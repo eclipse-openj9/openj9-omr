@@ -17,7 +17,7 @@
 ###############################################################################
 
 
-set(OMR_OS_DEFINITIONS 
+list(APPEND OMR_PLATFORM_DEFINITIONS
 	-DWIN32
 	-D_CRT_SECURE_NO_WARNINGS
 	-DCRTAPI1=_cdecl
@@ -34,12 +34,12 @@ set(OMR_OS_DEFINITIONS
 )
 
 if(OMR_ENV_DATA64)
-	list(APPEND OMR_OS_DEFINITIONS 
+	list(APPEND OMR_PLATFORM_DEFINITIONS
 		-DWIN64
 		-D_AMD64_=1
 	)
 else()
-	list(APPEND OMR_OS_DEFINITIONS 
+	list(APPEND OMR_PLATFORM_DEFINITIONS
 		-D_X86_
 	)
 endif()

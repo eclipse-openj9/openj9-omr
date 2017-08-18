@@ -16,11 +16,11 @@
 #    Multiple authors (IBM Corp.) - initial implementation and documentation
 ###############################################################################
 
-set(OMR_OS_DEFINITIONS 
+list(APPEND OMR_PLATFORM_DEFINITIONS
 	-DOSX
 	-D_FILE_OFFSET_BITS=64
 )
 
-set(OMR_OS_COMPILE_OPTIONS
+list(APPEND OMR_PLATFORM_COMPILE_OPTIONS
 	-pthread
 )

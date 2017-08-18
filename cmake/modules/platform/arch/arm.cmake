@@ -16,7 +16,7 @@
 #    Multiple authors (IBM Corp.) - initial implementation and documentation
 ###############################################################################
 
-set(OMR_ARCH_DEFINITIONS
+list(APPEND OMR_PLATFORM_DEFINITIONS
 	-DJ9ARM
 	-DARMGNU
 	-DFIXUP_UNALIGNED

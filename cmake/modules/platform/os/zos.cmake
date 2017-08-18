@@ -16,61 +16,70 @@
 #    Multiple authors (IBM Corp.) - initial implementation and documentation
 ###############################################################################
 
+list(APPEND OMR_PLATFORM_DEFINITIONS
+	-DJ9ZOS390
+	-DLONGLONG
+	-DJ9VM_TIERED_CODE_CACHE
+	-D_ALL_SOURCE
+	-D_XOPEN_SOURCE_EXTENDED
+	-DIBM_ATOE
+	-D_POSIX_SOURCE
+)
 
+list(APPEND OMR_PLATFORM_INCLUDE_DIRECTORIES
+	${CMAKE_SOURCE_DIR}/util/a2e/headers
+	/usr/lpp/cbclib/include
+	/usr/include
+)
+
+list(APPEND OMR_PLATFORM_COMPILE_OPTIONS
+	\"-Wc,xplink\"               # link with xplink calling convention
+	\"-Wc,convlit(ISO8859-1)\"   # convert all string literals to a codepage
+	\"-Wc,rostring\"             # place string literals in read only storage
+	\"-Wc,FLOAT(IEEE,FOLD,AFP)\" # Use IEEE (instead of IBM Hex Format) style floats
+	\"-Wc,enum(4)\"              # Specifies how many bytes of storage enums occupy
+	\"-Wa,goff\"                 # Assemble into GOFF object files
+	\"-Wc,NOANSIALIAS\"          # Do not generate ALIAS binger control statements
+	\"-Wc,TARGET(zOSV1R13)\"     # Generate code for the target operating system
+	\"-qnosearch\"
+)
+
+list(APPEND OMR_PLATFORM_C_COMPILE_OPTIONS
+	\"-Wc,ARCH(7)\"
+	\"-Wc,langlvl(extc99)\"
+)
+
+list(APPEND OMR_PLATFORM_CXX_COMPILE_OPTIONS
+	\"-Wc,langlvl(extended)\"
+	\"-Wc,ARCH(7)\"
+)
+
+list(APPEND OMR_PLATFORM_SHARED_LINKER_OPTIONS
+	\"-Wl,xplink\"
+	\"-Wl,dll\"
+)
+
+if(OMR_ENV_DATA64)
+	list(APPEND OMR_PLATFORM_DEFINITIONS
+		-DJ9ZOS39064
+	)
+	list(APPEND OMR_PLATFORM_COMPILE_OPTIONS
+		\"-Wc,lp64\"
+		\"-Wa,SYSPARM(BIT64)\"
+	)
+else()
+	list(APPEND OMR_PLATFORM_DEFINITIONS
+		-D_LARGE_FILES
+	)
+endif()
 
 macro(omr_os_global_setup)
 
+	# TODO: Move this out and after platform config.
 	enable_language(ASM-ZOS)
-
-	include_directories(util/a2e/headers)
-
-	add_definitions(
-		-DJ9ZOS390
-		-DLONGLONG
-		-DJ9VM_TIERED_CODE_CACHE
-		-D_ALL_SOURCE
-		-D_XOPEN_SOURCE_EXTENDED
-		-DIBM_ATOE
-		-D_POSIX_SOURCE
-	)
-
-	#NOTE: character escaping on compiler args seems broken
-
-	# Global Flags
-	# xplink   Link with the xplink calling convention
-	# convlit  Convert all string literals to a codepage
-	# rostring Place string literals in read only storage
-	# FLOAT    Use IEEE (instead of IBM Hex Format) style floats
-	# enum     Specifies how many bytes of storage enums occupy
-	# a,goff   Assemble into GOFF object files
-	# NOANSIALIAS Do not generate ALIAS binder control statements
-	# TARGET   Generate code for the target operating system
-	# list     Generate assembly listing
-	# offset   In assembly listing, show addresses as offsets of function entry points
-	#set(OMR_GLOBAL_FLAGS "-Wc,xplink,convlit\\\(ISO8859-1\\\),rostring,FLOAT\\\(IEEE,FOLD,AFP\\\),enum\\\(4\\\) -Wa,goff -Wc,NOANSIALIAS -Wc,TARGET\\\(zOSV1R13\\\) -W \"c,list,offset\"")
-	set(OMR_GLOBAL_FLAGS "-Wc,xplink,convlit\\\(ISO8859-1\\\),rostring,FLOAT\\\(IEEE,FOLD,AFP\\\),enum\\\(4\\\) -Wa,goff -Wc,NOANSIALIAS -Wc,TARGET\\\(zOSV1R13\\\)")
-
-	if(OMR_ENV_DATA64)
-		add_definitions(-DJ9ZOS39064)
-		set(OMR_GLOBAL_FLAGS "${OMR_GLOBAL_FLAGS} -Wc,lp64 -Wa,SYSPARM\\\(BIT64\\\)")
-	else()
-		add_definitions(-D_LARGE_FILES)
-	endif()
-
-
-	set(CMAKE_ASM-ZOS_FLAGS "${OMR_GLOBAL_FLAGS}")
-	set(OMR_GLOBAL_FLAGS "${OMR_GLOBAL_FLAGS} -qnosearch -I${CMAKE_SOURCE_DIR}/util/a2e/headers -I/usr/include")
-	# Specify the minimum arch for 64-bit programs
-	#TODO this is a gross hack
-
-	set(CMAKE_C_FLAGS "-Wc,ARCH\\\(7\\\) -Wc,\"langlvl(extc99)\" ${OMR_GLOBAL_FLAGS}")
-	set(CMAKE_CXX_FLAGS "-Wc,ARCH\\\(7\\\) -Wc,\"langlvl(extended)\" ${OMR_GLOBAL_FLAGS} -I/usr/lpp/cbclib/include")
-
-
+	set(CMAKE_ASM-ZOS_FLAGS "${OMR_PLATFORM_COMPILE_OPTIONS}")
 
 	target_compile_options(omr_shared INTERFACE "-Wc,DLL,EXPORTALL")
-
-	set(CMAKE_SHARED_LINKER_FLAGS "-Wl,xplink,dll")
 
 	#TODO below is a chunk of the original makefile which still needs to be ported
 	# # This is the first option applied to the C++ linking command.
@@ -98,8 +107,6 @@ macro(omr_os_global_setup)
 	#apparently above doesnt work like it does on windows. Attempt to work arround
 	set(EXECUTABLE_OUTPUT_PATH "${CMAKE_BINARY_DIR}")
 	set(LIBRARY_OUTPUT_PATH  "${CMAKE_BINARY_DIR}")
-
-
 
 	message(STATUS "DEBUG: RUNTIME_OUTPUT_DIR=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
 	message(STATUS "DEBUG: CFLAGS=${CMAKE_C_FLAGS}")

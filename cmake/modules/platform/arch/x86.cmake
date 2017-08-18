@@ -16,10 +16,8 @@
 #    Multiple authors (IBM Corp.) - initial implementation and documentation
 ###############################################################################
 
-set(OMR_ARCH_DEFINITIONS)
-
 if(OMR_ENV_DATA64)
-	list(APPEND OMR_ARCH_DEFINITIONS -DJ9HAMMER)
+	list(APPEND OMR_PLATFORM_DEFINITIONS -DJ9HAMMER)
 else()
-	list(APPEND OMR_ARCH_DEFINITIONS -DJ9X86)
+	list(APPEND OMR_PLATFORM_DEFINITIONS -DJ9X86)
 endif()

@@ -31,7 +31,7 @@ include(OmrUtility)
 
 omr_detect_system_information()
 
-# Pickup OS info 
+# Pickup OS info
 include(platform/os/${OMR_HOST_OS})
 
 # Pickup Arch Info
@@ -43,15 +43,51 @@ include(platform/toolcfg/${OMR_TOOLCONFIG})
 # Verify toolconfig!
 include(platform/toolcfg/verify)
 
-macro(omr_platform_global_setup)
-	omr_append_flags(CMAKE_C_FLAGS   ${OMR_OS_COMPILE_OPTIONS})
-	omr_append_flags(CMAKE_CXX_FLAGS ${OMR_OS_COMPILE_OPTIONS})
 
-	add_definitions(
-		${OMR_OS_DEFINITIONS}
-		${OMR_ARCH_DEFINITIONS}
+# interface library for exporting symbols from dynamic library
+# currently does nothing except on zos
+add_library(omr_shared INTERFACE)
+
+macro(omr_platform_global_setup)
+
+	omr_append_flags(CMAKE_C_FLAGS
+		${OMR_PLATFORM_COMPILE_OPTIONS}
+		${OMR_PLATFORM_C_COMPILE_OPTIONS}
 	)
 
+	omr_append_flags(CMAKE_CXX_FLAGS
+		${OMR_PLATFORM_COMPILE_OPTIONS}
+		${OMR_PLATFORM_CXX_COMPILE_OPTIONS}
+	)
+
+	omr_append_flags(CMAKE_EXE_LINKER_FLAGS
+		${OMR_PLATFORM_LINKER_OPTIONS}
+		${OMR_PLATFORM_EXE_LINKER_OPTIONS}
+	)
+
+	omr_append_flags(CMAKE_SHARED_LINKER_FLAGS
+		${OMR_PLATFORM_LINKER_OPTIONS}
+		${OMR_PLATFORM_SHARED_LINKER_OPTIONS}
+	)
+
+	omr_append_flags(CMAKE_STATIC_LINKER_FLAGS
+		${OMR_PLATFORM_LINKER_OPTIONS}
+		${OMR_PLATFORM_STATIC_LINKER_OPTIONS}
+	)
+
+	include_directories(
+		${OMR_PLATFORM_INCLUDE_DIRECTORIES}
+	)
+
+	add_definitions(
+		${OMR_PLATFORM_DEFINITIONS}
+	)
+
+	link_libraries(
+		${OMR_PLATFORM_LIBRARIES}
+	)
+
+	# TODO: Move this somewhere else, or just find a better home.
 	if(OMR_WARNINGS_AS_ERRORS)
 		omr_append_flags(CMAKE_C_FLAGS   ${OMR_WARNING_AS_ERROR_FLAG})
 		omr_append_flags(CMAKE_CXX_FLAGS ${OMR_WARNING_AS_ERROR_FLAG})
@@ -72,10 +108,6 @@ macro(omr_platform_global_setup)
 		omr_toolconfig_global_setup()
 	endif()
 endmacro()
-
-# interface library for exporting symbols from dynamic library
-# currently does nothing except on zos
-add_library(omr_shared INTERFACE)
 
 ###
 ### Flags we aren't using

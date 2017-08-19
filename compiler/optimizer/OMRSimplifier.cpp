@@ -157,7 +157,8 @@ static void computeInvarianceOfAllStructures(TR::Compilation *comp, TR_Structure
 OMR::Simplifier::Simplifier(TR::OptimizationManager *manager)
    : TR::Optimization(manager),
      _hashTable(manager->trMemory(), stackAlloc),
-     _ccHashTab(manager->trMemory(), stackAlloc)
+     _ccHashTab(manager->trMemory(), stackAlloc),
+     _performLowerTreeNodePairs(getTypedAllocator<std::pair<TR::TreeTop*, TR::Node*>>(self()->allocator()))
    {
    _invalidateUseDefInfo      = false;
    _alteredBlock = false;
@@ -376,15 +377,19 @@ OMR::Simplifier::simplifyExtendedBlock(TR::TreeTop * treeTop)
       if (trace())
          traceMsg(comp(), "simplifying block_%d\n", block->getNumber());
 
-      _performLowerTreeSimplifier=NULL;
-      _performLowerTreeNode=NULL;
       simplify(block);
 
-      if(_performLowerTreeSimplifier)
+      for(auto cursor = _performLowerTreeNodePairs.begin(); cursor != _performLowerTreeNodePairs.end(); ++cursor)
          {
-         _performLowerTreeNode = postWalkLowerTreeSimplifier(_performLowerTreeSimplifier, _performLowerTreeNode, block, (TR::Simplifier *) this);
-         _performLowerTreeSimplifier->setNode(_performLowerTreeNode);
+         auto treeNodePair = *cursor;
+         if (trace())
+            traceMsg(comp(), "process _performLowerTreeNodePairs treetop %p node %p\n", treeNodePair.first, treeNodePair.second);
+         TR::Node *performLowerNode = postWalkLowerTreeSimplifier(treeNodePair.first, treeNodePair.second, block, (TR::Simplifier *) this);
+         treeNodePair.first->setNode(performLowerNode);
          }
+
+      while (!_performLowerTreeNodePairs.empty())
+         _performLowerTreeNodePairs.pop_back();
 
       // If the block itself was removed from the CFG during simplification, find
       // the next 'legitimate' block to be simplified

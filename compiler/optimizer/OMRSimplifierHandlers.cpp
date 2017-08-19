@@ -16885,10 +16885,9 @@ TR::Node *NewSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 // Used by MethodEnter/ExitHook
 TR::Node *lowerTreeSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   if(node->getOpCodeValue() == TR::MethodExitHook)
+   if(node->getOpCodeValue() == TR::MethodExitHook || node->getOpCodeValue() == TR::MethodEnterHook)
       {
-      s->_performLowerTreeSimplifier = s->_curTree;
-      s->_performLowerTreeNode = node;
+      s->_performLowerTreeNodePairs.push_back(std::make_pair(s->_curTree, node));
       return node;
       }
    else

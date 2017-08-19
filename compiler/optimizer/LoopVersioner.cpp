@@ -4399,7 +4399,7 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
          {
          for (TR::TreeTop *tt = block->getEntry(); tt != block->getExit(); tt = tt->getNextTreeTop())
             {
-            if (comp()->isPotentialOSRPoint(tt->getNode()))
+            if (comp()->isPotentialOSRPoint(tt->getNode(), NULL, true))
                {
                safeToRemoveOSRGuards = false;
                break;

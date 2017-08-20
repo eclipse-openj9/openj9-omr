@@ -20,15 +20,22 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 #TODO there is a bunch of stuff with vpaths, presumably for some extensibility reasons
 # need to figure out if its actually needed and implement properly if required
-add_library(j9hookstatic STATIC
-	hookable.cpp
-	ut_j9hook.c
-	ut_j9hook.h
+add_library(j9hook_obj OBJECT
+	${CMAKE_CURRENT_SOURCE_DIR}/hookable.cpp
+	${CMAKE_CURRENT_BINARY_DIR}/ut_j9hook.c
 )
 
-target_include_directories(j9hookstatic
+target_include_directories(j9hook_obj
 	PUBLIC
 		.
+)
+
+add_library(j9hookstatic STATIC
+	$<TARGET_OBJECTS:j9hook_obj>
+)
+target_include_directories(j9hookstatic
+	PUBLIC
+	$<TARGET_PROPERTY:j9hook_obj,INTERFACE_INCLUDE_DIRECTORIES>
 )
 target_link_libraries(j9hookstatic PUBLIC
 	j9thrstatic

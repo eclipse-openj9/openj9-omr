@@ -827,8 +827,12 @@ public:
     *
     * osrPointNode can be used to identify the node that is believed to be the
     * potential OSR point. Multiple OSR points are not expected within a tree.
+    *
+    * The ignoreInfra flag will result in the call checking the node even if
+    * OSR infrastructure has been removed. By default, if infrastructure has been
+    * removed, this call will always return false.
     */
-   bool isPotentialOSRPoint(TR::Node *node, TR::Node **osrPointNode=NULL);
+   bool isPotentialOSRPoint(TR::Node *node, TR::Node **osrPointNode=NULL, bool ignoreInfra=false);
    bool isPotentialOSRPointWithSupport(TR::TreeTop *tt);
 
    TR::OSRMode getOSRMode();

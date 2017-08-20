@@ -632,7 +632,7 @@ bool OMR::Compilation::isShortRunningMethod(int32_t callerIndex)
    return false;
    }
 
-bool OMR::Compilation::isPotentialOSRPoint(TR::Node *node, TR::Node **osrPointNode)
+bool OMR::Compilation::isPotentialOSRPoint(TR::Node *node, TR::Node **osrPointNode, bool ignoreInfra)
    {
    static char *disableAsyncCheckOSR = feGetEnv("TR_disableAsyncCheckOSR");
    static char *disableGuardedCallOSR = feGetEnv("TR_disableGuardedCallOSR");
@@ -644,7 +644,7 @@ bool OMR::Compilation::isPotentialOSRPoint(TR::Node *node, TR::Node **osrPointNo
       if (node->getOpCodeValue() == TR::treetop || node->getOpCode().isCheck())
          node = node->getFirstChild(); 
 
-      if (_osrInfrastructureRemoved)
+      if (_osrInfrastructureRemoved && !ignoreInfra)
          potentialOSRPoint = false;
       else if (node->getOpCodeValue() == TR::asynccheck)
          {

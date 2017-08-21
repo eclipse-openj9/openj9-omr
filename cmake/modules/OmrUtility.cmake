@@ -16,6 +16,8 @@
 #    Multiple authors (IBM Corp.) - initial implementation and documentation
 ###############################################################################
 
+include(OmrAssert)
+
 # Given a prefix, and a list of arguments, prefix the list of arguments and
 # assign to out: ie, add_prefix(out "-I" "a;b;c") should set out to
 # "-Ia;-Ib;-Ic".
@@ -27,14 +29,23 @@ function(omr_add_prefix out prefix)
    set(${out} ${ret} PARENT_SCOPE)
 endfunction(omr_add_prefix)
 
-# omr_remove_flags(<variable> [<flag>...])
+# omr_trim_whitespace(<output_variable> <string>)
+# Trim repeated whitespace from <string> and assign to <output_variable>.
+# Does not remove leading/trailing whitespace. For that, use string(STRIP ...)
+function(omr_trim_whitespace variable string)
+	string(REGEX REPLACE " +" " " result "${string}")
+	set(${variable} "${result}" PARENT_SCOPE)
+endfunction(omr_trim_whitespace)
+
+# omr_remove_flags(<output_variable> [<flag>...])
 # Remove flags from a string.
 function(omr_remove_flags variable)
 	set(result "${${variable}}")
 	foreach(option IN ITEMS ${ARGN})
-		string(REGEX REPLACE "(^| )${option}($| )" "" result "${result}")
+		string(REGEX REPLACE "(^| )${option}( |$)" " " result "${result}")
 	endforeach()
-	set(${variable} ${result} PARENT_SCOPE)
+	omr_trim_whitespace(result "${result}")
+	set(${variable} "${result}" PARENT_SCOPE)
 endfunction(omr_remove_flags)
 
 # omr_stringify(<output_variable> <item>...)

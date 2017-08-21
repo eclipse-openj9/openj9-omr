@@ -134,3 +134,32 @@ TEST_P(CommoningTest, CommoningWithinBlock)
 
 INSTANTIATE_TEST_CASE_P(CommingValidationTest, CommoningTest,
   ::testing::ValuesIn(TRTest::const_value_pairs<int32_t, int32_t>()));
+
+class CommoningDeathTest : public TRTest::JitTest {};
+
+TEST_F(CommoningDeathTest, CommoningAcrossBlock)
+   {
+   //Ensure that the ILValidator is capable of catching 
+   //invalid commoning.
+   auto tril = TRIL((method return=Int32 args=[Int32]
+                     (block name="first"
+                      (iload parm=0 id="parm0")
+                      (imul id="multwo"
+                       (iconst 2)
+                       (@id "parm0")
+                      ))
+                     (block name="second"
+                      (ireturn
+                       (@id "multwo")
+                      )
+                     )
+                    ));
+
+   auto ast = parseString(tril);
+   ASSERT_NOTNULL(ast) << "Parsing failed unexpectedly";
+
+   Tril::JitBuilderCompiler compiler{ast};
+   ASSERT_DEATH(compiler.compile(), "VALIDATION ERROR")
+      << "Compilation did not fail due to ill-formed input trees";
+   }
+

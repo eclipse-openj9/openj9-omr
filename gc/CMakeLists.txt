@@ -201,7 +201,6 @@ add_library(omrgc
 	base/standard/OverflowStandard.cpp
 	base/standard/ParallelCompactTask.cpp
 	base/standard/ParallelGlobalGC.cpp
-	base/standard/ParallelGlobalGCTask.cpp
 	base/standard/ParallelScavengeTask.cpp
 	base/standard/ParallelSweepScheme.cpp
 	base/standard/PhysicalSubArenaVirtualMemorySemiSpace.cpp

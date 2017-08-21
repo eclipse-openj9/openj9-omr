@@ -380,7 +380,6 @@ bool         TR_ResolvedMethod::isPrivate()                                { not
 bool         TR_ResolvedMethod::isProtected()                              { notImplemented("isProtected"); return false; }
 bool         TR_ResolvedMethod::isPublic()                                 { notImplemented("isPublic"); return false; }
 bool         TR_ResolvedMethod::isFinal()                                  { notImplemented("isFinal"); return false; }
-bool         TR_ResolvedMethod::isDebugable()                              { notImplemented("isFinal"); return false; }
 bool         TR_ResolvedMethod::isStrictFP()                               { notImplemented("isStrictFP"); return false; }
 bool         TR_ResolvedMethod::isInterpreted()                            { notImplemented("isInterpreted"); return false; }
 bool         TR_ResolvedMethod::hasBackwardBranches()                      { notImplemented("hasBackwardBranches"); return false; }

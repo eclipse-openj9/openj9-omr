@@ -18,6 +18,7 @@
 
 include(OmrAssert)
 
+# omr_add_prefix(<output_variable> <prefix> <element>...)
 # Given a prefix, and a list of arguments, prefix the list of arguments and
 # assign to out: ie, add_prefix(out "-I" "a;b;c") should set out to
 # "-Ia;-Ib;-Ic".
@@ -55,11 +56,10 @@ function(omr_stringify output)
 	set(${output} ${result} PARENT_SCOPE)
 endfunction(omr_stringify)
 
-# omr_append_flags(<variable> [<flag>...])
+# omr_append_flags(<output_variable> [<flag>...])
 # Append flags to variable. Flags are space separated.
 # <variable> is a string, <flag> is a list.
 function(omr_append_flags variable)
 	omr_stringify(flags ${ARGN})
 	set(${variable} "${${variable}} ${flags}" PARENT_SCOPE)
 endfunction(omr_append_flags)
-

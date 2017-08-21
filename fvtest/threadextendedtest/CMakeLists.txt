@@ -28,8 +28,10 @@ add_executable(omrthreadextendedtest
 target_link_libraries(omrthreadextendedtest
 	omrtestutil
 	omrGtestGlue
-	j9thrstatic
-	omrport
+	omrutil
+	${OMR_PORT_LIB}
+	omrutil
+	${OMR_THREAD_LIB}
 )
 
 if(OMR_HOST_OS STREQUAL "zos")

@@ -340,7 +340,10 @@ add_library(omrport STATIC
 
 target_link_libraries(omrport
 	j9thrstatic
+	j9avl
 	j9hashtable
+	j9pool
+	omrglue
 )
 
 target_include_directories(omrport_obj PRIVATE

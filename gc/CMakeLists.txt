@@ -47,7 +47,7 @@ add_library(omrgc_tracegen OBJECT
 	${CMAKE_CURRENT_BINARY_DIR}/ut_j9vgc.c
 )
 
-add_library(omrgc
+add_library(omrgc STATIC
 	base/AddressOrderedListPopulator.cpp
 	base/AllocationContext.cpp
 	base/AllocationInterfaceGeneric.cpp
@@ -289,7 +289,11 @@ target_include_directories(omrgc
 
 target_link_libraries(omrgc
 	PUBLIC
-		omrcore
-		omrglue
-		j9hookstatic
+	omrglue
+	omrcore
+	omrglue
+	omrcore
+	${OMR_THREAD_LIB}
+	${OMR_HOOK_LIB}
+	${OMR_TRACE_LIB}
 )

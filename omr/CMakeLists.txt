@@ -45,11 +45,11 @@ add_dependencies(omrcore omrgc_tracegen)
 target_include_directories(omrcore
 	PUBLIC
 		.
+	PRIVATE
+		$<TARGET_PROPERTY:omrgc,INTERFACE_INCLUDE_DIRECTORIES>
 )
 
 target_link_libraries(omrcore
 	PUBLIC
-		omrgc # mminitcore.h
-		omrport
-		omrtrace
+		${OMR_PORT_LIB}
 )

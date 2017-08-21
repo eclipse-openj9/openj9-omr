@@ -85,15 +85,22 @@ configure_file(./omrcfg.CMakeTemplate.h omrcfg.h)
 configure_file(./omrversionstrings.CMakeTemplate.h omrversionstrings.h)
 
 add_library(omrglue STATIC)
-# Link as private since we dont want the interface sources to propagate
 target_link_libraries(omrglue
-	PUBLIC
-	omrgc
 	PRIVATE
+	# Link as private since we dont want the interface sources to propagate
 	${OMR_GLUE_TARGET}
 )
 #but we need to propagate the include paths
-target_include_directories(omrglue INTERFACE $<TARGET_PROPERTY:${OMR_GLUE_TARGET},INTERFACE_INCLUDE_DIRECTORIES>)
+target_include_directories(omrglue
+	INTERFACE
+	$<TARGET_PROPERTY:${OMR_GLUE_TARGET},INTERFACE_INCLUDE_DIRECTORIES>
+	PRIVATE
+	$<TARGET_PROPERTY:omrgc,INTERFACE_INCLUDE_DIRECTORIES>
+)
+add_dependencies(omrglue
+	omrgc_hookgen
+	omrgc_tracegen
+)
 
 add_subdirectory(tools)
 # Yeah, its dumb doing this here. Read note in tools/CMakeLists.txt

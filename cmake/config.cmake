@@ -35,6 +35,11 @@ set(OMR_THREAD ON CACHE BOOL "Enable thread library")
 # TODO: Support building only tools for cross-compilation build
 
 
+set(OMR_GC_LIB "omrgc" CACHE STRING "Name of the GC library to use")
+set(OMR_HOOK_LIB "j9hookstatic" CACHE STRING "Name of the hook library to link against")
+set(OMR_PORT_LIB "omrport" CACHE STRING "Name of the port library to link against")
+set(OMR_THREAD_LIB "j9thrstatic" CACHE STRING "Name of the thread library to link against")
+set(OMR_TRACE_LIB "omrtrace" CACHE STRING "Name of the trace library to link against")
 
 ###
 ### Boolean Feature Flags

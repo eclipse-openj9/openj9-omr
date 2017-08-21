@@ -30,6 +30,7 @@ add_library(omrtrace STATIC
 
 target_link_libraries(omrtrace
 	PUBLIC
+	${OMR_THREAD_LIB}
 	omrutil
 )
 #TODO: check if following makefile fragment still required:

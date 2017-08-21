@@ -87,6 +87,11 @@ target_link_libraries(tril INTERFACE
     dl
 )
 
+add_executable(tril_dumper compiler.cpp) 
+target_link_libraries(tril_dumper tril)
+
+add_executable(tril_compiler compiler.cpp) 
+target_link_libraries(tril_compiler tril)
 #export(TARGETS tril jitbuilder FILE tril-config.cmake)
 #install(FILES ast.h ilgen.hpp DESTINATION include)
 #install(TARGETS tril EXPORT tril-targets ARCHIVE DESTINATION lib)

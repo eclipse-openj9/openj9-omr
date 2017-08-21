@@ -23,6 +23,8 @@ We have used following valgrind API requests:
 
 6. `VALGRIND_MEMPOOL_FREE(pool, addr)`. This request is used to inform valgrind that object at `addr` has been freed from the `pool`.  This also marks the object as `NOACCESS`. The request is to be used in `MM_SweepPoolManagerAddressOrderedListBase::addFreeMemory(env, *sweepChunk, *address, size)`
 
+7. `VALGRIND_MEMPOOL_DESTROY`
+
 ## Different Ways of freeing objects in Valgrind.
 
 API request `VALGRIND_MEMPOOL_FREE(pool, addr)` requires us to have base address of object that we are attempting to free. GC keeps record of heap areas that are available or free. It is informed by `MM_MarkingDelegate::scanRoots` in the target language implementation of the root objects that are alive, but it does not track objects that are even allocated so even if we have a range of non-marked objects, it is not possible to calculate the ones that are dead (to be freed).
@@ -36,3 +38,10 @@ There are 3 workarounds for this issue.
  3. Adding new valgrind API: Valgrind already has the list of allocated objects, so it should be possible for it to find the objects in a range and also free them. Andrew Young has written a patch for this and it is in their mailing lists for review. https://sourceforge.net/p/valgrind/mailman/message/35996446/ . This works from the GC and also does not require to have specific addresses. This is best solution, but until it is merged in their code and a build is out, it will be a bit difficult to use.
 
  ## Usage
+
+ 1. To compile with valgrind API enabled, you have to use build option  `--enable-OMR_VALGRIND_MEMCHECK`. Valgrind documentation also recommends turning off optimizations 
+ > If you are planning to use Memcheck: On rare occasions, compiler optimisations (at -O2 and above, and sometimes -O1) have been observed to generate code which fools Memcheck into wrongly reporting uninitialised value errors.
+
+So for given example, you can run `make -f run_configure.mk SPEC=linux_x86-64 OMRGLUE=./example/glue EXTRA_CONFIGURE_ARGS='--disable-optimized --enable-OMR_VALGRIND_MEMCHECK` to enable our valgrind preprocessor.
+
+After compiling OMR,

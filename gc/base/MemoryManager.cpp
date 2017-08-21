@@ -516,14 +516,15 @@ MM_MemoryManager::destroyVirtualMemory(MM_EnvironmentBase* env, MM_MemoryHandle*
 		OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
 		omrtty_printf("VALGRIND: Destroying virtual memory, looking for any objects still left\n");
 
-		for(it = env->getExtensions()->_allocatedObjects.begin(); it != env->getExtensions()->_allocatedObjects.begin(); it++)
+		for(it = env->getExtensions()->_allocatedObjects.begin(); it != env->getExtensions()->_allocatedObjects.end(); it++)
 		{
 			int objSize = (int) ( (GC_ObjectModel)env->getExtensions()->objectModel ).getConsumedSizeInBytesWithHeader( (omrobjectptr_t) *it);
-			omrtty_printf("VALGRIND: object still left: %x of size %d\n", *it,objSize);
+			omrtty_printf("VALGRIND: destroyVirtualMemory: clearing object at 0x%x of size %d\n", *it,objSize);
 			VALGRIND_MEMPOOL_FREE(env->getExtensions()->valgrindMempoolAddr,*it);		
 		}
 		env->getExtensions()->_allocatedObjects.clear();
 
+		//kill mempool and hence also the remaining objects.
 		VALGRIND_DESTROY_MEMPOOL(env->getExtensions()->valgrindMempoolAddr);
 		env->getExtensions()->valgrindMempoolAddr = 0;
 		}

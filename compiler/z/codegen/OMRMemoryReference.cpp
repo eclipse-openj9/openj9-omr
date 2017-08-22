@@ -3283,6 +3283,7 @@ OMR::Z::MemoryReference::generateBinaryEncoding(uint8_t * cursor, TR::CodeGenera
          {
          if (instr->getKind()==TR::Instruction::IsRS ||
             instr->getKind()==TR::Instruction::IsRSY ||
+            instr->getKind()==TR::Instruction::IsRSL ||
             instr->getKind()==TR::Instruction::IsSI  ||
             instr->getKind()==TR::Instruction::IsSIY ||
             instr->getKind()==TR::Instruction::IsSIL ||
@@ -3291,7 +3292,7 @@ OMR::Z::MemoryReference::generateBinaryEncoding(uint8_t * cursor, TR::CodeGenera
             instr->getKind()==TR::Instruction::IsSS4 ||
             instr->getKind()==TR::Instruction::IsS    )
             {
-            TR_ASSERT( base!=NULL,"OMR::Z::MemoryReference::generateBinaryEncoding --  Expected non-NULL base reg for RS/S/SI type inst.");
+            TR_ASSERT_FATAL(base != NULL, "Expected non-NULL base register for long displacement on %s [%p] instruction", cg->getDebug()->getOpCodeName(&instr->getOpCode()), instr);
 
             //   ICM GPRt, DISP(,base)
             // becomes:
@@ -3352,13 +3353,13 @@ OMR::Z::MemoryReference::generateBinaryEncoding(uint8_t * cursor, TR::CodeGenera
             }
          else if (index==NULL)                                      // Since index reg is free, use it directly
             {
-            TR_ASSERT(instr->getKind()==TR::Instruction::IsRX  ||
-                    instr->getKind()==TR::Instruction::IsVRX  ||
-                    instr->getKind()==TR::Instruction::IsRXY ||
-                    instr->getKind()==TR::Instruction::IsRXYb ||
-                    instr->getKind()==TR::Instruction::IsRXE ||
-                    instr->getKind()==TR::Instruction::IsRXF  ,
-                "OMR::Z::MemoryReference::generateBinaryEncoding -- Unexpected instruction type %p.",instr);
+            TR_ASSERT_FATAL(instr->getKind()==TR::Instruction::IsRX ||
+                    instr->getKind() == TR::Instruction::IsVRX ||
+                    instr->getKind() == TR::Instruction::IsRXY ||
+                    instr->getKind() == TR::Instruction::IsRXYb ||
+                    instr->getKind() == TR::Instruction::IsRXE ||
+                    instr->getKind() == TR::Instruction::IsRXF,
+                "Unexpected instruction type for long displacement on %s [%p] instruction", cg->getDebug()->getOpCodeName(&instr->getOpCode()), instr);
 
             //    A GPRt, DISP(,base)
             // becomes:
@@ -3369,12 +3370,12 @@ OMR::Z::MemoryReference::generateBinaryEncoding(uint8_t * cursor, TR::CodeGenera
             }
          else // base is NULL                                       // Since base reg is free, use it directly
             {
-            TR_ASSERT(instr->getKind()==TR::Instruction::IsRX  ||
-                    instr->getKind()==TR::Instruction::IsRXY ||
-                    instr->getKind()==TR::Instruction::IsRXYb ||
-                    instr->getKind()==TR::Instruction::IsRXE ||
-                    instr->getKind()==TR::Instruction::IsRXF  ,
-               "OMR::Z::MemoryReference::generateBinaryEncoding -- Unexpected instruction type %p.",instr);
+            TR_ASSERT_FATAL(instr->getKind() == TR::Instruction::IsRX  ||
+                    instr->getKind() == TR::Instruction::IsRXY ||
+                    instr->getKind() == TR::Instruction::IsRXYb ||
+                    instr->getKind() == TR::Instruction::IsRXE ||
+                    instr->getKind() == TR::Instruction::IsRXF,
+                "Unexpected instruction type for long displacement on %s [%p] instruction", cg->getDebug()->getOpCodeName(&instr->getOpCode()), instr);
 
             //    A GPRt, DISP(,index)
             // becomes:

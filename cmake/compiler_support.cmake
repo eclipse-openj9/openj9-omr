@@ -324,7 +324,7 @@ endfunction()
 # Some source files in OMR don't map well into the transforms 
 # CMake already knows about. This generates a pipeline of custom commands
 # to transform these source files into files that CMake _does_ understand. 
-function(inject_object_modification_targets result compiler_name)
+function(omr_inject_object_modification_targets result compiler_name)
 	set(arg ${ARGN})
 
 	# Convert pasm files ot asm files: run this before masm2gas to ensure 
@@ -339,7 +339,7 @@ function(inject_object_modification_targets result compiler_name)
 	spp2s_files(arg ${compiler_name} ${arg})
 
 	set(${result} ${arg} PARENT_SCOPE)
-endfunction(inject_object_modification_targets)
+endfunction(omr_inject_object_modification_targets)
 
 # Create an OMR Compiler component
 # 
@@ -399,7 +399,7 @@ function(create_omr_compiler_library)
 		COMMENT "Generate ${BUILD_NAME_FILE}"
 	)
 
-	inject_object_modification_targets(COMPILER_OBJECTS ${COMPILER_NAME} ${COMPILER_OBJECTS})
+	omr_inject_object_modification_targets(COMPILER_OBJECTS ${COMPILER_NAME} ${COMPILER_OBJECTS})
 
 	add_library(${COMPILER_NAME} ${LIB_TYPE} 
 		${BUILD_NAME_FILE} 
@@ -457,7 +457,7 @@ function(create_omr_compiler_library)
 
 
 
-	inject_object_modification_targets(CORE_COMPILER_OBJECTS ${COMPILER_NAME} ${CORE_COMPILER_OBJECTS})
+	omr_inject_object_modification_targets(CORE_COMPILER_OBJECTS ${COMPILER_NAME} ${CORE_COMPILER_OBJECTS})
 
 	# Append to the compiler sources list
 	target_sources(${COMPILER_NAME} PRIVATE ${CORE_COMPILER_OBJECTS})

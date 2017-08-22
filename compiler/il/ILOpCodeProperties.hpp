@@ -8658,7 +8658,7 @@
    /* .properties4          = */ 0,
    /* .dataType             = */ TR::NoType,
    /* .typeProperties       = */ 0,
-   /* .childProperties      = */ ILChildProp::NoChildren,
+   /* .childProperties      = */ THREE_SAME_CHILD(TR::NoType),
    /* .swapChildrenOpCode   = */ TR::BadILOp,
    /* .reverseBranchOpCode  = */ TR::BadILOp,
    /* .booleanCompareOpCode = */ TR::BadILOp,

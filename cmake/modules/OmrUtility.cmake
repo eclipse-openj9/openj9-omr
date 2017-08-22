@@ -16,6 +16,12 @@
 #    Multiple authors (IBM Corp.) - initial implementation and documentation
 ###############################################################################
 
+# Include once
+if(OMR_UTILITY_)
+	return()
+endif()
+set(OMR_UTILITY_ 1)
+
 include(OmrAssert)
 
 # omr_add_prefix(<output_variable> <prefix> <element>...)

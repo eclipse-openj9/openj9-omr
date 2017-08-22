@@ -33,31 +33,31 @@ list(APPEND OMR_PLATFORM_INCLUDE_DIRECTORIES
 )
 
 list(APPEND OMR_PLATFORM_COMPILE_OPTIONS
-	\"-Wc,xplink\"               # link with xplink calling convention
-	\"-Wc,convlit(ISO8859-1)\"   # convert all string literals to a codepage
-	\"-Wc,rostring\"             # place string literals in read only storage
-	\"-Wc,FLOAT(IEEE,FOLD,AFP)\" # Use IEEE (instead of IBM Hex Format) style floats
-	\"-Wc,enum(4)\"              # Specifies how many bytes of storage enums occupy
-	\"-Wa,goff\"                 # Assemble into GOFF object files
-	\"-Wc,NOANSIALIAS\"          # Do not generate ALIAS binger control statements
-	\"-Wc,TARGET(zOSV1R13)\"     # Generate code for the target operating system
+	"\"-Wc,xplink\""               # link with xplink calling convention
+	"\"-Wc,convlit(ISO8859-1)\""   # convert all string literals to a codepage
+	"\"-Wc,rostring\""             # place string literals in read only storage
+	"\"-Wc,FLOAT(IEEE,FOLD,AFP)\"" # Use IEEE (instead of IBM Hex Format) style floats
+	"\"-Wc,enum(4)\""              # Specifies how many bytes of storage enums occupy
+	"\"-Wa,goff\""                 # Assemble into GOFF object files
+	"\"-Wc,NOANSIALIAS\""          # Do not generate ALIAS binger control statements
+	"\"-Wc,TARGET(zOSV1R13)\""     # Generate code for the target operating system
 )
 
 list(APPEND OMR_PLATFORM_C_COMPILE_OPTIONS
-	\"-Wc,ARCH(7)\"
-	\"-Wc,langlvl(extc99)\"
-	\"-qnosearch\"
+	"\"-Wc,ARCH(7)\""
+	"\"-Wc,langlvl(extc99)\""
+	"\"-qnosearch\""
 )
 
 list(APPEND OMR_PLATFORM_CXX_COMPILE_OPTIONS
-	\"-Wc,ARCH(7)\"
-	\"-Wc,langlvl(extended)\"
-	\"-qnosearch\"
+	"\"-Wc,ARCH(7)\""
+	"\"-Wc,langlvl(extended)\""
+	"\"-qnosearch\""
 )
 
 list(APPEND OMR_PLATFORM_SHARED_LINKER_OPTIONS
-	\"-Wl,xplink\"
-	\"-Wl,dll\"
+	"\"-Wl,xplink\""
+	"\"-Wl,dll\""
 )
 
 if(OMR_ENV_DATA64)

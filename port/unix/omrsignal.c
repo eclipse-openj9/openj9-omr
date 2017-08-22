@@ -187,7 +187,7 @@ static omrthread_tls_key_t tlsKey;
 /* key to get the current synchronous signal */
 static omrthread_tls_key_t tlsKeyCurrentSignal;
 
-struct {
+static struct {
 	uint32_t portLibSignalNo;
 	int unixSignalNo;
 } signalMap[] = {

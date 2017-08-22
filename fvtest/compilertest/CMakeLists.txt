@@ -17,7 +17,6 @@
 ###############################################################################
 
 
-
 include(../../cmake/compiler_support.cmake) 
 
 set(COMPILERTEST_FILES
@@ -41,6 +40,17 @@ set(COMPILERTEST_FILES
 if(OMR_ARCH_X86)
 	list(APPEND COMPILERTEST_FILES 
 		x/codegen/Evaluator.cpp
+	)
+elseif(OMR_ARCH_POWER)
+	list(APPEND COMPILERTEST_FILES 
+#Host 
+    		p/runtime/AsmUtil.spp
+    		p/runtime/CodeDispatch.spp
+    		p/runtime/CodeSync.cpp
+		${OMR_ROOT}/compiler/p/runtime/OMRCodeCacheConfig.cpp
+#target
+		p/codegen/Evaluator.cpp
+		${OMR_ROOT}/compiler/p/env/OMRDebugEnv.cpp
 	)
 endif()
 

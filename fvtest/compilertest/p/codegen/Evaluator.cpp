@@ -20,7 +20,7 @@
 #include "codegen/TreeEvaluator.hpp"
 #include "codegen/PPCEvaluator.hpp"
 #include "p/codegen/GenerateInstructions.hpp"
-#include "compilertest/env/FrontEnd.hpp"
+#include "env/FrontEnd.hpp"
 #include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
 #include "env/CompilerEnv.hpp"

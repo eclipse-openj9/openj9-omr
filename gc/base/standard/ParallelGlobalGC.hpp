@@ -265,9 +265,6 @@ public:
 	MM_HeapWalker *getHeapWalker() { return _heapWalker; }
 	virtual void prepareHeapForWalk(MM_EnvironmentBase *env);
 
-
-	void workThreadGarbageCollect(MM_EnvironmentBase *env);
-
 	virtual bool heapAddRange(MM_EnvironmentBase *env, MM_MemorySubSpace *subspace, uintptr_t size, void *lowAddress, void *highAddress);
 	virtual bool heapRemoveRange(MM_EnvironmentBase *env, MM_MemorySubSpace *subspace, uintptr_t size, void *lowAddress, void *highAddress, void *lowValidAddress, void *highValidAddress);
 	virtual void heapReconfigured(MM_EnvironmentBase *env);

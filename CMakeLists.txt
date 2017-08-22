@@ -40,7 +40,9 @@ include(OmrPlatform)
 ### Set up the global platform configuration
 ###
 
-omr_platform_global_setup()
+if(NOT OMR_PLATFORM_GLOBALLY_INITIALIZED)
+	omr_platform_global_setup()
+endif()
 
 ###
 ### Getting the glue target

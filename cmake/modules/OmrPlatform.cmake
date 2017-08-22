@@ -50,6 +50,12 @@ add_library(omr_shared INTERFACE)
 
 macro(omr_platform_global_setup)
 
+	omr_assert(WARNING TEST NOT OMR_PLATFORM_GLOBALLY_INITIALIZED
+		MESSAGE "omr_platform_global_setup called twice."
+	)
+
+	set(OMR_PLATFORM_GLOBALLY_INITIALIZED 1)
+
 	omr_append_flags(CMAKE_C_FLAGS
 		${OMR_PLATFORM_COMPILE_OPTIONS}
 		${OMR_PLATFORM_C_COMPILE_OPTIONS}

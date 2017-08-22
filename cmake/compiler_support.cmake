@@ -71,20 +71,25 @@ macro(tr_detect_system_information)
 		jit_not_ready()
 	endif()
 
-	string(TOUPPER ${OMR_HOST_OS} upcase_os)
 	# OS Setup Code. 
-	if(OMR_HOST_OS MATCHES "osx|linux")
+	if(OMR_HOST_OS MATCHES "linux")
 		list(APPEND TR_COMPILE_DEFINITIONS
-			${upcase_os}
 			SUPPORTS_THREAD_LOCAL
+			LINUX
+		)
+		
+        elseif(OMR_HOST_OS MATCHES "osx")
+		list(APPEND TR_COMPILE_DEFINITIONS
+			SUPPORTS_THREAD_LOCAL
+			OSX
 		)
 		
 	elseif(OMR_HOST_OS MATCHES "aix")
 		list(APPEND TR_COMPILE_DEFINITIONS
-			${upcase_os}
 			SUPPORTS_THREAD_LOCAL
 			_XOPEN_SOURCE_EXTENDED=1 
     			_ALL_SOURCE
+			AIX
 		)
 	else()
 		jit_not_ready()
@@ -98,7 +103,6 @@ macro(tr_detect_system_information)
 			-Wno-write-strings #This warning swamps almost all other output
 			) 
 
-
    		set(PASM_CMD ${CMAKE_C_COMPILER}) 
    		set(PASM_FLAGS -x assembler-with-cpp -E -P) 
 
@@ -106,6 +110,7 @@ macro(tr_detect_system_information)
 		set(SPP_FLAGS -x assembler-with-cpp -E -P) 
 	elseif(OMR_TOOLCONFIG MATCHES "msvc")
 		# MSVC Specifics
+		jit_not_ready()
 	elseif(OMR_TOOLCONFIG MATCHES "xlc") 
 		list(APPEND TR_COMPILE_OPTIONS
 			-qarch=pwr7

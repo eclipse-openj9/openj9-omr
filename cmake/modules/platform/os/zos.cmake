@@ -41,17 +41,18 @@ list(APPEND OMR_PLATFORM_COMPILE_OPTIONS
 	\"-Wa,goff\"                 # Assemble into GOFF object files
 	\"-Wc,NOANSIALIAS\"          # Do not generate ALIAS binger control statements
 	\"-Wc,TARGET(zOSV1R13)\"     # Generate code for the target operating system
-	\"-qnosearch\"
 )
 
 list(APPEND OMR_PLATFORM_C_COMPILE_OPTIONS
 	\"-Wc,ARCH(7)\"
 	\"-Wc,langlvl(extc99)\"
+	\"-qnosearch\"
 )
 
 list(APPEND OMR_PLATFORM_CXX_COMPILE_OPTIONS
-	\"-Wc,langlvl(extended)\"
 	\"-Wc,ARCH(7)\"
+	\"-Wc,langlvl(extended)\"
+	\"-qnosearch\"
 )
 
 list(APPEND OMR_PLATFORM_SHARED_LINKER_OPTIONS
@@ -77,7 +78,8 @@ macro(omr_os_global_setup)
 
 	# TODO: Move this out and after platform config.
 	enable_language(ASM-ZOS)
-	set(CMAKE_ASM-ZOS_FLAGS "${OMR_PLATFORM_COMPILE_OPTIONS}")
+
+	omr_append_flags(CMAKE_ASM-ZOS_FLAGS ${OMR_PLATFORM_COMPILE_OPTIONS})
 
 	target_compile_options(omr_shared INTERFACE "-Wc,DLL,EXPORTALL")
 

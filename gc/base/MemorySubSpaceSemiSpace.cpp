@@ -285,7 +285,7 @@ uintptr_t
 MM_MemorySubSpaceSemiSpace::getActualActiveFreeMemorySize(uintptr_t includeMemoryType)
 {
 	if (includeMemoryType & MEMORY_TYPE_NEW){ 
-		return _memorySubSpaceAllocate->getActualActiveFreeMemorySize() + getActualActiveFreeSurvivorMemorySize(includeMemoryType);
+		return _memorySubSpaceAllocate->getActualActiveFreeMemorySize();
 	} else {
 		return 0;
 	}	
@@ -309,7 +309,7 @@ uintptr_t
 MM_MemorySubSpaceSemiSpace::getApproximateActiveFreeMemorySize(uintptr_t includeMemoryType)
 {
 	if (includeMemoryType & MEMORY_TYPE_NEW){ 
-		return _memorySubSpaceAllocate->getApproximateActiveFreeMemorySize() + getApproximateActiveFreeSurvivorMemorySize(includeMemoryType);
+		return _memorySubSpaceAllocate->getApproximateActiveFreeMemorySize();
 	} else {
 		return 0;
 	}	
@@ -328,19 +328,21 @@ MM_MemorySubSpaceSemiSpace::getActiveSurvivorMemorySize(uintptr_t includeMemoryT
 uintptr_t
 MM_MemorySubSpaceSemiSpace::getApproximateActiveFreeSurvivorMemorySize(uintptr_t includeMemoryType)
 {
-	/* If we ask directly MemorySubSpaceSurvivor, we'll get as answer: everything is free. While it is true literally,
-	 * this memory is unavaliable for user allocation
-	 */
-	return 0;
+	if (includeMemoryType & MEMORY_TYPE_NEW){
+		return _memorySubSpaceSurvivor->getApproximateActiveFreeMemorySize();
+	} else {
+		return 0;
+	}
 }
 
 uintptr_t
 MM_MemorySubSpaceSemiSpace::getActualActiveFreeSurvivorMemorySize(uintptr_t includeMemoryType)
 {
-	/* If we ask directly MemorySubSpaceSurvivor, we'll get as answer: everything is free. While it is true literally,
-	 * this memory is unavaliable for user allocation
-	 */
-	return 0;
+	if (getTypeFlags() & MEMORY_TYPE_NEW) {
+		return _memorySubSpaceSurvivor->getActiveMemorySize(MEMORY_TYPE_NEW);
+	} else {
+		return 0;
+	}
 }
 
 void
@@ -444,9 +446,6 @@ MM_MemorySubSpaceSemiSpace::flip(MM_EnvironmentBase *env, Flip_step step)
 		_memorySubSpaceAllocate->isAllocatable(true);
 		/* Let know MemorySpace about new default MemorySubSpace */
 		getMemorySpace()->setDefaultMemorySubSpace(getDefaultMemorySubSpace());
-#if defined(OMR_GC_CONCURRENT_SCAVENGER)
-		_bytesAllocatedAtConcurrentStart = _extensions->allocationStats.bytesAllocated();
-#endif
 		break;
 	case disable_allocation:
 		_memorySubSpaceAllocate->isAllocatable(false);
@@ -455,10 +454,9 @@ MM_MemorySubSpaceSemiSpace::flip(MM_EnvironmentBase *env, Flip_step step)
 		_memorySubSpaceAllocate->isAllocatable(true);
 		_memorySubSpaceSurvivor = _memorySubSpaceEvacuate;
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
-		_bytesAllocatedAtConcurrentEnd = _extensions->allocationStats.bytesAllocated();
-		Assert_MM_true(_bytesAllocatedAtConcurrentStart <= _bytesAllocatedAtConcurrentEnd);
+		_bytesAllocatedDuringConcurrent = _extensions->allocationStats.bytesAllocated();
 		_avgBytesAllocatedDuringConcurrent = (uintptr_t)MM_Math::weightedAverage((float)_avgBytesAllocatedDuringConcurrent,
-											 (float)(_bytesAllocatedAtConcurrentEnd - _bytesAllocatedAtConcurrentStart), 0.5);
+											 (float)(_bytesAllocatedDuringConcurrent), 0.5);
 #endif /* OMR_GC_CONCURRENT_SCAVENGER */
 		break;
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
@@ -720,8 +718,7 @@ MM_MemorySubSpaceSemiSpace::checkSubSpaceMemoryPostCollectTilt(MM_EnvironmentBas
 			/* Account for mutator allocated objects in hybrid survivor/allocated during concurrent phase of Concurrent Scavenger */
 			desiredSurvivorSize += _avgBytesAllocatedDuringConcurrent * 1.2 + extensions->concurrentScavengerSlack;
 			if (debug) {
-				omrtty_printf("\tmutator bytesAllocated current %zu average %zu\n", _bytesAllocatedAtConcurrentEnd - _bytesAllocatedAtConcurrentStart,
-																					_avgBytesAllocatedDuringConcurrent);
+				omrtty_printf("\tmutator bytesAllocated current %zu average %zu\n", _bytesAllocatedDuringConcurrent, _avgBytesAllocatedDuringConcurrent);
 			}
 		}
 #endif /* OMR_GC_CONCURRENT_SCAVENGER */

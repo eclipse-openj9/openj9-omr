@@ -71,7 +71,6 @@ private:
 		return false;
 #endif /* OMR_GC_MODRON_CONCURRENT_MARK */
 	}
-	bool isConcurrentScavengeInProgress();
 #endif /* OMR_GC_CONCURRENT_SCAVENGER */
 	
 
@@ -93,7 +92,7 @@ private:
 			/* It is ok to encounter a forwarded object during overlapped concurrent scavenger/marking (or even root scanning),
 			 * but we must do nothing about it (if in backout, STW global phase will recover them).
 			 */
-			Assert_MM_true(NULL == forwardPtr || (isConcurrentMarkInProgress() && isConcurrentScavengeInProgress()));
+			Assert_MM_true(NULL == forwardPtr || (isConcurrentMarkInProgress() && _extensions->isConcurrentScavengerInProgress()));
 		}
 #endif /* OMR_GC_CONCURRENT_SCAVENGER */ 				
 	}

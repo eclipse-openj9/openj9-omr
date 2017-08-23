@@ -5259,149 +5259,64 @@ void TR_Debug::setupDebugger(void *startaddr, void *endaddr, bool before)
    char pp[20];
    char * Argv[4];
 
-   if (::feGetEnv("DEBUG_PROG") != NULL)
+   /* Only need to start the debugger once. */
+   if (!started)
       {
-      /* Only need to start the debugger once. */
-      if (!started)
+      pid_t p;
+      pid_t ppid = getpid();
+      if ((p = fork()) == 0)
          {
-         pid_t p;
-         pid_t ppid = getpid();
-         void* handle;
-         char* error=NULL;
-         static char* ipAddress = ::feGetEnv("DER_DBG_ADDR");
-         static char* libPath   = ::feGetEnv("DER_DBG_LIBPATH");
-         static char* lib       = ::feGetEnv("DER_DBG_LIB");
-         if (!ipAddress || !libPath || !lib)
+         sprintf(cfname, "/tmp/__TRJIT_%d_", getpid());
+         sprintf(pp,"%d", ppid);
+
+         if ((Argv[0] =  ::feGetEnv("TR_DEBUGGER")) == NULL)
+            Argv[0] = "/usr/bin/gdb";
+
+         if ((cf = fopen(cfname, "wb+")) == 0)
             {
-            fprintf(stderr, "You must specify a valid TCP/IP address for the debugger to connect to\n");
-            fprintf(stderr, "You must specify a valid Library Path to get the debugger from\n");
-            fprintf(stderr, "You must specify a valid Library to load\n");
-            fprintf(stderr, "... these are DER_DBG_ADDR, DER_DBG_LIBPATH, DER_DBG_LIB respectively\n");
-            return;
+            cfname[0] = '\0';
+            printf("ERROR: Couldn't open file %s", cfname);
             }
-         char debugger[2050];
-
-         int libPathLen = strlen(libPath);
-
-         if (libPath[libPathLen-1] == '/')
-            {
-            libPath[libPathLen-1] = '\0';
-            }
-
-         sprintf(debugger, "%.1024s/%.1024s", libPath, lib);
-         handle = dlopen(debugger, RTLD_LAZY);
-         error = dlerror();
-         if (error)
-            {
-            fprintf(stderr, "Error %s opening debugger dll %s\n",
-               error, debugger);
-            return;
-            }
-         typedef int (ATTACH_FN)(int, int, unsigned int*);
-         typedef int (STOP_FN)(int, void**);
-         ATTACH_FN* attach = (ATTACH_FN*) dlsym(handle, "_debug_attach");
-         STOP_FN*   stop   = (STOP_FN*)   dlsym(handle, "_debug_stop_at");
-
-         if (!attach || !stop)
-            {
-            fprintf(stderr, "One of attach (%p) or stop (%p) could not be located in %s shared library\n",
-               attach, stop, debugger);
-            return;
-            }
-
-         unsigned int attachInfo[2];
-         attachInfo[1] = 8001;     // port number...
-         struct hostent *phostent = gethostbyname(ipAddress);
-         if (phostent)
-         {
-           // if this is a valid host name
-           attachInfo[0] = *(unsigned int *)(*(phostent->h_addr_list));
-         }
          else
-         {
-           // assumed to be an IP address
-           attachInfo[0] = inet_addr(ipAddress);
-         }
-         int language = 0; // C++ is language 0
-         int rc = 0;
-         rc = attach(language, 2, attachInfo);
-         if (rc != 0)
             {
-            fprintf(stderr, "Return code of %d (0x%x) on attach of debugger\n", rc, rc);
-            return;
-            }
+            fprintf(cf, "file /proc/%s/exe\n", pp);
+            fprintf(cf, "attach %s\n",pp);
+            fprintf(cf, "i sh\n");
 
-         void* stopInfo[] = { startaddr, 0 };
-         fprintf(stderr, "Set breakpoint at address:%p\n", startaddr);
-         rc = stop(language, stopInfo);
-         if (rc != 1)
-            {
-            fprintf(stderr, "Return code of %d (0x%x) on stop_at request of debugger\n", rc, rc);
-            return;
-            }
-         }
-      }
-   else
-      {
-      /* Only need to start the debugger once. */
-      if (!started)
-         {
-         pid_t p;
-         pid_t ppid = getpid();
-         if ((p = fork()) == 0)
-            {
-            sprintf(cfname, "/tmp/__TRJIT_%d_", getpid());
-            sprintf(pp,"%d", ppid);
-
-            if ((Argv[0] =  ::feGetEnv("TR_DEBUGGER")) == NULL)
-               Argv[0] = "/usr/bin/gdb";
-
-            if ((cf = fopen(cfname, "wb+")) == 0)
-               {
-               cfname[0] = '\0';
-               printf("ERROR: Couldn't open file %s", cfname);
-               }
+            if ( before )
+               fprintf(cf, "break *%p\n",startaddr);
             else
                {
-               fprintf(cf, "file /proc/%s/exe\n", pp);
-               fprintf(cf, "attach %s\n",pp);
-               fprintf(cf, "i sh\n");
+               printf("\n methodStartAddress = %p",startaddr);
+               printf("\n methodEndAddress = %p\n",endaddr);
+               fprintf(cf, "break *%p\n",startaddr);
 
-               if ( before )
-                  fprintf(cf, "break *%p\n",startaddr);
-               else
+               // Insert breakpoints requested by codegen
+               //
+               for (auto bpIterator = _comp->cg()->getBreakPointList().begin();
+                    bpIterator != _comp->cg()->getBreakPointList().end();
+                    ++bpIterator)
                   {
-                  printf("\n methodStartAddress = %p",startaddr);
-                  printf("\n methodEndAddress = %p\n",endaddr);
-                  fprintf(cf, "break *%p\n",startaddr);
-
-                  // Insert breakpoints requested by codegen
-                  //
-                  for (auto bpIterator = _comp->cg()->getBreakPointList().begin();
-                       bpIterator != _comp->cg()->getBreakPointList().end();
-                       ++bpIterator)
-                     {
-                     fprintf(cf, "break *%p\n",*bpIterator);
-                     }
-
-                  fprintf(cf, "disassemble %p %p\n",startaddr,endaddr);
+                  fprintf(cf, "break *%p\n",*bpIterator);
                   }
 
-               fprintf(cf, "finish\n");
-               fprintf(cf, "shell rm %s\n",cfname);
-               fprintf(cf, "");
-               fclose(cf);
-
-               Argv[1] = "-x";
-               Argv[2] = cfname;
-               Argv[3] = NULL;
+               fprintf(cf, "disassemble %p %p\n",startaddr,endaddr);
                }
-            execvp(Argv[0], Argv);
+
+            fprintf(cf, "finish\n");
+            fprintf(cf, "shell rm %s\n",cfname);
+            fprintf(cf, "");
+            fclose(cf);
+
+            Argv[1] = "-x";
+            Argv[2] = cfname;
+            Argv[3] = NULL;
             }
-         else
-            {
-            sleep(2);
-            }
+         execvp(Argv[0], Argv);
+         }
+      else
+         {
+          sleep(2);
          }
       }
 

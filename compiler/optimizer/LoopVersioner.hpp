@@ -195,7 +195,7 @@ class TR_LoopVersioner : public TR_LoopTransformer
    bool isStoreInSpecialForm(int32_t, TR_Structure *);
    bool isConditionalTreeCandidateForElimination(TR::TreeTop * curTree) { return (!curTree->getNode()->getFirstChild()->getOpCode().isLoadConst() ||
                                                                                   !curTree->getNode()->getSecondChild()->getOpCode().isLoadConst()); };
-   TR::Node *isDependentOnInductionVariable(TR::Node *, bool, bool &, TR::Node* &, TR::Node* &);
+   TR::Node *isDependentOnInductionVariable(TR::Node *, bool, bool &, TR::Node* &, TR::Node* &, bool &);
    TR::Node *isDependentOnInvariant(TR::Node *);
    bool boundCheckUsesUnchangedValue(TR::TreeTop *, TR::Node *, TR::SymbolReference *, TR_RegionStructure *);
    bool findStore(TR::TreeTop *start, TR::TreeTop *end, TR::Node *node, TR::SymbolReference *symRef, bool ignoreLoads = false, bool lastTimeThrough = false);

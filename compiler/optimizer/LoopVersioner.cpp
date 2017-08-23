@@ -2102,7 +2102,13 @@ TR::Node *TR_LoopVersioner::isDependentOnInvariant(TR::Node *useNode)
    }
 
 
-TR::Node *TR_LoopVersioner::isDependentOnInductionVariable(TR::Node *useNode, bool noArithmeticAllowed, bool &isIndexChildMultiplied, TR::Node * &mulNode, TR::Node * &strideNode)
+TR::Node *TR_LoopVersioner::isDependentOnInductionVariable(
+   TR::Node *useNode,
+   bool noArithmeticAllowed,
+   bool &isIndexChildMultiplied,
+   TR::Node * &mulNode,
+   TR::Node * &strideNode,
+   bool &indVarOccursAsSecondChildOfSub)
    {
    TR_UseDefInfo *useDefInfo = optimizer()->getUseDefInfo();
    if (!useDefInfo)
@@ -2155,6 +2161,9 @@ TR::Node *TR_LoopVersioner::isDependentOnInductionVariable(TR::Node *useNode, bo
                   bool isFirstChildInvariant = isExprInvariant(child->getFirstChild());
                   if (isFirstChildInvariant)
                      {
+                     if (child->getOpCode().isSub())
+                        indVarOccursAsSecondChildOfSub = !indVarOccursAsSecondChildOfSub;
+
                      if(isIndexChildMultiplied)
                          strideNode=child->getFirstChild();
                      child = child->getSecondChild();
@@ -2422,7 +2431,14 @@ bool TR_LoopVersioner::detectInvariantBoundChecks(List<TR::TreeTop> *boundCheckT
                   bool isIndexChildMultiplied=false;
                   TR::Node *mulNode=NULL;
                   TR::Node *strideNode=NULL;
-                  indexChild = isDependentOnInductionVariable(indexChild, changedIndexSymRefAtSomePoint, isIndexChildMultiplied, mulNode, strideNode);
+                  bool indVarOccursAsSecondChildOfSub=false;
+                  indexChild = isDependentOnInductionVariable(
+                     indexChild,
+                     changedIndexSymRefAtSomePoint,
+                     isIndexChildMultiplied,
+                     mulNode,
+                     strideNode,
+                     indVarOccursAsSecondChildOfSub);
                   if (!indexChild ||
                       !indexChild->getOpCode().hasSymbolReference() ||
                       !indexChild->getSymbolReference()->getSymbol()->isAutoOrParm() ||
@@ -6687,7 +6703,14 @@ void TR_LoopVersioner::buildBoundCheckComparisonsTree(List<TR::TreeTop> *nullChe
 
             if (!foundInductionVariable)
                {
-               indexChild = isDependentOnInductionVariable(indexChild, changedIndexSymRefAtSomePoint, isIndexChildMultiplied, mulNode, strideNode);
+               indexChild = isDependentOnInductionVariable(
+                  indexChild,
+                  changedIndexSymRefAtSomePoint,
+                  isIndexChildMultiplied,
+                  mulNode,
+                  strideNode,
+                  indVarOccursAsSecondChildOfSub);
+
                if (!indexChild ||
                    !indexChild->getOpCode().hasSymbolReference() ||
                    !indexChild->getSymbolReference()->getSymbol()->isAutoOrParm() ||
@@ -7263,21 +7286,21 @@ void TR_LoopVersioner::buildBoundCheckComparisonsTree(List<TR::TreeTop> *nullChe
                      TR::Node *storeRhs = storeNode->getFirstChild()->duplicateTree();
                      TR::Node *replacementLoad = TR::Node::createWithSymRef(storeNode, comp()->il.opCodeForDirectLoad(storeNode->getDataType()), 0, indexSymRef);
                      //printf("Changing test in %s\n", comp()->signature());
+                     if (!storeRhs->getOpCode().isLoad())
+                        {
+                        int visitCount = comp()->incVisitCount();
+                        replaceInductionVariable(NULL, storeRhs, -1, origIndexSymRef->getReferenceNumber(), replacementLoad, visitCount);
+                        }
+                     else
+                        storeRhs = replacementLoad;
+
                      if (!firstChild->getOpCode().isLoad())
                         {
-  	                     if (!storeRhs->getOpCode().isLoad())
-                           {
-                           int visitCount = comp()->incVisitCount();
-                           replaceInductionVariable(NULL, storeRhs, -1, origIndexSymRef->getReferenceNumber(), replacementLoad, visitCount);
-			                  }
-                        else
-			                  storeRhs = replacementLoad;
-
                         visitCount = comp()->incVisitCount();
                         replaceInductionVariable(NULL, firstChild, -1, origIndexSymRef->getReferenceNumber(), storeRhs, visitCount);
                         }
                      else
-                        firstChild = replacementLoad; //storeRhs;
+                        firstChild = storeRhs;
                      }
                   }
                if(!isIndexChildMultiplied)

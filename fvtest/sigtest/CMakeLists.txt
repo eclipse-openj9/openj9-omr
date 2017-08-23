@@ -43,7 +43,13 @@ target_link_libraries(omrsigtest
 	omrtestutil
 	j9hashtable
 	omrsig
+	${OMR_THREAD_LIB}
+	${OMR_PORT_LIB}
 )
+
+if(OMR_HOST_OS MATCHES "linux|osx")
+	target_link_libraries(omrsigtest dl)
+endif()
 
 #TODO Unported makefile section:
 #MODULE_INCLUDES += ../util

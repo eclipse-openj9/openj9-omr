@@ -29,7 +29,13 @@ target_link_libraries(omrgctest
 	omrGtestGlue
 	pugixml
 	omrtestutil
-	omrgc
+	omrcore
+	omrglue
+	${OMR_HOOK_LIB}
+	${OMR_TRACE_LIB}
+	${OMR_GC_LIB}
+	${OMR_THREAD_LIB}
+	${OMR_PORT_LIB}
 )
 
 # TODO check linker flags from makefile are ported properly.

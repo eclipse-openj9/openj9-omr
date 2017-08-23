@@ -39,6 +39,8 @@ target_include_directories(j9hookstatic
 )
 target_link_libraries(j9hookstatic PUBLIC
 	j9thrstatic
+	j9pool
+	omrport
 )
 add_tracegen(j9hook.tdf)
 

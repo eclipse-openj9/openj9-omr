@@ -82,8 +82,18 @@ endif()
 #endif
 #endif
 
-target_link_libraries(omrsig omrutil omr_shared)
+target_link_libraries(omrsig
+	PRIVATE
+	omrutil
+	omr_shared
+)
 
+if(OMR_HOST_OS MATCHES "linux|osx")
+	target_link_libraries(omrsig PRIVATE dl)
+endif()
+if(OMR_HOST_OS STREQUAL "zos")
+	target_link_libraries(omrsig PRIVATE j9a2e)
+endif()
 #TODO ensure we are linking in the same way as source makefile:
 #MODULE_STATIC_LIBS += omrutil
 #ifneq (,$(findstring linux,$(OMR_HOST_OS)))

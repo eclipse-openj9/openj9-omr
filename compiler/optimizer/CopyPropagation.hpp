@@ -25,6 +25,7 @@
 #include "optimizer/Optimization.hpp"         // for Optimization
 #include "optimizer/OptimizationManager.hpp"  // for OptimizationManager
 #include "optimizer/UseDefInfo.hpp"  // for TR_UseDefInfo, etc
+#include "infra/Checklist.hpp"
 
 class TR_BitVector;
 namespace TR { class SymbolReference; }
@@ -85,6 +86,13 @@ class TR_CopyPropagation : public TR::Optimization
    bool containsLoadOfSymbol(TR::Node * node,TR::SymbolReference * symRef, TR::Node ** loadNode);
    TR::Node * isBaseAddrAvailable(TR::Node *, TR::Node *, bool &);
    bool isNodeAvailableInBlock(TR::TreeTop *, TR::Node *);
+
+   // The treetop for a use node is often required during
+   // this optimization. To reduce compile time overhead, they
+   // are stashed into the _useTreeTops map. This should be respected
+   // by updating this map if existing uses are moved to new treetops
+   //
+   void collectUseTrees(TR::TreeTop *tree, TR::Node *node, TR::NodeChecklist &checklist);
    void findUseTree(TR::Node *);
 
    TR::TreeTop *findAnchorTree(TR::Node *, TR::Node *);
@@ -100,6 +108,11 @@ class TR_CopyPropagation : public TR::Optimization
    typedef std::less<TR::Node*> StoreTreeMapComparator;
    typedef std::map<TR::Node *, TR::TreeTop *, StoreTreeMapComparator, StoreTreeMapAllocator> StoreTreeMap;
    StoreTreeMap _storeTreeTops;
+
+   typedef TR::typed_allocator<std::pair<TR::Node*, TR::TreeTop*>, TR::Region&> UseTreeMapAllocator;
+   typedef std::less<TR::Node*> UseTreeMapComparator;
+   typedef std::map<TR::Node*, TR::TreeTop*, UseTreeMapComparator, UseTreeMapAllocator> UseTreeMap;
+   UseTreeMap _useTreeTops;
    
    TR::Block *_storeBlock;
    bool _lookForOriginalDefs;

@@ -28,6 +28,8 @@ set(JITBUILDER_OBJECTS
     optimizer/JBOptimizer.cpp
     optimizer/Optimizer.hpp
     runtime/JBCodeCacheManager.cpp
+    ${OMR_ROOT}/compiler/ilgen/VirtualMachineOperandArray.cpp
+    ${OMR_ROOT}/compiler/ilgen/VirtualMachineOperandStack.cpp
     )
 
 if(OMR_ARCH_X86)

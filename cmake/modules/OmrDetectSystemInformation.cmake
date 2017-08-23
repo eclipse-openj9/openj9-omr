@@ -92,4 +92,8 @@ macro(omr_detect_system_information)
       set(OMR_TOOLCONFIG "gnu")
    endif()
 
+   message(STATUS "OMR: The CPU architecture is ${OMR_HOST_ARCH}")
+   message(STATUS "OMR: The OS is ${OMR_HOST_OS}")
+   message(STATUS "OMR: The tool configuration is ${OMR_TOOLCONFIG}")
+
 endmacro(omr_detect_system_information)

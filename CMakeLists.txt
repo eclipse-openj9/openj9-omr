@@ -34,6 +34,15 @@ set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules" ${CMAKE_MODULE
 
 include(OmrAssert)
 include(OmrFindFiles)
+include(OmrPlatform)
+
+###
+### Set up the global platform configuration
+###
+
+if(NOT OMR_PLATFORM_GLOBALLY_INITIALIZED)
+	omr_platform_global_setup()
+endif()
 
 ###
 ### Getting the glue target
@@ -53,7 +62,6 @@ add_subdirectory(example/glue)
 ### Versions and stuff
 ###
 
-include(cmake/platform.cmake)
 include(cmake/config.cmake)
 
 enable_testing()

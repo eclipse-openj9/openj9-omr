@@ -16,6 +16,12 @@
 #    Multiple authors (IBM Corp.) - initial implementation and documentation
 ###############################################################################
 
+# Include once
+if(OMR_ASSERT_)
+	return()
+endif()
+set(OMR_ASSERT_ 1)
+
 # omr_assert([<mode>] TEST <condition>... [MESSAGE <message>])
 # <mode> is one of FATAL_ERROR (default), WARNING, STATUS
 function(omr_assert)

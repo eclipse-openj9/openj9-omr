@@ -16,11 +16,24 @@
 #    Multiple authors (IBM Corp.) - initial implementation and documentation
 ###############################################################################
 
-set(OMR_ARCH_DEFINITIONS "")
+include(CheckSymbolExists)
 
-if(OMR_ENV_DATA64)
-	list(APPEND OMR_ARCH_DEFINITIONS J9HAMMER)
-else()
-	list(APPEND OMR_ARCH_DEFINITIONS J9X86)
+list(APPEND OMR_PLATFORM_DEFINITIONS
+	-DLINUX
+	-D_FILE_OFFSET_BITS=64
+)
+
+list(APPEND OMR_PLATFORM_COMPILE_OPTIONS
+	-pthread
+)
+
+# Check that we need to pull librt to get clock_gettime/settime family of functions
+if(NOT DEFINED OMR_NEED_LIBRT)
+	check_symbol_exists(clock_gettime time.h OMR_LIBC_HAS_CLOCK_GETTIME)
+	if(OMR_LIBC_HAS_CLOCK_GETTIME)
+		set(OMR_NEED_LIBRT FALSE CACHE BOOL "")
+	else()
+		set(OMR_NEED_LIBRT TRUE CACHE BOOL "")
+	endif()
+	mark_as_advanced(OMR_NEED_LIBRT)
 endif()
-

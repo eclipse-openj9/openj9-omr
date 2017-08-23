@@ -38,6 +38,7 @@ add_executable(comptest
 	ArithmeticTest.cpp
 	ShiftAndRotateTest.cpp
 	SimplifierFoldAndTest.cpp
+	IficmpTest.cpp
 )
 
 target_link_libraries(comptest

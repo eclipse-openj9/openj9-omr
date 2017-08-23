@@ -5268,6 +5268,144 @@ static bool skipRemLowering(int64_t divisor, TR::Simplifier *s)
    }
 
 
+/**
+ * @brief Reduce Ifcmp Greater-Than-Or-Equal to Ifcmp Equal in a specific case.
+ *
+ * If
+* - the first child is an "and" node
+* - the second child of the "and" node is a constant N
+* - the second child of the ifcmpge node is a constant N,
+* - either the comparison is unsigned or N >= 0
+* Then, we can reduce ifcmpge to ifcmpeq.
+*
+* For example, convert
+* ificmpge --> block_5
+*  iand
+*    iload  <...>
+*    iconst 16
+*  iconst 16
+*
+*  into
+*
+* ificmpeq --> block_5
+*  iand
+*    iload  <...>
+*    iconst 16
+*  iconst 16
+*
+* Since the constants are equal, the case of greater-than is impossible,
+* and we can reduce ifcmpge to ifcmpeq. In other words, the result of iand
+* cannot be greater than the constant, and we can simply perform an equality check,
+* which provides further optimization opportunities.
+*
+* NOTE: the following special case.
+* We need to check that either the comparison is unsigned, or the mask has the
+* high/sign bit clear. Otherwise it's possible for the result of iand to compare greater.
+* For example, consider the following tree:
+*
+* ificmpge
+*   iand
+*     foo
+*     iconst -2
+*   iconst -2
+*
+* If foo is non-negative, then the result of iand will also be non-negative, and therefore > -2.
+*/
+class IfcmpgeToIfcmpeqReducer
+   {
+   public:
+   IfcmpgeToIfcmpeqReducer(TR::Node *node, TR::Simplifier *s) : _node(node), _s(s) {}
+
+   /**
+    * @brief Checks whether an ifcmpge node can be reduced to ifcmpeq.
+    *
+    * @return True if the reduction is possible.
+    */
+   bool reducible()
+      {
+      switch (_node->getOpCodeValue())
+         {
+            case TR::ifbcmpge:
+               return reducibleSpecific<int8_t>();
+            case TR::ifbucmpge:
+               return reducibleSpecific<uint8_t>();
+
+            case TR::ifscmpge:
+               return reducibleSpecific<int16_t>();
+            case TR::ifsucmpge:
+               return reducibleSpecific<uint16_t>();
+
+            case TR::ificmpge:
+               return reducibleSpecific<int32_t>();
+            case TR::ifiucmpge:
+               return reducibleSpecific<uint32_t>();
+
+            case TR::iflcmpge:
+               return reducibleSpecific<int64_t>();
+            case TR::iflucmpge:
+               return reducibleSpecific<uint64_t>();
+         }
+         return false;
+      }
+
+   /*
+    * @brief Perform the reduction.
+    *
+    * @return The transformed node.
+    */
+   TR::Node *reduce()
+      {
+      if (performTransformation(_s->comp(), "%sReduce an ifcmpge node [%p] to ifcmpeq\n", _s->optDetailString(), _node))
+         {
+         TR::ILOpCodes newOp = getIfcmpeqOpCode(_node);
+         TR::Node::recreate(_node, newOp);
+         }
+      return _node;
+      }
+
+   private:
+   /**
+    * @brief The actual implementation of `reducible` for an exact type.
+    */
+   template<typename T>
+   bool reducibleSpecific() const
+      {
+      TR::Node * firstChild = _node->getFirstChild(), * secondChild = _node->getSecondChild();
+
+      if (firstChild->getOpCode().isAnd() &&
+         firstChild->getSecondChild()->getOpCode().isIntegralConst() &&
+         secondChild->getOpCode().isIntegralConst())
+         {
+         T constAnd = firstChild->getSecondChild()->getConst<T>();
+         T constIfcmp = secondChild->getConst<T>();
+
+         bool isCmpUnsigned = _node->getOpCode().isUnsigned();
+         if (constAnd == constIfcmp && (isCmpUnsigned || constAnd >= 0))
+            return true;
+         }
+      return false;
+      }
+
+   /**
+    * @brief Given an ifcmpge opcode, get the corresponding ifcmpeq opcode.
+    *
+    * E.g., ificmpge should be substituted with ificmpeq.
+    * Note, that equality is insensitive to signedness, so there's no
+    * issue changing ifiucmpge into ificmpeq (without the u).
+    *
+    * @param node An ifcmpge node
+    * @return A corresponding ifcmpeq node
+    */
+   static TR::ILOpCodes getIfcmpeqOpCode(TR::Node *node)
+      {
+      return TR::ILOpCode::ifcmpeqOpCode(node->getSecondChild()->getDataType());
+      }
+
+   TR::Node *_node;
+   TR::Simplifier *_s;
+   };
+
+
 /*
  * Simplifier handlers:
  * Each handler function corresponds to an entry in the simplifierOpts table,
@@ -13043,6 +13181,9 @@ TR::Node *ificmpgeSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier 
       unsignedIntCompareNarrower(node, s, TR::ifsucmpge, TR::ifbucmpge);
       }
 
+   IfcmpgeToIfcmpeqReducer ifcmpReducer(node, s);
+   if (ifcmpReducer.reducible())
+      node = ifcmpReducer.reduce();
 
    partialRedundantCompareElimination(node, block, s);
    return node;
@@ -13253,6 +13394,7 @@ TR::Node *iflcmpgeSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier 
    TR::Node *originalSecond = secondChild;
 
    makeConstantTheRightChildAndSetOpcode(node, firstChild, secondChild, s);
+
    if (node->getOpCodeValue() == TR::iflcmpge)
       {
       if (firstChild->getOpCode().isLoadConst() && conditionalBranchFold((originalFirst->getLongInt() >= originalSecond->getLongInt()), node, firstChild, secondChild, block, s))
@@ -13264,6 +13406,11 @@ TR::Node *iflcmpgeSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier 
       if (firstChild->getOpCode().isLoadConst() && conditionalBranchFold((((uint64_t)originalFirst->getLongInt())>=((uint64_t)originalSecond->getLongInt())), node, firstChild, secondChild, block, s))
          return node;
       }
+
+   IfcmpgeToIfcmpeqReducer ifcmpReducer(node, s);
+   if (ifcmpReducer.reducible())
+      node = ifcmpReducer.reduce();
+
    partialRedundantCompareElimination(node, block, s);
    return node;
    }
@@ -13577,6 +13724,12 @@ TR::Node *ifCmpWithEqualitySimplifier(TR::Node * node, TR::Block * block, TR::Si
       }
 
    makeConstantTheRightChildAndSetOpcode(node, firstChild, secondChild, s);
+
+   // Reduce ifcmpge to ifcmpeq in specific cases
+   TR::ILOpCode op = node->getOpCode();
+   IfcmpgeToIfcmpeqReducer ifcmpReducer(node, s);
+   if (op.isCompareForOrder() && op.isCompareTrueIfGreater() && ifcmpReducer.reducible())
+      node = ifcmpReducer.reduce();
 
    if (firstChild->getOpCode().isLoadConst() &&
        secondChild->getOpCode().isLoadConst())

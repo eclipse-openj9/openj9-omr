@@ -791,10 +791,10 @@ OMR::Z::Machine::findBestSwapRegister(TR::Register* reg1, TR::Register* reg2)
    }
 
 /**
- * @return a bit vector identifying assignable regs as 1's.
+ * @return a bit map identifying assignable regs as 1's.
  */
 uint32_t
-OMR::Z::Machine::genBitVectOfAssignableGPRs()
+OMR::Z::Machine::genBitMapOfAssignableGPRs()
    {
    int32_t first = TR::RealRegister::FirstGPR;
    int32_t last = TR::RealRegister::LastAssignableGPR;

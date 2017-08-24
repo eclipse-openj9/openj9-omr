@@ -280,7 +280,7 @@ class OMR_EXTENSIBLE Machine : public OMR::Machine
                                        bool            doBookKeeping,
                                        uint64_t        availRegMask = 0x0000ffff);
 
-   uint32_t genBitVectOfAssignableGPRs();
+   uint32_t genBitMapOfAssignableGPRs();
    uint8_t genBitVectOfLiveGPRPairs();
 
    TR::RealRegister* findBestSwapRegister(TR::Register* reg1, TR::Register* reg2);

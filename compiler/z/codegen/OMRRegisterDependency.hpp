@@ -149,13 +149,24 @@ class TR_S390RegisterDependencyGroup
       return -1;
       }
 
-   uint32_t genBitVectOfAssignableGPRs(TR::Instruction   *currentInstruction,
-                                       uint32_t          numberOfRegisters,
-                                       TR::CodeGenerator *cg);
+   uint32_t genBitMapOfAssignableGPRs(TR::CodeGenerator *cg, uint32_t numberOfRegisters);
 
-   uint32_t checkDependencyGroup(TR::Instruction  *currentInstruction,
-                                 uint32_t numberOfRegisters,
-                                 TR::CodeGenerator *cg);
+   void setRealRegisterForDependency(int32_t index, TR::RealRegister::RegNum regNum)
+      {
+      _dependencies[index].setRealRegister(regNum);
+      }
+
+   void checkRegisterPairSufficiencyAndHPRAssignment(TR::CodeGenerator *cg,
+                                     TR::Instruction  *currentInstruction,
+                                     const uint32_t availableGPRMap,
+                                     uint32_t numOfDependencies);
+
+   void checkRegisterDependencyDuplicates(TR::CodeGenerator* cg,
+                                          const uint32_t numOfDependencies);
+
+   uint32_t checkDependencyGroup(TR::CodeGenerator *cg,
+                                 TR::Instruction  *currentInstruction,
+                                 uint32_t numOfDependencies);
 
    void assignRegisters(TR::Instruction  *currentInstruction,
                         TR_RegisterKinds kindToBeAssigned,

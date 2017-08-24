@@ -136,7 +136,25 @@ int32_t commonJitInit(OMR::FrontEnd &fe, char *cmdLineOptions)
 
    void *pseudoTOC = NULL;
 #if defined(TR_TARGET_POWER)
-   pseudoTOC = (void *) TR_PPCTableOfConstants::initTOC(&fe, fe.getPersistentInfo(), jitConfig->getInterpreterTOC());
+
+   static bool initializedTOC = false;
+   // some silliness  here needed to support projects like JitBuilder where the JIT
+   // can be initialized, shutdown, then initialized again. If we're initializing the
+   // JIT a second (or later) time, the TOC cannot be re-initialized (it will throw
+   // an assertion), but we can reuse the older pseudoTOC. This code has never been
+   // thread safe on its own (it relies on the caller to ensure thread safety if
+   // required), so relying on a static boolean doesn't make this code any less safe.
+   if (initializedTOC)
+      {
+      TR_PPCTableOfConstants *tocManagement = static_cast<TR_PPCTableOfConstants *>(fe.getPersistentInfo()->getPersistentTOC());
+      pseudoTOC = tocManagement->getTOCBase();
+      }
+   else
+      {
+      pseudoTOC = (void *) TR_PPCTableOfConstants::initTOC(&fe, fe.getPersistentInfo(), jitConfig->getInterpreterTOC());
+      initializedTOC = true;
+      }
+
    if (pseudoTOC == (void*)0x1)
       pseudoTOC = NULL;
 #endif

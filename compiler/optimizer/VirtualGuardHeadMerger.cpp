@@ -37,6 +37,7 @@
 #include "optimizer/Optimizer.hpp"             // for Optimizer
 #include "optimizer/TransformUtil.hpp"         // for TransformUtil
 #include "ras/DebugCounter.hpp"
+#include "infra/Checklist.hpp"
 
 #define OPT_DETAILS "O^O VG HEAD MERGE: "
 
@@ -46,33 +47,107 @@ static bool isMergeableGuard(TR::Node *node)
    return mergeOnlyHCRGuards ? node->isHCRGuard() : node->isNopableInlineGuard();
    }
 
-// Splits monitor store from priv args
-// Return the block containing only the priv args if exist
-static TR::Block* splitMonitorStoreFromPrivArg(TR::Block* block, TR::CFG *cfg)
+/**
+ * Recursive call to anchor nodes with a reference count greater than one prior to a treetop.
+ *
+ * @param comp Compilation object
+ * @param node Node to potentially anchor
+ * @param tt Treetop to anchor nodes before
+ * @param checklist Checklist of visited nodes
+ * @return Whether or not a nodes was anchored.
+ */
+static bool anchorCommonNodes(TR::Compilation *comp, TR::Node* node, TR::TreeTop* tt, TR::NodeChecklist &checklist)
    {
+   if (checklist.contains(node))
+      return false;
+   checklist.add(node);
+
+   bool anchored = false;
+   if (node->getReferenceCount() > 1)
+      {
+      tt->insertBefore(TR::TreeTop::create(comp, TR::Node::create(TR::treetop, 1, node)));
+      anchored = true;
+      }
+   else
+      {
+      for (int i = 0; i <node->getNumChildren(); i++)
+         anchored |= anchorCommonNodes(comp, node->getChild(i), tt, checklist);
+      }
+
+   return anchored;
+   }
+
+/**
+ * A runtime guard block may have monitor stores and privarg stores along with the guard
+ * it self. This method will rearrange these stores and split the block, managing any
+ * uncommoning necessary for eventual block order.
+ *
+ * The provided block will become the privarg block, containing any privarg stores and additonal
+ * temps for uncommoning. It must be evaluated first. The returned block will contain monitor
+ * stores and the guard. If no split is required, the provided block will be returned.
+ *
+ * @param comp Compilation object
+ * @param block Block to manipulate
+ * @param cfg Current CFG
+ * @return The block containing the guard.
+ */
+static TR::Block* splitRuntimeGuardBlock(TR::Compilation *comp, TR::Block* block, TR::CFG *cfg)
+   {
+   TR::NodeChecklist checklist(comp);
    TR::TreeTop *start = block->getFirstRealTreeTop();
-   TR::TreeTop *end = block->getLastRealTreeTop();
-   bool hasMonitorStore = false;
+   TR::TreeTop *guard = block->getLastRealTreeTop();
    TR::TreeTop *firstPrivArg = NULL;
-   for(TR::TreeTop *tt = start; tt && tt != end; tt = tt->getNextTreeTop())
+   TR::TreeTop *firstMonitor = NULL;
+
+   // Manage the unexpected case that monitors and priv args are reversed
+   bool privThenMonitor = false;
+
+   TR_ASSERT(isMergeableGuard(guard->getNode()), "last node must be guard %p", guard->getNode());
+
+   // Search for privarg and monitor stores
+   // Only commoned nodes under the guard are required to be anchored, due to the guard being
+   // evaluted before the monitor stores later on
+   bool anchoredTemps = false;
+   for (TR::TreeTop *tt = start; tt && tt->getNode()->getOpCodeValue() != TR::BBEnd; tt = tt->getNextTreeTop())
       {
       TR::Node * node = tt->getNode();
+
       if (node->getOpCode().hasSymbolReference() && node->getSymbol()->holdsMonitoredObject())
-         hasMonitorStore = true;
-      else if(node->chkIsPrivatizedInlinerArg())
+         firstMonitor = firstMonitor == NULL ? tt : firstMonitor;
+      else if (node->chkIsPrivatizedInlinerArg())
          {
-         firstPrivArg = tt;
-         // Monitor stores always appear before priv args, so we can safely stop here
-         break;
+         if (firstPrivArg == NULL)
+            {
+            firstPrivArg = tt; 
+            privThenMonitor = (firstMonitor == NULL);
+            }
          }
+      else if (isMergeableGuard(node))
+         anchoredTemps |= anchorCommonNodes(comp, node, start, checklist);
+      else
+         TR_ASSERT(0, "Node other than monitor or privarg store %p before runtime guard", node);
       }
-   if (hasMonitorStore && firstPrivArg)
-      return block->split(firstPrivArg, cfg, true /* fixupCommoning */, false /* copyExceptionSuccessors */);
-   else if (firstPrivArg)
-      return block;
-   else
-      // This block does not contain a priv arg
-      return NULL;
+
+   // If there are monitors then privargs, they must be swapped around, such that all privargs are
+   // evaluated first
+   if (firstPrivArg && firstMonitor && !privThenMonitor)
+      {
+      TR::TreeTop *monitorEnd = firstPrivArg->getPrevTreeTop();
+      firstMonitor->getPrevTreeTop()->join(firstPrivArg);
+      guard->getPrevTreeTop()->join(firstMonitor);
+      monitorEnd->join(guard);
+      } 
+
+   // If there were temps created or privargs in the block, perform a split
+   TR::TreeTop *split = NULL;
+   if (firstPrivArg)
+      split = firstMonitor ? firstMonitor : guard;
+   else if (anchoredTemps)
+      split = start;
+
+   if (split)
+      return block->split(split, cfg, true /* fixupCommoning */, false /* copyExceptionSuccessors */);
+   return block;
    }
 
 static bool safeToMoveGuard(TR::Block *destination, TR::TreeTop *guardCandidate,
@@ -293,9 +368,6 @@ int32_t TR_VirtualGuardHeadMerger::perform() {
             if (guard2Tree != guard2Block->getFirstRealTreeTop())
                {
                cfg->setStructure(NULL);
-               guard2Block = guard2Block->split(guard2Tree, cfg, true, false);
-               if (trace())
-                  traceMsg(comp(), "  Created new block_%d to hold guard [%p] from block_%d\n", guard2Block->getNumber(), guard2, guard2Block->getNumber());
 
                // We should leave code ahead of an HCR guard in place because:
                // 1, it might have side effect to runtime guards after it, moving it up might cause us to falsely merge
@@ -310,12 +382,12 @@ int32_t TR_VirtualGuardHeadMerger::perform() {
                   // the priv arg store, because the priv arg store does not load the value from the temp
                   // holding the monitored object
 
-
                   // Split priv arg stores from monitor stores
                   // Monitor store is generated for the caller of the method guard2 protects, so should appear before
                   // priv arg stores for the method guard2 protects
-                  TR::Block *privargBlock = splitMonitorStoreFromPrivArg(guard2Block->getPrevBlock(), cfg);
-                  if (privargBlock)
+                  TR::Block *privargBlock = guard2Block;
+                  guard2Block = splitRuntimeGuardBlock(comp(), guard2Block, cfg);
+                  if (privargBlock != guard2Block)
                      {
                      if (trace())
                         traceMsg(comp(), "  Moving privarg block_%d after block_%d\n", privargBlock->getNumber(), privargIns->getNumber());
@@ -330,8 +402,12 @@ int32_t TR_VirtualGuardHeadMerger::perform() {
 
                      // refresh the insertPoint since it could be stale after the above updates
                      insertPoint = runtimeIns;
-                    }
+                     }
                   }
+
+               guard2Block = guard2Block->split(guard2Tree, cfg, true, false);
+               if (trace())
+                  traceMsg(comp(), "  Created new block_%d to hold guard [%p] from block_%d\n", guard2Block->getNumber(), guard2, guard2Block->getNumber());
                }
 
             if (insertPoint != guard2Block->getPrevBlock())

@@ -28,3 +28,18 @@ else()
 		-msse2
 	)
 endif()
+
+# Testarossa build variables. Longer term the distinction between TR and the rest 
+# of the OMR code should be heavily reduced. In the mean time, we keep
+# the distinction
+
+list(APPEND TR_COMPILE_OPTIONS 
+	-std=c++0x
+	-Wno-write-strings #This warning swamps almost all other output
+) 
+
+set(PASM_CMD ${CMAKE_C_COMPILER}) 
+set(PASM_FLAGS -x assembler-with-cpp -E -P) 
+
+set(SPP_CMD ${CMAKE_C_COMPILER}) 
+set(SPP_FLAGS -x assembler-with-cpp -E -P) 

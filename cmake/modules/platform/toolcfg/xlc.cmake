@@ -58,3 +58,21 @@ elseif(OMR_HOST_OS STREQUAL "linux")
 		-qxflag=selinux
 	)
 endif()
+
+# Testarossa build variables. Longer term the distinction between TR and the rest 
+# of the OMR code should be heavily reduced. In the mean time, we keep
+# the distinction
+list(APPEND TR_COMPILE_OPTIONS
+	-qarch=pwr7
+	-qtls 
+	-qnotempinc 
+	-qenum=small 
+	-qmbcs 
+	-qlanglvl=extended0x 
+	-qfuncsect 
+	-qsuppress=1540-1087:1540-1088:1540-1090:1540-029:1500-029
+	-qdebug=nscrep
+	)
+
+set(SPP_CMD ${CMAKE_C_COMPILER}) 
+set(SPP_FLAGS -E -P) 

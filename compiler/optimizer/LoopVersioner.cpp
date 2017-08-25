@@ -3438,6 +3438,11 @@ void TR_LoopVersioner::updateDefinitionsAndCollectProfiledExprs(TR::Node *parent
    if (node->getVisitCount() == visitCount)
       return;
 
+   // There will be no definitions or profiled expressions
+   // beneath a nopable guard
+   if (node->isNopableInlineGuard() || node->isOSRGuard())
+      return;
+
    if(node->getOpCode().isIndirect() && refineAliases())
       collectArrayAliasCandidates(node,visitCount);
 

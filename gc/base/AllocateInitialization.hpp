@@ -201,11 +201,12 @@ public:
 
 			if (NULL != heapBytes) {
 #if defined(OMR_VALGRIND_MEMCHECK)
-				/* Allocate object in Valgrind memory pool before modifying it */
+#if defined(VALGRIND_REQUEST_LOGS)
+				VALGRIND_PRINTF_BACKTRACE("VALGRIND: Allocated object at 0x%lx of size %lu\n", (uintptr_t)heapBytes,_allocateDescription.getBytesRequested());
+#endif /* defined(VALGRIND_REQUEST_LOGS) */
+				/* Allocate object in Valgrind memory pool. */ 		
 				VALGRIND_MEMPOOL_ALLOC(env->getExtensions()->valgrindMempoolAddr,heapBytes,_allocateDescription.getBytesRequested());
 				env->getExtensions()->_allocatedObjects.insert((uintptr_t)heapBytes);
-				OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
-				omrtty_printf("VALGRIND: Allocated object at %x of size %d\n", heapBytes,_allocateDescription.getBytesRequested());
 #endif /* defined(OMR_VALGRIND_MEMCHECK) */
 
 				/* wipe allocated space if requested and allowed (NON_ZERO_TLH flag set inhibits zeroing) */

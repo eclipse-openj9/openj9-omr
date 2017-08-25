@@ -346,9 +346,9 @@ MM_HeapVirtualMemory::heapAddRange(MM_EnvironmentBase* env, MM_MemorySubSpace* s
 	env->getExtensions()->identityHashDataAddRange(env, subspace, size, lowAddress, highAddress);
 
 #if defined(OMR_VALGRIND_MEMCHECK)
-
-	OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
-	omrtty_printf("VALGRIND: Adding heap Range b/w %x and  %x\n", lowAddress,highAddress);
+#if defined(VALGRIND_REQUEST_LOGS)	
+	VALGRIND_PRINTF_BACKTRACE("VALGRIND: Adding heap Range b/w %p and  %p\n", lowAddress,highAddress);
+#endif /* defined(VALGRIND_REQUEST_LOGS) */	
 	
 	//add heap range to valgrind
 	VALGRIND_MAKE_MEM_NOACCESS(lowAddress,size);
@@ -378,10 +378,10 @@ MM_HeapVirtualMemory::heapRemoveRange(MM_EnvironmentBase* env, MM_MemorySubSpace
 
 #if defined(OMR_VALGRIND_MEMCHECK)
 	//remove heap range from valgrind
-
-	OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
-	omrtty_printf("VALGRIND: Removing heap range b/w 0x%x and  0x%x\n", lowAddress,highAddress);
-
+#if defined(VALGRIND_REQUEST_LOGS)	
+	VALGRIND_PRINTF_BACKTRACE("VALGRIND: Removing heap range b/w %p and  %p\n", lowAddress,highAddress);
+#endif /* defined(VALGRIND_REQUEST_LOGS) */
+	
 	if(!env->getExtensions()->_allocatedObjects.empty())
 	{	
 		std::set<uintptr_t>::iterator it;
@@ -392,27 +392,35 @@ MM_HeapVirtualMemory::heapRemoveRange(MM_EnvironmentBase* env, MM_MemorySubSpace
 		while(*uBound > (uintptr_t) highAddress && uBound !=  env->getExtensions()->_allocatedObjects.begin())
 			uBound--;
 
-		omrtty_printf("VALGRIND: lBound = 0x%x, uBound = 0x%x\n",lBound,uBound);		
-		omrtty_printf("VALGRIND: *lBound = 0x%x, *uBound = 0x%x\n",*lBound,*uBound);		
+#if defined(VALGRIND_REQUEST_LOGS)	
+		VALGRIND_PRINTF_BACKTRACE("*lBound = %lx, *uBound = %lx\n",*lBound,*uBound);			
+#endif /* defined(VALGRIND_REQUEST_LOGS) */			
 		
 		for(it = lBound;*it <= *uBound && it != setEnd;it++)
 		{
+#if defined(VALGRIND_REQUEST_LOGS)				
 			int objSize = (int) ( (GC_ObjectModel)env->getExtensions()->objectModel ).getConsumedSizeInBytesWithHeader( (omrobjectptr_t) *it);
-			omrtty_printf("VALGRIND: heapRemoveRange: Clearing object at 0x%x of size %d\n", *it,objSize);
+			VALGRIND_PRINTF("Clearing object at %lx of size %d = 0x%x\n", *it,objSize,objSize);
+#endif /* defined(VALGRIND_REQUEST_LOGS) */				
 			VALGRIND_MEMPOOL_FREE(env->getExtensions()->valgrindMempoolAddr,*it);
 		}
 		if(*uBound >= *lBound && uBound != setEnd)
 		{
-			omrtty_printf("VALGRIND: Erasing set from *lBound = 0x%x to *uBound = 0x%x\n",*lBound,*uBound);		
+#if defined(VALGRIND_REQUEST_LOGS)				
+			VALGRIND_PRINTF("Erasing set from lBound = %lx to uBound = %lx\n",*lBound,*uBound);		
+#endif /* defined(VALGRIND_REQUEST_LOGS) */			
 			env->getExtensions()->_allocatedObjects.erase(lBound,++uBound);//uBound is exclusive
 		}
 		
 		//remove range from valgrind
-		omrtty_printf("VALGRIND: Marking area as undefined at 0x%x of size 0x%x\n",lowAddress,
-			(uintptr_t) highAddress - (uintptr_t) lowAddress);			
+#if defined(VALGRIND_REQUEST_LOGS)			
+	VALGRIND_PRINTF("VALGRIND: Marking area as undefined at %lx of size %lx\n",(uintptr_t)lowAddress,
+		(uintptr_t) highAddress - (uintptr_t) lowAddress);	
+#endif /* (VALGRIND_REQUEST_LOGS) */		
+			
 		VALGRIND_MAKE_MEM_UNDEFINED(lowAddress, (uintptr_t) highAddress - (uintptr_t) lowAddress);
-		}
-	omrtty_printf("VALGRIND: Done clearing heap range\n");		
+	}
+		
 #endif /* defined(OMR_VALGRIND_MEMCHECK) */
 
 	return result;

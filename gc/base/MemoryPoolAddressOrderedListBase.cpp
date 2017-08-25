@@ -72,12 +72,6 @@ MM_MemoryPoolAddressOrderedListBase::createFreeEntry(MM_EnvironmentBase* env, vo
 
 	if (internalRecycleHeapChunk(addrBase, addrTop, nextFreeEntry)) {
 
-#if defined(OMR_VALGRIND_MEMCHECK)
-		OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
-		omrtty_printf("VALGRIND: Recycled Heap chunk b/w 0x%x 0x%x and nextFreeEntry is 0x%x\n", 
-			addrBase, addrTop, nextFreeEntry);
-#endif /* defined(OMR_VALGRIND_MEMCHECK) */
-
 		/* The range is big enough for the free list, so link the previous to it */
 		if (previousFreeEntry) {
 			assume0(previousFreeEntry < addrBase);

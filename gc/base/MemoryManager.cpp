@@ -358,8 +358,9 @@ MM_MemoryManager::createVirtualMemoryForHeap(MM_EnvironmentBase* env, MM_MemoryH
 	}
 
 #if defined(OMR_VALGRIND_MEMCHECK)
-	//add handle's Memory Base to Valgrind memory pool
-	VALGRIND_CREATE_MEMPOOL(handle->getMemoryBase(), 0, 0);
+	//Use handle's Memory Base to refer valgrind memory pool
+	//1 lets valgrind know that objects will be defined when allocated
+	VALGRIND_CREATE_MEMPOOL(handle->getMemoryBase(), 0, 1);
 	extensions->valgrindMempoolAddr = (uintptr_t) handle->getMemoryBase();
 #endif /* defined(OMR_VALGRIND_MEMCHECK) */
 
@@ -511,23 +512,13 @@ MM_MemoryManager::destroyVirtualMemory(MM_EnvironmentBase* env, MM_MemoryHandle*
 	//clear valgrind mempool address
 	if(env->getExtensions()->valgrindMempoolAddr != 0)
 	{
-		//check any left over chunks
-		std::set<uintptr_t>::iterator it;
-		OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
-		omrtty_printf("VALGRIND: Destroying virtual memory, looking for any objects still left\n");
-
-		for(it = env->getExtensions()->_allocatedObjects.begin(); it != env->getExtensions()->_allocatedObjects.end(); it++)
-		{
-			int objSize = (int) ( (GC_ObjectModel)env->getExtensions()->objectModel ).getConsumedSizeInBytesWithHeader( (omrobjectptr_t) *it);
-			omrtty_printf("VALGRIND: destroyVirtualMemory: clearing object at 0x%x of size %d\n", *it,objSize);
-			VALGRIND_MEMPOOL_FREE(env->getExtensions()->valgrindMempoolAddr,*it);		
-		}
-		env->getExtensions()->_allocatedObjects.clear();
-
-		//kill mempool and hence also the remaining objects.
+		//All objects should have been freed by now!
+		Assert_MM_true(env->getExtensions()->_allocatedObjects.empty());
+		
+		//Destroy mempool.
 		VALGRIND_DESTROY_MEMPOOL(env->getExtensions()->valgrindMempoolAddr);
 		env->getExtensions()->valgrindMempoolAddr = 0;
-		}
+	}
 #endif /* defined(OMR_VALGRIND_MEMCHECK) */
 
 }

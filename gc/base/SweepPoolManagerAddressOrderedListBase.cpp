@@ -453,10 +453,40 @@ MM_SweepPoolManagerAddressOrderedListBase::addFreeMemory(MM_EnvironmentBase *env
 {
 #if defined(OMR_VALGRIND_MEMCHECK)
 	uintptr_t valgrindAreaSize = MM_Bits::convertSlotsToBytes(size);
-	OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
-	omrtty_printf("VALGRIND: Clearing area between 0x%x 0x%x and size 0x%x\n", address, (uintptr_t)address + valgrindAreaSize, valgrindAreaSize);
+#if defined(VALGRIND_REQUEST_LOGS)	
+	VALGRIND_PRINTF_BACKTRACE("Clearing area between %lx - %lx and size %lu\n", (uintptr_t) address, (uintptr_t)address + valgrindAreaSize, valgrindAreaSize);
+#endif /* defined(VALGRIND_REQUEST_LOGS) */	
+	if(!_extensions->_allocatedObjects.empty())
+	{	
+		std::set<uintptr_t>::iterator it;
+		std::set<uintptr_t>::iterator setEnd = _extensions->_allocatedObjects.end();
+		std::set<uintptr_t>::iterator lBound = _extensions->_allocatedObjects.lower_bound((uintptr_t)address);
+		std::set<uintptr_t>::iterator uBound = --_extensions->_allocatedObjects.end();			
+		
+		uintptr_t closingAddr = (uintptr_t)address + valgrindAreaSize-1; //skip 1 extra byte due to sum
+		while(*uBound > closingAddr && uBound !=  _extensions->_allocatedObjects.begin())
+			uBound--;
+#if defined(VALGRIND_REQUEST_LOGS)	
+		VALGRIND_PRINTF_BACKTRACE("*lBound = %lx, *uBound = %lx\n",*lBound,*uBound);			
+#endif /* defined(VALGRIND_REQUEST_LOGS) */	
+			
+		for(it = lBound;*it <= *uBound && it != setEnd;it++)
+		{
+#if defined(VALGRIND_REQUEST_LOGS)				
+			int objSize = (int) ( (GC_ObjectModel)_extensions->objectModel ).getConsumedSizeInBytesWithHeader( (omrobjectptr_t) *it);
+			VALGRIND_PRINTF("Clearing object at %lx of size %d = 0x%x\n", *it,objSize,objSize);
+#endif /* defined(VALGRIND_REQUEST_LOGS) */				
+			VALGRIND_MEMPOOL_FREE(_extensions->valgrindMempoolAddr,*it);
+		}
+		if(*uBound >= *lBound && uBound != setEnd)
+		{
+#if defined(VALGRIND_REQUEST_LOGS)				
+		VALGRIND_PRINTF("Erasing set from lBound = %lx to uBound = %lx\n",*lBound,*uBound);		
+#endif /* defined(VALGRIND_REQUEST_LOGS) */							
+			_extensions->_allocatedObjects.erase(lBound,++uBound);//uBound is exclusive
+		}
+	}
 #endif /* defined(OMR_VALGRIND_MEMCHECK) */
-
 	bool result = false;
 	
 	/* This implementation is able to support SORTED pieces of memory ONLY!!! */
@@ -484,14 +514,6 @@ MM_SweepPoolManagerAddressOrderedListBase::addFreeMemory(MM_EnvironmentBase *env
 		heapFreeByteCount -= objectSizeDelta;
 		address = (uintptr_t *) (((uintptr_t)address) + objectSizeDelta);
 		MM_MemoryPoolAddressOrderedListBase *memoryPool = (MM_MemoryPoolAddressOrderedListBase *)sweepChunk->memoryPool;
-
-#if defined(OMR_VALGRIND_MEMCHECK)
-		omrtty_printf("VALGRIND: Original size used %d = 0x%x\n",valgrindAreaSize, valgrindAreaSize);
-		valgrindAreaSize = heapFreeByteCount;
-		omrtty_printf("VALGRIND: Adjusted size %d = 0x%x\n",valgrindAreaSize,valgrindAreaSize);
-		omrtty_printf("VALGRIND: Adjusted the clearing area to b/w 0x%x 0x%x\n", address, (uintptr_t)address + valgrindAreaSize);
-#endif /* defined(OMR_VALGRIND_MEMCHECK) */
-
 
 		if(memoryPool->connectInnerMemoryToPool(env, address, heapFreeByteCount, sweepChunk->freeListTail)) {
 
@@ -525,34 +547,9 @@ MM_SweepPoolManagerAddressOrderedListBase::addFreeMemory(MM_EnvironmentBase *env
 		result = true;
 	}
 
-#if defined(OMR_VALGRIND_MEMCHECK)
-	if(!_extensions->_allocatedObjects.empty())
-	{	
-		std::set<uintptr_t>::iterator it;
-		std::set<uintptr_t>::iterator setEnd = _extensions->_allocatedObjects.end();
-		std::set<uintptr_t>::iterator lBound = _extensions->_allocatedObjects.lower_bound((uintptr_t)address);
-		std::set<uintptr_t>::iterator uBound = --_extensions->_allocatedObjects.end();			
-		
-		uintptr_t closingAddr = (uintptr_t)address + valgrindAreaSize-1; //skip 1 extra byte due to sum
-		while(*uBound > closingAddr && uBound !=  _extensions->_allocatedObjects.begin())
-			uBound--;
-		omrtty_printf("VALGRIND: *lBound = 0x%x, *uBound = 0x%x\n",*lBound,*uBound);			
-		omrtty_printf("VALGRIND: lBound = 0x%x, uBound = 0x%x\n",lBound,uBound);		
-		
-		for(it = lBound;*it <= *uBound && it != setEnd;it++)
-		{
-			int objSize = (int) ( (GC_ObjectModel)_extensions->objectModel ).getConsumedSizeInBytesWithHeader( (omrobjectptr_t) *it);
-			omrtty_printf("VALGRIND: Clearing object at 0x%x of size %d = 0x%x\n", *it,objSize,objSize);
-			VALGRIND_MEMPOOL_FREE(_extensions->valgrindMempoolAddr,*it);
-		}
-		if(*uBound >= *lBound && uBound != setEnd)
-		{
-			omrtty_printf("VALGRIND: Erasing set from *lBound = 0x%x to *uBound = 0x%x\n",*lBound,*uBound);		
-			_extensions->_allocatedObjects.erase(lBound,++uBound);//uBound is exclusive
-		}
-	}	
-	omrtty_printf("VALGRIND: Done clearing area\n");
-#endif /* defined(OMR_VALGRIND_MEMCHECK) */
+#if defined(VALGRIND_REQUEST_LOGS)			
+	VALGRIND_PRINTF("Done clearing area\n");
+#endif /* defined(VALGRIND_REQUEST_LOGS) */		
 
 	return result;
 }

@@ -35,10 +35,6 @@
 #include "HeapLinkedFreeHeader.hpp"
 #include "ObjectModelDelegate.hpp"
 
-#if defined(OMR_VALGRIND_MEMCHECK)
-#include <valgrind/memcheck.h>
-#endif /* defined(OMR_VALGRIND_MEMCHECK) */
-
 class MM_AllocateInitialization;
 class MM_EnvironmentBase;
 class MM_GCExtensionsBase;
@@ -366,20 +362,12 @@ public:
 	isDeadObject(void *objectPtr)
 	{
 		fomrobject_t *headerSlotPtr = getObjectHeaderSlotAddress((omrobjectptr_t)objectPtr);
-#if defined(OMR_VALGRIND_MEMCHECK)
-		VALGRIND_MAKE_MEM_DEFINED(headerSlotPtr,sizeof(*headerSlotPtr));
-#endif /* defined(OMR_VALGRIND_MEMCHECK) */
-
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
 		/* for ConcurrentScavenger, forwarded bit must be 0, otherwise it's a self-forwarded object */
 		bool result = (J9_GC_OBJ_HEAP_HOLE == (*headerSlotPtr & (J9_GC_OBJ_HEAP_HOLE | OMR_FORWARDED_TAG)));
 #else
 		bool result = (J9_GC_OBJ_HEAP_HOLE == (*headerSlotPtr & J9_GC_OBJ_HEAP_HOLE));
 #endif /* OMR_GC_CONCURRENT_SCAVENGER */
-
-#if defined(OMR_VALGRIND_MEMCHECK)
-		VALGRIND_MAKE_MEM_NOACCESS(headerSlotPtr,sizeof(*headerSlotPtr));
-#endif /* defined(OMR_VALGRIND_MEMCHECK) */
 		return result;
 	}
 
@@ -392,15 +380,7 @@ public:
 	isSingleSlotDeadObject(omrobjectptr_t objectPtr)
 	{
 		fomrobject_t *headerSlotPtr = getObjectHeaderSlotAddress((omrobjectptr_t)objectPtr);
-#if defined(OMR_VALGRIND_MEMCHECK)
-		VALGRIND_MAKE_MEM_DEFINED(headerSlotPtr,sizeof(*headerSlotPtr));
-#endif /* defined(OMR_VALGRIND_MEMCHECK) */
-
 		bool result = (J9_GC_SINGLE_SLOT_HOLE == (*headerSlotPtr & J9_GC_OBJ_HEAP_HOLE_MASK));
-
-#if defined(OMR_VALGRIND_MEMCHECK)
-		VALGRIND_MAKE_MEM_NOACCESS(headerSlotPtr,sizeof(*headerSlotPtr));
-#endif /* defined(OMR_VALGRIND_MEMCHECK) */
 		return result;
 	}
 

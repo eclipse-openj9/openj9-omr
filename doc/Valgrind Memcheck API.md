@@ -17,7 +17,7 @@ We have used following valgrind API requests:
 
 3. `VALGRIND_MAKE_MEM_UNDEFINED(lowAddress, size)` - This marks address ranges as accessible but containing undefined data. This request is used in `MM_HeapVirtualMemory::heapRemoveRange` to let Valgrind know that the memory is no longer in use for the heap.
 
-4. `VALGRIND_CREATE_MEMPOOL(pool, rzB, is_zeroed)` - pool provides the anchor address for our memory pool. We have set it to  `handle->getMemoryBase(),` in `MM_MemoryManager::newInstance` and saved it to `valgrindMempoolAddr` in `MM_ExtensionsBase` to identify the mempool whenever we add or remove objects.
+4. `VALGRIND_CREATE_MEMPOOL(pool, rzB, is_zeroed)` - pool provides the anchor address for our memory pool. We have set it to  `handle->getMemoryBase(),` in `MM_MemoryManager::newInstance` and saved it to `valgrindMempoolAddr` in `MM_ExtensionsBase` to identify the mempool whenever we add or remove objects. We also set is_zeroed to 1 to tell valgrind that object is defined just after allocation request is used.
 
 5. `VALGRIND_MEMPOOL_ALLOC(pool, addr, size)` - This request is used to inform valgrind that object of `size` has been allocated at `addr` inside `pool`.  This also marks the object as `DEFINED`. The request is added to `allocateAndInitializeObject(OMR_VMThread *omrVMThread)`.
 
@@ -25,17 +25,19 @@ We have used following valgrind API requests:
 
 7. `VALGRIND_DESTROY_MEMPOOL(pool)` - This request destroys valgrind `pool` along with objects allocated on it. This request is used in `MM_MemoryManager::destroyVirtualMemory`. So to avoid any area getting marked as noaccess fafter a GC cycle is complete, it is nececcary that all objects inside it to be freed before (or inside) `MM_HeapVirtualMemory::heapRemoveRange` that marks the area as undefined at end.
 
+8. `VALGRIND_PRINTF(format, ...)` and `VALGRIND_PRINTF_BACKTRACE(format, ...)` - These requests print messages on valgrind terminal. We use them to when `--enable-VALGRIND_REQUEST_LOGS` is used to print request logs with stack trace.
+
 ## Different Ways of freeing objects in Valgrind.
 
 API request `VALGRIND_MEMPOOL_FREE(pool, addr)` requires us to have base address of object that we are attempting to free. GC keeps a record of the heap areas that are available or free. The GC is informed of the live objects during the marking phase of the GC in `MM_MarkingDelegate::scanRoots`, where all live objects are noted. The GC combines all unused memory into a "free list" which is used for future allocations. Proper Valgrind integration requires `VALGRIND_MEMPOOL_FREE` to be called on each object freed during a garbage collection, which is not something that the GC tracks
 
 There are 3 workarounds for this issue.
 
-1. Using `MM_MarkingDelegate::masterCleanupAfterGC`. Target language has record of objects in a object table, and this method is called after GC cycle has been completed with a record of marked objects. While it is freeing the dead objects from object table we are also requesting valgrind to free them. **Disadvantage:** free requests should have been made inside the GC (where we also request allocations) and not in target.
+1. Using `MM_MarkingDelegate::masterCleanupAfterGC`. Target language has record of objects in a object table, and this method is called after GC cycle has been completed with a record of marked objects. While it is freeing the dead objects from object table we are also requesting valgrind to free them. **Disadvantage:** free requests should have been made inside the GC (where we also request allocations) and not in target language.
  
- 2. Using a list to track allocated objects. This workaround allows us to free objects from GC directly. This is how we are freeing them currently. **Disadvantage** we haven't needed such a list in current Implementation, it is a overhead to maintain it later and increases complexity of code. 
+ 2. Using a list to track allocated objects. This workaround allows us to free objects from GC directly. This is how we are freeing them currently. **Disadvantage** we haven't needed such a list in current Implementation, it is a overhead to maintain it later and increases complexity of code. Another disadvantage is we cannot access this list everywhere in GC (where `MM_ExtensionsBase` is absent)
 
- 3. Adding new valgrind API: Valgrind already has the list of allocated objects, so it should be possible for it to find the objects in a range and also free them. Andrew Young has written a patch for this and it is in their mailing lists for review. https://sourceforge.net/p/valgrind/mailman/message/35996446/ . This does not require to have a track of allocated objects. This should be best solution, but until it is merged in their code, it will be a bit difficult to use.
+ 3. Adding new valgrind API: Valgrind already has the list of allocated objects, so it should be possible for it to find the objects in a range and also free them. A patch has been made for this and it is in their mailing lists for review. https://sourceforge.net/p/valgrind/mailman/message/35996446/ . This does not require to have a track of allocated objects. This should be best solution, but until it is merged in their code, it will be difficult to use.
 
  ## Preperation
 
@@ -44,8 +46,9 @@ There are 3 workarounds for this issue.
 
     So for given example, makefiles are generated by: 
     
-        make -f run_configure.mk SPEC=linux_x86-64 OMRGLUE=./example/glue EXTRA_CONFIGURE_ARGS='--disable-optimized --enable-OMR_VALGRIND_MEMCHECK`
+        make -f run_configure.mk SPEC=linux_x86-64 OMRGLUE=./example/glue EXTRA_CONFIGURE_ARGS='--disable-optimized --enable-OMR_VALGRIND_MEMCHECK'
 
+    If you are debugging API integration or GC itself, option `--enable-VALGRIND_REQUEST_LOGS` will dump each valgrind request with callstack from GC. This option is not needed when developing target languages.
 
 
 1. **Preparing GC Tests** - Currently following 4 tests work are using valgrind requests. They are:
@@ -71,7 +74,7 @@ There are 3 workarounds for this issue.
 2. **Error Count** - last line of output indicates errors. Example:  
     > ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
 
-3. **Invalid Read / Write errors** - these are errors that  are most helpful. They are detailed and may also contain location of previous objects they are occurring, Example:
+3. **Invalid Read / Write errors** - these are errors that are very helpful. They are detailed and may also contain location of previous objects they are occurring, Example:
        
         Invalid read of size 8
         Address 0x6d71d18 is 1,104 bytes inside a block of size 1,448 free'd  

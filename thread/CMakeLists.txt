@@ -302,9 +302,8 @@ target_include_directories(j9thrstatic
 )
 
 target_link_libraries(j9thrstatic
-	omrutil
 	j9pool
-	omrglue
+	omrutil
 )
 
 if(OMR_HOST_OS MATCHES "linux|osx")

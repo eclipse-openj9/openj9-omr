@@ -48,7 +48,6 @@ if(OMR_HOST_OS STREQUAL "win")
 		Iphlpapi
 		psapi
 		pdh
-		omrglue
 	)
 endif()
 

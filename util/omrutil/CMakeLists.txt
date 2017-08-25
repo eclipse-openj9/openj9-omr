@@ -111,5 +111,6 @@ add_library(omrutil STATIC
 )
 target_link_libraries(omrutil PUBLIC
 	j9hashtable
-	omrglue
+	${OMR_UTIL_GLUE_TARGET}
+	omrcore
 )

@@ -47,10 +47,19 @@ endif()
 ###
 ### Getting the glue target
 ###
-if (NOT DEFINED OMR_GLUE_TARGET)
-	set(OMR_GLUE_TARGET "omr_example_glue" CACHE STRING "The glue target, must be an interface library")
-    message(STATUS "Glue not set, defaulting to example glue")
-endif()
+#if (NOT DEFINED OMR_GLUE_TARGET)
+#	set(OMR_GLUE_TARGET "omr_example_glue" CACHE STRING "The glue target, must be an interface library")
+#    message(STATUS "Glue not set, defaulting to example glue")
+#endif()
+
+set(OMR_GC_GLUE_TARGET "omr_example_gc_glue" CACHE STRING "The gc glue target, must be interface library")
+set(OMR_UTIL_GLUE_TARGET "omr_example_util_glue" CACHE STRING "The util glue target, must be interface library")
+set(OMR_RAS_GLUE_TARGET "omr_example_ras_glue" CACHE STRING "The ras glue target, must be interface library")
+set(OMR_CORE_GLUE_TARGET "omr_example_core_glue" CACHE STRING "The core glue target, must be and interface library")
+# TODO this only seems to be used by gc test. Maybe a different mechanism would be appropriate here?
+set(OMR_VM_GLUE_TARGET "omr_example_vm_glue" CACHE STRING "The vm  glue target")
+
+
 add_subdirectory(example/glue)
 
 # TODO: OMR_EXAMPLE flag
@@ -92,24 +101,6 @@ endif()
 configure_file(./omrcfg.CMakeTemplate.h omrcfg.h)
 configure_file(./omrversionstrings.CMakeTemplate.h omrversionstrings.h)
 
-add_library(omrglue STATIC)
-target_link_libraries(omrglue
-	PRIVATE
-	# Link as private since we dont want the interface sources to propagate
-	${OMR_GLUE_TARGET}
-)
-#but we need to propagate the include paths
-target_include_directories(omrglue
-	INTERFACE
-	$<TARGET_PROPERTY:${OMR_GLUE_TARGET},INTERFACE_INCLUDE_DIRECTORIES>
-	PRIVATE
-	$<TARGET_PROPERTY:omrgc,INTERFACE_INCLUDE_DIRECTORIES>
-)
-add_dependencies(omrglue
-	omrgc_hookgen
-	omrgc_tracegen
-)
-
 add_subdirectory(tools)
 # Yeah, its dumb doing this here. Read note in tools/CMakeLists.txt
 if(CMAKE_CROSSCOMPILING)
@@ -130,8 +121,6 @@ endif()
 
 if(OMR_GC)
   add_subdirectory(gc)
-  # if we are building the gc, add gc headers to omrglue
-  target_include_directories(omrglue PRIVATE $<TARGET_PROPERTY:omrgc,INCLUDE_DIRECTORIES>)
 endif(OMR_GC)
 
 if(OMR_DDR)

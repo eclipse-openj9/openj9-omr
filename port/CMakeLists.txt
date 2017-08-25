@@ -339,11 +339,11 @@ add_library(omrport STATIC
 )
 
 target_link_libraries(omrport
-	j9thrstatic
+	PRIVATE
 	j9avl
 	j9hashtable
 	j9pool
-	omrglue
+	${OMR_THREAD_LIB}
 )
 
 target_include_directories(omrport_obj PRIVATE
@@ -358,14 +358,14 @@ target_compile_definitions(omrport_obj PRIVATE -DOMRPORT_LIBRARY_DEFINE)
 #TODO hack to get to compile. Need platform checks
 if(NOT OMR_HOST_OS STREQUAL "win")
 	if(NOT OMR_HOST_OS STREQUAL "zos")
-		target_link_libraries(omrport dl)
+		target_link_libraries(omrport PRIVATE dl)
 	endif()
 endif()
 
 if(OMR_HOST_OS STREQUAL "osx")
-  target_link_libraries(omrport iconv)
+	target_link_libraries(omrport PRIVATE iconv)
 endif()
 
 if(OMR_HOST_OS STREQUAL "win")
-	target_link_libraries(omrport psapi pdh)
+	target_link_libraries(omrport PRIVATE psapi pdh)
 endif()

@@ -47,9 +47,9 @@ Following these guidelines will help us to merge your pull requests smoothly:
 
 The first line describes the change made. It is written in the imperative mood,
 and should say what happens when the patch is applied. Keep it short and
-simple. The first line should be less than 50 characters, sentence case, and
-does not end in a period. Leave a blank line between the first line and the
-message body.
+simple. The first line should be less than 70 characters, where reasonable,
+and should be written in sentence case preferably not ending in a period.
+Leave a blank line between the first line and the message body.
 
 The body should be wrapped at 72 characters, where reasonable.
 

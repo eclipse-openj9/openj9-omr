@@ -64,7 +64,8 @@ void collectNodesForIsCorrectChecks(TR::Node * n, TR::list< TR::Node *> & checkN
 
 TR_CopyPropagation::TR_CopyPropagation(TR::OptimizationManager *manager)
    : TR::Optimization(manager),
-   _storeTreeTops((StoreTreeMapComparator()), StoreTreeMapAllocator(comp()->trMemory()->currentStackRegion()))
+   _storeTreeTops((StoreTreeMapComparator()), StoreTreeMapAllocator(comp()->trMemory()->currentStackRegion())),
+   _useTreeTops((UseTreeMapComparator()), UseTreeMapAllocator(comp()->trMemory()->currentStackRegion()))
    {}
 
 template <class T>
@@ -476,6 +477,8 @@ int32_t TR_CopyPropagation::perform()
 
    StoreNodeMap storeMap((StoreNodeMapComparator()), StoreNodeMapAllocator(trMemory()->currentStackRegion()));
 
+   TR::NodeChecklist checklist(comp());
+
    _lookForOriginalDefs = false;
    for (TR::TreeTop *tree = comp()->getStartTree(); tree; tree = tree->getNextTreeTop())
       {
@@ -485,6 +488,8 @@ int32_t TR_CopyPropagation::perform()
          storeMap.clear();
          continue;
          }
+
+      collectUseTrees(tree, tree->getNode(), checklist);
 
       if (!(defNode->getOpCode().isStoreDirect()
             && defNode->getSymbolReference()->getSymbol()->isAutoOrParm()
@@ -657,7 +662,7 @@ int32_t TR_CopyPropagation::perform()
          TR::SymbolReference *copySymbolReference = defNode->getSymbolReference();
          if (performTransformation(comp(), "%s   Copy1 Propagation replacing Copy symRef #%d %p %p\n",OPT_DETAILS, copySymbolReference->getReferenceNumber(), defNode,  equivalentDefNode))
             {
-	    comp()->setOsrStateIsReliable(false); // could check if the propagation was done to a child of the OSR helper call here
+	      comp()->setOsrStateIsReliable(false); // could check if the propagation was done to a child of the OSR helper call here
 
             _storeTree = NULL;
             _useTree = NULL;
@@ -1030,6 +1035,24 @@ int32_t TR_CopyPropagation::perform()
    return 1; // actual cost
    }
 
+void TR_CopyPropagation::collectUseTrees(TR::TreeTop *tree, TR::Node *node, TR::NodeChecklist &checklist)
+   {
+   if (checklist.contains(node))
+      return;
+   checklist.add(node);
+
+   int32_t useIndex = node->getUseDefIndex();
+   TR_UseDefInfo *useDefInfo = optimizer()->getUseDefInfo();
+   if (useIndex >= useDefInfo->getFirstUseIndex() && useIndex <= useDefInfo->getLastUseIndex())
+      {
+      auto useTreeLookup = _useTreeTops.find(node);
+      if (useTreeLookup == _useTreeTops.end())
+         _useTreeTops[node] = tree;
+      }
+
+   for (int i = 0; i < node->getNumChildren(); i++)
+      collectUseTrees(tree, node->getChild(i), checklist);
+   }
 
 void TR_CopyPropagation::rematerializeIndirectLoadsFromAutos()
    {
@@ -1850,18 +1873,9 @@ void TR_CopyPropagation::findUseTree(TR::Node *useNode)
    {
    if (_useTree) return;
 
-   TR::TreeTop *currentTree = comp()->getStartTree();
-
-   comp()->incOrResetVisitCount();
-   while (currentTree)
-      {
-      if (containsNode(currentTree->getNode(), useNode))
-         {
-         _useTree = currentTree;
-         break;
-         }
-      currentTree = currentTree->getNextTreeTop();
-      }
+   auto lookup = _useTreeTops.find(useNode);
+   if (lookup != _useTreeTops.end())
+      _useTree = lookup->second;
    }
 
 bool TR_CopyPropagation::isCorrectToPropagate(TR::Node *useNode, TR::Node *storeNode, TR::list< TR::Node *> & checkNodes,
@@ -1870,17 +1884,9 @@ bool TR_CopyPropagation::isCorrectToPropagate(TR::Node *useNode, TR::Node *store
    TR::TreeTop *currentTree = comp()->getStartTree();
    _storeTree = NULL;
    _storeBlock = NULL;
+   _useTree = NULL;
 
-   comp()->incOrResetVisitCount();
-   while (currentTree)
-      {
-      if (containsNode(currentTree->getNode(), useNode))
-         {
-         _useTree = currentTree;
-         break;
-         }
-      currentTree = currentTree->getNextTreeTop();
-      }
+   findUseTree(useNode);
 
    if (_storeTree == NULL)
       {
@@ -2184,16 +2190,8 @@ bool TR_CopyPropagation::isCorrectToReplace(TR::Node *useNode, TR::Node *storeNo
    // z <- x + a
    refsToCheckIfKilled[storeNode->getSymbolReference()->getReferenceNumber()] = 1;
 
-   comp()->incOrResetVisitCount();
-   while (currentTree)
-      {
-      if (containsNode(currentTree->getNode(), useNode))
-         {
-         _useTree = currentTree;
-         break;
-         }
-      currentTree = currentTree->getNextTreeTop();
-      }
+   _useTree = NULL;
+   findUseTree(useNode);
 
    if (_storeTree == NULL)
       {

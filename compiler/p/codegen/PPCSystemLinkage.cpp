@@ -1717,7 +1717,6 @@ void TR::PPCSystemLinkage::setParameterLinkageRegisterIndex(TR::ResolvedMethodSy
                }
             numFloatArgs++;
             numIntArgs++;
-            if (paramCursor->getDataType() == TR::Double) numIntArgs++;
             break;
          case TR::Aggregate:
             {

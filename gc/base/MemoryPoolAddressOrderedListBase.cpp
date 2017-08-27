@@ -38,6 +38,10 @@
 #include "HeapLinkedFreeHeader.hpp"
 #include "Heap.hpp"
 
+#if defined(OMR_VALGRIND_MEMCHECK)
+#include <valgrind/memcheck.h>
+#endif /* defined(OMR_VALGRIND_MEMCHECK) */
+
 /****************************************
  * Allocation
  ****************************************
@@ -70,6 +74,58 @@ MM_MemoryPoolAddressOrderedListBase::createFreeEntry(MM_EnvironmentBase* env, vo
 	/* Sanity checks -- should never create an out of order link */
 	assume0((NULL == nextFreeEntry) || (nextFreeEntry > addrTop));
 
+#if defined(OMR_VALGRIND_MEMCHECK)	
+#if defined(VALGRIND_REQUEST_LOGS)	
+	VALGRIND_PRINTF_BACKTRACE("Removing heap range b/w %p and  %p\n", addrBase,addrTop);
+#endif /* defined(VALGRIND_REQUEST_LOGS) */
+
+	if(!env->getExtensions()->_allocatedObjects.empty() && (uintptr_t) addrTop> (uintptr_t) addrBase)
+	{	
+		std::set<uintptr_t>::iterator it;
+		std::set<uintptr_t>::iterator setEnd = env->getExtensions()->_allocatedObjects.end();
+		std::set<uintptr_t>::iterator lBound = env->getExtensions()->_allocatedObjects.lower_bound((uintptr_t)addrBase);
+		std::set<uintptr_t>::iterator uBound = --env->getExtensions()->_allocatedObjects.end();	
+		//addrTop is exclusive
+		while(*uBound > ((uintptr_t) addrTop -1) && uBound !=  env->getExtensions()->_allocatedObjects.begin())
+			uBound--;
+
+#if defined(VALGRIND_REQUEST_LOGS)	
+		VALGRIND_PRINTF("lBound = %lx, uBound = %lx\n",*lBound,*uBound);			
+#endif /* defined(VALGRIND_REQUEST_LOGS) */			
+		
+		if(*uBound >= (uintptr_t) addrTop)
+			{
+#if defined(VALGRIND_REQUEST_LOGS)	
+				VALGRIND_PRINTF("Skipping uBound %lx",*uBound);
+#endif /* defined(VALGRIND_REQUEST_LOGS) */			
+				goto skip_valgrind;
+			}
+
+		for(it = lBound;*it <= *uBound && it != setEnd;it++)
+		{
+#if defined(VALGRIND_REQUEST_LOGS)				
+			int objSize = (int) ( (GC_ObjectModel)env->getExtensions()->objectModel ).getConsumedSizeInBytesWithHeader( (omrobjectptr_t) *it);
+			VALGRIND_PRINTF("Clearing object at %lx of size %d = 0x%x\n", *it,objSize,objSize);
+#endif /* defined(VALGRIND_REQUEST_LOGS) */				
+			VALGRIND_MEMPOOL_FREE(env->getExtensions()->valgrindMempoolAddr,*it);
+		}
+		if(*uBound >= *lBound && uBound != setEnd)
+		{
+#if defined(VALGRIND_REQUEST_LOGS)				
+			VALGRIND_PRINTF("Erasing set from lBound = %lx to uBound = %lx\n",*lBound,*uBound);		
+#endif /* defined(VALGRIND_REQUEST_LOGS) */			
+			env->getExtensions()->_allocatedObjects.erase(lBound,++uBound);//uBound is exclusive
+		}
+skip_valgrind:
+#if defined(VALGRIND_REQUEST_LOGS)			
+	VALGRIND_PRINTF("Marking area as noaccess at %lx of size %lx (to %lx)\n",(uintptr_t)addrBase,
+		(uintptr_t) addrTop - (uintptr_t) addrBase - (uintptr_t)1,(uintptr_t) addrTop);	
+#endif /* (VALGRIND_REQUEST_LOGS) */		
+			
+		VALGRIND_MAKE_MEM_NOACCESS(addrBase, (uintptr_t) addrTop - (uintptr_t) addrBase);
+	}
+#endif /* defined(OMR_VALGRIND_MEMCHECK) */
+	
 	if (internalRecycleHeapChunk(addrBase, addrTop, nextFreeEntry)) {
 
 		/* The range is big enough for the free list, so link the previous to it */

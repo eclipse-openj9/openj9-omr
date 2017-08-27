@@ -379,7 +379,7 @@ MM_HeapVirtualMemory::heapRemoveRange(MM_EnvironmentBase* env, MM_MemorySubSpace
 #if defined(OMR_VALGRIND_MEMCHECK)
 	//remove heap range from valgrind
 #if defined(VALGRIND_REQUEST_LOGS)	
-	VALGRIND_PRINTF_BACKTRACE("VALGRIND: Removing heap range b/w %p and  %p\n", lowAddress,highAddress);
+	VALGRIND_PRINTF_BACKTRACE("Removing heap range b/w %p and  %p\n", lowAddress,highAddress);
 #endif /* defined(VALGRIND_REQUEST_LOGS) */
 	
 	if(!env->getExtensions()->_allocatedObjects.empty())
@@ -393,7 +393,7 @@ MM_HeapVirtualMemory::heapRemoveRange(MM_EnvironmentBase* env, MM_MemorySubSpace
 			uBound--;
 
 #if defined(VALGRIND_REQUEST_LOGS)	
-		VALGRIND_PRINTF_BACKTRACE("*lBound = %lx, *uBound = %lx\n",*lBound,*uBound);			
+		VALGRIND_PRINTF("lBound = %lx, uBound = %lx\n",*lBound,*uBound);			
 #endif /* defined(VALGRIND_REQUEST_LOGS) */			
 		
 		for(it = lBound;*it <= *uBound && it != setEnd;it++)
@@ -414,7 +414,7 @@ MM_HeapVirtualMemory::heapRemoveRange(MM_EnvironmentBase* env, MM_MemorySubSpace
 		
 		//remove range from valgrind
 #if defined(VALGRIND_REQUEST_LOGS)			
-	VALGRIND_PRINTF("VALGRIND: Marking area as undefined at %lx of size %lx\n",(uintptr_t)lowAddress,
+	VALGRIND_PRINTF("Marking area as undefined at %lx of size %lx\n",(uintptr_t)lowAddress,
 		(uintptr_t) highAddress - (uintptr_t) lowAddress);	
 #endif /* (VALGRIND_REQUEST_LOGS) */		
 			

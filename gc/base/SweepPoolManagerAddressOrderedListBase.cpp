@@ -467,7 +467,7 @@ MM_SweepPoolManagerAddressOrderedListBase::addFreeMemory(MM_EnvironmentBase *env
 		while(*uBound > closingAddr && uBound !=  _extensions->_allocatedObjects.begin())
 			uBound--;
 #if defined(VALGRIND_REQUEST_LOGS)	
-		VALGRIND_PRINTF_BACKTRACE("*lBound = %lx, *uBound = %lx\n",*lBound,*uBound);			
+		VALGRIND_PRINTF("*lBound = %lx, *uBound = %lx\n",*lBound,*uBound);			
 #endif /* defined(VALGRIND_REQUEST_LOGS) */	
 			
 		for(it = lBound;*it <= *uBound && it != setEnd;it++)

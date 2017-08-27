@@ -282,29 +282,30 @@ public:
 	MMINLINE static MM_HeapLinkedFreeHeader*
 	fillWithHoles(void* addrBase, uintptr_t freeEntrySize)
 	{
-#if defined(OMR_VALGRIND_MEMCHECK)
-#if defined(VALGRIND_REQUEST_LOGS)
-		VALGRIND_PRINTF_BACKTRACE("Marking area defined at 0x%p of size %lu\n",addrBase,freeEntrySize);
-#endif /* defined(VALGRIND_REQUEST_LOGS) */	
-		VALGRIND_MAKE_MEM_DEFINED(addrBase, freeEntrySize);
-#endif /* defined(OMR_VALGRIND_MEMCHECK) */
 		MM_HeapLinkedFreeHeader *freeEntry = NULL;
 		if (freeEntrySize < sizeof(MM_HeapLinkedFreeHeader)) {
 			/* Entry will be abandoned. Recycle the remainder as single slot entries */
 			fillWithSingleSlotHoles(addrBase, freeEntrySize);
 		} else {
+#if defined(OMR_VALGRIND_MEMCHECK)
+#if defined(VALGRIND_REQUEST_LOGS)
+			VALGRIND_PRINTF_BACKTRACE("Marking area defined at 0x%p of size %lu\n",addrBase,sizeof(MM_HeapLinkedFreeHeader));
+#endif /* defined(VALGRIND_REQUEST_LOGS) */	
+			VALGRIND_MAKE_MEM_DEFINED(addrBase, sizeof(MM_HeapLinkedFreeHeader));
+#endif /* defined(OMR_VALGRIND_MEMCHECK) */
+			
 			/* this is too big to use single slot holes so generate an AOL-style hole (note that this is not correct for other allocation schemes) */
 			freeEntry = (MM_HeapLinkedFreeHeader *)addrBase;
 
 			freeEntry->setNext(NULL);
 			freeEntry->setSize(freeEntrySize);
-		}
 #if defined(OMR_VALGRIND_MEMCHECK)
 #if defined(VALGRIND_REQUEST_LOGS)
-		VALGRIND_PRINTF("Marking area noaccess at 0x%p of size %lu\n",addrBase, freeEntrySize);		
+		VALGRIND_PRINTF("Marking area noaccess at 0x%p of size %lu\n",addrBase, sizeof(MM_HeapLinkedFreeHeader));		
 #endif /* defined(VALGRIND_REQUEST_LOGS) */	
-		VALGRIND_MAKE_MEM_NOACCESS(addrBase, freeEntrySize);
-#endif /* defined(OMR_VALGRIND_MEMCHECK) */
+		VALGRIND_MAKE_MEM_NOACCESS(addrBase, sizeof(MM_HeapLinkedFreeHeader));
+#endif /* defined(OMR_VALGRIND_MEMCHECK) */	
+		}
 		return freeEntry;
 	}
 

@@ -35,6 +35,10 @@
 #include "MemorySubSpaceSemiSpace.hpp"
 #include "PhysicalSubArena.hpp"
 
+#if defined(OMR_VALGRIND_MEMCHECK)
+#include <valgrind/memcheck.h>
+#endif /* defined(OMR_VALGRIND_MEMCHECK) */
+
 #if defined(OMR_GC_MODRON_SCAVENGER)
 
 /****************************************
@@ -577,10 +581,79 @@ MM_MemorySubSpaceSemiSpace::poisonEvacuateSpace()
 	uintptr_t* current = (uintptr_t*) _allocateSpaceBase;
 	uintptr_t* end = (uintptr_t*) _allocateSpaceTop;
 
+#if defined(OMR_VALGRIND_MEMCHECK)		
+	if((uintptr_t) _allocateSpaceTop > (uintptr_t) _allocateSpaceBase)
+	{
+		
+#if defined(VALGRIND_REQUEST_LOGS)	
+		VALGRIND_PRINTF_BACKTRACE("Removing heap range b/w %p and  %p\n", _allocateSpaceTop,_allocateSpaceBase);
+#endif /* defined(VALGRIND_REQUEST_LOGS) */
+	
+		if(!_extensions->_allocatedObjects.empty())
+		{
+			std::set<uintptr_t>::iterator it;
+			std::set<uintptr_t>::iterator setEnd = _extensions->_allocatedObjects.end();
+			std::set<uintptr_t>::iterator lBound = _extensions->_allocatedObjects.lower_bound((uintptr_t)_allocateSpaceBase);
+			std::set<uintptr_t>::iterator uBound = --_extensions->_allocatedObjects.end();	
+			//addrTop is exclusive
+			while(*uBound > ((uintptr_t) _allocateSpaceTop -1) && uBound !=  _extensions->_allocatedObjects.begin())
+				uBound--;
+	
+#if defined(VALGRIND_REQUEST_LOGS)	
+			VALGRIND_PRINTF("lBound = %lx, uBound = %lx\n",*lBound,*uBound);			
+#endif /* defined(VALGRIND_REQUEST_LOGS) */			
+			
+			if(*uBound > (uintptr_t) _allocateSpaceTop)
+			{
+#if defined(VALGRIND_REQUEST_LOGS)	
+				VALGRIND_PRINTF("Skipping uBound %lx",*uBound);
+#endif /* defined(VALGRIND_REQUEST_LOGS) */
+				goto skip_valgrind;
+			}
+	
+			for(it = lBound;*it <= *uBound && it != setEnd;it++)
+			{
+#if defined(VALGRIND_REQUEST_LOGS)				
+				int objSize = (int) ( (GC_ObjectModel)_extensions->objectModel ).getConsumedSizeInBytesWithHeader( (omrobjectptr_t) *it);
+				VALGRIND_PRINTF("Clearing object at %lx of size %d = 0x%x\n", *it,objSize,objSize);
+#endif /* defined(VALGRIND_REQUEST_LOGS) */				
+				VALGRIND_MEMPOOL_FREE(_extensions->valgrindMempoolAddr,*it);
+			}
+			if(*uBound >= *lBound && uBound != setEnd)
+			{
+#if defined(VALGRIND_REQUEST_LOGS)				
+				VALGRIND_PRINTF("Erasing set from lBound = %lx to uBound = %lx\n",*lBound,*uBound);		
+#endif /* defined(VALGRIND_REQUEST_LOGS) */			
+				_extensions->_allocatedObjects.erase(lBound,++uBound);//uBound is exclusive
+			}
+		}
+		//The space is already dead (objects).... lets redefine so it can be poisoned!
+#if defined(VALGRIND_REQUEST_LOGS)	
+		VALGRIND_PRINTF_BACKTRACE("Marking region as defined at %lx of size %lu\n",(uintptr_t)_allocateSpaceBase,
+			(uintptr_t) _allocateSpaceTop - (uintptr_t) _allocateSpaceBase );
+#endif /* defined(VALGRIND_REQUEST_LOGS) */						
+		VALGRIND_MAKE_MEM_DEFINED((uintptr_t)_allocateSpaceBase,(uintptr_t) _allocateSpaceTop - (uintptr_t) _allocateSpaceBase);
+	}
+#endif /* defined(OMR_VALGRIND_MEMCHECK) */
+	
 	while (current < end) {
 		*current = pattern;
 		current += 1;
 	}
+	
+#if defined(OMR_VALGRIND_MEMCHECK)			
+	if((uintptr_t) _allocateSpaceTop > (uintptr_t) _allocateSpaceBase)
+	{
+skip_valgrind:
+			//remove range from valgrind
+#if defined(VALGRIND_REQUEST_LOGS)			
+		VALGRIND_PRINTF("Marking area as noaccess at %lx of size %lx (to %lx)\n",(uintptr_t)_allocateSpaceBase,
+			(uintptr_t) _allocateSpaceTop - (uintptr_t) _allocateSpaceBase,(uintptr_t) _allocateSpaceTop);	
+#endif /* (VALGRIND_REQUEST_LOGS) */		
+		
+		VALGRIND_MAKE_MEM_NOACCESS((uintptr_t)_allocateSpaceBase,(uintptr_t) _allocateSpaceTop - (uintptr_t) _allocateSpaceBase);
+	}
+#endif /* defined(OMR_VALGRIND_MEMCHECK) */	
 }
 
 void

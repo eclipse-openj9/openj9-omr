@@ -28,6 +28,10 @@
 
 #include "HeapLinkedFreeHeader.hpp"
 
+#if defined(OMR_VALGRIND_MEMCHECK)
+#include <valgrind/memcheck.h>
+#endif /* defined(OMR_VALGRIND_MEMCHECK) */
+
 #if defined(OMR_INTERP_COMPRESSED_OBJECT_HEADER) != defined(OMR_GC_COMPRESSED_POINTERS)
 #error "MutableHeaderFields requires sizeof(fomrobject_t) == sizeof(j9objectclass_t)"
 #endif /* defined(OMR_INTERP_COMPRESSED_OBJECT_HEADER) != defined(OMR_GC_COMPRESSED_POINTERS) */
@@ -249,7 +253,17 @@ public:
 	getReverseForwardedPointer()
 	{
 		ForwardedHeaderAssert(isReverseForwardedPointer());
-		return (omrobjectptr_t)MM_HeapLinkedFreeHeader::getHeapLinkedFreeHeader(_objectPtr)->getNext();
+		omrobjectptr_t returnPtr;
+		MM_HeapLinkedFreeHeader* freeHeader = MM_HeapLinkedFreeHeader::getHeapLinkedFreeHeader(_objectPtr);
+		returnPtr = (omrobjectptr_t) freeHeader->getNext();
+#if defined(OMR_VALGRIND_MEMCHECK)		
+		//getNext will mark _objectPtr as noaccess but the object is still alive
+#if defined(VALGRIND_REQUEST_LOGS)
+		VALGRIND_PRINTF("marked area defined at %p of size %lu\n",freeHeader,sizeof(MM_HeapLinkedFreeHeader));
+#endif /* defined(VALGRIND_REQUEST_LOGS) */		
+		VALGRIND_MAKE_MEM_DEFINED(freeHeader,sizeof(MM_HeapLinkedFreeHeader));
+#endif /* defined(OMR_VALGRIND_MEMCHECK) */
+		return returnPtr;
 	}
 
 	/**

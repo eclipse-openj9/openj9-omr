@@ -78,8 +78,7 @@ public:
    virtual bool isProtected();
    virtual bool isPublic();
    virtual bool isFinal();
-   virtual bool isDebugable();
-
+   
    virtual bool isInterpreted();
    virtual bool hasBackwardBranches();
    virtual bool isObjectConstructor();

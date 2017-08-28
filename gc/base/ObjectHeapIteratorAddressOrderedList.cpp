@@ -28,6 +28,10 @@
 
 #include "ObjectHeapIteratorAddressOrderedList.hpp"
 
+#if defined(OMR_VALGRIND_MEMCHECK)
+#include "MemcheckWrapper.hpp"
+#endif /* defined(OMR_VALGRIND_MEMCHECK) */
+
 /**
  * @see GC_ObjectHeapIterator::reset()
  */
@@ -64,40 +68,21 @@ GC_ObjectHeapIteratorAddressOrderedList::advanceScanPtr(uintptr_t increment)
 bool
 GC_ObjectHeapIteratorAddressOrderedList::shouldReturnCurrentObject() {
 	if(_scanPtr < _scanPtrTop) {
-#if defined(OMR_VALGRIND_MEMCHECK)		
-		std::set<uintptr_t>::iterator it;
-		it = _extensions->_allocatedObjects.find((uintptr_t)_scanPtr);
-		if(it==_extensions->_allocatedObjects.end()) //unallocated
-		{
-#if defined(VALGRIND_REQUEST_LOGS)		
-			VALGRIND_PRINTF_BACKTRACE("Marking area defined at %lx of size %lu\n",(uintptr_t)_scanPtr,sizeof(omrobjectptr_t));						
-#endif /* defined(VALGRIND_REQUEST_LOGS) */
-			VALGRIND_MAKE_MEM_DEFINED(_scanPtr,sizeof(omrobjectptr_t));
-		}
+#if defined(OMR_VALGRIND_MEMCHECK)
+		bool scanPtrObjExists = valgrindCheckObjectInPool(_extensions,(uintptr_t) _scanPtr);
+		if(!scanPtrObjExists) valgrindMakeMemDefined(((uintptr_t) _scanPtr),sizeof(omrobjectptr_t));
 #endif /* defined(OMR_VALGRIND_MEMCHECK) */		
 		_isDeadObject = _extensions->objectModel.isDeadObject(_scanPtr);
 #if defined(OMR_VALGRIND_MEMCHECK)
-		if(it==_extensions->_allocatedObjects.end())
-		{	
-#if defined(VALGRIND_REQUEST_LOGS)		
-			VALGRIND_PRINTF("Marking area noaccess at %lx of size %lu\n",(uintptr_t)_scanPtr,sizeof(omrobjectptr_t));						
-#endif /* defined(VALGRIND_REQUEST_LOGS) */			
-			VALGRIND_MAKE_MEM_NOACCESS(_scanPtr,sizeof(omrobjectptr_t));
-		}
+		if(!scanPtrObjExists) valgrindMakeMemNoaccess(((uintptr_t) _scanPtr),sizeof(omrobjectptr_t));
 #endif /* defined(OMR_VALGRIND_MEMCHECK) */		
 		if (_isDeadObject) {
 #if defined(OMR_VALGRIND_MEMCHECK)			
-			if(it==_extensions->_allocatedObjects.end())
-			{	//same location, no need to log
-				VALGRIND_MAKE_MEM_DEFINED(_scanPtr,sizeof(omrobjectptr_t));
-			}
+	if(!scanPtrObjExists) valgrindMakeMemDefined(((uintptr_t) _scanPtr),sizeof(omrobjectptr_t));
 #endif /* defined(OMR_VALGRIND_MEMCHECK) */					
 			_isSingleSlotHole = _extensions->objectModel.isSingleSlotDeadObject(_scanPtr);
 #if defined(OMR_VALGRIND_MEMCHECK)			
-			if(it==_extensions->_allocatedObjects.end())
-			{	
-				VALGRIND_MAKE_MEM_NOACCESS(_scanPtr,sizeof(omrobjectptr_t));
-			}
+	if(!scanPtrObjExists) valgrindMakeMemNoaccess(((uintptr_t) _scanPtr),sizeof(omrobjectptr_t));
 #endif /* defined(OMR_VALGRIND_MEMCHECK) */					
 			_deadObjectSize = computeDeadObjectSize();
 			return _includeDeadObjects;
@@ -126,30 +111,18 @@ GC_ObjectHeapIteratorAddressOrderedList::nextObjectNoAdvance() {
 	}
 
 #if defined(OMR_VALGRIND_MEMCHECK)			
-	std::set<uintptr_t>::iterator it;
+	bool scanPtrObjExists;
 #endif /* defined(OMR_VALGRIND_MEMCHECK) */						
 	while(_scanPtr < _scanPtrTop) {
 #if defined(OMR_VALGRIND_MEMCHECK)				
-		it = _extensions->_allocatedObjects.find((uintptr_t)_scanPtr);
-		if(it==_extensions->_allocatedObjects.end()) //unallocated
-		{	
-#if defined(VALGRIND_REQUEST_LOGS)		
-			VALGRIND_PRINTF_BACKTRACE("Marking area defined at %lx of size %lu\n",(uintptr_t)_scanPtr,sizeof(omrobjectptr_t));						
-#endif /* defined(VALGRIND_REQUEST_LOGS) */			
-			VALGRIND_MAKE_MEM_DEFINED(_scanPtr,sizeof(omrobjectptr_t));
-		}
+		scanPtrObjExists = valgrindCheckObjectInPool(_extensions,(uintptr_t) _scanPtr);
+		if(!scanPtrObjExists) valgrindMakeMemDefined(((uintptr_t) _scanPtr),sizeof(omrobjectptr_t));
 #endif /* defined(OMR_VALGRIND_MEMCHECK) */							
 		/* These flags were set before we returned the last object, but the object might have changed. */
 		_isDeadObject = _extensions->objectModel.isDeadObject(_scanPtr);
 		_isSingleSlotHole = _isDeadObject ? _extensions->objectModel.isSingleSlotDeadObject(_scanPtr) : false;
 #if defined(OMR_VALGRIND_MEMCHECK)				
-		if(it==_extensions->_allocatedObjects.end()) //unallocated
-		{	
-#if defined(VALGRIND_REQUEST_LOGS)		
-			VALGRIND_PRINTF("Marking area noaccess at %lx of size %lu\n",(uintptr_t)_scanPtr,sizeof(omrobjectptr_t));						
-#endif /* defined(VALGRIND_REQUEST_LOGS) */			
-			VALGRIND_MAKE_MEM_NOACCESS(_scanPtr,sizeof(omrobjectptr_t));
-		}
+	if(!scanPtrObjExists) valgrindMakeMemNoaccess(((uintptr_t) _scanPtr),sizeof(omrobjectptr_t));
 #endif /* defined(OMR_VALGRIND_MEMCHECK) */					
 		
 		if(!_isDeadObject) {
@@ -162,8 +135,8 @@ GC_ObjectHeapIteratorAddressOrderedList::nextObjectNoAdvance() {
 #endif /* OMR_GC_CONCURRENT_SCAVENGER */
 			{
 				/* either regular object, or self forwarded */
-				_scanPtr = (omrobjectptr_t) ( ((uintptr_t)_scanPtr) + _extensions->objectModel.getConsumedSizeInBytesWithHeader(_scanPtr) );
-			}
+						_scanPtr = (omrobjectptr_t) ( ((uintptr_t)_scanPtr) + _extensions->objectModel.getConsumedSizeInBytesWithHeader(_scanPtr) );
+				}
 		} else {
 			_deadObjectSize = computeDeadObjectSize();
 			advanceScanPtr( _deadObjectSize );

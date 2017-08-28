@@ -23,7 +23,7 @@
 #include "GCExtensionsBase.hpp"
 #include "NonVirtualMemory.hpp"
 #if defined(OMR_VALGRIND_MEMCHECK)
-#include <valgrind/memcheck.h>
+#include "MemcheckWrapper.hpp"
 #endif /* defined(OMR_VALGRIND_MEMCHECK) */
 
 MM_MemoryManager*
@@ -359,9 +359,7 @@ MM_MemoryManager::createVirtualMemoryForHeap(MM_EnvironmentBase* env, MM_MemoryH
 
 #if defined(OMR_VALGRIND_MEMCHECK)
 	//Use handle's Memory Base to refer valgrind memory pool
-	//1 lets valgrind know that objects will be defined when allocated
-	VALGRIND_CREATE_MEMPOOL(handle->getMemoryBase(), 0, 1);
-	extensions->valgrindMempoolAddr = (uintptr_t) handle->getMemoryBase();
+	valgrindCreateMempool(extensions, (uintptr_t)handle->getMemoryBase());
 #endif /* defined(OMR_VALGRIND_MEMCHECK) */
 
 	return NULL != instance;
@@ -509,16 +507,7 @@ MM_MemoryManager::destroyVirtualMemory(MM_EnvironmentBase* env, MM_MemoryHandle*
 	handle->setMemoryTop(NULL);
 
 #if defined(OMR_VALGRIND_MEMCHECK)
-	//clear valgrind mempool address
-	if(env->getExtensions()->valgrindMempoolAddr != 0)
-	{
-		//All objects should have been freed by now!
-		Assert_MM_true(env->getExtensions()->_allocatedObjects.empty());
-		
-		//Destroy mempool.
-		VALGRIND_DESTROY_MEMPOOL(env->getExtensions()->valgrindMempoolAddr);
-		env->getExtensions()->valgrindMempoolAddr = 0;
-	}
+	valgrindDestroyMempool(env->getExtensions());
 #endif /* defined(OMR_VALGRIND_MEMCHECK) */
 
 }

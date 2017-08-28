@@ -85,7 +85,7 @@
 #include "SublistSlotIterator.hpp"
 
 #if defined(OMR_VALGRIND_MEMCHECK)
-#include <valgrind/memcheck.h>
+#include "MemcheckWrapper.hpp"
 #endif /* defined(OMR_VALGRIND_MEMCHECK) */
 
 /* OMRTODO temporary workaround to allow both ut_j9mm.h and ut_omrmm.h to be included.
@@ -1359,12 +1359,7 @@ MM_Scavenger::copy(MM_EnvironmentStandard *env, MM_ForwardedHeader* forwardedHea
 #endif /* J9VM_INTERP_NATIVE_SUPPORT */
 
 #if defined(OMR_VALGRIND_MEMCHECK)
-		//Alocate the copied object
-#if defined(VALGRIND_REQUEST_LOGS)
-		VALGRIND_PRINTF_BACKTRACE("Allocated object %p of size %lu\n",destinationObjectPtr,objectCopySizeInBytes);
-#endif /* defined(VALGRIND_REQUEST_LOGS) */		
-		VALGRIND_MEMPOOL_ALLOC(_extensions->valgrindMempoolAddr,destinationObjectPtr,objectCopySizeInBytes);
-		_extensions->_allocatedObjects.insert((uintptr_t) destinationObjectPtr);
+		valgrindMempoolAlloc(_extensions,(uintptr_t) destinationObjectPtr,(uintptr_t)objectCopySizeInBytes);
 		/* We don't free original object here or in copyAndForward function because
 		 * 1. It is  needed back in case of backout.
 		   2. It's care is already taken when MM_MemoryPoolAddressOrderedListBase::createFreeEntry
@@ -3161,10 +3156,7 @@ MM_Scavenger::backoutFixupAndReverseForwardPointersInSurvivor(MM_EnvironmentStan
 					 * will make free header undefined
 					 * as they are mostly used in undefined memory. But here forwardedObject
 					 * is still alive. So we manually have to make it defined again. */
-					VALGRIND_MAKE_MEM_DEFINED(freeHeader,sizeof(MM_HeapLinkedFreeHeader));
-#if defined(VALGRIND_REQUEST_LOGS)
-					VALGRIND_PRINTF("marked area defined at %p of size %lu\n",freeHeader,sizeof(MM_HeapLinkedFreeHeader));
-#endif /* defined(VALGRIND_REQUEST_LOGS) */						
+					valgrindMakeMemDefined((uintptr_t)freeHeader,(uintptr_t) sizeof(MM_HeapLinkedFreeHeader));					
 #endif /* defined(OMR_VALGRIND_MEMCHECK) */					
 				}
 			}

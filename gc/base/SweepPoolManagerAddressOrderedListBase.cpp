@@ -36,7 +36,7 @@
 #include "ModronAssertions.h"
 
 #if defined(OMR_VALGRIND_MEMCHECK)
-#include <valgrind/memcheck.h>
+#include "MemcheckWrapper.hpp"
 #endif /* defined(OMR_VALGRIND_MEMCHECK) */
 
 /**
@@ -453,39 +453,7 @@ MM_SweepPoolManagerAddressOrderedListBase::addFreeMemory(MM_EnvironmentBase *env
 {
 #if defined(OMR_VALGRIND_MEMCHECK)
 	uintptr_t valgrindAreaSize = MM_Bits::convertSlotsToBytes(size);
-#if defined(VALGRIND_REQUEST_LOGS)	
-	VALGRIND_PRINTF_BACKTRACE("Clearing area between %lx - %lx and size %lu\n", (uintptr_t) address, (uintptr_t)address + valgrindAreaSize, valgrindAreaSize);
-#endif /* defined(VALGRIND_REQUEST_LOGS) */	
-	if(!_extensions->_allocatedObjects.empty())
-	{	
-		std::set<uintptr_t>::iterator it;
-		std::set<uintptr_t>::iterator setEnd = _extensions->_allocatedObjects.end();
-		std::set<uintptr_t>::iterator lBound = _extensions->_allocatedObjects.lower_bound((uintptr_t)address);
-		std::set<uintptr_t>::iterator uBound = --_extensions->_allocatedObjects.end();			
-		
-		uintptr_t closingAddr = (uintptr_t)address + valgrindAreaSize-1; //skip 1 extra byte due to sum
-		while(*uBound > closingAddr && uBound !=  _extensions->_allocatedObjects.begin())
-			uBound--;
-#if defined(VALGRIND_REQUEST_LOGS)	
-		VALGRIND_PRINTF("*lBound = %lx, *uBound = %lx\n",*lBound,*uBound);			
-#endif /* defined(VALGRIND_REQUEST_LOGS) */	
-			
-		for(it = lBound;*it <= *uBound && it != setEnd;it++)
-		{
-#if defined(VALGRIND_REQUEST_LOGS)				
-			int objSize = (int) ( (GC_ObjectModel)_extensions->objectModel ).getConsumedSizeInBytesWithHeader( (omrobjectptr_t) *it);
-			VALGRIND_PRINTF("Clearing object at %lx of size %d = 0x%x\n", *it,objSize,objSize);
-#endif /* defined(VALGRIND_REQUEST_LOGS) */				
-			VALGRIND_MEMPOOL_FREE(_extensions->valgrindMempoolAddr,*it);
-		}
-		if(*uBound >= *lBound && uBound != setEnd)
-		{
-#if defined(VALGRIND_REQUEST_LOGS)				
-		VALGRIND_PRINTF("Erasing set from lBound = %lx to uBound = %lx\n",*lBound,*uBound);		
-#endif /* defined(VALGRIND_REQUEST_LOGS) */							
-			_extensions->_allocatedObjects.erase(lBound,++uBound);//uBound is exclusive
-		}
-	}
+	valgrindClearRange(_extensions,(uintptr_t)address,valgrindAreaSize);	
 #endif /* defined(OMR_VALGRIND_MEMCHECK) */
 	bool result = false;
 	
@@ -545,11 +513,7 @@ MM_SweepPoolManagerAddressOrderedListBase::addFreeMemory(MM_EnvironmentBase *env
 
 		}
 		result = true;
-	}
-
-#if defined(VALGRIND_REQUEST_LOGS)			
-	VALGRIND_PRINTF("Done clearing area\n");
-#endif /* defined(VALGRIND_REQUEST_LOGS) */		
+	}	
 
 	return result;
 }

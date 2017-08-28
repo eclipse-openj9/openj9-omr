@@ -90,7 +90,7 @@ protected:
 	const uintptr_t _heapMapIndexShift;	/* number of low-order bits to be shifted out of heap address to obtain heap map slot index */
 	const uintptr_t _heapMapBitMask;	/* bit mask for capturing bit index within heap map slot from (unshifted) heap address */
 	const uintptr_t _heapMapBitShift;	/* number of low-order bits to be shifted out of captured bit index to obtain actual bit index */
-	 
+
 	MM_GCExtensionsBase *_extensions;
 
 	void *_heapBase;

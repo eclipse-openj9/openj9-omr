@@ -656,7 +656,6 @@ CCLINKEXE
 CCLINKSHARED
 CCLINK
 OMR_CROSS_COMPILE
-VALGRIND_REQUEST_LOGS
 OMR_VALGRIND_MEMCHECK
 OMR_GC_IDLE_HEAP_MANAGER
 OMRTHREAD_LIB_UNIX
@@ -886,7 +885,6 @@ enable_OMRTHREAD_LIB_ZOS
 enable_OMRTHREAD_LIB_UNIX
 enable_OMR_GC_IDLE_HEAP_MANAGER
 enable_OMR_VALGRIND_MEMCHECK
-enable_VALGRIND_REQUEST_LOGS
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1674,9 +1672,6 @@ Optional Features:
 
   --enable-OMR_VALGRIND_MEMCHECK
                           Integrate valgrind memcheck API. (Default: no)
-  --enable-VALGRIND_REQUEST_LOGS
-                          Display valgrind request logs in valgrind console.
-                          (Default: no)
 
 Some influential environment variables:
   SPEC        The SPEC to use. Sets up many configure settings without checks.
@@ -7292,25 +7287,6 @@ else
 fi
 else
   OMR_VALGRIND_MEMCHECK=0
-
-
-fi
-
-
-# Check whether --enable-VALGRIND_REQUEST_LOGS was given.
-if test "${enable_VALGRIND_REQUEST_LOGS+set}" = set; then :
-  enableval=$enable_VALGRIND_REQUEST_LOGS; if test "x${enableval}" = xyes; then :
-  VALGRIND_REQUEST_LOGS=1
-
-   $as_echo "#define VALGRIND_REQUEST_LOGS 1" >>confdefs.h
-
-else
-  VALGRIND_REQUEST_LOGS=0
-
-
-fi
-else
-  VALGRIND_REQUEST_LOGS=0
 
 
 fi

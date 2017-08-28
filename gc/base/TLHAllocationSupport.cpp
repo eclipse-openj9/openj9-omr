@@ -46,7 +46,7 @@
 #include "ObjectHeapIteratorAddressOrderedList.hpp"
 
 #if defined(OMR_VALGRIND_MEMCHECK)
-#include <valgrind/memcheck.h>
+#include "MemcheckWrapper.hpp"
 #endif /* defined(OMR_VALGRIND_MEMCHECK) */
 
 #if defined(OMR_GC_THREAD_LOCAL_HEAP)
@@ -175,22 +175,14 @@ MM_TLHAllocationSupport::refresh(MM_EnvironmentBase *env, MM_AllocateDescription
 		MM_HeapLinkedFreeHeaderTLH* newCache = (MM_HeapLinkedFreeHeaderTLH*)getRealAlloc();
 
 #if defined(OMR_VALGRIND_MEMCHECK)
-#if defined(VALGRIND_REQUEST_LOGS)		
-		VALGRIND_PRINTF_BACKTRACE("TLHAllocationSupport: marking area as defined at %p of size %lu\n",newCache,
-			sizeof(MM_HeapLinkedFreeHeaderTLH));
-#endif /* defined(VALGRIND_REQUEST_LOGS) */			
-		VALGRIND_MAKE_MEM_DEFINED(newCache, sizeof(MM_HeapLinkedFreeHeaderTLH));			
+		valgrindMakeMemDefined((uintptr_t)newCache, sizeof(MM_HeapLinkedFreeHeaderTLH));			
 #endif /* defined(OMR_VALGRIND_MEMCHECK) */
 	    newCache->setSize(getSize());
 		newCache->_memoryPool = getMemoryPool();
 		newCache->_memorySubSpace = getMemorySubSpace();
 		newCache->setNext(_abandonedList);
-#if defined(OMR_VALGRIND_MEMCHECK)
-#if defined(VALGRIND_REQUEST_LOGS)		
-		VALGRIND_PRINTF("TLHAllocationSupport: marking area as noaccess at %p of size %lu\n",newCache,
-			sizeof(MM_HeapLinkedFreeHeaderTLH));
-#endif /* defined(VALGRIND_REQUEST_LOGS) */						
-		VALGRIND_MAKE_MEM_NOACCESS(newCache, sizeof(MM_HeapLinkedFreeHeaderTLH));
+#if defined(OMR_VALGRIND_MEMCHECK)					
+		valgrindMakeMemNoaccess((uintptr_t)newCache, sizeof(MM_HeapLinkedFreeHeaderTLH));
 #endif /* defined(OMR_VALGRIND_MEMCHECK) */
 		_abandonedList = newCache;
 		++_abandonedListSize;
@@ -206,21 +198,13 @@ MM_TLHAllocationSupport::refresh(MM_EnvironmentBase *env, MM_AllocateDescription
 	/* Try allocating a TLH */
 	if ((NULL != _abandonedList) && (sizeInBytesRequired <= tlhMinimumSize)) {
 		/* Try to get a cached TLH */
-#if defined(OMR_VALGRIND_MEMCHECK)
-#if defined(VALGRIND_REQUEST_LOGS)		
-		VALGRIND_PRINTF_BACKTRACE("TLHAllocationSupport: marking area as defined at %p of size %lu\n",_abandonedList,
-			sizeof(MM_HeapLinkedFreeHeaderTLH));
-#endif /* defined(VALGRIND_REQUEST_LOGS) */			
-		VALGRIND_MAKE_MEM_DEFINED(_abandonedList, sizeof(MM_HeapLinkedFreeHeaderTLH));			
+#if defined(OMR_VALGRIND_MEMCHECK)	
+		valgrindMakeMemDefined((uintptr_t)_abandonedList, sizeof(MM_HeapLinkedFreeHeaderTLH));			
 #endif /* defined(OMR_VALGRIND_MEMCHECK) */
 		setupTLH(env, (void *)_abandonedList, (void *)_abandonedList->afterEnd(),
 				_abandonedList->_memorySubSpace, _abandonedList->_memoryPool);
-#if defined(OMR_VALGRIND_MEMCHECK)
-#if defined(VALGRIND_REQUEST_LOGS)		
-		VALGRIND_PRINTF("TLHAllocationSupport: marking area as noaccess at %p of size %lu\n",_abandonedList,
-			sizeof(MM_HeapLinkedFreeHeaderTLH));
-#endif /* defined(VALGRIND_REQUEST_LOGS) */						
-		VALGRIND_MAKE_MEM_NOACCESS(_abandonedList, sizeof(MM_HeapLinkedFreeHeaderTLH));
+#if defined(OMR_VALGRIND_MEMCHECK)					
+		valgrindMakeMemNoaccess((uintptr_t)_abandonedList, sizeof(MM_HeapLinkedFreeHeaderTLH));
 #endif /* defined(OMR_VALGRIND_MEMCHECK) */
 		_abandonedList = (MM_HeapLinkedFreeHeaderTLH *)_abandonedList->getNext();
 		--_abandonedListSize;

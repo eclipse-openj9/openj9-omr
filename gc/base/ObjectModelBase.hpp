@@ -364,11 +364,10 @@ public:
 		fomrobject_t *headerSlotPtr = getObjectHeaderSlotAddress((omrobjectptr_t)objectPtr);
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
 		/* for ConcurrentScavenger, forwarded bit must be 0, otherwise it's a self-forwarded object */
-		bool result = (J9_GC_OBJ_HEAP_HOLE == (*headerSlotPtr & (J9_GC_OBJ_HEAP_HOLE | OMR_FORWARDED_TAG)));
+		return J9_GC_OBJ_HEAP_HOLE == (*headerSlotPtr & (J9_GC_OBJ_HEAP_HOLE | OMR_FORWARDED_TAG));
 #else
-		bool result = (J9_GC_OBJ_HEAP_HOLE == (*headerSlotPtr & J9_GC_OBJ_HEAP_HOLE));
+		return J9_GC_OBJ_HEAP_HOLE == (*headerSlotPtr & J9_GC_OBJ_HEAP_HOLE);
 #endif /* OMR_GC_CONCURRENT_SCAVENGER */
-		return result;
 	}
 
 	/**

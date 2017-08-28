@@ -239,9 +239,4 @@
  */
 #undef OMR_VALGRIND_MEMCHECK
 
-/**
- * Display valgrind request logs in valgrind console
- */
-#undef VALGRIND_REQUEST_LOGS
-
 #endif /* !defined(OMRCFG_H_) */

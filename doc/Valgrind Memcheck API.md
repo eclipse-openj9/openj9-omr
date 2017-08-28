@@ -1,3 +1,20 @@
+<!--
+(c) Copyright IBM Corp. 2017, 2017
+
+This program and the accompanying materials are made available
+under the terms of the Eclipse Public License v1.0 and
+Apache License v2.0 which accompanies this distribution.
+
+    The Eclipse Public License is available at
+    http://www.eclipse.org/legal/epl-v10.html
+
+    The Apache License v2.0 is available at
+    http://www.opensource.org/licenses/apache2.0.php
+
+Contributors:
+  Varun Garg - initial implementation and documentation
+-->
+
 # Valgrind Memchek API
 
 ## About Memcheck
@@ -101,4 +118,5 @@ Valgrind can be hooked with gdb. Not all gdb commands are supported (example run
 
 5. `monitor leak_check` run this to get valgrind leak summary of program at the moment.
 
-5. `monitor v.kill` this command will kill valgrind vgdb process.
+6. `monitor v.kill` this command will kill valgrind vgdb process.
+

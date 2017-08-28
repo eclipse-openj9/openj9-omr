@@ -27,10 +27,6 @@ We have used following valgrind API requests:
 
 8. `VALGRIND_PRINTF(format, ...)` and `VALGRIND_PRINTF_BACKTRACE(format, ...)` - These requests print messages on valgrind terminal. We use them to  print request logs with stack trace. They are placed to debug internal integration of API. To enable them turn on `VALGRIND_REQUEST_LOGS` in MemcheckWrapper.
 
-## Using API from GC (internal use)
-
-All api requests are made using a wrapper file `MemcheckWrapper.cpp`. Refer `MemcheckWrapper.hpp`for more documentation.
-
 ## Different Ways of freeing objects in Valgrind.
 
 API request `VALGRIND_MEMPOOL_FREE(pool, addr)` requires us to have base address of object that we are attempting to free. GC keeps a record of the heap areas that are available or free. The GC is informed of the live objects during the marking phase of the GC in `MM_MarkingDelegate::scanRoots`, where all live objects are noted. The GC combines all unused memory into a "free list" which is used for future allocations. Proper Valgrind integration requires `VALGRIND_MEMPOOL_FREE` to be called on each object freed during a garbage collection, which is not something that the GC tracks
@@ -43,8 +39,11 @@ There are 3 workarounds for this issue.
 
  3. Adding new valgrind API: Valgrind already has the list of allocated objects, so it should be possible for it to find the objects in a range and also free them. A patch has been made for this and it is in their mailing lists for review. https://sourceforge.net/p/valgrind/mailman/message/35996446/ . This does not require to have a track of allocated objects. This should be best solution, but until it is merged in their code, it will be difficult to use.
 
+## Debugging and extending API usage in GC
+
+All api requests are made using a wrapper file `MemcheckWrapper.cpp`. Refer `MemcheckWrapper.hpp`for more documentation. Enable `VALGRIND_REQUEST_LOGS` to get verbose logs/
+
 ## Running Valgrind
-Everything is ready now.
 
 1. **Preparing Makefiles** - To compile with valgrind API enabled, use build option  `--enable-OMR_VALGRIND_MEMCHECK` while generating makefiles. Valgrind documentation also recommends turning off optimizations. Their docs say:
     > If you are planning to use Memcheck: On rare occasions, compiler optimisations (at -O2 and above, and sometimes -O1) have been observed to generate code which fools Memcheck into wrongly reporting uninitialised value errors.

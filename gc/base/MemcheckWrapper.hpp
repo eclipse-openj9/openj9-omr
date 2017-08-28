@@ -23,6 +23,9 @@
 #ifndef _MEMCHECK_WRAPPER_H_
 #define _MEMCHECK_WRAPPER_H_
 
+#include "omrcfg.h"
+#if defined(OMR_VALGRIND_MEMCHECK)
+
 #include <set>
 #include "stdint.h"
 
@@ -109,5 +112,7 @@ void valgrindFreeObject(MM_GCExtensionsBase *extensions, uintptr_t baseAddress);
  *
 */
 bool valgrindCheckObjectInPool(MM_GCExtensionsBase *extensions, uintptr_t baseAddress);
+
+#endif /* defined(OMR_VALGRIND_MEMCHECK) */
 
 #endif /* _MEMCHECK_WRAPPER_H_ */

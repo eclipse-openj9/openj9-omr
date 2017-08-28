@@ -20,6 +20,9 @@
  * Wrapper for communication between valgrind and GC.
 */
 
+#include "omrcfg.h"
+#if defined(OMR_VALGRIND_MEMCHECK)
+
 #include "MemcheckWrapper.hpp"
 #include "GCExtensionsBase.hpp"
 
@@ -127,3 +130,5 @@ bool valgrindCheckObjectInPool(MM_GCExtensionsBase *extensions, uintptr_t baseAd
 {
     return (extensions->_allocatedObjects.find(baseAddress) != extensions->_allocatedObjects.end());
 }
+
+#endif /* defined(OMR_VALGRIND_MEMCHECK) */

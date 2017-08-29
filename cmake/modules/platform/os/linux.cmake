@@ -45,10 +45,6 @@ elseif(OMR_HOST_ARCH STREQUAL "s390")
 	)
 endif()
 
-list(APPEND OMR_PLATFORM_COMPILE_OPTIONS
-	-pthread
-)
-
 # Check that we need to pull librt to get clock_gettime/settime family of functions
 if(NOT DEFINED OMR_NEED_LIBRT)
 	check_symbol_exists(clock_gettime time.h OMR_LIBC_HAS_CLOCK_GETTIME)
@@ -61,8 +57,8 @@ if(NOT DEFINED OMR_NEED_LIBRT)
 	mark_as_advanced(OMR_NEED_LIBRT)
 endif()
 
-
 # Testarossa build variables. Longer term the distinction between TR and the rest 
 # of the OMR code should be heavily reduced. In the mean time, we keep
 # the distinction
 list(APPEND TR_COMPILE_DEFINITIONS -DSUPPORTS_THREAD_LOCAL -DLINUX)
+

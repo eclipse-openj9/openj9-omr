@@ -21,7 +21,6 @@ include(OmrUtility)
 set(OMR_WARNING_AS_ERROR_FLAG /WX)
 
 list(APPEND OMR_PLATFORM_COMPILE_OPTIONS
-	/MD     # Use a multithreaded runtime dll
 	/GR-    # Disable RTTI
 	/Zm400  # Precompiled header memory allocation limit
 	/wd4577 # Disable warning: Specifying noexcept when exceptions are disabled

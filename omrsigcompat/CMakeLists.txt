@@ -16,6 +16,8 @@
 #    Multiple authors (IBM Corp.) - initial implementation and documentation
 ###############################################################################
 
+include(OmrMsvcRuntime)
+
 add_library(omrsig SHARED
 	omrsig.cpp
 )
@@ -29,20 +31,16 @@ set(exportedSyms
 
 #for now only export symbols on windows
 if(OMR_HOST_OS STREQUAL "win")
+
 	file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/omrsig.exportlist" "EXPORTS\n" )
 	foreach(exportSymbol ${exportedSyms})
 		file(APPEND "${CMAKE_CURRENT_BINARY_DIR}/omrsig.exportlist" "${exportSymbol}\n" )
 	endforeach()
+
 	set_target_properties(omrsig
 		PROPERTIES LINK_FLAGS "-def:${CMAKE_CURRENT_BINARY_DIR}/omrsig.exportlist")
-	set(CRT_DLL "MSVC100.dll")
-	#TODO: below assumes we are using debug builds
-	if(MSVC12)
-		set(CRT_DLL "MSVC120d.dll")
-	elseif(MSVC14)
-		set(CRT_DLL "ucrtbased.dll")
-	endif()
-	target_compile_definitions(omrsig PRIVATE -DMSVC_RUNTIME_DLL="${CRT_DLL}")
+
+	target_compile_definitions(omrsig PRIVATE -DMSVC_RUNTIME_DLL="${OMR_MSVC_CRT}")
 endif()
 
 #Symbols exported from source makefile:

@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2015
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -29,6 +29,10 @@
 #include "MemoryManager.hpp"
 #include "MemorySubSpace.hpp"
 #include "PhysicalArena.hpp"
+
+#if defined(OMR_VALGRIND_MEMCHECK)
+#include "MemcheckWrapper.hpp"
+#endif /* defined(OMR_VALGRIND_MEMCHECK) */
 
 #define HIGH_ADDRESS UDATA_MAX
 #define OVERFLOW_ROUNDING ((uintptr_t)16 * 1024)
@@ -341,6 +345,10 @@ MM_HeapVirtualMemory::heapAddRange(MM_EnvironmentBase* env, MM_MemorySubSpace* s
 	
 	env->getExtensions()->identityHashDataAddRange(env, subspace, size, lowAddress, highAddress);
 
+#if defined(OMR_VALGRIND_MEMCHECK)
+	valgrindMakeMemNoaccess((uintptr_t)lowAddress,size);
+#endif /* defined(OMR_VALGRIND_MEMCHECK) */
+
 	return result;
 }
 
@@ -362,6 +370,12 @@ MM_HeapVirtualMemory::heapRemoveRange(MM_EnvironmentBase* env, MM_MemorySubSpace
 	}
 
 	env->getExtensions()->identityHashDataRemoveRange(env, subspace, size, lowAddress, highAddress);
+
+#if defined(OMR_VALGRIND_MEMCHECK)
+	//remove heap range from valgrind
+	valgrindClearRange(env->getExtensions(),(uintptr_t)lowAddress,size);
+	valgrindMakeMemNoaccess((uintptr_t)lowAddress,size);
+#endif /* defined(OMR_VALGRIND_MEMCHECK) */
 
 	return result;
 }

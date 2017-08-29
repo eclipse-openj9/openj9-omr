@@ -656,6 +656,7 @@ CCLINKEXE
 CCLINKSHARED
 CCLINK
 OMR_CROSS_COMPILE
+OMR_VALGRIND_MEMCHECK
 OMR_GC_IDLE_HEAP_MANAGER
 OMRTHREAD_LIB_UNIX
 OMRTHREAD_LIB_ZOS
@@ -883,6 +884,7 @@ enable_OMRTHREAD_LIB_WIN32
 enable_OMRTHREAD_LIB_ZOS
 enable_OMRTHREAD_LIB_UNIX
 enable_OMR_GC_IDLE_HEAP_MANAGER
+enable_OMR_VALGRIND_MEMCHECK
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1668,6 +1670,8 @@ Optional Features:
 
   --enable-OMR_GC_IDLE_HEAP_MANAGER
 
+  --enable-OMR_VALGRIND_MEMCHECK
+                          Integrate valgrind memcheck API. (Default: no)
 
 Some influential environment variables:
   SPEC        The SPEC to use. Sets up many configure settings without checks.
@@ -7264,6 +7268,25 @@ else
 fi
 else
   OMR_GC_IDLE_HEAP_MANAGER=0
+
+
+fi
+
+
+# Check whether --enable-OMR_VALGRIND_MEMCHECK was given.
+if test "${enable_OMR_VALGRIND_MEMCHECK+set}" = set; then :
+  enableval=$enable_OMR_VALGRIND_MEMCHECK; if test "x${enableval}" = xyes; then :
+  OMR_VALGRIND_MEMCHECK=1
+
+   $as_echo "#define OMR_VALGRIND_MEMCHECK 1" >>confdefs.h
+
+else
+  OMR_VALGRIND_MEMCHECK=0
+
+
+fi
+else
+  OMR_VALGRIND_MEMCHECK=0
 
 
 fi

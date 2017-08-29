@@ -70,6 +70,10 @@
 #undef UT_MODULE_UNLOADED
 #include "ut_omrmm.h"
 
+#if defined(OMR_VALGRIND_MEMCHECK)
+#include "MemcheckWrapper.hpp"
+#endif /* defined(OMR_VALGRIND_MEMCHECK) */
+
 /* Define hook routines to be called on AF start and End */
 static void globalGCHookAFCycleStart(J9HookInterface** hook, uintptr_t eventNum, void* eventData, void* userData);
 static void globalGCHookAFCycleEnd(J9HookInterface** hook, uintptr_t eventNum, void* eventData, void* userData);
@@ -97,6 +101,16 @@ fixObject(OMR_VMThread *omrVMThread, MM_HeapRegionDescriptor *region, omrobjectp
 	if( !collector->getMarkingScheme()->isMarked(object) ) {
 		MM_MemorySubSpace *memorySubSpace = region->getSubSpace();
 		uintptr_t deadObjectByteSize = extensions->objectModel.getConsumedSizeInBytesWithHeader(object);
+#if defined(OMR_VALGRIND_MEMCHECK)
+		/* Also clear dead object from valgrind pool
+		 * This could have been done directly inside internalRecycleHeapChunk (MemoryPoolAddressOrderedListBase.hpp)
+		 * but due to current limitation of API that requires address of object to be freed
+		 * which we need to check from a set stored in extensions, which weren't further passed
+		 * we will check it here. But in case new API is added, it is better to move there.
+		*/
+		if(valgrindCheckObjectInPool(extensions,(uintptr_t) object))
+			valgrindFreeObject(extensions,(uintptr_t) object);
+#endif /* defined(OMR_VALGRIND_MEMCHECK) */
 		memorySubSpace->abandonHeapChunk(object, ((U_8*)object) + deadObjectByteSize);
 		/* the userdata is a counter of dead objects fixed up so increment it here as a uintptr_t */
 		*((uintptr_t *)userData) += 1;

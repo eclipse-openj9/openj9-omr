@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2015
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -38,6 +38,10 @@
 #include "HeapLinkedFreeHeader.hpp"
 #include "Heap.hpp"
 
+#if defined(OMR_VALGRIND_MEMCHECK)
+#include "MemcheckWrapper.hpp"
+#endif /* defined(OMR_VALGRIND_MEMCHECK) */
+
 /****************************************
  * Allocation
  ****************************************
@@ -70,7 +74,12 @@ MM_MemoryPoolAddressOrderedListBase::createFreeEntry(MM_EnvironmentBase* env, vo
 	/* Sanity checks -- should never create an out of order link */
 	assume0((NULL == nextFreeEntry) || (nextFreeEntry > addrTop));
 
+#if defined(OMR_VALGRIND_MEMCHECK)
+	valgrindClearRange(env->getExtensions(),(uintptr_t) addrBase,(uintptr_t)addrTop - (uintptr_t)addrBase);
+#endif /* defined(OMR_VALGRIND_MEMCHECK) */
+	
 	if (internalRecycleHeapChunk(addrBase, addrTop, nextFreeEntry)) {
+
 		/* The range is big enough for the free list, so link the previous to it */
 		if (previousFreeEntry) {
 			assume0(previousFreeEntry < addrBase);

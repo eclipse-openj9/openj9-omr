@@ -1,6 +1,6 @@
 ###############################################################################
 #
-# (c) Copyright IBM Corp. 2015, 2016
+# (c) Copyright IBM Corp. 2015, 2017
 #
 #  This program and the accompanying materials are made available
 #  under the terms of the Eclipse Public License v1.0 and
@@ -516,6 +516,7 @@ AS_IF([[test "x$enable_DDR" = "xyes"] && [test "$cross_compiling" != "yes"] && [
 )
 
 OMRCFG_DEFINE_FLAG_OFF([OMR_GC_IDLE_HEAP_MANAGER])
+OMRCFG_DEFINE_FLAG_OFF([OMR_VALGRIND_MEMCHECK], [], [Integrate valgrind memcheck API. (Default: no)])
 
 ###
 ### Variable Substitution

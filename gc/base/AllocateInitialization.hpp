@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2015
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -34,6 +34,9 @@
 #include "ObjectAllocationInterface.hpp"
 #include "ObjectModel.hpp"
 
+#if defined(OMR_VALGRIND_MEMCHECK)
+#include "MemcheckWrapper.hpp"
+#endif /* defined(OMR_VALGRIND_MEMCHECK) */
 /**
  * Base class for language-specific object allocation and initialization. Subclasses
  * must complete initialization of the attached MM_AllocateDescription before calling
@@ -197,6 +200,10 @@ public:
 			_allocateDescription.setAllocationSucceeded(NULL != heapBytes);
 
 			if (NULL != heapBytes) {
+#if defined(OMR_VALGRIND_MEMCHECK)
+				valgrindMempoolAlloc(env->getExtensions(),(uintptr_t) heapBytes, _allocateDescription.getBytesRequested());
+#endif /* defined(OMR_VALGRIND_MEMCHECK) */
+
 				/* wipe allocated space if requested and allowed (NON_ZERO_TLH flag set inhibits zeroing) */
 				if (shouldZeroMemory(env)) {
 					OMRZeroMemory(heapBytes, _allocateDescription.getContiguousBytes());

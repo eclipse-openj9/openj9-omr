@@ -84,6 +84,10 @@
 #include "SublistPuddle.hpp"
 #include "SublistSlotIterator.hpp"
 
+#if defined(OMR_VALGRIND_MEMCHECK)
+#include "MemcheckWrapper.hpp"
+#endif /* defined(OMR_VALGRIND_MEMCHECK) */
+
 /* OMRTODO temporary workaround to allow both ut_j9mm.h and ut_omrmm.h to be included.
  *                 Dependency on ut_j9mm.h should be removed in the future.
  */
@@ -1354,6 +1358,14 @@ MM_Scavenger::copy(MM_EnvironmentStandard *env, MM_ForwardedHeader* forwardedHea
 			MM_HeapLinkedFreeHeader::fillWithHoles(hotFieldPadBase, hotFieldPadSize);
 		}
 #endif /* J9VM_INTERP_NATIVE_SUPPORT */
+
+#if defined(OMR_VALGRIND_MEMCHECK)
+		valgrindMempoolAlloc(_extensions,(uintptr_t) destinationObjectPtr,(uintptr_t)objectCopySizeInBytes);
+		/* We don't free original object here or in copyAndForward function because
+		 * 1. It is  needed back in case of backout.
+		   2. It's care is already taken when MM_MemoryPoolAddressOrderedListBase::createFreeEntry
+			  is called during end of scavanger cycle. */
+#endif /* defined(OMR_VALGRIND_MEMCHECK) */
 
 		memcpy((void *)destinationObjectPtr, forwardedHeader->getObject(), objectCopySizeInBytes);
 
@@ -3132,7 +3144,7 @@ MM_Scavenger::backoutFixupAndReverseForwardPointersInSurvivor(MM_EnvironmentStan
 					/* A reverse forwarded object is a hole whose 'next' pointer actually points at the original object.
 					 * This keeps tenure space walkable once the reverse forwarded objects are abandoned.
 					 */
-					UDATA evacuateObjectSizeInBytes = _extensions->objectModel.getConsumedSizeInBytesWithHeader(forwardedObject);
+					UDATA evacuateObjectSizeInBytes = _extensions->objectModel.getConsumedSizeInBytesWithHeader(forwardedObject);					
 					MM_HeapLinkedFreeHeader* freeHeader = MM_HeapLinkedFreeHeader::getHeapLinkedFreeHeader(forwardedObject);
 					freeHeader->setNext((MM_HeapLinkedFreeHeader*)originalObject);
 					freeHeader->setSize(evacuateObjectSizeInBytes);
@@ -3140,6 +3152,13 @@ MM_Scavenger::backoutFixupAndReverseForwardPointersInSurvivor(MM_EnvironmentStan
 					omrtty_printf("{SCAV: Back out forward pointer %p[%p]@%p -> %p[%p]}\n", objectPtr, *objectPtr, forwardedObject, freeHeader->getNext(), freeHeader->getSize());
 					Assert_MM_true(objectPtr == originalObject);
 #endif /* OMR_SCAVENGER_TRACE_BACKOUT */
+#if defined(OMR_VALGRIND_MEMCHECK)
+					/* Above methods setNext(), setSize(), getNext() and getSize()
+					 * will make free header undefined
+					 * as they are mostly used in undefined memory. But here forwardedObject
+					 * is still alive. So we manually have to make it defined again. */
+					valgrindMakeMemDefined((uintptr_t)freeHeader,(uintptr_t) sizeof(MM_HeapLinkedFreeHeader));					
+#endif /* defined(OMR_VALGRIND_MEMCHECK) */					
 				}
 			}
 		}
@@ -3288,6 +3307,7 @@ MM_Scavenger::processRememberedSetInBackout(MM_EnvironmentStandard *env)
 		 */
 
 #if defined(OMR_SCAVENGER_TRACE_BACKOUT)
+		OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
 		omrtty_printf("{SCAV: Back out RS list}\n");
 #endif /* OMR_SCAVENGER_TRACE_BACKOUT */
 

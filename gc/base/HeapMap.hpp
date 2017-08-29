@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2016
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -131,6 +131,7 @@ public:
 	getSlotIndexAndMask(omrobjectptr_t objectPtr, uintptr_t *slotIndex, uintptr_t *bitMask)
 	{
 		uintptr_t slot = ((uintptr_t)objectPtr) - _heapMapBaseDelta;
+		// _heapBitMask is in order of 2^n -1, and val % 2^n = val & (2^n -1)
 		uintptr_t bitIndex = (slot & _heapMapBitMask) >> _heapMapBitShift;
 		*bitMask = (((uintptr_t)1) << bitIndex);
 		*slotIndex = slot >> _heapMapIndexShift;

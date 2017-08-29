@@ -45,6 +45,8 @@
 #include "ScavengerStats.hpp"
 #include "SublistPool.hpp"
 
+#include <set>
+
 class MM_CardTable;
 class MM_ClassLoaderRememberedSet;
 class MM_Collector;
@@ -723,6 +725,11 @@ public:
 	bool gcOnIdle; /**< Enables releasing free heap pages if true while systemGarbageCollect invoked with IDLE GC code, default is false */
 	bool compactOnIdle; /**< Forces compaction if global GC executed while VM Runtime State set to IDLE, default is false */
 #endif
+
+#if defined(OMR_VALGRIND_MEMCHECK)
+	uintptr_t valgrindMempoolAddr; /** <Memory pool's address for valgrind> **/
+	std::set<uintptr_t> _allocatedObjects;
+#endif /* defined(OMR_VALGRIND_MEMCHECK) */
 
 	/* Function Members */
 private:

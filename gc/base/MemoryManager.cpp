@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2016
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -22,6 +22,9 @@
 #include "ModronAssertions.h"
 #include "GCExtensionsBase.hpp"
 #include "NonVirtualMemory.hpp"
+#if defined(OMR_VALGRIND_MEMCHECK)
+#include "MemcheckWrapper.hpp"
+#endif /* defined(OMR_VALGRIND_MEMCHECK) */
 
 MM_MemoryManager*
 MM_MemoryManager::newInstance(MM_EnvironmentBase* env)
@@ -354,6 +357,11 @@ MM_MemoryManager::createVirtualMemoryForHeap(MM_EnvironmentBase* env, MM_MemoryH
 		}
 	}
 
+#if defined(OMR_VALGRIND_MEMCHECK)
+	//Use handle's Memory Base to refer valgrind memory pool
+	valgrindCreateMempool(extensions, (uintptr_t)handle->getMemoryBase());
+#endif /* defined(OMR_VALGRIND_MEMCHECK) */
+
 	return NULL != instance;
 }
 
@@ -497,6 +505,11 @@ MM_MemoryManager::destroyVirtualMemory(MM_EnvironmentBase* env, MM_MemoryHandle*
 	handle->setVirtualMemory(NULL);
 	handle->setMemoryBase(NULL);
 	handle->setMemoryTop(NULL);
+
+#if defined(OMR_VALGRIND_MEMCHECK)
+	valgrindDestroyMempool(env->getExtensions());
+#endif /* defined(OMR_VALGRIND_MEMCHECK) */
+
 }
 
 bool

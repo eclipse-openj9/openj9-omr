@@ -45,6 +45,10 @@
 #include "ObjectAllocationInterface.hpp"
 #include "ObjectHeapIteratorAddressOrderedList.hpp"
 
+#if defined(OMR_VALGRIND_MEMCHECK)
+#include "MemcheckWrapper.hpp"
+#endif /* defined(OMR_VALGRIND_MEMCHECK) */
+
 #if defined(OMR_GC_THREAD_LOCAL_HEAP)
 /**
  * Report clearing of a full allocation cache
@@ -169,10 +173,17 @@ MM_TLHAllocationSupport::refresh(MM_EnvironmentBase *env, MM_AllocateDescription
 	if (NULL != getRealAlloc() && getSize() >= tlhMinimumSize) {
 		/* Cache the current TLH because it is bigger than the minimum size */
 		MM_HeapLinkedFreeHeaderTLH* newCache = (MM_HeapLinkedFreeHeaderTLH*)getRealAlloc();
-		newCache->setSize(getSize());
+
+#if defined(OMR_VALGRIND_MEMCHECK)
+		valgrindMakeMemDefined((uintptr_t)newCache, sizeof(MM_HeapLinkedFreeHeaderTLH));			
+#endif /* defined(OMR_VALGRIND_MEMCHECK) */
+	    newCache->setSize(getSize());
 		newCache->_memoryPool = getMemoryPool();
 		newCache->_memorySubSpace = getMemorySubSpace();
 		newCache->setNext(_abandonedList);
+#if defined(OMR_VALGRIND_MEMCHECK)					
+		valgrindMakeMemNoaccess((uintptr_t)newCache, sizeof(MM_HeapLinkedFreeHeaderTLH));
+#endif /* defined(OMR_VALGRIND_MEMCHECK) */
 		_abandonedList = newCache;
 		++_abandonedListSize;
 		if (_abandonedListSize > stats->_tlhMaxAbandonedListSize) {
@@ -187,9 +198,14 @@ MM_TLHAllocationSupport::refresh(MM_EnvironmentBase *env, MM_AllocateDescription
 	/* Try allocating a TLH */
 	if ((NULL != _abandonedList) && (sizeInBytesRequired <= tlhMinimumSize)) {
 		/* Try to get a cached TLH */
+#if defined(OMR_VALGRIND_MEMCHECK)	
+		valgrindMakeMemDefined((uintptr_t)_abandonedList, sizeof(MM_HeapLinkedFreeHeaderTLH));			
+#endif /* defined(OMR_VALGRIND_MEMCHECK) */
 		setupTLH(env, (void *)_abandonedList, (void *)_abandonedList->afterEnd(),
 				_abandonedList->_memorySubSpace, _abandonedList->_memoryPool);
-
+#if defined(OMR_VALGRIND_MEMCHECK)					
+		valgrindMakeMemNoaccess((uintptr_t)_abandonedList, sizeof(MM_HeapLinkedFreeHeaderTLH));
+#endif /* defined(OMR_VALGRIND_MEMCHECK) */
 		_abandonedList = (MM_HeapLinkedFreeHeaderTLH *)_abandonedList->getNext();
 		--_abandonedListSize;
 

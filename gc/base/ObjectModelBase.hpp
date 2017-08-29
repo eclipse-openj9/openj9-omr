@@ -367,7 +367,7 @@ public:
 		return J9_GC_OBJ_HEAP_HOLE == (*headerSlotPtr & (J9_GC_OBJ_HEAP_HOLE | OMR_FORWARDED_TAG));
 #else
 		return J9_GC_OBJ_HEAP_HOLE == (*headerSlotPtr & J9_GC_OBJ_HEAP_HOLE);
-#endif /* OMR_GC_CONCURRENT_SCAVENGER */ 		
+#endif /* OMR_GC_CONCURRENT_SCAVENGER */
 	}
 
 	/**
@@ -379,7 +379,8 @@ public:
 	isSingleSlotDeadObject(omrobjectptr_t objectPtr)
 	{
 		fomrobject_t *headerSlotPtr = getObjectHeaderSlotAddress((omrobjectptr_t)objectPtr);
-		return J9_GC_SINGLE_SLOT_HOLE == (*headerSlotPtr & J9_GC_OBJ_HEAP_HOLE_MASK);
+		bool result = (J9_GC_SINGLE_SLOT_HOLE == (*headerSlotPtr & J9_GC_OBJ_HEAP_HOLE_MASK));
+		return result;
 	}
 
 	/**

@@ -87,7 +87,6 @@ testMain(int argc, char ** argv, char **envp)
 	uintptr_t allocatedFlags = 0;
 	uintptr_t allocSize = 24;
 	uintptr_t allocatedCount = 0;
-	uintptr_t adjustedSize = extensions->objectModel.adjustSizeInBytes(allocSize);
 	while (true) {
 		MM_ObjectAllocationModel allocationModel(env, allocSize, allocatedFlags);
 		omrobjectptr_t obj = (omrobjectptr_t)OMR_GC_AllocateObject(omrVMThread, &allocationModel);
@@ -109,9 +108,6 @@ testMain(int argc, char ** argv, char **envp)
 	MM_AllocationStats *allocationStats = allocationInterface->getAllocationStats();
 	omrtty_printf("thread allocated %d tlh bytes, %d non-tlh bytes, from %d allocations before NULL\n",
 		allocationStats->tlhBytesAllocated(), allocationStats->nontlhBytesAllocated(), allocatedCount);
-	uintptr_t allocationTotalBytes = allocationStats->tlhBytesAllocated() + allocationStats->nontlhBytesAllocated();
-	uintptr_t allocatedTotalBytes = adjustedSize * allocatedCount;
-	Assert_MM_true(allocatedTotalBytes == allocationTotalBytes);
 
 	/* Force GC to print verbose system allocation stats -- should match thread allocation stats from before GC */
 	MM_ObjectAllocationModel allocationModel(env, allocSize, allocatedFlags);

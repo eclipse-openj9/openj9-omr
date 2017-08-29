@@ -1,6 +1,6 @@
 ###############################################################################
 #
-# (c) Copyright IBM Corp. 2015, 2016
+# (c) Copyright IBM Corp. 2015, 2017
 #
 #  This program and the accompanying materials are made available
 #  under the terms of the Eclipse Public License v1.0 and
@@ -183,6 +183,7 @@ OMR_OPTIMIZE := @OMR_OPTIMIZE@
 OMR_WARNINGS_AS_ERRORS := @OMR_WARNINGS_AS_ERRORS@
 OMR_ENHANCED_WARNINGS := @OMR_ENHANCED_WARNINGS@
 OMR_DEBUG := @OMR_DEBUG@
+OMR_VALGRIND_MEMCHECK:= @OMR_VALGRIND_MEMCHECK@
 
 ENABLE_FVTEST := @enable_fvtest@
 ENABLE_FVTEST_AGENT := @enable_fvtest_agent@

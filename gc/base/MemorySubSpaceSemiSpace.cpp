@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2016
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -34,6 +34,10 @@
 #include "MemorySubSpaceRegionIterator.hpp"
 #include "MemorySubSpaceSemiSpace.hpp"
 #include "PhysicalSubArena.hpp"
+
+#if defined(OMR_VALGRIND_MEMCHECK)
+#include "MemcheckWrapper.hpp"
+#endif /* defined(OMR_VALGRIND_MEMCHECK) */
 
 #if defined(OMR_GC_MODRON_SCAVENGER)
 
@@ -577,10 +581,22 @@ MM_MemorySubSpaceSemiSpace::poisonEvacuateSpace()
 	uintptr_t* current = (uintptr_t*) _allocateSpaceBase;
 	uintptr_t* end = (uintptr_t*) _allocateSpaceTop;
 
+#if defined(OMR_VALGRIND_MEMCHECK)
+	//clear dead objects before getting their size bits overwritten.	
+	valgrindClearRange(_extensions,(uintptr_t) _allocateSpaceBase, (uintptr_t) _allocateSpaceTop - (uintptr_t) _allocateSpaceBase);
+		
+	//The space is already dead (objects).... lets redefine so it can be poisoned!
+	valgrindMakeMemDefined((uintptr_t) _allocateSpaceBase, (uintptr_t) _allocateSpaceTop - (uintptr_t) _allocateSpaceBase);	
+#endif /* defined(OMR_VALGRIND_MEMCHECK) */
+	
 	while (current < end) {
 		*current = pattern;
 		current += 1;
 	}
+
+#if defined(OMR_VALGRIND_MEMCHECK)			
+	valgrindMakeMemNoaccess((uintptr_t) _allocateSpaceBase, (uintptr_t) _allocateSpaceTop - (uintptr_t) _allocateSpaceBase);	
+#endif /* defined(OMR_VALGRIND_MEMCHECK) */	
 }
 
 void

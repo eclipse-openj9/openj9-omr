@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 1991, 2015
+ * (c) Copyright IBM Corp. 1991, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -34,6 +34,10 @@
 #include "MemoryPoolAddressOrderedListBase.hpp"
 #include "SweepPoolManagerAddressOrderedListBase.hpp"
 #include "ModronAssertions.h"
+
+#if defined(OMR_VALGRIND_MEMCHECK)
+#include "MemcheckWrapper.hpp"
+#endif /* defined(OMR_VALGRIND_MEMCHECK) */
 
 /**
  * Initialize any internal structures.
@@ -88,6 +92,7 @@ MM_SweepPoolManagerAddressOrderedListBase::calculateTrailingDetails(
 		if(projection < trailingCandidateByteCount) {
 			sweepChunk->trailingFreeCandidate = (void *)(((uintptr_t)trailingCandidate) + projection);
 			sweepChunk->trailingFreeCandidateSize = trailingCandidateByteCount - projection;
+
 		}
 	}
 }
@@ -446,6 +451,10 @@ MM_SweepPoolManagerAddressOrderedListBase::updateTrailingFreeMemory(MM_Environme
 bool
 MM_SweepPoolManagerAddressOrderedListBase::addFreeMemory(MM_EnvironmentBase *env, MM_ParallelSweepChunk *sweepChunk, uintptr_t *address, uintptr_t size)
 {
+#if defined(OMR_VALGRIND_MEMCHECK)
+	uintptr_t valgrindAreaSize = MM_Bits::convertSlotsToBytes(size);
+	valgrindClearRange(_extensions,(uintptr_t)address,valgrindAreaSize);	
+#endif /* defined(OMR_VALGRIND_MEMCHECK) */
 	bool result = false;
 	
 	/* This implementation is able to support SORTED pieces of memory ONLY!!! */
@@ -456,6 +465,7 @@ MM_SweepPoolManagerAddressOrderedListBase::addFreeMemory(MM_EnvironmentBase *env
 		sweepChunk->leadingFreeCandidate = address;
 		sweepChunk->leadingFreeCandidateSize = (uintptr_t)MM_Bits::convertSlotsToBytes(size);
 		Assert_MM_true(sweepChunk->leadingFreeCandidate > sweepChunk->trailingFreeCandidate);
+	
 
 	} else if(address + size == (uintptr_t *)sweepChunk->chunkTop) {
 		/* Update the sweep chunk table entry with the trailing free hole information */
@@ -464,6 +474,7 @@ MM_SweepPoolManagerAddressOrderedListBase::addFreeMemory(MM_EnvironmentBase *env
 	} else {
 		/* Check if the hole is a free list candidate */
 		uintptr_t heapFreeByteCount = MM_Bits::convertSlotsToBytes(size);
+
 		uintptr_t objectSizeDelta = 
 			_extensions->objectModel.getConsumedSizeInBytesWithHeader((omrobjectptr_t)(address - J9MODRON_HEAP_SLOTS_PER_MARK_BIT))
 			- (J9MODRON_HEAP_SLOTS_PER_MARK_BIT * sizeof(uintptr_t));
@@ -499,10 +510,11 @@ MM_SweepPoolManagerAddressOrderedListBase::addFreeMemory(MM_EnvironmentBase *env
 			sweepChunk->previousFreeListTail = sweepChunk->freeListTail;
 			sweepChunk->freeListTail = (MM_HeapLinkedFreeHeader *)address;
 			sweepChunk->freeListTailSize = heapFreeByteCount;
+
 		}
 		result = true;
-	}
-	
+	}	
+
 	return result;
 }
 #endif /* defined(OMR_GC_MODRON_STANDARD) */

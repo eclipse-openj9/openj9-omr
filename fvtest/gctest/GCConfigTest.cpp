@@ -43,11 +43,11 @@ const char *gcTests[] = {"fvtest/gctest/configuration/sample_GC_config.xml",
                                 "fvtest/gctest/configuration/gencon_GC_backout_config.xml",
                                 "fvtest/gctest/configuration/scavenger_GC_config.xml",
                                 "fvtest/gctest/configuration/scavenger_GC_backout_config.xml",
-                                "fvtest/gctest/configuration/global_GC_config.xml",
-                                "fvtest/gctest/configuration/optavgpause_GC_config.xml"};
+                               	"fvtest/gctest/configuration/global_GC_config.xml",
+								"fvtest/gctest/configuration/optavgpause_GC_config.xml"};
 
 const char *perfTests[] = {"perftest/gctest/configuration/21645_core.20150126.202455.11862202.0001.xml",
-                                "perftest/gctest/configuration/24404_core.20140723.091737.5812.0002.xml"};
+								"perftest/gctest/configuration/24404_core.20140723.091737.5812.0002.xml"};
 void
 GCConfigTest::SetUp()
 {
@@ -609,8 +609,8 @@ GCConfigTest::attachChildEntry(ObjectEntry *parentEntry, ObjectEntry *childEntry
 	if ((uint32_t)parentEntry->numOfRef < slotCount) {
 		fomrobject_t *childSlot = firstSlot + parentEntry->numOfRef;
 		standardWriteBarrierStore(exampleVM->_omrVMThread, parentEntry->objPtr, childSlot, childEntry->objPtr);
-		gcTestEnv->log(LEVEL_VERBOSE, "\tadd child %s(%p[0x%llx]) to parent %s(%p[0x%llx]) slot %p[%llx].\n",
-				childEntry->name, childEntry->objPtr, *(childEntry->objPtr), parentEntry->name, parentEntry->objPtr, *(parentEntry->objPtr), childSlot, (uintptr_t)*childSlot);
+		gcTestEnv->log(LEVEL_VERBOSE, "\tadd child %s(%p[0x%llx]) to parent %s(%p[0x%llx]) slot %p[%llx].\n", 
+        			childEntry->name, childEntry->objPtr, *(childEntry->objPtr), parentEntry->name, parentEntry->objPtr, *(parentEntry->objPtr), childSlot, (uintptr_t)*childSlot);
 		parentEntry->numOfRef += 1;
 	} else {
 		gcTestEnv->log(LEVEL_ERROR, "%s:%d Invalid XML input: numOfFields %d defined for %s(%p[0x%llx]) is not enough to hold child reference for %s(%p[0x%llx]).\n",

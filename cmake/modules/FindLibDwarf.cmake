@@ -9,27 +9,49 @@
 
 find_package(LibElf)
 
-find_path(DWARF_H_INCLUDE_DIR "dwarf.h")
-
-if(DWARF_H_INCLUDE_DIR)
-	set(DWARF_H_DEFINITIONS -DHAVE_DWARF_H=1)
+if(LIBDWARF_FOUND)
+	return()
 endif()
 
-find_path(LIBDWARF_H_INCLUDE_DIR "libdwarf/dwarf.h")
+# Find dwarf.h
 
-if(LIBDWARF_H_INCLUDE_DIR)
-	set(LIBDWARF_H_DEFINITIONS -DHAVE_LIBDWARF_LIBDWARF_H=1)
-else()
-	find_path(LIBDWARF_H_INCLUDE_DIR "libdwarf.h")
-
-	if(LIBDWARF_H_INCLUDE_DIR)
-		set(LIBDWARF_H_DEFINITIONS -DHAVE_LIBDWARF_H=1)
+if(not DWARF_H_INCLUDE_DIR)
+	find_path(DWARF_H_INCLUDE_DIR "dwarf.h")
+	if(DWARF_H_INCLUDE_DIR)
+		set(DWARF_H_DEFINITIONS -DHAVE_DWARF_H)
 	endif()
 endif()
 
+if(not DWARF_H_INCLUDE_DIR)
+	find_path(DWARF_H_INCLUDE_DIR "libdwarf/dwarf.h")
+	if(DWARF_H_INCLUDE_DIR)
+		set(DWARF_H_DEFINITIONS -DHAVE_LIBDWARF_DWARF_H)
+	endif()
+endif()
+
+# Find libdwarf.h
+
+if(not LIBDWARF_H_INCLUDE_DIR)
+	find_path(LIBDWARF_H_INCLUDE_DIR "libdwarf.h")
+	if(LIBDWARF_H_INCLUDE_DIR)
+		set(LIBDWARF_H_DEFINITIONS -DHAVE_LIBDWARF_H)
+	endif()
+endif()
+
+if(not LIBDWARF_H_INCLUDE_DIR)
+	find_path(LIBDWARF_H_INCLUDE_DIR "libdwarf/libdwarf.h")
+	if(LIBDWARF_H_INCLUDE_DIR)
+		set(LIBDWARF_H_DEFINITIONS -DHAVE_LIBDWARF_LIBDWARF_H)
+	endif()
+endif()
+
+# Find library
+
 find_library(LIBDWARF_LIBRARY dwarf)
 
-include (FindPackageHandleStandardArgs)
+# Handle the arguments
+
+include(FindPackageHandleStandardArgs)
 
 find_package_handle_standard_args(LibDwarf
 	DEFAULT_MSG
@@ -54,4 +76,8 @@ if(LIBDWARF_FOUND)
 		${LIBDWARF_H_DEFINITIONS}
 		${LIBELF_DEFINITIONS}
 	)
+else(LIBDWARF_FOUND)
+	set(LIBDWARF_INCLUDE_DIRS NOTFOUND)
+	set(LIBDWARF_LIBRARIES NOTFOUND)
+	set(LIBDWARF_DEFINITIONS NOTFOUND)
 endif(LIBDWARF_FOUND)

@@ -16,7 +16,6 @@
 #    Multiple authors (IBM Corp.) - initial implementation and documentation
 ###############################################################################
 
-find_package(LibDwarf)
 
 add_library(omr_ddr_scanner
 	Scanner.cpp
@@ -29,21 +28,6 @@ target_link_libraries(omr_ddr_scanner
 		omr_ddr_base
 		omr_ddr_ir
 )
-
-if(LIBDWARF_FOUND)
-	target_link_libraries(omr_ddr_scanner
-		PUBLIC
-			${LIBDWARF_LIBRARIES}
-	)
-	target_include_directories(omr_ddr_scanner
-		PUBLIC
-			${LIBDWARF_INCLUDE_DIRS}
-	)
-	target_compile_definitions(omr_ddr_scanner
-		PUBLIC
-			${LIBDWARF_DEFINITIONS}
-	)
-endif(LIBDWARF_FOUND)
 
 if(OMR_HOST_OS STREQUAL "win")
 	find_package(DiaSDK REQUIRED)
@@ -60,6 +44,22 @@ if(OMR_HOST_OS STREQUAL "win")
 			${DIASDK_INCLUDE_DIRS}
 	)
 elseif(OMR_HOST_OS STREQUAL "linux")
+	
+	find_package(LibDwarf REQUIRED)
+
+	target_link_libraries(omr_ddr_scanner
+		PUBLIC
+			${LIBDWARF_LIBRARIES}
+	)
+	target_include_directories(omr_ddr_scanner
+		PUBLIC
+			${LIBDWARF_INCLUDE_DIRS}
+	)
+	target_compile_definitions(omr_ddr_scanner
+		PUBLIC
+			${LIBDWARF_DEFINITIONS}
+	)
+
 	target_sources(omr_ddr_scanner
 		PRIVATE
 			dwarf/DwarfFunctions.cpp

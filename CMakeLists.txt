@@ -34,7 +34,9 @@ set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules" ${CMAKE_MODULE
 
 include(OmrAssert)
 include(OmrFindFiles)
+include(OmrHookgen)
 include(OmrPlatform)
+include(OmrTracegen)
 
 ###
 ### Set up the global platform configuration
@@ -95,10 +97,12 @@ endif()
 configure_file(./omrcfg.CMakeTemplate.h omrcfg.h)
 configure_file(./omrversionstrings.CMakeTemplate.h omrversionstrings.h)
 
-add_subdirectory(tools)
-# Yeah, its dumb doing this here. Read note in tools/CMakeLists.txt
-if(CMAKE_CROSSCOMPILING)
-	include(${OMR_TOOLS_IMPORTFILE})
+if(OMR_TOOLS_IMPORTFILE)
+	include("${OMR_TOOLS_IMPORTFILE}")
+elseif(OMR_TOOLS)
+	add_subdirectory(tools)
+else()
+	message(FATAL_ERROR "OMR: Build tools are required. See OMR_TOOLS and OMR_TOOLS_IMPORTFILE")
 endif()
 
 add_subdirectory(thread)

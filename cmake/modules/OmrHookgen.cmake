@@ -1,6 +1,6 @@
 ###############################################################################
 #
-# (c) Copyright IBM Corp. 2017, 2017
+# (c) Copyright IBM Corp. 2017
 #
 #  This program and the accompanying materials are made available
 #  under the terms of the Eclipse Public License v1.0 and
@@ -16,19 +16,23 @@
 #    Multiple authors (IBM Corp.) - initial implementation and documentation
 ###############################################################################
 
-include(OmrAssert)
+if(OMR_HOOKGEN_)
+	return()
+endif()
+set(OMR_HOOKGEN_ 1)
 
-omr_assert(TEST OMR_TOOLS)
-omr_assert(TEST NOT OMR_TOOLS_IMPORTFILE)
+#TODO: currently output in source tree, should be in build tree
+#TODO: Dependecy checking is broken, since it checks for output in build tree rather than src
+function(omr_add_hookgen input)
+	get_filename_component(input_dir "${input}" DIRECTORY)
+	add_custom_command(
+		OUTPUT ${ARGN}
+		COMMAND hookgen ${CMAKE_CURRENT_SOURCE_DIR}/${input}
+		DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/${input}"
+		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${input_dir}
+	)
+endfunction(omr_add_hookgen)
 
-if(CMAKE_CROSSCOMPILING)
-	message(STATUS "OMR: Using cross compiled tools.")
-	message(STATUS "OMR: You may need to import tools from a native project.")
-	message(STATUS "OMR: See OMR_TOOLS_IMPORTFILE.")
-endif(CMAKE_CROSSCOMPILING)
-
-add_subdirectory(hookgen)
-add_subdirectory(tracemerge)
-add_subdirectory(tracegen)
-
-export(TARGETS hookgen tracemerge tracegen FILE "ImportTools.cmake")
+macro(add_hookgen)
+	omr_add_hookgen(${ARGN})
+endmacro(add_hookgen)

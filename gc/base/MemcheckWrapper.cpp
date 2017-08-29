@@ -26,6 +26,9 @@
 #include "MemcheckWrapper.hpp"
 #include "GCExtensionsBase.hpp"
 
+#if defined(OMR_VALGRIND_MEMCHECK)
+#include <valgrind/memcheck.h>
+#endif /* defined(OMR_VALGRIND_MEMCHECK) */
 
 void valgrindCreateMempool(MM_GCExtensionsBase *extensions,uintptr_t poolAddr)
 {

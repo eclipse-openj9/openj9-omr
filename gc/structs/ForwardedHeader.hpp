@@ -28,9 +28,6 @@
 
 #include "HeapLinkedFreeHeader.hpp"
 
-#if defined(OMR_VALGRIND_MEMCHECK)
-#include <valgrind/memcheck.h>
-#endif /* defined(OMR_VALGRIND_MEMCHECK) */
 
 #if defined(OMR_VALGRIND_MEMCHECK)
 #include "MemcheckWrapper.hpp"

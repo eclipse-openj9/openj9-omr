@@ -3613,8 +3613,8 @@ MM_Scavenger::masterThreadGarbageCollect(MM_EnvironmentBase *envBase, MM_Allocat
 			/* reset tenure processLargeAllocateStats after TGC */
 			resetTenureLargeAllocateStats(env);
 		}
-		_extensions->allocationStats.clear();
 	} // if !isConcurrentInProgress
+	_extensions->allocationStats.clear();
 
 	if (_extensions->trackMutatorThreadCategory) {
 		/* Done doing GC, reset the category back to the old one */

@@ -856,14 +856,24 @@ MM_VerboseHandlerOutputStandard::outputMemoryInfoInnerStanza(MM_EnvironmentBase 
 {
 	MM_VerboseWriterChain* writer = _manager->getWriterChain();
 	MM_CollectionStatisticsStandard *stats = MM_CollectionStatisticsStandard::getCollectionStatistics(statsBase);
+	MM_GCExtensionsBase* extensions = MM_GCExtensionsBase::getExtensions(env->getOmrVM());
 
 	if (stats->_scavengerEnabled) {
 		writer->formatAndOutput(env, indent, "<mem type=\"nursery\" free=\"%zu\" total=\"%zu\" percent=\"%zu\">",
 				stats->_totalFreeNurseryHeapSize, stats->_totalNurseryHeapSize,
 				((stats->_totalNurseryHeapSize == 0) ? 0 : ((uintptr_t)(((uint64_t)stats->_totalFreeNurseryHeapSize*100) / (uint64_t)stats->_totalNurseryHeapSize))));
 
-		outputMemType(env, indent + 1, "allocate", stats->_totalFreeNurseryHeapSize - stats->_totalFreeSurvivorHeapSize, stats->_totalNurseryHeapSize - stats->_totalSurvivorHeapSize);
-		outputMemType(env, indent + 1, "survivor",  stats->_totalFreeSurvivorHeapSize,  stats->_totalSurvivorHeapSize);
+		/* The only free memory in Nursery is in Allocate subspace (hence, using _totalFreeNurseryHeapSize to report free allocate) */
+		if (extensions->isConcurrentScavengerInProgress()) {
+			/* During CS active cycle, Allocate and Survivor is same subspace. The rest is Evacuate */
+			Assert_MM_true(stats->_totalFreeSurvivorHeapSize == stats->_totalFreeNurseryHeapSize);
+			outputMemType(env, indent + 1, "allocate/survivor",  stats->_totalFreeNurseryHeapSize, stats->_totalSurvivorHeapSize);
+			outputMemType(env, indent + 1, "evacuate", 0, stats->_totalNurseryHeapSize - stats->_totalSurvivorHeapSize);
+		} else {
+			/* Prior to Scavenge start or just after the end, any Survivor free memory is reported as reserved (0 free) */
+			outputMemType(env, indent + 1, "allocate", stats->_totalFreeNurseryHeapSize, stats->_totalNurseryHeapSize - stats->_totalSurvivorHeapSize);
+			outputMemType(env, indent + 1, "survivor", 0,  stats->_totalSurvivorHeapSize);
+		}
 		writer->formatAndOutput(env, indent, "</mem>");
 	}
 

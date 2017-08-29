@@ -26,6 +26,9 @@
 
 #include "CollectorLanguageInterface.hpp"
 #include "EnvironmentBase.hpp"
+#if defined(OMR_GC_MODRON_SCAVENGER)
+#include "Scavenger.hpp"
+#endif /* OMR_GC_MODRON_SCAVENGER */
 
 MM_GCExtensionsBase*
 MM_GCExtensionsBase::newInstance(MM_EnvironmentBase* env)
@@ -281,6 +284,16 @@ MM_GCExtensionsBase::tearDown(MM_EnvironmentBase* env)
 		(*tmpOmrHookInterface)->J9HookShutdownInterface(tmpOmrHookInterface);
 		*tmpOmrHookInterface = NULL; /* avoid issues with double teardowns */
 	}
+}
+
+bool
+MM_GCExtensionsBase::isConcurrentScavengerInProgress()
+{
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+	return scavenger->isConcurrentInProgress();
+#else
+	return false;
+#endif
 }
 
 void

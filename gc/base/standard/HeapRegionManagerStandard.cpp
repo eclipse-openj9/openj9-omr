@@ -104,9 +104,9 @@ MM_HeapRegionManagerStandard::getHeapMemorySnapshot(MM_GCExtensionsBase *extensi
 #if defined(OMR_GC_MODRON_SCAVENGER)
 	if (extensions->scavengerEnabled) {
 		snapshot->_totalNurseryAllocateSize = heap->getActiveMemorySize(MEMORY_TYPE_NEW) - heap->getActiveSurvivorMemorySize(MEMORY_TYPE_NEW);
-		snapshot->_freeNurseryAllocateSize = heap->getApproximateActiveFreeMemorySize(MEMORY_TYPE_NEW) - heap->getApproximateActiveFreeSurvivorMemorySize(MEMORY_TYPE_NEW);
+		snapshot->_freeNurseryAllocateSize = heap->getApproximateActiveFreeMemorySize(MEMORY_TYPE_NEW);
 		snapshot->_totalNurserySurvivorSize = heap->getActiveSurvivorMemorySize(MEMORY_TYPE_NEW);
-		snapshot->_freeNurserySurvivorSize = heap->getApproximateActiveFreeSurvivorMemorySize(MEMORY_TYPE_NEW);
+		snapshot->_freeNurserySurvivorSize = 0;
 	}
 #endif /* OMR_GC_MODRON_SCAVENGER */
 	return snapshot;

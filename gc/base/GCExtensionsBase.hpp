@@ -804,6 +804,8 @@ public:
 #endif /* defined(OMR_GC_CONCURRENT_SCAVENGER) */
 	}
 	
+	bool isConcurrentScavengerInProgress();
+	
 	MMINLINE bool
 	isScavengerEnabled()
 	{

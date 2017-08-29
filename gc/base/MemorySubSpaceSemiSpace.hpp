@@ -74,8 +74,7 @@ private:
 
 	double _desiredSurvivorSpaceRatio;
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
-	uintptr_t _bytesAllocatedAtConcurrentStart;
-	uintptr_t _bytesAllocatedAtConcurrentEnd;
+	uintptr_t _bytesAllocatedDuringConcurrent;
 	uintptr_t _avgBytesAllocatedDuringConcurrent;
 #endif /* OMR_GC_CONCURRENT_SCAVENGER */
 
@@ -187,8 +186,7 @@ public:
 		,_lastScavengeEndTime(0)
 		,_desiredSurvivorSpaceRatio(0.0)
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)		
-		,_bytesAllocatedAtConcurrentStart(0)
-		,_bytesAllocatedAtConcurrentEnd(0)
+		,_bytesAllocatedDuringConcurrent(0)
 		,_avgBytesAllocatedDuringConcurrent(0)
 #endif /* OMR_GC_CONCURRENT_SCAVENGER */ 		
 	{

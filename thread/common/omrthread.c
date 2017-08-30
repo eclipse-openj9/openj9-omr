@@ -5390,7 +5390,6 @@ omrthread_does_affinity_cache_contain_node(omrthread_t thread, uintptr_t nodeNum
 static intptr_t
 fixupThreadAccounting(omrthread_t thread, uintptr_t type)
 {
-	omrthread_t self = MACRO_SELF();
 	omrthread_library_t lib = GLOBAL_DATA(default_library);
 	J9ThreadsCpuUsage *cumulativeUsage = &lib->cumulativeThreadsInfo;
 	int64_t cpuQuantum = 0;

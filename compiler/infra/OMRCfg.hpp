@@ -32,7 +32,6 @@ namespace OMR { typedef OMR::CFG CFGConnector; }
 #include <stdint.h>                 // for uint32_t
 #include <vector>
 #include "compile/Compilation.hpp"  // for Compilation
-#include "cs2/tableof.h"            // for TableOf
 #include "cs2/listof.h"             // for ListOf
 #include "env/TRMemory.hpp"         // for Allocator, TR_Memory, etc
 #include "il/Node.hpp"              // for vcount_t

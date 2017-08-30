@@ -35,7 +35,6 @@
 #include "cs2/bitvectr.h"                      // for ABitVector<>::Cursor, etc
 #include "cs2/hashtab.h"                       // for HashTable, HashIndex
 #include "cs2/sparsrbit.h"                     // for ASparseBitVector, etc
-#include "cs2/tableof.h"                       // for TableOf, TableIndex
 #include "env/CompilerEnv.hpp"
 #include "env/TRMemory.hpp"                    // for SparseBitVector, etc
 #include "il/AliasSetInterface.hpp"

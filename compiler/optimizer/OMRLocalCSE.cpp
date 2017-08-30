@@ -29,7 +29,6 @@
 #include "control/Options_inlines.hpp"          // for TR::Options, etc
 #include "cs2/arrayof.h"                        // for ArrayOf
 #include "cs2/sparsrbit.h"                      // for ASparseBitVector, etc
-#include "cs2/tableof.h"                        // for TableOf<>::Cursor, etc
 #include "env/IO.hpp"                           // for POINTER_PRINTF_FORMAT
 #include "env/StackMemoryRegion.hpp"
 #include "env/TRMemory.hpp"                     // for BitVector, etc

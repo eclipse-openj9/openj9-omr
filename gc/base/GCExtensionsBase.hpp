@@ -45,7 +45,9 @@
 #include "ScavengerStats.hpp"
 #include "SublistPool.hpp"
 
+#if defined(OMR_VALGRIND_MEMCHECK)
 #include <set>
+#endif /* defined(OMR_VALGRIND_MEMCHECK) */
 
 class MM_CardTable;
 class MM_ClassLoaderRememberedSet;

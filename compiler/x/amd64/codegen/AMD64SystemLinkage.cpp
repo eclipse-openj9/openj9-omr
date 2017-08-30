@@ -884,12 +884,18 @@ TR::Register *TR::AMD64SystemLinkage::buildDirectDispatch(
    if (methodSymbol->getMethodAddress())
       {
       TR_ASSERT(scratchReg, "could not find second scratch register");
-      generateRegImm64Instruction(
+      auto LoadRegisterInstruction = generateRegImm64SymInstruction(
          MOV8RegImm64,
          callNode,
          scratchReg,
          (uintptr_t)methodSymbol->getMethodAddress(),
+         methodSymRef,
          cg());
+
+      if( TR::Options::getCmdLineOptions()->getOption(TR_EnableObjectFileGeneration) )
+         {
+         LoadRegisterInstruction->setReloKind(TR_NativeMethodAbsolute);
+         }
 
       instr = generateRegInstruction(CALLReg, callNode, scratchReg, preDeps, cg());
       }

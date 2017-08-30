@@ -66,6 +66,7 @@ namespace OMR { typedef OMR::CodeGenerator CodeGeneratorConnector; }
 #include "optimizer/Dominators.hpp"             // for TR_Dominators
 #include "ras/DebugCounter.hpp"
 #include "runtime/Runtime.hpp"
+#include "codegen/StaticRelocation.hpp"
 
 #define OPT_DETAILS_CA "O^O COMPLETE ALIASING: "
 
@@ -283,9 +284,10 @@ class OMR_EXTENSIBLE CodeGenerator
    {
    private:
 
-   TR::Machine *_machine;
    TR::Compilation *_compilation;
    TR_Memory *_trMemory;
+
+   TR::Machine *_machine;
 
    TR_BitVector *_liveLocals;
    TR::TreeTop *_currentEvaluationTreeTop;
@@ -1062,10 +1064,12 @@ class OMR_EXTENSIBLE CodeGenerator
    //
    TR::list<TR::Relocation*>& getRelocationList() {return _relocationList;}
    TR::list<TR::Relocation*>& getAOTRelocationList() {return _aotRelocationList;}
+   TR::list<TR::StaticRelocation>& getStaticRelocations() { return _staticRelocationList; }
 
    void addRelocation(TR::Relocation *r);
-   void addAOTRelocation(TR::Relocation *r, char *generatingFileName, uintptr_t generatingLineNumber, TR::Node *node);
+   void addAOTRelocation(TR::Relocation *r, const char *generatingFileName, uintptr_t generatingLineNumber, TR::Node *node);
    void addAOTRelocation(TR::Relocation *r, TR::RelocationDebugInfo *info);
+   void addStaticRelocation(const TR::StaticRelocation &relocation);
 
    void addProjectSpecializedRelocation(uint8_t *location,
                                           uint8_t *target,
@@ -1893,6 +1897,7 @@ class OMR_EXTENSIBLE CodeGenerator
    TR::list<TR_BackingStore*> _allSpillList;
    TR::list<TR::Relocation *> _relocationList;
    TR::list<TR::Relocation *> _aotRelocationList;
+   TR::list<TR::StaticRelocation> _staticRelocationList;
    TR::list<uint8_t*> _breakPointList;
 
    TR::list<TR::SymbolReference*> _variableSizeSymRefPendingFreeList;

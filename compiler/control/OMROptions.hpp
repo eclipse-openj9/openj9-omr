@@ -309,14 +309,14 @@ enum TR_CompilationOptions
    TR_DisableNewLoopTransfer              = 0x10000000 + 6, // loop versioning for virtual guards
    TR_UseSamplingJProfilingForDLT                 = 0x20000000 + 6,
    TR_UseSamplingJProfilingForInterpSampledMethods= 0x40000000 + 6,
-   // Available                           = 0x80000000 + 6,
+   TR_EnableObjectFileGeneration          = 0x80000000 + 6,
 
    // Option word 7
    //
    TR_DisableCodeCacheSnippets            = 0x00000020 + 7,
    TR_EnableReassociation                 = 0x00000040 + 7,
    TR_DisableSSOpts                       = 0x00000080 + 7,
-   // Available                           = 0x00000100 + 7,
+   TR_TraceObjectFileGeneration           = 0x00000100 + 7,
    TR_DisableDelayRelocationForAOTCompilations   = 0x00000200 + 7,
    TR_DisableLateEdgeSplitting            = 0x00000400 + 7,
    TR_DisableLoopReplicatorColdSideEntryCheck = 0x00000800 + 7,
@@ -1949,6 +1949,8 @@ public:
    static bool isQuickstartDetected() { return _quickstartDetected; }
    void disableCHOpts(); // disable CHOpts, but also IPA and prex which depend on the chtable
 
+   const char *getObjectFileName() { return _objectFileName; }
+
 protected:
    void  jitPreProcess();
    bool  fePreProcess(void *base);
@@ -2431,6 +2433,8 @@ private:
    int32_t                     _maxSzForVPInliningWarm;
 
    int32_t                     _loopyAsyncCheckInsertionMaxEntryFreq;
+
+   char *                      _objectFileName;
 
    }; // TR::Options
 

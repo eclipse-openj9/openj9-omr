@@ -304,7 +304,9 @@ typedef enum
    TR_VirtualRamMethodConst               = 53,
    TR_InlinedInterfaceMethod              = 54,
    TR_InlinedVirtualMethod                = 55,
-   TR_NumExternalRelocationKinds          = 56,
+   TR_NativeMethodAbsolute                = 56,
+   TR_NativeMethodRelative                = 57,
+   TR_NumExternalRelocationKinds          = 58,
    TR_ExternalRelocationTargetKindMask    = 0xff,
    } TR_ExternalRelocationTargetKind;
 

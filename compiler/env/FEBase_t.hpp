@@ -67,7 +67,7 @@ FEBase<Derived>::allocateCodeMemory(TR::Compilation *comp, uint32_t warmCodeSize
 
    if (warmCode == NULL)
       {
-      if (jitConfig()->isCodeCacheFull())
+      if (codeCacheManager().codeCacheIsFull())
          {
          comp->failCompilation<TR::CodeCacheError>("Code Cache Full");
          }
@@ -79,7 +79,6 @@ FEBase<Derived>::allocateCodeMemory(TR::Compilation *comp, uint32_t warmCodeSize
 
    TR_ASSERT( !((warmCodeSize && !warmCode) || (coldCodeSize && !coldCode)), "Allocation failed but didn't throw an exception");
 
-   codeCacheManager().registerCompiledMethod(TR::comp()->signature(), warmCode, warmCodeSize);
    return warmCode;
    }
 

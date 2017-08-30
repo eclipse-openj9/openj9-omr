@@ -205,6 +205,9 @@ JIT_PRODUCT_BACKEND_SOURCES+=\
     $(JIT_OMR_DIRTY_DIR)/codegen/OMRRealRegister.cpp \
     $(JIT_OMR_DIRTY_DIR)/codegen/OMRRegisterPair.cpp \
     $(JIT_OMR_DIRTY_DIR)/codegen/OMRInstruction.cpp \
+    $(JIT_OMR_DIRTY_DIR)/codegen/ELFObjectFileGenerator.cpp \
+    $(JIT_OMR_DIRTY_DIR)/codegen/OMRELFRelocationResolver.cpp \
+
 
 JIT_PRODUCT_SOURCE_FILES+=\
     $(JIT_PRODUCT_DIR)/ilgen/BinaryOpIlInjector.cpp \

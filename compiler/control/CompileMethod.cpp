@@ -53,6 +53,7 @@
 #include "omr.h"
 #include "env/SystemSegmentProvider.hpp"
 #include "env/DebugSegmentProvider.hpp"
+#include "runtime/CodeCacheManager.hpp"
 
 static void
 writePerfToolEntry(void *start, uint32_t size, const char *name)
@@ -392,8 +393,27 @@ compileMethodFromDetails(
             trfflush(jitConfig->options.vLogFile);
             }
 
-         if (TR::Options::getCmdLineOptions()->getOption(TR_PerfTool))
-            generatePerfToolEntry(startPC, compiler.cg()->getCodeEnd(), compiler.signature(), compiler.getHotnessName(compiler.getMethodHotness()));
+         if (
+               TR::Options::getCmdLineOptions()->getOption(TR_PerfTool)
+            || TR::Options::getCmdLineOptions()->getOption(TR_EnableObjectFileGeneration)
+            )
+            {
+            TR::CodeCacheManager &codeCacheManager(fe.codeCacheManager());
+            TR::CodeGenerator &codeGenerator(*compiler.cg());
+            codeCacheManager.registerCompiledMethod(compiler.externalName(), startPC, codeGenerator.getCodeLength());
+            if (TR::Options::getCmdLineOptions()->getOption(TR_EnableObjectFileGeneration))
+               {
+               auto &relocations = codeGenerator.getStaticRelocations();
+               for (auto it = relocations.begin(); it != relocations.end(); ++it)
+                  {
+                  codeCacheManager.registerStaticRelocation(*it);
+                  }
+               }
+            if (TR::Options::getCmdLineOptions()->getOption(TR_PerfTool))
+               {
+               generatePerfToolEntry(startPC, codeGenerator.getCodeEnd(), compiler.signature(), compiler.getHotnessName(compiler.getMethodHotness()));
+               }
+            }
 
          if (compiler.getOutFile() != NULL && compiler.getOption(TR_TraceAll))
             traceMsg((&compiler), "<result success=\"true\" startPC=\"%#p\" time=\"%lld.%lldms\"/>\n",

@@ -61,6 +61,7 @@
 #include "x/codegen/X86Instruction.hpp"
 #include "x/codegen/X86Ops.hpp"                    // for TR_X86OpCode, etc
 #include "x/codegen/X86Ops_inlines.hpp"
+#include "codegen/StaticRelocation.hpp"
 
 #ifdef J9_PROJECT_SPECIFIC
 #include "env/CHTable.hpp"
@@ -2707,6 +2708,15 @@ TR::AMD64RegImm64SymInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
                                                                                       __LINE__,
                                                                                       getNode());
 
+            break;
+            }
+         case TR_NativeMethodAbsolute:
+            {
+            if (cg()->comp()->getOption(TR_EnableObjectFileGeneration))
+               {
+               TR_ResolvedMethod *target = getSymbolReference()->getSymbol()->castToResolvedMethodSymbol()->getResolvedMethod();
+               cg()->addStaticRelocation(TR::StaticRelocation(cursor, target->externalName(cg()->trMemory()), TR::StaticRelocationSize::word64, TR::StaticRelocationType::Absolute));
+               }
             break;
             }
          default:

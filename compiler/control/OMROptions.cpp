@@ -537,7 +537,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"disableTM",                          "O\tdisable transactional memory support", SET_OPTION_BIT(TR_DisableTM), "F"},
    {"disableTOCForConsts",                "O\tdisable use of the TOC for constants and floats materialization", SET_OPTION_BIT(TR_DisableTOCForConsts), "F"},
    {"disableTraceRegDeps",                "O\tdisable printing of register dependancies for each instruction in trace file",              SET_OPTION_BIT(TR_DisableTraceRegDeps), "F"},
-   {"disableTraps",                       "C\disable trap instructions",                       SET_OPTION_BIT(TR_DisableTraps), "F"},
+   {"disableTraps",                       "C\tdisable trap instructions",                       SET_OPTION_BIT(TR_DisableTraps), "F"},
    {"disableTreeCleansing",               "O\tdisable tree cleansing",                         TR::Options::disableOptimization, treesCleansing, 0, "P"},
    {"disableTreeSimplification",          "O\tdisable tree simplification",                    TR::Options::disableOptimization, treeSimplification, 0, "P"},
    {"disableTrivialBlockExtension",       "O\tdisable trivial block extension",                TR::Options::disableOptimization, trivialBlockExtension, 0, "P"},

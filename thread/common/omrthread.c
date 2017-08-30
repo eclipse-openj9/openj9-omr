@@ -336,7 +336,7 @@ omrthread_init(omrthread_library_t lib)
 
 #if defined(OSX)
 /* Unused cleanup label for future error handling. */
-init_cleanup12:		mach_port_deallocate(mach_task_self(), lib->clockService);
+/* init_cleanup12:		mach_port_deallocate(mach_task_self(), lib->clockService); */
 init_cleanup11:		omrthread_attr_destroy(&lib->systemThreadAttr);
 #endif /* defined(OSX) */
 init_cleanup10:		pool_kill(lib->global_pool);

@@ -247,7 +247,9 @@ omrthread_init(omrthread_library_t lib)
 	/* set all TLS finalizers to NULL. This indicates that the key is unused */
 	memset(lib->tls_finalizers, 0, sizeof(lib->tls_finalizers));
 
-	STATIC_ASSERT(CALLER_LAST_INDEX <= MAX_CALLER_INDEX);
+#if !(CALLER_LAST_INDEX <= MAX_CALLER_INDEX)
+#error "CALLER_LAST_INDEX must be <= MAX_CALLER_INDEX"
+#endif
 
 #if defined(WIN32)
 	if (TLS_ALLOC(lib->self_ptr))

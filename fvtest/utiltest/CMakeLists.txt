@@ -24,7 +24,6 @@ target_link_libraries(omrutiltest
 	#omrGtestGlue
 	omrGtest
 	omrutil
-	omrglue
 )
 
 target_include_directories(omrutiltest

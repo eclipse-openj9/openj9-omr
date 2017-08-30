@@ -30,7 +30,6 @@ target_link_libraries(omrgctest
 	pugixml
 	omrtestutil
 	omrcore
-	omrglue
 	${OMR_HOOK_LIB}
 	${OMR_TRACE_LIB}
 	${OMR_GC_LIB}

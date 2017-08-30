@@ -77,11 +77,11 @@ target_link_libraries(omrporttest
 	omrcore
 	omrport
 	omrtestutil
+	${OMR_THREAD_LIB}
 )
 if(OMR_HOST_OS STREQUAL "win")
 	target_link_libraries(omrporttest
 		ws2_32
-		omrglue
 	)
 endif()
 

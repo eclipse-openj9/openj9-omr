@@ -38,6 +38,8 @@ target_link_libraries(omralgotest
 	omrGtestGlue
 	omrport
 	omrtestutil
+	omrcore
+	${OMR_GC_LIB}
 )
 
 #TODO hack to get building
@@ -48,7 +50,6 @@ if(OMR_HOST_OS STREQUAL "win")
 		Iphlpapi
 		psapi
 		pdh
-		omrglue
 	)
 endif()
 

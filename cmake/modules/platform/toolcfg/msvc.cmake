@@ -28,6 +28,12 @@ list(APPEND OMR_PLATFORM_COMPILE_OPTIONS
 	/wd4091 # Disable warning: Caused by broken windows SDK, see also https://connect.microsoft.com/VisualStudio/feedback/details/1302025/warning-c4091-in-sdk-7-1a-shlobj-h-1051-dbghelp-h-1054-3056
 )
 
+if(OMR_ENV_DATA64)
+	set(TARGET_MACHINE "AMD64")
+else()
+	set(TARGET_MACHINE "i386")
+endif()
+
 list(APPEND OMR_PLATFORM_LINKER_OPTIONS
 	-subsystem:console
 	-machine:${TARGET_MACHINE}

@@ -16,11 +16,22 @@
 #    Multiple authors (IBM Corp.) - initial implementation and documentation
 ###############################################################################
 
-if(OMR_HOST_OS STREQUAL "zos")
-	add_subdirectory(a2e)
-endif()
-add_subdirectory(avl)
-add_subdirectory(hashtable)
-add_subdirectory(hookable)
-add_subdirectory(omrutil)
-add_subdirectory(pool)
+add_library(j9a2e SHARED
+	sysTranslate.c
+	atoe.c
+	atoe_utils.c
+)
+
+target_link_libraries(j9a2e PRIVATE omr_shared)
+
+target_include_directories(j9a2e
+	PUBLIC
+		.
+)
+
+add_custom_command(TARGET j9a2e
+	POST_BUILD
+	COMMAND mv j9a2e.x ${CMAKE_BINARY_DIR}/j9a2e.x
+	WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+)
+

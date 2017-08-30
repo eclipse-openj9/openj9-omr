@@ -19,55 +19,6 @@
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 #TODO port following vpath code:
-#ifeq (s390,$(OMR_HOST_ARCH))
-  #ifeq (zos,$(OMR_HOST_OS))
-    #ifeq (1,$(OMR_ENV_DATA64))
-      #OBJECTS += j9memclrz10_64$(OBJEXT)
-      #vpath %.s unix/zos/64
-    #else
-      #OBJECTS += j9ceetbck$(OBJEXT)
-      #OBJECTS += j9memclrz10_31$(OBJEXT)
-      #vpath %.s unix/zos/31
-    #endif
-
-    #OBJECTS += zosversion$(OBJEXT) getstoragekey$(OBJEXT) getpsw$(OBJEXT) j9getdsa$(OBJEXT)
-    #vpath %.c unix/zos
-    #vpath %.s unix/zos
-  #endif
-
-  #ifeq (linux,$(OMR_HOST_OS))
-    #ifeq (1,$(OMR_ENV_DATA64))
-      #OBJECTS += j9memclrz10_64$(OBJEXT)
-      #vpath %.s unix/linux/s390/64
-    #else
-      #OBJECTS += j9memclrz10_31$(OBJEXT)
-      #vpath %.s unix/linux/s390/31
-    #endif
-
-    #OBJECTS += archinfo$(OBJEXT) 
-    #vpath %.c unix/linux/s390
-  #endif
-#endif
-
-#ifeq (ppc,$(OMR_HOST_ARCH))
-  #ifeq (linux,$(OMR_HOST_OS))
-    #ifeq (1,$(OMR_ENV_DATA64))
-      #ifeq (1,$(OMR_ENV_LITTLE_ENDIAN))
-        #OBJECTS += gettoc$(OBJEXT)
-        #vpath %.s unix/linux/ppc/64le
-      #endif
-    #endif
-  #endif
-  #ifeq (0,$(OMR_ENV_DATA64))
-    #OBJECTS += cas8help$(OBJEXT)
-    #ifeq (linux,$(OMR_HOST_OS))
-      #vpath cas8help.s unix/linux/ppc/32
-    #else
-      #vpath cas8help.s unix/aix/32
-    #endif
-  #endif
-#endif
-
 #ifeq (zos,$(OMR_HOST_OS))
   #OBJECTS += zbarrier$(OBJEXT)
   #ifeq (0,$(OMR_ENV_DATA64))
@@ -77,9 +28,85 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
   #endif
 #endif
 
+include(OmrFindFiles)
+
+set(OBJECTS "")
+set(VPATH "")
+
 add_tracegen(utilcore.tdf j9utilcore)
 
 add_library(omrutil_obj OBJECT
+	ut_j9utilcore.c
+)
+
+list(APPEND VPATH .)
+target_include_directories(omrport PRIVATE .)
+
+if(OMR_ARCH_S390)
+	if(OMR_HOST_OS STREQUAL zos)
+		if(OMR_ENV_DATA64)
+			list(APPEND OBJECTS j9memclrz10_64.s)
+			list(APPEND OBJECTS omrget_userExtendedPrivateAreaMemoryType.s)
+			
+			list(APPEND VPATH unix/zos/64)
+			target_include_directories(omrport PRIVATE unix/zos/64)
+		else()
+			list(APPEND OBJECTS j9ceetbck.s)
+			list(APPEND OBJECTS j9memclrz10_31.s)
+			
+			list(APPEND VPATH unix/zos/31)
+			target_include_directories(omrport PRIVATE unix/zos/31)
+		endif()
+		list(APPEND OBJECTS zosversion.c)
+		list(APPEND OBJECTS getstoragekey.c)
+		list(APPEND OBJECTS getpsw.s)
+		list(APPEND OBJECTS j9getdsa.s)
+		
+		list(APPEND VPATH unix/zos)
+		target_include_directories(omrport PRIVATE unix/zos)
+	else()
+		if(OMR_ENV_DATA64)
+			list(APPEND OBJECTS j9memclrz10_64.s)
+			
+			list(APPEND VPATH unix/linux/s390/64)
+			target_include_directories(omrport PRIVATE unix/linux/s390/64)
+		else()
+			list(APPEND OBJECTS j9memclrz10_31.s)
+			
+			list(APPEND VPATH unix/linux/s390/31)
+			target_include_directories(omrport PRIVATE unix/linux/s390/31)
+		endif()
+		list(APPEND OBJECTS archinfo.c)
+		
+		list(APPEND VPATH unix/linux/s390)
+		target_include_directories(omrport PRIVATE unix/linux/s390)
+	endif()
+endif()
+
+if(OMR_ARCH_POWER)
+	if(OMR_HOST_OS STREQUAL linux)
+		if(OMR_ENV_DATA64)
+			if(OMR_ENV_LITTLE_ENDIAN)
+				list(APPEND OBJECTS gettoc.s)
+				
+				list(APPEND VPATH unix/linux/ppc/64le)
+				target_include_directories(omrport PRIVATE unix/linux/ppc/64le)
+			endif()
+		endif()
+	endif()
+	if(NOT OMR_ENV_DATA64)
+		list(APPEND OBJECTS cas8help.s)
+		if(OMR_HOST_OS STREQUAL linux)
+			list(APPEND VPATH unix/linux/ppc/32)
+			target_include_directories(omrport PRIVATE unix/linux/ppc/32)
+		else()
+			list(APPEND VPATH unix/aix/32)
+			target_include_directories(omrport PRIVATE unix/aix/32)
+		endif()
+	endif()
+endif()
+
+list(APPEND OBJECTS
 	AtomicFunctions.cpp
 	argscan.c
 	detectVMDirectory.c
@@ -92,7 +119,6 @@ add_library(omrutil_obj OBJECT
 	stricmp.c
 	threadhelp.c
 	thrname_core.c
-	ut_j9utilcore.c
 	utf8decode.c
 	utf8encode.c
 	xlphelp.c
@@ -106,10 +132,19 @@ if(OMR_HOST_OS STREQUAL "win")
 	)
 endif()
 
+omr_find_files(resolvedPaths
+	PATHS ${VPATH}
+	FILES ${OBJECTS}
+)
+
+target_sources(omrutil_obj PRIVATE ${resolvedPaths})
+
 add_library(omrutil STATIC
 	$<TARGET_OBJECTS:omrutil_obj>
 )
+
 target_link_libraries(omrutil PUBLIC
 	j9hashtable
-	omrglue
+	${OMR_UTIL_GLUE_TARGET}
+	omrcore
 )

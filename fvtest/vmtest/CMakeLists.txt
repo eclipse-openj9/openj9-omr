@@ -30,19 +30,13 @@ target_link_libraries(omrvmtest
 	omrtrace
 	omrgc
 	j9hookstatic
-	omrglue
 	j9thrstatic
 	omrutil
 	omrport
 	j9hashtable
 	j9avl
 	j9pool
-	omrgc
-	omrglue
-	omrcore
 
 )
 
 add_test(NAME vmtest COMMAND omrvmtest)
-
-

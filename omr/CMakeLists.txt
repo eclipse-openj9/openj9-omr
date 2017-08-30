@@ -21,7 +21,7 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 add_tracegen(omrti.tdf)
 add_tracegen(omrvm.tdf)
 
-add_library(omrcore
+add_library(omrcore STATIC
 	OMR_Agent.cpp
 	OMR_MethodDictionary.cpp
 	OMR_MethodDictionary.hpp
@@ -41,15 +41,23 @@ add_library(omrcore
 	ut_omrvm.h
 )
 
-add_dependencies(omrcore omrgc_tracegen)
+add_dependencies(omrcore
+	omrgc_tracegen
+	omrgc_hookgen
+)
+
+target_link_libraries(omrcore
+	PRIVATE
+		${OMR_CORE_GLUE_TARGET}
+		omrtrace
+		omrgc
+)
+
 target_include_directories(omrcore
 	PUBLIC
 		.
 	PRIVATE
 		$<TARGET_PROPERTY:omrgc,INTERFACE_INCLUDE_DIRECTORIES>
+		$<TARGET_PROPERTY:${OMR_GC_GLUE_TARGET},INTERFACE_INCLUDE_DIRECTORIES>
 )
 
-target_link_libraries(omrcore
-	PUBLIC
-		${OMR_PORT_LIB}
-)

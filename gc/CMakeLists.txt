@@ -287,12 +287,11 @@ target_include_directories(omrgc
 )
 
 target_link_libraries(omrgc
-	PUBLIC
-	omrglue
-	omrcore
-	omrglue
-	omrcore
-	${OMR_THREAD_LIB}
-	${OMR_HOOK_LIB}
-	${OMR_TRACE_LIB}
+	PRIVATE
+		${OMR_GC_GLUE_TARGET}
+		omrutil
+		omrcore
+		${OMR_HOOK_LIB}
+		${OMR_TRACE_LIB}
+		${OMR_THREAD_LIB}
 )

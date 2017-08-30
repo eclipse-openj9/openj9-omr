@@ -33,7 +33,7 @@ add_library(omrport_obj OBJECT
 
 
 if(OMR_HOST_OS STREQUAL "aix")
-	list(APPEND OBJECTS omrgetsp.c)
+	list(APPEND OBJECTS omrgetsp.s)
 endif()
 
 
@@ -47,15 +47,12 @@ if(OMR_HOST_OS STREQUAL "zos")
 		j9sysinfo_get_number_CPUs.s
 		j9jobname.s
 		j9userid.s
-		j9csrsi.c
-		j9csrsi_wrp.s
 		j9zfs.c
 		j9lpdat.mc
 	)
 	#TODO more objects here. See port_objects.mk:55
 	if(OMR_ENV_DATA64)
 		list(APPEND OBJECTS
-			omrget_userExtendedPrivateAreaMemoryType.s
 			omrget_large_pages_supported.s
 			omrget_large_2gb_pages_supported.s
 			omrvmem_support_above_bar.s
@@ -63,7 +60,7 @@ if(OMR_HOST_OS STREQUAL "zos")
 			j9ipt_ttoken64.s
 		)
 	else()
-		list(APPEND OBJECTS omrvmem_support_below_bar_31.c)
+		list(APPEND OBJECTS omrvmem_support_below_bar_31.s)
 	endif()
 else()
 	list(APPEND OBJECTS protect_helpers.c)
@@ -78,11 +75,10 @@ list(APPEND OBJECTS
 if(OMR_ARCH_S390)
 	list(APPEND OBJECTS omrrttime.s)
 else()
-	if(OMR_ARCH_PPC)
+	if(OMR_ARCH_POWER)
 		if(OMR_ENV_DATA64)
 			if(OMR_HOST_OS STREQUAL "linux")
-				#TODO what source extension is this?
-				list(APPEND OBJECTS omrrttime)
+				list(APPEND OBJECTS omrrttime.s)
 			endif()
 		endif()
 	endif()
@@ -90,7 +86,7 @@ endif()
 
 if(OMR_ARCH_S390)
 	if(OMR_HOST_OS STREQUAL "linux")
-		list(APPEND OBJECTS omrgetstfle) #TODO: extension?
+		list(APPEND OBJECTS omrgetstfle.s)
 	else()
 		if(OMR_ENV_DATA64)
 			list(APPEND OBJECTS omrgetstfle64.s)
@@ -105,8 +101,8 @@ endif()
 
 if(OMR_HOST_OS STREQUAL "aix")
 	list(APPEND OBJECTS 
-		rt_divu64.c
-		rt_time.c
+		rt_divu64.s
+		rt_time.s
 	)
 endif()
 
@@ -247,41 +243,14 @@ if(OMR_HOST_OS STREQUAL "aix")
 	#endif
 
 	if(OMR_ENV_DATA64)
-	#vpath % $(PORT_SRCDIR)aix64
-	#MODULE_INCLUDES += $(PORT_SRCDIR)aix64
+		list(APPEND VPATH aix64)
+		target_include_directories(omrport_obj PRIVATE aix64)
 	endif()
-	#vpath % $(PORT_SRCDIR)aix
-	#MODULE_INCLUDES += $(PORT_SRCDIR)aix
+	list(APPEND VPATH aix)
+	target_include_directories(omrport_obj PRIVATE aix)
 endif()
 
-
-#endif
-#TODO other platforms port_objects:209
-
 if(OMR_HOST_OS STREQUAL "linux")
-	#TODO need to port following vpath code
-	#ifeq (ppc,$(OMR_HOST_ARCH))
-		#ifeq (1,$(OMR_ENV_DATA64))
-			#ifeq (1,$(OMR_ENV_LITTLE_ENDIAN))
-				#vpath % $(PORT_SRCDIR)linuxppc64le
-				#MODULE_INCLUDES += $(PORT_SRCDIR)linuxppc64le
-			#endif
-			#vpath % $(PORT_SRCDIR)linuxppc64
-			#MODULE_INCLUDES += $(PORT_SRCDIR)linuxppc64
-		#endif
-		#vpath % $(PORT_SRCDIR)linuxppc
-		#MODULE_INCLUDES += $(PORT_SRCDIR)linuxppc
-	#endif
-
-	#ifeq (s390,$(OMR_HOST_ARCH))
-		#ifeq (1,$(OMR_ENV_DATA64))
-			#vpath % $(PORT_SRCDIR)linuxs39064
-			#MODULE_INCLUDES += $(PORT_SRCDIR)linuxs39064
-		#endif
-		#vpath % $(PORT_SRCDIR)linuxs390
-		#MODULE_INCLUDES += $(PORT_SRCDIR)linuxs390
-	#endif
-
 	if(OMR_ARCH_ARM)
 		list(APPEND VPATH linuxarm)
 		target_include_directories(omrport_obj PRIVATE linuxarm)
@@ -296,6 +265,28 @@ if(OMR_HOST_OS STREQUAL "linux")
 			target_include_directories(omrport_obj PRIVATE linux386)
 		endif()
 
+	endif()
+	
+	if(OMR_ARCH_POWER)
+		if(OMR_ENV_DATA64)
+			if(OMR_ENV_LITTLE_ENDIAN)
+				list(APPEND VPATH linuxppc64le)
+				target_include_directories(omrport_obj PRIVATE linuxppc64le)
+			endif()
+			list(APPEND VPATH linuxppc64)
+			target_include_directories(omrport_obj PRIVATE linuxppc64)
+		endif()
+		list(APPEND VPATH linuxppc)
+		target_include_directories(omrport_obj PRIVATE linuxppc)
+	endif()
+	
+	if(OMR_ARCH_S390)
+		if(OMR_ENV_DATA64)
+			list(APPEND VPATH linuxs39064)
+			target_include_directories(omrport_obj PRIVATE linuxs39064)
+		endif()
+		list(APPEND VPATH linuxs390)
+		target_include_directories(omrport_obj PRIVATE linuxs390)
 	endif()
 
 	list(APPEND VPATH linux)
@@ -339,11 +330,11 @@ add_library(omrport STATIC
 )
 
 target_link_libraries(omrport
-	j9thrstatic
+	PRIVATE
 	j9avl
 	j9hashtable
 	j9pool
-	omrglue
+	${OMR_THREAD_LIB}
 )
 
 target_include_directories(omrport_obj PRIVATE
@@ -358,14 +349,14 @@ target_compile_definitions(omrport_obj PRIVATE -DOMRPORT_LIBRARY_DEFINE)
 #TODO hack to get to compile. Need platform checks
 if(NOT OMR_HOST_OS STREQUAL "win")
 	if(NOT OMR_HOST_OS STREQUAL "zos")
-		target_link_libraries(omrport dl)
+		target_link_libraries(omrport PRIVATE dl)
 	endif()
 endif()
 
 if(OMR_HOST_OS STREQUAL "osx")
-  target_link_libraries(omrport iconv)
+	target_link_libraries(omrport PRIVATE iconv)
 endif()
 
 if(OMR_HOST_OS STREQUAL "win")
-	target_link_libraries(omrport psapi pdh)
+	target_link_libraries(omrport PRIVATE psapi pdh)
 endif()

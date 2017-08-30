@@ -103,8 +103,6 @@ omrthread_get_cpu_time(omrthread_t thread)
 intptr_t
 omrthread_get_cpu_time_ex(omrthread_t thread, int64_t *cpuTime)
 {
-	intptr_t ret = 0;
-
 	/* If there is no OS thread attached to this as yet, return error */
 	/* This assumes that a valid thread handle can never be 0 */
 	if (0 == omrthread_get_handle(thread)) {
@@ -114,6 +112,7 @@ omrthread_get_cpu_time_ex(omrthread_t thread, int64_t *cpuTime)
 
 #if defined(WIN32) && !defined(BREW)
 	{
+		intptr_t ret = 0;
 		FILETIME creationTime, exitTime, kernelTime, userTime;
 		int64_t totalTime;
 
@@ -146,6 +145,7 @@ omrthread_get_cpu_time_ex(omrthread_t thread, int64_t *cpuTime)
 
 #ifdef AIXPPC
 	{
+		intptr_t ret = 0;
 		int result;
 		struct rusage usageInfo;
 		memset(&usageInfo, 0, sizeof(usageInfo));
@@ -174,6 +174,7 @@ omrthread_get_cpu_time_ex(omrthread_t thread, int64_t *cpuTime)
 
 #if defined(LINUX)
 	{
+		intptr_t ret = 0;
 		int result;
 		clockid_t clock_id;
 		struct timespec time;
@@ -208,6 +209,7 @@ omrthread_get_cpu_time_ex(omrthread_t thread, int64_t *cpuTime)
 
 #if defined(J9ZOS390)
 	{
+		intptr_t ret = 0;
 		struct j9pg_thread_data threadData;
 		unsigned char *output_buffer = (unsigned char *) &threadData;
 		uint32_t output_size = sizeof(struct j9pg_thread_data);

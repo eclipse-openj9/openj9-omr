@@ -1618,8 +1618,6 @@ thread_wrapper(WRAPPER_ARG arg)
 void
 omrthread_cancel(omrthread_t thread)
 {
-	omrthread_monitor_t monitor = NULL;
-
 	ASSERT(thread);
 	THREAD_LOCK(thread, CALLER_CANCEL);
 

@@ -401,7 +401,7 @@ set_priority_spread(void)
 	if (dups < 0) {
 		dups = 0;
 	}
-	for (i = J9THREAD_PRIORITY_NORMAL - dups - 1, j = prio; i >= J9THREAD_PRIORITY_USER_MIN; i--, j) {
+	for (i = J9THREAD_PRIORITY_NORMAL - dups - 1, j = prio; i >= J9THREAD_PRIORITY_USER_MIN; i--) {
 		priority_map[i] = --j + PRIORITY_MAP_ADJUSTED_POLICY(policy_regular_thread);
 	}
 	lowerBoundRegularMapped = j;

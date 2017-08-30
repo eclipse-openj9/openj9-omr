@@ -82,7 +82,10 @@ static void threadInterruptWake(omrthread_t thread, omrthread_monitor_t monitor)
 static void threadNotify(omrthread_t threadToNotify);
 static int32_t J9THREAD_PROC interruptServer(void *entryArg);
 static intptr_t interrupt_waiting_thread(omrthread_t self, omrthread_t threadToInterrupt);
+
+#if defined(OMR_THR_THREE_TIER_LOCKING)
 static void interrupt_blocked_thread(omrthread_t self, omrthread_t threadToInterrupt);
+#endif /* OMR_THR_THREE_TIER_LOCKING */
 
 static intptr_t check_notified(omrthread_t self, omrthread_monitor_t monitor);
 static uintptr_t monitor_maximum_wait_number(omrthread_monitor_t monitor);
@@ -2720,6 +2723,7 @@ threadInterrupt(omrthread_t thread, uintptr_t interruptFlag)
 	GLOBAL_UNLOCK(self);
 }
 
+#if defined(OMR_THR_THREE_TIER_LOCKING)
 /*
  * Interrupt a blocked thread.
  *
@@ -2763,6 +2767,7 @@ interrupt_blocked_thread(omrthread_t self, omrthread_t threadToInterrupt)
 	}
 	MONITOR_UNLOCK(monitor);
 }
+#endif /* OMR_THR_THREE_TIER_LOCKING */
 
 /**
  * Interrupt a waiting thread.

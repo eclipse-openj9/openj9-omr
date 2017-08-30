@@ -37,7 +37,7 @@ if test "x$BUILD_WITH_CMAKE" = "xyes"; then
   if test "x$RUN_BUILD" != "xno"; then
     time cmake --build . -- -j $JOBS
     if test "x$RUN_TESTS" != "xno"; then
-      time ctest -V --parallel $JOBS
+      time ctest -V
     fi
   fi
 else

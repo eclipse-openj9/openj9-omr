@@ -42,7 +42,7 @@ protected:
 		}
 	}
 };
-unsigned int SanityTest::runTime = 10; /* default test run time of 10 seconds */
+unsigned int SanityTest::runTime = 2; /* default test run time of 2 second */
 
 TEST_F(SanityTest, simpleSanity)
 {

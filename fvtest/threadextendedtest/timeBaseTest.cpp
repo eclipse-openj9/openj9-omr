@@ -23,11 +23,11 @@
 #include "thrdsup.h"
 #include "threadExtendedTestHelpers.hpp"
 
-#define NUM_ITERATIONS		12
-#define FIVE_SEC_IN_MSEC	5000 /**< 5 sec in ms */
+#define NUM_ITERATIONS		3
+#define TIME_IN_MILLIS		500
 
 /**
- * Generate CPU Load for 5 seconds
+ * Generate CPU Load for 1 seconds
  */
 static void
 cpuLoad(void)
@@ -37,14 +37,13 @@ cpuLoad(void)
 	int64_t end = 0;
 
 	start = omrtime_current_time_millis();
-	/* Generate CPU Load for 5 seconds */
 	do {
 		end = omrtime_current_time_millis();
-	} while ((end - start) < FIVE_SEC_IN_MSEC);
+	} while ((end - start) < TIME_IN_MILLIS);
 }
 
 /**
- * Test the monotonicity of the GET_HIRES_CLOCK()/getTimebase() functions.
+ * Test the monotonicity of omrtime_current_time_millis.
  *
  */
 TEST(ThreadExtendedTest, TestTimeBaseMonotonicity)

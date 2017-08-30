@@ -1368,7 +1368,6 @@ omrthread_detach(omrthread_t thread)
 {
 	uintptr_t destroy = 0;
 	uintptr_t attached = 0;
-	omrthread_library_t lib = GLOBAL_DATA(default_library);
 
 	if (thread == NULL) {
 		thread = MACRO_SELF();

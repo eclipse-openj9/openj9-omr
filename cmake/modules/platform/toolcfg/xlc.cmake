@@ -62,17 +62,30 @@ endif()
 # Testarossa build variables. Longer term the distinction between TR and the rest 
 # of the OMR code should be heavily reduced. In the mean time, we keep
 # the distinction
+
+# TR_COMPILE_OPTIONS are variables appended to CMAKE_{C,CXX}_FLAGS, and so 
+# apply to both C and C++ compilations. 
 list(APPEND TR_COMPILE_OPTIONS
 	-qarch=pwr7
 	-qtls 
 	-qnotempinc 
 	-qenum=small 
 	-qmbcs 
-	-qlanglvl=extended0x 
 	-qfuncsect 
 	-qsuppress=1540-1087:1540-1088:1540-1090:1540-029:1500-029
 	-qdebug=nscrep
-	)
+)
+
+# TR_CXX_COMPILE_OPTIONS are appended to CMAKE_CXX_FLAGS, and so apply only to
+# C++ file compilation
+list(APPEND TR_CXX_COMPILE_OPTIONS
+	-qlanglvl=extended0x 
+)
+
+# TR_C_COMPILE_OPTIONS are appended to CMAKE_C_FLAGS, and so apply only to
+# C file compilation
+list(APPEND TR_C_COMPILE_OPTIONS 
+)
 
 set(SPP_CMD ${CMAKE_C_COMPILER}) 
 set(SPP_FLAGS -E -P) 

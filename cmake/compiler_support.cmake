@@ -69,10 +69,6 @@ function(make_compiler_target TARGET_NAME)
 		${COMPILER_DEFINES} 
 	)
 
-target_compile_options(${TARGET_NAME} PRIVATE 
-		${TR_COMPILE_OPTIONS}
-	)
-
 	message("Made ${TARGET_NAME} into a compiler target,for ${TARGET_COMPILER}.")
 	message("Defines are ${COMPILER_DEFINES} and ${TR_COMPILE_DEFINITIONS}, arch is ${TR_TARGET_ARCH} and ${TR_TARGET_SUBARCH}, compile options are ${TR_COMPILE_OPTIONS} ") 
 endfunction(make_compiler_target)
@@ -239,6 +235,15 @@ function(omr_inject_object_modification_targets result compiler_name)
 	set(${result} ${arg} PARENT_SCOPE)
 endfunction(omr_inject_object_modification_targets)
 
+# Setup the current scope for compiling the Testarossa compiler technology. Used in 
+# conjunction with make_compiler_target -- Only can infect add_directory scope.
+macro(set_tr_compile_options)
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TR_COMPILE_OPTIONS} ${TR_CXX_COMPILE_OPTIONS}" PARENT_SCOPE)
+	set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} ${TR_COMPILE_OPTIONS}   ${TR_C_COMPILE_OPTIONS}" PARENT_SCOPE)
+	# message("[set_tr_compile_options] Set CMAKE_CXX_FLAGS to ${CMAKE_CXX_FLAGS}")
+	# message("[set_tr_compile_options] Set CMAKE_C_FLAGS to ${CMAKE_C_FLAGS}")
+endmacro(set_tr_compile_options)
+
 # Create an OMR Compiler component
 # 
 # call like this: 
@@ -267,6 +272,8 @@ function(create_omr_compiler_library)
 		message("Creating static library for ${COMPILER_NAME}")
 		set(LIB_TYPE STATIC)
 	endif()
+
+	set_tr_compile_options()
 
 
 	get_filename_component(abs_root ${CMAKE_CURRENT_LIST_DIR} ABSOLUTE)

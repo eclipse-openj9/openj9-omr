@@ -47,6 +47,11 @@ static bool isMergeableGuard(TR::Node *node)
    return mergeOnlyHCRGuards ? node->isHCRGuard() : node->isNopableInlineGuard();
    }
 
+static bool isStopTheWorldGuard(TR::Node *node)
+   {
+   return node->isHCRGuard() || node->isOSRGuard();
+   }
+
 /**
  * Recursive call to anchor nodes with a reference count greater than one prior to a treetop.
  *
@@ -205,12 +210,19 @@ static bool safeToMoveGuard(TR::Block *destination, TR::TreeTop *guardCandidate,
    {
    static char *disablePrivArgMovement = feGetEnv("TR_DisableRuntimeGuardPrivArgMovement");
    TR::TreeTop *start = destination ? destination->getExit() : TR::comp()->getStartTree();
-   bool stopTheWorld = guardCandidate->getNode()->isHCRGuard();
-   if (stopTheWorld)
+   if (guardCandidate->getNode()->isHCRGuard())
       {
       for (TR::TreeTop *tt = start; tt && tt != guardCandidate; tt = tt->getNextTreeTop())
          {
          if (tt->getNode()->canGCandReturn())
+            return false;
+         }
+      }
+   else if (guardCandidate->getNode()->isOSRGuard())
+      {
+      for (TR::TreeTop *tt = start; tt && tt != guardCandidate; tt = tt->getNextTreeTop())
+         {
+         if (TR::comp()->isPotentialOSRPoint(tt->getNode(), NULL, true))
             return false;
          }
       }
@@ -391,7 +403,12 @@ int32_t TR_VirtualGuardHeadMerger::perform() {
             TR::Node *guard2 = guard2Tree->getNode();
             TR::Block *guard2Block = nextBlock;
 
-            TR::Block *insertPoint = guard2->isHCRGuard() ? HCRIns : runtimeIns;
+            // It is not possible to shift an OSR guard unless the destination is already an OSR point
+            // as the necessary OSR state will not be available
+            if (guard2->isOSRGuard() && !guard1->isOSRGuard())
+               break;
+
+            TR::Block *insertPoint = isStopTheWorldGuard(guard2) ? HCRIns : runtimeIns;
             if (!safeToMoveGuard(insertPoint, guard2Tree, guard1->getBranchDestination(), privArgSymRefs))
                break;
 
@@ -427,7 +444,7 @@ int32_t TR_VirtualGuardHeadMerger::perform() {
             // argument for the outer call site. As the privargs for the inner call site must be evaluated before
             // both guards, this would result in the recycled temp holding the incorrect value if the guard is ever
             // taken.
-            if (!guard2->isHCRGuard())
+            if (!isStopTheWorldGuard(guard2))
                {
                if (!evaluatedColdPathLoads)
                   {
@@ -443,7 +460,7 @@ int32_t TR_VirtualGuardHeadMerger::perform() {
                   }
                }
 
-            if (!performTransformation(comp(), "%sRedirecting %s guard [%p] in block_%d to parent guard cold block_%d\n", OPT_DETAILS, guard2->isHCRGuard() ? "HCR" : "runtime", guard2, guard2Block->getNumber(), cold1->getNumber()))
+            if (!performTransformation(comp(), "%sRedirecting %s guard [%p] in block_%d to parent guard cold block_%d\n", OPT_DETAILS, isStopTheWorldGuard(guard2) ? "stop the world" : "runtime", guard2, guard2Block->getNumber(), cold1->getNumber()))
                   continue;
 
             if (guard2->getBranchDestination() != guard1->getBranchDestination())
@@ -457,7 +474,7 @@ int32_t TR_VirtualGuardHeadMerger::perform() {
                // 1, it might have side effect to runtime guards after it, moving it up might cause us to falsely merge
                //    the subsequent runtime guards
                // 2, it might contain live monitor, moving it up above a guard can affect the monitor's live range
-               if (!guard2->isHCRGuard())
+               if (!isStopTheWorldGuard(guard2))
                   {
 	          // the block created above guard2 contains only privarg treetops or monitor stores if
                   // guard2 is a runtime-patchable guard and is safe to merge. We need to move the priv
@@ -496,7 +513,7 @@ int32_t TR_VirtualGuardHeadMerger::perform() {
 
             if (insertPoint != guard2Block->getPrevBlock())
                {
-               TR::DebugCounter::incStaticDebugCounter(comp(), TR::DebugCounter::debugCounterName(comp(), "headMerger/%s_%s/(%s)", guard1->isHCRGuard() ? "hcr" : "runtime", guard2->isHCRGuard() ? "hcr" : "runtime", comp()->signature()));
+               TR::DebugCounter::incStaticDebugCounter(comp(), TR::DebugCounter::debugCounterName(comp(), "headMerger/%s_%s/(%s)", isStopTheWorldGuard(guard1) ? "stop the world" : "runtime", isStopTheWorldGuard(guard2) ? "stop the world" : "runtime", comp()->signature()));
                cfg->setStructure(NULL);
 
                block = nextBlock = guard2Block->getPrevBlock();

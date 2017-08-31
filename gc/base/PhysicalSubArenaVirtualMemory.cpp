@@ -21,15 +21,6 @@
 
 class MM_EnvironmentBase;
 
-/**
- * Zos390 Platform dependent trickery for the ar command.  Without this definition
- * the ar command on Zos390 will fail to link this class.
- */
-#if defined(J9ZOS390)
-#include "ZOSLinkage.hpp"
-int j9zos390LinkTrickPhysicalSubArenaVirtualMemory;
-#endif /* J9ZOS390 */
-
 bool
 MM_PhysicalSubArenaVirtualMemory::initialize(MM_EnvironmentBase* env)
 {

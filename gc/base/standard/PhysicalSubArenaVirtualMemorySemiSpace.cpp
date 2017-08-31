@@ -42,15 +42,6 @@
 #if defined(OMR_GC_MODRON_SCAVENGER)
 
 /**
- * Zos390 Platform dependent trickery for the ar command.  Without this definition
- * the ar command on Zos390 will fail to link this class.
- */
-#if defined(J9ZOS390)
-#include "ZOSLinkage.hpp"
-int j9zos390LinkTrickPhysicalSubArenaVirtualMemorySemiSpace; 
-#endif /* J9ZOS390 */
-
-/**
  * Initialization
  */
 MM_PhysicalSubArenaVirtualMemorySemiSpace *

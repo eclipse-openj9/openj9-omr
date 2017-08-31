@@ -147,7 +147,6 @@ add_library(omrgc STATIC
 	base/WorkPacketOverflow.cpp
 	base/WorkPackets.cpp
 	base/WorkStack.cpp
-	base/ZOSLinkage.cpp
 	base/gcspinlock.cpp
 	base/gcutils.cpp
 	base/modronapicore.cpp

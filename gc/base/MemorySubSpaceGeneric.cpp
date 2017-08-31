@@ -39,15 +39,6 @@
 #include "RegionPool.hpp"
 
 /**
- * Zos390 Platform dependent trickery for the ar command.  Without this definition
- * the ar command on Zos390 will fail to link this class.
- */
-#if defined(J9ZOS390)
-#include "ZOSLinkage.hpp"
-int j9zos390LinkTrickMemorySubSpaceGeneric;
-#endif /* J9ZOS390 */
-
-/**
  * Return the memory pool associated to the receiver.
  * @return MM_MemoryPool
  */

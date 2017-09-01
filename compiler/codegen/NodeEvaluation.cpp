@@ -368,8 +368,6 @@ OMR::CodeGenerator::decReferenceCount(TR::Node * node)
    {
    TR::Register *reg = node->getRegister();
 
-   // restricted registers go dead when ref count==2 because
-   // their ref count was inced in prepareNodeForInstructionSelection
    if ((node->getReferenceCount() == 1) &&
        reg && self()->getLiveRegisters(reg->getKind()))
        {

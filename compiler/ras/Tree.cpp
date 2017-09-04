@@ -33,7 +33,6 @@
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"
 #include "cs2/sparsrbit.h"
-#include "cs2/tableof.h"                              // for TableOf
 #include "env/CompilerEnv.hpp"
 #include "env/IO.hpp"                                 // for IO
 #include "env/TRMemory.hpp"                           // for TR_Memory, etc

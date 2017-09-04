@@ -337,7 +337,6 @@ omrthread_get_stack_range(omrthread_t thread, void **stackStart, void **stackEnd
 	return J9THREAD_SUCCESS;
 #elif defined(OSX)
 	OSTHREAD osTid = thread->handle;
-	uintptr_t rc = 0;
 	size_t stackSize = 0;
 
 	*stackStart = pthread_get_stackaddr_np(osTid);

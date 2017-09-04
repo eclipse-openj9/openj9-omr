@@ -82,7 +82,10 @@ static void threadInterruptWake(omrthread_t thread, omrthread_monitor_t monitor)
 static void threadNotify(omrthread_t threadToNotify);
 static int32_t J9THREAD_PROC interruptServer(void *entryArg);
 static intptr_t interrupt_waiting_thread(omrthread_t self, omrthread_t threadToInterrupt);
+
+#if defined(OMR_THR_THREE_TIER_LOCKING)
 static void interrupt_blocked_thread(omrthread_t self, omrthread_t threadToInterrupt);
+#endif /* OMR_THR_THREE_TIER_LOCKING */
 
 static intptr_t check_notified(omrthread_t self, omrthread_monitor_t monitor);
 static uintptr_t monitor_maximum_wait_number(omrthread_monitor_t monitor);
@@ -244,7 +247,9 @@ omrthread_init(omrthread_library_t lib)
 	/* set all TLS finalizers to NULL. This indicates that the key is unused */
 	memset(lib->tls_finalizers, 0, sizeof(lib->tls_finalizers));
 
-	STATIC_ASSERT(CALLER_LAST_INDEX <= MAX_CALLER_INDEX);
+#if !(CALLER_LAST_INDEX <= MAX_CALLER_INDEX)
+#error "CALLER_LAST_INDEX must be <= MAX_CALLER_INDEX"
+#endif
 
 #if defined(WIN32)
 	if (TLS_ALLOC(lib->self_ptr))
@@ -331,7 +336,7 @@ omrthread_init(omrthread_library_t lib)
 
 #if defined(OSX)
 /* Unused cleanup label for future error handling. */
-init_cleanup12:		mach_port_deallocate(mach_task_self(), lib->clockService);
+/* init_cleanup12:		mach_port_deallocate(mach_task_self(), lib->clockService); */
 init_cleanup11:		omrthread_attr_destroy(&lib->systemThreadAttr);
 #endif /* defined(OSX) */
 init_cleanup10:		pool_kill(lib->global_pool);
@@ -1363,7 +1368,6 @@ omrthread_detach(omrthread_t thread)
 {
 	uintptr_t destroy = 0;
 	uintptr_t attached = 0;
-	omrthread_library_t lib = GLOBAL_DATA(default_library);
 
 	if (thread == NULL) {
 		thread = MACRO_SELF();
@@ -1614,8 +1618,6 @@ thread_wrapper(WRAPPER_ARG arg)
 void
 omrthread_cancel(omrthread_t thread)
 {
-	omrthread_monitor_t monitor = NULL;
-
 	ASSERT(thread);
 	THREAD_LOCK(thread, CALLER_CANCEL);
 
@@ -2720,6 +2722,7 @@ threadInterrupt(omrthread_t thread, uintptr_t interruptFlag)
 	GLOBAL_UNLOCK(self);
 }
 
+#if defined(OMR_THR_THREE_TIER_LOCKING)
 /*
  * Interrupt a blocked thread.
  *
@@ -2763,6 +2766,7 @@ interrupt_blocked_thread(omrthread_t self, omrthread_t threadToInterrupt)
 	}
 	MONITOR_UNLOCK(monitor);
 }
+#endif /* OMR_THR_THREE_TIER_LOCKING */
 
 /**
  * Interrupt a waiting thread.
@@ -5386,7 +5390,6 @@ omrthread_does_affinity_cache_contain_node(omrthread_t thread, uintptr_t nodeNum
 static intptr_t
 fixupThreadAccounting(omrthread_t thread, uintptr_t type)
 {
-	omrthread_t self = MACRO_SELF();
 	omrthread_library_t lib = GLOBAL_DATA(default_library);
 	J9ThreadsCpuUsage *cumulativeUsage = &lib->cumulativeThreadsInfo;
 	int64_t cpuQuantum = 0;

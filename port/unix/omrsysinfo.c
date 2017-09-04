@@ -1,6 +1,6 @@
 /*******************************************************************************
  *
- * (c) Copyright IBM Corp. 2015, 2016
+ * (c) Copyright IBM Corp. 2015, 2017
  *
  *  This program and the accompanying materials are made available
  *  under the terms of the Eclipse Public License v1.0 and
@@ -14,6 +14,7 @@
  *
  * Contributors:
  *    Multiple authors (IBM Corp.) - initial API and implementation and/or initial documentation
+ *    James Johnston (IBM Corp.) - z/TPF Port updates
  *******************************************************************************/
 
 /**
@@ -26,7 +27,7 @@
 #define ENV_DEBUG
 #endif
 
-#if defined(LINUX)
+#if defined(LINUX) && !defined(OMRZTPF)
 #define _GNU_SOURCE
 #elif defined(OSX)
 #define _XOPEN_SOURCE
@@ -36,7 +37,7 @@
 #include <mach-o/dyld.h>
 #include <sys/param.h>
 #include <sys/mount.h>
-#endif /* defined(LINUX) */
+#endif /* defined(LINUX) && !defined(OMRZTPF) */
 
 #include <inttypes.h>
 #include <stdio.h>
@@ -58,9 +59,9 @@
 #include <sys/resource.h>
 #include <nl_types.h>
 #include <langinfo.h>
-#ifndef USER_HZ
+#if !defined(USER_HZ) && !defined(OMRZTPF)
 #define USER_HZ HZ
-#endif
+#endif /* !defined(USER_HZ) && !defined(OMRZTPF) */
 
 #if defined(J9ZOS390)
 #include "omrsimap.h"
@@ -123,14 +124,14 @@
 #endif
 #endif
 
-#if defined(LINUX)
+#if defined(LINUX) && !defined(OMRZTPF)
 #include <linux/magic.h>
 #include <sys/sysinfo.h>
 #include <sys/vfs.h>
 #include <sched.h>
 #elif defined(OSX)
 #include <sys/sysctl.h>
-#endif /* defined(LINUX) */
+#endif /* defined(LINUX) && !defined(OMRZTPF) */
 
 #include <unistd.h>
 
@@ -141,6 +142,10 @@
 #include "omrportpg.h"
 #include "omrportptb.h"
 #include "ut_omrport.h"
+
+#if defined(OMRZTPF)
+#include <locale.h>
+#endif /* defined(OMRZTPF) */
 
 #if defined(J9ZOS390)
 #include <sys/ps.h>
@@ -297,6 +302,10 @@ static intptr_t getZOSDescription(struct OMRPortLibrary *portLibrary, struct OMR
 #if !defined(RS6000) && !defined(J9ZOS390) && !defined(OSX)
 static uint64_t getPhysicalMemory(struct OMRPortLibrary *portLibrary);
 #endif /* !defined(RS6000) && !defined(J9ZOS390) && !defined(OSX) */
+
+#if defined(OMRZTPF)
+	uintptr_t getIstreamCount();
+#endif /* defined(OMRZTPF) */
 
 #if defined(LINUX)
 static void freeCgroupEntries(struct OMRPortLibrary *portLibrary, OMRCgroupEntry *cgEntryList);
@@ -1103,7 +1112,7 @@ omrsysinfo_get_number_CPUs_by_type(struct OMRPortLibrary *portLibrary, uintptr_t
 		if (0 >= toReturn) {
 			Trc_PRT_sysinfo_get_number_CPUs_by_type_failedBound("errno: ", errno);
 		}
-#elif defined(LINUX)
+#elif defined(LINUX) && !defined(OMRZTPF)
 		cpu_set_t cpuSet;
 		int32_t size = sizeof(cpuSet); /* Size in bytes */
 		pid_t mainProcess = getpid();
@@ -1718,7 +1727,15 @@ omrsysinfo_get_limit(struct OMRPortLibrary *portLibrary, uint32_t resourceID, ui
 	Trc_PRT_sysinfo_get_limit_Entered(resourceID);
 
 	if (OMRPORT_RESOURCE_ADDRESS_SPACE == resourceRequested) {
+#if !defined(OMRZTPF)
 		resource = RLIMIT_AS;
+#else /* !defined(OMRZTPF) */
+		/* z/TPF does not have virtual address support */
+		*limit = OMRPORT_LIMIT_UNKNOWN_VALUE;
+		rc = OMRPORT_LIMIT_UNKNOWN;
+		Trc_PRT_sysinfo_get_limit_Exit(rc);
+		return rc;
+#endif /* !defined(OMRZTPF) */
 	} else if (OMRPORT_RESOURCE_CORE_FILE == resourceRequested) {
 		resource = RLIMIT_CORE;
 	}
@@ -1819,7 +1836,14 @@ omrsysinfo_set_limit(struct OMRPortLibrary *portLibrary, uint32_t resourceID, ui
 	Trc_PRT_sysinfo_set_limit_Entered(resourceID, limit);
 
 	if (OMRPORT_RESOURCE_ADDRESS_SPACE == resourceRequested) {
+#if !defined(OMRZTPF)
 		resource = RLIMIT_AS;
+#else /* !defined(OMRZTPF) */
+		/* z/TPF does not have virtual address support */
+		rc = -1;
+		Trc_PRT_sysinfo_set_limit_Exit(rc);
+		return rc;
+#endif /* !defined(OMRZTPF) */
 	} else if (OMRPORT_RESOURCE_CORE_FILE == resourceRequested) {
 		resource = RLIMIT_CORE;
 	}
@@ -1930,7 +1954,7 @@ errorReturn:
 intptr_t
 omrsysinfo_get_load_average(struct OMRPortLibrary *portLibrary, struct J9PortSysInfoLoadData *loadAverageData)
 {
-#if defined(LINUX) || defined(OSX)
+#if (defined(LINUX) || defined(OSX)) && !defined(OMRZTPF)
 	double loadavg[3];
 	int returnValue = getloadavg(loadavg, 3);
 	if (returnValue == 3) {
@@ -1979,7 +2003,11 @@ omrsysinfo_get_CPU_utilization(struct OMRPortLibrary *portLibrary, struct J9Sysi
 	 * ~70.  Allocate 128 bytes to give lots of margin.
 	 */
 	char buf[128];
+#if !defined(OMRZTPF)
 	const uintptr_t NS_PER_HZ = 1000000000 / USER_HZ;
+#else /* !defined(OMRZTPF) */
+	const uintptr_t NS_PER_HZ = 1;
+#endif /* !defined(OMRZTPF) */
 	intptr_t fd = portLibrary->file_open(portLibrary, "/proc/stat", EsOpenRead, 0);
 	if (-1 == fd) {
 		int32_t portableError = portLibrary->error_last_error_number(portLibrary);
@@ -2193,6 +2221,10 @@ convertWithMBTOWC(struct OMRPortLibrary *portLibrary, char *inputBuffer, char *o
 	end = &outputBuffer[bufLen - 1];
 
 	walk = inputBuffer;
+
+#if defined(OMRZTPF)
+	setlocale(LC_ALL, "C");
+#endif /* defined(OMRZTPF) */
 
 	/* reset the shift state */
 	mbtowc(NULL, NULL, 0);
@@ -3150,8 +3182,11 @@ omrsysinfo_os_kernel_info(struct OMRPortLibrary *portLibrary, struct OMROSKernel
 	BOOLEAN success = FALSE;
 
 #if defined(LINUX)
+#if !defined(OMRZTPF)
 	struct utsname name = {0};
-
+#else /* !defined(OMRZTPF) */
+	struct utsname name = {{0}};
+#endif /* !defined(OMRZTPF) */
 	if (0 == uname(&name)) {
 		if (3 == sscanf(name.release, "%u.%u.%u", &kernelInfo->kernelVersion, &kernelInfo->majorRevision, &kernelInfo->minorRevision)) {
 			success = TRUE;
@@ -3445,7 +3480,7 @@ int32_t
 omrsysinfo_cgroup_is_limits_supported(struct OMRPortLibrary *portLibrary)
 {
 	int32_t rc = OMRPORT_ERROR_SYSINFO_CGROUP_UNSUPPORTED_PLATFORM;
-#if defined(LINUX)
+#if defined(LINUX) && !defined(OMRZTPF)
 	struct statfs buf = {0};
 
 	if (NULL == PPG_cgroupEntryList) {
@@ -3465,7 +3500,7 @@ omrsysinfo_cgroup_is_limits_supported(struct OMRPortLibrary *portLibrary)
 	}
 
 _end:
-#endif /* defined(LINUX) */
+#endif /* defined(LINUX) && !defined(OMRZTPF) */
 	return rc;
 }
 

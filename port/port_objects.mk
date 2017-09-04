@@ -146,7 +146,7 @@ endif
 OBJECTS += omrsl
 OBJECTS += omrstr
 OBJECTS += omrsysinfo
-ifeq ($(OMR_HOST_OS),$(filter $(OMR_HOST_OS),zos linux_ztpf))
+ifeq (zos,$(OMR_HOST_OS))
   OBJECTS += omrsysinfo_helpers
 endif
 OBJECTS += omrsyslog

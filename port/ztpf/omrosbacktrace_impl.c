@@ -83,7 +83,7 @@ backtrace_sigprotect(struct OMRPortLibrary *portLibrary,
 
 	if (omrthread_self()) {
 		if (portLibrary->sig_protect(portLibrary, protectedBacktrace, &args,
-			handler, NULL,
+			(omrsig_handler_fn)handler, NULL,
 			OMRPORT_SIG_FLAG_SIGALLSYNC | OMRPORT_SIG_FLAG_MAY_RETURN, &ret)
 			!= 0) {
 			/* check to see if there were any addresses populated */

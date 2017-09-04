@@ -88,24 +88,25 @@ public:
    void * allocate(const size_t bytes, void * hint = 0);
 
    /**
-    * @brief A function template to allocate a Region-managed object instance.
+    * @brief A function template to create a Region-managed object instance.
     *
     * @param[in] prototype A copy-constructible instance used to initialize the Region-managed instance.
     *
-    * Object instances allocated in this form will be destroyed in LIFO order when the owning
+    * Object instances created in this manner will be destroyed in LIFO order when the owning
     * Region is destroyed.\n
-    * NOTE: If, using a region R0, a second Region R1 is allocated (directly or indirectly)
-    * in this manner, any objects allocated in R0 after the allocation of R1 will have a
-    * shorter life span than all the objects allocated in R1:\n
+    * NOTE: If, using a region R0, a second Region R1 is instantiated (directly or indirectly)
+    * via this mechanism, any objects created in R0 after the instantiation of R1 will have a
+    * shorter life span than all the objects created in R1.\n
     * \n
-    * Objects Allocated in R0 before R1 > Objects allocated in R1 > Objects allocated in R0 after R1\n
+    * Given the context of R0 and R1 above:\n
+    * Objects created in R0 before R1 > Objects created in R1 > Objects created in R0 after R1\n
     * \n
     * This is most likely going to be invoked using a temporary:\n
-    * ```region.allocate( MyClass(arg0, ...argN) );```\n
+    * ```region.create( MyClass(arg0, ...argN) );```\n
     * Or, if using the default constructor, use extra parentheses to avoid the 'most vexing parse':\n
-    * ```region.allocate( (MyClass()) );```
+    * ```region.create( (MyClass()) );```
     */
-   template <typename T> inline T& allocate(const T& prototype);
+   template <typename T> inline T& create(const T& prototype);
 
    void deallocate(void * allocation, size_t = 0) throw();
 
@@ -158,7 +159,7 @@ inline void operator delete[](void * p, TR::Region &region) { region.deallocate(
 
 template <typename T>
 T &
-TR::Region::allocate(const T &value)
+TR::Region::create(const T &value)
    {
    Instance<T> *instance = new (*this) Instance<T>(_lastDestructable, value);
    _lastDestructable = static_cast<Destructable *>(instance);

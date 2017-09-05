@@ -104,30 +104,26 @@ macro(omr_detect_system_information)
 		message(FATAL_ERROR "Unsupported OS: ${CMAKE_SYSTEM_NAME}")
 	endif()
 
-	if(OMR_HOST_OS STREQUAL "linux")
-		# Linux specifics
-		set(OMR_TOOLCONFIG "gnu")
-	endif()
-
-	if(OMR_HOST_OS STREQUAL "win")
-		#TODO: should probably check for MSVC
-		set(OMR_WINVER "0x501")
-		set(OMR_TOOLCONFIG "msvc")
-	endif()
-
-	if(OMR_HOST_OS STREQUAL "zos")
-		# ZOS specifics
-		set(OMR_TOOLCONFIG "gnu")
-	endif()
-
-	if(OMR_HOST_OS STREQUAL "osx")
-		# OSX specifics
-		set(OMR_TOOLCONFIG "gnu")
-	endif()
-
-	if(OMR_HOST_OS STREQUAL "aix")
-		# AIX specifics
-		set(OMR_TOOLCONFIG "xlc")
+	#NOTE: This is based off of the id of the C compiler. This means that
+	# if you mix and match c/c++ compilers it all falls apart.
+	# But that seems like a case we probably don't want to suppot anyway
+	if(NOT CMAKE_C_COMPILER_ID)
+		message(WARNING "OMR: C Compiler ID is not set. Did you call omr_detect_system_information before C was enabled?")
+	else()
+		if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+			set(_OMR_TOOLCONFIG "gnu")
+		elseif(CMAKE_C_COMPILER_ID STREQUAL "MSVC")
+			set(_OMR_TOOLCONFIG "msvc")
+		elseif(CMAKE_C_COMPILER_ID MATCHES "^(Apple)?Clang$")
+			#TODO we dont actually have a clang config.
+			# Just use GNU config
+			set(_OMR_TOOLCONFIG "gnu")
+		elseif(CMAKE_C_COMPILER_ID STREQUAL "XL")
+			set(_OMR_TOOLCONFIG "xlc")
+		else()
+			message(FATAL_ERROR "OMR: Unknown compiler ID: '${CMAKE_CXX_COMPILER_ID}'")
+		endif()
+		set(OMR_TOOLCONFIG ${_OMR_TOOLCONFIG} CACHE STRING "Name of toolchain configuration options to use")
 	endif()
 
 	message(STATUS "OMR: The CPU architecture is ${OMR_HOST_ARCH}")

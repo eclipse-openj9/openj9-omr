@@ -32,114 +32,12 @@ if (NOT PERL_FOUND )
 	message(FATAL_ERROR "Perl not found")
 endif()
 
+# Currently not doing cross, so assume HOST == TARGET
+set(TR_TARGET_ARCH    ${TR_HOST_ARCH})
+set(TR_TARGET_SUBARCH ${TR_HOST_SUBARCH})
+set(TR_TARGET_BITS    ${TR_HOST_BITS})
 
-macro(tr_detect_system_information)
-	macro(jit_not_ready)
-		message(FATAL_ERROR "JIT isn't ready to build with CMake on this platform: ")
-	endmacro()
-
-	set(TR_COMPILE_DEFINITIONS "")
-	set(TR_COMPILE_OPTIONS     "")
-
-
-	# Platform setup code! 
-	# 
-	# Longer term this will have to be integrated into the evolving platform story, 
-	# hence the attempt to try to isolate the pieces by architecture, OS, and toolconfig.
-	if(OMR_ARCH_X86)
-		set(TR_HOST_ARCH    x)
-		list(APPEND TR_COMPILE_DEFINITIONS TR_HOST_X86 TR_TARGET_X86)
-		if(OMR_ENV_DATA64)
-			set(TR_HOST_SUBARCH amd64)
-			set(TR_HOST_BITS    64)
-			set(CMAKE_ASM-ATT_FLAGS "--64 --defsym TR_HOST_X86=1 --defsym TR_HOST_64BIT=1 --defsym BITVECTOR_64BIT=1 --defsym LINUX=1 --defsym TR_TARGET_X86=1 --defsym TR_TARGET_64BIT=1")
-
-			list(APPEND TR_COMPILE_DEFINITIONS TR_HOST_64BIT TR_TARGET_64BIT)
-		else()
-			jit_not_ready()
-		endif()
-	elseif(OMR_ARCH_POWER)
-		set(TR_HOST_ARCH p)
-		list(APPEND TR_COMPILE_DEFINITIONS TR_HOST_POWER TR_TARGET_POWER)
-		if(OMR_ENV_DATA64)
-			set(TR_HOST_BITS    64)
-			list(APPEND TR_COMPILE_DEFINITIONS TR_HOST_64BIT TR_TARGET_64BIT)
-		else()
-			jit_not_ready()
-		endif()
-	else()
-		jit_not_ready()
-	endif()
-
-	# OS Setup Code. 
-	if(OMR_HOST_OS MATCHES "linux")
-		list(APPEND TR_COMPILE_DEFINITIONS
-			SUPPORTS_THREAD_LOCAL
-			LINUX
-		)
-		
-        elseif(OMR_HOST_OS MATCHES "osx")
-		list(APPEND TR_COMPILE_DEFINITIONS
-			SUPPORTS_THREAD_LOCAL
-			OSX
-		)
-		
-	elseif(OMR_HOST_OS MATCHES "aix")
-		list(APPEND TR_COMPILE_DEFINITIONS
-			SUPPORTS_THREAD_LOCAL
-			_XOPEN_SOURCE_EXTENDED=1 
-			_ALL_SOURCE
-			AIX
-		)
-	else()
-		jit_not_ready()
-	endif()
-
-	message("OMR_TOOLCONFIG is ${OMR_TOOLCONFIG}")
-	# TOOLCHAIN setup code. 
-	if(OMR_TOOLCONFIG MATCHES "gnu|clang")
-		list(APPEND TR_COMPILE_OPTIONS 
-			-std=c++0x
-			-Wno-write-strings #This warning swamps almost all other output
-			) 
-
-		set(PASM_CMD ${CMAKE_C_COMPILER}) 
-		set(PASM_FLAGS -x assembler-with-cpp -E -P) 
-
-		set(SPP_CMD ${CMAKE_C_COMPILER}) 
-		set(SPP_FLAGS -x assembler-with-cpp -E -P) 
-	elseif(OMR_TOOLCONFIG MATCHES "msvc")
-		# MSVC Specifics
-		jit_not_ready()
-	elseif(OMR_TOOLCONFIG MATCHES "xlc") 
-		list(APPEND TR_COMPILE_OPTIONS
-			-qarch=pwr7
-			-qtls 
-			-qnotempinc 
-			-qenum=small 
-			-qmbcs 
-			-qlanglvl=extended0x 
-			-qfuncsect 
-			-qsuppress=1540-1087:1540-1088:1540-1090:1540-029:1500-029
-			-qdebug=nscrep
-			)
-
-		set(SPP_CMD ${CMAKE_C_COMPILER}) 
-		set(SPP_FLAGS -E -P) 
-	endif()
-
-
-	# Currently not doing cross, so assume HOST == TARGET
-	set(TR_TARGET_ARCH    ${TR_HOST_ARCH})
-	set(TR_TARGET_SUBARCH ${TR_HOST_SUBARCH})
-	set(TR_TARGET_BITS    ${TR_HOST_BITS})
-
-	set(MASM2GAS_PATH ${OMR_ROOT}/tools/compiler/scripts/masm2gas.pl)
-
-	message(STATUS "Set TR_COMPILE_DEFINITIONS to ${TR_COMPILE_DEFINITIONS}")
-endmacro(tr_detect_system_information)
-
-tr_detect_system_information()
+set(MASM2GAS_PATH ${OMR_ROOT}/tools/compiler/scripts/masm2gas.pl)
 
 # Mark a target as consuming the compiler components. 
 # 
@@ -169,10 +67,6 @@ function(make_compiler_target TARGET_NAME)
 		UT_DIRECT_TRACE_REGISTRATION
 		${TR_COMPILE_DEFINITIONS}
 		${COMPILER_DEFINES} 
-	)
-
-target_compile_options(${TARGET_NAME} PRIVATE 
-		${TR_COMPILE_OPTIONS}
 	)
 
 	message("Made ${TARGET_NAME} into a compiler target,for ${TARGET_COMPILER}.")
@@ -341,6 +235,15 @@ function(omr_inject_object_modification_targets result compiler_name)
 	set(${result} ${arg} PARENT_SCOPE)
 endfunction(omr_inject_object_modification_targets)
 
+# Setup the current scope for compiling the Testarossa compiler technology. Used in 
+# conjunction with make_compiler_target -- Only can infect add_directory scope.
+macro(set_tr_compile_options)
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TR_COMPILE_OPTIONS} ${TR_CXX_COMPILE_OPTIONS}" PARENT_SCOPE)
+	set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} ${TR_COMPILE_OPTIONS}   ${TR_C_COMPILE_OPTIONS}" PARENT_SCOPE)
+	# message("[set_tr_compile_options] Set CMAKE_CXX_FLAGS to ${CMAKE_CXX_FLAGS}")
+	# message("[set_tr_compile_options] Set CMAKE_C_FLAGS to ${CMAKE_C_FLAGS}")
+endmacro(set_tr_compile_options)
+
 # Create an OMR Compiler component
 # 
 # call like this: 
@@ -369,6 +272,8 @@ function(create_omr_compiler_library)
 		message("Creating static library for ${COMPILER_NAME}")
 		set(LIB_TYPE STATIC)
 	endif()
+
+	set_tr_compile_options()
 
 
 	get_filename_component(abs_root ${CMAKE_CURRENT_LIST_DIR} ABSOLUTE)

@@ -24,3 +24,9 @@ list(APPEND OMR_PLATFORM_DEFINITIONS
 list(APPEND OMR_PLATFORM_COMPILE_OPTIONS
 	-pthread
 )
+
+
+# Testarossa build variables. Longer term the distinction between TR and the rest 
+# of the OMR code should be heavily reduced. In the mean time, we keep
+# the distinction
+list(APPEND TR_COMPILE_DEFINITIONS -DSUPPORTS_THREAD_LOCAL -DOSX)

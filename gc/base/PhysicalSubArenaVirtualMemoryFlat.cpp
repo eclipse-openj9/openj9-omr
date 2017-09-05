@@ -34,15 +34,6 @@
 #include "ModronAssertions.h"
 
 /**
- * Zos390 Platform dependent trickery for the ar command.  Without this definition
- * the ar command on Zos390 will fail to link this class.
- */
-#if defined(J9ZOS390)
-#include "ZOSLinkage.hpp"
-int j9zos390LinkTrickPhysicalSubArenaVirtualMemoryFlat;
-#endif /* J9ZOS390 */
-
-/**
  * Create and return a new instance of MM_PhysicalSubArenaVirtualMemoryFlat.
  */
 MM_PhysicalSubArenaVirtualMemoryFlat *

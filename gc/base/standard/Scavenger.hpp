@@ -536,7 +536,6 @@ protected:
 	 * Perform partial initialization if Garbage Collection is called earlier then GC Master Thread is activated
 	 * @param env Master GC thread.
 	 */
-	virtual void preMasterGCThreadInitialize(MM_EnvironmentBase *env);
 	virtual MM_ConcurrentPhaseStatsBase *getConcurrentPhaseStats() { return &_concurrentPhaseStats; }
 #endif /* OMR_GC_CONCURRENT_SCAVENGER */
 	

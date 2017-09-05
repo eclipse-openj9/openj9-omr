@@ -21,8 +21,10 @@ if(OMR_HOOKGEN_)
 endif()
 set(OMR_HOOKGEN_ 1)
 
-#TODO: currently output in source tree, should be in build tree
-#TODO: Dependecy checking is broken, since it checks for output in build tree rather than src
+# Process an input hookgen file to generate output source files.
+# Usage: omr_add_hookgen(<input> <output>...)
+# TODO: currently output in source tree, should be in build tree
+# TODO: Dependecy checking is broken, since it checks for output in build tree rather than src
 function(omr_add_hookgen input)
 	get_filename_component(input_dir "${input}" DIRECTORY)
 	add_custom_command(

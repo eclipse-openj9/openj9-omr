@@ -21,6 +21,13 @@ if(OMR_TRACEGEN_)
 endif()
 set(OMR_TRACEGEN 1)
 
+# Process an <input> tracegen file to produce trace headers, sources, and pdat files.
+# Usage: omr_add_tracegen(<input> [<output>])
+# By default, <output> is derived from the base name of <input>.
+# tracegen will produce:
+#   ut_<output>.h
+#   ut_<output>.c
+#   ut_<output>.pdat
 #TODO: pehaps should detect output by searching for "executable=" line
 #takes extra optional argument name to override output filename
 function(omr_add_tracegen input)

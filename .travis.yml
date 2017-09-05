@@ -37,6 +37,8 @@ addons:
       - gcc-multilib
       - g++-multilib
       - ninja-build
+before_install:
+  - if [ $TRAVIS_OS_NAME = osx ]; then brew install ccache ; fi
 env:
   matrix:
     - BUILD_WITH_CMAKE=yes CMAKE_GENERATOR=Ninja
@@ -51,6 +53,8 @@ matrix:
   exclude:
     - os: osx
       env: BUILD_WITH_CMAKE=yes CMAKE_GENERATOR="Unix Makefiles"
+    - os: osx
+      env: BUILD_WITH_CMAKE=yes CMAKE_GENERATOR=Ninja
   include:
     - os: linux
       env: SPEC=linux_x86-64 PLATFORM=amd64-linux64-gcc
@@ -61,7 +65,14 @@ matrix:
       dist: precise
     - os: linux
       env: SPEC=linux_x86 PLATFORM=amd64-linux-gcc
+    - os: osx
+      env: BUILD_WITH_CMAKE=yes CMAKE_GENERATOR=Ninja
+      compiler: clang
 before_script:
   - ulimit -c unlimited
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then export PATH=/usr/local/opt/ccache/libexec:$PATH ; fi
+  - ccache -s -z
 script:
   - bash ./scripts/build-on-travis.sh
+after_script:
+  - ccache -s

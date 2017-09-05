@@ -126,12 +126,11 @@ TEST(PortHeapTest, heap_test1)
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
 	const char *testName = "omrheap_test1";
 
-	/*malloc 2MB as backing storage for the heap*/
-	uintptr_t memAllocAmount = 2 * 1024 * 1024;
+	/*malloc 1MB as backing storage for the heap*/
+	uintptr_t memAllocAmount = 1 * 1024 * 1024;
 	uint8_t *allocPtr = NULL;
 	uintptr_t heapStartOffset = 50;
-	uintptr_t heapSize[] = {10, 30, 100, 200, 1000, 1 * 1024 * 1024};
-	uintptr_t i;
+	uintptr_t heapSize[] = {10, 100, 1000, 512 * 1024};
 	uintptr_t j;
 
 	reportTestEntry(OMRPORTLIB, testName);
@@ -150,41 +149,39 @@ TEST(PortHeapTest, heap_test1)
 
 	for (j = 0; j < (sizeof(heapSize) / sizeof(heapSize[0])); j++) {
 		portTestEnv->log("test for heap size %zu bytes\n", heapSize[j]);
-		for (i = 0; i < 16; i++) {
-			/*we leave the first <heapStartOffset> bytes alone so that we can check if they are corrupted by heap operations*/
-			uint8_t *allocPtrAdjusted = allocPtr + (i + heapStartOffset);
-			uintptr_t subAllocSize = 0;
-			void *subAllocPtr = NULL;
-			J9Heap *heapBase;
+		/*we leave the first <heapStartOffset> bytes alone so that we can check if they are corrupted by heap operations*/
+		uint8_t *allocPtrAdjusted = allocPtr + heapStartOffset;
+		uintptr_t subAllocSize = 0;
+		void *subAllocPtr = NULL;
+		J9Heap *heapBase;
 
-			memset(allocPtr, 0xff, memAllocAmount);
-			heapBase = omrheap_create(allocPtrAdjusted, heapSize[j], 0);
-			if (((NULL == heapBase) && heapSize[j] > MINIMUM_HEAP_SIZE) || ((NULL != heapBase) && heapSize[j] < MINIMUM_HEAP_SIZE)) {
-				outputErrorMessage(PORTTEST_ERROR_ARGS, "Failed to create heap at %p with size %zu\n", allocPtrAdjusted, heapSize[j]);
-				goto exit;
-			}
-			if (NULL == heapBase) {
-				break;
-			}
-			do {
-				subAllocPtr = omrheap_allocate(heapBase, subAllocSize);
-				if (subAllocPtr) {
-					uintptr_t querySize = omrheap_query_size(heapBase, subAllocPtr);
-					/*The size returned may have been rounded-up to the nearest U64, and may have an extra 2 slots added in some circumstances*/
-					if (querySize < subAllocSize || querySize > (subAllocSize + 3 * sizeof(uint64_t))) {
-						outputErrorMessage(PORTTEST_ERROR_ARGS, "omrheap_query_size returned the wrong size. Expected %zu, got %zu\n", subAllocSize, querySize);
-						omrheap_free(heapBase, subAllocPtr);
-						break;
-					}
-				}
-				walkHeap(OMRPORTLIB, heapBase, testName);
-				omrheap_free(heapBase, subAllocPtr);
-				walkHeap(OMRPORTLIB, heapBase, testName);
-				subAllocSize  += 1;
-			} while (NULL != subAllocPtr);
-
-			verifyHeapOutofRegionWrite(OMRPORTLIB, allocPtr, allocPtrAdjusted + heapSize[j], heapStartOffset + i, testName);
+		memset(allocPtr, 0xff, memAllocAmount);
+		heapBase = omrheap_create(allocPtrAdjusted, heapSize[j], 0);
+		if (((NULL == heapBase) && heapSize[j] > MINIMUM_HEAP_SIZE) || ((NULL != heapBase) && heapSize[j] < MINIMUM_HEAP_SIZE)) {
+			outputErrorMessage(PORTTEST_ERROR_ARGS, "Failed to create heap at %p with size %zu\n", allocPtrAdjusted, heapSize[j]);
+			goto exit;
 		}
+		if (NULL == heapBase) {
+			break;
+		}
+		do {
+			subAllocPtr = omrheap_allocate(heapBase, subAllocSize);
+			if (subAllocPtr) {
+				uintptr_t querySize = omrheap_query_size(heapBase, subAllocPtr);
+				/*The size returned may have been rounded-up to the nearest U64, and may have an extra 2 slots added in some circumstances*/
+				if (querySize < subAllocSize || querySize > (subAllocSize + 3 * sizeof(uint64_t))) {
+					outputErrorMessage(PORTTEST_ERROR_ARGS, "omrheap_query_size returned the wrong size. Expected %zu, got %zu\n", subAllocSize, querySize);
+					omrheap_free(heapBase, subAllocPtr);
+					break;
+				}
+			}
+			walkHeap(OMRPORTLIB, heapBase, testName);
+			omrheap_free(heapBase, subAllocPtr);
+			walkHeap(OMRPORTLIB, heapBase, testName);
+			subAllocSize  += 4;
+		} while (NULL != subAllocPtr);
+
+		verifyHeapOutofRegionWrite(OMRPORTLIB, allocPtr, allocPtrAdjusted + heapSize[j], heapStartOffset, testName);
 	}
 	omrmem_free_memory(allocPtr);
 	portTestEnv->changeIndent(-1);
@@ -219,7 +216,7 @@ omrheap_test2(struct OMRPortLibrary *portLibrary, int randomSeed)
 	uintptr_t freeSerialNumber = 0;
 	uintptr_t reallocSerialNumber = 0;
 	uintptr_t heapSize = 10 * 1024 * 1024;
-	uintptr_t serialNumberTop = 100000;
+	uintptr_t serialNumberTop = 10000;
 	uintptr_t allocSizeBoundary = heapSize / 2;
 
 	uintptr_t largestAllocSize = 0;
@@ -1400,7 +1397,7 @@ TEST(PortHeapTest, heap_test2)
 	 * point in continuing
 	 */
 	timeStart = omrtime_current_time_millis();
-	for (i = 0; i < 10; i += 1) {
+	for (i = 0; i < 2; i += 1) {
 		rc |= omrheap_test2(OMRPORTLIB, randomSeed);
 		if (rc) {
 			portTestEnv->log(LEVEL_ERROR, "omrheap_test2 failed loop %d\n\n", i);

@@ -23,7 +23,7 @@
 #include "testHelper.hpp"
 #include "thread_api.h"
 
-#define MILLI_TIMEOUT	10000
+#define MILLI_TIMEOUT	1000
 #define NANO_TIMEOUT	0
 
 #define STEP_MILLI_TIMEOUT		600000

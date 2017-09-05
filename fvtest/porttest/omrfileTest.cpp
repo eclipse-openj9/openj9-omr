@@ -2720,7 +2720,7 @@ omrfile_test22_child_1(OMRPortLibrary *portLibrary)
 		SleepFor(1);
 	}
 
-	SleepFor(5);
+	SleepFor(1);
 
 	unlockRc = FILE_UNLOCK_BYTES_FUNCTION(OMRPORTLIB, fd, offset, length);
 
@@ -3071,7 +3071,7 @@ omrfile_test24_child_1(OMRPortLibrary *portLibrary)
 		SleepFor(1);
 	}
 
-	SleepFor(5);
+	SleepFor(1);
 
 	unlockRc = FILE_UNLOCK_BYTES_FUNCTION(OMRPORTLIB, fd, offset, length);
 
@@ -3258,7 +3258,7 @@ omrfile_test25_child_1(OMRPortLibrary *portLibrary)
 		SleepFor(1);
 	}
 
-	SleepFor(5);
+	SleepFor(1);
 
 #if defined(_WIN32) || defined(OSX)
 	unlockRc = FILE_UNLOCK_BYTES_FUNCTION(OMRPORTLIB, fd, offset, length);

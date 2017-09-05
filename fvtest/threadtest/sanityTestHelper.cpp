@@ -41,12 +41,12 @@ SimpleSanity(void)
 		CMonitor mon2(0, "monitor2");
 		omrTestEnv->log("Enter on 1 and hold, contended enter on 2\n");
 		omrTestEnv->changeIndent(1);
-		CEnterExit thread1(mon2, 10 * 1000);
+		CEnterExit thread1(mon2, 1000);
 		CEnterExit thread2(mon2, 0);
 
 		omrTestEnv->log("Starting thread 1\n");
 		thread1.Start();
-		omrthread_sleep(2 * 1000);
+		omrthread_sleep(2000);
 		omrTestEnv->log("starting thread 2\n");
 		thread2.Start();
 
@@ -182,9 +182,6 @@ void
 SanityTestNThreads(unsigned int numThreads, unsigned int runTime)
 {
 	omrTestEnv->changeIndent(1);
-	
-	omrTestEnv->log("1000ms\n");
-	TestNThreadsLooping(numThreads, 1000, runTime, false);
 
 	omrTestEnv->log("100ms\n");
 	TestNThreadsLooping(numThreads, 100, runTime, false);

@@ -503,7 +503,7 @@ TEST(DISABLED_PortTimeTest, time_test4)
 }
 
 
-#define J9TIME_TEST_DIRECTION_TIMEOUT_MILLIS 300000 /* 5 minutes */
+#define J9TIME_TEST_DIRECTION_TIMEOUT_MILLIS 60000 /* 1 minute */
 static uintptr_t omrtimeTestDirectionNumThreads = 0;
 
 typedef struct J9TimeTestDirectionStruct {
@@ -549,7 +549,7 @@ TEST(PortTimeTest, time_nano_time_direction)
 		if (0 == omrthread_monitor_init(&tds.monitor, 0)) {
 			uintptr_t i;
 			intptr_t waitRetVal = 0;
-			const uintptr_t threadToCPUFactor = 10;
+			const uintptr_t threadToCPUFactor = 2;
 			omrthread_t *threads = NULL;
 
 			omrtimeTestDirectionNumThreads = omrsysinfo_get_number_CPUs_by_type(OMRPORT_CPU_ONLINE) * threadToCPUFactor;

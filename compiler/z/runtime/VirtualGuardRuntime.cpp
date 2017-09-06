@@ -44,14 +44,16 @@
   */
 extern "C" void _patchVirtualGuard(uint8_t* locationAddr, uint8_t* destinationAddr, int32_t smpFlag)
    {
+   volatile uint8_t* volatileLocationAddr = locationAddr;
+
    static bool debugTrace = debug("traceVGNOP") != NULL;
 
    if (debugTrace)
       {
-      printf("####> Patching VGNOP at locationAddr %p (%x), destinationAddr %p (%x), smpFlag: %d\n", locationAddr, *reinterpret_cast<intptrj_t*>(locationAddr), destinationAddr, *reinterpret_cast<intptrj_t*>(destinationAddr), smpFlag);
+      printf("####> Patching VGNOP at locationAddr %p (%x), destinationAddr %p (%x), smpFlag: %d\n", volatileLocationAddr, *reinterpret_cast<volatile intptrj_t*>(volatileLocationAddr), destinationAddr, *reinterpret_cast<intptrj_t*>(destinationAddr), smpFlag);
       }
 
-   int64_t displacement = static_cast<int64_t>(destinationAddr - locationAddr) / 2;
+   int64_t displacement = static_cast<int64_t>(destinationAddr - volatileLocationAddr) / 2;
 
    // If there is a NOP BRC / BRCL at locationAddr the application could be asynchronously executing this branch as
    // we are patching it. Because the caller / codegen ensured this branch will never execute if it is to be patched
@@ -60,24 +62,24 @@ extern "C" void _patchVirtualGuard(uint8_t* locationAddr, uint8_t* destinationAd
    if (displacement >= MIN_IMMEDIATE_VAL && displacement <= MAX_IMMEDIATE_VAL)
       {
       // Note the 0 mask value
-      locationAddr[1] = 0x04;
+      volatileLocationAddr[1] = 0x04;
 
-      locationAddr[0] = 0xA7;
-      locationAddr[2] = (displacement & 0xFF00) >> 8;
-      locationAddr[3] = (displacement & 0x00FF);
+      volatileLocationAddr[0] = 0xA7;
+      volatileLocationAddr[2] = (displacement & 0xFF00) >> 8;
+      volatileLocationAddr[3] = (displacement & 0x00FF);
       }
    else
       {
       // Note the 0 mask value
-      locationAddr[1] = 0x04;
+      volatileLocationAddr[1] = 0x04;
 
-      locationAddr[0] = 0xC0;
-      locationAddr[2] = (displacement & 0xFF000000) >> 24;
-      locationAddr[3] = (displacement & 0x00FF0000) >> 16;
-      locationAddr[4] = (displacement & 0x0000FF00) >> 8;
-      locationAddr[5] = (displacement & 0x000000FF);
+      volatileLocationAddr[0] = 0xC0;
+      volatileLocationAddr[2] = (displacement & 0xFF000000) >> 24;
+      volatileLocationAddr[3] = (displacement & 0x00FF0000) >> 16;
+      volatileLocationAddr[4] = (displacement & 0x0000FF00) >> 8;
+      volatileLocationAddr[5] = (displacement & 0x000000FF);
       }
 
    // Modify the mask value to an always taken branch (after modifying displacement - order matters; see above)
-   locationAddr[1] = 0xF4;
+   volatileLocationAddr[1] = 0xF4;
    }

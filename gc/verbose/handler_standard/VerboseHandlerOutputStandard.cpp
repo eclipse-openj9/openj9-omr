@@ -399,7 +399,8 @@ MM_VerboseHandlerOutputStandard::handleScavengeEnd(J9HookInterface** hook, uintp
 	MM_GCExtensionsBase *extensions = MM_GCExtensionsBase::getExtensions(env->getOmrVM());
 	MM_VerboseManager* manager = getManager();
 	MM_VerboseWriterChain* writer = manager->getWriterChain();
-	MM_ScavengerStats *scavengerStats = &extensions->scavengerStats;
+	MM_ScavengerStats *scavengerStats = &extensions->incrementScavengerStats;
+	MM_ScavengerStats *cycleScavengerStats = &extensions->scavengerStats;
 	OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
 	uint64_t duration = 0;
 	bool deltaTimeSuccess = getTimeDeltaInMicroSeconds(&duration, scavengerStats->_startTime, scavengerStats->_endTime);
@@ -408,7 +409,8 @@ MM_VerboseHandlerOutputStandard::handleScavengeEnd(J9HookInterface** hook, uintp
 	handleGCOPOuterStanzaStart(env, "scavenge", env->_cycleState->_verboseContextID, duration, deltaTimeSuccess);
 
 	if (event->cycleEnd) {
-		writer->formatAndOutput(env, 1, "<scavenger-info tenureage=\"%zu\" tenuremask=\"%4zx\" tiltratio=\"%zu\" />", scavengerStats->_tenureAge, scavengerStats->getFlipHistory(0)->_tenureMask, scavengerStats->_tiltRatio);
+		writer->formatAndOutput(env, 1, "<scavenger-info tenureage=\"%zu\" tenuremask=\"%4zx\" tiltratio=\"%zu\" />",
+				cycleScavengerStats->_tenureAge, cycleScavengerStats->getFlipHistory(0)->_tenureMask, cycleScavengerStats->_tiltRatio);
 	}
 
 	if (0 != scavengerStats->_flipCount) {

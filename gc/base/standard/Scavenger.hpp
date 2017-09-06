@@ -362,11 +362,11 @@ public:
 	void reportScavengeStart(MM_EnvironmentStandard *env);
 	void reportScavengeEnd(MM_EnvironmentStandard *env, bool lastIncrement);
 
-	MMINLINE MM_ScavengerHotFieldStats *getHotFieldStats(MM_EnvironmentStandard *env) { return &(env->_hotFieldStats); }
+	MMINLINE MM_ScavengerHotFieldStats *getHotFieldStats(MM_EnvironmentBase *env) { return &(env->_hotFieldStats); }
 	void masterClearHotFieldStats();
 	void masterReportHotFieldStats();
-	void clearHotFieldStats(MM_EnvironmentStandard *env);
-	void mergeHotFieldStats(MM_EnvironmentStandard *env);
+	void clearHotFieldStats(MM_EnvironmentBase *env);
+	void mergeHotFieldStats(MM_EnvironmentBase *env);
 
 	/**
 	 * Add the specified object to the remembered set.
@@ -413,8 +413,33 @@ public:
 	 */
 	bool processRememberedThreadReference(MM_EnvironmentStandard *env, omrobjectptr_t objectPtr);
 
-	void clearGCStats(MM_EnvironmentBase *env);
-	void mergeGCStats(MM_EnvironmentBase *env);
+	/**
+	 * Clear global (not thread local) stats for current phase/increment
+	 * @param firstIncrement true if first increment in a cycle
+	 */
+	void clearIncrementGCStats(MM_EnvironmentBase *env, bool firstIncrement);
+	/**
+	 * Clear global (not thread local) cumulative cycle stats 
+	 */
+	void clearCycleGCStats(MM_EnvironmentBase *env);
+	/**
+	 * Clear thread local stats for current phase/increment
+	 * @param firstIncrement true if first increment in a cycle
+	 */
+	void clearThreadGCStats(MM_EnvironmentBase *env, bool firstIncrement);
+	/**
+	 * Merge thread local stats for current phase/increment in to global current increment stats
+	 */	
+	void mergeThreadGCStats(MM_EnvironmentBase *env);
+	/**
+	 * Merge global current increment stats in to global cycle stats
+	 * @param firstIncrement true if last increment in a cycle
+	 */		
+	void mergeIncrementGCStats(MM_EnvironmentBase *env, bool lastIncrement);
+	/**
+	 * Common merge logic used for both thread and increment level merges.
+	 */
+	void mergeGCStatsBase(MM_EnvironmentBase *env, MM_ScavengerStats *finalGCStats, MM_ScavengerStats *scavStats);
 	bool canCalcGCStats(MM_EnvironmentStandard *env);
 	void calcGCStats(MM_EnvironmentStandard *env);
 

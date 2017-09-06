@@ -363,8 +363,8 @@ MM_Scavenger::masterSetupForGC(MM_EnvironmentStandard *env)
 	uintptr_t regionSize = _extensions->heap->getHeapRegionManager()->getRegionSize();
 	Assert_MM_true((0 != regionSize) && (0 == ((uintptr_t)_heapBase % regionSize)));
 
-	/* Clear the gc statistics */
-	clearGCStats(env);
+	/* Clear the cycle gc statistics. Increment level stats will be cleared just prior to increment start. */
+	clearCycleGCStats(env);
 
 	/* invoke collector language interface callback */
 	_cli->scavenger_masterSetupForGC(env);
@@ -410,8 +410,7 @@ MM_Scavenger::masterSetupForGC(MM_EnvironmentStandard *env)
 void
 MM_Scavenger::workerSetupForGC(MM_EnvironmentStandard *env)
 {
-	/* Clear local stats */
-	env->_scavengerStats.clear();
+	clearThreadGCStats(env, true);
 
 	/* Clear the worker hot field statistics */
 	clearHotFieldStats(env);
@@ -480,9 +479,11 @@ MM_Scavenger::reportScavengeEnd(MM_EnvironmentStandard *env, bool lastIncrement)
 	bool scavengeSuccessful = scavengeCompletedSuccessfully(env);
 	_cli->scavenger_reportScavengeEnd(env, scavengeSuccessful);
 
-	_extensions->scavengerStats._tiltRatio = calculateTiltRatio();
+	if (lastIncrement) {
+		_extensions->scavengerStats._tiltRatio = calculateTiltRatio();
 
-	Trc_MM_Tiltratio(env->getLanguageVMThread(), _extensions->scavengerStats._tiltRatio);
+		Trc_MM_Tiltratio(env->getLanguageVMThread(), _extensions->scavengerStats._tiltRatio);
+	}
 
 	TRIGGER_J9HOOK_MM_PRIVATE_SCAVENGE_END(
 		_extensions->privateHookInterface,
@@ -533,34 +534,34 @@ MM_Scavenger::reportGCEnd(MM_EnvironmentStandard *env)
 	OMRPORT_ACCESS_FROM_ENVIRONMENT(env);
 
 	Trc_MM_LocalGCEnd(env->getLanguageVMThread(),
-		_extensions->scavengerStats._rememberedSetOverflow,
-		_extensions->scavengerStats._causedRememberedSetOverflow,
-		_extensions->scavengerStats._scanCacheOverflow,
-		_extensions->scavengerStats._failedFlipCount,
-		_extensions->scavengerStats._failedFlipBytes,
-		_extensions->scavengerStats._failedTenureCount,
-		_extensions->scavengerStats._failedTenureBytes,
-		_extensions->scavengerStats._flipCount,
-		_extensions->scavengerStats._flipBytes,
+		_extensions->incrementScavengerStats._rememberedSetOverflow,
+		_extensions->incrementScavengerStats._causedRememberedSetOverflow,
+		_extensions->incrementScavengerStats._scanCacheOverflow,
+		_extensions->incrementScavengerStats._failedFlipCount,
+		_extensions->incrementScavengerStats._failedFlipBytes,
+		_extensions->incrementScavengerStats._failedTenureCount,
+		_extensions->incrementScavengerStats._failedTenureBytes,
+		_extensions->incrementScavengerStats._flipCount,
+		_extensions->incrementScavengerStats._flipBytes,
 		_extensions->heap->getApproximateActiveFreeMemorySize(MEMORY_TYPE_NEW),
 		_extensions->heap->getActiveMemorySize(MEMORY_TYPE_NEW),
 		_extensions->heap->getApproximateActiveFreeMemorySize(MEMORY_TYPE_OLD),
 		_extensions->heap->getActiveMemorySize(MEMORY_TYPE_OLD),
 		(_extensions-> largeObjectArea ? _extensions->heap->getApproximateActiveFreeLOAMemorySize(MEMORY_TYPE_OLD) : (uintptr_t)0 ),
 		(_extensions-> largeObjectArea ? _extensions->heap->getActiveLOAMemorySize(MEMORY_TYPE_OLD) : (uintptr_t)0 ),
-		_extensions->scavengerStats._tenureAge
+		_extensions->incrementScavengerStats._tenureAge
 	);
 
 	Trc_OMRMM_LocalGCEnd(env->getOmrVMThread(),
-		_extensions->scavengerStats._rememberedSetOverflow,
-		_extensions->scavengerStats._causedRememberedSetOverflow,
-		_extensions->scavengerStats._scanCacheOverflow,
-		_extensions->scavengerStats._failedFlipCount,
-		_extensions->scavengerStats._failedFlipBytes,
-		_extensions->scavengerStats._failedTenureCount,
-		_extensions->scavengerStats._failedTenureBytes,
-		_extensions->scavengerStats._flipCount,
-		_extensions->scavengerStats._flipBytes,
+		_extensions->incrementScavengerStats._rememberedSetOverflow,
+		_extensions->incrementScavengerStats._causedRememberedSetOverflow,
+		_extensions->incrementScavengerStats._scanCacheOverflow,
+		_extensions->incrementScavengerStats._failedFlipCount,
+		_extensions->incrementScavengerStats._failedFlipBytes,
+		_extensions->incrementScavengerStats._failedTenureCount,
+		_extensions->incrementScavengerStats._failedTenureBytes,
+		_extensions->incrementScavengerStats._flipCount,
+		_extensions->incrementScavengerStats._flipBytes,
 		_extensions->heap->getApproximateActiveFreeMemorySize(MEMORY_TYPE_NEW),
 		_extensions->heap->getActiveMemorySize(MEMORY_TYPE_NEW),
 		_extensions->heap->getApproximateActiveFreeMemorySize(MEMORY_TYPE_OLD),
@@ -577,19 +578,19 @@ MM_Scavenger::reportGCEnd(MM_EnvironmentStandard *env)
 		J9HOOK_MM_OMR_LOCAL_GC_END,
 		env->_cycleState->_activeSubSpace,
 		_extensions->globalGCStats.gcCount,
-		_extensions->scavengerStats._gcCount,
-		_extensions->scavengerStats._rememberedSetOverflow,
-		_extensions->scavengerStats._causedRememberedSetOverflow,
-		_extensions->scavengerStats._scanCacheOverflow,
-		_extensions->scavengerStats._failedFlipCount,
-		_extensions->scavengerStats._failedFlipBytes,
-		_extensions->scavengerStats._failedTenureCount,
-		_extensions->scavengerStats._failedTenureBytes,
-		_extensions->scavengerStats._backout,
-		_extensions->scavengerStats._flipCount,
-		_extensions->scavengerStats._flipBytes,
-		_extensions->scavengerStats._tenureAggregateCount,
-		_extensions->scavengerStats._tenureAggregateBytes,
+		_extensions->incrementScavengerStats._gcCount,
+		_extensions->incrementScavengerStats._rememberedSetOverflow,
+		_extensions->incrementScavengerStats._causedRememberedSetOverflow,
+		_extensions->incrementScavengerStats._scanCacheOverflow,
+		_extensions->incrementScavengerStats._failedFlipCount,
+		_extensions->incrementScavengerStats._failedFlipBytes,
+		_extensions->incrementScavengerStats._failedTenureCount,
+		_extensions->incrementScavengerStats._failedTenureBytes,
+		_extensions->incrementScavengerStats._backout,
+		_extensions->incrementScavengerStats._flipCount,
+		_extensions->incrementScavengerStats._flipBytes,
+		_extensions->incrementScavengerStats._tenureAggregateCount,
+		_extensions->incrementScavengerStats._tenureAggregateBytes,
 		_extensions->tiltedScavenge ? 1 : 0,
 		_extensions->heap->getApproximateActiveFreeMemorySize(MEMORY_TYPE_NEW),
 		_extensions->heap->getActiveMemorySize(MEMORY_TYPE_NEW),
@@ -598,7 +599,7 @@ MM_Scavenger::reportGCEnd(MM_EnvironmentStandard *env)
 		(_extensions->largeObjectArea ? 1 : 0),
 		(_extensions->largeObjectArea ? _extensions->heap->getApproximateActiveFreeLOAMemorySize(MEMORY_TYPE_OLD) : 0),
 		(_extensions->largeObjectArea ? _extensions->heap->getActiveLOAMemorySize(MEMORY_TYPE_OLD) :0),
-		_extensions->scavengerStats._tenureAge,
+		_extensions->incrementScavengerStats._tenureAge,
 		_extensions->heap->getMemorySize()
 	);
 }
@@ -630,7 +631,7 @@ MM_Scavenger::masterReportHotFieldStats()
  * Clears hot field statistics for worker, if tracing hot fields is enabled.
  */
 void
-MM_Scavenger::clearHotFieldStats(MM_EnvironmentStandard *env)
+MM_Scavenger::clearHotFieldStats(MM_EnvironmentBase *env)
 {
 	if (_extensions->scavengerTraceHotFields) {
 		getHotFieldStats(env)->clear();
@@ -641,37 +642,34 @@ MM_Scavenger::clearHotFieldStats(MM_EnvironmentStandard *env)
  * Merges hot field statistics for worker into master, if tracing hot fields is enabled.
  */
 void
-MM_Scavenger::mergeHotFieldStats(MM_EnvironmentStandard *env)
+MM_Scavenger::mergeHotFieldStats(MM_EnvironmentBase *env)
 {
 	if (_extensions->scavengerTraceHotFields) {
 		_extensions->scavengerHotFieldStats.mergeStats(getHotFieldStats(env));
 	}
 }
 
-/**
- * Clear any global stats associated to the scavenger.
- */
 void
-MM_Scavenger::clearGCStats(MM_EnvironmentBase *env)
+MM_Scavenger::clearThreadGCStats(MM_EnvironmentBase *env, bool firstIncrement)
 {
-	_extensions->scavengerStats.clear();
+	env->_scavengerStats.clear(firstIncrement);
 }
 
-/**
- * Merge the current threads scavenge stats into the global scavenge stats.
- */
 void
-MM_Scavenger::mergeGCStats(MM_EnvironmentBase *env)
+MM_Scavenger::clearIncrementGCStats(MM_EnvironmentBase *env, bool firstIncrement)
 {
-	OMRPORT_ACCESS_FROM_OMRVM(_omrVM);
+	_extensions->incrementScavengerStats.clear(firstIncrement);
+}
 
-	/* Protect the merge with the mutex (this is done by multiple threads in the parallel collector) */
-	omrthread_monitor_enter(_extensions->gcStatsMutex);
+void
+MM_Scavenger::clearCycleGCStats(MM_EnvironmentBase *env)
+{
+	_extensions->scavengerStats.clear(true);
+}
 
-	MM_ScavengerStats *finalGCStats, *scavStats;
-	finalGCStats = &_extensions->scavengerStats;
-	scavStats = &env->_scavengerStats;
-
+void
+MM_Scavenger::mergeGCStatsBase(MM_EnvironmentBase *env, MM_ScavengerStats *finalGCStats, MM_ScavengerStats *scavStats)
+{
 	finalGCStats->_rememberedSetOverflow |= scavStats->_rememberedSetOverflow;
 	finalGCStats->_causedRememberedSetOverflow |= scavStats->_causedRememberedSetOverflow;
 	finalGCStats->_scanCacheOverflow |= scavStats->_scanCacheOverflow;
@@ -717,23 +715,8 @@ MM_Scavenger::mergeGCStats(MM_EnvironmentBase *env)
 	finalGCStats->_tenureSpaceAllocationCountLarge += scavStats->_tenureSpaceAllocationCountLarge;
 	finalGCStats->_tenureSpaceAllocationCountSmall += scavStats->_tenureSpaceAllocationCountSmall;
 
-	if (env->isMasterThread()) {
-		finalGCStats->getFlipHistory(0)->_tenureMask = _tenureMask;
-		uintptr_t tenureAge = 0;
-		for (tenureAge = 0; tenureAge <= OBJECT_HEADER_AGE_MAX; ++tenureAge) {
-			if (_tenureMask & ((uintptr_t)1 << tenureAge)) {
-				break;
-			}
-		}
-		finalGCStats->_tenureAge = tenureAge;
-
-		MM_ScavengerStats::FlipHistory* flipHistoryPrevious = finalGCStats->getFlipHistory(1);
-		flipHistoryPrevious->_flipBytes[0] = finalGCStats->_semiSpaceAllocBytesAcumulation;
-		flipHistoryPrevious->_tenureBytes[0] = finalGCStats->_tenureSpaceAllocBytesAcumulation;
-
-		finalGCStats->_semiSpaceAllocBytesAcumulation = 0;
-		finalGCStats->_tenureSpaceAllocBytesAcumulation = 0;
-	}
+	/* TODO: Fix this. Not true when merging Master GC threads stats for standard (non CS) Scavenger.
+	   Assert_MM_true(finalGCStats->_flipHistoryNewIndex == scavStats->_flipHistoryNewIndex); */
 
 	for (int i = 1; i <= OBJECT_HEADER_AGE_MAX+1; ++i) {
 		finalGCStats->getFlipHistory(0)->_flipBytes[i] += scavStats->getFlipHistory(0)->_flipBytes[i];
@@ -759,11 +742,23 @@ MM_Scavenger::mergeGCStats(MM_EnvironmentBase *env)
 	finalGCStats->_completeStallCount += scavStats->_completeStallCount;
 	_extensions->scavengerStats._syncStallCount += scavStats->_syncStallCount;
 
-	if (_extensions->scavengerTraceHotFields) {
-		_extensions->scavengerHotFieldStats.mergeStats(&(env->_hotFieldStats));
-	}
+	mergeHotFieldStats(env);
+}
 
-	/* Merge language specific statistics */
+
+void
+MM_Scavenger::mergeThreadGCStats(MM_EnvironmentBase *env)
+{
+	OMRPORT_ACCESS_FROM_OMRVM(_omrVM);
+
+	/* Protect the merge with the mutex (this is done by multiple threads in the parallel collector) */
+	omrthread_monitor_enter(_extensions->gcStatsMutex);
+
+	MM_ScavengerStats *scavStats = &env->_scavengerStats;
+
+	mergeGCStatsBase(env, &_extensions->incrementScavengerStats, scavStats);
+
+	/* Merge language specific statistics. No known interesting data per increment - they are merged directly to aggregate cycle stats */
 	_cli->scavenger_mergeGCStats_mergeLangStats(env);
 
 	omrthread_monitor_exit(_extensions->gcStatsMutex);
@@ -784,6 +779,36 @@ MM_Scavenger::mergeGCStats(MM_EnvironmentBase *env)
 		scavStats->_releaseScanListCount);
 }
 
+void
+MM_Scavenger::mergeIncrementGCStats(MM_EnvironmentBase *env, bool lastIncrement)
+{
+	Assert_MM_true(env->isMasterThread());
+	MM_ScavengerStats *finalGCStats = &_extensions->scavengerStats;
+	mergeGCStatsBase(env, finalGCStats, &_extensions->incrementScavengerStats);
+
+	/* Language specific stats were supposed to be merged directly from thread local to cycle global. No need to merge them here. */
+
+	if (lastIncrement) {
+		/* Calculate new tenure age */
+		finalGCStats->getFlipHistory(0)->_tenureMask = _tenureMask;
+		uintptr_t tenureAge = 0;
+		for (tenureAge = 0; tenureAge <= OBJECT_HEADER_AGE_MAX; ++tenureAge) {
+			if (_tenureMask & ((uintptr_t)1 << tenureAge)) {
+				break;
+			}
+		}
+		finalGCStats->_tenureAge = tenureAge;
+
+		/* Update historical flip stats for age 0 */
+		MM_ScavengerStats::FlipHistory* flipHistoryPrevious = finalGCStats->getFlipHistory(1);
+		flipHistoryPrevious->_flipBytes[0] = finalGCStats->_semiSpaceAllocBytesAcumulation;
+		flipHistoryPrevious->_tenureBytes[0] = finalGCStats->_tenureSpaceAllocBytesAcumulation;
+
+		finalGCStats->_semiSpaceAllocBytesAcumulation = 0;
+		finalGCStats->_tenureSpaceAllocBytesAcumulation = 0;
+	}
+}
+
 /**
  * Determine whether GC stats should be calculated for this round.
  * @return true if GC stats should be calculated for this round, false otherwise.
@@ -791,8 +816,17 @@ MM_Scavenger::mergeGCStats(MM_EnvironmentBase *env)
 bool
 MM_Scavenger::canCalcGCStats(MM_EnvironmentStandard *env)
 {
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+	/* Only do once, at the end of cycle */
+	bool canCalculate = !isConcurrentInProgress();
+#else
+	bool canCalculate = true;
+#endif
+
 	/* If no backout and we actually did a scavenge this time around then it's safe to gather stats */
-	return !isBackOutFlagRaised() && (0 < _extensions->heap->getPercolateStats()->getScavengesSincePercolate());
+	canCalculate &= (!isBackOutFlagRaised() && (0 < _extensions->heap->getPercolateStats()->getScavengesSincePercolate()));
+
+	return canCalculate;
 }
 
 /**
@@ -2070,7 +2104,7 @@ MM_Scavenger::workThreadGarbageCollect(MM_EnvironmentStandard *env)
 	}
 
 	/* No matter what happens, always sum up the gc stats */
-	mergeGCStats(env);
+	mergeThreadGCStats(env);
 }
 
 /****************************************
@@ -3490,20 +3524,25 @@ MM_Scavenger::masterThreadGarbageCollect(MM_EnvironmentBase *envBase, MM_Allocat
 	}
 
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
-	if (!isConcurrentInProgress())
+	bool firstIncrement = !isConcurrentInProgress();
+#else
+	bool firstIncrement = true;
 #endif
-	{
+
+	if (firstIncrement)	{
 		if (_extensions->processLargeAllocateStats) {
 			processLargeAllocateStatsBeforeGC(env);
 		}
 
 		reportGCCycleStart(env);
+		_extensions->scavengerStats._startTime = omrtime_hires_clock();
 		masterSetupForGC(env);
 	}
+	clearIncrementGCStats(env, firstIncrement);
 	reportGCStart(env);
 	reportGCIncrementStart(env);
 	reportScavengeStart(env);
-	_extensions->scavengerStats._startTime = omrtime_hires_clock();
+	_extensions->incrementScavengerStats._startTime = omrtime_hires_clock();
 
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
 	if (_extensions->concurrentScavenger) {
@@ -3514,15 +3553,19 @@ MM_Scavenger::masterThreadGarbageCollect(MM_EnvironmentBase *envBase, MM_Allocat
 		scavenge(env);
 	}
 
-	_extensions->scavengerStats._endTime = omrtime_hires_clock();
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
-	if (isConcurrentInProgress()) {
-		reportScavengeEnd(env, false);
-	} else
+	bool lastIncrement = !isConcurrentInProgress();
+#else
+	bool lastIncrement = true;
 #endif
-	{
-		reportScavengeEnd(env, true);
 
+	_extensions->incrementScavengerStats._endTime = omrtime_hires_clock();
+
+	/* merge stats from this increment/phase to aggregate cycle stats */
+	mergeIncrementGCStats(env, lastIncrement);
+	reportScavengeEnd(env, lastIncrement);
+
+	if (lastIncrement) {
 		/* defer to collector language interface */
 		_cli->scavenger_masterThreadGarbageCollect_scavengeComplete(env);
 
@@ -3598,22 +3641,19 @@ MM_Scavenger::masterThreadGarbageCollect(MM_EnvironmentBase *envBase, MM_Allocat
 
 		reportGCCycleFinalIncrementEnding(env);
 
-	} // if !isConcurrentInProgress
+	} // if lastIncrement
 
 
 	reportGCIncrementEnd(env);
 	reportGCEnd(env);
-#if defined(OMR_GC_CONCURRENT_SCAVENGER)
-	if (!isConcurrentInProgress())
-#endif
-	{
+	if (lastIncrement) {
+		_extensions->scavengerStats._endTime = omrtime_hires_clock();
 		reportGCCycleEnd(env);
-
 		if (_extensions->processLargeAllocateStats) {
 			/* reset tenure processLargeAllocateStats after TGC */
 			resetTenureLargeAllocateStats(env);
 		}
-	} // if !isConcurrentInProgress
+	}
 	_extensions->allocationStats.clear();
 
 	if (_extensions->trackMutatorThreadCategory) {
@@ -4558,8 +4598,6 @@ MM_Scavenger::scavengeComplete(MM_EnvironmentBase *envBase)
 
 	Assert_MM_true(concurrent_state_complete == _concurrentState);
 
-	clearGCStats(env);
-
 	GC_OMRVMThreadListIterator threadIterator(_extensions->getOmrVM());
 	OMR_VMThread *walkThread = NULL;
 
@@ -4612,6 +4650,8 @@ MM_Scavenger::scavengeIncremental(MM_EnvironmentBase *env)
 
 			if (isBackOutFlagRaised()) {
 				/* if we aborted during root processing, continue with the cycle while still in STW mode */
+				mergeIncrementGCStats(env, false);
+				clearIncrementGCStats(env, false);
 				continue;
 			}
 
@@ -4629,6 +4669,8 @@ MM_Scavenger::scavengeIncremental(MM_EnvironmentBase *env)
 			_concurrentState = concurrent_state_complete;
 
 			if (isBackOutFlagRaised()) {
+				mergeIncrementGCStats(env, false);
+				clearIncrementGCStats(env, false);
 				continue;
 			}
 
@@ -4665,14 +4707,14 @@ MM_Scavenger::workThreadProcessRoots(MM_EnvironmentStandard *env)
 
 	rootScanner.scanRoots(env);
 
-	mergeGCStats(env);
+	mergeThreadGCStats(env);
 }
 
 void
 MM_Scavenger::workThreadScan(MM_EnvironmentStandard *env)
 {
-	/* Clear thread local stats */
-	env->_scavengerStats.clear();
+	/* This is where the most of scan work should occur in CS. Typically as a concurrent task (background threads), but in some corner cases it could be scheduled as a STW task */
+	clearThreadGCStats(env, false);
 
 	completeScan(env);
 	// todo: are these two steps really necessary?
@@ -4681,7 +4723,7 @@ MM_Scavenger::workThreadScan(MM_EnvironmentStandard *env)
 	addCopyCachesToFreeList(env);
 	abandonTLHRemainders(env);
 
-	mergeGCStats(env);
+	mergeThreadGCStats(env);
 }
 
 void
@@ -4689,8 +4731,7 @@ MM_Scavenger::workThreadComplete(MM_EnvironmentStandard *env)
 {
 	Assert_MM_true(_extensions->concurrentScavenger);
 
-	/* Clear thread local stats */
-	env->_scavengerStats.clear();
+	clearThreadGCStats(env, false);
 
 	MM_ScavengerRootScanner rootScanner(env, this);
 
@@ -4734,7 +4775,7 @@ MM_Scavenger::workThreadComplete(MM_EnvironmentStandard *env)
 	}
 
 	/* No matter what happens, always sum up the gc stats */
-	mergeGCStats(env);
+	mergeThreadGCStats(env);
 }
 
 uintptr_t
@@ -4742,7 +4783,7 @@ MM_Scavenger::masterThreadConcurrentCollect(MM_EnvironmentBase *env)
 {
 	Assert_MM_true(concurrent_state_scan == _concurrentState);
 
-	clearGCStats(env);
+	clearIncrementGCStats(env, false);
 
 	MM_ConcurrentScavengeTask scavengeTask(env, _dispatcher, this, MM_ConcurrentScavengeTask::SCAVENGE_SCAN, UDATA_MAX, &_forceConcurrentTermination, env->_cycleState);
 	/* Concurrent background task will run with different (typically lower) number of threads. */
@@ -4752,6 +4793,8 @@ MM_Scavenger::masterThreadConcurrentCollect(MM_EnvironmentBase *env)
 	_concurrentState = concurrent_state_complete;
 	/* make allocate space non-allocatable to trigger the final GC phase */
 	_activeSubSpace->flip(env, MM_MemorySubSpaceSemiSpace::disable_allocation);
+
+	mergeIncrementGCStats(env, false);
 
 	/* return the number of bytes scanned since the caller needs to pass it into postConcurrentUpdateStatsAndReport for stats reporting */
 	return scavengeTask.getBytesScanned();
@@ -4772,7 +4815,7 @@ void MM_Scavenger::preConcurrentInitializeStatsAndReport(MM_EnvironmentBase *env
 			J9HOOK_MM_PRIVATE_CONCURRENT_PHASE_START,
 			stats);
 
-	_extensions->scavengerStats._startTime = omrtime_hires_clock();
+	_extensions->incrementScavengerStats._startTime = omrtime_hires_clock();
 }
 
 void MM_Scavenger::postConcurrentUpdateStatsAndReport(MM_EnvironmentBase *env, MM_ConcurrentPhaseStatsBase *stats, UDATA bytesConcurrentlyScanned)
@@ -4781,7 +4824,7 @@ void MM_Scavenger::postConcurrentUpdateStatsAndReport(MM_EnvironmentBase *env, M
 
 	stats->_terminationWasRequested = _forceConcurrentTermination;
 
-	_extensions->scavengerStats._endTime = omrtime_hires_clock();
+	_extensions->incrementScavengerStats._endTime = omrtime_hires_clock();
 
 	TRIGGER_J9HOOK_MM_PRIVATE_CONCURRENT_PHASE_END(
 		_extensions->privateHookInterface,

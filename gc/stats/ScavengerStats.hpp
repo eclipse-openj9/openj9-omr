@@ -136,6 +136,7 @@ public:
 protected:
 
 private:
+public:
 	uintptr_t _flipHistoryNewIndex; /**< Index in to the first dimension of _flipHistory for the freshest history. */
 	FlipHistory _flipHistory[SCAVENGER_FLIP_HISTORY_SIZE]; /**< Array for storing object flip stats. */
 
@@ -214,7 +215,7 @@ public:
 		_copy_cachesize_sum += copyCacheSize;
 	}
 
-	void clear();
+	void clear(bool firstIncrement);
 	MM_ScavengerStats();
 
 	struct FlipHistory* getFlipHistory(uintptr_t lookback);

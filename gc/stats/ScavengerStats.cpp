@@ -105,10 +105,17 @@ MM_ScavengerStats::getFlipHistory(uintptr_t lookback)
 }
 
 void 
-MM_ScavengerStats::clear()
+MM_ScavengerStats::clear(bool firstIncrement)
 {
-	/* Increment the histogram offset and loop if necessary */
-	_flipHistoryNewIndex = (_flipHistoryNewIndex + 1) % SCAVENGER_FLIP_HISTORY_SIZE;
+	if (firstIncrement) {
+		/* clear() can be called several times per a cycle (in Concurrent Scavenger), but some stats/params must be reset/updated only once per a cycle */
+
+		/* Increment the histogram offset and loop if necessary */
+		/* TODO: this does not properly work for Master GC threads, which is implicit (a random mutator thread), for standard (non CS) Scavenger.
+		 * Flip history stats (or complete ScavengerStats) should be one place (in GcExtensions or Scavenger), not scattered among mutator threads.
+		 */
+		_flipHistoryNewIndex = (_flipHistoryNewIndex + 1) % SCAVENGER_FLIP_HISTORY_SIZE;
+	}
 
 	/* Clear the new histogram row */
 	memset(&_flipHistory[_flipHistoryNewIndex], 0, sizeof(_flipHistory[_flipHistoryNewIndex]));

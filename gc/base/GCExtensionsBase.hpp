@@ -225,7 +225,8 @@ public:
 	MM_GlobalGCStats globalGCStats;
 #endif /* OMR_GC_MODRON_STANDARD || OMR_GC_REALTIME */
 #if defined(OMR_GC_MODRON_SCAVENGER)
-	MM_ScavengerStats scavengerStats;
+	MM_ScavengerStats incrementScavengerStats; /**< scavengerStats for the current phase/increment; typically just used for reporting purposes */
+	MM_ScavengerStats scavengerStats; /**< cumulative scavengerStats for all phases/increments (STW and concurrent) within a single cycle; typically used for various heursitics at the end of GC */
 	MM_ScavengerCopyScanRatio copyScanRatio; /* Most recent estimate of ratio of aggregate slots copied to slots scanned in completeScan() */
 #endif /* OMR_GC_MODRON_SCAVENGER */
 #if defined(OMR_GC_VLHGC)

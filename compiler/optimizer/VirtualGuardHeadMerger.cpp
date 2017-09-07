@@ -47,6 +47,11 @@ static bool isMergeableGuard(TR::Node *node)
    return mergeOnlyHCRGuards ? node->isHCRGuard() : node->isNopableInlineGuard();
    }
 
+static bool isStopTheWorldGuard(TR::Node *node)
+   {
+   return node->isHCRGuard() || node->isOSRGuard();
+   }
+
 /**
  * Recursive call to anchor nodes with a reference count greater than one prior to a treetop.
  *
@@ -150,13 +155,62 @@ static TR::Block* splitRuntimeGuardBlock(TR::Compilation *comp, TR::Block* block
    return block;
    }
 
+/**
+ * Collect direct loads in a node and its children, adding them to the provided BitVector.
+ *
+ * @param node The node to consider.
+ * @param loadSymRefs BitVector of symbol reference numbers seen.
+ * @param checklist Checklist of visited nodes.
+ */
+static void collectDirectLoads(TR::Node *node, TR_BitVector &loadSymRefs, TR::NodeChecklist &checklist)
+   {
+   if (checklist.contains(node))
+      return;
+   checklist.add(node);
+
+   if (node->getOpCode().isLoadVarDirect())
+      loadSymRefs.set(node->getSymbolReference()->getReferenceNumber());
+
+   for (int i = 0; i < node->getNumChildren(); i++)
+      collectDirectLoads(node->getChild(i), loadSymRefs, checklist);
+   }
+
+/**
+ * Search for direct loads in the taken side of a guard
+ *
+ * @param firstBlock The guard's branch destination
+ * @param coldPathLoads BitVector of symbol reference numbers for any direct loads seen until the merge back to mainline
+ */
+static void collectColdPathLoads(TR::Block* firstBlock, TR_BitVector &coldPathLoads)
+   {
+   TR_Stack<TR::Block*> blocksToCheck(TR::comp()->trMemory(), 8, false, stackAlloc);
+   blocksToCheck.push(firstBlock);
+   TR::NodeChecklist checklist(TR::comp());
+
+   coldPathLoads.empty();
+   while (!blocksToCheck.isEmpty())
+      {
+      TR::Block *block = blocksToCheck.pop();
+
+      for (TR::TreeTop *tt = block->getFirstRealTreeTop(); tt->getNode()->getOpCodeValue() != TR::BBEnd; tt = tt->getNextTreeTop())
+         collectDirectLoads(tt->getNode(), coldPathLoads, checklist);
+
+      // Search for any successors that have not merged with the mainline
+      for (auto itr = block->getSuccessors().begin(), end = block->getSuccessors().end(); itr != end; ++itr)
+         {
+         TR::Block *dest = (*itr)->getTo()->asBlock();
+         if (dest != TR::comp()->getFlowGraph()->getEnd() && dest->getPredecessors().size() == 1)
+            blocksToCheck.push(dest);
+         }
+      }
+   }
+
 static bool safeToMoveGuard(TR::Block *destination, TR::TreeTop *guardCandidate,
-   TR::TreeTop *branchDest)
+   TR::TreeTop *branchDest, TR_BitVector &privArgSymRefs)
    {
    static char *disablePrivArgMovement = feGetEnv("TR_DisableRuntimeGuardPrivArgMovement");
    TR::TreeTop *start = destination ? destination->getExit() : TR::comp()->getStartTree();
-   bool stopTheWorld = guardCandidate->getNode()->isHCRGuard();
-   if (stopTheWorld)
+   if (guardCandidate->getNode()->isHCRGuard())
       {
       for (TR::TreeTop *tt = start; tt && tt != guardCandidate; tt = tt->getNextTreeTop())
          {
@@ -164,13 +218,22 @@ static bool safeToMoveGuard(TR::Block *destination, TR::TreeTop *guardCandidate,
             return false;
          }
       }
-   else
+   else if (guardCandidate->getNode()->isOSRGuard())
       {
       for (TR::TreeTop *tt = start; tt && tt != guardCandidate; tt = tt->getNextTreeTop())
          {
-          // It's safe to move the guard if there are only priv arg stores and live monitor stores
-          // ahead of the guard
-          if (tt->getNode()->getOpCodeValue() != TR::BBStart
+         if (TR::comp()->isPotentialOSRPoint(tt->getNode(), NULL, true))
+            return false;
+         }
+      }
+   else
+      {
+      privArgSymRefs.empty();
+      for (TR::TreeTop *tt = start; tt && tt != guardCandidate; tt = tt->getNextTreeTop())
+         {
+         // It's safe to move the guard if there are only priv arg stores and live monitor stores
+         // ahead of the guard
+         if (tt->getNode()->getOpCodeValue() != TR::BBStart
              && tt->getNode()->getOpCodeValue() != TR::BBEnd
              && !tt->getNode()->chkIsPrivatizedInlinerArg()
              && !(tt->getNode()->getOpCode().hasSymbolReference() && tt->getNode()->getSymbol()->holdsMonitoredObject())
@@ -184,6 +247,9 @@ static bool safeToMoveGuard(TR::Block *destination, TR::TreeTop *guardCandidate,
              // then we cannot move the guard and its priv args up across other calls' priv args
              tt->getNode()->getInlinedSiteIndex() != TR::comp()->getInlinedCallSite(guardCandidate->getNode()->getInlinedSiteIndex())._byteCodeInfo.getCallerIndex())))
             return false;
+
+         if (tt->getNode()->chkIsPrivatizedInlinerArg())
+            privArgSymRefs.set(tt->getNode()->getSymbolReference()->getReferenceNumber());
 
          if (tt->getNode()->isNopableInlineGuard()
              && tt->getNode()->getBranchDestination() != branchDest)
@@ -245,6 +311,12 @@ static void moveBlockAfterDest(TR::CFG *cfg, TR::Block *toMove, TR::Block *dest)
 int32_t TR_VirtualGuardHeadMerger::perform() {
    static char *disableVGHeadMergerTailSplitting = feGetEnv("TR_DisableVGHeadMergerTailSplitting");
    TR::CFG *cfg = comp()->getFlowGraph();
+
+   // Cache the loads for the outer guard's cold path
+   TR_BitVector coldPathLoads(comp()->trMemory()->currentStackRegion());
+   TR_BitVector privArgSymRefs(comp()->trMemory()->currentStackRegion());
+   bool evaluatedColdPathLoads = false;
+
    for (TR::Block *block = optimizer()->getMethodSymbol()->getFirstTreeTop()->getNode()->getBlock();
         block; block = block->getNextBlock())
       {
@@ -304,6 +376,9 @@ int32_t TR_VirtualGuardHeadMerger::perform() {
          TR::Block *runtimeIns = block->getPrevBlock();
          TR::Block *HCRIns = block;
 
+         // New outer guard so cold paths must be evaluated
+         evaluatedColdPathLoads = false;
+
          // scan for candidate guards to merge with guard1 identified above
          for (TR::Block *nextBlock = block->getNextBlock(); nextBlock; nextBlock = nextBlock->getNextBlock())
             {
@@ -328,8 +403,13 @@ int32_t TR_VirtualGuardHeadMerger::perform() {
             TR::Node *guard2 = guard2Tree->getNode();
             TR::Block *guard2Block = nextBlock;
 
-            TR::Block *insertPoint = guard2->isHCRGuard() ? HCRIns : runtimeIns;
-            if (!safeToMoveGuard(insertPoint, guard2Tree, guard1->getBranchDestination()))
+            // It is not possible to shift an OSR guard unless the destination is already an OSR point
+            // as the necessary OSR state will not be available
+            if (guard2->isOSRGuard() && !guard1->isOSRGuard())
+               break;
+
+            TR::Block *insertPoint = isStopTheWorldGuard(guard2) ? HCRIns : runtimeIns;
+            if (!safeToMoveGuard(insertPoint, guard2Tree, guard1->getBranchDestination(), privArgSymRefs))
                break;
 
             // now we figure out if we can redirect guard2 to guard1's cold block
@@ -359,7 +439,28 @@ int32_t TR_VirtualGuardHeadMerger::perform() {
                break;
                }
 
-            if (!performTransformation(comp(), "%sRedirecting %s guard [%p] in block_%d to parent guard cold block_%d\n", OPT_DETAILS, guard2->isHCRGuard() ? "HCR" : "runtime", guard2, guard2Block->getNumber(), cold1->getNumber()))
+            // Runtime guards will shift their privargs, so it is necessary to check such a move is safe
+            // This is possible if a privarg temp was recycled for the inner call site, with a prior use as an
+            // argument for the outer call site. As the privargs for the inner call site must be evaluated before
+            // both guards, this would result in the recycled temp holding the incorrect value if the guard is ever
+            // taken.
+            if (!isStopTheWorldGuard(guard2))
+               {
+               if (!evaluatedColdPathLoads)
+                  {
+                  collectColdPathLoads(cold1, coldPathLoads);
+                  evaluatedColdPathLoads = true;
+                  }
+
+               if (coldPathLoads.intersects(privArgSymRefs))
+                  {
+                  if (trace())
+                     traceMsg(comp(), "  Recycled temp live in cold1 block_%d and used as privarg before guard2 [%p] - stop guard merging", cold1->getNumber(), guard2);
+                  break;
+                  }
+               }
+
+            if (!performTransformation(comp(), "%sRedirecting %s guard [%p] in block_%d to parent guard cold block_%d\n", OPT_DETAILS, isStopTheWorldGuard(guard2) ? "stop the world" : "runtime", guard2, guard2Block->getNumber(), cold1->getNumber()))
                   continue;
 
             if (guard2->getBranchDestination() != guard1->getBranchDestination())
@@ -373,7 +474,7 @@ int32_t TR_VirtualGuardHeadMerger::perform() {
                // 1, it might have side effect to runtime guards after it, moving it up might cause us to falsely merge
                //    the subsequent runtime guards
                // 2, it might contain live monitor, moving it up above a guard can affect the monitor's live range
-               if (!guard2->isHCRGuard())
+               if (!isStopTheWorldGuard(guard2))
                   {
 	          // the block created above guard2 contains only privarg treetops or monitor stores if
                   // guard2 is a runtime-patchable guard and is safe to merge. We need to move the priv
@@ -412,7 +513,7 @@ int32_t TR_VirtualGuardHeadMerger::perform() {
 
             if (insertPoint != guard2Block->getPrevBlock())
                {
-               TR::DebugCounter::incStaticDebugCounter(comp(), TR::DebugCounter::debugCounterName(comp(), "headMerger/%s_%s/(%s)", guard1->isHCRGuard() ? "hcr" : "runtime", guard2->isHCRGuard() ? "hcr" : "runtime", comp()->signature()));
+               TR::DebugCounter::incStaticDebugCounter(comp(), TR::DebugCounter::debugCounterName(comp(), "headMerger/%s_%s/(%s)", isStopTheWorldGuard(guard1) ? "stop the world" : "runtime", isStopTheWorldGuard(guard2) ? "stop the world" : "runtime", comp()->signature()));
                cfg->setStructure(NULL);
 
                block = nextBlock = guard2Block->getPrevBlock();

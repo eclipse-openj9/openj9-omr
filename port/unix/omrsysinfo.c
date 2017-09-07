@@ -145,6 +145,10 @@
 
 #if defined(OMRZTPF)
 #include <locale.h>
+#include <tpf/c_cinfc.h>
+#include <tpf/c_dctist.h>
+#include <tpf/tpfapi.h>
+#include <tpf/sysapi.h>
 #endif /* defined(OMRZTPF) */
 
 #if defined(J9ZOS390)
@@ -299,15 +303,17 @@ static void setOSFeature(struct OMROSDesc *desc, uint32_t feature);
 static intptr_t getZOSDescription(struct OMRPortLibrary *portLibrary, struct OMROSDesc *desc);
 #endif /* defined(J9ZOS390) */
 
-#if !defined(RS6000) && !defined(J9ZOS390) && !defined(OSX)
+#if !defined(RS6000) && !defined(J9ZOS390) && !defined(OSX) && !defined(OMRZTPF)
 static uint64_t getPhysicalMemory(struct OMRPortLibrary *portLibrary);
-#endif /* !defined(RS6000) && !defined(J9ZOS390) && !defined(OSX) */
+#elif defined(OMRZTPF) /* !defined(RS6000) && !defined(J9ZOS390) && !defined(OSX)  && !defined(OMRZTPF) */
+static uint16_t getPhysicalMemory();
+#endif /* !defined(RS6000) && !defined(J9ZOS390) && !defined(OSX) && !defined(OMRZTPF) */
 
 #if defined(OMRZTPF)
 	uintptr_t getIstreamCount();
 #endif /* defined(OMRZTPF) */
 
-#if defined(LINUX)
+#if defined(LINUX) && !defined(OMRZTPF)
 static void freeCgroupEntries(struct OMRPortLibrary *portLibrary, OMRCgroupEntry *cgEntryList);
 static char * getCgroupNameForSubsystem(struct OMRPortLibrary *portLibrary, OMRCgroupEntry *cgEntryList, const char *subsystem);
 static int32_t addCgroupEntry(struct OMRPortLibrary *portLibrary, OMRCgroupEntry **cgEntryList, int32_t hierId, const char *subsystem, const char *cgroupName);
@@ -1049,6 +1055,10 @@ omrsysinfo_get_number_CPUs_by_type(struct OMRPortLibrary *portLibrary, uintptr_t
 
 	Trc_PRT_sysinfo_get_number_CPUs_by_type_Entered();
 
+#if defined(OMRZTPF)
+	toReturn = getIstreamCount();
+#else /* defined(OMRZTPF) */
+
 	switch (type) {
 	case OMRPORT_CPU_PHYSICAL:
 #if defined(LINUX) || defined(AIXPPC) || defined(OSX)
@@ -1189,6 +1199,8 @@ omrsysinfo_get_number_CPUs_by_type(struct OMRPortLibrary *portLibrary, uintptr_t
 		Trc_PRT_sysinfo_get_number_CPUs_by_type_invalidType();
 		break;
 	}
+
+#endif /* defined(OMRZTPF) */
 
 	Trc_PRT_sysinfo_get_number_CPUs_by_type_Exit(type, toReturn);
 
@@ -1544,13 +1556,22 @@ omrsysinfo_get_physical_memory(struct OMRPortLibrary *portLibrary)
 			result = 0;
 		}
 	}
-#else /* defined(OSX) */
+#elif defined(OMRZTPF)
+	/* getPhysicalMemory is returning the number of 1 MB frames */
+	/* for our ECB that we can use - XMMES */
+	uint64_t pmem = (uint64_t)getPhysicalMemory();
+	if (pmem != 0) {
+		return pmem << 20;
+	} else {
+		return pmem;
+	}
+#else /* defined (RS6000) */
 	result = getPhysicalMemory(portLibrary);
-#endif /* defined(OSX) */
+#endif /* defined (RS6000) */
 	return result;
 }
 
-#if !defined(RS6000) && !defined(J9ZOS390) && !defined(OSX)
+#if !defined(RS6000) && !defined(J9ZOS390) && !defined(OSX) && !defined(OMRZTPF)
 
 /**
  * Returns physical memory available on the system
@@ -1573,8 +1594,32 @@ getPhysicalMemory(struct OMRPortLibrary *portLibrary)
 		return (uint64_t) pagesize * num_pages;
 	}
 }
+#elif defined(OMRZTPF) /* !defined(RS6000) && !defined(J9ZOS390) && !defined(OSX) && !defined(OMRZTPF) */
 
-#endif /* !defined(RS6000) && !defined(J9ZOS390) && !defined(OSX) */
+uint16_t getPhysicalMemory( void ) {
+
+	struct ebmaxc_parmlist newValues[] = {
+			{ MAX64HEAP, MAXVALUE},
+			{ 0, 0}
+	};
+
+	tpf_ebmaxc(newValues);
+	uint16_t physMemory = *(uint16_t*)(cinfc_fast(CINFC_CMMMMES) + 8);
+	int numFRM1MB  = numbc(LFRM1MB);
+	/*
+	 * If the available memory, i.e. number of available 1MB frames, is
+	 * too low to satisfy MAX64HEAP, then the jvm cannot run. Return 0.
+	 */
+	if (physMemory >= (uint16_t)(numFRM1MB-1)) {
+		physMemory = 0;
+	}
+	else {
+		physMemory = physMemory * 4 / 5;
+	}
+	return physMemory;
+}
+
+#endif /* !defined(RS6000) && !defined(J9ZOS390) && !defined(OSX) && !defined(OMRZTPF) */
 
 void
 omrsysinfo_shutdown(struct OMRPortLibrary *portLibrary)
@@ -1593,7 +1638,7 @@ omrsysinfo_shutdown(struct OMRPortLibrary *portLibrary)
 			portLibrary->mem_free_memory(portLibrary, PPG_si_executableName);
 			PPG_si_executableName = NULL;
 		}
-#if defined(LINUX)
+#if defined(LINUX) && !defined(OMRZTPF)
 		freeCgroupEntries(portLibrary, PPG_cgroupEntryList);
 		PPG_cgroupEntryList = NULL;
 #endif /* defined(LINUX) */
@@ -1610,7 +1655,7 @@ omrsysinfo_startup(struct OMRPortLibrary *portLibrary)
 	 */
 	(void) find_executable_name(portLibrary, &PPG_si_executableName);
 
-#if defined(LINUX)
+#if defined(LINUX) && !defined(OMRZTPF)
 	PPG_cgroupEntryList = NULL;
 #endif /* defined(LINUX) */
 	return 0;
@@ -3507,9 +3552,9 @@ _end:
 BOOLEAN 
 omrsysinfo_cgroup_is_limits_enabled(struct OMRPortLibrary *portLibrary)
 {
-#if defined(LINUX)
+#if defined(LINUX) && !defined(OMRZTPF)
 	return PPG_cgroupLimitsEnabled;
-#else /* defined(LINUX) */
+#else /* defined(LINUX)  && !defined(OMRZTPF) */
 	return FALSE;
 #endif /* defined(LINUX) */
 }
@@ -3518,13 +3563,13 @@ int32_t
 omrsysinfo_cgroup_enable_limits(struct OMRPortLibrary *portLibrary)
 {
 	int32_t cgroupSupported = portLibrary->sysinfo_cgroup_is_limits_supported(portLibrary);
-#if defined(LINUX)
+#if defined(LINUX) && !defined(OMRZTPF)
 	if (0 == cgroupSupported) {
 		PPG_cgroupLimitsEnabled = TRUE;
 	} else {
 		PPG_cgroupLimitsEnabled = FALSE;
 	}
-#endif /* defined(LINUX) */
+#endif /* defined(LINUX)  && !defined(OMRZTPF) */
 	return cgroupSupported;
 }
 
@@ -3532,7 +3577,7 @@ int32_t
 omrsysinfo_cgroup_get_memlimit(struct OMRPortLibrary *portLibrary, uint64_t *limit)
 {
 	int32_t rc = OMRPORT_ERROR_SYSINFO_CGROUP_UNSUPPORTED_PLATFORM;
-#if defined(LINUX)
+#if defined(LINUX) && !defined(OMRZTPF)
 	uint64_t cgroupMemLimit = 0;
 	uint64_t physicalMemLimit = 0;
 	int32_t numItemsToRead = 1; /* memory.limit_in_bytes file contains only one integer value */
@@ -3557,6 +3602,20 @@ omrsysinfo_cgroup_get_memlimit(struct OMRPortLibrary *portLibrary, uint64_t *lim
 	*limit = cgroupMemLimit;
 	rc = 0;
 _end:
-#endif /* defined(LINUX) */
+#endif /* defined(LINUX) && !defined(OMRZTPF) */
 	return rc;
 }
+
+#if defined(OMRZTPF)
+/*
+ *	Return the number of I-streams ("processors", as called by other
+ *	systems) in an unsigned integer.
+ */
+uintptr_t
+getIstreamCount( void ) {
+	struct dctist *ist;
+	ist = (struct dctist *)cinfc_fast(CINFC_CMMIST);
+	int numberOfIStreams = ist->istuseis;
+	return (uintptr_t)numberOfIStreams;
+}
+#endif /* defined(OMRZTPF) */

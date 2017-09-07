@@ -359,10 +359,16 @@ endif
 # C
 %$(OBJEXT): %.c
 	$(COMPILE_C_COMMAND)
+ifeq (linux_ztpf,$(OMR_HOST_OS))
+	tpfobjpp -O ONotApplicable -g gNotApplicable -c PUT14.1 $@
+endif
 
 # C++
 %$(OBJEXT): %.cpp
 	$(COMPILE_CXX_COMMAND)
+ifeq (linux_ztpf,$(OMR_HOST_OS))
+	tpfobjpp -O ONotApplicable -g gNotApplicable -c PUT14.1 $@
+endif
 
 # Assembly
 %$(OBJEXT): %.s

@@ -162,7 +162,7 @@ OBJECTS += omrmemtag_checks
 ifeq (aix,$(OMR_HOST_OS))
   OBJECTS += omrosdump_helpers
 else
-  ifeq (linux,$(OMR_HOST_OS))
+  ifeq ($(OMR_HOST_OS),$(filter $(OMR_HOST_OS),linux linux_ztpf))
     OBJECTS += omrosdump_helpers
   endif
   ifeq (osx,$(OMR_HOST_OS))
@@ -174,6 +174,10 @@ ifeq (zos,$(OMR_HOST_OS))
     OBJECTS += omrsignal_ceehdlr
     OBJECTS += omrsignal_context_ceehdlr
   endif
+endif
+
+ifeq (linux_ztpf,$(OMR_HOST_OS))
+    OBJECTS += omrloadfpc
 endif
 
 ifeq (ppc,$(OMR_HOST_ARCH))

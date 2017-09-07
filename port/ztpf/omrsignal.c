@@ -239,7 +239,7 @@ typedef struct J9UnixAsyncHandlerRecord {
 	struct J9UnixAsyncHandlerRecord	*next;
 } J9UnixAsyncHandlerRecord;
 
-/* holds the options set by j9sig_set_options */
+/* holds the options set by omrsig_set_options */
 uint32_t signalOptionsGlobal;
 
 static J9UnixAsyncHandlerRecord	*asyncHandlerList = NULL;
@@ -325,7 +325,7 @@ omrsig_can_protect(struct OMRPortLibrary *portLibrary,  uint32_t flags)
 }
 
 uint32_t
-j9sig_info(struct OMRPortLibrary *portLibrary, void *info, uint32_t category, int32_t index, const char **name, void **value)
+omrsig_info(struct OMRPortLibrary *portLibrary, void *info, uint32_t category, int32_t index, const char **name, void **value)
 {
 	*name = "";
 
@@ -348,7 +348,7 @@ j9sig_info(struct OMRPortLibrary *portLibrary, void *info, uint32_t category, in
 
 
 uint32_t
-j9sig_info_count(struct OMRPortLibrary *portLibrary, void *info, uint32_t category)
+omrsig_info_count(struct OMRPortLibrary *portLibrary, void *info, uint32_t category)
 {
 	return countInfoInCategory(portLibrary, info, category);
 }
@@ -357,7 +357,7 @@ j9sig_info_count(struct OMRPortLibrary *portLibrary, void *info, uint32_t catego
  * We register the master signal handlers here to deal with -Xrs
  */
 int32_t
-j9sig_protect(struct OMRPortLibrary *portLibrary,  omrsig_protected_fn fn, void* fn_arg,
+omrsig_protect(struct OMRPortLibrary *portLibrary,  omrsig_protected_fn fn, void* fn_arg,
 					 omrsig_handler_fn handler, void* handler_arg, uint32_t flags, UDATA *result )
 {
 	struct J9SignalHandlerRecord thisRecord;
@@ -416,7 +416,7 @@ j9sig_protect(struct OMRPortLibrary *portLibrary,  omrsig_protected_fn fn, void*
 		 * within the scope of this layer of protection would have been handled by that point.
 		 * 
 		 * The only scenario where this is of real concern, is if more than one signal was 
-		 * handled per call to j9sig_protect. In this case, the current signal in tls will 
+		 * handled per call to omrsig_protect. In this case, the current signal in tls will
 		 * be pointing at a stale stack frame and signal: CMVC 126838 
 		 */
 		currentSignal = omrthread_tls_get(thisThread, tlsKeyCurrentSignal);
@@ -503,7 +503,7 @@ omrsig_set_async_signal_handler(struct OMRPortLibrary* portLibrary, omrsig_handl
 
 	while (NULL != cursor) {
 		if ( (cursor->portLib == portLibrary) && (cursor->handler == handler) && (cursor->handler_arg == handler_arg) ) {
-			if (0 == flags) {	/* Remove the listener, but not masterHandlers, which get removed at j9signal shutdown */
+			if (0 == flags) {	/* Remove the listener, but not masterHandlers, which get removed at omrsignal shutdown */
 				*previousLink = cursor->next;						/* remove this handler record */
 				portLibrary->mem_free_memory(portLibrary, cursor);
 				Trc_PRT_signal_omrsig_set_async_signal_handler_user_handler_removed(handler, handler_arg, flags);
@@ -563,10 +563,10 @@ omrsig_shutdown(struct OMRPortLibrary *portLibrary)
  * Start up the signal handling component of the port library
  *
  * Note: none of the master handlers are registered with the OS until the first call to either
- *		 j9sig_protect or j9sig_set_async_signal_handler.
+ *		 omrsig_protect or j9sig_set_async_signal_handler.
  */
 int32_t
-j9sig_startup(struct OMRPortLibrary *portLibrary)
+omrsig_startup(struct OMRPortLibrary *portLibrary)
 {
 	int32_t result = 0;
 	omrthread_monitor_t globalMonitor;
@@ -703,7 +703,7 @@ asynchSignalReporter(void *userData) {
 /**
  * This signal handler is specific to synchronous signals.
  * It will call all of the user's handlers that were registered with the 
- * vm using j9sig_protect upon receiving a signal one listens for.
+ * vm using omrsig_protect upon receiving a signal one listens for.
  *
  */ 
 void
@@ -879,7 +879,7 @@ masterASynchSignalHandler(int signal, siginfo_t * sigInfo, void *contextInfo, UD
 
 /**
  * Register the signal handler with the OS, generally used to register the master signal handlers 
- * Not to be confused with j9sig_protect, which registers the user's handler with the port library.
+ * Not to be confused with omrsig_protect, which registers the user's handler with the port library.
  * 
  * Calls to this function must be synchronized using "masterHandlerMonitor".
  * 

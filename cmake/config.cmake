@@ -31,9 +31,19 @@ set(OMR_OMRSIG ON CACHE BOOL "Enable the OMR signal compatibility library")
 set(OMR_PORT ON CACHE BOOL "Enable portability library")
 set(OMR_TEST_COMPILER OFF CACHE BOOL "Enable building the test compiler")
 set(OMR_THREAD ON CACHE BOOL "Enable thread library")
-# set(OMR_TOOLS On CACHE BOOL "Enable the build tools")
-# TODO: Support building only tools for cross-compilation build
+set(OMR_TOOLS ON CACHE BOOL "Enable the native build tools")
 
+###
+### Tooling
+###
+
+set(OMR_TOOLS_IMPORTFILE "IMPORTFILE-NOTFOUND" CACHE FILEPATH
+	"Point it to the ImportTools.cmake file of a native build"
+)
+
+###
+### Library names
+###
 
 set(OMR_GC_LIB "omrgc" CACHE STRING "Name of the GC library to use")
 set(OMR_HOOK_LIB "j9hookstatic" CACHE STRING "Name of the hook library to link against")

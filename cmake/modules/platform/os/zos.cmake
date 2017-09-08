@@ -54,6 +54,11 @@ list(APPEND OMR_PLATFORM_CXX_COMPILE_OPTIONS
 	"\"-qnosearch\""
 )
 
+list(APPEND OMR_PLATFORM_SHARED_COMPILE_OPTIONS
+	"\"-Wc,DLL\""
+	"\"-Wc,EXPORTALL\""
+)
+
 list(APPEND OMR_PLATFORM_SHARED_LINKER_OPTIONS
 	"\"-Wl,xplink\""
 	"\"-Wl,dll\""
@@ -79,8 +84,6 @@ macro(omr_os_global_setup)
 	enable_language(ASM-ZOS)
 
 	omr_append_flags(CMAKE_ASM-ZOS_FLAGS ${OMR_PLATFORM_COMPILE_OPTIONS})
-
-	target_compile_options(omr_shared INTERFACE "-Wc,DLL,EXPORTALL")
 
 	#TODO below is a chunk of the original makefile which still needs to be ported
 	# # This is the first option applied to the C++ linking command.

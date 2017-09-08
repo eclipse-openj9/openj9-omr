@@ -47,11 +47,6 @@ include(platform/toolcfg/${OMR_TOOLCONFIG})
 # Verify toolconfig!
 include(platform/toolcfg/verify)
 
-
-# interface library for exporting symbols from dynamic library
-# currently does nothing except on zos
-add_library(omr_shared INTERFACE)
-
 macro(omr_platform_global_setup)
 
 	omr_assert(WARNING TEST NOT OMR_PLATFORM_GLOBALLY_INITIALIZED

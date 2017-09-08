@@ -22,7 +22,10 @@ add_library(j9a2e SHARED
 	atoe_utils.c
 )
 
-target_link_libraries(j9a2e PRIVATE omr_shared)
+target_compile_options(j9a2e
+	PRIVATE
+		${OMR_PLATFORM_SHARED_COMPILE_OPTIONS}
+)
 
 target_include_directories(j9a2e
 	PUBLIC

@@ -84,8 +84,12 @@ endif()
 
 target_link_libraries(omrsig
 	PRIVATE
-	omrutil
-	omr_shared
+		omrutil
+)
+
+target_compile_options(omrsig
+	PRIVATE
+		${OMR_PLATFORM_SHARED_COMPILE_OPTIONS}
 )
 
 if(OMR_HOST_OS MATCHES "linux|osx")

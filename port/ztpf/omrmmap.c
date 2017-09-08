@@ -15,6 +15,7 @@
  * Contributors:
  *    Multiple authors (IBM Corp.) - initial API and implementation and/or initial documentation
  *    Multiple authors (IBM Corp.) - z/TPF platform initial port to OMR environment
+ *    James Johnston (IBM Corp.) - copy dummy omrmmap_dont_need call from common.
  *******************************************************************************/
 
 /**
@@ -171,4 +172,14 @@ omrmmap_get_region_granularity(struct OMRPortLibrary *portLibrary, void *address
 	return protect_region_granularity(portLibrary, address);
 }
 
-
+/**
+ * Advise operating system to free resources in the given range.
+ * @note The start address is rounded up to the nearest page boundary and the length is rounded down to a page boundary.
+ * @param startAddress start address of the data to disclaim
+ * @param length number of bytes to disclaim
+ */
+void
+omrmmap_dont_need(struct OMRPortLibrary *portLibrary, const void *startAddress, size_t length)
+{
+        return;
+}

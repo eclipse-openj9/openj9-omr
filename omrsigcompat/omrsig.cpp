@@ -15,6 +15,7 @@
  * Contributors:
  *    Multiple authors (IBM Corp.) - initial API and implementation and/or initial documentation
  *    James Johnston (IBM Corp.) - z/TPF uses single brace initializer
+ *    James Johnston (IBM Corp.) - Fectch sigaction address for z/TPF
  *******************************************************************************/
 
 #if defined(J9ZOS390)
@@ -283,6 +284,22 @@ omrsig_signalOS_internal(int signum, const struct sigaction *act, struct sigacti
 #if defined(J9ZOS390)
 	/* zos does not seem to allow dlopen with NULL and no dll name. Use pragma map to SIGACT instead.*/
 	rc = sigactionOS(signum, act, oldact);
+#elif defined(OMRZTPF)
+	if (sigactionOS == NULL) {
+		void *handle = (char *)dlopen("CTIS", RTLD_LOCAL);
+		if (handle == NULL)  {
+			rc = -1;
+		}  else  {
+			sigactionOS = (SIGACTION)dlsym(handle, "sigaction");
+			if (sigactionOS == NULL) {
+				rc = -1;
+			} else {
+				rc = sigactionOS(signum, act, oldact);
+			}
+		}
+	}  else  {
+		rc = sigactionOS(signum, act, oldact);
+	}
 #elif defined(POSIX_SIGNAL)
 	/* Find the system implementation of sigaction on first call. */
 	if (NULL == sigactionOS) {

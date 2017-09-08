@@ -14,6 +14,7 @@
  *
  * Contributors:
  *    Multiple authors (IBM Corp.) - initial implementation and documentation
+ *    James Johnston (IBM Corp.) - configure for z/TPF use
  ******************************************************************************/
 
 #include "omrcfg.h"
@@ -157,7 +158,7 @@ OMRZeroMemory(void *ptr, uintptr_t length)
 		memset(ptr, 0, (size_t)length);
 	}
 #else
-#if (defined (LINUX) && defined(S390))
+#if (defined (LINUX) && defined(S390)) && !defined(OMRZTPF)
 	if (-1 == isZ10orGreater) {
 		int machineType = get390zLinuxMachineType();
 		if ((-1 == machineType) || machineType < Z10) {
@@ -172,7 +173,7 @@ OMRZeroMemory(void *ptr, uintptr_t length)
 	} else {
 		memset(ptr, 0, (size_t)length);
 	}
-#else /* (defined (LINUX) && defined(S390)) */
+#else /* (defined (LINUX) && defined(S390)) && !defined(OMRZTPF) */
 	memset(ptr, 0, (size_t)length);
 #endif
 #endif

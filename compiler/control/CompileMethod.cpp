@@ -336,9 +336,7 @@ compileMethodFromDetails(
          compiler.setDebug(createDebugObject(&compiler));
          }
 
-#ifdef TEST_PROJECT_SPECIFIC
       compiler.setIlVerifier(details.getIlVerifier());
-#endif
 
       if (TR::Options::getCmdLineOptions()->getVerboseOption(TR_VerboseCompileStart))
          {

@@ -56,13 +56,13 @@ class OMR_EXTENSIBLE IlGeneratorMethodDetails : public OMR::IlGeneratorMethodDet
 public:
 
    IlGeneratorMethodDetails() :
-      _method(NULL),
-      _ilVerifier(NULL)
+      OMR::IlGeneratorMethodDetailsConnector(),
+      _method(NULL)
       { }
 
    IlGeneratorMethodDetails(TR::ResolvedMethod *method) :
-      _method(method),
-      _ilVerifier(NULL)
+      OMR::IlGeneratorMethodDetailsConnector(),
+      _method(method)
       { }
 
    IlGeneratorMethodDetails(TR_ResolvedMethod *method);
@@ -81,13 +81,9 @@ public:
                                           bool forceClassLookahead,
                                           TR_InlineBlocks *blocksToInline);
 
-   TR::IlVerifier * getIlVerifier() { return _ilVerifier; }
-   void setIlVerifier(TR::IlVerifier * ilVerifier) { _ilVerifier = ilVerifier; }
-
 protected:
 
    TR::ResolvedMethod * _method;
-   TR::IlVerifier     * _ilVerifier;
    };
 
 }

@@ -2826,10 +2826,19 @@ void OMR::Optimizer::setAliasSetsAreValid(bool b, bool setForWCode)
    _aliasSetsAreValid = b;
    }
 
+const OptimizationStrategy *OMR::Optimizer::_mockStrategy = NULL;
 
 const OptimizationStrategy *
 OMR::Optimizer::optimizationStrategy(TR::Compilation *c)
    {
+   // Mock strategies are used for testing, and override 
+   // the compilation strategy.
+   if (NULL != OMR::Optimizer::_mockStrategy) 
+      {
+      traceMsg(c, "Using mock optimization strategy %p\n", OMR::Optimizer::_mockStrategy);
+      return OMR::Optimizer::_mockStrategy;
+      }
+
    TR_Hotness strategy = c->getMethodHotness();
    TR_ASSERT(strategy <= lastOMRStrategy, "Invalid optimization strategy");
 

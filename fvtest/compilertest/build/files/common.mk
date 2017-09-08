@@ -267,7 +267,6 @@ JIT_PRODUCT_SOURCE_FILES+=\
     $(JIT_PRODUCT_DIR)/env/FrontEnd.cpp \
     $(JIT_PRODUCT_DIR)/ilgen/IlInjector.cpp \
     $(JIT_PRODUCT_DIR)/ilgen/TestIlGeneratorMethodDetails.cpp \
-    $(JIT_PRODUCT_DIR)/optimizer/TestOptimizer.cpp \
     $(JIT_PRODUCT_DIR)/runtime/TestCodeCacheManager.cpp \
     $(JIT_PRODUCT_DIR)/runtime/TestJitConfig.cpp
 

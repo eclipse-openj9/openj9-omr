@@ -33,6 +33,8 @@ testMain(int argc, char **argv, char **envp)
 {
 	::testing::InitGoogleTest(&argc, argv);
 
+	OMREventListener::setDefaultTestListener();
+
 	gcTestEnv = (GCTestEnvironment *)testing::AddGlobalTestEnvironment(new GCTestEnvironment(argc, argv));
 	gcTestEnv->GCTestSetUp();
 	int result = RUN_ALL_TESTS();

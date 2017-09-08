@@ -30,7 +30,7 @@ int
 main(int argc, char **argv, char **envp)
 {
 	::testing::InitGoogleTest(&argc, argv);
-
+	OMREventListener::setDefaultTestListener();
 	return RUN_ALL_TESTS();
 }
 

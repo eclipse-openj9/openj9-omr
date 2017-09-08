@@ -303,8 +303,12 @@ target_link_libraries(j9thrstatic
 	omrutil
 )
 
-if(OMR_HOST_OS MATCHES "linux|osx")
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
 	target_link_libraries(j9thrstatic
 		-pthread
+	)
+elseif(CMAKE_C_COMPILER_ID MATCHES "^(Apple)?Clang$")
+	target_link_libraries(j9thrstatic
+		pthread
 	)
 endif()

@@ -18,6 +18,8 @@
 
 set(OMR_WARNING_AS_ERROR_FLAG -Werror)
 
+list(APPEND OMR_PLATFORM_COMPILE_OPTIONS -pthread)
+
 if(OMR_ENV_DATA64)
 	list(APPEND OMR_PLATFORM_COMPILE_OPTIONS
 		-m64
@@ -55,4 +57,5 @@ set(PASM_CMD ${CMAKE_C_COMPILER})
 set(PASM_FLAGS -x assembler-with-cpp -E -P) 
 
 set(SPP_CMD ${CMAKE_C_COMPILER}) 
-set(SPP_FLAGS -x assembler-with-cpp -E -P) 
+set(SPP_FLAGS -x assembler-with-cpp -E -P)
+

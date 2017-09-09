@@ -117,7 +117,7 @@ errMsg(args *argv, uint8_t *message, ...)
 	va_list plist;
 
 	va_start(plist, message);
-	vsprintf(workSpace(argv), message, plist);
+	vsprintf((char *)workSpace(argv), (char *)message, plist);
 	va_end(plist);
 	dumpFlags(argv) |= J9TPF_ERRMSG_IN_WKSPC;
 	return;
@@ -258,7 +258,7 @@ splitPathName(char *finalname, char *pathname)
 		strcpy(&tempPath[0], "/tmp/");
 	}
 	strcpy(pathname, &tempPath[0]);
-	return pathname;
+	return (uint8_t *)pathname;
 }
 
 /**
@@ -345,7 +345,7 @@ ztpfBuildCoreFile(void *argv_block)
 	Elf64_Phdr *phdrp; /* Pointer to Elf64_Phdr block                */
 	Elf64_Nhdr *narea; /* Pointer to the ELF NOTE data                */
 	char pathName[PATH_MAX]; /* Working buffer for core.* fname.*/
-	char *ofn = dumpFilename(arg); /* Output dump file path    */
+	char *ofn = (char *)dumpFilename(arg); /* Output dump file path    */
 	uint32_t ofd; /* File descriptor for output dump            */
 	uintptr_t rc; /* Working return code d.o.                    */
 	uintptr_t wPtr; /* Working byte-sized pointer d.o.            */
@@ -398,7 +398,7 @@ ztpfBuildCoreFile(void *argv_block)
 		buffer = malloc64(octetsToWrite); /*  anywhere. We're desperate.    */
 		if (!buffer) { /* If we can't buffer our I/Os,    */
 			returnCode (arg) = -1; /*  we are done. Indicate error */
-			errMsg(arg, "Cannot buffer dump file, out of memory");
+			errMsg(arg, (uint8_t *)"Cannot buffer dump file, out of memory");
 			dumpFlags(arg) |= J9TPF_OUT_OF_BUFFERSPACE;
 			KEY0();
 			dbfptr->ijavcnt = 0L; /* Unlock the JDB so CCCPSE can reuse it*/
@@ -421,7 +421,7 @@ ztpfBuildCoreFile(void *argv_block)
 	/*
 	 *    The "OS filename" will look like ${path}/core.${TOD_in_hex}.${pid}
 	 */
-	sprintf(workSpace(arg), "core.%lX.%d", dibPtr->dstckf,
+	sprintf((char *)workSpace(arg), "core.%lX.%d", dibPtr->dstckf,
 			dumpSiginfo(arg)->si_pid);
 	{
 		int pathLen = strlen(pathName);
@@ -429,8 +429,8 @@ ztpfBuildCoreFile(void *argv_block)
 		a2e_len(pathName, ebcdicPath, strlen(pathName));
 		int fsystype = pathconf(ebcdicPath, _TPF_PC_FS_TYPE);
 		if (fsystype == MOUNT_TFS) {
-			errMsg(arg, "Cannot use the tfs for java dumps: path used='%s'\n",
-					pathName);
+			errMsg(arg, (uint8_t *)"Cannot use the tfs for java dumps: path used='%s'\n",
+					(uint8_t *)pathName);
 			returnCode (arg) = -1;
 			KEY0();
 			dbfptr->ijavcnt = 0L; /* Unlock the JDB so CCCPSE can reuse it*/
@@ -439,11 +439,11 @@ ztpfBuildCoreFile(void *argv_block)
 			//dir_path_name is within the TFS
 		}
 	}
-	strcat(pathName, workSpace(arg));
+	strcat(pathName, (const char *)workSpace(arg));
 	ofd = open(pathName, O_WRONLY | O_CREAT | O_EXCL);
 
 	if (-1 == ofd) {
-		errMsg(arg, "Cannot open() filename %s: %s\n", strerror(errno));
+		errMsg(arg, (uint8_t *)"Cannot open() filename %s: %s\n", strerror(errno));
 		returnCode (arg) = -1;
 		KEY0();
 		dbfptr->ijavcnt = 0L; /* Unlock the JDB so CCCPSE can reuse it*/
@@ -477,7 +477,7 @@ ztpfBuildCoreFile(void *argv_block)
 	 */
 	octetsWritten = writeDumpFile(ofd, buffer, octetsToWrite);
 	if (-1 == octetsWritten) {
-		errMsg(arg, "Error writing dump file %s: %s", ofn, strerror(errno));
+		errMsg(arg, (uint8_t *)"Error writing dump file %s: %s", ofn, strerror(errno));
 		dumpFlags(arg) |= J9TPF_FILE_SYSTEM_ERROR;
 		KEY0();
 		dbfptr->ijavcnt = 0L; /* Unlock the JDB so CCCPSE can reuse it*/
@@ -490,7 +490,7 @@ ztpfBuildCoreFile(void *argv_block)
 	imageBuffer = (uint8_t *) cinfc_fast(CINFC_CMMJDB);
 	octetsWritten = writeDumpFile(ofd, imageBuffer, numBytes);
 	if (-1 == octetsWritten) {
-		errMsg(arg, "Error writing dump file %s: %s", ofn, strerror(errno));
+		errMsg(arg, (uint8_t *)"Error writing dump file %s: %s", ofn, strerror(errno));
 		dumpFlags(arg) |= J9TPF_FILE_SYSTEM_ERROR;
 		KEY0();
 		dbfptr->ijavcnt = 0L; /* Unlock the JDB so CCCPSE can reuse it*/
@@ -506,9 +506,9 @@ ztpfBuildCoreFile(void *argv_block)
 					+ 0x1000;
 			char * text = ((char*) pgmbase) + offset;
 			uint64_t size = pgmpat->patpsize - offset;
-			octetsWritten = writeDumpFile(ofd, text, size);
+			octetsWritten = writeDumpFile(ofd, (uint8_t *)text, size);
 			if (-1 == octetsWritten) {
-				errMsg(arg, "Error writing dump file %s: %s", ofn,
+				errMsg(arg, (uint8_t *)"Error writing dump file %s: %s", ofn,
 						strerror(errno));
 				dumpFlags(arg) |= J9TPF_FILE_SYSTEM_ERROR;
 				KEY0();
@@ -524,7 +524,7 @@ ztpfBuildCoreFile(void *argv_block)
 	 */
 	rc = close(ofd); /* Only try to close() the file once    */
 	if (-1 == rc) {
-		errMsg(arg, "I/O error attempting to close %s:%s\n", ofn,
+		errMsg(arg, (uint8_t *)"I/O error attempting to close %s:%s\n", ofn,
 				strerror(errno));
 		KEY0();
 		dbfptr->ijavcnt = 0L; /* Unlock the JDB so CCCPSE can reuse it*/
@@ -535,7 +535,7 @@ ztpfBuildCoreFile(void *argv_block)
 	 * Make sure we have a recognizable IPC permission on the OS filename,
 	 *  then make sure the JDB buffer is unlocked in case CPSE needs it again.
 	 */
-	rc = chmod(workSpace(arg), S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH);
+	rc = chmod((const char *)workSpace(arg), S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH);
 	KEY0();
 	dbfptr->ijavcnt = 0L; /* Unlock the JDB so CCCPSE can reuse it*/
 	UNKEY();
@@ -544,7 +544,7 @@ ztpfBuildCoreFile(void *argv_block)
 	 * it is non-JVM-managed heap space and should be free()d back to it to
 	 * avoid a mem leak.
 	 */
-	strcpy(dumpFilename(arg), ofn); /* Store it in the args block so the */
+	strcpy((char *)dumpFilename(arg), ofn); /* Store it in the args block so the */
 	return (void *) ofn; /*  caller always has it, and goback.*/
 }
 
@@ -852,14 +852,14 @@ buildELFNoteArea(Elf64_Nhdr *buffer, DIB *dibPtr)
 	 * as well do it right ....
 	 */
 	prstat->stime.tv_usec = ecbptr()->ce1istim / 4098; /* Used CPU time    */
-	wDest = (char *) &(prstat->reg); /* Point at offset +0 of reg fld    */
+	wDest = (uint8_t *) &(prstat->reg); /* Point at offset +0 of reg fld    */
 	/*
 	 *     The PGM/O PSW is followed by a 16-wide array of ULONGs which
 	 *     represent the values of all 16 general registers, 0 through 15,
 	 *     as they were at the time the PGM/N PSW fired. Prepare to copy
 	 *     them into the NT_PRSTATUS section, lth=128+16 (144).
 	 */
-	wSrc = (char *) (dibPtr->dispw); /* Point @ PSW & general regs        */
+	wSrc = (unsigned char *) (dibPtr->dispw); /* Point @ PSW & general regs        */
 	memcpy(wDest, wSrc, 144); /* Preserve all that data.            */
 	prstat->fpvalid = TRUE; /* Yes, we have floating point        */
 	/*
@@ -876,10 +876,10 @@ buildELFNoteArea(Elf64_Nhdr *buffer, DIB *dibPtr)
 	prinfo->uid = pIPROC->iproc_uid; /* User id &                */
 	prinfo->gid = pIPROC->iproc_gid; /*  group id.                */
 	memcpy(&prinfo->pid, &prstat->pid, 16); /* Process ID set again        */
-	strcpy(prinfo->fname, "main"); /* Just like Linux does it    */
-	wSrc = getenv("IBM_JAVA_COMMAND_LINE");
+	strcpy((char *)prinfo->fname, "main"); /* Just like Linux does it    */
+	wSrc = (unsigned char *)getenv("IBM_JAVA_COMMAND_LINE");
 	if (wSrc) {
-		strncpy(prinfo->psargs, wSrc, PRARGSZ);
+		strncpy((char *)prinfo->psargs, (const char *)wSrc, (size_t)PRARGSZ);
 		prinfo->psargs[PRARGSZ - 1] = '\0';
 	}
 	/*
@@ -920,7 +920,7 @@ buildELFNoteArea(Elf64_Nhdr *buffer, DIB *dibPtr)
 	nsh_lastbr->n_type = 0x306; /* Type = NT_S390_LAST_BR    */
 	wDest = (uint8_t *) NOTE_DATA_OFFSET(nsh_lastbr);
 	memcpy(nsh_lastbr + 1, "LINUX", 6); /* Set "LINUX" name            */
-	wSrc = (char *) (dibPtr->dbrevn); /* Get NOTE data source ptr */
+	wSrc = (unsigned char *) (dibPtr->dbrevn); /* Get NOTE data source ptr */
 	memcpy(wDest, wSrc, 8); /*  and move it in.            */
 	UNKEY();
 	return tableSize; /* We're done.                */
@@ -935,7 +935,7 @@ buildELFNoteArea(Elf64_Nhdr *buffer, DIB *dibPtr)
 	nsh_lastbr->n_type = 0x500; /* Type = 500                */
 	memcpy(nsh_lastbr + 1, "ZTPF", 5); /* Set "ZTPF" name ...        */
 	wDest += 0x14; /*  and point at data        */
-	sprintf(wDest, "SE-%4.4d OPR-%c%6.6X PGM-%4.4s %5.5c %8.8s", eriPtr->eriseq,
+	sprintf((char *)wDest, "SE-%4.4d OPR-%c%6.6X PGM-%4.4s %5.5c %8.8s", eriPtr->eriseq,
 			eriPtr->eridpfx, eriPtr->eridnum, eriPtr->eridate, eriPtr->eritime);
 	UNKEY();
 	return tableSize; /* We're done.                */

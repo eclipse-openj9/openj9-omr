@@ -73,7 +73,7 @@ endif
 
 ifneq (,$(findstring executable,$(ARTIFACT_TYPE)))
 	## Default Libraries
-	DEFAULT_LIBS:=-lCTIS -lCISO -lCLBM -lCTAL -lCFVS -lCTBX -lCTXO -lCJ00 -lCTDF -lCOMX -lCOMS -lCTHD -lCPP1 -lCTAD -lTPFSTUB -Wl,-z,origin,\$$ORIGIN,--disable-new-dtags,$(top_srcdir)
+	DEFAULT_LIBS:=-lCTIS -lCISO -lCLBM -lCTAL -lCFVS -lCTBX -lCTXO -lCJ00 -lCTDF -lCOMX -lCOMS -lCTHD -lCPP1 -lCTAD -lTPFSTUB -Wl,--disable-new-dtags,$(top_srcdir)
 	GLOBAL_LDFLAGS+=$(DEFAULT_LIBS)
 endif
 
@@ -95,7 +95,7 @@ $(MODULE_NAME)_LINKER_EXPORT_SCRIPT := $(MODULE_NAME).exp
 	GLOBAL_LDFLAGS+=-Wl,--version-script,$($(MODULE_NAME)_LINKER_EXPORT_SCRIPT)
 	GLOBAL_LDFLAGS+=-Wl,-script=/ztpf/commit/base/util/tools/tpfscript
 	GLOBAL_LDFLAGS+=-Wl,-soname=lib$(MODULE_NAME)$(SOLIBEXT)
-	GLOBAL_LDFLAGS+=-Xlinker -z -Xlinker origin -Xlinker \$$ORIGIN -Xlinker --disable-new-dtags
+	GLOBAL_LDFLAGS+=-Xlinker --disable-new-dtags
 	GLOBAL_LDFLAGS+=-Wl,-entry=0 
 
 	ifeq (s390,$(OMR_HOST_ARCH))

@@ -19,8 +19,6 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
 
-#include "ilgen/IlInjector.hpp"
-
 #include "codegen/CodeGenerator.hpp"
 #include "compile/Compilation.hpp"
 #include "compile/Method.hpp"
@@ -35,6 +33,7 @@
 #include "il/TreeTop.hpp"
 #include "il/TreeTop_inlines.hpp"
 #include "ilgen/IlGeneratorMethodDetails_inlines.hpp"
+#include "ilgen/IlInjector.hpp"
 #include "ilgen/TypeDictionary.hpp"
 #include "infra/Cfg.hpp"
 #include "ras/ILValidator.hpp"

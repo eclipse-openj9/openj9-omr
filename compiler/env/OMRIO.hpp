@@ -55,12 +55,12 @@ namespace OMR { typedef OMR::IO IOConnector; }
    #if defined(LINUX) || defined(OSX)
       #ifdef TR_HOST_64BIT
          #ifdef TR_TARGET_X86
-            #define POINTER_PRINTF_FORMAT "%012p"
+            #define POINTER_PRINTF_FORMAT "%12p"
          #else
-            #define POINTER_PRINTF_FORMAT "%018p"
+            #define POINTER_PRINTF_FORMAT "%18p"
          #endif
       #else
-         #define POINTER_PRINTF_FORMAT "%010p"
+         #define POINTER_PRINTF_FORMAT "%10p"
       #endif
    #else /* assume AIX and ZOS */
       #define POINTER_PRINTF_FORMAT "0x%p"

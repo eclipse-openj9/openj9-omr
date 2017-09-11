@@ -139,7 +139,7 @@ TR_Debug::printSymRefTable(TR::FILE *pOutFile, bool printFullTable)
          trfprintf(pOutFile, "\nSymbol References (incremental):\n--------------------------------\n");
       for (int i = _comp->getPrevSymRefTabSize() ; i < currSymRefTabSize ; i++)
          {
-         if (symRefIterator = symRefTab->getSymRef(i))
+         if ((symRefIterator = symRefTab->getSymRef(i)))
             {
             output.reset();
             print(symRefIterator, output, false/*hideHelperMethodInfo*/, true /*verbose*/);

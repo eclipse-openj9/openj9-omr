@@ -304,7 +304,7 @@ bool TR_InterferenceGraph::doColouring(IGNodeColour numColours)
 
    // TODO: reset stacks, colours?
    //
-   if (success = simplify())
+   if ((success = simplify()))
       {
       success = select();
       }

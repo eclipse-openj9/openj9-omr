@@ -239,7 +239,7 @@ TR_RegisterCandidate *
 TR_RegisterCandidates::findOrCreate(TR::SymbolReference * symRef)
    {
    TR_RegisterCandidate * rc;
-   if (rc = find(symRef))
+   if ((rc = find(symRef)))
       {
       if (_candidateForSymRefs)
          {
@@ -2282,7 +2282,7 @@ TR_RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, in
       maxGPRsLiveOnExit[blockNumber] = cg->getMaximumNumberOfGPRsAllowedAcrossEdge(b);
       maxFPRsLiveOnExit[blockNumber] = cg->getMaximumNumberOfFPRsAllowedAcrossEdge(node);
       maxVRFsLiveOnExit[blockNumber] = cg->getMaximumNumberOfVRFsAllowedAcrossEdge(node);
-      } while (b = b->getNextBlock());
+      } while ((b = b->getNextBlock()));
 
    int32_t numCandidates = 0;
    TR_Array<int32_t> totalGPRCount(trMemory(), numberOfBlocks,true,stackAlloc);

@@ -777,7 +777,7 @@ OMR::SymbolReference::setLiteralPoolAliases(TR_BitVector * aliases, TR::SymbolRe
 
    TR_SymRefIterator i(symRefTab->aliasBuilder.genericIntShadowSymRefs(), symRefTab);
    TR::SymbolReference * symRef;
-   while (symRef = i.getNext())
+   while ((symRef = i.getNext()))
       if (symRef->isLiteralPoolAddress() || symRef->isFromLiteralPool())
          aliases->set(symRef->getReferenceNumber());
 
@@ -796,7 +796,7 @@ OMR::SymbolReference::setSharedShadowAliases(TR_BitVector * aliases, TR::SymbolR
                                            : (type.isInt32() ? symRefTab->aliasBuilder.intShadowSymRefs()
                                                              : symRefTab->aliasBuilder.nonIntPrimitiveShadowSymRefs()), symRefTab);
       TR::SymbolReference * symRef;
-      while (symRef = i.getNext())
+      while ((symRef = i.getNext()))
          if (symRef->getSymbol() == self()->getSymbol())
             aliases->set(symRef->getReferenceNumber());
 
@@ -820,7 +820,7 @@ OMR::SymbolReference::setSharedStaticAliases(TR_BitVector * aliases, TR::SymbolR
                                            : (type.isInt32() ? symRefTab->aliasBuilder.intStaticSymRefs()
                                                              : symRefTab->aliasBuilder.nonIntPrimitiveStaticSymRefs()), symRefTab);
       TR::SymbolReference * symRef;
-      while (symRef = i.getNext())
+      while ((symRef = i.getNext()))
          if (symRef->getSymbol() == self()->getSymbol())
             aliases->set(symRef->getReferenceNumber());
       }

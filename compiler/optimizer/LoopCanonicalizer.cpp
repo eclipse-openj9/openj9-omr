@@ -2591,7 +2591,7 @@ bool TR_LoopCanonicalizer::examineTreeForInductionVariableUse(TR::Block *loopInv
          loadOfPrimaryInductionVar = TR::Node::create(((dataType == TR::Int32) ? TR::iadd : TR::ladd), 2, loadOfPrimaryInductionVar, TR::Node::createWithSymRef(node, comp()->il.opCodeForDirectLoad(dataType), 0, *newSymbolReference));
 
          bool nodeSetUp = false;
-         if ((_primaryIncrementedFirst == 0))
+         if (_primaryIncrementedFirst == 0)
             {
             if (_derivedInductionVarStoreInBlock)
                {

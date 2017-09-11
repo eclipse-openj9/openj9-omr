@@ -176,7 +176,7 @@ TR::Symbol *TR_LoopUnroller::findSymbolInTree(TR::Node *node)
    for (int32_t child = node->getNumChildren() - 1; child >= 0; child--)
       {
       TR::Symbol *sym;
-      if (sym = findSymbolInTree(node->getChild(child)))
+      if ((sym = findSymbolInTree(node->getChild(child))))
          return sym;
       }
    return NULL;

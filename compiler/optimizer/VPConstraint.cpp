@@ -2703,7 +2703,7 @@ TR::VPConstraint * TR::VPConstraint::intersect(TR::VPConstraint *other, OMR::Val
    {
    // If this is the same constraint, just return it
    //
-   if (!this || !other)
+   if (!other)
       {
       if (vp->trace())
          traceMsg(vp->comp(), "setIntersectionFailed to true because NULL constraint found this = 0x%p, other = 0x%p\n", this, other);

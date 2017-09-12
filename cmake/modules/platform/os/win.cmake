@@ -19,6 +19,8 @@
 # SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
 #############################################################################
 
+set(OMR_WINVER "0x501")
+
 list(APPEND OMR_PLATFORM_DEFINITIONS
 	-DWIN32
 	-D_CRT_SECURE_NO_WARNINGS

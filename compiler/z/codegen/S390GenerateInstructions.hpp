@@ -434,41 +434,168 @@ TR::Instruction * generateRIInstruction(
                    TR::InstOpCode::Mnemonic          op,
                    TR::Node                *n,
                    TR::Register            *treg,
-                   char                   *data,
+                   char                    *data,
                    TR::Instruction         *preced = 0);
 
+/** \brief
+ *     Generates a new S390RILInstruction object.
+ *
+ *     RIL type instructions have 2 different kinds of immediates. One is a "pure" immediate, meaning
+ *     the immediate is used as is, usually as an integer for an instruction like AFI. The other is a
+ *     relative immediate used to calculate an address in instructions like BRASL and LARL.
+ *
+ *     This function is to be used for instructions with relative immediates. A fatal assert will trigger
+ *     if this function is used with a mnemonic which has a pure immediate.
+ *
+ *  \param cg
+ *     The code generator used to generate the instructions.
+ *
+ *  \param op
+ *     The opcode mnemonic of the instruction to be generated.
+ *
+ *  \param n
+ *     The node for which an instruction is being generated.
+ *
+ *  \param treg
+ *     The target register for the instruction.
+ *
+ *  \param sr
+ *     The symbol reference to be used.
+ *
+ *  \param addr
+ *     The address to be used in the generated instruction. An absolute address needs to be used.
+ *     Binary Encoding will automatically change the absolute address to the relative offset format
+ *     needed by the instruction.
+ *
+ *  \param preced
+ *     The preceeding instruction.
+ *
+ *  \return
+ *     The generated S390RILInstruction.
+ */
 TR::Instruction * generateRILInstruction(
-                   TR::CodeGenerator       *cg,
-                   TR::InstOpCode::Mnemonic          op,
-                   TR::Node                *n,
-                   TR::Register            *treg,
-                   TR::SymbolReference     *sr,
-                   uintptrj_t              imm,
-                   TR::Instruction         *preced = 0);
+                   TR::CodeGenerator        *cg,
+                   TR::InstOpCode::Mnemonic  op,
+                   TR::Node                 *n,
+                   TR::Register             *treg,
+                   TR::SymbolReference      *sr,
+                   void                     *addr,
+                   TR::Instruction          *preced = 0);
 
 TR::Instruction * generateRILInstruction(
-                   TR::CodeGenerator       *cg,
-                   TR::InstOpCode::Mnemonic         op,
-                   TR::Node                *n,
-                   TR::Register            *treg,
+                   TR::CodeGenerator        *cg,
+                   TR::InstOpCode::Mnemonic  op,
+                   TR::Node                 *n,
+                   TR::Register             *treg,
                    TR::LabelSymbol          *label,
-                   TR::Instruction         *preced = 0);
+                   TR::Instruction          *preced = 0);
+
+/** \brief
+ *     Generates a new S390RILInstruction object.
+ *
+ *     RIL type instructions have 2 different kinds of immediates. One is a "pure" immediate, meaning
+ *     the immediate is used as is, usually as an integer for an instruction like AFI. The other is a
+ *     relative immediate used to calculate an address in instructions like BRASL and LARL.
+ *
+ *     This function is to be used for instructions with pure immediates. A fatal assert will trigger
+ *     if this function is used with a mnemonic which has a relative immediate.
+ *
+ *  \param cg
+ *     The code generator used to generate the instructions.
+ *
+ *  \param op
+ *     The opcode mnemonic of the instruction to be generated.
+ *
+ *  \param n
+ *     The node for which an instruction is being generated.
+ *
+ *  \param treg
+ *     The target register for the instruction.
+ *
+ *  \param imm
+ *     The pure immediate to be used.
+ *
+ *  \param preced
+ *     The preceeding instruction.
+ *
+ *  \return
+ *     The generated S390RILInstruction.
+ */
+TR::Instruction * generateRILInstruction(
+                   TR::CodeGenerator        *cg,
+                   TR::InstOpCode::Mnemonic  op,
+                   TR::Node                 *n,
+                   TR::Register             *treg,
+                   uint32_t                  imm,
+                   TR::Instruction          *preced = 0);
 
 TR::Instruction * generateRILInstruction(
-                   TR::CodeGenerator       *cg,
-                   TR::InstOpCode::Mnemonic          op,
-                   TR::Node                *n,
-                   TR::Register            *treg,
-                   uintptrj_t              imm,
-                   TR::Instruction         *preced = 0);
+                   TR::CodeGenerator        *cg,
+                   TR::InstOpCode::Mnemonic  op,
+                   TR::Node                 *n,
+                   TR::Register             *treg,
+                   int32_t                   imm,
+                   TR::Instruction          *preced = 0);
+
+/** \brief
+ *     Generates a new S390RILInstruction object.
+ *
+ *     RIL type instructions have 2 different kinds of immediates. One is a "pure" immediate, meaning
+ *     the immediate is used as is, usually as an integer for an instruction like AFI. The other is a
+ *     relative immediate used to calculate an address in instructions like BRASL and LARL.
+ *
+ *     This function is to be used for instructions with relative immediates. A fatal assert will trigger
+ *     if this function is used with a mnemonic which has a pure immediate.
+ *
+ *  \param cg
+ *     The code generator used to generate the instructions.
+ *
+ *  \param op
+ *     The opcode mnemonic of the instruction to be generated.
+ *
+ *  \param n
+ *     The node for which an instruction is being generated.
+ *
+ *  \param treg
+ *     The target register for the instruction.
+ *
+ *  \param sr
+ *     The symbol reference to be used.
+ *
+ *  \param addr
+ *     The address to be used in the generated instruction. An absolute address needs to be used.
+ *     Binary Encoding will automatically change the absolute address to the relative offset format
+ *     needed by the instruction.
+ *
+ *  \param preced
+ *     The preceeding instruction.
+ *
+ *  \return
+ *     The generated S390RILInstruction.
+ */
+TR::Instruction * generateRILInstruction(
+                   TR::CodeGenerator        *cg,
+                   TR::InstOpCode::Mnemonic  op,
+                   TR::Node                 *n,
+                   TR::Register             *treg,
+                   void                     *addr,
+                   TR::Instruction          *preced = 0);
 
 TR::Instruction * generateRILInstruction(
-                   TR::CodeGenerator       *cg,
-                   TR::InstOpCode::Mnemonic         op,
-                   TR::Node                *n,
-                   TR::Register            *treg,
-                   TR::Snippet             *ts,
-                   TR::Instruction         *preced);
+                   TR::CodeGenerator        *cg,
+                   TR::InstOpCode::Mnemonic  op,
+                   TR::Node                 *n,
+                   uint32_t                  mask,
+                   void                     *addr,
+                   TR::Instruction          *preced = 0);
+
+TR::Instruction * generateRILInstruction(
+                   TR::CodeGenerator        *cg,
+                   TR::InstOpCode::Mnemonic  op,
+                   TR::Node                 *n,
+                   TR::Register             *treg,
+                   TR::Snippet              *ts,
+                   TR::Instruction          *preced = 0);
 
 TR::Instruction * generateSIInstruction(
                    TR::CodeGenerator *cg,

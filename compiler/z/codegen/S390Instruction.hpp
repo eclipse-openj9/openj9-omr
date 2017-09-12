@@ -2128,12 +2128,12 @@ class S390RIInstruction : public TR::S390RegInstruction
 ////////////////////////////////////////////////////////////////////////////////
 class S390RILInstruction : public TR::Instruction
    {
-   uint32_t     _mask;
-   uintptrj_t   _targetPtr;
-   TR::Snippet  *_targetSnippet;
-   TR::Symbol    *_targetSymbol;
-   TR::LabelSymbol    *_targetLabel;
-   flags8_t _flagsRIL;
+   uint32_t             _mask;
+   void                *_targetPtr;
+   TR::Snippet         *_targetSnippet;
+   TR::Symbol          *_targetSymbol;
+   TR::LabelSymbol     *_targetLabel;
+   flags8_t             _flagsRIL;
    TR::SymbolReference *_symbolReference;
 
    /** _flagsRIL */
@@ -2143,29 +2143,19 @@ class S390RILInstruction : public TR::Instruction
       isImmediateOffsetInBytesFlag    = 0x02
       };
 
-   /** Use to store immediate value in extended immediate instruction. */
-   int32_t  _sourceImmediate;
+   /** Use to store immediate value where the immediate is not used as a relative offset in address calculation.*/
+   uint32_t  _sourceImmediate;
 
    public:
 
    S390RILInstruction(TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register  *treg,
-                         uintptrj_t     tp,
+                         uint32_t           imm,
                          TR::CodeGenerator *cg)
-      : TR::Instruction(op, n, cg), _targetSnippet(NULL), _targetSymbol(NULL), _flagsRIL(0), _mask(0xffffffff),  _targetLabel(NULL),_symbolReference(NULL)
+      : TR::Instruction(op, n, cg), _targetPtr(NULL), _targetSnippet(NULL), _targetSymbol(NULL), _flagsRIL(0), _mask(0xffffffff),  _targetLabel(NULL), _symbolReference(NULL), _sourceImmediate(imm)
       {
-
+      TR_ASSERT_FATAL(getOpCode().isExtendedImmediate(), "Incorrect S390RILInstruction constructor used.\n"
+                                                       "%s expects an address as the immediate but this constructor is for integer immediates.", getOpCode().getMnemonicName());
       checkRegForGPR0Disable(op,treg);
-      if (getOpCode().isExtendedImmediate())
-         {
-         // If extended immediate instruction, store parm as source immediate value.
-         _targetPtr = (uintptrj_t)NULL;
-         _sourceImmediate = tp;
-         }
-      else
-         {
-         _targetPtr = tp;
-         _sourceImmediate = 0;
-         }
       if (!getOpCode().setsOperand1())
          useSourceRegister(treg);
       else
@@ -2173,10 +2163,39 @@ class S390RILInstruction : public TR::Instruction
       }
 
    S390RILInstruction(TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register  *treg,
-                         uintptrj_t     tp,
+                         int32_t            imm,
+                         TR::CodeGenerator *cg)
+      : TR::Instruction(op, n, cg), _targetPtr(NULL), _targetSnippet(NULL), _targetSymbol(NULL), _flagsRIL(0), _mask(0xffffffff),  _targetLabel(NULL), _symbolReference(NULL), _sourceImmediate(imm)
+      {
+      TR_ASSERT_FATAL(getOpCode().isExtendedImmediate(), "Incorrect S390RILInstruction constructor used.\n"
+                                                       "%s expects an address as the immediate but this constructor is for integer immediates.", getOpCode().getMnemonicName());
+      checkRegForGPR0Disable(op,treg);
+      if (!getOpCode().setsOperand1())
+         useSourceRegister(treg);
+      else
+         useTargetRegister(treg);
+      }
+
+   S390RILInstruction(TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register  *treg,
+                         void              *targetPtr,
+                         TR::CodeGenerator *cg)
+      : TR::Instruction(op, n, cg), _targetPtr(targetPtr), _targetSnippet(NULL), _targetSymbol(NULL), _flagsRIL(0), _mask(0xffffffff),  _targetLabel(NULL), _symbolReference(NULL), _sourceImmediate(0)
+      {
+      TR_ASSERT_FATAL(!getOpCode().isExtendedImmediate(), "Incorrect S390RILInstruction constructor used.\n"
+                                                        "%s expects an integer as the immediate but this constructor is for address immediates.", getOpCode().getMnemonicName());
+      checkRegForGPR0Disable(op,treg);
+      if (!getOpCode().setsOperand1())
+         useSourceRegister(treg);
+      else
+         useTargetRegister(treg);
+      }
+
+
+   S390RILInstruction(TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register  *treg,
+                         void                *targetPtr,
                          TR::SymbolReference *sr,
-                         TR::CodeGenerator *cg)
-      : TR::Instruction(op, n, cg), _targetPtr(tp), _targetSnippet(NULL), _targetSymbol(NULL), _flagsRIL(0), _mask(0xffffffff), _targetLabel(NULL), _symbolReference(sr),_sourceImmediate(0)
+                         TR::CodeGenerator   *cg)
+      : TR::Instruction(op, n, cg), _targetPtr(targetPtr), _targetSnippet(NULL), _targetSymbol(NULL), _flagsRIL(0), _mask(0xffffffff), _targetLabel(NULL), _symbolReference(sr), _sourceImmediate(0)
       {
       checkRegForGPR0Disable(op,treg);
       if (!getOpCode().setsOperand1())
@@ -2186,11 +2205,11 @@ class S390RILInstruction : public TR::Instruction
       }
 
    S390RILInstruction(TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register  *treg,
-                         uintptrj_t     tp,
+                         void                *targetPtr,
                          TR::SymbolReference *sr,
-                         TR::Instruction *precedingInstruction,
-                         TR::CodeGenerator *cg)
-      : TR::Instruction(op, n, precedingInstruction, cg), _targetPtr(tp), _targetSnippet(NULL), _targetSymbol(NULL), _flagsRIL(0), _mask(0xffffffff), _targetLabel(NULL), _symbolReference(sr),_sourceImmediate(0)
+                         TR::Instruction     *precedingInstruction,
+                         TR::CodeGenerator   *cg)
+      : TR::Instruction(op, n, precedingInstruction, cg), _targetPtr(targetPtr), _targetSnippet(NULL), _targetSymbol(NULL), _flagsRIL(0), _mask(0xffffffff), _targetLabel(NULL), _symbolReference(sr), _sourceImmediate(0)
       {
       checkRegForGPR0Disable(op,treg);
       if (!getOpCode().setsOperand1())
@@ -2200,23 +2219,44 @@ class S390RILInstruction : public TR::Instruction
       }
 
    S390RILInstruction(TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register  *treg,
-                         uintptrj_t     tp,
-                         TR::Instruction *precedingInstruction,
+                         uint32_t           imm,
+                         TR::Instruction   *precedingInstruction,
                          TR::CodeGenerator *cg)
-      : TR::Instruction(op, n, precedingInstruction, cg), _targetPtr(tp), _targetSnippet(NULL), _targetSymbol(NULL), _flagsRIL(0), _mask(0xffffffff), _targetLabel(NULL),_symbolReference(NULL),_sourceImmediate(0)
+      : TR::Instruction(op, n, precedingInstruction, cg), _targetPtr(NULL), _targetSnippet(NULL), _targetSymbol(NULL), _flagsRIL(0), _mask(0xffffffff), _targetLabel(NULL), _symbolReference(NULL), _sourceImmediate(imm)
       {
+      TR_ASSERT_FATAL(getOpCode().isExtendedImmediate(), "Incorrect S390RILInstruction constructor used.\n"
+                                                       "%s expects an adddress as the immediate but this constructor is for integer immediates.", getOpCode().getMnemonicName());
       checkRegForGPR0Disable(op,treg);
-      if (getOpCode().isExtendedImmediate())
-         {
-         // If extended immediate instruction, store parm as source immediate value.
-         _targetPtr = (uintptrj_t)NULL;
-         _sourceImmediate = tp;
-         }
+      if (!getOpCode().setsOperand1())
+         useSourceRegister(treg);
       else
-         {
-         _targetPtr = tp;
-         _sourceImmediate = 0;
-         }
+         useTargetRegister(treg);
+      }
+
+   S390RILInstruction(TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register  *treg,
+                         int32_t            imm,
+                         TR::Instruction   *precedingInstruction,
+                         TR::CodeGenerator *cg)
+      : TR::Instruction(op, n, precedingInstruction, cg), _targetPtr(NULL), _targetSnippet(NULL), _targetSymbol(NULL), _flagsRIL(0), _mask(0xffffffff), _targetLabel(NULL), _symbolReference(NULL), _sourceImmediate(imm)
+      {
+      TR_ASSERT_FATAL(getOpCode().isExtendedImmediate(), "Incorrect S390RILInstruction constructor used.\n"
+                                                       "%s expects an address as the immediate but this constructor is for integer immediates.", getOpCode().getMnemonicName());
+      checkRegForGPR0Disable(op,treg);
+      if (!getOpCode().setsOperand1())
+         useSourceRegister(treg);
+      else
+         useTargetRegister(treg);
+      }
+
+   S390RILInstruction(TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register  *treg,
+                         void              *targetPtr,
+                         TR::Instruction   *precedingInstruction,
+                         TR::CodeGenerator *cg)
+      : TR::Instruction(op, n, precedingInstruction, cg), _targetPtr(targetPtr), _targetSnippet(NULL), _targetSymbol(NULL), _flagsRIL(0), _mask(0xffffffff), _targetLabel(NULL), _symbolReference(NULL), _sourceImmediate(0)
+      {
+      TR_ASSERT_FATAL(!getOpCode().isExtendedImmediate(), "Incorrect S390RILInstruction constructor used.\n"
+                                                        "%s expects an address as the immediate but this constructor is for integer immediates.", getOpCode().getMnemonicName());
+      checkRegForGPR0Disable(op,treg);
       if (!getOpCode().setsOperand1())
          useSourceRegister(treg);
       else
@@ -2225,9 +2265,9 @@ class S390RILInstruction : public TR::Instruction
 
    /** For TR::InstOpCode::BRCL */
    S390RILInstruction(TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register  *treg,
-                         TR::Snippet *ts,
+                         TR::Snippet       *ts,
                          TR::CodeGenerator *cg)
-      : TR::Instruction(op, n, cg), _targetPtr((uintptrj_t)NULL), _targetSnippet(ts), _targetSymbol(NULL), _flagsRIL(0), _mask(0xffffffff), _targetLabel(NULL),_symbolReference(NULL),_sourceImmediate(0)
+      : TR::Instruction(op, n, cg), _targetPtr(NULL), _targetSnippet(ts), _targetSymbol(NULL), _flagsRIL(0), _mask(0xffffffff), _targetLabel(NULL), _symbolReference(NULL), _sourceImmediate(0)
       {
       checkRegForGPR0Disable(op,treg);
       if (!getOpCode().setsOperand1())
@@ -2237,24 +2277,24 @@ class S390RILInstruction : public TR::Instruction
       }
 
    S390RILInstruction(TR::InstOpCode::Mnemonic op, TR::Node * n, uint32_t mask,
-                         uintptrj_t targetPtr,
+                         void              *targetPtr,
                          TR::CodeGenerator *cg)
-      : TR::Instruction(op, n, cg), _targetPtr(targetPtr), _targetSnippet(NULL), _targetSymbol(NULL), _flagsRIL(0), _mask(mask),  _targetLabel(NULL),_symbolReference(NULL),_sourceImmediate(0)
+      : TR::Instruction(op, n, cg), _targetPtr(targetPtr), _targetSnippet(NULL), _targetSymbol(NULL), _flagsRIL(0), _mask(mask), _targetLabel(NULL), _symbolReference(NULL), _sourceImmediate(0)
       {
       }
 
    S390RILInstruction(TR::InstOpCode::Mnemonic op, TR::Node * n, uint32_t mask,
-                         TR::Snippet *ts,
+                         TR::Snippet       *ts,
                          TR::CodeGenerator *cg)
-      : TR::Instruction(op, n, cg), _targetPtr((uintptrj_t)NULL), _targetSnippet(ts), _targetSymbol(NULL), _flagsRIL(0), _mask(mask), _targetLabel(NULL),_symbolReference(NULL),_sourceImmediate(0)
+      : TR::Instruction(op, n, cg), _targetPtr(NULL), _targetSnippet(ts), _targetSymbol(NULL), _flagsRIL(0), _mask(mask), _targetLabel(NULL), _symbolReference(NULL), _sourceImmediate(0)
       {
       }
 
    S390RILInstruction(TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register  *treg,
-                         TR::Snippet *ts,
-                         TR::Instruction *precedingInstruction,
+                         TR::Snippet       *ts,
+                         TR::Instruction   *precedingInstruction,
                          TR::CodeGenerator *cg)
-      : TR::Instruction(op, n, precedingInstruction, cg), _targetPtr((uintptrj_t)NULL), _targetSnippet(ts), _targetSymbol(NULL), _flagsRIL(0), _mask(0xffffffff), _targetLabel(NULL),_symbolReference(NULL),_sourceImmediate(0)
+      : TR::Instruction(op, n, precedingInstruction, cg), _targetPtr(NULL), _targetSnippet(ts), _targetSymbol(NULL), _flagsRIL(0), _mask(0xffffffff), _targetLabel(NULL), _symbolReference(NULL), _sourceImmediate(0)
       {
       checkRegForGPR0Disable(op,treg);
       if (!getOpCode().setsOperand1())
@@ -2264,18 +2304,19 @@ class S390RILInstruction : public TR::Instruction
       }
 
    S390RILInstruction(TR::InstOpCode::Mnemonic op, TR::Node * n, uint32_t mask,
-                         uintptrj_t targetPtr,
-                         TR::Instruction *precedingInstruction,
+                         void              *targetPtr,
+                         TR::Instruction   *precedingInstruction,
                          TR::CodeGenerator *cg)
-      : TR::Instruction(op, n, precedingInstruction, cg), _targetPtr(targetPtr), _targetSnippet(NULL), _targetSymbol(NULL), _flagsRIL(0), _mask(mask), _targetLabel(NULL),_symbolReference(NULL),_sourceImmediate(0)
+      : TR::Instruction(op, n, precedingInstruction, cg), _targetPtr(targetPtr), _targetSnippet(NULL), _targetSymbol(NULL), _flagsRIL(0), _mask(mask), _targetLabel(NULL), _symbolReference(NULL), _sourceImmediate(0)
       {
       }
+     
    /** For TR::InstOpCode::BRASL */
    S390RILInstruction(TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register  *treg,
-                         TR::Snippet *ts,
-                         TR::RegisterDependencyConditions * cond,
-                         TR::CodeGenerator *cg)
-      : TR::Instruction(op, n, cond, cg), _targetPtr((uintptrj_t)NULL), _targetSnippet(ts), _targetSymbol(NULL), _flagsRIL(0), _mask(0xffffffff), _targetLabel(NULL),_symbolReference(NULL),_sourceImmediate(0)
+                         TR::Snippet                      *ts,
+                         TR::RegisterDependencyConditions *cond,
+                         TR::CodeGenerator                *cg)
+      : TR::Instruction(op, n, cond, cg), _targetPtr(NULL), _targetSnippet(ts), _targetSymbol(NULL), _flagsRIL(0), _mask(0xffffffff), _targetLabel(NULL) ,_symbolReference(NULL), _sourceImmediate(0)
       {
       checkRegForGPR0Disable(op,treg);
       if (!getOpCode().setsOperand1())
@@ -2285,11 +2326,11 @@ class S390RILInstruction : public TR::Instruction
       }
 
    S390RILInstruction(TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register  *treg,
-                         TR::Snippet *ts,
-                         TR::RegisterDependencyConditions * cond,
-                         TR::SymbolReference *sr,
-                         TR::CodeGenerator *cg)
-      : TR::Instruction(op, n, cond, cg), _targetPtr((uintptrj_t)NULL), _targetSnippet(ts), _targetSymbol(NULL), _flagsRIL(0), _mask(0xffffffff), _targetLabel(NULL), _symbolReference(sr),_sourceImmediate(0)
+                         TR::Snippet                      *ts,
+                         TR::RegisterDependencyConditions *cond,
+                         TR::SymbolReference              *sr,
+                         TR::CodeGenerator                *cg)
+      : TR::Instruction(op, n, cond, cg), _targetPtr(NULL), _targetSnippet(ts), _targetSymbol(NULL), _flagsRIL(0), _mask(0xffffffff), _targetLabel(NULL), _symbolReference(sr), _sourceImmediate(0)
       {
       checkRegForGPR0Disable(op,treg);
       if (!getOpCode().setsOperand1())
@@ -2299,18 +2340,18 @@ class S390RILInstruction : public TR::Instruction
       }
 
    S390RILInstruction(TR::InstOpCode::Mnemonic op, TR::Node * n, uint32_t mask,
-                         TR::Snippet *ts,
-                         TR::RegisterDependencyConditions * cond,
-                         TR::CodeGenerator *cg)
-      : TR::Instruction(op, n, cond, cg), _targetPtr((uintptrj_t)NULL), _targetSnippet(ts), _targetSymbol(NULL), _flagsRIL(0), _mask(mask), _targetLabel(NULL),_symbolReference(NULL),_sourceImmediate(0)
+                         TR::Snippet                      *ts,
+                         TR::RegisterDependencyConditions *cond,
+                         TR::CodeGenerator                *cg)
+      : TR::Instruction(op, n, cond, cg), _targetPtr(NULL), _targetSnippet(ts), _targetSymbol(NULL), _flagsRIL(0), _mask(mask), _targetLabel(NULL), _symbolReference(NULL), _sourceImmediate(0)
       {
       }
 
    S390RILInstruction(TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register  *treg,
-                         uintptrj_t     tp,
-                         TR::RegisterDependencyConditions * cond,
-                         TR::CodeGenerator *cg)
-      : TR::Instruction(op, n, cond, cg), _targetPtr(tp), _targetSnippet(NULL), _targetSymbol(NULL), _flagsRIL(0), _mask(0xffffffff), _targetLabel(NULL),_symbolReference(NULL),_sourceImmediate(0)
+                         void                             *targetPtr,
+                         TR::RegisterDependencyConditions *cond,
+                         TR::CodeGenerator                *cg)
+      : TR::Instruction(op, n, cond, cg), _targetPtr(targetPtr), _targetSnippet(NULL), _targetSymbol(NULL), _flagsRIL(0), _mask(0xffffffff), _targetLabel(NULL), _symbolReference(NULL), _sourceImmediate(0)
       {
       checkRegForGPR0Disable(op,treg);
       if (!getOpCode().setsOperand1())
@@ -2320,10 +2361,10 @@ class S390RILInstruction : public TR::Instruction
       }
 
    S390RILInstruction(TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register  *treg,
-                         TR::Symbol *sym,
-                         TR::RegisterDependencyConditions * cond,
-                         TR::CodeGenerator *cg)
-      : TR::Instruction(op, n, cond, cg), _targetPtr((uintptrj_t)NULL), _targetSnippet(NULL),_targetSymbol(sym), _flagsRIL(0), _mask(0xffffffff), _targetLabel(NULL),_symbolReference(NULL),_sourceImmediate(0)
+                         TR::Symbol                       *sym,
+                         TR::RegisterDependencyConditions *cond,
+                         TR::CodeGenerator                *cg)
+      : TR::Instruction(op, n, cond, cg), _targetPtr(NULL), _targetSnippet(NULL), _targetSymbol(sym), _flagsRIL(0), _mask(0xffffffff), _targetLabel(NULL), _symbolReference(NULL), _sourceImmediate(0)
       {
       checkRegForGPR0Disable(op,treg);
       if (!getOpCode().setsOperand1())
@@ -2335,9 +2376,9 @@ class S390RILInstruction : public TR::Instruction
       }
 
    S390RILInstruction(TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register  *treg,
-                         TR::Symbol *sym,
+                         TR::Symbol        *sym,
                          TR::CodeGenerator *cg)
-      : TR::Instruction(op, n, cg), _targetPtr((uintptrj_t)NULL), _targetSnippet(NULL),_targetSymbol(sym), _flagsRIL(0), _mask(0xffffffff), _targetLabel(NULL),_symbolReference(NULL),_sourceImmediate(0)
+      : TR::Instruction(op, n, cg), _targetPtr(NULL), _targetSnippet(NULL), _targetSymbol(sym), _flagsRIL(0), _mask(0xffffffff), _targetLabel(NULL), _symbolReference(NULL), _sourceImmediate(0)
       {
       checkRegForGPR0Disable(op,treg);
       useTargetRegister(treg);
@@ -2346,10 +2387,10 @@ class S390RILInstruction : public TR::Instruction
       }
 
    S390RILInstruction(TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register  *treg,
-                         TR::Symbol *sym,
+                         TR::Symbol          *sym,
                          TR::SymbolReference *sr,
-                         TR::CodeGenerator *cg)
-      : TR::Instruction(op, n, cg), _targetPtr((uintptrj_t)NULL), _targetSnippet(NULL),_targetSymbol(sym), _flagsRIL(0), _mask(0xffffffff), _targetLabel(NULL), _symbolReference(sr),_sourceImmediate(0)
+                         TR::CodeGenerator   *cg)
+      : TR::Instruction(op, n, cg), _targetPtr(NULL), _targetSnippet(NULL), _targetSymbol(sym), _flagsRIL(0), _mask(0xffffffff), _targetLabel(NULL), _symbolReference(sr), _sourceImmediate(0)
       {
       checkRegForGPR0Disable(op,treg);
       if (!getOpCode().setsOperand1())
@@ -2361,11 +2402,11 @@ class S390RILInstruction : public TR::Instruction
       }
 
    S390RILInstruction(TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register  *treg,
-                         TR::Symbol *sym,
-                         TR::SymbolReference *sr,
-                         TR::RegisterDependencyConditions * cond,
-                         TR::CodeGenerator *cg)
-           : TR::Instruction(op, n, cond, cg), _targetPtr((uintptrj_t)NULL), _targetSnippet(NULL),_targetSymbol(sym), _flagsRIL(0), _mask(0xffffffff),  _targetLabel(NULL), _symbolReference(sr),_sourceImmediate(0)
+                         TR::Symbol                       *sym,
+                         TR::SymbolReference              *sr,
+                         TR::RegisterDependencyConditions *cond,
+                         TR::CodeGenerator                *cg)
+      : TR::Instruction(op, n, cond, cg), _targetPtr(NULL), _targetSnippet(NULL), _targetSymbol(sym), _flagsRIL(0), _mask(0xffffffff), _targetLabel(NULL), _symbolReference(sr), _sourceImmediate(0)
       {
       checkRegForGPR0Disable(op,treg);
       if (!getOpCode().setsOperand1())
@@ -2377,11 +2418,11 @@ class S390RILInstruction : public TR::Instruction
       }
 
    S390RILInstruction(TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register  *treg,
-                         TR::Symbol *sym,
+                         TR::Symbol          *sym,
                          TR::SymbolReference *sr,
-                         TR::Instruction *precedingInstruction,
-                         TR::CodeGenerator *cg)
-      : TR::Instruction(op, n, precedingInstruction, cg), _targetPtr((uintptrj_t)NULL), _targetSnippet(NULL),_targetSymbol(sym), _flagsRIL(0), _mask(0xffffffff), _targetLabel(NULL), _symbolReference(sr),_sourceImmediate(0)
+                         TR::Instruction     *precedingInstruction,
+                         TR::CodeGenerator   *cg)
+      : TR::Instruction(op, n, precedingInstruction, cg), _targetPtr(NULL), _targetSnippet(NULL), _targetSymbol(sym), _flagsRIL(0), _mask(0xffffffff), _targetLabel(NULL), _symbolReference(sr), _sourceImmediate(0)
       {
       checkRegForGPR0Disable(op,treg);
       if (!getOpCode().setsOperand1())
@@ -2391,32 +2432,33 @@ class S390RILInstruction : public TR::Instruction
       if (sym->isLabel())
          _targetLabel = sym->castToLabelSymbol();
       }
+
    /** For PFDRL */
    S390RILInstruction(TR::InstOpCode::Mnemonic op, TR::Node * n, uint32_t mask,
-                         TR::Symbol *sym,
+                         TR::Symbol          *sym,
                          TR::SymbolReference *sr,
-                         TR::CodeGenerator *cg)
-      : TR::Instruction(op, n, cg), _targetPtr((uintptrj_t) NULL), _targetSnippet(NULL),_targetSymbol(sym), _flagsRIL(0), _mask(mask), _targetLabel(NULL), _symbolReference(sr), _sourceImmediate(0)
+                         TR::CodeGenerator   *cg)
+      : TR::Instruction(op, n, cg), _targetPtr(NULL), _targetSnippet(NULL), _targetSymbol(sym), _flagsRIL(0), _mask(mask), _targetLabel(NULL), _symbolReference(sr), _sourceImmediate(0)
       {
       if (sym->isLabel())
          _targetLabel = sym->castToLabelSymbol();
       }
 
    S390RILInstruction(TR::InstOpCode::Mnemonic op, TR::Node * n, uint32_t mask,
-                         TR::Symbol *sym,
+                         TR::Symbol          *sym,
                          TR::SymbolReference *sr,
-                         TR::Instruction *precedingInstruction,
-                         TR::CodeGenerator *cg)
-      : TR::Instruction(op, n, precedingInstruction, cg), _targetPtr((uintptrj_t) NULL), _targetSnippet(NULL),_targetSymbol(sym), _flagsRIL(0), _mask(mask), _targetLabel(NULL), _symbolReference(sr), _sourceImmediate(0)
+                         TR::Instruction     *precedingInstruction,
+                         TR::CodeGenerator   *cg)
+      : TR::Instruction(op, n, precedingInstruction, cg), _targetPtr(NULL), _targetSnippet(NULL), _targetSymbol(sym), _flagsRIL(0), _mask(mask), _targetLabel(NULL), _symbolReference(sr), _sourceImmediate(0)
       {
       if (sym->isLabel())
          _targetLabel = sym->castToLabelSymbol();
       }
 
    S390RILInstruction(TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register  *treg,
-                         TR::LabelSymbol *label,
+                         TR::LabelSymbol   *label,
                          TR::CodeGenerator *cg)
-      : TR::Instruction(op, n, cg), _targetPtr((uintptrj_t)NULL), _targetSnippet(NULL),_targetSymbol(NULL), _flagsRIL(0), _mask(0xffffffff),  _targetLabel(label),_symbolReference(NULL),_sourceImmediate(0)
+      : TR::Instruction(op, n, cg), _targetPtr(NULL), _targetSnippet(NULL), _targetSymbol(NULL), _flagsRIL(0), _mask(0xffffffff), _targetLabel(label), _symbolReference(NULL), _sourceImmediate(0)
       {
       checkRegForGPR0Disable(op,treg);
       if (!getOpCode().setsOperand1())
@@ -2426,10 +2468,10 @@ class S390RILInstruction : public TR::Instruction
       }
 
    S390RILInstruction(TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register  *treg,
-                         TR::LabelSymbol *label,
-                         TR::Instruction *precedingInstruction,
+                         TR::LabelSymbol   *label,
+                         TR::Instruction   *precedingInstruction,
                          TR::CodeGenerator *cg)
-      : TR::Instruction(op, n, precedingInstruction, cg), _targetPtr((uintptrj_t)NULL), _targetSnippet(NULL),_targetSymbol(NULL), _flagsRIL(0), _mask(0xffffffff),  _targetLabel(label),_symbolReference(NULL),_sourceImmediate(0)
+      : TR::Instruction(op, n, precedingInstruction, cg), _targetPtr(NULL), _targetSnippet(NULL), _targetSymbol(NULL), _flagsRIL(0), _mask(0xffffffff), _targetLabel(label), _symbolReference(NULL), _sourceImmediate(0)
       {
       checkRegForGPR0Disable(op,treg);
       if (!getOpCode().setsOperand1())
@@ -2447,14 +2489,14 @@ class S390RILInstruction : public TR::Instruction
    bool isImmediateOffsetInBytes() {return _flagsRIL.testAny(isImmediateOffsetInBytesFlag); }
    void setIsImmediateOffsetInBytes() { _flagsRIL.set(isImmediateOffsetInBytesFlag);}
 
-   uintptrj_t  getTargetPtr()
-      { return  _targetPtr; }
-   uintptrj_t  setTargetPtr(uintptrj_t tp)
-      { TR_ASSERT(!isImmediateOffsetInBytes(), "Immediate Offset already set on RIL instruction."); return _targetPtr = tp; }
-   uintptrj_t  getImmediateOffsetInBytes()
-      { TR_ASSERT(isImmediateOffsetInBytes(), "Immediate Offset not set for RIL Instruction."); return _targetPtr; }
-   uintptrj_t  setImmediateOffsetInBytes(uintptrj_t tp)
-      { setIsImmediateOffsetInBytes(); return _targetPtr = tp; }
+   uintptrj_t getTargetPtr()
+      { return  reinterpret_cast<uintptrj_t>(_targetPtr); }
+   uintptrj_t setTargetPtr(uintptrj_t tp)
+      { TR_ASSERT(!isImmediateOffsetInBytes(), "Immediate Offset already set on RIL instruction."); _targetPtr = reinterpret_cast<void*>(tp); return tp; }
+   uintptrj_t getImmediateOffsetInBytes()
+      { TR_ASSERT(isImmediateOffsetInBytes(), "Immediate Offset not set for RIL Instruction."); return reinterpret_cast<uintptrj_t>(_targetPtr); }
+   uintptrj_t setImmediateOffsetInBytes(uintptrj_t tp)
+      { setIsImmediateOffsetInBytes(); _targetPtr = reinterpret_cast<void*>(tp); return tp; }
    TR::Snippet *getTargetSnippet()
       { return _targetSnippet; }
    TR::Snippet *setTargetSnippet(TR::Snippet *ts)

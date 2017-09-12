@@ -297,10 +297,10 @@ genLoadLongConstant(TR::CodeGenerator * cg, TR::Node * node, int64_t value, TR::
       {
       cursor = generateRIInstruction(cg, TR::InstOpCode::LGHI, node, targetRegister, value, cursor);
       }
-   else if (value >= GE_MIN_IMMEDIATE_VAL && value <= GE_MAX_IMMEDIATE_VAL)
+   else if (value >= GE_MIN_IMMEDIATE_VAL && value <= GE_MAX_IMMEDIATE_VAL) // value is signed 32bit - use sign extension
       {
       // If within Golden Eagle min and max immediate value, then use Load immediate.
-      cursor = generateRILInstruction(cg, TR::InstOpCode::LGFI, node, targetRegister, (int32_t)value, cursor);
+      cursor = generateRILInstruction(cg, TR::InstOpCode::LGFI, node, targetRegister, static_cast<int32_t>(value), cursor);
       }
    else if (!(value & CONSTANT64(0x00000000FFFFFFFF)))
       {
@@ -309,23 +309,23 @@ genLoadLongConstant(TR::CodeGenerator * cg, TR::Node * node, int64_t value, TR::
       int32_t value32 = value >> 32;
       cursor = generateRILInstruction(cg, TR::InstOpCode::LLIHF, node, targetRegister, value32, cursor);
       }
-   else if (!(value & CONSTANT64(0xFFFFFFFF00000000)))
+   else if (!(value & CONSTANT64(0xFFFFFFFF00000000))) // 2^33 < value <= 2^32 ; value is unsigned 32bit so use load logical
       {
-      cursor = generateRILInstruction(cg, TR::InstOpCode::LLILF, node, targetRegister, value, cursor);
+      cursor = generateRILInstruction(cg, TR::InstOpCode::LLILF, node, targetRegister, static_cast<int32_t>(value), cursor);
       }
    //disable LARL for AOT for easier relocation
    //cannot safely generate LARL for longs on 31-bit
    else if (cg->canUseRelativeLongInstructions(value) &&
             TR::Compiler->target.is64Bit() && !(comp->compileRelocatableCode()))
       {
-      cursor = generateRILInstruction(cg, TR::InstOpCode::LARL, node, targetRegister, value, cursor);
+      cursor = generateRILInstruction(cg, TR::InstOpCode::LARL, node, targetRegister, reinterpret_cast<void*>(value), cursor);
       }
    else
       {
       int32_t high32 = value >> 32;
 
       cursor = generateRILInstruction(cg, TR::InstOpCode::LLIHF, node, targetRegister, high32, cursor);
-      cursor = generateRILInstruction(cg, TR::InstOpCode::IILF, node, targetRegister, value, cursor);
+      cursor = generateRILInstruction(cg, TR::InstOpCode::IILF, node, targetRegister, static_cast<int32_t>(value), cursor);
       }
 
    return cursor;
@@ -370,7 +370,7 @@ genLoadAddressConstant(TR::CodeGenerator * cg, TR::Node * node, uintptrj_t value
    if (node->isClassUnloadingConst())
       {
       uintptrj_t value = node->getAddress();
-      TR::Instruction *unloadableConstInstr = generateRILInstruction(cg, TR::InstOpCode::LARL, node, targetRegister, value);
+      TR::Instruction *unloadableConstInstr = generateRILInstruction(cg, TR::InstOpCode::LARL, node, targetRegister, reinterpret_cast<void*>(value));
       TR_OpaqueClassBlock* unloadableClass = NULL;
       if (node->isMethodPointerConstant())
          {
@@ -1750,7 +1750,7 @@ generateS390ImmOp(TR::CodeGenerator * cg,
              // potential d-cache) vs the extra cycle for 1 extra instr.   The latter would
              // seem to be more likely to be a win.
              //
-             generateRILInstruction(cg, TR::InstOpCode::LLIHF, node, targetRegister, value);
+             generateRILInstruction(cg, TR::InstOpCode::LLIHF, node, targetRegister, static_cast<int32_t>(value));
 
              ei_immOp = TR::InstOpCode::IILF;
              }
@@ -1796,7 +1796,7 @@ generateS390ImmOp(TR::CodeGenerator * cg,
     // LL: Golden Eagle extended immediate instructions
     if (ei_immOp != TR::InstOpCode::BAD)
        {
-       return generateRILInstruction(cg, ei_immOp, node, targetRegister, value);
+       return generateRILInstruction(cg, ei_immOp, node, targetRegister, static_cast<int32_t>(value));
        }
     else if (immOp != TR::InstOpCode::BAD)
        {
@@ -5643,7 +5643,7 @@ bool relativeLongLoadHelper(TR::CodeGenerator * cg, TR::Node * node, TR::Registe
          //traceMsg(cg->comp(), "node->useSignExtensionMode = %d node->isUnsignedLoad = %d\n",node->useSignExtensionMode(), node->isUnsignedLoad());
          if (node->useSignExtensionMode())
             {
-            generateRILInstruction(cg, TR::InstOpCode::LGFRL, node, tReg, symRef, staticAddress);
+            generateRILInstruction(cg, TR::InstOpCode::LGFRL, node, tReg, symRef, reinterpret_cast<void*>(staticAddress));
             }
          else
             {
@@ -5654,7 +5654,7 @@ bool relativeLongLoadHelper(TR::CodeGenerator * cg, TR::Node * node, TR::Registe
                //
                tReg->setIsUsedInMemRef();
                }
-            generateRILInstruction(cg, op, node, tReg, symRef, staticAddress);
+            generateRILInstruction(cg, op, node, tReg, symRef, reinterpret_cast<void*>(staticAddress));
             }
          return true;
          }
@@ -6033,7 +6033,7 @@ aloadHelper(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference * tempM
         constNode->isClassUnloadingConst())
       {
       uintptrj_t value = constNode->getAddress();
-      TR::Instruction *unloadableConstInstr = generateRILInstruction(cg, TR::InstOpCode::LARL, node, tempReg, value);
+      TR::Instruction *unloadableConstInstr = generateRILInstruction(cg, TR::InstOpCode::LARL, node, tempReg, reinterpret_cast<void*>(value));
       TR_OpaqueClassBlock* unloadableClass = NULL;
       if (constNode->isMethodPointerConstant())
          {
@@ -6213,7 +6213,7 @@ bool relativeLongStoreHelper(TR::CodeGenerator * cg, TR::Node * node, TR::Node *
            ( TR::Compiler->target.is64Bit() && (staticAddress&0x7) == 0)
          )
          {
-         generateRILInstruction(cg, op, node, sourceRegister, symRef, staticAddress);
+         generateRILInstruction(cg, op, node, sourceRegister, symRef, reinterpret_cast<void*>(staticAddress));
 
          return true;
          }
@@ -7981,7 +7981,7 @@ inlineTrailingZerosQuadWordAtATime(
       rInputByteArray->setIs64BitReg(true);
       }
 
-   cursor = generateRILInstruction  (cg, TR::InstOpCode::NIHF, node, rOffset, (uintptrj_t) 0x0);
+   cursor = generateRILInstruction  (cg, TR::InstOpCode::NIHF, node, rOffset, 0x0);
    cursor = generateRXInstruction   (cg, TR::InstOpCode::getLoadAddressOpCode(), node, rInputByteArray, generateS390MemoryReference(rInputByteArray, valueContentOffset, cg)); iComment("get to the actual content of the byte array");
    cursor = generateRSInstruction   (cg, TR::InstOpCode::getShiftRightLogicalSingleOpCode(), node, rBranchCounter, rOffset, 3);                                                                                                                   iComment("divide by 8 to use BCTRG");
 
@@ -8091,7 +8091,7 @@ inlineHighestOneBit(
    //  AND out high order to get proper FLOGR val for a 32-bit sint
    if (!isLong)
       {
-      cursor = generateRILInstruction(cg, TR::InstOpCode::NIHF, node, srcReg, (uintptrj_t)0x00000000);
+      cursor = generateRILInstruction(cg, TR::InstOpCode::NIHF, node, srcReg, 0x0);
       }
 
    // generate the FLOGR
@@ -11692,7 +11692,7 @@ OMR::Z::TreeEvaluator::loadaddrEvaluator(TR::Node * node, TR::CodeGenerator * cg
          litpool->setUnresolvedDataSnippet(uds);
 
          TR::S390RILInstruction * LRLinst;
-         LRLinst = (TR::S390RILInstruction *) generateRILInstruction(cg, TR::InstOpCode::getLoadRelativeLongOpCode(), node, targetRegister, 0xBABE, 0);
+         LRLinst = (TR::S390RILInstruction *) generateRILInstruction(cg, TR::InstOpCode::getLoadRelativeLongOpCode(), node, targetRegister, reinterpret_cast<void*>(0xBABE), 0);
          uds->setDataReferenceInstruction(LRLinst);
          LRLinst->setSymbolReference(uds->getDataSymbolReference());
          LRLinst->setTargetSnippet(litpool);
@@ -11729,7 +11729,7 @@ OMR::Z::TreeEvaluator::loadaddrEvaluator(TR::Node * node, TR::CodeGenerator * cg
             if (sym && sym->isStartPC())
                {
                cursor = generateRILInstruction(cg, TR::InstOpCode::LARL, node, targetRegister, node->getSymbolReference(),
-                                               (uintptrj_t) sym->getStaticAddress(),  NULL);
+                                                reinterpret_cast<void*>(sym->getStaticAddress()),  NULL);
                }
             else if (comp->compileRelocatableCode())
                {
@@ -13931,7 +13931,7 @@ OMR::Z::TreeEvaluator::iRegStoreEvaluator(TR::Node * node, TR::CodeGenerator * c
       if (globalReg == NULL)
          {
          globalReg = cg->allocateRegister();
-         generateRILInstruction(cg, TR::InstOpCode::IIHF, child, globalReg,(getIntegralValue(child)));
+         generateRILInstruction(cg, TR::InstOpCode::IIHF, child, globalReg, static_cast<int32_t>((getIntegralValue(child))));
          child->setRegister(globalReg);
          }
       globalReg->setAssignToHPR(true);
@@ -17876,11 +17876,11 @@ inlineUTF16BEEncode(TR::Node *node, TR::CodeGenerator *cg)
    processChar4End->setEndInternalControlFlow();
    processChar1End->setEndInternalControlFlow();
 
-   uint16_t surrogateRange1 = 0xD800;
-   uint16_t surrogateRange2 = 0xDFFF;
+   const uint16_t surrogateRange1 = 0xD800;
+   const uint16_t surrogateRange2 = 0xDFFF;
 
-   uint32_t surrogateMaskAND = 0xF800F800;
-   uint32_t surrogateMaskXOR = 0xD800D800;
+   const uint32_t surrogateMaskAND = 0xF800F800;
+   const uint32_t surrogateMaskXOR = 0xD800D800;
 
    TR::RegisterDependencyConditions* dependencies = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 7, cg);
 

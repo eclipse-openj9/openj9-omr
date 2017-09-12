@@ -5352,7 +5352,7 @@ TR_S390Peephole::reloadLiteralPoolRegisterForCatchBlock()
       if ((_cg->getLinkage())->setupLiteralPoolRegister(firstSnippet) > 0)
          {
          // the imm. operand will be patched when the actual address of the literal pool is known at binary encoding phase
-         TR::S390RILInstruction * inst = (TR::S390RILInstruction *) generateRILInstruction(_cg, TR::InstOpCode::LARL, _cursor->getNode(), _cg->getLitPoolRealRegister(), 0xBABE, _cursor);
+         TR::S390RILInstruction * inst = (TR::S390RILInstruction *) generateRILInstruction(_cg, TR::InstOpCode::LARL, _cursor->getNode(), _cg->getLitPoolRealRegister(), reinterpret_cast<void*>(0xBABE), _cursor);
          inst->setIsLiteralPoolAddress();
          }
       }
@@ -10184,7 +10184,7 @@ OMR::Z::CodeGenerator::clearHighOrderBits( TR::Node * node, TR::Register * targe
 
       case 24:
          // Can use AND immediate to clear high 24 bits
-         generateRILInstruction(self(), TR::InstOpCode::NILF, node, targetRegister, (int32_t)0x000000FF);
+         generateRILInstruction(self(), TR::InstOpCode::NILF, node, targetRegister, 0x000000FF);
          break;
 
       case 48:

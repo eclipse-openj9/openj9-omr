@@ -833,7 +833,7 @@ int32_t TR_RedundantAsyncCheckRemoval::findShallowestCommonCaller(int32_t callSi
       else
 	 callSiteIndex2 = comp()->getInlinedCallSite(callSiteIndex2)._byteCodeInfo.getCallerIndex();
       }
-   if ((callSiteIndex1 == callSiteIndex2))
+   if (callSiteIndex1 == callSiteIndex2)
       return callSiteIndex1;
    else
       return -1;

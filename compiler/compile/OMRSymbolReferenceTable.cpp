@@ -1293,7 +1293,7 @@ OMR::SymbolReferenceTable::findStaticSymbol(TR_ResolvedMethod * owningMethod, in
    TR::SymbolReference * symRef;
    TR_SymRefIterator i(type == TR::Address ? aliasBuilder.addressStaticSymRefs() :
                                             (type == TR::Int32 ? aliasBuilder.intStaticSymRefs() : aliasBuilder.nonIntPrimitiveStaticSymRefs()), self());
-   while (symRef = i.getNext())
+   while ((symRef = i.getNext()))
       {
       if (symRef->getSymbol()->getDataType() == type &&
           symRef->getCPIndex() != -1 &&

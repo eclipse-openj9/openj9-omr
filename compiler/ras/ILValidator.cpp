@@ -264,9 +264,9 @@ bool TR::ILValidator::treesAreValid(TR::TreeTop *start, TR::TreeTop *stop)
                {
                const auto expChildType = opcode.expectedChildType(i);
                const auto actChildType = childOpcode.getDataType().getDataType();
-               const auto expChildTypeName = expChildType == ILChildProp::UnspecifiedChildType ? "UnspecifiedChildType" : TR::DataType::getName(expChildType);
+               const auto expChildTypeName = (expChildType == ILChildProp::UnspecifiedChildType) ? "UnspecifiedChildType" : TR::DataType::getName(expChildType);
                const auto actChildTypeName = TR::DataType::getName(actChildType);
-               validityRule(iter, expChildType == ILChildProp::UnspecifiedChildType || actChildType == expChildType,
+               validityRule(iter, ((expChildType == ILChildProp::UnspecifiedChildType) || (actChildType == expChildType)),
                             "Child %d has unexpected type %s (expected %s)" , i, actChildTypeName, expChildTypeName);
                }
             else

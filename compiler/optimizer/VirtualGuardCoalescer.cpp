@@ -451,7 +451,7 @@ TR::Block *TR_VirtualGuardTailSplitter::lookAheadAndSplit(VGInfo *guard, List<TR
             TR::CFGEdge *succ2 = *(++succs.begin());
             TR::Block *succBlock1 = toBlock(succ1->getTo());
 
-            if (/* succBlock1->getSuccessors().size() == 1) && */ (succBlock1 == cursor->getNextBlock()))
+            if (succBlock1 == cursor->getNextBlock())
                {
                //TR::Block *nextBlock = toBlock(succBlock1->getSuccessors().front()->getTo());
                TR::Block *nextBlock = succBlock1;
@@ -466,7 +466,7 @@ TR::Block *TR_VirtualGuardTailSplitter::lookAheadAndSplit(VGInfo *guard, List<TR
             if (!newCursor)
                {
                TR::Block *succBlock2 = toBlock(succ2->getTo());
-               if (/* succBlock2->getSuccessors().size() == 1) && */ (succBlock2 == cursor->getNextBlock()))
+               if (succBlock2 == cursor->getNextBlock())
                   {
                   //TR::Block *nextBlock = toBlock(succBlock2->getSuccessors().front()->getTo());
                   TR::Block *nextBlock = succBlock2;
@@ -590,7 +590,7 @@ void TR_VirtualGuardTailSplitter::transformLinear(TR::Block *first, TR::Block *l
             TR::Block *succBlock1 = toBlock(succ1->getTo());
             TR::Block *succBlock2 = toBlock(succ2->getTo());
 
-            if (/* succBlock1->getSuccessors().size() == 1) && */ (succBlock1 == next->getNextBlock()))
+            if (succBlock1 == next->getNextBlock())
                {
                TR::Block *nextBlock = succBlock1;
                VGInfo *info = getVirtualGuardInfo(nextBlock);
@@ -603,7 +603,7 @@ void TR_VirtualGuardTailSplitter::transformLinear(TR::Block *first, TR::Block *l
 
             if (!dest)
                {
-               if (/* succBlock2->getSuccessors().size() == 1) && */ (succBlock2 == next->getNextBlock()))
+               if (succBlock2 == next->getNextBlock())
                   {
                   TR::Block *nextBlock = succBlock2;
                   VGInfo *info = getVirtualGuardInfo(nextBlock);

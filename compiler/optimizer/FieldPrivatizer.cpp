@@ -833,7 +833,9 @@ bool TR_FieldPrivatizer::bothSubtreesMatch(TR::Node *node1, TR::Node *node2)
                   return true;
                }
             else
+               {
                return true;
+               }
 
       }
 

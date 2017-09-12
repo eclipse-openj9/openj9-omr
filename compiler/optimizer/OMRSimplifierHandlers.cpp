@@ -1881,7 +1881,7 @@ static TR::Node *intDemoteSimplifier(TR::Node * node, TR::Block * block, TR::Sim
 
       }
 
-   if (result = foldRedundantAND(node, andOp, andConstOp, andVal, s))
+   if ((result = foldRedundantAND(node, andOp, andConstOp, andVal, s)))
          return result;
 
    // Long reduce transformation
@@ -8705,7 +8705,7 @@ TR::Node *ldivSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
             // if power of 2 long divisor
             uint64_t value = divisor<0 ? -divisor : divisor;
             int32_t shiftAmount = 0;
-            while (value = (value >> 1))
+            while ((value = (value >> 1)))
               ++shiftAmount;
 
             int32_t shftAmnt = -1;
@@ -11613,7 +11613,7 @@ TR::Node *i2bSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    if ((result = foldDemotionConversion(node, TR::l2i, TR::l2b, s)))
       return result;
 
-   if (result = foldRedundantAND(node, TR::iand, TR::iconst, 0xFF, s))
+   if ((result = foldRedundantAND(node, TR::iand, TR::iconst, 0xFF, s)))
       return result;
 
    return node;
@@ -11644,7 +11644,7 @@ TR::Node *i2sSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
       return resultNode;
       }
 
-   if (result = foldRedundantAND(node, TR::iand, TR::iconst, 0xFFFF, s))
+   if ((result = foldRedundantAND(node, TR::iand, TR::iconst, 0xFFFF, s)))
       return result;
 
    return node;
@@ -12554,7 +12554,7 @@ TR::Node *s2bSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    if ((result = s->unaryCancelOutWithChild(node, firstChild, s->_curTree, TR::bu2s)))
       return result;
 
-   if (result = foldRedundantAND(node, TR::sand, TR::sconst, 0xFF, s))
+   if ((result = foldRedundantAND(node, TR::sand, TR::sconst, 0xFF, s)))
       return result;
 
    return node;

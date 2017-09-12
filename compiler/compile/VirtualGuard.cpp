@@ -262,6 +262,7 @@ TR_VirtualGuard::createBreakpointGuardNode
    return guard;
 #else
    TR_ASSERT(false, "need project specific implementation to generate the breakpoint guard node");
+   return NULL;
 #endif
    }
  

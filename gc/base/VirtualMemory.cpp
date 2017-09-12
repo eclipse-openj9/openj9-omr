@@ -114,9 +114,9 @@ MM_VirtualMemory::initialize(MM_EnvironmentBase* env, uintptr_t size, void* pref
 
 		/* If heap touches top of address range */
 		if (lastByte == HIGH_ADDRESS) {
-			_heapTop = (void*)MM_Math::roundToFloor(_heapAlignment, ((uintptr_t)_baseAddress) + (allocateSize - _tailPadding - _heapAlignment));
+			_heapTop = (void*)MM_Math::roundToFloor(_heapAlignment, ((uintptr_t)_heapBase) + (allocateSize - _tailPadding - _heapAlignment));
 		} else {
-			_heapTop = (void*)MM_Math::roundToFloor(_heapAlignment, ((uintptr_t)_baseAddress) + (allocateSize - _tailPadding));
+			_heapTop = (void*)MM_Math::roundToFloor(_heapAlignment, ((uintptr_t)_heapBase) + (allocateSize - _tailPadding));
 		}
 
 		if ((_heapBase >= _heapTop) /* CMVC 45178: Need to catch the case where we aligned heapTop and heapBase to the same address and consider it an error. */

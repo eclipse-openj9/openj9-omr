@@ -241,8 +241,10 @@ endfunction(omr_inject_object_modification_targets)
 # Setup the current scope for compiling the Testarossa compiler technology. Used in 
 # conjunction with make_compiler_target -- Only can infect add_directory scope.
 macro(set_tr_compile_options)
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TR_COMPILE_OPTIONS} ${TR_CXX_COMPILE_OPTIONS}" PARENT_SCOPE)
-	set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} ${TR_COMPILE_OPTIONS}   ${TR_C_COMPILE_OPTIONS}" PARENT_SCOPE)
+	omr_append_flags(CMAKE_CXX_FLAGS ${TR_COMPILE_OPTIONS} ${TR_CXX_COMPILE_OPTIONS})
+	set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} PARENT_SCOPE)
+	omr_append_flags(CMAKE_C_FLAGS ${TR_COMPILE_OPTIONS} ${TR_C_COMPILE_OPTIONS})
+	set(CMAKE_C_FLAGS ${CMAKE_C_FLAGS} PARENT_SCOPE)
 	# message("[set_tr_compile_options] Set CMAKE_CXX_FLAGS to ${CMAKE_CXX_FLAGS}")
 	# message("[set_tr_compile_options] Set CMAKE_C_FLAGS to ${CMAKE_C_FLAGS}")
 endmacro(set_tr_compile_options)

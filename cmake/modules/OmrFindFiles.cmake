@@ -61,7 +61,7 @@ function(omr_find_files output_variable)
 				break()
 			endif()
 		endforeach()
-		omr_assert(WARNING TEST file_found MESSAGE "Could not find file: ${file}")
+		omr_assert(FATAL_ERROR TEST file_found MESSAGE "Could not find file: ${file}")
 	endforeach()
 
 	set(${output_variable} "${result}" PARENT_SCOPE)

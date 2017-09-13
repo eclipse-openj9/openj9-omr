@@ -49,6 +49,7 @@ include(OmrTracegen)
 if(NOT OMR_PLATFORM_GLOBALLY_INITIALIZED)
 	omr_platform_global_setup()
 endif()
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 ###
 ### Getting the glue target

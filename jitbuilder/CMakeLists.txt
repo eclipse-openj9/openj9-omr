@@ -64,9 +64,13 @@ create_omr_compiler_library(NAME       jitbuilder
 
 # Add interface path so that include paths propagate. 
 # NOTE: `release` directory  isn't being automatically setup, so this 
-#       Won't yet work on a clone!
-target_include_directories(jitbuilder 
-    INTERFACE release/include ../compiler/ ../
+#       is adding the actual compiler dir, as opposed to the 'composed'
+#       install directory.
+target_include_directories(jitbuilder
+	INTERFACE
+		release/include
+		../compiler/
+		../
 )
 
 

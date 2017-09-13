@@ -31,7 +31,6 @@ add_executable(mandelbrot
    main.cpp
 )
 
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../../tril/ ${CMAKE_CURRENT_BINARY_DIR}/tril)
 target_link_libraries(mandelbrot
    tril
 )

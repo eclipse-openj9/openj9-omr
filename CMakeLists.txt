@@ -117,10 +117,6 @@ add_subdirectory(omr)
 add_subdirectory(third_party)
 add_subdirectory(omrsigcompat)
 
-if(OMR_FVTEST)
-	add_subdirectory(fvtest)
-endif()
-
 if(OMR_GC)
 	add_subdirectory(gc)
 endif(OMR_GC)
@@ -132,4 +128,11 @@ endif(OMR_DDR)
 if(OMR_JITBUILDER)
 	add_subdirectory(jitbuilder)
 endif(OMR_JITBUILDER)
+
+# This should come last to ensure dependencies 
+# are defined
+if(OMR_FVTEST)
+	add_subdirectory(fvtest)
+endif()
+
 

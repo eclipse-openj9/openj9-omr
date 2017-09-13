@@ -19,17 +19,9 @@
 # SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
 ###############################################################################
 
-cmake_minimum_required(VERSION 3.2 FATAL_ERROR)
-
-if(NOT TARGET triltest)
-
-project(triltest LANGUAGES CXX)
-
-# not very robust but since we can't build JitBuilder by itself using cmake yet,
-# this will have to do
-if(NOT "${CMAKE_PROJECT_NAME}" STREQUAL "omr")
-   find_package(GTest REQUIRED)
-endif()
+# cmake_minimum_required(VERSION 3.2 FATAL_ERROR)
+# 
+# project(triltest LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
@@ -45,22 +37,12 @@ add_executable(triltest
    CompileTest.cpp
 )
 
-add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../tril/ ${CMAKE_CURRENT_BINARY_DIR}/tril)
 target_link_libraries(triltest
    tril
+   omrGtest
 )
-
-# not very robust but since we can't build JitBuilder by itself using cmake yet,
-# this will have to do
-if(NOT "${CMAKE_PROJECT_NAME}" STREQUAL "omr")
-    target_link_libraries(triltest ${GTEST_BOTH_LIBRARIES})
-else()
-    target_link_libraries(triltest omrGtest)
-endif()
 
 add_test(
     NAME triltest
-    COMMAND triltest --gtest_color=yes
+    COMMAND triltest
 )
-
-endif()

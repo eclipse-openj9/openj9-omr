@@ -92,11 +92,14 @@ if(OMR_HOST_OS STREQUAL "zos")
 	target_link_libraries(omrporttest j9a2e)
 endif()
 
-
 add_library(sltestlib SHARED
-	sltestlib/sltest.c)
-target_link_libraries(sltestlib PRIVATE omr_shared)
+	sltestlib/sltest.c
+)
 
+target_compile_options(sltestlib
+	PRIVATE
+		${OMR_PLATFORM_SHARED_COMPILE_OPTIONS}
+)
 
 add_test(NAME porttest COMMAND omrporttest)
 

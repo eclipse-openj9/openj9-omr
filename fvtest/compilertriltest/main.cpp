@@ -19,9 +19,14 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
 
-#include "gtest/gtest.h"
+#include "omrTest.h"
 
-int main(int argc, char** argv) {
+extern "C" {
+int testMain(int argc, char **argv, char **envp);
+}
+
+int testMain(int argc, char **argv, char **envp) {
    ::testing::InitGoogleTest(&argc, argv);
+   OMREventListener::setDefaultTestListener();
    return RUN_ALL_TESTS();
 }

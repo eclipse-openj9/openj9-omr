@@ -34,6 +34,8 @@ testMain(int argc, char **argv, char **envp)
 {
 	::testing::InitGoogleTest(&argc, argv);
 
+	OMREventListener::setDefaultTestListener();
+
 	ATTACH_J9THREAD();
 	omrTestEnv = (PortEnvironment *)testing::AddGlobalTestEnvironment(new PortEnvironment(argc, argv));
 	int result = RUN_ALL_TESTS();

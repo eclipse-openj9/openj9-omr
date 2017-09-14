@@ -52,6 +52,8 @@ testMain(int argc, char **argv, char **envp)
 		::testing::InitGoogleTest(&argc, argv);
 	}
 
+	OMREventListener::setDefaultTestListener();
+
 	ATTACH_J9THREAD();
 
 	portTestEnv = new PortTestEnvironment(argc, argv);

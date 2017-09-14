@@ -47,6 +47,7 @@ add_executable(triltest
 
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../tril/ ${CMAKE_CURRENT_BINARY_DIR}/tril)
 target_link_libraries(triltest
+   omrGtestGlue
    tril
 )
 

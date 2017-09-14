@@ -23,9 +23,6 @@
 #define algorithm_test_internal_h
 
 /**
-* @file algorithm_test_internal.h
-* @brief Internal prototypes used within the ALGORITHM_TEST module.
-*
 * This file contains implementation-private function prototypes and
 * type definitions for the ALGORITHM_TEST module.
 *
@@ -37,30 +34,53 @@
 extern "C" {
 #endif
 
+typedef struct PoolInputData {
+	const char *poolName;
+	uint32_t structSize;
+	uint32_t numberElements;
+	uint32_t elementAlignment;
+	uint32_t padding;
+	uintptr_t poolFlags;
+} PoolInputData;
+
+typedef struct HashtableInputData {
+	const char* hashtableName;
+	const uintptr_t* data;
+	uintptr_t dataLength;
+	uint32_t listToTreeThreshold;
+	BOOLEAN forceCollisions;
+	BOOLEAN collisionResistant;
+} HashtableInputData;
+
 /* ---------------- avltest.c ---------------- */
 
 /**
 * @brief
 * @param *portLib
-* @param *testListFile
-* @param *passCount
-* @param *failCount
+* @param *testData
 * @return int32_t
 */
 int32_t
-verifyAVLTree(OMRPortLibrary *portLib, char *testListFile, uintptr_t *passCount, uintptr_t *failCount);
+buildAndVerifyAVLTree(OMRPortLibrary *portLib, const char *success, const char *testData);
 
 /* ---------------- pooltest.c ---------------- */
 
 /**
 * @brief
 * @param *portLib
-* @param *passCount
-* @param *failCount
+* @param *input
 * @return int32_t
 */
 int32_t
-verifyPools(OMRPortLibrary *portLib, uintptr_t *passCount, uintptr_t *failCount);
+createAndVerifyPool(OMRPortLibrary *portLib, PoolInputData *input);
+
+/**
+* @brief
+* @param *portLib
+* @return int32_t
+*/
+int32_t
+testPoolPuddleListSharing(OMRPortLibrary *portLib);
 
 /* ---------------- hooktest.c ---------------- */
 
@@ -85,6 +105,10 @@ verifyHookable(OMRPortLibrary *portLib, uintptr_t *passCount, uintptr_t *failCou
 */
 int32_t
 verifyHashtable(OMRPortLibrary *portLib, uintptr_t *passCount, uintptr_t *failCount);
+
+
+int32_t
+buildAndVerifyHashtable(OMRPortLibrary *portLib, HashtableInputData *inputData);
 
 #ifdef __cplusplus
 }

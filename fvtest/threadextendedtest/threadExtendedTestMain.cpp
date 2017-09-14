@@ -28,7 +28,7 @@ extern "C" int
 testMain(int argc, char **argv, char **envp)
 {
 	::testing::InitGoogleTest(&argc, argv);
-
+	OMREventListener::setDefaultTestListener();
 	int result = 0;
 	OMRPortLibrary portLibrary;
 	thrExtendedTestSetUp(&portLibrary);

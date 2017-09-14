@@ -135,9 +135,9 @@ void OMR::X86::Linkage::mapCompactedStack(TR::ResolvedMethodSymbol *method)
       {
       if (localCursor->getGCMapIndex() >= 0)
          {
-         TR_IGNode *igNode;
+         TR_IGNode *igNode = self()->cg()->getLocalsIG()->getIGNodeForEntity(localCursor);
          bool performSharing = true;
-         if (igNode = self()->cg()->getLocalsIG()->getIGNodeForEntity(localCursor))
+         if (igNode)
             {
             IGNodeColour colour = igNode->getColour();
 
@@ -227,8 +227,8 @@ void OMR::X86::Linkage::mapCompactedStack(TR::ResolvedMethodSymbol *method)
    for (localCursor = automaticIterator.getFirst(); localCursor; localCursor = automaticIterator.getNext())
       if (localCursor->getGCMapIndex() < 0)
          {
-         TR_IGNode *igNode;
-         if (igNode = self()->cg()->getLocalsIG()->getIGNodeForEntity(localCursor))
+         TR_IGNode *igNode = self()->cg()->getLocalsIG()->getIGNodeForEntity(localCursor);
+         if (igNode)
             {
             IGNodeColour colour = igNode->getColour();
 

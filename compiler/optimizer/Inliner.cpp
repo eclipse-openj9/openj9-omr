@@ -5072,7 +5072,7 @@ bool TR_InlinerBase::inlineCallTarget2(TR_CallStack * callStack, TR_CallTarget *
       //
 
       TR::CFGNode * n;
-      while (n = calleeCFG->getNodes().pop())
+      while ((n = calleeCFG->getNodes().pop()))
          {
          int32_t calleeNodeNumber = n->getNumber();
          callerCFG->addNode(n);

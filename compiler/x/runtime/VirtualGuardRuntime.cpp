@@ -21,6 +21,7 @@
 
 #include <stdint.h>
 #include "infra/Assert.hpp"
+#include "x/runtime/X86Runtime.hpp"
 
 #define IS_32BIT_SIGNED(x)   ((x) == ( int32_t)(x))
 
@@ -47,7 +48,7 @@ extern "C" void _patchVirtualGuard(uint8_t *locationAddr, uint8_t *destinationAd
       // Self-loop
       *(uint16_t*)locationAddr = 0xfeeb;
 
-      _patchingFence16(locationAddr);
+      patchingFence16(locationAddr);
 
       // Bytes 2-4
       locationAddr[2] = (displacement >> 8);
@@ -55,7 +56,7 @@ extern "C" void _patchVirtualGuard(uint8_t *locationAddr, uint8_t *destinationAd
       locationAddr[4] = (displacement >> 24);
 
       // Bytes 0-1; unlock the self-loop/JMP+3
-      _patchingFence16(locationAddr);
+      patchingFence16(locationAddr);
       *(uint16_t*)locationAddr = 0xe9 + ((displacement & 0xff) << 8);
       }
    }

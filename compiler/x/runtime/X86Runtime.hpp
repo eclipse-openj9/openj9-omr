@@ -25,11 +25,14 @@
 #include "env/ProcessorInfo.hpp"
 
 #ifdef WINDOWS
-#include <intrin.h> // for __cpuid, __cpuidex
+#include <intrin.h>
 #define cpuid(CPUInfo, EAXValue)             __cpuid(CPUInfo, EAXValue)
 #define cpuidex(CPUInfo, EAXValue, ECXValue) __cpuidex(CPUInfo, EAXValue, ECXValue)
 #else
 #include <cpuid.h>
+#ifdef TR_HOST_64BIT
+#include <emmintrin.h>
+#endif
 #define cpuid(CPUInfo, EAXValue)             __cpuid(EAXValue, CPUInfo[0], CPUInfo[1], CPUInfo[2], CPUInfo[3] )
 #define cpuidex(CPUInfo, EAXValue, ECXValue) __cpuid_count(EAXValue, ECXValue, CPUInfo[0], CPUInfo[1], CPUInfo[2], CPUInfo[3] )
 #endif
@@ -69,6 +72,32 @@ inline bool jitGetCPUID(TR_X86CPUIDBuffer* pBuffer)
       {
       return false;
       }
+   }
+
+inline bool AtomicCompareAndSwap(volatile uint32_t* ptr, uint32_t old_val, uint32_t new_val)
+   {
+#ifdef WINDOWS
+   return old_val == (uint32_t)_InterlockedCompareExchange((volatile long*)ptr, (long)new_val, (long)old_val);
+#else
+   return __sync_bool_compare_and_swap(ptr, old_val, new_val);
+#endif
+   }
+
+inline bool AtomicCompareAndSwap(volatile uint16_t* ptr, uint16_t old_val, uint16_t new_val)
+   {
+#ifdef WINDOWS
+   return old_val == (uint16_t)_InterlockedCompareExchange16((volatile short*)ptr, (short)new_val, (short)old_val);
+#else
+   return __sync_bool_compare_and_swap(ptr, old_val, new_val);
+#endif
+   }
+
+inline void patchingFence16(void* addr)
+   {
+#ifdef TR_HOST_64BIT
+   _mm_clflush(addr);
+   _mm_clflush(static_cast<char*>(addr)+8);
+#endif
    }
 
 #endif

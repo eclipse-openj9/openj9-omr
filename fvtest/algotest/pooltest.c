@@ -50,14 +50,17 @@ int32_t
 createAndVerifyPool(OMRPortLibrary *portLib, PoolInputData *input)
 {
 	J9Pool *pool = createNewPool(portLib, input);
+	int32_t elementCount = 0;
+	int32_t rc = 0;
+
 	if (NULL == pool) {
 		return -1;
 	}
-	int32_t elementCount = testPoolNewElement(portLib, input, pool);
+	elementCount = testPoolNewElement(portLib, input, pool);
 	if (elementCount < 0) {
 		return elementCount;
 	}
-	int32_t rc = testPoolWalkFunctions(portLib, input, pool, elementCount);
+	rc = testPoolWalkFunctions(portLib, input, pool, elementCount);
 	if (0 != rc) {
 		return rc;
 	}

@@ -24,10 +24,12 @@
 #include <algorithm>
 #include <assert.h>
 #include <comdef.h>
+#if !defined(WIN32)
 #include <inttypes.h>
+#endif
 #include <stdio.h>
-#include "ddr/std/sstream.hpp"
 
+#include "ddr/std/sstream.hpp"
 #include "ddr/config.hpp"
 #include "ddr/ir/EnumMember.hpp"
 #include "ddr/ir/ClassUDT.hpp"

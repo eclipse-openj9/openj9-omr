@@ -26,25 +26,28 @@
 #define ASSERT_NULL(pointer) ASSERT_EQ(nullptr, (pointer))
 #define ASSERT_NOTNULL(pointer) ASSERT_TRUE(nullptr != (pointer))
 
-TEST(ParserTest, SingleNodeWithJustName) {
-    auto trees = parseString("(nodeName)");
+
+typedef std::pair<const char *, const char *> TestParamWithExpectedResultString;
+
+class SingleNodeWithName : public testing::TestWithParam<TestParamWithExpectedResultString> {};
+
+TEST_P(SingleNodeWithName, VerifyNode) {
+    auto trees = parseString(GetParam().first);
 
     ASSERT_NOTNULL(trees);
-    ASSERT_STREQ("nodeName", trees->getName());
+    ASSERT_STREQ(GetParam().second, trees->getName());
     ASSERT_NULL(trees->getArgs());
     ASSERT_NULL(trees->getChildren());
     ASSERT_NULL(trees->next);
 }
 
-TEST(ParserTest, SingleCommandNodeWithJustName) {
-    auto trees = parseString("(@commandName)");
-
-    ASSERT_NOTNULL(trees);
-    ASSERT_STREQ("@commandName", trees->getName());
-    ASSERT_NULL(trees->getArgs());
-    ASSERT_NULL(trees->getChildren());
-    ASSERT_NULL(trees->next);
-}
+INSTANTIATE_TEST_CASE_P(
+    ParserTest,
+    SingleNodeWithName,
+    testing::Values(
+        TestParamWithExpectedResultString("(nodeName)", "nodeName"),
+        TestParamWithExpectedResultString("(@commandName)", "@commandName")
+));
 
 TEST(ParserTest, TwoNodesWithJustName) {
     auto trees = parseString("(nodeName)(otherNode)");
@@ -100,8 +103,12 @@ TEST(ParserTest, NodeWithChildAndSibling) {
     ASSERT_NULL(sibling->next);
 }
 
-TEST(ParserTest, SingleNodeWithIntArg) {
-    auto trees = parseString("(nodeName 3)");
+typedef std::pair<const char *, ASTValue::Integer_t> TestParamWithExpectedResultInt;
+
+class SingleNodeWithIntArg : public testing::TestWithParam<TestParamWithExpectedResultInt> {};
+
+TEST_P(SingleNodeWithIntArg, VerifyNode) {
+    auto trees = parseString(GetParam().first);
 
     ASSERT_NOTNULL(trees);
     ASSERT_STREQ("nodeName", trees->getName());
@@ -112,45 +119,36 @@ TEST(ParserTest, SingleNodeWithIntArg) {
     auto arg = trees->getArgs();
     ASSERT_STREQ("", arg->getName());
     ASSERT_EQ(ASTValue::Integer, arg->getValue()->getType());
-    ASSERT_EQ(3, arg->getValue()->getInteger());
+    ASSERT_EQ(GetParam().second, arg->getValue()->getInteger());
     ASSERT_NULL(arg->next);
 }
 
-TEST(ParserTest, SingleNodeWithHexArg) {
-    auto trees = parseString("(nodeName 0xabc123)");
+INSTANTIATE_TEST_CASE_P(
+    ParserTestSingleNodeWithIntArgAsDecValue,
+    SingleNodeWithIntArg,
+    testing::Values(
+        TestParamWithExpectedResultInt("(nodeName 0)", 0),
+        TestParamWithExpectedResultInt("(nodeName 3)", 3),
+        TestParamWithExpectedResultInt("(nodeName -3)", -3),
+        TestParamWithExpectedResultInt("(nodeName 9223372036854775807)", 9223372036854775807U),
+        TestParamWithExpectedResultInt("(nodeName 18446744073709551615)", 18446744073709551615ULL)
+));
 
-    ASSERT_NOTNULL(trees);
-    ASSERT_STREQ("nodeName", trees->getName());
-    ASSERT_NOTNULL(trees->getArgs());
-    ASSERT_NULL(trees->getChildren());
-    ASSERT_NULL(trees->next);
+INSTANTIATE_TEST_CASE_P(
+    ParserTestSingleNodeWithIntArgAsHexValue,
+    SingleNodeWithIntArg,
+    testing::Values(
+        TestParamWithExpectedResultInt("(nodeName 0xabc123)", 0xabc123),
+        TestParamWithExpectedResultInt("(nodeName -0x249DEF)", -0x249DEF),
+        TestParamWithExpectedResultInt("(nodeName 0xFFFFFFFF00000000)", 0xFFFFFFFF00000000)
+));
 
-    auto arg = trees->getArgs();
-    ASSERT_STREQ("", arg->getName());
-    ASSERT_EQ(ASTValue::Integer, arg->getValue()->getType());
-    ASSERT_EQ(0xabc123, arg->getValue()->getInteger());
-    ASSERT_NULL(arg->next);
-}
+typedef std::pair<const char *, ASTValue::FloatingPoint_t> TestParamWithExpectedResultFloat;
 
-TEST(ParserTest, SingleNodeWithNegativeHexArg) {
-    auto trees = parseString("(nodeName -0x249DEF)");
+class SingleNodeWithFloatArg : public testing::TestWithParam<TestParamWithExpectedResultFloat> {};
 
-    ASSERT_NOTNULL(trees);
-    ASSERT_STREQ("nodeName", trees->getName());
-    ASSERT_NOTNULL(trees->getArgs());
-    ASSERT_NULL(trees->getChildren());
-    ASSERT_NULL(trees->next);
-
-    auto arg = trees->getArgs();
-    ASSERT_STREQ("", arg->getName());
-    ASSERT_EQ(ASTValue::Integer, arg->getValue()->getType());
-    ASSERT_EQ(-0x249DEF, arg->getValue()->getInteger());
-    ASSERT_NULL(arg->next);
-}
-
-
-TEST(ParserTest, SingleNodeWithFloatArg) {
-    auto trees = parseString("(nodeName 3.00)");
+TEST_P(SingleNodeWithFloatArg, VerifyNode) {
+    auto trees = parseString(GetParam().first);
 
     ASSERT_NOTNULL(trees);
     ASSERT_STREQ("nodeName", trees->getName());
@@ -161,9 +159,18 @@ TEST(ParserTest, SingleNodeWithFloatArg) {
     auto arg = trees->getArgs();
     ASSERT_STREQ("", arg->getName());
     ASSERT_EQ(ASTValue::FloatingPoint, arg->getValue()->getType());
-    ASSERT_EQ(3.00, arg->getValue()->getFloatingPoint());
+    ASSERT_EQ(GetParam().second, arg->getValue()->getFloatingPoint());
     ASSERT_NULL(arg->next);
 }
+
+INSTANTIATE_TEST_CASE_P(
+    ParserTest,
+    SingleNodeWithFloatArg,
+    testing::Values(
+        TestParamWithExpectedResultFloat("(nodeName 3.00)", 3.00),
+        TestParamWithExpectedResultFloat("(nodeName -3.00)", -3.00),
+        TestParamWithExpectedResultFloat("(nodeName 9223372036854775807.00)", 9223372036854775807.00)
+));
 
 TEST(ParserTest, SingleNodeWithStringArg) {
     auto trees = parseString("(nodeName \"foo\")");
@@ -181,8 +188,10 @@ TEST(ParserTest, SingleNodeWithStringArg) {
     ASSERT_NULL(arg->next);
 }
 
-TEST(ParserTest, SingleNodeWithIdentiferArg) {
-    auto trees = parseString("(nodeName id)");
+class SingleNodeWithUnnamedArg : public testing::TestWithParam<TestParamWithExpectedResultString> {};
+
+TEST_P(SingleNodeWithUnnamedArg, VerifyNode) {
+    auto trees = parseString(GetParam().first);
 
     ASSERT_NOTNULL(trees);
     ASSERT_STREQ("nodeName", trees->getName());
@@ -193,25 +202,17 @@ TEST(ParserTest, SingleNodeWithIdentiferArg) {
     auto arg = trees->getArgs();
     ASSERT_STREQ("", arg->getName());
     ASSERT_EQ(ASTValue::String, arg->getValue()->getType());
-    ASSERT_STREQ("id", arg->getValue()->getString());
+    ASSERT_STREQ(GetParam().second, arg->getValue()->getString());
     ASSERT_NULL(arg->next);
 }
 
-TEST(ParserTest, SingleNodeWithCommandArg) {
-    auto trees = parseString("(nodeName @cmd)");
-
-    ASSERT_NOTNULL(trees);
-    ASSERT_STREQ("nodeName", trees->getName());
-    ASSERT_NOTNULL(trees->getArgs());
-    ASSERT_NULL(trees->getChildren());
-    ASSERT_NULL(trees->next);
-
-    auto arg = trees->getArgs();
-    ASSERT_STREQ("", arg->getName());
-    ASSERT_EQ(ASTValue::String, arg->getValue()->getType());
-    ASSERT_STREQ("@cmd", arg->getValue()->getString());
-    ASSERT_NULL(arg->next);
-}
+INSTANTIATE_TEST_CASE_P(
+    ParserTest,
+    SingleNodeWithUnnamedArg,
+    testing::Values(
+        TestParamWithExpectedResultString("(nodeName id)", "id"),
+        TestParamWithExpectedResultString("(nodeName @cmd)", "@cmd")
+));
 
 TEST(ParserTest, SingleNodeWithNamedArg) {
     auto trees = parseString("(nodeName arg=3.14)");

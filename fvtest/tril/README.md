@@ -45,54 +45,35 @@ on your machine
 
 2. Clone the Eclipse OMR repo:
 
-```sh
-git clone https://github.com/eclipse/omr.git
-```
+    ```sh
+    git clone https://github.com/eclipse/omr.git
+    ```
 
-3. Build JitBuilder
+3. Build tril using `cmake`. To ensure OMR gets built in a compatible
+   configuration, we currently reccomend you use the CMake cache that drives
+   our TravisCI builds.
 
-```sh
-cd omr
-./configure SPEC=x86-64 --enable-OMR_JITBUILDER # set SPEC for your platfrom
-cd jitbuilder
-make -j4
-cd ..
-```
+    ```sh
+    mkdir build
+    cd build
+    cmake -C../cmake/caches/Travis.cmake ..
+    ```
 
-4. Build the Tril library
+    At this point you can use whatever generated build system to build
+    tril: 
 
-```sh
-cd fvtest/tril
-mkdir build
-cd build
-cmake -GNinja ..
-cmake --build .
-```
+    ```
+    make tril
+    ```
 
 5. You should now have a static archive called `libtril.a`
 
-### Building the Mandelbrot example
-
-Now that the Tril library was built, you should be able to build any of the
-provided examples.
-
-1. `cd` into the Tril top level directory (`cd ../..` if continuing from
-   previous section)
-
-2. Go to the Mandelbrot example directory and build
-
-```sh
-cd examples/mandelbrot
-mkdir build
-cd build
-cmake -GNinja ..
-cmake --build .
-```
-
-3. Run the example, optionally enabling Testarossa tracing
-
-```sh
-TR_Options=traceIlGen,traceFull,log=trace.log ./mandelbrot ../mandelbrot.tril
-```
+6. You can build the tests by building `triltest`, or the compiler tests built
+   using tril by by building `comptest`. There's also the `mandelbrot` and `incordec` 
+   examples.
 
 4. Enjoy the view!
+
+   ```
+   ./fvtest/tril/examples/mandelbrot/mandelbrot ../fvtest/tril/examples/mandelbrot/mandelbrot.tril
+   ```

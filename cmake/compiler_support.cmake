@@ -47,8 +47,8 @@ set(MASM2GAS_PATH ${OMR_ROOT}/tools/compiler/scripts/masm2gas.pl)
 # This supplements the compile definitions, options and 
 # include directories.
 # 
-# Call as make_compiler_component(<target> COMPILER <compiler name>)
-function(make_compiler_target TARGET_NAME) 
+# Call as make_compiler_target(<target> <scope> COMPILER <compiler name>)
+function(make_compiler_target TARGET_NAME SCOPE)
 	cmake_parse_arguments(TARGET 
 		"" # Optional Arguments
 		"COMPILER" # One value arguments
@@ -60,12 +60,12 @@ function(make_compiler_target TARGET_NAME)
 	set(COMPILER_ROOT     ${${TARGET_COMPILER}_ROOT})
 	set(COMPILER_INCLUDES ${${TARGET_COMPILER}_INCLUDES})
 
-	target_include_directories(${TARGET_NAME} BEFORE PRIVATE 
+	target_include_directories(${TARGET_NAME} BEFORE ${SCOPE}
 		${COMPILER_INCLUDES}
 	)
 
 	# TODO: Extract into platform specific section.
-	target_compile_definitions(${TARGET_NAME} PRIVATE
+	target_compile_definitions(${TARGET_NAME} ${SCOPE}
 		BITVECTOR_BIT_NUMBERING_MSB
 		UT_DIRECT_TRACE_REGISTRATION
 		${TR_COMPILE_DEFINITIONS}
@@ -375,5 +375,5 @@ function(create_omr_compiler_library)
 
 
 	# Set include paths and defines.  
-	make_compiler_target(${COMPILER_NAME} COMPILER ${COMPILER_NAME})
+	make_compiler_target(${COMPILER_NAME} PRIVATE COMPILER ${COMPILER_NAME})
 endfunction(create_omr_compiler_library)

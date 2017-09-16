@@ -1354,8 +1354,8 @@ omrsig_chain_at_shutdown_and_exit(struct OMRPortLibrary *portLibrary)
 	if (currentSignal != NULL) {
 		/* we are shutting down due to a signal, forward it to the application handlers */
 		if (!(signalOptionsGlobal & OMRPORT_SIG_OPTIONS_OMRSIG_NO_CHAIN)) {
-			Trc_PRT_signal_omrsig_chain_at_shutdown_and_exit_forwarding_to_jsigHandler(portLibrary, currentSignal->signal);
-			jsig_handler(currentSignal->signal, currentSignal->sigInfo, currentSignal->contextInfo);
+			Trc_PRT_signal_omrsig_chain_at_shutdown_and_exit_forwarding_to_omrsigHandler(portLibrary, currentSignal->signal);
+			omrsig_handler(currentSignal->signal, currentSignal->sigInfo, currentSignal->contextInfo);
 		}	
 	}
 	Trc_PRT_signal_omrsig_chain_at_shutdown_and_exit_exiting(portLibrary);

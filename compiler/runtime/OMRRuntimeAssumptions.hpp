@@ -185,6 +185,21 @@ class PatchNOPedGuardSite : public OMR::LocationRedirectRuntimeAssumption
    uint8_t *_destination;
    }; // TR::PatchNOPedGuardSite
 
+class PatchNOPedGuardSiteOnMethodBreakPoint : public PatchNOPedGuardSite
+   {
+   protected:
+   PatchNOPedGuardSiteOnMethodBreakPoint(TR_PersistentMemory *pm, TR_OpaqueMethodBlock *j9method,
+                       uint8_t *location, uint8_t *destination)
+      : PatchNOPedGuardSite(pm, (uintptrj_t)j9method, RuntimeAssumptionOnMethodBreakPoint, location, destination) {}
+
+   public: 
+   static PatchNOPedGuardSiteOnMethodBreakPoint *make(
+      TR_FrontEnd *fe, TR_PersistentMemory * pm, TR_OpaqueMethodBlock *j9method, uint8_t *location, uint8_t *destination,
+      OMR::RuntimeAssumption **sentinel);
+ 
+   virtual TR_RuntimeAssumptionKind getAssumptionKind() { return RuntimeAssumptionOnMethodBreakPoint; }
+   };
+
 }  // namespace TR
 
 #endif

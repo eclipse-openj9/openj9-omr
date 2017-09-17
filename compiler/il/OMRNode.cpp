@@ -7510,10 +7510,10 @@ OMR::Node::resetIsTheVirtualGuardForAGuardedInlinedCall()
 bool
 OMR::Node::isNopableInlineGuard()
    {
-   return self()->isTheVirtualGuardForAGuardedInlinedCall() && !self()->isProfiledGuard() && !self()->isBreakpointGuard();
+   TR::Compilation * c = TR::comp();
+   return self()->isTheVirtualGuardForAGuardedInlinedCall() && !self()->isProfiledGuard() && 
+      !(self()->isBreakpointGuard() && c->getOption(TR_DisableNopBreakpointGuard));
    }
-
-
 
 bool
 OMR::Node::isMutableCallSiteTargetGuard()

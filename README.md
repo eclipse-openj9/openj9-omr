@@ -72,11 +72,11 @@ to promote fairness, openness, and inclusion.
 Who is using Eclipse OMR?
 =========================
 
-* The most comprehensive consumer of the Eclipse OMR technology is the IBM J9
+* The most comprehensive consumer of the Eclipse OMR technology is the
+  [Eclipse OpenJ9][oj9] (previously IBM J9)
   Virtual Machine: a high performance, scalable, enterprise class Java Virtual
   Machine implementation representing hundreds of person years of effort, built
-  using the core implementations provided by Eclipse OMR. IBM is working actively
-  to open source J9.
+  using the core implementations provided by Eclipse OMR.
 * The Ruby+OMR Technology Preview has used Eclipse OMR components to add a JIT
   compiler to the CRuby implementation, and to experiment with replacing the
   garbage collector in CRuby.
@@ -86,6 +86,7 @@ Who is using Eclipse OMR?
   has also been created but is not yet available in the open. (Our focus
   has been dominated by getting this code out into the open!)
 
+[oj9]: https://github.com/eclipse/openj9
 
 What's the licence?
 ===================

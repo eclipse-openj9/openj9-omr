@@ -77,7 +77,7 @@ TR_CompactLocals::TR_CompactLocals(TR::OptimizationManager *manager)
    : _liveVars(NULL),
      _prevLiveVars(NULL),
      _temp(NULL),
-     _localIndexToSymbolMap(NULL),
+     _localIndexToIGNode(NULL),
      _localsIG(NULL),
      TR::Optimization(manager)
    {
@@ -151,9 +151,12 @@ int32_t TR_CompactLocals::perform()
    TR_BitVector *referenceLocals;
    TR_BitVector *nonReferenceLocals;
 
-   // Create a local index to symbol mapping table and seed the interference graph.
+   // Create a local index to node table and seed the interference graph.
    //
-   _localIndexToSymbolMap = new (trStackMemory()) TR_Array<TR::AutomaticSymbol *>(trMemory(), numLocals, false, stackAlloc);
+   _localIndexToIGNode = new (trStackMemory()) TR::vector<TR_IGNode*, TR::Region&>(
+      numLocals,
+      static_cast<TR_IGNode*>(NULL),
+      comp()->trMemory()->currentStackRegion());
 
    _localsIG = new (trHeapMemory()) TR_InterferenceGraph(comp(), numLocals);
    referenceLocals = new (trStackMemory()) TR_BitVector(numLocals, trMemory(), stackAlloc);
@@ -162,11 +165,10 @@ int32_t TR_CompactLocals::perform()
    for (p = locals.getFirst(); p != NULL; p = locals.getNext())
       {
       p->setLocalIndex(0);
-      (*_localIndexToSymbolMap)[p->getLiveLocalIndex()] = p;
 
       if (eligibleLocal(p))
          {
-         _localsIG->add(p, true);
+         (*_localIndexToIGNode)[p->getLiveLocalIndex()] = _localsIG->add(p, true);
 
          // Avoid colouring any internal pointers or
          // pinning array autos
@@ -442,7 +444,7 @@ TR_CompactLocals::createInterferenceBetween(TR_BitVector *bv)
    *_prevLiveVars = *bv;
 
    TR_BitVectorIterator bvi(*bv), wbvi;
-   TR::AutomaticSymbol  *sym1, *sym2;
+   TR_IGNode            *ig1, *ig2;
    int32_t              i1, i2;
 
    TR_BitVector *workBV = new (trStackMemory()) TR_BitVector(*bv);
@@ -458,23 +460,20 @@ TR_CompactLocals::createInterferenceBetween(TR_BitVector *bv)
          {
          i2 = wbvi.getNextElement();
 
-         sym1 = (*_localIndexToSymbolMap)[i1];
-         sym2 = (*_localIndexToSymbolMap)[i2];
+         ig1 = (*_localIndexToIGNode)[i1];
+         ig2 = (*_localIndexToIGNode)[i2];
 
-         if (sym1 && sym2 &&
-             eligibleLocal(sym1) && eligibleLocal(sym2) &&
-             !_localsIG->hasInterference(sym1, sym2))
+         if (ig1 && ig2)
             {
-            if (trace())
+            if (trace() && !_localsIG->hasInterference(ig1, ig2))
                {
                traceMsg(comp(), "Adding interference between %d and %d\n", i1, i2);
                }
-            _localsIG->addInterferenceBetween(sym1, sym2);
+            _localsIG->addInterferenceBetween(ig1, ig2);
             }
          }
       }
    }
-
 
 // Add interferences between elements in different bit vectors.
 //
@@ -483,7 +482,7 @@ TR_CompactLocals::createInterferenceBetween(TR_BitVector *bv1,
                                             TR_BitVector *bv2)
    {
    TR_BitVectorIterator  bvi1(*bv1), bvi2;
-   TR::AutomaticSymbol   *sym1, *sym2;
+   TR_IGNode             *ig1, *ig2;
    int32_t               i1, i2;
 
    while (bvi1.hasMoreElements())
@@ -494,14 +493,17 @@ TR_CompactLocals::createInterferenceBetween(TR_BitVector *bv1,
          {
          i2 = bvi2.getNextElement();
 
-         sym1 = (*_localIndexToSymbolMap)[i1];
-         sym2 = (*_localIndexToSymbolMap)[i2];
+         ig1 = (*_localIndexToIGNode)[i1];
+         ig2 = (*_localIndexToIGNode)[i2];
 
-         if (trace())
+         if (ig1 && ig2)
             {
-            traceMsg(comp(), "Adding interference between %d and %d\n", i1, i2);
+            if (trace() && !_localsIG->hasInterference(ig1, ig2))
+               {
+               traceMsg(comp(), "Adding interference between %d and %d\n", i1, i2);
+               }
+            _localsIG->addInterferenceBetween(ig1, ig2);
             }
-         _localsIG->addInterferenceBetween(sym1, sym2);
          }
       }
    }
@@ -515,8 +517,7 @@ TR_CompactLocals::createInterferenceBetweenLocals(int32_t localIndex)
    //
    int32_t               liveLocalIndex;
    TR_BitVectorIterator  lvi(*_liveVars);
-   TR::AutomaticSymbol   *sym1, *sym2;
-
+   TR_IGNode             *ig1, *ig2;
 
    while (lvi.hasMoreElements())
       {
@@ -525,20 +526,16 @@ TR_CompactLocals::createInterferenceBetweenLocals(int32_t localIndex)
       if (liveLocalIndex == localIndex)
          continue;
 
-      sym1 = (*_localIndexToSymbolMap)[liveLocalIndex];
-      sym2 = (*_localIndexToSymbolMap)[localIndex];
+      ig1 = (*_localIndexToIGNode)[liveLocalIndex];
+      ig2 = (*_localIndexToIGNode)[localIndex];
 
-      if (sym1 && sym2 &&
-          eligibleLocal(sym1) && eligibleLocal(sym2) &&
-          !_localsIG->hasInterference(sym1, sym2))
+      if (ig1 && ig2)
          {
-         if (trace())
+         if (trace() && !_localsIG->hasInterference(ig1, ig2))
             {
-            traceMsg(comp(), "Adding interference between %d (%p) and %d (%p)\n",
-                        liveLocalIndex, sym1, localIndex, sym2);
+            traceMsg(comp(), "Adding interference between %d and %d\n", liveLocalIndex, localIndex);
             }
-
-         _localsIG->addInterferenceBetween(sym1, sym2);
+         _localsIG->addInterferenceBetween(ig1, ig2);
          }
       }
    }
@@ -551,8 +548,10 @@ bool TR_CompactLocals::eligibleLocal(TR::AutomaticSymbol * localSym)
 
    if (localSym->isLocalObject())
       return false;
-   if (_localsIG->getNumNodes() > MAX_NUMBER_OF_LOCALS && _localsIG->getIGNodeForEntity(localSym) == NULL)
+
+   if (_localsIG->getNumNodes() > MAX_NUMBER_OF_LOCALS && (*_localIndexToIGNode)[localSym->getLiveLocalIndex()] == NULL)
       return false;
+
    return true;
    }
 

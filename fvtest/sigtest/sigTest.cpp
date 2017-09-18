@@ -25,6 +25,8 @@
 #endif /* defined(J9ZOS390) */
 
 #if !defined(WIN32)
+#include <stdint.h>
+#include <inttypes.h>
 #include <pthread.h>
 #include <dlfcn.h>
 #endif /* !defined(WIN32) */
@@ -57,6 +59,10 @@ enum TestAction {
 	test_omrsig_primary_sigaction
 #endif /* !defined(WIN32) */
 };
+
+#if !defined(PRId64)
+#define PRId64 "I64d"
+#endif
 
 static jmp_buf env;
 static volatile int handlerCalls;
@@ -312,21 +318,19 @@ test(TestAction testFunc)
 #endif /* defined(WIN32) */
 				signum,
 				testFunc)) {
+
+			int64_t flags = 0;
+#if !defined(WIN32)
+			flags = act.sa_flags;
+#endif
 			rc = OMR_ERROR_INTERNAL;
-#if (defined(S390) && defined(OMR_ENV_DATA64))
-			printf("Test %d:%d failed at %s:%d. Conditions: %sexisting primary, %sexisting secondary, flags = %ld, signum is %d, handler is 0x%p, %salt signal stack.\n",
-#else /* (defined(S390) && defined(OMR_ENV_DATA64)) */
-			printf("Test %d:%d failed at %s:%d. Conditions: %sexisting primary, %sexisting secondary, flags = %d, signum is %d, handler is 0x%p, %salt signal stack.\n",
-#endif /* (defined(S390) && defined(OMR_ENV_DATA64)) */
+
+			printf("Test %d:%d failed at %s:%d. Conditions: %sexisting primary, %sexisting secondary, flags = %" PRId64 ", signum is %d, handler is 0x%p, %salt signal stack.\n",
 				   testFunc, i,
 				   __FILE__, __LINE__,
 				   existingPrimary ? "" : "no ",
 				   existingSecondary ? "" : "no ",
-#if defined(WIN32)
-				   0,
-#else /* defined(WIN32) */
-				   act.sa_flags,
-#endif /* defined(WIN32) */
+				   flags,
 				   signum,
 				   handlerOptions[handlerIndex],
 				   onStack ? "" : "no ");

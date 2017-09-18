@@ -45,7 +45,7 @@ public:
 
    void breakPoint();
 
-   char *extraAssertMessage(TR::Compilation *comp) { return ""; }
+   const char *extraAssertMessage(TR::Compilation *comp) { return ""; }
 
    int32_t hexAddressWidthInChars() { return _hexAddressWidthInChars; }
 

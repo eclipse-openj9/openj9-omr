@@ -1987,7 +1987,7 @@ bool TR_LoopStrider::examineTreeForInductionVariableUse(TR::Block *loopInvariant
             //traceMsg(comp(), "looking for store at node = %p\n", node);
 
             TR::Node *replacingNode = NULL, *mulTerm = NULL, *linearTerm = NULL;
-            if (replacingNode = findReplacingNode(node->getFirstChild()->getFirstChild(), usingAladd, -1))
+            if ((replacingNode = findReplacingNode(node->getFirstChild()->getFirstChild(), usingAladd, -1)))
                {
                linearTerm = node->getFirstChild()->getFirstChild();
                mulTerm = node->getFirstChild()->getSecondChild();
@@ -2111,7 +2111,7 @@ bool TR_LoopStrider::examineTreeForInductionVariableUse(TR::Block *loopInvariant
 
 
       TR::Node *replacingNode = NULL, *mulTerm = NULL, *linearTerm = NULL;
-      if (replacingNode = findReplacingNode(node->getFirstChild(), usingAladd, -1))
+      if ((replacingNode = findReplacingNode(node->getFirstChild(), usingAladd, -1)))
          {
          linearTerm = node->getFirstChild();
          mulTerm = node->getSecondChild();

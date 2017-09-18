@@ -991,7 +991,8 @@ void TR::X86RegRegInstruction::assignRegisters(TR_RegisterKinds kindsToBeAssigne
 
       bool regRegCopy = isRegRegMove();
       TR_X86OpCodes opCode = getOpCodeValue();
-      if (feGetEnv("TR_UseOutOfDatedRegRevMoveList"))
+      static char* useOutOfDateRegRegMoveList = feGetEnv("TR_UseOutOfDateRegRegMoveList");
+      if (useOutOfDateRegRegMoveList)
          {
          if (opCode == MOVAPSRegReg ||
              opCode == MOV8RegReg   ||

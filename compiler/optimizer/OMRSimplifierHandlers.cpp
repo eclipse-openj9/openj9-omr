@@ -4608,7 +4608,8 @@ static bool isBitwiseLongComplement(TR::Node * n)
 template <typename T>
 static bool checkAndReplaceRotation(TR::Node *node,TR::Block *block, TR::Simplifier *s)
    {
-   if (feGetEnv("TR_DisableROLSimplification"))
+   static char* disableROLSimplification = feGetEnv("TR_DisableROLSimplification");
+   if (disableROLSimplification)
       return false;
 
    TR::Node *firstChild = node->getFirstChild();

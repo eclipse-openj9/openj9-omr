@@ -492,6 +492,7 @@ TR_GlobalRegisterAllocator::perform()
          _candidatesSignExtendedInThisLoop = new (trStackMemory()) TR_BitVector(_origSymRefCount, trMemory(), stackAlloc);
          }
 
+      candidates->getReferencedAutoSymRefs(comp()->trMemory()->currentStackRegion());
       if (!comp()->mayHaveLoops() || cg()->considerAllAutosAsTacticalGlobalRegisterCandidates())
          offerAllAutosAndRegisterParmAsCandidates(cfgBlocks, numberOfBlocks);
       else
@@ -3442,163 +3443,71 @@ void TR_GlobalRegisterAllocator::offerAllAutosAndRegisterParmAsCandidates(TR::Bl
    {
    LexicalTimer t("TR_GlobalRegisterAllocator::offerAllAutosAndRegisterParmsAsCandidates", comp()->phaseTimer());
 
-   TR::ResolvedMethodSymbol              *methodSymbol = comp()->getJittedMethodSymbol();
+   TR::ResolvedMethodSymbol            *methodSymbol = comp()->getJittedMethodSymbol();
    ListIterator<TR::ParameterSymbol>   paramIterator(&(methodSymbol->getParameterList()));
-   TR::CFG * cfg = comp()->getFlowGraph();
-   TR::CFGNode              *node;
-   TR::Block                *block, *startBlock=toBlock(cfg->getStart()), *endBlock=toBlock(cfg->getEnd());
-   TR::ParameterSymbol      *paramCursor = paramIterator.getFirst();
-   int32_t                  symRefCount = comp()->getSymRefCount();
-   TR::SymbolReferenceTable *symRefTab   = comp()->getSymRefTab();
-   TR::SymbolReference      *symRef;
-   TR::Symbol                *sym;
-   TR_Array<int32_t>       interestedCFGNodes(trMemory(), cfg->getNextNodeNumber()/2, false, stackAlloc);
-   int32_t                 numInterested;
-   int32_t                 i;
-   bool                    new2Offer=!debug("old2Offer");
-   bool                    newOffer=!new2Offer && !debug("oldOffer");
+   TR::CFG                             *cfg = comp()->getFlowGraph();
+   TR::CFGNode                         *node;
+   TR::Block                           *block, *startBlock=toBlock(cfg->getStart()), *endBlock=toBlock(cfg->getEnd());
+   int32_t                             symRefCount  = comp()->getSymRefCount();
+   TR::SymbolReferenceTable            *symRefTab   = comp()->getSymRefTab();
+   TR::SymbolReference                 *symRef;
+   TR::Symbol                          *sym;
+   TR_RegisterCandidates               *candidates = comp()->getGlobalRegisterCandidates();
 
-   TR_RegisterCandidates * candidates = comp()->getGlobalRegisterCandidates();
-   TR::GlobalSet& referencedAutoSymRefsInBlock = candidates->getReferencedAutoSymRefs(comp()->trMemory()->currentStackRegion());
 
-   if (newOffer || new2Offer)
+   // Interested blocks consist of all blocks except for entry, exit and exception handlers
+   TR_BitVector interestedBlocks(numberOfNodes, comp()->trMemory()->currentStackRegion());
+   TR_BitVector tmp(numberOfNodes, comp()->trMemory()->currentStackRegion());
+   for (node = cfg->getFirstNode(); node != NULL; node = node->getNext())
       {
-      numInterested=0;
-      for (node = cfg->getFirstNode(); node != NULL; node = node->getNext())
-        {
-        block = toBlock(node);
-
-        if (block == startBlock || block == endBlock || (!block->getExceptionPredecessors().empty()))
-           continue;
-
-        interestedCFGNodes[numInterested++]=block->getNumber();
-        }
+      block = toBlock(node);
+      if (block == startBlock || block == endBlock || (!block->getExceptionPredecessors().empty()) || !cfgBlocks[block->getNumber()])
+         continue;
+      interestedBlocks.set(block->getNumber());
       }
 
-   int32_t origRefCount = comp()->getSymRefCount();
    //
    // Offer parameters first
    //
-   while (paramCursor != NULL)
+   for (TR::ParameterSymbol *paramCursor = paramIterator.getFirst(); paramCursor != NULL; paramCursor = paramIterator.getNext())
       {
-      TR::SymbolReference *symRef = methodSymbol->getParmSymRef(paramCursor->getSlot());
+      symRef = methodSymbol->getParmSymRef(paramCursor->getSlot());
 
       if ((paramCursor->isReferencedParameter() && isTypeAvailable(symRef)) &&
           !onlySelectedCandidates)
          {
-
          if (!isSymRefAvailable(symRef))
-            {
-            paramCursor = paramIterator.getNext();
             continue;
-            }
-
-
-         TR_RegisterCandidate *rc = NULL;
-         if (new2Offer)
-            {
-            if (paramCursor->getLinkageRegisterIndex() >= 0)
-               rc = comp()->getGlobalRegisterCandidates()->findOrCreate(symRef);
-            else
-               rc = comp()->getGlobalRegisterCandidates()->find(symRef);
-            }
-         else
-            rc = comp()->getGlobalRegisterCandidates()->findOrCreate(symRef);
 
          int32_t symRefNumber = symRef->getReferenceNumber();
-         if (rc)
-            {
-            TR_RegisterCandidate::BlockInfo::iterator itr = rc->_blocks.getIterator();
-            while (itr.hasMoreElements())
-               {
-               int32_t block_num = itr.getNextElement();
-               TR_ASSERT(block_num < numberOfNodes, "Overflow on candidate BB numbers");
-               block = cfgBlocks[block_num];
-               if (!block) continue;
 
-               int32_t weight = 1;
+         // Check there is an interested block that references the symref
+         tmp.empty();
+         tmp |= *candidates->getBlocksReferencingSymRef(symRefNumber);
+         tmp &= interestedBlocks;
+         if (tmp.isEmpty())
+            continue;
 
-               if ((block == startBlock || block == endBlock) ||
-                   !block->getExceptionPredecessors().empty())
-                  continue;
+         TR_RegisterCandidate *rc = comp()->getGlobalRegisterCandidates()->findOrCreate(symRef);
 
-               TR_ASSERT(block_num == block->getNumber(),"blocks[x]->getNumber() != x");
-               if (!referencedAutoSymRefsInBlock[block]->get(symRefNumber))
-                  weight = 0;
+         // All interested blocks will be candidates
+         rc->_blocks.getCandidateBlocks() |= interestedBlocks;
 
-               rc->_blocks.incNumberOfLoadsAndStores(block_num, weight);
-               }
-            }
+         // Increment the number of loads and stores for all candidate blocks
+         // that also reference the symref
+         TR_BitVectorIterator bvi(tmp);
+         while (bvi.hasMoreElements())
+            rc->_blocks.incNumberOfLoadsAndStores(bvi.getNextElement(), 1);
 
-         if (new2Offer)
-            {
-            for (i = 0; i < numInterested; i++)
-               {
-               int32_t weight = 1;
-               int32_t blockNumber = interestedCFGNodes[i];
-               if ((rc && rc->_blocks.find(blockNumber)))
-                  continue;
-               if (!referencedAutoSymRefsInBlock[cfgBlocks[blockNumber]]->get(symRefNumber))
-                  weight = 0;
-               // If there is a reference in some block then actually create a candidate
-               // and set all the previous block NumberOfLoadsAndStores to zero
-               if (!rc && weight != 0)
-                  {
-                  rc = comp()->getGlobalRegisterCandidates()->findOrCreate(symRef);
-                  for (int32_t j = 0; j < i; j++)
-                     {
-                     rc->_blocks.setNumberOfLoadsAndStores(interestedCFGNodes[j], 0);
-                     }
-                  rc->_blocks.setNumberOfLoadsAndStores(blockNumber, weight);
-                  }
-               else if (rc)
-                  rc->_blocks.setNumberOfLoadsAndStores(blockNumber, weight);
-               }
-            }
-         else if (newOffer)
-            {
-            for (i = 0; i < numInterested; i++)
-               {
-               int32_t weight = 1;
-               int32_t blockNumber = interestedCFGNodes[i];
-               if (rc->_blocks.find(blockNumber))
-                  continue;
-               if (!referencedAutoSymRefsInBlock[cfgBlocks[blockNumber]]->get(symRefNumber))
-                  weight = 0;
-               rc->_blocks.setNumberOfLoadsAndStores(blockNumber, weight);
-               }
-            }
-         else
-            {
-            for (node = cfg->getFirstNode(); node; node = node->getNext())
-               {
-               int32_t weight = 1;
-               block = toBlock(node);
-
-               if (rc->_blocks.find(block->getNumber()) ||
-                   (block == startBlock || block == endBlock) ||
-                   !block->getExceptionPredecessors().empty())
-                  continue;
-
-               if (!referencedAutoSymRefsInBlock[block]->get(symRefNumber))
-                  weight = 0;
-
-               rc->_blocks.setNumberOfLoadsAndStores(block->getNumber(), weight);
-               }
-            }
-
-         //traceMsg(comp(), "For rc %p symref %d getLinkageRegisterIndex = %d\n",rc,rc->getSymbolReference()->getReferenceNumber(),paramCursor->getLinkageRegisterIndex());
-         if (rc && paramCursor->getLinkageRegisterIndex() >= 0)
+         if (paramCursor->getLinkageRegisterIndex() >= 0)
             rc->addAllBlocks();
          }
-      paramCursor = paramIterator.getNext();
       }
+
    //
    // Offer all autos now
    //
-   //comp()->printMemStatsBefore("GRA_offer_autos");
-   int32_t symRefNumber;
-   for (symRefNumber = symRefTab->getIndexOfFirstSymRef(); symRefNumber < symRefCount; symRefNumber++)
+   for (int32_t symRefNumber = symRefTab->getIndexOfFirstSymRef(); symRefNumber < symRefCount; symRefNumber++)
       {
       symRef = symRefTab->getSymRef(symRefNumber);
       if (symRef && isSymRefAvailable(symRef))
@@ -3606,7 +3515,6 @@ void TR_GlobalRegisterAllocator::offerAllAutosAndRegisterParmAsCandidates(TR::Bl
          sym = symRef->getSymbol();
          if (sym)
             {
-
             if (candidates->aliasesPreventAllocation(comp(),symRef))
                {
                if (comp()->getOptions()->trace(OMR::tacticalGlobalRegisterAllocator))
@@ -3616,110 +3524,36 @@ void TR_GlobalRegisterAllocator::offerAllAutosAndRegisterParmAsCandidates(TR::Bl
 
             if ((sym->isAuto() &&
                 methodSymbol->getAutomaticList().find(sym->castToAutoSymbol()) &&
-                !onlySelectedCandidates)
-                )
+                !onlySelectedCandidates))
                {
 
-               TR_RegisterCandidate *rc;
-               if (new2Offer)
-                  rc = comp()->getGlobalRegisterCandidates()->find(symRef);
-               else
-                  rc = comp()->getGlobalRegisterCandidates()->findOrCreate(symRef);
+               int32_t symRefNumber = symRef->getReferenceNumber();
 
+               // Check there is an interested block that references the symref
+               tmp.empty();
+               tmp |= *candidates->getBlocksReferencingSymRef(symRefNumber);
+               tmp &= interestedBlocks;
+               if (tmp.isEmpty())
+                  continue;
+
+               TR_RegisterCandidate *rc = comp()->getGlobalRegisterCandidates()->findOrCreate(symRef);
                if (sym->isMethodMetaData() && rc && rc->initialBlocksWeightComputed())
                   continue;
 
-               int32_t symRefNumber=symRef->getReferenceNumber();
+               // All interested blocks will be candidates
+               rc->_blocks.getCandidateBlocks() |= interestedBlocks;
 
-               // Ensure all blocks have a LoadsAndStores count. If it already exists icrement it by one.
-               // If it is new then set the count to zero or one based on use in the block
-               if (rc)
-                  {
-                  TR_RegisterCandidate::BlockInfo::iterator itr = rc->_blocks.getIterator();
-                  while (itr.hasMoreElements())
-                     {
-                     int32_t block_num = itr.getNextElement();
-                     TR_ASSERT(block_num < numberOfNodes, "Overflow on candidate BB numbers");
-                     block = cfgBlocks[block_num];
-                     if (!block) continue;
+               // Increment the number of loads and stores for all candidate blocks
+               // that also reference the symref
+               TR_BitVectorIterator bvi(tmp);
+               while (bvi.hasMoreElements())
+                  rc->_blocks.incNumberOfLoadsAndStores(bvi.getNextElement(), 1);
 
-                     int32_t weight = 1;
-
-                     if ((block == startBlock || block == endBlock) ||
-                         !block->getExceptionPredecessors().empty())
-                        continue;
-
-                     TR_ASSERT(block_num == block->getNumber(),"blocks[x]->getNumber() != x");
-                     if (!referencedAutoSymRefsInBlock[block]->get(symRefNumber))
-                        weight = 0;
-
-                     rc->_blocks.incNumberOfLoadsAndStores(block_num, weight);
-                     }
-                  }
-
-               if (new2Offer)
-                  {
-                  for (i = 0; i < numInterested; i++)
-                     {
-                     int32_t weight = 1;
-                     int32_t blockNumber = interestedCFGNodes[i];
-                     if ((rc && rc->_blocks.find(blockNumber))
-                        ) // handle reg(*) only in block with abnormal blocks
-                        continue;
-                     if (!referencedAutoSymRefsInBlock[cfgBlocks[blockNumber]]->get(symRefNumber))
-                        weight = 0;
-                     // If there is a reference in some block then actually create a candidate
-                     // and set all the previous block NumberOfLoadsAndStores to zero
-                     if (!rc && weight != 0)
-                        {
-                        rc = comp()->getGlobalRegisterCandidates()->findOrCreate(symRef);
-                        for (int32_t j = 0; j < i; j++)
-                           {
-                           rc->_blocks.setNumberOfLoadsAndStores(interestedCFGNodes[j], 0);
-                           }
-                        rc->_blocks.setNumberOfLoadsAndStores(blockNumber, weight);
-                        }
-                     else if(rc)
-                        rc->_blocks.setNumberOfLoadsAndStores(blockNumber, weight);
-                     }
-                  }
-               else if (newOffer)
-                  {
-                  for (i = 0; i < numInterested; i++)
-                     {
-                     int32_t weight = 1;
-                     int32_t blockNumber = interestedCFGNodes[i];
-                     if (rc->_blocks.find(blockNumber))
-                        continue;
-                     if (!referencedAutoSymRefsInBlock[cfgBlocks[blockNumber]]->get(symRef->getReferenceNumber()))
-                        weight = 0;
-                     rc->_blocks.setNumberOfLoadsAndStores(blockNumber, weight);
-                     }
-                  }
-               else
-                  {
-                  for (node = cfg->getFirstNode(); node; node = node->getNext())
-                     {
-                     int32_t weight = 1;
-                     block = toBlock(node);
-
-                     if (rc->_blocks.find(block->getNumber()) ||
-                         (block == startBlock || block == endBlock) ||
-                         !block->getExceptionPredecessors().empty())
-                         continue;
-
-                     if (!referencedAutoSymRefsInBlock[block]->get(symRef->getReferenceNumber()))
-                        weight = 0;
-
-                     rc->_blocks.setNumberOfLoadsAndStores(block->getNumber(), weight);
-                     }
-                  }
-               if (rc) rc->setInitialBlocksWeightComputed(true);
+               rc->setInitialBlocksWeightComputed(true);
                }
             }
          }
       }
-   //comp()->printMemStatsAfter("GRA_offer_autos");
    }
 
 
@@ -3728,31 +3562,32 @@ void TR_GlobalRegisterAllocator::offerAllFPAutosAndParmsAsCandidates(TR::Block *
    {
    LexicalTimer t("TR_GlobalRegisterAllocator::offerAllFPAutosAndParmsAsCandidates", comp()->phaseTimer());
 
-   TR::CFG * cfg = comp()->getFlowGraph();
+   TR::CFG                  *cfg = comp()->getFlowGraph();
    TR::CFGNode              *node;
    TR::Block                *block, *startBlock=toBlock(cfg->getStart()), *endBlock=toBlock(cfg->getEnd());
    int32_t                  symRefCount = comp()->getSymRefCount();
    TR::SymbolReferenceTable *symRefTab   = comp()->getSymRefTab();
    TR::SymbolReference      *symRef;
-   TR::Symbol                *sym;
-   TR::ResolvedMethodSymbol              *methodSymbol = comp()->getJittedMethodSymbol();
+   TR::Symbol               *sym;
+   TR::ResolvedMethodSymbol *methodSymbol = comp()->getJittedMethodSymbol();
+   TR_RegisterCandidates    *candidates = comp()->getGlobalRegisterCandidates();
 
-   TR_RegisterCandidates * candidates = comp()->getGlobalRegisterCandidates();
-   TR::GlobalSet& referencedAutoSymRefsInBlock = candidates->getReferencedAutoSymRefs(comp()->trMemory()->currentStackRegion());
-//   TR_BitVector **referencedAutoSymRefsInBlock; // = candidates->getReferencedAutoSymRefs();
-//   referencedAutoSymRefsInBlock = (TR_BitVector **)trMemory()->allocateStackMemory(numberOfNodes*sizeof(TR_BitVector *));
-//   memset(referencedAutoSymRefsInBlock, 0, numberOfNodes*sizeof(TR_BitVector *));
-//   candidates->setReferencedAutoSymRefs(referencedAutoSymRefsInBlock);
-//   int32_t i;
-//   for (i=0;i<numberOfNodes;i++)
-//      referencedAutoSymRefsInBlock[i] = new (trStackMemory()) TR_BitVector(symRefCount, trMemory(), stackAlloc);
+   // Interested blocks consist of all blocks except for entry, exit and exception handlers
+   TR_BitVector interestedBlocks(numberOfNodes, comp()->trMemory()->currentStackRegion());
+   TR_BitVector tmp(numberOfNodes, comp()->trMemory()->currentStackRegion());
+   for (node = cfg->getFirstNode(); node != NULL; node = node->getNext())
+      {
+      block = toBlock(node);
+      if (block == startBlock || block == endBlock || (!block->getExceptionPredecessors().empty()) || !cfgBlocks[block->getNumber()])
+         continue;
 
+      interestedBlocks.set(block->getNumber());
+      }
 
    //
    // Offer all FP autos now
    //
-   int32_t symRefNumber;
-   for (symRefNumber = symRefTab->getIndexOfFirstSymRef(); symRefNumber < symRefCount; symRefNumber++)
+   for (int32_t symRefNumber = symRefTab->getIndexOfFirstSymRef(); symRefNumber < symRefCount; symRefNumber++)
       {
       symRef = symRefTab->getSymRef(symRefNumber);
       if (symRef)
@@ -3773,52 +3608,31 @@ void TR_GlobalRegisterAllocator::offerAllFPAutosAndParmsAsCandidates(TR::Block *
                 ((sym->isAuto() && methodSymbol->getAutomaticList().find(sym->castToAutoSymbol())) ||
                  (sym->isParm() && methodSymbol->getParameterList().find(sym->castToParmSymbol()) && sym->isReferencedParameter())))
                {
+
+               int32_t symRefNumber = symRef->getReferenceNumber();
+
+               // Check there is an interested block that references the symref
+               tmp.empty();
+               tmp |= *candidates->getBlocksReferencingSymRef(symRefNumber);
+               tmp &= interestedBlocks;
+               if (tmp.isEmpty())
+                  continue;
+
                TR_RegisterCandidate *rc = comp()->getGlobalRegisterCandidates()->findOrCreate(symRef);
-              
-               TR_RegisterCandidate::BlockInfo::iterator itr = rc->_blocks.getIterator(); 
-               while (itr.hasMoreElements())
-                  {
-                  int32_t block_num = itr.getNextElement();
-                  TR_ASSERT(block_num < numberOfNodes, "Overflow on candidate BB numbers");
-      block = cfgBlocks[block_num];
-                  if (!block) continue;
 
-      int32_t weight = 1;
+               // All interested blocks will be candidates
+               rc->_blocks.getCandidateBlocks() |= interestedBlocks;
 
-                  if ((block == startBlock || block == endBlock) ||
-                      !block->getExceptionPredecessors().empty())
-                      continue;
-
-                  if (!referencedAutoSymRefsInBlock[block]->get(symRef->getReferenceNumber()))
-                    weight = 0;
-
-      rc->_blocks.incNumberOfLoadsAndStores(block_num, weight);
-                  }
-
-               for (node = cfg->getFirstNode(); node; node = node->getNext())
-                  {
-                  int32_t weight = 1;
-                  block = toBlock(node);
-
-                  if (rc->_blocks.find(block->getNumber()) ||
-                      (block == startBlock || block == endBlock) ||
-                      !block->getExceptionPredecessors().empty())
-                      continue;
-
-                  if (!referencedAutoSymRefsInBlock[block]->get(symRef->getReferenceNumber()))
-                    weight = 0;
-
-      rc->_blocks.setNumberOfLoadsAndStores(block->getNumber(), weight);
-                  }
-
-               //rc->addAllBlocks();
+               // Increment the number of loads and stores for all candidate blocks
+               // that also reference the symref
+               TR_BitVectorIterator bvi(tmp);
+               while (bvi.hasMoreElements())
+                  rc->_blocks.incNumberOfLoadsAndStores(bvi.getNextElement(), 1);
                }
             }
          }
       }
    }
-
-
 
 void
 TR_GlobalRegisterAllocator::findLoopAutoRegisterCandidates()

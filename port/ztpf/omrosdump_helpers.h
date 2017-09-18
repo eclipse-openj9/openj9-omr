@@ -35,6 +35,7 @@
 #include <elf.h>
 #include <errno.h>
 #include <tpf/tpfapi.h>
+#include <sys/ucontext.h>
 
 #ifndef OSDUMP_SYMBOLS_ONLY
 #include "omrport.h"

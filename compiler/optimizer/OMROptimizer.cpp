@@ -544,8 +544,8 @@ static const OptimizationStrategy ilgenStrategyOpts[] =
    { coldBlockMarker                               },
    { allocationSinking,             IfNews         },
    { invariantArgumentPreexistence, IfNotClassLoadPhaseAndNotProfiling },
-   { osrLiveRangeAnalysis                          },
-   { osrDefAnalysis                                },
+   { osrLiveRangeAnalysis,          IfVoluntaryOSR   },
+   { osrDefAnalysis,                IfInvoluntaryOSR },
 #endif
    { endOpts },
    };
@@ -1435,15 +1435,21 @@ int32_t OMR::Optimizer::performOptimization(const OptimizationStrategy *optimiza
             doThisOptimization = true;
      break;
 
-     case IfOSR:
-     if (comp()->getOption(TR_EnableOSR))
+      case IfOSR:
+         if (comp()->getOption(TR_EnableOSR))
             doThisOptimization = true;
-     break;
+         break;
 
-     case IfOSRAndNoDebug:
-     if (comp()->getOption(TR_EnableOSR) && !comp()->getOption(TR_FullSpeedDebug))
+      case IfVoluntaryOSR:
+         if (comp()->getOption(TR_EnableOSR) && comp()->getOSRMode() == TR::voluntaryOSR)
             doThisOptimization = true;
-     break;
+         break;
+
+      case IfInvoluntaryOSR:
+         if (comp()->getOption(TR_EnableOSR) && comp()->getOSRMode() == TR::involuntaryOSR)
+            doThisOptimization = true;
+         break;
+
 
       case IfEnabled:
          if (manager->requested())

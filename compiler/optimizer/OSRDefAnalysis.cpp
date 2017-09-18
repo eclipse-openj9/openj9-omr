@@ -601,24 +601,10 @@ int32_t TR_OSRDefAnalysis::perform()
       return 0;
       }
 
-   TR_OSRMethodData *osrMethodData = comp()->getOSRCompilationData()->findOrCreateOSRMethodData(comp()->getCurrentInlinedSiteIndex(), comp()->getMethodSymbol());
-   if (osrMethodData->hasSlotSharingInfo())
+   if (trace())
       {
-      if (trace())
-         {
-         traceMsg(comp(), "%s OSR reaching definition analysis is not required as it has already been calculated\n",
-            optimizer()->getMethodSymbol()->signature(comp()->trMemory()));
-         traceMsg(comp(), "Returning...\n");
-         }
-      return 0;
-      }
-   else
-      {
-      if (trace())
-         {
-         traceMsg(comp(), "%s OSR reaching definition analysis is required\n",
-            optimizer()->getMethodSymbol()->signature(comp()->trMemory()));
-         }
+      traceMsg(comp(), "%s OSR reaching definition analysis is required\n",
+         optimizer()->getMethodSymbol()->signature(comp()->trMemory()));
       }
 
    TR_Structure* rootStructure = TR_RegionAnalysis::getRegions(comp(), optimizer()->getMethodSymbol());

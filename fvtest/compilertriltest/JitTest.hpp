@@ -23,6 +23,7 @@
 #define JITTEST_HPP
 
 #include <gtest/gtest.h>
+#include <stdexcept> 
 #include "Jit.hpp"
 
 #define ASSERT_NULL(pointer) ASSERT_EQ(nullptr, (pointer))
@@ -50,13 +51,14 @@ class JitTest : public ::testing::Test
    {
    public:
 
-   static void SetUpTestCase()
+   JitTest()
       {
       auto initSuccess = initializeJitWithOptions((char*)"-Xjit:acceptHugeMethods,enableBasicBlockHoisting,omitFramePointer,useIlValidator,paranoidoptcheck");
-      ASSERT_TRUE(initSuccess) << "Failed to initialize the JIT.";
+      if (!initSuccess) 
+         throw std::runtime_error("Failed to initialize jit");
       }
 
-   static void TearDownTestCase()
+   ~JitTest()
       {
       shutdownJit();
       }

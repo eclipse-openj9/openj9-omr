@@ -107,7 +107,7 @@ TEST_P(Int64ShiftAndRotate, UsingConst) {
     auto param = TRTest::to_struct(GetParam());
 
     char inputTrees[120] = {0};
-    std::snprintf(inputTrees, 120, "(method return=Int64 (block (lreturn (%s (lconst %ld) (iconst %d)) )))", param.opcode.c_str(), param.lhs, param.rhs);
+    std::snprintf(inputTrees, 120, "(method return=Int64 (block (lreturn (%s (lconst %lld) (iconst %d)) )))", param.opcode.c_str(), param.lhs, param.rhs);
     auto trees = parseString(inputTrees);
 
     ASSERT_NOTNULL(trees);
@@ -271,7 +271,7 @@ TEST_P(UInt64ShiftAndRotate, UsingConst) {
     auto param = TRTest::to_struct(GetParam());
 
     char inputTrees[120] = {0};
-    std::snprintf(inputTrees, 120, "(method return=Int64 (block (lreturn (%s (lconst %ld) (iconst %d)) )))", param.opcode.c_str(), param.lhs, param.rhs);
+    std::snprintf(inputTrees, 120, "(method return=Int64 (block (lreturn (%s (lconst %llu) (iconst %d)) )))", param.opcode.c_str(), param.lhs, param.rhs);
     auto trees = parseString(inputTrees);
 
     ASSERT_NOTNULL(trees);

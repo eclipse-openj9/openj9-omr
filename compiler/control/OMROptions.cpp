@@ -1701,11 +1701,7 @@ int32_t       OMR::Options::_TransactionalMemoryRetryCount = 2048;
 int32_t       OMR::Options::_TransactionalMemoryRetryCount = 1;
 #endif
 
-#ifdef TR_HOST_Power
-int32_t       OMR::Options::_minimalNumberOfTreeTopsInsideTMMonitor = 2;
-#else
 int32_t       OMR::Options::_minimalNumberOfTreeTopsInsideTMMonitor = 6;
-#endif
 
 TR::SimpleRegex *OMR::Options::_debugCounterInsertByteCode = NULL;
 TR::SimpleRegex *OMR::Options::_debugCounterInsertJittedBody = NULL;

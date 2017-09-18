@@ -1622,8 +1622,8 @@ int32_t OMR::LocalCSE::hash(TR::Node *parent, TR::Node *node)
        (!parent || !(parent->isTheVirtualGuardForAGuardedInlinedCall() && parent->isProfiledGuard())))
       return 0;
 
-   if (node->getOpCode().hasSymbolReference() &&
-       node->getOpCode().isLoadVar() || node->getOpCode().isCall())
+   if ((node->getOpCode().hasSymbolReference() &&
+       node->getOpCode().isLoadVar()) || node->getOpCode().isCall())
       return node->getSymbolReference()->getReferenceNumber();
 
    // Hash on the opcode of the children

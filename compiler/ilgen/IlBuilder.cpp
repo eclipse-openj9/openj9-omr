@@ -1822,7 +1822,7 @@ IlBuilder::genCall(TR::SymbolReference *methodSymRef, int32_t numArgs, TR::IlVal
    for (int32_t a=0;a < numArgs;a++)
       {
       TR::IlValue *arg = argValues[a];
-      if (arg->getDataType() == TR::Int8 || arg->getDataType() == TR::Int16 || Word == Int64 && arg->getDataType() == TR::Int32)
+      if (arg->getDataType() == TR::Int8 || arg->getDataType() == TR::Int16 || (Word == Int64 && arg->getDataType() == TR::Int32))
          arg = ConvertTo(Word, arg);
       callNode->setAndIncChild(childIndex++, loadValue(arg));
       }

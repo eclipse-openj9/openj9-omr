@@ -1672,7 +1672,7 @@ TR_IsolatedStoreElimination::markNodesAndLocateSideEffectIn(TR::Node *node, vcou
        node->getOpCode().isReturn() ||
        node->getOpCode().isLoadReg() ||
        node->getOpCode().isStoreReg() ||
-       node->getOpCode().hasSymbolReference() && node->getSymbolReference()->getSymbol()->isVolatile() ||
+       (node->getOpCode().hasSymbolReference() && node->getSymbolReference()->getSymbol()->isVolatile()) ||
        ((node->getOpCode().isStore() ||
          (node->getOpCode().hasSymbolReference() &&
           node->getSymbolReference()->getSymbol()->isVolatile())) &&

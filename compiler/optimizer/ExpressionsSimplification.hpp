@@ -113,7 +113,7 @@ class TR_ExpressionsSimplification : public TR::Optimization
          if (_increment == 0)
             return 0;
 
-         if (_increment > 0 && _lowerBound > _upperBound || _increment < 0 && _lowerBound < _upperBound)
+         if ((_increment > 0 && _lowerBound > _upperBound) || (_increment < 0 && _lowerBound < _upperBound))
             return 0;
 
          if (isEquals())

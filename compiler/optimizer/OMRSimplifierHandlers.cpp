@@ -5646,7 +5646,7 @@ TR::Node *directStoreSimplifier(TR::Node * node, TR::Block * block, TR::Simplifi
       bool secondLoadsSymRef = (secondGrandchild->getOpCode().isLoadVar() && symRef == secondGrandchild->getSymbolReference()); // && secondGrandchild->getReferenceCount() > 1);
       bool secondIsLoadConst = (secondGrandchild->getOpCode().isLoadConst());
 
-      if (firstLoadsSymRef && secondIsLoadConst || firstIsLoadConst && secondLoadsSymRef)
+      if ((firstLoadsSymRef && secondIsLoadConst) || (firstIsLoadConst && secondLoadsSymRef))
          {
          // found a candidate update form tree: now walk trees forward until either something stores to <sym> or end of block
          // remember tree where last use of node was on this walk: insert our update tree following that last use tree

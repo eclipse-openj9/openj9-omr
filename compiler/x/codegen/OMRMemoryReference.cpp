@@ -538,7 +538,7 @@ OMR::X86::MemoryReference::populateMemoryReference(
       evalSubTree = false;
 
    if (evalSubTree &&
-       subTree->getReferenceCount() > 1 || subTree->getRegister() != NULL || self()->inUpcastingMode() && !subTree->cannotOverflow())
+       subTree->getReferenceCount() > 1 || subTree->getRegister() != NULL || (self()->inUpcastingMode() && !subTree->cannotOverflow()))
       {
       if (_baseRegister != NULL)
          {

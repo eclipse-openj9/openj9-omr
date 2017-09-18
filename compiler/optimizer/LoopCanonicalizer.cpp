@@ -3473,8 +3473,8 @@ void TR_LoopTransformer::updateInfo(TR::Node *node, vcount_t visitCount, updateI
 
    TR::BitVector defAliases(comp()->allocator());
 
-   if (node->getOpCode().isStore()
-         && !node->isTheVirtualCallNodeForAGuardedInlinedCall()
+   if ((node->getOpCode().isStore()
+         && !node->isTheVirtualCallNodeForAGuardedInlinedCall())
          || !_doingVersioning)
       {
       if (refNo == 0 || !uinfo.seenMultipleStores[refNo])

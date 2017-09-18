@@ -243,7 +243,7 @@ OMR::SymbolReference::getUseDefAliasesBV(bool isDirectCall, bool includeGCSafePo
             {
             if ((self()->isUnresolved() && !_symbol->isConstObjectRef()) || _symbol->isVolatile() || self()->isLiteralPoolAddress() ||
                 self()->isFromLiteralPool() || _symbol->isUnsafeShadowSymbol() ||
-                _symbol->isArrayShadowSymbol() && comp->getMethodSymbol()->hasVeryRefinedAliasSets())
+                (_symbol->isArrayShadowSymbol() && comp->getMethodSymbol()->hasVeryRefinedAliasSets()))
                {
                // getUseDefAliases might not return NULL
                }

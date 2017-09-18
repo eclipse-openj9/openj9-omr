@@ -2319,7 +2319,7 @@ TR::Register *OMR::X86::TreeEvaluator::signedIntegerDivOrRemAnalyser(TR::Node *n
             {
             generateRegRegInstruction(SUBRegReg(nodeIs64Bit), node, tempRegister, edxRegister, cg);
             }
-         else if (!nodeIs64Bit || dvalue > 0 && dvalue <= CONSTANT64(0x80000000))
+         else if (!nodeIs64Bit || (dvalue > 0 && dvalue <= CONSTANT64(0x80000000)))
             {
             int32_t mask = dvalue-1;
             TR_ASSERT(mask >= 0,

@@ -3167,15 +3167,15 @@ bool TR_TrivialSinkStores::storeCanMoveThroughBlock(TR_BitVector *blockKilledSet
    {
    return (blockKilledSet == NULL || !blockKilledSet->get(symIdx))
           &&
-          (blockUsedSet == NULL || !blockUsedSet->intersects(*_killedSymbolsToMove) && !blockUsedSet->get(symIdx));
+          (blockUsedSet == NULL || (!blockUsedSet->intersects(*_killedSymbolsToMove) && !blockUsedSet->get(symIdx)));
    }
 
 bool TR_SinkStores::storeCanMoveThroughBlock(TR_BitVector *blockKilledSet, TR_BitVector *blockUsedSet, int symIdx, TR_BitVector *allBlockUsedSymbols, TR_BitVector *allBlockKilledSymbols)
    {
    bool canMove =
-      (blockKilledSet == NULL || !blockKilledSet->intersects(*_usedSymbolsToMove) && !blockKilledSet->get(symIdx))
+      (blockKilledSet == NULL || (!blockKilledSet->intersects(*_usedSymbolsToMove) && !blockKilledSet->get(symIdx)))
       &&
-      (blockUsedSet == NULL || !blockUsedSet->intersects(*_killedSymbolsToMove) && !blockUsedSet->get(symIdx));
+      (blockUsedSet == NULL || (!blockUsedSet->intersects(*_killedSymbolsToMove) && !blockUsedSet->get(symIdx)));
 
    if (canMove)
       {

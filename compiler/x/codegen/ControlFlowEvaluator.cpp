@@ -666,8 +666,8 @@ void OMR::X86::TreeEvaluator::compareIntegersForEquality(TR::Node *node, TR::Cod
    intptrj_t constValue;
    if (secondChild->getOpCode().isLoadConst() &&
        secondChild->getRegister() == NULL     &&
-       ((secondChild->getSize() <= 2) && (!secondChild->isUnsigned()) ||
-       TR::TreeEvaluator::constNodeValueIs32BitSigned(secondChild, &constValue, cg) && !cg->constantAddressesCanChangeSize(secondChild)))
+       (((secondChild->getSize() <= 2) && (!secondChild->isUnsigned())) ||
+       (TR::TreeEvaluator::constNodeValueIs32BitSigned(secondChild, &constValue, cg) && !cg->constantAddressesCanChangeSize(secondChild))))
       {
       if(secondChild->getSize() <= 2)
          constValue = (intptrj_t)secondChild->get64bitIntegralValue();

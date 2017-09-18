@@ -788,7 +788,7 @@ TR_RegisterCandidate::processLiveOnEntryBlocks(TR::Block * * blocks, int32_t *bl
                   // Fixed by Nakaike
                   // if (predBlock && !predBlock->isExtensionOfPreviousBlock())
                   if (parentPredBlock == predBlock ||
-                      parentPredBlock->getNextBlock() && ( parentPredBlock->getNextBlock() == block || !parentPredBlock->getNextBlock()->isExtensionOfPreviousBlock()))
+                      (parentPredBlock->getNextBlock() && ( parentPredBlock->getNextBlock() == block || !parentPredBlock->getNextBlock()->isExtensionOfPreviousBlock())))
                      break;
                   parentPredBlock = parentPredBlock->getNextBlock();
                   }
@@ -2174,7 +2174,7 @@ TR_RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, in
          {
          if (node->getType().isInt64())
             {
-            if (node->getSymbolReference()->getSymbol()->isAutoOrParm() || 0 && node->getSymbolReference()->getSymbol()->isMethodMetaData())
+            if (node->getSymbolReference()->getSymbol()->isAutoOrParm() || (0 && node->getSymbolReference()->getSymbol()->isMethodMetaData()))
                {
                if ((!node->getFirstChild()->isHighWordZero() &&
                     !node->getFirstChild()->getOpCode().isLoadConst()) ||

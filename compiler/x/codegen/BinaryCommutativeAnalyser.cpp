@@ -823,7 +823,7 @@ TR::Register *TR_X86BinaryCommutativeAnalyser::integerAddAnalyserImpl(TR::Node  
    // maybe a register that did not exist before has just been created,
    // and this new register contains a collected reference
    // arraylets: aiadd is technically internal pointer into spine object, but isn't marked as internal pointer
-   if (root->isInternalPointer() || comp->generateArraylets() && root->getOpCodeValue() == TR::aiadd)
+   if (root->isInternalPointer() || (comp->generateArraylets() && root->getOpCodeValue() == TR::aiadd))
       {
       // check whether a newly created register contains collected reference
       if ((getEvalChild1() && ((!firstRegister->containsInternalPointer()) || (firstRegister->getPinningArrayPointer() != root->getPinningArrayPointer()))) ||

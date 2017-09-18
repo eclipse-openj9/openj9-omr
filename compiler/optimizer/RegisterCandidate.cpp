@@ -574,7 +574,6 @@ TR_RegisterCandidate::setWeight(TR::Block * * blocks, int32_t *blockStructureWei
       if (!b) continue;
 
       TR_ASSERT(blockNumber == b->getNumber(),"blocks[x]->getNumber() != x");
-      bool hasLoadNearStart = !isExtensionOfPreviousBlock.isSet(blockNumber) && findLoadNearStartOfBlock(b, getSymbolReference());
       TR_ASSERT((blockNumber < cfg->getNextNodeNumber()) && (blocks[blockNumber] == b),"blockNumber is wrong");
       
       int32_t blockWeight = _blocks.getNumberOfLoadsAndStores(blockNumber);

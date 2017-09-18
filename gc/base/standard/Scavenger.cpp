@@ -3574,6 +3574,8 @@ MM_Scavenger::masterThreadGarbageCollect(MM_EnvironmentBase *envBase, MM_Allocat
 		 */
 		_activeSubSpace->setResizable(_cachedSemiSpaceResizableFlag);
 
+		_extensions->scavengerStats._endTime = omrtime_hires_clock();
+
 		if(scavengeCompletedSuccessfully(env)) {
 			/* Merge sublists in the remembered set (if necessary) */
 			_extensions->rememberedSet.compact(env);
@@ -3647,7 +3649,6 @@ MM_Scavenger::masterThreadGarbageCollect(MM_EnvironmentBase *envBase, MM_Allocat
 	reportGCIncrementEnd(env);
 	reportGCEnd(env);
 	if (lastIncrement) {
-		_extensions->scavengerStats._endTime = omrtime_hires_clock();
 		reportGCCycleEnd(env);
 		if (_extensions->processLargeAllocateStats) {
 			/* reset tenure processLargeAllocateStats after TGC */

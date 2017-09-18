@@ -3758,7 +3758,7 @@ TR_RegisterCandidates::computeAvailableRegisters(TR_RegisterCandidate *rc, int32
             overlaps = overlapLookup->second;
             }
 
-         TR_RegisterCandidate *rc2 = b->getGlobalRegisters(comp())[i].getRegisterCandidateOnEntry();
+         TR_RegisterCandidate *rc2 = b->getGlobalRegisters(comp())[i].getRegisterCandidateOnExit();
          if (rc2)
             {
             Coordinates::iterator rcItr = overlaps->find(rc->getSymbolReference()->getReferenceNumber());

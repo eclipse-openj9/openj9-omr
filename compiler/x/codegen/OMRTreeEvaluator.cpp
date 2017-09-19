@@ -3951,7 +3951,7 @@ static void arraycopyForShortConstArrayWithoutDirection(TR::Node* node, TR::Regi
 
 TR::Register *OMR::X86::TreeEvaluator::arraycopyEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   static bool useNewArraycopy = feGetEnv("TR_UseNewArraycopy");
+   static char *useNewArraycopy = feGetEnv("TR_UseNewArraycopy");
    if (useNewArraycopy == NULL)
       {
       return deprecated_arraycopyEvaluator(node, cg);

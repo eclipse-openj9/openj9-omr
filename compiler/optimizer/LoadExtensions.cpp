@@ -244,7 +244,7 @@ void TR_LoadExtensions::countLoadExtensions(TR::Node *parent, vcount_t visitCoun
                      TR::Node *realLoad = NULL;
                      if ((defNode->getOpCode().isStoreReg() || (defNode->getOpCode().isStore() && defNode->getSymbol() && defNode->getSymbol()->isRegisterSymbol()) ) &&
                            NULL!= (realLoad = defNode->getFirstChild()) &&
-                           ((realLoad->getOpCode().isLoadVar() && !realLoad->getSymbol()->isRegisterSymbol()) || realLoad->getOpCode().isLoadConst() && supportedConstLoad(realLoad, comp())) &&
+                           ((realLoad->getOpCode().isLoadVar() && !realLoad->getSymbol()->isRegisterSymbol()) || (realLoad->getOpCode().isLoadConst() && supportedConstLoad(realLoad, comp()))) &&
                            supportedType(realLoad))
                         {
                         if (trace()) traceMsg(comp(), "\t\tPeeked through %p (%s) and found %p (%s) with child %p (%s), Counting.\n",
@@ -352,7 +352,7 @@ bool TR_LoadExtensions::detectReverseNeededConversionPattern(TR::Node* parent, T
              constant->getOpCode().isLoadConst() &&
              !constant->getType().isAggregate()) &&
           (constant->get64bitIntegralValue() == andMask2  ||
-            conversion->getOpCode().isZeroExtension() &&  constant->get64bitIntegralValue() == andMask))
+            (conversion->getOpCode().isZeroExtension() &&  (constant->get64bitIntegralValue() == andMask))))
          return false;
       }
    else if (opcode.isConversion() || (opcode.isStore() && !opcode.isStoreReg() && !(parent->getSymbol() && parent->getSymbol()->isRegisterSymbol())))
@@ -394,11 +394,11 @@ bool TR_LoadExtensions::detectUnneededConversionPattern(TR::Node* conversion, TR
        *         load <Load-and-test>
        */
 
-      if (((childOpcode.isLoadVar() && !(child->getSymbol()->isRegisterSymbol())) || childOpcode.isLoadConst() && supportedConstLoad(child, comp())) &&
+      if (((childOpcode.isLoadVar() && !(child->getSymbol()->isRegisterSymbol())) || (childOpcode.isLoadConst() && supportedConstLoad(child, comp()))) &&
             isConvWide &&
             (conversion->getSize() != 8 || (TR::Compiler->target.is64Bit() || comp()->cg()->use64BitRegsOn32Bit())) &&
-            (loadIsSigned && loadIsSigned == opcode.isSignExtension() || !loadIsSigned && (!loadIsSigned) == conversion->isZeroExtension() )&&
-            ( opcode.getOpCodeValue() != TR::a2l || child->getReferenceCount() == 1 && TR::Compiler->target.is32Bit()))  // 4 byte a2l really means 31->64! careful!
+            ((loadIsSigned && (loadIsSigned == opcode.isSignExtension())) || (!loadIsSigned && ((!loadIsSigned) == conversion->isZeroExtension())) )&&
+            ( opcode.getOpCodeValue() != TR::a2l || ((child->getReferenceCount() == 1) && TR::Compiler->target.is32Bit())))  // 4 byte a2l really means 31->64! careful!
          {
          if (trace()) traceMsg(comp(), "\t\tDetected Sign Extension pattern on conversion and load nodes %p\n", conversion);
          if ((conversion->getSize() == 8 || conversion->useSignExtensionMode()))
@@ -662,8 +662,8 @@ ncount_t TR_LoadExtensions::indexNodesForCodegen(TR::Node *parent, ncount_t node
 
    ncount_t _nodeCount = nodeCount;
    TR::ILOpCode& opcode = parent->getOpCode();
-   if (opcode.isLoadVar() && supportedType(parent)
-         || opcode.isLoadConst() && supportedConstLoad(parent, comp())
+   if ((opcode.isLoadVar() && supportedType(parent))
+         || (opcode.isLoadConst() && supportedConstLoad(parent, comp()))
          //|| opcode.isConversion() // can't index conversion nodes, the second child is already reused for other purposes
          )
       {

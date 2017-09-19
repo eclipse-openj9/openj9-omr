@@ -2008,8 +2008,8 @@ void TR_LoopEstimator::mergeWithLoopIncrements(TR::Block *block, IncrementInfo *
 void TR_LoopEstimator::IncrementInfo::merge(IncrementInfo *other)
    {
    if (other->isUnknownValue() ||
-       _kind == Arithmetic && other->_kind == Geometric ||
-       _kind == Geometric && other->_kind == Arithmetic)
+       (_kind == Arithmetic && other->_kind == Geometric) ||
+       (_kind == Geometric && other->_kind == Arithmetic))
       _unknown = true;
    else if (!_unknown)
       {

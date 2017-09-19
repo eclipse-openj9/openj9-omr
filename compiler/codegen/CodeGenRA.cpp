@@ -2389,7 +2389,7 @@ static TR_RegisterCandidate *findCandidate(TR::SymbolReference *symRef, TR_LinkH
 static void rememberMostRecentValue(TR::SymbolReference *symRef, TR::Node *valueNode, OMR::CodeGenerator::TR_RegisterPressureState *state, TR::CodeGenerator *cg)
    {
    if (  state->_alreadyAssignedOnExit.isSet(symRef->getReferenceNumber())
-      || state->_candidate && state->getCandidateSymRef() == symRef)
+      || (state->_candidate && (state->getCandidateSymRef() == symRef)))
       {
       TR_RegisterCandidate *candidate = findCandidate(symRef, state->_candidatesAlreadyAssigned, state->_candidate);
       TR_ASSERT(candidate, "rememberMostRecentValue: there should be a matching candidate for #%d %s", symRef->getReferenceNumber(), cg->getDebug()->getName(symRef));

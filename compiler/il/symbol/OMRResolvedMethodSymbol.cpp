@@ -160,7 +160,7 @@ OMR::ResolvedMethodSymbol::ResolvedMethodSymbol(TR_ResolvedMethod * method, TR::
    // Set the interpreted flag for an interpreted method unless we're calling
    // the method that's being jitted
    //
-   if (_methodIndex > JITTED_METHOD_INDEX && !_resolvedMethod->isSameMethod(comp->getJittedMethodSymbol()->getResolvedMethod()) || comp->isDLT())
+   if ((_methodIndex > JITTED_METHOD_INDEX && !_resolvedMethod->isSameMethod(comp->getJittedMethodSymbol()->getResolvedMethod())) || comp->isDLT())
       {
       if (_resolvedMethod->isInterpreted())
          {

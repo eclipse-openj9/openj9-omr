@@ -424,8 +424,8 @@ void TR_PrefetchInsertion::examineNode(TR::TreeTop *treeTop, TR::Block *block, T
          TR_PrimaryInductionVariable *closestPIV = NULL;  // argument loop is the most outer loop
          TR_BasicInductionVariable *biv = NULL;  // argument loop is the most outer loop
          if (firstChild->getOpCode().isLoadDirect() &&
-             ((closestPIV=getClosestPIV(block)) && (firstChild->getOpCode().hasSymbolReference() && firstChild->getSymbolReference() == closestPIV->getSymRef()) ||
-             closestPIV == NULL && isBIV(firstChild->getSymbolReference(), block, biv)))
+             (((closestPIV=getClosestPIV(block)) && (firstChild->getOpCode().hasSymbolReference() && firstChild->getSymbolReference() == closestPIV->getSymRef())) ||
+             (closestPIV == NULL && isBIV(firstChild->getSymbolReference(), block, biv))))
             {
             if (closestPIV)
                biv = closestPIV;
@@ -433,8 +433,8 @@ void TR_PrefetchInsertion::examineNode(TR::TreeTop *treeTop, TR::Block *block, T
             int64_t stepInBytes = mulConstBytes * (mulConst * (int64_t)biv->getDeltaOnBackEdge() + addConst);
             TR_Structure *loop1= treeTop->getEnclosingBlock()->getStructureOf()->getContainingLoop();
             bool isTreetopInLoop = (loop1 && (loop1->asRegion() == loop)) ? true : false;
-            if (isTreetopInLoop && (stepInBytes > 0 &&  stepInBytes <= TR::Compiler->vm.heapTailPaddingSizeInBytes() ||
-                stepInBytes < 0 && -stepInBytes <= TR::Compiler->om.contiguousArrayHeaderSizeInBytes()))
+            if (isTreetopInLoop && ((stepInBytes > 0 &&  stepInBytes <= TR::Compiler->vm.heapTailPaddingSizeInBytes()) ||
+                (stepInBytes < 0 && -stepInBytes <= TR::Compiler->om.contiguousArrayHeaderSizeInBytes())))
                {
                // Save array access info
                //

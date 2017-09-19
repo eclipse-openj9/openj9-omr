@@ -695,7 +695,7 @@ TR::CFGNode *TR_OrderBlocks::chooseBestFallThroughSuccessor(TR::CFG *cfg, TR::CF
             TR_Structure *outerLoop = candBlock->getStructureOf()->getContainingLoop() ;
 
             //outer loop does not exist or contains the inner loop
-            if (!outerLoop || innerLoop!=outerLoop && outerLoop->contains(innerLoop))
+            if (!outerLoop || ((innerLoop!=outerLoop) && outerLoop->contains(innerLoop)))
                {
                TR::CFGEdgeList& successors = block->asBlock()->getSuccessors();
                if (successors.size() !=2 )

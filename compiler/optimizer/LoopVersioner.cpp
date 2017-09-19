@@ -5003,8 +5003,8 @@ void TR_LoopVersioner::buildNullCheckComparisonsTree(List<TR::Node> *nullChecked
               nextNode->getData()->getFirstChild()->getOpCode().hasSymbolReference() &&
               nextNode->getData()->getFirstChild()->getSymbolReference()->getSymbol()->isAuto();
 
-         if (nextNode->getData()->getOpCode().hasSymbolReference() &&
-             nextNode->getData()->getSymbolReference()->getSymbol()->isAuto() ||
+         if ((nextNode->getData()->getOpCode().hasSymbolReference() &&
+             nextNode->getData()->getSymbolReference()->getSymbol()->isAuto()) ||
              nullCheckReferenceisField)
             {
             TR::Node *invariantNullCheckReference = isDependentOnInvariant(nextNode->getData());
@@ -5893,8 +5893,8 @@ void TR_LoopVersioner::buildConditionalTree(List<TR::TreeTop> *nullCheckTrees, L
                   }
 
                if(isInductionVar &&
-                 (conditionalNode->isVersionableIfWithMaxExpr() && isAddition ||
-                  conditionalNode->isVersionableIfWithMinExpr() && !isAddition ))
+                 ((conditionalNode->isVersionableIfWithMaxExpr() && isAddition) ||
+                  (conditionalNode->isVersionableIfWithMinExpr() && !isAddition) ))
                   {
                   replaceIndexWithExpr=true;
                   //replace ind var with max value;

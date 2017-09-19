@@ -19,8 +19,8 @@
 # SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
 ###############################################################################
 
-find_package(BISON)
-find_package(FLEX)
+find_package(BISON REQUIRED)
+find_package(FLEX REQUIRED)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)

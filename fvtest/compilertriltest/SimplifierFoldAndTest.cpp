@@ -20,7 +20,7 @@
  *******************************************************************************/
 
 #include "JitTest.hpp"
-#include "jitbuilder_compiler.hpp"
+#include "default_compiler.hpp"
 #include "il/Node.hpp"
 #include "infra/ILWalk.hpp"
 #include "ras/IlVerifier.hpp"
@@ -104,7 +104,7 @@ TEST_F(SimplifierFoldAndTest, FoldHappens) {
 
     ASSERT_NOTNULL(trees);
 
-    Tril::JitBuilderCompiler compiler{trees};
+    Tril::DefaultCompiler compiler{trees};
     SimplifierFoldAndIlVerifier verifier;  
 
     ASSERT_EQ(0, compiler.compileWithVerifier(&verifier)) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;

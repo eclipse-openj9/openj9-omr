@@ -29,15 +29,15 @@ namespace TR { class IlVerifier; }
 namespace Tril {
 
 /**
- * @brief Concrete realization of MethodCompiler that uses JitBuilder for compilation
+ * @brief Concrete realization of MethodCompiler 
  */
-class JitBuilderCompiler : public Tril::MethodCompiler {
+class SimpleCompiler : public Tril::MethodCompiler {
     public:
-        explicit JitBuilderCompiler(const ASTNode* methodNode)
+        explicit SimpleCompiler(const ASTNode* methodNode)
             : MethodCompiler{methodNode} {}
 
         /**
-         * @brief Compiles the Tril method using JitBuilder
+         * @brief Compiles the Tril method
          * @return 0 on compilation success, an error code otherwise
          */
         int32_t compile() /* override */ ;

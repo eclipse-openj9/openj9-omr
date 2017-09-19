@@ -70,6 +70,10 @@ create_omr_compiler_library(
 		PROD_WITH_ASSUMES
 		INCLUDES ${OMR_ROOT}/fvtest
 )
+
+# Export paths for dependent objects
+make_compiler_target(testcompiler INTERFACE COMPILER testcompiler)
+
 add_executable(compilertest
 	tests/main.cpp
 	tests/BarIlInjector.cpp

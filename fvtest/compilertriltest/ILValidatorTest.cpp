@@ -20,7 +20,7 @@
  *******************************************************************************/
 
 #include "JitTest.hpp"
-#include "jitbuilder_compiler.hpp"
+#include "default_compiler.hpp"
 
 #include <string>
 
@@ -32,7 +32,7 @@ TEST_P(IllformedTrees, FailCompilation) {
 
     ASSERT_NOTNULL(trees);
 
-    Tril::JitBuilderCompiler compiler{trees};
+    Tril::DefaultCompiler compiler{trees};
 
     ASSERT_DEATH(compiler.compile(), "VALIDATION ERROR")
             << "Compilation did not fail due to ill-formed input trees";
@@ -64,7 +64,7 @@ TEST_P(WellformedTrees, CompileOnly) {
 
     ASSERT_NOTNULL(trees);
 
-    Tril::JitBuilderCompiler compiler{trees};
+    Tril::DefaultCompiler compiler{trees};
 
     ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly";
 }
@@ -101,7 +101,7 @@ TEST_P(CommoningTest, CommoningUnderSameTree)
    auto ast = parseString(tril);
    ASSERT_NOTNULL(ast) << "Parsing failed unexpectedly";
 
-   Tril::JitBuilderCompiler compiler{ast};
+   Tril::DefaultCompiler compiler{ast};
    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly";
 
    auto entry_point = compiler.getEntryPoint<int32_t (*)(int32_t, int32_t)>();
@@ -130,7 +130,7 @@ TEST_P(CommoningTest, CommoningWithinBlock)
    auto ast = parseString(tril);
    ASSERT_NOTNULL(ast) << "Parsing failed unexpectedly";
 
-   Tril::JitBuilderCompiler compiler{ast};
+   Tril::DefaultCompiler compiler{ast};
    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly";
 
    auto entry_point = compiler.getEntryPoint<int32_t (*)(int32_t, int32_t)>();
@@ -165,7 +165,7 @@ TEST_F(CommoningDeathTest, CommoningAcrossBlock)
    auto ast = parseString(tril);
    ASSERT_NOTNULL(ast) << "Parsing failed unexpectedly";
 
-   Tril::JitBuilderCompiler compiler{ast};
+   Tril::DefaultCompiler compiler{ast};
    ASSERT_DEATH(compiler.compile(), "VALIDATION ERROR")
       << "Compilation did not fail due to ill-formed input trees";
    }

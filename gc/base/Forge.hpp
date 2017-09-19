@@ -23,11 +23,18 @@
 #if !defined(FORGE_HPP_)
 #define FORGE_HPP_
 
+#include "omrcfg.h"
+
 #include "omrcomp.h"
 #include "thread_api.h"
 #include "omrport.h"
 
-typedef struct MM_AllocationCategory {
+#include <new>
+
+class MM_EnvironmentBase;
+class MM_GCExtensionsBase;
+
+struct MM_AllocationCategory {
 	enum Enum {
 		FIXED = 0,		/** Memory that is a fixed cost of running the garbage collector (e.g. memory for GCExtensions) */
 		WORK_PACKETS, 	/** Memory that is used for work packets  */
@@ -41,21 +48,20 @@ typedef struct MM_AllocationCategory {
 		/* Must be last, do not use this category! */
 		CATEGORY_COUNT
 	};
-} MM_AllocationCategory;
+};
 
-typedef struct MM_MemoryStatistics {
+struct MM_MemoryStatistics {
 	MM_AllocationCategory::Enum category;
 	uintptr_t allocated;
 	uintptr_t highwater;
-} MM_MemoryStatistics;
+};
 
-class MM_EnvironmentBase;
+namespace OMR {
+namespace GC {
 
-
-class MM_Forge
-{
+class Forge {
 /* Friend Declarations */
-friend class MM_GCExtensionsBase;
+friend class ::MM_GCExtensionsBase;
 
 /* Data Members */
 private:
@@ -69,19 +75,18 @@ protected:
 	 * Initialize internal structures of the memory forge.  An instance of MM_Forge must be initialized before
 	 * the methods allocate or free are called.
 	 * 
-	 * @param[in] env - the environment base
+	 * @param[in] port The portlibrary the forge will make allocations through.
 	 * @return true if the forge was successfully initialized, otherwise returns false.  A instance of MM_Forge
 	 * 		   should not be used before it has been successfully initialized.
 	 */
-	bool initialize(MM_EnvironmentBase* env);
+	bool initialize(OMRPortLibrary* port);
 	
 	/**
 	 * Release any internal structures of the memory forge.  After tear down, there should be no calls to the 
 	 * methods allocate or free.
 	 * 
-	 * @param[in] env - the environment base
 	 */
-	void tearDown(MM_EnvironmentBase* env);
+	void tearDown();
 	
 public:
 	/**
@@ -94,7 +99,7 @@ public:
 	 * 						 the OMR_GET_CALLSITE() macro
 	 * @return a pointer to the allocated memory, or NULL if the request could not be performed
 	 */
-	void* allocate(uintptr_t bytesRequested, MM_AllocationCategory::Enum category, const char* callsite);
+	void* allocate(std::size_t bytesRequested, MM_AllocationCategory::Enum category, const char* callsite);
 
 	/**
 	 * Deallocate memory that has been allocated by the garbage collector.  This function should not be called
@@ -114,5 +119,31 @@ public:
 	 */
 	MM_MemoryStatistics* getCurrentStatistics();
 };
+
+} // namespace GC
+} // namespace OMR
+
+/**
+ * Usage:
+ *   MyStruct* s = new(forge, AllocationCategory::FIXED, OMR_GET_CALLSITE(), std::nothrow) MyStruct(constructor params...);
+ */
+inline void*
+operator new(std::size_t size, OMR::GC::Forge* forge, MM_AllocationCategory::Enum category, const char* site, const std::nothrow_t&) throw() {
+	return forge->allocate(size, category, site);
+}
+
+/**
+ * Usage:
+ *   MyStruct* s = new(forge, AllocationCategory::FIXED, OMR_GET_CALLSITE(), std::nothrow) MyStruct(constructor params...);
+ */
+inline void*
+operator new[](std::size_t size, OMR::GC::Forge* forge, MM_AllocationCategory::Enum category, const char* site, const std::nothrow_t&) throw() {
+	return operator new(size, forge, category, site, std::nothrow);
+}
+
+/**
+ * Backwards compatible alias.
+ */
+typedef OMR::GC::Forge MM_Forge;
 
 #endif /*FORGE_HPP_*/

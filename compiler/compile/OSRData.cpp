@@ -82,12 +82,24 @@ TR_OSRCompilationData::ensureSlotSharingInfoAt(const TR_ByteCodeInfo& bcinfo)
    }
 
 /**
-  This is the top-level method that is called by the codegen to populate
-  the maps that are eventually written to meta data.
-*/
+ * This is the top-level method that is called by the codegen to populate
+ * the maps that are eventually written to meta data.
+ *
+ * In voluntary OSR, only induce OSR calls must be added to the
+ * OSR table, as these are the only points that will transition.
+ * However, under involuntary OSR, all points must support
+ * transitions.
+ */
 void
 TR_OSRCompilationData::addInstruction(TR::Instruction* instr)
    {
+   TR::Node *node = instr->getNode();
+   if (comp->getOSRMode() == TR::voluntaryOSR
+       && !(node
+         && node->getOpCode().hasSymbolReference()
+         && node->getSymbolReference()->getReferenceNumber() == TR_induceOSRAtCurrentPC))
+      return;
+
    int32_t instructionPC = instr->getBinaryEncoding() - instr->cg()->getCodeStart();
    TR_ByteCodeInfo& bcInfo = instr->getNode()->getByteCodeInfo();
    addInstruction(instructionPC, bcInfo);

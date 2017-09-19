@@ -21,6 +21,8 @@
 
 #include "JitTest.hpp"
 #include "jitbuilder_compiler.hpp"
+#include "ras/IlVerifier.hpp"
+#include "ras/IlVerifierHelpers.hpp"
 
 #define ASSERT_NULL(pointer) ASSERT_EQ(nullptr, (pointer))
 #define ASSERT_NOTNULL(pointer) ASSERT_TRUE(nullptr != (pointer))
@@ -39,4 +41,18 @@ TEST_F(CompileTest, Return3) {
     auto entry = compiler.getEntryPoint<int32_t (*)(void)>();
     ASSERT_NOTNULL(entry) << "Entry point of compiled body cannot be null";
     ASSERT_EQ(3, entry()) << "Compiled body did not return expected value";
+}
+
+
+TEST_F(CompileTest, NoCodeGen) {
+    auto trees = parseString("(method return=\"Int32\" (block (ireturn (iconst 3))))");
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::JitBuilderCompiler compiler{trees};
+    TR::NoCodegenVerifier verifier{nullptr}; 
+
+    EXPECT_NE(0, compiler.compileWithVerifier(&verifier)) << "Compilation succeeded";
+
+    EXPECT_TRUE(verifier.hasRun());
 }

@@ -38,29 +38,16 @@ namespace OMR { typedef OMR::IlGeneratorMethodDetails IlGeneratorMethodDetailsCo
 class TR_FrontEnd;
 class TR_ResolvedMethod;
 namespace TR { class IlGeneratorMethodDetails; }
+namespace TR { class IlVerifier; }
 
 namespace OMR
 {
 
 /**
- * IlGeneratorMethodDetailsBase defines the IlGeneratorMethodDetails API that common code can count on.  A front
- *   end will typically extend this class (perhaps even with a hierarchy of classes) and then map its own concrete
- *   base class onto OMR::IlGeneratorMethodDetails.  In this way, common code can count on a particular API
- *   existing, but IlGeneratorMethodDetails will be passed around with all front-end specific data and API intact
- *   (so less up/down casting).
+ * Accessing ANY language-specific API/data in common code is prohibited.
  *
- * Accessing ANY front-end specific API/data in common code is prohibited.
- *
- * IlGeneratorMethodDetailsBase defines the IlGenRequest API that common code can count on, although it's more documentation
- *   then enforcement.  A front end will typically extend this class (perhaps even with a hierarchy of classes)
- *   and then map its own concrete base class onto OMR::IlGeneratorMethodDetailsBase.
- *
- * Accessing ANY front-end specific API/data in common code is prohibited since other front end builds would fail.
- *
- * Note all functions are non-virtual in this class, so declarations should never use the IlGeneratorMethodDetailsBase type
- *   directly: all variable declarations should use the OMR::IlGeneratorMethodDetails type instead.
+ * IlGeneratorMethodDetails defines the IlGenRequest API.
  */
-
 class OMR_EXTENSIBLE IlGeneratorMethodDetails
    {
 
@@ -76,13 +63,17 @@ public:
 
    inline static TR::IlGeneratorMethodDetails & create(TR::IlGeneratorMethodDetails & target, TR_ResolvedMethod *method);
 
+   TR::IlVerifier * getIlVerifier()                     { return _ilVerifier; }
+   void setIlVerifier(TR::IlVerifier * ilVerifier)      { _ilVerifier = ilVerifier; }
+
 protected:
-   IlGeneratorMethodDetails() { }
+   IlGeneratorMethodDetails() : _ilVerifier(NULL) { }
    virtual ~IlGeneratorMethodDetails() {}
 
    void *operator new(size_t size, TR::IlGeneratorMethodDetails *p){ return (void*) p; }
    void *operator new(size_t size, TR::IlGeneratorMethodDetails &p){ return (void*)&p; }
 
+   TR::IlVerifier     * _ilVerifier;
    };
 
 }

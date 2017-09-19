@@ -30,6 +30,7 @@
 #define IlVerifierHelpers_hpp
 
 #include <vector>
+#include "compile/CompilationException.hpp"
 #include "ras/IlVerifier.hpp"
 
 namespace TR { class ResolvedMethodSymbol; }

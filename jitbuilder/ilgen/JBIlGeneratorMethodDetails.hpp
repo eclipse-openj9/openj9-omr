@@ -55,9 +55,15 @@ class OMR_EXTENSIBLE IlGeneratorMethodDetails : public OMR::IlGeneratorMethodDet
 
 public:
 
-   IlGeneratorMethodDetails() : _method(NULL) { }
+   IlGeneratorMethodDetails() :
+      OMR::IlGeneratorMethodDetailsConnector(),
+      _method(NULL)
+   { }
 
-   IlGeneratorMethodDetails(TR::ResolvedMethod *method) : _method(method) { }
+   IlGeneratorMethodDetails(TR::ResolvedMethod *method) :
+      OMR::IlGeneratorMethodDetailsConnector(),
+      _method(method)
+   { }
 
    IlGeneratorMethodDetails(TR_ResolvedMethod *method);
 

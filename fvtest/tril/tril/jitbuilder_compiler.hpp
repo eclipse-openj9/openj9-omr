@@ -24,6 +24,8 @@
 
 #include "method_compiler.hpp"
 
+namespace TR { class IlVerifier; } 
+
 namespace Tril {
 
 /**
@@ -39,6 +41,13 @@ class JitBuilderCompiler : public Tril::MethodCompiler {
          * @return 0 on compilation success, an error code otherwise
          */
         int32_t compile() override;
+
+        /**
+         * @brief Start compilation with a verifier. 
+         * @param verifier The verifier to run. 
+         * @return 0 on complilation success, an error code or exception otherwise. 
+         */
+        int32_t compileWithVerifier(TR::IlVerifier* verifier);
 };
 
 } // namespace Tril

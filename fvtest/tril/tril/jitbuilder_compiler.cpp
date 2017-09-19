@@ -37,6 +37,10 @@
 #include <algorithm>
 
 int32_t Tril::JitBuilderCompiler::compile() {
+   return compileWithVerifier(NULL);
+}
+
+int32_t Tril::JitBuilderCompiler::compileWithVerifier(TR::IlVerifier* verifier) {
     // construct an IL generator for the method
     auto methodInfo = getMethodInfo();
     TR::TypeDictionary types;
@@ -58,6 +62,13 @@ int32_t Tril::JitBuilderCompiler::compile() {
                                       0,
                                       &ilgenerator);
     TR::IlGeneratorMethodDetails methodDetails(&resolvedMethod);
+
+    // If a verifier is provided, set one up. 
+    if (nullptr != verifier) 
+       {
+       methodDetails.setIlVerifier(verifier);
+       }
+
     int32_t rc = 0;
     auto entry_point = compileMethodFromDetails(nullptr, methodDetails, warm, rc);
 

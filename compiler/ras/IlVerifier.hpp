@@ -32,7 +32,7 @@ class IlVerifier
    /**
     * Verify the IL of a method has certain properties.
     *
-    * @return 0 on success, or a non-zero error code. If 0 is returned,
+    * @return 0 on success, or a non-zero error code. If non-zero is returned,
     * compilation stops.
     */
    virtual int32_t verify(TR::ResolvedMethodSymbol *methodSymbol) = 0; 

@@ -35,6 +35,7 @@ add_executable(comptest
    ILValidatorTest.cpp
    ArithmeticTest.cpp
    ShiftAndRotateTest.cpp
+   SimplifierFoldAndTest.cpp
 )
 
 target_link_libraries(comptest

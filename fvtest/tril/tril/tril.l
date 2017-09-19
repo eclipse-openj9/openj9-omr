@@ -38,12 +38,12 @@
                        };
 
 [-]?[0-9]+      {
-                yylval.integer = atol(yytext);
+                yylval.integer = strtoul(yytext, NULL, 10);
                 return INTEGER;
             };
 
 [-]?0x[0-9a-fA-F]+      {
-                yylval.integer = strtol(yytext, NULL, 16);
+                yylval.integer = strtoul(yytext, NULL, 16);
                 return INTEGER;
             }
 

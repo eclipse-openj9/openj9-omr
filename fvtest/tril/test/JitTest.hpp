@@ -29,13 +29,13 @@ namespace Tril {
 namespace Test {
 
 /**
- * @brief The JitBuilderTest class is a basic test fixture for JitBuilder test cases.
+ * @brief The JitTest class is a basic test fixture for Jit test cases.
  *
- * Most JitBuilder test case fixtures should publically inherit from this class.
+ * Most Jit test case fixtures should publically inherit from this class.
  *
  * Example use:
  *
- *    class MyTestCase : public JitBuilderTest {};
+ *    class MyTestCase : public JitTest {};
  */
 class JitTest : public ::testing::Test
    {

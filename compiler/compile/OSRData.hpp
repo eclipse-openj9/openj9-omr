@@ -27,6 +27,7 @@
 #include "env/TRMemory.hpp"                 // for TR_Memory, etc
 #include "env/jittypes.h"                   // for TR_ByteCodeInfo
 #include "infra/Array.hpp"                  // for TR_Array
+#include "infra/deque.hpp"                  // for TR_Array
 
 class TR_BitVector;
 class TR_OSRMethodData;
@@ -233,7 +234,7 @@ class TR_OSRCompilationData
    friend TR::Compilation& operator<< (TR::Compilation&, const TR_OSRCompilationData&);
 
    private:
-   typedef TR_Array<TR_Instruction2SharedSlotMapEntry> TR_Instruction2SharedSlotMap;
+   typedef TR::deque<TR_Instruction2SharedSlotMapEntry, TR::Region&> TR_Instruction2SharedSlotMap;
 
    /// a mapping from the symref's reference number to symRefOrder
    /// (see above for the definition of symRefOrder)

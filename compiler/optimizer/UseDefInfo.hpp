@@ -104,7 +104,6 @@ class TR_UseDefInfo
              _expandedAtoms(0, std::make_pair<TR::Node *, TR::TreeTop *>(NULL, NULL), _region),
              _sideTableToUseDefMap(_region),
              _numAliases(numSymRefs, _region),
-             _nodesByGlobalIndex(nodeCount, _region),
              _loadsBySymRefNum(numSymRefs, _region),
              _defsForOSR(0, static_cast<TR_BitVector*>(NULL), _region),
              _workBitVector(_region)
@@ -132,7 +131,6 @@ class TR_UseDefInfo
       TR::deque<uint32_t, TR::Region&> _sideTableToUseDefMap;
       private:
       TR::deque<uint32_t, TR::Region&> _numAliases;
-      TR::deque<TR::Node *, TR::Region&> _nodesByGlobalIndex;
       TR::deque<TR::Node *, TR::Region&> _loadsBySymRefNum;
 
       protected:

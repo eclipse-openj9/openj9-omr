@@ -583,7 +583,6 @@ void TR_UseDefInfo::findTrivialSymbolsToExclude(TR::Node *node, TR::TreeTop *tre
          if (aux._neverWrittenSymbols.get(symRefNum))
             {
             aux._neverWrittenSymbols.reset(symRefNum);
-            aux._nodesByGlobalIndex[node->getGlobalIndex()] = node;
 
             if (trace())
                traceMsg(comp(), "Resetting write bit %d at node %p\n", symRefNum, node);
@@ -600,23 +599,7 @@ void TR_UseDefInfo::findTrivialSymbolsToExclude(TR::Node *node, TR::TreeTop *tre
             }
          else if (!aux._onceWrittenSymbolsIndices[symRefNum].IsNull())
             {
-            // following code fails assert when aux._onceWrittenSymbolsIndices[symRefNum].IsZero() - needs to be fixed
-            // int32_t prevStoreIndex = aux._onceWrittenSymbolsIndices[symRefNum].FirstOne();
-            // TR::Node *prevStoreNode = aux._nodesByGlobalIndex[prevStoreIndex];
-            if (_hasLoadsAsDefs && 0 /* &&
-             (prevStoreNode->getByteCodeIndex() == node->getByteCodeIndex()) &&
-             (prevStoreNode->getInlinedSiteIndex() == node->getInlinedSiteIndex()) */)
-               {
-               aux._onceWrittenSymbolsIndices[symRefNum][node->getGlobalIndex()] = true;
-               aux._nodesByGlobalIndex[node->getGlobalIndex()] = node;
-
-               if (trace())
-                  traceMsg(comp(), "SETTING node %p symRefNum %d\n", node, symRefNum);
-               }
-            else
-               {
-               aux._onceWrittenSymbolsIndices[symRefNum].ClearToNull();
-               }
+            aux._onceWrittenSymbolsIndices[symRefNum].ClearToNull();
             }
          }
       }
@@ -627,8 +610,6 @@ void TR_UseDefInfo::findTrivialSymbolsToExclude(TR::Node *node, TR::TreeTop *tre
       int32_t symRefNum = symRef->getReferenceNumber();
       if (symRef->getSymbol()->isAutoOrParm())
          {
-         //aux._nodesByGlobalIndex[node->getGlobalIndex()] = node;
-
          if (aux._neverReadSymbols.get(symRefNum))
             {
             aux._neverReadSymbols.reset(symRefNum);

@@ -2423,7 +2423,9 @@ void TR_UseDefInfo::buildUseDefs(TR::Node *node, void *vanalysisInfo, TR_BitVect
 
       if (!aux._defsForSymbol[symIndex]->isEmpty())
          {
-         TR_BitVector defs(comp()->trMemory()->currentStackRegion());
+         // Use the temporary work BitVector
+         TR_BitVector *defs = &(aux._workBitVector);
+         defs->empty();
 
          // assume aux._defsForSymbol[symIndex] is never NULL if _possibleDefs is non-NULL
          if (trace())
@@ -2433,7 +2435,7 @@ void TR_UseDefInfo::buildUseDefs(TR::Node *node, void *vanalysisInfo, TR_BitVect
             traceMsg(comp(), "\n");
             }
 
-         defs = *(aux._defsForSymbol[symIndex]);
+         *defs = *(aux._defsForSymbol[symIndex]);
 
          if (memSymIndex != -1 && !aux._defsForSymbol[memSymIndex]->isEmpty())
             {
@@ -2443,14 +2445,14 @@ void TR_UseDefInfo::buildUseDefs(TR::Node *node, void *vanalysisInfo, TR_BitVect
                aux._defsForSymbol[memSymIndex]->print(comp());
                traceMsg(comp(), "\n");
                }
-            defs |= *(aux._defsForSymbol[memSymIndex]);
+            *defs |= *(aux._defsForSymbol[memSymIndex]);
             }
 
          if (analysisInfo)
-            defs &= *analysisInfo;
+            *defs &= *analysisInfo;
 
          bool ignoreDefsOnEntry = false;
-         if (memSymIndex != -1 && !defs.get(memSymIndex))
+         if (memSymIndex != -1 && !defs->get(memSymIndex))
             ignoreDefsOnEntry = true;
 
 #if 0
@@ -2464,7 +2466,7 @@ void TR_UseDefInfo::buildUseDefs(TR::Node *node, void *vanalysisInfo, TR_BitVect
 
          TR_Method *method = comp()->getMethodSymbol()->getMethod();
 
-         TR_BitVectorIterator cursor(defs);
+         TR_BitVectorIterator cursor(*defs);
          while (cursor.hasMoreElements())
             {
             i = cursor.getNextElement();

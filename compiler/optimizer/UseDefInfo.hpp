@@ -106,9 +106,13 @@ class TR_UseDefInfo
              _numAliases(numSymRefs, _region),
              _nodesByGlobalIndex(nodeCount, _region),
              _loadsBySymRefNum(numSymRefs, _region),
-             _defsForOSR(0, static_cast<TR_BitVector*>(NULL), _region)
+             _defsForOSR(0, static_cast<TR_BitVector*>(NULL), _region),
+             _workBitVector(_region)
             {}
       TR::Region _region;
+
+      // BitVector for temporary work. Used in buildUseDefs.
+      TR_BitVector _workBitVector;
 
       TR::vector<TR_BitVector *, TR::Region&> _onceReadSymbols;
       TR::vector<TR_BitVector *, TR::Region&> _onceWrittenSymbols;

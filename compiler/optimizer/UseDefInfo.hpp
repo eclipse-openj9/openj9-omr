@@ -94,7 +94,7 @@ class TR_UseDefInfo
              _region(region),
              _onceReadSymbols(numSymRefs, static_cast<TR_BitVector*>(NULL), _region),
              _onceWrittenSymbols(numSymRefs, static_cast<TR_BitVector*>(NULL), _region),
-             _defsForSymbol(0, BitVector(allocator), _region),
+             _defsForSymbol(0, static_cast<TR_BitVector*>(NULL), _region),
              _neverReadSymbols(numSymRefs, _region),
              _neverReferencedSymbols(numSymRefs, _region),
              _neverWrittenSymbols(numSymRefs, _region),
@@ -106,14 +106,14 @@ class TR_UseDefInfo
              _numAliases(numSymRefs, _region),
              _nodesByGlobalIndex(nodeCount, _region),
              _loadsBySymRefNum(numSymRefs, _region),
-             _defsForOSR(0, TR_UseDefInfo::BitVector(allocator), _region)
+             _defsForOSR(0, static_cast<TR_BitVector*>(NULL), _region)
             {}
       TR::Region _region;
 
       TR::vector<TR_BitVector *, TR::Region&> _onceReadSymbols;
       TR::vector<TR_BitVector *, TR::Region&> _onceWrittenSymbols;
       // defsForSymbol are known definitions of the symbol
-      TR::vector<BitVector, TR::Region&> _defsForSymbol;
+      TR::vector<TR_BitVector *, TR::Region&> _defsForSymbol;
       TR_BitVector _neverReadSymbols;
       TR_BitVector _neverReferencedSymbols;
       TR_BitVector _neverWrittenSymbols;
@@ -133,7 +133,7 @@ class TR_UseDefInfo
 
       protected:
       // used only in TR_OSRDefInfo - should extend AuxiliaryData really:
-      TR::vector<BitVector, TR::Region&> _defsForOSR;
+      TR::vector<TR_BitVector *, TR::Region&> _defsForOSR;
 
       friend class TR_UseDefInfo;
       friend class TR_ReachingDefinitions;
@@ -264,15 +264,15 @@ class TR_UseDefInfo
    bool    isExpandedUseDefIndex(uint32_t index)
                { return index >= _numExpandedDefOnlyNodes && index < getNumExpandedDefNodes(); }
 
-   bool getDefsForSymbol(BitVector &defs, int32_t symIndex, AuxiliaryData &aux)
+   bool getDefsForSymbol(TR_BitVector &defs, int32_t symIndex, AuxiliaryData &aux)
       {
-      defs.Or(aux._defsForSymbol[symIndex]);
-      return !defs.IsZero();
+      defs |= *(aux._defsForSymbol[symIndex]);
+      return !defs.isEmpty();
       }
 
    bool getDefsForSymbolIsZero(int32_t symIndex, AuxiliaryData &aux)
       {
-      return aux._defsForSymbol[symIndex].IsZero();
+      return aux._defsForSymbol[symIndex]->isEmpty();
       }
 
    bool hasLoadsAsDefs() { return _hasLoadsAsDefs; }
@@ -314,7 +314,7 @@ class TR_UseDefInfo
    bool childIndexIndicatesImplicitStore(TR::Node * node, int32_t childIndex);
    void insertData(TR::Block *, TR::Node *node, TR::Node *parent, TR::TreeTop *treeTop, AuxiliaryData &aux, TR::SparseBitVector &, bool considerImplicitStores = false);
    void buildUseDefs(void *vblockInfo, AuxiliaryData &aux);
-   void buildUseDefs(TR::Node *node, void *vanalysisInfo, TR::BitVector &nodesToBeDereferenced, TR::Node *parent, AuxiliaryData &aux);
+   void buildUseDefs(TR::Node *node, void *vanalysisInfo, TR_BitVector &nodesToBeDereferenced, TR::Node *parent, AuxiliaryData &aux);
    int32_t setSingleDefiningLoad(int32_t useIndex, BitVector &nodesLookedAt, BitVector &loadDefs);
 
    protected:

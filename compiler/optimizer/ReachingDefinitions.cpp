@@ -119,8 +119,7 @@ void TR_ReachingDefinitions::initializeGenAndKillSetInfo()
    TR::Block *block;
    int32_t   blockNum = 0;
    bool      seenException = false;
-   TR_UseDefInfo::BitVector defsKilled(comp()->allocator());
-   defsKilled.GrowTo(getNumberOfBits());
+   TR_BitVector defsKilled(getNumberOfBits(), trMemory()->currentStackRegion());
 
    comp()->incVisitCount();
    for (TR::TreeTop *treeTop = comp()->getStartTree(); treeTop; treeTop = treeTop->getNextTreeTop())
@@ -173,7 +172,7 @@ void TR_ReachingDefinitions::initializeGenAndKillSetInfo()
    }
 
 
-void TR_ReachingDefinitions::initializeGenAndKillSetInfoForNode(TR::Node *node, TR_UseDefInfo::BitVector &defsKilled, bool seenException, int32_t blockNum, TR::Node *parent)
+void TR_ReachingDefinitions::initializeGenAndKillSetInfoForNode(TR::Node *node, TR_BitVector &defsKilled, bool seenException, int32_t blockNum, TR::Node *parent)
    {
    // Update gen and kill info for nodes in this subtree
    //
@@ -206,7 +205,7 @@ void TR_ReachingDefinitions::initializeGenAndKillSetInfoForNode(TR::Node *node, 
 
    bool foundDefsToKill = false;
    int32_t numDefNodes = 0;
-   defsKilled.Clear();
+   defsKilled.empty();
 
    TR::ILOpCode &opCode = node->getOpCode();
    TR::SymbolReference *symRef;

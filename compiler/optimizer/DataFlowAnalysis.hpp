@@ -495,7 +495,7 @@ class TR_ReachingDefinitions : public TR_UnionBitVectorAnalysis
 
    private:
 
-   void initializeGenAndKillSetInfoForNode(TR::Node *node, TR_UseDefInfo::BitVector &defsKilled, bool seenException, int32_t blockNum, TR::Node *parent);
+   void initializeGenAndKillSetInfoForNode(TR::Node *node, TR_BitVector &defsKilled, bool seenException, int32_t blockNum, TR::Node *parent);
 
    TR_UseDefInfo *_useDefInfo;
    TR_UseDefInfo::AuxiliaryData &_aux;

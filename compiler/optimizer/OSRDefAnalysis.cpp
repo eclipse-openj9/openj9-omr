@@ -116,16 +116,16 @@ void TR_OSRDefInfo::performFurtherAnalysis(AuxiliaryData &aux)
       if (point == NULL) continue;
       uint32_t osrIndex = point->getOSRIndex();
       TR_ASSERT(osrIndex == i, "something doesn't make sense\n");
-      BitVector &info = aux._defsForOSR[osrIndex];
+      TR_BitVector *info = aux._defsForOSR[osrIndex];
       //one reason that info can be NULL is that the block that contains that i-th osr point has
       //been deleted (e.g., because it was unreachable), and therefore, we have never set _defsForOSR[i] to
       //a non-NULL value
-      if (!info.IsNull())
+      if (info)
          {
-         BitVector::Cursor cursor(info);
-         for (cursor.SetToFirstOne(); cursor.Valid(); cursor.SetToNextOne())
+         TR_BitVectorIterator cursor(*info);
+         while (cursor.hasMoreElements())
             {
-            int32_t j = cursor;
+            int32_t j = cursor.getNextElement();
             if (j < getNumExpandedDefsOnEntry()) continue;
             int32_t jj = aux._sideTableToUseDefMap[j];
 
@@ -178,7 +178,10 @@ void TR_OSRDefInfo::addSharingInfo(AuxiliaryData &aux)
    //of every symbol in S.
 
    TR_Array<List<TR::SymbolReference> > *ppsListArray = _methodSymbol->getPendingPushSymRefs();
-   TR_UseDefInfo::BitVector prevUnionTwoSlotDef(comp()->allocator());
+   TR_BitVector *prevTwoSlotUnionDef = new (comp()->trMemory()->currentStackRegion()) TR_BitVector(getBitVectorSize(), comp()->trMemory()->currentStackRegion());
+   TR_BitVector *twoSlotUnionDef = new (comp()->trMemory()->currentStackRegion()) TR_BitVector(getBitVectorSize(), comp()->trMemory()->currentStackRegion());
+   TR_BitVector unionDef(getBitVectorSize(), comp()->trMemory()->currentStackRegion());
+
    bool isTwoSlotSymRefAtPrevSlot = false;
    for (int i = 0; ppsListArray && i < ppsListArray->size(); ++i)
       {
@@ -200,31 +203,29 @@ void TR_OSRDefInfo::addSharingInfo(AuxiliaryData &aux)
           isTwoSlotSymRefAtThisSlot ||
           isTwoSlotSymRefAtPrevSlot)
          {
-         TR_UseDefInfo::BitVector unionDef(comp()->allocator());
-         unionDef.GrowTo(getBitVectorSize());
-         TR_UseDefInfo::BitVector twoSlotUnionDef(comp()->allocator());
-         twoSlotUnionDef.GrowTo(getBitVectorSize());
+         unionDef.empty();
+         twoSlotUnionDef->empty();
 
          for (TR::SymbolReference* symRef = ppsIt.getFirst(); symRef; symRef = ppsIt.getNext())
             {
             uint16_t symIndex = symRef->getSymbol()->getLocalIndex();
-            const TR_UseDefInfo::BitVector &defs = aux._defsForSymbol[symIndex];
-            unionDef |= defs;
+            TR_BitVector *defs = aux._defsForSymbol[symIndex];
+            unionDef |= *defs;
             TR::DataType dt = symRef->getSymbol()->getDataType();
             bool takesTwoSlots = dt == TR::Int64 || dt == TR::Double;
             if (takesTwoSlots)
-               twoSlotUnionDef |= defs;
+               *twoSlotUnionDef |= *defs;
             }
 
-         unionDef |= prevUnionTwoSlotDef;
+         unionDef |= *prevTwoSlotUnionDef;
 
          for (TR::SymbolReference* symRef = ppsIt.getFirst(); symRef; symRef = ppsIt.getNext())
             {
             uint16_t symIndex = symRef->getSymbol()->getLocalIndex();
             // is assignment okay here, before it was reference only?
-            aux._defsForSymbol[symIndex] = unionDef;
+            *aux._defsForSymbol[symIndex] = unionDef;
 
-            if (!prevUnionTwoSlotDef.IsZero())
+            if (!prevTwoSlotUnionDef->isEmpty())
                {
                List<TR::SymbolReference> prevppsList = (*ppsListArray)[i-1];
                ListIterator<TR::SymbolReference> prevppsIt(&prevppsList);
@@ -235,25 +236,25 @@ void TR_OSRDefInfo::addSharingInfo(AuxiliaryData &aux)
                   if (doesPrevTakesTwoSlots)
                      {
                      uint16_t prevSymIndex = prevSymRef->getSymbol()->getLocalIndex();
-                     aux._defsForSymbol[prevSymIndex] |= unionDef;
+                     *aux._defsForSymbol[prevSymIndex] |= unionDef;
                      }
                   }
                }
             }
 
-         // shallow swap bit vectors, causing the contents of prevUnionTwoSlotDef prior to the swap
-         // to be discarded, and its new contents from twoSlotUnionDef to be preserved
-         CS2::Swap(prevUnionTwoSlotDef, twoSlotUnionDef);
+         TR_BitVector *swap = prevTwoSlotUnionDef;
+         prevTwoSlotUnionDef = twoSlotUnionDef;
+         twoSlotUnionDef = swap;
          }
       else
-         prevUnionTwoSlotDef.Clear();
+         prevTwoSlotUnionDef->empty();
 
       isTwoSlotSymRefAtPrevSlot = isTwoSlotSymRefAtThisSlot;
       }
 
 
    TR_Array<List<TR::SymbolReference> > *autosListArray = _methodSymbol->getAutoSymRefs();
-   prevUnionTwoSlotDef.Clear();
+   prevTwoSlotUnionDef->empty();
    isTwoSlotSymRefAtPrevSlot = false;
    for (int i = 0; autosListArray && i < autosListArray->size(); ++i)
       {
@@ -277,30 +278,29 @@ void TR_OSRDefInfo::addSharingInfo(AuxiliaryData &aux)
          {
          if (!autosIt.getFirst() || (autosIt.getFirst()->getCPIndex() >= _methodSymbol->getFirstJitTempIndex()))
             continue;
-         TR_UseDefInfo::BitVector unionDef(comp()->allocator());
-         unionDef.GrowTo(getBitVectorSize());
-         TR_UseDefInfo::BitVector twoSlotUnionDef(comp()->allocator());
-         twoSlotUnionDef.GrowTo(getBitVectorSize());
+         unionDef.empty();
+         twoSlotUnionDef->empty();
+
          for (TR::SymbolReference* symRef = autosIt.getFirst(); symRef; symRef = autosIt.getNext())
             {
             uint16_t symIndex = symRef->getSymbol()->getLocalIndex();
-            const TR_UseDefInfo::BitVector &defs = aux._defsForSymbol[symIndex];
-            unionDef |= defs;
+            TR_BitVector *defs = aux._defsForSymbol[symIndex];
+            unionDef |= *defs;
             TR::DataType dt = symRef->getSymbol()->getDataType();
             bool takesTwoSlots = dt == TR::Int64 || dt == TR::Double;
             if (takesTwoSlots)
-               twoSlotUnionDef |= defs;
+               *twoSlotUnionDef |= *defs;
             }
 
-         unionDef |= prevUnionTwoSlotDef;
+         unionDef |= *prevTwoSlotUnionDef;
 
          for (TR::SymbolReference* symRef = autosIt.getFirst(); symRef; symRef = autosIt.getNext())
             {
             uint16_t symIndex = symRef->getSymbol()->getLocalIndex();
             // is assignment okay here, before it was reference only?
-            aux._defsForSymbol[symIndex] = unionDef;
+            *aux._defsForSymbol[symIndex] = unionDef;
 
-            if (!prevUnionTwoSlotDef.IsZero())
+            if (!prevTwoSlotUnionDef->isEmpty())
                {
                List<TR::SymbolReference> prevautosList = (*autosListArray)[i-1];
                ListIterator<TR::SymbolReference> prevautosIt(&prevautosList);
@@ -311,18 +311,18 @@ void TR_OSRDefInfo::addSharingInfo(AuxiliaryData &aux)
                   if (doesPrevTakesTwoSlots)
                      {
                      uint16_t prevSymIndex = prevSymRef->getSymbol()->getLocalIndex();
-                     aux._defsForSymbol[prevSymIndex] |= unionDef;
+                     *aux._defsForSymbol[prevSymIndex] |= unionDef;
                      }
                   }
                }
             }
 
-         // shallow swap bit vectors, causing the contents of prevUnionTwoSlotDef prior to the swap
-         // to be discarded, and its new contents from twoSlotUnionDef to be preserved
-         CS2::Swap(prevUnionTwoSlotDef, twoSlotUnionDef);
+         TR_BitVector *swap = prevTwoSlotUnionDef;
+         prevTwoSlotUnionDef = twoSlotUnionDef;
+         twoSlotUnionDef = swap;
          }
       else
-         prevUnionTwoSlotDef.Clear();
+         prevTwoSlotUnionDef->empty();
 
       isTwoSlotSymRefAtPrevSlot = isTwoSlotSymRefAtThisSlot;
       }
@@ -364,7 +364,7 @@ void TR_OSRDefInfo::buildOSRDefs(void *vblockInfo, AuxiliaryData &aux)
    // Allocate the array of bit vectors that will represent live definitions at OSR points
    //
    int32_t numOSRPoints = _methodSymbol->getNumOSRPoints();
-   aux._defsForOSR.resize(numOSRPoints, TR_UseDefInfo::BitVector(comp()->allocator()));
+   aux._defsForOSR.resize(numOSRPoints, NULL);
 
    TR::Block *block;
    TR::TreeTop *treeTop;
@@ -443,22 +443,24 @@ void TR_OSRDefInfo::buildOSRDefs(void *vblockInfo, AuxiliaryData &aux)
 
    for (int i = 0; i < numOSRPoints; ++i)
       {
-      BitVector &info = aux._defsForOSR[i];
+      TR_BitVector *info = aux._defsForOSR[i];
+
       //one reason that info can be NULL is that the block that contains that i-th osr point has
       //been deleted (e.g., because it was unreachable), and therefore, we have never set _defsForOSR[i] to
       //a non-NULL value
-      if (info.IsNull()) continue;
-      TR_ASSERT(!info.IsZero(), "OSR def info at index %d is empty", i);
+      if (info == NULL) continue;
+
+      TR_ASSERT(!info->isEmpty(), "OSR def info at index %d is empty", i);
       if (trace())
          {
-         if (info.IsZero())
+         if (info->isEmpty())
             {
             traceMsg(comp(), "OSR def info at index %d is empty\n", i);
             continue;
             }
          TR_ByteCodeInfo& bcinfo = _methodSymbol->getOSRPoints()[i]->getByteCodeInfo();
          traceMsg(comp(), "OSR defs at index %d bcIndex %d callerIndex %d\n", i, bcinfo.getByteCodeIndex(), bcinfo.getCallerIndex());
-         *comp() << info;
+         info->print(comp());
          traceMsg(comp(), "\n");
          }
       }
@@ -486,8 +488,8 @@ void TR_OSRDefInfo::buildOSRDefs(TR::Node *node, void *vanalysisInfo, TR_OSRPoin
       TR::SymbolReference *symRef = node->getSymbolReference();
       TR::Symbol *sym = symRef->getSymbol();
       uint16_t symIndex = sym->getLocalIndex();
-      TR_UseDefInfo::BitVector const &defsForSymbol = aux._defsForSymbol[symIndex];
-      if (!defsForSymbol.IsZero() &&
+      TR_BitVector *defsForSymbol = aux._defsForSymbol[symIndex];
+      if (!defsForSymbol->isEmpty() &&
          isExpandedDefIndex(expandedNodeIndex) &&
          !sym->isRegularShadow() &&
          !sym->isMethod())
@@ -495,10 +497,10 @@ void TR_OSRDefInfo::buildOSRDefs(TR::Node *node, void *vanalysisInfo, TR_OSRPoin
             if (trace())
                {
                traceMsg(comp(), "defs for symbol %d with symref index %d\n", symIndex, symRef->getReferenceNumber());
-               (*comp()) << defsForSymbol;
+               defsForSymbol->print(comp());
                traceMsg(comp(), "\n");
                }
-            *analysisInfo -= defsForSymbol;
+            *analysisInfo -= *defsForSymbol;
             analysisInfo->set(expandedNodeIndex);
          }
       }
@@ -515,22 +517,24 @@ void TR_OSRDefInfo::buildOSRDefs(TR::Node *node, void *vanalysisInfo, TR_OSRPoin
       if (osrPoint != NULL)
          {
          uint32_t osrIndex = osrPoint->getOSRIndex();
-         Assign(aux._defsForOSR[osrIndex], *analysisInfo);
+         aux._defsForOSR[osrIndex] = new (aux._region) TR_BitVector(aux._region);
+         *aux._defsForOSR[osrIndex] |= *analysisInfo;
          if (trace())
             {
             traceMsg(comp(), "_defsForOSR[%d] at node %p \n", osrIndex, node);
-            *comp() << aux._defsForOSR[osrIndex];
+            aux._defsForOSR[osrIndex]->print(comp());
             traceMsg(comp(), "\n");
             }
          }
       if (osrPoint2 != NULL)
          {
          uint32_t osrIndex = osrPoint2->getOSRIndex();
-         Assign(aux._defsForOSR[osrIndex], *analysisInfo);
+         aux._defsForOSR[osrIndex] = new (aux._region) TR_BitVector(aux._region);
+         *aux._defsForOSR[osrIndex] |= *analysisInfo;
          if (trace())
             {
             traceMsg(comp(), "_defsForOSR[%d] after node %p \n", osrIndex, node);
-            *comp() << aux._defsForOSR[osrIndex];
+            aux._defsForOSR[osrIndex]->print(comp());
             traceMsg(comp(), "\n");
             }
          }

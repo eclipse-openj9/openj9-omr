@@ -873,12 +873,10 @@ bool TR_UseDefInfo::indexSymbolsAndNodes(AuxiliaryData &aux)
       traceMsg(comp(), "\n");
       }
 
-   SharedSparseBitVector relevantAliases(comp()->allocator());
-   SharedSparseBitVector methodsAndShadows(comp()->allocator());
-   SharedSparseBitVector referencedSymRefs(comp()->allocator());
-
-   CS2::HashTable<uint32_t, uint32_t, TR::Allocator> num_aliases_table(comp()->allocator());
-   CS2::HashTable<uint32_t, uint32_t, TR::Allocator> num_method_aliases_table(comp()->allocator());
+   TR_BitVector relevantAliases(aux._region);
+   TR_BitVector methodsAndShadows(aux._region);
+   TR_BitVector referencedSymRefs(aux._region);
+   TR_BitVector aliases(aux._region);
 
    for (symRefNumber = symRefTab->getIndexOfFirstSymRef(); symRefNumber < symRefCount; symRefNumber++)
       {
@@ -891,34 +889,23 @@ bool TR_UseDefInfo::indexSymbolsAndNodes(AuxiliaryData &aux)
       if (aux._neverReferencedSymbols.get(symRefNumber))
          continue;
 
-      referencedSymRefs[symRefNumber] = true;
-
-      num_aliases_table.Add(symRefNumber, 0);
-      num_method_aliases_table.Add(symRefNumber, 0);
+      referencedSymRefs.set(symRefNumber);
 
       if (excludedGlobals(symRef->getSymbol()))
          continue;
 
       if (symRef->getSymbol()->isMethod() || symRef->getSymbol()->isRegularShadow())
-         methodsAndShadows[symRefNumber] = true;
+         methodsAndShadows.set(symRefNumber);
       else
-         relevantAliases[symRefNumber] = true;
+         relevantAliases.set(symRefNumber);
       }
 
-
-      {
-      LexicalTimer tlex("indexSymbolsAndNodes_count", comp()->phaseTimer());
-
-      CountUseDefAliases(num_aliases_table, relevantAliases);
-      CountUseDefAliases(num_method_aliases_table, methodsAndShadows);
-      }
-
-   SharedSparseBitVector::Cursor refIter(referencedSymRefs);
-   for (refIter.SetToFirstOne(); refIter.Valid(); refIter.SetToNextOne())
+   TR_BitVectorIterator refIter(referencedSymRefs);
+   while (refIter.hasMoreElements())
       {
       LexicalTimer tlex2("indexSymbolsAndNodes_refs", comp()->phaseTimer());
 
-      symRefNumber = refIter;
+      symRefNumber = refIter.getNextElement();
       symRef = symRefTab->getSymRef(symRefNumber);
       if (symRef)
          {
@@ -928,14 +915,11 @@ bool TR_UseDefInfo::indexSymbolsAndNodes(AuxiliaryData &aux)
          uint32_t num_aliases = 0;
          uint32_t numMethodsAndShadows = 0;
 
+         if (symRef->sharesSymbol())
             {
-            CS2::HashIndex hi;
-
-            if (num_aliases_table.Locate(symRefNumber, hi))
-               num_aliases = num_aliases_table[hi];
-
-            if (num_method_aliases_table.Locate(symRefNumber, hi))
-               numMethodsAndShadows = num_method_aliases_table[hi];
+            symRef->getUseDefAliases().getAliases(aliases);
+            num_aliases = aliases.commonElementCount(relevantAliases);
+            numMethodsAndShadows = aliases.commonElementCount(methodsAndShadows);
             }
 
          if (num_aliases == 0 && !sym->isMethod())
@@ -990,9 +974,10 @@ bool TR_UseDefInfo::indexSymbolsAndNodes(AuxiliaryData &aux)
 
    _numStaticsAndFields = _numSymbols;
 
-   for (refIter.SetToFirstOne(); refIter.Valid(); refIter.SetToNextOne())
+   refIter.reset();
+   while (refIter.hasMoreElements())
       {
-      symRefNumber = refIter;
+      symRefNumber = refIter.getNextElement();
 
       symRef = symRefTab->getSymRef(symRefNumber);
 
@@ -1052,9 +1037,10 @@ bool TR_UseDefInfo::indexSymbolsAndNodes(AuxiliaryData &aux)
    int numRegisters = _useDefForRegs ? comp()->cg()->getNumberOfGlobalRegisters() : 0;
    _numDefsOnEntry += numRegisters;
 
-   for (refIter.SetToFirstOne(); refIter.Valid(); refIter.SetToNextOne())
+   refIter.reset();
+   while (refIter.hasMoreElements())
       {
-      symRefNumber = refIter;
+      symRefNumber = refIter.getNextElement();
       symRef = symRefTab->getSymRef(symRefNumber);
       if (symRef &&
           (isTrivialUseDefSymRef(symRef, aux) ||

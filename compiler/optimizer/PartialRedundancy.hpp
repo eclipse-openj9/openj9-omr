@@ -29,6 +29,7 @@
 #include "infra/BitVector.hpp"                      // for TR_BitVector
 #include "infra/List.hpp"                           // for List (ptr only), etc
 #include "optimizer/Optimization.hpp"               // for Optimization
+#include "optimizer/Optimization_inlines.hpp"       // for trace etc.  
 #include "optimizer/OptimizationManager.hpp"
 #include "optimizer/DataFlowAnalysis.hpp"
 

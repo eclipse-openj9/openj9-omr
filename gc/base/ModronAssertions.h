@@ -41,7 +41,7 @@ extern "C" {
 /* Currently, there are startup errors pointed out by these assertions so only enable them on combination spec until they are fixed for everyone */
 #if defined(OMR_GC_DEBUG_ASSERTS)
 
-extern void omrGcDebugAssertionOutput(OMR_VMThread *omrVMThread, const char *format, ...);
+extern void omrGcDebugAssertionOutput(OMRPortLibrary *portLibrary, OMR_VMThread *omrVMThread, const char *format, ...);
 
 #define Assert_MM_true(arg) \
 	do {\
@@ -81,7 +81,7 @@ extern void omrGcDebugAssertionOutput(OMR_VMThread *omrVMThread, const char *for
 #define Assert_GC_true_with_message(__env__,__condition,__message,__parameter) \
 do {\
 	if(!(__condition)) {\
-		omrGcDebugAssertionOutput(__env__->getOmrVMThread(), __message, __parameter);\
+		omrGcDebugAssertionOutput(__env__->getPortLibrary(), __env__->getOmrVMThread(), __message, __parameter);\
 		Assert_MM_unreachable();\
 	}\
 } while (false)
@@ -90,7 +90,7 @@ do {\
 #define Assert_GC_true_with_message2(__env__,__condition,__message,__parameter1,__parameter2) \
 do {\
 	if(!(__condition)) {\
-		omrGcDebugAssertionOutput(__env__->getOmrVMThread(), __message, __parameter1, __parameter2);\
+		omrGcDebugAssertionOutput(__env__->getPortLibrary(), __env__->getOmrVMThread(), __message, __parameter1, __parameter2);\
 		Assert_MM_unreachable();\
 	}\
 } while (false)
@@ -99,7 +99,7 @@ do {\
 #define Assert_GC_true_with_message3(__env__,__condition,__message,__parameter1,__parameter2,__parameter3) \
 do {\
 	if(!(__condition)) {\
-		omrGcDebugAssertionOutput(__env__->getOmrVMThread(), __message, __parameter1, __parameter2, __parameter3);\
+		omrGcDebugAssertionOutput(__env__->getPortLibrary(), __env__->getOmrVMThread(), __message, __parameter1, __parameter2, __parameter3);\
 		Assert_MM_unreachable();\
 	}\
 } while (false)
@@ -108,7 +108,7 @@ do {\
 #define Assert_GC_true_with_message4(__env__,__condition,__message,__parameter1,__parameter2,__parameter3,__parameter4) \
 do {\
 	if(!(__condition)) {\
-		omrGcDebugAssertionOutput(__env__->getOmrVMThread(), __message, __parameter1, __parameter2, __parameter3, __parameter4);\
+		omrGcDebugAssertionOutput(__env__->getPortLibrary(), __env__->getOmrVMThread(), __message, __parameter1, __parameter2, __parameter3, __parameter4);\
 		Assert_MM_unreachable();\
 	}\
 } while (false)

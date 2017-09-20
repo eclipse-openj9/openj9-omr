@@ -336,9 +336,9 @@ MM_MemoryManager::createVirtualMemoryForHeap(MM_EnvironmentBase* env, MM_MemoryH
 				handle->setMemoryBase((void *)heapBase);
 
 				/* top of adjusted Nursery should fit reserved memory */
-				Assert_GC_true_with_message4(env, ((heapBase + size) <= ((uintptr_t)handle->getMemoryTop() - tailPadding)),
-						"End of projected heap (base 0x%zx + size 0x%zx) is larger then (Top allocated %p - tailPadding 0x%zx)",
-						heapBase, size, handle->getMemoryTop(), tailPadding);
+				Assert_GC_true_with_message3(env, ((heapBase + size) <= (uintptr_t)handle->getMemoryTop()),
+						"End of projected heap (base 0x%zx + size 0x%zx) is larger then Top allocated %p\n",
+						heapBase, size, handle->getMemoryTop());
 			}
 
 			/* adjust heap top to lowest possible address */

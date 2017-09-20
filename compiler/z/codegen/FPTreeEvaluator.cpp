@@ -66,6 +66,7 @@
 #include "z/codegen/S390GenerateInstructions.hpp"
 #include "z/codegen/S390Instruction.hpp"
 #include "z/codegen/S390OutOfLineCodeSection.hpp"
+#include "z/codegen/OMRLinkage.hpp"
 
 static TR::InstOpCode::Mnemonic getIntToFloatLogicalConversion(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic convertOpCode)
    {
@@ -1059,14 +1060,11 @@ OMR::Z::TreeEvaluator::ddivEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    return node->getRegister();
    }
 
-/**
- * Generate code for a % b for both float and double.
- * The code calls out to an assembler version of fmod that uses standard
- * JIT linkage, except that it is known that the function does not kill
- * any registers other than FPR0/FPR1/FPR2/GPR-ra
- * The call-out does not always happen - in fact, it is hopefully rare.
- * The DIxBR instruction is used to do a divide-to-integer. The call-out is
- * only done if the result is not exact.
+/** \brief Generates code for a % b for both float and double values
+ *  \details
+ *  The code uses divide-to-integer instructions DIxBR to get remainder of two double/float values. 
+ *  In rare cases when result of DIxBR is not exact it calls out to double/float remainder helper which
+ *  calls fmod to get remainder and uses System linkage.
  */
 TR::Register *
 OMR::Z::TreeEvaluator::floatRemHelper(TR::Node * node, TR::CodeGenerator * cg)
@@ -1076,15 +1074,9 @@ OMR::Z::TreeEvaluator::floatRemHelper(TR::Node * node, TR::CodeGenerator * cg)
    TR::Register * secondRegister = cg->fprClobberEvaluate(node->getSecondChild());
    TR::Register * tempRegister = cg->allocateRegister(TR_FPR);
    TR::Register * targetRegister = cg->allocateRegister(TR_FPR);
-   TR::Register * dummyRegister3 = cg->allocateRegister(TR_FPR);
-   TR::Register * dummyRegister4 = cg->allocateRegister(TR_FPR);
-   TR::Register * dummyRegister5 = cg->allocateRegister(TR_FPR);
-   TR::Register * dummyRegister6 = cg->allocateRegister(TR_FPR);
-   TR::Register * dummyRegister7 = cg->allocateRegister(TR_FPR);
    TR::LabelSymbol * labelNotExact = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
    TR::LabelSymbol * labelOK = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-   TR::Register * raReg = cg->allocateRegister();
-
+   TR::ILOpCodes opCode = node->getOpCodeValue();
    //
    // Algorithm: c = a rem b;
    //              target = a;
@@ -1093,6 +1085,8 @@ OMR::Z::TreeEvaluator::floatRemHelper(TR::Node * node, TR::CodeGenerator * cg)
    //              if (target is +0 AND a is < +0) then target is -0;
    // The check for the special case of 0's should be on rare path code, not in the mainline
 
+   // callNode is used as dangling node used to pass to buildSystemLInkageDispatch to generate a call to fmod helper
+   TR::Node *callNode = NULL;
 
    if (node->getDataType() == TR::Float)
       {
@@ -1107,6 +1101,8 @@ OMR::Z::TreeEvaluator::floatRemHelper(TR::Node * node, TR::CodeGenerator * cg)
       generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BE, node, labelOK);        // it is not < +0
       generateRRInstruction(cg, TR::InstOpCode::LCEBR, node, targetRegister, targetRegister); // negate answer to be -0
       generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BRC, node, labelOK);        // it is not < +0
+      TR::SymbolReference *helperCallSymRef = cg->symRefTab()->findOrCreateRuntimeHelper(TR_S390jitMathHelperFREM, false, false, false);
+      callNode = TR::Node::createWithSymRef(node, TR::fcall, 2, helperCallSymRef);
       }
    else
       {
@@ -1121,45 +1117,38 @@ OMR::Z::TreeEvaluator::floatRemHelper(TR::Node * node, TR::CodeGenerator * cg)
       generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BE, node, labelOK);        // it is not < +0
       generateRRInstruction(cg, TR::InstOpCode::LCDBR, node, targetRegister, targetRegister); // negate answer to be -0
       generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BRC, node, labelOK);        // it is not < +0
+      TR::SymbolReference *helperCallSymRef = cg->symRefTab()->findOrCreateRuntimeHelper(TR_S390jitMathHelperDREM, false, false, false);
+      callNode = TR::Node::createWithSymRef(node, TR::dcall, 2, helperCallSymRef);
       }
+
+   // Putting call-out part in the OOL as we only need to call helper when result is not exact which is very rare.
+   TR_S390OutOfLineCodeSection *outlinedSlowPath = new (cg->trHeapMemory()) TR_S390OutOfLineCodeSection(labelNotExact,labelOK,cg);
+   cg->getS390OutOfLineCodeSectionList().push_front(outlinedSlowPath);
+   outlinedSlowPath->swapInstructionListsWithCompilation();
+   
    generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, labelNotExact);
+   callNode->setChild(0, node->getFirstChild());
+   callNode->setChild(1, node->getSecondChild());
+   TR::Linkage *linkage = cg->createLinkage(TR_System);
+   TR::Register *helperReturnRegister = linkage->buildSystemLinkageDispatch(callNode);
+   generateRRInstruction(cg, node->getDataType() == TR::Float ? TR::InstOpCode::LER : TR::InstOpCode::LDR, node,  targetRegister, helperReturnRegister);
 
-   void * remHelper ;
-   if (node->getDataType() == TR::Float)
-     remHelper = (void *) cg->symRefTab()->findOrCreateRuntimeHelper(TR_S390floatRemainder, false, false, false)->getMethodAddress();
-   else
-     remHelper = (void *) cg->symRefTab()->findOrCreateRuntimeHelper(TR_S390doubleRemainder, false, false, false)->getMethodAddress();
+   // buildSystemLinkageDispatch sets a helperReturnRegister to callNode. 
+   // Artificially setting reference count of callNode to 1 and decreasing it makes sure that this register is no longer live in the method. 
+   callNode->setReferenceCount(1);
+   cg->decReferenceCount(callNode);
+   generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BRC, node, labelOK);
+   outlinedSlowPath->swapInstructionListsWithCompilation();
 
-   TR::RegisterDependencyConditions * postDeps = generateRegisterDependencyConditions(0, 12, cg);
-
-   genLoadAddressConstant(cg, node, (uintptrj_t) remHelper, raReg, NULL, postDeps, NULL);
-
-   cursor = generateRRInstruction(cg, TR::InstOpCode::BASR, node, raReg, raReg);
-
-   TR::Linkage * linkage = cg->getS390Linkage();
-   postDeps->addPostCondition(raReg, linkage->getReturnAddressRegister());
-   postDeps->addPostCondition(targetRegister, TR::RealRegister::FPR0);
-   postDeps->addPostCondition(firstRegister, TR::RealRegister::FPR1);
-   postDeps->addPostCondition(secondRegister, TR::RealRegister::FPR2);
-   postDeps->addPostCondition(dummyRegister3, TR::RealRegister::FPR3);
-   postDeps->addPostCondition(dummyRegister4, TR::RealRegister::FPR4);
-   postDeps->addPostCondition(dummyRegister5, TR::RealRegister::FPR5);
-   postDeps->addPostCondition(dummyRegister6, TR::RealRegister::FPR6);
-   postDeps->addPostCondition(dummyRegister7, TR::RealRegister::FPR7);
+   TR::RegisterDependencyConditions * postDeps = generateRegisterDependencyConditions(0, 4, cg);   
+   postDeps->addPostCondition(targetRegister, TR::RealRegister::AssignAny);
+   postDeps->addPostCondition(firstRegister, TR::RealRegister::AssignAny);
+   postDeps->addPostCondition(secondRegister, TR::RealRegister::AssignAny);
    postDeps->addPostCondition(tempRegister, TR::RealRegister::AssignAny);
    generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, labelOK,postDeps);
-
    node->setRegister(targetRegister);
-   cg->decReferenceCount(node->getFirstChild());
-   cg->decReferenceCount(node->getSecondChild());
-   cg->stopUsingRegister(raReg);
    cg->stopUsingRegister(firstRegister);
    cg->stopUsingRegister(secondRegister);
-   cg->stopUsingRegister(dummyRegister3);
-   cg->stopUsingRegister(dummyRegister4);
-   cg->stopUsingRegister(dummyRegister5);
-   cg->stopUsingRegister(dummyRegister6);
-   cg->stopUsingRegister(dummyRegister7);
    cg->stopUsingRegister(tempRegister);
    return targetRegister;
    }

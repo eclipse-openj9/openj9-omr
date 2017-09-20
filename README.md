@@ -89,6 +89,8 @@ Who is using Eclipse OMR?
 
 What's the licence?
 ===================
+[![License](https://img.shields.io/badge/License-EPL%202.0-green.svg)](https://opensource.org/licenses/EPL-2.0)
+[![License](https://img.shields.io/badge/License-APL%202.0-green.svg)](https://opensource.org/licenses/Apache-2.0)
 
 All Eclipse OMR project materials are made available under the Eclipse Public
 License 2.0 and the Apache 2.0 license. You can choose which license you wish

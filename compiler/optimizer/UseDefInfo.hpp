@@ -185,7 +185,7 @@ class TR_UseDefInfo
    bool getUseDef_noExpansion(BitVector &useDef, int32_t useIndex);
    private:
    const BitVector &getUseDef_ref(int32_t useIndex, BitVector *defs = NULL);
-   const BitVector &getUseDef_ref_body(int32_t useIndex, TR_UseDefInfo::BitVector &visitedDefs, TR_UseDefInfo::BitVector *defs = NULL);
+   const BitVector &getUseDef_ref_body(int32_t useIndex, TR_BitVector *visitedDefs, TR_UseDefInfo::BitVector *defs = NULL);
    public:
 
    void          setUseDef(int32_t useIndex, int32_t defIndex);
@@ -340,6 +340,9 @@ class TR_UseDefInfo
    TR::vector<BitVector, TR::Region&> _defUseInfo;
    TR::vector<BitVector, TR::Region&> _loadDefUseInfo;
    TR::vector<int32_t, TR::Region&> _sideTableToSymRefNumMap;
+
+   // Checklist used in getUseDef_ref
+   TR_BitVector        *_defsChecklist;
 
    int32_t             _numDefOnlyNodes;
    int32_t             _numDefUseNodes;

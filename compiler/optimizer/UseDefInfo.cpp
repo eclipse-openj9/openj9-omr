@@ -285,6 +285,7 @@ void TR_UseDefInfo::prepareUseDefInfo(bool requiresGlobals, bool prefersGlobals,
       }
 
    _atoms.resize(getTotalNodes());
+   _defsChecklist = new (_region) TR_BitVector(getTotalNodes(), _region);
 
    //  traceMsg(comp(), "Growing useDefInfo to %d\n",getNumUseNodes());
    _useDefInfo.resize(getNumUseNodes(), TR_UseDefInfo::BitVector(comp()->allocator(allocatorName)));
@@ -2679,24 +2680,18 @@ bool TR_UseDefInfo::getUseDef_noExpansion(BitVector &useDef, int32_t useIndex)
 
 const TR_UseDefInfo::BitVector &TR_UseDefInfo::getUseDef_ref(int32_t useIndex, TR_UseDefInfo::BitVector *defs)
    {
-
-   TR_UseDefInfo::BitVector visitedDefs(comp()->allocator());
-   visitedDefs.GrowTo(getTotalNodes());
-
-   return getUseDef_ref_body(useIndex, visitedDefs, defs);
-
+   _defsChecklist->empty();
+   return getUseDef_ref_body(useIndex, _defsChecklist, defs);
    }
 
-const TR_UseDefInfo::BitVector & TR_UseDefInfo::getUseDef_ref_body(int32_t useIndex, TR_UseDefInfo::BitVector &visitedDefs, TR_UseDefInfo::BitVector *defs)
+const TR_UseDefInfo::BitVector & TR_UseDefInfo::getUseDef_ref_body(int32_t useIndex, TR_BitVector *visitedDefs, TR_UseDefInfo::BitVector *defs)
    {
    TR_ASSERT(isUseIndex(useIndex), "useIndex is invalid");
    bool save = (defs == NULL);
 
-   if (visitedDefs[useIndex])
-         return _EMPTY;
-
-   visitedDefs[useIndex] = true;
-
+   if (visitedDefs->get(useIndex))
+      return _EMPTY;
+   visitedDefs->set(useIndex);
 
    //   traceMsg(comp(), "UDI: getUseDef_ref for useIndex %d defs = ",useIndex);
    //   if(defs)

@@ -635,6 +635,19 @@ void TR_UseDefInfo::findTrivialSymbolsToExclude(TR::Node *node, TR::TreeTop *tre
 
 bool TR_UseDefInfo::isTrivialUseDefNode(TR::Node *node, AuxiliaryData &aux)
    {
+   if (aux._doneTrivialNode.get(node->getGlobalIndex()))
+      return aux._isTrivialNode.get(node->getGlobalIndex());
+
+   bool result = isTrivialUseDefNodeImpl(node, aux);
+   aux._doneTrivialNode.set(node->getGlobalIndex());
+   if (result)
+      aux._isTrivialNode.set(node->getGlobalIndex());
+
+   return result;
+   }
+
+bool TR_UseDefInfo::isTrivialUseDefNodeImpl(TR::Node *node, AuxiliaryData &aux)
+   {
    if (node->getOpCode().isStore() &&
        node->getSymbol()->isAutoOrParm() &&
        node->storedValueIsIrrelevant())
@@ -653,6 +666,9 @@ bool TR_UseDefInfo::isTrivialUseDefNode(TR::Node *node, AuxiliaryData &aux)
          return false;
          }
       }
+
+   if (isTrivialUseDefSymRef(symRef, aux))
+      return true;
 
    if (_hasLoadsAsDefs && symRef->getSymbol()->isAutoOrParm())
       {
@@ -678,7 +694,7 @@ bool TR_UseDefInfo::isTrivialUseDefNode(TR::Node *node, AuxiliaryData &aux)
          return true;
       }
 
-   return isTrivialUseDefSymRef(symRef, aux);
+   return false;
    }
 
 

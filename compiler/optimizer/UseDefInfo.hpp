@@ -106,12 +106,18 @@ class TR_UseDefInfo
              _numAliases(numSymRefs, _region),
              _loadsBySymRefNum(numSymRefs, _region),
              _defsForOSR(0, static_cast<TR_BitVector*>(NULL), _region),
-             _workBitVector(_region)
+             _workBitVector(_region),
+             _doneTrivialNode(_region),
+             _isTrivialNode(_region)
             {}
       TR::Region _region;
 
       // BitVector for temporary work. Used in buildUseDefs.
       TR_BitVector _workBitVector;
+
+      // Cache results from isTrivialNode
+      TR_BitVector _doneTrivialNode;
+      TR_BitVector _isTrivialNode;
 
       TR::vector<TR_BitVector *, TR::Region&> _onceReadSymbols;
       TR::vector<TR_BitVector *, TR::Region&> _onceWrittenSymbols;
@@ -208,6 +214,7 @@ class TR_UseDefInfo
 
    void    findTrivialSymbolsToExclude(TR::Node *node, TR::TreeTop *treeTop, AuxiliaryData &aux);
    bool    isTrivialUseDefNode(TR::Node *node, AuxiliaryData &aux);
+   bool    isTrivialUseDefNodeImpl(TR::Node *node, AuxiliaryData &aux);
    bool    isTrivialUseDefSymRef(TR::SymbolReference *symRef, AuxiliaryData &aux);
 
    // For Languages where an auto can alias a volatile, extra care needs to be taken when setting up use-def

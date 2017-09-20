@@ -63,7 +63,7 @@ class SimplifierFoldAndIlVerifier : public TR::IlVerifier
    };
 
 
-class DISABLED_SimplifierFoldAndTest : public TRTest::JitTest  {};
+class SimplifierFoldAndTest : public TRTest::JitTest  {};
 
 /*
  * method(int32_t parameter) 
@@ -73,7 +73,7 @@ class DISABLED_SimplifierFoldAndTest : public TRTest::JitTest  {};
  * Note that the combo of the mask and width of the parameter means
  * the expression should always fold to zero. 
  */
-TEST_F(DISABLED_SimplifierFoldAndTest, FoldHappens) {
+TEST_F(SimplifierFoldAndTest, FoldHappens) {
 
     auto inputTrees ="(method return=Int64 args=[Int32]  "
                      " (block                            "

@@ -35,39 +35,48 @@
 #include "il/SymbolReference.hpp"              // for SymbolReference, etc
 #include "il/symbol/ResolvedMethodSymbol.hpp"  // for ResolvedMethodSymbol
 #include "infra/Assert.hpp"                    // for TR_ASSERT
-#include "infra/BitVector.hpp"                 // for TR_BitContainer, etc
+#include "infra/BitVector.hpp"                 // for TR_BitVector, etc
 
 
 template <class AliasSetInterface>
 class TR_AliasSetInterface {
 public:
 
-  TR_AliasSetInterface(bool isDirectCall = false, bool includeGCSafePoint = false) :
-    _isDirectCall(isDirectCall),
-    _includeGCSafePoint(includeGCSafePoint) {
-  }
+   TR_AliasSetInterface(bool isDirectCall = false, bool includeGCSafePoint = false) :
+      _isDirectCall(isDirectCall),
+      _includeGCSafePoint(includeGCSafePoint)
+      {}
 
-  TR_BitContainer getTRAliases() {
-    return static_cast<AliasSetInterface*>(this)->getTRAliases_impl(_isDirectCall, _includeGCSafePoint);
-  }
+   TR_BitVector *getTRAliases()
+      {
+      return static_cast<AliasSetInterface*>(this)->getTRAliases_impl(_isDirectCall, _includeGCSafePoint);
+      }
 
    template <class BitVector>
    bool
    getAliases(BitVector &aliases)
       {
-        TR::Compilation *comp = TR::comp();
-        LexicalTimer t("getAliases", comp->phaseTimer());
-        return getAliasesWithClear(aliases);
+      TR::Compilation *comp = TR::comp();
+      LexicalTimer t("getAliases", comp->phaseTimer());
+      return getAliasesWithClear(aliases);
+      }
+
+   bool
+   getAliases(TR_BitVector &aliases)
+      {
+      TR::Compilation *comp = TR::comp();
+      LexicalTimer t("getAliases_TR", comp->phaseTimer());
+      return getAliasesWithClear(aliases);
       }
 
    bool
    getAliasesAndUnionWith(TR::SparseBitVector &aliases)
       {
-        TR::Compilation *comp = TR::comp();
-        LexicalTimer t("getAliasesAndUnionWith", comp->phaseTimer());
-        TR::SparseBitVector tmp(comp->allocator());
-        getAliasesWithClear(tmp);
-        return aliases.Or(tmp);
+      TR::Compilation *comp = TR::comp();
+      LexicalTimer t("getAliasesAndUnionWith", comp->phaseTimer());
+      TR::SparseBitVector tmp(comp->allocator());
+      getAliasesWithClear(tmp);
+      return aliases.Or(tmp);
       }
 
    bool
@@ -75,8 +84,9 @@ public:
       {
       TR::Compilation *comp = TR::comp();
       LexicalTimer t("getAliasesAndUnionWith_TR", comp->phaseTimer());
-      TR_BitContainer bc_aliases = getTRAliases();
-      aliases |= bc_aliases;
+      TR_BitVector *bc_aliases = getTRAliases();
+      if (bc_aliases)
+         aliases |= *bc_aliases;
       return (!aliases.isEmpty());
       }
 
@@ -85,17 +95,10 @@ public:
    getAliasesAndSubtractFrom(BitVector &v)
       {
       TR::Compilation *comp = TR::comp();
-   	LexicalTimer t("getAliasesAndSubtractFrom", comp->phaseTimer());
-    	TR_BitContainer bc_aliases = getTRAliases();
-    	if (bc_aliases.isSingleValue())
-         {
-         v[bc_aliases.getSingleValue()]=false;
-         }
-      else
-         {
-         if (bc_aliases.getBitVector())
-            v.Andc(CS2_TR_BitVector(*bc_aliases.getBitVector()));
-         }
+      LexicalTimer t("getAliasesAndSubtractFrom", comp->phaseTimer());
+      TR_BitVector *bc_aliases = getTRAliases();
+      if (bc_aliases)
+         v.Andc(CS2_TR_BitVector(*bc_aliases));
       return (!v.IsZero());
       }
 
@@ -104,18 +107,9 @@ public:
       {
       TR::Compilation *comp = TR::comp();
       LexicalTimer t("getAliasesAndIntersectWith", comp->phaseTimer());
-      TR_BitContainer bc_aliases = getTRAliases();
-      if (bc_aliases.isSingleValue())
-         {
-         bool set = v.ValueAt(bc_aliases.getSingleValue());
-         v.Clear();
-         if (set) v[bc_aliases.getSingleValue()]=true;
-         }
-      else
-         {
-         if (bc_aliases.getBitVector())
-            v.And(CS2_TR_BitVector(*bc_aliases.getBitVector()));
-         }
+      TR_BitVector *bc_aliases = getTRAliases();
+      if (bc_aliases)
+         v.And(CS2_TR_BitVector(*bc_aliases));
       return (!v.IsZero());
       }
 
@@ -124,8 +118,9 @@ public:
       {
       TR::Compilation *comp = TR::comp();
       LexicalTimer t("getAliasesAndSubtractFrom_TR", comp->phaseTimer());
-      TR_BitContainer bc_aliases = getTRAliases();
-      bitvector -= bc_aliases;
+      TR_BitVector *bc_aliases = getTRAliases();
+      if (bc_aliases)
+         bitvector -= *bc_aliases;
       return (!bitvector.isEmpty());
       }
 
@@ -139,24 +134,20 @@ public:
    contains(uint32_t refNum, TR::Compilation *comp)
       {
       LexicalTimer t("aliasesContains", comp->phaseTimer());
-      TR_BitContainer bc_aliases = getTRAliases();
-      return (bc_aliases.get(refNum) != 0);
+      TR_BitVector *bc_aliases = getTRAliases();
+      if (bc_aliases)
+         return (bc_aliases->get(refNum) != 0);
+      return false;
       }
 
    template <class BitVector> bool
    containsAny(const BitVector &refs, TR::Compilation *comp)
       {
       LexicalTimer t("aliasesContainsAny", comp->phaseTimer());
-      TR_BitContainer bc_aliases = getTRAliases();
-      if (bc_aliases.isSingleValue())
-         {
-         return refs.ValueAt(bc_aliases.getSingleValue());
-         }
-      else
-         {
-         if (!bc_aliases.getBitVector()) return false;
-         return refs.Intersects(CS2_TR_BitVector(*bc_aliases.getBitVector()));
-         }
+      TR_BitVector *bc_aliases = getTRAliases();
+      if (bc_aliases == NULL)
+         return false;
+      return refs.Intersects(CS2_TR_BitVector(*bc_aliases));
       }
 
    void
@@ -194,21 +185,29 @@ public:
    bool containsAny(TR_BitVector& v2, TR::Compilation *comp)
       {
       LexicalTimer t("aliasesContainsAny_TR", comp->phaseTimer());
-      TR_BitContainer bc_aliases = getTRAliases();
-      return bc_aliases.intersects(v2);
+      TR_BitVector *bc_aliases = getTRAliases();
+      if (bc_aliases)
+         return bc_aliases->intersects(v2);
+      return false;
       }
 
    bool isZero(TR::Compilation *comp)
       {
       LexicalTimer t("isZero", comp->phaseTimer());
-      return getTRAliases().isEmpty();
+      TR_BitVector *bc_aliases = getTRAliases();
+      if (bc_aliases)
+         return bc_aliases->isEmpty();
+      return true;
       }
 
    bool hasAliases()
       {
       TR::Compilation *comp = TR::comp();
       LexicalTimer t("hasAliases", comp->phaseTimer());
-      return !isZero(comp) && getTRAliases().hasMoreThanOneElement();
+      TR_BitVector *bc_aliases = getTRAliases();
+      if (bc_aliases)
+         return !bc_aliases->isEmpty() && bc_aliases->hasMoreThanOneElement();
+      return false;
       }
 
    void
@@ -219,10 +218,19 @@ public:
    template <class BitVector> bool
    getAliasesWithClear(BitVector &aliases)
       {
-      TR::Compilation *comp = TR::comp();
-      TR_BitContainer bc_aliases = getTRAliases();
-      Assign(aliases, bc_aliases, true);
+      TR_BitVector *bc_aliases = getTRAliases();
+      if (bc_aliases)
+         Assign(aliases, *bc_aliases, true);
       return (!aliases.IsZero());
+      }
+
+   bool
+   getAliasesWithClear(TR_BitVector &aliases)
+      {
+      TR_BitVector *bc_aliases = getTRAliases();
+      if (bc_aliases)
+         aliases = *bc_aliases;
+      return (!aliases.isEmpty());
       }
 
    bool _isDirectCall;
@@ -243,7 +251,7 @@ public:
     TR_AliasSetInterface<TR_SymAliasSetInterface<_aliasSetType> >(isDirectCall, includeGCSafePoint),
     _symbolReference(symRef) {}
 
-   TR_BitContainer getTRAliases_impl(bool isDirectCall, bool includeGCSafePoint);
+   TR_BitVector *getTRAliases_impl(bool isDirectCall, bool includeGCSafePoint);
 
    void
    setAlias_impl(TR::SymbolReference *symRef2, bool value, bool isDirectCall, bool includeGCSafePoint);
@@ -347,8 +355,8 @@ void TR_SymAliasSetInterface<_aliasSetType>::setAlias_impl(TR::SymbolReference *
 template <uint32_t _aliasSetType> inline
 void TR_SymAliasSetInterface<_aliasSetType>::removeSymRef1KillsSymRef2Asymmetrically(TR::SymbolReference *symRef1, TR::SymbolReference *symRef2, bool includeGCSafePoint)
    {
-   TR_BitVector *symRef1_killedAliases = symRef1->getUseDefAliases(includeGCSafePoint).getTRAliases().getBitVector();
-   TR_BitVector *symRef2_useAliases = symRef2->getUseonlyAliases().getTRAliases().getBitVector();
+   TR_BitVector *symRef1_killedAliases = symRef1->getUseDefAliases(includeGCSafePoint).getTRAliases();
+   TR_BitVector *symRef2_useAliases = symRef2->getUseonlyAliases().getTRAliases();
 
    if ((symRef1_killedAliases == NULL) || (symRef2_useAliases == NULL))
       return;
@@ -364,7 +372,7 @@ template <uint32_t _aliasSetType> inline
 void TR_SymAliasSetInterface<_aliasSetType>::addSymRef1KillsSymRef2Asymmetrically(TR::SymbolReference *symRef1, TR::SymbolReference *symRef2, bool includeGCSafePoint)
    {
    TR::Compilation *comp = TR::comp();
-   TR_BitVector *symRef1_killedAliases = symRef1->getUseDefAliases(includeGCSafePoint).getTRAliases().getBitVector();
+   TR_BitVector *symRef1_killedAliases = symRef1->getUseDefAliases(includeGCSafePoint).getTRAliases();
 
    if (symRef1_killedAliases != NULL)
       {
@@ -372,7 +380,7 @@ void TR_SymAliasSetInterface<_aliasSetType>::addSymRef1KillsSymRef2Asymmetricall
          symRef1_killedAliases->set(symRef2->getReferenceNumber());
       }
 
-   TR_BitVector *symRef2_useAliases = symRef2->getUseonlyAliases().getTRAliases().getBitVector();
+   TR_BitVector *symRef2_useAliases = symRef2->getUseonlyAliases().getTRAliases();
    if (symRef2_useAliases != NULL)
       {
       if (!symRef2_useAliases->isSet(symRef1->getReferenceNumber()))
@@ -394,14 +402,16 @@ void TR_SymAliasSetInterface<_aliasSetType>::setSymRef1KillsSymRef2Asymmetricall
    }
 
 template <> inline
-TR_BitContainer TR_SymAliasSetInterface<useDefAliasSet>::getTRAliases_impl(bool isDirectCall, bool includeGCSafePoint) {
-  return _symbolReference->getUseDefAliasesBV(isDirectCall, includeGCSafePoint);
-}
+TR_BitVector *TR_SymAliasSetInterface<useDefAliasSet>::getTRAliases_impl(bool isDirectCall, bool includeGCSafePoint)
+   {
+   return _symbolReference->getUseDefAliasesBV(isDirectCall, includeGCSafePoint);
+   }
 
 template <> inline
-TR_BitContainer TR_SymAliasSetInterface<UseOnlyAliasSet>::getTRAliases_impl(bool isDirectCall, bool includeGCSafePoint) {
-  return _symbolReference->getUseonlyAliasesBV(TR::comp()->getSymRefTab());
-}
+TR_BitVector *TR_SymAliasSetInterface<UseOnlyAliasSet>::getTRAliases_impl(bool isDirectCall, bool includeGCSafePoint)
+   {
+   return _symbolReference->getUseonlyAliasesBV(TR::comp()->getSymRefTab());
+   }
 
 template <class T>
 void CountUseDefAliases( T& t, const TR::SparseBitVector &syms)
@@ -419,7 +429,13 @@ void CountUseDefAliases( T& t, const TR::SparseBitVector &syms)
          {
          TR::SymbolReference *symRef = symRefTab->getSymRef(t.KeyAt(c));
          if (symRef && symRef->sharesSymbol())
-            t[c] = symRef->getUseDefAliases().getTRAliases().getBitVector()->commonElementCount(*tr_syms);
+            {
+            TR_BitVector *bv = symRef->getUseDefAliases().getTRAliases();
+            if (bv)
+               t[c] = bv->commonElementCount(*tr_syms);
+            else
+               t[c] = 0;
+            }
          else
             t[c] = 0;
          }
@@ -441,40 +457,45 @@ public:
       TR_AliasSetInterface<TR_NodeAliasSetInterface<_aliasSetType> >(isDirectCall, includeGCSafePoint),
         _node(node) {}
 
-   TR_BitContainer getTRAliases_impl(bool isDirectCall, bool includeGCSafePoint);
+   TR_BitVector *getTRAliases_impl(bool isDirectCall, bool includeGCSafePoint);
 
 private:
   TR::Node            *_node;
 };
 
 template<> inline
-TR_BitContainer TR_NodeAliasSetInterface<mayUseAliasSet>::getTRAliases_impl(bool isDirectCall, bool includeGCSafePoint) {
+TR_BitVector *TR_NodeAliasSetInterface<mayUseAliasSet>::getTRAliases_impl(bool isDirectCall, bool includeGCSafePoint)
+   {
    TR::Compilation *comp = TR::comp();
-   TR_BitContainer bc;
+   TR_BitVector *bv = NULL;
 
    if (_node->getOpCode().isLikeUse() && _node->getOpCode().hasSymbolReference())
-      bc = _node->getSymbolReference()->getUseonlyAliasesBV(comp->getSymRefTab());
+      bv = _node->getSymbolReference()->getUseonlyAliasesBV(comp->getSymRefTab());
    // else there is no symbol reference associated with the node, we return an empty bit container
 
-   return bc;
-}
+   return bv;
+   }
 
 template<> inline
-TR_BitContainer TR_NodeAliasSetInterface<mayKillAliasSet>::getTRAliases_impl(bool isDirectCall, bool includeGCSafePoint) {
+TR_BitVector *TR_NodeAliasSetInterface<mayKillAliasSet>::getTRAliases_impl(bool isDirectCall, bool includeGCSafePoint)
+   {
    TR::Compilation *comp = TR::comp();
-   TR_BitContainer bc;
+   TR_BitVector *bv = NULL;
 
    if (_node->getOpCode().hasSymbolReference() && (_node->getOpCode().isLikeDef() || _node->mightHaveVolatileSymbolReference())) //we want the old behavior in these cases
       {
       if (_node->getSymbolReference()->sharesSymbol(includeGCSafePoint))
-         bc = _node->getSymbolReference()->getUseDefAliasesBV(isDirectCall, includeGCSafePoint);
+         bv = _node->getSymbolReference()->getUseDefAliasesBV(isDirectCall, includeGCSafePoint);
       else
-         bc = _node->getSymbolReference()->getReferenceNumber();
+         {
+         bv = new (comp->aliasRegion()) TR_BitVector(comp->getSymRefCount(), comp->aliasRegion(), growable);
+         bv->set(_node->getSymbolReference()->getReferenceNumber());
+         }
       }
 
    // else there is no symbol reference associated with the node, we return an empty bit container
-   return bc;
-}
+   return bv;
+   }
 
 struct TR_NodeUseAliasSetInterface: public TR_NodeAliasSetInterface<mayUseAliasSet> {
   TR_NodeUseAliasSetInterface(TR::Node *node,

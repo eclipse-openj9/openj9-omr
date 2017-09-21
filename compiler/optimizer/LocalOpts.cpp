@@ -6390,8 +6390,12 @@ int32_t TR_BlockSplitter::perform()
          int16_t coldFreq = mergeNode->getFrequency() - hotFreq;
          if (hotFreq < splitPred->getFrequency())
             {
-            TR::DebugCounter::incStaticDebugCounter(comp(), TR::DebugCounter::debugCounterName(comp(), "blockSplitter.inconsistentFreqs/%s/(%s)/block_%d", comp()->getHotnessName(comp()->getMethodHotness()), comp()->signature(), mergeNode->getNumber()));
-            hotFreq = splitPred->getFrequency();
+            static const bool force = feGetEnv("TR_forceBlockSplitterFrequencyAdjustment") != NULL;
+            if (force || splitPred->getSuccessors().size() == 1)
+               {
+               TR::DebugCounter::incStaticDebugCounter(comp(), TR::DebugCounter::debugCounterName(comp(), "blockSplitter.inconsistentFreqs/%s/(%s)/block_%d", comp()->getHotnessName(comp()->getMethodHotness()), comp()->signature(), mergeNode->getNumber()));
+               hotFreq = splitPred->getFrequency();
+               }
             }
          int16_t hotEdgeFreq = splitPred_to_mergeNode_edge->getFrequency();
          int16_t coldEdgeFreq = (predEdgeFrequency - splitPred_to_mergeNode_edge->getFrequency()) / predEdgeFrequency;

@@ -127,6 +127,10 @@ class TR_OSRExceptionEdgeRemoval : public TR::Optimization
       return new (manager->allocator()) TR_OSRExceptionEdgeRemoval(manager);
       }
 
+   TR_BitVector *_seenDeadStores;
+
+   bool addDeadStores(TR::Block* osrBlock, TR_BitVector& dead, bool init);
+   void removeDeadStores(TR::Block* osrBlock, TR_BitVector& dead);
    virtual int32_t perform();
    virtual const char * optDetailString() const throw();
    };

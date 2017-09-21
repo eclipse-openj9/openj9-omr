@@ -6355,135 +6355,115 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
          }
       }
 
-   bool doBinaryEncoding = true;
 
-   //turns off binary encoding phase if isAssemblyOnlyMode == true
-   if (doBinaryEncoding)
+   TR_HashTab * branchHashTable = new (self()->trStackMemory()) TR_HashTab(self()->comp()->trMemory(), stackAlloc, 60, true);
+   TR_HashTab * labelHashTable = new (self()->trStackMemory()) TR_HashTab(self()->comp()->trMemory(), stackAlloc, 60, true);
+   TR_HashTab * notPrintLabelHashTable = new (self()->trStackMemory()) TR_HashTab(self()->comp()->trMemory(), stackAlloc, 60, true);
+
+   while (data.cursorInstruction)
       {
-      TR_HashTab * branchHashTable = new (self()->trStackMemory()) TR_HashTab(self()->comp()->trMemory(), stackAlloc, 60, true);
-      TR_HashTab * labelHashTable = new (self()->trStackMemory()) TR_HashTab(self()->comp()->trMemory(), stackAlloc, 60, true);
-      TR_HashTab * notPrintLabelHashTable = new (self()->trStackMemory()) TR_HashTab(self()->comp()->trMemory(), stackAlloc, 60, true);
-
-      while (data.cursorInstruction)
+      uint8_t * const instructionStart = self()->getBinaryBufferCursor();
+      if (data.cursorInstruction->isBreakPoint())
          {
-         uint8_t * const instructionStart = self()->getBinaryBufferCursor();
-         if (data.cursorInstruction->isBreakPoint())
-            {
-            self()->addBreakPointAddress(instructionStart);
-            }
+         self()->addBreakPointAddress(instructionStart);
+         }
 
-         if (self()->comp()->cg()->isBranchInstruction(data.cursorInstruction))
+      if (self()->comp()->cg()->isBranchInstruction(data.cursorInstruction))
+         {
+         TR::LabelSymbol * branchLabelSymbol = ((TR::S390BranchInstruction *)data.cursorInstruction)->getLabelSymbol();
+         if (data.cursorInstruction->getKind() == TR::Instruction::IsRIE &&
+             (toS390RIEInstruction(data.cursorInstruction)->getRieForm() == TR::S390RIEInstruction::RIE_RR ||
+              toS390RIEInstruction(data.cursorInstruction)->getRieForm() == TR::S390RIEInstruction::RIE_RI8))
             {
-            TR::LabelSymbol * branchLabelSymbol = ((TR::S390BranchInstruction *)data.cursorInstruction)->getLabelSymbol();
-            if (data.cursorInstruction->getKind() == TR::Instruction::IsRIE &&
-                (toS390RIEInstruction(data.cursorInstruction)->getRieForm() == TR::S390RIEInstruction::RIE_RR ||
-                 toS390RIEInstruction(data.cursorInstruction)->getRieForm() == TR::S390RIEInstruction::RIE_RI8))
-               {
-               branchLabelSymbol = toS390RIEInstruction(data.cursorInstruction)->getBranchDestinationLabel();
-               }
-            if (branchLabelSymbol)
-               {
-               TR_HashId hashIndex = 0;
-               branchHashTable->add((void *)branchLabelSymbol, hashIndex, (void *)branchLabelSymbol);
-               }
+            branchLabelSymbol = toS390RIEInstruction(data.cursorInstruction)->getBranchDestinationLabel();
             }
-         else if (data.cursorInstruction->getKind() == TR::Instruction::IsRIL) // e.g. LARL/EXRL
+         if (branchLabelSymbol)
             {
-            if (((TR::S390RILInstruction *)data.cursorInstruction)->getTargetLabel() != NULL)
-               {
-               TR::LabelSymbol * targetLabel = ((TR::S390RILInstruction *)data.cursorInstruction)->getTargetLabel();
-               TR_HashId hashIndex = 0;
-               branchHashTable->add((void *)targetLabel, hashIndex, (void *)targetLabel);
-               }
-            }
-         else if (self()->comp()->cg()->isLabelInstruction(data.cursorInstruction))
-            {
-            TR::LabelSymbol * labelSymbol = ((TR::S390BranchInstruction *)data.cursorInstruction)->getLabelSymbol();
             TR_HashId hashIndex = 0;
-            labelHashTable->add((void *)labelSymbol, hashIndex, (void *)labelSymbol);
-            }
-
-         self()->setBinaryBufferCursor(data.cursorInstruction->generateBinaryEncoding());
-
-         TR_ASSERT(data.cursorInstruction->getEstimatedBinaryLength() >= self()->getBinaryBufferCursor() - instructionStart,
-                 "\nInstruction length estimate must be conservatively large \n(instr=" POINTER_PRINTF_FORMAT ", opcode=%s, estimate=%d, actual=%d",
-                 data.cursorInstruction,
-                 self()->getDebug()? self()->getDebug()->getOpCodeName(&data.cursorInstruction->getOpCode()) : "(unknown)",
-                 data.cursorInstruction->getEstimatedBinaryLength(),
-                 self()->getBinaryBufferCursor() - instructionStart);
-
-         self()->addToAtlas(data.cursorInstruction);
-
-         if (data.cursorInstruction == data.preProcInstruction)
-            {
-            self()->setPrePrologueSize(self()->getBinaryBufferCursor() - self()->getBinaryBufferStart());
-            if ((!self()->comp()->getOptions()->getOption(TR_DisableGuardedCountingRecompilations) ||
-                 self()->comp()->isJProfilingCompilation()) &&
-                TR::Options::getCmdLineOptions()->allowRecompilation())
-             self()->comp()->getSymRefTab()->findOrCreateStartPCSymbolRef()->getSymbol()->getStaticSymbol()->setStaticAddress(self()->getBinaryBufferCursor());
-            }
-
-         data.cursorInstruction = data.cursorInstruction->getNext();
-
-         // generate magic word
-         if (isPrivateLinkage && data.cursorInstruction == data.jitTojitStart)
-            {
-            uint32_t argSize = self()->getBinaryBufferCursor() - self()->getCodeStart();
-            uint32_t magicWord = (argSize << 16) | static_cast<uint32_t>(self()->comp()->getReturnInfo());
-            uint32_t recompFlag = 0;
-
-#ifdef J9_PROJECT_SPECIFIC
-            if (recomp != NULL && recomp->couldBeCompiledAgain())
-               {
-               TR_LinkageInfo * linkageInfo = TR_LinkageInfo::get(self()->getCodeStart());
-               TR_ASSERT(data.loadArgSize == argSize, "arg size %d != %d\n", data.loadArgSize, argSize);
-               if (recomp->useSampling())
-                  {
-                  recompFlag = METHOD_SAMPLING_RECOMPILATION;
-                  linkageInfo->setSamplingMethodBody();
-                  }
-               else
-                  {
-                  recompFlag = METHOD_COUNTING_RECOMPILATION;
-                  linkageInfo->setCountingMethodBody();
-                  }
-               }
-#endif
-            magicWord |= recompFlag;
-
-            // first word is the code size of intrepeter-to-jit glue in bytes and the second word is the return info
-            toS390ImmInstruction(data.preProcInstruction)->setSourceImmediate(magicWord);
-            *(uint32_t *) (data.preProcInstruction->getBinaryEncoding()) = magicWord;
+            branchHashTable->add((void *)branchLabelSymbol, hashIndex, (void *)branchLabelSymbol);
             }
          }
-
-
-      // Create list of unused labels that should not be printed
-      TR_HashTabIterator lit(labelHashTable);
-      for (TR::LabelSymbol *labelSymbol = (TR::LabelSymbol *)lit.getFirst();labelSymbol;labelSymbol = (TR::LabelSymbol *)lit.getNext())
+      else if (data.cursorInstruction->getKind() == TR::Instruction::IsRIL) // e.g. LARL/EXRL
          {
+         if (((TR::S390RILInstruction *)data.cursorInstruction)->getTargetLabel() != NULL)
+            {
+            TR::LabelSymbol * targetLabel = ((TR::S390RILInstruction *)data.cursorInstruction)->getTargetLabel();
+            TR_HashId hashIndex = 0;
+            branchHashTable->add((void *)targetLabel, hashIndex, (void *)targetLabel);
+            }
+         }
+      else if (self()->comp()->cg()->isLabelInstruction(data.cursorInstruction))
+         {
+         TR::LabelSymbol * labelSymbol = ((TR::S390BranchInstruction *)data.cursorInstruction)->getLabelSymbol();
          TR_HashId hashIndex = 0;
-         if (!(branchHashTable->locate((void *)labelSymbol, hashIndex)))
-            notPrintLabelHashTable->add((void *)labelSymbol, hashIndex, (void *)labelSymbol);
+         labelHashTable->add((void *)labelSymbol, hashIndex, (void *)labelSymbol);
          }
 
-      self()->setLabelHashTable(notPrintLabelHashTable);
-      }
-   else
-      { //sets values for warmCodeEnd and coldCodeStart to avoid failing later assertions
-        //that warmcode length < estimated warmcode length
+      self()->setBinaryBufferCursor(data.cursorInstruction->generateBinaryEncoding());
+
+      TR_ASSERT(data.cursorInstruction->getEstimatedBinaryLength() >= self()->getBinaryBufferCursor() - instructionStart,
+              "\nInstruction length estimate must be conservatively large \n(instr=" POINTER_PRINTF_FORMAT ", opcode=%s, estimate=%d, actual=%d",
+              data.cursorInstruction,
+              self()->getDebug()? self()->getDebug()->getOpCodeName(&data.cursorInstruction->getOpCode()) : "(unknown)",
+              data.cursorInstruction->getEstimatedBinaryLength(),
+              self()->getBinaryBufferCursor() - instructionStart);
+
+      self()->addToAtlas(data.cursorInstruction);
+
       if (data.cursorInstruction == data.preProcInstruction)
          {
          self()->setPrePrologueSize(self()->getBinaryBufferCursor() - self()->getBinaryBufferStart());
+         if ((!self()->comp()->getOptions()->getOption(TR_DisableGuardedCountingRecompilations) ||
+              self()->comp()->isJProfilingCompilation()) &&
+             TR::Options::getCmdLineOptions()->allowRecompilation())
+          self()->comp()->getSymRefTab()->findOrCreateStartPCSymbolRef()->getSymbol()->getStaticSymbol()->setStaticAddress(self()->getBinaryBufferCursor());
          }
-      if (self()->allowSplitWarmAndColdBlocks())
+
+      data.cursorInstruction = data.cursorInstruction->getNext();
+
+      // generate magic word
+      if (isPrivateLinkage && data.cursorInstruction == data.jitTojitStart)
          {
-         self()->setWarmCodeEnd(self()->getBinaryBufferCursor());
+         uint32_t argSize = self()->getBinaryBufferCursor() - self()->getCodeStart();
+         uint32_t magicWord = (argSize << 16) | static_cast<uint32_t>(self()->comp()->getReturnInfo());
+         uint32_t recompFlag = 0;
+
+#ifdef J9_PROJECT_SPECIFIC
+         if (recomp != NULL && recomp->couldBeCompiledAgain())
+            {
+            TR_LinkageInfo * linkageInfo = TR_LinkageInfo::get(self()->getCodeStart());
+            TR_ASSERT(data.loadArgSize == argSize, "arg size %d != %d\n", data.loadArgSize, argSize);
+            if (recomp->useSampling())
+               {
+               recompFlag = METHOD_SAMPLING_RECOMPILATION;
+               linkageInfo->setSamplingMethodBody();
+               }
+            else
+               {
+               recompFlag = METHOD_COUNTING_RECOMPILATION;
+               linkageInfo->setCountingMethodBody();
+               }
+            }
+#endif
+         magicWord |= recompFlag;
+
+         // first word is the code size of intrepeter-to-jit glue in bytes and the second word is the return info
+         toS390ImmInstruction(data.preProcInstruction)->setSourceImmediate(magicWord);
+         *(uint32_t *) (data.preProcInstruction->getBinaryEncoding()) = magicWord;
          }
-      self()->setColdCodeStart(coldCode);
-      self()->setBinaryBufferCursor(coldCode);
       }
 
+
+   // Create list of unused labels that should not be printed
+   TR_HashTabIterator lit(labelHashTable);
+   for (TR::LabelSymbol *labelSymbol = (TR::LabelSymbol *)lit.getFirst();labelSymbol;labelSymbol = (TR::LabelSymbol *)lit.getNext())
+      {
+      TR_HashId hashIndex = 0;
+      if (!(branchHashTable->locate((void *)labelSymbol, hashIndex)))
+         notPrintLabelHashTable->add((void *)labelSymbol, hashIndex, (void *)labelSymbol);
+      }
+
+   self()->setLabelHashTable(notPrintLabelHashTable);
 
    // Create exception table entries for outlined instructions.
    //

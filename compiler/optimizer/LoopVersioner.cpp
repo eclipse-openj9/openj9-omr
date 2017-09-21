@@ -7575,10 +7575,18 @@ void TR_LoopVersioner::collectAllExpressionsToBeChecked(List<TR::TreeTop> *nullC
                TR::Node *duplicateCheckedValue = node->getFirstChild()->duplicateTreeForCodeMotion();
                TR::Node *vftLoad = TR::Node::createWithSymRef(TR::aloadi, 1, 1, duplicateCheckedValue, comp()->getSymRefTab()->findOrCreateVftSymbolRef());
                //TR::Node *componentTypeLoad = TR::Node::create(TR::aloadi, 1, vftLoad, comp()->getSymRefTab()->findOrCreateArrayComponentTypeSymbolRef());
-               TR::Node *romClassLoad = TR::Node::createWithSymRef(TR::aloadi, 1, 1, vftLoad, comp()->getSymRefTab()->findOrCreateClassRomPtrSymbolRef());
-               TR::Node *isArrayField = TR::Node::createWithSymRef(TR::iloadi, 1, 1, romClassLoad, comp()->getSymRefTab()->findOrCreateClassIsArraySymbolRef());
-               TR::Node *andConstNode = TR::Node::create(isArrayField, TR::iconst, 0, TR::Compiler->cls.flagValueForArrayCheck(comp()));
-               TR::Node * andNode   = TR::Node::create(TR::iand, 2, isArrayField, andConstNode);
+               TR::Node *classFlag = NULL;
+               if (TR::Compiler->target.is32Bit())
+                  {
+                  classFlag = TR::Node::createWithSymRef(TR::iloadi, 1, 1, vftLoad, comp()->getSymRefTab()->findOrCreateClassAndDepthFlagsSymbolRef());
+                  }
+               else
+                  {
+                  classFlag = TR::Node::createWithSymRef(TR::lloadi, 1, 1, vftLoad, comp()->getSymRefTab()->findOrCreateClassAndDepthFlagsSymbolRef());
+                  classFlag = TR::Node::create(TR::l2i, 1, classFlag);
+                  }
+               TR::Node *andConstNode = TR::Node::create(classFlag, TR::iconst, 0, TR::Compiler->cls.flagValueForArrayCheck(comp()));
+               TR::Node * andNode   = TR::Node::create(TR::iand, 2, classFlag, andConstNode);
                TR::Node *cmp = TR::Node::createif(TR::ificmpne, andNode, andConstNode, exitGotoBlock->getEntry());
                comparisonTrees->add(cmp);
                dumpOptDetails(comp(), "The node %p has been created for testing if object is of array type\n", cmp);

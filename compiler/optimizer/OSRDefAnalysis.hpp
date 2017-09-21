@@ -70,20 +70,6 @@ class TR_OSRDefAnalysis : public TR::Optimization
    bool requiresAnalysis();
    };
 
-
-struct ParentInfo
-   {
-   int32_t             _childNum;
-   TR::Node            *_parent;
-   ParentInfo      *_next;
-   };
-
-struct NodeParentInfo
-   {
-   TR::Node *_node;
-   ParentInfo *_parentInfo;
-   };
-
 class TR_OSRLiveRangeAnalysis : public TR::Optimization
    {
    public:
@@ -112,7 +98,6 @@ class TR_OSRLiveRangeAnalysis : public TR::Optimization
    TR_BitVector *_deadVars;
    TR_BitVector *_liveVars;
    TR_BitVector *_pendingPushVars;
-   NodeParentInfo **_pendingSlotValueParents;
    };
 
 class TR_OSRExceptionEdgeRemoval : public TR::Optimization

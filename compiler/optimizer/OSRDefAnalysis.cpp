@@ -859,8 +859,6 @@ int32_t TR_OSRLiveRangeAnalysis::perform()
          }
       }
 
-   _pendingSlotValueParents = (NodeParentInfo **)trMemory()->allocateStackMemory(numBits*sizeof(NodeParentInfo *));
-
    TR_OSRMethodData *osrMethodData = comp()->getOSRCompilationData()->findOrCreateOSRMethodData(comp()->getCurrentInlinedSiteIndex(), comp()->getMethodSymbol());
 
    TR::Block *block = NULL;
@@ -872,8 +870,6 @@ int32_t TR_OSRLiveRangeAnalysis::perform()
    block = comp()->getStartBlock();
    while (block)
       {
-      memset(_pendingSlotValueParents, 0, numBits*sizeof(NodeParentInfo *));
-
       blockNum    = block->getNumber();
       TR::TreeTop *firstTT = block->getEntry();
       for (tt = block->getExit(); tt != firstTT; tt = tt->getPrevTreeTop())
@@ -1076,47 +1072,6 @@ void TR_OSRLiveRangeAnalysis::maintainLiveness(TR::Node *node,
          //
          if (local->getLocalIndex() == 0)
             {
-            if (_pendingPushVars->get(localIndex))
-               {
-               if (_pendingSlotValueParents[localIndex])
-                  {
-                  NodeParentInfo *nodeParentInfo = _pendingSlotValueParents[localIndex];
-                  ParentInfo *cursor = nodeParentInfo->_parentInfo;
-
-                  // First time this node has been encountered.
-                  //
-                  if (node->getFirstChild()->getVisitCount() != visitCount)
-                     {
-                     node->getFirstChild()->setVisitCount(visitCount);
-                     node->getFirstChild()->setLocalIndex(node->getFirstChild()->getReferenceCount());
-
-                     if (node->getFirstChild()->getOpCode().hasSymbolReference() &&
-                         node->getFirstChild()->getSymbolReference()->getSymbol()->isAuto())
-                        {
-                        TR::AutomaticSymbol *rhsLocal = node->getFirstChild()->getSymbolReference()->getSymbol()->getAutoSymbol();
-                        if (rhsLocal && !rhsLocal->isLiveLocalIndexUninitialized())
-                           {
-                           int32_t rhsLocalIndex = rhsLocal->getLiveLocalIndex();
-                           TR_ASSERT(rhsLocalIndex >= 0, "bad local index: %d\n", rhsLocalIndex);
-                           rhsLocal->setLocalIndex(rhsLocal->getLocalIndex() + node->getFirstChild()->getReferenceCount());
-                           }
-                         }
-                      }
-
-                   while (cursor)
-                     {
-                     TR::Node *loadParent = cursor->_parent;
-                     int32_t loadChildNum = cursor->_childNum;
-                     TR::Node *loadNode = loadParent->getChild(loadChildNum);
-                     loadParent->setAndIncChild(loadChildNum, node->getFirstChild());
-                     loadNode->recursivelyDecReferenceCount();
-                     cursor = cursor->_next;
-                     }
-
-                  _pendingSlotValueParents[localIndex] = NULL;
-                  }
-               }
-
             liveVars->reset(localIndex);
             if (comp()->getOption(TR_TraceOSR))
                {
@@ -1139,25 +1094,6 @@ void TR_OSRLiveRangeAnalysis::maintainLiveness(TR::Node *node,
          if (node->getLocalIndex() == node->getReferenceCount())
             {
             local->setLocalIndex(local->getLocalIndex() + node->getReferenceCount());
-            }
-
-         if (0 && _pendingPushVars->get(localIndex))
-            {
-            NodeParentInfo *nodeParentInfo = _pendingSlotValueParents[localIndex];
-            if (!nodeParentInfo)
-               {
-               nodeParentInfo = (NodeParentInfo *) comp()->trMemory()->allocateStackMemory(sizeof(NodeParentInfo));
-               nodeParentInfo->_node = node;
-               nodeParentInfo->_parentInfo = NULL;
-               _pendingSlotValueParents[localIndex] = nodeParentInfo;
-               }
-
-            ParentInfo *parentInfo = (ParentInfo *) comp()->trMemory()->allocateStackMemory(sizeof(ParentInfo));
-            parentInfo->_parent = parent;
-            parentInfo->_childNum = childNum;
-            ParentInfo *oldParentInfo = nodeParentInfo->_parentInfo;
-            parentInfo->_next = oldParentInfo;
-            nodeParentInfo->_parentInfo = parentInfo;
             }
 
          static const char *disallowOSRPPS3 = feGetEnv("TR_DisallowOSRPPS3");

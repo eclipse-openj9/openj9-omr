@@ -885,10 +885,25 @@ int32_t TR_OSRLiveRangeAnalysis::perform()
             //
             _liveVars->empty();
             TR::Block *succ;
-            for (auto edge = block->getSuccessors().begin(); edge != block->getSuccessors().end(); ++edge)
+            auto edge = block->getSuccessors().begin();
+            for (; edge != block->getSuccessors().end(); ++edge)
                {
                succ = toBlock((*edge)->getTo());
                *_liveVars |= *liveLocals._blockAnalysisInfo[succ->getNumber()];
+               }
+
+            // If the block contains an OSR point, it should have an exception edge
+            // to an OSR catch block
+            for (edge = block->getExceptionSuccessors().begin(); edge != block->getExceptionSuccessors().end(); ++edge)
+               {
+               if (toBlock((*edge)->getTo())->isOSRCatchBlock())
+                  break;
+               }
+            if (edge == block->getExceptionSuccessors().end())
+               {
+               if (comp()->getOption(TR_TraceOSR))
+                  traceMsg(comp(), "skipping block_%d without OSR points", block->getNumber());
+               break;
                }
 
             if (comp()->getOption(TR_TraceOSR))

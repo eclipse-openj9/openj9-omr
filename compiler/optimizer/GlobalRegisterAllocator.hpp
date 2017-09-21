@@ -100,7 +100,7 @@ class TR_LiveRangeSplitter : public TR::Optimization
    virtual int32_t perform();
    virtual const char * optDetailString() const throw();
 
-   typedef TR::typed_allocator<std::pair<uint32_t, TR_RegisterCandidate*>, TR::Region&> SymRefCandidateMapAllocator;
+   typedef TR::typed_allocator<std::pair<uint32_t const, TR_RegisterCandidate*>, TR::Region&> SymRefCandidateMapAllocator;
    typedef std::less<uint32_t> SymRefCandidateMapComparator;
    typedef std::map<uint32_t, TR_RegisterCandidate*, SymRefCandidateMapComparator, SymRefCandidateMapAllocator> SymRefCandidateMap;
 
@@ -177,7 +177,7 @@ public:
    TR::Node *           resolveTypeMismatch(TR::DataType inputOldType, TR::Node *oldNode, TR::Node *newNode);
 
 private:
-   typedef TR::typed_allocator<std::pair<uint32_t, TR_RegisterCandidate*>, TR::Region&> SymRefCandidateMapAllocator;
+   typedef TR::typed_allocator<std::pair<uint32_t const, TR_RegisterCandidate*>, TR::Region&> SymRefCandidateMapAllocator;
    typedef std::less<uint32_t> SymRefCandidateMapComparator;
    typedef std::map<uint32_t, TR_RegisterCandidate*, SymRefCandidateMapComparator, SymRefCandidateMapAllocator> SymRefCandidateMap;
 

@@ -190,21 +190,21 @@ class MethodBuilder : public TR::IlBuilder
 
    typedef bool (*StrComparator)(const char *, const char*);
 
-   typedef TR::typed_allocator<std::pair<const char *, TR::SymbolReference *>, TR::Region &> SymbolMapAllocator;
+   typedef TR::typed_allocator<std::pair<const char * const, TR::SymbolReference *>, TR::Region &> SymbolMapAllocator;
    typedef std::map<const char *, TR::SymbolReference *, StrComparator, SymbolMapAllocator> SymbolMap;
 
    // This map should only be accessed inside a compilation via lookupSymbol
    SymbolMap                   _symbols;
 
-   typedef TR::typed_allocator<std::pair<const char *, int32_t>, TR::Region &> ParameterMapAllocator;
+   typedef TR::typed_allocator<std::pair<const char * const, int32_t>, TR::Region &> ParameterMapAllocator;
    typedef std::map<const char *, int32_t, StrComparator, ParameterMapAllocator> ParameterMap;
    ParameterMap                _parameterSlot;
 
-   typedef TR::typed_allocator<std::pair<const char *, TR::IlType *>, TR::Region &> SymbolTypeMapAllocator;
+   typedef TR::typed_allocator<std::pair<const char * const, TR::IlType *>, TR::Region &> SymbolTypeMapAllocator;
    typedef std::map<const char *, TR::IlType *, StrComparator, SymbolTypeMapAllocator> SymbolTypeMap;
    SymbolTypeMap               _symbolTypes;
 
-   typedef TR::typed_allocator<std::pair<int32_t, const char *>, TR::Region &> SlotToSymNameMapAllocator;
+   typedef TR::typed_allocator<std::pair<int32_t const, const char *>, TR::Region &> SlotToSymNameMapAllocator;
    typedef std::map<int32_t, const char *, std::less<int32_t>, SlotToSymNameMapAllocator> SlotToSymNameMap;
    SlotToSymNameMap            _symbolNameFromSlot;
    
@@ -214,11 +214,11 @@ class MethodBuilder : public TR::IlBuilder
    // This set acts as an identifier for symbols which correspond to arrays
    ArrayIdentifierSet          _symbolIsArray;
 
-   typedef TR::typed_allocator<std::pair<const char *, void *>, TR::Region &> MemoryLocationMapAllocator;
+   typedef TR::typed_allocator<std::pair<const char * const, void *>, TR::Region &> MemoryLocationMapAllocator;
    typedef std::map<const char *, void *, StrComparator, MemoryLocationMapAllocator> MemoryLocationMap;
    MemoryLocationMap           _memoryLocations;
 
-   typedef TR::typed_allocator<std::pair<const char *, TR::ResolvedMethod *>, TR::Region &> FunctionMapAllocator;
+   typedef TR::typed_allocator<std::pair<const char * const, TR::ResolvedMethod *>, TR::Region &> FunctionMapAllocator;
    typedef std::map<const char *, TR::ResolvedMethod *, StrComparator, FunctionMapAllocator> FunctionMap;
    FunctionMap                 _functions;
 

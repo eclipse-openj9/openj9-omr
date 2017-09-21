@@ -212,7 +212,7 @@ static int32_t getLongestPathOfDAG(TR::Node *entry, TR::Compilation *cm)
    {
    TR::StackMemoryRegion stackMemoryRegion(*cm->trMemory());
    TR::deque<TR::Node *, TR::Region&> queue(stackMemoryRegion);
-   typedef TR::typed_allocator<std::pair<TR::Node *, int32_t>, TR::Region&> LongestPathAllocator;
+   typedef TR::typed_allocator<std::pair<TR::Node * const, int32_t>, TR::Region&> LongestPathAllocator;
    typedef std::less<TR::Node *> LongestPathComparator;
    typedef std::map<TR::Node *, int32_t, LongestPathComparator, LongestPathAllocator> LongestPathMap;
    LongestPathMap longestPathLens((LongestPathComparator()), stackMemoryRegion);

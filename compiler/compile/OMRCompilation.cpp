@@ -847,6 +847,25 @@ OMR::Compilation::requiresAnalysisOSRPoint(TR::Node *node)
       }
    }
 
+/**
+ * To reduce OSR overhead, OSRLiveRangeAnalysis supports solving liveness analysis
+ * during IlGen, as an approximation of this information is commonly known at this
+ * stage.
+ *
+ * If this function returns true, OSRLiveRangeAnalysis expects pending push liveness
+ * information to be stashed in OSRData using addPendingPushLivenessInfo prior to
+ * its execution in IlGenOpts. Returning true without the correct information stashed
+ * will result in reduced performance and failed OSR transitions.
+ *
+ * If this function returns false, OSRLiveRangeAnalysis will perform liveness analysis
+ * on pending push symbols.
+ */
+bool
+OMR::Compilation::pendingPushLivenessDuringIlgen()
+   {
+   return false;
+   }
+
 bool
 OMR::Compilation::isProfilingCompilation()
    {

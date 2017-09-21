@@ -85,19 +85,28 @@ class TR_OSRLiveRangeAnalysis : public TR::Optimization
 
    private:
 
-   bool canAffordAnalysis();
+   bool shouldPerformAnalysis();
+   int32_t fullAnalysis(bool sharedParm, bool containsPendingPush);
+   int32_t partialAnalysis();
+
    void buildOSRLiveRangeInfo(TR::Node *node, TR_BitVector *liveVars, TR_OSRPoint *osrPoint,
-      int32_t *liveLocalIndexToSymRefNumberMap, int32_t maxSymRefNumber, int32_t numBits,
-      TR_OSRMethodData *osrMethodData);
+      int32_t *liveLocalIndexToSymRefNumberMap, int32_t numBits, TR_OSRMethodData *osrMethodData);
    void buildOSRSlotSharingInfo(TR::Node *node, TR_BitVector *liveVars, TR_OSRPoint *osrPoint,
       int32_t *liveLocalIndexToSymRefNumberMap, TR_BitVector *slotSharingVars);
+
+   void pendingPushLiveRangeInfo(TR::Node *node, TR_BitVector *liveSymRefs,
+      TR_BitVector *allPendingPushSymRefs, TR_OSRPoint *osrPoint, TR_OSRMethodData *osrMethodData);
+   void pendingPushSlotSharingInfo(TR::Node *node, TR_BitVector *liveSymRefs,
+      TR_BitVector *slotSharingSymRefs, TR_OSRPoint *osrPoint);
+
    void maintainLiveness(TR::Node *node, TR::Node *parent, int32_t childNum, vcount_t  visitCount,
        TR_Liveness *liveLocals, TR_BitVector *liveVars, TR::Block *block);
    TR::TreeTop *collectPendingPush(TR_ByteCodeInfo bci, TR::TreeTop *pps, TR_BitVector *liveVars);
 
-   TR_BitVector *_deadVars;
    TR_BitVector *_liveVars;
-   TR_BitVector *_pendingPushVars;
+   TR_BitVector *_pendingPushSymRefs;
+   TR_BitVector *_sharedSymRefs;
+   TR_BitVector *_workBitVector;
    };
 
 class TR_OSRExceptionEdgeRemoval : public TR::Optimization

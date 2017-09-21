@@ -636,7 +636,11 @@ TR_OSRMethodData::TR_OSRMethodData(int32_t _inlinedSiteIndex, TR::ResolvedMethod
         _linkedToCaller(false),
         slot2ScratchBufferOffset(comp()->allocator()),
         _numSymRefs(0),
-        bcInfoHashTab(comp()->allocator()),  bcLiveRangeInfoHashTab(comp()->allocator()), argInfoHashTab(comp()->allocator()) {};
+        bcInfoHashTab(comp()->allocator()),
+        bcLiveRangeInfoHashTab(comp()->allocator()),
+        bcPendingPushLivenessInfoHashTab(comp()->allocator()),
+        argInfoHashTab(comp()->allocator())
+   {}
 
 TR::Block *
 TR_OSRMethodData::findOrCreateOSRCodeBlock(TR::Node* n)
@@ -790,6 +794,37 @@ TR_OSRMethodData::getArgInfo(int32_t byteCodeIndex)
       args = argInfoHashTab.DataAt(hashIndex);
       }
    return args;
+   }
+
+/*
+ * Add pending push live range info for a BCI.
+ *
+ * During IlGen, the live pending push symbol references may be available.
+ * They can be stashed against the BCI, so that OSRLiveRangeAnalysis can
+ * skip them, avoiding costly region and liveness analysis.
+ */
+void
+TR_OSRMethodData::addPendingPushLivenessInfo(int32_t byteCodeIndex, TR_BitVector *livenessInfo)
+   {
+   bcPendingPushLivenessInfoHashTab.Add(byteCodeIndex, livenessInfo);
+   }
+
+/*
+ * Get pending push live range info for a BCI. This represents all pending pushes
+ * that are live at a BCI. It will only be valid if they are stash here using
+ * addPendingPushLivenessInfo.
+ */
+TR_BitVector *
+TR_OSRMethodData::getPendingPushLivenessInfo(int32_t byteCodeIndex)
+   {
+   CS2::HashIndex hashIndex;
+   TR_BitVector* livenessInfo = NULL;
+   if (bcPendingPushLivenessInfoHashTab.Locate(byteCodeIndex, hashIndex))
+      {
+      livenessInfo = bcPendingPushLivenessInfoHashTab.DataAt(hashIndex);
+      }
+
+   return livenessInfo;
    }
 
 void

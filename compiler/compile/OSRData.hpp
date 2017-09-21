@@ -293,6 +293,9 @@ class TR_OSRMethodData
    void addLiveRangeInfo(int32_t byteCodeIndex, TR_BitVector *liveRangeInfo);
    TR_BitVector *getLiveRangeInfo(int32_t byteCodeIndex);
 
+   void addPendingPushLivenessInfo(int32_t byteCodeIndex, TR_BitVector *livenessInfo);
+   TR_BitVector *getPendingPushLivenessInfo(int32_t byteCodeIndex);
+
    void ensureArgInfoAt(int32_t byteCodeIndex, int32_t argNum);
    void addArgInfo(int32_t byteCodeIndex, int32_t argIndex, int32_t argSymRef);
    TR_Array<int32_t>* getArgInfo(int32_t byteCodeIndex);
@@ -323,6 +326,7 @@ class TR_OSRMethodData
    TR_BCInfoHashTable           bcInfoHashTab;
 
    TR_BCLiveRangeInfoHashTable  bcLiveRangeInfoHashTab;
+   TR_BCLiveRangeInfoHashTable  bcPendingPushLivenessInfoHashTab;
 
    TR_ArgInfoHashTable argInfoHashTab;
 

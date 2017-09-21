@@ -45,23 +45,27 @@ add_library(omrcore STATIC
 	ut_omrvm.h
 )
 
-add_dependencies(omrcore
-	omrgc_tracegen
-	omrgc_hookgen
-)
-
-target_link_libraries(omrcore
-	PRIVATE
-		${OMR_CORE_GLUE_TARGET}
-		omrtrace
-		omrgc
-)
-
 target_include_directories(omrcore
 	PUBLIC
 		.
-	PRIVATE
-		$<TARGET_PROPERTY:omrgc,INTERFACE_INCLUDE_DIRECTORIES>
-		$<TARGET_PROPERTY:${OMR_GC_GLUE_TARGET},INTERFACE_INCLUDE_DIRECTORIES>
 )
 
+if(OMR_GC)
+	add_dependencies(omrcore
+		omrgc_tracegen
+		omrgc_hookgen
+	)
+
+	target_link_libraries(omrcore
+		PRIVATE
+			${OMR_CORE_GLUE_TARGET}
+			omrtrace
+			omrgc
+	)
+
+	target_include_directories(omrcore
+		PRIVATE
+			$<TARGET_PROPERTY:omrgc,INTERFACE_INCLUDE_DIRECTORIES>
+			$<TARGET_PROPERTY:${OMR_GC_GLUE_TARGET},INTERFACE_INCLUDE_DIRECTORIES>
+	)
+endif(OMR_GC)

@@ -20,10 +20,15 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
 
+#include "omrcfg.h"
+
 #define linkNext _linkNext
 #define linkPrevious _linkPrevious
+
 #include "omrlinkedlist.h"
+#if defined(OMR_GC)
 #include "mminitcore.h"
+#endif /* OMR_GC */
 #include "omrtrace.h"
 #include "ut_omrvm.h"
 #include "omrutil.h"

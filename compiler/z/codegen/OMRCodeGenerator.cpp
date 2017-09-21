@@ -6322,16 +6322,8 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
       _extentOfLitPool = self()->setEstimatedOffsetForConstantDataSnippets(_extentOfLitPool);
       }
 
-   if (self()->allowSplitWarmAndColdBlocks())
-      {
-      self()->setEstimatedWarmLength(data.estimate);
-      self()->setEstimatedColdLength(0);
-      }
-   else
-      {
-      self()->setEstimatedWarmLength(0);
-      self()->setEstimatedColdLength(data.estimate);
-      }
+   self()->setEstimatedWarmLength(data.estimate);
+   self()->setEstimatedColdLength(0);
 
    data.cursorInstruction = self()->comp()->getFirstInstruction();
 
@@ -6339,20 +6331,8 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
    uint8_t *temp = self()->allocateCodeMemory(self()->getEstimatedWarmLength(), self()->getEstimatedColdLength(), &coldCode);
 
 
-   if (!self()->allowSplitWarmAndColdBlocks())
-      {
-      // Only java split warm and cold blocks
-      TR_ASSERT(self()->getEstimatedWarmLength() == 0, "Warm estimate should be zero if we don't split warm and cold blocks");
-      self()->setBinaryBufferStart(coldCode);
-      self()->setColdCodeStart(coldCode);
-      self()->setWarmCodeEnd(coldCode);
-      self()->setBinaryBufferCursor(coldCode);
-      }
-   else
-      {
-      self()->setBinaryBufferStart(temp);
-      self()->setBinaryBufferCursor(temp);
-      }
+   self()->setBinaryBufferStart(temp);
+   self()->setBinaryBufferCursor(temp);
 
 
    static char *disableAlignJITEP = feGetEnv("TR_DisableAlignJITEP");
@@ -6478,16 +6458,6 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
          }
 
 
-      if ( !self()->allowSplitWarmAndColdBlocks() )
-         {
-         // We need this, otherwise getWarmCodeLength() would compute a -ive value,
-         // which in-turn would make the later assert check fail. The negative
-         // value comes about because getCodeStart() is larger _binaryBufferStart,
-         // which is what warmCodeEnd is initlaized to.
-         self()->setWarmCodeEnd(self()->getCodeStart());
-         }
-
-
       // Create list of unused labels that should not be printed
       TR_HashTabIterator lit(labelHashTable);
       for (TR::LabelSymbol *labelSymbol = (TR::LabelSymbol *)lit.getFirst();labelSymbol;labelSymbol = (TR::LabelSymbol *)lit.getNext())
@@ -6512,15 +6482,6 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
          }
       self()->setColdCodeStart(coldCode);
       self()->setBinaryBufferCursor(coldCode);
-      }
-
-   if ( !self()->allowSplitWarmAndColdBlocks() )
-      {
-      // We need this, otherwise getWarmCodeLength() would compute a -ive value,
-      // which in-turn would make the later assert check fail. The negative
-      // value comes about because getCodeStart() is larger _binaryBufferStart,
-      // which is what warmCodeEnd is initlaized to.
-      self()->setWarmCodeEnd(self()->getCodeStart());
       }
 
 

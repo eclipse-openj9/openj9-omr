@@ -689,9 +689,7 @@ int32_t TR_OSRLiveRangeAnalysis::perform()
    {
    if (comp()->getOption(TR_EnableOSR))
       {
-      static const char *disableOSRLiveRangeAnalysis = feGetEnv("TR_DisableOSRLiveRangeAnalysis");
-      //if (comp()->getOption(TR_DisableOSRLiveRangeAnalysis)) // add to Options later
-      if (disableOSRLiveRangeAnalysis)
+      if (comp()->getOption(TR_DisableOSRLiveRangeAnalysis))
          {
          if (comp()->getOption(TR_TraceOSR))
             traceMsg(comp(), "OSR is enabled but OSR live range analysis is not.\n");

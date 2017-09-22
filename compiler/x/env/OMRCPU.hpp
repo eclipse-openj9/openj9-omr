@@ -62,9 +62,6 @@ public:
    uint32_t getX86ProcessorFeatureFlags8(TR::Compilation *comp);
 
    bool testOSForSSESupport(TR::Compilation *comp);
-   bool getX86OSSupportsSSE(TR::Compilation *comp);
-   bool getX86OSSupportsSSE2(TR::Compilation *comp);
-   bool getX86SupportsTM(TR::Compilation *comp);
 
    };
 

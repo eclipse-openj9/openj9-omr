@@ -25,7 +25,7 @@
 #include <assert.h>
 #include <stdio.h>
 
-using MandelbrotFunction = void(int32_t, int32_t, int32_t*);
+typedef void (MandelbrotFunction) (int32_t, int32_t, int32_t*);
 
 int main(int argc, char const * const * const argv) {
     assert(argc == 2);
@@ -33,7 +33,7 @@ int main(int argc, char const * const * const argv) {
 
     // parse the input Tril file
     FILE* inputFile = fopen(argv[1], "r");
-    assert(inputFile != nullptr);
+    assert(inputFile != NULL);
     ASTNode* trees = parseFile(inputFile);
     fclose(inputFile);
 
@@ -45,8 +45,8 @@ int main(int argc, char const * const * const argv) {
     assert(mandelbrotCompiler.compile() == 0);
     auto mandelbrot = mandelbrotCompiler.getEntryPoint<MandelbrotFunction*>();
 
-    constexpr auto size = 80;                   // number of rows/columns in the output table
-    constexpr auto iterations = 1000;           // number of iterations to be performed
+    const auto size = 80;                   // number of rows/columns in the output table
+    const auto iterations = 1000;           // number of iterations to be performed
     int32_t table[size][size] = {{0}};          // the output table
 
     mandelbrot(iterations, size, &table[0][0]);

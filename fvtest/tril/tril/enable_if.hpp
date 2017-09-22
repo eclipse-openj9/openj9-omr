@@ -19,37 +19,20 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
 
-#ifndef JITBUILDER_COMPILER_HPP
-#define JITBUILDER_COMPILER_HPP
-
-#include "method_compiler.hpp"
-
-namespace TR { class IlVerifier; } 
+#ifndef ENABLE_IF_HPP
+#define ENABLE_IF_HPP
 
 namespace Tril {
+    // Create an implementation of std::enable_if which was only
+    //  added since C++11.
+    template <bool, typename T = void>
 
-/**
- * @brief Concrete realization of MethodCompiler that uses JitBuilder for compilation
- */
-class JitBuilderCompiler : public Tril::MethodCompiler {
-    public:
-        explicit JitBuilderCompiler(const ASTNode* methodNode)
-            : MethodCompiler{methodNode} {}
+    struct enable_if {};
 
-        /**
-         * @brief Compiles the Tril method using JitBuilder
-         * @return 0 on compilation success, an error code otherwise
-         */
-        int32_t compile() /* override */ ;
-
-        /**
-         * @brief Start compilation with a verifier. 
-         * @param verifier The verifier to run. 
-         * @return 0 on complilation success, an error code or exception otherwise. 
-         */
-        int32_t compileWithVerifier(TR::IlVerifier* verifier);
-};
-
+    template <typename T>
+    struct enable_if<true, T> {
+        typedef T type;
+    };
 } // namespace Tril
 
-#endif // JITBUILDER_COMPILER_HPP
+#endif // ENABLE_IF_HPP

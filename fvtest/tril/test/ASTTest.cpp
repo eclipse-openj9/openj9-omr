@@ -332,7 +332,7 @@ TEST(ASTNodeArgumentTest, CreateListFrom3SingleArguments) {
 TEST(ASTNodeArgumentTest, CompareArgumentsWithSelf) {
     auto v = createIntegerValue(10);
     auto name = "arg0";
-    auto arg = createNodeArg(name, v, nullptr);
+    auto arg = createNodeArg(name, v, NULL);
 
     ASSERT_TRUE(*arg == *arg);
     ASSERT_FALSE(*arg != *arg);
@@ -343,8 +343,8 @@ TEST(ASTNodeArgumentTest, CompareEqualArguments) {
     auto v1 = createIntegerValue(10);
     auto name0 = "arg0";
     auto name1 = "arg0";
-    auto arg0 = createNodeArg(name0, v0, nullptr);
-    auto arg1 = createNodeArg(name1, v1, nullptr);
+    auto arg0 = createNodeArg(name0, v0, NULL);
+    auto arg1 = createNodeArg(name1, v1, NULL);
 
     ASSERT_TRUE(*arg0 == *arg1);
     ASSERT_FALSE(*arg0 != *arg1);
@@ -355,8 +355,8 @@ TEST(ASTNodeArgumentTest, CompareArgumentsWithDifferentNames) {
     auto v1 = createIntegerValue(10);
     auto name0 = "arg0";
     auto name1 = "arg1";
-    auto arg0 = createNodeArg(name0, v0, nullptr);
-    auto arg1 = createNodeArg(name1, v1, nullptr);
+    auto arg0 = createNodeArg(name0, v0, NULL);
+    auto arg1 = createNodeArg(name1, v1, NULL);
 
     ASSERT_TRUE(*arg0 != *arg1);
     ASSERT_FALSE(*arg0 == *arg1);
@@ -367,8 +367,8 @@ TEST(ASTNodeArgumentTest, CompareArgumentsWithDifferentValues) {
     auto v1 = createIntegerValue(14);
     auto name0 = "arg0";
     auto name1 = "arg0";
-    auto arg0 = createNodeArg(name0, v0, nullptr);
-    auto arg1 = createNodeArg(name1, v1, nullptr);
+    auto arg0 = createNodeArg(name0, v0, NULL);
+    auto arg1 = createNodeArg(name1, v1, NULL);
 
     ASSERT_TRUE(*arg0 != *arg1);
     ASSERT_FALSE(*arg0 == *arg1);
@@ -379,8 +379,8 @@ TEST(ASTNodeArgumentTest, CompareArgumentsWithDifferentTypes) {
     auto v1 = createFloatingPointValue(10.0);
     auto name0 = "arg0";
     auto name1 = "arg0";
-    auto arg0 = createNodeArg(name0, v0, nullptr);
-    auto arg1 = createNodeArg(name1, v1, nullptr);
+    auto arg0 = createNodeArg(name0, v0, NULL);
+    auto arg1 = createNodeArg(name1, v1, NULL);
 
     ASSERT_TRUE(*arg0 != *arg1);
     ASSERT_FALSE(*arg0 == *arg1);
@@ -540,17 +540,17 @@ TEST(ASTNodeTest, Concatenate3SingleNodes)  {
 }
 
 ASTNodeArg* getMixedArgumentList() {
-   auto argList = createNodeArg("arg0", createIntegerValue(3), nullptr);
-   appendSiblingArg(argList, createNodeArg("", createStrValue("value1"), nullptr));
-   appendSiblingArg(argList, createNodeArg("arg1", createFloatingPointValue(5.4), nullptr));
-   appendSiblingArg(argList, createNodeArg("", createStrValue("value3"), nullptr));
+   auto argList = createNodeArg("arg0", createIntegerValue(3), NULL);
+   appendSiblingArg(argList, createNodeArg("", createStrValue("value1"), NULL));
+   appendSiblingArg(argList, createNodeArg("arg1", createFloatingPointValue(5.4), NULL));
+   appendSiblingArg(argList, createNodeArg("", createStrValue("value3"), NULL));
 
    return argList;
 }
 
 TEST(ASTNodeTest, GetArgsTest) {
    auto argList = getMixedArgumentList();
-   auto node = createNode("testNode", argList, nullptr, nullptr);
+   auto node = createNode("testNode", argList, NULL, NULL);
 
    auto arg = node->getArgs();
    ASSERT_EQ(*argList, *arg);
@@ -567,7 +567,7 @@ TEST(ASTNodeTest, GetArgsTest) {
 
 TEST(ASTNodeTest, GetFirstArgumentTest) {
    auto argList = getMixedArgumentList();
-   auto node = createNode("testNode", argList, nullptr, nullptr);
+   auto node = createNode("testNode", argList, NULL, NULL);
 
    auto arg = node->getArgument(0);
    ASSERT_EQ(*argList, *arg);
@@ -575,7 +575,7 @@ TEST(ASTNodeTest, GetFirstArgumentTest) {
 
 TEST(ASTNodeTest, GetThirdArgumentTest) {
    auto argList = getMixedArgumentList();
-   auto node = createNode("testNode", argList, nullptr, nullptr);
+   auto node = createNode("testNode", argList, NULL, NULL);
 
    auto arg = node->getArgument(2);
    argList = argList->next->next;
@@ -584,7 +584,7 @@ TEST(ASTNodeTest, GetThirdArgumentTest) {
 
 TEST(ASTNodeTest, GetFirstPositionalArgumentTest) {
    auto argList = getMixedArgumentList();
-   auto node = createNode("testNode", argList, nullptr, nullptr);
+   auto node = createNode("testNode", argList, NULL, NULL);
 
    auto arg = node->getPositionalArg(0);
    argList = argList->next;
@@ -593,7 +593,7 @@ TEST(ASTNodeTest, GetFirstPositionalArgumentTest) {
 
 TEST(ASTNodeTest, GetSecondPositionalArgumentTest) {
    auto argList = getMixedArgumentList();
-   auto node = createNode("testNode", argList, nullptr, nullptr);
+   auto node = createNode("testNode", argList, NULL, NULL);
 
    auto arg = node->getPositionalArg(1);
    argList = argList->next->next->next;
@@ -602,7 +602,7 @@ TEST(ASTNodeTest, GetSecondPositionalArgumentTest) {
 
 TEST(ASTNodeTest, GetFirstNamedArgumentTest) {
    auto argList = getMixedArgumentList();
-   auto node = createNode("testNode", argList, nullptr, nullptr);
+   auto node = createNode("testNode", argList, NULL, NULL);
 
    auto arg = node->getArgByName("arg0");
    ASSERT_EQ(*argList, *arg);
@@ -610,7 +610,7 @@ TEST(ASTNodeTest, GetFirstNamedArgumentTest) {
 
 TEST(ASTNodeTest, GetSecondNamedArgumentTest) {
    auto argList = getMixedArgumentList();
-   auto node = createNode("testNode", argList, nullptr, nullptr);
+   auto node = createNode("testNode", argList, NULL, NULL);
 
    auto arg = node->getArgByName("arg1");
    argList = argList->next->next;

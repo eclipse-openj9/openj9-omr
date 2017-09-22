@@ -23,8 +23,8 @@
 
 #include "ast.hpp"
 
-#define ASSERT_NULL(pointer) ASSERT_EQ(nullptr, (pointer))
-#define ASSERT_NOTNULL(pointer) ASSERT_TRUE(nullptr != (pointer))
+#define ASSERT_NULL(pointer) ASSERT_EQ(NULL, (pointer))
+#define ASSERT_NOTNULL(pointer) ASSERT_TRUE(NULL != (pointer))
 
 
 typedef std::pair<const char *, const char *> TestParamWithExpectedResultString;

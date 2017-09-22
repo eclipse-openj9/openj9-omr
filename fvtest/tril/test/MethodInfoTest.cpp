@@ -22,8 +22,8 @@
 #include "JitTest.hpp"
 #include "method_info.hpp"
 
-#define ASSERT_NULL(pointer) ASSERT_EQ(nullptr, (pointer))
-#define ASSERT_NOTNULL(pointer) ASSERT_TRUE(nullptr != (pointer))
+#define ASSERT_NULL(pointer) ASSERT_EQ(NULL, (pointer))
+#define ASSERT_NOTNULL(pointer) ASSERT_TRUE(NULL != (pointer))
 
 TEST(MethodInfoTest, EmptyMethod) {
     auto methodAST = parseString("(method return=\"NoType\")");

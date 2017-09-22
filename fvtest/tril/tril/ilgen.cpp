@@ -45,7 +45,9 @@ class OpCodeTable : public TR::ILOpCode {
       static TR::ILOpCodes getOpCodeFromName(const std::string& name) {
          auto opcode = _opcodeNameMap.find(name);
          if (opcode == _opcodeNameMap.cend()) {
-            for (const auto& p : _opCodeProperties) {
+            for (int i = TR::FirstOMROp; i< TR::NumIlOps; i++) {
+               const auto p_opCode = static_cast<TR::ILOpCodes>(i);
+               const auto& p = TR::ILOpCode::_opCodeProperties[p_opCode];
                if (name == p.name) {
                   _opcodeNameMap[name] = p.opcode;
                   return p.opcode;
@@ -79,7 +81,7 @@ std::unordered_map<std::string, TR::ILOpCodes> OpCodeTable::_opcodeNameMap;
  * reason, special opcodes are detected using opcode properties.
  */
 TR::Node* Tril::TRLangBuilder::toTRNode(const ASTNode* const tree) {
-     TR::Node* node = nullptr;
+     TR::Node* node = NULL;
 
      auto childCount = tree->getChildCount();
 
@@ -93,7 +95,7 @@ TR::Node* Tril::TRLangBuilder::toTRNode(const ASTNode* const tree) {
          }
          else {
              TraceIL("Failed to find node for commoning (@id \"%s\")\n", id)
-             return nullptr;
+             return NULL;
          }
      }
      else if (strcmp("@common", tree->getName()) == 0) {
@@ -108,7 +110,7 @@ TR::Node* Tril::TRLangBuilder::toTRNode(const ASTNode* const tree) {
          }
          else {
              TraceIL("Failed to find node for commoning (@id \"%s\")\n", id)
-             return nullptr;
+             return NULL;
          }
      }
 
@@ -135,7 +137,7 @@ TR::Node* Tril::TRLangBuilder::toTRNode(const ASTNode* const tree) {
                  node->setDouble(value->get<double>());
                  break;
               default:
-                 return nullptr;
+                 return NULL;
            }
            TraceIL("floating point value %f\n", value->getFloatingPoint());
         }
@@ -144,13 +146,13 @@ TR::Node* Tril::TRLangBuilder::toTRNode(const ASTNode* const tree) {
         TraceIL("  is direct load of ", "");
 
         // the name of the first argument tells us what kind of symref we're loading
-        if (tree->getArgByName("parm") != nullptr) {
+        if (tree->getArgByName("parm") != NULL) {
              auto arg = tree->getArgByName("parm")->getValue()->get<int32_t>();
              TraceIL("parameter %d\n", arg);
              auto symref = symRefTab()->findOrCreateAutoSymbol(_methodSymbol, arg, opcode.getType() );
              node = TR::Node::createLoad(symref);
          }
-         else if (tree->getArgByName("temp") != nullptr) {
+         else if (tree->getArgByName("temp") != NULL) {
              const auto symName = tree->getArgByName("temp")->getValue()->getString();
              TraceIL("temporary %s\n", symName);
              auto symref = _symRefMap[symName];
@@ -158,14 +160,14 @@ TR::Node* Tril::TRLangBuilder::toTRNode(const ASTNode* const tree) {
          }
          else {
              // symref kind not recognized
-             return nullptr;
+             return NULL;
          }
      }
      else if (opcode.isStoreDirect()) {
         TraceIL("  is direct store of ", "");
 
         // the name of the first argument tells us what kind of symref we're storing to
-        if (tree->getArgByName("temp") != nullptr) {
+        if (tree->getArgByName("temp") != NULL) {
             const auto symName = tree->getArgByName("temp")->getValue()->getString();
             TraceIL("temporary %s\n", symName);
 
@@ -180,7 +182,7 @@ TR::Node* Tril::TRLangBuilder::toTRNode(const ASTNode* const tree) {
         }
         else {
             // symref kind not recognized
-            return nullptr;
+            return NULL;
         }
      }
      else if (opcode.isLoadIndirect() || opcode.isStoreIndirect()) {
@@ -227,7 +229,7 @@ TR::Node* Tril::TRLangBuilder::toTRNode(const ASTNode* const tree) {
      TraceIL("  node index n%dn\n", node->getGlobalIndex());
 
      auto nodeIdArg = tree->getArgByName("id");
-     if (nodeIdArg != nullptr) {
+     if (nodeIdArg != NULL) {
          auto id = nodeIdArg->getValue()->getString();
          _nodeMap[id] = node;
          TraceIL("  node ID %s\n", id);
@@ -307,7 +309,7 @@ bool Tril::TRLangBuilder::injectIL() {
 
     // assign block names
     while (block) {
-       if (block->getArgByName("name") != nullptr) {
+       if (block->getArgByName("name") != NULL) {
            auto name = block->getArgByName("name")->getValue()->getString();
            _blockMap[name] = blockIndex;
            TraceIL("Name of block %d set to \"%s\"\n", blockIndex, name);
@@ -350,7 +352,7 @@ bool Tril::TRLangBuilder::injectIL() {
 
        // create fall-through edge
        auto fallthroughArg = block->getArgByName("fallthrough");
-       if (fallthroughArg != nullptr) {
+       if (fallthroughArg != NULL) {
            auto target = std::string(fallthroughArg->getValue()->getString());
            if (target == "@exit") {
                cfg()->addEdge(_currentBlock, cfg()->getEnd());

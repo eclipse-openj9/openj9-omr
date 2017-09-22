@@ -2531,13 +2531,12 @@ static bool virtualGuardHelper(TR::Node *node, TR::CodeGenerator *cg)
    TR::LabelSymbol *label = node->getBranchDestination()->getNode()->getLabel();
 
    cg->setVMThreadRequired(true);
-
    TR::Instruction *vgnopInstr = generateVirtualGuardNOPInstruction(node, site, deps, label, cg);
    TR::Instruction *patchPoint = cg->getVirtualGuardForPatching(vgnopInstr);
 
-   // Guards patched when the threads are stopped have no issues with multithreaded patching. 
-   // therefore alignment is not required
-   if (TR::Compiler->target.isSMP() && !cg->isStopTheWorldGuard(node))
+   // HCR guards are patched when the threads are stopped.
+   // No issues with multithreaded patching, therefore alignment is not required
+   if (TR::Compiler->target.isSMP() && !node->isHCRGuard() && !node->isOSRGuard())
       {
       // the compiler is now capable of generating a train of vgnops all looking to patch the
       // same point with different constraints. alignment is required before the delegated patch
@@ -2577,6 +2576,8 @@ static bool virtualGuardHelper(TR::Node *node, TR::CodeGenerator *cg)
    return false;
 #endif
    }
+
+
 
 void
 OMR::X86::CodeGenerator::addMetaDataForBranchTableAddress(

@@ -294,7 +294,7 @@ enum TR_CompilationOptions
    TR_TLHPrefetch                         = 0x00002000 + 6,
    TR_ReservingLocks                      = 0x00004000 + 6, // Can be merged with TR_DisableLockResevation when lock reservation is enabled on all platforms
    TR_DisableLockResevation               = 0x00008000 + 6,
-   TR_DisableNopBreakpointGuard           = 0x00010000 + 6,
+   // Available                           = 0x00010000 + 6,
    TR_DisableAggressiveRecompilations     = 0x00020000 + 6,
    TR_DisableVariablePrecisionDAA         = 0x00040000 + 6,
    // Available                           =0x00080000 + 6,

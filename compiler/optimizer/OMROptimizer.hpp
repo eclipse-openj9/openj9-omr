@@ -260,8 +260,6 @@ class Optimizer
 
    bool optsThatCanCreateLoopsDisabled() { return _disableLoopOptsThatCanCreateLoops; }
 
-   void setStrategy (const OptimizationStrategy *s) { _strategy = s; }
-
    // allowBCDSignPromotion -- if true and node1 has conservatively 'better' sign state then node2 then also consider
    // nodes equivalent (used only by certain optimizations such as CSE)
    static bool areNodesEquivalent(TR::Node *, TR::Node *, TR::Compilation *, bool allowBCDSignPromotion=false);

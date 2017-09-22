@@ -658,7 +658,7 @@ MM_ConcurrentCardTable::prepareCardsForCleaning(MM_EnvironmentStandard *env)
 
 		_firstCardInPhase = getCardTableStart();
 		/* Provided we are not already out of free storage we clean cards up to start of free list */
-		_lastCardInPhase = (firstFree > 0 )? heapAddrToCardAddr(env, firstFree) : _lastCard;
+		_lastCardInPhase = (NULL != firstFree)? heapAddrToCardAddr(env, firstFree) : _lastCard;
 
 		/* Save so we can do analysis of re-dirtied cards in finalCleanCards */
 		_firstCardInPhase2= _lastCardInPhase;

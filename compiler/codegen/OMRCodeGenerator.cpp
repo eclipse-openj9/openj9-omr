@@ -3268,24 +3268,24 @@ OMR::CodeGenerator::computeBlocksWithCalls()
 From codegen/CodeGenerator.cpp to make the size of instructions to patch smarter.
 **/
 
-static bool isStopTheWorldGuard(TR::Node *node)
+bool OMR::CodeGenerator::isStopTheWorldGuard(TR::Node *node)
    {
-   return node->isHCRGuard() || node->isOSRGuard();
+   return node->isHCRGuard() || node->isOSRGuard() || node->isBreakpointGuard();
    }
 
-static bool mergeableGuard(TR::Instruction *guard)
+bool OMR::CodeGenerator::mergeableGuard(TR::Instruction *guard)
    {
    static char *mergeOnlyHCRGuards = feGetEnv("TR_MergeOnlyHCRGuards");
-   return mergeOnlyHCRGuards ? isStopTheWorldGuard(guard->getNode()) : guard->getNode()->isNopableInlineGuard();
+   return mergeOnlyHCRGuards ? self()->isStopTheWorldGuard(guard->getNode()) : guard->getNode()->isNopableInlineGuard();
    }
 
-static bool mergeableGuards(TR::Instruction *earlierGuard, TR::Instruction *laterGuard)
+bool OMR::CodeGenerator::mergeableGuards(TR::Instruction *earlierGuard, TR::Instruction *laterGuard)
    {
-   return    mergeableGuard(earlierGuard)
-          && mergeableGuard(laterGuard)
+   return    self()->mergeableGuard(earlierGuard)
+          && self()->mergeableGuard(laterGuard)
           && earlierGuard->getNode()->getBranchDestination()
              == laterGuard->getNode()->getBranchDestination()
-          && (!isStopTheWorldGuard(earlierGuard->getNode()) || isStopTheWorldGuard(laterGuard->getNode()));
+          && (!self()->isStopTheWorldGuard(earlierGuard->getNode()) || self()->isStopTheWorldGuard(laterGuard->getNode()));
    }
 
 TR::Instruction *OMR::CodeGenerator::getVirtualGuardForPatching(TR::Instruction *vgdnop)
@@ -3293,7 +3293,7 @@ TR::Instruction *OMR::CodeGenerator::getVirtualGuardForPatching(TR::Instruction 
    TR_ASSERT(vgdnop->isVirtualGuardNOPInstruction(),
       "getGuardForPatching called with non VirtualGuardNOPInstruction [%p] - this only works for guards!", vgdnop);
 
-   if (!mergeableGuard(vgdnop))
+   if (!self()->mergeableGuard(vgdnop))
       return vgdnop;
 
    // If there are no previous instructions the instruction must be the patch point
@@ -3317,7 +3317,7 @@ TR::Instruction *OMR::CodeGenerator::getVirtualGuardForPatching(TR::Instruction 
       {
       if (prevI->isVirtualGuardNOPInstruction())
          {
-         if (mergeableGuards(prevI, vgdnop))
+         if (self()->mergeableGuards(prevI, vgdnop))
             {
             toReturn = prevI;
             }
@@ -3328,7 +3328,7 @@ TR::Instruction *OMR::CodeGenerator::getVirtualGuardForPatching(TR::Instruction 
          }
       else
          {
-         if (mergeableGuard(prevI) &&
+         if (self()->mergeableGuard(prevI) &&
              prevI->getNode()->getBranchDestination() == vgdnop->getNode()->getBranchDestination())
             {
             // instruction tied to an acceptable guard so do nothing and continue
@@ -3364,7 +3364,7 @@ TR::Instruction
       {
       if (nextI->isVirtualGuardNOPInstruction())
          {
-         if (!mergeableGuards(vgdnop, nextI))
+         if (!self()->mergeableGuards(vgdnop, nextI))
             return NULL;
          continue;
          }
@@ -3409,7 +3409,7 @@ OMR::CodeGenerator::sizeOfInstructionToBePatched(TR::Instruction *vgdnop)
 bool
 OMR::CodeGenerator::requiresAtomicPatching(TR::Instruction *vgdnop)
    {
-   return !(vgdnop->getNode() && isStopTheWorldGuard(vgdnop->getNode()));
+   return !(vgdnop->getNode() && self()->isStopTheWorldGuard(vgdnop->getNode()));
    }
 
 int32_t
@@ -3423,7 +3423,7 @@ OMR::CodeGenerator::sizeOfInstructionToBePatchedHCRGuard(TR::Instruction *vgdnop
       {
       if (nextI->isVirtualGuardNOPInstruction())
          {
-         if (!mergeableGuards(vgdnop, nextI))
+         if (!self()->mergeableGuards(vgdnop, nextI))
             break;
          continue;
          }

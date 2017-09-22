@@ -227,12 +227,12 @@ TR_VirtualGuard::createBreakpointGuardNode
 #ifdef J9_PROJECT_SPECIFIC
 /*
  * Shape of a breakpoint guard:
- * iflcmpeq/ificmpeq
+ * iflcmpne/ificmpne
  *    land/iand
  *       lloadi/iloadi <ConstantPool shadow>
  *          aconst J9Method
  *       isBreakpointedBit 
- *    isBreakpointedBit 
+ *    iconst 0 
  */
    bool is64Bit = TR::Compiler->target.is64Bit();
    TR::SymbolReferenceTable * symRefTab = comp->getSymRefTab();
@@ -244,20 +244,22 @@ TR_VirtualGuard::createBreakpointGuardNode
    aconstNode->setByteCodeIndex(0);
    TR::Node * flagBit = NULL;
    TR::Node *guard = NULL;
+   TR::Node * zero = NULL;
    if (TR::Compiler->target.is64Bit())
       {
       flagBit = TR::Node::create(callNode, TR::lconst, 0, 0);
       flagBit->setLongInt(comp->fej9()->offsetOfMethodIsBreakpointedBit());
-
+      zero = TR::Node::create(callNode, TR::lconst, 0, 0);
       }
    else
       {
       flagBit = TR::Node::create(callNode, TR::iconst, 0, comp->fej9()->offsetOfMethodIsBreakpointedBit());
+      zero = TR::Node::create(callNode, TR::iconst, 0, 0);
       }
 
-   guard =  TR::Node::createif(is64Bit? TR::iflcmpeq: TR::ificmpeq,
+   guard =  TR::Node::createif(is64Bit? TR::iflcmpne: TR::ificmpne,
             TR::Node::create(is64Bit? TR::land: TR::iand, 2, constantPool, flagBit),
-            flagBit,
+            zero,
             destination);
    return guard;
 #else
@@ -278,6 +280,8 @@ TR_VirtualGuard::createBreakpointGuard
    TR_VirtualGuard *vg = new (comp->trHeapMemory()) TR_VirtualGuard(TR_FSDTest, TR_BreakpointGuard, comp, callNode, guard, calleeIndex, comp->getCurrentInlinedSiteIndex());
    setGuardKind(guard, TR_BreakpointGuard, comp);
 
+   if (!comp->getOption(TR_DisableNopBreakpointGuard))
+      vg->dontGenerateChildrenCode();
    traceMsg(comp ,"create breakpoint guard: callNode %p guardNode %p isBreakpointGuard %d\n", callNode, guard, guard->isBreakpointGuard());
    return guard;
    }

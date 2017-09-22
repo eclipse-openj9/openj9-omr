@@ -35,15 +35,6 @@ extern "C" void _patchVirtualGuard(uint8_t *locationAddr, uint8_t *destinationAd
 extern "C" void ASM_CALL _patchVirtualGuard(uint8_t*, uint8_t*, uint32_t);
 #endif
 
-TR::PatchNOPedGuardSiteOnMethodBreakPoint* TR::PatchNOPedGuardSiteOnMethodBreakPoint::make(
-      TR_FrontEnd *fe, TR_PersistentMemory * pm, TR_OpaqueMethodBlock *method, uint8_t *location, uint8_t *destination,
-      OMR::RuntimeAssumption **sentinel)
-   {
-   TR::PatchNOPedGuardSiteOnMethodBreakPoint *result = new (pm) TR::PatchNOPedGuardSiteOnMethodBreakPoint(pm, method, location, destination);
-   result->addToRAT(pm, RuntimeAssumptionOnMethodBreakPoint, fe, sentinel);
-   return result;
-   }
- 
 
 void TR::PatchNOPedGuardSite::compensate(bool isSMP, uint8_t *location, uint8_t *destination)
    {

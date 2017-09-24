@@ -921,6 +921,9 @@ typedef struct J9MmapHandle {
 #define _XOPEN_SOURCE
 #endif /* defined(OSX) */
 #include <ucontext.h>
+#if defined(OSX)
+#undef _XOPEN_SOURCE
+#endif /* OSX */
 #endif /* !WIN32 */
 
 #if defined(J9ZOS390)

@@ -384,8 +384,7 @@ class TR_X86OpCode
       template <class TBuffer> inline typename TBuffer::cursor_t encode(typename TBuffer::cursor_t cursor, uint8_t rexbits) const;
       // finalize instruction prefix information, currently only in-use for AVX instructions for VEX.vvvv field
       inline void finalize(uint8_t* cursor) const;
-      private:
-      inline static bool allowsAVX();
+      inline bool allowsAVX() const;
       };
    template <typename TCursor>
    class BufferBase

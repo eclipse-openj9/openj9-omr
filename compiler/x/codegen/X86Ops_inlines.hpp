@@ -22,24 +22,23 @@
 #ifndef X86OPS_INLINES_INCL
 #define X86OPS_INLINES_INCL
 
-inline bool TR_X86OpCode::OpCode_t::allowsAVX()
+inline bool TR_X86OpCode::OpCode_t::allowsAVX() const
    {
-   static bool enable = feGetEnv("TR_EnableAVX") && TR::CodeGenerator::getX86ProcessorInfo().supportsAVX();
+   static bool enable = TR::CodeGenerator::getX86ProcessorInfo().supportsAVX() && !feGetEnv("TR_DisableAVX");
    return enable;
    }
 
 template <typename TBuffer> inline typename TBuffer::cursor_t TR_X86OpCode::OpCode_t::encode(typename TBuffer::cursor_t cursor, uint8_t rexbits) const
    {
+   TBuffer buffer(cursor);
    if (isX87())
       {
-      TBuffer buffer(cursor);
       buffer.append(opcode);
       // Heuristics for X87 second byte opcode
       // It could be eliminated if GCC/MSVC fully support initializer list
       buffer.append((uint8_t)((modrm_opcode << 5) | (modrm_form << 3) | immediate_size));
       return buffer;
       }
-   TBuffer buffer(cursor);
    // Prefixes
    TR::Instruction::REX rex(rexbits);
    rex.W = rex_w;

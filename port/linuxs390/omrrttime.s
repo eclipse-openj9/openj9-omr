@@ -36,7 +36,7 @@ maxprec:
     brc 3,.LCarry
     ahi %r2,-1
 .LCarry:
-    s   %r2,.LC0-.LT0(%r1)
+    sl   %r2,.LC0-.LT0(%r1)
     srdl %r2,1
     br  %r14
 

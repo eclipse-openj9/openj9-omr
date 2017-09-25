@@ -40,7 +40,7 @@ maxprec  EDCXPRLG BASEREG=8
          sl  r3,LC0+4
          brc NOBORROW,LCarry0
          ahi r2,-1
-LCarry0  s   r2,LC0
+LCarry0  sl   r2,LC0
          using PSA,r0
          l   r1,FLCCVT
          using CVT,r1
@@ -59,7 +59,7 @@ LCarry1  s   r2,CVTLSO
 maxprec  CELQPRLG BASEREG=8
          stckf CLOCK64(r4)
          lg  r3,CLOCK64(r4)
-         sg  r3,LC0
+         slg  r3,LC0
          using PSA,r0
          llgt  r1,FLCCVT
          using CVT,r1

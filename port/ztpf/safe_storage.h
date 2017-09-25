@@ -46,6 +46,7 @@ typedef struct _durable_storage {
 	siginfo_t	siginfo;
 	ucontext_t ucontext;
 	struct sigcontext sigcontext;
+	_sigregs _sregs; /* sigcontext struct contains pointer to _sigregs */
 	DIB	*pDIB;
 	struct iproc *pPROC;
 	args argv;

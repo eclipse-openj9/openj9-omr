@@ -1780,12 +1780,18 @@ omrsysinfo_get_limit(struct OMRPortLibrary *portLibrary, uint32_t resourceID, ui
 #else /* !defined(OMRZTPF) */
 		/* z/TPF does not have virtual address support */
 		*limit = OMRPORT_LIMIT_UNKNOWN_VALUE;
-		rc = OMRPORT_LIMIT_UNKNOWN;
 		Trc_PRT_sysinfo_get_limit_Exit(rc);
 		return rc;
 #endif /* !defined(OMRZTPF) */
 	} else if (OMRPORT_RESOURCE_CORE_FILE == resourceRequested) {
+#if !defined(OMRZTPF)
 		resource = RLIMIT_CORE;
+#else /* !defined(OMRZTPF) */
+		/* z/TPF does not have virtual address support */
+		*limit = OMRPORT_LIMIT_UNKNOWN_VALUE;
+		Trc_PRT_sysinfo_get_limit_Exit(rc);
+		return rc;
+#endif /* !defined(OMRZTPF) */
 	}
 
 	switch (resourceRequested) {
@@ -1795,6 +1801,7 @@ omrsysinfo_get_limit(struct OMRPortLibrary *portLibrary, uint32_t resourceID, ui
 	case OMRPORT_RESOURCE_ADDRESS_SPACE:
 		/* FALLTHROUGH */
 	case OMRPORT_RESOURCE_CORE_FILE: {
+#if !defined(OMRZTPF)
 		if (0 == getrlimit(resource, &lim)) {
 			*limit = (uint64_t)(hardLimitRequested ? lim.rlim_max : lim.rlim_cur);
 			if (RLIM_INFINITY == *limit) {
@@ -1808,6 +1815,7 @@ omrsysinfo_get_limit(struct OMRPortLibrary *portLibrary, uint32_t resourceID, ui
 			Trc_PRT_sysinfo_getrlimit_error(resource, findError(errno));
 			rc = OMRPORT_LIMIT_UNKNOWN;
 		}
+#endif /* !defined(OMRZTPF) */
 	}
 	break;
 	case OMRPORT_RESOURCE_CORE_FLAGS: {
@@ -1840,7 +1848,7 @@ omrsysinfo_get_limit(struct OMRPortLibrary *portLibrary, uint32_t resourceID, ui
 	 * must match "ulimit -n".
 	 */
 	case OMRPORT_RESOURCE_FILE_DESCRIPTORS: {
-#if defined(AIXPPC) || defined(LINUX) || defined(OSX) || defined(J9ZOS390)
+#if defined(AIXPPC) || (defined(LINUX) && !defined(OMRZTPF)) || defined(OSX) || defined(J9ZOS390)
 		/* getrlimit(2) is a POSIX routine. */
 		if (0 == getrlimit(RLIMIT_NOFILE, &lim)) {
 			*limit = (uint64_t) (hardLimitRequested ? lim.rlim_max : lim.rlim_cur);
@@ -1855,11 +1863,11 @@ omrsysinfo_get_limit(struct OMRPortLibrary *portLibrary, uint32_t resourceID, ui
 			Trc_PRT_sysinfo_getrlimit_error(resource, findError(errno));
 			rc = OMRPORT_LIMIT_UNKNOWN;
 		}
-#else
+#else /* defined(AIXPPC) || (defined(LINUX) && !defined(OMRZTPF)) || defined(OSX) || defined(J9ZOS390) */
 		/* unsupported on other platforms (just in case). */
 		*limit = OMRPORT_LIMIT_UNKNOWN_VALUE;
 		rc = OMRPORT_LIMIT_UNKNOWN;
-#endif /* defined(AIXPPC) || defined(LINUX) || defined(OSX) || defined(J9ZOS390) */
+#endif /* defined(AIXPPC) || (defined(LINUX) && !defined(OMRZTPF)) || defined(OSX) || defined(J9ZOS390) */
 	}
 	break;
 	default:
@@ -1893,13 +1901,20 @@ omrsysinfo_set_limit(struct OMRPortLibrary *portLibrary, uint32_t resourceID, ui
 		return rc;
 #endif /* !defined(OMRZTPF) */
 	} else if (OMRPORT_RESOURCE_CORE_FILE == resourceRequested) {
+#if !defined(OMRZTPF)
 		resource = RLIMIT_CORE;
+#else /* !defined(OMRZTPF) */
+		rc = -1;
+		Trc_PRT_sysinfo_set_limit_Exit(rc);
+		return rc;
+#endif /* !defined(OMRZTPF) */
 	}
 
 	switch (resourceRequested) {
 	case OMRPORT_RESOURCE_ADDRESS_SPACE:
 		/* FALLTHROUGH */
 	case OMRPORT_RESOURCE_CORE_FILE: {
+#if !defined(OMRZTPF)
 		rc = getrlimit(resource, &lim);
 		if (-1 == rc) {
 			portLibrary->error_set_last_error(portLibrary, errno, findError(errno));
@@ -1918,6 +1933,9 @@ omrsysinfo_set_limit(struct OMRPortLibrary *portLibrary, uint32_t resourceID, ui
 			portLibrary->error_set_last_error(portLibrary, errno, findError(errno));
 			Trc_PRT_sysinfo_setrlimit_error(resource, limit, findError(errno));
 		}
+#else /* !defined(OMRZTPF) */
+		rc = -1;
+#endif /* !defined(OMRZTPF) */
 		break;
 	}
 
@@ -2171,6 +2189,7 @@ omrsysinfo_limit_iterator_next(struct OMRPortLibrary *portLibrary, J9SysinfoLimi
 
 	limitElement->name = limitMap[state->count].resourceName;
 
+#if !defined(OMRZTPF)
 	getrlimitRC = getrlimit(limitMap[state->count].resource, &limits);
 
 	if (0 != getrlimitRC) {
@@ -2201,6 +2220,11 @@ omrsysinfo_limit_iterator_next(struct OMRPortLibrary *portLibrary, J9SysinfoLimi
 
 		rc = 0;
 	}
+#else /* !defined(OMRZTPF) */
+	rc = OMRPORT_ERROR_SYSINFO_OPFAILED;
+	limitElement->softValue = 0;
+	limitElement->hardValue = 0;
+#endif /* !defined(OMRZTPF) */
 
 	state->count = state->count + 1;
 	return rc;

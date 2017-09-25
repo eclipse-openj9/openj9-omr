@@ -19,7 +19,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
 
-#if defined(LINUX) || defined(__APPLE__) || defined(_AIX)
+#if (defined(LINUX) && !defined(OMRZTPF)) || defined(__APPLE__) || defined(_AIX)
 #include <sys/mman.h>
 #if defined(__APPLE__) || !defined(MAP_ANONYMOUS)
 #define MAP_ANONYMOUS MAP_ANON
@@ -45,7 +45,7 @@ TR::DebugSegmentProvider::~DebugSegmentProvider() throw()
    {
    for ( auto it = _segments.begin(); it != _segments.end(); it = _segments.begin() )
       {
-#if defined(LINUX) || defined(__APPLE__) || defined(_AIX)
+#if (defined(LINUX) && !defined(OMRZTPF)) || defined(__APPLE__) || defined(_AIX)
       munmap(it->base(), it->size());
 #elif defined(_WIN32)
       VirtualFree(it->base(), 0, MEM_RELEASE);
@@ -60,7 +60,7 @@ TR::MemorySegment &
 TR::DebugSegmentProvider::request(size_t requiredSize)
    {
    size_t adjustedSize = ( ( requiredSize + (defaultSegmentSize() - 1) ) / defaultSegmentSize() ) * defaultSegmentSize();
-#if defined(LINUX) || defined(__APPLE__) || defined(_AIX)
+#if (defined(LINUX) && !defined(OMRZTPF)) || defined(__APPLE__) || defined(_AIX)
    void *newSegmentArea = mmap(NULL, adjustedSize, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
    if (newSegmentArea == MAP_FAILED) throw std::bad_alloc();
 #elif defined(_WIN32)
@@ -79,7 +79,7 @@ TR::DebugSegmentProvider::request(size_t requiredSize)
       }
    catch (...)
       {
-#if defined(LINUX) || defined(__APPLE__) || defined(_AIX)
+#if (defined(LINUX) && !defined(OMRZTPF)) || defined(__APPLE__) || defined(_AIX)
       munmap(newSegmentArea, adjustedSize);
 #elif defined(_WIN32)
       VirtualFree(newSegmentArea, 0, MEM_RELEASE);
@@ -93,7 +93,7 @@ TR::DebugSegmentProvider::request(size_t requiredSize)
 void
 TR::DebugSegmentProvider::release(TR::MemorySegment &segment) throw()
    {
-#if defined(LINUX) || defined(__APPLE__) || defined(_AIX)
+#if (defined(LINUX) && !defined(OMRZTPF)) || defined(__APPLE__) || defined(_AIX)
    void * remap = mmap(segment.base(), segment.size(), PROT_NONE, MAP_ANONYMOUS | MAP_PRIVATE | MAP_FIXED, -1, 0);
    TR_ASSERT(remap == segment.base(), "Remapping of memory failed!");
 #elif defined(_WIN32)

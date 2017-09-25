@@ -102,7 +102,7 @@ class Relocation
    virtual uint8_t *getUpdateLocation()           {return _updateLocation;}
    uint8_t *setUpdateLocation(uint8_t *p) {return (_updateLocation = p);}
 
-   virtual bool isAOTRelocation() { return true; }
+   virtual bool isExternalRelocation() { return true; }
 
    TR::RelocationDebugInfo* getDebugInfo();
 
@@ -111,7 +111,8 @@ class Relocation
    /**dumps a trace of the internals - override as required */
    virtual void trace(TR::Compilation* comp);
 
-   virtual void addAOTRelocation(TR::CodeGenerator *codeGen) {}
+   virtual void addAOTRelocation(TR::CodeGenerator *codeGen) {addExternalRelocation(codeGen);}
+   virtual void addExternalRelocation(TR::CodeGenerator *codeGen) {}
 
    virtual void apply(TR::CodeGenerator *codeGen);
    };
@@ -127,7 +128,7 @@ class LabelRelocation : public TR::Relocation
    TR::LabelSymbol *getLabel()                  {return _label;}
    TR::LabelSymbol *setLabel(TR::LabelSymbol *l) {return (_label = l);}
 
-   bool isAOTRelocation() { return false; }
+   bool isExternalRelocation() { return false; }
    };
 
 class LabelRelative8BitRelocation : public TR::LabelRelocation
@@ -205,7 +206,7 @@ class InstructionAbsoluteRelocation : public TR::Relocation
       : TR::Relocation(updateLocation), _instruction(i), _useEndAddr(useEndAddr) {}
    virtual void apply(TR::CodeGenerator *cg);
 
-   bool isAOTRelocation() { return false; }
+   bool isExternalRelocation() { return false; }
 
    protected:
    TR::Instruction *getInstruction() { return _instruction; }
@@ -251,7 +252,7 @@ class LoadLabelRelative16BitRelocation : public TR::Relocation
    int32_t setDeltaToStartLabel(int32_t d)   { return (_deltaToStartLabel = d); }
    int32_t getDeltaToStartLabel()            { return _deltaToStartLabel; }
 
-   bool isAOTRelocation() { return false; }
+   bool isExternalRelocation() { return false; }
 
    virtual void apply(TR::CodeGenerator *codeGen);
    };
@@ -279,7 +280,7 @@ class LoadLabelRelative32BitRelocation : public TR::Relocation
    int32_t setDeltaToStartLabel(int32_t d)   { return (_deltaToStartLabel = d); }
    int32_t getDeltaToStartLabel()            { return _deltaToStartLabel; }
 
-   bool isAOTRelocation() { return false; }
+   bool isExternalRelocation() { return false; }
 
    virtual void apply(TR::CodeGenerator *codeGen);
    };
@@ -415,7 +416,8 @@ class ExternalRelocation : public TR::Relocation
 
    void trace(TR::Compilation* comp);
 
-   void addAOTRelocation(TR::CodeGenerator *codeGen);
+   void addAOTRelocation(TR::CodeGenerator *codeGen) {addExternalRelocation(codeGen);}
+   void addExternalRelocation(TR::CodeGenerator *codeGen);
    virtual uint8_t collectModifier();
    virtual uint32_t getNarrowSize() {return 2;}
    virtual uint32_t getWideSize() {return 4;}

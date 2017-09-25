@@ -154,12 +154,12 @@ uint8_t TR::ExternalRelocation::collectModifier()
    return 0;
    }
 
-void TR::ExternalRelocation::addAOTRelocation(TR::CodeGenerator *codeGen)
+void TR::ExternalRelocation::addExternalRelocation(TR::CodeGenerator *codeGen)
    {
    TR::AheadOfTimeCompile::interceptAOTRelocation(this);
 
    TR::Compilation *comp = codeGen->comp();
-   AOTcgDiag0(comp, "TR::ExternalRelocation::addAOTRelocation\n");
+   AOTcgDiag0(comp, "TR::ExternalRelocation::addExternalRelocation\n");
    if (comp->getOption(TR_AOT))
       {
       TR_LinkHead<TR::IteratedExternalRelocation>& aot = codeGen->getAheadOfTimeCompile()->getAOTRelocationTargets();

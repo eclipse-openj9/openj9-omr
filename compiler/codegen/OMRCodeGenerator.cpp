@@ -250,7 +250,7 @@ OMR::CodeGenerator::CodeGenerator() :
      _collectedSpillList(getTypedAllocator<TR_BackingStore*>(TR::comp()->allocator())),
      _allSpillList(getTypedAllocator<TR_BackingStore*>(TR::comp()->allocator())),
      _relocationList(getTypedAllocator<TR::Relocation*>(TR::comp()->allocator())),
-     _aotRelocationList(getTypedAllocator<TR::Relocation*>(TR::comp()->allocator())),
+     _externalRelocationList(getTypedAllocator<TR::Relocation*>(TR::comp()->allocator())),
      _staticRelocationList(_compilation->allocator()),
      _breakPointList(getTypedAllocator<uint8_t*>(TR::comp()->allocator())),
      _jniCallSites(getTypedAllocator<TR_Pair<TR_ResolvedMethod,TR::Instruction> *>(TR::comp()->allocator())),
@@ -3179,9 +3179,9 @@ TR::list<OMR::RegisterUsage*> *OMR::CodeGenerator::stopRecordingRegisterUsage()
 
 void OMR::CodeGenerator::addRelocation(TR::Relocation *r)
    {
-   if (r->isAOTRelocation())
+   if (r->isExternalRelocation())
       {
-      TR_ASSERT(false, "Cannot use addRelocation to add an AOT relocation. Please use addAOTRelocation here");
+      TR_ASSERT(false, "Cannot use addRelocation to add an AOT relocation. Please use addExternalRelocation here");
       }
    else
       {
@@ -3191,37 +3191,47 @@ void OMR::CodeGenerator::addRelocation(TR::Relocation *r)
 
 void OMR::CodeGenerator::addAOTRelocation(TR::Relocation *r, const char *generatingFileName, uintptr_t generatingLineNumber, TR::Node *node, TR::AOTRelocationPositionRequest where)
    {
-   TR_ASSERT(generatingFileName, "AOT relocation location has improper NULL filename specified");
+   self()->addExternalRelocation(r, generatingFileName, generatingLineNumber, node, static_cast<TR::ExternalRelocationPositionRequest>(where));
+   }
+
+void OMR::CodeGenerator::addAOTRelocation(TR::Relocation *r, TR::RelocationDebugInfo* info, TR::AOTRelocationPositionRequest where)
+   {
+   self()->addExternalRelocation(r, info, static_cast<TR::ExternalRelocationPositionRequest>(where));
+   }
+
+void OMR::CodeGenerator::addExternalRelocation(TR::Relocation *r, const char *generatingFileName, uintptr_t generatingLineNumber, TR::Node *node, TR::ExternalRelocationPositionRequest where)
+   {
+   TR_ASSERT(generatingFileName, "External relocation location has improper NULL filename specified");
    if (self()->comp()->compileRelocatableCode())
       {
       TR::RelocationDebugInfo *genData = new(self()->trHeapMemory()) TR::RelocationDebugInfo;
       genData->file = generatingFileName;
       genData->line = generatingLineNumber;
       genData->node = node;
-      self()->addAOTRelocation(r, genData, where);
+      self()->addExternalRelocation(r, genData, where);
       }
    }
 
-void OMR::CodeGenerator::addAOTRelocation(TR::Relocation *r, TR::RelocationDebugInfo* info, TR::AOTRelocationPositionRequest where)
+void OMR::CodeGenerator::addExternalRelocation(TR::Relocation *r, TR::RelocationDebugInfo* info, TR::ExternalRelocationPositionRequest where)
    {
    if (self()->comp()->compileRelocatableCode())
       {
-      TR_ASSERT(info, "AOT relocation location does not have associated debug information");
+      TR_ASSERT(info, "External relocation location does not have associated debug information");
       r->setDebugInfo(info);
       switch (where)
          {
-         case TR::AOTRelocationAtFront:
-            _aotRelocationList.push_front(r);
+         case TR::ExternalRelocationAtFront:
+            _externalRelocationList.push_front(r);
             break;
 
-         case TR::AOTRelocationAtBack:
-            _aotRelocationList.push_back(r);
+         case TR::ExternalRelocationAtBack:
+            _externalRelocationList.push_back(r);
             break;
 
          default:
             TR_ASSERT_FATAL(
                false,
-               "invalid TR::AOTRelocationPositionRequest %d",
+               "invalid TR::ExternalRelocationPositionRequest %d",
                where);
             break;
          }

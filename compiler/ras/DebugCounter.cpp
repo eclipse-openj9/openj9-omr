@@ -146,7 +146,7 @@ TR::DebugCounter::generateRelocation(TR::Compilation *comp, uint8_t *location, T
                                                                                  TR_DebugCounter,
                                                                                  comp->cg());
 
-   comp->cg()->addAOTRelocation(r, __FILE__, __LINE__, node);
+   comp->cg()->addExternalRelocation(r, __FILE__, __LINE__, node);
    }
 
 void
@@ -160,7 +160,7 @@ TR::DebugCounter::generateRelocation(TR::Compilation *comp, TR::Instruction *fir
                                                                                      TR_DebugCounter,
                                                                                      comp->cg());
 
-   comp->cg()->addAOTRelocation(r, __FILE__, __LINE__, node);
+   comp->cg()->addExternalRelocation(r, __FILE__, __LINE__, node);
    }
 
 void
@@ -175,7 +175,7 @@ TR::DebugCounter::generateRelocation(TR::Compilation *comp, TR::Instruction *fir
                                                                                      TR_DebugCounter,
                                                                                      comp->cg());
 
-   comp->cg()->addAOTRelocation(r, __FILE__, __LINE__, node);
+   comp->cg()->addExternalRelocation(r, __FILE__, __LINE__, node);
    }
 
 bool

@@ -339,7 +339,7 @@ uint8_t *TR::ARMConstantDataSnippet::emitSnippetBody()
                   }
                else
                   {
-                  cg()->addAOTRelocation(new (cg()->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(requestors[i],
+                  cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(requestors[i],
                                                                                                (uint8_t *)(addr),
                                                                                                (uint8_t *)fixedSequence4,
                                                                                                TR_FixedSequenceAddress2, cg()),
@@ -354,7 +354,7 @@ uint8_t *TR::ARMConstantDataSnippet::emitSnippetBody()
                *(int32_t *)iloc2 |= LO_VALUE(addr) & 0x0000ffff;
                TR_RelocationRecordInformation *recordInfo = ( TR_RelocationRecordInformation *)comp->trMemory()->allocateMemory(sizeof( TR_RelocationRecordInformation), heapAlloc);
                recordInfo->data3 = orderedPairSequence1;
-               cg()->addAOTRelocation(new (_cg->trHeapMemory()) TR::ExternalOrderedPair32BitRelocation(iloc1,
+               cg()->addExternalRelocation(new (_cg->trHeapMemory()) TR::ExternalOrderedPair32BitRelocation(iloc1,
                                                                                                       iloc2,
                                                                                                       (uint8_t *)recordInfo,
                                                                                                       TR_AbsoluteMethodAddressOrderedPair,
@@ -401,7 +401,7 @@ uint8_t *TR::ARMConstantDataSnippet::emitSnippetBody()
                   }
                else
                   {
-                  cg()->addAOTRelocation(new (cg()->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(requestors[i],
+                  cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(requestors[i],
                                                                                                (uint8_t *)(addr),
                                                                                                (uint8_t *)fixedSequence4,
                                                                                                TR_FixedSequenceAddress2,
@@ -418,7 +418,7 @@ uint8_t *TR::ARMConstantDataSnippet::emitSnippetBody()
 
                TR_RelocationRecordInformation *recordInfo = ( TR_RelocationRecordInformation *)comp->trMemory()->allocateMemory(sizeof( TR_RelocationRecordInformation), heapAlloc);
                recordInfo->data3 = orderedPairSequence1;
-               cg()->addAOTRelocation(new (_cg->trHeapMemory()) TR::ExternalOrderedPair32BitRelocation(iloc1, iloc2, (uint8_t *)recordInfo, TR_AbsoluteMethodAddressOrderedPair, cg()),
+               cg()->addExternalRelocation(new (_cg->trHeapMemory()) TR::ExternalOrderedPair32BitRelocation(iloc1, iloc2, (uint8_t *)recordInfo, TR_AbsoluteMethodAddressOrderedPair, cg()),
                                       __FILE__, __LINE__, requestors[i]->getNode());
                }
             }
@@ -458,7 +458,7 @@ uint8_t *TR::ARMConstantDataSnippet::emitSnippetBody()
                   {
                   TR::Relocation *relo;
                   relo = new (cg()->trHeapMemory()) TR::ExternalRelocation(codeCursor, (uint8_t *)node, kind, cg());
-                  cg()->addAOTRelocation(relo, __FILE__, __LINE__, node);
+                  cg()->addExternalRelocation(relo, __FILE__, __LINE__, node);
                   }
                }
             }
@@ -493,7 +493,7 @@ uint8_t *TR::ARMConstantDataSnippet::emitSnippetBody()
                }
             else
                {
-               cg()->addAOTRelocation(new (cg()->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(requestors[i],
+               cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(requestors[i],
                                                                                                (uint8_t *)(addr),
                                                                                                (uint8_t *)fixedSequence4,
                                                                                                TR_FixedSequenceAddress2,

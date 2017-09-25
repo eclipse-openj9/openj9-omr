@@ -1178,7 +1178,7 @@ uint8_t *OMR::Power::MemoryReference::generateBinaryEncoding(TR::Instruction *cu
                recordInfo->data1 = (uintptr_t)self()->getSymbolReference();
                recordInfo->data2 = node == NULL ? -1 : node->getInlinedSiteIndex();
                recordInfo->data3 = fixedSequence1;
-               cg->addAOTRelocation(
+               cg->addExternalRelocation(
                   new (cg->trHeapMemory()) TR::ExternalRelocation(
                      cursor,
                      (uint8_t*)recordInfo,

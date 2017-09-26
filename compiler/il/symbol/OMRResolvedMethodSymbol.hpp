@@ -169,7 +169,7 @@ public:
 
    bool canInjectInduceOSR(TR::Node* node);
 
-   bool induceOSRAfter(TR::TreeTop *insertionPoint, TR_ByteCodeInfo induceBCI, TR::TreeTop* branch, bool extendRemainder, int32_t offset);
+   bool induceOSRAfter(TR::TreeTop *insertionPoint, TR_ByteCodeInfo induceBCI, TR::TreeTop* branch, bool extendRemainder, int32_t offset, TR::TreeTop ** lastTreeTop = NULL);
    TR::TreeTop *induceImmediateOSRWithoutChecksBefore(TR::TreeTop *insertionPoint);
 
    int32_t incTempIndex(TR_FrontEnd * fe);

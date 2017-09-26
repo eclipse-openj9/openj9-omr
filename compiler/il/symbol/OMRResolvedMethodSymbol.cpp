@@ -594,7 +594,8 @@ OMR::ResolvedMethodSymbol::genInduceOSRCallNode(TR::TreeTop* insertionPoint,
 
 
 bool
-OMR::ResolvedMethodSymbol::induceOSRAfter(TR::TreeTop *insertionPoint, TR_ByteCodeInfo induceBCI, TR::TreeTop* branch, bool extendRemainder, int32_t offset)
+OMR::ResolvedMethodSymbol::induceOSRAfter(TR::TreeTop *insertionPoint, TR_ByteCodeInfo induceBCI, TR::TreeTop* branch,
+    bool extendRemainder, int32_t offset, TR::TreeTop ** lastTreeTop)
    {
    TR::Block *block = insertionPoint->getEnclosingBlock();
 
@@ -628,7 +629,13 @@ OMR::ResolvedMethodSymbol::induceOSRAfter(TR::TreeTop *insertionPoint, TR_ByteCo
       osrBlock->getEntry()->getNode()->setByteCodeInfo(induceBCI);
       osrBlock->getExit()->getNode()->setByteCodeInfo(induceBCI);
 
-      cfg->findLastTreeTop()->join(osrBlock->getEntry());
+      // Load the cached last treetop if available, and store it when finished
+      TR::TreeTop *end = lastTreeTop && (*lastTreeTop) ? (*lastTreeTop) : cfg->findLastTreeTop();
+      TR_ASSERT(end->getNextTreeTop() == NULL, "The last treetop must not have a treetop after it");
+      end->join(osrBlock->getEntry());
+      if (lastTreeTop)
+         (*lastTreeTop) = osrBlock->getExit();
+
       cfg->addNode(osrBlock);
       cfg->addEdge(block, osrBlock);
 

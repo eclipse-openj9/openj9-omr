@@ -24,6 +24,8 @@
 
 #include <stdint.h>                           // for int32_t
 #include "il/Node.hpp"                        // for Node, vcount_t
+#include "infra/IGNode.hpp"                   // for TR_IGNode
+#include "infra/vector.hpp"                   // for TR::vector
 #include "optimizer/Optimization.hpp"         // for Optimization
 #include "optimizer/OptimizationManager.hpp"  // for OptimizationManager
 
@@ -53,7 +55,7 @@ class TR_CompactLocals : public TR::Optimization
    TR_BitVector                   *_liveVars;
    TR_BitVector                   *_prevLiveVars;
    TR_BitVector                   *_temp;
-   TR_Array<TR::AutomaticSymbol *> *_localIndexToSymbolMap;
+   TR::vector<TR_IGNode *, TR::Region&> *_localIndexToIGNode;
    TR_InterferenceGraph           *_localsIG;
    TR_HashTabInt                  *_visit;
    TR_Array<TR::AutomaticSymbol *> *_callerLiveSyms;

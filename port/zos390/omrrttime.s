@@ -49,7 +49,7 @@ LCarry0  sl   r2,LC0
          sl  r3,CVTLSO+4
          brc NOBORROW,LCarry1
          ahi r2,-1
-LCarry1  s   r2,CVTLSO
+LCarry1  sl  r2,CVTLSO
          drop r0,r1
          srdl r2,1
          EDCXEPLG

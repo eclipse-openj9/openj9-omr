@@ -754,7 +754,7 @@ void TR::LocalDeadStoreElimination::adjustStoresInfo(TR::Node *node, TR_BitVecto
    // being stored into as unused so that any dead store encountered above
    // can be removed if it does not feed a use.
    //
-   if (node->getOpCode().isStore())
+   if (node->getOpCode().isStore() && !(node->getSymbolReference()->getSymbol()->isAutoOrParm() && node->storedValueIsIrrelevant()))
       {
       TR::SymbolReference *symRef = node->getSymbolReference();
       TR::Symbol *sym = symRef->getSymbol();

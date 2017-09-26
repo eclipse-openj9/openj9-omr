@@ -69,7 +69,14 @@ endif
 
 tool_targets += tools/hookgen
 
-HOOK_DEFINITION_FILES = $(abspath ./gc/base/omrmmprivate.hdf ./gc/include/omrmm.hdf ./fvtest/algotest/hooksample.hdf)
+# convert Cygwin path to Windows path with regular slashes
+ifneq (,$(findstring CYGWIN,$(shell uname -s)))
+convertPath = $(shell cygpath -m $1)
+else
+convertPath = $1
+endif
+
+HOOK_DEFINITION_FILES = $(call convertPath,$(abspath ./gc/base/omrmmprivate.hdf ./gc/include/omrmm.hdf ./fvtest/algotest/hooksample.hdf))
 HOOK_DEFINITION_SENTINEL = $(patsubst %.hdf,%.sentinel, $(HOOK_DEFINITION_FILES))
 define HOOKGEN_COMMAND
 cd $(exe_output_dir) && ./hookgen $<

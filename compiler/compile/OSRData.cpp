@@ -809,12 +809,6 @@ TR_OSRMethodData::ensureSlotSharingInfoAt(int32_t byteCodeIndex)
       }
    }
 
-bool
-TR_OSRMethodData::hasSlotSharingInfo()
-   {
-   return !bcInfoHashTab.IsEmpty();
-   }
-
 void
 TR_OSRMethodData::addScratchBufferOffset(int32_t slotIndex, int32_t symRefOrder, int32_t scratchBufferOffset)
    {

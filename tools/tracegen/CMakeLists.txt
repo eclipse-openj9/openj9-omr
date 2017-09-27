@@ -52,3 +52,8 @@ target_include_directories(trace
 if(OMR_HOST_OS STREQUAL "zos")
 	target_link_libraries(trace j9a2e)
 endif()
+
+install(TARGETS tracegen
+	RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+	COMPONENT tooling
+)

@@ -52,6 +52,23 @@ endif()
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 ###
+### Set up install path stuff
+###
+# Note the paths are a bit odd compared to standard gnu install paths
+# This is because we arent expecting to actually be installing globally
+# since we don't have a good story for installing OMR system-wide
+set(CMAKE_INSTALL_BINDIR ".")
+set(CMAKE_INSTALL_LIBDIR ".")
+set(OMR_INSTALL_PREFIX "${CMAKE_CURRENT_BINARY_DIR}" CACHE PATH "Root path where to install OMR")
+set(CMAKE_INSTALL_PREFIX "${OMR_INSTALL_PREFIX}")
+include(GNUInstallDirs)
+set(CMAKE_INSTALL_RPATH "\$ORIGIN")
+add_custom_target(omr_install_tooling
+	COMMAND ${CMAKE_COMMAND} --build tools --target preinstall
+	COMMAND ${CMAKE_COMMAND} -DCMAKE_INSTALL_COMPONENT=tooling -P "${CMAKE_BINARY_DIR}/cmake_install.cmake"
+)
+
+###
 ### Getting the glue target
 ###
 set(OMR_GC_GLUE_TARGET "omr_example_gc_glue" CACHE STRING "The gc glue target, must be interface library")

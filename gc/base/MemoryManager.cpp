@@ -76,14 +76,16 @@ MM_MemoryManager::createVirtualMemoryForHeap(MM_EnvironmentBase* env, MM_MemoryH
 	uintptr_t allocateSize = size;
 
 	uintptr_t concurrentScavengerPageSize = 0;
-	uintptr_t concurrentScavengerPageAlignmentIncrement = 0;
 	if (extensions->isConcurrentScavengerEnabled()) {
 		OMRPORT_ACCESS_FROM_ENVIRONMENT(env);
-		/* allocate extra memory to guarantee proper alignment regardless start address location */
-		/* There is an assumption that no need to take to consideration heapAlignment or pageSize */
+		/*
+		 * Allocate extra memory to guarantee proper alignment regardless start address location
+		 * Minimum size of over-allocation should be (Concurrent_Scavenger_page_size - section size) however
+		 * Virtual Memory can return heap size shorter by a region (and here region size == section size)
+		 * So to guarantee desired heap size over-allocate it by full Concurrent_Scavenger_page_size
+		 */
 		concurrentScavengerPageSize = extensions->getConcurrentScavengerPageSectionSize() * CONCURRENT_SCAVENGER_PAGE_SECTIONS;
-		concurrentScavengerPageAlignmentIncrement = concurrentScavengerPageSize - extensions->getConcurrentScavengerPageSectionSize();
-		allocateSize += concurrentScavengerPageAlignmentIncrement;
+		allocateSize += concurrentScavengerPageSize;
 		if (extensions->isDebugConcurrentScavengerPageAlignment()) {
 			omrtty_printf("Requested heap size 0x%zx has been extended to 0x%zx for guaranteed alignment\n", size, allocateSize);
 		}
@@ -167,7 +169,7 @@ MM_MemoryManager::createVirtualMemoryForHeap(MM_EnvironmentBase* env, MM_MemoryH
 		if (extensions->isConcurrentScavengerEnabled()) {
 			void * ceilingToRequest = ceiling;
 			/* Requested top address might be higher then ceiling because of added chunk */
-			if ((requestedTopAddress > ceiling) && ((void *)((uintptr_t)requestedTopAddress - concurrentScavengerPageAlignmentIncrement) <= ceiling)) {
+			if ((requestedTopAddress > ceiling) && ((void *)((uintptr_t)requestedTopAddress - concurrentScavengerPageSize) <= ceiling)) {
 				/* ZOS 2_TO_64/2_TO_32 options would not allow memory request larger then 64G/32G so total requested size including tail padding should not exceed it */
 				allocateSize = (uintptr_t)ceiling - (uintptr_t)startAllocationAddress - tailPadding;
 
@@ -328,7 +330,7 @@ MM_MemoryManager::createVirtualMemoryForHeap(MM_EnvironmentBase* env, MM_MemoryH
 				extensions->setConcurrentScavengerPageStartAddress((void *)baseAligned);
 
 				if (extensions->isDebugConcurrentScavengerPageAlignment()) {
-					omrtty_printf("Expected Nursery start address 0x%zx\n", baseAligned);
+					omrtty_printf("Expected Nursery start address adjusted to 0x%zx\n", baseAligned);
 				}
 
 				/* Move up entire heap for proper Nursery adjustment */

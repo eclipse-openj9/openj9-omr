@@ -84,7 +84,7 @@ class FEBase : public FECommon
    FEBase()
       : FECommon(),
       _config(),
-      _codeCacheManager(this),
+      _codeCacheManager(TR::Compiler->rawAllocator),
       _start_time(TR::Compiler->vm.getUSecClock()),
       _persistentMemory(jitConfig(), TR::Compiler->persistentAllocator())
       {

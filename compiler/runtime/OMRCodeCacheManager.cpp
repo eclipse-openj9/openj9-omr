@@ -48,6 +48,12 @@
 #include <unistd.h>                     // for getpid, pid_t
 #endif
 
+OMR::CodeCacheManager::CodeCacheManager(TR::RawAllocator rawAllocator) :
+   _rawAllocator(rawAllocator),
+   _initialized(false)
+   {
+   }
+
 TR::CodeCacheManager *
 OMR::CodeCacheManager::self()
    {
@@ -213,6 +219,17 @@ OMR::CodeCacheManager::destroy()
    _initialized = false;
    }
 
+void *
+OMR::CodeCacheManager::getMemory(size_t sizeInBytes)
+   {
+   return _rawAllocator.allocate(sizeInBytes, std::nothrow);
+   }
+
+void
+OMR::CodeCacheManager::freeMemory(void *memoryToFree)
+   {
+   _rawAllocator.deallocate(memoryToFree);
+   }
 
 TR::CodeCache *
 OMR::CodeCacheManager::allocateCodeCacheObject(TR::CodeCacheMemorySegment *codeCacheSegment,

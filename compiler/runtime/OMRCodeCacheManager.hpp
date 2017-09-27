@@ -30,6 +30,7 @@
 #include "runtime/MethodExceptionData.hpp"     // for MethodExceptionData
 #include "runtime/Runtime.hpp"                 // for TR_CCPreLoadedCode, etc
 #include "runtime/CodeCacheTypes.hpp"
+#include "env/RawAllocator.hpp"
 
 class TR_FrontEnd;
 class TR_OpaqueMethodBlock;
@@ -120,10 +121,7 @@ protected:
 public:
    enum ErrorCode { };
 
-   CodeCacheManager(TR_FrontEnd *fe) : _fe(fe)
-      {
-      _initialized = false;
-      }
+   CodeCacheManager(TR::RawAllocator rawAllocator);
 
    class CacheListCriticalSection : public CriticalSection
       {
@@ -138,7 +136,6 @@ public:
       };
 
    TR::CodeCacheConfig & codeCacheConfig() { return _config; }
-   TR_FrontEnd *fe()                       { return _fe; }
 
    TR::CodeCache *initialize(bool useConsolidatedCache, uint32_t numberOfCodeCachesToCreateAtStartup);
    void lateInitialization();
@@ -246,8 +243,8 @@ protected:
    void printRemainingSpaceInCodeCaches();
    void printOccupancyStats();
 
+   TR::RawAllocator               _rawAllocator;
    TR::CodeCacheConfig            _config;
-   TR_FrontEnd                   *_fe;
    TR::CodeCache                 *_lastCache;                         /*!< last code cache round robined through */
    CodeCacheList                  _codeCacheList;                     /*!< list of allocated code caches */
    int32_t                        _curNumberOfCodeCaches;

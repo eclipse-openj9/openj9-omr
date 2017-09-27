@@ -25,6 +25,7 @@
 #endif /* defined(J9ZOS390) */
 
 #if !defined(WIN32)
+#define __STDC_FORMAT_MACROS
 #include <stdint.h>
 #include <inttypes.h>
 #include <pthread.h>
@@ -61,7 +62,11 @@ enum TestAction {
 };
 
 #if !defined(PRId64)
+#if defined(WIN32) || defined(J9ZOS390)
 #define PRId64 "I64d"
+#else
+#error no value for PRId64
+#endif
 #endif
 
 static jmp_buf env;

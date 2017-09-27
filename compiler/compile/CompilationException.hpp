@@ -28,46 +28,105 @@
 
 namespace TR {
 
+/**
+ * Compilation Failure exception type.
+ *
+ * The most general type of exception thrown during a compilation that is
+ * not related to an Out of Memory condition (which results in std::bad_alloc
+ * or an exception derived from std::bad_alloc thrown).
+ *
+ * Functionally, unless a compilation error requires special processing,
+ * TR::CompilationException is sufficient. However, it is good practice to
+ * define somewhat general subtypes for RAS purposes.
+ */
 struct CompilationException : public virtual std::exception
    {
    virtual const char* what() const throw() { return "Compilation Exception"; }
    };
 
+/**
+ * IL Generation Failure exception type.
+ *
+ * Thrown on an IL Generation Failure condition.
+ */
 struct ILGenFailure : public virtual CompilationException
    {
    virtual const char* what() const throw() { return "IL Gen Failure"; }
    };
 
+/**
+ * Recoverable IL Generation Failure exception type.
+ *
+ * Thrown on an IL Generation Failure condition which the compiler can
+ * recover either by continuing the compilation, or by allowing a
+ * recompilation to occur.
+ */
 struct RecoverableILGenException : public virtual CompilationException
    {
    virtual const char* what() const throw() { return "Recoverable IL Gen Exception"; }
    };
 
+/**
+ * Excessive Complexity exception type.
+ *
+ * Thrown when the complexity of the compile exceeds the compiler's
+ * threshold to sucessfully finish compilation, for example, if the
+ * compilation created more TR::Node objects than is supported.
+ */
 struct ExcessiveComplexity : public virtual CompilationException
    {
    virtual const char* what() const throw() { return "Excessive Complexity"; }
    };
 
+/**
+ * Max Caller Index Exceeded exception type.
+ *
+ * Thrown when the number of calls to other methods from the method being
+ * compiled exceeds the compiler's threshold.
+ */
 struct MaxCallerIndexExceeded : public virtual CompilationException
    {
    virtual const char* what() const throw() { return "Max Caller Index Exceeded"; }
    };
 
+/**
+ * Compilation Interrupted exception type.
+ *
+ * Thrown when the compilation has to be interrupted, for example, if a runtime
+ * is going into its shutdown phase.
+ */
 struct CompilationInterrupted : public virtual CompilationException
    {
    virtual const char* what() const throw() { return "Compilation Interrupted"; }
    };
 
+/**
+ * Unimplemented Op Code exception type.
+ *
+ * Thrown when the compiler encounters an unimplemented opt code.
+ */
 struct UnimplementedOpCode : public virtual CompilationException
    {
    virtual const char* what() const throw() { return "Unimplemented Op Code"; }
    };
 
+/**
+ * Insufficiently Aggressive Compilation exception type.
+ *
+ * Thrown when the compiler determines that optimization level of the current
+ * compilation is not aggressive enough.
+ */
 struct InsufficientlyAggressiveCompilation : public virtual CompilationException
    {
    virtual const char* what() const throw() { return "Insufficiently Aggressive Compilation"; }
    };
 
+/**
+ * GCR Patch Failure exception type.
+ *
+ * Only thrown from J9_PROJECT_SPECIFIC guarded code. Thrown when address of
+ * the GCR Patch Point is not known at Binary Encoding.
+ */
 struct GCRPatchFailure : public virtual CompilationException
    {
    virtual const char* what() const throw() { return "GCR Patch Failure"; }

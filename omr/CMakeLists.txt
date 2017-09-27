@@ -59,8 +59,6 @@ if(OMR_GC)
 	target_link_libraries(omrcore
 		PRIVATE
 			${OMR_CORE_GLUE_TARGET}
-			omrtrace
-			omrgc
 	)
 
 	target_include_directories(omrcore

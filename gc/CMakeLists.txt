@@ -287,6 +287,8 @@ target_include_directories(omrgc
 		structs
 		verbose
 		verbose/handler_standard
+	INTERFACE
+		$<TARGET_PROPERTY:${OMR_GC_GLUE_TARGET},INTERFACE_INCLUDE_DIRECTORIES>
 )
 
 target_link_libraries(omrgc

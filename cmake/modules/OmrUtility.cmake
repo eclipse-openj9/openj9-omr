@@ -72,3 +72,16 @@ function(omr_append_flags variable)
 	omr_stringify(flags ${ARGN})
 	set(${variable} "${${variable}} ${flags}" PARENT_SCOPE)
 endfunction(omr_append_flags)
+
+# omr_list_contains(<list> <element> <output>)
+# Checks if <element> is in a given named <list>
+# sets <output> TRUE/FALSE as appropriate
+macro(omr_list_contains lst element output)
+	list(FIND ${lst} ${element} _omr_list_contains_idx)
+	if(_omr_list_contains_idx EQUAL -1)
+		set(${output} FALSE)
+	else()
+		set(${output} TRUE)
+	endif()
+	unset(_omr_list_contains_idx)
+endmacro(omr_list_contains)

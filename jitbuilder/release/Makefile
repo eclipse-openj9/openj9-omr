@@ -22,6 +22,7 @@
 
 # Sample makefile using g++ may need additional compile options to work in any particular environment
 
+CC?=gcc
 CXX?=g++
 CXXFLAGS=-g -std=c++0x -O2 -c -fno-rtti -fPIC -I./include/compiler -I./include
 
@@ -54,7 +55,10 @@ ALL_TESTS = \
             toiltype \
             transactionaloperations \
             union \
-            worklist
+            worklist \
+            useIncrement \
+            useCall \
+
 
 # Compile all the tests by default
 all: $(ALL_TESTS)
@@ -96,6 +100,8 @@ all_goal: common_goal
 experimental_goal: common_goal
 	./atomicoperations
 	./transactionaloperations
+	./useIncrement
+	./useCall
 
 
 # In general, only compile and run tests that are known to work on all platforms
@@ -208,10 +214,10 @@ NestedLoop.o: src/NestedLoop.cpp src/NestedLoop.hpp
 
 
 operandarraytests : libjitbuilder.a OperandArrayTests.o
-	g++ -g -fno-rtti -o $@ OperandArrayTests.o -L. -ljitbuilder -ldl
+	$(CXX) -g -fno-rtti -o $@ OperandArrayTests.o -L. -ljitbuilder -ldl
 
 OperandArrayTests.o: src/OperandArrayTests.cpp src/OperandArrayTests.hpp
-	g++ -o $@ $(CXXFLAGS) $<
+	$(CXX) -o $@ $(CXXFLAGS) $<
 
 
 operandstacktests : libjitbuilder.a OperandStackTests.o
@@ -306,6 +312,26 @@ thunks : libjitbuilder.a Thunk.o
 
 Thunk.o: src/Thunk.cpp
 	$(CXX) -o $@ $(CXXFLAGS) $<
+
+
+useIncrement : increment.o UseIncrement.o
+	$(CC) -g -o $@ increment.o UseIncrement.o
+
+UseIncrement.o : src/UseIncrement.c
+	$(CC) -g -o $@ -c $<
+
+increment.o : simple
+	TR_Options='enableObjectFileGeneration,objectFile=increment.o' ./simple
+
+
+useCall : test_calls.o UseCall.o
+	$(CC) -g -o $@ test_calls.o UseCall.o
+
+UseCall.o : src/UseCall.c
+	$(CC) -g -o $@ -c $<
+
+test_calls.o : call
+	TR_Options='enableObjectFileGeneration,objectFile=test_calls.o' ./call
 
 
 clean:

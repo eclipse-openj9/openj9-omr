@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2017, 2017 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -19,18 +19,26 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
 
-#include "env/JitConfig.hpp"
-#include <string.h> // for memcpy
-#include "env/ConcreteFE.hpp"
+#ifndef ELFRELOCATIONRESOLVER_HPP
+#define ELFRELOCATIONRESOLVER_HPP
 
-TR::JitConfig::JitConfig()
-   : _processorInfo(0), _interpreterTOC(0), _pseudoTOC(0)
-   {
-   memcpy(_eyecatcher, "JITCONF" /* 7 bytes + null */, sizeof(this->_eyecatcher));
-   }
+#pragma once
 
-TR::JitConfig *
-TR::JitConfig::instance()
+#if defined(LINUX)
+
+#include "codegen/OMRELFRelocationResolver.hpp"
+
+namespace TR {
+
+/**
+ * @brief The ELFRelocationResolver class translates between a TR::StaticRelocation and the ELF relocation type required for the platform.
+ */
+class OMR_EXTENSIBLE ELFRelocationResolver : public ::OMR::ELFRelocationResolverConnector
    {
-   return OMR::FrontEnd::singleton().jitConfig();
-   }
+   };
+
+}
+
+#endif /* defined(LINUX) */
+
+#endif // ELFRELOCATIONRESOLVER_HPP

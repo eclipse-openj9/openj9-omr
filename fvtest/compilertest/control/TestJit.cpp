@@ -101,6 +101,7 @@ initializeCodeCache(TR::CodeCacheManager & codeCacheManager)
    codeCacheConfig._maxNumberOfCodeCaches = 96;
    codeCacheConfig._canChangeNumCodeCaches = true;
    codeCacheConfig._emitElfObject = TR::Options::getCmdLineOptions()->getOption(TR_PerfTool);
+   codeCacheConfig._emitELFObjectFile = TR::Options::getCmdLineOptions()->getOption(TR_EnableObjectFileGeneration);
 
    TR::CodeCache *firstCodeCache = codeCacheManager.initialize(true, 1);
    }

@@ -43,12 +43,13 @@ namespace OMR { class CodeCacheHashEntrySlab; }
 namespace OMR { class FaintCacheBlock; }
 namespace OMR { typedef void CodeCacheTrampolineCode; }
 namespace OMR { class CodeCacheManager; }
+namespace TR { class StaticRelocation; }
 namespace OMR { typedef CodeCacheManager CodeCacheManagerConnector; }
 
 #if (HOST_OS == OMR_LINUX)
 
 #include <elf.h>                            // for ELF64_ST_INFO, etc
-
+namespace TR { class ELFObjectFileGenerator; }
 #if defined(TR_HOST_64BIT)
 typedef Elf64_Ehdr ELFHeader;
 typedef Elf64_Shdr ELFSectionHeader;
@@ -136,6 +137,8 @@ public:
       };
 
    TR::CodeCacheConfig & codeCacheConfig() { return _config; }
+   bool codeCacheIsFull() { return _codeCacheIsFull; }
+   void setCodeCacheIsFull(bool codeCacheIsFull) { _codeCacheIsFull = codeCacheIsFull; }
 
    TR::CodeCache *initialize(bool useConsolidatedCache, uint32_t numberOfCodeCachesToCreateAtStartup);
    void lateInitialization();
@@ -237,6 +240,7 @@ public:
 
    void repositoryCodeCacheCreated();
    void registerCompiledMethod(const char *sig, uint8_t *startPC, uint32_t codeSize);
+   void registerStaticRelocation(const TR::StaticRelocation &relocation);
 
 protected:
 
@@ -256,14 +260,17 @@ protected:
 
    bool                           _initialized;                       /*!< flag to indicate if code cache manager has been initialized or not */
    bool                           _lowCodeCacheSpaceThresholdReached; /*!< true if close to exhausting available code cache */
+   bool                           _codeCacheIsFull;
 
 #if (HOST_OS == OMR_LINUX)
    public:
+   void initializeObjectFileGenerator();
    void initializeELFHeader();
    void initializeELFTrailer();
    void initializeELFHeaderForPlatform(ELFCodeCacheHeader *hdr);
 
    protected:
+   TR::ELFObjectFileGenerator    *_objectFileGenerator;
    struct ELFCodeCacheHeader     *_elfHeader;
    struct ELFCodeCacheTrailer    *_elfTrailer;
    uint32_t                       _elfTrailerSize;

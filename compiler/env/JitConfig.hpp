@@ -50,8 +50,6 @@ class JitConfig
    void *getProcessorInfo() { return _processorInfo; }
    void setProcessorInfo(void *buf) { _processorInfo = buf; }
 
-   bool isCodeCacheFull() { return _codeCacheFull; }
-
    void setInterpreterTOC(size_t interpreterTOC) { _interpreterTOC = interpreterTOC; }
    size_t getInterpreterTOC()                    { return _interpreterTOC; }
 
@@ -62,8 +60,6 @@ class JitConfig
    char                        _eyecatcher[8];
 
    void                      * _processorInfo;
-
-   bool                        _codeCacheFull;
 
    size_t                      _interpreterTOC;
 

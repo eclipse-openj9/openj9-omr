@@ -192,7 +192,7 @@ OMR::CodeGenerator::generateNop(TR::Node * node, TR::Instruction *instruction, T
 
 OMR::CodeGenerator::CodeGenerator() :
       _compilation(TR::comp()),
-      _trMemory(TR::comp()->trMemory()),
+      _trMemory(_compilation->trMemory()),
       _liveLocals(0),
       _currentEvaluationTreeTop(0),
       _currentEvaluationBlock(0),
@@ -273,6 +273,7 @@ OMR::CodeGenerator::CodeGenerator() :
      _allSpillList(getTypedAllocator<TR_BackingStore*>(TR::comp()->allocator())),
      _relocationList(getTypedAllocator<TR::Relocation*>(TR::comp()->allocator())),
      _aotRelocationList(getTypedAllocator<TR::Relocation*>(TR::comp()->allocator())),
+     _staticRelocationList(_compilation->allocator()),
      _breakPointList(getTypedAllocator<uint8_t*>(TR::comp()->allocator())),
      _jniCallSites(getTypedAllocator<TR_Pair<TR_ResolvedMethod,TR::Instruction> *>(TR::comp()->allocator())),
      _lowestSavedReg(0),
@@ -3894,7 +3895,7 @@ void OMR::CodeGenerator::addRelocation(TR::Relocation *r)
       }
    }
 
-void OMR::CodeGenerator::addAOTRelocation(TR::Relocation *r, char *generatingFileName, uintptr_t generatingLineNumber, TR::Node *node)
+void OMR::CodeGenerator::addAOTRelocation(TR::Relocation *r, const char *generatingFileName, uintptr_t generatingLineNumber, TR::Node *node)
    {
    TR_ASSERT(generatingFileName, "AOT relocation location has improper NULL filename specified");
    if (self()->comp()->compileRelocatableCode())
@@ -3916,6 +3917,12 @@ void OMR::CodeGenerator::addAOTRelocation(TR::Relocation *r, TR::RelocationDebug
       r->setDebugInfo(info);
       _aotRelocationList.push_back(r);
       }
+   }
+
+void
+OMR::CodeGenerator::addStaticRelocation(const TR::StaticRelocation &relocation)
+   {
+   _staticRelocationList.push_back(relocation);
    }
 
 intptrj_t OMR::CodeGenerator::hiValue(intptrj_t address)

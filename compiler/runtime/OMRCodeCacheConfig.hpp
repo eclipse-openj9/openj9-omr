@@ -105,7 +105,8 @@ class OMR_EXTENSIBLE CodeCacheConfig
          _verboseReclamation(false),
          _doSanityChecks(false),
          _codeCacheFreeBlockRecylingEnabled(false),
-         _emitElfObject(false)
+         _emitElfObject(false),
+         _emitELFObjectFile(false)
       {
       #if defined(J9ZOS390)     // EBCDIC
       _warmEyeCatcher[0] = '\xD1';
@@ -174,6 +175,7 @@ class OMR_EXTENSIBLE CodeCacheConfig
    CodeCacheCodeGenCallbacks & mccCallbacks() { return _mccCallbacks; }
 
    bool emitElfObject() const { return _emitElfObject; }
+   bool emitELFObjectFile() const { return _emitELFObjectFile; }
 
    int32_t _trampolineCodeSize;          /*!< size of the trampoline code in bytes */
    int32_t _CCPreLoadedCodeSize;         /*!< size of the pre-Loaded CodeCache Helpers code in bytes */
@@ -203,6 +205,7 @@ class OMR_EXTENSIBLE CodeCacheConfig
    CodeCacheCodeGenCallbacks _mccCallbacks;              /*!< codeGen call backs */
 
    bool _emitElfObject;                  /*!< emit code cache as ELF object on shutdown */
+   bool _emitELFObjectFile;
 
    char * const warmEyeCatcher() { return _warmEyeCatcher; }
 

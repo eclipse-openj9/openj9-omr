@@ -46,11 +46,13 @@
 #ifdef LINUX
 #include <elf.h>                        // for EV_CURRENT, SHT_STRTAB, etc
 #include <unistd.h>                     // for getpid, pid_t
+#include "codegen/ELFObjectFileGenerator.hpp"
 #endif
 
 OMR::CodeCacheManager::CodeCacheManager(TR::RawAllocator rawAllocator) :
    _rawAllocator(rawAllocator),
-   _initialized(false)
+   _initialized(false),
+   _codeCacheIsFull(false)
    {
    }
 
@@ -81,6 +83,7 @@ OMR::CodeCacheManager::initialize(
    TR_ASSERT(!self()->initialized(), "cannot initialize code cache manager more than once");
 
 #if (HOST_OS == OMR_LINUX)
+   _objectFileGenerator = NULL;
    _elfHeader = NULL;
 #endif // HOST_OS == OMR_LINUX
 
@@ -184,6 +187,11 @@ OMR::CodeCacheManager::destroy()
    {
 #if (HOST_OS == OMR_LINUX)
    // if code cache should be written out as shared object, do that now before destroying anything
+   if (_objectFileGenerator)
+      {
+      _objectFileGenerator->emitObjectFile();
+      }
+
    if (_elfHeader)
       {
       self()->initializeELFTrailer();
@@ -963,6 +971,10 @@ OMR::CodeCacheManager::repositoryCodeCacheCreated()
    TR::CodeCacheConfig &config = self()->codeCacheConfig();
    if (config.emitElfObject())
       self()->initializeELFHeader();
+   if (config.emitELFObjectFile())
+      {
+      self()->initializeObjectFileGenerator();
+      }
 #endif // HOST_OS == OMR_LINUX
    }
 
@@ -970,6 +982,11 @@ void
 OMR::CodeCacheManager::registerCompiledMethod(const char *sig, uint8_t *startPC, uint32_t codeSize)
    {
 #if (HOST_OS == OMR_LINUX)
+   if (_objectFileGenerator)
+      {
+      _objectFileGenerator->registerCompiledMethod(sig, startPC, codeSize);
+      }
+
    CodeCacheSymbol *newSymbol = static_cast<CodeCacheSymbol *> (self()->getMemory(sizeof(CodeCacheSymbol)));
 
    uint32_t nameLength = strlen(sig) + 1;
@@ -984,6 +1001,17 @@ OMR::CodeCacheManager::registerCompiledMethod(const char *sig, uint8_t *startPC,
    _numELFSymbols++;
    _totalELFSymbolNamesLength += nameLength;
 #endif // HOST_OS == OMR_LINUX
+   }
+
+void
+OMR::CodeCacheManager::registerStaticRelocation(const TR::StaticRelocation &relocation)
+   {
+#if (HOST_OS == OMR_LINUX)
+   if (_objectFileGenerator)
+      {
+      _objectFileGenerator->registerStaticRelocation(relocation);
+      }
+#endif
    }
 
 void *
@@ -1155,11 +1183,24 @@ OMR::CodeCacheSymbol * OMR::CodeCacheManager::_symbols = NULL;
 uint32_t OMR::CodeCacheManager::_numELFSymbols = 0; // does not include UNDEF symbol: embedded in ELfCodeCacheTrailer
 uint32_t OMR::CodeCacheManager::_totalELFSymbolNamesLength = 1; // pre-count 0 for the UNDEF symbol name
 
+
+void
+OMR::CodeCacheManager::initializeObjectFileGenerator()
+   {
+   _objectFileGenerator =
+      new (_rawAllocator) TR::ELFObjectFileGenerator(
+         _rawAllocator,
+         _codeCacheRepositorySegment->segmentBase(),
+         _codeCacheRepositorySegment->segmentTop() - _codeCacheRepositorySegment->segmentBase(),
+         TR::Options::getCmdLineOptions()->getObjectFileName()
+         );
+   }
+
 void
 OMR::CodeCacheManager::initializeELFHeader()
    {
    //fprintf(stderr,"segmentAlloc: %p, base %p, diff %d\n", _codeCacheRepositorySegment->segmentAlloc(), _codeCacheRepositorySegment->segmentBase(), _codeCacheRepositorySegment->segmentAlloc() - _codeCacheRepositorySegment->segmentBase());
-   ELFCodeCacheHeader *hdr = static_cast<ELFCodeCacheHeader *>(self()->getMemory(sizeof(ELFCodeCacheHeader)));
+   ELFCodeCacheHeader *hdr = static_cast<ELFCodeCacheHeader *>(_rawAllocator.allocate(sizeof(ELFCodeCacheHeader), std::nothrow));
 
    // main elf header
    hdr->hdr.e_ident[EI_MAG0] = ELFMAG0;

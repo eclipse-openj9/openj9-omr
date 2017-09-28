@@ -78,7 +78,7 @@ namespace TR {
 struct RelocationDebugInfo
    {
    /** the file name of the code that generated the associated RR*/
-   char* file;
+   const char* file;
    /** the line number in the file file that created the associated RR*/
    uintptr_t line;
    /** the node in the IL that triggered the creation of the associated RR */
@@ -421,7 +421,7 @@ class ExternalRelocation : public TR::Relocation
 
    virtual void apply(TR::CodeGenerator *codeGen);
 
-   static char *getName(TR_ExternalRelocationTargetKind k) {return _externalRelocationTargetKindNames[k];}
+   static const char *getName(TR_ExternalRelocationTargetKind k) {return _externalRelocationTargetKindNames[k];}
    static uintptr_t    getGlobalValue(uint32_t g)
          {
          TR_ASSERT(g >= 0 && g < TR_NumGlobalValueItems, "invalid index for global item");
@@ -443,7 +443,7 @@ class ExternalRelocation : public TR::Relocation
    uint8_t                         *_targetAddress2;
    TR::IteratedExternalRelocation   *_relocationRecord;
    TR_ExternalRelocationTargetKind  _kind;
-   static char                     *_externalRelocationTargetKindNames[TR_NumExternalRelocationKinds];
+   static const char               *_externalRelocationTargetKindNames[TR_NumExternalRelocationKinds];
    static uintptr_t                 _globalValueList[TR_NumGlobalValueItems];
    static uint8_t                   _globalValueSizeList[TR_NumGlobalValueItems];
    static char                     *_globalValueNames[TR_NumGlobalValueItems];

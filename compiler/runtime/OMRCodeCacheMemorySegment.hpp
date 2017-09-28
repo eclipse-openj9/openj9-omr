@@ -55,9 +55,9 @@ public:
 
    void *operator new(size_t size, TR::CodeCacheMemorySegment *segment) { return segment; }
 
-   uint8_t *segmentBase()  { return _base; }
-   uint8_t *segmentAlloc() { return _alloc; }
-   uint8_t *segmentTop()   { return _top; }
+   uint8_t *segmentBase() const  { return _base; }
+   uint8_t *segmentAlloc() const { return _alloc; }
+   uint8_t *segmentTop() const   { return _top; }
 
    void adjustAlloc(int64_t adjust);
 

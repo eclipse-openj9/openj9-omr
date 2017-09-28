@@ -363,7 +363,7 @@ void TR::ExternalOrderedPair32BitRelocation::apply(TR::CodeGenerator *codeGen)
    }
 
 // remember to update the debug extensions when add or changing relocations.
-char *TR::ExternalRelocation::_externalRelocationTargetKindNames[TR_NumExternalRelocationKinds] =
+const char *TR::ExternalRelocation::_externalRelocationTargetKindNames[TR_NumExternalRelocationKinds] =
    {
    "TR_ConstantPool (0)",
    "TR_HelperAddress (1)",
@@ -421,6 +421,8 @@ char *TR::ExternalRelocation::_externalRelocationTargetKindNames[TR_NumExternalR
    "TR_VirtualRamMethodConst (53)"
    "TR_InlinedInterfaceMethod (54)",
    "TR_InlinedVirtualMethod (55)",
+   "TR_NativeMethodAbsolute (56)",
+   "TR_NativeMethodRelative (57)",
    };
 
 uintptr_t TR::ExternalRelocation::_globalValueList[TR_NumGlobalValueItems] =

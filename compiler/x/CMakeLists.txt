@@ -70,5 +70,6 @@ if(TR_TARGET_BITS STREQUAL 64)
         ${CMAKE_CURRENT_SOURCE_DIR}/amd64/codegen/OMRMemoryReference.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/amd64/codegen/OMRRealRegister.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/amd64/codegen/AMD64SystemLinkage.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/amd64/codegen/OMRELFRelocationResolver.cpp
         )
 endif()

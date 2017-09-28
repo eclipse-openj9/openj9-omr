@@ -63,6 +63,7 @@ public:
    virtual bool returnTypeIsUnsigned();
    virtual TR::ILOpCodes returnOpCode();
    virtual const char *signature(TR_Memory *, TR_AllocationKind = heapAlloc);
+   virtual const char *externalName(TR_Memory *, TR_AllocationKind = heapAlloc);
    virtual uint16_t classNameLength();
    virtual uint16_t nameLength();
    virtual uint16_t signatureLength();

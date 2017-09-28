@@ -419,6 +419,7 @@ public:
    int32_t getCompThreadID() const { return _compThreadID; }
 
    const char * signature() { return _signature; }
+   const char * externalName() { return _method->externalName(_trMemory); }
 
    TR::ResolvedMethodSymbol *getJittedMethodSymbol() { return _methodSymbol;}
    TR::CFG *getFlowGraph();

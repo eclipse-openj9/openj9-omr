@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2017, 2017 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -19,18 +19,16 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
 
-#include "env/JitConfig.hpp"
-#include <string.h> // for memcpy
-#include "env/ConcreteFE.hpp"
+#include "codegen/OMRELFRelocationResolver.hpp"
+#include "infra/Assert.hpp"
 
-TR::JitConfig::JitConfig()
-   : _processorInfo(0), _interpreterTOC(0), _pseudoTOC(0)
+#if defined(LINUX)
+
+uint32_t
+OMR::ELFRelocationResolver::resolveRelocationType(const TR::StaticRelocation &relocation)
    {
-   memcpy(_eyecatcher, "JITCONF" /* 7 bytes + null */, sizeof(this->_eyecatcher));
+   TR_ASSERT(false, "Unimplemented for this platform.");
+   return static_cast<uint32_t>(-1);
    }
 
-TR::JitConfig *
-TR::JitConfig::instance()
-   {
-   return OMR::FrontEnd::singleton().jitConfig();
-   }
+#endif /* defined(LINUX) */

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2017, 2017 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -19,18 +19,24 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
 
-#include "env/JitConfig.hpp"
-#include <string.h> // for memcpy
-#include "env/ConcreteFE.hpp"
+#include <stdint.h>
+#include <stdio.h>
 
-TR::JitConfig::JitConfig()
-   : _processorInfo(0), _interpreterTOC(0), _pseudoTOC(0)
-   {
-   memcpy(_eyecatcher, "JITCONF" /* 7 bytes + null */, sizeof(this->_eyecatcher));
-   }
+extern int32_t test_calls(int32_t);
 
-TR::JitConfig *
-TR::JitConfig::instance()
-   {
-   return OMR::FrontEnd::singleton().jitConfig();
-   }
+int32_t
+doublesum(int32_t first, int32_t second) {
+	int32_t result = (second << 1) + (first << 1);
+	fprintf(stderr, "doublesum(%d, %d) == %d\n", first, second, result);
+	return result;
+}
+
+int main(int argc, char *argv[]) {
+	int32_t n;
+	for (n=0; n < 10; n++) {
+		printf("call(%2d) = %d\n", n, test_calls(n));
+	}
+	printf("STATIC TEST PASS\n");
+	return 0;
+}
+

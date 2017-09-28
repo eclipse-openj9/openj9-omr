@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2017, 2017 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -19,18 +19,22 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
 
-#include "env/JitConfig.hpp"
-#include <string.h> // for memcpy
-#include "env/ConcreteFE.hpp"
+#include "codegen/ELFRelocationResolver.hpp"
 
-TR::JitConfig::JitConfig()
-   : _processorInfo(0), _interpreterTOC(0), _pseudoTOC(0)
+#if defined(LINUX)
+
+#include <elf.h>
+#include "infra/Assert.hpp"
+
+uint32_t
+OMR::X86::AMD64::ELFRelocationResolver::resolveRelocationType(const TR::StaticRelocation &relocation)
    {
-   memcpy(_eyecatcher, "JITCONF" /* 7 bytes + null */, sizeof(this->_eyecatcher));
+   if (relocation.size() == TR::StaticRelocationSize::word64 && relocation.type() == TR::StaticRelocationType::Absolute)
+      {
+      return R_X86_64_64;
+      }
+   TR_ASSERT(false, "Unknown ELF relocation type.");
+   return static_cast<uint32_t>(-1);
    }
 
-TR::JitConfig *
-TR::JitConfig::instance()
-   {
-   return OMR::FrontEnd::singleton().jitConfig();
-   }
+#endif /* defined(LINUX) */

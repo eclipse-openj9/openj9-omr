@@ -1432,6 +1432,9 @@ TR::X86RegInstruction::enlarge(int32_t requestedEnlargementSize, int32_t maxEnla
    if (disableRexExpansion || TR::comp()->getOption(TR_DisableZealousCodegenOpts))
       return OMR::X86::EnlargementResult(0, 0);
 
+   if (getOpCode().info().supportsAVX() && getOpCode().info().allowsAVX())
+      return OMR::X86::EnlargementResult(0, 0); // REX expansion isn't allowed for AVX instructions
+
    if ((maxEnlargementSize < requestedEnlargementSize && !allowPartialEnlargement) || requestedEnlargementSize < 1)
       return OMR::X86::EnlargementResult(0, 0);
 

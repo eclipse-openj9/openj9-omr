@@ -24,7 +24,7 @@
 
 #pragma once
 
-#include <inttypes.h>
+#include <stdint.h>
 
 class TR_ResolvedMethod;
 

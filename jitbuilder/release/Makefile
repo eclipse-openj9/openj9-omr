@@ -56,8 +56,6 @@ ALL_TESTS = \
             transactionaloperations \
             union \
             worklist \
-            useIncrement \
-            useCall \
 
 
 # Compile all the tests by default
@@ -97,7 +95,7 @@ all_goal: common_goal
 # Tests that are still on the experimental side
 # If you add to this list and want them to be built under "make", please
 # also add to ALL_TESTS
-experimental_goal: common_goal
+experimental_goal: common_goal useIncrement useCall
 	./atomicoperations
 	./transactionaloperations
 	./useIncrement
@@ -335,4 +333,4 @@ test_calls.o : call
 
 
 clean:
-	@rm -f $(ALL_TESTS) replay *.o
+	@rm -f $(ALL_TESTS) useIncrement useCall replay *.o

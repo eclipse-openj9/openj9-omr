@@ -1504,7 +1504,6 @@ omrvmem_numa_get_node_details(struct OMRPortLibrary *portLibrary, J9MemoryNodeDe
 		} else {
 			uintptr_t arraySize = *nodeCount;
 			uintptr_t populatedNodeCount = 0;
-			struct dirent nodeStorage;
 			struct dirent *node = NULL;
 
 			/* by default, set the SET and CLEAR states to the same value since "default" NUMA mode has all nodes cleared */
@@ -1529,7 +1528,15 @@ omrvmem_numa_get_node_details(struct OMRPortLibrary *portLibrary, J9MemoryNodeDe
 			}
 
 			/* walk through the /sys/devices/system/node/ directory to find each individual node */
-			while ((0 == readdir_r(nodes, &nodeStorage, &node)) && (NULL != node)) {
+			
+			/*
+			from readdir man page: 
+			If the end of the directory stream is reached, 
+			NULL is returned and errno is not changed. If an error occurs, 
+			NULL is returned and errno is set appropriately. 
+			*/
+			errno = 0;
+			while (NULL != (node = readdir(nodes))) {
 				unsigned long nodeIndex = 0;
 				if (1 == sscanf(node->d_name, "node%lu", &nodeIndex)) {
 					if (nodeIndex < PPG_numa_max_node_bits) {
@@ -1546,10 +1553,9 @@ omrvmem_numa_get_node_details(struct OMRPortLibrary *portLibrary, J9MemoryNodeDe
 
 								/* find each CPU and check to see if it is part of our global mask */
 								uintptr_t allowedCPUCount = 0;
-								struct dirent cpuStorage;
 								struct dirent *fileEntry = NULL;
 								uint64_t memoryOnNodeInKibiBytes = 0;
-								while ((0 == readdir_r(oneNode, &cpuStorage, &fileEntry)) && (NULL != fileEntry)) {
+								while (NULL != (fileEntry = readdir(oneNode))) {
 									unsigned long cpuIndex = 0;
 									const char *fileName = fileEntry->d_name;
 									if ((1 == sscanf(fileName, "cpu%lu", &cpuIndex)) && (CPU_ISSET(cpuIndex, &PPG_process_affinity))) {
@@ -1592,10 +1598,18 @@ omrvmem_numa_get_node_details(struct OMRPortLibrary *portLibrary, J9MemoryNodeDe
 					}
 				}
 			}
-			/* save back how many entries we saw (the caller knows that the number of entries we populated is the minimum of how many we were given and how many we found) */
-			*nodeCount = populatedNodeCount;
-			result = 0;
-			closedir(nodes);
+			//when error occurs, node is null and errno is changed (!=0)
+			if(node == NULL && errno != 0)
+			{
+				result = OMRPORT_ERROR_VMEM_OPFAILED;
+			}
+			else
+			{
+				/* save back how many entries we saw (the caller knows that the number of entries we populated is the minimum of how many we were given and how many we found) */
+				*nodeCount = populatedNodeCount;
+				result = 0;
+				closedir(nodes);
+			}
 		}
 	}
 #endif /* OMR_PORT_NUMA_SUPPORT */

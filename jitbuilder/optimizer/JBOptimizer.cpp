@@ -169,10 +169,6 @@ Optimizer::Optimizer(TR::Compilation *comp, TR::ResolvedMethodSymbol *methodSymb
    self()->setRequestOptimization(OMR::cheapTacticalGlobalRegisterAllocatorGroup, true);
    self()->setRequestOptimization(OMR::tacticalGlobalRegisterAllocatorGroup, true);
    self()->setRequestOptimization(OMR::tacticalGlobalRegisterAllocator, true);
-
-   // force warm strategy for now
-   if (!isIlGen)
-      self()->setStrategy(JBwarmStrategyOpts);
    }
 
 const OptimizationStrategy *

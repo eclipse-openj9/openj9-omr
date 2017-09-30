@@ -178,6 +178,9 @@ MM_MemoryPoolAddressOrderedListBase::connectFinalMemoryToPool(MM_EnvironmentBase
 void
 MM_MemoryPoolAddressOrderedListBase::abandonMemoryInPool(MM_EnvironmentBase* env, void* address, uintptr_t size)
 {
+#if defined(OMR_VALGRIND_MEMCHECK)
+	valgrindClearRange(env->getExtensions(),(uintptr_t) address,size);
+#endif /* defined(OMR_VALGRIND_MEMCHECK) */
 	abandonHeapChunk((MM_HeapLinkedFreeHeader*)address, (uint8_t*)address + size);
 }
 

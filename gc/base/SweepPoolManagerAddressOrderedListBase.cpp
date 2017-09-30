@@ -39,10 +39,6 @@
 #include "SweepPoolManagerAddressOrderedListBase.hpp"
 #include "ModronAssertions.h"
 
-#if defined(OMR_VALGRIND_MEMCHECK)
-#include "MemcheckWrapper.hpp"
-#endif /* defined(OMR_VALGRIND_MEMCHECK) */
-
 /**
  * Initialize any internal structures.
  * @return true if initialization is successful, false otherwise.
@@ -455,10 +451,6 @@ MM_SweepPoolManagerAddressOrderedListBase::updateTrailingFreeMemory(MM_Environme
 bool
 MM_SweepPoolManagerAddressOrderedListBase::addFreeMemory(MM_EnvironmentBase *env, MM_ParallelSweepChunk *sweepChunk, uintptr_t *address, uintptr_t size)
 {
-#if defined(OMR_VALGRIND_MEMCHECK)
-	uintptr_t valgrindAreaSize = MM_Bits::convertSlotsToBytes(size);
-	valgrindClearRange(_extensions,(uintptr_t)address,valgrindAreaSize);	
-#endif /* defined(OMR_VALGRIND_MEMCHECK) */
 	bool result = false;
 	
 	/* This implementation is able to support SORTED pieces of memory ONLY!!! */

@@ -107,7 +107,7 @@ void valgrindClearRange(MM_GCExtensionsBase *extensions, uintptr_t baseAddress, 
 
         for(it = lBound;*it <= *uBound && it != setEnd;it++)
         {
-#if defined(VALGRIND_REQUEST_LOGS)				
+#if defined(VALGRIND_REQUEST_LOGS)
             int objSize = (int) ( (GC_ObjectModel)extensions->objectModel ).getConsumedSizeInBytesWithHeader( (omrobjectptr_t) *it);
             VALGRIND_PRINTF("Clearing object at 0x%lx of size %d\n", *it,objSize);
 #endif /* defined(VALGRIND_REQUEST_LOGS) */				
@@ -121,6 +121,9 @@ void valgrindClearRange(MM_GCExtensionsBase *extensions, uintptr_t baseAddress, 
             extensions->_allocatedObjects.erase(lBound,++uBound);//uBound is exclusive
         }
     }
+    /* Valgrind automatically marks free objects as noaccess.
+    We still mark the entire region for left out areas */
+    valgrindMakeMemNoaccess(baseAddress,size);
 }
 
 void valgrindFreeObject(MM_GCExtensionsBase *extensions, uintptr_t baseAddress)

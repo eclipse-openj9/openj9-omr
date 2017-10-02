@@ -48,7 +48,7 @@ ifeq (zos,$(OMR_HOST_OS))
   OBJECTS += omrpgser_release
   OBJECTS += omrgetuserid
   OBJECTS += omrsysinfo_get_number_CPUs
-  OBJECTS += j9jobname
+  OBJECTS += omrjobname
   OBJECTS += omruserid
   OBJECTS += j9zfs
   OBJECTS += j9lpdat

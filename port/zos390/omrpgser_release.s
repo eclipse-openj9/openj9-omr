@@ -21,7 +21,7 @@
 * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
 ***********************************************************************
 
-         TITLE 'Pgser_Release'
+         TITLE 'omrpgser_release.s'
 
 R0       EQU   0
 R1       EQU   1      Input: start address

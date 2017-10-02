@@ -45,7 +45,7 @@ ifeq (zos,$(OMR_HOST_OS))
   OBJECTS += j9generate_ieat_dump
   OBJECTS += omrget_large_pageable_pages_supported
   OBJECTS += omrwto
-  OBJECTS += j9pgser_release
+  OBJECTS += omrpgser_release
   OBJECTS += omrgetuserid
   OBJECTS += omrsysinfo_get_number_CPUs
   OBJECTS += j9jobname

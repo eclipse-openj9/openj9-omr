@@ -46,7 +46,7 @@ if(OMR_HOST_OS STREQUAL "zos")
 		j9generate_ieat_dump.s
 		omrget_large_pageable_pages_supported.s
 		omrwto.s
-		j9pgser_release.s
+		omrpgser_release.s
 		omrgetuserid.c
 		omrsysinfo_get_number_CPUs.s
 		j9jobname.s

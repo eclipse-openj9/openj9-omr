@@ -21,7 +21,7 @@
 * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
 ***********************************************************************
 
-         TITLE 'j9ipt_ttoken64.s'
+         TITLE 'omript_ttoken64.s'
 
 R1       EQU   1
 R2       EQU   2

@@ -145,26 +145,26 @@ uintptr_t getSupportedBiggestNumberByPrimeNumberHelper(void);
 
 #if defined(WIN32) && !defined(WIN32_IBMC)
 
-/* ---------------- j9getdbghelp.c ---------------- */
+/* ---------------- omrgetdbghelp.c ---------------- */
 
 /**
 * @brief Load the version of dbghelp.dll that shipped with the JRE. If we can't find the shipped version, try to find it somewhere else.
 * @return A handle to dbghelp.dll if we were able to find one, NULL otherwise.
 */
-uintptr_t j9getdbghelp_loadDLL(void);
+uintptr_t omrgetdbghelp_loadDLL(void);
 
 /**
 * @brief Get a previously loaded version of dbghelp.dll that shipped with the JRE.
 * @return A handle to dbghelp.dll if we were able to find a previously loaded version, NULL otherwise.
 */
-uintptr_t j9getdbghelp_getDLL(void);
+uintptr_t omrgetdbghelp_getDLL(void);
 
 /**
 * @brief Free the supplied version of dbgHelpDLL
 * @param dbgHelpDLL
 * @return 0 if the library was freed, non-zero otherwise.
 */
-void j9getdbghelp_freeDLL(uintptr_t dbgHelpDLL);
+void omrgetdbghelp_freeDLL(uintptr_t dbgHelpDLL);
 
 #endif  /* defined(WIN32) && !defined(WIN32_IBMC) */
 

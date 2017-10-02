@@ -132,7 +132,7 @@ list(APPEND OBJECTS
 if(OMR_HOST_OS STREQUAL "win")
 	target_sources(omrutil_obj
 		PRIVATE
-			win/j9getdbghelp.c
+			win/omrgetdbghelp.c
 	)
 endif()
 

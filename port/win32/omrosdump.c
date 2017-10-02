@@ -201,10 +201,10 @@ linkDumpFn(HINSTANCE dllHandle, const char *fnName)
 static HINSTANCE
 loadDumpLib(void)
 {
-	HINSTANCE dbghelpDll = (HINSTANCE)j9getdbghelp_getDLL();
+	HINSTANCE dbghelpDll = (HINSTANCE)omrgetdbghelp_getDLL();
 
 	if (dbghelpDll == NULL) {
-		dbghelpDll = (HINSTANCE)j9getdbghelp_loadDLL();
+		dbghelpDll = (HINSTANCE)omrgetdbghelp_loadDLL();
 	}
 
 	return dbghelpDll;

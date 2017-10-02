@@ -136,9 +136,9 @@ load_dbg_functions(struct OMRPortLibrary *portLibrary)
 
 	if (NULL == PPG_dbgHlpLibraryFunctions->hDbgHelpLib) {
 		/* see if the debug help library is already loaded, if not try to load it */
-		PPG_dbgHlpLibraryFunctions->hDbgHelpLib = (HMODULE) j9getdbghelp_getDLL();
+		PPG_dbgHlpLibraryFunctions->hDbgHelpLib = (HMODULE) omrgetdbghelp_getDLL();
 		if (NULL == PPG_dbgHlpLibraryFunctions->hDbgHelpLib) {
-			PPG_dbgHlpLibraryFunctions->hDbgHelpLib = (HINSTANCE) j9getdbghelp_loadDLL();
+			PPG_dbgHlpLibraryFunctions->hDbgHelpLib = (HINSTANCE) omrgetdbghelp_loadDLL();
 		}
 
 		if (NULL == PPG_dbgHlpLibraryFunctions->hDbgHelpLib) {

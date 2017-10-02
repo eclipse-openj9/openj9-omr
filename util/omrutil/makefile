@@ -95,7 +95,7 @@ ifeq (zos,$(OMR_HOST_OS))
 endif
 
 ifeq (win,$(OMR_HOST_OS))
-  OBJECTS += j9getdbghelp$(OBJEXT)
+  OBJECTS += omrgetdbghelp$(OBJEXT)
   vpath %.c win
 endif
 

@@ -43,7 +43,7 @@ endif()
 
 if(OMR_HOST_OS STREQUAL "zos")
 	list(APPEND OBJECTS
-		j9generate_ieat_dump.s
+		omrgenerate_ieat_dump.s
 		omrget_large_pageable_pages_supported.s
 		omrwto.s
 		omrpgser_release.s

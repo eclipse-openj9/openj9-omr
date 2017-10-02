@@ -42,7 +42,7 @@ endif
 
 ifeq (zos,$(OMR_HOST_OS))
   # 31- and 64-bit
-  OBJECTS += j9generate_ieat_dump
+  OBJECTS += omrgenerate_ieat_dump
   OBJECTS += omrget_large_pageable_pages_supported
   OBJECTS += omrwto
   OBJECTS += omrpgser_release

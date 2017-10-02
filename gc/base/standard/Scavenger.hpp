@@ -558,17 +558,24 @@ public:
 	virtual uintptr_t masterThreadConcurrentCollect(MM_EnvironmentBase *env);
 	virtual void postConcurrentUpdateStatsAndReport(MM_EnvironmentBase *env, MM_ConcurrentPhaseStatsBase *stats, UDATA bytesConcurrentlyScanned);
 
-	/* master thread */
+	/* master thread specific methods */
 	bool scavengeIncremental(MM_EnvironmentBase *env);
-	
 	bool scavengeInit(MM_EnvironmentBase *env);
 	bool scavengeRoots(MM_EnvironmentBase *env);
 	bool scavengeScan(MM_EnvironmentBase *env);
 	bool scavengeComplete(MM_EnvironmentBase *env);
 	
-	/* mutator thread */
-	void mutatorFinalReleaseCopyCaches(MM_EnvironmentBase *env, MM_EnvironmentBase *threadEnvironment);
+	/* mutator thread specific methods */
 	void mutatorSetupForGC(MM_EnvironmentBase *env);
+	
+	/* methods used by either mutator or GC threads */
+	/**
+	 * All open copy caches (even if not full) are pushed onto scan queue. Unused memory is abondoned.
+	 * @param env Invoking thread. Could be master thread on behalf on mutator threads (threadEnvironment) for which copy caches are to be released, or could be mutator or GC thread itself.
+	 * @param threadEnvironment Thread for which copy caches are to be released. Could be either GC or mutator thread.
+	 */
+	void threadFinalReleaseCopyCaches(MM_EnvironmentBase *env, MM_EnvironmentBase *threadEnvironment);
+	
 	/**
 	 * trigger STW phase (either start or end) of a Concurrent Scavenger Cycle 
 	 */ 

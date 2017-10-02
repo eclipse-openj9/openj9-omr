@@ -72,11 +72,20 @@ MM_EnvironmentStandard::initialize(MM_GCExtensionsBase *extensions)
 void
 MM_EnvironmentStandard::tearDown(MM_GCExtensionsBase *extensions)
 {
-#if defined(OMR_GC_CONCURRENT_SCAVENGER)
-	if (extensions->concurrentScavenger) {
-		extensions->scavenger->mutatorFinalReleaseCopyCaches(this, this);
-	}
-#endif
+	/* If we are in a middle of a concurrent GC, we may want to flush GC caches (if thread happens to do GC work) */
+	flushGCCaches(this);
 	/* tearDown base class */
 	MM_EnvironmentBase::tearDown(extensions);
+}
+
+void
+MM_EnvironmentStandard::flushGCCaches(MM_EnvironmentBase *env)
+{
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+	if (env->getExtensions()->concurrentScavenger) {
+		if (MUTATOR_THREAD == env->getThreadType()) {
+			getExtensions()->scavenger->threadFinalReleaseCopyCaches((MM_EnvironmentStandard *)env, (MM_EnvironmentStandard *)env);
+		}
+	}
+#endif
 }

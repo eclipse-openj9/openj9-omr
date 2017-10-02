@@ -4526,14 +4526,14 @@ MM_Scavenger::mutatorSetupForGC(MM_EnvironmentBase *envBase)
 }
 
 void
-MM_Scavenger::mutatorFinalReleaseCopyCaches(MM_EnvironmentBase *envBase, MM_EnvironmentBase *threadEnvironmentBase)
+MM_Scavenger::threadFinalReleaseCopyCaches(MM_EnvironmentBase *envBase, MM_EnvironmentBase *threadEnvironmentBase)
 {
 	MM_EnvironmentStandard *env = MM_EnvironmentStandard::getEnvironment(envBase);
 	MM_EnvironmentStandard *threadEnvironment = MM_EnvironmentStandard::getEnvironment(threadEnvironmentBase);
 
-	if (isConcurrentInProgress() && (MUTATOR_THREAD == threadEnvironment->getThreadType())) {
-		/* in case of scavenge complete phase, master thread will act on behalf (use its own environment) of mutator threads
-		 * in case of thread teardown, caller ensures that own environment is used
+	if (isConcurrentInProgress()) {
+		/* In a case of scavenge complete phase, master thread will act on behalf (use its own environment) of mutator threads
+		 * In a case of thread teardown or flushing caches for walk, caller ensures that own environment is used.
 		 */
 
 		// todo: try to simplify. perhaps even we can use threadEnvironment directly?
@@ -4609,7 +4609,7 @@ MM_Scavenger::scavengeComplete(MM_EnvironmentBase *envBase)
 	while((walkThread = threadIterator.nextOMRVMThread()) != NULL) {
 		MM_EnvironmentStandard *threadEnvironment = MM_EnvironmentStandard::getEnvironment(walkThread);
 		if (MUTATOR_THREAD == threadEnvironment->getThreadType()) {
-			mutatorFinalReleaseCopyCaches(env, threadEnvironment);
+			threadFinalReleaseCopyCaches(env, threadEnvironment);
 		}
 	}
 
@@ -4711,6 +4711,12 @@ MM_Scavenger::workThreadProcessRoots(MM_EnvironmentStandard *env)
 	rootScanner.scavengeRememberedSet(env);
 
 	rootScanner.scanRoots(env);
+
+	/* Push any thread local copy caches to scan queue and abandon unused memory to make it walkable.
+	 * This is important to do only for GC threads that will not be used in concurrent phase, but at this point
+	 * we don't know which threads Scheduler will not use, so we do it for every thread.
+	 */
+	threadFinalReleaseCopyCaches(env, env);
 
 	mergeThreadGCStats(env);
 }

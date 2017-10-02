@@ -72,6 +72,8 @@ private:
 /* Functionality Section */
 public:
 	static MM_EnvironmentStandard *newInstance(MM_GCExtensionsBase *extensions, OMR_VMThread *vmThread);
+	
+	virtual void flushGCCaches(MM_EnvironmentBase *env);
 
 	MMINLINE static MM_EnvironmentStandard *getEnvironment(OMR_VMThread *omrVMThread) { return static_cast<MM_EnvironmentStandard*>(omrVMThread->_gcOmrVMThreadExtensions); }
 	MMINLINE static MM_EnvironmentStandard *getEnvironment(MM_EnvironmentBase *env) { return static_cast<MM_EnvironmentStandard*>(env); }

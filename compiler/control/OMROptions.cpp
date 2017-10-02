@@ -446,6 +446,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"disableNextGenHCR",                  "O\tdisable HCR implemented with on-stack replacement",  SET_OPTION_BIT(TR_DisableNextGenHCR), "F"},
 
    {"disableNonvirtualInlining",          "O\tdisable inlining of non virtual methods",        SET_OPTION_BIT(TR_DisableNonvirtualInlining), "F"},
+   {"disableNopBreakpointGuard",          "O\tdisable nop of breakpoint guards",        SET_OPTION_BIT(TR_DisableNopBreakpointGuard), "F"},
    {"disableNoServerDuringStartup",       "M\tDo not use NoServer during startup",  SET_OPTION_BIT(TR_DisableNoServerDuringStartup), "F"},
    {"disableNoVMAccess",                  "O\tdisable compilation without holding VM access",  SET_OPTION_BIT(TR_DisableNoVMAccess), "F"},
    {"disableOnDemandLiteralPoolRegister", "O\tdisable on demand literal pool register",        SET_OPTION_BIT(TR_DisableOnDemandLiteralPoolRegister), "F"},

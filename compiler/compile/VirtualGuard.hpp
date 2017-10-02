@@ -212,6 +212,7 @@ class TR_VirtualGuard
          {
          case TR_DummyTest:
          case TR_NonoverriddenTest:
+         case TR_FSDTest:
             return false;
          default:
             return true;

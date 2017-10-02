@@ -296,7 +296,8 @@ class OMR_EXTENSIBLE CodeGenerator
    uint32_t _prePrologueSize;
 
    TR::Instruction *_implicitExceptionPoint;
-
+   bool mergeableGuard(TR::Instruction *guard);
+   bool mergeableGuards(TR::Instruction *earlierGuard, TR::Instruction *laterGuard);
 
    protected:
 
@@ -1199,6 +1200,8 @@ class OMR_EXTENSIBLE CodeGenerator
    // Used to find the guard instruction where a given guard will actually patch
    // currently can only return a value other than vgdnop for HCR guards
    TR::Instruction* getVirtualGuardForPatching(TR::Instruction *vgdnop);
+
+   bool isStopTheWorldGuard(TR::Node *node);
 
    void jitAddPicToPatchOnClassUnload(void *classPointer, void *addressToBePatched) {}
    void jitAdd32BitPicToPatchOnClassUnload(void *classPointer, void *addressToBePatched) {}

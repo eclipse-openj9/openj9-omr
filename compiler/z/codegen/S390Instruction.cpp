@@ -5804,17 +5804,17 @@ TR::S390VirtualGuardNOPInstruction::generateBinaryEncoding()
    // in) if the patching occurs during GC pause times.  The patching of up to 6-bytes is potentially
    // not atomic.
 
-   bool performEmptyPatch = getNode()->isHCRGuard() || getNode()->isProfiledGuard() || getNode()->isOSRGuard();
+   bool performEmptyPatch = cg()->isStopTheWorldGuard(getNode()) || getNode()->isProfiledGuard();
 
-   // HCR guards that are merged with profiled guards never need to generate NOPs for patching because
-   // the profiled guard will generate the NOP branch to the same location the HCR guard needs to branch
-   // to, so we can always use the NOP branch form the profiled guard as our HCR patch point.
+   // Stop the world guards that are merged with profiled guards never need to generate NOPs for patching because
+   // the profiled guard will generate the NOP branch to the same location the stop the world guard needs to branch
+   // to, so we can always use the NOP branch form the profiled guard as our stop the world patch point.
 
    int32_t sumEstimatedBinaryLength = getNode()->isProfiledGuard() ? 6 : 0;
 
    if (performEmptyPatch)
       {
-      // so at this point we know we are an HCR guard and that there may be other HCR guards
+      // so at this point we know we are an stop the world guard and that there may be other stop the world guards
       // after us that will use us as their patch point. We now calculate how much space we
       // are sure to have to overwrite to inform us about what to do next
       TR::Node *firstBBEnd = NULL;

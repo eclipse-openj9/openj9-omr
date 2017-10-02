@@ -29,7 +29,7 @@ OBJECTS := \
   argmain \
   fileTest \
   heapTest \
-  j9portTest \
+  omrportTest \
   main \
   memTest \
   omrdumpTest \

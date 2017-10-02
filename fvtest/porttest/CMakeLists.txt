@@ -45,7 +45,7 @@ endif()
 add_executable(omrporttest
 	fileTest.cpp
 	heapTest.cpp
-	j9portTest.cpp
+	omrportTest.cpp
 	main.cpp
 	memTest.cpp
 	omrdumpTest.cpp

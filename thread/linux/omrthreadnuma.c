@@ -378,7 +378,7 @@ omrthread_numa_set_node_affinity_nolock(omrthread_t thread, const uintptr_t *nod
 					cpuset_logical_or(&affinityCPUs, newSet);
 				}
 			}
-			if (J9_ARE_NO_BITS_SET(flags, J9THREAD_NUMA_OVERRIDE_DEFAULT_AFFINITY)) {
+			if (OMR_ARE_NO_BITS_SET(flags, J9THREAD_NUMA_OVERRIDE_DEFAULT_AFFINITY)) {
 				cpuset_logical_and(&affinityCPUs, &defaultAffinityMask);
 			}
 		} else {

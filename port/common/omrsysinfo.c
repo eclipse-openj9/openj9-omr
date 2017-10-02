@@ -787,7 +787,7 @@ omrsysinfo_os_has_feature(struct OMRPortLibrary *portLibrary, struct OMROSDesc *
 		uint32_t featureIndex = feature / 32;
 		uint32_t featureShift = feature % 32;
 
-		rc = J9_ARE_ALL_BITS_SET(desc->features[featureIndex], 1 << featureShift);
+		rc = OMR_ARE_ALL_BITS_SET(desc->features[featureIndex], 1 << featureShift);
 	}
 
 	Trc_PRT_sysinfo_os_has_feature_Exit((uintptr_t)rc);

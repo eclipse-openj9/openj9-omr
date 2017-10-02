@@ -815,7 +815,7 @@ traceV(OMR_TraceThread *thr, UtModuleInfo *modInfo, uint32_t traceId, const char
 	 * Process maximal trace
 	 */
 	str = (const signed char *)spec;
-	if (J9_ARE_ANY_BITS_SET(thr->currentOutputMask, UT_MAXIMAL | UT_EXCEPTION) && (str != NULL)) {
+	if (OMR_ARE_ANY_BITS_SET(thr->currentOutputMask, UT_MAXIMAL | UT_EXCEPTION) && (str != NULL)) {
 		int i;
 
 		/*

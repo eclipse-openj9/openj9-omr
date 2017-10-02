@@ -221,10 +221,10 @@ omrsl_open_shared_library(struct OMRPortLibrary *portLibrary, char *name, uintpt
 	char mangledName[EsMaxPath + 1];
 	char errBuf[512];
 	uintptr_t result;
-	int lazyOrNow = J9_ARE_ALL_BITS_SET(flags, OMRPORT_SLOPEN_LAZY) ? RTLD_LAZY : RTLD_NOW;
-	BOOLEAN decorate = J9_ARE_ALL_BITS_SET(flags, OMRPORT_SLOPEN_DECORATE);
+	int lazyOrNow = OMR_ARE_ALL_BITS_SET(flags, OMRPORT_SLOPEN_LAZY) ? RTLD_LAZY : RTLD_NOW;
+	BOOLEAN decorate = OMR_ARE_ALL_BITS_SET(flags, OMRPORT_SLOPEN_DECORATE);
 	uintptr_t lastErrno = 0;
-	BOOLEAN openExec = J9_ARE_ALL_BITS_SET(flags, OMRPORT_SLOPEN_OPEN_EXECUTABLE);
+	BOOLEAN openExec = OMR_ARE_ALL_BITS_SET(flags, OMRPORT_SLOPEN_OPEN_EXECUTABLE);
 	uintptr_t pathLength = 0;
 
 	Trc_PRT_sl_open_shared_library_Entry(name, flags);

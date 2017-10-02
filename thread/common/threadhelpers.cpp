@@ -61,7 +61,7 @@ omrthread_spinlock_acquire(omrthread_t self, omrthread_monitor_t monitor)
 
 #if defined(OMR_THR_JLM)
 	J9ThreadMonitorTracing *tracing = NULL;
-	if (J9_ARE_ALL_BITS_SET(lib->flags, J9THREAD_LIB_FLAG_JLM_ENABLED)) {
+	if (OMR_ARE_ALL_BITS_SET(lib->flags, J9THREAD_LIB_FLAG_JLM_ENABLED)) {
 		tracing = monitor->tracing;
 	}
 #endif /* OMR_THR_JLM */
@@ -94,7 +94,7 @@ omrthread_spinlock_acquire(omrthread_t self, omrthread_monitor_t monitor)
 				goto update_jlm;
 			}
 			/* Stop spinning if adaptive spin heuristic disables spinning */
-			if (J9_ARE_ALL_BITS_SET(monitor->flags, J9THREAD_MONITOR_DISABLE_SPINNING)) {
+			if (OMR_ARE_ALL_BITS_SET(monitor->flags, J9THREAD_MONITOR_DISABLE_SPINNING)) {
 				goto update_jlm;
 			}
 			VM_AtomicSupport::yieldCPU();

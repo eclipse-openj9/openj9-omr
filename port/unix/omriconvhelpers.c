@@ -129,7 +129,7 @@ iconv_global_init(struct OMRPortLibrary *portLibrary)
 	} else { /* clean up */
 		uint32_t iconvIndex = 0;
 		for (iconvIndex = OMRPORT_FIRST_ICONV_DESCRIPTOR; iconvIndex < UNCACHED_ICONV_DESCRIPTOR; ++iconvIndex) {
-			if (J9_ARE_ANY_BITS_SET(initializedConvertors, 1 << iconvIndex)) {
+			if (OMR_ARE_ANY_BITS_SET(initializedConvertors, 1 << iconvIndex)) {
 				MUTEX_DESTROY(globalConverterMutex[iconvIndex]);
 				iconv_close(globalConverter[iconvIndex]);
 			}

@@ -171,7 +171,7 @@ omrthread_t global_lock_owner = UNOWNED;
 #else /* defined(WIN32) || !defined(OMR_NOTIFY_POLICY_CONTROL) */
 #define NOTIFY_WRAPPER(thread) \
 	do { \
-		if (J9_ARE_ALL_BITS_SET((thread)->library->flags, J9THREAD_LIB_FLAG_NOTIFY_POLICY_BROADCAST)) { \
+		if (OMR_ARE_ALL_BITS_SET((thread)->library->flags, J9THREAD_LIB_FLAG_NOTIFY_POLICY_BROADCAST)) { \
 			J9OSCOND_NOTIFY_ALL((thread)->condition); \
 		} else { \
 			J9OSCOND_NOTIFY((thread)->condition); \
@@ -478,7 +478,7 @@ omrthread_lib_use_realtime_scheduling(void)
 {
 #if defined(LINUX) || defined(OSX)
 	omrthread_library_t lib = GLOBAL_DATA(default_library);
-	return J9_ARE_ALL_BITS_SET(lib->flags, J9THREAD_LIB_FLAG_REALTIME_SCHEDULING_ENABLED);
+	return OMR_ARE_ALL_BITS_SET(lib->flags, J9THREAD_LIB_FLAG_REALTIME_SCHEDULING_ENABLED);
 #else /* defined(LINUX) || defined(OSX) */
 	return FALSE;
 #endif /* defined(LINUX) || defined(OSX) */
@@ -1293,7 +1293,7 @@ storeExitCpuUsage(omrthread_t thread)
 	int64_t threadCpuTime = 0;
 
 	/* If -XX:-EnableCPUMonitor has been set, this function is a no-op */
-	if (J9_ARE_NO_BITS_SET(lib->flags, J9THREAD_LIB_FLAG_ENABLE_CPU_MONITOR)) {
+	if (OMR_ARE_NO_BITS_SET(lib->flags, J9THREAD_LIB_FLAG_ENABLE_CPU_MONITOR)) {
 		return;
 	}
 
@@ -1304,20 +1304,20 @@ storeExitCpuUsage(omrthread_t thread)
 	thread->flags &= ~J9THREAD_FLAG_CPU_SAMPLING_ENABLED;
 	THREAD_UNLOCK(thread);
 
-	if (J9_ARE_ALL_BITS_SET(lib->flags, J9THREAD_LIB_FLAG_ENABLE_CPU_MONITOR)) {
+	if (OMR_ARE_ALL_BITS_SET(lib->flags, J9THREAD_LIB_FLAG_ENABLE_CPU_MONITOR)) {
 		/* Store dying thread's CPU data */
 		threadCpuTime = omrthread_get_cpu_time(thread);
 		if (threadCpuTime > 0) {
 			threadCpuTime /= 1000;
 			/* We only need the time that the cpu usage is unaccounted for */
 			threadCpuTime -= thread->lastCategorySwitchTime;
-			if (J9_ARE_ALL_BITS_SET(thread->effective_category, J9THREAD_CATEGORY_RESOURCE_MONITOR_THREAD)) {
+			if (OMR_ARE_ALL_BITS_SET(thread->effective_category, J9THREAD_CATEGORY_RESOURCE_MONITOR_THREAD)) {
 				cumulativeInfo->resourceMonitorCpuTime += threadCpuTime;
-			} else if (J9_ARE_ALL_BITS_SET(thread->effective_category, J9THREAD_CATEGORY_SYSTEM_THREAD)) {
+			} else if (OMR_ARE_ALL_BITS_SET(thread->effective_category, J9THREAD_CATEGORY_SYSTEM_THREAD)) {
 				cumulativeInfo->systemJvmCpuTime += threadCpuTime;
-				if (J9_ARE_ALL_BITS_SET(thread->effective_category, J9THREAD_CATEGORY_SYSTEM_GC_THREAD)) {
+				if (OMR_ARE_ALL_BITS_SET(thread->effective_category, J9THREAD_CATEGORY_SYSTEM_GC_THREAD)) {
 					cumulativeInfo->gcCpuTime += threadCpuTime;
-				} else if (J9_ARE_ALL_BITS_SET(thread->effective_category, J9THREAD_CATEGORY_SYSTEM_JIT_THREAD)) {
+				} else if (OMR_ARE_ALL_BITS_SET(thread->effective_category, J9THREAD_CATEGORY_SYSTEM_JIT_THREAD)) {
 					cumulativeInfo->jitCpuTime += threadCpuTime;
 				}
 			} else {
@@ -3557,7 +3557,7 @@ monitor_init(omrthread_monitor_t monitor, uintptr_t flags, omrthread_library_t l
 	 * the default is now that we do not spin.
 	 */
 	if ((J9THREAD_MONITOR_OBJECT != (flags & J9THREAD_MONITOR_OBJECT))
-		|| J9_ARE_ALL_BITS_SET(lib->flags, J9THREAD_LIB_FLAG_SECONDARY_SPIN_OBJECT_MONITORS_ENABLED)
+		|| OMR_ARE_ALL_BITS_SET(lib->flags, J9THREAD_LIB_FLAG_SECONDARY_SPIN_OBJECT_MONITORS_ENABLED)
 	) {
 		monitor->flags |= J9THREAD_MONITOR_TRY_ENTER_SPIN;
 	}
@@ -5429,13 +5429,13 @@ fixupThreadAccounting(omrthread_t thread, uintptr_t type)
 	}
 
 	/* Capture the current cpu usage of the thread since the last event (such as attach, category switch */
-	if (J9_ARE_ALL_BITS_SET(thread->effective_category, J9THREAD_CATEGORY_RESOURCE_MONITOR_THREAD)) {
+	if (OMR_ARE_ALL_BITS_SET(thread->effective_category, J9THREAD_CATEGORY_RESOURCE_MONITOR_THREAD)) {
 		cumulativeUsage->resourceMonitorCpuTime += cpuQuantum;
-	} else if (J9_ARE_ALL_BITS_SET(thread->effective_category, J9THREAD_CATEGORY_SYSTEM_THREAD)) {
+	} else if (OMR_ARE_ALL_BITS_SET(thread->effective_category, J9THREAD_CATEGORY_SYSTEM_THREAD)) {
 		cumulativeUsage->systemJvmCpuTime += cpuQuantum;
-		if (J9_ARE_ALL_BITS_SET(thread->effective_category, J9THREAD_CATEGORY_SYSTEM_GC_THREAD)) {
+		if (OMR_ARE_ALL_BITS_SET(thread->effective_category, J9THREAD_CATEGORY_SYSTEM_GC_THREAD)) {
 			cumulativeUsage->gcCpuTime += cpuQuantum;
-		} else if (J9_ARE_ALL_BITS_SET(thread->effective_category, J9THREAD_CATEGORY_SYSTEM_JIT_THREAD)) {
+		} else if (OMR_ARE_ALL_BITS_SET(thread->effective_category, J9THREAD_CATEGORY_SYSTEM_JIT_THREAD)) {
 			cumulativeUsage->jitCpuTime += cpuQuantum;
 		}
 	} else {
@@ -5477,7 +5477,7 @@ omrthread_set_category(omrthread_t thread, uintptr_t category, uintptr_t type)
 
 	/* If -XX:-EnableCPUMonitor has been set, no cpu usage accounting will be done.
 	 * Check if we are in the middle of a GC cycle, if so, no accounting updates will be done */
-	if (J9_ARE_ALL_BITS_SET(lib->flags, J9THREAD_LIB_FLAG_ENABLE_CPU_MONITOR)
+	if (OMR_ARE_ALL_BITS_SET(lib->flags, J9THREAD_LIB_FLAG_ENABLE_CPU_MONITOR)
 	 && ((J9THREAD_TYPE_SET_GC == type)
 	 || ((J9THREAD_TYPE_SET_GC != type) && (thread->category == thread->effective_category)))
 	) {
@@ -5570,7 +5570,7 @@ threadEnableCpuMonitor(omrthread_t thread)
 {
 	omrthread_library_t lib = thread->library;
 
-	if (J9_ARE_ALL_BITS_SET(lib->flags, J9THREAD_LIB_FLAG_ENABLE_CPU_MONITOR)) {
+	if (OMR_ARE_ALL_BITS_SET(lib->flags, J9THREAD_LIB_FLAG_ENABLE_CPU_MONITOR)) {
 		THREAD_LOCK(thread, CALLER_SET_FLAG_ENABLE_CPU_MONITOR);
 		/* Should be safe now to query cpu usage for the freshly attached thread */
 		thread->flags |= J9THREAD_FLAG_CPU_SAMPLING_ENABLED;

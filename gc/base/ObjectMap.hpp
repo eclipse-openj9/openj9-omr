@@ -160,7 +160,7 @@ public:
 	MMINLINE bool
 	isValidObject(omrobjectptr_t objectPtr)
 	{
-		bool shouldCheck = isCommittedHeapObject(objectPtr) && J9_ARE_NO_BITS_SET((uintptr_t)objectPtr, _extensions->getObjectAlignmentInBytes() - 1);
+		bool shouldCheck = isCommittedHeapObject(objectPtr) && OMR_ARE_NO_BITS_SET((uintptr_t)objectPtr, _extensions->getObjectAlignmentInBytes() - 1);
 		if (shouldCheck) {
 			return _objectMap->isBitSet(objectPtr);
 		}

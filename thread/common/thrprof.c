@@ -892,7 +892,7 @@ omrthread_get_jvm_cpu_usage_info(J9ThreadsCpuUsage *cpuUsage)
 	uint64_t postTimestamp = 0;
 
 	/* If -XX:-EnableCPUMonitor has been set, this function returns an error */
-	if (J9_ARE_NO_BITS_SET(lib->flags, J9THREAD_LIB_FLAG_ENABLE_CPU_MONITOR)) {
+	if (OMR_ARE_NO_BITS_SET(lib->flags, J9THREAD_LIB_FLAG_ENABLE_CPU_MONITOR)) {
 		return -J9THREAD_ERR_USAGE_RETRIEVAL_UNSUPPORTED;
 	}
 
@@ -942,16 +942,16 @@ omrthread_get_jvm_cpu_usage_info(J9ThreadsCpuUsage *cpuUsage)
 		/* Only account for the quantum from the previous category change */
 		threadCpuTime /= 1000;
 		threadCpuTime -= walkThread->lastCategorySwitchTime;
-		if (J9_ARE_ALL_BITS_SET(walkThread->effective_category, J9THREAD_CATEGORY_RESOURCE_MONITOR_THREAD)) {
+		if (OMR_ARE_ALL_BITS_SET(walkThread->effective_category, J9THREAD_CATEGORY_RESOURCE_MONITOR_THREAD)) {
 			resourceMonitorCpuTime += threadCpuTime;
-		} else if (J9_ARE_ALL_BITS_SET(walkThread->effective_category, J9THREAD_CATEGORY_SYSTEM_THREAD)) {
+		} else if (OMR_ARE_ALL_BITS_SET(walkThread->effective_category, J9THREAD_CATEGORY_SYSTEM_THREAD)) {
 			systemJvmCpuTime += threadCpuTime;
-			if (J9_ARE_ALL_BITS_SET(walkThread->effective_category, J9THREAD_CATEGORY_SYSTEM_GC_THREAD)) {
+			if (OMR_ARE_ALL_BITS_SET(walkThread->effective_category, J9THREAD_CATEGORY_SYSTEM_GC_THREAD)) {
 				gcCpuTime += threadCpuTime;
-			} else if (J9_ARE_ALL_BITS_SET(walkThread->effective_category, J9THREAD_CATEGORY_SYSTEM_JIT_THREAD)) {
+			} else if (OMR_ARE_ALL_BITS_SET(walkThread->effective_category, J9THREAD_CATEGORY_SYSTEM_JIT_THREAD)) {
 				jitCpuTime += threadCpuTime;
 			}
-		} else if (J9_ARE_ALL_BITS_SET(walkThread->effective_category, J9THREAD_CATEGORY_APPLICATION_THREAD)) {
+		} else if (OMR_ARE_ALL_BITS_SET(walkThread->effective_category, J9THREAD_CATEGORY_APPLICATION_THREAD)) {
 			applicationCpuTime += threadCpuTime;
 
 			/* If the thread has been set to a user defined category, count it in the right category */

@@ -3061,16 +3061,16 @@ struct EventCreate : public InitializedAfter {
 
 		cudaError_t error = cudaErrorInvalidValue;
 
-		if (J9_ARE_NO_BITS_SET(flags, ~allFlags)) {
+		if (OMR_ARE_NO_BITS_SET(flags, ~allFlags)) {
 			unsigned int eventFlags = 0;
 
-			if (J9_ARE_ANY_BITS_SET(flags, J9CUDA_EVENT_FLAG_BLOCKING_SYNC)) {
+			if (OMR_ARE_ANY_BITS_SET(flags, J9CUDA_EVENT_FLAG_BLOCKING_SYNC)) {
 				eventFlags |= cudaEventBlockingSync;
 			}
-			if (J9_ARE_ANY_BITS_SET(flags, J9CUDA_EVENT_FLAG_DISABLE_TIMING)) {
+			if (OMR_ARE_ANY_BITS_SET(flags, J9CUDA_EVENT_FLAG_DISABLE_TIMING)) {
 				eventFlags |= cudaEventDisableTiming;
 			}
-			if (J9_ARE_ANY_BITS_SET(flags, J9CUDA_EVENT_FLAG_INTERPROCESS)) {
+			if (OMR_ARE_ANY_BITS_SET(flags, J9CUDA_EVENT_FLAG_INTERPROCESS)) {
 				eventFlags |= cudaEventInterprocess;
 			}
 
@@ -3982,18 +3982,18 @@ omrcuda_hostAlloc(OMRPortLibrary *portLibrary, uintptr_t size, uint32_t flags, v
 	cudaError_t result = cudaErrorNoDevice;
 
 	if (NULL != functions->HostAlloc) {
-		if (J9_ARE_ANY_BITS_SET(flags, ~allFlags)) {
+		if (OMR_ARE_ANY_BITS_SET(flags, ~allFlags)) {
 			result = cudaErrorInvalidValue;
 		} else {
 			unsigned int cudaFlags = cudaHostAllocDefault;
 
-			if (J9_ARE_ANY_BITS_SET(flags, J9CUDA_HOST_ALLOC_MAPPED)) {
+			if (OMR_ARE_ANY_BITS_SET(flags, J9CUDA_HOST_ALLOC_MAPPED)) {
 				cudaFlags |= cudaHostAllocMapped;
 			}
-			if (J9_ARE_ANY_BITS_SET(flags, J9CUDA_HOST_ALLOC_PORTABLE)) {
+			if (OMR_ARE_ANY_BITS_SET(flags, J9CUDA_HOST_ALLOC_PORTABLE)) {
 				cudaFlags |= cudaHostAllocPortable;
 			}
-			if (J9_ARE_ANY_BITS_SET(flags, J9CUDA_HOST_ALLOC_WRITE_COMBINED)) {
+			if (OMR_ARE_ANY_BITS_SET(flags, J9CUDA_HOST_ALLOC_WRITE_COMBINED)) {
 				cudaFlags |= cudaHostAllocWriteCombined;
 			}
 
@@ -6108,10 +6108,10 @@ struct StreamCreateEx : public InitializedAfter {
 
 		cudaError_t error = cudaErrorInvalidValue;
 
-		if (J9_ARE_NO_BITS_SET(flags, ~allFlags)) {
+		if (OMR_ARE_NO_BITS_SET(flags, ~allFlags)) {
 			unsigned int streamFlags = 0;
 
-			if (J9_ARE_ANY_BITS_SET(flags, J9CUDA_STREAM_FLAG_NON_BLOCKING)) {
+			if (OMR_ARE_ANY_BITS_SET(flags, J9CUDA_STREAM_FLAG_NON_BLOCKING)) {
 				streamFlags |= cudaStreamNonBlocking;
 			}
 

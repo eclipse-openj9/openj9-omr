@@ -81,8 +81,8 @@ omrsl_open_shared_library(struct OMRPortLibrary *portLibrary, char *name, uintpt
 	char *openName = name;
 	wchar_t portLibDir[EsMaxPath];
 	wchar_t unicodeBuffer[UNICODE_BUFFER_SIZE], *unicodeName;
-	BOOLEAN decorate = J9_ARE_ALL_BITS_SET(flags, OMRPORT_SLOPEN_DECORATE);
-	BOOLEAN openExec = J9_ARE_ALL_BITS_SET(flags, OMRPORT_SLOPEN_OPEN_EXECUTABLE);
+	BOOLEAN decorate = OMR_ARE_ALL_BITS_SET(flags, OMRPORT_SLOPEN_DECORATE);
+	BOOLEAN openExec = OMR_ARE_ALL_BITS_SET(flags, OMRPORT_SLOPEN_OPEN_EXECUTABLE);
 	uintptr_t pathLength = 0;
 
 	Trc_PRT_sl_open_shared_library_Entry(name, flags);
@@ -106,7 +106,7 @@ omrsl_open_shared_library(struct OMRPortLibrary *portLibrary, char *name, uintpt
 
 		/* Check for any errors. */
 		if (NULL == dllHandle) {
-			BOOLEAN useNlsMessage = J9_ARE_ALL_BITS_SET(flags, OMRPORT_SLOPEN_NO_LOOKUP_MSG_FOR_NOT_FOUND);
+			BOOLEAN useNlsMessage = OMR_ARE_ALL_BITS_SET(flags, OMRPORT_SLOPEN_NO_LOOKUP_MSG_FOR_NOT_FOUND);
 			BOOLEAN platformErrorFailed = FALSE;
 
 			error = GetLastError();
@@ -248,7 +248,7 @@ omrsl_open_shared_library(struct OMRPortLibrary *portLibrary, char *name, uintpt
 		}
 		/* When the flag OMRPORT_SLOPEN_NO_LOOKUP_MSG_FOR_NOT_FOUND is set and the error is ERROR_MOD_NOT_FOUND,
 		 * do not call FormatMessageW() since it cost 700K of memory when called the first time. */
-		if ((ERROR_MOD_NOT_FOUND == error) && J9_ARE_ALL_BITS_SET(flags, OMRPORT_SLOPEN_NO_LOOKUP_MSG_FOR_NOT_FOUND)) {
+		if ((ERROR_MOD_NOT_FOUND == error) && OMR_ARE_ALL_BITS_SET(flags, OMRPORT_SLOPEN_NO_LOOKUP_MSG_FOR_NOT_FOUND)) {
 			const char errorString[] = "The specified module could not be found";
 			SetErrorMode(prevMode);
 			if (unicodeBuffer != unicodeName) {

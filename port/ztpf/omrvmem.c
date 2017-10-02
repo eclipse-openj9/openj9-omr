@@ -1371,7 +1371,7 @@ getMemoryInRangeForDefaultPages(struct OMRPortLibrary *portLibrary,
 	}
 
 	/* check if we should use quick search for fast performance */
-	if (J9_ARE_ANY_BITS_SET(vmemOptions, OMRPORT_VMEM_ALLOC_QUICK)) {
+	if (OMR_ARE_ANY_BITS_SET(vmemOptions, OMRPORT_VMEM_ALLOC_QUICK)) {
 
 		void *smartAddress = NULL;
 		void *allocatedAddress = NULL;

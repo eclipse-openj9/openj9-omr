@@ -562,7 +562,7 @@ omrfile_open(struct OMRPortLibrary *portLibrary, const char *path, int32_t flags
 	shareMode = FILE_SHARE_READ | FILE_SHARE_WRITE;
 
 	/* this flag allows files to be deleted/renamed while they are still open, which more in line with unix semantics */
-	if (J9_ARE_ALL_BITS_SET(flags, EsOpenShareDelete)) {
+	if (OMR_ARE_ALL_BITS_SET(flags, EsOpenShareDelete)) {
 		shareMode = shareMode | FILE_SHARE_DELETE;
 	}
 

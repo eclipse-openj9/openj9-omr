@@ -45,7 +45,7 @@ if(OMR_HOST_OS STREQUAL "zos")
 	list(APPEND OBJECTS
 		j9generate_ieat_dump.s
 		omrget_large_pageable_pages_supported.s
-		j9wto.s
+		omrwto.s
 		j9pgser_release.s
 		omrgetuserid.c
 		j9sysinfo_get_number_CPUs.s

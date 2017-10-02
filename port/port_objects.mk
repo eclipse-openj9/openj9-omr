@@ -44,7 +44,7 @@ ifeq (zos,$(OMR_HOST_OS))
   # 31- and 64-bit
   OBJECTS += j9generate_ieat_dump
   OBJECTS += omrget_large_pageable_pages_supported
-  OBJECTS += j9wto
+  OBJECTS += omrwto
   OBJECTS += j9pgser_release
   OBJECTS += omrgetuserid
   OBJECTS += j9sysinfo_get_number_CPUs

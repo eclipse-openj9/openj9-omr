@@ -76,7 +76,7 @@ private:
 
    TR::Region &_region;
    TR_BitVector _empty;
-   typedef TR::typed_allocator<std::pair<uint32_t, TR_BitVector*>, TR::Region&> RefMapAllocator;
+   typedef TR::typed_allocator<std::pair<uint32_t const, TR_BitVector*>, TR::Region&> RefMapAllocator;
    typedef std::less<uint32_t> RefMapComparator;
    typedef std::map<uint32_t, TR_BitVector*, RefMapComparator, RefMapAllocator> RefMap;
    RefMap _refAutosPerBlock;
@@ -100,7 +100,7 @@ public:
    TR_RegisterCandidate(TR::SymbolReference *, TR::Region &r);
 
    class BlockInfo {
-     typedef TR::typed_allocator<std::pair<uint32_t, uint32_t>, TR::Region &> InfoMapAllocator;
+     typedef TR::typed_allocator<std::pair<uint32_t const, uint32_t>, TR::Region &> InfoMapAllocator;
      typedef std::less<uint32_t> InfoMapComparator;
      typedef std::map<uint32_t, uint32_t, InfoMapComparator, InfoMapAllocator> InfoMap;
      InfoMap _blockMap;
@@ -377,7 +377,7 @@ private:
    static int32_t                    _candidateTypeWeights[TR_NumRegisterCandidateTypes];
    TR::GlobalSet            *_referencedAutoSymRefsInBlock;
 
-   typedef TR::typed_allocator<std::pair<uint32_t, TR_RegisterCandidate*>, TR::Region&> SymRefCandidateMapAllocator;
+   typedef TR::typed_allocator<std::pair<uint32_t const, TR_RegisterCandidate*>, TR::Region&> SymRefCandidateMapAllocator;
    typedef std::less<uint32_t> SymRefCandidateMapComparator;
    typedef std::map<uint32_t, TR_RegisterCandidate*, SymRefCandidateMapComparator, SymRefCandidateMapAllocator> SymRefCandidateMap;
 
@@ -405,11 +405,11 @@ public:
      uint32_t first, last;
    };
 
-   typedef TR::typed_allocator<std::pair<int32_t, struct coordinates>, TR::Region &> CoordinatesAllocator;
+   typedef TR::typed_allocator<std::pair<int32_t const, struct coordinates>, TR::Region &> CoordinatesAllocator;
    typedef std::less<int32_t> CoordinatesComparator;
    typedef std::map<int32_t, struct coordinates, CoordinatesComparator, CoordinatesAllocator> Coordinates;
 
-   typedef TR::typed_allocator<std::pair<uint32_t, Coordinates *>, TR::Region &> ReferenceTableAllocator;
+   typedef TR::typed_allocator<std::pair<uint32_t const, Coordinates *>, TR::Region &> ReferenceTableAllocator;
    typedef std::less<uint32_t> ReferenceTableComparator;
    typedef std::map<uint32_t, Coordinates *, ReferenceTableComparator, ReferenceTableAllocator> ReferenceTable;
 private:

@@ -1388,7 +1388,7 @@ void OMR::CFG::findLoopingBlocks(TR_BitVector &loopingBlocks)
    int32_t numberOfBlocks = getNextNodeNumber();
    TR::deque<int32_t, TR::Region&> seenIndex(numberOfBlocks, workingSpace);
    TR::deque<TR::Block *, TR::Region&> stack(numberOfBlocks, workingSpace);
-   typedef TR::typed_allocator<std::pair<int32_t, LoopInfo*>, TR::Region&> LoopMapAllocator;
+   typedef TR::typed_allocator<std::pair<int32_t const, LoopInfo*>, TR::Region&> LoopMapAllocator;
    typedef std::less<int32_t> LoopMapComparator;
    typedef std::map<int32_t, LoopInfo*, LoopMapComparator, LoopMapAllocator> LoopMap;
    LoopMap loops((LoopMapComparator()), LoopMapAllocator(workingSpace));

@@ -426,11 +426,11 @@ protected:
 
    typedef bool (*StrComparator)(const char *, const char *);
 
-   typedef TR::typed_allocator<std::pair<const char *, OMR::StructType *>, TR::Region &> StructMapAllocator;
+   typedef TR::typed_allocator<std::pair<const char * const, OMR::StructType *>, TR::Region &> StructMapAllocator;
    typedef std::map<const char *, OMR::StructType *, StrComparator, StructMapAllocator> StructMap;
    StructMap          _structsByName;
 
-   typedef TR::typed_allocator<std::pair<const char *, OMR::UnionType *>, TR::Region &> UnionMapAllocator;
+   typedef TR::typed_allocator<std::pair<const char * const, OMR::UnionType *>, TR::Region &> UnionMapAllocator;
    typedef std::map<const char *, OMR::UnionType *, StrComparator, UnionMapAllocator> UnionMap;
    UnionMap           _unionsByName;
 

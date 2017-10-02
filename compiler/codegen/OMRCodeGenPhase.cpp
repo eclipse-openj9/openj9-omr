@@ -438,7 +438,7 @@ OMR::CodeGenPhase::performSetupForInstructionSelectionPhase(TR::CodeGenerator * 
 
       auto mapAllocator = getTypedAllocator<std::pair<TR::TreeTop*, TR::TreeTop*> >(comp->allocator());
 
-      std::map<TR::TreeTop*, TR::TreeTop*, std::less<TR::TreeTop*>, TR::typed_allocator<std::pair<TR::TreeTop*, TR::TreeTop*>, TR::Allocator> >
+      std::map<TR::TreeTop*, TR::TreeTop*, std::less<TR::TreeTop*>, TR::typed_allocator<std::pair<TR::TreeTop* const, TR::TreeTop*>, TR::Allocator> >
          currentTreeTopToappendTreeTop(std::less<TR::TreeTop*> (), mapAllocator);
 
       TR_BitVector *unAnchorableAloadiNodes = comp->getBitVectorPool().get();

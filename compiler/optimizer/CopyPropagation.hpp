@@ -107,12 +107,12 @@ class TR_CopyPropagation : public TR::Optimization
    TR::TreeTop *_storeTree;
    TR::TreeTop *_useTree;
 
-   typedef TR::typed_allocator<std::pair<TR::Node*, TR::TreeTop*>, TR::Region&> StoreTreeMapAllocator;
+   typedef TR::typed_allocator<std::pair<TR::Node* const, TR::TreeTop*>, TR::Region&> StoreTreeMapAllocator;
    typedef std::less<TR::Node*> StoreTreeMapComparator;
    typedef std::map<TR::Node *, TR::TreeTop *, StoreTreeMapComparator, StoreTreeMapAllocator> StoreTreeMap;
    StoreTreeMap _storeTreeTops;
 
-   typedef TR::typed_allocator<std::pair<TR::Node*, TR::TreeTop*>, TR::Region&> UseTreeMapAllocator;
+   typedef TR::typed_allocator<std::pair<TR::Node* const, TR::TreeTop*>, TR::Region&> UseTreeMapAllocator;
    typedef std::less<TR::Node*> UseTreeMapComparator;
    typedef std::map<TR::Node*, TR::TreeTop*, UseTreeMapComparator, UseTreeMapAllocator> UseTreeMap;
    UseTreeMap _useTreeTops;

@@ -189,7 +189,7 @@ class TR_LoopStrider : public TR_LoopTransformer
 
    // Maps are keyed by a node's global index, because a node's address could
    // be reused after its reference count decreases to zero.
-   typedef TR::typed_allocator<std::pair<ncount_t, SignExtEntry>, TR::Allocator> SignExtMemoAllocator;
+   typedef TR::typed_allocator<std::pair<ncount_t const, SignExtEntry>, TR::Allocator> SignExtMemoAllocator;
    typedef std::map<ncount_t, SignExtEntry, std::less<ncount_t>, SignExtMemoAllocator> SignExtMemo;
 
    void morphExpressionsLinearInInductionVariable(TR_Structure *, vcount_t);
@@ -305,14 +305,14 @@ class TR_LoopStrider : public TR_LoopTransformer
    int64_t **_linearEquations;
    TR::Node **_loadUsedInNewLoopIncrement;
 
-   typedef TR::typed_allocator<std::pair<uint32_t, TR::SymbolReference*>, TR::Region&> SymRefMapAllocator;
+   typedef TR::typed_allocator<std::pair<uint32_t const, TR::SymbolReference*>, TR::Region&> SymRefMapAllocator;
    typedef std::less<uint32_t> SymRefMapComparator;
    typedef std::map<uint32_t, TR::SymbolReference*, SymRefMapComparator, SymRefMapAllocator> SymRefMap;
    SymRefMap *_reassociatedAutos;
 
    List<TR::Node> _reassociatedNodes;
 
-   typedef TR::typed_allocator<std::pair<uint32_t, List<TR_StoreTreeInfo> *>, TR::Region&> StoreTreeMapAllocator;
+   typedef TR::typed_allocator<std::pair<uint32_t const, List<TR_StoreTreeInfo> *>, TR::Region&> StoreTreeMapAllocator;
    typedef std::less<uint32_t> StoreTreeMapComparator;
    typedef std::map<uint32_t, List<TR_StoreTreeInfo>*, StoreTreeMapComparator, StoreTreeMapAllocator> StoreTreeMap;
    StoreTreeMap  _storeTreesSingleton;
@@ -321,7 +321,7 @@ class TR_LoopStrider : public TR_LoopTransformer
 
    int32_t _numSymRefs;
 
-   typedef TR::typed_allocator<std::pair<uint32_t, SymRefPair*>, TR::Region&> SymRefPairMapAllocator;
+   typedef TR::typed_allocator<std::pair<uint32_t const, SymRefPair*>, TR::Region&> SymRefPairMapAllocator;
    typedef std::less<uint32_t> SymRefPairMapComparator;
    typedef std::map<uint32_t, SymRefPair*, SymRefPairMapComparator, SymRefPairMapAllocator> SymRefPairMap;
    SymRefPairMap *_hoistedAutos;

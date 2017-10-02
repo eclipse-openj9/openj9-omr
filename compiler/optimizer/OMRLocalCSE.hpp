@@ -141,7 +141,7 @@ class LocalCSE : public TR::Optimization
    TR::Node *getNode(TR::Node *node);
 
    TR::TreeTop *_treeBeingExamined;
-   typedef TR::typed_allocator<std::pair<uint32_t, TR::Node*>, TR::Region&> StoreMapAllocator;
+   typedef TR::typed_allocator<std::pair<uint32_t const, TR::Node*>, TR::Region&> StoreMapAllocator;
    typedef std::less<uint32_t> StoreMapComparator;
    typedef std::map<uint32_t, TR::Node*, StoreMapComparator, StoreMapAllocator> StoreMap;
    StoreMap *_storeMap;

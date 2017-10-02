@@ -466,7 +466,7 @@ int32_t TR_CopyPropagation::perform()
    int32_t lastDefIndex      = useDefInfo->getLastDefIndex();
    int32_t numDefNodes       = lastDefIndex - firstRealDefIndex + 1;
 
-   typedef TR::typed_allocator<std::pair<int32_t, int32_t>, TR::Region&> UDMapAllocator;
+   typedef TR::typed_allocator<std::pair<int32_t const, int32_t>, TR::Region&> UDMapAllocator;
    typedef std::less<int32_t> UDMapComparator;
    typedef std::map<int32_t, int32_t, UDMapComparator, UDMapAllocator> UsesToBeFixedMap;
    typedef std::map<int32_t, int32_t, UDMapComparator, UDMapAllocator> EquivalentDefMap;
@@ -474,7 +474,7 @@ int32_t TR_CopyPropagation::perform()
    UsesToBeFixedMap usesToBeFixed((UDMapComparator()), UDMapAllocator(trMemory()->currentStackRegion()));
    EquivalentDefMap equivalentDefs((UDMapComparator()), UDMapAllocator(trMemory()->currentStackRegion()));
 
-   typedef TR::typed_allocator<std::pair<TR::Node*, TR::deque<TR::Node*, TR::Region&>*>, TR::Region&> StoreNodeMapAllocator;
+   typedef TR::typed_allocator<std::pair<TR::Node* const, TR::deque<TR::Node*, TR::Region&>*>, TR::Region&> StoreNodeMapAllocator;
    typedef std::less<TR::Node*> StoreNodeMapComparator;
    typedef std::map<TR::Node*, TR::deque<TR::Node*, TR::Region&>*, StoreNodeMapComparator, StoreNodeMapAllocator> StoreNodeMap;
 

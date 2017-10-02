@@ -244,7 +244,7 @@ enum MonitorInBlock
 class TR_SetMonitorStateOnBlockEntry
    {
 public:
-   typedef TR::typed_allocator<std::pair<int32_t , TR_Stack<TR::SymbolReference *>*>, TR::Region&> LiveMonitorStacksAllocator;
+   typedef TR::typed_allocator<std::pair<int32_t const, TR_Stack<TR::SymbolReference *>*>, TR::Region&> LiveMonitorStacksAllocator;
    typedef std::less<int32_t> LiveMonitorStacksComparator;
    typedef std::map<int32_t, TR_Stack<TR::SymbolReference *>*, LiveMonitorStacksComparator, LiveMonitorStacksAllocator> LiveMonitorStacks;
    TR_SetMonitorStateOnBlockEntry(TR::Compilation * c, LiveMonitorStacks *liveMonitorStacks)

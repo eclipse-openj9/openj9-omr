@@ -64,7 +64,7 @@ if(OMR_ARCH_S390)
 		list(APPEND OBJECTS zosversion.c)
 		list(APPEND OBJECTS getstoragekey.c)
 		list(APPEND OBJECTS getpsw.s)
-		list(APPEND OBJECTS j9getdsa.s)
+		list(APPEND OBJECTS omrgetdsa.s)
 		
 		list(APPEND VPATH unix/zos)
 		target_include_directories(omrport PRIVATE unix/zos)

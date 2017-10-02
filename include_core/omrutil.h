@@ -44,7 +44,7 @@ extern "C" {
 
 #if defined(J9ZOS390)
 #pragma map(getdsa, "GETDSA")
-/* ----------------- j9getdsa.s ---------------- */
+/* ----------------- omrgetdsa.s ---------------- */
 /**
  * Returns the caa and dsa respectively on z/OS
  */

@@ -40,7 +40,7 @@ ifeq (s390,$(OMR_HOST_ARCH))
       vpath %.s unix/zos/31
     endif
 
-    OBJECTS += zosversion$(OBJEXT) getstoragekey$(OBJEXT) getpsw$(OBJEXT) j9getdsa$(OBJEXT)
+    OBJECTS += zosversion$(OBJEXT) getstoragekey$(OBJEXT) getpsw$(OBJEXT) omrgetdsa$(OBJEXT)
     vpath %.c unix/zos
     vpath %.s unix/zos
   endif

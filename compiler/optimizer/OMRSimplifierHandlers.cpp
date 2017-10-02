@@ -5381,7 +5381,7 @@ class IfxcmpgeToIfxcmpeqReducer
     */
    TR::Node* reduce()
       {
-      if (performTransformation(_s->comp(), "%sReduce an ifxcmpge node [%p] to ifxcmpeq\n", _s->optDetailString(), _node))
+      if (performTransformation(_simplifier->comp(), "%sReduce an ifxcmpge node [%p] to ifxcmpeq\n", _simplifier->optDetailString(), _node))
          {
          TR::ILOpCodes ifcmpeqOpCode = TR::ILOpCode::ifcmpeqOpCode(_node->getSecondChild()->getDataType());
          TR::Node::recreate(_node, ifcmpeqOpCode);

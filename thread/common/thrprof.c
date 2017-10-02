@@ -899,7 +899,7 @@ omrthread_get_jvm_cpu_usage_info(J9ThreadsCpuUsage *cpuUsage)
 	/* Need to hold the lib->monitor_mutex while walking the thread_pool */
 	GLOBAL_LOCK_SIMPLE(lib);
 	lib->threadWalkMutexesHeld = THREAD_WALK_MONITOR_MUTEX_HELD;
-	J9OSMUTEX_ENTER(lib->resourceUsageMutex);
+	OMROSMUTEX_ENTER(lib->resourceUsageMutex);
 	lib->threadWalkMutexesHeld |= THREAD_WALK_RESOURCE_USAGE_MUTEX_HELD;
 
 	/* pre timestamp in microseconds */
@@ -992,7 +992,7 @@ omrthread_get_jvm_cpu_usage_info(J9ThreadsCpuUsage *cpuUsage)
 
 err_exit:
 	lib->threadWalkMutexesHeld &= ~(uintptr_t)THREAD_WALK_RESOURCE_USAGE_MUTEX_HELD;
-	J9OSMUTEX_EXIT(lib->resourceUsageMutex);
+	OMROSMUTEX_EXIT(lib->resourceUsageMutex);
 	lib->threadWalkMutexesHeld = 0;
 	GLOBAL_UNLOCK_SIMPLE(lib);
 	if (ret < 0) {
@@ -1017,7 +1017,7 @@ omrthread_get_jvm_cpu_usage_info_error_recovery(void)
 
 	if (lib->threadWalkMutexesHeld & THREAD_WALK_RESOURCE_USAGE_MUTEX_HELD) {
 		lib->threadWalkMutexesHeld &= ~(uintptr_t)THREAD_WALK_RESOURCE_USAGE_MUTEX_HELD;
-		J9OSMUTEX_EXIT(lib->resourceUsageMutex);
+		OMROSMUTEX_EXIT(lib->resourceUsageMutex);
 	}
 	if (lib->threadWalkMutexesHeld & THREAD_WALK_MONITOR_MUTEX_HELD) {
 		lib->threadWalkMutexesHeld = 0;

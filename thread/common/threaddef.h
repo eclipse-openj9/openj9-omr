@@ -174,25 +174,25 @@ enum {
 #define GLOBAL_LOCK(self, caller) \
 	do { \
 		ASSERT(global_lock_owner != (self)); \
-		J9OSMUTEX_ENTER((self)->library->monitor_mutex); \
+		OMROSMUTEX_ENTER((self)->library->monitor_mutex); \
 		ASSERT(UNOWNED == global_lock_owner); \
 		global_lock_owner = (self); \
 	} while(0)
 #else
-#define GLOBAL_LOCK(self, caller) J9OSMUTEX_ENTER((self)->library->monitor_mutex)
+#define GLOBAL_LOCK(self, caller) OMROSMUTEX_ENTER((self)->library->monitor_mutex)
 #endif
 
-#define GLOBAL_TRY_LOCK(self, caller) J9OSMUTEX_TRY_ENTER((self)->library->monitor_mutex)
+#define GLOBAL_TRY_LOCK(self, caller) OMROSMUTEX_TRY_ENTER((self)->library->monitor_mutex)
 
 #ifdef THREAD_ASSERTS
 #define GLOBAL_UNLOCK(self) \
 	do { \
 		ASSERT((self) == global_lock_owner); \
 		global_lock_owner = UNOWNED; \
-		J9OSMUTEX_EXIT((self)->library->monitor_mutex); \
+		OMROSMUTEX_EXIT((self)->library->monitor_mutex); \
 	} while(0)
 #else
-#define GLOBAL_UNLOCK(self) J9OSMUTEX_EXIT((self)->library->monitor_mutex)
+#define GLOBAL_UNLOCK(self) OMROSMUTEX_EXIT((self)->library->monitor_mutex)
 #endif
 
 /*
@@ -204,12 +204,12 @@ enum {
 	do { \
 		omrthread_t self = MACRO_SELF(); \
 		ASSERT(self != global_lock_owner); \
-		J9OSMUTEX_ENTER((lib)->monitor_mutex); \
+		OMROSMUTEX_ENTER((lib)->monitor_mutex); \
 		ASSERT(UNOWNED == global_lock_owner); \
 		global_lock_owner = self; \
 	} while(0)
 #else
-#define GLOBAL_LOCK_SIMPLE(lib) J9OSMUTEX_ENTER((lib)->monitor_mutex)
+#define GLOBAL_LOCK_SIMPLE(lib) OMROSMUTEX_ENTER((lib)->monitor_mutex)
 #endif
 
 /*
@@ -221,17 +221,17 @@ enum {
 	do { \
 		ASSERT(MACRO_SELF() == global_lock_owner); \
 		global_lock_owner = UNOWNED; \
-		J9OSMUTEX_EXIT((lib)->monitor_mutex); \
+		OMROSMUTEX_EXIT((lib)->monitor_mutex); \
 	} while(0)
 #else /* THREAD_ASSERTS */
-#define GLOBAL_UNLOCK_SIMPLE(lib) J9OSMUTEX_EXIT((lib)->monitor_mutex)
+#define GLOBAL_UNLOCK_SIMPLE(lib) OMROSMUTEX_EXIT((lib)->monitor_mutex)
 #endif /* THREAD_ASSERTS */
 
-#define THREAD_LOCK(thread, caller) J9OSMUTEX_ENTER((thread)->mutex)
+#define THREAD_LOCK(thread, caller) OMROSMUTEX_ENTER((thread)->mutex)
 
-#define THREAD_UNLOCK(thread) J9OSMUTEX_EXIT((thread)->mutex)
+#define THREAD_UNLOCK(thread) OMROSMUTEX_EXIT((thread)->mutex)
 
-#define MONITOR_LOCK(monitor, caller) J9OSMUTEX_ENTER((monitor)->mutex)
+#define MONITOR_LOCK(monitor, caller) OMROSMUTEX_ENTER((monitor)->mutex)
 
 #ifdef FORCE_TO_USE_IS_THREAD
 /*
@@ -240,10 +240,10 @@ enum {
  */
 #define MONITOR_TRY_LOCK(monitor)  (-1)
 #else /* FORCE_TO_USE_IS_THREAD */
-#define MONITOR_TRY_LOCK(monitor) J9OSMUTEX_TRY_ENTER((monitor)->mutex)
+#define MONITOR_TRY_LOCK(monitor) OMROSMUTEX_TRY_ENTER((monitor)->mutex)
 #endif /* FORCE_TO_USE_IS_THREAD */
 
-#define MONITOR_UNLOCK(monitor) J9OSMUTEX_EXIT((monitor)->mutex)
+#define MONITOR_UNLOCK(monitor) OMROSMUTEX_EXIT((monitor)->mutex)
 
 #define IS_OBJECT_MONITOR(monitor) (J9THREAD_MONITOR_OBJECT == ((monitor)->flags & J9THREAD_MONITOR_OBJECT))
 

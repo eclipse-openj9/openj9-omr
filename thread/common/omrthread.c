@@ -167,14 +167,14 @@ omrthread_t global_lock_owner = UNOWNED;
 #define J9THR_WAIT_PRI_INTERRUPTED(flags) (((flags) & (J9THREAD_FLAG_PRIORITY_INTERRUPTED | J9THREAD_FLAG_ABORTED)) != 0)
 
 #if defined(WIN32) || !defined(OMR_NOTIFY_POLICY_CONTROL)
-#define NOTIFY_WRAPPER(thread) J9OSCOND_NOTIFY_ALL((thread)->condition);
+#define NOTIFY_WRAPPER(thread) OMROSCOND_NOTIFY_ALL((thread)->condition);
 #else /* defined(WIN32) || !defined(OMR_NOTIFY_POLICY_CONTROL) */
 #define NOTIFY_WRAPPER(thread) \
 	do { \
 		if (OMR_ARE_ALL_BITS_SET((thread)->library->flags, J9THREAD_LIB_FLAG_NOTIFY_POLICY_BROADCAST)) { \
-			J9OSCOND_NOTIFY_ALL((thread)->condition); \
+			OMROSCOND_NOTIFY_ALL((thread)->condition); \
 		} else { \
-			J9OSCOND_NOTIFY((thread)->condition); \
+			OMROSCOND_NOTIFY((thread)->condition); \
 		} \
 	} while (0)
 #endif /* defined(WIN32) || !defined(OMR_NOTIFY_POLICY_CONTROL) */
@@ -275,16 +275,16 @@ omrthread_init(omrthread_library_t lib)
 	}
 #endif /* defined(OMR_THR_FORK_SUPPORT) */
 
-	if (!J9OSMUTEX_INIT(lib->monitor_mutex)) {
+	if (!OMROSMUTEX_INIT(lib->monitor_mutex)) {
 		goto init_cleanup4;
 	}
-	if (!J9OSMUTEX_INIT(lib->tls_mutex)) {
+	if (!OMROSMUTEX_INIT(lib->tls_mutex)) {
 		goto init_cleanup5;
 	}
-	if (!J9OSMUTEX_INIT(lib->global_mutex)) {
+	if (!OMROSMUTEX_INIT(lib->global_mutex)) {
 		goto init_cleanup6;
 	}
-	if (!J9OSMUTEX_INIT(lib->resourceUsageMutex)) {
+	if (!OMROSMUTEX_INIT(lib->resourceUsageMutex)) {
 		goto init_cleanup7;
 	}
 
@@ -344,10 +344,10 @@ init_cleanup11:		omrthread_attr_destroy(&lib->systemThreadAttr);
 #endif /* defined(OSX) */
 init_cleanup10:		pool_kill(lib->global_pool);
 init_cleanup9:		pool_kill(lib->thread_pool);
-init_cleanup8:		J9OSMUTEX_DESTROY(lib->resourceUsageMutex);
-init_cleanup7:		J9OSMUTEX_DESTROY(lib->global_mutex);
-init_cleanup6:		J9OSMUTEX_DESTROY(lib->tls_mutex);
-init_cleanup5:		J9OSMUTEX_DESTROY(lib->monitor_mutex);
+init_cleanup8:		OMROSMUTEX_DESTROY(lib->resourceUsageMutex);
+init_cleanup7:		OMROSMUTEX_DESTROY(lib->global_mutex);
+init_cleanup6:		OMROSMUTEX_DESTROY(lib->tls_mutex);
+init_cleanup5:		OMROSMUTEX_DESTROY(lib->monitor_mutex);
 #if defined(OMR_THR_FORK_SUPPORT)
 init_cleanup4:		pool_kill(lib->rwmutexPool);
 init_cleanup3:		free_monitor_pools();
@@ -505,7 +505,7 @@ init_global_monitor(omrthread_library_t lib)
 	if (monitor_init(monitor, 0, lib, name) != 0) {
 		return -1;
 	}
-	if (!J9OSMUTEX_INIT(monitor->mutex)) {
+	if (!OMROSMUTEX_INIT(monitor->mutex)) {
 		return -1;
 	}
 
@@ -688,10 +688,10 @@ omrthread_shutdown(void)
 	omrthread_numa_shutdown(lib);
 #endif /* OMR_PORT_NUMA_SUPPORT */
 	omrthread_attr_destroy(&lib->systemThreadAttr);
-	J9OSMUTEX_DESTROY(lib->tls_mutex);
-	J9OSMUTEX_DESTROY(lib->monitor_mutex);
-	J9OSMUTEX_DESTROY(lib->global_mutex);
-	J9OSMUTEX_DESTROY(lib->resourceUsageMutex);
+	OMROSMUTEX_DESTROY(lib->tls_mutex);
+	OMROSMUTEX_DESTROY(lib->monitor_mutex);
+	OMROSMUTEX_DESTROY(lib->global_mutex);
+	OMROSMUTEX_DESTROY(lib->resourceUsageMutex);
 	pool_kill(lib->global_pool);
 	lib->global_pool = 0;
 
@@ -782,10 +782,10 @@ omrthread_lib_preFork(void)
 	}
 
 	lib = self->library;
-	J9OSMUTEX_ENTER(lib->monitor_mutex);
-	J9OSMUTEX_ENTER(lib->tls_mutex);
-	J9OSMUTEX_ENTER(lib->global_mutex);
-	J9OSMUTEX_ENTER(lib->resourceUsageMutex);
+	OMROSMUTEX_ENTER(lib->monitor_mutex);
+	OMROSMUTEX_ENTER(lib->tls_mutex);
+	OMROSMUTEX_ENTER(lib->global_mutex);
+	OMROSMUTEX_ENTER(lib->resourceUsageMutex);
 }
 
 void
@@ -799,10 +799,10 @@ omrthread_lib_postForkParent(void)
 	}
 
 	lib = self->library;
-	J9OSMUTEX_EXIT(lib->resourceUsageMutex);
-	J9OSMUTEX_EXIT(lib->global_mutex);
-	J9OSMUTEX_EXIT(lib->tls_mutex);
-	J9OSMUTEX_EXIT(lib->monitor_mutex);
+	OMROSMUTEX_EXIT(lib->resourceUsageMutex);
+	OMROSMUTEX_EXIT(lib->global_mutex);
+	OMROSMUTEX_EXIT(lib->tls_mutex);
+	OMROSMUTEX_EXIT(lib->monitor_mutex);
 }
 
 void
@@ -821,10 +821,10 @@ omrthread_lib_postForkChild(void)
 	postForkResetThreads(self);
 	postForkResetRWMutexes(self);
 
-	J9OSMUTEX_EXIT(lib->resourceUsageMutex);
-	J9OSMUTEX_EXIT(lib->global_mutex);
-	J9OSMUTEX_EXIT(lib->tls_mutex);
-	J9OSMUTEX_EXIT(lib->monitor_mutex);
+	OMROSMUTEX_EXIT(lib->resourceUsageMutex);
+	OMROSMUTEX_EXIT(lib->global_mutex);
+	OMROSMUTEX_EXIT(lib->tls_mutex);
+	OMROSMUTEX_EXIT(lib->monitor_mutex);
 }
 
 /**
@@ -852,8 +852,8 @@ postForkResetThreads(omrthread_t self)
 	while (NULL != threadIterator) {
 		if (threadIterator == self) {
 			/* cond/mutex reinitialized without freeing the old one. */
-			J9OSCOND_INIT(threadIterator->condition);
-			J9OSMUTEX_INIT(threadIterator->mutex);
+			OMROSCOND_INIT(threadIterator->condition);
+			OMROSMUTEX_INIT(threadIterator->mutex);
 			threadIterator->tid = omrthread_get_ras_tid();
 #if defined(WIN32)
 #error "The implementation of postForkResetThreads() is not complete in WIN32."
@@ -913,7 +913,7 @@ postForkResetMonitors(omrthread_t self)
 		omrthread_monitor_t entry = &threadMonitorPool->entries[0];
 		for (i = 0; i < MONITOR_POOL_SIZE - 1; i++, entry++) {
 			if (entry->flags != J9THREAD_MONITOR_MUTEX_UNINITIALIZED) {
-				J9OSMUTEX_INIT(entry->mutex);
+				OMROSMUTEX_INIT(entry->mutex);
 			}
 			if (FREE_TAG != entry->count) {
 				if (self != entry->owner) {
@@ -1079,13 +1079,13 @@ omrthread_global(char *name)
 	J9ThreadGlobal *global;
 	omrthread_library_t lib = GLOBAL_DATA(default_library);
 
-	J9OSMUTEX_ENTER(lib->global_mutex);
+	OMROSMUTEX_ENTER(lib->global_mutex);
 
 	global = lib->globals;
 
 	while (global) {
 		if (strcmp(global->name, name) == 0) {
-			J9OSMUTEX_EXIT(lib->global_mutex);
+			OMROSMUTEX_EXIT(lib->global_mutex);
 			return &global->data;
 		}
 		global = global->next;
@@ -1098,7 +1098,7 @@ omrthread_global(char *name)
 
 	global = pool_newElement(lib->global_pool);
 	if (global == NULL) {
-		J9OSMUTEX_EXIT(lib->global_mutex);
+		OMROSMUTEX_EXIT(lib->global_mutex);
 		return NULL;
 	}
 
@@ -1107,7 +1107,7 @@ omrthread_global(char *name)
 	global->data = 0;
 	lib->globals = global;
 
-	J9OSMUTEX_EXIT(lib->global_mutex);
+	OMROSMUTEX_EXIT(lib->global_mutex);
 
 	return &global->data;
 }
@@ -1212,12 +1212,12 @@ omrthread_attach_ex(omrthread_t *handle, omrthread_attr_t *attr)
 	/* Note an attached thread can never be omrthread-joinable */
 	thread->lockedmonitorcount = 0;
 
-	if (!J9OSCOND_INIT(thread->condition)) {
+	if (!OMROSCOND_INIT(thread->condition)) {
 		retVal = J9THREAD_ERR_CANT_INIT_CONDITION;
 		goto cleanup1;
 	}
 
-	if (!J9OSMUTEX_INIT(thread->mutex)) {
+	if (!OMROSMUTEX_INIT(thread->mutex)) {
 		retVal = J9THREAD_ERR_CANT_INIT_MUTEX;
 		goto cleanup2;
 	}
@@ -1276,7 +1276,7 @@ omrthread_attach_ex(omrthread_t *handle, omrthread_attr_t *attr)
 	return J9THREAD_SUCCESS;
 
 /* failure points */
-cleanup2:	J9OSCOND_DESTROY(thread->condition);
+cleanup2:	OMROSCOND_DESTROY(thread->condition);
 cleanup1:	threadFree(thread, GLOBAL_NOT_LOCKED);
 cleanup0:	return retVal;
 }
@@ -1297,7 +1297,7 @@ storeExitCpuUsage(omrthread_t thread)
 		return;
 	}
 
-	J9OSMUTEX_ENTER(lib->resourceUsageMutex);
+	OMROSMUTEX_ENTER(lib->resourceUsageMutex);
 
 	THREAD_LOCK(thread, CALLER_STORE_EXIT_CPU_USAGE);
 	/* No longer safe for querying cpu usage for this thread */
@@ -1347,7 +1347,7 @@ storeExitCpuUsage(omrthread_t thread)
 		thread->lastCategorySwitchTime = 0;
 	}
 
-	J9OSMUTEX_EXIT(lib->resourceUsageMutex);
+	OMROSMUTEX_EXIT(lib->resourceUsageMutex);
 }
 
 /**
@@ -1543,11 +1543,11 @@ thread_wrapper(WRAPPER_ARG arg)
 	 */
 	THREAD_LOCK(thread, CALLER_THREAD_WRAPPER);
 	if (thread->flags & J9THREAD_FLAG_SUSPENDED) {
-		J9OSCOND_WAIT(thread->condition, thread->mutex);
+		OMROSCOND_WAIT(thread->condition, thread->mutex);
 		if ((thread->flags & J9THREAD_FLAG_SUSPENDED) == 0) {
 			break;
 		}
-		J9OSCOND_WAIT_LOOP();
+		OMROSCOND_WAIT_LOOP();
 	}
 	thread->flags |= J9THREAD_FLAG_STARTED;
 	flags = thread->flags;
@@ -1794,11 +1794,11 @@ threadCreate(omrthread_t *handle, const omrthread_attr_t *attr, uintptr_t suspen
 
 	thread->interrupter = NULL;
 
-	if (!J9OSCOND_INIT(thread->condition)) {
+	if (!OMROSCOND_INIT(thread->condition)) {
 		retVal = J9THREAD_ERR_CANT_INIT_CONDITION;
 		goto cleanup1;
 	}
-	if (!J9OSMUTEX_INIT(thread->mutex)) {
+	if (!OMROSMUTEX_INIT(thread->mutex)) {
 		retVal = J9THREAD_ERR_CANT_INIT_MUTEX;
 		goto cleanup2;
 	}
@@ -1837,8 +1837,8 @@ threadCreate(omrthread_t *handle, const omrthread_attr_t *attr, uintptr_t suspen
 
 	/* Cleanup points */
 cleanup4:
-	J9OSMUTEX_DESTROY(thread->mutex);
-cleanup2:	J9OSCOND_DESTROY(thread->condition);
+	OMROSMUTEX_DESTROY(thread->mutex);
+cleanup2:	OMROSCOND_DESTROY(thread->condition);
 cleanup1:	threadFree(thread, globalIsLocked);
 cleanup0:	if (handle) *handle = NULL;
 	/* clean up the temp attr */
@@ -1992,9 +1992,9 @@ threadDestroy(omrthread_t thread, int globalAlreadyLocked)
 	}
 	THREAD_UNLOCK(thread);
 
-	J9OSCOND_DESTROY(thread->condition);
+	OMROSCOND_DESTROY(thread->condition);
 
-	J9OSMUTEX_DESTROY(thread->mutex);
+	OMROSMUTEX_DESTROY(thread->mutex);
 
 #ifdef OMR_THR_TRACING
 	omrthread_dump_trace(thread);
@@ -2200,7 +2200,7 @@ omrthread_sleep_interruptable(int64_t millis, intptr_t nanos)
 
 	self->flags |= J9THREAD_FLAGM_SLEEPING_TIMED_INTERRUPTIBLE;
 
-	J9OSCOND_WAIT_IF_TIMEDOUT(self->condition, self->mutex, boundedMillis, nanos) {
+	OMROSCOND_WAIT_IF_TIMEDOUT(self->condition, self->mutex, boundedMillis, nanos) {
 		break;
 	} else {
 		if (self->flags & J9THREAD_FLAG_INTERRUPTED) {
@@ -2219,7 +2219,7 @@ omrthread_sleep_interruptable(int64_t millis, intptr_t nanos)
 			return J9THREAD_PRIORITY_INTERRUPTED;
 		}
 	}
-	J9OSCOND_WAIT_TIMED_LOOP();
+	OMROSCOND_WAIT_TIMED_LOOP();
 
 	self->flags &= ~(J9THREAD_FLAGM_SLEEPING_TIMED_INTERRUPTIBLE);
 	THREAD_UNLOCK(self);
@@ -2256,10 +2256,10 @@ omrthread_sleep(int64_t millis)
 
 	self->flags |= J9THREAD_FLAGM_SLEEPING_TIMED;
 
-	J9OSCOND_WAIT_IF_TIMEDOUT(self->condition, self->mutex, boundedMillis, 0) {
+	OMROSCOND_WAIT_IF_TIMEDOUT(self->condition, self->mutex, boundedMillis, 0) {
 		break;
 	}
-	J9OSCOND_WAIT_TIMED_LOOP();
+	OMROSCOND_WAIT_TIMED_LOOP();
 
 	self->flags &= ~J9THREAD_FLAGM_SLEEPING_TIMED;
 	THREAD_UNLOCK(self);
@@ -2402,11 +2402,11 @@ omrthread_suspend(void)
 	THREAD_LOCK(self, CALLER_SUSPEND);
 	self->flags |= J9THREAD_FLAG_SUSPENDED;
 
-	J9OSCOND_WAIT(self->condition, self->mutex);
+	OMROSCOND_WAIT(self->condition, self->mutex);
 		if ((self->flags & J9THREAD_FLAG_SUSPENDED) == 0) {
 			break;
 		}
-	J9OSCOND_WAIT_LOOP();
+	OMROSCOND_WAIT_LOOP();
 
 	THREAD_UNLOCK(self);
 
@@ -3114,7 +3114,7 @@ omrthread_park(int64_t millis, intptr_t nanos)
 
 			self->flags |= J9THREAD_FLAG_TIMER_SET;
 
-			J9OSCOND_WAIT_IF_TIMEDOUT(self->condition, self->mutex, boundedMillis, nanos) {
+			OMROSCOND_WAIT_IF_TIMEDOUT(self->condition, self->mutex, boundedMillis, nanos) {
 				rc = J9THREAD_TIMED_OUT;
 				break;
 			} else if (self->flags & J9THREAD_FLAG_UNPARKED) {
@@ -3127,9 +3127,9 @@ omrthread_park(int64_t millis, intptr_t nanos)
 				rc = J9THREAD_PRIORITY_INTERRUPTED;
 				break;
 			}
-			J9OSCOND_WAIT_TIMED_LOOP();
+			OMROSCOND_WAIT_TIMED_LOOP();
 		} else {
-			J9OSCOND_WAIT(self->condition, self->mutex);
+			OMROSCOND_WAIT(self->condition, self->mutex);
 				if (self->flags & J9THREAD_FLAG_UNPARKED) {
 					self->flags &= ~J9THREAD_FLAG_UNPARKED;
 					break;
@@ -3140,7 +3140,7 @@ omrthread_park(int64_t millis, intptr_t nanos)
 					rc = J9THREAD_PRIORITY_INTERRUPTED;
 					break;
 				}
-			J9OSCOND_WAIT_LOOP();
+			OMROSCOND_WAIT_LOOP();
 		}
 	}
 
@@ -3398,7 +3398,7 @@ monitor_allocate(omrthread_t self, intptr_t policy, intptr_t policyData)
 	 * initialize its mutex
 	 */
 	if (newMonitor->flags == J9THREAD_MONITOR_MUTEX_UNINITIALIZED) {
-		rc = J9OSMUTEX_INIT(newMonitor->mutex);
+		rc = OMROSMUTEX_INIT(newMonitor->mutex);
 		if (!rc) {
 			/* failed to initialize mutex */
 			ASSERT_DEBUG(0);
@@ -3466,7 +3466,7 @@ monitor_free(omrthread_library_t lib, omrthread_monitor_t monitor)
 
 	/* CMVC 144063 J9VM is "leaking" handles */
 	if ((monitor->flags & J9THREAD_MONITOR_MUTEX_UNINITIALIZED) == 0) {
-		J9OSMUTEX_DESTROY(monitor->mutex);
+		OMROSMUTEX_DESTROY(monitor->mutex);
 		monitor->flags = J9THREAD_MONITOR_MUTEX_UNINITIALIZED;
 	}
 
@@ -3505,7 +3505,7 @@ monitor_free_nolock(omrthread_library_t lib, omrthread_t thread, omrthread_monit
 	/* CMVC 144063 J9VM is "leaking" handles */
 	if (lib->flags & J9THREAD_LIB_FLAG_DESTROY_MUTEX_ON_MONITOR_FREE) {
 		if ((monitor->flags & J9THREAD_MONITOR_MUTEX_UNINITIALIZED) == 0) {
-			J9OSMUTEX_DESTROY(monitor->mutex);
+			OMROSMUTEX_DESTROY(monitor->mutex);
 			monitor->flags = J9THREAD_MONITOR_MUTEX_UNINITIALIZED;
 		}
 	}
@@ -3852,9 +3852,9 @@ monitor_enter_three_tier(omrthread_t self, omrthread_monitor_t monitor, BOOLEAN 
 		THREAD_UNLOCK(self);
 
 		threadEnqueue(&monitor->blocking, self);
-		J9OSCOND_WAIT(self->condition, monitor->mutex);
+		OMROSCOND_WAIT(self->condition, monitor->mutex);
 			break;
-		J9OSCOND_WAIT_LOOP();
+		OMROSCOND_WAIT_LOOP();
 		threadDequeue(&monitor->blocking, self);
 
 		/*
@@ -4398,7 +4398,7 @@ monitor_wait_original(omrthread_t self, omrthread_monitor_t monitor,
 		intptr_t boundedMillis = BOUNDED_I64_TO_IDATA(millis);
 
 		ASSERT_MONITOR_UNOWNED_IF_NOT_3TIER(monitor);
-		J9OSCOND_WAIT_IF_TIMEDOUT(MONITOR_WAIT_CONDITION(self, monitor), monitor->mutex, boundedMillis, nanos) {
+		OMROSCOND_WAIT_IF_TIMEDOUT(MONITOR_WAIT_CONDITION(self, monitor), monitor->mutex, boundedMillis, nanos) {
 			ASSERT_MONITOR_UNOWNED_IF_NOT_3TIER(monitor);
 
 			THREAD_LOCK(self, CALLER_MONITOR_WAIT2);
@@ -4424,7 +4424,7 @@ monitor_wait_original(omrthread_t self, omrthread_monitor_t monitor,
 			}
 			THREAD_UNLOCK(self);
 		}
-		J9OSCOND_WAIT_TIMED_LOOP();
+		OMROSCOND_WAIT_TIMED_LOOP();
 
 	} else {
 		/*
@@ -4432,7 +4432,7 @@ monitor_wait_original(omrthread_t self, omrthread_monitor_t monitor,
 		 */
 
 		ASSERT_MONITOR_UNOWNED_IF_NOT_3TIER(monitor);
-		J9OSCOND_WAIT(MONITOR_WAIT_CONDITION(self,monitor), monitor->mutex);
+		OMROSCOND_WAIT(MONITOR_WAIT_CONDITION(self,monitor), monitor->mutex);
 			ASSERT_MONITOR_UNOWNED_IF_NOT_3TIER(monitor);
 
 			THREAD_LOCK(self, CALLER_MONITOR_WAIT2);
@@ -4444,7 +4444,7 @@ monitor_wait_original(omrthread_t self, omrthread_monitor_t monitor,
 				break;
 			}
 			THREAD_UNLOCK(self);
-		J9OSCOND_WAIT_LOOP();
+		OMROSCOND_WAIT_LOOP();
 	}
 
 	/* DONE WAITING AT THIS POINT */
@@ -4653,7 +4653,7 @@ monitor_wait_three_tier(omrthread_t self, omrthread_monitor_t monitor,
 		 */
 		intptr_t boundedMillis = BOUNDED_I64_TO_IDATA(millis);
 
-		J9OSCOND_WAIT_IF_TIMEDOUT(self->condition, monitor->mutex, boundedMillis, nanos) {
+		OMROSCOND_WAIT_IF_TIMEDOUT(self->condition, monitor->mutex, boundedMillis, nanos) {
 			THREAD_LOCK(self, CALLER_MONITOR_WAIT2);
 			intrFlags = self->flags & intrMask;
 			interrupted = J9THR_WAIT_INTERRUPTED(intrFlags);
@@ -4676,13 +4676,13 @@ monitor_wait_three_tier(omrthread_t self, omrthread_monitor_t monitor,
 			THREAD_UNLOCK(self);
 			ASSERT(0);
 		}
-		J9OSCOND_WAIT_TIMED_LOOP();
+		OMROSCOND_WAIT_TIMED_LOOP();
 
 	} else {
 		/*
 		 * WAIT UNTIL NOTIFIED, NO TIMEOUT
 		 */
-		J9OSCOND_WAIT(self->condition, monitor->mutex);
+		OMROSCOND_WAIT(self->condition, monitor->mutex);
 			THREAD_LOCK(self, CALLER_MONITOR_WAIT2);
 			intrFlags = self->flags & intrMask;
 			interrupted = J9THR_WAIT_INTERRUPTED(intrFlags);
@@ -4693,7 +4693,7 @@ monitor_wait_three_tier(omrthread_t self, omrthread_monitor_t monitor,
 			}
 			THREAD_UNLOCK(self);
 			ASSERT(0);
-		J9OSCOND_WAIT_LOOP();
+		OMROSCOND_WAIT_LOOP();
 	}
 
 	/* DONE WAITING AT THIS POINT */
@@ -5122,7 +5122,7 @@ free_monitor_pools(void)
 		omrthread_monitor_t entry = &pool->entries[0];
 		for (i = 0; i < MONITOR_POOL_SIZE - 1; i++, entry++) {
 			if (entry->flags != J9THREAD_MONITOR_MUTEX_UNINITIALIZED) {
-				J9OSMUTEX_DESTROY(entry->mutex);
+				OMROSMUTEX_DESTROY(entry->mutex);
 			}
 		}
 		omrthread_free_memory(lib, pool);
@@ -5468,7 +5468,7 @@ omrthread_set_category(omrthread_t thread, uintptr_t category, uintptr_t type)
 
 	ASSERT(thread);
 
-	J9OSMUTEX_ENTER(lib->resourceUsageMutex);
+	OMROSMUTEX_ENTER(lib->resourceUsageMutex);
 
 	/* If the category to be set is the same as the current category, nothing to be done */
 	if (category == thread->category && category == thread->effective_category) {
@@ -5519,7 +5519,7 @@ omrthread_set_category(omrthread_t thread, uintptr_t category, uintptr_t type)
 	}
 
 unlock_exit:
-	J9OSMUTEX_EXIT(lib->resourceUsageMutex);
+	OMROSMUTEX_EXIT(lib->resourceUsageMutex);
 	return rc;
 }
 

@@ -430,44 +430,44 @@ intptr_t j9OSCond_freeAndDestroy(J9OSCond cond);
 intptr_t j9OSCond_notify(J9OSCond cond);
 intptr_t j9OSCond_notifyAll(J9OSCond cond);
 
-#define J9OSCOND_WAIT_IF_TIMEDOUT(cond, mutex, millis, nanos) 							\
+#define OMROSCOND_WAIT_IF_TIMEDOUT(cond, mutex, millis, nanos) 							\
 	do {																				\
 		struct timespec ts_;															\
 		SETUP_TIMEOUT(ts_, millis, nanos);												\
 		while (1) {																		\
 			if (PTHREAD_COND_TIMEDWAIT(cond, mutex, &ts_) == COND_WAIT_RC_TIMEDOUT)
-#define J9OSCOND_WAIT_TIMED_LOOP()		}	} while(0)
+#define OMROSCOND_WAIT_TIMED_LOOP()		}	} while(0)
 
-#define J9OSCOND_WAIT(cond, mutex) \
+#define OMROSCOND_WAIT(cond, mutex) \
 	do {	\
 		pthread_cond_wait((cond), (mutex))
-#define J9OSCOND_WAIT_LOOP()	} while(1)
+#define OMROSCOND_WAIT_LOOP()	} while(1)
 
-#define J9OSMUTEX_INIT(mutex) j9OSMutex_allocAndInit(&(mutex))
-#define J9OSMUTEX_DESTROY(mutex) j9OSMutex_freeAndDestroy((mutex))
-#define J9OSMUTEX_ENTER(mutex) j9OSMutex_enter((mutex))
-#define J9OSMUTEX_EXIT(mutex) j9OSMutex_exit((mutex))
-#define J9OSMUTEX_TRY_ENTER(mutex) j9OSMutex_tryEnter((mutex))
-#define J9OSCOND_INIT(cond) j9OSCond_allocAndInit(&(cond))
-#define J9OSCOND_DESTROY(cond) j9OSCond_freeAndDestroy((cond))
-#define J9OSCOND_NOTIFY(cond) j9OSCond_notify((cond))
-#define J9OSCOND_NOTIFY_ALL(cond) j9OSCond_notifyAll((cond))
+#define OMROSMUTEX_INIT(mutex) j9OSMutex_allocAndInit(&(mutex))
+#define OMROSMUTEX_DESTROY(mutex) j9OSMutex_freeAndDestroy((mutex))
+#define OMROSMUTEX_ENTER(mutex) j9OSMutex_enter((mutex))
+#define OMROSMUTEX_EXIT(mutex) j9OSMutex_exit((mutex))
+#define OMROSMUTEX_TRY_ENTER(mutex) j9OSMutex_tryEnter((mutex))
+#define OMROSCOND_INIT(cond) j9OSCond_allocAndInit(&(cond))
+#define OMROSCOND_DESTROY(cond) j9OSCond_freeAndDestroy((cond))
+#define OMROSCOND_NOTIFY(cond) j9OSCond_notify((cond))
+#define OMROSCOND_NOTIFY_ALL(cond) j9OSCond_notifyAll((cond))
 
 #else /* defined(OMR_THR_FORK_SUPPORT) */
 
-#define J9OSMUTEX_INIT(mutex) MUTEX_INIT((mutex))
-#define J9OSMUTEX_DESTROY(mutex) MUTEX_DESTROY((mutex))
-#define J9OSMUTEX_ENTER(mutex) MUTEX_ENTER((mutex))
-#define J9OSMUTEX_EXIT(mutex) MUTEX_EXIT((mutex))
-#define J9OSMUTEX_TRY_ENTER(mutex) MUTEX_TRY_ENTER((mutex))
-#define J9OSCOND_INIT(cond) COND_INIT((cond))
-#define J9OSCOND_DESTROY(cond) COND_DESTROY((cond))
-#define J9OSCOND_NOTIFY(cond) COND_NOTIFY((cond))
-#define J9OSCOND_NOTIFY_ALL(cond) COND_NOTIFY_ALL((cond))
-#define J9OSCOND_WAIT_IF_TIMEDOUT(cond, mutex, millis, nanos) COND_WAIT_IF_TIMEDOUT((cond), (mutex), (millis), (nanos))
-#define J9OSCOND_WAIT_TIMED_LOOP() COND_WAIT_TIMED_LOOP()
-#define J9OSCOND_WAIT(cond, mutex) COND_WAIT((cond), (mutex))
-#define J9OSCOND_WAIT_LOOP() COND_WAIT_LOOP()
+#define OMROSMUTEX_INIT(mutex) MUTEX_INIT((mutex))
+#define OMROSMUTEX_DESTROY(mutex) MUTEX_DESTROY((mutex))
+#define OMROSMUTEX_ENTER(mutex) MUTEX_ENTER((mutex))
+#define OMROSMUTEX_EXIT(mutex) MUTEX_EXIT((mutex))
+#define OMROSMUTEX_TRY_ENTER(mutex) MUTEX_TRY_ENTER((mutex))
+#define OMROSCOND_INIT(cond) COND_INIT((cond))
+#define OMROSCOND_DESTROY(cond) COND_DESTROY((cond))
+#define OMROSCOND_NOTIFY(cond) COND_NOTIFY((cond))
+#define OMROSCOND_NOTIFY_ALL(cond) COND_NOTIFY_ALL((cond))
+#define OMROSCOND_WAIT_IF_TIMEDOUT(cond, mutex, millis, nanos) COND_WAIT_IF_TIMEDOUT((cond), (mutex), (millis), (nanos))
+#define OMROSCOND_WAIT_TIMED_LOOP() COND_WAIT_TIMED_LOOP()
+#define OMROSCOND_WAIT(cond, mutex) COND_WAIT((cond), (mutex))
+#define OMROSCOND_WAIT_LOOP() COND_WAIT_LOOP()
 
 #endif /* defined(OMR_THR_FORK_SUPPORT) */
 

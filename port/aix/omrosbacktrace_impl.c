@@ -103,7 +103,7 @@ omrintrospect_backtrace_thread_raw(struct OMRPortLibrary *portLibrary, J9Platfor
 	void *r1;
 	AIXStackFrame *frame;
 	J9PlatformStackFrame **nextFrame;
-	J9UnixSignalInfo *sigInfo = (J9UnixSignalInfo *)signalInfo;
+	OMRUnixSignalInfo *sigInfo = (OMRUnixSignalInfo *)signalInfo;
 	const char *regName = "";
 	void **faultingAddress = 0;
 

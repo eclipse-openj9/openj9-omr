@@ -818,7 +818,7 @@ masterSynchSignalHandler(int signal, siginfo_t *sigInfo, void *contextInfo)
 		while (NULL != thisRecord) {
 
 			if (OMR_ARE_ANY_BITS_SET(thisRecord->flags, portLibType)) {
-				struct J9UnixSignalInfo j9Info;
+				struct OMRUnixSignalInfo j9Info;
 				struct J9PlatformSignalInfo platformSignalInfo;
 
 

@@ -38,13 +38,13 @@ typedef struct J9PlatformSignalInfo {
 	Dl_info dl_info;
 } J9PlatformSignalInfo;
 
-typedef struct J9UnixSignalInfo {
+typedef struct OMRUnixSignalInfo {
 	struct J9PlatformSignalInfo platformSignalInfo;
 	uint32_t portLibrarySignalType;
 	void *handlerAddress;
 	void *handlerAddress2;
 	siginfo_t *sigInfo;
-} J9UnixSignalInfo;
+} OMRUnixSignalInfo;
 
 /* START: need to define this ourselves until we compile on a newer distro */
 #define UC_EXTENDED		0x00000001
@@ -59,10 +59,10 @@ typedef struct ucontext_extended {
 } ucontext_extended ;
 /* END: need to define this ourselves until we compile on a newer distro */
 
-uint32_t infoForFPR(struct OMRPortLibrary *portLibrary, struct J9UnixSignalInfo *info, int32_t index, const char **name, void **value);
-uint32_t infoForGPR(struct OMRPortLibrary *portLibrary, struct J9UnixSignalInfo *info, int32_t index, const char **name, void **value);
-uint32_t infoForModule(struct OMRPortLibrary *portLibrary, struct J9UnixSignalInfo *info, int32_t index, const char **name, void **value);
-uint32_t infoForControl(struct OMRPortLibrary *portLibrary, struct J9UnixSignalInfo *info, int32_t index, const char **name, void **value);
-uint32_t infoForSignal(struct OMRPortLibrary *portLibrary, struct J9UnixSignalInfo *info, int32_t index, const char **name, void **value);
-void fillInUnixSignalInfo(struct OMRPortLibrary *portLibrary, void *contextInfo, struct J9UnixSignalInfo *j9Info);
+uint32_t infoForFPR(struct OMRPortLibrary *portLibrary, struct OMRUnixSignalInfo *info, int32_t index, const char **name, void **value);
+uint32_t infoForGPR(struct OMRPortLibrary *portLibrary, struct OMRUnixSignalInfo *info, int32_t index, const char **name, void **value);
+uint32_t infoForModule(struct OMRPortLibrary *portLibrary, struct OMRUnixSignalInfo *info, int32_t index, const char **name, void **value);
+uint32_t infoForControl(struct OMRPortLibrary *portLibrary, struct OMRUnixSignalInfo *info, int32_t index, const char **name, void **value);
+uint32_t infoForSignal(struct OMRPortLibrary *portLibrary, struct OMRUnixSignalInfo *info, int32_t index, const char **name, void **value);
+void fillInUnixSignalInfo(struct OMRPortLibrary *portLibrary, void *contextInfo, struct OMRUnixSignalInfo *j9Info);
 

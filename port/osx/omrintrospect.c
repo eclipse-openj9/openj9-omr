@@ -245,7 +245,7 @@ setupNativeThread(J9ThreadWalkState *state, thread_context *sigContext)
 			}
 		} else {
 			/* Copy the context. We're using the provided context instead of generating it. */
-			memcpy(state->current_thread->context, ((J9UnixSignalInfo *)sigContext)->platformSignalInfo.context, size);
+			memcpy(state->current_thread->context, ((OMRUnixSignalInfo *)sigContext)->platformSignalInfo.context, size);
 		}
 	}
 

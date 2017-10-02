@@ -79,7 +79,7 @@ checkIfResumableTrapsSupported(struct OMRPortLibrary *portLibrary)
 
 
 void
-fillInUnixSignalInfo(struct OMRPortLibrary *portLibrary, void *contextInfo, struct J9UnixSignalInfo *j9Info)
+fillInUnixSignalInfo(struct OMRPortLibrary *portLibrary, void *contextInfo, struct OMRUnixSignalInfo *j9Info)
 {
 	/* __mcontext_t_ is defined in port/zos390/edcwccwi.h and appears to overlay the ucontext_t structure */
 	j9Info->platformSignalInfo.context = (__mcontext_t_ *) contextInfo;
@@ -148,7 +148,7 @@ fillInJumpInfo(struct OMRPortLibrary *portLibrary, void *contextInfo, void  *jum
 
 
 uint32_t
-infoForSignal(struct OMRPortLibrary *portLibrary, J9UnixSignalInfo *info, int32_t index, const char **name, void **value)
+infoForSignal(struct OMRPortLibrary *portLibrary, OMRUnixSignalInfo *info, int32_t index, const char **name, void **value)
 {
 	*name = "";
 
@@ -195,7 +195,7 @@ infoForSignal(struct OMRPortLibrary *portLibrary, J9UnixSignalInfo *info, int32_
 }
 
 uint32_t
-infoForFPR(struct OMRPortLibrary *portLibrary, J9UnixSignalInfo *info, int32_t index, const char **name, void **value)
+infoForFPR(struct OMRPortLibrary *portLibrary, OMRUnixSignalInfo *info, int32_t index, const char **name, void **value)
 {
 	const char *n_fpr[NUM_REGS] = {
 		"fpr0",
@@ -228,7 +228,7 @@ infoForFPR(struct OMRPortLibrary *portLibrary, J9UnixSignalInfo *info, int32_t i
 }
 
 uint32_t
-infoForGPR(struct OMRPortLibrary *portLibrary, J9UnixSignalInfo *info, int32_t index, const char **name, void **value)
+infoForGPR(struct OMRPortLibrary *portLibrary, OMRUnixSignalInfo *info, int32_t index, const char **name, void **value)
 {
 
 	const char *n_gpr[NUM_REGS * 2] = {
@@ -288,7 +288,7 @@ infoForGPR(struct OMRPortLibrary *portLibrary, J9UnixSignalInfo *info, int32_t i
 }
 
 uint32_t
-infoForVR(struct OMRPortLibrary *portLibrary, J9UnixSignalInfo *info, int32_t index, const char **name, void **value)
+infoForVR(struct OMRPortLibrary *portLibrary, OMRUnixSignalInfo *info, int32_t index, const char **name, void **value)
 {
 	const char *const n_vr[NUM_VECTOR_REGS] = {
 		"vr0",
@@ -344,7 +344,7 @@ infoForVR(struct OMRPortLibrary *portLibrary, J9UnixSignalInfo *info, int32_t in
 }
 
 uint32_t
-infoForControl(struct OMRPortLibrary *portLibrary, J9UnixSignalInfo *info, int32_t index, const char **name, void **value)
+infoForControl(struct OMRPortLibrary *portLibrary, OMRUnixSignalInfo *info, int32_t index, const char **name, void **value)
 {
 #if defined(OMR_ENV_DATA64)
 	struct __cib *conditionInfoBlock = NULL;
@@ -434,7 +434,7 @@ infoForControl(struct OMRPortLibrary *portLibrary, J9UnixSignalInfo *info, int32
  *
  */
 uint32_t
-infoForModule(struct OMRPortLibrary *portLibrary, J9UnixSignalInfo *info, int32_t index, const char **name, void **value)
+infoForModule(struct OMRPortLibrary *portLibrary, OMRUnixSignalInfo *info, int32_t index, const char **name, void **value)
 {
 
 #if defined(J9ZOS39064)

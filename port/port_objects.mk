@@ -49,7 +49,7 @@ ifeq (zos,$(OMR_HOST_OS))
   OBJECTS += omrgetuserid
   OBJECTS += j9sysinfo_get_number_CPUs
   OBJECTS += j9jobname
-  OBJECTS += j9userid
+  OBJECTS += omruserid
   OBJECTS += j9zfs
   OBJECTS += j9lpdat
 

@@ -50,7 +50,7 @@ if(OMR_HOST_OS STREQUAL "zos")
 		omrgetuserid.c
 		j9sysinfo_get_number_CPUs.s
 		j9jobname.s
-		j9userid.s
+		omruserid.s
 		j9zfs.c
 		j9lpdat.mc
 	)

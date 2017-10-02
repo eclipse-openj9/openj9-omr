@@ -36,9 +36,9 @@ testMain(int argc, char **argv, char **envp)
 
 	OMREventListener::setDefaultTestListener();
 
-	ATTACH_J9THREAD();
+	ATTACH_OMRTHREAD();
 	omrTestEnv = (PortEnvironment *)testing::AddGlobalTestEnvironment(new PortEnvironment(argc, argv));
 	int result = RUN_ALL_TESTS();
-	DETACH_J9THREAD();
+	DETACH_OMRTHREAD();
 	return result;
 }

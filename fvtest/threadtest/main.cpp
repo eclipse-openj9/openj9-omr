@@ -30,9 +30,9 @@ testMain(int argc, char **argv, char **envp)
 {
 	::testing::InitGoogleTest(&argc, argv);
 	OMREventListener::setDefaultTestListener();
-	ATTACH_J9THREAD();
+	ATTACH_OMRTHREAD();
 	omrTestEnv = (ThreadTestEnvironment *)testing::AddGlobalTestEnvironment(new ThreadTestEnvironment(argc, argv));
 	int rc = RUN_ALL_TESTS();
-	DETACH_J9THREAD();
+	DETACH_OMRTHREAD();
 	return rc;
 }

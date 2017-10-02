@@ -21,15 +21,15 @@
  *******************************************************************************/
 
 /**
- * @file j9lpdat.mc
+ * @file omrlpdat.mc
  * @ingroup Port
  * @brief Contains Metal-C code that invokes SYSEVENT to query for LPAR Data.
  * The file must be saved with the extension ".mc" so that build automation can
  * recognize this and appropriately compile the source.
  */
 
-#pragma prolog(j9req_lpdatlen, "MYPROLOG")
-#pragma epilog(j9req_lpdatlen, "MYEPILOG")
+#pragma prolog(omrreq_lpdatlen, "MYPROLOG")
+#pragma epilog(omrreq_lpdatlen, "MYEPILOG")
 
 /**
  * Function returns the size of a buffer that must be used to
@@ -38,7 +38,7 @@
  * @return Size of LPAR data area. -1 in case of failure.
  */
 int
-j9req_lpdatlen(void)
+omrreq_lpdatlen(void)
 {
 	int lpdatlen = 0;
 	int rc = 0;
@@ -62,8 +62,8 @@ j9req_lpdatlen(void)
 	}
 }
 
-#pragma prolog(j9req_lpdat, "MYPROLOG")
-#pragma epilog(j9req_lpdat, "MYEPILOG")
+#pragma prolog(omrreq_lpdat, "MYPROLOG")
+#pragma epilog(omrreq_lpdat, "MYEPILOG")
 
 /**
  * Function fills in the buffer area provided with LPAR data.
@@ -73,7 +73,7 @@ j9req_lpdatlen(void)
  * @return Error value. 0 on success.
  */
 int
-j9req_lpdat(char* lpbuf)
+omrreq_lpdat(char* lpbuf)
 {
 	int rc = 0;
 	char *bufp;

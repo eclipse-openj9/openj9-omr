@@ -52,7 +52,7 @@ if(OMR_HOST_OS STREQUAL "zos")
 		omrjobname.s
 		omruserid.s
 		j9zfs.c
-		j9lpdat.mc
+		omrlpdat.mc
 	)
 	#TODO more objects here. See port_objects.mk:55
 	if(OMR_ENV_DATA64)

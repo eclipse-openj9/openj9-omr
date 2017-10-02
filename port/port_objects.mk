@@ -51,7 +51,7 @@ ifeq (zos,$(OMR_HOST_OS))
   OBJECTS += omrjobname
   OBJECTS += omruserid
   OBJECTS += j9zfs
-  OBJECTS += j9lpdat
+  OBJECTS += omrlpdat
 
   ifeq (1,$(OMR_ENV_DATA64))
     # 64-bit only

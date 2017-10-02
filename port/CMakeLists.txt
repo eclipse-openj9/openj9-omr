@@ -51,7 +51,7 @@ if(OMR_HOST_OS STREQUAL "zos")
 		omrsysinfo_get_number_CPUs.s
 		omrjobname.s
 		omruserid.s
-		j9zfs.c
+		omrzfs.c
 		omrlpdat.mc
 	)
 	#TODO more objects here. See port_objects.mk:55

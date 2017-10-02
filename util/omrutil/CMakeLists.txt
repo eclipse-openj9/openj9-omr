@@ -55,7 +55,7 @@ if(OMR_ARCH_S390)
 			list(APPEND VPATH unix/zos/64)
 			target_include_directories(omrport PRIVATE unix/zos/64)
 		else()
-			list(APPEND OBJECTS j9ceetbck.s)
+			list(APPEND OBJECTS omrceetbck.s)
 			list(APPEND OBJECTS j9memclrz10_31.s)
 			
 			list(APPEND VPATH unix/zos/31)

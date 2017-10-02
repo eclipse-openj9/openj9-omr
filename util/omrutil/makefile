@@ -35,7 +35,7 @@ ifeq (s390,$(OMR_HOST_ARCH))
       OBJECTS += j9memclrz10_64$(OBJEXT)
       vpath %.s unix/zos/64
     else
-      OBJECTS += j9ceetbck$(OBJEXT)
+      OBJECTS += omrceetbck$(OBJEXT)
       OBJECTS += j9memclrz10_31$(OBJEXT)
       vpath %.s unix/zos/31
     endif

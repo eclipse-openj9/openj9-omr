@@ -74,7 +74,7 @@
 #define INVALID_KEY -1
 
 #if 0
-#define J9VMEM_DEBUG
+#define OMRVMEM_DEBUG
 #endif
 
 #define VMEM_MEMINFO_SIZE_MAX	2048
@@ -598,7 +598,7 @@ omrvmem_commit_memory(struct OMRPortLibrary *portLibrary, void *address,
 				OMRPORT_ERROR_VMEM_INVALID_PARAMS);
 	}
 
-#if defined(J9VMEM_DEBUG)
+#if defined(OMRVMEM_DEBUG)
 	printf("\t\t omrvmem_commit_memory returning 0x%x\n",rc);fflush(stdout);
 #endif
 	Trc_PRT_vmem_omrvmem_commit_memory_Exit(rc);
@@ -741,7 +741,7 @@ omrvmem_reserve_memory_ex(struct OMRPortLibrary *portLibrary,
 		if (NULL == memoryPointer) {
 			/* If strict page size flag is not set try again with default page size */
 			if (0 == (OMRPORT_VMEM_STRICT_PAGE_SIZE & params->options)) {
-#if defined(J9VMEM_DEBUG)
+#if defined(OMRVMEM_DEBUG)
 				printf("\t\t\t NULL == memoryPointer, reverting to default pages\n");fflush(stdout);
 #endif
 				uintptr_t defaultPageSize = PPG_vmem_pageSize[0];
@@ -775,7 +775,7 @@ omrvmem_reserve_memory_ex(struct OMRPortLibrary *portLibrary,
 	}
 #endif
 
-#if defined(J9VMEM_DEBUG)
+#if defined(OMRVMEM_DEBUG)
 	printf("\tomrvmem_reserve_memory_ex returning %p\n", memoryPointer);fflush(stdout);
 #endif
 
@@ -850,7 +850,7 @@ reserveLargePages(struct OMRPortLibrary *portLibrary,
 		update_vmemIdentifier(identifier, NULL, NULL, 0, 0, 0, 0, 0, NULL);
 	}
 
-#if defined(J9VMEM_DEBUG)
+#if defined(OMRVMEM_DEBUG)
 	printf("\treserveLargePages returning 0x%zx\n", memoryPointer);fflush(stdout);
 #endif
 	return memoryPointer;

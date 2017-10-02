@@ -27,12 +27,11 @@
 #include "omrcfg.h"
 #if defined(OMR_VALGRIND_MEMCHECK)
 
+#include <valgrind/memcheck.h>
+
 #include "MemcheckWrapper.hpp"
 #include "GCExtensionsBase.hpp"
-
-#if defined(OMR_VALGRIND_MEMCHECK)
-#include <valgrind/memcheck.h>
-#endif /* defined(OMR_VALGRIND_MEMCHECK) */
+#include "ForwardedHeader.hpp"
 
 void valgrindCreateMempool(MM_GCExtensionsBase *extensions,uintptr_t poolAddr)
 {
@@ -55,7 +54,7 @@ void valgrindDestroyMempool(MM_GCExtensionsBase *extensions)
 void valgrindMempoolAlloc(MM_GCExtensionsBase *extensions, uintptr_t baseAddress, uintptr_t size)
 {
 #if defined(VALGRIND_REQUEST_LOGS)
-    VALGRIND_PRINTF_BACKTRACE("Allocated object at 0x%lx of size %lu\n", baseAddress, size);
+    VALGRIND_PRINTF_BACKTRACE("Allocating object at 0x%lx of size %lu\n", baseAddress, size);
 #endif /* defined(VALGRIND_REQUEST_LOGS) */
     /* Allocate object in Valgrind memory pool. */ 		
     VALGRIND_MEMPOOL_ALLOC(extensions->valgrindMempoolAddr, baseAddress, size);
@@ -107,10 +106,15 @@ void valgrindClearRange(MM_GCExtensionsBase *extensions, uintptr_t baseAddress, 
 
         for(it = lBound;*it <= *uBound && it != setEnd;it++)
         {
+            int objSize;
+            if(MM_ForwardedHeader((omrobjectptr_t) *it).isForwardedPointer())
+                objSize = sizeof(MM_ForwardedHeader);
+            else
+                objSize = (int) ((GC_ObjectModel)extensions->objectModel).getConsumedSizeInBytesWithHeader((omrobjectptr_t) *it);
 #if defined(VALGRIND_REQUEST_LOGS)
-            int objSize = (int) ( (GC_ObjectModel)extensions->objectModel ).getConsumedSizeInBytesWithHeader( (omrobjectptr_t) *it);
             VALGRIND_PRINTF("Clearing object at 0x%lx of size %d\n", *it,objSize);
-#endif /* defined(VALGRIND_REQUEST_LOGS) */				
+#endif /* defined(VALGRIND_REQUEST_LOGS) */
+            VALGRIND_CHECK_MEM_IS_DEFINED(*it,objSize);
             VALGRIND_MEMPOOL_FREE(extensions->valgrindMempoolAddr,*it);
         }
         if(*uBound >= *lBound && uBound != setEnd)
@@ -128,17 +132,41 @@ void valgrindClearRange(MM_GCExtensionsBase *extensions, uintptr_t baseAddress, 
 
 void valgrindFreeObject(MM_GCExtensionsBase *extensions, uintptr_t baseAddress)
 {
+    int objSize;
+    if(MM_ForwardedHeader((omrobjectptr_t) baseAddress).isForwardedPointer())
+        objSize = sizeof(MM_ForwardedHeader);
+    else
+        objSize = (int) ((GC_ObjectModel)extensions->objectModel).getConsumedSizeInBytesWithHeader((omrobjectptr_t) baseAddress);
 #if defined(VALGRIND_REQUEST_LOGS)				    
-    int objSize = (int) ( (GC_ObjectModel)extensions->objectModel ).getConsumedSizeInBytesWithHeader( (omrobjectptr_t) baseAddress);
     VALGRIND_PRINTF_BACKTRACE("Clearing object at 0x%lx of size %d\n",baseAddress,objSize);
-#endif /* defined(VALGRIND_REQUEST_LOGS) */			    
-    VALGRIND_MEMPOOL_FREE(extensions->valgrindMempoolAddr,baseAddress);	
+#endif /* defined(VALGRIND_REQUEST_LOGS) */
+    VALGRIND_CHECK_MEM_IS_DEFINED(baseAddress,objSize);
+    VALGRIND_MEMPOOL_FREE(extensions->valgrindMempoolAddr,baseAddress);
     extensions->_allocatedObjects.erase(baseAddress);
 }
 
 bool valgrindCheckObjectInPool(MM_GCExtensionsBase *extensions, uintptr_t baseAddress)
 {
     return (extensions->_allocatedObjects.find(baseAddress) != extensions->_allocatedObjects.end());
+}
+
+void valgrindResizeObject(MM_GCExtensionsBase *extensions, uintptr_t baseAddress, uintptr_t oldSize, uintptr_t newSize)
+{
+
+#if defined(VALGRIND_REQUEST_LOGS)
+    VALGRIND_PRINTF_BACKTRACE("Resizing object at 0x%lx from size %d to %d\n", baseAddress, (int) oldSize, (int) newSize);
+#endif /* defined(VALGRIND_REQUEST_LOGS) */
+
+    /* We could have used VALGRIND_MEMPOOL_CHANGE request to let Valgrind know of moved object
+    but it is very slow without an internal hack. (https://bugs.kde.org/show_bug.cgi?id=366817)*/
+    VALGRIND_CHECK_MEM_IS_DEFINED(baseAddress, oldSize);
+
+    /* Valgrind already knows former size of object allocated at baseAddress. So it will 
+    mark the area from baseAddress to oldSize-1 noaccess on a free request as desired*/
+    VALGRIND_MEMPOOL_FREE(extensions->valgrindMempoolAddr, baseAddress);
+
+    /* And we don't need to remove and add same address in extensions->_allocatedObjects */
+    VALGRIND_MEMPOOL_ALLOC(extensions->valgrindMempoolAddr, baseAddress, newSize);
 }
 
 #endif /* defined(OMR_VALGRIND_MEMCHECK) */

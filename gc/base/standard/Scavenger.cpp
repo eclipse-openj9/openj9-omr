@@ -1415,11 +1415,7 @@ MM_Scavenger::copy(MM_EnvironmentStandard *env, MM_ForwardedHeader* forwardedHea
 #endif /* J9VM_INTERP_NATIVE_SUPPORT */
 
 #if defined(OMR_VALGRIND_MEMCHECK)
-		valgrindMempoolAlloc(_extensions,(uintptr_t) destinationObjectPtr,(uintptr_t)objectCopySizeInBytes);
-		/* We don't free original object here or in copyAndForward function because
-		 * 1. It is  needed back in case of backout.
-		   2. It's care is already taken when MM_MemoryPoolAddressOrderedListBase::createFreeEntry
-			  is called during end of scavanger cycle. */
+valgrindMempoolAlloc(_extensions,(uintptr_t) destinationObjectPtr,(uintptr_t)objectCopySizeInBytes);
 #endif /* defined(OMR_VALGRIND_MEMCHECK) */
 
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
@@ -1448,6 +1444,10 @@ MM_Scavenger::copy(MM_EnvironmentStandard *env, MM_ForwardedHeader* forwardedHea
 
 			_extensions->objectModel.fixupForwardedObject(forwardedHeader, destinationObjectPtr, objectAge);
 		}
+
+#if defined(OMR_VALGRIND_MEMCHECK)
+valgrindResizeObject(_extensions, (uintptr_t) forwardedHeader->getObject(),objectCopySizeInBytes,sizeof(MM_ForwardedHeader));
+#endif /* defined(OMR_VALGRIND_MEMCHECK) */
 
 #if defined(OMR_SCAVENGER_TRACE_COPY)
 		OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
@@ -3319,6 +3319,10 @@ MM_Scavenger::backoutFixupAndReverseForwardPointersInSurvivor(MM_EnvironmentStan
 					 * This keeps tenure space walkable once the reverse forwarded objects are abandoned.
 					 */
 					UDATA evacuateObjectSizeInBytes = _extensions->objectModel.getConsumedSizeInBytesWithHeader(forwardedObject);					
+#if defined(OMR_VALGRIND_MEMCHECK)
+					valgrindFreeObject(_extensions, (uintptr_t) forwardedObject);
+					valgrindResizeObject(_extensions, (uintptr_t) originalObject, (uintptr_t) sizeof(MM_ForwardedHeader), (uintptr_t) evacuateObjectSizeInBytes);
+#endif /* defined(OMR_VALGRIND_MEMCHECK) */
 					MM_HeapLinkedFreeHeader* freeHeader = MM_HeapLinkedFreeHeader::getHeapLinkedFreeHeader(forwardedObject);
 					freeHeader->setNext((MM_HeapLinkedFreeHeader*)originalObject);
 					freeHeader->setSize(evacuateObjectSizeInBytes);
@@ -3331,7 +3335,7 @@ MM_Scavenger::backoutFixupAndReverseForwardPointersInSurvivor(MM_EnvironmentStan
 					 * will make free header undefined
 					 * as they are mostly used in undefined memory. But here forwardedObject
 					 * is still alive. So we manually have to make it defined again. */
-					valgrindMakeMemDefined((uintptr_t)freeHeader,(uintptr_t) sizeof(MM_HeapLinkedFreeHeader));					
+					valgrindMakeMemDefined((uintptr_t)freeHeader, (uintptr_t) sizeof(MM_HeapLinkedFreeHeader)); //TODO: Remove
 #endif /* defined(OMR_VALGRIND_MEMCHECK) */					
 				}
 			}

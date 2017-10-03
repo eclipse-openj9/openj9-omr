@@ -462,6 +462,7 @@ setStacksize(pthread_attr_t *pattr, uintptr_t stacksize)
 {
 	/* stacksize may be adjusted to satisfy platform-specific quirks */
 
+#if !defined(OMRZTPF)
 #if defined(LINUX) || defined(OSX)
 	/* Linux allocates 2MB if you ask for a stack smaller than STACK_MIN */
 	{
@@ -476,10 +477,11 @@ setStacksize(pthread_attr_t *pattr, uintptr_t stacksize)
 	}
 #endif /* defined(LINUX) || defined(OSX) */
 
-
 	if (DEBUG_SYSCALL(pthread_attr_setstacksize(pattr, stacksize)) != 0) {
 		return J9THREAD_ERR_INVALID_VALUE;
 	}
+#endif /* !defined(OMRZTPF) */
+
 	return J9THREAD_SUCCESS;
 }
 

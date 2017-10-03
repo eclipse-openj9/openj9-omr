@@ -216,6 +216,7 @@ reenter:
 	rtnv->argv.sii = &(rtnv->siginfo);
 	rtnv->argv.uct = &(rtnv->ucontext);
 	rtnv->argv.sct = &(rtnv->sigcontext);
+	rtnv->sigcontext.sregs = &(rtnv->_sregs); /* point to actual _sigregs struct */
 	rtnv->argv.wkspcSize = PATH_MAX;
 	rtnv->argv.wkSpace = &(rtnv->workbuffer[0]);
 	rtnv->argv.OSFilename = &(rtnv->filename[0]);
@@ -326,13 +327,12 @@ ztpfDeriveSiginfo( siginfo_t *build ) {
 
 static void
 ztpfDeriveSigcontext( struct sigcontext *sigcPtr, ucontext_t *uctPtr ) {
-        memset( sigcPtr, 0, sizeof(*sigcPtr) );         /* Set it all to zeros, then fill it all in.     */
 
         sigcPtr->sregs->regs.psw.mask  = uctPtr->uc_mcontext.psw.mask;
         sigcPtr->sregs->regs.psw.addr  = uctPtr->uc_mcontext.psw.addr;
 
-        memcpy(&(sigcPtr->sregs->regs.gprs), &(uctPtr->uc_mcontext.gregs),sizeof(sigcPtr->sregs->regs.gprs));
-        memcpy(&(sigcPtr->sregs->regs.acrs), &(uctPtr->uc_mcontext.aregs),sizeof(sigcPtr->sregs->regs.acrs));
+        memcpy(&(sigcPtr->sregs->regs.gprs), &(uctPtr->uc_mcontext.gregs),sizeof(uctPtr->uc_mcontext.gregs));
+        memcpy(&(sigcPtr->sregs->regs.acrs), &(uctPtr->uc_mcontext.aregs),sizeof(uctPtr->uc_mcontext.aregs));
 
         memcpy(&(sigcPtr->sregs->fpregs), &(uctPtr->uc_mcontext.fpregs), sizeof(fpregset_t));
 
@@ -348,7 +348,6 @@ ztpfDeriveUcontext( ucontext_t *uscPtr ) {
    DBFITEM * pDbi = NULL;
    void * lowcore = NULL;
 
-   memset( uscPtr, 0, sizeof(*uscPtr) );	/* Zeroize everything		*/
    if( pJdb ) {					 /* If JDB contents are for this thread */
 	  if( pJdb->ijavcnt ) {		 /*  and the JDB is unlocked			*/
 		 pDbi = (DBFITEM *)(pJdb+1);		 /* Point at the JDB base	*/

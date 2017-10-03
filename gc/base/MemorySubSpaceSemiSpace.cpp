@@ -847,6 +847,21 @@ MM_MemorySubSpaceSemiSpace::checkSubSpaceMemoryPostCollectResize(MM_EnvironmentB
 			
 			if(debug) {
 				omrtty_printf("\tTime scav:%llu interval:%llu ratio:%lf\n", scavengeTime, intervalTime, timeRatio);
+			}
+
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+			if (_extensions->isConcurrentScavengerEnabled()) {
+				/* In CS world, we cannot easily measure GC overhead. This is just a simple adjustment, which is somewhat ok for light to medium
+				 * loaded systems. In overloaded systems (where GC background threads are starved and GC prolonged), we may expand more than necessary.
+				 * Multi JVM configuration may skew this even more (perhaps it's better to base it on CPU count, rather than GC thread count?). */
+				timeRatio = timeRatio * _extensions->concurrentScavengerBackgroundThreads / _extensions->dispatcher->activeThreadCount();
+				if(debug) {
+					omrtty_printf("\tCS adjusted ratio:%lf\n", timeRatio);
+				}
+			}
+#endif /* OMR_GC_CONCURRENT_SCAVENGER */
+
+			if(debug) {
 				omrtty_printf("\tAverage scavenge time ratio: %lf -> ", _averageScavengeTimeRatio);
 			}
 
@@ -895,7 +910,7 @@ MM_MemorySubSpaceSemiSpace::checkSubSpaceMemoryPostCollectResize(MM_EnvironmentB
 				_averageScavengeTimeRatio -= adjustedExpansionFactor;
 
 				_expansionSize = MM_Math::roundToCeiling(extensions->heapAlignment, (uintptr_t)(getCurrentSize() * adjustedExpansionFactor));
-				_expansionSize = MM_Math::roundToCeiling(regionSize, _expansionSize);
+				_expansionSize = MM_Math::roundToCeiling(2 * regionSize, _expansionSize);
 
 				if(debug) {
 					omrtty_printf("\tExpand decision - expandFactor desired: %lf adjusted: %lf size: %u\n", desiredExpansionFactor, adjustedExpansionFactor, _expansionSize);

@@ -10934,7 +10934,7 @@ void handleLoadWithRegRanges(TR::Instruction *inst, TR::CodeGenerator *cg)
    lowRegNum = lowRegNum == (isVector ? numVRFs - 1 : 15) ? 0 : lowRegNum + 1;
    // wrap around for loop terminal index to 0 at 15 or 31 for Vector Registers
 
-   uint32_t availForShuffle = cg->machine()->genBitVectOfAssignableGPRs() & ~(getRegMaskFromRange(inst));
+   uint32_t availForShuffle = cg->machine()->genBitMapOfAssignableGPRs() & ~(getRegMaskFromRange(inst));
 
    for (uint32_t i  = lowRegNum  ;
                  i != highRegNum ;

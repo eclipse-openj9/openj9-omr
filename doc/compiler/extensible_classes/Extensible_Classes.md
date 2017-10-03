@@ -109,7 +109,7 @@ calling the member function. If the function is not defined in a given
 extensible class, then the compiler will search the extensible class' parent.
 
 We can tell the compiler what the most derived type is with a forward
-declaration. To know the name of this class, we decide upfront what the name of
+declaration. To know the name of this class, we decide up-front what the name of
 the most derived type will be and force the hierarchy to end at this name. By
 ensuring that only the most derived type can be instantiated, we guaranty that
 the cast is always to the type of the object referenced by `this`. This is why

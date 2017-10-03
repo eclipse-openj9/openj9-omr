@@ -59,7 +59,7 @@ architectures. These are also assigned namespaces as follows:
 
 Since there are many different possible class strings that can be generated
 depending on the build time configuration, we need a name that consumers of
-particlar classes can use to reference the final complete concept.
+particular classes can use to reference the final complete concept.
 
 We use the `TR::` namespace to serve this purpose. Outside of the layered
 construction of an extensible class, all compiler code uses the `TR::`

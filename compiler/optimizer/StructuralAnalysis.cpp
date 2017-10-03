@@ -50,10 +50,11 @@ void TR_RegionAnalysis::simpleIterator (TR_Stack<int32_t>& workStack,
                                         TR::Block *hdrBlock,
                                         bool doThisCheck)
    {
-   StructureBitVector::Cursor cursor(vector);
-   for (cursor.SetToFirstOne(); cursor.Valid(); cursor.SetToNextOne())
+   TR_BitVectorIterator cursor(vector);
+   while (cursor.hasMoreElements())
       {
-      StructInfo &next = getInfo(cursor);
+      uint32_t regionNum = cursor.getNextElement();
+      StructInfo &next = getInfo(regionNum);
 
       // The exit block must only be made part of the region headed by the entry
       // block. It provides an exit for all other regions.
@@ -71,15 +72,15 @@ void TR_RegionAnalysis::simpleIterator (TR_Stack<int32_t>& workStack,
       //We should be able to push the same node at most twice
       //so if we come across the same node the second time (nodesInPath[next]) we could say that we are done with this
       //particular node and move on
-      if (regionNodes.get(cursor))
+      if (regionNodes.get(regionNum))
          {
-         if (!cyclesFound && nodesInPath.get(cursor) &&
+         if (!cyclesFound && nodesInPath.get(regionNum) &&
              _dominators.dominates(hdrBlock, next._originalBlock))
             {
             cyclesFound = true;
             if (trace())
                {
-               traceMsg(comp(), "cycle found at node = %d\n", (uint32_t)cursor);
+               traceMsg(comp(), "cycle found at node = %d\n", (uint32_t)regionNum);
                }
             }
          }
@@ -87,7 +88,7 @@ void TR_RegionAnalysis::simpleIterator (TR_Stack<int32_t>& workStack,
          {
          if (_dominators.dominates(hdrBlock, next._originalBlock))
             {
-            workStack.push(cursor);
+            workStack.push(regionNum);
             }
          }
       }
@@ -347,10 +348,10 @@ TR_RegionStructure *TR_RegionAnalysis::findNaturalLoop(StructInfo &node,
 
    int32_t numBackEdges = 0;
 
-   StructureBitVector::Cursor cursor(node._pred);
-   for (cursor.SetToFirstOne(); cursor.Valid(); cursor.SetToNextOne())
+   TR_BitVectorIterator cursor(node._pred);
+   while (cursor.hasMoreElements())
       {
-      StructInfo &backEdgeNode = getInfo(cursor);
+      StructInfo &backEdgeNode = getInfo(cursor.getNextElement());
       if (_dominators.dominates(node._originalBlock, backEdgeNode._originalBlock))
          {
          // A back-edge has been found. Add its loop nodes to the region
@@ -474,17 +475,17 @@ void TR_RegionAnalysis::addNaturalLoopNodes(StructInfo &node, WorkBitVector &reg
    regionNodes.set(index);
    nodesInPath.set(index);
 
-   StructureBitVector::Cursor cursor(node._pred);
-   for (cursor.SetToFirstOne(); cursor.Valid(); cursor.SetToNextOne())
+   TR_BitVectorIterator cursor(node._pred);
+   while (cursor.hasMoreElements())
       {
-      StructInfo &next = getInfo(cursor);
+      StructInfo &next = getInfo(cursor.getNextElement());
       if (_dominators.dominates(hdrBlock, next._originalBlock))
          addNaturalLoopNodes(next, regionNodes, nodesInPath, cyclesFound, hdrBlock);
       }
-   StructureBitVector::Cursor eCursor(node._exceptionPred);
-   for (eCursor.SetToFirstOne(); eCursor.Valid(); eCursor.SetToNextOne())
+   TR_BitVectorIterator eCursor(node._exceptionPred);
+   while (eCursor.hasMoreElements())
       {
-      StructInfo &next = getInfo(eCursor);
+      StructInfo &next = getInfo(eCursor.getNextElement());
       if (_dominators.dominates(hdrBlock, next._originalBlock))
          addNaturalLoopNodes(next, regionNodes, nodesInPath, cyclesFound, hdrBlock);
       }
@@ -606,10 +607,10 @@ void TR_RegionAnalysis::addRegionNodes(StructInfo &node, WorkBitVector &regionNo
    regionNodes.set(index);
    nodesInPath.set(index);
 
-   StructureBitVector::Cursor cursor(node._succ);
-   for (cursor.SetToFirstOne(); cursor.Valid(); cursor.SetToNextOne())
+   TR_BitVectorIterator cursor(node._succ);
+   while (cursor.hasMoreElements())
       {
-      StructInfo &next = getInfo(cursor);
+      StructInfo &next = getInfo(cursor.getNextElement());
 
       // The exit block must only be made part of the region headed by the entry
       // block. It provides an exit for all other regions.
@@ -624,10 +625,11 @@ void TR_RegionAnalysis::addRegionNodes(StructInfo &node, WorkBitVector &regionNo
          addRegionNodes(next, regionNodes, nodesInPath, cyclesFound, hdrBlock);
 
       }
-   StructureBitVector::Cursor eCursor(node._exceptionSucc);
-   for (eCursor.SetToFirstOne(); eCursor.Valid(); eCursor.SetToNextOne())
+
+   TR_BitVectorIterator eCursor(node._exceptionSucc);
+   while (eCursor.hasMoreElements())
       {
-      StructInfo &next = getInfo(eCursor);
+      StructInfo &next = getInfo(eCursor.getNextElement());
       if (_dominators.dominates(hdrBlock, next._originalBlock))
          addRegionNodes(next, regionNodes, nodesInPath, cyclesFound, hdrBlock);
       }
@@ -663,10 +665,10 @@ void TR_RegionAnalysis::buildRegionSubGraph(TR_RegionStructure *region,
    // so they are accumulated in a separate vector and turned off after iteration
    StructureBitVector bitsToBeRemoved(memRegion);
 
-   WorkBitVector::Cursor rCursor(regionNodes);
-   for (rCursor.SetToFirstOne(); rCursor.Valid(); rCursor.SetToNextOne())
+   TR_BitVectorIterator rCursor(regionNodes);
+   while (rCursor.hasMoreElements())
       {
-      fromIndex = rCursor;
+      fromIndex = rCursor.getNextElement();
       StructInfo &fromNode = getInfo(fromIndex);
 
       if (cfgNodes[fromIndex] == NULL)
@@ -674,10 +676,10 @@ void TR_RegionAnalysis::buildRegionSubGraph(TR_RegionStructure *region,
       from = cfgNodes[fromIndex];
       region->addSubNode(from);
 
-      StructureBitVector::Cursor cursor(fromNode._succ);
-      for (cursor.SetToFirstOne(); cursor.Valid(); cursor.SetToNextOne())
+      TR_BitVectorIterator cursor(fromNode._succ);
+      while (cursor.hasMoreElements())
          {
-         toIndex = cursor;
+         toIndex = cursor.getNextElement();
          StructInfo &toNode = getInfo(toIndex);
          if (cfgNodes[toIndex] == NULL)
             {
@@ -709,10 +711,10 @@ void TR_RegionAnalysis::buildRegionSubGraph(TR_RegionStructure *region,
       fromNode._succ -= bitsToBeRemoved;
 
       bitsToBeRemoved.empty();
-      StructureBitVector::Cursor eCursor(fromNode._exceptionSucc);
-      for (eCursor.SetToFirstOne(); eCursor.Valid(); eCursor.SetToNextOne())
+      TR_BitVectorIterator eCursor(fromNode._exceptionSucc);
+      while (eCursor.hasMoreElements())
          {
-         toIndex = eCursor;
+         toIndex = eCursor.getNextElement();
          StructInfo &toNode = getInfo(toIndex);
          if (cfgNodes[toIndex] == NULL)
             {

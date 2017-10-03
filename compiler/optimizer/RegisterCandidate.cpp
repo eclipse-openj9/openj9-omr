@@ -78,7 +78,6 @@
 
 #define OPT_DETAILS "O^O GLOBAL REGISTER ASSIGNER: "
 
-//static TR_BitVector *availableOnExit = NULL;
 //static TR_BitVector *blocksVisited = NULL;
 
 // Duplicated in GlobalRegisterAllocator.cpp. TODO try and factor this out
@@ -86,43 +85,62 @@
 
 TR::GlobalSet::GlobalSet(TR::Compilation * comp, TR::Region &region)
    :_region(region),
-    _empty(region),
-    _refAutosPerBlock((RefMapComparator()),(RefMapAllocator(region))),
+    _blocksPerAuto((RefMapComparator()),(RefMapAllocator(region))),
+    _EMPTY(region),
+    _collected(false),
     _comp(comp)
    {
    }
 
-
-TR_BitVector *TR::GlobalSet::collectReferencedAutoSymRefs(TR::Block * BB)
+void TR::GlobalSet::collectBlocks()
    {
-   if (!(BB->getEntry() && BB->getExit()))
-        return NULL;
+   TR::StackMemoryRegion stackMemoryRegion(*_comp->trMemory());
 
-   if (BB->getEntry()->getNextTreeTop() == BB->getExit())
+   TR_BitVector references(0, _comp->trMemory(), stackAlloc);
+   TR_BitVectorIterator bvi(references);
+   TR::NodeChecklist visited(_comp);
+
+   for (TR::CFGNode *node = _comp->getFlowGraph()->getFirstNode(); node; node = node->getNext())
       {
-      _refAutosPerBlock[BB->getNumber()] = &_empty;
-      return &_empty;
+      TR::Block *block = toBlock(node);
+      if (!block)
+         continue;
+
+      // Collect all autos/parms used in this block
+      references.empty();
+      visited.remove(visited);
+      for (TR::TreeTop * tt = block->getEntry(); tt && tt != block->getExit(); tt = tt->getNextTreeTop())
+         collectReferencedAutoSymRefs(tt->getNode(), references, visited);
+
+      // Set this block as referencing the collected autos/params
+      // Also set any blocks that extend this one
+      bvi.setBitVector(references);
+      while (bvi.hasMoreElements())
+         {
+         uint32_t symRefNum = bvi.getNextElement();
+         auto lookup = _blocksPerAuto.find(symRefNum);
+         if (lookup != _blocksPerAuto.end())
+            lookup->second->set(block->getNumber());
+         else
+            {
+            TR_BitVector *blocks = new (_region) TR_BitVector(_region);
+            blocks->set(block->getNumber());
+            _blocksPerAuto[symRefNum] = blocks;
+            }
+         }
       }
 
-   TR_BitVector * refAutos = new (_region) TR_BitVector(_region);
-
-   _refAutosPerBlock[BB->getNumber()] = refAutos;
-
-   TR::NodeChecklist visited(comp());
-   for (TR::TreeTop * tt = BB->getFirstRealTreeTop(); tt != BB->getExit(); tt = tt->getNextTreeTop())
-     collectReferencedAutoSymRefs(tt->getNode(), refAutos, visited);
-   return refAutos;
+   _collected = true;
    }
 
-void TR::GlobalSet::collectReferencedAutoSymRefs(TR::Node * node, TR_BitVector * referencedAutoSymRefs, TR::NodeChecklist &visited)
+void TR::GlobalSet::collectReferencedAutoSymRefs(TR::Node *node, TR_BitVector &referencedAutoSymRefs, TR::NodeChecklist &visited)
    {
    if (visited.contains(node))
       return;
-
    visited.add(node);
 
    if (node->getOpCode().hasSymbolReference() && node->getSymbolReference()->getSymbol()->isAutoOrParm())
-      referencedAutoSymRefs->set(node->getSymbolReference()->getReferenceNumber());
+      referencedAutoSymRefs.set(node->getSymbolReference()->getReferenceNumber());
 
    for (int32_t i = 0; i < node->getNumChildren(); ++i)
       collectReferencedAutoSymRefs(node->getChild(i), referencedAutoSymRefs, visited);
@@ -152,8 +170,7 @@ TR_RegisterCandidate::TR_RegisterCandidate(TR::SymbolReference * sr, TR::Region 
      _stores(r),
      _loopsWithHoles(r),
      _mostRecentValue(NULL),
-     _lastLoad(NULL),
-     _availableOnExit(NULL)
+     _lastLoad(NULL)
    {
    }
 
@@ -574,7 +591,6 @@ TR_RegisterCandidate::setWeight(TR::Block * * blocks, int32_t *blockStructureWei
       if (!b) continue;
 
       TR_ASSERT(blockNumber == b->getNumber(),"blocks[x]->getNumber() != x");
-      bool hasLoadNearStart = !isExtensionOfPreviousBlock.isSet(blockNumber) && findLoadNearStartOfBlock(b, getSymbolReference());
       TR_ASSERT((blockNumber < cfg->getNextNodeNumber()) && (blocks[blockNumber] == b),"blockNumber is wrong");
       
       int32_t blockWeight = _blocks.getNumberOfLoadsAndStores(blockNumber);
@@ -1606,20 +1622,18 @@ TR_RegisterCandidate::extendLiveRangesForLiveOnExit(TR::Compilation *comp, TR::B
    LexicalTimer t("extendLiveRangesForLiveOnExit", comp->phaseTimer());
 
    bool trace = comp->getOptions()->trace(OMR::tacticalGlobalRegisterAllocator);
-
    if (trace)
       traceMsg(comp, "Extending live ranges due to live on exits\n");
 
-   getAvailableOnExit()->empty();
    TR_BitVector blocksVisited(comp->trMemory()->currentStackRegion());
+   TR_BitVector *blocksReferencing = comp->getGlobalRegisterCandidates()->getBlocksReferencingSymRef(getSymbolReference()->getReferenceNumber());
 
    _liveOnExit.empty();  // this function will recalculate
 
    // TODO: move allocation of working bitvectors out
    //    don't visit the same ext block more than once
    //    save all liveOnEntry that were added
-   TR_BitVectorIterator bvi;
-   bvi.setBitVector(_liveOnEntry);
+   TR_BitVectorIterator bvi(_liveOnEntry);
    while (bvi.hasMoreElements())
       {
       int32_t blockNumber = bvi.getNextElement();
@@ -1642,18 +1656,11 @@ TR_RegisterCandidate::extendLiveRangesForLiveOnExit(TR::Compilation *comp, TR::B
             // Top-down pass through the extended block:
             //       find all blocks where candidate is available to be used on exit
             //
-            getAvailableOnExit()->empty();
             TR::Block *currBlock = extPred;
             TR::Block *lastBlock;
             do
                {
                blocksVisited.set(currBlock->getNumber());
-
-               TR_BitVector *autosInBlock = comp->getGlobalRegisterCandidates()->getReferencedAutoSymRefsInBlock(currBlock);
-               if (autosInBlock &&
-                  autosInBlock->get(getSymbolReference()->getReferenceNumber()))
-                  getAvailableOnExit()->set(currBlock->getNumber());
-
                lastBlock = currBlock;
                currBlock = currBlock->getNextBlock();
                } while (currBlock && currBlock->isExtensionOfPreviousBlock());
@@ -1674,14 +1681,13 @@ TR_RegisterCandidate::extendLiveRangesForLiveOnExit(TR::Compilation *comp, TR::B
                      break;
                      }
                   }
-               bool availableInPrevBlock = false;
-               if (currBlock->isExtensionOfPreviousBlock())
-                  availableInPrevBlock = getAvailableOnExit()->get(currBlock->getPrevBlock()->getNumber()) != 0;
 
                if (!_liveOnEntry.get(currBlock->getNumber()) &&  // not set already
                   _liveOnExit.get(currBlock->getNumber()) &&
-                  availableInPrevBlock &&
-                  !getAvailableOnExit()->get(currBlock->getNumber()))
+                  currBlock->isExtensionOfPreviousBlock() &&
+                  blocksReferencing &&
+                  blocksReferencing->get(currBlock->getPrevBlock()->getNumber()) &&
+                  !blocksReferencing->get(currBlock->getNumber()))
                   {
                   if (trace)
                      traceMsg(comp, "\tFor candidate #%d, set live on block_%d entry due to live on exit\n", getSymbolReference()->getReferenceNumber(), currBlock->getNumber());
@@ -2129,8 +2135,6 @@ TR_RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, in
 
    // Init scratch bitvectors for extendLiveRangesForLiveOnExit
 
-   TR_BitVector *availableOnExit = new (comp()->trStackMemory()) TR_BitVector(comp()->getFlowGraph()->getNextNodeNumber(), comp()->trMemory());
-
    bool useProfilingFrequencies = comp()->getUsesBlockFrequencyInGRA();
    double freqRatio;
    if(useProfilingFrequencies)
@@ -2312,11 +2316,6 @@ TR_RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, in
    for (; rc; rc = next)
       {
       next = rc->getNext();
-
-      if (!rc->getAvailableOnExit())
-         {
-         rc->setAvailableOnExit(availableOnExit);
-         }
 
       rc->setWeight(blocks, blockStructureWeight, comp(), totalGPRCount,totalFPRCount, totalVRFCount, &referencedBlocks, _startOfExtendedBBForBB,
                     _firstBlock, _isExtensionOfPreviousBlock);
@@ -3092,7 +3091,7 @@ TR_RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, in
                     TR::Block * block = blocks[blockNumber];
                     TR_BlockStructure *blockStructure = block->getStructureOf();
                     int32_t blockWeight = 1;
-                    TR_BitVector *autosInBlock = getReferencedAutoSymRefsInBlock(block);
+                    TR_BitVector *autosInBlock = getBlocksReferencingSymRef(rc->getSymbolReference()->getReferenceNumber());
 
                     if (blockStructure)
                        {
@@ -3114,7 +3113,7 @@ TR_RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, in
                              }
                           }
 #endif
-                       if (autosInBlock && autosInBlock->get(rc->getSymbolReference()->getReferenceNumber()))
+                       if (autosInBlock && autosInBlock->get(block->getNumber()))
                           {
                           // blockWeight = blockStructureWeight[block->getNumber()];
                           blockWeight = rc->_blocks.getNumberOfLoadsAndStores(block->getNumber());
@@ -3758,7 +3757,7 @@ TR_RegisterCandidates::computeAvailableRegisters(TR_RegisterCandidate *rc, int32
             overlaps = overlapLookup->second;
             }
 
-         TR_RegisterCandidate *rc2 = b->getGlobalRegisters(comp())[i].getRegisterCandidateOnEntry();
+         TR_RegisterCandidate *rc2 = b->getGlobalRegisters(comp())[i].getRegisterCandidateOnExit();
          if (rc2)
             {
             Coordinates::iterator rcItr = overlaps->find(rc->getSymbolReference()->getReferenceNumber());

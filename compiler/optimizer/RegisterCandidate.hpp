@@ -54,32 +54,33 @@ class GlobalSet
 public:
    GlobalSet(TR::Compilation * comp, TR::Region &region);
 
-   TR_BitVector * operator[](TR::Block *BB)
+   TR_BitVector *operator[](uint32_t symRefNum)
       {
-      uint32_t blockNum = BB->getNumber();
-      if (blockNum == TR::CFG::StartBlock || blockNum == TR::CFG::EndBlock)
-         return NULL;
-   
-      auto lookup = _refAutosPerBlock.find(blockNum);
-      if (lookup != _refAutosPerBlock.end())
+      if (!_collected)
+         collectBlocks();
+
+      auto lookup = _blocksPerAuto.find(symRefNum);
+      if (lookup != _blocksPerAuto.end())
          return lookup->second; 
-      return collectReferencedAutoSymRefs(BB);
+      return &_EMPTY;
       }
 
-   bool isEmpty() { return _refAutosPerBlock.empty(); }
-   void makeEmpty() { _refAutosPerBlock.clear(); }
+   bool isEmpty() { return _blocksPerAuto.empty(); }
+   void makeEmpty() { _collected = false; _blocksPerAuto.clear(); }
 
 private:
 
-   TR_BitVector *collectReferencedAutoSymRefs(TR::Block * BB);
-   void collectReferencedAutoSymRefs(TR::Node * node, TR_BitVector * referencedAutos, TR::NodeChecklist &visited);
+   void collectBlocks();
+   void collectReferencedAutoSymRefs(TR::Node *node, TR_BitVector &referencedAutoSymRefs, TR::NodeChecklist &visited);
 
    TR::Region &_region;
    TR_BitVector _empty;
    typedef TR::typed_allocator<std::pair<uint32_t const, TR_BitVector*>, TR::Region&> RefMapAllocator;
    typedef std::less<uint32_t> RefMapComparator;
    typedef std::map<uint32_t, TR_BitVector*, RefMapComparator, RefMapAllocator> RefMap;
-   RefMap _refAutosPerBlock;
+   RefMap _blocksPerAuto;
+   TR_BitVector _EMPTY;
+   bool _collected;
    TR::Compilation * _comp;
    };
 
@@ -143,6 +144,8 @@ public:
           }
        return 0;
      }
+
+     TR_BitVector& getCandidateBlocks() { return _candidateBlocks; }
 
      iterator getIterator() { return iterator(_candidateBlocks); }    
    };
@@ -221,9 +224,6 @@ public:
 
    void extendLiveRangesForLiveOnExit(TR::Compilation *, TR::Block **, TR_Array<TR::Block *>& startOfExtendedBBForBB);
 
-   TR_BitVector *          getAvailableOnExit()     { return _availableOnExit; }
-
-   void          setAvailableOnExit(TR_BitVector *b)     { _availableOnExit = b; }
 
    void recalculateWeight(TR::Block * *, int32_t *, TR::Compilation *,
                           TR_Array<int32_t>&,TR_Array<int32_t>&,TR_Array<int32_t>&,TR_BitVector *, TR_Array<TR::Block *>& startOfExtendedBB);
@@ -277,7 +277,6 @@ private:
    TR_BitVector            _liveOnEntry;
    TR_BitVector            _liveOnExit;
    TR_BitVector            _originalLiveOnEntry;
-   TR_BitVector           *_availableOnExit;
    List<TR::TreeTop>        _stores;
    List<TR_Structure>      _loopsWithHoles;
    TR::Node                *_mostRecentValue;
@@ -321,7 +320,7 @@ public:
    TR_RegisterCandidate * find(TR::SymbolReference * symRef);
    TR_RegisterCandidate * find(TR::Symbol * sym);
 
-   TR::GlobalSet&      getReferencedAutoSymRefs(TR::Region &region)
+   TR::GlobalSet& getReferencedAutoSymRefs(TR::Region &region)
       {
       if (_referencedAutoSymRefsInBlock == NULL)
          {
@@ -330,11 +329,11 @@ public:
          }
       return *_referencedAutoSymRefsInBlock;
       }
-   TR_BitVector *getReferencedAutoSymRefsInBlock(TR::Block *block)
+   TR_BitVector *getBlocksReferencingSymRef(uint32_t symRefNum)
       {
-      if (!_referencedAutoSymRefsInBlock || _referencedAutoSymRefsInBlock->isEmpty())
-         return 0;
-      return (*_referencedAutoSymRefsInBlock)[block];
+      if (_referencedAutoSymRefsInBlock == NULL)
+         return NULL;
+      return (*_referencedAutoSymRefsInBlock)[symRefNum];
       }
 
    bool assign(TR::Block **, int32_t, int32_t &, int32_t &);

@@ -44,7 +44,6 @@ add_library(omrutil_obj OBJECT
 )
 
 list(APPEND VPATH .)
-target_include_directories(omrport PRIVATE .)
 
 if(OMR_ARCH_S390)
 	if(OMR_HOST_OS STREQUAL zos)

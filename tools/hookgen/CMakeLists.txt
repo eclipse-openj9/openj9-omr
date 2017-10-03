@@ -30,3 +30,8 @@ target_link_libraries(hookgen pugixml)
 if(OMR_HOST_OS STREQUAL "zos")
 	target_link_libraries(hookgen j9a2e)
 endif()
+
+install(TARGETS hookgen
+	RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+	COMPONENT tooling
+)

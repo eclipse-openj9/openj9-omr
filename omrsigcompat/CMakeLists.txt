@@ -108,4 +108,8 @@ endif()
 #ifneq (,$(findstring osx,$(OMR_HOST_OS)))
     #MODULE_SHARED_LIBS += pthread
 #endif
+install(TARGETS omrsig
+	LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+	RUNTIME DESTINATION ${CMAKE_INSTALL_LIBDIR}
+)
 

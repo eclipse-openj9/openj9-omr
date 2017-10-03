@@ -34,3 +34,8 @@ target_link_libraries(tracemerge
 	PRIVATE
 		trace # static
 )
+
+install(TARGETS tracemerge
+	RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+	COMPONENT tooling
+)

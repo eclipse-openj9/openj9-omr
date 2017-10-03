@@ -20,9 +20,6 @@
 # SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
 ###############################################################################
 
-project(libomrgc VERSION 0.0.1 LANGUAGES CXX)
-
-
 add_hookgen(include/omrmm.hdf
 	${CMAKE_CURRENT_SOURCE_DIR}/../include_core/mmomrhook.h
 	${CMAKE_CURRENT_SOURCE_DIR}/base/mmomrhook_internal.h

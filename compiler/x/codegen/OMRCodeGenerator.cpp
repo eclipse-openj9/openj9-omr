@@ -101,8 +101,6 @@
 namespace OMR { class RegisterUsage; }
 namespace TR { class RegisterDependencyConditions; }
 
-extern "C" bool jitTestOSForSSESupport(void);
-
 // Hack markers
 #define CANT_REMATERIALIZE_ADDRESSES (TR::Compiler->target.is64Bit()) // AMD64 produces a memref with an unassigned addressRegister
 
@@ -227,7 +225,7 @@ OMR::X86::CodeGenerator::initialize(TR::Compilation *comp)
    //
 
 #if defined(TR_TARGET_X86) && !defined(J9HAMMER)
-   if (_targetProcessorInfo.supportsSSE2() && TR::Compiler->target.cpu.getX86OSSupportsSSE2(comp))
+   if (_targetProcessorInfo.supportsSSE2() && TR::Compiler->target.cpu.testOSForSSESupport(comp))
       supportsSSE2 = true;
 #endif // defined(TR_TARGET_X86) && !defined(J9HAMMER)
 
@@ -281,7 +279,7 @@ OMR::X86::CodeGenerator::initialize(TR::Compilation *comp)
    // 32-bit platforms must check the processor and OS.
    // 64-bit platforms unconditionally support prefetching.
    //
-   if (_targetProcessorInfo.supportsSSE() && jitTestOSForSSESupport())
+   if (_targetProcessorInfo.supportsSSE() && TR::Compiler->target.cpu.testOSForSSESupport(comp))
 #endif // defined(TR_TARGET_X86) && !defined(J9HAMMER)
       {
       self()->setTargetSupportsSoftwarePrefetches();

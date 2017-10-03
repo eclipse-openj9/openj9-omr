@@ -136,9 +136,6 @@ portLib_get390zLinuxMachineType()
 //  .o8"'88b   `8.   .88P `Y88   88P
 // o88'   888o  `boood8'   `88bod8'
 
-#if defined(TR_HOST_X86)
-extern "C" bool jitTestOSForSSESupport(void);
-#endif
 
 
 //                    o8o
@@ -273,10 +270,6 @@ void TR_LinkageInfo::setHasFailedRecompilation()
 // S390 specific fucntion - FIXME: make this only be a problem when HOST is s390.  Also, use a better
 // name for this
 void setDllSlip(char*CodeStart,char*CodeEnd,char*dllName,  TR::Compilation *comp) { notImplemented("setDllSlip"); }
-
-// X86 specific functions
-extern "C" bool jitTestOSForSSESupport(void) { return false; } // TODO there are some signal handling peculiarities on x86-32 linux
-
 
 // runtime assumptions
 #ifdef J9_PROJECT_SPECIFIC

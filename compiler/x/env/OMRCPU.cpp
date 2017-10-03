@@ -116,39 +116,3 @@ OMR::X86::CPU::testOSForSSESupport(TR::Compilation *comp)
    {
    return false;
    }
-
-bool
-OMR::X86::CPU::getX86OSSupportsSSE(TR::Compilation *comp)
-   {
-   // If the FXSR (bit 24) and SSE (bit 25) bits in the feature flags are not set, SSE is unavailable
-   // on this processor.
-   //
-   uint32_t flags = self()->getX86ProcessorFeatureFlags(comp);
-
-   if ((flags & 0x03000000) != 0x03000000)
-      return false;
-
-   return self()->testOSForSSESupport(comp);
-   }
-
-bool
-OMR::X86::CPU::getX86OSSupportsSSE2(TR::Compilation *comp)
-   {
-   // If the FXSR (bit 24) and SSE2 (bit 26) bits in the feature flags are not set, SSE is unavailable
-   // on this processor.
-   //
-   uint32_t flags = self()->getX86ProcessorFeatureFlags(comp);
-   if ((flags & 0x05000000) != 0x05000000)
-      return false;
-
-   return self()->testOSForSSESupport(comp);
-   }
-
-bool
-OMR::X86::CPU::getX86SupportsTM(TR::Compilation *comp)
-   {
-   uint32_t flags8 = self()->getX86ProcessorFeatureFlags8(comp);
-   if ((flags8 & TR_RTM) != 0x00000000)
-         return true;
-   else return false;
-   }

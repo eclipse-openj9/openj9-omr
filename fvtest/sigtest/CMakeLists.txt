@@ -62,23 +62,23 @@ endif()
 #vpath argmain.cpp $(top_srcdir)/fvtest/omrGtestGlue
 
 #MODULE_STATIC_LIBS += \
-  #omrGtest \
-  #testutil \
-  #omrstatic
+	#omrGtest \
+	#testutil \
+	#omrstatic
 
 #MODULE_SHARED_LIBS += omrsig
 
 #ifeq (linux,$(OMR_HOST_OS))
-  #MODULE_SHARED_LIBS += rt pthread
+	#MODULE_SHARED_LIBS += rt pthread
 #endif
 #ifeq (osx,$(OMR_HOST_OS))
-  #MODULE_SHARED_LIBS += iconv pthread
+	#MODULE_SHARED_LIBS += iconv pthread
 #endif
 #ifeq (aix,$(OMR_HOST_OS))
-  #MODULE_SHARED_LIBS += iconv perfstat
+	#MODULE_SHARED_LIBS += iconv perfstat
 #endif
 #ifeq (win,$(OMR_HOST_OS))
-  #MODULE_SHARED_LIBS += ws2_32 shell32 Iphlpapi psapi pdh
+	#MODULE_SHARED_LIBS += ws2_32 shell32 Iphlpapi psapi pdh
 #endif
 
 add_test(NAME sigtest COMMAND omrsigtest)

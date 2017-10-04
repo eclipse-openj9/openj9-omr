@@ -24,12 +24,12 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 #TODO port following vpath code:
 #ifeq (zos,$(OMR_HOST_OS))
-  #OBJECTS += zbarrier$(OBJEXT)
-  #ifeq (0,$(OMR_ENV_DATA64))
-    #vpath zbarrier.s unix/zos/31
-  #else
-    #vpath zbarrier.s unix/zos/64
-  #endif
+	#OBJECTS += zbarrier$(OBJEXT)
+	#ifeq (0,$(OMR_ENV_DATA64))
+		#vpath zbarrier.s unix/zos/31
+	#else
+		#vpath zbarrier.s unix/zos/64
+	#endif
 #endif
 
 include(OmrFindFiles)

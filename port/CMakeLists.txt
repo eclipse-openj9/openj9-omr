@@ -172,14 +172,14 @@ endif()
 list(APPEND OBJECTS omrsyslog.c)
 
 if(OMR_HOST_OS STREQUAL win)
-    #TODO hack to compile mc files
-    enable_language(RC)
-    add_custom_command(
-        OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/win32/omrsyslogmessages.rc
-        COMMAND mc  ${CMAKE_CURRENT_SOURCE_DIR}/win32/omrsyslogmessages.mc
-        DEPENDS win32/omrsyslogmessages.mc
-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/win32
-    )
+	#TODO hack to compile mc files
+	enable_language(RC)
+	add_custom_command(
+		OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/win32/omrsyslogmessages.rc
+		COMMAND mc  ${CMAKE_CURRENT_SOURCE_DIR}/win32/omrsyslogmessages.mc
+		DEPENDS win32/omrsyslogmessages.mc
+		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/win32
+	)
 	#TODO need to handle res files properly
 	#list(APPEND OBJECTS omrsyslogmessages.res)
 endif()
@@ -324,7 +324,7 @@ omr_find_files(resolvedPaths
 
 
 if(OMR_HOST_OS STREQUAL "win")
-    list(APPEND resolvedPaths win32/omrsyslogmessages.rc)
+	list(APPEND resolvedPaths win32/omrsyslogmessages.rc)
 endif()
 
 target_sources(omrport_obj PRIVATE ${resolvedPaths})

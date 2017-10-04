@@ -32,20 +32,20 @@ add_compile_options(-pthread)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -fno-rtti -fno-threadsafe-statics -Wno-deprecated -Wno-enum-compare -Wno-invalid-offsetof -Wno-write-strings -O3 -fomit-frame-pointer -fasynchronous-unwind-tables -Wreturn-type -fno-dollars-in-identifiers -m64 -fno-strict-aliasing")
 
 add_executable(comptest
-   main.cpp
-   JitTestUtilitiesTest.cpp
-   ILValidatorTest.cpp
-   ArithmeticTest.cpp
-   ShiftAndRotateTest.cpp
-   SimplifierFoldAndTest.cpp
+	main.cpp
+	JitTestUtilitiesTest.cpp
+	ILValidatorTest.cpp
+	ArithmeticTest.cpp
+	ShiftAndRotateTest.cpp
+	SimplifierFoldAndTest.cpp
 )
 
 target_link_libraries(comptest
-   omrGtestGlue
-   tril
+	omrGtestGlue
+	tril
 )
 
 add_test(
-    NAME comptest
-    COMMAND comptest --gtest_color=yes
+	NAME comptest
+	COMMAND comptest --gtest_color=yes
 )

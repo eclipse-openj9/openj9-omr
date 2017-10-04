@@ -25,42 +25,44 @@ include(OmrCompilerSupport)
 
 # JitBuilder Files
 set(JITBUILDER_OBJECTS
-    env/FrontEnd.cpp
-    compile/Method.cpp
-    control/Jit.cpp
-    ilgen/JBIlGeneratorMethodDetails.cpp
-    optimizer/JBOptimizer.hpp
-    optimizer/JBOptimizer.cpp
-    optimizer/Optimizer.hpp
-    runtime/JBCodeCacheManager.cpp
-    ${OMR_ROOT}/compiler/ilgen/VirtualMachineOperandArray.cpp
-    ${OMR_ROOT}/compiler/ilgen/VirtualMachineOperandStack.cpp
-    )
+	env/FrontEnd.cpp
+	compile/Method.cpp
+	control/Jit.cpp
+	ilgen/JBIlGeneratorMethodDetails.cpp
+	optimizer/JBOptimizer.hpp
+	optimizer/JBOptimizer.cpp
+	optimizer/Optimizer.hpp
+	runtime/JBCodeCacheManager.cpp
+	${OMR_ROOT}/compiler/ilgen/VirtualMachineOperandArray.cpp
+	${OMR_ROOT}/compiler/ilgen/VirtualMachineOperandStack.cpp
+)
 
 if(OMR_ARCH_X86)
-    list(APPEND JITBUILDER_OBJECTS
-        x/codegen/Evaluator.cpp
-        x/runtime/AsmUtil64.asm
-        )
+	list(APPEND JITBUILDER_OBJECTS
+		x/codegen/Evaluator.cpp
+		x/runtime/AsmUtil64.asm
+	)
 elseif(OMR_ARCH_S390)
-    list(APPEND JITBUILDER_OBJECTS
-        z/codegen/Evaluator.cpp
-        z/codegen/JBCodeGenerator.cpp
-        )
+	list(APPEND JITBUILDER_OBJECTS
+		z/codegen/Evaluator.cpp
+		z/codegen/JBCodeGenerator.cpp
+	)
 elseif(OMR_ARCH_POWER)
-    list(APPEND JITBUILDER_OBJECTS
-        p/codegen/Evaluator.cpp
-        p/runtime/CodeSync.cpp
-        p/runtime/AsmUtil.spp
-        p/runtime/CodeDispatch.spp
-        )
+	list(APPEND JITBUILDER_OBJECTS
+		p/codegen/Evaluator.cpp
+		p/runtime/CodeSync.cpp
+		p/runtime/AsmUtil.spp
+		p/runtime/CodeDispatch.spp
+	)
 endif()
 
 
 # Create jitbuilder library.
-create_omr_compiler_library(NAME       jitbuilder
-                            OBJECTS    ${JITBUILDER_OBJECTS}
-                            DEFINES    PROD_WITH_ASSUMES)
+create_omr_compiler_library(
+	NAME    jitbuilder
+	OBJECTS ${JITBUILDER_OBJECTS}
+	DEFINES PROD_WITH_ASSUMES
+)
 
 # Add interface path so that include paths propagate.
 # NOTE: `release` directory  isn't being automatically setup, so this

@@ -103,10 +103,10 @@ endif()
 #TODO ensure we are linking in the same way as source makefile:
 #MODULE_STATIC_LIBS += omrutil
 #ifneq (,$(findstring linux,$(OMR_HOST_OS)))
-    #MODULE_SHARED_LIBS += pthread
+	#MODULE_SHARED_LIBS += pthread
 #endif
 #ifneq (,$(findstring osx,$(OMR_HOST_OS)))
-    #MODULE_SHARED_LIBS += pthread
+	#MODULE_SHARED_LIBS += pthread
 #endif
 install(TARGETS omrsig
 	LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}

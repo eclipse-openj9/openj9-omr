@@ -39,7 +39,7 @@ add_executable(omrthreadtest
 
 #TODO Unported makefile fragment:
 #ifeq (1,$(OMR_THR_FORK_SUPPORT))
-  #OBJECTS += forkResetTest forkResetRWMutexTest
+	#OBJECTS += forkResetTest forkResetRWMutexTest
 #endif
 
 #OBJECTS := $(addsuffix $(OBJEXT),$(OBJECTS))
@@ -51,21 +51,21 @@ add_executable(omrthreadtest
 #vpath argmain.cpp $(top_srcdir)/fvtest/omrGtestGlue
 
 #MODULE_STATIC_LIBS += \
-  #omrGtest \
-  #testutil \
-  #omrstatic
+	#omrGtest \
+	#testutil \
+	#omrstatic
 
 #ifeq (linux,$(OMR_HOST_OS))
-  #MODULE_SHARED_LIBS += rt pthread
+	#MODULE_SHARED_LIBS += rt pthread
 #endif
 #ifeq (osx,$(OMR_HOST_OS))
-  #MODULE_SHARED_LIBS += iconv pthread
+	#MODULE_SHARED_LIBS += iconv pthread
 #endif
 #ifeq (aix,$(OMR_HOST_OS))
-  #MODULE_SHARED_LIBS += iconv perfstat
+	#MODULE_SHARED_LIBS += iconv perfstat
 #endif
 #ifeq (win,$(OMR_HOST_OS))
-  #MODULE_SHARED_LIBS += ws2_32 shell32 Iphlpapi psapi pdh
+	#MODULE_SHARED_LIBS += ws2_32 shell32 Iphlpapi psapi pdh
 #endif
 
 #include $(top_srcdir)/omrmakefiles/rules.mk
@@ -80,13 +80,13 @@ target_link_libraries(omrthreadtest
 	${OMR_GC_LIB}
 )
 if(OMR_HOST_OS STREQUAL "win")
-    target_link_libraries(omrthreadtest
-        ws2_32
-        shell32
-        Iphlpapi
-        psapi
-        pdh
-    )
+	target_link_libraries(omrthreadtest
+		ws2_32
+		shell32
+		Iphlpapi
+		psapi
+		pdh
+	)
 endif()
 
 if(OMR_HOST_OS STREQUAL "zos")

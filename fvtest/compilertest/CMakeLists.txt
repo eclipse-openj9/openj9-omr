@@ -45,20 +45,25 @@ if(OMR_ARCH_X86)
 	)
 elseif(OMR_ARCH_POWER)
 	list(APPEND COMPILERTEST_FILES
-#Host
-    		p/runtime/AsmUtil.spp
-    		p/runtime/CodeDispatch.spp
-    		p/runtime/CodeSync.cpp
+		#Host
+		p/runtime/AsmUtil.spp
+		p/runtime/CodeDispatch.spp
+		p/runtime/CodeSync.cpp
 		${OMR_ROOT}/compiler/p/runtime/OMRCodeCacheConfig.cpp
-#target
+		#target
 		p/codegen/Evaluator.cpp
 		${OMR_ROOT}/compiler/p/env/OMRDebugEnv.cpp
 	)
 endif()
 
-create_omr_compiler_library(NAME       testcompiler
-                            OBJECTS    ${COMPILERTEST_FILES}
-							DEFINES JITTEST TEST_PROJECT_SPECIFIC PROD_WITH_ASSUMES)
+create_omr_compiler_library(
+	NAME testcompiler
+	OBJECTS ${COMPILERTEST_FILES}
+	DEFINES
+		JITTEST
+		TEST_PROJECT_SPECIFIC
+		PROD_WITH_ASSUMES
+)
 add_executable(compilertest
 	tests/main.cpp
 	tests/BarIlInjector.cpp
@@ -81,7 +86,6 @@ add_executable(compilertest
 	tests/OptTestDriver.cpp
 	tests/TestDriver.cpp
 	tests/X86OpCodesTest.cpp
-
 )
 
 
@@ -96,7 +100,7 @@ make_compiler_target(compilertest PRIVATE COMPILER testcompiler)
 target_link_libraries(compilertest
 	testcompiler
 	omrGtest
-    ${CMAKE_DL_LIBS}
+	${CMAKE_DL_LIBS}
 )
 
 add_test(NAME CompilerTest COMMAND compilertest)

@@ -40,7 +40,7 @@ target_link_libraries(omrtrace
 #TODO: check if following makefile fragment still required:
 #ifeq (gcc,$(OMR_TOOLCHAIN))
 ## disable builtin strncpy buffer length check for optimized builds (_FORTIFY_SOURCE=1 requires -O3)
-  #ifeq ($(OMR_OPTIMIZE),1)
-    #MODULE_CXXFLAGS+=-U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1
-  #endif
+	#ifeq ($(OMR_OPTIMIZE),1)
+		#MODULE_CXXFLAGS+=-U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1
+	#endif
 #endif

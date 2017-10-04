@@ -26,11 +26,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 macro(create_jitbuilder_test target)
-    add_executable(${target} ${ARGN})
-    target_link_libraries(${target}
-        jitbuilder
-        ${CMAKE_DL_LIBS})
-    add_test(NAME ${target}_example_as_test COMMAND ${target})
+	add_executable(${target} ${ARGN})
+	target_link_libraries(${target}
+		jitbuilder
+		${CMAKE_DL_LIBS})
+	add_test(NAME ${target}_example_as_test COMMAND ${target})
 endmacro(create_jitbuilder_test)
 
 # Basic Tests: These should run properly on all platforms.
@@ -46,26 +46,26 @@ create_jitbuilder_test(worklist        src/Worklist.cpp)
 # Additional Tests: These may not run properly on all platforms
 # Opt in by setting OMR_JITBUILDER_ADDITIONAL
 if(OMR_JITBUILDER_ADDITIONAL)
-    create_jitbuilder_test(call              src/Call.cpp)
-    create_jitbuilder_test(conststring       src/ConstString.cpp)
-    create_jitbuilder_test(dotproduct        src/DotProduct.cpp)
-    create_jitbuilder_test(fieldaddress      src/FieldAddress.cpp)
-    create_jitbuilder_test(linkedlist        src/LinkedList.cpp)
-    create_jitbuilder_test(localarray        src/LocalArray.cpp)
-    create_jitbuilder_test(operandarraytests src/OperandArrayTests.cpp)
-    create_jitbuilder_test(operandstacktests src/OperandStackTests.cpp)
-    create_jitbuilder_test(pointer           src/Pointer.cpp)
-    create_jitbuilder_test(recfib            src/RecursiveFib.cpp)
-    create_jitbuilder_test(structArray       src/StructArray.cpp)
-    create_jitbuilder_test(switch            src/Switch.cpp)
-    create_jitbuilder_test(union             src/Union.cpp)
+	create_jitbuilder_test(call              src/Call.cpp)
+	create_jitbuilder_test(conststring       src/ConstString.cpp)
+	create_jitbuilder_test(dotproduct        src/DotProduct.cpp)
+	create_jitbuilder_test(fieldaddress      src/FieldAddress.cpp)
+	create_jitbuilder_test(linkedlist        src/LinkedList.cpp)
+	create_jitbuilder_test(localarray        src/LocalArray.cpp)
+	create_jitbuilder_test(operandarraytests src/OperandArrayTests.cpp)
+	create_jitbuilder_test(operandstacktests src/OperandStackTests.cpp)
+	create_jitbuilder_test(pointer           src/Pointer.cpp)
+	create_jitbuilder_test(recfib            src/RecursiveFib.cpp)
+	create_jitbuilder_test(structArray       src/StructArray.cpp)
+	create_jitbuilder_test(switch            src/Switch.cpp)
+	create_jitbuilder_test(union             src/Union.cpp)
 endif()
 
 # Experimental Tests: These are still on the experimental side
 # Opt in by setting OMR_JITBUILDER_EXPERIMENTAL
 if(OMR_JITBUILDER_EXPERIMENTAL)
-    create_jitbuilder_test(atomicoperations             src/AtomicOperations.cpp)
-    create_jitbuilder_test(transactionaloperations      src/TransactionalOperations.cpp)
+	create_jitbuilder_test(atomicoperations             src/AtomicOperations.cpp)
+	create_jitbuilder_test(transactionaloperations      src/TransactionalOperations.cpp)
 endif()
 
 

@@ -32,11 +32,11 @@ include(OmrAssert)
 # assign to out: ie, add_prefix(out "-I" "a;b;c") should set out to
 # "-Ia;-Ib;-Ic".
 function(omr_add_prefix out prefix)
-   set(ret "")
-   foreach(var IN ITEMS ${ARGN})
-      list(APPEND ret "${prefix}${var}")
-   endforeach()
-   set(${out} ${ret} PARENT_SCOPE)
+	set(ret "")
+	foreach(var IN ITEMS ${ARGN})
+		list(APPEND ret "${prefix}${var}")
+	endforeach()
+	set(${out} ${ret} PARENT_SCOPE)
 endfunction(omr_add_prefix)
 
 # omr_trim_whitespace(<output_variable> <string>)

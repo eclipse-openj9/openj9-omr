@@ -63,13 +63,13 @@ compiler_library(x
 )
 
 if(TR_TARGET_BITS STREQUAL 64)
-    compiler_library(x_64
-        ${CMAKE_CURRENT_SOURCE_DIR}/amd64/codegen/OMRCodeGenerator.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/amd64/codegen/OMRMachine.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/amd64/codegen/OMRTreeEvaluator.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/amd64/codegen/OMRMemoryReference.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/amd64/codegen/OMRRealRegister.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/amd64/codegen/AMD64SystemLinkage.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/amd64/codegen/OMRELFRelocationResolver.cpp
-        )
+	compiler_library(x_64
+		${CMAKE_CURRENT_SOURCE_DIR}/amd64/codegen/OMRCodeGenerator.cpp
+		${CMAKE_CURRENT_SOURCE_DIR}/amd64/codegen/OMRMachine.cpp
+		${CMAKE_CURRENT_SOURCE_DIR}/amd64/codegen/OMRTreeEvaluator.cpp
+		${CMAKE_CURRENT_SOURCE_DIR}/amd64/codegen/OMRMemoryReference.cpp
+		${CMAKE_CURRENT_SOURCE_DIR}/amd64/codegen/OMRRealRegister.cpp
+		${CMAKE_CURRENT_SOURCE_DIR}/amd64/codegen/AMD64SystemLinkage.cpp
+		${CMAKE_CURRENT_SOURCE_DIR}/amd64/codegen/OMRELFRelocationResolver.cpp
+	)
 endif()

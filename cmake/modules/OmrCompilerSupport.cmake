@@ -19,6 +19,13 @@
 # SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
 #############################################################################
 
+# Include once
+if(OMR_COMPILER_SUPPORT_)
+	return()
+endif()
+set(OMR_COMPILER_SUPPORT_ 1)
+
+
 # This file contains a number of support pieces required to build the compiler
 # component. 
 # 

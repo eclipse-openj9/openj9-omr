@@ -22,6 +22,7 @@
 if(OMR_TRACEGEN_)
 	return()
 endif()
+set(OMR_TRACEGEN_ 1)
 
 add_custom_target(run_tracegen)
 

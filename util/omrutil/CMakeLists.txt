@@ -54,7 +54,7 @@ if(OMR_ARCH_S390)
 			list(APPEND VPATH unix/zos/64)
 			target_include_directories(omrport PRIVATE unix/zos/64)
 		else()
-			list(APPEND OBJECTS j9ceetbck.s)
+			list(APPEND OBJECTS omrceetbck.s)
 			list(APPEND OBJECTS j9memclrz10_31.s)
 			
 			list(APPEND VPATH unix/zos/31)
@@ -63,7 +63,7 @@ if(OMR_ARCH_S390)
 		list(APPEND OBJECTS zosversion.c)
 		list(APPEND OBJECTS getstoragekey.c)
 		list(APPEND OBJECTS getpsw.s)
-		list(APPEND OBJECTS j9getdsa.s)
+		list(APPEND OBJECTS omrgetdsa.s)
 		
 		list(APPEND VPATH unix/zos)
 		target_include_directories(omrport PRIVATE unix/zos)
@@ -131,7 +131,7 @@ list(APPEND OBJECTS
 if(OMR_HOST_OS STREQUAL "win")
 	target_sources(omrutil_obj
 		PRIVATE
-			win/j9getdbghelp.c
+			win/omrgetdbghelp.c
 	)
 endif()
 

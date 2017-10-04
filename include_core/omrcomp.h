@@ -575,9 +575,9 @@ typedef struct U_128 {
 #define OMR_MIN(a,b) (((a) < (b)) ? (a) : (b))
 
 /* Provide macros which can be used for bit testing */
-#define J9_ARE_ANY_BITS_SET(value, bits) (0 != ((value) & (bits)))
-#define J9_ARE_ALL_BITS_SET(value, bits) ((bits) == ((value) & (bits)))
-#define J9_ARE_NO_BITS_SET(value, bits) (!J9_ARE_ANY_BITS_SET(value, bits))
+#define OMR_ARE_ANY_BITS_SET(value, bits) (0 != ((value) & (bits)))
+#define OMR_ARE_ALL_BITS_SET(value, bits) ((bits) == ((value) & (bits)))
+#define OMR_ARE_NO_BITS_SET(value, bits) (!OMR_ARE_ANY_BITS_SET(value, bits))
 
 /* Workaround for gcc -Wunused-result, which was added in 4.5.4 */
 #if defined(__GNUC__) && ((__GNUC__ > 4) || ((__GNUC__ == 4) && (__GNUC_MINOR__ >= 5)))
@@ -590,9 +590,9 @@ typedef struct U_128 {
 #define J9_IGNORE_RETURNVAL(funcCall) (funcCall)
 #endif /* defined(__GNUC__) && ((__GNUC__ > 4) || ((__GNUC__ == 4) && (__GNUC_MINOR__ >= 5))) */
 
-#define J9_STR_(x) #x
-#define J9_STR(x) J9_STR_(x)
-#define OMR_GET_CALLSITE() __FILE__ ":" J9_STR(__LINE__)
+#define OMR_STR_(x) #x
+#define OMR_STR(x) OMR_STR_(x)
+#define OMR_GET_CALLSITE() __FILE__ ":" OMR_STR(__LINE__)
 
 /* Legacy defines - remove once code cleanup is complete */
 #define J9VM_ENV_DIRECT_FUNCTION_POINTERS

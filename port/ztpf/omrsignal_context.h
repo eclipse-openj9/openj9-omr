@@ -49,13 +49,13 @@ typedef struct J9PlatformSignalInfo {
 /*
  * This structure declaration came in this file in this format from J9
  */
-typedef struct J9UnixSignalInfo {
+typedef struct OMRUnixSignalInfo {
 	struct J9PlatformSignalInfo	platformSignalInfo;
 	uint32_t portLibrarySignalType;
 	void* handlerAddress;
 	void* handlerAddress2;
 	siginfo_t *sigInfo;
-} J9UnixSignalInfo;
+} OMRUnixSignalInfo;
 
 
 /*
@@ -115,16 +115,16 @@ static const inline uint8_t  s390FetchDXC(uint8_t* b) { return *(b+0x93); }
 void translateInterruptContexts( args *argv ) __attribute__((nonnull));
 void ztpfDeriveSiginfo( siginfo_t *build ) __attribute__((nonnull));
 #endif
-uint32_t infoForFPR(struct OMRPortLibrary *portLibrary, struct J9UnixSignalInfo* info, int32_t index, const char **name, void **value)
+uint32_t infoForFPR(struct OMRPortLibrary *portLibrary, struct OMRUnixSignalInfo* info, int32_t index, const char **name, void **value)
  __attribute__((nonnull(1,2,4,5)));
 
-uint32_t infoForGPR(struct OMRPortLibrary *portLibrary, struct J9UnixSignalInfo* info, int32_t index, const char **name, void **value) __attribute__((nonnull(1,2,4,5)));
+uint32_t infoForGPR(struct OMRPortLibrary *portLibrary, struct OMRUnixSignalInfo* info, int32_t index, const char **name, void **value) __attribute__((nonnull(1,2,4,5)));
 
-uint32_t infoForModule(struct OMRPortLibrary *portLibrary, struct J9UnixSignalInfo* info, int32_t index, const char **name, void **value) __attribute__((nonnull(1,2,4,5)));
+uint32_t infoForModule(struct OMRPortLibrary *portLibrary, struct OMRUnixSignalInfo* info, int32_t index, const char **name, void **value) __attribute__((nonnull(1,2,4,5)));
 
-uint32_t infoForControl(struct OMRPortLibrary *portLibrary, struct J9UnixSignalInfo* info, int32_t index, const char **name, void **value) __attribute__((nonnull(1,2,4,5)));
+uint32_t infoForControl(struct OMRPortLibrary *portLibrary, struct OMRUnixSignalInfo* info, int32_t index, const char **name, void **value) __attribute__((nonnull(1,2,4,5)));
 
-uint32_t infoForSignal(struct OMRPortLibrary *portLibrary, struct J9UnixSignalInfo* info, int32_t index, const char **name, void **value) __attribute__((nonnull(1,2,4,5)));
+uint32_t infoForSignal(struct OMRPortLibrary *portLibrary, struct OMRUnixSignalInfo* info, int32_t index, const char **name, void **value) __attribute__((nonnull(1,2,4,5)));
 
-void fillInUnixSignalInfo(struct OMRPortLibrary *portLibrary, void *contextInfo, struct J9UnixSignalInfo *j9Info)  __attribute__((nonnull));
+void fillInUnixSignalInfo(struct OMRPortLibrary *portLibrary, void *contextInfo, struct OMRUnixSignalInfo *j9Info)  __attribute__((nonnull));
 #endif

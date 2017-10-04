@@ -21,7 +21,7 @@
 * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
 ***********************************************************************
 
-         TITLE 'JOBNAME.s'
+         TITLE 'omrjobname.s'
 
          AIF ('&SYSPARM' EQ 'BIT64').JMP1
 _JOBNAME EDCXPRLG BASEREG=8

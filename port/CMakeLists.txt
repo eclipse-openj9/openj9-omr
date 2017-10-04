@@ -43,16 +43,16 @@ endif()
 
 if(OMR_HOST_OS STREQUAL "zos")
 	list(APPEND OBJECTS
-		j9generate_ieat_dump.s
+		omrgenerate_ieat_dump.s
 		omrget_large_pageable_pages_supported.s
-		j9wto.s
-		j9pgser_release.s
+		omrwto.s
+		omrpgser_release.s
 		omrgetuserid.c
-		j9sysinfo_get_number_CPUs.s
-		j9jobname.s
-		j9userid.s
-		j9zfs.c
-		j9lpdat.mc
+		omrsysinfo_get_number_CPUs.s
+		omrjobname.s
+		omruserid.s
+		omrzfs.c
+		omrlpdat.mc
 	)
 	#TODO more objects here. See port_objects.mk:55
 	if(OMR_ENV_DATA64)
@@ -61,7 +61,7 @@ if(OMR_HOST_OS STREQUAL "zos")
 			omrget_large_2gb_pages_supported.s
 			omrvmem_support_above_bar.s
 			omrvmem_support_below_bar_64.s
-			j9ipt_ttoken64.s
+			omript_ttoken64.s
 		)
 	else()
 		list(APPEND OBJECTS omrvmem_support_below_bar_31.s)

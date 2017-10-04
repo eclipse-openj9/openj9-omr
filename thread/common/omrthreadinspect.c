@@ -207,14 +207,14 @@ omrthread_get_flags(omrthread_t thread, omrthread_monitor_t *blocker)
 
 	ASSERT(thread);
 
-	J9OSMUTEX_ENTER(thread->mutex);
+	OMROSMUTEX_ENTER(thread->mutex);
 
 	if (blocker) {
 		*blocker = READP(thread->monitor);
 	}
 	flags = READU(thread->flags);
 
-	J9OSMUTEX_EXIT(thread->mutex);
+	OMROSMUTEX_EXIT(thread->mutex);
 
 	return flags;
 }
@@ -240,7 +240,7 @@ omrthread_get_state(omrthread_t thread, omrthread_state_t *const state)
 		return;
 	}
 
-	J9OSMUTEX_ENTER(thread->mutex);
+	OMROSMUTEX_ENTER(thread->mutex);
 	state->flags = READU(thread->flags);
 	state->blocker = READP(thread->monitor);
 	if (state->blocker) {
@@ -250,7 +250,7 @@ omrthread_get_state(omrthread_t thread, omrthread_state_t *const state)
 		state->owner = 0;
 		state->count = 0;
 	}
-	J9OSMUTEX_EXIT(thread->mutex);
+	OMROSMUTEX_EXIT(thread->mutex);
 }
 
 /**

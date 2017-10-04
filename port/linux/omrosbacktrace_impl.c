@@ -119,7 +119,7 @@ omrintrospect_backtrace_thread_raw(struct OMRPortLibrary *portLibrary, J9Platfor
 	J9PlatformStackFrame **nextFrame;
 	J9PlatformStackFrame *junkFrames = NULL;
 	J9PlatformStackFrame *prevFrame = NULL;
-	J9UnixSignalInfo *sigInfo = (J9UnixSignalInfo *)signalInfo;
+	OMRUnixSignalInfo *sigInfo = (OMRUnixSignalInfo *)signalInfo;
 	int i;
 	int discard = 0;
 	int ret;

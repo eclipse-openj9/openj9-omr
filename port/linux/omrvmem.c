@@ -66,7 +66,7 @@
 #define INVALID_KEY -1
 
 #if 0
-#define J9VMEM_DEBUG
+#define OMRVMEM_DEBUG
 #endif
 
 #define VMEM_MEMINFO_SIZE_MAX	2048
@@ -545,7 +545,7 @@ omrvmem_commit_memory(struct OMRPortLibrary *portLibrary, void *address, uintptr
 			0 != (identifier->mode & OMRPORT_VMEM_MEMORY_MODE_EXECUTE)
 		) {
 			if (0 == mprotect(address, byteAmount, get_protectionBits(identifier->mode))) {
-#if defined(J9VMEM_DEBUG)
+#if defined(OMRVMEM_DEBUG)
 				printf("\t\t omrvmem_commit_memory called mprotect, returning 0x%zx\n", address);
 				fflush(stdout);
 #endif
@@ -562,7 +562,7 @@ omrvmem_commit_memory(struct OMRPortLibrary *portLibrary, void *address, uintptr
 		portLibrary->error_set_last_error(portLibrary,  -1, OMRPORT_ERROR_VMEM_INVALID_PARAMS);
 	}
 
-#if defined(J9VMEM_DEBUG)
+#if defined(OMRVMEM_DEBUG)
 	printf("\t\t omrvmem_commit_memory returning 0x%x\n", rc);
 	fflush(stdout);
 #endif
@@ -717,7 +717,7 @@ omrvmem_reserve_memory_ex(struct OMRPortLibrary *portLibrary, struct J9PortVmemI
 		if (NULL == memoryPointer) {
 			/* If strict page size flag is not set try again with default page size */
 			if (0 == (OMRPORT_VMEM_STRICT_PAGE_SIZE & params->options)) {
-#if defined(J9VMEM_DEBUG)
+#if defined(OMRVMEM_DEBUG)
 				printf("\t\t\t NULL == memoryPointer, reverting to default pages\n");
 				fflush(stdout);
 #endif
@@ -744,7 +744,7 @@ omrvmem_reserve_memory_ex(struct OMRPortLibrary *portLibrary, struct J9PortVmemI
 	}
 #endif
 
-#if defined(J9VMEM_DEBUG)
+#if defined(OMRVMEM_DEBUG)
 	printf("\tomrvmem_reserve_memory_ex returning %p\n", memoryPointer);
 	fflush(stdout);
 #endif
@@ -807,7 +807,7 @@ reserveLargePages(struct OMRPortLibrary *portLibrary, struct J9PortVmemIdentifie
 		update_vmemIdentifier(identifier, NULL, NULL, 0, 0, 0, 0, 0, NULL);
 	}
 
-#if defined(J9VMEM_DEBUG)
+#if defined(OMRVMEM_DEBUG)
 	printf("\treserveLargePages returning 0x%zx\n", memoryPointer);
 	fflush(stdout);
 #endif
@@ -1208,7 +1208,7 @@ getMemoryInRangeForDefaultPages(struct OMRPortLibrary *portLibrary, struct J9Por
 	}
 
 	/* check if we should use quick search for fast performance */
-	if (J9_ARE_ANY_BITS_SET(vmemOptions, OMRPORT_VMEM_ALLOC_QUICK)) {
+	if (OMR_ARE_ANY_BITS_SET(vmemOptions, OMRPORT_VMEM_ALLOC_QUICK)) {
 
 		void *smartAddress = NULL;
 		void *allocatedAddress = NULL;

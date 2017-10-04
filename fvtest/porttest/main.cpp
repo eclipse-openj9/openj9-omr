@@ -54,7 +54,7 @@ testMain(int argc, char **argv, char **envp)
 
 	OMREventListener::setDefaultTestListener();
 
-	ATTACH_J9THREAD();
+	ATTACH_OMRTHREAD();
 
 	portTestEnv = new PortTestEnvironment(argc, argv);
 	testing::AddGlobalTestEnvironment(portTestEnv);
@@ -77,7 +77,7 @@ testMain(int argc, char **argv, char **envp)
 		result = RUN_ALL_TESTS();
 	}
 
-	DETACH_J9THREAD();
+	DETACH_OMRTHREAD();
 
 	if (earlyExit) {
 		printf("exiting from testMain\n");

@@ -77,7 +77,7 @@ omrthread_tls_alloc_with_finalizer(omrthread_tls_key_t *handle, omrthread_tls_fi
 
 	*handle = 0;
 
-	J9OSMUTEX_ENTER(lib->tls_mutex);
+	OMROSMUTEX_ENTER(lib->tls_mutex);
 
 	for (index = 0; index < J9THREAD_MAX_TLS_KEYS; index++) {
 		if (lib->tls_finalizers[index] == NULL) {
@@ -87,7 +87,7 @@ omrthread_tls_alloc_with_finalizer(omrthread_tls_key_t *handle, omrthread_tls_fi
 		}
 	}
 
-	J9OSMUTEX_EXIT(lib->tls_mutex);
+	OMROSMUTEX_EXIT(lib->tls_mutex);
 
 	return index < J9THREAD_MAX_TLS_KEYS ? 0 : -1;
 }
@@ -123,9 +123,9 @@ omrthread_tls_free(omrthread_tls_key_t key)
 	GLOBAL_UNLOCK_SIMPLE(lib);
 
 	/* now return the key to the free set */
-	J9OSMUTEX_ENTER(lib->tls_mutex);
+	OMROSMUTEX_ENTER(lib->tls_mutex);
 	lib->tls_finalizers[key - 1] = NULL;
-	J9OSMUTEX_EXIT(lib->tls_mutex);
+	OMROSMUTEX_EXIT(lib->tls_mutex);
 
 	return 0;
 }
@@ -169,10 +169,10 @@ omrthread_tls_finalize(omrthread_t thread)
 			omrthread_tls_finalizer_t finalizer;
 
 			/* read the value and finalizer together under mutex to be sure that they belong together */
-			J9OSMUTEX_ENTER(lib->tls_mutex);
+			OMROSMUTEX_ENTER(lib->tls_mutex);
 			value = thread->tls[index];
 			finalizer = lib->tls_finalizers[index];
-			J9OSMUTEX_EXIT(lib->tls_mutex);
+			OMROSMUTEX_EXIT(lib->tls_mutex);
 
 			if (value) {
 				finalizer(value);

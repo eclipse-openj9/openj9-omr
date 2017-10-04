@@ -35,12 +35,12 @@ ifeq (s390,$(OMR_HOST_ARCH))
       OBJECTS += j9memclrz10_64$(OBJEXT)
       vpath %.s unix/zos/64
     else
-      OBJECTS += j9ceetbck$(OBJEXT)
+      OBJECTS += omrceetbck$(OBJEXT)
       OBJECTS += j9memclrz10_31$(OBJEXT)
       vpath %.s unix/zos/31
     endif
 
-    OBJECTS += zosversion$(OBJEXT) getstoragekey$(OBJEXT) getpsw$(OBJEXT) j9getdsa$(OBJEXT)
+    OBJECTS += zosversion$(OBJEXT) getstoragekey$(OBJEXT) getpsw$(OBJEXT) omrgetdsa$(OBJEXT)
     vpath %.c unix/zos
     vpath %.s unix/zos
   endif
@@ -95,7 +95,7 @@ ifeq (zos,$(OMR_HOST_OS))
 endif
 
 ifeq (win,$(OMR_HOST_OS))
-  OBJECTS += j9getdbghelp$(OBJEXT)
+  OBJECTS += omrgetdbghelp$(OBJEXT)
   vpath %.c win
 endif
 

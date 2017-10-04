@@ -196,7 +196,7 @@ omrsig_protect(struct OMRPortLibrary *portLibrary, omrsig_protected_fn fn, void 
 	omrthread_tls_set(thisThread, tlsKey, &thisRecord);
 
 	/* We can not use setjmp/longjmp to jump out of a VectoredExceptionHandler (CMVC 175576), so use _try/_except semantics instead */
-	if (J9_ARE_ALL_BITS_SET(flags, OMRPORT_SIG_FLAG_MAY_RETURN)) {
+	if (OMR_ARE_ALL_BITS_SET(flags, OMRPORT_SIG_FLAG_MAY_RETURN)) {
 
 		J9CurrentSignal *currentSignal = omrthread_tls_get(thisThread, tlsKeyCurrentSignal);
 		int32_t exceptionStatus = OMRPORT_SIG_NO_EXCEPTION;

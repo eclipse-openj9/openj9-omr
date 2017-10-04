@@ -21,7 +21,7 @@
 * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
 ***********************************************************************
 
-         TITLE 'Get_number_CPUs'
+         TITLE 'omrsysinfo_get_number_CPUs.s'
 **********************************************************************
 * 20031027 63548 rgf Initial port attempt to 64 bit zOS.             *
 *                    This is new                                     *

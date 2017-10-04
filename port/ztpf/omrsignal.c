@@ -306,19 +306,19 @@ omrsig_can_protect(struct OMRPortLibrary *portLibrary,  uint32_t flags)
 
 	supportedFlags |= OMRPORT_SIG_FLAG_MAY_CONTINUE_EXECUTION;
 
-	if (J9_ARE_NO_BITS_SET(signalOptionsGlobal, OMRPORT_SIG_OPTIONS_REDUCED_SIGNALS_SYNCHRONOUS)) {
+	if (OMR_ARE_NO_BITS_SET(signalOptionsGlobal, OMRPORT_SIG_OPTIONS_REDUCED_SIGNALS_SYNCHRONOUS)) {
 		supportedFlags |= OMRPORT_SIG_FLAG_SIGALLSYNC;
 	}
 
-	if (J9_ARE_NO_BITS_SET(signalOptionsGlobal, OMRPORT_SIG_OPTIONS_REDUCED_SIGNALS_ASYNCHRONOUS)) {
+	if (OMR_ARE_NO_BITS_SET(signalOptionsGlobal, OMRPORT_SIG_OPTIONS_REDUCED_SIGNALS_ASYNCHRONOUS)) {
 		supportedFlags |= OMRPORT_SIG_FLAG_SIGQUIT | OMRPORT_SIG_FLAG_SIGABRT | OMRPORT_SIG_FLAG_SIGTERM;
 	}
 
-	if (J9_ARE_ANY_BITS_SET(signalOptionsGlobal, OMRPORT_SIG_OPTIONS_SIGXFSZ)) {
+	if (OMR_ARE_ANY_BITS_SET(signalOptionsGlobal, OMRPORT_SIG_OPTIONS_SIGXFSZ)) {
 		supportedFlags |= OMRPORT_SIG_FLAG_SIGXFSZ;
 	}
 
-	if (J9_ARE_ALL_BITS_SET(supportedFlags, flags)) {
+	if (OMR_ARE_ALL_BITS_SET(supportedFlags, flags)) {
 		Trc_PRT_signal_omrsig_can_protect_exiting_is_able_to_protect(supportedFlags);
 		return 1;
 	} else {
@@ -371,7 +371,7 @@ omrsig_protect(struct OMRPortLibrary *portLibrary,  omrsig_protected_fn fn, void
 	
 	Trc_PRT_signal_omrsig_protect_entered(fn, fn_arg, handler, handler_arg, flags);
 
-	if (J9_ARE_ANY_BITS_SET(signalOptionsGlobal, OMRPORT_SIG_OPTIONS_REDUCED_SIGNALS_SYNCHRONOUS)) {
+	if (OMR_ARE_ANY_BITS_SET(signalOptionsGlobal, OMRPORT_SIG_OPTIONS_REDUCED_SIGNALS_SYNCHRONOUS)) {
 		/* -Xrs was set, we can't protect against any signals, do not install the master handler */
 		Trc_PRT_signal_omrsig_protect_cannot_protect_dueto_Xrs(fn, fn_arg, flags);
 		*result = fn(portLibrary, fn_arg);		
@@ -411,7 +411,7 @@ omrsig_protect(struct OMRPortLibrary *portLibrary,  omrsig_protected_fn fn, void
 	thisRecord.handler_arg = handler_arg;
 	thisRecord.flags = flags;
 
-	if (J9_ARE_ANY_BITS_SET(flags, OMRPORT_SIG_FLAG_MAY_RETURN)) {
+	if (OMR_ARE_ANY_BITS_SET(flags, OMRPORT_SIG_FLAG_MAY_RETURN)) {
 		J9CurrentSignal *currentSignal;
 		/* 
 		 * Record the current signal. We need to store this value back into tls if we
@@ -469,13 +469,13 @@ omrsig_set_async_signal_handler(struct OMRPortLibrary* portLibrary, omrsig_handl
 	
 	omrthread_monitor_enter(masterHandlerMonitor);
 
-	if (J9_ARE_ANY_BITS_SET(signalOptionsGlobal, OMRPORT_SIG_OPTIONS_REDUCED_SIGNALS_ASYNCHRONOUS)) {
+	if (OMR_ARE_ANY_BITS_SET(signalOptionsGlobal, OMRPORT_SIG_OPTIONS_REDUCED_SIGNALS_ASYNCHRONOUS)) {
 		/*
 		 * -Xrs was set, we can't protect against any signals,
 		 *  do not install any handlers except SIGXFSZ.
 		 */
-		if (J9_ARE_ANY_BITS_SET(flags, OMRPORT_SIG_FLAG_SIGXFSZ)
-			&& J9_ARE_ANY_BITS_SET(signalOptionsGlobal, OMRPORT_SIG_OPTIONS_SIGXFSZ)) {
+		if (OMR_ARE_ANY_BITS_SET(flags, OMRPORT_SIG_FLAG_SIGXFSZ)
+			&& OMR_ARE_ANY_BITS_SET(signalOptionsGlobal, OMRPORT_SIG_OPTIONS_SIGXFSZ)) {
 			rc = registerMasterHandlers(portLibrary, OMRPORT_SIG_FLAG_SIGXFSZ, OMRPORT_SIG_FLAG_SIGALLASYNC);
 		} else {
 			Trc_PRT_signal_omrsig_set_async_signal_handler_will_not_set_handler_due_to_Xrs(handler, handler_arg, flags);
@@ -670,7 +670,7 @@ asynchSignalReporter(void *userData) {
 
 		cursor = asyncHandlerList;
 		while (NULL != cursor) {
-			if (J9_ARE_ANY_BITS_SET(cursor->flags, asyncSignalFlag)) {
+			if (OMR_ARE_ANY_BITS_SET(cursor->flags, asyncSignalFlag)) {
 				Trc_PRT_signal_omrsig_asynchSignalReporter_calling_handler(cursor->portLib,
 																		  asyncSignalFlag, cursor->handler_arg); 
 				cursor->handler(cursor->portLib, asyncSignalFlag, NULL, cursor->handler_arg);
@@ -683,7 +683,7 @@ asynchSignalReporter(void *userData) {
 		}
 		omrthread_monitor_exit(asyncMonitor);
 #ifdef OMRPORT_JSIG_SUPPORT
-		if (J9_ARE_NO_BITS_SET(signalOptionsGlobal, OMRPORT_SIG_OPTIONS_OMRSIG_NO_CHAIN)) {
+		if (OMR_ARE_NO_BITS_SET(signalOptionsGlobal, OMRPORT_SIG_OPTIONS_OMRSIG_NO_CHAIN)) {
 			int unixSignal = mapPortLibSignalToUnix(asyncSignalFlag);	 /* mapPortLibSignalToUnix returns */
 																		 /* -1 on an unknown mapping	   */
 			if (-1 != unixSignal) {
@@ -746,8 +746,8 @@ masterSynchSignalHandler(int signal, siginfo_t * sigInfo, void *contextInfo, UDA
 
 		while (NULL != thisRecord) {
 
-			if (J9_ARE_ANY_BITS_SET(thisRecord->flags,portLibType)) {
-				struct J9UnixSignalInfo j9Info;
+			if (OMR_ARE_ANY_BITS_SET(thisRecord->flags,portLibType)) {
+				struct OMRUnixSignalInfo j9Info;
 				struct J9PlatformSignalInfo platformSignalInfo;
 
 				/*
@@ -817,7 +817,7 @@ masterSynchSignalHandler(int signal, siginfo_t * sigInfo, void *contextInfo, UDA
 	/* The only ways to get here are: (1) if this thread was not attached to the thread library or 
 	 * (2) the thread hasn't registered any signal handlers with the port library that could handle the signal
 	 */
-	if (J9_ARE_NO_BITS_SET(signalOptionsGlobal, OMRPORT_SIG_OPTIONS_OMRSIG_NO_CHAIN)) {
+	if (OMR_ARE_NO_BITS_SET(signalOptionsGlobal, OMRPORT_SIG_OPTIONS_OMRSIG_NO_CHAIN)) {
 #if 0
 		Trc_PRT_signal_masterSynchSignalHandler_calling_jsig_handler(signal, sigInfo, contextInfo);
 #endif
@@ -1099,7 +1099,7 @@ registerMasterHandlers(OMRPortLibrary *portLibrary, uint32_t flags, uint32_t all
 			 * Iterate through all the signals and register the master handler
 			 * for those that don't have one yet
 			 */
-			if (J9_ARE_ANY_BITS_SET(flagsWithoutHandlers, portSignalType)) {
+			if (OMR_ARE_ANY_BITS_SET(flagsWithoutHandlers, portSignalType)) {
 				/*
 				 * we need a master handler for this (portSignalType's) signal
 				 */

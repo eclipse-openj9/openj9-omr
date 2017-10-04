@@ -21,7 +21,7 @@
  *******************************************************************************/
 
 /**
- * @file j9zfs.c
+ * @file omrzfs.c
  * @ingroup Port
  * @brief Contains implementation of methods to retrieve ZFS file system cache and buffer details.
  */

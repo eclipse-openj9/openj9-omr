@@ -42,16 +42,16 @@ endif
 
 ifeq (zos,$(OMR_HOST_OS))
   # 31- and 64-bit
-  OBJECTS += j9generate_ieat_dump
+  OBJECTS += omrgenerate_ieat_dump
   OBJECTS += omrget_large_pageable_pages_supported
-  OBJECTS += j9wto
-  OBJECTS += j9pgser_release
+  OBJECTS += omrwto
+  OBJECTS += omrpgser_release
   OBJECTS += omrgetuserid
-  OBJECTS += j9sysinfo_get_number_CPUs
-  OBJECTS += j9jobname
-  OBJECTS += j9userid
-  OBJECTS += j9zfs
-  OBJECTS += j9lpdat
+  OBJECTS += omrsysinfo_get_number_CPUs
+  OBJECTS += omrjobname
+  OBJECTS += omruserid
+  OBJECTS += omrzfs
+  OBJECTS += omrlpdat
 
   ifeq (1,$(OMR_ENV_DATA64))
     # 64-bit only
@@ -59,7 +59,7 @@ ifeq (zos,$(OMR_HOST_OS))
     OBJECTS += omrget_large_2gb_pages_supported
     OBJECTS += omrvmem_support_above_bar
     OBJECTS += omrvmem_support_below_bar_64
-    OBJECTS += j9ipt_ttoken64
+    OBJECTS += omript_ttoken64
   else
     # 31-bit only
     OBJECTS += omrvmem_support_below_bar_31

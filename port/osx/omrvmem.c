@@ -62,7 +62,7 @@
 #define INVALID_KEY -1
 
 #if 0
-#define J9VMEM_DEBUG
+#define OMRVMEM_DEBUG
 #endif
 
 typedef void *ADDRESS;
@@ -201,10 +201,10 @@ omrvmem_commit_memory(struct OMRPortLibrary *portLibrary, void *address, uintptr
 			0 != (identifier->mode & OMRPORT_VMEM_MEMORY_MODE_EXECUTE)
 		) {
 			if (0 == mprotect(address, byteAmount, get_protectionBits(identifier->mode))) {
-#if defined(J9VMEM_DEBUG)
+#if defined(OMRVMEM_DEBUG)
 				printf("\t\t omrvmem_commit_memory called mprotect, returning 0x%zx\n", address);
 				fflush(stdout);
-#endif /* defined(J9VMEM_DEBUG) */
+#endif /* defined(OMRVMEM_DEBUG) */
 				rc = address;
 			} else {
 				Trc_PRT_vmem_omrvmem_commit_memory_mprotect_failure(errno);
@@ -218,10 +218,10 @@ omrvmem_commit_memory(struct OMRPortLibrary *portLibrary, void *address, uintptr
 		portLibrary->error_set_last_error(portLibrary,  -1, OMRPORT_ERROR_VMEM_INVALID_PARAMS);
 	}
 
-#if defined(J9VMEM_DEBUG)
+#if defined(OMRVMEM_DEBUG)
 	printf("\t\t omrvmem_commit_memory returning 0x%x\n", rc);
 	fflush(stdout);
-#endif /* defined(J9VMEM_DEBUG) */
+#endif /* defined(OMRVMEM_DEBUG) */
 	Trc_PRT_vmem_omrvmem_commit_memory_Exit(rc);
 	return rc;
 }
@@ -367,10 +367,10 @@ omrvmem_reserve_memory_ex(struct OMRPortLibrary *portLibrary, struct J9PortVmemI
 		if (NULL == memoryPointer) {
 			/* If strict page size flag is not set try again with default page size */
 			if (0 == (OMRPORT_VMEM_STRICT_PAGE_SIZE & params->options)) {
-#if defined(J9VMEM_DEBUG)
+#if defined(OMRVMEM_DEBUG)
 				printf("\t\t\t NULL == memoryPointer, reverting to default pages\n");
 				fflush(stdout);
-#endif /* defined(J9VMEM_DEBUG) */
+#endif /* defined(OMRVMEM_DEBUG) */
 				uintptr_t defaultPageSize = PPG_vmem_pageSize[0];
 				uintptr_t alignmentInBytes = OMR_MAX(defaultPageSize, params->alignmentInBytes);
 				uintptr_t minimumGranule = OMR_MIN(defaultPageSize, params->alignmentInBytes);
@@ -390,7 +390,7 @@ omrvmem_reserve_memory_ex(struct OMRPortLibrary *portLibrary, struct J9PortVmemI
 	}
 
 
-#if defined(J9VMEM_DEBUG)
+#if defined(OMRVMEM_DEBUG)
 	printf("\tomrvmem_reserve_memory_ex returning %p\n", memoryPointer);
 	fflush(stdout);
 #endif

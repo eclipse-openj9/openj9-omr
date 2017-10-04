@@ -43,7 +43,7 @@ static uintptr_t getDbgHelpDLLLocation(wchar_t *dbghelpPath);
  *
  */
 uintptr_t
-j9getdbghelp_loadDLL(void)
+omrgetdbghelp_loadDLL(void)
 {
 
 	HINSTANCE dbghelpDLL = NULL;
@@ -84,7 +84,7 @@ j9getdbghelp_loadDLL(void)
  *
  */
 uintptr_t
-j9getdbghelp_getDLL(void)
+omrgetdbghelp_getDLL(void)
 {
 
 	HINSTANCE dbghelpDLL = NULL;
@@ -111,7 +111,7 @@ j9getdbghelp_getDLL(void)
  *
  */
 void
-j9getdbghelp_freeDLL(uintptr_t dbgHelpDLL)
+omrgetdbghelp_freeDLL(uintptr_t dbgHelpDLL)
 {
 	if (NULL != (HMODULE)dbgHelpDLL) {
 		FreeLibrary((HMODULE) dbgHelpDLL);

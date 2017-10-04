@@ -30,14 +30,14 @@
 
 
 void
-fillInUnixSignalInfo(struct OMRPortLibrary *portLibrary, void *contextInfo, struct J9UnixSignalInfo *j9Info)
+fillInUnixSignalInfo(struct OMRPortLibrary *portLibrary, void *contextInfo, struct OMRUnixSignalInfo *j9Info)
 {
 	j9Info->platformSignalInfo.context = (ucontext_t *)contextInfo;
 	/* module info is filled on demand */
 }
 
 uint32_t
-infoForSignal(struct OMRPortLibrary *portLibrary, struct J9UnixSignalInfo *info, int32_t index, const char **name, void **value)
+infoForSignal(struct OMRPortLibrary *portLibrary, struct OMRUnixSignalInfo *info, int32_t index, const char **name, void **value)
 {
 	*name = "";
 
@@ -96,7 +96,7 @@ infoForSignal(struct OMRPortLibrary *portLibrary, struct J9UnixSignalInfo *info,
 }
 
 uint32_t
-infoForFPR(struct OMRPortLibrary *portLibrary, struct J9UnixSignalInfo *info, int32_t index, const char **name, void **value)
+infoForFPR(struct OMRPortLibrary *portLibrary, struct OMRUnixSignalInfo *info, int32_t index, const char **name, void **value)
 {
 	switch (index) {
 	default:
@@ -105,7 +105,7 @@ infoForFPR(struct OMRPortLibrary *portLibrary, struct J9UnixSignalInfo *info, in
 }
 
 uint32_t
-infoForGPR(struct OMRPortLibrary *portLibrary, struct J9UnixSignalInfo *info, int32_t index, const char **name, void **value)
+infoForGPR(struct OMRPortLibrary *portLibrary, struct OMRUnixSignalInfo *info, int32_t index, const char **name, void **value)
 {
 	struct sigcontext *context = (struct sigcontext *)&info->platformSignalInfo.context->uc_mcontext;
 	*name = "";
@@ -148,7 +148,7 @@ infoForGPR(struct OMRPortLibrary *portLibrary, struct J9UnixSignalInfo *info, in
 }
 
 uint32_t
-infoForControl(struct OMRPortLibrary *portLibrary, struct J9UnixSignalInfo *info, int32_t index, const char **name, void **value)
+infoForControl(struct OMRPortLibrary *portLibrary, struct OMRUnixSignalInfo *info, int32_t index, const char **name, void **value)
 {
 	struct sigcontext *context = (struct sigcontext *)&info->platformSignalInfo.context->uc_mcontext;
 	*name = "";
@@ -197,7 +197,7 @@ infoForControl(struct OMRPortLibrary *portLibrary, struct J9UnixSignalInfo *info
 
 
 uint32_t
-infoForModule(struct OMRPortLibrary *portLibrary, struct J9UnixSignalInfo *info, int32_t index, const char **name, void **value)
+infoForModule(struct OMRPortLibrary *portLibrary, struct OMRUnixSignalInfo *info, int32_t index, const char **name, void **value)
 {
 	void *address;
 	Dl_info *dl_info = &(info->platformSignalInfo.dl_info);

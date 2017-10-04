@@ -397,20 +397,20 @@ translateInterruptContexts( args *argv ) {
 
 
 /**
- * \brief Store signal information in the J9UnixSignalInfo struct.
+ * \brief Store signal information in the OMRUnixSignalInfo struct.
  *
  * This routine is <em>supposed</em> to store the context information provided
- * to it by its caller in a J9UnixSignalInfo structure. We have no idea where 
+ * to it by its caller in a OMRUnixSignalInfo structure. We have no idea where 
  * that struct is stored, the caller must provide it.
  *
  * \param[in]	portLibrary		Pointer to the OMRPortLibrary in use
  * \param[in]	contextInfo		Pointer to context information
- * \param[out]	j9info			Pointer to a J9UnixSignalInfo structure
+ * \param[out]	j9info			Pointer to a OMRUnixSignalInfo structure
  *
  * \returns		Not a thing.
  */
 void
-fillInUnixSignalInfo(struct OMRPortLibrary *portLibrary, void *contextInfo, struct J9UnixSignalInfo *j9Info)
+fillInUnixSignalInfo(struct OMRPortLibrary *portLibrary, void *contextInfo, struct OMRUnixSignalInfo *j9Info)
 {
 	j9Info->platformSignalInfo.context = (ucontext_t *)contextInfo;		/* module info is filled on demand */
 }
@@ -420,12 +420,12 @@ fillInUnixSignalInfo(struct OMRPortLibrary *portLibrary, void *contextInfo, stru
  * \brief Return specific signal information to the caller.
  *
  * This routine stores the name and value attributes of a given signal 
- * described in a J9UnixSignalInfo structure whose address is passed 
+ * described in a OMRUnixSignalInfo structure whose address is passed 
  * by the caller. The <TT>index</TT> parameter is the artificial J9
  * signal value (or 'class type'?) associated with the kind of signal.
  *
  * \param[in]	portLibrary		The OMRPortLibrary in use
- * \param[in]	info			A pointer to the J9UnixSignalInfo from which the information
+ * \param[in]	info			A pointer to the OMRUnixSignalInfo from which the information
  *								is taken
  * \param[in]	index			The J9 signal value assigned to the 'signal type'
  * \param[out]	name			The name of the signal type class, double pointer to type char
@@ -435,7 +435,7 @@ fillInUnixSignalInfo(struct OMRPortLibrary *portLibrary, void *contextInfo, stru
  *				an address. Also can return an error indicator.
  */
 U_32
-infoForSignal(struct OMRPortLibrary *portLibrary, struct J9UnixSignalInfo *info, int32_t index, const char **name, void **value)
+infoForSignal(struct OMRPortLibrary *portLibrary, struct OMRUnixSignalInfo *info, int32_t index, const char **name, void **value)
 {
 	*name = "";
 
@@ -500,7 +500,7 @@ infoForSignal(struct OMRPortLibrary *portLibrary, struct J9UnixSignalInfo *info,
  * the register * content from context information.
  *
  * \param[in]	portLibrary		Pointer to the OMRPortLibrary in use
- * \param[in]	info			Pointer to applicable J9UnixSignalInfo structure.
+ * \param[in]	info			Pointer to applicable OMRUnixSignalInfo structure.
  * \param[in]	index			Number of the floating point register sought.
  * \param[out]	name			Double pointer to type char, name of the register
  * \param[out]	value			Double pointer to type void, likely to be last known
@@ -508,7 +508,7 @@ infoForSignal(struct OMRPortLibrary *portLibrary, struct J9UnixSignalInfo *info,
  *								pointer of type <TT>double</TT>.
  */
 uint32_t
-infoForFPR(struct OMRPortLibrary *portLibrary, struct J9UnixSignalInfo *info, int32_t index, const char **name, void **value)
+infoForFPR(struct OMRPortLibrary *portLibrary, struct OMRUnixSignalInfo *info, int32_t index, const char **name, void **value)
 {
 	const char *n_fpr[NUM_REGS] = {
 									"fpr0", 
@@ -543,7 +543,7 @@ infoForFPR(struct OMRPortLibrary *portLibrary, struct J9UnixSignalInfo *info, in
  * general registers instead of FPRs.
  *
  * \param[in]	portLibrary		Pointer to the OMRPortLibrary in use
- * \param[in]	info			Pointer to applicable J9UnixSignalInfo structure.
+ * \param[in]	info			Pointer to applicable OMRUnixSignalInfo structure.
  * \param[in]	index			Number of the general register sought.
  * \param[out]	name			Double pointer to type char, name of the register
  * \param[out]	value			Double pointer to type void, last known value
@@ -560,7 +560,7 @@ infoForFPR(struct OMRPortLibrary *portLibrary, struct J9UnixSignalInfo *info, in
  *			hardware (even if we do grudgingly support AMODE=31).
  */
 U_32
-infoForGPR(struct OMRPortLibrary *portLibrary, struct J9UnixSignalInfo *info, int32_t index, const char **name, void **value)
+infoForGPR(struct OMRPortLibrary *portLibrary, struct OMRUnixSignalInfo *info, int32_t index, const char **name, void **value)
 {
 	const char *n_gpr[NUM_REGS] = {
 									"gpr0", 
@@ -594,7 +594,7 @@ infoForGPR(struct OMRPortLibrary *portLibrary, struct J9UnixSignalInfo *info, in
  * \fn	Return miscellaneous h/w control words from signal/dump contexts.
  *
  * \param[in]	portLibrary		Pointer to the portability library in use
- * \param[in]	info			Pointer to J9UnixSignalInfo block
+ * \param[in]	info			Pointer to OMRUnixSignalInfo block
  * \param[in]	index			The J9 'type class' of the signal associated with this dump
  * \param[out]	name			Dbl pointer to a buffer large enough to hold an object name
  * \param[out]	value			Dbl pointer to a buffer large enough to hold an object value
@@ -604,7 +604,7 @@ infoForGPR(struct OMRPortLibrary *portLibrary, struct J9UnixSignalInfo *info, in
  *
  */
 U_32
-infoForControl(struct OMRPortLibrary *portLibrary, struct J9UnixSignalInfo *info, int32_t index, const char **name, void **value)
+infoForControl(struct OMRPortLibrary *portLibrary, struct OMRUnixSignalInfo *info, int32_t index, const char **name, void **value)
 {
 	uint8_t *eip;
 	mcontext_t *mcontext = (mcontext_t *)&info->platformSignalInfo.context->uc_mcontext;
@@ -637,7 +637,7 @@ infoForControl(struct OMRPortLibrary *portLibrary, struct J9UnixSignalInfo *info
 }
 
 U_32
-infoForModule(struct OMRPortLibrary *portLibrary, struct J9UnixSignalInfo *info, int32_t index, const char **name, void **value)
+infoForModule(struct OMRPortLibrary *portLibrary, struct OMRUnixSignalInfo *info, int32_t index, const char **name, void **value)
 {
 	Dl_info		*dl_info = &(info->platformSignalInfo.dl_info);
 	void*		address;

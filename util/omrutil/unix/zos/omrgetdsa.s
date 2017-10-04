@@ -21,7 +21,7 @@
 * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
 ***********************************************************************
 
-         TITLE 'j9getdsa.s'
+         TITLE 'omrgetdsa.s'
 
 r0       EQU      0
 fp0      EQU      0

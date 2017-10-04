@@ -1708,7 +1708,7 @@ TEST(PortVmemTest, vmem_testReserveLargePagesAboveBar)
 			if (pageable) {
 				if  (TWO_GB == params.pageSize) {
 					expectError =true;
-				} else if (!J9_ARE_ANY_BITS_SET(pageFlags[i], OMRPORT_VMEM_PAGE_FLAG_PAGEABLE)) {
+				} else if (!OMR_ARE_ANY_BITS_SET(pageFlags[i], OMRPORT_VMEM_PAGE_FLAG_PAGEABLE)) {
 					continue;  /* pageable not supported */
 				}  else {
 					params.pageFlags &= ~OMRPORT_VMEM_PAGE_FLAG_FIXED;
@@ -1716,7 +1716,7 @@ TEST(PortVmemTest, vmem_testReserveLargePagesAboveBar)
 				}
 			} else { /* fixed */
 				/* allocating 4K fixed pages is technically an error, but not reported in existing code. */
-				if (!J9_ARE_ANY_BITS_SET(pageFlags[i], OMRPORT_VMEM_PAGE_FLAG_FIXED)) {
+				if (!OMR_ARE_ANY_BITS_SET(pageFlags[i], OMRPORT_VMEM_PAGE_FLAG_FIXED)) {
 					continue; /* fixed/non-pageable not supported */
 				}  else {
 					params.pageFlags &= ~OMRPORT_VMEM_PAGE_FLAG_PAGEABLE;

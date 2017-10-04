@@ -342,7 +342,7 @@ tdump(struct OMRPortLibrary *portLibrary, char *asciiLabel, char *ebcdicLabel, u
 	strcpy(dsnPattern31->dsn, ebcdicLabel);
 	dsnPattern31->len = strlen(ebcdicLabel);
 
-	/* Note: the actual IEATDUMP options are specified on the assembler macro call in j9generate_ieat_dumps.s. The
+	/* Note: the actual IEATDUMP options are specified on the assembler macro call in omrgenerate_ieat_dumps.s. The
 	 * message below needs to be kept consistent with the options set on the macro call.
 	 */
 	omrtty_err_printf(portLibrary, "IEATDUMP in progress with options SDATA=(LPA,GRSQ,LSQA,NUC,PSA,RGN,SQA,SUM,SWA,TRT)\n");

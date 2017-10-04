@@ -21,7 +21,7 @@
 * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
 ***********************************************************************
 
-         TITLE 'j9generate_ieat_dump.s'
+         TITLE 'omrgenerate_ieat_dump.s'
 
          AIF ('&SYSPARM' EQ 'BIT64').JMP1
 _TDUMP   EDCXPRLG BASEREG=8

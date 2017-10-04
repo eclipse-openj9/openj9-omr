@@ -51,7 +51,7 @@
 
 
 #if 0
-#define J9VMEM_DEBUG
+#define OMRVMEM_DEBUG
 #endif
 
 BOOL SetLockPagesPrivilege(HANDLE hProcess, BOOL bEnable);
@@ -299,7 +299,7 @@ omrvmem_reserve_memory_ex(struct OMRPortLibrary *portLibrary, struct J9PortVmemI
 	OMRMemCategory *category = omrmem_get_category(portLibrary, params->category);
 
 
-#if defined(J9VMEM_DEBUG)
+#if defined(OMRVMEM_DEBUG)
 	printf("\n\tomrvmem_reserve_memory_ex byteAmount: %p, startAddress: %p, endAddress: %p, pageSize: %p\n"
 		   " \t\t%s\n"
 		   " \t\t%s\n"
@@ -440,7 +440,7 @@ omrvmem_reserve_memory_ex(struct OMRPortLibrary *portLibrary, struct J9PortVmemI
 	}
 	Trc_PRT_vmem_omrvmem_reserve_memory_Exit(memoryPointer);
 
-#if defined(J9VMEM_DEBUG)
+#if defined(OMRVMEM_DEBUG)
 	printf("\t\t omrvmem_reserve_memory_ex returning address: %p\n", memoryPointer);
 #endif
 
@@ -787,7 +787,7 @@ getMemoryInRange(struct OMRPortLibrary *portLibrary, struct J9PortVmemIdentifier
 	void *currentAddress = startAddress;
 	void *oldAddress;
 	void *memoryPointer;
-#if defined(J9VMEM_DEBUG)
+#if defined(OMRVMEM_DEBUG)
 	static int count = 0;
 #endif
 
@@ -797,7 +797,7 @@ getMemoryInRange(struct OMRPortLibrary *portLibrary, struct J9PortVmemIdentifier
 		allocationFlags |= MEM_TOP_DOWN;
 		direction = -1;
 		currentAddress = endAddress;
-#if defined(J9VMEM_DEBUG)
+#if defined(OMRVMEM_DEBUG)
 		printf("\t\t getMemoryInRange top down, start address: %p\n", currentAddress);
 #endif
 
@@ -806,7 +806,7 @@ getMemoryInRange(struct OMRPortLibrary *portLibrary, struct J9PortVmemIdentifier
 		if (startAddress == NULL) {
 			currentAddress = (void *)((uintptr_t)currentAddress + direction * alignmentInBytes);
 		}
-#if defined(J9VMEM_DEBUG)
+#if defined(OMRVMEM_DEBUG)
 		printf("\t\t getMemoryInRange bottom up, start address: %p\n", currentAddress);
 #endif
 
@@ -846,7 +846,7 @@ getMemoryInRange(struct OMRPortLibrary *portLibrary, struct J9PortVmemIdentifier
 	/* try all addresses within range */
 	while ((startAddress <= currentAddress) && (endAddress >= currentAddress)) {
 
-#if defined(J9VMEM_DEBUG)
+#if defined(OMRVMEM_DEBUG)
 		if ((count % 0x10) == 0) {
 			printf("\t\t getMemoryInRange calling VirtualAlloc: address: %p, size: %p, allocationFlags: %x, protection: %x\n", (LPVOID)currentAddress, byteAmount, allocationFlags, protection);
 			fflush(stdout);
@@ -868,7 +868,7 @@ getMemoryInRange(struct OMRPortLibrary *portLibrary, struct J9PortVmemIdentifier
 			}
 		}
 
-#if defined(J9VMEM_DEBUG)
+#if defined(OMRVMEM_DEBUG)
 		if ((count++ % 0x10) == 0) {
 			printf("\t\t\t getMemoryInRange returned from VirtualAlloc\n");
 			fflush(stdout);

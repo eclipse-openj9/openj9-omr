@@ -3204,7 +3204,7 @@ getZOSDescription(struct OMRPortLibrary *portLibrary, struct OMROSDesc *desc)
 #if defined(OMR_ENV_DATA64)
 	J9CVT * __ptr32 cvtp = ((J9PSA * __ptr32)0)->flccvt;
 	uint8_t cvtoslvl6 = cvtp->cvtoslvl[6];
-	if (J9_ARE_ANY_BITS_SET(cvtoslvl6, 0x10)) {
+	if (OMR_ARE_ANY_BITS_SET(cvtoslvl6, 0x10)) {
 		setOSFeature(desc, OMRPORT_ZOS_FEATURE_RMODE64);
 	}
 #endif /* defined(OMR_ENV_DATA64) */
@@ -3241,7 +3241,7 @@ omrsysinfo_os_has_feature(struct OMRPortLibrary *portLibrary, struct OMROSDesc *
 		uint32_t featureIndex = feature / 32;
 		uint32_t featureShift = feature % 32;
 
-		rc = J9_ARE_ALL_BITS_SET(desc->features[featureIndex], 1 << featureShift);
+		rc = OMR_ARE_ALL_BITS_SET(desc->features[featureIndex], 1 << featureShift);
 	}
 
 	Trc_PRT_sysinfo_os_has_feature_Exit((uintptr_t)rc);

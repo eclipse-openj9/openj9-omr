@@ -29,7 +29,7 @@ list(APPEND OMR_PLATFORM_DEFINITIONS
 	-DPPC
 )
 
-# Testarossa build variables. Longer term the distinction between TR and the rest 
+# Testarossa build variables. Longer term the distinction between TR and the rest
 # of the OMR code should be heavily reduced. In the mean time, we keep
 # the distinction
 set(TR_HOST_ARCH p)

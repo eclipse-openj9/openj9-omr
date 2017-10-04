@@ -46,7 +46,7 @@ if(OMR_HOST_OS STREQUAL "win")
 			${DIASDK_INCLUDE_DIRS}
 	)
 elseif(OMR_HOST_OS STREQUAL "linux")
-	
+
 	find_package(LibDwarf REQUIRED)
 
 	target_link_libraries(omr_ddr_scanner

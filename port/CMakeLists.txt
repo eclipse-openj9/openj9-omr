@@ -1,19 +1,19 @@
 ###############################################################################
 # Copyright (c) 2017, 2017 IBM Corp. and others
-# 
+#
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
 # distribution and is available at https://www.eclipse.org/legal/epl-2.0/
 # or the Apache License, Version 2.0 which accompanies this distribution and
 # is available at https://www.apache.org/licenses/LICENSE-2.0.
-#      
+#
 # This Source Code may also be made available under the following
 # Secondary Licenses when the conditions for such availability set
 # forth in the Eclipse Public License, v. 2.0 are satisfied: GNU
 # General Public License, version 2 with the GNU Classpath
 # Exception [1] and GNU General Public License, version 2 with the
 # OpenJDK Assembly Exception [2].
-#    
+#
 # [1] https://www.gnu.org/software/classpath/license.html
 # [2] http://openjdk.java.net/legal/assembly-exception.html
 #
@@ -29,7 +29,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
 
 add_tracegen(common/omrport.tdf)
 
-# Logic below will set the target_includes, and supplement the 
+# Logic below will set the target_includes, and supplement the
 # target_sources
 add_library(omrport_obj OBJECT
 	ut_omrport.c
@@ -104,13 +104,13 @@ endif()
 #TODO another if block @port_objects.mk:89
 
 if(OMR_HOST_OS STREQUAL "aix")
-	list(APPEND OBJECTS 
+	list(APPEND OBJECTS
 		rt_divu64.s
 		rt_time.s
 	)
 endif()
 
-list(APPEND OBJECTS 
+list(APPEND OBJECTS
 	omrcpu.c
 	omrerror.c
 	omrerrorhelpers.c
@@ -135,7 +135,7 @@ if(OMR_ENV_DATA64)
 	list(APPEND OBJECTS omrmem32helpers.c)
 endif()
 
-list(APPEND OBJECTS 
+list(APPEND OBJECTS
 	omrheap.c
 	omrmem.c
 	omrmemtag.c
@@ -151,7 +151,7 @@ list(APPEND OBJECTS
 	omrosdump.c
 	omrportcontrol.c
 	omrportptb.c
-	
+
 	omrsignal.c
 )
 
@@ -185,7 +185,7 @@ if(OMR_HOST_OS STREQUAL win)
 endif()
 
 list(APPEND OBJECTS
-	omrtime.c 
+	omrtime.c
 	omrtlshelpers.c
 	omrtty.c
 	omrvmem.c
@@ -202,7 +202,7 @@ endif()
 
 if(OMR_HOST_OS STREQUAL zos)
 	if(NOT OMR_ENV_DATA64)
-		list(APPEND OBJECTS 
+		list(APPEND OBJECTS
 			omrsignal_ceehdlr.c
 			omrsignal_context_ceehdlr.c
 		)
@@ -270,7 +270,7 @@ if(OMR_HOST_OS STREQUAL "linux")
 		endif()
 
 	endif()
-	
+
 	if(OMR_ARCH_POWER)
 		if(OMR_ENV_DATA64)
 			if(OMR_ENV_LITTLE_ENDIAN)
@@ -283,7 +283,7 @@ if(OMR_HOST_OS STREQUAL "linux")
 		list(APPEND VPATH linuxppc)
 		target_include_directories(omrport_obj PRIVATE linuxppc)
 	endif()
-	
+
 	if(OMR_ARCH_S390)
 		if(OMR_ENV_DATA64)
 			list(APPEND VPATH linuxs39064)

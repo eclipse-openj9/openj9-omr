@@ -19,7 +19,7 @@
 # SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
 #############################################################################
 
-compiler_library(x 
+compiler_library(x
 	${CMAKE_CURRENT_SOURCE_DIR}/codegen/BinaryCommutativeAnalyser.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/codegen/BinaryEvaluator.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/codegen/CompareAnalyser.cpp
@@ -62,11 +62,11 @@ compiler_library(x
 	${CMAKE_CURRENT_SOURCE_DIR}/env/OMRDebugEnv.cpp
 )
 
-if(TR_TARGET_BITS STREQUAL 64) 
+if(TR_TARGET_BITS STREQUAL 64)
     compiler_library(x_64
-        ${CMAKE_CURRENT_SOURCE_DIR}/amd64/codegen/OMRCodeGenerator.cpp 
+        ${CMAKE_CURRENT_SOURCE_DIR}/amd64/codegen/OMRCodeGenerator.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/amd64/codegen/OMRMachine.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/amd64/codegen/OMRTreeEvaluator.cpp 
+        ${CMAKE_CURRENT_SOURCE_DIR}/amd64/codegen/OMRTreeEvaluator.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/amd64/codegen/OMRMemoryReference.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/amd64/codegen/OMRRealRegister.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/amd64/codegen/AMD64SystemLinkage.cpp

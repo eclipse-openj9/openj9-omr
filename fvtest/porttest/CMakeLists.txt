@@ -69,7 +69,7 @@ add_executable(omrporttest
 	testHelpers.cpp
 	testProcessHelpers.cpp
 	vmemTest.cpp
-	
+
 	${cudaSources}
 )
 

@@ -34,30 +34,30 @@ else()
 	)
 endif()
 
-# Testarossa build variables. Longer term the distinction between TR and the rest 
+# Testarossa build variables. Longer term the distinction between TR and the rest
 # of the OMR code should be heavily reduced. In the mean time, we keep
 # the distinction
 
 
-# TR_COMPILE_OPTIONS are variables appended to CMAKE_{C,CXX}_FLAGS, and so 
-# apply to both C and C++ compilations. 
-list(APPEND TR_COMPILE_OPTIONS 
+# TR_COMPILE_OPTIONS are variables appended to CMAKE_{C,CXX}_FLAGS, and so
+# apply to both C and C++ compilations.
+list(APPEND TR_COMPILE_OPTIONS
 	-Wno-write-strings #This warning swamps almost all other output
-) 
+)
 
 # TR_CXX_COMPILE_OPTIONS are appended to CMAKE_CXX_FLAGS, and so apply only to
 # C++ file compilation
-list(APPEND TR_CXX_COMPILE_OPTIONS 
+list(APPEND TR_CXX_COMPILE_OPTIONS
 	-std=c++0x
 )
 
 # TR_C_COMPILE_OPTIONS are appended to CMAKE_C_FLAGS, and so apply only to
 # C file compilation
-list(APPEND TR_C_COMPILE_OPTIONS 
+list(APPEND TR_C_COMPILE_OPTIONS
 )
 
-set(PASM_CMD ${CMAKE_C_COMPILER}) 
-set(PASM_FLAGS -x assembler-with-cpp -E -P) 
+set(PASM_CMD ${CMAKE_C_COMPILER})
+set(PASM_FLAGS -x assembler-with-cpp -E -P)
 
-set(SPP_CMD ${CMAKE_C_COMPILER}) 
+set(SPP_CMD ${CMAKE_C_COMPILER})
 set(SPP_FLAGS -x assembler-with-cpp -E -P)

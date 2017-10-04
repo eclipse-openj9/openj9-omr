@@ -1,22 +1,22 @@
 ###############################################################################
 # Copyright (c) 2017, 2017 IBM Corp. and others
-# 
+#
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
 # distribution and is available at https://www.eclipse.org/legal/epl-2.0/
 # or the Apache License, Version 2.0 which accompanies this distribution and
 # is available at https://www.apache.org/licenses/LICENSE-2.0.
-#      
+#
 # This Source Code may also be made available under the following
 # Secondary Licenses when the conditions for such availability set
 # forth in the Eclipse Public License, v. 2.0 are satisfied: GNU
 # General Public License, version 2 with the GNU Classpath
 # Exception [1] and GNU General Public License, version 2 with the
 # OpenJDK Assembly Exception [2].
-#    
+#
 # [1] https://www.gnu.org/software/classpath/license.html
 # [2] http://openjdk.java.net/legal/assembly-exception.html
-# 
+#
 # SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
 ###############################################################################
 
@@ -29,7 +29,7 @@ message(WARNING
 "CMake support is currently experimental.\n\
 Various components may fail to compile with default configuration options, and some are not even attempted.")
 
-include(cmake/versions.cmake) # Required for OMR_VERSION 
+include(cmake/versions.cmake) # Required for OMR_VERSION
 
 project(omr VERSION ${OMR_VERSION} LANGUAGES CXX C)
 set(OMR_ROOT ${CMAKE_CURRENT_LIST_DIR} CACHE INTERNAL "Root of OMR")
@@ -77,7 +77,7 @@ set(OMR_RAS_GLUE_TARGET "omr_example_ras_glue" CACHE STRING "The ras glue target
 set(OMR_CORE_GLUE_TARGET "omr_example_core_glue" CACHE STRING "The core glue target, must be and interface library")
 
 # TODO should we always be adding this?  Likely only when compiling OMR proper for testing. Otherwise we would want
-# to add the languages glue folder 
+# to add the languages glue folder
 add_subdirectory(example/glue)
 
 # TODO: OMR_EXAMPLE flag
@@ -147,10 +147,8 @@ if(OMR_JITBUILDER)
 	add_subdirectory(jitbuilder)
 endif(OMR_JITBUILDER)
 
-# This should come last to ensure dependencies 
+# This should come last to ensure dependencies
 # are defined
 if(OMR_FVTEST)
 	add_subdirectory(fvtest)
 endif()
-
-

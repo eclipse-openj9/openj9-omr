@@ -29,7 +29,7 @@ else()
 	)
 endif()
 
-# Testarossa build variables. Longer term the distinction between TR and the rest 
+# Testarossa build variables. Longer term the distinction between TR and the rest
 # of the OMR code should be heavily reduced. In the mean time, we keep
 # the distinction
 list(APPEND TR_COMPILE_DEFINITIONS -DTR_HOST_X86 -DTR_TARGET_X86)

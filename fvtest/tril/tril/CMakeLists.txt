@@ -43,22 +43,22 @@ add_library(tril STATIC
 # This is mildly peculiar. Because tril relies
 # on jitbuilder as a 'backend' of sorts, we use
 # its includes. Tril exports this as interface
-make_compiler_target(tril PUBLIC COMPILER jitbuilder) 
+make_compiler_target(tril PUBLIC COMPILER jitbuilder)
 
 target_include_directories(tril PUBLIC
 	${CMAKE_CURRENT_BINARY_DIR}
 	${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-target_link_libraries(tril PUBLIC 
+target_link_libraries(tril PUBLIC
 	jitbuilder
 	dl
 )
 
-add_executable(tril_dumper compiler.cpp) 
+add_executable(tril_dumper compiler.cpp)
 target_link_libraries(tril_dumper tril)
 
-add_executable(tril_compiler compiler.cpp) 
+add_executable(tril_compiler compiler.cpp)
 target_link_libraries(tril_compiler tril)
 
 #export(TARGETS tril jitbuilder FILE tril-config.cmake)

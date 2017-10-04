@@ -19,14 +19,14 @@
 # SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
 #############################################################################
 
-compiler_library(compile 
+compiler_library(compile
 
 	${CMAKE_CURRENT_SOURCE_DIR}/OSRData.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/Method.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/VirtualGuard.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/OMRSymbolReferenceTable.cpp 
-	${CMAKE_CURRENT_SOURCE_DIR}/OMRAliasBuilder.cpp 
-	${CMAKE_CURRENT_SOURCE_DIR}/OMRCompilation.cpp 
-	${CMAKE_CURRENT_SOURCE_DIR}/TLSCompilationManager.cpp 
+	${CMAKE_CURRENT_SOURCE_DIR}/OMRSymbolReferenceTable.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/OMRAliasBuilder.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/OMRCompilation.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/TLSCompilationManager.cpp
 
 )

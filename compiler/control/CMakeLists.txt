@@ -19,7 +19,7 @@
 # SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
 #############################################################################
 
-compiler_library(control 
+compiler_library(control
 	${CMAKE_CURRENT_SOURCE_DIR}/OMROptions.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/OptimizationPlan.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/OMRRecompilation.cpp

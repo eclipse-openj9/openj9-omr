@@ -34,7 +34,6 @@ set(COMPILERTEST_FILES
 	env/FrontEnd.cpp
 	ilgen/IlInjector.cpp
 	ilgen/TestIlGeneratorMethodDetails.cpp
-	optimizer/TestOptimizer.cpp
 	runtime/TestCodeCacheManager.cpp
 	runtime/TestJitConfig.cpp
 )

@@ -23,7 +23,11 @@
 #define JITTEST_HPP
 
 #include <gtest/gtest.h>
+#include <vector>
+#include <stdexcept> 
 #include "Jit.hpp"
+#include "control/Options.hpp"
+#include "optimizer/Optimizer.hpp"
 
 #define ASSERT_NULL(pointer) ASSERT_EQ(nullptr, (pointer))
 #define ASSERT_NOTNULL(pointer) ASSERT_TRUE(nullptr != (pointer))
@@ -50,16 +54,101 @@ class JitTest : public ::testing::Test
    {
    public:
 
-   static void SetUpTestCase()
+   JitTest()
       {
       auto initSuccess = initializeJitWithOptions((char*)"-Xjit:acceptHugeMethods,enableBasicBlockHoisting,omitFramePointer,useIlValidator,paranoidoptcheck");
-      ASSERT_TRUE(initSuccess) << "Failed to initialize the JIT.";
+      if (!initSuccess) 
+         throw std::runtime_error("Failed to initialize jit");
       }
 
-   static void TearDownTestCase()
+   ~JitTest()
       {
       shutdownJit();
       }
+   };
+
+/**
+ * @brief A fixture for testing with a customized optimization strategy. 
+ *
+ * The design of this is such that it is expected sublasses will 
+ * call addOptimization inside their constructor, so that SetUp will
+ * know what opts to use.
+ */
+class JitOptTest : public JitTest 
+   {
+   public:
+
+   JitOptTest() :
+      JitTest(), _optimizations(), _strategy(NULL)
+      {
+      // This is an allocated pointer because the strategy needs to 
+      // live as long as this fixture
+      _strategy = new OptimizationStrategy[_optimizations.size() + 1];
+      } 
+
+   virtual void SetUp()
+      {
+      JitTest::SetUp();
+      makeOptimizationStrategyArray(_strategy);
+      TR::Optimizer::setMockStrategy(_strategy);
+      }
+
+
+   ~JitOptTest() 
+      {
+      TR::Optimizer::setMockStrategy(NULL);
+      delete[] _strategy;
+      }
+
+   /**
+    * Append a single optimization to the list of optimizations to perform.
+    * The optimization is marked as `MustBeDone`.
+    *
+    * @param opt The optimization to perform.
+    */
+   void addOptimization(OMR::Optimizations opt)
+      {
+      OptimizationStrategy strategy = {opt, OMR::MustBeDone};
+      _optimizations.push_back(strategy);
+      }
+
+   /**
+    * Append an optimization strategy to the list of optimizations to perform.
+    *
+    * @param opts An array of optimizations to perform. The last item in this
+    * array must be `endOpts` or `endGroup`.
+    */
+   void addOptimizations(const OptimizationStrategy *opts)
+      {
+      const OptimizationStrategy *end = opts;
+      while(end->_num != OMR::endOpts && end->_num != OMR::endGroup)
+         ++end;
+
+      _optimizations.insert(_optimizations.end(), opts, end);
+      }
+
+
+   private:
+   /**
+    * Fill the array \p strategy with optimizations.
+    *
+    * @param[out] strategy An array with at least
+    * `_optimization.size() + 1` elements.
+    */
+   void makeOptimizationStrategyArray(OptimizationStrategy *strat)
+      {
+      for(unsigned int i = 0; i < _optimizations.size(); ++i)
+         {
+         strat[i]._num = _optimizations[i]._num;
+         strat[i]._options = _optimizations[i]._options;
+         }
+
+      strat[_optimizations.size()]._num = OMR::endOpts;
+      strat[_optimizations.size()]._options = 0;
+      }
+
+   OptimizationStrategy*             _strategy;
+   std::vector<OptimizationStrategy> _optimizations;
    };
 
 /**

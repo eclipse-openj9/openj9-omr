@@ -62,8 +62,26 @@ class SimplifierFoldAndIlVerifier : public TR::IlVerifier
       }
    };
 
+/**
+ * Test Fixture for SimplifierFoldAndTest that 
+ * selects only the relevant opts for the test case
+ */
+class SimplifierFoldAndTest : public TRTest::JitOptTest
+   {
 
-class SimplifierFoldAndTest : public TRTest::JitTest  {};
+   public:
+   SimplifierFoldAndTest()
+      {
+      /* Add an optimization.
+       * You can add as many optimizations as you need, in order,
+       * using `addOptimization`, or add a group using
+       * `addOptimizations(omrCompilationStrategies[warm])`.
+       * This could also be done in test cases themselves.
+       */
+      addOptimization(OMR::treeSimplification);
+      }
+
+   };
 
 /*
  * method(int32_t parameter) 

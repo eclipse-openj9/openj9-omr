@@ -170,6 +170,19 @@ class Optimizer
    static const char * getOptimizationName(OMR::Optimizations opt);
 
    static const OptimizationStrategy *optimizationStrategy( TR::Compilation *c);
+
+   /**
+    * Override what #OptimizationStrategy to use. While this has the same
+    * functionality as the `optTest=` parameter, it does not require
+    * reinitializing the JIT, nor manually changing the optFile.
+    *
+    * If _mockStrategy is NULL, has no effect on the optimizer. 
+    *
+    * @param strategy The #OptimizationStrategy to return when requested. 
+    */
+   static void setMockStrategy(const OptimizationStrategy *strategy) { _mockStrategy = strategy; };
+
+
    static ValueNumberInfoBuildType valueNumberInfoBuildType();
 
    void enableAllLocalOpts();
@@ -247,8 +260,6 @@ class Optimizer
 
    bool optsThatCanCreateLoopsDisabled() { return _disableLoopOptsThatCanCreateLoops; }
 
-   void setStrategy (const OptimizationStrategy *s) { _strategy = s; }
-
    // allowBCDSignPromotion -- if true and node1 has conservatively 'better' sign state then node2 then also consider
    // nodes equivalent (used only by certain optimizations such as CSE)
    static bool areNodesEquivalent(TR::Node *, TR::Node *, TR::Compilation *, bool allowBCDSignPromotion=false);
@@ -310,6 +321,7 @@ class Optimizer
 
    void dumpStrategy(const OptimizationStrategy *);
 
+
    TR::Compilation *            _compilation;
    TR_Memory *                   _trMemory;
    TR::CodeGenerator *          _cg;
@@ -318,6 +330,19 @@ class Optimizer
    bool                          _isIlGen;
 
    const OptimizationStrategy *          _strategy;
+
+   /* 
+    * Since mock strategies are only used in testing right now, we make this
+    * static to ease implementation. 
+    *
+    * This is currently not a thread-safe implementation beause doing a
+    * thread-safe implementation would require a more invasive compilation
+    * control modification (since the strategy would need to be injected into
+    * the Compilation object, but due to where it's created, there's little
+    * opportunity for this.)
+    */
+   static const OptimizationStrategy *_mockStrategy;
+
    int32_t *                     _symReferencesTable;
    TR_UseDefInfo *               _useDefInfo;
    TR_ValueNumberInfo *          _valueNumberInfo;

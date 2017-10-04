@@ -7782,42 +7782,54 @@ TR::Node *constrainIand(OMR::ValuePropagation *vp, TR::Node *node)
          if(rhs && rhs->asIntConst())
             {
             TR::Node *firstChild = node->getFirstChild();
-            TR::Node *secondChild = node->getSecondChild();
 
-            if ((firstChild->getOpCodeValue() == TR::iloadi) &&
-                (firstChild->getSymbolReference() == vp->comp()->getSymRefTab()->findClassIsArraySymbolRef()) &&
+            // On 64bit platform, the flag is 64 bits long and is casted to int
+            if (firstChild->getOpCodeValue() == TR::l2i)
+               firstChild = firstChild->getChild(0);
+
+            if ((firstChild->getOpCodeValue() == TR::iloadi || firstChild->getOpCodeValue() == TR::lloadi) &&
+                (firstChild->getSymbolReference() == vp->comp()->getSymRefTab()->findClassAndDepthFlagsSymbolRef()) &&
                 (rhs->getLowInt() == TR::Compiler->cls.flagValueForArrayCheck(vp->comp())))
                {
-               TR::Node *firstGrandChild = firstChild->getFirstChild();
-               if ((firstGrandChild->getOpCodeValue() == TR::aloadi) &&
-                   (firstGrandChild->getSymbolReference() == vp->comp()->getSymRefTab()->findClassRomPtrSymbolRef()))
+               if (vp->trace())
+                  traceMsg(vp->comp(), "Found isArray test on node %p\n", node);
+
+               TR::Node *vftLoad = firstChild->getFirstChild();
+
+               if (vftLoad->getOpCodeValue() == TR::aloadi || vftLoad->getOpCodeValue() == TR::loadaddr)
                   {
-                  TR::Node *vftLoad = firstGrandChild->getFirstChild();
-                  if ((vftLoad->getOpCodeValue() == TR::aloadi) &&
-                      (vftLoad->getSymbolReference() == vp->comp()->getSymRefTab()->findVftSymbolRef()))
+                  TR::Node *baseExpression = NULL;
+                  if (vftLoad->getOpCodeValue() == TR::loadaddr)
+                     baseExpression = vftLoad;
+                  else
+                     baseExpression = vftLoad->getFirstChild();
+
+                  if (vp->trace())
+                     traceMsg(vp->comp(), "Base expression node for isArray test is %p\n", baseExpression);
+
+                  bool baseExpressionGlobal;
+                  TR::VPConstraint *baseExpressionConstraint = vp->getConstraint(baseExpression, baseExpressionGlobal);
+                  if (baseExpressionConstraint && baseExpressionConstraint->getClassType() && (baseExpressionConstraint->getClassType()->isArray() != TR_maybe))
                      {
-                     TR::Node *objectLoad = vftLoad->getFirstChild();
-                     bool objectLoadGlobal;
-                     TR::VPConstraint *objConstraint = vp->getConstraint(objectLoad, objectLoadGlobal);
-                     if (objConstraint && objConstraint->getClassType() && (objConstraint->getClassType()->isArray() != TR_maybe))
-                        {
-                        //dumpOptDetails(vp->comp(), "Folding isArray test in %p\n", objectLoad);
-                        //printf("Folding isArray test in %s\n", vp->comp()->signature()); fflush(stdout);
-                        if (objConstraint->getClassType()->isArray() == TR_yes)
-                           constraint = TR::VPIntConst::create(vp, rhs->asIntConst()->getLowInt()/*, isUnsigned*/);
-                        else
-                           constraint = TR::VPIntConst::create(vp, 0/*, isUnsigned*/);
-                        }
+                     if (vp->trace())
+                        traceMsg(vp->comp(), "Fold isArray test in %p\n", baseExpression);
+
+                     if (baseExpressionConstraint->getClassType()->isArray() == TR_yes)
+                        constraint = TR::VPIntConst::create(vp, rhs->asIntConst()->getLowInt());
                      else
-                        {
-                        //if (vp->_isGlobalPropagation)
-                        //   {
-                        //   dumpOptDetails(vp->comp(), "NOT Folding isArray test in %p\n", objectLoad);
-                        //   printf("NOT Folding isArray test in %s\n", vp->comp()->signature()); fflush(stdout);
-                        //   }
-                        }
+                        constraint = TR::VPIntConst::create(vp, 0);
+
+                     TR::DebugCounter::incStaticDebugCounter(vp->comp(), TR::DebugCounter::debugCounterName(vp->comp(), "isArrayTest/hit/(%s)/%s", vp->comp()->signature(), vp->comp()->getHotnessName(vp->comp()->getMethodHotness())));
+                     }
+                  else
+                     {
+                     TR::DebugCounter::incStaticDebugCounter(vp->comp(), TR::DebugCounter::debugCounterName(vp->comp(), "isArrayTest/miss/(%s)/%s", vp->comp()->signature(), vp->comp()->getHotnessName(vp->comp()->getMethodHotness())));
                      }
                   }
+                  else
+                     {
+                     TR::DebugCounter::incStaticDebugCounter(vp->comp(), TR::DebugCounter::debugCounterName(vp->comp(), "isArrayTest/unsuitable/(%s)/%s", vp->comp()->signature(), vp->comp()->getHotnessName(vp->comp()->getMethodHotness())));
+                     }
                }
             }
 

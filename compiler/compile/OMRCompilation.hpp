@@ -845,6 +845,8 @@ public:
    int32_t getOSRInductionOffset(TR::Node *node);
    bool requiresAnalysisOSRPoint(TR::Node *node);
 
+   bool pendingPushLivenessDuringIlgen();
+
    // for OSR
    TR_OSRCompilationData* getOSRCompilationData() {return _osrCompilationData;}
    void setSeenClassPreventingInducedOSR();

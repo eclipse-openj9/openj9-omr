@@ -49,7 +49,7 @@
 TR::Compilation& operator<< (TR::Compilation& out, const TR_OSRSlotSharingInfo* osrSlotSharingInfo);
 
 TR_OSRCompilationData::TR_OSRCompilationData(TR::Compilation* _comp) :
-   instruction2SharedSlotMap(_comp->trMemory()),
+   instruction2SharedSlotMap(_comp->trMemory()->heapMemoryRegion()),
    comp(_comp),
    _classPreventingInducedOSRSeen(false),
    osrMethodDataArray(_comp->trMemory()),
@@ -206,28 +206,18 @@ TR_OSRCompilationData::addInstruction2SharedSlotMapEntry(
    int32_t instructionPC,
    const TR_ScratchBufferInfos& infos)
    {
-   uint32_t numOfElements = instruction2SharedSlotMap.size();
-   //find the right place in the array to place the new shared slot map entry
-   //such that the instruction PC offsets are in non-decreasing order
-   int i;
-   for (i = 0; i < numOfElements; i++)
-      if (instructionPC <= instruction2SharedSlotMap[i].instructionPC)
+   auto cur = instruction2SharedSlotMap.begin(), end = instruction2SharedSlotMap.end();
+   while (cur != end)
+      {
+      if (instructionPC <= (*cur).instructionPC)
          break;
+      ++cur;
+      }
 
-
-   if (i < numOfElements)
-      if (instructionPC == instruction2SharedSlotMap[i].instructionPC)
-         {
-         //we need to add infos to the already existing one at index i
-         //The infos, in this case, belongs to a different call site index than the existing ones
-         instruction2SharedSlotMap[i].scratchBufferInfos.append(infos);
-         }
-      else
-         {
-         instruction2SharedSlotMap.insert(TR_Instruction2SharedSlotMapEntry(instructionPC, infos),i);
-         }
+   if (cur != end && instructionPC == (*cur).instructionPC)
+      (*cur).scratchBufferInfos.append(infos);
    else
-      instruction2SharedSlotMap.add(TR_Instruction2SharedSlotMapEntry(instructionPC, infos));
+      instruction2SharedSlotMap.insert(cur, TR_Instruction2SharedSlotMapEntry(instructionPC, infos));
    }
 
 /*
@@ -236,36 +226,30 @@ TR_OSRCompilationData::addInstruction2SharedSlotMapEntry(
 void
 TR_OSRCompilationData::compressInstruction2SharedSlotMap()
    {
-   // This approach isn't ideal, as it will result in copies when moving to the new list
-   // and back, however, it is cheaper than the prior implementation.
-   //
-   // TODO: Replace TR_Array with a TR::deque in TR_Instruction2SharedSlotMap
-   if (instruction2SharedSlotMap.size() > 0)
+   auto cur = instruction2SharedSlotMap.begin();
+   while (cur != instruction2SharedSlotMap.end())
       {
-      TR_Instruction2SharedSlotMap tmpList(comp->trMemory());
-      tmpList.add(instruction2SharedSlotMap[0]);
+      auto next = cur + 1;
 
-      for (int i = 1; i < instruction2SharedSlotMap.size(); i++)
+      for (; next != instruction2SharedSlotMap.end(); ++next)
          {
-         const TR_ScratchBufferInfos& prevInfos = tmpList[tmpList.lastIndex()].scratchBufferInfos;
-         const TR_ScratchBufferInfos& curInfos = instruction2SharedSlotMap[i].scratchBufferInfos;
-         //check the equality of infos of the prev and the current element
-         //if they are equal, don't add the current to the list
-         if (curInfos.size() != prevInfos.size())
-            {
-            tmpList.add(instruction2SharedSlotMap[i]);
-            continue;
-            }
+         const TR_ScratchBufferInfos& curInfo = (*cur).scratchBufferInfos;
+         const TR_ScratchBufferInfos& nextInfo = (*next).scratchBufferInfos;
+         if (curInfo.size() != nextInfo.size())
+            break;
 
-         for (int j = 0; j < curInfos.size(); j++)
-            if (!(curInfos[j] == prevInfos[j]))
-               {
-               tmpList.add(instruction2SharedSlotMap[i]);
+         int j;
+         for (j = 0; j < curInfo.size(); j++)
+            if (!(curInfo[j] == nextInfo[j]))
                break;
-               }
+         if (j != curInfo.size())
+            break;
          }
 
-      instruction2SharedSlotMap = tmpList;
+      if (cur + 1 != next)
+         cur = instruction2SharedSlotMap.erase(cur + 1, next);
+      else
+         ++cur;
       }
    }
 
@@ -308,12 +292,12 @@ TR_OSRCompilationData::getSizeOfInstruction2SharedSlotMap() const
    size += sizeof(uint32_t); //number of bytes used to store the whole section
    size += sizeof(uint32_t); //maximum size of scratch buffer
    size += sizeof(int32_t); //number of mappings
-   for (int i = 0; i < instruction2SharedSlotMap.size(); i++)
+   for (auto itr = instruction2SharedSlotMap.begin(), end = instruction2SharedSlotMap.end(); itr != end; ++itr)
       {
       size += sizeof(int32_t); //instructionPC
       //storing the number of elements of the array (which is represented as the data of the hash table
       size += sizeof(int32_t);
-      size += sizeof(TR_ScratchBufferInfo) * instruction2SharedSlotMap[i].scratchBufferInfos.size(); //data
+      size += sizeof(TR_ScratchBufferInfo) * (*itr).scratchBufferInfos.size(); //data
       }
    return size;
    }
@@ -396,14 +380,13 @@ TR_OSRCompilationData::writeInstruction2SharedSlotMap(uint8_t* buffer) const
    *((uint32_t*)buffer) = getMaxScratchBufferSize(); buffer += sizeof(uint32_t);
    int32_t numberOfMappings = instruction2SharedSlotMap.size();
    *((int32_t*)buffer) = numberOfMappings; buffer += sizeof(int32_t);
-   for (int i = 0; i < numberOfMappings; i++)
+   for (auto itr = instruction2SharedSlotMap.begin(), end = instruction2SharedSlotMap.end(); itr != end; ++itr)
       {
-      const TR_Instruction2SharedSlotMapEntry& entry = instruction2SharedSlotMap[i];
-      *((int32_t*)buffer) = entry.instructionPC; buffer += sizeof(int32_t);
-      *((int32_t*)buffer) = entry.scratchBufferInfos.size(); buffer += sizeof(int32_t);
-      for (int j = 0; j < entry.scratchBufferInfos.size(); j++)
+      *((int32_t*)buffer) = (*itr).instructionPC; buffer += sizeof(int32_t);
+      *((int32_t*)buffer) = (*itr).scratchBufferInfos.size(); buffer += sizeof(int32_t);
+      for (int j = 0; j < (*itr).scratchBufferInfos.size(); j++)
          {
-         const TR_ScratchBufferInfo info = entry.scratchBufferInfos[j];
+         const TR_ScratchBufferInfo info = (*itr).scratchBufferInfos[j];
          buffer += info.writeToBuffer(buffer);
          }
       }
@@ -597,13 +580,13 @@ TR::Compilation& operator<< (TR::Compilation& out, const TR_OSRCompilationData& 
       {
       out << ", Instr2SharedSlotMetaData: " << array1.size() << "[\n";
       bool first = true;
-      for (int i = 0; i < array1.size(); i++)
+      for (auto itr = array1.begin(), end = array1.end(); itr != end; ++itr)
          {
          if (!first)
             out << ",\n";
          char tmp[20];
-         sprintf(tmp, "%x", array1[i].instructionPC);
-         const  TR_OSRCompilationData::TR_ScratchBufferInfos& array2 = array1[i].scratchBufferInfos;
+         sprintf(tmp, "%x", (*itr).instructionPC);
+         const  TR_OSRCompilationData::TR_ScratchBufferInfos& array2 = (*itr).scratchBufferInfos;
          out << tmp << " -> " << array2.size() << "[ ";
          for (int j = 0; j < array2.size(); j++)
             {

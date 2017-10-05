@@ -20,7 +20,7 @@
 #############################################################################
 
 compiler_library(ilgen
-	${CMAKE_CURRENT_SOURCE_DIR}/IlGenRequest.cpp 
+	${CMAKE_CURRENT_SOURCE_DIR}/IlGenRequest.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/IlBuilder.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/IlValue.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/IlInjector.cpp

@@ -19,7 +19,7 @@
 # SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
 #############################################################################
 
-compiler_library(optimizer 
+compiler_library(optimizer
 	${CMAKE_CURRENT_SOURCE_DIR}/AsyncCheckInsertion.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/BackwardBitVectorAnalysis.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/BackwardIntersectionBitVectorAnalysis.cpp

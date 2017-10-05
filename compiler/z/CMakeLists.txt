@@ -19,7 +19,7 @@
 # SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
 #############################################################################
 
-compiler_library(z 
+compiler_library(z
 	${CMAKE_CURRENT_SOURCE_DIR}/codegen/BinaryAnalyser.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/codegen/BinaryCommutativeAnalyser.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/codegen/BinaryEvaluator.cpp

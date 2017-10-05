@@ -19,7 +19,7 @@
 # SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
 ###############################################################################
 
-include(OmrCompilerSupport) 
+include(OmrCompilerSupport)
 
 set(COMPILERTEST_FILES
 	ilgen/BinaryOpIlInjector.cpp
@@ -39,25 +39,30 @@ set(COMPILERTEST_FILES
 )
 
 if(OMR_ARCH_X86)
-	list(APPEND COMPILERTEST_FILES 
+	list(APPEND COMPILERTEST_FILES
 		x/codegen/Evaluator.cpp
 	)
 elseif(OMR_ARCH_POWER)
-	list(APPEND COMPILERTEST_FILES 
-#Host 
-    		p/runtime/AsmUtil.spp
-    		p/runtime/CodeDispatch.spp
-    		p/runtime/CodeSync.cpp
+	list(APPEND COMPILERTEST_FILES
+		#Host
+		p/runtime/AsmUtil.spp
+		p/runtime/CodeDispatch.spp
+		p/runtime/CodeSync.cpp
 		${OMR_ROOT}/compiler/p/runtime/OMRCodeCacheConfig.cpp
-#target
+		#target
 		p/codegen/Evaluator.cpp
 		${OMR_ROOT}/compiler/p/env/OMRDebugEnv.cpp
 	)
 endif()
 
-create_omr_compiler_library(NAME       testcompiler 
-                            OBJECTS    ${COMPILERTEST_FILES}
-							DEFINES JITTEST TEST_PROJECT_SPECIFIC PROD_WITH_ASSUMES)
+create_omr_compiler_library(
+	NAME testcompiler
+	OBJECTS ${COMPILERTEST_FILES}
+	DEFINES
+		JITTEST
+		TEST_PROJECT_SPECIFIC
+		PROD_WITH_ASSUMES
+)
 add_executable(compilertest
 	tests/main.cpp
 	tests/BarIlInjector.cpp
@@ -80,22 +85,21 @@ add_executable(compilertest
 	tests/OptTestDriver.cpp
 	tests/TestDriver.cpp
 	tests/X86OpCodesTest.cpp
-
 )
 
 
 # Inherit the include path from the compiler component
 make_compiler_target(compilertest PRIVATE COMPILER testcompiler)
 
-# target_include_directories(compilertest PRIVATE 
+# target_include_directories(compilertest PRIVATE
 # 	${PROJECT_SOURCE_DIR}/third_party/gtest-1.7.0/
 # 	${PROJECT_SOURCE_DIR}/third_party/gtest-1.7.0/include
 # )
 
 target_link_libraries(compilertest
-	testcompiler	
+	testcompiler
 	omrGtest
-    ${CMAKE_DL_LIBS}
+	${CMAKE_DL_LIBS}
 )
 
-add_test(NAME CompilerTest COMMAND compilertest) 
+add_test(NAME CompilerTest COMMAND compilertest)

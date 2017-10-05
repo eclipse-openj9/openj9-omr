@@ -45,6 +45,6 @@ if(OMR_TEST_COMPILER)
 endif()
 
 if(OMR_JITBUILDER)
-    add_subdirectory(tril) 
+	add_subdirectory(tril)
 	add_subdirectory(compilertriltest)
 endif()

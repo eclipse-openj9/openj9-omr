@@ -43,16 +43,16 @@ target_link_libraries(omrgctest
 # TODO check linker flags from makefile are ported properly.
 # Relevant section from makefile below
 #ifeq (linux,$(OMR_HOST_OS))
-  #MODULE_SHARED_LIBS += rt pthread
+	#MODULE_SHARED_LIBS += rt pthread
 #endif
 #ifeq (osx,$(OMR_HOST_OS))
-  #MODULE_SHARED_LIBS += iconv pthread
+	#MODULE_SHARED_LIBS += iconv pthread
 #endif
 #ifeq (aix,$(OMR_HOST_OS))
-  #MODULE_SHARED_LIBS += iconv perfstat
+	#MODULE_SHARED_LIBS += iconv perfstat
 #endif
 #ifeq (win,$(OMR_HOST_OS))
-  #MODULE_SHARED_LIBS += ws2_32 shell32 Iphlpapi psapi pdh
+	#MODULE_SHARED_LIBS += ws2_32 shell32 Iphlpapi psapi pdh
 #endif
 
 if(OMR_HOST_OS STREQUAL "zos")
@@ -62,4 +62,5 @@ endif()
 
 add_test(NAME gctest
 	COMMAND omrgctest "--gtest_filter=gcFunctionalTest*"
-	WORKING_DIRECTORY "${omr_SOURCE_DIR}")
+	WORKING_DIRECTORY "${omr_SOURCE_DIR}"
+)

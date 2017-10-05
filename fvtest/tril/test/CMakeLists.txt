@@ -20,7 +20,7 @@
 ###############################################################################
 
 # cmake_minimum_required(VERSION 3.2 FATAL_ERROR)
-# 
+#
 # project(triltest LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 11)
@@ -29,21 +29,21 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_INCLUDE_CURRENT_DIR TRUE)
 
 add_executable(triltest
-   main.cpp
-   ASTTest.cpp
-   ParserTest.cpp
-   MethodInfoTest.cpp
-   IlGenTest.cpp
-   CompileTest.cpp
+	main.cpp
+	ASTTest.cpp
+	ParserTest.cpp
+	MethodInfoTest.cpp
+	IlGenTest.cpp
+	CompileTest.cpp
 )
 
 target_link_libraries(triltest
-   omrGtestGlue
-   tril
-   omrGtest
+	omrGtestGlue
+	tril
+	omrGtest
 )
 
 add_test(
-    NAME triltest
-    COMMAND triltest
+	NAME triltest
+	COMMAND triltest
 )

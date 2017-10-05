@@ -20,12 +20,12 @@
 ###############################################################################
 
 add_executable(example
-  main.cpp
+	main.cpp
 )
 
 target_link_libraries(example
-  PRIVATE
-    omrgc
+	PRIVATE
+	omrgc
 )
 
 add_test(example example)

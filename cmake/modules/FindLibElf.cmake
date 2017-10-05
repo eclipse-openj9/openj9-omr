@@ -51,4 +51,3 @@ if(LIBELF_FOUND)
 	)
 	set (LIBELF_DEFINITIONS "")
 endif(LIBELF_FOUND)
-

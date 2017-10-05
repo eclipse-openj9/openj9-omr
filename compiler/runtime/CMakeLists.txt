@@ -19,7 +19,7 @@
 # SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
 #############################################################################
 
-compiler_library(runtime 
+compiler_library(runtime
 	${CMAKE_CURRENT_SOURCE_DIR}/Runtime.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/Trampoline.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/Alignment.cpp

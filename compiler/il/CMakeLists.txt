@@ -19,15 +19,15 @@
 # SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
 #############################################################################
 
-compiler_library(il 
+compiler_library(il
 	${CMAKE_CURRENT_SOURCE_DIR}/symbol/OMRSymbol.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/symbol/OMRAutomaticSymbol.cpp 
-	${CMAKE_CURRENT_SOURCE_DIR}/symbol/OMRLabelSymbol.cpp 
-	${CMAKE_CURRENT_SOURCE_DIR}/symbol/OMRMethodSymbol.cpp 
-	${CMAKE_CURRENT_SOURCE_DIR}/symbol/OMRParameterSymbol.cpp 
-	${CMAKE_CURRENT_SOURCE_DIR}/symbol/OMRRegisterMappedSymbol.cpp 
-	${CMAKE_CURRENT_SOURCE_DIR}/symbol/OMRResolvedMethodSymbol.cpp 
-	${CMAKE_CURRENT_SOURCE_DIR}/symbol/OMRStaticSymbol.cpp 
+	${CMAKE_CURRENT_SOURCE_DIR}/symbol/OMRAutomaticSymbol.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/symbol/OMRLabelSymbol.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/symbol/OMRMethodSymbol.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/symbol/OMRParameterSymbol.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/symbol/OMRRegisterMappedSymbol.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/symbol/OMRResolvedMethodSymbol.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/symbol/OMRStaticSymbol.cpp
 
 	${CMAKE_CURRENT_SOURCE_DIR}/Aliases.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/OMRBlock.cpp

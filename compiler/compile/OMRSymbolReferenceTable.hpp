@@ -117,6 +117,7 @@ class SymbolReferenceTable
       componentClassAsPrimitiveSymbol,
       isArraySymbol,
       isClassAndDepthFlagsSymbol,
+      initializeStatusFromClassSymbol,
       isClassFlagsSymbol,
       vftSymbol,
       currentThreadSymbol,

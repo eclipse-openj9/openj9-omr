@@ -1488,6 +1488,62 @@ TR_OSRLiveRangeAnalysis::optDetailString() const throw()
    return "O^O OSR LIVE RANGE ANALYSIS: ";
    }
 
+/**
+ * Collect the dead stores in the provided block. Either initialize the provided bitvector with
+ * the dead stores symrefs that were found or take the intersection of the two, filtering down to
+ * symrefs that are always dead.
+ */
+bool TR_OSRExceptionEdgeRemoval::addDeadStores(TR::Block* osrBlock, TR_BitVector& dead, bool inited)
+   {
+   TR_ASSERT(osrBlock->isOSRCodeBlock() || osrBlock->isOSRInduceBlock(), "It is only safe to identify dead stores in OSRCodeBlocks and OSRInduceBlocks");
+
+   _seenDeadStores->empty();
+   for (TR::TreeTop *tt = osrBlock->getFirstRealTreeTop(); tt != osrBlock->getExit(); tt = tt->getNextTreeTop())
+      {
+      TR::Node *node = tt->getNode();
+      if (node->getOpCode().isStoreDirect() && node->getSymbol()->isAutoOrParm() && node->storedValueIsIrrelevant())
+         _seenDeadStores->set(node->getSymbolReference()->getReferenceNumber());
+      }
+
+   if (inited)
+      dead &= *_seenDeadStores;
+   else
+      dead |= *_seenDeadStores;
+
+   if (comp()->getOption(TR_TraceOSR))
+      {
+      traceMsg(comp(), "Identified dead stores for block_%d:\n", osrBlock->getNumber());
+      _seenDeadStores->print(comp());
+      traceMsg(comp(), "\nRemaining dead stores:\n");
+      dead.print(comp());
+      traceMsg(comp(), "\n");
+      }
+
+   return !_seenDeadStores->isEmpty();
+   }
+
+/**
+ * If loads of a symbol along a OSR paths are zeroed, the dead stores can be removed
+ * as well. Given an OSRCodeBlock or an OSRInduceBlock and a bitvector of dead symbol
+ * references, this function will remove them.
+ */
+void TR_OSRExceptionEdgeRemoval::removeDeadStores(TR::Block* osrBlock, TR_BitVector& dead)
+   {
+   TR_ASSERT(osrBlock->isOSRCodeBlock() || osrBlock->isOSRInduceBlock(), "It is only safe to remove dead stores from OSRCodeBlocks and OSRInduceBlocks");
+
+   for (TR::TreeTop *tt = osrBlock->getFirstRealTreeTop(); tt != osrBlock->getExit(); tt = tt->getNextTreeTop())
+      {
+      TR::Node *node = tt->getNode();
+      if (node->getOpCode().isStoreDirect() && node->getSymbol()->isAutoOrParm() && node->storedValueIsIrrelevant() &&
+          dead.get(node->getSymbolReference()->getReferenceNumber()))
+         {
+         if (comp()->getOption(TR_TraceOSR))
+            traceMsg(comp(), "Removing dead store n%dn of symref #%d\n", node->getGlobalIndex(), node->getSymbolReference()->getReferenceNumber());
+         TR::TransformUtil::removeTree(comp(), tt);
+         } 
+      }
+   }
+
 int32_t TR_OSRExceptionEdgeRemoval::perform()
    {
    if (comp()->getOption(TR_EnableOSR))
@@ -1535,6 +1591,7 @@ int32_t TR_OSRExceptionEdgeRemoval::perform()
 
    TR::CFG *cfg = comp()->getFlowGraph();
 
+   // Remove edges to OSR catch blocks that are no longer necessary
    TR::CFGNode *cfgNode;
    for (cfgNode = cfg->getFirstNode(); cfgNode; cfgNode = cfgNode->getNext())
       {
@@ -1549,6 +1606,90 @@ int32_t TR_OSRExceptionEdgeRemoval::perform()
          if (catchBlock->isOSRCatchBlock()
              && performTransformation(comp(), "%s: Remove redundant exception edge from block_%d at [%p] to OSR catch block_%d at [%p]\n", OPT_DETAILS, block->getNumber(), block, catchBlock->getNumber(), catchBlock))
             cfg->removeEdge(block, catchBlock);
+         }
+      }
+
+   // Under voluntary OSR, it is common for all paths to an OSR code block to contain
+   // a dead store for some of the prepareForOSR loads. As this is a cold path and
+   // OSR infrastructure is commonly ignored, the optimizer won't eliminate these loads.
+   //
+   // As this is cheap to do and will reduce the overhead of analysis like UseDef and
+   // CompactLocals, identify the loads that have dead stores on all paths
+   // and zero them.
+   //
+   static const char *disableDeadStoreCleanup = feGetEnv("TR_DisableDeadStoreCleanup");
+   if (!disableDeadStoreCleanup)
+      {
+      // A stack of blocks is used to stash blocks that will be revisited for cleanup
+      TR_Stack<TR::Block *> osrBlocks(trMemory(), 8, false, stackAlloc);
+
+      TR_BitVector alwaysDead(comp()->trMemory()->currentStackRegion());
+      _seenDeadStores = new (trStackMemory()) TR_BitVector(comp()->trMemory()->currentStackRegion());
+
+      // OSR induce and code blocks will contain dead stores for the next
+      // frame.
+      for (cfgNode = cfg->getFirstNode(); cfgNode; cfgNode = cfgNode->getNext())
+         {
+         TR::Block *block = toBlock(cfgNode);
+         if (!block->isOSRCodeBlock())
+            continue;
+
+         // Find the prepareForOSR call
+         TR::TreeTop *tt = block->getFirstRealTreeTop();
+         while (tt &&
+             !((tt->getNode()->getOpCode().isCheck() || tt->getNode()->getOpCodeValue() == TR::treetop) &&
+             tt->getNode()->getFirstChild()->getOpCode().isCall() &&
+             tt->getNode()->getFirstChild()->getSymbolReference()->getReferenceNumber() == TR_prepareForOSR))
+            {
+            tt = tt->getNextTreeTop();
+            }
+         TR_ASSERT(tt, "OSRCodeBlocks must contain a call to prepareForOSR and no other calls");
+         TR::Node *prepareForOSR = tt->getNode()->getFirstChild();
+
+         // Collect symrefs that are always dead
+         alwaysDead.empty();
+         bool firstPass = true;
+         for (auto edge = block->getPredecessors().begin(); edge != block->getPredecessors().end(); ++edge)
+            {
+            TR::Block *osrBlock = toBlock((*edge)->getFrom());
+            TR_ASSERT(osrBlock && (osrBlock->isOSRCodeBlock() || osrBlock->isOSRCatchBlock()), "Predecessors to an OSR code block should be OSR code or catch blocks");
+            if (osrBlock->isOSRCodeBlock() && addDeadStores(osrBlock, alwaysDead, !firstPass))
+               osrBlocks.push(osrBlock);
+            else if (osrBlock->isOSRCatchBlock())
+               {
+               for (auto exEdge = osrBlock->getExceptionPredecessors().begin(); exEdge != osrBlock->getExceptionPredecessors().end(); ++exEdge)
+                  {
+                  TR::Block *exBlock = toBlock((*exEdge)->getFrom());
+                  TR_ASSERT(exBlock && exBlock->isOSRInduceBlock(), "Predecessors to an OSR catch block should be OSR induce blocks");
+                  if (addDeadStores(exBlock, alwaysDead, !firstPass))
+                     osrBlocks.push(exBlock);
+                  firstPass = false;
+                  }
+               }
+            firstPass = false;
+            }
+
+         // Remove loads that are always dead
+         for (int32_t i = 0 ; i < prepareForOSR->getNumChildren(); ++i)
+            {
+            TR::Node *child = prepareForOSR->getChild(i);
+            if (child->getOpCode().isLoadVar() && alwaysDead.get(child->getSymbolReference()->getReferenceNumber()))
+               {
+               if (performTransformation(comp(), "%s: Remove dead OSR load [%p] from OSR code block_%d\n", OPT_DETAILS, child, block->getNumber()))
+                  {
+                  TR::Node::recreate(prepareForOSR->getChild(i), comp()->il.opCodeForConst(prepareForOSR->getChild(i)->getDataType()));
+                  prepareForOSR->getChild(i)->setConstValue(0);
+                  }
+               else
+                  {
+                  alwaysDead.reset(child->getSymbolReference()->getReferenceNumber());
+                  }
+               }
+            }
+
+         // Remove the original dead stores
+         while (!osrBlocks.isEmpty())
+            removeDeadStores(osrBlocks.pop(), alwaysDead);
          }
       }
 

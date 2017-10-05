@@ -105,6 +105,7 @@ static const OptimizationStrategy JBcoldStrategyOpts[] =
 static const OptimizationStrategy JBwarmStrategyOpts[] =
    {
    { OMR::deadTreesElimination                                                     },
+   { OMR::inlining                                                                 },
    { OMR::treeSimplification                                                       },
    { OMR::localCSE                                                                 },
    { OMR::basicBlockOrdering                                                       }, // straighten goto's

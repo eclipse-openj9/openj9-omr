@@ -81,14 +81,16 @@ class JitOptTest : public JitTest
    JitOptTest() :
       JitTest(), _optimizations(), _strategy(NULL)
       {
-      // This is an allocated pointer because the strategy needs to 
-      // live as long as this fixture
-      _strategy = new OptimizationStrategy[_optimizations.size() + 1];
       } 
 
    virtual void SetUp()
       {
       JitTest::SetUp();
+
+      // This is an allocated pointer because the strategy needs to 
+      // live as long as this fixture
+      _strategy = new OptimizationStrategy[_optimizations.size() + 1];
+
       makeOptimizationStrategyArray(_strategy);
       TR::Optimizer::setMockStrategy(_strategy);
       }

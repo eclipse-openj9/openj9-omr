@@ -266,6 +266,10 @@ inline void setCCOr(T value, TR::Node *node, TR::Simplifier *s)
 
 static void convertToTestUnderMask(TR::Node *node, TR::Block *block, TR::Simplifier *s)
    {
+   // butest evaluator is only implemented on Z
+   if (!TR::Compiler->target.cpu.isZ())
+      return;
+
    if (debug("disableConvertToTestUnderMask"))
       return;
    auto cm = s->comp();

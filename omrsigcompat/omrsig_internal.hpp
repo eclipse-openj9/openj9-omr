@@ -68,6 +68,11 @@ struct OMR_SigData {
 
 #if defined(J9ZOS390)
 #define NSIG 65
+#elif defined(OMRZTPF)
+#ifdef NSIG
+#undef NSIG
+#endif /* ifdef NSIG */
+#define NSIG MNSIG
 #endif /* defined(J9ZOS390) */
 
 

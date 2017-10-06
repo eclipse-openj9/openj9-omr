@@ -30,7 +30,7 @@
 #include <unistd.h>
 #include <sys/ucontext.h>
 
-#define MAX_UNIX_SIGNAL_TYPES  32
+#define MAX_UNIX_SIGNAL_TYPES  MNSIG
 
 #define __USE_GNU 1
 #include <dlfcn.h>

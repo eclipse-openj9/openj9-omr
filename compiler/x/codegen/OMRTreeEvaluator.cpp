@@ -4848,30 +4848,20 @@ static TR::Register * inlineSinglePrecisionSQRT(TR::Node *node, TR::CodeGenerato
   return node->getRegister();
 }
 
-TR::Register* OMR::X86::TreeEvaluator::performSimpleAtomicMemoryUpdate(TR::Node* node, int8_t size, TR_X86OpCodes op, TR::CodeGenerator* cg)
+TR::Register* OMR::X86::TreeEvaluator::performSimpleAtomicMemoryUpdate(TR::Node* node, TR_X86OpCodes op, TR::CodeGenerator* cg)
    {
-   // There are two versions of native exchange helpers:
-   //     2 nodes: exchange with [address]
-   //     3 nodes: exchange with [address+offset]
-   TR::Register* object = cg->evaluate(node->getFirstChild());
-   TR::Register* offset = node->getNumChildren() == 2 ? NULL : cg->evaluate(node->getSecondChild());
-   TR::Register* value = TR::TreeEvaluator::intOrLongClobberEvaluate(node->getLastChild(), size == 8, cg);
-   // Assume that the offset is positive and not pathologically large (i.e., > 2^31).
-   if (offset && TR::Compiler->target.is32Bit() && size == 8)
-      {
-      offset = offset->getLowOrder();
-      }
+   TR_ASSERT((!TR_X86OpCode(op).hasLongSource() && !TR_X86OpCode(op).hasLongTarget()) || TR::Compiler->target.is64Bit(), "64-bit instruction not supported on IA32");
+   TR::Register* address = cg->evaluate(node->getChild(0));
+   TR::Register* value   = cg->evaluate(node->getChild(1));
+   TR::Register* result  = cg->allocateRegister();
 
-   generateMemRegInstruction(op, node, generateX86MemoryReference(object, offset, 0, cg), value, cg);
+   generateRegRegInstruction(MOVRegReg(), node, result, value, cg);
+   generateMemRegInstruction(op, node, generateX86MemoryReference(address, 0, cg), value, cg);
 
-   node->setRegister(value);
-
-   // Clean up children nodes
-   for (uint16_t i = 0; i < node->getNumChildren(); i++)
-      {
-      cg->decReferenceCount(node->getChild(i));
-      }
-   return value;
+   node->setRegister(result);
+   cg->decReferenceCount(node->getChild(0));
+   cg->decReferenceCount(node->getChild(1));
+   return result;
    }
 
 // TR::icall, TR::acall, TR::lcall, TR::fcall, TR::dcall, TR::call handled by directCallEvaluator
@@ -4889,27 +4879,27 @@ TR::Register *OMR::X86::TreeEvaluator::directCallEvaluator(TR::Node *node, TR::C
       {
       if (comp->getSymRefTab()->isNonHelper(SymRef, TR::SymbolReferenceTable::atomicAdd32BitSymbol))
          {
-         return TR::TreeEvaluator::performSimpleAtomicMemoryUpdate(node, 4, LADD4MemReg, cg);
+         return TR::TreeEvaluator::performSimpleAtomicMemoryUpdate(node, LADD4MemReg, cg);
          }
       if (comp->getSymRefTab()->isNonHelper(SymRef, TR::SymbolReferenceTable::atomicAdd64BitSymbol))
          {
-         return TR::TreeEvaluator::performSimpleAtomicMemoryUpdate(node, 8, LADD8MemReg, cg);
+         return TR::TreeEvaluator::performSimpleAtomicMemoryUpdate(node, LADD8MemReg, cg);
          }
       if (comp->getSymRefTab()->isNonHelper(SymRef, TR::SymbolReferenceTable::atomicFetchAndAdd32BitSymbol))
          {
-         return TR::TreeEvaluator::performSimpleAtomicMemoryUpdate(node, 4, LXADD4MemReg, cg);
+         return TR::TreeEvaluator::performSimpleAtomicMemoryUpdate(node, LXADD4MemReg, cg);
          }
       if (comp->getSymRefTab()->isNonHelper(SymRef, TR::SymbolReferenceTable::atomicFetchAndAdd64BitSymbol))
          {
-         return TR::TreeEvaluator::performSimpleAtomicMemoryUpdate(node, 8, LXADD8MemReg, cg);
+         return TR::TreeEvaluator::performSimpleAtomicMemoryUpdate(node, LXADD8MemReg, cg);
          }
       if (comp->getSymRefTab()->isNonHelper(SymRef, TR::SymbolReferenceTable::atomicSwap32BitSymbol))
          {
-         return TR::TreeEvaluator::performSimpleAtomicMemoryUpdate(node, 4, XCHG4MemReg, cg);
+         return TR::TreeEvaluator::performSimpleAtomicMemoryUpdate(node, XCHG4MemReg, cg);
          }
       if (comp->getSymRefTab()->isNonHelper(SymRef, TR::SymbolReferenceTable::atomicSwap64BitSymbol))
          {
-         return TR::TreeEvaluator::performSimpleAtomicMemoryUpdate(node, 8, XCHG8MemReg, cg);
+         return TR::TreeEvaluator::performSimpleAtomicMemoryUpdate(node, XCHG8MemReg, cg);
          }
       }
 

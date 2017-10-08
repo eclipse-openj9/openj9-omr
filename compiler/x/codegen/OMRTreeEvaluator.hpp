@@ -369,7 +369,7 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
 
    protected:
 
-   static TR::Register *performSimpleAtomicMemoryUpdate(TR::Node* node, int8_t size, TR_X86OpCodes op, TR::CodeGenerator* cg);
+   static TR::Register *performSimpleAtomicMemoryUpdate(TR::Node* node, TR_X86OpCodes op, TR::CodeGenerator* cg);
    static TR::Register *performHelperCall(TR::Node *node, TR::SymbolReference *helperSymRef, TR::ILOpCodes helperCallOpCode, bool spillFPRegs, TR::CodeGenerator *cg);
    static TR::Register *performIload(TR::Node *node, TR::MemoryReference  *sourceMR, TR::CodeGenerator *cg);
    static TR::Register *performFload(TR::Node *node, TR::MemoryReference  *sourceMR, TR::CodeGenerator *cg);

@@ -104,7 +104,7 @@ ifeq (ld,$(LINKTOOL))
   else
     GLOBAL_LDFLAGS+=-b32
   endif
-  GLOBAL_LDFLAGS+=-G -bnoentry -bernotok
+  GLOBAL_LDFLAGS+=-G -bnoentry -berok -bexpall
   GLOBAL_LDFLAGS+=-bmap:$(MODULE_NAME).map
   GLOBAL_LDFLAGS+=-bE:$($(MODULE_NAME)_LINKER_EXPORT_SCRIPT)
   GLOBAL_SHARED_LIBS+=c_r C_r m pthread

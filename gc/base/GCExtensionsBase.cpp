@@ -179,7 +179,7 @@ MM_GCExtensionsBase::initialize(MM_EnvironmentBase* env)
 	}
 
 
-	if (!_forge.initialize(env)) {
+	if (!_forge.initialize(env->getPortLibrary())) {
 		goto failed;
 	}
 
@@ -275,7 +275,7 @@ MM_GCExtensionsBase::tearDown(MM_EnvironmentBase* env)
 		_lightweightNonReentrantLockPoolMutex = (omrthread_monitor_t) NULL;
 	}
 
-	_forge.tearDown(env);
+	_forge.tearDown();
 
 	J9HookInterface** tmpHookInterface = getPrivateHookInterface();
 	if ((NULL != tmpHookInterface) && (NULL != *tmpHookInterface)) {

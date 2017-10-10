@@ -25,20 +25,23 @@
 #include "omrcomp.h"
 #include "EnvironmentBase.hpp"
 
-typedef struct MM_MemoryHeader {
+namespace OMR {
+namespace GC {
+
+struct MemoryHeader {
 	uintptr_t allocatedBytes;
 	MM_AllocationCategory::Enum category;
-} MM_MemoryHeader;
+};
 
-typedef union MM_AlignedMemoryHeader {
+union AlignedMemoryHeader {
 	double forAlignment;
-	MM_MemoryHeader header;
-} MM_AlignedMemoryHeader;
+	MemoryHeader header;
+};
 
 bool
-MM_Forge::initialize(MM_EnvironmentBase* env)
+Forge::initialize(OMRPortLibrary* port)
 {
-	_portLibrary = env->getPortLibrary();
+	_portLibrary = port;
 
 	if (0 != omrthread_monitor_init_with_name(&_mutex, 0, "MM_Forge")) {
 		return false;
@@ -54,7 +57,7 @@ MM_Forge::initialize(MM_EnvironmentBase* env)
 }
 
 void 
-MM_Forge::tearDown(MM_EnvironmentBase* env)
+Forge::tearDown()
 {
 	_portLibrary = NULL;
 	
@@ -74,11 +77,11 @@ MM_Forge::tearDown(MM_EnvironmentBase* env)
  * @return a pointer to the allocated memory, or NULL if the request could not be performed
  */
 void* 
-MM_Forge::allocate(uintptr_t bytesRequested, MM_AllocationCategory::Enum category, const char* callsite)
+Forge::allocate(std::size_t bytesRequested, MM_AllocationCategory::Enum category, const char* callsite)
 {
-	MM_AlignedMemoryHeader* memoryPointer;
+	AlignedMemoryHeader* memoryPointer;
 
-	memoryPointer = (MM_AlignedMemoryHeader *) _portLibrary->mem_allocate_memory(_portLibrary, bytesRequested + sizeof(MM_AlignedMemoryHeader), callsite, OMRMEM_CATEGORY_MM);
+	memoryPointer = (AlignedMemoryHeader *) _portLibrary->mem_allocate_memory(_portLibrary, bytesRequested + sizeof(AlignedMemoryHeader), callsite, OMRMEM_CATEGORY_MM);
 	if (NULL != memoryPointer) {
 		memoryPointer->header.allocatedBytes = bytesRequested;
 		memoryPointer->header.category = category;
@@ -104,13 +107,13 @@ MM_Forge::allocate(uintptr_t bytesRequested, MM_AllocationCategory::Enum categor
  * @param[in] memoryPointer - a pointer to the memory that will be freed
  */
 void 
-MM_Forge::free(void* memoryPointer)
+Forge::free(void* memoryPointer)
 {	
 	if (NULL == memoryPointer) {
 		return;
 	}
 
-	MM_AlignedMemoryHeader* alignedHeader = (MM_AlignedMemoryHeader *) memoryPointer;
+	AlignedMemoryHeader* alignedHeader = (AlignedMemoryHeader *) memoryPointer;
 	alignedHeader -= 1;
 
 
@@ -133,3 +136,6 @@ MM_Forge::getCurrentStatistics()
 {
 	return _statistics;
 }
+
+} // namespace GC
+} // namespace OMR

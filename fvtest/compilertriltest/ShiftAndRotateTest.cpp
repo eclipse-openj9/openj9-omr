@@ -56,6 +56,34 @@ template <typename T> static T rotate(T a, int32_t b)
    return a;
    }
 
+template <typename Left> static Left shift_left(Left left, int32_t right)
+   {
+   int32_t r = right;
+   if (sizeof(Left) <= sizeof(int32_t))
+      {
+      r = (r & (8 * sizeof(int32_t) - 1));
+      }
+   else
+      {
+      r = (r & (8 * sizeof(int64_t) - 1));
+      }
+   return left << r;
+   }
+
+template <typename Left> static Left shift_right(Left left, int32_t right)
+   {
+   int32_t r = right;
+   if (sizeof(Left) <= sizeof(int32_t))
+      {
+      r = (r & (8 * sizeof(int32_t) - 1));
+      }
+   else
+      {
+      r = (r & (8 * sizeof(int64_t) - 1));
+      }
+   return left >> r;
+   }
+
 template <typename T>
 class ShiftAndRotateArithmetic : public TRTest::OpCodeTest<T, T, int32_t> {};
 
@@ -97,8 +125,8 @@ TEST_P(Int32ShiftAndRotate, UsingLoadParam) {
 
 INSTANTIATE_TEST_CASE_P(ShiftAndRotateTest, Int32ShiftAndRotate, ::testing::Combine(
     ::testing::ValuesIn(test_input_values<int32_t>()),
-    ::testing::Values( std::make_tuple("ishl", [](int32_t l, int32_t r){return l << r;}),
-                       std::make_tuple("ishr", [](int32_t l, int32_t r){return l >> r;}),
+    ::testing::Values( std::make_tuple("ishl", shift_left<int32_t>),
+                       std::make_tuple("ishr", shift_right<int32_t>),
                        std::make_tuple("irol", rotate<int32_t >) )));
 
 class Int64ShiftAndRotate : public ShiftAndRotateArithmetic<int64_t> {};
@@ -139,8 +167,8 @@ TEST_P(Int64ShiftAndRotate, UsingLoadParam) {
 
 INSTANTIATE_TEST_CASE_P(ShiftAndRotateTest, Int64ShiftAndRotate, ::testing::Combine(
     ::testing::ValuesIn(test_input_values<int64_t>()),
-    ::testing::Values( std::make_tuple("lshl", [](int64_t l, int32_t r){return l << r;}),
-                       std::make_tuple("lshr", [](int64_t l, int32_t r){return l >> r;}),
+    ::testing::Values( std::make_tuple("lshl", shift_left<int64_t>),
+                       std::make_tuple("lshr", shift_right<int64_t>),
                        std::make_tuple("lrol", rotate<int64_t >) )));
 
 class Int8ShiftAndRotate : public ShiftAndRotateArithmetic<int8_t> {};
@@ -181,8 +209,8 @@ TEST_P(Int8ShiftAndRotate, UsingLoadParam) {
 
 INSTANTIATE_TEST_CASE_P(ShiftAndRotateTest, Int8ShiftAndRotate, ::testing::Combine(
     ::testing::ValuesIn(test_input_values<int8_t>()),
-    ::testing::Values( std::make_tuple("bshl", [](int8_t l, int32_t r){return static_cast<int8_t>(l << r);}),
-                       std::make_tuple("bshr", [](int8_t l, int32_t r){return static_cast<int8_t>(l >> r);}) )));
+    ::testing::Values( std::make_tuple("bshl", shift_left<int8_t>),
+                       std::make_tuple("bshr", shift_right<int8_t>) )));
 
 class Int16ShiftAndRotate : public ShiftAndRotateArithmetic<int16_t> {};
 
@@ -222,8 +250,8 @@ TEST_P(Int16ShiftAndRotate, UsingLoadParam) {
 
 INSTANTIATE_TEST_CASE_P(ShiftAndRotateTest, Int16ShiftAndRotate, ::testing::Combine(
     ::testing::ValuesIn(test_input_values<int16_t>()),
-    ::testing::Values( std::make_tuple("sshl", [](int16_t l, int32_t r){return static_cast<int16_t>(l << r);}),
-                       std::make_tuple("sshr", [](int16_t l, int32_t r){return static_cast<int16_t>(l >> r);}) )));
+    ::testing::Values( std::make_tuple("sshl", shift_left<int16_t>),
+                       std::make_tuple("sshr", shift_right<int16_t>) )));
 
 class UInt32ShiftAndRotate : public ShiftAndRotateArithmetic<uint32_t> {};
 
@@ -263,7 +291,7 @@ TEST_P(UInt32ShiftAndRotate, UsingLoadParam) {
 
 INSTANTIATE_TEST_CASE_P(ShiftAndRotateTest, UInt32ShiftAndRotate, ::testing::Combine(
     ::testing::ValuesIn(test_input_values<uint32_t>()),
-    ::testing::Values( std::make_tuple("iushr", [](uint32_t l, int32_t r){return l >> r;}) )));
+    ::testing::Values( std::make_tuple("iushr", shift_right<uint32_t>) )));
 
 class UInt64ShiftAndRotate : public ShiftAndRotateArithmetic<uint64_t> {};
 
@@ -303,7 +331,7 @@ TEST_P(UInt64ShiftAndRotate, UsingLoadParam) {
 
 INSTANTIATE_TEST_CASE_P(ShiftAndRotateTest, UInt64ShiftAndRotate, ::testing::Combine(
     ::testing::ValuesIn(test_input_values<uint64_t>()),
-    ::testing::Values( std::make_tuple("lushr", [](uint64_t l, int32_t r){return l >> r;}) )));
+    ::testing::Values( std::make_tuple("lushr", shift_right<uint64_t>) )));
 
 class UInt8ShiftAndRotate : public ShiftAndRotateArithmetic<uint8_t> {};
 
@@ -343,7 +371,7 @@ TEST_P(UInt8ShiftAndRotate, UsingLoadParam) {
 
 INSTANTIATE_TEST_CASE_P(ShiftAndRotateTest, UInt8ShiftAndRotate, ::testing::Combine(
     ::testing::ValuesIn(test_input_values<uint8_t>()),
-    ::testing::Values( std::make_tuple("bushr", [](uint8_t l, int32_t r){return static_cast<uint8_t>(l >> r);}) )));
+    ::testing::Values( std::make_tuple("bushr", shift_right<uint8_t>) )));
 
 class UInt16ShiftAndRotate : public ShiftAndRotateArithmetic<uint16_t> {};
 
@@ -383,4 +411,4 @@ TEST_P(UInt16ShiftAndRotate, UsingLoadParam) {
 
 INSTANTIATE_TEST_CASE_P(ShiftAndRotateTest, UInt16ShiftAndRotate, ::testing::Combine(
     ::testing::ValuesIn(test_input_values<uint16_t>()),
-    ::testing::Values( std::make_tuple("sushr", [](uint16_t l, int32_t r){return static_cast<uint16_t>(l >> r);}) )));
+    ::testing::Values( std::make_tuple("sushr", shift_right<uint16_t>) )));

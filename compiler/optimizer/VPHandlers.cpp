@@ -2161,6 +2161,7 @@ TR::Node *constrainIaload(OMR::ValuePropagation *vp, TR::Node *node)
          if (symRef == vp->comp()->getSymRefTab()->findClassFromJavaLangClassSymbolRef())
             {
             TR::KnownObjectTable *knot = vp->comp()->getOrCreateKnownObjectTable();
+            TR_ASSERT(knot, "Can not have a TR::VPKnownObject without a known-object table");
 
                {
                TR::VMAccessCriticalSection constrainIaloadCriticalSection(vp->comp(),
@@ -2212,9 +2213,9 @@ TR::Node *constrainIaload(OMR::ValuePropagation *vp, TR::Node *node)
           && base->getClass()
           && (!needInitializedCheck || TR::Compiler->cls.isClassInitialized(vp->comp(), base->getClass())))
          {
-         if (symRef == vp->comp()->getSymRefTab()->findJavaLangClassFromClassSymbolRef())
+         TR::KnownObjectTable *knot = vp->comp()->getOrCreateKnownObjectTable();
+         if (knot && symRef == vp->comp()->getSymRefTab()->findJavaLangClassFromClassSymbolRef())
             {
-            TR::KnownObjectTable *knot = vp->comp()->getOrCreateKnownObjectTable();
             TR_J9VMBase *fej9 = (TR_J9VMBase *)(vp->comp()->fe());
             TR::KnownObjectTable::Index knownObjectIndex = knot->getIndexAt((uintptrj_t*)(base->getClass() + fej9->getOffsetOfJavaLangClassFromClassField()));
             vp->addBlockOrGlobalConstraint(node,

@@ -1524,7 +1524,8 @@ TR_InlinerBase::createVirtualGuard(
    if (guard->_kind == TR_MutableCallSiteTargetGuard)
       {
       TR::KnownObjectTable *knot = comp()->getOrCreateKnownObjectTable();
-      heuristicTrace(tracer(),"  createVirtualGuard: MutableCallSite.epoch is %p.obj%d (%p.%p)", guard->_mutableCallSiteObject, guard->_mutableCallSiteEpoch, *guard->_mutableCallSiteObject, *knot->getPointerLocation(guard->_mutableCallSiteEpoch));
+      if (knot)
+         heuristicTrace(tracer(),"  createVirtualGuard: MutableCallSite.epoch is %p.obj%d (%p.%p)", guard->_mutableCallSiteObject, guard->_mutableCallSiteEpoch, *guard->_mutableCallSiteObject, *knot->getPointerLocation(guard->_mutableCallSiteEpoch));
       return TR_VirtualGuard::createMutableCallSiteTargetGuard(comp(), calleeIndex, callNode, destination, guard->_mutableCallSiteObject, guard->_mutableCallSiteEpoch);
       }
 

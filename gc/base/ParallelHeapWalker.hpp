@@ -52,14 +52,14 @@ public:
 	/**
 	 * Walk through all live objects of the heap in parallel and apply the provided function.
 	 */
-	void allObjectsDoParallel(MM_EnvironmentBase *env, MM_HeapWalkerObjectFunc function, void *userData, UDATA walkFlags);
+	void allObjectsDoParallel(MM_EnvironmentBase *env, MM_HeapWalkerObjectFunc function, void *userData, uintptr_t walkFlags);
 
 	/**
 	 * Walk through all live objects of the heap and apply the provided function.
 	 * If parallel is set to true, task is dispatched to GC threads and walks the heap segments in parallel,
 	 * otherwise walk all objects in the heap in a single threaded linear fashion.
 	 */
-	virtual void allObjectsDo(MM_EnvironmentBase *env, MM_HeapWalkerObjectFunc function, void *userData, UDATA walkFlags, bool parallel, bool prepareHeapForWalk);
+	virtual void allObjectsDo(MM_EnvironmentBase *env, MM_HeapWalkerObjectFunc function, void *userData, uintptr_t walkFlags, bool parallel, bool prepareHeapForWalk);
 
 	MM_MarkMap *getMarkMap() {
 		return _markMap;

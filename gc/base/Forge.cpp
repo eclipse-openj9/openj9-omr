@@ -131,8 +131,8 @@ Forge::free(void* memoryPointer)
  *
  * @return an array of memory usage statistics indexed using the MM_AllocationCategory enumeration
  */
-MM_MemoryStatistics*
-MM_Forge::getCurrentStatistics()
+OMR_GC_MemoryStatistics*
+Forge::getCurrentStatistics()
 {
 	return _statistics;
 }

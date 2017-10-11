@@ -166,7 +166,7 @@ runTest(void *arg)
 	return 0;
 }
 
-#define THREAD_NUM 100
+#define THREAD_NUM 10
 
 /**
  * Compare the values of omrthread_get_cpu_time and omrthread_get_self_cpu_time

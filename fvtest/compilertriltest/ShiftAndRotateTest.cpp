@@ -231,6 +231,7 @@ TEST_P(Int16ShiftAndRotate, UsingConst) {
     ASSERT_EQ(param.oracle(param.lhs, param.rhs), entry_point());
 }
 
+#if !defined(TR_TARGET_POWER)
 TEST_P(Int16ShiftAndRotate, UsingLoadParam) {
     auto param = TRTest::to_struct(GetParam());
 
@@ -247,6 +248,7 @@ TEST_P(Int16ShiftAndRotate, UsingLoadParam) {
     auto entry_point = compiler.getEntryPoint<int16_t (*)(int16_t, int32_t)>();
     ASSERT_EQ(param.oracle(param.lhs, param.rhs), entry_point(param.lhs, param.rhs));
 }
+#endif
 
 INSTANTIATE_TEST_CASE_P(ShiftAndRotateTest, Int16ShiftAndRotate, ::testing::Combine(
     ::testing::ValuesIn(test_input_values<int16_t>()),

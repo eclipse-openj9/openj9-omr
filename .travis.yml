@@ -19,10 +19,13 @@
 # 
 # SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
 ###############################################################################
+language: cpp
 os:
   - linux
   - osx
-language: cpp
+compiler:
+  - gcc
+  - clang
 sudo: false
 cache: ccache # https://docs.travis-ci.com/user/caching/
 dist: trusty
@@ -33,45 +36,78 @@ addons:
     packages:
       - libnuma-dev
       - bison
-      - clang-3.4
-      - libclang-3.4-dev
       - libdwarf-dev
       - libelf-dev
-      - llvm-3.4
-      - gcc-multilib
-      - g++-multilib
-      - ninja-build
 before_install:
   - if [ $TRAVIS_OS_NAME = osx ]; then brew update && brew install ccache; fi
 env:
-  matrix:
-    - BUILD_WITH_CMAKE=yes CMAKE_GENERATOR=Ninja
-    - BUILD_WITH_CMAKE=yes CMAKE_GENERATOR="Unix Makefiles"
   global:
     - GTEST_COLOR=1
     - GTEST_FILTER=-*dump_test_create_dump_*:*NumaSetAffinity:*NumaSetAffinitySuspended
     # Disable the core dump tests as container based builds don't allow setting
     # core_pattern and don't have apport installed.  This can be removed when
     # apport is available in apt whitelist
+    - BUILD_JOBS=2
+  matrix:
+    - BUILD_WITH_CMAKE=yes CMAKE_GENERATOR="Unix Makefiles"
 matrix:
   exclude:
     - os: osx
-      env: BUILD_WITH_CMAKE=yes CMAKE_GENERATOR="Unix Makefiles"
+      compiler: gcc
     - os: osx
-      env: BUILD_WITH_CMAKE=yes CMAKE_GENERATOR=Ninja
+      env: BUILD_WITH_CMAKE=yes CMAKE_GENERATOR="Unix Makefiles"
+    - os: linux
+      compiler: clang
   include:
+    # Auto tool builds
+    # 32 bit Linux x86
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - libnuma-dev
+            - gcc-multilib
+            - g++-multilib
+      env: SPEC=linux_x86 PLATFORM=amd64-linux-gcc
+    # 64 bit Linux x86
     - os: linux
       env: SPEC=linux_x86-64 PLATFORM=amd64-linux64-gcc
+    # 64 bit Linux x86 compressed pointers
     - os: linux
       env: SPEC=linux_x86-64_cmprssptrs PLATFORM=amd64-linux64-gcc
+    # Linter
     - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - bison
+            - clang-3.4
+            - libclang-3.4-dev
+            - llvm-3.4
       env: RUN_LINT=yes RUN_BUILD=no SPEC=linux_x86-64 PLATFORM=amd64-linux64-gcc
       dist: precise
+    # CMake builds
+    # Ninja builds
+    # 64 bit Linux x86
     - os: linux
-      env: SPEC=linux_x86 PLATFORM=amd64-linux-gcc
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - libnuma-dev
+            - bison
+            - libdwarf-dev
+            - libelf-dev 
+            - ninja-build
+      env: BUILD_WITH_CMAKE=yes CMAKE_GENERATOR=Ninja
+    # 64 bit OS X
     - os: osx
       env: BUILD_WITH_CMAKE=yes CMAKE_GENERATOR=Ninja
-      compiler: clang
 before_script:
   - ulimit -c unlimited
   - if [ "$TRAVIS_OS_NAME" == "osx" ]; then export PATH=/usr/local/opt/ccache/libexec:$PATH ; fi

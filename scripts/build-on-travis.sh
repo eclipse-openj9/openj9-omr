@@ -23,14 +23,10 @@
 
 set -evx
 
-export JOBS=2
-
-if test "x$CMAKE_GENERATOR" = "x"; then
-  export CMAKE_GENERATOR="Ninja"
-fi
-
 if test "x$BUILD_WITH_CMAKE" = "xyes"; then
-
+  if test "x$CMAKE_GENERATOR" = "x"; then
+    export CMAKE_GENERATOR="Ninja"
+  fi
   if test "x$TRAVIS_OS_NAME" = "xosx" && test "x$CMAKE_GENERATOR" = "xNinja"; then
     brew install ninja
   fi
@@ -39,7 +35,7 @@ if test "x$BUILD_WITH_CMAKE" = "xyes"; then
   cd build
   time cmake -Wdev -G "$CMAKE_GENERATOR" -C../cmake/caches/Travis.cmake ..
   if test "x$RUN_BUILD" != "xno"; then
-    time cmake --build . -- -j $JOBS
+    time cmake --build . -- -j $BUILD_JOBS
     if test "x$RUN_TESTS" != "xno"; then
       time ctest -V
     fi
@@ -54,9 +50,9 @@ else
   time make -f run_configure.mk OMRGLUE=./example/glue SPEC="$SPEC" PLATFORM="$PLATFORM"
   if test "x$RUN_BUILD" != "xno"; then
     # Normal build system
-    time make --jobs $JOBS
+    time make --jobs $BUILD_JOBS
     if test "x$RUN_TESTS" != "xno"; then
-      time make --jobs $JOBS test
+      time make test
     fi
   fi
   if test "x$RUN_LINT" = "xyes"; then
@@ -64,15 +60,15 @@ else
     clang++ --version
 
     # Run linter for x86 target
-    time make --jobs $JOBS lint
+    time make --jobs $BUILD_JOBS lint
 
     # Run linter for p and z targets
     export TARGET_ARCH=p
     export TARGET_BITS=64
-    time make --jobs $JOBS lint
+    time make --jobs $BUILD_JOBS lint
 
     export TARGET_ARCH=z
     export TARGET_BITS=64
-    time make --jobs $JOBS lint
+    time make --jobs $BUILD_JOBS lint
   fi
 fi

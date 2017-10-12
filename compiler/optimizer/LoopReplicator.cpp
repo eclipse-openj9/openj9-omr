@@ -60,6 +60,17 @@ TR_LoopReplicator::TR_LoopReplicator(TR::OptimizationManager *manager)
    _maxNestingDepth = 0;
    }
 
+
+//Add static debug counter for a given replication failure
+static void countReplicationFailure(char *failureReason, int32_t regionNum)
+   {
+   //Assemble format string: "LoopReplicator/<failureReason>/%s/(%s)/region_%d"
+   TR::DebugCounter::incStaticDebugCounter(TR::comp(), TR::DebugCounter::debugCounterName(TR::comp(),
+      "LoopReplicator/%s/%s/(%s)/region_%d", failureReason,
+      TR::comp()->getHotnessName(TR::comp()->getMethodHotness()),
+      TR::comp()->signature(), regionNum));
+   }
+
 int32_t TR_LoopReplicator::perform()
    {
    // mainline entry
@@ -155,6 +166,7 @@ int32_t TR_LoopReplicator::perform(TR_Structure *str)
    TR::Block *entryBlock = region->getEntryBlock();
    if (entryBlock->isCold())
       {
+      countReplicationFailure("ColdLoop", region->getNumber());
       dumpOptDetails(comp(), "region (%d) is a cold loop\n", region->getNumber());
       return 0;
       }
@@ -229,6 +241,8 @@ int32_t TR_LoopReplicator::perform(TR_Structure *str)
       _loopType = doWhile;
       return replicateLoop(region, branchNode);
       }
+
+   countReplicationFailure("UnsupportedLoopStructure", region->getNumber());
 
    dumpOptDetails(comp(), "loop (%d) does not conform to required form & will not be replicated\n",
                     region->getNumber());
@@ -331,6 +345,7 @@ int32_t TR_LoopReplicator::replicateLoop(TR_RegionStructure *region,
    TR::TreeTop *lastTT = cBlock->getLastRealTreeTop();
    if (!lastTT->getNode()->getOpCode().isBranch())
       {
+      countReplicationFailure("NoBranchFoundInLoop", region->getNumber());
       if (trace())
          traceMsg(comp(), "no branch condition found in loop (%d)\n", region->getNumber());
       return false;
@@ -504,6 +519,7 @@ bool TR_LoopReplicator::checkInnerLoopFrequencies(TR_RegionStructure *region, Lo
          hotInnerLoopHeaders.add(innerLoopHeader);
          if (!searchList(innerLoopHeader, common, lInfo))
             {
+            countReplicationFailure("HotInnerLoopNotOnTrace", loop->getNumber());
             traceMsg(comp(), "not going to replicate loop because hot inner loop %d is not on the trace\n", loop->getNumber());
             return false;
             }
@@ -569,6 +585,7 @@ bool TR_LoopReplicator::shouldReplicateWithHotInnerLoops(
          if (tracePrefixNext != NULL)
             {
             // Stop due to branching paths within the trace.
+            countReplicationFailure("HotInnerLoopHitBranchWithoutColdSideEntry", region->getNumber());
             if (trace())
                traceMsg(comp(), "Hit a branch without finding a cold side-entry. Will not replicate.\n");
             return false;
@@ -593,6 +610,7 @@ bool TR_LoopReplicator::shouldReplicateWithHotInnerLoops(
          //
          TR_ASSERT(false, "cold side-entry detection ran out of trace\n");
 
+         countReplicationFailure("HotInnerLoopRanOutOfTrace", region->getNumber());
          // In production, just safely return false for this case.
          if (trace())
             traceMsg(comp(), "Ran out of trace without finding a cold side-entry. Will not replicate.\n");
@@ -623,6 +641,7 @@ bool TR_LoopReplicator::shouldReplicateWithHotInnerLoops(
       // Don't search past the header of a hot inner loop.
       if (hotInnerLoopHeaders->find(tracePrefixCursor))
          {
+         countReplicationFailure("HotInnerLoopNoColdSideEntry", region->getNumber());
          if (trace())
             traceMsg(comp(), "Hit a hot inner loop without finding a cold side-entry. Will not replicate.\n");
          return false;
@@ -729,7 +748,7 @@ bool TR_LoopReplicator::heuristics(LoopInfo *lInfo)
    if (!lInfo->_replicated)
       dumpOptDetails(comp(), "no side entrance found into trace; no replication will be performed\n");
 
-   return true;
+   return lInfo->_replicated;
    }
 
 void TR_LoopReplicator::logTrace(LoopInfo *lInfo)
@@ -1107,6 +1126,7 @@ bool TR_LoopReplicator::gatherBlocksToBeCloned(LoopInfo *lInfo)
       return true;
       }
 
+   countReplicationFailure("NoSideEntryFound", region->getNumber());
    if (trace())
       traceMsg(comp(), "   no side-entrance found\n");
    return false;
@@ -2366,7 +2386,7 @@ bool TR_LoopReplicator::heuristics(LoopInfo *lInfo, bool dumb)
          traceMsg(comp(), "no side entrance found into trace; no replication will be performed\n");
       }
 
-   return true;
+   return lInfo->_replicated;
    }
 
 #undef COLOR_BLACK

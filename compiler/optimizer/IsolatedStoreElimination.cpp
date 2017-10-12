@@ -201,13 +201,6 @@ int32_t TR_IsolatedStoreElimination::perform()
    TR_UseDefInfo *useDefInfo = optimizer()->getUseDefInfo();
    int32_t cost = 0;
 
-   // The non-useDefInfo path examines direct loads/stores to autos/parms to determine what
-   // stores are removable.  Autos can have their address taken in WCode and this aliasing
-   // is only required to be communicated through PALIs (pointer aliasing) on consuming calls.
-   // Therefore aliasing (through useDefInfo) must be consulted to safely remove stores.
-   // Checking address taken is not sufficient as a frontend does not have to set address taken
-   // if the aliasing is correctly communicated through PALIs (address taken pessimizes optimizing
-   // the symbol everywhere but PALIs can provide more precise information)
    _mustUseUseDefInfo = false;
 
    // The use of _mustUseUseDefInfo is temporary until all opts maintain proper
@@ -219,18 +212,11 @@ int32_t TR_IsolatedStoreElimination::perform()
           traceMsg(comp(), "Starting Global Store Elimination (using use/def info)\n");
       cost = performWithUseDefInfo();
       }
-   else if (!_mustUseUseDefInfo)
+   else
       {
       if (trace())
           traceMsg(comp(), "Starting Global Store Elimination (without using use/def info)\n");
       cost = performWithoutUseDefInfo();
-      }
-   else
-      {
-      if (trace())
-          traceMsg(comp(), "Not performing Global Store Elimination because there is no use/def info\n");
-
-      bool enableBailOut = !comp()->getOption(TR_DisableDeadStoreBailOut);
       }
 
    // Now remove the isolated stores.

@@ -3428,69 +3428,67 @@ MM_Scavenger::completeBackOut(MM_EnvironmentStandard *env)
 			omrtty_printf("{SCAV: Handle RS overflow}\n");
 #endif /* OMR_SCAVENGER_TRACE_BACKOUT */
 
+			if (IS_CONCURRENT_ENABLED) {
+				/* All heap fixup will occur during or after global GC */
+				clearRememberedSetLists(env);
+			} else {
+				/* i) Unremember any objects that moved from new space to old */
+				while(NULL != (rootRegion = evacuateRegionIterator.nextRegion())) {
+					/* skip survivor regions */
+					if (isObjectInEvacuateMemory((omrobjectptr_t)rootRegion->getLowAddress())) {
+						/* tell the object iterator to work on the given region */
+						GC_ObjectHeapIteratorAddressOrderedList evacuateHeapIterator(_extensions, rootRegion, false);
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
-			if (_extensions->concurrentScavenger) {
-				// todo: backout while in RS overflow for CS yet to be implemented
-				Assert_MM_unreachable();
-			}
+						evacuateHeapIterator.includeForwardedObjects();
 #endif
-
-			/* i) Unremember any objects that moved from new space to old */
-			while(NULL != (rootRegion = evacuateRegionIterator.nextRegion())) {
-				/* skip survivor regions */
-				if (isObjectInEvacuateMemory((omrobjectptr_t)rootRegion->getLowAddress())) {
-					/* tell the object iterator to work on the given region */
-					GC_ObjectHeapIteratorAddressOrderedList evacuateHeapIterator(_extensions, rootRegion, false);
-#if defined(OMR_GC_CONCURRENT_SCAVENGER)
-					evacuateHeapIterator.includeForwardedObjects();
-#endif
-					omrobjectptr_t objectPtr = NULL;
-					omrobjectptr_t fwdObjectPtr = NULL;
-					while((objectPtr = evacuateHeapIterator.nextObjectNoAdvance()) != NULL) {
-						MM_ForwardedHeader header(objectPtr);
-						fwdObjectPtr = header.getForwardedObject();
-						if (NULL != fwdObjectPtr) {
-							if(_extensions->objectModel.isRemembered(fwdObjectPtr)) {
-								_extensions->objectModel.clearRemembered(fwdObjectPtr);
-							}
+						omrobjectptr_t objectPtr = NULL;
+						omrobjectptr_t fwdObjectPtr = NULL;
+						while((objectPtr = evacuateHeapIterator.nextObjectNoAdvance()) != NULL) {
+							MM_ForwardedHeader header(objectPtr);
+							fwdObjectPtr = header.getForwardedObject();
+							if (NULL != fwdObjectPtr) {
+								if(_extensions->objectModel.isRemembered(fwdObjectPtr)) {
+									_extensions->objectModel.clearRemembered(fwdObjectPtr);
+								}
 #if defined(OMR_GC_DEFERRED_HASHCODE_INSERTION)
-							evacuateHeapIterator.advance(_extensions->objectModel.getConsumedSizeInBytesWithHeaderBeforeMove(fwdObjectPtr));
+								evacuateHeapIterator.advance(_extensions->objectModel.getConsumedSizeInBytesWithHeaderBeforeMove(fwdObjectPtr));
 #else
-							evacuateHeapIterator.advance(_extensions->objectModel.getConsumedSizeInBytesWithHeader(fwdObjectPtr));
+								evacuateHeapIterator.advance(_extensions->objectModel.getConsumedSizeInBytesWithHeader(fwdObjectPtr));
 #endif /* defined(OMR_GC_DEFERRED_HASHCODE_INSERTION) */
+							}
 						}
 					}
 				}
-			}
 
-			/* ii) Walk old space and build up the overflow list */
-			/* the list is built because after reverse fwd ptrs are installed, the heap becomes unwalkable */
-			clearRememberedSetLists(env);
+				/* ii) Walk old space and build up the overflow list */
+				/* the list is built because after reverse fwd ptrs are installed, the heap becomes unwalkable */
+				clearRememberedSetLists(env);
 
-			MM_RSOverflow rememberedSetOverflow(env);
-			addAllRememberedObjectsToOverflow(env, &rememberedSetOverflow);
+				MM_RSOverflow rememberedSetOverflow(env);
+				addAllRememberedObjectsToOverflow(env, &rememberedSetOverflow);
 
-			/*
-			 * 2.c)Walk the evacuate space, fixing up objects and installing reverse forward pointers in survivor space
-			 */
-			backoutFixupAndReverseForwardPointersInSurvivor(env);
+				/*
+				 * 2.c)Walk the evacuate space, fixing up objects and installing reverse forward pointers in survivor space
+				 */
+				backoutFixupAndReverseForwardPointersInSurvivor(env);
 
-			/* 3) Walk the remembered set, updating list pointers as well as remembered object ptrs */
+				/* 3) Walk the remembered set, updating list pointers as well as remembered object ptrs */
 #if defined(OMR_SCAVENGER_TRACE_BACKOUT)
-			omrtty_printf("{SCAV: Back out RS overflow}\n");
+				omrtty_printf("{SCAV: Back out RS overflow}\n");
 #endif /* OMR_SCAVENGER_TRACE_BACKOUT */
 
-			/* Walk the remembered set overflow list built earlier */
-			omrobjectptr_t objectOverflow;
-			while (NULL != (objectOverflow = rememberedSetOverflow.nextObject())) {
-				backOutObjectScan(env, objectOverflow);
-			}
+				/* Walk the remembered set overflow list built earlier */
+				omrobjectptr_t objectOverflow;
+				while (NULL != (objectOverflow = rememberedSetOverflow.nextObject())) {
+					backOutObjectScan(env, objectOverflow);
+				}
 
-			/* Walk all classes that are flagged as remembered */
-			_cli->scavenger_backOutIndirectObjects(env);
+				/* Walk all classes that are flagged as remembered */
+				_cli->scavenger_backOutIndirectObjects(env);
+			}
 		} else {
 			/* RS not in overflow */
-			if (!_extensions->isConcurrentScavengerEnabled()) {
+			if (!IS_CONCURRENT_ENABLED) {
 				/* Walk the evacuate space, fixing up objects and installing reverse forward pointers in survivor space */
 				backoutFixupAndReverseForwardPointersInSurvivor(env);
 			}

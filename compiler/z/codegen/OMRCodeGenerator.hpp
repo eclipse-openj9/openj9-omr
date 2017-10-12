@@ -1135,8 +1135,8 @@ public:
    TR::Instruction* ccInstruction() { return _ccInstruction; }
    void setCCInstruction(TR::Instruction* cc) { _ccInstruction = cc; }
 
-   #define TR_DEFAULT_DATA_SNIPPET_EXPONENT 6
-   int32_t constantDataSnippetExponent() { return TR_DEFAULT_DATA_SNIPPET_EXPONENT; } // 1 << 6 = 64 byte max size for each constantDataSnippet
+   #define TR_DEFAULT_DATA_SNIPPET_EXPONENT 7
+   int32_t constantDataSnippetExponent() { return TR_DEFAULT_DATA_SNIPPET_EXPONENT; } // 1 << 7 = 128 byte max size for each constantDataSnippet
 
 
  private:

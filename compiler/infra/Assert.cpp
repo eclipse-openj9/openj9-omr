@@ -93,7 +93,7 @@ static void assumeDontCallMeDirectlyImpl( const char * file, int32_t line, const
    // Fatal assertions fire always, however, non fatal assertions
    // can be disabled via TR_SoftFailOnAssume.
    if (comp && comp->getOption(TR_SoftFailOnAssume) && !fatal)
-      throw TR::AssertionFailure();
+      comp->failCompilation<TR::AssertionFailure>("Assertion Failure");
 
    // Default is to always print to screen
    bool printOnscreen = true;

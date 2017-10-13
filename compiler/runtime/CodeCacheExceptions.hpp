@@ -29,11 +29,22 @@
 
 namespace TR {
 
+/**
+ * Code Cache Allocation Failure exception type.
+ *
+ * Thrown when the compiler fails to allocate a code cache.
+ */
 struct CodeCacheError : public virtual std::bad_alloc
    {
    virtual const char* what() const throw() { return "Code Cache Error"; }
    };
 
+/**
+ * Recoverable Code Cache Allocation Failure exception type.
+ *
+ * Thrown on an Code Cache Allocation Failure condition which the
+ * compiler can recover from by allowing a recompilation to occur.
+ */
 struct RecoverableCodeCacheError : public virtual std::bad_alloc
    {
    virtual const char* what() const throw() { return "Recoverable Code Cache Error"; }

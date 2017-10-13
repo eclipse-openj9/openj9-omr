@@ -1181,10 +1181,10 @@ int32_t OMR::Compilation::compile()
    // If that happened we want to fail the compilation at this point.
    //
    if (_methodSymbol->unimplementedOpcode())
-      throw TR::UnimplementedOpCode();
+      self()->failCompilation<TR::UnimplementedOpCode>("Unimplemented Op Code");
 
    if (!_ilGenSuccess)
-      throw TR::ILGenFailure();
+      self()->failCompilation<TR::ILGenFailure>("IL Gen Failure");
 
 #ifdef J9_PROJECT_SPECIFIC
    if (self()->getOption(TR_TraceCG))

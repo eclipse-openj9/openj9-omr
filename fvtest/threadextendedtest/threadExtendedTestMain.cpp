@@ -38,19 +38,7 @@ testMain(int argc, char **argv, char **envp)
 	 */
 	if (!testing::Test::HasFatalFailure()) {
 		omrTestEnv = (ThreadExtendedTestEnvironment *)testing::AddGlobalTestEnvironment(new ThreadExtendedTestEnvironment(argc, argv, &portLibrary));
-
-		OMRPORT_ACCESS_FROM_OMRPORT(&portLibrary);
-
-		uint64_t start = omrtime_current_time_millis();
-		uint64_t end = start;
-		uint64_t grindingTime = omrTestEnv->grindTime * 60 * 1000;
-
-		/* keep running the tests until we have run for the requested number of minutes */
-		omrTestEnv->log("grinding time is %llu millis. (The value can be specified using -grind=<mins>)\n", grindingTime);
-		do {
-			result = RUN_ALL_TESTS();
-			end = omrtime_current_time_millis();
-		} while ((end < (start + grindingTime)) && (0 == result));
+		result = RUN_ALL_TESTS();
 	}
 
 	thrExtendedTestTearDown(&portLibrary);

@@ -105,7 +105,7 @@ TEST_F(CpuTimeTest, increasesMonotonically)
 	J9ThreadsCpuUsage prevCpuUsage;
 	omrthread_get_jvm_cpu_usage_info(&prevCpuUsage);
 
-	for (unsigned int i = 0; i < 500; i += 1) {
+	for (unsigned int i = 0; i < 100; i += 1) {
 		userTimeCpuBurn();
 		ASSERT_EQ(omrthread_get_jvm_cpu_usage_info(&cpuUsage), 0);
 		ASSERT_GE(cpuUsage.systemJvmCpuTime, prevCpuUsage.systemJvmCpuTime);
@@ -138,7 +138,7 @@ TEST_F(ApplicationCpuTimeTest, increasesMonotonically)
 	J9ThreadsCpuUsage cpuUsage, prevCpuUsage;
 	omrthread_get_jvm_cpu_usage_info(&prevCpuUsage);
 
-	for (unsigned int i = 0; i < 500; i += 1) {
+	for (unsigned int i = 0; i < 100; i += 1) {
 		userTimeCpuBurn();
 		ASSERT_EQ(omrthread_get_jvm_cpu_usage_info(&cpuUsage), 0);
 		ASSERT_GE(cpuUsage.applicationCpuTime, prevCpuUsage.applicationCpuTime);
@@ -282,8 +282,8 @@ appThread(void * arg)
 	return 0;
 }
 
-#define NUM_APP_THREAD 50
-#define NUM_SYS_THREAD 10
+#define NUM_APP_THREAD 10
+#define NUM_SYS_THREAD 5
 
 /**
  * Compare the values of omrthread_get_cpu_time and omrthread_get_self_cpu_time

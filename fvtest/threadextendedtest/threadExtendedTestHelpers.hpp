@@ -37,7 +37,6 @@ class ThreadExtendedTestEnvironment: public BaseEnvironment
 private:
 protected:
 public:
-	uint32_t grindTime;
 
 /*
 * Function members
@@ -46,14 +45,8 @@ private:
 protected:
 public:
 	ThreadExtendedTestEnvironment(int argc, char **argv, OMRPortLibrary *portLibrary) :
-		BaseEnvironment(argc, argv),
-		grindTime(0)
+		BaseEnvironment(argc, argv)
 	{
-		for (int i = 1; i < argc; i++) {
-			if (strncmp(argv[i], "-grind=", strlen("-grind=")) == 0) {
-				sscanf(&argv[i][strlen("-grind=")], "%u", &grindTime);
-			}
-		}
 		portLib = portLibrary;
 	}
 };

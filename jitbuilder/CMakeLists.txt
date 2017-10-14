@@ -53,6 +53,7 @@ elseif(OMR_ARCH_POWER)
 		p/runtime/CodeSync.cpp
 		p/runtime/AsmUtil.spp
 		p/runtime/CodeDispatch.spp
+		${OMR_ROOT}/compiler/p/env/OMRDebugEnv.cpp
 	)
 endif()
 
@@ -61,7 +62,7 @@ endif()
 create_omr_compiler_library(
 	NAME    jitbuilder
 	OBJECTS ${JITBUILDER_OBJECTS}
-	DEFINES PROD_WITH_ASSUMES
+	DEFINES PROD_WITH_ASSUMES JITTEST
 )
 
 # Add interface path so that include paths propagate.

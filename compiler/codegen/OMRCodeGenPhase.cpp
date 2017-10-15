@@ -189,7 +189,7 @@ OMR::CodeGenPhase::performProcessRelocationsPhase(TR::CodeGenerator * cg, TR::Co
 
      if (debug("dumpCodeSizes"))
         {
-        diagnostic("%08d   %s\n", cg->getWarmCodeLength()+ cg->getColdCodeLength(), comp->signature());
+        diagnostic("%08d   %s\n", cg->getWarmCodeLength(), comp->signature());
         }
 
      if (comp->getCurrentMethod() == NULL)
@@ -197,12 +197,11 @@ OMR::CodeGenPhase::performProcessRelocationsPhase(TR::CodeGenerator * cg, TR::Co
         comp->getMethodSymbol()->setMethodAddress(cg->getBinaryBufferStart());
         }
 
-     TR_ASSERT(cg->getWarmCodeLength() <= cg->getEstimatedWarmLength() && cg->getColdCodeLength() <= 0,
+     TR_ASSERT(cg->getWarmCodeLength() <= cg->getEstimatedWarmLength(),
                "Method length estimate must be conservatively large\n"
-               "    warmCodeLength = %d, estimatedWarmLength = %d \n"
-               "    coldCodeLength = %d",
-               cg->getWarmCodeLength(), cg->getEstimatedWarmLength(),
-               cg->getColdCodeLength());
+               "    warmCodeLength = %d, estimatedWarmLength = %d \n",
+               cg->getWarmCodeLength(), cg->getEstimatedWarmLength()
+               );
 
      // also trace the interal stack atlas
      cg->getStackAtlas()->close(cg);
@@ -265,7 +264,7 @@ OMR::CodeGenPhase::performEmitSnippetsPhase(TR::CodeGenerator * cg, TR::CodeGenP
                   "\nAmount of code memory consumed for this function         = %d"
                   "\nAmount of snippet code memory consumed for this function = %d\n\n",
                   cg->getEstimatedMethodLength(),
-                  cg->getWarmCodeLength() + cg->getColdCodeLength(),
+                  cg->getWarmCodeLength(),
                   snippetLength);
       }
    }

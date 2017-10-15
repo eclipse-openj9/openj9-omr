@@ -1178,12 +1178,6 @@ OMR::CodeGenerator::getWarmCodeLength() // cast explicitly
    }
 
 uint32_t
-OMR::CodeGenerator::getColdCodeLength() // cast explicitly
-   {
-   return (uint32_t)0;
-   }
-
-uint32_t
 OMR::CodeGenerator::getCodeLength() // cast explicitly
    {
    return (uint32_t)(self()->getCodeEnd() - self()->getCodeStart());

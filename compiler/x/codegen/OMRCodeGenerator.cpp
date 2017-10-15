@@ -1888,7 +1888,6 @@ void OMR::X86::CodeGenerator::doBinaryEncoding()
    // the allocated size by 4.
    #define OVER_ESTIMATION 4
    self()->setEstimatedWarmLength(estimate+OVER_ESTIMATION);
-   self()->setEstimatedColdLength(0);
 
    if (self()->comp()->getOption(TR_TraceCG))
       {
@@ -1906,7 +1905,7 @@ void OMR::X86::CodeGenerator::doBinaryEncoding()
       }
 
    uint8_t * coldCode = NULL;
-   uint8_t * temp = self()->allocateCodeMemory(self()->getEstimatedWarmLength(), self()->getEstimatedColdLength(), &coldCode);
+   uint8_t * temp = self()->allocateCodeMemory(self()->getEstimatedWarmLength(), 0, &coldCode);
    TR_ASSERT(temp, "Failed to allocate primary code area.");
 
    if (TR::Compiler->target.is64Bit() && self()->comp()->getCodeCacheSwitched() && self()->getPicSlotCount() != 0)

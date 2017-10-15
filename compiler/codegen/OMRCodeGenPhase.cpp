@@ -197,12 +197,12 @@ OMR::CodeGenPhase::performProcessRelocationsPhase(TR::CodeGenerator * cg, TR::Co
         comp->getMethodSymbol()->setMethodAddress(cg->getBinaryBufferStart());
         }
 
-     TR_ASSERT(cg->getWarmCodeLength() <= cg->getEstimatedWarmLength() && cg->getColdCodeLength() <= cg->getEstimatedColdLength(),
+     TR_ASSERT(cg->getWarmCodeLength() <= cg->getEstimatedWarmLength() && cg->getColdCodeLength() <= 0,
                "Method length estimate must be conservatively large\n"
                "    warmCodeLength = %d, estimatedWarmLength = %d \n"
-               "    coldCodeLength = %d, estimatedColdLength = %d",
+               "    coldCodeLength = %d",
                cg->getWarmCodeLength(), cg->getEstimatedWarmLength(),
-               cg->getColdCodeLength(),cg->getEstimatedColdLength());
+               cg->getColdCodeLength());
 
      // also trace the interal stack atlas
      cg->getStackAtlas()->close(cg);
@@ -247,8 +247,6 @@ OMR::CodeGenPhase::performEmitSnippetsPhase(TR::CodeGenerator * cg, TR::CodeGenP
    if (comp->getOption(TR_TraceCG) || comp->getOptions()->getTraceCGOption(TR_TraceCGPostBinaryEncoding))
       {
       diagnostic("\nbuffer start = %8x, code start = %8x, buffer length = %d", cg->getBinaryBufferStart(), cg->getCodeStart(), cg->getEstimatedWarmLength());
-      if (cg->getEstimatedColdLength())
-         diagnostic(" + %d", cg->getEstimatedColdLength());
       diagnostic("\n");
       const char * title = "Post Binary Instructions";
 

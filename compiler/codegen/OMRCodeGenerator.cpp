@@ -214,7 +214,6 @@ OMR::CodeGenerator::CodeGenerator() :
      _warmCodeEnd(NULL),
      _coldCodeStart(NULL),
      _estimatedWarmLength(0),
-     _estimatedColdLength(0),
      _estimatedSnippetStart(0),
      _accumulatedInstructionLengthError(0),
      _registerSaveDescription(0),

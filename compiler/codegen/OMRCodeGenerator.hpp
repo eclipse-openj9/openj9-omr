@@ -741,9 +741,7 @@ class OMR_EXTENSIBLE CodeGenerator
    //
    uint32_t getEstimatedWarmLength()           {return _estimatedWarmLength;}
    uint32_t setEstimatedWarmLength(uint32_t l) {return (_estimatedWarmLength = l);}
-   uint32_t getEstimatedColdLength()           {return _estimatedColdLength;}
-   uint32_t setEstimatedColdLength(uint32_t l) {return (_estimatedColdLength = l);}
-   uint32_t getEstimatedMethodLength()           {return _estimatedWarmLength+_estimatedColdLength;}
+   uint32_t getEstimatedMethodLength()           {return _estimatedWarmLength;}
 
    uint8_t *getBinaryBufferStart()           {return _binaryBufferStart;}
    uint8_t *setBinaryBufferStart(uint8_t *b) {return (_binaryBufferStart = b);}
@@ -1929,7 +1927,6 @@ class OMR_EXTENSIBLE CodeGenerator
    uint32_t _largestOutgoingArgSize;
 
    uint32_t _estimatedWarmLength;
-   uint32_t _estimatedColdLength;
    int32_t _estimatedSnippetStart;
    int32_t _accumulatedInstructionLengthError;
    int32_t _frameSizeInBytes;

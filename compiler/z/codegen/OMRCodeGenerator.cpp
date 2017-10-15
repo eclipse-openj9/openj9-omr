@@ -6323,12 +6323,11 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
       }
 
    self()->setEstimatedWarmLength(data.estimate);
-   self()->setEstimatedColdLength(0);
 
    data.cursorInstruction = self()->comp()->getFirstInstruction();
 
    uint8_t *coldCode = NULL;
-   uint8_t *temp = self()->allocateCodeMemory(self()->getEstimatedWarmLength(), self()->getEstimatedColdLength(), &coldCode);
+   uint8_t *temp = self()->allocateCodeMemory(self()->getEstimatedWarmLength(), 0, &coldCode);
 
 
    self()->setBinaryBufferStart(temp);

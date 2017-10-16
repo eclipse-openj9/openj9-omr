@@ -53,6 +53,12 @@ elseif(OMR_ARCH_POWER)
 		p/codegen/Evaluator.cpp
 		${OMR_ROOT}/compiler/p/env/OMRDebugEnv.cpp
 	)
+elseif(OMR_ARCH_S390)
+	list(APPEND COMPILERTEST_FILES 
+		z/codegen/Evaluator.cpp
+		z/codegen/TestCodeGenerator.cpp
+		${OMR_ROOT}/compiler/z/env/OMRDebugEnv.cpp
+	)
 endif()
 
 create_omr_compiler_library(
@@ -62,6 +68,7 @@ create_omr_compiler_library(
 		JITTEST
 		TEST_PROJECT_SPECIFIC
 		PROD_WITH_ASSUMES
+		INCLUDES ${OMR_ROOT}/fvtest
 )
 add_executable(compilertest
 	tests/main.cpp

@@ -32,6 +32,8 @@
 #include "ilgen/MethodBuilder.hpp"
 #include "LinkedList.hpp"
 
+#undef DEBUG_OUTPUT
+
 static void printString(int64_t ptr)
    {
    #define PRINTSTRING_LINE LINETOSTR(__LINE__)
@@ -120,6 +122,7 @@ LinkedListMethod::buildIL()
    AppendBuilder(breakBuilder);
 
    IlBuilder *foundBuilder = NULL;
+#if defined(DEBUG_OUTPUT)
    loop->Call("printString",  1,
    loop->                     ConstInt64((int64_t) "search["));
    loop->Call("printAddress", 1,
@@ -136,6 +139,7 @@ LinkedListMethod::buildIL()
    loop->                        Load("ptr")));
    loop->Call("printString",  1,
    loop->                     ConstInt64((int64_t) "}\n"));
+#endif
 
    loop->IfThen(&foundBuilder,
    loop->   EqualTo(
@@ -178,7 +182,7 @@ class LinkedListTypeDictionary : public TR::TypeDictionary
       }
    };
 
-
+#if defined(DEBUG_OUTPUT)
 void
 printList(Element *ptr)
    {
@@ -188,6 +192,7 @@ printList(Element *ptr)
       ptr = ptr->next;
       }
    }
+#endif
 
 int
 main(int argc, char *argv[])
@@ -224,22 +229,26 @@ main(int argc, char *argv[])
       cdr = car;
       }
    Element *list = cdr;
+#if defined(DEBUG_OUTPUT)
    printList(list);
+#endif
 
    printf("Step 5: invoke compiled code and verify results\n");
    LinkedListFunctionType *search = (LinkedListFunctionType *)entry;
    int32_t val = search(list, 500);
-   printf("search(list,500) == %d\n", val);
    if (val != -1)
+      {
+      printf("search(list,500) == %d\n", val);
       printf("FAIL!\n");
+      }
    else
       {
       for (int16_t n=0;n < 100;n++)
          {
          val = search(list, n);
-         printf("search(list,%2d) = %d\n", n, val);
          if (val != 4 * n)
             {
+            printf("search(list,%2d) = %d\n", n, val);
             printf("FAIL!\n");
             break;
             }

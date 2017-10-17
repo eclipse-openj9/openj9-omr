@@ -168,7 +168,7 @@ TEST_P(UInt8ReductionTest, Reduction)
 
    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
 
-   auto entry_point = compiler.getEntryPoint<int32_t (*)(uint8_t)>();
+   auto entry_point = compiler.getEntryPoint<int32_t (*)(int8_t)>();
 
    ASSERT_EQ(param.oracle(param.val1, param.val2), entry_point(param.val1));
    }
@@ -256,7 +256,7 @@ TEST_P(UInt16ReductionTest, Reduction)
 
    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
 
-   auto entry_point = compiler.getEntryPoint<int32_t (*)(uint16_t)>();
+   auto entry_point = compiler.getEntryPoint<int32_t (*)(int16_t)>();
 
    ASSERT_EQ(param.oracle(param.val1, param.val2), entry_point(param.val1));
    }
@@ -342,7 +342,7 @@ TEST_P(UInt32ReductionTest, Reduction)
 
    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
 
-   auto entry_point = compiler.getEntryPoint<int32_t (*)(uint32_t)>();
+   auto entry_point = compiler.getEntryPoint<int32_t (*)(int32_t)>();
 
    ASSERT_EQ(param.oracle(param.val1, param.val2), entry_point(param.val1));
    }
@@ -428,7 +428,7 @@ TEST_P(UInt64ReductionTest, Reduction)
 
    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
 
-   auto entry_point = compiler.getEntryPoint<int32_t (*)(uint64_t)>();
+   auto entry_point = compiler.getEntryPoint<int32_t (*)(int64_t)>();
 
    ASSERT_EQ(param.oracle(param.val1, param.val2), entry_point(param.val1));
    }

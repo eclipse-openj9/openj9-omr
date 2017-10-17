@@ -283,7 +283,11 @@ IlBuilder::Copy(TR::IlValue *value)
    {
    TR::DataType dt = value->getDataType();
    TR::SymbolReference *newSymRef = symRefTab()->createTemporary(_methodSymbol, dt);
+   char *name = (char *) _comp->trMemory()->allocateHeapMemory((2+10+1) * sizeof(char)); // 2 ("_T") + max 10 digits + trailing zero
+   sprintf(name, "_T%u", newSymRef->getCPIndex());
+   newSymRef->getSymbol()->getAutoSymbol()->setName(name);
    newSymRef->getSymbol()->setNotCollected();
+   _methodBuilder->defineSymbol(name, newSymRef);
 
    storeToTemp(newSymRef, loadValue(value));
 
@@ -727,7 +731,11 @@ IlBuilder::CreateLocalArray(int32_t numElements, TR::IlType *elementType)
    TR::SymbolReference *localArraySymRef = symRefTab()->createLocalPrimArray(size,
                                                                              methodSymbol(),
                                                                              8 /*FIXME: JVM-specific - byte*/);
+   char *name = (char *) _comp->trMemory()->allocateHeapMemory((2+10+1) * sizeof(char)); // 2 ("_T") + max 10 digits + trailing zero
+   sprintf(name, "_T%u", localArraySymRef->getCPIndex());
+   localArraySymRef->getSymbol()->getAutoSymbol()->setName(name);
    localArraySymRef->setStackAllocatedArrayAccess();
+   _methodBuilder->defineSymbol(name, localArraySymRef);
 
    TR::Node *arrayAddress = TR::Node::createWithSymRef(TR::loadaddr, 0, localArraySymRef);
    TR::IlValue *arrayAddressValue = newValue(TR::Address, arrayAddress);
@@ -747,7 +755,11 @@ IlBuilder::CreateLocalStruct(TR::IlType *structType)
    TR::SymbolReference *localStructSymRef = symRefTab()->createLocalPrimArray(size,
                                                                              methodSymbol(),
                                                                              8 /*FIXME: JVM-specific - byte*/);
+   char *name = (char *) _comp->trMemory()->allocateHeapMemory((2+10+1) * sizeof(char)); // 2 ("_T") + max 10 digits + trailing zero
+   sprintf(name, "_T%u", localStructSymRef->getCPIndex());
+   localStructSymRef->getSymbol()->getAutoSymbol()->setName(name);
    localStructSymRef->setStackAllocatedArrayAccess();
+   _methodBuilder->defineSymbol(name, localStructSymRef);
 
    TR::Node *structAddress = TR::Node::createWithSymRef(TR::loadaddr, 0, localStructSymRef);
    TR::IlValue *structAddressValue = newValue(TR::Address, structAddress);

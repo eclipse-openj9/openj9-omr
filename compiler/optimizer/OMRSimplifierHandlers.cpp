@@ -5268,6 +5268,161 @@ static bool skipRemLowering(int64_t divisor, TR::Simplifier *s)
    }
 
 
+/** \brief
+ *     Reduce ifxcmpge to ifxcmpeq if possible to simplify the trees so that a code generator may have the opportunity
+ *     to carry out in-memory bit tests to evaluate the respective tree.
+ *
+ *  \details
+ *     The transformation is only performed under the following conditions:
+ *
+ *     - the first child is logical AND node
+ *     - the second child of the logical AND node is a constant N
+ *     - the second child of the ifxcmpge node is a constant N,
+ *     - either the comparison is unsigned or N >= 0
+ *
+ *     If all conditions are satisfied then ifxcmpge can be reduced to ifxcmpeq.
+ *
+ *  \example
+ *     <code>
+ *     (0) ificmpge --> block_5
+ *     (?)   iand
+ *     (?)     iload y
+ *     (?)     iconst 16
+ *     (?)   iconst 16
+ *     </code>
+ *
+ *     Can be reduced to:
+ *
+ *     <code>
+ *     (0) ificmpeq --> block_5
+ *     (?)   iand
+ *     (?)     iload y
+ *     (?)     iconst 16
+ *     (?)   iconst 16
+ *     </code>
+ *
+ *     Since the constants are equal, the case of greater-than is impossible, and we can reduce ificmpge to ificmpeq.
+ *     In other words, the result of iand cannot be greater than the constant, and we can simply perform an equality
+ *     check, which provides further optimization opportunities.
+ *
+ *  \note
+ *     The following special case. We need to check that either the comparison is unsigned, or the mask has the high /
+ *     sign bit clear. Otherwise it's possible for the result of iand to compare greater. For example, consider the
+ *     following tree:
+ *
+ *     <code>
+ *     (0) ificmpge --> block_7
+ *     (?)   iand
+ *     (?)     iload y
+ *     (?)     iconst -2
+ *     (?)   iconst -2
+ *     </code>
+ *
+ *     If <c>y</c> is non-negative, then the result of iand will also be non-negative, and therefore greater than -2.
+ */
+class IfxcmpgeToIfxcmpeqReducer
+   {
+   public:
+
+   IfxcmpgeToIfxcmpeqReducer(TR::Simplifier* simplifier, TR::Node* node)
+   :
+      _simplifier(simplifier), _node(node)
+   {}
+
+   /** \brief
+    *     Determines whether an ifxcmpge node can be reduced to ifxcmpeq.
+    *
+    *  \return
+    *     <c>true</c> if the reduction is possible; <c>false</c> otherwise.
+    */
+   bool isReducible()
+      {
+      bool result = false;
+
+      switch (_node->getOpCodeValue())
+         {
+         case TR::ifbcmpge:
+            result =  isReducibleSpecific<int8_t>();
+            break;
+         case TR::ifbucmpge:
+            result =  isReducibleSpecific<uint8_t>();
+            break;
+
+         case TR::ifscmpge:
+            result =  isReducibleSpecific<int16_t>();
+            break;
+         case TR::ifsucmpge:
+            result =  isReducibleSpecific<uint16_t>();
+            break;
+
+         case TR::ificmpge:
+            result =  isReducibleSpecific<int32_t>();
+            break;
+         case TR::ifiucmpge:
+            result =  isReducibleSpecific<uint32_t>();
+            break;
+
+         case TR::iflcmpge:
+            result =  isReducibleSpecific<int64_t>();
+            break;
+         case TR::iflucmpge:
+            result =  isReducibleSpecific<uint64_t>();
+            break;
+         }
+
+         return result;
+      }
+
+   /** \brief
+    *     Perform the reduction.
+    *
+    *  \return
+    *     The transformed node if a reduction was performed.
+    */
+   TR::Node* reduce()
+      {
+      if (performTransformation(_simplifier->comp(), "%sReduce an ifxcmpge node [%p] to ifxcmpeq\n", _simplifier->optDetailString(), _node))
+         {
+         TR::ILOpCodes ifcmpeqOpCode = TR::ILOpCode::ifcmpeqOpCode(_node->getSecondChild()->getDataType());
+         TR::Node::recreate(_node, ifcmpeqOpCode);
+         }
+
+      return _node;
+      }
+
+   private:
+
+   /** \brief
+    *     The actual implementation of `isReducible` for an exact type.
+    */
+   template<typename T>
+   bool isReducibleSpecific() const
+      {
+      TR::Node* lhsNode = _node->getFirstChild();
+      TR::Node* rhsNode = _node->getSecondChild();
+
+      if (lhsNode->getOpCode().isAnd() && lhsNode->getSecondChild()->getOpCode().isIntegralConst() &&
+            rhsNode->getOpCode().isIntegralConst())
+         {
+         T andConst = lhsNode->getSecondChild()->getConst<T>();
+
+         if (andConst == rhsNode->getConst<T>() && (_node->getOpCode().isUnsignedCompare() || andConst >= 0))
+            {
+            return true;
+            }
+         }
+
+      return false;
+      }
+
+   private:
+
+   TR::Simplifier* _simplifier;
+
+   TR::Node* _node;
+   };
+
+
 /*
  * Simplifier handlers:
  * Each handler function corresponds to an entry in the simplifierOpts table,
@@ -13043,6 +13198,9 @@ TR::Node *ificmpgeSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier 
       unsignedIntCompareNarrower(node, s, TR::ifsucmpge, TR::ifbucmpge);
       }
 
+   IfxcmpgeToIfxcmpeqReducer ifxcmpReducer(s, node);
+   if (ifxcmpReducer.isReducible())
+      node = ifxcmpReducer.reduce();
 
    partialRedundantCompareElimination(node, block, s);
    return node;
@@ -13253,6 +13411,7 @@ TR::Node *iflcmpgeSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier 
    TR::Node *originalSecond = secondChild;
 
    makeConstantTheRightChildAndSetOpcode(node, firstChild, secondChild, s);
+
    if (node->getOpCodeValue() == TR::iflcmpge)
       {
       if (firstChild->getOpCode().isLoadConst() && conditionalBranchFold((originalFirst->getLongInt() >= originalSecond->getLongInt()), node, firstChild, secondChild, block, s))
@@ -13264,6 +13423,11 @@ TR::Node *iflcmpgeSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier 
       if (firstChild->getOpCode().isLoadConst() && conditionalBranchFold((((uint64_t)originalFirst->getLongInt())>=((uint64_t)originalSecond->getLongInt())), node, firstChild, secondChild, block, s))
          return node;
       }
+
+   IfxcmpgeToIfxcmpeqReducer ifxcmpReducer(s, node);
+   if (ifxcmpReducer.isReducible())
+      node = ifxcmpReducer.reduce();
+
    partialRedundantCompareElimination(node, block, s);
    return node;
    }
@@ -13577,6 +13741,12 @@ TR::Node *ifCmpWithEqualitySimplifier(TR::Node * node, TR::Block * block, TR::Si
       }
 
    makeConstantTheRightChildAndSetOpcode(node, firstChild, secondChild, s);
+
+   // Reduce ifcmpge to ifcmpeq in specific cases
+   TR::ILOpCode op = node->getOpCode();
+   IfxcmpgeToIfxcmpeqReducer ifxcmpReducer(s, node);
+   if (op.isCompareForOrder() && op.isCompareTrueIfGreater() && ifxcmpReducer.isReducible())
+      node = ifxcmpReducer.reduce();
 
    if (firstChild->getOpCode().isLoadConst() &&
        secondChild->getOpCode().isLoadConst())

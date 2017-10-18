@@ -253,7 +253,7 @@ protected:
 	}
 
 public:
-	static MM_ParallelGlobalGC *newInstance(MM_EnvironmentBase *env, MM_CollectorLanguageInterface *cli);
+	static MM_ParallelGlobalGC *newInstance(MM_EnvironmentBase *env);
 	virtual void kill(MM_EnvironmentBase *env);
 
 	virtual uintptr_t getVMStateID();
@@ -307,8 +307,8 @@ public:
 
 	virtual void completeExternalConcurrentCycle(MM_EnvironmentBase *env);
 
-	MM_ParallelGlobalGC(MM_EnvironmentBase *env, MM_CollectorLanguageInterface *cli)
-		: MM_GlobalCollector(env, cli)
+	MM_ParallelGlobalGC(MM_EnvironmentBase *env)
+		: MM_GlobalCollector()
 		, _extensions(MM_GCExtensionsBase::getExtensions(env->getOmrVM()))
 		, _portLibrary(env->getPortLibrary())
 #if defined(OMR_GC_MODRON_COMPACTION)

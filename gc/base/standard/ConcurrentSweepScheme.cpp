@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2015 IBM Corp. and others
+ * Copyright (c) 1991, 2017 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1089,7 +1089,7 @@ MM_ConcurrentSweepScheme::calculateTax(MM_EnvironmentBase *envModron, UDATA allo
 
 #if defined(OMR_GC_MODRON_CONCURRENT_MARK)
 	if(_extensions->concurrentMark) {
-		UDATA kickoffThreshold = ((MM_ConcurrentGC *)_collector)->_stats->getKickoffThreshold();
+		UDATA kickoffThreshold = ((MM_ConcurrentGC *)_collector)->getConcurrentGCStats()->getKickoffThreshold();
 		
 		/* Another thread may have pushed us over the kickoffThreshold leaving us with a 
 		 * negative difference between remainingFree and kickoffThreshold 

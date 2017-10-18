@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2015 IBM Corp. and others
+ * Copyright (c) 1991, 2017 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -123,7 +123,7 @@ typedef enum {
 } BitMapAction;	
 
 
-class MM_EnvironmentStandard;
+class MM_EnvironmentBase;
 class MM_ConcurrentGC;
 class MM_Dispatcher;
 class MM_MarkingScheme;
@@ -182,20 +182,20 @@ public:
 private:
 	virtual void tearDown(MM_EnvironmentBase *env);
 	
-	bool allocateCardTableEntriesForHeapRange(MM_EnvironmentStandard *env, MM_MemorySubSpace *subspace, uintptr_t size, void *lowAddress, void *highAddress, bool clearNewCards);
-	bool freeCardTableEntriesForHeapRange(MM_EnvironmentStandard *env, uintptr_t size, void *lowAddress, void *highAddress, void *lowValidAddress, void *highValidAddress);
-	bool allocateTLHMarkMapEntriesForHeapRange(MM_EnvironmentStandard *env, MM_MemorySubSpace *subspace, uintptr_t size, void *lowAddress, void *highAddress);
-	bool freeTLHMarkMapEntriesForHeapRange(MM_EnvironmentStandard *env, uintptr_t size, void *lowAddress, void *highAddress, void *lowValidAddress, void *highValidAddress);
+	bool allocateCardTableEntriesForHeapRange(MM_EnvironmentBase *env, MM_MemorySubSpace *subspace, uintptr_t size, void *lowAddress, void *highAddress, bool clearNewCards);
+	bool freeCardTableEntriesForHeapRange(MM_EnvironmentBase *env, uintptr_t size, void *lowAddress, void *highAddress, void *lowValidAddress, void *highValidAddress);
+	bool allocateTLHMarkMapEntriesForHeapRange(MM_EnvironmentBase *env, MM_MemorySubSpace *subspace, uintptr_t size, void *lowAddress, void *highAddress);
+	bool freeTLHMarkMapEntriesForHeapRange(MM_EnvironmentBase *env, uintptr_t size, void *lowAddress, void *highAddress, void *lowValidAddress, void *highValidAddress);
 	
-	void setTLHMarkBits(MM_EnvironmentStandard *env, uintptr_t slotIndex, uintptr_t slotBits);
-	void clearTLHMarkBits(MM_EnvironmentStandard *env, uintptr_t slotIndex, uintptr_t slotBits);
-	static uintptr_t calculateTLHMarkMapSize(MM_EnvironmentStandard *env, uintptr_t cardTableSize);
+	void setTLHMarkBits(MM_EnvironmentBase *env, uintptr_t slotIndex, uintptr_t slotBits);
+	void clearTLHMarkBits(MM_EnvironmentBase *env, uintptr_t slotIndex, uintptr_t slotBits);
+	static uintptr_t calculateTLHMarkMapSize(MM_EnvironmentBase *env, uintptr_t cardTableSize);
 	
-	void determineCleaningRanges(MM_EnvironmentStandard *env);
-	void resetCleaningRanges(MM_EnvironmentStandard *env);
-	bool isCardInActiveTLH(MM_EnvironmentStandard *env, Card *card);
+	void determineCleaningRanges(MM_EnvironmentBase *env);
+	void resetCleaningRanges(MM_EnvironmentBase *env);
+	bool isCardInActiveTLH(MM_EnvironmentBase *env, Card *card);
 	
-	void reportCardCleanPass2Start(MM_EnvironmentStandard *env);
+	void reportCardCleanPass2Start(MM_EnvironmentBase *env);
 		
 	MMINLINE uintptr_t getTLHMarkBitMask(uintptr_t index)
 	{
@@ -224,19 +224,19 @@ private:
 #endif		
 	}
 	
-	void processTLHMarkBits(MM_EnvironmentStandard *env, MM_MemorySubSpace *subspace, void *tlhBase, void *tlhTop, BitMapAction action);
+	void processTLHMarkBits(MM_EnvironmentBase *env, MM_MemorySubSpace *subspace, void *tlhBase, void *tlhTop, BitMapAction action);
 	
 protected:
 	bool initialize(MM_EnvironmentBase *env, MM_Heap *heap);
 	
-	bool cleanSingleCard(MM_EnvironmentStandard *env, Card *card, uintptr_t bytesToClean, uintptr_t *totalBytesCleaned);
-	Card* getNextDirtyCard(MM_EnvironmentStandard *env, Card cardMask, bool concurrentCardClean);
+	bool cleanSingleCard(MM_EnvironmentBase *env, Card *card, uintptr_t bytesToClean, uintptr_t *totalBytesCleaned);
+	Card* getNextDirtyCard(MM_EnvironmentBase *env, Card cardMask, bool concurrentCardClean);
 	
-	bool cardHasMarkedObjects(MM_EnvironmentStandard *env, Card *card);
+	bool cardHasMarkedObjects(MM_EnvironmentBase *env, Card *card);
 	
-	virtual void prepareCardsForCleaning(MM_EnvironmentStandard *env); 
-	virtual bool getExclusiveCardTableAccess(MM_EnvironmentStandard *env, CardCleanPhase currentPhase, bool threadAtSafePoint);
-	virtual void releaseExclusiveCardTableAccess(MM_EnvironmentStandard *env);
+	virtual void prepareCardsForCleaning(MM_EnvironmentBase *env);
+	virtual bool getExclusiveCardTableAccess(MM_EnvironmentBase *env, CardCleanPhase currentPhase, bool threadAtSafePoint);
+	virtual void releaseExclusiveCardTableAccess(MM_EnvironmentBase *env);
 	
 	MMINLINE virtual void concurrentCleanCard(Card *card) { *card = CARD_CLEAN; };
 	MMINLINE virtual void finalCleanCard(Card *card) { *card = CARD_CLEAN; };
@@ -306,7 +306,7 @@ public:
 	 * @param[in] cleanNewCards True if the new cards included in this range should be cleared (true if the subspace is collectable)
 	 * @return true if expansion is successful
 	 */
-	bool heapAddRange(MM_EnvironmentStandard *env, MM_MemorySubSpace *subspace, uintptr_t size, void *lowAddress, void *highAddress, bool cleaNewCards);
+	bool heapAddRange(MM_EnvironmentBase *env, MM_MemorySubSpace *subspace, uintptr_t size, void *lowAddress, void *highAddress, bool cleaNewCards);
 	/**
 	 * Called when a range of memory has been removed from the heap.
 	 * @param[in] env The thread which initiated the contraction request (typically the master GC thread)
@@ -319,13 +319,13 @@ public:
 	 * @param[in] cleanNewCards True if the new cards included in this range should be cleared (true if the subspace is collectable)
 	 * @return true if contraction is successful
 	 */
-	bool heapRemoveRange(MM_EnvironmentStandard *env, MM_MemorySubSpace *subspace, uintptr_t size, void *lowAddress, void *highAddress, void *lowValidAddress, void *highValidAddress);
+	bool heapRemoveRange(MM_EnvironmentBase *env, MM_MemorySubSpace *subspace, uintptr_t size, void *lowAddress, void *highAddress, void *lowValidAddress, void *highValidAddress);
 	/**
 	 * Called when the heap geometry has been reconfigured but no memory was added or removed from the heap (happens during tilt).
 	 * @param[in] env The thread which caused the heap geometry change (typically the master GC thread)
 	 * @note This implementation does nothing.
 	 */
-	void heapReconfigured(MM_EnvironmentStandard *env);
+	void heapReconfigured(MM_EnvironmentBase *env);
 	
 	/**
 	 * @return A pointer to the mutable card table stats structure
@@ -341,7 +341,7 @@ public:
 	 * @return The size, in bytes, of all the cards which map to the supplied heap range
 	 * @note Only called by MM_ConcurrentCardTable and MM_ConcurrentGC
 	 */
-	uintptr_t cardBytesForHeapRange(MM_EnvironmentStandard *env, void *heapBase, void *heapTop);
+	uintptr_t cardBytesForHeapRange(MM_EnvironmentBase *env, void *heapBase, void *heapTop);
 	/**
 	 * Dirties the card backing the given range of the heap.  Will dirty the heapBase and heapTop cards, inclusively.
 	 * @param[in] env The thread which caused the remembered set to resize
@@ -349,21 +349,21 @@ public:
 	 * @param[in] heapTop The byte after the highest address of the heap excluded from the remembered set
 	 * @note Called when the remembered set resizes to exclude a range of the heap
 	 */
-	void dirtyCardsInRange(MM_EnvironmentStandard *env, void *heapBase, void *heapTop);
+	void dirtyCardsInRange(MM_EnvironmentBase *env, void *heapBase, void *heapTop);
 	/**
 	 * Called to clear the cards backing the heap regions which are in active but not concurrently collectable subspaces.
 	 * The purpose of this call is to clear the cards backing active nursery heap ranges, under the gencon policy.
 	 * @param[in] env The thread which reported the concurrent work stack overflow
 	 * @note Called only from MM_ConcurrentGC during concurrent work stack overflow
 	 */
-	void clearNonConcurrentCards(MM_EnvironmentStandard *env);
+	void clearNonConcurrentCards(MM_EnvironmentBase *env);
 	
 	/**
 	 * Prepare for next concurrent marking cycle (atomically sets internal state of the card table).
 	 * @param[in] env The initializing concurrent card cleaning
 	 * @note Called only from MM_ConcurrentGC
 	 */
-	void initializeCardCleaning(MM_EnvironmentStandard *env);
+	void initializeCardCleaning(MM_EnvironmentBase *env);
 	
 	/**
 	 * Start or continue the card cleaning process.
@@ -379,13 +379,13 @@ public:
 	 * @param threadAtSafePoint Whether the calling thread is at a safe point or not
 	 * @return FALSE if a GC occurs during during card table preperation.
 	 */
-	bool cleanCards(MM_EnvironmentStandard *env, bool isMutator, uintptr_t sizeToDo, uintptr_t *sizeDone, bool threadAtSafePoint);
+	bool cleanCards(MM_EnvironmentBase *env, bool isMutator, uintptr_t sizeToDo, uintptr_t *sizeDone, bool threadAtSafePoint);
 	/**
 	 * Initialize for final card cleaning.
 	 *
 	 * Called by STW to do any necessary initialization prior to final card cleaning.
 	 */
-	virtual void initializeFinalCardCleaning(MM_EnvironmentStandard *env);
+	virtual void initializeFinalCardCleaning(MM_EnvironmentBase *env);
 	/**
 	 * Do final card cleaning.
 	 *
@@ -400,7 +400,7 @@ public:
 	 * 			processed. Also returns number of bytes traced whilst cleaning cards.
 	 *
 	 */
-	bool finalCleanCards(MM_EnvironmentStandard *env, uintptr_t *bytesTraced);
+	bool finalCleanCards(MM_EnvironmentBase *env, uintptr_t *bytesTraced);
 	/**
 	 * Determine whether the referenced object is within a dirty card. Used if
 	 * object reference may not be in tenure or nursery.
@@ -408,7 +408,7 @@ public:
 	 * @param object - reference to object to be checked
 	 * @return TRUE if reference is to an object within a dirty card; FALSE otherwise
 	 */
-	bool isObjectInDirtyCard(MM_EnvironmentStandard *env, omrobjectptr_t object);
+	bool isObjectInDirtyCard(MM_EnvironmentBase *env, omrobjectptr_t object);
 	/**
 	 * Is object in a dirty card
 	 *
@@ -419,7 +419,7 @@ public:
 	 * @param object - reference to object to be checked
 	 * @return TRUE if reference is to an object within a dirty card; FALSE otherwise
 	 */
-	bool isObjectInDirtyCardNoCheck(MM_EnvironmentStandard *env, omrobjectptr_t object);
+	bool isObjectInDirtyCardNoCheck(MM_EnvironmentBase *env, omrobjectptr_t object);
 	
 	/**
 	 * Is object in an uncleaned dirty card
@@ -431,7 +431,7 @@ public:
 	 *
 	 * @return TRUE if card has NOT already been cleaned; FALSE otherwise
 	 */
-	virtual bool isObjectInUncleanedDirtyCard(MM_EnvironmentStandard *env, omrobjectptr_t object);
+	virtual bool isObjectInUncleanedDirtyCard(MM_EnvironmentBase *env, omrobjectptr_t object);
 	
 	/**
 	 * @return TRUE if we are at least in PHASE1_CLEANING.
@@ -452,7 +452,7 @@ public:
 	 * @return TRUE if reference is to an object within an active TLH; FALSE otherwise
 	 * @note Only called from MM_ConcurrentGC and internally
 	 */
-	bool isObjectInActiveTLH(MM_EnvironmentStandard *env, omrobjectptr_t object);
+	bool isObjectInActiveTLH(MM_EnvironmentBase *env, omrobjectptr_t object);
 	
 	/**
 	 * Is TLH mark bits empty?
@@ -469,8 +469,8 @@ public:
 	static void tlhRefreshed(J9HookInterface** hook, uintptr_t eventNum, void* eventData, void* userData);
 		
 #if defined(DEBUG)
-	bool isTLHMarkBitsEmpty(MM_EnvironmentStandard *env);
-	bool isCardTableEmpty(MM_EnvironmentStandard *env);
+	bool isTLHMarkBitsEmpty(MM_EnvironmentBase *env);
+	bool isCardTableEmpty(MM_EnvironmentBase *env);
 #endif /* DEBUG */
 	
 	/**

@@ -175,13 +175,13 @@ MM_Scavenger::deleteSweepPoolState(MM_EnvironmentBase *env, void *sweepPoolState
  * @return a new instance of the receiver or NULL on failure.
  */
 MM_Scavenger *
-MM_Scavenger::newInstance(MM_EnvironmentStandard *env, MM_CollectorLanguageInterface *cli, MM_HeapRegionManager *regionManager)
+MM_Scavenger::newInstance(MM_EnvironmentStandard *env, MM_HeapRegionManager *regionManager)
 {
 	MM_Scavenger *scavenger;
 
 	scavenger = (MM_Scavenger *)env->getForge()->allocate(sizeof(MM_Scavenger), MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
 	if (scavenger) {
-		new(scavenger) MM_Scavenger(env, cli, regionManager);
+		new(scavenger) MM_Scavenger(env, regionManager);
 		if (!scavenger->initialize(env)) {
 			scavenger->kill(env);
 			scavenger = NULL;

@@ -152,7 +152,7 @@ MM_ConfigurationGenerational::createDefaultMemorySpace(MM_EnvironmentBase *envBa
 	/* then we build "new-space" - note that if we fail during this we must remember to kill() the oldspace we created */
 
 	/* join them with a semispace */
-	if(NULL == (scavenger = MM_Scavenger::newInstance(env, ext->collectorLanguageInterface, ext->heapRegionManager))) {
+	if(NULL == (scavenger = MM_Scavenger::newInstance(env, ext->heapRegionManager))) {
 		memorySubSpaceOld->kill(env);
 		return NULL;
 	}

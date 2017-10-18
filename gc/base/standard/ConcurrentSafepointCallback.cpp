@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2015 IBM Corp. and others
+ * Copyright (c) 2015, 2017 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -56,7 +56,7 @@ MM_ConcurrentSafepointCallback::registerCallback(MM_EnvironmentBase *env, Safepo
 }
 
 void
-MM_ConcurrentSafepointCallback::requestCallback(MM_EnvironmentStandard *env)
+MM_ConcurrentSafepointCallback::requestCallback(MM_EnvironmentBase *env)
 {
 	/* In uncomplicated cases that always call the concurrent write barrier
 	 * (MM_CollectorLanguageInterface::writeBarrierStore/Update()) this can
@@ -69,7 +69,7 @@ MM_ConcurrentSafepointCallback::requestCallback(MM_EnvironmentStandard *env)
 
 
 void
-MM_ConcurrentSafepointCallback::cancelCallback(MM_EnvironmentStandard *env)
+MM_ConcurrentSafepointCallback::cancelCallback(MM_EnvironmentBase *env)
 {
 	/* To facilitate simple Card Table logic treat cancelCallback as a no-op */
 }

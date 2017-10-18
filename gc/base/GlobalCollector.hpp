@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2015 IBM Corp. and others
+ * Copyright (c) 1991, 2017 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -95,8 +95,8 @@ public:
  	*/
 	virtual void deleteSweepPoolState(MM_EnvironmentBase* env, void* sweepPoolState) = 0;
 
-	MM_GlobalCollector(MM_EnvironmentBase* env, MM_CollectorLanguageInterface *cli)
-		: MM_Collector(cli)
+	MM_GlobalCollector()
+		: MM_Collector()
 		, _delegate()
 	{
 		_typeId = __FUNCTION__;

@@ -26,6 +26,10 @@
 
 #include <string.h>
 
+#if defined(OMR_GC_MODRON_CONCURRENT_MARK)
+#include "ConcurrentGC.hpp"
+#include "ConcurrentGCStats.hpp"
+#endif /* defined(OMR_GC_MODRON_CONCURRENT_MARK) */
 #include "EnvironmentBase.hpp"
 #include "GCExtensionsBase.hpp"
 #include "Heap.hpp"
@@ -392,5 +396,18 @@ MM_MarkingScheme::createWorkPackets(MM_EnvironmentBase *env) {
 
 	return workPackets;
 }
+
+
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+bool
+MM_MarkingScheme::isConcurrentMarkInProgress() {
+#if defined(OMR_GC_MODRON_CONCURRENT_MARK)
+	uintptr_t mode = ((MM_ConcurrentGC *)_extensions->getGlobalCollector())->getConcurrentGCStats()->getExecutionMode();
+	return (CONCURRENT_ROOT_TRACING <= mode) && (mode < CONCURRENT_EXHAUSTED);
+#else
+	return false;
+#endif /* OMR_GC_MODRON_CONCURRENT_MARK */
+}
+#endif /* OMR_GC_CONCURRENT_SCAVENGER */
 
 

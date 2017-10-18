@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2016 IBM Corp. and others
+ * Copyright (c) 2015, 2017 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -25,14 +25,12 @@
 
 #include "omrcfg.h"
 
-
 #include "omrcomp.h"
 #include "BaseVirtual.hpp"
 
 #if defined (OMR_GC_MODRON_CONCURRENT_MARK)
 
 class MM_EnvironmentBase;
-class MM_EnvironmentStandard;
 
 typedef void (*SafepointCallbackHandler)(struct OMR_VMThread * currentThread, void * userData);
 
@@ -54,9 +52,9 @@ public:
 	virtual void registerCallback(MM_EnvironmentBase *env,  SafepointCallbackHandler handler, void *userData);
 #endif /* defined(AIXPPC) || defined(LINUXPPC) */
 
-	virtual void requestCallback(MM_EnvironmentStandard *env);
+	virtual void requestCallback(MM_EnvironmentBase *env);
 
-	virtual void cancelCallback(MM_EnvironmentStandard *env);
+	virtual void cancelCallback(MM_EnvironmentBase *env);
 
 	/* Providing this no-op class as a concrete implementation reduces the glue burden on client languages. */
 	static MM_ConcurrentSafepointCallback *newInstance(MM_EnvironmentBase *env);

@@ -95,8 +95,10 @@ inline bool AtomicCompareAndSwap(volatile uint16_t* ptr, uint16_t old_val, uint1
 inline void patchingFence16(void* addr)
    {
 #ifdef TR_HOST_64BIT
+   _mm_mfence();
    _mm_clflush(addr);
    _mm_clflush(static_cast<char*>(addr)+8);
+   _mm_mfence();
 #endif
    }
 

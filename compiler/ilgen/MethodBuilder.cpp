@@ -58,21 +58,6 @@
 #define TraceEnabled    (comp()->getOption(TR_TraceILGen))
 #define TraceIL(m, ...) {if (TraceEnabled) {traceMsg(comp(), m, ##__VA_ARGS__);}}
 
-// replay always on for now
-//#define REPLAY(x)            { x; }
-#define REPLAY(x)            { }
-#define MB_REPLAY(...)	     { REPLAY({sprintf(_rpLine, ##__VA_ARGS__); (*_rpCpp) << "\t" << _rpLine << std::endl;}) }
-#define MB_REPLAY_NONL(...)       { REPLAY({sprintf(_rpLine, ##__VA_ARGS__); (*_rpCpp) << "\t" << _rpLine;}) }
-#define REPLAY_TYPE(t)    ((t)->getName())
-
-#define REPLAY_USE_NAMES_FOR_POINTERS
-#if defined(REPLAY_USE_NAMES_FOR_POINTERS)
-#define	REPLAY_POINTER_FMT   "&%s"
-#define REPLAY_POINTER(p,n)  n
-#else
-#define	REPLAY_POINTER_FMT   "%p"
-#define REPLAY_POINTER(p,n)  p
-#endif
 
 // MethodBuilder is an IlBuilder object representing an entire method /
 // function, so it conceptually has an entry point (though multiple entry
@@ -123,32 +108,6 @@ MethodBuilder::MethodBuilder(TR::TypeDictionary *types, OMR::VirtualMachineState
    {
 
    _definingLine[0] = '\0';
-
-   REPLAY({
-      std::fstream rpHpp("ReplayMethod.hpp",std::fstream::out);
-      rpHpp << "#include \"ilgen/MethodBuilder.hpp\"" << std::endl;
-      rpHpp << "class ReplayMethod : public TR::MethodBuilder {" << std::endl;
-      rpHpp << "\tReplayMethod(TR::TypeDictionary *types);" << std::endl;
-      rpHpp << "\tvirtual bool buildIL();" << std::endl;
-      rpHpp << "};" << std::endl;
-      rpHpp.close();
-
-      _rpCpp = new std::fstream("ReplayMethodConstructor.cpp",std::fstream::out);
-      (*_rpCpp) << "#include \"ilgen/TypeDictionary.hpp\"" << std::endl << std::endl;
-      (*_rpCpp) << "#include \"ReplayMethod.hpp\"" << std::endl << std::endl;
-      (*_rpCpp) << "ReplayMethod::ReplayMethod(TR::TypeDictionary *types)" << std::endl;
-      (*_rpCpp) << "\t: TR::MethodBuilder(types) {" << std::endl;
-      // } to match open one in string in prev line so editors can match properly
-
-      _rpILCpp = new std::fstream("ReplayMethodBuildIL.cpp",std::fstream::out);
-      (*_rpILCpp) << "#include \"ilgen/TypeDictionary.hpp\"" << std::endl << std::endl;
-      (*_rpILCpp) << "#include \"ReplayMethod.hpp\"" << std::endl << std::endl;
-      (*_rpILCpp) << "bool ReplayMethod::buildIL() {" << std::endl;
-      // } to match open one in string in prev line so editors can match properly
-
-      strcpy(_replayName, "this");
-      _haveReplayName = true;
-   })
    }
 
 MethodBuilder::~MethodBuilder()
@@ -201,13 +160,6 @@ bool
 MethodBuilder::injectIL()
    {
    bool rc = IlBuilder::injectIL();
-   REPLAY({
-      (*_rpCpp) << "}" << std::endl;
-      _rpCpp->close();
-
-      (*_rpILCpp) << "}" << std::endl;
-      _rpILCpp->close();
-   })
    return rc;
    }
 
@@ -441,8 +393,6 @@ MethodBuilder::isSymbolAnArray(const char *name)
 TR::BytecodeBuilder *
 MethodBuilder::OrphanBytecodeBuilder(int32_t bcIndex, char *name)
    {
-   MB_REPLAY("OrphanBytecodeBuilder(%d, \"%s\");", bcIndex, name);
-
    TR::BytecodeBuilder *orphan = new (comp()->trHeapMemory()) TR::BytecodeBuilder(_methodBuilder, bcIndex, name);
    orphan->initialize(_details, _methodSymbol, _fe, _symRefTab);
    orphan->setupForBuildIL();
@@ -461,15 +411,12 @@ MethodBuilder::AppendBuilder(TR::BytecodeBuilder *bb)
 void
 MethodBuilder::DefineName(const char *name)
    {
-   MB_REPLAY("DefineName(\"%s\");", name);
    _methodName = name;
    }
 
 void
 MethodBuilder::DefineLocal(const char *name, TR::IlType *dt)
    {
-   MB_REPLAY("DefineLocal(\"%s\", %s);", name, REPLAY_TYPE(dt));
-
    TR_ASSERT_FATAL(_symbolTypes.find(name) == _symbolTypes.end(), "Symbol '%s' already defined", name);
    _symbolTypes.insert(std::make_pair(name, dt));
    }
@@ -477,8 +424,6 @@ MethodBuilder::DefineLocal(const char *name, TR::IlType *dt)
 void
 MethodBuilder::DefineMemory(const char *name, TR::IlType *dt, void *location)
    {
-   MB_REPLAY("DefineMemory(\"%s\", %s, " REPLAY_POINTER_FMT ");", name, REPLAY_TYPE(dt), REPLAY_POINTER(location, name));
-
    TR_ASSERT_FATAL(_memoryLocations.find(name) == _memoryLocations.end(), "Memory '%s' already defined", name);
 
    _symbolTypes.insert(std::make_pair(name, dt));
@@ -488,8 +433,6 @@ MethodBuilder::DefineMemory(const char *name, TR::IlType *dt, void *location)
 void
 MethodBuilder::DefineParameter(const char *name, TR::IlType *dt)
    {
-   MB_REPLAY("DefineParameter(\"%s\", %s);", name, REPLAY_TYPE(dt));
-
    TR_ASSERT_FATAL(_parameterSlot.find(name) == _parameterSlot.end(), "Parameter '%s' already defined", name);
 
    _parameterSlot.insert(std::make_pair(name, _numParameters));
@@ -502,7 +445,6 @@ MethodBuilder::DefineParameter(const char *name, TR::IlType *dt)
 void
 MethodBuilder::DefineArrayParameter(const char *name, TR::IlType *elementType)
    {
-   MB_REPLAY("DefineArrayParameter(\"%s\", %s);", name, REPLAY_TYPE(elementType));
    DefineParameter(name, elementType);
 
    _symbolIsArray.insert(name);
@@ -511,7 +453,6 @@ MethodBuilder::DefineArrayParameter(const char *name, TR::IlType *elementType)
 void
 MethodBuilder::DefineReturnType(TR::IlType *dt)
    {
-   MB_REPLAY("DefineReturnType(%s);", REPLAY_TYPE(dt));
    _returnType = dt;
    }
 
@@ -545,21 +486,7 @@ MethodBuilder::DefineFunction(const char* const name,
                               int32_t          numParms,
                               TR::IlType     ** parmTypes)
    {   
-   MB_REPLAY("DefineFunction((const char* const)\"%s\",", name);
-   MB_REPLAY("               (const char* const)\"%s\",", fileName);
-   MB_REPLAY("               (const char* const)\"%s\",", lineNumber);
-   MB_REPLAY("               " REPLAY_POINTER_FMT ",", REPLAY_POINTER(entryPoint, name));
-   MB_REPLAY("               %s,", REPLAY_TYPE(returnType));
-   MB_REPLAY_NONL("               %d", numParms);
-
    TR_ASSERT_FATAL(_functions.find(name) == _functions.end(), "Function '%s' already defined", name);
-
-   for (int32_t p=0;p < numParms;p++)
-      {   
-      MB_REPLAY_NONL(",\n               %s", REPLAY_TYPE(parmTypes[p]));
-      }   
-   MB_REPLAY(");");
-
    TR::ResolvedMethod *method = new (*_memoryRegion) TR::ResolvedMethod((char*)fileName,
                                                                         (char*)lineNumber,
                                                                         (char*)name,

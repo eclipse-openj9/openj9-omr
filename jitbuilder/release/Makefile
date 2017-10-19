@@ -28,8 +28,6 @@ CXXFLAGS=-g -std=c++0x -O2 -c -fno-rtti -fPIC -I./include/compiler -I./include
 
 .SUFFIXES: .cpp .o
 
-# NOTE: replay purposefully left out of these lists
-
 # These tests may not work on all platforms
 ALL_TESTS = \
             atomicoperations \
@@ -243,19 +241,6 @@ recfib : libjitbuilder.a RecursiveFib.o
 	$(CXX) -g -fno-rtti -o $@ RecursiveFib.o -L. -ljitbuilder -ldl
 
 RecursiveFib.o: src/RecursiveFib.cpp src/RecursiveFib.hpp
-	$(CXX) -o $@ $(CXXFLAGS) $<
-
-
-replay: libjitbuilder.a ReplayMethod.o ReplayMethodConstructor.o ReplayMethodBuildIL.o
-	$(CXX) -g -fno-rtti -o $@ ReplayMethod.o ReplayMethodConstructor.o ReplayMethodBuilderIL.o -L. -ljitbuilder -ldl
-
-ReplayMethod.o: ReplayMethod.cpp ReplayMethod.hpp
-	$(CXX) -o $@ $(CXXFLAGS) $<
-
-ReplayMethodConstructor.o: ReplayMethodConstructor.cpp ReplayMethod.hpp
-	$(CXX) -o $@ $(CXXFLAGS) $<
-
-ReplayMethodBuildIL.o: ReplayMethodBuildIL.cpp ReplayMethod.hpp
 	$(CXX) -o $@ $(CXXFLAGS) $<
 
 

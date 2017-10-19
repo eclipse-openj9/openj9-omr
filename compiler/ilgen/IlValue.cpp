@@ -59,6 +59,7 @@ OMR::IlValue::storeToAuto()
       char *name = (char *) comp->trMemory()->allocateHeapMemory((2+10+1) * sizeof(char)); // 2 ("_T") + max 10 digits + trailing zero
       sprintf(name, "_T%u", symRef->getCPIndex());
       symRef->getSymbol()->getAutoSymbol()->setName(name);
+      _methodBuilder->defineSymbol(name, symRef);
 
       // create store and its treetop
       TR::Node *storeNode = TR::Node::createStore(symRef, _nodeThatComputesValue);

@@ -1079,90 +1079,10 @@ omrintrospect_threads_startDo_with_signal(struct OMRPortLibrary *portLibrary, J9
  *	work on z/TPF. We'll leave this gate open for now, with a pending decision to close
  *	it or not.
  */
-#ifdef ZOS64
-	RECORD_ERROR(state, UNSUPPORT_PLATFORM, 0);
+
+	RECORD_ERROR(state, UNSUPPORTED_PLATFORM, 0);
 	return NULL;
-#endif
 
-	/* construct the walk state and thread structures */
-	state->heap = heap;
-	state->portLibrary = portLibrary;
-	data = (struct PlatformWalkData*)portLibrary->heap_allocate(portLibrary, heap, sizeof(struct PlatformWalkData));
-	state->platform_data = data;
-	state->current_thread = NULL;
-
-	if (!data) {
-		RECORD_ERROR(state, ALLOCATION_FAILURE, 0);
-		return NULL;
-	}
-
-	memset(data, 0, sizeof(struct PlatformWalkData));
-	data->state = state;
-	data->controllerThread = omrthread_get_ras_tid();
-
-	memset(&thread, 0, sizeof(J9PlatformThread));
-
-	/* prevent this thread from receiving the suspend signal */
-	sigemptyset(&mask);
-	sigaddset(&mask, SUSPEND_SIG);
-	if (sigprocmask(SIG_BLOCK, &mask, &data->old_mask) != 0) {
-		/* can't risk it if we can't filter the suspend signal from this thread */
-		RECORD_ERROR(state, SIGNAL_SETUP_ERROR, errno);
-		return NULL;
-	}
-
-	/* ensure that we can tell which file handles need closing if part of the semaphore initialization fails */
-	data->client_sem.descriptor_pair[0] = -1;
-	data->client_sem.descriptor_pair[1] = -1;
-	data->controller_sem.descriptor_pair[0] = -1;
-	data->controller_sem.descriptor_pair[1] = -1;
-	data->release_barrier.descriptor_pair[0] = -1;
-	data->release_barrier.descriptor_pair[1] = -1;
-
-	/* set up the semaphores */
-	if ((sem_init_r(&data->client_sem, 0)) != 0 || (sem_init_r(&data->controller_sem, 0)) != 0) {
-		RECORD_ERROR(state, INITIALIZATION_ERROR, errno);
-		goto cleanup;
-	}
-	/* initialise client semaphore pipe to be non-blocking */
-	flag = fcntl(data->client_sem.descriptor_pair[0],F_GETFL);
-	fcntl(data->client_sem.descriptor_pair[0],F_SETFL,flag | O_NONBLOCK);
-
-	barrier_init_r(&data->release_barrier, 0);
-
-	/* suspend all threads bar this one */
-	suspend_result = suspend_all_preemptive(state->platform_data);
-	if (suspend_result < 0) {
-		RECORD_ERROR(state, SUSPEND_FAILURE, suspend_result);
-		/* update the barrier for the number of signals we actually managed to queue */
-		barrier_update_r(&data->release_barrier, data->threadsOutstanding);
-		goto cleanup;
-	}
-
-	data->threadsOutstanding = suspend_result;
-	barrier_update_r(&data->release_barrier, data->threadsOutstanding);
-	/* we start at zero with no filter */
-	data->filterThread = 0;
-	data->thread = NULL;
-
-	/* pass back the current thread as we can be sure we won't hit a problem getting it */
-	thread.thread_id = omrthread_get_ras_tid();
-	thread.process_id = getpid();
-	data->thread = &thread;
-
-	data->consistent = 1;
-
-	result = setup_native_thread(state, signal_info, 1);
-	if (0 != result) {
-		RECORD_ERROR(state, ALLOCATION_FAILURE, result);
-		goto cleanup;
-	}
-
-	return state->current_thread;
-
-cleanup:
-	resume_all_preempted(data);
-	return NULL;
 }
 
 /* This function is identical to omrintrospect_threads_startDo_with_signal but omits the signal argument

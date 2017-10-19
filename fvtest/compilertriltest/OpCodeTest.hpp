@@ -34,32 +34,7 @@
 namespace TRTest
 {
 
-/**
- * @brief Type for holding argument to parameterized opcode tests
- * @tparam Ret the type returned by the opcode
- * @tparam Args the types of the arguments to the opcode
- *
- * This type is just a tuple that packages the different parts of a argument for
- * an opcode test. The first field is another tuple holding the input values to
- * be given to the opcode for testing. The second field is a two-tuple containing
- * the opcode's name as a string, and a pointer to an oracle function that
- * returns the expected return value of the opcode test when given the input
- * values from the first part of the outer tuple.
- */
-template <typename Ret, typename... Args>
-using ParamType = std::tuple<std::tuple<Args...>, std::tuple<std::string, Ret (*)(Args...)> >;
-
-/**
- * @brief Type for holding argument to parameterized binary opcode tests
- */
-template <typename Ret, typename Left, typename Right>
-using BinaryOpParamType = ParamType<Ret, Left, Right>;
-
-/**
- * @brief Struct equivalent to the BinaryOpParamType tuple
- *
- * Used for easier unpacking of test argument.
- */
+// C++11 upgrade (Issue #1916).
 template <typename Ret, typename Left, typename Right>
 struct BinaryOpParamStruct {
         Left lhs;
@@ -73,7 +48,7 @@ struct BinaryOpParamStruct {
  *    of BinaryOpParamStruct
  */
 template <typename Ret, typename Left, typename Right>
-BinaryOpParamStruct<Ret, Left, Right> to_struct(BinaryOpParamType<Ret, Left, Right> param) {
+BinaryOpParamStruct<Ret, Left, Right> to_struct(std::tuple<std::tuple<Left,Right>, std::tuple<std::string, Ret (*)(Left,Right)>> param) {
     BinaryOpParamStruct<Ret, Left, Right> s;
     s.lhs = std::get<0>(std::get<0>(param));
     s.rhs = std::get<1>(std::get<0>(param));
@@ -85,10 +60,10 @@ BinaryOpParamStruct<Ret, Left, Right> to_struct(BinaryOpParamType<Ret, Left, Rig
 //~ Opcode test fixtures ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 template <typename Ret, typename... Args>
-class OpCodeTest : public JitTest, public ::testing::WithParamInterface<ParamType<Ret, Args...>> {};
+class OpCodeTest : public JitTest, public ::testing::WithParamInterface< std::tuple<std::tuple<Args...>, std::tuple<std::string, Ret (*)(Args...)>> > {};
 
 template <typename T>
-class BinaryOpTest : public JitTest, public ::testing::WithParamInterface<BinaryOpParamType<T,T,T>> {};
+class BinaryOpTest : public JitTest, public ::testing::WithParamInterface< std::tuple< std::tuple<T,T>, std::tuple<std::string, T (*)(T,T)>> > {};
 
 } // namespace CompTest
 

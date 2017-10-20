@@ -750,7 +750,6 @@ class OMR_EXTENSIBLE CodeGenerator
 
    uint8_t *getCodeStart();
    uint8_t *getCodeEnd()                  {return _binaryBufferCursor;}
-   uint32_t getWarmCodeLength();
    uint32_t getCodeLength();
 
    uint8_t *getBinaryBufferCursor() {return _binaryBufferCursor;}

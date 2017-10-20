@@ -189,7 +189,7 @@ OMR::CodeGenPhase::performProcessRelocationsPhase(TR::CodeGenerator * cg, TR::Co
 
      if (debug("dumpCodeSizes"))
         {
-        diagnostic("%08d   %s\n", cg->getWarmCodeLength(), comp->signature());
+        diagnostic("%08d   %s\n", cg->getCodeLength(), comp->signature());
         }
 
      if (comp->getCurrentMethod() == NULL)
@@ -197,10 +197,10 @@ OMR::CodeGenPhase::performProcessRelocationsPhase(TR::CodeGenerator * cg, TR::Co
         comp->getMethodSymbol()->setMethodAddress(cg->getBinaryBufferStart());
         }
 
-     TR_ASSERT(cg->getWarmCodeLength() <= cg->getEstimatedCodeLength(),
+     TR_ASSERT(cg->getCodeLength() <= cg->getEstimatedCodeLength(),
                "Method length estimate must be conservatively large\n"
-               "    warmCodeLength = %d, estimatedCodeLength = %d \n",
-               cg->getWarmCodeLength(), cg->getEstimatedCodeLength()
+               "    codeLength = %d, estimatedCodeLength = %d \n",
+               cg->getCodeLength(), cg->getEstimatedCodeLength()
                );
 
      // also trace the interal stack atlas
@@ -211,11 +211,11 @@ OMR::CodeGenPhase::performProcessRelocationsPhase(TR::CodeGenerator * cg, TR::Co
         {
         if (TR::Compiler->target.is64Bit())
         {
-        setDllSlip((char*)cg->getCodeStart(),(char*)cg->getCodeStart()+cg->getWarmCodeLength(),"SLIPDLL64", comp);
+        setDllSlip((char*)cg->getCodeStart(),(char*)cg->getCodeStart()+cg->getCodeLength(),"SLIPDLL64", comp);
         }
      else
         {
-        setDllSlip((char*)cg->getCodeStart(),(char*)cg->getCodeStart()+cg->getWarmCodeLength(),"SLIPDLL31", comp);
+        setDllSlip((char*)cg->getCodeStart(),(char*)cg->getCodeStart()+cg->getCodeLength(),"SLIPDLL31", comp);
         }
      }
 
@@ -264,7 +264,7 @@ OMR::CodeGenPhase::performEmitSnippetsPhase(TR::CodeGenerator * cg, TR::CodeGenP
                   "\nAmount of code memory consumed for this function         = %d"
                   "\nAmount of snippet code memory consumed for this function = %d\n\n",
                   cg->getEstimatedCodeLength(),
-                  cg->getWarmCodeLength(),
+                  cg->getCodeLength(),
                   snippetLength);
       }
    }

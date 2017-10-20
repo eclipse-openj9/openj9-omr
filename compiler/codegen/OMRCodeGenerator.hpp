@@ -1640,10 +1640,6 @@ class OMR_EXTENSIBLE CodeGenerator
    void incOutOfLineColdPathNestedDepth(){_outOfLineColdPathNestedDepth++;}
    void decOutOfLineColdPathNestedDepth(){_outOfLineColdPathNestedDepth--;}
 
-   bool getIsInWarmCodeCache();
-   void setIsInWarmCodeCache() {_flags2.set(IsInWarmCodeCache);}
-   void resetIsInWarmCodeCache() {_flags2.reset(IsInWarmCodeCache);}
-
    bool getMethodModifiedByRA() {return _flags2.testAny(MethodModifiedByRA);}
    void setMethodModifiedByRA() {_flags2.set(MethodModifiedByRA);}
    void resetMethodModifiedByRA() {_flags2.reset(MethodModifiedByRA);}
@@ -1750,7 +1746,7 @@ class OMR_EXTENSIBLE CodeGenerator
       SupportsReverseLoadAndStore                         = 0x00400000,
       SupportsLoweringConstLDivPower2                     = 0x00800000,
       DisableFpGRA                                        = 0x01000000,
-      IsInWarmCodeCache                                   = 0x02000000,
+      // Available                                        = 0x02000000,
       MethodModifiedByRA                                  = 0x04000000,
       SchedulingInstrCleanupNeeded                        = 0x08000000,
       // Available                                        = 0x10000000,

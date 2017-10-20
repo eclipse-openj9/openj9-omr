@@ -1050,12 +1050,6 @@ OMR::CodeGenerator::getSupportsConstantOffsetInAddressing(int64_t value)
    return self()->getSupportsConstantOffsetInAddressing();
    }
 
-bool
-OMR::CodeGenerator::getIsInWarmCodeCache()
-   {
-   return _flags2.testAny(IsInWarmCodeCache) && !self()->isOutOfLineColdPath();
-   }
-
 void
 OMR::CodeGenerator::toggleIsInOOLSection()
    {

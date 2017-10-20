@@ -749,8 +749,6 @@ class OMR_EXTENSIBLE CodeGenerator
    uint8_t *setBinaryBufferStart(uint8_t *b) {return (_binaryBufferStart = b);}
 
    uint8_t *getCodeStart();
-   uint8_t *getWarmCodeEnd()              {return _binaryBufferCursor;}
-   uint8_t *setWarmCodeEnd(uint8_t *c)    {return (_warmCodeEnd = c);}
    uint8_t *getCodeEnd()                  {return _binaryBufferCursor;}
    uint32_t getWarmCodeLength();
    uint32_t getCodeLength();
@@ -1864,7 +1862,6 @@ class OMR_EXTENSIBLE CodeGenerator
    TR_GCStackMap *_methodStackMap;
    TR::list<TR::Block*> _counterBlocks;
    uint8_t *_binaryBufferStart;
-   uint8_t *_warmCodeEnd;
    uint8_t *_binaryBufferCursor;
    TR::SparseBitVector _extendedToInt64GlobalRegisters;
 

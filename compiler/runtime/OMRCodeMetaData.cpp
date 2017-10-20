@@ -39,7 +39,7 @@ OMR::CodeMetaData::CodeMetaData(TR::Compilation *comp)
    _interpreterEntryPC = comp->cg()->getCodeStart();
    
    _compiledEntryPC = _interpreterEntryPC;
-   _compiledEndPC = comp->cg()->getWarmCodeEnd();
+   _compiledEndPC = comp->cg()->getCodeEnd();
 
    _hotness = comp->cg()->getMethodHotness();
    }

@@ -211,7 +211,6 @@ OMR::CodeGenerator::CodeGenerator() :
      _binaryBufferStart(NULL),
      _binaryBufferCursor(NULL),
      _largestOutgoingArgSize(0),
-     _warmCodeEnd(NULL),
      _estimatedCodeLength(0),
      _estimatedSnippetStart(0),
      _accumulatedInstructionLengthError(0),
@@ -1174,7 +1173,7 @@ OMR::CodeGenerator::getCodeStart()
 uint32_t
 OMR::CodeGenerator::getWarmCodeLength() // cast explicitly
    {
-   return (uint32_t)(self()->getWarmCodeEnd() - self()->getCodeStart());
+   return (uint32_t)(self()->getCodeEnd() - self()->getCodeStart());
    }
 
 uint32_t
@@ -2604,8 +2603,8 @@ OMR::CodeGenerator::allocateCodeMemory(uint32_t size, bool isCold, bool isMethod
 void
 OMR::CodeGenerator::resizeCodeMemory()
    {
-   int32_t warmCodeLength = self()->getWarmCodeEnd()-self()->getBinaryBufferStart();
-   self()->fe()->resizeCodeMemory(self()->comp(), self()->getBinaryBufferStart(), warmCodeLength);
+   int32_t codeLength = self()->getCodeEnd()-self()->getBinaryBufferStart();
+   self()->fe()->resizeCodeMemory(self()->comp(), self()->getBinaryBufferStart(), codeLength);
    }
 
 bool

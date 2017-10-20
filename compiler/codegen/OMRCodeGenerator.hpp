@@ -739,9 +739,11 @@ class OMR_EXTENSIBLE CodeGenerator
    // --------------------------------------------------------------------------
    // Binary encoding code cache
    //
-   uint32_t getEstimatedWarmLength()           {return _estimatedWarmLength;}
-   uint32_t setEstimatedWarmLength(uint32_t l) {return (_estimatedWarmLength = l);}
-   uint32_t getEstimatedMethodLength()           {return _estimatedWarmLength;}
+   uint32_t getEstimatedWarmLength()           {return _estimatedCodeLength;} // DEPRECATED
+   uint32_t setEstimatedWarmLength(uint32_t l) {return (_estimatedCodeLength = l);} // DEPRECATED
+
+   uint32_t getEstimatedCodeLength()           {return _estimatedCodeLength;}
+   uint32_t setEstimatedCodeLength(uint32_t l) {return (_estimatedCodeLength = l);}
 
    uint8_t *getBinaryBufferStart()           {return _binaryBufferStart;}
    uint8_t *setBinaryBufferStart(uint8_t *b) {return (_binaryBufferStart = b);}
@@ -1922,7 +1924,7 @@ class OMR_EXTENSIBLE CodeGenerator
    uint32_t _vmThreadLiveCount;
    uint32_t _largestOutgoingArgSize;
 
-   uint32_t _estimatedWarmLength;
+   uint32_t _estimatedCodeLength;
    int32_t _estimatedSnippetStart;
    int32_t _accumulatedInstructionLengthError;
    int32_t _frameSizeInBytes;

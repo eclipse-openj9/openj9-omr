@@ -212,7 +212,7 @@ OMR::CodeGenerator::CodeGenerator() :
      _binaryBufferCursor(NULL),
      _largestOutgoingArgSize(0),
      _warmCodeEnd(NULL),
-     _estimatedWarmLength(0),
+     _estimatedCodeLength(0),
      _estimatedSnippetStart(0),
      _accumulatedInstructionLengthError(0),
      _registerSaveDescription(0),

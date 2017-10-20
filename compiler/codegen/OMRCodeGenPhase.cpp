@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2017 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -197,10 +197,10 @@ OMR::CodeGenPhase::performProcessRelocationsPhase(TR::CodeGenerator * cg, TR::Co
         comp->getMethodSymbol()->setMethodAddress(cg->getBinaryBufferStart());
         }
 
-     TR_ASSERT(cg->getWarmCodeLength() <= cg->getEstimatedWarmLength(),
+     TR_ASSERT(cg->getWarmCodeLength() <= cg->getEstimatedCodeLength(),
                "Method length estimate must be conservatively large\n"
-               "    warmCodeLength = %d, estimatedWarmLength = %d \n",
-               cg->getWarmCodeLength(), cg->getEstimatedWarmLength()
+               "    warmCodeLength = %d, estimatedCodeLength = %d \n",
+               cg->getWarmCodeLength(), cg->getEstimatedCodeLength()
                );
 
      // also trace the interal stack atlas
@@ -241,7 +241,7 @@ OMR::CodeGenPhase::performEmitSnippetsPhase(TR::CodeGenerator * cg, TR::CodeGenP
 
    if (comp->getOption(TR_TraceCG) || comp->getOptions()->getTraceCGOption(TR_TraceCGPostBinaryEncoding))
       {
-      diagnostic("\nbuffer start = %8x, code start = %8x, buffer length = %d", cg->getBinaryBufferStart(), cg->getCodeStart(), cg->getEstimatedWarmLength());
+      diagnostic("\nbuffer start = %8x, code start = %8x, buffer length = %d", cg->getBinaryBufferStart(), cg->getCodeStart(), cg->getEstimatedCodeLength());
       diagnostic("\n");
       const char * title = "Post Binary Instructions";
 
@@ -263,7 +263,7 @@ OMR::CodeGenPhase::performEmitSnippetsPhase(TR::CodeGenerator * cg, TR::CodeGenP
       diagnostic("\nAmount of code memory allocated for this function        = %d"
                   "\nAmount of code memory consumed for this function         = %d"
                   "\nAmount of snippet code memory consumed for this function = %d\n\n",
-                  cg->getEstimatedMethodLength(),
+                  cg->getEstimatedCodeLength(),
                   cg->getWarmCodeLength(),
                   snippetLength);
       }

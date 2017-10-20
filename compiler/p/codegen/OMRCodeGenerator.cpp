@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2017 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -2065,11 +2065,11 @@ void OMR::Power::CodeGenerator::doBinaryEncoding()
       data.estimate = identifyFarConditionalBranches(data.estimate, self());
       }
 
-   self()->setEstimatedWarmLength(data.estimate);
+   self()->setEstimatedCodeLength(data.estimate);
 
    data.cursorInstruction = self()->comp()->getFirstInstruction();
    uint8_t *coldCode = NULL;
-   uint8_t *temp = self()->allocateCodeMemory(self()->getEstimatedWarmLength(), 0, &coldCode);
+   uint8_t *temp = self()->allocateCodeMemory(self()->getEstimatedCodeLength(), 0, &coldCode);
 
    self()->setBinaryBufferStart(temp);
    self()->setBinaryBufferCursor(temp);

@@ -34,7 +34,7 @@ OMR::CodeMetaData::self()
 OMR::CodeMetaData::CodeMetaData(TR::Compilation *comp)
    {
    _codeAllocStart = comp->cg()->getBinaryBufferStart();
-   _codeAllocSize = comp->cg()->getEstimatedMethodLength();
+   _codeAllocSize = comp->cg()->getEstimatedCodeLength();
 
    _interpreterEntryPC = comp->cg()->getCodeStart();
    

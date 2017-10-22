@@ -610,8 +610,14 @@ class OMR_EXTENSIBLE CodeGenerator
    // Optimizer, code generator capabilities
    //
    int32_t getPreferredLoopUnrollFactor() {return -1;} // no virt, default
-   bool suppressInliningOfRecognizedMethod(TR::RecognizedMethod method) {return false;} // no virt, default
-   bool isMethodInAtomicLongGroup (TR::RecognizedMethod rm);
+
+   /**
+    * @brief Answers whether the provided recognized method should be inlined by an
+    *        inliner optimization.
+    * @param method : the recognized method to consider
+    * @return true if inlining should be suppressed; false otherwise
+    */
+   bool suppressInliningOfRecognizedMethod(TR::RecognizedMethod method) {return false;}
 
    // --------------------------------------------------------------------------
    // Optimizer, not code generator

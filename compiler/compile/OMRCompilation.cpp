@@ -530,12 +530,6 @@ OMR::Compilation::getMethodHotness()
    return (TR_Hotness) self()->getOptLevel();
    }
 
-TR_Hotness
-OMR::Compilation::getDeFactoHotness()
-   {
-   return self()->isProfilingCompilation() ? warm : self()->getMethodHotness();
-   }
-
 ncount_t
 OMR::Compilation::getAccurateNodeCount()
    {

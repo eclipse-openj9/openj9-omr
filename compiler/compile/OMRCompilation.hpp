@@ -734,7 +734,6 @@ public:
    TR_Hotness getNextOptLevel() { return _nextOptLevel; }
    void setNextOptLevel(TR_Hotness nextOptLevel) { _nextOptLevel = nextOptLevel; }
    TR_Hotness getMethodHotness();
-   TR_Hotness getDeFactoHotness();
    static const char *getHotnessName(TR_Hotness t);
    const char *getHotnessName();
 

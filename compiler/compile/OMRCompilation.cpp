@@ -227,7 +227,6 @@ OMR::Compilation::Compilation(
    _optimizer(0),
    _firstInstruction(NULL),
    _appendInstruction(NULL),
-   _firstColdInstruction(NULL),
    _currentSymRefTab(NULL),
    _recompilationInfo(0),
    _optimizationPlan(optimizationPlan),

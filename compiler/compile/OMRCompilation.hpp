@@ -508,9 +508,6 @@ public:
    TR::Instruction *getAppendInstruction() {return _appendInstruction;}
    TR::Instruction *setAppendInstruction(TR::Instruction *ai) {return (_appendInstruction = ai);}
 
-   TR::Instruction *getFirstColdInstruction() {return _firstColdInstruction;}
-   TR::Instruction *setFirstColdInstruction(TR::Instruction *fi) {return (_firstColdInstruction = fi);}
-
    bool nodeNeeds2Regs(TR::Node * node);
 
    // J9
@@ -1047,7 +1044,6 @@ private:
    TR::Optimizer                      *_optimizer;
    TR::Instruction                    *_firstInstruction;
    TR::Instruction                    *_appendInstruction;
-   TR::Instruction                    *_firstColdInstruction;
    TR_RegisterCandidates             *_globalRegisterCandidates;
    TR::SymbolReferenceTable          *_currentSymRefTab;
    TR::Recompilation                  *_recompilationInfo;

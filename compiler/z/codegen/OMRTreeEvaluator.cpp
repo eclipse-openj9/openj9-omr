@@ -11908,12 +11908,6 @@ OMR::Z::TreeEvaluator::BBStartEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 
    bool generateFence = true;
 
-   if (!block->isSuperCold() &&
-        comp->getFirstColdInstruction()!=NULL)
-      {
-      comp->setFirstColdInstruction(NULL);
-      }
-
    TR::RegisterDependencyConditions * deps = NULL;
 
    if (node->getLabel() != NULL

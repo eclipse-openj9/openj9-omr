@@ -415,7 +415,7 @@ bool TR_UseDefInfo::_runReachingDefinitions(TR_ReachingDefinitions& reachingDefi
    return succeeded;
    }
 
-void TR_UseDefInfo::setVolatileSybolsIndexAndRecurse(TR::BitVector &volatileSymbols, int32_t symRefNum)
+void TR_UseDefInfo::setVolatileSymbolsIndexAndRecurse(TR::BitVector &volatileSymbols, int32_t symRefNum)
    {
    TR::SymbolReference* symRef = comp()->getSymRefTab()->getSymRef(symRefNum);
 
@@ -443,7 +443,7 @@ void TR_UseDefInfo::setVolatileSybolsIndexAndRecurse(TR::BitVector &volatileSymb
       if (!aliasedSymRef || !aliasedSymRef->getSymbol())
          continue;
 
-      setVolatileSybolsIndexAndRecurse(volatileSymbols,aliasedSymRef->getReferenceNumber());
+      setVolatileSymbolsIndexAndRecurse(volatileSymbols,aliasedSymRef->getReferenceNumber());
       }
    }
 
@@ -461,7 +461,7 @@ void TR_UseDefInfo::findAndPopulateVolatileSymbolsIndex(TR::BitVector &volatileS
       if (symRef->getSymbol()->isVolatile())
          {
  //        traceMsg(comp(), "it is volatile");
-         setVolatileSybolsIndexAndRecurse(volatileSymbols, symRefNumber);
+         setVolatileSymbolsIndexAndRecurse(volatileSymbols, symRefNumber);
          }
  //     traceMsg(comp(), "\n");
       }

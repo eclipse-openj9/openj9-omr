@@ -113,7 +113,7 @@ void
 MM_ConcurrentCardTableForWC::prepareCardTableAsyncEventHandler(OMR_VMThread *omrVMThread, void *userData)
 {
 	MM_ConcurrentCardTableForWC *cardTable  = (MM_ConcurrentCardTableForWC *)userData;
-	MM_EnvironmentStandard *env = MM_EnvironmentStandard::getEnvironment(omrVMThread);
+	MM_EnvironmentBase *env = MM_EnvironmentBase::getEnvironment(omrVMThread);
 
 	cardTable->prepareCardTable(env);
 }
@@ -123,7 +123,7 @@ MM_ConcurrentCardTableForWC::prepareCardTableAsyncEventHandler(OMR_VMThread *omr
  * 
  */
 void
-MM_ConcurrentCardTableForWC::prepareCardTable(MM_EnvironmentStandard *env)
+MM_ConcurrentCardTableForWC::prepareCardTable(MM_EnvironmentBase *env)
 {
 	CardCleanPhase currentPhase = _cardCleanPhase;
 	
@@ -153,7 +153,7 @@ MM_ConcurrentCardTableForWC::prepareCardTable(MM_EnvironmentStandard *env)
  * miss any object references. 
  */
 void
-MM_ConcurrentCardTableForWC::prepareCardsForCleaning(MM_EnvironmentStandard *env)
+MM_ConcurrentCardTableForWC::prepareCardsForCleaning(MM_EnvironmentBase *env)
 {
 	/* First call superclass which will set card cleaning range for next
 	 * phase of card cleaning
@@ -196,7 +196,7 @@ MM_ConcurrentCardTableForWC::prepareCardsForCleaning(MM_EnvironmentStandard *env
  * @return TRUE if exclusive access acquired; FALSE otherwise
  */
 MMINLINE bool
-MM_ConcurrentCardTableForWC::getExclusiveCardTableAccess(MM_EnvironmentStandard *env, CardCleanPhase currentPhase, bool threadAtSafePoint)
+MM_ConcurrentCardTableForWC::getExclusiveCardTableAccess(MM_EnvironmentBase *env, CardCleanPhase currentPhase, bool threadAtSafePoint)
 {
 	/* Because the WC CardTable requires exclusive access to prepare the cards for cleaning, we cannot gain
 	 * exclusive access to the card table if the thread is not at a safe point. Request async call back
@@ -233,7 +233,7 @@ MM_ConcurrentCardTableForWC::getExclusiveCardTableAccess(MM_EnvironmentStandard 
  * Release exclusive control of the card table
  */
 MMINLINE void
-MM_ConcurrentCardTableForWC::releaseExclusiveCardTableAccess(MM_EnvironmentStandard *env)
+MM_ConcurrentCardTableForWC::releaseExclusiveCardTableAccess(MM_EnvironmentBase *env)
 {
 	/* Cache the current value */
 	CardCleanPhase currentPhase = _cardCleanPhase;
@@ -265,7 +265,7 @@ MM_ConcurrentCardTableForWC::releaseExclusiveCardTableAccess(MM_EnvironmentStand
  * @return Number of active cards in the the chunk
  */ 
 uintptr_t
-MM_ConcurrentCardTableForWC::countCardsInRange(MM_EnvironmentStandard *env, Card *chunkStart, Card *chunkEnd)
+MM_ConcurrentCardTableForWC::countCardsInRange(MM_EnvironmentBase *env, Card *chunkStart, Card *chunkEnd)
 {
 	uintptr_t cardsInRange = 0;
 	CleaningRange  *cleaningRange = _cleaningRanges;
@@ -306,7 +306,7 @@ MM_ConcurrentCardTableForWC::countCardsInRange(MM_EnvironmentStandard *env, Card
  * MARK_SAFE_CARD_DIRTY.
  */ 
 void
-MM_ConcurrentCardTableForWC::prepareCardTableChunk(MM_EnvironmentStandard *env, Card *chunkStart, Card *chunkEnd, CardAction action)
+MM_ConcurrentCardTableForWC::prepareCardTableChunk(MM_EnvironmentBase *env, Card *chunkStart, Card *chunkEnd, CardAction action)
 {
 	uintptr_t prepareUnitFactor, prepareUnitSize;
 	
@@ -410,7 +410,7 @@ MM_ConcurrentCardTableForWC::prepareCardTableChunk(MM_EnvironmentStandard *env, 
  * not cleaned back to card_DIRTY so that they are rescanned during final card cleaning.
  */ 
 void
-MM_ConcurrentCardTableForWC::initializeFinalCardCleaning(MM_EnvironmentStandard *env)
+MM_ConcurrentCardTableForWC::initializeFinalCardCleaning(MM_EnvironmentBase *env)
 {
 	/* Did we get as far as preparing the card table for cleaning ? */
 	if (_cardTablePreparedForCleaning ) {

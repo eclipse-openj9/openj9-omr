@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2015 IBM Corp. and others
+ * Copyright (c) 1991, 2017 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -33,7 +33,7 @@
 
 #include "Base.hpp"
 #include "ConcurrentCardTable.hpp"
-#include "EnvironmentStandard.hpp"
+#include "EnvironmentBase.hpp"
 #include "ConcurrentSafepointCallback.hpp"
 
 
@@ -60,12 +60,12 @@ class MM_ConcurrentCardTableForWC : public MM_ConcurrentCardTable
 	bool initialize(MM_EnvironmentBase *env, MM_Heap *heap);
 	virtual void tearDown(MM_EnvironmentBase *env);
 		
-	virtual	void prepareCardsForCleaning(MM_EnvironmentStandard *env);
-	virtual bool getExclusiveCardTableAccess(MM_EnvironmentStandard *env, CardCleanPhase currentPhase, bool threadAtSafePoint);
-	virtual void releaseExclusiveCardTableAccess(MM_EnvironmentStandard *env);
-	void prepareCardTable(MM_EnvironmentStandard *env);
+	virtual	void prepareCardsForCleaning(MM_EnvironmentBase *env);
+	virtual bool getExclusiveCardTableAccess(MM_EnvironmentBase *env, CardCleanPhase currentPhase, bool threadAtSafePoint);
+	virtual void releaseExclusiveCardTableAccess(MM_EnvironmentBase *env);
+	void prepareCardTable(MM_EnvironmentBase *env);
 		
-	uintptr_t countCardsInRange(MM_EnvironmentStandard *env, Card *rangeStart, Card *rangeEnd);
+	uintptr_t countCardsInRange(MM_EnvironmentBase *env, Card *rangeStart, Card *rangeEnd);
 	
 	MMINLINE virtual void concurrentCleanCard(Card *card)
 	{
@@ -82,8 +82,8 @@ class MM_ConcurrentCardTableForWC : public MM_ConcurrentCardTable
 public:
 	static MM_ConcurrentCardTable	*newInstance(MM_EnvironmentBase *env, MM_Heap *heap, MM_MarkingScheme *markingScheme, MM_ConcurrentGC *collector);
 	
-	void prepareCardTableChunk(MM_EnvironmentStandard *env, Card *chunkStart, Card *chunkEnd, CardAction action);
-	virtual void initializeFinalCardCleaning(MM_EnvironmentStandard *env);
+	void prepareCardTableChunk(MM_EnvironmentBase *env, Card *chunkStart, Card *chunkEnd, CardAction action);
+	virtual void initializeFinalCardCleaning(MM_EnvironmentBase *env);
 	
 	static void prepareCardTableAsyncEventHandler(OMR_VMThread *omrVMThread, void *userData);
 	
@@ -91,7 +91,7 @@ public:
 	 * as we know such cards are sure to be cleaned in future either after a STW card table 
 	 * prepare phase or during FCC.
 	 */  
-	MMINLINE virtual bool isObjectInUncleanedDirtyCard(MM_EnvironmentStandard *env, omrobjectptr_t object)
+	MMINLINE virtual bool isObjectInUncleanedDirtyCard(MM_EnvironmentBase *env, omrobjectptr_t object)
 	{
 		return false;	
 	}

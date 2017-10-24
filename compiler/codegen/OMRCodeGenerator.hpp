@@ -362,6 +362,38 @@ class OMR_EXTENSIBLE CodeGenerator
    TR_BitVector *getLiveLocals() {return _liveLocals;}
    TR_BitVector *setLiveLocals(TR_BitVector *v) {return (_liveLocals = v);}
 
+   /**
+    * @brief Returns the first TR::Instruction in the stream of instructions for
+    *        this method.  This instruction's "previous" link should be NULL.
+    *
+    * @return The first instruction in this method; NULL if not yet set.
+    */
+   TR::Instruction *getFirstInstruction();
+
+   /**
+    * @brief Sets the first TR::Instruction in the stream of instructions for
+    *        this method.  This instruction's "previous" link should be NULL.
+    *
+    * @return The instruction being set.
+    */
+   TR::Instruction *setFirstInstruction(TR::Instruction *fi);
+
+   /**
+    * @brief Returns the last TR::Instruction in the stream of instructions for
+    *        this method.  This instruction's "next" link should be NULL.
+    *
+    * @return The last instruction in this method; NULL if not yet set.
+    */
+   TR::Instruction *getAppendInstruction();
+
+   /**
+    * @brief Sets the last TR::Instruction in the stream of instructions for
+    *        this method.  This instruction's "next" link should be NULL.
+    *
+    * @return The instruction being set.
+    */
+   TR::Instruction *setAppendInstruction(TR::Instruction *ai);
+
    TR::TreeTop *getCurrentEvaluationTreeTop() {return _currentEvaluationTreeTop;}
    TR::TreeTop *setCurrentEvaluationTreeTop(TR::TreeTop *tt) {return (_currentEvaluationTreeTop = tt);}
 

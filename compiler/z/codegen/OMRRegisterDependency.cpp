@@ -834,57 +834,51 @@ TR_S390RegisterDependencyGroup::checkRegisterDependencyDuplicates(TR::CodeGenera
 
    bool isHighWordSupported = cg->supportsHighWordFacility() && !cg->comp()->getOption(TR_DisableHighWordRA);
 
-   for (int32_t i = 0; i < static_cast<int32_t>(numOfDependencies - 1); i++)
+   for (uint32_t i = 0; i < numOfDependencies - 1; ++i)
       {
       TR::Register* virtRegI = _dependencies[i].getRegister(cg);
-      TR::Register* virtRegJ = NULL;
+      TR::Register* virtRegJ;
       TR::RealRegister::RegNum realRegI = _dependencies[i].getRealRegister();
-      TR::RealRegister::RegNum realRegJ = TR::RealRegister::NoReg;
+      TR::RealRegister::RegNum realRegJ;
 
-      for (int32_t j = i + 1; j < numOfDependencies; j++)
+      for (uint32_t j = i + 1; j < numOfDependencies; ++j)
          {
          virtRegJ = _dependencies[j].getRegister(cg);
          realRegJ = _dependencies[j].getRealRegister();
 
          if (virtRegI == virtRegJ
-             && realRegI != TR::RealRegister::SpilledReg
-             && realRegJ != TR::RealRegister::SpilledReg)
+               && realRegI != TR::RealRegister::SpilledReg
+               && realRegJ != TR::RealRegister::SpilledReg)
             {
-            if (cg->getDebug())
-               cg->getDebug()->printRegisterDependencies(comp->getOutFile(), this, numOfDependencies);
-            TR_ASSERT( 0, "checkDependencyGroup::Virtual dup found in register dependencies\n");
+            TR_ASSERT(false, "Virtual register duplicate found in a register dependency\n");
             }
 
          if (realRegI == realRegJ &&
-                 TR::RealRegister::isRealReg(realRegI))
+               TR::RealRegister::isRealReg(realRegI))
             {
-            if (cg->getDebug())
-               cg->getDebug()->printRegisterDependencies(comp->getOutFile(), this, numOfDependencies);
-            TR_ASSERT( 0, "checkDependencyGroup::Real reg dup found in register dependencies\n");
+            TR_ASSERT(false, "Real register duplicate found in a register dependency\n");
             }
 
          // highword RA: remove duplicated GPR/HPR deps
          if (isHighWordSupported &&
-                virtRegJ &&
-                virtRegJ->getKind() != TR_FPR &&
-                virtRegJ->getKind() != TR_VRF &&
-                virtRegJ->is64BitReg() &&
+                realRegI == realRegJ + (TR::RealRegister::FirstHPR - TR::RealRegister::FirstGPR) &&
                 virtRegI->isPlaceholderReg() &&
-                realRegI == realRegJ + (TR::RealRegister::FirstHPR - TR::RealRegister::FirstGPR))
+                virtRegJ->is64BitReg() &&
+                virtRegJ->getKind() != TR_FPR &&
+                virtRegJ->getKind() != TR_VRF)
             {
-            traceMsg (comp, "HW RA: remove dup GPR/HPR deps i=%d [%d %x]\n", i, realRegI, virtRegI);
+            traceMsg(comp, "Remove duplicate GPR (%s) / HPR (%s) register dependency\n", virtRegJ->getRegisterName(comp), virtRegI->getRegisterName(comp));
             _dependencies[i].setRealRegister(TR::RealRegister::NoReg);
             }
 
          if (isHighWordSupported &&
-                virtRegI &&
-                virtRegI->getKind() !=  TR_FPR &&
-                virtRegI->getKind() !=  TR_VRF &&
-                virtRegI->is64BitReg() &&
+                realRegJ == realRegI + (TR::RealRegister::FirstHPR - TR::RealRegister::FirstGPR) &&
                 virtRegJ->isPlaceholderReg() &&
-                realRegJ == realRegI + (TR::RealRegister::FirstHPR - TR::RealRegister::FirstGPR))
+                virtRegI->is64BitReg() &&
+                virtRegI->getKind() != TR_FPR &&
+                virtRegI->getKind() != TR_VRF)
             {
-            traceMsg (comp, "HW RA: remove dup GPR/HPR deps j=%d [%d %x] vs [%d %x]\n", j, realRegJ, virtRegJ, realRegI, virtRegI);
+            traceMsg(comp, "Remove duplicate GPR (%s) / HPR (%s) register dependency\n", virtRegI->getRegisterName(comp), virtRegJ->getRegisterName(comp));
             _dependencies[j].setRealRegister(TR::RealRegister::NoReg);
             }
          }

@@ -113,9 +113,6 @@ class OMR_EXTENSIBLE RealRegister : public OMR::RealRegister
    static bool isHPR(RegNum reg);
    static bool isVRF(RegNum reg);
 
-   static uint64_t getBitMask(RegNum reg);
-   static uint64_t getBitMask(int32_t regNum);
-
    private:
 
    enum

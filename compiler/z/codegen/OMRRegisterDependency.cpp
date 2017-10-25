@@ -683,13 +683,17 @@ uint32_t
 TR_S390RegisterDependencyGroup::genBitMapOfAssignableGPRs(TR::CodeGenerator * cg,
                                                            uint32_t numberOfRegisters)
    {
-   uint32_t availRegMap = cg->machine()->genBitMapOfAssignableGPRs();
+   TR::Machine* machine = cg->machine();
+
+   uint32_t availRegMap = machine->genBitMapOfAssignableGPRs();
 
    for (uint32_t i = 0; i < numberOfRegisters; i++)
       {
       TR::RealRegister::RegNum realReg = _dependencies[i].getRealRegister();
       if (TR::RealRegister::isGPR(realReg))
-         availRegMap &= (~TR::RealRegister::getBitMask(realReg));
+         {
+         availRegMap &= ~machine->getS390RealRegister(realReg)->getRealRegisterMask();
+         }
       }
 
    return availRegMap;
@@ -722,6 +726,8 @@ TR_S390RegisterDependencyGroup::checkRegisterPairSufficiencyAndHPRAssignment(TR:
                                                              const uint32_t availableGPRMap,
                                                              uint32_t numOfDependencies)
    {
+   TR::Machine* machine = cg->machine();
+
    bool isHighWordSupported = cg->supportsHighWordFacility() && !(cg->comp()->getOption(TR_DisableHighWordRA));
    uint32_t numReqPairs = 0, numAvailPairs = 0;
 
@@ -757,15 +763,11 @@ TR_S390RegisterDependencyGroup::checkRegisterPairSufficiencyAndHPRAssignment(TR:
             if (TR::RealRegister::isHPR(realRegI))
                {
                virtRegI->setAssignToHPR(true);
-               cg->maskAvailableHPRSpillMask(~(TR::RealRegister::getBitMask(realRegI)));
-               //traceMsg (comp, "\n HPR: i = %d, _availableHPRSpillMask = 0x%x\n", i, cg->getAvailableHPRSpillMask());
+               cg->maskAvailableHPRSpillMask(~(machine->getS390RealRegister(realRegI)->getRealRegisterMask()));
                }
-            else if (virtRegI->is64BitReg())
+            else if (TR::RealRegister::isGPR(realRegI) && virtRegI->is64BitReg())
                {
-               cg->maskAvailableHPRSpillMask(~(TR::RealRegister::getBitMask(realRegI) << 16));
-               //traceMsg (comp, "\n 64: i = %d, _availableHPRSpillMask = 0x%x, reg= %d, mask = 0x%x\n",
-                            // i, cg->getAvailableHPRSpillMask(),
-                            //  _dependencies[i].getRealRegister(), (TR::RealRegister::getBitMask(_dependencies[i].getRealRegister()) << 16));
+               cg->maskAvailableHPRSpillMask(~(machine->getS390RealRegister(realRegI)->getRealRegisterMask() << 16));
                }
             }
          }
@@ -1502,7 +1504,7 @@ TR_S390RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstru
          if(virtReg->isUsedInMemRef())
            {
            virtReg->setAssignToHPR(false);
-           uint32_t availRegMask =~(TR::RealRegister::getBitMask(TR::RealRegister::GPR0));
+           uint32_t availRegMask =~TR::RealRegister::GPR0Mask;
 
             // No bookkeeping on assignment call as we do bookkeeping at end of this method
             TR::Register * targetReg = machine->assignBestRegister(virtReg, currentInstruction, NOBOOKKEEPING, availRegMask);

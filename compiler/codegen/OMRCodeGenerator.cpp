@@ -211,10 +211,7 @@ OMR::CodeGenerator::CodeGenerator() :
      _binaryBufferStart(NULL),
      _binaryBufferCursor(NULL),
      _largestOutgoingArgSize(0),
-     _warmCodeEnd(NULL),
-     _coldCodeStart(NULL),
-     _estimatedWarmLength(0),
-     _estimatedColdLength(0),
+     _estimatedCodeLength(0),
      _estimatedSnippetStart(0),
      _accumulatedInstructionLengthError(0),
      _registerSaveDescription(0),
@@ -1053,12 +1050,6 @@ OMR::CodeGenerator::getSupportsConstantOffsetInAddressing(int64_t value)
    return self()->getSupportsConstantOffsetInAddressing();
    }
 
-bool
-OMR::CodeGenerator::getIsInWarmCodeCache()
-   {
-   return _flags2.testAny(IsInWarmCodeCache) && !self()->isOutOfLineColdPath();
-   }
-
 void
 OMR::CodeGenerator::toggleIsInOOLSection()
    {
@@ -1171,18 +1162,6 @@ uint8_t *
 OMR::CodeGenerator::getCodeStart()
    {
    return _binaryBufferStart + self()->getPrePrologueSize() + _jitMethodEntryPaddingSize;
-   }
-
-uint32_t
-OMR::CodeGenerator::getWarmCodeLength() // cast explicitly
-   {
-   return (uint32_t)(self()->getWarmCodeEnd() - self()->getCodeStart());
-   }
-
-uint32_t
-OMR::CodeGenerator::getColdCodeLength() // cast explicitly
-   {
-   return (uint32_t)(_coldCodeStart ? self()->getCodeEnd() - self()->getColdCodeStart() : 0);
    }
 
 uint32_t
@@ -2612,8 +2591,8 @@ OMR::CodeGenerator::allocateCodeMemory(uint32_t size, bool isCold, bool isMethod
 void
 OMR::CodeGenerator::resizeCodeMemory()
    {
-   int32_t warmCodeLength = self()->getWarmCodeEnd()-self()->getBinaryBufferStart();
-   self()->fe()->resizeCodeMemory(self()->comp(), self()->getBinaryBufferStart(), warmCodeLength);
+   int32_t codeLength = self()->getCodeEnd()-self()->getBinaryBufferStart();
+   self()->fe()->resizeCodeMemory(self()->comp(), self()->getBinaryBufferStart(), codeLength);
    }
 
 bool

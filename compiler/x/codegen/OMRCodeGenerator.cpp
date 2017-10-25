@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2017 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1887,8 +1887,7 @@ void OMR::X86::CodeGenerator::doBinaryEncoding()
    // adjacent block. For this reason it is better to overestimate
    // the allocated size by 4.
    #define OVER_ESTIMATION 4
-   self()->setEstimatedWarmLength(estimate+OVER_ESTIMATION);
-   self()->setEstimatedColdLength(0);
+   self()->setEstimatedCodeLength(estimate+OVER_ESTIMATION);
 
    if (self()->comp()->getOption(TR_TraceCG))
       {
@@ -1906,7 +1905,7 @@ void OMR::X86::CodeGenerator::doBinaryEncoding()
       }
 
    uint8_t * coldCode = NULL;
-   uint8_t * temp = self()->allocateCodeMemory(self()->getEstimatedWarmLength(), self()->getEstimatedColdLength(), &coldCode);
+   uint8_t * temp = self()->allocateCodeMemory(self()->getEstimatedCodeLength(), 0, &coldCode);
    TR_ASSERT(temp, "Failed to allocate primary code area.");
 
    if (TR::Compiler->target.is64Bit() && self()->comp()->getCodeCacheSwitched() && self()->getPicSlotCount() != 0)

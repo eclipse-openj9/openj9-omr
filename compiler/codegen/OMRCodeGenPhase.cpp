@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2017 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -189,7 +189,7 @@ OMR::CodeGenPhase::performProcessRelocationsPhase(TR::CodeGenerator * cg, TR::Co
 
      if (debug("dumpCodeSizes"))
         {
-        diagnostic("%08d   %s\n", cg->getWarmCodeLength()+ cg->getColdCodeLength(), comp->signature());
+        diagnostic("%08d   %s\n", cg->getCodeLength(), comp->signature());
         }
 
      if (comp->getCurrentMethod() == NULL)
@@ -197,12 +197,11 @@ OMR::CodeGenPhase::performProcessRelocationsPhase(TR::CodeGenerator * cg, TR::Co
         comp->getMethodSymbol()->setMethodAddress(cg->getBinaryBufferStart());
         }
 
-     TR_ASSERT(cg->getWarmCodeLength() <= cg->getEstimatedWarmLength() && cg->getColdCodeLength() <= cg->getEstimatedColdLength(),
+     TR_ASSERT(cg->getCodeLength() <= cg->getEstimatedCodeLength(),
                "Method length estimate must be conservatively large\n"
-               "    warmCodeLength = %d, estimatedWarmLength = %d \n"
-               "    coldCodeLength = %d, estimatedColdLength = %d",
-               cg->getWarmCodeLength(), cg->getEstimatedWarmLength(),
-               cg->getColdCodeLength(),cg->getEstimatedColdLength());
+               "    codeLength = %d, estimatedCodeLength = %d \n",
+               cg->getCodeLength(), cg->getEstimatedCodeLength()
+               );
 
      // also trace the interal stack atlas
      cg->getStackAtlas()->close(cg);
@@ -212,15 +211,11 @@ OMR::CodeGenPhase::performProcessRelocationsPhase(TR::CodeGenerator * cg, TR::Co
         {
         if (TR::Compiler->target.is64Bit())
         {
-        setDllSlip((char*)cg->getCodeStart(),(char*)cg->getCodeStart()+cg->getWarmCodeLength(),"SLIPDLL64", comp);
-        if (cg->getColdCodeStart())
-           setDllSlip((char*)cg->getColdCodeStart(),(char*)cg->getColdCodeStart()+cg->getColdCodeLength(),"SLIPDLL64", comp);
+        setDllSlip((char*)cg->getCodeStart(),(char*)cg->getCodeStart()+cg->getCodeLength(),"SLIPDLL64", comp);
         }
      else
         {
-        setDllSlip((char*)cg->getCodeStart(),(char*)cg->getCodeStart()+cg->getWarmCodeLength(),"SLIPDLL31", comp);
-        if (cg->getColdCodeStart())
-           setDllSlip((char*)cg->getColdCodeStart(),(char*)cg->getColdCodeStart()+cg->getColdCodeLength(),"SLIPDLL31", comp);
+        setDllSlip((char*)cg->getCodeStart(),(char*)cg->getCodeStart()+cg->getCodeLength(),"SLIPDLL31", comp);
         }
      }
 
@@ -246,9 +241,7 @@ OMR::CodeGenPhase::performEmitSnippetsPhase(TR::CodeGenerator * cg, TR::CodeGenP
 
    if (comp->getOption(TR_TraceCG) || comp->getOptions()->getTraceCGOption(TR_TraceCGPostBinaryEncoding))
       {
-      diagnostic("\nbuffer start = %8x, code start = %8x, buffer length = %d", cg->getBinaryBufferStart(), cg->getCodeStart(), cg->getEstimatedWarmLength());
-      if (cg->getEstimatedColdLength())
-         diagnostic(" + %d", cg->getEstimatedColdLength());
+      diagnostic("\nbuffer start = %8x, code start = %8x, buffer length = %d", cg->getBinaryBufferStart(), cg->getCodeStart(), cg->getEstimatedCodeLength());
       diagnostic("\n");
       const char * title = "Post Binary Instructions";
 
@@ -270,8 +263,8 @@ OMR::CodeGenPhase::performEmitSnippetsPhase(TR::CodeGenerator * cg, TR::CodeGenP
       diagnostic("\nAmount of code memory allocated for this function        = %d"
                   "\nAmount of code memory consumed for this function         = %d"
                   "\nAmount of snippet code memory consumed for this function = %d\n\n",
-                  cg->getEstimatedMethodLength(),
-                  cg->getWarmCodeLength() + cg->getColdCodeLength(),
+                  cg->getEstimatedCodeLength(),
+                  cg->getCodeLength(),
                   snippetLength);
       }
    }

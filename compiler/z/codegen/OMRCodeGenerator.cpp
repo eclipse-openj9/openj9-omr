@@ -6322,13 +6322,12 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
       _extentOfLitPool = self()->setEstimatedOffsetForConstantDataSnippets(_extentOfLitPool);
       }
 
-   self()->setEstimatedWarmLength(data.estimate);
-   self()->setEstimatedColdLength(0);
+   self()->setEstimatedCodeLength(data.estimate);
 
    data.cursorInstruction = self()->comp()->getFirstInstruction();
 
    uint8_t *coldCode = NULL;
-   uint8_t *temp = self()->allocateCodeMemory(self()->getEstimatedWarmLength(), self()->getEstimatedColdLength(), &coldCode);
+   uint8_t *temp = self()->allocateCodeMemory(self()->getEstimatedCodeLength(), 0, &coldCode);
 
 
    self()->setBinaryBufferStart(temp);

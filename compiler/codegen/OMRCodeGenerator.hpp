@@ -771,23 +771,17 @@ class OMR_EXTENSIBLE CodeGenerator
    // --------------------------------------------------------------------------
    // Binary encoding code cache
    //
-   uint32_t getEstimatedWarmLength()           {return _estimatedWarmLength;}
-   uint32_t setEstimatedWarmLength(uint32_t l) {return (_estimatedWarmLength = l);}
-   uint32_t getEstimatedColdLength()           {return _estimatedColdLength;}
-   uint32_t setEstimatedColdLength(uint32_t l) {return (_estimatedColdLength = l);}
-   uint32_t getEstimatedMethodLength()           {return _estimatedWarmLength+_estimatedColdLength;}
+   uint32_t getEstimatedWarmLength()           {return _estimatedCodeLength;} // DEPRECATED
+   uint32_t setEstimatedWarmLength(uint32_t l) {return (_estimatedCodeLength = l);} // DEPRECATED
+
+   uint32_t getEstimatedCodeLength()           {return _estimatedCodeLength;}
+   uint32_t setEstimatedCodeLength(uint32_t l) {return (_estimatedCodeLength = l);}
 
    uint8_t *getBinaryBufferStart()           {return _binaryBufferStart;}
    uint8_t *setBinaryBufferStart(uint8_t *b) {return (_binaryBufferStart = b);}
 
    uint8_t *getCodeStart();
-   uint8_t *getWarmCodeEnd()              {return _coldCodeStart ? _warmCodeEnd : _binaryBufferCursor;}
-   uint8_t *setWarmCodeEnd(uint8_t *c)    {return (_warmCodeEnd = c);}
-   uint8_t *getColdCodeStart()            {return _coldCodeStart;}
-   uint8_t *setColdCodeStart(uint8_t *c)  {return (_coldCodeStart = c);}
    uint8_t *getCodeEnd()                  {return _binaryBufferCursor;}
-   uint32_t getWarmCodeLength();
-   uint32_t getColdCodeLength();
    uint32_t getCodeLength();
 
    uint8_t *getBinaryBufferCursor() {return _binaryBufferCursor;}
@@ -1678,10 +1672,6 @@ class OMR_EXTENSIBLE CodeGenerator
    void incOutOfLineColdPathNestedDepth(){_outOfLineColdPathNestedDepth++;}
    void decOutOfLineColdPathNestedDepth(){_outOfLineColdPathNestedDepth--;}
 
-   bool getIsInWarmCodeCache();
-   void setIsInWarmCodeCache() {_flags2.set(IsInWarmCodeCache);}
-   void resetIsInWarmCodeCache() {_flags2.reset(IsInWarmCodeCache);}
-
    bool getMethodModifiedByRA() {return _flags2.testAny(MethodModifiedByRA);}
    void setMethodModifiedByRA() {_flags2.set(MethodModifiedByRA);}
    void resetMethodModifiedByRA() {_flags2.reset(MethodModifiedByRA);}
@@ -1788,7 +1778,7 @@ class OMR_EXTENSIBLE CodeGenerator
       SupportsReverseLoadAndStore                         = 0x00400000,
       SupportsLoweringConstLDivPower2                     = 0x00800000,
       DisableFpGRA                                        = 0x01000000,
-      IsInWarmCodeCache                                   = 0x02000000,
+      // Available                                        = 0x02000000,
       MethodModifiedByRA                                  = 0x04000000,
       SchedulingInstrCleanupNeeded                        = 0x08000000,
       // Available                                        = 0x10000000,
@@ -1899,8 +1889,6 @@ class OMR_EXTENSIBLE CodeGenerator
    TR_GCStackMap *_methodStackMap;
    TR::list<TR::Block*> _counterBlocks;
    uint8_t *_binaryBufferStart;
-   uint8_t *_warmCodeEnd;
-   uint8_t *_coldCodeStart;
    uint8_t *_binaryBufferCursor;
    TR::SparseBitVector _extendedToInt64GlobalRegisters;
 
@@ -1960,8 +1948,7 @@ class OMR_EXTENSIBLE CodeGenerator
    uint32_t _vmThreadLiveCount;
    uint32_t _largestOutgoingArgSize;
 
-   uint32_t _estimatedWarmLength;
-   uint32_t _estimatedColdLength;
+   uint32_t _estimatedCodeLength;
    int32_t _estimatedSnippetStart;
    int32_t _accumulatedInstructionLengthError;
    int32_t _frameSizeInBytes;

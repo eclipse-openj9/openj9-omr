@@ -625,21 +625,33 @@ int32_t OMR::X86::CodeGenerator::getMaximumNumbersOfAssignableGPRs()
    }
 
 /*
- * this method returns TRUE for all the cases we decide NOT to inline the CAS native
- * it checks the same condition as inlineCompareAndSwapNative in tr.source/trj9/x/codegen/J9TreeEvaluator.cpp
+ * This method returns TRUE for all the cases we decide NOT to replace the call to CAS
+ * with inline assembly.
+ * It checks the same condition as inlineCompareAndSwapNative in tr.source/trj9/x/codegen/J9TreeEvaluator.cpp
  * so that GRA and Evaluator should be consistent about whether to inline CAS natives
  */
 static bool willNotInlineCompareAndSwapNative(TR::Node *node,
       int8_t size,
-      bool isObject,
       TR::Compilation *comp)
    {
 #ifdef J9_PROJECT_SPECIFIC
+   TR::SymbolReference *callSymRef = node->getSymbolReference();
+   TR::MethodSymbol *methodSymbol = callSymRef->getSymbol()->castToMethodSymbol();
+
    if (TR::Compiler->om.canGenerateArraylets() && !node->isUnsafeGetPutCASCallOnNonArray())
       return true;
    static char *disableCASInlining = feGetEnv("TR_DisableCASInlining");
 
    if (disableCASInlining /* || comp->useCompressedPointers() */)
+      return true;
+
+   // In Java9 the sun.misc.Unsafe JNI methods have been moved to jdk.internal,
+   // with a set of wrappers remaining in sun.misc to delegate to the new package.
+   // We can be called in this function for the wrappers (which we will
+   // not be converting to assembly), the new jdk.internal JNI methods or the
+   // Java8 sun.misc JNI methods (both of which we will convert). We can
+   // differentiate between these cases by testing with isNative() on the method.
+   if (!methodSymbol->isNative())
       return true;
 
    if (size == 4)
@@ -662,7 +674,17 @@ static bool willNotInlineCompareAndSwapNative(TR::Node *node,
 #endif
    }
 
-//some recognized methods might be transformed into very simple hardcoded assembly sequence which doesn't need register spills as a real call does
+   
+/** @brief Identify methods which are not transformed into inline assembly.
+
+    Some recognized methods are transformed into very simple hardcoded
+    assembly sequences which don't need register spills as real calls do.
+
+    @param node The TR::Node for the method call. NB this function assumes the Node is a call.
+
+    @return true if the method will be treated as a normal call, false if the method
+    will be converted to inline assembly.
+ */
 bool OMR::X86::CodeGenerator::willBeEvaluatedAsCallByCodeGen(TR::Node *node, TR::Compilation *comp)
    {
    TR::SymbolReference *callSymRef = node->getSymbolReference();
@@ -671,11 +693,11 @@ bool OMR::X86::CodeGenerator::willBeEvaluatedAsCallByCodeGen(TR::Node *node, TR:
       {
 #ifdef J9_PROJECT_SPECIFIC
       case TR::sun_misc_Unsafe_compareAndSwapLong_jlObjectJJJ_Z:
-         return willNotInlineCompareAndSwapNative(node, 8, false, comp);
+         return willNotInlineCompareAndSwapNative(node, 8, comp);
       case TR::sun_misc_Unsafe_compareAndSwapInt_jlObjectJII_Z:
-         return willNotInlineCompareAndSwapNative(node, 4, false, comp);
+         return willNotInlineCompareAndSwapNative(node, 4, comp);
       case TR::sun_misc_Unsafe_compareAndSwapObject_jlObjectJjlObjectjlObject_Z:
-         return willNotInlineCompareAndSwapNative(node, (TR::Compiler->target.is64Bit() && !comp->useCompressedPointers()) ? 8 : 4, true, comp);
+         return willNotInlineCompareAndSwapNative(node, (TR::Compiler->target.is64Bit() && !comp->useCompressedPointers()) ? 8 : 4, comp);
 #endif
       default:
          return true;

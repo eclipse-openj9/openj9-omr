@@ -41,6 +41,7 @@ add_executable(comptest
 	IfxcmpgeReductionTest.cpp
 	VectorTest.cpp
 	CallTest.cpp
+	LongAndAsRotateTest.cpp
 )
 
 target_link_libraries(comptest

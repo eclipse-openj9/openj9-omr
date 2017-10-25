@@ -3240,11 +3240,16 @@ class S390RIEInstruction : public TR::S390RegInstruction
       useSourceRegister(sourceRegister);
       // note that _targetRegister is registered for use via the
       // S390RegInstruction constructor call
-      if ((op == TR::InstOpCode::RISBG || op == TR::InstOpCode::RISBGN) &&
-          cg->supportsHighWordFacility() && !cg->comp()->getOption(TR_DisableHighWordRA) &&
-          sourceImmediateTwo & 0x80) // if the zero bit is set, target reg will be 64bit
+      if (op == TR::InstOpCode::RISBG || op == TR::InstOpCode::RISBGN)
          {
-         (S390RegInstruction::getRegisterOperand(1))->setIs64BitReg(true);
+         TR_ASSERT((sourceImmediateOne & 0xC0) == 0, "Bits 0-1 in the I3 field for %s must be 0", getOpCodeValue() == TR::InstOpCode::RISBG ? "RISBG" : "RISBGN");
+         TR_ASSERT((sourceImmediateTwo & 0x40) == 0, "Bit 1 in the I4 field for %s must be 0", getOpCodeValue() == TR::InstOpCode::RISBG ? "RISBG" : "RISBGN");
+
+         if (cg->supportsHighWordFacility() && !cg->comp()->getOption(TR_DisableHighWordRA) &&
+             sourceImmediateTwo & 0x80)
+            {
+            (S390RegInstruction::getRegisterOperand(1))->setIs64BitReg(true);
+            }
          }
       }
 

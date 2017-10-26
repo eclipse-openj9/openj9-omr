@@ -707,7 +707,7 @@ bool TR_RegisterCandidate::rcNeeds2Regs(TR::Compilation *comp)
 bool
 TR_RegisterCandidate::hasSameGlobalRegisterNumberAs(TR::Node *node, TR::Compilation *comp)
    {
-   if (comp->nodeNeeds2Regs(node))
+   if (node->requiresRegisterPair(comp))
       return (getLowGlobalRegisterNumber() == node->getLowGlobalRegisterNumber())
           && (getHighGlobalRegisterNumber() == node->getHighGlobalRegisterNumber());
    else

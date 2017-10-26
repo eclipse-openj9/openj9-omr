@@ -1566,7 +1566,7 @@ TR_GlobalRegisterAllocator::transformNode(
                   setSignExtensionNotRequired(true, rc->getGlobalRegisterNumber());
                }
 
-            if (comp()->nodeNeeds2Regs(node))
+            if (node->requiresRegisterPair(comp()))
                {
                node->setLowGlobalRegisterNumber(rc->getLowGlobalRegisterNumber());
                node->setHighGlobalRegisterNumber(rc->getHighGlobalRegisterNumber());
@@ -2175,7 +2175,7 @@ TR_GlobalRegisterAllocator::prepareForBlockExit(
             TR::Node *actualValue = value;
             value = TR::Node::create(TR::PassThrough, 1, value);
 
-            if (comp()->nodeNeeds2Regs(actualValue))
+            if (actualValue->requiresRegisterPair(comp()))
                {
                value->setLowGlobalRegisterNumber(extgr->getCurrentRegisterCandidate()->getLowGlobalRegisterNumber());
                value->setHighGlobalRegisterNumber(extgr->getCurrentRegisterCandidate()->getHighGlobalRegisterNumber());
@@ -3012,7 +3012,7 @@ TR_GlobalRegister::createLoadFromRegister(TR::Node * n, TR::Compilation *comp)
    load = TR::Node::create(n, comp->il.opCodeForRegisterLoad(dt));
    load->setRegLoadStoreSymbolReference(rc->getSymbolReference());
 
-   if (comp->nodeNeeds2Regs(load))
+   if (load->requiresRegisterPair(comp))
       {
       load->setLowGlobalRegisterNumber(rc->getLowGlobalRegisterNumber());
       load->setHighGlobalRegisterNumber(rc->getHighGlobalRegisterNumber());
@@ -3022,7 +3022,7 @@ TR_GlobalRegister::createLoadFromRegister(TR::Node * n, TR::Compilation *comp)
    if (!rc->is8BitGlobalGPR())
       load->setIsInvalid8BitGlobalRegister(true);
    setValue(load);
-   if (comp->nodeNeeds2Regs(load))
+   if (load->requiresRegisterPair(comp))
       dumpOptDetails(comp, "%s create load [%p] from Register %d (low word) and Register %d (high word)\n", OPT_DETAILS, load, rc->getLowGlobalRegisterNumber(), rc->getHighGlobalRegisterNumber());
    else
       dumpOptDetails(comp, "%s create load [%p] %s from Register %d\n", OPT_DETAILS, load, rc->getSymbolReference()->getSymbol()->isMethodMetaData() ? rc->getSymbolReference()->getSymbol()->castToMethodMetaDataSymbol()->getName():"", rc->getGlobalRegisterNumber());
@@ -3087,7 +3087,7 @@ TR_GlobalRegister::createStoreToRegister(TR::TreeTop * prevTreeTop, TR::Node *no
       store->setNeedsSignExtension(true);
       }
 
-   if (comp->nodeNeeds2Regs(store))
+   if (store->requiresRegisterPair(comp))
       {
       store->setLowGlobalRegisterNumber(rc->getLowGlobalRegisterNumber());
       store->setHighGlobalRegisterNumber(rc->getHighGlobalRegisterNumber());
@@ -3108,7 +3108,7 @@ TR_GlobalRegister::createStoreToRegister(TR::TreeTop * prevTreeTop, TR::Node *no
    setValue(load);
    setAutoContainsRegisterValue(true);
 
-   if (comp->nodeNeeds2Regs(store))
+   if (store->requiresRegisterPair(comp))
       dumpOptDetails(comp, "%s create store [%p] of symRef#%d to Register %d (low word) and Register %d (high word)\n", OPT_DETAILS, store, rc->getSymbolReference()->getReferenceNumber(), rc->getLowGlobalRegisterNumber(), rc->getHighGlobalRegisterNumber());
    else
       dumpOptDetails(comp, "%s create store [%p] of %s symRef#%d to Register %d\n", OPT_DETAILS, store,
@@ -3154,7 +3154,7 @@ TR_GlobalRegister::createStoreFromRegister(vcount_t visitCount, TR::TreeTop * pr
 
    if (i != -1)
       {
-      if (comp->nodeNeeds2Regs(store))
+      if (store->requiresRegisterPair(comp))
          dumpOptDetails(comp, "%s create store [%p] from Register %d (low word) and Register %d (high word)\n", OPT_DETAILS, store, rc->getLowGlobalRegisterNumber(), rc->getHighGlobalRegisterNumber());
       else
          dumpOptDetails(comp, "%s create store [%p] from Register %d for %s #%d\n", OPT_DETAILS, store,
@@ -5203,7 +5203,7 @@ TR_LiveRangeSplitter::replaceAutosUsedIn(
 #endif
                             );
             int32_t numRegsForCandidate = 1;
-            if (comp()->nodeNeeds2Regs(node))
+            if (node->requiresRegisterPair(comp()))
                numRegsForCandidate = 2;
 
             bool candidateIsLiveOnExit = false;

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2017 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1269,13 +1269,7 @@ private:
 class TR_S390Peephole
    {
 public:
-   TR_S390Peephole(TR::Compilation* comp, TR::CodeGenerator *cg)
-      : _fe(comp->fe()),
-        _outFile(comp->getOutFile()),
-        _cursor(comp->getFirstInstruction()),
-        _cg(cg)
-      {
-      }
+   TR_S390Peephole(TR::Compilation* comp, TR::CodeGenerator *cg);
 
    void perform();
 

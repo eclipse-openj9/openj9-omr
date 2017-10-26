@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2017 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -747,7 +747,7 @@ TR::PPCSystemLinkage::createPrologue(
    //Preserve JIT pseudo-TOC as required by FrontEnd.
    if(cg()->hasCall())
       {
-      cg()->comp()->setAppendInstruction(cursor);
+      cg()->setAppendInstruction(cursor);
       TR::TreeEvaluator::preserveTOCRegister(firstNode, cg(), NULL);
       }
 

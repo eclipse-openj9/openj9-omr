@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2017 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -2536,7 +2536,7 @@ TR_Debug::dumpMethodInstrs(TR::FILE *pOutFile, const char *title, bool dumpTrees
    if (header)
       printInstrDumpHeader(title);
 
-   TR::Instruction *instr = _comp->getFirstInstruction();
+   TR::Instruction *instr = _comp->cg()->getFirstInstruction();
    if (dumpTrees)
       {
       _nodeChecklist.empty();
@@ -2711,7 +2711,7 @@ TR_Debug::dumpMixedModeDisassembly()
                  title, signature(_comp->getMethodSymbol()));
 
    TR::Node * n = 0;
-   TR::Instruction * inst = _comp->getFirstInstruction();
+   TR::Instruction * inst = _comp->cg()->getFirstInstruction();
    for (; inst; inst = inst->getNext())
       {
       if (inst->getNode()!=NULL &&

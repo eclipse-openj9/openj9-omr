@@ -581,8 +581,8 @@ void OMR::X86::TreeEvaluator::removeLiveDiscardableStatics(TR::CodeGenerator *cg
             {
             diagnostic("\n---> Deleting static discardable candidate %s at %s instruction " POINTER_PRINTF_FORMAT,
                   regCursor->getRegisterName(comp),
-                  comp->getAppendInstruction()->getOpCode().getOpCodeName(cg),
-                  comp->getAppendInstruction());
+                  cg->getAppendInstruction()->getOpCode().getOpCodeName(cg),
+                  cg->getAppendInstruction());
             }
          }
       else
@@ -5255,9 +5255,9 @@ TR::Register *OMR::X86::TreeEvaluator::BBEndEvaluator(TR::Node *node, TR::CodeGe
       TR::Machine *machine = cg->machine();
 
       if (cg->enableRegisterAssociations() &&
-          comp->getAppendInstruction()->getOpCodeValue() != ASSOCREGS)
+          cg->getAppendInstruction()->getOpCodeValue() != ASSOCREGS)
          {
-         machine->createRegisterAssociationDirective(comp->getAppendInstruction());
+         machine->createRegisterAssociationDirective(cg->getAppendInstruction());
          }
 
       bool needVMThreadDep =

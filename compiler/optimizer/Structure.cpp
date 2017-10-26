@@ -1399,8 +1399,8 @@ TR_StructureSubGraphNode *TR_StructureSubGraphNode::asStructureSubGraphNode() {r
 
 void TR_BlockStructure::checkStructure(TR_BitVector *_blockNumbers)
    {
-   TR_ASSERT(this->getNumber()==_block->getNumber(), "Number of BlockStructure is NOT the same as that of the block");
-   TR_ASSERT(_blockNumbers->get(this->getNumber())==0, "Structure, Two blocks with the same number");
+   TR_ASSERT_FATAL(this->getNumber()==_block->getNumber(), "Number of BlockStructure is NOT the same as that of the block");
+   TR_ASSERT_FATAL(_blockNumbers->get(this->getNumber())==0, "Structure, Two blocks with the same number");
    //set the value of the bit representing this block number
    //
    _blockNumbers->set(this->getNumber());
@@ -1409,12 +1409,12 @@ void TR_BlockStructure::checkStructure(TR_BitVector *_blockNumbers)
 void TR_RegionStructure::checkStructure(TR_BitVector* _blockNumbers)
    {
    TR_StructureSubGraphNode *node;
-   TR_ASSERT(this->getNumber()==getEntry()->getStructure()->getNumber(), "Entry node does not have same number as this RegionStructure");
+   TR_ASSERT_FATAL(this->getNumber()==getEntry()->getStructure()->getNumber(), "Entry node does not have same number as this RegionStructure");
    TR_RegionStructure::Cursor si(*this);
    for (node = si.getCurrent(); node != NULL; node = si.getNext())
       {
-      TR_ASSERT(this==node->getStructure()->getParent(), "subGraphNode does not have this RegionStructure as its parent");
-      TR_ASSERT(node->getNumber()==node->getStructure()->getNumber(), "subGraphNode does not have the same node number as its structure");
+      TR_ASSERT_FATAL(this==node->getStructure()->getParent(), "subGraphNode does not have this RegionStructure as its parent");
+      TR_ASSERT_FATAL(node->getNumber()==node->getStructure()->getNumber(), "subGraphNode does not have the same node number as its structure");
       TR_StructureSubGraphNode *pred, *succ;
       bool isConsistent;
       for (auto edge = node->getPredecessors().begin(); edge != node->getPredecessors().end(); ++edge)
@@ -1429,7 +1429,7 @@ void TR_RegionStructure::checkStructure(TR_BitVector* _blockNumbers)
                break;
                }
             }
-         TR_ASSERT(isConsistent, "predecessor of this subGraph node not not contain this node in its successors");
+         TR_ASSERT_FATAL(isConsistent, "predecessor of this subGraph node not not contain this node in its successors");
          }
       for (auto edge = node->getExceptionPredecessors().begin(); edge != node->getExceptionPredecessors().end(); ++edge)
          {
@@ -1443,7 +1443,7 @@ void TR_RegionStructure::checkStructure(TR_BitVector* _blockNumbers)
                break;
                }
             }
-         TR_ASSERT(isConsistent, "exception predecessor of this subGraph node not not contain this node in its exception successors");
+         TR_ASSERT_FATAL(isConsistent, "exception predecessor of this subGraph node not not contain this node in its exception successors");
          }
 
       for (auto edge = node->getSuccessors().begin(); edge != node->getSuccessors().end(); ++edge)
@@ -1458,7 +1458,7 @@ void TR_RegionStructure::checkStructure(TR_BitVector* _blockNumbers)
                break;
                }
             }
-         TR_ASSERT(isConsistent, "successor of this subGraph node not not contain this node in its predecessors");
+         TR_ASSERT_FATAL(isConsistent, "successor of this subGraph node not not contain this node in its predecessors");
          }
       for (auto edge = node->getExceptionSuccessors().begin(); edge != node->getExceptionSuccessors().end(); ++edge)
          {
@@ -1473,7 +1473,7 @@ void TR_RegionStructure::checkStructure(TR_BitVector* _blockNumbers)
                break;
                }
             }
-         TR_ASSERT(isConsistent, "exception successor of this subGraph node not not contain this node in its exception predecessors");
+         TR_ASSERT_FATAL(isConsistent, "exception successor of this subGraph node not not contain this node in its exception predecessors");
          }
       node->getStructure()->checkStructure(_blockNumbers);
       }
@@ -1491,7 +1491,7 @@ void TR_RegionStructure::checkStructure(TR_BitVector* _blockNumbers)
          {
          if ((seenNode->getNumber() == toNode->getNumber()) &&
              (seenNode != toNode))
-            TR_ASSERT(0, "Exit edges to the same node number %d in region %p must have a unique structure subgraph node (node1 %p node2 %p)\n", seenNode->getNumber(), this, seenNode, toNode);
+            TR_ASSERT_FATAL(0, "Exit edges to the same node number %d in region %p must have a unique structure subgraph node (node1 %p node2 %p)\n", seenNode->getNumber(), this, seenNode, toNode);
          }
       if (!exitNodes.find(toNode))
          exitNodes.add(toNode);

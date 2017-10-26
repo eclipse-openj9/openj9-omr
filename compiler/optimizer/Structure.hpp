@@ -101,7 +101,7 @@ class TR_Structure
    //
    bool  contains(TR_Structure *other, TR_Structure *commonParent = NULL);
 
-   TR_Structure *getContainingLoop();
+   TR_RegionStructure *getContainingLoop();
 
    // Finds the common parent of this and other
    // note that if A contains B, then the common parent is parent(A)

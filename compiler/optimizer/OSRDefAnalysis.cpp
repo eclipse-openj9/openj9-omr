@@ -1574,6 +1574,13 @@ int32_t TR_OSRExceptionEdgeRemoval::perform()
       return 0;
       }
 
+   if (comp()->osrInfrastructureRemoved())
+      {
+      if (comp()->getOption(TR_TraceOSR))
+         traceMsg(comp(), "OSR infrastructure removed -- returning from OSR exception edge removal analysis since we have already removed OSR infrastructure.\n");
+      return 0;
+      }
+
    if (comp()->isPeekingMethod())
       {
       if (comp()->getOption(TR_TraceOSR))
@@ -1656,7 +1663,6 @@ int32_t TR_OSRExceptionEdgeRemoval::perform()
          for (auto edge = block->getPredecessors().begin(); edge != block->getPredecessors().end(); ++edge)
             {
             TR::Block *osrBlock = toBlock((*edge)->getFrom());
-            TR_ASSERT(osrBlock && (osrBlock->isOSRCodeBlock() || osrBlock->isOSRCatchBlock()), "Predecessors to an OSR code block should be OSR code or catch blocks");
             if (osrBlock->isOSRCodeBlock() && addDeadStores(osrBlock, alwaysDead, !firstPass))
                osrBlocks.push(osrBlock);
             else if (osrBlock->isOSRCatchBlock())
@@ -1670,8 +1676,17 @@ int32_t TR_OSRExceptionEdgeRemoval::perform()
                   firstPass = false;
                   }
                }
+            else
+               {
+               // Another block was found in the OSR infrastructure, give up
+               alwaysDead.empty();
+               break;
+               }
             firstPass = false;
             }
+
+         if (alwaysDead.isEmpty())
+            continue;
 
          // Remove loads that are always dead
          for (int32_t i = 0 ; i < prepareForOSR->getNumChildren(); ++i)

@@ -94,8 +94,7 @@ if(OMR_HOST_OS STREQUAL "zos")
 endif()
 
 add_test(NAME threadtest COMMAND omrthreadtest)
-#TODO need to add other execution targets
-#	./omrthreadtest --gtest_also_run_disabled_tests --gtest_filter=ThreadCreateTest.DISABLED_SetAttrThreadWeight
-#ifneq (,$(findstring linux,$(SPEC)))
-#	./omrthreadtest --gtest_filter=ThreadCreateTest.*:$(GTEST_FILTER) -realtime
-#endif
+add_test(NAME threadSetAttrThreadWeightTest COMMAND omrthreadtest --gtest_also_run_disabled_tests --gtest_filter=ThreadCreateTest.DISABLED_SetAttrThreadWeight)
+if(OMR_HOST_OS STREQUAL "linux")
+	add_test(NAME threadRealtimeTest COMMAND omrthreadtest --gtest_filter=ThreadCreateTest.* -realtime)
+endif()

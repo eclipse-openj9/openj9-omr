@@ -24,6 +24,7 @@
 
 #include "il/DataTypes.hpp"
 #include "ilgen.hpp"
+#include "compiler_util.hpp"
 
 #include <vector>
 #include <string>
@@ -89,25 +90,6 @@ class MethodInfo {
          * @brief Returns the number of arguments the Tril method takes
          */
         std::size_t getArgCount() const { return _argTypes.size(); }
-
-        /**
-         * @brief Gets the TR::DataTypes value from the data type's name
-         * @param name is the name of the data type as a string
-         * @return the TR::DataTypes value corresponding to the specified name
-         */
-        static TR::DataTypes getTRDataTypes(const std::string& name) {
-            if (name == "Int8") return TR::Int8;
-            else if (name == "Int16") return TR::Int16;
-            else if (name == "Int32") return TR::Int32;
-            else if (name == "Int64") return TR::Int64;
-            else if (name == "Address") return TR::Address;
-            else if (name == "Float") return TR::Float;
-            else if (name == "Double") return TR::Double;
-            else if (name == "NoType") return TR::NoType;
-            else {
-                throw std::runtime_error{std::string{"Unknown type name: "}.append(name)};
-            }
-        }
 
     private:
         const ASTNode* _methodNode;

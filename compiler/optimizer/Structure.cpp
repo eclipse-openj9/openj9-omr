@@ -1476,6 +1476,113 @@ void TR_RegionStructure::checkStructure(TR_BitVector* _blockNumbers)
          TR_ASSERT_FATAL(isConsistent, "exception successor of this subGraph node not not contain this node in its exception predecessors");
          }
       node->getStructure()->checkStructure(_blockNumbers);
+
+      if (node->getStructure()->asRegion() != NULL)
+         {
+         // Check that node's outgoing edges correspond to the subregion's exits
+         TR_RegionStructure * const subregion = node->getStructure()->asRegion();
+
+         // All normal successors of node must have corresponding normal exits
+         auto &succs = node->getSuccessors();
+         for (auto edge = succs.begin(); edge != succs.end(); ++edge)
+            {
+            const int32_t num = (*edge)->getTo()->getNumber();
+            TR::CFGEdge *exit = NULL;
+            ListIterator<TR::CFGEdge> exits(&subregion->getExitEdges());
+            for (exit = exits.getFirst(); exit != NULL; exit = exits.getNext())
+               {
+               if (exit->getTo()->getNumber() == num)
+                  break;
+               }
+
+            TR_ASSERT_FATAL(
+               exit != NULL,
+               "subnode %d:%p edge to %d has no corresponding exit edge from "
+               "subregion %p\n",
+               node->getNumber(),
+               node,
+               num,
+               subregion);
+
+            auto * const exitNode = toStructureSubGraphNode(exit->getTo());
+            auto &preds = exitNode->getPredecessors();
+            TR_ASSERT_FATAL(
+               std::find(preds.begin(), preds.end(), exit) != preds.end(),
+               "exit in subregion %p corresponding to subnode %d:%p edge to %d "
+               "not found in normal predecessors of exit node %p\n",
+               subregion,
+               node->getNumber(),
+               node,
+               num,
+               exitNode);
+            }
+
+         // All exception successors of node must have corresponding exception exits
+         auto &excSuccs = node->getExceptionSuccessors();
+         for (auto edge = excSuccs.begin(); edge != excSuccs.end(); ++edge)
+            {
+            const int32_t num = (*edge)->getTo()->getNumber();
+            TR::CFGEdge *exit = NULL;
+            ListIterator<TR::CFGEdge> exits(&subregion->getExitEdges());
+            for (exit = exits.getFirst(); exit != NULL; exit = exits.getNext())
+               {
+               if (exit->getTo()->getNumber() == num)
+                  break;
+               }
+
+            TR_ASSERT_FATAL(
+               exit != NULL,
+               "subnode %d:%p edge to %d has no corresponding exit edge from "
+               "subregion %p\n",
+               node->getNumber(),
+               node,
+               num,
+               subregion);
+
+            auto * const exitNode = toStructureSubGraphNode(exit->getTo());
+            auto &excPreds = exitNode->getExceptionPredecessors();
+            TR_ASSERT_FATAL(
+               std::find(excPreds.begin(), excPreds.end(), exit) != excPreds.end(),
+               "exit in subregion %p corresponding to subnode %d:%p edge to %d "
+               "not found in exception predecessors of exit node %p\n",
+               subregion,
+               node->getNumber(),
+               node,
+               num,
+               exitNode);
+            }
+
+         // For each exit node must have a corresponding successor of the
+         // appropriate type
+         ListIterator<TR::CFGEdge> exits(&subregion->getExitEdges());
+         for (auto exit = exits.getFirst(); exit != NULL; exit = exits.getNext())
+            {
+            auto * const exitNode = toStructureSubGraphNode(exit->getTo());
+            const int32_t num = exitNode->getNumber();
+            auto &excPreds = exitNode->getExceptionPredecessors();
+            const bool isExc =
+               std::find(excPreds.begin(), excPreds.end(), exit) != excPreds.end();
+
+            TR::CFGEdgeList &succs =
+               isExc ? node->getExceptionSuccessors() : node->getSuccessors();
+
+            auto found = succs.begin();
+            for (; found != succs.end(); ++found)
+               {
+               if ((*found)->getTo()->getNumber() == num)
+                  break;
+               }
+
+            TR_ASSERT_FATAL(
+               found != succs.end(),
+               "exit from subregion %p to %d has no corresponding edge in "
+               "parent region outgoing from subnode %d:%p\n",
+               subregion,
+               num,
+               node->getNumber(),
+               node);
+            }
+         }
       }
 
    TR_ScratchList<TR_StructureSubGraphNode> exitNodes(trMemory());

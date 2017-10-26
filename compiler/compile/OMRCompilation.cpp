@@ -225,8 +225,6 @@ OMR::Compilation::Compilation(
    _allocatorName(NULL),
    _ilGenerator(0),
    _optimizer(0),
-   _firstInstruction(NULL),
-   _appendInstruction(NULL),
    _currentSymRefTab(NULL),
    _recompilationInfo(0),
    _optimizationPlan(optimizationPlan),

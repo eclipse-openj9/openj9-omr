@@ -368,7 +368,7 @@ class OMR_EXTENSIBLE CodeGenerator
     *
     * @return The first instruction in this method; NULL if not yet set.
     */
-   TR::Instruction *getFirstInstruction();
+   TR::Instruction *getFirstInstruction() {return _firstInstruction;}
 
    /**
     * @brief Sets the first TR::Instruction in the stream of instructions for
@@ -376,7 +376,7 @@ class OMR_EXTENSIBLE CodeGenerator
     *
     * @return The instruction being set.
     */
-   TR::Instruction *setFirstInstruction(TR::Instruction *fi);
+   TR::Instruction *setFirstInstruction(TR::Instruction *fi) {return (_firstInstruction = fi);}
 
    /**
     * @brief Returns the last TR::Instruction in the stream of instructions for
@@ -384,7 +384,7 @@ class OMR_EXTENSIBLE CodeGenerator
     *
     * @return The last instruction in this method; NULL if not yet set.
     */
-   TR::Instruction *getAppendInstruction();
+   TR::Instruction *getAppendInstruction() {return _appendInstruction;}
 
    /**
     * @brief Sets the last TR::Instruction in the stream of instructions for
@@ -392,7 +392,7 @@ class OMR_EXTENSIBLE CodeGenerator
     *
     * @return The instruction being set.
     */
-   TR::Instruction *setAppendInstruction(TR::Instruction *ai);
+   TR::Instruction *setAppendInstruction(TR::Instruction *ai) {return (_appendInstruction = ai);}
 
    TR::TreeTop *getCurrentEvaluationTreeTop() {return _currentEvaluationTreeTop;}
    TR::TreeTop *setCurrentEvaluationTreeTop(TR::TreeTop *tt) {return (_currentEvaluationTreeTop = tt);}
@@ -1956,6 +1956,9 @@ class OMR_EXTENSIBLE CodeGenerator
    int32_t _outOfLineColdPathNestedDepth;
 
    TR::CodeGenPhase _codeGenPhase;
+
+   TR::Instruction *_firstInstruction;
+   TR::Instruction *_appendInstruction;
 
    TR_RegisterMask _liveRealRegisters[NumRegisterKinds];
    TR_GlobalRegisterNumber _lastGlobalGPR;

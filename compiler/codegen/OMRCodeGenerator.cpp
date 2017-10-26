@@ -233,6 +233,8 @@ OMR::CodeGenerator::CodeGenerator() :
      _last8BitGlobalGPR(0),
      _globalGPRPartitionLimit(0),
      _globalFPRPartitionLimit(0),
+     _firstInstruction(NULL),
+     _appendInstruction(NULL),
      _firstGlobalVRF(-1),
      _lastGlobalVRF(-1),
      _firstOverlappedGlobalVRF(-1),
@@ -4110,32 +4112,4 @@ OMR::CodeGenerator::lowerTree(TR::Node *root, TR::TreeTop *tt)
    {
    TR_ASSERT(0, "Unimplemented lowerTree() called for an opcode that needs to be lowered");
    return NULL;
-   }
-
-
-TR::Instruction *
-OMR::CodeGenerator::getFirstInstruction()
-   {
-   return self()->comp()->getFirstInstruction();
-   }
-
-
-TR::Instruction *
-OMR::CodeGenerator::setFirstInstruction(TR::Instruction *fi)
-   {
-   return self()->comp()->setFirstInstruction(fi);
-   }
-
-
-TR::Instruction *
-OMR::CodeGenerator::getAppendInstruction()
-   {
-   return self()->comp()->getAppendInstruction();
-   }
-
-
-TR::Instruction *
-OMR::CodeGenerator::setAppendInstruction(TR::Instruction *ai)
-   {
-   return self()->comp()->setAppendInstruction(ai);
    }

@@ -502,12 +502,6 @@ public:
    // ==========================================================================
    // Should be in Code Generator
    //
-   TR::Instruction *getFirstInstruction() {return _firstInstruction;}
-   TR::Instruction *setFirstInstruction(TR::Instruction *fi) {return (_firstInstruction = fi);}
-
-   TR::Instruction *getAppendInstruction() {return _appendInstruction;}
-   TR::Instruction *setAppendInstruction(TR::Instruction *ai) {return (_appendInstruction = ai);}
-
    bool nodeNeeds2Regs(TR::Node * node);
 
    // J9
@@ -1041,8 +1035,6 @@ private:
 
    TR_IlGenerator                    *_ilGenerator;
    TR::Optimizer                      *_optimizer;
-   TR::Instruction                    *_firstInstruction;
-   TR::Instruction                    *_appendInstruction;
    TR_RegisterCandidates             *_globalRegisterCandidates;
    TR::SymbolReferenceTable          *_currentSymRefTab;
    TR::Recompilation                  *_recompilationInfo;

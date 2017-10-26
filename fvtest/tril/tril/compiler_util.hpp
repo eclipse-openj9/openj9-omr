@@ -37,6 +37,12 @@ static TR::DataTypes getTRDataTypes(const std::string& name) {
    else if (name == "Address") return TR::Address;
    else if (name == "Float") return TR::Float;
    else if (name == "Double") return TR::Double;
+   else if (name == "VectorInt8") return TR::VectorInt8;
+   else if (name == "VectorInt16") return TR::VectorInt16;
+   else if (name == "VectorInt32") return TR::VectorInt32;
+   else if (name == "VectorInt64") return TR::VectorInt64;
+   else if (name == "VectorFloat") return TR::VectorFloat;
+   else if (name == "VectorDouble") return TR::VectorDouble;
    else if (name == "NoType") return TR::NoType;
    else {
       throw std::runtime_error{std::string{"Unknown type name: "}.append(name)};

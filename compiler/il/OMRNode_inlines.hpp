@@ -683,9 +683,9 @@ OMR::Node::setBranchDestination(TR::TreeTop * p)
 TR::DataType
 OMR::Node::getDataType()
    {
-   if (!_opCode.hasNoDataType())
-      return _opCode.getDataType();
-   return self()->computeDataType();
+   if (_opCode.hasNoDataType())
+      return self()->computeDataType();
+   return _opCode.getDataType();
    }
 
 TR::DataType

@@ -7360,6 +7360,9 @@ void OMR::ValuePropagation::doDelayedTransformations()
 
    // If there were unreachable edges that still exist, remove them
    //
+   TR::Region &stackRegion = comp()->trMemory()->currentStackRegion();
+   TR::list<TR::Block*, TR::Region&> removedEdgeSources(stackRegion);
+
    if (_edgesToBeRemoved)
       {
       for (i = _edgesToBeRemoved->size()-1; i >= 0; --i)
@@ -7369,6 +7372,7 @@ void OMR::ValuePropagation::doDelayedTransformations()
          // NB: this following transformation is not conditional - it must be done otherwise the CFG could
          // be incorrect (for example, if a conditional branch was converted to a goto, you have to remove
          // the extra edge in the CFG or else madness will ensue.
+         removedEdgeSources.push_back(toBlock(edge->getFrom()));
          if (std::find(edge->getTo()->getPredecessors().begin(), edge->getTo()->getPredecessors().end(), edge) != edge->getTo()->getPredecessors().end())
             {
             if (trace())
@@ -7392,6 +7396,8 @@ void OMR::ValuePropagation::doDelayedTransformations()
             }
          }
       }
+
+   TR_RegionStructure::extractUnconditionalExits(comp(), removedEdgeSources);
 
 #ifdef J9_PROJECT_SPECIFIC
    if (!_multiLeafCallsToInline.isEmpty())

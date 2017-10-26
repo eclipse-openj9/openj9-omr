@@ -39,6 +39,7 @@ add_executable(comptest
 	ShiftAndRotateTest.cpp
 	SimplifierFoldAndTest.cpp
 	IfxcmpgeReductionTest.cpp
+	VectorTest.cpp
 )
 
 target_link_libraries(comptest

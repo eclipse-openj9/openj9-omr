@@ -20,6 +20,7 @@
  *******************************************************************************/
 
 #include "ilgen.hpp"
+#include "compiler_util.hpp"
 
 #include "il/Block.hpp"
 #include "il/Node.hpp"
@@ -184,11 +185,34 @@ TR::Node* Tril::TRLangBuilder::toTRNode(const ASTNode* const tree) {
         }
      }
      else if (opcode.isLoadIndirect() || opcode.isStoreIndirect()) {
-         auto offset = tree->getArgByName("offset")->getValue()->get<int32_t>();
+         // If not specified, offset will default to zero. 
+         int32_t offset = 0; 
+         if (tree->getArgByName("offset")) {
+            offset = tree->getArgByName("offset")->getValue()->get<int32_t>();
+         } else { 
+            // warning("Should specify offset on indirect load and stores -- has defaulted to zero"); 
+         }
+
          TraceIL("  is indirect store/load with offset %d\n", offset);
          const auto name = tree->getName();
-         auto type = opcode.getType();
          auto compilation = TR::comp();
+         TR::DataType type;  
+         if (opcode.isVector()) { 
+            // Vector types in TR IL are "typeless", insofar as they are
+            // supposed to infer the vector type depending on the children.
+            // Loads determine their data type based on the symref. However,
+            // given that we are creating a symref here, we need a hint as to
+            // what type of symref to create. So, vloadi and vstorei will take 
+            // an extra argument "type" to annotate the type desired.
+            if (tree->getArgByName("type") != NULL) { 
+               auto nameoftype = tree->getArgByName("type")->getValue()->getString();
+               type = getTRDataTypes(nameoftype); 
+            } else { 
+               return NULL;
+            } 
+         } else { 
+            type = opcode.getType();
+         }
          TR::Symbol *sym = TR::Symbol::createNamedShadow(compilation->trHeapMemory(), type, TR::DataType::getSize(opcode.getType()), (char*)name);
          TR::SymbolReference *symref = new (compilation->trHeapMemory()) TR::SymbolReference(compilation->getSymRefTab(), sym, compilation->getMethodSymbol()->getResolvedMethodIndex(), -1);
          symref->setOffset(offset);

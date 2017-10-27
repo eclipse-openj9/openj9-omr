@@ -185,15 +185,16 @@ TR::Node* Tril::TRLangBuilder::toTRNode(const ASTNode* const tree) {
         }
      }
      else if (opcode.isLoadIndirect() || opcode.isStoreIndirect()) {
+         TraceIL("  is indirect store/load with ");
          // If not specified, offset will default to zero. 
          int32_t offset = 0; 
          if (tree->getArgByName("offset")) {
             offset = tree->getArgByName("offset")->getValue()->get<int32_t>();
          } else { 
-            // warning("Should specify offset on indirect load and stores -- has defaulted to zero"); 
+            TraceIL(" (default) ");
          }
+         TraceIL("offset %d ", offset);
 
-         TraceIL("  is indirect store/load with offset %d\n", offset);
          const auto name = tree->getName();
          auto compilation = TR::comp();
          TR::DataType type;  
@@ -207,10 +208,12 @@ TR::Node* Tril::TRLangBuilder::toTRNode(const ASTNode* const tree) {
             if (tree->getArgByName("type") != NULL) { 
                auto nameoftype = tree->getArgByName("type")->getValue()->getString();
                type = getTRDataTypes(nameoftype); 
+               TraceIL(" of vector type %s\n", nameoftype);
             } else { 
                return NULL;
             } 
          } else { 
+            TraceIL("\n");
             type = opcode.getType();
          }
          TR::Symbol *sym = TR::Symbol::createNamedShadow(compilation->trHeapMemory(), type, TR::DataType::getSize(opcode.getType()), (char*)name);

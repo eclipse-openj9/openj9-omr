@@ -99,6 +99,10 @@ call_omrthread_init(void)
 	zos_init_yielding();
 #endif
 
+#if  defined(OMRZTPF)
+	ztpf_init_proc();
+#endif /* defined(OMRZTPF) */
+
 #if J9THREAD_USE_MONOTONIC_COND_CLOCK
 	initCondAttr(); /* ignore the result */
 #endif

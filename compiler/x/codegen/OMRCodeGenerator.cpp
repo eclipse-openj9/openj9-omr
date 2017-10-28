@@ -968,15 +968,35 @@ bool
 OMR::X86::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode, TR::DataType dt)
    {
    /*
-    * Only a few of the vector evaluators for opcodes used in AutoSIMD have been implemented.
+    * Most of the vector evaluators for opcodes used in AutoSIMD have been implemented.
     * The cases that return false are placeholders that should be updated as support for more vector evaluators is added.
     */
    // implemented vector opcodes
    switch (opcode.getOpCodeValue())
       {
       case TR::vadd:
+      case TR::vsub:
+         if (dt == TR::Int32 || dt == TR::Int64 || dt == TR::Float || dt == TR::Double)
+            return true;
+         else
+            return false;
       case TR::vmul:
-         if (dt == TR::Double)
+         if (dt == TR::Float || dt == TR::Double || (dt == TR::Int32 && self()->getX86ProcessorInfo().supportsSSE4_1()))
+            return true;
+         else
+            return false;
+      case TR::vdiv:
+         if (dt == TR::Float || dt == TR::Double)
+            return true;
+         else
+            return false;
+      case TR::vneg:
+      case TR::vrem:
+         return false;
+      case TR::vxor:
+      case TR::vor:
+      case TR::vand:
+         if (dt == TR::Int32 || dt == TR::Int64)
             return true;
          else
             return false;
@@ -985,18 +1005,11 @@ OMR::X86::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode, TR::D
       case TR::vstore:
       case TR::vstorei:
       case TR::vsplats:
+      case TR::getvelem:
          if (dt == TR::Int32 || dt == TR::Int64 || dt == TR::Float || dt == TR::Double)
             return true;
          else
             return false;
-      case TR::vsub:
-      case TR::vdiv:
-      case TR::vrem:
-      case TR::vneg:
-      case TR::vxor:
-      case TR::vor:
-      case TR::vand:
-      case TR::getvelem:
       default:
          return false;
       }

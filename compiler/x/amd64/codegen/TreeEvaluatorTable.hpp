@@ -463,13 +463,13 @@
    TR::TreeEvaluator::unImpOpEvaluator,                    // TR::vneg
    TR::TreeEvaluator::unImpOpEvaluator,                    // TR::vcom
    TR::TreeEvaluator::FloatingPointAndVectorBinaryArithmeticEvaluator, // TR::vadd
-   TR::TreeEvaluator::unImpOpEvaluator,                    // TR::vsub
+   TR::TreeEvaluator::FloatingPointAndVectorBinaryArithmeticEvaluator, // TR::vsub
    TR::TreeEvaluator::FloatingPointAndVectorBinaryArithmeticEvaluator, // TR::vmul
-   TR::TreeEvaluator::unImpOpEvaluator,                    // TR::vdiv
+   TR::TreeEvaluator::FloatingPointAndVectorBinaryArithmeticEvaluator, // TR::vdiv
    TR::TreeEvaluator::unImpOpEvaluator,                    // TR::vrem
-   TR::TreeEvaluator::unImpOpEvaluator,                    // TR::vand
-   TR::TreeEvaluator::unImpOpEvaluator,                    // TR::vor
-   TR::TreeEvaluator::unImpOpEvaluator,                    // TR::vxor
+   TR::TreeEvaluator::FloatingPointAndVectorBinaryArithmeticEvaluator, // TR::vand
+   TR::TreeEvaluator::FloatingPointAndVectorBinaryArithmeticEvaluator, // TR::vor
+   TR::TreeEvaluator::FloatingPointAndVectorBinaryArithmeticEvaluator, // TR::vxor
    TR::TreeEvaluator::unImpOpEvaluator,                    // TR::vshl
    TR::TreeEvaluator::unImpOpEvaluator,                    // TR::vushr
    TR::TreeEvaluator::unImpOpEvaluator,                    // TR::vshr
@@ -495,7 +495,7 @@
    TR::TreeEvaluator::unImpOpEvaluator,                    // TR::v2v
    TR::TreeEvaluator::unImpOpEvaluator,                    // TR::vl2vd
    TR::TreeEvaluator::unImpOpEvaluator,                    // TR::vconst
-   TR::TreeEvaluator::unImpOpEvaluator,                    // TR::getvelem
+   TR::TreeEvaluator::SIMDgetvelemEvaluator,               // TR::getvelem
    TR::TreeEvaluator::unImpOpEvaluator,                    // TR::vsetelem
 
    TR::TreeEvaluator::SIMDRegLoadEvaluator,                // TR::vbRegLoad

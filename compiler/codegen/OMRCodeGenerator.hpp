@@ -233,47 +233,8 @@ class TR_ClobberEvalData
 
    };
 
-enum MonitorInBlock
-   {
-   NoMonitor = 0,
-   MonitorEnter,
-   MonitorExit
-   };
-
-
-class TR_SetMonitorStateOnBlockEntry
-   {
-public:
-   typedef TR::typed_allocator<std::pair<int32_t const, TR_Stack<TR::SymbolReference *>*>, TR::Region&> LiveMonitorStacksAllocator;
-   typedef std::less<int32_t> LiveMonitorStacksComparator;
-   typedef std::map<int32_t, TR_Stack<TR::SymbolReference *>*, LiveMonitorStacksComparator, LiveMonitorStacksAllocator> LiveMonitorStacks;
-   TR_SetMonitorStateOnBlockEntry(TR::Compilation * c, LiveMonitorStacks *liveMonitorStacks)
-      : _blocksToVisit(c->trMemory(), 8, false, stackAlloc)
-      {
-      _comp = c;
-      _visitCount = c->incVisitCount();
-      _liveMonitorStacks = liveMonitorStacks;
-      }
-
-   void set(bool& lmmdFailed, bool traceIt = false);
-
-private:
-   int32_t addSuccessors(TR::CFGNode * cfgNode, TR_Stack<TR::SymbolReference *> *, bool traceIt, bool dontPropagateMonitor = false, MonitorInBlock monitorType = NoMonitor, int32_t callerIndex = -1, bool walkOnlyExceptionSuccs = false);
-   bool isMonitorStateConsistentForBlock(TR::Block *block, TR_Stack<TR::SymbolReference *> *newMonitorStack, bool popMonitor);
-
-   TR_Memory *        trMemory()  { return comp()->trMemory(); }
-   TR_HeapMemory   trHeapMemory() { return trMemory(); }
-
-   TR::Compilation * comp() { return _comp; }
-
-   TR::Compilation *     _comp;
-   vcount_t             _visitCount;
-   TR_Stack<TR::Block *> _blocksToVisit;
-   LiveMonitorStacks *_liveMonitorStacks;
-   };
 
 TR::Node* generatePoisonNode(TR::Compilation *comp, TR::Block *currentBlock, TR::SymbolReference *liveAutoSymRef);
-
 
 
 

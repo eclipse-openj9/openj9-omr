@@ -52,6 +52,8 @@ INSTANTIATE_TEST_CASE_P(ILValidatorDeathTest, IllformedTrees, ::testing::Values(
     "(method return=Int32 (block (ireturn (GlRegDeps) (iadd (iconst 1) (iconst 3)))))",
     "(method return=Int32 (block (ireturn (iconst 3 (GlRegDeps)))))",
     "(method return=Int32 (block (ireturn (iadd (GlRegDeps) (iconst 1) (iconst 3)))))"
+    "(method return=Int64 (block (lreturn (sshl (sconst 1) (iconst 1)))))", // lreturn incorrect type. 
+    "(method return=Int64 (block (lreturn (sconst 1) )))"                   // lreturn incorrect type. 
     ));
 
 class WellformedTrees : public TRTest::JitTest, public ::testing::WithParamInterface<std::string> {};
@@ -69,12 +71,14 @@ TEST_P(WellformedTrees, CompileOnly) {
 
 INSTANTIATE_TEST_CASE_P(ILValidatorTest, WellformedTrees, ::testing::Values(
     "(method return=Int32 (block (ireturn (iconst 3))))",
-    "(method return=Int32 (block (ireturn (sconst 3))))",
+    "(method return=Int32 (block (ireturn (s2i (sconst 3)))))",
     "(method return=Int32 (block (ireturn (iadd (iconst 1) (iconst 3)))))",
     "(method return=Address (block (areturn (aladd (aconst 4) (lconst 1)))))",
     "(method return=Int32 (block (ireturn (acmpge (aconst 4) (aconst 4)))))",
     "(method return=Int32 (block (ireturn (scmpeq (sconst 1) (sconst 3)))))",
     "(method return=Int32 (block (ireturn (lcmpeq (lconst 1) (lconst 3)))))"
+    "(method return=Int32 (block (ireturn (sconst 1) )))",                  // ireturn may return i,b or s  
+    "(method return=Int32 (block (ireturn (bconst 1) )))"                  // ireturn may return i,b or s  
     ));
 
 class CommoningTest : public TRTest::JitTest, public ::testing::WithParamInterface<std::tuple<int32_t, int32_t>> {};

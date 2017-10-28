@@ -156,13 +156,13 @@ bool operator == (const ASTNodeArg& lhs, const ASTNodeArg& rhs) {
     auto lhsValue = lhs.getValue();
     auto rhsValue = rhs.getValue();
 
-    while (lhsValue != nullptr && rhsValue != nullptr) {
+    while (lhsValue != NULL && rhsValue != NULL) {
         if (*lhsValue != *rhsValue) return false;
         lhsValue = lhsValue->next;
         rhsValue = rhsValue->next;
     }
 
-    if (lhsValue != nullptr || rhsValue != nullptr) return false;
+    if (lhsValue != NULL || rhsValue != NULL) return false;
 
     return true;
 }

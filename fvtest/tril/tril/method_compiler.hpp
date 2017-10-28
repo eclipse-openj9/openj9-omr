@@ -44,7 +44,7 @@ class MethodCompiler {
          */
         explicit MethodCompiler(const ASTNode* methodNode)
             : _method{methodNode},
-              _entry_point{nullptr}
+              _entry_point{NULL}
         {}
 
         virtual ~MethodCompiler() = default;

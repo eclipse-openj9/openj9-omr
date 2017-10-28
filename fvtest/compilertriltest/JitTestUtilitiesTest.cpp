@@ -24,7 +24,7 @@
 
 TEST(PtrTest, AssertNullWithNullValue)
    {
-   ASSERT_NULL(nullptr) << "This should always pass.";
+   ASSERT_NULL(NULL) << "This should always pass.";
    }
 
 TEST(PtrTest, AssertNotNullWithNonNullValue)
@@ -39,12 +39,12 @@ TEST(PtrTest, AssertNullWithNonNullValue)
 
 TEST(PtrTest, AssertNotNullWithNullValue)
    {
-   EXPECT_FATAL_FAILURE(ASSERT_NOTNULL(nullptr), "");
+   EXPECT_FATAL_FAILURE(ASSERT_NOTNULL(NULL), "");
    }
 
 TEST(PtrTest, ExpectNullWithNullValue)
    {
-   EXPECT_NULL(nullptr) << "This should always pass.";
+   EXPECT_NULL(NULL) << "This should always pass.";
    }
 
 TEST(PtrTest, ExpectNotNullWithNonNullValue)
@@ -59,7 +59,7 @@ TEST(PtrTest, ExpectNullWithNonNullValue)
 
 TEST(PtrTest, ExpectNotNullWithNullValue)
    {
-   EXPECT_NONFATAL_FAILURE(EXPECT_NOTNULL(nullptr), "");
+   EXPECT_NONFATAL_FAILURE(EXPECT_NOTNULL(NULL), "");
    }
 
 TEST(TRTestCombineVectorTest, CombineEmptyVectorsOfSameType)

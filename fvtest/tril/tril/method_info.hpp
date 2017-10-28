@@ -46,16 +46,16 @@ class MethodInfo {
             _returnType = getTRDataTypes(returnTypeArg->getValue()->getString());
 
             auto argTypesArg = _methodNode->getArgByName("args");
-            if (argTypesArg != nullptr) {
+            if (argTypesArg != NULL) {
                 auto typeValue = argTypesArg->getValue();
-                while (typeValue != nullptr) {
+                while (typeValue != NULL) {
                     _argTypes.push_back(getTRDataTypes(typeValue->getString()));
                     typeValue = typeValue->next;
                 }
             }
 
             auto nameArg = _methodNode->getArgByName("name");
-            if (nameArg != nullptr) {
+            if (nameArg != NULL) {
                 _name = nameArg->getValue()->get<ASTValue::String_t>();
             }
         }

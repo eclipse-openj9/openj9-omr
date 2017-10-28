@@ -23,6 +23,7 @@
 #define AST_HPP
 
 #include "ast.h"
+#include "enable_if.hpp"
 
 #include <type_traits>
 #include <assert.h>
@@ -59,9 +60,9 @@ struct ASTValue {
     enum ASTType {Integer, FloatingPoint, String} ;
 
     // aliases for the underlying C++ types used to store the different AST types
-    using Integer_t = uint64_t;
-    using FloatingPoint_t = double;
-    using String_t = const char *;
+    typedef uint64_t Integer_t;
+    typedef double FloatingPoint_t;
+    typedef const char* String_t;
 
     /**
      * STL compatible type traits for working with AST data types
@@ -76,17 +77,11 @@ struct ASTValue {
      * is_FloatintPoint_Compatible<double>::value; // true
      * is_String_Compatible<const char*>::value;   // true
      */
-    template <typename T>
-    using is_Integer_Compatible = std::is_integral<T>;
-    template <typename T>
-    using is_FloatingPoint_Compatible = std::is_floating_point<T>;
-    template <typename T>
-    using is_String_Compatible = std::is_same<String_t, T>;
 
     // constructors
-    explicit ASTValue(Integer_t v) : _type{Integer}, next{nullptr} { _value.integer = v; }
-    explicit ASTValue(FloatingPoint_t v) : _type{FloatingPoint}, next{nullptr} { _value.floatingPoint = v; }
-    explicit ASTValue(String_t v) : _type{String}, next{nullptr} { _value.str = v; }
+    explicit ASTValue(Integer_t v) : _type{Integer}, next{NULL} { _value.integer = v; }
+    explicit ASTValue(FloatingPoint_t v) : _type{FloatingPoint}, next{NULL} { _value.floatingPoint = v; }
+    explicit ASTValue(String_t v) : _type{String}, next{NULL} { _value.str = v; }
 
     /**
      * @brief Return the contained value as the specified type
@@ -108,18 +103,19 @@ struct ASTValue {
      * b.get<double>(); // returns 4.5 as a double
      * b.get<int>();    // causes an assertion failure
      */
+
     template <typename T>
-    typename std::enable_if<is_Integer_Compatible<T>::value, T>::type get() const {
+    typename Tril::enable_if<std::is_integral<T>::value , T>::type get() const {
         assert(Integer == _type);
         return static_cast<T>(_value.integer);
     }
     template <typename T>
-    typename std::enable_if<is_FloatingPoint_Compatible<T>::value, T>::type get() const {
+    typename Tril::enable_if<std::is_floating_point<T>::value, T>::type get() const {
         assert(FloatingPoint == _type);
         return static_cast<T>(_value.floatingPoint);
     }
     template <typename T>
-    typename std::enable_if<is_String_Compatible<T>::value, T>::type get() const {
+    typename Tril::enable_if<std::is_same<String_t, T>::value, T>::type get() const {
         assert(String == _type);
         return static_cast<T>(_value.str);
     }
@@ -155,16 +151,17 @@ struct ASTValue {
      * b.isCompatibleWith<double>(); // returns true
      * b.isCompatibleWith<int>();    // returns false
      */
+
     template <typename T>
-    typename std::enable_if<is_Integer_Compatible<T>::value, bool>::type isCompatibleWith() const {
+    typename Tril::enable_if<std::is_integral<T>::value , bool>::type isCompatibleWith() const {
         return Integer == _type;
     }
     template <typename T>
-    typename std::enable_if<is_FloatingPoint_Compatible<T>::value, bool>::type isCompatibleWith() const {
+    typename Tril::enable_if<std::is_floating_point<T>::value, bool>::type isCompatibleWith() const {
         return FloatingPoint == _type;
     }
     template <typename T>
-    typename std::enable_if<is_String_Compatible<T>::value, bool>::type isCompatibleWith() const {
+    typename Tril::enable_if<std::is_same<String_t, T>::value, bool>::type isCompatibleWith() const {
         return String == _type;
     }
 
@@ -220,7 +217,7 @@ struct ASTNodeArg {
     public:
     ASTNodeArg* next;
 
-    ASTNodeArg(const char* name, ASTValue* value, ASTNodeArg* next = nullptr)
+    ASTNodeArg(const char* name, ASTValue* value, ASTNodeArg* next = NULL)
         : _name{name}, _value{value}, next{next} {}
 
     const char* getName() const { return _name; }
@@ -265,7 +262,7 @@ struct ASTNode {
     const ASTNodeArg* getArgument(int index) const {
         auto arg = _args;
 
-        while (arg != nullptr && index > 0) {
+        while (arg != NULL && index > 0) {
             arg = arg->next;
             --index;
         }
@@ -297,9 +294,9 @@ struct ASTNode {
     const ASTNodeArg* getPositionalArg(int index) const {
         auto arg = _args;
 
-        while (arg != nullptr) {
+        while (arg != NULL) {
             const auto name = arg->getName();
-            if (name == nullptr || name[0] == '\0') {
+            if (name == NULL || name[0] == '\0') {
                 if (index > 0) { --index; }
                 else { break; }
             }
@@ -315,7 +312,7 @@ struct ASTNode {
         auto arg = _args;
         auto i = 0;
 
-        while (arg != nullptr) {
+        while (arg != NULL) {
             ++i;
             arg = arg->next;
         }

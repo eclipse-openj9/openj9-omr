@@ -29,10 +29,10 @@
 #include "control/Options.hpp"
 #include "optimizer/Optimizer.hpp"
 
-#define ASSERT_NULL(pointer) ASSERT_EQ(nullptr, (pointer))
-#define ASSERT_NOTNULL(pointer) ASSERT_TRUE(nullptr != (pointer))
-#define EXPECT_NULL(pointer) EXPECT_EQ(nullptr, (pointer))
-#define EXPECT_NOTNULL(pointer) EXPECT_TRUE(nullptr != (pointer))
+#define ASSERT_NULL(pointer) ASSERT_EQ(NULL, (pointer))
+#define ASSERT_NOTNULL(pointer) ASSERT_TRUE(NULL != (pointer))
+#define EXPECT_NULL(pointer) EXPECT_EQ(NULL, (pointer))
+#define EXPECT_NOTNULL(pointer) EXPECT_TRUE(NULL != (pointer))
 
 #define TRIL(code) #code
 

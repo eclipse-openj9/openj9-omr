@@ -50,9 +50,10 @@ int32_t Tril::JitBuilderCompiler::compileWithVerifier(TR::IlVerifier* verifier) 
     // into a list of `TR::IlType`
     auto argTypes = methodInfo.getArgTypes();
     auto argIlTypes = std::vector<TR::IlType*>{argTypes.size()};
-    std::transform(argTypes.cbegin(), argTypes.cend(), argIlTypes.begin(),
-                   [&types](TR::DataTypes d){ return types.PrimitiveType(d); } );
-
+    auto it_argIlTypes = argIlTypes.begin(); 
+    for (auto it = argTypes.cbegin(); it != argTypes.cend(); it++) {
+          *it_argIlTypes++ = types.PrimitiveType(*it);
+    }
     // construct a `TR::ResolvedMethod` instance from the IL generator and use
     // to compile the method
     TR::ResolvedMethod resolvedMethod("file", "line", "name",
@@ -64,13 +65,13 @@ int32_t Tril::JitBuilderCompiler::compileWithVerifier(TR::IlVerifier* verifier) 
     TR::IlGeneratorMethodDetails methodDetails(&resolvedMethod);
 
     // If a verifier is provided, set one up. 
-    if (nullptr != verifier) 
+    if (NULL != verifier) 
        {
        methodDetails.setIlVerifier(verifier);
        }
 
     int32_t rc = 0;
-    auto entry_point = compileMethodFromDetails(nullptr, methodDetails, warm, rc);
+    auto entry_point = compileMethodFromDetails(NULL, methodDetails, warm, rc);
 
     // if compilation was successful, set the entry point for the compiled body
     if (rc == 0) setEntryPoint(entry_point);

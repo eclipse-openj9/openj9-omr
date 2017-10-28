@@ -50,7 +50,7 @@ class TRLangBuilder : public TR::IlInjector {
         TRLangBuilder(const ASTNode* trees, TR::TypeDictionary* d)
               : TR::IlInjector(d), _trees(trees) {}
 
-        bool injectIL() override;
+        bool injectIL(); /* override */
 
         /**
          * @brief Given an AST structure, returns a TR::Node represented by the AST

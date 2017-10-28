@@ -502,6 +502,18 @@ MethodBuilder::DefineFunction(const char* const name,
 const char *
 MethodBuilder::getSymbolName(int32_t slot)
    {
+   // Sometimes the code generators will manufacture a symbol reference themselves with no way
+   // to properly assign a cpIndex, that these symbol references show up here with slot == -1
+   // when JIT logging. One specific case is when the code generate converts an indirect store to
+   // a known stack allocated object using a constant offset to a store with a different offset
+   // based of the stack pointer (because it knows exactly which stack slot is being referenced),
+   // but there could be other cases. This escape clause doesn't feel like a great solution to this
+   // problem, but since the assertions only really catch while create JIT logs (names are only
+   // needed when generating logs), it's actually more useful to allow the compilation to continue
+   // so that the full log can be generated rather than aborting.
+   if (slot == -1)
+      return "Unknown";
+
    SlotToSymNameMap::iterator it = _symbolNameFromSlot.find(slot);
    TR_ASSERT_FATAL(it != _symbolNameFromSlot.end(), "No symbol found in slot %d", slot);
 

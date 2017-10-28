@@ -217,7 +217,6 @@ OMR::CodeGenerator::CodeGenerator() :
      _registerSaveDescription(0),
      _extendedToInt64GlobalRegisters(self()->comp()->allocator()),
      _liveButMaybeUnreferencedLocals(NULL),
-     _liveMonitors(NULL),
      _assignedGlobalRegisters(NULL),
      _aheadOfTimeCompile(NULL),
      _globalRegisterTable(NULL),

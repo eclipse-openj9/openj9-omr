@@ -1209,9 +1209,6 @@ class OMR_EXTENSIBLE CodeGenerator
    TR_BitVector *getLiveButMaybeUnreferencedLocals() {return _liveButMaybeUnreferencedLocals;}
    TR_BitVector *setLiveButMaybeUnreferencedLocals(TR_BitVector *v) {return (_liveButMaybeUnreferencedLocals = v);}
 
-   TR_BitVector *getLiveMonitors() {return _liveMonitors;}
-   TR_BitVector *setLiveMonitors(TR_BitVector *v) {return (_liveMonitors = v);}
-
    TR::AheadOfTimeCompile *getAheadOfTimeCompile() {return _aheadOfTimeCompile;}
    TR::AheadOfTimeCompile *setAheadOfTimeCompile(TR::AheadOfTimeCompile *p) {return (_aheadOfTimeCompile = p);}
 
@@ -1846,7 +1843,6 @@ class OMR_EXTENSIBLE CodeGenerator
    TR::SparseBitVector _extendedToInt64GlobalRegisters;
 
    TR_BitVector *_liveButMaybeUnreferencedLocals;
-   TR_BitVector *_liveMonitors;
    bool _lmmdFailed;
    TR_BitVector *_signExtensionFlags;
    TR_BitVector *_assignedGlobalRegisters;

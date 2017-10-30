@@ -40,10 +40,14 @@ if(OMR_HOST_OS STREQUAL "zos")
 	target_link_libraries(omrsigtest j9a2e)
 endif()
 
-#TODO pretty sure omrtestutil only used for headers
+target_include_directories(omrsigtest
+	PRIVATE
+		.
+		../util/
+)
+
 target_link_libraries(omrsigtest
 	omrGtestGlue
-	omrtestutil
 	j9hashtable
 	omrsig
 	${OMR_THREAD_LIB}

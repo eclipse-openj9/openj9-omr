@@ -31,4 +31,5 @@ target_link_libraries(omr_blob_reader
 	omr_ddr_ir
 	omr_ddr_macros
 	omr_ddr_scanner
+	omrutil
 )

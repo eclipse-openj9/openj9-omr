@@ -77,7 +77,6 @@ add_executable(omrporttest
 
 target_link_libraries(omrporttest
 	omrGtestGlue
-	omrcore
 	omrport
 	omrtestutil
 	${OMR_THREAD_LIB}

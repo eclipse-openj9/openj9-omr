@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2017 IBM Corp. and others
+ * Copyright (c) 2016, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -31,22 +31,22 @@ TypedefUDT::~TypedefUDT()
 }
 
 DDR_RC
-TypedefUDT::acceptVisitor(TypeVisitor const &visitor)
+TypedefUDT::acceptVisitor(const TypeVisitor &visitor)
 {
-	return visitor.visitType(this);
+	return visitor.visitTypedef(this);
 }
 
-void
-TypedefUDT::checkDuplicate(Symbol_IR *ir)
+bool
+TypedefUDT::insertUnique(Symbol_IR *ir)
 {
-	/* No-op: since TypedefUDTs aren't printed, there's no need to check if they're duplicates either */
+	// FIXME remove this method?
+	return UDT::insertUnique(ir);
 }
 
 string
 TypedefUDT::getSymbolKindName()
 {
-	if (NULL == _aliasedType) return "";
-	return _aliasedType->getSymbolKindName();
+	return "";
 }
 
 size_t
@@ -76,13 +76,13 @@ TypedefUDT::getBaseType()
 }
 
 bool
-TypedefUDT::operator==(Type const & rhs) const
+TypedefUDT::operator==(const Type & rhs) const
 {
 	return rhs.compareToTypedef(*this);
 }
 
 bool
-TypedefUDT::compareToTypedef(TypedefUDT const &other) const
+TypedefUDT::compareToTypedef(const TypedefUDT &other) const
 {
 	return compareToType(other)
 		&& *_aliasedType == *other._aliasedType

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2017 IBM Corp. and others
+ * Copyright (c) 2015, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -22,29 +22,25 @@
 #ifndef ENUMUDT_HPP
 #define ENUMUDT_HPP
 
-#include "ddr/config.hpp"
-
 #include "ddr/error.hpp"
-#include "ddr/ir/EnumMember.hpp"
 #include "ddr/ir/UDT.hpp"
 
-using std::vector;
+class EnumMember;
 
-class EnumUDT: public UDT
+class EnumUDT : public UDT
 {
 public:
-	vector<EnumMember *> _enumMembers;
+	std::vector<EnumMember *> _enumMembers;
 
-	EnumUDT(unsigned int lineNumber = 0);
+	explicit EnumUDT(unsigned int lineNumber = 0);
 	virtual ~EnumUDT();
 
-	bool isAnonymousType();
 	virtual string getSymbolKindName();
 
-	virtual DDR_RC acceptVisitor(TypeVisitor const &visitor);
+	virtual DDR_RC acceptVisitor(const TypeVisitor &visitor);
 
-	bool operator==(Type const & rhs) const;
-	virtual bool compareToEnum(EnumUDT const &) const;
+	bool operator==(const Type & rhs) const;
+	virtual bool compareToEnum(const EnumUDT &) const;
 };
 
 #endif /* ENUMUDT_HPP */

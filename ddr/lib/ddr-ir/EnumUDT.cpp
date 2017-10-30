@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2017 IBM Corp. and others
+ * Copyright (c) 2015, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -26,24 +26,14 @@
 EnumUDT::EnumUDT(unsigned int lineNumber)
 	: UDT(4, lineNumber)
 {
-};
+}
 
 EnumUDT::~EnumUDT()
 {
-	for (size_t i = 0; i < _enumMembers.size(); i++) {
-		if (_enumMembers[i] == NULL) {
-			ERRMSG("Null member, cannot free");
-		} else {
-			delete(_enumMembers[i]);
-		}
+	for (vector<EnumMember *>::iterator it = _enumMembers.begin(); it != _enumMembers.end(); ++it) {
+		delete *it;
 	}
 	_enumMembers.clear();
-}
-
-bool
-EnumUDT::isAnonymousType()
-{
-	return (NULL != _outerNamespace) && (_name.empty());
 }
 
 string
@@ -53,25 +43,25 @@ EnumUDT::getSymbolKindName()
 }
 
 DDR_RC
-EnumUDT::acceptVisitor(TypeVisitor const &visitor)
+EnumUDT::acceptVisitor(const TypeVisitor &visitor)
 {
-	return visitor.visitType(this);
+	return visitor.visitEnum(this);
 }
 
 bool
-EnumUDT::operator==(Type const & rhs) const
+EnumUDT::operator==(const Type & rhs) const
 {
 	return rhs.compareToEnum(*this);
 }
 
 bool
-EnumUDT::compareToEnum(EnumUDT const &other) const
+EnumUDT::compareToEnum(const EnumUDT &other) const
 {
 	bool enumMembersEqual = _enumMembers.size() == other._enumMembers.size();
 	vector<EnumMember *>::const_iterator it2 = other._enumMembers.begin();
 	for (vector<EnumMember *>::const_iterator it = _enumMembers.begin();
 		it != _enumMembers.end() && it2 != other._enumMembers.end() && enumMembersEqual;
-		++ it, ++ it2) {
+		++it, ++it2) {
 		enumMembersEqual = ((*it)->_name == (*it2)->_name) && ((*it)->_value == (*it2)->_value);
 	}
 	return compareToUDT(other)

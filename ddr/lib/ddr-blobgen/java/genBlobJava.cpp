@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2017 IBM Corp. and others
+ * Copyright (c) 2015, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -23,27 +23,39 @@
 #define __IBMCPP_TR1__ 1
 #endif /* defined(AIXPPC) || defined(J9ZOS390) */
 
-#include <stdio.h>
-
 #include "ddr/blobgen/genBlob.hpp"
 #include "ddr/blobgen/java/genBinaryBlob.hpp"
 #include "ddr/blobgen/java/genSuperset.hpp"
 
+#include <stdio.h>
+
 DDR_RC
-genBlob(struct OMRPortLibrary *portLibrary, Symbol_IR *const ir, const char *supersetFile, const char *blobFile, bool printEmptyTypes)
+genBlob(struct OMRPortLibrary *portLibrary, Symbol_IR *ir, const char *supersetFile, const char *blobFile, bool printEmptyTypes)
 {
-	JavaSupersetGenerator supersetGenerator(printEmptyTypes);
-	DDR_RC rc = supersetGenerator.printSuperset(portLibrary, ir, supersetFile);
+	DDR_RC rc = DDR_RC_OK;
 
-	if (DDR_RC_OK == rc) {
-		printf("Superset written to file: %s\n", supersetFile);
-
+	if (NULL != blobFile) {
 		JavaBlobGenerator blobGenerator(printEmptyTypes);
+
 		rc = blobGenerator.genBinaryBlob(portLibrary, ir, blobFile);
+
+		if (DDR_RC_OK == rc) {
+			printf("Blob written to file: %s\n", blobFile);
+		} else {
+			printf("Blob NOT written to file: %s\n", blobFile);
+		}
 	}
 
-	if (DDR_RC_OK == rc) {
-		printf("Blob written to file: %s\n", blobFile);
+	if ((DDR_RC_OK == rc) && (NULL != supersetFile)) {
+		JavaSupersetGenerator supersetGenerator(printEmptyTypes);
+
+		rc = supersetGenerator.printSuperset(portLibrary, ir, supersetFile);
+
+		if (DDR_RC_OK == rc) {
+			printf("Superset written to file: %s\n", supersetFile);
+		} else {
+			printf("Superset NOT written to file: %s\n", supersetFile);
+		}
 	}
 
 	return rc;

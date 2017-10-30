@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2017 IBM Corp. and others
+ * Copyright (c) 2015, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -20,17 +20,20 @@
  *******************************************************************************/
 
 #include "ddr/ir/Field.hpp"
+#include "ddr/ir/Type.hpp"
 
 Field::Field()
-	: _fieldType(NULL),
-	  _sizeOf(0),
-	  _bitField(0),
-	  _isStatic(false)
+	: _fieldType(NULL)
+	, _sizeOf(0)
+	, _offset(0)
+	, _modifiers()
+	, _bitField(0)
+	, _isStatic(false)
 {
 }
 
-string
-Field::getTypeName()
+const string &
+Field::getTypeName() const
 {
 	return _fieldType->_name;
 }

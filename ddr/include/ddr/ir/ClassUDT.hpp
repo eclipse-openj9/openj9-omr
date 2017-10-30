@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2017 IBM Corp. and others
+ * Copyright (c) 2015, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -22,27 +22,25 @@
 #ifndef CLASSUDT_HPP
 #define CLASSUDT_HPP
 
-#include "ddr/config.hpp"
-
 #include "ddr/ir/ClassType.hpp"
 #include "ddr/error.hpp"
 
 /* This type represents both class and struct types */
-class ClassUDT: public ClassType
+class ClassUDT : public ClassType
 {
 public:
 	ClassUDT *_superClass;
 	bool _isClass;
 
-	ClassUDT(size_t size, bool isClass = true, unsigned int lineNumber = 0);
+	explicit ClassUDT(size_t size, bool isClass = true, unsigned int lineNumber = 0);
 	virtual ~ClassUDT();
 
 	virtual string getSymbolKindName();
 
-	virtual DDR_RC acceptVisitor(TypeVisitor const &visitor);
+	virtual DDR_RC acceptVisitor(const TypeVisitor &visitor);
 
-	bool operator==(Type const & rhs) const;
-	virtual bool compareToClass(ClassUDT const &) const;
+	bool operator==(const Type & rhs) const;
+	virtual bool compareToClass(const ClassUDT &) const;
 };
 
 #endif /* CLASSUDT_HPP */

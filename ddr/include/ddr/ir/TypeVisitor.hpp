@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2017 IBM Corp. and others
+ * Copyright (c) 2015, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -22,29 +22,24 @@
 #ifndef TYPEVISITOR_HPP
 #define TYPEVISITOR_HPP
 
-#include "ddr/config.hpp"
-
 #include "ddr/error.hpp"
 
-using std::string;
-
-class Symbol_IR;
-class Type;
+class ClassUDT;
 class EnumUDT;
 class NamespaceUDT;
+class Type;
 class TypedefUDT;
-class ClassUDT;
 class UnionUDT;
 
 class TypeVisitor
 {
 public:
 	virtual DDR_RC visitType(Type *type) const = 0;
-	virtual DDR_RC visitType(NamespaceUDT *type) const = 0;
-	virtual DDR_RC visitType(EnumUDT *type) const = 0;
-	virtual DDR_RC visitType(TypedefUDT *type) const = 0;
-	virtual DDR_RC visitType(ClassUDT *type) const = 0;
-	virtual DDR_RC visitType(UnionUDT *type) const = 0;
+	virtual DDR_RC visitClass(ClassUDT *type) const = 0;
+	virtual DDR_RC visitEnum(EnumUDT *type) const = 0;
+	virtual DDR_RC visitNamespace(NamespaceUDT *type) const = 0;
+	virtual DDR_RC visitTypedef(TypedefUDT *type) const = 0;
+	virtual DDR_RC visitUnion(UnionUDT *type) const = 0;
 };
 
 #endif /* TYPEVISITOR_HPP */

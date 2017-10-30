@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2017 IBM Corp. and others
+ * Copyright (c) 2015, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -66,8 +66,8 @@ public:
 	typedef unsigned short USDATA;
 	uint64_t getData() { return (data + Z.g * (USDATA)Z.h[7][2] + ENUM_A2); }
 };
-MyClass instanceOfMyClass;
 
+MyClass instanceOfMyClass;
 
 // 7. typedef
 // - typedef'ed primitive
@@ -80,29 +80,33 @@ IDATA instanceOfIDATA;
 typedef struct S1 {
 	IDATA a;
 } T1;
-T1 instanceOfT1 = {0};
+
+T1 instanceOfT1 = { 0 };
 
 // - typedef where the name matches the struct tag
 typedef struct S2 {
 	IDATA b;
 	S1 b2;
 } S2;
-S2 instanceOfS2 = {0, {0}};
+
+S2 instanceOfS2 = { 0, { 0 } };
 
 // - typedef there there is no struct tag
 typedef struct {
 	S2 c;
 } T2;
-T2 instanceOfT2 = {{0, {0}}};
+
+T2 instanceOfT2 = { { 0, { 0 } } };
 
 /* Type without struct name at beginning used as a field. */
-typedef S2 * T3 ;
+typedef S2 *T3;
 typedef struct {
 	T2 d;
 	S2 e;
 	T3 f;
 } T4;
-T4 instanceOfT4 = {{{0, {0}}}, {0, {0}}, NULL};
+
+T4 instanceOfT4 = { { { 0, { 0 } } }, { 0, { 0 } }, NULL };
 
 // - typedef'ed enum
 typedef enum {
@@ -113,6 +117,7 @@ typedef enum {
 	something5,
 	somethingN
 } MyEnum;
+
 MyEnum instanceOfEnum;
 
 // - typedef'ed union
@@ -123,6 +128,7 @@ typedef union {
 		uint32_t lo_ipv6;
 	} s;
 } Ip;
+
 Ip instanceOfIp;
 
 // 8. Fields of classes or structs
@@ -169,6 +175,7 @@ public:
 typedef struct HasVoidStarField {
 	void *voidStar;
 } HasVoidStarField;
+
 HasVoidStarField instanceOfHasVoidStarField;
 
 typedef union UnionFieldType {
@@ -180,6 +187,7 @@ typedef struct HasUnionField {
 	union UnionFieldType unionField1;
 	UnionFieldType unionField2;
 } HasUnionField;
+
 HasUnionField instanceOfHasUnionField;
 
 // 9. Simple numeric macros
@@ -257,7 +265,7 @@ sample2()
 
 	int w = 5;
 
-	std::cout << "max(w++y z++): " << std::endl;
+	std::cout << "max(w++ y++): " << std::endl;
 	y = 10;
 	z = MAX(w++, y++);
 

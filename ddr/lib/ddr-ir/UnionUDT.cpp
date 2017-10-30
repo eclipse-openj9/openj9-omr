@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2017 IBM Corp. and others
+ * Copyright (c) 2016, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -29,9 +29,9 @@ UnionUDT::UnionUDT(size_t size, unsigned int lineNumber)
 UnionUDT::~UnionUDT() {};
 
 DDR_RC
-UnionUDT::acceptVisitor(TypeVisitor const &visitor)
+UnionUDT::acceptVisitor(const TypeVisitor &visitor)
 {
-	return visitor.visitType(this);
+	return visitor.visitUnion(this);
 }
 
 string
@@ -41,13 +41,13 @@ UnionUDT::getSymbolKindName()
 }
 
 bool
-UnionUDT::operator==(Type const & rhs) const
+UnionUDT::operator==(const Type & rhs) const
 {
 	return rhs.compareToUnion(*this);
 }
 
 bool
-UnionUDT::compareToUnion(UnionUDT const &other) const
+UnionUDT::compareToUnion(const UnionUDT &other) const
 {
 	return compareToClasstype(other);
 }

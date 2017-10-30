@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2017 IBM Corp. and others
+ * Copyright (c) 2017, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -19,93 +19,131 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#include "ddr/config.hpp"
-
 #include "ddr/scanner/Scanner.hpp"
 
 #include <fstream>
 #include <iostream>
 #include <stdio.h>
 
-using std::ios;
-using std::ifstream;
-
 static bool
-checkStringMatch(string checked, set<string> *patterns)
+stringMatches(const char *candidate, const char *pattern)
 {
-	bool match = patterns->find(checked) != patterns->end();
-
-	if (!match) {
-		for (set<string>::iterator it = patterns->begin(); it != patterns->end(); it ++) {
-			size_t wildcardPos = 0;
-			size_t lastWildcardPos = 0;
-			size_t lastSequencePos = 0;
-			bool matchFound = false;
-			while ((string::npos != wildcardPos) && (it->length() > wildcardPos)) {
-				wildcardPos = it->find("*", lastWildcardPos);
-				if (string::npos == wildcardPos) {
-					wildcardPos = it->length();
-				}
-				string sequence = it->substr(lastWildcardPos, wildcardPos - lastWildcardPos);
-				size_t sequencePos = checked.find(sequence);
-				matchFound = sequence.empty()
-					|| (0 == lastWildcardPos && 0 == sequencePos)
-					|| ((string::npos != sequencePos) && (sequencePos > lastSequencePos) && (0 != lastWildcardPos));
-				matchFound = matchFound
-					&& (sequencePos + sequence.length() == checked.length()
-					|| wildcardPos < it->length()
-					|| sequence.empty());
-				if (!matchFound) {
+	for (;;) {
+		if ('*' == *pattern) {
+			/* match successively longer prefixes of candidate against the asterisk */
+			for (++pattern;; ++candidate) {
+				if (stringMatches(candidate, pattern)) {
+					return true;
+				} else if ('\0' == *candidate) {
 					break;
 				}
-				lastWildcardPos = wildcardPos + 1;
-				lastSequencePos = sequencePos;
 			}
-			if (matchFound) {
+			break;
+		} else if (*candidate != *pattern) {
+			/* no match */
+			break;
+		} else if ('\0' == *pattern) {
+			/* match: at the end of both the string and the pattern with no conflicts */
+			return true;
+		} else {
+			++candidate;
+			++pattern;
+		}
+	}
+
+	return false;
+}
+
+static bool
+stringMatchesAny(const string &candidate, const set<string> &patterns)
+{
+	bool match = false; // patterns.find(candidate) != patterns.end();
+
+	if (!match) {
+		const char *c_candidate = candidate.c_str();
+
+		for (set<string>::const_iterator it = patterns.begin(); it != patterns.end(); ++it) {
+			const string &pattern = *it;
+
+			if (stringMatches(c_candidate, pattern.c_str())) {
 				match = true;
 				break;
 			}
 		}
 	}
+
 	return match;
 }
 
 bool
-Scanner::checkBlacklistedType(string name)
+Scanner::checkBlacklistedType(const string &name) const
 {
-	return checkStringMatch(name, &_blacklistedTypes);
+	bool blacklisted = false;
+
+	/* Implicitly blacklisted are non-empty names that don't start
+	 * with a letter or an underscore.
+	 */
+	if (!name.empty()) {
+		char start = name.front();
+
+		if (('_' == start)
+				|| (('A' <= start) && (start <= 'I'))
+				|| (('J' <= start) && (start <= 'R'))
+				|| (('S' <= start) && (start <= 'Z'))
+				|| (('a' <= start) && (start <= 'i'))
+				|| (('j' <= start) && (start <= 'r'))
+				|| (('s' <= start) && (start <= 'z'))) {
+			blacklisted = stringMatchesAny(name, _blacklistedTypes);
+		} else {
+			blacklisted = true;
+		}
+	}
+
+	return blacklisted;
 }
 
 bool
-Scanner::checkBlacklistedFile(string name)
+Scanner::checkBlacklistedFile(const string &name) const
 {
-	return checkStringMatch(name, &_blacklistedFiles);
+	return stringMatchesAny(name, _blacklistedFiles);
 }
 
 DDR_RC
-Scanner::loadBlacklist(string path)
+Scanner::loadBlacklist(const char *path)
 {
 	/* Load the blacklist file. The blacklist contains a list of types
 	 * to ignore and not add to the IR, such as system types.
 	 */
 	DDR_RC rc = DDR_RC_OK;
-	string line = "";
-	ifstream blackListInput(path.c_str(), ios::in);
 
-	if (blackListInput.is_open()) {
-		while (getline(blackListInput, line)) {
-			string pattern = line.substr(5, line.length() - (string::npos == line.find_last_of("\n") ? 5 : 6));
-			if (0 == line.find("file:")) {
-				_blacklistedFiles.insert(pattern);
-			} else if (0 == line.find("type:")) {
-				_blacklistedTypes.insert(pattern);
+	if (NULL != path) {
+		std::ifstream blackListInput(path, std::ios::in);
+
+		if (!blackListInput.is_open()) {
+			ERRMSG("Could not open %s", path);
+			rc = DDR_RC_ERROR;
+		} else {
+			string line;
+
+			while (getline(blackListInput, line)) {
+				size_t end = line.find_last_not_of("\r\n");
+
+				if ((string::npos == end) || (end < 5)) {
+					continue;
+				}
+
+				string tag = line.substr(0, 5);
+				string pattern = line.substr(5, end);
+
+				if ("file:" == tag) {
+					_blacklistedFiles.insert(pattern);
+				} else if ("type:" == tag) {
+					_blacklistedTypes.insert(pattern);
+				}
 			}
+			blackListInput.close();
 		}
-	} else {
-		ERRMSG("Could not open blackList.txt");
-		rc = DDR_RC_ERROR;
 	}
-	blackListInput.close();
 
 	return rc;
 }

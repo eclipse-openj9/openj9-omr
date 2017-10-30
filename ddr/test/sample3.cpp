@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2017 IBM Corp. and others
+ * Copyright (c) 2015, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -28,12 +28,13 @@ struct S3 {
 	//const field
 	const uint8_t r;
 };
-struct S3 instanceOfS3 = {1, 4};
 
-//typedef of pointer type
+struct S3 instanceOfS3 = { 1, 4 };
+
+// typedef of pointer type
 typedef S3 *pS3;
 
-//multiple inheritance
+// multiple inheritance
 class Vehicle
 {
 public:
@@ -52,21 +53,25 @@ class MatchboxCar : public Vehicle, public Toy
 {
 public:
 	int hasWheels;
-	MatchboxCar(int hasWheelsIn, double speedIn, int durabilityIn) : Vehicle(speedIn), Toy(durabilityIn), hasWheels(hasWheelsIn) {}
+	MatchboxCar(int hasWheelsIn, double speedIn, int durabilityIn)
+		: Vehicle(speedIn), Toy(durabilityIn), hasWheels(hasWheelsIn)
+	{
+	}
 };
 
 /* Function pointer */
 typedef void VOID;
-typedef VOID* (*FunctionPointer)();
+typedef VOID *(*FunctionPointer)();
 
 /* Array and pointer typedef test */
-typedef int * INT[2];
-typedef INT * INT_ARRAY[10];
+typedef int *INT[2];
+typedef INT *INT_ARRAY[10];
 
 struct StructWithFunctionPointer {
 	FunctionPointer functionPointer;
 	INT_ARRAY i;
 };
+
 struct StructWithFunctionPointer structFunctionPointer;
 
 //struct with base types
@@ -77,9 +82,9 @@ struct S4 {
 	char c;
 	bool b;
 };
-struct S4 instanceOfS4 = {0, 1L, 3.8, 'c', true};
+struct S4 instanceOfS4 = { 0, 1L, 3.8, 'c', true };
 
-//Multiple untagged struct definitions inside a scope.
+// Multiple untagged struct definitions inside a scope.
 struct Outer {
 	struct {
 		uint8_t ui8;
@@ -94,9 +99,10 @@ struct Outer {
 		InnerStruct innerStruct;
 	} innerField3;
 };
-struct Outer instanceOfOuter = {{2}, {4}, {{6}}};
 
-//Two different class's with inner class's with the same name.
+struct Outer instanceOfOuter = { { 2 }, { 4 }, { { 6 } } };
+
+// Two different classes with inner classes of the same name.
 class OuterClassWithDifferentName1
 {
 private:
@@ -104,10 +110,13 @@ private:
 	{
 	public:
 		double g;
+		virtual void nop();
 	};
 	InnerClassWithSameName instanceOfInnerClassWithSameName;
 public:
+	virtual void nop();
 };
+
 OuterClassWithDifferentName1 instanceOfOuterClassWithDifferentName1;
 
 class OuterClassWithDifferentName2
@@ -121,6 +130,7 @@ private:
 	InnerClassWithSameName instanceOfInnerClassWithSameName;
 public:
 };
+
 OuterClassWithDifferentName2 instanceOfOuterClassWithDifferentName2;
 
 //Template class
@@ -135,17 +145,19 @@ public:
 		imaginary = imaginaryIn;
 	}
 };
-Complex <int> instanceOfComplex1(100, 75);
-Complex <double> instanceOfComplex2(64.829, 23.42);
 
-//Array field with base type defined in a typedef
+Complex<int> instanceOfComplex1(100, 75);
+Complex<double> instanceOfComplex2(64.829, 23.42);
+
+// Array field with base type defined in a typedef
 typedef unsigned int UDATA2;
 UDATA2 instanceOfUDATA2;
 
 struct SArrayWithTypedefType {
 	UDATA2 arrayWithTypedefType[12];
 };
-struct SArrayWithTypedefType instanceOfSArrayWithTypedefType = {{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12}};
+
+struct SArrayWithTypedefType instanceOfSArrayWithTypedefType = { { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 } };
 
 void
 sample3()
@@ -168,3 +180,6 @@ sample3()
 
 	std::cout << "functionPointer: " << structFunctionPointer.functionPointer << std::endl;
 }
+
+void OuterClassWithDifferentName1::nop() {}
+void OuterClassWithDifferentName1::InnerClassWithSameName::nop() {}

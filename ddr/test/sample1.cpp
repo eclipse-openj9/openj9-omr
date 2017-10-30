@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2017 IBM Corp. and others
+ * Copyright (c) 2015, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -38,37 +38,39 @@ struct A {
 	uint16_t *x;
 	uint16_t y;
 };
-struct A instanceOfA = {0, 1};
+
+struct A instanceOfA = { 0, 1 };
 
 struct SOA {
 	uint8_t a[10];
 	uint16_t b[10][10];
 };
-struct SOA instanceOfSOA = {{0}, {0}};
+
+struct SOA instanceOfSOA = { { 0 }, { 0 } };
 
 struct IPv4 {
 #if __BYTE_ORDER == __LITTLE_ENDIAN
-	uint8_t ihl:4;
-	uint8_t version:4;
+	uint8_t ihl :4;
+	uint8_t version :4;
 #elif __BYTE_ORDER == __BIG_ENDIAN
-	uint8_t version:4;
-	uint8_t ihl:4;
+	uint8_t version :4;
+	uint8_t ihl :4;
 #endif
 #if __BYTE_ORDER == __LITTLE_ENDIAN
-	uint8_t ecn:2;
-	uint8_t dscp:6;
+	uint8_t ecn :2;
+	uint8_t dscp :6;
 #elif __BYTE_ORDER == __BIG_ENDIAN
-	unsigned int ecn:2;
-	unsigned int dscp:6;
+	unsigned int ecn :2;
+	unsigned int dscp :6;
 #endif
 	uint16_t tot_len;
 	uint16_t id;
 #if __BYTE_ORDER == __LITTLE_ENDIAN
-	uint16_t fragOff:13;
-	uint16_t flags:3;
+	uint16_t fragOff :13;
+	uint16_t flags :3;
 #elif __BYTE_ORDER == __BIG_ENDIAN
-	uint16_t fragOff:3;
-	uint16_t flags:13;
+	uint16_t fragOff :3;
+	uint16_t flags :13;
 #endif
 	uint8_t ttl;
 	uint8_t protocol;
@@ -76,19 +78,22 @@ struct IPv4 {
 	uint32_t saddr;
 	uint32_t daddr;
 };
-struct IPv4 instanceOfIPv4 = {0};
+
+struct IPv4 instanceOfIPv4 = { 0 };
 
 struct C {
 	uint32_t x;
 	uint32_t y;
 };
-struct C instanceOfC = {0, 0};
+
+struct C instanceOfC = { 0, 0 };
 
 struct D {
 	struct C xy;
 	uint32_t z;
 };
-struct D instanceOfD = {{0, 0}, 0};
+
+struct D instanceOfD = { { 0, 0 }, 0 };
 
 struct UDPPacket {
 	struct IPv4 ipHeader;
@@ -97,29 +102,33 @@ struct UDPPacket {
 	uint16_t length;
 	uint16_t checksum;
 };
+
 struct UDPPacket instanceOfUDPPacket;
 
 struct F {
-	uint16_t x:4;
-	uint16_t y:8;
-	uint16_t z:4;
+	uint16_t x :4;
+	uint16_t y :8;
+	uint16_t z :4;
 };
-struct F instanceOfF = {0};
+
+struct F instanceOfF = { 0 };
 
 struct G {
 	uint16_t x :10;
 	uint16_t y :1;
 	uint16_t z :7;
 };
-struct G instanceOfG = {0};
+
+struct G instanceOfG = { 0 };
 
 struct H {
-	uint16_t a:6;
-	uint16_t b:5;
-	uint16_t c:5;
+	uint16_t a :6;
+	uint16_t b :5;
+	uint16_t c :5;
 	uint16_t d;
 };
-struct H instanceOfH = {0};
+
+struct H instanceOfH = { 0 };
 
 struct Empty {};
 struct Empty instanceOfEmpty;
@@ -155,6 +164,7 @@ union Uniondata1 {
 	uint32_t f16;
 	uint8_t  arrI8[1];
 };
+
 union Uniondata1 instanceOfUniondata1;
 
 union Uniondata2 {
@@ -162,6 +172,7 @@ union Uniondata2 {
 	uint32_t f32;
 	uint8_t arrI8[3];
 };
+
 union Uniondata2 instanceOfUniondata2;
 
 union Uniondata3 {
@@ -169,6 +180,7 @@ union Uniondata3 {
 	uint32_t f32;
 	uint8_t arrI8[4];
 };
+
 union Uniondata3 instanceOfUniondata3;
 
 union Uniondata4 {
@@ -176,6 +188,7 @@ union Uniondata4 {
 	uint32_t f32;
 	uint8_t arrI8[5];
 };
+
 union Uniondata4 instanceOfUniondata4;
 
 union Unionjob {
@@ -183,6 +196,7 @@ union Unionjob {
 	float salary;
 	int worker_no;
 };
+
 union Unionjob instanceOfUnionjob;
 
 // 5. Types defined in a namespace
@@ -232,6 +246,7 @@ namespace MyNamespace
 		TypeInInnerNamespace instanceOfTypeInInnerNamespace;
 	}
 }
+
 MyNamespace::Q instanceOfQ;
 MyNamespace::RGBColourV2 instanceOfRGBColourV2;
 MyNamespace::UDATA instanceOfUDATA;
@@ -299,7 +314,6 @@ main(int argc, char *argv[])
 
 	volume = box2.getVolume();
 	std::cout << "Volume: box2: " << volume << std::endl;
-
 
 	RGBColour rgb1;
 	RGBColour rgb2;

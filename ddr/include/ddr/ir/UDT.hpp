@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2017 IBM Corp. and others
+ * Copyright (c) 2015, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -22,29 +22,23 @@
 #ifndef UDT_HPP
 #define UDT_HPP
 
-#include "ddr/config.hpp"
-
-#include <vector>
-
-#include "ddr/ir/Members.hpp"
-#include "ddr/ir/Macro.hpp"
 #include "ddr/ir/Type.hpp"
 
 class UDT : public Type
 {
 public:
 	NamespaceUDT *_outerNamespace;
-	unsigned int _lineNumber;
+	unsigned int const _lineNumber;
 
-	UDT(size_t size, unsigned int lineNumber = 0);
+	explicit UDT(size_t size, unsigned int lineNumber = 0);
 	virtual ~UDT();
 
 	virtual string getFullName();
-	virtual void checkDuplicate(Symbol_IR *ir);
+	virtual bool insertUnique(Symbol_IR *ir);
 	virtual NamespaceUDT * getNamespace();
 
-	bool operator==(Type const & rhs) const;
-	virtual bool compareToUDT(UDT const &) const;
+	bool operator==(const Type & rhs) const;
+	virtual bool compareToUDT(const UDT &) const;
 };
 
 #endif /* UDT_HPP */

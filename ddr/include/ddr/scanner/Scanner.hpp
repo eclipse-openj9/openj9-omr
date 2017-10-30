@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2017 IBM Corp. and others
+ * Copyright (c) 2015, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -22,22 +22,20 @@
 #ifndef SCANNER_HPP
 #define SCANNER_HPP
 
-#include "ddr/config.hpp"
-
-#include <set>
+#include "ddr/error.hpp"
 #include "ddr/std/string.hpp"
-#include <vector>
 
 #include "omrport.h"
 
-#include "ddr/error.hpp"
+#include <set>
+#include <vector>
 
-class Symbol_IR;
-class Type;
+class ClassUDT;
 class EnumUDT;
 class NamespaceUDT;
+class Symbol_IR;
+class Type;
 class TypedefUDT;
-class ClassUDT;
 class UnionUDT;
 
 using std::set;
@@ -47,15 +45,16 @@ using std::vector;
 class Scanner
 {
 public:
-	virtual DDR_RC startScan(OMRPortLibrary *portLibrary, Symbol_IR *const ir, vector<string> *debugFiles, string blacklistPath) = 0;
+	virtual DDR_RC startScan(OMRPortLibrary *portLibrary, Symbol_IR *ir,
+			vector<string> *debugFiles, const char *blacklistPath) = 0;
 	
 protected:
 	set<string> _blacklistedFiles;
 	set<string> _blacklistedTypes;
 
-	bool checkBlacklistedType(string name);
-	bool checkBlacklistedFile(string name);
-	DDR_RC loadBlacklist(string file);
+	bool checkBlacklistedType(const string &name) const;
+	bool checkBlacklistedFile(const string &name) const;
+	DDR_RC loadBlacklist(const char *file);
 };
 
 #endif /* SCANNER_HPP */

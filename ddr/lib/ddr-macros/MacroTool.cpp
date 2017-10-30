@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2017 IBM Corp. and others
+ * Copyright (c) 2016, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -19,44 +19,25 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#include "ddr/config.hpp"
-
-#include "ddr/std/unordered_map.hpp"
-#include <fstream>
-#include <iostream>
-#include <set>
-
-#include "ddr/error.hpp"
 #include "ddr/macros/MacroTool.hpp"
+
 #include "ddr/ir/NamespaceUDT.hpp"
 #include "ddr/std/unordered_map.hpp"
 
+#include <fstream>
+#include <iostream>
 
-string
-MacroTool::getTypeName(string s)
-{
-	string typeEyeCatcher = "@TYPE_";
-	return s.substr(typeEyeCatcher.size());
-}
+#define FileBeginEyeCatcher "@DDRFILE_BEGIN "
+#define FileEndEyeCatcher "@DDRFILE_END "
+#define MacroEyeCatcher "@MACRO_"
+#define TypeEyeCatcher "@TYPE_"
 
-pair<string, string>
-MacroTool::getMacroInfo(string s)
-{
-	string macroEyeCatcher = "@MACRO_";
-	size_t pos = s.find(" ");
-	string name = s.substr(macroEyeCatcher.size(), pos - macroEyeCatcher.size());
-	/* pos is the location of a space. Add +1 to remove the space from the substring */
-	string value = s.substr(pos + 1);
-	pair<string, string> p(name, value);
-	return p;
-}
+#define LITERAL_STRLEN(s) (sizeof(s) - 1)
 
-string
-MacroTool::getFileName(string s)
+static bool
+startsWith(const string &str, const char *prefix, size_t prefix_len)
 {
-	string fileNameEyeCatcher = "@DDRFILE_BEGIN ";
-	string fileName = s.substr(fileNameEyeCatcher.size());
-	return fileName;
+	return 0 == str.compare(0, prefix_len, prefix, prefix_len);
 }
 
 /**
@@ -66,8 +47,8 @@ MacroTool::getFileName(string s)
  * type name. This vector is returned as an output parameter.
  * @return DDR_RC_OK on failure, DDR_RC_ERROR if an error is encountered.
  */
-	DDR_RC
-MacroTool::getMacros(string fname)
+DDR_RC
+MacroTool::getMacros(const string &fname)
 {
 	DDR_RC rc = DDR_RC_OK;
 
@@ -76,8 +57,7 @@ MacroTool::getMacros(string fname)
 		return DDR_RC_ERROR;
 	}
 
-	string line;
-	ifstream infile(fname.c_str());
+	std::ifstream infile(fname.c_str());
 
 	if (!infile) {
 		ERRMSG("invalid macrolist filename");
@@ -85,29 +65,45 @@ MacroTool::getMacros(string fname)
 	}
 
 	set<string> includeFileSet;
+	string line;
 	/* Parse the input file for macros with values. */
 	while (getline(infile, line)) {
-		if (0 == line.find("@DDRFILE_BEGIN")) {
-			string fileName = getFileName(line);
-			if (includeFileSet.end() != includeFileSet.find(fileName)) {
+		if (startsWith(line, FileBeginEyeCatcher, LITERAL_STRLEN(FileBeginEyeCatcher))) {
+			const string fileName = line.substr(LITERAL_STRLEN(FileBeginEyeCatcher));
+			if (includeFileSet.end() == includeFileSet.find(fileName)) {
+				includeFileSet.insert(fileName);
+			} else {
 				/* This include file was already processed.
 				 * Scan until the file end delimiter is found.
 				 */
 				while (getline(infile, line)) {
-					if (0 == line.find("@DDRFILE_END")) {
+					if (startsWith(line, FileEndEyeCatcher, LITERAL_STRLEN(FileEndEyeCatcher))) {
 						break;
 					}
 				}
-			} else {
-				includeFileSet.insert(fileName);
 			}
-		} else if (string::npos != line.find("@TYPE_")) {
-			MacroInfo m(getTypeName(line));
-			macroList.push_back(m);
-		} else if (string::npos != line.find("@MACRO_")) {
-			pair<string, string> macro = getMacroInfo(line);
-			if (!macro.second.empty()) {
-				macroList.back().addMacro(macro);
+		} else if (startsWith(line, TypeEyeCatcher, LITERAL_STRLEN(TypeEyeCatcher))) {
+			const string typeName = line.substr(LITERAL_STRLEN(TypeEyeCatcher));
+			MacroInfo info(typeName);
+			macroList.push_back(info);
+		} else if (startsWith(line, MacroEyeCatcher, LITERAL_STRLEN(MacroEyeCatcher))) {
+			const char * const whitespace = "\t ";
+			const size_t pos = line.find_first_of(whitespace);
+			if ((string::npos == pos) || (pos <= LITERAL_STRLEN(MacroEyeCatcher))) {
+				// input malformed: no space
+			} else {
+				/* omit leading whitespace */
+				size_t start = line.find_first_not_of(whitespace, pos);
+
+				if (string::npos != start) {
+					/* omit trailing whitespace */
+					size_t end = line.find_last_not_of(whitespace);
+
+					const string name = line.substr(LITERAL_STRLEN(MacroEyeCatcher), pos - LITERAL_STRLEN(MacroEyeCatcher) );
+					const string value = line.substr(start, end - start + 1);
+
+					macroList.back().addMacro(name, value);
+				}
 			}
 		}
 	}
@@ -116,7 +112,7 @@ MacroTool::getMacros(string fname)
 }
 
 DDR_RC
-MacroTool::addMacrosToIR(Symbol_IR *ir)
+MacroTool::addMacrosToIR(Symbol_IR *ir) const
 {
 	DDR_RC rc = DDR_RC_OK;
 
@@ -124,25 +120,42 @@ MacroTool::addMacrosToIR(Symbol_IR *ir)
 	 * can contain macros. This is used to add macros to existing types.
 	 */
 	unordered_map<string, Type *> irMap;
-	for (vector<Type *>::iterator it = ir->_types.begin(); it != ir->_types.end(); it += 1) {
-		irMap[(*it)->_name] = *it;
+	for (std::vector<Type *>::const_iterator it = ir->_types.begin(); it != ir->_types.end(); ++it) {
+		Type *type = *it;
+
+		if (type->isAnonymousType()) {
+			continue;
+		} else if (type->getSymbolKindName().empty()) {
+			continue;
+		} else {
+			const string &typeName = type->_name;
+
+			if (irMap.end() == irMap.find(typeName)) {
+				irMap[typeName] = type;
+			} else {
+				ERRMSG("Duplicate type name: %s", typeName.c_str());
+				return DDR_RC_ERROR;
+			}
+		}
 	}
 
-	for (vector<MacroInfo>::iterator it = macroList.begin(); it != macroList.end(); it += 1) {
+	for (std::vector<MacroInfo>::const_iterator it = macroList.begin(); it != macroList.end(); ++it) {
 		/* For each found MacroInfo which contains macros, add the macros to the IR. */
-		MacroInfo *macroInfo = &*it;
-		if (macroInfo->getNumMacros() > 0) {
+		const MacroInfo &macroInfo = *it;
+		if (macroInfo.getNumMacros() > 0) {
 			Type *outerType = NULL;
-			/* If there is a type of the correct name already, use it. Otherwise,
-			 * create a new namespace to contain the macros.
+			/* If there is a type of the correct name already, use it.
+			 * Otherwise, create a new namespace to contain the macros.
 			 */
-			if (irMap.find(macroInfo->getTypeName()) == irMap.end()) {
-				outerType = new NamespaceUDT();
-				outerType->_name = macroInfo->getTypeName();
-				ir->_types.push_back(outerType);
-				irMap[macroInfo->getTypeName()] = outerType;
+			const string &typeName = macroInfo.getTypeName();
+			unordered_map<string, Type *>::iterator mapIt = irMap.find(typeName);
+			if (irMap.end() != mapIt) {
+				outerType = mapIt->second;
 			} else {
-				outerType = irMap[macroInfo->getTypeName()];
+				outerType = new NamespaceUDT;
+				outerType->_name = typeName;
+				ir->_types.push_back(outerType);
+				irMap[typeName] = outerType;
 			}
 
 			if (NULL == outerType) {
@@ -150,9 +163,8 @@ MacroTool::addMacrosToIR(Symbol_IR *ir)
 				rc = DDR_RC_ERROR;
 				break;
 			} else {
-				for (set<pair<string, string> >::iterator it = macroInfo->getMacroStart(); it != macroInfo->getMacroEnd(); ++it) {
-					Macro macro(it->first, it->second);
-					outerType->addMacro(&macro);
+				for (set<pair<string, string> >::const_iterator it = macroInfo.getMacroStart(); it != macroInfo.getMacroEnd(); ++it) {
+					outerType->addMacro(new Macro(it->first, it->second));
 				}
 			}
 		}

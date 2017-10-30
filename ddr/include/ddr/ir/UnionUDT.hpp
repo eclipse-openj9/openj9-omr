@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2017 IBM Corp. and others
+ * Copyright (c) 2016, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -24,18 +24,17 @@
 
 #include "ddr/ir/ClassType.hpp"
 
-class UnionUDT: public ClassType
+class UnionUDT : public ClassType
 {
 public:
-	UnionUDT(size_t size, unsigned int lineNumber = 0);
-
+	explicit UnionUDT(size_t size, unsigned int lineNumber = 0);
 	virtual ~UnionUDT();
 
-	virtual DDR_RC acceptVisitor(TypeVisitor const &visitor);
+	virtual DDR_RC acceptVisitor(const TypeVisitor &visitor);
 	virtual string getSymbolKindName();
 
-	bool operator==(Type const & rhs) const;
-	virtual bool compareToUnion(UnionUDT const &) const;
+	bool operator==(const Type & rhs) const;
+	virtual bool compareToUnion(const UnionUDT &) const;
 };
 
 #endif /* UNIONUDT_HPP */

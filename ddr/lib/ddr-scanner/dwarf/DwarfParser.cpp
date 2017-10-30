@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2017 IBM Corp. and others
+ * Copyright (c) 2015, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -45,7 +45,7 @@ dwarf_finish(Dwarf_Debug dbg, Dwarf_Error *error)
 		if (NULL != Dwarf_CU_Context::_currentCU->_die) {
 			deleteDie(Dwarf_CU_Context::_currentCU->_die);
 		}
-		delete(Dwarf_CU_Context::_currentCU);
+		delete Dwarf_CU_Context::_currentCU;
 		Dwarf_CU_Context::_currentCU = nextCU;
 	}
 	Dwarf_CU_Context::_fileList.clear();
@@ -76,7 +76,6 @@ dwarf_init(int fd,
 	/* Call the dwarfdump command on the file's dSYM bundle and read its output.
 	 * The bundle must first be created by using dsymutil on an object or executable.
 	 */
-	
 	FILE *fp = NULL;
 	if (DW_DLV_OK == ret) {
 		stringstream ss;
@@ -96,8 +95,7 @@ dwarf_init(int fd,
 		Dwarf_Die lastCreatedDie = NULL;
 		Dwarf_Die currentDie = NULL;
 		size_t lastIndent = 0;
-		while ((-1 != getline(&buffer, &len, fp)) && (DW_DLV_OK == ret))
-		{
+		while ((-1 != getline(&buffer, &len, fp)) && (DW_DLV_OK == ret)) {
 			if (0 == strncmp(buffer, "error", 5)) {
 				ret = DW_DLV_ERROR;
 				setError(error, DW_DLE_NOB);
@@ -106,10 +104,9 @@ dwarf_init(int fd,
 			}
 		}
 		free(buffer);
-
 	}
 	if (DW_DLV_OK == ret) {
-		for (unordered_map<Dwarf_Die *, Dwarf_Off>::iterator it = refToPopulate.begin(); it != refToPopulate.end(); it ++) {
+		for (unordered_map<Dwarf_Die *, Dwarf_Off>::iterator it = refToPopulate.begin(); it != refToPopulate.end(); ++it) {
 			(*it->first) = Dwarf_Die_s::refMap[it->second];
 		}
 		Dwarf_CU_Context::_currentCU = NULL;
@@ -132,7 +129,7 @@ deleteDie(Dwarf_Die die)
 		if (NULL != attr->_stringdata) {
 			free(attr->_stringdata);
 		}
-		delete(attr);
+		delete attr;
 		attr = next;
 	}
 
@@ -143,7 +140,7 @@ deleteDie(Dwarf_Die die)
 	if (NULL != die->_child) {
 		deleteDie(die->_child);
 	}
-	delete(die);
+	delete die;
 }
 
 static int
@@ -265,7 +262,7 @@ parseCompileUnit(char *line, size_t *lastIndent, Dwarf_Error *error)
 	}
 
 	if (DW_DLV_OK == ret) {
-		Dwarf_CU_Context *newCU = new Dwarf_CU_Context();
+		Dwarf_CU_Context *newCU = new Dwarf_CU_Context;
 		if (NULL == newCU) {
 			ret = DW_DLV_ERROR;
 			setError(error, DW_DLE_MAF);
@@ -302,7 +299,7 @@ parseDwarfDie(char *line, Dwarf_Die *lastCreatedDie,
 	if (DW_TAG_unknown == tag) {
 		*currentDie = NULL;
 	} else {
-		Dwarf_Die newDie = new Dwarf_Die_s();
+		Dwarf_Die newDie = new Dwarf_Die_s;
 		if (NULL == newDie) {
 			ret = DW_DLV_ERROR;
 			setError(error, DW_DLE_MAF);
@@ -336,10 +333,10 @@ parseDwarfDie(char *line, Dwarf_Die *lastCreatedDie,
 			*lastIndent = spaces;
 		}
 	}
-	return DW_DLV_OK;
+	return ret;
 }
 
-static pair<const char *, Dwarf_Half> tagStrings[] = {
+static const pair<const char *, Dwarf_Half> tagStrings[] = {
 	make_pair("array_type", DW_TAG_array_type),
 	make_pair("base_type", DW_TAG_base_type),
 	make_pair("class_type", DW_TAG_class_type),
@@ -366,7 +363,7 @@ static void
 parseTagString(char *string, size_t length, Dwarf_Half *tag)
 {
 	size_t options = sizeof(tagStrings) / sizeof(tagStrings[0]);
-	for (size_t i = 0; i < options; i += 1) {
+	for (size_t i = 0; i < options; ++i) {
 		if (0 == strncmp(string, tagStrings[i].first, length)) {
 			*tag = tagStrings[i].second;
 			break;
@@ -387,7 +384,7 @@ parseAttribute(char *line, Dwarf_Die *lastCreatedDie,
 	parseAttrType(line, span, &type, &form);
 
 	if ((DW_AT_unknown != type) && (DW_FORM_unknown != form)) {
-		Dwarf_Attribute newAttr = new Dwarf_Attribute_s();
+		Dwarf_Attribute newAttr = new Dwarf_Attribute_s;
 		if (NULL == newAttr) {
 			ret = DW_DLV_ERROR;
 			setError(error, DW_DLE_MAF);
@@ -426,6 +423,8 @@ parseAttribute(char *line, Dwarf_Die *lastCreatedDie,
 				newAttr->_udata = strtoul(line + span + 1, NULL, 0);
 			} else if (DW_FORM_sdata == form) {
 				newAttr->_udata = strtol(line + span + 1, NULL, 0);
+			} else if (DW_FORM_flag == form) {
+				newAttr->_flag = 0 != strtol(line + span + 1, NULL, 0);
 			} else {
 				ret = DW_DLV_ERROR;
 				setError(error, DW_DLE_VMM);
@@ -442,20 +441,21 @@ parseAttribute(char *line, Dwarf_Die *lastCreatedDie,
 					attr->_nextAttr = newAttr;
 				}
 			} else {
-				delete(newAttr);
+				delete newAttr;
 			}
 		}
 	}
 	return ret;
 }
 
-static tuple<const char *, Dwarf_Half, Dwarf_Half> attrStrings[] = {
+static const tuple<const char *, Dwarf_Half, Dwarf_Half> attrStrings[] = {
 	make_tuple("byte_size", DW_AT_byte_size, DW_FORM_udata),
 	make_tuple("bit_size", DW_AT_bit_size, DW_FORM_udata),
 	make_tuple("comp_dir", DW_AT_comp_dir, DW_FORM_string),
 	make_tuple("const_value", DW_AT_const_value, DW_FORM_sdata),
 	make_tuple("decl_file", DW_AT_decl_file, DW_FORM_udata),
 	make_tuple("decl_line", DW_AT_decl_line, DW_FORM_udata),
+	make_tuple("external", DW_AT_external, DW_FORM_flag),
 	make_tuple("linkage_name", DW_AT_linkage_name, DW_FORM_string),
 	make_tuple("name", DW_AT_name, DW_FORM_string),
 	make_tuple("specification", DW_AT_specification, DW_FORM_ref1),
@@ -467,7 +467,7 @@ static void
 parseAttrType(char *string, size_t length, Dwarf_Half *type, Dwarf_Half *form)
 {
 	size_t options = sizeof(attrStrings) / sizeof(attrStrings[0]);
-	for (size_t i = 0; i < options; i += 1) {
+	for (size_t i = 0; i < options; ++i) {
 		if (0 == strncmp(string, get<0>(attrStrings[i]), length)) {
 			*type = get<1>(attrStrings[i]);
 			*form = get<2>(attrStrings[i]);

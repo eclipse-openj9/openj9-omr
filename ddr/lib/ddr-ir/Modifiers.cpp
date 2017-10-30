@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2017 IBM Corp. and others
+ * Copyright (c) 2016, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -23,54 +23,56 @@
 
 #include "ddr/config.hpp"
 #include "ddr/ir/Modifiers.hpp"
+#include "ddr/std/sstream.hpp"
 
 using std::string;
+using std::stringstream;
 using std::vector;
 
 Modifiers::Modifiers()
-	: _modifierFlags(NO_MOD),
-	  _offset(0),
-	  _pointerCount(0),
-	  _referenceCount(0)
+	: _arrayLengths()
+	, _modifierFlags(NO_MOD)
+	, _pointerCount(0)
+	, _referenceCount(0)
 {
 }
 
-Modifiers::~Modifiers() {}
+Modifiers::~Modifiers()
+{
+}
 
-const string Modifiers::MODIFIER_NAMES[] = {"const", "volatile", "unaligned", "restrict", "shared"};
+static const char * const MODIFIER_NAMES[] = { "const", "volatile", "unaligned", "restrict", "shared" };
 
 string
-Modifiers::getModifierNames()
+Modifiers::getModifierNames() const
 {
-	string modifierString = "";
-	for (int i = 1, index = 0; i < MODIFIER_FLAGS; i *= 2, index ++) {
+	stringstream modifiers;
+	for (uint8_t i = 1, index = 0; i < MODIFIER_FLAGS; i <<= 1, ++index) {
 		if (0 != (_modifierFlags & i)) {
-			modifierString += MODIFIER_NAMES[index] + " ";
+			modifiers << MODIFIER_NAMES[index] << " ";
 		}
 	}
-	return modifierString;
+	return modifiers.str();
 }
 
 string
-Modifiers::getPointerType()
+Modifiers::getPointerType() const
 {
-	string s = string("");
+	stringstream s;
 
-	for (size_t i = 0; i < _pointerCount; i++) {
-		s += "*";
+	for (size_t i = 0; i < _pointerCount; ++i) {
+		s << "*";
 	}
 
-	for (size_t i = 0; i < _referenceCount; i++) {
-		s += "&";
+	for (size_t i = 0; i < _referenceCount; ++i) {
+		s << "&";
 	}
 
-	if (isArray()) {
-		for (size_t i = 0; i < getArrayDimensions(); i++) {
-			s += "[]";
-		}
+	for (size_t i = getArrayDimensions(); i != 0; i -= 1) {
+		s << "[]";
 	}
 
-	return s;
+	return s.str();
 }
 
 void
@@ -80,13 +82,13 @@ Modifiers::addArrayDimension(size_t length)
 }
 
 bool
-Modifiers::isArray()
+Modifiers::isArray() const
 {
 	return _arrayLengths.size() > 0;
 }
 
 size_t
-Modifiers::getArrayLength(size_t i)
+Modifiers::getArrayLength(size_t i) const
 {
 	if (i >= _arrayLengths.size()) {
 		return 0;
@@ -95,43 +97,37 @@ Modifiers::getArrayLength(size_t i)
 }
 
 size_t
-Modifiers::getArrayDimensions()
+Modifiers::getArrayDimensions() const
 {
 	return _arrayLengths.size();
 }
 
 size_t
-Modifiers::getSize(size_t typeSize)
+Modifiers::getSize(size_t typeSize) const
 {
-	size_t sizeOf = 0;
+	size_t sizeOf = typeSize;
 	if (_pointerCount > 0) {
 		sizeOf = sizeof(void *);
-	} else {
-		sizeOf = typeSize;
 	}
-	if (isArray()) {
-		size_t arrayElements = 0;
-		for (vector<size_t>::iterator it = _arrayLengths.begin(); it != _arrayLengths.end(); it += 1) {
-			arrayElements += *it;
-		}
-		sizeOf *= arrayElements;
+	for (vector<size_t>::const_iterator it = _arrayLengths.begin(); it != _arrayLengths.end(); ++it) {
+		sizeOf *= *it;
 	}
 	return sizeOf;
 }
 
 bool
-Modifiers::operator==(Modifiers const& type) const
+Modifiers::operator==(const Modifiers &type) const
 {
 	bool arrayLengthsEqual = true;
-	for (size_t i = 0; i < _arrayLengths.size(); i += 1) {
-		if (_arrayLengths[i] != type._arrayLengths[i]) {
+	for (size_t i = _arrayLengths.size(); i != 0; i -= 1) {
+		if (_arrayLengths[i] != type.getArrayLength(i)) {
 			arrayLengthsEqual = false;
 			break;
 		}
 	}
 
-	return (_modifierFlags == type._modifierFlags)
+	return arrayLengthsEqual
+		&& (_modifierFlags == type._modifierFlags)
 		&& (_referenceCount == type._referenceCount)
-		&& (_pointerCount == type._pointerCount)
-		&& arrayLengthsEqual;
+		&& (_pointerCount == type._pointerCount);
 }

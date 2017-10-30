@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2017 IBM Corp. and others
+ * Copyright (c) 2016, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -164,13 +164,12 @@ main(int argc, char *argv[])
 	}
 	fclose(fd);
 
-
 	/* Read strings */
 	{
 		printf("\n== STRINGS ==\n");
 
-		const uint8_t *const stringDataStart = blobBuffer + sizeof(blobHdrV1) + blobHdrV1.structDataSize;
-		const uint8_t *const stringDataEnd = stringDataStart + blobHdrV1.stringTableDataSize;
+		const uint8_t * const stringDataStart = blobBuffer + sizeof(blobHdrV1) + blobHdrV1.structDataSize;
+		const uint8_t * const stringDataEnd = stringDataStart + blobHdrV1.stringTableDataSize;
 		const uint8_t *currentString = stringDataStart;
 		unsigned int stringNum = 1; /* Numbers the strings in the printed list */
 
@@ -260,7 +259,7 @@ main(int argc, char *argv[])
 		sort(structs.begin(), structs.end(), compareStructs);
 
 		printf("\n== STRUCTS ==\n");
-		for (size_t i = 0; i < structs.size(); i += 1) {
+		for (size_t i = 0; i < structs.size(); ++i) {
 			Structure *builtStruct = structs[i];
 			printf("\nStruct name: %.*s\n",
 				   builtStruct->nameLength,
@@ -280,7 +279,7 @@ main(int argc, char *argv[])
 				   (unsigned long int)builtStruct->constants.size());
 
 			/* Print fields in the struct */
-			for (size_t j = 0; j < builtStruct->fields.size(); j += 1) {
+			for (size_t j = 0; j < builtStruct->fields.size(); ++j) {
 				Field *field = builtStruct->fields[j];
 
 				printf(" Field declaredName: %.*s\n",
@@ -294,7 +293,7 @@ main(int argc, char *argv[])
 			}
 
 			/* Print consts in the struct */
-			for (size_t j = 0; j < builtStruct->constants.size(); j += 1) {
+			for (size_t j = 0; j < builtStruct->constants.size(); ++j) {
 				Constant *constant = builtStruct->constants[j];
 
 				printf(" Constant name: %.*s\n",

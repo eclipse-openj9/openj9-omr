@@ -235,7 +235,7 @@
 #define OMRPORT_TIME_DELTA_IN_NANOSECONDS ((uint64_t) 1000000000)
 /** @} */
 
-#if (defined(S390) || defined(J9ZOS390)) && !defined(OMRZTPF)
+#if defined(S390) || defined(J9ZOS390)
 /**
  * @name Constants to calculate time from high-resolution timer
  * @anchor hiresConstants
@@ -253,21 +253,14 @@
 #define OMRPORT_TIME_HIRES_MILLITIME_DIVISOR ((uint64_t) 2048000)
 #define OMRTIME_HIRES_CLOCK_FREQUENCY ((uint64_t) 2048000000) /* Frequency is microseconds / second */
 
-#elif defined(OMRZTPF)
-#define OMRPORT_TIME_HIRES_NANOTIME_NUMERATOR ((uint64_t) 125)
-#define OMRPORT_TIME_HIRES_NANOTIME_DENOMINATOR ((uint64_t) 256)
-#define OMRPORT_TIME_HIRES_MICROTIME_DIVISOR ((uint64_t) 8)
-#define OMRPORT_TIME_HIRES_MILLITIME_DIVISOR ((uint64_t) 8000)
-#define OMRTIME_HIRES_CLOCK_FREQUENCY ((uint64_t) 8000000) /* Frequency is microseconds / second */
-
-#else /* (defined(S390) || defined(J9ZOS390)) && !defined(OMRZTPF) */
+#else /* defined(S390) || defined(J9ZOS390) */
 
 #define OMRPORT_TIME_HIRES_NANOTIME_NUMERATOR ((uint64_t) 0)
 #define OMRPORT_TIME_HIRES_NANOTIME_DENOMINATOR ((uint64_t) 0)
 #define OMRPORT_TIME_HIRES_MICROTIME_DIVISOR ((uint64_t) 0)
 #define OMRPORT_TIME_HIRES_MILLITIME_DIVISOR ((uint64_t) 0)
 
-#endif /* (defined(S390) || defined(J9ZOS390)) && !defined(OMRZTPF) */
+#endif /* defined(S390) || defined(J9ZOS390) */
 /** @} */
 
 #if defined(LINUX) && !defined(OMRZTPF)

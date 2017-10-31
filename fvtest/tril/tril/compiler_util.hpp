@@ -23,6 +23,7 @@
 #define COMPILER_UTIL_HPP
 #include <stdexcept>
 #include "il/DataTypes.hpp"
+#include "ast.hpp"
 
 namespace Tril { 
 /**
@@ -48,6 +49,28 @@ static TR::DataTypes getTRDataTypes(const std::string& name) {
    else {
       throw std::runtime_error{static_cast<const std::string&>(std::string{"Unknown type name: "}.append(name))};
    }
+}
+
+/**
+ * @brief Return a parsed array of DataTypes from a node with an 
+ *        "args" list.
+ * @param node is the node being processed.
+ * @return the std::vector of TR::DataTypes corresponding to the 
+ *         args=[Type1,Type2,...] attached to the ASTNode. 
+ */
+static std::vector<TR::DataTypes> parseArgTypes(const ASTNode* node) { 
+
+   std::vector<TR::DataTypes> argTypes;
+   auto argTypesArg = node->getArgByName("args");
+   if (argTypesArg != nullptr) {
+      auto typeValue = argTypesArg->getValue();
+      while (typeValue != nullptr) {
+         argTypes.push_back(getTRDataTypes(typeValue->getString()));
+         typeValue = typeValue->next;
+      }
+   }
+
+   return argTypes;
 }
 
 }

@@ -20,6 +20,7 @@
 #############################################################################
 
 set(OMR_WARNINGS_AS_ERRORS ON CACHE BOOL "Treat compile warnings as errors")
+set(OMR_ENHANCED_WARNINGS ON CACHE BOOL "Enable enhanced compiler warnings")
 
 ###
 ### Major Feature Flags

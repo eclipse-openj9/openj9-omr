@@ -269,7 +269,6 @@ infoForControl(struct OMRPortLibrary *portLibrary, struct OMRUnixSignalInfo *inf
 uint32_t
 infoForModule(struct OMRPortLibrary *portLibrary, struct OMRUnixSignalInfo *info, int32_t index, const char **name, void **value)
 {
-	void *address;
 	Dl_info *dl_info = &(info->platformSignalInfo.dl_info);
 	*name = "";
 

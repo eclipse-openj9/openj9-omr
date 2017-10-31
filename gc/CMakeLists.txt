@@ -265,6 +265,14 @@ add_library(omrgc STATIC
 )
 add_dependencies(omrgc omrgc_hookgen)
 
+if(OMR_WARNINGS_AS_ERRORS)
+	target_compile_options(omrgc PRIVATE ${OMR_WARNING_AS_ERROR_FLAG})
+endif()
+
+if(OMR_ENHANCED_WARNINGS)
+	target_compile_options(omrgc PRIVATE ${OMR_ENHANCED_WARNING_FLAG})
+endif()
+
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang|AppleClang")
 	target_compile_options(omrgc PRIVATE -fno-strict-aliasing)
 elseif(CMAKE_CXX_COMPILER_ID MATCHES "XL|VisualAge")

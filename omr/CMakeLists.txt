@@ -45,6 +45,14 @@ add_library(omrcore STATIC
 	ut_omrvm.h
 )
 
+if(OMR_WARNINGS_AS_ERRORS)
+	target_compile_options(omrcore PRIVATE ${OMR_WARNING_AS_ERROR_FLAG})
+endif()
+
+if(OMR_ENHANCED_WARNINGS)
+	target_compile_options(omrcore PRIVATE ${OMR_ENHANCED_WARNING_FLAG})
+endif()
+
 target_include_directories(omrcore
 	PUBLIC
 		.

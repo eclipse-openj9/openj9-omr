@@ -299,7 +299,7 @@ omrtime_startup(struct OMRPortLibrary *portLibrary)
 	if (NULL != systemcfgP_millis) {
 		struct OMROSKernelInfo kernelInfo = {0};
 
-		if (omrsysinfo_os_kernel_info(portLibrary, &kernelInfo)) {
+		if (portLibrary->sysinfo_os_kernel_info(portLibrary, &kernelInfo)) {
 			if ((2 == kernelInfo.kernelVersion) && (6 == kernelInfo.majorRevision) && (18 >= kernelInfo.minorRevision)) {
 				systemcfgP_nanos = systemcfgP_millis;
 			}

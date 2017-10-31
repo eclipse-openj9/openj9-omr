@@ -54,13 +54,11 @@ omrgc_spinlock_acquire(J9GCSpinlock *spinlock, J9ThreadMonitorTracing*  lockTrac
 	intptr_t result;
 	intptr_t oldValue = -1;
 	intptr_t newValue = 0;
-	J9ThreadMonitorTracing* tracing = NULL;
+#if defined(OMR_THR_JLM)
+	J9ThreadMonitorTracing* tracing = lockTracing;
+#endif
 	uintptr_t spinCount2 = 0;
 	uintptr_t spinCount3 = spinlock->spinCount3;
-
-#if defined(OMR_THR_JLM)
-	tracing = lockTracing;
-#endif /* OMR_THR_JLM */
 
 	for (; spinCount3 > 0; spinCount3--) {
 		for (spinCount2 = spinlock->spinCount2; spinCount2 > 0; spinCount2--) {

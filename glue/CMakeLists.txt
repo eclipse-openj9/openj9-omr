@@ -48,5 +48,13 @@ add_library(omrglue
 	VerboseManagerImpl.hpp
 )
 
+if(OMR_WARNINGS_AS_ERRORS)
+	target_compile_options(omrglue PRIVATE ${OMR_WARNING_AS_ERROR_FLAG})
+endif()
+
+if(OMR_ENHANCED_WARNINGS)
+	target_compile_options(omrglue PRIVATE ${OMR_ENHANCED_WARNING_FLAG})
+endif()
+
 target_include_directories(omrglue PUBLIC .)
 target_link_libraries(omrglue PUBLIC omrgc)

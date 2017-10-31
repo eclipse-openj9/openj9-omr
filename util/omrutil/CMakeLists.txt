@@ -146,6 +146,14 @@ add_library(omrutil STATIC
 	$<TARGET_OBJECTS:omrutil_obj>
 )
 
+if(OMR_WARNINGS_AS_ERRORS)
+	target_compile_options(omrutil PRIVATE ${OMR_WARNING_AS_ERROR_FLAG})
+endif()
+
+if(OMR_ENHANCED_WARNINGS)
+	target_compile_options(omrutil PRIVATE ${OMR_ENHANCED_WARNING_FLAG})
+endif()
+
 target_link_libraries(omrutil PUBLIC
 	j9hashtable
 	${OMR_UTIL_GLUE_TARGET}

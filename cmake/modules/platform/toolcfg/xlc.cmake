@@ -21,6 +21,9 @@
 
 set(OMR_WARNING_AS_ERROR_FLAG -qhalt=w)
 
+#There is no enhanced warning for XLC right now
+set(OMR_ENHANCED_WARNING_FLAG )
+
 list(APPEND OMR_PLATFORM_COMPILE_OPTIONS
 	-qalias=noansi
 	-qxflag=LTOL:LTOL0

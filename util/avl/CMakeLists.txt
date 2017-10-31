@@ -29,6 +29,14 @@ add_library(j9avl STATIC
 	ut_avl.c
 )
 
+if(OMR_WARNINGS_AS_ERRORS)
+	target_compile_options(j9avl PRIVATE ${OMR_WARNING_AS_ERROR_FLAG})
+endif()
+
+if(OMR_ENHANCED_WARNINGS)
+	target_compile_options(j9avl PRIVATE ${OMR_ENHANCED_WARNING_FLAG})
+endif()
+
 target_include_directories(j9avl
 	PUBLIC
 		.

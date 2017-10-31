@@ -23,6 +23,8 @@ include(OmrUtility)
 
 set(OMR_WARNING_AS_ERROR_FLAG /WX)
 
+set(OMR_ENHANCED_WARNING_FLAG /W3)
+
 list(APPEND OMR_PLATFORM_COMPILE_OPTIONS
 	/GR-    # Disable RTTI
 	/Zm400  # Precompiled header memory allocation limit

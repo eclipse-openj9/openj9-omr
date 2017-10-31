@@ -40,6 +40,7 @@ add_executable(comptest
 	SimplifierFoldAndTest.cpp
 	IfxcmpgeReductionTest.cpp
 	VectorTest.cpp
+	CallTest.cpp
 )
 
 target_link_libraries(comptest

@@ -248,6 +248,48 @@ TR::Node* Tril::TRLangBuilder::toTRNode(const ASTNode* const tree) {
          node = TR::Node::create(opcode.getOpCodeValue(), childCount);
          node->setBranchDestination(targetEntry);
      }
+     else if (opcode.isCall()) { 
+        auto compilation = TR::comp();
+
+        const auto addressArg = tree->getArgByName("address");
+        if (addressArg == NULL) {
+           TraceIL("  Found call without required address associated\n");
+           return NULL;
+        }
+
+         TraceIL("  is call with target %s", addressArg);
+        /* I don't want to extend the ASTValue type system to include pointers at this moment,
+         * so for now, we do the reinterpret_cast to pointer type from long
+         */
+        const auto targetAddress = reinterpret_cast<void*>(addressArg->getValue()->get<long>()); 
+
+        /* To generate a call, will create a ResolvedMethodSymbol, but we need to know the 
+         * signature. The return type is intuitable from the call node, but the arguments 
+         * must be provided explicitly, hence the args list, that mimics the args list of 
+         * (method ...) 
+         */
+        const auto argList = parseArgTypes(tree); 
+
+        auto argIlTypes = std::vector<TR::IlType*>{argList.size()};
+        auto output = argIlTypes.begin(); 
+        for (auto iter = argList.cbegin(); iter != argList.cend(); iter++, output++) {
+           *output = _types.PrimitiveType(*iter); 
+        }
+
+        auto returnIlType = _types.PrimitiveType(opcode.getType());
+         
+        TR::ResolvedMethod* method = new (compilation->trHeapMemory()) TR::ResolvedMethod("file",
+                                                                                          "line",
+                                                                                          "name",
+                                                                                          argIlTypes.size(),
+                                                                                          argIlTypes.data(),
+                                                                                          returnIlType,
+                                                                                          targetAddress,
+                                                                                          0);
+
+         TR::SymbolReference *methodSymRef = symRefTab()->findOrCreateStaticMethodSymbol(JITTED_METHOD_INDEX, -1, method);
+         node  = TR::Node::createWithSymRef(opcode.getOpCodeValue(), childCount, methodSymRef);
+     }
      else {
         TraceIL("  unrecognized opcode; using default creation mechanism\n", "");
         node = TR::Node::create(opcode.getOpCodeValue(), childCount);

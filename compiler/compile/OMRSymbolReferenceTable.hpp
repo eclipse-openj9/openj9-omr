@@ -171,15 +171,17 @@ class SymbolReferenceTable
        *  This symbol is used by the code generator to recognize and inline a call which emulates the following
        *  tree sequence:
        *
-       *  <code>
+       *  \code
        *  monent
        *    object
-       *  aloadi / iloadi
+       *  ...
+       *  aloadi / iloadi / lloadi
        *    ==>object
-       *  monexit
+       *  ...
        *  monexitfence
+       *  monexit
        *    ==>object
-       *  </code>
+       *  \endcode
        *
        *  Where <c>object</c> is a valid object reference. The sequence represents a field load within a
        *  synchronized region. Since a full monent / monexit operation for a single load is expensive, some code

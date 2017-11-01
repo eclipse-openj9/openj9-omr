@@ -149,6 +149,7 @@ Testing/
 /.settings/
 
 # Visual Studio
+/.vs
 *.dir/
 *.opensdf
 *.sdf

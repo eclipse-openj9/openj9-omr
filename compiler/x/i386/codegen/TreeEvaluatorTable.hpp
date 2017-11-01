@@ -464,7 +464,7 @@
    TR::TreeEvaluator::unImpOpEvaluator,                    // TR::vneg
    TR::TreeEvaluator::unImpOpEvaluator,                    // TR::vcom
    TR::TreeEvaluator::FloatingPointAndVectorBinaryArithmeticEvaluator, // TR::vadd
-   TR::TreeEvaluator::FloatingPointAndVectorBinaryArithmeticEvaluator, // TR::sub
+   TR::TreeEvaluator::FloatingPointAndVectorBinaryArithmeticEvaluator, // TR::vsub
    TR::TreeEvaluator::FloatingPointAndVectorBinaryArithmeticEvaluator, // TR::vmul
    TR::TreeEvaluator::FloatingPointAndVectorBinaryArithmeticEvaluator, // TR::vdiv
    TR::TreeEvaluator::unImpOpEvaluator,                    // TR::vrem
@@ -499,18 +499,18 @@
    TR::TreeEvaluator::SIMDgetvelemEvaluator,               // TR::getvelem
    TR::TreeEvaluator::unImpOpEvaluator,                    // TR::vsetelem
 
-   TR::TreeEvaluator::unImpOpEvaluator,                    // TR::vbRegLoad
-   TR::TreeEvaluator::unImpOpEvaluator,                    // TR::vsRegLoad
-   TR::TreeEvaluator::unImpOpEvaluator,                    // TR::viRegLoad
-   TR::TreeEvaluator::unImpOpEvaluator,                    // TR::vlRegLoad
-   TR::TreeEvaluator::unImpOpEvaluator,                    // TR::vfRegLoad
-   TR::TreeEvaluator::unImpOpEvaluator,                    // TR::vdRegLoad
-   TR::TreeEvaluator::unImpOpEvaluator,                    // TR::vbRegStore
-   TR::TreeEvaluator::unImpOpEvaluator,                    // TR::vsRegStore
-   TR::TreeEvaluator::unImpOpEvaluator,                    // TR::viRegStore
-   TR::TreeEvaluator::unImpOpEvaluator,                    // TR::vlRegStore
-   TR::TreeEvaluator::unImpOpEvaluator,                    // TR::vfRegStore
-   TR::TreeEvaluator::unImpOpEvaluator,                    // TR::vdRegStore
+   TR::TreeEvaluator::SIMDRegLoadEvaluator,                // TR::vbRegLoad
+   TR::TreeEvaluator::SIMDRegLoadEvaluator,                // TR::vsRegLoad
+   TR::TreeEvaluator::SIMDRegLoadEvaluator,                // TR::viRegLoad
+   TR::TreeEvaluator::SIMDRegLoadEvaluator,                // TR::vlRegLoad
+   TR::TreeEvaluator::SIMDRegLoadEvaluator,                // TR::vfRegLoad
+   TR::TreeEvaluator::SIMDRegLoadEvaluator,                // TR::vdRegLoad
+   TR::TreeEvaluator::SIMDRegStoreEvaluator,               // TR::vbRegStore
+   TR::TreeEvaluator::SIMDRegStoreEvaluator,               // TR::vsRegStore
+   TR::TreeEvaluator::SIMDRegStoreEvaluator,               // TR::viRegStore
+   TR::TreeEvaluator::SIMDRegStoreEvaluator,               // TR::vlRegStore
+   TR::TreeEvaluator::SIMDRegStoreEvaluator,               // TR::vfRegStore
+   TR::TreeEvaluator::SIMDRegStoreEvaluator,               // TR::vdRegStore
 
 /*
  *END OF OPCODES REQUIRED BY OMR

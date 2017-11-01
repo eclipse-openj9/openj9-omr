@@ -343,6 +343,42 @@ class AllBlockIterator: protected BlockIterator
    void operator ++() { stepForward(); }
    };
 
+/** \brief
+ *     Iterates through extended basic block sequences in a treetop order, where treetop order means the order in 
+ *     which the extended basic blocks appear in a trace log file.
+ */
+class TreeTopOrderExtendedBlockIterator : protected BlockIterator
+   {
+
+   public:
+
+      TreeTopOrderExtendedBlockIterator(TR::Compilation* comp, const char* name = NULL);
+
+   /** \brief
+    *     Returns the first basic block in the current iteration of the extended basic block sequence.
+    */
+   TR::Block* getFirst();
+
+   /** \brief
+    *     Returns the last basic block in the current iteration of the extended basic block sequence.
+    */
+   TR::Block* getLast();
+
+   /** \brief
+    *     Advances the iterator to the next extended basic block in TreeTop order.
+    */
+   void operator ++();
+
+   private:
+
+   void logCurrentLocation();
+
+   private:
+
+   TR::Block* _currBlock;
+   TR::Block* _nextBlock;
+   };
+
 }
 
 #endif

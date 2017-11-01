@@ -47,7 +47,7 @@ set(TR_TARGET_ARCH    ${TR_HOST_ARCH})
 set(TR_TARGET_SUBARCH ${TR_HOST_SUBARCH})
 set(TR_TARGET_BITS    ${TR_HOST_BITS})
 
-set(MASM2GAS_PATH ${OMR_ROOT}/tools/compiler/scripts/masm2gas.pl)
+set(MASM2GAS_PATH ${omr_SOURCE_DIR}/tools/compiler/scripts/masm2gas.pl)
 
 # Mark a target as consuming the compiler components.
 #
@@ -297,10 +297,10 @@ function(create_omr_compiler_library)
 		${${COMPILER_NAME}_ROOT}/${TR_TARGET_ARCH}/${TR_TARGET_SUBARCH}
 		${${COMPILER_NAME}_ROOT}/${TR_TARGET_ARCH}
 		${${COMPILER_NAME}_ROOT}
-		${OMR_ROOT}/compiler/${TR_TARGET_ARCH}/${TR_TARGET_SUBARCH}
-		${OMR_ROOT}/compiler/${TR_TARGET_ARCH}
-		${OMR_ROOT}/compiler
-		${OMR_ROOT}
+		${omr_SOURCE_DIR}/compiler/${TR_TARGET_ARCH}/${TR_TARGET_SUBARCH}
+		${omr_SOURCE_DIR}/compiler/${TR_TARGET_ARCH}
+		${omr_SOURCE_DIR}/compiler
+		${omr_SOURCE_DIR}
 		${COMPILER_INCLUDES}
 		CACHE INTERNAL "Include header list for ${COMPILER}"
 	)
@@ -311,7 +311,7 @@ function(create_omr_compiler_library)
 	# Generate a build name file.
 	set(BUILD_NAME_FILE "${CMAKE_BINARY_DIR}/${COMPILER_NAME}Name.cpp")
 	add_custom_command(OUTPUT ${BUILD_NAME_FILE}
-		COMMAND perl ${OMR_ROOT}/tools/compiler/scripts/generateVersion.pl ${COMPILER_NAME} > ${BUILD_NAME_FILE}
+		COMMAND perl ${omr_SOURCE_DIR}/tools/compiler/scripts/generateVersion.pl ${COMPILER_NAME} > ${BUILD_NAME_FILE}
 		VERBATIM
 		COMMENT "Generate ${BUILD_NAME_FILE}"
 	)
@@ -344,7 +344,7 @@ function(create_omr_compiler_library)
 	#
 	# This macro computes an appropriate target directory.
 	macro(add_compiler_subdirectory dir)
-		add_subdirectory(${OMR_ROOT}/compiler/${dir}
+		add_subdirectory(${omr_SOURCE_DIR}/compiler/${dir}
 			${CMAKE_CURRENT_BINARY_DIR}/compiler/${dir}_${COMPILER_NAME})
 	endmacro(add_compiler_subdirectory)
 

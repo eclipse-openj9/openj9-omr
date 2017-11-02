@@ -260,7 +260,7 @@ OMR::Node::Node(TR::Node * from, uint16_t numChildren)
 
    if (from->getOpCode().isStoreReg() || from->getOpCode().isLoadReg())
       {
-      if (comp->nodeNeeds2Regs(from))
+      if (from->requiresRegisterPair(comp))
          {
          self()->setLowGlobalRegisterNumber(from->getLowGlobalRegisterNumber());
          self()->setHighGlobalRegisterNumber(from->getHighGlobalRegisterNumber());
@@ -1791,7 +1791,7 @@ OMR::Node::duplicateTree_DEPRECATED(bool duplicateChildren)
 
    if (newRoot->getOpCode().isStoreReg() || newRoot->getOpCode().isLoadReg())
       {
-      if (comp->nodeNeeds2Regs(newRoot))
+      if (newRoot->requiresRegisterPair(comp))
          {
          newRoot->setLowGlobalRegisterNumber(self()->getLowGlobalRegisterNumber());
          newRoot->setHighGlobalRegisterNumber(self()->getHighGlobalRegisterNumber());
@@ -4239,6 +4239,13 @@ OMR::Node::countChildren(TR::ILOpCodes opcode)
       }
    return count;
    }
+
+bool
+OMR::Node::requiresRegisterPair(TR::Compilation *comp)
+   {
+   return (self()->getType().isInt64() && TR::Compiler->target.is32Bit() && !comp->cg()->use64BitRegsOn32Bit());
+   }
+
 
 /**
  * Node field functions end

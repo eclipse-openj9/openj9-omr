@@ -209,7 +209,7 @@ TR::RegDepCopyRemoval::readRegDeps()
 
       // Avoid register pairs for simplicity, at least for now
       bool isRegPairDep = depNode->getHighGlobalRegisterNumber() != (TR_GlobalRegisterNumber)-1;
-      bool valueNeedsRegPair = comp()->nodeNeeds2Regs(depValue);
+      bool valueNeedsRegPair = depValue->requiresRegisterPair(comp());
       TR_ASSERT(isRegPairDep == valueNeedsRegPair, "mismatch on number of registers required for n%un\n", depNode->getGlobalIndex());
       if (isRegPairDep)
          {

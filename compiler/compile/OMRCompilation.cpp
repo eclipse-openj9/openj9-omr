@@ -181,7 +181,7 @@ OMR::Compilation::getHotnessName(TR_Hotness h)
 
 bool OMR::Compilation::nodeNeeds2Regs(TR::Node*node)
    {
-   return (node->getType().isInt64() && TR::Compiler->target.is32Bit() && !self()->cg()->use64BitRegsOn32Bit());
+   return node->requiresRegisterPair(self());
    }
 
 

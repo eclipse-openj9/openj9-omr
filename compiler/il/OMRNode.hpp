@@ -456,6 +456,15 @@ public:
 
    bool                   addressPointsAtObject();
 
+   /**
+    * @brief Answers whether the act of evaluating this node will
+    *        require a register pair (two registers) to hold the
+    *        result.
+    * @param comp, the TR::Compilation object
+    * @return true if two registers are required; false otherwise
+    */
+   bool                   requiresRegisterPair(TR::Compilation *comp);
+
    /// Decide whether it is safe to replace the next reference to this node with
    /// a copy of the node, i.e. make sure it is not killed between the first
    /// reference and the next reference.

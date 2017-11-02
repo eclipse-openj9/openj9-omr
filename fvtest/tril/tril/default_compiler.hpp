@@ -19,40 +19,15 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
 
-#ifndef JITTEST_HPP
-#define JITTEST_HPP
+#ifndef DEFAULT_COMPILER_HPP
+#define DEFAULT_COMPILER_HPP
 
-#include <gtest/gtest.h>
-#include "Jit.hpp"
-
-namespace Tril {
-namespace Test {
-
-/**
- * @brief The JitTest class is a basic test fixture for Jit test cases.
- *
- * Most Jit test case fixtures should publically inherit from this class.
- *
- * Example use:
- *
- *    class MyTestCase : public JitTest {};
+/* If you want to support more backends that are 
+ * incompatible with the SimpleCompiler interface,
+ * use #ifdefs to select them in this file. 
  */
-class JitTest : public ::testing::Test
-   {
-   public:
 
-   static void SetUpTestCase()
-      {
-      ASSERT_TRUE(initializeJit()) << "Failed to initialize the JIT.";
-      }
+#include "simple_compiler.hpp"
+namespace Tril { typedef Tril::SimpleCompiler DefaultCompiler; } 
 
-   static void TearDownTestCase()
-      {
-      shutdownJit();
-      }
-   };
-
-} // namespace Test
-} // namespace Tril
-
-#endif // JITTEST_HPP
+#endif

@@ -20,7 +20,7 @@
  *******************************************************************************/
 
 #include "JitTest.hpp"
-#include "jitbuilder_compiler.hpp"
+#include "default_compiler.hpp"
 
 class VectorTest : public TRTest::JitTest {};
 
@@ -40,7 +40,7 @@ TEST_F(VectorTest, VDoubleAdd) {
 
     ASSERT_NOTNULL(trees);
 
-    Tril::JitBuilderCompiler compiler{trees};
+    Tril::DefaultCompiler compiler{trees};
     ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
 
 

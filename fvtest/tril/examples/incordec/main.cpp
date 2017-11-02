@@ -19,7 +19,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
 
-#include "jitbuilder_compiler.hpp"
+#include "default_compiler.hpp"
 #include "Jit.hpp"
 
 #include <assert.h>
@@ -41,7 +41,7 @@ int main(int argc, char const * const * const argv) {
     printTrees(stdout, trees, 0);
 
     // assume that the file contians a single method and compile it
-    Tril::JitBuilderCompiler incordecCompiler{trees};
+    Tril::DefaultCompiler incordecCompiler{trees};
     assert(incordecCompiler.compile() == 0);
     auto incordec = incordecCompiler.getEntryPoint<IncOrDecFunction*>();
 

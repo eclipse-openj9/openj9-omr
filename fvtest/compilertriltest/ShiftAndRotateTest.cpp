@@ -20,7 +20,7 @@
  *******************************************************************************/
 
 #include "OpCodeTest.hpp"
-#include "jitbuilder_compiler.hpp"
+#include "default_compiler.hpp"
 
 template <typename T> static
 std::vector<std::tuple<T, int32_t>> test_input_values()
@@ -98,7 +98,7 @@ TEST_P(Int32ShiftAndRotate, UsingConst) {
 
     ASSERT_NOTNULL(trees);
 
-    Tril::JitBuilderCompiler compiler{trees};
+    Tril::DefaultCompiler compiler{trees};
 
     ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
 
@@ -115,7 +115,7 @@ TEST_P(Int32ShiftAndRotate, UsingLoadParam) {
 
     ASSERT_NOTNULL(trees);
 
-    Tril::JitBuilderCompiler compiler{trees};
+    Tril::DefaultCompiler compiler{trees};
 
     ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
 
@@ -140,7 +140,7 @@ TEST_P(Int64ShiftAndRotate, UsingConst) {
 
     ASSERT_NOTNULL(trees);
 
-    Tril::JitBuilderCompiler compiler{trees};
+    Tril::DefaultCompiler compiler{trees};
 
     ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
 
@@ -157,7 +157,7 @@ TEST_P(Int64ShiftAndRotate, UsingLoadParam) {
 
     ASSERT_NOTNULL(trees);
 
-    Tril::JitBuilderCompiler compiler{trees};
+    Tril::DefaultCompiler compiler{trees};
 
     ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
 
@@ -182,7 +182,7 @@ TEST_P(Int8ShiftAndRotate, UsingConst) {
 
     ASSERT_NOTNULL(trees);
 
-    Tril::JitBuilderCompiler compiler{trees};
+    Tril::DefaultCompiler compiler{trees};
 
     ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
 
@@ -199,7 +199,7 @@ TEST_P(Int8ShiftAndRotate, UsingLoadParam) {
 
     ASSERT_NOTNULL(trees);
 
-    Tril::JitBuilderCompiler compiler{trees};
+    Tril::DefaultCompiler compiler{trees};
 
     ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
 
@@ -223,7 +223,7 @@ TEST_P(Int16ShiftAndRotate, UsingConst) {
 
     ASSERT_NOTNULL(trees);
 
-    Tril::JitBuilderCompiler compiler{trees};
+    Tril::DefaultCompiler compiler{trees};
 
     ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
 
@@ -241,7 +241,7 @@ TEST_P(Int16ShiftAndRotate, UsingLoadParam) {
 
     ASSERT_NOTNULL(trees);
 
-    Tril::JitBuilderCompiler compiler{trees};
+    Tril::DefaultCompiler compiler{trees};
 
     ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
 
@@ -266,7 +266,7 @@ TEST_P(UInt32ShiftAndRotate, UsingConst) {
 
     ASSERT_NOTNULL(trees);
 
-    Tril::JitBuilderCompiler compiler{trees};
+    Tril::DefaultCompiler compiler{trees};
 
     ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
 
@@ -283,7 +283,7 @@ TEST_P(UInt32ShiftAndRotate, UsingLoadParam) {
 
     ASSERT_NOTNULL(trees);
 
-    Tril::JitBuilderCompiler compiler{trees};
+    Tril::DefaultCompiler compiler{trees};
 
     ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
 
@@ -306,7 +306,7 @@ TEST_P(UInt64ShiftAndRotate, UsingConst) {
 
     ASSERT_NOTNULL(trees);
 
-    Tril::JitBuilderCompiler compiler{trees};
+    Tril::DefaultCompiler compiler{trees};
 
     ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
 
@@ -323,7 +323,7 @@ TEST_P(UInt64ShiftAndRotate, UsingLoadParam) {
 
     ASSERT_NOTNULL(trees);
 
-    Tril::JitBuilderCompiler compiler{trees};
+    Tril::DefaultCompiler compiler{trees};
 
     ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
 
@@ -346,7 +346,7 @@ TEST_P(UInt8ShiftAndRotate, UsingConst) {
 
     ASSERT_NOTNULL(trees);
 
-    Tril::JitBuilderCompiler compiler{trees};
+    Tril::DefaultCompiler compiler{trees};
 
     ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
 
@@ -363,7 +363,7 @@ TEST_P(UInt8ShiftAndRotate, UsingLoadParam) {
 
     ASSERT_NOTNULL(trees);
 
-    Tril::JitBuilderCompiler compiler{trees};
+    Tril::DefaultCompiler compiler{trees};
 
     ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
 
@@ -386,7 +386,7 @@ TEST_P(UInt16ShiftAndRotate, UsingConst) {
 
     ASSERT_NOTNULL(trees);
 
-    Tril::JitBuilderCompiler compiler{trees};
+    Tril::DefaultCompiler compiler{trees};
 
     ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
 
@@ -403,7 +403,7 @@ TEST_P(UInt16ShiftAndRotate, UsingLoadParam) {
 
     ASSERT_NOTNULL(trees);
 
-    Tril::JitBuilderCompiler compiler{trees};
+    Tril::DefaultCompiler compiler{trees};
 
     ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
 

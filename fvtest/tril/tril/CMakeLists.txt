@@ -32,26 +32,32 @@ FLEX_TARGET(tril_scanner tril.l ${CMAKE_CURRENT_BINARY_DIR}/tril.scanner.c
 #            DEFINES_FILE ${CMAKE_CURRENT_BINARY_DIR}/tril.scanner.h)
 ADD_FLEX_BISON_DEPENDENCY(tril_scanner tril_parser)
 
+if(TRIL_TEST_COMPILER)
+    set(TRIL_BACKEND_LIB      testcompiler)
+else()
+    set(TRIL_BACKEND_LIB      jitbuilder)
+endif()
+
 add_library(tril STATIC
 	${BISON_tril_parser_OUTPUTS}
 	${FLEX_tril_scanner_OUTPUTS}
 	ast.cpp
 	ilgen.cpp
-	jitbuilder_compiler.cpp
+	simple_compiler.cpp
 )
 
 # This is mildly peculiar. Because tril relies
 # on jitbuilder as a 'backend' of sorts, we use
 # its includes. Tril exports this as interface
-make_compiler_target(tril PUBLIC COMPILER jitbuilder)
+make_compiler_target(tril PUBLIC COMPILER ${TRIL_BACKEND_LIB}) 
 
 target_include_directories(tril PUBLIC
 	${CMAKE_CURRENT_BINARY_DIR}
 	${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-target_link_libraries(tril PUBLIC
-	jitbuilder
+target_link_libraries(tril PUBLIC 
+	${TRIL_BACKEND_LIB}
 	dl
 )
 

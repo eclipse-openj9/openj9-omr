@@ -22,7 +22,7 @@
 #include <gtest/gtest.h>
 #include "Jit.hpp"
 #include "JitTest.hpp"
-#include "jitbuilder_compiler.hpp"
+#include "default_compiler.hpp"
 
 template <typename ValType>
 using IfxcmpgeReductionParamType = std::tuple<ValType, ValType, int32_t (*)(ValType, ValType)>;
@@ -120,7 +120,7 @@ TEST_P(Int8ReductionTest, Reduction)
 
    ASSERT_NOTNULL(trees);
 
-   Tril::JitBuilderCompiler compiler{trees};
+   Tril::DefaultCompiler compiler{trees};
 
    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
 
@@ -164,7 +164,7 @@ TEST_P(UInt8ReductionTest, Reduction)
 
    ASSERT_NOTNULL(trees);
 
-   Tril::JitBuilderCompiler compiler{trees};
+   Tril::DefaultCompiler compiler{trees};
 
    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
 
@@ -208,7 +208,7 @@ TEST_P(Int16ReductionTest, Reduction)
 
    ASSERT_NOTNULL(trees);
 
-   Tril::JitBuilderCompiler compiler{trees};
+   Tril::DefaultCompiler compiler{trees};
 
    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
 
@@ -252,7 +252,7 @@ TEST_P(UInt16ReductionTest, Reduction)
 
    ASSERT_NOTNULL(trees);
 
-   Tril::JitBuilderCompiler compiler{trees};
+   Tril::DefaultCompiler compiler{trees};
 
    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
 
@@ -295,7 +295,7 @@ TEST_P(Int32ReductionTest, Reduction)
 
    ASSERT_NOTNULL(trees);
 
-   Tril::JitBuilderCompiler compiler{trees};
+   Tril::DefaultCompiler compiler{trees};
 
    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
 
@@ -338,7 +338,7 @@ TEST_P(UInt32ReductionTest, Reduction)
 
    ASSERT_NOTNULL(trees);
 
-   Tril::JitBuilderCompiler compiler{trees};
+   Tril::DefaultCompiler compiler{trees};
 
    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
 
@@ -381,7 +381,7 @@ TEST_P(Int64ReductionTest, Reduction)
 
    ASSERT_NOTNULL(trees);
 
-   Tril::JitBuilderCompiler compiler{trees};
+   Tril::DefaultCompiler compiler{trees};
 
    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
 
@@ -424,7 +424,7 @@ TEST_P(UInt64ReductionTest, Reduction)
 
    ASSERT_NOTNULL(trees);
 
-   Tril::JitBuilderCompiler compiler{trees};
+   Tril::DefaultCompiler compiler{trees};
 
    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
 

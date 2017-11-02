@@ -19,7 +19,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
 
-#include "jitbuilder_compiler.hpp"
+#include "simple_compiler.hpp"
 
 #include "env/jittypes.h"
 #include "il/DataTypes.hpp"
@@ -31,16 +31,16 @@
 #include "env/jittypes.h"
 #include "il/DataTypes.hpp"
 #include "ilgen.hpp"
-#include "Jit.hpp"
 #include "ilgen/IlGeneratorMethodDetails_inlines.hpp"
+#include "Jit.hpp" 
 
 #include <algorithm>
 
-int32_t Tril::JitBuilderCompiler::compile() {
+int32_t Tril::SimpleCompiler::compile() {
    return compileWithVerifier(NULL);
 }
 
-int32_t Tril::JitBuilderCompiler::compileWithVerifier(TR::IlVerifier* verifier) {
+int32_t Tril::SimpleCompiler::compileWithVerifier(TR::IlVerifier* verifier) {
     // construct an IL generator for the method
     auto methodInfo = getMethodInfo();
     TR::TypeDictionary types;

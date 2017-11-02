@@ -19,7 +19,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
 
-#include "jitbuilder_compiler.hpp"
+#include "default_compiler.hpp"
 #include "Jit.hpp"
 #include <cstdio>
 #include <string>
@@ -48,7 +48,7 @@ int main(int argc, char** argv)
       if (!isDumper) 
          {
          initializeJit();
-         Tril::JitBuilderCompiler compiler{trees}; 
+         Tril::DefaultCompiler compiler{trees}; 
          if (compiler.compile() != 0) { 
             fprintf(out, "Error compiling trees!"); 
          }

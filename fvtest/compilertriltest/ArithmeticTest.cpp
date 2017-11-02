@@ -20,7 +20,7 @@
  *******************************************************************************/
 
 #include "OpCodeTest.hpp"
-#include "jitbuilder_compiler.hpp"
+#include "default_compiler.hpp"
 
 class Int32Arithmetic : public TRTest::BinaryOpTest<int32_t> {};
 
@@ -33,7 +33,7 @@ TEST_P(Int32Arithmetic, UsingConst) {
 
     ASSERT_NOTNULL(trees);
 
-    Tril::JitBuilderCompiler compiler{trees};
+    Tril::DefaultCompiler compiler{trees};
 
     ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
 
@@ -52,7 +52,7 @@ TEST_P(Int32Arithmetic, UsingLoadParam) {
 
     ASSERT_NOTNULL(trees);
 
-    Tril::JitBuilderCompiler compiler{trees};
+    Tril::DefaultCompiler compiler{trees};
 
     ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
 

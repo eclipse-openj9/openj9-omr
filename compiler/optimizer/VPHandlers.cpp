@@ -1419,15 +1419,22 @@ static const char *getFieldSignature(OMR::ValuePropagation *vp, TR::Node *node, 
    return NULL;
    }
 
-static void addKnownObjectConstraints(OMR::ValuePropagation *vp, TR::Node *node)
+/**
+ * Try to add constraint to known objects or constant strings.
+ * @parm vp The VP object.
+ * @parm node The node whose value might be a known object or a constant string.
+ *
+ * @return True if the constraint is created, otherwise false.
+ */
+static bool addKnownObjectConstraints(OMR::ValuePropagation *vp, TR::Node *node)
    {
    TR::KnownObjectTable *knot = vp->comp()->getKnownObjectTable();
    if (!knot)
-      return;
+      return false;
 
    TR::SymbolReference *symRef = node->getSymbolReference();
    if (symRef->isUnresolved())
-      return;
+      return false;
 
    uintptrj_t *objectReferenceLocation = NULL;
    if (symRef->hasKnownObjectIndex())
@@ -1504,10 +1511,12 @@ static void addKnownObjectConstraints(OMR::ValuePropagation *vp, TR::Node *node)
                traceMsg(vp->comp(), "\n");
                }
             vp->addGlobalConstraint(node, constraint);
+            return true;
             }
          }
       }
 #endif
+   return false;
    }
 
 TR::Node *constrainAload(OMR::ValuePropagation *vp, TR::Node *node)
@@ -1516,9 +1525,7 @@ TR::Node *constrainAload(OMR::ValuePropagation *vp, TR::Node *node)
       return node;
 
    // before undertaking aload specific handling see if the default load transformation helps
-   // But even if it does help, node may still be an aload that we can constrain.
-   if (TR::TransformUtil::transformDirectLoad(vp->comp(), node)
-       && node->getOpCodeValue() != TR::aload)
+   if (TR::TransformUtil::transformDirectLoad(vp->comp(), node))
       {
       constrainNewlyFoldedConst(vp, node, false /* !isGlobal, conservative */);
       return node;
@@ -1540,7 +1547,8 @@ TR::Node *constrainAload(OMR::ValuePropagation *vp, TR::Node *node)
          vp->addGlobalConstraint(node, TR::VPObjectLocation::create(vp, TR::VPObjectLocation::J9ClassObject));
          }
 
-      addKnownObjectConstraints(vp, node);
+      if (addKnownObjectConstraint(vp, node))
+         return node;
 
       if (!symRef->getSymbol()->isArrayShadowSymbol())
          {
@@ -1930,8 +1938,6 @@ TR::Node *constrainIiload(OMR::ValuePropagation *vp, TR::Node *node)
    if (containsUnsafeSymbolReference(vp, node))
       return node;
 
-   addKnownObjectConstraints(vp, node);
-
    if (constrainCompileTimeLoad(vp, node))
       return node;
 
@@ -2047,7 +2053,8 @@ TR::Node *constrainIaload(OMR::ValuePropagation *vp, TR::Node *node)
             }
          }
 
-      addKnownObjectConstraints(vp, node);
+      if (addKnownObjectConstraints(vp, node))
+         return node;
 
       TR::SymbolReference *symRef = node->getSymbolReference();
       bool attemptCompileTimeLoad = true;
@@ -11455,7 +11462,15 @@ void constrainNewlyFoldedConst(OMR::ValuePropagation *vp, TR::Node *node, bool i
          break;
 
       default:
-         if (vp->trace())
+         // The symRef on the node might contain a known object index
+         // Create a known object constraint for it if so
+         if (node->getDataType() == TR::Address &&
+             node->getOpCode().hasSymbolReference() &&
+             node->getSymbolReference()->hasKnownObjectIndex())
+            {
+            addKnownObjectConstraints(vp, node);
+            }
+         else if (vp->trace())
             {
             traceMsg(
                vp->comp(),

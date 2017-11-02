@@ -20,25 +20,26 @@
 # SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
 ###############################################################################
 
-add_hookgen(include/omrmm.hdf
-	${CMAKE_CURRENT_SOURCE_DIR}/../include_core/mmomrhook.h
-	${CMAKE_CURRENT_SOURCE_DIR}/base/mmomrhook_internal.h
+omr_add_hookgen(
+	INPUT include/omrmm.hdf
+	PUBLIC_DIR "${omr_BINARY_DIR}"
+	TARGETS omrgc_hookgen
 )
-add_hookgen(base/omrmmprivate.hdf
-	${CMAKE_CURRENT_SOURCE_DIR}/base/mmprivatehook.h
-	${CMAKE_CURRENT_SOURCE_DIR}/base/mmprivatehook_internal.h
+
+omr_add_hookgen(
+	INPUT base/omrmmprivate.hdf
+	TARGETS omrgc_hookgen
+)
+
+add_custom_target(omrgc_hookgen
+	DEPENDS
+		"${omr_BINARY_DIR}/mmomrhook.h"
+		"${CMAKE_CURRENT_BINARY_DIR}/mmprivatehook.h"
 )
 
 add_tracegen(base/j9mm.tdf)
 add_tracegen(base/omrmm.tdf)
 add_tracegen(verbose/j9vgc.tdf)
-add_custom_target(omrgc_hookgen
-		DEPENDS
-		${CMAKE_CURRENT_SOURCE_DIR}/../include_core/mmomrhook.h
-		${CMAKE_CURRENT_SOURCE_DIR}/base/mmomrhook_internal.h
-		${CMAKE_CURRENT_SOURCE_DIR}/base/mmprivatehook.h
-		${CMAKE_CURRENT_SOURCE_DIR}/base/mmprivatehook_internal.h
-)
 
 # Ideally We would handle the tracegen stuff like the hookgen stuff above
 # But for whatever reason that breaks the ninja builds

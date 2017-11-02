@@ -33,8 +33,8 @@ set(JITBUILDER_OBJECTS
 	optimizer/JBOptimizer.cpp
 	optimizer/Optimizer.hpp
 	runtime/JBCodeCacheManager.cpp
-	${OMR_ROOT}/compiler/ilgen/VirtualMachineOperandArray.cpp
-	${OMR_ROOT}/compiler/ilgen/VirtualMachineOperandStack.cpp
+	${omr_SOURCE_DIR}/compiler/ilgen/VirtualMachineOperandArray.cpp
+	${omr_SOURCE_DIR}/compiler/ilgen/VirtualMachineOperandStack.cpp
 )
 
 if(OMR_ARCH_X86)
@@ -53,7 +53,7 @@ elseif(OMR_ARCH_POWER)
 		p/runtime/CodeSync.cpp
 		p/runtime/AsmUtil.spp
 		p/runtime/CodeDispatch.spp
-		${OMR_ROOT}/compiler/p/env/OMRDebugEnv.cpp
+		${omr_SOURCE_DIR}/compiler/p/env/OMRDebugEnv.cpp
 	)
 endif()
 

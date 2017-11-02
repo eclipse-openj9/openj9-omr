@@ -48,16 +48,16 @@ elseif(OMR_ARCH_POWER)
 		p/runtime/AsmUtil.spp
 		p/runtime/CodeDispatch.spp
 		p/runtime/CodeSync.cpp
-		${OMR_ROOT}/compiler/p/runtime/OMRCodeCacheConfig.cpp
+		${omr_SOURCE_DIR}/compiler/p/runtime/OMRCodeCacheConfig.cpp
 		#target
 		p/codegen/Evaluator.cpp
-		${OMR_ROOT}/compiler/p/env/OMRDebugEnv.cpp
+		${omr_SOURCE_DIR}/compiler/p/env/OMRDebugEnv.cpp
 	)
 elseif(OMR_ARCH_S390)
 	list(APPEND COMPILERTEST_FILES 
 		z/codegen/Evaluator.cpp
 		z/codegen/TestCodeGenerator.cpp
-		${OMR_ROOT}/compiler/z/env/OMRDebugEnv.cpp
+		${omr_SOURCE_DIR}/compiler/z/env/OMRDebugEnv.cpp
 	)
 endif()
 
@@ -68,7 +68,7 @@ create_omr_compiler_library(
 		JITTEST
 		TEST_PROJECT_SPECIFIC
 		PROD_WITH_ASSUMES
-		INCLUDES ${OMR_ROOT}/fvtest
+		INCLUDES ${omr_SOURCE_DIR}/fvtest
 )
 add_executable(compilertest
 	tests/main.cpp

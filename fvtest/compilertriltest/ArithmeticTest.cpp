@@ -22,6 +22,26 @@
 #include "OpCodeTest.hpp"
 #include "default_compiler.hpp"
 
+int32_t iadd(int32_t l, int32_t r) {
+    return l+r;
+}
+
+int32_t isub(int32_t l, int32_t r) {
+    return l-r;
+}
+
+int32_t imul(int32_t l, int32_t r) {
+    return l*r;
+}
+
+int32_t idiv(int32_t l, int32_t r) {
+    return l/r;
+}
+
+int32_t irem(int32_t l, int32_t r) {
+    return l%r;
+}
+
 class Int32Arithmetic : public TRTest::BinaryOpTest<int32_t> {};
 
 TEST_P(Int32Arithmetic, UsingConst) {
@@ -60,12 +80,13 @@ TEST_P(Int32Arithmetic, UsingLoadParam) {
     ASSERT_EQ(param.oracle(param.lhs, param.rhs), entry_point(param.lhs, param.rhs));
 }
 
+
 INSTANTIATE_TEST_CASE_P(ArithmeticTest, Int32Arithmetic, ::testing::Combine(
     ::testing::ValuesIn(TRTest::const_value_pairs<int32_t, int32_t>()),
     ::testing::Values(
-        std::make_tuple("iadd", [](int32_t l, int32_t r){return l+r;}),
-        std::make_tuple("isub", [](int32_t l, int32_t r){return l-r;}),
-        std::make_tuple("imul", [](int32_t l, int32_t r){return l*r;}) )));
+        std::make_tuple("iadd", iadd),
+        std::make_tuple("isub", isub),
+        std::make_tuple("imul", imul) )));
 
 /**
  * @brief Filter function for *div opcodes
@@ -93,5 +114,5 @@ INSTANTIATE_TEST_CASE_P(DivArithmeticTest, Int32Arithmetic, ::testing::Combine(
     ::testing::ValuesIn(
         TRTest::filter(TRTest::const_value_pairs<int32_t, int32_t>(), div_filter<int32_t> )),
     ::testing::Values(
-        std::make_tuple("idiv", [](int32_t l, int32_t r){return l/r;}),
-        std::make_tuple("irem", [](int32_t l, int32_t r){return l%r;}) )));
+        std::make_tuple("idiv", idiv),
+        std::make_tuple("irem", irem) )));

@@ -49,7 +49,7 @@ class SimplifierFoldAndIlVerifier : public TR::IlVerifier
       return 0;
       }
 
-   int32_t verify(TR::ResolvedMethodSymbol *sym) override
+   int32_t verify(TR::ResolvedMethodSymbol *sym)
       {
       for(TR::PreorderNodeIterator iter(sym->getFirstTreeTop(), sym->comp()); iter.currentTree(); ++iter)
          {

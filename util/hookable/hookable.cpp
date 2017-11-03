@@ -44,7 +44,7 @@ static intptr_t J9HookReserve(struct J9HookInterface **hookInterface, uintptr_t 
 static uintptr_t J9HookAllocateAgentID(struct J9HookInterface **hookInterface);
 static void J9HookDeallocateAgentID(struct J9HookInterface **hookInterface, uintptr_t agentID);
 
-static J9CONST_TABLE J9HookInterface hookFunctionTable = {
+static const J9HookInterface hookFunctionTable = {
 	J9HookDispatch,
 	J9HookDisable,
 	J9HookReserve,

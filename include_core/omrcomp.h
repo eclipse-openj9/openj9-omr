@@ -536,11 +536,6 @@ typedef struct U_128 {
 #define PTR_LONG_VALUE(dstPtr, aLongPtr) (*(aLongPtr) = *(dstPtr))
 #endif
 
-/* Macro used when declaring tables which require relocations. */
-#ifndef J9CONST_TABLE
-#define J9CONST_TABLE const
-#endif
-
 /* ANSI qsort is not always available */
 #ifndef J9_SORT
 #define J9_SORT(base, nmemb, size, compare) qsort((base), (nmemb), (size), (compare))

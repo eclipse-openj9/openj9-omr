@@ -33,7 +33,7 @@ int main(int argc, char const * const * const argv) {
 
     // parse the input Tril file
     FILE* inputFile = fopen(argv[1], "r");
-    assert(inputFile != nullptr);
+    assert(inputFile != NULL);
     ASTNode* trees = parseFile(inputFile);
     fclose(inputFile);
 

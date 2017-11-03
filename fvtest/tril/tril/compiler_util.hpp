@@ -62,9 +62,9 @@ static std::vector<TR::DataTypes> parseArgTypes(const ASTNode* node) {
 
    std::vector<TR::DataTypes> argTypes;
    auto argTypesArg = node->getArgByName("args");
-   if (argTypesArg != nullptr) {
+   if (argTypesArg != NULL) {
       auto typeValue = argTypesArg->getValue();
-      while (typeValue != nullptr) {
+      while (typeValue != NULL) {
          argTypes.push_back(getTRDataTypes(typeValue->getString()));
          typeValue = typeValue->next;
       }

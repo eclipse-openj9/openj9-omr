@@ -420,12 +420,21 @@ bool TR_RedundantAsyncCheckRemoval::callDoesAnImplicitAsyncCheck(TR::Node *callN
        (symbol->getRecognizedMethod()==TR::java_lang_Integer_rotateLeft) ||
        (symbol->getRecognizedMethod()==TR::java_lang_Long_rotateLeft) ||
        (symbol->getRecognizedMethod()==TR::java_lang_Integer_rotateRight) ||
-       (symbol->getRecognizedMethod()==TR::java_lang_Long_rotateRight) ||
-       (symbol->getRecognizedMethod()==TR::sun_misc_Unsafe_compareAndSwapInt_jlObjectJII_Z) ||
-       (symbol->getRecognizedMethod()==TR::sun_misc_Unsafe_compareAndSwapLong_jlObjectJJJ_Z) ||
-       (symbol->getRecognizedMethod()==TR::sun_misc_Unsafe_compareAndSwapObject_jlObjectJjlObjectjlObject_Z)
+       (symbol->getRecognizedMethod()==TR::java_lang_Long_rotateRight)
        )
        return false;
+
+   // Beginning in Java9 we use the same enum values for both the
+   // sun.misc.Unsafe wrappers and the jdk.internal.misc.Unsafe JNI methods, so
+   // for these we need to do an additional test to check if they are the native
+   // versions or not.
+   if (symbol->isNative() && 
+       ((symbol->getRecognizedMethod()==TR::sun_misc_Unsafe_compareAndSwapInt_jlObjectJII_Z) ||
+       (symbol->getRecognizedMethod()==TR::sun_misc_Unsafe_compareAndSwapLong_jlObjectJJJ_Z) ||
+       (symbol->getRecognizedMethod()==TR::sun_misc_Unsafe_compareAndSwapObject_jlObjectJjlObjectjlObject_Z)) 
+      )
+      return false;
+
 
    if ((symbol->getRecognizedMethod()==TR::java_math_BigDecimal_DFPPerformHysteresis)  ||
        (symbol->getRecognizedMethod()==TR::java_math_BigDecimal_DFPUseDFP) ||

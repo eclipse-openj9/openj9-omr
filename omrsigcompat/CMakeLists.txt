@@ -26,6 +26,14 @@ add_library(omrsig SHARED
 	omrsig.cpp
 )
 
+if(OMR_WARNINGS_AS_ERRORS)
+	target_compile_options(omrsig PRIVATE ${OMR_WARNING_AS_ERROR_FLAG})
+endif()
+
+if(OMR_ENHANCED_WARNINGS)
+	target_compile_options(omrsig PRIVATE ${OMR_ENHANCED_WARNING_FLAG})
+endif()
+
 #TODO need more comprehensive symbols
 set(exportedSyms
 	omrsig_primary_signal

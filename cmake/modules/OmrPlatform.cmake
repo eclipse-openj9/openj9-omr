@@ -95,12 +95,6 @@ macro(omr_platform_global_setup)
 		${OMR_PLATFORM_LIBRARIES}
 	)
 
-	# TODO: Move this somewhere else, or just find a better home.
-	if(OMR_WARNINGS_AS_ERRORS)
-		omr_append_flags(CMAKE_C_FLAGS   ${OMR_WARNING_AS_ERROR_FLAG})
-		omr_append_flags(CMAKE_CXX_FLAGS ${OMR_WARNING_AS_ERROR_FLAG})
-	endif()
-
 	# If the OS requires global setup, do it here.
 	if(COMMAND omr_arch_global_setup)
 		omr_arch_global_setup()

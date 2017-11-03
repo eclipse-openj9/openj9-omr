@@ -83,7 +83,6 @@ omrcpu_startup(struct OMRPortLibrary *portLibrary)
 	int32_t ppcCacheLineSize;
 
 	int  i;
-	int input1 = 20;
 	char buf[1024];
 	memset(buf, 255, 1024);
 

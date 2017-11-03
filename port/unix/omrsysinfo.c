@@ -3254,11 +3254,7 @@ omrsysinfo_os_kernel_info(struct OMRPortLibrary *portLibrary, struct OMROSKernel
 	BOOLEAN success = FALSE;
 
 #if defined(LINUX)
-#if !defined(OMRZTPF)
-	struct utsname name = {0};
-#else /* !defined(OMRZTPF) */
 	struct utsname name = {{0}};
-#endif /* !defined(OMRZTPF) */
 	if (0 == uname(&name)) {
 		if (3 == sscanf(name.release, "%u.%u.%u", &kernelInfo->kernelVersion, &kernelInfo->majorRevision, &kernelInfo->minorRevision)) {
 			success = TRUE;

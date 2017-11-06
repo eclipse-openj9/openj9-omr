@@ -101,10 +101,10 @@ bool TR_Structure::contains(TR_Structure *other, TR_Structure *commonParent)
    return false;
    }
 
-TR_Structure *TR_Structure::getContainingLoop()
+TR_RegionStructure *TR_Structure::getContainingLoop()
    {
-   for (TR_Structure *p = getParent(); p != NULL ; p = p->getParent())
-      if (p->asRegion()->isNaturalLoop())
+   for (TR_RegionStructure *p = getParent(); p != NULL ; p = p->getParent())
+      if (p->isNaturalLoop())
          return p;
    return NULL;
    }

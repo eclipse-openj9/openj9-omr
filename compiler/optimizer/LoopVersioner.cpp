@@ -3173,6 +3173,14 @@ bool TR_LoopVersioner::detectChecksToBeEliminated(TR_RegionStructure *whileLoop,
    whileLoop->getBlocks(&blocksInWhileLoop);
    int32_t loop_size = blocksInWhileLoop.getSize();
 
+   // Blocks are listed in order of a traversal over the tree of regions, i.e.
+   // they are grouped by region. As we iterate, maintain the current innermost
+   // region, and current innermost containing loop. The hottest intervening
+   // loop header only has to be recomputed when the innermost loop changes.
+   TR_RegionStructure *rememberedInnermostRegion = NULL;
+   TR_RegionStructure *rememberedInnermostLoop = NULL;
+   TR::Block *rememberedHotLoopHeader = NULL;
+
    ListIterator<TR::Block> blocksIt(&blocksInWhileLoop);
    TR::Block *nextBlock;
    for (nextBlock = blocksIt.getCurrent(); nextBlock; nextBlock=blocksIt.getNext())
@@ -3197,17 +3205,54 @@ bool TR_LoopVersioner::detectChecksToBeEliminated(TR_RegionStructure *whileLoop,
          static char *unimportantFrequencyRatioStr = feGetEnv("TR_loopVersionerControlUnimportantFrequencyRatio");
          int32_t unimportantFrequencyRatio = unimportantFrequencyRatioStr ? atoi(unimportantFrequencyRatioStr) : 20;
          int16_t blockFrequency = nextBlock->getFrequency();
-         int16_t loopFrequency = whileLoop->getEntryBlock()->getFrequency();
 
          // If the aggressive loop versioning flag is set, only do the unimportant block test
          // at lower optlevels
          bool aggressive = TR::Options::getCmdLineOptions()->getOption(TR_EnableAggressiveLoopVersioning);
 
+         static const bool useOuterHeader =
+            feGetEnv("TR_loopVersionerUseOuterHeaderForImportance") != NULL;
+
+         TR::Block *hotBlock = NULL;
+         if (useOuterHeader)
+            {
+            hotBlock = whileLoop->getEntryBlock();
+            }
+         else
+            {
+            // Find the hottest intervening loop header.
+            TR_BlockStructure * const bstruct = nextBlock->getStructureOf();
+            TR_RegionStructure * const region = bstruct->getParent();
+
+            hotBlock = rememberedHotLoopHeader;
+            if (region != rememberedInnermostRegion)
+               {
+               rememberedInnermostRegion = region;
+               TR_RegionStructure *loop = bstruct->getContainingLoop();
+               if (loop != rememberedInnermostLoop)
+                  {
+                  rememberedInnermostLoop = loop;
+                  hotBlock = whileLoop->getEntryBlock();
+                  while (loop != whileLoop)
+                     {
+                     TR::Block * const innerHeader = loop->getEntryBlock();
+                     if (innerHeader->getFrequency() > hotBlock->getFrequency())
+                        hotBlock = innerHeader;
+
+                     loop = loop->getContainingLoop();
+                     }
+
+                  rememberedHotLoopHeader = hotBlock;
+                  }
+               }
+            }
+
+         const int16_t loopFrequency = hotBlock->getFrequency();
          if ( (!aggressive || comp()->getMethodHotness() <= warm)
               && blockFrequency >= 0 // frequency must be valid
               && blockFrequency < loopFrequency / unimportantFrequencyRatio
-              && performTransformation(comp(), "%sDisregard unimportant block_%d frequency %d < loop %d frequency %d\n",
-                 OPT_DETAILS_LOOP_VERSIONER, nextBlock->getNumber(), blockFrequency, whileLoop->getNumber(), loopFrequency)
+              && performTransformation(comp(), "%sDisregard unimportant block_%d frequency %d < %d from block_%d in loop %d\n",
+                 OPT_DETAILS_LOOP_VERSIONER, nextBlock->getNumber(), blockFrequency, loopFrequency, hotBlock->getNumber(), whileLoop->getNumber())
             )
             {
             isUnimportant = true;

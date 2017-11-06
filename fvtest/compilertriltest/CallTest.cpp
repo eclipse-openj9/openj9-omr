@@ -27,7 +27,6 @@ class CallTest : public TRTest::JitTest {};
 int32_t oracleBoracle(int32_t x) { return x + 1123; } // Randomish number to avoid accidental test passes.
 
 TEST_F(CallTest, icallOracle) { 
-   // Construsts what is essentially a thunk.
     char inputTrees[200] = {0};
     const auto format_string = "(method return=Int32 args=[Int32] (block (ireturn (icall address=%p args=[Int32] (iload parm=0)) )  ))";
     std::snprintf(inputTrees, 200, format_string, &oracleBoracle);
@@ -35,9 +34,12 @@ TEST_F(CallTest, icallOracle) {
 
     ASSERT_NOTNULL(trees) << "Trees failed to parse\n" << inputTrees;
 
+    // Execution of this test is disabled on non-X86 platforms, as we 
+    // do not have trampoline support, and so this call may be out of 
+    // range for some architectures. 
+#ifdef TR_TARGET_X86
     Tril::DefaultCompiler compiler{trees};
     ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
-
 
     auto entry_point = compiler.getEntryPoint<int32_t (*)(int32_t)>();
 
@@ -45,5 +47,5 @@ TEST_F(CallTest, icallOracle) {
     EXPECT_EQ(oracleBoracle(-128), entry_point(-128));
     EXPECT_EQ(oracleBoracle(128), entry_point(128));
     EXPECT_EQ(oracleBoracle(1280), entry_point(1280));
-
+#endif
 }

@@ -2192,7 +2192,8 @@ void OMR::ValuePropagation::generateArrayTranslateNode(TR::TreeTop *callTree,TR:
    const TR::RecognizedMethod rm = symbol->getRecognizedMethod();
    TR_ResolvedMethod *m = symbol->getResolvedMethodSymbol()->getResolvedMethod();
 
-   bool isISO88591Encoder = (rm == TR::sun_nio_cs_ISO_8859_1_Encoder_encodeISOArray);
+   bool isISO88591Encoder = (rm == TR::sun_nio_cs_ISO_8859_1_Encoder_encodeISOArray
+                             || rm == TR::java_lang_StringCoding_implEncodeISOArray);
    bool isISO88591Decoder = (rm == TR::sun_nio_cs_ISO_8859_1_Decoder_decodeISO8859_1);
    bool isSBCSEncoder = (rm == TR::sun_nio_cs_ext_SBCS_Encoder_encodeSBCS)? true:false;
    bool isSBCSDecoder = (rm == TR::sun_nio_cs_ext_SBCS_Decoder_decodeSBCS)? true:false;
@@ -2450,7 +2451,8 @@ TR::TreeTop* OMR::ValuePropagation::createConverterCallNodeAfterStores(
    TR_ResolvedMethod *m = symbol->getResolvedMethodSymbol()->getResolvedMethod();
 
 #ifdef J9_PROJECT_SPECIFIC
-   bool isISO88591Encoder = (rm == TR::sun_nio_cs_ISO_8859_1_Encoder_encodeISOArray);
+   bool isISO88591Encoder = (rm == TR::sun_nio_cs_ISO_8859_1_Encoder_encodeISOArray
+                             || rm == TR::java_lang_StringCoding_implEncodeISOArray);
 #else
    bool isISO88591Encoder = false;
 #endif
@@ -2756,7 +2758,8 @@ TR::TreeTop *createStoresForConverterCallChildren(TR::Compilation *comp, TR::Tre
    TR::RecognizedMethod rm = symbol->getRecognizedMethod();
    TR_ResolvedMethod *m = symbol->getResolvedMethodSymbol()->getResolvedMethod();
 #ifdef J9_PROJECT_SPECIFIC
-   bool isISO88591Encoder = (rm == TR::sun_nio_cs_ISO_8859_1_Encoder_encodeISOArray);
+   bool isISO88591Encoder = (rm == TR::sun_nio_cs_ISO_8859_1_Encoder_encodeISOArray
+                             || rm == TR::java_lang_StringCoding_implEncodeISOArray);
 #else
    bool isISO88591Encoder = false;
 #endif
@@ -3697,7 +3700,8 @@ void OMR::ValuePropagation::transformConverterCall(TR::TreeTop *callTree)
    bool hasTable = false;
 
    TR_ResolvedMethod *m = symbol->getResolvedMethodSymbol()->getResolvedMethod();
-   bool isISO88591Encoder = (rm == TR::sun_nio_cs_ISO_8859_1_Encoder_encodeISOArray);
+   bool isISO88591Encoder = (rm == TR::sun_nio_cs_ISO_8859_1_Encoder_encodeISOArray
+                             || rm == TR::java_lang_StringCoding_implEncodeISOArray);
    int32_t childId = callNode->getFirstArgumentIndex();
    bool hasReciever = symbol->isStatic() ? false : true;
    if (hasReciever)
@@ -3730,6 +3734,10 @@ void OMR::ValuePropagation::transformConverterCall(TR::TreeTop *callTree)
 
    TR::Node *child1 = TR::Node::create(TR::iadd, 2, srcOff, len);
    TR::Node *child2 = TR::Node::create(TR::arraylength, 1, srcObjNode);
+   // the source for the decompressed string version of this in StringCoding takes a byte array
+   // used as a char array so convert the size appropriately for the check >> 1
+   if (rm == TR::java_lang_StringCoding_implEncodeISOArray)
+      child2 = TR::Node::create(TR::ishr, 2, child2, TR::Node::iconst(child2, 1));
 
    TR::TreeTop *ifTree = TR::TreeTop::create(comp());
    TR::Node *ifNode = TR::Node::createif(TR::ificmpgt, child1, child2);
@@ -3829,6 +3837,7 @@ void OMR::ValuePropagation::transformConverterCall(TR::TreeTop *callTree)
       switch (rm)
          {
          case TR::sun_nio_cs_ISO_8859_1_Encoder_encodeISOArray:  threshold = 0; break;
+         case TR::java_lang_StringCoding_implEncodeISOArray:  threshold = 0; break;
          case TR::sun_nio_cs_ISO_8859_1_Decoder_decodeISO8859_1: threshold = 0; break;
 
          case TR::sun_nio_cs_US_ASCII_Encoder_encodeASCII: threshold = 0; break;

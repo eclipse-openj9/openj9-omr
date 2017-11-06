@@ -111,7 +111,7 @@ void printASTValue(FILE* file, const ASTValue* value) {
     const ASTValue* v = value;
     int isList = v->next != NULL;
     if (isList) {
-        printf("[");
+        fprintf(file,"[");
     }
     printASTValueUnion(file, v);
     while (v->next) {
@@ -127,13 +127,17 @@ void printASTValue(FILE* file, const ASTValue* value) {
 void printASTArgs(FILE* file, const ASTNodeArg* args) {
     const ASTNodeArg* a = args;
     while (a) {
-        printf(" ");
+        fprintf(file," ");
         if (a->getName() != NULL && strcmp("", a->getName()) != 0) {
             fprintf(file, "%s=", a->getName());
         }
         printASTValue(file, a->getValue());
         a = a->next;
     }
+}
+
+void printTreesToStdErr(const ASTNode* trees) {
+   printTrees(stderr, trees, 1);
 }
 
 void printTrees(FILE* file, const ASTNode* trees, int indent) {

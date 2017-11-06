@@ -26,6 +26,8 @@
 #include "omrcfg.h"
 #include "omr.h"
 
+#if defined(OMR_GC_MODRON_COMPACTION)
+
 #include "BaseVirtual.hpp"
 #include "Debug.hpp"
 #include "EnvironmentStandard.hpp"
@@ -35,6 +37,7 @@
 #include "MarkingScheme.hpp"
 #include "MarkMap.hpp"
 #include "SlotObject.hpp"
+#include "CompactDelegate.hpp"
 
 class MM_AllocateDescription;
 class MM_EnvironmentStandard;
@@ -135,6 +138,8 @@ protected:
     SubAreaEntry *_subAreaTable;  /**< Reference to the subAreaTable which is shared data from the SweepHeapSectioning */
     omrobjectptr_t _compactFrom;
     omrobjectptr_t _compactTo;
+    MM_CompactDelegate _delegate;
+
 public:
 
     /*
@@ -330,9 +335,11 @@ public:
         , _markMap(markingScheme->getMarkMap())
         , _subAreaTableSize(0)
     	, _subAreaTable(NULL)
+    	, _delegate()
     {
     	_typeId = __FUNCTION__;
     }
 };
 
+#endif /* OMR_GC_MODRON_COMPACTION */
 #endif /* COMPACTSCHEMEBASE_HPP_ */

@@ -85,12 +85,6 @@ public:
 #endif /* OMR_INTERP_COMPRESSED_OBJECT_HEADER */
 #endif /* OMR_GC_MODRON_SCAVENGER */
 
-#if defined(OMR_GC_MODRON_COMPACTION)
-	virtual void compactScheme_languageMasterSetupForGC(MM_EnvironmentBase *env);
-	virtual void compactScheme_fixupRoots(MM_EnvironmentBase *env, MM_CompactScheme *compactScheme);
-	virtual void compactScheme_workerCleanupAfterGC(MM_EnvironmentBase *env);
-	virtual void compactScheme_verifyHeap(MM_EnvironmentBase *env, MM_MarkMap *markMap);
-#endif /* OMR_GC_MODRON_COMPACTION */
 };
 
 #endif /* COLLECTORLANGUAGEINTERFACEIMPL_HPP_ */

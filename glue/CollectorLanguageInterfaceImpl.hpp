@@ -65,10 +65,7 @@ public:
 	virtual void kill(MM_EnvironmentBase *env);
 
 #if defined(OMR_GC_MODRON_COMPACTION)
-	virtual void compactScheme_languageMasterSetupForGC(MM_EnvironmentBase *env);
-	virtual void compactScheme_fixupRoots(MM_EnvironmentBase *env, MM_CompactScheme *compactScheme);
-	virtual void compactScheme_workerCleanupAfterGC(MM_EnvironmentBase *env);
-	virtual void compactScheme_verifyHeap(MM_EnvironmentBase *env, MM_MarkMap *markMap);
+	virtual CompactPreventedReason parallelGlobalGC_checkIfCompactionShouldBePrevented(MM_EnvironmentBase *env) {return COMPACT_PREVENTED_NONE;}
 #endif /* OMR_GC_MODRON_COMPACTION */
 
 #if defined(OMR_GC_MODRON_SCAVENGER)

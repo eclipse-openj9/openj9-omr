@@ -107,6 +107,13 @@ void printASTValue(FILE* file, const ASTValue* value);
 void printASTArgs(FILE* file, const ASTNodeArg* args);
 void printTrees(FILE* file, const ASTNode* trees, int indent);
 
+/** 
+ * Dump trees to stderr by default. 
+ *
+ * Useful for calling in a debugger
+ */
+void printTreesToStdErr(const ASTNode* trees);
+
 /**
  * @brief Parse an input file containing Tril code
  * @param in is a handle pointing to the input file

@@ -72,4 +72,12 @@ if(TR_TARGET_BITS STREQUAL 64)
 		${CMAKE_CURRENT_SOURCE_DIR}/amd64/codegen/AMD64SystemLinkage.cpp
 		${CMAKE_CURRENT_SOURCE_DIR}/amd64/codegen/OMRELFRelocationResolver.cpp
 	)
+else()
+	compiler_library(x_32
+		${CMAKE_CURRENT_SOURCE_DIR}/i386/codegen/IA32SystemLinkage.cpp
+		${CMAKE_CURRENT_SOURCE_DIR}/i386/codegen/OMRCodeGenerator.cpp
+		${CMAKE_CURRENT_SOURCE_DIR}/i386/codegen/OMRMachine.cpp
+		${CMAKE_CURRENT_SOURCE_DIR}/i386/codegen/OMRRealRegister.cpp
+		${CMAKE_CURRENT_SOURCE_DIR}/i386/codegen/OMRTreeEvaluator.cpp
+	)
 endif()

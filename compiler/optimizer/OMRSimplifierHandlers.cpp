@@ -5476,8 +5476,7 @@ TR::Node *indirectLoadSimplifier(TR::Node * node, TR::Block * block, TR::Simplif
       return resultNode;
 
    TR::Node *firstChild = node->getFirstChild();
-   if (firstChild->getOpCodeValue() == TR::loadaddr &&
-       !s->comp()->cg()->getLinkage()->isArgumentListSymbol(firstChild->getSymbolReference()->getSymbol(), s->comp())) // argList symbol can grow later on
+   if (firstChild->getOpCodeValue() == TR::loadaddr)
        {
        bool newOType = false;
        TR::DataType loadDataType = newOType ? node->getDataType() : node->getSymbolReference()->getSymbol()->getDataType();
@@ -5607,9 +5606,7 @@ TR::Node *indirectStoreSimplifier(TR::Node * node, TR::Block * block, TR::Simpli
       return NULL;
       }
 
-   if (
-       firstChild->getOpCodeValue() == TR::loadaddr &&
-       !s->comp()->cg()->getLinkage()->isArgumentListSymbol(firstChild->getSymbolReference()->getSymbol(), s->comp())) // argList symbol can grow later on
+   if (firstChild->getOpCodeValue() == TR::loadaddr)
        {
        bool newOType = false;
 

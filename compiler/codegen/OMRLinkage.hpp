@@ -109,8 +109,6 @@ class OMR_EXTENSIBLE Linkage
 
    virtual bool isAddressOfStaticSymRef(TR::SymbolReference *) { return false; }
 
-   virtual List<TR::ParameterSymbol> *getMainBodyLogicalParameterList() { return NULL; }
-
    virtual bool mapPreservedRegistersToStackOffsets(int32_t *mapRegsToStack, int32_t &numPreserved, TR_BitVector *&) { return false; }
    virtual TR::Instruction *savePreservedRegister(TR::Instruction *cursor, int32_t regIndex, int32_t offset)    {return NULL; }
    virtual TR::Instruction *restorePreservedRegister(TR::Instruction *cursor, int32_t regIndex, int32_t offset) {return NULL; }

@@ -1882,6 +1882,8 @@ OMR::Options::Options(
          {
          optimizationPlan->setOptLevel(noOpt);
          self()->setOption (TR_DisableInterpreterProfiling, true);
+         if (self()->allowRecompilation())
+            self()->setAllowRecompilation(false); // disable recompilation for this method
          optimizationPlan->setOptLevelDowngraded(false);
          }
       }

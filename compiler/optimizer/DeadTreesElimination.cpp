@@ -77,23 +77,19 @@ static OMR::TreeInfo *findOrCreateTreeInfo(TR::TreeTop *treeTop, List<OMR::TreeI
    return t;
    }
 
-// temporarily revert this fix
-//static bool fixUpTree(TR::Node *node, TR::TreeTop *treeTop, TR::SparseBitVector &seenNodes, bool &highGlobalIndex, TR::Compilation *comp, vcount_t oldCompVisitCount)
-static bool fixUpTree(TR::Node *node, TR::TreeTop *treeTop, TR::SparseBitVector &seenNodes, bool &highGlobalIndex, TR::Optimization *opt)
+static bool fixUpTree(TR::Node *node, TR::TreeTop *treeTop, TR::NodeChecklist &visited, bool &highGlobalIndex, TR::Optimization *opt, vcount_t evaluatedVisitCount)
    {
+   if (node->getVisitCount() == evaluatedVisitCount)
+      return false;
+
+   if (visited.contains(node))
+      return false;
+
+   visited.add(node);
+
    bool containsFloatingPoint = false;
    bool anchorLoadaddr = true;
    bool anchorArrayCmp = true;
-
-   // temporarily revert this fix
-   /*if (node->getVisitCount() <= oldCompVisitCount)
-     {
-     // This node was from a treetop that was encountered before the current treetop
-     // in which case it should already be anchored and so would not need to be anchored afresh
-     //
-     return containsFloatingPoint;
-     }*/
-
 
    // for arraycmp node, don't create its tree top anchor
    // fold it into if statment and save jump instruction
@@ -105,7 +101,6 @@ static bool fixUpTree(TR::Node *node, TR::TreeTop *treeTop, TR::SparseBitVector 
       }
 
    if ((node->getReferenceCount() > 1) &&
-       !seenNodes.ValueAt(node->getGlobalIndex()) &&
        !node->getOpCode().isLoadConst() &&
        anchorLoadaddr &&
        anchorArrayCmp)
@@ -124,7 +119,6 @@ static bool fixUpTree(TR::Node *node, TR::TreeTop *treeTop, TR::SparseBitVector 
             }
          }
 
-      seenNodes[node->getGlobalIndex()] = 1;
       if (node->getOpCode().isFloatingPoint())
         containsFloatingPoint = true;
       TR::TreeTop *nextTree = treeTop->getNextTreeTop();
@@ -139,9 +133,7 @@ static bool fixUpTree(TR::Node *node, TR::TreeTop *treeTop, TR::SparseBitVector 
       for (int32_t i = 0; i < node->getNumChildren(); ++i)
          {
          TR::Node *child = node->getChild(i);
-         // temporarily rever this fix
-         //if (fixUpTree(child, treeTop, seenNodes, highGlobalIndex, comp, oldCompVisitCount))
-         if (fixUpTree(child, treeTop, seenNodes, highGlobalIndex, opt))
+         if (fixUpTree(child, treeTop, visited, highGlobalIndex, opt, evaluatedVisitCount))
             containsFloatingPoint = true;
          }
       }
@@ -626,12 +618,8 @@ int32_t TR::DeadTreesElimination::process(TR::TreeTop *startTree, TR::TreeTop *e
 
    // Update visitCount as they are used in this optimization and need to be
    visitCount = comp()->incOrResetVisitCount();
-   //TR_ScratchList<TR::Node> seenNodes(trMemory());
-   TR::SparseBitVector seenNodes(comp()->allocator());
    for (TR::TreeTopIterator iter(startTree, comp()); iter != endTree; ++iter)
       {
-      // temporarily revert this fix
-      //vcount_t compVisitCount = comp()->getVisitCount();
       TR::Node *node = iter.currentTree()->getNode();
 
       if (node->getOpCodeValue() == TR::BBStart)
@@ -787,16 +775,14 @@ int32_t TR::DeadTreesElimination::process(TR::TreeTop *startTree, TR::TreeTop *e
 
          if (treeTopCanBeEliminated)
             {
-            seenNodes.Clear();
+            TR::NodeChecklist visited(comp());
             bool containsFloatingPoint = false;
             for (int32_t i = 0; i < child->getNumChildren(); ++i)
                {
                // Anchor nodes with reference count > 1
                //
                bool highGlobalIndex = false;
-               // temporarily revert this fix
-               //if (fixUpTree(child->getChild(i), iter.currentTree(), seenNodes, highGlobalIndex, comp(), compVisitCount))
-               if (fixUpTree(child->getChild(i), iter.currentTree(), seenNodes, highGlobalIndex, self()))
+               if (fixUpTree(child->getChild(i), iter.currentTree(), visited, highGlobalIndex, self(), visitCount))
                   containsFloatingPoint = true;
                if (highGlobalIndex)
                   {

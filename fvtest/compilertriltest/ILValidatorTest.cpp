@@ -139,7 +139,7 @@ TEST_P(CommoningTest, CommoningWithinBlock)
    ASSERT_EQ(1, entry_point(std::get<0>(param), std::get<1>(param)));
    }
 
-INSTANTIATE_TEST_CASE_P(CommingValidationTest, CommoningTest,
+INSTANTIATE_TEST_CASE_P(CommoningValidationTest, CommoningTest,
   ::testing::ValuesIn(TRTest::const_value_pairs<int32_t, int32_t>()));
 
 class CommoningDeathTest : public TRTest::JitTest {};

@@ -1604,16 +1604,6 @@ OMR::CodeGenerator::pickRegister(TR_RegisterCandidate     *rc,
                   if ((node->getOpCodeValue() == TR::treetop) && (node->getFirstChild()->getOpCode().isCall()))
                      {
                      callNode = node->getFirstChild();
-                     }
-
-                  if (callNode &&
-                       self()->getLinkage()->isRecognizedBuiltin(self()->comp(), callNode))
-                     {
-                     callNode = NULL;
-                     }
-
-                  if (callNode)
-                     {
                      for (uint32_t i = 0; i < callNode->getNumChildren(); i++)
                         {
                         bool isUnpreferred;
@@ -1649,7 +1639,7 @@ OMR::CodeGenerator::pickRegister(TR_RegisterCandidate     *rc,
                               }
                            }
                         }
-                     } // end if (callNode)
+                     }
 
                   if (!candidate)
                      {
@@ -2772,12 +2762,6 @@ OMR::CodeGenerator::simulateTreeEvaluation(TR::Node *node, TR_RegisterPressureSt
       if (isCall)
          {
          isCall = self()->comp()->cg()->willBeEvaluatedAsCallByCodeGen(node, self()->comp());
-         }
-
-      if (isCall &&
-          self()->getLinkage()->isRecognizedBuiltin(self()->comp(), node))
-         {
-         isCall = false;
          }
 
       if (isCall && node->isTheVirtualCallNodeForAGuardedInlinedCall())

@@ -88,7 +88,6 @@ class OMR_EXTENSIBLE Linkage
 
    virtual bool isPointerToPrivateStaticAddress(TR::SymbolReference *ref) { return false; }
 
-   virtual bool isRecognizedBuiltin(TR::Compilation *comp, TR::Node *node) { return false; }
    virtual int32_t getInRegisterNumberForParameter(TR::Node *callNode, uint32_t childIndex) { return -1; }
 
    virtual void setParameterLinkageRegisterIndex(TR::ResolvedMethodSymbol *method)

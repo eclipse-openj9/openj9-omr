@@ -1474,7 +1474,7 @@ void
 OMR::Z::CodeGenerator::doInstructionSelection()
    {
 
-   _outgoingArgLevelDuringTreeEvaluation = self()->getLinkage()->getNumberOfAllocatedOutgoingArgumentAreas();
+   _outgoingArgLevelDuringTreeEvaluation = 0;
 
    self()->setDoingInstructionSelection(true);
    OMR::CodeGenerator::doInstructionSelection();

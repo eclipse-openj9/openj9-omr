@@ -78,7 +78,6 @@ class OMR_EXTENSIBLE Linkage
       TR_ASSERT(0, "setParameterLinkageRegisterIndex has to be implemented for this linkage\n");
       }
 
-   virtual uintptr_t getNumberOfAllocatedOutgoingArgumentAreas() { return 0; }
    virtual bool isArgumentListSymbol(TR::Symbol *sym, TR::Compilation *comp) { return false; }
 
    virtual int32_t numArgumentRegisters(TR_RegisterKinds kind) = 0;

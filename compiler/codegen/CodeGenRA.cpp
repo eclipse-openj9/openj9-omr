@@ -1607,8 +1607,7 @@ OMR::CodeGenerator::pickRegister(TR_RegisterCandidate     *rc,
                      }
 
                   if (callNode &&
-                       (self()->getLinkage()->isRecognizedBuiltin(self()->comp(), callNode) ||
-                       self()->getLinkage()->isAlwaysInlined(callNode)))
+                       self()->getLinkage()->isRecognizedBuiltin(self()->comp(), callNode))
                      {
                      callNode = NULL;
                      }
@@ -2776,8 +2775,7 @@ OMR::CodeGenerator::simulateTreeEvaluation(TR::Node *node, TR_RegisterPressureSt
          }
 
       if (isCall &&
-          (self()->getLinkage()->isRecognizedBuiltin(self()->comp(), node) ||
-           self()->getLinkage()->isAlwaysInlined(node)))
+          self()->getLinkage()->isRecognizedBuiltin(self()->comp(), node))
          {
          isCall = false;
          }

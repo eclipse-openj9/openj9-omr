@@ -87,7 +87,6 @@ class OMR_EXTENSIBLE Linkage
    virtual bool useCachedStaticAreaAddresses(TR::Compilation *c) { return false; }
 
    virtual bool isPointerToPrivateStaticAddress(TR::SymbolReference *ref) { return false; }
-   virtual bool isAddressOfPrivateStaticSymRef(TR::SymbolReference *ref)  { return false; }
 
    virtual bool isAlwaysInlined(TR::Node *call) { return false; }
    virtual bool isRecognizedBuiltin(TR::Compilation *comp, TR::Node *node) { return false; }

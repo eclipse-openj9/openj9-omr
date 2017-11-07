@@ -2247,12 +2247,6 @@ OMR::CodeGenerator::nodeMatches(TR::Node *addr1, TR::Node *addr2, bool addresses
       {
       foundMatch = true;
       }
-   else if (addr1->getOpCodeValue() == TR::aload && addr2->getOpCodeValue() == TR::aload &&
-            self()->getLinkage()->isAddressOfPrivateStaticSymRef(addr1->getSymbolReference()) &&
-            self()->getLinkage()->isAddressOfPrivateStaticSymRef(addr2->getSymbolReference()))
-      {
-      foundMatch = true;
-      }
    else if (addressesUnderSameTreeTop &&
             addr1->getOpCodeValue() == TR::i2a && addr2->getOpCodeValue() == TR::i2a &&
             addr1->getFirstChild()->getOpCode().isLoadVarDirect() &&

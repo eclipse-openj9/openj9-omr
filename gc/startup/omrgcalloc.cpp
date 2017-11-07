@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2016 IBM Corp. and others
+ * Copyright (c) 2015, 2017 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -44,6 +44,13 @@ OMR_GC_AllocateObject(OMR_VMThread * omrVMThread, MM_AllocateInitialization *all
 	}
 
 	return allocator->allocateAndInitializeObject(omrVMThread);
+}
+
+omrobjectptr_t
+OMR_GC_AllocateObject(OMR_VMThread * omrVMThread, uintptr_t allocationCategory, uintptr_t requiredSizeInBytes, uintptr_t allocationFlags)
+{
+	MM_AllocateInitialization allocator(MM_EnvironmentBase::getEnvironment(omrVMThread), allocationCategory, requiredSizeInBytes, allocationFlags);
+	return OMR_GC_AllocateObject(omrVMThread, &allocator);
 }
 
 omr_error_t

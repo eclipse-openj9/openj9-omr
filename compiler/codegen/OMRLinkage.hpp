@@ -80,17 +80,11 @@ class OMR_EXTENSIBLE Linkage
 
    virtual uintptr_t getNumberOfAllocatedOutgoingArgumentAreas() { return 0; }
    virtual bool isArgumentListSymbol(TR::Symbol *sym, TR::Compilation *comp) { return false; }
-   virtual TR_GlobalRegisterNumber getFormalParameterGlobalRegister(TR::ParameterSymbol *sym) { return -1; }
 
    virtual int32_t numArgumentRegisters(TR_RegisterKinds kind) = 0;
    virtual TR_RegisterKinds argumentRegisterKind(TR::Node *argumentNode);
 
    virtual bool useCachedStaticAreaAddresses(TR::Compilation *c) { return false; }
-
-   virtual TR::SymbolReference *getCachedPrivateStaticSymRef()  { return NULL; }
-   virtual bool safeToUseCachedPrivateStaticSymRef()             { return false; }
-
-   virtual bool usedCachedStaticSymRef()                         { return false; }
 
    virtual bool isPointerToPrivateStaticAddress(TR::SymbolReference *ref) { return false; }
    virtual bool isAddressOfPrivateStaticSymRef(TR::SymbolReference *ref)  { return false; }
@@ -104,29 +98,6 @@ class OMR_EXTENSIBLE Linkage
       TR_ASSERT(0, "setParameterLinkageRegisterIndex(2) has to be implemented for this linkage\n");
       }
 
-   virtual uint8_t getCodeNum()
-      {
-      TR_ASSERT(0, "getCodeNum has to be implemented for this linkage\n");
-      return 0;
-      }
-
-   virtual uint8_t getDataNum()
-      {
-      TR_ASSERT(0, "getDataNum has to be implemented for this linkage\n");
-      return 0;
-      }
-
-   virtual uint8_t getStatNum()
-      {
-      TR_ASSERT(0, "getStatNum has to be implemented for this linkage\n");
-      return 0;
-      }
-
-   virtual bool preserveForInlining(uint8_t)
-      {
-      return true;
-      }
-
    virtual  TR_BitVector * getKilledRegisters(TR::Node *node)
       {
       return NULL;
@@ -137,12 +108,6 @@ class OMR_EXTENSIBLE Linkage
       }
 
    virtual bool isAddressOfStaticSymRef(TR::SymbolReference *) { return false; }
-   virtual TR::SymbolReference* getCachedStaticSymRef() { return NULL; }
-   virtual TR::SymbolReference* getCached512KStaticSymRef(uint32_t index) { return NULL; }
-   virtual TR::SymbolReference* getCachedCRENTSymRef() { return NULL; }
-
-#define DEFAULT_NUM_WSA_BUCKETS 1
-   virtual uint32_t getNumWSABuckets() { return DEFAULT_NUM_WSA_BUCKETS; }
 
    virtual List<TR::ParameterSymbol> *getMainBodyLogicalParameterList() { return NULL; }
 

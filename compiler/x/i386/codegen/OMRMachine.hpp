@@ -27,8 +27,8 @@
  */
 #ifndef OMR_MACHINEBASE_CONNECTOR
 #define OMR_MACHINEBASE_CONNECTOR
-namespace OMR { namespace X86 { namespace i386 { class Machine; } } }
-namespace OMR { typedef OMR::X86::i386::Machine MachineConnector; }
+namespace OMR { namespace X86 { namespace I386 { class Machine; } } }
+namespace OMR { typedef OMR::X86::I386::Machine MachineConnector; }
 #else
 #error OMR::IA32::Machine expected to be a primary connector, but an OMR connector is already defined
 #endif
@@ -48,7 +48,7 @@ namespace OMR
 namespace X86
 {
 
-namespace i386
+namespace I386
 {
 
 class OMR_EXTENSIBLE Machine : public OMR::X86::Machine
@@ -89,7 +89,7 @@ class OMR_EXTENSIBLE Machine : public OMR::X86::Machine
 
    };
 
-} // namespace i386
+} // namespace I386
 
 } // namespace X86
 

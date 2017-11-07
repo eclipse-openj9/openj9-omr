@@ -27,10 +27,10 @@
  */
 #ifndef OMR_REAL_REGISTER_CONNECTOR
 #define OMR_REAL_REGISTER_CONNECTOR
-namespace OMR { namespace X86 { namespace i386 { class RealRegister; } } }
-namespace OMR { typedef OMR::X86::i386::RealRegister RealRegisterConnector; }
+namespace OMR { namespace X86 { namespace I386 { class RealRegister; } } }
+namespace OMR { typedef OMR::X86::I386::RealRegister RealRegisterConnector; }
 #else
-#error OMR::X86::i386::RealRegister expected to be a primary connector, but a OMR connector is already defined
+#error OMR::X86::I386::RealRegister expected to be a primary connector, but a OMR connector is already defined
 #endif
 
 #include "x/codegen/OMRRealRegister.hpp"
@@ -46,7 +46,7 @@ namespace OMR
 namespace X86
 {
 
-namespace i386
+namespace I386
 {
 
 class OMR_EXTENSIBLE RealRegister : public OMR::X86::RealRegister

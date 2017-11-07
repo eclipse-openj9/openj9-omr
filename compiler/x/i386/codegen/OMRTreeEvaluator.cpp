@@ -80,7 +80,7 @@ class TR_OpaqueMethodBlock;
 // Helper functions
 //
 
-TR::Register *OMR::X86::i386::TreeEvaluator::longArithmeticCompareRegisterWithImmediate(
+TR::Register *OMR::X86::I386::TreeEvaluator::longArithmeticCompareRegisterWithImmediate(
       TR::Node       *node,
       TR::Register   *cmpRegister,
       TR::Node       *immedChild,
@@ -128,7 +128,7 @@ TR::Register *OMR::X86::i386::TreeEvaluator::longArithmeticCompareRegisterWithIm
    return targetRegister;
    }
 
-TR::Register *OMR::X86::i386::TreeEvaluator::compareLongAndSetOrderedBoolean(
+TR::Register *OMR::X86::I386::TreeEvaluator::compareLongAndSetOrderedBoolean(
       TR::Node       *node,
       TR_X86OpCodes highSetOpCode,
       TR_X86OpCodes lowSetOpCode,
@@ -190,7 +190,7 @@ TR::Register *OMR::X86::i386::TreeEvaluator::compareLongAndSetOrderedBoolean(
    return targetRegister;
    }
 
-void OMR::X86::i386::TreeEvaluator::compareLongsForOrder(
+void OMR::X86::I386::TreeEvaluator::compareLongsForOrder(
       TR::Node          *node,
       TR_X86OpCodes    highOrderBranchOp,
       TR_X86OpCodes    highOrderReversedBranchOp,
@@ -298,14 +298,14 @@ void OMR::X86::i386::TreeEvaluator::compareLongsForOrder(
 //
 // TODO:AMD64: Reorder these to match their declaration in TreeEvaluator.hpp
 //
-TR::Register *OMR::X86::i386::TreeEvaluator::aconstEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+TR::Register *OMR::X86::I386::TreeEvaluator::aconstEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Register *reg = loadConstant(node, node->getInt(), TR_RematerializableAddress, cg);
    node->setRegister(reg);
    return reg;
    }
 
-TR::Register *OMR::X86::i386::TreeEvaluator::lconstEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+TR::Register *OMR::X86::I386::TreeEvaluator::lconstEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Register *lowRegister,
                *highRegister;
@@ -348,7 +348,7 @@ TR::Register *OMR::X86::i386::TreeEvaluator::lconstEvaluator(TR::Node *node, TR:
    }
 
 // also handles ilstore
-TR::Register *OMR::X86::i386::TreeEvaluator::lstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+TR::Register *OMR::X86::I386::TreeEvaluator::lstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Compilation *comp = cg->comp();
    TR::Node *valueChild;
@@ -592,7 +592,7 @@ TR::Register *OMR::X86::i386::TreeEvaluator::lstoreEvaluator(TR::Node *node, TR:
    return NULL;
    }
 
-TR::Register *OMR::X86::i386::TreeEvaluator::integerPairReturnEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+TR::Register *OMR::X86::I386::TreeEvaluator::integerPairReturnEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    // Restore the default FPCW if it has been forced to single precision mode.
    //
@@ -652,7 +652,7 @@ TR::Register *OMR::X86::i386::TreeEvaluator::integerPairReturnEvaluator(TR::Node
    return NULL;
    }
 
-TR::Register *OMR::X86::i386::TreeEvaluator::integerPairAddEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+TR::Register *OMR::X86::I386::TreeEvaluator::integerPairAddEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Register            *targetRegister = NULL;
    TR::Node                *secondChild    = node->getSecondChild();
@@ -797,7 +797,7 @@ TR::Register *OMR::X86::i386::TreeEvaluator::integerPairAddEvaluator(TR::Node *n
    return targetRegister;
    }
 
-TR::Register *OMR::X86::i386::TreeEvaluator::integerPairSubEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+TR::Register *OMR::X86::I386::TreeEvaluator::integerPairSubEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Node                *firstChild     = node->getFirstChild();
    TR::Node                *secondChild    = node->getSecondChild();
@@ -942,7 +942,7 @@ TR::Register *OMR::X86::i386::TreeEvaluator::integerPairSubEvaluator(TR::Node *n
    return targetRegister;
    }
 
-TR::Register *OMR::X86::i386::TreeEvaluator::integerPairDualMulEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+TR::Register *OMR::X86::I386::TreeEvaluator::integerPairDualMulEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR_ASSERT((node->getOpCodeValue() == TR::lumulh) || (node->getOpCodeValue() == TR::lmul), "Unexpected operator. Expected lumulh or lmul.");
    if (node->isDualCyclic() && (node->getChild(2)->getReferenceCount() == 1))
@@ -971,7 +971,7 @@ TR::Register *OMR::X86::i386::TreeEvaluator::integerPairDualMulEvaluator(TR::Nod
    }
 
 
-TR::Register *OMR::X86::i386::TreeEvaluator::integerPairMulEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+TR::Register *OMR::X86::I386::TreeEvaluator::integerPairMulEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Register *lowRegister    = NULL;
    TR::Register *highRegister;
@@ -1478,7 +1478,7 @@ TR::Register *OMR::X86::i386::TreeEvaluator::integerPairMulEvaluator(TR::Node *n
 
    }
 
-TR::Register *OMR::X86::i386::TreeEvaluator::integerPairDivEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+TR::Register *OMR::X86::I386::TreeEvaluator::integerPairDivEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
 #ifdef J9_PROJECT_SPECIFIC
    TR::Node     *firstChild   = node->getFirstChild();
@@ -1584,7 +1584,7 @@ TR::Register *OMR::X86::i386::TreeEvaluator::integerPairDivEvaluator(TR::Node *n
 
    }
 
-TR::Register *OMR::X86::i386::TreeEvaluator::integerPairRemEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+TR::Register *OMR::X86::I386::TreeEvaluator::integerPairRemEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
 #if J9_PROJECT_SPECIFIC
    // TODO: Consider combining with integerPairDivEvaluator
@@ -1696,7 +1696,7 @@ TR::Register *OMR::X86::i386::TreeEvaluator::integerPairRemEvaluator(TR::Node *n
 #endif
    }
 
-TR::Register *OMR::X86::i386::TreeEvaluator::integerPairNegEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+TR::Register *OMR::X86::I386::TreeEvaluator::integerPairNegEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Node *firstChild = node->getFirstChild();
    TR::Register *targetRegister = cg->longClobberEvaluate(firstChild);
@@ -1709,7 +1709,7 @@ TR::Register *OMR::X86::i386::TreeEvaluator::integerPairNegEvaluator(TR::Node *n
    return targetRegister;
    }
 
-TR::Register *OMR::X86::i386::TreeEvaluator::integerPairAbsEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+TR::Register *OMR::X86::I386::TreeEvaluator::integerPairAbsEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Node *child = node->getFirstChild();
    TR::Register *targetRegister = cg->longClobberEvaluate(child);
@@ -1726,7 +1726,7 @@ TR::Register *OMR::X86::i386::TreeEvaluator::integerPairAbsEvaluator(TR::Node *n
    return targetRegister;
    }
 
-TR::Register *OMR::X86::i386::TreeEvaluator::integerPairShlEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+TR::Register *OMR::X86::I386::TreeEvaluator::integerPairShlEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Register *targetRegister;
    TR::Node     *secondChild = node->getSecondChild();
@@ -1808,7 +1808,7 @@ TR::Register *OMR::X86::i386::TreeEvaluator::integerPairShlEvaluator(TR::Node *n
    return targetRegister;
    }
 
-TR::Register *OMR::X86::i386::TreeEvaluator::integerPairRolEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+TR::Register *OMR::X86::I386::TreeEvaluator::integerPairRolEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Register *targetRegister;
    TR::Node     *firstChild  = node->getFirstChild();
@@ -1895,7 +1895,7 @@ TR::Register *OMR::X86::i386::TreeEvaluator::integerPairRolEvaluator(TR::Node *n
    return targetRegister;
    }
 
-TR::Register *OMR::X86::i386::TreeEvaluator::integerPairShrEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+TR::Register *OMR::X86::I386::TreeEvaluator::integerPairShrEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Node     *secondChild    = node->getSecondChild();
    TR::Node     *firstChild     = node->getFirstChild();
@@ -1959,7 +1959,7 @@ TR::Register *OMR::X86::i386::TreeEvaluator::integerPairShrEvaluator(TR::Node *n
    return targetRegister;
    }
 
-TR::Register *OMR::X86::i386::TreeEvaluator::integerPairUshrEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+TR::Register *OMR::X86::I386::TreeEvaluator::integerPairUshrEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Node     *secondChild    = node->getSecondChild();
    TR::Node     *firstChild     = node->getFirstChild();
@@ -2023,7 +2023,7 @@ TR::Register *OMR::X86::i386::TreeEvaluator::integerPairUshrEvaluator(TR::Node *
    return targetRegister;
    }
 
-TR::Register *OMR::X86::i386::TreeEvaluator::landEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+TR::Register *OMR::X86::I386::TreeEvaluator::landEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Register            *targetRegister = NULL;
    TR::Node                *firstChild     = node->getFirstChild();
@@ -2201,7 +2201,7 @@ TR::Register *OMR::X86::i386::TreeEvaluator::landEvaluator(TR::Node *node, TR::C
    return targetRegister;
    }
 
-TR::Register *OMR::X86::i386::TreeEvaluator::lorEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+TR::Register *OMR::X86::I386::TreeEvaluator::lorEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Register            *targetRegister = NULL;
    TR::Register            *temp           = NULL;
@@ -2347,7 +2347,7 @@ TR::Register *OMR::X86::i386::TreeEvaluator::lorEvaluator(TR::Node *node, TR::Co
    return targetRegister;
    }
 
-TR::Register *OMR::X86::i386::TreeEvaluator::lxorEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+TR::Register *OMR::X86::I386::TreeEvaluator::lxorEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Register            *targetRegister = NULL;
    TR::Node                *firstChild     = node->getFirstChild();
@@ -2492,7 +2492,7 @@ TR::Register *OMR::X86::i386::TreeEvaluator::lxorEvaluator(TR::Node *node, TR::C
    return targetRegister;
    }
 
-TR::Register *OMR::X86::i386::TreeEvaluator::l2iEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+TR::Register *OMR::X86::I386::TreeEvaluator::l2iEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Node     *child = node->getFirstChild();
    TR::Register *targetRegister;
@@ -2531,7 +2531,7 @@ TR::Register *OMR::X86::i386::TreeEvaluator::l2iEvaluator(TR::Node *node, TR::Co
    return targetRegister;
    }
 
-TR::Register *OMR::X86::i386::TreeEvaluator::ifacmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+TR::Register *OMR::X86::I386::TreeEvaluator::ifacmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Node::recreate(node, TR::ificmpeq);
    integerIfCmpeqEvaluator(node, cg);
@@ -2541,7 +2541,7 @@ TR::Register *OMR::X86::i386::TreeEvaluator::ifacmpeqEvaluator(TR::Node *node, T
 
 // ifacmpne handled by ificmpeqEvaluator
 
-TR::Register *OMR::X86::i386::TreeEvaluator::acmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+TR::Register *OMR::X86::I386::TreeEvaluator::acmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Node::recreate(node, TR::icmpeq);
    TR::Register *targetRegister = integerCmpeqEvaluator(node, cg);
@@ -2551,7 +2551,7 @@ TR::Register *OMR::X86::i386::TreeEvaluator::acmpeqEvaluator(TR::Node *node, TR:
 
 // acmpneEvaluator handled by icmpeqEvaluator
 
-TR::Register *OMR::X86::i386::TreeEvaluator::lcmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+TR::Register *OMR::X86::I386::TreeEvaluator::lcmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Node     *secondChild = node->getSecondChild();
    TR::Register *targetRegister;
@@ -2619,7 +2619,7 @@ TR::Register *OMR::X86::i386::TreeEvaluator::lcmpeqEvaluator(TR::Node *node, TR:
    return targetRegister;
    }
 
-TR::Register *OMR::X86::i386::TreeEvaluator::lcmpneEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+TR::Register *OMR::X86::I386::TreeEvaluator::lcmpneEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Node     *secondChild = node->getSecondChild();
    TR::Register *targetRegister;
@@ -2682,22 +2682,22 @@ TR::Register *OMR::X86::i386::TreeEvaluator::lcmpneEvaluator(TR::Node *node, TR:
    return targetRegister;
    }
 
-TR::Register *OMR::X86::i386::TreeEvaluator::lcmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+TR::Register *OMR::X86::I386::TreeEvaluator::lcmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return compareLongAndSetOrderedBoolean(node, SETL1Reg, SETB1Reg, cg);
    }
 
-TR::Register *OMR::X86::i386::TreeEvaluator::lcmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+TR::Register *OMR::X86::I386::TreeEvaluator::lcmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return compareLongAndSetOrderedBoolean(node, SETG1Reg, SETAE1Reg, cg);
    }
 
-TR::Register *OMR::X86::i386::TreeEvaluator::lcmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+TR::Register *OMR::X86::I386::TreeEvaluator::lcmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return compareLongAndSetOrderedBoolean(node, SETG1Reg, SETA1Reg, cg);
    }
 
-TR::Register *OMR::X86::i386::TreeEvaluator::lcmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+TR::Register *OMR::X86::I386::TreeEvaluator::lcmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return compareLongAndSetOrderedBoolean(node, SETL1Reg, SETBE1Reg, cg);
    }
@@ -2705,22 +2705,22 @@ TR::Register *OMR::X86::i386::TreeEvaluator::lcmpleEvaluator(TR::Node *node, TR:
 
 
 
-TR::Register *OMR::X86::i386::TreeEvaluator::lucmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+TR::Register *OMR::X86::I386::TreeEvaluator::lucmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return compareLongAndSetOrderedBoolean(node, SETB1Reg, SETB1Reg, cg);
    }
 
-TR::Register *OMR::X86::i386::TreeEvaluator::lucmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+TR::Register *OMR::X86::I386::TreeEvaluator::lucmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return compareLongAndSetOrderedBoolean(node, SETA1Reg, SETAE1Reg, cg);
    }
 
-TR::Register *OMR::X86::i386::TreeEvaluator::lucmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+TR::Register *OMR::X86::I386::TreeEvaluator::lucmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return compareLongAndSetOrderedBoolean(node, SETA1Reg, SETA1Reg, cg);
    }
 
-TR::Register *OMR::X86::i386::TreeEvaluator::lucmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+TR::Register *OMR::X86::I386::TreeEvaluator::lucmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return compareLongAndSetOrderedBoolean(node, SETB1Reg, SETBE1Reg, cg);
    }
@@ -2729,7 +2729,7 @@ TR::Register *OMR::X86::i386::TreeEvaluator::lucmpleEvaluator(TR::Node *node, TR
 
 
 // also handles lucmp
-TR::Register *OMR::X86::i386::TreeEvaluator::lcmpEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+TR::Register *OMR::X86::I386::TreeEvaluator::lcmpEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Node     *secondChild    = node->getSecondChild();
    TR::Node     *firstChild     = node->getFirstChild();
@@ -2765,7 +2765,7 @@ TR::Register *OMR::X86::i386::TreeEvaluator::lcmpEvaluator(TR::Node *node, TR::C
    return targetRegister;
    }
 
-TR::Register *OMR::X86::i386::TreeEvaluator::lRegLoadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+TR::Register *OMR::X86::I386::TreeEvaluator::lRegLoadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Register *globalReg = node->getRegister();
    if (globalReg == NULL)
@@ -2777,7 +2777,7 @@ TR::Register *OMR::X86::i386::TreeEvaluator::lRegLoadEvaluator(TR::Node *node, T
    return globalReg;
    }
 
-TR::Register *OMR::X86::i386::TreeEvaluator::i2lEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+TR::Register *OMR::X86::I386::TreeEvaluator::i2lEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Node         *child    = node->getFirstChild();
    TR::Register     *childReg = cg->intClobberEvaluate(child);
@@ -2805,7 +2805,7 @@ TR::Register *OMR::X86::i386::TreeEvaluator::i2lEvaluator(TR::Node *node, TR::Co
    return longReg;
    }
 
-TR::Register *OMR::X86::i386::TreeEvaluator::iu2lEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+TR::Register *OMR::X86::I386::TreeEvaluator::iu2lEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Node         *child    = node->getFirstChild();
    TR::Register     *childReg = cg->intClobberEvaluate(child);
@@ -2819,7 +2819,7 @@ TR::Register *OMR::X86::i386::TreeEvaluator::iu2lEvaluator(TR::Node *node, TR::C
    return longReg;
    }
 
-TR::Register *OMR::X86::i386::TreeEvaluator::b2lEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+TR::Register *OMR::X86::I386::TreeEvaluator::b2lEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Node     *child   = node->getFirstChild();
    TR::Register *longReg;
@@ -2847,7 +2847,7 @@ TR::Register *OMR::X86::i386::TreeEvaluator::b2lEvaluator(TR::Node *node, TR::Co
    return longReg;
    }
 
-TR::Register *OMR::X86::i386::TreeEvaluator::bu2lEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+TR::Register *OMR::X86::I386::TreeEvaluator::bu2lEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Node     *child   = node->getFirstChild();
    TR::Register *longReg;
@@ -2874,7 +2874,7 @@ TR::Register *OMR::X86::i386::TreeEvaluator::bu2lEvaluator(TR::Node *node, TR::C
    return longReg;
    }
 
-TR::Register *OMR::X86::i386::TreeEvaluator::s2lEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+TR::Register *OMR::X86::I386::TreeEvaluator::s2lEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Node     *child   = node->getFirstChild();
    TR::Register *longReg;
@@ -2905,7 +2905,7 @@ TR::Register *OMR::X86::i386::TreeEvaluator::s2lEvaluator(TR::Node *node, TR::Co
    return longReg;
    }
 
-TR::Register *OMR::X86::i386::TreeEvaluator::su2lEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+TR::Register *OMR::X86::I386::TreeEvaluator::su2lEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Node     *child   = node->getFirstChild();
    TR::Register *longReg;
@@ -2933,7 +2933,7 @@ TR::Register *OMR::X86::i386::TreeEvaluator::su2lEvaluator(TR::Node *node, TR::C
    return longReg;
    }
 
-TR::Register *OMR::X86::i386::TreeEvaluator::c2lEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+TR::Register *OMR::X86::I386::TreeEvaluator::c2lEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Node     *child   = node->getFirstChild();
    TR::Register *longReg;
@@ -2962,7 +2962,7 @@ TR::Register *OMR::X86::i386::TreeEvaluator::c2lEvaluator(TR::Node *node, TR::Co
    return longReg;
    }
 
-TR::Register *OMR::X86::i386::TreeEvaluator::dstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+TR::Register *OMR::X86::I386::TreeEvaluator::dstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    bool     nodeIsIndirect = node->getOpCode().isIndirect()? 1 : 0;
    TR::Node *valueChild     = node->getChild(nodeIsIndirect);
@@ -3038,7 +3038,7 @@ TR::Register *OMR::X86::i386::TreeEvaluator::dstoreEvaluator(TR::Node *node, TR:
 
    }
 
-TR::Register *OMR::X86::i386::TreeEvaluator::l2fEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+TR::Register *OMR::X86::I386::TreeEvaluator::l2fEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Node     *child = node->getFirstChild();
    TR::Register *target = cg->allocateSinglePrecisionRegister(TR_X87);
@@ -3072,7 +3072,7 @@ TR::Register *OMR::X86::i386::TreeEvaluator::l2fEvaluator(TR::Node *node, TR::Co
    return target;
    }
 
-TR::Register *OMR::X86::i386::TreeEvaluator::l2dEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+TR::Register *OMR::X86::I386::TreeEvaluator::l2dEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Node     *child = node->getFirstChild();
    TR::Register *target = cg->allocateRegister(TR_X87);
@@ -3106,7 +3106,7 @@ TR::Register *OMR::X86::i386::TreeEvaluator::l2dEvaluator(TR::Node *node, TR::Co
    return target;
    }
 
-TR::Register *OMR::X86::i386::TreeEvaluator::performLload(TR::Node *node, TR::MemoryReference  *sourceMR, TR::CodeGenerator *cg)
+TR::Register *OMR::X86::I386::TreeEvaluator::performLload(TR::Node *node, TR::MemoryReference  *sourceMR, TR::CodeGenerator *cg)
    {
    TR::Compilation *comp = cg->comp();
    TR::Register *lowRegister = NULL, *highRegister = NULL;
@@ -3220,7 +3220,7 @@ TR::Register *OMR::X86::i386::TreeEvaluator::performLload(TR::Node *node, TR::Me
    }
 
 // also handles ilload
-TR::Register *OMR::X86::i386::TreeEvaluator::lloadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+TR::Register *OMR::X86::I386::TreeEvaluator::lloadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::MemoryReference  *sourceMR = generateX86MemoryReference(node, cg);
    TR::Register            *reg      = performLload(node, sourceMR, cg);
@@ -3229,7 +3229,7 @@ TR::Register *OMR::X86::i386::TreeEvaluator::lloadEvaluator(TR::Node *node, TR::
    return reg;
    }
 
-TR::Register *OMR::X86::i386::TreeEvaluator::lbits2dEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+TR::Register *OMR::X86::I386::TreeEvaluator::lbits2dEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Node                *child = node->getFirstChild();
    TR::MemoryReference  *tempMR;
@@ -3257,7 +3257,7 @@ TR::Register *OMR::X86::i386::TreeEvaluator::lbits2dEvaluator(TR::Node *node, TR
    return node->getRegister();
    }
 
-TR::Register *OMR::X86::i386::TreeEvaluator::dbits2lEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+TR::Register *OMR::X86::I386::TreeEvaluator::dbits2lEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Node                *child   = node->getFirstChild();
    TR::Register            *lowReg  = cg->allocateRegister();
@@ -3330,7 +3330,7 @@ TR::Register *OMR::X86::i386::TreeEvaluator::dbits2lEvaluator(TR::Node *node, TR
    return target;
    }
 
-TR::Register *OMR::X86::i386::TreeEvaluator::iflcmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+TR::Register *OMR::X86::I386::TreeEvaluator::iflcmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Compilation *comp = cg->comp();
    TR::Node        *secondChild      = node->getSecondChild();
@@ -3478,7 +3478,7 @@ TR::Register *OMR::X86::i386::TreeEvaluator::iflcmpeqEvaluator(TR::Node *node, T
    return NULL;
    }
 
-TR::Register *OMR::X86::i386::TreeEvaluator::iflcmpneEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+TR::Register *OMR::X86::I386::TreeEvaluator::iflcmpneEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Compilation *comp = cg->comp();
    TR::Node        *secondChild      = node->getSecondChild();
@@ -3611,7 +3611,7 @@ TR::Register *OMR::X86::i386::TreeEvaluator::iflcmpneEvaluator(TR::Node *node, T
    return NULL;
    }
 
-TR::Register *OMR::X86::i386::TreeEvaluator::iflcmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+TR::Register *OMR::X86::I386::TreeEvaluator::iflcmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    if (generateLAddOrSubForOverflowCheck(node, cg))
       {
@@ -3628,7 +3628,7 @@ TR::Register *OMR::X86::i386::TreeEvaluator::iflcmpltEvaluator(TR::Node *node, T
    return NULL;
    }
 
-TR::Register *OMR::X86::i386::TreeEvaluator::iflcmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+TR::Register *OMR::X86::I386::TreeEvaluator::iflcmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    if (generateLAddOrSubForOverflowCheck(node, cg))
       {
@@ -3645,7 +3645,7 @@ TR::Register *OMR::X86::i386::TreeEvaluator::iflcmpgeEvaluator(TR::Node *node, T
    return NULL;
    }
 
-TR::Register *OMR::X86::i386::TreeEvaluator::iflcmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+TR::Register *OMR::X86::I386::TreeEvaluator::iflcmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR_X86OpCodes compareOp = node->getOpCode().isUnsigned() ? JA4 : JG4;
    TR_X86OpCodes reverseCompareOp = node->getOpCode().isUnsigned() ? JB4 : JL4;
@@ -3653,7 +3653,7 @@ TR::Register *OMR::X86::i386::TreeEvaluator::iflcmpgtEvaluator(TR::Node *node, T
    return NULL;
    }
 
-TR::Register *OMR::X86::i386::TreeEvaluator::iflcmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+TR::Register *OMR::X86::I386::TreeEvaluator::iflcmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR_X86OpCodes compareOp = node->getOpCode().isUnsigned() ? JB4 : JL4;
    TR_X86OpCodes reverseCompareOp = node->getOpCode().isUnsigned() ? JA4 : JG4;
@@ -3662,7 +3662,7 @@ TR::Register *OMR::X86::i386::TreeEvaluator::iflcmpleEvaluator(TR::Node *node, T
    }
 
 
-TR::Register *OMR::X86::i386::TreeEvaluator::lternaryEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+TR::Register *OMR::X86::I386::TreeEvaluator::lternaryEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Node *condition = node->getChild(0);
    TR::Node *trueVal   = node->getChild(1);
@@ -3714,7 +3714,7 @@ TR::Register *OMR::X86::i386::TreeEvaluator::lternaryEvaluator(TR::Node *node, T
    }
 
 TR::Register *
-OMR::X86::i386::TreeEvaluator::integerPairByteswapEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+OMR::X86::I386::TreeEvaluator::integerPairByteswapEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR_ASSERT(node->getNumChildren() == 1, "Wrong number of children in byteswapEvaluator");
    TR::Node *child = node->getFirstChild();
@@ -3734,7 +3734,7 @@ OMR::X86::i386::TreeEvaluator::integerPairByteswapEvaluator(TR::Node *node, TR::
    }
 
 TR::Register *
-OMR::X86::i386::TreeEvaluator::lcmpsetEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+OMR::X86::I386::TreeEvaluator::lcmpsetEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Node *pointer      = node->getChild(0);
    TR::Node *compareValue = node->getChild(1);

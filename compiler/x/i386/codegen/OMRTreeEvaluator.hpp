@@ -27,10 +27,10 @@
  */
 #ifndef OMR_TREE_EVALUATOR_CONNECTOR
 #define OMR_TREE_EVALUATOR_CONNECTOR
-namespace OMR { namespace X86 { namespace i386 { class TreeEvaluator; } } }
-namespace OMR { typedef OMR::X86::i386::TreeEvaluator TreeEvaluatorConnector; }
+namespace OMR { namespace X86 { namespace I386 { class TreeEvaluator; } } }
+namespace OMR { typedef OMR::X86::I386::TreeEvaluator TreeEvaluatorConnector; }
 #else
-#error OMR::X86::i386::TreeEvaluator expected to be a primary connector, but a OMR connector is already defined
+#error OMR::X86::I386::TreeEvaluator expected to be a primary connector, but a OMR connector is already defined
 #endif
 
 #include "compiler/x/codegen/OMRTreeEvaluator.hpp"
@@ -47,7 +47,7 @@ namespace OMR
 namespace X86
 {
 
-namespace i386
+namespace I386
 {
 
 class OMR_EXTENSIBLE TreeEvaluator: public OMR::X86::TreeEvaluator
@@ -140,7 +140,7 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::X86::TreeEvaluator
 
    };
 
-} // namespace i386
+} // namespace I386
 
 } // namespace X86
 

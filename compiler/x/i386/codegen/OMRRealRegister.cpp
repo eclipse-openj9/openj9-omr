@@ -21,7 +21,7 @@
 
 #include "codegen/RealRegister.hpp"  // for RealRegister, etc
 
-const OMR::X86::RealRegister::TR_RegisterBinaryEncoding OMR::X86::i386::RealRegister::_fullRegisterBinaryEncodings[TR::RealRegister::NumRegisters] =
+const OMR::X86::RealRegister::TR_RegisterBinaryEncoding OMR::X86::I386::RealRegister::_fullRegisterBinaryEncodings[TR::RealRegister::NumRegisters] =
    {
    // -----------id
    // |   --------needsRexPlusRXB

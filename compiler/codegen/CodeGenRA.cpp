@@ -2119,15 +2119,11 @@ OMR::CodeGenerator::findCoalescenceForRegisterCopy(TR::Node *node, TR_RegisterCa
 TR_GlobalRegisterNumber
 OMR::CodeGenerator::findCoalescenceRegisterForParameter(TR::Node *callNode, TR_RegisterCandidate *rc, uint32_t childIndex, bool *isUnpreferred)
    {
-   int32_t realRegNum = -1;
-
    TR::Node *paramNode = callNode->getChild(childIndex);
    if (paramNode->getOpCode().isLoadVarDirect())
       {
       int32_t paramSymRefNum = paramNode->getSymbolReference()->getReferenceNumber();
       *isUnpreferred = !(paramSymRefNum == rc->getSymbolReference()->getReferenceNumber());
-      TR_GlobalRegisterNumber candidateRegister = self()->getLinkage()->getInRegisterNumberForParameter(callNode, childIndex);
-      return candidateRegister;
       }
    return -1;
    }

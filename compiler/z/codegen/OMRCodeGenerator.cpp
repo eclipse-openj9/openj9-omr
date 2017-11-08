@@ -547,8 +547,7 @@ OMR::Z::CodeGenerator::CodeGenerator()
      _ccInstruction(NULL),
      _previouslyAssignedTo(self()->comp()->allocator("LocalRA")),
      _bucketPlusIndexRegisters(self()->comp()->allocator()),
-     _currentDEPEND(NULL),
-     _outgoingArgLevelDuringTreeEvaluation(0)
+     _currentDEPEND(NULL)
    {
    TR::Compilation *comp = self()->comp();
    _cgFlags = 0;
@@ -1473,9 +1472,6 @@ OMR::Z::CodeGenerator::endInstructionSelection()
 void
 OMR::Z::CodeGenerator::doInstructionSelection()
    {
-
-   _outgoingArgLevelDuringTreeEvaluation = 0;
-
    self()->setDoingInstructionSelection(true);
    OMR::CodeGenerator::doInstructionSelection();
    self()->setDoingInstructionSelection(false);
@@ -1484,7 +1480,6 @@ OMR::Z::CodeGenerator::doInstructionSelection()
       {
       _returnTypeInfoInstruction->setSourceImmediate(static_cast<uint32_t>(self()->comp()->getReturnInfo()));
       }
-
    }
 
 bool

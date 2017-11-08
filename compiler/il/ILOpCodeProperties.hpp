@@ -10416,7 +10416,7 @@
    /* .properties4          = */ 0,
    /* .dataType             = */ TR::NoType,
    /* .typeProperties       = */ 0,
-   /* .childProperties      = */ ONE_CHILD(ILChildProp::UnspecifiedChildType),
+   /* .childProperties      = */ ILChildProp::NoChildren,
    /* .swapChildrenOpCode   = */ TR::BadILOp,
    /* .reverseBranchOpCode  = */ TR::BadILOp,
    /* .booleanCompareOpCode = */ TR::BadILOp,

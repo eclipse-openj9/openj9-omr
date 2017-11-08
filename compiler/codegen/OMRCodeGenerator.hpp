@@ -1847,7 +1847,6 @@ class OMR_EXTENSIBLE CodeGenerator
    TR_BitVector *_signExtensionFlags;
    TR_BitVector *_assignedGlobalRegisters;
 
-   TR::list<TR::Node*> *_liveRestrictValues[16];
    TR_LiveRegisters *_liveRegisters[NumRegisterKinds];
    TR::AheadOfTimeCompile *_aheadOfTimeCompile;
    uint32_t *_globalRegisterTable;

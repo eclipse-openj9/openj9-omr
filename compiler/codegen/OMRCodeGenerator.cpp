@@ -301,9 +301,6 @@ OMR::CodeGenerator::CodeGenerator() :
    uintptrj_t maxSize = TR::Compiler->vm.getOverflowSafeAllocSize(self()->comp());
    int32_t i;
 
-   for(i = 0; i < 16; i++)
-       _liveRestrictValues[i] = NULL;
-
    for (i = 0; i < NumRegisterKinds; ++i)
       {
       _liveRegisters[i] = NULL;

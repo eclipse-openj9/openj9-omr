@@ -1547,7 +1547,7 @@ TR::Node *constrainAload(OMR::ValuePropagation *vp, TR::Node *node)
          vp->addGlobalConstraint(node, TR::VPObjectLocation::create(vp, TR::VPObjectLocation::J9ClassObject));
          }
 
-      if (addKnownObjectConstraint(vp, node))
+      if (addKnownObjectConstraints(vp, node))
          return node;
 
       if (!symRef->getSymbol()->isArrayShadowSymbol())

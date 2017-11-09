@@ -38,7 +38,7 @@ extern "C" {
 #endif
 
 /* Allocation description will be initialized in call */
-omrobjectptr_t OMR_GC_AllocateObject(OMR_VMThread * omrVMThread, uintptr_t allocationCategory, uintptr_t requiredSizeInBytes, uintptr_t objectAllocationFlags = 0);
+omrobjectptr_t OMR_GC_AllocateObject(OMR_VMThread * omrVMThread, uintptr_t allocationCategory, uintptr_t requiredSizeInBytes, uintptr_t objectAllocationFlags);
 
 omr_error_t OMR_GC_SystemCollect(OMR_VMThread* omrVMThread, uint32_t gcCode);
 

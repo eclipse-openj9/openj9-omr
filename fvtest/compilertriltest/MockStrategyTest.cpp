@@ -29,35 +29,34 @@
 
 
 /**
- * Test Fixture for SimplifierFoldAndTest that 
- * selects only the relevant opts for the test case
+ * Uses the mockStrategy support to select only an 
+ * optimization that should have no effect on the 
+ * existence of 'and' operations. 
+ *
+ * Coupling note: This is assuming the default optimization
+ * strategy contains the simplifier. If it did not, this test
+ * case would be invalid
  */
-class SimplifierFoldAndTest : public TRTest::JitOptTest
+class MockStrategyTest : public TRTest::JitOptTest
    {
 
    public:
-   SimplifierFoldAndTest()
+   MockStrategyTest()
       {
-      /* Add an optimization.
-       * You can add as many optimizations as you need, in order,
-       * using `addOptimization`, or add a group using
-       * `addOptimizations(omrCompilationStrategies[warm])`.
-       * This could also be done in test cases themselves.
+      /*
+       * By adding a non-simplifier opt, we make sure the 
+       * simplifier doesn't run. 
        */
-      addOptimization(OMR::treeSimplification);
+      addOptimization(OMR::trivialDeadTreeRemoval);
       }
 
    };
 
 /*
- * method(int32_t parameter) 
- *   int64_t i = ((int64_t) parameter) & 0xFFFFFFFF00000000ll;
- *   return i;
- *
- * Note that the combo of the mask and width of the parameter means
- * the expression should always fold to zero. 
+ * This tree should not fold, as the simplifier should be disabled. This
+ * ensures that the mock optimizer support is working. 
  */
-TEST_F(SimplifierFoldAndTest, FoldHappens) {
+TEST_F(MockStrategyTest, FoldDoesntHappen) {
     auto* inputTrees = "(method return=Int64 args=[Int32]  "
                        " (block                            "
                        "  (lreturn                         "
@@ -73,14 +72,8 @@ TEST_F(SimplifierFoldAndTest, FoldHappens) {
     Tril::DefaultCompiler compiler{trees};
     NoAndIlVerifier verifier;  
 
-    ASSERT_EQ(0, compiler.compileWithVerifier(&verifier)) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
-
-    auto entry_point = compiler.getEntryPoint<int64_t (*)(int32_t)>();
-    // Invoke the compiled method, and assert the output is correct.
-    EXPECT_EQ(0ll, entry_point(0));
-    EXPECT_EQ(0ll, entry_point(1));
-    EXPECT_EQ(0ll, entry_point(-1));
-    EXPECT_EQ(0ll, entry_point(-9));
-    EXPECT_EQ(0ll, entry_point(2147483647));
+    ASSERT_NE(0, compiler.compileWithVerifier(&verifier)) 
+       << "Simplifier simplified when it shouldn't have!";
 }
+
 

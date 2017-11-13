@@ -121,6 +121,7 @@ typedef struct OMRPortPlatformGlobals {
 #endif
 
 #if defined(LINUX)
+/* Note that PPG_cgroupSubsystemsAvailable and PPG_cgroupSubsystemsEnabled are valid only if PPG_cgroupEntryList is not NULL */
 #define PPG_cgroupSubsystemsAvailable (portLibrary->portGlobals->platformGlobals.cgroupSubsystemsAvailable)
 #define PPG_cgroupSubsystemsEnabled (portLibrary->portGlobals->platformGlobals.cgroupSubsystemsEnabled)
 #define PPG_cgroupEntryList (portLibrary->portGlobals->platformGlobals.cgroupEntryList)

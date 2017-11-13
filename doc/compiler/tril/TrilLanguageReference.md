@@ -121,7 +121,10 @@ can come from, which can be specified with one of the following two properties:
 
 ### Branches 
 
-Branches evaluate a condition then either jump to a target, or falls through. 
+Branches evaluate a condition then either jump to a target, or falls through to
+the next block. The fallthrough block can be eiher implied, in which case it
+will be the next block textually, or it can be specified manually with the 
+`fallthrough` property. 
 
 #### Properties
 
@@ -132,8 +135,12 @@ Branches evaluate a condition then either jump to a target, or falls through.
   constructed. In addition to a block `name`, there are two special values that
   may be used here: 
    * `@none` indicates no fallthrough edge need be generated: this can be the
-     case for certain opcodes. 
-   * `@exit` falls through to the exit block of the CFG. 
+     case for certain opcodes, ie
+
+            (goto target="unconditionalTarget" fallthrough=@none)
+
+   * `@exit` falls through to the exit block of the CFG. This can be useful for
+     constructing invalid control flow in the case of test-cases.
 
 #### Example
 

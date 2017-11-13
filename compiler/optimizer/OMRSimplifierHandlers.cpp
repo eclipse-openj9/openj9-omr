@@ -5585,12 +5585,6 @@ TR::Node *indirectLoadSimplifier(TR::Node * node, TR::Block * block, TR::Simplif
 
 TR::Node *indirectStoreSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-#ifdef ENABLE_STRUCTS
-   if (node->getSymbolReference()->isPacked() && node->getOpCodeValue() != TR::astorei)
-      {
-      removeStructObjectCreation(node, s);
-      }
-#endif
    if (node->getOpCode().isStoreIndirect())
       node->getFirstChild()->setIsNonNegative(true);
 

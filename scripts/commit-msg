@@ -47,7 +47,7 @@ title, body = commit.split("\n", 2)
 title_len = title.length
 #puts "Title is #{title}, length is #{title_len}"
 
-if (title_len > 0 && title_len < 50)
+if (title_len > 0 && title_len < 70)
   # shortcut to skip commit message checking
   if (title.match(/^skip.*/) || title.match(/^fixup.*/))
     puts "PASSED: Skipping commit checks!\n"
@@ -63,7 +63,7 @@ if (title_len > 0 && title_len < 50)
   end
 else
   state = "failure"
-  description = "Commit title should be less than 50 characters: actual #{title_len}"
+  description = "Commit title should be less than 70 characters: actual #{title_len}"
 end
 
 # check commit message body length

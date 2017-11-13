@@ -19,18 +19,18 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
 
-#ifndef OMR_i386_CODEGENERATOR_INCL
-#define OMR_i386_CODEGENERATOR_INCL
+#ifndef OMR_I386_CODEGENERATOR_INCL
+#define OMR_I386_CODEGENERATOR_INCL
 
 /*
  * The following #define and typedef must appear before any #includes in this file
  */
 #ifndef OMR_CODEGENERATOR_CONNECTOR
 #define OMR_CODEGENERATOR_CONNECTOR
-namespace OMR { namespace X86 { namespace i386 { class CodeGenerator; } } }
-namespace OMR { typedef OMR::X86::i386::CodeGenerator CodeGeneratorConnector; }
+namespace OMR { namespace X86 { namespace I386 { class CodeGenerator; } } }
+namespace OMR { typedef OMR::X86::I386::CodeGenerator CodeGeneratorConnector; }
 #else
-#error OMR::X86::i386::CodeGenerator expected to be a primary connector, but a OMR connector is already defined
+#error OMR::X86::I386::CodeGenerator expected to be a primary connector, but a OMR connector is already defined
 #endif
 
 #include "compiler/x/codegen/OMRCodeGenerator.hpp"
@@ -48,7 +48,7 @@ namespace OMR
 namespace X86
 {
 
-namespace i386
+namespace I386
 {
 
 class OMR_EXTENSIBLE CodeGenerator : public OMR::X86::CodeGenerator
@@ -73,7 +73,7 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::X86::CodeGenerator
 
    };
 
-} // namespace i386
+} // namespace I386
 
 } // namespace X86
 

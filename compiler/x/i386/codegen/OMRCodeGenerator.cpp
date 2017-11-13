@@ -57,7 +57,7 @@
 #include "x/codegen/X86Instruction.hpp"
 #include "x/codegen/X86Ops.hpp"                     // for ::MOV4RegReg
 
-OMR::X86::i386::CodeGenerator::CodeGenerator() :
+OMR::X86::I386::CodeGenerator::CodeGenerator() :
    OMR::X86::CodeGenerator()
    {
    // Common X86 initialization
@@ -156,7 +156,7 @@ OMR::X86::i386::CodeGenerator::CodeGenerator() :
 
 
 TR::Register *
-OMR::X86::i386::CodeGenerator::longClobberEvaluate(TR::Node *node)
+OMR::X86::I386::CodeGenerator::longClobberEvaluate(TR::Node *node)
    {
    TR_ASSERT(node->getOpCode().is8Byte(), "assertion failure");
    if (node->getReferenceCount() > 1)
@@ -178,7 +178,7 @@ OMR::X86::i386::CodeGenerator::longClobberEvaluate(TR::Node *node)
 
 
 TR_GlobalRegisterNumber
-OMR::X86::i386::CodeGenerator::pickRegister(
+OMR::X86::I386::CodeGenerator::pickRegister(
       TR_RegisterCandidate *rc,
       TR::Block **allBlocks,
       TR_BitVector &availableRegisters,
@@ -375,7 +375,7 @@ OMR::X86::i386::CodeGenerator::pickRegister(
    }
 
 int32_t
-OMR::X86::i386::CodeGenerator::getMaximumNumberOfGPRsAllowedAcrossEdge(TR::Node *node)
+OMR::X86::I386::CodeGenerator::getMaximumNumberOfGPRsAllowedAcrossEdge(TR::Node *node)
    {
    // TODO: Currently, lookupEvaluator doesn't deal properly with different
    // glRegDeps on different cases of a lookupswitch.
@@ -450,7 +450,7 @@ OMR::X86::i386::CodeGenerator::getMaximumNumberOfGPRsAllowedAcrossEdge(TR::Node 
 
 
 bool
-OMR::X86::i386::CodeGenerator::codegenMulDecomposition(int64_t multiplier)
+OMR::X86::I386::CodeGenerator::codegenMulDecomposition(int64_t multiplier)
    {
    bool iMulDecomposeReport = self()->comp()->getOptions()->getTraceSimplifier(TR_TraceMulDecomposition);
    bool answer = false;

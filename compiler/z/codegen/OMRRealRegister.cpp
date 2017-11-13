@@ -373,32 +373,6 @@ OMR::Z::RealRegister::isVRF(RegNum reg)
       return false;
    }
 
-// static method
-uint64_t
-OMR::Z::RealRegister::getBitMask(RegNum reg)
-   {
-   if (TR::RealRegister::isGPR(reg))
-      return 0x1 << (reg - FirstGPR);
-   else if (TR::RealRegister::isHPR(reg))
-      return 0x1 << (reg - FirstHPR + LastGPR);
-   else if (TR::RealRegister::isAR(reg))
-      return 0x1 << (reg - FirstAR);
-   else if (TR::RealRegister::isFPR(reg))
-      return 0x1 << (reg - FirstFPR);
-   else if (TR::RealRegister::isVRF(reg))
-      return 0x1 << (reg - FirstVRF);
-   else
-      return 0;
-   }
-
-// static method
-uint64_t
-OMR::Z::RealRegister::getBitMask(int32_t regNum)
-   {
-   return TR::RealRegister::getBitMask((TR::RealRegister::RegNum)regNum);
-   }
-
-
 const uint8_t OMR::Z::RealRegister::_fullRegBinaryEncodings[TR::RealRegister::NumRegisters] =
    {
    0x00,        // NoReg

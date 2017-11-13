@@ -796,21 +796,17 @@ OMR::Z::Machine::findBestSwapRegister(TR::Register* reg1, TR::Register* reg2)
 uint32_t
 OMR::Z::Machine::genBitMapOfAssignableGPRs()
    {
-   int32_t first = TR::RealRegister::FirstGPR;
-   int32_t last = TR::RealRegister::LastAssignableGPR;
-   uint32_t bitVect = 0x0;
+   uint32_t availRegMask = 0x0;
 
-   for (int32_t i = first; i <= last; i++)
+   for (int32_t i = TR::RealRegister::FirstGPR; i <= TR::RealRegister::LastAssignableGPR; ++i)
       {
-      if (_registerFile[i]->getState() == TR::RealRegister::Locked)
+      if (_registerFile[i]->getState() != TR::RealRegister::Locked)
          {
-         continue;
+         availRegMask |= _registerFile[i]->getRealRegisterMask();
          }
-
-      bitVect |= TR::RealRegister::getBitMask(i);
       }
 
-   return bitVect;
+   return availRegMask;
    }
 
 /**
@@ -819,23 +815,19 @@ OMR::Z::Machine::genBitMapOfAssignableGPRs()
 uint8_t
 OMR::Z::Machine::genBitVectOfLiveGPRPairs()
    {
-   int32_t first = TR::RealRegister::FirstGPR;
-   int32_t last = TR::RealRegister::LastAssignableGPR;
-   uint8_t bitVect = 0x0;
-   int32_t bit = 8;
+   uint8_t liveRegMask = 0x0;
 
-   for (int32_t i = first; i <= last; i+=2)
+   for (int32_t i = TR::RealRegister::FirstGPR, j = 8; i <= TR::RealRegister::LastAssignableGPR; i += 2, --j)
       {
-      if (_registerFile[i]->getState() != TR::RealRegister::Free ||
-          _registerFile[i+1]->getState() != TR::RealRegister::Free)
+      if (_registerFile[i + 0]->getState() != TR::RealRegister::Free ||
+          _registerFile[i + 1]->getState() != TR::RealRegister::Free)
          {
-         // MSB = GPR0/1, LSB=GPR14/15
-         bitVect |= TR::RealRegister::getBitMask(bit);
+         // MSB = GPR0/GPR1, LSB = GPR14/GPR15
+         liveRegMask |= _registerFile[j]->getRealRegisterMask();
          }
-      bit--;
       }
 
-   return bitVect;
+   return liveRegMask;
    }
 ///////////////////////////////////////////////////////////////////////////////
 // REGISTER PAIR assignment methods
@@ -905,7 +897,7 @@ OMR::Z::Machine::isLegalEvenRegister(TR::RealRegister * reg, bool allowBlocked, 
    if (regNum %
       2 !=
       0 ||
-      (TR::RealRegister::getBitMask(toRealRegister(reg)->getRegisterNumber()) & availRegMask) ==
+      (toRealRegister(reg)->getRealRegisterMask() & availRegMask) ==
       0 ||
       _registerFile[toRealRegister(reg)->getRegisterNumber() + 1]->getState() ==
       TR::RealRegister::Locked && allowLocked == false ||
@@ -953,7 +945,7 @@ OMR::Z::Machine::isLegalFirstOfFPRegister(TR::RealRegister * reg, bool allowBloc
    // 1) must be one of FPR0, FPR4, FPR8, FPR12, FPR1, FPR5, FPR9, FPR13
    // 2) its sibling FP Reg is NOT locked/blocked
    if ((regNum % 4 != 0 && regNum % 4 != 1 ) ||
-      (TR::RealRegister::getBitMask(toRealRegister(reg)->getRegisterNumber()) & availRegMask) == 0 ||
+      (toRealRegister(reg)->getRealRegisterMask() & availRegMask) == 0 ||
       _registerFile[toRealRegister(reg)->getRegisterNumber() + 2]->getState() ==
       TR::RealRegister::Locked && allowLocked == false ||
       (_registerFile[toRealRegister(reg)->getRegisterNumber() + 2]->getState() == TR::RealRegister::Blocked &&
@@ -984,7 +976,7 @@ OMR::Z::Machine::isLegalSecondOfFPRegister(TR::RealRegister * reg, bool allowBlo
    // 1) must be one of FPR2, FPR6, FPR10, FPR14, FPR3, FPR7, FPR11, FPR15
    // 2) its sibling FP Reg is NOT locked/blocked
    if ((regNum % 4 != 2 && regNum % 4 != 3 ) ||
-      (TR::RealRegister::getBitMask(toRealRegister(reg)->getRegisterNumber()) & availRegMask) == 0 ||
+      (toRealRegister(reg)->getRealRegisterMask() & availRegMask) == 0 ||
       _registerFile[toRealRegister(reg)->getRegisterNumber() - 2]->getState() ==
       TR::RealRegister::Locked && allowLocked == false ||
       (_registerFile[toRealRegister(reg)->getRegisterNumber() - 2]->getState() == TR::RealRegister::Blocked &&
@@ -1005,42 +997,38 @@ OMR::Z::Machine::isLegalSecondOfFPRegister(TR::RealRegister * reg, bool allowBlo
 TR::RealRegister *
 OMR::Z::Machine::findBestLegalOddRegister(uint64_t availRegMask)
    {
-   int32_t first = TR::RealRegister::FirstGPR;
-   int32_t last = TR::RealRegister::LastAssignableGPR;
-
-   uint32_t bestWeightSoFar = 0xffffffff;
+   uint32_t bestWeightSoFar = 0xFFFFFFFF;
    TR::RealRegister * freeRegister = NULL;
    TR::RealRegister * lastOddReg = NULL;
    bool foundFreePair = false;
 
-   for (int32_t i = first + 1; i <= last; i += 2)
+   for (int32_t i = TR::RealRegister::FirstGPR + 1; i <= TR::RealRegister::LastAssignableGPR; i += 2)
       {
-      // Don't consider registers that can't be assigned.
+      // Don't consider registers that can't be assigned
       if (_registerFile[i - 1]->getState() == TR::RealRegister::Locked ||
-         _registerFile[i]->getState() == TR::RealRegister::Locked ||
-         _registerFile[i - 1]->getState() == TR::RealRegister::Blocked ||
-         _registerFile[i]->getState() == TR::RealRegister::Blocked ||
-         (TR::RealRegister::getBitMask(i) & availRegMask) == 0 ||
-         (TR::RealRegister::getBitMask(i - 1) & availRegMask) == 0)
+          _registerFile[i - 0]->getState() == TR::RealRegister::Locked ||
+          _registerFile[i - 1]->getState() == TR::RealRegister::Blocked ||
+          _registerFile[i - 0]->getState() == TR::RealRegister::Blocked ||
+         (_registerFile[i - 0]->getRealRegisterMask() & availRegMask) == 0 ||
+         (_registerFile[i - 1]->getRealRegisterMask() & availRegMask) == 0)
          {
          continue;
          }
 
       lastOddReg = _registerFile[i];
-      //_cg->traceRegWeight(lastOddReg, lastOddReg->getWeight());
 
-      if ((_registerFile[i]->getState() == TR::RealRegister::Free || _registerFile[i]->getState() == TR::RealRegister::Unlatched) &&
-         (_registerFile[i - 1]->getState() == TR::RealRegister::Free ||
-         _registerFile[i - 1]->getState() == TR::RealRegister::Unlatched) &&
-         _registerFile[i]->getWeight() < bestWeightSoFar)
+      if ((_registerFile[i - 0]->getState() == TR::RealRegister::Free || _registerFile[i - 0]->getState() == TR::RealRegister::Unlatched) &&
+          (_registerFile[i - 1]->getState() == TR::RealRegister::Free || _registerFile[i - 1]->getState() == TR::RealRegister::Unlatched) &&
+           _registerFile[i - 0]->getWeight() < bestWeightSoFar)
          {
-         foundFreePair = true;                   // Always prioritize a free pair
+         // Always prioritize a free pair
+         foundFreePair = true;
          freeRegister = _registerFile[i];
          bestWeightSoFar = _registerFile[i]->getWeight();
          }
       else if (foundFreePair == false &&
          (_registerFile[i]->getState() == TR::RealRegister::Free || _registerFile[i]->getState() == TR::RealRegister::Unlatched) &&
-         _registerFile[i]->getWeight() < bestWeightSoFar)
+          _registerFile[i]->getWeight() < bestWeightSoFar)
          {
          freeRegister = _registerFile[i];
          bestWeightSoFar = freeRegister->getWeight();
@@ -1081,7 +1069,7 @@ OMR::Z::Machine::isLegalOddRegister(TR::RealRegister * reg, bool allowBlocked, u
 
    // Not a legal Even reg if 1) not odd or 2) reg+1 is locked
    if (regNum % 2 != 1 ||
-      (TR::RealRegister::getBitMask(toRealRegister(reg)->getRegisterNumber()) & availRegMask) == 0 ||
+      (toRealRegister(reg)->getRealRegisterMask() & availRegMask) == 0 ||
       _registerFile[toRealRegister(reg)->getRegisterNumber() - 1]->getState() == TR::RealRegister::Locked  && allowLocked == false ||
       (_registerFile[toRealRegister(reg)->getRegisterNumber() - 1]->getState() == TR::RealRegister::Blocked &&
       allowBlocked == false))
@@ -1101,23 +1089,20 @@ OMR::Z::Machine::isLegalOddRegister(TR::RealRegister * reg, bool allowBlocked, u
 TR::RealRegister *
 OMR::Z::Machine::findBestLegalEvenRegister(uint64_t availRegMask)
    {
-   int32_t first = TR::RealRegister::FirstGPR;
-   int32_t last = TR::RealRegister::LastAssignableGPR;
-
-   uint32_t bestWeightSoFar = 0xffffffff;
+   uint32_t bestWeightSoFar = 0xFFFFFFFF;
    TR::RealRegister * freeRegister = NULL;
    TR::RealRegister * lastEvenReg = NULL;
    bool foundFreePair = false;
 
-   for (int32_t i = first; i <= last; i += 2)
+   for (int32_t i = TR::RealRegister::FirstGPR; i <= TR::RealRegister::LastAssignableGPR; i += 2)
       {
       // Don't consider registers that can't be assigned.
-      if (_registerFile[i]->getState() == TR::RealRegister::Locked ||
-         _registerFile[i + 1]->getState() == TR::RealRegister::Locked ||
-         _registerFile[i]->getState() == TR::RealRegister::Blocked ||
-         _registerFile[i + 1]->getState() == TR::RealRegister::Blocked ||
-         (TR::RealRegister::getBitMask(i) & availRegMask) == 0 ||
-         (TR::RealRegister::getBitMask(i + 1) & availRegMask) == 0)
+      if (_registerFile[i + 0]->getState() == TR::RealRegister::Locked ||
+          _registerFile[i + 1]->getState() == TR::RealRegister::Locked ||
+          _registerFile[i + 0]->getState() == TR::RealRegister::Blocked ||
+          _registerFile[i + 1]->getState() == TR::RealRegister::Blocked ||
+         (_registerFile[i + 0]->getRealRegisterMask() & availRegMask) == 0 ||
+         (_registerFile[i + 1]->getRealRegisterMask() & availRegMask) == 0)
          {
          continue;
          }
@@ -1125,19 +1110,18 @@ OMR::Z::Machine::findBestLegalEvenRegister(uint64_t availRegMask)
       lastEvenReg = _registerFile[i];
       //_cg->traceRegWeight(lastEvenReg, lastEvenReg->getWeight());
 
-      if ((_registerFile[i]->getState() == TR::RealRegister::Free || _registerFile[i]->getState() == TR::RealRegister::Unlatched) &&
-         (_registerFile[i + 1]->getState() == TR::RealRegister::Free ||
-         _registerFile[i + 1]->getState() == TR::RealRegister::Unlatched) &&
-         _registerFile[i]->getWeight() <
-         bestWeightSoFar)
+      if ((_registerFile[i + 0]->getState() == TR::RealRegister::Free || _registerFile[i + 0]->getState() == TR::RealRegister::Unlatched) &&
+          (_registerFile[i + 1]->getState() == TR::RealRegister::Free || _registerFile[i + 1]->getState() == TR::RealRegister::Unlatched) &&
+           _registerFile[i + 0]->getWeight() < bestWeightSoFar)
          {
-         foundFreePair = true;                   // Always prioritize a free pair
+         // Always prioritize a free pair
+         foundFreePair = true;
          freeRegister = _registerFile[i];
          bestWeightSoFar = _registerFile[i]->getWeight();
          }
       else if (foundFreePair == false &&
          (_registerFile[i]->getState() == TR::RealRegister::Free || _registerFile[i]->getState() == TR::RealRegister::Unlatched) &&
-         _registerFile[i]->getWeight() < bestWeightSoFar)
+          _registerFile[i]->getWeight() < bestWeightSoFar)
          {
          freeRegister = _registerFile[i];
          bestWeightSoFar = freeRegister->getWeight();
@@ -1164,7 +1148,7 @@ OMR::Z::Machine::findBestLegalEvenRegister(uint64_t availRegMask)
 TR::RealRegister *
 OMR::Z::Machine::findBestLegalSiblingFPRegister(bool isFirst, uint64_t availRegMask)
    {
-   uint32_t bestWeightSoFar = 0xffffffff;
+   uint32_t bestWeightSoFar = 0xFFFFFFFF;
    TR::RealRegister * freeRegister = NULL;
    TR::RealRegister * lastFirstOfPair = NULL;
    TR::RealRegister * lastSecondOfPair = NULL;
@@ -1180,8 +1164,8 @@ OMR::Z::Machine::findBestLegalSiblingFPRegister(bool isFirst, uint64_t availRegM
          || _registerFile[secondReg]->getState() == TR::RealRegister::Locked
          || _registerFile[firstReg]->getState() == TR::RealRegister::Blocked
          || _registerFile[secondReg]->getState() == TR::RealRegister::Blocked
-         || (TR::RealRegister::getBitMask(firstReg) & availRegMask) == 0
-         || (TR::RealRegister::getBitMask(secondReg) & availRegMask) == 0)
+         || (_registerFile[firstReg]->getRealRegisterMask() & availRegMask) == 0
+         || (_registerFile[secondReg]->getRealRegisterMask() & availRegMask) == 0)
          {
          continue;
          }
@@ -1299,7 +1283,9 @@ OMR::Z::Machine::shuffleOrSpillRegister(TR::Instruction *currInst,
    {
    TR::RealRegister * assignedRegister = toFreeReg->getAssignedRealRegister();
    if (toFreeReg->isUsedInMemRef())
-      availRegMask &= ~(TR::RealRegister::getBitMask(TR::RealRegister::GPR0));
+      {
+      availRegMask &= ~TR::RealRegister::GPR0Mask;
+      }
 
    TR::RealRegister * bestRegister = self()->findBestFreeRegister(currInst, toFreeReg->getKind(), toFreeReg, availRegMask);
    if (bestRegister == NULL)
@@ -1359,7 +1345,7 @@ OMR::Z::Machine::assignBestRegisterSingle(TR::Register    *targetRegister,
          }
       if (targetRegister->is64BitReg())
          {
-         if ((TR::RealRegister::getBitMask(toRealRegister(assignedRegister)->getRegisterNumber()) & availRegMask) == 0)
+         if ((toRealRegister(assignedRegister)->getRealRegisterMask() & availRegMask) == 0)
            {
            // Oh no.. targetRegister is assigned something it shouldn't be assigned to. Do some shuffling
            // find a new register to shuffle to
@@ -1471,7 +1457,7 @@ OMR::Z::Machine::assignBestRegisterSingle(TR::Register    *targetRegister,
                _cg->traceRAInstruction(cursor);
                }
             }
-         else if ((TR::RealRegister::getBitMask(toRealRegister(assignedRegister)->getRegisterNumber()) & availRegMask) == 0)
+         else if ((toRealRegister(assignedRegister)->getRealRegisterMask() & availRegMask) == 0)
            {
            // Oh no.. targetRegister is assigned something it shouldn't be assigned to. Do some shuffling
            // find a new register to shuffle to
@@ -1485,7 +1471,7 @@ OMR::Z::Machine::assignBestRegisterSingle(TR::Register    *targetRegister,
            }
          }
       } // end if(enabledHighWordRA && assignedRegister != NULL)
-   else if(assignedRegister != NULL && (TR::RealRegister::getBitMask(toRealRegister(assignedRegister)->getRegisterNumber()) & availRegMask) == 0)
+   else if(assignedRegister != NULL && (toRealRegister(assignedRegister)->getRealRegisterMask() & availRegMask) == 0)
       {
       // Oh no.. targetRegister is assigned something it shouldn't be assigned to
       // Do some shuffling
@@ -1768,8 +1754,8 @@ OMR::Z::Machine::assignBestRegisterPair(TR::Register    *regPair,
    // Disable GPR0 for this assignment if it is used in a memref
    if (firstReg->isUsedInMemRef())
       {
-      availRegMask &= ~(TR::RealRegister::getBitMask(TR::RealRegister::GPR0));
-      availRegMask &= ~(TR::RealRegister::getBitMask(TR::RealRegister::GPR1));
+      availRegMask &= ~TR::RealRegister::GPR0Mask;
+      availRegMask &= ~TR::RealRegister::GPR1Mask;
       }
 
    if (enableHighWordRA && (lastReg->is64BitReg() || firstReg->is64BitReg()))
@@ -2200,8 +2186,7 @@ OMR::Z::Machine::findBestFreeRegisterPair(TR::RealRegister ** firstRegister, TR:
    TR_RegisterKinds rk, TR::Instruction * currInst, uint64_t availRegMask)
    {
    uint32_t interference = 0;
-   int32_t first, maskI;
-   int32_t last;
+
    TR::Compilation *comp = _cg->comp();
 
    TR::RealRegister * freeRegisterLow = NULL;
@@ -2214,18 +2199,16 @@ OMR::Z::Machine::findBestFreeRegisterPair(TR::RealRegister ** firstRegister, TR:
                            rk != TR_FPR && rk != TR_VRF;
    bool highWordPairIsFree = true;
 
-   if ( rk != TR_FPR  && rk != TR_VRF)
+   if (rk != TR_FPR  && rk != TR_VRF)
       {
-      maskI = first = TR::RealRegister::FirstGPR;
-      last = TR::RealRegister::LastAssignableGPR;
-      // Look at all reg pairs (starting with an even reg)
-      for (int32_t i = first; i <= last; i += 2)
+      // Look at all reg pairs (starting with an even register)
+      for (int32_t i = TR::RealRegister::FirstGPR; i <= TR::RealRegister::LastAssignableGPR; i += 2)
          {
          // Don't consider registers that can't be assigned.
-         if ((_registerFile[i]->getState() == TR::RealRegister::Locked) ||
-            (_registerFile[i + 1]->getState() == TR::RealRegister::Locked) ||
-            (TR::RealRegister::getBitMask(i) & availRegMask) == 0 ||
-            (TR::RealRegister::getBitMask(i + 1) & availRegMask) == 0)
+         if ((_registerFile[i + 0]->getState() == TR::RealRegister::Locked) ||
+             (_registerFile[i + 1]->getState() == TR::RealRegister::Locked) ||
+             (_registerFile[i + 0]->getRealRegisterMask() & availRegMask) == 0 ||
+             (_registerFile[i + 1]->getRealRegisterMask() & availRegMask) == 0)
             {
             continue;
             }
@@ -2237,19 +2220,18 @@ OMR::Z::Machine::findBestFreeRegisterPair(TR::RealRegister ** firstRegister, TR:
             {
             // for 64 bit reg pair, need to check high word pairs also
             highWordPairIsFree = false;
-            if ((_registerFile[i]->getHighWordRegister()->getState() == TR::RealRegister::Free ||
-                 _registerFile[i]->getHighWordRegister()->getState() == TR::RealRegister::Unlatched) &&
+            if ((_registerFile[i + 0]->getHighWordRegister()->getState() == TR::RealRegister::Free ||
+                 _registerFile[i + 0]->getHighWordRegister()->getState() == TR::RealRegister::Unlatched) &&
                 (_registerFile[i + 1]->getHighWordRegister()->getState() == TR::RealRegister::Free ||
                  _registerFile[i + 1]->getHighWordRegister()->getState() == TR::RealRegister::Unlatched))
                highWordPairIsFree = true;
             }
 
          // See if this pair is available, and better than the prev
-         if ((_registerFile[i]->getState() == TR::RealRegister::Free || _registerFile[i]->getState() == TR::RealRegister::Unlatched) &&
-            (_registerFile[i + 1]->getState() == TR::RealRegister::Free ||
-            _registerFile[i + 1]->getState() == TR::RealRegister::Unlatched) &&
-             highWordPairIsFree &&
-            ((_registerFile[i]->getWeight() + _registerFile[i + 1]->getWeight()) < bestWeightSoFar))
+         if (highWordPairIsFree &&
+             (_registerFile[i + 0]->getState() == TR::RealRegister::Free || _registerFile[i + 0]->getState() == TR::RealRegister::Unlatched) &&
+             (_registerFile[i + 1]->getState() == TR::RealRegister::Free || _registerFile[i + 1]->getState() == TR::RealRegister::Unlatched) &&
+             (_registerFile[i + 0]->getWeight() + _registerFile[i + 1]->getWeight()) < bestWeightSoFar)
             {
             freeRegisterHigh = _registerFile[i];
             freeRegisterLow = _registerFile[i + 1];
@@ -2264,23 +2246,19 @@ OMR::Z::Machine::findBestFreeRegisterPair(TR::RealRegister ** firstRegister, TR:
       for (int32_t k = 0; k < NUM_S390_FPR_PAIRS; k++)
          {
          int32_t i = _S390FirstOfFPRegisterPairs[k];
-         // Don't consider registers that can't be assigned.
-         if ((_registerFile[i]->getState() == TR::RealRegister::Locked) ||
-            (_registerFile[i + 2]->getState() == TR::RealRegister::Locked) ||
-            (TR::RealRegister::getBitMask(i) & availRegMask) == 0 ||
-            (TR::RealRegister::getBitMask(i + 2) & availRegMask) == 0)
+         // Don't consider registers that can't be assigned
+         if ((_registerFile[i + 0]->getState() == TR::RealRegister::Locked) ||
+             (_registerFile[i + 2]->getState() == TR::RealRegister::Locked) ||
+             (_registerFile[i + 0]->getRealRegisterMask() & availRegMask) == 0 ||
+             (_registerFile[i + 2]->getRealRegisterMask() & availRegMask) == 0)
             {
             continue;
             }
 
-         //_cg->traceRegWeight(_registerFile[i], _registerFile[i]->getWeight());
-         //_cg->traceRegWeight(_registerFile[i + 2], _registerFile[i + 2]->getWeight());
-
-         // See if this pair is available, and better than the prev
-         if ((_registerFile[i]->getState() == TR::RealRegister::Free || _registerFile[i]->getState() == TR::RealRegister::Unlatched) &&
-            (_registerFile[i + 2]->getState() == TR::RealRegister::Free ||
-            _registerFile[i + 2]->getState() == TR::RealRegister::Unlatched) &&
-            ((_registerFile[i]->getWeight() + _registerFile[i + 2]->getWeight()) < bestWeightSoFar))
+         // See if this pair is available and better than the previous
+         if ((_registerFile[i + 0]->getState() == TR::RealRegister::Free || _registerFile[i]->getState() == TR::RealRegister::Unlatched) &&
+             (_registerFile[i + 2]->getState() == TR::RealRegister::Free || _registerFile[i + 2]->getState() == TR::RealRegister::Unlatched) &&
+             (_registerFile[i + 0]->getWeight() + _registerFile[i + 2]->getWeight()) < bestWeightSoFar)
             {
             freeRegisterHigh = _registerFile[i];
             freeRegisterLow = _registerFile[i + 2];
@@ -2342,8 +2320,7 @@ OMR::Z::Machine::freeBestFPRegisterPair(TR::RealRegister ** firstReg, TR::RealRe
    {
    TR::Node * currentNode = currInst->getNode();
    TR::Compilation *comp = self()->cg()->comp();
-   int32_t first, maskI;
-   int32_t last;
+
    TR::Instruction * cursor = NULL;
 
    TR_BackingStore * locationLow;
@@ -2365,8 +2342,8 @@ OMR::Z::Machine::freeBestFPRegisterPair(TR::RealRegister ** firstReg, TR::RealRe
          (_registerFile[secondReg]->getState() == TR::RealRegister::Locked) ||
          (_registerFile[firstReg]->getState() == TR::RealRegister::Blocked) ||
          (_registerFile[secondReg]->getState() == TR::RealRegister::Blocked) ||
-         (TR::RealRegister::getBitMask(firstReg) & availRegMask) == 0 ||
-         (TR::RealRegister::getBitMask(secondReg) & availRegMask) == 0)
+         (_registerFile[firstReg]->getRealRegisterMask() & availRegMask) == 0 ||
+         (_registerFile[secondReg]->getRealRegisterMask() & availRegMask) == 0)
          {
          continue;
          }
@@ -2542,8 +2519,7 @@ OMR::Z::Machine::freeBestRegisterPair(TR::RealRegister ** firstReg, TR::RealRegi
      return;
      }
    TR::Node * currentNode = currInst->getNode();
-   int32_t first, maskI;
-   int32_t last;
+
    TR::Instruction * cursor = NULL;
    TR::Compilation *comp = _cg->comp();
    TR::Machine *machine = self()->cg()->machine();
@@ -2559,34 +2535,30 @@ OMR::Z::Machine::freeBestRegisterPair(TR::RealRegister ** firstReg, TR::RealRegi
 
    bool enableHighWordRA = _cg->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) &&
                            rk != TR_FPR &&  rk != TR_VRF;
-   maskI = first = TR::RealRegister::FirstGPR;
-   last = TR::RealRegister::LastAssignableGPR;
 
    // Look at all reg pairs (starting with an even reg)
-   for (int32_t i = first; i <= last; i += 2)
+   for (int32_t i = TR::RealRegister::FirstGPR; i <= TR::RealRegister::LastAssignableGPR; i += 2)
       {
       // Don't consider registers that can't be assigned.
-      if ((_registerFile[i]->getState() == TR::RealRegister::Locked) ||
-         (_registerFile[i + 1]->getState() == TR::RealRegister::Locked) ||
-         (_registerFile[i]->getState() == TR::RealRegister::Blocked) ||
-         (_registerFile[i + 1]->getState() == TR::RealRegister::Blocked) ||
-         (TR::RealRegister::getBitMask(i) & availRegMask) == 0 ||
-         (TR::RealRegister::getBitMask(i + 1) & availRegMask) == 0)
+      if ((_registerFile[i + 0]->getState() == TR::RealRegister::Locked) ||
+          (_registerFile[i + 1]->getState() == TR::RealRegister::Locked) ||
+          (_registerFile[i + 0]->getState() == TR::RealRegister::Blocked) ||
+          (_registerFile[i + 1]->getState() == TR::RealRegister::Blocked) ||
+          (_registerFile[i + 0]->getRealRegisterMask() & availRegMask) == 0 ||
+          (_registerFile[i + 1]->getRealRegisterMask() & availRegMask) == 0)
          {
          continue;
          }
 
       // Priority to assigned/unassigned pairs.
-      if ((_registerFile[i]->getState() == TR::RealRegister::Free || _registerFile[i]->getState() == TR::RealRegister::Unlatched) &&
-         _registerFile[i + 1]->getState() == TR::RealRegister::Assigned)
+      if ((_registerFile[i + 0]->getState() == TR::RealRegister::Free || _registerFile[i + 0]->getState() == TR::RealRegister::Unlatched) &&
+           _registerFile[i + 1]->getState() == TR::RealRegister::Assigned)
          {
          bestCandidateHigh = _registerFile[i];
          bestCandidateLow = _registerFile[i + 1];
          }
-      else if ((_registerFile[i + 1]->getState() == TR::RealRegister::Free ||
-         _registerFile[i + 1]->getState() == TR::RealRegister::Unlatched) &&
-         _registerFile[i]->getState() ==
-         TR::RealRegister::Assigned)
+      else if ((_registerFile[i + 1]->getState() == TR::RealRegister::Free || _registerFile[i + 1]->getState() == TR::RealRegister::Unlatched) &&
+                _registerFile[i + 0]->getState() == TR::RealRegister::Assigned)
          {
          bestCandidateHigh = _registerFile[i];
          bestCandidateLow = _registerFile[i + 1];
@@ -2617,10 +2589,9 @@ OMR::Z::Machine::freeBestRegisterPair(TR::RealRegister ** firstReg, TR::RealRegi
       {
       // this is to prevent us from spilling into the high word of candidates
       _cg->setAvailableHPRSpillMask(availRegMask);
-      TR::RealRegister::RegNum hprHigh = bestCandidateHigh->getHighWordRegister()->getRegisterNumber();
-      TR::RealRegister::RegNum hprLow = bestCandidateLow->getHighWordRegister()->getRegisterNumber();
-      _cg->maskAvailableHPRSpillMask(TR::RealRegister::getBitMask(hprHigh));
-      _cg->maskAvailableHPRSpillMask(TR::RealRegister::getBitMask(hprLow));
+
+      _cg->maskAvailableHPRSpillMask(bestCandidateHigh->getHighWordRegister()->getRealRegisterMask());
+      _cg->maskAvailableHPRSpillMask(bestCandidateLow->getHighWordRegister()->getRealRegisterMask());
       }
    if (bestVirtCandidateLow != NULL)
       {
@@ -3036,7 +3007,7 @@ OMR::Z::Machine::findBestFreeRegister(TR::Instruction   *currentInstruction,
       preference = 0;
       }
 
-   uint64_t prefRegMask = TR::RealRegister::getBitMask(preference);
+   uint64_t prefRegMask = _registerFile[preference] ? _registerFile[preference]->getRealRegisterMask() : 0;
 
    if (liveRegOn && virtualReg != NULL)
       {
@@ -3059,16 +3030,16 @@ OMR::Z::Machine::findBestFreeRegister(TR::Instruction   *currentInstruction,
    // Check to see if we exclude GPR0
    if (!useGPR0)
       {
-      availRegMask &= (~TR::RealRegister::getBitMask(TR::RealRegister::GPR0));
-      availRegMask &= (~TR::RealRegister::getBitMask(TR::RealRegister::HPR0));
+      availRegMask &= ~TR::RealRegister::GPR0Mask;
+      availRegMask &= ~TR::RealRegister::HPR0Mask;
       }
 
    // We can't use FPRs for vector registers when current instruction is a call
    if(virtualReg->getKind() == TR_VRF && self()->cg()->getSupportsVectorRegisters() && currentInstruction->isCall())
      {
-     for(int32_t i=TR::RealRegister::FirstFPR; i <= TR::RealRegister::LastFPR; i++)
+     for (int32_t i = TR::RealRegister::FPR0Mask; i <= TR::RealRegister::FPR15Mask; ++i)
        {
-       availRegMask &= (~TR::RealRegister::getBitMask(i));
+       availRegMask &= ~i;
        }
      }
 
@@ -3114,7 +3085,7 @@ OMR::Z::Machine::findBestFreeRegister(TR::Instruction   *currentInstruction,
             ALLOWBLOCKED,
             availRegMask))
          {
-         uint64_t sibRegMask = TR::RealRegister::getBitMask(toRealRegister(realSibling)->getRegisterNumber() - 1);
+         uint64_t sibRegMask = toRealRegister(toRealRegister(realSibling)->getSiblingRegister())->getRealRegisterMask();
          // If the sibling is assigned we choose the even register next to it
          if (availRegMask & sibRegMask)
             {
@@ -3187,7 +3158,7 @@ OMR::Z::Machine::findBestFreeRegister(TR::Instruction   *currentInstruction,
             ALLOWBLOCKED,
             availRegMask))
          {
-         uint64_t sibRegMask = TR::RealRegister::getBitMask(toRealRegister(realSibling)->getRegisterNumber() + 1);
+         uint64_t sibRegMask = toRealRegister(toRealRegister(realSibling)->getSiblingRegister())->getRealRegisterMask();
 
          // If the sibling is assigned we choose the even register next to it
          if (availRegMask & sibRegMask)
@@ -3252,7 +3223,7 @@ OMR::Z::Machine::findBestFreeRegister(TR::Instruction   *currentInstruction,
             ALLOWBLOCKED,
             availRegMask))
          {
-         uint64_t sibRegMask = TR::RealRegister::getBitMask(toRealRegister(realSibling)->getRegisterNumber() - 2);
+         uint64_t sibRegMask = toRealRegister(toRealRegister(realSibling)->getSiblingRegister())->getRealRegisterMask();
          // If the sibling is assigned we choose the even register next to it
          if (availRegMask & sibRegMask)
             {
@@ -3291,7 +3262,7 @@ OMR::Z::Machine::findBestFreeRegister(TR::Instruction   *currentInstruction,
             ALLOWBLOCKED,
             availRegMask))
          {
-         uint64_t sibRegMask = TR::RealRegister::getBitMask(toRealRegister(realSibling)->getRegisterNumber() + 2);
+         uint64_t sibRegMask = toRealRegister(toRealRegister(realSibling)->getSiblingRegister())->getRealRegisterMask();
          // If the sibling is assigned we choose the even register next to it
          if (availRegMask & sibRegMask)
             {
@@ -3329,7 +3300,7 @@ OMR::Z::Machine::findBestFreeRegister(TR::Instruction   *currentInstruction,
             {
             preference = 0;
             }
-         prefRegMask = TR::RealRegister::getBitMask(preference);
+         prefRegMask = _registerFile[preference] ? _registerFile[preference]->getRealRegisterMask() : 0;
          }
 
       if (!enableHighWordRA)
@@ -3439,7 +3410,7 @@ OMR::Z::Machine::findBestFreeRegister(TR::Instruction   *currentInstruction,
    // If no association or assoc fails, find any other free register
    for (int32_t i = first; i <= last; i++)
       {
-      uint64_t tRegMask = TR::RealRegister::getBitMask(i);
+      uint64_t tRegMask = _registerFile[i]->getRealRegisterMask();
 
       if(!enableHighWordRA)
          {
@@ -3522,7 +3493,7 @@ OMR::Z::Machine::findBestFreeRegister(TR::Instruction   *currentInstruction,
             if (virtualReg->assignToHPR() || needsHighWord)
                {
                candidate = _registerFile[i]->getHighWordRegister();
-               tRegMask = TR::RealRegister::getBitMask(candidate->getRegisterNumber());
+               tRegMask = candidate->getRealRegisterMask();
                }
             else
                {
@@ -4158,7 +4129,7 @@ OMR::Z::Machine::freeBestRegister(TR::Instruction * currentInstruction, TR::Regi
    // If we spill into highword, make sure to not to spill it into the one that will clobber fullsize reg
    if (enableHighWordRA && (virtReg->is64BitReg() || doNotSpillToSiblingHPR))
       {
-      uint32_t availHighWordRegMap = ~(TR::RealRegister::getBitMask(toRealRegister(best->getHighWordRegister())->getRegisterNumber())) & availRegMask & 0xffff0000;
+      uint32_t availHighWordRegMap = ~(toRealRegister(best->getHighWordRegister())->getRealRegisterMask()) & availRegMask & 0xffff0000;
       self()->spillRegister(currentInstruction, candidates[0], availHighWordRegMap);
       }
    else
@@ -4182,7 +4153,7 @@ void OMR::Z::Machine::freeRealRegister(TR::Instruction *currentInstruction, TR::
     {
     if (enableHighWordRA && is64BitReg)
       {
-      uint32_t availHighWordRegMap = ~(TR::RealRegister::getBitMask(toRealRegister(targetReal->getHighWordRegister())->getRegisterNumber())) & 0xffff0000;
+      uint32_t availHighWordRegMap = ~(toRealRegister(targetReal->getHighWordRegister())->getRealRegisterMask()) & 0xffff0000;
       self()->spillRegister(currentInstruction, virtReg, availHighWordRegMap);
       }
     else
@@ -5091,7 +5062,7 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
    uint32_t availHighWordRegMap;
    if (enableHighWordRA)
       {
-      availHighWordRegMap = ~(TR::RealRegister::getBitMask(toRealRegister(targetRegister)->getHighWordRegister()->getRegisterNumber()));
+      availHighWordRegMap = ~(toRealRegister(targetRegister)->getHighWordRegister()->getRealRegisterMask());
       }
     _cg->traceRegisterAssignment("COERCE %R into %R", virtualRegister, targetRegister);
 
@@ -6072,7 +6043,9 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
              _cg->traceRegisterAssignment(" Freeing locked register %R ", targetRegister);
              uint64_t availRegMask = 0xffffffff;
              if (toFreeRegister->isUsedInMemRef())
-                availRegMask &= ~(TR::RealRegister::getBitMask(TR::RealRegister::GPR0));
+                {
+                availRegMask &= ~TR::RealRegister::GPR0Mask;
+                }
 
              TR::RealRegister * bestRegister = NULL;
              if ((bestRegister = self()->findBestFreeRegister(currentInstruction, toFreeRegister->getKind(), toFreeRegister, availRegMask)) == NULL)
@@ -6116,9 +6089,11 @@ uint64_t OMR::Z::Machine::filterColouredRegisterConflicts(TR::Register *targetRe
       TR::Register *cr=(*reg)->getRealRegister() ? NULL : (*reg)->getAssignedRegister();
       if(cr==NULL)
         cr=(*reg)->getRealRegister() ? NULL : (*reg)->getColouredRegister();
-      if(cr && targetRegister != (*reg) && (*reg)->getAssignedRegister() != targetRegister &&
+      if (cr && targetRegister != (*reg) && (*reg)->getAssignedRegister() != targetRegister &&
          (siblingRegister == NULL || (*reg) != siblingRegister))
-        mask &= ~TR::RealRegister::getBitMask(toRealRegister(cr)->getRegisterNumber());
+         {
+         mask &= ~toRealRegister(cr)->getRealRegisterMask();
+         }
       }
     }
 
@@ -6128,9 +6103,11 @@ uint64_t OMR::Z::Machine::filterColouredRegisterConflicts(TR::Register *targetRe
     TR::Register *cr=(*reg)->getRealRegister() ? NULL : (*reg)->getAssignedRegister();
     if(cr==NULL)
       cr=(*reg)->getRealRegister() ? NULL : (*reg)->getColouredRegister();
-    if(cr && targetRegister != (*reg) && (*reg)->getAssignedRegister() != targetRegister &&
+    if (cr && targetRegister != (*reg) && (*reg)->getAssignedRegister() != targetRegister &&
        (siblingRegister == NULL || (*reg) != siblingRegister))
-      mask &= ~TR::RealRegister::getBitMask(toRealRegister(cr)->getRegisterNumber());
+       {
+       mask &= ~toRealRegister(cr)->getRealRegisterMask();
+       }
     }
 
   return mask;
@@ -7436,7 +7413,7 @@ OMR::Z::Machine::setVirtualAssociatedWithReal(TR::RealRegister::RegNum regNum, T
       virtReg->setAssociation(regNum);
       return NULL;
       }
-   else if (TR::RealRegister::getBitMask(regNum) == 0)
+   else if (regNum >= TR::RealRegister::NumRegisters || _registerFile[regNum]->getRealRegisterMask() == 0)
       {
       virtReg->setAssociation(TR::RealRegister::NoReg);
       return NULL;

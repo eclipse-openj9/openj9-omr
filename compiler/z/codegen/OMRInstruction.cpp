@@ -2293,8 +2293,8 @@ OMR::Z::Instruction::assignOrderedRegisters(TR_RegisterKinds kindToBeAssigned)
              _targetReg[i]->getRegisterPair()->getHighOrder()->getKind() != TR_VRF)
             {
             uint32_t availHPRMask = self()->cg()->getAvailableHPRSpillMask();
-            availHPRMask &= ~(TR::RealRegister::getBitMask(toRealRegister(_targetReg[i]->getRegisterPair()->getHighOrder())->getHighWordRegister()->getRegisterNumber()));
-            availHPRMask &= ~(TR::RealRegister::getBitMask(toRealRegister(_targetReg[i]->getRegisterPair()->getLowOrder())->getHighWordRegister()->getRegisterNumber()));
+            availHPRMask &= ~(toRealRegister(_targetReg[i]->getRegisterPair()->getHighOrder())->getHighWordRegister()->getRealRegisterMask());
+            availHPRMask &= ~(toRealRegister(_targetReg[i]->getRegisterPair()->getLowOrder())->getHighWordRegister()->getRealRegisterMask());
             self()->cg()->setAvailableHPRSpillMask(availHPRMask);
             }
          }
@@ -2390,7 +2390,7 @@ OMR::Z::Instruction::assignOrderedRegisters(TR_RegisterKinds kindToBeAssigned)
 
             // make sure we do not spill to the targetReg's HPR later (even if it's free)
             uint32_t availHPRMask = self()->cg()->getAvailableHPRSpillMask();
-            availHPRMask &= ~(TR::RealRegister::getBitMask(toRealRegister(_targetReg[i])->getHighWordRegister()->getRegisterNumber()));
+            availHPRMask &= ~(toRealRegister(_targetReg[i])->getHighWordRegister()->getRealRegisterMask());
             self()->cg()->setAvailableHPRSpillMask(availHPRMask);
             }
 

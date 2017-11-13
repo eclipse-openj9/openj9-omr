@@ -2420,8 +2420,9 @@ OMR::Z::MemoryReference::assignRegisters(TR::Instruction * currentInstruction, T
          }
 
       if (_baseRegister != NULL && _baseRegister->getRealRegister() == NULL)
-         assignedBaseRegister = (TR::RealRegister *)
-           machine->assignBestRegisterSingle(_baseRegister, currentInstruction, NOBOOKKEEPING,~(TR::RealRegister::getBitMask(TR::RealRegister::GPR0)));
+         {
+         assignedBaseRegister = static_cast<TR::RealRegister*>(machine->assignBestRegisterSingle(_baseRegister, currentInstruction, NOBOOKKEEPING, ~TR::RealRegister::GPR0Mask));
+         }
       else if (_baseRegister != NULL && _baseRegister->getRealRegister() != NULL)
          assignedBaseRegister = _baseRegister->getRealRegister();
 
@@ -2445,8 +2446,7 @@ OMR::Z::MemoryReference::assignRegisters(TR::Instruction * currentInstruction, T
 
       // Assign a real reg to _indexRegister.  This real reg now points to the old virt
       // reg that _indexRegister was.
-      assignedIndexRegister = (TR::RealRegister *)
-      machine->assignBestRegisterSingle(_indexRegister, currentInstruction, BOOKKEEPING,~(TR::RealRegister::getBitMask(TR::RealRegister::GPR0)));
+      assignedIndexRegister = static_cast<TR::RealRegister*>(machine->assignBestRegisterSingle(_indexRegister, currentInstruction, BOOKKEEPING, ~TR::RealRegister::GPR0Mask));
 
       _indexRegister = assignedIndexRegister;
 

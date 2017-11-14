@@ -93,7 +93,10 @@ MM_ConfigurationStandard::initialize(MM_EnvironmentBase* env)
 MM_GlobalCollector*
 MM_ConfigurationStandard::createGlobalCollector(MM_EnvironmentBase* env)
 {
+#if defined(OMR_GC_MODRON_CONCURRENT_MARK) || defined(OMR_GC_MODRON_CONCCURENT_SWEEP)
 	MM_GCExtensionsBase *extensions = env->getExtensions();
+#endif /* OMR_GC_MODRON_CONCURRENT_MARK || OMR_GC_CONCURRENT_SWEEP */
+
 #if defined(OMR_GC_MODRON_CONCURRENT_MARK)
 	if (extensions->concurrentMark) {
 		return MM_ConcurrentGC::newInstance(env);

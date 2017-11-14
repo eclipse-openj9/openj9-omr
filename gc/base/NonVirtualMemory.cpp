@@ -68,7 +68,7 @@ MM_NonVirtualMemory::reserveMemory(J9PortVmemParams* params)
 	if (alignment > 0) {
 		bytesToAllocate += (alignment - 1);
 	}
-	_baseAddress = _extensions->getForge()->allocate(bytesToAllocate, OMR::GC::AllocationCategory::JAVA_HEAP, OMR_GET_CALLSITE());
+	_baseAddress = _extensions->getForge()->allocate(bytesToAllocate, OMR::GC::AllocationCategory::GC_HEAP, OMR_GET_CALLSITE());
 	void* addressToReturn = _baseAddress;
 	if ((NULL != _baseAddress) && (alignment > 0)) {
 		addressToReturn = (void*)(((uintptr_t)addressToReturn + alignment - 1) & ~(alignment - 1));

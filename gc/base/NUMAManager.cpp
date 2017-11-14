@@ -95,7 +95,7 @@ MM_NUMAManager::recacheNUMASupport(MM_EnvironmentBase *env)
 	if (0 != nodeCount) {
 		/* we want to support NUMA either via the machine's physical NUMA or our simulated (aka "purely logical") NUMA */ 
 		uintptr_t nodeArraySize = sizeof(J9MemoryNodeDetail) * nodeCount;
-		_activeNodes = (J9MemoryNodeDetail *)env->getForge()->allocate(nodeArraySize, MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+		_activeNodes = (J9MemoryNodeDetail *)env->getForge()->allocate(nodeArraySize, OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 		if (NULL == _activeNodes) {
 			result = false;
 		} else {
@@ -151,7 +151,7 @@ MM_NUMAManager::recacheNUMASupport(MM_EnvironmentBase *env)
 			/* Affinity Leader array allocation and construction */
 			if (0 != _affinityLeaderCount) {
 				uintptr_t affinityLeaderArraySize = sizeof(J9MemoryNodeDetail) * _affinityLeaderCount;
-				_affinityLeaders = (J9MemoryNodeDetail *)env->getForge()->allocate(affinityLeaderArraySize, MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+				_affinityLeaders = (J9MemoryNodeDetail *)env->getForge()->allocate(affinityLeaderArraySize, OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 				if (NULL == _affinityLeaders) {
 					result = false;
 				} else {
@@ -172,7 +172,7 @@ MM_NUMAManager::recacheNUMASupport(MM_EnvironmentBase *env)
 			if (0 != _freeProcessorPoolNodeCount) {
 				/* allocate a free processor pool */
 				uintptr_t processorPoolArraySize = sizeof(J9MemoryNodeDetail) * _freeProcessorPoolNodeCount;
-				_freeProcessorPoolNodes = (J9MemoryNodeDetail *)env->getForge()->allocate(processorPoolArraySize, MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+				_freeProcessorPoolNodes = (J9MemoryNodeDetail *)env->getForge()->allocate(processorPoolArraySize, OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 				if (NULL == _freeProcessorPoolNodes) {
 					result = false;
 				} else {

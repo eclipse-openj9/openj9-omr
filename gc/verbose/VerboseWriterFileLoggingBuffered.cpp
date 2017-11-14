@@ -45,7 +45,7 @@ MM_VerboseWriterFileLoggingBuffered::newInstance(MM_EnvironmentBase *env, MM_Ver
 {
 	MM_GCExtensionsBase *extensions = MM_GCExtensionsBase::getExtensions(env->getOmrVM());
 	
-	MM_VerboseWriterFileLoggingBuffered *agent = (MM_VerboseWriterFileLoggingBuffered *)extensions->getForge()->allocate(sizeof(MM_VerboseWriterFileLoggingBuffered), MM_AllocationCategory::DIAGNOSTIC, OMR_GET_CALLSITE());
+	MM_VerboseWriterFileLoggingBuffered *agent = (MM_VerboseWriterFileLoggingBuffered *)extensions->getForge()->allocate(sizeof(MM_VerboseWriterFileLoggingBuffered), OMR::GC::AllocationCategory::DIAGNOSTIC, OMR_GET_CALLSITE());
 	if(agent) {
 		new(agent) MM_VerboseWriterFileLoggingBuffered(env, manager);
 		if(!agent->initialize(env, filename, numFiles, numCycles)) {

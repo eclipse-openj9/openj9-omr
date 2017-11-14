@@ -70,7 +70,7 @@ MM_SublistPuddle::initialize(MM_EnvironmentBase *env, uintptr_t size, MM_Sublist
  * @return An initialized instance of a sublist puddle with backing store
  */
 MM_SublistPuddle *
-MM_SublistPuddle::newInstance(MM_EnvironmentBase *env, uintptr_t size, MM_SublistPool *parent, MM_AllocationCategory::Enum category)
+MM_SublistPuddle::newInstance(MM_EnvironmentBase *env, uintptr_t size, MM_SublistPool *parent, OMR::GC::AllocationCategory::Enum category)
 {
 	MM_SublistPuddle *puddle = (MM_SublistPuddle *) env->getForge()->allocate(size + sizeof(MM_SublistPuddle), category, OMR_GET_CALLSITE());
 

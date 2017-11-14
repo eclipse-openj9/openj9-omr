@@ -80,7 +80,7 @@ MM_CompactScheme::newInstance(MM_EnvironmentBase *env, MM_MarkingScheme *marking
 {
 	MM_CompactScheme *compactScheme;
 
-	compactScheme = (MM_CompactScheme *)env->getForge()->allocate(sizeof(MM_CompactScheme), MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+	compactScheme = (MM_CompactScheme *)env->getForge()->allocate(sizeof(MM_CompactScheme), OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 	if (compactScheme) {
 		new(compactScheme) MM_CompactScheme(env, markingScheme);
 		if (!compactScheme->initialize(env)) {

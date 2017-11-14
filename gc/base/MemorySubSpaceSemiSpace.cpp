@@ -385,7 +385,7 @@ MM_MemorySubSpaceSemiSpace::newInstance(MM_EnvironmentBase *env, MM_Collector *c
 {
 	MM_MemorySubSpaceSemiSpace *memorySubSpace;
 	
-	memorySubSpace = (MM_MemorySubSpaceSemiSpace *)env->getForge()->allocate(sizeof(MM_MemorySubSpaceSemiSpace), MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+	memorySubSpace = (MM_MemorySubSpaceSemiSpace *)env->getForge()->allocate(sizeof(MM_MemorySubSpaceSemiSpace), OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 	if (memorySubSpace) {
 		new(memorySubSpace) MM_MemorySubSpaceSemiSpace(env, collector, physicalSubArena, memorySubSpaceAllocate, memorySubSpaceSurvivor, usesGlobalCollector, minimumSize, initialSize, maximumSize);
 		if (!memorySubSpace->initialize(env)) {

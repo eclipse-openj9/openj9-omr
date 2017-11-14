@@ -437,7 +437,7 @@ MM_ConcurrentCardTable::heapReconfigured(MM_EnvironmentBase *env)
 MM_ConcurrentCardTable *
 MM_ConcurrentCardTable::newInstance(MM_EnvironmentBase *env, MM_Heap *heap, MM_MarkingScheme *markingScheme, MM_ConcurrentGC *collector)
 {
-	MM_ConcurrentCardTable *cardTable = (MM_ConcurrentCardTable *)env->getForge()->allocate(sizeof(MM_ConcurrentCardTable), MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+	MM_ConcurrentCardTable *cardTable = (MM_ConcurrentCardTable *)env->getForge()->allocate(sizeof(MM_ConcurrentCardTable), OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 	if (NULL != cardTable) {
 		new(cardTable) MM_ConcurrentCardTable(env, markingScheme, collector);
 		if (!cardTable->initialize(env, heap)) {
@@ -1562,7 +1562,7 @@ MM_ConcurrentCardTable::determineCleaningRanges(MM_EnvironmentBase *env)
 			}
 
 			uintptr_t sizeRequired = sizeof(CleaningRange) * numRanges;
-			_cleaningRanges = (CleaningRange *) env->getForge()->allocate(sizeRequired, MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+			_cleaningRanges = (CleaningRange *) env->getForge()->allocate(sizeRequired, OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 			_maxCleaningRanges = numRanges;
 		} else {
 			/* Address first range for next round of card cleaning */

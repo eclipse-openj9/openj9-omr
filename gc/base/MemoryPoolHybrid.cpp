@@ -56,7 +56,7 @@ MM_MemoryPoolHybrid::newInstance(MM_EnvironmentBase* env, uintptr_t minimumFreeE
 {
 	MM_MemoryPoolHybrid* memoryPool;
 
-	memoryPool = (MM_MemoryPoolHybrid*)env->getForge()->allocate(sizeof(MM_MemoryPoolHybrid), MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+	memoryPool = (MM_MemoryPoolHybrid*)env->getForge()->allocate(sizeof(MM_MemoryPoolHybrid), OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 	if (memoryPool) {
 		memoryPool = new (memoryPool) MM_MemoryPoolHybrid(env, minimumFreeEntrySize, maxSplit, name);
 		if (!memoryPool->initialize(env)) {

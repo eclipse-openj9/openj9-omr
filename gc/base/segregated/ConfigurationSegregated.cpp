@@ -63,7 +63,7 @@ MM_ConfigurationSegregated::newInstance(MM_EnvironmentBase *env)
 {
 	MM_ConfigurationSegregated *configuration;
 
-	configuration = (MM_ConfigurationSegregated *) env->getForge()->allocate(sizeof(MM_ConfigurationSegregated), MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+	configuration = (MM_ConfigurationSegregated *) env->getForge()->allocate(sizeof(MM_ConfigurationSegregated), OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 	if(NULL != configuration) {
 		new(configuration) MM_ConfigurationSegregated(env);
 		if(!configuration->initialize(env)) {

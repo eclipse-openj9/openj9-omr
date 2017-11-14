@@ -59,7 +59,7 @@ MM_MemoryPoolAddressOrderedList::newInstance(MM_EnvironmentBase *env, uintptr_t 
 {
 	MM_MemoryPoolAddressOrderedList *memoryPool;
 
-	memoryPool = (MM_MemoryPoolAddressOrderedList *)env->getForge()->allocate(sizeof(MM_MemoryPoolAddressOrderedList), MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+	memoryPool = (MM_MemoryPoolAddressOrderedList *)env->getForge()->allocate(sizeof(MM_MemoryPoolAddressOrderedList), OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 	if (memoryPool) {
 		memoryPool = new(memoryPool) MM_MemoryPoolAddressOrderedList(env, minimumFreeEntrySize, name);
 		if (!memoryPool->initialize(env)) {

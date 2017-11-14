@@ -90,7 +90,7 @@ MM_GCExtensionsBase::initialize(MM_EnvironmentBase* env)
 
 
 #if defined(OMR_GC_MODRON_SCAVENGER)
-	if (!rememberedSet.initialize(env, MM_AllocationCategory::REMEMBERED_SET)) {
+	if (!rememberedSet.initialize(env, OMR::GC::AllocationCategory::REMEMBERED_SET)) {
 		goto failed;
 	}
 	rememberedSet.setGrowSize(J9_SCV_REMSET_SIZE);

@@ -53,7 +53,7 @@ MM_RegionPoolSegregated::newInstance(MM_EnvironmentBase *env, MM_HeapRegionManag
 {
 	MM_RegionPoolSegregated *regionPool;
 
-	regionPool = (MM_RegionPoolSegregated *)env->getForge()->allocate(sizeof(MM_RegionPoolSegregated), MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+	regionPool = (MM_RegionPoolSegregated *)env->getForge()->allocate(sizeof(MM_RegionPoolSegregated), OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 	if (NULL != regionPool) {
 		regionPool = new(regionPool) MM_RegionPoolSegregated(env, heapRegionManager);
 		if (!regionPool->initialize(env)) {
@@ -91,7 +91,7 @@ MM_RegionPoolSegregated::initialize(MM_EnvironmentBase *env)
 	for (szClass=OMR_SIZECLASSES_MIN_SMALL; szClass<=OMR_SIZECLASSES_MAX_SMALL; szClass++) {
 		for (int32_t i=0; i<NUM_DEFRAG_BUCKETS; i++) {
 			uintptr_t splitAvailableListsSize = sizeof(MM_LockingHeapRegionQueue) * _splitAvailableListSplitCount;
-			_smallAvailableRegions[szClass][i] = (MM_LockingHeapRegionQueue *)env->getForge()->allocate(splitAvailableListsSize, MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+			_smallAvailableRegions[szClass][i] = (MM_LockingHeapRegionQueue *)env->getForge()->allocate(splitAvailableListsSize, OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 			if (NULL == _smallAvailableRegions[szClass][i]) {
 				return false;
 			}

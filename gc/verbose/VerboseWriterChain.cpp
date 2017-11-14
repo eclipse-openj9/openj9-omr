@@ -45,7 +45,7 @@ MM_VerboseWriterChain::newInstance(MM_EnvironmentBase *env)
 {
 	MM_GCExtensionsBase *extensions = env->getExtensions();
 	
-	MM_VerboseWriterChain *chain = (MM_VerboseWriterChain *)extensions->getForge()->allocate(sizeof(MM_VerboseWriterChain), MM_AllocationCategory::DIAGNOSTIC, OMR_GET_CALLSITE());
+	MM_VerboseWriterChain *chain = (MM_VerboseWriterChain *)extensions->getForge()->allocate(sizeof(MM_VerboseWriterChain), OMR::GC::AllocationCategory::DIAGNOSTIC, OMR_GET_CALLSITE());
 	if(NULL != chain) {
 		new(chain) MM_VerboseWriterChain();
 		if(!chain->initialize(env)) {

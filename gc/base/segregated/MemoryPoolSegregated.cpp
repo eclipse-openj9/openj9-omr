@@ -56,7 +56,7 @@
 MM_MemoryPoolSegregated *
 MM_MemoryPoolSegregated::newInstance(MM_EnvironmentBase *env, MM_RegionPoolSegregated *regionPool, uintptr_t minimumFreeEntrySize, MM_GlobalAllocationManagerSegregated *gam)
 {
-	MM_MemoryPoolSegregated *memoryPool = (MM_MemoryPoolSegregated *)env->getForge()->allocate(sizeof(MM_MemoryPoolSegregated), MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+	MM_MemoryPoolSegregated *memoryPool = (MM_MemoryPoolSegregated *)env->getForge()->allocate(sizeof(MM_MemoryPoolSegregated), OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 	if (memoryPool) {
 		memoryPool = new(memoryPool) MM_MemoryPoolSegregated(env, regionPool, minimumFreeEntrySize, gam);
 		if (!memoryPool->initialize(env)) {

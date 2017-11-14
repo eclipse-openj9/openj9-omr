@@ -35,7 +35,7 @@ MM_CopyScanCacheChunk::newInstance(MM_EnvironmentBase* env, uintptr_t cacheEntry
 {
 	MM_CopyScanCacheChunk *chunk;
 	
-	chunk = (MM_CopyScanCacheChunk *)env->getForge()->allocate(sizeof(MM_CopyScanCacheChunk) + cacheEntryCount * sizeof(MM_CopyScanCacheStandard), MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+	chunk = (MM_CopyScanCacheChunk *)env->getForge()->allocate(sizeof(MM_CopyScanCacheChunk) + cacheEntryCount * sizeof(MM_CopyScanCacheStandard), OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 	if (chunk) {
 		new(chunk) MM_CopyScanCacheChunk();
 		chunk->_baseCache = (MM_CopyScanCacheStandard *)(chunk + 1);

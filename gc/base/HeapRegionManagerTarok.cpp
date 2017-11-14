@@ -42,7 +42,7 @@ MM_HeapRegionManagerTarok::MM_HeapRegionManagerTarok(MM_EnvironmentBase *env, ui
 MM_HeapRegionManagerTarok *
 MM_HeapRegionManagerTarok::newInstance(MM_EnvironmentBase *env, uintptr_t regionSize, uintptr_t tableDescriptorSize, MM_RegionDescriptorInitializer regionDescriptorInitializer, MM_RegionDescriptorDestructor regionDescriptorDestructor)
 {
-	MM_HeapRegionManagerTarok *regionManager = (MM_HeapRegionManagerTarok *)env->getForge()->allocate(sizeof(MM_HeapRegionManagerTarok), MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+	MM_HeapRegionManagerTarok *regionManager = (MM_HeapRegionManagerTarok *)env->getForge()->allocate(sizeof(MM_HeapRegionManagerTarok), OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 	if (NULL != regionManager) {
 		new(regionManager) MM_HeapRegionManagerTarok(env, regionSize, tableDescriptorSize, regionDescriptorInitializer, regionDescriptorDestructor);
 		if (!regionManager->initialize(env)) {
@@ -64,7 +64,7 @@ MM_HeapRegionManagerTarok::initialize(MM_EnvironmentBase *env)
 		_freeRegionTableSize = maximumNodeNumber + 1;
 
 		uintptr_t freeRegionTableSizeInBytes = _freeRegionTableSize * sizeof(MM_HeapRegionDescriptor *);
-		_freeRegionTable = (MM_HeapRegionDescriptor **)env->getForge()->allocate(freeRegionTableSizeInBytes, MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+		_freeRegionTable = (MM_HeapRegionDescriptor **)env->getForge()->allocate(freeRegionTableSizeInBytes, OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 		if (NULL == _freeRegionTable) {
 			return false;
 		}

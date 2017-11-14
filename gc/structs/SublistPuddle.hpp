@@ -73,7 +73,7 @@ private:
 
 protected:
 public:
-	static MM_SublistPuddle *newInstance(MM_EnvironmentBase *env, uintptr_t size, MM_SublistPool *parent, MM_AllocationCategory::Enum category);
+	static MM_SublistPuddle *newInstance(MM_EnvironmentBase *env, uintptr_t size, MM_SublistPool *parent, OMR::GC::AllocationCategory::Enum category);
 	static void kill(MM_EnvironmentBase *env, MM_SublistPuddle *puddle);
 	void tearDown(MM_EnvironmentBase *env) {};
 

@@ -61,7 +61,7 @@ MM_CollectorLanguageInterfaceImpl::newInstance(MM_EnvironmentBase *env)
 	OMR_VM *omrVM = env->getOmrVM();
 	MM_GCExtensionsBase *extensions = MM_GCExtensionsBase::getExtensions(omrVM);
 
-	cli = (MM_CollectorLanguageInterfaceImpl *)extensions->getForge()->allocate(sizeof(MM_CollectorLanguageInterfaceImpl), MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+	cli = (MM_CollectorLanguageInterfaceImpl *)extensions->getForge()->allocate(sizeof(MM_CollectorLanguageInterfaceImpl), OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 	if (NULL != cli) {
 		new(cli) MM_CollectorLanguageInterfaceImpl(omrVM);
 		if (!cli->initialize(omrVM)) {

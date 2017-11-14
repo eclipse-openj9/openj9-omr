@@ -45,7 +45,7 @@ MM_VerboseWriterFileLoggingSynchronous::newInstance(MM_EnvironmentBase *env, MM_
 {
 	MM_GCExtensionsBase *extensions = MM_GCExtensionsBase::getExtensions(env->getOmrVM());
 	
-	MM_VerboseWriterFileLoggingSynchronous *agent = (MM_VerboseWriterFileLoggingSynchronous *)extensions->getForge()->allocate(sizeof(MM_VerboseWriterFileLoggingSynchronous), MM_AllocationCategory::DIAGNOSTIC, OMR_GET_CALLSITE());
+	MM_VerboseWriterFileLoggingSynchronous *agent = (MM_VerboseWriterFileLoggingSynchronous *)extensions->getForge()->allocate(sizeof(MM_VerboseWriterFileLoggingSynchronous), OMR::GC::AllocationCategory::DIAGNOSTIC, OMR_GET_CALLSITE());
 	if(agent) {
 		new(agent) MM_VerboseWriterFileLoggingSynchronous(env, manager);
 		if(!agent->initialize(env, filename, numFiles, numCycles)) {

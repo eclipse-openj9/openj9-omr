@@ -44,7 +44,7 @@ MM_VerboseWriterHook::newInstance(MM_EnvironmentBase *env)
 {
 	MM_GCExtensionsBase *extensions = MM_GCExtensionsBase::getExtensions(env->getOmrVM());
 	
-	MM_VerboseWriterHook *agent = (MM_VerboseWriterHook *)extensions->getForge()->allocate(sizeof(MM_VerboseWriterHook), MM_AllocationCategory::DIAGNOSTIC, OMR_GET_CALLSITE());
+	MM_VerboseWriterHook *agent = (MM_VerboseWriterHook *)extensions->getForge()->allocate(sizeof(MM_VerboseWriterHook), OMR::GC::AllocationCategory::DIAGNOSTIC, OMR_GET_CALLSITE());
 	if (agent) {
 		new(agent) MM_VerboseWriterHook(env);
 		if(!agent->initialize(env)){

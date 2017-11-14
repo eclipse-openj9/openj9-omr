@@ -50,7 +50,7 @@ class MM_MemorySubSpace;
 MM_HeapSplit *
 MM_HeapSplit::newInstance(MM_EnvironmentBase *env, uintptr_t heapAlignment, uintptr_t lowExtentSize, uintptr_t highExtentSize, MM_HeapRegionManager *regionManager)
 {
-	MM_HeapSplit *heap = (MM_HeapSplit *)env->getForge()->allocate(sizeof(MM_HeapSplit), MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+	MM_HeapSplit *heap = (MM_HeapSplit *)env->getForge()->allocate(sizeof(MM_HeapSplit), OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 	
 	if (NULL != heap) {
 		new(heap) MM_HeapSplit(env, lowExtentSize, highExtentSize, regionManager);

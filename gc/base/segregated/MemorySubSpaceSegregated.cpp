@@ -242,7 +242,7 @@ MM_MemorySubSpaceSegregated::newInstance(
 {
 	MM_MemorySubSpaceSegregated *memorySubSpace;
 
-	memorySubSpace = (MM_MemorySubSpaceSegregated *)env->getForge()->allocate(sizeof(MM_MemorySubSpaceSegregated), MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+	memorySubSpace = (MM_MemorySubSpaceSegregated *)env->getForge()->allocate(sizeof(MM_MemorySubSpaceSegregated), OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 	if (NULL != memorySubSpace) {
 		new(memorySubSpace) MM_MemorySubSpaceSegregated(env, physicalSubArena, memoryPool, usesGlobalCollector, minimumSize, initialSize, maximumSize);
 		if (!memorySubSpace->initialize(env)) {

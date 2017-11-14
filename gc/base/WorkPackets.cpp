@@ -47,7 +47,7 @@ MM_WorkPackets::newInstance(MM_EnvironmentBase *env)
 {
 	MM_WorkPackets *workPackets;
 	
-	workPackets = (MM_WorkPackets *)env->getForge()->allocate(sizeof(MM_WorkPackets), MM_AllocationCategory::WORK_PACKETS, OMR_GET_CALLSITE());
+	workPackets = (MM_WorkPackets *)env->getForge()->allocate(sizeof(MM_WorkPackets), OMR::GC::AllocationCategory::WORK_PACKETS, OMR_GET_CALLSITE());
 	if (workPackets) {
 		new(workPackets) MM_WorkPackets(env);
 		if (!workPackets->initialize(env)) {
@@ -176,7 +176,7 @@ MM_WorkPackets::initWorkPacketsBlock(MM_EnvironmentBase *env)
 
 	Assert_MM_true(_packetsBlocksTop < _maxPacketsBlocks);
 	/* Build the output packet list */
-	if (NULL == (_packetsStart[_packetsBlocksTop] = (MM_Packet *) env->getForge()->allocate(blockSize, MM_AllocationCategory::WORK_PACKETS, OMR_GET_CALLSITE()))) {
+	if (NULL == (_packetsStart[_packetsBlocksTop] = (MM_Packet *) env->getForge()->allocate(blockSize, OMR::GC::AllocationCategory::WORK_PACKETS, OMR_GET_CALLSITE()))) {
 		return false;
 	}
 	memset((void *)_packetsStart[_packetsBlocksTop], 0, totalHeaderSize); /* initialize only MM_Packet's to avoid paging the rest of the block */

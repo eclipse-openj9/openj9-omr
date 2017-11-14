@@ -41,7 +41,7 @@ MM_PhysicalArenaVirtualMemory::newInstance(MM_EnvironmentBase* env, MM_Heap* hea
 {
 	MM_PhysicalArenaVirtualMemory* arena;
 
-	arena = (MM_PhysicalArenaVirtualMemory*)env->getForge()->allocate(sizeof(MM_PhysicalArenaVirtualMemory), MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+	arena = (MM_PhysicalArenaVirtualMemory*)env->getForge()->allocate(sizeof(MM_PhysicalArenaVirtualMemory), OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 	if (arena) {
 		new (arena) MM_PhysicalArenaVirtualMemory(env, heap);
 		if (!arena->initialize(env)) {

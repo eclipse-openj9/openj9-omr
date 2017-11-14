@@ -46,7 +46,7 @@
  * @return true if the initialization is successful, false otherwise.
  */
 bool
-MM_SublistPool::initialize(MM_EnvironmentBase *env, MM_AllocationCategory::Enum category)
+MM_SublistPool::initialize(MM_EnvironmentBase *env, OMR::GC::AllocationCategory::Enum category)
 {
 	memset(this, 0, sizeof(*this));
 	_allocCategory = category;

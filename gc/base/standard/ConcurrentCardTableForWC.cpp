@@ -53,7 +53,7 @@ MM_ConcurrentCardTableForWC::newInstance(MM_EnvironmentBase *env, MM_Heap *heap,
 {
 	MM_ConcurrentCardTableForWC *cardTable;
 	
-	cardTable = (MM_ConcurrentCardTableForWC *)env->getForge()->allocate(sizeof(MM_ConcurrentCardTableForWC), MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+	cardTable = (MM_ConcurrentCardTableForWC *)env->getForge()->allocate(sizeof(MM_ConcurrentCardTableForWC), OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 	if (NULL != cardTable) {
 		new(cardTable) MM_ConcurrentCardTableForWC(env, markingScheme, collector);
 		if (!cardTable->initialize(env, heap)) {

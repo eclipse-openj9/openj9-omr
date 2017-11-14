@@ -50,7 +50,7 @@ MM_SegregatedAllocationInterface::newInstance(MM_EnvironmentBase *env)
 {
 	MM_SegregatedAllocationInterface *allocationInterface;
 	
-	allocationInterface = (MM_SegregatedAllocationInterface *)env->getForge()->allocate(sizeof(MM_SegregatedAllocationInterface), MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+	allocationInterface = (MM_SegregatedAllocationInterface *)env->getForge()->allocate(sizeof(MM_SegregatedAllocationInterface), OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 	if(NULL != allocationInterface) {
 		new(allocationInterface) MM_SegregatedAllocationInterface(env);
 		if(!allocationInterface->initialize(env)) {

@@ -62,7 +62,7 @@ MM_MemoryPoolSplitAddressOrderedList::newInstance(MM_EnvironmentBase* env, uintp
 {
 	MM_MemoryPoolSplitAddressOrderedList* memoryPool;
 
-	memoryPool = (MM_MemoryPoolSplitAddressOrderedList*)env->getForge()->allocate(sizeof(MM_MemoryPoolSplitAddressOrderedList), MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+	memoryPool = (MM_MemoryPoolSplitAddressOrderedList*)env->getForge()->allocate(sizeof(MM_MemoryPoolSplitAddressOrderedList), OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 	if (memoryPool) {
 		memoryPool = new (memoryPool) MM_MemoryPoolSplitAddressOrderedList(env, minimumFreeEntrySize, maxSplit, name);
 		if (!memoryPool->initialize(env)) {

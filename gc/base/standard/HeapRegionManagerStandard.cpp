@@ -35,7 +35,7 @@ MM_HeapRegionManagerStandard::MM_HeapRegionManagerStandard(MM_EnvironmentBase *e
 MM_HeapRegionManagerStandard *
 MM_HeapRegionManagerStandard::newInstance(MM_EnvironmentBase *env, uintptr_t regionSize, uintptr_t tableDescriptorSize, MM_RegionDescriptorInitializer regionDescriptorInitializer, MM_RegionDescriptorDestructor regionDescriptorDestructor)
 {
-	MM_HeapRegionManagerStandard *regionManager = (MM_HeapRegionManagerStandard *)env->getForge()->allocate(sizeof(MM_HeapRegionManagerStandard), MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+	MM_HeapRegionManagerStandard *regionManager = (MM_HeapRegionManagerStandard *)env->getForge()->allocate(sizeof(MM_HeapRegionManagerStandard), OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 	if (regionManager) {
 		new(regionManager) MM_HeapRegionManagerStandard(env, regionSize, tableDescriptorSize, regionDescriptorInitializer, regionDescriptorDestructor);
 		if (!regionManager->initialize(env)) {

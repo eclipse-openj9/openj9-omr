@@ -43,7 +43,7 @@
 MM_OverflowStandard *
 MM_OverflowStandard::newInstance(MM_EnvironmentBase *env, MM_WorkPackets *workPackets)
 {
-	MM_OverflowStandard *overflow = (MM_OverflowStandard *)env->getForge()->allocate(sizeof(MM_OverflowStandard), MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+	MM_OverflowStandard *overflow = (MM_OverflowStandard *)env->getForge()->allocate(sizeof(MM_OverflowStandard), OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 	if (NULL != overflow) {
 		new(overflow) MM_OverflowStandard(env,workPackets);
 		if (!overflow->initialize(env)) {

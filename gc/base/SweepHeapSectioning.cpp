@@ -96,7 +96,7 @@ MM_ParallelSweepChunkArray::initialize(MM_EnvironmentBase* env, bool useVmem)
 			}
 		} else {
 			if (0 != _size) {
-				_array = (MM_ParallelSweepChunk*)env->getForge()->allocate(_size * sizeof(MM_ParallelSweepChunk), MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+				_array = (MM_ParallelSweepChunk*)env->getForge()->allocate(_size * sizeof(MM_ParallelSweepChunk), OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 				result = (NULL != _array);
 			} else {
 				result = true;
@@ -131,7 +131,7 @@ MM_ParallelSweepChunkArray::newInstance(MM_EnvironmentBase* env, uintptr_t size,
 {
 	MM_ParallelSweepChunkArray* array;
 
-	array = (MM_ParallelSweepChunkArray*)env->getForge()->allocate(sizeof(MM_ParallelSweepChunkArray), MM_AllocationCategory::OTHER, OMR_GET_CALLSITE());
+	array = (MM_ParallelSweepChunkArray*)env->getForge()->allocate(sizeof(MM_ParallelSweepChunkArray), OMR::GC::AllocationCategory::OTHER, OMR_GET_CALLSITE());
 	if (NULL != array) {
 		new (array) MM_ParallelSweepChunkArray(size);
 		if (!array->initialize(env, useVmem)) {

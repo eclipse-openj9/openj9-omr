@@ -39,7 +39,7 @@ MM_ObjectMap::newInstance(MM_EnvironmentBase *env)
 {
 	MM_ObjectMap *objectMap;
 
-	objectMap = (MM_ObjectMap *)env->getForge()->allocate(sizeof(MM_ObjectMap), MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+	objectMap = (MM_ObjectMap *)env->getForge()->allocate(sizeof(MM_ObjectMap), OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 	if (objectMap) {
 		new(objectMap) MM_ObjectMap(env);
 		if (!objectMap->initialize(env)) {

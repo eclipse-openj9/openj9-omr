@@ -51,7 +51,7 @@ MM_MarkingScheme::newInstance(MM_EnvironmentBase *env)
 {
 	MM_MarkingScheme *markingScheme;
 
-	markingScheme = (MM_MarkingScheme *)env->getForge()->allocate(sizeof(MM_MarkingScheme), MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+	markingScheme = (MM_MarkingScheme *)env->getForge()->allocate(sizeof(MM_MarkingScheme), OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 	if (markingScheme) {
 		new(markingScheme) MM_MarkingScheme(env);
 		if (!markingScheme->initialize(env)) {

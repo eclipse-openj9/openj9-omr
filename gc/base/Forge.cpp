@@ -30,7 +30,7 @@ namespace GC {
 
 struct MemoryHeader {
 	uintptr_t allocatedBytes;
-	MM_AllocationCategory::Enum category;
+	OMR::GC::AllocationCategory::Enum category;
 };
 
 union AlignedMemoryHeader {
@@ -47,8 +47,8 @@ Forge::initialize(OMRPortLibrary* port)
 		return false;
 	}	
 
-	for (uintptr_t i = 0; i < MM_AllocationCategory::CATEGORY_COUNT; i++) {
-		_statistics[i].category = (MM_AllocationCategory::Enum) i;
+	for (uintptr_t i = 0; i < OMR::GC::AllocationCategory::CATEGORY_COUNT; i++) {
+		_statistics[i].category = (OMR::GC::AllocationCategory::Enum) i;
 		_statistics[i].allocated = 0;
 		_statistics[i].highwater = 0;
 	}
@@ -77,7 +77,7 @@ Forge::tearDown()
  * @return a pointer to the allocated memory, or NULL if the request could not be performed
  */
 void* 
-Forge::allocate(std::size_t bytesRequested, MM_AllocationCategory::Enum category, const char* callsite)
+Forge::allocate(std::size_t bytesRequested, OMR::GC::AllocationCategory::Enum category, const char* callsite)
 {
 	AlignedMemoryHeader* memoryPointer;
 
@@ -129,7 +129,7 @@ Forge::free(void* memoryPointer)
  * Returns the current memory usage statistics for the garbage collector.  Each entry in the array corresponds to a memory usage category type.
  * To locate memory usage statistics for a particular category, use the enumeration value as the array index (e.g. stats[REFERENCES]).
  *
- * @return an array of memory usage statistics indexed using the MM_AllocationCategory enumeration
+ * @return an array of memory usage statistics indexed using the OMR::GC::AllocationCategory enumeration
  */
 OMR_GC_MemoryStatistics*
 Forge::getCurrentStatistics()

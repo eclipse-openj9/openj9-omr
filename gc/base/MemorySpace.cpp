@@ -39,7 +39,7 @@
 MM_MemorySpace *
 MM_MemorySpace::newInstance(MM_EnvironmentBase *env, MM_Heap *heap, MM_PhysicalArena *physicalArena, MM_MemorySubSpace *memorySubSpace, MM_InitializationParameters *parameters, const char *name, const char *description)
 {
-	MM_MemorySpace *memorySpace = (MM_MemorySpace *)env->getForge()->allocate(sizeof(MM_MemorySpace), MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+	MM_MemorySpace *memorySpace = (MM_MemorySpace *)env->getForge()->allocate(sizeof(MM_MemorySpace), OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 	if (memorySpace) {
 		new(memorySpace) MM_MemorySpace(heap, physicalArena, parameters, name, description);
 		if (!memorySpace->initialize(env, memorySubSpace)) {

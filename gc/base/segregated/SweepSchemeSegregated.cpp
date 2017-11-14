@@ -50,7 +50,7 @@ MM_SweepSchemeSegregated::newInstance(MM_EnvironmentBase *env, MM_MarkMap *markM
 {
 	MM_SweepSchemeSegregated *instance;
 	
-	instance = (MM_SweepSchemeSegregated *)env->getForge()->allocate(sizeof(MM_SweepSchemeSegregated), MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+	instance = (MM_SweepSchemeSegregated *)env->getForge()->allocate(sizeof(MM_SweepSchemeSegregated), OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 	if (NULL != instance) {
 		new(instance) MM_SweepSchemeSegregated(env, markMap);
 		if (!instance->initialize(env)) {

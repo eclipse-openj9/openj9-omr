@@ -55,7 +55,7 @@ MM_HeapRegionManager::MM_HeapRegionManager(MM_EnvironmentBase* env, uintptr_t re
 MM_HeapRegionManager*
 MM_HeapRegionManager::newInstance(MM_EnvironmentBase* env, uintptr_t regionSize, uintptr_t tableDescriptorSize, MM_RegionDescriptorInitializer regionDescriptorInitializer, MM_RegionDescriptorDestructor regionDescriptorDestructor)
 {
-	MM_HeapRegionManager *regionManager = (MM_HeapRegionManager *)env->getForge()->allocate(sizeof(MM_HeapRegionManager), MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+	MM_HeapRegionManager *regionManager = (MM_HeapRegionManager *)env->getForge()->allocate(sizeof(MM_HeapRegionManager), OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 	if (regionManager) {
 		new(regionManager) MM_HeapRegionManager(env, regionSize, tableDescriptorSize, regionDescriptorInitializer, regionDescriptorDestructor);
 		if (!regionManager->initialize(env)) {
@@ -240,7 +240,7 @@ MM_HeapRegionManager::findFirstUsedRegion(MM_HeapRegionDescriptor* start)
 MM_HeapRegionDescriptor*
 MM_HeapRegionManager::internalAllocateAuxiliaryRegionDescriptor(MM_EnvironmentBase* env, void* lowAddress, void* highAddress)
 {
-	MM_HeapRegionDescriptor* desc = (MM_HeapRegionDescriptor*)env->getForge()->allocate(_tableDescriptorSize, MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+	MM_HeapRegionDescriptor* desc = (MM_HeapRegionDescriptor*)env->getForge()->allocate(_tableDescriptorSize, OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 	if (NULL != desc) {
 		if (!_regionDescriptorInitializer(env, this, desc, lowAddress, highAddress)) {
 			desc = NULL;
@@ -265,7 +265,7 @@ MM_HeapRegionManager::internalAllocateAndInitializeRegionTable(MM_EnvironmentBas
 	uintptr_t regionSize = getRegionSize();
 	uintptr_t regionCount = size / regionSize;
 	uintptr_t sizeInBytes = regionCount * _tableDescriptorSize;
-	MM_HeapRegionDescriptor* table = (MM_HeapRegionDescriptor*)env->getForge()->allocate(sizeInBytes, MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+	MM_HeapRegionDescriptor* table = (MM_HeapRegionDescriptor*)env->getForge()->allocate(sizeInBytes, OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 	if (NULL != table) {
 		/* the table has been allocated so initialize the descriptors inside it and the meta-data to use the table */
 		memset((void*)table, 0, sizeInBytes);

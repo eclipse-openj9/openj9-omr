@@ -204,7 +204,7 @@ MM_MemorySubSpaceGenerational::newInstance(MM_EnvironmentBase *env, MM_MemorySub
 {
 	MM_MemorySubSpaceGenerational *memorySubSpace;
 	
-	memorySubSpace = (MM_MemorySubSpaceGenerational *)env->getForge()->allocate(sizeof(MM_MemorySubSpaceGenerational), MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+	memorySubSpace = (MM_MemorySubSpaceGenerational *)env->getForge()->allocate(sizeof(MM_MemorySubSpaceGenerational), OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 	if (memorySubSpace) {
 		new(memorySubSpace) MM_MemorySubSpaceGenerational(env, memorySubSpaceNew, memorySubSpaceOld, usesGlobalCollector, minimumSize, minimumSizeNew, initialSizeNew, maximumSizeNew, minimumSizeOld, initialSizeOld, maximumSizeOld, maximumSize);
 		if (!memorySubSpace->initialize(env)) {

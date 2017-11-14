@@ -544,7 +544,7 @@ MM_ConcurrentGC::signalThreadsToDirtyCardsAsyncEventHandler(OMR_VMThread *omrVMT
 MM_ConcurrentGC *
 MM_ConcurrentGC::newInstance(MM_EnvironmentBase *env)
 {
-	MM_ConcurrentGC *concurrentGC = (MM_ConcurrentGC *)env->getForge()->allocate(sizeof(MM_ConcurrentGC), MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+	MM_ConcurrentGC *concurrentGC = (MM_ConcurrentGC *)env->getForge()->allocate(sizeof(MM_ConcurrentGC), OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 	if (NULL != concurrentGC) {
 		new(concurrentGC) MM_ConcurrentGC(env);
 		if (!concurrentGC->initialize(env)) {
@@ -603,7 +603,7 @@ MM_ConcurrentGC::initialize(MM_EnvironmentBase *env)
 
 	if (_conHelperThreads > 0) {
 		/* Get storage for concurrent helper thread table */
-		_conHelpersTable = (omrthread_t *)env->getForge()->allocate(_conHelperThreads * sizeof(omrthread_t), MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+		_conHelpersTable = (omrthread_t *)env->getForge()->allocate(_conHelperThreads * sizeof(omrthread_t), OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 		if(!_conHelpersTable) {
 			goto error_no_memory;
 		}
@@ -696,7 +696,7 @@ MM_ConcurrentGC::initialize(MM_EnvironmentBase *env)
 			/* Get storage for metering history table */
 			uintptr_t historySize = _meteringHistorySize * sizeof(MeteringHistory);
 
-			_meteringHistory = (MeteringHistory *)env->getForge()->allocate(historySize, MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+			_meteringHistory = (MeteringHistory *)env->getForge()->allocate(historySize, OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 
 			if(!_meteringHistory) {
 				goto error_no_memory;
@@ -886,7 +886,7 @@ MM_ConcurrentGC::determineInitWork(MM_EnvironmentBase *env)
 			/* TODO: dynamically allocating this structure.  Should the VM tear itself down
 			 * in this scenario?
 			 */
-			_initRanges = (InitWorkItem *) env->getForge()->allocate(sizeof(InitWorkItem) * _numInitRanges, MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+			_initRanges = (InitWorkItem *) env->getForge()->allocate(sizeof(InitWorkItem) * _numInitRanges, OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 			if (NULL == _initRanges) {
 				initDone = true;
 				_numPhysicalInitRanges = 0;

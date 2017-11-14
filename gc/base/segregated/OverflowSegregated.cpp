@@ -46,7 +46,7 @@ MM_OverflowSegregated *
 MM_OverflowSegregated::newInstance(MM_EnvironmentBase *env, MM_WorkPackets *workPackets)
 {
 	Assert_MM_true(env->getExtensions()->isSegregatedHeap());
-	MM_OverflowSegregated *overflow = (MM_OverflowSegregated *)env->getForge()->allocate(sizeof(MM_OverflowSegregated), MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+	MM_OverflowSegregated *overflow = (MM_OverflowSegregated *)env->getForge()->allocate(sizeof(MM_OverflowSegregated), OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 	if (NULL != overflow) {
 		new(overflow) MM_OverflowSegregated(env,workPackets);
 		if (!overflow->initialize(env)) {

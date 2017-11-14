@@ -36,7 +36,7 @@ MM_PacketList::initialize(MM_EnvironmentBase *env)
 	_sublistCount = extensions->packetListSplit;
 	Assert_MM_true(0 < _sublistCount);
 
-	_sublists = (struct PacketSublist *)extensions->getForge()->allocate(sizeof(struct PacketSublist) * _sublistCount, MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+	_sublists = (struct PacketSublist *)extensions->getForge()->allocate(sizeof(struct PacketSublist) * _sublistCount, OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 	if (NULL == _sublists) {
 		result = false;
 	} else {

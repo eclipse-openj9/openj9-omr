@@ -33,7 +33,7 @@
 MM_MemoryManager*
 MM_MemoryManager::newInstance(MM_EnvironmentBase* env)
 {
-	MM_MemoryManager* memoryManager = (MM_MemoryManager*)env->getForge()->allocate(sizeof(MM_MemoryManager), MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+	MM_MemoryManager* memoryManager = (MM_MemoryManager*)env->getForge()->allocate(sizeof(MM_MemoryManager), OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 
 	if (NULL != memoryManager) {
 		new (memoryManager) MM_MemoryManager(env);

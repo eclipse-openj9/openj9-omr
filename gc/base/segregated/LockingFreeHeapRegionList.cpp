@@ -32,7 +32,7 @@
 MM_LockingFreeHeapRegionList *
 MM_LockingFreeHeapRegionList::newInstance(MM_EnvironmentBase *env, MM_HeapRegionList::RegionListKind regionListKind, bool singleRegionsOnly)
 {
-	MM_LockingFreeHeapRegionList *fpl = (MM_LockingFreeHeapRegionList *)env->getForge()->allocate(sizeof(MM_LockingFreeHeapRegionList), MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+	MM_LockingFreeHeapRegionList *fpl = (MM_LockingFreeHeapRegionList *)env->getForge()->allocate(sizeof(MM_LockingFreeHeapRegionList), OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 	if (fpl) {
 		new (fpl) MM_LockingFreeHeapRegionList(regionListKind, singleRegionsOnly);
 		if (!fpl->initialize(env)) {

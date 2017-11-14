@@ -46,7 +46,7 @@ MM_ConfigurationFlat::newInstance(MM_EnvironmentBase* env)
 {
 	MM_ConfigurationFlat* configuration;
 
-	configuration = (MM_ConfigurationFlat*)env->getForge()->allocate(sizeof(MM_ConfigurationFlat), MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+	configuration = (MM_ConfigurationFlat*)env->getForge()->allocate(sizeof(MM_ConfigurationFlat), OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 	if (NULL != configuration) {
 		new (configuration) MM_ConfigurationFlat(env);
 		if (!configuration->initialize(env)) {

@@ -36,7 +36,7 @@ MM_WorkPacketsStandard::newInstance(MM_EnvironmentBase *env)
 {
 	MM_WorkPacketsStandard *workPackets;
 	
-	workPackets = (MM_WorkPacketsStandard *)env->getForge()->allocate(sizeof(MM_WorkPacketsStandard), MM_AllocationCategory::WORK_PACKETS, OMR_GET_CALLSITE());
+	workPackets = (MM_WorkPacketsStandard *)env->getForge()->allocate(sizeof(MM_WorkPacketsStandard), OMR::GC::AllocationCategory::WORK_PACKETS, OMR_GET_CALLSITE());
 	if (NULL != workPackets) {
 		new(workPackets) MM_WorkPacketsStandard(env);
 		if (!workPackets->initialize(env)) {

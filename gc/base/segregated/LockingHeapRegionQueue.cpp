@@ -41,7 +41,7 @@
 MM_LockingHeapRegionQueue *
 MM_LockingHeapRegionQueue::newInstance(MM_EnvironmentBase *env, RegionListKind regionListKind, bool singleRegionsOnly, bool concurrentAccess, bool trackFreeBytes)
 {
-	MM_LockingHeapRegionQueue *regionList = (MM_LockingHeapRegionQueue *)env->getForge()->allocate(sizeof(MM_LockingHeapRegionQueue), MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+	MM_LockingHeapRegionQueue *regionList = (MM_LockingHeapRegionQueue *)env->getForge()->allocate(sizeof(MM_LockingHeapRegionQueue), OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 	if (regionList) {
 		new (regionList) MM_LockingHeapRegionQueue(regionListKind, singleRegionsOnly, concurrentAccess, trackFreeBytes);
 		if (!regionList->initialize(env)) {

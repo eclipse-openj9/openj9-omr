@@ -94,7 +94,7 @@ MM_VerboseWriter::initialize(MM_EnvironmentBase* env)
 	const char* version = omrgc_get_version(env->getOmrVM());
 	/* The length is -2 for the "%s" in VERBOSEGC_HEADER and +1 for '\0' */
 	uintptr_t headerLength = strlen(version) + strlen(VERBOSEGC_HEADER) - 1;
-	_header = (char*)ext->getForge()->allocate(sizeof(char) * headerLength, MM_AllocationCategory::DIAGNOSTIC, OMR_GET_CALLSITE());
+	_header = (char*)ext->getForge()->allocate(sizeof(char) * headerLength, OMR::GC::AllocationCategory::DIAGNOSTIC, OMR_GET_CALLSITE());
 	if (NULL == _header) {
 		return false;
 	}
@@ -102,7 +102,7 @@ MM_VerboseWriter::initialize(MM_EnvironmentBase* env)
 
 	/* Initialize _footer */
 	uintptr_t footerLength = strlen(VERBOSEGC_FOOTER) + 1;
-	_footer = (char*)ext->getForge()->allocate(sizeof(char) * footerLength, MM_AllocationCategory::DIAGNOSTIC, OMR_GET_CALLSITE());
+	_footer = (char*)ext->getForge()->allocate(sizeof(char) * footerLength, OMR::GC::AllocationCategory::DIAGNOSTIC, OMR_GET_CALLSITE());
 	if (NULL == _footer) {
 		ext->getForge()->free(_header);
 		return false;

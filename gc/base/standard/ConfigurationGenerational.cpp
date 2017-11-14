@@ -52,7 +52,7 @@ MM_ConfigurationGenerational::newInstance(MM_EnvironmentBase *env)
 {
 	MM_ConfigurationGenerational *configuration;
 	
-	configuration = (MM_ConfigurationGenerational *) env->getForge()->allocate(sizeof(MM_ConfigurationGenerational), MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+	configuration = (MM_ConfigurationGenerational *) env->getForge()->allocate(sizeof(MM_ConfigurationGenerational), OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 	if(NULL != configuration) {
 		new(configuration) MM_ConfigurationGenerational(env);
 		if(!configuration->initialize(env)) {

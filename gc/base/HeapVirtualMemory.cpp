@@ -54,7 +54,7 @@ MM_HeapVirtualMemory::newInstance(MM_EnvironmentBase* env, uintptr_t heapAlignme
 {
 	MM_HeapVirtualMemory* heap;
 
-	heap = (MM_HeapVirtualMemory*)env->getForge()->allocate(sizeof(MM_HeapVirtualMemory), MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+	heap = (MM_HeapVirtualMemory*)env->getForge()->allocate(sizeof(MM_HeapVirtualMemory), OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 	if (heap) {
 		new (heap) MM_HeapVirtualMemory(env, heapAlignment, size, regionManager);
 		if (!heap->initialize(env, size)) {

@@ -204,7 +204,7 @@ MM_SweepHeapSectioningSegmented::reassignChunks(MM_EnvironmentBase *env)
 MM_SweepHeapSectioningSegmented *
 MM_SweepHeapSectioningSegmented::newInstance(MM_EnvironmentBase *env)
 {
-	MM_SweepHeapSectioningSegmented *sweepHeapSectioning = (MM_SweepHeapSectioningSegmented *)env->getForge()->allocate(sizeof(MM_SweepHeapSectioningSegmented), MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+	MM_SweepHeapSectioningSegmented *sweepHeapSectioning = (MM_SweepHeapSectioningSegmented *)env->getForge()->allocate(sizeof(MM_SweepHeapSectioningSegmented), OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 	if (sweepHeapSectioning) {
 		new(sweepHeapSectioning) MM_SweepHeapSectioningSegmented(env);
 		if (!sweepHeapSectioning->initialize(env)) {

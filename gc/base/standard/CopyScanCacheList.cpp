@@ -42,7 +42,7 @@ MM_CopyScanCacheList::initialize(MM_EnvironmentBase *env, volatile uintptr_t *ca
 	_sublistCount = extensions->cacheListSplit;
 	Assert_MM_true(0 < _sublistCount);
 
-	_sublists = (struct CopyScanCacheSublist *)extensions->getForge()->allocate(sizeof(struct CopyScanCacheSublist) * _sublistCount, MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+	_sublists = (struct CopyScanCacheSublist *)extensions->getForge()->allocate(sizeof(struct CopyScanCacheSublist) * _sublistCount, OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 	if (NULL == _sublists) {
 		result = false;
 	} else {

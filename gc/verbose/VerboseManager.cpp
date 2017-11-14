@@ -47,7 +47,7 @@ MM_VerboseManager::newInstance(MM_EnvironmentBase *env, OMR_VM* vm)
 {
 	MM_GCExtensionsBase* extensions = MM_GCExtensionsBase::getExtensions(vm);
 	
-	MM_VerboseManager *verboseManager = (MM_VerboseManager *)extensions->getForge()->allocate(sizeof(MM_VerboseManager), MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+	MM_VerboseManager *verboseManager = (MM_VerboseManager *)extensions->getForge()->allocate(sizeof(MM_VerboseManager), OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 	if (verboseManager) {
 		new(verboseManager) MM_VerboseManager(vm);
 		if(!verboseManager->initialize(env)) {

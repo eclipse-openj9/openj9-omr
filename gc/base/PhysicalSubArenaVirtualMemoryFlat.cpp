@@ -45,7 +45,7 @@ MM_PhysicalSubArenaVirtualMemoryFlat::newInstance(MM_EnvironmentBase *env, MM_He
 {
 	MM_PhysicalSubArenaVirtualMemoryFlat *subArena;
 
-	subArena = (MM_PhysicalSubArenaVirtualMemoryFlat *)env->getForge()->allocate(sizeof(MM_PhysicalSubArenaVirtualMemoryFlat), MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+	subArena = (MM_PhysicalSubArenaVirtualMemoryFlat *)env->getForge()->allocate(sizeof(MM_PhysicalSubArenaVirtualMemoryFlat), OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 	if(subArena) {
 		new(subArena) MM_PhysicalSubArenaVirtualMemoryFlat(heap);
 		if(!subArena->initialize(env)) {

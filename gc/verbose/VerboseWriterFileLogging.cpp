@@ -176,7 +176,7 @@ MM_VerboseWriterFileLogging::initializeFilename(MM_EnvironmentBase *env, const c
 			nameLen += sizeof(".%seq") - 1;
 		}
 
-		_filename = (char*)extensions->getForge()->allocate(nameLen, MM_AllocationCategory::DIAGNOSTIC, OMR_GET_CALLSITE());
+		_filename = (char*)extensions->getForge()->allocate(nameLen, OMR::GC::AllocationCategory::DIAGNOSTIC, OMR_GET_CALLSITE());
 		if (NULL == _filename) {
 			return false;
 		}
@@ -206,7 +206,7 @@ MM_VerboseWriterFileLogging::initializeFilename(MM_EnvironmentBase *env, const c
 			strcpy(write, ".%seq");
 		}
 	} else {
-		_filename = (char*)extensions->getForge()->allocate(strlen(filename) + 1, MM_AllocationCategory::DIAGNOSTIC, OMR_GET_CALLSITE());
+		_filename = (char*)extensions->getForge()->allocate(strlen(filename) + 1, OMR::GC::AllocationCategory::DIAGNOSTIC, OMR_GET_CALLSITE());
 		if (NULL == _filename) {
 			return false;
 		}
@@ -236,7 +236,7 @@ MM_VerboseWriterFileLogging::expandFilename(MM_EnvironmentBase *env, uintptr_t c
 	}
 	
 	uintptr_t len = omrstr_subst_tokens(NULL, 0, _filename, _tokens);
-	char *filenameToOpen = (char*)extensions->getForge()->allocate(len, MM_AllocationCategory::DIAGNOSTIC, OMR_GET_CALLSITE());
+	char *filenameToOpen = (char*)extensions->getForge()->allocate(len, OMR::GC::AllocationCategory::DIAGNOSTIC, OMR_GET_CALLSITE());
 	if (NULL != filenameToOpen) {
 		omrstr_subst_tokens(filenameToOpen, len, _filename, _tokens);
 	}

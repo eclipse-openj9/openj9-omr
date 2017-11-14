@@ -95,7 +95,14 @@ Key: Value
 ```
 
 When a commit has related issues or commits, explain the relation in the message
-body. You should also leave an `Issue` tag in the footer. For example:
+body. You should also leave an `Issue` tag in the footer. However, if this is the
+final commit that fixes an issue you should leave a `Closes` tag (or one of the
+tags described [here](https://help.github.com/articles/closing-issues-using-keywords/)
+in the footer instead which will automatically close the referenced issue when
+this pull request is merged.
+
+For example, if this is just one of the commits necessary to address Issue 1234
+then the following is a valid commit message:
 
 ```
 Correct race in frobnicator 
@@ -103,6 +110,17 @@ Correct race in frobnicator
 This patch eliminates the race condition in issue #1234.
 
 Issue: #1234
+```
+
+However, if this is the final commit that addresses the issue then the following
+is an acceptable commit message:
+
+```
+Correct race in frobnicator 
+
+This patch eliminates the race condition in issue #1234.
+
+Closes: #1234
 ```
 
 Sign off on your commit in the footer. By doing this, you assert original

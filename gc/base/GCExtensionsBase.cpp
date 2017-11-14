@@ -40,7 +40,7 @@ MM_GCExtensionsBase::newInstance(MM_EnvironmentBase* env)
 	OMRPORT_ACCESS_FROM_ENVIRONMENT(env);
 	MM_GCExtensionsBase* extensions;
 
-	/* Avoid using MM_Forge to allocate memory for the extension, since MM_Forge itself has not been created! */
+	/* Avoid using OMR::GC::Forge to allocate memory for the extension, since OMR::GC::Forge itself has not been created! */
 	extensions = static_cast<MM_GCExtensionsBase*>(omrmem_allocate_memory(sizeof(MM_GCExtensionsBase), OMRMEM_CATEGORY_MM));
 	if (extensions) {
 		new (extensions) MM_GCExtensionsBase();
@@ -55,7 +55,7 @@ MM_GCExtensionsBase::newInstance(MM_EnvironmentBase* env)
 void
 MM_GCExtensionsBase::kill(MM_EnvironmentBase* env)
 {
-	/* Avoid using MM_Forge to free memory for the extension, since MM_Forge was not used to allocate the memory */
+	/* Avoid using OMR::GC::Forge to free memory for the extension, since OMR::GC::Forge was not used to allocate the memory */
 	OMRPORT_ACCESS_FROM_ENVIRONMENT(env);
 	tearDown(env);
 	omrmem_free_memory(this);

@@ -735,7 +735,7 @@ error_no_memory:
 void
 MM_ConcurrentGC::tearDown(MM_EnvironmentBase *env)
 {
-	MM_Forge *forge = env->getForge();
+	OMR::GC::Forge *forge = env->getForge();
 
 	if (NULL != _cardTable){
 		_cardTable->kill(env);

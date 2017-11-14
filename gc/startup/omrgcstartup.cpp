@@ -89,7 +89,7 @@ heapCreationHelper(OMR_VM *omrVM, MM_StartupManager *startupManager, bool create
 
 	/* The 'fake' environment is necessary because obtaining an environment for a thread
 	 * is done by calling out to MM_Configuration, which itself uses the environment
-	 * to obtain pointers to MM_GCExtensionsBase and MM_Forge, etc. While this circular
+	 * to obtain pointers to MM_GCExtensionsBase and OMR::GC::Forge, etc. While this circular
 	 * dependency could be eliminated, it would require changes to many interfaces. */
 	MM_EnvironmentBase envBase(omrVM);
 

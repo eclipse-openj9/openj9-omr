@@ -263,7 +263,7 @@ public:
 	 * Get the memory forge
 	 * @return The memory forge
 	 */
-	MMINLINE MM_Forge *getForge() { return getExtensions()->getForge(); }
+	MMINLINE OMR::GC::Forge *getForge() { return getExtensions()->getForge(); }
 
 	/**
 	 * Get the thread's priority.

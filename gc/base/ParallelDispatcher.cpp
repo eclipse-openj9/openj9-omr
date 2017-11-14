@@ -206,7 +206,7 @@ MM_ParallelDispatcher::newInstance(MM_EnvironmentBase *env, omrsig_handler_fn ha
 void
 MM_ParallelDispatcher::kill(MM_EnvironmentBase *env)
 {
-	MM_Forge *forge = env->getForge();
+	OMR::GC::Forge *forge = env->getForge();
 
 	if(_slaveThreadMutex) {
 		omrthread_monitor_destroy(_slaveThreadMutex);
@@ -240,7 +240,7 @@ MM_ParallelDispatcher::kill(MM_EnvironmentBase *env)
 bool
 MM_ParallelDispatcher::initialize(MM_EnvironmentBase *env)
 {
-	MM_Forge *forge = env->getForge();
+	OMR::GC::Forge *forge = env->getForge();
 
 	_threadCountMaximum = env->getExtensions()->gcThreadCount;
 	Assert_MM_true(0 < _threadCountMaximum);

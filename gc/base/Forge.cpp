@@ -43,7 +43,7 @@ Forge::initialize(OMRPortLibrary* port)
 {
 	_portLibrary = port;
 
-	if (0 != omrthread_monitor_init_with_name(&_mutex, 0, "MM_Forge")) {
+	if (0 != omrthread_monitor_init_with_name(&_mutex, 0, "OMR::GC::Forge")) {
 		return false;
 	}	
 

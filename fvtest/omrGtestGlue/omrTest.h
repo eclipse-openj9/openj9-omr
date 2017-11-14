@@ -122,6 +122,7 @@ public:
 	}
 
 	static void setDefaultTestListener(bool showTestCases = true, bool showTests = false, bool showSuccess = false, bool showFailures = true) {
+            if (!getenv("OMR_VERBOSE_TEST")) {
 		TestEventListeners& listeners = testing::UnitTest::GetInstance()->listeners();
 		TestEventListener* default_printer = listeners.Release(listeners.default_result_printer());
 		OMREventListener *listener = new OMREventListener(default_printer);
@@ -130,6 +131,7 @@ public:
 		listener->_showSuccess = showSuccess;
 		listener->_showFailures = showFailures;
 		listeners.Append(listener);
+            }
 	}
 };
 

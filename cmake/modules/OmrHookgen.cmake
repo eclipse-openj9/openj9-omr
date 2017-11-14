@@ -26,11 +26,11 @@ set(OMR_HOOKGEN_ 1)
 include(CMakeParseArguments)
 
 # Process an input hookgen file to generate output source files.
-# Usage: omr_add_hookgen(INPUT <input> [PRIVATE_DIR <private_header_dir>] [PUBLIC_DIR <public_header_dir>]
+# Usage: (INPUT <input> [PRIVATE_DIR <private_header_dir>] [PUBLIC_DIR <public_header_dir>]
 # public headers are written to public_header_dir (defaults to current binary dir)
-# private headers are written to private_heade_dir (defautls to current binary dir)
+# private headers are written to private_header_dir (defaults to current binary dir)
 function(omr_add_hookgen)
-	cmake_parse_arguments(OPT "" "INPUT;PRIVATE_DIR;PUBLIC_DIR" "TARGETS" ${ARGN})
+	cmake_parse_arguments(OPT "" "INPUT;PRIVATE_DIR;PUBLIC_DIR" "" ${ARGN})
 
 	if(NOT OPT_INPUT)
 		message(FATAL_ERROR "value for INPUT must be specified")
@@ -50,7 +50,7 @@ function(omr_add_hookgen)
 	string(REGEX MATCH "<privateHeader>[^<]*" private_header "${hook_def}")
 	string(REGEX MATCH "<publicHeader>[^<]*" public_header "${hook_def}")
 	if((NOT public_header) OR (NOT private_header))
-		messeage(FATAL_ERROR "Header extraction failed for ${input}")
+		message(FATAL_ERROR "Header extraction failed for ${input}")
 	endif()
 
 	string(REPLACE "<privateHeader>" "" private_header "${private_header}")
@@ -61,7 +61,7 @@ function(omr_add_hookgen)
 	string(STRIP "${public_header}" public_header)
 	get_filename_component(public_header "${public_header}" NAME)
 
-	# Hookgen does not accept absoulte paths, they must be relative to the input file
+	# Hookgen does not accept absolute paths, they must be relative to the input file
 	# So we need to figure out what that would be
 	file(RELATIVE_PATH private_path "${CMAKE_CURRENT_BINARY_DIR}" "${OPT_PRIVATE_DIR}/${private_header}")
 	file(RELATIVE_PATH public_path "${CMAKE_CURRENT_BINARY_DIR}" "${OPT_PUBLIC_DIR}/${public_header}")

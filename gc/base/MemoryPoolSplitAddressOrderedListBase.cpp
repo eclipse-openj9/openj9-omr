@@ -334,6 +334,7 @@ MM_MemoryPoolSplitAddressOrderedListBase::reset(Cause cause)
 		/* initialize frequent allocates for each free list based on cummulative large object stats for the pool */
 		resetFreeEntryAllocateStats(&_largeObjectAllocateStatsForFreeList[i]);
 	}
+	_lastFreeEntry = NULL;
 	resetFreeEntryAllocateStats(_largeObjectAllocateStats);
 	resetLargeObjectAllocateStats();
 }

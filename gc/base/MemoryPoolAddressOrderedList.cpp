@@ -706,6 +706,7 @@ MM_MemoryPoolAddressOrderedList::reset(Cause cause)
 	clearHints();
 	_heapFreeList = (MM_HeapLinkedFreeHeader *)NULL;
 
+	_lastFreeEntry = NULL;
 	resetFreeEntryAllocateStats(_largeObjectAllocateStats);
 	resetLargeObjectAllocateStats();
 }

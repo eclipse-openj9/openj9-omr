@@ -2154,7 +2154,7 @@ class S390RILInstruction : public TR::Instruction
       : TR::Instruction(op, n, cg), _targetPtr(NULL), _targetSnippet(NULL), _targetSymbol(NULL), _flagsRIL(0), _mask(0xffffffff),  _targetLabel(NULL), _symbolReference(NULL), _sourceImmediate(imm)
       {
       TR_ASSERT_FATAL(getOpCode().isExtendedImmediate(), "Incorrect S390RILInstruction constructor used.\n"
-                                                       "%s expects an address as the immediate but this constructor is for integer immediates.", getOpCode().getMnemonicName());
+                                                       "%s expects an address as the immediate but this constructor is for integer immediates.", cg->getDebug()->getOpCodeName(&this->getOpCode()));
       checkRegForGPR0Disable(op,treg);
       if (!getOpCode().setsOperand1())
          useSourceRegister(treg);
@@ -2168,7 +2168,7 @@ class S390RILInstruction : public TR::Instruction
       : TR::Instruction(op, n, cg), _targetPtr(NULL), _targetSnippet(NULL), _targetSymbol(NULL), _flagsRIL(0), _mask(0xffffffff),  _targetLabel(NULL), _symbolReference(NULL), _sourceImmediate(imm)
       {
       TR_ASSERT_FATAL(getOpCode().isExtendedImmediate(), "Incorrect S390RILInstruction constructor used.\n"
-                                                       "%s expects an address as the immediate but this constructor is for integer immediates.", getOpCode().getMnemonicName());
+                                                       "%s expects an address as the immediate but this constructor is for integer immediates.", cg->getDebug()->getOpCodeName(&this->getOpCode()));
       checkRegForGPR0Disable(op,treg);
       if (!getOpCode().setsOperand1())
          useSourceRegister(treg);
@@ -2182,7 +2182,7 @@ class S390RILInstruction : public TR::Instruction
       : TR::Instruction(op, n, cg), _targetPtr(targetPtr), _targetSnippet(NULL), _targetSymbol(NULL), _flagsRIL(0), _mask(0xffffffff),  _targetLabel(NULL), _symbolReference(NULL), _sourceImmediate(0)
       {
       TR_ASSERT_FATAL(!getOpCode().isExtendedImmediate(), "Incorrect S390RILInstruction constructor used.\n"
-                                                        "%s expects an integer as the immediate but this constructor is for address immediates.", getOpCode().getMnemonicName());
+                                                        "%s expects an integer as the immediate but this constructor is for address immediates.", cg->getDebug()->getOpCodeName(&this->getOpCode()));
       checkRegForGPR0Disable(op,treg);
       if (!getOpCode().setsOperand1())
          useSourceRegister(treg);
@@ -2225,7 +2225,7 @@ class S390RILInstruction : public TR::Instruction
       : TR::Instruction(op, n, precedingInstruction, cg), _targetPtr(NULL), _targetSnippet(NULL), _targetSymbol(NULL), _flagsRIL(0), _mask(0xffffffff), _targetLabel(NULL), _symbolReference(NULL), _sourceImmediate(imm)
       {
       TR_ASSERT_FATAL(getOpCode().isExtendedImmediate(), "Incorrect S390RILInstruction constructor used.\n"
-                                                       "%s expects an adddress as the immediate but this constructor is for integer immediates.", getOpCode().getMnemonicName());
+                                                       "%s expects an adddress as the immediate but this constructor is for integer immediates.", cg->getDebug()->getOpCodeName(&this->getOpCode()));
       checkRegForGPR0Disable(op,treg);
       if (!getOpCode().setsOperand1())
          useSourceRegister(treg);
@@ -2240,7 +2240,7 @@ class S390RILInstruction : public TR::Instruction
       : TR::Instruction(op, n, precedingInstruction, cg), _targetPtr(NULL), _targetSnippet(NULL), _targetSymbol(NULL), _flagsRIL(0), _mask(0xffffffff), _targetLabel(NULL), _symbolReference(NULL), _sourceImmediate(imm)
       {
       TR_ASSERT_FATAL(getOpCode().isExtendedImmediate(), "Incorrect S390RILInstruction constructor used.\n"
-                                                       "%s expects an address as the immediate but this constructor is for integer immediates.", getOpCode().getMnemonicName());
+                                                       "%s expects an address as the immediate but this constructor is for integer immediates.", cg->getDebug()->getOpCodeName(&this->getOpCode()));
       checkRegForGPR0Disable(op,treg);
       if (!getOpCode().setsOperand1())
          useSourceRegister(treg);
@@ -2255,7 +2255,7 @@ class S390RILInstruction : public TR::Instruction
       : TR::Instruction(op, n, precedingInstruction, cg), _targetPtr(targetPtr), _targetSnippet(NULL), _targetSymbol(NULL), _flagsRIL(0), _mask(0xffffffff), _targetLabel(NULL), _symbolReference(NULL), _sourceImmediate(0)
       {
       TR_ASSERT_FATAL(!getOpCode().isExtendedImmediate(), "Incorrect S390RILInstruction constructor used.\n"
-                                                        "%s expects an address as the immediate but this constructor is for integer immediates.", getOpCode().getMnemonicName());
+                                                        "%s expects an address as the immediate but this constructor is for integer immediates.", cg->getDebug()->getOpCodeName(&this->getOpCode()));
       checkRegForGPR0Disable(op,treg);
       if (!getOpCode().setsOperand1())
          useSourceRegister(treg);

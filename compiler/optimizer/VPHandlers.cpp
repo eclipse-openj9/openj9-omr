@@ -4367,14 +4367,6 @@ static int32_t longNumberOfLeadingZeros (int64_t n) {return leadingZeroes (n);}
 static int32_t longNumberOfTrailingZeros (int64_t n) { return trailingZeroes(n); }
 static int32_t longBitCount (int64_t n) {return populationCount(n);}
 
-template <typename T>
-void swap (T& a, T& b)
-   {
-   T tmp = b;
-   b = a;
-   a = tmp;
-   }
-
 
 template <typename FUNC, typename FUNC2, typename T>
 void addValidRangeBlockOrGlobalConstraint (OMR::ValuePropagation *vp,
@@ -4389,7 +4381,7 @@ void addValidRangeBlockOrGlobalConstraint (OMR::ValuePropagation *vp,
 
    if (pLow > pHigh)
       {
-      swap (pLow, pHigh);
+      std::swap (pLow, pHigh);
       }
 
    if (vp->trace())

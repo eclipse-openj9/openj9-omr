@@ -2993,8 +2993,11 @@ TR::S390RIEInstruction::generateBinaryEncoding()
          // mask the I3 field as bits 1-3 must be 0
          *(int8_t *) (cursor) |= (int8_t)getSourceImmediate8One() & 0x1F;
       else if (getOpCodeValue() == TR::InstOpCode::RISBG || getOpCodeValue() == TR::InstOpCode::RISBGN)
-         // mask the I3 field as bits 1-2 must be 0
+         {
+         // mask the I3 field as bits 0-1 must be 0
          *(int8_t *) (cursor) |= (int8_t)getSourceImmediate8One() & 0x3F;
+         TR_ASSERT(((int8_t)getSourceImmediate8One() & 0xC0) == 0, "Bits 0-1 in the I3 field for %s must be 0", getOpCodeValue() == TR::InstOpCode::RISBG ? "RISBG" : "RISBGN");
+         }
       else
          *(int8_t *) (cursor) |= (int8_t)getSourceImmediate8One();
 
@@ -3004,7 +3007,10 @@ TR::S390RIEInstruction::generateBinaryEncoding()
          // mask the I4 field as bits 1-2 must be 0
          *(int8_t *) (cursor) |= (int8_t)getSourceImmediate8Two() & 0x9F;
       else if (getOpCodeValue() == TR::InstOpCode::RISBG || getOpCodeValue() == TR::InstOpCode::RISBGN)
+         {
          *(int8_t *) (cursor) |= (int8_t)getSourceImmediate8Two() & 0xBF;
+         TR_ASSERT(((int8_t)getSourceImmediate8Two() & 0x40) == 0, "Bit 1 in the I4 field for %s must be 0", getOpCodeValue() == TR::InstOpCode::RISBG ? "RISBG" : "RISBGN");
+         }
       else
          *(int8_t *) (cursor) |= (int8_t)getSourceImmediate8Two();
       cursor -= 1;

@@ -40,7 +40,7 @@
 MM_MemoryPoolBumpPointer *
 MM_MemoryPoolBumpPointer::newInstance(MM_EnvironmentBase *env, uintptr_t minimumFreeEntrySize)
 {
-	MM_MemoryPoolBumpPointer *memoryPool = (MM_MemoryPoolBumpPointer *)env->getForge()->allocate(sizeof(MM_MemoryPoolBumpPointer), MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+	MM_MemoryPoolBumpPointer *memoryPool = (MM_MemoryPoolBumpPointer *)env->getForge()->allocate(sizeof(MM_MemoryPoolBumpPointer), OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 	if (NULL != memoryPool) {
 		memoryPool = new(memoryPool) MM_MemoryPoolBumpPointer(env, minimumFreeEntrySize);
 		if (!memoryPool->initialize(env)) {

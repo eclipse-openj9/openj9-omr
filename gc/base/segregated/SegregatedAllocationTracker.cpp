@@ -35,7 +35,7 @@ MM_SegregatedAllocationTracker*
 MM_SegregatedAllocationTracker::newInstance(MM_EnvironmentBase *env, volatile uintptr_t *globalBytesInUse, uintptr_t flushThreshold)
 {
 	MM_SegregatedAllocationTracker* allocationTracker;
-	allocationTracker = (MM_SegregatedAllocationTracker*)env->getForge()->allocate(sizeof(MM_SegregatedAllocationTracker), MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+	allocationTracker = (MM_SegregatedAllocationTracker*)env->getForge()->allocate(sizeof(MM_SegregatedAllocationTracker), OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 	if(NULL != allocationTracker) {
 		new(allocationTracker) MM_SegregatedAllocationTracker(env);
 		if(!allocationTracker->initialize(env, globalBytesInUse, flushThreshold)) {

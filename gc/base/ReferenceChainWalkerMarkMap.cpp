@@ -40,7 +40,7 @@
 MM_ReferenceChainWalkerMarkMap *
 MM_ReferenceChainWalkerMarkMap::newInstance(MM_EnvironmentBase *env, uintptr_t maxHeapSize)
 {
-	MM_ReferenceChainWalkerMarkMap *markMap = (MM_ReferenceChainWalkerMarkMap *)env->getForge()->allocate(sizeof(MM_ReferenceChainWalkerMarkMap), MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+	MM_ReferenceChainWalkerMarkMap *markMap = (MM_ReferenceChainWalkerMarkMap *)env->getForge()->allocate(sizeof(MM_ReferenceChainWalkerMarkMap), OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 	if (NULL != markMap) {
 		new(markMap) MM_ReferenceChainWalkerMarkMap(env, maxHeapSize);
 		if (!markMap->initialize(env)) {

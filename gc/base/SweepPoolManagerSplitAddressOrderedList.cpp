@@ -31,7 +31,7 @@ MM_SweepPoolManagerSplitAddressOrderedList::newInstance(MM_EnvironmentBase *env)
 {
 	MM_SweepPoolManagerSplitAddressOrderedList *sweepPoolManager;
 	
-	sweepPoolManager = (MM_SweepPoolManagerSplitAddressOrderedList *)env->getForge()->allocate(sizeof(MM_SweepPoolManagerSplitAddressOrderedList), MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+	sweepPoolManager = (MM_SweepPoolManagerSplitAddressOrderedList *)env->getForge()->allocate(sizeof(MM_SweepPoolManagerSplitAddressOrderedList), OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 	if (sweepPoolManager) {
 		new(sweepPoolManager) MM_SweepPoolManagerSplitAddressOrderedList(env);
 		if (!sweepPoolManager->initialize(env)) { 

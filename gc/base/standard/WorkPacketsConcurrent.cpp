@@ -37,7 +37,7 @@
 MM_WorkPacketsConcurrent *
 MM_WorkPacketsConcurrent::newInstance(MM_EnvironmentBase *env)
 {
-	MM_WorkPacketsConcurrent *workPackets = (MM_WorkPacketsConcurrent *)env->getForge()->allocate(sizeof(MM_WorkPacketsConcurrent), MM_AllocationCategory::WORK_PACKETS, OMR_GET_CALLSITE());
+	MM_WorkPacketsConcurrent *workPackets = (MM_WorkPacketsConcurrent *)env->getForge()->allocate(sizeof(MM_WorkPacketsConcurrent), OMR::GC::AllocationCategory::WORK_PACKETS, OMR_GET_CALLSITE());
 	if (NULL != workPackets) {
 		new(workPackets) MM_WorkPacketsConcurrent(env);
 		if (!workPackets->initialize(env)) {

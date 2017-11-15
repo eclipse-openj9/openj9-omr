@@ -49,7 +49,7 @@ MM_ConcurrentOverflow::newInstance(MM_EnvironmentBase *env,MM_WorkPackets *workP
 {
 	MM_ConcurrentOverflow *overflow;
 
-	overflow = (MM_ConcurrentOverflow *)env->getForge()->allocate(sizeof(MM_ConcurrentOverflow), MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+	overflow = (MM_ConcurrentOverflow *)env->getForge()->allocate(sizeof(MM_ConcurrentOverflow), OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 	if (NULL != overflow) {
 		new(overflow) MM_ConcurrentOverflow(env,workPackets);
 		if (!overflow->initialize(env)) {

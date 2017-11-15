@@ -28,33 +28,13 @@
 #include "omrcomp.h"
 #include "thread_api.h"
 #include "omrport.h"
+#include "MemoryStatistics.hpp"
+#include "AllocationCategory.hpp"
 
 #include <new>
 
 class MM_EnvironmentBase;
 class MM_GCExtensionsBase;
-
-struct MM_AllocationCategory {
-	enum Enum {
-		FIXED = 0,		/** Memory that is a fixed cost of running the garbage collector (e.g. memory for GCExtensions) */
-		WORK_PACKETS, 	/** Memory that is used for work packets  */
-		REFERENCES, 	/** Memory that is used to track soft, weak, and phantom references */
-		FINALIZE, 		/** Memory that is used to track and finalize objects */
-		DIAGNOSTIC,		/** Memory that is used to track gc behaviour (e.g. gc check, verbose gc) */
-		REMEMBERED_SET, /** Memory that is used to track the remembered set */
-		JAVA_HEAP,		/** Memory that is used for the java heap */
-		OTHER, 			/** Memory that does not fall into any of the above categories */
-		
-		/* Must be last, do not use this category! */
-		CATEGORY_COUNT
-	};
-};
-
-struct MM_MemoryStatistics {
-	MM_AllocationCategory::Enum category;
-	uintptr_t allocated;
-	uintptr_t highwater;
-};
 
 namespace OMR {
 namespace GC {
@@ -67,16 +47,16 @@ friend class ::MM_GCExtensionsBase;
 private:
 	omrthread_monitor_t _mutex;
 	OMRPortLibrary* _portLibrary;
-	MM_MemoryStatistics _statistics[MM_AllocationCategory::CATEGORY_COUNT];
+	OMR_GC_MemoryStatistics _statistics[AllocationCategory::CATEGORY_COUNT];
 	
 /* Function Members */
 protected:
 	/**
-	 * Initialize internal structures of the memory forge.  An instance of MM_Forge must be initialized before
+	 * Initialize internal structures of the memory forge.  An instance of Forge must be initialized before
 	 * the methods allocate or free are called.
 	 * 
 	 * @param[in] port The portlibrary the forge will make allocations through.
-	 * @return true if the forge was successfully initialized, otherwise returns false.  A instance of MM_Forge
+	 * @return true if the forge was successfully initialized, otherwise returns false.  A instance of Forge
 	 * 		   should not be used before it has been successfully initialized.
 	 */
 	bool initialize(OMRPortLibrary* port);
@@ -99,7 +79,7 @@ public:
 	 * 						 the OMR_GET_CALLSITE() macro
 	 * @return a pointer to the allocated memory, or NULL if the request could not be performed
 	 */
-	void* allocate(std::size_t bytesRequested, MM_AllocationCategory::Enum category, const char* callsite);
+	void* allocate(std::size_t bytesRequested, AllocationCategory::Enum category, const char* callsite);
 
 	/**
 	 * Deallocate memory that has been allocated by the garbage collector.  This function should not be called
@@ -117,7 +97,7 @@ public:
 	 *
 	 * @return an array of memory usage statistics indexed using the CategoryType enumeration
 	 */
-	MM_MemoryStatistics* getCurrentStatistics();
+	OMR_GC_MemoryStatistics* getCurrentStatistics();
 };
 
 } // namespace GC
@@ -128,7 +108,7 @@ public:
  *   MyStruct* s = new(forge, AllocationCategory::FIXED, OMR_GET_CALLSITE(), std::nothrow) MyStruct(constructor params...);
  */
 inline void*
-operator new(std::size_t size, OMR::GC::Forge* forge, MM_AllocationCategory::Enum category, const char* site, const std::nothrow_t&) throw() {
+operator new(std::size_t size, OMR::GC::Forge* forge, OMR::GC::AllocationCategory::Enum category, const char* site, const std::nothrow_t&) throw() {
 	return forge->allocate(size, category, site);
 }
 
@@ -137,7 +117,7 @@ operator new(std::size_t size, OMR::GC::Forge* forge, MM_AllocationCategory::Enu
  *   MyStruct* s = new(forge, AllocationCategory::FIXED, OMR_GET_CALLSITE(), std::nothrow) MyStruct(constructor params...);
  */
 inline void*
-operator new[](std::size_t size, OMR::GC::Forge* forge, MM_AllocationCategory::Enum category, const char* site, const std::nothrow_t&) throw() {
+operator new[](std::size_t size, OMR::GC::Forge* forge, OMR::GC::AllocationCategory::Enum category, const char* site, const std::nothrow_t&) throw() {
 	return operator new(size, forge, category, site, std::nothrow);
 }
 

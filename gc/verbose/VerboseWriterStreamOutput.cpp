@@ -42,7 +42,7 @@ MM_VerboseWriterStreamOutput::newInstance(MM_EnvironmentBase *env, const char *f
 {
 	MM_GCExtensionsBase *extensions = MM_GCExtensionsBase::getExtensions(env->getOmrVM());
 
-	MM_VerboseWriterStreamOutput *agent = (MM_VerboseWriterStreamOutput *)extensions->getForge()->allocate(sizeof(MM_VerboseWriterStreamOutput), MM_AllocationCategory::DIAGNOSTIC, OMR_GET_CALLSITE());
+	MM_VerboseWriterStreamOutput *agent = (MM_VerboseWriterStreamOutput *)extensions->getForge()->allocate(sizeof(MM_VerboseWriterStreamOutput), OMR::GC::AllocationCategory::DIAGNOSTIC, OMR_GET_CALLSITE());
 	if(agent) {
 		new(agent) MM_VerboseWriterStreamOutput(env);
 		if(!agent->initialize(env, filename)) {

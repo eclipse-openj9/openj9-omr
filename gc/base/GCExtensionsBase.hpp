@@ -201,7 +201,7 @@ private:
 
 protected:
 	OMR_VM* _omrVM;
-	MM_Forge _forge;
+	OMR::GC::Forge _forge;
 	MM_Collector* _globalCollector; /**< The global collector for the system */
 #if defined(OMR_GC_OBJECT_MAP)
 	MM_ObjectMap *_objectMap;
@@ -779,7 +779,7 @@ public:
 	 * Gets a pointer to the memory forge
 	 * @return Pointer to the memory forge
 	 */
-	MMINLINE MM_Forge* getForge() { return &_forge; }
+	MMINLINE OMR::GC::Forge* getForge() { return &_forge; }
 
 	MMINLINE uintptr_t getRememberedCount()
 	{

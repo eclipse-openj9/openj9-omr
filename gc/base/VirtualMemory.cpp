@@ -44,7 +44,7 @@
 MM_VirtualMemory*
 MM_VirtualMemory::newInstance(MM_EnvironmentBase* env, uintptr_t heapAlignment, uintptr_t size, uintptr_t pageSize, uintptr_t pageFlags, uintptr_t tailPadding, void* preferredAddress, void* ceiling, uintptr_t mode, uintptr_t options, uint32_t memoryCategory)
 {
-	MM_VirtualMemory* vmem = (MM_VirtualMemory*)env->getForge()->allocate(sizeof(MM_VirtualMemory), MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+	MM_VirtualMemory* vmem = (MM_VirtualMemory*)env->getForge()->allocate(sizeof(MM_VirtualMemory), OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 
 	if (vmem) {
 		new (vmem) MM_VirtualMemory(env, heapAlignment, pageSize, pageFlags, tailPadding, mode);

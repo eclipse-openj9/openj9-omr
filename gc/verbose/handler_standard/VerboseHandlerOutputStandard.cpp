@@ -77,7 +77,7 @@ MM_VerboseHandlerOutputStandard::newInstance(MM_EnvironmentBase *env, MM_Verbose
 {
 	MM_GCExtensionsBase* extensions = MM_GCExtensionsBase::getExtensions(env->getOmrVM());
 
-	MM_VerboseHandlerOutputStandard *verboseHandlerOutput = (MM_VerboseHandlerOutputStandard *)extensions->getForge()->allocate(sizeof(MM_VerboseHandlerOutputStandard), MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+	MM_VerboseHandlerOutputStandard *verboseHandlerOutput = (MM_VerboseHandlerOutputStandard *)extensions->getForge()->allocate(sizeof(MM_VerboseHandlerOutputStandard), OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 	if (NULL != verboseHandlerOutput) {
 		new(verboseHandlerOutput) MM_VerboseHandlerOutputStandard(extensions);
 		if(!verboseHandlerOutput->initialize(env, manager)) {

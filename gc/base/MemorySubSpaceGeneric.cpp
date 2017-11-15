@@ -543,7 +543,7 @@ MM_MemorySubSpaceGeneric::newInstance(MM_EnvironmentBase* env, MM_MemoryPool* me
 {
 	MM_MemorySubSpaceGeneric* memorySubSpace;
 
-	memorySubSpace = (MM_MemorySubSpaceGeneric*)env->getForge()->allocate(sizeof(MM_MemorySubSpaceGeneric), MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+	memorySubSpace = (MM_MemorySubSpaceGeneric*)env->getForge()->allocate(sizeof(MM_MemorySubSpaceGeneric), OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 	if (NULL != memorySubSpace) {
 		new (memorySubSpace) MM_MemorySubSpaceGeneric(env, memoryPool, regionPool, usesGlobalCollector, minimumSize, initialSize, maximumSize, memoryType, objectFlags);
 		if (!memorySubSpace->initialize(env)) {

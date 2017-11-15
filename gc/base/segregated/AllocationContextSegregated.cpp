@@ -47,7 +47,7 @@
 MM_AllocationContextSegregated *
 MM_AllocationContextSegregated::newInstance(MM_EnvironmentBase *env, MM_GlobalAllocationManagerSegregated *gam, MM_RegionPoolSegregated *regionPool)
 {
-	MM_AllocationContextSegregated *allocCtxt = (MM_AllocationContextSegregated *)env->getForge()->allocate(sizeof(MM_AllocationContextSegregated), MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+	MM_AllocationContextSegregated *allocCtxt = (MM_AllocationContextSegregated *)env->getForge()->allocate(sizeof(MM_AllocationContextSegregated), OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 	if (allocCtxt) {
 		new(allocCtxt) MM_AllocationContextSegregated(env, gam, regionPool);
 		if (!allocCtxt->initialize(env)) {

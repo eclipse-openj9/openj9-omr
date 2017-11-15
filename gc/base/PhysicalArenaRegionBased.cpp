@@ -40,7 +40,7 @@
 MM_PhysicalArenaRegionBased *
 MM_PhysicalArenaRegionBased::newInstance(MM_EnvironmentBase *env, MM_Heap *heap)
 {
-	MM_PhysicalArenaRegionBased *arena = (MM_PhysicalArenaRegionBased *)env->getForge()->allocate(sizeof(MM_PhysicalArenaRegionBased), MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+	MM_PhysicalArenaRegionBased *arena = (MM_PhysicalArenaRegionBased *)env->getForge()->allocate(sizeof(MM_PhysicalArenaRegionBased), OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 	if (arena) {
 		new(arena) MM_PhysicalArenaRegionBased(env, heap);
 		if(!arena->initialize(env)) {

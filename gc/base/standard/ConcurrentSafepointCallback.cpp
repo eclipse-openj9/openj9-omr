@@ -32,7 +32,7 @@ MM_ConcurrentSafepointCallback::newInstance(MM_EnvironmentBase *env)
 {
 	MM_ConcurrentSafepointCallback *callback;
 
-	callback = (MM_ConcurrentSafepointCallback *)env->getForge()->allocate(sizeof(MM_ConcurrentSafepointCallback), MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+	callback = (MM_ConcurrentSafepointCallback *)env->getForge()->allocate(sizeof(MM_ConcurrentSafepointCallback), OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 	if (NULL != callback) {
 		new(callback) MM_ConcurrentSafepointCallback(env);
 	}

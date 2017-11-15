@@ -88,7 +88,7 @@ MM_ParallelHeapWalker::newInstance(MM_ParallelGlobalGC *globalCollector, MM_Mark
 {
 	MM_ParallelHeapWalker *heapWalker;
 
-	heapWalker = (MM_ParallelHeapWalker *)env->getForge()->allocate(sizeof(MM_ParallelHeapWalker), MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+	heapWalker = (MM_ParallelHeapWalker *)env->getForge()->allocate(sizeof(MM_ParallelHeapWalker), OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 	if (heapWalker) {
 		new(heapWalker) MM_ParallelHeapWalker(globalCollector, markMap);
 	}

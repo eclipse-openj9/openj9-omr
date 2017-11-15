@@ -147,7 +147,7 @@ MM_MemoryPoolSplitAddressOrderedListBase::initialize(MM_EnvironmentBase* env)
 	 */
 	_sweepPoolManager = extensions->sweepPoolManagerSmallObjectArea;
 
-	_currentThreadFreeList = (uintptr_t*)extensions->getForge()->allocate(sizeof(uintptr_t) * _heapFreeListCount, MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+	_currentThreadFreeList = (uintptr_t*)extensions->getForge()->allocate(sizeof(uintptr_t) * _heapFreeListCount, OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 	if (NULL == _currentThreadFreeList) {
 		return false;
 	} else {
@@ -156,7 +156,7 @@ MM_MemoryPoolSplitAddressOrderedListBase::initialize(MM_EnvironmentBase* env)
 		}
 	}
 
-	_heapFreeLists = (J9ModronHeapFreeList*)extensions->getForge()->allocate(sizeof(J9ModronHeapFreeList) * _heapFreeListCountExtended, MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+	_heapFreeLists = (J9ModronHeapFreeList*)extensions->getForge()->allocate(sizeof(J9ModronHeapFreeList) * _heapFreeListCountExtended, OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 	if (NULL == _heapFreeLists) {
 		return false;
 	} else {
@@ -180,7 +180,7 @@ MM_MemoryPoolSplitAddressOrderedListBase::initialize(MM_EnvironmentBase* env)
 	/* If we ever subclass MM_LargeObjectAllocateStats we will have to allocate this as an array of pointers to MM_LargeObjectAllocateStats and invoke newInstance instead of just initialize
 	 * Than, we may also need to virtualize initialize() and tearDown().
 	 */
-	_largeObjectAllocateStatsForFreeList = (MM_LargeObjectAllocateStats*)extensions->getForge()->allocate(sizeof(MM_LargeObjectAllocateStats) * _heapFreeListCountExtended, MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+	_largeObjectAllocateStatsForFreeList = (MM_LargeObjectAllocateStats*)extensions->getForge()->allocate(sizeof(MM_LargeObjectAllocateStats) * _heapFreeListCountExtended, OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 
 	if (NULL == _largeObjectAllocateStatsForFreeList) {
 		return false;

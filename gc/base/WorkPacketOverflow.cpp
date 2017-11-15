@@ -33,7 +33,7 @@ MM_WorkPacketOverflow::newInstance(MM_EnvironmentBase *env, MM_WorkPackets *work
 {
 	MM_WorkPacketOverflow *overflow;
 
-	overflow = (MM_WorkPacketOverflow *)env->getForge()->allocate(sizeof(MM_WorkPacketOverflow), MM_AllocationCategory::WORK_PACKETS, OMR_GET_CALLSITE());
+	overflow = (MM_WorkPacketOverflow *)env->getForge()->allocate(sizeof(MM_WorkPacketOverflow), OMR::GC::AllocationCategory::WORK_PACKETS, OMR_GET_CALLSITE());
 	if (overflow) {
 		new(overflow) MM_WorkPacketOverflow(env, workPackets);
 		if (!overflow->initialize(env)) {

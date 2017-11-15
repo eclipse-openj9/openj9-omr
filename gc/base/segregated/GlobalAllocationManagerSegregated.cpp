@@ -35,7 +35,7 @@
 MM_GlobalAllocationManagerSegregated*
 MM_GlobalAllocationManagerSegregated::newInstance(MM_EnvironmentBase *env, MM_RegionPoolSegregated *regionPool)
 {
-	MM_GlobalAllocationManagerSegregated *allocationManager = (MM_GlobalAllocationManagerSegregated *)env->getForge()->allocate(sizeof(MM_GlobalAllocationManagerSegregated), MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+	MM_GlobalAllocationManagerSegregated *allocationManager = (MM_GlobalAllocationManagerSegregated *)env->getForge()->allocate(sizeof(MM_GlobalAllocationManagerSegregated), OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 	if (allocationManager) {
 		allocationManager = new(allocationManager) MM_GlobalAllocationManagerSegregated(env);
 		if (!allocationManager->initialize(env, regionPool)) {
@@ -117,7 +117,7 @@ MM_GlobalAllocationManagerSegregated::initializeAllocationContexts(MM_Environmen
 {
 	Assert_MM_true(0 != _managedAllocationContextCount);
 
-	MM_AllocationContextSegregated **contexts = (MM_AllocationContextSegregated **)env->getForge()->allocate(sizeof(MM_AllocationContextSegregated*) * _managedAllocationContextCount, MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+	MM_AllocationContextSegregated **contexts = (MM_AllocationContextSegregated **)env->getForge()->allocate(sizeof(MM_AllocationContextSegregated*) * _managedAllocationContextCount, OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 	if (NULL == contexts) {
 		return false;
 	}

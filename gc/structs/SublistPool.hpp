@@ -62,7 +62,7 @@ private:
 	uintptr_t _currentSize;
 	uintptr_t _maxSize;
 	volatile uintptr_t _count; /**< A count for number of elements across all sublistPuddles */
-	MM_AllocationCategory::Enum _allocCategory;
+	OMR::GC::AllocationCategory::Enum _allocCategory;
 	
 	MM_SublistPuddle *_previousList; /**< A list of the non-empty puddles when #startProcessingSublist() was called */
 	
@@ -77,7 +77,7 @@ private:
 
 protected:
 public:
-	bool initialize(MM_EnvironmentBase *env, MM_AllocationCategory::Enum category);
+	bool initialize(MM_EnvironmentBase *env, OMR::GC::AllocationCategory::Enum category);
 	void tearDown(MM_EnvironmentBase *env);
 
 	MMINLINE void setGrowSize(uintptr_t growSize) { _growSize = growSize; }
@@ -133,7 +133,7 @@ public:
 		, _currentSize(0)
 		, _maxSize(0)
 		, _count(0)
-		, _allocCategory(MM_AllocationCategory::OTHER)
+		, _allocCategory(OMR::GC::AllocationCategory::OTHER)
 		, _previousList(NULL)
 	{}
 

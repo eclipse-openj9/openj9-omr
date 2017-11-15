@@ -191,7 +191,7 @@ MM_ParallelGlobalGC::newInstance(MM_EnvironmentBase *env)
 {
 	MM_ParallelGlobalGC *globalGC;
 		
-	globalGC = (MM_ParallelGlobalGC *)env->getForge()->allocate(sizeof(MM_ParallelGlobalGC), MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+	globalGC = (MM_ParallelGlobalGC *)env->getForge()->allocate(sizeof(MM_ParallelGlobalGC), OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 	if (globalGC) {
 		new(globalGC) MM_ParallelGlobalGC(env);
 		if (!globalGC->initialize(env)) { 

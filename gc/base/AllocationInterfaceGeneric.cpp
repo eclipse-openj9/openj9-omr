@@ -35,7 +35,7 @@
 MM_AllocationInterfaceGeneric*
 MM_AllocationInterfaceGeneric::newInstance(MM_EnvironmentBase *env)
 {
-	MM_AllocationInterfaceGeneric *allocationInterface = (MM_AllocationInterfaceGeneric *)env->getForge()->allocate(sizeof(MM_AllocationInterfaceGeneric), MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+	MM_AllocationInterfaceGeneric *allocationInterface = (MM_AllocationInterfaceGeneric *)env->getForge()->allocate(sizeof(MM_AllocationInterfaceGeneric), OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 	if(NULL != allocationInterface) {
 		new(allocationInterface) MM_AllocationInterfaceGeneric(env);
 		if(!allocationInterface->initialize(env)) {

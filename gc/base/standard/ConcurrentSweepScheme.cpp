@@ -337,7 +337,7 @@ MM_ConcurrentSweepScheme::newInstance(MM_EnvironmentBase *env, MM_GlobalCollecto
 {
 	MM_ConcurrentSweepScheme *sweepScheme;
 	
-	sweepScheme = (MM_ConcurrentSweepScheme *)env->getForge()->allocate(sizeof(MM_ConcurrentSweepScheme), MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+	sweepScheme = (MM_ConcurrentSweepScheme *)env->getForge()->allocate(sizeof(MM_ConcurrentSweepScheme), OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 	if (sweepScheme) {
 		new(sweepScheme) MM_ConcurrentSweepScheme(env, collector);
 		if (!sweepScheme->initialize(env)) { 

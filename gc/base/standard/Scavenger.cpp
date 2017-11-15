@@ -179,7 +179,7 @@ MM_Scavenger::newInstance(MM_EnvironmentStandard *env, MM_HeapRegionManager *reg
 {
 	MM_Scavenger *scavenger;
 
-	scavenger = (MM_Scavenger *)env->getForge()->allocate(sizeof(MM_Scavenger), MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+	scavenger = (MM_Scavenger *)env->getForge()->allocate(sizeof(MM_Scavenger), OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 	if (scavenger) {
 		new(scavenger) MM_Scavenger(env, regionManager);
 		if (!scavenger->initialize(env)) {

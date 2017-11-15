@@ -155,7 +155,7 @@ MM_ParallelSweepScheme::newInstance(MM_EnvironmentBase *env)
 {
 	MM_ParallelSweepScheme *sweepScheme;
 	
-	sweepScheme = (MM_ParallelSweepScheme *)env->getForge()->allocate(sizeof(MM_ParallelSweepScheme), MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+	sweepScheme = (MM_ParallelSweepScheme *)env->getForge()->allocate(sizeof(MM_ParallelSweepScheme), OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 	if (sweepScheme) {
 		new(sweepScheme) MM_ParallelSweepScheme(env);
 		if (!sweepScheme->initialize(env)) { 

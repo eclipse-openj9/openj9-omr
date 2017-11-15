@@ -68,7 +68,7 @@ MM_MemoryPoolLargeObjects::newInstance(MM_EnvironmentBase* env, MM_MemoryPoolAdd
 {
 	MM_MemoryPoolLargeObjects* memoryPool;
 
-	memoryPool = (MM_MemoryPoolLargeObjects*)env->getForge()->allocate(sizeof(MM_MemoryPoolLargeObjects), MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+	memoryPool = (MM_MemoryPoolLargeObjects*)env->getForge()->allocate(sizeof(MM_MemoryPoolLargeObjects), OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 	if (NULL != memoryPool) {
 		memoryPool = new (memoryPool) MM_MemoryPoolLargeObjects(env, largeObjectArea, smallObjectArea);
 		if (!memoryPool->initialize(env)) {
@@ -117,7 +117,7 @@ MM_MemoryPoolLargeObjects::initialize(MM_EnvironmentBase* env)
 		omrtty_printf("LOA Initialize: SOA subpool %p LOA subpool %p\n ", _memoryPoolSmallObjects, _memoryPoolLargeObjects);
 	}
 
-	_loaFreeRatioHistory = (double*)env->getForge()->allocate(_extensions->loaFreeHistorySize * sizeof(double), MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+	_loaFreeRatioHistory = (double*)env->getForge()->allocate(_extensions->loaFreeHistorySize * sizeof(double), OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 
 	if (NULL == _loaFreeRatioHistory){
 		return false;

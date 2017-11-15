@@ -54,7 +54,7 @@ MM_TLHAllocationInterface::newInstance(MM_EnvironmentBase *env)
 {
 	MM_TLHAllocationInterface *allocationInterface;
 
-	allocationInterface = (MM_TLHAllocationInterface *)env->getForge()->allocate(sizeof(MM_TLHAllocationInterface), MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+	allocationInterface = (MM_TLHAllocationInterface *)env->getForge()->allocate(sizeof(MM_TLHAllocationInterface), OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 	if (NULL != allocationInterface) {
 		new(allocationInterface) MM_TLHAllocationInterface(env);
 		if (!allocationInterface->initialize(env)) {

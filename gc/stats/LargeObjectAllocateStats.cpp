@@ -43,7 +43,7 @@ MM_FreeEntrySizeClassStats::initialize(MM_EnvironmentBase *env, uintptr_t maxAll
 	_maxVeryLargeEntrySizes = 0;
 
 	if (0 != _maxSizeClasses) {
-		_count = (uintptr_t *)env->getForge()->allocate(sizeof(uintptr_t) * _maxSizeClasses, MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+		_count = (uintptr_t *)env->getForge()->allocate(sizeof(uintptr_t) * _maxSizeClasses, OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 
 		if (NULL == _count) {
 			return false;
@@ -51,20 +51,20 @@ MM_FreeEntrySizeClassStats::initialize(MM_EnvironmentBase *env, uintptr_t maxAll
 
 		/* _maxFrequentAllocateSizes is set to 0 when we use this structure to gather TLH allocation profile, which has no need for frequent allocations */
 		if (0 != _maxFrequentAllocateSizes) {
-			_frequentAllocationHead = (FrequentAllocation **)env->getForge()->allocate(sizeof(FrequentAllocation *) * _maxSizeClasses, MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+			_frequentAllocationHead = (FrequentAllocation **)env->getForge()->allocate(sizeof(FrequentAllocation *) * _maxSizeClasses, OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 
 			if (NULL == _frequentAllocationHead) {
 				return false;
 			}
 
-			_frequentAllocation = (FrequentAllocation *)env->getForge()->allocate(sizeof(FrequentAllocation) * MAX_FREE_ENTRY_COUNTERS_PER_FREQ_ALLOC_SIZE * _maxFrequentAllocateSizes, MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+			_frequentAllocation = (FrequentAllocation *)env->getForge()->allocate(sizeof(FrequentAllocation) * MAX_FREE_ENTRY_COUNTERS_PER_FREQ_ALLOC_SIZE * _maxFrequentAllocateSizes, OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 
 			if (NULL == _frequentAllocation) {
 				return false;
 			}
 
 			if (simulation) {
-				_fractionFrequentAllocation = (float *)env->getForge()->allocate(sizeof(float)*_maxFrequentAllocateSizes, MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+				_fractionFrequentAllocation = (float *)env->getForge()->allocate(sizeof(float)*_maxFrequentAllocateSizes, OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 				if (NULL == _fractionFrequentAllocation) {
 					return false;
 				}
@@ -82,7 +82,7 @@ MM_FreeEntrySizeClassStats::initialize(MM_EnvironmentBase *env, uintptr_t maxAll
 					guarantyEnoughPoolSizeForVeryLargeEntry = false;
 				}
 
-				_veryLargeEntryPool = (FrequentAllocation *)env->getForge()->allocate(sizeof(FrequentAllocation) * count, MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+				_veryLargeEntryPool = (FrequentAllocation *)env->getForge()->allocate(sizeof(FrequentAllocation) * count, OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 
 				if (NULL == _veryLargeEntryPool) {
 					return false;
@@ -486,7 +486,7 @@ MM_LargeObjectAllocateStats::newInstance(MM_EnvironmentBase *env, uint16_t maxAl
 {
 	MM_LargeObjectAllocateStats *largeObjectAllocateStats;
 
-	largeObjectAllocateStats = (MM_LargeObjectAllocateStats *)env->getForge()->allocate(sizeof(MM_LargeObjectAllocateStats), MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+	largeObjectAllocateStats = (MM_LargeObjectAllocateStats *)env->getForge()->allocate(sizeof(MM_LargeObjectAllocateStats), OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 
 	if(NULL != largeObjectAllocateStats) {
 		new(largeObjectAllocateStats) MM_LargeObjectAllocateStats();
@@ -572,7 +572,7 @@ MM_LargeObjectAllocateStats::initialize(MM_EnvironmentBase *env, uint16_t maxAll
 	}
 #endif
 
-	_sizeClassSizes = (uintptr_t *)env->getForge()->allocate(sizeof(uintptr_t) * _freeEntrySizeClassStats._maxSizeClasses, MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+	_sizeClassSizes = (uintptr_t *)env->getForge()->allocate(sizeof(uintptr_t) * _freeEntrySizeClassStats._maxSizeClasses, OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 
 	if (NULL == _sizeClassSizes) {
 		return false;

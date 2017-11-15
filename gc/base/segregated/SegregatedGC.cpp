@@ -56,7 +56,7 @@ MM_SegregatedGC::newInstance(MM_EnvironmentBase *env)
 {
 	MM_SegregatedGC *globalGC;
 
-	globalGC = (MM_SegregatedGC *)env->getForge()->allocate(sizeof(MM_SegregatedGC), MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+	globalGC = (MM_SegregatedGC *)env->getForge()->allocate(sizeof(MM_SegregatedGC), OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 	if (NULL != globalGC) {
 		new(globalGC) MM_SegregatedGC(env);
 		if (!globalGC->initialize(env)) { 

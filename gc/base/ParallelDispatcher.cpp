@@ -192,7 +192,7 @@ MM_ParallelDispatcher::newInstance(MM_EnvironmentBase *env, omrsig_handler_fn ha
 {
 	MM_ParallelDispatcher *dispatcher;
 	
-	dispatcher = (MM_ParallelDispatcher *)env->getForge()->allocate(sizeof(MM_ParallelDispatcher), MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+	dispatcher = (MM_ParallelDispatcher *)env->getForge()->allocate(sizeof(MM_ParallelDispatcher), OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 	if (dispatcher) {
 		new(dispatcher) MM_ParallelDispatcher(env, handler, handler_arg, defaultOSStackSize);
 		if(!dispatcher->initialize(env)) {
@@ -206,7 +206,7 @@ MM_ParallelDispatcher::newInstance(MM_EnvironmentBase *env, omrsig_handler_fn ha
 void
 MM_ParallelDispatcher::kill(MM_EnvironmentBase *env)
 {
-	MM_Forge *forge = env->getForge();
+	OMR::GC::Forge *forge = env->getForge();
 
 	if(_slaveThreadMutex) {
 		omrthread_monitor_destroy(_slaveThreadMutex);
@@ -240,7 +240,7 @@ MM_ParallelDispatcher::kill(MM_EnvironmentBase *env)
 bool
 MM_ParallelDispatcher::initialize(MM_EnvironmentBase *env)
 {
-	MM_Forge *forge = env->getForge();
+	OMR::GC::Forge *forge = env->getForge();
 
 	_threadCountMaximum = env->getExtensions()->gcThreadCount;
 	Assert_MM_true(0 < _threadCountMaximum);
@@ -252,19 +252,19 @@ MM_ParallelDispatcher::initialize(MM_EnvironmentBase *env)
 	}
 
 	/* Initialize the thread tables */
-	_threadTable = (omrthread_t *)forge->allocate(_threadCountMaximum * sizeof(omrthread_t), MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+	_threadTable = (omrthread_t *)forge->allocate(_threadCountMaximum * sizeof(omrthread_t), OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 	if(!_threadTable) {
 		goto error_no_memory;
 	}
 	memset(_threadTable, 0, _threadCountMaximum * sizeof(omrthread_t));
 
-	_statusTable = (uintptr_t *)forge->allocate(_threadCountMaximum * sizeof(uintptr_t *), MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+	_statusTable = (uintptr_t *)forge->allocate(_threadCountMaximum * sizeof(uintptr_t *), OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 	if(!_statusTable) {
 		goto error_no_memory;
 	}
 	memset(_statusTable, 0, _threadCountMaximum * sizeof(uintptr_t *));
 
-	_taskTable = (MM_Task **)forge->allocate(_threadCountMaximum * sizeof(MM_Task *), MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+	_taskTable = (MM_Task **)forge->allocate(_threadCountMaximum * sizeof(MM_Task *), OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 	if(!_taskTable) {
 		goto error_no_memory;
 	}

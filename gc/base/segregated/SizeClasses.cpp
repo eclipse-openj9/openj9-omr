@@ -35,7 +35,7 @@ MM_SizeClasses::newInstance(MM_EnvironmentBase* env)
 {
 	MM_SizeClasses* sizeClasses;
 	
-	sizeClasses = (MM_SizeClasses*)env->getForge()->allocate(sizeof(MM_SizeClasses), MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+	sizeClasses = (MM_SizeClasses*)env->getForge()->allocate(sizeof(MM_SizeClasses), OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 	if (sizeClasses) {
 		new(sizeClasses) MM_SizeClasses(env);
 		if (!sizeClasses->initialize(env)) {

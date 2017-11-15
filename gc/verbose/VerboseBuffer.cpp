@@ -38,7 +38,7 @@ MM_VerboseBuffer::newInstance(MM_EnvironmentBase *env, uintptr_t size)
 {
 	MM_GCExtensionsBase *extensions = MM_GCExtensionsBase::getExtensions(env->getOmrVM());
 	
-	MM_VerboseBuffer *verboseBuffer = (MM_VerboseBuffer *) extensions->getForge()->allocate(sizeof(MM_VerboseBuffer), MM_AllocationCategory::DIAGNOSTIC, OMR_GET_CALLSITE());
+	MM_VerboseBuffer *verboseBuffer = (MM_VerboseBuffer *) extensions->getForge()->allocate(sizeof(MM_VerboseBuffer), OMR::GC::AllocationCategory::DIAGNOSTIC, OMR_GET_CALLSITE());
 	if(NULL != verboseBuffer) {
 		new(verboseBuffer) MM_VerboseBuffer(env);
 		if (!verboseBuffer->initialize(env, size)) {
@@ -62,7 +62,7 @@ MM_VerboseBuffer::initialize(MM_EnvironmentBase *env, uintptr_t size)
 		return false;
 	}
 	
-	if(NULL == (_buffer = (char *) extensions->getForge()->allocate(size, MM_AllocationCategory::DIAGNOSTIC, OMR_GET_CALLSITE()))) {
+	if(NULL == (_buffer = (char *) extensions->getForge()->allocate(size, OMR::GC::AllocationCategory::DIAGNOSTIC, OMR_GET_CALLSITE()))) {
 		return false;
 	}
 	
@@ -136,7 +136,7 @@ MM_VerboseBuffer::ensureCapacity(MM_EnvironmentBase *env, uintptr_t spaceNeeded)
 		uintptr_t currentSize = this->currentSize();
 		uintptr_t newStringLength = currentSize + spaceNeeded;
 		uintptr_t newSize = newStringLength + (newStringLength / 2);
-		char* newBuffer = (char *) extensions->getForge()->allocate(newSize, MM_AllocationCategory::DIAGNOSTIC, OMR_GET_CALLSITE());
+		char* newBuffer = (char *) extensions->getForge()->allocate(newSize, OMR::GC::AllocationCategory::DIAGNOSTIC, OMR_GET_CALLSITE());
 		if(NULL == newBuffer) {
 			result = false;
 		} else {

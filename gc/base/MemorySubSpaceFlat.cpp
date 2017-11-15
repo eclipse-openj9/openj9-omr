@@ -277,7 +277,7 @@ MM_MemorySubSpaceFlat::newInstance(
 {
 	MM_MemorySubSpaceFlat* memorySubSpace;
 
-	memorySubSpace = (MM_MemorySubSpaceFlat*)env->getForge()->allocate(sizeof(MM_MemorySubSpaceFlat), MM_AllocationCategory::FIXED, OMR_GET_CALLSITE());
+	memorySubSpace = (MM_MemorySubSpaceFlat*)env->getForge()->allocate(sizeof(MM_MemorySubSpaceFlat), OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 	if (memorySubSpace) {
 		new (memorySubSpace) MM_MemorySubSpaceFlat(env, physicalSubArena, childMemorySubSpace, usesGlobalCollector, minimumSize, initialSize, maximumSize, memoryType, objectFlags);
 		if (!memorySubSpace->initialize(env)) {

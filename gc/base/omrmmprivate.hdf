@@ -927,7 +927,7 @@
 		<data type="struct OMR_VMThread*" name="currentThread" description="current thread" />
 		<data type="uint64_t" name="timestamp" description="time of event" />
 		<data type="uintptr_t" name="eventid" description="unique identifier for event" />
-		<data type="struct MM_MemoryStatistics*" name="statistics" description="" />
+		<data type="struct OMR_GC_MemoryStatistics*" name="statistics" description="" />
 	</event>
 
 	<event>

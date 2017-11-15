@@ -1084,7 +1084,7 @@ MemInitVarLenMacroOp::generateRemainder()
       if(TR::Compiler->target.is64Bit())
          {
          generateRILInstruction(_cg, TR::InstOpCode::NILF, _rootNode, _regLen, 0xFF);
-         generateRILInstruction(_cg, TR::InstOpCode::NIHF, _rootNode, _regLen, (uintptrj_t)0);
+         generateRILInstruction(_cg, TR::InstOpCode::NIHF, _rootNode, _regLen, 0);
          }
       else
          {

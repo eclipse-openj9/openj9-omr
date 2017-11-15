@@ -994,13 +994,13 @@ generateRIInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::N
     }
 
 TR::Instruction *
-generateRILInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register * treg, TR::SymbolReference * sr, uintptrj_t imm, TR::Instruction * preced)
+generateRILInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register * treg, TR::SymbolReference * sr, void * addr, TR::Instruction * preced)
    {
    if (preced)
       {
-      return new (INSN_HEAP) TR::S390RILInstruction(op, n, treg, imm, sr, preced, cg);
+      return new (INSN_HEAP) TR::S390RILInstruction(op, n, treg, addr, sr, preced, cg);
       }
-   return new (INSN_HEAP) TR::S390RILInstruction(op, n, treg, imm, sr, cg);
+   return new (INSN_HEAP) TR::S390RILInstruction(op, n, treg, addr, sr, cg);
    }
 
 TR::Instruction *
@@ -1012,24 +1012,43 @@ generateRILInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::
    }
 
 TR::Instruction *
-generateRILInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register * treg, uintptrj_t imm, TR::Instruction * preced)
+generateRILInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register * treg, uint32_t imm, TR::Instruction * preced)
    {
-   if (cg->supportsHighWordFacility() && cg->comp()->getOption(TR_DisableHighWordRA) && treg->assignToHPR())
-      {
-      switch(op)
-         {
-         case TR::InstOpCode::AFI:
-            return generateRILInstruction(cg, TR::InstOpCode::AIH, n, treg, imm, preced);
-            break;
-         default:
-            break;
-         }
-      }
    if (preced)
       {
       return new (INSN_HEAP) TR::S390RILInstruction(op, n, treg, imm, preced, cg);
       }
    return new (INSN_HEAP) TR::S390RILInstruction(op, n, treg, imm, cg);
+   }
+
+TR::Instruction *
+generateRILInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register * treg, int32_t imm, TR::Instruction * preced)
+   {
+   if (preced)
+      {
+      return new (INSN_HEAP) TR::S390RILInstruction(op, n, treg, imm, preced, cg);
+      }
+   return new (INSN_HEAP) TR::S390RILInstruction(op, n, treg, imm, cg);
+   }
+
+TR::Instruction *
+generateRILInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register * treg, void * addr, TR::Instruction * preced)
+   {
+   if (preced)
+      {
+      return new (INSN_HEAP) TR::S390RILInstruction(op, n, treg, addr, preced, cg);
+      }
+   return new (INSN_HEAP) TR::S390RILInstruction(op, n, treg, addr, cg);
+   }
+
+TR::Instruction *
+generateRILInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::Node * n, uint32_t mask, void * addr, TR::Instruction * preced)
+   {
+   if (preced)
+      {
+      return new (INSN_HEAP) TR::S390RILInstruction(op, n, mask, addr, preced, cg);
+      }
+   return new (INSN_HEAP) TR::S390RILInstruction(op, n, mask, addr, cg);
    }
 
 TR::Instruction *
@@ -2337,7 +2356,7 @@ generateDirectCall(TR::CodeGenerator * cg, TR::Node * callNode, bool myself, TR:
          if (comp->getOption(TR_EnableRMODE64))
 #endif
             {
-            tempInst = (new (INSN_HEAP) TR::S390RILInstruction(TR::InstOpCode::BRASL, callNode, RegRA, imm, callSymRef, cg));
+            tempInst = (new (INSN_HEAP) TR::S390RILInstruction(TR::InstOpCode::BRASL, callNode, RegRA, reinterpret_cast<void*>(imm), callSymRef, cg));
             }
 #endif
 #if !defined(TR_TARGET_64BIT) || (defined(TR_TARGET_64BIT) && defined(J9ZOS390))
@@ -2346,7 +2365,7 @@ generateDirectCall(TR::CodeGenerator * cg, TR::Node * callNode, bool myself, TR:
 #endif
 
             {
-            tempInst = new (INSN_HEAP) TR::S390RILInstruction(TR::InstOpCode::BRASL, callNode, RegRA, imm, cg);
+            tempInst = new (INSN_HEAP) TR::S390RILInstruction(TR::InstOpCode::BRASL, callNode, RegRA, reinterpret_cast<void*>(imm), cg);
 
 
             if (isHelper)
@@ -2439,7 +2458,7 @@ generateLoadLiteralPoolAddress(TR::CodeGenerator * cg, TR::Node * node, TR::Regi
    TR::Instruction *cursor;
 
    //support f/w only so far
-   TR::S390RILInstruction *LARLinst = (TR::S390RILInstruction *) generateRILInstruction(cg, TR::InstOpCode::LARL, node, treg, 0xBABE, 0);
+   TR::S390RILInstruction *LARLinst = (TR::S390RILInstruction *) generateRILInstruction(cg, TR::InstOpCode::LARL, node, treg, reinterpret_cast<void*>(0xBABE), 0);
    LARLinst->setIsLiteralPoolAddress();
    cursor = LARLinst;
 

@@ -4380,7 +4380,7 @@ OMR::Z::Machine::spillRegister(TR::Instruction * currentInstruction, TR::Registe
                   {
                   cursor = generateExtendedHighWordInstruction(currentNode, _cg, TR::InstOpCode::LLHFR, best, freeHighWordReg, 0, currentInstruction);
                   self()->cg()->traceRAInstruction(cursor);
-                  cursor = generateRILInstruction(_cg, TR::InstOpCode::IIHF, currentNode, best, (uintptrj_t)0, cursor);
+                  cursor = generateRILInstruction(_cg, TR::InstOpCode::IIHF, currentNode, best, 0, cursor);
                   self()->cg()->traceRAInstruction(cursor);
                   }
                else
@@ -5191,7 +5191,7 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
                   TR_ASSERT(currentAssignedRegister->isLowWordRegister(), " OOL HPR spill: 64-bit reg assigned to HPR and is not spilled to HPR");
                   cursor = generateExtendedHighWordInstruction(currentNode, _cg, TR::InstOpCode::LLHFR, currentAssignedRegister, targetRegister, 0, currentInstruction);
                   _cg->traceRAInstruction(cursor);
-                  cursor = generateRILInstruction(_cg, TR::InstOpCode::IIHF, currentNode, currentAssignedRegister, (uintptrj_t)0, cursor);
+                  cursor = generateRILInstruction(_cg, TR::InstOpCode::IIHF, currentNode, currentAssignedRegister, 0, cursor);
                   _cg->traceRAInstruction(cursor);
 
                   // fix up states
@@ -5589,7 +5589,7 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
                   TR_ASSERT(currentAssignedRegister->isLowWordRegister(), " OOL HPR spill: 64-bit reg assigned to HPR and is not spilled to HPR");
                   cursor = generateExtendedHighWordInstruction(currentNode, _cg, TR::InstOpCode::LLHFR, currentAssignedRegister, targetRegister, 0, currentInstruction);
                   _cg->traceRAInstruction(cursor);
-                  cursor = generateRILInstruction(_cg, TR::InstOpCode::IIHF, currentNode, currentAssignedRegister, (uintptrj_t)0, cursor);
+                  cursor = generateRILInstruction(_cg, TR::InstOpCode::IIHF, currentNode, currentAssignedRegister, 0, cursor);
                   _cg->traceRAInstruction(cursor);
 
                   // fix up states

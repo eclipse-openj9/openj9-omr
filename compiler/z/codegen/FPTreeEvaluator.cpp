@@ -448,7 +448,7 @@ convertToFixed(TR::Node * node, TR::CodeGenerator * cg)
          generateRRFInstruction(cg, convertOp, node, targetRegister, srcRegCpy, (int8_t) 0x5, true);
 
          //4) Handle the sign bit by XOR
-         generateRILInstruction(cg, TR::InstOpCode::XILF, node, targetRegister, (uintptrj_t)0x80000000);
+         generateRILInstruction(cg, TR::InstOpCode::XILF, node, targetRegister, 0x80000000);
 
          //5) Convert the targetRegister value to appropriate integer type, if needed
          generateValueConversionToIntType(cg, node, targetRegister);

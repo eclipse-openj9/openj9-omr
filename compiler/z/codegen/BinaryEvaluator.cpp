@@ -810,7 +810,7 @@ lDivRemGenericEvaluator(TR::Node * node, TR::CodeGenerator * cg, bool isDivision
       else if ((shiftAmnt = TR::TreeEvaluator::checkPositiveOrNegativePowerOfTwo(denominator)) > 0 &&
             performTransformation(comp, "O^O Denominator is powerOfTwo (%d) for ldir/lrem.\n",denominator))
          {
-         int64_t absValueOfDenomintor = denominator>0 ? denominator : -denominator;
+         int64_t absValueOfDenominator = denominator>0 ? denominator : -denominator;
          TR::LabelSymbol * done = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
 
          //setup dependencies for shift instructions for division or remainder
@@ -829,7 +829,7 @@ lDivRemGenericEvaluator(TR::Node * node, TR::CodeGenerator * cg, bool isDivision
                cursor->setStartInternalControlFlow();
 
                //adjustment to dividend if dividend is negative
-               dividendPair = laddConst(node, cg, dividendPair,absValueOfDenomintor-1, dep);
+               dividendPair = laddConst(node, cg, dividendPair,absValueOfDenominator-1, dep);
 
                generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, skipSet, dep);
                skipSet->setEndInternalControlFlow();
@@ -863,13 +863,13 @@ lDivRemGenericEvaluator(TR::Node * node, TR::CodeGenerator * cg, bool isDivision
                generateRRInstruction(cg, TR::InstOpCode::LR, node, tempRegisterPair1->getLowOrder(), dividendPair->getLowOrder());
                generateRRInstruction(cg, TR::InstOpCode::LR, node, tempRegisterPair1->getHighOrder(), dividendPair->getHighOrder());
                generateRSInstruction(cg, TR::InstOpCode::SRDA, node, tempRegisterPair2, 63);
-               generateRILInstruction(cg, TR::InstOpCode::NILF, node, tempRegisterPair2->getLowOrder(), (int32_t) (absValueOfDenomintor-1) );
-               generateRILInstruction(cg, TR::InstOpCode::NILF, node, tempRegisterPair2->getHighOrder(), (int32_t) ((absValueOfDenomintor-1)>>32) );
+               generateRILInstruction(cg, TR::InstOpCode::NILF, node, tempRegisterPair2->getLowOrder(), static_cast<int32_t>(absValueOfDenominator-1) );
+               generateRILInstruction(cg, TR::InstOpCode::NILF, node, tempRegisterPair2->getHighOrder(), static_cast<int32_t>((absValueOfDenominator-1)>>32) );
                generateRRInstruction(cg, TR::InstOpCode::ALR, node, dividendPair->getLowOrder(), tempRegisterPair2->getLowOrder());
                generateRRInstruction(cg, TR::InstOpCode::ALCR, node, dividendPair->getHighOrder(), tempRegisterPair2->getHighOrder());
-               generateRILInstruction(cg, TR::InstOpCode::NILF, node, dividendPair->getLowOrder(), (int32_t) ((int64_t) CONSTANT64(0xFFFFFFFFFFFFFFFF) - absValueOfDenomintor +1) );
-               if (absValueOfDenomintor != (int32_t) absValueOfDenomintor)
-                  generateRILInstruction(cg, TR::InstOpCode::NILF, node, dividendPair->getHighOrder(), (int32_t) (((int64_t) CONSTANT64(0xFFFFFFFFFFFFFFFF) - absValueOfDenomintor +1)>>32) );
+               generateRILInstruction(cg, TR::InstOpCode::NILF, node, dividendPair->getLowOrder(), static_cast<int32_t>( CONSTANT64(0xFFFFFFFFFFFFFFFF) - absValueOfDenominator +1) );
+               if (absValueOfDenominator != static_cast<int32_t>(absValueOfDenominator))
+                  generateRILInstruction(cg, TR::InstOpCode::NILF, node, dividendPair->getHighOrder(), static_cast<int32_t>(( CONSTANT64(0xFFFFFFFFFFFFFFFF) - absValueOfDenominator +1)>>32) );
                generateRRInstruction(cg, TR::InstOpCode::SLR, node, tempRegisterPair1->getLowOrder(), dividendPair->getLowOrder());
                generateRRInstruction(cg, TR::InstOpCode::SLBR, node, tempRegisterPair1->getHighOrder(), dividendPair->getHighOrder());
                generateRRInstruction(cg, TR::InstOpCode::LR, node, dividendPair->getLowOrder(), tempRegisterPair1->getLowOrder());
@@ -1204,7 +1204,7 @@ lDivRemGenericEvaluator64(TR::Node * node, TR::CodeGenerator * cg, bool isDivisi
          {
          TR::Register * firstRegister = NULL;
 
-         int64_t absValueOfDenomintor = denominator>0 ? denominator : -denominator;
+         int64_t absValueOfDenominator = denominator>0 ? denominator : -denominator;
 
          if (isDivision)
             {
@@ -1219,7 +1219,7 @@ lDivRemGenericEvaluator64(TR::Node * node, TR::CodeGenerator * cg, bool isDivisi
                //adjustment to dividend if dividend is negative
                TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 2, cg);
                deps->addPostCondition(firstRegister, TR::RealRegister::AssignAny);
-               generateS390ImmOp(cg, TR::InstOpCode::AG, node, firstRegister, firstRegister, absValueOfDenomintor-1, deps);
+               generateS390ImmOp(cg, TR::InstOpCode::AG, node, firstRegister, firstRegister, absValueOfDenominator-1, deps);
                skipSet->setEndInternalControlFlow();
                generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, skipSet, deps);
                }
@@ -1246,12 +1246,12 @@ lDivRemGenericEvaluator64(TR::Node * node, TR::CodeGenerator * cg, bool isDivisi
                TR::Register * tempRegister2 = cg->allocate64bitRegister();
                generateRSInstruction(cg, TR::InstOpCode::SRAG, node, tempRegister2, firstRegister, 63);
                generateRRInstruction(cg, TR::InstOpCode::LGR, node, tempRegister1, firstRegister);
-               generateRILInstruction(cg, TR::InstOpCode::NIHF, node, tempRegister2, (int32_t)((absValueOfDenomintor-1)>>32) );
-               generateRILInstruction(cg, TR::InstOpCode::NILF, node, tempRegister2, (int32_t)(absValueOfDenomintor-1));
+               generateRILInstruction(cg, TR::InstOpCode::NIHF, node, tempRegister2, static_cast<int32_t>((absValueOfDenominator-1)>>32) );
+               generateRILInstruction(cg, TR::InstOpCode::NILF, node, tempRegister2, static_cast<int32_t>(absValueOfDenominator-1));
                generateRRInstruction(cg, TR::InstOpCode::AGR, node, firstRegister, tempRegister2);
-               if (denominator != (int32_t) absValueOfDenomintor)
-                  generateRILInstruction(cg, TR::InstOpCode::NIHF, node, firstRegister, (int32_t) (((int64_t) CONSTANT64(0xFFFFFFFFFFFFFFFF) - absValueOfDenomintor +1)>>32));
-               generateRILInstruction(cg, TR::InstOpCode::NILF, node, firstRegister, (int32_t) ((int64_t) CONSTANT64(0xFFFFFFFFFFFFFFFF) - absValueOfDenomintor +1));
+               if (denominator != static_cast<int32_t>(absValueOfDenominator))
+                  generateRILInstruction(cg, TR::InstOpCode::NIHF, node, firstRegister, static_cast<int32_t>(( CONSTANT64(0xFFFFFFFFFFFFFFFF) - absValueOfDenominator +1)>>32));
+               generateRILInstruction(cg, TR::InstOpCode::NILF, node, firstRegister, static_cast<int32_t>( CONSTANT64(0xFFFFFFFFFFFFFFFF) - absValueOfDenominator +1));
                generateRRInstruction(cg, TR::InstOpCode::SGR, node, tempRegister1, firstRegister);
                generateRRInstruction(cg, TR::InstOpCode::LGR, node, firstRegister, tempRegister1);
                cg->stopUsingRegister(tempRegister1);
@@ -1359,7 +1359,7 @@ lDivRemGenericEvaluator64(TR::Node * node, TR::CodeGenerator * cg, bool isDivisi
 
          if (value <= TR::getMaxSigned<TR::Int32>())
             {
-            generateRILInstruction(cg, TR::InstOpCode::CLGFI, node, absDividendReg, value);
+            generateRILInstruction(cg, TR::InstOpCode::CLGFI, node, absDividendReg, static_cast<int32_t>(value));
             }
          else
             {

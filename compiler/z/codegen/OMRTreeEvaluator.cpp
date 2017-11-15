@@ -3380,7 +3380,7 @@ generateS390CompareAndBranchOpsHelper(TR::Node * node, TR::CodeGenerator * cg, T
             case TR::Int16:
             case TR::Int8:
                constValue32 = getIntegralValue(constNode);
-               compareOpCode = TR::InstOpCode::C;
+               compareOpCode = isUnsignedCmp ? TR::InstOpCode::CL : TR::InstOpCode::C;
                break;
             default:
                TR_ASSERT(0, "generateS390CompareOps: Unexpected Type\n");

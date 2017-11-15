@@ -3107,10 +3107,6 @@ TR_HandleInjectedBasicBlock::createTemps(bool replaceAllReferences)
          {
          ref->_isConst = true;
          }
-      else if (opcode.getOpCodeValue() == TR::aload && comp()->cg()->getLinkage()->isAddressOfPrivateStaticSymRef(ref->_node->getSymbolReference()))
-         {
-         ref->_isConst = true;
-         }
       else
          {
          TR::SymbolReference * symRef = 0;

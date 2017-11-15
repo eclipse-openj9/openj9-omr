@@ -369,7 +369,6 @@ public:
    TR::Instruction *getCurrentDEPEND() {return _currentDEPEND; }
    void setCurrentDEPEND(TR::Instruction *instr) { _currentDEPEND=instr; }
 
-   uintptr_t getOutgoingArgLevelDuringTreeEvaluation() { return _outgoingArgLevelDuringTreeEvaluation; }
    void changeRegisterKind(TR::Register * temp, TR_RegisterKinds rk);
 
 
@@ -1260,7 +1259,6 @@ private:
    int32_t _currentlyClobberedRestrictedRegister;
    TR::SparseBitVector _bucketPlusIndexRegisters;
    TR::Instruction *_currentDEPEND;
-   uintptr_t _outgoingArgLevelDuringTreeEvaluation;
    };
 
 }

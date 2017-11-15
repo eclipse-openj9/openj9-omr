@@ -624,3 +624,63 @@ void TR::AllBlockIterator::logCurrentLocation()
          traceMsg(comp(), "BLOCK  %s finished\n", _name);
       }
    }
+
+TR::TreeTopOrderExtendedBlockIterator::TreeTopOrderExtendedBlockIterator(TR::Compilation* comp, const char* name)
+   :
+      BlockIterator(comp, name), _currBlock(comp->getStartBlock()), _nextBlock(_currBlock->getNextExtendedBlock())
+   {
+   logCurrentLocation();
+   }
+
+TR::Block* TR::TreeTopOrderExtendedBlockIterator::getFirst()
+   {
+   return _currBlock;
+   }
+
+TR::Block* TR::TreeTopOrderExtendedBlockIterator::getLast()
+   {
+   if (_nextBlock != NULL)
+      {
+      return _nextBlock->getPrevBlock();
+      }
+   else
+      {
+      TR::Block* lastBlock = _currBlock;
+
+      for (TR::Block* nextBlock = _currBlock->getNextBlock(); nextBlock != NULL; lastBlock = nextBlock, nextBlock = lastBlock->getNextBlock())
+         {
+         // Void
+         }
+
+      return lastBlock;
+      }
+   }
+
+void TR::TreeTopOrderExtendedBlockIterator::operator++()
+   {
+   TR_ASSERT(_currBlock != NULL, "Cannot increment an TreeTopOrderExtendedBlockIterator that has already finished iterating");
+
+   _currBlock = _nextBlock;
+
+   if (_nextBlock != NULL)
+      {
+      _nextBlock = _nextBlock->getNextExtendedBlock();
+
+      logCurrentLocation();
+      }
+   }
+
+void TR::TreeTopOrderExtendedBlockIterator::logCurrentLocation()
+   {
+   if (isLoggingEnabled())
+      {
+      if (getFirst() != NULL)
+         {
+         traceMsg(comp(), "BLOCK %s @ block_%d\n", _name, getFirst()->getNumber());
+         }
+      else
+         {
+         traceMsg(comp(), "BLOCK %s finished\n", _name);
+         }
+      }
+   }

@@ -19,10 +19,7 @@
 # SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
 ###############################################################################
 
-add_hookgen(hooksample.hdf
-	${CMAKE_CURRENT_SOURCE_DIR}/hooksample.h
-	${CMAKE_CURRENT_SOURCE_DIR}/hooksample_internal.h
-)
+omr_add_hookgen(INPUT hooksample.hdf)
 
 add_executable(omralgotest
 	algoTest.cpp
@@ -35,6 +32,9 @@ add_executable(omralgotest
 	hooktest.c
 	main.cpp
 	pooltest.c
+
+	# We need to introduce dependencies on the hookgen step.
+	"${CMAKE_CURRENT_BINARY_DIR}/hooksample.h"
 )
 
 target_link_libraries(omralgotest
@@ -44,6 +44,8 @@ target_link_libraries(omralgotest
 	omrcore
 	${OMR_GC_LIB}
 )
+
+target_include_directories(omralgotest PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
 #TODO hack to get building
 if(OMR_HOST_OS STREQUAL "win")

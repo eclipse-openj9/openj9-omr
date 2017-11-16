@@ -22,32 +22,21 @@
 #include "compile/Compilation.hpp"
 #include "env/FrontEnd.hpp"
 #include "compile/Method.hpp"
-#include "ilgen/CmpBranchOpIlInjector.hpp"
+#include "tests/injectors/BinaryOpIlInjector.hpp"
 
 namespace TestCompiler
 {
+
 bool
-CmpBranchOpIlInjector::injectIL()
+BinaryOpIlInjector::injectIL()
    {
    if (!isOpCodeSupported())
       return false;
-   createBlocks(3);
 
-   // 3 blocks requested start at 2 (0 is entry, 1 is exit)
-   // by default, generate to block 2
-
-   // Block2: blocks(0)
-   // if () goto Block4;
-   ifjump(_opCode, parm(1), parm(2), 2);
-
-   // Block3: blocks(1)
-   // return 0;
-   returnValue(iconst(0));
-
-   // Block4: blocks(2)
-   // return 1;
-   generateToBlock(2);
-   returnValue(iconst(1));
+   createBlocks(1);
+   // Block 2: blocks(0)
+   // return parameter1 op parameter2;
+   returnValue(createWithoutSymRef(_opCode, 2, parm(1), parm(2)));
 
    return true;
    }

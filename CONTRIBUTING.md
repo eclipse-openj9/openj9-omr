@@ -28,11 +28,82 @@ We welcome and enourage all kinds of contribution to the project, not only code.
 This includes bug reports, user experience feedback, assistance in reproducing
 issues and more.
 
+## Issues 
+
 This project uses GitHub Issues to track ongoing development, discuss project
 plans, and keep track of bugs.  Be sure to search for existing issues before
 you create another one.
 
 Visit [our Issues page on GitHub to search and submit](https://github.com/eclipse/omr/issues)
+
+### Labelling
+
+Our GitHub issues get labelled by committers in order to allow easier navigation,
+and to flag certain issues as being of interest to certain groups. A PR or Issue 
+may have multiple labels, as many as needed to provide adequate categorization. 
+
+A subset of the labels are documented below.
+
+* [**`beginner`**](https://github.com/eclipse/omr/labels/beginner) generally
+  refers to a task that would be suitable for someone new to the project with
+  little experience with either the technology or even open-source projects and
+  processes. They are intended for anyone who wants to gently get their feet
+  wet on building, testing, or familiarizing themselves with part of the code
+  base.
+
+* [**`bug`**](https://github.com/eclipse/omr/labels/bug) issues are functional
+  problems, errors or unexpected behaviour.
+
+* [**`build/configure`**](https://github.com/eclipse/omr/labels/build%20%2F%20configure)
+  labels are used to describe issues with the build and configure system (e.g.,
+  makefiles, autotools configure).
+
+* [**`ci`**](https://github.com/eclipse/omr/labels/ci) labels are used for
+  issues and enhancements with the continuous integration system for pull
+  request testing (e.g., Jenkins, Travis, AppVeyor, etc.)
+
+* [**`cmake`**](https://github.com/eclipse/omr/labels/cmake) labels are similar
+  to build/configure but they apply specifically to the Cmake configuration.
+
+* [**`documentation`**](https://github.com/eclipse/omr/labels/documentation)
+  labels are used for issues or enhancements to the documentation (either in
+  the source code itself or stand-alone documentation files).
+
+* [**`epic`**](https://github.com/eclipse/omr/labels/epic) issues are used to
+  group together related issues and to track larger goals in the project across
+  issues. 
+
+* [**`GSoC Project`**](https://github.com/eclipse/omr/labels/GSoC%20project)
+  labels are for potential ideas for Google Summer Of Code projects.
+
+* [**`help wanted`**](https://github.com/eclipse/omr/labels/help%20wanted)
+  issues have value to the project but no immediate human resources to
+  undertake it. Those that are looking to complete a task that someone isn't
+  already working on can consider these.
+
+* [**`license`**](https://github.com/eclipse/omr/labels/license) labels are
+  used to annotate issues concerning the source code license.
+
+* [**`test`**](https://github.com/eclipse/omr/labels/test) labels are for
+  issues relating to the unit test framework and the unit tests themselves
+  found in the fvtest directory.
+
+* [**`tooling`**](https://github.com/eclipse/omr/labels/tooling) labels are for
+  issues concerning support tooling needed to support any of the code or
+  processes within the project.
+
+Labels are also used to classify issues and pull requests by the dominant
+Eclipse OMR technology component they affect. For instance:
+
+* **`compiler`**
+* **`gc`**
+* **`glue`**
+* **`jitbuilder`**
+* **`port`**
+* **`ras`**
+* **`thread`**
+* **`tril`**
+* **`utilities`**
 
 ## Submitting a contribution
 

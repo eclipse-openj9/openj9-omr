@@ -40,6 +40,7 @@ add_executable(comptest
 	CallTest.cpp
 	LongAndAsRotateTest.cpp
 	MockStrategyTest.cpp
+	LogicalTest.cpp
 )
 
 target_link_libraries(comptest

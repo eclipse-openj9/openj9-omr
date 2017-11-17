@@ -3203,6 +3203,101 @@ TR_S390Peephole::AGIReduction()
 
    return performed;
    }
+
+/**
+ * \brief Swaps guarded storage loads with regular loads and a software read barrier
+ *
+ * \details
+ * This function swaps LGG/LLGFSG with regular loads and software read barrier sequence
+ * for runs with -Xgc:concurrentScavenge on hardware that doesn't support guarded storage facility.
+ * The sequence first checks if concurrent scavange is in progress and if the current object pointer is
+ * in the evacuate space then calls the GC helper to update the object pointer.
+ */
+
+bool
+TR_S390Peephole::replaceGuardedLoadWithSoftwareReadBarrier()
+   {
+   if (!TR::Compiler->om.shouldReplaceGuardedLoadWithSoftwareReadBarrier())
+      {
+      return false;
+      }
+
+   auto* concurrentScavangeNotActiveLabel = generateLabelSymbol(_cg);
+   TR::S390RXInstruction *load = static_cast<TR::S390RXInstruction*> (_cursor);
+   TR::MemoryReference *loadMemRef = generateS390MemoryReference(*load->getMemoryReference(), 0, _cg);
+   TR::Register *loadTargetReg = _cursor->getRegisterOperand(1);
+   TR::Register *vmReg = _cg->getLinkage()->getMethodMetaDataRealRegister();
+   TR::Register *raReg = _cg->machine()->getS390RealRegister(_cg->getReturnAddressRegister());
+   TR::Instruction* prev = load->getPrev();
+
+   // If guarded load target and mem ref registers are the same,
+   // preserve the register before overwriting it, since we need to repeat the load after calling the GC helper.
+   bool shouldPreserveLoadReg = (loadMemRef->getBaseRegister() == loadTargetReg);
+   if (shouldPreserveLoadReg) {
+      TR::MemoryReference *gsIntermediateAddrMemRef = generateS390MemoryReference(vmReg, TR::Compiler->vm.thisThreadGetGSIntermediateResultOffset(comp()), _cg);
+      _cursor = generateRXInstruction(_cg, TR::InstOpCode::STG, load->getNode(), loadTargetReg, gsIntermediateAddrMemRef, prev);
+      prev = _cursor;
+   }
+
+   if (load->getOpCodeValue() == TR::InstOpCode::LGG)
+      {
+      _cursor = generateRXInstruction(_cg, TR::InstOpCode::LG, load->getNode(), loadTargetReg, loadMemRef, prev);
+      }
+   else
+      {
+      _cursor = generateRXInstruction(_cg, TR::InstOpCode::LLGF, load->getNode(), loadTargetReg, loadMemRef, prev);
+      _cursor = generateRSInstruction(_cg, TR::InstOpCode::SLLG, load->getNode(), loadTargetReg, loadTargetReg, TR::Compiler->om.compressedReferenceShift(), _cursor);
+      }
+
+   // Check if concurrent scavange is in progress and if object pointer is in the evacuate space
+   TR::MemoryReference *privFlagMR = generateS390MemoryReference(vmReg, TR::Compiler->vm.thisThreadGetConcurrentScavengeActiveByteAddressOffset(comp()), _cg);
+   _cursor = generateSIInstruction(_cg, TR::InstOpCode::TM, load->getNode(), privFlagMR, 0x00000002, _cursor);
+   _cursor = generateS390BranchInstruction(_cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_CC0, load->getNode(), concurrentScavangeNotActiveLabel, _cursor);
+
+   _cursor = generateRXInstruction(_cg, TR::InstOpCode::CG, load->getNode(), loadTargetReg,
+   		generateS390MemoryReference(vmReg, TR::Compiler->vm.thisThreadGetEvacuateBaseAddressOffset(comp()), _cg), _cursor);
+   _cursor = generateS390BranchInstruction(_cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_CC1, load->getNode(), concurrentScavangeNotActiveLabel, _cursor);
+
+   _cursor = generateRXInstruction(_cg, TR::InstOpCode::CG, load->getNode(), loadTargetReg,
+   		generateS390MemoryReference(vmReg, TR::Compiler->vm.thisThreadGetEvacuateTopAddressOffset(comp()), _cg), _cursor);
+   _cursor = generateS390BranchInstruction(_cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_CC2, load->getNode(), concurrentScavangeNotActiveLabel, _cursor);
+
+   // Save result of LA to gsParameters.operandAddr as invokeJ9ReadBarrier helper expects it to be set
+   TR::MemoryReference *loadAddrMemRef = generateS390MemoryReference(*load->getMemoryReference(), 0, _cg);
+   _cursor = generateRXInstruction(_cg, TR::InstOpCode::LA, load->getNode(), loadTargetReg, loadAddrMemRef, _cursor);
+   TR::MemoryReference *gsOperandAddrMemRef = generateS390MemoryReference(vmReg, TR::Compiler->vm.thisThreadGetGSOperandAddressOffset(comp()), _cg);
+   _cursor = generateRXInstruction(_cg, TR::InstOpCode::STG, load->getNode(), loadTargetReg, gsOperandAddrMemRef, _cursor);
+
+   // Use raReg to call handleReadBarrier helper, preserve raReg before the call in the load reg
+   _cursor = generateRRInstruction(_cg, TR::InstOpCode::LGR, load->getNode(), loadTargetReg, raReg, _cursor);
+   TR::MemoryReference *gsHelperAddrMemRef = generateS390MemoryReference(vmReg, TR::Compiler->vm.thisThreadGetGSHandlerAddressOffset(comp()), _cg);
+   _cursor = generateRXYInstruction(_cg, TR::InstOpCode::LG, load->getNode(), raReg, gsHelperAddrMemRef, _cursor);
+   _cursor = new (_cg->trHeapMemory()) TR::S390RRInstruction(TR::InstOpCode::BASR, load->getNode(), raReg, raReg, _cursor, _cg);
+   _cursor = generateRRInstruction(_cg, TR::InstOpCode::LGR, load->getNode(), raReg, loadTargetReg, _cursor);
+
+   if (shouldPreserveLoadReg) {
+      TR::MemoryReference * restoreBaseRegAddrMemRef = generateS390MemoryReference(vmReg, TR::Compiler->vm.thisThreadGetGSIntermediateResultOffset(comp()), _cg);
+      _cursor = generateRXInstruction(_cg, TR::InstOpCode::LG, load->getNode(), loadTargetReg, restoreBaseRegAddrMemRef, _cursor);
+   }
+   // Repeat load as the object pointer got updated by GC after calling handleReadBarrier helper
+   TR::MemoryReference *updateLoadMemRef = generateS390MemoryReference(*load->getMemoryReference(), 0, _cg);
+   if (load->getOpCodeValue() == TR::InstOpCode::LGG)
+      {
+      _cursor = generateRXInstruction(_cg, TR::InstOpCode::LG, load->getNode(), loadTargetReg, updateLoadMemRef,_cursor);
+      }
+   else
+      {
+      _cursor = generateRXInstruction(_cg, TR::InstOpCode::LLGF, load->getNode(), loadTargetReg, updateLoadMemRef, _cursor);
+      _cursor = generateRSInstruction(_cg, TR::InstOpCode::SLLG, load->getNode(), loadTargetReg, loadTargetReg, TR::Compiler->om.compressedReferenceShift(), _cursor);
+      }
+
+   _cursor = generateS390LabelInstruction(_cg, TR::InstOpCode::LABEL, load->getNode(), concurrentScavangeNotActiveLabel, _cursor);
+
+   _cg->deleteInst(load);
+
+   return true;
+   }
+
 ///////////////////////////////////////////////////////////////////////////////
 bool
 TR_S390Peephole::ICMReduction()
@@ -5789,6 +5884,17 @@ TR_S390Peephole::perform()
                }
             }
             break;
+
+         case TR::InstOpCode::LGG:
+         case TR::InstOpCode::LLGFSG:
+            {
+            replaceGuardedLoadWithSoftwareReadBarrier();
+
+            if (comp()->getOption(TR_TraceCG))
+               printInst();
+
+            break;
+            }
 
          default:
             {

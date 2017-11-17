@@ -13510,8 +13510,8 @@ OMR::Z::TreeEvaluator::primitiveArraycopyEvaluator(TR::Node* node, TR::CodeGener
       TR_ASSERT_FATAL(TR::Compiler->target.is64Bit(),
                  "GSCS: Guarded Load OOL Path only defined in 64 bit mode");
       TR::Register *vmReg = cg->getMethodMetaDataRealRegister();
-      int32_t offsetOfConcurrentScavengerActiveByte = offsetof(J9VMThread, privateFlags) + 5;
-      TR::MemoryReference *privFlagMR = generateS390MemoryReference(vmReg, offsetOfConcurrentScavengerActiveByte, cg);
+      TR::MemoryReference *privFlagMR = generateS390MemoryReference(vmReg,
+            TR::Compiler->vm.thisThreadGetConcurrentScavengeActiveByteAddressOffset(cg->comp()), cg);
       generateSIInstruction(cg, TR::InstOpCode::TM, node, privFlagMR, 0x00000002);
       generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_CC3, node, slowPathLabel);
 

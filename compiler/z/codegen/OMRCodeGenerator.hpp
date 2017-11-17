@@ -1162,6 +1162,7 @@ private:
    bool LGFRReduction();
    bool AGIReduction();
    bool ICMReduction();
+   bool replaceGuardedLoadWithSoftwareReadBarrier();
    bool LAReduction();
    bool NILHReduction();
    bool duplicateNILHReduction();

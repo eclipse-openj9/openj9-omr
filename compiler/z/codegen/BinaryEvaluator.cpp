@@ -1371,7 +1371,7 @@ lDivRemGenericEvaluator64(TR::Node * node, TR::CodeGenerator * cg, bool isDivisi
          generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_MASK4, node, skipDiv); // branch to done on <
          }
 
-   // Do divison
+   // Do division
    if (isUnsigned)
       {
       if (doConditionalRemainder)
@@ -1547,7 +1547,7 @@ iDivRemGenericEvaluator(TR::Node * node, TR::CodeGenerator * cg, bool isDivision
    else
       generateRSInstruction(cg, TR::InstOpCode::SRDA, node, targetRegisterPair, 32);
 
-   // Do divison
+   // Do division
    if (sourceMR)
       {
       if (node->getOpCode().isUnsigned())
@@ -4000,7 +4000,7 @@ OMR::Z::TreeEvaluator::idivEvaluator(TR::Node * node, TR::CodeGenerator * cg)
          generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BRC, node, skipDiv);
          // Label to do the division
          generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, doDiv);
-         // Do divison by -1 (take complement)
+         // Do division by -1 (take complement)
          generateRRInstruction(cg, TR::InstOpCode::LCR, node, targetRegister, targetRegister);
          // Label to skip the division
          cursor = generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, skipDiv, dependencies);

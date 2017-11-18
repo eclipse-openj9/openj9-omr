@@ -452,7 +452,6 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
 
    uint8_t getSizeOfCombinedBuffer();
 
-   bool suppressInliningOfRecognizedMethod(TR::RecognizedMethod);
    bool supportsInliningOfIsInstance();
 
    bool supportsPassThroughCopyToNewVirtualRegister() { return true; }

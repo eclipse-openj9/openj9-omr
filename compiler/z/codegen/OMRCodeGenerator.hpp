@@ -980,7 +980,6 @@ public:
       {
       return 1 << (reg-1);
       }
-   bool fixedPointOverflowExceptionEnabled() { return false; }
 
    bool opCodeIsNoOpOnThisPlatform(TR::ILOpCode &opCode);
 

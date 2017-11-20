@@ -35,19 +35,13 @@ GC_OMRVMThreadInterface::flushCachesForWalk(MM_EnvironmentBase *env)
 	env->_objectAllocationInterface->flushCache(env);
 	/* If we are in a middle of a concurrent GC, we want to flush GC caches, typically for mutator threads doing GC work.
 	 * (GC threads are  smart enough to do it themselves, before they let the walk occur) */
-	env->flushGCCaches(env);
+	env->flushGCCaches();
 }
 
 void
 GC_OMRVMThreadInterface::flushNonAllocationCaches(MM_EnvironmentBase *env)
 {
 	env->flushNonAllocationCaches();
-
-#if defined(OMR_GC_MODRON_SCAVENGER)
-	if (env->getExtensions()->isStandardGC()) {
-		((MM_EnvironmentStandard *)env)->flushRememberedSet();
-	}
-#endif
 }
 
 void

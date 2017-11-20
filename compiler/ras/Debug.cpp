@@ -2179,8 +2179,11 @@ TR_Debug::getShadowName(TR::SymbolReference * symRef)
 
    if (symRef->getSymbol())
       {
-      if(symRef->getSymbol()->isArrayShadowSymbol())
+      if (comp()->getSymRefTab()->isRefinedArrayShadow(symRef))
          return "<refined-array-shadow>";
+
+      if (comp()->getSymRefTab()->isImmutableArrayShadow(symRef))
+         return "<immutable-array-shadow>";
 
       if(symRef->getSymbol()->isArrayletShadowSymbol())
          return "<arraylet-shadow>";

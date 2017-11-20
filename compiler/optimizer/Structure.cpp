@@ -214,7 +214,7 @@ class TR_RegionStructure::ExitExtraction
    typedef TR::typed_allocator<TR::CFGEdge*, TR::Region&> EdgeVecAlloc;
    typedef std::vector<TR::CFGEdge*, EdgeVecAlloc> EdgeVec;
 
-   typedef std::pair<TR_RegionStructure*, TR_BitVector> RcEntry;
+   typedef std::pair<TR_RegionStructure* const, TR_BitVector> RcEntry;
    typedef TR::typed_allocator<RcEntry, TR::Region&> RcAlloc;
    typedef std::less<TR_RegionStructure*> RcCmp;
    typedef std::map<TR_RegionStructure*, TR_BitVector, RcCmp, RcAlloc> RegionContents;

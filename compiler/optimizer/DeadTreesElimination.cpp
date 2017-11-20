@@ -199,7 +199,7 @@ bool collectSymbolReferencesInNode(TR::Node *node,
    return true;
    }
 
-typedef std::pair<TR::Node*, int32_t> LPEntry;
+typedef std::pair<TR::Node* const, int32_t> LPEntry;
 typedef TR::typed_allocator<LPEntry, TR::Region&> LPAlloc;
 typedef std::map<TR::Node*, int32_t, std::less<TR::Node*>, LPAlloc> LongestPathMap;
 

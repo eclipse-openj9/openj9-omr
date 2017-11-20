@@ -261,7 +261,7 @@ static OMRPortLibrary MasterPortLibraryTable = {
 	omrsysinfo_cgroup_get_enabled_subsystems, /* sysinfo_cgroup_get_enabled_subsystems */
 	omrsysinfo_cgroup_enable_subsystems, /* sysinfo_cgroup_enable_subsystems */
 	omrsysinfo_cgroup_are_subsystems_enabled, /* sysinfo_cgroup_are_subsystems_enabled */
-	omrsysinfo_cgroup_get_memlimit, /* sysinfo_cgroup_get_memlimit */	
+	omrsysinfo_cgroup_get_memlimit, /* sysinfo_cgroup_get_memlimit */
 	omrport_init_library, /* port_init_library */
 	omrport_startup_library, /* port_startup_library */
 	omrport_create_library, /* port_create_library */

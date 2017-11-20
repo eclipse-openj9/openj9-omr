@@ -902,6 +902,7 @@ omrsysinfo_cgroup_are_subsystems_enabled(struct OMRPortLibrary *portLibrary, uin
  * omrsysinfo_cgroup_enable_limits() before calling this function.
  * When the fuction returns OMRPORT_ERROR_SYSINFO_CGROUP_UNSUPPORTED_PLATFORM,
  * value of *limits is unspecified.
+ * Note that 'limit' parameter must not be NULL.
  *
  * @param[in] portLibrary pointer to OMRPortLibrary
  * @param[out] limit pointer to uint64_t which successful return contains memory limit imposed by cgroup

@@ -34,9 +34,13 @@ int32_t iabs(int32_t l) {
       return -1 * l; 
 }
 
-class Int32Logical : public TRTest::UnaryOpTest<int32_t> {}; 
+int32_t ior(int32_t l, int32_t r) {
+    return l | r;
+}
 
-TEST_P(Int32Logical, UsingConst) {
+class Int32LogicalUnary : public TRTest::UnaryOpTest<int32_t> {}; 
+
+TEST_P(Int32LogicalUnary, UsingConst) {
     auto param = TRTest::to_struct(GetParam());
 
     char inputTrees[120] = {0};
@@ -56,9 +60,37 @@ TEST_P(Int32Logical, UsingConst) {
 }
 
 
-INSTANTIATE_TEST_CASE_P(LogicalTest, Int32Logical, ::testing::Combine(
+INSTANTIATE_TEST_CASE_P(LogicalTest, Int32LogicalUnary, ::testing::Combine(
     ::testing::ValuesIn(TRTest::const_values<int32_t>()),
     ::testing::Values(
         std::make_tuple("ineg", ineg),
         std::make_tuple("iabs", iabs)
         )));
+
+class Int32LogicalBinary : public TRTest::BinaryOpTest<int32_t> {};
+
+TEST_P(Int32LogicalBinary, UsingConst) {
+    auto param = TRTest::to_struct(GetParam());
+
+    char inputTrees[120] = {0};
+    std::snprintf(inputTrees, 120, "(method return=Int32 (block (ireturn (%s (iconst %d) (iconst %d)) )))", param.opcode.c_str(), param.lhs, param.rhs);
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler{trees};
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<int32_t (*)(void)>();
+    volatile auto exp = param.oracle(param.lhs, param.rhs);
+    volatile auto act = entry_point();
+    ASSERT_EQ(exp, act);
+}
+
+INSTANTIATE_TEST_CASE_P(LogicalTest, Int32LogicalBinary, ::testing::Combine(
+    ::testing::ValuesIn(TRTest::const_value_pairs<int32_t,int32_t>()),
+    ::testing::Values(
+        std::make_tuple("ior", ior)
+        )));
+

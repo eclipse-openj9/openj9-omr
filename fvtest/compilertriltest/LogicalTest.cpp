@@ -27,6 +27,13 @@ int32_t ineg(int32_t l) {
     return -l;
 }
 
+int32_t iabs(int32_t l) { 
+   if (l >= 0) 
+      return l;
+   else 
+      return -1 * l; 
+}
+
 class Int32Logical : public TRTest::UnaryOpTest<int32_t> {}; 
 
 TEST_P(Int32Logical, UsingConst) {
@@ -52,5 +59,6 @@ TEST_P(Int32Logical, UsingConst) {
 INSTANTIATE_TEST_CASE_P(LogicalTest, Int32Logical, ::testing::Combine(
     ::testing::ValuesIn(TRTest::const_values<int32_t>()),
     ::testing::Values(
-        std::make_tuple("ineg", ineg)
+        std::make_tuple("ineg", ineg),
+        std::make_tuple("iabs", iabs)
         )));

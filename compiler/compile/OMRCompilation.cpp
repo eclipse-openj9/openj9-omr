@@ -179,11 +179,6 @@ OMR::Compilation::getHotnessName(TR_Hotness h)
    return pHotnessNames[h];
    }
 
-bool OMR::Compilation::nodeNeeds2Regs(TR::Node*node)
-   {
-   return node->requiresRegisterPair(self());
-   }
-
 
 static TR::CodeGenerator * allocateCodeGenerator(TR::Compilation * comp)
    {
@@ -636,7 +631,7 @@ bool OMR::Compilation::isPotentialOSRPoint(TR::Node *node, TR::Node **osrPointNo
    if (self()->isOSRTransitionTarget(TR::postExecutionOSR))
       {
       if (node->getOpCodeValue() == TR::treetop || node->getOpCode().isCheck())
-         node = node->getFirstChild(); 
+         node = node->getFirstChild();
 
       if (_osrInfrastructureRemoved && !ignoreInfra)
          potentialOSRPoint = false;
@@ -769,7 +764,7 @@ OMR::Compilation::getOSRInductionOffset(TR::Node *node)
    // If no induction after the OSR point, offset must be 0
    if (!self()->isOSRTransitionTarget(TR::postExecutionOSR))
       return 0;
-   
+
    TR::Node *osrNode;
    if (!self()->isPotentialOSRPoint(node, &osrNode))
       {
@@ -2289,7 +2284,7 @@ OMR::Compilation::getOSRCallSiteRematSize(uint32_t callSiteIndex)
    }
 
 /*
- * Get the pending push symbol reference and the corresponding load, to later remat the pending push 
+ * Get the pending push symbol reference and the corresponding load, to later remat the pending push
  * within OSR code blocks inside the callee. To get a mapping, the call site index for the callee and
  * the caller's pending push slot should be provided.
  */

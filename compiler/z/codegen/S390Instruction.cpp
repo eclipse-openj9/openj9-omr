@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2017 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -694,7 +694,7 @@ TR::S390BranchInstruction::assignRegistersAndDependencies(TR_RegisterKinds kindT
          // in the OOL section can jump to the end of section and then only one branch (the
          // last instruction of an OOL section) jumps to the merge-point. In other words, OOL
          // section must contain exactly one exit point.
-         TR_ASSERT(comp->getAppendInstruction() == this, "OOL section must have only one branch to the merge point\n");
+         TR_ASSERT(cg()->getAppendInstruction() == this, "OOL section must have only one branch to the merge point\n");
          // Start RA for OOL cold path, restore register state from snap shot
          TR::Machine *machine = cg()->machine();
          if (comp->getOptions()->getRegisterAssignmentTraceOption(TR_TraceRARegisterStates))

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2017 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -176,7 +176,7 @@ bool isConditionCodeSetForCompareToZero(TR::Node *node, bool justTestZeroFlag)
    //
    TR::Instruction     *prevInstr;
    TR::X86RegInstruction  *prevRegInstr;
-   for (prevInstr = comp->getAppendInstruction();
+   for (prevInstr = comp->cg()->getAppendInstruction();
         prevInstr;
         prevInstr = prevInstr->getPrev())
       {
@@ -1652,7 +1652,7 @@ TR::Register *OMR::X86::TreeEvaluator::integerIfCmpneEvaluator(TR::Node *node, T
       //             (virtualGuard->getTestType() == TR_VftTest) &&
       //             !TR::Compiler->cls.sameClassLoaders(comp, virtualGuard->getThisClass(), comp->getCurrentMethod()->classOfMethod()))
       //            {
-      //            TR::Instruction *guardInstr = comp->getAppendInstruction();
+      //            TR::Instruction *guardInstr = comp->cg()->getAppendInstruction();
       //            comp->getStaticPICSites()->add(guardInstr);
       //            }
       //         }

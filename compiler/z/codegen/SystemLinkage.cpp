@@ -1868,7 +1868,7 @@ TR::S390zLinuxSystemLinkage::checkLeafRoutine(int32_t stackFrameSize, TR::Instru
    //
 
    #define ZLINUX_SYSTEMLINK_LEAF_INSTRUCTION_CHECK_THRESHOLD 150
-   TR::Instruction *cursor = comp()->getFirstInstruction();
+   TR::Instruction *cursor = comp()->cg()->getFirstInstruction();
    int32_t numToCheck = ZLINUX_SYSTEMLINK_LEAF_INSTRUCTION_CHECK_THRESHOLD;
    bool regs[TR::RealRegister::NumRegisters] = { };
 

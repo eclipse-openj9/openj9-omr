@@ -233,6 +233,8 @@ OMR::CodeGenerator::CodeGenerator() :
      _last8BitGlobalGPR(0),
      _globalGPRPartitionLimit(0),
      _globalFPRPartitionLimit(0),
+     _firstInstruction(NULL),
+     _appendInstruction(NULL),
      _firstGlobalVRF(-1),
      _lastGlobalVRF(-1),
      _firstOverlappedGlobalVRF(-1),
@@ -683,7 +685,7 @@ OMR::CodeGenerator::doInstructionSelection()
 
    for (TR::TreeTop *tt = comp->getStartTree(); tt; tt = self()->getCurrentEvaluationTreeTop()->getNextTreeTop())
       {
-      TR::Instruction *prevInstr = comp->getAppendInstruction();
+      TR::Instruction *prevInstr = self()->getAppendInstruction();
       TR::Node *node = tt->getNode();
       TR::ILOpCodes opCode = node->getOpCodeValue();
 
@@ -756,7 +758,7 @@ OMR::CodeGenerator::doInstructionSelection()
 
       if (comp->getOption(TR_TraceCG) || debug("traceGRA"))
          {
-         TR::Instruction *lastInstr = comp->getAppendInstruction();
+         TR::Instruction *lastInstr = self()->getAppendInstruction();
          tt->setLastInstruction(lastInstr == prevInstr ? 0 : lastInstr);
          }
 
@@ -3713,7 +3715,7 @@ OMR::CodeGenerator::generateDebugCounter(const char *name, TR::Register *deltaRe
 TR::Instruction *OMR::CodeGenerator::generateDebugCounter(TR::Instruction *cursor, const char *name, int32_t delta, int8_t fidelity, int32_t staticDelta)
    {
    if (!cursor)
-      cursor = self()->comp()->getAppendInstruction();
+      cursor = self()->getAppendInstruction();
    if (!self()->comp()->getOptions()->enableDebugCounters())
       return cursor;
    if (delta == 0)
@@ -3728,7 +3730,7 @@ TR::Instruction *OMR::CodeGenerator::generateDebugCounter(TR::Instruction *curso
 TR::Instruction *OMR::CodeGenerator::generateDebugCounter(TR::Instruction *cursor, const char *name, TR::Register *deltaReg, int8_t fidelity, int32_t staticDelta)
    {
    if (!cursor)
-      cursor = self()->comp()->getAppendInstruction();
+      cursor = self()->getAppendInstruction();
    if (!self()->comp()->getOptions()->enableDebugCounters())
       return cursor;
    // We won't do any aggregation (histogram buckets, bytecode breakdown, etc.) if we're getting the delta from a register
@@ -3741,7 +3743,7 @@ TR::Instruction *OMR::CodeGenerator::generateDebugCounter(TR::Instruction *curso
 TR::Instruction *OMR::CodeGenerator::generateDebugCounter(const char *name, TR::RegisterDependencyConditions &cond, int32_t delta, int8_t fidelity, int32_t staticDelta, TR::Instruction *cursor)
    {
    if (!cursor)
-      cursor = self()->comp()->getAppendInstruction();
+      cursor = self()->getAppendInstruction();
    if (!self()->comp()->getOptions()->enableDebugCounters())
       return cursor;
    if (delta == 0)
@@ -3756,7 +3758,7 @@ TR::Instruction *OMR::CodeGenerator::generateDebugCounter(const char *name, TR::
 TR::Instruction *OMR::CodeGenerator::generateDebugCounter(const char *name, TR::Register *deltaReg, TR::RegisterDependencyConditions &cond, int8_t fidelity, int32_t staticDelta, TR::Instruction *cursor)
    {
    if (!cursor)
-      cursor = self()->comp()->getAppendInstruction();
+      cursor = self()->getAppendInstruction();
    if (!self()->comp()->getOptions()->enableDebugCounters())
       return cursor;
    // We won't do any aggregation (histogram buckets, bytecode breakdown, etc.) if we're getting the delta from a register
@@ -3769,7 +3771,7 @@ TR::Instruction *OMR::CodeGenerator::generateDebugCounter(const char *name, TR::
 TR::Instruction *OMR::CodeGenerator::generateDebugCounter(const char *name, TR_ScratchRegisterManager &srm, int32_t delta, int8_t fidelity, int32_t staticDelta, TR::Instruction *cursor)
    {
    if (!cursor)
-      cursor = self()->comp()->getAppendInstruction();
+      cursor = self()->getAppendInstruction();
    if (!self()->comp()->getOptions()->enableDebugCounters())
       return cursor;
    if (delta == 0)
@@ -3784,7 +3786,7 @@ TR::Instruction *OMR::CodeGenerator::generateDebugCounter(const char *name, TR_S
 TR::Instruction *OMR::CodeGenerator::generateDebugCounter(const char *name, TR::Register *deltaReg, TR_ScratchRegisterManager &srm, int8_t fidelity, int32_t staticDelta, TR::Instruction *cursor)
    {
    if (!cursor)
-      cursor = self()->comp()->getAppendInstruction();
+      cursor = self()->getAppendInstruction();
    if (!self()->comp()->getOptions()->enableDebugCounters())
       return cursor;
    // We won't do any aggregation (histogram buckets, bytecode breakdown, etc.) if we're getting the delta from a register
@@ -4078,32 +4080,4 @@ OMR::CodeGenerator::lowerTree(TR::Node *root, TR::TreeTop *tt)
    {
    TR_ASSERT(0, "Unimplemented lowerTree() called for an opcode that needs to be lowered");
    return NULL;
-   }
-
-
-TR::Instruction *
-OMR::CodeGenerator::getFirstInstruction()
-   {
-   return self()->comp()->getFirstInstruction();
-   }
-
-
-TR::Instruction *
-OMR::CodeGenerator::setFirstInstruction(TR::Instruction *fi)
-   {
-   return self()->comp()->setFirstInstruction(fi);
-   }
-
-
-TR::Instruction *
-OMR::CodeGenerator::getAppendInstruction()
-   {
-   return self()->comp()->getAppendInstruction();
-   }
-
-
-TR::Instruction *
-OMR::CodeGenerator::setAppendInstruction(TR::Instruction *ai)
-   {
-   return self()->comp()->setAppendInstruction(ai);
    }

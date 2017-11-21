@@ -674,7 +674,7 @@ static bool willNotInlineCompareAndSwapNative(TR::Node *node,
 #endif
    }
 
-   
+
 /** @brief Identify methods which are not transformed into inline assembly.
 
     Some recognized methods are transformed into very simple hardcoded
@@ -1948,7 +1948,7 @@ void OMR::X86::CodeGenerator::doBinaryEncoding()
       int32_t numTrampolinesToReserve = self()->getPicSlotCount() - self()->comp()->getNumReservedIPICTrampolines();
       TR_ASSERT(numTrampolinesToReserve >= 0, "Discrepancy with number of IPIC trampolines to reserve getPicSlotCount()=%d getNumReservedIPICTrampolines()=%d",
          self()->getPicSlotCount(), self()->comp()->getNumReservedIPICTrampolines());
-      self()->comp()->fe()->reserveNTrampolines(self()->comp(), numTrampolinesToReserve, true);
+      self()->reserveNTrampolines(numTrampolinesToReserve);
       }
 
    self()->setBinaryBufferStart(temp);

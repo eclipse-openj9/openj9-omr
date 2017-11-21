@@ -10739,9 +10739,6 @@ bool OMR::Z::CodeGenerator::nodeMayCauseException(TR::Node *node)
    {
    TR::ILOpCode op = node->getOpCode();
 
-   if (!node->cannotOverflow() && self()->fixedPointOverflowExceptionEnabled())
-      return true;
-
 #ifdef J9_PROJECT_SPECIFIC
    if (op.isBinaryCodedDecimalOp())
       {

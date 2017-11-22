@@ -299,8 +299,16 @@ OMR::X86::CodeGenerator::initialize(TR::Compilation *comp)
    self()->setLastGlobalGPR(self()->machine()->getLastGlobalGPRRegisterNumber());
    self()->setLast8BitGlobalGPR(self()->machine()->getLast8BitGlobalGPRRegisterNumber());
    self()->setLastGlobalFPR(self()->machine()->getLastGlobalFPRRegisterNumber());
-   self()->setFirstGlobalVRF(self()->getFirstGlobalFPR());
-   self()->setLastGlobalVRF(self()->getLastGlobalFPR());
+   /*
+    * GRA does not work with vector registers on 32 bit due to a bug where xmm registers are not being assigned.
+    * This disables GRA for vector registers on 32 bit.
+    * This code will be reenabled as part of Issue 2035 which tracks the progress of fixing the GRA bug.
+    */
+   if (TR::Compiler->target.is64Bit())
+      {
+      self()->setFirstGlobalVRF(self()->getFirstGlobalFPR());
+      self()->setLastGlobalVRF(self()->getLastGlobalFPR());
+      }
 
    // Initialize Linkage for Code Generator
    self()->initializeLinkage();
@@ -1027,8 +1035,19 @@ OMR::X86::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode, TR::D
       case TR::vstore:
       case TR::vstorei:
       case TR::vsplats:
-      case TR::getvelem:
          if (dt == TR::Int32 || dt == TR::Int64 || dt == TR::Float || dt == TR::Double)
+            return true;
+         else
+            return false;
+      /*
+       * GRA does not work with vector registers on 32 bit due to a bug where xmm registers are not being assigned.
+       * This can potentially cause a performance problem in autosimd reductions.
+       * This function is where AutoSIMD checks to see if getvelem is suppored for use in reductions.
+       * The getvelem case was changed to disable the use of getvelem on 32 bit x86.
+       * This code will be reenabled as part of Issue 2035 which tracks the progress of fixing the GRA bug.
+       */
+      case TR::getvelem:
+         if (TR::Compiler->target.is64Bit() && (dt == TR::Int32 || dt == TR::Int64 || dt == TR::Float || dt == TR::Double))
             return true;
          else
             return false;

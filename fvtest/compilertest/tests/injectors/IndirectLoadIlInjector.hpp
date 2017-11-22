@@ -19,24 +19,28 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
 
-#include "compile/Compilation.hpp"
-#include "env/FrontEnd.hpp"
-#include "compile/Method.hpp"
-#include "ilgen/ChildlessUnaryOpIlInjector.hpp"
+#ifndef TEST_INDIRECTLOADIILINJECTOR_INCL
+#define TEST_INDIRECTLOADIILINJECTOR_INCL
+
+#include "tests/injectors/UnaryOpIlInjector.hpp"
+
+namespace TR { class TypeDictionary; }
 
 namespace TestCompiler
 {
-
-bool
-ChildlessUnaryOpIlInjector::injectIL()
+class IndirectLoadIlInjector : public UnaryOpIlInjector
    {
-   if (!isOpCodeSupported())
-      return false;
-
-   createBlocks(1);
-   returnValue(parm(1));
-
-   return true;
+   public:
+   IndirectLoadIlInjector(TR::TypeDictionary *types, TestDriver *test, TR::ILOpCodes opCode)
+   : UnaryOpIlInjector(types, test, opCode)
+   {
    }
 
+   TR_ALLOC(TR_Memory::IlGenerator)
+   bool injectIL();
+
+   };
+
 } // namespace TestCompiler
+
+#endif // !defined(TEST_INDIRECTLOADIILINJECTOR_INCL)

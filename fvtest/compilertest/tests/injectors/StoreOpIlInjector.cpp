@@ -20,25 +20,26 @@
  *******************************************************************************/
 
 #include "compile/Compilation.hpp"
-#include "compile/SymbolReferenceTable.hpp"
 #include "env/FrontEnd.hpp"
 #include "compile/Method.hpp"
-#include "tests/IndirectStoreIlInjector.hpp"
-#include "tests/OpCodesTest.hpp"
+#include "ilgen/TypeDictionary.hpp"
+#include "tests/injectors/StoreOpIlInjector.hpp"
 
 namespace TestCompiler
 {
 
 bool
-IndirectStoreIlInjector::injectIL()
+StoreOpIlInjector::injectIL()
    {
    if (!isOpCodeSupported())
       return false;
 
    createBlocks(1);
-   TR::SymbolReference *storeSymRef = symRefTab()->findOrCreateArrayShadowSymbolRef(_dataType, parm(1));
-   genTreeTop(TR::Node::createWithSymRef(_opCode, 2, parm(1), parm(2), 0, storeSymRef));
-   returnNoValue();
+
+   TR::SymbolReference *newStoreSymRef = newTemp(_types->PrimitiveType(_dataType));
+   storeToTemp(newStoreSymRef, parm(1));
+   returnValue(loadTemp(newStoreSymRef));
+
    return true;
    }
 

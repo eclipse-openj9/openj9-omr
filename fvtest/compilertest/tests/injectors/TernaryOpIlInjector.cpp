@@ -20,30 +20,23 @@
  *******************************************************************************/
 
 #include "compile/Compilation.hpp"
-#include "compile/SymbolReferenceTable.hpp"
 #include "env/FrontEnd.hpp"
 #include "compile/Method.hpp"
-#include "ilgen/TypeDictionary.hpp"
-#include "tests/IndirectLoadIlInjector.hpp"
-#include "tests/OpCodesTest.hpp"
-#include "il/Node.hpp"
-#include "il/Node_inlines.hpp"
+#include "tests/injectors/TernaryOpIlInjector.hpp"
 
 namespace TestCompiler
 {
-
 bool
-IndirectLoadIlInjector::injectIL()
+TernaryOpIlInjector::injectIL()
    {
    if (!isOpCodeSupported())
+      {
       return false;
-
-   OpCodesTest *test = static_cast<OpCodesTest *>(_test);
+      }
    createBlocks(1);
-   TR::SymbolReference *loadSymRef = symRefTab()->findOrCreateArrayShadowSymbolRef(_dataType, parm(1));
-   returnValue(TR::Node::createWithSymRef(_opCode, 1, 1, parm(1), loadSymRef));
-
+   // Block 2: blocks(0)
+   returnValue(createWithoutSymRef(_opCode, 3, parm(1), parm(2), parm(3)));
    return true;
    }
 
-} // namespace TestCompiler
+} /* namespace TestCompiler */

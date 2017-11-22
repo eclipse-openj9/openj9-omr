@@ -547,8 +547,6 @@ public:
    // Should be in Optimizer
    //
 
-   bool isPinningNeeded() { return true; }
-
    // J9
    bool getLoopWasVersionedWrtAsyncChecks() { return _loopVersionedWrtAsyncChecks; }
    void setLoopWasVersionedWrtAsyncChecks(bool v) { _loopVersionedWrtAsyncChecks = v; }

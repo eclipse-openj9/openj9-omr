@@ -1293,7 +1293,6 @@ class OMR_EXTENSIBLE CodeGenerator
    bool supportsOnDemandLiteralPool() { return false; } // no virt, cast
    bool supportsDirectIntegralLoadStoresFromLiteralPool() { return false; } // no virt
    bool supportsHighWordFacility() { return false; } // no virt, default, cast
-   bool doInlineAllocate(TR::Node *node) { TR_ASSERT(0, "unexpected call to OMR::CodeGenerator::doInlineAllocate"); return false; } // no virt, default
 
    bool inlineDirectCall(TR::Node *node, TR::Register *&resultReg) { return false; }
 

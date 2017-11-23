@@ -330,6 +330,8 @@ TR::Node* Tril::TRLangBuilder::toTRNode(const ASTNode* const tree) {
      int i = 0;
      while (t) {
          auto child = toTRNode(t);
+         if (child == NULL) 
+            return NULL; 
          TraceIL("Setting n%dn (%p) as child %d of n%dn (%p)\n", child->getGlobalIndex(), child, i, node->getGlobalIndex(), node);
          node->setAndIncChild(i, child);
          t = t->next;
@@ -417,6 +419,8 @@ bool Tril::TRLangBuilder::injectIL() {
        const ASTNode* t = block->getChildren();
        while (t) {
            auto node = toTRNode(t);
+           if (node == NULL) 
+              return false;
            const auto tt = genTreeTop(node);
            TraceIL("Created TreeTop %p for node n%dn (%p)\n", tt, node->getGlobalIndex(), node);
            t = t->next;

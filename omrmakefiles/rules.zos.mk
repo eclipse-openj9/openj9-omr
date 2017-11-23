@@ -36,7 +36,6 @@ endif
 
 # Enable Debugging Symbols
 ifeq ($(OMR_DEBUG),1)
-  GLOBAL_FLAGS+=-Wc,g9
 endif
 
 # Enable Optimizations
@@ -70,9 +69,7 @@ GLOBAL_CPPFLAGS+=-DJ9ZOS390 -DLONGLONG -DJ9VM_TIERED_CODE_CACHE -D_ALL_SOURCE -D
 # a,goff   Assemble into GOFF object files
 # NOANSIALIAS Do not generate ALIAS binder control statements
 # TARGET   Generate code for the target operating system
-# list     Generate assembly listing
-# offset   In assembly listing, show addresses as offsets of function entry points
-GLOBAL_FLAGS+=-Wc,xplink,convlit\(ISO8859-1\),rostring,FLOAT\(IEEE,FOLD,AFP\),enum\(4\) -Wa,goff -Wc,NOANSIALIAS -Wc,TARGET\(zOSV1R13\) -W "c,list,offset"
+GLOBAL_FLAGS+=-Wc,xplink,convlit\(ISO8859-1\),rostring,FLOAT\(IEEE,FOLD,AFP\),enum\(4\) -Wa,goff -Wc,NOANSIALIAS -Wc,TARGET\(zOSV1R13\)
 
 ifeq (1,$(OMR_ENV_DATA64))
   GLOBAL_CPPFLAGS+=-DJ9ZOS39064
@@ -114,17 +111,6 @@ ifeq (1,$(DO_LINK))
     GLOBAL_SHARED_LIBS+=j9a2e
   endif
 endif
-
-
-# compilation for C files.
-define COMPILE_C_COMMAND
-$(CC) $(CPPFLAGS) $(MODULE_CPPFLAGS) $(GLOBAL_CPPFLAGS) $(GLOBAL_CFLAGS) $(MODULE_CFLAGS) $(CFLAGS) -c $< -o $@ > $*.asmlist
-endef
-
-# compilation for C++ files.
-define COMPILE_CXX_COMMAND
-$(CXX) $(CPPFLAGS) $(MODULE_CPPFLAGS) $(GLOBAL_CPPFLAGS) $(GLOBAL_CXXFLAGS) $(MODULE_CXXFLAGS) $(CXXFLAGS) -c $< -o $@ > $*.asmlist
-endef
 
 # compilation for metal-C files.
 ifeq (1,$(OMR_ENV_DATA64))

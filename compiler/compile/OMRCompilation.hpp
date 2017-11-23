@@ -872,14 +872,6 @@ public:
       return _flags.testAny(HasColdBlocks);
       }
 
-   void printMemStatsCS2();
-
-   void printMemStats(const char *name);
-
-   void printMemStatsBefore(const char *name);
-
-   void printMemStatsAfter(const char *name);
-
    TR::ResolvedMethodSymbol *createJittedMethodSymbol(TR_ResolvedMethod *resolvedMethod);
 
    bool isGPUCompilation() { return _flags.testAny(IsGPUCompilation);}

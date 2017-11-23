@@ -983,8 +983,6 @@ int32_t OMR::Compilation::compile()
       methodInfo->setProfileInfo(NULL);
 #endif
 
-   self()->printMemStatsBefore(self()->signature());
-
    {
      if (printCodegenTime) genILTime.startTiming(self());
      _ilGenSuccess = _methodSymbol->genIL(self()->fe(), self(), self()->getSymRefTab(), _ilGenRequest);
@@ -1037,8 +1035,6 @@ int32_t OMR::Compilation::compile()
 
       self()->performOptimizations();
 
-      self()->printMemStatsAfter("optimization");
-
       if (printCodegenTime) optTime.stopTiming(self());
 
 #ifdef J9_PROJECT_SPECIFIC
@@ -1070,8 +1066,6 @@ int32_t OMR::Compilation::compile()
            codegenTime.startTiming(self());
 
         self()->cg()->generateCode();
-
-        self()->printMemStatsAfter("all codegen");
 
         if (printCodegenTime)
            codegenTime.stopTiming(self());
@@ -1203,8 +1197,6 @@ int32_t OMR::Compilation::compile()
       self()->getDebug()->setupDebugger(self()->cg()->getCodeStart(),self()->cg()->getCodeEnd(),false);
       }
 #endif
-
-   self()->printMemStatsAfter(self()->signature());
 
    return COMPILATION_SUCCEEDED;
    }
@@ -2496,18 +2488,6 @@ void
 OMR::Compilation::setStartTree(TR::TreeTop * tt)
    {
    _methodSymbol->setFirstTreeTop(tt);
-   }
-
-void OMR::Compilation::printMemStats(const char *name)
-   {
-   }
-
-void OMR::Compilation::printMemStatsBefore(const char *name)
-   {
-   }
-
-void OMR::Compilation::printMemStatsAfter(const char *name)
-   {
    }
 
 bool

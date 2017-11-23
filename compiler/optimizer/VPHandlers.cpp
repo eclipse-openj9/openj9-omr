@@ -1809,7 +1809,7 @@ TR::Node *constrainAload(OMR::ValuePropagation *vp, TR::Node *node)
                   vp->addGlobalConstraint(node, constraint);
                   }
                }
-            else if (vp->comp()->isOptServer())
+            else
                {
                TR_ResolvedMethod *method = node->getSymbolReference()->getOwningMethod(vp->comp());
                constraint = TR::VPUnresolvedClass::create(vp, sig, len, method);
@@ -9402,7 +9402,7 @@ static TR::Node *constrainIfcmpeqne(OMR::ValuePropagation *vp, TR::Node *node, b
       }
 
 #ifdef J9_PROJECT_SPECIFIC
-   if (!vp->comp()->compileRelocatableCode() && vp->comp()->isOptServer() &&
+   if (!vp->comp()->compileRelocatableCode() &&
        vp->lastTimeThrough() &&
        vp->comp()->performVirtualGuardNOPing() &&
        !vp->_curBlock->isCold() &&
@@ -9482,7 +9482,8 @@ static TR::Node *constrainIfcmpeqne(OMR::ValuePropagation *vp, TR::Node *node, b
 
                if (clazzToBeInitialized &&
                    (((clazzNameLen == 35) && !strncmp(clazzToBeInitialized, "Lcom/ibm/ejs/ras/TraceEnabledToken;", clazzNameLen)) ||
-                    ((clazzNameLen == 41) && !strncmp(clazzToBeInitialized, "Lcom/ibm/websphere/ras/TraceEnabledToken;", clazzNameLen))) &&
+                    ((clazzNameLen == 41) && !strncmp(clazzToBeInitialized, "Lcom/ibm/websphere/ras/TraceEnabledToken;", clazzNameLen)) ||
+                    ((clazzNameLen == 40) && !strncmp(clazzToBeInitialized, "Ljava/lang/String$StringCompressionFlag;", clazzNameLen))) &&
                    performTransformation(vp->comp(), "%sUsing side-effect guard to fold away condition on a load from an uninitializec class  %s [%p]\n", OPT_DETAILS, clazzToBeInitialized, node))
                   {
                   char *clazzToBeInitializedCopy = (char *)vp->trMemory()->allocateMemory(clazzNameLen+1, heapAlloc);

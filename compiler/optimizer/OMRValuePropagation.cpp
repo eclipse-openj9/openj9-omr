@@ -8037,9 +8037,11 @@ void OMR::ValuePropagation::doDelayedTransformations()
 
          if ((staticName && (staticNameLen > 0) &&
              (!strncmp(staticName, "com/ibm/websphere/ras/TraceComponent.fineTracingEnabled", 55) ||
-              !strncmp(staticName, "com/ibm/ejs/ras/TraceComponent.anyTracingEnabled", 48))) ||
+              !strncmp(staticName, "com/ibm/ejs/ras/TraceComponent.anyTracingEnabled", 48) ||
+              !strncmp(staticName, "java/lang/String.compressionFlag", 32))) ||
              ((cii->_len == 41) && !strncmp(cii->_sig, "Lcom/ibm/websphere/ras/TraceEnabledToken;", cii->_len)) ||
-             ((cii->_len == 35) && !strncmp(cii->_sig, "Lcom/ibm/ejs/ras/TraceEnabledToken;", cii->_len)))
+             ((cii->_len == 35) && !strncmp(cii->_sig, "Lcom/ibm/ejs/ras/TraceEnabledToken;", cii->_len)) ||
+             ((cii->_len == 40) && !strncmp(cii->_sig, "Ljava/lang/String$StringCompressionFlag;", cii->_len)))
             {
             recognizedStatic = true;
             ifNode->setAndIncChild(0, origFirst->duplicateTree());

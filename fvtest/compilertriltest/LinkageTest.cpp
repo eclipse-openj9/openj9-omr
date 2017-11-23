@@ -50,12 +50,25 @@ TEST(TypeToString,TestTemplate) {
 template <typename T>
 T passThrough(T x) { return x; }
 
-
 template <typename T>
 class LinkageTest : public TRTest::JitTest {};
 
 typedef ::testing::Types<int32_t, int64_t, float, double> InputTypes;
 TYPED_TEST_CASE(LinkageTest, InputTypes);
+
+TYPED_TEST(LinkageTest, InvalidLinkageTest) { 
+   char inputTrees[200] = {0};
+   const auto format_string = "(method return=Int32  args=[Int32] (block (ireturn (icall address=%p args=[Int32] linkage=noexist  (iload parm=0)) )  ))";
+   std::snprintf(inputTrees, 200, format_string, &passThrough<TypeParam>); 
+
+   auto trees = parseString(inputTrees);
+   ASSERT_NOTNULL(trees) << "Trees failed to parse\n" << inputTrees;
+
+#ifdef TR_TARGET_X86
+   Tril::DefaultCompiler compiler{trees};
+   ASSERT_NE(0, compiler.compile()) << "Compilation succeeded unexpectedly\n" << "Input trees: " << inputTrees;
+#endif
+}
 
 TYPED_TEST(LinkageTest, SystemLinkageParameterPassingSingleArg) {
     char inputTrees[200] = {0};
@@ -68,6 +81,7 @@ TYPED_TEST(LinkageTest, SystemLinkageParameterPassingSingleArg) {
                                                   TypeToString<TypeParam>::type, //args
                                                   TypeToString<TypeParam>::prefix //load
                                                   );
+
     auto trees = parseString(inputTrees);
 
     ASSERT_NOTNULL(trees) << "Trees failed to parse\n" << inputTrees;

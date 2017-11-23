@@ -406,9 +406,3 @@ TR_FrontEnd::needsMethodTrampolines()
    return 0;
    }
 
-
-void
-TR_FrontEnd::reserveNTrampolines(TR::Compilation *, int32_t n, bool inBinaryEncoding)
-   {
-   notImplemented("reserveNTrampolines");
-   }

@@ -230,7 +230,6 @@ public:
    virtual void reserveTrampolineIfNecessary(TR::Compilation *, TR::SymbolReference *symRef, bool inBinaryEncoding);
    virtual intptrj_t methodTrampolineLookup(TR::Compilation *, TR::SymbolReference *symRef, void * callSite);
    virtual intptrj_t indexedTrampolineLookup(int32_t helperIndex, void * callSite); // No TR::Compilation parameter so this can be called from runtime code
-   virtual bool needsMethodTrampolines();
 
    // Z only
    virtual uint8_t * getCodeCacheBase();

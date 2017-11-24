@@ -386,7 +386,7 @@ enum TR_CompilationOptions
    TR_VerboseInlineProfiling              = 0x00004000 + 9,
    // Available                           = 0x00008000 + 9,
    // Available                           = 0x00010000 + 9,
-   // Available                           = 0x00020000 + 9,
+   TR_DisableIntegerCompareSimplification = 0x00020000 + 9,
    TR_DisableAutoSIMD                      = 0x00040000 + 9,
    TR_DisableOOL                          = 0x00080000 + 9,
    TR_DisableWriteBarriersRangeCheck      = 0x00100000 + 9,

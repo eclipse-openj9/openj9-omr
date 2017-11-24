@@ -1039,7 +1039,6 @@ public:
    bool mulDecompositionCostIsJustified(int32_t numOfOperations, char bitPosition[], char operationType[], int64_t value);
 
    bool disableCommoningOfVolatiles() { return false; } // TODO : Identitiy needs folding
-   bool allowDSEOfVolatiles() { return true; } // TODO : Identitiy needs folding
 
    bool canUseGoldenEagleImmediateInstruction( int32_t value )
      {

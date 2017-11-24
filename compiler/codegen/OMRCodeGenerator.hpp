@@ -1552,7 +1552,6 @@ class OMR_EXTENSIBLE CodeGenerator
    void setInlinedGetCurrentThreadMethod() {_flags3.set(InlinedGetCurrentThreadMethod);}
 
    bool disableCommoningOfVolatiles() {return false; }
-   bool allowDSEOfVolatiles() {return true; }
 
    bool considerAllAutosAsTacticalGlobalRegisterCandidates()    {return _flags1.testAny(ConsiderAllAutosAsTacticalGlobalRegisterCandidates);}
    void setConsiderAllAutosAsTacticalGlobalRegisterCandidates() {_flags1.set(ConsiderAllAutosAsTacticalGlobalRegisterCandidates);}

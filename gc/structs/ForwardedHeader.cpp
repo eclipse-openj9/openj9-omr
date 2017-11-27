@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2016 IBM Corp. and others
+ * Copyright (c) 2015, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -26,6 +26,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #endif /* defined(FORWARDEDHEADER_DEBUG) */
+#include <string.h>
 #include "AtomicOperations.hpp"
 
 #if defined(FORWARDEDHEADER_DEBUG)
@@ -58,7 +59,7 @@ MM_ForwardedHeader::ForwardedHeaderDump(omrobjectptr_t destinationObjectPtr)
  * @return the actual location of the forwarded object
  */
 omrobjectptr_t
-MM_ForwardedHeader::setForwardedObject(omrobjectptr_t destinationObjectPtr)
+MM_ForwardedHeader::setForwardedObjectInternal(omrobjectptr_t destinationObjectPtr, uintptr_t forwardedTag)
 {
 	ForwardedHeaderAssert(!isForwardedPointer());
 	volatile MutableHeaderFields* objectHeader = (volatile MutableHeaderFields *)((fomrobject_t*)_objectPtr + _forwardingSlotOffset);
@@ -67,19 +68,20 @@ MM_ForwardedHeader::setForwardedObject(omrobjectptr_t destinationObjectPtr)
 	/* Forwarded tag should be in low bits of the pointer and at the same time be in forwarding slot */
 #if defined (OMR_INTERP_COMPRESSED_OBJECT_HEADER) && !defined(OMR_ENV_LITTLE_ENDIAN)
 	/* To get it for compressed big endian just swap halves of pointer */
-	uintptr_t newValue = (((uintptr_t)destinationObjectPtr | _forwardedTag) << 32) | (((uintptr_t)destinationObjectPtr >> 32) & 0xffffffff);
+	uintptr_t newValue = (((uintptr_t)destinationObjectPtr | forwardedTag) << 32) | (((uintptr_t)destinationObjectPtr >> 32) & 0xffffffff);
 #else /* defined (OMR_INTERP_COMPRESSED_OBJECT_HEADER) && !defined(OMR_ENV_LITTLE_ENDIAN) */
 	/* For little endian or not compressed write uintptr_t bytes straight */
-	uintptr_t newValue = (uintptr_t)destinationObjectPtr | _forwardedTag;
+	uintptr_t newValue = (uintptr_t)destinationObjectPtr | forwardedTag;
 #endif /* defined (OMR_INTERP_COMPRESSED_OBJECT_HEADER) && !defined(OMR_ENV_LITTLE_ENDIAN) */
 
 	if (MM_AtomicOperations::lockCompareExchange((volatile uintptr_t*)&objectHeader->slot, oldValue, newValue) != oldValue) {
+		/* If we lost forwarding it, return where we are really forwarded. Another thread could raced us to forward on another location
+		 * or (Concurrent world) self-forward it. In the later case, we will return NULL */
 		MM_ForwardedHeader forwardedObject(_objectPtr);
 		ForwardedHeaderAssert(forwardedObject.isForwardedPointer());
 		destinationObjectPtr = forwardedObject.getForwardedObject();
 	}
 
-	ForwardedHeaderAssert(NULL != destinationObjectPtr);
 	return destinationObjectPtr;
 }
 
@@ -94,18 +96,20 @@ MM_ForwardedHeader::getForwardedObject()
 	omrobjectptr_t forwardedObject = NULL;
 
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
+	uintptr_t forwardedTag = _forwardedTag | _beingCopiedHint;
 	if (isStrictlyForwardedPointer()) {
 #else
+	uintptr_t forwardedTag = _forwardedTag;
 	if (isForwardedPointer()) {
 #endif
 #if defined (OMR_INTERP_COMPRESSED_OBJECT_HEADER) && !defined(OMR_ENV_LITTLE_ENDIAN)
 		/* Compressed big endian - read two halves separately */
 		uint32_t hi = (uint32_t)_preserved.overlap;
-		uint32_t lo = (uint32_t)_preserved.slot & ~_forwardedTag;
+		uint32_t lo = (uint32_t)_preserved.slot & ~forwardedTag;
 		uintptr_t restoredForwardingSlotValue = (((uintptr_t)hi) <<32 ) | ((uintptr_t)lo);
 #else /* defined (OMR_INTERP_COMPRESSED_OBJECT_HEADER) && !defined(OMR_ENV_LITTLE_ENDIAN) */
 		/* Little endian or not compressed - read all uintptr_t bytes at once */
-		uintptr_t restoredForwardingSlotValue = *(uintptr_t *)(&_preserved.slot) & ~_forwardedTag;
+		uintptr_t restoredForwardingSlotValue = *(uintptr_t *)(&_preserved.slot) & ~forwardedTag;
 #endif /* defined (OMR_INTERP_COMPRESSED_OBJECT_HEADER) && !defined(OMR_ENV_LITTLE_ENDIAN) */
 
 		forwardedObject = (omrobjectptr_t)(restoredForwardingSlotValue);
@@ -121,18 +125,20 @@ MM_ForwardedHeader::getNonStrictForwardedObject()
 	omrobjectptr_t forwardedObject = NULL;
 
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
+	uintptr_t forwardedTag = _forwardedTag | _beingCopiedHint;
 	if (isStrictlyForwardedPointer()) {
 #else
+	uintptr_t forwardedTag = _forwardedTag;
 	if (isForwardedPointer()) {
 #endif /* OMR_GC_CONCURRENT_SCAVENGER */
 #if defined (OMR_INTERP_COMPRESSED_OBJECT_HEADER) && !defined(OMR_ENV_LITTLE_ENDIAN)
 		/* Compressed big endian - read two halves separately */
 		uint32_t hi = (uint32_t)_preserved.overlap;
-		uint32_t lo = (uint32_t)_preserved.slot & ~_forwardedTag;
+		uint32_t lo = (uint32_t)_preserved.slot & ~forwardedTag;
 		uintptr_t restoredForwardingSlotValue = (((uintptr_t)hi) <<32 ) | ((uintptr_t)lo);
 #else /* defined (OMR_INTERP_COMPRESSED_OBJECT_HEADER) && !defined(OMR_ENV_LITTLE_ENDIAN) */
 		/* Little endian or not compressed - read all uintptr_t bytes at once */
-		uintptr_t restoredForwardingSlotValue = *(uintptr_t *)(&_preserved.slot) & ~_forwardedTag;
+		uintptr_t restoredForwardingSlotValue = *(uintptr_t *)(&_preserved.slot) & ~forwardedTag;
 #endif /* defined (OMR_INTERP_COMPRESSED_OBJECT_HEADER) && !defined(OMR_ENV_LITTLE_ENDIAN) */
 
 		forwardedObject = (omrobjectptr_t)(restoredForwardingSlotValue);
@@ -146,11 +152,53 @@ MM_ForwardedHeader::getNonStrictForwardedObject()
 	return forwardedObject;
 }
 
+uintptr_t
+MM_ForwardedHeader::copySetup(omrobjectptr_t destinationObjectPtr, uintptr_t *remainingSizeToCopy)
+{
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+	volatile MutableHeaderFields* objectHeader = (volatile MutableHeaderFields *)((fomrobject_t*)destinationObjectPtr + _forwardingSlotOffset);
+	uintptr_t copyOffset = sizeof(fomrobject_t) * (_forwardingSlotOffset + 1);
+
+	ForwardedHeaderAssert(*remainingSizeToCopy >= copyOffset);
+	*remainingSizeToCopy = *remainingSizeToCopy - copyOffset;
+	/* take small section (about 1%) to copy now to maximize parallelism */
+	uintptr_t sizeToCopy = SIZE_OF_SECTION_TO_COPY(*remainingSizeToCopy);
+	/* but obey minimum increment size (to hide overhead associated with each section) */
+	sizeToCopy = OMR_MAX(sizeToCopy, _minIncrement);
+	/* still, don't copy more than the remaining size (whole object) */
+	sizeToCopy = OMR_MIN(*remainingSizeToCopy, sizeToCopy);
+	*remainingSizeToCopy -= sizeToCopy;
+	uintptr_t alignmentResidue = *remainingSizeToCopy & _copySizeAlignement;
+	sizeToCopy += alignmentResidue;
+	*remainingSizeToCopy -= alignmentResidue;
+
+	/* set the remaining length to copy */
+	objectHeader->slot = (fomrobject_t)(*remainingSizeToCopy | (0 << OUTSTANDING_COPIES_SHIFT)) | _beingCopiedTag;
+	/* write sync not necessary (atomic in follow-up set forward is an implicit barrier) */
+
+	return sizeToCopy;
+#else
+	/* currently no users outside of CS */
+	ForwardedHeaderAssert(false);
+	return 0;
+#endif /* #if defined(OMR_GC_CONCURRENT_SCAVENGER) */
+}
+
+void
+MM_ForwardedHeader::copySection(omrobjectptr_t destinationObjectPtr, uintptr_t remainingSizeToCopy, uintptr_t sizeToCopy)
+{
+	uintptr_t copyOffset = sizeof(fomrobject_t) * (_forwardingSlotOffset + 1) + remainingSizeToCopy;
+
+	void *dstStartAddress = (void *)((uintptr_t)destinationObjectPtr + copyOffset);
+	void *srcStartAddress = (void *)((uintptr_t)_objectPtr + copyOffset);
+
+	memcpy(dstStartAddress, srcStartAddress, sizeToCopy);
+}
+
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
 omrobjectptr_t
 MM_ForwardedHeader::setSelfForwardedObject()
 {
-	ForwardedHeaderAssert(!isForwardedPointer());
 	volatile MutableHeaderFields* objectHeader = (volatile MutableHeaderFields *)((fomrobject_t*)_objectPtr + _forwardingSlotOffset);
 	fomrobject_t oldValue = _preserved.slot;
 
@@ -158,14 +206,10 @@ MM_ForwardedHeader::setSelfForwardedObject()
 
 	omrobjectptr_t forwardedObject = _objectPtr;
 
-#if defined(OMR_INTERP_COMPRESSED_OBJECT_HEADER)
-	if (oldValue != MM_AtomicOperations::lockCompareExchangeU32((volatile uint32_t*)&objectHeader->slot, oldValue, newValue)) {
-#else /* defined(OMR_INTERP_COMPRESSED_OBJECT_HEADER) */
-	if (oldValue != MM_AtomicOperations::lockCompareExchange((volatile uintptr_t*)&objectHeader->slot, (uintptr_t)oldValue, (uintptr_t)newValue)) {
-#endif /* defined(OMR_INTERP_COMPRESSED_OBJECT_HEADER) */
-		/* if we lost on self-forwarding, return where we are really forwarded */
+	if (oldValue != lockCompareExchangeObjectHeader(&objectHeader->slot, oldValue, newValue)) {
+		/* If we lost on self-forwarding, return where we are really forwarded. We could still be self-forwarded (another thread raced us) or
+		 * strictly forwarded (another thread successfully copied the object). Either way, getNonStrictForwardedObject() should return us where we really are. */
 		MM_ForwardedHeader forwardedHeader(_objectPtr);
-		ForwardedHeaderAssert(forwardedHeader.isStrictlyForwardedPointer());
 		forwardedObject = forwardedHeader.getNonStrictForwardedObject();
 	}
 
@@ -185,4 +229,115 @@ MM_ForwardedHeader::restoreSelfForwardedPointer()
 	objectHeader->slot = newValue;
 }
 
+
+uintptr_t
+MM_ForwardedHeader::winObjectSectionToCopy(volatile fomrobject_t *copyProgressSlot, fomrobject_t oldValue, uintptr_t *remainingSizeToCopy, uintptr_t outstandingCopies)
+{
+	/* take small section (about 1%) to copy now to maximize parallelism */
+	uintptr_t sizeToCopy = SIZE_OF_SECTION_TO_COPY(*remainingSizeToCopy) & ~_copySizeAlignement;
+	/* but obey minimum increment size (to hide overhead associated with each section) */
+	sizeToCopy = OMR_MAX(sizeToCopy, _minIncrement);
+	/* don't copy more then the remaining size */
+	sizeToCopy = OMR_MIN(*remainingSizeToCopy, sizeToCopy);
+	*remainingSizeToCopy -= sizeToCopy;
+
+	/* atomically try to win this section */
+	fomrobject_t newValue = (fomrobject_t)(*remainingSizeToCopy | (outstandingCopies << OUTSTANDING_COPIES_SHIFT)) | _beingCopiedTag;
+	if (oldValue == lockCompareExchangeObjectHeader(copyProgressSlot, oldValue, newValue)) {
+		return sizeToCopy;
+	}
+
+	return 0;
+}
+
+void
+MM_ForwardedHeader::wait(uintptr_t *spinCount) {
+	/* TODO: consider yielding and/or sleeping, for high spinCount value */
+	for (uintptr_t i = *spinCount; i > 0; i--)	{
+		MM_AtomicOperations::nop();
+	}
+
+	/* double the wait time, for subsequent re-tries */
+	*spinCount += *spinCount;
+}
+
+void
+MM_ForwardedHeader::copyOrWaitOutline(omrobjectptr_t destinationObjectPtr)
+{
+	volatile MutableHeaderFields* objectHeader = (volatile MutableHeaderFields *)((fomrobject_t*)destinationObjectPtr + _forwardingSlotOffset);
+	uintptr_t spinCount = 10;
+
+	bool participatingInCopy = false;
+	while (true) {
+		uintptr_t sizeToCopy = 0, remainingSizeToCopy = 0;
+		do {
+			fomrobject_t oldValue = objectHeader->slot;
+			if (0 == (oldValue & _beingCopiedTag)) {
+				/* the object is fully copied */
+				return;
+			}
+			remainingSizeToCopy = oldValue & _remainingSizeMask;
+			uintptr_t outstandingCopies = (oldValue & _copySizeAlignement) >> OUTSTANDING_COPIES_SHIFT;
+
+			if (0 == remainingSizeToCopy) {
+				if (participatingInCopy) {
+					fomrobject_t newValue = ((outstandingCopies - 1) << OUTSTANDING_COPIES_SHIFT) | _beingCopiedTag;
+					if (oldValue != lockCompareExchangeObjectHeader(&objectHeader->slot, oldValue, newValue)) {
+						continue;
+					}
+					participatingInCopy = false;
+				}
+				/* No work left to help with. Just keep waiting and checking till copying/fixing is done. */
+				wait(&spinCount);
+				continue;
+			}
+
+			if (!participatingInCopy) {
+				if (outstandingCopies < MAX_OUTSTANDING_COPIES) {
+					outstandingCopies += 1;
+				} else {
+					wait(&spinCount);
+					continue;
+				}
+			}
+
+			sizeToCopy = winObjectSectionToCopy(&objectHeader->slot, oldValue, &remainingSizeToCopy, outstandingCopies);
+		} while (0 == sizeToCopy);
+
+		participatingInCopy = true;
+
+		copySection(destinationObjectPtr, remainingSizeToCopy, sizeToCopy);
+	}
+}
 #endif /* OMR_GC_CONCURRENT_SCAVENGER */
+
+void
+MM_ForwardedHeader::copyOrWaitWinner(omrobjectptr_t destinationObjectPtr)
+{
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+	volatile MutableHeaderFields* objectHeader = (volatile MutableHeaderFields *)((fomrobject_t*)destinationObjectPtr + _forwardingSlotOffset);
+	uintptr_t spinCount = 10;
+
+	while (true) {
+		uintptr_t remainingSizeToCopy = 0, sizeToCopy = 0;
+		do {
+			fomrobject_t oldValue = objectHeader->slot;
+			remainingSizeToCopy = (uintptr_t)(oldValue & _remainingSizeMask);
+			uintptr_t outstandingCopies = ((uintptr_t)oldValue & _copySizeAlignement) >> OUTSTANDING_COPIES_SHIFT;
+
+			if (0 == remainingSizeToCopy) {
+				if (0 == outstandingCopies) {
+					return;
+				} else {
+					wait(&spinCount);
+					continue;
+				}
+			}
+
+			sizeToCopy = winObjectSectionToCopy(&objectHeader->slot, oldValue, &remainingSizeToCopy, outstandingCopies);
+		} while (0 == sizeToCopy);
+
+		copySection(destinationObjectPtr, remainingSizeToCopy, sizeToCopy);
+	}
+#endif /* #if defined(OMR_GC_CONCURRENT_SCAVENGER) */
+}

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2017 IBM Corp. and others
+ * Copyright (c) 1991, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -62,6 +62,10 @@ struct OMR_VMThread;
 #define OMR_OBJECT_METADATA_FLAGS_MASK		0xFF
 #define OMR_OBJECT_METADATA_AGE_MASK		0xF0
 #define OMR_OBJECT_METADATA_AGE_SHIFT		4
+
+#if (0 != (OMR_OBJECT_METADATA_FLAGS_MASK & COPY_PROGRESS_INFO_MASK))
+#error "mask overlap: OMR_OBJECT_METADATA_FLAGS_MASK, COPY_PROGRESS_INFO_MASK"
+#endif
 
 /**
  * Remembered bit states overlay tenured header age flags. These are normalized to low-order byte, as above.
@@ -765,9 +769,6 @@ public:
 	MMINLINE void
 	fixupForwardedObject(MM_ForwardedHeader *forwardedHeader, omrobjectptr_t destinationObjectPtr, uintptr_t objectAge)
 	{
-		/* Copy the preserved fields from the forwarded header into the destination object */
-		forwardedHeader->fixupForwardedObject(destinationObjectPtr);
-
 		uintptr_t age = objectAge << OMR_OBJECT_METADATA_AGE_SHIFT;
 		setObjectFlags(destinationObjectPtr, OMR_OBJECT_METADATA_AGE_MASK, age);
 	}

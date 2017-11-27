@@ -5544,18 +5544,6 @@ TR_S390Peephole::perform()
       moveInstr = true;
       switch (_cursor->getOpCodeValue())
          {
-         case TR::InstOpCode::LOCK:
-            {
-            int32_t regNum = ((TR::S390PseudoInstruction *)_cursor)->getLockedRegisterNumber();
-            if (_cg->getCurrentlyRestrictedRegisters()) _cg->getCurrentlyRestrictedRegisters()->set(regNum);
-            break;
-            }
-         case TR::InstOpCode::UNLOCK:
-            {
-            int32_t regNum = ((TR::S390PseudoInstruction *)_cursor)->getLockedRegisterNumber();
-            if (_cg->getCurrentlyRestrictedRegisters()) _cg->getCurrentlyRestrictedRegisters()->reset(regNum);
-            break;
-            }
          case TR::InstOpCode::AP:
          case TR::InstOpCode::SP:
          case TR::InstOpCode::MP:

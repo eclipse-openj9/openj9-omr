@@ -619,11 +619,7 @@ class S390PseudoInstruction : public TR::Instruction
    {
    TR::Node *_fenceNode;
 
-   union
-      {
-      uint64_t _callDescValue; ///< Call Descriptor for XPLINK on zOS 31 JNI Calls.
-      int32_t  _register_num;  ///< contains machine register number for LOCK & UNLOCK
-      };
+   uint64_t _callDescValue; ///< Call Descriptor for XPLINK on zOS 31 JNI Calls.
 
    uint8_t _padbytes;
    TR::LabelSymbol *_callDescLabel;
@@ -699,12 +695,6 @@ class S390PseudoInstruction : public TR::Instruction
 
    //   TR::Register  *getTargetRegister() { return (_targetRegSize!=0) ? (targetRegBase())[0] : NULL;}
 
-   void setRegisterNumber(int32_t regnum) {
-       TR_ASSERT(getOpCodeValue()==TR::InstOpCode::LOCK || getOpCodeValue()==TR::InstOpCode::UNLOCK, "assertion failure");
-       _register_num=regnum;
-       }
-
-
    void setShouldBeginNewLine(bool sbnl) { _shouldBeginNewLine = sbnl; }
    bool shouldBeginNewLine() { return _shouldBeginNewLine; }
 
@@ -731,10 +721,6 @@ class S390PseudoInstruction : public TR::Instruction
    uint8_t getNumPadBytes() { return _padbytes; }
 
    virtual int32_t estimateBinaryLength(int32_t currentEstimate);
-   int32_t getLockedRegisterNumber() {
-     TR_ASSERT(getOpCodeValue()==TR::InstOpCode::LOCK || getOpCodeValue()==TR::InstOpCode::UNLOCK, "assertion failure");
-     return _register_num;
-     }
    };
 
 /**

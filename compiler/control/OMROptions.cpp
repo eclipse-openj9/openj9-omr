@@ -1295,7 +1295,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"useHigherMethodCounts", "M\tuse the default high counts for methods even for AOT", SET_OPTION_BIT(TR_UseHigherMethodCounts), "F" },
    {"useHigherMethodCountsAfterStartup", "M\tuse the default high counts for methods after startup in AOT mode", SET_OPTION_BIT(TR_UseHigherMethodCountsAfterStartup), "F", NOT_IN_SUBSET },
    {"useIdleTime", "M\tuse cpu idle time to compile more aggressively", SET_OPTION_BIT(TR_UseIdleTime), "F", NOT_IN_SUBSET },
-   {"useIlValidator", "O\tuse the new ILValidator to check IL instead of the old TreeVerifier", SET_OPTION_BIT(TR_UseILValidator), "F"},
+   {"useILValidator", "O\tuse the new ILValidator to check IL instead of the old TreeVerifier", SET_OPTION_BIT(TR_UseILValidator), "F"},
    {"useLowerMethodCounts",          "M\tuse the original initial counts for methods", SET_OPTION_BIT(TR_UseLowerMethodCounts), "F"},
    {"useLowPriorityQueueDuringCLP",  "O\tplace cold compilations due to classLoadPhase "
                                      "in the low priority queue to be compiled later",

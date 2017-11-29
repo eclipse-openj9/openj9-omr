@@ -35,6 +35,8 @@ JIT_PRODUCT_BACKEND_SOURCES+=\
     $(JIT_OMR_DIRTY_DIR)/infra/IGBase.cpp \
     $(JIT_OMR_DIRTY_DIR)/infra/IGNode.cpp \
     $(JIT_OMR_DIRTY_DIR)/infra/ILWalk.cpp \
+    $(JIT_OMR_DIRTY_DIR)/ras/ILValidationRules.cpp \
+    $(JIT_OMR_DIRTY_DIR)/ras/ILValidationUtils.cpp \
     $(JIT_OMR_DIRTY_DIR)/ras/ILValidator.cpp \
     $(JIT_OMR_DIRTY_DIR)/infra/InterferenceGraph.cpp \
     $(JIT_OMR_DIRTY_DIR)/infra/OMRMonitor.cpp \

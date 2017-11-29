@@ -136,8 +136,7 @@ OMR::IlInjector::genIL()
 
    if (success)
       {
-      TR::ILValidator validator(_comp);
-      success = validator.treesAreValid(_methodSymbol->getFirstTreeTop());
+      /* The ILValidator is still a WIP at this point. */
       }
 
    return success;

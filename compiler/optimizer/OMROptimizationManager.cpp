@@ -41,6 +41,7 @@
 #include "optimizer/Optimizations.hpp"
 #include "optimizer/Optimizer.hpp"             // for Optimizer
 #include "ras/ILValidator.hpp"
+#include "ras/ILValidationStrategies.hpp"
 #include "env/CompilerEnv.hpp"
 
 struct OptimizationStrategy;
@@ -280,13 +281,13 @@ void OMR::OptimizationManager::performChecks()
    TR::StackMemoryRegion stackMemoryRegion(*(self()->trMemory()));
    if (self()->getVerifyTrees() || self()->comp()->getOption(TR_EnableParanoidOptCheck) || debug("paranoidOptCheck"))
       {
-      if (!self()->comp()->getOption(TR_UseILValidator))
+      if (self()->comp()->getOption(TR_UseILValidator))
          {
-         self()->comp()->verifyTrees(self()->comp()->getMethodSymbol());
+         self()->comp()->validateIL(TR::postILgenValidation);
          }
       else
          {
-         /* The ILValidator is still a WIP at this point. */
+         self()->comp()->verifyTrees(self()->comp()->getMethodSymbol());
          }
       }
 

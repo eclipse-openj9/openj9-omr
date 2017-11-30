@@ -66,6 +66,7 @@ namespace OMR { typedef OMR::Compilation CompilationConnector; }
 #include "optimizer/Optimizations.hpp"        // for Optimizations, etc
 #include "ras/Debug.hpp"                      // for TR_DebugBase
 #include "ras/DebugCounter.hpp"               // for TR_DebugCounter, etc
+#include "ras/ILValidationStrategies.hpp"
 
 
 #include "omr.h"
@@ -96,6 +97,7 @@ namespace TR { class CodeGenerator; }
 namespace TR { class Compilation; }
 namespace TR { class IlGenRequest; }
 namespace TR { class IlVerifier; }
+namespace TR { class ILValidator; }
 namespace TR { class Instruction; }
 namespace TR { class KnownObjectTable; }
 namespace TR { class LabelSymbol; }
@@ -656,6 +658,10 @@ public:
 
    bool getAddressEnumerationOption(TR_CompilationOptions o) {return _options->getAddressEnumerationOption(o);}
 
+   TR::ILValidator *getILValidator() { return _ilValidator; }
+   void setILValidator(TR::ILValidator *ilValidator) { _ilValidator = ilValidator; }
+   void validateIL(TR::ILValidationContext ilValidationContext);
+
    void verifyTrees(TR::ResolvedMethodSymbol *s = 0);
    void verifyBlocks(TR::ResolvedMethodSymbol *s = 0);
    void verifyCFG(TR::ResolvedMethodSymbol *s = 0);
@@ -1022,6 +1028,7 @@ private:
 
 
    TR_IlGenerator                    *_ilGenerator;
+   TR::ILValidator                    *_ilValidator;
    TR::Optimizer                      *_optimizer;
    TR_RegisterCandidates             *_globalRegisterCandidates;
    TR::SymbolReferenceTable          *_currentSymRefTab;

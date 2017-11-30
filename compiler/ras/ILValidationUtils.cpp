@@ -29,14 +29,6 @@
 #include "il/ILOps.hpp"
 
 
-#if defined(DEBUG) || defined(PROD_WITH_ASSUMES)
-#define ABORT() TR::trap()
-#else
-#define ABORT() comp->failCompilation<TR::CompilationException>("Validation error")
-#endif
-
-#define FAIL() if (!feGetEnv("TR_continueAfterValidationError")) ABORT()
-
 TR::LiveNodeWindow::LiveNodeWindow(NodeSideTable<NodeState> &sideTable,
                                    TR_Memory *memory)
    :_sideTable(sideTable)
@@ -47,8 +39,7 @@ TR::LiveNodeWindow::LiveNodeWindow(NodeSideTable<NodeState> &sideTable,
 
 bool TR::isILValidationLoggingEnabled(TR::Compilation *comp)
    {
-   // TODO: IL validation should have its own logging option.
-   return (comp->getOption(TR_TraceILWalks));
+   return (comp->getOption(TR_TraceILValidator));
    }
 
 void TR::checkILCondition(TR::Node *node, bool condition,
@@ -64,7 +55,11 @@ void TR::checkILCondition(TR::Node *node, bool condition,
       vprintILDiagnostic(comp, formatStr, args);
       va_end(args);
       printILDiagnostic(comp, "\n");
-      FAIL();
+      printILDiagnostic(comp, "\n");
+      if (!comp->getOption(TR_ContinueAfterILValidationError))
+         {
+         TR::trap();
+         }
       }
    }
 

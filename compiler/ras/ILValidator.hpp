@@ -52,8 +52,7 @@ class ILValidator
    *
    *  \return
    *     If the Method IL is valid with respect to the given strategy, then
-   *     then this returns on success.
-   *     Otherwise, we abort Compilation.
+   *     returns on success. Otherwise, compilation aborts.
    *
    */
    void validate(const OMR::ILValidationStrategy *strategy);

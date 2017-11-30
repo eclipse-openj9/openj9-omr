@@ -75,8 +75,6 @@ class MethodValidationRule
    }
    /**
     * @return returns on success.
-    *
-    * Otherwise, reports the associated discrepency and compilation aborts.
     */
    virtual void validate(TR::ResolvedMethodSymbol *methodSymbol) = 0;
 
@@ -137,11 +135,6 @@ class BlockValidationRule
    }
    /**
     * @return returns on success.
-    *
-    * The Rules are guaranteed to call "FAIL()" upon
-    * encountering the breach of a specified rule and exit based on
-    * the defined protocol.
-    * See ILValidationUtils.cpp for the definition of FAIL().
     */
    virtual void validate(TR::TreeTop *firstTreeTop, TR::TreeTop *exitTreeTop) = 0;
 
@@ -184,13 +177,6 @@ class NodeValidationRule
    }
    /**
     * @return returns on success.
-    *
-    * The Rules are guaranteed to call "FAIL()" upon
-    * encountering the breach of a specified rule and exit based on
-    * the defined protocol.
-    * See ILValidationUtils.cpp for the definition of FAIL().
-    * @return 0 on success, or a non-zero error code. If non-zero is returned,
-    * compilation stops.
     */
    virtual void validate(TR::Node *node) = 0;
 

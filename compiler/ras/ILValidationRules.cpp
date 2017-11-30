@@ -43,9 +43,7 @@
  * SoundnessRule (a TR::MethodValidationRule) :
  * 
  * "Soundness" comprises the criteria required to make the IL iterators
- * function properly.  Compilation will abort if the trees are unsound
- * because we can't realistically continue when our most basic assumptions
- * are violated.
+ * function properly.
  *
  * NOTE: The "stop" tree is not checked.
  */
@@ -145,7 +143,10 @@ void TR::SoundnessRule::checkSoundnessCondition(TR::TreeTop *location, bool cond
       TR::vprintILDiagnostic(comp(), formatStr, args);
       va_end(args);
       TR::printILDiagnostic(comp(), "\n");
-      TR::trap();
+      if (!comp()->getOption(TR_ContinueAfterILValidationError))
+         {
+         TR::trap();
+         }
       }
    }
 

@@ -3141,7 +3141,7 @@ TR_Debug::printRegisterMask(TR::FILE *pOutFile, TR_RegisterMask mask, TR_Registe
       return;
 
    mask = mask & (TR::RealRegister::getAvailableRegistersMask(rk));
-   int32_t n = ::bitCount32(mask);
+   int32_t n = populationCount(mask);
 
    TR::RealRegister *reg;
    if (mask)

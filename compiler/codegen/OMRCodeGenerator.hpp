@@ -111,8 +111,6 @@ namespace TR { class TreeTop; }
 
 typedef TR::SparseBitVector SharedSparseBitVector;
 
-extern int32_t bitCount32(uint32_t w);
-
 enum TR_SpillKinds // For register pressure simulation
    {
    // Mandatory spill kinds are certain to cause a spill to memory

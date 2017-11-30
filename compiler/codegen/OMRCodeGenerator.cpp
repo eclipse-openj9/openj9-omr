@@ -141,25 +141,6 @@ static_assert(TR::NumIlOps ==
 
 #define OPT_DETAILS "O^O CODE GENERATION: "
 
-
-
-// Utility function to count the number of bits set in an unsigned 32-bit integer.
-//
-int32_t bitCount32(uint32_t w)
-   {
-   const uint32_t all1   = ~0;
-   const uint32_t mask1h = all1 /  3  << 1;
-   const uint32_t mask2l = all1 /  5;
-   const uint32_t mask4l = all1 / 17;
-   w -= (mask1h & w) >> 1;
-   w = (w & mask2l) + ((w>>2) & mask2l);
-   w = w + (w >> 4) & mask4l;
-   w += w >> 8;
-   w += w >> 16;
-   return w & 0xff;
-   }
-
-
 TR::Node* generatePoisonNode(TR::Compilation *comp, TR::Block *currentBlock, TR::SymbolReference *liveAutoSymRef)
    {
 

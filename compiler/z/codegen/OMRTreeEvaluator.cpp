@@ -91,8 +91,8 @@
 #include "infra/HashTab.hpp"                        // for TR_HashId
 #include "infra/List.hpp"                           // for List, etc
 #include "infra/Random.hpp"
-#include "infra/TRCfgEdge.hpp"                      // for CFGEdge
-#include "infra/TRCfgNode.hpp"                      // for CFGNode
+#include "infra/CfgEdge.hpp"                        // for CFGEdge
+#include "infra/CfgNode.hpp"                        // for CFGNode
 #include "optimizer/OptimizationManager.hpp"
 #include "optimizer/Optimizations.hpp"
 #include "optimizer/Optimizer.hpp"                  // for Optimizer
@@ -3956,28 +3956,28 @@ genCompareAndBranchInstructionIfPossible(TR::CodeGenerator * cg, TR::Node * node
    }
 
 /**
- * \brief 
- *    Converts a comparison branch condition to the correct branch condition for the test under mask instruction 
+ * \brief
+ *    Converts a comparison branch condition to the correct branch condition for the test under mask instruction
  *    being generated.
  *
- * \param constNode 
+ * \param constNode
  *    The constant the comparison branch condition is comparing against.
- * 
+ *
  * \param brCond
- *    The comparison branch condition to be converted. 
- * 
+ *    The comparison branch condition to be converted.
+ *
  * \return newCond
- *    The branch condition to be used in generated test under mask instruction. 
+ *    The branch condition to be used in generated test under mask instruction.
  *
  */
 TR::InstOpCode::S390BranchCondition convertComparisonBranchConditionToTestUnderMaskBranchCondition(TR::Node * constNode, TR::InstOpCode::S390BranchCondition brCond)
    {
-   
+
    TR_ASSERT((constNode->getOpCode().isLoadConst()), "Expected constNode %p to be constant\n", constNode);
 
    TR::InstOpCode::S390BranchCondition newCond = brCond;
    if (getIntegralValue(constNode) == 0)
-      { 
+      {
       if (getBranchConditionForMask(getMaskForBranchCondition(brCond)) == TR::InstOpCode::COND_MASK8)
          {
          newCond = TR::InstOpCode::COND_BZ;
@@ -3991,7 +3991,7 @@ TR::InstOpCode::S390BranchCondition convertComparisonBranchConditionToTestUnderM
       {
       newCond = TR::InstOpCode::COND_BO;
       }
-   else 
+   else
       {
       newCond = TR::InstOpCode::COND_BNO;
       }
@@ -5352,7 +5352,7 @@ OMR::Z::TreeEvaluator::extendCastEvaluator(TR::Node * node, TR::CodeGenerator * 
    // reusing the source 64bit GPR, as this would trigger an assume in RA.
    if (cg->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) && (numberOfExtendBits==64))
       canClobberSrc = false;
-    
+
    /**
    * A load (for proper type conversion) is required if the node is unsigned, not sign extended and
    * not marked as unneeded conversion.
@@ -6450,7 +6450,7 @@ bool directMemoryStoreHelper(TR::CodeGenerator* cg, TR::Node* storeNode)
                // Force the memory references to not use an index register because MVC is an SS instruction
                // After generating a memory reference, Enforce it to generate LA instruction.
                // This will avoid scenarios when we have common base/index between destination and source
-               // And when generating the source memory reference, it clobber evaluates one of the node shared between 
+               // And when generating the source memory reference, it clobber evaluates one of the node shared between
                // target memory reference as well.
                TR::MemoryReference* targetMemRef = generateS390MemoryReference(storeNode, cg, false);
                targetMemRef->enforceSSFormatLimits(storeNode, cg, NULL);

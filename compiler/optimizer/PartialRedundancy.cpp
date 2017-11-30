@@ -55,8 +55,8 @@
 #include "infra/Cfg.hpp"                            // for CFG
 #include "infra/Link.hpp"                           // for TR_LinkHead
 #include "infra/List.hpp"                           // for ListElement, etc
-#include "infra/TRCfgEdge.hpp"                      // for CFGEdge
-#include "infra/TRCfgNode.hpp"                      // for CFGNode
+#include "infra/CfgEdge.hpp"                        // for CFGEdge
+#include "infra/CfgNode.hpp"                        // for CFGNode
 #include "optimizer/DataFlowAnalysis.hpp"
 #include "optimizer/InductionVariable.hpp"          // for TR_PrimaryInductionVariable
 #include "optimizer/LocalAnalysis.hpp"

@@ -40,7 +40,7 @@
 #include "il/TreeTop_inlines.hpp"              // for TreeTop::getNode, etc
 #include "infra/Assert.hpp"                    // for TR_ASSERT
 #include "infra/Cfg.hpp"                       // for CFG, TR_SuccessorIterator
-#include "infra/TRCfgEdge.hpp"                 // for CFGEdge
+#include "infra/CfgEdge.hpp"                   // for CFGEdge
 #include "optimizer/OptimizationManager.hpp"   // for OptimizationManager
 #include "optimizer/Optimizations.hpp"
 #include "optimizer/Optimization_inlines.hpp"  // for Optimization::self

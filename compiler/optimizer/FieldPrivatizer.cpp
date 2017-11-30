@@ -55,8 +55,8 @@
 #include "infra/Cfg.hpp"                                // for CFG
 #include "infra/HashTab.hpp"
 #include "infra/List.hpp"                               // for ListIterator, etc
-#include "infra/TRCfgEdge.hpp"                          // for CFGEdge
-#include "infra/TRCfgNode.hpp"                          // for CFGNode
+#include "infra/CfgEdge.hpp"                            // for CFGEdge
+#include "infra/CfgNode.hpp"                            // for CFGNode
 #include "optimizer/Inliner.hpp"
 #include "optimizer/Optimization_inlines.hpp"
 #include "optimizer/OptimizationManager.hpp"

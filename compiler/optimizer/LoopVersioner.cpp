@@ -66,8 +66,8 @@
 #include "infra/Cfg.hpp"                           // for CFG, etc
 #include "infra/Link.hpp"                          // for TR_LinkHead, etc
 #include "infra/List.hpp"                          // for List, ListElement, etc
-#include "infra/TRCfgEdge.hpp"                     // for CFGEdge
-#include "infra/TRCfgNode.hpp"                     // for CFGNode
+#include "infra/CfgEdge.hpp"                       // for CFGEdge
+#include "infra/CfgNode.hpp"                       // for CFGNode
 #include "optimizer/Dominators.hpp"                // for TR_PostDominators
 #include "optimizer/LocalAnalysis.hpp"             // for TR_LocalAnalysis
 #include "optimizer/LoopCanonicalizer.hpp"
@@ -229,7 +229,7 @@ bool TR_LoopVersioner::loopIsWorthVersioning(TR_RegionStructure *naturalLoop)
 
       int32_t lvBlockFreqCutoff;
       static const char * b = feGetEnv("TR_LoopVersionerFreqCutoff");
-      if (b) 
+      if (b)
          {
          lvBlockFreqCutoff = atoi(b);
          }
@@ -572,9 +572,9 @@ int32_t TR_LoopVersioner::performWithoutDominators()
             if (trace()) traceMsg(comp(), "aggressiveLoopVersioning: raising hotnessThreshold for conditionalsWillBeEliminated\n");
             hotnessThreshold = maxHotness; // threshold which can't be matched by the > operator
             }
-         
-         if (( (debug("nullCheckVersion") || 
-                comp()->cg()->performsChecksExplicitly() || 
+
+         if (( (debug("nullCheckVersion") ||
+                comp()->cg()->performsChecksExplicitly() ||
                 (comp()->getMethodHotness() > hotnessThreshold)
                ) && nullChecksWillBeEliminated
              ) ||
@@ -713,7 +713,7 @@ int32_t TR_LoopVersioner::performWithoutDominators()
    if (!_virtualGuardInfo.isEmpty())
       {
       bool disableLT = TR::Options::getCmdLineOptions()->getOption(TR_DisableLoopTransfer);
-      if (!disableLT) 
+      if (!disableLT)
          performLoopTransfer();
       }
 
@@ -4255,7 +4255,7 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
 
    // Construct the tests for invariant expressions that need
    // to be null checked.
-   
+
    // default hotness threshold
    TR_Hotness hotnessThreshold = hot;
 
@@ -4266,7 +4266,7 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
       hotnessThreshold = maxHotness; // threshold which can't be matched by the > operator
       }
 
-   if (comp()->cg()->performsChecksExplicitly() || 
+   if (comp()->cg()->performsChecksExplicitly() ||
        (comp()->getMethodHotness() > hotnessThreshold))
       {
       if (!nullCheckTrees->isEmpty() &&
@@ -4448,7 +4448,7 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
       dumpOptDetails(comp(), "The node %p has been created for testing if virtual guard is required\n", nextComparisonNode);
       }
 
-   // If all yield points have been removed from the loop but OSR guards remain, 
+   // If all yield points have been removed from the loop but OSR guards remain,
    // they can be versioned out. Currently, this code assumes all OSR guards
    // will be patched by the same runtime assumptions, so only one OSR guard is added
    // to branch to the slow loop.

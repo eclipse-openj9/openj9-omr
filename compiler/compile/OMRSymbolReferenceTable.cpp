@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2017 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -76,8 +76,8 @@
 #include "infra/HashTab.hpp"                   // for TR_HashTab, TR_HashId
 #include "infra/Link.hpp"                      // for TR_LinkHead, TR_Pair
 #include "infra/List.hpp"                      // for List, ListIterator, etc
-#include "infra/TRCfgEdge.hpp"                 // for CFGEdge
-#include "infra/TRCfgNode.hpp"                 // for CFGNode
+#include "infra/CfgEdge.hpp"                   // for CFGEdge
+#include "infra/CfgNode.hpp"                   // for CFGNode
 #include "ras/Debug.hpp"                       // for TR_DebugBase
 #include "runtime/Runtime.hpp"                 // for TR_RuntimeHelper, etc
 
@@ -1999,7 +1999,7 @@ void OMR::SymbolReferenceTable::makeSharedAliases(TR::SymbolReference *sr1, TR::
        aliases1->empty();
        _sharedAliasMap->insert(std::make_pair(symRefNum1, aliases1));
        }
- 
+
     if (aliases2 == NULL)
        {
        aliases2 = new (comp()->trHeapMemory()) TR_BitVector(self()->getNumSymRefs(), comp()->trMemory(), heapAlloc);

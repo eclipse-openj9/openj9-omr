@@ -105,7 +105,7 @@
 #include "infra/Random.hpp"
 #include "infra/SimpleRegex.hpp"
 #include "infra/Stack.hpp"                          // for TR_Stack
-#include "infra/TRCfgEdge.hpp"                      // for CFGEdge
+#include "infra/CfgEdge.hpp"                        // for CFGEdge
 #include "optimizer/OptimizationManager.hpp"
 #include "optimizer/Optimizations.hpp"
 #include "optimizer/Optimizer.hpp"                  // for Optimizer
@@ -509,7 +509,7 @@ TR_S390ProcessorInfo::getProcessor()
       {
       result = TR_s370gp8;
       }
-      
+
    return result;
    }
 
@@ -560,12 +560,12 @@ OMR::Z::CodeGenerator::CodeGenerator()
       {
       _processorInfo.disableArch(TR_S390ProcessorInfo::TR_z10);
       }
-      
+
    if (comp->getOption(TR_DisableZ196))
       {
       _processorInfo.disableArch(TR_S390ProcessorInfo::TR_z196);
       }
-      
+
    if (comp->getOption(TR_DisableZHelix))
       {
       _processorInfo.disableArch(TR_S390ProcessorInfo::TR_zEC12);
@@ -2695,7 +2695,7 @@ OMR::Z::CodeGenerator::doRegisterAssignment(TR_RegisterKinds kindsToAssign)
          self()->setSpilledRegisterList(spilledRegisterList);
          }
       }
-      
+
    if (!self()->isOutOfLineColdPath())
       {
       if (self()->getDebug())
@@ -2767,7 +2767,7 @@ OMR::Z::CodeGenerator::doRegisterAssignment(TR_RegisterKinds kindsToAssign)
       else if(instructionCursor->getOpCodeValue() == TR::InstOpCode::DCB)
          {
          TR::S390DebugCounterBumpInstruction *dcbInstr = static_cast<TR::S390DebugCounterBumpInstruction*>(instructionCursor);
-            
+
          int32_t first = TR::RealRegister::FirstGPR + 1;  // skip GPR0
          int32_t last  = TR::RealRegister::LastAssignableGPR;
 
@@ -2784,7 +2784,7 @@ OMR::Z::CodeGenerator::doRegisterAssignment(TR_RegisterKinds kindsToAssign)
                break;
                }
             }
-            
+
             self()->traceRegisterAssignment("BEST FREE REG for DCB is %R", dcbInstr->getAssignableReg());
          }
 

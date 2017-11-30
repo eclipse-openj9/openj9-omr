@@ -41,8 +41,8 @@
 #include "il/TreeTop.hpp"                      // for TreeTop
 #include "il/TreeTop_inlines.hpp"              // for TreeTop::getNode, etc
 #include "infra/Assert.hpp"                    // for TR_ASSERT
-#include "infra/TRCfgEdge.hpp"                 // for CFGEdge
-#include "infra/TRCfgNode.hpp"                 // for CFGNode
+#include "infra/CfgEdge.hpp"                   // for CFGEdge
+#include "infra/CfgNode.hpp"                   // for CFGNode
 #include "optimizer/Optimization_inlines.hpp"
 #include "optimizer/Optimizer.hpp"             // for Optimizer
 

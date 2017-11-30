@@ -727,13 +727,6 @@ public:
 
    bool doRematerialization() {return true;}
 
-   /**
-    * The number of nodes we want between a monexit and the next monent before transforming a monitored region with
-    * transactional lock elision.  On Z, we require 25-30 cycles between transactions, or else the latter transaction will
-    * be aborted (with significant penalty).  The 45 is an estimate based on CPI of 1.5-2, and average of 1 instruction per node.
-    */
-   int32_t getMinimumNumberOfNodesBetweenMonitorsForTLE() { return 45; }
-
    void dumpDataSnippets(TR::FILE *outFile);
    void dumpTargetAddressSnippets(TR::FILE *outFile);
 

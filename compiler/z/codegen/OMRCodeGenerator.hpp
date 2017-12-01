@@ -956,10 +956,6 @@ public:
    // Snippet Data functions
    void addDataConstantSnippet(TR::S390ConstantDataSnippet * snippet);
 
-   // Identify the Inst selection phase
-   bool getDoingInstructionSelection() { return _cgFlags.testAny(S390CG_doingInstructionSelection); }
-   void setDoingInstructionSelection(bool b) { _cgFlags.set(S390CG_doingInstructionSelection, b); }
-
    // Target Address List functions
    int32_t setEstimatedOffsetForTargetAddressSnippets();
    int32_t setEstimatedLocationsForTargetAddressSnippetLabels(int32_t estimatedSnippetStart);
@@ -1224,7 +1220,7 @@ protected:
       {
       // Available                       = 0x00000001,
       S390CG_extCodeBaseRegisterIsFree   = 0x00000002,
-      S390CG_doingInstructionSelection   = 0x00000004,
+      // Available                       = 0x00000004,
       S390CG_addStorageReferenceHints    = 0x00000008,
       S390CG_isOutOfLineHotPath          = 0x00000010,
       S390CG_literalPoolOnDemandOnRun    = 0x00000020,

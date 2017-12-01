@@ -1472,10 +1472,7 @@ OMR::Z::CodeGenerator::endInstructionSelection()
 void
 OMR::Z::CodeGenerator::doInstructionSelection()
    {
-   self()->setDoingInstructionSelection(true);
    OMR::CodeGenerator::doInstructionSelection();
-   self()->setDoingInstructionSelection(false);
-
    if (_returnTypeInfoInstruction != NULL)
       {
       _returnTypeInfoInstruction->setSourceImmediate(static_cast<uint32_t>(self()->comp()->getReturnInfo()));

@@ -3369,7 +3369,7 @@ generateS390CompareAndBranchOpsHelper(TR::Node * node, TR::CodeGenerator * cg, T
                if(testRegister->getKind() == TR_GPR64 || cg->use64BitRegsOn32Bit())
                   compareOpCode = isUnsignedCmp ? TR::InstOpCode::CLG : TR::InstOpCode::CG;
                else
-                  compareOpCode = isUnsignedCmp ? TR::InstOpCode::getCmpLogicalOpCodeFromNode(nonConstNode) : TR::InstOpCode::getCmpOpCodeFromNode(nonConstNode);
+                  compareOpCode = isUnsignedCmp ? TR::InstOpCode::getCmpLogicalOpCode() : TR::InstOpCode::getCmpOpCode();
                break;
                }
             case TR::Int32:

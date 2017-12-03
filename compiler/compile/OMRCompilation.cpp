@@ -992,13 +992,6 @@ int32_t OMR::Compilation::compile()
    if (_recompilationInfo)
       _recompilationInfo->startOfCompilation();
 
-#ifdef J9_PROJECT_SPECIFIC
-   TR_PersistentMethodInfo * methodInfo = TR_PersistentMethodInfo::get(self()->getCurrentMethod());
-   if (methodInfo &&
-       self()->isProfilingCompilation())
-      methodInfo->setProfileInfo(NULL);
-#endif
-
    {
      if (printCodegenTime) genILTime.startTiming(self());
      _ilGenSuccess = _methodSymbol->genIL(self()->fe(), self(), self()->getSymRefTab(), _ilGenRequest);

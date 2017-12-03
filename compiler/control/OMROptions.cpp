@@ -1213,6 +1213,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"traceOSRGuardInsertion",           "L\ttrace HCR guard insertion",                    TR::Options::traceOptimization, osrGuardInsertion, 0, "P"},
    {"traceOSRGuardRemoval",             "L\ttrace HCR guard removal",                      TR::Options::traceOptimization, osrGuardRemoval, 0, "P"},
 #endif
+   {"traceOSRLiveRangeAnalysis",        "L\ttrace OSR live range analysis",                TR::Options::traceOptimization, osrLiveRangeAnalysis, 0, "P"},
    {"tracePartialInlining",             "L\ttrace partial inlining heuristics",            SET_OPTION_BIT(TR_TracePartialInlining), "P" },
    {"tracePostBinaryEncoding",          "L\tdump instructions (code cache addresses, real registers) after binary encoding", SET_TRACECG_BIT(TR_TraceCGPostBinaryEncoding), "P"},
    {"tracePostInstructionSelection",    "L\tdump instructions (virtual registers) after instruction selection", SET_TRACECG_BIT(TR_TraceCGPostInstructionSelection), "P"},

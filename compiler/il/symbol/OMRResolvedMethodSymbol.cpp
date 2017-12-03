@@ -2256,6 +2256,7 @@ OMR::ResolvedMethodSymbol::detectInternalCycles(TR::CFG *cfg, TR::Compilation *c
                      gotoBlock->setIsCold();
                      clonedCatch->setFrequency(CATCH_COLD_BLOCK_COUNT);
                      gotoBlock->setFrequency(CATCH_COLD_BLOCK_COUNT);
+
                      break;
                      }
                   }

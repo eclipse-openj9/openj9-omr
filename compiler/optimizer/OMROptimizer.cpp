@@ -546,7 +546,7 @@ static const OptimizationStrategy ilgenStrategyOpts[] =
    { coldBlockMarker                               },
    { allocationSinking,             IfNews         },
    { invariantArgumentPreexistence, IfNotClassLoadPhaseAndNotProfiling }, // Should not run if a recompilation is possible
-   { osrLiveRangeAnalysis,          IfVoluntaryOSR   },
+   { osrLiveRangeAnalysis,          IfOSR   },
    { osrDefAnalysis,                IfInvoluntaryOSR },
 #endif
    { endOpts },

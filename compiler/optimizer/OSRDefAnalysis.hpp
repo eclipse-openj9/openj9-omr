@@ -90,10 +90,14 @@ class TR_OSRLiveRangeAnalysis : public TR::Optimization
    int32_t partialAnalysis();
 
    void buildOSRLiveRangeInfo(TR::Node *node, TR_BitVector *liveVars, TR_OSRPoint *osrPoint,
-      int32_t *liveLocalIndexToSymRefNumberMap, int32_t numBits, TR_OSRMethodData *osrMethodData);
+      int32_t *liveLocalIndexToSymRefNumberMap, int32_t numBits, TR_OSRMethodData *osrMethodData, bool containsPendingPushes);
    void buildOSRSlotSharingInfo(TR::Node *node, TR_BitVector *liveVars, TR_OSRPoint *osrPoint,
       int32_t *liveLocalIndexToSymRefNumberMap, TR_BitVector *slotSharingVars);
 
+   void buildDeadSlotsInfo(TR::Node *node, TR_BitVector *liveVars, TR_OSRPoint *osrPoint,
+      int32_t *liveLocalIndexToSymRefNumberMap, bool containsPendingPush);
+
+   void buildDeadPendingPushSlotsInfo(TR::Node *node, TR_BitVector *livePendingPushSymRefs, TR_OSRPoint *osrPoint);
    void pendingPushLiveRangeInfo(TR::Node *node, TR_BitVector *liveSymRefs,
       TR_BitVector *allPendingPushSymRefs, TR_OSRPoint *osrPoint, TR_OSRMethodData *osrMethodData);
    void pendingPushSlotSharingInfo(TR::Node *node, TR_BitVector *liveSymRefs,
@@ -102,11 +106,14 @@ class TR_OSRLiveRangeAnalysis : public TR::Optimization
    void maintainLiveness(TR::Node *node, TR::Node *parent, int32_t childNum, vcount_t  visitCount,
        TR_Liveness *liveLocals, TR_BitVector *liveVars, TR::Block *block);
    TR::TreeTop *collectPendingPush(TR_ByteCodeInfo bci, TR::TreeTop *pps, TR_BitVector *liveVars);
+   void intersectWithExistingDeadSlots (TR_OSRPoint *osrPoint, TR_BitVector *deadPPSSlots, TR_BitVector *deadAutoSlots, bool containsPendingPush);
 
    TR_BitVector *_liveVars;
    TR_BitVector *_pendingPushSymRefs;
    TR_BitVector *_sharedSymRefs;
    TR_BitVector *_workBitVector;
+   TR_BitVector *_workDeadSymRefs;
+   TR_BitVector *_visitedBCI;    
    };
 
 class TR_OSRExceptionEdgeRemoval : public TR::Optimization

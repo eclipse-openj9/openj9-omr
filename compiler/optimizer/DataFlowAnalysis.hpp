@@ -775,12 +775,12 @@ class TR_LiveVariableInformation
    void findLocalUsesInBackwardsTreeWalk(TR::Node *node, int32_t blockNum,
                                          TR_BitVector *genSetInfo, TR_BitVector *killSetInfo,
                                          TR_BitVector *commonedLoads, vcount_t visitCount);
-   void findUseOfLocal(TR::Node *node, int32_t blockNum,
+
+   protected:
+   virtual void findUseOfLocal(TR::Node *node, int32_t blockNum,
                        TR_BitVector **genSetInfo, TR_BitVector **killSetInfo,
                        TR_BitVector *commonedLoads, bool movingForwardThroughTrees, vcount_t visitCount);
-
    private:
-
    void visitTreeForLocals(TR::Node *node, TR_BitVector **blockGenSetInfo, TR_BitVector *blockKillSetInfo,
                            bool movingForwardThroughTrees, bool visitEntireTree, vcount_t visitCount,
                            TR_BitVector *commonedLoads, bool belowCommonedNode);
@@ -810,6 +810,34 @@ class TR_LiveVariableInformation
 
    // this bit vector tracks which commoned loads are currently live
    TR_BitVector   *_liveCommonedLoads;
+   };
+
+
+class TR_OSRLiveVariableInformation : public TR_LiveVariableInformation
+   {
+   public:
+   TR_ALLOC(TR_Memory::DataFlowAnalysis)
+
+   TR_OSRLiveVariableInformation(TR::Compilation *comp,
+                              TR::Optimizer *,
+                              TR_Structure *,
+                              bool splitLongs = false,
+                              bool includeParms = false,
+                              bool includeMethodMetaDataSymbols = false,
+                              bool ignoreOSRUses = false);
+
+   private:
+   virtual void findUseOfLocal(TR::Node *node, int32_t blockNum,
+                       TR_BitVector **genSetInfo, TR_BitVector **killSetInfo,
+                       TR_BitVector *commonedLoads, bool movingForwardThroughTrees, vcount_t visitCount);
+   TR_BitVector *getLiveSymbolsInInterpreter(TR_ByteCodeInfo &byteCodeInfo);
+   void buildLiveSymbolsBitVector(TR_OSRMethodData *osrMethodData, int32_t byteCodeIndex, TR_BitVector *);
+
+   typedef TR::typed_allocator<std::pair<int32_t , TR_BitVector*>, TR::Region&> TR_BCLiveSymbolsMapAllocator;
+   typedef std::less<int32_t> TR_BCLiveSymbolsMapComparator;
+   typedef std::map<int32_t, TR_BitVector*, TR_BCLiveSymbolsMapComparator, TR_BCLiveSymbolsMapAllocator> TR_BCLiveSymbolsMap;
+
+   TR_BCLiveSymbolsMap **bcLiveSymbolMaps;
    };
 
 // Global Collected Reference analysis - find which collected reference locals

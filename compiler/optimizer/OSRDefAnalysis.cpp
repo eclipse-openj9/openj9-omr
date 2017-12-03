@@ -744,10 +744,18 @@ int32_t TR_OSRLiveRangeAnalysis::perform()
    _workBitVector = new (trStackMemory()) TR_BitVector(0, trMemory(), stackAlloc);
 
    bool containsAuto = false, sharesParm = false, containsPendingPush = false;
+   TR_OSRMethodData *osrMethodData = comp()->getOSRCompilationData()->findOSRMethodData(
+      comp()->getCurrentInlinedSiteIndex(), comp()->getMethodSymbol());
 
    // Detect autos, pending push temps and whether there is a shared parm slot
    TR::ResolvedMethodSymbol *methodSymbol = optimizer()->getMethodSymbol();
    TR_Array<List<TR::SymbolReference>> *autosListArray = methodSymbol->getAutoSymRefs();
+   if (comp()->getOSRMode() == TR::involuntaryOSR && autosListArray)
+      {
+      TR_BitVector *symRefs = new (trHeapMemory()) TR_BitVector(0, trMemory(), heapAlloc);
+      osrMethodData->setSymRefs(symRefs);
+      }
+
    for (uint32_t i = 0; autosListArray && i < autosListArray->size(); ++i)
       {
       List<TR::SymbolReference> &autosList = (*autosListArray)[i];
@@ -768,6 +776,9 @@ int32_t TR_OSRLiveRangeAnalysis::perform()
             if (methodSymbol->sharesStackSlot(symRef))
                _sharedSymRefs->set(symRef->getReferenceNumber());
             }
+
+         if (comp()->getOSRMode() == TR::involuntaryOSR && osrMethodData->getSymRefs())
+            osrMethodData->getSymRefs()->set(symRef->getReferenceNumber());
          }
       }
 
@@ -783,6 +794,16 @@ int32_t TR_OSRLiveRangeAnalysis::perform()
          if (comp()->getMethodSymbol()->sharesStackSlot(symRef))
             _sharedSymRefs->set(symRef->getReferenceNumber());
          }
+      }
+   
+   if (comp()->getOSRMode() == TR::involuntaryOSR && containsPendingPush)
+      {
+      if (!osrMethodData->getSymRefs())
+         {
+         TR_BitVector *symRefs = new (trHeapMemory()) TR_BitVector(0, trMemory(), heapAlloc);
+         osrMethodData->setSymRefs(symRefs);
+         }
+      *osrMethodData->getSymRefs() |= *_pendingPushSymRefs;
       }
 
    if (comp()->getOption(TR_DisableOSRLiveRangeAnalysis))

@@ -2005,11 +2005,9 @@ bool TR_PartialRedundancy::eliminateRedundantSupportedNodes(TR::Node *parent, TR
                    currentOpCode.isJumpWithMultipleTargets() ||
                    currentOpCode.isReturn() ||
                    currentOpCode.getOpCodeValue() == TR::athrow)
-                  valueProfiler->addProfilingTrees(node, prevTree, NULL, true);
-         //valueProfiler->addProfilingTrees(node, prevTree);
+                  valueProfiler->addProfilingTrees(node, prevTree);
                else
-                  valueProfiler->addProfilingTrees(node, currentTree, NULL, true);
-         //valueProfiler->addProfilingTrees(node, currentTree);
+                  valueProfiler->addProfilingTrees(node, currentTree);
 
                if (trace())
                   traceMsg(comp(), "Added profiling instrumentation for %p(%d)\n", node, node->getByteCodeIndex());

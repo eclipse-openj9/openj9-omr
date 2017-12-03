@@ -711,12 +711,7 @@ TR_VirtualGuardTailSplitter::VGInfo *TR_VirtualGuardTailSplitter::recognizeVirtu
 #ifdef J9_PROJECT_SPECIFIC
    if (call && guardNode->isProfiledGuard())
       {
-      TR_ValueProfileInfoManager *profileManager = TR_ValueProfileInfoManager::get(comp());
-      TR_AddressInfo *  valueInfo = (TR_AddressInfo *)profileManager->getValueInfo(node->getByteCodeInfo(),
-                                                               comp(),
-                                                               TR_ValueProfileInfoManager::allProfileInfoKinds,
-                                                               NotBigDecimalOrString);
-
+      TR_AddressInfo *valueInfo = static_cast<TR_AddressInfo*>(TR_ValueProfileInfoManager::getProfiledValueInfo(node, comp(), AddressInfo));
 
       float profiledGuardProbabilityThreshold = 0.98f;
       static char *profiledGuardSplitProbabilityThresholdStr = feGetEnv("TR_ProfiledGuardSplitProbabilityThreshold");

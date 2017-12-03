@@ -5415,7 +5415,7 @@ int64_t TR::ArraycopyTransformation::arraycopyHighFrequencySpecificLength(TR::No
       {
       if (TR::Compiler->target.is64Bit())
          {
-         TR_LongValueInfo *valueInfo = (TR_LongValueInfo *)TR_ValueProfiler::getProfiledValueInfo(arrayCopyNode, comp());
+         TR_LongValueInfo *valueInfo = static_cast<TR_LongValueInfo*>(TR_ValueProfileInfoManager::getProfiledValueInfo(arrayCopyNode, comp(), LongValueInfo));
          if (valueInfo && valueInfo->getTopProbability() > MIN_ARRAYCOPY_FREQ_FOR_SPECIALIZATION)
             {
             return ((int64_t) valueInfo->getTopValue());
@@ -5423,7 +5423,7 @@ int64_t TR::ArraycopyTransformation::arraycopyHighFrequencySpecificLength(TR::No
          }
       else
          {
-         TR_ValueInfo *valueInfo = (TR_ValueInfo *)TR_ValueProfiler::getProfiledValueInfo(arrayCopyNode, comp());
+         TR_ValueInfo *valueInfo = static_cast<TR_ValueInfo*>(TR_ValueProfileInfoManager::getProfiledValueInfo(arrayCopyNode, comp(), ValueInfo));
          if (valueInfo && valueInfo->getTopProbability() > MIN_ARRAYCOPY_FREQ_FOR_SPECIALIZATION)
             {
             return ((int64_t) valueInfo->getTopValue());

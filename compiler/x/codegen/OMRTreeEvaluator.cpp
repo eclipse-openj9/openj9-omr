@@ -2979,12 +2979,12 @@ static TR::Register * deprecated_arraycopyEvaluator(TR::Node *node, TR::CodeGene
        comp->getRecompilationInfo() &&
        (node->isHalfWordElementArrayCopy() || node->isWordElementArrayCopy()))
       {
-      TR_ValueInfo *valueInfo = (TR_ValueInfo *)TR_ValueProfiler::getProfiledValueInfo(node, comp);
+      TR_ValueInfo *valueInfo = static_cast<TR_ValueInfo*>(TR_ValueProfileInfoManager::getProfiledValueInfo(node, comp, ValueInfo));
       if (valueInfo)
          {
-         if ((valueInfo->_totalFrequency > 0) &&
-             (valueInfo->_frequency1 > (valueInfo->_totalFrequency/2)) &&
-             (valueInfo->_value1 > 24))
+         if ((valueInfo->getTotalFrequency() > 0) &&
+             (valueInfo->getTopProbability() > 0.5) &&
+             (valueInfo->getTopValue() > 24))
             {
             shortCopy = false;
             }

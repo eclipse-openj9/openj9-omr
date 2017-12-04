@@ -3736,14 +3736,17 @@ OMR::X86::I386::TreeEvaluator::integerPairByteswapEvaluator(TR::Node *node, TR::
 TR::Register*
 OMR::X86::I386::TreeEvaluator::integerPairMinMaxEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR_X86OpCodes SETcc = BADIA32Op;
+   TR_X86OpCodes SETccHi = BADIA32Op;
+   TR_X86OpCodes SETccLo = BADIA32Op;
    switch (node->getOpCodeValue())
       {
       case TR::lmin:
-         SETcc = SETL1Reg;
+         SETccHi = SETL1Reg;
+         SETccLo = SETB1Reg;
          break;
       case TR::lmax:
-         SETcc = SETG1Reg;
+         SETccHi = SETG1Reg;
+         SETccLo = SETA1Reg;
          break;
       default:
          TR_ASSERT(false, "INCORRECT IL OPCODE.");
@@ -3754,9 +3757,9 @@ OMR::X86::I386::TreeEvaluator::integerPairMinMaxEvaluator(TR::Node *node, TR::Co
    auto result = cg->allocateRegisterPair(cg->allocateRegister(), cg->allocateRegister());
 
    generateRegRegInstruction(CMP4RegReg, node, operand0->getLowOrder(), operand1->getLowOrder(), cg);
-   generateRegInstruction(SETcc, node, result->getLowOrder(), cg); // t1 = (low0 < low1)
+   generateRegInstruction(SETccLo, node, result->getLowOrder(), cg); // t1 = (low0 < low1)
    generateRegRegInstruction(CMP4RegReg, node, operand0->getHighOrder(), operand1->getHighOrder(), cg);
-   generateRegInstruction(SETcc, node, result->getHighOrder(), cg); // t2 = (high0 < high1)
+   generateRegInstruction(SETccHi, node, result->getHighOrder(), cg); // t2 = (high0 < high1)
    generateRegRegInstruction(CMOVE4RegReg, node, result->getHighOrder(), result->getLowOrder(), cg); // if (high0 == high1) then t2 = t1 = (low0 < low1)
 
    generateRegRegInstruction(TEST1RegReg,  node, result->getHighOrder(), result->getHighOrder(),  cg);

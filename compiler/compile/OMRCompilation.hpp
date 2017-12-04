@@ -939,7 +939,15 @@ public:
    // To TransformUtil
    void setStartTree(TR::TreeTop * tt);
 
-
+   /**
+    * \brief
+    *    Answers whether the fact that a method has not been executed yet implies
+    *    that the method is cold.
+    *
+    * \return
+    *    true if the fact that a method has not been executed implies it is cold;
+    *    false otherwise
+    */
    bool notYetRunMeansCold();
 
    TR::Region &aliasRegion();

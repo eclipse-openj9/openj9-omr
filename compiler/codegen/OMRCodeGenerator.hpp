@@ -591,10 +591,6 @@ class OMR_EXTENSIBLE CodeGenerator
 
    uint8_t getSizeOfCombinedBuffer() {return 0;} // no virt, default
 
-   // The number of nodes we want between a monexit and the next monent before transforming a monitored region with
-   // transactional lock elision.
-   int32_t getMinimumNumberOfNodesBetweenMonitorsForTLE() { return 15; } // no virt, default
-
    bool doRematerialization() {return false;} // no virt, default
 
    // --------------------------------------------------------------------------

@@ -10,7 +10,7 @@ is available at https://www.apache.org/licenses/LICENSE-2.0.
 This Source Code may also be made available under the following
 Secondary Licenses when the conditions for such availability set
 forth in the Eclipse Public License, v. 2.0 are satisfied: GNU
-General Public License, version 2 with the GNU Classpath 
+General Public License, version 2 with the GNU Classpath
 Exception [1] and GNU General Public License, version 2 with the
 OpenJDK Assembly Exception [2].
 
@@ -24,11 +24,11 @@ SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
 
 Thanks for your interest in this project.
 
-We welcome and enourage all kinds of contribution to the project, not only code. 
+We welcome and enourage all kinds of contribution to the project, not only code.
 This includes bug reports, user experience feedback, assistance in reproducing
 issues and more.
 
-## Issues 
+## Issues
 
 This project uses GitHub Issues to track ongoing development, discuss project
 plans, and keep track of bugs.  Be sure to search for existing issues before
@@ -39,8 +39,8 @@ Visit [our Issues page on GitHub to search and submit](https://github.com/eclips
 ### Labelling
 
 Our GitHub issues get labelled by committers in order to allow easier navigation,
-and to flag certain issues as being of interest to certain groups. A PR or Issue 
-may have multiple labels, as many as needed to provide adequate categorization. 
+and to flag certain issues as being of interest to certain groups. A PR or Issue
+may have multiple labels, as many as needed to provide adequate categorization.
 
 A subset of the labels are documented below.
 
@@ -71,7 +71,7 @@ A subset of the labels are documented below.
 
 * [**`epic`**](https://github.com/eclipse/omr/labels/epic) issues are used to
   group together related issues and to track larger goals in the project across
-  issues. 
+  issues.
 
 * [**`GSoC Project`**](https://github.com/eclipse/omr/labels/GSoC%20project)
   labels are for potential ideas for Google Summer Of Code projects.
@@ -111,29 +111,32 @@ You can propose contributions by sending pull requests through GitHub.
 Following these guidelines will help us to merge your pull requests smoothly:
 
 1. If you're not sure your contribution would be accepted, and want to validate
-   your approach or idea before writing code, feel free to open an issue. However, 
-   not every feature or fix needs an issue. If the problem and fix are cleanly 
+   your approach or idea before writing code, feel free to open an issue. However,
+   not every feature or fix needs an issue. If the problem and fix are cleanly
    connected, and you have the fix in hand, feel free to just submit a pull request.
 
 2. Your pull request is an opportunity to explain both what changes you'd like
    pulled in, but also _why_ you'd like them added. Providing clarity on why
    you want changes makes it easier to accept, and provides valuable context to
    review.
- 
+
 3. Please read carefully and adhere to the legal considerations and
    copyright/license requirements outlined below.
 
-4. Follow the coding style and format of the code you are modifying (see the
+4. For each file that you modify, ensure that the current copyright year in the
+   header at the top of the file is up-to-date with the current year.
+
+5. Follow the coding style and format of the code you are modifying (see the
    [coding standards](doc/CodingStandard.md)). The code base is yet to be unified
    in style however, so if the file you are editing seems to have a diffferent
-   style, defer to the style of the file as you found it. 
+   style, defer to the style of the file as you found it.
 
-5. Follow the commit guidelines found below.
+6. Follow the commit guidelines found below.
 
-6. We encourage you to open a pull request early, and mark it as "Work In Progress"
+7. We encourage you to open a pull request early, and mark it as "Work In Progress"
    (prefix the PR title with WIP). This allows feedback to start early, and helps
    create a better end product. Committers will wait until after you've removed
-   the WIP prefix to merge your changes. 
+   the WIP prefix to merge your changes.
 
 
 ## Commit Guidelines
@@ -176,7 +179,7 @@ For example, if this is just one of the commits necessary to address Issue 1234
 then the following is a valid commit message:
 
 ```
-Correct race in frobnicator 
+Correct race in frobnicator
 
 This patch eliminates the race condition in issue #1234.
 
@@ -187,7 +190,7 @@ However, if this is the final commit that addresses the issue then the following
 is an acceptable commit message:
 
 ```
-Correct race in frobnicator 
+Correct race in frobnicator
 
 This patch eliminates the race condition in issue #1234.
 
@@ -256,7 +259,7 @@ improperly referenced, and the commit is not signed off by the author.
 ### Install a git commit message hook script to validate local commits
 
 We have a script that attempts to enforce some of these commit guidelines. You
-can install it by following instructions similar to the ones below. 
+can install it by following instructions similar to the ones below.
 
 ```
 cd omr_repo_dir
@@ -264,7 +267,7 @@ cp scripts/commit-msg .git/hooks
 chmod +x .git/hooks/commit-msg
 ```
 
-If the hook declines your commit, the message will remain in 
+If the hook declines your commit, the message will remain in
 `omr_repo_dir/.git/COMMIT_EDITMSG`.
 
 Be sure to update your version of the script occasionally as it may evolve as
@@ -290,7 +293,7 @@ Here is the checklist for contributions to be _acceptable_:
 Your signing of the ECA will be verified by a webservice called 'ip-validation'
 that checks the email address that signed-off on your commits has signed the
 ECA. **Note**: This service is case-sensitive, so ensure the email that signed
-the ECA and that signed-off on your commits is the same, down to the case. 
+the ECA and that signed-off on your commits is the same, down to the case.
 
 ### Copyright Notice and Licensing Requirements
 
@@ -312,23 +315,23 @@ The template for the copyright notice and dual-license is as follows:
 ```c
 /*******************************************************************************
  *  Copyright (c) 2017, 2017 ${author} and others
- *  
+ *
  *  This program and the accompanying materials are made available under
  *  the terms of the Eclipse Public License 2.0 which accompanies this
  *  distribution and is available at https://www.eclipse.org/legal/epl-2.0/
  *  or the Apache License, Version 2.0 which accompanies this distribution and
  *  is available at https://www.apache.org/licenses/LICENSE-2.0.
- *       
+ *
  *  This Source Code may also be made available under the following
  *  Secondary Licenses when the conditions for such availability set
  *  forth in the Eclipse Public License, v. 2.0 are satisfied: GNU
  *  General Public License, version 2 with the GNU Classpath
  *  Exception [1] and GNU General Public License, version 2 with the
  *  OpenJDK Assembly Exception [2].
- *     
+ *
  *  [1] https://www.gnu.org/software/classpath/license.html
  *  [2] http://openjdk.java.net/legal/assembly-exception.html
- *  
+ *
  *  SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
 ```

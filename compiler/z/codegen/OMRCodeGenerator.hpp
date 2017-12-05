@@ -730,9 +730,6 @@ public:
    void dumpDataSnippets(TR::FILE *outFile);
    void dumpTargetAddressSnippets(TR::FILE *outFile);
 
-   bool specializedEpilogues() { return _cgFlags.testAny(S390CG_specializedEpilogues); }
-   void setSpecializedEpilogues(bool b) { _cgFlags.set(S390CG_specializedEpilogues, b); }
-
    bool getSupportsBitOpCodes() { return true;}
 
    bool getSupportsImplicitNullChecks() { return _cgFlags.testAny(S390CG_implicitNullChecks); }
@@ -751,12 +748,6 @@ public:
    void setFCondMoveBranchOpCond(TR::InstOpCode::S390BranchCondition b) { fCondMoveBranchOpCond = (getMaskForBranchCondition(b)) & 0xF; }
 
    uint8_t getRCondMoveBranchOpCond() { return 0xF - fCondMoveBranchOpCond; }
-
-   void markBlockThatModifiesRegister(TR::RealRegister::RegNum reg, int32_t blockNum);
-
-   /** Checks if reg has to be restored in block blockNumber during epilogue */
-   bool restoreRegister(TR::RealRegister::RegNum reg, int32_t blockNumber);
-   void performReachingBlocks();
 
    /** Support for shrinkwrapping */
    bool processInstruction(TR::Instruction *instr, TR_BitVector **registerUsageInfo, int32_t &blockNum, int32_t &isFence, bool traceIt); // virt
@@ -1069,8 +1060,6 @@ public:
 
    bool ilOpCodeIsSupported(TR::ILOpCodes);
 
-   void setupSpecializedEpilogues();
-
    void setUsesZeroBasePtr( bool v = true );
    bool getUsesZeroBasePtr();
 
@@ -1124,13 +1113,6 @@ public:
  private:
    TR_BitVector _globalGPRsPreservedAcrossCalls;
    TR_BitVector _globalFPRsPreservedAcrossCalls;
-
-   TR_BitVector *getBlocksThatModifyRegister(TR::RealRegister::RegNum reg)
-      {
-      return _blocksThatModifyRegister[reg];
-      }
-
-
 
    TR::S390ImmInstruction          *_returnTypeInfoInstruction;
    RegisterAssignmentDirection     assignmentDirection;
@@ -1195,9 +1177,6 @@ private:
 
    TR::SymbolReference* _reusableTempSlot;
 
-   TR_ReachingBlocks                *_reachingBlocks;
-   TR_BitVector                     **_blocksThatModifyRegister;
-
    TR_BitVector  *_currentlyRestrictedRegisters;
    TR_BitVector  *_killedRestrictedRegisters;
 
@@ -1219,7 +1198,7 @@ protected:
       S390CG_literalPoolOnDemandOnRun    = 0x00000020,
       S390CG_prefetchNextStackCacheLine  = 0x00000040,
       S390CG_doesExit                    = 0x00000080,
-      S390CG_specializedEpilogues        = 0x00000100,
+      // Available                       = 0x00000100,
       S390CG_implicitNullChecks          = 0x00000200,
       S390CG_reusableSlotIsFree          = 0x00000400,
       S390CG_conditionalMovesEvaluation  = 0x00000800,
@@ -1321,13 +1300,10 @@ private:
    bool revertTo32BitShift();
    bool inlineEXtargetHelper(TR::Instruction *, TR::Instruction *);
    bool inlineEXtarget();
-   void markBlockThatModifiesRegister(TR::Instruction *, TR::Register *, int32_t);
+   void markBlockThatModifiesRegister(TR::Instruction *, TR::Register *);
    void reloadLiteralPoolRegisterForCatchBlock();
 
    TR::Compilation * comp() { return TR::comp(); }
-
-private:
-   void setupSpecializedEpilogues();
 
 private:
    TR_FrontEnd * _fe;

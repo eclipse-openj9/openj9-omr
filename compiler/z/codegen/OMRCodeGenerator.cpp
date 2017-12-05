@@ -852,24 +852,6 @@ OMR::Z::CodeGenerator::getGlobalGPRFromHPR (TR_GlobalRegisterNumber n)
    return self()->machine()->getGlobalReg(gpr->getRegisterNumber());
    }
 
-void
-OMR::Z::CodeGenerator::setupSpecializedEpilogues()
-   {
-
-   if (self()->specializedEpilogues())
-      {
-      int32_t numRegs = TR::RealRegister::NumRegisters;
-
-      _blocksThatModifyRegister = (TR_BitVector **)self()->trMemory()->allocateHeapMemory(numRegs*sizeof(TR_BitVector *), TR_Memory::CodeGenerator);
-
-      int32_t reg;
-      TR_ASSERT(self()->comp()->getFlowGraph(),"TR::CodeGenerator - %s needs a flow graph\n", self()->comp()->signature());
-      for (reg = 0; reg < numRegs; reg++)
-         _blocksThatModifyRegister[reg] = new (self()->trHeapMemory()) TR_BitVector(self()->comp()->getFlowGraph()->getNextNodeNumber(), self()->trMemory(), heapAlloc, growable);
-
-      }
-   }
-
 bool OMR::Z::CodeGenerator::isStackBased(TR::MemoryReference *mr)
    {
    if (mr->getBaseRegister() && mr->getBaseRegister()->getGPRofArGprPair()->getRealRegister()) // need to consider AR register pair as base reg
@@ -5288,10 +5270,8 @@ TR_S390Peephole::attemptZ7distinctOperants()
 
 void
 TR_S390Peephole::markBlockThatModifiesRegister(TR::Instruction * cursor,
-                                               TR::Register * targetReg, int32_t blockNum)
+                                               TR::Register * targetReg)
    {
-   bool specializedEpilogues = _cg->specializedEpilogues();
-
    // some stores use targetReg as part of source
    if (targetReg && !cursor->isStore() && !cursor->isCompare())
       {
@@ -5309,17 +5289,8 @@ TR_S390Peephole::markBlockThatModifiesRegister(TR::Instruction * cursor,
                for (uint8_t i=highReg->getRegisterNumber()+1; i++; i<= numRegs)
                   {
                   _cg->getS390Linkage()->getS390RealRegister(REGNUM(i))->setModified(true);
-                  if (specializedEpilogues)
-                     {
-                     _cg->markBlockThatModifiesRegister(REGNUM(i), blockNum);
-                     }
                   }
                }
-            }
-         if (specializedEpilogues)
-            {
-            _cg->markBlockThatModifiesRegister(lowReg->getRegisterNumber(), blockNum);
-            _cg->markBlockThatModifiesRegister(highReg->getRegisterNumber(), blockNum);
             }
          }
       else
@@ -5327,10 +5298,6 @@ TR_S390Peephole::markBlockThatModifiesRegister(TR::Instruction * cursor,
          // some stores use targetReg as part of source
          TR::RealRegister * rReg = toRealRegister(targetReg);
          rReg->setModified(true);
-         if (specializedEpilogues)
-            {
-            _cg->markBlockThatModifiesRegister(rReg->getRegisterNumber(), blockNum);
-            }
          }
       }
    }
@@ -5355,31 +5322,6 @@ TR_S390Peephole::reloadLiteralPoolRegisterForCatchBlock()
          TR::S390RILInstruction * inst = (TR::S390RILInstruction *) generateRILInstruction(_cg, TR::InstOpCode::LARL, _cursor->getNode(), _cg->getLitPoolRealRegister(), reinterpret_cast<void*>(0xBABE), _cursor);
          inst->setIsLiteralPoolAddress();
          }
-      }
-   }
-
-void TR_S390Peephole::setupSpecializedEpilogues()
-   {
-   _cg->setSpecializedEpilogues(comp()->getOption(TR_EnableSpecializedEpilogues) &&
-                                  comp()->getMethodHotness() > noOpt);
-
-   if (!(TR::Optimizer *)comp()->getOptimizer())
-      _cg->setSpecializedEpilogues(false);
-
-   // disable specialized epilogues when shrinkwrapping
-   // is enabled
-   if (!comp()->getOption(TR_DisableShrinkWrapping))
-      _cg->setSpecializedEpilogues(false);
-
-   if (_cg->specializedEpilogues())
-      {
-      TR_ASSERT((TR::Optimizer *)comp()->getOptimizer(), "No optimizer\n");
-      _cg->setupSpecializedEpilogues();
-
-      if (!comp()->getFlowGraph()->getStructure())
-         ((TR::Optimizer *)comp()->getOptimizer())->doStructuralAnalysis();
-
-      _cg->performReachingBlocks();
       }
    }
 
@@ -5442,13 +5384,6 @@ TR_S390Peephole::perform()
    if (comp()->getOption(TR_TraceCG))
       printInfo("\nPost Peephole Optimization Instructions:\n");
 
-   // following vars for specialized epilog analysis
-   int32_t curBlockNum = -1;
-   bool    catchBlock  = false;
-
-   setupSpecializedEpilogues();
-   bool processedCatchBlock = false;
-   bool specializedEpilogues = _cg->specializedEpilogues();
    bool moveInstr;
 
    if (_cg->getCurrentlyRestrictedRegisters()) _cg->getCurrentlyRestrictedRegisters()->empty();
@@ -5463,46 +5398,7 @@ TR_S390Peephole::perform()
             reloadLiteralPoolRegisterForCatchBlock();
          }
 
-      bool deferMarkingRegsUntilAfterTailCall = false;
-      if (specializedEpilogues)
-         {
-         // curBlockNum = _cursor->getBlockIndex();
-         curBlockNum = comp()->getCurrentBlock()->getNumber();
-         if (_cursor->getNode()->getOpCodeValue() == TR::BBStart)
-            {
-            if (_cursor->getNode()->getBlock()->isCatchBlock())
-               {
-               catchBlock = true;
-               processedCatchBlock = false;
-               }
-            else
-               {
-               catchBlock = false;
-               }
-            }
-         else if (_cursor->getNode()->getOpCodeValue() == TR::BBEnd)
-            {
-            catchBlock = false; //reset for next block
-            }
-
-         TR_ASSERT(curBlockNum > 0, "Instruction %p without valid block index\n", _cursor);
-
-         // prepare block indices for epilogue in linkage code
-         if (_cursor->getOpCodeValue() == TR::InstOpCode::RET)
-            {
-            _cursor->setBlockIndex(curBlockNum);
-            }
-
-         if (comp()->getOption(TR_EnableTailCallOpt) &&
-             !catchBlock &&
-             (_cursor->getOpCodeValue() == TR::InstOpCode::BRASL ||
-              _cursor->getOpCodeValue() == TR::InstOpCode::BRAS ||
-              _cursor->getOpCodeValue() == TR::InstOpCode::BASR))
-            deferMarkingRegsUntilAfterTailCall = true;
-         }
-
-      if (!deferMarkingRegsUntilAfterTailCall &&
-          _cursor->getOpCodeValue() != TR::InstOpCode::FENCE &&
+      if (_cursor->getOpCodeValue() != TR::InstOpCode::FENCE &&
           _cursor->getOpCodeValue() != TR::InstOpCode::ASSOCREGS &&
           _cursor->getOpCodeValue() != TR::InstOpCode::DEPEND)
          {
@@ -5510,17 +5406,12 @@ TR_S390Peephole::perform()
          bool depCase = (_cursor->isBranchOp() || _cursor->isLabel()) && deps;
          if (depCase)
             {
-            _cg->getS390Linkage()->markPreservedRegsInDep(deps, curBlockNum);
-            }
-         if (catchBlock && !processedCatchBlock)
-            {
-            _cg->getS390Linkage()->markPreservedRegsInBlock(curBlockNum);
-            processedCatchBlock = true;
+            _cg->getS390Linkage()->markPreservedRegsInDep(deps);
             }
 
          //handle all other regs
          TR::Register *reg = _cursor->getRegisterOperand(1);
-         markBlockThatModifiesRegister(_cursor, reg, curBlockNum);
+         markBlockThatModifiesRegister(_cursor, reg);
          }
 
       // this code is used to handle all compare instruction which sets the compare flag
@@ -6086,37 +5977,10 @@ OMR::Z::CodeGenerator::getPICsListForInterfaceSnippet(TR::S390ConstantDataSnippe
 
    }
 
-void
-OMR::Z::CodeGenerator::markBlockThatModifiesRegister(TR::RealRegister::RegNum reg, int32_t blockNum)
-   {
-   self()->getBlocksThatModifyRegister(reg)->set(blockNum);
-   }
 
 ////////////////////////////////////////////////////////////////////////////////
 // OMR::Z::CodeGenerator::doBinaryEncoding
 ////////////////////////////////////////////////////////////////////////////////
-bool
-OMR::Z::CodeGenerator::restoreRegister(TR::RealRegister::RegNum reg, int32_t blockNumber)
-   {
-   bool test1 = _reachingBlocks->_blockAnalysisInfo[blockNumber]->intersects(*_blocksThatModifyRegister[reg]);
-   bool test2 = _blocksThatModifyRegister[reg]->get(blockNumber);
-   // traceMsg(comp(), "&&& Reaching BBs block=%d reg=%d\n", blockNumber, reg);
-   // _reachingBlocks->_blockAnalysisInfo[blockNumber]->print(comp());
-   // traceMsg(comp(), "\n&&& Modify BBs block=%d reg=%d\n", blockNumber, reg);
-   // _blocksThatModifyRegister[reg]->print(comp());
-   // traceMsg(comp(), "\n&&& specialized=%d test1=%d test2=%d\n", specializedEpilogues(), test1, test2);
-   if (self()->specializedEpilogues())
-      return test1 || test2;
-   else
-      return true;
-   }
-
-void
-OMR::Z::CodeGenerator::performReachingBlocks()
-   {
-   _reachingBlocks = new (self()->comp()->allocator()) TR_ReachingBlocks(self()->comp(), (TR::Optimizer *)self()->comp()->getOptimizer());
-   _reachingBlocks->perform();
-   }
 
 /**
  * Step through the list of snippets looking for any that are not data constants

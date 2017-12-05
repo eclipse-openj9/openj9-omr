@@ -89,5 +89,4 @@ TestCompiler::FrontEnd::generateBinaryEncodingPrologue(
       }
 
    cg->getLinkage()->createPrologue(data->cursorInstruction);
-   //cg->getLinkage()->analyzePrologue();
    }

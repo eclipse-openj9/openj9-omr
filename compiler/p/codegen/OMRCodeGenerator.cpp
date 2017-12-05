@@ -133,23 +133,6 @@ OMR::Power::CodeGenerator::CodeGenerator() :
 
    _linkageProperties = &self()->getLinkage()->getProperties();
 
-   _specializedEpilogues = self()->comp()->getOption(TR_EnableSpecializedEpilogues) && self()->comp()->getOptLevel() >= hot;
-   // disable specialized epilogues when shrinkwrapping
-   // is enabled
-   if (!self()->comp()->getOption(TR_DisableShrinkWrapping))
-      _specializedEpilogues = false;
-
-   if (_specializedEpilogues)
-      {
-      _blocksThatModifyRegister = (TR_BitVector **)self()->trMemory()->allocateHeapMemory(TR::RealRegister::NumRegisters*sizeof(TR_BitVector *), TR_Memory::CodeGenerator);
-
-      int reg;
-      for (reg = 0; reg < TR::RealRegister::NumRegisters; reg++)
-         {
-         _blocksThatModifyRegister[reg] = new (self()->trHeapMemory()) TR_BitVector(self()->comp()->getFlowGraph()->getNextNodeNumber(), self()->trMemory(), heapAlloc, growable);
-         }
-      }
-
    // Set up to collect items for later TOC mapping
    if (TR::Compiler->target.is64Bit())
       {
@@ -2010,32 +1993,6 @@ void OMR::Power::CodeGenerator::doBinaryEncoding()
    data.estimate = 0;
 
    self()->generateBinaryEncodingPrologue(&data);
-
-   if (!(TR::Optimizer *)self()->comp()->getOptimizer())
-      _specializedEpilogues = false;
-
-   if (_specializedEpilogues)
-      {
-      TR_ASSERT((TR::Optimizer *)self()->comp()->getOptimizer(), "No optimizer\n");
-
-      if (!self()->comp()->getFlowGraph()->getStructure())
-         ((TR::Optimizer *)self()->comp()->getOptimizer())->doStructuralAnalysis();
-
-      _reachingBlocks = new (self()->comp()->allocator()) TR_ReachingBlocks(self()->comp(), (TR::Optimizer *)self()->comp()->getOptimizer());
-      _reachingBlocks->perform();
-
-      TR::Instruction *instr = self()->getFirstInstruction();
-      while (instr)
-         {
-         TR::RealRegister *reg = (TR::RealRegister *)instr->getTrg1Register();
-         if (reg)
-            {
-            TR_ASSERT(instr->getBlockIndex(), "Instruction %p without block index\n", instr);
-            self()->getBlocksThatModifyRegister(reg->getRegisterNumber())->set(instr->getBlockIndex());
-            }
-         instr = instr->getNext();
-         }
-      }
 
    bool skipOneReturn = false;
    while (data.cursorInstruction)

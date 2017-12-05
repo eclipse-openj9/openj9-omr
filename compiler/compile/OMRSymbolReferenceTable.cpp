@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2017 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1773,14 +1773,6 @@ OMR::SymbolReferenceTable::makeAutoAvailableForIlGen(TR::SymbolReference * a)
       _availableAutos.add(a);
    }
 
-static bool parmSlotCameFromExpandingAnArchetypeArgPlaceholder(int32_t slot, TR::ResolvedMethodSymbol *sym, TR_Memory *mem)
-   {
-   TR_ResolvedMethod *meth = sym->getResolvedMethod();
-   if (meth->convertToMethod()->isArchetypeSpecimen())
-      return slot >= meth->archetypeArgPlaceholderSlot(mem);
-   else
-      return false;
-   }
 
 TR::ParameterSymbol *
 OMR::SymbolReferenceTable::createParameterSymbol(
@@ -1788,16 +1780,9 @@ OMR::SymbolReferenceTable::createParameterSymbol(
    {
    TR::ParameterSymbol * sym = TR::ParameterSymbol::create(trHeapMemory(),type,isUnsigned,slot);
 
-   if (comp()->getOption(TR_MimicInterpreterFrameShape))
-      {
-      int32_t parameterSlots = owningMethodSymbol->getNumParameterSlots();
-      sym->setGCMapIndex(-slot + parameterSlots - sym->getNumberOfSlots());
-      }
-
    TR::SymbolReference *symRef = new (trHeapMemory()) TR::SymbolReference(self(), sym, owningMethodSymbol->getResolvedMethodIndex(), slot);
    owningMethodSymbol->setParmSymRef(slot, symRef);
-   if (!parmSlotCameFromExpandingAnArchetypeArgPlaceholder(slot, owningMethodSymbol, trMemory()))
-      owningMethodSymbol->getAutoSymRefs(slot).add(symRef);
+   owningMethodSymbol->getAutoSymRefs(slot).add(symRef);
 
    return sym;
    }
@@ -1999,7 +1984,7 @@ void OMR::SymbolReferenceTable::makeSharedAliases(TR::SymbolReference *sr1, TR::
        aliases1->empty();
        _sharedAliasMap->insert(std::make_pair(symRefNum1, aliases1));
        }
- 
+
     if (aliases2 == NULL)
        {
        aliases2 = new (comp()->trHeapMemory()) TR_BitVector(self()->getNumSymRefs(), comp()->trMemory(), heapAlloc);

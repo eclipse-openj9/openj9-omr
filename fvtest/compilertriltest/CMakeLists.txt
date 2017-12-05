@@ -49,6 +49,8 @@ target_link_libraries(comptest
 	tril
 )
 
+set_property(TARGET comptest PROPERTY FOLDER fvtest)
+
 add_test(
 	NAME comptest
 	COMMAND comptest --gtest_color=yes

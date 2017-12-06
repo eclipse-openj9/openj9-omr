@@ -779,6 +779,13 @@ TR_OSRMethodData::getArgInfo(int32_t byteCodeIndex)
    return args;
    }
 
+
+bool
+TR_OSRMethodData::hasSlotSharingOrDeadSlotsInfo()
+   {
+   return !bcInfoHashTab.IsEmpty();
+   }
+
 /*
  * Add pending push live range info for a BCI.
  *

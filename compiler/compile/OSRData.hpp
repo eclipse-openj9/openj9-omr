@@ -278,6 +278,7 @@ class TR_OSRMethodData
    void addSlotSharingInfo(int32_t byteCodeIndex,
                            int32_t slot, int32_t symRefNum, int32_t symRefOrder, int32_t symSize, bool takesTwoSlots);
    void ensureSlotSharingInfoAt(int32_t byteCodeIndex);
+   bool hasSlotSharingOrDeadSlotsInfo();
    void addInstruction(int32_t instructionPC, int32_t byteCodeIndex);
 
    int32_t getHeaderSize() const;

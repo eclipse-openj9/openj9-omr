@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2017 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -3554,7 +3554,6 @@ OMR::Z::MemoryReference::generateBinaryEncodingTouchUpForLongDisp(uint8_t *curso
             nbytes += currInstr->getOpCode().getInstructionLength();
             }
          currInstr->setNext(nextInstr);
-         //May need to copy some attributes of instr into currInstr e.g. lastWarm etc.
          }
       else if (TR::Compiler->target.is64Bit())
          {

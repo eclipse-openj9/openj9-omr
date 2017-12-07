@@ -3630,7 +3630,6 @@ static void arrayCopy16BitPrimitive(TR::Node* node, TR::Register* dstReg, TR::Re
       }
    else // decide direction during runtime
       {
-      TR::LabelSymbol* residueLabel = generateLabelSymbol(cg);
       TR::LabelSymbol* backwardLabel = generateLabelSymbol(cg);
 
       generateRegRegInstruction(SUBRegReg(), node, dstReg, srcReg, cg);  // dst = dst - src
@@ -3640,7 +3639,6 @@ static void arrayCopy16BitPrimitive(TR::Node* node, TR::Register* dstReg, TR::Re
 
       generateRegImmInstruction(SHRRegImm1(), node, sizeReg, 2, cg);
       generateInstruction(REPMOVSD, node, cg);
-      generateLabelInstruction(LABEL, node, residueLabel, cg);
       generateLabelInstruction(JAE1, node, mainEndLabel, cg);
       generateRegMemInstruction(L2RegMem, node, sizeReg, generateX86MemoryReference(srcReg, 0, cg), cg);
       generateMemRegInstruction(S2MemReg, node, generateX86MemoryReference(dstReg, 0, cg), sizeReg, cg);
@@ -3652,10 +3650,9 @@ static void arrayCopy16BitPrimitive(TR::Node* node, TR::Register* dstReg, TR::Re
       generateRegMemInstruction(LEARegMem(), node, srcReg, generateX86MemoryReference(srcReg, sizeReg, 0, -2, cg), cg);
       generateRegMemInstruction(LEARegMem(), node, dstReg, generateX86MemoryReference(dstReg, sizeReg, 0, -2, cg), cg);
       generateInstruction(STD, node, cg);
-      generateRegImmInstruction(SHRRegImm1(), node, sizeReg, 2, cg);
-      generateInstruction(REPMOVSD, node, cg);
+      generateRepMovsInstruction(REPMOVSW, node, sizeReg, NULL, cg);
       generateInstruction(CLD, node, cg);
-      generateLabelInstruction(JMP4, node, residueLabel, cg);
+      generateLabelInstruction(JMP4, node, mainEndLabel, cg);
       backwardPath->swapInstructionListsWithCompilation();
       }
    generateLabelInstruction(LABEL, node, mainEndLabel, dependencies, cg);
@@ -4065,7 +4062,7 @@ static void arraycopyForShortConstArrayWithoutDirection(TR::Node* node, TR::Regi
 
 TR::Register *OMR::X86::TreeEvaluator::arraycopyEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   static char *useNewArraycopy = feGetEnv("TR_UseNewArraycopy");
+   static bool useNewArraycopy = !(bool)feGetEnv("TR_UseOldArraycopy");
    if (useNewArraycopy == NULL)
       {
       return deprecated_arraycopyEvaluator(node, cg);
@@ -4106,7 +4103,7 @@ TR::Register *OMR::X86::TreeEvaluator::arraycopyEvaluator(TR::Node *node, TR::Co
 
    TR::DataType dt = node->getArrayCopyElementType();
    uint32_t elementSize = 1;
-   static bool avoidREPMOVSW = feGetEnv("TR_AvoidREPMOVSWForArrayCopy");
+   static bool useREPMOVSW = feGetEnv("TR_UseREPMOVSWForArrayCopy");
    static bool forceByteArrayElementCopy = feGetEnv("TR_ForceByteArrayElementCopy");
    if (!forceByteArrayElementCopy)
       {
@@ -4157,7 +4154,7 @@ TR::Register *OMR::X86::TreeEvaluator::arraycopyEvaluator(TR::Node *node, TR::Co
          {
          arrayCopy64BitPrimitiveOnIA32(node, dstReg, srcReg, sizeReg, cg);
          }
-      else if (elementSize == 2 && avoidREPMOVSW)
+      else if (elementSize == 2 && !useREPMOVSW)
          {
          arrayCopy16BitPrimitive(node, dstReg, srcReg, sizeReg, cg);
          }

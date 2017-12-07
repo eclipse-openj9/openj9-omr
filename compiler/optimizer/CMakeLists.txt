@@ -75,7 +75,6 @@ compiler_library(optimizer
 	${CMAKE_CURRENT_SOURCE_DIR}/PartialRedundancy.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/PreExistence.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/PrefetchInsertion.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/ReachingBlocks.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/Reachability.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/ReachingDefinitions.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/RedundantAsyncCheckRemoval.cpp

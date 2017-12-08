@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -110,6 +110,15 @@ public:
 
    char *classSignature_DEPRECATED(TR::Compilation *comp, TR_OpaqueClassBlock * clazz, int32_t & length, TR_Memory *) { return NULL; }
    char *classSignature(TR::Compilation *comp, TR_OpaqueClassBlock * clazz, TR_Memory *) { return NULL; }
+
+   /**
+    * Get the virtual function table entry at a specific offset from the class
+    *
+    * @param clazz The RAM class pointer to read from
+    * @param offset An offset into the virtual function table (VFT) of clazz
+    * @return The entry point of the method at the given offset
+    */
+   intptrj_t getVFTEntry(TR::Compilation *comp, TR_OpaqueClassBlock* clazz, int32_t offset);
 
    };
 

@@ -594,7 +594,6 @@ public:
    void setRealRegisterAssociation(TR::Register     *reg,
                                    TR::RealRegister::RegNum realNum);
    bool isGlobalRegisterAvailable(TR_GlobalRegisterNumber i, TR::DataType dt);
-   void registerSymbolSetup();
 
    // Used to model register liveness without Future Use Count.
    virtual bool isInternalControlFlowReg(TR::Register *reg);

@@ -209,7 +209,7 @@ void TR_LoadExtensions::countLoadExtensions(TR::Node *parent, vcount_t visitCoun
           supportedType(load) &&
           parent->getSize() != load->getSize())
          {
-         if (load->getOpCode().isLoadReg() || (load->getOpCode().isLoadVar() && load->getSymbol()->isRegisterSymbol()))
+         if (load->getOpCode().isLoadReg())
             {
             if (optimizer() && _useDefInfo && _useDefInfo->infoIsValid() &&
                 load->getUseDefIndex() && _useDefInfo->isUseIndex(load->getUseDefIndex()) &&
@@ -241,9 +241,9 @@ void TR_LoadExtensions::countLoadExtensions(TR::Node *parent, vcount_t visitCoun
                         continue;
 
                      TR::Node *realLoad = NULL;
-                     if ((defNode->getOpCode().isStoreReg() || (defNode->getOpCode().isStore() && defNode->getSymbol() && defNode->getSymbol()->isRegisterSymbol()) ) &&
+                     if (defNode->getOpCode().isStoreReg() &&
                            NULL!= (realLoad = defNode->getFirstChild()) &&
-                           ((realLoad->getOpCode().isLoadVar() && !realLoad->getSymbol()->isRegisterSymbol()) || (realLoad->getOpCode().isLoadConst() && supportedConstLoad(realLoad, comp()))) &&
+                           (realLoad->getOpCode().isLoadVar() || (realLoad->getOpCode().isLoadConst() && supportedConstLoad(realLoad, comp()))) &&
                            supportedType(realLoad))
                         {
                         if (trace()) traceMsg(comp(), "\t\tPeeked through %p (%s) and found %p (%s) with child %p (%s), Counting.\n",
@@ -291,7 +291,7 @@ void TR_LoadExtensions::countLoadExtensions(TR::Node *parent, vcount_t visitCoun
       // (Do counting for all conversions. Whether it is a narrowing conversion is verified at the flag-setting stage)
       if (child->getOpCode().isConversion())
          {
-         if (opcode.isStoreReg() || (opcode.isStore() && parent->getSymbol() && parent->getSymbol()->isRegisterSymbol()))
+         if (opcode.isStoreReg())
             {
             // TODO: traverse all the defs linked to parent, see all can be ignored
             setOverrideOpt(child, narrowOverride);
@@ -354,7 +354,7 @@ bool TR_LoadExtensions::detectReverseNeededConversionPattern(TR::Node* parent, T
             (conversion->getOpCode().isZeroExtension() &&  (constant->get64bitIntegralValue() == andMask))))
          return false;
       }
-   else if (opcode.isConversion() || (opcode.isStore() && !opcode.isStoreReg() && !(parent->getSymbol() && parent->getSymbol()->isRegisterSymbol())))
+   else if (opcode.isConversion() || (opcode.isStore() && !opcode.isStoreReg()))
       return false;
 
    return true;
@@ -393,7 +393,7 @@ bool TR_LoadExtensions::detectUnneededConversionPattern(TR::Node* conversion, TR
        *         load <Load-and-test>
        */
 
-      if (((childOpcode.isLoadVar() && !(child->getSymbol()->isRegisterSymbol())) || (childOpcode.isLoadConst() && supportedConstLoad(child, comp()))) &&
+      if ((childOpcode.isLoadVar() || (childOpcode.isLoadConst() && supportedConstLoad(child, comp()))) &&
             isConvWide &&
             (conversion->getSize() != 8 || (TR::Compiler->target.is64Bit() || comp()->cg()->use64BitRegsOn32Bit())) &&
             ((loadIsSigned && (loadIsSigned == opcode.isSignExtension())) || (!loadIsSigned && ((!loadIsSigned) == conversion->isZeroExtension())) )&&
@@ -539,7 +539,7 @@ void TR_LoadExtensions::setPreferredExtension(TR::Node *node, vcount_t visitCoun
                   }
                }
             }
-         else if ((childOpcode.isLoadReg() || (childOpcode.isLoadVar() && child->getSymbol()->isRegisterSymbol()))
+         else if (childOpcode.isLoadReg()
                   && !(node->getSize() > 4 && TR::Compiler->target.is32Bit())
                   && !isOverriden(node, regLoadOverride) && supportedType(child))
             {
@@ -673,7 +673,7 @@ ncount_t TR_LoadExtensions::indexNodesForCodegen(TR::Node *parent, ncount_t node
       _seenLoads |= 1;
       }
 
-   if (opcode.isLoadReg() || (opcode.isLoadVar() && parent->getSymbol()->isRegisterSymbol()))
+   if (opcode.isLoadReg())
       _seenLoads |= 2;
 
       // The following line should not be needed, especially in case somebody really wants to mark conversion nodes as unneeded earlier

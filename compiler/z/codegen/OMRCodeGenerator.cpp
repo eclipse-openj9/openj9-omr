@@ -1318,12 +1318,6 @@ OMR::Z::CodeGenerator::isAddMemoryUpdate(TR::Node * node, TR::Node * valueChild)
    }
 
 bool
-OMR::Z::CodeGenerator::inlinePackedLongConversion()
-   {
-   return !self()->comp()->getOptions()->getOption(TR_DisablePackedLongConversion);
-   }
-
-bool
 OMR::Z::CodeGenerator::isUsing32BitEvaluator(TR::Node *node)
    {
    if ((node->getOpCodeValue() == TR::sadd || node->getOpCodeValue() == TR::ssub) &&
@@ -2508,8 +2502,6 @@ bool OMR::Z::CodeGenerator::shouldValueBeInACommonedNode(int64_t value)
 
    return ((value >= smallestPos) || (value <= largestNeg));
    }
-
-bool OMR::Z::CodeGenerator::supportsNamedVirtualRegisters() { return false; } // TODO : Identitiy needs folding
 
 // This method it mostly for safely moving register spills outside of loops
 // Within a loop after each instruction we must keep track of what happened to registers

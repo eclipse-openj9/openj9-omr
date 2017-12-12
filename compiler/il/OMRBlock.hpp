@@ -33,7 +33,7 @@ namespace OMR { typedef OMR::Block BlockConnector; }
 
 #define MIN_PROFILED_FREQUENCY (.75f)
 
-#include "infra/TRCfgNode.hpp"      // for CFGNode
+#include "infra/CfgNode.hpp"        // for CFGNode
 
 #include <limits.h>                 // for UINT_MAX
 #include <stddef.h>                 // for NULL

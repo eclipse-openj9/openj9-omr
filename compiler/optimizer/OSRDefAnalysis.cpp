@@ -51,8 +51,8 @@
 #include "infra/BitVector.hpp"                        // for TR_BitVector, etc
 #include "infra/Cfg.hpp"                              // for CFG
 #include "infra/List.hpp"                             // for List, etc
-#include "infra/TRCfgEdge.hpp"                        // for CFGEdge
-#include "infra/TRCfgNode.hpp"                        // for CFGNode
+#include "infra/CfgEdge.hpp"                          // for CFGEdge
+#include "infra/CfgNode.hpp"                          // for CFGNode
 #include "optimizer/Optimization.hpp"                 // for Optimization
 #include "optimizer/Optimization_inlines.hpp"
 #include "optimizer/OptimizationManager.hpp"
@@ -410,14 +410,14 @@ void TR_OSRDefInfo::buildOSRDefs(void *vblockInfo, AuxiliaryData &aux)
          osrPoint = _methodSymbol->findOSRPoint(node->getByteCodeInfo());
          TR_ASSERT(osrPoint != NULL, "Cannot find a pre OSR point for node %p", node);
          }
- 
+
       buildOSRDefs(node, analysisInfo, osrPoint, nextOsrPoint, NULL, aux);
       nextOsrPoint = NULL;
- 
+
       if (isPotentialOSRPoint && comp()->isOSRTransitionTarget(TR::postExecutionOSR))
          {
          // Skip to the end of the OSR region, processing all treetops along the way
-         TR::TreeTop *pps = treeTop->getNextTreeTop(); 
+         TR::TreeTop *pps = treeTop->getNextTreeTop();
          TR_ByteCodeInfo bci = _methodSymbol->getOSRByteCodeInfo(treeTop->getNode());
          while (pps && _methodSymbol->isOSRRelatedNode(pps->getNode(), bci))
             {
@@ -1239,7 +1239,7 @@ int32_t TR_OSRLiveRangeAnalysis::fullAnalysis(bool includeParms, bool containsPe
    return 0;
    }
 
-// 
+//
 // To reduce the impact of pending push temps in postExecutionOSR, the live pending push symrefs can be stored or
 // referenced in anchored loads, between the OSR point and the transition. In the event that the anchored loads
 // are not commoned, they will be removed.
@@ -1330,7 +1330,7 @@ void TR_OSRLiveRangeAnalysis::maintainLiveness(TR::Node *node,
       TR::RegisterMappedSymbol *local = node->getSymbolReference()->getSymbol()->getAutoSymbol();
       if (!local)
          local = node->getSymbolReference()->getSymbol()->getParmSymbol();
- 
+
       if (local && !local->isLiveLocalIndexUninitialized())
          {
          int32_t localIndex = local->getLiveLocalIndex();
@@ -1548,7 +1548,7 @@ void TR_OSRExceptionEdgeRemoval::removeDeadStores(TR::Block* osrBlock, TR_BitVec
          if (comp()->getOption(TR_TraceOSR))
             traceMsg(comp(), "Removing dead store n%dn of symref #%d\n", node->getGlobalIndex(), node->getSymbolReference()->getReferenceNumber());
          TR::TransformUtil::removeTree(comp(), tt);
-         } 
+         }
       }
    }
 

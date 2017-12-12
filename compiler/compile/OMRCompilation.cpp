@@ -82,9 +82,9 @@
 #include "infra/List.hpp"                      // for List, ListIterator, etc
 #include "infra/Random.hpp"                    // for TR_RandomGenerator
 #include "infra/Stack.hpp"                     // for TR_Stack
-#include "infra/TRCfgEdge.hpp"                 // for CFGEdge
+#include "infra/CfgEdge.hpp"                   // for CFGEdge
 #include "infra/Timer.hpp"                     // for TR_SingleTimer
-#include "infra/ThreadLocal.h"         // for tlsDefine
+#include "infra/ThreadLocal.h"                 // for tlsDefine
 #include "optimizer/DebuggingCounters.hpp"     // for TR_DebuggingCounters
 #include "optimizer/Optimizations.hpp"         // for Optimizations, etc
 #include "optimizer/Optimizer.hpp"             // for Optimizer

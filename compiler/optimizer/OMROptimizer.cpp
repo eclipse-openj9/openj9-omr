@@ -61,7 +61,7 @@
 #include "infra/Cfg.hpp"                                 // for CFG
 #include "infra/List.hpp"                                // for List, etc
 #include "infra/SimpleRegex.hpp"
-#include "infra/TRCfgNode.hpp"                           // for CFGNode
+#include "infra/CfgNode.hpp"                             // for CFGNode
 #include "infra/Timer.hpp"
 #include "optimizer/LoadExtensions.hpp"
 #include "optimizer/Optimization.hpp"
@@ -2824,9 +2824,9 @@ const OptimizationStrategy *OMR::Optimizer::_mockStrategy = NULL;
 const OptimizationStrategy *
 OMR::Optimizer::optimizationStrategy(TR::Compilation *c)
    {
-   // Mock strategies are used for testing, and override 
+   // Mock strategies are used for testing, and override
    // the compilation strategy.
-   if (NULL != OMR::Optimizer::_mockStrategy) 
+   if (NULL != OMR::Optimizer::_mockStrategy)
       {
       traceMsg(c, "Using mock optimization strategy %p\n", OMR::Optimizer::_mockStrategy);
       return OMR::Optimizer::_mockStrategy;

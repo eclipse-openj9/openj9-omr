@@ -76,8 +76,8 @@
 #include "infra/HashTab.hpp"                   // for TR_HashTab, TR_HashId
 #include "infra/Link.hpp"                      // for TR_LinkHead, TR_Pair
 #include "infra/List.hpp"                      // for List, ListIterator, etc
-#include "infra/TRCfgEdge.hpp"                 // for CFGEdge
-#include "infra/TRCfgNode.hpp"                 // for CFGNode
+#include "infra/CfgEdge.hpp"                   // for CFGEdge
+#include "infra/CfgNode.hpp"                   // for CFGNode
 #include "ras/Debug.hpp"                       // for TR_DebugBase
 #include "runtime/Runtime.hpp"                 // for TR_RuntimeHelper, etc
 

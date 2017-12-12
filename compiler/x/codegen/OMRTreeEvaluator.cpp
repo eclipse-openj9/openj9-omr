@@ -65,7 +65,7 @@
 #include "infra/Assert.hpp"                           // for TR_ASSERT
 #include "infra/Bit.hpp"                              // for leadingZeroes
 #include "infra/List.hpp"                             // for List, etc
-#include "infra/TRCfgEdge.hpp"                        // for CFGEdge
+#include "infra/CfgEdge.hpp"                          // for CFGEdge
 #include "ras/Debug.hpp"                              // for TR_DebugBase
 #include "ras/DebugCounter.hpp"
 #include "runtime/Runtime.hpp"
@@ -1169,12 +1169,12 @@ TR::Register *OMR::X86::TreeEvaluator::cstoreEvaluator(TR::Node *node, TR::CodeG
 static TR::Register *REPArraycmpEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    /*
-    * This evaluator will utilize the REPE CMPSQ (64 bit) or CMPSD (32 bit) 
-    * instruction to compare 8 (64 bit) or 4 (32 bit) bytes of an array at a 
-    * time. Before compare the 8 or 4 byte chunks, the residuals will be taken 
-    * care of. By right shifting the length array 3 times, the size of the 
-    * residual can be determined and taken care of by using CMPSB, CMPSW and 
-    * CMPSD (64 bit). For example, if the residual is 7 Byte, each shift will 
+    * This evaluator will utilize the REPE CMPSQ (64 bit) or CMPSD (32 bit)
+    * instruction to compare 8 (64 bit) or 4 (32 bit) bytes of an array at a
+    * time. Before compare the 8 or 4 byte chunks, the residuals will be taken
+    * care of. By right shifting the length array 3 times, the size of the
+    * residual can be determined and taken care of by using CMPSB, CMPSW and
+    * CMPSD (64 bit). For example, if the residual is 7 Byte, each shift will
     * set the CF flag, which will result in CMPSB, CMPSW and CMPSD being used.
     * Depending on the result, equal/less than/greater than, the result register
     * will be 0/1/2 respectively
@@ -1183,7 +1183,7 @@ static TR::Register *REPArraycmpEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    TR::Node *src1AddrNode = node->getChild(0);
    TR::Node *src2AddrNode = node->getChild(1);
    TR::Node *lengthNode = node->getChild(2);
-   
+
    int32_t byteLen = TR::Compiler->target.is64Bit() ? 8 : 4;
 
    TR::Register *src1AddrRegister = cg->gprClobberEvaluate(src1AddrNode, MOVRegReg());
@@ -1195,7 +1195,7 @@ static TR::Register *REPArraycmpEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    TR::LabelSymbol *notEqualLabel = generateLabelSymbol(cg);
    TR::LabelSymbol *lessThanLabel = generateLabelSymbol(cg);
    TR::LabelSymbol *endResultLabel = generateLabelSymbol(cg);
-   
+
    TR::LabelSymbol *wordCompareLabel = generateLabelSymbol(cg);
    TR::LabelSymbol *dWordCompareLabel = generateLabelSymbol(cg);
    TR::LabelSymbol *qWordCompareLabel = generateLabelSymbol(cg);
@@ -1211,7 +1211,7 @@ static TR::Register *REPArraycmpEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    deps->addPostCondition(arrayLenRegister, TR::RealRegister::NoReg, cg);
    deps->addPostCondition(resultRegister, TR::RealRegister::NoReg, cg);
 
-   generateRegRegInstruction(MOVRegReg(), node, counterRegister, arrayLenRegister, cg);   
+   generateRegRegInstruction(MOVRegReg(), node, counterRegister, arrayLenRegister, cg);
    cg->stopUsingRegister(arrayLenRegister);
 
    //Byte Compare
@@ -1241,7 +1241,7 @@ static TR::Register *REPArraycmpEvaluator(TR::Node *node, TR::CodeGenerator *cg)
       generateInstruction(REPECMPSQ, node, deps, cg);
       generateLabelInstruction(JNE4, node, notEqualLabel, cg);
       }
-   else 
+   else
       {
       generateLabelInstruction(LABEL, node, dWordCompareLabel, cg);
       generateInstruction(REPECMPSD, node, deps, cg);
@@ -1252,7 +1252,7 @@ static TR::Register *REPArraycmpEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    cg->stopUsingRegister(src1AddrRegister);
    cg->stopUsingRegister(src2AddrRegister);
 
-   //Result 
+   //Result
    generateLabelInstruction(LABEL, node, equalLabel, cg);
    generateRegRegInstruction(TR::Compiler->target.is64Bit() ? XOR8RegReg : XOR4RegReg, node, resultRegister, resultRegister, cg); //Equal
    generateLabelInstruction(JMP4, node, endResultLabel, cg);
@@ -1264,7 +1264,7 @@ static TR::Register *REPArraycmpEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 
    generateLabelInstruction(LABEL, node, lessThanLabel, cg);
    generateRegImmInstruction(MOVRegImm4(), node, resultRegister, 1, cg); //Less Than
-   
+
    deps->stopAddingConditions();
 
    generateLabelInstruction(LABEL, node, endResultLabel, deps, cg);
@@ -1282,19 +1282,19 @@ static TR::Register *REPArraycmpEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 static TR::Register *REPArraycmpLenEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    /*
-    * This evaluator will utilize the REPE CMPSQ (64 bit) or CMPSD (32 bit) 
-    * instruction to compare 8 (64 bit) or 4 (32 bit) bytes of an array at a 
+    * This evaluator will utilize the REPE CMPSQ (64 bit) or CMPSD (32 bit)
+    * instruction to compare 8 (64 bit) or 4 (32 bit) bytes of an array at a
     * time. The residual bytes are compared using the REPE CMPSB instruction.
     * If an inequality was found, in order to determine the first unequal byte,
     * the ESI/EDI registers will be moved back 8 bytes (64 bit), 4 bytes (32 bit)
-    * or 1 byte if the inequality was found in the residuals. After this 
+    * or 1 byte if the inequality was found in the residuals. After this
     * backtracking is done, REPE CMPSB will be used to find the byte of inequality
    */
    TR::Register *resultRegister = cg->allocateRegister(TR_GPR);
    TR::Node *src1AddrNode = node->getChild(0);
    TR::Node *src2AddrNode = node->getChild(1);
    TR::Node *lengthNode = node->getChild(2);
-   
+
    int32_t byteLen = TR::Compiler->target.is64Bit() ? 8 : 4;
 
    TR::Register *src1AddrRegister = cg->gprClobberEvaluate(src1AddrNode, MOVRegReg());
@@ -1321,8 +1321,8 @@ static TR::Register *REPArraycmpLenEvaluator(TR::Node *node, TR::CodeGenerator *
    deps->addPostCondition(resultRegister, TR::RealRegister::NoReg, cg);
 
    //Setup
-   generateRegRegInstruction(MOVRegReg(), node, resultRegister, src1AddrRegister, cg);   
-   generateRegRegInstruction(MOVRegReg(), node, counterRegister, arrayLenRegister, cg);   
+   generateRegRegInstruction(MOVRegReg(), node, resultRegister, src1AddrRegister, cg);
+   generateRegRegInstruction(MOVRegReg(), node, counterRegister, arrayLenRegister, cg);
 
 
    if (TR::Compiler->target.is64Bit())
@@ -1341,13 +1341,13 @@ static TR::Register *REPArraycmpLenEvaluator(TR::Node *node, TR::CodeGenerator *
 
    //Residual
    generateLabelInstruction(LABEL, node, residualLabel, cg);
-   generateRegRegInstruction(MOVRegReg(), node, counterRegister, arrayLenRegister, cg);   
+   generateRegRegInstruction(MOVRegReg(), node, counterRegister, arrayLenRegister, cg);
    generateRegImmInstruction(ANDRegImm4(), node, counterRegister, 0x7, cg);
    generateInstruction(REPECMPSB, node, deps, cg);
    generateLabelInstruction(JNE4, node, notEqualLabel, cg);
 
    //Equal
-   generateRegRegInstruction(MOVRegReg(), node, resultRegister, arrayLenRegister, cg);   
+   generateRegRegInstruction(MOVRegReg(), node, resultRegister, arrayLenRegister, cg);
    generateLabelInstruction(JMP4, node, endResultLabel, cg);
    cg->stopUsingRegister(arrayLenRegister);
 
@@ -1363,10 +1363,10 @@ static TR::Register *REPArraycmpLenEvaluator(TR::Node *node, TR::CodeGenerator *
    generateLabelInstruction(LABEL, node, notEqualLabel, cg);
    generateRegImmInstruction(SUBRegImm4(), node, src1AddrRegister, 1, cg);
    generateRegRegInstruction(SUBRegReg(), node, src1AddrRegister, resultRegister, cg);
-   generateRegRegInstruction(MOVRegReg(), node, resultRegister, src1AddrRegister, cg);   
+   generateRegRegInstruction(MOVRegReg(), node, resultRegister, src1AddrRegister, cg);
    generateLabelInstruction(JMP4, node, endResultLabel, cg);
 
-   //Result 
+   //Result
    cg->stopUsingRegister(src1AddrRegister);
    cg->stopUsingRegister(src2AddrRegister);
    deps->stopAddingConditions();
@@ -1394,7 +1394,7 @@ static TR::Register *ConstLenArraycmpEvaluator(TR::Node *node, TR::CodeGenerator
    TR::Node *src1AddrNode = node->getChild(0);
    TR::Node *src2AddrNode = node->getChild(1);
    TR::Node *lengthNode = node->getChild(2);
-   
+
    int32_t byteLen = TR::Compiler->target.is64Bit() ? 8 : 4;
 
    TR::Register *src1AddrRegister = cg->gprClobberEvaluate(src1AddrNode, MOVRegReg());
@@ -1415,7 +1415,7 @@ static TR::Register *ConstLenArraycmpEvaluator(TR::Node *node, TR::CodeGenerator
 
    //Deal with the residual bits first, as we want to have a length that is a multiple of 8/4 in order to use CMPSQ
    uintptrj_t residualLen = arrLen % byteLen;
-   
+
    if (TR::Compiler->target.is64Bit() && residualLen & 4)
       {
       generateInstruction(CMPSD, node, deps, cg);
@@ -1447,7 +1447,7 @@ static TR::Register *ConstLenArraycmpEvaluator(TR::Node *node, TR::CodeGenerator
          generateLabelInstruction(JNE4, node, notEqualLabel, cg);
       }
 
-   //Result 
+   //Result
    cg->stopUsingRegister(src1AddrRegister);
    cg->stopUsingRegister(src2AddrRegister);
    generateRegRegInstruction(TR::Compiler->target.is64Bit() ? XOR8RegReg : XOR4RegReg, node, resultRegister, resultRegister, cg); //Equal
@@ -1460,7 +1460,7 @@ static TR::Register *ConstLenArraycmpEvaluator(TR::Node *node, TR::CodeGenerator
 
    generateLabelInstruction(LABEL, node, lessThanLabel, cg);
    generateRegImmInstruction(MOVRegImm4(), node, resultRegister, 2, cg);
-   
+
    deps->stopAddingConditions();
 
    generateLabelInstruction(LABEL, node, endResultLabel, deps, cg);
@@ -1486,7 +1486,7 @@ static TR::Register *ConstLenArraycmpLenEvaluator(TR::Node *node, TR::CodeGenera
    TR::Node *src1AddrNode = node->getChild(0);
    TR::Node *src2AddrNode = node->getChild(1);
    TR::Node *lengthNode = node->getChild(2);
-   
+
    int32_t byteLen = TR::Compiler->target.is64Bit() ? 8 : 4;
 
    TR::Register *src1AddrRegister = cg->gprClobberEvaluate(src1AddrNode, MOVRegReg());
@@ -1510,7 +1510,7 @@ static TR::Register *ConstLenArraycmpLenEvaluator(TR::Node *node, TR::CodeGenera
    deps->addPostCondition(resultRegister, TR::RealRegister::NoReg, cg);
 
    //Setup
-   generateRegRegInstruction(MOVRegReg(), node, resultRegister, src1AddrRegister, cg);   
+   generateRegRegInstruction(MOVRegReg(), node, resultRegister, src1AddrRegister, cg);
 
    //Use CMPSQ/CMPSD to compare the first N bytes of the array that are a multiple of 8/4
    while (arrLen >= byteLen )
@@ -1529,7 +1529,7 @@ static TR::Register *ConstLenArraycmpLenEvaluator(TR::Node *node, TR::CodeGenera
       }
 
    //Equal
-   generateRegRegInstruction(MOVRegReg(), node, resultRegister, arrayLenRegister, cg);   
+   generateRegRegInstruction(MOVRegReg(), node, resultRegister, arrayLenRegister, cg);
    generateLabelInstruction(JMP4, node, endResultLabel, cg);
 
    //Inequality found, figure out which byte
@@ -1549,10 +1549,10 @@ static TR::Register *ConstLenArraycmpLenEvaluator(TR::Node *node, TR::CodeGenera
    generateLabelInstruction(LABEL, node, notEqualLabel, cg);
    generateRegInstruction(TR::Compiler->target.is64Bit() ? DEC8Reg : DEC4Reg, node, src1AddrRegister, cg);
    generateRegRegInstruction(SUBRegReg(), node, src1AddrRegister, resultRegister, cg);
-   generateRegRegInstruction(MOVRegReg(), node, resultRegister, src1AddrRegister, cg);   
+   generateRegRegInstruction(MOVRegReg(), node, resultRegister, src1AddrRegister, cg);
    generateLabelInstruction(JMP4, node, endResultLabel, cg);
 
-   //Result 
+   //Result
    cg->stopUsingRegister(src1AddrRegister);
    cg->stopUsingRegister(src2AddrRegister);
    cg->stopUsingRegister(arrayLenRegister);
@@ -2695,12 +2695,12 @@ TR::Block *OMR::X86::TreeEvaluator::getOverflowCatchBlock(TR::Node *node, TR::Co
    //make sure the overflowCHK has a catch block first
    TR::Block *overflowCatchBlock = NULL;
    TR::CFGEdgeList &excepSucc = cg->getCurrentEvaluationTreeTop()->getEnclosingBlock()->getExceptionSuccessors();
-   for (auto e = excepSucc.begin(); e != excepSucc.end(); ++e) 
-      {    
+   for (auto e = excepSucc.begin(); e != excepSucc.end(); ++e)
+      {
       TR::Block *dest = toBlock((*e)->getTo());
       if (dest->getCatchBlockExtension()->_catchType == TR::Block::CanCatchOverflowCheck)
             overflowCatchBlock = dest;
-      }    
+      }
    TR_ASSERT(overflowCatchBlock != NULL, "OverflowChk node %p doesn't have overflow catch block\n", node);
 
    //the BBStartEvaluator will generate the label but in this case the catch block might not been evaluated yet
@@ -2715,14 +2715,14 @@ TR::Block *OMR::X86::TreeEvaluator::getOverflowCatchBlock(TR::Node *node, TR::Co
    }
 
 void OMR::X86::TreeEvaluator::genArithmeticInstructionsForOverflowCHK(TR::Node *node, TR::CodeGenerator *cg)
-   {   
+   {
    /*
     *overflowCHK
     *   =>child1(Operation)
     *   =>child2(Operand1)
     *   =>child3(Operand2)
     */
- 
+
    TR_X86OpCodes op;
    TR::Node *operationNode = node->getFirstChild();
    TR::Node *operand1 = node->getSecondChild();
@@ -2780,10 +2780,10 @@ void OMR::X86::TreeEvaluator::genArithmeticInstructionsForOverflowCHK(TR::Node *
       cg->decReferenceCount(operand1);
       cg->decReferenceCount(operand2);
       }
-   else 
+   else
    // we need to do the operation again when the Operation node has been evaluated already under a different treetop
    // TODO: there is still a chance that the flags might still be avaiable and we could detect it and avoid repeating
-   // the operation 
+   // the operation
       {
       TR_X86BinaryCommutativeAnalyser  addMulAnalyser(cg);
       TR_X86SubtractAnalyser subAnalyser(cg);
@@ -2798,7 +2798,7 @@ void OMR::X86::TreeEvaluator::genArithmeticInstructionsForOverflowCHK(TR::Node *
             addMulAnalyser.integerAddAnalyserWithExplicitOperands(node, operand1, operand2, op, BADIA32Op, needsEflags);
             break;
          case TR::ladd:
-            TR::Compiler->target.is32Bit() ? addMulAnalyser.longAddAnalyserWithExplicitOperands(node, operand1, operand2) 
+            TR::Compiler->target.is32Bit() ? addMulAnalyser.longAddAnalyserWithExplicitOperands(node, operand1, operand2)
                                            : addMulAnalyser.integerAddAnalyserWithExplicitOperands(node, operand1, operand2, op, BADIA32Op, needsEflags);
             break;
          // sub group
@@ -2810,7 +2810,7 @@ void OMR::X86::TreeEvaluator::genArithmeticInstructionsForOverflowCHK(TR::Node *
             subAnalyser.integerSubtractAnalyserWithExplicitOperands(node, operand1, operand2, op, BADIA32Op, MOV4RegReg, needsEflags);
             break;
          case TR::lsub:
-            TR::Compiler->target.is32Bit() ? subAnalyser.longSubtractAnalyserWithExplicitOperands(node, operand1, operand2) 
+            TR::Compiler->target.is32Bit() ? subAnalyser.longSubtractAnalyserWithExplicitOperands(node, operand1, operand2)
                                            : subAnalyser.integerSubtractAnalyserWithExplicitOperands(node, operand1, operand2, op, BADIA32Op, MOV8RegReg, needsEflags);
             break;
          // mul group
@@ -2830,10 +2830,10 @@ TR::Register *OMR::X86::TreeEvaluator::overflowCHKEvaluator(TR::Node *node, TR::
    {
    TR_X86OpCodes opcode;
    if (node->getOpCodeValue() == TR::OverflowCHK)
-       opcode = JO4; 
+       opcode = JO4;
    else if (node->getOpCodeValue() == TR::UnsignedOverflowCHK)
-       opcode = JB4; 
-   else 
+       opcode = JB4;
+   else
        TR_ASSERT(0, "unrecognized overflow operation in overflowCHKEvaluator");
    TR::Block *overflowCatchBlock = TR::TreeEvaluator::getOverflowCatchBlock(node, cg);
    TR::TreeEvaluator::genArithmeticInstructionsForOverflowCHK(node, cg);
@@ -4255,7 +4255,7 @@ TR::Register *OMR::X86::TreeEvaluator::arraytranslateEvaluator(TR::Node *node, T
    TR_RuntimeHelper helper ;
    if (sourceByte)
       {
-      
+
       TR_ASSERT(!node->isTargetByteArrayTranslate(), "Both source and target are byte for array translate");
       if (arraytranslateOT)
       {
@@ -5805,10 +5805,10 @@ TR::Register *OMR::X86::TreeEvaluator::atomicorEvaluator(TR::Node *node, TR::Cod
    return NULL;
    }
 
-TR::Register *                                                                                                                                                             
-OMR::X86::TreeEvaluator::tstartEvaluator(TR::Node *node, TR::CodeGenerator *cg)                                                                                             
-   {                                                                                                                                                                       
-   /*         
+TR::Register *
+OMR::X86::TreeEvaluator::tstartEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   /*
    .Lstart:
       xbegin       .Lfallback
       jmp          .LfallThrough
@@ -5816,42 +5816,42 @@ OMR::X86::TreeEvaluator::tstartEvaluator(TR::Node *node, TR::CodeGenerator *cg)
       test         eax, 0x2
       jne          .Ltransient
       jmp          .Lpersistent
-   .Lend:  
-   */                                                                                                                                                                      
+   .Lend:
+   */
    TR::Node *persistentFailureNode = node->getFirstChild();
-   TR::Node *transientFailureNode = node->getSecondChild();                                                                                                                
+   TR::Node *transientFailureNode = node->getSecondChild();
    TR::Node *fallThroughNode = node->getThirdChild();
-   TR::Node *GRANode = NULL;                                                                                                                                               
-                                                                                                                                                                           
-   TR::LabelSymbol *startLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);                                                                                           
-   startLabel->setStartInternalControlFlow();                                                                                                                              
-   TR::LabelSymbol *endLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);                                                                                             
-   endLabel->setEndInternalControlFlow();                                                                                                                                  
-                    
-   TR::LabelSymbol *fallbackLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);                                                                                    
-   TR::LabelSymbol *persistentFailureLabel = persistentFailureNode->getBranchDestination()->getNode()->getLabel();                                                         
-   TR::LabelSymbol *transientFailureLabel  = transientFailureNode->getBranchDestination()->getNode()->getLabel();     
-   TR::LabelSymbol *fallThroughLabel = fallThroughNode->getBranchDestination()->getNode()->getLabel();    
+   TR::Node *GRANode = NULL;
+
+   TR::LabelSymbol *startLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+   startLabel->setStartInternalControlFlow();
+   TR::LabelSymbol *endLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+   endLabel->setEndInternalControlFlow();
+
+   TR::LabelSymbol *fallbackLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+   TR::LabelSymbol *persistentFailureLabel = persistentFailureNode->getBranchDestination()->getNode()->getLabel();
+   TR::LabelSymbol *transientFailureLabel  = transientFailureNode->getBranchDestination()->getNode()->getLabel();
+   TR::LabelSymbol *fallThroughLabel = fallThroughNode->getBranchDestination()->getNode()->getLabel();
 
    //if LabelSymbol isn't ready yet, generate a new one and assign to the node.
    if(!fallThroughLabel){
-      fallThroughLabel = generateLabelSymbol(cg); 
+      fallThroughLabel = generateLabelSymbol(cg);
       fallThroughNode->getBranchDestination()->getNode()->setLabel(fallThroughLabel);
-   }         
+   }
 
    if(!transientFailureLabel){
-       transientFailureLabel = generateLabelSymbol(cg); 
+       transientFailureLabel = generateLabelSymbol(cg);
        transientFailureNode->getBranchDestination()->getNode()->setLabel(transientFailureLabel);
-   }                                
-  
+   }
+
    //in case user will make transientFailure goto persistenFailure, in which case the label will mess up at this point
    //we'd better re-generate the label and set it to persistentFailure node again.
    if(!persistentFailureLabel || persistentFailureLabel != persistentFailureNode->getBranchDestination()->getNode()->getLabel()){
-      persistentFailureLabel = generateLabelSymbol(cg);  
+      persistentFailureLabel = generateLabelSymbol(cg);
       persistentFailureNode->getBranchDestination()->getNode()->setLabel(persistentFailureLabel);
-   }     
-       
-   TR::Register *accReg = cg->allocateRegister();                                                                                                                          
+   }
+
+   TR::Register *accReg = cg->allocateRegister();
    TR::RegisterDependencyConditions *endLabelConditions;
    TR::RegisterDependencyConditions *fallThroughConditions = NULL;
    TR::RegisterDependencyConditions *persistentConditions = NULL;
@@ -5895,7 +5895,7 @@ OMR::X86::TreeEvaluator::tstartEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    generateLabelInstruction(LABEL, node, startLabel, startLabelConditions, cg);
 
    //xbegin, if fallback then go to fallbackLabel
-   generateLongLabelInstruction(XBEGIN4, node, fallbackLabel, cg);  
+   generateLongLabelInstruction(XBEGIN4, node, fallbackLabel, cg);
 
    //jump to  fallThrough Path
    if (fallThroughConditions)
@@ -5906,7 +5906,7 @@ OMR::X86::TreeEvaluator::tstartEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    endLabelConditions = generateRegisterDependencyConditions((uint8_t)0, 1, cg);
    endLabelConditions->addPostCondition(accReg, TR::RealRegister::eax, cg);
    endLabelConditions->stopAddingConditions();
-  
+
    //Label fallback begin:
    generateLabelInstruction(LABEL, node, fallbackLabel, cg);
 
@@ -5931,7 +5931,7 @@ OMR::X86::TreeEvaluator::tstartEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 
    cg->decReferenceCount(persistentFailureNode);
    cg->decReferenceCount(transientFailureNode);
-   
+
    return NULL;
    }
 

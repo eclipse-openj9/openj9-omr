@@ -97,8 +97,8 @@
 #include "infra/List.hpp"                           // for ListIterator, etc
 #include "infra/Stack.hpp"                          // for TR_Stack
 #include "infra/Checklist.hpp"                      // for TR::NodeCheckList
-#include "infra/TRCfgEdge.hpp"                      // for CFGEdge
-#include "infra/TRCfgNode.hpp"                      // for CFGNode
+#include "infra/CfgEdge.hpp"                        // for CFGEdge
+#include "infra/CfgNode.hpp"                        // for CFGNode
 #include "optimizer/Optimizations.hpp"
 #include "optimizer/DataFlowAnalysis.hpp"
 #include "ras/Debug.hpp"                            // for TR_DebugBase

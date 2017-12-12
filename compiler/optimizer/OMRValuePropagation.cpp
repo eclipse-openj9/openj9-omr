@@ -65,8 +65,8 @@
 #include "infra/Cfg.hpp"                        // for CFG, etc
 #include "infra/Link.hpp"                       // for TR_LinkHead, TR_Pair
 #include "infra/List.hpp"                       // for ListIterator, List, etc
-#include "infra/TRCfgEdge.hpp"                  // for CFGEdge
-#include "infra/TRCfgNode.hpp"                  // for CFGNode
+#include "infra/CfgEdge.hpp"                    // for CFGEdge
+#include "infra/CfgNode.hpp"                    // for CFGNode
 #include "optimizer/Inliner.hpp"                // for TR_InlineCall, etc
 #include "optimizer/Optimization.hpp"           // for Optimization
 #include "optimizer/Optimization_inlines.hpp"
@@ -1700,7 +1700,7 @@ void OMR::ValuePropagation::checkTypeRelationship(TR::VPConstraint *lhs, TR::VPC
 
 #ifdef J9_PROJECT_SPECIFIC
    jlKlass = comp()->getClassClassPointer();
-#endif   
+#endif
 
    if (lhs->asClass() && rhs->asClass())
       {

@@ -87,8 +87,8 @@
 #include "infra/Random.hpp"
 #include "infra/SimpleRegex.hpp"
 #include "infra/Stack.hpp"                                // for TR_Stack
-#include "infra/TRCfgEdge.hpp"                            // for CFGEdge
-#include "infra/TRCfgNode.hpp"                            // for CFGNode
+#include "infra/CfgEdge.hpp"                              // for CFGEdge
+#include "infra/CfgNode.hpp"                              // for CFGNode
 #include "optimizer/CallInfo.hpp"                         // for TR_CallTarget, etc
 #include "optimizer/InlinerFailureReason.hpp"
 #include "optimizer/Optimization.hpp"                     // for Optimization
@@ -1653,8 +1653,8 @@ void TR_InlinerBase::rematerializeCallArguments(TR_TransformInlinedFunction & ti
       // makes these for us
       if (failedArgs.size() > 0)
          {
-         RematTools::walkTreeTopsCalculatingRematFailureAlternatives(comp(), 
-            block1->getFirstRealTreeTop(), 
+         RematTools::walkTreeTopsCalculatingRematFailureAlternatives(comp(),
+            block1->getFirstRealTreeTop(),
             tif.getParameterMapper().firstTempTreeTop()->getNextTreeTop(),
             failedArgs, scanTargets, argSafetyInfo, tracer()->debugLevel());
 
@@ -1678,8 +1678,8 @@ void TR_InlinerBase::rematerializeCallArguments(TR_TransformInlinedFunction & ti
       TR::SparseBitVector unsafeSymRefs(comp()->allocator());
       if (!scanTargets.IsZero())
          {
-         RematTools::walkTreesCalculatingRematSafety(comp(), block1->getFirstRealTreeTop(), 
-            tif.getParameterMapper().lastTempTreeTop()->getNextTreeTop(), 
+         RematTools::walkTreesCalculatingRematSafety(comp(), block1->getFirstRealTreeTop(),
+            tif.getParameterMapper().lastTempTreeTop()->getNextTreeTop(),
             scanTargets, unsafeSymRefs, tracer()->debugLevel());
          }
 
@@ -3143,7 +3143,7 @@ TR_HandleInjectedBasicBlock::createTemps(bool replaceAllReferences)
             if (tt->getNode()->getOpCode().isBranch() || tt->getNode()->getOpCode().isSwitch())
                tt = tt->getPrevTreeTop();
 
-            // If this treetop is an OSR point, a store cannot be placed between it and the 
+            // If this treetop is an OSR point, a store cannot be placed between it and the
             // transition treetop in postExecutionOSR
             if (comp()->isPotentialOSRPoint(tt->getNode()))
                tt = comp()->getMethodSymbol()->getOSRTransitionTreeTop(tt);
@@ -5129,7 +5129,7 @@ bool TR_InlinerBase::inlineCallTarget2(TR_CallStack * callStack, TR_CallTarget *
        && (tif->resultNode() == NULL || tif->resultNode()->getReferenceCount() == 0))
       {
       /**
-       * In OSR, we need to split block even for cases without virtual guard. This is 
+       * In OSR, we need to split block even for cases without virtual guard. This is
        * because in OSR a block with OSR point must have an exception edge to the osrCatchBlock
        * of correct callerIndex. Split the block here so that the OSR points from callee
        * and from caller are separated.

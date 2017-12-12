@@ -93,7 +93,6 @@ class TR_PseudoRegister;
 class TR_RegisterCandidate;
 namespace TR { class S390ConstantDataSnippet; }
 namespace TR { class S390ConstantInstructionSnippet; }
-namespace TR { class S390DeclTrampSnippet; }
 namespace TR { class S390EyeCatcherDataSnippet; }
 namespace TR { class S390ImmInstruction; }
 namespace TR { class S390LabelTableSnippet; }
@@ -101,7 +100,6 @@ namespace TR { class S390LookupSwitchSnippet; }
 class TR_S390OutOfLineCodeSection;
 namespace TR { class S390PrivateLinkage; }
 class TR_S390ScratchRegisterManager;
-namespace TR { class S390SortJumpTrampSnippet; }
 namespace TR { class S390TargetAddressSnippet; }
 namespace TR { class S390WritableDataSnippet; }
 class TR_StorageReference;

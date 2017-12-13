@@ -2166,12 +2166,6 @@ refCanBeKilled(TR::Node *node, TR::Compilation *comp)
       return false;
       }
 
-   if (node->getOpCodeValue() == TR::aload &&
-       comp->cg()->getLinkage()->isAddressOfStaticSymRef(node->getSymbolReference()))
-      {
-      return false;
-      }
-
    if (node->getOpCode().isLoadConst() && !node->anchorConstChildren())
       {
       return false;
@@ -4755,7 +4749,7 @@ OMR::Node::setArrayComponentClassInNode(TR_OpaqueClassBlock *c)
 TR::ILOpCodes
 OMR::Node::setOverflowCheckOperation(TR::ILOpCodes op)
    {
-   TR_ASSERT(self()->getOpCode().isOverflowCheck(), 
+   TR_ASSERT(self()->getOpCode().isOverflowCheck(),
              "set OverflowCHK operation info for no OverflowCHK node");
    return _unionBase._extension.getExtensionPtr()->setElem<TR::ILOpCodes>(3, op);
    }
@@ -4763,7 +4757,7 @@ OMR::Node::setOverflowCheckOperation(TR::ILOpCodes op)
 TR::ILOpCodes
 OMR::Node::getOverflowCheckOperation()
    {
-   TR_ASSERT(self()->getOpCode().isOverflowCheck(), 
+   TR_ASSERT(self()->getOpCode().isOverflowCheck(),
    	     "get OverflowCHK operation info for no OverflowCHK node");
    return _unionBase._extension.getExtensionPtr()->getElem<TR::ILOpCodes>(3);
    }
@@ -7517,7 +7511,7 @@ bool
 OMR::Node::isNopableInlineGuard()
    {
    TR::Compilation * c = TR::comp();
-   return self()->isTheVirtualGuardForAGuardedInlinedCall() && !self()->isProfiledGuard() && 
+   return self()->isTheVirtualGuardForAGuardedInlinedCall() && !self()->isProfiledGuard() &&
       !(self()->isBreakpointGuard() && c->getOption(TR_DisableNopBreakpointGuard));
    }
 

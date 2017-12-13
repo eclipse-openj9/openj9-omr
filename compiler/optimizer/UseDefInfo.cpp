@@ -723,8 +723,7 @@ bool TR_UseDefInfo::isValidAutoOrParm(TR::SymbolReference *symRef)
    symRef->getUseonlyAliases().getAliases(useOnlyAliases);
 
    return  (useDefAliases.PopulationCount() == 1 &&
-            useOnlyAliases.PopulationCount() == 1 &&
-            !comp()->cg()->getLinkage()->isAddressOfStaticSymRef(symRef));
+            useOnlyAliases.PopulationCount() == 1);
    }
 
 bool TR_UseDefInfo::excludedGlobals(TR::Symbol *sym)

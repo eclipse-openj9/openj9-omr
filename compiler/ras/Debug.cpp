@@ -3965,7 +3965,8 @@ TR_Debug::getRuntimeHelperName(int32_t index)
          case TR_jitProfileLongValue:       return "jitProfileLongValue";
          case TR_jitProfileAddress:         return "jitProfileAddress";
          case TR_jitProfileWarmCompilePICAddress: return "jitProfileAddress for mainline code PIC's";
-         case TR_jitProfileParseBuffer:     return "jitProfileParseBuffer";
+         case TR_jProfile32BitValue:        return "jProfile32BitValue";
+         case TR_jProfile64BitValue:        return "jProfile64BitValue";
          case TR_prepareForOSR:             return "prepareForOSR";
 
          case TR_jitRetranslateCaller:      return "jitRetranslateCaller";

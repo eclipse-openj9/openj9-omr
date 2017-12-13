@@ -855,10 +855,28 @@ OMR::Compilation::pendingPushLivenessDuringIlgen()
    return false;
    }
 
+/**
+ * A profiling compilation will include instrumentation to collect information
+ * on block and value frequencies. isProfilingCompilation() should return true for
+ * such a compilation and getProfilingMode() can distinguish between the profiling
+ * implementations.
+ */
 bool
 OMR::Compilation::isProfilingCompilation()
    {
    return _recompilationInfo ? _recompilationInfo->isProfilingCompilation() : false;
+   }
+
+ProfilingMode
+OMR::Compilation::getProfilingMode()
+   {
+   if (!self()->isProfilingCompilation())
+      return DisabledProfiling;
+
+   if (self()->getOption(TR_EnableJProfiling) || self()->getOption(TR_EnableJProfilingInProfilingCompilations))
+      return JProfiling;
+
+   return JitProfiling;
    }
 
 bool
@@ -973,13 +991,6 @@ int32_t OMR::Compilation::compile()
    if (printCodegenTime) compTime.startTiming(self());
    if (_recompilationInfo)
       _recompilationInfo->startOfCompilation();
-
-#ifdef J9_PROJECT_SPECIFIC
-   TR_PersistentMethodInfo * methodInfo = TR_PersistentMethodInfo::get(self()->getCurrentMethod());
-   if (methodInfo &&
-       self()->isProfilingCompilation())
-      methodInfo->setProfileInfo(NULL);
-#endif
 
    {
      if (printCodegenTime) genILTime.startTiming(self());

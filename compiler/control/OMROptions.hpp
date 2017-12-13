@@ -980,7 +980,7 @@ enum TR_CompilationOptions
    TR_DisableHardwareProfilerReducedWarm              = 0x00002000 + 30,
    TR_RestrictStaticFieldFolding                      = 0x00004000 + 30,
    TR_TraceILValidator                                = 0x00008000 + 30,
-   // Available                                       = 0x00010000 + 30,
+   TR_EnableJProfilingInProfilingCompilations         = 0x00010000 + 30,
    TR_EnableJProfiling                                = 0x00020000 + 30,
    TR_DisableForcedEXInlining                         = 0x00040000 + 30,
    TR_EnableOnsiteCacheForSuperClassTest              = 0x00080000 + 30,
@@ -1151,6 +1151,8 @@ enum TR_VerboseFlags
    TR_VerboseHookDetailsClassLoading,
    TR_VerboseHookDetailsClassUnloading,
    TR_VerboseSampleDensity,
+
+   TR_VerboseProfiling,
 
    //If adding new options add an entry to _verboseOptionNames as well
    TR_NumVerboseOptions        // Must be the last one;

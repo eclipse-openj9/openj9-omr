@@ -3925,7 +3925,7 @@ int32_t TR_ProfiledNodeVersioning::perform()
                   continue;
 
                TR_ByteCodeInfo originalBcInfo = TR_ProfiledNodeVersioning::temporarilySetProfilingBcInfoOnNewArrayLengthChild(node, comp());
-               TR_ValueInfo *numElementsInfo = (TR_ValueInfo*)TR_ValueProfiler::getProfiledValueInfo(numElementsNode, comp());
+               TR_ValueInfo *numElementsInfo = static_cast<TR_ValueInfo*>(TR_ValueProfileInfoManager::getProfiledValueInfo(numElementsNode, comp(), ValueInfo));
                numElementsNode->setByteCodeInfo(originalBcInfo);
 
                if (numElementsInfo)
@@ -3941,15 +3941,14 @@ int32_t TR_ProfiledNodeVersioning::perform()
                      static char *versionNewarrayForMultipleSizes = feGetEnv("TR_versionNewarrayForMultipleSizes");
                      if (trace())
                         traceMsg(comp(), "Node %s has %d profiled values:\n", getDebug()->getName(node), totalFrequency);
-                     TR_ScratchList<TR_ExtraAbstractInfo> valuesSortedByFrequency(trMemory());
-                     numElementsInfo->getSortedList(comp(), (List<TR_ExtraAbstractInfo> *) &valuesSortedByFrequency);
-                     ListIterator<TR_ExtraAbstractInfo> i((List<TR_ExtraAbstractInfo> *) &valuesSortedByFrequency);
-                     for (TR_ExtraAbstractInfo *profiledInfo = i.getFirst(); profiledInfo != NULL; profiledInfo = i.getNext())
+                     TR_ScratchList<TR_ExtraValueInfo> valuesSortedByFrequency(trMemory());
+                     numElementsInfo->getSortedList(comp(), &valuesSortedByFrequency);
+                     ListIterator<TR_ExtraValueInfo> i(&valuesSortedByFrequency);
+                     for (TR_ExtraValueInfo *profiledInfo = i.getFirst(); profiledInfo != NULL; profiledInfo = i.getNext())
                         {
-                        TR_ExtraValueInfo *someValue = (TR_ExtraValueInfo*)profiledInfo;
-                        float probability = (float)someValue->_frequency / totalFrequency;
+                        float probability = (float)profiledInfo->_frequency / totalFrequency;
                         if (trace())
-                           traceMsg(comp(), "%8d %5.1f%%\n", someValue->_value, 100.0 * probability);
+                           traceMsg(comp(), "%8d %5.1f%%\n", profiledInfo->_value, 100.0 * probability);
 
                         // The heuristic: accumulate values until we hit the
                         // threshold where it's worth versioning.  After that
@@ -3958,14 +3957,14 @@ int32_t TR_ProfiledNodeVersioning::perform()
                         // the case, the more we're willing to grow the size to
                         // catch it.
                         //
-                        if (!doProfiling || (someValue->_value < (uint32_t)(profiledSize * (1.0+probability))))
+                        if (!doProfiling || (profiledInfo->_value < (uint32_t)(profiledSize * (1.0+probability))))
                            {
                            if (numDifferentSizes == 1 && !versionNewarrayForMultipleSizes)
                               break;
 
                            numDifferentSizes++;
-                           profiledSize    = std::max(profiledSize, someValue->_value);
-                           minProfiledSize = std::min(minProfiledSize, someValue->_value);
+                           profiledSize    = std::max(profiledSize, profiledInfo->_value);
+                           minProfiledSize = std::min(minProfiledSize, profiledInfo->_value);
 
                            combinedProbability += probability;
                            if (combinedProbability > MIN_PROFILED_FREQUENCY)

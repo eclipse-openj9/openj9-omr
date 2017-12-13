@@ -94,6 +94,8 @@ JIT_PRODUCT_BACKEND_SOURCES+=\
     $(JIT_OMR_DIRTY_DIR)/ras/OptionsDebug.cpp \
     $(JIT_OMR_DIRTY_DIR)/ras/PPCOpNames.cpp \
     $(JIT_OMR_DIRTY_DIR)/ras/Tree.cpp \
+    $(JIT_OMR_DIRTY_DIR)/ras/ILValidationRules.cpp \
+    $(JIT_OMR_DIRTY_DIR)/ras/ILValidationUtils.cpp \
     $(JIT_OMR_DIRTY_DIR)/ras/ILValidator.cpp \
     $(JIT_OMR_DIRTY_DIR)/optimizer/AsyncCheckInsertion.cpp \
     $(JIT_OMR_DIRTY_DIR)/optimizer/BackwardBitVectorAnalysis.cpp \

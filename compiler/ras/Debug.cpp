@@ -1786,16 +1786,7 @@ TR_Debug::getAutoName(TR::SymbolReference * symRef)
 
    name[0]=0;  //initialize to empty string
 
-
-   if (symRef->getSymbol()->isRegisterSymbol())
-     {
-     TR::AutomaticSymbol *symReg=symRef->getSymbol()->castToRegisterSymbol();
-     if(symReg->isRealRegister())
-       sprintf(name,"<GlobalReg%d %s>",symReg->getGlobalRegisterNumber(),getGlobalRegisterName(symReg->getGlobalRegisterNumber()));
-     else
-       sprintf(name,"<GlobalReg%d>",symReg->getGlobalRegisterNumber());
-     }
-   else if (symRef->getSymbol()->isSpillTempAuto())
+   if (symRef->getSymbol()->isSpillTempAuto())
       {
       char * symName = (char *)_comp->trMemory()->allocateHeapMemory(20);
       if (symRef->getSymbol()->getDataType() == TR::Float || symRef->getSymbol()->getDataType() == TR::Double)

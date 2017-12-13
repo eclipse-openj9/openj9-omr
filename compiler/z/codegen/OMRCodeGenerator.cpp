@@ -6967,46 +6967,6 @@ OMR::Z::CodeGenerator::isGlobalRegisterAvailable(TR_GlobalRegisterNumber i, TR::
      return false;
    }
 
-void
-OMR::Z::CodeGenerator::registerSymbolSetup()
-  {
-  TR_GlobalRegisterNumber grn,lastGrn;
-  TR::Linkage *linkage = self()->getS390Linkage();
-  TR::SparseBitVector volatileRegs(self()->comp()->allocator());
-  TR::SymbolReferenceTable *symRefTab = self()->comp()->getSymRefTab();
-
-  // Enumerate all volatile global register symbols
-  lastGrn = self()->machine()->getLastRealRegisterGlobalRegisterNumber();
-  for (grn = 0; grn <= lastGrn; grn++)
-     {
-     TR::RealRegister *rr=(TR::RealRegister *)self()->machine()->getRealRegister(grn);
-     if (!linkage->getPreserved(rr->getRegisterNumber()))
-        {
-        TR::SymbolReference *symRef=symRefTab->getRegisterSymbol(grn);
-        if (symRef)
-           {
-           volatileRegs[symRef->getReferenceNumber()] = 1;
-           }
-        }
-     }
-
-  //  traceMsg(comp(),"Volatile Register symbol references:\n");
-  //  (*comp()) << volatileRegs;
-  //  traceMsg(comp(),"\n");
-
-  // Now visit all function symbol references and add the volatile register symbols as aliases
-  int32_t i,n;
-  n = symRefTab->getNumSymRefs();
-  for (i=symRefTab->getIndexOfFirstSymRef();i<n;i++)
-     {
-     TR::SymbolReference *symRef=symRefTab->getSymRef(i);
-     if (symRef && symRef->getSymbol()->isMethod())
-        {
-        symRef->getUseDefAliases().addAliases(volatileRegs);
-        //      traceMsg(comp(),"Aliasing volatile regs with SymRef #%d\n",symRef->getReferenceNumber());
-        }
-     }
-  }
 
 bool OMR::Z::CodeGenerator::isInternalControlFlowReg(TR::Register *reg)
   {
@@ -11370,10 +11330,6 @@ OMR::Z::CodeGenerator::checkSimpleLoadStore(TR::Node *loadNode, TR::Node *storeN
       {
       return false;
       }
-   else if(loadNode->getOpCode().hasSymbolReference() && loadNode->getSymbolReference()->getSymbol()->isRegisterSymbol())
-     {
-     return false;
-     }
    else if (loadNode->getSize() != storeNode->getSize())
       {
       return false;

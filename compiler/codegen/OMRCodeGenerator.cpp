@@ -2572,7 +2572,7 @@ bool OMR::CodeGenerator::mergeableGuard(TR::Instruction *guard)
    return mergeOnlyHCRGuards ? guard->getNode()->isStopTheWorldGuard() : guard->getNode()->isNopableInlineGuard();
    }
 
-bool OMR::CodeGenerator::mergeableGuards(TR::Instruction *earlierGuard, TR::Instruction *laterGuard)
+bool OMR::CodeGenerator::areMergeableGuards(TR::Instruction *earlierGuard, TR::Instruction *laterGuard)
    {
    return    self()->mergeableGuard(earlierGuard)
           && self()->mergeableGuard(laterGuard)
@@ -2610,7 +2610,7 @@ TR::Instruction *OMR::CodeGenerator::getVirtualGuardForPatching(TR::Instruction 
       {
       if (prevI->isVirtualGuardNOPInstruction())
          {
-         if (self()->mergeableGuards(prevI, vgdnop))
+         if (self()->areMergeableGuards(prevI, vgdnop))
             {
             toReturn = prevI;
             }
@@ -2657,7 +2657,7 @@ TR::Instruction
       {
       if (nextI->isVirtualGuardNOPInstruction())
          {
-         if (!self()->mergeableGuards(vgdnop, nextI))
+         if (!self()->areMergeableGuards(vgdnop, nextI))
             return NULL;
          continue;
          }
@@ -2716,7 +2716,7 @@ OMR::CodeGenerator::sizeOfInstructionToBePatchedHCRGuard(TR::Instruction *vgdnop
       {
       if (nextI->isVirtualGuardNOPInstruction())
          {
-         if (!self()->mergeableGuards(vgdnop, nextI))
+         if (!self()->areMergeableGuards(vgdnop, nextI))
             break;
          continue;
          }

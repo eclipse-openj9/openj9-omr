@@ -256,7 +256,7 @@ class OMR_EXTENSIBLE CodeGenerator
 
    TR::Instruction *_implicitExceptionPoint;
    bool mergeableGuard(TR::Instruction *guard);
-   bool mergeableGuards(TR::Instruction *earlierGuard, TR::Instruction *laterGuard);
+   bool areMergeableGuards(TR::Instruction *earlierGuard, TR::Instruction *laterGuard);
 
    protected:
 

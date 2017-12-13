@@ -133,6 +133,13 @@ enum CompilationReturnCodes
    COMPILATION_FAILED
    };
 
+enum ProfilingMode
+   {
+   DisabledProfiling,
+   JitProfiling,
+   JProfiling
+   };
+
 #if defined(DEBUG)
    // For a production build the body of of TR::Compilation::diagnostic is empty, so
    // the call will be inlined and become a NOP.  The problem is that unless the
@@ -744,6 +751,7 @@ public:
    TR_OptimizationPlan * getOptimizationPlan() {return _optimizationPlan;}
 
    bool isProfilingCompilation();
+   ProfilingMode getProfilingMode();
    bool isJProfilingCompilation();
 
    TR::Recompilation *getRecompilationInfo() { return _recompilationInfo; }

@@ -737,7 +737,7 @@ enum TR_CompilationOptions
    TR_EnableScratchMemoryDebugging                    = 0x00400000 + 21,
    TR_ProfileMemoryRegions                            = 0x00800000 + 21,
    TR_DisableConverterReducer                         = 0x01000000 + 21,
-   // Available                                       = 0x02000000 + 21,
+   TR_CompileTimeProfiler                             = 0x02000000 + 21,
    // Available                                       = 0x04000000 + 21,
    // Available                                       = 0x08000000 + 21,
    // Available                                       = 0x10000000 + 21,

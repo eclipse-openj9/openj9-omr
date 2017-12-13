@@ -1358,8 +1358,6 @@ class OMR_EXTENSIBLE CodeGenerator
    int32_t getVMThreadGlobalRegisterNumber() {return -1;} // no virt
    int32_t arrayInitMinimumNumberOfBytes() {return 8;} // no virt
 
-   int32_t getMaxPatchableInstructionLength() { return 0; } // no virt
-
    TR::Instruction *saveOrRestoreRegisters(TR_BitVector *regs, TR::Instruction *cursor, bool doSaves);
 
    void addCountersToEdges(TR::Block *block);

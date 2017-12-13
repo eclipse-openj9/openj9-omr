@@ -215,7 +215,7 @@ TEST(ThreadAbortTest, Waiting)
 		J9ThreadAbstractMonitor *mon = (J9ThreadAbstractMonitor *)testdata.waitSync;
 		EXPECT_TRUE(NULL == mon->waiting);
 		EXPECT_TRUE(NULL == mon->blocking);
-		EXPECT_EQ(0, mon->count);
+		EXPECT_TRUE(0 == mon->count);
 		EXPECT_TRUE(NULL == mon->owner);
 	}
 

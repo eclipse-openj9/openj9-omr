@@ -1849,7 +1849,7 @@ OMR::Node::isUnsafeToDuplicateAndExecuteAgain(int32_t *nodeVisitBudget)
          // Unresolved symrefs need to be evaluated in their original location,
          // under the ResolveCHK.
          //
-         return false;
+         return true;
          }
       else if (self()->getOpCodeValue() == TR::loadaddr)
          {

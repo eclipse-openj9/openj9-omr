@@ -154,6 +154,7 @@ JIT_PRODUCT_BACKEND_SOURCES+=\
     $(JIT_OMR_DIRTY_DIR)/optimizer/PrefetchInsertion.cpp \
     $(JIT_OMR_DIRTY_DIR)/optimizer/Reachability.cpp \
     $(JIT_OMR_DIRTY_DIR)/optimizer/ReachingDefinitions.cpp \
+    $(JIT_OMR_DIRTY_DIR)/optimizer/OMRRecognizedCallTransformer.cpp \
     $(JIT_OMR_DIRTY_DIR)/optimizer/RedundantAsyncCheckRemoval.cpp \
     $(JIT_OMR_DIRTY_DIR)/optimizer/RegisterAnticipatability.cpp \
     $(JIT_OMR_DIRTY_DIR)/optimizer/RegisterAvailability.cpp \

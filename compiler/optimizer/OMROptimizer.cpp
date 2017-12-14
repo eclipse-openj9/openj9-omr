@@ -110,6 +110,7 @@
 #include "optimizer/FieldPrivatizer.hpp"
 #include "optimizer/ReorderIndexExpr.hpp"
 #include "optimizer/GlobalRegisterAllocator.hpp"
+#include "optimizer/RecognizedCallTransformer.hpp"
 #include "env/RegionProfiler.hpp"
 
 #if defined (_MSC_VER) && _MSC_VER < 1900
@@ -541,6 +542,7 @@ static const OptimizationStrategy ilgenStrategyOpts[] =
 #ifdef J9_PROJECT_SPECIFIC
    { varHandleTransformer,          MustBeDone     },
    { unsafeFastPath                                },
+   { recognizedCallTransformer                     },
    { coldBlockMarker                               },
    { allocationSinking,             IfNews         },
    { invariantArgumentPreexistence, IfNotClassLoadPhaseAndNotProfiling },
@@ -860,6 +862,8 @@ OMR::Optimizer::Optimizer(TR::Compilation *comp, TR::ResolvedMethodSymbol *metho
       new (comp->allocator()) TR::OptimizationManager(self(), TR_LiveRangeSplitter::create, OMR::liveRangeSplitter);
    _opts[OMR::loopSpecializer] =
       new (comp->allocator()) TR::OptimizationManager(self(), TR_LoopSpecializer::create, OMR::loopSpecializer);
+   _opts[OMR::recognizedCallTransformer] =
+      new (comp->allocator()) TR::OptimizationManager(self(), TR::RecognizedCallTransformer::create, OMR::recognizedCallTransformer);
 
    // NOTE: Please add new OMR optimizations here!
 

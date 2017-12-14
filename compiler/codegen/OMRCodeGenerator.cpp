@@ -2693,12 +2693,6 @@ OMR::CodeGenerator::sizeOfInstructionToBePatched(TR::Instruction *vgdnop)
         return 0;
    }
 
-bool
-OMR::CodeGenerator::requiresAtomicPatching(TR::Instruction *vgdnop)
-   {
-   return !(vgdnop->getNode() && vgdnop->getNode()->isStopTheWorldGuard());
-   }
-
 int32_t
 OMR::CodeGenerator::sizeOfInstructionToBePatchedHCRGuard(TR::Instruction *vgdnop)
    {

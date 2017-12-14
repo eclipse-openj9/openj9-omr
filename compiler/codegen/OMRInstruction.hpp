@@ -221,10 +221,11 @@ class OMR_EXTENSIBLE Instruction
    int32_t getRegisterSaveDescription() { return _registerSaveDescription; }
    int32_t setRegisterSaveDescription(int32_t v) { return (_registerSaveDescription = v); }
 
+   bool    requiresAtomicPatching();
+
    int32_t getMaxPatchableInstructionLength() { return 0; } // no virt
 
    bool isMergeableGuard();
-
 
    protected:
 

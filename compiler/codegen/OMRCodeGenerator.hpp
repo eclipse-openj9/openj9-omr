@@ -1170,7 +1170,6 @@ class OMR_EXTENSIBLE CodeGenerator
    // Code patching
    //
    // Used to find out whether there is an appropriate instruction space as vgdnop space
-   bool    requiresAtomicPatching(TR::Instruction *vgdnop);
    int32_t sizeOfInstructionToBePatched(TR::Instruction *vgdnop);
    int32_t sizeOfInstructionToBePatchedHCRGuard(TR::Instruction *vgdnop);
    // Used to find which instruction is an appropriate instruction space as vgdnop space

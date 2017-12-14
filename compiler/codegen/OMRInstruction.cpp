@@ -269,6 +269,12 @@ Instruction::useRegister(TR::Register *reg)
    }
 
 bool
+Instruction::requiresAtomicPatching()
+   {
+   return !(self()->getNode() && self()->getNode()->isStopTheWorldGuard());
+   }
+
+bool
 Instruction::isMergeableGuard()
    {
    static char *mergeOnlyHCRGuards = feGetEnv("TR_MergeOnlyHCRGuards");

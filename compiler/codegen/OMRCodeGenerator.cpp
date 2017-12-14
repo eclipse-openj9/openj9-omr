@@ -2559,15 +2559,10 @@ OMR::CodeGenerator::computeBlocksWithCalls()
 From codegen/CodeGenerator.cpp to make the size of instructions to patch smarter.
 **/
 
-bool OMR::CodeGenerator::isStopTheWorldGuard(TR::Node *node)
-   {
-   return node->isHCRGuard() || node->isOSRGuard() || node->isBreakpointGuard();
-   }
-
 bool OMR::CodeGenerator::mergeableGuard(TR::Instruction *guard)
    {
    static char *mergeOnlyHCRGuards = feGetEnv("TR_MergeOnlyHCRGuards");
-   return mergeOnlyHCRGuards ? self()->isStopTheWorldGuard(guard->getNode()) : guard->getNode()->isNopableInlineGuard();
+   return mergeOnlyHCRGuards ? guard->getNode()->isStopTheWorldGuard() : guard->getNode()->isNopableInlineGuard();
    }
 
 bool OMR::CodeGenerator::mergeableGuards(TR::Instruction *earlierGuard, TR::Instruction *laterGuard)
@@ -2576,7 +2571,7 @@ bool OMR::CodeGenerator::mergeableGuards(TR::Instruction *earlierGuard, TR::Inst
           && self()->mergeableGuard(laterGuard)
           && earlierGuard->getNode()->getBranchDestination()
              == laterGuard->getNode()->getBranchDestination()
-          && (!self()->isStopTheWorldGuard(earlierGuard->getNode()) || self()->isStopTheWorldGuard(laterGuard->getNode()));
+          && (!earlierGuard->getNode()->isStopTheWorldGuard() || laterGuard->getNode()->isStopTheWorldGuard());
    }
 
 TR::Instruction *OMR::CodeGenerator::getVirtualGuardForPatching(TR::Instruction *vgdnop)
@@ -2700,7 +2695,7 @@ OMR::CodeGenerator::sizeOfInstructionToBePatched(TR::Instruction *vgdnop)
 bool
 OMR::CodeGenerator::requiresAtomicPatching(TR::Instruction *vgdnop)
    {
-   return !(vgdnop->getNode() && self()->isStopTheWorldGuard(vgdnop->getNode()));
+   return !(vgdnop->getNode() && vgdnop->getNode()->isStopTheWorldGuard());
    }
 
 int32_t

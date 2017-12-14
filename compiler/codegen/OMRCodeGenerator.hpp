@@ -1180,8 +1180,6 @@ class OMR_EXTENSIBLE CodeGenerator
    // currently can only return a value other than vgdnop for HCR guards
    TR::Instruction* getVirtualGuardForPatching(TR::Instruction *vgdnop);
 
-   bool isStopTheWorldGuard(TR::Node *node);
-
    void jitAddPicToPatchOnClassUnload(void *classPointer, void *addressToBePatched) {}
    void jitAdd32BitPicToPatchOnClassUnload(void *classPointer, void *addressToBePatched) {}
    void jitAddPicToPatchOnClassRedefinition(void *classPointer, void *addressToBePatched, bool unresolved = false) {}

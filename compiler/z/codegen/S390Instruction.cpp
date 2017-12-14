@@ -5810,7 +5810,7 @@ TR::S390VirtualGuardNOPInstruction::generateBinaryEncoding()
    // in) if the patching occurs during GC pause times.  The patching of up to 6-bytes is potentially
    // not atomic.
 
-   bool performEmptyPatch = cg()->isStopTheWorldGuard(getNode()) || getNode()->isProfiledGuard();
+   bool performEmptyPatch = getNode()->isStopTheWorldGuard() || getNode()->isProfiledGuard();
 
    // Stop the world guards that are merged with profiled guards never need to generate NOPs for patching because
    // the profiled guard will generate the NOP branch to the same location the stop the world guard needs to branch

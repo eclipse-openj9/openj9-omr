@@ -7306,7 +7306,11 @@ OMR::Node::printIsMaxLoopIterationGuard()
    return self()->isMaxLoopIterationGuard() ? "maxLoopIternGuard " : "";
    }
 
-
+bool
+OMR::Node::isStopTheWorldGuard()
+   {
+   return self()->isHCRGuard() || self()->isOSRGuard() || self()->isBreakpointGuard();
+   }
 
 bool
 OMR::Node::isProfiledGuard()

@@ -77,6 +77,7 @@ compiler_library(optimizer
 	${CMAKE_CURRENT_SOURCE_DIR}/PrefetchInsertion.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/Reachability.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/ReachingDefinitions.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/OMRRecognizedCallTransformer.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/RedundantAsyncCheckRemoval.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/RegisterAnticipatability.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/RegisterAvailability.cpp

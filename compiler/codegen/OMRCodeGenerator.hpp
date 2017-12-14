@@ -255,7 +255,6 @@ class OMR_EXTENSIBLE CodeGenerator
    uint32_t _prePrologueSize;
 
    TR::Instruction *_implicitExceptionPoint;
-   bool isMergeableGuard(TR::Instruction *guard);
    bool areMergeableGuards(TR::Instruction *earlierGuard, TR::Instruction *laterGuard);
 
    protected:

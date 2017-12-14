@@ -223,6 +223,9 @@ class OMR_EXTENSIBLE Instruction
 
    int32_t getMaxPatchableInstructionLength() { return 0; } // no virt
 
+   bool isMergeableGuard();
+
+
    protected:
 
    uint8_t *_binaryEncodingBuffer;

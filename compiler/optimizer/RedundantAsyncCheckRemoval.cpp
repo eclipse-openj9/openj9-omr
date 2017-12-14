@@ -106,7 +106,7 @@ bool TR_RedundantAsyncCheckRemoval::shouldPerform()
    {
    // Don't run when profiling
    //
-   if (comp()->isProfilingCompilation() || comp()->generateArraylets())
+   if (comp()->getProfilingMode() == JitProfiling || comp()->generateArraylets())
       return false;
 
 

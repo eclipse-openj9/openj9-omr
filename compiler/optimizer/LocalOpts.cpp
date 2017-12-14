@@ -3323,7 +3323,7 @@ int32_t TR_EliminateRedundantGotos::process(TR::TreeTop *startTree, TR::TreeTop 
    if (cfg == NULL)
       return false;
 
-   if (comp()->isProfilingCompilation())
+   if (comp()->getProfilingMode() == JitProfiling)
       return 0;
 
    bool gotosWereEliminated = false;
@@ -3732,7 +3732,7 @@ void TR_CleanseTrees::prePerformOnBlocks()
 
 int32_t TR_CleanseTrees::process(TR::TreeTop *startTree, TR::TreeTop *endTreeTop)
    {
-   if (comp()->isProfilingCompilation())
+   if (comp()->getProfilingMode() == JitProfiling)
       return 0;
 
    TR_Structure *rootStructure = comp()->getFlowGraph()->getStructure();
@@ -6840,7 +6840,7 @@ bool TR_BlockSplitter::isExitEdge(TR::Block *mergeNode, TR::Block *successor)
 bool TR_BlockSplitter::hasIVUpdate(TR::Block *block)
    {
    TR_RegionStructure *parent = getParentStructure(block);
-   if (getLastRun() || comp()->isProfilingCompilation() || !parent || !parent->isNaturalLoop())
+   if (getLastRun() || comp()->getProfilingMode() == JitProfiling || !parent || !parent->isNaturalLoop())
       return false;
 
    if (trace())
@@ -6872,7 +6872,7 @@ bool TR_BlockSplitter::hasIVUpdate(TR::Block *block)
 bool TR_BlockSplitter::hasLoopAsyncCheck(TR::Block *block)
    {
    TR_RegionStructure *parent = getParentStructure(block);
-   if (getLastRun() || comp()->isProfilingCompilation() || !parent || !parent->isNaturalLoop())
+   if (getLastRun() || comp()->getProfilingMode() == JitProfiling || !parent || !parent->isNaturalLoop())
       return false;
 
    if (trace())

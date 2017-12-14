@@ -293,7 +293,7 @@ const OptimizationStrategy partialRedundancyEliminationOpts[] =
    { loopVersionerGroup,          IfEnabledAndLoops },
    { treeSimplification,          IfEnabled }, // loop reduction block should be after PRE so that privatization
    { treesCleansing                         }, // clean up gotos in code and convert to fall-throughs for loop reducer
-   { redundantGotoElimination, IfNotProfiling }, // clean up for loop reducer.  Note: NEVER run this before PRE
+   { redundantGotoElimination,    IfNotJitProfiling }, // clean up for loop reducer.  Note: NEVER run this before PRE
    { loopReduction,               IfLoops   }, // will have happened and it needs to be before loopStrider
    { localCSE,                   IfEnabled },  // so that it will not get confused with internal pointers.
    { globalDeadStoreElimination, IfEnabledAndMoreThanOneBlock}, // It may need to be run twice if deadstore elimination is required,
@@ -450,10 +450,10 @@ const OptimizationStrategy blockManipulationOpts[] =
    {
 //   { generalLoopUnroller,       IfLoops   }, //Unroll Loops
    { coldBlockOutlining } ,
-   { CFGSimplification, IfNotProfiling    },
-   { basicBlockHoisting, IfNotProfiling   },
+   { CFGSimplification,        IfNotJitProfiling },
+   { basicBlockHoisting,       IfNotJitProfiling },
    { treeSimplification                   },
-   { redundantGotoElimination, IfNotProfiling }, // redundant gotos gone
+   { redundantGotoElimination, IfNotJitProfiling }, // redundant gotos gone
    { treesCleansing                       }, // maximize fall throughs
    { virtualGuardHeadMerger               },
    { basicBlockExtension,     MarkLastRun}, // extend blocks; move trees around if reqd
@@ -500,7 +500,7 @@ static const OptimizationStrategy tacticalGlobalRegisterAllocatorOpts[] =
    { OMR::inductionVariableAnalysis,             OMR::IfLoops                      },
    { OMR::loopCanonicalization,                  OMR::IfLoops                      },
    { OMR::liveRangeSplitter,                     OMR::IfLoops                      },
-   { OMR::redundantGotoElimination,              OMR::IfNotProfiling               }, // need to be run before global register allocator
+   { OMR::redundantGotoElimination,              OMR::IfNotJitProfiling            }, // need to be run before global register allocator
    { OMR::treeSimplification,                    OMR::MarkLastRun                  }, // Cleanup the trees after redundantGotoElimination
    { OMR::tacticalGlobalRegisterAllocator,       OMR::IfEnabled                    },
    { OMR::localCSE                                                            },
@@ -508,7 +508,7 @@ static const OptimizationStrategy tacticalGlobalRegisterAllocatorOpts[] =
    { OMR::globalCopyPropagation,                 OMR::IfEnabledAndMoreThanOneBlock }, // if live range splitting created copies
    { OMR::localCSE                                                            }, // localCSE after post-PRE + post-GRA globalCopyPropagation to clean up whole expression remat (rtc 64659)
    { OMR::globalDeadStoreGroup,                  OMR::IfEnabled                    },
-   { OMR::redundantGotoElimination,              OMR::IfEnabledAndNotProfiling     }, // if global register allocator created new block
+   { OMR::redundantGotoElimination,              OMR::IfEnabledAndNotJitProfiling  }, // if global register allocator created new block
    { OMR::deadTreesElimination                                                }, // remove dangling GlRegDeps
    { OMR::deadTreesElimination,                  OMR::IfEnabled                    }, // remove dead RegStores produced by previous deadTrees pass
    { OMR::deadTreesElimination,                  OMR::IfEnabled                    }, // remove dead RegStores produced by previous deadTrees pass
@@ -522,7 +522,7 @@ const OptimizationStrategy finalGlobalOpts[] =
    { deadTreesElimination                 },
    //{ treeSimplification,       IfEnabled  },
    { localLiveRangeReduction              },
-   { compactLocals,            IfNotProfiling }, // analysis results are invalidated by profilingGroup
+   { compactLocals,             IfNotJitProfiling }, // analysis results are invalidated by profilingGroup
 #ifdef J9_PROJECT_SPECIFIC
    { globalLiveVariablesForGC             },
 #endif
@@ -545,7 +545,7 @@ static const OptimizationStrategy ilgenStrategyOpts[] =
    { recognizedCallTransformer                     },
    { coldBlockMarker                               },
    { allocationSinking,             IfNews         },
-   { invariantArgumentPreexistence, IfNotClassLoadPhaseAndNotProfiling },
+   { invariantArgumentPreexistence, IfNotClassLoadPhaseAndNotProfiling }, // Should not run if a recompilation is possible
    { osrLiveRangeAnalysis,          IfVoluntaryOSR   },
    { osrDefAnalysis,                IfInvoluntaryOSR },
 #endif
@@ -1308,6 +1308,11 @@ int32_t OMR::Optimizer::performOptimization(const OptimizationStrategy *optimiza
             doThisOptimization = true;
          break;
 
+      case IfNotJitProfiling:
+         if (comp()->getProfilingMode() != JitProfiling)
+            doThisOptimization = true;
+         break;
+
       case IfNews:
          if (comp()->hasNews())
             doThisOptimization = true;
@@ -1408,6 +1413,14 @@ int32_t OMR::Optimizer::performOptimization(const OptimizationStrategy *optimiza
 
       case IfEnabledAndNotProfiling:
          if (!comp()->isProfilingCompilation() && manager->requested())
+            {
+            doThisOptimizationIfEnabled = true;
+            doThisOptimization = true;
+            }
+         break;
+
+      case IfEnabledAndNotJitProfiling:
+         if (comp()->getProfilingMode() != JitProfiling && manager->requested())
             {
             doThisOptimizationIfEnabled = true;
             doThisOptimization = true;

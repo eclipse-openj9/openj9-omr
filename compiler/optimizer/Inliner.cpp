@@ -1590,7 +1590,7 @@ void TR_InlinerBase::rematerializeCallArguments(TR_TransformInlinedFunction & ti
    block1 = block1->startOfExtendedBlock();
    static char *disableProfiledGuardRemat = feGetEnv("TR_DisableProfiledGuardRemat");
 
-   bool suitableForRemat = !comp()->getOption(TR_DisableGuardedCallArgumentRemat) && !comp()->isProfilingCompilation();
+   bool suitableForRemat = !comp()->getOption(TR_DisableGuardedCallArgumentRemat) && comp()->getProfilingMode() != JitProfiling;
    if (suitableForRemat)
       {
       if (guard->_kind == TR_NoGuard)

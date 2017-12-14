@@ -4213,7 +4213,7 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
             _canPredictIters = false;
          }
 
-      if (!refineAliases() && _canPredictIters && !comp()->isProfilingCompilation() &&
+      if (!refineAliases() && _canPredictIters && comp()->getProfilingMode() != JitProfiling &&
           performTransformation(comp(), "%s Creating test outside loop for deciding if async check is required\n", OPT_DETAILS_LOOP_VERSIONER))
          {
          TR::Node *lowerBound = _loopTestTree->getNode()->getFirstChild()->duplicateTreeForCodeMotion();

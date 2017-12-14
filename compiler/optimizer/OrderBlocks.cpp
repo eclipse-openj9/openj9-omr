@@ -1027,7 +1027,7 @@ bool TR_OrderBlocks::peepHoleGotoToFollowing(TR::CFG *cfg, TR::Block *block, TR:
 bool TR_OrderBlocks::peepHoleGotoToGoto(TR::CFG *cfg, TR::Block *block, TR::Node *gotoNode, TR::Block *destOfGoto, char *title,
                                         TR::BitVector &skippedGotoBlocks)
    {
-   if (comp()->isProfilingCompilation())
+   if (comp()->getProfilingMode() == JitProfiling)
       return false;
 
    if (destOfGoto->isGotoBlock(comp(),true)
@@ -1068,7 +1068,7 @@ bool TR_OrderBlocks::peepHoleGotoToGoto(TR::CFG *cfg, TR::Block *block, TR::Node
 // returns TRUE if the pattern was found and replaced
 bool TR_OrderBlocks::peepHoleGotoToEmpty(TR::CFG *cfg, TR::Block *block, TR::Node *gotoNode, TR::Block *destOfGoto, char *title)
    {
-   if (comp()->isProfilingCompilation())
+   if (comp()->getProfilingMode() == JitProfiling)
       return false;
 
    if (destOfGoto->isEmptyBlock() && !(destOfGoto->getStructureOf() && destOfGoto->getStructureOf()->isLoopInvariantBlock()) &&
@@ -1494,7 +1494,7 @@ bool TR_OrderBlocks::doPeepHoleBlockCorrections(TR::Block *block, char *title)
    TR::CFG *cfg             = comp()->getFlowGraph();
 
    // pattern: block has nothing in it and no exceptional predecessors (can redirect edges around it and remove it)
-   if ((block->isEmptyBlock() && (block->hasExceptionPredecessors() == false) && !comp()->isProfilingCompilation()
+   if ((block->isEmptyBlock() && (block->hasExceptionPredecessors() == false) && comp()->getProfilingMode() != JitProfiling
        && !(block->getStructureOf() && block->getStructureOf()->isLoopInvariantBlock()))
        && (block->isTargetOfJumpWhoseTargetCanBeChanged(comp())))
        //TODO enable for PLX, currently disabled because we cannot re-direct edges for ASM flows
@@ -1536,7 +1536,8 @@ bool TR_OrderBlocks::doPeepHoleBlockCorrections(TR::Block *block, char *title)
             madeAChange = true;
 
          // if we made either of the above changes, then prevBlock might be empty now (remove it if it is)
-         if (madeAChange && prevBlock->isEmptyBlock() && (prevBlock->hasExceptionPredecessors() == false) && !comp()->isProfilingCompilation() && prevBlock->isTargetOfJumpWhoseTargetCanBeChanged(comp()))
+         if (madeAChange && prevBlock->isEmptyBlock() && (prevBlock->hasExceptionPredecessors() == false) && comp()->getProfilingMode() != JitProfiling &&
+             prevBlock->isTargetOfJumpWhoseTargetCanBeChanged(comp()))
             {
             removeEmptyBlock(cfg, prevBlock, title);
             }

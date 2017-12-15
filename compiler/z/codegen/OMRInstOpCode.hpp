@@ -400,19 +400,20 @@ namespace Z
 #define   VSI_FORMAT    59
 
 /* Instruction Properties (One hot encoding) */
+#define S390OpProp_None                   static_cast<uint64_t>(0x0000000000000000ull)
 #define S390OpProp_UsesTarget             static_cast<uint64_t>(0x0000000000000001ull)
 #define S390OpProp_SingleFP               static_cast<uint64_t>(0x0000000000000002ull)
 #define S390OpProp_DoubleFP               static_cast<uint64_t>(0x0000000000000004ull)
 #define S390OpProp_SetsZeroFlag           static_cast<uint64_t>(0x0000000000000008ull)
 #define S390OpProp_SetsSignFlag           static_cast<uint64_t>(0x0000000000000010ull)
-#define S390OpProp_SetsCarryFlag          static_cast<uint64_t>(0x0000000000000020ull)
+// Available                              static_cast<uint64_t>(0x0000000000000020ull)
 #define S390OpProp_SetsOverflowFlag       static_cast<uint64_t>(0x0000000000000040ull)
 #define S390OpProp_BranchOp               static_cast<uint64_t>(0x0000000000000080ull)
 #define S390OpProp_IsLoad                 static_cast<uint64_t>(0x0000000000000100ull)
 #define S390OpProp_IsStore                static_cast<uint64_t>(0x0000000000000200ull)
-#define S390OpProp_IsSync                 static_cast<uint64_t>(0x0000000000000400ull)
-#define S390OpProp_ReadsMultipleRegs      static_cast<uint64_t>(0x0000000000000800ull)
-#define S390OpProp_SetsMultipleRegs       static_cast<uint64_t>(0x0000000000001000ull)
+// Available                              static_cast<uint64_t>(0x0000000000000400ull)
+// Available                              static_cast<uint64_t>(0x0000000000000800ull)
+// Available                              static_cast<uint64_t>(0x0000000000001000ull)
 #define S390OpProp_Is64Bit                static_cast<uint64_t>(0x0000000000002000ull)
 #define S390OpProp_Is32Bit                static_cast<uint64_t>(0x0000000000004000ull)
 #define S390OpProp_Is32To64Bit            static_cast<uint64_t>(0x0000000000008000ull)
@@ -427,11 +428,11 @@ namespace Z
 #define S390OpProp_UsesRegRangeForTarget  static_cast<uint64_t>(0x0000000001000000ull)
 #define S390OpProp_IsRegCopy              static_cast<uint64_t>(0x0000000002000000ull)
 #define S390OpProp_Trap                   static_cast<uint64_t>(0x0000000004000000ull)
-#define S390OpProp_ReadsDFPRoundingMode   static_cast<uint64_t>(0x0000000008000000ull)
-#define S390OpProp_SetsDFPRoundingMode    static_cast<uint64_t>(0x0000000010000000ull)
+// Available                              static_cast<uint64_t>(0x0000000008000000ull)
+// Available                              static_cast<uint64_t>(0x0000000010000000ull)
 #define S390OpProp_ReadsFPC               static_cast<uint64_t>(0x0000000020000000ull)
 #define S390OpProp_SetsFPC                static_cast<uint64_t>(0x0000000040000000ull)
-#define S390OpProp_UsesImplicitRegisters  static_cast<uint64_t>(0x0000000080000000ull)
+// Available                              static_cast<uint64_t>(0x0000000080000000ull)
 #define S390OpProp_TargetHW               static_cast<uint64_t>(0x0000000100000000ull)
 #define S390OpProp_TargetLW               static_cast<uint64_t>(0x0000000200000000ull)
 #define S390OpProp_SrcHW                  static_cast<uint64_t>(0x0000000400000000ull)
@@ -446,16 +447,16 @@ namespace Z
 #define S390OpProp_ImplicitlySetsGPR1     static_cast<uint64_t>(0x0000080000000000ull)
 #define S390OpProp_ImplicitlySetsGPR2     static_cast<uint64_t>(0x0000100000000000ull)
 #define S390OpProp_IsCompare              static_cast<uint64_t>(0x0000200000000000ull)
-#define S390OpProp_MayUseRegPairForTarget static_cast<uint64_t>(0x0000400000000000ull)
-#define S390OpProp_IsYForm                static_cast<uint64_t>(0x0000800000000000ull)
-#define S390OpProp_IsImplicitLoad         static_cast<uint64_t>(0x0001000000000000ull)
-#define S390OpProp_IsImplicitStore        static_cast<uint64_t>(0x0002000000000000ull)
-#define S390OpProp_MemRefOneIsStore       static_cast<uint64_t>(0x0004000000000000ull)
-#define S390OpProp_MemRefOneIsLoad        static_cast<uint64_t>(0x0008000000000000ull)
-#define S390OpProp_MemRefTwoIsStore       static_cast<uint64_t>(0x0010000000000000ull)
-#define S390OpProp_MemRefTwoIsLoad        static_cast<uint64_t>(0x0020000000000000ull)
-#define S390OpProp_SSSchedulingCandidate  static_cast<uint64_t>(0x0040000000000000ull)
-#define S390OpProp_IsExecutionHint        static_cast<uint64_t>(0x0080000000000000ull)
+// Available                              static_cast<uint64_t>(0x0000400000000000ull)
+// Available                              static_cast<uint64_t>(0x0000800000000000ull)
+// Available                              static_cast<uint64_t>(0x0001000000000000ull)
+// Available                              static_cast<uint64_t>(0x0002000000000000ull)
+// Available                              static_cast<uint64_t>(0x0004000000000000ull)
+// Available                              static_cast<uint64_t>(0x0008000000000000ull)
+// Available                              static_cast<uint64_t>(0x0010000000000000ull)
+// Available                              static_cast<uint64_t>(0x0020000000000000ull)
+// Available                              static_cast<uint64_t>(0x0040000000000000ull)
+// Available                              static_cast<uint64_t>(0x0080000000000000ull)
 #define S390OpProp_SetsOperand1           static_cast<uint64_t>(0x0100000000000000ull)
 #define S390OpProp_SetsOperand2           static_cast<uint64_t>(0x0200000000000000ull)
 #define S390OpProp_SetsOperand3           static_cast<uint64_t>(0x0400000000000000ull)
@@ -463,7 +464,7 @@ namespace Z
 #define S390OpProp_ImplicitlySetsGPR3     static_cast<uint64_t>(0x1000000000000000ull)
 #define S390OpProp_ImplicitlySetsGPR4     static_cast<uint64_t>(0x2000000000000000ull)
 #define S390OpProp_ImplicitlySetsGPR5     static_cast<uint64_t>(0x4000000000000000ull)
-#define S390OpProp_IsSignedImmediate      static_cast<uint64_t>(0x8000000000000000ull)
+// Available                              static_cast<uint64_t>(0x8000000000000000ull)
 
 /* Instruction Properties 2 (One hot encoding) */
 #define S390OpProp2_UsesM3                static_cast<uint64_t>(0x0000000000000001ull)
@@ -618,7 +619,6 @@ class InstOpCode: public OMR::InstOpCode
    uint64_t isCall() {return properties[_mnemonic] & S390OpProp_IsCall;}
    uint64_t isCompare() {return properties[_mnemonic] & S390OpProp_IsCompare;}
    uint64_t isExtendedImmediate() {return properties[_mnemonic] & S390OpProp_IsExtendedImmediate;}
-   uint64_t isSignedImmediate() {return properties[_mnemonic] & S390OpProp_IsSignedImmediate;}
    uint64_t isTargetHW() {return properties[_mnemonic] & S390OpProp_TargetHW;}
    uint64_t isTargetLW() {return properties[_mnemonic] & S390OpProp_TargetLW;}
    uint64_t isSrcHW() {return properties[_mnemonic] & S390OpProp_SrcHW;}
@@ -631,13 +631,11 @@ class InstOpCode: public OMR::InstOpCode
    uint64_t is32bit() {return properties[_mnemonic] & S390OpProp_Is32Bit;}
    uint64_t is32to64bit() {return properties[_mnemonic] & S390OpProp_Is32To64Bit;}
 
-   uint64_t usesImplicitRegisters() { return properties[_mnemonic] & S390OpProp_UsesImplicitRegisters;}
    uint64_t hasLongDispSupport() {return properties[_mnemonic] & S390OpProp_LongDispSupported;}
    uint64_t usesRegPairForTarget() {return properties[_mnemonic] & S390OpProp_UsesRegPairForTarget; }
-   uint64_t mayUseRegPairForTarget() { return properties[_mnemonic] & S390OpProp_MayUseRegPairForTarget; }
    uint64_t usesRegPairForSource() {return properties[_mnemonic] & S390OpProp_UsesRegPairForSource; }
    uint64_t usesRegRangeForTarget(){return properties[_mnemonic] & S390OpProp_UsesRegRangeForTarget; }
-   uint64_t canUseRegPairForTarget() {return usesRegPairForTarget() || usesRegRangeForTarget() || mayUseRegPairForTarget(); }
+   uint64_t canUseRegPairForTarget() {return usesRegPairForTarget() || usesRegRangeForTarget(); }
    uint64_t shouldUseRegPairForTarget() {return usesRegPairForTarget(); }
 
    uint64_t implicitlyUsesGPR0() { return properties[_mnemonic] & S390OpProp_ImplicitlyUsesGPR0; }
@@ -659,32 +657,17 @@ class InstOpCode: public OMR::InstOpCode
    uint64_t setsCC() {return (setsZeroFlag() || setsSignFlag() || setsOverflowFlag() || setsCompareFlag() || setsCarryFlag() || (properties[_mnemonic] & S390OpProp_SetsCC));}
    uint64_t readsCC() {return properties[_mnemonic] & S390OpProp_ReadsCC;}
 
-   uint64_t readsMultipleRegs() {return properties[_mnemonic] & S390OpProp_ReadsMultipleRegs;}
-   uint64_t setsMultipleRegs() {return properties[_mnemonic] & S390OpProp_SetsMultipleRegs;}
    uint64_t setsZeroFlag() {return properties[_mnemonic] & S390OpProp_SetsZeroFlag;}
    uint64_t setsSignFlag() {return properties[_mnemonic] & S390OpProp_SetsSignFlag;}
-   uint64_t setsCarryFlag() {return properties[_mnemonic] & S390OpProp_SetsCarryFlag;}
    uint64_t setsOverflowFlag() {return properties[_mnemonic] & S390OpProp_SetsOverflowFlag;}
    uint64_t setsCompareFlag() {return properties[_mnemonic] & S390OpProp_SetsCompareFlag;}
+   uint64_t setsCarryFlag() { return setsZeroFlag(); }
 
    uint64_t isRegCopy() {return properties[_mnemonic] & S390OpProp_IsRegCopy; }
    uint64_t hasTwoMemoryReferences() {return properties[_mnemonic] & S390OpProp_HasTwoMemoryReferences;}
 
-   uint64_t readsDFPRoundingMode() {return properties[_mnemonic] & S390OpProp_ReadsDFPRoundingMode; }
-   uint64_t setsDFPRoundingMode() {return properties[_mnemonic] & S390OpProp_SetsDFPRoundingMode; }
-
    uint64_t readsFPC() {return properties[_mnemonic] & S390OpProp_ReadsFPC; }
    uint64_t setsFPC() {return properties[_mnemonic] & S390OpProp_SetsFPC; }
-
-   uint64_t mr1IsStore()   {return properties[_mnemonic] & S390OpProp_MemRefOneIsStore;}
-   uint64_t mr1IsLoad()    {return properties[_mnemonic] & S390OpProp_MemRefOneIsLoad;}
-   uint64_t mr2IsStore()   {return properties[_mnemonic] & S390OpProp_MemRefTwoIsStore;}
-   uint64_t mr2IsLoad()    {return properties[_mnemonic] & S390OpProp_MemRefTwoIsLoad;}
-
-   uint64_t isSSSchedulingCandidate()  {return properties[_mnemonic] & S390OpProp_SSSchedulingCandidate;}
-   uint64_t isYForm() {return properties[_mnemonic] & S390OpProp_IsYForm; }
-   uint64_t isImplicitLoad()  {return properties[_mnemonic] & S390OpProp_IsImplicitLoad; }   // like CLCL R1,R2
-   uint64_t isImplicitStore() {return properties[_mnemonic] & S390OpProp_IsImplicitStore; }  // like MVCL R1,R2
 
    uint64_t isLabel() {return _mnemonic == LABEL;}
    uint64_t isBeginBlock() {return _mnemonic == LABEL;}

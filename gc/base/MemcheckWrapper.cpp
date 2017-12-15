@@ -32,12 +32,19 @@
 #include "MemcheckWrapper.hpp"
 #include "GCExtensionsBase.hpp"
 #include "ForwardedHeader.hpp"
+// #include "avl_api.h"
+
+//private
+void valgrindFreeObjectDirect(MM_GCExtensionsBase *extensions, uintptr_t baseAddress);
+
 
 void valgrindCreateMempool(MM_GCExtensionsBase *extensions,uintptr_t poolAddr)
 {
     //1 lets valgrind know that objects will be defined when allocated
     VALGRIND_CREATE_MEMPOOL(poolAddr, 0, 1);
     extensions->valgrindMempoolAddr = poolAddr;
+//  extensions->_ValgrindAllocatedObjectTree = new J9AVLTree;
+    extensions->MemcheckWrapperHead = extensions->MemcheckWrapperTail = NULL;
 }
 
 void valgrindDestroyMempool(MM_GCExtensionsBase *extensions)
@@ -45,9 +52,18 @@ void valgrindDestroyMempool(MM_GCExtensionsBase *extensions)
     if(extensions->valgrindMempoolAddr != 0)
 	{
         //All objects should have been freed by now!
-        Assert_MM_true(extensions->_allocatedObjects.empty());
+        // Assert_MM_true(extensions->_allocatedObjects.empty());
         VALGRIND_DESTROY_MEMPOOL(extensions->valgrindMempoolAddr);
         extensions->valgrindMempoolAddr = 0;
+        MemcheckWrapperNode *temp;
+        while(extensions->MemcheckWrapperHead != NULL)
+        {
+            temp = extensions->MemcheckWrapperHead;
+            extensions->MemcheckWrapperHead = extensions->MemcheckWrapperHead->next;
+            valgrindFreeObjectDirect(extensions,temp->addressData);
+            delete temp;
+        }
+        extensions->MemcheckWrapperTail = NULL;
     }
 }
 
@@ -58,7 +74,21 @@ void valgrindMempoolAlloc(MM_GCExtensionsBase *extensions, uintptr_t baseAddress
 #endif /* defined(VALGRIND_REQUEST_LOGS) */
     /* Allocate object in Valgrind memory pool. */ 		
     VALGRIND_MEMPOOL_ALLOC(extensions->valgrindMempoolAddr, baseAddress, size);
-    extensions->_allocatedObjects.insert(baseAddress);
+    // extensions->_allocatedObjects.insert(baseAddress);
+//    J9AVLTreeNode *elem = AVL_GETNODE(baseAddress);
+//    avl_insert(extensions->_ValgrindAllocatedObjectTree,elem); ->segmentation fault
+    MemcheckWrapperNode *temp = new MemcheckWrapperNode;
+    temp->addressData = baseAddress;
+    temp->next = NULL;
+	if(extensions->MemcheckWrapperHead == NULL)
+	{
+		extensions->MemcheckWrapperHead = temp;
+		extensions->MemcheckWrapperTail = extensions->MemcheckWrapperHead;
+	}
+	else
+	{	extensions->MemcheckWrapperTail->next = temp;
+		extensions->MemcheckWrapperTail = temp;
+	}
 }
 
 void valgrindMakeMemDefined(uintptr_t address, uintptr_t size)
@@ -81,13 +111,53 @@ void valgrindClearRange(MM_GCExtensionsBase *extensions, uintptr_t baseAddress, 
 {
     if(size == 0)
         return;
-
     uintptr_t topInclusiveAddr = baseAddress + size - 1;
+
 #if defined(VALGRIND_REQUEST_LOGS)	
     VALGRIND_PRINTF_BACKTRACE("Clearing objects in range b/w 0x%lx and  0x%lx\n", baseAddress,topInclusiveAddr);
 #endif /* defined(VALGRIND_REQUEST_LOGS) */
 
-    if(!extensions->_allocatedObjects.empty())
+
+	MemcheckWrapperNode *temp1, *temp2;
+
+	while(extensions->MemcheckWrapperHead != NULL && baseAddress <= extensions->MemcheckWrapperHead->addressData &&  topInclusiveAddr >= extensions->MemcheckWrapperHead->addressData)
+	{
+		temp1 = extensions->MemcheckWrapperHead;
+        extensions->MemcheckWrapperHead = extensions->MemcheckWrapperHead->next;
+        valgrindFreeObjectDirect(extensions,temp1->addressData);
+		delete temp1;
+    }
+    if(extensions->MemcheckWrapperHead == NULL)
+        extensions->MemcheckWrapperTail =  extensions->MemcheckWrapperHead;
+
+	temp1 = extensions->MemcheckWrapperHead;
+    if(temp1 != NULL) temp2 = temp1->next;
+    else temp2 = NULL;
+
+	while (temp2 != NULL)
+	{
+		if(baseAddress <= temp2->addressData &&  topInclusiveAddr >= temp2->addressData)
+		{
+            temp1->next = temp2->next;
+            valgrindFreeObjectDirect(extensions,temp2->addressData);
+            delete temp2;
+		}
+		else 
+            temp1 = temp1->next;
+            
+		temp2 = temp1->next;
+    }
+    /*if(NULL != extensions->MemcheckWrapperTail && baseAddress <= extensions->MemcheckWrapperTail->addressData &&  topInclusiveAddr >= extensions->MemcheckWrapperTail->addressData)
+    {    
+        extensions->MemcheckWrapperTail = temp1; //temp1 is last node
+        valgrindFreeObjectDirect(extensions,extensions->MemcheckWrapperTail->addressData);
+        extensions->MemcheckWrapperTail->next = NULL;
+        delete temp1;
+    }*/
+    extensions->MemcheckWrapperTail = temp1;
+
+
+    /*if(!extensions->_allocatedObjects.empty())
     {	
         std::set<uintptr_t>::iterator it;
         std::set<uintptr_t>::iterator setEnd = extensions->_allocatedObjects.end();
@@ -100,7 +170,7 @@ void valgrindClearRange(MM_GCExtensionsBase *extensions, uintptr_t baseAddress, 
 #if defined(VALGRIND_REQUEST_LOGS)	
         VALGRIND_PRINTF("lBound = %lx, uBound = %lx\n",*lBound,*uBound);			
 #endif /* defined(VALGRIND_REQUEST_LOGS) */			
-        
+ /*       
         if(*uBound >topInclusiveAddr)
             return; //all elements left in set are greater than our range
 
@@ -114,7 +184,7 @@ void valgrindClearRange(MM_GCExtensionsBase *extensions, uintptr_t baseAddress, 
 #if defined(VALGRIND_REQUEST_LOGS)
             VALGRIND_PRINTF("Clearing object at 0x%lx of size %d\n", *it,objSize);
 #endif /* defined(VALGRIND_REQUEST_LOGS) */
-            VALGRIND_CHECK_MEM_IS_DEFINED(*it,objSize);
+/*            // VALGRIND_CHECK_MEM_IS_DEFINED(*it,objSize);
             VALGRIND_MEMPOOL_FREE(extensions->valgrindMempoolAddr,*it);
         }
         if(*uBound >= *lBound && uBound != setEnd)
@@ -122,9 +192,11 @@ void valgrindClearRange(MM_GCExtensionsBase *extensions, uintptr_t baseAddress, 
 #if defined(VALGRIND_REQUEST_LOGS)				
             VALGRIND_PRINTF("Erasing set from lBound = %lx to uBound = %lx\n",*lBound,*uBound);		
 #endif /* defined(VALGRIND_REQUEST_LOGS) */			
-            extensions->_allocatedObjects.erase(lBound,++uBound);//uBound is exclusive
+/*            extensions->_allocatedObjects.erase(lBound,++uBound);//uBound is exclusive
         }
-    }
+    } */
+
+
     /* Valgrind automatically marks free objects as noaccess.
     We still mark the entire region for left out areas */
     valgrindMakeMemNoaccess(baseAddress,size);
@@ -132,22 +204,76 @@ void valgrindClearRange(MM_GCExtensionsBase *extensions, uintptr_t baseAddress, 
 
 void valgrindFreeObject(MM_GCExtensionsBase *extensions, uintptr_t baseAddress)
 {
+/*    int objSize;
+    if(MM_ForwardedHeader((omrobjectptr_t) baseAddress).isForwardedPointer())
+        objSize = sizeof(MM_ForwardedHeader);
+    else
+        objSize = (int) ((GC_ObjectModel)extensions->objectModel).getConsumedSizeInBytesWithHeader((omrobjectptr_t) baseAddress);
+*/
+    /* #if defined(VALGRIND_REQUEST_LOGS)				    
+    VALGRIND_PRINTF_BACKTRACE("Clearing object at 0x%lx of size %d\n",baseAddress,objSize);
+#endif /* defined(VALGRIND_REQUEST_LOGS) */
+/*    VALGRIND_CHECK_MEM_IS_DEFINED(baseAddress,objSize);
+    VALGRIND_MEMPOOL_FREE(extensions->valgrindMempoolAddr,baseAddress);
+    extensions->_allocatedObjects.erase(baseAddress);*/
+
+    MemcheckWrapperNode *temp = extensions->MemcheckWrapperHead, *prev = NULL;
+    if(temp->addressData == baseAddress)
+    {   
+        // VALGRIND_CHECK_MEM_IS_DEFINED(baseAddress,objSize);
+        VALGRIND_MEMPOOL_FREE(extensions->valgrindMempoolAddr,baseAddress);
+        extensions->MemcheckWrapperHead = extensions->MemcheckWrapperHead->next;
+        if(extensions->MemcheckWrapperHead == NULL) //there was only one element
+            extensions->MemcheckWrapperTail =  extensions->MemcheckWrapperHead;
+        delete temp;
+        return;
+    }
+    
+    for(prev = temp, temp = temp->next ;temp != extensions->MemcheckWrapperTail; prev = temp, temp = temp->next)
+        if(temp->addressData == baseAddress)
+        {   
+            // VALGRIND_CHECK_MEM_IS_DEFINED(baseAddress,objSize);
+            VALGRIND_MEMPOOL_FREE(extensions->valgrindMempoolAddr,baseAddress);
+            prev->next = temp->next;
+            delete temp;
+            return;
+        }
+    if(extensions->MemcheckWrapperTail->addressData == baseAddress)
+    {
+        // VALGRIND_CHECK_MEM_IS_DEFINED(baseAddress,objSize);
+        VALGRIND_MEMPOOL_FREE(extensions->valgrindMempoolAddr,baseAddress);
+        delete extensions->MemcheckWrapperTail;
+        extensions->MemcheckWrapperTail = prev;
+        extensions->MemcheckWrapperTail->next = NULL;
+    }
+}
+
+void valgrindFreeObjectDirect(MM_GCExtensionsBase *extensions, uintptr_t baseAddress)
+{
+#if defined(VALGRIND_REQUEST_LOGS)	
     int objSize;
     if(MM_ForwardedHeader((omrobjectptr_t) baseAddress).isForwardedPointer())
         objSize = sizeof(MM_ForwardedHeader);
     else
         objSize = (int) ((GC_ObjectModel)extensions->objectModel).getConsumedSizeInBytesWithHeader((omrobjectptr_t) baseAddress);
-#if defined(VALGRIND_REQUEST_LOGS)				    
+
     VALGRIND_PRINTF_BACKTRACE("Clearing object at 0x%lx of size %d\n",baseAddress,objSize);
 #endif /* defined(VALGRIND_REQUEST_LOGS) */
-    VALGRIND_CHECK_MEM_IS_DEFINED(baseAddress,objSize);
     VALGRIND_MEMPOOL_FREE(extensions->valgrindMempoolAddr,baseAddress);
-    extensions->_allocatedObjects.erase(baseAddress);
 }
 
 bool valgrindCheckObjectInPool(MM_GCExtensionsBase *extensions, uintptr_t baseAddress)
 {
-    return (extensions->_allocatedObjects.find(baseAddress) != extensions->_allocatedObjects.end());
+//    return (extensions->_allocatedObjects.find(baseAddress) != extensions->_allocatedObjects.end());
+  
+    MemcheckWrapperNode *temp = extensions->MemcheckWrapperHead;
+    while(temp != NULL)
+	{
+        if(temp->addressData == baseAddress)
+            return true;
+		temp = temp->next;
+    }
+    return false; 
 }
 
 void valgrindResizeObject(MM_GCExtensionsBase *extensions, uintptr_t baseAddress, uintptr_t oldSize, uintptr_t newSize)
@@ -159,7 +285,7 @@ void valgrindResizeObject(MM_GCExtensionsBase *extensions, uintptr_t baseAddress
 
     /* We could have used VALGRIND_MEMPOOL_CHANGE request to let Valgrind know of moved object
     but it is very slow without an internal hack. (https://bugs.kde.org/show_bug.cgi?id=366817)*/
-    VALGRIND_CHECK_MEM_IS_DEFINED(baseAddress, oldSize);
+    // VALGRIND_CHECK_MEM_IS_DEFINED(baseAddress, oldSize);
 
     /* Valgrind already knows former size of object allocated at baseAddress. So it will 
     mark the area from baseAddress to oldSize-1 noaccess on a free request as desired*/

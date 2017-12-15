@@ -30,12 +30,33 @@
 #include "omrcfg.h"
 #if defined(OMR_VALGRIND_MEMCHECK)
 
-#include <set>
+// #include <set>
 #include "stdint.h"
 
-#if 0
+#if 1
 #define VALGRIND_REQUEST_LOGS
 #endif
+
+struct MemcheckWrapperNode {
+	uintptr_t addressData;
+	MemcheckWrapperNode * next;
+}; 
+
+/*typedef struct AVLMemcheckWrapperNode {
+	J9WSRP leftChild;
+	J9WSRP rightChild;
+	uintptr_t address;
+} MemcheckWrapperNode; */
+
+/*static BOOLEAN avlMemcheckWrapperInsert(OMRPortLibr	ary *portlib, J9AVLTree *tree, uintptr_t val);
+static intptr_t MemcheckWrapperInsertionComparator(J9AVLTree *tree, AVLMemcheckWrapperNode *insertNode, AVLMemcheckWrapperNode *walkNode);
+static uintptr_t get_node_string(OMRPortLibrary *portlib, J9AVLTree *tree, AVLMemcheckWrapperNode *walk, char *buffer, uintptr_t bufSize);
+static void avlSetup(J9AVLTree *tree);
+static uintptr_t get_datum_string(OMRPortLibrary *portlib, AVLMemcheckWrapperNode *walk, char *buffer, uintptr_t bufSize);
+static void avl_get_string(OMRPortLibrary *portlib, J9AVLTree *tree, char *buffer, uintptr_t bufSize);
+static intptr_t MemcheckWrapperSearchComparator(J9AVLTree *tree, intptr_t search, AVLMemcheckWrapperNode *walkNode);
+static void freeAVLTree(OMRPortLibrary *portlib, J9AVLTreeNode *currentNode);
+*/
 
 class MM_GCExtensionsBase;
 

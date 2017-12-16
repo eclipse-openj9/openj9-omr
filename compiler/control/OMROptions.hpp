@@ -964,7 +964,7 @@ enum TR_CompilationOptions
    TR_DontDowngradeWhenRIIsTemporarilyOff             = 0x10000000 + 29,
    TR_DontRIUpgradeAOTWarmMethods                     = 0x20000000 + 29,
    TR_UseRIOnlyForLargeQSZ                            = 0x20000000 + 29,
-   // Available                                       = 0x40000000 + 29,
+   TR_EnableAggressiveLiveness                        = 0x40000000 + 29,
    // Available                                       = 0x80000000 + 29,
 
 
@@ -987,7 +987,6 @@ enum TR_CompilationOptions
    TR_DisableVMCSProfiling                            = 0x00100000 + 30,
    TR_EnableHardwareProfileIndirectDispatch           = 0x00200000 + 30,
    TR_DisableCompareAndBranchInstruction              = 0x00400000 + 30,
-   TR_EnableAggressiveLiveness                        = 0x00010000 + 30,
    TR_EnableMetadataBytecodePCToIAMap                 = 0x00800000 + 30,
    TR_DisableHardwareProfilerReducedWarmUpgrades      = 0x01000000 + 30,
    TR_DontAddHWPDataToIProfiler                       = 0x02000000 + 30,

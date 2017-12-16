@@ -61,7 +61,7 @@ void valgrindDestroyMempool(MM_GCExtensionsBase *extensions)
             temp = extensions->MemcheckWrapperHead;
             extensions->MemcheckWrapperHead = extensions->MemcheckWrapperHead->next;
             valgrindFreeObjectDirect(extensions,temp->addressData);
-            delete temp;
+            free(temp);
         }
         extensions->MemcheckWrapperTail = NULL;
     }
@@ -77,7 +77,7 @@ void valgrindMempoolAlloc(MM_GCExtensionsBase *extensions, uintptr_t baseAddress
     // extensions->_allocatedObjects.insert(baseAddress);
 //    J9AVLTreeNode *elem = AVL_GETNODE(baseAddress);
 //    avl_insert(extensions->_ValgrindAllocatedObjectTree,elem); ->segmentation fault
-    MemcheckWrapperNode *temp = new MemcheckWrapperNode;
+    MemcheckWrapperNode *temp = (MemcheckWrapperNode *)malloc(sizeof(MemcheckWrapperNode));
     temp->addressData = baseAddress;
     temp->next = NULL;
 	if(extensions->MemcheckWrapperHead == NULL)
@@ -125,7 +125,7 @@ void valgrindClearRange(MM_GCExtensionsBase *extensions, uintptr_t baseAddress, 
 		temp1 = extensions->MemcheckWrapperHead;
         extensions->MemcheckWrapperHead = extensions->MemcheckWrapperHead->next;
         valgrindFreeObjectDirect(extensions,temp1->addressData);
-		delete temp1;
+		free(temp1);
     }
     if(extensions->MemcheckWrapperHead == NULL)
         extensions->MemcheckWrapperTail =  extensions->MemcheckWrapperHead;
@@ -140,7 +140,7 @@ void valgrindClearRange(MM_GCExtensionsBase *extensions, uintptr_t baseAddress, 
 		{
             temp1->next = temp2->next;
             valgrindFreeObjectDirect(extensions,temp2->addressData);
-            delete temp2;
+            free(temp2);
 		}
 		else 
             temp1 = temp1->next;
@@ -225,7 +225,7 @@ void valgrindFreeObject(MM_GCExtensionsBase *extensions, uintptr_t baseAddress)
         extensions->MemcheckWrapperHead = extensions->MemcheckWrapperHead->next;
         if(extensions->MemcheckWrapperHead == NULL) //there was only one element
             extensions->MemcheckWrapperTail =  extensions->MemcheckWrapperHead;
-        delete temp;
+        free(temp);
         return;
     }
     
@@ -235,14 +235,14 @@ void valgrindFreeObject(MM_GCExtensionsBase *extensions, uintptr_t baseAddress)
             // VALGRIND_CHECK_MEM_IS_DEFINED(baseAddress,objSize);
             VALGRIND_MEMPOOL_FREE(extensions->valgrindMempoolAddr,baseAddress);
             prev->next = temp->next;
-            delete temp;
+            free(temp);
             return;
         }
     if(extensions->MemcheckWrapperTail->addressData == baseAddress)
     {
         // VALGRIND_CHECK_MEM_IS_DEFINED(baseAddress,objSize);
         VALGRIND_MEMPOOL_FREE(extensions->valgrindMempoolAddr,baseAddress);
-        delete extensions->MemcheckWrapperTail;
+        free(extensions->MemcheckWrapperTail);
         extensions->MemcheckWrapperTail = prev;
         extensions->MemcheckWrapperTail->next = NULL;
     }

@@ -19,6 +19,10 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
 
+#ifdef OMRZTPF
+#define __TPF_DO_NOT_MAP_ATOE_REMOVE
+#endif
+
 #include "optimizer/RegisterCandidate.hpp"
 
 #include <algorithm>                           // for std::max, etc

@@ -77,6 +77,9 @@ ifneq (,$(findstring executable,$(ARTIFACT_TYPE)))
 	GLOBAL_LDFLAGS+=$(DEFAULT_LIBS)
 endif
 
+ZTPF_ROOT?=/ztpf/commit
+PROJECT_ROOT?=/projects/jvmport/userfiles
+
 ###
 ### Shared Libraries
 ###
@@ -93,7 +96,7 @@ $(MODULE_NAME)_LINKER_EXPORT_SCRIPT := $(MODULE_NAME).exp
 	GLOBAL_LDFLAGS+=-shared
 	GLOBAL_LDFLAGS+=-Wl,-Map=$(MODULE_NAME).map
 	GLOBAL_LDFLAGS+=-Wl,--version-script,$($(MODULE_NAME)_LINKER_EXPORT_SCRIPT)
-	GLOBAL_LDFLAGS+=-Wl,-script=/ztpf/commit/base/util/tools/tpfscript
+	GLOBAL_LDFLAGS+=-Wl,-script=$(ZTPF_ROOT)/base/util/tools/tpfscript
 	GLOBAL_LDFLAGS+=-Wl,-soname=lib$(MODULE_NAME)$(SOLIBEXT)
 	GLOBAL_LDFLAGS+=-Xlinker --disable-new-dtags
 	GLOBAL_LDFLAGS+=-Wl,-entry=0 
@@ -121,7 +124,7 @@ $(MODULE_NAME)_LINKER_EXPORT_SCRIPT := $(MODULE_NAME).exp
 	GLOBAL_LDFLAGS+=-lCTAD 
 	GLOBAL_LDFLAGS+=-lTPFSTUB
 	
-	GLOBAL_LDFLAGS+=-L/ztpf/commit/base/lib/
+	GLOBAL_LDFLAGS+=-L$(ZTPF_ROOT)/base/lib/
 endif # ARTIFACT_TYPE contains "shared"
 
 
@@ -173,8 +176,9 @@ endif
 GLOBAL_CFLAGS+=$(OPTIMIZATION_FLAGS)
 GLOBAL_CXXFLAGS+=$(OPTIMIZATION_FLAGS)
 
-GLOBAL_CFLAGS+=-D_TPF_SOURCE -DOMRZTPF -DJ9ZTPF -DOMRPORT_JSIG_SUPPORT -DLINUX -DS390 -DS39064 -DFULL_ANSI -DMAXMOVE -DZTPF_POSIX_SOCKET -fPIC -fno-strict-aliasing -D_GNU_SOURCE -fexec-charset=ISO-8859-1 -fmessage-length=0 -funsigned-char -Wno-format-extra-args  -fverbose-asm -fno-builtin-abort -fno-builtin-exit -fno-builtin-sprintf -ffloat-store -DIBM_ATOE -Wno-unknown-pragmas -Wreturn-type -Wno-unused -Wno-uninitialized -Wno-parentheses -gdwarf-2 -Wno-unused-but-set-variable -Wno-unknown-pragmas -DZTPF -D_TPF_THREADS -mtpf-trace -I/ztpf/commit/base/a2e/headers -isystem /tpfjava/cleanbuild/jvmupgrade/base/include -isystem /tpfjava/cleanbuild/jvmupgrade/opensource/include -isystem /ztpf/commit/base/include -isystem /ztpf/commit/opensource/include46 -isystem /ztpf/commit/opensource/include46/g++ -isystem /ztpf/commit/opensource/include -isystem /ztpf/commit/noship/include -isystem /ztpf/commit
-GLOBAL_CXXFLAGS+=-D_TPF_SOURCE -DOMRZTPF -DJ9ZTPF -DOMRPORT_JSIG_SUPPORT -DLINUX -DS390 -DS39064 -DFULL_ANSI -DMAXMOVE -DZTPF_POSIX_SOCKET -fPIC -fno-strict-aliasing -D_GNU_SOURCE -fexec-charset=ISO-8859-1 -fmessage-length=0 -funsigned-char -Wno-format-extra-args  -fverbose-asm -fno-builtin-abort -fno-builtin-exit -fno-builtin-sprintf -ffloat-store -DIBM_ATOE -Wno-unknown-pragmas -Wreturn-type -Wno-unused -Wno-uninitialized -Wno-parentheses -gdwarf-2 -Wno-unused-but-set-variable -Wno-unknown-pragmas -DZTPF -D_TPF_THREADS -mtpf-trace -I/ztpf/commit/base/a2e/headers -isystem /tpfjava/cleanbuild/jvmupgrade/base/include -isystem /tpfjava/cleanbuild/jvmupgrade/opensource/include -isystem /ztpf/commit/base/include -isystem /ztpf/commit/opensource/include46 -isystem /ztpf/commit/opensource/include46/g++ -isystem /ztpf/commit/opensource/include -isystem /ztpf/commit/noship/include -isystem /ztpf/commit
+GLOBAL_CFLAGS+=-D_TPF_SOURCE -DOMRZTPF -DJ9ZTPF -DOMRPORT_JSIG_SUPPORT -DLINUX -DS390 -DS39064 -DFULL_ANSI -DMAXMOVE -DZTPF_POSIX_SOCKET -fPIC -fno-strict-aliasing -D_GNU_SOURCE -fexec-charset=ISO-8859-1 -fmessage-length=0 -funsigned-char -Wno-format-extra-args  -fverbose-asm -fno-builtin-abort -fno-builtin-exit -fno-builtin-sprintf -ffloat-store -DIBM_ATOE -Wno-unknown-pragmas -Wreturn-type -Wno-unused -Wno-uninitialized -Wno-parentheses -gdwarf-2 -Wno-unused-but-set-variable -Wno-unknown-pragmas -DZTPF -D_TPF_THREADS -mtpf-trace -I$(PROJECT_ROOT)/base/a2e/headers -I$(ZTPF_ROOT)/base/a2e/headers -I$(PROJECT_ROOT)/base/include -I$(ZTPF_ROOT)/base/include -I$(PROJECT_ROOT)/opensource/include -I$(ZTPF_ROOT)/opensource/include -isystem $(PROJECT_ROOT)/base/a2e/headers -isystem $(ZTPF_ROOT)/base/a2e/headers -isystem $(PROJECT_ROOT)/base/include -isystem $(ZTPF_ROOT)/base/include -isystem $(PROJECT_ROOT)/opensource/include -isystem $(ZTPF_ROOT)/opensource/include -isystem $(PROJECT_ROOT)/noship/include -isystem $(ZTPF_ROOT)/noship/include -isystem $(ZTPF_ROOT)
+GLOBAL_CXXFLAGS+=-D_TPF_SOURCE -DOMRZTPF -DJ9ZTPF -DOMRPORT_JSIG_SUPPORT -DLINUX -DS390 -DS39064 -DFULL_ANSI -DMAXMOVE -DZTPF_POSIX_SOCKET -fPIC -fno-strict-aliasing -D_GNU_SOURCE -fexec-charset=ISO-8859-1 -fmessage-length=0 -funsigned-char -Wno-format-extra-args  -fverbose-asm -fno-builtin-abort -fno-builtin-exit -fno-builtin-sprintf -ffloat-store -DIBM_ATOE -Wno-unknown-pragmas -Wreturn-type -Wno-unused -Wno-uninitialized -Wno-parentheses -gdwarf-2 -Wno-unused-but-set-variable -Wno-unknown-pragmas -DZTPF -D_TPF_THREADS -mtpf-trace -I$(PROJECT_ROOT)/base/a2e/headers -I$(ZTPF_ROOT)/base/a2e/headers -I$(PROJECT_ROOT)/base/include -I$(ZTPF_ROOT)/base/include -I$(PROJECT_ROOT)/opensource/include -I$(ZTPF_ROOT)/opensource/include -I$(PROJECT_ROOT)/opensource/include46/g++ -I$(ZTPF_ROOT)/opensource/include46/g++ -I$(PROJECT_ROOT)/opensource/include46/g++/backward -I$(ZTPF_ROOT)/opensource/include46/g++/backward -isystem $(PROJECT_ROOT)/base/a2e/headers -isystem $(ZTPF_ROOT)/base/a2e/headers -isystem $(PROJECT_ROOT)/base/include -isystem $(ZTPF_ROOT)/base/include -isystem $(PROJECT_ROOT)/opensource/include -isystem $(ZTPF_ROOT)/opensource/include -isystem $(PROJECT_ROOT)/opensource/include46/g++ -isystem $(ZTPF_ROOT)/opensource/include46/g++ -isystem $(PROJECT_ROOT)/opensource/include46/g++/backward -isystem $(ZTPF_ROOT)/opensource/include46/g++/backward -isystem $(PROJECT_ROOT)/noship/include -isystem $(ZTPF_ROOT)/noship/include -isystem $(ZTPF_ROOT)
+
 
 # Override the default recipe if we are using USE_GNU_DEBUG, so that we strip out the
 # symbols and store them seperately.

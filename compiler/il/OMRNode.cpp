@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -3933,100 +3933,120 @@ OMR::Node::setOpCodeValue(TR::ILOpCodes op)
    return op;
    }
 
-
-
-#define SignExtensionFlagsIndex(x) reinterpret_cast<long>(self()->hasNodeExtension() ? _unionBase._extension.getExtensionPtr()->getElem<TR::Node *>(1) : _unionBase._children[1])*numSignExtensionFlags + x
-#define SupportedType(node) (node->getOpCode().isLoadVar() && TR_LoadExtensions::supportedType(node)|| \
-                            (node->getOpCode().isLoadConst() && TR_LoadExtensions::supportedConstLoad(node, c)))
-
 bool
-OMR::Node::couldIgnoreExtend()
+OMR::Node::isExtendedTo32BitAtSource()
    {
-   TR::Compilation * c = TR::comp();
-   TR_BitVector* flags = c->cg()->signExtensionFlags();
-   //traceMsg(c, "\t\tChecking couldIgnore on %d+%d == %c on %p\n", SignExtensionFlagsIndex(0), (int)couldSkipExtension, flags && SupportedType(getOpCode()) && flags->isSet(SignExtensionFlagsIndex(couldSkipExtension))?'1':'0', this);
-   return flags &&
-         SupportedType(self()) &&
-         flags->isSet(SignExtensionFlagsIndex(couldSkipExtension));
-   }
-
-void
-OMR::Node::setCouldIgnoreExtend(bool b)
-   {
-   TR::Compilation * c = TR::comp();
-   TR_ASSERT(SupportedType(self()), "couldIgnoreExtend() should only be called for loads");
-   TR_BitVector* flags = c->cg()->signExtensionFlags();
-   TR_ASSERT(flags, "Flags for signExtension have not been allocated");
-   //traceMsg(c, "\t\tSetting couldIgnore on %d+%d to %c on %p\n", SignExtensionFlagsIndex(0), (int)couldSkipExtension, b?'1':'0', this);
-   if (b)
-      flags->set(SignExtensionFlagsIndex(couldSkipExtension));
-   else
-      flags->reset(SignExtensionFlagsIndex(couldSkipExtension));
-   }
-
-const char *
-OMR::Node::printCouldIgnoreExtend()
-   {
-   return self()->couldIgnoreExtend() ? "couldSkipExt " : "";
+   return self()->isSignExtendedTo32BitAtSource() || self()->isZeroExtendedTo32BitAtSource();
    }
 
 bool
-OMR::Node::force64BitLoad()
+OMR::Node::isExtendedTo64BitAtSource()
    {
-   TR::Compilation * c = TR::comp();
-   TR_BitVector* flags = c->cg()->signExtensionFlags();
-   //traceMsg(c, "\t\tChecking force64BitReg on %d+%d == %c on %p\n", SignExtensionFlagsIndex(0), (int)force64BitReg, flags && SupportedType(getOpCode()) && flags->isSet(SignExtensionFlagsIndex(force64BitReg))?'1':'0', this);
-   return flags && SupportedType(self()) && flags->isSet(SignExtensionFlagsIndex(force64BitReg));
-   }
-
-void
-OMR::Node::setForce64BitLoad(bool b)
-   {
-   TR::Compilation * c = TR::comp();
-   TR_ASSERT(SupportedType(self()), "setForce64BitLoad() should only be called for loads");
-   TR_BitVector* flags = c->cg()->signExtensionFlags();
-   TR_ASSERT(flags, "Flags for signExtension have not been allocated");
-   //traceMsg(c, "\t\tSetting force64BitReg on %d+%d to %c on %p\n", SignExtensionFlagsIndex(0), (int)force64BitReg, b?'1':'0', this);
-   if (b)
-      flags->set(SignExtensionFlagsIndex(force64BitReg));
-   else
-      flags->reset(SignExtensionFlagsIndex(force64BitReg));
-   }
-
-const char *
-OMR::Node::printForce64BitLoad()
-   {
-   return self()->force64BitLoad() ? "force64Reg " : "";
+   return self()->isSignExtendedTo64BitAtSource() || self()->isZeroExtendedTo64BitAtSource();
    }
 
 bool
-OMR::Node::isUnsignedLoad()
+OMR::Node::isSignExtendedAtSource()
    {
-   TR::Compilation * c = TR::comp();
-   TR_BitVector* flags = c->cg()->signExtensionFlags();
-   //traceMsg(c, "\t\tChecking unsignedLoad on %d+%d == %c on %p\n", SignExtensionFlagsIndex(0), (int)unsignedLoad, flags && SupportedType(getOpCode()) && flags->isSet(SignExtensionFlagsIndex(unsignedLoad))?'1':'0', this);
-   return flags && SupportedType(self()) && flags->isSet(SignExtensionFlagsIndex(unsignedLoad));
+   return self()->isSignExtendedTo32BitAtSource() || self()->isSignExtendedTo64BitAtSource();
+   }
+
+bool
+OMR::Node::isZeroExtendedAtSource()
+   {
+   return self()->isZeroExtendedTo32BitAtSource() || self()->isZeroExtendedTo64BitAtSource();
+   }
+
+bool
+OMR::Node::isSignExtendedTo32BitAtSource()
+   {
+   return self()->getOpCode().isLoadVar() && _flags.testAny(signExtendTo32BitAtSource);
+   }
+
+bool
+OMR::Node::isSignExtendedTo64BitAtSource()
+   {
+   return self()->getOpCode().isLoadVar() && _flags.testAny(signExtendTo64BitAtSource);
    }
 
 void
-OMR::Node::setIsUnsignedLoad(bool b)
+OMR::Node::setSignExtendTo32BitAtSource(bool v)
    {
-   TR::Compilation * c = TR::comp();
-   TR_ASSERT(SupportedType(self()), "setIsUnsignedLoad() should only be called for loads");
-   TR_BitVector* flags = c->cg()->signExtensionFlags();
-   TR_ASSERT(flags, "Flags for signExtension have not been allocated");
-//   traceMsg(c->cg(), "Node %p was marked as %d\n", this, (long)(_unionBase._children[1]));
-//   traceMsg(c, "\t\tSetting unsignedLoad on %d+%d to %c on %p\n", SignExtensionFlagsIndex(0), (int)unsignedLoad, b?'1':'0', this);
-   if (b)
-      flags->set(SignExtensionFlagsIndex(unsignedLoad));
-   else
-      flags->reset(SignExtensionFlagsIndex(unsignedLoad));
+   TR::Compilation* c = TR::comp();
+   TR_ASSERT(self()->getOpCode().isLoadVar(), "Can only call this for variable loads\n");
+   if (performNodeTransformation2(c, "O^O NODE FLAGS: Setting signExtendedTo32BitAtSource flag on node %p to %d\n", self(), v))
+      {
+      _flags.set(signExtendTo32BitAtSource, v);
+      }
    }
 
-const char *
-OMR::Node::printIsUnsignedLoad()
+void
+OMR::Node::setSignExtendTo64BitAtSource(bool v)
    {
-   return self()->isUnsignedLoad() ? "isUnsignedLoad " : "";
+   TR::Compilation* c = TR::comp();
+   TR_ASSERT(self()->getOpCode().isLoadVar(), "Can only call this for variable loads\n");
+   if (performNodeTransformation2(c, "O^O NODE FLAGS: Setting signExtendedTo64BitAtSource flag on node %p to %d\n", self(), v))
+      {
+      _flags.set(signExtendTo64BitAtSource, v);
+      }
+   }
+
+const char*
+OMR::Node::printIsSignExtendedTo32BitAtSource()
+   {
+   return self()->isSignExtendedTo32BitAtSource() ? "signExtendedTo32BitAtSource " : "";
+   }
+
+const char*
+OMR::Node::printIsSignExtendedTo64BitAtSource()
+   {
+   return self()->isSignExtendedTo64BitAtSource() ? "signExtendedTo64BitAtSource " : "";
+   }
+
+bool
+OMR::Node::isZeroExtendedTo32BitAtSource()
+   {
+   return self()->getOpCode().isLoadVar() && _flags.testAny(zeroExtendTo32BitAtSource);
+   }
+
+bool
+OMR::Node::isZeroExtendedTo64BitAtSource()
+   {
+   return self()->getOpCode().isLoadVar() && _flags.testAny(zeroExtendTo64BitAtSource);
+   }
+
+void
+OMR::Node::setZeroExtendTo32BitAtSource(bool v)
+   {
+   TR::Compilation* c = TR::comp();
+   TR_ASSERT(self()->getOpCode().isLoadVar(), "Can only call this for variable loads\n");
+   if (performNodeTransformation2(c, "O^O NODE FLAGS: Setting zeroExtendTo32BitAtSource flag on node %p to %d\n", self(), v))
+      {
+      _flags.set(zeroExtendTo32BitAtSource, v);
+      }
+   }
+
+void
+OMR::Node::setZeroExtendTo64BitAtSource(bool v)
+   {
+   TR::Compilation* c = TR::comp();
+   TR_ASSERT(self()->getOpCode().isLoadVar(), "Can only call this for variable loads\n");
+   if (performNodeTransformation2(c, "O^O NODE FLAGS: Setting zeroExtendTo64BitAtSource flag on node %p to %d\n", self(), v))
+      {
+      _flags.set(zeroExtendTo64BitAtSource, v);
+      }
+   }
+
+const char*
+OMR::Node::printIsZeroExtendedTo32BitAtSource()
+   {
+   return self()->isZeroExtendedTo32BitAtSource() ? "zeroExtendTo32BitAtSource " : "";
+   }
+
+const char*
+OMR::Node::printIsZeroExtendedTo64BitAtSource()
+   {
+   return self()->isZeroExtendedTo64BitAtSource() ? "zeroExtendTo64BitAtSource " : "";
    }
 
 /**

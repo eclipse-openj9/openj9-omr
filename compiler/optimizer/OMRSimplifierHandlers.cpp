@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -6401,7 +6401,7 @@ TR::Node *iaddSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
       // n1.3083n   (  0)      iadd (in *GPR_6512) (profilingCode )                                             [0x2BB38260] loc=[-1,2848,1153] rc=0 vc=631 vn=- sti=- udi=14723 nc=2 flg=0x80
       // n1.3081n   (  0)        a2i (in *GPR_6512) (profilingCode unneededConv )                               [0x2BB381C0] loc=[-1,2847,1153] rc=0 vc=631 vn=- sti=- udi=14723 nc=1 addr=4 flg=0x8080
       // n1.26322n  (  0)          aiadd (in *GPR_6512) (profilingCode X>=0 internalPtr )                       [0x374931DC] loc=[-1,2844,1153] rc=0 vc=1859 vn=- sti=- udi=14723 nc=2 addr=4 flg=0x8180
-      // n1.3077n   (  2)            ==>aload (in GPR_6513) (profilingCode isUnsignedLoad )
+      // n1.3077n   (  2)            ==>aload (in GPR_6513) (profilingCode )
       // n1.3086n   (  0)            ==>iconst 692 (profilingCode X!=0 X>=0 )
       // n1.3082n   (  0)        iconst -24 (profilingCode X!=0 X<=0 )                                          [0x2BB38210] loc=[-1,2848,1153] rc=0 vc=631 vn=- sti=- udi=- nc=0 flg=0x284
       //

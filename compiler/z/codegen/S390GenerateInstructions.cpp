@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -729,7 +729,7 @@ generateRXInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::N
    TR::Compilation *comp = cg->comp();
 
    TR_ASSERT(treg->getRealRegister()!=NULL || // Not in RA
-           op != TR::InstOpCode::L || n->couldIgnoreExtend() || !n->force64BitLoad(), "Generating an TR::InstOpCode::L, when LLGF|LGF should be used");
+           op != TR::InstOpCode::L || !n->isExtendedTo64BitAtSource(), "Generating an TR::InstOpCode::L, when LLGF|LGF should be used");
    if (cg->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) && treg->assignToHPR())
       {
       switch(op)

@@ -1023,6 +1023,17 @@ OMR::CodeGenerator::getSupportsIbyteswap()
    return false;
    }
 
+/**
+ * Query whether [bsil]bitpermute is supported
+ *
+ * \return True if the opcodes are supported in codegen
+ */
+bool
+OMR::CodeGenerator::getSupportsBitPermute()
+   {
+   return false;
+   }
+
 bool
 OMR::CodeGenerator::getSupportsConstantOffsetInAddressing(int64_t value)
    {

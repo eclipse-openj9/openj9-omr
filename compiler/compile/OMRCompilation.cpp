@@ -99,7 +99,7 @@
 #include "control/Recompilation.hpp"           // for TR_Recompilation, etc
 #include "runtime/CodeCacheExceptions.hpp"
 #include "ilgen/IlGen.hpp"                     // for TR_IlGenerator
-
+#include "env/RegionProfiler.hpp"              // for TR::RegionProfiler
 // this ratio defines how full the alias memory region is allowed to become before
 // it is recreated after an optimization finishes
 #define ALIAS_REGION_LOAD_FACTOR 0.75
@@ -993,6 +993,7 @@ int32_t OMR::Compilation::compile()
       _recompilationInfo->startOfCompilation();
 
    {
+     TR::RegionProfiler rpIlgen(self()->trMemory()->heapMemoryRegion(), *self(), "comp/ilgen");
      if (printCodegenTime) genILTime.startTiming(self());
      _ilGenSuccess = _methodSymbol->genIL(self()->fe(), self(), self()->getSymRefTab(), _ilGenRequest);
      if (printCodegenTime) genILTime.stopTiming(self());
@@ -1049,7 +1050,10 @@ int32_t OMR::Compilation::compile()
       TR_DebuggingCounters::initializeCompilation();
       if (printCodegenTime) optTime.startTiming(self());
 
-      self()->performOptimizations();
+         {
+         TR::RegionProfiler rpOpt(self()->trMemory()->heapMemoryRegion(), *self(), "comp/opt");
+         self()->performOptimizations();
+         }
 
       if (printCodegenTime) optTime.stopTiming(self());
 
@@ -1085,6 +1089,8 @@ int32_t OMR::Compilation::compile()
          _recompilationInfo->beforeCodeGen();
 
         {
+        TR::RegionProfiler rpCodegen(self()->trMemory()->heapMemoryRegion(), *self(), "comp/codegen");
+
         if (printCodegenTime)
            codegenTime.startTiming(self());
 

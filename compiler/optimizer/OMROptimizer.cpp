@@ -1251,11 +1251,6 @@ int32_t OMR::Optimizer::performOptimization(const OptimizationStrategy *optimiza
    {
    OMR::Optimizations optNum = optimization->_num;
    TR::OptimizationManager *manager = getOptimization(optNum);
-   char description[256];
-   snprintf(description, sizeof(description), "performOptimization - %s", getOptimizationName(optNum));
-   description[255] = '\0';
-   TR::RegionProfiler heapMemoryProfiler(comp()->trMemory()->heapMemoryRegion(), *comp(), description);
-
    TR_ASSERT(manager != NULL, "Optimization manager should have been initialized for %s.",
       getOptimizationName(optNum));
 
@@ -1629,6 +1624,8 @@ int32_t OMR::Optimizer::performOptimization(const OptimizationStrategy *optimiza
    //
    // This is a real optimization.
    //
+   TR::RegionProfiler rp(comp()->trMemory()->heapMemoryRegion(), *comp(), "opt/%s/%s", comp()->getHotnessName(comp()->getMethodHotness()),
+      getOptimizationName(optNum));
 
    if (comp()->isOutermostMethod())
       comp()->incOptIndex(); // Note that we count the opt even if we're not doing it, to keep the opt indexes more stable

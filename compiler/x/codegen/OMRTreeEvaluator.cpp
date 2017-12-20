@@ -6058,3 +6058,99 @@ TR::Register* OMR::X86::TreeEvaluator::FloatingPointAndVectorBinaryArithmeticEva
    return resultReg;
    }
 
+TR::Register *
+OMR::X86::TreeEvaluator::bitpermuteEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   TR_ASSERT(node->getNumChildren() == 3, "Wrong number of children in bitpermuteEvaluator");
+   TR::Node *value = node->getChild(0);
+   TR::Node *addr = node->getChild(1);
+   TR::Node *length = node->getChild(2);
+
+   bool nodeIs64Bit = node->getSize() == 8;
+   auto valueReg = cg->evaluate(value);
+   auto addrReg = cg->evaluate(addr);
+
+   TR::Register *tmpReg = cg->allocateRegister(TR_GPR);
+
+   // Zero result reg
+   TR::Register *resultReg = cg->allocateRegister(TR_GPR);
+   generateRegRegInstruction(XORRegReg(nodeIs64Bit), node, resultReg, resultReg, cg);
+   
+   if (length->getOpCode().isLoadConst())
+      {
+      // Manage the constant length case
+      uintptrj_t arrayLen = TR::TreeEvaluator::integerConstNodeValue(length, cg); 
+      for (uintptrj_t x = 0; x < arrayLen; ++x)
+         {
+         // Zero tmpReg if SET won't do it
+         if (x >= 8)
+            generateRegRegInstruction(XORRegReg(nodeIs64Bit), node, tmpReg, tmpReg, cg);
+
+         TR::MemoryReference *sourceMR = generateX86MemoryReference(addrReg, x, cg);
+         generateRegMemInstruction(L1RegMem, node, tmpReg, sourceMR, cg);
+         generateRegRegInstruction(BTRegReg(nodeIs64Bit), node, valueReg, tmpReg, cg);
+
+         generateRegInstruction(SETB1Reg, node, tmpReg, cg);
+
+         // Shift to desired bit
+         if (x > 0)
+            generateRegImmInstruction(SHLRegImm1(nodeIs64Bit), node, tmpReg, x, cg);
+
+         // OR with result
+         TR_X86OpCodes op = (x < 8) ? OR1RegReg : ORRegReg(nodeIs64Bit);
+         generateRegRegInstruction(op, node, resultReg, tmpReg, cg);
+         }
+      }
+   else
+      {
+      auto lengthReg = cg->evaluate(length);
+
+      auto indexReg = cg->allocateRegister(TR_GPR);
+      TR::RegisterDependencyConditions *shiftDependencies = generateRegisterDependencyConditions((uint8_t)1, 1, cg);
+      shiftDependencies->addPreCondition(indexReg, TR::RealRegister::ecx, cg);
+      shiftDependencies->addPostCondition(indexReg, TR::RealRegister::ecx, cg);
+
+      TR::RegisterDependencyConditions* deps = generateRegisterDependencyConditions((uint8_t)0, (uint8_t)2, cg);
+      deps->addPostCondition(addrReg, TR::RealRegister::NoReg, cg);
+      deps->addPostCondition(indexReg, TR::RealRegister::ecx, cg);
+
+      TR::LabelSymbol *startLabel = generateLabelSymbol(cg);
+      TR::LabelSymbol *endLabel = generateLabelSymbol(cg);
+      startLabel->setStartInternalControlFlow();
+      endLabel->setEndInternalControlFlow();
+
+      // Load initial index, ending if 0
+      generateRegRegInstruction(MOV4RegReg, node, indexReg, lengthReg, cg);
+
+      // Test and decrement
+      generateLabelInstruction(LABEL, node, startLabel, cg);
+      generateLabelInstruction(JRCXZ1, node, endLabel, cg);
+      generateRegImmInstruction(SUB4RegImm4, node, indexReg, 1, cg);
+
+      // Load the byte, test the bit and set
+      generateRegRegInstruction(XORRegReg(nodeIs64Bit), node, tmpReg, tmpReg, cg);
+      TR::MemoryReference *sourceMR = generateX86MemoryReference(addrReg, indexReg, 0, 0, cg);
+      generateRegMemInstruction(L1RegMem, node, tmpReg, sourceMR, cg);
+      generateRegRegInstruction(BTRegReg(nodeIs64Bit), node, valueReg, tmpReg, cg);
+      generateRegInstruction(SETB1Reg, node, tmpReg, cg);
+
+      // Shift and OR with result
+      generateRegRegInstruction(SHLRegCL(nodeIs64Bit), node, tmpReg, indexReg, shiftDependencies, cg);
+      generateRegRegInstruction(ORRegReg(nodeIs64Bit), node, resultReg, tmpReg, cg);
+
+      // Loop
+      generateLabelInstruction(JMP4, node, startLabel, cg);
+      generateLabelInstruction(LABEL, node, endLabel, deps, cg);
+
+      cg->stopUsingRegister(indexReg);
+      }
+
+   cg->stopUsingRegister(tmpReg);
+
+   node->setRegister(resultReg);
+   cg->decReferenceCount(value);
+   cg->decReferenceCount(addr);
+   cg->decReferenceCount(length);
+
+   return resultReg;
+   }

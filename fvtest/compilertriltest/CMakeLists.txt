@@ -42,6 +42,7 @@ add_executable(comptest
 	MockStrategyTest.cpp
 	LogicalTest.cpp
 	LinkageTest.cpp
+	BitPermuteTest.cpp
 )
 
 target_link_libraries(comptest

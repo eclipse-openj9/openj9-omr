@@ -49,6 +49,7 @@
 #include "cs2/allocator.h"                     // for heap_allocator
 #include "cs2/sparsrbit.h"
 #include "env/CompilerEnv.hpp"
+#include "env/CompileTimeProfiler.hpp"         // for TR::CompileTimeProfiler
 #include "env/IO.hpp"                  // for IO (trfflush)
 #include "env/ObjectModel.hpp"                 // for ObjectModel
 #include "env/KnownObjectTable.hpp"            // for KnownObjectTable
@@ -991,6 +992,9 @@ int32_t OMR::Compilation::compile()
    if (printCodegenTime) compTime.startTiming(self());
    if (_recompilationInfo)
       _recompilationInfo->startOfCompilation();
+
+   // Create the compile time profiler
+   TR::CompileTimeProfiler perf(self(), "compileTimePerf");
 
    {
      TR::RegionProfiler rpIlgen(self()->trMemory()->heapMemoryRegion(), *self(), "comp/ilgen");

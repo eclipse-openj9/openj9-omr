@@ -1027,6 +1027,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"printErrorInfoOnCompFailure",        "O\tPrint compilation error info to stderr", SET_OPTION_BIT(TR_PrintErrorInfoOnCompFailure), "F", NOT_IN_SUBSET},
    {"privatizeOverlaps",  "O\tif BCD storageRefs are going to overlap then do the move through a temp", SET_OPTION_BIT(TR_PrivatizeOverlaps), "F"},
    {"profile",            "O\tcompile a profiling method body", SET_OPTION_BIT(TR_Profile), "F"},
+   {"profileCompileTime",   "I\tgenerate a perf report for a specific compilation", SET_OPTION_BIT(TR_CompileTimeProfiler), "F" },
    {"profileMemoryRegions", "I\tenable the collection of scratch memory profiling data", SET_OPTION_BIT(TR_ProfileMemoryRegions), "F" },
    {"profilingCompNodecountThreshold=", "M<nnn>\tthreshold for doubling the method to do a profiling compile is considered expensive",
         TR::Options::setStaticNumeric, (intptrj_t)&OMR::Options::_profilingCompNodecountThreshold, 0, "F%d", NOT_IN_SUBSET},

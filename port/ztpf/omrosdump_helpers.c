@@ -55,10 +55,14 @@ extern void masterSynchSignalHandler(int nbr, siginfo_t *siginfo,
 #define    KEY0(a)    do { cinfc(CINFC_WRITE, CINFC_CMMJDB); } while(0)
 #define    UNKEY(a) do { keyrc(); } while(0)
 
-char javaPgmsToDump[][5] = { "DJHK", "DJNC", "DJVB", "DJCK", "DJHS",
+char javaPgmsToDump[][5] = { /* clean programs */ "DJHK", "DJNC", "DJVB", "DJCK", "DJHS",
 		"DJPR", "DJVM", "DJDD", "DJHT", "DJRD", "DJZL", "DJDP", "DJHV", "DJSG",
 		"D9VM", "DJDY", "DJHY", "DJSH", "DJ7B", "DJGC", "DJIT", "DJTH", "DJAR",
-		"DJGK", "DJMT", "DJTR", "DJFF", "DJXT", "DJOR" };
+		"DJGK", "DJMT", "DJTR", "DJFF", "DJXT", "DJOR", /* dirty programs */ "DJVA",
+		"DJRM", "DJNM", "DJAT", "DJAW", "DJAH", "DJDB", "DJDC", "DJDS", "DJFM",
+		"DJHP", "DJIN", "DJAV", "DJCD", "DJJW", "DJWP", "DJLI", "DJPG", "DJSD",
+		"DJSN", "DJKC", "DJLC", "DJMN", "DJML", "DJNT", "DJIO", "DJPT", "DJTK",
+		"DJUN", "DJVR", "DJWR", "DJZP"};
 
 /**
  * The ELF program header permission bits for read, write, and execute combined

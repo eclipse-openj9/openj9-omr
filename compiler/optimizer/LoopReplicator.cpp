@@ -86,7 +86,7 @@ int32_t TR_LoopReplicator::perform()
        optimizer()->optsThatCanCreateLoopsDisabled())
       return 0;
 
-   if (comp()->isProfilingCompilation())
+   if (comp()->getProfilingMode() == JitProfiling)
       return 0;
 
    _cfg = comp()->getFlowGraph();

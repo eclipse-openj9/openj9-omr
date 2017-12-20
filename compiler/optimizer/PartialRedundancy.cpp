@@ -227,7 +227,7 @@ int32_t TR_PartialRedundancy::perform()
    // PRE is too expensive when profiling with HCR on, due to the number
    // of blocks and temps this configuration creates. Disabling it
    // won't affect performance if there are no profilings allowed.
-   if (comp()->isProfilingCompilation() && comp()->getHCRMode() != TR::none && _numProfilingsAllowed == 0)
+   if (comp()->getProfilingMode() == JitProfiling && comp()->getHCRMode() != TR::none && _numProfilingsAllowed == 0)
       return 0;
 
    TR::StackMemoryRegion stackMemoryRegion(*trMemory());

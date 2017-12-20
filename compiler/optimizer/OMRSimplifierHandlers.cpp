@@ -15249,7 +15249,7 @@ TR::Node *endBlockSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier 
       node->getBlock()->getNumber(),
       block->getNumber());
 
-   if (s->comp()->isProfilingCompilation())
+   if (s->comp()->getProfilingMode() == JitProfiling)
       return node;
 
    // See if this block has a single successor by looking at the CFG

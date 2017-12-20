@@ -83,11 +83,6 @@ int32_t TR_ShrinkWrap::perform()
    if (_traceSW)
       traceMsg(comp(), "Going to start shrink wrapping of registers\n");
 
-   // dont bother with profiling compiles
-   //
-   if (0 && comp()->isProfilingCompilation())
-      return 0;
-
    // no shrink wrapping on CFG with internal cycles, as the
    // analysis is going to be conservative anyway
    //

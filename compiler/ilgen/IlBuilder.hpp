@@ -154,7 +154,6 @@ public:
    TR::IlValue *ConstDouble(double value);
    TR::IlValue *ConstAddress(const void * const value);
    TR::IlValue *ConstString(const char * const value);
-   TR::IlValue *ConstzeroValueForValue(TR::IlValue *v);
 
    TR::IlValue *Const(int8_t value)             { return ConstInt8(value); }
    TR::IlValue *Const(int16_t value)            { return ConstInt16(value); }

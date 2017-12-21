@@ -220,7 +220,7 @@ class SymbolReferenceTable
        *  This symbol represents an intrinsic call of the following format:
        *
        *  \code
-       *    icall <atomicAddSymbol>
+       *    icall/lcall <atomicAddSymbol>
        *      <address>
        *      <value>
        *  \endcode
@@ -241,7 +241,7 @@ class SymbolReferenceTable
        *  This symbol represents an intrinsic call of the following format:
        *
        *  \code
-       *    icall <atomicFetchAndAddSymbol>
+       *    icall/lcall <atomicFetchAndAddSymbol>
        *      <address>
        *      <value>
        *  \endcode
@@ -265,7 +265,7 @@ class SymbolReferenceTable
        *  This symbol represents an intrinsic call of the following format:
        *
        *  \code
-       *    icall <atomicSwapSymbol>
+       *    icall/lcall <atomicSwapSymbol>
        *      <address>
        *      <value>
        *  \endcode
@@ -283,7 +283,56 @@ class SymbolReferenceTable
       atomicSwapSymbol,
       atomicSwap32BitSymbol,
       atomicSwap64BitSymbol,
-      atomicCompareAndSwapSymbol,
+
+      /** \brief
+       *
+       *  This symbol represents an intrinsic call of the following format:
+       *
+       *  \code
+       *    icall <atomicCompareAndSwapReturnStatusSymbol>
+       *      <address>
+       *      <old value>
+       *      <new value>
+       *  \endcode
+       *
+       *  Which performs the following operation atomically:
+       *
+       *  \code
+       *    temp = [address]
+       *    if (temp == <old value>)
+       *      [address] = <new value>
+       *      return true
+       *    else
+       *      return false
+       *  \endcode
+       *
+       *  The data type of \c <old value> indicates the width of the operation.
+       */
+      atomicCompareAndSwapReturnStatusSymbol,
+
+      /** \brief
+       *
+       *  This symbol represents an intrinsic call of the following format:
+       *
+       *  \code
+       *    icall/lcall <atomicCompareAndSwapReturnValueSymbol>
+       *      <address>
+       *      <old value>
+       *      <new value>
+       *  \endcode
+       *
+       *  Which performs the following operation atomically:
+       *
+       *  \code
+       *    temp = [address]
+       *    if (temp == <old value>)
+       *      [address] = <new value>
+       *    return temp
+       *  \endcode
+       *
+       *  The data type of \c <old value> indicates the width of the operation.
+       */
+      atomicCompareAndSwapReturnValueSymbol,
 
       firstPerCodeCacheHelperSymbol,
       lastPerCodeCacheHelperSymbol = firstPerCodeCacheHelperSymbol + TR_numCCPreLoadedCode - 1,

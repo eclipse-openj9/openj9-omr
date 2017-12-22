@@ -488,8 +488,6 @@ class SymbolReferenceTable
 
    size_t                              _size_hint;
 
-   TR_HashTab *_genericCallHash;
-
    typedef CS2::CompoundHashKey<mcount_t, const char *> OwningMethodAndString;
    typedef CS2::HashTable<OwningMethodAndString, TR::SymbolReference *, TR::Allocator> SymrefsByOwningMethodAndString;
 

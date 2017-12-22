@@ -132,8 +132,6 @@ OMR::SymbolReferenceTable::SymbolReferenceTable(size_t sizeHint, TR::Compilation
       baseArray.element(i) = 0;
    _size_hint = sizeHint;
 
-   _genericCallHash  = new (trHeapMemory()) TR_HashTab(comp->trMemory(), heapAlloc, 60);
-
    }
 
 

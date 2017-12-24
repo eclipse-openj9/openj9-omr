@@ -45,6 +45,7 @@
 #include "infra/Assert.hpp"
 #include "infra/Monitor.hpp"                 // for createCounter race conditions
 #include "infra/CriticalSection.hpp"         // for createCounter race conditions
+#include "infra/Bit.hpp"
 
 #if defined(_MSC_VER)
 #include <malloc.h> // alloca on Windows

@@ -31,7 +31,6 @@ namespace OMR { class SymbolReferenceTable; }
 namespace OMR { typedef OMR::SymbolReferenceTable SymbolReferenceTableConnector; }
 #endif
 
-#include "infra/HashTab.hpp"
 #include "il/symbol/ResolvedMethodSymbol.hpp"
 
 #include <map>                                 // for std::map

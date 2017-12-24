@@ -73,7 +73,6 @@
 #include "infra/BitVector.hpp"                 // for TR_BitVector, etc
 #include "infra/Cfg.hpp"                       // for CFG, TR_SuccessorIterator, etc
 #include "infra/Flags.hpp"                     // for flags8_t
-#include "infra/HashTab.hpp"                   // for TR_HashTab, TR_HashId
 #include "infra/Link.hpp"                      // for TR_LinkHead, TR_Pair
 #include "infra/List.hpp"                      // for List, ListIterator, etc
 #include "infra/CfgEdge.hpp"                   // for CFGEdge

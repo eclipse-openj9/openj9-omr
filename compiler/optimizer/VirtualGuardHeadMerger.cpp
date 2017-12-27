@@ -19,8 +19,6 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  *******************************************************************************/
 
-#include "VirtualGuardHeadMerger.hpp"
-
 #include <stddef.h>                            // for NULL
 #include "codegen/FrontEnd.hpp"                // for feGetEnv
 #include "compile/Compilation.hpp"             // for Compilation
@@ -39,6 +37,7 @@
 #include "optimizer/Optimization_inlines.hpp"
 #include "optimizer/Optimizer.hpp"             // for Optimizer
 #include "optimizer/TransformUtil.hpp"         // for TransformUtil
+#include "optimizer/VirtualGuardHeadMerger.hpp"
 #include "ras/DebugCounter.hpp"
 #include "infra/Checklist.hpp"
 

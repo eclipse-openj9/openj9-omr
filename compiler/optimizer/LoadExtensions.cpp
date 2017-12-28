@@ -54,7 +54,7 @@
 
 TR_LoadExtensions::TR_LoadExtensions(TR::OptimizationManager *manager)
    : TR::Optimization(manager),
-     _counts(0), _seenLoads(0), _useDefInfo(NULL)
+     _counts(0), _seenLoads(0), _useDefInfo(NULL), _excludedNodes(comp()->allocator())
    {
    setTrace(comp()->getOptions()->getOptsToTrace() && TR::SimpleRegex::match(comp()->getOptions()->getOptsToTrace(), "traceLoadExtensions"));
    vcount_t visitCount = comp()->incVisitCount();
@@ -73,6 +73,8 @@ TR_LoadExtensions::TR_LoadExtensions(TR::OptimizationManager *manager)
 
    TR::SparseBitVector extendedToInt64GlobalRegisters = cg()->getExtendedToInt64GlobalRegisters();
    extendedToInt64GlobalRegisters.Clear();
+
+   _excludedNodes.Clear();
    }
 
 //#define REUSE_USEDEFS
@@ -313,6 +315,18 @@ void TR_LoadExtensions::countLoadExtensions(TR::Node *parent, vcount_t visitCoun
          //_counts[child->getGlobalIndex()] |= 0x0001 setOverrideOpt(child, loadOverride);;
          }
 
+      // Exclude all loads which feed into global register stores which require sign extensions. This must be done 
+      // because Load Extensions is a local optimization and it must respect global sign extension decisions made
+      // by GRA. Excluding such loads prevents a situation where GRA decided that a particular global register
+      // should be sign extended at its definitions however Load Extensions has determined that the same load
+      // should be zero extended. If local RA were to pick the same register for the gloabl register as well as
+      // the load then we have a conflicting decision which will result in a conversion to be skipped when it is
+      // not supposted to be.
+      if (opcode.isStoreReg() && parent->needsSignExtension() && child->getOpCode().isLoadVar())
+         {
+         _excludedNodes[child->getGlobalIndex()] = true;
+         }
+
       countLoadExtensions(child, visitCount);
       }
    }
@@ -375,7 +389,7 @@ bool TR_LoadExtensions::detectUnneededConversionPattern(TR::Node* conversion, TR
    int64_t andMask = 8*conversion->getSize();
    andMask  = (1ll<<andMask) - 1;
    int64_t andMask2 = andMask>>1ll;
-   if (supportedType(child))
+   if (!_excludedNodes[child->getGlobalIndex()] && supportedType(child))
       {
       bool loadIsSigned = countIsSigned(child);
       /*

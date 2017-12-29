@@ -365,7 +365,7 @@ MM_MemoryManager::createVirtualMemoryForHeap(MM_EnvironmentBase* env, MM_MemoryH
 
 #if defined(OMR_VALGRIND_MEMCHECK)
 	//Use handle's Memory Base to refer valgrind memory pool
-	valgrindCreateMempool(extensions, (uintptr_t)handle->getMemoryBase());
+	valgrindCreateMempool(extensions, env, (uintptr_t)handle->getMemoryBase());
 #endif /* defined(OMR_VALGRIND_MEMCHECK) */
 
 	return NULL != instance;

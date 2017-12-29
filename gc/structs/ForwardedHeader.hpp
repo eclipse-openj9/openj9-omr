@@ -422,7 +422,7 @@ public:
 		MM_HeapLinkedFreeHeader* freeHeader = MM_HeapLinkedFreeHeader::getHeapLinkedFreeHeader(_objectPtr);
 		returnPtr = (omrobjectptr_t) freeHeader->getNext();
 #if defined(OMR_VALGRIND_MEMCHECK)		
-		valgrindMakeMemDefined((uintptr_t)freeHeader,(uintptr_t)sizeof(MM_HeapLinkedFreeHeader)); //TODO: Remove
+		valgrindMakeMemDefined((uintptr_t)freeHeader,(uintptr_t)sizeof(MM_HeapLinkedFreeHeader));
 #endif /* defined(OMR_VALGRIND_MEMCHECK) */
 		return returnPtr;
 	}

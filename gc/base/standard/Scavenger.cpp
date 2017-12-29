@@ -3335,7 +3335,7 @@ MM_Scavenger::backoutFixupAndReverseForwardPointersInSurvivor(MM_EnvironmentStan
 					 * will make free header undefined
 					 * as they are mostly used in undefined memory. But here forwardedObject
 					 * is still alive. So we manually have to make it defined again. */
-					valgrindMakeMemDefined((uintptr_t)freeHeader, (uintptr_t) sizeof(MM_HeapLinkedFreeHeader)); //TODO: Remove
+					valgrindMakeMemDefined((uintptr_t)freeHeader, (uintptr_t) sizeof(MM_HeapLinkedFreeHeader));
 #endif /* defined(OMR_VALGRIND_MEMCHECK) */					
 				}
 			}

@@ -3926,7 +3926,18 @@ bool OMR::Power::CodeGenerator::supportsTransientPrefetch()
 
 bool OMR::Power::CodeGenerator::is64BitProcessor()
    {
-   return TR::Compiler->target.cpu.getPPCis64bit();
+   /*
+    * If the target is 64 bit, the CPU must also be 64 bit (even if we don't specifically know which Power CPU it is) so this can just return true.
+    * If the target is not 64 bit, we need to check the CPU properties to try and find out if the CPU is 64 bit or not.
+    */
+   if (TR::Compiler->target.is64Bit())
+      {
+      return true;
+      }
+   else
+      {
+      return TR::Compiler->target.cpu.getPPCis64bit();
+      }
    }
 
 bool OMR::Power::CodeGenerator::getSupportsIbyteswap()

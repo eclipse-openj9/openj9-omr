@@ -132,7 +132,7 @@ omrfile_blockingasync_read(struct OMRPortLibrary *portLibrary, intptr_t fd, void
  * @return Number of bytes written on success, portable error return code (which is negative) on failure.
  */
 intptr_t
-omrfile_blockingasync_write(struct OMRPortLibrary *portLibrary, intptr_t fd, void *buf, intptr_t nbytes)
+omrfile_blockingasync_write(struct OMRPortLibrary *portLibrary, intptr_t fd, const void *buf, intptr_t nbytes)
 {
 	return -1;
 }

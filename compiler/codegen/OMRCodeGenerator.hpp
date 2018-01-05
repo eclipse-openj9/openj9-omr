@@ -1441,9 +1441,6 @@ class OMR_EXTENSIBLE CodeGenerator
    bool getSupportsArraySet() {return _flags1.testAny(SupportsArraySet);}
    void setSupportsArraySet() {_flags1.set(SupportsArraySet);}
 
-   bool getSupportsArraySetToZero() {return _flags3.testAny(SupportsArraySetToZero);}
-   void setSupportsArraySetToZero() {_flags3.set(SupportsArraySetToZero);}
-
    bool getSupportsArrayCmp() {return _flags1.testAny(SupportsArrayCmp);}
    void setSupportsArrayCmp() {_flags1.set(SupportsArrayCmp);}
 
@@ -1752,7 +1749,7 @@ class OMR_EXTENSIBLE CodeGenerator
       SupportsShrinkWrapping                              = 0x00100000,
       ShrinkWrappingDone                                  = 0x00200000,
       SupportsStackAllocationOfArraylets                  = 0x00400000,
-      SupportsArraySetToZero                              = 0x00800000,
+      //                                                  = 0x00800000,  AVAILABLE FOR USE!
       SupportsDoubleWordCAS                               = 0x01000000,
       SupportsDoubleWordSet                               = 0x02000000,
       UsesLoadStoreMultiple                               = 0x04000000,

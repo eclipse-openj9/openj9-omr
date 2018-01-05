@@ -668,7 +668,6 @@ OMR::Z::CodeGenerator::CodeGenerator()
    if (!comp->getOption(TR_DisableArraySetOpts))
       {
       self()->setSupportsArraySet();
-      self()->setSupportsArraySetToZero();
       }
    self()->setSupportsArrayCmp();
    self()->setSupportsArrayCmpSign();

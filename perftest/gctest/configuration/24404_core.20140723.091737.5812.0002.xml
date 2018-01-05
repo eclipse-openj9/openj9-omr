@@ -18,7 +18,7 @@
         [1] https://www.gnu.org/software/classpath/license.html
         [2] http://openjdk.java.net/legal/assembly-exception.html
 
-        SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
+        SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
 -->
 <gc-config style="min">
 <option verboseLog="VerboseGC_24404_core.20140723.091737.5812.0002" sizeUnit="KB" initialMemorySize="2" memoryMax="524288" maxSizeDefaultMemorySpace="524288" minOldSpaceSize="2" oldSpaceSize="2" maxOldSpaceSize="524288"/>

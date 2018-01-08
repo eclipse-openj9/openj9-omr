@@ -91,7 +91,11 @@ MM_MemoryPoolAddressOrderedList::initialize(MM_EnvironmentBase *env)
 
 #if defined(OMR_GC_THREAD_LOCAL_HEAP)
 	/* this memoryPool can be used by scavenger, maximum tlh size should be max(_extensions->tlhMaximumSize, _extensions->scavengerScanCacheMaximumSize) */
+#if defined(OMR_GC_MODRON_SCAVENGER)
 	uintptr_t tlhMaximumSize = OMR_MAX(_extensions->tlhMaximumSize, _extensions->scavengerScanCacheMaximumSize);
+#else /* OMR_GC_MODRON_SCAVENGER */
+	uintptr_t tlhMaximumSize = _extensions->tlhMaximumSize;
+#endif /* OMR_GC_MODRON_SCAVENGER */
 	_largeObjectAllocateStats = MM_LargeObjectAllocateStats::newInstance(env, (uint16_t)ext->largeObjectAllocationProfilingTopK, ext->largeObjectAllocationProfilingThreshold, ext->largeObjectAllocationProfilingVeryLargeObjectThreshold, (float)ext->largeObjectAllocationProfilingSizeClassRatio / (float)100.0,
 			_extensions->heap->getMaximumMemorySize(), tlhMaximumSize + _minimumFreeEntrySize, _extensions->tlhMinimumSize);
 #else

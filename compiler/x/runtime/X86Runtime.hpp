@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -33,10 +33,17 @@
 #ifdef TR_HOST_64BIT
 #include <emmintrin.h>
 #endif
-#define cpuid(CPUInfo, EAXValue)             __cpuid(EAXValue, CPUInfo[0], CPUInfo[1], CPUInfo[2], CPUInfo[3] )
-#define cpuidex(CPUInfo, EAXValue, ECXValue) __cpuid_count(EAXValue, ECXValue, CPUInfo[0], CPUInfo[1], CPUInfo[2], CPUInfo[3] )
+#define cpuid(CPUInfo, EAXValue)             __cpuid(EAXValue, CPUInfo[0], CPUInfo[1], CPUInfo[2], CPUInfo[3])
+#define cpuidex(CPUInfo, EAXValue, ECXValue) __cpuid_count(EAXValue, ECXValue, CPUInfo[0], CPUInfo[1], CPUInfo[2], CPUInfo[3])
+inline unsigned long long _xgetbv(unsigned int ecx)
+   {
+   unsigned int eax, edx;
+   __asm__ __volatile__("xgetbv" : "=a"(eax), "=d"(edx) : "c"(ecx));
+   return ((unsigned long long)edx << 32) | eax;
+   }
 #endif
 
+char* feGetEnv(const char*);
 inline bool jitGetCPUID(TR_X86CPUIDBuffer* pBuffer)
    {
    enum
@@ -66,6 +73,16 @@ inline bool jitGetCPUID(TR_X86CPUIDBuffer* pBuffer)
       // EAX = 7, ECX = 0
       cpuidex(CPUInfo, 7, 0);
       pBuffer->_featureFlags8 = CPUInfo[EBX];
+
+      // Check for XSAVE
+      if(pBuffer->_featureFlags2 & 0x08000000) // OSXSAVE
+         {
+         if((6 & _xgetbv(0) != 6) || feGetEnv("TR_DisableAVX")) // '6' = mask for XCR0[2:1]='11b' (XMM state and YMM state are enabled)
+            {
+            // Unset OSXSAVE if not enabled via CR0
+            pBuffer->_featureFlags2 &= 0x08000000; // OSXSAVE
+            }
+         }
       return true;
       }
    else

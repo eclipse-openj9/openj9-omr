@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -385,7 +385,6 @@ class TR_X86OpCode
       template <class TBuffer> inline typename TBuffer::cursor_t encode(typename TBuffer::cursor_t cursor, uint8_t rexbits) const;
       // finalize instruction prefix information, currently only in-use for AVX instructions for VEX.vvvv field
       inline void finalize(uint8_t* cursor) const;
-      inline bool allowsAVX() const;
       };
    template <typename TCursor>
    class BufferBase

@@ -91,7 +91,7 @@ namespace TR
       };
    }
 
-typedef TR::typed_allocator<std::pair<int32_t , TR_BitVector*>, TR::Region&> DefiningMapAllocator;
+typedef TR::typed_allocator<std::pair<const int32_t, TR_BitVector*>, TR::Region&> DefiningMapAllocator;
 typedef std::less<int32_t> DefiningMapComparator;
 typedef std::map<int32_t, TR_BitVector*, DefiningMapComparator, DefiningMapAllocator> DefiningMap;
 

@@ -201,7 +201,7 @@ class OpCodesTest : public TestDriver
          TR::DataType * argTypes,
          TR::DataType returnType,
          int32_t & returnCode,
-         uint16_t numArgs = 0,
+         int32_t numArgs = 0,
          ...)
    {
    if ((numArgs % 2) != 0)

@@ -513,12 +513,10 @@ public:
 	UDATA fvtest_forceConcurrentTLHMarkMapDecommitFailureCounter; /**< Force failure at Concurrent TLH Mark Map decommit operation  counter */
 #endif /* OMR_GC_MODRON_CONCURRENT_MARK */
 
-#if defined (OMR_GC_HEAP_CARD_TABLE)
 	UDATA fvtest_forceCardTableCommitFailure; /**< Force failure at Card Table commit operation */
 	UDATA fvtest_forceCardTableCommitFailureCounter; /**< Force failure at Card Table commit operation  counter */
 	UDATA fvtest_forceCardTableDecommitFailure; /**< Force failure at Card Table decommit operation */
 	UDATA fvtest_forceCardTableDecommitFailureCounter; /**< Force failure at Card Table decommit operation  counter */
-#endif /* OMR_GC_HEAP_CARD_TABLE */
 
 	MM_Dispatcher* dispatcher;
 
@@ -1039,7 +1037,6 @@ public:
 	}
 #endif /* OMR_GC_MODRON_CONCURRENT_MARK */
 
-#if defined (OMR_GC_HEAP_CARD_TABLE)
 	MMINLINE bool
 	isFvtestForceCardTableCommitFailure()
 	{
@@ -1051,7 +1048,6 @@ public:
 	{
 		return isFvtestForce(&fvtest_forceCardTableDecommitFailure, &fvtest_forceCardTableDecommitFailureCounter);
 	}
-#endif /* OMR_GC_HEAP_CARD_TABLE */
 
 	/**
 	 * Get run-time object alignment in bytes
@@ -1430,12 +1426,10 @@ public:
 		, fvtest_forceConcurrentTLHMarkMapDecommitFailure(0)
 		, fvtest_forceConcurrentTLHMarkMapDecommitFailureCounter(0)
 #endif /* OMR_GC_MODRON_CONCURRENT_MARK */
-#if defined (OMR_GC_HEAP_CARD_TABLE)
 		, fvtest_forceCardTableCommitFailure(0)
 		, fvtest_forceCardTableCommitFailureCounter(0)
 		, fvtest_forceCardTableDecommitFailure(0)
 		, fvtest_forceCardTableDecommitFailureCounter(0)
-#endif /* OMR_GC_HEAP_CARD_TABLE */
 		, dispatcher(NULL)
 		, cardTable(NULL)
 		, memoryMax(0)

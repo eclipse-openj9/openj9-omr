@@ -32,7 +32,6 @@
 #include "omrcfg.h"
 #include "omrmodroncore.h"
 #include "modronbase.h"
-#if defined (OMR_GC_HEAP_CARD_TABLE)
 
 #include "BaseVirtual.hpp"
 #include "MemoryManager.hpp"
@@ -276,7 +275,5 @@ protected:
 private:
 	void cleanRange(MM_EnvironmentBase *env, MM_CardCleaner *cardCleaner, Card *low, Card *high);
 };
-
-#endif /* defined (OMR_GC_HEAP_CARD_TABLE) */
 
 #endif /* CARDTABLE_HPP_ */

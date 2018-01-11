@@ -21,7 +21,6 @@
  *******************************************************************************/
 
 #include "omrcfg.h"
-#if defined (OMR_GC_HEAP_CARD_TABLE)
 
 #include "CardTable.hpp"
 
@@ -427,6 +426,4 @@ MM_CardTable::setNumaAffinityCorrespondingToHeapRange(MM_EnvironmentBase *env, u
 	return memoryManager->setNumaAffinity(&_cardTableMemoryHandle, numaNode, (void*)lowAddress, highAddress - lowAddress);
 }
 #endif /* defined(OMR_GC_VLHGC) */
-
-#endif /* defined (OMR_GC_HEAP_CARD_TABLE) */
 

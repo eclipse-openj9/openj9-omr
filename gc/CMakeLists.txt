@@ -49,7 +49,7 @@ add_library(omrgc_tracegen OBJECT
 	${CMAKE_CURRENT_BINARY_DIR}/ut_j9vgc.c
 )
 
-add_library(omrgc STATIC
+set (GC_SRC_LIST
 	base/AddressOrderedListPopulator.cpp
 	base/AllocationContext.cpp
 	base/AllocationInterfaceGeneric.cpp
@@ -261,7 +261,10 @@ add_library(omrgc STATIC
 	verbose/VerboseWriterHook.cpp
 	verbose/VerboseWriterStreamOutput.cpp
 	verbose/handler_standard/VerboseHandlerOutputStandard.cpp
+)
 
+add_library(omrgc STATIC
+	${GC_SRC_LIST}
 	$<TARGET_OBJECTS:omrgc_tracegen>
 )
 add_dependencies(omrgc omrgc_hookgen)

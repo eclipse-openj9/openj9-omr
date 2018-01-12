@@ -73,7 +73,6 @@
 #include "infra/BitVector.hpp"                 // for TR_BitVector, etc
 #include "infra/Cfg.hpp"                       // for CFG, TR_SuccessorIterator, etc
 #include "infra/Flags.hpp"                     // for flags8_t
-#include "infra/HashTab.hpp"                   // for TR_HashTab, TR_HashId
 #include "infra/Link.hpp"                      // for TR_LinkHead, TR_Pair
 #include "infra/List.hpp"                      // for List, ListIterator, etc
 #include "infra/CfgEdge.hpp"                   // for CFGEdge
@@ -131,8 +130,6 @@ OMR::SymbolReferenceTable::SymbolReferenceTable(size_t sizeHint, TR::Compilation
    for (uint32_t i = 0; i < _numPredefinedSymbols; i++)
       baseArray.element(i) = 0;
    _size_hint = sizeHint;
-
-   _genericCallHash  = new (trHeapMemory()) TR_HashTab(comp->trMemory(), heapAlloc, 60);
 
    }
 

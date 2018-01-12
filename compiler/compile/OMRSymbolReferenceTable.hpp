@@ -31,7 +31,6 @@ namespace OMR { class SymbolReferenceTable; }
 namespace OMR { typedef OMR::SymbolReferenceTable SymbolReferenceTableConnector; }
 #endif
 
-#include "infra/HashTab.hpp"
 #include "il/symbol/ResolvedMethodSymbol.hpp"
 
 #include <map>                                 // for std::map
@@ -487,8 +486,6 @@ class SymbolReferenceTable
    bool                                _hasUserField;
 
    size_t                              _size_hint;
-
-   TR_HashTab *_genericCallHash;
 
    typedef CS2::CompoundHashKey<mcount_t, const char *> OwningMethodAndString;
    typedef CS2::HashTable<OwningMethodAndString, TR::SymbolReference *, TR::Allocator> SymrefsByOwningMethodAndString;

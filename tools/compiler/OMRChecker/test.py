@@ -1,7 +1,7 @@
 #! /usr/bin/python
 
 ###############################################################################
-# Copyright (c) 2016, 2016 IBM Corp. and others
+# Copyright (c) 2016, 2018 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -39,7 +39,8 @@ class OMRChecker(tool.Tool):
    '''A wrapper providing an interface for interacting with OMRChecker.'''
 
    def __init__(self, checker):
-      base = ['clang++', '-fsyntax-only', '-Xclang', '-load', '-Xclang', checker, '-Xclang', '-add-plugin', '-Xclang', 'omr-checker'] 
+      clang = os.getenv('CLANG', 'clang++')
+      base = [clang, '-fsyntax-only', '-Xclang', '-load', '-Xclang', checker, '-Xclang', '-add-plugin', '-Xclang', 'omr-checker'] 
       super(OMRChecker, self).__init__(lambda args: base + args)
 
 
@@ -73,7 +74,7 @@ class TestReturnNotZero(CheckerTestCase):
 if __name__ == '__main__':
    args = arg_parser.parse_args(sys.argv[1:])
    args = vars(args)
-   
+
    if not os.path.exists(args['CHECKER']):
       print("Could not find: " + args['CHECKER'])
       exit(1)

@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2016, 2017 IBM Corp. and others
+# Copyright (c) 2016, 2018 IBM Corp. and others
 # 
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -30,10 +30,10 @@ top_srcdir = .
 include $(top_srcdir)/omrmakefiles/configure.mk
 
 # Ensure the source tree path is canonically-formed and ends with /
-abs_srcroot = $(abspath $(TOP_SRCDIR))/
+abs_srcroot := $(subst //,/,$(abspath $(TOP_SRCDIR))/)
 
 all: check-vars
-	./tools/ddrgen/src/macros/getMacros.sh $(abs_srcroot)
+	bash $(top_srcdir)/ddr/tools/getmacros $(abs_srcroot)
 	$(exe_output_dir)/ddrgen --filelist $(DBG_FILE_LIST) --macrolist $(abs_srcroot)macroList 
 
 check-vars:

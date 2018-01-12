@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2016 IBM Corp. and others
+ * Copyright (c) 1991, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -31,15 +31,17 @@
 extern "C" {
 #endif
 
-
 /* DO NOT DIRECTLY INCLUDE THIS FILE! */
 /* Include hashtable_api.h instead */
-
 
 #include "omravl.h"
 #include "omrcomp.h"
 #include "omrport.h"
 #include "pool_api.h"
+
+/*
+ * @ddr_namespace: map_to_type=J9HashtableConstants
+ */
 
 /**
  * Hash table flags
@@ -50,7 +52,11 @@ extern "C" {
 #define J9HASH_TABLE_ALLOW_SIZE_OPTIMIZATION	0x00000008	/*!< Allow space optimized hashTable, some functions not supported */
 #define J9HASH_TABLE_DO_NOT_REHASH	0x00000010	/*!< Do not rehash the table while set */
 
-#define J9HASH_TABLE_AVL_TREE_TAG_BIT ((uintptr_t)0x00000001) /*!< Bit to indicate that hastable slot contains a pointer to an AVL tree */
+/*
+ * This used to include a cast to uintptr_t, but ddrgen doesn't
+ * handle casts; that cast has been moved to hashtable.c.
+ */
+#define J9HASH_TABLE_AVL_TREE_TAG_BIT 0x00000001 /*!< Bit to indicate that hastable slot contains a pointer to an AVL tree */
 
 /**
  * Hash Table state constants for iteration
@@ -58,6 +64,10 @@ extern "C" {
 #define J9HASH_TABLE_ITERATE_STATE_LIST_NODES 0
 #define J9HASH_TABLE_ITERATE_STATE_TREE_NODES 1
 #define J9HASH_TABLE_ITERATE_STATE_FINISHED  2
+
+/*
+ * @ddr_namespace: default
+ */
 
 /**
  * Macros for getting at data directly from AVLTreeNodes

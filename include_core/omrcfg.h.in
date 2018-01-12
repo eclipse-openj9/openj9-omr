@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2017 IBM Corp. and others
+ * Copyright (c) 2015, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -29,6 +29,8 @@
 #if !defined(OMRCFG_H_)
 #define OMRCFG_H_
 
+/* @ddr_namespace: map_to_type=OmrBuildFlags */
+
 #undef OMR_GC
 #undef OMR_JIT
 #undef OMR_JITBUILDER
@@ -57,7 +59,6 @@
 #undef OMR_GC_NON_ZERO_TLH
 #undef OMR_GC_SEGREGATED_HEAP
 #undef OMR_GC_THREAD_LOCAL_HEAP
-
 
 /**
  * Tells if a platform has support for Semaphores.

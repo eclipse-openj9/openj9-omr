@@ -58,8 +58,8 @@ TYPED_TEST_CASE(LinkageTest, InputTypes);
 
 TYPED_TEST(LinkageTest, InvalidLinkageTest) { 
    char inputTrees[200] = {0};
-   const auto format_string = "(method return=Int32  args=[Int32] (block (ireturn (icall address=%p args=[Int32] linkage=noexist  (iload parm=0)) )  ))";
-   std::snprintf(inputTrees, 200, format_string, &passThrough<TypeParam>); 
+   const auto format_string = "(method return=Int32  args=[Int32] (block (ireturn (icall address=%p args=[Int32] linkage=noexist  (iload parm=0)) )  ))"; 
+   std::snprintf(inputTrees, 200, format_string, static_cast<TypeParam (*)(TypeParam)>(passThrough<TypeParam>)); 
 
    auto trees = parseString(inputTrees);
    ASSERT_NOTNULL(trees) << "Trees failed to parse\n" << inputTrees;
@@ -77,7 +77,7 @@ TYPED_TEST(LinkageTest, SystemLinkageParameterPassingSingleArg) {
                                                   TypeToString<TypeParam>::type, //Args
                                                   TypeToString<TypeParam>::prefix, //return
                                                   TypeToString<TypeParam>::prefix, //call
-                                                  &passThrough<TypeParam>, //address
+                                                  static_cast<TypeParam (*)(TypeParam)>(passThrough<TypeParam>),//address
                                                   TypeToString<TypeParam>::type, //args
                                                   TypeToString<TypeParam>::prefix //load
                                                   );
@@ -114,7 +114,6 @@ TYPED_TEST(LinkageTest, SystemLinkageParameterPassingFourArg) {
                                  " (%sload parm=2)"
                                  " (%sload parm=3)"
                                  ") )  ))";
-
     std::snprintf(inputTrees, 400, format_string, TypeToString<TypeParam>::type,   // Return
                                                   TypeToString<TypeParam>::type,   // Args
                                                   TypeToString<TypeParam>::type,   // Args
@@ -122,7 +121,7 @@ TYPED_TEST(LinkageTest, SystemLinkageParameterPassingFourArg) {
                                                   TypeToString<TypeParam>::type,   // Args
                                                   TypeToString<TypeParam>::prefix, // return
                                                   TypeToString<TypeParam>::prefix, // call
-                                                  &fourthArg<TypeParam>,           // address
+                                                  static_cast<TypeParam (*)(TypeParam,TypeParam,TypeParam,TypeParam)>(fourthArg<TypeParam>),// address
                                                   TypeToString<TypeParam>::type,   // args
                                                   TypeToString<TypeParam>::type,   // args
                                                   TypeToString<TypeParam>::type,   // args

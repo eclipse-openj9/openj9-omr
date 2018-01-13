@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1430,7 +1430,7 @@ OMR::X86::EnlargementResult
 TR::X86RegInstruction::enlarge(int32_t requestedEnlargementSize, int32_t maxEnlargementSize, bool allowPartialEnlargement)
    {
    static char *disableRexExpansion = feGetEnv("TR_DisableREXInstructionExpansion");
-   if (disableRexExpansion || TR::comp()->getOption(TR_DisableZealousCodegenOpts))
+   if (disableRexExpansion || cg()->comp()->getOption(TR_DisableZealousCodegenOpts))
       return OMR::X86::EnlargementResult(0, 0);
 
    if (getOpCode().info().supportsAVX() && getOpCode().info().allowsAVX())
@@ -1441,7 +1441,7 @@ TR::X86RegInstruction::enlarge(int32_t requestedEnlargementSize, int32_t maxEnla
 
    int32_t enlargementSize = std::min(requestedEnlargementSize, maxEnlargementSize);
 
-   TR::Compilation *comp = TR::comp();
+   TR::Compilation *comp = cg()->comp();
    if (  TR::Compiler->target.is64Bit()
       && !getOpCode().info().hasMandatoryPrefix()
       && performTransformation(comp, "O^O Enlarging instruction %p by %d bytes by repeating the REX prefix\n", this, enlargementSize))
@@ -1874,7 +1874,7 @@ int32_t TR::X86MemInstruction::estimateBinaryLength(int32_t currentEstimate)
 OMR::X86::EnlargementResult
 TR::X86MemInstruction::enlarge(int32_t requestedEnlargementSize, int32_t maxEnlargementSize, bool allowPartialEnlargement)
    {
-   TR::Compilation *comp = TR::comp();
+   TR::Compilation *comp = cg()->comp();
    if ((maxEnlargementSize < requestedEnlargementSize && !allowPartialEnlargement) || requestedEnlargementSize < 1)
       return OMR::X86::EnlargementResult(0, 0);
 
@@ -2279,7 +2279,7 @@ int32_t TR::X86RegMemInstruction::estimateBinaryLength(int32_t currentEstimate)
 OMR::X86::EnlargementResult
 TR::X86RegMemInstruction::enlarge(int32_t requestedEnlargementSize, int32_t maxEnlargementSize, bool allowPartialEnlargement)
    {
-   TR::Compilation *comp = TR::comp();
+   TR::Compilation *comp = cg()->comp();
    if ((maxEnlargementSize < requestedEnlargementSize && !allowPartialEnlargement) || requestedEnlargementSize < 1)
       return OMR::X86::EnlargementResult(0, 0);
 

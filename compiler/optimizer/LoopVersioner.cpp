@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1544,7 +1544,7 @@ bool TR_LoopVersioner::detectInvariantNodes(List<TR_NodeParentSymRef> *invariant
       {
       TR::Node *node = nextNode->getData()->_node;
       TR::Node *parent = nextNode->getData()->_parent;
-      traceMsg(comp(), "Looking at node %p parent %p\n\n", node, nextNode->getData()->_parent);
+      if (trace()) traceMsg(comp(), "Looking at node %p parent %p\n\n", node, nextNode->getData()->_parent);
       bool isNodeInvariant = isExprInvariant(node);
       // while not technically true, computeCC and overflow compares need to have their children intact and so they can't be marked as invariant
       // a better solution is really needed
@@ -1566,7 +1566,9 @@ bool TR_LoopVersioner::detectInvariantNodes(List<TR_NodeParentSymRef> *invariant
          }
       else
          {
-         traceMsg(comp(), "Invariant expr %p (%s)\n", node, node->getOpCode().getName());
+         if (trace())
+            traceMsg(comp(), "Invariant expr %p (%s)\n", node, node->getOpCode().getName());
+
          prevNode = nextNode;
          }
 
@@ -3651,7 +3653,7 @@ void TR_LoopVersioner::updateDefinitionsAndCollectProfiledExprs(TR::Node *parent
               !node->getSymbolReference()->getSymbol()->isAutoOrParm()) ||
              !node->getOpCode().hasSymbolReference()))
           {
-          traceMsg(comp(), "Added invariant node %p %s\n", node, node->getOpCode().getName());
+          if (trace()) traceMsg(comp(), "Added invariant node %p %s\n", node, node->getOpCode().getName());
           invariantNodes->add(new (trStackMemory()) TR_NodeParentSymRef(node, parent, NULL));
           }
        }

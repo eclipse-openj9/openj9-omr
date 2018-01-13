@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1274,7 +1274,11 @@ OMR::ResolvedMethodSymbol::genIL(TR_FrontEnd * fe, TR::Compilation * comp, TR::S
 
          auto genIL_rc = ilGen->genIL();
          _methodFlags.set(IlGenSuccess, genIL_rc);
-         traceMsg(self()->comp(), "genIL() returned %d\n", genIL_rc);
+
+         if (comp->getOutFile() != NULL && comp->getOption(TR_TraceBC))
+            {
+            traceMsg(self()->comp(), "genIL() returned %d\n", genIL_rc);
+            }
 
          if (_methodFlags.testAny(IlGenSuccess))
             {

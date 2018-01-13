@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -472,7 +472,6 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"disableOutlinedNew",                 "O\tdo object allocation logic inline instead of using a fast jit helper",  SET_OPTION_BIT(TR_DisableOutlinedNew), "F"},
    {"disableOutlinedPrologues",           "O\tdo all prologue logic in-line",      RESET_OPTION_BIT(TR_EnableOutlinedPrologues), "F"},
    {"disablePackedDecimalIntrinsics",     "O\tDisables packed decimal function optimizations and avoid generating exception triggering packed decimal instructions on z/Architecture.", SET_OPTION_BIT(TR_DisablePackedDecimalIntrinsics), "F"},
-   {"disablePackedLongConversionOn32Bit", "O\t prevent pd2l/l2pd/pd2lu/lu2pd conversions from using the 64 bit IL (instead call out or use 32 bit operations)", SET_OPTION_BIT(TR_DisablePackedLongConversion), "F"},
    {"disablePartialInlining",             "O\tdisable  partial Inlining ",        SET_OPTION_BIT(TR_DisablePartialInlining), "F"},
    {"disablePostProfileCompPriorityBoost","M\tdisable boosting the priority of post profiling compilations",  SET_OPTION_BIT(TR_DisablePostProfileCompPriorityBoost), "F"},
    {"disablePRBE",                        "O\tdisable partial redundancy branch elimination",  SET_OPTION_BIT(TR_DisablePRBE), "F"},

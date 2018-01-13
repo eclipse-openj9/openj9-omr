@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -22,12 +22,6 @@
 #ifndef X86OPS_INLINES_INCL
 #define X86OPS_INLINES_INCL
 
-inline bool TR_X86OpCode::OpCode_t::allowsAVX() const
-   {
-   static bool enable = TR::CodeGenerator::getX86ProcessorInfo().supportsAVX() && !feGetEnv("TR_DisableAVX");
-   return enable;
-   }
-
 template <typename TBuffer> inline typename TBuffer::cursor_t TR_X86OpCode::OpCode_t::encode(typename TBuffer::cursor_t cursor, uint8_t rexbits) const
    {
    TBuffer buffer(cursor);
@@ -44,7 +38,7 @@ template <typename TBuffer> inline typename TBuffer::cursor_t TR_X86OpCode::OpCo
    rex.W = rex_w;
    TR_ASSERT(TR::Compiler->target.is64Bit() || !rex.value(), "ERROR: REX.W used on X86-32. OpCode = %d; rex = %02x", opcode, (uint32_t)(uint8_t)rex.value());
    // Use AVX if possible
-   if (supportsAVX() && allowsAVX())
+   if (supportsAVX() && TR::CodeGenerator::getX86ProcessorInfo().supportsAVX())
       {
       TR::Instruction::VEX<3> vex(rex, modrm_opcode);
       vex.m = escape;

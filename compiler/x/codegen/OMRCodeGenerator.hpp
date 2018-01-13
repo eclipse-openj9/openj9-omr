@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -128,6 +128,7 @@ struct TR_X86ProcessorInfo
       TR_UnknownVendor                 = 0x04
       };
 
+   bool enabledXSAVE()                     {return _featureFlags2.testAny(TR_OSXSAVE);}
    bool hasBuiltInFPU()                    {return _featureFlags.testAny(TR_BuiltInFPU);}
    bool supportsVirtualModeExtension()     {return _featureFlags.testAny(TR_VirtualModeExtension);}
    bool supportsDebuggingExtension()       {return _featureFlags.testAny(TR_DebuggingExtension);}
@@ -158,11 +159,11 @@ struct TR_X86ProcessorInfo
    bool supportsSSSE3()                    {return _featureFlags2.testAny(TR_SSSE3);}
    bool supportsSSE4_1()                   {return _featureFlags2.testAny(TR_SSE4_1);}
    bool supportsSSE4_2()                   {return _featureFlags2.testAny(TR_SSE4_2);}
-   bool supportsAVX()                      {return _featureFlags2.testAny(TR_AVX);}
-   bool supportsAVX2()                     {return _featureFlags8.testAny(TR_AVX2);}
-   bool supportsBMI1()                     {return _featureFlags8.testAny(TR_BMI1);}
-   bool supportsBMI2()                     {return _featureFlags8.testAny(TR_BMI2);}
-   bool supportsFMA()                      {return _featureFlags2.testAny(TR_FMA);}
+   bool supportsAVX()                      {return _featureFlags2.testAny(TR_AVX) && enabledXSAVE();}
+   bool supportsAVX2()                     {return _featureFlags8.testAny(TR_AVX2) && enabledXSAVE();}
+   bool supportsBMI1()                     {return _featureFlags8.testAny(TR_BMI1) && enabledXSAVE();}
+   bool supportsBMI2()                     {return _featureFlags8.testAny(TR_BMI2) && enabledXSAVE();}
+   bool supportsFMA()                      {return _featureFlags2.testAny(TR_FMA) && enabledXSAVE();}
    bool supportsCLMUL()                    {return _featureFlags2.testAny(TR_CLMUL);}
    bool supportsAESNI()                    {return _featureFlags2.testAny(TR_AESNI);}
    bool supportsPOPCNT()                   {return _featureFlags2.testAny(TR_POPCNT);}

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -117,8 +117,6 @@ OMR::SymbolReferenceTable::SymbolReferenceTable(size_t sizeHint, TR::Compilation
      _methodsBySignature(8, comp->allocator("SymRefTab")), // TODO: Determine a suitable default size
      _hasImmutable(false),
      _hasUserField(false),
-     _aggregateShadowSymbolMap(8, comp->allocator("SymRefTab")),
-     _aggregateShadowSymbolReferenceMap(8, comp->allocator("SymRefTab")),
      _sharedAliasMap(NULL)
    {
    _numHelperSymbols = TR_numRuntimeHelpers + 1;;

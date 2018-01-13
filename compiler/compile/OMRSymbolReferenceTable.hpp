@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -475,9 +475,6 @@ class SymbolReferenceTable
    List<TR::SymbolReference>            _currentThreadDebugEventDataSymbolRefs;
 
    uint32_t                            _nextRegShadowIndex;
-
-   CS2::HashTable<uint32_t, TR::Symbol *, TR::Allocator> _aggregateShadowSymbolMap;
-   CS2::HashTable<TR::SparseBitVector *, TR::SymbolReference *, TR::Allocator> _aggregateShadowSymbolReferenceMap;
    int32_t                             _numUnresolvedSymbols;
    uint32_t                            _numHelperSymbols;
    uint32_t                            _numPredefinedSymbols;

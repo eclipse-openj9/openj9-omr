@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -592,26 +592,87 @@ public:
    inline                 TR_NodeUseAliasSetInterface mayUse();
    inline                 TR_NodeKillAliasSetInterface mayKill(bool gcSafe = false);
 
-   enum signExtensionFlagNames
-      {
-                           ///< isUnneededConversion,
-      unsignedLoad,        ///< = isUnneededConversion,
-      force64BitReg,       ///< Flag used by 390 loads to place result into 64 bit register
-      couldSkipExtension,  ///< Flag used by 390 loads, when top bits might be ignored. i.e. load<24>(ICM)+a2b
-      numSignExtensionFlags
-      };
+   /** \brief
+    *     Determines whether this node should be sign/zero extended to 32-bit at the point of evaluation (source) by
+    *     checking for the signExtendTo32BitAtSource or zeroExtendTo32BitAtSource flags.
+    */
+   bool isExtendedTo32BitAtSource();
 
-   bool couldIgnoreExtend();
-   void setCouldIgnoreExtend(bool b);
-   const char * printCouldIgnoreExtend();
+   /** \brief
+    *     Determines whether this node should be sign/zero extended to 64-bit at the point of evaluation (source) by
+    *     checking for the signExtendTo64BitAtSource or zeroExtendTo64BitAtSource flags.
+    */
+   bool isExtendedTo64BitAtSource();
 
-   bool force64BitLoad();
-   void setForce64BitLoad(bool b);
-   const char * printForce64BitLoad();
+   /** \brief
+    *     Determines whether this node should be sign extended at the point of evaluation (source) by checking for the
+    *     signExtendTo32BitAtSource or signExtendTo64BitAtSource flags.
+    */
+   bool isSignExtendedAtSource();
 
-   bool isUnsignedLoad();
-   void setIsUnsignedLoad(bool b);
-   const char * printIsUnsignedLoad();
+   /** \brief
+    *     Determines whether this node should be zero extended at the point of evaluation (source) by checking for the
+    *     zeroExtendTo32BitAtSource or zeroExtendTo64BitAtSource flags.
+    */
+   bool isZeroExtendedAtSource();
+
+   /** \brief
+    *     Determines whether this node should be sign extended to 32-bits at the point of evaluation (source).
+    */
+   bool isSignExtendedTo32BitAtSource();
+
+   /** \brief
+    *     Determines whether this node should be sign extended to 64-bits at the point of evaluation (source).
+    */
+   bool isSignExtendedTo64BitAtSource();
+
+   /** \brief
+    *     Marks the load with the signExtendTo32BitAtSource flag.
+    *
+    *  \param b
+    *     Determines whether the respective flag should be active.
+    */
+   void setSignExtendTo32BitAtSource(bool b);
+
+   /** \brief
+    *     Marks the load with the signExtendTo64BitAtSource flag.
+    *
+    *  \param b
+    *     Determines whether the respective flag should be active.
+    */
+   void setSignExtendTo64BitAtSource(bool b);
+
+   const char* printIsSignExtendedTo32BitAtSource();
+   const char* printIsSignExtendedTo64BitAtSource();
+
+   /** \brief
+    *     Determines whether this node should be zero extended to 32-bits at the point of evaluation (source).
+    */
+   bool isZeroExtendedTo32BitAtSource();
+
+   /** \brief
+    *     Determines whether this node should be sign extended to 64-bits at the point of evaluation (source).
+    */
+   bool isZeroExtendedTo64BitAtSource();
+
+   /** \brief
+    *     Marks the load with the zeroExtendTo32BitAtSource flag.
+    *
+    *  \param b
+    *     Determines whether the respective flag should be active.
+    */
+   void setZeroExtendTo32BitAtSource(bool b);
+
+   /** \brief
+    *     Marks the load with the zeroExtendTo32BitAtSource flag.
+    *
+    *  \param b
+    *     Determines whether the respective flag should be active.
+    */
+   void setZeroExtendTo64BitAtSource(bool b);
+
+   const char* printIsZeroExtendedTo32BitAtSource();
+   const char* printIsZeroExtendedTo64BitAtSource();
 
    /**
     * Node field functions
@@ -1863,6 +1924,19 @@ protected:
       dontMoveUnderBranch                   = 0x00002000, ///< Flag used by TR::xload/TR::xRegLoad
       nodeCreatedByPRE                      = 0x00040000, ///< Flag used by TR_xload
 
+      /** \brief
+       *     Represents that a load must be sign/zero extended to a particular width at the point of evaluation.
+       *
+       *  \details
+       *     This flag is used by load nodes to signal the code generator to emit a load and sign/zero extend 
+       *     instructions for the evaluation of this particular load. These flags are used in conjunction with the
+       *     unneededConv flag to avoid sign/zero extension conversions which the respective load feeds into.
+       */
+      signExtendTo32BitAtSource             = 0x00080000, ///< Flag used by TR::xload
+      signExtendTo64BitAtSource             = 0x00100000, ///< Flag used by TR::xload
+      zeroExtendTo32BitAtSource             = 0x00200000, ///< Flag used by TR::xload
+      zeroExtendTo64BitAtSource             = 0x00400000, ///< Flag used by TR::xload
+
       // Flag used by TR::xstore
       privatizedInlinerArg                  = 0x00002000,
 
@@ -1960,9 +2034,15 @@ protected:
       // float/double or double/extended double used
       resultFPStrictCompliant               = 0x00002000,
 
-      // Flags used by conversion nodes e.g. i2b
-      //
-      unneededConv                          = 0x00008000,
+      /** \brief
+       *     Represents that the evaluation of this conversion can be skipped.
+       *
+       *  \details
+       *     This flag is used by conversion nodes to signal the code generator that the respective conversion is not
+       *     needed because the value the conversion is acting on has been cleansed prior to reaching this evaluation
+       *     point.
+       */
+      unneededConv                          = 0x00008000, ///< Flag used by TR::x2y
       ParentSupportsLazyClobber             = 0x00002000, ///< Tactical x86 codegen flag.  Only when refcount <= 1.  Indicates that parent will consult the register's node count before clobbering it (not just the node's refcount).
 
       // Flag used by float to fixed conversion nodes e.g. f2i/f2pd/d2i/df2i/f2l/d2l/f2s/d2pd etc

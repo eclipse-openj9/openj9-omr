@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -44,672 +44,605 @@
 #include "infra/BitVector.hpp"                // for TR_BitVector, etc
 #include "infra/Cfg.hpp"                      // for CFG
 #include "infra/SimpleRegex.hpp"
+#include "infra/ILWalk.hpp"
 #include "optimizer/Optimization.hpp"         // for Optimization
 #include "optimizer/Optimization_inlines.hpp" // for Optimization inlines
 #include "optimizer/Optimizer.hpp"            // for Optimizer
 #include "optimizer/UseDefInfo.hpp"           // for TR_UseDefInfo, etc
 #include "ras/Debug.hpp"                      // for TR_Debug
 
-#define OPT_DETAILS "O^O LOAD EXTENSIONS: "
-
 TR_LoadExtensions::TR_LoadExtensions(TR::OptimizationManager *manager)
    : TR::Optimization(manager),
-     _counts(0), _seenLoads(0), _useDefInfo(NULL), _excludedNodes(comp()->allocator())
+     excludedNodes(NULL), loadExtensionPreference(NULL)
    {
-   setTrace(comp()->getOptions()->getOptsToTrace() && TR::SimpleRegex::match(comp()->getOptions()->getOptsToTrace(), "traceLoadExtensions"));
-   vcount_t visitCount = comp()->incVisitCount();
-   ncount_t nodeCount = 0;
-   TR::Node * node;
+   setTrace(comp()->getOptions()->getOptsToTrace() != NULL && TR::SimpleRegex::match(comp()->getOptions()->getOptsToTrace(), "traceLoadExtensions"));
 
-   // Unfortunately, no globalIndex in the codegen, so need our own index...
-   for (TR::TreeTop *tt = comp()->getStartTree(); tt; tt = tt->getNextTreeTop())
-      {
-      node = tt->getNode();
-      TR_ASSERT(node->getVisitCount() != visitCount, "Code Gen: error in marking load nodes");
-      nodeCount = indexNodesForCodegen(node, nodeCount, visitCount);
-      }
-
-   _signExtensionFlags = new (trHeapMemory()) TR_BitVector(nodeCount*TR::Node::numSignExtensionFlags, trMemory(), heapAlloc, growable);
-
-   TR::SparseBitVector extendedToInt64GlobalRegisters = cg()->getExtendedToInt64GlobalRegisters();
-   extendedToInt64GlobalRegisters.Clear();
-
-   _excludedNodes.Clear();
+   cg()->getExtendedToInt64GlobalRegisters().Clear();
    }
-
-//#define REUSE_USEDEFS
-//#define DISABLE_REGLOADS
 
 int32_t TR_LoadExtensions::perform()
    {
-
-
-   if (
-#ifdef DISABLE_REGLOADS
-       0 &&
-#endif
-       (comp()->getOptLevel() > noOpt) &&
-       _seenLoads & 0x2 && optimizer()
-       && !optimizer()->cantBuildGlobalsUseDefInfo()
-#ifdef REUSE_USEDEFS
-        && (NULL == (_useDefInfo = optimizer()->getUseDefInfo()) ||
-            !_useDefInfo->hasGlobalsUseDefs() ||
-            !_useDefInfo->_useDefForRegs)
-#endif
-      )
+   if (comp()->getOptLevel() >= warm && !optimizer()->cantBuildGlobalsUseDefInfo())
       {
       if (!comp()->getFlowGraph()->getStructure())
+         {
          optimizer()->doStructuralAnalysis();
+         }
 
-      TR::LexicalMemProfiler mp("use defs (Load Extensions)", comp()->phaseMemProfiler());
+      TR::LexicalMemProfiler memoryProfiler("Load Extensions: Usedef calculation", comp()->phaseMemProfiler());
 
       optimizer()->setUseDefInfo(NULL);
 
-      _useDefInfo = new (comp()->allocator()) TR_UseDefInfo(comp(), comp()->getFlowGraph(), optimizer(), false, false, false, true, true);
+      TR_UseDefInfo* useDefInfo = new (comp()->allocator()) TR_UseDefInfo(comp(), comp()->getFlowGraph(), optimizer(), false, false, false, true, true);
 
-      if (_useDefInfo->infoIsValid())
-         optimizer()->setUseDefInfo(_useDefInfo);
+      if (useDefInfo->infoIsValid())
+         {
+         optimizer()->setUseDefInfo(useDefInfo);
+         }
       else
          {
-         // release storage for failed _useDefInfo
-         delete _useDefInfo;
-         _useDefInfo = NULL;
+         delete useDefInfo;
          }
       }
 
-   {
    TR::StackMemoryRegion stackMemoryRegion(*trMemory());
 
-   _counts = (int32_t *)trMemory()->allocateStackMemory(comp()->getNodeCount()*sizeof(int32_t), TR_Memory::CodeGenerator);
-   memset(_counts, 0, comp()->getNodeCount()*sizeof(int32_t));
+   excludedNodes = new (stackMemoryRegion) NodeToIntTable(NodeToIntTableComparator(), NodeToIntTableAllocator(stackMemoryRegion));
+   loadExtensionPreference = new (stackMemoryRegion) NodeToIntTable(NodeToIntTableComparator(), NodeToIntTableAllocator(stackMemoryRegion));
 
-   vcount_t visitCount = comp()->incVisitCount();
-
-   for (TR::TreeTop *tt = comp()->getStartTree(); tt; tt = tt->getNextTreeTop())
+   for (TR::PreorderNodeIterator iter(comp()->getStartTree(), comp()); iter.currentTree() != NULL; ++iter)
       {
-      TR::Node *node = tt->getNode();
-      TR_ASSERT(node->getVisitCount() != visitCount, "Code Gen: error in marking load nodes");
-      countLoadExtensions(node, visitCount);
+      findPreferredLoadExtensions(iter.currentNode());
       }
 
-   visitCount = comp()->incVisitCount();
-
-   for (TR::TreeTop *tt = comp()->getStartTree(); tt; tt = tt->getNextTreeTop())
+   for (TR::PreorderNodeIterator iter(comp()->getStartTree(), comp()); iter.currentTree() != NULL; ++iter)
       {
-      TR::Node *node = tt->getNode();
-      TR_ASSERT(node->getVisitCount() != visitCount, "Code Gen: error in marking load nodes");
-      setPreferredExtension(node, visitCount);
+      flagPreferredLoadExtensions(iter.currentNode());
       }
-
-   } // scope for stack memory region
 
    return 0;
    }
 
-void TR_LoadExtensions::countLoad(TR::Node* load, TR::Node* conversion)
+const bool TR_LoadExtensions::canSkipConversion(TR::Node* conversion, TR::Node* child, bool& forceExtension)
    {
-   TR::ILOpCode& opcode = conversion->getOpCode();
+   bool result = false;
 
-   if (opcode.isSignExtension()) // i.e. TR::b2i
+   // Assume we are not forcing the load (if the child is really a load) to be zero/sign extended
+   forceExtension = false;
+
+   if (trace())
       {
-      if (trace()) traceMsg(comp(), "\t\tSigned %p %p\n", conversion, load);
-      _counts[load->getGlobalIndex()]+=totalFlags;
+      traceMsg(comp(), "\t\tExamining conversion %s [%p]\n", 
+         conversion->getOpCode().getName(), 
+         conversion);
       }
-   else if (conversion->isZeroExtension() || opcode.isUnsigned()) // i.e. TR::bu2i || TR::buadd
+
+   if (isSupportedType(child) && excludedNodes->count(child) == 0)
       {
-      if (trace()) traceMsg(comp(), "\t\tUnsigned %p %p\n", conversion, load);
-      _counts[load->getGlobalIndex()]-=totalFlags;
+      const int32_t preference = getExtensionPreference(child);
+
+      const bool loadPrefersSignExtension = preference > 0;
+      const bool loadPrefersZeroExtension = preference < 0;
+
+      TR::ILOpCode& conversionOpCode = conversion->getOpCode();
+
+      if (isSupportedLoad(child) &&
+
+         // Only consider widening conversions
+         conversion->getSize() > child->getSize() &&
+
+         // Ensure we do not use register pairs for 64-bit loads on 32-bit platforms
+         (TR::Compiler->target.is64Bit() || comp()->cg()->use64BitRegsOn32Bit() || conversion->getSize() != 8) &&
+
+         // Ensure the conversion matches our preferred extension on the load
+         (loadPrefersSignExtension && loadPrefersSignExtension == conversionOpCode.isSignExtension() ||
+          loadPrefersZeroExtension && loadPrefersZeroExtension == conversion->isZeroExtension()))
+         {
+         if (trace())
+            {
+            traceMsg(comp(), "\t\tDetected sign extension pattern on widening conversion %s [%p] and load %s [%p]\n", 
+               conversion->getOpCode().getName(), 
+               conversion, 
+               child->getOpCode().getName(), 
+               child);
+            }
+
+         forceExtension = true;
+         result = true;
+         }
+
+      if (conversion->getSize() < child->getSize())
+         {
+         // TODO (Issue #2213): Determine whether this case is ever needed and why? Shouldn't the simplifier have eliminated such IL?
+         if (child->getOpCode().isConversion())
+            {
+            TR::Node* grandChild = child->getFirstChild();
+
+            if (isSupportedLoad(grandChild) &&
+
+               // Conversion is narrowing down to the original width (i.e. stacked conversion which is a NOP)
+               conversion->getSize() == grandChild->getSize())
+               {
+               if (trace())
+                  {
+                  traceMsg(comp(), "\t\tDetected sign extension pattern on narrowing conversion %s [%p] and load %s [%p]\n", 
+                     conversion->getOpCode().getName(), 
+                     conversion, 
+                     child->getOpCode().getName(), 
+                     child);
+                  }
+
+               result = true;
+               }
+            }
+         }
       }
-   else // i.e. TR::isub
-      {
-      if (trace()) traceMsg(comp(), "\t\tSignedd %p %p\n", conversion, load);
-      //Do not pennalize loads for opcodes that do not care about sign
-      _counts[load->getGlobalIndex()]+=totalFlags;
-      }
+
+   return result;
    }
 
-bool TR_LoadExtensions::supportedConstLoad(TR::Node *load, TR::Compilation * c)
+const bool TR_LoadExtensions::isSupportedType(TR::Node* node) const
    {
-   TR_ASSERT(load->getOpCode().isLoadConst(), "Only meant to be called by const loads.");
+   bool result = node->getType().isIntegral() || node->getType().isAddress();
 
-   //this line can be removed as part of implemention task 63142
-   return false;
-
-   if (load->getSize() > 4 || !load->getType().isIntegral())
-      return false;
-#define MAX_IMMEDIATE_VAL            32767         // 0x7fff
-#define MIN_IMMEDIATE_VAL           -32768         // 0x8000
-
-   int32_t value = MAX_IMMEDIATE_VAL+1;
-   switch(load->getOpCodeValue())
+   // Disallow static integral loads of size smaller than an int
+   if (!TR::comp()->cg()->getAccessStaticsIndirectly() &&
+      node->getOpCode().isLoadDirect() &&
+      node->getOpCode().hasSymbolReference() && node->getSymbol()->isStatic() &&
+      !node->getOpCode().isInt() && !node->getOpCode().isLong())
       {
-      case TR::buconst:    value = load->getByte() & 0xFF; break;
-      case TR::bconst:     value = load->getByte(); break;
-      case TR::cconst:     value = load->getConst<uint16_t>(); break;
-      case TR::sconst:     value = load->getShortInt(); break;
-      case TR::iconst:     value = load->getInt(); break;
-      default: break;
+      result = false;
       }
-   if (value >= MIN_IMMEDIATE_VAL && value <= MAX_IMMEDIATE_VAL)
-      return true;
-   return false;
+
+   return result;
    }
 
-void TR_LoadExtensions::countLoadExtensions(TR::Node *parent, vcount_t visitCount)
+const bool TR_LoadExtensions::isSupportedLoad(TR::Node* node) const
    {
-   if (parent->getVisitCount() == visitCount)
-      return;
+   bool result = false;
 
-   parent->setVisitCount(visitCount);
-   TR::ILOpCode& opcode = parent->getOpCode();
+   // We don't need to handle constant loads because simplifier would have taken care of these already
+   if (node->getOpCode().isLoadVar())
+      {
+      result = true;
+      }
+
+   return result;
+   }
+
+void TR_LoadExtensions::findPreferredLoadExtensions(TR::Node* parent)
+   {
+   TR::ILOpCode& parentOpCode = parent->getOpCode();
 
    // count how a load is being used. As a signed or unsigned number?
-   if (opcode.isConversion() && supportedType(parent))
+   if (isSupportedType(parent) && parentOpCode.isConversion())
       {
-      TR::Node *load = parent->getFirstChild();
-      if ((load->getOpCode().isLoadVar() || load->getOpCode().isLoadReg() || load->getOpCode().isLoadConst()) &&
-          supportedType(load) &&
-          parent->getSize() != load->getSize())
+      TR::Node* child = parent->getFirstChild();
+
+      // Only examine non-trivial conversions
+      if (isSupportedType(child) && parent->getSize() != child->getSize())
          {
-         if (load->getOpCode().isLoadReg())
+         if (isSupportedLoad(child))
             {
-            if (optimizer() && _useDefInfo && _useDefInfo->infoIsValid() &&
-                load->getUseDefIndex() && _useDefInfo->isUseIndex(load->getUseDefIndex()) &&
-                (parent->getSize() < 8)) // On Java disable i2l, because of interferance with HRA
+            setExtensionPreference(child, parent);
+            }
+         else if (child->getOpCode().isLoadReg())
+            {
+            TR::Node* useRegLoad = child;
+
+            TR_UseDefInfo* useDefInfo = optimizer()->getUseDefInfo();
+
+            // If we have usedef info we can traverse all defs of this particular use and if all the defs are stores
+            // of supported counted loads then we can count such loads as well. If this criteria is not met then there
+            // exists at least one def (store) of this particular use which feeds from a non-load operation (an
+            // addition for example). These are not candidates for skipping extension because we cannot easily extend
+            // a non-load operation.
+            if (useDefInfo != NULL && useDefInfo->infoIsValid() && useRegLoad->getUseDefIndex() != 0 && useDefInfo->isUseIndex(useRegLoad->getUseDefIndex() != 0))
                {
                TR_UseDefInfo::BitVector info(comp()->allocator());
-               _useDefInfo->getUseDef(info, load->getUseDefIndex());
-               if (!info.IsZero())
+
+               if (useDefInfo->getUseDef(info, useRegLoad->getUseDefIndex()))
                   {
-                  if (trace()) traceMsg(comp(), "\t\tPeeking through RegLoad %p for Conversion %p (%s)\n", load, parent, parent->getOpCode().getName());
+                  if (trace())
+                     {
+                     traceMsg(comp(), "\t\tPeeking through RegLoad %p for conversion %s [%p]\n", 
+                        useRegLoad, 
+                        parentOpCode.getName(), 
+                        parent);
+                     }
+
                   TR_UseDefInfo::BitVector::Cursor cursor(info);
-                  int32_t firstDefIndex = _useDefInfo->getFirstRealDefIndex();
-                  int32_t firstUseIndex = _useDefInfo->getFirstUseIndex();
+
+                  int32_t firstDefIndex = useDefInfo->getFirstRealDefIndex();
+                  int32_t firstUseIndex = useDefInfo->getFirstUseIndex();
+
                   for (cursor.SetToFirstOne(); cursor.Valid(); cursor.SetToNextOne())
                      {
                      int32_t defIndex = cursor;
-                     if (defIndex >= firstUseIndex)
-                        break;
 
-                     // Definition is the method parameter (entry)
+                     // We've examined all the defs of this particular use
+                     if (defIndex >= firstUseIndex)
+                        {
+                        break;
+                        }
+
+                     // Do not consider defs that correspond to method arguments as we cannot force extension on those
                      if (defIndex < firstDefIndex)
                         {
-                        setOverrideOpt(parent, regLoadOverride);
+                        (*excludedNodes)[parent] = true;
                         break;
                         }
 
-                     TR::Node *defNode = _useDefInfo->getNode(defIndex);
-                     if (!defNode)
-                        continue;
+                     TR::Node* defRegLoad = useDefInfo->getNode(defIndex);
 
-                     TR::Node *realLoad = NULL;
-                     if (defNode->getOpCode().isStoreReg() &&
-                           NULL!= (realLoad = defNode->getFirstChild()) &&
-                           (realLoad->getOpCode().isLoadVar() || (realLoad->getOpCode().isLoadConst() && supportedConstLoad(realLoad, comp()))) &&
-                           supportedType(realLoad))
+                     if (defRegLoad != NULL)
                         {
-                        if (trace()) traceMsg(comp(), "\t\tPeeked through %p (%s) and found %p (%s) with child %p (%s), Counting.\n",
-                                          load, load->getOpCode().getName(),
-                                          defNode, defNode->getOpCode().getName(),
-                                          realLoad, realLoad->getOpCode().getName());
-                        countLoad(realLoad, parent);
-                        }
-                     else
-                        {
-                        if (trace()) traceMsg(comp(), "\t\tPeeked through %p (%s) and found %p (%s) with child %p (%s), setting Ignore.\n",
-                                          load, load->getOpCode().getName(),
-                                          defNode, defNode->getOpCode().getName(),
-                                          realLoad, realLoad ? realLoad->getOpCode().getName() : "NULL");
-                        setOverrideOpt(parent, regLoadOverride);
+                        TR::Node* defRegLoadChild = defRegLoad->getFirstChild();
+
+                        if (defRegLoad->getOpCode().isStoreReg() && isSupportedType(defRegLoadChild) && isSupportedLoad(defRegLoadChild))
+                           {
+                           if (trace())
+                              {
+                              traceMsg(comp(), "\t\tPeeked through use %s [%p] and found def %s [%p] with child %s [%p] - Counting [%p]\n",
+                                 useRegLoad->getOpCode().getName(), 
+                                 useRegLoad,
+                                 defRegLoad->getOpCode().getName(), 
+                                 defRegLoad,
+                                 defRegLoadChild->getOpCode().getName(), 
+                                 defRegLoadChild, 
+                                 defRegLoadChild);
+                              }
+
+                           setExtensionPreference(defRegLoadChild, parent);
+                           }
+                        else
+                           {
+                           if (trace())
+                              {
+                              traceMsg(comp(), "\t\tPeeked through use %s [%p] and found def %s [%p] with child %s [%p] - Excluding [%p]\n",
+                                 useRegLoad->getOpCode().getName(), 
+                                 useRegLoad,
+                                 defRegLoad->getOpCode().getName(), 
+                                 defRegLoad,
+                                 defRegLoadChild != NULL ? 
+                                    defRegLoadChild->getOpCode().getName() : 
+                                    "NULL", 
+                                 defRegLoadChild, 
+                                 parent);
+                              }
+
+                           (*excludedNodes)[parent] = true;
+                           }
                         }
                      }
                   }
                }
             else
                {
-               // No UseDef info, override OPT
-               setOverrideOpt(parent, regLoadOverride);
+               (*excludedNodes)[parent] = true;
                }
             }
-         else if (load->getOpCode().isLoadConst())
+         }
+      }
+
+
+   // Exclude all loads which feed into global register stores which require sign extensions. This must be done 
+   // because Load Extensions is a local optimization and it must respect global sign extension decisions made
+   // by GRA. Excluding such loads prevents a situation where GRA decided that a particular global register
+   // should be sign extended at its definitions however Load Extensions has determined that the same load
+   // should be zero extended. If local RA were to pick the same register for the global register as well as
+   // the load then we have a conflicting decision which will result in a conversion to be skipped when it is
+   // not supposed to be.
+   if (parentOpCode.isStoreReg() && parent->needsSignExtension() && parent->getFirstChild()->getOpCode().isLoadVar())
+      {
+      (*excludedNodes)[parent->getFirstChild()] = true;
+      }
+   }
+
+void TR_LoadExtensions::flagPreferredLoadExtensions(TR::Node* parent)
+   {
+   if (isSupportedType(parent) && parent->getOpCode().isConversion())
+      {
+      TR::Node* child = parent->getFirstChild();
+
+      bool canSkipConversion = false;
+
+      if (isSupportedType(child))
+         {
+         if (parent->getSize() == child->getSize())
             {
-            if (supportedConstLoad(load, comp()))
-               countLoad(load, parent);
+            TR::DebugCounter::incStaticDebugCounter(comp(), TR::DebugCounter::debugCounterName(comp(), "codegen/LoadExtensions/success/unneededConversion/%s", comp()->signature()));
+
+            parent->setUnneededConversion(true);
             }
          else
-            countLoad(load, parent);
-         }
-      }
-
-
-   for (int32_t i = 0; i < parent->getNumChildren(); i++)
-      {
-      TR::Node *child = parent->getChild(i);
-
-      // See how a conversion is being used. A narrowing conversion may be unneeded as long as it feeds only:
-      //  - conversions
-      //  - stores
-      //
-      // (Do counting for all conversions. Whether it is a narrowing conversion is verified at the flag-setting stage)
-      if (child->getOpCode().isConversion())
-         {
-         if (opcode.isStoreReg())
             {
-            // TODO: traverse all the defs linked to parent, see all can be ignored
-            setOverrideOpt(child, narrowOverride);
-            }
-         else if (detectReverseNeededConversionPattern(parent, child))
-            setOverrideOpt(child, narrowOverride);
-        // We counted all the loads feeding into conversions (before the loop), now count the other references to loads
-        else if (!opcode.isConversion() && child->getOpCode().isLoadVar() && supportedType(child))
-           countLoad(child, parent);
-         }
+            TR::ILOpCode& childOpCode = child->getOpCode();
 
-      // See how a load is being used. If a load feeds only to narrowing conversions, we may set couldIgnoreExtend() flag on the load
-      // WARNING: "Clever idea" -- set the LSB, to mean that does _not_ feed into a narrowing conversion, use other bits as int
-      if (child->getOpCode().isLoadVar() &&
-            (!opcode.isConversion() ||
-              (opcode.isConversion() && parent->getSize() < child->getSize())))
-         {
-         //traceMsg(comp, "\t\t\tSigned %p\n", child);
-         //_counts[child->getGlobalIndex()] |= 0x0001 setOverrideOpt(child, loadOverride);;
-         }
-
-      // Exclude all loads which feed into global register stores which require sign extensions. This must be done 
-      // because Load Extensions is a local optimization and it must respect global sign extension decisions made
-      // by GRA. Excluding such loads prevents a situation where GRA decided that a particular global register
-      // should be sign extended at its definitions however Load Extensions has determined that the same load
-      // should be zero extended. If local RA were to pick the same register for the gloabl register as well as
-      // the load then we have a conflicting decision which will result in a conversion to be skipped when it is
-      // not supposted to be.
-      if (opcode.isStoreReg() && parent->needsSignExtension() && child->getOpCode().isLoadVar())
-         {
-         _excludedNodes[child->getGlobalIndex()] = true;
-         }
-
-      countLoadExtensions(child, visitCount);
-      }
-   }
-
-/**
- * Detect for
- *   parent
- *     conversion (narrowing)
- *
- * This function returns false for patterns we might ignore a narrowing conversion for
- * @param parent
- * @param conversion
- * @return
- */
-bool TR_LoadExtensions::detectReverseNeededConversionPattern(TR::Node* parent, TR::Node* conversion)
-   {
-   TR::ILOpCode& opcode = parent->getOpCode();
-
-   // Many programmers zero out top bits with AND. Calculate the AND mask that will result in conversion being unneeeded
-   // i.e.
-   // i2s <unneeded>         i2su <unneeded>
-   //   iand                   iand
-   //     s2i <unneeded>         su2i <unneeded>
-   //       sX                     sX
-   //     iconst 0x7FFF          iconst 0xFFFF
-   if (opcode.isAnd() &&
-         (conversion->getSize() - conversion->getFirstChild()->getSize()) > 0) // Must be widening conversion
-      {
-      TR::Node *constant;
-      int64_t andMask = 8 * conversion->getFirstChild()->getSize();
-      andMask  = (1ll<<andMask) - 1;
-      int64_t andMask2 = andMask>>1ll;
-      if ((NULL != (constant = parent->getFirstChild()) &&
-             constant->getOpCode().isLoadConst() ||
-           NULL != (constant = parent->getSecondChild()) &&
-             constant->getOpCode().isLoadConst() &&
-             !constant->getType().isAggregate()) &&
-          (constant->get64bitIntegralValue() == andMask2  ||
-            (conversion->getOpCode().isZeroExtension() &&  (constant->get64bitIntegralValue() == andMask))))
-         return false;
-      }
-   else if (opcode.isConversion() || (opcode.isStore() && !opcode.isStoreReg()))
-      return false;
-
-   return true;
-   }
-
-bool TR_LoadExtensions::detectUnneededConversionPattern(TR::Node* conversion, TR::Node* child, bool& mustForce64)
-   {
-   TR::ILOpCode& opcode = conversion->getOpCode();
-   TR::ILOpCode& childOpcode = child->getOpCode();
-   const bool isConvWide = child->getSize() < conversion->getSize();
-   mustForce64 = false;
-
-   TR::Node *grandChild;
-   if (trace()) traceMsg(comp(), "\t\tLooking at conversion %p%s%s\n", conversion,
-                        isOverriden(conversion, narrowOverride) ? " [narrow]" : "",
-                        isOverriden(conversion, regLoadOverride) ? " [regLoad]" : "");
-
-   int64_t andMask = 8*conversion->getSize();
-   andMask  = (1ll<<andMask) - 1;
-   int64_t andMask2 = andMask>>1ll;
-   if (!_excludedNodes[child->getGlobalIndex()] && supportedType(child))
-      {
-      bool loadIsSigned = countIsSigned(child);
-      /*
-       * conv  (widening)
-       *   load
-       * Set flags on conversion, for it to be ignored
-       * Exceptions, cannot ignore if:
-       *   - sign of load does not match (i.e. RefCnt > 1, load is being used with different signedness, odd)
-       * TODO:
-       *   - addresses?
-       *   - conv
-       *       iload <Fixed24>
-       *   - if <Frequency!!!!!>
-       *       i2l
-       *         load <Load-and-test>
-       */
-
-      if ((childOpcode.isLoadVar() || (childOpcode.isLoadConst() && supportedConstLoad(child, comp()))) &&
-            isConvWide &&
-            (conversion->getSize() != 8 || (TR::Compiler->target.is64Bit() || comp()->cg()->use64BitRegsOn32Bit())) &&
-            ((loadIsSigned && (loadIsSigned == opcode.isSignExtension())) || (!loadIsSigned && ((!loadIsSigned) == conversion->isZeroExtension())) )&&
-            ( opcode.getOpCodeValue() != TR::a2l || ((child->getReferenceCount() == 1) && TR::Compiler->target.is32Bit())))  // 4 byte a2l really means 31->64! careful!
-         {
-         if (trace()) traceMsg(comp(), "\t\tDetected Sign Extension pattern on conversion and load nodes %p\n", conversion);
-         if ((conversion->getSize() == 8 || conversion->useSignExtensionMode()))
-            mustForce64 = true;
-         return true;
-         }
-      // See how a conversion is being used. A narrowing conversion may be unneeded as long as it feeds only:
-      //  - conversions
-      //  - stores
-      // If above is not true, counts[node->getGlobalIndex()] would had been set to true/1
-      // l2i can be also ignored: will either grab the reg->getLowOrder() or keep on passing GPR64
-      else if (!isConvWide && (!isOverriden(conversion, narrowOverride) ||
-            // Also ignore a narrowing conversion if:
-            // i2b ---------    <<------------------|
-            //   bu2i       = --- same size then unneeded
-            //     bX ------
-            // (probably too conservative but good for now)
-            childOpcode.isConversion() &&
-            NULL != (grandChild = child->getFirstChild()) &&
-            supportedType(grandChild) &&
-            grandChild->getSize() == conversion->getSize()))
-         {
-         if (trace()) traceMsg(comp(), "\t\tDetected Sign Extension pattern on narrowing conversion node %p\n", conversion);
-         return true;
-         }
-      else if (childOpcode.isRightShift() &&
-            child->getSecondChild()->getOpCode().isLoadConst() &&
-            child->getSecondChild()->getInt() == (child->getSize() - conversion->getSize())) //(16|24|32...?)
-         {
-         if (trace()) traceMsg(comp(), "\t\tDetected Sign Extension pattern on conversion and right shift nodes %p\n", conversion);
-         return true;
-         }
-      else if (childOpcode.isBooleanCompare() &&
-            conversion->getSize() != 8)// Needs a conversion from GPR32 to GPR64 or 2xGPR32
-         {
-         if (trace()) traceMsg(comp(), "\t\tDetected Sign Extension pattern on conversion and compare nodes %p\n", conversion);
-         return true;
-         }
-      // Many programmers zero out top bits with AND. Calculate the AND mask that will result in conversion being unneeeded
-      // i.e.
-      // i2s <unneeded>         i2su <unneeded>
-      //   iand                   iand
-      //     s2i <unneeded>         su2i <unneeded>
-      //       sX                     sX
-      //     iconst 0x7FFF          iconst 0xFFFF
-      else if (!isConvWide && childOpcode.isAnd())
-         {
-         uint64_t mask = 0;
-         uint64_t maskZeroExtend = andMask;
-         uint64_t maskSignExtend = andMask2;
-         if (child->getFirstChild()->getOpCode().isLoadConst())
-            mask = child->getFirstChild()->get64bitIntegralValue();
-         else if (child->getSecondChild()->getOpCode().isLoadConst())
-            mask = child->getSecondChild()->get64bitIntegralValue();
-         if (mask == 0)
-            return false;
-         else if (opcode.isZeroExtension() && mask <= maskZeroExtend)
-            {
-            if (trace()) traceMsg(comp(), "\t\tDetected Sign Extension pattern on conversion and AND nodes %p\n", conversion);
-            return true;
-            }
-         else if (mask <= maskSignExtend)
-            {
-            if (trace()) traceMsg(comp(), "\t\tDetected Sign Extension pattern on conversion and AND nodes %p\n", conversion);
-            return true;
-            }
-         else
-            return false;
-         }
-#if defined(TR_TARGET_S390)
-      // Only for  PLX
-      else if (isConvWide && conversion->getSize() == 4 && cg()->isUsing32BitEvaluator(child) &&  child->cannotOverflow() &&
-               ((opcode.isSignExtension() && !childOpcode.isLoadReg()) ||
-                child->isNonNegative()))
-         {
-         if (trace()) traceMsg(comp(), "\t\tDetected Sign Extension s2i/b2i pattern on ssub/sadd, bsub/badd and/or sRegLoad/bRegLoad %p\n", conversion);
-         return true;
-         }
-#endif
-      else
-         {
-         return false;
-         }
-      }
-   else
-      return false;
-   }
-
-void TR_LoadExtensions::setPreferredExtension(TR::Node *node, vcount_t visitCount)
-   {
-   if (node->getVisitCount() == visitCount)
-      return;
-
-   node->setVisitCount(visitCount);
-
-   TR::ILOpCode& opcode = node->getOpCode();
-
-   if (supportedType(node))
-      {
-      if (opcode.isLoadVar() || (opcode.isLoadConst() && supportedConstLoad(node, comp())))
-         {
-         bool loadIsSigned = countIsSigned(node);
-
-         node->setIsUnsignedLoad(!loadIsSigned);
-
-         //if ((counts[node->getGlobalIndex()] & 0x0001) == 0)
-         //   node->setCouldIgnoreExtend(true);
-         }
-      else if (opcode.isConversion())
-         {
-         TR::Node *child = node->getFirstChild();
-         TR::ILOpCode& childOpcode = child->getOpCode();
-         bool isConvWide = child->getSize() < node->getSize();
-         bool isUnneeded = false;
-         //traceMsg(_compilation, "\t\t\tLooking at Conversion %p\n", node);
-         if (child->getSize() == node->getSize())
-            {
-            // conversion is unneeded, no need to take the high road...
-            if (supportedType(child)) // e.g. pd2i,f2i *are* needed
+            if (childOpCode.isLoadReg()
+               && !(parent->getSize() > 4 && TR::Compiler->target.is32Bit())
+               && excludedNodes->count(parent) == 0)
                {
-               if (child->getSize() >= 2 &&
-                   (node->getOpCodeValue() == TR::bu2i ||
-                    node->getOpCodeValue() == TR::b2i))
-                  {
-                  }
-               else if (child->getSize() >= 4 &&
-                        (node->getOpCodeValue() == TR::su2i ||
-                         node->getOpCodeValue() == TR::s2i))
-                  {
-                  }
-               else if (child->getSize() == 8 &&
-                        (node->getOpCodeValue() == TR::iu2l ||
-                         node->getOpCodeValue() == TR::i2l))
-                  {
-                  }
-               else
-                  {
-                  node->setUnneededConversion(true);
-                  }
-               }
-            }
-         else if (childOpcode.isLoadReg()
-                  && !(node->getSize() > 4 && TR::Compiler->target.is32Bit())
-                  && !isOverriden(node, regLoadOverride) && supportedType(child))
-            {
-            TR_ASSERT(optimizer() && _useDefInfo && _useDefInfo->infoIsValid() && child->getUseDefIndex() && _useDefInfo->isUseIndex(child->getUseDefIndex()),
-                           "No UseDef info available, yet override flag not set!\n");
+               TR::Node* useRegLoad = child;
 
-            TR_UseDefInfo::BitVector info(comp()->allocator());
-            _useDefInfo->getUseDef(info, child->getUseDefIndex());
-            TR_ASSERT(!info.IsZero() || !childOpcode.isLoadReg(), "Could not get UseDef info for RegLoad!");
-            TR_UseDefInfo::BitVector::Cursor cursor(info);
-            int32_t firstDefIndex = _useDefInfo->getFirstRealDefIndex();
-            int32_t firstUseIndex = _useDefInfo->getFirstUseIndex();
-            isUnneeded = true;
-            bool mustForce64All = false;
-            bool mustForce64 = true;
-            for (cursor.SetToFirstOne(); isUnneeded && cursor.Valid(); cursor.SetToNextOne())
-               {
-               int32_t defIndex = cursor;
-               if (defIndex >= firstUseIndex)
-                  break;
+               TR_UseDefInfo* useDefInfo = optimizer()->getUseDefInfo();
 
-               // Definition is the method parameter (entry)
-               if (defIndex < firstDefIndex)
-                  continue;
-
-               TR::Node *defNode = _useDefInfo->getNode(defIndex);
-               if (!defNode)
-                  continue;
-
-               TR::Node *realLoad = defNode->getFirstChild();
-               bool mustForce64Case = false;
-               isUnneeded &= detectUnneededConversionPattern(node, realLoad, mustForce64Case);
-               mustForce64All |= mustForce64Case;
-               mustForce64 &= mustForce64Case;
-               isUnneeded &= (mustForce64 == mustForce64All); //i.e. break?
-               if (trace()) traceMsg(comp(), "\t\tPeeked through %p (%s) and found %p (%s) with child %p (%s), evaluate %s%s.\n",
-                              child, child->getOpCode().getName(),
-                              defNode, defNode->getOpCode().getName(),
-                              realLoad, realLoad->getOpCode().getName(),
-                              isUnneeded ? "unneed" : "need",
-                              mustForce64 ? " mustForce64" : "");
-               }
-
-            if (isUnneeded && performTransformation(comp(), "%sFound Unneeded conversion %p after RegLoad\n", OPT_DETAILS, node))
-               {
-               if (isUnneeded && mustForce64)
+               if (useDefInfo != NULL && useDefInfo->infoIsValid() && useRegLoad->getUseDefIndex() != 0 && useDefInfo->isUseIndex(useRegLoad->getUseDefIndex() != 0))
                   {
-                  TR_UseDefInfo::BitVector info2(comp()->allocator());
-                  _useDefInfo->getUseDef(info2, child->getUseDefIndex());
-                  TR_UseDefInfo::BitVector::Cursor cursor2(info2);
-                  for (cursor2.SetToFirstOne(); cursor2.Valid(); cursor2.SetToNextOne())
+                  TR_UseDefInfo::BitVector info(comp()->allocator());
+
+                  if (useDefInfo->getUseDef(info, useRegLoad->getUseDefIndex()))
                      {
-                     int32_t defIndex = cursor2;
-                     if (defIndex >= firstUseIndex)
-                        break;
+                     TR_UseDefInfo::BitVector::Cursor cursor(info);
 
-                     // Definition is the method parameter (entry)
-                     if (defIndex < firstDefIndex)
-                        continue;
+                     int32_t firstDefIndex = useDefInfo->getFirstRealDefIndex();
+                     int32_t firstUseIndex = useDefInfo->getFirstUseIndex();
 
-                     TR::Node *defNode = _useDefInfo->getNode(defIndex);
-                     if (!defNode)
-                        continue;
-                     if (trace()) traceMsg(comp(), "\t\t\tSetting force64 on %p (%p)\n", defNode->getFirstChild(), child);
-                     defNode->getFirstChild()->setForce64BitLoad(true);
+                     canSkipConversion = true;
+
+                     bool forceExtensionOnAnyLoads = false;
+                     bool forceExtensionOnAllLoads = true;
+
+                     for (cursor.SetToFirstOne(); cursor.Valid() && canSkipConversion; cursor.SetToNextOne())
+                        {
+                        int32_t defIndex = cursor;
+
+                        // We've examined all the defs of this particular use
+                        if (defIndex >= firstUseIndex)
+                           {
+                           break;
+                           }
+
+                        // Do not consider defs that correspond to method arguments as we cannot force extension on those
+                        if (defIndex < firstDefIndex)
+                           {
+                           continue;
+                           }
+
+                        TR::Node* defRegLoad = useDefInfo->getNode(defIndex);
+
+                        if (defRegLoad != NULL)
+                           {
+                           TR::Node* defRegLoadChild = defRegLoad->getFirstChild();
+
+                           bool forceExtension = false;
+                           canSkipConversion = TR_LoadExtensions::canSkipConversion(parent, defRegLoadChild, forceExtension);
+
+                           forceExtensionOnAnyLoads |= forceExtension;
+                           forceExtensionOnAllLoads &= forceExtension;
+
+                           // If we have to force extension on any loads which feed a def of this use ensure we must also 
+                           // force extension on all such loads. Conversely the conversion can be skipped if none of the
+                           // loads feeding the def of this use need to be extended. This ensures either all loads feeding
+                           // into defs of this use should be extended or none of them.
+                           canSkipConversion &= forceExtensionOnAllLoads == forceExtensionOnAnyLoads;
+
+                           if (trace())
+                              {
+                              traceMsg(comp(), "\t\tPeeked through %s [%p] and found %s [%p] with child %s [%p] - conversion %s be skipped\n",
+                                 useRegLoad->getOpCode().getName(), 
+                                 useRegLoad,
+                                 defRegLoad->getOpCode().getName(), 
+                                 defRegLoad,
+                                 defRegLoadChild->getOpCode().getName(), 
+                                 defRegLoadChild,
+                                 canSkipConversion ? 
+                                    "can" :
+                                    "cannot");
+                              }
+                           }
+                        }
+
+                     if (canSkipConversion && performTransformation(comp(), "%sSkipping conversion %s [%p] after RegLoad\n", optDetailString(), parent->getOpCode().getName(), parent))
+                        {
+                        TR::DebugCounter::incStaticDebugCounter(comp(), TR::DebugCounter::debugCounterName(comp(), "codegen/LoadExtensions/success/unneededConversion/GRA/%s", comp()->signature()));
+
+                        parent->setUnneededConversion(true);
+
+                        if (forceExtensionOnAllLoads)
+                           {
+                           TR_UseDefInfo::BitVector info(comp()->allocator());
+
+                           if (useDefInfo->getUseDef(info, useRegLoad->getUseDefIndex()))
+                              {
+                              TR_UseDefInfo::BitVector::Cursor cursor(info);
+
+                              for (cursor.SetToFirstOne(); cursor.Valid(); cursor.SetToNextOne())
+                                 {
+                                 int32_t defIndex = cursor;
+
+                                 // We've examined all the defs of this particular use
+                                 if (defIndex >= firstUseIndex)
+                                    {
+                                    break;
+                                    }
+
+                                 // Do not consider defs that correspond to method arguments as we cannot force extension on those
+                                 if (defIndex < firstDefIndex)
+                                    {
+                                    continue;
+                                    }
+
+                                 TR::Node *defRegLoad = useDefInfo->getNode(defIndex);
+
+                                 if (defRegLoad != NULL)
+                                    {
+                                    TR::Node* defRegLoadChild = defRegLoad->getFirstChild();
+
+                                    const int32_t preference = getExtensionPreference(defRegLoadChild);
+
+                                    if (preference > 0)
+                                       {
+                                       if (trace())
+                                          {
+                                          traceMsg(comp(), "\t\t\tForcing sign extension on %s [%p]\n",
+                                             defRegLoadChild->getOpCode().getName(),
+                                             defRegLoadChild);
+                                          }
+
+                                       if (parent->getSize() == 8 || parent->useSignExtensionMode())
+                                          {
+                                          defRegLoadChild->setSignExtendTo64BitAtSource(true);
+                                          }
+                                       else
+                                          {
+                                          defRegLoadChild->setSignExtendTo32BitAtSource(true);
+                                          }
+                                       }
+
+                                    if (preference < 0)
+                                       {
+                                       if (trace())
+                                          {
+                                          traceMsg(comp(), "\t\t\tForcing zero extension on %s [%p]\n",
+                                             defRegLoadChild->getOpCode().getName(),
+                                             defRegLoadChild);
+                                          }
+
+                                       if (parent->getSize() == 8 || parent->useSignExtensionMode())
+                                          {
+                                          defRegLoadChild->setZeroExtendTo64BitAtSource(true);
+                                          }
+                                       else
+                                          {
+                                          defRegLoadChild->setZeroExtendTo32BitAtSource(true);
+                                          }
+                                       }
+                                    }
+                                 }
+                              }
+                           }
+
+                        if (parent->getType().isInt64() && parent->getSize() > child->getSize())
+                           {
+                           if (trace())
+                              {
+                              traceMsg(comp(), "\t\t\tSet global register %s in getExtendedToInt64GlobalRegisters for child %s [%p] with parent node %s [%p]\n",
+                                 comp()->getDebug()->getGlobalRegisterName(child->getGlobalRegisterNumber()),
+                                 child->getOpCode().getName(),
+                                 child,
+                                 parent->getOpCode().getName(),
+                                 parent);
+                              }
+
+                           // getExtendedToInt64GlobalRegisters is used by the evaluators to force a larger virtual register to be used when
+                           // evaluating the regload so any instructions generated by local RA are the correct size to preserve the upper bits
+                           cg()->getExtendedToInt64GlobalRegisters()[child->getGlobalRegisterNumber()] = true;
+                           }
+                        }
                      }
                   }
-               node->setUnneededConversion(isUnneeded);
-               if (node->getType().isInt64() &&
-                   node->getSize() > child->getSize())
-                  {
-                  if (trace())
-                     traceMsg(comp(),"\t\t\tset num %d (%s) in getExtendedToInt64GlobalRegisters for child %s (%p) with parent node %s (%p)\n",
-                        child->getGlobalRegisterNumber(),
-                        comp()->getDebug()->getGlobalRegisterName(child->getGlobalRegisterNumber()),
-                        child->getOpCode().getName(),
-                        child,
-                        node->getOpCode().getName(),
-                        node);
-                  // getExtendedToInt64GlobalRegisters is used by the evaluators to force a larger virtual register to be used when
-                  // evaluating the regload so any instructions generated by local RA are the correct size to preserve the upper bits
-                  cg()->getExtendedToInt64GlobalRegisters()[child->getGlobalRegisterNumber()] = true;
-                  }
-               }
-            }
-
-         if (!isUnneeded)
-            {
-            bool mustForce64 = false;
-            isUnneeded = detectUnneededConversionPattern(node, child, mustForce64);
-            if (isUnneeded && performTransformation(comp(), "%sFound Unneeded conversion %p\n", OPT_DETAILS, node))
-               {
-               if (mustForce64)
-                  child->setForce64BitLoad(true);
-               node->setUnneededConversion(isUnneeded);
                }
             }
          }
-      /*else if (opcode.isIf())
+
+      if (!canSkipConversion)
          {
+         bool forceExtension = false;
+         canSkipConversion = TR_LoadExtensions::canSkipConversion(parent, child, forceExtension);
 
-         } */
-      }
+         if (canSkipConversion && performTransformation(comp(), "%sSkipping conversion %s [%p]\n", optDetailString(), parent->getOpCode().getName(), parent))
+            {
+            TR::DebugCounter::incStaticDebugCounter(comp(), TR::DebugCounter::debugCounterName(comp(), "codegen/LoadExtensions/success/unneededConversion/%s", comp()->signature()));
 
-   for (int32_t i = 0; i < node->getNumChildren(); i++)
-      {
-      setPreferredExtension(node->getChild(i), visitCount);
+            parent->setUnneededConversion(true);
+
+            if (forceExtension)
+               {
+               const int32_t preference = getExtensionPreference(child);
+
+               if (preference > 0)
+                  {
+                  if (trace())
+                     {
+                     traceMsg(comp(), "\t\t\tForcing sign extension on %s [%p]\n",
+                        child->getOpCode().getName(),
+                        child);
+                     }
+
+                  if (parent->getSize() == 8 || parent->useSignExtensionMode())
+                     {
+                     child->setSignExtendTo64BitAtSource(true);
+                     }
+                  else
+                     {
+                     child->setSignExtendTo32BitAtSource(true);
+                     }
+                  }
+
+               if (preference < 0)
+                  {
+                  if (trace())
+                     {
+                     traceMsg(comp(), "\t\t\tForcing zero extension on %s [%p]\n",
+                        child->getOpCode().getName(),
+                        child);
+                     }
+
+                  if (parent->getSize() == 8 || parent->useSignExtensionMode())
+                     {
+                     child->setZeroExtendTo64BitAtSource(true);
+                     }
+                  else
+                     {
+                     child->setZeroExtendTo32BitAtSource(true);
+                     }
+                  }
+               }
+            }
+         }
       }
    }
 
-/*
- * globalIndex() is not available at codegen, make our own
- */
-ncount_t TR_LoadExtensions::indexNodesForCodegen(TR::Node *parent, ncount_t nodeCount, vcount_t visitCount)
+const int32_t TR_LoadExtensions::getExtensionPreference(TR::Node* load) const
    {
-   if (parent->getVisitCount() == visitCount)
-      return nodeCount;
-   parent->setVisitCount(visitCount);
+   int32_t result;
 
-   ncount_t _nodeCount = nodeCount;
-   TR::ILOpCode& opcode = parent->getOpCode();
-   if ((opcode.isLoadVar() && supportedType(parent))
-         || (opcode.isLoadConst() && supportedConstLoad(parent, comp()))
-         //|| opcode.isConversion() // can't index conversion nodes, the second child is already reused for other purposes
-         )
+   if (load->getType().isAddress())
       {
-      if (trace()) traceMsg(cg(), "Marking node %p as %d [children: %d]\n", parent, _nodeCount, parent->getNumChildren());
-      TR_ASSERT(parent->getNumChildren()<2, "Cannot reuse the second child slot, already taken\n");
-      parent->setSecond(reinterpret_cast<TR::Node *>(_nodeCount));
-      _nodeCount++;
-      _seenLoads |= 1;
+      // Addresses are always unsigned, and thus their preference as well
+      result = -1;
+      }
+   else
+      {
+      result = (*loadExtensionPreference)[load];
       }
 
-   if (opcode.isLoadReg())
-      _seenLoads |= 2;
-
-      // The following line should not be needed, especially in case somebody really wants to mark conversion nodes as unneeded earlier
-      // but I am tired of finding bugs with flags incorrectly set (i.e. changing Node opcode and inheriting -incorrect/overloaded- flags)
-      // As far as I know, nobody else is using these flags in other optimizations yet.
-      // Another option is to move the unneededConversion flag to its own bitvector, as with load flags. That is also more work because
-      // second-child in conversion nodes may already be sometimes used by <code>bool TR_DynamicLiteralPool::addNewAloadChild(TR::Node *node)</code>
-      // (the second child is being used instead of globalIndex)
-   if (!comp()->getOptions()->getDebugEnableFlag(TR_EnableUnneededNarrowIntConversion))
-      if (opcode.isConversion())
-         parent->setUnneededConversion(false);
-
-   for (int32_t i = 0; i < parent->getNumChildren(); i++)
-      {
-      _nodeCount = indexNodesForCodegen(parent->getChild(i), _nodeCount, visitCount);
-      }
-
-   return _nodeCount;
+   return result;
    }
 
-const char *
-TR_LoadExtensions::optDetailString() const throw()
+const int32_t TR_LoadExtensions::setExtensionPreference(TR::Node* load, TR::Node* conversion)
    {
-   return "O^O LOAD EXTENSION: ";
+   int32_t result;
+
+   if (conversion->isZeroExtension() || conversion->getOpCode().isUnsigned())
+      {
+      if (trace())
+         {
+         traceMsg(comp(), "\t\tCounting unsigned load %s [%p] under %s [%p]\n", 
+            load->getOpCode().getName(), 
+            load, 
+            conversion->getOpCode().getName(), 
+            conversion);
+         }
+
+      // i.e. TR::bu2i || TR::iu2l
+      result = --(*loadExtensionPreference)[load];
+      }
+   else
+      {
+      if (trace())
+         {
+         traceMsg(comp(), "\t\tCounting signed load %s [%p] under %s [%p]\n", 
+            load->getOpCode().getName(), 
+            load, 
+            conversion->getOpCode().getName(), 
+            conversion);
+         }
+
+      // i.e. TR::i2l || TR::b2i
+      result = ++(*loadExtensionPreference)[load];
+      }
+
+   return result;
    }

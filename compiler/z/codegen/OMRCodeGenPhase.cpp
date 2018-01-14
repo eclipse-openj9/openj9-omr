@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -47,7 +47,6 @@ OMR::Z::CodeGenPhase::performMarkLoadAsZeroOrSignExtensionPhase(TR::CodeGenerato
       TR::OptimizationManager *manager = comp->getOptimizer()->getOptimization(OMR::loadExtensions);
       TR_ASSERT(manager, "Load extensions optimization should be initialized.");
       TR_LoadExtensions *loadExtensions = (TR_LoadExtensions *) manager->factory()(manager);
-      cg->setSignExtensionFlags( loadExtensions->getFlags() );
       loadExtensions->perform();
       delete loadExtensions;
       }

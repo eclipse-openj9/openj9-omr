@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -222,7 +222,7 @@ generateLoad32BitConstant(TR::CodeGenerator* cg, TR::Node* node, int32_t value, 
       sym = node->getSymbol();
    bool needRegPair = cg->evaluateNodeInRegPair(node) || !(TR::Compiler->target.is64Bit() || cg->use64BitRegsOn32Bit());
    bool load64bit = !needRegPair &&
-                    (node->getType().isInt64() || node->force64BitLoad());
+                    (node->getType().isInt64() || node->isExtendedTo64BitAtSource());
 
    if (value >= MIN_IMMEDIATE_VAL && value <= MAX_IMMEDIATE_VAL)
       {
@@ -2612,11 +2612,6 @@ tryGenerateCLCForComparison(TR::Node *node, TR::CodeGenerator *cg)
       //
       if (firstChild->getSize() < operand1->getSize())
          return 0;
-
-      // either both operands are unsigned or none of them can be
-      //
-      if (operand1->isUnsignedLoad() != operand2->isUnsignedLoad())
-         return 0;
       }
 
    // Make sure that neither operand is in a register, or wants to be a in
@@ -3173,7 +3168,7 @@ generateS390CompareAndBranchOpsHelper(TR::Node * node, TR::CodeGenerator * cg, T
           !isUnsignedCmp &&
           !nonConstNode->getOpCode().isDouble() &&
           getIntegralValue(constNode) == 0 &&
-          (!nonConstNode->force64BitLoad() || cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10) ))
+          (!nonConstNode->isExtendedTo64BitAtSource() || cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10) ))
          {
          // case 1.3
          TR_ASSERT( NULLVALUE == 0, "Can not generate ICM if NULL is not 0");
@@ -3194,7 +3189,7 @@ generateS390CompareAndBranchOpsHelper(TR::Node * node, TR::CodeGenerator * cg, T
             {
             testRegister = cg->allocate64bitRegister();
             }
-         else if (!nonConstNode->couldIgnoreExtend() && nonConstNode->force64BitLoad())
+         else if (nonConstNode->isExtendedTo64BitAtSource())
             {
             if (TR::Compiler->target.is64Bit() || cg->use64BitRegsOn32Bit())
                testRegister = cg->allocate64bitRegister();
@@ -3207,9 +3202,7 @@ generateS390CompareAndBranchOpsHelper(TR::Node * node, TR::CodeGenerator * cg, T
             }
 
          TR::MemoryReference * tempMR = generateS390MemoryReference(nonConstNode, cg);
-         bool mustExtend = !useLTG &&
-               !nonConstNode->couldIgnoreExtend() &&
-               nonConstNode->force64BitLoad();
+         bool mustExtend = !useLTG && nonConstNode->isExtendedTo64BitAtSource();
 
          if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10) && mustExtend)
             {
@@ -3217,14 +3210,14 @@ generateS390CompareAndBranchOpsHelper(TR::Node * node, TR::CodeGenerator * cg, T
                {
                generateRXYInstruction(cg, TR::InstOpCode::LLGF, nonConstNode, testRegister, tempMR);  // 64 bits zero extended
                generateRRInstruction(cg, TR::InstOpCode::LTGR, node, testRegister, testRegister);     // 64 bit reg test
-               if (!nonConstNode->isUnsignedLoad())
+               if (nonConstNode->isSignExtendedTo64BitAtSource())
                   {
                   generateRRInstruction(cg, TR::InstOpCode::LGFR, node, testRegister, testRegister);  // 64 bits sign extended
                   }
                }
             else
                {
-               if (!nonConstNode->isUnsignedLoad())
+               if (nonConstNode->isSignExtendedTo64BitAtSource())
                   {
                   generateRXYInstruction(cg, TR::InstOpCode::LTGF, nonConstNode, testRegister, tempMR); // 64 bits sign extended and test
                   }
@@ -3260,9 +3253,19 @@ generateS390CompareAndBranchOpsHelper(TR::Node * node, TR::CodeGenerator * cg, T
             else if (tempMR->getIndexRegister())
                {
                TR::InstOpCode::Mnemonic load = TR::InstOpCode::L;
-               if (!nonConstNode->couldIgnoreExtend() && nonConstNode->force64BitLoad())
-                  load = nonConstNode->isUnsignedLoad() ? TR::InstOpCode::LLGF : TR::InstOpCode::LGF;
+
+               if (nonConstNode->isSignExtendedTo64BitAtSource())
+                  {
+                  load = TR::InstOpCode::LGF;
+                  }
+
+               if (nonConstNode->isZeroExtendedTo64BitAtSource())
+                  {
+                  load = TR::InstOpCode::LLGF;
+                  }
+
                generateRXInstruction(cg, load, nonConstNode, testRegister, tempMR);
+
                if (branchTarget != NULL)
                   {
                   returnInstruction = generateS390CompareAndBranchInstruction(cg, TR::InstOpCode::C, node, testRegister, (int32_t)0, isForward?fBranchOpCond:rBranchOpCond, branchTarget, false, true);
@@ -4900,15 +4903,15 @@ template <uint32_t numberOfBits>
 TR::Register *
 genericLoad(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference * tempMR, TR::Register * srcRegister)
    {
-   bool nodeSigned = node->getType().isInt64() || !node->isUnsignedLoad();
+   bool nodeSigned = node->getType().isInt64() || !node->isZeroExtendedAtSource();
 
    if (node->getType().isAddress() || node->getType().isAggregate()) // o- and a-type and PLX-Fixed24/Fixed8 always unsigned
       nodeSigned = false;
 
-   if (numberOfBits>32 || numberOfBits==31 || node->force64BitLoad())
-      return genericLoadHelper<numberOfBits, 64, MemReg>(node, cg, tempMR, srcRegister, nodeSigned, node->couldIgnoreExtend());
+   if (numberOfBits > 32 || numberOfBits == 31 || node->isExtendedTo64BitAtSource())
+      return genericLoadHelper<numberOfBits, 64, MemReg>(node, cg, tempMR, srcRegister, nodeSigned, false);
    else
-      return genericLoadHelper<numberOfBits, 32, MemReg>(node, cg, tempMR, srcRegister, nodeSigned, node->couldIgnoreExtend());
+      return genericLoadHelper<numberOfBits, 32, MemReg>(node, cg, tempMR, srcRegister, nodeSigned, false);
    }
 
 #if defined(TRACE_EVAL)
@@ -5433,7 +5436,7 @@ OMR::Z::TreeEvaluator::addressCastEvaluator(TR::Node * node, TR::CodeGenerator *
          //   aload
          if (child->getOpCode().isLoadVar() && child->getType().isAddress())
             {
-            child->setForce64BitLoad(true);
+            child->setZeroExtendTo64BitAtSource(true);
             //if (child->getRegister() == NULL)
             //   node->setUnneededConversion(true);
             }
@@ -5545,10 +5548,10 @@ sloadHelper(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference * tempM
       {
       generateRXInstruction(cg, TR::InstOpCode::LRVH, node, tempReg, tempMR);
       //sign or clear highOrderBits: TODO: Clearing/Extending is probably not needed
-      if (node->force64BitLoad())
-         tempReg = genericLoadHelper<16, 64, RegReg>(node, cg, NULL, tempReg, !node->isUnsignedLoad(), true);
+      if (node->isExtendedTo64BitAtSource())
+         tempReg = genericLoadHelper<16, 64, RegReg>(node, cg, NULL, tempReg, !node->isZeroExtendedAtSource(), true);
       else
-         tempReg = genericLoadHelper<16, 32, RegReg>(node, cg, NULL, tempReg, !node->isUnsignedLoad(), true);
+         tempReg = genericLoadHelper<16, 32, RegReg>(node, cg, NULL, tempReg, !node->isZeroExtendedAtSource(), true);
       }
    else
       {
@@ -5587,20 +5590,16 @@ bool relativeLongLoadHelper(TR::CodeGenerator * cg, TR::Node * node, TR::Registe
       TR::InstOpCode::Mnemonic op = TR::InstOpCode::BAD;
       if (node->getType().isInt32() || (!(TR::Compiler->target.is64Bit()) && node->getType().isAddress() ))
          {
-         if (node->force64BitLoad())
+         op = TR::InstOpCode::LRL;
+
+         if (node->isSignExtendedTo64BitAtSource())
             {
-            if (node->isUnsignedLoad())
-               {
-               op = TR::InstOpCode::LLGFRL;
-               }
-            else
-               {
-               op = TR::InstOpCode::LGFRL;
-               }
+            op = TR::InstOpCode::LGFRL;
             }
-         else
+
+         if (node->isZeroExtendedTo64BitAtSource())
             {
-            op = TR::InstOpCode::LRL;
+            op = TR::InstOpCode::LLGFRL;
             }
          }
       else
@@ -5616,7 +5615,6 @@ bool relativeLongLoadHelper(TR::CodeGenerator * cg, TR::Node * node, TR::Registe
            )
          )
          {
-         //traceMsg(cg->comp(), "node->useSignExtensionMode = %d node->isUnsignedLoad = %d\n",node->useSignExtensionMode(), node->isUnsignedLoad());
          if (node->useSignExtensionMode())
             {
             generateRILInstruction(cg, TR::InstOpCode::LGFRL, node, tReg, symRef, reinterpret_cast<void*>(staticAddress));
@@ -5646,7 +5644,7 @@ iloadHelper(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference * tempM
 
    TR::Register * tempReg = NULL;
 
-   if (!node->couldIgnoreExtend() && node->force64BitLoad())
+   if (node->isExtendedTo64BitAtSource())
       {
       if (TR::Compiler->target.is64Bit() || cg->use64BitRegsOn32Bit())
          tempReg = cg->allocate64bitRegister();
@@ -5672,27 +5670,33 @@ iloadHelper(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference * tempM
    if (isReversed)
       {
       generateRXInstruction(cg, TR::InstOpCode::LRV, node, tempReg, tempMR);
-      if (!node->couldIgnoreExtend() && node->force64BitLoad())
-         tempReg = genericLoadHelper<32, 64, RegReg>(node, cg, NULL, tempReg, !node->isUnsignedLoad(), true);
+
+      if (node->isExtendedTo64BitAtSource())
+         {
+         tempReg = genericLoadHelper<32, 64, RegReg>(node, cg, NULL, tempReg, !node->isZeroExtendedAtSource(), true);
+         }
       }
    else if (cg->getConditionalMovesEvaluationMode())
       {
       generateRSInstruction(cg, TR::InstOpCode::LOC, node, tempReg, cg->getRCondMoveBranchOpCond(), tempMR);
-      if(node->force64BitLoad())
-        {
-        if(node->isUnsignedLoad())
-          generateRRInstruction(cg, TR::InstOpCode::LLGFR, node, tempReg, tempReg);
-        else
-          generateRRInstruction(cg, TR::InstOpCode::LGFR, node, tempReg, tempReg);
-        }
+
+      if (node->isSignExtendedTo64BitAtSource())
+         {
+         generateRRInstruction(cg, TR::InstOpCode::LGFR, node, tempReg, tempReg);
+         }
+
+      if (node->isZeroExtendedTo64BitAtSource())
+         {
+         generateRRInstruction(cg, TR::InstOpCode::LLGFR, node, tempReg, tempReg);
+         }
       }
    else if ((node->getOpCodeValue() == TR::iload || node->getOpCodeValue() == TR::iloadi) && node->isLoadAndTest())
       {
-      bool mustExtend = !node->couldIgnoreExtend() && node->force64BitLoad();
+      bool mustExtend = node->isExtendedTo64BitAtSource();
 
       if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10) && mustExtend)
          {
-         if (node->isUnsignedLoad())
+         if (node->isZeroExtendedTo64BitAtSource())
             {
             generateRXYInstruction(cg, TR::InstOpCode::LLGF, node, tempReg, tempMR);
             generateRRInstruction(cg, TR::InstOpCode::LTGR, node, tempReg, tempReg);
@@ -5967,7 +5971,7 @@ aloadHelper(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference * tempM
    //regular-born aload/iaload
    else
       {
-      if (node->getSymbol()->getSize() == 8 || node->force64BitLoad())
+      if (node->getSymbol()->getSize() == 8 || node->isExtendedTo64BitAtSource())
          tempReg = cg->allocate64bitRegister();
       else
          tempReg = cg->allocateRegister();
@@ -6081,18 +6085,14 @@ aloadHelper(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference * tempM
             {
             TR::InstOpCode::Mnemonic opCode = TR::InstOpCode::getLoadTestOpCode();
 
-            if (node->force64BitLoad())
-               {
-               if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10) && !node->isUnsignedLoad())
-                  opCode = TR::InstOpCode::LTGF;
-               else
-                  {
-                  generateRXInstruction(cg, TR::InstOpCode::LLGF, node, tempReg, tempMR);
-                  generateRRInstruction(cg, TR::InstOpCode::LTGR, node, tempReg, tempReg);
-                  }
-               }
+            TR_ASSERT_FATAL(!node->isSignExtendedAtSource(), "Cannot force sign extension at source for address loads\n");
 
-            if (!node->force64BitLoad() || (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10) && !node->isUnsignedLoad()))
+            if (node->isZeroExtendedTo64BitAtSource())
+               {
+               generateRXInstruction(cg, TR::InstOpCode::LLGF, node, tempReg, tempMR);
+               generateRRInstruction(cg, TR::InstOpCode::LTGR, node, tempReg, tempReg);
+               }
+            else
                {
                generateRXInstruction(cg, opCode, node, tempReg, tempMR);
                }
@@ -6119,7 +6119,7 @@ aloadHelper(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference * tempM
                {
                if (node->getSymbolReference() == comp->getSymRefTab()->findVftSymbolRef())
                   TR::TreeEvaluator::genLoadForObjectHeadersMasked(cg, node, tempReg, tempMR, NULL);
-               else if (node->getSymbol()->getSize() == 4 && node->force64BitLoad())
+               else if (node->getSymbol()->getSize() == 4 && node->isExtendedTo64BitAtSource())
                   generateRXInstruction(cg, TR::InstOpCode::LLGF, node, tempReg, tempMR);
                else
                   {
@@ -13808,7 +13808,7 @@ OMR::Z::TreeEvaluator::iRegStoreEvaluator(TR::Node * node, TR::CodeGenerator * c
 
    if (needsLGFR && child->getOpCode().isLoadVar() && (child->getRegister()==NULL) && child->getType().isInt32())
       {
-      child->setForce64BitLoad(true);
+      child->setSignExtendTo64BitAtSource(true);
       child->setUseSignExtensionMode(true);
       noLGFgenerated =false;
       }

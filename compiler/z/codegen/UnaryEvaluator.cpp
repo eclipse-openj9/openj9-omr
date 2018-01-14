@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -172,7 +172,7 @@ OMR::Z::TreeEvaluator::bconstEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    PRINT_ME("bconst", node, cg);
    TR::Register * tempReg = node->setRegister(cg->allocateRegister());
-   if (node->getOpCodeValue() == TR::buconst || node->isUnsignedLoad())
+   if (node->getOpCodeValue() == TR::buconst)
       generateLoad32BitConstant(cg, node, node->getByte() & 0xFF, tempReg, true);
    else
       {
@@ -190,7 +190,7 @@ OMR::Z::TreeEvaluator::sconstEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    PRINT_ME("sconst", node, cg);
    TR::Register * tempReg = node->setRegister(cg->allocateRegister());
-   int32_t value = (node->isUnsigned() || node->isUnsignedLoad()) ? node->getConst<uint16_t>() : node->getShortInt();
+   int32_t value = node->isUnsigned() ? node->getConst<uint16_t>() : node->getShortInt();
    generateLoad32BitConstant(cg, node, value, tempReg, true);
    return tempReg;
    }

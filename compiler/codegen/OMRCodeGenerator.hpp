@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -776,8 +776,6 @@ class OMR_EXTENSIBLE CodeGenerator
    // Load extensions (Z)
 
    TR::SparseBitVector & getExtendedToInt64GlobalRegisters()  { return _extendedToInt64GlobalRegisters; }
-   TR_BitVector *signExtensionFlags() {return _signExtensionFlags;}
-   TR_BitVector *setSignExtensionFlags(TR_BitVector* flag) { return _signExtensionFlags = flag; }
 
    // --------------------------------------------------------------------------
    // Live registers
@@ -1836,7 +1834,6 @@ class OMR_EXTENSIBLE CodeGenerator
 
    TR_BitVector *_liveButMaybeUnreferencedLocals;
    bool _lmmdFailed;
-   TR_BitVector *_signExtensionFlags;
    TR_BitVector *_assignedGlobalRegisters;
 
    TR_LiveRegisters *_liveRegisters[NumRegisterKinds];

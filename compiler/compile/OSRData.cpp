@@ -74,6 +74,12 @@ TR_OSRCompilationData::addSlotSharingInfo(const TR_ByteCodeInfo& bcinfo,
       addSlotSharingInfo(bcinfo.getByteCodeIndex(), slot, symRefNum, symRefOrder, symSize, takesTwoSlots);
    }
 
+TR_OSRSlotSharingInfo *
+TR_OSRCompilationData::getSlotsInfo(const TR_ByteCodeInfo& bcinfo)
+   {
+   return getOSRMethodDataArray()[bcinfo.getCallerIndex()+1]->getSlotsInfo(bcinfo.getByteCodeIndex());
+   }
+
 void
 TR_OSRCompilationData::ensureSlotSharingInfoAt(const TR_ByteCodeInfo& bcinfo)
    {
@@ -200,7 +206,6 @@ TR_OSRCompilationData::findCallerOSRMethodData(TR_OSRMethodData *callee)
    TR_OSRMethodData *osrMethodData = osrMethodDataArray[callerIndex+1];
    return osrMethodData;
    }
-
 
 void
 TR_OSRCompilationData::addInstruction2SharedSlotMapEntry(
@@ -512,7 +517,6 @@ uint32_t TR_OSRCompilationData::getOSRStackFrameSize(uint32_t methodIndex)
    else
       return 0;
    }
-
 
 static void printMap(DefiningMap *map, TR::Compilation *comp)
    {
@@ -1167,7 +1171,6 @@ TR_OSRMethodData::getArgInfo(int32_t byteCodeIndex)
    return args;
    }
 
-
 bool
 TR_OSRMethodData::hasSlotSharingOrDeadSlotsInfo()
    {
@@ -1245,6 +1248,16 @@ TR_OSRMethodData::addScratchBufferOffset(int32_t slotIndex, int32_t symRefOrder,
    slot2ScratchBufferOffset.DataAt(hashIndex)[symRefOrder] = scratchBufferOffset;
    }
 
+TR_OSRSlotSharingInfo* 
+TR_OSRMethodData::getSlotsInfo(int32_t byteCodeIndex)
+   {
+   TR_OSRSlotSharingInfo* slotsInfo = NULL;
+   CS2::HashIndex hashIndex;
+   if (bcInfoHashTab.Locate(byteCodeIndex, hashIndex))
+      slotsInfo = bcInfoHashTab.DataAt(hashIndex);
+   return slotsInfo;
+   }
+
 void
 TR_OSRMethodData::addInstruction(int32_t instructionPC, int32_t byteCodeIndex)
    {
@@ -1273,7 +1286,10 @@ TR_OSRMethodData::addInstruction(int32_t instructionPC, int32_t byteCodeIndex)
          {
          int32_t scratchBufferOffset;
          bool found = slot2ScratchBufferOffset.Locate(slotInfos[i].slot, hashIndex);
-         TR_ASSERT(found, "slot %d symref #%d must be in slot2ScratchBufferOffset hash table\n",
+         //slotInfos[i].symRefOrder == -1 means the slot would be zeroed out at this OSR point
+         //scratchBufferOffset is not needed in such case because we don't need to copy a variable
+         //value from the scratch buffer.
+         TR_ASSERT(found || slotInfos[i].symRefOrder == -1, "slot %d symref #%d must be in slot2ScratchBufferOffset hash table\n",
                  slotInfos[i].slot, slotInfos[i].symRefNum);
          if (slotInfos[i].symRefOrder == -1)
             {
@@ -1416,12 +1432,14 @@ TR_OSRSlotSharingInfo::addSlotInfo(int32_t slot, int32_t symRefNum, int32_t symR
             //TR_ASSERTC(0, comp, "ERROR: For slot %d symref #%d conflicts with symref#%d\n",
             //    symRefNum, info.symRefNum, slot);
             }
-         if ((info.slot == slot) && (info.symRefNum == symRefNum))
-            {
-            TR_ASSERT(info.symRefOrder==symRefOrder && info.symSize==symSize, "symref order (%d,%d) and symsize (%d,%d) must match", info.symRefOrder, symRefOrder, info.symSize, symSize);
-            found = true;
-            }
          }
+
+      if ((info.slot == slot) && (info.symRefNum == symRefNum))
+         {
+         TR_ASSERT(info.symRefOrder==symRefOrder && info.symSize==symSize, "symref order (%d,%d) and symsize (%d,%d) must match", info.symRefOrder, symRefOrder, info.symSize, symSize);
+         found = true;
+         }
+
       //check if the two syms overlap, if they do we will write zero in that stack slot. That's because
       //two shared symbols cannot be live at the same OSR point and we write the value zero because
       //it's a valid value for both reference and non-reference types.
@@ -1433,7 +1451,8 @@ TR_OSRSlotSharingInfo::addSlotInfo(int32_t slot, int32_t symRefNum, int32_t symR
          int32_t endSlot2 = startSlot2 + (info.takesTwoSlots ? 2 : 1) - 1;
          if ((startSlot1 <= endSlot2) && (startSlot2 <= endSlot1))
             {
-            //if (trace) traceMsg(comp, "symbols %d and %d overlap\n", symRefNum, info.symRefNum);
+            if (trace) 
+               traceMsg(comp, "addSlotInfo: symbols #%d and #%d overlap zeroing out slot %d\n", symRefNum, info.symRefNum, slot);
             // don't add any more symbols to the list
             found = true;
             //mark the symbol

@@ -44,6 +44,17 @@ struct CompilationException : public virtual std::exception
    virtual const char* what() const throw() { return "Compilation Exception"; }
    };
 
+
+/**
+ * IL Validation Failure exception type.
+ *
+ * Thrown on an IL Validation Failure condition.
+ */
+struct ILValidationFailure : public virtual CompilationException
+   {
+   virtual const char* what() const throw() { return "IL Validation Failure"; }
+   };
+
 /**
  * IL Generation Failure exception type.
  *

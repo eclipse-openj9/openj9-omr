@@ -21,6 +21,7 @@
 
 #include "JitTest.hpp"
 #include "default_compiler.hpp"
+#include "compile/OMRCompilation.hpp"
 
 #include <string>
 
@@ -34,11 +35,11 @@ TEST_P(IllformedTrees, FailCompilation) {
 
     Tril::DefaultCompiler compiler{trees};
 
-    ASSERT_DEATH(compiler.compile(), "VALIDATION ERROR")
+    ASSERT_EQ(compiler.compile(), COMPILATION_IL_VALIDATION_FAILURE)  
             << "Compilation did not fail due to ill-formed input trees";
 }
 
-INSTANTIATE_TEST_CASE_P(ILValidatorDeathTest, IllformedTrees, ::testing::Values(
+INSTANTIATE_TEST_CASE_P(ILValidatorTest, IllformedTrees, ::testing::Values(
     "(method return=Int32 (block (ireturn (iadd (iconst 1) (sconst 3)))))",
     "(method return=Int32 (block (ireturn (sadd (iconst 1) (iconst 3)))))",
     "(method return=Address (block (areturn (aiadd (aconst 4) (lconst 1)))))",
@@ -142,9 +143,9 @@ TEST_P(CommoningTest, CommoningWithinBlock)
 INSTANTIATE_TEST_CASE_P(CommoningValidationTest, CommoningTest,
   ::testing::ValuesIn(TRTest::const_value_pairs<int32_t, int32_t>()));
 
-class CommoningDeathTest : public TRTest::JitTest {};
+class InvalidCommoningTest : public TRTest::JitTest {};
 
-TEST_F(CommoningDeathTest, CommoningAcrossBlock)
+TEST_F(InvalidCommoningTest, CommoningAcrossBlock)
    {
    //Ensure that the ILValidator is capable of catching 
    //invalid commoning.
@@ -166,6 +167,7 @@ TEST_F(CommoningDeathTest, CommoningAcrossBlock)
    ASSERT_NOTNULL(ast) << "Parsing failed unexpectedly";
 
    Tril::DefaultCompiler compiler{ast};
-   ASSERT_DEATH(compiler.compile(), "VALIDATION ERROR")
+
+   ASSERT_EQ(compiler.compile(), COMPILATION_IL_VALIDATION_FAILURE)
       << "Compilation did not fail due to ill-formed input trees";
    }

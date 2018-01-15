@@ -432,6 +432,17 @@ compileMethodFromDetails(
          }
 
       }
+   catch (const TR::ILValidationFailure &exception)
+      {
+      rc = COMPILATION_IL_VALIDATION_FAILURE;
+#if defined(J9ZOS390)
+      // Compiling with -Wc,lp64 results in a crash on z/OS when trying
+      // to call the what() virtual method of the exception.
+      printCompFailureInfo(jitConfig, &compiler, "");
+#else
+      printCompFailureInfo(jitConfig, &compiler, exception.what());
+#endif
+      } 
    catch (const std::exception &exception)
       {
       // failed! :-(

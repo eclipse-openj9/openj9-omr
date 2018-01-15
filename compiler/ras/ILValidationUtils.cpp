@@ -58,7 +58,7 @@ void TR::checkILCondition(TR::Node *node, bool condition,
       printILDiagnostic(comp, "\n");
       if (!comp->getOption(TR_ContinueAfterILValidationError))
          {
-         TR::trap();
+         comp->failCompilation<TR::ILValidationFailure>("IL VALIDATION ERROR");
          }
       }
    }

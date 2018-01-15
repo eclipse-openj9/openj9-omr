@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -8279,7 +8279,10 @@ TR_ColdBlockMarker::isBlockCold(TR::Block *block)
 
       if (_notYetRunMeansCold && hasNotYetRun(node))
          {
-         traceMsg(comp(), "%s n%dn [%p] has not yet run\n", node->getOpCode().getName(), node->getGlobalIndex(), node);
+         if (trace())
+            {
+            traceMsg(comp(), "%s n%dn [%p] has not yet run\n", node->getOpCode().getName(), node->getGlobalIndex(), node);
+            }
          return UNRESOLVED_COLD_BLOCK_COUNT;
          }
 
@@ -8294,7 +8297,10 @@ TR_ColdBlockMarker::isBlockCold(TR::Block *block)
 
          if (calleeSymbol->getResolvedMethod()->isCold(comp(), node->getOpCode().isCallIndirect(), calleeSymbol))
             {
-            traceMsg(comp(), "Infrequent interpreted call node %p\n", node);
+            if (trace())
+               {
+               traceMsg(comp(), "Infrequent interpreted call node %p\n", node);
+               }
             return INTERP_CALLEE_COLD_BLOCK_COUNT;
             }
          }

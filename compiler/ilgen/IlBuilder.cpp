@@ -1033,6 +1033,15 @@ IlBuilder::doVectorConversions(TR::Node **leftPtr, TR::Node **rightPtr)
       *leftPtr = TR::Node::create(TR::vsplats, 1, left);
    }
 
+TR::IlValue *
+IlBuilder::widenIntegerTo32Bits(TR::IlValue *v)
+   {
+   if (v->getDataType() == TR::Int8 || v->getDataType() == TR::Int16)
+      return ConvertTo(Int32, v);
+
+   return v;
+   }
+
 TR::Node*
 IlBuilder::binaryOpNodeFromNodes(TR::ILOpCodes op,
                                  TR::Node *leftNode,
@@ -1360,6 +1369,27 @@ IlBuilder::Div(TR::IlValue *left, TR::IlValue *right)
    {
    TR::IlValue *returnValue=binaryOpFromOpMap(TR::ILOpCode::divideOpCode, left, right);
    TraceIL("IlBuilder[ %p ]::%d is Div %d / %d\n", this, returnValue->getID(), left->getID(), right->getID());
+   return returnValue;
+   }
+
+TR::IlValue *
+IlBuilder::Rem(TR::IlValue *left, TR::IlValue *right)
+   {
+   TR::DataType returnType = left->getDataType();
+
+   // No code generators currently support the brem or srem opcodes. If we
+   // encounter types that would emit those opcodes, simulate correct behaviour
+   // by widening them to 32-bit integers, using irem to calculate the
+   // remainder, then truncating the result.
+   left = widenIntegerTo32Bits(left);
+   right = widenIntegerTo32Bits(right);
+
+   TR::IlValue *returnValue = binaryOpFromOpMap(TR::ILOpCode::remainderOpCode, left, right);
+   TraceIL("IlBuilder[ %p ]::%d is Rem %d %% %d\n", this, returnValue->getID(), left->getID(), right->getID());
+
+   if (returnValue->getDataType() != returnType)
+      returnValue = ConvertTo(_types->PrimitiveType(returnType), returnValue);
+
    return returnValue;
    }
 

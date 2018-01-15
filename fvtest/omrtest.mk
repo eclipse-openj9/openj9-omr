@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2015, 2016 IBM Corp. and others
+# Copyright (c) 2015, 2018 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -45,8 +45,8 @@ omr_algotest:
 	./omralgotest -avltest:fvtest/algotest/avltest.lst
 
 omr_ddrtest:
-	tools/ddrgen/src/macros/getMacros.sh "tools/ddrgen/test"
-	./ddrgen ./ddrgentest --macrolist test/macroList
+	bash $(top_srcdir)/ddr/tools/getmacros tools/ddrgen/test
+	./ddrgen ddrgentest --macrolist test/macroList
 
 omr_gctest:
 	./omrgctest --gtest_filter="gcFunctionalTest*"

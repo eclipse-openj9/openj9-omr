@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -36,7 +36,6 @@
    Note that this file is included is asm code as well. Apart from C
    pre-processor macros, it shouldn't contain anything else.
 */
-
 
 /* Operating Systems */
 #ifndef OMR_LINUX
@@ -82,6 +81,8 @@
 #ifndef COMPILER_CLANG
 #  define COMPILER_CLANG 304
 #endif
+
+/* @ddr_namespace: map_to_type=TRBuildFlags */
 
 /*
   Standardize the OS macros Use HOST_OS instead of various different
@@ -168,6 +169,8 @@
 #if (HOST_ARCH == ARCH_ARM)
 #  define TR_HOST_ARM    1
 #endif
+
+/* @ddr_namespace: default */
 
 /* FIXME: we need to document what these ifdefs do
    If these are permanently enabled, the ifdefs should be removed

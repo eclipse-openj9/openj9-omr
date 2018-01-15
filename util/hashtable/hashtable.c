@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2015 IBM Corp. and others
+ * Copyright (c) 1991, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -62,7 +62,7 @@
  */
 #define NEXT(p) *((void **)((uint8_t *)p + table->listNodeSize - sizeof(uintptr_t)))
 
-#define AVL_TREE_TAG_BIT ((uintptr_t)0x00000001)
+#define AVL_TREE_TAG_BIT ((uintptr_t)J9HASH_TABLE_AVL_TREE_TAG_BIT)
 #define AVL_TREE_TAGGED(p) (((uintptr_t)(p)) & AVL_TREE_TAG_BIT)
 #define AVL_TREE_TAG(p) ((J9AVLTree *)(((uintptr_t)(p)) | AVL_TREE_TAG_BIT))
 #define AVL_TREE_UNTAG(p) ((J9AVLTree *)(((uintptr_t)(p)) & (~AVL_TREE_TAG_BIT)))

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2017 IBM Corp. and others
+ * Copyright (c) 2017, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -27,6 +27,8 @@
 
 #if !defined(OMRCFG_H_)
 #define OMRCFG_H_
+
+/* @ddr_namespace: map_to_type=OmrBuildFlags */
 
 #cmakedefine OMR_GC
 #cmakedefine OMR_JIT

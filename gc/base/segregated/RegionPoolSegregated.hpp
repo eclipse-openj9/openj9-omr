@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2015 IBM Corp. and others
+ * Copyright (c) 1991, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -42,6 +42,8 @@ class MM_LockingHeapRegionQueue;
 
 #define PRIMARY_BUCKET 0
 #define SKIP_AVAILABLE_REGION_FOR_ALLOCATION 1
+
+/* @ddr_namespace: map_to_type=MM_RegionPoolSegregated */
 
 /*
  * Thresholds for dividing available list into buckets so that we tend to

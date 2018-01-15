@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1748,7 +1748,7 @@ TR::Register *OMR::X86::TreeEvaluator::csubEvaluator(TR::Node *node, TR::CodeGen
    TR::Compilation     *comp                = cg->comp();
 
    if (NEED_CC(node))
-      {    
+      {
       TR_ASSERT(node->getOpCodeValue() == TR::csub,
                 "CC computation not supported for this node %p with opcode %s\n", node, cg->comp()->getDebug()->getName(node->getOpCode()));
 
@@ -1759,7 +1759,7 @@ TR::Register *OMR::X86::TreeEvaluator::csubEvaluator(TR::Node *node, TR::CodeGen
                                                                true/* produce eflags */);
       targetRegister = node->getRegister();
       return targetRegister;
-      }  
+      }
 
    // See if we can generate a direct memory operation. In this case there is no
    // target register generated and we return NULL to the caller (which should be
@@ -2484,7 +2484,7 @@ TR::Register *OMR::X86::TreeEvaluator::integerDivOrRemEvaluator(TR::Node *node, 
    TR::Node *secondChild = node->getSecondChild();
 
    // Signed division by a constant can be done cheaper than using IDIV.
-   if (secondChild->getOpCode().isLoadConst() &&
+   if (!opCode.isUnsigned() && secondChild->getOpCode().isLoadConst() &&
        TR::TreeEvaluator::integerConstNodeValue(secondChild, cg) != 0)
       {
       TR::Register *reg = TR::TreeEvaluator::signedIntegerDivOrRemAnalyser(node, cg);

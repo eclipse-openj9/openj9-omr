@@ -26,8 +26,6 @@
 #include "omrcfg.h"
 #include "omrmodroncore.h"
 
-#if defined (OMR_GC_HEAP_CARD_TABLE)
-
 #include "BaseVirtual.hpp"
 
 class MM_EnvironmentBase;
@@ -75,7 +73,5 @@ public:
 protected:
 private:
 };
-
-#endif /* defined (OMR_GC_HEAP_CARD_TABLE) */
 
 #endif /* CARDCLEANER_HPP_ */

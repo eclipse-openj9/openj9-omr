@@ -162,9 +162,7 @@ public:
 
 	volatile uint32_t _allocationColor; /**< Flag field to indicate whether premarking is enabled on the thread */
 
-#if defined(OMR_GC_HEAP_CARD_TABLE)
 	MM_CardCleaningStats _cardCleaningStats; /**< Per thread stats to track the performance of the card cleaning */
-#endif /* defined(OMR_GC_HEAP_CARD_TABLE) */
 #if defined(OMR_GC_MODRON_STANDARD) || defined(OMR_GC_REALTIME)
 	MM_SweepStats _sweepStats;
 #if defined(OMR_GC_MODRON_COMPACTION)

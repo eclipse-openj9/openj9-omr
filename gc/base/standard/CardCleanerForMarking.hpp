@@ -25,8 +25,6 @@
 
 #include "omrcfg.h"
 
-#if defined (OMR_GC_HEAP_CARD_TABLE)
-
 #include "CardCleaner.hpp"
 #include "CollectorLanguageInterface.hpp"
 #include "EnvironmentStandard.hpp"
@@ -90,7 +88,5 @@ public:
 
 private:
 };
-
-#endif /* defined (OMR_GC_HEAP_CARD_TABLE)*/
 
 #endif /* CARDCLEANERFORMARKING_HPP_ */

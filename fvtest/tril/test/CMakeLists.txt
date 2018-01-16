@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2017 IBM Corp. and others
+# Copyright (c) 2017, 2018 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -42,6 +42,8 @@ target_link_libraries(triltest
 	tril
 	omrGtest
 )
+
+target_compile_options(triltest PRIVATE "-Wno-write-strings")
 
 set_property(TARGET triltest PROPERTY FOLDER fvtest/tril)
 

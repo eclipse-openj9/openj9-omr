@@ -2152,10 +2152,16 @@ TR_Debug::getShadowName(TR::SymbolReference * symRef)
       return getOwningMethod(symRef)->fieldName(symRef->getCPIndex(), comp()->trMemory());
 
    if (symRef->getSymbol() == _comp->getSymRefTab()->findGenericIntShadowSymbol())
+      {
       if (symRef->reallySharesSymbol(_comp))
+         {
          return "<generic int shadow>";
+         }
       else
+         {
          return "<immutable generic int shadow>";
+         }
+      }
 
    if (_comp->getSymRefTab()->isVtableEntrySymbolRef(symRef))
       return "<vtable-entry-symbol>";

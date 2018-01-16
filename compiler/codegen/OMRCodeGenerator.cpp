@@ -720,8 +720,7 @@ OMR::CodeGenerator::doInstructionSelection()
          // the others
          self()->getDebug()->saveNodeChecklist(nodeChecklistBeforeDump);
          self()->getDebug()->dumpSingleTreeWithInstrs(tt, NULL, true, false, true, true);
-         trfprintf(comp->getOutFile(),"\n------------------------------\n");
-         trfflush(comp->getOutFile());
+         traceMsg(comp, "\n------------------------------\n");
          }
 
       self()->setCurrentEvaluationTreeTop(tt);
@@ -806,16 +805,16 @@ OMR::CodeGenerator::doInstructionSelection()
          self()->getDebug()->restoreNodeChecklist(nodeChecklistBeforeDump);
          if (tt == self()->getCurrentEvaluationTreeTop())
             {
-            trfprintf(comp->getOutFile(),"------------------------------\n");
+            traceMsg(comp, "------------------------------\n");
             self()->getDebug()->dumpSingleTreeWithInstrs(tt, prevInstr->getNext(), true, true, true, false);
             }
          else
             {
             // dump all the trees that the evaluator handled
-            trfprintf(comp->getOutFile(),"------------------------------");
+            traceMsg(comp, "------------------------------");
             for (TR::TreeTop *dumptt = tt; dumptt != self()->getCurrentEvaluationTreeTop()->getNextTreeTop(); dumptt = dumptt->getNextTreeTop())
                {
-               trfprintf(comp->getOutFile(),"\n");
+               traceMsg(comp, "\n");
                self()->getDebug()->dumpSingleTreeWithInstrs(dumptt, NULL, true, false, true, false);
                }
 

@@ -77,7 +77,7 @@ inline bool jitGetCPUID(TR_X86CPUIDBuffer* pBuffer)
       // Check for XSAVE
       if(pBuffer->_featureFlags2 & 0x08000000) // OSXSAVE
          {
-         if((6 & _xgetbv(0) != 6) || feGetEnv("TR_DisableAVX")) // '6' = mask for XCR0[2:1]='11b' (XMM state and YMM state are enabled)
+         if(((6 & _xgetbv(0)) != 6) || feGetEnv("TR_DisableAVX")) // '6' = mask for XCR0[2:1]='11b' (XMM state and YMM state are enabled)
             {
             // Unset OSXSAVE if not enabled via CR0
             pBuffer->_featureFlags2 &= 0x08000000; // OSXSAVE

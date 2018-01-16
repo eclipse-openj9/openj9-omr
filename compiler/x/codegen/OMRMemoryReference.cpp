@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1213,7 +1213,7 @@ OMR::X86::MemoryReference::addMetaDataForCodeAddress(
             && self()->getSymbolReference().getSymbol()->isClassObject()
             && cg->wantToPatchClassPointer(NULL, cursor)) // might not point to beginning of class
             {
-            cg->jitAdd32BitPicToPatchOnClassRedefinition((void*)*(int32_t*)cursor, (void *) cursor, self()->getUnresolvedDataSnippet() != NULL);
+            cg->jitAdd32BitPicToPatchOnClassRedefinition((void*)(uintptr_t)*(int32_t*)cursor, (void *) cursor, self()->getUnresolvedDataSnippet() != NULL);
             }
 
          break;
@@ -1251,7 +1251,7 @@ OMR::X86::MemoryReference::addMetaDataForCodeAddress(
 
                      if (cg->wantToPatchClassPointer(NULL, cursor)) // might not point to beginning of class
                         {
-                        cg->jitAdd32BitPicToPatchOnClassRedefinition((void*)*(int32_t*)cursor, (void *) cursor, false);
+                        cg->jitAdd32BitPicToPatchOnClassRedefinition((void*)(uintptr_t)*(int32_t*)cursor, (void *) cursor, false);
                         }
                      }
                   else
@@ -1282,7 +1282,7 @@ OMR::X86::MemoryReference::addMetaDataForCodeAddress(
                         {
                         cg->addAOTRelocation(new (cg->trHeapMemory()) TR::ExternalRelocation(cursor,
                                                                            (uint8_t *)&self()->getSymbolReference(),
-                                                                           node ? (uint8_t *)node->getInlinedSiteIndex() : (uint8_t *)-1,
+                                                                           node ? (uint8_t *)(uintptr_t)node->getInlinedSiteIndex() : (uint8_t *)-1,
                                                                            TR_DataAddress, cg),
                                              __FILE__,
                                              __LINE__,
@@ -1348,7 +1348,7 @@ OMR::X86::MemoryReference::addMetaDataForCodeAddress(
                && self()->getSymbolReference().getSymbol()->isClassObject()
                && cg->wantToPatchClassPointer(NULL, cursor)) // possibly unresolved, may not point to beginning of class
                {
-               cg->jitAdd32BitPicToPatchOnClassRedefinition((void*)*(int32_t*)cursor, (void *) cursor, self()->getUnresolvedDataSnippet() != NULL);
+               cg->jitAdd32BitPicToPatchOnClassRedefinition((void*)(uintptr_t)*(int32_t*)cursor, (void *) cursor, self()->getUnresolvedDataSnippet() != NULL);
                }
             }
 
@@ -1367,7 +1367,7 @@ OMR::X86::MemoryReference::addMetaDataForCodeAddress(
                && self()->getSymbolReference().getSymbol()->isClassObject()
                && cg->wantToPatchClassPointer(NULL, cursor)) // possibly unresolved, may not point to beginning of class
                {
-               cg->jitAdd32BitPicToPatchOnClassRedefinition((void*)*(int32_t*)cursor, (void *)cursor, self()->getUnresolvedDataSnippet() != NULL);
+               cg->jitAdd32BitPicToPatchOnClassRedefinition((void*)(uintptr_t)*(int32_t*)cursor, (void *)cursor, self()->getUnresolvedDataSnippet() != NULL);
                }
             }
 

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1440,10 +1440,7 @@ TR::Register *OMR::ARM::TreeEvaluator::conversionAnalyser(TR::Node          *nod
       {
       targetRegister = cg->allocateRegister();
       sourceRegister = child->getOpCode().isLong() ? cg->evaluate(child)->getLowOrder() : cg->evaluate(child);
-      if(needSignExtend)
-         signExtend(node, targetRegister, sourceRegister, dstBits, cg);
-      else
-         zeroExtend(node, targetRegister, sourceRegister, dstBits, cg);
+      generateSignOrZeroExtend(node, targetRegister, sourceRegister, needSignExtend, dstBits, cg);
       }
    node->setRegister(targetRegister);
    child->decReferenceCount();
@@ -1452,22 +1449,48 @@ TR::Register *OMR::ARM::TreeEvaluator::conversionAnalyser(TR::Node          *nod
    }
 
 
-static void signExtend(TR::Node *node, TR::Register *dst, TR::Register *src, int32_t bitsInDst, TR::CodeGenerator *cg)
+static void generateSignOrZeroExtend(TR::Node *node, TR::Register *dst, TR::Register *src, bool needSignExtend, int32_t bitsInDst, TR::CodeGenerator *cg)
    {
-   TR_ARMOperand2 *op;
+   TR_ARMOpCodes opcode = ARMOp_bad;
 
-   op = new (cg->trHeapMemory()) TR_ARMOperand2(ARMOp2RegLSLImmed, src, 32 - bitsInDst);
-   generateTrg1Src1Instruction(cg, ARMOp_mov, node, dst, op);
-   op = new (cg->trHeapMemory()) TR_ARMOperand2(ARMOp2RegASRImmed, dst, 32 - bitsInDst);
-   generateTrg1Src1Instruction(cg, ARMOp_mov, node, dst, op);
-   }
+   if (TR::Compiler->target.cpu.id() >= TR_ARMv6)
+      {
+      // sxtb/sxth/uxtb/uxth instructions are unavailable in ARMv5 and older
+      if (needSignExtend)
+         {
+         if (bitsInDst == 8) // byte
+            {
+            opcode = ARMOp_sxtb;
+            }
+         else if (bitsInDst == 16) // short
+            {
+            opcode = ARMOp_sxth;
+            }
+         }
+      else
+         {
+         if (bitsInDst == 8) // byte
+            {
+            opcode = ARMOp_uxtb;
+            }
+         else if (bitsInDst == 16) // short
+            {
+            opcode = ARMOp_uxth;
+            }
+         }
+      }
 
-static void zeroExtend(TR::Node *node, TR::Register *dst, TR::Register *src, int32_t bitsInDst, TR::CodeGenerator *cg)
-   {
-   TR_ARMOperand2 *op;
+   if (opcode != ARMOp_bad)
+      {
+      generateTrg1Src1Instruction(cg, opcode, node, dst, src);
+      }
+   else
+      {
+      TR_ARMOperand2 *op;
 
-   op = new (cg->trHeapMemory()) TR_ARMOperand2(ARMOp2RegLSLImmed, src, 32 - bitsInDst);
-   generateTrg1Src1Instruction(cg, ARMOp_mov, node, dst, op);
-   op = new (cg->trHeapMemory()) TR_ARMOperand2(ARMOp2RegLSRImmed, dst, 32 - bitsInDst);
-   generateTrg1Src1Instruction(cg, ARMOp_mov, node, dst, op);
+      op = new (cg->trHeapMemory()) TR_ARMOperand2(ARMOp2RegLSLImmed, src, 32 - bitsInDst);
+      generateTrg1Src1Instruction(cg, ARMOp_mov, node, dst, op);
+      op = new (cg->trHeapMemory()) TR_ARMOperand2((needSignExtend ? ARMOp2RegASRImmed : ARMOp2RegLSRImmed), dst, 32 - bitsInDst);
+      generateTrg1Src1Instruction(cg, ARMOp_mov, node, dst, op);
+      }
    }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -201,6 +201,18 @@ ARMOpProp_Arch4,
 0,
 
 // swp
+0,
+
+// sxtb
+0,
+
+// sxth
+0,
+
+// uxtb
+0,
+
+// uxth
 0,
 
 // fence

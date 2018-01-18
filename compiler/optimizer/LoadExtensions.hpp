@@ -225,9 +225,9 @@ class TR_LoadExtensions : public TR::Optimization
 
    private:
 
-   typedef TR::typed_allocator<std::pair<const TR::Node*, int32_t>, TR::Region&> NodeToIntTableAllocator;
-   typedef std::less<TR::Node*> NodeToIntTableComparator;
-   typedef std::map<TR::Node*, int32_t, NodeToIntTableComparator, NodeToIntTableAllocator> NodeToIntTable;
+   typedef TR::typed_allocator<std::pair<const TR::Node* const, int32_t>, TR::Region&> NodeToIntTableAllocator;
+   typedef std::less<const TR::Node*> NodeToIntTableComparator;
+   typedef std::map<const TR::Node*, int32_t, NodeToIntTableComparator, NodeToIntTableAllocator> NodeToIntTable;
 
    /** \brief
     *     Keeps track of all nodes which should be excluded from consideration in this optimization.

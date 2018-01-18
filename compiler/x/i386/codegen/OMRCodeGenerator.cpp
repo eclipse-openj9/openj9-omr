@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -104,8 +104,6 @@ OMR::X86::I386::CodeGenerator::CodeGenerator() :
          TR::RealRegister *ebp = self()->machine()->getX86RealRegister(TR::RealRegister::ebp);
          ebp->resetState(TR::RealRegister::Free);
          ebp->setAssignedRegister(NULL);
-         if (!self()->comp()->getOptions()->getOption(TR_DisableVMThreadGRA))
-            self()->setSupportsVMThreadGRA();
          }
 
       // The default CTM behaviour is to do the conversion via X87 instructions.

@@ -319,7 +319,6 @@ private:
 	bool tracingRateDropped(MM_EnvironmentBase *env);
 #if defined(OMR_GC_MODRON_SCAVENGER)	
 	uintptr_t potentialFreeSpace(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription);
-	static void hookOldToOldReferenceCreated(J9HookInterface** hook, uintptr_t eventNum, void* eventData, void* userData);
 #endif /*OMR_GC_MODRON_SCAVENGER */	
 	static void hookCardCleanPass2Start(J9HookInterface** hook, uintptr_t eventNum, void* eventData, void* userData);
 

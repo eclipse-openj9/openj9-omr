@@ -192,6 +192,7 @@ private:
 	bool _isRememberedSetInOverflow;
 
 	volatile BackOutState _backOutState; /**< set if a thread is unable to copy an object due to lack of free space in both Survivor and Tenure */
+	volatile bool _concurrentGlobalGCInProgress; /**< set to true if concurrent Global GC is in progress */
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
 	bool debugConcurrentScavengerPageAlignment; /**< if true allows debug output prints for Concurrent Scavenger Page Alignment logic */
 	uintptr_t concurrentScavengerPageSectionSize; /**< selected section size for Concurrent Scavenger Page */
@@ -962,6 +963,9 @@ public:
 	MMINLINE void setScavengerBackOutState(BackOutState backOutState) { _backOutState = backOutState; }
 	MMINLINE BackOutState getScavengerBackOutState() { return _backOutState; }
 	MMINLINE bool isScavengerBackOutFlagRaised() { return backOutFlagCleared < _backOutState; }
+	
+	MMINLINE bool shouldScavengeNotifyGlobalGCOfOldToOldReference() { return _concurrentGlobalGCInProgress; }
+	MMINLINE void setConcurrentGlobalGCInProgress(bool inProgress) { _concurrentGlobalGCInProgress = inProgress; }
 #endif /* OMR_GC_MODRON_SCAVENGER */
 
 	/**
@@ -1196,6 +1200,7 @@ public:
 		, _guaranteedNurseryEnd(NULL)
 		, _isRememberedSetInOverflow(false)
 		, _backOutState(backOutFlagCleared)
+		, _concurrentGlobalGCInProgress(false)
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
 		, debugConcurrentScavengerPageAlignment(false)
 		, concurrentScavengerPageSectionSize(0)

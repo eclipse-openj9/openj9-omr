@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -24,8 +24,6 @@
 #include "x/runtime/X86Runtime.hpp"
 
 #define IS_32BIT_SIGNED(x)   ((x) == ( int32_t)(x))
-
-extern "C" void _patchingFence16(void *startAddr);
 
 extern "C" void _patchVirtualGuard(uint8_t *locationAddr, uint8_t *destinationAddr, int32_t smpFlag)
    {

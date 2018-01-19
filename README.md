@@ -20,6 +20,8 @@ OpenJDK Assembly Exception [2].
 SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
 -->
 
+DUMMY CHANGE
+
 [![Travis Status](https://api.travis-ci.org/eclipse/omr.svg?branch=master)](https://travis-ci.org/eclipse/omr)
 [![Appveyor Status](https://ci.appveyor.com/api/projects/status/github/eclipse/omr?svg=true&branch=master)](https://ci.appveyor.com/project/eclipsewebmaster/omr)
 [![Build-linux_390-64 Status](https://ci.eclipse.org/omr/job/Build-linux_390-64/badge/icon)](https://ci.eclipse.org/omr/job/Build-linux_390-64/)

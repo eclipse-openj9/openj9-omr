@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -163,10 +163,6 @@ extern int64_t getIntegralValue(TR::Node* node);
 #define TR_MAX_SEARCH_STRING_SIZE (TR_MAX_SS1_SIZE)
 #define TR_MAX_REPLACE_CHAR_STRING_SIZE 1
 #define TR_MAX_BEFORE_AFTER_SIZE 1
-
-
-// heuristic codegen register pressure threshold (restricted registers)
-#define CODEGEN_REGPRESSURE_THRESHOLD 14
 
 // performance thresholds -- until SRST and similar instructions are used inline
 #define TR_MAX_REPLACE_ALL_LOOP_PERF 150              // search > 1 byte (otherwise it is table lookup)
@@ -721,41 +717,6 @@ public:
     */
    TR::Instruction* insertPad(TR::Node* node, TR::Instruction* cursor, uint32_t size, bool prependCursor);
 
-   void setCurrentlyClobberedRestrictedRegister(int32_t regNum)
-      {
-      _currentlyClobberedRestrictedRegister = regNum;
-      }
-   void clearCurrentlyClobberedRestrictedRegister()
-      {
-      _currentlyClobberedRestrictedRegister = TR_INVALID_REGISTER;
-      }
-   int32_t getCurrentlyClobberedRestrictedRegister(int32_t regNum)
-      {
-      return _currentlyClobberedRestrictedRegister;
-      }
-
-   TR_BitVector * setKilledRestrictedRegisters(TR_BitVector *killRestrictedRegsBV)
-      {
-      return _killedRestrictedRegisters = killRestrictedRegsBV;
-      }
-   TR_BitVector * getKilledRestrictedRegisters()
-      {
-      return _killedRestrictedRegisters;
-      }
-
-   TR_BitVector * setCurrentlyRestrictedRegisters(TR_BitVector *currentRestrictedRegsBV)
-      {
-      return _currentlyRestrictedRegisters = currentRestrictedRegsBV;
-      }
-
-   TR_BitVector * getCurrentlyRestrictedRegisters()
-      {
-      return _currentlyRestrictedRegisters;
-      }
-
-   /** Heuristicly get the register pressure for doing codegen */
-   int8_t getCurrentRegisterPressure(TR_RegisterKinds rk = TR_GPR);
-
     struct TR_S390ConstantDataSnippetKey
         {
            void * c;
@@ -1077,9 +1038,6 @@ private:
 
    TR::SymbolReference* _reusableTempSlot;
 
-   TR_BitVector  *_currentlyRestrictedRegisters;
-   TR_BitVector  *_killedRestrictedRegisters;
-
    TR::list<TR::Register *> _internalControlFlowRegisters;
 
    CS2::HashTable<ncount_t, bool, TR::Allocator> _nodesToBeEvaluatedInRegPairs;
@@ -1118,7 +1076,6 @@ private:
    TR::Node *_nodeAddressOfCachedStatic;
    protected:
 
-   int32_t _currentlyClobberedRestrictedRegister;
    TR::SparseBitVector _bucketPlusIndexRegisters;
    TR::Instruction *_currentDEPEND;
    };

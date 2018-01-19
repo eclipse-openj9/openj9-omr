@@ -849,8 +849,7 @@ generateS390ImmOp(TR::CodeGenerator * cg,  TR::InstOpCode::Mnemonic memOp, TR::N
                if (sourceRegister == targetRegister)
                   {
                   // testing register pressure
-                  if (cg->getCurrentRegisterPressure() < CODEGEN_REGPRESSURE_THRESHOLD &&
-                      !comp->getJittedMethodSymbol()->isNoTemps())
+                  if (!comp->getJittedMethodSymbol()->isNoTemps())
                      {
                      TR::Register * tempReg = cg->allocateRegister();
                      cursor = generateRIInstruction(cg, TR::InstOpCode::LHI, node, tempReg, value, preced);
@@ -910,8 +909,7 @@ generateS390ImmOp(TR::CodeGenerator * cg,  TR::InstOpCode::Mnemonic memOp, TR::N
                if (sourceRegister == targetRegister)
                   {
                   // testing register pressure
-                  if (cg->getCurrentRegisterPressure() < CODEGEN_REGPRESSURE_THRESHOLD &&
-                        !comp->getJittedMethodSymbol()->isNoTemps())
+                  if (!comp->getJittedMethodSymbol()->isNoTemps())
                      {
                      TR::Register * tempReg = cg->allocate64bitRegister();
                      cursor = generateRIInstruction(cg, TR::InstOpCode::LGHI, node, tempReg, value, preced);
@@ -1047,8 +1045,7 @@ generateS390ImmOp(TR::CodeGenerator * cg,  TR::InstOpCode::Mnemonic memOp, TR::N
                else
                   {
                   // testing register pressure
-                  if (cg->getCurrentRegisterPressure() >= CODEGEN_REGPRESSURE_THRESHOLD &&
-                        !comp->getJittedMethodSymbol()->isNoTemps())
+                  if (!comp->getJittedMethodSymbol()->isNoTemps())
                      {
                      if (!targetRegister)
                         targetRegister = sourceRegister;
@@ -2715,7 +2712,7 @@ tryGenerateCLCForComparison(TR::Node *node, TR::CodeGenerator *cg)
 
    uint16_t numOfBytesToCompare = operand1->getSize();
    // CLC is slower than CL when the length is 4 bytes
-   if (numOfBytesToCompare == 4  && cg->getCurrentRegisterPressure() < CODEGEN_REGPRESSURE_THRESHOLD)
+   if (numOfBytesToCompare == 4)
       {
       return 0;
       }

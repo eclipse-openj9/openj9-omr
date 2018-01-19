@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -712,9 +712,6 @@ lDivRemGenericEvaluator(TR::Node * node, TR::CodeGenerator * cg, bool isDivision
    TR::Instruction *cursor=NULL;
    TR::Compilation *comp = cg->comp();
 
-   // div uses reg pairs that can interfeer with currently clobbered reg
-   cg->clearCurrentlyClobberedRestrictedRegister();
-
    TR::RegisterPair * dividendPair = (TR::RegisterPair *) cg->gprClobberEvaluate(firstChild);
 
    int32_t shiftAmnt;
@@ -1108,8 +1105,6 @@ lDivRemGenericEvaluator64(TR::Node * node, TR::CodeGenerator * cg, bool isDivisi
    TR::Node * firstChild = node->getFirstChild();
    TR::Node * secondChild = node->getSecondChild();
    TR::Instruction * cursor = NULL;
-   // div uses reg pairs that can interfeer with currently clobbered reg
-   cg->clearCurrentlyClobberedRestrictedRegister();
 
    int32_t shiftAmnt;
    // A/A, return 1 (div) or 0 (rem).
@@ -1900,27 +1895,9 @@ TR::Register *
 OMR::Z::TreeEvaluator::addrAddHelper(TR::Node *node, TR::CodeGenerator *cg)
    {
    if (node->getOpCodeValue() == TR::aiadd)
-      {
-      if (cg->getCurrentRegisterPressure() < CODEGEN_REGPRESSURE_THRESHOLD)
-         return generic32BitAddEvaluator(node, cg);
-      else
-         {
-         TR_S390BinaryCommutativeAnalyser temp(cg);
-         temp.integerAddAnalyser(node, TR::InstOpCode::ALR, TR::InstOpCode::AL, TR::InstOpCode::LR);
-         return node->getRegister();
-         }
-      }
+      return generic32BitAddEvaluator(node, cg);
    else if (node->getOpCodeValue() == TR::aladd)
-      {
-      if (cg->getCurrentRegisterPressure() < CODEGEN_REGPRESSURE_THRESHOLD)
-         return TR::TreeEvaluator::laddEvaluator(node, cg);
-      else
-         {
-         TR_S390BinaryCommutativeAnalyser temp(cg);
-         temp.integerAddAnalyser(node, TR::InstOpCode::ALGR, TR::InstOpCode::ALG, TR::InstOpCode::LGR);
-         return node->getRegister();
-         }
-      }
+      return TR::TreeEvaluator::laddEvaluator(node, cg);
    else
       TR_ASSERT(0,"Wrong il-opCode for calling addAddHelper!\n");
 

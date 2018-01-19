@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -83,6 +83,10 @@ typedef enum  {
    ARMOp_stm,              // Store multiple words
    ARMOp_stmdb,            // Store multiple words, decrement before
    ARMOp_swp,              // Swap dword
+   ARMOp_sxtb,             // Sign extend byte
+   ARMOp_sxth,             // Sign extend halfword
+   ARMOp_uxtb,             // Zero extend byte
+   ARMOp_uxth,             // Zero extend halfword
    ARMOp_fence,            // Fence
    ARMOp_ret,              // Return
    ARMOp_wrtbar,           // Write barrier directive

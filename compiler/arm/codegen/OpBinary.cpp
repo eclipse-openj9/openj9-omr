@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -83,6 +83,10 @@ const TR_ARMOpCode::TR_OpCodeBinaryEntry TR_ARMOpCode::binaryEncodings[ARMNumOpC
    0x08800000,  // stm
    0x09200000,  // stmdb
    0x01000090,  // swp
+   0x06AF0070,  // sxtb
+   0x06BF0070,  // sxth
+   0x06EF0070,  // uxtb
+   0x06FF0070,  // uxth
    0x00000000,  // fence
    0x00000000,  // ret
    0x00000000,  // wrtbar

@@ -605,6 +605,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"dontActivateCompThreadWhenHighPriReqIsBlocked", "M\tdo not activate another compilation thread when high priority request is blocked",  RESET_OPTION_BIT(TR_ActivateCompThreadWhenHighPriReqIsBlocked), "F", NOT_IN_SUBSET},
    {"dontAddHWPDataToIProfiler",          "O\tDont add HW Data to IProfiler", SET_OPTION_BIT(TR_DontAddHWPDataToIProfiler), "F", NOT_IN_SUBSET},
    {"dontDowngradeToCold",                "M\tdon't downgrade first time compilations from warm to cold", SET_OPTION_BIT(TR_DontDowngradeToCold), "F", NOT_IN_SUBSET},
+   {"dontDowngradeToColdDuringGracePeriod","M\tdon't downgrade first time compilations from warm to cold during grace period (first second of run)", SET_OPTION_BIT(TR_DontDowgradeToColdDuringGracePeriod), "F", NOT_IN_SUBSET },
    {"dontDowngradeWhenRIIsTemporarilyOff","M\t", SET_OPTION_BIT(TR_DontDowngradeWhenRIIsTemporarilyOff), "F", NOT_IN_SUBSET },
    {"dontIncreaseCountsForNonBootstrapMethods", "M\t", RESET_OPTION_BIT(TR_IncreaseCountsForNonBootstrapMethods), "F", NOT_IN_SUBSET }, // Xjit: option
    {"dontInline=",                        "O{regex}\tlist of callee methods to not inline",

@@ -321,7 +321,7 @@ enum TR_CompilationOptions
    TR_DisableLateEdgeSplitting            = 0x00000400 + 7,
    TR_DisableLoopReplicatorColdSideEntryCheck = 0x00000800 + 7,
    TR_TraceVFPSubstitution                = 0x00001000 + 7,
-   // Available                           = 0x00002000 + 7,
+   TR_DontDowgradeToColdDuringGracePeriod = 0x00002000 + 7,
    TR_EnableRecompilationPushing          = 0x00004000 + 7,
    TR_EnableJCLInline                     = 0x00008000 + 7, // enable JCL Integer and Long methods inline
    TR_DisableTreePatternMatching          = 0x00010000 + 7,

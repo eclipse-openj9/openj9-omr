@@ -873,7 +873,7 @@ static TR::Node *addSimplifier(TR::Node * node, TR::Block * block, TR::Simplifie
       {
       if (performTransformation(s->comp(), "%sNormalized xadd of xconst > 0 in node [%s] to xsub of -xconst\n", s->optDetailString(), node->getName(s->getDebug())))
          {
-      TR::Node::recreate(node, TR::ILOpCode::getSubOpCode<T>());
+         TR::Node::recreate(node, TR::ILOpCode::getSubOpCode<T>());
          if (secondChild->getReferenceCount() == 1)
             {
             secondChild->setConst<T>(-secondChild->getConst<T>());
@@ -4770,10 +4770,16 @@ static int64_t floatToLong(float value, bool roundUp)
    else
       {
       if (roundUp)
+         {
          if (value > 0)
+            {
             value += 0.5;
+            }
          else
+            {
             value -= 0.5;
+            }
+         }
 
       result = (int64_t)value;
       }
@@ -4797,10 +4803,16 @@ static int64_t doubleToLong(double value, bool roundUp)
    else
       {
       if (roundUp)
+         {
          if (value > 0)
+            {
             value += 0.5;
+            }
          else
+            {
             value -= 0.5;
+            }
+         }
 
       result = (int64_t)value;
       }

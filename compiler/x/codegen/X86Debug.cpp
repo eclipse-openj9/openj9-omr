@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -876,11 +876,17 @@ TR_Debug::print(TR::FILE *pOutFile, TR::X86ImmSymInstruction  * instr)
 
    //  64 bit always gets the targetAddress from the symRef
    if(TR::Compiler->target.is64Bit())
+      {
       // new code patching might have a call to a snippet label, which is not a method
       if(!sym->isLabel())
+         {
          targetAddress = (intptr_t)instr->getSymbolReference()->getMethodAddress();
+         }
+      }
    else
+      {
       targetAddress = instr->getSourceImmediate();
+      }
 
    if (name)
       {

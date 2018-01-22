@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -2216,7 +2216,7 @@ void OMR::X86::TreeEvaluator::genArithmeticInstructionsForOverflowCHK(TR::Node *
       }
    else
    // we need to do the operation again when the Operation node has been evaluated already under a different treetop
-   // TODO: there is still a chance that the flags might still be avaiable and we could detect it and avoid repeating
+   // TODO: there is still a chance that the flags might still be available and we could detect it and avoid repeating
    // the operation
       {
       TR_X86BinaryCommutativeAnalyser  addMulAnalyser(cg);
@@ -2253,6 +2253,8 @@ void OMR::X86::TreeEvaluator::genArithmeticInstructionsForOverflowCHK(TR::Node *
             break;
          case TR::lmul:
             addMulAnalyser.genericAnalyserWithExplicitOperands(node, operand1, operand2, op, BADIA32Op, MOV8RegReg);
+            break;
+         default:
             break;
          }
       }

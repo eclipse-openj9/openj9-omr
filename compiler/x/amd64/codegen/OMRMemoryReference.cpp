@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -392,7 +392,7 @@ OMR::X86::AMD64::MemoryReference::addMetaDataForCodeAddressWithLoad(
             {
             if (cg->needClassAndMethodPointerRelocations())
                cg->addAOTRelocation(new (cg->trHeapMemory()) TR::ExternalRelocation(displacementLocation, (uint8_t *)&_symbolReference,
-                                                                                        (uint8_t *)containingInstruction->getNode()->getInlinedSiteIndex(),
+                                                                                        (uint8_t *)(uintptr_t)containingInstruction->getNode()->getInlinedSiteIndex(),
                                                                                         TR_ClassAddress, cg),__FILE__, __LINE__,
                                                                                         containingInstruction->getNode());
             if (cg->wantToPatchClassPointer(NULL, displacementLocation)) // may not point to beginning of class

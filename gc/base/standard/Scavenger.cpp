@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2017 IBM Corp. and others
+ * Copyright (c) 1991, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1152,8 +1152,10 @@ MM_Scavenger::copyAndForward(MM_EnvironmentStandard *env, volatile omrobjectptr_
 
 			if (NULL != forwardPtr) {
 				/* Object has been copied - update the forwarding information and return */
-				*objectPtrIndirect = forwardPtr;
 				toReturn = isObjectInNewSpace(forwardPtr);
+				/* CS: ensure it's fully copied before exposing this new version of the object */
+				forwardHeader.copyOrWait(forwardPtr);
+				*objectPtrIndirect = forwardPtr;
 			} else {
 				omrobjectptr_t destinationObjectPtr = copy(env, &forwardHeader);
 				if (NULL == destinationObjectPtr) {
@@ -1167,15 +1169,18 @@ MM_Scavenger::copyAndForward(MM_EnvironmentStandard *env, volatile omrobjectptr_
 						 * So we will attempt to atomically self forward it.  */
 						forwardPtr = forwardHeader.setSelfForwardedObject();
 						if (forwardPtr != objectPtr) {
-							*objectPtrIndirect = forwardPtr;
+							/* Failed to self-forward (someone successfully copied it). Re-fetch the forwarding info
+							 * and ensure it's fully copied before exposing this new version of the object */
 							toReturn = isObjectInNewSpace(forwardPtr);
+							MM_ForwardedHeader(objectPtr).copyOrWait(forwardPtr);
+							*objectPtrIndirect = forwardPtr;
 						}
 					}
 #endif /* OMR_GC_CONCURRENT_SCAVENGER */
 				} else {
-					/* Update the slot */
-					*objectPtrIndirect = destinationObjectPtr;
+					/* Update the slot. copy() ensures the object is fully copied */
 					toReturn = isObjectInNewSpace(destinationObjectPtr);
+					*objectPtrIndirect = destinationObjectPtr;
 				}
 			}
 		} else if (isObjectInNewSpace(objectPtr)) {
@@ -1214,10 +1219,14 @@ MM_Scavenger::copyAndForward(MM_EnvironmentStandard *env, GC_SlotObject *slotObj
 	omrobjectptr_t oldSlot = slotObject->readReferenceFromSlot();
 	omrobjectptr_t slot = oldSlot;
 	bool result = copyAndForward(env, &slot);
-	if (IS_CONCURRENT_ENABLED) {
-		// todo: could do non-atomically during STW phases
-		slotObject->atomicWriteReferenceToSlot(oldSlot, slot);
-	} else {
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+	if (concurrent_state_scan == _concurrentState) {
+		if (oldSlot != slot) {
+			slotObject->atomicWriteReferenceToSlot(oldSlot, slot);
+		}
+	} else
+#endif /* OMR_GC_CONCURRENT_SCAVENGER */
+	{
 		slotObject->writeReferenceToSlot(slot);
 	}
 
@@ -1385,10 +1394,34 @@ MM_Scavenger::copy(MM_EnvironmentStandard *env, MM_ForwardedHeader* forwardedHea
 	newCacheAlloc = (void *) (((uint8_t *)destinationObjectPtr) + objectReserveSizeInBytes);
 
 	omrobjectptr_t originalDestinationObjectPtr = destinationObjectPtr;
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+	uintptr_t remainingSizeToCopy = 0;
+	uintptr_t initialSizeToCopy = 0;
+	bool allowDuplicate = false;
+	bool allowDuplicateOrConcurrentDisabled = true;
+	
+	if (IS_CONCURRENT_ENABLED) {
+		/* For smaller objects, we allow duplicate (copy first and try to win forwarding).
+		 * For larger objects, there is only one copy (threads setup destination header, one wins, and other participate in copying or wait till copy is complete).
+		 * 1024 is somewhat arbitrary threshold, so that most of time we do not have to go through relatively expensive setup procedure.
+		 */
+		if (objectCopySizeInBytes <= 1024) {
+			allowDuplicate = true;
+		} else {
+			remainingSizeToCopy = objectCopySizeInBytes;
+			initialSizeToCopy = forwardedHeader->copySetup(destinationObjectPtr, &remainingSizeToCopy);
+			/* set the hint in the f/w pointer, that the object might still be in the processes of copying */
+			destinationObjectPtr = forwardedHeader->setForwardedObjectWithBeingCopiedHint(destinationObjectPtr);
+			allowDuplicateOrConcurrentDisabled = false;
+		}
+	} else
+#endif /* OMR_GC_CONCURRENT_SCAVENGER */
+	{
+		destinationObjectPtr = forwardedHeader->setForwardedObject(destinationObjectPtr);
+	}
 
-	if (IS_CONCURRENT_ENABLED || (originalDestinationObjectPtr == (destinationObjectPtr = forwardedHeader->setForwardedObject(destinationObjectPtr)))) {
-		/* Succeeded in forwarding the object */
-		/* Copy and adjust the age value */
+	if (originalDestinationObjectPtr == destinationObjectPtr) {
+		/* Succeeded in forwarding the object, or we allow duplicate (did not even tried to forward yet). */
 
 #if defined(J9VM_INTERP_NATIVE_SUPPORT)
 		if (NULL != hotFieldPadBase) {
@@ -1405,9 +1438,32 @@ MM_Scavenger::copy(MM_EnvironmentStandard *env, MM_ForwardedHeader* forwardedHea
 			  is called during end of scavanger cycle. */
 #endif /* defined(OMR_VALGRIND_MEMCHECK) */
 
-		memcpy((void *)destinationObjectPtr, forwardedHeader->getObject(), objectCopySizeInBytes);
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+		if (!allowDuplicateOrConcurrentDisabled) {
+			/* Copy a non-aligned section */
+			forwardedHeader->copySection(destinationObjectPtr, remainingSizeToCopy, initialSizeToCopy);
 
-		_extensions->objectModel.fixupForwardedObject(forwardedHeader, destinationObjectPtr, objectAge);
+			/* Try to copy more aligned sections. Once no more sections to copy, wait till other threads are done with their sections */
+			forwardedHeader->copyOrWaitWinner(destinationObjectPtr);
+
+			/* Fixup most of the destination object (part that overlaps with forwarded header) */
+			forwardedHeader->commenceFixup(destinationObjectPtr);
+
+			/* Object model specific fixup, like age */
+			_extensions->objectModel.fixupForwardedObject(forwardedHeader, destinationObjectPtr, objectAge);
+
+			/* Final fixup step - the object is available for usage by mutator threads */
+			forwardedHeader->commitFixup(destinationObjectPtr);
+		} else
+#endif /* OMR_GC_CONCURRENT_SCAVENGER */
+		{
+			memcpy((void *)destinationObjectPtr, forwardedHeader->getObject(), objectCopySizeInBytes);
+
+			/* Copy the preserved fields from the forwarded header into the destination object */
+			forwardedHeader->fixupForwardedObject(destinationObjectPtr);
+
+			_extensions->objectModel.fixupForwardedObject(forwardedHeader, destinationObjectPtr, objectAge);
+		}
 
 #if defined(OMR_SCAVENGER_TRACE_COPY)
 		OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
@@ -1418,7 +1474,7 @@ MM_Scavenger::copy(MM_EnvironmentStandard *env, MM_ForwardedHeader* forwardedHea
 	/* Concurrent Scavenger can update forwarding pointer only after the object has been copied
 	 * (since mutator may access the object as soon as forwarding pointer is installed) */
 	}
-	if (originalDestinationObjectPtr == (_extensions->concurrentScavenger ? (destinationObjectPtr = forwardedHeader->setForwardedObject(destinationObjectPtr)) : destinationObjectPtr)) {
+	if (originalDestinationObjectPtr == (allowDuplicate ? (destinationObjectPtr = forwardedHeader->setForwardedObject(destinationObjectPtr)) : destinationObjectPtr)) {
 		/* Succeeded in forwarding the object */
 #endif /* OMR_GC_CONCURRENT_SCAVENGER */
 
@@ -1462,6 +1518,10 @@ MM_Scavenger::copy(MM_EnvironmentStandard *env, MM_ForwardedHeader* forwardedHea
 		} else {
 			Assert_MM_unreachable();
 		}
+
+		/* Failed to forward (someone else did it). Re-fetch the forwarding info and (for Concurrent Scavenger only) ensure
+		 * it's fully copied before letting the caller expose this new version of the object */
+		MM_ForwardedHeader(forwardedHeader->getObject()).copyOrWait(destinationObjectPtr);
 	}
 	/* return value for updating the slot */
 	return destinationObjectPtr;
@@ -4608,6 +4668,7 @@ MM_Scavenger::scavengeComplete(MM_EnvironmentBase *envBase)
 		MM_EnvironmentStandard *threadEnvironment = MM_EnvironmentStandard::getEnvironment(walkThread);
 		if (MUTATOR_THREAD == threadEnvironment->getThreadType()) {
 			threadFinalReleaseCopyCaches(env, threadEnvironment);
+			threadEnvironment->_scavengerStats.clear(false);
 		}
 	}
 

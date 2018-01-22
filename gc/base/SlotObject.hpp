@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2015 IBM Corp. and others
+ * Copyright (c) 1991, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -104,18 +104,15 @@ public:
 	 */ 	
 	MMINLINE bool atomicWriteReferenceToSlot(omrobjectptr_t oldReference, omrobjectptr_t newReference)
 	{
-		bool swapResult = false;
+		/* Caller should ensure oldReference != newReference */
+		fomrobject_t compressedOld = convertTokenFromPointer(oldReference);
+		fomrobject_t compressedNew = convertTokenFromPointer(newReference);
 		
-		if (oldReference != newReference) {
-			fomrobject_t compressedOld = convertTokenFromPointer(oldReference);
-			fomrobject_t compressedNew = convertTokenFromPointer(newReference);
-		
-#if defined(OMR_INTERP_COMPRESSED_OBJECT_HEADER)
-			swapResult = ((uint32_t)(uintptr_t)compressedOld == MM_AtomicOperations::lockCompareExchangeU32((uint32_t *)_slot, (uint32_t)(uintptr_t)compressedOld, (uint32_t)(uintptr_t)compressedNew));
+#if defined (OMR_GC_COMPRESSED_POINTERS)
+		bool swapResult = ((uint32_t)(uintptr_t)compressedOld == MM_AtomicOperations::lockCompareExchangeU32((uint32_t *)_slot, (uint32_t)(uintptr_t)compressedOld, (uint32_t)(uintptr_t)compressedNew));
 #else
-			swapResult = ((uintptr_t)compressedOld == MM_AtomicOperations::lockCompareExchange((uintptr_t *)_slot, (uintptr_t)compressedOld, (uintptr_t)compressedNew));
-#endif /* OMR_INTERP_COMPRESSED_OBJECT_HEADER */
-		}
+		bool swapResult = ((uintptr_t)compressedOld == MM_AtomicOperations::lockCompareExchange((uintptr_t *)_slot, (uintptr_t)compressedOld, (uintptr_t)compressedNew));
+#endif /* OMR_GC_COMPRESSED_POINTERS */
 		
 		return swapResult;
 	}

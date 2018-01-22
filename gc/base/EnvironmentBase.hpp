@@ -571,9 +571,8 @@ public:
 
 	MMINLINE MM_WorkStack *getWorkStack() { return &_workStack; }
 
-	MMINLINE void flushNonAllocationCaches() { _delegate.flushNonAllocationCaches(); }
-	virtual void flushGCCaches(MM_EnvironmentBase *env) {}
-	
+	virtual void flushNonAllocationCaches() { _delegate.flushNonAllocationCaches(); }
+	virtual void flushGCCaches() {}
 
 	/**
 	 * Get a pointer to common GC metadata attached to this environment. The GC environment structure

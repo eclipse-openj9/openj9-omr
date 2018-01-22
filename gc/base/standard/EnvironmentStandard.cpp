@@ -73,19 +73,33 @@ void
 MM_EnvironmentStandard::tearDown(MM_GCExtensionsBase *extensions)
 {
 	/* If we are in a middle of a concurrent GC, we may want to flush GC caches (if thread happens to do GC work) */
-	flushGCCaches(this);
+	flushGCCaches();
 	/* tearDown base class */
 	MM_EnvironmentBase::tearDown(extensions);
 }
 
 void
-MM_EnvironmentStandard::flushGCCaches(MM_EnvironmentBase *env)
+MM_EnvironmentStandard::flushNonAllocationCaches()
 {
-#if defined(OMR_GC_CONCURRENT_SCAVENGER)
-	if (env->getExtensions()->concurrentScavenger) {
-		if (MUTATOR_THREAD == env->getThreadType()) {
-			getExtensions()->scavenger->threadFinalReleaseCopyCaches((MM_EnvironmentStandard *)env, (MM_EnvironmentStandard *)env);
+	MM_EnvironmentBase::flushNonAllocationCaches();
+
+#if defined(OMR_GC_MODRON_SCAVENGER)
+	if (getExtensions()->scavengerEnabled) {
+		if (MUTATOR_THREAD == getThreadType()) {
+			flushRememberedSet();
 		}
 	}
-#endif
+#endif /* OMR_GC_MODRON_SCAVENGER */
+}
+
+void
+MM_EnvironmentStandard::flushGCCaches()
+{
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+	if (getExtensions()->concurrentScavenger) {
+		if (MUTATOR_THREAD == getThreadType()) {
+			getExtensions()->scavenger->threadFinalReleaseCopyCaches(this, this);
+		}
+	}
+#endif /* OMR_GC_CONCURRENT_SCAVENGER */
 }

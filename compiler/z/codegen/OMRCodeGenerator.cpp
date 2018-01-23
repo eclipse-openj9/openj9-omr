@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -541,8 +541,6 @@ OMR::Z::CodeGenerator::CodeGenerator()
      _currentBCDCHKHandlerLabel(NULL),
      _internalControlFlowRegisters(getTypedAllocator<TR::Register*>(self()->comp()->allocator())),
      _nodesToBeEvaluatedInRegPairs(self()->comp()->allocator()),
-     _killedRestrictedRegisters(NULL),
-     _currentlyRestrictedRegisters(NULL),
      _nodeAddressOfCachedStatic(NULL),
      _ccInstruction(NULL),
      _previouslyAssignedTo(self()->comp()->allocator("LocalRA")),
@@ -3036,11 +3034,6 @@ TR_S390Peephole::AGIReduction()
         toRealRegister(lgrTargetReg)==_cg->getStackPointerRealRegister(NULL))
       return performed;
 
-   // don't want to propagate if the LGR target register is restricted
-   // doing so would change the use(as a base or index reg) to the wrong register
-   if (_cg->getCurrentlyRestrictedRegisters() && _cg->getCurrentlyRestrictedRegisters()->isSet(toRealRegister(lgrTargetReg)->getRegisterNumber() - 1))
-      return performed;
-
    TR::Instruction* current=_cursor->getNext();
 
    // if:
@@ -5473,7 +5466,6 @@ TR_S390Peephole::perform()
 
    bool moveInstr;
 
-   if (_cg->getCurrentlyRestrictedRegisters()) _cg->getCurrentlyRestrictedRegisters()->empty();
    while (_cursor != NULL)
       {
       if (_cursor->getNode()!= NULL && _cursor->getNode()->getOpCodeValue() == TR::BBStart)
@@ -10274,50 +10266,6 @@ OMR::Z::CodeGenerator::setRegister(TR::RealRegister::RegNum reg, TR_BitVector &r
 void
 OMR::Z::CodeGenerator::setUnavailableRegisters(TR::Block *b, TR_BitVector &unavailableRegisters)
    {
-   }
-/**
- * Heuristicly get the register pressure for doing codegen
- */
-int8_t
-OMR::Z::CodeGenerator::getCurrentRegisterPressure(TR_RegisterKinds rk)
-   {
-   // just return 0 for any language that does not use restricted regs
-   if (!self()->getCurrentlyRestrictedRegisters()) return 0;
-
-   TR_ASSERT(rk != TR_VRF, "VRF: RegisterPressure unavailable");
-
-   int8_t numOfRegs = 0;
-   if (rk == TR_GPR)
-      {
-      for (uint8_t i = TR::RealRegister::FirstGPR; i <= TR::RealRegister::LastGPR; ++i)
-         {
-         if (self()->getCurrentlyRestrictedRegisters()->isSet(REGNUM(i) - 1))
-            numOfRegs++;
-         }
-
-      TR_LiveRegisters *liveRegisters = self()->getLiveRegisters(TR_GPR);
-      TR_LiveRegisterInfo *info = NULL;
-      int8_t realRegNum = 0;
-      if (liveRegisters)
-         {
-         for (info = liveRegisters->getFirstLiveRegister(); info; info = info->getNext())
-            {
-            numOfRegs++;
-            }
-         }
-
-      liveRegisters = self()->getLiveRegisters(TR_GPR64);
-      if (liveRegisters)
-         {
-         for (info = liveRegisters->getFirstLiveRegister(); info; info = info->getNext())
-            {
-            numOfRegs++;
-            }
-         }
-      }
-   // else can extent it to other kind of register in the future if needed
-
-   return numOfRegs;
    }
 
 

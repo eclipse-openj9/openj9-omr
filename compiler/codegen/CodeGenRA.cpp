@@ -2441,11 +2441,6 @@ OMR::CodeGenerator::simulateBlockEvaluation(
    TR_ASSERT(!block->isExtensionOfPreviousBlock(), "simulateBlockEvaluation operates on extended basic blocks");
    state->_currentBlock = block;
 
-#if defined(TR_TARGET_S390)
-   if (self()->getCurrentlyRestrictedRegisters())
-      self()->getCurrentlyRestrictedRegisters()->empty();
-#endif
-
    if (self()->traceSimulateTreeEvaluation())
       {
       traceMsg(self()->comp(), "            { simulating block_%d", block->getNumber());

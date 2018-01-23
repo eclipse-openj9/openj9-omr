@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -976,19 +976,12 @@ bool OMR::X86::CodeGenerator::supportsAddressRematerialization()         { stati
 
 bool OMR::X86::CodeGenerator::allowVMThreadRematerialization()
    {
-   if (self()->comp()->getOptions()->getOption(TR_DisableTraps)) return false;
-
-   static bool flag = (feGetEnv("TR_disableRematerializeVMThread") == NULL);
-   return flag;
+   return false;
    }
 
 bool OMR::X86::CodeGenerator::supportsFS0VMThreadRematerialization()
    {
-#ifdef WINDOWS
-   return allowVMThreadRematerialization();
-#else
    return false;
-#endif
    }
 
 #undef ALLOWED_TO_REMATERIALIZE

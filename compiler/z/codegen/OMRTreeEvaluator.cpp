@@ -220,7 +220,7 @@ generateLoad32BitConstant(TR::CodeGenerator* cg, TR::Node* node, int32_t value, 
    TR::Symbol *sym = NULL;
    if (node->getOpCode().hasSymbolReference())
       sym = node->getSymbol();
-   bool needRegPair = cg->evaluateNodeInRegPair(node) || !(TR::Compiler->target.is64Bit() || cg->use64BitRegsOn32Bit());
+   bool needRegPair = !(TR::Compiler->target.is64Bit() || cg->use64BitRegsOn32Bit());
    bool load64bit = !needRegPair &&
                     (node->getType().isInt64() || node->isExtendedTo64BitAtSource());
 
@@ -4968,7 +4968,7 @@ genericLoadHelper(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference *
    TR::RegisterDependencyConditions * flogrDeps;
    TR::Instruction * cursor;
    TR::Register * targetRegister = srcRegister;
-   const bool useRegPairs = (numberOfExtendBits==64 && TR::Compiler->target.is32Bit() && !cg->use64BitRegsOn32Bit()) || cg->evaluateNodeInRegPair(node);
+   const bool useRegPairs = numberOfExtendBits==64 && TR::Compiler->target.is32Bit() && !cg->use64BitRegsOn32Bit();
    const bool canClobberSrcReg = form==RegReg && couldIgnoreExtend_OR_canClobberSrcReg;
 
    // Compile-time constant-folding variable
@@ -5606,9 +5606,9 @@ bool relativeLongLoadHelper(TR::CodeGenerator * cg, TR::Node * node, TR::Registe
 
       TR_ASSERT(op != TR::InstOpCode::BAD, "Bad opcode selection in relative load helper!\n");
 
-      if ( (!disableFORCELRL || cg->canUseRelativeLongInstructions(staticAddress)) &&
-           ( (TR::Compiler->target.is32Bit() && (staticAddress&0x3) == 0)  ||
-             ( TR::Compiler->target.is64Bit() && (staticAddress&0x7) == 0)
+      if ((!disableFORCELRL || cg->canUseRelativeLongInstructions(staticAddress)) &&
+           ((TR::Compiler->target.is32Bit() && (staticAddress&0x3) == 0)  ||
+             (TR::Compiler->target.is64Bit() && (staticAddress&0x7) == 0)
            )
          )
          {
@@ -5729,7 +5729,7 @@ lloadHelper(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference * highM
    {
    TR::Compilation *comp = cg->comp();
    //TR_ASSERTC( !isReversed,comp, "need to write logic for reverse load still");
-   TR_ASSERT(TR::Compiler->target.is32Bit() || cg->evaluateNodeInRegPair(node), "should call 64-bit version: lloadHelper64()!\n");
+   TR_ASSERT(TR::Compiler->target.is32Bit(), "should call 64-bit version: lloadHelper64()!\n");
    TR::RegisterPair       * longRegister = cg->allocateConsecutiveRegisterPair();
    // Force Memref to get a new reg.  Re-using the pair screws it up.
    node->setRegister(NULL);
@@ -5792,9 +5792,7 @@ lloadHelper(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference * highM
       else
          longRegister = (TR::RegisterPair *)genericLoad<64>(node, cg, highMR, longRegister);
       }
-   //IvanB
-   //if (!cg->evaluateNodeInRegPair(node))
-      node->setRegister(longRegister);
+   node->setRegister(longRegister);
    highMR->stopUsingMemRefRegister(cg);
    return longRegister;
    }
@@ -5803,7 +5801,7 @@ TR::Register *
 lloadHelper64(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference * highMR, bool isReversed)
    {
    //TR_ASSERTC(!isReversed, cg->comp(), "need to write logic for reverse load still");
-   TR_ASSERT( TR::Compiler->target.is64Bit() || cg->use64BitRegsOn32Bit(), "should call 32-bit version: lloadHelper()");
+   TR_ASSERT(TR::Compiler->target.is64Bit() || cg->use64BitRegsOn32Bit(), "should call 32-bit version: lloadHelper()");
 
 
    TR::Register * longRegister = cg->allocate64bitRegister();
@@ -6182,8 +6180,8 @@ bool relativeLongStoreHelper(TR::CodeGenerator * cg, TR::Node * node, TR::Node *
 
       TR::Register * sourceRegister = cg->evaluate(valueChild);
 
-      if ( (TR::Compiler->target.is32Bit() && (staticAddress&0x3) == 0)  ||
-           ( TR::Compiler->target.is64Bit() && (staticAddress&0x7) == 0)
+      if ((TR::Compiler->target.is32Bit() && (staticAddress&0x3) == 0)  ||
+           (TR::Compiler->target.is64Bit() && (staticAddress&0x7) == 0)
          )
          {
          generateRILInstruction(cg, op, node, sourceRegister, symRef, reinterpret_cast<void*>(staticAddress));
@@ -6730,7 +6728,7 @@ istoreHelper(TR::Node * node, TR::CodeGenerator * cg, bool isReversed)
 TR::MemoryReference *
 lstoreHelper(TR::Node * node, TR::CodeGenerator * cg, bool isReversed)
    {
-   TR_ASSERT( TR::Compiler->target.is32Bit(), "must call 64bit version: lstoreHelper64(...)");
+   TR_ASSERT(TR::Compiler->target.is32Bit(), "must call 64bit version: lstoreHelper64(...)");
 
    if (directMemoryStoreHelper(cg, node))
       {
@@ -6809,7 +6807,7 @@ lstoreHelper(TR::Node * node, TR::CodeGenerator * cg, bool isReversed)
 TR::MemoryReference *
 lstoreHelper64(TR::Node * node, TR::CodeGenerator * cg, bool isReversed)
    {
-   TR_ASSERT( TR::Compiler->target.is64Bit() || cg->use64BitRegsOn32Bit(), "must call 32bit version -- lstoreHelper(...)");
+   TR_ASSERT(TR::Compiler->target.is64Bit() || cg->use64BitRegsOn32Bit(), "must call 32bit version -- lstoreHelper(...)");
    TR::Node * valueChild;
    TR::Node * addrChild = NULL;
 
@@ -7360,8 +7358,7 @@ TR::Register *
 OMR::Z::TreeEvaluator::lloadEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    PRINT_ME("lload", node, cg);
-   if (!cg->evaluateNodeInRegPair(node) &&
-      (TR::Compiler->target.is64Bit() || cg->use64BitRegsOn32Bit()))
+   if (TR::Compiler->target.is64Bit() || cg->use64BitRegsOn32Bit())
       {
       return lloadHelper64(node, cg, NULL);
       }

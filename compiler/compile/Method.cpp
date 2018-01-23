@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -597,7 +597,7 @@ void TR_ResolvedMethod::makeParameterList(TR::ResolvedMethodSymbol *methodSym)
       }
    else
       {
-      parmSymbol = methodSym->comp()->getSymRefTab()->createParameterSymbol(methodSym, 0, TR::Address, false);
+      parmSymbol = methodSym->comp()->getSymRefTab()->createParameterSymbol(methodSym, 0, TR::Address);
       parmSymbol->setOrdinal(ordinal++);
 
       int32_t len = classNameLen; // len is passed by reference and changes during the call
@@ -642,9 +642,7 @@ void TR_ResolvedMethod::makeParameterList(TR::ResolvedMethodSymbol *methodSym)
       // pointer subtraction below getting converted into a 32-bit signed integer subtraction
       int len = static_cast<int>(end - s) + 1;
 
-      bool isUnsigned = (*s == 'C' || *s == 'Z'); // char or bool
-
-      parmSymbol = methodSym->comp()->getSymRefTab()->createParameterSymbol(methodSym, slot, type, isUnsigned);
+      parmSymbol = methodSym->comp()->getSymRefTab()->createParameterSymbol(methodSym, slot, type);
       parmSymbol->setOrdinal(ordinal++);
       parmSymbol->setTypeSignature(s, len);
 

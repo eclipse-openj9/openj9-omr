@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2016 IBM Corp. and others
+ * Copyright (c) 2014, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -153,7 +153,7 @@ JitBuilder::ResolvedMethod::makeParameterList(TR::ResolvedMethodSymbol *methodSy
       TR::DataType dt = type->getPrimitiveType();
       int32_t size = methodSym->convertTypeToSize(dt);
 
-      parmSymbol = methodSym->comp()->getSymRefTab()->createParameterSymbol(methodSym, slot, type->getPrimitiveType(), false);
+      parmSymbol = methodSym->comp()->getSymRefTab()->createParameterSymbol(methodSym, slot, type->getPrimitiveType());
       parmSymbol->setOrdinal(ordinal++);
 
       char *s = type->getSignatureName();

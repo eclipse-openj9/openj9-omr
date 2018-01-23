@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -48,19 +48,19 @@ class OMR_EXTENSIBLE ParameterSymbol : public TR::RegisterMappedSymbol
 
 protected:
 
-   ParameterSymbol(TR::DataType d, bool isUnsigned, int32_t slot);
+   ParameterSymbol(TR::DataType d, int32_t slot);
 
-   ParameterSymbol(TR::DataType d, bool isUnsigned, int32_t slot, size_t size);
+   ParameterSymbol(TR::DataType d, int32_t slot, size_t size);
 
    TR::ParameterSymbol * self();
 
 public:
 
    template <typename AllocatorType>
-   static TR::ParameterSymbol * create(AllocatorType, TR::DataType, bool, int32_t);
+   static TR::ParameterSymbol * create(AllocatorType, TR::DataType, int32_t);
 
    template <typename AllocatorType>
-   static TR::ParameterSymbol * create(AllocatorType, TR::DataType, bool, int32_t, size_t);
+   static TR::ParameterSymbol * create(AllocatorType, TR::DataType, int32_t, size_t);
 
    int32_t  getParameterOffset()               { return _mappedOffset; }
    void     setParameterOffset(int32_t o);
@@ -93,9 +93,6 @@ public:
    void     setKnownObjectIndex(TR::KnownObjectTable::Index i) { _knownObjectIndex = i; }
    TR::KnownObjectTable::Index getKnownObjectIndex() { return _knownObjectIndex; }
 
-   bool     getIsUnsigned()                    { return _isUnsigned; }
-   void     setIsUnsigned(bool t)              { _isUnsigned = t; }
-
    void           setTypeSignature(const char * s, int32_t l) { _typeLength = l; _typeSignature = s; }
    const char *   getTypeSignature(int32_t & len) { len = _typeLength; return _typeSignature; }
 
@@ -109,7 +106,6 @@ private:
    int8_t                      _allocatedHigh;
    int8_t                      _allocatedLow;
    bool                        _isPreexistent;
-   bool                        _isUnsigned;
    uintptr_t                   _addressSize;
    TR::KnownObjectTable::Index _knownObjectIndex;
    };

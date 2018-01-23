@@ -2200,17 +2200,6 @@ generateS390DebugCounterBumpInstruction(TR::CodeGenerator * cg, TR::InstOpCode::
    }
 
 TR::Instruction *
-generateRegRegInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register * sreg, TR::Register * treg,
-                          TR::RegisterDependencyConditions * cond, TR::Instruction * preced)
-   {
-   if (preced)
-      {
-      return new (INSN_HEAP) TR::S390RRInstruction(op, n, sreg, treg, cond, preced, cg);
-      }
-   return new (INSN_HEAP) TR::S390RRInstruction(op, n, sreg, treg, cond, cg);
-   }
-
-TR::Instruction *
 generateS390ImmSymInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::Node * n, uint32_t imm, TR::SymbolReference * sr,
                               TR::RegisterDependencyConditions * cond, TR::Instruction * preced)
    {

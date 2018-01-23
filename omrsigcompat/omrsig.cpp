@@ -397,8 +397,9 @@ omrsig_sigaction_internal(int signum, const struct sigaction *act, struct sigact
 
 		SIGLOCK(sigMutex);
 		if (NULL != oldact) {
-			struct sigaction oact = {{0}};
+			struct sigaction oact;
 			bool returnOldAction = false;
+			memset(&oact, 0, sizeof(struct sigaction));
 			rc = omrsig_signalOS_internal(signum, NULL, &oact);
 			if (-1 != rc) {
 #if defined(POSIX_SIGNAL)

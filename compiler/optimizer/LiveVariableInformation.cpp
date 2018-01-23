@@ -633,3 +633,146 @@ void TR_LiveVariableInformation::visitTreeForLocals(TR::Node *node, TR_BitVector
       }
    return;
    }
+
+/*
+ * Solve gen set for a given node. If the node is an OSR point, consider the symbols that are alive if the
+ * program is interpreted. Add those symbols to the basic gen set.
+ */
+void 
+TR_OSRLiveVariableInformation::findUseOfLocal(TR::Node *node, int32_t blockNum,
+                                                TR_BitVector **genSetInfo, TR_BitVector **killSetInfo,
+                                                TR_BitVector *commonedLoads, bool movingForwardThroughTrees, vcount_t visitCount)
+   {
+   TR_LiveVariableInformation::findUseOfLocal(node, blockNum, genSetInfo, killSetInfo, commonedLoads, movingForwardThroughTrees, visitCount);
+   if (comp()->isPotentialOSRPoint(node))
+      {
+      TR_BitVector *liveSymbols = getLiveSymbolsInInterpreter(node->getByteCodeInfo());
+      if (killSetInfo[blockNum])
+         *liveSymbols -= *killSetInfo[blockNum];
+      TR_BitVector **blockGenSetInfo =  genSetInfo+blockNum;
+      if (comp()->getOption(TR_TraceOSR))
+         {
+         traceMsg(comp(), "liveSymbols introduced by real uses at OSRPoint node n%dn:", node->getGlobalIndex());
+         liveSymbols->print(comp());
+         traceMsg(comp(), "\n");
+         }
+
+      if (!liveSymbols->isEmpty())
+         {
+         if (*blockGenSetInfo == NULL)
+            *blockGenSetInfo = new (trStackMemory()) TR_BitVector(numLocals(),trMemory(), stackAlloc);
+
+         *(*blockGenSetInfo) |= *liveSymbols;
+         }
+      }
+   }
+
+/*
+ * \brief Calculate live symbols for a BCI for a method based on OSRLiveRangeInfo
+ * 
+ * @param osrMethodData
+ * @param byteCodeIndex BCI of the OSRPoint
+ * @param liveLocals The bit vector keeping liveness info
+ *
+ * OSRLiveRangeInfo keeps all the dead symbol reference numbers for a bci in a given caller. This function use the total autos or pend
+ */
+void
+TR_OSRLiveVariableInformation::buildLiveSymbolsBitVector(TR_OSRMethodData *osrMethodData, int32_t byteCodeIndex, TR_BitVector *liveLocals)
+   {
+   if (osrMethodData == NULL || osrMethodData->getSymRefs() == NULL)
+      return;
+   TR_BitVector *deadSymRefs = osrMethodData->getLiveRangeInfo(byteCodeIndex);
+   TR_BitVector *liveSymRefs = new (comp()->trStackMemory()) TR_BitVector(0, trMemory(), stackAlloc);
+  
+   *liveSymRefs |= *osrMethodData->getSymRefs();
+   if (deadSymRefs != NULL)
+      *liveSymRefs -= *deadSymRefs;
+   DefiningMap *definingMap = osrMethodData->getDefiningMap();
+
+   TR_BitVectorIterator liveSymRefIt(*liveSymRefs);
+   while (liveSymRefIt.hasMoreElements())
+      {
+      int32_t symRefNumber = liveSymRefIt.getNextElement();
+      //if the symbol can't be found in definigMap don't need to set any gen set bit 
+      //because it must be defined by a constant
+      if (definingMap->find(symRefNumber) == definingMap->end()) 
+         continue;
+      TR_BitVector *definingSymbols = (*definingMap)[symRefNumber];
+      if (comp()->getOption(TR_TraceOSR))
+         {
+         traceMsg(comp(), "definingMap for symRef #%d\n", symRefNumber);
+         definingSymbols->print(comp());
+         traceMsg(comp(), "\n");
+         }
+      TR_BitVectorIterator it(*definingSymbols);
+      while (it.hasMoreElements())
+         {
+         int32_t definingSymRefNumber = it.getNextElement();   
+         int32_t liveLocalIndex = INVALID_LIVENESS_INDEX;
+         TR::Symbol *symbol = comp()->getSymRefTab()->getSymRef(definingSymRefNumber)->getSymbol();
+         TR::RegisterMappedSymbol *local = NULL;
+         local = symbol->getAutoSymbol();
+         if (!local && includeParms())
+            local = symbol->getParmSymbol();
+         if (local)
+            liveLocalIndex = local->getLiveLocalIndex();
+         if (local && liveLocalIndex != INVALID_LIVENESS_INDEX)
+            {
+            if (comp()->getOption(TR_TraceOSR))
+               traceMsg(comp(), "set liveLocalIndex %d for definingSymbol %p definingSymRefNumber %d\n",local->getLiveLocalIndex(), symbol, definingSymRefNumber);
+            liveLocals->set(liveLocalIndex);
+            }
+         }
+      }
+   }
+
+/*
+ * Calculate live symbols at a given bci in the current call chain
+ */
+TR_BitVector *
+TR_OSRLiveVariableInformation::getLiveSymbolsInInterpreter(TR_ByteCodeInfo &byteCodeInfo)
+   {
+   int32_t callerIndex = byteCodeInfo.getCallerIndex();
+   int32_t byteCodeIndex = byteCodeInfo.getByteCodeIndex();
+   TR_BCLiveSymbolsMap *bcLiveSymbolMap = NULL;
+   TR_BitVector *liveSymbols = NULL;
+   if (bcLiveSymbolMaps[callerIndex+1] == NULL)
+      {
+      bcLiveSymbolMap = new TR_BCLiveSymbolsMap(TR_BCLiveSymbolsMapComparator(), TR_BCLiveSymbolsMapAllocator(comp()->region()));
+      bcLiveSymbolMaps[callerIndex+1] = bcLiveSymbolMap;
+      }
+   else
+      {
+      bcLiveSymbolMap = bcLiveSymbolMaps[callerIndex+1];
+      if (bcLiveSymbolMap->find(byteCodeIndex) != bcLiveSymbolMap->end())
+         return (*bcLiveSymbolMap)[byteCodeIndex];
+      }
+
+   OMR::ResolvedMethodSymbol *methodSymbol = (callerIndex == -1) ? comp()->getMethodSymbol(): comp()->getInlinedResolvedMethodSymbol(callerIndex);
+   TR_OSRMethodData *osrMethodData = comp()->getOSRCompilationData()->getOSRMethodDataArray()[callerIndex+1];
+   TR_BitVector *liveLocals = new (comp()->trStackMemory()) TR_BitVector(0, comp()->trMemory(), stackAlloc);
+   buildLiveSymbolsBitVector(osrMethodData, byteCodeIndex, liveLocals);
+   (*bcLiveSymbolMap)[byteCodeIndex] = liveLocals;
+
+   //recursively traverse the call chain until reaching the top method caller
+   if (callerIndex == -1)
+      return liveLocals;
+   TR_InlinedCallSite &callSite = comp()->getInlinedCallSite(callerIndex);
+   *liveLocals |= *getLiveSymbolsInInterpreter(callSite._byteCodeInfo);
+   return liveLocals;
+   }
+
+TR_OSRLiveVariableInformation::TR_OSRLiveVariableInformation (TR::Compilation   *c,
+                                                              TR::Optimizer *optimizer,
+                                                              TR_Structure     *rootStructure,
+                                                              bool              splitLongs,
+                                                              bool              includeParms,
+                                                              bool              includeMethodMetaDataSymbols,
+                                                              bool              ignoreOSRUses)
+   :TR_LiveVariableInformation(c, optimizer, rootStructure, splitLongs, includeParms, includeMethodMetaDataSymbols, ignoreOSRUses)
+   {
+   int32_t numOfMethods = comp()->getNumInlinedCallSites()+1;
+   bcLiveSymbolMaps = (TR_BCLiveSymbolsMap **)comp()->trMemory()->allocateHeapMemory( numOfMethods * sizeof (TR_BCLiveSymbolsMap*));
+   memset(bcLiveSymbolMaps, 0x00, numOfMethods * sizeof (TR_BCLiveSymbolsMap *));
+   }
+    

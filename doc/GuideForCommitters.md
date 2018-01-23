@@ -72,23 +72,33 @@ anyway as you will ultimately be responsible for merging them.
 * Regardless of the simplicity of the pull request, explicitly Approve the
 changes in the pull request.
 
+* Be sure to validate the commit title and message on **each** commit in the PR (not
+just the pull request message) and ensure they describe the contents of the commit.
+
+* Ensure the commits in the pull request are squashed into only as few commits as
+is logically required to represent the changes contributed (in other words, superfluous
+commits are discouraged without justification).  This is difficult to quantify
+objectively, but the committer should verify that each commit contains distinct
+changes that should not otherwise be logically squashed with other commits in the
+same pull request.
+
 * When commits are pushed to a pull request, TravisCI and AppVeyor builds launch
-to test the changes on x86 Linux, macOS, and Windows platforms.  If the change affects
-multiple platforms, you must initiate a pull request build on all affected
-platforms prior to merging.  To launch a pull request build, add a comment to
-the pull request that follows the syntax:
+automatically to test the changes on x86 Linux, macOS, and Windows platforms.
+If the change affects multiple platforms, you must initiate a pull request build
+on all affected platforms prior to merging.  To launch a pull request build, add
+a comment to the pull request that follows the syntax:
    ```
-   genie-omr build { all | zlinux | zos | plinux }
+   @genie-omr build { all | zlinux | zos | plinux }
    ```
    Combinations of platforms can be specified separated by commas.
 
    For example, to launch a pull request build on all non-x86 platforms:
    ```
-   genie-omr build all
+   @genie-omr build all
    ```
    To launch a pull request build on Z-specific platforms only:
    ```
-   genie-omr build zos,zlinux
+   @genie-omr build zos,zlinux
    ```
    If testing is only warranted on a subset of platforms (for example, only files
 built on x86 are modified) then pull request testing can be limited to only those

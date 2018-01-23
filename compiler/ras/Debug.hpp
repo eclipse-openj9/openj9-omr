@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -426,9 +426,6 @@ public:
    virtual void         printHeader();
    virtual void         printMethodHotness();
    virtual void         printInstrDumpHeader(const char * title);
-#if defined(TR_TARGET_ARM)
-   virtual void         printAsmDumpHeader();
-#endif
 
    virtual void         printByteCodeAnnotations();
    virtual void         printAnnotationInfoEntry(J9AnnotationInfo *,J9AnnotationInfoEntry *,int32_t);
@@ -977,7 +974,6 @@ public:
    void print(TR::FILE *, TR::ARMStackCheckFailureSnippet *);
    void print(TR::FILE *, TR::UnresolvedDataSnippet *);
    void print(TR::FILE *, TR::ARMRecompilationSnippet *);
-   void printARM(TR::FILE *, uint8_t *, uint8_t *);
 #endif
 #ifdef TR_TARGET_S390
    void printPrefix(TR::FILE *, TR::Instruction *);

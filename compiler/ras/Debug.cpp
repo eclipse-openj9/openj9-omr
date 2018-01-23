@@ -703,29 +703,6 @@ TR_Debug::printInstrDumpHeader(const char * title)
       }
    }
 
-#if defined(TR_TARGET_ARM)
-void
-TR_Debug::printAsmDumpHeader()
-   {
-   if (_file == NULL)
-      return;
-
-   int addressFieldWidth   = TR::Compiler->debug.hexAddressFieldWidthInChars();
-   int codeByteColumnWidth = TR::Compiler->debug.codeByteColumnWidth();
-
-   char* buff = (char *)_comp->trMemory()->allocateHeapMemory(addressFieldWidth);
-   memset(buff, '-', addressFieldWidth-2);
-   buff[addressFieldWidth-2] = '\0' ;
-
-   trfprintf(_file, "\n  +%s-------------------------------------- instruction address", buff);
-   trfprintf(_file, "\n  |%*s +----------------------------------------- binary representation", addressFieldWidth - 3, " ", addressFieldWidth - 1, " ");
-   trfprintf(_file, "\n  |%*s | %*s+----------------------------- opcode and operands", addressFieldWidth - 3, " ", codeByteColumnWidth + 4, " ");
-   trfprintf(_file, "\n  |%*s | %*s|\t\t\t\t    +------- additional information", addressFieldWidth - 3, " ", codeByteColumnWidth + 4, " ");
-   trfprintf(_file, "\n  |%*s | %*s|\t\t\t\t    |", addressFieldWidth - 3, " ", codeByteColumnWidth + 4, " ");
-   trfprintf(_file, "\n  V%*s V %*sV\t\t\t\t    V\n", addressFieldWidth - 3, " ", codeByteColumnWidth + 4, " ");
-   }
-#endif
-
 
 #define MAX_PREFIX_WIDTH 80
 
@@ -3418,16 +3395,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::RegisterMappedSymbol *localCursor, bool 
 void
 TR_Debug::print(TR::FILE *pOutFile, uint8_t* instrStart, uint8_t* instrEnd)
    {
-#if defined(TR_TARGET_ARM)
-   if (TR::Compiler->target.cpu.isARM() && pOutFile != NULL)
-      {
-      trfprintf(pOutFile, "\nAssembly:\n");
-
-      printAsmDumpHeader();
-
-      printARM(pOutFile, instrStart, instrEnd);
-      }
-#endif
    }
 
 void

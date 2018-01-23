@@ -24,7 +24,6 @@ int jitDebugARM;
 #else
 
 #include "arm/codegen/ARMInstruction.hpp"
-#include "arm/codegen/ARMDisassem.hpp"
 #ifdef J9_PROJECT_SPECIFIC
 #include "arm/codegen/ARMRecompilationSnippet.hpp"
 #endif
@@ -1535,21 +1534,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARMRecompilationSnippet * snippet)
    // startPC
    printPrefix(pOutFile, NULL, cursor, 4);
    trfprintf(pOutFile, "dd \t0x%08x\t\t; startPC ", _cg->getCodeStart());
-#endif
-   }
-
-void
-TR_Debug::printARM(TR::FILE *pOutFile, uint8_t* instrStart, uint8_t* instrEnd)
-   {
-#ifdef J9_PROJECT_SPECIFIC
-   char opcodeBuf[MIN_mbuffer];
-   char opBuf[MIN_ibuffer];
-
-   for ( ; instrStart < instrEnd; instrStart += 4)
-      {
-      disassemble((int32_t*)instrStart, opcodeBuf, opBuf);
-      trfprintf(pOutFile, "0x%08x %08x        %-11s%s\n",instrStart,*(uint32_t*)instrStart,opcodeBuf,opBuf);
-      }
 #endif
    }
 

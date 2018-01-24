@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2016 IBM Corp. and others
+ * Copyright (c) 1991, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -170,7 +170,7 @@ close_wrapper(int fd)
 }
 
 /*
- * This function constructs a barrier for use within signal handler contexts. It's a combination o
+ * This function constructs a barrier for use within signal handler contexts. It's a combination of
  * spinlock techniques modified with blocking read/write/poll scheduler visible calls to avoid
  * thread contention.
  *
@@ -1205,7 +1205,7 @@ freeThread(J9ThreadWalkState *state, J9PlatformThread *thread)
 }
 
 /*
- * This functions resumes all threads suspended by suspend_all_preemptive. The general behaviour
+ * This function resumes all threads suspended by suspend_all_preemptive. The general behaviour
  * is to swallow any spurious signals from the queue so they are not delivered after we remove our
  * custom handler, the custom handler is removed, then we wake any threads blocking on the relase
  * barrier. On AIX we set the signal handler to SIG_IGN before attempting to swallow signals off
@@ -1457,17 +1457,18 @@ sigqueue_is_reliable(void)
 {
 #if defined(LINUX)
 	struct utsname sysinfo;
-	uintptr_t release = 0;
+	uintptr_t release_major = 0;
+	uintptr_t release_minor = 0;
 
-	/* If either uname() or sscanf() fail, version will stay zero
-	 * and we'll consider sigqueue() unreliable.
+	/* If either uname() or sscanf() fail, release_major and/or release_minor
+	 * will stay zero and we'll consider sigqueue() unreliable.
 	 */
 	if (0 == uname(&sysinfo)) {
-		sscanf(sysinfo.release, "%lu", &release);
+		sscanf(sysinfo.release, "%lu.%lu", &release_major, &release_minor);
 	}
 
-	/* sigqueue() is sufficiently reliable on newer Linux kernels (version 3.* and later). */
-	return release >= 3;
+	/* sigqueue() is sufficiently reliable on newer Linux kernels (version 3.11 and later). */
+	return (3 < release_major) || ((3 == release_major) && (11 <= release_minor));
 #elif defined(AIXPPC) || defined(J9ZOS390)
 	/* The controller can't use sem_timedwait_r on AIX or z/OS. */
 	return 0;

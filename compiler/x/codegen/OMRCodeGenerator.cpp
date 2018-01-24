@@ -1501,22 +1501,6 @@ void OMR::X86::CodeGenerator::doBackwardsRegisterAssignment(
       {
       TR::Instruction  *inst = instructionCursor;
 
-      // Detect BBEnd end of a non-extended block or the last BBEnd end of an extended block
-      if (comp->cg()->getSupportsVMThreadGRA() && inst->getKind() == TR::Instruction::IsLabel && vmThreadIndex != TR::RealRegister::NoReg)
-         {
-         TR::Node *node = inst->getNode();
-         if (node && node->getOpCodeValue() == TR::BBEnd)
-            {
-            TR::Block *block = node->getBlock();
-            if (block && (!block->getNextBlock() || !block->getNextBlock()->isExtensionOfPreviousBlock()))
-               { // Reset vmThread register state.
-               TR::RealRegister *vmThreadRealReg = self()->machine()->getX86RealRegister(TR::RealRegister::ebp);
-               self()->getVMThreadRegister()->setAssignedRegister(NULL);
-               vmThreadRealReg->setAssignedRegister(NULL);
-               vmThreadRealReg->setState(TR::RealRegister::Free);
-               }
-            }
-         }
 #ifdef DEBUG
       if (dumpPreGP)
          {

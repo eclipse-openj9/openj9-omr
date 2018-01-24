@@ -185,8 +185,7 @@ OMR::X86::I386::CodeGenerator::pickRegister(
    {
    if (!self()->comp()->getOptions()->getOption(TR_DisableRegisterPressureSimulation))
       {
-      if (self()->comp()->getOption(TR_AssignEveryGlobalRegister) &&
-          (!self()->comp()->cg()->getSupportsVMThreadGRA() || self()->comp()->getOption(TR_DisableLateEdgeSplitting)))
+      if (self()->comp()->getOption(TR_AssignEveryGlobalRegister))
          {
          // This is not really necessary except for testing purposes.
          // Conceptually, the common pickRegister code should be free to make
@@ -227,36 +226,6 @@ OMR::X86::I386::CodeGenerator::pickRegister(
 
    if (!_assignedGlobalRegisters)
       _assignedGlobalRegisters = new (self()->trStackMemory()) TR_BitVector(self()->comp()->getSymRefCount(), self()->trMemory(), stackAlloc, growable);
-
-   if (self()->comp()->cg()->getSupportsVMThreadGRA() && !self()->comp()->getOption(TR_DisableLateEdgeSplitting) && availableRegisters.get(6))
-      {
-      vcount_t visitCount = self()->comp()->incVisitCount();
-      bool vmThreadUsed = false;
-      TR_BitVectorIterator bvi(rc->getBlocksLiveOnEntry());
-      bvi.setBitVector(rc->getBlocksLiveOnEntry());
-      while (bvi.hasMoreElements())
-         {
-         int32_t liveBlockNum = bvi.getNextElement();
-         TR::Block *block = allBlocks[liveBlockNum];
-
-         _assignedGlobalRegisters->empty();
-         int32_t numAssignedGlobalRegs = 0;
-         int32_t maxFrequency = 1;
-         int32_t maxStaticFrequency = 1;
-         bool assigningEDX = false;
-         int32_t maxRegisterPressure = self()->estimateRegisterPressure(block, visitCount, maxStaticFrequency, maxFrequency, vmThreadUsed, numAssignedGlobalRegs, _assignedGlobalRegisters, rc->getSymbolReference(), assigningEDX);
-         if (vmThreadUsed)
-            break;
-         }
-
-      if (!vmThreadUsed)
-         {
-         if (debug("vmThreadGRA"))
-            diagnostic("\npickRegister answering with EBP\n");
-
-         return 6;
-         }
-      }
 
    if (availableRegisters.get(5))
       return 5; // esi
@@ -387,7 +356,7 @@ OMR::X86::I386::CodeGenerator::getMaximumNumberOfGPRsAllowedAcrossEdge(TR::Node 
       // 1 for jump table base reg, which is not apparent in the trees
       // 1 for ebp when it is needed for the VMThread
       //
-      return self()->getNumberOfGlobalGPRs() - self()->comp()->cg()->getSupportsVMThreadGRA()? 1 : 2;
+      return self()->getNumberOfGlobalGPRs() - 2;
       }
 
    if (node->getOpCode().isIf())

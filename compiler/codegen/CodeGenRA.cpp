@@ -1281,21 +1281,18 @@ OMR::CodeGenerator::pickRegister(TR_RegisterCandidate     *rc,
          }
 
       TR_BitVector remainingRegisters = availableRegisters;
-      if (!self()->comp()->cg()->getSupportsVMThreadGRA() || self()->comp()->getOption(TR_DisableLateEdgeSplitting))
+      TR_BitVector *spilledRegisters = self()->getGlobalRegisters(TR_vmThreadSpill, self()->comp()->getMethodSymbol()->getLinkageConvention());
+      if (spilledRegisters)
          {
-         TR_BitVector *spilledRegisters = self()->getGlobalRegisters(TR_vmThreadSpill, self()->comp()->getMethodSymbol()->getLinkageConvention());
-         if (spilledRegisters)
+         if (self()->traceSimulateTreeEvaluation())
             {
-            if (self()->traceSimulateTreeEvaluation())
-               {
-               TR_BitVector regsToPrint = remainingRegisters;
-               regsToPrint &= *spilledRegisters;
-               traceMsg(self()->comp(), "            vmThread register not enabled; rejected: ");
-               self()->getDebug()->print(self()->comp()->getOptions()->getLogFile(), &regsToPrint);
-               traceMsg(self()->comp(), "\n");
-               }
-            remainingRegisters -= *spilledRegisters;
+            TR_BitVector regsToPrint = remainingRegisters;
+            regsToPrint &= *spilledRegisters;
+            traceMsg(self()->comp(), "            vmThread register not enabled; rejected: ");
+            self()->getDebug()->print(self()->comp()->getOptions()->getLogFile(), &regsToPrint);
+            traceMsg(self()->comp(), "\n");
             }
+         remainingRegisters -= *spilledRegisters;
          }
 
       // 1. Simulate register pressure in each extended basic block.

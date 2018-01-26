@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2017 IBM Corp. and others
+ * Copyright (c) 1991, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -55,14 +55,21 @@ extern void masterSynchSignalHandler(int nbr, siginfo_t *siginfo,
 #define    KEY0(a)    do { cinfc(CINFC_WRITE, CINFC_CMMJDB); } while(0)
 #define    UNKEY(a) do { keyrc(); } while(0)
 
-char javaPgmsToDump[][5] = { /* clean programs */ "DJHK", "DJNC", "DJVB", "DJCK", "DJHS",
-		"DJPR", "DJVM", "DJDD", "DJHT", "DJRD", "DJZL", "DJDP", "DJHV", "DJSG",
-		"D9VM", "DJDY", "DJHY", "DJSH", "DJ7B", "DJGC", "DJIT", "DJTH", "DJAR",
-		"DJGK", "DJMT", "DJTR", "DJFF", "DJXT", "DJOR", /* dirty programs */ "DJVA",
-		"DJRM", "DJNM", "DJAT", "DJAW", "DJAH", "DJDB", "DJDC", "DJDS", "DJFM",
-		"DJHP", "DJIN", "DJAV", "DJCD", "DJJW", "DJWP", "DJLI", "DJPG", "DJSD",
-		"DJSN", "DJKC", "DJLC", "DJMN", "DJML", "DJNT", "DJIO", "DJPT", "DJTK",
-		"DJUN", "DJVR", "DJWR", "DJZP"};
+char javaPgmsToDump[][5] =
+{
+		/* JVM 2.9 programs */
+		"DJHK", "DJNC", "DJVB", "DJCK", "DJHS", "DJPR", "DJVM",
+		"DJDD", "DJHT", "DJRD", "DJZL", "DJDP", "DJHV", "DJSG",
+		"D9VM", "DJHY", "DJSH", "DJ7B", "DJGC", "DJIT", "DJTH",
+		"DJAR", "DJGK", "DJMT", "DJTR", "DJFF", "DJXT", "DJOR",
+
+		/* JCL programs */
+		"DJVA", "DJRM", "DJNM", "DJAT", "DJAW", "DJAH", "DJDB",
+		"DJDC", "DJDS", "DJFM", "DJHP", "DJIN", "DJAV", "DJCD",
+		"DJJW", "DJWP", "DJLI", "DJPG", "DJSD", "DJSN", "DJKC",
+		"DJLC", "DJMN", "DJML", "DJNT", "DJIO", "DJPT", "DJTK",
+		"DJUN", "DJVR", "DJWR", "DJZP"
+};
 
 /**
  * The ELF program header permission bits for read, write, and execute combined
@@ -501,21 +508,23 @@ ztpfBuildCoreFile(void *argv_block)
 	int i = 0;
 	for (i = 0; i < numJavaPgms; i++) {
 		struct pat * pgmpat = progc(javaPgmsToDump[i], PROGC_PBI);
-		struct ifetch *pgmbase = pgmpat->patgca;
-		if (pgmbase != NULL) {
-			int offset = pgmbase->_iftch_txt_off + pgmbase->_iftch_txt_size
+		if (pgmpat != NULL) {
+			struct ifetch *pgmbase = pgmpat->patgca;
+			if (pgmbase != NULL) {
+				int offset = pgmbase->_iftch_txt_off + pgmbase->_iftch_txt_size
 					+ 0x1000;
-			char * text = ((char*) pgmbase) + offset;
-			uint64_t size = pgmpat->patpsize - offset;
-			octetsWritten = writeDumpFile(ofd, (uint8_t *)text, size);
-			if (-1 == octetsWritten) {
-				errMsg(arg, (uint8_t *)"Error writing dump file %s: %s", ofn,
+				char * text = ((char*) pgmbase) + offset;
+				uint64_t size = pgmpat->patpsize - offset;
+				octetsWritten = writeDumpFile(ofd, (uint8_t *)text, size);
+				if (-1 == octetsWritten) {
+					errMsg(arg, (uint8_t *)"Error writing dump file %s: %s", ofn,
 						strerror(errno));
-				dumpFlags(arg) |= J9TPF_FILE_SYSTEM_ERROR;
-				KEY0();
-				dbfptr->ijavcnt = 0L; /* Unlock the JDB so CCCPSE can reuse it*/
-				UNKEY();
-				return NULL;
+					dumpFlags(arg) |= J9TPF_FILE_SYSTEM_ERROR;
+					KEY0();
+					dbfptr->ijavcnt = 0L; /* Unlock the JDB so CCCPSE can reuse it*/
+					UNKEY();
+					return NULL;
+				}
 			}
 		}
 	}

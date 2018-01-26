@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -174,23 +174,11 @@ void TR_OutlinedInstructions::generateOutlinedInstructionsDispatch()
 
    new (_cg->trHeapMemory()) TR::X86LabelInstruction(NULL, LABEL, _entryLabel, _cg);
 
-   if (_rematerializeVMThread)
-      {
-      generateRegInstruction(PUSHReg, _callNode, vmThreadReg, _cg);
-      generateRestoreVMThreadInstruction ( _callNode, _cg);
-      TR::MemoryReference  *vmThreadMR = generateX86MemoryReference(vmThreadReg, (TR::Compiler->target.is64Bit()) ? 16 : 8, _cg);
-      generateRegMemInstruction (LRegMem(), _callNode, vmThreadReg, vmThreadMR, _cg);
-      }
    TR::Register *resultReg=NULL;
    if (_callNode->getOpCode().isCallIndirect())
       resultReg = TR::TreeEvaluator::performCall(_callNode, true, false, _cg);
    else
       resultReg = TR::TreeEvaluator::performCall(_callNode, false, false, _cg);
-
-   if (_rematerializeVMThread)
-      {
-      generateRegInstruction(POPReg, _callNode, vmThreadReg, _cg);
-      }
 
    if (_targetReg)
       {

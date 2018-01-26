@@ -91,21 +91,6 @@ OMR::X86::I386::CodeGenerator::CodeGenerator() :
       self()->setSupportsDivCheck();
       self()->setJNILinkageCalleeCleanup();
 
-      // The non-linear register assigner doesn't know about EBP spills yet.
-      //
-      static char *disableEBPasGPR = feGetEnv("TR_DisableEBPasGPR");
-      if (!disableEBPasGPR && self()->allowVMThreadRematerialization() && !self()->comp()->requiresSpineChecks()
-          //when OSR is enabled, we don't want to generate any code in the osr code block or the osr catch block
-          //that causes ebp to be restored (because it was saved at some other jitted code).
-          //if we don't, when we jump to the osr catch block, we trash ebp by that restore
-          && !self()->comp()->getOption(TR_EnableOSR)
-         )
-         {
-         TR::RealRegister *ebp = self()->machine()->getX86RealRegister(TR::RealRegister::ebp);
-         ebp->resetState(TR::RealRegister::Free);
-         ebp->setAssignedRegister(NULL);
-         }
-
       // The default CTM behaviour is to do the conversion via X87 instructions.
       //
       static char *dontUseGPRsForWin32CTMConversion = feGetEnv("TR_DontUseGPRsForWin32CTMConversion");

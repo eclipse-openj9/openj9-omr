@@ -112,8 +112,6 @@ OMR::SymbolReferenceTable::SymbolReferenceTable(size_t sizeHint, TR::Compilation
      _classStaticsSymbolRefs(comp->trMemory()),
      _classDLPStaticsSymbolRefs(comp->trMemory()),
      _debugCounterSymbolRefs(comp->trMemory()),
-     _currentThreadDebugEventDataSymbol(0),
-     _currentThreadDebugEventDataSymbolRefs(comp->trMemory()),
      _methodsBySignature(8, comp->allocator("SymRefTab")), // TODO: Determine a suitable default size
      _hasImmutable(false),
      _hasUserField(false),

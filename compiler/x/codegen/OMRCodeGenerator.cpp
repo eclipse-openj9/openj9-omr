@@ -580,18 +580,10 @@ OMR::X86::CodeGenerator::beginInstructionSelection()
          _returnTypeInfoInstruction = new (self()->trHeapMemory()) TR::X86ImmInstruction((TR::Instruction *)NULL, DDImm4, 0, self());
       }
 
-   TR::RegisterDependencyConditions  *deps = generateRegisterDependencyConditions((uint8_t)0, (uint8_t)1, self());
-   if (_linkageProperties->getMethodMetaDataRegister() != TR::RealRegister::NoReg)
-      {
-      deps->addPostCondition(self()->getVMThreadRegister(),
-                             (TR::RealRegister::RegNum)self()->getVMThreadRegister()->getAssociation(), self());
-      }
-   deps->stopAddingPostConditions();
-
    if (self()->getAppendInstruction())
-      generateInstruction(PROCENTRY, startNode, deps, self());
+      generateInstruction(PROCENTRY, startNode, self());
    else
-      new (self()->trHeapMemory()) TR::Instruction(deps, PROCENTRY, (TR::Instruction *)NULL, self());
+      new (self()->trHeapMemory()) TR::Instruction(PROCENTRY, (TR::Instruction *)NULL, self());
 
    // Set the default FPCW to single precision mode if we are allowed to.
    //
@@ -1491,8 +1483,6 @@ void OMR::X86::CodeGenerator::doBackwardsRegisterAssignment(
          self()->setSpilledRegisterList(new (self()->trHeapMemory()) TR::list<TR::Register*>(getTypedAllocator<TR::Register*>(comp->allocator())));
          }
       }
-
-   TR::RealRegister::RegNum vmThreadIndex = _linkageProperties->getMethodMetaDataRegister();
 
    if (self()->getDebug())
       self()->getDebug()->startTracingRegisterAssignment("backward", kindsToAssign);

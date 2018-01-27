@@ -977,7 +977,7 @@ OMR::CodeGenerator::canClobberNodesRegister(
 void
 OMR::CodeGenerator::setVMThreadRequired(bool v)
    {
-   if (self()->comp()->getOption(TR_DisableLateEdgeSplitting) && _liveRegisters[TR_GPR])
+   if (_liveRegisters[TR_GPR])
       {
       if (v)
          {
@@ -1159,7 +1159,7 @@ bool OMR::CodeGenerator::supportsNativeLongOperations() { return (TR::Compiler->
 void
 OMR::CodeGenerator::setVMThreadSpillInstruction(TR::Instruction *i)
    {
-   if (_vmThreadSpillInstr == NULL && self()->comp()->getOption(TR_DisableLateEdgeSplitting))
+   if (_vmThreadSpillInstr == NULL)
       {
       _vmThreadSpillInstr = i;
       }

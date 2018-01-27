@@ -4042,26 +4042,10 @@ TR::Register *OMR::X86::TreeEvaluator::BBStartEvaluator(TR::Node *node, TR::Code
          generateAlignmentInstruction(node, 16, cg); // TODO: Derive alignment from CPU cache information
          }
 
-      if (comp->getOption(TR_DisableLateEdgeSplitting))
-         {
-         // Check the cfg edge for the mustRestoreVMThreadRegister attribute. If markked then
-         // there can be only one incoming edge.
-         TR::CFGEdge *edge = (!block->getPredecessors().empty()) ? block->getPredecessors().front() : NULL;
-         if (node->getNumChildren() > 0)
-            inst = generateLabelInstruction(LABEL, node, label, node->getFirstChild(), &popRegisters, true, cg);
-         else
-            inst = generateLabelInstruction(LABEL, node, node->getLabel(), true, cg);
-         }
+      if (node->getNumChildren() > 0)
+         inst = generateLabelInstruction(LABEL, node, label, node->getFirstChild(), &popRegisters, true, cg);
       else
-         {
-         bool needVMThreadDep =
-            !performTransformation(comp, "O^O LATE EDGE SPLITTING: Omit ebp dependency for %s node %s\n",
-                                     node->getOpCode().getName(), cg->getDebug()->getName(node));
-         if (node->getNumChildren() > 0)
-            inst = generateLabelInstruction(LABEL, node, label, node->getFirstChild(), &popRegisters, needVMThreadDep, cg);
-         else
-            inst = generateLabelInstruction(LABEL, node, node->getLabel(), needVMThreadDep, cg);
-         }
+         inst = generateLabelInstruction(LABEL, node, node->getLabel(), true, cg);
 
       if (inst->getDependencyConditions())
          inst->getDependencyConditions()->setMayNeedToPopFPRegisters(true);
@@ -4144,9 +4128,7 @@ TR::Register *OMR::X86::TreeEvaluator::BBEndEvaluator(TR::Node *node, TR::CodeGe
          machine->createRegisterAssociationDirective(cg->getAppendInstruction());
          }
 
-      bool needVMThreadDep =
-         comp->getOption(TR_DisableLateEdgeSplitting) ||
-         !performTransformation(comp, "O^O LATE EDGE SPLITTING: Omit ebp dependency for %s node %s\n", node->getOpCode().getName(), cg->getDebug()->getName(node));
+      bool needVMThreadDep = true;
 
       // This label is also used by RegisterDependency to detect the end of a block.
       TR::Instruction *labelInst = NULL;

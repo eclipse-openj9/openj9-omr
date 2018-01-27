@@ -392,7 +392,6 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"disableJProfilingThread",            "O\tdisable separate thread for JProfiling", SET_OPTION_BIT(TR_DisableJProfilerThread), "F", NOT_IN_SUBSET},
    {"disableKnownObjectTable",            "O\tdisable support for including heap object info in symbol references", SET_OPTION_BIT(TR_DisableKnownObjectTable), "F"},
    {"disableLastITableCache",             "C\tdisable using class lastITable cache for interface dispatches",  SET_OPTION_BIT(TR_DisableLastITableCache), "F"},
-   {"disableLateEdgeSplitting",           "C\tconservatively add regdeps for the vmthread on any edge that might need it",  SET_OPTION_BIT(TR_DisableLateEdgeSplitting), "F"},
    {"disableLeafRoutineDetection",        "O\tdisable lleaf routine detection on zlinux", SET_OPTION_BIT(TR_DisableLeafRoutineDetection), "F"},
    {"disableLinkageRegisterAllocation",   "O\tdon't turn parm loads into RegLoads in first basic block",  SET_OPTION_BIT(TR_DisableLinkageRegisterAllocation), "F"},
    {"disableLiveMonitorMetadata",         "O\tdisable the creation of live monitor metadata", SET_OPTION_BIT(TR_DisableLiveMonitorMetadata), "F"},
@@ -700,7 +699,6 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"enableLargeCodePages",              "C\tenable large code pages",  SET_OPTION_BIT(TR_EnableLargeCodePages), "F"},
    {"enableLastRetrialLogging",          "O\tenable fullTrace logging for last compilation attempt. Needs to have a log defined on the command line", SET_OPTION_BIT(TR_EnableLastCompilationRetrialLogging), "F"},
    {"enableLateCleanFolding",            "O\tfold pdclean flags into pdstore nodes right before codegen",  SET_OPTION_BIT(TR_EnableLateCleanFolding), "F"},
-   {"enableLateEdgeSplitting",           "C\trematerialize the vmthread at codegen time only on paths that need it",  RESET_OPTION_BIT(TR_DisableLateEdgeSplitting), "F"},
    {"enableLinkagePreserveStrategy2",              "O\tenable linkage strategy 2", SET_OPTION_BIT(TR_LinkagePreserveStrategy2), "F"},
    {"enableLocalVPSkipLowFreqBlock",     "O\tSkip processing of low frequency blocks in localVP", SET_OPTION_BIT(TR_EnableLocalVPSkipLowFreqBlock), "F" },
    {"enableLongRegAllocation",            "O\tenable allocation of 64-bit regs on 32-bit",      SET_OPTION_BIT(TR_Enable64BitRegsOn32Bit), "F"},
@@ -4615,7 +4613,6 @@ OMR::Options::TR_OptionStringToBit OMR::Options::_optionStringToBitMapping[] = {
 // Local RA named trace options
 { "deps", TR_TraceRADependencies },
 { "details", TR_TraceRADetails },
-{ "lateEdgeSplitting", TR_TraceRALateEdgeSplitting },
 { "preRA", TR_TraceRAPreAssignmentInstruction },
 { "spillTemps", TR_TraceRASpillTemps },
 { "states", TR_TraceRARegisterStates },

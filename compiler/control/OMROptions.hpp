@@ -318,7 +318,7 @@ enum TR_CompilationOptions
    TR_DisableSSOpts                       = 0x00000080 + 7,
    TR_TraceObjectFileGeneration           = 0x00000100 + 7,
    TR_DisableDelayRelocationForAOTCompilations   = 0x00000200 + 7,
-   TR_DisableLateEdgeSplitting            = 0x00000400 + 7,
+   // Available                           = 0x00000400 + 7,
    TR_DisableLoopReplicatorColdSideEntryCheck = 0x00000800 + 7,
    TR_TraceVFPSubstitution                = 0x00001000 + 7,
    TR_DontDowgradeToColdDuringGracePeriod = 0x00002000 + 7,
@@ -1044,7 +1044,7 @@ enum TR_CompilationOptions
    TR_TraceRAPreAssignmentInstruction   = 0x00000008,
    TR_TraceRARegisterStates             = 0x00000010,
    TR_TraceRASpillTemps                 = 0x00000020,
-   TR_TraceRALateEdgeSplitting          = 0x00000040,
+   // Available                         = 0x00000040,
    TR_TraceRAListing                    = 0x00000200,
 
    // Instruction Level GRA tracing option word

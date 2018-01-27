@@ -3322,9 +3322,7 @@ TR::Register *OMR::X86::I386::TreeEvaluator::iflcmpeqEvaluator(TR::Node *node, T
       TR::Register                         *cmpRegister = NULL;
       TR::RegisterDependencyConditions  *deps        = NULL;
 
-      bool needVMThreadDep =
-         comp->getOption(TR_DisableLateEdgeSplitting) ||
-         !performTransformation(comp, "O^O LATE EDGE SPLITTING: Omit ebp dependency for %s node %s\n", node->getOpCode().getName(), cg->getDebug()->getName(node));
+      bool needVMThreadDep = true;
 
       if ((lowValue | highValue) == 0)
          {
@@ -3467,9 +3465,7 @@ TR::Register *OMR::X86::I386::TreeEvaluator::iflcmpneEvaluator(TR::Node *node, T
       TR::Register                         *cmpRegister = NULL;
       TR::RegisterDependencyConditions  *deps        = NULL;
 
-      bool needVMThreadDep =
-         comp->getOption(TR_DisableLateEdgeSplitting) ||
-         !performTransformation(comp, "O^O LATE EDGE SPLITTING: Omit ebp dependency for %s node %s\n", node->getOpCode().getName(), cg->getDebug()->getName(node));
+      bool needVMThreadDep = true;
 
       if ((lowValue | highValue) == 0)
          {

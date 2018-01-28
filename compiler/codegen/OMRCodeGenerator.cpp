@@ -185,7 +185,6 @@ OMR::CodeGenerator::CodeGenerator() :
       _ialoadUnneeded(self()->comp()->trMemory()),
      _symRefTab(self()->comp()->getSymRefTab()),
      _vmThreadRegister(NULL),
-     _vmThreadLiveCount(0),
      _vmThreadSpillInstr(NULL),
      _stackAtlas(NULL),
      _methodStackMap(NULL),

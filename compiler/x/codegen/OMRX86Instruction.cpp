@@ -434,14 +434,6 @@ TR::X86FenceInstruction::X86FenceInstruction(TR::Instruction   *precedingInstruc
    {
    }
 
-////////////////////////////////////////////////////////////////////////////////
-// TR::X86RestoreVMThreadInstruction:: member functions
-////////////////////////////////////////////////////////////////////////////////
-
-TR::X86RestoreVMThreadInstruction::X86RestoreVMThreadInstruction(TR_X86OpCodes op, TR::Node *node, TR::CodeGenerator *cg)
-   : TR::Instruction(node, op, cg)
-   {
-   }
 
 ////////////////////////////////////////////////////////////////////////////////
 // TR::X86ImmInstruction:: member functions
@@ -4370,12 +4362,6 @@ generateLabelInstruction(TR_X86OpCodes     opCode,
    return instr;
    }
 
-TR::X86RestoreVMThreadInstruction  *
-generateRestoreVMThreadInstruction(TR::Node          *node,
-                                   TR::CodeGenerator *cg)
-   {
-   return new (cg->trHeapMemory()) TR::X86RestoreVMThreadInstruction(RestoreVMThread, node, cg);
-   }
 
 static TR_AtomicRegion longBranchAtomicRegions[] =
    {

@@ -95,9 +95,6 @@ TR_Debug::printx(TR::FILE *pOutFile, TR::Instruction  * instr)
       case TR::Instruction::IsFence:
          print(pOutFile, (TR::X86FenceInstruction  *)instr);
          break;
-      case TR::Instruction::IsRestoreVMThread:
-         print(pOutFile, (TR::X86RestoreVMThreadInstruction  *)instr);
-         break;
       case TR::Instruction::IsImm:
          print(pOutFile, (TR::X86ImmInstruction  *)instr);
          break;
@@ -447,21 +444,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::X86AlignmentInstruction  * instr)
    trfflush(pOutFile);
    }
 
-void
-TR_Debug::print(TR::FILE *pOutFile, TR::X86RestoreVMThreadInstruction  * instr)
-   {
-   if (pOutFile == NULL)
-      return;
-
-   printPrefix(pOutFile, instr);
-   if (instr->getBinaryEncoding())
-      {
-      trfprintf(pOutFile, "mov ebp, dword ptr fs:[0]\t\t;%sRestoreVMThread ",
-                    commentString());
-      }
-
-   trfflush(pOutFile);
-   }
 
 void
 TR_Debug::printBoundaryAvoidanceInfo(TR::FILE *pOutFile, TR::X86BoundaryAvoidanceInstruction  * instr)

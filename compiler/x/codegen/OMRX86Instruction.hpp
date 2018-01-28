@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -501,24 +501,6 @@ class X86FenceInstruction : public TR::Instruction
    virtual uint8_t *generateBinaryEncoding();
 
    virtual void addMetaDataForCodeAddress(uint8_t *cursor);
-
-   };
-
-
-class X86RestoreVMThreadInstruction : public TR::Instruction
-   {
-   public:
-
-   X86RestoreVMThreadInstruction(TR_X86OpCodes    op,
-                                     TR::Node          *n,
-                                     TR::CodeGenerator *cg);
-
-   virtual char *description() { return "X86RestoreVMThread"; }
-
-   virtual Kind getKind() { return IsRestoreVMThread; }
-   virtual uint8_t *generateBinaryEncoding();
-   virtual int32_t  estimateBinaryLength(int32_t currentEstimate);
-   virtual uint8_t  getBinaryLengthLowerBound();
 
    };
 
@@ -2969,8 +2951,6 @@ TR::X86MemInstruction  * generateMemInstruction(TR_X86OpCodes                   
 
 TR::X86MemTableInstruction * generateMemTableInstruction(TR_X86OpCodes op, TR::Node *node, TR::MemoryReference *mr, ncount_t numEntries, TR::CodeGenerator *cg);
 TR::X86MemTableInstruction * generateMemTableInstruction(TR_X86OpCodes op, TR::Node *node, TR::MemoryReference *mr, ncount_t numEntries, TR::RegisterDependencyConditions *deps, TR::CodeGenerator *cg);
-
-TR::X86RestoreVMThreadInstruction  *generateRestoreVMThreadInstruction(TR::Node *, TR::CodeGenerator *);
 
 TR::X86RegImmInstruction  * generateRegImmInstruction(TR::Instruction *, TR_X86OpCodes op, TR::Register * reg1, int32_t imm, TR::CodeGenerator *cg, int32_t reloKind=TR_NoRelocation);
 TR::X86RegMemInstruction  * generateRegMemInstruction(TR::Instruction *, TR_X86OpCodes op, TR::Register * reg1, TR::MemoryReference  * mr, TR::CodeGenerator *cg);

@@ -496,7 +496,6 @@ OMR::X86::CodeGenerator::CodeGenerator() :
    _dependentDiscardableRegisters(getTypedAllocator<TR::Register*>(TR::comp()->allocator())),
    _clobberingInstructions(getTypedAllocator<TR::ClobberingInstruction*>(TR::comp()->allocator())),
    _outlinedInstructionsList(getTypedAllocator<TR_OutlinedInstructions*>(TR::comp()->allocator())),
-   _deferredSplits(getTypedAllocator<TR::X86LabelInstruction*>(TR::comp()->allocator())),
    _flags(0)
    {
    _clobIterator = _clobberingInstructions.begin();
@@ -3548,94 +3547,6 @@ OMR::X86::CodeGenerator::patchableRangeNeedsAlignment(void *cursor, intptrj_t le
 TR_X86ScratchRegisterManager *OMR::X86::CodeGenerator::generateScratchRegisterManager(int32_t capacity)
    {
    return new (self()->trHeapMemory()) TR_X86ScratchRegisterManager(capacity, self());
-   }
-
-void OMR::X86::CodeGenerator::clearDeferredSplits()
-   {
-   if (_internalControlFlowNestingDepth == 0)
-      {
-      _deferredSplits.clear();
-      }
-   else
-      {
-      // Whatever made us think it was safe to clear deferred splits would be
-      // uncertain inside internal control flow, so do nothing.
-      }
-   }
-
-void OMR::X86::CodeGenerator::performDeferredSplits()
-   {
-   for (auto li = _deferredSplits.begin(); li != _deferredSplits.end(); ++li)
-      {
-      TR::LabelSymbol *newLabelSymbol = self()->splitLabel((*li)->getLabelSymbol());
-      (*li)->setLabelSymbol(newLabelSymbol);
-      }
-
-   _deferredSplits.clear();
-   }
-
-void
-OMR::X86::CodeGenerator::processDeferredSplits(bool clear)
-   {
-   if (clear)
-      self()->clearDeferredSplits();
-   else
-      self()->performDeferredSplits();
-   }
-
-TR::LabelSymbol *OMR::X86::CodeGenerator::splitLabel(TR::LabelSymbol *targetLabel, TR::X86LabelInstruction *instructionToDefer)
-   {
-   TR::Instruction *instr = targetLabel->getInstruction();
-   TR_ASSERT(instr, "splitLabel only works on a label from a TR::Instruction");
-
-   // See if we can defer splitting this label until we know for sure that
-   // ebp won't contain the vmthread
-   //
-   TR::X86LabelInstruction *labelInstr = instr->getIA32LabelInstruction();
-   TR::RealRegister *ebp = self()->machine()->getX86RealRegister(self()->getProperties().getMethodMetaDataRegister());
-   if (instructionToDefer && !ebp->getAssignedRegister()
-      && performTransformation(self()->comp(), "O^O LATE EDGE SPLITTING: Defer splitting %s for %s\n", self()->getDebug()->getName(targetLabel), self()->getDebug()->getName(instructionToDefer)))
-      {
-      TR_ASSERT(instructionToDefer->getOpCode().isBranchOp() && instructionToDefer->getLabelSymbol() == targetLabel,
-         "instructionToDefer must be a branch to targetLabel");
-
-      // Just because ebp is not assigned to anything doesn't mean the value
-      // sitting in it can't possibly be the vmthread register.  There's still
-      // a chance that the last value in ebp was indeed the vmthread register.
-      // Defer the decision to split until we find out for sure that we've
-      // assigned something else to ebp.
-      //
-      self()->addDeferredSplit(instructionToDefer);
-      return targetLabel;
-      }
-
-   // Add another target label instruction if there isn't one already
-   //
-   if (!targetLabel->getVMThreadRestoringLabel())
-      {
-      TR::LabelSymbol *newLabel = generateLabelSymbol(self());
-      targetLabel->setVMThreadRestoringLabel(newLabel);
-      newLabel->setInstruction(generateLabelInstruction(targetLabel->getInstruction()->getPrev(), LABEL, newLabel, self()));
-      self()->generateDebugCounter(targetLabel->getInstruction(), "cg.lateSplitEdges", 1, TR::DebugCounter::Exorbitant);
-      }
-
-   // Conservatively store ebp in the prologue just in case any of these split labels decide they need to load it
-   // That decision will occur at binary encoding time, at which point it's too late to do anything about it.
-   // TODO: This is wasteful.  Come up with something better.
-   //
-   TR::Register *vmThreadVirtualReg = self()->getVMThreadRegister();
-   if (vmThreadVirtualReg->getBackingStorage() == NULL)
-      {
-      // copied from RegisterDependency.cpp
-      vmThreadVirtualReg->setBackingStorage(self()->allocateVMThreadSpill());
-      self()->getSpilledIntRegisters().push_front(vmThreadVirtualReg);
-      }
-
-   // Set spill instruction to the "spill in prolog" value.
-   //
-   self()->setVMThreadSpillInstruction((TR::Instruction *)0xffffffff);
-
-   return targetLabel->getVMThreadRestoringLabel();
    }
 
 bool

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1226,9 +1226,6 @@ void OMR::X86::Machine::coerceGPRegisterAssignment(TR::Instruction          *cur
          currentTargetVirtual->setAssignedRegister(currentAssignedRegister);
          self()->cg()->traceRegAssigned(currentTargetVirtual, currentAssignedRegister);
          self()->cg()->traceRAInstruction(instr);
-
-         if (toRealRegister(currentAssignedRegister)->getRegisterNumber() == self()->cg()->getProperties().getMethodMetaDataRegister())
-            self()->cg()->processDeferredSplits(currentTargetVirtual == self()->cg()->getVMThreadRegister());
          }
       else
          {
@@ -1260,9 +1257,6 @@ void OMR::X86::Machine::coerceGPRegisterAssignment(TR::Instruction          *cur
             self()->cg()->traceRegAssigned(currentTargetVirtual, candidate);
             self()->cg()->traceRAInstruction(instr);
             self()->cg()->resetRegisterAssignmentFlag(TR_RegisterSpilled); // the spill (if any) has been traced
-
-            if (candidate->getRegisterNumber() == self()->cg()->getProperties().getMethodMetaDataRegister())
-               self()->cg()->processDeferredSplits(currentTargetVirtual == self()->cg()->getVMThreadRegister());
             }
 
          if (virtualRegister->getTotalUseCount() != virtualRegister->getFutureUseCount())
@@ -1286,10 +1280,6 @@ void OMR::X86::Machine::coerceGPRegisterAssignment(TR::Instruction          *cur
    targetRegister->setAssignedRegister(virtualRegister);
    virtualRegister->setAssignedRegister(targetRegister);
    virtualRegister->setAssignedAsByteRegister(false);
-
-   if (registerNumber == self()->cg()->getProperties().getMethodMetaDataRegister())
-      self()->cg()->processDeferredSplits(virtualRegister == self()->cg()->getVMThreadRegister());
-
    }
 
 void OMR::X86::Machine::coerceXMMRegisterAssignment(TR::Instruction          *currentInstruction,
@@ -1487,8 +1477,6 @@ void OMR::X86::Machine::coerceXMMRegisterAssignment(TR::Instruction          *cu
             self()->cg()->traceRegAssigned(currentTargetVirtual, candidate);
             self()->cg()->traceRAInstruction(instr);
             self()->cg()->setRegisterAssignmentFlag(TR_RegisterSpilled); // the spill (if any) has been traced
-            if (candidate->getRegisterNumber() == self()->cg()->getProperties().getMethodMetaDataRegister())
-               self()->cg()->processDeferredSplits(currentTargetVirtual == self()->cg()->getVMThreadRegister());
             }
 
          if (virtualRegister->getTotalUseCount() != virtualRegister->getFutureUseCount())
@@ -1553,9 +1541,6 @@ void OMR::X86::Machine::coerceGPRegisterAssignment(TR::Instruction   *currentIns
    candidate->setAssignedRegister(virtualRegister);
    virtualRegister->setAssignedRegister(candidate);
    virtualRegister->setAssignedAsByteRegister(false);
-
-   if (candidate->getRegisterNumber() == self()->cg()->getProperties().getMethodMetaDataRegister())
-      self()->cg()->processDeferredSplits(virtualRegister == self()->cg()->getVMThreadRegister());
 
    self()->cg()->traceRegAssigned(virtualRegister, candidate);
    }

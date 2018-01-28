@@ -2190,7 +2190,7 @@ TR_OutlinedInstructions * OMR::X86::CodeGenerator::findOutlinedInstructionsFromL
    auto oiIterator = self()->getOutlinedInstructionsList().begin();
    while (oiIterator != self()->getOutlinedInstructionsList().end())
       {
-      if ((*oiIterator)->getEntryLabel() == label || (*oiIterator)->getEntryLabel()->getVMThreadRestoringLabel() == label)
+      if ((*oiIterator)->getEntryLabel() == label)
          return *oiIterator;
       ++oiIterator;
       }
@@ -2708,20 +2708,7 @@ uint32_t OMR::X86::CodeGenerator::isPreservedRegister(int32_t regIndex)
 TR::Instruction *OMR::X86::CodeGenerator::splitBlockEntry(TR::Instruction *instr)
    {
    TR::LabelSymbol *newLabel = generateLabelSymbol(self());
-   TR::Instruction *location = instr;
-   // late edge-splitting may have introduced a vmthreadrestoring label
-   // check for that and update the location accordingly so that
-   // the new label is placed correctly
-   //
-   if (instr->getKind() == TR::Instruction::IsLabel)
-      {
-      TR::LabelSymbol *label = ((TR::X86LabelInstruction *)instr)->getLabelSymbol();
-      if (label->getVMThreadRestoringLabel())
-         location = label->getVMThreadRestoringLabel()->getInstruction();
-      }
-   location = location->getPrev();
-
-   return generateLabelInstruction(location, LABEL, newLabel, self());
+   return generateLabelInstruction(instr->getPrev(), LABEL, newLabel, self());
    }
 
 TR::Instruction *OMR::X86::CodeGenerator::splitEdge(TR::Instruction *instr,
@@ -2755,13 +2742,6 @@ TR::Instruction *OMR::X86::CodeGenerator::splitEdge(TR::Instruction *instr,
       targetLabel = labelInstr->getLabelSymbol();
       labelInstr->setLabelSymbol(newLabel);
       location = targetLabel->getInstruction()->getPrev();
-      // for late-edge splitting
-      if (targetLabel->getVMThreadRestoringLabel())
-         {
-         location = targetLabel->getVMThreadRestoringLabel()->getInstruction();
-         traceMsg(self()->comp(), "found vmthreadrestoring label at %p\n", location);
-         location = location->getPrev();
-         }
       traceMsg(self()->comp(), "splitEdge fixing branch %p, appending to %p\n", instr, location);
       // now fixup any remaining jmp instrs that jmp to the target
       // so that they now jmp to the new label
@@ -2788,9 +2768,6 @@ TR::Instruction *OMR::X86::CodeGenerator::splitEdge(TR::Instruction *instr,
       {
       TR::Instruction *jmpLocation = cursor->getPrev();
       TR::LabelSymbol *l = targetLabel;
-      // for late-edge splitting
-      if (firstJump && targetLabel->getVMThreadRestoringLabel())
-         l = targetLabel->getVMThreadRestoringLabel();
       TR::Instruction *i = generateLabelInstruction(jmpLocation, JMP4, l, self());
       traceMsg(self()->comp(), "splitEdge jmp instr at [%p]\n", i);
       }

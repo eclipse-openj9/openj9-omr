@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -100,9 +100,6 @@ public:
    TR::Snippet * getSnippet()               { return _snippet; }
    TR::Snippet * setSnippet(TR::Snippet *s) { return (_snippet = s); }
 
-   TR::LabelSymbol * getVMThreadRestoringLabel()                    { return _vmThreadRestoringLabel; }
-   TR::LabelSymbol * setVMThreadRestoringLabel(TR::LabelSymbol *ls) { return (_vmThreadRestoringLabel = ls); }
-
    void setDirectlyTargeted() { _directlyTargeted = true; }
    TR_YesNoMaybe isTargeted();
 
@@ -115,8 +112,6 @@ private:
    int32_t            _estimatedCodeLocation;
 
    TR::Snippet *      _snippet;
-
-   TR::LabelSymbol *  _vmThreadRestoringLabel; ///< For late edge splitting
 
    bool               _directlyTargeted;
 

@@ -977,27 +977,6 @@ OMR::CodeGenerator::canClobberNodesRegister(
 void
 OMR::CodeGenerator::setVMThreadRequired(bool v)
    {
-   if (_liveRegisters[TR_GPR])
-      {
-      if (v)
-         {
-         if (self()->incVMThreadLiveCount() == 1)
-            {
-            _liveRegisters[TR_GPR]->addRegister(_vmThreadRegister);
-            _flags1.set(VMThreadRequired, true);
-            }
-         }
-      else
-         {
-         TR_ASSERT(_vmThreadRegister->isLive(), "Tried to remove the vmThread from live list, but wasn't live\n");
-         TR_ASSERT(_vmThreadLiveCount != 0, "Tried to underflow the VMThread register live count\n");
-         if (self()->decVMThreadLiveCount() == 0)
-            {
-            _flags1.set(VMThreadRequired, false);
-            _liveRegisters[TR_GPR]->registerIsDead(_vmThreadRegister);
-            }
-         }
-      }
    }
 
 bool

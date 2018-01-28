@@ -224,7 +224,6 @@ OMR::X86::MemoryReference::MemoryReference(
             if (symbol->isMethodMetaData())
                {
                _baseRegister = cg->getMethodMetaDataRegister();
-               cg->setVMThreadRequired(true);
                }
 
             rcount_t refCount = base->getReferenceCount();
@@ -254,7 +253,6 @@ OMR::X86::MemoryReference::MemoryReference(
             else
                {
                _baseRegister = cg->getMethodMetaDataRegister();
-               cg->setVMThreadRequired(true);
                }
             _baseNode = NULL;
             }
@@ -310,7 +308,6 @@ OMR::X86::MemoryReference::initialize(
    if (symbol->isMethodMetaData())
       {
       _baseRegister = cg->getMethodMetaDataRegister();
-      cg->setVMThreadRequired(true);
       }
    else if (symbol->isRegisterMappedSymbol())
       {
@@ -419,9 +416,6 @@ OMR::X86::MemoryReference::decNodeReferenceCounts(TR::CodeGenerator *cg)
 
    if (_baseRegister != NULL)
       {
-      if (_baseRegister == vmThreadReg)
-         cg->setVMThreadRequired(false);
-
       if (_baseNode != NULL)
          cg->decReferenceCount(_baseNode);
       else if (_baseRegister != vmThreadReg)
@@ -430,9 +424,6 @@ OMR::X86::MemoryReference::decNodeReferenceCounts(TR::CodeGenerator *cg)
 
    if (_indexRegister != NULL)
       {
-      if (_indexRegister == vmThreadReg)
-         cg->setVMThreadRequired(false);
-
       if (_indexNode != NULL)
          cg->decReferenceCount(_indexNode);
       else if (_indexRegister != vmThreadReg)
@@ -447,16 +438,12 @@ OMR::X86::MemoryReference::stopUsingRegisters(TR::CodeGenerator *cg)
    TR::Register *vmThreadReg = cg->getVMThreadRegister();
    if (_baseRegister != NULL)
       {
-      if (_baseRegister == vmThreadReg)
-         cg->setVMThreadRequired(false);
-      else
+      if (_baseRegister != vmThreadReg)
          cg->stopUsingRegister(_baseRegister);
       }
    if (_indexRegister != NULL)
       {
-      if (_indexRegister == vmThreadReg)
-         cg->setVMThreadRequired(false);
-      else
+      if (_indexRegister != vmThreadReg)
          cg->stopUsingRegister(_indexRegister);
       }
    }
@@ -695,7 +682,6 @@ OMR::X86::MemoryReference::populateMemoryReference(
                else
                   {
                   _indexRegister = cg->getMethodMetaDataRegister();
-                  cg->setVMThreadRequired(true);
                   }
                _indexNode = NULL;
                }
@@ -710,7 +696,6 @@ OMR::X86::MemoryReference::populateMemoryReference(
                else
                   {
                   _baseRegister = cg->getMethodMetaDataRegister();
-                  cg->setVMThreadRequired(true);
                   }
                _baseNode = NULL;
                }

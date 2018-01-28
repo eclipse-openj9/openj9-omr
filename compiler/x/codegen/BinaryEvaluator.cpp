@@ -278,7 +278,6 @@ bool OMR::X86::TreeEvaluator::analyseAddForLEA(TR::Node *node, TR::CodeGenerator
              firstChild->getSymbolReference()->getSymbol()->isMethodMetaData())
             {
             baseRegister = cg->getMethodMetaDataRegister();
-            cg->setVMThreadRequired(true);
             offset += firstChild->getSymbolReference()->getOffset();
             }
          else

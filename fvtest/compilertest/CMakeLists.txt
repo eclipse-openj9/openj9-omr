@@ -99,9 +99,6 @@ add_executable(compilertest
 )
 
 
-# Inherit the include path from the compiler component
-make_compiler_target(compilertest PRIVATE COMPILER testcompiler)
-
 # target_include_directories(compilertest PRIVATE
 # 	${PROJECT_SOURCE_DIR}/third_party/gtest-1.7.0/
 # 	${PROJECT_SOURCE_DIR}/third_party/gtest-1.7.0/include

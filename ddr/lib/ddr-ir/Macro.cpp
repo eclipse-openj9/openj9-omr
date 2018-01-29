@@ -23,6 +23,11 @@
 
 #include <stdlib.h>
 
+#if defined(_MSC_VER)
+/* Older Visual Studio compilers don't provide strtoll(). */
+#define strtoll(str, end, base) _strtoi64((str), (end), (base))
+#endif
+
 using std::string;
 
 DDR_RC

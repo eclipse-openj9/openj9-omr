@@ -935,10 +935,6 @@ TR::Register *OMR::ARM::TreeEvaluator::arraycopyEvaluator(TR::Node *node, TR::Co
    FILE *outFile;
 
    bool isSimpleCopy = (node->getNumChildren() == 3);
-   if(!isSimpleCopy)
-      {
-      TR_ASSERT(0,"Only simple array copies currently implemented on arm");
-      }
 
    if (isSimpleCopy)
       {
@@ -949,14 +945,13 @@ TR::Register *OMR::ARM::TreeEvaluator::arraycopyEvaluator(TR::Node *node, TR::Co
       lengthNode = node->getChild(2);
       }
    else
-     {
-      TR_ASSERT(0,"Only simple array copies implemented for arm");
+      {
       srcObjNode = node->getChild(0);
       dstObjNode = node->getChild(1);
       srcAddrNode = node->getChild(2);
       dstAddrNode = node->getChild(3);
       lengthNode = node->getChild(4);
-     }
+      }
 
    stopUsingCopyReg1 = stopUsingCopyReg(srcObjNode, srcObjReg, cg);
    stopUsingCopyReg2 = stopUsingCopyReg(dstObjNode, dstObjReg, cg);
@@ -985,6 +980,13 @@ TR::Register *OMR::ARM::TreeEvaluator::arraycopyEvaluator(TR::Node *node, TR::Co
                                    node, (uintptr_t)arrayCopyHelper->getMethodAddress(),
                                    deps,
                                    arrayCopyHelper);
+
+#ifdef J9_PROJECT_SPECIFIC
+   if (!isSimpleCopy)
+      {
+      TR::TreeEvaluator::genWrtbarForArrayCopy(node, srcObjReg, dstObjReg, cg);
+      }
+#endif
 
    if (srcObjNode != NULL)
       cg->decReferenceCount(srcObjNode);

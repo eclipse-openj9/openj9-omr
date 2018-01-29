@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -48,6 +48,11 @@ enum RuntimeAssumptionCategory
    ValueModification,
    SentinelCategory,
    LastRuntimeAssumptionCategory = SentinelCategory
+   };
+
+enum AssumptionSameJittedBodyFlags
+   {
+   MARK_FOR_DELETE=1
    };
 
 class RuntimeAssumption : public TR_Link0<RuntimeAssumption>
@@ -106,9 +111,23 @@ class RuntimeAssumption : public TR_Link0<RuntimeAssumption>
       setNext(NULL);
       }
 
+   /**
+    * Mark this assumption for future removal
+    * The caller of this routine must insure that the assumption has been dequeueFromListOfAssumptionsForJittedBody
+    * prior to this call. Using this marking feature will allow for removing a number of items from the linked-list
+    * of assumptions using one pass through the linked-list
+    */
+   void markForDetach() { _nextAssumptionForSameJittedBody = (RuntimeAssumption *)(((uintptr_t)_nextAssumptionForSameJittedBody)|MARK_FOR_DELETE); }
+
+   /**
+    * Returns true when the assumption has previously been marked using the markForDetach routine
+    */
+   bool isMarkedForDetach() { return(((uintptr_t)(_nextAssumptionForSameJittedBody)&MARK_FOR_DELETE) == MARK_FOR_DELETE); }
+
    protected:
    RuntimeAssumption *_nextAssumptionForSameJittedBody; // links assumptions that pertain to the same method body
-                                                           // These should form a circular linked list with a sentinel
+                                                        // These should form a circular linked list with a sentinel
+                                                        // Lower bit is used to mark assumptions that will be removed after all marking is completed
    uintptrj_t _key; // key for searching in the hashtable
    };
 

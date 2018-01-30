@@ -175,6 +175,13 @@ con_helper_thread_proc2(OMRPortLibrary* portLib, void *info)
 	return 0;
 }
 
+#if defined(OMR_GC_MODRON_SCAVENGER)
+void oldToOldReferenceCreated(MM_EnvironmentBase *env, omrobjectptr_t objectPtr)
+{
+	((MM_ConcurrentGC *)env->getExtensions()->getGlobalCollector())->oldToOldReferenceCreated(env, objectPtr);
+}
+#endif /* OMR_GC_MODRON_SCAVENGER */
+
 } /* extern "C" */
 
 void
@@ -491,21 +498,6 @@ MM_ConcurrentGC::reportConcurrentRememberedSetScanEnd(MM_EnvironmentBase *env, u
 	);
 }
 
-#if defined(OMR_GC_MODRON_SCAVENGER)
-/**
- * Hook function called when an old-to-old reference is created by external GC (Scavenger).
- * This is a wrapper into the non-static MM_ConcurrentGC::oldToOldReferenceCreated
- */
-void
-MM_ConcurrentGC::hookOldToOldReferenceCreated(J9HookInterface** hook, uintptr_t eventNum, void* eventData, void* userData)
-{
-	MM_OldToOldReferenceCreatedEvent* event = (MM_OldToOldReferenceCreatedEvent*)eventData;
-	MM_EnvironmentBase *env = MM_EnvironmentBase::getEnvironment(event->currentThread);
-
-	((MM_ConcurrentGC *)userData)->oldToOldReferenceCreated(env, static_cast<omrobjectptr_t>(event->objectPtr));
-}
-#endif /* OMR_GC_MODRON_SCAVENGER */
-
 /**
  * Hook function called when an the 2nd pass over card table to clean cards starts.
  * This is a wrapper into the non-static MM_ConcurrentGC::recordCardCleanPass2Start
@@ -715,11 +707,6 @@ MM_ConcurrentGC::initialize(MM_EnvironmentBase *env)
 
 	/* Register on any hook we are interested in */
 	(*mmPrivateHooks)->J9HookRegisterWithCallSite(mmPrivateHooks, J9HOOK_MM_PRIVATE_CARD_CLEANING_PASS_2_START, hookCardCleanPass2Start, OMR_GET_CALLSITE(), (void *)this);
-
-#if defined(OMR_GC_MODRON_SCAVENGER)
-	/* attach to the hooks for creation old-to-old references by external GC (Scavenger) */
-	(*mmPrivateHooks)->J9HookRegisterWithCallSite(mmPrivateHooks, J9HOOK_MM_PRIVATE_OLD_TO_OLD_REFERENCE_CREATED, hookOldToOldReferenceCreated, OMR_GET_CALLSITE(), this);
-#endif /* OMR_GC_MODRON_SCAVENGER */
 
 	return true;
 
@@ -2334,6 +2321,9 @@ MM_ConcurrentGC::timeToKickoffConcurrent(MM_EnvironmentBase *env, MM_AllocateDes
 			/* Set kickoff reason if it is not set yet */
 			_stats.setKickoffReason(KICKOFF_THRESHOLD_REACHED);
 			_languageKickoffReason = NO_LANGUAGE_KICKOFF_REASON;
+#if defined(OMR_GC_MODRON_SCAVENGER)
+			_extensions->setConcurrentGlobalGCInProgress(true);
+#endif
 			reportConcurrentKickoff(env);
 		}
 		return true;
@@ -2988,6 +2978,9 @@ MM_ConcurrentGC::internalPreCollect(MM_EnvironmentBase *env, MM_MemorySubSpace *
 
 		/* Switch the executionMode to OFF to complete the STW collection */
 		_stats.switchExecutionMode(executionModeAtGC, CONCURRENT_OFF);
+#if defined(OMR_GC_MODRON_SCAVENGER)
+		_extensions->setConcurrentGlobalGCInProgress(false);
+#endif
 
 		/* Mark map is usable. We got far enough into the concurrent to be
 		 * sure we at least initialized the mark map so no need to do so again.
@@ -3208,6 +3201,9 @@ MM_ConcurrentGC::abortCollection(MM_EnvironmentBase *env, CollectionAbortReason 
 	switchConHelperRequest(CONCURRENT_HELPER_MARK, CONCURRENT_HELPER_WAIT);
 
 	_stats.switchExecutionMode(_stats.getExecutionMode(), CONCURRENT_OFF );
+#if defined(OMR_GC_MODRON_SCAVENGER)
+	_extensions->setConcurrentGlobalGCInProgress(false);
+#endif
 
 	/* make sure to reset the init ranges before the next kickOff */
 	resetInitRangesForConcurrentKO();
@@ -3616,11 +3612,10 @@ MM_ConcurrentGC::oldToOldReferenceCreated(MM_EnvironmentBase *env, omrobjectptr_
 	/* todo: Consider doing mark and push-to-scan on child object.
 	 * Child object will be tenured only once during a Scavenge cycle,
 	 * so there are no risks of creating duplicates in scan queue. */
-	if (CONCURRENT_OFF != _stats.getExecutionMode()) {
-		Assert_MM_true(_extensions->isOld(objectPtr));
-		if (_markingScheme->isMarkedOutline(objectPtr) ) {
-			_cardTable->dirtyCard(env,objectPtr);
-		}
+	Assert_MM_true(CONCURRENT_OFF != _stats.getExecutionMode());
+	Assert_MM_true(_extensions->isOld(objectPtr));
+	if (_markingScheme->isMarkedOutline(objectPtr) ) {
+		_cardTable->dirtyCard(env,objectPtr);
 	}
 }
 #endif /* OMR_GC_MODRON_SCAVENGER */

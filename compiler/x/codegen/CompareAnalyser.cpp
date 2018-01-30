@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -432,10 +432,6 @@ void TR_X86CompareAnalyser::longOrderedCompareAndBranchAnalyser(TR::Node       *
    uint32_t                           numAdditionalRegDeps = 5;
    List<TR::Register>                 popRegisters(cg()->trMemory());
 
-   bool needVMThreadDep =
-      comp->getOption(TR_DisableLateEdgeSplitting) ||
-      !performTransformation(comp, "O^O LATE EDGE SPLITTING: Omit ebp dependency for %s node %s\n", root->getOpCode().getName(), cg()->getDebug()->getName(root));
-
    if (getCmpReg1Mem2())
       {
       lowMR  = generateX86MemoryReference(secondChild, cg());
@@ -464,12 +460,6 @@ void TR_X86CompareAnalyser::longOrderedCompareAndBranchAnalyser(TR::Node       *
    else
       {
       deps = generateRegisterDependencyConditions((uint8_t)0, (uint8_t)numAdditionalRegDeps, cg());
-      }
-
-   if (deps && needVMThreadDep && cg()->getLinkage()->getProperties().getMethodMetaDataRegister() != TR::RealRegister::NoReg)
-      {
-      deps->addPostCondition(cg()->getVMThreadRegister(),
-                             (TR::RealRegister::RegNum)cg()->getVMThreadRegister()->getAssociation(), cg());
       }
 
    startLabel->setStartInternalControlFlow();
@@ -796,10 +786,6 @@ void TR_X86CompareAnalyser::longEqualityCompareAndBranchAnalyser(TR::Node       
    uint32_t                           numAdditionalRegDeps = 5;
    List<TR::Register>                 popRegisters(cg()->trMemory());
 
-   bool needVMThreadDep =
-      comp->getOption(TR_DisableLateEdgeSplitting) ||
-      !performTransformation(comp, "O^O LATE EDGE SPLITTING: Omit ebp dependency for %s node %s\n", root->getOpCode().getName(), cg()->getDebug()->getName(root));
-
    if (getCmpReg1Mem2())
       {
       lowMR  = generateX86MemoryReference(secondChild, cg());
@@ -839,12 +825,6 @@ void TR_X86CompareAnalyser::longEqualityCompareAndBranchAnalyser(TR::Node       
          }
 
       deps = generateRegisterDependencyConditions((uint8_t)0, (uint8_t)numAdditionalRegDeps, cg());
-      }
-
-   if (deps && needVMThreadDep && cg()->getLinkage()->getProperties().getMethodMetaDataRegister() != TR::RealRegister::NoReg)
-      {
-      deps->addPostCondition(cg()->getVMThreadRegister(),
-                             (TR::RealRegister::RegNum)cg()->getVMThreadRegister()->getAssociation(), cg());
       }
 
    generateLabelInstruction(LABEL, root, startLabel, cg());
@@ -1093,16 +1073,6 @@ TR::Register *TR_X86CompareAnalyser::longOrderedBooleanAnalyser(TR::Node       *
    TR::MemoryReference  *lowMR = NULL;
    TR::MemoryReference  *highMR;
 
-   bool needVMThreadDep =
-      comp->getOption(TR_DisableLateEdgeSplitting) ||
-      !performTransformation(comp, "O^O LATE EDGE SPLITTING: Omit ebp dependency for %s node %s\n", root->getOpCode().getName(), cg()->getDebug()->getName(root));
-
-   if (deps && needVMThreadDep && cg()->getLinkage()->getProperties().getMethodMetaDataRegister() != TR::RealRegister::NoReg)
-      {
-      deps->addPostCondition(cg()->getVMThreadRegister(),
-                             (TR::RealRegister::RegNum)cg()->getVMThreadRegister()->getAssociation(), cg());
-      }
-
    startLabel->setStartInternalControlFlow();
    doneLabel->setEndInternalControlFlow();
    generateLabelInstruction(LABEL, root, startLabel, cg());
@@ -1214,16 +1184,6 @@ TR::Register *TR_X86CompareAnalyser::longCMPAnalyser(TR::Node *root)
    TR::RegisterDependencyConditions  *deps = generateRegisterDependencyConditions((uint8_t)0, 6, cg());
    TR::MemoryReference  *lowMR = NULL;
    TR::MemoryReference  *highMR;
-
-   bool needVMThreadDep =
-      comp->getOption(TR_DisableLateEdgeSplitting) ||
-      !performTransformation(comp, "O^O LATE EDGE SPLITTING: Omit ebp dependency for %s node %s\n", root->getOpCode().getName(), cg()->getDebug()->getName(root));
-
-   if (deps && needVMThreadDep && cg()->getLinkage()->getProperties().getMethodMetaDataRegister() != TR::RealRegister::NoReg)
-      {
-      deps->addPostCondition(cg()->getVMThreadRegister(),
-                             (TR::RealRegister::RegNum)cg()->getVMThreadRegister()->getAssociation(), cg());
-      }
 
    startLabel->setStartInternalControlFlow();
    doneLabel->setEndInternalControlFlow();

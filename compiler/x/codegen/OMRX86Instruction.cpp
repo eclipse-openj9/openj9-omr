@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -402,88 +402,6 @@ void TR::X86LabelInstruction::assignRegisters(TR_RegisterKinds kindsToBeAssigned
          {
          if (cg()->enableBetterSpillPlacements())
             cg()->saveBetterSpillPlacements(this);
-         }
-
-      if (!comp->getOption(TR_DisableLateEdgeSplitting) && cg()->getProperties().getMethodMetaDataRegister())
-         {
-         // If we find a branch instruction that doesn't have vmthread in ebp,
-         // jumping to a label that needs vmthread in ebp, then we need to insert
-         // an ebp load.  We want to insert it just before the target label, and
-         // change the offending branch so it jumps to the load instead.  We're
-         // effectively splitting the edge, with branches needing an ebp load
-         // jumping to the load instructions, and other branches jumping to the
-         // original label.
-         //
-         // This logic has three parts:
-         // 1. Identify block exits where the vmthread is not in ebp.  At that point,
-         // we'll split the edge and add a second label.
-         // 2. Identify labels where the vmthread must be in ebp.  Mark such labels
-         // with IsVMThreadLive.
-         // 3. (After register assignment, during size estimation.)  Find labels that
-         // have been split AND have IsVMThreadLive.  Insert an ebp load between the labels.
-
-         TR::RealRegister    *ebp = cg()->machine()->getX86RealRegister(cg()->getProperties().getMethodMetaDataRegister());
-         bool ebpIsVMThreadRegister = ebp->getAssignedRegister() == cg()->getVMThreadRegister();
-         bool ebpIsUnknown          = ebp->getAssignedRegister() == NULL;
-
-         if (getOpCodeValue() == LABEL && ebpIsVMThreadRegister)
-            {
-            // (This is step 2.)
-            //
-            _symbol->setVMThreadLive();
-            }
-         else if (getNode()->getOpCodeValue() == TR::BBStart && !getNode()->getBlock()->isExtensionOfPreviousBlock() && cg()->hasDeferredSplits())
-            {
-            // If we got to the top of the block without assigning ebp to
-            // anything, we have a choice.  We can either mark this label with
-            // setVMThreadLive(), making all the deferred splits unnecessary;
-            // or we can perform the splits.  The former has a decent chance of
-            // keeping ebp loads out of loops, so we do that.
-            //
-            if (cg()->getTraceRAOption(TR_TraceRALateEdgeSplitting))
-               traceMsg(comp, "O^O LATE EDGE SPLITTING: BBStart label %s needs vmthread in ebp because of deferred splits\n",
-                  cg()->getDebug()->getName(this));
-
-            _symbol->setVMThreadLive();
-            cg()->clearDeferredSplits();
-            }
-         else if (!ebpIsVMThreadRegister)
-            {
-            // (This is step 1.)
-            //
-            if (getNode()->getOpCodeValue() == TR::BBEnd)
-               {
-               // Check for a BBEnd that falls through to a different extended block
-               //
-               // Note that this logic doesn't *prove* that the BBEnd falls
-               // through -- there could be an unconditional branch (goto, table,
-               // or lookup) with the next block as a successor -- but then
-               // unnecessarily splitting this edge will, at worst, cause us to
-               // insert a useless vmthread rematerialization that is never
-               // executed.
-               //
-               TR::Block *nextBlock = getNode()->getBlock()->getNextBlock();
-               if (nextBlock && getNode()->getBlock()->hasSuccessor(nextBlock) && !nextBlock->isExtensionOfPreviousBlock())
-                  {
-                  cg()->splitLabel(nextBlock->getEntry()->getNode()->getLabel());
-                  }
-               }
-            else if (getOpCode().isBranchOp())
-               {
-               // Not split when _symbol is Outline instruction's entry label
-               if (_symbol->getInstruction() && !cg()->findOutlinedInstructionsFromLabel(_symbol))
-                  {
-                  TR::LabelSymbol *newLabelSymbol = cg()->splitLabel(_symbol, this);
-
-                  if (cg()->getTraceRAOption(TR_TraceRALateEdgeSplitting) && newLabelSymbol != _symbol)
-                     traceMsg(comp, "O^O LATE EDGE SPLITTING: Pointed branch %s at vmThread-restoring label %s\n",
-                        cg()->getDebug()->getName(this),
-                        cg()->getDebug()->getName(newLabelSymbol));
-
-                  _symbol = newLabelSymbol;
-                  }
-               }
-            }
          }
       }
    else
@@ -1920,11 +1838,6 @@ void TR::X86MemTableInstruction::assignRegisters(TR_RegisterKinds kindsToBeAssig
             if (targetLabel->getInstruction())
                {
                relocation->setLabel(cg()->splitLabel(targetLabel));
-               if (cg()->getTraceRAOption(TR_TraceRALateEdgeSplitting))
-                  traceMsg(cg()->comp(), "O^O LATE EDGE SPLITTING: Pointed jump table entry %d of %s at vmThread-restoring label %s\n",
-                     i,
-                     cg()->getDebug()->getName(this),
-                     cg()->getDebug()->getName(relocation->getLabel()));
                }
             }
          }
@@ -4367,21 +4280,7 @@ generateLabelInstruction(TR_X86OpCodes   op,
                          bool             needsVMThreadRegister,
                          TR::CodeGenerator *cg)
    {
-   TR::X86LabelInstruction  *instr;
-   if (needsVMThreadRegister && cg->getLinkage()->getProperties().getMethodMetaDataRegister() != TR::RealRegister::NoReg)
-      {
-      TR::RegisterDependencyConditions  *cond = generateRegisterDependencyConditions((uint8_t)1, (uint8_t)1, cg);
-      TR::Register *vmThreadRegister = cg->getVMThreadRegister();
-      cond->addPreCondition(vmThreadRegister, (TR::RealRegister::RegNum)vmThreadRegister->getAssociation(), cg);
-      cond->addPostCondition(vmThreadRegister, (TR::RealRegister::RegNum)vmThreadRegister->getAssociation(), cg);
-      instr = new (cg->trHeapMemory()) TR::X86LabelInstruction(op, node, sym, cond, cg);
-      }
-   else
-      {
-      instr = new (cg->trHeapMemory()) TR::X86LabelInstruction(op, node, sym, cg);
-      }
-
-   return instr;
+   return new (cg->trHeapMemory()) TR::X86LabelInstruction(op, node, sym, cg);
    }
 
 TR::X86LabelInstruction  *
@@ -4391,21 +4290,7 @@ generateLabelInstruction(TR::Instruction * pred,
                          bool             needsVMThreadRegister,
                          TR::CodeGenerator *cg)
    {
-   TR::X86LabelInstruction  *instr;
-   if (needsVMThreadRegister && cg->getLinkage()->getProperties().getMethodMetaDataRegister() != TR::RealRegister::NoReg)
-      {
-      TR::RegisterDependencyConditions  *cond = generateRegisterDependencyConditions((uint8_t)1, (uint8_t)1, cg);
-      TR::Register *vmThreadRegister = cg->getVMThreadRegister();
-      cond->addPreCondition(vmThreadRegister, (TR::RealRegister::RegNum)vmThreadRegister->getAssociation(), cg);
-      cond->addPostCondition(vmThreadRegister, (TR::RealRegister::RegNum)vmThreadRegister->getAssociation(), cg);
-      instr = new (cg->trHeapMemory()) TR::X86LabelInstruction(pred, op, sym, cond, cg);
-      }
-   else
-      {
-      instr = new (cg->trHeapMemory()) TR::X86LabelInstruction(pred, op, sym, cg);
-      }
-
-   return instr;
+   return new (cg->trHeapMemory()) TR::X86LabelInstruction(pred, op, sym, cg);;
    }
 
 TR::X86LabelInstruction  *
@@ -4454,20 +4339,7 @@ generateLongLabelInstruction(TR_X86OpCodes     op,
                              bool              needsVMThreadRegister,
                              TR::CodeGenerator *cg)
    {
-   TR::X86LabelInstruction  *instr;
-   if (needsVMThreadRegister && cg->getLinkage()->getProperties().getMethodMetaDataRegister() != TR::RealRegister::NoReg)
-      {
-      TR::RegisterDependencyConditions  *cond = generateRegisterDependencyConditions((uint8_t)1, (uint8_t)1, cg);
-      TR::Register *vmThreadRegister = cg->getVMThreadRegister();
-      cond->addPreCondition(vmThreadRegister, (TR::RealRegister::RegNum)vmThreadRegister->getAssociation(), cg);
-      cond->addPostCondition(vmThreadRegister, (TR::RealRegister::RegNum)vmThreadRegister->getAssociation(), cg);
-      instr = new (cg->trHeapMemory()) TR::X86LabelInstruction(op, node, sym, cond, cg);
-      }
-   else
-      {
-      instr = new (cg->trHeapMemory()) TR::X86LabelInstruction(op, node, sym, cg);
-      }
-
+   TR::X86LabelInstruction *instr = new (cg->trHeapMemory()) TR::X86LabelInstruction(op, node, sym, cg);
    instr->prohibitShortening();
    return instr;
    }
@@ -4483,30 +4355,17 @@ generateLabelInstruction(TR_X86OpCodes     opCode,
                          bool               evaluateGlRegDeps,
                          TR::CodeGenerator *cg)
    {
-   TR::X86LabelInstruction  *instr;
-
    if (evaluateGlRegDeps)
       {
       cg->evaluate(glRegDep);
       }
 
-   if (needsVMThreadRegister && cg->getLinkage()->getProperties().getMethodMetaDataRegister() != TR::RealRegister::NoReg)
-      {
-      TR::RegisterDependencyConditions  *deps = generateRegisterDependencyConditions(glRegDep, cg, 1, popRegisters);
-      TR::Register *vmThreadRegister = cg->getVMThreadRegister();
-      deps->addPreCondition(vmThreadRegister, (TR::RealRegister::RegNum)vmThreadRegister->getAssociation(), cg);
-      deps->addPostCondition(vmThreadRegister, (TR::RealRegister::RegNum)vmThreadRegister->getAssociation(), cg);
-      deps->stopAddingConditions();
-      instr = new (cg->trHeapMemory()) TR::X86LabelInstruction(opCode, node, label, deps, cg);
-      }
-   else
-      {
-      instr = generateLabelInstruction(opCode,
-                                       node,
-                                       label,
-                                       generateRegisterDependencyConditions(glRegDep, cg, 0, popRegisters),
-                                       cg);
-      }
+   TR::X86LabelInstruction *instr =
+      generateLabelInstruction(opCode,
+                               node,
+                               label,
+                               generateRegisterDependencyConditions(glRegDep, cg, 0, popRegisters),
+                               cg);
 
    return instr;
    }
@@ -4564,21 +4423,11 @@ generateConditionalJumpInstruction(
    TR::X86LabelInstruction  * inst;
    TR::LabelSymbol           * destinationLabel = ifNode->getBranchDestination()->getNode()->getLabel();
 
-   // With late edge splitting, we can ignore needsVMThreadRegister
-   //
-   if (!comp->getOption(TR_DisableLateEdgeSplitting))
-      {
-      needsVMThreadRegister =
-         needsVMThreadRegister &&
-         !performTransformation(comp, "O^O LATE EDGE SPLITTING: Omit ebp dependency for %s node %s\n",
-                                  ifNode->getOpCode().getName(), cg->getDebug()->getName(ifNode));
-      }
-
    if (ifNode->getNumChildren() == 3)
       {
       List<TR::Register> popRegisters(cg->trMemory());
       TR::Node* glRegDep = ifNode->getChild(2);
-      inst = generateLabelInstruction(opCode, ifNode, destinationLabel, glRegDep, &popRegisters, needsVMThreadRegister, cg);
+      inst = generateLabelInstruction(opCode, ifNode, destinationLabel, glRegDep, &popRegisters, false, cg);
 
       if (inst->getDependencyConditions())
          {
@@ -4600,7 +4449,7 @@ generateConditionalJumpInstruction(
       }
    else
       {
-      inst = generateLabelInstruction(opCode, ifNode, destinationLabel, needsVMThreadRegister, cg);
+      inst = generateLabelInstruction(opCode, ifNode, destinationLabel, false, cg);
       }
 
    return inst;

@@ -580,18 +580,10 @@ OMR::X86::CodeGenerator::beginInstructionSelection()
          _returnTypeInfoInstruction = new (self()->trHeapMemory()) TR::X86ImmInstruction((TR::Instruction *)NULL, DDImm4, 0, self());
       }
 
-   TR::RegisterDependencyConditions  *deps = generateRegisterDependencyConditions((uint8_t)0, (uint8_t)1, self());
-   if (_linkageProperties->getMethodMetaDataRegister() != TR::RealRegister::NoReg)
-      {
-      deps->addPostCondition(self()->getVMThreadRegister(),
-                             (TR::RealRegister::RegNum)self()->getVMThreadRegister()->getAssociation(), self());
-      }
-   deps->stopAddingPostConditions();
-
    if (self()->getAppendInstruction())
-      generateInstruction(PROCENTRY, startNode, deps, self());
+      generateInstruction(PROCENTRY, startNode, self());
    else
-      new (self()->trHeapMemory()) TR::Instruction(deps, PROCENTRY, (TR::Instruction *)NULL, self());
+      new (self()->trHeapMemory()) TR::Instruction(PROCENTRY, (TR::Instruction *)NULL, self());
 
    // Set the default FPCW to single precision mode if we are allowed to.
    //
@@ -1492,8 +1484,6 @@ void OMR::X86::CodeGenerator::doBackwardsRegisterAssignment(
          }
       }
 
-   TR::RealRegister::RegNum vmThreadIndex = _linkageProperties->getMethodMetaDataRegister();
-
    if (self()->getDebug())
       self()->getDebug()->startTracingRegisterAssignment("backward", kindsToAssign);
 
@@ -1501,22 +1491,6 @@ void OMR::X86::CodeGenerator::doBackwardsRegisterAssignment(
       {
       TR::Instruction  *inst = instructionCursor;
 
-      // Detect BBEnd end of a non-extended block or the last BBEnd end of an extended block
-      if (comp->cg()->getSupportsVMThreadGRA() && inst->getKind() == TR::Instruction::IsLabel && vmThreadIndex != TR::RealRegister::NoReg)
-         {
-         TR::Node *node = inst->getNode();
-         if (node && node->getOpCodeValue() == TR::BBEnd)
-            {
-            TR::Block *block = node->getBlock();
-            if (block && (!block->getNextBlock() || !block->getNextBlock()->isExtensionOfPreviousBlock()))
-               { // Reset vmThread register state.
-               TR::RealRegister *vmThreadRealReg = self()->machine()->getX86RealRegister(TR::RealRegister::ebp);
-               self()->getVMThreadRegister()->setAssignedRegister(NULL);
-               vmThreadRealReg->setAssignedRegister(NULL);
-               vmThreadRealReg->setState(TR::RealRegister::Free);
-               }
-            }
-         }
 #ifdef DEBUG
       if (dumpPreGP)
          {
@@ -3572,8 +3546,6 @@ void OMR::X86::CodeGenerator::clearDeferredSplits()
    {
    if (_internalControlFlowNestingDepth == 0)
       {
-      if (self()->getTraceRAOption(TR_TraceRALateEdgeSplitting))
-         traceMsg(self()->comp(), "LATE EDGE SPLITTING: clearDeferredSplits\n");
       _deferredSplits.clear();
       }
    else
@@ -3585,17 +3557,9 @@ void OMR::X86::CodeGenerator::clearDeferredSplits()
 
 void OMR::X86::CodeGenerator::performDeferredSplits()
    {
-   if (self()->getTraceRAOption(TR_TraceRALateEdgeSplitting))
-      traceMsg(self()->comp(), "LATE EDGE SPLITTING: performDeferredSplits\n");
-
    for (auto li = _deferredSplits.begin(); li != _deferredSplits.end(); ++li)
       {
       TR::LabelSymbol *newLabelSymbol = self()->splitLabel((*li)->getLabelSymbol());
-      if (self()->getTraceRAOption(TR_TraceRALateEdgeSplitting))
-         traceMsg(self()->comp(), "LATE EDGE SPLITTING: Pointed branch %s at vmThread-restoring label %s\n",
-                  self()->getDebug()->getName(*li),
-                  self()->getDebug()->getName(newLabelSymbol));
-
       (*li)->setLabelSymbol(newLabelSymbol);
       }
 
@@ -3645,10 +3609,6 @@ TR::LabelSymbol *OMR::X86::CodeGenerator::splitLabel(TR::LabelSymbol *targetLabe
       targetLabel->setVMThreadRestoringLabel(newLabel);
       newLabel->setInstruction(generateLabelInstruction(targetLabel->getInstruction()->getPrev(), LABEL, newLabel, self()));
       self()->generateDebugCounter(targetLabel->getInstruction(), "cg.lateSplitEdges", 1, TR::DebugCounter::Exorbitant);
-      if (self()->getTraceRAOption(TR_TraceRALateEdgeSplitting))
-         traceMsg(self()->comp(), "LATE EDGE SPLITTING: Inserted vmThread-restoring label %s before %s\n",
-            self()->getDebug()->getName(newLabel),
-            self()->getDebug()->getName(targetLabel));
       }
 
    // Conservatively store ebp in the prologue just in case any of these split labels decide they need to load it
@@ -3666,8 +3626,6 @@ TR::LabelSymbol *OMR::X86::CodeGenerator::splitLabel(TR::LabelSymbol *targetLabe
    // Set spill instruction to the "spill in prolog" value.
    //
    self()->setVMThreadSpillInstruction((TR::Instruction *)0xffffffff);
-   if (self()->getTraceRAOption(TR_TraceRALateEdgeSplitting))
-      traceMsg(self()->comp(), "LATE EDGE SPLITTING: Store ebp in prologue\n");
 
    return targetLabel->getVMThreadRestoringLabel();
    }

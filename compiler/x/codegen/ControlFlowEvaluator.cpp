@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -471,36 +471,15 @@ TR::Register *OMR::X86::TreeEvaluator::tableEvaluator(TR::Node *node, TR::CodeGe
 
    TR::X86MemTableInstruction *jmpTableInstruction = NULL;
 
-   // A VMThread Register of NoReg means we are in WCode and don't have a VM
-   // thread register to worry about
-   //
    if (cg->getLinkage()->getProperties().getMethodMetaDataRegister() != TR::RealRegister::NoReg)
       {
-      TR::Compilation *comp = cg->comp();
-      bool needVMThreadDep =
-         comp->getOption(TR_DisableLateEdgeSplitting) ||
-         !performTransformation(comp, "O^O LATE EDGE SPLITTING: Omit ebp dependency for %s node %s\n", node->getOpCode().getName(), cg->getDebug()->getName(node));
-
-      TR::RegisterDependencyConditions  *deps = NULL;
+      TR::RegisterDependencyConditions *deps = NULL;
 
       if (secondChild->getNumChildren() > 0)
          {
-         deps = generateRegisterDependencyConditions(secondChild->getFirstChild(), cg, needVMThreadDep?1:0, NULL);
-         }
-      else if (needVMThreadDep)
-         {
-         deps = generateRegisterDependencyConditions((uint8_t)1, 0, cg);
-         }
-
-      if (needVMThreadDep)
-         {
-         TR_ASSERT(deps, "assertion failure");
-         TR::Register *vmThreadRegister = cg->getVMThreadRegister();
-         deps->addPreCondition(vmThreadRegister, (TR::RealRegister::RegNum)vmThreadRegister->getAssociation(), cg);
-         }
-
-      if (deps)
+         deps = generateRegisterDependencyConditions(secondChild->getFirstChild(), cg, 0, NULL);
          deps->stopAddingConditions();
+         }
 
       jmpTableInstruction = generateMemTableInstruction(JMPMem, node, tempMR, numBranchTableEntries, deps, cg);
       }
@@ -555,7 +534,7 @@ TR::Register *OMR::X86::TreeEvaluator::minmaxEvaluator(TR::Node *node, TR::CodeG
          TR_ASSERT(false, "INCORRECT IL OPCODE.");
          break;
       }
-   
+
    auto operand0 = cg->evaluate(node->getChild(0));
    auto operand1 = cg->evaluate(node->getChild(1));
    auto result = cg->allocateRegister();
@@ -1149,11 +1128,7 @@ void OMR::X86::TreeEvaluator::compareBytesForOrder(TR::Node *node, TR::CodeGener
 
 TR::Register *OMR::X86::TreeEvaluator::gotoEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR::Compilation *comp = cg->comp();
-   bool needVMThreadDep =
-      comp->getOption(TR_DisableLateEdgeSplitting) ||
-      !performTransformation(comp, "O^O LATE EDGE SPLITTING: Omit ebp dependency for %s node %s\n", node->getOpCode().getName(), cg->getDebug()->getName(node));
-   generateJumpInstruction(JMP4, node, cg, needVMThreadDep);
+   generateJumpInstruction(JMP4, node, cg, false);
    return NULL;
    }
 
@@ -1212,25 +1187,13 @@ TR::Register *OMR::X86::TreeEvaluator::integerReturnEvaluator(TR::Node *node, TR
    TR::RealRegister::RegNum machineReturnRegister =
       linkageProperties.getIntegerReturnRegister();
 
-   TR::RegisterDependencyConditions  *dependencies;
+   TR::RegisterDependencyConditions  *dependencies = NULL;
    if (machineReturnRegister != TR::RealRegister::NoReg)
       {
-      dependencies = generateRegisterDependencyConditions((uint8_t)2, 0, cg);
-      dependencies->addPreCondition(returnRegister, machineReturnRegister, cg);
-      }
-   else
-      {
       dependencies = generateRegisterDependencyConditions((uint8_t)1, 0, cg);
+      dependencies->addPreCondition(returnRegister, machineReturnRegister, cg);
+      dependencies->stopAddingConditions();
       }
-
-   if (cg->getLinkage()->getProperties().getMethodMetaDataRegister() != TR::RealRegister::NoReg)
-      {
-      dependencies->addPreCondition(
-         cg->getVMThreadRegister(),
-         (TR::RealRegister::RegNum)cg->getVMThreadRegister()->getAssociation(), cg);
-      }
-   dependencies->stopAddingConditions();
-
 
    if (linkageProperties.getCallerCleanup())
       {
@@ -1286,21 +1249,13 @@ TR::Register *OMR::X86::TreeEvaluator::returnEvaluator(TR::Node *node, TR::CodeG
       generateMemInstruction(LDCWMem, node, generateX86MemoryReference(cds, cg), cg);
       }
 
-   TR::RegisterDependencyConditions  *dependencies = generateRegisterDependencyConditions((uint8_t)1, 0, cg);
-
-   if (cg->getLinkage()->getProperties().getMethodMetaDataRegister() != TR::RealRegister::NoReg)
-      {
-      dependencies->addPreCondition(cg->getVMThreadRegister(), (TR::RealRegister::RegNum)cg->getVMThreadRegister()->getAssociation(), cg);
-      }
-   dependencies->stopAddingConditions();
-
    if (cg->getProperties().getCallerCleanup())
       {
-      generateInstruction(RET, node, dependencies, cg);
+      generateInstruction(RET, node, cg);
       }
    else
       {
-      generateImmInstruction(RETImm2, node, 0, dependencies, cg);
+      generateImmInstruction(RETImm2, node, 0, cg);
       }
 
    if (comp->getMethodSymbol()->getLinkageConvention() == TR_Private)
@@ -2466,17 +2421,12 @@ static bool virtualGuardHelper(TR::Node *node, TR::CodeGenerator *cg)
       TR::Node *third = node->getChild(2);
       cg->evaluate(third);
       deps = generateRegisterDependencyConditions(third, cg, 1, &popRegisters);
+      deps->stopAddingConditions();
       }
-   else
-      deps = generateRegisterDependencyConditions (1, 1, cg);
 
    if(virtualGuard->shouldGenerateChildrenCode())
       cg->evaluateChildrenWithMultipleRefCount(node);
 
-   deps->addPostCondition(cg->getVMThreadRegister(), (TR::RealRegister::RegNum)cg->getVMThreadRegister()->getAssociation(), cg);
-   deps->addPreCondition (cg->getVMThreadRegister(), (TR::RealRegister::RegNum)cg->getVMThreadRegister()->getAssociation(), cg);
-
-   deps->stopAddingConditions();
    TR::LabelSymbol *label = node->getBranchDestination()->getNode()->getLabel();
 
    cg->setVMThreadRequired(true);
@@ -2484,7 +2434,7 @@ static bool virtualGuardHelper(TR::Node *node, TR::CodeGenerator *cg)
    TR::Instruction *vgnopInstr = generateVirtualGuardNOPInstruction(node, site, deps, label, cg);
    TR::Instruction *patchPoint = cg->getVirtualGuardForPatching(vgnopInstr);
 
-   // Guards patched when the threads are stopped have no issues with multithreaded patching. 
+   // Guards patched when the threads are stopped have no issues with multithreaded patching.
    // therefore alignment is not required
    if (TR::Compiler->target.isSMP() && !node->isStopTheWorldGuard())
       {

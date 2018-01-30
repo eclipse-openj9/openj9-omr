@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -534,24 +534,13 @@ TR::Register *OMR::X86::TreeEvaluator::fpReturnEvaluator(TR::Node *node, TR::Cod
    TR::RealRegister::RegNum machineReturnRegister =
       (returnRegister->isSinglePrecision())? linkageProperties.getFloatReturnRegister() : linkageProperties.getDoubleReturnRegister();
 
-   TR::RegisterDependencyConditions  *dependencies;
+   TR::RegisterDependencyConditions *dependencies = NULL;
    if (machineReturnRegister != TR::RealRegister::NoReg)
       {
-      dependencies = generateRegisterDependencyConditions((uint8_t)2, 0, cg);
-      dependencies->addPreCondition(returnRegister, machineReturnRegister, cg);
-      }
-   else
-      {
       dependencies = generateRegisterDependencyConditions((uint8_t)1, 0, cg);
+      dependencies->addPreCondition(returnRegister, machineReturnRegister, cg);
+      dependencies->stopAddingConditions();
       }
-
-   // Protect VMThread register fetch, it could be NULL if we are generating from WCode
-   //
-   if (linkageProperties.getMethodMetaDataRegister() != TR::RealRegister::NoReg)
-      {
-      dependencies->addPreCondition(cg->getVMThreadRegister(), (TR::RealRegister::RegNum)cg->getVMThreadRegister()->getAssociation(), cg);
-      }
-   dependencies->stopAddingConditions();
 
    if (linkageProperties.getCallerCleanup())
       {
@@ -2011,9 +2000,9 @@ TR::Register *OMR::X86::TreeEvaluator::generateBranchOrSetOnFPCompare(TR::Node  
                                                                   bool         generateBranch,
                                                                   TR::CodeGenerator *cg)
    {
-   List<TR::Register>                    popRegisters(cg->trMemory());
-   TR::Register                         *targetRegister = NULL;
-   TR::RegisterDependencyConditions  *deps           = NULL;
+   List<TR::Register> popRegisters(cg->trMemory());
+   TR::Register *targetRegister = NULL;
+   TR::RegisterDependencyConditions *deps = NULL;
 
    if (generateBranch)
       {
@@ -2023,18 +2012,8 @@ TR::Register *OMR::X86::TreeEvaluator::generateBranchOrSetOnFPCompare(TR::Node  
          cg->evaluate(third);
          deps = generateRegisterDependencyConditions(third, cg, 1, &popRegisters);
          deps->setMayNeedToPopFPRegisters(true);
+         deps->stopAddingConditions();
          }
-      else
-         {
-         deps = generateRegisterDependencyConditions((uint8_t)0, 1, cg);
-         }
-
-      if (cg->getLinkage()->getProperties().getMethodMetaDataRegister() != TR::RealRegister::NoReg)
-         {
-         deps->addPostCondition(cg->getVMThreadRegister(),
-                                (TR::RealRegister::RegNum)cg->getVMThreadRegister()->getAssociation(), cg);
-         }
-      deps->stopAddingConditions();
       }
 
    // If not using FCOMI/UCOMISS/UCOMISD, then we must be interpreting the FPSW in AH;
@@ -2064,11 +2043,10 @@ TR::Register *OMR::X86::TreeEvaluator::generateBranchOrSetOnFPCompare(TR::Node  
       if (generateBranch)
          {
          // We want the pre-conditions on the first branch, and the post-conditions
-         // on the last one. If there are no global register dependencies, we only
-         // need a post-condition for the vmThread register.
+         // on the last one.
          //
          TR::RegisterDependencyConditions  *deps1 = NULL;
-         if (deps->getPreConditions() && deps->getPreConditions()->getMayNeedToPopFPRegisters())
+         if (deps && deps->getPreConditions() && deps->getPreConditions()->getMayNeedToPopFPRegisters())
             {
             deps1 = deps->clone(cg);
             deps1->setNumPostConditions(0, cg->trMemory());
@@ -2103,7 +2081,7 @@ TR::Register *OMR::X86::TreeEvaluator::generateBranchOrSetOnFPCompare(TR::Node  
          fallThroughLabel->setEndInternalControlFlow();
 
          TR::RegisterDependencyConditions  *deps1 = NULL;
-         if (deps->getPreConditions() && deps->getPreConditions()->getMayNeedToPopFPRegisters())
+         if (deps && deps->getPreConditions() && deps->getPreConditions()->getMayNeedToPopFPRegisters())
             {
             deps1 = deps->clone(cg);
             deps1->setNumPostConditions(0, cg->trMemory());

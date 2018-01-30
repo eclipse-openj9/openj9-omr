@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -732,39 +732,6 @@ void TR_X86RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentIn
          hasByteDeps = true;
       else if (dependentRegNum == TR::RealRegister::BestFreeReg)
          hasBestFreeRegDeps = true;
-
-      // Reload vmThread at the start of it's live range.
-      //
-      TR::Register *vmThreadReg = cg->getVMThreadRegister();
-      TR::RealRegister *vmThreadRealReg = machine->getX86RealRegister(TR::RealRegister::ebp);
-      if (cg->getSupportsVMThreadGRA() &&
-          dependentRegNum == TR::RealRegister::ebp &&
-          virtReg && virtReg != vmThreadReg &&
-          vmThreadReg->getAssignedRealRegister() == vmThreadRealReg)
-         {
-         TR_BackingStore *vmThreadSill = vmThreadReg->getBackingStorage();
-         if (vmThreadSill == NULL)
-            {
-            vmThreadSill = cg->allocateVMThreadSpill();
-            vmThreadReg->setBackingStorage(vmThreadSill);
-
-            // Set spill instruction to the "spill in prolog" value.
-            //
-            cg->setVMThreadSpillInstruction((TR::Instruction *)0xffffffff);
-            cg->getSpilledIntRegisters().push_front(vmThreadReg);
-            }
-         if (debug("vmThreadGRA"))
-            cg->traceRegisterAssignment("Force spill of vmThread at inst %p", currentInstruction);
-         TR::MemoryReference    *tempMR  = generateX86MemoryReference(vmThreadSill->getSymbolReference(), cg);
-         TR::X86RegMemInstruction  *inst    = generateRegMemInstruction(currentInstruction, LRegMem(), vmThreadRealReg, tempMR, cg);
-         cg->traceRAInstruction(inst);
-
-         // Reset vmThread register's state.
-         //
-         vmThreadReg->setAssignedRegister(NULL);
-         vmThreadRealReg->setAssignedRegister(NULL);
-         vmThreadRealReg->setState(TR::RealRegister::Free);
-         }
 
       // Handle spill registers first.
       //

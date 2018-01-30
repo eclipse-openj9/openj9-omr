@@ -4042,48 +4042,10 @@ TR::Register *OMR::X86::TreeEvaluator::BBStartEvaluator(TR::Node *node, TR::Code
          generateAlignmentInstruction(node, 16, cg); // TODO: Derive alignment from CPU cache information
          }
 
-      if (comp->getOption(TR_DisableLateEdgeSplitting))
-         {
-         // Check the cfg edge for the mustRestoreVMThreadRegister attribute. If markked then
-         // there can be only one incoming edge.
-         TR::CFGEdge *edge = (!block->getPredecessors().empty()) ? block->getPredecessors().front() : NULL;
-         if (cg->getSupportsVMThreadGRA() &&
-             edge && edge->mustRestoreVMThreadRegister())
-            {
-            // Add a dummy register dependency on ebp to force a vmThread reload.
-            TR::RegisterDependencyConditions  *glRegDeps;
-            if (node->getNumChildren() > 0)
-               {
-               cg->evaluate(node->getFirstChild());
-               glRegDeps = generateRegisterDependencyConditions(node->getFirstChild(), cg, 1, &popRegisters);
-               }
-            else
-               glRegDeps = generateRegisterDependencyConditions((uint8_t)0, (uint8_t)1, cg);
-
-            TR::Register *dummyReg = cg->allocateRegister();
-            glRegDeps->addPostCondition(dummyReg, TR::RealRegister::ebp, cg);
-            glRegDeps->stopAddingConditions();
-            inst = new (cg->trHeapMemory()) TR::X86LabelInstruction(LABEL, node, label, glRegDeps, cg);
-            cg->stopUsingRegister(dummyReg);
-            }
-         else
-            {
-            if (node->getNumChildren() > 0)
-               inst = generateLabelInstruction(LABEL, node, label, node->getFirstChild(), &popRegisters, true, cg);
-            else
-               inst = generateLabelInstruction(LABEL, node, node->getLabel(), true, cg);
-            }
-         }
+      if (node->getNumChildren() > 0)
+         inst = generateLabelInstruction(LABEL, node, label, node->getFirstChild(), &popRegisters, true, cg);
       else
-         {
-         bool needVMThreadDep =
-            !performTransformation(comp, "O^O LATE EDGE SPLITTING: Omit ebp dependency for %s node %s\n",
-                                     node->getOpCode().getName(), cg->getDebug()->getName(node));
-         if (node->getNumChildren() > 0)
-            inst = generateLabelInstruction(LABEL, node, label, node->getFirstChild(), &popRegisters, needVMThreadDep, cg);
-         else
-            inst = generateLabelInstruction(LABEL, node, node->getLabel(), needVMThreadDep, cg);
-         }
+         inst = generateLabelInstruction(LABEL, node, node->getLabel(), true, cg);
 
       if (inst->getDependencyConditions())
          inst->getDependencyConditions()->setMayNeedToPopFPRegisters(true);
@@ -4166,9 +4128,7 @@ TR::Register *OMR::X86::TreeEvaluator::BBEndEvaluator(TR::Node *node, TR::CodeGe
          machine->createRegisterAssociationDirective(cg->getAppendInstruction());
          }
 
-      bool needVMThreadDep =
-         comp->getOption(TR_DisableLateEdgeSplitting) ||
-         !performTransformation(comp, "O^O LATE EDGE SPLITTING: Omit ebp dependency for %s node %s\n", node->getOpCode().getName(), cg->getDebug()->getName(node));
+      bool needVMThreadDep = true;
 
       // This label is also used by RegisterDependency to detect the end of a block.
       TR::Instruction *labelInst = NULL;
@@ -4875,11 +4835,11 @@ OMR::X86::TreeEvaluator::bitpermuteEvaluator(TR::Node *node, TR::CodeGenerator *
    // Zero result reg
    TR::Register *resultReg = cg->allocateRegister(TR_GPR);
    generateRegRegInstruction(XORRegReg(nodeIs64Bit), node, resultReg, resultReg, cg);
-   
+
    if (length->getOpCode().isLoadConst())
       {
       // Manage the constant length case
-      uintptrj_t arrayLen = TR::TreeEvaluator::integerConstNodeValue(length, cg); 
+      uintptrj_t arrayLen = TR::TreeEvaluator::integerConstNodeValue(length, cg);
       for (uintptrj_t x = 0; x < arrayLen; ++x)
          {
          // Zero tmpReg if SET won't do it

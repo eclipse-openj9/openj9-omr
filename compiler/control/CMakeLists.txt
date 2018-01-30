@@ -1,5 +1,5 @@
 ################################################################################
-# Copyright (c) 2017, 2017 IBM Corp. and others
+# Copyright (c) 2017, 2018 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -20,9 +20,9 @@
 #############################################################################
 
 compiler_library(control
-	${CMAKE_CURRENT_SOURCE_DIR}/OMROptions.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/OptimizationPlan.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/OMRRecompilation.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/CompilationController.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/CompileMethod.cpp
+	${CMAKE_CURRENT_LIST_DIR}/OMROptions.cpp
+	${CMAKE_CURRENT_LIST_DIR}/OptimizationPlan.cpp
+	${CMAKE_CURRENT_LIST_DIR}/OMRRecompilation.cpp
+	${CMAKE_CURRENT_LIST_DIR}/CompilationController.cpp
+	${CMAKE_CURRENT_LIST_DIR}/CompileMethod.cpp
 )

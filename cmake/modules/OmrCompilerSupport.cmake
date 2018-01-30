@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2017 IBM Corp. and others
+# Copyright (c) 2017, 2018 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -329,23 +329,13 @@ function(create_omr_compiler_library)
 	# Add the contents of the macro to CORE_COMPILER_OBJECTS in this scope.
 	# The library name parameter is currently ignored.
 	macro(compiler_library libraryname)
-		# Since CMake *copies* the enviornment from parent to child scope,
-		# a PARENT_SCOPE set ultimately is not reflected for local lookups.
-		# As a result, we need to _also_ update the local scope here if we
-		# want this to succeed when called multiple times in a scope.
-		set(CORE_COMPILER_OBJECTS ${CORE_COMPILER_OBJECTS} ${ARGN}             )
-		set(CORE_COMPILER_OBJECTS ${CORE_COMPILER_OBJECTS} ${ARGN} PARENT_SCOPE)
+		list(APPEND CORE_COMPILER_OBJECTS ${ARGN})
 	endmacro(compiler_library)
 
-	# Because we want to be able to build multiple compiler
-	# components in the same tree (ie the compiler test code, as
-	# well as JitBuilder, we can't just use the plain add_subdirectory,
-	# CMake demands we specify the object target directory as well.
-	#
-	# This macro computes an appropriate target directory.
+	# Instead of a real add_subdirectory we just include the file so everything stays
+	# in the same scope.
 	macro(add_compiler_subdirectory dir)
-		add_subdirectory(${omr_SOURCE_DIR}/compiler/${dir}
-			${CMAKE_CURRENT_BINARY_DIR}/compiler/${dir}_${COMPILER_NAME})
+		include("${omr_SOURCE_DIR}/compiler/${dir}/CMakeLists.txt")
 	endmacro(add_compiler_subdirectory)
 
 

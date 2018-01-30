@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2017 IBM Corp. and others
+# Copyright (c) 2017, 2018 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -20,20 +20,20 @@
 #############################################################################
 
 compiler_library(infra
-	${CMAKE_CURRENT_SOURCE_DIR}/Assert.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/BitVector.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/Checklist.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/HashTab.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/IGBase.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/IGNode.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/ILWalk.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/InterferenceGraph.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/OMRMonitor.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/OMRMonitorTable.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/Random.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/SimpleRegex.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/STLUtils.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/Timer.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/TreeServices.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/OMRCfg.cpp
+	${CMAKE_CURRENT_LIST_DIR}/Assert.cpp
+	${CMAKE_CURRENT_LIST_DIR}/BitVector.cpp
+	${CMAKE_CURRENT_LIST_DIR}/Checklist.cpp
+	${CMAKE_CURRENT_LIST_DIR}/HashTab.cpp
+	${CMAKE_CURRENT_LIST_DIR}/IGBase.cpp
+	${CMAKE_CURRENT_LIST_DIR}/IGNode.cpp
+	${CMAKE_CURRENT_LIST_DIR}/ILWalk.cpp
+	${CMAKE_CURRENT_LIST_DIR}/InterferenceGraph.cpp
+	${CMAKE_CURRENT_LIST_DIR}/OMRMonitor.cpp
+	${CMAKE_CURRENT_LIST_DIR}/OMRMonitorTable.cpp
+	${CMAKE_CURRENT_LIST_DIR}/Random.cpp
+	${CMAKE_CURRENT_LIST_DIR}/SimpleRegex.cpp
+	${CMAKE_CURRENT_LIST_DIR}/STLUtils.cpp
+	${CMAKE_CURRENT_LIST_DIR}/Timer.cpp
+	${CMAKE_CURRENT_LIST_DIR}/TreeServices.cpp
+	${CMAKE_CURRENT_LIST_DIR}/OMRCfg.cpp
 )

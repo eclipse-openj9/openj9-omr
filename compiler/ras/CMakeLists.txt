@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2017 IBM Corp. and others
+# Copyright (c) 2017, 2018 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -20,17 +20,17 @@
 ###############################################################################
 
 compiler_library(ras
-	${CMAKE_CURRENT_SOURCE_DIR}/CallStack.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/CFGChecker.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/Debug.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/DebugCounter.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/ILValidationRules.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/ILValidationUtils.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/ILValidator.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/IgnoreLocale.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/LimitFile.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/LogTracer.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/OptionsDebug.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/PPCOpNames.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/Tree.cpp
+	${CMAKE_CURRENT_LIST_DIR}/CallStack.cpp
+	${CMAKE_CURRENT_LIST_DIR}/CFGChecker.cpp
+	${CMAKE_CURRENT_LIST_DIR}/Debug.cpp
+	${CMAKE_CURRENT_LIST_DIR}/DebugCounter.cpp
+	${CMAKE_CURRENT_LIST_DIR}/ILValidationRules.cpp
+	${CMAKE_CURRENT_LIST_DIR}/ILValidationUtils.cpp
+	${CMAKE_CURRENT_LIST_DIR}/ILValidator.cpp
+	${CMAKE_CURRENT_LIST_DIR}/IgnoreLocale.cpp
+	${CMAKE_CURRENT_LIST_DIR}/LimitFile.cpp
+	${CMAKE_CURRENT_LIST_DIR}/LogTracer.cpp
+	${CMAKE_CURRENT_LIST_DIR}/OptionsDebug.cpp
+	${CMAKE_CURRENT_LIST_DIR}/PPCOpNames.cpp
+	${CMAKE_CURRENT_LIST_DIR}/Tree.cpp
 )

@@ -471,8 +471,6 @@ class SymbolReferenceTable
    List<TR::SymbolReference>            _classStaticsSymbolRefs;
    List<TR::SymbolReference>            _classDLPStaticsSymbolRefs;
    List<TR::SymbolReference>            _debugCounterSymbolRefs;
-   TR::Symbol                           *_currentThreadDebugEventDataSymbol;
-   List<TR::SymbolReference>            _currentThreadDebugEventDataSymbolRefs;
 
    uint32_t                            _nextRegShadowIndex;
    int32_t                             _numUnresolvedSymbols;

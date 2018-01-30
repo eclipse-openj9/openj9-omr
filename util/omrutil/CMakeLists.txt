@@ -142,9 +142,17 @@ omr_find_files(resolvedPaths
 
 target_sources(omrutil_obj PRIVATE ${resolvedPaths})
 
+# This is a bit of a song and dance because CMake
+# won't let object libraries link against anything.
+# So instead we manually apply the interface properties
+target_sources(omrutil_obj PRIVATE $<TARGET_PROPERTY:${OMR_UTIL_GLUE_TARGET},INTERFACE_SOURCES>)
+target_include_directories(omrutil_obj PUBLIC $<TARGET_PROPERTY:${OMR_UTIL_GLUE_TARGET},INTERFACE_INCLUDE_DIRECTORIES>)
+
 add_library(omrutil STATIC
 	$<TARGET_OBJECTS:omrutil_obj>
 )
+# Add in the interface include dirs from omrutil_obj to omrutil
+target_include_directories(omrutil PUBLIC $<TARGET_PROPERTY:omrutil_obj,INTERFACE_INCLUDE_DIRECTORIES>)
 
 if(OMR_WARNINGS_AS_ERRORS)
 	target_compile_options(omrutil PRIVATE ${OMR_WARNING_AS_ERROR_FLAG})
@@ -158,7 +166,6 @@ endif()
 
 target_link_libraries(omrutil PUBLIC
 	j9hashtable
-	${OMR_UTIL_GLUE_TARGET}
 )
 
 set_target_properties(omrutil_obj omrutil PROPERTIES FOLDER util)

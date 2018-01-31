@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2017 IBM Corp. and others
+ * Copyright (c) 2015, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -198,8 +198,9 @@ public:
 		} \
 	} while (0)
 
-#define DETACH_OMRTHREAD() omrthread_detach(NULL)
-
+#define DETACH_OMRTHREAD() \
+	omrthread_detach(NULL); \
+	omrthread_shutdown_library();
 
 /**
  * PortEnvironment provides BaseEnvironment and initializes/finalizes the j9port

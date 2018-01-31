@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -221,7 +221,6 @@ public:
    bool isBndCheck()                 const { return properties2().testAny(ILProp2::BndCheck); }
    bool isCheckCast()                const { return properties2().testAny(ILProp2::CheckCast); }
    bool isCheckCastOrNullCheck()     const { return properties2().testAny(ILProp2::CheckCast | ILProp2::NullCheck); }
-   bool mayUseVMThread()             const { return properties2().testAny(ILProp2::MayUseVMThread); }
    bool mayUseSystemStack()          const { return properties2().testAny(ILProp2::MayUseSystemStack); }
    bool isSupportedForPRE()          const { return properties2().testAny(ILProp2::SupportedForPRE); }
    bool isLeftRotate()               const { return properties2().testAny(ILProp2::LeftRotate); }
@@ -272,8 +271,8 @@ public:
    bool isTwoChildrenAddress()  const { return isArrayRef(); }
    bool isCase()                const { return getOpCodeValue() == TR::Case; }
    bool isAnchor()              const { return getOpCodeValue() == TR::compressedRefs; }
-   bool isOverflowCheck()         const { return (getOpCodeValue() == TR::OverflowCHK)         || 
-                                               (getOpCodeValue() == TR::UnsignedOverflowCHK); 
+   bool isOverflowCheck()         const { return (getOpCodeValue() == TR::OverflowCHK)         ||
+                                               (getOpCodeValue() == TR::UnsignedOverflowCHK);
                                       }
 
    bool hasPinningArrayPointer()
@@ -707,7 +706,7 @@ public:
       }
 
    static TR::ILOpCodes unsignedAddOpCode(TR::DataType type, bool is64Bit)
-      {    
+      {
       switch(type)
          {
          case TR::Int8:     return TR::buadd;
@@ -718,8 +717,8 @@ public:
          default: TR_ASSERT(0, "no add opcode for this datatype");
          }
       return TR::BadILOp;
-      }    
- 
+      }
+
    static TR::ILOpCodes subtractOpCode(TR::DataType type)
       {
       switch(type)
@@ -742,7 +741,7 @@ public:
       }
 
    static TR::ILOpCodes unsignedSubtractOpCode(TR::DataType type)
-      {    
+      {
       switch(type)
          {
          case TR::Int8:    return TR::busub;
@@ -752,7 +751,7 @@ public:
          default: TR_ASSERT(0, "no unsigned sub opcode for this datatype");
          }
       return TR::BadILOp;
-      }    
+      }
 
    static TR::ILOpCodes multiplyOpCode(TR::DataType type)
       {

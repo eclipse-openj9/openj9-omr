@@ -303,12 +303,16 @@ OMR::X86::CodeGenerator::initialize(TR::Compilation *comp)
     * GRA does not work with vector registers on 32 bit due to a bug where xmm registers are not being assigned.
     * This disables GRA for vector registers on 32 bit.
     * This code will be reenabled as part of Issue 2035 which tracks the progress of fixing the GRA bug.
+    * GRA does not work with vector registers on 64 bit either. So GRA is now being disabled vector registers.
+    * This code will be reenabled as part of Issue 2280
     */
+#if 0
    if (TR::Compiler->target.is64Bit())
       {
       self()->setFirstGlobalVRF(self()->getFirstGlobalFPR());
       self()->setLastGlobalVRF(self()->getLastGlobalFPR());
       }
+#endif // closes the if 0.
 
    // Initialize Linkage for Code Generator
    self()->initializeLinkage();
@@ -1030,11 +1034,16 @@ OMR::X86::CodeGenerator::getSupportsOpCodeForAutoSIMD(TR::ILOpCode opcode, TR::D
        * This function is where AutoSIMD checks to see if getvelem is suppored for use in reductions.
        * The getvelem case was changed to disable the use of getvelem on 32 bit x86.
        * This code will be reenabled as part of Issue 2035 which tracks the progress of fixing the GRA bug.
+       * GRA does not work with vector registers on 64 bit either.
+       * getvelem is now being disabled on 64 bit for the same reasons as 32 bit.
+       * This code will be reenabled as part of Issue 2280
        */
       case TR::getvelem:
+#if 0
          if (TR::Compiler->target.is64Bit() && (dt == TR::Int32 || dt == TR::Int64 || dt == TR::Float || dt == TR::Double))
             return true;
          else
+#endif //closes the if 0
             return false;
       default:
          return false;

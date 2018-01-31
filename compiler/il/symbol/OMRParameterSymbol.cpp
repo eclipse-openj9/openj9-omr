@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -37,14 +37,13 @@ OMR::ParameterSymbol::self()
    return static_cast<TR::ParameterSymbol*>(this);
    }
 
-OMR::ParameterSymbol::ParameterSymbol(TR::DataType d, bool isUnsigned, int32_t slot) :
+OMR::ParameterSymbol::ParameterSymbol(TR::DataType d, int32_t slot) :
    TR::RegisterMappedSymbol(d),
    _registerIndex(-1),
    _allocatedHigh(-1),
    _allocatedLow(-1),
    _fixedType(0),
    _isPreexistent(false),
-   _isUnsigned(isUnsigned),
    _knownObjectIndex(TR::KnownObjectTable::UNKNOWN)
    {
    _flags.setValue(KindMask, IsParameter);
@@ -52,14 +51,13 @@ OMR::ParameterSymbol::ParameterSymbol(TR::DataType d, bool isUnsigned, int32_t s
    self()->setOffset(slot * TR::ParameterSymbol::convertTypeToSize(TR::Address));
    }
 
-OMR::ParameterSymbol::ParameterSymbol(TR::DataType d, bool isUnsigned, int32_t slot, size_t size) :
+OMR::ParameterSymbol::ParameterSymbol(TR::DataType d, int32_t slot, size_t size) :
    TR::RegisterMappedSymbol(d, (uint32_t)size), // cast argument size explicitly \TODO: Document why?
    _registerIndex(-1),
    _allocatedHigh(-1),
    _allocatedLow(-1),
    _fixedType(0),
    _isPreexistent(false),
-   _isUnsigned(isUnsigned),
    _knownObjectIndex(TR::KnownObjectTable::UNKNOWN)
    {
    _flags.setValue(KindMask, IsParameter);
@@ -80,21 +78,21 @@ OMR::ParameterSymbol::getSlot()
    }
 
 template <typename AllocatorType>
-TR::ParameterSymbol * OMR::ParameterSymbol::create(AllocatorType m, TR::DataType d, bool isUnsigned, int32_t slot)
+TR::ParameterSymbol * OMR::ParameterSymbol::create(AllocatorType m, TR::DataType d, int32_t slot)
    {
-   return new (m) TR::ParameterSymbol(d, isUnsigned, slot);
+   return new (m) TR::ParameterSymbol(d, slot);
    }
 
 template <typename AllocatorType>
-TR::ParameterSymbol * OMR::ParameterSymbol::create(AllocatorType m, TR::DataType d, bool isUnsigned, int32_t slot, size_t size)
+TR::ParameterSymbol * OMR::ParameterSymbol::create(AllocatorType m, TR::DataType d, int32_t slot, size_t size)
    {
-   return new (m) TR::ParameterSymbol(d, isUnsigned, slot, size);
+   return new (m) TR::ParameterSymbol(d, slot, size);
    }
 
 
-template TR::ParameterSymbol * OMR::ParameterSymbol::create(TR_StackMemory, TR::DataType, bool, int32_t);
-template TR::ParameterSymbol * OMR::ParameterSymbol::create(TR_StackMemory, TR::DataType, bool, int32_t, size_t);
-template TR::ParameterSymbol * OMR::ParameterSymbol::create(TR_HeapMemory, TR::DataType, bool, int32_t);
-template TR::ParameterSymbol * OMR::ParameterSymbol::create(TR_HeapMemory, TR::DataType, bool, int32_t, size_t);
-template TR::ParameterSymbol * OMR::ParameterSymbol::create(PERSISTENT_NEW_DECLARE, TR::DataType, bool, int32_t);
-template TR::ParameterSymbol * OMR::ParameterSymbol::create(PERSISTENT_NEW_DECLARE, TR::DataType, bool, int32_t, size_t);
+template TR::ParameterSymbol * OMR::ParameterSymbol::create(TR_StackMemory, TR::DataType, int32_t);
+template TR::ParameterSymbol * OMR::ParameterSymbol::create(TR_StackMemory, TR::DataType, int32_t, size_t);
+template TR::ParameterSymbol * OMR::ParameterSymbol::create(TR_HeapMemory, TR::DataType, int32_t);
+template TR::ParameterSymbol * OMR::ParameterSymbol::create(TR_HeapMemory, TR::DataType, int32_t, size_t);
+template TR::ParameterSymbol * OMR::ParameterSymbol::create(PERSISTENT_NEW_DECLARE, TR::DataType, int32_t);
+template TR::ParameterSymbol * OMR::ParameterSymbol::create(PERSISTENT_NEW_DECLARE, TR::DataType, int32_t, size_t);

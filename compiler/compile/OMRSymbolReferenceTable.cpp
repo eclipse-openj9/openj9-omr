@@ -1686,9 +1686,9 @@ OMR::SymbolReferenceTable::makeAutoAvailableForIlGen(TR::SymbolReference * a)
 
 TR::ParameterSymbol *
 OMR::SymbolReferenceTable::createParameterSymbol(
-   TR::ResolvedMethodSymbol * owningMethodSymbol, int32_t slot, TR::DataType type, bool isUnsigned)
+   TR::ResolvedMethodSymbol * owningMethodSymbol, int32_t slot, TR::DataType type)
    {
-   TR::ParameterSymbol * sym = TR::ParameterSymbol::create(trHeapMemory(),type,isUnsigned,slot);
+   TR::ParameterSymbol * sym = TR::ParameterSymbol::create(trHeapMemory(),type,slot);
 
    TR::SymbolReference *symRef = new (trHeapMemory()) TR::SymbolReference(self(), sym, owningMethodSymbol->getResolvedMethodIndex(), slot);
    owningMethodSymbol->setParmSymRef(slot, symRef);

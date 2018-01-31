@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -36,11 +36,11 @@ class OMR_EXTENSIBLE ParameterSymbol : public OMR::ParameterSymbolConnector
 
 protected:
 
-   ParameterSymbol(TR::DataType d, bool isUnsigned, int32_t slot) :
-      OMR::ParameterSymbolConnector(d, isUnsigned, slot) { }
+   ParameterSymbol(TR::DataType d, int32_t slot) :
+      OMR::ParameterSymbolConnector(d, slot) { }
 
-   ParameterSymbol(TR::DataType d, bool isUnsigned, int32_t slot, size_t size) :
-      OMR::ParameterSymbolConnector(d, isUnsigned, slot, size) { }
+   ParameterSymbol(TR::DataType d, int32_t slot, size_t size) :
+      OMR::ParameterSymbolConnector(d, slot, size) { }
 
 private:
 

@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2017 IBM Corp. and others
+# Copyright (c) 2017, 2018 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -52,13 +52,13 @@ if(OMR_ARCH_S390)
 			list(APPEND OBJECTS omrget_userExtendedPrivateAreaMemoryType.s)
 
 			list(APPEND VPATH unix/zos/64)
-			target_include_directories(omrport PRIVATE unix/zos/64)
+			target_include_directories(omrutil_obj PRIVATE unix/zos/64)
 		else()
 			list(APPEND OBJECTS omrceetbck.s)
 			list(APPEND OBJECTS j9memclrz10_31.s)
 
 			list(APPEND VPATH unix/zos/31)
-			target_include_directories(omrport PRIVATE unix/zos/31)
+			target_include_directories(omrutil_obj PRIVATE unix/zos/31)
 		endif()
 		list(APPEND OBJECTS zosversion.c)
 		list(APPEND OBJECTS getstoragekey.c)
@@ -66,23 +66,23 @@ if(OMR_ARCH_S390)
 		list(APPEND OBJECTS omrgetdsa.s)
 
 		list(APPEND VPATH unix/zos)
-		target_include_directories(omrport PRIVATE unix/zos)
+		target_include_directories(omrutil_obj PRIVATE unix/zos)
 	else()
 		if(OMR_ENV_DATA64)
 			list(APPEND OBJECTS j9memclrz10_64.s)
 
 			list(APPEND VPATH unix/linux/s390/64)
-			target_include_directories(omrport PRIVATE unix/linux/s390/64)
+			target_include_directories(omrutil_obj PRIVATE unix/linux/s390/64)
 		else()
 			list(APPEND OBJECTS j9memclrz10_31.s)
 
 			list(APPEND VPATH unix/linux/s390/31)
-			target_include_directories(omrport PRIVATE unix/linux/s390/31)
+			target_include_directories(omrutil_obj PRIVATE unix/linux/s390/31)
 		endif()
 		list(APPEND OBJECTS archinfo.c)
 
 		list(APPEND VPATH unix/linux/s390)
-		target_include_directories(omrport PRIVATE unix/linux/s390)
+		target_include_directories(omrutil_obj PRIVATE unix/linux/s390)
 	endif()
 endif()
 
@@ -93,7 +93,7 @@ if(OMR_ARCH_POWER)
 				list(APPEND OBJECTS gettoc.s)
 
 				list(APPEND VPATH unix/linux/ppc/64le)
-				target_include_directories(omrport PRIVATE unix/linux/ppc/64le)
+				target_include_directories(omrutil_obj PRIVATE unix/linux/ppc/64le)
 			endif()
 		endif()
 	endif()
@@ -101,10 +101,10 @@ if(OMR_ARCH_POWER)
 		list(APPEND OBJECTS cas8help.s)
 		if(OMR_HOST_OS STREQUAL linux)
 			list(APPEND VPATH unix/linux/ppc/32)
-			target_include_directories(omrport PRIVATE unix/linux/ppc/32)
+			target_include_directories(omrutil_obj PRIVATE unix/linux/ppc/32)
 		else()
 			list(APPEND VPATH unix/aix/32)
-			target_include_directories(omrport PRIVATE unix/aix/32)
+			target_include_directories(omrutil_obj PRIVATE unix/aix/32)
 		endif()
 	endif()
 endif()
@@ -142,21 +142,30 @@ omr_find_files(resolvedPaths
 
 target_sources(omrutil_obj PRIVATE ${resolvedPaths})
 
+# This is a bit of a song and dance because CMake
+# won't let object libraries link against anything.
+# So instead we manually apply the interface properties
+target_sources(omrutil_obj PRIVATE $<TARGET_PROPERTY:${OMR_UTIL_GLUE_TARGET},INTERFACE_SOURCES>)
+target_include_directories(omrutil_obj PUBLIC $<TARGET_PROPERTY:${OMR_UTIL_GLUE_TARGET},INTERFACE_INCLUDE_DIRECTORIES>)
+
 add_library(omrutil STATIC
 	$<TARGET_OBJECTS:omrutil_obj>
 )
+# Add in the interface include dirs from omrutil_obj to omrutil
+target_include_directories(omrutil PUBLIC $<TARGET_PROPERTY:omrutil_obj,INTERFACE_INCLUDE_DIRECTORIES>)
 
 if(OMR_WARNINGS_AS_ERRORS)
 	target_compile_options(omrutil PRIVATE ${OMR_WARNING_AS_ERROR_FLAG})
+	target_compile_options(omrutil_obj PRIVATE ${OMR_WARNING_AS_ERROR_FLAG})
 endif()
 
 if(OMR_ENHANCED_WARNINGS)
 	target_compile_options(omrutil PRIVATE ${OMR_ENHANCED_WARNING_FLAG})
+	target_compile_options(omrutil_obj PRIVATE ${OMR_ENHANCED_WARNING_FLAG})
 endif()
 
 target_link_libraries(omrutil PUBLIC
 	j9hashtable
-	${OMR_UTIL_GLUE_TARGET}
 )
 
 set_target_properties(omrutil_obj omrutil PROPERTIES FOLDER util)

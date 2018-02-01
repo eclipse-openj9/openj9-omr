@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2017 IBM Corp. and others
+# Copyright (c) 2017, 2018 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -20,34 +20,34 @@
 #############################################################################
 
 compiler_library(codegen
-	${CMAKE_CURRENT_SOURCE_DIR}/OMRAheadOfTimeCompile.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/Analyser.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/CodeGenPrep.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/CodeGenGC.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/CodeGenRA.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/FrontEnd.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/OMRGCRegisterMap.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/OMRGCStackAtlas.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/OMRLinkage.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/LiveRegister.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/OutOfLineCodeSection.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/Relocation.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/ScratchRegisterManager.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/StorageInfo.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/OMRTreeEvaluator.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/PreInstructionSelection.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/NodeEvaluation.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/OMRSnippet.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/OMRUnresolvedDataSnippet.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/OMRSnippetGCMap.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/OMRCodeGenerator.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/OMRCodeGenPhase.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/OMRMemoryReference.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/OMRMachine.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/OMRRegister.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/OMRRealRegister.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/OMRRegisterPair.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/OMRInstruction.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/ELFObjectFileGenerator.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/OMRELFRelocationResolver.cpp
+	${CMAKE_CURRENT_LIST_DIR}/OMRAheadOfTimeCompile.cpp
+	${CMAKE_CURRENT_LIST_DIR}/Analyser.cpp
+	${CMAKE_CURRENT_LIST_DIR}/CodeGenPrep.cpp
+	${CMAKE_CURRENT_LIST_DIR}/CodeGenGC.cpp
+	${CMAKE_CURRENT_LIST_DIR}/CodeGenRA.cpp
+	${CMAKE_CURRENT_LIST_DIR}/FrontEnd.cpp
+	${CMAKE_CURRENT_LIST_DIR}/OMRGCRegisterMap.cpp
+	${CMAKE_CURRENT_LIST_DIR}/OMRGCStackAtlas.cpp
+	${CMAKE_CURRENT_LIST_DIR}/OMRLinkage.cpp
+	${CMAKE_CURRENT_LIST_DIR}/LiveRegister.cpp
+	${CMAKE_CURRENT_LIST_DIR}/OutOfLineCodeSection.cpp
+	${CMAKE_CURRENT_LIST_DIR}/Relocation.cpp
+	${CMAKE_CURRENT_LIST_DIR}/ScratchRegisterManager.cpp
+	${CMAKE_CURRENT_LIST_DIR}/StorageInfo.cpp
+	${CMAKE_CURRENT_LIST_DIR}/OMRTreeEvaluator.cpp
+	${CMAKE_CURRENT_LIST_DIR}/PreInstructionSelection.cpp
+	${CMAKE_CURRENT_LIST_DIR}/NodeEvaluation.cpp
+	${CMAKE_CURRENT_LIST_DIR}/OMRSnippet.cpp
+	${CMAKE_CURRENT_LIST_DIR}/OMRUnresolvedDataSnippet.cpp
+	${CMAKE_CURRENT_LIST_DIR}/OMRSnippetGCMap.cpp
+	${CMAKE_CURRENT_LIST_DIR}/OMRCodeGenerator.cpp
+	${CMAKE_CURRENT_LIST_DIR}/OMRCodeGenPhase.cpp
+	${CMAKE_CURRENT_LIST_DIR}/OMRMemoryReference.cpp
+	${CMAKE_CURRENT_LIST_DIR}/OMRMachine.cpp
+	${CMAKE_CURRENT_LIST_DIR}/OMRRegister.cpp
+	${CMAKE_CURRENT_LIST_DIR}/OMRRealRegister.cpp
+	${CMAKE_CURRENT_LIST_DIR}/OMRRegisterPair.cpp
+	${CMAKE_CURRENT_LIST_DIR}/OMRInstruction.cpp
+	${CMAKE_CURRENT_LIST_DIR}/ELFObjectFileGenerator.cpp
+	${CMAKE_CURRENT_LIST_DIR}/OMRELFRelocationResolver.cpp
 )

@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2017 IBM Corp. and others
+# Copyright (c) 2017, 2018 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -20,13 +20,13 @@
 #############################################################################
 
 compiler_library(ilgen
-	${CMAKE_CURRENT_SOURCE_DIR}/IlGenRequest.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/IlBuilder.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/IlValue.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/IlInjector.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/MethodBuilder.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/BytecodeBuilder.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/TypeDictionary.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/ThunkBuilder.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/VirtualMachineOperandStack.cpp
+	${CMAKE_CURRENT_LIST_DIR}/IlGenRequest.cpp
+	${CMAKE_CURRENT_LIST_DIR}/IlBuilder.cpp
+	${CMAKE_CURRENT_LIST_DIR}/IlValue.cpp
+	${CMAKE_CURRENT_LIST_DIR}/IlInjector.cpp
+	${CMAKE_CURRENT_LIST_DIR}/MethodBuilder.cpp
+	${CMAKE_CURRENT_LIST_DIR}/BytecodeBuilder.cpp
+	${CMAKE_CURRENT_LIST_DIR}/TypeDictionary.cpp
+	${CMAKE_CURRENT_LIST_DIR}/ThunkBuilder.cpp
+	${CMAKE_CURRENT_LIST_DIR}/VirtualMachineOperandStack.cpp
 )

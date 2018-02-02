@@ -1876,38 +1876,38 @@ TR_Debug::getName(uint32_t realRegisterIndex, TR_RegisterSizes size)
       case TR::RealRegister::SpilledReg:
          return "spilledReg";
       case TR::RealRegister::eax:
-         switch (size) { case 0: return "al";   case 1:  return "ax";  case 2: case -1: return "eax"; case 3: return "rax"; default: return unknownRegisterName('r'); }
+         switch (size) { case 0: return "al";   case 1:  return "ax";  case 2: case -1: return "eax"; case 3: return "rax"; default: "?a?"; }
       case TR::RealRegister::ebx:
-         switch (size) { case 0: return "bl";   case 1:  return "bx";  case 2: case -1: return "ebx"; case 3: return "rbx"; default: return unknownRegisterName('r'); }
+         switch (size) { case 0: return "bl";   case 1:  return "bx";  case 2: case -1: return "ebx"; case 3: return "rbx"; default: "?b?"; }
       case TR::RealRegister::ecx:
-         switch (size) { case 0: return "cl";   case 1:  return "cx";  case 2: case -1: return "ecx"; case 3: return "rcx"; default: return unknownRegisterName('r'); }
+         switch (size) { case 0: return "cl";   case 1:  return "cx";  case 2: case -1: return "ecx"; case 3: return "rcx"; default: "?c?"; }
       case TR::RealRegister::edx:
-         switch (size) { case 0: return "dl";   case 1:  return "dx";  case 2: case -1: return "edx"; case 3: return "rdx"; default: return unknownRegisterName('r'); }
+         switch (size) { case 0: return "dl";   case 1:  return "dx";  case 2: case -1: return "edx"; case 3: return "rdx"; default: "?d?"; }
       case TR::RealRegister::edi:
-         switch (size) { case 0: return "dil";  case 1: return "di";   case 2: case -1: return "edi"; case 3: return "rdi"; default: return unknownRegisterName('r'); }
+         switch (size) { case 0: return "dil";  case 1: return "di";   case 2: case -1: return "edi"; case 3: return "rdi"; default: "?di?"; }
       case TR::RealRegister::esi:
-         switch (size) { case 0: return "sil";  case 1: return "si";   case 2: case -1: return "esi"; case 3: return "rsi"; default: return unknownRegisterName('r'); }
+         switch (size) { case 0: return "sil";  case 1: return "si";   case 2: case -1: return "esi"; case 3: return "rsi"; default: "?si?"; }
       case TR::RealRegister::ebp:
-         switch (size) { case 0: return "bpl";  case 1: return "bp";   case 2: case -1: return "ebp"; case 3: return "rbp"; default: return unknownRegisterName('r'); }
+         switch (size) { case 0: return "bpl";  case 1: return "bp";   case 2: case -1: return "ebp"; case 3: return "rbp"; default: "?bp?"; }
       case TR::RealRegister::esp:
-         switch (size) { case 0: return "spl";  case 1: return "sp";   case 2: case -1: return "esp"; case 3: return "rsp"; default: return unknownRegisterName('r'); }
+         switch (size) { case 0: return "spl";  case 1: return "sp";   case 2: case -1: return "esp"; case 3: return "rsp"; default: "?sp?"; }
 #ifdef TR_TARGET_64BIT
       case TR::RealRegister::r8:
-         switch (size) { case 0: return "r8b";  case 1: return "r8w";  case 2: return "r8d"; case 3: case -1: return "r8"; default: return unknownRegisterName('r'); }
+         switch (size) { case 0: return "r8b";  case 1: return "r8w";  case 2: return "r8d"; case 3: case -1: return "r8"; default: "r8?"; }
       case TR::RealRegister::r9:
-         switch (size) { case 0: return "r9b";  case 1: return "r9w";  case 2: return "r9d"; case 3: case -1: return "r9"; default: return unknownRegisterName('r'); }
+         switch (size) { case 0: return "r9b";  case 1: return "r9w";  case 2: return "r9d"; case 3: case -1: return "r9"; default: "r9?"; }
       case TR::RealRegister::r10:
-         switch (size) { case 0: return "r10b"; case 1: return "r10w"; case 2: return "r10d"; case 3: case -1: return "r10"; default: return unknownRegisterName('r'); }
+         switch (size) { case 0: return "r10b"; case 1: return "r10w"; case 2: return "r10d"; case 3: case -1: return "r10"; default: "r10?"; }
       case TR::RealRegister::r11:
-         switch (size) { case 0: return "r11b"; case 1: return "r11w"; case 2: return "r11d"; case 3: case -1: return "r11"; default: return unknownRegisterName('r'); }
+         switch (size) { case 0: return "r11b"; case 1: return "r11w"; case 2: return "r11d"; case 3: case -1: return "r11"; default: "r11?"; }
       case TR::RealRegister::r12:
-         switch (size) { case 0: return "r12b"; case 1: return "r12w"; case 2: return "r12d"; case 3: case -1: return "r12"; default: return unknownRegisterName('r'); }
+         switch (size) { case 0: return "r12b"; case 1: return "r12w"; case 2: return "r12d"; case 3: case -1: return "r12"; default: "r12?"; }
       case TR::RealRegister::r13:
-         switch (size) { case 0: return "r13b"; case 1: return "r13w"; case 2: return "r13d"; case 3: case -1: return "r13"; default: return unknownRegisterName('r'); }
+         switch (size) { case 0: return "r13b"; case 1: return "r13w"; case 2: return "r13d"; case 3: case -1: return "r13"; default: "r13?"; }
       case TR::RealRegister::r14:
-         switch (size) { case 0: return "r14b"; case 1: return "r14w"; case 2: return "r14d"; case 3: case -1: return "r14"; default: return unknownRegisterName('r'); }
+         switch (size) { case 0: return "r14b"; case 1: return "r14w"; case 2: return "r14d"; case 3: case -1: return "r14"; default: "r14?"; }
       case TR::RealRegister::r15:
-         switch (size) { case 0: return "r15b"; case 1: return "r15w"; case 2: return "r15d"; case 3: case -1: return "r15"; default: return unknownRegisterName('r'); }
+         switch (size) { case 0: return "r15b"; case 1: return "r15w"; case 2: return "r15d"; case 3: case -1: return "r15"; default: "r15?"; }
 #endif
       case TR::RealRegister::vfp:
          switch (size) { case 2: case 3: case -1: return "vfp";   default: return unknownRegisterName('v'); } // 3 is for AMD64
@@ -1944,38 +1944,38 @@ TR_Debug::getName(uint32_t realRegisterIndex, TR_RegisterSizes size)
       case TR::RealRegister::mm7:
          switch (size) { case 3: case -1: return "mm7";   default: return unknownRegisterName('m'); }
       case TR::RealRegister::xmm0:
-         switch (size) { case 4: case -1: return "xmm0";  default: return unknownRegisterName('x'); }
+         switch (size) { case 4: case -1: return "xmm0";  default: return "?mm0"; }
       case TR::RealRegister::xmm1:
-         switch (size) { case 4: case -1: return "xmm1";  default: return unknownRegisterName('x'); }
+         switch (size) { case 4: case -1: return "xmm1";  default: return "?mm1"; }
       case TR::RealRegister::xmm2:
-         switch (size) { case 4: case -1: return "xmm2";  default: return unknownRegisterName('x'); }
+         switch (size) { case 4: case -1: return "xmm2";  default: return "?mm2"; }
       case TR::RealRegister::xmm3:
-         switch (size) { case 4: case -1: return "xmm3";  default: return unknownRegisterName('x'); }
+         switch (size) { case 4: case -1: return "xmm3";  default: return "?mm3"; }
       case TR::RealRegister::xmm4:
-         switch (size) { case 4: case -1: return "xmm4";  default: return unknownRegisterName('x'); }
+         switch (size) { case 4: case -1: return "xmm4";  default: return "?mm4"; }
       case TR::RealRegister::xmm5:
-         switch (size) { case 4: case -1: return "xmm5";  default: return unknownRegisterName('x'); }
+         switch (size) { case 4: case -1: return "xmm5";  default: return "?mm5"; }
       case TR::RealRegister::xmm6:
-         switch (size) { case 4: case -1: return "xmm6";  default: return unknownRegisterName('x'); }
+         switch (size) { case 4: case -1: return "xmm6";  default: return "?mm6"; }
       case TR::RealRegister::xmm7:
-         switch (size) { case 4: case -1: return "xmm7";  default: return unknownRegisterName('x'); }
+         switch (size) { case 4: case -1: return "xmm7";  default: return "?mm7"; }
 #ifdef TR_TARGET_64BIT
       case TR::RealRegister::xmm8:
-         switch (size) { case 4: case -1: return "xmm8";  default: return unknownRegisterName('x'); }
+         switch (size) { case 4: case -1: return "xmm8";  default: return "?mm8"; }
       case TR::RealRegister::xmm9:
-         switch (size) { case 4: case -1: return "xmm9";  default: return unknownRegisterName('x'); }
+         switch (size) { case 4: case -1: return "xmm9";  default: return "?mm9"; }
       case TR::RealRegister::xmm10:
-         switch (size) { case 4: case -1: return "xmm10"; default: return unknownRegisterName('x'); }
+         switch (size) { case 4: case -1: return "xmm10"; default: return "?mm10"; }
       case TR::RealRegister::xmm11:
-         switch (size) { case 4: case -1: return "xmm11"; default: return unknownRegisterName('x'); }
+         switch (size) { case 4: case -1: return "xmm11"; default: return "?mm11"; }
       case TR::RealRegister::xmm12:
-         switch (size) { case 4: case -1: return "xmm12"; default: return unknownRegisterName('x'); }
+         switch (size) { case 4: case -1: return "xmm12"; default: return "?mm12"; }
       case TR::RealRegister::xmm13:
-         switch (size) { case 4: case -1: return "xmm13"; default: return unknownRegisterName('x'); }
+         switch (size) { case 4: case -1: return "xmm13"; default: return "?mm13"; }
       case TR::RealRegister::xmm14:
-         switch (size) { case 4: case -1: return "xmm14"; default: return unknownRegisterName('x'); }
+         switch (size) { case 4: case -1: return "xmm14"; default: return "?mm14"; }
       case TR::RealRegister::xmm15:
-         switch (size) { case 4: case -1: return "xmm15"; default: return unknownRegisterName('x'); }
+         switch (size) { case 4: case -1: return "xmm15"; default: return "?mm15"; }
 #endif
       default: TR_ASSERT( 0, "unexpected register number"); return unknownRegisterName();
       }

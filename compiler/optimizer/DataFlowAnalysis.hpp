@@ -833,7 +833,7 @@ class TR_OSRLiveVariableInformation : public TR_LiveVariableInformation
    TR_BitVector *getLiveSymbolsInInterpreter(TR_ByteCodeInfo &byteCodeInfo);
    void buildLiveSymbolsBitVector(TR_OSRMethodData *osrMethodData, int32_t byteCodeIndex, TR_BitVector *);
 
-   typedef TR::typed_allocator<std::pair<int32_t , TR_BitVector*>, TR::Region&> TR_BCLiveSymbolsMapAllocator;
+   typedef TR::typed_allocator<std::pair<const int32_t , TR_BitVector*>, TR::Region&> TR_BCLiveSymbolsMapAllocator;
    typedef std::less<int32_t> TR_BCLiveSymbolsMapComparator;
    typedef std::map<int32_t, TR_BitVector*, TR_BCLiveSymbolsMapComparator, TR_BCLiveSymbolsMapAllocator> TR_BCLiveSymbolsMap;
 

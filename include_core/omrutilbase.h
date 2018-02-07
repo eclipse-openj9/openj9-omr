@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2015 IBM Corp. and others
+ * Copyright (c) 1991, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -37,6 +37,20 @@ void issueReadWriteBarrier(void);
 void issueWriteBarrier(void);
 uintptr_t addAtomic(volatile uintptr_t *address, uintptr_t addend);
 uintptr_t subtractAtomic(volatile uintptr_t *address, uintptr_t value);
+
+/**
+ * @brief Store value at memory location. Stores value at memory
+ * location pointed to be address.
+ *
+ * @param[in] address The memory location to be updated
+ * @param[in] value The value to be stored
+ *
+ * @return The value at memory location address
+ *
+ * @note This method can spin indefinitely while attempting to write
+ * the new value.
+ */
+uintptr_t setAtomic(volatile uintptr_t *address, uintptr_t value);
 
 /* ---------------- cas8help.s ---------------- */
 #if !defined(OMR_ENV_DATA64) && (defined(AIXPPC) || defined(LINUXPPC))

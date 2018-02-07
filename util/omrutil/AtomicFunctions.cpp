@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1998, 2015 IBM Corp. and others
+ * Copyright (c) 1998, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -63,4 +63,10 @@ uintptr_t
 subtractAtomic(volatile uintptr_t *address, uintptr_t value)
 {
 	return VM_AtomicSupport::subtract(address, value);
+}
+
+uintptr_t
+setAtomic(volatile uintptr_t *address, uintptr_t value)
+{
+	return VM_AtomicSupport::set(address, value);
 }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2016 IBM Corp. and others
+ * Copyright (c) 1991, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -93,7 +93,7 @@ MM_GCExtensionsBase::initialize(MM_EnvironmentBase* env)
 	if (!rememberedSet.initialize(env, OMR::GC::AllocationCategory::REMEMBERED_SET)) {
 		goto failed;
 	}
-	rememberedSet.setGrowSize(J9_SCV_REMSET_SIZE);
+	rememberedSet.setGrowSize(OMR_SCV_REMSET_SIZE);
 #endif /* OMR_GC_MODRON_SCAVENGER */
 
 #if defined(J9MODRON_USE_CUSTOM_SPINLOCKS)

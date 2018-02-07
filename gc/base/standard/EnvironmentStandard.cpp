@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2015 IBM Corp. and others
+ * Copyright (c) 1991, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -55,7 +55,7 @@ MM_EnvironmentStandard::initialize(MM_GCExtensionsBase *extensions)
 	_scavengerRememberedSet.count = 0;
 	_scavengerRememberedSet.fragmentCurrent = NULL;
 	_scavengerRememberedSet.fragmentTop = NULL;
-	_scavengerRememberedSet.fragmentSize = (uintptr_t)J9_SCV_REMSET_FRAGMENT_SIZE;
+	_scavengerRememberedSet.fragmentSize = (uintptr_t)OMR_SCV_REMSET_FRAGMENT_SIZE;
 	_scavengerRememberedSet.parentList = &extensions->rememberedSet;
 #endif
 

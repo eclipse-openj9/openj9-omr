@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2017 IBM Corp. and others
+ * Copyright (c) 1991, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -461,9 +461,8 @@ typedef enum {
 
 #define J9_SCV_TENURE_RATIO_LOW 10
 #define J9_SCV_TENURE_RATIO_HIGH 30
-#define J9_SCV_REMSET_MAX 65536
-#define J9_SCV_REMSET_FRAGMENT_SIZE 32
-#define J9_SCV_REMSET_SIZE 16384
+#define OMR_SCV_REMSET_FRAGMENT_SIZE 32
+#define OMR_SCV_REMSET_SIZE 16384
 
 #define J9MODRON_ALLOCATION_MANAGER_HINT_MAX_WALK 20
 

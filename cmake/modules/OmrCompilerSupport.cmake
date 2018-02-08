@@ -323,51 +323,23 @@ function(create_omr_compiler_library)
 		${COMPILER_OBJECTS}
 	)
 
-	# Populated and then will use target_sources to append to the compiler library.
-	set(CORE_COMPILER_OBJECTS "")
-
-	# Add the contents of the macro to CORE_COMPILER_OBJECTS in this scope.
-	# The library name parameter is currently ignored.
-	macro(compiler_library libraryname)
-		list(APPEND CORE_COMPILER_OBJECTS ${ARGN})
-	endmacro(compiler_library)
-
-	# Instead of a real add_subdirectory we just include the file so everything stays
-	# in the same scope.
-	macro(add_compiler_subdirectory dir)
-		include("${omr_SOURCE_DIR}/compiler/${dir}/CMakeLists.txt")
-	endmacro(add_compiler_subdirectory)
-
-
-	# There's a little bit of a song and dance here
-	# I wonder if it's not better to just have a
-	# unified object list.
-	add_compiler_subdirectory(ras)
-	add_compiler_subdirectory(compile)
-	add_compiler_subdirectory(codegen)
-	add_compiler_subdirectory(control)
-	add_compiler_subdirectory(env)
-	add_compiler_subdirectory(infra)
-	add_compiler_subdirectory(il)
-	add_compiler_subdirectory(optimizer)
-	add_compiler_subdirectory(runtime)
-	add_compiler_subdirectory(ilgen)
-
-	add_compiler_subdirectory(${TR_TARGET_ARCH})
+	# Grab the list of core compiler objects from the global property.
+	# Note: the property is initialized by compiler/CMakeLists.txt
+	get_property(core_compiler_objects GLOBAL PROPERTY OMR_CORE_COMPILER_OBJECTS)
 
 	# Filter out objects requested to be removed by
 	# client project (if any):
 	foreach(object ${COMPILER_FILTER})
 		get_filename_component(abs_filename ${object} ABSOLUTE)
-		list(REMOVE_ITEM CORE_COMPILER_OBJECTS ${abs_filename})
+		list(REMOVE_ITEM core_compiler_objects ${abs_filename})
 	endforeach()
 
 
 
-	omr_inject_object_modification_targets(CORE_COMPILER_OBJECTS ${COMPILER_NAME} ${CORE_COMPILER_OBJECTS})
+	omr_inject_object_modification_targets(core_compiler_objects ${COMPILER_NAME} ${core_compiler_objects})
 
 	# Append to the compiler sources list
-	target_sources(${COMPILER_NAME} PRIVATE ${CORE_COMPILER_OBJECTS})
+	target_sources(${COMPILER_NAME} PRIVATE ${core_compiler_objects})
 
 
 

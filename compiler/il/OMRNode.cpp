@@ -5616,22 +5616,6 @@ OMR::Node::divisionCannotOverflow()
    return dividendIsNotMin || divisorIsNotNegativeOne;
    }
 
-
-
-bool
-OMR::Node::isDebug()
-   {
-   return _flags.testAny(nodeIsDebug);
-   }
-
-void
-OMR::Node::setIsDebug(bool v)
-   {
-   _flags.set(nodeIsDebug, v);
-   }
-
-
-
 bool
 OMR::Node::cannotOverflow()
    {

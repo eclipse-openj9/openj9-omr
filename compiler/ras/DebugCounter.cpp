@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -227,13 +227,9 @@ const char *TR::DebugCounter::debugCounterBucketName(TR::Compilation *comp, int3
 TR::Node *TR::DebugCounterBase::createBumpCounterNode(TR::Compilation *comp, TR::Node *deltaNode)
    {
    TR::SymbolReference *symref = getBumpCountSymRef(comp);
-   deltaNode->setIsDebug(true);
    TR::Node *load = TR::Node::createWithSymRef(deltaNode, TR::Compiler->target.is64Bit() ? TR::lload : TR::iload, 0, symref);
-   load->setIsDebug(true);
    TR::Node *add = TR::Node::create(TR::Compiler->target.is64Bit() ? TR::ladd : TR::iadd, 2, load, deltaNode);
-   add->setIsDebug(true);
    TR::Node *store = TR::Node::createWithSymRef(TR::Compiler->target.is64Bit() ? TR::lstore : TR::istore, 1, 1, add, symref);
-   store->setIsDebug(true);
    return store;
    }
 

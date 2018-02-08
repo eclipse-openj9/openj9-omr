@@ -1011,10 +1011,6 @@ public:
    bool divisionCannotOverflow();
    bool isNonDegenerateArrayCopy();
 
-   // Should not be counted for metrics
-   bool isDebug();
-   void setIsDebug(bool v);
-
    // Flag used by arithmetic int/long operations
    bool cannotOverflow();
    void setCannotOverflow(bool v);
@@ -1812,7 +1808,6 @@ protected:
       visitedForHints                       = 0x00000080, ///< Used only during codegen phase
       nodeIsNonNegative                     = 0x00000100,
       nodeIsNonPositive                     = 0x00000200,
-      nodeIsDebug                           = 0x00000400, ///< Should not be counted for metrics
 
       //---------------------------------------- node specific flags---------------------------------------
 

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2017 IBM Corp. and others
+ * Copyright (c) 2017, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -27,19 +27,11 @@
 #include "omrcfg.h"
 #if defined(OMR_VALGRIND_MEMCHECK)
 
-#include <valgrind/memcheck.h>
-
 #include "MemcheckWrapper.hpp"
 #include "GCExtensionsBase.hpp"
 #include "EnvironmentBase.hpp"
+#include "hashtable_api.h"
 #include "HashTableIterator.hpp"
-
-typedef struct HashtableInputData {
-	const char* hashtableName;
-	const uintptr_t* data;
-	uintptr_t dataLength;
-	BOOLEAN forceCollisions;
-} HashtableInputData;
 
 static uintptr_t hashFn(void *key, void *userData);
 static uintptr_t hashEqualFn(void *leftKey, void *rightKey, void *userData);
@@ -49,37 +41,38 @@ static uintptr_t hashEqualFn(void *leftKey, void *rightKey, void *userData)
 	return *(uintptr_t *)leftKey == *(uintptr_t *)rightKey;
 }
 
-static uintptr_t hashFn(void *key, void *userData)
+static uintptr_t memcheckHashFn(uintptr_t x) //64 bit hash function
 {
-	BOOLEAN forceCollisions = (BOOLEAN)((uintptr_t)userData);
-	if (forceCollisions) {
-		return (*(uintptr_t *)key) & 0x1;
-	} else {
-		return *(uintptr_t *)key;
-	}
+    x = (x ^ (x >> 30)) * UINT64_C(0xbf58476d1ce4e5b9);
+    x = (x ^ (x >> 27)) * UINT64_C(0x94d049bb133111eb);
+    x = x ^ (x >> 31);
+    return x;
 }
 
-static J9HashTable * allocateHashtable(OMRPortLibrary *portLib, HashtableInputData *inputData)
+
+static uintptr_t hashFn(void *key, void *userData)
+{
+ 	return memcheckHashFn(*(uintptr_t *)key);
+}
+
+static J9HashTable * allocateHashtable(OMRPortLibrary *portLib)
 {
 	J9HashTable *hashtable = NULL;
-	const char *tableName = inputData->hashtableName;
-	uint32_t tableSize = 17;
+	const char *tableName = "MemcheckWrapper";
 	uint32_t entrySize = sizeof(uintptr_t);
-	uint32_t flags = 0;
-	void *userData = (void *)(uintptr_t)inputData->forceCollisions;
-	
+
 	hashtable = hashTableNew(portLib,
 			tableName,
-			tableSize,
+			//HASH_TABLE_SIZE_MAX,
+			2200103,
 			entrySize,
-			sizeof(char *),
-			flags | J9HASH_TABLE_ALLOW_SIZE_OPTIMIZATION,
-			OMRMEM_CATEGORY_VM,
+			0,
+			0,
+			OMRMEM_CATEGORY_UNKNOWN,
 			hashFn,
 			hashEqualFn,
-			NULL,
-			userData);
-
+			0,
+			0);
 	return hashtable;
 }
 
@@ -90,13 +83,11 @@ void valgrindCreateMempool(MM_GCExtensionsBase *extensions, MM_EnvironmentBase* 
     //1 lets valgrind know that objects will be defined when allocated
     VALGRIND_CREATE_MEMPOOL(poolAddr, 0, 1);
     extensions->valgrindMempoolAddr = poolAddr;
-
-    HashtableInputData *hashtableInputData = (HashtableInputData *) malloc(sizeof(HashtableInputData));
-    hashtableInputData->hashtableName = "MemcheckHashTable";
-    hashtableInputData->forceCollisions = FALSE;
-    hashtableInputData->dataLength = sizeof(uintptr_t);
     
-    extensions->MemcheckHashTable = allocateHashtable(env->getPortLibrary(),hashtableInputData);
+    MUTEX_INIT(extensions->MemcheckHashTable_mutex);
+    MUTEX_ENTER(extensions->MemcheckHashTable_mutex);
+    extensions->MemcheckHashTable = allocateHashtable(env->getPortLibrary());
+    MUTEX_EXIT(extensions->MemcheckHashTable_mutex);
 }
 
 void valgrindDestroyMempool(MM_GCExtensionsBase *extensions)
@@ -106,9 +97,12 @@ void valgrindDestroyMempool(MM_GCExtensionsBase *extensions)
         //All objects should have been freed by now!
         // Assert_MM_true(extensions->_allocatedObjects.empty());
         VALGRIND_DESTROY_MEMPOOL(extensions->valgrindMempoolAddr);
+        MUTEX_ENTER(extensions->MemcheckHashTable_mutex);
         extensions->valgrindMempoolAddr = 0;
         hashTableFree(extensions->MemcheckHashTable);
         extensions->MemcheckHashTable = NULL;
+        MUTEX_EXIT(extensions->MemcheckHashTable_mutex);
+        MUTEX_DESTROY(extensions->MemcheckHashTable_mutex);
     }
 }
 
@@ -118,9 +112,11 @@ void valgrindMempoolAlloc(MM_GCExtensionsBase *extensions, uintptr_t baseAddress
     VALGRIND_PRINTF_BACKTRACE("Allocating object at 0x%lx of size %lu\n", baseAddress, size);
 #endif /* defined(VALGRIND_REQUEST_LOGS) */
 
-    /* Allocate object in Valgrind memory pool. */ 		
+    /* Allocate object in Valgrind memory pool. */  
     VALGRIND_MEMPOOL_ALLOC(extensions->valgrindMempoolAddr, baseAddress, size);
+    MUTEX_ENTER(extensions->MemcheckHashTable_mutex);
     hashTableAdd(extensions->MemcheckHashTable, &baseAddress);
+    MUTEX_EXIT(extensions->MemcheckHashTable_mutex);
 }
 
 void valgrindMakeMemDefined(uintptr_t address, uintptr_t size)
@@ -147,21 +143,23 @@ void valgrindClearRange(MM_GCExtensionsBase *extensions, uintptr_t baseAddress, 
         return;
     uintptr_t topInclusiveAddr = baseAddress + size - 1;
 
-#if defined(VALGRIND_REQUEST_LOGS)	
+#if defined(VALGRIND_REQUEST_LOGS)
     VALGRIND_PRINTF_BACKTRACE("Clearing objects in range b/w 0x%lx and  0x%lx\n", baseAddress,topInclusiveAddr);
 #endif /* defined(VALGRIND_REQUEST_LOGS) */
 
+    MUTEX_ENTER(extensions->MemcheckHashTable_mutex);
     GC_HashTableIterator it(extensions->MemcheckHashTable);
     uintptr_t *currentSlotPointer = (uintptr_t*) it.nextSlot();
     while(currentSlotPointer != NULL)
-    {        
+    {
         if(baseAddress <= *currentSlotPointer &&  topInclusiveAddr >= *currentSlotPointer)
         {
             valgrindFreeObjectDirect(extensions,*currentSlotPointer);
             it.removeSlot();
         }
-        currentSlotPointer = (uintptr_t*)it.nextSlot(); // TODO: 
+        currentSlotPointer = (uintptr_t*)it.nextSlot(); // TODO:
     }
+    MUTEX_EXIT(extensions->MemcheckHashTable_mutex);
 
     /* Valgrind automatically marks free objects as noaccess.
     We still mark the entire region as no access for any left out areas */
@@ -176,13 +174,16 @@ void valgrindFreeObject(MM_GCExtensionsBase *extensions, uintptr_t baseAddress)
     else
         objSize = (int) ((GC_ObjectModel)extensions->objectModel).getConsumedSizeInBytesWithHeader((omrobjectptr_t) baseAddress);
 
-#if defined(VALGRIND_REQUEST_LOGS)				    
+#if defined(VALGRIND_REQUEST_LOGS)
     VALGRIND_PRINTF_BACKTRACE("Clearing object at 0x%lx of size %d\n",baseAddress,objSize);
 #endif /* defined(VALGRIND_REQUEST_LOGS) */
 
     VALGRIND_CHECK_MEM_IS_DEFINED(baseAddress,objSize);
     VALGRIND_MEMPOOL_FREE(extensions->valgrindMempoolAddr,baseAddress);
+    
+    MUTEX_ENTER(extensions->MemcheckHashTable_mutex);
     hashTableRemove(extensions->MemcheckHashTable,&baseAddress);
+    MUTEX_EXIT(extensions->MemcheckHashTable_mutex);
 }
 
 MMINLINE void valgrindFreeObjectDirect(MM_GCExtensionsBase *extensions, uintptr_t baseAddress)
@@ -193,7 +194,7 @@ MMINLINE void valgrindFreeObjectDirect(MM_GCExtensionsBase *extensions, uintptr_
     else
         objSize = (int) ((GC_ObjectModel)extensions->objectModel).getConsumedSizeInBytesWithHeader((omrobjectptr_t) baseAddress);
 
-#if defined(VALGRIND_REQUEST_LOGS)	
+#if defined(VALGRIND_REQUEST_LOGS)
     VALGRIND_PRINTF_BACKTRACE("Clearing object at 0x%lx of size %d\n",baseAddress,objSize);
 #endif /* defined(VALGRIND_REQUEST_LOGS) */
 
@@ -207,10 +208,17 @@ bool valgrindCheckObjectInPool(MM_GCExtensionsBase *extensions, uintptr_t baseAd
     VALGRIND_PRINTF("Checking for object at 0x%lx\n", baseAddress);
 #endif /* defined(VALGRIND_REQUEST_LOGS) */
 
+    MUTEX_ENTER(extensions->MemcheckHashTable_mutex);
     if(hashTableFind(extensions->MemcheckHashTable,&baseAddress) != NULL)
+    {
+        MUTEX_EXIT(extensions->MemcheckHashTable_mutex);
         return true;
+    }
     else
+    {   
+        MUTEX_EXIT(extensions->MemcheckHashTable_mutex); 
         return false;
+    }
 }
 
 void valgrindResizeObject(MM_GCExtensionsBase *extensions, uintptr_t baseAddress, uintptr_t oldSize, uintptr_t newSize)

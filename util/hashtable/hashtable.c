@@ -37,6 +37,7 @@
 #include "omrutilbase.h"
 #include "omrutil.h"
 
+//#define HASHTABLE_DEBUG 1
 #undef HASHTABLE_DEBUG
 #define HASHTABLE_ENABLE_ASSERTS
 

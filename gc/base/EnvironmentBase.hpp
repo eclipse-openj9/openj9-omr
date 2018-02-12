@@ -171,7 +171,7 @@ public:
 #endif /* OMR_GC_MODRON_STANDARD || OMR_GC_REALTIME */
 #if defined(OMR_GC_MODRON_SCAVENGER) || defined(OMR_GC_VLHGC)
 	MM_ScavengerStats _scavengerStats;
-	MM_ScavengerHotFieldStats _hotFieldStats; /**< hot field statistics for this GC thread */
+	MM_ScavengerHotFieldStats *_hotFieldStats; /**< hot field statistics for this GC thread */
 #endif /* defined(OMR_GC_MODRON_SCAVENGER) || defined(OMR_GC_VLHGC) */
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
 	uint64_t _concurrentScavengerSwitchCount; /**< local counter of cycle start and cycle end transitions */
@@ -632,6 +632,9 @@ public:
 #if defined(OMR_GC_SEGREGATED_HEAP)
 		,_allocationTracker(NULL)
 #endif /* OMR_GC_SEGREGATED_HEAP */
+#if defined(OMR_GC_MODRON_SCAVENGER) || defined(OMR_GC_VLHGC)
+		,_hotFieldStats(NULL)
+#endif /* defined(OMR_GC_MODRON_SCAVENGER) || defined(OMR_GC_VLHGC) */
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
 		,_concurrentScavengerSwitchCount(0)
 #endif /* defined(OMR_GC_CONCURRENT_SCAVENGER) */

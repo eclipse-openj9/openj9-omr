@@ -407,7 +407,7 @@ public:
 	};
 	ScavengerScanOrdering scavengerScanOrdering; /**< scan ordering in Scavenger */
 	bool scavengerTraceHotFields; /**< whether tracing hot fields in Scavenger is enabled */
-	MM_ScavengerHotFieldStats scavengerHotFieldStats; /**< hot field stats accumulated over all GC threads */
+	MM_ScavengerHotFieldStats *scavengerHotFieldStats; /**< hot field stats accumulated over all GC threads */
 #if defined(OMR_GC_MODRON_SCAVENGER)
 	uintptr_t scvTenureRatioHigh;
 	uintptr_t scvTenureRatioLow;
@@ -1338,6 +1338,7 @@ public:
 #if defined(OMR_GC_MODRON_SCAVENGER) || defined(OMR_GC_VLHGC)
 		, scavengerScanOrdering(OMR_GC_SCAVENGER_SCANORDERING_HIERARCHICAL)
 		, scavengerTraceHotFields(false)
+		, scavengerHotFieldStats(NULL)
 #endif /* OMR_GC_MODRON_SCAVENGER || OMR_GC_VLHGC */
 #if defined(OMR_GC_MODRON_SCAVENGER)
 		, scvTenureRatioHigh(J9_SCV_TENURE_RATIO_HIGH)

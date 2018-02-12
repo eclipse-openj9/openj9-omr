@@ -3888,11 +3888,13 @@ monitor_enter_three_tier(omrthread_t self, omrthread_monitor_t monitor, BOOLEAN 
 		self->flags &= ~J9THREAD_FLAGM_BLOCKED_ABORTABLE;
 		self->monitor = 0;
 
-		/* Check for abort that may have occurred after we got the monitor. */
-		if (self->flags & J9THREAD_FLAG_ABORTED) {
-			THREAD_UNLOCK(self);
-			monitor_exit(self, monitor);
-			return J9THREAD_INTERRUPTED_MONITOR_ENTER;
+		if (SET_ABORTABLE == isAbortable) {
+			/* Check for abort that may have occurred after we got the monitor. */
+			if (self->flags & J9THREAD_FLAG_ABORTED) {
+				THREAD_UNLOCK(self);
+				monitor_exit(self, monitor);
+				return J9THREAD_INTERRUPTED_MONITOR_ENTER;
+			}
 		}
 		THREAD_UNLOCK(self);
 	}

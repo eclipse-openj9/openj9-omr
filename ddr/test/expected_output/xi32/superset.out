@@ -141,7 +141,6 @@ F|length|length|I64|int64_t
 F|width|width|I64|int64_t
 F|height|height|I64|int64_t
 S|Foo|FooPointer|
-F|staticTest|staticTest|I32|int
 F|data|data|UDATA|uintptr_t
 F|data2|data2|I32|const int
 S|HasVoidStarField|HasVoidStarFieldPointer|

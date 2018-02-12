@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2017 IBM Corp. and others
+ * Copyright (c) 2016, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -22,10 +22,6 @@
 #ifndef NAMESPACEUDT_HPP
 #define NAMESPACEUDT_HPP
 
-#include "ddr/config.hpp"
-
-#include "ddr/std/string.hpp"
-
 #include "ddr/ir/Macro.hpp"
 #include "ddr/ir/UDT.hpp"
 
@@ -35,19 +31,19 @@ public:
 	std::vector<UDT *> _subUDTs;
 	std::vector<Macro> _macros;
 
-	NamespaceUDT(unsigned int lineNumber = 0);
+	explicit NamespaceUDT(unsigned int lineNumber = 0);
 	~NamespaceUDT();
 
-	virtual DDR_RC acceptVisitor(TypeVisitor const &visitor);
-	virtual void checkDuplicate(Symbol_IR *ir);
+	virtual DDR_RC acceptVisitor(const TypeVisitor &visitor);
+	virtual bool insertUnique(Symbol_IR *ir);
 	virtual string getSymbolKindName();
 	virtual void computeFieldOffsets();
 	virtual void addMacro(Macro *macro);
 	virtual std::vector<UDT *> * getSubUDTS();
-	virtual void renameFieldsAndMacros(FieldOverride fieldOverride, Type *replacementType);
+	virtual void renameFieldsAndMacros(const FieldOverride &fieldOverride, Type *replacementType);
 
-	bool operator==(Type const & rhs) const;
-	virtual bool compareToNamespace(NamespaceUDT const &) const;
+	bool operator==(const Type & rhs) const;
+	virtual bool compareToNamespace(const NamespaceUDT &) const;
 };
 
 #endif /* NAMESPACEUDT_HPP */

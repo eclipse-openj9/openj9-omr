@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2017 IBM Corp. and others
+ * Copyright (c) 2015, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -22,10 +22,7 @@
 #ifndef MACRO_HPP
 #define MACRO_HPP
 
-#include "ddr/config.hpp"
-
 #include "ddr/error.hpp"
-
 #include "ddr/std/string.hpp"
 
 class Macro
@@ -36,17 +33,24 @@ private:
 public:
 	std::string _name;
 
-	Macro(std::string name, std::string value) : _value(value), _name(name)
+	Macro(const std::string &name, const std::string &value)
+		: _value(value), _name(name)
 	{
 	}
 
-	std::string
+	const std::string &
 	getValue() const
 	{
 		return _value;
 	}
 
-	DDR_RC getNumeric(long long *ret);
+	void
+	setValue(const std::string &value)
+	{
+		_value = value;
+	}
+
+	DDR_RC getNumeric(long long *ret) const;
 };
 
 #endif /* MACRO_HPP */

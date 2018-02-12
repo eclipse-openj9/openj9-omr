@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2017 IBM Corp. and others
+ * Copyright (c) 2016, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -22,15 +22,13 @@
 #ifndef TYPE_HPP
 #define TYPE_HPP
 
-#include "ddr/config.hpp"
-
-#include <set>
-#include "ddr/std/string.hpp"
-
 #include "ddr/blobgen/genBlob.hpp"
 #include "ddr/ir/Symbol_IR.hpp"
 #include "ddr/ir/TypeVisitor.hpp"
 #include "ddr/scanner/Scanner.hpp"
+#include "ddr/std/string.hpp"
+
+#include <set>
 
 using std::set;
 using std::string;
@@ -49,40 +47,45 @@ struct FieldOverride;
 class Type
 {
 public:
+	bool _blacklisted;
 	string _name;
 	size_t _sizeOf; /* Size of type in bytes */
-	bool _isDuplicate;
 
-	Type(size_t size);
+	explicit Type(size_t size);
 	virtual ~Type();
 
-	virtual bool isAnonymousType();
+	bool isAnonymousType() const;
 
 	virtual string getFullName();
 	virtual string getSymbolKindName();
 
 	/* Visitor pattern function to allow the scanner/generator/IR to dispatch functionality based on type. */
-	virtual DDR_RC acceptVisitor(TypeVisitor const &visitor);
+	virtual DDR_RC acceptVisitor(const TypeVisitor &visitor);
 
-	virtual void checkDuplicate(Symbol_IR *ir);
+	/*
+	 * Insert this type into the map in 'ir' and return true if its
+	 * name doesn't clash; otherwise do nothing and return false.
+	 */
+	virtual bool insertUnique(Symbol_IR *ir);
+
 	virtual NamespaceUDT *getNamespace();
 	virtual size_t getPointerCount();
 	virtual size_t getArrayDimensions();
 	virtual void computeFieldOffsets();
 	virtual void addMacro(Macro *macro);
 	virtual vector<UDT *> *getSubUDTS();
-	virtual void renameFieldsAndMacros(FieldOverride fieldOverride, Type *replacementType);
+	virtual void renameFieldsAndMacros(const FieldOverride &fieldOverride, Type *replacementType);
 	virtual Type *getBaseType();
 
-	bool operator==(Type const & rhs) const;
-	virtual bool compareToClass(ClassUDT const &) const;
-	virtual bool compareToClasstype(ClassType const &) const;
-	virtual bool compareToEnum(EnumUDT const &) const;
-	virtual bool compareToNamespace(NamespaceUDT const &) const;
-	virtual bool compareToType(Type const &) const;
-	virtual bool compareToTypedef(TypedefUDT const &) const;
-	virtual bool compareToUDT(UDT const &) const;
-	virtual bool compareToUnion(UnionUDT const &) const;
+	bool operator==(const Type & rhs) const;
+	virtual bool compareToClass(const ClassUDT &) const;
+	virtual bool compareToClasstype(const ClassType &) const;
+	virtual bool compareToEnum(const EnumUDT &) const;
+	virtual bool compareToNamespace(const NamespaceUDT &) const;
+	virtual bool compareToType(const Type &) const;
+	virtual bool compareToTypedef(const TypedefUDT &) const;
+	virtual bool compareToUDT(const UDT &) const;
+	virtual bool compareToUnion(const UnionUDT &) const;
 };
 
 #endif /* TYPE_HPP */

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2017 IBM Corp. and others
+ * Copyright (c) 2015, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -22,7 +22,7 @@
 #include "ddr/scanner/dwarf/DwarfFunctions.hpp"
 
 /* Statics to define */
-static const char *_errmsgs[] = {
+static const char * const _errmsgs[] = {
 	"No error (0)",
 	"DW_DLE_ATTR_FORM_BAD (1)",
 	"DW_DLE_BADOFF (2) Invalid offset",
@@ -34,6 +34,7 @@ static const char *_errmsgs[] = {
 	"DW_DLE_NOB (8) not an object file or dSYM bundle not found",
 	"DW_DLE_VMM (9) dwarf format/library version mismatch",
 };
+
 vector<string> Dwarf_CU_Context::_fileList;
 unordered_map<Dwarf_Off, Dwarf_Die> Dwarf_Die_s::refMap;
 
@@ -59,7 +60,7 @@ dwarf_srcfiles(Dwarf_Die die, char ***srcfiles, Dwarf_Signed *filecount, Dwarf_E
 			setError(error, DW_DLE_MAF);
 		} else {
 			size_t index = 0;
-			for (str_vect::iterator it = Dwarf_CU_Context::_fileList.begin(); it != Dwarf_CU_Context::_fileList.end(); it ++) {
+			for (str_vect::iterator it = Dwarf_CU_Context::_fileList.begin(); it != Dwarf_CU_Context::_fileList.end(); ++it) {
 				(*srcfiles)[index] = strdup(it->c_str());
 				if (NULL == (*srcfiles)[index]) {
 					ret = DW_DLV_ERROR;
@@ -138,13 +139,13 @@ dwarf_dealloc(Dwarf_Debug dbg, void *space, Dwarf_Unsigned type)
 	 * freed data. Just as in the dwarf library, dwarf_dealloc()
 	 * is a no-op for Dies and Attributes.
 	 */
-	 if (DW_DLA_STRING == type) {
-		 free((char *)space);
-	 } else if (DW_DLA_LIST == type) {
-		 delete [] ((char **)space);
-	 } else if (DW_DLA_ERROR == type) {
-		 delete((Dwarf_Error)space);
-	 }
+	if (DW_DLA_STRING == type) {
+		free((char *)space);
+	} else if (DW_DLA_LIST == type) {
+		delete[] (void **)space;
+	} else if (DW_DLA_ERROR == type) {
+		delete (Dwarf_Error)space;
+	}
 }
 
 int
@@ -154,7 +155,7 @@ dwarf_hasattr(Dwarf_Die die, Dwarf_Half attr, Dwarf_Bool *returned_bool, Dwarf_E
 	if (NULL == die) {
 		ret = DW_DLV_ERROR;
 		setError(error, DW_DLE_DIE_NULL);
-	} if (NULL == returned_bool) {
+	} else if (NULL == returned_bool) {
 		ret = DW_DLV_ERROR;
 		setError(error, DW_DLE_IA);
 	} else {
@@ -170,6 +171,23 @@ dwarf_hasattr(Dwarf_Die die, Dwarf_Half attr, Dwarf_Bool *returned_bool, Dwarf_E
 			}
 			attrCurrent = attrCurrent->_nextAttr;
 		}
+	}
+	return ret;
+}
+
+int
+dwarf_formflag(Dwarf_Attribute attr, Dwarf_Bool *returned_flag, Dwarf_Error *error)
+{
+	int ret = DW_DLV_OK;
+	if ((NULL == attr) || (NULL == returned_flag)) {
+		ret = DW_DLV_ERROR;
+		setError(error, DW_DLE_IA);
+	} else if (DW_FORM_flag != attr->_form) {
+		ret = DW_DLV_ERROR;
+		setError(error, DW_DLE_ATTR_FORM_BAD);
+	} else {
+		/* Return attribute flag. */
+		*returned_flag = attr->_flag;
 	}
 	return ret;
 }
@@ -205,7 +223,7 @@ dwarf_diename(Dwarf_Die die, char **diename, Dwarf_Error *error)
 		/* Get the name attribute. */
 		Dwarf_Attribute attr = NULL;
 		ret = dwarf_attr(die, DW_AT_name, &attr, error);
-		char (*name) = NULL;
+		char *name = NULL;
 		if (DW_DLV_OK == ret) {
 			ret = dwarf_formstring(attr, &name, error);
 		}
@@ -392,8 +410,10 @@ dwarf_dieoffset(Dwarf_Die die, Dwarf_Off *dieOffset, Dwarf_Error *error)
 		setError(error, DW_DLE_DIE_NULL);
 	} else {
 		/* Get the address of a Die. */
-		/* Note that the returned offset is not reversible using dwarf_offdie_b, but just needs to be unique per Die. */
-		*dieOffset = (Dwarf_Off)(die);
+		/* Note that the returned offset is not reversible using dwarf_offdie_b,
+		 * but just needs to be unique per Die.
+		 */
+		*dieOffset = (Dwarf_Off)die;
 	}
 	return ret;
 }
@@ -407,76 +427,77 @@ dwarf_get_TAG_name(Dwarf_Half tag, const char **name)
 	} else {
 		switch (tag) {
 		case DW_TAG_unknown:
-			(*name) = "DW_TAG_unknown";
+			*name = "DW_TAG_unknown";
 			break;
 		case DW_TAG_array_type:
-			(*name) = "DW_TAG_array_type";
+			*name = "DW_TAG_array_type";
 			break;
 		case DW_TAG_base_type:
-			(*name) = "DW_TAG_base_type";
+			*name = "DW_TAG_base_type";
 			break;
 		case DW_TAG_class_type:
-			(*name) = "DW_TAG_class_type";
+			*name = "DW_TAG_class_type";
 			break;
 		case DW_TAG_compile_unit:
-			(*name) = "DW_TAG_compile_unit";
+			*name = "DW_TAG_compile_unit";
 			break;
 		case DW_TAG_const_type:
-			(*name) = "DW_TAG_const_type";
+			*name = "DW_TAG_const_type";
 			break;
 		case DW_TAG_enumeration_type:
-			(*name) = "DW_TAG_enumeration_type";
+			*name = "DW_TAG_enumeration_type";
 			break;
 		case DW_TAG_enumerator:
-			(*name) = "DW_TAG_enumerator";
+			*name = "DW_TAG_enumerator";
 			break;
 		case DW_TAG_inheritance:
-			(*name) = "DW_TAG_inheritance";
+			*name = "DW_TAG_inheritance";
 			break;
 		case DW_TAG_member:
-			(*name) = "DW_TAG_member";
+			*name = "DW_TAG_member";
 			break;
 		case DW_TAG_namespace:
-			(*name) = "DW_TAG_namespace";
+			*name = "DW_TAG_namespace";
 			break;
 		case DW_TAG_pointer_type:
-			(*name) = "DW_TAG_pointer_type";
+			*name = "DW_TAG_pointer_type";
 			break;
 		case DW_TAG_ptr_to_member_type:
-			(*name) = "DW_TAG_ptr_to_member_type";
+			*name = "DW_TAG_ptr_to_member_type";
 			break;
 		case DW_TAG_restrict_type:
-			(*name) = "DW_TAG_restrict_type";
+			*name = "DW_TAG_restrict_type";
 			break;
 		case DW_TAG_reference_type:
-			(*name) = "DW_TAG_reference_type";
+			*name = "DW_TAG_reference_type";
 			break;
 		case DW_TAG_shared_type:
-			(*name) = "DW_TAG_shared_type";
+			*name = "DW_TAG_shared_type";
 			break;
 		case DW_TAG_structure_type:
-			(*name) = "DW_TAG_structure_type";
+			*name = "DW_TAG_structure_type";
 			break;
 		case DW_TAG_subprogram:
-			(*name) = "DW_TAG_subprogram";
+			*name = "DW_TAG_subprogram";
 			break;
 		case DW_TAG_subrange_type:
-			(*name) = "DW_TAG_subrange_type";
+			*name = "DW_TAG_subrange_type";
 			break;
 		case DW_TAG_subroutine_type:
-			(*name) = "DW_TAG_subroutine_type";
+			*name = "DW_TAG_subroutine_type";
 			break;
 		case DW_TAG_typedef:
-			(*name) = "DW_TAG_typedef";
+			*name = "DW_TAG_typedef";
 			break;
 		case DW_TAG_union_type:
-			(*name) = "DW_TAG_union_type";
+			*name = "DW_TAG_union_type";
 			break;
 		case DW_TAG_volatile_type:
-			(*name) = "DW_TAG_volatile_type";
+			*name = "DW_TAG_volatile_type";
 			break;
 		default:
-			(*name) = "unknown";
+			*name = "unknown";
+			break;
 		}
 	}
 	return ret;
@@ -486,7 +507,7 @@ void
 setError(Dwarf_Error *error, Dwarf_Half num)
 {
 	if (NULL != error) {
-		*error = new Dwarf_Error_s();
+		*error = new Dwarf_Error_s;
 		if (NULL != *error) {
 			(*error)->_errno = num;
 		}

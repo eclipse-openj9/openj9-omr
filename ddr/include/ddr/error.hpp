@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2017 IBM Corp. and others
+ * Copyright (c) 2015, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -25,11 +25,11 @@
 #include <ddr/config.hpp>
 #include <stdio.h>
 
-#define ERRMSG(...) { \
-	fprintf(stderr, "Error: %s:%d %s - ", __FILE__, __LINE__, __FUNCTION__);\
-	fprintf(stderr, __VA_ARGS__);\
-	fprintf(stderr, "\n");\
-}
+#define ERRMSG(...) do { \
+	fprintf(stderr, "Error: %s:%d %s - ", __FILE__, __LINE__, __FUNCTION__); \
+	fprintf(stderr, __VA_ARGS__); \
+	fprintf(stderr, "\n"); \
+} while (0)
 
 #if 0
 /* Enable debug printf output */
@@ -37,14 +37,14 @@
 #endif
 
 #if defined(DEBUGPRINTF_ON)
-#define DEBUGPRINTF(...) { \
-	printf("DEBUG: %s[%d]: %s: ", __FILE__, __LINE__, __FUNCTION__);\
-	printf(__VA_ARGS__);\
-	printf("\n");\
-	fflush(stdout);\
-}
+#define DEBUGPRINTF(...) do { \
+	printf("DEBUG: %s:%d %s - ", __FILE__, __LINE__, __FUNCTION__); \
+	printf(__VA_ARGS__); \
+	printf("\n"); \
+	fflush(stdout); \
+} while (0)
 #else
-#define DEBUGPRINTF(...)
+#define DEBUGPRINTF(...) do {} while(0)
 #endif /* defined(DEBUG) */
 
 enum DDR_RC {

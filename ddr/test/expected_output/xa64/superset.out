@@ -1,7 +1,304 @@
-S|Sample1Constants|Sample1ConstantsPointer|
-C|Aa
-C|Bb
-C|Cc
+S|int8_t|int8_tPointer|
+S|int16_t|int16_tPointer|
+S|int32_t|int32_tPointer|
+S|int64_t|int64_tPointer|
+S|uint8_t|uint8_tPointer|
+S|uint16_t|uint16_tPointer|
+S|uint32_t|uint32_tPointer|
+S|uint64_t|uint64_tPointer|
+S|int_least8_t|int_least8_tPointer|
+S|int_least16_t|int_least16_tPointer|
+S|int_least32_t|int_least32_tPointer|
+S|int_least64_t|int_least64_tPointer|
+S|uint_least8_t|uint_least8_tPointer|
+S|uint_least16_t|uint_least16_tPointer|
+S|uint_least32_t|uint_least32_tPointer|
+S|uint_least64_t|uint_least64_tPointer|
+S|int_fast8_t|int_fast8_tPointer|
+S|int_fast16_t|int_fast16_tPointer|
+S|int_fast32_t|int_fast32_tPointer|
+S|int_fast64_t|int_fast64_tPointer|
+S|uint_fast8_t|uint_fast8_tPointer|
+S|uint_fast16_t|uint_fast16_tPointer|
+S|uint_fast32_t|uint_fast32_tPointer|
+S|uint_fast64_t|uint_fast64_tPointer|
+S|intmax_t|intmax_tPointer|
+S|uintmax_t|uintmax_tPointer|
+S|_IO_marker|_IO_markerPointer|
+F|_next|_next|_IO_marker*|_IO_marker*
+F|_sbuf|_sbuf|_IO_FILE*|_IO_FILE*
+F|_pos|_pos|I32|int
+S|__off_t|__off_tPointer|
+S|__off64_t|__off64_tPointer|
+S|size_t|size_tPointer|
+S|_IO_FILE|_IO_FILEPointer|
+F|_flags|_flags|I32|int
+F|_IO_read_ptr|_IO_read_ptr|U8*|char*
+F|_IO_read_end|_IO_read_end|U8*|char*
+F|_IO_read_base|_IO_read_base|U8*|char*
+F|_IO_write_base|_IO_write_base|U8*|char*
+F|_IO_write_ptr|_IO_write_ptr|U8*|char*
+F|_IO_write_end|_IO_write_end|U8*|char*
+F|_IO_buf_base|_IO_buf_base|U8*|char*
+F|_IO_buf_end|_IO_buf_end|U8*|char*
+F|_IO_save_base|_IO_save_base|U8*|char*
+F|_IO_backup_base|_IO_backup_base|U8*|char*
+F|_IO_save_end|_IO_save_end|U8*|char*
+F|_markers|_markers|_IO_marker*|_IO_marker*
+F|_chain|_chain|_IO_FILE*|_IO_FILE*
+F|_fileno|_fileno|I32|int
+F|_flags2|_flags2|I32|int
+F|_old_offset|_old_offset|I64|__off_t
+F|_cur_column|_cur_column|U16|short unsigned int
+F|_vtable_offset|_vtable_offset|I8|signed char
+F|_shortbuf|_shortbuf|U8[]|char[]
+F|_lock|_lock|_IO_lock_t*|_IO_lock_t*
+F|_offset|_offset|I64|__off64_t
+F|__pad1|__pad1|void*|void*
+F|__pad2|__pad2|void*|void*
+F|__pad3|__pad3|void*|void*
+F|__pad4|__pad4|void*|void*
+F|__pad5|__pad5|U64|size_t
+F|_mode|_mode|I32|int
+F|_unused2|_unused2|U8[]|char[]
+S|FILE|FILEPointer|
+F|_flags|_flags|I32|int
+F|_IO_read_ptr|_IO_read_ptr|U8*|char*
+F|_IO_read_end|_IO_read_end|U8*|char*
+F|_IO_read_base|_IO_read_base|U8*|char*
+F|_IO_write_base|_IO_write_base|U8*|char*
+F|_IO_write_ptr|_IO_write_ptr|U8*|char*
+F|_IO_write_end|_IO_write_end|U8*|char*
+F|_IO_buf_base|_IO_buf_base|U8*|char*
+F|_IO_buf_end|_IO_buf_end|U8*|char*
+F|_IO_save_base|_IO_save_base|U8*|char*
+F|_IO_backup_base|_IO_backup_base|U8*|char*
+F|_IO_save_end|_IO_save_end|U8*|char*
+F|_markers|_markers|_IO_marker*|_IO_marker*
+F|_chain|_chain|_IO_FILE*|_IO_FILE*
+F|_fileno|_fileno|I32|int
+F|_flags2|_flags2|I32|int
+F|_old_offset|_old_offset|I64|__off_t
+F|_cur_column|_cur_column|U16|short unsigned int
+F|_vtable_offset|_vtable_offset|I8|signed char
+F|_shortbuf|_shortbuf|U8[]|char[]
+F|_lock|_lock|_IO_lock_t*|_IO_lock_t*
+F|_offset|_offset|I64|__off64_t
+F|__pad1|__pad1|void*|void*
+F|__pad2|__pad2|void*|void*
+F|__pad3|__pad3|void*|void*
+F|__pad4|__pad4|void*|void*
+F|__pad5|__pad5|U64|size_t
+F|_mode|_mode|I32|int
+F|_unused2|_unused2|U8[]|char[]
+S|__FILE|__FILEPointer|
+F|_flags|_flags|I32|int
+F|_IO_read_ptr|_IO_read_ptr|U8*|char*
+F|_IO_read_end|_IO_read_end|U8*|char*
+F|_IO_read_base|_IO_read_base|U8*|char*
+F|_IO_write_base|_IO_write_base|U8*|char*
+F|_IO_write_ptr|_IO_write_ptr|U8*|char*
+F|_IO_write_end|_IO_write_end|U8*|char*
+F|_IO_buf_base|_IO_buf_base|U8*|char*
+F|_IO_buf_end|_IO_buf_end|U8*|char*
+F|_IO_save_base|_IO_save_base|U8*|char*
+F|_IO_backup_base|_IO_backup_base|U8*|char*
+F|_IO_save_end|_IO_save_end|U8*|char*
+F|_markers|_markers|_IO_marker*|_IO_marker*
+F|_chain|_chain|_IO_FILE*|_IO_FILE*
+F|_fileno|_fileno|I32|int
+F|_flags2|_flags2|I32|int
+F|_old_offset|_old_offset|I64|__off_t
+F|_cur_column|_cur_column|U16|short unsigned int
+F|_vtable_offset|_vtable_offset|I8|signed char
+F|_shortbuf|_shortbuf|U8[]|char[]
+F|_lock|_lock|_IO_lock_t*|_IO_lock_t*
+F|_offset|_offset|I64|__off64_t
+F|__pad1|__pad1|void*|void*
+F|__pad2|__pad2|void*|void*
+F|__pad3|__pad3|void*|void*
+F|__pad4|__pad4|void*|void*
+F|__pad5|__pad5|U64|size_t
+F|_mode|_mode|I32|int
+F|_unused2|_unused2|U8[]|char[]
+S|typedef __va_list_tag __va_list_tag|typedef __va_list_tag __va_list_tagPointer|
+F|gp_offset|gp_offset|U32|unsigned int
+F|fp_offset|fp_offset|U32|unsigned int
+F|overflow_arg_area|overflow_arg_area|void*|void*
+F|reg_save_area|reg_save_area|void*|void*
+S|wint_t|wint_tPointer|
+S|__mbstate_t|__mbstate_tPointer|
+F|__count|__count|I32|int
+F|__value$__wch|__value.__wch|U32|unsigned int
+F|__value$__wchb|__value.__wchb|U8[]|char[]
+S|mbstate_t|mbstate_tPointer|
+F|__count|__count|I32|int
+F|__value$__wch|__value.__wch|U32|unsigned int
+F|__value$__wchb|__value.__wchb|U8[]|char[]
+S|_Atomic_word|_Atomic_wordPointer|
+S|fmtflags|fmtflagsPointer|
+C|_S_boolalpha
+C|_S_dec
+C|_S_fixed
+C|_S_hex
+C|_S_internal
+C|_S_left
+C|_S_oct
+C|_S_right
+C|_S_scientific
+C|_S_showbase
+C|_S_showpoint
+C|_S_showpos
+C|_S_skipws
+C|_S_unitbuf
+C|_S_uppercase
+C|_S_adjustfield
+C|_S_basefield
+C|_S_floatfield
+C|_S_ios_fmtflags_end
+C|_S_ios_fmtflags_max
+C|_S_ios_fmtflags_min
+S|iostate|iostatePointer|
+C|_S_goodbit
+C|_S_badbit
+C|_S_eofbit
+C|_S_failbit
+C|_S_ios_iostate_end
+C|_S_ios_iostate_max
+C|_S_ios_iostate_min
+S|openmode|openmodePointer|
+C|_S_app
+C|_S_ate
+C|_S_bin
+C|_S_in
+C|_S_out
+C|_S_trunc
+C|_S_ios_openmode_end
+C|_S_ios_openmode_max
+C|_S_ios_openmode_min
+S|seekdir|seekdirPointer|
+C|_S_beg
+C|_S_cur
+C|_S_end
+C|_S_ios_seekdir_end
+S|std|stdPointer|
+S|std$__exception_ptr|std$__exception_ptrPointer|
+S|std$__exception_ptr$exception_ptr|std$__exception_ptr$exception_ptrPointer|
+F|_M_exception_object|_M_exception_object|void*|void*
+S|std$__debug|std$__debugPointer|
+S|std$_Ios_Fmtflags|std$_Ios_FmtflagsPointer|
+C|_S_boolalpha
+C|_S_dec
+C|_S_fixed
+C|_S_hex
+C|_S_internal
+C|_S_left
+C|_S_oct
+C|_S_right
+C|_S_scientific
+C|_S_showbase
+C|_S_showpoint
+C|_S_showpos
+C|_S_skipws
+C|_S_unitbuf
+C|_S_uppercase
+C|_S_adjustfield
+C|_S_basefield
+C|_S_floatfield
+C|_S_ios_fmtflags_end
+C|_S_ios_fmtflags_max
+C|_S_ios_fmtflags_min
+S|std$_Ios_Openmode|std$_Ios_OpenmodePointer|
+C|_S_app
+C|_S_ate
+C|_S_bin
+C|_S_in
+C|_S_out
+C|_S_trunc
+C|_S_ios_openmode_end
+C|_S_ios_openmode_max
+C|_S_ios_openmode_min
+S|std$_Ios_Iostate|std$_Ios_IostatePointer|
+C|_S_goodbit
+C|_S_badbit
+C|_S_eofbit
+C|_S_failbit
+C|_S_ios_iostate_end
+C|_S_ios_iostate_max
+C|_S_ios_iostate_min
+S|std$_Ios_Seekdir|std$_Ios_SeekdirPointer|
+C|_S_beg
+C|_S_cur
+C|_S_end
+C|_S_ios_seekdir_end
+S|std$ios_base|std$ios_basePointer|
+S|std$ios_base$Init|std$ios_base$InitPointer|
+S|tm|tmPointer|
+F|tm_sec|tm_sec|I32|int
+F|tm_min|tm_min|I32|int
+F|tm_hour|tm_hour|I32|int
+F|tm_mday|tm_mday|I32|int
+F|tm_mon|tm_mon|I32|int
+F|tm_year|tm_year|I32|int
+F|tm_wday|tm_wday|I32|int
+F|tm_yday|tm_yday|I32|int
+F|tm_isdst|tm_isdst|I32|int
+F|tm_gmtoff|tm_gmtoff|I64|long int
+F|tm_zone|tm_zone|U8*|const char*
+S|__gnu_cxx|__gnu_cxxPointer|
+S|__gnu_cxx$__numeric_traits_integer<int>|__gnu_cxx$__numeric_traits_integer<int>Pointer|
+S|__gnu_cxx$__numeric_traits_floating<float>|__gnu_cxx$__numeric_traits_floating<float>Pointer|
+S|__gnu_cxx$__numeric_traits_floating<double>|__gnu_cxx$__numeric_traits_floating<double>Pointer|
+S|__gnu_cxx$__numeric_traits_floating<long double>|__gnu_cxx$__numeric_traits_floating<long double>Pointer|
+S|__gnu_cxx$__numeric_traits_integer<long unsigned int>|__gnu_cxx$__numeric_traits_integer<long unsigned int>Pointer|
+S|__gnu_cxx$__numeric_traits_integer<char>|__gnu_cxx$__numeric_traits_integer<char>Pointer|
+S|__gnu_cxx$__numeric_traits_integer<short int>|__gnu_cxx$__numeric_traits_integer<short int>Pointer|
+S|__gnu_cxx$__numeric_traits_integer<long int>|__gnu_cxx$__numeric_traits_integer<long int>Pointer|
+S|__gnu_debug|__gnu_debugPointer|
+S|lconv|lconvPointer|
+F|decimal_point|decimal_point|U8*|char*
+F|thousands_sep|thousands_sep|U8*|char*
+F|grouping|grouping|U8*|char*
+F|int_curr_symbol|int_curr_symbol|U8*|char*
+F|currency_symbol|currency_symbol|U8*|char*
+F|mon_decimal_point|mon_decimal_point|U8*|char*
+F|mon_thousands_sep|mon_thousands_sep|U8*|char*
+F|mon_grouping|mon_grouping|U8*|char*
+F|positive_sign|positive_sign|U8*|char*
+F|negative_sign|negative_sign|U8*|char*
+F|int_frac_digits|int_frac_digits|U8|char
+F|frac_digits|frac_digits|U8|char
+F|p_cs_precedes|p_cs_precedes|U8|char
+F|p_sep_by_space|p_sep_by_space|U8|char
+F|n_cs_precedes|n_cs_precedes|U8|char
+F|n_sep_by_space|n_sep_by_space|U8|char
+F|p_sign_posn|p_sign_posn|U8|char
+F|n_sign_posn|n_sign_posn|U8|char
+F|int_p_cs_precedes|int_p_cs_precedes|U8|char
+F|int_p_sep_by_space|int_p_sep_by_space|U8|char
+F|int_n_cs_precedes|int_n_cs_precedes|U8|char
+F|int_n_sep_by_space|int_n_sep_by_space|U8|char
+F|int_p_sign_posn|int_p_sign_posn|U8|char
+F|int_n_sign_posn|int_n_sign_posn|U8|char
+S|__int32_t|__int32_tPointer|
+S|div_t|div_tPointer|
+F|quot|quot|I32|int
+F|rem|rem|I32|int
+S|ldiv_t|ldiv_tPointer|
+F|quot|quot|I64|long int
+F|rem|rem|I64|long int
+S|lldiv_t|lldiv_tPointer|
+F|quot|quot|I64|long long int
+F|rem|rem|I64|long long int
+S|__compar_fn_t|__compar_fn_tPointer|
+S|_G_fpos64_t|_G_fpos64_tPointer|
+F|__pos|__pos|I64|__off64_t
+F|__state|__state|__mbstate_t|__mbstate_t
+S|fpos_t|fpos_tPointer|
+F|__pos|__pos|I64|__off64_t
+F|__state|__state|__mbstate_t|__mbstate_t
+S|wctype_t|wctype_tPointer|
+S|wctrans_t|wctrans_tPointer|
 S|E|EPointer|
 C|E1
 C|E2
@@ -10,8 +307,8 @@ S|A|APointer|
 F|x|x|U16*|uint16_t*
 F|y|y|U16|uint16_t
 S|SOA|SOAPointer|
-F|a|a|U8[]|uint8_t[]
-F|b|b|U16[][]|uint16_t[][]
+F|a|a|U8[]|unsigned char[]
+F|b|b|U16[][]|short unsigned int[][]
 S|IPv4|IPv4Pointer|
 F|ihl|ihl|U8:4|uint8_t:4
 F|version|version|U8:4|uint8_t:4
@@ -62,19 +359,19 @@ F|blue|blue|U8|uint8_t
 S|Uniondata1|Uniondata1Pointer|
 F|i8|i8|U16|uint16_t
 F|f16|f16|U32|uint32_t
-F|arrI8|arrI8|U8[]|uint8_t[]
+F|arrI8|arrI8|U8[]|unsigned char[]
 S|Uniondata2|Uniondata2Pointer|
 F|i16|i16|U16|uint16_t
 F|f32|f32|U32|uint32_t
-F|arrI8|arrI8|U8[]|uint8_t[]
+F|arrI8|arrI8|U8[]|unsigned char[]
 S|Uniondata3|Uniondata3Pointer|
 F|i16|i16|U16|uint16_t
 F|f32|f32|U32|uint32_t
-F|arrI8|arrI8|U8[]|uint8_t[]
+F|arrI8|arrI8|U8[]|unsigned char[]
 S|Uniondata4|Uniondata4Pointer|
 F|i16|i16|U16|uint16_t
 F|f32|f32|U32|uint32_t
-F|arrI8|arrI8|U8[]|uint8_t[]
+F|arrI8|arrI8|U8[]|unsigned char[]
 S|Unionjob|UnionjobPointer|
 F|name|name|U8[]|char[]
 F|salary|salary|float|float
@@ -86,7 +383,7 @@ C|THING2
 C|THING3
 S|MyNamespace$Q|MyNamespace$QPointer|
 F|d|d|U16|uint16_t
-F|e|e|U16[][]|uint16_t[][]
+F|e|e|U16[][]|short unsigned int[][]
 S|MyNamespace$RGBColourV2|MyNamespace$RGBColourV2Pointer|
 F|red|red|U8|uint8_t
 F|green|green|U8|uint8_t
@@ -94,7 +391,7 @@ F|blue|blue|U8|uint8_t
 S|MyNamespace$Uniondata5|MyNamespace$Uniondata5Pointer|
 F|i16|i16|U16|uint16_t
 F|f32|f32|U32|uint32_t
-F|arrI8|arrI8|U8[]|uint8_t[]
+F|arrI8|arrI8|U8[]|unsigned char[]
 S|MyNamespace$InnerNamespace|MyNamespace$InnerNamespacePointer|
 S|MyNamespace$InnerNamespace$TypeInInnerNamespace|MyNamespace$InnerNamespace$TypeInInnerNamespacePointer|
 F|h|h|U16|uint16_t
@@ -106,24 +403,34 @@ F|data|data|I64|int64_t
 C|ENUM1
 C|ENUM2
 C|ENUM3
+F|innerEnum|innerEnum|MyClass$InnerEnum|MyClass$InnerEnum
 F|Z|Z|MyClass$Z|MyClass$Z
 F|instanceOfZ|instanceOfZ|MyClass$Z|MyClass$Z
 S|MyClass$MyNestedClass|MyClass$MyNestedClassPointer|
 F|d|d|I32|int
+S|MyClass$InnerEnum|MyClass$InnerEnumPointer|
+C|ENUM_A
+C|ENUM_B
+C|ENUM_C
 S|MyClass$Z|MyClass$ZPointer|
 F|g|g|U64|uint64_t
-F|h|h|U16[][]|uint16_t[][]
+F|h|h|U16[][]|short unsigned int[][]
 S|S1|S1Pointer|
+F|a|a|IDATA|IDATA
+S|T1|T1Pointer|
 F|a|a|IDATA|IDATA
 S|S2|S2Pointer|
 F|b|b|IDATA|IDATA
 F|b2|b2|S1|S1
 S|T2|T2Pointer|
-F|c|c|struct S2|struct S2
+F|c|c|S2|S2
+S|T3|T3Pointer|
+F|b|b|IDATA|IDATA
+F|b2|b2|S1|S1
 S|T4|T4Pointer|
 F|d|d|T2|T2
-F|e|e|struct S2|struct S2
-F|f|f|struct S2*|T3
+F|e|e|S2|S2
+F|f|f|S2*|T3
 S|MyEnum|MyEnumPointer|
 C|something1
 C|something2
@@ -141,11 +448,10 @@ F|length|length|I64|int64_t
 F|width|width|I64|int64_t
 F|height|height|I64|int64_t
 S|Foo|FooPointer|
-F|staticTest|staticTest|I32|int
 F|data|data|UDATA|uintptr_t
 F|data2|data2|I32|const int
 S|HasVoidStarField|HasVoidStarFieldPointer|
-F|voidStar|voidStar|FunctionPointer*|FunctionPointer*
+F|voidStar|voidStar|void*|void*
 S|UnionFieldType|UnionFieldTypePointer|
 F|i|i|I32|int32_t
 F|s|s|I16|int16_t
@@ -155,14 +461,20 @@ F|unionField2|unionField2|UnionFieldType|UnionFieldType
 S|S3|S3Pointer|
 F|q|q|U8|volatile uint8_t
 F|r|r|U8|const uint8_t
+S|pS3|pS3Pointer|
+F|q|q|U8|volatile uint8_t
+F|r|r|U8|const uint8_t
 S|Vehicle|VehiclePointer|
 F|speed|speed|double|double
 S|Toy|ToyPointer|
 F|durability|durability|I32|int
-S|MatchboxCar|MatchboxCarPointer|Toy
+S|MatchboxCar|MatchboxCarPointer|Vehicle
 F|hasWheels|hasWheels|I32|int
+S|FunctionPointer|FunctionPointerPointer|
+S|INT|INTPointer|
+S|INT_ARRAY|INT_ARRAYPointer|
 S|StructWithFunctionPointer|StructWithFunctionPointerPointer|
-F|functionPointer|functionPointer|FunctionPointer*|FunctionPointer
+F|functionPointer|functionPointer|void*|FunctionPointer
 F|i|i|I32**[][]|INT_ARRAY
 S|S4|S4Pointer|
 F|i|i|I32|int
@@ -174,12 +486,6 @@ S|Outer|OuterPointer|
 F|innerField1$ui8|innerField1.ui8|U8|uint8_t
 F|innerField2$i16|innerField2.i16|I16|int16_t
 F|innerField3$innerStruct|innerField3.innerStruct|Outer$$InnerStruct|Outer$$InnerStruct
-S|Outer$$InnerStruct|Outer$$InnerStructPointer|
-F|i32|i32|I32|int32_t
-S|OuterClassWithDifferentName1|OuterClassWithDifferentName1Pointer|
-F|instanceOfInnerClassWithSameName|instanceOfInnerClassWithSameName|OuterClassWithDifferentName1$InnerClassWithSameName|OuterClassWithDifferentName1$InnerClassWithSameName
-S|OuterClassWithDifferentName1$InnerClassWithSameName|OuterClassWithDifferentName1$InnerClassWithSameNamePointer|
-F|g|g|double|double
 S|OuterClassWithDifferentName2|OuterClassWithDifferentName2Pointer|
 F|instanceOfInnerClassWithSameName|instanceOfInnerClassWithSameName|OuterClassWithDifferentName2$InnerClassWithSameName|OuterClassWithDifferentName2$InnerClassWithSameName
 S|OuterClassWithDifferentName2$InnerClassWithSameName|OuterClassWithDifferentName2$InnerClassWithSameNamePointer|
@@ -190,16 +496,16 @@ F|imaginary|imaginary|I32|int
 S|Complex<double>|Complex<double>Pointer|
 F|real|real|double|double
 F|imaginary|imaginary|double|double
+S|UDATA2|UDATA2Pointer|
 S|SArrayWithTypedefType|SArrayWithTypedefTypePointer|
-F|arrayWithTypedefType|arrayWithTypedefType|U32[]|UDATA2[]
+F|arrayWithTypedefType|arrayWithTypedefType|U32[]|unsigned int[]
+S|OuterClassWithDifferentName1|OuterClassWithDifferentName1Pointer|
+F|instanceOfInnerClassWithSameName|instanceOfInnerClassWithSameName|OuterClassWithDifferentName1$InnerClassWithSameName|OuterClassWithDifferentName1$InnerClassWithSameName
+S|OuterClassWithDifferentName1$InnerClassWithSameName|OuterClassWithDifferentName1$InnerClassWithSameNamePointer|
+F|g|g|double|double
 S|SNoLengthArray|SNoLengthArrayPointer|
 F|numElements|numElements|I32|int
 F|intArr|intArr|I32[]|int[]
-S|TestFileInSubDirConstants|TestFileInSubDirConstantsPointer|
-C|SEAHORSE
-C|TEST_FLAG
-C|TEST_FLAG2
-C|TEST_FLAG_UNDEF
 S|TestHeaderConstants|TestHeaderConstantsPointer|
 C|COW
 S|MapToTypeTest1|MapToTypeTest1Pointer|
@@ -213,6 +519,9 @@ S|MapToTypeTest4|MapToTypeTest4Pointer|
 C|myMapToTypeMacro4
 S|TestConstants|TestConstantsPointer|
 C|dolphin
-C|fish
 C|octopus
 C|whale
+S|TestFileInSubDirConstants|TestFileInSubDirConstantsPointer|
+C|SEAHORSE
+C|TEST_FLAG2
+C|TEST_FLAG_UNDEF

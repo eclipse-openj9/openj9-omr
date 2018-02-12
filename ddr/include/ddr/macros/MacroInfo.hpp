@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2017 IBM Corp. and others
+ * Copyright (c) 2016, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -23,33 +23,31 @@
 #define MACROINFO_HPP
 
 #include "ddr/std/string.hpp"
-#include <set>
-#include <vector>
 
+#include <set>
+
+using std::pair;
 using std::set;
 using std::string;
-using std::pair;
-using std::vector;
-using std::ifstream;
 
 class MacroInfo {
 private:
-	/* This could be a real type name, or a fake type name representing a custom rule
-	 * associated with a macro, or a name based off of a file
+	/* This could be a real type name, or a fake type name representing a
+	 * custom rule associated with a macro, or a name based off of a file.
 	 */
-	string _typeName;
+	const string _typeName;
 
 	/* A list of all macros associated with typeName */
 	set<pair<string, string> > _macros;
 
 public:
-	MacroInfo(string typeName);
+	explicit MacroInfo(const string &typeName);
 
-	string getTypeName();
-	void addMacro(pair<string, string> p);
-	size_t getNumMacros();
-	set<pair<string, string> >::iterator getMacroStart();
-	set<pair<string, string> >::iterator getMacroEnd();
+	const string &getTypeName() const;
+	void addMacro(const string &name, const string &value);
+	size_t getNumMacros() const;
+	set<pair<string, string> >::const_iterator getMacroStart() const;
+	set<pair<string, string> >::const_iterator getMacroEnd() const;
 };
 
 #endif /* MACROINFO_HPP */

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2017 IBM Corp. and others
+ * Copyright (c) 2016, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -22,27 +22,21 @@
 #ifndef MACROTOOL_HPP
 #define MACROTOOL_HPP
 
-#include "ddr/std/string.hpp"
-
-#include "ddr/config.hpp"
+#include "ddr/error.hpp"
 #include "ddr/macros/MacroInfo.hpp"
-#include "ddr/ir/Symbol_IR.hpp"
 
-using std::string;
-using std::vector;
+#include <vector>
+
+class Symbol_IR;
 
 class MacroTool
 {
 private:
-	vector<MacroInfo> macroList;
-
-	string getTypeName(string s);
-	pair<string, string> getMacroInfo(string s);
-	string getFileName(string s);
+	std::vector<MacroInfo> macroList;
 
 public:
-	DDR_RC getMacros(string fname);
-	DDR_RC addMacrosToIR(Symbol_IR *ir);
+	DDR_RC getMacros(const std::string &fname);
+	DDR_RC addMacrosToIR(Symbol_IR *ir) const;
 };
 
 #endif /* MACROTOOL_HPP */

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2017 IBM Corp. and others
+ * Copyright (c) 2016, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -32,31 +32,29 @@ class Modifiers
 {
 public:
 	vector<size_t> _arrayLengths;
-	int _modifierFlags;
-	size_t _offset;
+	uint8_t _modifierFlags;
 	size_t _pointerCount;
 	size_t _referenceCount;
 
-	static const int MODIFIER_FLAGS = 31;
-	static const int NO_MOD = 0;
-	static const int CONST_TYPE = 1;
-	static const int VOLATILE_TYPE = 2;
-	static const int UNALIGNED_TYPE = 4;
-	static const int RESTRICT_TYPE = 8;
-	static const int SHARED_TYPE = 16;
-	static const string MODIFIER_NAMES[];
+	static const uint8_t MODIFIER_FLAGS = 31;
+	static const uint8_t NO_MOD = 0;
+	static const uint8_t CONST_TYPE = 1;
+	static const uint8_t VOLATILE_TYPE = 2;
+	static const uint8_t UNALIGNED_TYPE = 4;
+	static const uint8_t RESTRICT_TYPE = 8;
+	static const uint8_t SHARED_TYPE = 16;
 
 	Modifiers();
 	~Modifiers();
 
-	string getPointerType();
-	string getModifierNames();
+	string getPointerType() const;
+	string getModifierNames() const;
 	void addArrayDimension(size_t length);
-	bool isArray();
-	size_t getArrayLength(size_t i);
-	size_t getArrayDimensions();
-	size_t getSize(size_t typeSize);
-	bool operator==(Modifiers const& type) const;
+	bool isArray() const;
+	size_t getArrayLength(size_t index) const;
+	size_t getArrayDimensions() const;
+	size_t getSize(size_t typeSize) const;
+	bool operator==(const Modifiers &type) const;
 };
 
 #endif /* MODIFIERS_HPP */

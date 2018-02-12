@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2017 IBM Corp. and others
+ * Copyright (c) 2016, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -19,10 +19,16 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#include "ddr/config.hpp"
-
 #include "ddr/blobgen/java/genBinaryBlob.hpp"
-
+#include "ddr/ir/ClassUDT.hpp"
+#include "ddr/ir/EnumMember.hpp"
+#include "ddr/ir/EnumUDT.hpp"
+#include "ddr/ir/Field.hpp"
+#include "ddr/ir/Macro.hpp"
+#include "ddr/ir/Symbol_IR.hpp"
+#include "ddr/ir/TypeVisitor.hpp"
+#include "ddr/ir/TypedefUDT.hpp"
+#include "ddr/ir/UnionUDT.hpp"
 #include "ddr/std/sstream.hpp"
 
 #undef NDEBUG
@@ -47,36 +53,42 @@ using std::stringstream;
 class BlobBuildVisitor : public TypeVisitor
 {
 private:
-	JavaBlobGenerator *_gen;
-	bool _addFieldsOnly;
-	string _prefix;
+	JavaBlobGenerator * const _gen;
+	const bool _addFieldsOnly;
+	const string _prefix;
 
 public:
-	BlobBuildVisitor(JavaBlobGenerator *gen, bool addFieldsOnly, string prefix) : _gen(gen), _addFieldsOnly(addFieldsOnly), _prefix(prefix) {}
+	BlobBuildVisitor(JavaBlobGenerator *gen, bool addFieldsOnly, const string &prefix)
+		: _gen(gen), _addFieldsOnly(addFieldsOnly), _prefix(prefix)
+	{
+	}
 
-	DDR_RC visitType(Type *type) const;
-	DDR_RC visitType(NamespaceUDT *type) const;
-	DDR_RC visitType(EnumUDT *type) const;
-	DDR_RC visitType(TypedefUDT *type) const;
-	DDR_RC visitType(ClassUDT *type) const;
-	DDR_RC visitType(UnionUDT *type) const;
+	virtual DDR_RC visitType(Type *type) const;
+	virtual DDR_RC visitClass(ClassUDT *type) const;
+	virtual DDR_RC visitEnum(EnumUDT *type) const;
+	virtual DDR_RC visitNamespace(NamespaceUDT *type) const;
+	virtual DDR_RC visitTypedef(TypedefUDT *type) const;
+	virtual DDR_RC visitUnion(UnionUDT *type) const;
 };
 
 class BlobEnumerateVisitor : public TypeVisitor
 {
 private:
-	JavaBlobGenerator *_gen;
-	bool _addFieldsOnly;
+	JavaBlobGenerator * const _gen;
+	const bool _addFieldsOnly;
 
 public:
-	BlobEnumerateVisitor(JavaBlobGenerator *gen, bool addFieldsOnly) : _gen(gen), _addFieldsOnly(addFieldsOnly) {}
+	BlobEnumerateVisitor(JavaBlobGenerator *gen, bool addFieldsOnly)
+		: _gen(gen), _addFieldsOnly(addFieldsOnly)
+	{
+	}
 
-	DDR_RC visitType(Type *type) const;
-	DDR_RC visitType(NamespaceUDT *type) const;
-	DDR_RC visitType(EnumUDT *type) const;
-	DDR_RC visitType(TypedefUDT *type) const;
-	DDR_RC visitType(ClassUDT *type) const;
-	DDR_RC visitType(UnionUDT *type) const;
+	virtual DDR_RC visitType(Type *type) const;
+	virtual DDR_RC visitClass(ClassUDT *type) const;
+	virtual DDR_RC visitEnum(EnumUDT *type) const;
+	virtual DDR_RC visitNamespace(NamespaceUDT *type) const;
+	virtual DDR_RC visitTypedef(TypedefUDT *type) const;
+	virtual DDR_RC visitUnion(UnionUDT *type) const;
 };
 
 void
@@ -136,13 +148,13 @@ static uintptr_t
 stringTableHash(void *key, void *userData)
 {
 	const char *s = ((StringTableEntry *)key)->cString;
-	size_t length = strlen(s);
+	const size_t length = strlen(s);
 	uintptr_t hash = 0;
-	uint8_t *data = (uint8_t *)s;
+	const uint8_t *data = (uint8_t *)s;
 	const uint8_t *end = data + length;
 
 	while (data < end) {
-		uint16_t c;
+		uint16_t c = 0;
 
 		data += decodeUTF8Char(data, &c);
 		hash = (hash << 5) - hash + c;
@@ -154,8 +166,8 @@ stringTableHash(void *key, void *userData)
 static uintptr_t
 stringTableEquals(void *leftKey, void *rightKey, void *userData)
 {
-	const char *left_s = ((StringTableEntry *)leftKey)->cString;
-	const char *right_s = ((StringTableEntry *)rightKey)->cString;
+	const char *left_s = ((const StringTableEntry *)leftKey)->cString;
+	const char *right_s = ((const StringTableEntry *)rightKey)->cString;
 
 	return (left_s == right_s) || (0 == strcmp(left_s, right_s));
 }
@@ -163,15 +175,15 @@ stringTableEquals(void *leftKey, void *rightKey, void *userData)
 void
 JavaBlobGenerator::copyStringTable()
 {
-	uint8_t *stringData = _buildInfo.stringBuffer;
+	uint8_t * const stringData = _buildInfo.stringBuffer;
 	J9HashTableState state;
 
-	/* Iterate the table and copy each string to its already-assigned offset */
+	/* Iterate the table and copy each string to its already-assigned offset. */
 	StringTableEntry *entry = (StringTableEntry *)hashTableStartDo(_buildInfo.stringHash, &state);
 	while (NULL != entry) {
 		J9UTF8 *utf = (J9UTF8 *)(stringData + entry->offset);
 		const char *cString = entry->cString;
-		size_t len = strlen(cString);
+		const size_t len = strlen(cString);
 
 		utf->length = (uint16_t)len;
 		memcpy(utf->data, cString, len);
@@ -179,12 +191,6 @@ JavaBlobGenerator::copyStringTable()
 
 		entry = (StringTableEntry *)hashTableNextDo(&state);
 	}
-
-	/* TODO need to pad file length to 32-bits? */
-#if 0
-	/* Update cursor (stringDataSize is U_32 aligned already) */
-	data->cursor = stringData + data->coreFileData->stringDataSize;
-#endif
 }
 
 DDR_RC
@@ -192,38 +198,37 @@ JavaBlobGenerator::stringTableOffset(BlobHeader *blobHeader, J9HashTable *string
 {
 	DDR_RC rc = DDR_RC_OK;
 	StringTableEntry exemplar;
-	StringTableEntry *entry;
+
 	*offset = UINT32_MAX;
 
 	exemplar.cString = cString;
 	exemplar.offset = UINT32_MAX;
 
 	/* Add will return an existing entry if one matches, NULL on allocation failure, or the new node */
-	entry = (StringTableEntry *)hashTableAdd(stringTable, &exemplar);
+	StringTableEntry *entry = (StringTableEntry *)hashTableAdd(stringTable, &exemplar);
 
-	/* NULL means the string was new, but memory allocation failed */
 	if (NULL == entry) {
+		/* the string was new, but memory allocation failed */
 		ERRMSG("Unable to allocate memory for string table entry: %s", cString);
 		rc = DDR_RC_ERROR;
+	} else if (UINT32_MAX != entry->offset) {
+		/* an existing entry was found */
+		*offset = entry->offset;
 	} else {
 		/* If the offset is UINT32_MAX, this indicates that a new entry was added */
-		if (UINT32_MAX == entry->offset) {
-			entry->offset = blobHeader->stringDataSize;
+		entry->offset = blobHeader->stringDataSize;
 
-			/* For new string entries, allocate memory to hold the string */
-			char *buffer = (char *)malloc(strlen(cString) + 1);
-			if (NULL == buffer) {
-				ERRMSG("Unable to allocate memory for string table entry: %s", cString);
-				rc = DDR_RC_ERROR;
-			} else {
-				strcpy(buffer, cString);
-				entry->cString = buffer;
-
-				/* Reserve space for the uint16_t size, the string data, and the padding byte, if necessary */
-				blobHeader->stringDataSize += (uint32_t)((sizeof(uint16_t) + strlen(cString) + 1) & ~(size_t)1);
-				*offset = entry->offset;
-			}
+		/* For new string entries, allocate memory to hold the string */
+		char *buffer = (char *)malloc(strlen(cString) + 1);
+		if (NULL == buffer) {
+			ERRMSG("Unable to allocate memory for string table entry: %s", cString);
+			rc = DDR_RC_ERROR;
 		} else {
+			strcpy(buffer, cString);
+			entry->cString = buffer;
+
+			/* Reserve space for the uint16_t size, the string data, and the padding byte, if necessary */
+			blobHeader->stringDataSize += (uint32_t)((sizeof(uint16_t) + strlen(cString) + 1) & ~(size_t)1);
 			*offset = entry->offset;
 		}
 	}
@@ -234,14 +239,13 @@ JavaBlobGenerator::stringTableOffset(BlobHeader *blobHeader, J9HashTable *string
 DDR_RC
 JavaBlobGenerator::genBinaryBlob(OMRPortLibrary *portLibrary, Symbol_IR *ir, const char *blobFile)
 {
-	DDR_RC rc = DDR_RC_OK;
 	OMRPORT_ACCESS_FROM_OMRPORT(portLibrary);
 
 	/* iterate ir:
 	 *  - count structs - update blob header
 	 *  - build string hash table
 	 */
-	rc = countStructsAndStrings(ir);
+	DDR_RC rc = countStructsAndStrings(ir);
 
 	if (DDR_RC_OK == rc) {
 		/* compute offsets for each entry of string hash table
@@ -270,7 +274,7 @@ JavaBlobGenerator::genBinaryBlob(OMRPortLibrary *portLibrary, Symbol_IR *ir, con
 		uint32_t f_ix = 0;
 		uint32_t c_ix = 0;
 		intptr_t amountWritten = 0;
-		for (unsigned int s_ix = 0; s_ix < _buildInfo.header.structureCount; s_ix++) {
+		for (uint32_t s_ix = 0; s_ix < _buildInfo.header.structureCount; ++s_ix) {
 			wb = omrfile_write(fd, &_buildInfo.blobStructs[s_ix], sizeof(BlobStruct));
 			amountWritten += wb;
 
@@ -285,11 +289,12 @@ JavaBlobGenerator::genBinaryBlob(OMRPortLibrary *portLibrary, Symbol_IR *ir, con
 			c_ix += _buildInfo.blobStructs[s_ix].constantCount;
 		}
 
-		if ((unsigned long)amountWritten != _buildInfo.header.structDataSize) {
-			ERRMSG("Written: %d fields, %d constants, %d structs.\nCounted: %d fields, %d constants, %d structures.\n",
-				   f_ix, c_ix, (int)(_buildInfo.curBlobStruct - _buildInfo.blobStructs),
+		if (amountWritten != (intptr_t)_buildInfo.header.structDataSize) {
+			ERRMSG("Wrote %u fields, %u constants, %u structs.\nCounted %u fields, %u constants, %u structures.\n",
+				   f_ix, c_ix, (uint32_t)(_buildInfo.curBlobStruct - _buildInfo.blobStructs),
 				   _buildInfo.fieldCount, _buildInfo.constCount, _buildInfo.header.structureCount);
-			ERRMSG("Expected %d to be written, but %d was written.\n", (int)_buildInfo.header.structDataSize, (int)amountWritten);
+			ERRMSG("Expected %u to be written, but %u was written.\n",
+					(uint32_t)_buildInfo.header.structDataSize, (uint32_t)amountWritten);
 		}
 
 		/* write string data */
@@ -308,112 +313,63 @@ JavaBlobGenerator::genBinaryBlob(OMRPortLibrary *portLibrary, Symbol_IR *ir, con
 	return rc;
 }
 
-pair<string, unsigned long long> JavaBlobGenerator::cLimits[] = {
-		make_pair("CHAR_MAX", CHAR_MAX),
-		make_pair("CHAR_MIN", CHAR_MIN),
-		make_pair("INT_MAX", INT_MAX),
-		make_pair("INT_MIN", INT_MIN),
-		make_pair("LONG_MAX", LONG_MAX),
-		make_pair("LONG_MIN", LONG_MIN),
-		make_pair("SCHAR_MAX", SCHAR_MAX),
-		make_pair("SCHAR_MIN", SCHAR_MIN),
-		make_pair("SHRT_MAX", SHRT_MAX),
-		make_pair("SHRT_MIN", SHRT_MIN),
-		make_pair("UCHAR_MAX", UCHAR_MAX),
-		make_pair("UINT_MAX", UINT_MAX),
-		make_pair("ULONG_MAX", ULONG_MAX),
-		make_pair("USHRT_MAX", USHRT_MAX)
-};
-
-DDR_RC
-JavaBlobGenerator::enumerateCLimits()
-{
-	DDR_RC rc = DDR_RC_OK;
-	size_t fieldCount = 0;
-	size_t constCount = sizeof(cLimits) / sizeof(cLimits[0]);
-	size_t structDataSize = sizeof(BlobField) * fieldCount + sizeof(BlobConstant) * constCount + sizeof(BlobStruct);
-
-	_buildInfo.header.structureCount += 1;
-	_buildInfo.header.structDataSize += (uint32_t)structDataSize;
-	_buildInfo.fieldCount += (uint32_t)fieldCount;
-	_buildInfo.constCount += (uint32_t)constCount;
-	return rc;
-}
-
-DDR_RC
-JavaBlobGenerator::addCLimits()
-{
-	DDR_RC rc = DDR_RC_OK;
-	size_t fieldCount = 0;
-	size_t constCount = sizeof(cLimits) / sizeof(cLimits[0]);
-
-	for (size_t i = 0; i < constCount; i += 1) {
-		rc = addBlobConst(cLimits[i].first, cLimits[i].second, NULL);
-		if (DDR_RC_OK != rc) {
-			break;
-		}
-	}
-
-	if (DDR_RC_OK == rc) {
-		rc = addBlobStruct("CLimits", "", (uint32_t)constCount, (uint32_t)fieldCount, 0);
-	}
-
-	return rc;
-}
-
 /* iterate ir:
  *  - count structs - update blob header
  *  - build string hash table
  */
 DDR_RC
-JavaBlobGenerator::countStructsAndStrings(Symbol_IR *const ir)
+JavaBlobGenerator::countStructsAndStrings(Symbol_IR *ir)
 {
 	DDR_RC rc = DDR_RC_OK;
+	const BlobEnumerateVisitor enumerator(this, false);
+
 	/* just count everything */
-	for (vector<Type *>::iterator v = (ir->_types).begin(); v != (ir->_types).end(); ++v) {
-		rc = (*v)->acceptVisitor(BlobEnumerateVisitor(this, false));
-		if (DDR_RC_OK != rc) {
-			break;
+	for (vector<Type *>::iterator v = ir->_types.begin(); v != ir->_types.end(); ++v) {
+		Type *type = *v;
+		if (!type->_blacklisted) {
+			rc = type->acceptVisitor(enumerator);
+			if (DDR_RC_OK != rc) {
+				break;
+			}
 		}
 	}
 
-	/* Add CLimits to the count. */
-	if (DDR_RC_OK == rc) {
-		rc = enumerateCLimits();
-	}
 	return rc;
 }
 
 DDR_RC
-JavaBlobGenerator::buildBlobData(OMRPortLibrary *portLibrary, Symbol_IR *const ir)
+JavaBlobGenerator::buildBlobData(OMRPortLibrary *portLibrary, Symbol_IR *ir)
 {
 	DDR_RC rc = DDR_RC_OK;
+
 	/* allocate hashtable */
 	_buildInfo.stringHash =
 		hashTableNew(portLibrary, OMR_GET_CALLSITE(), 0,
 					 sizeof(StringTableEntry), 0, 0, OMRMEM_CATEGORY_UNKNOWN,
 					 stringTableHash, stringTableEquals, NULL, NULL);
 
-	/* allocate class, field, and const structures */
-	_buildInfo.blobStructs = (BlobStruct *)malloc(_buildInfo.header.structureCount * sizeof(BlobStruct));
+	/* Allocate room for one extra class, field and constant
+	 * so our cursors always point at valid locations.
+	 */
+	_buildInfo.blobStructs = (BlobStruct *)malloc((_buildInfo.header.structureCount + 1) * sizeof(BlobStruct));
 	_buildInfo.curBlobStruct = _buildInfo.blobStructs;
-	_buildInfo.blobFields = (BlobField *)malloc(_buildInfo.fieldCount * sizeof(BlobField));
+	_buildInfo.blobFields = (BlobField *)malloc((_buildInfo.fieldCount + 1) * sizeof(BlobField));
 	_buildInfo.curBlobField = _buildInfo.blobFields;
-	_buildInfo.blobConsts = (BlobConstant *)malloc(_buildInfo.constCount * sizeof(BlobConstant));
+	_buildInfo.blobConsts = (BlobConstant *)malloc((_buildInfo.constCount + 1) * sizeof(BlobConstant));
 	_buildInfo.curBlobConst = _buildInfo.blobConsts;
 	_buildInfo.curBlobStruct->constantCount = 0;
 	_buildInfo.curBlobStruct->fieldCount = 0;
 
-	for (vector<Type *>::iterator v = ir->_types.begin(); v != ir->_types.end(); ++v) {
-		rc = (*v)->acceptVisitor(BlobBuildVisitor(this, false, ""));
-		if (DDR_RC_OK != rc) {
-			break;
-		}
-	}
+	const BlobBuildVisitor builder(this, false, "");
 
-	if (DDR_RC_OK == rc) {
-		/* Add CLimits. */
-		rc = addCLimits();
+	for (vector<Type *>::iterator v = ir->_types.begin(); v != ir->_types.end(); ++v) {
+		Type *type = *v;
+		if (!type->_blacklisted) {
+			rc = type->acceptVisitor(builder);
+			if (DDR_RC_OK != rc) {
+				break;
+			}
+		}
 	}
 
 	if (DDR_RC_OK == rc) {
@@ -421,224 +377,42 @@ JavaBlobGenerator::buildBlobData(OMRPortLibrary *portLibrary, Symbol_IR *const i
 		memset(_buildInfo.stringBuffer, 0, _buildInfo.header.stringDataSize);
 		copyStringTable();
 	}
+
 	return rc;
 }
 
-DDR_RC
-BlobBuildVisitor::visitType(EnumUDT *e) const
+static bool
+isNeededBy(UDT *type, const vector<Field *> &fields)
 {
-	DDR_RC rc = DDR_RC_OK;
-	if (!e->_isDuplicate) {
-		/* Do not add anonymous inner types as their own type. */
-		if ((!e->isAnonymousType() || _addFieldsOnly)
-			&& ((e->_enumMembers.size() > 0) || _gen->_printEmptyTypes)) {
-			/* Format class name */
-			string nameFormatted = e->_name;
-			if (NULL != e->_outerNamespace) {
-				nameFormatted = e->_outerNamespace->_name + "__" + nameFormatted;
-			}
+	bool referenced = true;
 
-			uint32_t constCount = 0;
-			for (vector<EnumMember *>::iterator m = (e->_enumMembers).begin(); m != (e->_enumMembers).end(); ++m) {
-				rc = _gen->addBlobConst((*m)->_name, (*m)->_value, &constCount);
-				if (DDR_RC_OK != rc) {
-					break;
-				}
-			}
-
-			if (DDR_RC_OK == rc) {
-				if (_addFieldsOnly) {
-					_gen->_buildInfo.curBlobStruct->constantCount += constCount;
-				} else {
-					rc = _gen->addBlobStruct(nameFormatted, "", constCount, 0, 0);
-				}
-			}
-		}
-	}
-	return rc;
-}
-
-DDR_RC
-BlobBuildVisitor::visitType(UnionUDT *u) const
-{
-	DDR_RC rc = DDR_RC_OK;
-	if (!u->_isDuplicate) {
-		/* Do not add anonymous inner types as their own type. */
-		if ((!u->isAnonymousType() || _addFieldsOnly)
-			&& ((u->_fieldMembers.size() > 0) || _gen->_printEmptyTypes)) {
-			/* Format class name */
-			string nameFormatted = u->_name;
-			if (NULL != u->_outerNamespace) {
-				nameFormatted = u->_outerNamespace->_name + "__" + nameFormatted;
-			}
-
-			uint32_t fieldCount = 0;
-			uint32_t constCount = 0;
-			for (vector<Field *>::iterator m = (u->_fieldMembers).begin(); m != (u->_fieldMembers).end(); ++m) {
-				rc = _gen->addBlobField(*m, &fieldCount, &constCount, _prefix);
-				if (DDR_RC_OK != rc) {
-					break;
-				}
-			}
-
-			if (DDR_RC_OK == rc) {
-				for (vector<EnumMember *>::iterator m = (u->_enumMembers).begin(); m != (u->_enumMembers).end(); ++m) {
-					rc = _gen->addBlobConst((*m)->_name, (*m)->_value, &constCount);
-					if (DDR_RC_OK != rc) {
-						break;
-					}
-				}
-			}
-
-			if (DDR_RC_OK == rc) {
-				for (vector<Macro>::iterator m = (u->_macros).begin(); m != (u->_macros).end(); ++m) {
-					long long value = 0;
-					if (DDR_RC_OK == m->getNumeric(&value)) {
-						rc = _gen->addBlobConst(m->_name, value, &constCount);
-						if (DDR_RC_OK != rc) {
-							break;
-						}
-					}
-				}
-			}
-
-			if (DDR_RC_OK == rc) {
-				if (_addFieldsOnly) {
-					_gen->_buildInfo.curBlobStruct->constantCount += constCount;
-					_gen->_buildInfo.curBlobStruct->fieldCount += fieldCount;
-				} else {
-					rc = _gen->addBlobStruct(nameFormatted, "", constCount, fieldCount, (uint32_t)u->_sizeOf);
-				}
-			}
-		}
-	}
-	if ((DDR_RC_OK == rc) && !_addFieldsOnly) {
-		for (vector<UDT *>::iterator v = u->_subUDTs.begin(); v != u->_subUDTs.end(); ++v) {
-			rc = (*v)->acceptVisitor(BlobBuildVisitor(_gen, false, ""));
-			if (DDR_RC_OK != rc) {
+	if (type->isAnonymousType()) {
+		referenced = false;
+		for (vector<Field *>::const_iterator it = fields.begin(); it != fields.end(); ++it) {
+			if ((*it)->_fieldType == type) {
+				referenced = true;
 				break;
 			}
 		}
 	}
-	return rc;
+
+	return referenced;
 }
 
 DDR_RC
-BlobBuildVisitor::visitType(ClassUDT *cu) const
+BlobBuildVisitor::visitEnum(EnumUDT *e) const
 {
 	DDR_RC rc = DDR_RC_OK;
-	if (!cu->_isDuplicate) {
-		/* Do not add anonymous inner types as their own type. */
-		if ((!cu->isAnonymousType() || _addFieldsOnly)
-			&& ((cu->_fieldMembers.size() > 0) || _gen->_printEmptyTypes)) {
-			/* Format class name */
-			string nameFormatted = cu->_name;
-			if (NULL != cu->_outerNamespace) {
-				nameFormatted = cu->_outerNamespace->_name + "__" + nameFormatted;
-			}
 
-			/* Find super class name offset */
-			string superName;
-			if (NULL != cu->_superClass) {
-				superName = cu->_superClass->_name;
-				if (NULL != cu->_superClass->_outerNamespace) {
-					superName = cu->_superClass->_outerNamespace->_name + "__" + superName;
-				}
-			}
-
-			uint32_t fieldCount = 0;
-			uint32_t constCount = 0;
-			for (vector<Field *>::iterator m = (cu->_fieldMembers).begin(); m != (cu->_fieldMembers).end(); ++m) {
-				rc = _gen->addBlobField(*m, &fieldCount, &constCount, _prefix);
-				if (DDR_RC_OK != rc) {
-					break;
-				}
-			}
-
-			if (DDR_RC_OK == rc) {
-				for (vector<EnumMember *>::iterator m = (cu->_enumMembers).begin(); m != (cu->_enumMembers).end(); ++m) {
-					rc = _gen->addBlobConst((*m)->_name, (*m)->_value, &constCount);
-					if (DDR_RC_OK != rc) {
-						break;
-					}
-				}
-			}
-
-			if (DDR_RC_OK == rc) {
-				for (vector<Macro>::iterator m = (cu->_macros).begin(); m != (cu->_macros).end(); ++m) {
-					long long value = 0;
-					if (DDR_RC_OK == m->getNumeric(&value)) {
-						rc = _gen->addBlobConst(m->_name, value, &constCount);
-						if (DDR_RC_OK != rc) {
-							break;
-						}
-					}
-				}
-			}
-
-			if (DDR_RC_OK == rc) {
-				if (_addFieldsOnly) {
-					_gen->_buildInfo.curBlobStruct->constantCount += constCount;
-					_gen->_buildInfo.curBlobStruct->fieldCount += fieldCount;
-				} else {
-					rc = _gen->addBlobStruct(nameFormatted, superName, constCount, fieldCount, (uint32_t)cu->_sizeOf);
-				}
-			}
-		}
-	}
-
-	/* Anonymous sub udt's not used as fields are to have their fields added to this struct.*/
-	if ((DDR_RC_OK == rc) && !_addFieldsOnly && !cu->_isDuplicate) {
-		for (vector<UDT *>::iterator it = cu->_subUDTs.begin(); it != cu->_subUDTs.end(); ++it) {
-			if ((*it)->isAnonymousType()) {
-				bool isUsedAsField = false;
-				for (vector<Field *>::iterator fit = cu->_fieldMembers.begin(); fit != cu->_fieldMembers.end(); fit += 1) {
-					if ((*fit)->_fieldType == (*it)) {
-						isUsedAsField = true;
-						break;
-					}
-				}
-				if (!isUsedAsField) {
-					rc = (*it)->acceptVisitor(BlobBuildVisitor(_gen, true, ""));
-					if (DDR_RC_OK != rc) {
-						break;
-					}
-				}
-			}
-		}
-	}
-	if ((DDR_RC_OK == rc) && !_addFieldsOnly) {
-		for (vector<UDT *>::iterator it = cu->_subUDTs.begin(); it != cu->_subUDTs.end(); ++it) {
-			bool isUsedAsField = false;
-			if ((*it)->isAnonymousType()) {
-				for (vector<Field *>::iterator fit = cu->_fieldMembers.begin(); fit != cu->_fieldMembers.end(); fit += 1) {
-					if ((*fit)->_fieldType == (*it)) {
-						isUsedAsField = true;
-						break;
-					}
-				}
-			}
-			if (!(*it)->isAnonymousType() || isUsedAsField) {
-				rc = (*it)->acceptVisitor(BlobBuildVisitor(_gen, false, ""));
-				if (DDR_RC_OK != rc) {
-					break;
-				}
-			}
-		}
-	}
-	return rc;
-}
-
-DDR_RC
-BlobBuildVisitor::visitType(NamespaceUDT *ns) const
-{
-	DDR_RC rc = DDR_RC_OK;
-	if (!ns->_isDuplicate) {
+	/* Do not add anonymous inner types as their own type. */
+	if (_addFieldsOnly || !e->isAnonymousType()) {
 		uint32_t constCount = 0;
-		for (vector<Macro>::iterator m = (ns->_macros).begin(); m != (ns->_macros).end(); ++m) {
-			long long value = 0;
-			if (DDR_RC_OK == m->getNumeric(&value)) {
-				rc = _gen->addBlobConst(m->_name, value, &constCount);
+
+		if (!_addFieldsOnly) {
+			for (vector<EnumMember *>::iterator m = e->_enumMembers.begin(); m != e->_enumMembers.end(); ++m) {
+				EnumMember *literal = *m;
+
+				rc = _gen->addBlobConst(literal->_name, literal->_value, &constCount);
 				if (DDR_RC_OK != rc) {
 					break;
 				}
@@ -649,32 +423,220 @@ BlobBuildVisitor::visitType(NamespaceUDT *ns) const
 			if (_addFieldsOnly) {
 				_gen->_buildInfo.curBlobStruct->constantCount += constCount;
 			} else {
-				rc = _gen->addBlobStruct(ns->_name, "", constCount, 0, 0);
+				string nameFormatted = e->_name;
+
+				if (NULL != e->_outerNamespace) {
+					nameFormatted = e->_outerNamespace->_name + "__" + nameFormatted;
+				}
+
+				rc = _gen->addBlobStruct(nameFormatted, "", constCount, 0, (uint32_t)e->_sizeOf);
+			}
+		}
+	}
+
+	return rc;
+}
+
+DDR_RC
+BlobBuildVisitor::visitUnion(UnionUDT *u) const
+{
+	DDR_RC rc = DDR_RC_OK;
+
+	/* Do not add anonymous inner types as their own type. */
+	if (_addFieldsOnly || !u->isAnonymousType()) {
+		uint32_t fieldCount = 0;
+		uint32_t constCount = 0;
+
+		for (vector<Field *>::iterator m = u->_fieldMembers.begin(); m != u->_fieldMembers.end(); ++m) {
+			rc = _gen->addBlobField(*m, &fieldCount, _prefix);
+			if (DDR_RC_OK != rc) {
+				break;
 			}
 		}
 
 		if ((DDR_RC_OK == rc) && !_addFieldsOnly) {
-			/* Anonymous sub udt's are to have their fields added to this struct.*/
-			for (vector<UDT *>::iterator v = ns->_subUDTs.begin(); v != ns->_subUDTs.end(); ++v) {
-				if ((*v)->isAnonymousType()) {
-					rc = (*v)->acceptVisitor(BlobBuildVisitor(_gen, true, ""));
+			for (vector<EnumMember *>::iterator m = u->_enumMembers.begin(); m != u->_enumMembers.end(); ++m) {
+				EnumMember *literal = *m;
+
+				rc = _gen->addBlobConst(literal->_name, literal->_value, &constCount);
+				if (DDR_RC_OK != rc) {
+					break;
+				}
+			}
+		}
+
+		if ((DDR_RC_OK == rc) && !_addFieldsOnly) {
+			for (vector<Macro>::iterator m = u->_macros.begin(); m != u->_macros.end(); ++m) {
+				long long value = 0;
+
+				if (DDR_RC_OK == m->getNumeric(&value)) {
+					rc = _gen->addBlobConst(m->_name, value, &constCount);
 					if (DDR_RC_OK != rc) {
 						break;
 					}
 				}
 			}
 		}
-		if ((DDR_RC_OK == rc) && !_addFieldsOnly) {
-			for (vector<UDT *>::iterator v = ns->_subUDTs.begin(); v != ns->_subUDTs.end(); ++v) {
-				if (!(*v)->isAnonymousType()) {
-					rc = (*v)->acceptVisitor(BlobBuildVisitor(_gen, false, ""));
-					if (DDR_RC_OK != rc) {
-						break;
-					}
+
+		if (DDR_RC_OK == rc) {
+			if (_addFieldsOnly) {
+				_gen->_buildInfo.curBlobStruct->constantCount += constCount;
+				_gen->_buildInfo.curBlobStruct->fieldCount += fieldCount;
+			} else {
+				string nameFormatted = u->_name;
+				if (NULL != u->_outerNamespace) {
+					nameFormatted = u->_outerNamespace->_name + "__" + nameFormatted;
+				}
+
+				rc = _gen->addBlobStruct(nameFormatted, "", constCount, fieldCount, (uint32_t)u->_sizeOf);
+			}
+		}
+	}
+
+	if ((DDR_RC_OK == rc) && !_addFieldsOnly) {
+		BlobBuildVisitor builder(_gen, false, "");
+
+		for (vector<UDT *>::const_iterator it = u->_subUDTs.begin(); it != u->_subUDTs.end(); ++it) {
+			UDT *nested = *it;
+
+			if (isNeededBy(nested, u->_fieldMembers)) {
+				rc = nested->acceptVisitor(builder);
+				if (DDR_RC_OK != rc) {
+					break;
 				}
 			}
 		}
 	}
+
+	return rc;
+}
+
+DDR_RC
+BlobBuildVisitor::visitClass(ClassUDT *cu) const
+{
+	DDR_RC rc = DDR_RC_OK;
+
+	/* Do not add anonymous inner types as their own type. */
+	if (_addFieldsOnly || !cu->isAnonymousType()) {
+		uint32_t fieldCount = 0;
+		uint32_t constCount = 0;
+
+		for (vector<Field *>::iterator m = cu->_fieldMembers.begin(); m != cu->_fieldMembers.end(); ++m) {
+			rc = _gen->addBlobField(*m, &fieldCount, _prefix);
+			if (DDR_RC_OK != rc) {
+				break;
+			}
+		}
+
+		if ((DDR_RC_OK == rc) && !_addFieldsOnly) {
+			for (vector<EnumMember *>::iterator m = cu->_enumMembers.begin(); m != cu->_enumMembers.end(); ++m) {
+				EnumMember *literal = *m;
+
+				rc = _gen->addBlobConst(literal->_name, literal->_value, &constCount);
+				if (DDR_RC_OK != rc) {
+					break;
+				}
+			}
+		}
+
+		if ((DDR_RC_OK == rc) && !_addFieldsOnly) {
+			for (vector<Macro>::iterator m = cu->_macros.begin(); m != cu->_macros.end(); ++m) {
+				long long value = 0;
+
+				if (DDR_RC_OK == m->getNumeric(&value)) {
+					rc = _gen->addBlobConst(m->_name, value, &constCount);
+					if (DDR_RC_OK != rc) {
+						break;
+					}
+				}
+			}
+		}
+
+		if (DDR_RC_OK == rc) {
+			if (_addFieldsOnly) {
+				_gen->_buildInfo.curBlobStruct->constantCount += constCount;
+				_gen->_buildInfo.curBlobStruct->fieldCount += fieldCount;
+			} else {
+				string nameFormatted = cu->_name;
+
+				if (NULL != cu->_outerNamespace) {
+					nameFormatted = cu->_outerNamespace->_name + "__" + nameFormatted;
+				}
+
+				/* Find super class name offset */
+				string superName;
+
+				if (NULL != cu->_superClass) {
+					superName = cu->_superClass->_name;
+
+					if (NULL != cu->_superClass->_outerNamespace) {
+						superName = cu->_superClass->_outerNamespace->_name + "__" + superName;
+					}
+				}
+
+				rc = _gen->addBlobStruct(nameFormatted, superName, constCount, fieldCount, (uint32_t)cu->_sizeOf);
+			}
+		}
+	}
+
+	if ((DDR_RC_OK == rc) && !_addFieldsOnly) {
+		const BlobBuildVisitor builder(_gen, false, "");
+
+		for (vector<UDT *>::const_iterator it = cu->_subUDTs.begin(); it != cu->_subUDTs.end(); ++it) {
+			UDT *nested = *it;
+
+			if (isNeededBy(nested, cu->_fieldMembers)) {
+				rc = nested->acceptVisitor(builder);
+				if (DDR_RC_OK != rc) {
+					break;
+				}
+			}
+		}
+	}
+
+	return rc;
+}
+
+DDR_RC
+BlobBuildVisitor::visitNamespace(NamespaceUDT *ns) const
+{
+	DDR_RC rc = DDR_RC_OK;
+	uint32_t constCount = 0;
+
+	for (vector<Macro>::iterator m = ns->_macros.begin(); m != ns->_macros.end(); ++m) {
+		long long value = 0;
+
+		if (DDR_RC_OK == m->getNumeric(&value)) {
+			rc = _gen->addBlobConst(m->_name, value, &constCount);
+			if (DDR_RC_OK != rc) {
+				break;
+			}
+		}
+	}
+
+	if (DDR_RC_OK == rc) {
+		if (_addFieldsOnly) {
+			_gen->_buildInfo.curBlobStruct->constantCount += constCount;
+		} else {
+			rc = _gen->addBlobStruct(ns->_name, "", constCount, 0, 0);
+		}
+	}
+
+	if ((DDR_RC_OK == rc) && !_addFieldsOnly) {
+		const BlobBuildVisitor builder(_gen, false, "");
+
+		for (vector<UDT *>::const_iterator it = ns->_subUDTs.begin(); it != ns->_subUDTs.end(); ++it) {
+			UDT *nested = *it;
+
+			if (!nested->isAnonymousType()) {
+				rc = nested->acceptVisitor(builder);
+				if (DDR_RC_OK != rc) {
+					break;
+				}
+			}
+		}
+	}
+
 	return rc;
 }
 
@@ -685,53 +647,87 @@ BlobBuildVisitor::visitType(Type *type) const
 	return DDR_RC_OK;
 }
 
-DDR_RC
-BlobBuildVisitor::visitType(TypedefUDT *type) const
+static Type *
+getBaseType(TypedefUDT *type)
 {
-	/* No op: base types are not added to the blob at this time. */
-	return DDR_RC_OK;
+	Type *baseType = type;
+	set<Type *> baseTypes;
+
+	for (;;) {
+		baseTypes.insert(baseType);
+
+		Type * nextBase = baseType->getBaseType();
+
+		if (NULL == nextBase) {
+			/* this is the end of the chain */
+			break;
+		} else if (baseTypes.find(nextBase) != baseTypes.end()) {
+			/* this signals a cycle in the chain of base types */
+			break;
+		}
+
+		baseType = nextBase;
+	}
+
+	return baseType;
 }
 
 DDR_RC
-JavaBlobGenerator::addBlobField(Field *f, uint32_t *fieldCount, uint32_t *constCount)
-{
-	return addBlobField(f, fieldCount, constCount, "");
-}
-
-DDR_RC
-JavaBlobGenerator::addBlobField(Field *f, uint32_t *fieldCount, uint32_t *constCount, string prefix)
+BlobBuildVisitor::visitTypedef(TypedefUDT *type) const
 {
 	DDR_RC rc = DDR_RC_OK;
 
-	if (!f->_isStatic) {
-		/* Anonymous classes, structs, and unions add their fields directly to the outer type. */
-		if ((NULL != f->_fieldType) && f->_fieldType->isAnonymousType()) {
-			f->_fieldType->acceptVisitor(BlobBuildVisitor(this, true, prefix + f->_name + "."));
-		} else {
+	if (!_addFieldsOnly) {
+		Type *baseType = getBaseType(type);
+		/* include this typedef if its name is different than its baseType */
+		if (baseType->_name != type->_name) {
+			// TODO
+		}
+	}
+
+	return rc;
+}
+
+DDR_RC
+JavaBlobGenerator::addBlobField(Field *field, uint32_t *fieldCount, const string &prefix)
+{
+	DDR_RC rc = DDR_RC_OK;
+	Type *fieldType = field->_fieldType;
+
+	if (field->_isStatic) {
+		/* omit static fields */
+	} else if (NULL == fieldType) {
+		/* omit fields without a type */
+	} else if (fieldType->isAnonymousType()) {
+		rc = fieldType->acceptVisitor(BlobBuildVisitor(this, true, prefix + field->_name + "."));
+	} else {
+		uint32_t nameOffset = UINT32_MAX;
+		uint32_t typeOffset = UINT32_MAX;
+		string typeName;
+
+		rc = formatFieldType(field, &typeName);
+
+		if (DDR_RC_OK == rc) {
+			string fieldName = prefix + field->_name;
+
+			rc = stringTableOffset(&_buildInfo.header, _buildInfo.stringHash, fieldName.c_str(), &nameOffset);
+		}
+
+		if (DDR_RC_OK == rc) {
+			rc = stringTableOffset(&_buildInfo.header, _buildInfo.stringHash, typeName.c_str(), &typeOffset);
+		}
+
+		if (DDR_RC_OK == rc) {
 			*fieldCount += 1;
-			string typeName;
-			rc = formatFieldType(f, &typeName);
+			_buildInfo.curBlobField->nameOffset = nameOffset;
+			_buildInfo.curBlobField->typeOffset = typeOffset;
+			_buildInfo.curBlobField->offset = (uint32_t)field->_offset;
 
-			if (DDR_RC_OK == rc) {
-				string fieldName = prefix + f->_name;
-				if (DDR_RC_OK == rc) {
-					uint32_t offset = UINT32_MAX;
-					rc = stringTableOffset(&_buildInfo.header, _buildInfo.stringHash, fieldName.c_str(), &offset);
-
-					if (DDR_RC_OK == rc) {
-						_buildInfo.curBlobField->nameOffset = offset;
-
-						offset = UINT32_MAX;
-						rc = stringTableOffset(&_buildInfo.header, _buildInfo.stringHash, typeName.c_str(), &offset);
-
-						if (DDR_RC_OK == rc) {
-							_buildInfo.curBlobField->typeOffset = offset;
-
-							_buildInfo.curBlobField->offset = (uint32_t)f->_offset;
-							_buildInfo.curBlobField += 1;
-						}
-					}
-				}
+			if ((uintptr_t)(_buildInfo.curBlobField - _buildInfo.blobFields) < (uintptr_t)_buildInfo.fieldCount) {
+				_buildInfo.curBlobField += 1;
+			} else {
+				ERRMSG("Adding more fields than enumerated");
+				rc = DDR_RC_ERROR;
 			}
 		}
 	}
@@ -740,20 +736,25 @@ JavaBlobGenerator::addBlobField(Field *f, uint32_t *fieldCount, uint32_t *constC
 }
 
 DDR_RC
-JavaBlobGenerator::addBlobConst(string name, long long value, uint32_t *constCount)
+JavaBlobGenerator::addBlobConst(const string &name, long long value, uint32_t *constCount)
 {
-	DDR_RC rc = DDR_RC_OK;
 	uint32_t offset = UINT32_MAX;
+	DDR_RC rc = stringTableOffset(&_buildInfo.header, _buildInfo.stringHash, name.c_str(), &offset);
 
-	rc = stringTableOffset(&_buildInfo.header, _buildInfo.stringHash, name.c_str(), &offset);
 	if (DDR_RC_OK == rc) {
 		_buildInfo.curBlobConst->nameOffset = offset;
 
 		memset(_buildInfo.curBlobConst->value, 0, sizeof(_buildInfo.curBlobConst->value));
 		memcpy(_buildInfo.curBlobConst->value, &value, sizeof(value));
-		_buildInfo.curBlobConst += 1;
-		if (NULL != constCount) {
-			*constCount += 1;
+
+		if ((uintptr_t)(_buildInfo.curBlobConst - _buildInfo.blobConsts) < (uintptr_t)_buildInfo.constCount) {
+			_buildInfo.curBlobConst += 1;
+			if (NULL != constCount) {
+				*constCount += 1;
+			}
+		} else {
+			ERRMSG("Adding more constants than enumerated");
+			rc = DDR_RC_ERROR;
 		}
 	}
 
@@ -761,33 +762,30 @@ JavaBlobGenerator::addBlobConst(string name, long long value, uint32_t *constCou
 }
 
 DDR_RC
-JavaBlobGenerator::addBlobStruct(string name, string superName, uint32_t constCount, uint32_t fieldCount, uint32_t size)
+JavaBlobGenerator::addBlobStruct(const string &name, const string &superName, uint32_t constCount, uint32_t fieldCount, uint32_t size)
 {
-	DDR_RC rc = DDR_RC_OK;
-	uint32_t offset = UINT32_MAX;
+	uint32_t nameOffset = UINT32_MAX;
+	uint32_t superOffset = UINT32_MAX;
+	DDR_RC rc = stringTableOffset(&_buildInfo.header, _buildInfo.stringHash, name.c_str(), &nameOffset);
 
-	rc = stringTableOffset(&_buildInfo.header, _buildInfo.stringHash, name.c_str(), &offset);
+	if ((DDR_RC_OK == rc) && !superName.empty()) {
+		rc = stringTableOffset(&_buildInfo.header, _buildInfo.stringHash, superName.c_str(), &superOffset);
+	}
 
 	if (DDR_RC_OK == rc) {
-		_buildInfo.curBlobStruct->nameOffset = offset;
-		if (superName.empty()) {
-			_buildInfo.curBlobStruct->superOffset = 0xffffffff;
-		} else {
-			offset = UINT32_MAX;
-			rc = stringTableOffset(&_buildInfo.header, _buildInfo.stringHash, superName.c_str(), &offset);
-
-			if (DDR_RC_OK == rc) {
-				_buildInfo.curBlobStruct->superOffset = offset;
-			}
-		}
-
+		_buildInfo.curBlobStruct->nameOffset = nameOffset;
+		_buildInfo.curBlobStruct->superOffset = superOffset;
 		_buildInfo.curBlobStruct->constantCount += constCount;
 		_buildInfo.curBlobStruct->fieldCount += fieldCount;
 		_buildInfo.curBlobStruct->structSize = size;
-		if ((uintptr_t)(_buildInfo.curBlobStruct - _buildInfo.blobStructs) < (uintptr_t)_buildInfo.header.structureCount - 1) {
+
+		if ((uintptr_t)(_buildInfo.curBlobStruct - _buildInfo.blobStructs) < (uintptr_t)_buildInfo.header.structureCount) {
 			_buildInfo.curBlobStruct += 1;
 			_buildInfo.curBlobStruct->constantCount = 0;
 			_buildInfo.curBlobStruct->fieldCount = 0;
+		} else {
+			ERRMSG("Adding more types than enumerated");
+			rc = DDR_RC_ERROR;
 		}
 	}
 
@@ -797,17 +795,20 @@ JavaBlobGenerator::addBlobStruct(string name, string superName, uint32_t constCo
 class BlobFieldVisitor : public TypeVisitor
 {
 private:
-	string *_fieldString;
+	string * const _fieldString;
 
 public:
-	BlobFieldVisitor(string *fieldString) : _fieldString(fieldString) {}
+	explicit BlobFieldVisitor(string *fieldString)
+		: _fieldString(fieldString)
+	{
+	}
 
-	DDR_RC visitType(Type *type) const;
-	DDR_RC visitType(NamespaceUDT *type) const;
-	DDR_RC visitType(EnumUDT *type) const;
-	DDR_RC visitType(TypedefUDT *type) const;
-	DDR_RC visitType(ClassUDT *type) const;
-	DDR_RC visitType(UnionUDT *type) const;
+	virtual DDR_RC visitType(Type *type) const;
+	virtual DDR_RC visitClass(ClassUDT *type) const;
+	virtual DDR_RC visitEnum(EnumUDT *type) const;
+	virtual DDR_RC visitNamespace(NamespaceUDT *type) const;
+	virtual DDR_RC visitTypedef(TypedefUDT *type) const;
+	virtual DDR_RC visitUnion(UnionUDT *type) const;
 };
 
 DDR_RC
@@ -818,77 +819,84 @@ BlobFieldVisitor::visitType(Type *type) const
 }
 
 DDR_RC
-BlobFieldVisitor::visitType(NamespaceUDT *type) const
+BlobFieldVisitor::visitNamespace(NamespaceUDT *type) const
 {
 	*_fieldString += type->getSymbolKindName() + " " + type->getFullName();
 	return DDR_RC_OK;
 }
 
 DDR_RC
-BlobFieldVisitor::visitType(EnumUDT *type) const
+BlobFieldVisitor::visitEnum(EnumUDT *type) const
 {
 	*_fieldString += type->getSymbolKindName() + " " + type->getFullName();
 	return DDR_RC_OK;
 }
 
 DDR_RC
-BlobFieldVisitor::visitType(TypedefUDT *type) const
+BlobFieldVisitor::visitTypedef(TypedefUDT *type) const
 {
 	/* If typedef is void*, or otherwise known as a function pointer, return name as void*. */
-	if ((NULL != type->_aliasedType) && ("void" == type->_aliasedType->_name) && (1 == type->_modifiers._pointerCount)) {
+	Type *aliasedType = type->_aliasedType;
+
+	if ((NULL != aliasedType) && ("void" == aliasedType->_name) && (0 != type->_modifiers._pointerCount)) {
 		*_fieldString += "void*";
 	} else {
 		string prefix = type->getSymbolKindName();
-		*_fieldString += (prefix.empty() ? "" : prefix + " ") + type->getFullName();
+		*_fieldString += prefix.empty() ? type->getFullName() : (prefix + " " + type->getFullName());
 	}
 
 	return DDR_RC_OK;
 }
 
 DDR_RC
-BlobFieldVisitor::visitType(ClassUDT *type) const
+BlobFieldVisitor::visitClass(ClassUDT *type) const
 {
-	return visitType((NamespaceUDT *)type);
+	return visitNamespace(type);
 }
 
 DDR_RC
-BlobFieldVisitor::visitType(UnionUDT *type) const
+BlobFieldVisitor::visitUnion(UnionUDT *type) const
 {
-	return visitType((NamespaceUDT *)type);
+	return visitNamespace(type);
 }
 
 DDR_RC
 JavaBlobGenerator::formatFieldType(Field *field, string *fieldType)
 {
 	DDR_RC rc = DDR_RC_OK;
+
 	*fieldType = "";
 
 	if (0 != (field->_modifiers._modifierFlags & ~Modifiers::MODIFIER_FLAGS)) {
 		ERRMSG("Unhandled field modifer flags: %d", field->_modifiers._modifierFlags);
 		rc = DDR_RC_ERROR;
 	} else {
-		*fieldType =  field->_modifiers.getModifierNames();
+		*fieldType = field->_modifiers.getModifierNames();
 	}
 
 	if (DDR_RC_OK == rc) {
-		if (NULL == field->_fieldType) {
+		Type *type = field->_fieldType;
+
+		if ((NULL == type) || type->_blacklisted || (field->_modifiers._pointerCount > 1)) {
 			*fieldType = "void";
 		} else {
-			rc = field->_fieldType->acceptVisitor(BlobFieldVisitor(fieldType));
+			rc = type->acceptVisitor(BlobFieldVisitor(fieldType));
 		}
 	}
 
 	if (DDR_RC_OK == rc) {
-		for (size_t i = 0; i < field->_modifiers._pointerCount; i++) {
+		for (size_t i = field->_modifiers._pointerCount; i > 0; --i) {
 			*fieldType += "*";
 		}
 
 		if (field->_modifiers.isArray()) {
 			stringstream stream;
-			for (size_t i = 0; i < field->_modifiers.getArrayDimensions(); i++) {
+			size_t dimensionCount = field->_modifiers.getArrayDimensions();
+			for (size_t i = 0; i < dimensionCount; ++i) {
+				size_t length = field->_modifiers.getArrayLength(i);
 				stream << "[";
-				if (field->_modifiers.getArrayLength(i) > 0) {
-					stream << field->_modifiers.getArrayLength(i);
+				if (0 != length) {
+					stream << length;
 				}
 				stream << "]";
 			}
@@ -904,21 +912,26 @@ JavaBlobGenerator::addFieldAndConstCount(bool addFieldsOnly, size_t fieldCount, 
 {
 	DDR_RC rc = DDR_RC_OK;
 	size_t structDataSize = sizeof(BlobField) * fieldCount + sizeof(BlobConstant) * constCount;
+
 	if (!addFieldsOnly) {
 		structDataSize += sizeof(BlobStruct);
 	}
 
 	if (structDataSize < ((uint32_t)-1)) {
-		if (!addFieldsOnly) {
-			_buildInfo.header.structureCount += 1;
-		}
 		_buildInfo.header.structDataSize += (uint32_t)structDataSize;
 		_buildInfo.fieldCount += (uint32_t)fieldCount;
 		_buildInfo.constCount += (uint32_t)constCount;
+
+		if (addFieldsOnly) {
+			/* just count fields and constants */
+		} else if (_printEmptyTypes || (0 != _buildInfo.constCount) || (0 != _buildInfo.fieldCount)) {
+			_buildInfo.header.structureCount += 1;
+		}
 	} else {
 		ERRMSG("structDataSize is too large to fit in header.structDataSize");
 		rc = DDR_RC_ERROR;
 	}
+
 	return rc;
 }
 
@@ -930,196 +943,191 @@ BlobEnumerateVisitor::visitType(Type *type) const
 }
 
 DDR_RC
-BlobEnumerateVisitor::visitType(NamespaceUDT *type) const
+BlobEnumerateVisitor::visitNamespace(NamespaceUDT *type) const
 {
 	DDR_RC rc = DDR_RC_OK;
-	if (!type->_isDuplicate) {
+
+	if (_addFieldsOnly || !type->isAnonymousType()) {
 		size_t constCount = 0;
-		/* Add only integer constants to the blob. */
-		for (vector<Macro>::iterator it = type->_macros.begin(); it != type->_macros.end(); it += 1) {
+
+		if(!_addFieldsOnly) {
+			for (vector<Macro>::iterator it = type->_macros.begin(); it != type->_macros.end(); ++it) {
+				/* Add only integer constants to the blob. */
+				if (DDR_RC_OK == it->getNumeric(NULL)) {
+					constCount += 1;
+				}
+			}
+		}
+
+		rc = _gen->addFieldAndConstCount(_addFieldsOnly, 0, constCount);
+	}
+
+	if ((DDR_RC_OK == rc) && !_addFieldsOnly) {
+		for (vector<UDT *>::const_iterator it = type->_subUDTs.begin(); it != type->_subUDTs.end(); ++it) {
+			UDT *nested = *it;
+
+			if (!nested->isAnonymousType()) {
+				rc = nested->acceptVisitor(*this);
+				if (DDR_RC_OK != rc) {
+					break;
+				}
+			}
+		}
+	}
+
+	return rc;
+}
+
+DDR_RC
+BlobEnumerateVisitor::visitEnum(EnumUDT *type) const
+{
+	DDR_RC rc = DDR_RC_OK;
+	size_t constCount = _addFieldsOnly ? 0 : type->_enumMembers.size();
+
+	if (_addFieldsOnly || !type->isAnonymousType()) {
+		rc = _gen->addFieldAndConstCount(_addFieldsOnly, 0, constCount);
+	}
+
+	return rc;
+}
+
+DDR_RC
+BlobEnumerateVisitor::visitTypedef(TypedefUDT *type) const
+{
+	DDR_RC rc = DDR_RC_OK;
+
+	if (!_addFieldsOnly) {
+		Type *baseType = getBaseType(type);
+		/* include this typedef if its name is different than its baseType */
+		if (baseType->_name != type->_name) {
+			// TODO
+		}
+	}
+
+	return rc;
+}
+
+DDR_RC
+BlobEnumerateVisitor::visitClass(ClassUDT *type) const
+{
+	DDR_RC rc = DDR_RC_OK;
+	size_t fieldCount = 0;
+
+	if (_addFieldsOnly || !type->isAnonymousType()) {
+		const BlobEnumerateVisitor fieldsOnly(_gen, true);
+
+		for (vector<Field *>::iterator v = type->_fieldMembers.begin(); v != type->_fieldMembers.end(); ++v) {
+			Field *field = *v;
+			Type *fieldType = field->_fieldType;
+
+			if (field->_isStatic) {
+				/* skip static fields */
+			} else if (NULL == fieldType) {
+				/* skip fields without a type */
+			} else if (fieldType->isAnonymousType()) {
+				/* Anonymous type members are added to the struct and not counted as fields themselves. */
+				rc = fieldType->acceptVisitor(fieldsOnly);
+				if (DDR_RC_OK != rc) {
+					break;
+				}
+			} else {
+				fieldCount += 1;
+			}
+		}
+	}
+
+	size_t constCount = 0;
+
+	if ((DDR_RC_OK == rc) && !_addFieldsOnly) {
+		constCount += type->_enumMembers.size();
+
+		for (vector<Macro>::iterator it = type->_macros.begin(); it != type->_macros.end(); ++it) {
+			/* Only add integer constants to the blob. */
 			if (DDR_RC_OK == it->getNumeric(NULL)) {
 				constCount += 1;
 			}
 		}
-
-		if ((DDR_RC_OK == rc) && (!type->isAnonymousType() || _addFieldsOnly)) {
-			rc = _gen->addFieldAndConstCount(_addFieldsOnly, 0, constCount);
-		}
-		/* When adding the fields from a field with an anonymous type, do not add subUDTs twice. */
-		if ((DDR_RC_OK == rc) && !_addFieldsOnly) {
-			for (vector<UDT *>::iterator it = type->_subUDTs.begin(); it != type->_subUDTs.end(); ++it) {
-				if ((*it)->isAnonymousType()) {
-					rc = (*it)->acceptVisitor(BlobEnumerateVisitor(_gen, true));
-					if (DDR_RC_OK != rc) {
-						break;
-					}
-				}
-			}
-		}
-		if ((DDR_RC_OK == rc) && !_addFieldsOnly) {
-			for (vector<UDT *>::iterator it = type->_subUDTs.begin(); it != type->_subUDTs.end(); ++it) {
-				if (!(*it)->isAnonymousType()) {
-					rc = (*it)->acceptVisitor(BlobEnumerateVisitor(_gen, false));
-					if (DDR_RC_OK != rc) {
-						break;
-					}
-				}
-			}
-		}
-	}
-	return rc;
-}
-
-DDR_RC
-BlobEnumerateVisitor::visitType(EnumUDT *type) const
-{
-	DDR_RC rc = DDR_RC_OK;
-	if (!type->_isDuplicate) {
-		if ((!type->isAnonymousType() || _addFieldsOnly)
-			&& ((type->_enumMembers.size() > 0) || _gen->_printEmptyTypes)) {
-			rc = _gen->addFieldAndConstCount(_addFieldsOnly, 0, type->_enumMembers.size());
-		}
-	}
-	return rc;
-}
-
-DDR_RC
-BlobEnumerateVisitor::visitType(TypedefUDT *type) const
-{
-	/* No op: typedefs are not added to the blob at this time. */
-	return DDR_RC_OK;
-}
-
-DDR_RC
-BlobEnumerateVisitor::visitType(ClassUDT *type) const
-{
-	DDR_RC rc = DDR_RC_OK;
-	if (!type->_isDuplicate) {
-		size_t fieldCount = 0;
-		size_t constCount = type->_enumMembers.size();
-
-		if ((DDR_RC_OK == rc) && (!type->isAnonymousType() || _addFieldsOnly)
-			&& ((type->_fieldMembers.size() > 0) || _gen->_printEmptyTypes)) {
-			for (vector<Field *>::iterator v = type->_fieldMembers.begin(); v != type->_fieldMembers.end(); ++v) {
-				if (!(*v)->_isStatic) {
-					/* Anonymous type members are added to the struct and not counted as a field themselves. */
-					if ((NULL != (*v)->_fieldType) && (*v)->_fieldType->isAnonymousType()) {
-						rc = (*v)->_fieldType->acceptVisitor(BlobEnumerateVisitor(_gen, true));
-						if (DDR_RC_OK != rc) {
-							break;
-						}
-					} else {
-						fieldCount += 1;
-					}
-				}
-			}
-		}
-
-		if (DDR_RC_OK == rc) {
-			/* Add only integer constants to the blob. */
-			for (vector<Macro>::iterator it = type->_macros.begin(); it != type->_macros.end(); it += 1) {
-				if (DDR_RC_OK == it->getNumeric(NULL)) {
-					constCount += 1;
-				}
-			}
-		}
-		if ((DDR_RC_OK == rc) && (!type->isAnonymousType() || _addFieldsOnly)
-			&& ((type->_fieldMembers.size() > 0) || _gen->_printEmptyTypes)) {
-			rc = _gen->addFieldAndConstCount(_addFieldsOnly, fieldCount, constCount);
-		}
 	}
 
-	/* Anonymous sub udt's not used as fields are to have their fields added to this struct. */
-	if ((DDR_RC_OK == rc) && !_addFieldsOnly && !type->_isDuplicate) {
-		/* When adding the fields from a field with an anonymous type, do not add subUDTs twice. */
-		for (vector<UDT *>::iterator it = type->_subUDTs.begin(); it != type->_subUDTs.end(); ++it) {
-			if ((*it)->isAnonymousType()) {
-				bool isUsedAsField = false;
-				for (vector<Field *>::iterator fit = type->_fieldMembers.begin(); fit != type->_fieldMembers.end(); fit += 1) {
-					if ((*fit)->_fieldType == (*it)) {
-						isUsedAsField = true;
-						break;
-					}
-				}
-				if (!isUsedAsField) {
-					rc = (*it)->acceptVisitor(BlobEnumerateVisitor(_gen, true));
-					if (DDR_RC_OK != rc) {
-						break;
-					}
-				}
-			}
-		}
+	if ((DDR_RC_OK == rc) && (_addFieldsOnly || !type->isAnonymousType())) {
+		rc = _gen->addFieldAndConstCount(_addFieldsOnly, fieldCount, constCount);
 	}
+
 	if ((DDR_RC_OK == rc) && !_addFieldsOnly) {
-		for (vector<UDT *>::iterator it = type->_subUDTs.begin(); it != type->_subUDTs.end(); ++it) {
-			bool isUsedAsField = false;
-			if ((*it)->isAnonymousType()) {
-				for (vector<Field *>::iterator fit = type->_fieldMembers.begin(); fit != type->_fieldMembers.end(); fit += 1) {
-					if ((*fit)->_fieldType == (*it)) {
-						isUsedAsField = true;
-						break;
-					}
-				}
-			}
-			if (!(*it)->isAnonymousType() || isUsedAsField) {
-				rc = (*it)->acceptVisitor(BlobEnumerateVisitor(_gen, false));
+		for (vector<UDT *>::const_iterator it = type->_subUDTs.begin(); it != type->_subUDTs.end(); ++it) {
+			UDT *nested = *it;
+
+			if (isNeededBy(nested, type->_fieldMembers)) {
+				rc = nested->acceptVisitor(*this);
 				if (DDR_RC_OK != rc) {
 					break;
 				}
 			}
 		}
 	}
+
 	return rc;
 }
 
 DDR_RC
-BlobEnumerateVisitor::visitType(UnionUDT *type) const
+BlobEnumerateVisitor::visitUnion(UnionUDT *type) const
 {
 	DDR_RC rc = DDR_RC_OK;
-	if (!type->_isDuplicate) {
-		size_t fieldCount = 0;
-		size_t constCount = type->_enumMembers.size();
+	size_t fieldCount = 0;
 
-		if ((DDR_RC_OK == rc) && (!type->isAnonymousType() || _addFieldsOnly)
-			&& ((type->_fieldMembers.size() > 0) || _gen->_printEmptyTypes)) {
-			for (vector<Field *>::iterator v = type->_fieldMembers.begin(); v != type->_fieldMembers.end(); ++v) {
-				if (!(*v)->_isStatic) {
-					/* Anonymous type members are added to the struct and not counted as a field themselves. */
-					if ((NULL != (*v)->_fieldType) && (*v)->_fieldType->isAnonymousType()) {
-						rc = (*v)->_fieldType->acceptVisitor(BlobEnumerateVisitor(_gen, true));
-						if (DDR_RC_OK != rc) {
-							break;
-						}
-					} else {
-						fieldCount += 1;
-					}
-				}
-			}
-		}
+	if (_addFieldsOnly || !type->isAnonymousType()) {
+		const BlobEnumerateVisitor fieldsOnly(_gen, true);
 
-		if (DDR_RC_OK == rc) {
-			/* Add only integer constants to the blob. */
-			for (vector<Macro>::iterator it = type->_macros.begin(); it != type->_macros.end(); it += 1) {
-				if (DDR_RC_OK == it->getNumeric(NULL)) {
-					constCount += 1;
+		for (vector<Field *>::iterator v = type->_fieldMembers.begin(); v != type->_fieldMembers.end(); ++v) {
+			Field *field = *v;
+			Type *fieldType = field->_fieldType;
+
+			if (field->_isStatic) {
+				/* skip static fields */
+			} else if (NULL == fieldType) {
+				/* skip fields without a type */
+			} else if (fieldType->isAnonymousType()) {
+				/* Anonymous type members are added to the struct and not counted as fields themselves. */
+				rc = fieldType->acceptVisitor(fieldsOnly);
+				if (DDR_RC_OK != rc) {
+					break;
 				}
+			} else {
+				fieldCount += 1;
 			}
-		}
-		if ((DDR_RC_OK == rc) && (!type->isAnonymousType() || _addFieldsOnly)
-			&& ((type->_fieldMembers.size() > 0) || _gen->_printEmptyTypes)) {
-			rc = _gen->addFieldAndConstCount(_addFieldsOnly, fieldCount, constCount);
 		}
 	}
-	if (DDR_RC_OK == rc) {
-		/* When adding the fields from a field with an anonymous type, do not add subUDTs twice. */
-		if (!_addFieldsOnly) {
-			for (vector<UDT *>::iterator v = type->_subUDTs.begin(); v != type->_subUDTs.end(); ++v) {
-				rc = (*v)->acceptVisitor(BlobEnumerateVisitor(_gen, false));
+
+	size_t constCount = 0;
+
+	if ((DDR_RC_OK == rc) && !_addFieldsOnly) {
+		constCount += type->_enumMembers.size();
+
+		for (vector<Macro>::iterator it = type->_macros.begin(); it != type->_macros.end(); ++it) {
+			/* Only add integer constants to the blob. */
+			if (DDR_RC_OK == it->getNumeric(NULL)) {
+				constCount += 1;
+			}
+		}
+	}
+
+	if ((DDR_RC_OK == rc) && (_addFieldsOnly || !type->isAnonymousType())) {
+		rc = _gen->addFieldAndConstCount(_addFieldsOnly, fieldCount, constCount);
+	}
+
+	/* When adding the fields from a field with an anonymous type, do not add subUDTs twice. */
+	if ((DDR_RC_OK == rc) && !_addFieldsOnly) {
+		for (vector<UDT *>::const_iterator it = type->_subUDTs.begin(); it != type->_subUDTs.end(); ++it) {
+			UDT *nested = *it;
+
+			if (isNeededBy(nested, type->_fieldMembers)) {
+				rc = nested->acceptVisitor(*this);
 				if (DDR_RC_OK != rc) {
 					break;
 				}
 			}
 		}
 	}
+
 	return rc;
 }

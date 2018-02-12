@@ -1,5 +1,5 @@
 <!--
-Copyright (c) 2016, 2017 IBM Corp. and others
+Copyright (c) 2016, 2018 IBM Corp. and others
 
 This program and the accompanying materials are made available under
 the terms of the Eclipse Public License 2.0 which accompanies this
@@ -10,7 +10,7 @@ is available at https://www.apache.org/licenses/LICENSE-2.0.
 This Source Code may also be made available under the following
 Secondary Licenses when the conditions for such availability set
 forth in the Eclipse Public License, v. 2.0 are satisfied: GNU
-General Public License, version 2 with the GNU Classpath 
+General Public License, version 2 with the GNU Classpath
 Exception [1] and GNU General Public License, version 2 with the
 OpenJDK Assembly Exception [2].
 
@@ -31,7 +31,7 @@ OMR must be configured to enable the DDR component. As of writing, this is not
 the default. DDR will be built after the main files are built.
 
 ```sh
-./configure --enable-debug --enable-DDR CPPFLAGS=-I/usr/include/libdwarf
+bash configure --enable-debug --enable-DDR CPPFLAGS=-I/usr/include/libdwarf
 make
 ```
 
@@ -41,15 +41,15 @@ How to run new ddrgen on the test samples:
 
 1. Run the macros script from the top directory:
    ```sh
-   ./ddr/tools/getmacros "ddr/test"
+   bash ddr/tools/getmacros ddr/test
    ```
 2. Run ddrgen with the files to scan and macro list as parameters
    ```sh
-   ./ddrgen ./ddrgentest --macrolist ./macroList
+   ./ddrgen ddrgentest --macrolist ddr/test/macroList --blob blob.dat --superset superset.out
    ```
 3. Print the generated blob
    ```sh
-   ./blob_reader blob.dat >blob.dat.strings
+   ./blob_reader blob.dat > blob.dat.strings
    ```
 4. Compare the output to the expected output. For linux x86 (Note that ubuntu has slightly different results):
    ```sh
@@ -77,4 +77,3 @@ You need to call a special makefile, which will run ddrgen on your project.
 ```sh
 make -f omr/ddr_artifacts.mk TOP_SRCDIR=. DBG_FILE_LIST=./<filelist>
 ```
-

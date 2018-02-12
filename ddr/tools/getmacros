@@ -1,7 +1,7 @@
-#! /bin/bash
+#!/bin/bash
 
 ###############################################################################
-# Copyright (c) 2016, 2017 IBM Corp. and others
+# Copyright (c) 2016, 2018 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -21,26 +21,38 @@
 # SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
 ###############################################################################
 
+debug=1
+
+# Regular expressions used to process the defines and namespace annotations.
+# These assume that all whitespace has been replaced by space characters.
+id='[A-Za-z_][A-Za-z0-9_]*' # matches an identifier
+default_regex="@ddr_namespace: *default"
+map_to_type_regex="@ddr_namespace: *map_to_type="
+flag_define_regex="^ *# *define +${id} *($|//|/\*)"
+flag_undef_regex="^ *# *undef +${id} *($|//|/\*)"
+value_define_regex="^ *# *define +${id} +[^ ].*($|//|/\*)"
+include_guard_regex=".*_[Hh]([Pp][Pp])?_? *($|//|/\*)"
+
 ##
-# Create a list of all cpp, hpp, c, and h files that have a simple (non function) macro within them.
+# Create a list of all c, h, cpp and hpp files that have simple (non function) macros within them.
 ##
 get_all_annotated_files() {
-	local annotated_files=$(grep -rlE "@ddr_(namespace|options): " ${scan_dir} | grep -e '\.[ch]pp$' -e '\.[ch]$')
+	local annotated_files=$(find ${scan_dir} -type f | grep -E -e '\.[ch](pp)?$' | sort | xargs -d '\n' grep -lE '@ddr_(namespace|options):')
 	echo "${annotated_files[@]}"
 }
 
 get_ddr_options() {
 	# Check the file for "@ddr_options" or use the default settings.
-	if grep -qE "@ddr_options: valuesonly" ${f}; then
+	if grep -qE "@ddr_options: *valuesonly" ${f}; then
 		addValues=1
 		addFlags=0
-	elif grep -qE "@ddr_options: buildflagsonly" ${f}; then
+	elif grep -qE "@ddr_options: *buildflagsonly" ${f}; then
 		addValues=0
 		addFlags=1
-	elif grep -qE "@ddr_options: valuesandbuildflags" ${f}; then
+	elif grep -qE "@ddr_options: *valuesandbuildflags" ${f}; then
 		addValues=1
 		addFlags=1
-	elif grep -qE "@ddr_namespace: (default|map_to_type=.*)" ${f}; then
+	elif grep -qE "@ddr_namespace: *(default|map_to_type=)" ${f}; then
 		addValues=1
 		addFlags=0
 	else
@@ -49,38 +61,28 @@ get_ddr_options() {
 	fi
 }
 
-end_previous_namespace() {
-	if [[ 0 -ne ${#namespace} ]]; then
-		namespace=""
-	fi
-}
-
 begin_new_namespace() {
 	temp_macro_file=${f}
-	echo "@TYPE_${namespace}" >> ${temp_macro_file}
+	echo "@TYPE_${namespace}" >> "${temp_macro_file}"
 }
 
-set_map_to_type_namespace() {
+end_previous_namespace() {
+	namespace=''
+}
+
+set_default_namespace() {
 	end_previous_namespace
-	# Strip off everything on the line up to the'='.
-	namespace=${line##*map_to_type=}
-	# Remove everything after comma (version info).
-	namespace=${namespace%,*}
-	# Remove everything after white space space (line may end in " */", for example).
-	namespace=${namespace% *}
-	namespace=${namespace%	*}
+	# Remove directory and extension; append 'Constants'.
+	namespace=$(echo ${f} | sed -e 's|^.*/||' -e 's|\..*$||' -e 's|\(.\)|\U\1|' -e 's|$|Constants|')
 
 	# Echo the type name into the output file.
 	begin_new_namespace
 }
 
-set_default_namespace() {
+set_map_to_type_namespace() {
 	end_previous_namespace
-	# Remove directory info.
-	namespace=${f##*/}
-	# Remove file extension.
-	namespace=${namespace%.*}
-	namespace=$(echo "${namespace}Constants" | sed 's/\(.\)/\U\1/')
+	# Extract the type name.
+	namespace=$(echo "${line}" | sed -e "s|^.*map_to_type=\(${id}\).*$|\1|")
 
 	# Echo the type name into the output file.
 	begin_new_namespace
@@ -92,8 +94,7 @@ define_flag_macro() {
 		if [[ 0 -eq ${#namespace} ]]; then
 			set_default_namespace
 		fi
-		macro=$(echo "${line}" | awk '{print $2'})
-		echo "@MACRO_${macro} 1" >> "${temp_macro_file}"
+		echo "${line}" | sed -e "s|^ *# *define  *\(${id}\).*$|#ifdef \1\n@MACRO_\1 1\n#endif|" >> "${temp_macro_file}"
 	fi
 }
 
@@ -102,8 +103,7 @@ undef_flag_macro() {
 		set_default_namespace
 	fi
 	# Print a constant of 0 to the macro file.
-	macro=$(echo "${line}" | awk '{print $2'})
-	echo "@MACRO_${macro} 0" >> "${temp_macro_file}"
+	echo "${line}" | sed -e "s|^ *# *undef  *\(${id}\).*$|#ifndef \1\n@MACRO_\1 0\n#endif|" >> "${temp_macro_file}"
 }
 
 define_value_macro() {
@@ -111,14 +111,13 @@ define_value_macro() {
 		set_default_namespace
 	fi
 	# Print the macro.
-	macro=$(echo ${line} | awk '{print $2}')
-	echo "@MACRO_${macro} ${macro}" >> "${temp_macro_file}"
+	echo "${line}" | sed -e "s|^ *# *define  *\(${id}\) .*$|#ifdef \1\n@MACRO_\1 \1\n#endif|" >> "${temp_macro_file}"
 }
 
 ##
 # For each file, create another file with all the macro names in it. This file
-# Will include the source file, and be used to find macro values by running the
-# c pre processor on it. The results are added to the macroList file containing
+# will include the source file, and be used to find macro values by running the
+# C preprocessor on it. The results are added to the macroList file containing
 # all macro info. The map to type policy associates all of the macros from a file
 # with the type specified in the top of the header.
 ##
@@ -132,49 +131,45 @@ parse_namespace_policy_files() {
 		# Find ddr_options or use the default.
 		get_ddr_options
 
-		if [[ 1 == ${addFlags} || 1 == ${addValues} ]]; then
-			# gather qualifying macro definitions
-			IFS=$'\n'
-			macro_list=$(awk '/@ddr_namespace: (map_to_type=|default)/{print}/^[ 	]*#(define|undef)[ 	]+[A-Za-z_][A-Za-z0-9_]*/{print}' ${f})
+		if [ ${addFlags} -ne 0 -o ${addValues} -ne 0 ]; then
+			if [ $debug -ne 0 ]; then
+				echo "Processing constants in '${f}' ..."
+			fi
 
-			# backup the original file
-			cp ${f} ${f}.orig
+			# backup the original file (preserving its timestamp)
+			mv ${f} ${f}.orig
+			cp ${f}.orig ${f}
 
 			# Inject repeated include guard and file delimiter
 			(( filenum++ ))
 			echo >> ${f}
-			echo "#ifndef DDRGEN_F${filenum}_GUARD" >> ${f}
-			echo "#define DDRGEN_F${filenum}_GUARD" >> ${f}
+			echo "#ifndef DDRGEN_F${filenum}_GUARD_H" >> ${f}
+			echo "#define DDRGEN_F${filenum}_GUARD_H" >> ${f}
 			echo "@DDRFILE_BEGIN ${f}" >> ${f}
 
-			for line in ${macro_list}; do
-				# Regex's used to process the defines and namespace annotations.
-				# The script was not happy on Windows if the regex's are in the if statements.
-				map_to_type_regex="(@ddr_namespace: map_to_type=)"
-				default_regex="(@ddr_namespace: default)"
-				flag_define_regex="^[ 	]*\#define[ 	]+[A-Za-z_][A-Za-z0-9_]*[ 	]*($|\/\/|\/\*)"
-				flag_undef_regex="^[ 	]*\#undef[ 	]+[A-Za-z_][A-Za-z0-9_]*[ 	]*($|\/\/|\/\*)"
-				value_define_regex="^[ 	]*#define[ 	]+[A-Za-z_][A-Za-z0-9_]*[^(][ 	]+.+($|\/\/|\/\*)"
-				include_guard_regex="((.*_h)|(.*_hpp)|(.*_h_)|(.*_hpp_))([ \t]*($|\/\/|\/\*))"
-
-				# Remove trailing whitespace from lines. This clears line endings.
-				line="$(echo -e "${line}" | sed -e 's/[[:space:]]*$//')"
-
-				if [[ ${line} =~ ${map_to_type_regex} ]]; then
-					# Change namespaces to specified pseudostructure.
-					set_map_to_type_namespace
-				elif [[ ${line} =~ ${default_regex} ]]; then
+			# Gather qualifying macro definitions.
+			# We use sed to replace tabs with spaces and trim trailing spaces
+			# to simplify patterns for grep and this script.
+			sed -e 's/\t/ /g' -e 's/ *$//' < ${f} \
+			| grep -E \
+				-e '@ddr_namespace: *(default|map_to_type=)' \
+				-e '^ *# *(define|undef) +[A-Za-z_]' \
+			| while read -r line; do
+				if [[ ${line} =~ ${default_regex} ]]; then
 					# Change namespaces to "<FilenameConstants>".
 					set_default_namespace
-				elif [[ ${line} =~ ${flag_define_regex} && 1 == ${addFlags} ]]; then
-					# Print a define flag as a constant of 1.
-					define_flag_macro
-				elif [[ ${line} =~ ${flag_undef_regex} && 1 == ${addFlags} ]]; then
-					# Print an undef flag as a constant of 0.
-					undef_flag_macro
-				elif [[ ${line} =~ ${value_define_regex} && 1 == ${addValues} ]]; then
+				elif [[ ${line} =~ ${map_to_type_regex} ]]; then
+					# Change namespaces to specified pseudostructure.
+					set_map_to_type_namespace
+				elif [[ ${addValues} -ne 0 && ${line} =~ ${value_define_regex} ]]; then
 					# Print a value define.
 					define_value_macro
+				elif [[ ${addFlags} -ne 0 && ${line} =~ ${flag_define_regex} ]]; then
+					# Print a define flag as a constant of 1.
+					define_flag_macro
+				elif [[ ${addFlags} -ne 0 && ${line} =~ ${flag_undef_regex} ]]; then
+					# Print an undef flag as a constant of 0.
+					undef_flag_macro
 				fi
 			done
 			end_previous_namespace
@@ -187,30 +182,30 @@ parse_namespace_policy_files() {
 }
 
 restore_annotated_files() {
+	echo "Restoring annotated files ..."
 	for f in "${annotated_files[@]}"; do
 		# Find ddr_options or use the default.
 		get_ddr_options
 
-		if [[ 1 == ${addFlags} || 1 == ${addValues} ]]; then
-			# restore the original file
+		if [ ${addFlags} -ne 0 -o ${addValues} -ne 0 ]; then
+			# restore the original file (retaining its timestamp)
 			if [[ -e ${f}.orig ]]; then
-				cp ${f}.orig ${f}
-				rm ${f}.orig
+				rm -f ${f}
+				mv ${f}.orig ${f}
 			fi
 		fi
 	done
 }
 
-# On ctrl-c we want to restore any annotated files, and then exit
+# On Ctrl-C we want to restore any annotated files, and then exit
 trap_int() {
-	echo "Ctrl-c detected, exiting ..."
-	echo "Restoring annotated files ..."
+	echo "Ctrl-C detected, exiting ..."
 	restore_annotated_files
 	exit
 }
 
 main() {
-	# trap ctrl-c and call trap_int()
+	# trap Ctrl-C and call trap_int()
 	trap "trap_int" INT TERM
 
 	annotated_files=( $(get_all_annotated_files) )
@@ -221,22 +216,18 @@ main() {
 	echo "Annotating source files containing macros ..."
 	# Deal with specific policies.
 	parse_namespace_policy_files
-	
 
 	# preprocess annotated source code
 	if [[ $(command -v gmake) ]]; then
-		gmake --ignore-errors -C ${scan_dir} ddrgen
+		make=gmake
 	else
-		make --ignore-errors -C ${scan_dir} ddrgen
+		make=make
 	fi
+	${make} --ignore-errors --keep-going -C ${scan_dir} ddrgen
 
 	echo "Scraping anotations from preprocessed code ..."
-	local preproc_files=$(grep -rl -e @MACRO_ -e @TYPE_ ${scan_dir} | grep '\.i$')
-	if [[ 0 -ne ${#preproc_files} ]]; then
-		grep -h -e @DDRFILE -e @MACRO_ -e @TYPE_ ${preproc_files} > ${macroList_file}
-	fi
+	find ${scan_dir} -type f -name '*.i' | sort | xargs -d '\n' grep -hE -e '^@(DDRFILE|MACRO|TYPE)_' > ${macroList_file}
 
-	echo "Restoring annotated files ..."
 	restore_annotated_files
 }
 

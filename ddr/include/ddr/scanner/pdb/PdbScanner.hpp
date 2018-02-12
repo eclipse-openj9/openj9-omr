@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2017 IBM Corp. and others
+ * Copyright (c) 2015, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -57,7 +57,8 @@ typedef struct PostponedType
 class PdbScanner: public Scanner
 {
 public:
-	DDR_RC startScan(OMRPortLibrary *portLibrary, Symbol_IR *const ir, vector<string> *debugFiles, string blacklistPath);
+	virtual DDR_RC startScan(OMRPortLibrary *portLibrary, Symbol_IR *ir,
+			vector<string> *debugFiles, const char *blacklistPath);
 
 private:
 	Symbol_IR *_ir;
@@ -65,7 +66,7 @@ private:
 	vector<PostponedType> _postponedFields;
 
 	void addType(Type *type, bool addToIR);
-	DDR_RC addFieldMember(IDiaSymbol *symbol, ClassUDT *const udt);
+	DDR_RC addFieldMember(IDiaSymbol *symbol, ClassUDT *udt);
 	DDR_RC setBaseType(IDiaSymbol *typeSymbol, Type **type);
 	DDR_RC setBaseTypeFloat(ULONGLONG ulLen, Type **type);
 	DDR_RC setBaseTypeInt(ULONGLONG ulLen, Type **type);
@@ -79,7 +80,7 @@ private:
 	DDR_RC setMemberOffset(IDiaSymbol *symbol, Field *newField);
 
 	DDR_RC addChildrenSymbols(IDiaSymbol *symbol, enum SymTagEnum symTag, NamespaceUDT *outerUDT);
-	DDR_RC addEnumMembers(IDiaSymbol *diaSymbol, EnumUDT *const e);
+	DDR_RC addEnumMembers(IDiaSymbol *diaSymbol, EnumUDT *e);
 	DDR_RC createClassUDT(IDiaSymbol *symbol, NamespaceUDT *outerUDT);
 	DDR_RC createEnumUDT(IDiaSymbol *symbol, NamespaceUDT *outerUDT);
 	DDR_RC createTypedef(IDiaSymbol *symbol, NamespaceUDT *outerUDT);

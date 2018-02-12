@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2017 IBM Corp. and others
+ * Copyright (c) 2015, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -47,162 +47,203 @@ using std::stack;
 
 Symbol_IR::~Symbol_IR()
 {
-	for (size_t i = 0; i < _types.size(); i++) {
-		if (NULL == _types[i]) {
-			ERRMSG("Null member, cannot free");
-		} else {
-			delete(_types[i]);
-		}
+	for (std::vector<Type *>::const_iterator it = _types.begin(); it != _types.end(); ++it) {
+		delete *it;
 	}
 	_types.clear();
 }
 
 DDR_RC
-Symbol_IR::applyOverrideList(OMRPortLibrary *portLibrary, const char *overrideFiles)
+Symbol_IR::applyOverridesList(OMRPortLibrary *portLibrary, const char *overridesListFile)
 {
 	DDR_RC rc = DDR_RC_OK;
 	OMRPORT_ACCESS_FROM_OMRPORT(portLibrary);
+	vector<string> filenames;
 
 	/* Read list of type override files from specified file. */
-	intptr_t fd = omrfile_open(overrideFiles, EsOpenRead, 0);
+	intptr_t fd = omrfile_open(overridesListFile, EsOpenRead, 0);
 	if (0 > fd) {
-		ERRMSG("Failure attempting to open %s\nExiting...\n", overrideFiles);
+		ERRMSG("Failure attempting to open %s\nExiting...\n", overridesListFile);
 		rc = DDR_RC_ERROR;
 	} else {
-		char *buff = NULL;
 		int64_t offset = omrfile_seek(fd, 0, EsSeekEnd);
 		if (-1 != offset) {
-			buff = (char *)malloc(offset + 1);
+			char *buff = (char *)malloc(offset + 1);
+			if (NULL == buff) {
+				ERRMSG("Unable to allocate memory for file contents: %s", overridesListFile);
+				rc = DDR_RC_ERROR;
+				goto closeFile;
+			}
 			memset(buff, 0, offset + 1);
 			omrfile_seek(fd, 0, EsSeekSet);
-
-			/* Read each line as a file name, then open that file to get type overrides. */
-			if (0 < omrfile_read(fd, buff, offset)) {
-				char *line = buff;
-				char *nextLine = strchr(line, '\n');
-				nextLine[0] = '\0';
-				while ((NULL != nextLine) && (DDR_RC_OK == rc)) {
-					nextLine[0] = '\0';
-					rc = applyOverrides(portLibrary, line);
-					line = nextLine + 1;
-					nextLine = strchr(line, '\n');
+			/* Read each line as a file name. */
+			if (offset == omrfile_read(fd, buff, offset)) {
+				for (char *nextLine = strtok(buff, "\r\n"); NULL != nextLine; nextLine = strtok(NULL, "\r\n")) {
+					string line(nextLine);
+					size_t commentPosition = line.find("#");
+					if (string::npos != commentPosition) {
+						line.erase(commentPosition, line.length());
+					}
+					line.erase(line.find_last_not_of(" \t") + 1, line.length());
+					if (!line.empty()) {
+						filenames.push_back(line);
+					}
 				}
 			}
 			free(buff);
+		}
+closeFile:
+		omrfile_close(fd);
+	}
+	for (vector<string>::const_iterator it = filenames.begin(); filenames.end() != it; ++it) {
+		rc = applyOverridesFile(portLibrary, it->c_str());
+		if (DDR_RC_OK != rc) {
+			break;
 		}
 	}
 	return rc;
 }
 
+static bool
+startsWith(const string &str, const string &prefix)
+{
+	return 0 == str.compare(0, prefix.length(), prefix);
+}
+
 DDR_RC
-Symbol_IR::applyOverrides(OMRPortLibrary *portLibrary, const char *overrideFile)
+Symbol_IR::applyOverridesFile(OMRPortLibrary *portLibrary, const char *overridesFile)
 {
 	DDR_RC rc = DDR_RC_OK;
 	OMRPORT_ACCESS_FROM_OMRPORT(portLibrary);
 
 	/* Read list of type overrides from specified file. */
 	vector<FieldOverride> overrideList;
-	intptr_t fd = omrfile_open(overrideFile, EsOpenRead, 0);
+	intptr_t fd = omrfile_open(overridesFile, EsOpenRead, 0);
 	if (0 > fd) {
-		ERRMSG("Failure attempting to open %s\nExiting...\n", overrideFile);
+		ERRMSG("Failure attempting to open %s\nExiting...\n", overridesFile);
 		rc = DDR_RC_ERROR;
 	} else {
-		char *buff = NULL;
 		int64_t offset = omrfile_seek(fd, 0, EsSeekEnd);
 		if (-1 != offset) {
-			buff = (char *)malloc(offset + 1);
+			char *buff = (char *)malloc(offset + 1);
+			if (NULL == buff) {
+				ERRMSG("Unable to allocate memory for file contents: %s", overridesFile);
+				rc = DDR_RC_ERROR;
+				goto closeFile;
+			}
 			memset(buff, 0, offset + 1);
 			omrfile_seek(fd, 0, EsSeekSet);
 
-			/* Read each line, expecting format of "[typeoverride/fieldoverride].[StructureName].[fieldName]=[overrideType]" */
-			if (0 < omrfile_read(fd, buff, offset)) {
-				char *nextLine = strtok(buff, "\n");
-				while (NULL != nextLine) {
+			/*
+			 * Read each line, expecting one of the following formats:
+			 *   opaquetype={TypeName}
+			 *   fieldoverride.{StructureName}.{fieldName}={newName}
+			 *   typeoverride.{StructureName}.{fieldName}={newType}"
+			 */
+			if (offset != omrfile_read(fd, buff, offset)) {
+				ERRMSG("Failure reading %s", overridesFile);
+				rc = DDR_RC_ERROR;
+			} else {
+				const string blobprefix = "ddrblob.";
+				const string opaquetype = "opaquetype=";
+				const string fieldoverride = "fieldoverride.";
+				const string typeoverride = "typeoverride.";
+
+				for (char *nextLine = strtok(buff, "\r\n");
+						NULL != nextLine;
+						nextLine = strtok(NULL, "\r\n")) {
 					string line = nextLine;
 
 					/* Remove comment portion of the line, if present. */
 					size_t commentPosition = line.find("#");
 					if (string::npos != commentPosition) {
-						line = line.substr(0, commentPosition);
+						line.erase(commentPosition, line.length());
 					}
-					line.erase(line.find_last_not_of(" \t") + 1);
+					line.erase(line.find_last_not_of(" \t") + 1, line.length());
 
 					/* Ignore the prefix "ddrblob.", if present. */
-					string prefix = "ddrblob.";
-					if (string::npos != line.find(prefix)) {
-						line = line.substr(prefix.length(), line.length());
+					if (startsWith(line, blobprefix)) {
+						line.erase(0, blobprefix.length());
+					}
+
+					/* Check for opaque types. */
+					if (startsWith(line, opaquetype)) {
+						line.erase(0, opaquetype.length());
+						if (!line.empty()) {
+							_opaqueTypeNames.insert(line);
+						}
+						continue;
 					}
 
 					/* Check if the override is a typeoverride or a fieldoverride. */
-					string typeoverride = "typeoverride.";
-					string fieldoverride = "fieldoverride.";
 					bool isTypeOverride = false;
-					if (string::npos != line.find(typeoverride)) {
+					if (startsWith(line, fieldoverride)) {
+						line.erase(0, fieldoverride.length());
+					} else if (startsWith(line, typeoverride)) {
 						isTypeOverride = true;
-						line = line.substr(typeoverride.length(), line.length());
-					} else if (string::npos != line.find(fieldoverride)) {
-						line = line.substr(fieldoverride.length(), line.length());
+						line.erase(0, typeoverride.length());
+					} else {
+						continue;
 					}
 
-					/* Remove any pointer or array specifiers in the line and use those the field has. */
-					line.erase(remove(line.begin(), line.end(), '*'), line.end());
-					line.erase(remove(line.begin(), line.end(), '['), line.end());
-					line.erase(remove(line.begin(), line.end(), ']'), line.end());
-
-					/* Correctly formatted lines must have exactly 1 dot and 1 equals. */
-					size_t dotCount = count(line.begin(), line.end(), '.');
-					size_t equalCount = count(line.begin(), line.end(), '=');
-					if ((1 == dotCount) && (1 == equalCount)) {
-						/* Get the structure name, field name, and override name. Add to list to process. */
-						size_t dotPosition = line.find(".");
-						size_t equalsPosition = line.find("=", dotPosition);
-						FieldOverride to = {
-							line.substr(0, dotPosition),
-							line.substr(dotPosition + 1, equalsPosition - dotPosition - 1),
-							line.substr(equalsPosition + 1, line.length() - equalsPosition - 1),
-							isTypeOverride
-						};
-						overrideList.push_back(to);
-						if (DDR_RC_OK != rc) {
-							break;
-						}
+					/* Correctly formatted lines must have exactly 1 dot and 1 equals in that order. */
+					size_t dotPosition = line.find('.');
+					if ((string::npos == dotPosition) || (string::npos != line.find('.', dotPosition + 1))) {
+						/* not exactly one '.' */
+						continue;
 					}
-					nextLine = strtok(NULL, "\n");
+					size_t equalsPosition = line.find('=', dotPosition);
+					if ((string::npos == equalsPosition) || (string::npos != line.find('=', equalsPosition + 1))) {
+						/* not exactly one '=' after the '.' */
+						continue;
+					}
+					/* Get the structure name, field name, and override name. Add to list to process. */
+					FieldOverride override = {
+						line.substr(0, dotPosition),
+						line.substr(dotPosition + 1, equalsPosition - dotPosition - 1),
+						line.substr(equalsPosition + 1),
+						isTypeOverride
+					};
+					overrideList.push_back(override);
 				}
 			}
 			free(buff);
 		}
+closeFile:
+		omrfile_close(fd);
 	}
 
 	/* Create a map of type name to vector of types to check all types
 	 * by name for type overrides.
 	 */
 	map<string, vector<Type *> > typeNames;
-	for (vector<Type *>::iterator it = _types.begin(); it != _types.end(); it += 1) {
+	for (vector<Type *>::const_iterator it = _types.begin(); it != _types.end(); ++it) {
 		Type *type = *it;
 		typeNames[type->_name].push_back(type);
 	}
 
 	/* Apply the type overrides. */
-	for (vector<FieldOverride>::iterator it = overrideList.begin(); it != overrideList.end(); it += 1) {
-		FieldOverride type = *it;
+	for (vector<FieldOverride>::const_iterator it = overrideList.begin(); it != overrideList.end(); ++it) {
+		const FieldOverride &type = *it;
 		/* Check if the structure to override exists. */
-		if (typeNames.find(type.structName) != typeNames.end()) {
+		map<string, vector<Type *> >::const_iterator typeEntry = typeNames.find(type.structName);
+		if (typeNames.end() != typeEntry) {
 			Type *replacementType = NULL;
 			if (type.isTypeOverride) {
 				/* If the type for the override exists in the IR, use it. Otherwise, create it. */
-				if (typeNames.find(type.overrideName) == typeNames.end()) {
+				map<string, vector<Type *> >::const_iterator overEntry = typeNames.find(type.overrideName);
+				if (typeNames.end() != overEntry) {
+					replacementType = overEntry->second.front();
+				} else {
 					replacementType = new Type(0);
 					replacementType->_name = type.overrideName;
 					typeNames[replacementType->_name].push_back(replacementType);
-				} else {
-					replacementType = typeNames[type.overrideName].front();
 				}
 			}
 
 			/* Iterate over the types with a matching name for the override. */
-			vector<Type *> *typesWithName = &typeNames[type.structName];
-			for (vector<Type *>::iterator it2 = typesWithName->begin(); it2 != typesWithName->end(); it2 += 1) {
+			const vector<Type *> &typesWithName = typeEntry->second;
+			for (vector<Type *>::const_iterator it2 = typesWithName.begin(); it2 != typesWithName.end(); ++it2) {
 				(*it2)->renameFieldsAndMacros(type, replacementType);
 			}
 		}
@@ -216,35 +257,45 @@ void
 Symbol_IR::computeOffsets()
 {
 	/* For each Type in the ir, compute the field offsets from the size of each field. */
-	for (size_t i = 0; i < _types.size(); i++) {
-		_types[i]->computeFieldOffsets();
+	for (vector<Type *>::const_iterator it = _types.begin(); it != _types.end(); ++it) {
+		(*it)->computeFieldOffsets();
 	}
 }
 
 void
 Symbol_IR::removeDuplicates()
 {
-	for (vector<Type *>::iterator it = _types.begin(); it != _types.end(); ++it) {
-		(*it)->checkDuplicate(this);
+	for (vector<Type *>::iterator it = _types.begin(); it != _types.end();) {
+		if ((*it)->insertUnique(this)) {
+			++it;
+		} else {
+			it = _types.erase(it);
+		}
 	}
 }
 
 class MergeVisitor : public TypeVisitor
 {
 private:
-	Symbol_IR *_ir;
-	Type *_other;
-	vector<Type *> *_merged;
+	Symbol_IR * const _ir;
+	Type * const _other;
+	vector<Type *> *const _merged;
 
 public:
-	MergeVisitor(Symbol_IR *ir, Type *other, vector<Type *> *merged) : _ir(ir), _other(other), _merged(merged) {}
+	MergeVisitor(Symbol_IR *ir, Type *other, vector<Type *> *merged)
+		: _ir(ir), _other(other), _merged(merged)
+	{
+	}
 
-	DDR_RC visitType(Type *type) const;
-	DDR_RC visitType(NamespaceUDT *type) const;
-	DDR_RC visitType(EnumUDT *type) const;
-	DDR_RC visitType(TypedefUDT *type) const;
-	DDR_RC visitType(ClassUDT *type) const;
-	DDR_RC visitType(UnionUDT *type) const;
+	virtual DDR_RC visitType(Type *type) const;
+	virtual DDR_RC visitClass(ClassUDT *type) const;
+	virtual DDR_RC visitEnum(EnumUDT *type) const;
+	virtual DDR_RC visitNamespace(NamespaceUDT *type) const;
+	virtual DDR_RC visitTypedef(TypedefUDT *type) const;
+	virtual DDR_RC visitUnion(UnionUDT *type) const;
+
+private:
+	DDR_RC visitComposite(ClassType *type) const;
 };
 
 DDR_RC
@@ -255,7 +306,7 @@ MergeVisitor::visitType(Type *type) const
 }
 
 DDR_RC
-MergeVisitor::visitType(NamespaceUDT *type) const
+MergeVisitor::visitNamespace(NamespaceUDT *type) const
 {
 	/* Merge by adding the fields/subtypes of '_other' into 'type'. */
 	NamespaceUDT *other = (NamespaceUDT *)_other;
@@ -264,7 +315,7 @@ MergeVisitor::visitType(NamespaceUDT *type) const
 }
 
 DDR_RC
-MergeVisitor::visitType(EnumUDT *type) const
+MergeVisitor::visitEnum(EnumUDT *type) const
 {
 	/* Merge by adding the fields/subtypes of '_other' into 'type'. */
 	EnumUDT *other = (EnumUDT *)_other;
@@ -273,59 +324,58 @@ MergeVisitor::visitType(EnumUDT *type) const
 }
 
 DDR_RC
-MergeVisitor::visitType(TypedefUDT *type) const
+MergeVisitor::visitTypedef(TypedefUDT *type) const
 {
 	/* No merging necessary for typedefs. */
 	return DDR_RC_OK;
 }
 
 DDR_RC
-MergeVisitor::visitType(ClassUDT *type) const
+MergeVisitor::visitComposite(ClassType *type) const
 {
 	/* Merge by adding the fields/subtypes of '_other' into 'type'. */
-	ClassUDT *other = (ClassUDT *)_other;
-	_ir->mergeTypes(type->getSubUDTS(), other->getSubUDTS(), type, _merged);
+	visitNamespace(type);
+	ClassType *other = (ClassType *)_other;
 	_ir->mergeFields(&type->_fieldMembers, &other->_fieldMembers, type, _merged);
 	_ir->mergeEnums(&type->_enumMembers, &other->_enumMembers);
-	if ((NULL == type->_superClass) && (NULL != other->_superClass)) {
-		type->_superClass = other->_superClass;
-		_merged->push_back(type);
-	}
 	return DDR_RC_OK;
 }
 
 DDR_RC
-MergeVisitor::visitType(UnionUDT *type) const
+MergeVisitor::visitClass(ClassUDT *type) const
 {
-	/* Merge by adding the fields/subtypes of '_other' into 'type'. */
-	UnionUDT *other = (UnionUDT *)_other;
-	_ir->mergeTypes(type->getSubUDTS(), other->getSubUDTS(), type, _merged);
-	_ir->mergeFields(&type->_fieldMembers, &other->_fieldMembers, type, _merged);
-	_ir->mergeEnums(&type->_enumMembers, &other->_enumMembers);
-	return DDR_RC_OK;
+	return visitComposite(type);
+}
+
+DDR_RC
+MergeVisitor::visitUnion(UnionUDT *type) const
+{
+	return visitComposite(type);
 }
 
 template<typename T> void
 Symbol_IR::mergeTypes(vector<T *> *source, vector<T *> *other,
-	NamespaceUDT *outerNamespace, vector<Type *> *merged)
+		NamespaceUDT *outerNamespace, vector<Type *> *merged)
 {
-	for (typename vector<T *>::iterator it = other->begin(); it != other->end();) {
-		Type *type = (Type *)(*it);
-		Type *originalType = findTypeInMap(type);
+	if ((NULL != source) && (NULL != other)) {
+		for (typename vector<T *>::iterator it = other->begin(); it != other->end();) {
+			Type *otherType = (Type *)*it;
+			Type *sourceType = findTypeInMap(otherType);
 
-		/* Types in the other list not in the source list are added. */
-		/* Types in both lists are merged. */
-		if (NULL == originalType) {
-			addTypeToMap(type);
-			source->push_back((T *)type);
-			merged->push_back(type);
-			it = other->erase(it);
-			if (NULL != outerNamespace) {
-				((UDT *)type)->_outerNamespace = outerNamespace;
+			/* Types in the other list not in the source list are added. */
+			/* Types in both lists are merged. */
+			if (NULL != sourceType) {
+				sourceType->acceptVisitor(MergeVisitor(this, otherType, merged));
+				++it;
+			} else {
+				it = other->erase(it);
+				source->push_back((T *)otherType);
+				if (NULL != outerNamespace) {
+					((UDT *)otherType)->_outerNamespace = outerNamespace;
+				}
+				addTypeToMap(otherType);
+				merged->push_back(otherType);
 			}
-		} else {
-			originalType->acceptVisitor(MergeVisitor(this, type, merged));
-			++ it;
 		}
 	}
 }
@@ -335,22 +385,25 @@ Symbol_IR::mergeFields(vector<Field *> *source, vector<Field *> *other, Type *ty
 {
 	/* Create a map of all fields in the source list. */
 	set<string> fieldNames;
-	for (vector<Field *>::iterator it = source->begin(); it != source->end(); ++it) {
+	for (vector<Field *>::const_iterator it = source->begin(); it != source->end(); ++it) {
 		fieldNames.insert((*it)->_name);
 	}
 	bool fieldsMerged = false;
 	for (vector<Field *>::iterator it = other->begin(); it != other->end();) {
 		/* Fields in the other list not in the source list are added. */
-		if (fieldNames.end() == fieldNames.find((*it)->_name)) {
-			source->push_back(*it);
-			fieldNames.insert((*it)->_name);
-			fieldsMerged = true;
+		Field * field = *it;
+		const string &fieldName = field->_name;
+		if (fieldNames.end() == fieldNames.find(fieldName)) {
 			it = other->erase(it);
+			source->push_back(field);
+			fieldNames.insert(fieldName);
+			fieldsMerged = true;
 		} else {
-			++ it;
+			++it;
 		}
 	}
 	if (fieldsMerged) {
+		/* We must revisit 'type' to fix the type of the newly added fields. */
 		merged->push_back(type);
 	}
 }
@@ -360,17 +413,19 @@ Symbol_IR::mergeEnums(vector<EnumMember *> *source, vector<EnumMember *> *other)
 {
 	/* Create a map of all fields in the source list. */
 	set<string> enumNames;
-	for (vector<EnumMember *>::iterator it = source->begin(); it != source->end(); ++it) {
+	for (vector<EnumMember *>::const_iterator it = source->begin(); it != source->end(); ++it) {
 		enumNames.insert((*it)->_name);
 	}
 	for (vector<EnumMember *>::iterator it = other->begin(); it != other->end();) {
+		EnumMember *member = *it;
+		const string & memberName = (*it)->_name;
 		/* Fields in the other list not in the source list are added. */
-		if (enumNames.end() == enumNames.find((*it)->_name)) {
-			source->push_back(*it);
-			enumNames.insert((*it)->_name);
+		if (enumNames.end() == enumNames.find(memberName)) {
 			it = other->erase(it);
+			source->push_back(member);
+			enumNames.insert(memberName);
 		} else {
-			++ it;
+			++it;
 		}
 	}
 }
@@ -378,29 +433,39 @@ Symbol_IR::mergeEnums(vector<EnumMember *> *source, vector<EnumMember *> *other)
 class TypeReplaceVisitor : public TypeVisitor
 {
 private:
-	Symbol_IR *_ir;
+	Symbol_IR * const _ir;
 
 public:
-	TypeReplaceVisitor(Symbol_IR *ir)
-		: _ir(ir) {}
-
-	DDR_RC visitType(Type *type) const;
-	DDR_RC visitType(NamespaceUDT *type) const;
-	DDR_RC visitType(EnumUDT *type) const;
-	DDR_RC visitType(TypedefUDT *type) const;
-	DDR_RC visitType(ClassUDT *type) const;
-	DDR_RC visitType(UnionUDT *type) const;
-};
-
-struct TypeCheck
-{
-    TypeCheck(const Type* other) : _other(other) {}
-    bool operator()(Type *compare) const {
-		return  *compare == *_other;
+	explicit TypeReplaceVisitor(Symbol_IR *ir)
+		: _ir(ir)
+	{
 	}
 
+	virtual DDR_RC visitType(Type *type) const;
+	virtual DDR_RC visitClass(ClassUDT *type) const;
+	virtual DDR_RC visitEnum(EnumUDT *type) const;
+	virtual DDR_RC visitNamespace(NamespaceUDT *type) const;
+	virtual DDR_RC visitTypedef(TypedefUDT *type) const;
+	virtual DDR_RC visitUnion(UnionUDT *type) const;
+
 private:
-    const Type* _other;
+	DDR_RC visitComposite(ClassType *type) const;
+};
+
+class TypeCheck
+{
+private:
+    const Type * const _other;
+
+public:
+    explicit TypeCheck(const Type *other)
+    	: _other(other)
+    {
+    }
+
+    bool operator()(Type *compare) const {
+		return *compare == *_other;
+	}
 };
 
 DDR_RC
@@ -410,95 +475,119 @@ TypeReplaceVisitor::visitType(Type *type) const
 }
 
 DDR_RC
-TypeReplaceVisitor::visitType(NamespaceUDT *type) const
+TypeReplaceVisitor::visitNamespace(NamespaceUDT *type) const
 {
 	DDR_RC rc = DDR_RC_OK;
-	for (vector<UDT *>::iterator it = type->_subUDTs.begin(); it != type->_subUDTs.end(); ++it) {
-		rc = (*it)->acceptVisitor(TypeReplaceVisitor(_ir));
+
+	for (vector<UDT *>::const_iterator it = type->_subUDTs.begin(); it != type->_subUDTs.end(); ++it) {
+		rc = (*it)->acceptVisitor(*this);
+		if (DDR_RC_OK != rc) {
+			break;
+		}
 	}
+
 	return rc;
 }
 
 DDR_RC
-TypeReplaceVisitor::visitType(EnumUDT *type) const
+TypeReplaceVisitor::visitEnum(EnumUDT *type) const
 {
 	return DDR_RC_OK;
 }
 
 DDR_RC
-TypeReplaceVisitor::visitType(TypedefUDT *type) const
+TypeReplaceVisitor::visitTypedef(TypedefUDT *type) const
 {
 	return _ir->replaceTypeUsingMap(&type->_aliasedType, type);
 }
 
 DDR_RC
-TypeReplaceVisitor::visitType(ClassUDT *type) const
+TypeReplaceVisitor::visitComposite(ClassType *type) const
 {
-	DDR_RC rc = DDR_RC_OK;
-	for (vector<UDT *>::iterator it = type->_subUDTs.begin(); it != type->_subUDTs.end(); ++it) {
-		rc = (*it)->acceptVisitor(TypeReplaceVisitor(_ir));
-	}
+	DDR_RC rc = visitNamespace(type);
+
 	if (DDR_RC_OK == rc) {
-		for (vector<Field *>::iterator it = type->_fieldMembers.begin(); it != type->_fieldMembers.end() && DDR_RC_OK == rc; ++it) {
+		for (vector<Field *>::const_iterator it = type->_fieldMembers.begin(); it != type->_fieldMembers.end(); ++it) {
 			rc = _ir->replaceTypeUsingMap(&(*it)->_fieldType, type);
+			if (DDR_RC_OK != rc) {
+				break;
+			}
 		}
 	}
 
-	if (DDR_RC_OK == rc) {
-		rc = _ir->replaceTypeUsingMap((Type **)&type->_superClass, type);
-	}
 	return rc;
 }
 
 DDR_RC
-TypeReplaceVisitor::visitType(UnionUDT *type) const
+TypeReplaceVisitor::visitClass(ClassUDT *type) const
 {
-	DDR_RC rc = DDR_RC_OK;
-	for (vector<UDT *>::iterator it = type->_subUDTs.begin(); it != type->_subUDTs.end(); ++it) {
-		rc = (*it)->acceptVisitor(TypeReplaceVisitor(_ir));
-	}
+	DDR_RC rc = visitComposite(type);
+
 	if (DDR_RC_OK == rc) {
-		for (vector<Field *>::iterator it = type->_fieldMembers.begin(); it != type->_fieldMembers.end() && DDR_RC_OK == rc; ++it) {
-			rc = _ir->replaceTypeUsingMap(&(*it)->_fieldType, type);
-		}
+		rc = _ir->replaceTypeUsingMap((Type **)&type->_superClass, type);
 	}
+
 	return rc;
+}
+
+DDR_RC
+TypeReplaceVisitor::visitUnion(UnionUDT *type) const
+{
+	return visitComposite(type);
 }
 
 DDR_RC
 Symbol_IR::replaceTypeUsingMap(Type **type, Type *outer)
 {
 	DDR_RC rc = DDR_RC_OK;
-	if ((NULL != type) && (NULL != *type) && (_typeSet.end() == _typeSet.find(*type))) {
-		Type *replacementType = findTypeInMap(*type);
-		if (NULL == replacementType) {
-			ERRMSG("Error replacing type '%s' in '%s'", (*type)->getFullName().c_str(), outer->getFullName().c_str());
-			rc = DDR_RC_ERROR;
+	if (NULL != type) {
+		Type *oldType = *type;
+		if ((NULL != oldType) && (_typeSet.end() == _typeSet.find(oldType))) {
+			Type *replacementType = findTypeInMap(oldType);
+			if (NULL == replacementType) {
+				ERRMSG("Error replacing type '%s' in '%s'",
+						oldType->getFullName().c_str(),
+						outer->getFullName().c_str());
+				rc = DDR_RC_ERROR;
+			} else if (oldType == replacementType) {
+				/* don't create a cycle */
+				ERRMSG("Cycle found replacing type '%s' in '%s'",
+						oldType->getFullName().c_str(),
+						outer->getFullName().c_str());
+				rc = DDR_RC_ERROR;
+				*type = NULL;
+			} else {
+				*type = replacementType;
+			}
 		}
-		*type = replacementType;
 	}
 	return rc;
+}
+
+static string
+getTypeNameKey(Type *type)
+{
+	string prefix = type->getSymbolKindName();
+	string fullname = type->getFullName();
+
+	return prefix.empty() ? fullname : (prefix + " " + fullname);
 }
 
 Type *
 Symbol_IR::findTypeInMap(Type *typeToFind)
 {
 	Type *returnType = NULL;
-	if (NULL != typeToFind) {
-		string nameKey = typeToFind->getFullName();
-		if (nameKey.empty()) {
-			nameKey = typeToFind->getSymbolKindName();
-		} else if (NULL != typeToFind->getBaseType()) {
-			nameKey = "typedef " + nameKey;
-		}
+	if ((NULL != typeToFind) && !typeToFind->isAnonymousType()) {
+		const string nameKey = getTypeNameKey(typeToFind);
+		unordered_map<string, set<Type *> >::const_iterator map_it = _typeMap.find(nameKey);
 
-		if (_typeMap.end() != _typeMap.find(nameKey)) {
-			set<Type *> s = _typeMap.find(nameKey)->second;
-			if ((1 == s.size()) && (!typeToFind->_name.empty())) {
-				returnType = *s.begin();
-			} else if (1 < s.size()) {
-				set<Type *>::iterator it = find_if(s.begin(), s.end(), TypeCheck(typeToFind));
-				if (s.end() != it) {
+		if (_typeMap.end() != map_it) {
+			const set<Type *> &matches = map_it->second;
+			if (1 == matches.size()) {
+				returnType = *matches.begin();
+			} else if (1 < matches.size()) {
+				set<Type *>::const_iterator it = find_if(matches.begin(), matches.end(), TypeCheck(typeToFind));
+				if (matches.end() != it) {
 					returnType = *it;
 				}
 			}
@@ -510,29 +599,30 @@ Symbol_IR::findTypeInMap(Type *typeToFind)
 void
 Symbol_IR::addTypeToMap(Type *type)
 {
-	stack<vector<UDT *>::iterator> itStack;
-	if ((NULL != type->getSubUDTS()) && (!type->getSubUDTS()->empty())) {
-		itStack.push(type->getSubUDTS()->begin());
+	Type * const startType = type;
+	stack<vector<UDT *>::const_iterator> itStack;
+	vector<UDT *> *subs = NULL;
+
+	subs = type->getSubUDTS();
+	if ((NULL != subs) && !subs->empty()) {
+		itStack.push(subs->begin());
 	}
 
-	Type *startType = type;
 	while (NULL != type) {
-		string nameKey = type->getFullName();
-		if (nameKey.empty()) {
-			nameKey = type->getSymbolKindName();
-		} else if (NULL != type->getBaseType()) {
-			nameKey = "typedef " + nameKey;
+		if (!type->isAnonymousType()) {
+			_typeMap[getTypeNameKey(type)].insert(type);
 		}
-
-		_typeMap[nameKey].insert(type);
 		_typeSet.insert(type);
-		if (NULL == type->getSubUDTS() || type->getSubUDTS()->empty()) {
+
+		subs = type->getSubUDTS();
+
+		if (NULL == subs || subs->empty()) {
 			if (startType == type) {
 				type = NULL;
 			} else {
 				type = type->getNamespace();
 			}
-		} else if (type->getSubUDTS()->end() == itStack.top()) {
+		} else if (subs->end() == itStack.top()) {
 			if (startType == type) {
 				type = NULL;
 			} else {
@@ -541,37 +631,43 @@ Symbol_IR::addTypeToMap(Type *type)
 			itStack.pop();
 		} else {
 			type = *itStack.top();
-			itStack.top() ++;
-			if (NULL != type->getSubUDTS() && !type->getSubUDTS()->empty()) {
-				itStack.push(type->getSubUDTS()->begin());
+			itStack.top()++;
+			subs = type->getSubUDTS();
+			if ((NULL != subs) && !subs->empty()) {
+				itStack.push(subs->begin());
 			}
 		}
-	};
+	}
 }
 
 DDR_RC
 Symbol_IR::mergeIR(Symbol_IR *other)
 {
 	DDR_RC rc = DDR_RC_OK;
+
 	/* Create map of this source IR of type full name to type. Use it to replace all
 	 * pointers in types acquired from other IRs. The problem of encountering
 	 * types to replace that are not yet in this IR is solved by doing all of the type
 	 * replacement after all types are merged.
 	 */
 	if (_typeMap.empty() && _typeSet.empty()) {
-		for (vector<Type *>::iterator it = _types.begin(); it != _types.end(); ++it) {
+		for (vector<Type *>::const_iterator it = _types.begin(); it != _types.end(); ++it) {
 			addTypeToMap(*it);
 		}
 	}
 
 	vector<Type *> mergedTypes;
+
 	mergeTypes(&_types, &other->_types, NULL, &mergedTypes);
 
-	for (vector<Type *>::iterator it = mergedTypes.begin(); it != mergedTypes.end(); ++it) {
-		rc = (*it)->acceptVisitor(TypeReplaceVisitor(this));
+	const TypeReplaceVisitor typeReplacer(this);
+
+	for (vector<Type *>::const_iterator it = mergedTypes.begin(); it != mergedTypes.end(); ++it) {
+		rc = (*it)->acceptVisitor(typeReplacer);
 		if (DDR_RC_OK != rc) {
 			break;
 		}
 	}
+
 	return rc;
 }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2017 IBM Corp. and others
+ * Copyright (c) 2016, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -25,36 +25,25 @@
 
 ClassType::ClassType(size_t size, unsigned int lineNumber)
 	: NamespaceUDT(lineNumber)
+	, _isComplete(false)
+	, _fieldMembers()
+	, _enumMembers()
 {
 	_sizeOf = size;
 }
 
 ClassType::~ClassType()
 {
-	/*enum members may be added to a classType in the case of anonymous enums */
-	for (size_t i = 0; i < _enumMembers.size(); i++) {
-		if (NULL == _enumMembers[i]) {
-			ERRMSG("Null member, cannot free");
-		} else {
-			delete(_enumMembers[i]);
-		}
+	/* enum members may be added to a classType in the case of anonymous enums */
+	for (vector<EnumMember *>::iterator it = _enumMembers.begin(); it != _enumMembers.end(); ++it) {
+		delete *it;
 	}
 	_enumMembers.clear();
 
-	for (size_t i = 0; i < _fieldMembers.size(); i++) {
-		if (NULL == _fieldMembers[i]) {
-			ERRMSG("Null member, cannot free");
-		} else {
-			delete(_fieldMembers[i]);
-		}
+	for (vector<Field *>::iterator it = _fieldMembers.begin(); it != _fieldMembers.end(); ++it) {
+		delete *it;
 	}
 	_fieldMembers.clear();
-}
-
-bool
-ClassType::isAnonymousType()
-{
-	return _name.empty();
 }
 
 void
@@ -64,8 +53,8 @@ ClassType::computeFieldOffsets()
 	
 	/* For classes, structs, and unions, find the field offsets. */
 	size_t offset = 0;
-	for (size_t i = 0; i < _fieldMembers.size(); i += 1) {
-		Field *field = (_fieldMembers[i]);
+	for (vector<Field *>::iterator it = _fieldMembers.begin(); it != _fieldMembers.end(); ++it) {
+		Field *field = *it;
 
 		if (!field->_isStatic) {
 			/* Use the field size to compute offsets. */
@@ -80,32 +69,40 @@ ClassType::computeFieldOffsets()
 }
 
 void
-ClassType::renameFieldsAndMacros(FieldOverride fieldOverride, Type *replacementType)
+ClassType::renameFieldsAndMacros(const FieldOverride &fieldOverride, Type *replacementType)
 {
+	NamespaceUDT::renameFieldsAndMacros(fieldOverride, replacementType);
+
 	/* Iterate the fields of structures with matching names. */
-	for (vector<Field *>::iterator it = _fieldMembers.begin(); it != _fieldMembers.end(); it += 1) {
+	for (vector<Field *>::iterator it = _fieldMembers.begin(); it != _fieldMembers.end(); ++it) {
+		Field *field = *it;
 		/* Once a matching structure and field name are found, apply the override. */
-		if ((*it)->_name == fieldOverride.fieldName) {
+		if (field->_name == fieldOverride.fieldName) {
 			if (fieldOverride.isTypeOverride) {
 				if (0 == replacementType->_sizeOf) {
-					replacementType->_sizeOf = (*it)->_fieldType->_sizeOf;
+					replacementType->_sizeOf = field->_fieldType->_sizeOf;
 				}
-				(*it)->_fieldType = replacementType;
+				// update type and reset all modifiers
+				field->_fieldType = replacementType;
+				field->_modifiers._arrayLengths.clear();
+				field->_modifiers._modifierFlags = Modifiers::NO_MOD;
+				field->_modifiers._pointerCount = 0;
+				field->_modifiers._referenceCount = 0;
 			} else {
-				(*it)->_name = fieldOverride.overrideName;
+				field->_name = fieldOverride.overrideName;
 			}
 		}
 	}
 }
 
 bool
-ClassType::operator==(Type const & rhs) const
+ClassType::operator==(const Type & rhs) const
 {
 	return rhs.compareToClasstype(*this);
 }
 
 bool
-ClassType::compareToClasstype(ClassType const &other) const
+ClassType::compareToClasstype(const ClassType &other) const
 {
 	bool enumMembersEqual = _enumMembers.size() == other._enumMembers.size();
 	vector<EnumMember *>::const_iterator it2 = other._enumMembers.begin();

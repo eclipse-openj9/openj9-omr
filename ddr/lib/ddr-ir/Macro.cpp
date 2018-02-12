@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2017 IBM Corp. and others
+ * Copyright (c) 2015, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -19,61 +19,53 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#include "ddr/config.hpp"
-
-#include "ddr/error.hpp"
 #include "ddr/ir/Macro.hpp"
 
-#include "ddr/std/sstream.hpp"
-#include <string.h>
+#include <stdlib.h>
+
+#if defined(_MSC_VER)
+/* Older Visual Studio compilers don't provide strtoll(). */
+#define strtoll(str, end, base) _strtoi64((str), (end), (base))
+#endif
 
 using std::string;
-using std::stringstream;
 
 DDR_RC
-Macro::getNumeric(long long *ret)
+Macro::getNumeric(long long *ret) const
 {
-	DDR_RC rc = DDR_RC_OK;
-	string value = getValue();
+	DDR_RC rc = DDR_RC_ERROR;
+	const string &value = getValue();
+	const char * const whitespace = "\t ";
 
-	if (value.length() > 0) {
-		/* If the pre-processed macro contains no brackets, read it as a number. */
-		if (string::npos == value.find('(')) {
-			stringstream ss;
-			ss << value;
-			long long valueNumeric = 0;
-			ss >> valueNumeric;
-			if (ss.fail()) {
-				rc = DDR_RC_ERROR;
-			} else if (NULL != ret) {
-				*ret = valueNumeric;
-			}
+	for (size_t start = 0, end = value.length() - 1; start <= end;) {
+		/* trim leading whitespace */
+		start = value.find_first_not_of(whitespace, start);
+		if (string::npos == start) {
+			break;
+		}
+
+		/* trim trailing whitespace */
+		end = value.find_last_not_of(whitespace, end);
+
+		if (('(' == value[start]) && (')' == value[end])) {
+			/* discard a pair of balanced parentheses and continue */
+			++start;
+			--end;
 		} else {
-			/* For macros containing brackets, extract the number. This works for casts
-			 * such as ((int)5).
-			 */
-			rc = DDR_RC_ERROR;
-			while (string::npos != value.find('(')) {
-				size_t lastOpenParen = value.find_last_of('(');
-				size_t nextCloseParen = value.find(')', lastOpenParen);
-				if (string::npos == nextCloseParen) {
-					break;
+			string trimmed = value.substr(start, end - start + 1);
+			const char * c_trimmed = trimmed.c_str();
+			char * end = NULL;
+			/* strtoll parses prefixes like '0x' when the final argument is 0 */
+			long long int valueNumeric = strtoll(c_trimmed, &end, 0);
+
+			if ((NULL != end) && ('\0' == *end)) {
+				/* strtoll consumed the whole string */
+				if (NULL != ret) {
+					*ret = valueNumeric;
 				}
-				string substr = value.substr(lastOpenParen + 1, nextCloseParen - lastOpenParen - 1);
-				stringstream ss;
-				ss << substr;
-				long long valueNumeric = 0;
-				ss >> valueNumeric;
-				if (!ss.fail()) {
-					rc = DDR_RC_OK;
-					if (NULL != ret) {
-						*ret = valueNumeric;
-					}
-					break;
-				} else {
-					value.replace(lastOpenParen, nextCloseParen, "");
-				}
+				rc = DDR_RC_OK;
 			}
+			break;
 		}
 	}
 

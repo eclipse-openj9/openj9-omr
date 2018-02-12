@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2017 IBM Corp. and others
+ * Copyright (c) 2015, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -22,22 +22,18 @@
 #ifndef GENBLOB_HPP
 #define GENBLOB_HPP
 
-#include "ddr/config.hpp"
-
 #include "ddr/std/string.hpp"
-#include <vector>
-
-#include "omrport.h"
 #include "ddr/error.hpp"
+#include "omrport.h"
 
 using std::string;
 
-class Symbol_IR;
-class Type;
+class ClassUDT;
 class EnumUDT;
 class NamespaceUDT;
+class Symbol_IR;
+class Type;
 class TypedefUDT;
-class ClassUDT;
 class UnionUDT;
 
 DDR_RC genBlob(OMRPortLibrary *portLibrary, Symbol_IR *ir, const char *supersetFile, const char *blobFile, bool printEmptyTypes);

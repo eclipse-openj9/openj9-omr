@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2017 IBM Corp. and others
+ * Copyright (c) 2015, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -36,7 +36,7 @@
 #elif defined(HAVE_LIBDWARF_DWARF_H)
 #include <libdwarf/dwarf.h>
 #else
-#error
+#error "Need dwarf.h or libdwarf/dwarf.h"
 #endif /* defined(HAVE_DWARF_H) */
 
 #if defined(HAVE_LIBDWARF_H)
@@ -44,13 +44,12 @@
 #elif defined(HAVE_LIBDWARF_LIBDWARF_H)
 #include <libdwarf/libdwarf.h>
 #else
-#error
-#endif
+#error "Need libdwarf.h or libdwarf/libdwarf.h"
+#endif /* defined(HAVE_LIBDWARF_H) */
 
 #endif /* defined(OSX) || defined(AIXPPX) */
 
 #include "ddr/ir/ClassUDT.hpp"
-#include "ddr/config.hpp"
 #include "ddr/ir/EnumUDT.hpp"
 #include "ddr/scanner/Scanner.hpp"
 #include "ddr/ir/Symbol_IR.hpp"
@@ -66,13 +65,14 @@ using std::tr1::hash;
 using std::hash;
 #endif
 
-class DwarfScanner: public Scanner
+class DwarfScanner : public Scanner
 {
 public:
 	DwarfScanner();
 	~DwarfScanner();
 
-	DDR_RC startScan(OMRPortLibrary *portLibrary, Symbol_IR *const ir, vector<string> *debugFiles, string blacklistPath);
+	virtual DDR_RC startScan(OMRPortLibrary *portLibrary, Symbol_IR *ir,
+			vector<string> *debugFiles, const char *blacklistPath);
 
 private:
 	Dwarf_Signed _fileNameCount;
@@ -83,14 +83,14 @@ private:
 	Dwarf_Debug _debug;
 
 	DDR_RC scanFile(OMRPortLibrary *portLibrary, Symbol_IR *ir, const char *filepath);
-	DDR_RC traverse_cu_in_debug_section(Symbol_IR *const ir);
-	DDR_RC addDieToIR(Dwarf_Die die, Dwarf_Half tag, bool ignoreFilter, NamespaceUDT *outerUDT, Type **type);
-	DDR_RC getOrCreateNewType(Dwarf_Die die, Dwarf_Half tag, Type **const newUDT, NamespaceUDT *outerUDT, bool *isNewType);
-	DDR_RC createNewType(Dwarf_Die die, Dwarf_Half tag, string dieName, Type **const newUDT);
-	DDR_RC scanClassChildren(NamespaceUDT *newClass, Dwarf_Die die, bool alreadyHadFields);
-	DDR_RC addEnumMember(Dwarf_Die die, EnumUDT *const udt);
-	DDR_RC addClassField(Dwarf_Die die, ClassType *const newClass, string fieldName);
-	DDR_RC getSuperUDT(Dwarf_Die die, ClassUDT *const udt);
+	DDR_RC traverse_cu_in_debug_section(Symbol_IR *ir);
+	DDR_RC addDieToIR(Dwarf_Die die, Dwarf_Half tag, NamespaceUDT *outerUDT, Type **type);
+	DDR_RC getOrCreateNewType(Dwarf_Die die, Dwarf_Half tag, Type **newUDT, NamespaceUDT *outerUDT, bool *isNewType);
+	DDR_RC createNewType(Dwarf_Die die, Dwarf_Half tag, const char *dieName, Type **newUDT);
+	DDR_RC scanClassChildren(NamespaceUDT *newClass, Dwarf_Die die);
+	DDR_RC addEnumMember(Dwarf_Die die, EnumUDT *udt);
+	DDR_RC addClassField(Dwarf_Die die, ClassType *newClass, const string &fieldName);
+	DDR_RC getSuperUDT(Dwarf_Die die, ClassUDT *udt);
 	DDR_RC getTypeInfo(Dwarf_Die die, Dwarf_Die *dieout, string *typeName, Modifiers *modifiers, size_t *typeSize, size_t *bitField);
 	DDR_RC getTypeSize(Dwarf_Die die, size_t *typeSize);
 	DDR_RC getTypeTag(Dwarf_Die die, Dwarf_Die *typedie, Dwarf_Half *tag);

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2017 IBM Corp. and others
+ * Copyright (c) 2015, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -24,7 +24,9 @@
 #include "ddr/ir/NamespaceUDT.hpp"
 
 UDT::UDT(size_t size, unsigned int lineNumber)
-	: Type(size), _outerNamespace(NULL), _lineNumber(lineNumber)
+	: Type(size)
+	, _outerNamespace(NULL)
+	, _lineNumber(lineNumber)
 {
 }
 
@@ -35,21 +37,23 @@ UDT::~UDT()
 string
 UDT::getFullName()
 {
-	return ((NULL == _outerNamespace) ? "" : _outerNamespace->getFullName() + "::") + _name;
+	return (NULL == _outerNamespace)
+			? _name
+			: (_outerNamespace->getFullName() + "::" + _name);
 }
 
-
-void
-UDT::checkDuplicate(Symbol_IR *ir)
+bool
+UDT::insertUnique(Symbol_IR *ir)
 {
-	if (!this->isAnonymousType()) {
+	bool inserted = false;
+	if (!isAnonymousType()) {
 		string fullName = getFullName();
-		if (ir->_fullTypeNames.end() != ir->_fullTypeNames.find(fullName)) {
-			this->_isDuplicate = true;
-		} else {
+		if (ir->_fullTypeNames.end() == ir->_fullTypeNames.find(fullName)) {
 			ir->_fullTypeNames.insert(fullName);
+			inserted = true;
 		}
 	}
+	return inserted;
 }
 
 NamespaceUDT *
@@ -59,14 +63,23 @@ UDT::getNamespace()
 }
 
 bool
-UDT::operator==(Type const & rhs) const
+UDT::operator==(const Type & rhs) const
 {
 	return rhs.compareToUDT(*this);
 }
 
 bool
-UDT::compareToUDT(UDT const &other) const
+UDT::compareToUDT(const UDT &other) const
 {
-	return compareToType(other)
-		&& (*_outerNamespace == *other._outerNamespace);
+	if (compareToType(other)) {
+		if (NULL != _outerNamespace) {
+			if (NULL != other._outerNamespace) {
+				return *_outerNamespace == *other._outerNamespace;
+			}
+		} else if (NULL == other._outerNamespace) {
+			return true;
+		}
+	}
+
+	return false;
 }

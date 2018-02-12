@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2017 IBM Corp. and others
+ * Copyright (c) 2016, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -19,9 +19,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-/*
- * @ddr_namespace: map_to_type=MapToTypeTest1
- */
+/*@ddr_namespace: map_to_type=MapToTypeTest1*/
 
 #define myMapToTypeMacro1a 13
 #define myMapToTypeMacro1b 14
@@ -29,7 +27,6 @@
 /* @ddr_namespace: default */
 
 #define myMapToTypeMacro2 23
-
 
 /*
  * @ddr_namespace: map_to_type=MapToTypeTest3

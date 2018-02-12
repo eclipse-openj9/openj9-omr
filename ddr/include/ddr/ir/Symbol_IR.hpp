@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2017 IBM Corp. and others
+ * Copyright (c) 2015, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -22,20 +22,18 @@
 #ifndef SYMBOL_IR_HPP
 #define SYMBOL_IR_HPP
 
-#include "ddr/config.hpp"
-
-#include <vector>
-#include <set>
+#include "ddr/ir/EnumMember.hpp"
+#include "ddr/ir/Field.hpp"
+#include "ddr/ir/Type.hpp"
 #include "ddr/std/unordered_map.hpp"
 
 #include "omrport.h"
 
-#include "ddr/ir/EnumMember.hpp"
-#include "ddr/ir/Field.hpp"
-#include "ddr/ir/Type.hpp"
+#include <set>
+#include <vector>
 
-using std::vector;
 using std::set;
+using std::vector;
 
 struct FieldOverride {
 	string structName;
@@ -44,8 +42,9 @@ struct FieldOverride {
 	bool isTypeOverride;
 };
 
-class Field;
+class MergeVisitor;
 class NamespaceUDT;
+class TypeReplaceVisitor;
 
 class Symbol_IR {
 public:
@@ -59,17 +58,19 @@ public:
 	set<string> _fullTypeNames;
 	set<Type *> _typeSet;
 	unordered_map<string, set<Type *> > _typeMap;
+	/* Types with names in this set are treated as opaque and not expanded. */
+	set<string> _opaqueTypeNames;
 
-	Symbol_IR() {}
+	Symbol_IR() : _types(), _fullTypeNames(), _typeSet(), _typeMap(), _opaqueTypeNames() {}
 	~Symbol_IR();
 
-	DDR_RC applyOverrideList(OMRPortLibrary *portLibrary, const char *overrideFiles);
+	DDR_RC applyOverridesFile(OMRPortLibrary *portLibrary, const char *overridesFile);
+	DDR_RC applyOverridesList(OMRPortLibrary *portLibrary, const char *overridesListFile);
 	void computeOffsets();
 	void removeDuplicates();
 	DDR_RC mergeIR(Symbol_IR *other);
 
 private:
-	DDR_RC applyOverrides(OMRPortLibrary *portLibrary, const char *overrideFile);
 	template<typename T> void mergeTypes(vector<T *> *source, vector<T *> *other,
 		NamespaceUDT *outerNamespace, vector<Type *> *merged);
 	void mergeFields(vector<Field *> *source, vector<Field *> *other, Type *type, vector<Type *> *merged);

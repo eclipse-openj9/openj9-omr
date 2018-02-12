@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2017 IBM Corp. and others
+ * Copyright (c) 2015, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -42,7 +42,7 @@
 using std::ios;
 using std::stringstream;
 
-const char *const baseTypeArray[] = {
+const char * const baseTypeArray[] = {
 	"<NoType>",
 	"void",
 	"I8", /* This could also be char. */
@@ -104,8 +104,8 @@ PdbScanner::initBaseTypeList()
 	/* Add the base types with the typemap, to be referenced as
 	 * fields but not added to the IR at this time.
 	 */
-	size_t length = sizeof(baseTypeArray) / sizeof(char *);
-	for (size_t i = 0; i < length; i += 1) {
+	size_t length = sizeof(baseTypeArray) / sizeof(*baseTypeArray);
+	for (size_t i = 0; i < length; ++i) {
 		Type *type = new Type(0);
 		type->_name = baseTypeArray[i];
 		_typeMap[type->_name] = type;
@@ -151,7 +151,7 @@ getName(IDiaSymbol *symbol, string *name)
 }
 
 DDR_RC
-PdbScanner::startScan(OMRPortLibrary *portLibrary, Symbol_IR *const ir, vector<string> *debugFiles, string blacklistPath)
+PdbScanner::startScan(OMRPortLibrary *portLibrary, Symbol_IR *ir, vector<string> *debugFiles, const char *blacklistPath)
 {
 	DDR_RC rc = DDR_RC_OK;
 	IDiaDataSource *diaDataSource = NULL;
@@ -165,7 +165,7 @@ PdbScanner::startScan(OMRPortLibrary *portLibrary, Symbol_IR *const ir, vector<s
 		rc = DDR_RC_ERROR;
 	}
 
-	if ((DDR_RC_OK == rc) && ("" != blacklistPath)) {
+	if (DDR_RC_OK == rc) {
 		rc = loadBlacklist(blacklistPath);
 	}
 
@@ -219,7 +219,7 @@ PdbScanner::startScan(OMRPortLibrary *portLibrary, Symbol_IR *const ir, vector<s
 				diaSymbol->Release();
 				diaSymbol = NULL;
 			}
-			delete(filename);
+			delete filename;
 			if (DDR_RC_OK != rc) {
 				break;
 			}
@@ -249,7 +249,7 @@ PdbScanner::renameAnonymousTypes()
 	 * print it.
 	 */
 	ULONGLONG unnamedTypeCount = 0;
-	for (vector<Type *>::iterator it = _ir->_types.begin(); it != _ir->_types.end(); it ++) {
+	for (vector<Type *>::iterator it = _ir->_types.begin(); it != _ir->_types.end(); ++it) {
 		renameAnonymousType(*it, &unnamedTypeCount);
 	}
 }
@@ -265,14 +265,14 @@ PdbScanner::renameAnonymousType(Type *type, ULONGLONG *unnamedTypeCount)
 			 * a placeholder name.
 			 */
 			stringstream ss;
-			ss << "AnonymousType" << (*unnamedTypeCount) ++;
+			ss << "AnonymousType" << (*unnamedTypeCount)++;
 			type->_name = ss.str();
 		} else {
 			type->_name = "";
 		}
 	}
 	if (NULL != type->getSubUDTS()) {
-		for (vector<UDT *>::iterator it = type->getSubUDTS()->begin(); it != type->getSubUDTS()->end(); it ++) {
+		for (vector<UDT *>::iterator it = type->getSubUDTS()->begin(); it != type->getSubUDTS()->end(); ++it) {
 			renameAnonymousType(*it, unnamedTypeCount);
 		}
 	}
@@ -289,7 +289,7 @@ PdbScanner::loadDataFromPdb(const wchar_t *filename, IDiaDataSource **dataSource
 	if (FAILED(hr)) {
 		const char *libraries[] = {"MSDIA100", "MSDIA80", "MSDIA70", "MSDIA60"};
 		rc = DDR_RC_ERROR;
-		for (size_t i = 0; i < sizeof(libraries) / sizeof(char *); i += 1) {
+		for (size_t i = 0; i < sizeof(libraries) / sizeof(*libraries); ++i) {
 			HMODULE hmodule = LoadLibrary(libraries[i]);
 			BOOL (WINAPI *DllGetClassObject)(REFCLSID, REFIID, LPVOID) = NULL;
 			if (NULL != hmodule) {
@@ -303,7 +303,7 @@ PdbScanner::loadDataFromPdb(const wchar_t *filename, IDiaDataSource **dataSource
 				hr = DllGetClassObject(__uuidof(DiaSource), IID_IClassFactory, &classFactory);
 			}
 			if (SUCCEEDED(hr)) {
-				hr = classFactory->CreateInstance(NULL, __uuidof(IDiaDataSource), (void**)dataSource);
+				hr = classFactory->CreateInstance(NULL, __uuidof(IDiaDataSource), (void **)dataSource);
 			}
 			if (SUCCEEDED(hr)) {
 				rc = DDR_RC_OK;
@@ -351,7 +351,7 @@ PdbScanner::updatePostponedFieldNames()
 	/* Update field type references for fields which were
 	 * processed before their type was added to the IR.
 	 */
-	for (vector<PostponedType>::iterator it = _postponedFields.begin(); it != _postponedFields.end(); it ++) {
+	for (vector<PostponedType>::iterator it = _postponedFields.begin(); it != _postponedFields.end(); ++it) {
 		Type **type = it->type;
 		if (_typeMap.end() != _typeMap.find(it->name)) {
 			*type = _typeMap[it->name];
@@ -410,7 +410,7 @@ PdbScanner::addChildrenSymbols(IDiaSymbol *symbol, enum SymTagEnum symTag, Names
 		if (NULL != outerNamespace) {
 			alreadyHadSubtypes = !outerNamespace->_subUDTs.empty();
 		}
-		for (ULONG index = 0; index < celt; index += 1) {
+		for (ULONG index = 0; index < celt; ++index) {
 			string udtName = "";
 			DWORD symTag = 0;
 			hr = childSymbols[index]->get_symTag(&symTag);
@@ -450,14 +450,14 @@ PdbScanner::addChildrenSymbols(IDiaSymbol *symbol, enum SymTagEnum symTag, Names
 	 * here, since they have no associated symbol.
 	 */
 	if (DDR_RC_OK == rc) {
-		for (vector<ULONG>::iterator it = innerTypeSymbols.begin(); it != innerTypeSymbols.end() && DDR_RC_OK == rc; it ++) {
+		for (vector<ULONG>::iterator it = innerTypeSymbols.begin(); it != innerTypeSymbols.end() && DDR_RC_OK == rc; ++it) {
 			rc = addSymbol(childSymbols[*it], NULL);
 			childSymbols[*it]->Release();
 		}
 	}
 
 	if (NULL != childSymbols) {
-		delete(childSymbols);
+		delete childSymbols;
 	}
 	if (NULL != classSymbols) {
 		classSymbols->Release();
@@ -506,7 +506,7 @@ PdbScanner::createTypedef(IDiaSymbol *symbol, NamespaceUDT *outerNamespace)
 		}
 		if (DDR_RC_OK == rc) {
 			if (!checkBlacklistedType(baseName)) {
-				TypedefUDT *newTypedef = new TypedefUDT();
+				TypedefUDT *newTypedef = new TypedefUDT;
 				newTypedef->_name = typedefName;
 				newTypedef->_aliasedType = NULL;
 				newTypedef->_outerNamespace = outerNamespace;
@@ -519,7 +519,7 @@ PdbScanner::createTypedef(IDiaSymbol *symbol, NamespaceUDT *outerNamespace)
 					newTypedef->_sizeOf = newTypedef->_aliasedType->_sizeOf;
 					addType(newTypedef, NULL == outerNamespace);
 				} else {
-					delete(newTypedef);
+					delete newTypedef;
 				}
 			}
 		}
@@ -531,7 +531,7 @@ PdbScanner::createTypedef(IDiaSymbol *symbol, NamespaceUDT *outerNamespace)
 }
 
 DDR_RC
-PdbScanner::addEnumMembers(IDiaSymbol *symbol, EnumUDT *const enumUDT)
+PdbScanner::addEnumMembers(IDiaSymbol *symbol, EnumUDT *enumUDT)
 {
 	DDR_RC rc = DDR_RC_OK;
 
@@ -559,7 +559,7 @@ PdbScanner::addEnumMembers(IDiaSymbol *symbol, EnumUDT *const enumUDT)
 			rc = getName(childSymbol, &name);
 
 			if (DDR_RC_OK == rc) {
-				EnumMember *enumMember = new EnumMember();
+				EnumMember *enumMember = new EnumMember;
 				enumMember->_name = name;
 				enumUDT->_enumMembers.push_back(enumMember);
 			}
@@ -614,7 +614,7 @@ PdbScanner::createEnumUDT(IDiaSymbol *symbol, NamespaceUDT *outerNamespace)
 					getNamespaceFromName(&name, &outerNamespace);
 
 					/* If this is a new enum, get its members and add it to the IR. */
-					EnumUDT *enumUDT = new EnumUDT();
+					EnumUDT *enumUDT = new EnumUDT;
 					enumUDT->_name = name;
 					rc = addEnumMembers(symbol, enumUDT);
 
@@ -626,7 +626,7 @@ PdbScanner::createEnumUDT(IDiaSymbol *symbol, NamespaceUDT *outerNamespace)
 						}
 						addType(enumUDT, NULL == outerNamespace);
 					} else {
-						delete(enumUDT);
+						delete enumUDT;
 					}
 				} else if (_typeMap.end() != _typeMap.find(fullName)) {
 					EnumUDT *enumUDT = (EnumUDT *)(getType(fullName));
@@ -802,9 +802,9 @@ PdbScanner::setPointerType(IDiaSymbol *symbol, Modifiers *modifiers)
 		ERRMSG("get_reference failed with HRESULT = %08X", hr);
 		rc = DDR_RC_ERROR;
 	} else if (bSet) {
-		modifiers->_referenceCount++;
+		modifiers->_referenceCount += 1;
 	} else {
-		modifiers->_pointerCount++;
+		modifiers->_pointerCount += 1;
 	}
 
 	return rc;
@@ -1143,13 +1143,13 @@ PdbScanner::getSize(IDiaSymbol *symbol, ULONGLONG *size)
 }
 
 DDR_RC
-PdbScanner::addFieldMember(IDiaSymbol *symbol, ClassUDT *const udt)
+PdbScanner::addFieldMember(IDiaSymbol *symbol, ClassUDT *udt)
 {
 	DDR_RC rc = DDR_RC_OK;
 	/* Add a new field to a class. Find its name, type, size,
 	 * modifiers, and offset.
 	 */
-	Field *newField = new Field();
+	Field *newField = new Field;
 	rc = getName(symbol, &newField->_name);
 
 	if (DDR_RC_OK == rc) {
@@ -1241,7 +1241,7 @@ PdbScanner::createClassUDT(IDiaSymbol *symbol, NamespaceUDT *outerUDT)
 					if (DDR_RC_OK == rc) {
 						addType(classUDT, NULL == classUDT->_outerNamespace);
 					} else {
-						delete(classUDT);
+						delete classUDT;
 						classUDT = NULL;
 					}
 				} else if (_typeMap.end() != _typeMap.find(fullName)) {
@@ -1296,9 +1296,7 @@ PdbScanner::getNamespaceFromName(string *name, NamespaceUDT **outerUDT)
 				if ((NULL != outerNamespace) && (NULL == ns->_outerNamespace)) {
 					ns->_outerNamespace = outerNamespace;
 					outerNamespace->_subUDTs.push_back(ns);
-					if (_ir->_types.end() != find(_ir->_types.begin(), _ir->_types.end(), ns)) {
-						_ir->_types.erase(remove(_ir->_types.begin(), _ir->_types.end(), ns));
-					}
+					_ir->_types.erase(remove(_ir->_types.begin(), _ir->_types.end(), ns));
 				}
 
 				outerNamespace = ns;

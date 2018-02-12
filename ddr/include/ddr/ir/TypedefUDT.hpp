@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2017 IBM Corp. and others
+ * Copyright (c) 2016, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -22,11 +22,7 @@
 #ifndef TYPEDEFUDT_HPP
 #define TYPEDEFUDT_HPP
 
-#include "ddr/config.hpp"
-
-#include "ddr/std/string.hpp"
-
-#include "Modifiers.hpp"
+#include "ddr/ir/Modifiers.hpp"
 #include "ddr/ir/UDT.hpp"
 
 class TypedefUDT : public UDT
@@ -35,18 +31,18 @@ public:
 	Type *_aliasedType;
 	Modifiers _modifiers;
 
-	TypedefUDT(unsigned int lineNumber = 0);
+	explicit TypedefUDT(unsigned int lineNumber = 0);
 	~TypedefUDT();
 
-	virtual DDR_RC acceptVisitor(TypeVisitor const &visitor);
-	virtual void checkDuplicate(Symbol_IR *ir);
+	virtual DDR_RC acceptVisitor(const TypeVisitor &visitor);
+	virtual bool insertUnique(Symbol_IR *ir);
 	virtual string getSymbolKindName();
 	virtual size_t getPointerCount();
 	virtual size_t getArrayDimensions();
 	virtual Type *getBaseType();
 
-	bool operator==(Type const & rhs) const;
-	virtual bool compareToTypedef(TypedefUDT const &) const;
+	bool operator==(const Type & rhs) const;
+	virtual bool compareToTypedef(const TypedefUDT &) const;
 };
 
 #endif /* TYPEDEFUDT_HPP */

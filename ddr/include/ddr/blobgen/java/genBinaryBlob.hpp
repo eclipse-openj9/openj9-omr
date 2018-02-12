@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2017 IBM Corp. and others
+ * Copyright (c) 2016, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -22,23 +22,18 @@
 #ifndef GENBINARYBLOB_HPP
 #define GENBINARYBLOB_HPP
 
+#include "ddr/blobgen/genBlob.hpp"
+
 #include "hashtable_api.h"
 #include "omrutil.h"
 #include "omrport.h"
 
-#include "ddr/ir/ClassUDT.hpp"
-#include "ddr/config.hpp"
-#include "ddr/ir/EnumMember.hpp"
-#include "ddr/ir/EnumUDT.hpp"
-#include "ddr/ir/Field.hpp"
-#include "ddr/ir/Macro.hpp"
-#include "ddr/ir/Symbol_IR.hpp"
-#include "ddr/ir/TypedefUDT.hpp"
-#include "ddr/ir/UnionUDT.hpp"
+class BlobBuildVisitor;
+class BlobEnumerateVisitor;
+class Field;
+class Symbol_IR;
 
-using std::pair;
-
-class JavaBlobGenerator: public BlobGenerator
+class JavaBlobGenerator : public BlobGenerator
 {
 private:
 	typedef struct BitField {
@@ -127,29 +122,24 @@ private:
 		DDR_RC initializeBitfieldFormat(uint8_t *bitfieldFormat);
 	};
 
-	static pair<string, unsigned long long> cLimits[];
-
 	BuildBlobInfo _buildInfo;
 	bool _printEmptyTypes;
 
 	void copyStringTable();
 	DDR_RC stringTableOffset(BlobHeader *blobHeader, J9HashTable *stringTable, const char *cString, uint32_t *offset);
-	DDR_RC enumerateCLimits();
-	DDR_RC addCLimits();
-	DDR_RC countStructsAndStrings(Symbol_IR *const ir);
+	DDR_RC countStructsAndStrings(Symbol_IR *ir);
 	DDR_RC addFieldAndConstCount(bool addStructureCount, size_t fieldCount, size_t constCount);
-	DDR_RC buildBlobData(OMRPortLibrary *portLibrary, Symbol_IR *const ir);
-	DDR_RC addBlobField(Field *f, uint32_t *fieldCount, uint32_t *constCount);
-	DDR_RC addBlobField(Field *f, uint32_t *fieldCount, uint32_t *constCount, string prefix);
-	DDR_RC addBlobConst(string name, long long value, uint32_t *constCount);
-	DDR_RC addBlobStruct(string name, string superName, uint32_t constCount, uint32_t fieldCount, uint32_t size);
-	DDR_RC formatFieldType(Field *f, string *fieldType);
+	DDR_RC buildBlobData(OMRPortLibrary *portLibrary, Symbol_IR *ir);
+	DDR_RC addBlobField(Field *field, uint32_t *fieldCount, const string &prefix);
+	DDR_RC addBlobConst(const string &name, long long value, uint32_t *constCount);
+	DDR_RC addBlobStruct(const string &name, const string &superName, uint32_t constCount, uint32_t fieldCount, uint32_t size);
+	DDR_RC formatFieldType(Field *field, string *fieldType);
 
 	friend class BlobBuildVisitor;
 	friend class BlobEnumerateVisitor;
 
 public:
-	JavaBlobGenerator(bool printEmptyTypes) : _printEmptyTypes(printEmptyTypes) {}
+	explicit JavaBlobGenerator(bool printEmptyTypes) : _printEmptyTypes(printEmptyTypes) {}
 	DDR_RC genBinaryBlob(struct OMRPortLibrary *portLibrary, Symbol_IR *ir, const char *blobFile);
 };
 

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2017 IBM Corp. and others
+ * Copyright (c) 2016, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -21,37 +21,37 @@
 
 #include "ddr/macros/MacroInfo.hpp"
 
-MacroInfo::MacroInfo(string typeName)
+MacroInfo::MacroInfo(const string &typeName)
 	: _typeName(typeName)
 {
 }
 
-string
-MacroInfo::getTypeName()
+const string &
+MacroInfo::getTypeName() const
 {
 	return _typeName;
 }
 
 void
-MacroInfo::addMacro(pair<string, string> p)
+MacroInfo::addMacro(const string &name, const string &value)
 {
-	_macros.insert(p);
+	_macros.insert(make_pair(name, value));
 }
 
 size_t
-MacroInfo::getNumMacros()
+MacroInfo::getNumMacros() const
 {
 	return _macros.size();
 }
 
-set<pair<string, string> >::iterator
-MacroInfo::getMacroStart()
+set<pair<string, string> >::const_iterator
+MacroInfo::getMacroStart() const
 {
 	return _macros.begin();
 }
 
-set<pair<string, string> >::iterator
-MacroInfo::getMacroEnd()
+set<pair<string, string> >::const_iterator
+MacroInfo::getMacroEnd() const
 {
 	return _macros.end();
 }

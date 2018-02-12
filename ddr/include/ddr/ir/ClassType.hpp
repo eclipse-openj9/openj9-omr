@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2017 IBM Corp. and others
+ * Copyright (c) 2016, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -22,30 +22,28 @@
 #ifndef CLASSTYPE_HPP
 #define CLASSTYPE_HPP
 
-#include "ddr/config.hpp"
-
-#include "ddr/ir/EnumMember.hpp"
-#include "ddr/ir/Field.hpp"
 #include "ddr/ir/NamespaceUDT.hpp"
-#include "ddr/ir/UDT.hpp"
+
+class EnumMember;
+class Field;
 
 using std::vector;
 
 class ClassType : public NamespaceUDT
 {
 public:
+	bool _isComplete; /* as opposed to just a forward declaration */
 	vector<Field *> _fieldMembers;
 	vector<EnumMember *> _enumMembers; /* used for anonymous enums*/
 
-	ClassType(size_t size, unsigned int lineNumber = 0);
+	explicit ClassType(size_t size, unsigned int lineNumber = 0);
 	virtual ~ClassType();
 
-	virtual bool isAnonymousType();
 	virtual void computeFieldOffsets();
-	virtual void renameFieldsAndMacros(FieldOverride fieldOverride, Type *replacementType);
+	virtual void renameFieldsAndMacros(const FieldOverride &fieldOverride, Type *replacementType);
 
-	bool operator==(Type const & rhs) const;
-	virtual bool compareToClasstype(ClassType const &) const;
+	bool operator==(const Type & rhs) const;
+	virtual bool compareToClasstype(const ClassType &) const;
 };
 
 #endif /* CLASSTYPE_HPP */

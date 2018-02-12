@@ -234,24 +234,25 @@ waitingMain(void *arg)
 	testdata->waiting = 1;
 	testdata->rc = omrthread_monitor_wait_interruptable(testdata->waitSync, 0, 0);
 
-	if (J9THREAD_INTERRUPTED_MONITOR_ENTER == testdata->rc) {
-		J9AbstractThread *self = (J9AbstractThread *)omrthread_self();
-		J9ThreadAbstractMonitor *mon = (J9ThreadAbstractMonitor *)testdata->waitSync;
+	/* This test assumes that the thread will be Aborted.  If it is not there is a timing hole
+	 * which needs to be resolved.
+	 */
+	EXPECT_EQ(J9THREAD_INTERRUPTED_MONITOR_ENTER, testdata->rc);
 
-		assert(!(self->flags & J9THREAD_FLAG_INTERRUPTABLE));
-		assert(!(self->flags & J9THREAD_FLAG_INTERRUPTED));
-		assert(!(self->flags & J9THREAD_FLAG_PRIORITY_INTERRUPTED));
-		assert(!(self->flags & J9THREAD_FLAG_BLOCKED));
-		assert(!(self->flags & J9THREAD_FLAG_WAITING));
-		EXPECT_TRUE(NULL == self->monitor);
+	J9AbstractThread *self = (J9AbstractThread *)omrthread_self();
+	J9ThreadAbstractMonitor *mon = (J9ThreadAbstractMonitor *)testdata->waitSync;
 
-		EXPECT_TRUE(NULL == mon->waiting);
-		/*assert((J9AbstractThread *)mon->owner == self);*/
-		EXPECT_TRUE(NULL == mon->blocking);
-		/*assert(mon->count == 1);*/
-	} else {
-		omrthread_monitor_exit(testdata->waitSync);
-	}
+	EXPECT_EQ(0, (self->flags & J9THREAD_FLAG_INTERRUPTABLE));
+	EXPECT_EQ(0, (self->flags & J9THREAD_FLAG_INTERRUPTED));
+	EXPECT_EQ(0, (self->flags & J9THREAD_FLAG_PRIORITY_INTERRUPTED));
+	EXPECT_EQ(0, (self->flags & J9THREAD_FLAG_BLOCKED));
+	EXPECT_EQ(0, (self->flags & J9THREAD_FLAG_WAITING));
+	EXPECT_EQ(J9THREAD_FLAG_ABORTED, (self->flags & J9THREAD_FLAG_ABORTED));
+	EXPECT_TRUE(NULL == self->monitor);
+	EXPECT_TRUE(NULL == mon->waiting);
+	/*assert((J9AbstractThread *)mon->owner == self);*/
+	EXPECT_TRUE(NULL == mon->blocking);
+	/*assert(mon->count == 1);*/
 
 	EXPECT_EQ(0, omrthread_monitor_enter(testdata->exitSync));
 	testdata->aborted = 1;

@@ -138,6 +138,18 @@ Following these guidelines will help us to merge your pull requests smoothly:
    create a better end product. Committers will wait until after you've removed
    the WIP prefix to merge your changes.
 
+### Downstream Dependencies
+
+If a downstream project consuming OMR has a dependency on the contents of your pull 
+request, i.e. the pull request should not be merged until all downstream preparations 
+have been complete, you as the contributor of the pull request may use the WIP prefix in 
+addition to comment in the said pull request to inform the committer of your 
+particular circumstances for merging. That is, you may request a review of the pull
+request even though it's marked WIP, informing the committer of your desire to
+coordinate when the PR is merged. Once all downstream preparations have been complete
+it is your responsibility as the contributor to remove the WIP prefix and inform the
+committers that the pull request is ready for merging, pending reviews have been
+completed.
 
 ## Commit Guidelines
 

@@ -225,8 +225,20 @@ main() {
 	fi
 	${make} --ignore-errors --keep-going -C ${scan_dir} ddrgen
 
+	# Build an awk filter that removes duplicate information.
+	declare -ar dedup_filter=(
+		'BEGIN { include = 0 }'
+		'/^@DDRFILE_BEGIN / { file[$2] += 1 ; if (file[$2] == 1) { include = 1 } }'
+		'{ if (include) { print } }'
+		'/^@DDRFILE_END / { if (include) { print } ; include = 0 }'
+	)
+
 	echo "Scraping anotations from preprocessed code ..."
-	find ${scan_dir} -type f -name '*.i' | sort | xargs -d '\n' grep -hE -e '^@(DDRFILE|MACRO|TYPE)_' > ${macroList_file}
+	find ${scan_dir} -type f -name '*.i' \
+		| sort \
+		| xargs -d '\n' grep -hE -e '^@(DDRFILE|MACRO|TYPE)_' \
+		| awk "${dedup_filter[*]}" \
+		> ${macroList_file}
 
 	restore_annotated_files
 }

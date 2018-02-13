@@ -57,22 +57,17 @@ stringMatches(const char *candidate, const char *pattern)
 static bool
 stringMatchesAny(const string &candidate, const set<string> &patterns)
 {
-	bool match = false; // patterns.find(candidate) != patterns.end();
+	const char *c_candidate = candidate.c_str();
 
-	if (!match) {
-		const char *c_candidate = candidate.c_str();
+	for (set<string>::const_iterator it = patterns.begin(); it != patterns.end(); ++it) {
+		const string &pattern = *it;
 
-		for (set<string>::const_iterator it = patterns.begin(); it != patterns.end(); ++it) {
-			const string &pattern = *it;
-
-			if (stringMatches(c_candidate, pattern.c_str())) {
-				match = true;
-				break;
-			}
+		if (stringMatches(c_candidate, pattern.c_str())) {
+			return true;
 		}
 	}
 
-	return match;
+	return false;
 }
 
 bool

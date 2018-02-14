@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2016 IBM Corp. and others
+ * Copyright (c) 2015, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -506,6 +506,7 @@ setupExistingHandlerConditions(bool existingPrimary, bool existingSecondary, boo
 			stack.ss_flags = SS_DISABLE;
 			/* To compensate for OSX bug, this is needed to prevent ENOMEM error. */
 			stack.ss_size = SIGSTKSZ;
+			stack.ss_sp = NULL;
 		}
 		if (0 != sigaltstack(&stack, NULL)) {
 			rc = OMR_ERROR_INTERNAL;

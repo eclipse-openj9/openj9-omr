@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2016 IBM Corp. and others
+ * Copyright (c) 2014, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -30,9 +30,9 @@ testMain(int argc, char **argv, char **envp)
 {
 	::testing::InitGoogleTest(&argc, argv);
 	OMREventListener::setDefaultTestListener();
-	ATTACH_OMRTHREAD();
+	INITIALIZE_THREADLIBRARY_AND_ATTACH();
 	omrTestEnv = (ThreadTestEnvironment *)testing::AddGlobalTestEnvironment(new ThreadTestEnvironment(argc, argv));
 	int rc = RUN_ALL_TESTS();
-	DETACH_OMRTHREAD();
+	DETACH_AND_DESTROY_THREADLIBRARY();
 	return rc;
 }

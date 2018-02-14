@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2017 IBM Corp. and others
+ * Copyright (c) 2015, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -190,7 +190,7 @@ public:
  * Note that Googletest's ASSERT_*() macros cannot be used in this context. Those macros can
  * only be used in methods that return void.
  */
-#define ATTACH_OMRTHREAD() \
+#define INITIALIZE_THREADLIBRARY_AND_ATTACH() \
 	do { \
 		intptr_t rc = omrthread_attach_ex(NULL, J9THREAD_ATTR_DEFAULT); \
 		if (0 != rc) { \
@@ -198,15 +198,16 @@ public:
 		} \
 	} while (0)
 
-#define DETACH_OMRTHREAD() omrthread_detach(NULL)
-
+#define DETACH_AND_DESTROY_THREADLIBRARY() \
+	omrthread_detach(NULL); \
+	omrthread_shutdown_library();
 
 /**
  * PortEnvironment provides BaseEnvironment and initializes/finalizes the j9port
  * library for all tests run from main(). As a prerequisite, the omrthread library must be
  * initialized and the main test thread attached before instantiating this class and calling
  * RUN_ALL_TESTS() and the main test thread must be detached and the omrthread library shut
- * down after RUN_ALL_TESTS(). The ATTACH_OMRTHREAD() and DETACH_OMRTHREAD() macros can be used
+ * down after RUN_ALL_TESTS(). The INITIALIZE_THREADLIBRARY_AND_ATTACH() and DETACH_AND_DESTROY_THREADLIBRARY() macros can be used
  * for this purpose.
  */
 class PortEnvironment: public BaseEnvironment

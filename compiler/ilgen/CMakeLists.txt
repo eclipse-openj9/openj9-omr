@@ -21,7 +21,7 @@
 
 compiler_library(ilgen
 	${CMAKE_CURRENT_LIST_DIR}/IlGenRequest.cpp
-	${CMAKE_CURRENT_LIST_DIR}/IlBuilder.cpp
+	${CMAKE_CURRENT_LIST_DIR}/OMRIlBuilder.cpp
 	${CMAKE_CURRENT_LIST_DIR}/IlValue.cpp
 	${CMAKE_CURRENT_LIST_DIR}/IlInjector.cpp
 	${CMAKE_CURRENT_LIST_DIR}/MethodBuilder.cpp

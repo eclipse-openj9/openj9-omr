@@ -19,29 +19,38 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#ifndef TR_ILBUILDER_INCL
-#define TR_ILBUILDER_INCL
+#ifndef TEST_ILBUILDER_INCL
+#define TEST_ILBUILDER_INCL
 
-#include "ilgen/TestIlBuilder.hpp"
+#include "ilgen/OMRIlBuilder.hpp"
 
-namespace TR
+namespace TestCompiler
 {
-   class IlBuilder : public TestCompiler::IlBuilder
+
+class TestDriver;
+
+class IlBuilder : public OMR::IlBuilder
+   {
+public:
+   TR_ALLOC(TR_Memory::IlGenerator)
+
+   IlBuilder(TR::MethodBuilder *methodBuilder, TR::TypeDictionary *types)
+      : OMR::IlBuilder(methodBuilder, types)
+      { }
+
+   IlBuilder(TR::IlBuilder *source)
+      : OMR::IlBuilder(source)
+      { }
+
+   IlBuilder(TestDriver *test, TR::MethodBuilder *methodBuilder, TR::TypeDictionary *types)
+      : OMR::IlBuilder(methodBuilder, types)
       {
-      public:
-         IlBuilder(TR::MethodBuilder *methodBuilder, TypeDictionary *types)
-            : TestCompiler::IlBuilder(methodBuilder, types)
-            { }
+      // need to explicitly initialize TestCompiler::IlInjector layer because
+      // it's hiding behind our OMR::IlBuilder base class
+      setMethodAndTest((TR::ResolvedMethod *)NULL, test);
+      }
+   };
 
-         IlBuilder(TR::IlBuilder *source)
-            : TestCompiler::IlBuilder(source)
-            { }
+} // namespace TestCompiler
 
-         IlBuilder(TestCompiler::TestDriver *test, TR::MethodBuilder *methodBuilder, TR::TypeDictionary *types)
-            : TestCompiler::IlBuilder(test, methodBuilder, types)
-            { }
-      };
-
-} // namespace TR
-
-#endif // !defined(TR_ILBUILDER_INCL)
+#endif // !defined(TEST_ILBUILDER_INCL)

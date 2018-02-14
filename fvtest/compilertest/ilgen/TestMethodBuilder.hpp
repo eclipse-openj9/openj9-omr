@@ -19,24 +19,36 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#ifndef TR_METHODBUILDER_INCL
-#define TR_METHODBUILDER_INCL
+#ifndef TEST_METHODBUILDER_INCL
+#define TEST_METHODBUILDER_INCL
 
 #include "ilgen/OMRMethodBuilder.hpp"
 
-namespace TR
+class TR_Memory;
+
+namespace TestCompiler
 {
-   class MethodBuilder : public OMR::MethodBuilder
+
+class TestDriver;
+
+class MethodBuilder : public OMR::MethodBuilder
+   {
+public:
+   TR_ALLOC(TR_Memory::IlGenerator)
+
+   MethodBuilder(TR::TypeDictionary *types)
+      : OMR::MethodBuilder(types)
       {
-      public:
-         MethodBuilder(TR::TypeDictionary *types)
-            : OMR::MethodBuilder(types)
-            { }
-         MethodBuilder(TR::TypeDictionary *types, OMR::VirtualMachineState *vmState)
-            : OMR::MethodBuilder(types, vmState)
-            { }
-      };
+      }
 
-} // namespace TR
+   MethodBuilder(TR::TypeDictionary *types, TestDriver *test)
+      : OMR::MethodBuilder(types)
+      {
+      // need to explicitly initialize TestCompiler::IlInjector layer
+      setMethodAndTest(NULL, test);
+      }
+   };
 
-#endif // !defined(TR_METHODBUILDER_INCL)
+} // namespace TestCompiler
+
+#endif // !defined(TEST_METHODBUILDER_INCL)

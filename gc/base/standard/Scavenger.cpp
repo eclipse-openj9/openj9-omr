@@ -430,7 +430,7 @@ MM_Scavenger::workerSetupForGC(MM_EnvironmentStandard *env)
 	env->_scavengerRememberedSet.count = 0;
 	env->_scavengerRememberedSet.fragmentCurrent = NULL;
 	env->_scavengerRememberedSet.fragmentTop = NULL;
-	env->_scavengerRememberedSet.fragmentSize = (uintptr_t)J9_SCV_REMSET_FRAGMENT_SIZE;
+	env->_scavengerRememberedSet.fragmentSize = (uintptr_t)OMR_SCV_REMSET_FRAGMENT_SIZE;
 	env->_scavengerRememberedSet.parentList = &_extensions->rememberedSet;
 
 	/* caches should all be reset */
@@ -2372,7 +2372,7 @@ MM_Scavenger::scavengeRememberedSetOverflow(MM_EnvironmentStandard *env)
 	/* Reset the local remembered set fragment */
 	env->_scavengerRememberedSet.fragmentCurrent = NULL;
 	env->_scavengerRememberedSet.fragmentTop = NULL;
-	env->_scavengerRememberedSet.fragmentSize = (uintptr_t)J9_SCV_REMSET_FRAGMENT_SIZE;
+	env->_scavengerRememberedSet.fragmentSize = (uintptr_t)OMR_SCV_REMSET_FRAGMENT_SIZE;
 	env->_scavengerRememberedSet.parentList = &_extensions->rememberedSet;
 
 	if (env->_currentTask->synchronizeGCThreadsAndReleaseMaster(env, UNIQUE_ID)) {
@@ -2426,7 +2426,7 @@ MM_Scavenger::pruneRememberedSetOverflow(MM_EnvironmentStandard *env)
 	/* Reset the local remembered set fragment */
 	env->_scavengerRememberedSet.fragmentCurrent = NULL;
 	env->_scavengerRememberedSet.fragmentTop = NULL;
-	env->_scavengerRememberedSet.fragmentSize = (uintptr_t)J9_SCV_REMSET_FRAGMENT_SIZE;
+	env->_scavengerRememberedSet.fragmentSize = (uintptr_t)OMR_SCV_REMSET_FRAGMENT_SIZE;
 	env->_scavengerRememberedSet.parentList = &_extensions->rememberedSet;
 
 	if (env->_currentTask->synchronizeGCThreadsAndReleaseMaster(env, UNIQUE_ID)) {
@@ -2565,9 +2565,86 @@ MM_Scavenger::pruneRememberedSetList(MM_EnvironmentStandard *env)
 #endif /* OMR_SCAVENGER_TRACE_REMEMBERED_SET */
 }
 
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+void
+MM_Scavenger::scavengeRememberedSetListDirect(MM_EnvironmentStandard *env)
+{
+	Trc_MM_ParallelScavenger_scavengeRememberedSetList_Entry(env->getLanguageVMThread());
+
+	MM_SublistPuddle *puddle = NULL;
+	while (NULL != (puddle = _extensions->rememberedSet.popPreviousPuddle(puddle))) {
+		Trc_MM_ParallelScavenger_scavengeRememberedSetList_startPuddle(env->getLanguageVMThread(), puddle);
+		uintptr_t numElements = 0;
+		GC_SublistSlotIterator remSetSlotIterator(puddle);
+		omrobjectptr_t *slotPtr;
+		while((slotPtr = (omrobjectptr_t *)remSetSlotIterator.nextSlot()) != NULL) {
+			omrobjectptr_t objectPtr = *slotPtr;
+
+			/* Ignore flaged for removal by the indirect refs pass */
+			if (0 == ((uintptr_t)objectPtr & DEFERRED_RS_REMOVE_FLAG)) {
+				if (!_extensions->objectModel.hasIndirectObjectReferents((CLI_THREAD_TYPE*)env->getLanguageVMThread(), objectPtr)) {
+					Assert_MM_true(_extensions->objectModel.isRemembered(objectPtr));
+					numElements += 1;
+					*slotPtr = (omrobjectptr_t)((uintptr_t)objectPtr | DEFERRED_RS_REMOVE_FLAG);
+					bool shouldBeRemembered = scavengeObjectSlots(env, NULL, objectPtr, GC_ObjectScanner::scanRoots, slotPtr);
+					if (shouldBeRemembered) {
+						/* We want to remember this object after all; clear the flag for removal. */
+						*slotPtr = objectPtr;
+					}
+				}
+			}
+		}
+
+		Trc_MM_ParallelScavenger_scavengeRememberedSetList_donePuddle(env->getLanguageVMThread(), puddle, numElements);
+	}
+
+	Trc_MM_ParallelScavenger_scavengeRememberedSetList_Exit(env->getLanguageVMThread());
+}
+
+void
+MM_Scavenger::scavengeRememberedSetListIndirect(MM_EnvironmentStandard *env)
+{
+	Trc_MM_ParallelScavenger_scavengeRememberedSetList_Entry(env->getLanguageVMThread());
+
+	MM_SublistPuddle *puddle = NULL;
+	while (NULL != (puddle = _extensions->rememberedSet.popPreviousPuddle(puddle))) {
+		Trc_MM_ParallelScavenger_scavengeRememberedSetList_startPuddle(env->getLanguageVMThread(), puddle);
+		uintptr_t numElements = 0;
+		GC_SublistSlotIterator remSetSlotIterator(puddle);
+		omrobjectptr_t *slotPtr;
+		while((slotPtr = (omrobjectptr_t *)remSetSlotIterator.nextSlot()) != NULL) {
+			omrobjectptr_t objectPtr = *slotPtr;
+
+			if(NULL != objectPtr) {
+				if (_extensions->objectModel.hasIndirectObjectReferents((CLI_THREAD_TYPE*)env->getLanguageVMThread(), objectPtr)) {
+					numElements += 1;
+					Assert_MM_true(_extensions->objectModel.isRemembered(objectPtr));
+					*slotPtr = (omrobjectptr_t)((uintptr_t)objectPtr | DEFERRED_RS_REMOVE_FLAG);
+					bool shouldBeRemembered = _cli->scavenger_scavengeIndirectObjectSlots(env, objectPtr);
+					shouldBeRemembered |= scavengeObjectSlots(env, NULL, objectPtr, GC_ObjectScanner::scanRoots, slotPtr);
+					if (shouldBeRemembered) {
+						/* We want to remember this object after all; clear the flag for removal. */
+						*slotPtr = objectPtr;
+					}
+				}
+			} else {
+				remSetSlotIterator.removeSlot();
+			}
+		}
+
+		Trc_MM_ParallelScavenger_scavengeRememberedSetList_donePuddle(env->getLanguageVMThread(), puddle, numElements);
+	}
+
+	Trc_MM_ParallelScavenger_scavengeRememberedSetList_Exit(env->getLanguageVMThread());
+}
+
+#endif /* OMR_GC_CONCURRENT_SCAVENGER */
+
 void
 MM_Scavenger::scavengeRememberedSetList(MM_EnvironmentStandard *env)
 {
+	Assert_MM_false(IS_CONCURRENT_ENABLED);
+
 	Trc_MM_ParallelScavenger_scavengeRememberedSetList_Entry(env->getLanguageVMThread());
 
 	/* Remembered set walk */
@@ -2594,9 +2671,7 @@ MM_Scavenger::scavengeRememberedSetList(MM_EnvironmentStandard *env)
 					shouldBeRemembered |= _cli->scavenger_scavengeIndirectObjectSlots(env, objectPtr);
 				}
 
-				if (!IS_CONCURRENT_ENABLED) {
-					shouldBeRemembered |= isRememberedThreadReference(env, objectPtr);
-				}
+				shouldBeRemembered |= isRememberedThreadReference(env, objectPtr);
 
 				if (shouldBeRemembered) {
 					/* We want to remember this object after all; clear the flag for removal. */
@@ -2621,9 +2696,27 @@ MM_Scavenger::scavengeRememberedSet(MM_EnvironmentStandard *env)
 {
 	if (_isRememberedSetInOverflowAtTheBeginning) {
 		env->_scavengerStats._rememberedSetOverflow = 1;
-		scavengeRememberedSetOverflow(env);
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+		/* For CS, in case of OF, we deal with both direct and indirect refs with only one pass. */
+		if (!IS_CONCURRENT_ENABLED || (concurrent_state_roots == _concurrentState))
+#endif /* OMR_GC_CONCURRENT_SCAVENGER */
+		{
+			scavengeRememberedSetOverflow(env);
+		}
 	} else {
-		scavengeRememberedSetList(env);
+		if (!IS_CONCURRENT_ENABLED) {
+			scavengeRememberedSetList(env);
+		}
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+		/* Indirect refs are dealt within the root scanning phase (first STW phase), while the direct references are dealt within the main scan phase (typically concurrent). */
+		else if (concurrent_state_roots == _concurrentState) {
+			scavengeRememberedSetListIndirect(env);
+		} else if (concurrent_state_scan == _concurrentState) {
+			scavengeRememberedSetListDirect(env);
+		} else {
+			Assert_MM_unreachable();
+		}
+#endif /* OMR_GC_CONCURRENT_SCAVENGER */
 	}
 }
 
@@ -4768,6 +4861,7 @@ MM_Scavenger::workThreadProcessRoots(MM_EnvironmentStandard *env)
 
 	MM_ScavengerRootScanner rootScanner(env, this);
 
+	/* Indirect refs, only. */
 	rootScanner.scavengeRememberedSet(env);
 
 	rootScanner.scanRoots(env);
@@ -4786,6 +4880,10 @@ MM_Scavenger::workThreadScan(MM_EnvironmentStandard *env)
 {
 	/* This is where the most of scan work should occur in CS. Typically as a concurrent task (background threads), but in some corner cases it could be scheduled as a STW task */
 	clearThreadGCStats(env, false);
+
+	/* Direct refs, only. */
+	MM_ScavengerRootScanner rootScanner(env, this);
+	rootScanner.scavengeRememberedSet(env);
 
 	completeScan(env);
 	// todo: are these two steps really necessary?
@@ -4855,6 +4953,9 @@ MM_Scavenger::masterThreadConcurrentCollect(MM_EnvironmentBase *env)
 	Assert_MM_true(concurrent_state_scan == _concurrentState);
 
 	clearIncrementGCStats(env, false);
+
+	/* prepare for the second pass (direct refs) */
+	_extensions->rememberedSet.startProcessingSublist();
 
 	MM_ConcurrentScavengeTask scavengeTask(env, _dispatcher, this, MM_ConcurrentScavengeTask::SCAVENGE_SCAN, UDATA_MAX, &_forceConcurrentTermination, env->_cycleState);
 	/* Concurrent background task will run with different (typically lower) number of threads. */

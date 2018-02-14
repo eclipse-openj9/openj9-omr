@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2001, 2016 IBM Corp. and others
+ * Copyright (c) 2001, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -54,7 +54,7 @@ testMain(int argc, char **argv, char **envp)
 
 	OMREventListener::setDefaultTestListener();
 
-	ATTACH_OMRTHREAD();
+	INITIALIZE_THREADLIBRARY_AND_ATTACH();
 
 	portTestEnv = new PortTestEnvironment(argc, argv);
 	testing::AddGlobalTestEnvironment(portTestEnv);
@@ -77,7 +77,7 @@ testMain(int argc, char **argv, char **envp)
 		result = RUN_ALL_TESTS();
 	}
 
-	DETACH_OMRTHREAD();
+	DETACH_AND_DESTROY_THREADLIBRARY();
 
 	if (earlyExit) {
 		printf("exiting from testMain\n");

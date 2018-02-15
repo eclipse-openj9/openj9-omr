@@ -32,7 +32,7 @@ namespace TR
          MethodBuilder(TR::TypeDictionary *types)
             : OMR::MethodBuilder(types)
             { }
-         MethodBuilder(TR::TypeDictionary *types, OMR::VirtualMachineState *vmState)
+         MethodBuilder(TR::TypeDictionary *types, TR::VirtualMachineState *vmState)
             : OMR::MethodBuilder(types, vmState)
             { }
       };

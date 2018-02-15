@@ -35,7 +35,7 @@ class TR_BitVector;
 namespace TR { class BytecodeBuilder; }
 namespace TR { class ResolvedMethod; }
 namespace TR { class SymbolReference; }
-namespace OMR { class VirtualMachineState; }
+namespace TR { class VirtualMachineState; }
 
 namespace TR { class SegmentProvider; }
 namespace TR { class Region; }
@@ -49,7 +49,7 @@ class MethodBuilder : public TR::IlBuilder
    public:
    TR_ALLOC(TR_Memory::IlGenerator)
 
-   MethodBuilder(TR::TypeDictionary *types, OMR::VirtualMachineState *vmState = NULL);
+   MethodBuilder(TR::TypeDictionary *types, TR::VirtualMachineState *vmState = NULL);
    MethodBuilder(const MethodBuilder &src);
    virtual ~MethodBuilder();
 
@@ -66,8 +66,8 @@ class MethodBuilder : public TR::IlBuilder
    void addToTreeConnectingWorklist(TR::BytecodeBuilder *builder);
    void addToBlockCountingWorklist(TR::BytecodeBuilder *builder);
 
-   OMR::VirtualMachineState *vmState()                       { return _vmState; }
-   void setVMState(OMR::VirtualMachineState *vmState)        { _vmState = vmState; }
+   TR::VirtualMachineState *vmState()                        { return _vmState; }
+   void setVMState(TR::VirtualMachineState *vmState)         { _vmState = vmState; }
 
    virtual bool isMethodBuilder()                            { return true; }
    virtual TR::MethodBuilder *asMethodBuilder();
@@ -240,7 +240,7 @@ class MethodBuilder : public TR::IlBuilder
    List<TR::BytecodeBuilder> * _countBlocksWorklist;
    List<TR::BytecodeBuilder> * _connectTreesWorklist;
    List<TR::BytecodeBuilder> * _allBytecodeBuilders;
-   OMR::VirtualMachineState  * _vmState;
+   TR::VirtualMachineState   * _vmState;
 
    TR_BitVector              * _bytecodeWorklist;
    TR_BitVector              * _bytecodeHasBeenInWorklist;

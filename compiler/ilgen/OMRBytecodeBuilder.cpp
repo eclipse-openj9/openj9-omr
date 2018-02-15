@@ -195,10 +195,10 @@ OMR::BytecodeBuilder::setHandlerInfo(uint32_t catchType)
    }
 
 void
-OMR::BytecodeBuilder::propagateVMState(OMR::VirtualMachineState *fromVMState)
+OMR::BytecodeBuilder::propagateVMState(TR::VirtualMachineState *fromVMState)
    {
-   _initialVMState = (OMR::VirtualMachineState *) fromVMState->MakeCopy();
-   _vmState = (OMR::VirtualMachineState *) fromVMState->MakeCopy();
+   _initialVMState = fromVMState->MakeCopy();
+   _vmState = fromVMState->MakeCopy();
    }
 
 // transferVMState needs to be called before the actual transfer operation (Goto, IfCmp,

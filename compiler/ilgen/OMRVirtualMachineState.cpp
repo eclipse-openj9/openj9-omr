@@ -19,19 +19,16 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#ifndef TR_VIRTUALMACHINESTATE_INCL
-#define TR_VIRTUALMACHINESTATE_INCL
+#include "ilgen/VirtualMachineState.hpp"
 
+namespace TR { class IlBuilder; }
+class TR_Memory;
 
-#include "ilgen/OMRVirtualMachineState.hpp"
+template <class T> class List;
+template <class T> class ListAppender;
 
-namespace TR
-{
-
-class VirtualMachineState : public OMR::VirtualMachineState
+TR::VirtualMachineState *
+OMR::VirtualMachineState::MakeCopy()
    {
-   };
-
-} // namespace TR
-
-#endif // !defined(TR_VIRTUALMACHINESTATE_INCL)
+   return static_cast<TR::VirtualMachineState *>(this);
+   }

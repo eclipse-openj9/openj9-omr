@@ -31,5 +31,5 @@ compiler_library(ilgen
 	${CMAKE_CURRENT_LIST_DIR}/OMRThunkBuilder.cpp
 	${CMAKE_CURRENT_LIST_DIR}/OMRVirtualMachineState.cpp
 	${CMAKE_CURRENT_LIST_DIR}/OMRVirtualMachineOperandArray.cpp
-	${CMAKE_CURRENT_LIST_DIR}/VirtualMachineOperandStack.cpp
+	${CMAKE_CURRENT_LIST_DIR}/OMRVirtualMachineOperandStack.cpp
 )

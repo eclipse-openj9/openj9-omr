@@ -25,7 +25,7 @@ compiler_library(ilgen
 	${CMAKE_CURRENT_LIST_DIR}/IlValue.cpp
 	${CMAKE_CURRENT_LIST_DIR}/IlInjector.cpp
 	${CMAKE_CURRENT_LIST_DIR}/OMRMethodBuilder.cpp
-	${CMAKE_CURRENT_LIST_DIR}/BytecodeBuilder.cpp
+	${CMAKE_CURRENT_LIST_DIR}/OMRBytecodeBuilder.cpp
 	${CMAKE_CURRENT_LIST_DIR}/TypeDictionary.cpp
 	${CMAKE_CURRENT_LIST_DIR}/ThunkBuilder.cpp
 	${CMAKE_CURRENT_LIST_DIR}/VirtualMachineOperandStack.cpp

@@ -19,25 +19,23 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#ifndef TR_TYPEDICTIONARY_INCL
-#define TR_TYPEDICTIONARY_INCL
+#ifndef TR_ILTYPE_INCL
+#define TR_ILTYPE_INCL
 
-// Because IlType used to be part of TypeDictionary, include it here for backwards
-// compatibility.
-
-#include "ilgen/IlType.hpp"
-
-#include "ilgen/OMRTypeDictionary.hpp"
+#include "ilgen/OMRIlType.hpp"
 
 namespace TR
 {
-class TypeDictionary : public OMR::TypeDictionary
+class IlType : public OMR::IlType
    {
    public:
-      TypeDictionary()
-         : OMR::TypeDictionary()
+      IlType(const char *name)
+         : OMR::IlType(name)
+         { }
+      IlType()
+         : OMR::IlType()
          { }
    };
 } // namespace TR
 
-#endif // !defined(TR_TYPEDICTIONARY_INCL)
+#endif // !defined(TR_ILTYPE_INCL)

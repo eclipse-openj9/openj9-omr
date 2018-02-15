@@ -93,6 +93,12 @@ $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/il/OMRILOpCodesEnum.hpp: $(FIXED_SRCBASE
 $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/il/ILHelpers.hpp: $(FIXED_SRCBASE)/$(JIT_OMR_DIRTY_DIR)/il/ILHelpers.hpp $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/il
 	cp $< $@ || cp $< $@
 
+$(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen/OMRIlType.hpp: $(FIXED_SRCBASE)/$(JIT_OMR_DIRTY_DIR)/ilgen/OMRIlType.hpp $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen
+	cp $< $@ || cp $< $@
+
+$(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen/IlType.hpp: $(FIXED_SRCBASE)/$(JIT_OMR_DIRTY_DIR)/ilgen/IlType.hpp $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen
+	cp $< $@ || cp $< $@
+
 $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen/IlValue.hpp: $(FIXED_SRCBASE)/$(JIT_OMR_DIRTY_DIR)/ilgen/IlValue.hpp $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen
 	cp $< $@ || cp $< $@
 
@@ -118,6 +124,9 @@ $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen/OMRBytecodeBuilder.hpp: $(FIXED_SR
 	cp $< $@ || cp $< $@
 
 $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen/BytecodeBuilder.hpp: $(FIXED_SRCBASE)/$(JIT_OMR_DIRTY_DIR)/ilgen/BytecodeBuilder.hpp $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen
+	cp $< $@ || cp $< $@
+
+$(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen/OMRTypeDictionary.hpp: $(FIXED_SRCBASE)/$(JIT_OMR_DIRTY_DIR)/ilgen/OMRTypeDictionary.hpp $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen
 	cp $< $@ || cp $< $@
 
 $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen/TypeDictionary.hpp: $(FIXED_SRCBASE)/$(JIT_OMR_DIRTY_DIR)/ilgen/TypeDictionary.hpp $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen
@@ -157,6 +166,8 @@ JITBUILDER_FILES=$(RELEASE_DIR)/Makefile \
              $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/il/OMRDataTypes.hpp \
              $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/il/OMRDataTypes_inlines.hpp \
              $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/il/OMRILOpCodesEnum.hpp \
+             $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen/OMRIlType.hpp \
+             $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen/IlType.hpp \
              $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen/IlValue.hpp \
              $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen/IlInjector.hpp \
              $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen/OMRIlBuilder.hpp \
@@ -166,6 +177,7 @@ JITBUILDER_FILES=$(RELEASE_DIR)/Makefile \
              $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen/ThunkBuilder.hpp \
              $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen/OMRBytecodeBuilder.hpp \
              $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen/BytecodeBuilder.hpp \
+             $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen/OMRTypeDictionary.hpp \
              $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen/TypeDictionary.hpp \
              $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen/VirtualMachineState.hpp \
              $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen/VirtualMachineRegister.hpp \

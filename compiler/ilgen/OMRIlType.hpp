@@ -19,25 +19,52 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#ifndef TR_TYPEDICTIONARY_INCL
-#define TR_TYPEDICTIONARY_INCL
+#ifndef OMR_ILTYPE_INCL
+#define OMR_ILTYPE_INCL
 
-// Because IlType used to be part of TypeDictionary, include it here for backwards
-// compatibility.
+#include "il/DataTypes.hpp"
 
-#include "ilgen/IlType.hpp"
+class TR_Memory;
 
-#include "ilgen/OMRTypeDictionary.hpp"
+namespace TR { class IlType; }
 
-namespace TR
+namespace OMR
 {
-class TypeDictionary : public OMR::TypeDictionary
-   {
-   public:
-      TypeDictionary()
-         : OMR::TypeDictionary()
-         { }
-   };
-} // namespace TR
 
-#endif // !defined(TR_TYPEDICTIONARY_INCL)
+class IlType
+   {
+public:
+   TR_ALLOC(TR_Memory::IlGenerator)
+
+   IlType(const char *name) :
+      _name(name)
+      { }
+   IlType() :
+      _name(0)
+      { }
+   virtual ~IlType()
+      { }
+
+   const char *getName() { return _name; }
+   virtual char *getSignatureName();
+
+   virtual TR::DataType getPrimitiveType() { return TR::NoType; }
+
+   virtual bool isArray() { return false; }
+   virtual bool isPointer() { return false; }
+   virtual TR::IlType *baseType() { return NULL; }
+
+   virtual bool isStruct() {return false; }
+   virtual bool isUnion() { return false; }
+
+   virtual size_t getSize();
+
+protected:
+   const char *_name;
+   static const char * signatureNameForType[TR::NumOMRTypes];
+   static const uint8_t primitiveTypeAlignment[TR::NumOMRTypes];
+   };
+
+} // namespace OMR
+
+#endif // !defined(OMR_ILTYPE_INCL)

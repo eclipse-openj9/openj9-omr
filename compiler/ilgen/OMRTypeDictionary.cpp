@@ -38,58 +38,6 @@
 namespace OMR
 {
 
-static const char *signatureNameForType[] =
-   {
-   "V",  // NoType
-   "B",  // Int8
-   "C",  // Int16
-   "I",  // Int32
-   "J",  // Int64
-   "F",  // Float
-   "D",  // Double
-   "L",  // Address
-   // TODO: vector types!
-   };
-
-char *
-IlType::getSignatureName()
-   {
-   TR::DataType dt = getPrimitiveType();
-   if (dt == TR::Address)
-      return (char *)_name;
-   return (char *) signatureNameForType[dt];
-   }
-
-size_t
-IlType::getSize()
-   {
-   TR_ASSERT(0, "The input type does not have a defined size\n");
-   return 0;
-   }
-
-const uint8_t primitiveTypeAlignment[TR::NumOMRTypes] =
-   {
-   1,  // NoType
-   1,  // Int8
-   2,  // Int16
-   4,  // Int32
-   8,  // Int64
-   4,  // Float
-   8,  // Double
-#if TR_TARGET_64BIT // HOST?
-   4,  // Address/Word
-#else
-   8,  // Address/Word
-#endif
-   16, // VectorInt8
-   16, // VectorInt16
-   16, // VectorInt32
-   16, // VectorInt64
-   16, // VectorFloat
-   16  // VectorDouble
-   };
-
-
 class PrimitiveType : public TR::IlType
    {
 public:
@@ -191,122 +139,6 @@ protected:
    bool        _closed;
    };
 
-void
-StructType::AddField(const char *name, TR::IlType *typeInfo, size_t offset)
-   {
-   if (_closed)
-      return;
-
-   TR_ASSERT(_size <= offset, "Offset of new struct field %s::%s is %d, which is less than the current size of the struct %d\n", _name, name, offset, _size);
-
-   FieldInfo *fieldInfo = new (PERSISTENT_NEW) FieldInfo(name, offset, typeInfo);
-   if (0 != _lastField)
-      _lastField->setNext(fieldInfo);
-   else
-      _firstField = fieldInfo;
-   _lastField = fieldInfo;
-   _size = offset + typeInfo->getSize();
-   }
-
-void
-StructType::AddField(const char *name, TR::IlType *typeInfo)
-   {
-   if (_closed)
-      return;
-
-   TR::DataType primitiveType = typeInfo->getPrimitiveType();
-   uint32_t align = primitiveTypeAlignment[primitiveType] - 1;
-   _size = (_size + align) & (~align);
-
-   FieldInfo *fieldInfo = new (PERSISTENT_NEW) FieldInfo(name, _size, typeInfo);
-   if (0 != _lastField)
-      _lastField->setNext(fieldInfo);
-   else
-      _firstField = fieldInfo;
-   _lastField = fieldInfo;
-   _size += typeInfo->getSize();
-   }
-
-FieldInfo *
-StructType::findField(const char *fieldName)
-   {
-   FieldInfo *info = _firstField;
-   while (NULL != info)
-      {
-      if (strncmp(info->_name, fieldName, strlen(fieldName)) == 0)
-         return info;
-      info = info->_next;
-      }
-   return NULL;
-   }
-
-TR::IlType *
-StructType::getFieldType(const char *fieldName)
-   {
-   FieldInfo *info = findField(fieldName);
-   if (NULL == info)
-      return NULL;
-   return info->_type;
-   }
-
-size_t
-StructType::getFieldOffset(const char *fieldName)
-   {
-   FieldInfo *info = findField(fieldName);
-   if (NULL == info)
-      return -1;
-   return info->getOffset();
-   }
-
-TR::IlReference *
-StructType::getFieldSymRef(const char *fieldName)
-   {
-   FieldInfo *info = findField(fieldName);
-   if (NULL == info)
-      return NULL;
-
-   TR::SymbolReference *symRef = info->getSymRef();
-   if (NULL == symRef)
-      {
-      TR::Compilation *comp = TR::comp();
-
-      TR::DataType type = info->getPrimitiveType();
-
-      char *fullName = (char *) comp->trMemory()->allocateHeapMemory((strlen(info->_name) + 1 + strlen(_name) + 1) * sizeof(char));
-      sprintf(fullName, "%s.%s", _name, info->_name);
-      TR::Symbol *symbol = TR::Symbol::createNamedShadow(comp->trHeapMemory(), type, info->_type->getSize(), fullName);
-
-      // TBD: should we create a dynamic "constant" pool for accesses made by the method being compiled?
-      symRef = new (comp->trHeapMemory()) TR::SymbolReference(comp->getSymRefTab(), symbol, comp->getMethodSymbol()->getResolvedMethodIndex(), -1);
-      symRef->setOffset(info->getOffset());
-
-      // conservative aliasing
-      int32_t refNum = symRef->getReferenceNumber();
-      if (type == TR::Address)
-         comp->getSymRefTab()->aliasBuilder.addressShadowSymRefs().set(refNum);
-      else if (type == TR::Int32)
-         comp->getSymRefTab()->aliasBuilder.intShadowSymRefs().set(refNum);
-      else
-         comp->getSymRefTab()->aliasBuilder.nonIntPrimitiveShadowSymRefs().set(refNum);
-
-      info->cacheSymRef(symRef);
-      }
-
-   return (TR::IlReference *)symRef;
-   }
-
-void
-StructType::clearSymRefs()
-   {
-   FieldInfo *field = _firstField;
-   while (field)
-      {
-      field->clearSymRef();
-      field = field->_next;
-      }
-   }
-
-
 class UnionType : public TR::IlType
    {
 public:
@@ -347,33 +179,77 @@ protected:
    TR_Memory* _trMemory;
    };
 
+class PointerType : public TR::IlType
+   {
+public:
+   TR_ALLOC(TR_Memory::IlGenerator)
+
+   PointerType(TR::IlType *baseType) :
+      TR::IlType(_nameArray),
+      _baseType(baseType)
+      {
+      char *baseName = (char *)_baseType->getName();
+      TR_ASSERT(strlen(baseName) < 45, "cannot store name of pointer type");
+      sprintf(_nameArray, "L%s;", baseName);
+      }
+   virtual bool isPointer() { return true; }
+
+   virtual TR::IlType *baseType() { return _baseType; }
+
+   virtual const char *getName() { return _name; }
+
+   virtual TR::DataType getPrimitiveType() { return TR::Address; }
+
+   virtual size_t getSize() { return TR::DataType::getSize(TR::Address); }
+
+protected:
+   TR::IlType          * _baseType;
+   char                  _nameArray[48];
+   };
+
+} //namespace OMR
+
+
 void
-UnionType::AddField(const char *name, TR::IlType *typeInfo)
+OMR::StructType::AddField(const char *name, TR::IlType *typeInfo, size_t offset)
    {
    if (_closed)
       return;
 
-   auto fieldSize = typeInfo->getSize();
-   if (fieldSize > _size) _size = fieldSize;
+   TR_ASSERT(_size <= offset, "Offset of new struct field %s::%s is %d, which is less than the current size of the struct %d\n", _name, name, offset, _size);
 
-   FieldInfo *fieldInfo = new (PERSISTENT_NEW) FieldInfo(name, 0 /* no offset */, typeInfo);
+   OMR::FieldInfo *fieldInfo = new (PERSISTENT_NEW) OMR::FieldInfo(name, offset, typeInfo);
    if (0 != _lastField)
       _lastField->setNext(fieldInfo);
    else
       _firstField = fieldInfo;
    _lastField = fieldInfo;
+   _size = offset + typeInfo->getSize();
    }
 
 void
-UnionType::Close()
+OMR::StructType::AddField(const char *name, TR::IlType *typeInfo)
    {
-   _closed = true;
+   if (_closed)
+      return;
+
+   TR::DataType primitiveType = typeInfo->getPrimitiveType();
+   uint32_t align = primitiveTypeAlignment[primitiveType] - 1;
+   _size = (_size + align) & (~align);
+
+   OMR::FieldInfo *fieldInfo = new (PERSISTENT_NEW) OMR::FieldInfo(name, _size, typeInfo);
+   if (0 != _lastField)
+      _lastField->setNext(fieldInfo);
+   else
+      _firstField = fieldInfo;
+   _lastField = fieldInfo;
+   _size += typeInfo->getSize();
    }
 
-FieldInfo *
-UnionType::findField(const char *fieldName)
+OMR::FieldInfo *
+OMR::StructType::findField(const char *fieldName)
    {
-   FieldInfo *info = _firstField;
+   OMR::FieldInfo *info = _firstField;
    while (NULL != info)
       {
       if (strncmp(info->_name, fieldName, strlen(fieldName)) == 0)
@@ -384,18 +260,121 @@ UnionType::findField(const char *fieldName)
    }
 
 TR::IlType *
-UnionType::getFieldType(const char *fieldName)
+OMR::StructType::getFieldType(const char *fieldName)
    {
-   FieldInfo *info = findField(fieldName);
+   OMR::FieldInfo *info = findField(fieldName);
+   if (NULL == info)
+      return NULL;
+   return info->_type;
+   }
+
+size_t
+OMR::StructType::getFieldOffset(const char *fieldName)
+   {
+   OMR::FieldInfo *info = findField(fieldName);
+   if (NULL == info)
+      return -1;
+   return info->getOffset();
+   }
+
+TR::IlReference *
+OMR::StructType::getFieldSymRef(const char *fieldName)
+   {
+   OMR::FieldInfo *info = findField(fieldName);
+   if (NULL == info)
+      return NULL;
+
+   TR::SymbolReference *symRef = info->getSymRef();
+   if (NULL == symRef)
+      {
+      TR::Compilation *comp = TR::comp();
+
+      TR::DataType type = info->getPrimitiveType();
+
+      char *fullName = (char *) comp->trMemory()->allocateHeapMemory((strlen(info->_name) + 1 + strlen(_name) + 1) * sizeof(char));
+      sprintf(fullName, "%s.%s", _name, info->_name);
+      TR::Symbol *symbol = TR::Symbol::createNamedShadow(comp->trHeapMemory(), type, info->_type->getSize(), fullName);
+
+      // TBD: should we create a dynamic "constant" pool for accesses made by the method being compiled?
+      symRef = new (comp->trHeapMemory()) TR::SymbolReference(comp->getSymRefTab(), symbol, comp->getMethodSymbol()->getResolvedMethodIndex(), -1);
+      symRef->setOffset(info->getOffset());
+
+      // conservative aliasing
+      int32_t refNum = symRef->getReferenceNumber();
+      if (type == TR::Address)
+         comp->getSymRefTab()->aliasBuilder.addressShadowSymRefs().set(refNum);
+      else if (type == TR::Int32)
+         comp->getSymRefTab()->aliasBuilder.intShadowSymRefs().set(refNum);
+      else
+         comp->getSymRefTab()->aliasBuilder.nonIntPrimitiveShadowSymRefs().set(refNum);
+
+      info->cacheSymRef(symRef);
+      }
+
+   return (TR::IlReference *)symRef;
+   }
+
+void
+OMR::StructType::clearSymRefs()
+   {
+   OMR::FieldInfo *field = _firstField;
+   while (field)
+      {
+      field->clearSymRef();
+      field = field->_next;
+      }
+   }
+
+
+void
+OMR::UnionType::AddField(const char *name, TR::IlType *typeInfo)
+   {
+   if (_closed)
+      return;
+
+   auto fieldSize = typeInfo->getSize();
+   if (fieldSize > _size) _size = fieldSize;
+
+   OMR::FieldInfo *fieldInfo = new (PERSISTENT_NEW) OMR::FieldInfo(name, 0 /* no offset */, typeInfo);
+   if (0 != _lastField)
+      _lastField->setNext(fieldInfo);
+   else
+      _firstField = fieldInfo;
+   _lastField = fieldInfo;
+   }
+
+void
+OMR::UnionType::Close()
+   {
+   _closed = true;
+   }
+
+OMR::FieldInfo *
+OMR::UnionType::findField(const char *fieldName)
+   {
+   OMR::FieldInfo *info = _firstField;
+   while (NULL != info)
+      {
+      if (strncmp(info->_name, fieldName, strlen(fieldName)) == 0)
+         return info;
+      info = info->_next;
+      }
+   return NULL;
+   }
+
+TR::IlType *
+OMR::UnionType::getFieldType(const char *fieldName)
+   {
+   OMR::FieldInfo *info = findField(fieldName);
    if (NULL == info)
       return NULL;
    return info->_type;
    }
 
 TR::IlReference *
-UnionType::getFieldSymRef(const char *fieldName)
+OMR::UnionType::getFieldSymRef(const char *fieldName)
    {
-   FieldInfo *info = findField(fieldName);
+   OMR::FieldInfo *info = findField(fieldName);
    TR_ASSERT(info, "Struct %s has no field with name %s\n", getName(), fieldName);
 
    TR::SymbolReference *symRef = info->getSymRef();
@@ -428,9 +407,9 @@ UnionType::getFieldSymRef(const char *fieldName)
    }
 
 void
-UnionType::clearSymRefs()
+OMR::UnionType::clearSymRefs()
    {
-   FieldInfo *field = _firstField;
+   OMR::FieldInfo *field = _firstField;
    while (field)
       {
       field->clearSymRef();
@@ -440,47 +419,19 @@ UnionType::clearSymRefs()
    }
 
 
-class PointerType : public TR::IlType
-   {
-public:
-   TR_ALLOC(TR_Memory::IlGenerator)
-
-   PointerType(TR::IlType *baseType) :
-      TR::IlType(_nameArray),
-      _baseType(baseType)
-      {
-      char *baseName = (char *)_baseType->getName();
-      TR_ASSERT(strlen(baseName) < 45, "cannot store name of pointer type");
-      sprintf(_nameArray, "L%s;", baseName);
-      }
-   virtual bool isPointer() { return true; }
-
-   virtual TR::IlType *baseType() { return _baseType; }
-
-   virtual const char *getName() { return _name; }
-
-   virtual TR::DataType getPrimitiveType() { return TR::Address; }
-
-   virtual size_t getSize() { return TR::DataType::getSize(TR::Address); }
-
-protected:
-   TR::IlType          * _baseType;
-   char                  _nameArray[48];
-   };
-
 // Note: _memoryRegion and the corresponding TR::SegmentProvider and TR::Memory instances are stored as pointers within TypeDictionary
 // in order to avoid increasing the number of header files needed to compile against the JitBuilder library. Because we are storing
 // them as pointers, we cannot rely on the default C++ destruction semantic to destruct and deallocate the memory region, but rather
 // have to do it explicitly in the TypeDictionary::MemoryManager destructor. And since C++ destroys the other members *after* executing
 // the user defined destructor, we need to make sure that any members (and their contents) that are allocated in _memoryRegion are
 // explicitly destroyed and deallocated *before* _memoryRegion in the TypeDictionary::MemoryManager destructor.
-TypeDictionary::MemoryManager::MemoryManager() :
-      _segmentProvider( new(TR::Compiler->persistentAllocator()) TR::SystemSegmentProvider(1 << 16, TR::Compiler->rawAllocator) ),
-      _memoryRegion( new(TR::Compiler->persistentAllocator()) TR::Region(*_segmentProvider, TR::Compiler->rawAllocator) ),
-      _trMemory( new(TR::Compiler->persistentAllocator()) TR_Memory(*::trPersistentMemory, *_memoryRegion) )
+OMR::TypeDictionary::MemoryManager::MemoryManager() :
+   _segmentProvider( new(TR::Compiler->persistentAllocator()) TR::SystemSegmentProvider(1 << 16, TR::Compiler->rawAllocator) ),
+   _memoryRegion( new(TR::Compiler->persistentAllocator()) TR::Region(*_segmentProvider, TR::Compiler->rawAllocator) ),
+   _trMemory( new(TR::Compiler->persistentAllocator()) TR_Memory(*::trPersistentMemory, *_memoryRegion) )
    {}
 
-TypeDictionary::MemoryManager::~MemoryManager()
+OMR::TypeDictionary::MemoryManager::~MemoryManager()
    {
    _trMemory->~TR_Memory();
    ::operator delete(_trMemory, TR::Compiler->persistentAllocator());
@@ -490,7 +441,7 @@ TypeDictionary::MemoryManager::~MemoryManager()
    ::operator delete(_segmentProvider, TR::Compiler->persistentAllocator());
    }
 
-TypeDictionary::TypeDictionary() :
+OMR::TypeDictionary::TypeDictionary() :
    _structsByName(str_comparator, trMemory()->heapMemoryRegion()),
    _unionsByName(str_comparator, trMemory()->heapMemoryRegion())
    {
@@ -511,20 +462,20 @@ TypeDictionary::TypeDictionary() :
    VectorDouble = _primitiveType[TR::VectorDouble]          = new (PERSISTENT_NEW) OMR::PrimitiveType("VectorDouble", TR::VectorDouble);
 
    // pointer to primitive types
-   pNoType       = _pointerToPrimitiveType[TR::NoType]       = new (PERSISTENT_NEW) PointerType(NoType);
-   pInt8         = _pointerToPrimitiveType[TR::Int8]         = new (PERSISTENT_NEW) PointerType(Int8);
-   pInt16        = _pointerToPrimitiveType[TR::Int16]        = new (PERSISTENT_NEW) PointerType(Int16);
-   pInt32        = _pointerToPrimitiveType[TR::Int32]        = new (PERSISTENT_NEW) PointerType(Int32);
-   pInt64        = _pointerToPrimitiveType[TR::Int64]        = new (PERSISTENT_NEW) PointerType(Int64);
-   pFloat        = _pointerToPrimitiveType[TR::Float]        = new (PERSISTENT_NEW) PointerType(Float);
-   pDouble       = _pointerToPrimitiveType[TR::Double]       = new (PERSISTENT_NEW) PointerType(Double);
-   pAddress      = _pointerToPrimitiveType[TR::Address]      = new (PERSISTENT_NEW) PointerType(Address);
-   pVectorInt8   = _pointerToPrimitiveType[TR::VectorInt8]   = new (PERSISTENT_NEW) PointerType(VectorInt8);
-   pVectorInt16  = _pointerToPrimitiveType[TR::VectorInt16]  = new (PERSISTENT_NEW) PointerType(VectorInt16);
-   pVectorInt32  = _pointerToPrimitiveType[TR::VectorInt32]  = new (PERSISTENT_NEW) PointerType(VectorInt32);
-   pVectorInt64  = _pointerToPrimitiveType[TR::VectorInt64]  = new (PERSISTENT_NEW) PointerType(VectorInt64);
-   pVectorFloat  = _pointerToPrimitiveType[TR::VectorFloat]  = new (PERSISTENT_NEW) PointerType(VectorFloat);
-   pVectorDouble = _pointerToPrimitiveType[TR::VectorDouble] = new (PERSISTENT_NEW) PointerType(VectorDouble);
+   pNoType       = _pointerToPrimitiveType[TR::NoType]       = new (PERSISTENT_NEW) OMR::PointerType(NoType);
+   pInt8         = _pointerToPrimitiveType[TR::Int8]         = new (PERSISTENT_NEW) OMR::PointerType(Int8);
+   pInt16        = _pointerToPrimitiveType[TR::Int16]        = new (PERSISTENT_NEW) OMR::PointerType(Int16);
+   pInt32        = _pointerToPrimitiveType[TR::Int32]        = new (PERSISTENT_NEW) OMR::PointerType(Int32);
+   pInt64        = _pointerToPrimitiveType[TR::Int64]        = new (PERSISTENT_NEW) OMR::PointerType(Int64);
+   pFloat        = _pointerToPrimitiveType[TR::Float]        = new (PERSISTENT_NEW) OMR::PointerType(Float);
+   pDouble       = _pointerToPrimitiveType[TR::Double]       = new (PERSISTENT_NEW) OMR::PointerType(Double);
+   pAddress      = _pointerToPrimitiveType[TR::Address]      = new (PERSISTENT_NEW) OMR::PointerType(Address);
+   pVectorInt8   = _pointerToPrimitiveType[TR::VectorInt8]   = new (PERSISTENT_NEW) OMR::PointerType(VectorInt8);
+   pVectorInt16  = _pointerToPrimitiveType[TR::VectorInt16]  = new (PERSISTENT_NEW) OMR::PointerType(VectorInt16);
+   pVectorInt32  = _pointerToPrimitiveType[TR::VectorInt32]  = new (PERSISTENT_NEW) OMR::PointerType(VectorInt32);
+   pVectorInt64  = _pointerToPrimitiveType[TR::VectorInt64]  = new (PERSISTENT_NEW) OMR::PointerType(VectorInt64);
+   pVectorFloat  = _pointerToPrimitiveType[TR::VectorFloat]  = new (PERSISTENT_NEW) OMR::PointerType(VectorFloat);
+   pVectorDouble = _pointerToPrimitiveType[TR::VectorDouble] = new (PERSISTENT_NEW) OMR::PointerType(VectorDouble);
 
    if (TR::Compiler->target.is64Bit())
       {
@@ -538,7 +489,7 @@ TypeDictionary::TypeDictionary() :
       }
    }
 
-TypeDictionary::~TypeDictionary() throw()
+OMR::TypeDictionary::~TypeDictionary() throw()
    {
    // Cleanup allocations in _memoryRegion *before* its destroyed in
    // the TypeDictionary::MemoryManager destructor
@@ -547,119 +498,119 @@ TypeDictionary::~TypeDictionary() throw()
    }
 
 TR::IlType *
-TypeDictionary::LookupStruct(const char *structName)
+OMR::TypeDictionary::LookupStruct(const char *structName)
    {
    return getStruct(structName);
    }
 
 TR::IlType *
-TypeDictionary::LookupUnion(const char *unionName)
+OMR::TypeDictionary::LookupUnion(const char *unionName)
    {
    return getUnion(unionName);
    }
 
 TR::IlType *
-TypeDictionary::DefineStruct(const char *structName)
+OMR::TypeDictionary::DefineStruct(const char *structName)
    {
    TR_ASSERT_FATAL(_structsByName.find(structName) == _structsByName.end(), "Struct '%s' already exists", structName);
 
-   StructType *newType = new (PERSISTENT_NEW) StructType(structName);
+   OMR::StructType *newType = new (PERSISTENT_NEW) OMR::StructType(structName);
    _structsByName.insert(std::make_pair(structName, newType));
 
    return newType;
    }
 
 void
-TypeDictionary::DefineField(const char *structName, const char *fieldName, TR::IlType *type, size_t offset)
+OMR::TypeDictionary::DefineField(const char *structName, const char *fieldName, TR::IlType *type, size_t offset)
    {
    getStruct(structName)->AddField(fieldName, type, offset);
    }
 
 void
-TypeDictionary::DefineField(const char *structName, const char *fieldName, TR::IlType *type)
+OMR::TypeDictionary::DefineField(const char *structName, const char *fieldName, TR::IlType *type)
    {
    getStruct(structName)->AddField(fieldName, type);
    }
 
 TR::IlType *
-TypeDictionary::GetFieldType(const char *structName, const char *fieldName)
+OMR::TypeDictionary::GetFieldType(const char *structName, const char *fieldName)
    {
    return getStruct(structName)->getFieldType(fieldName);
    }
 
 size_t
-TypeDictionary::OffsetOf(const char *structName, const char *fieldName)
+OMR::TypeDictionary::OffsetOf(const char *structName, const char *fieldName)
    {
    return getStruct(structName)->getFieldOffset(fieldName);
    }
 
 void
-TypeDictionary::CloseStruct(const char *structName, size_t finalSize)
+OMR::TypeDictionary::CloseStruct(const char *structName, size_t finalSize)
    {
    getStruct(structName)->Close(finalSize);
    }
 
 void
-TypeDictionary::CloseStruct(const char *structName)
+OMR::TypeDictionary::CloseStruct(const char *structName)
    {
    getStruct(structName)->Close();
    }
 
 TR::IlType *
-TypeDictionary::DefineUnion(const char *unionName)
+OMR::TypeDictionary::DefineUnion(const char *unionName)
    {
    TR_ASSERT_FATAL(_unionsByName.find(unionName) == _unionsByName.end(), "Union '%s' already exists", unionName);
    
-   UnionType *newType = new (PERSISTENT_NEW) UnionType(unionName, trMemory());
+   OMR::UnionType *newType = new (PERSISTENT_NEW) OMR::UnionType(unionName, trMemory());
    _unionsByName.insert(std::make_pair(unionName, newType));
 
    return newType;
    }
 
 void
-TypeDictionary::UnionField(const char *unionName, const char *fieldName, TR::IlType *type)
+OMR::TypeDictionary::UnionField(const char *unionName, const char *fieldName, TR::IlType *type)
    {
    getUnion(unionName)->AddField(fieldName, type);
    }
 
 void
-TypeDictionary::CloseUnion(const char *unionName)
+OMR::TypeDictionary::CloseUnion(const char *unionName)
    {
    getUnion(unionName)->Close();
    }
 
 TR::IlType *
-TypeDictionary::UnionFieldType(const char *unionName, const char *fieldName)
+OMR::TypeDictionary::UnionFieldType(const char *unionName, const char *fieldName)
    {
    return getUnion(unionName)->getFieldType(fieldName);
    }
 
 TR::IlType *
-TypeDictionary::PointerTo(const char *structName)
+OMR::TypeDictionary::PointerTo(const char *structName)
    {
    return PointerTo(LookupStruct(structName));
    }
 
 TR::IlType *
-TypeDictionary::PointerTo(TR::IlType *baseType)
+OMR::TypeDictionary::PointerTo(TR::IlType *baseType)
    {
-   return new (PERSISTENT_NEW) PointerType(baseType);
+   return new (PERSISTENT_NEW) OMR::PointerType(baseType);
    }
 
 TR::IlReference *
-TypeDictionary::FieldReference(const char *typeName, const char *fieldName)
+OMR::TypeDictionary::FieldReference(const char *typeName, const char *fieldName)
    {
    StructMap::iterator structIterator = _structsByName.find(typeName);
    if (structIterator != _structsByName.end())
       {
-      StructType *theStruct = structIterator->second;
+      OMR::StructType *theStruct = structIterator->second;
       return theStruct->getFieldSymRef(fieldName);
       }
 
    UnionMap::iterator unionIterator = _unionsByName.find(typeName);
    if (unionIterator != _unionsByName.end())
       {
-      UnionType *theUnion = unionIterator->second;
+      OMR::UnionType *theUnion = unionIterator->second;
       return theUnion->getFieldSymRef(fieldName);
       }
 
@@ -668,40 +619,39 @@ TypeDictionary::FieldReference(const char *typeName, const char *fieldName)
    }
 
 void
-TypeDictionary::NotifyCompilationDone()
+OMR::TypeDictionary::NotifyCompilationDone()
    {
    // clear all symbol references for fields
    for (StructMap::iterator it = _structsByName.begin(); it != _structsByName.end(); it++)
       {
-      StructType *aStruct = it->second;
+      OMR::StructType *aStruct = it->second;
       aStruct->clearSymRefs();
       }
 
    // clear all symbol references for union fields
    for (UnionMap::iterator it = _unionsByName.begin(); it != _unionsByName.end(); it++)
       {
-      UnionType *aUnion = it->second;
+      OMR::UnionType *aUnion = it->second;
       aUnion->clearSymRefs();
       }
    }
 
 OMR::StructType *
-TypeDictionary::getStruct(const char *structName)
+OMR::TypeDictionary::getStruct(const char *structName)
    {
    StructMap::iterator it = _structsByName.find(structName);
    TR_ASSERT_FATAL(it != _structsByName.end(), "No struct named '%s'", structName);
 
-   StructType *theStruct = it->second;
+   OMR::StructType *theStruct = it->second;
    return theStruct;
    }
 
 OMR::UnionType *
-TypeDictionary::getUnion(const char *unionName)
+OMR::TypeDictionary::getUnion(const char *unionName)
    {
    UnionMap::iterator it = _unionsByName.find(unionName);
    TR_ASSERT_FATAL(it != _unionsByName.end(), "No union named '%s'", unionName);
 
-   UnionType *theUnion = it->second;
+   OMR::UnionType *theUnion = it->second;
    return theUnion;
    }
-} // namespace OMR

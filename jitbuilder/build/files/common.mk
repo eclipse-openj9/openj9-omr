@@ -230,7 +230,7 @@ JIT_PRODUCT_BACKEND_SOURCES+=\
     $(JIT_OMR_DIRTY_DIR)/ilgen/OMRThunkBuilder.cpp \
     $(JIT_OMR_DIRTY_DIR)/ilgen/OMRTypeDictionary.cpp \
     $(JIT_OMR_DIRTY_DIR)/ilgen/OMRVirtualMachineState.cpp \
-    $(JIT_OMR_DIRTY_DIR)/ilgen/VirtualMachineOperandArray.cpp \
+    $(JIT_OMR_DIRTY_DIR)/ilgen/OMRVirtualMachineOperandArray.cpp \
     $(JIT_OMR_DIRTY_DIR)/ilgen/VirtualMachineOperandStack.cpp \
     $(JIT_OMR_DIRTY_DIR)/runtime/Alignment.cpp \
     $(JIT_OMR_DIRTY_DIR)/runtime/CodeCacheTypes.cpp \

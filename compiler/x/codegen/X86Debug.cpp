@@ -115,6 +115,9 @@ TR_Debug::printx(TR::FILE *pOutFile, TR::Instruction  * instr)
       case TR::Instruction::IsRegReg:
          print(pOutFile, (TR::X86RegRegInstruction  *)instr);
          break;
+      case TR::Instruction::IsRegRegReg:
+         print(pOutFile, (TR::X86RegRegRegInstruction  *)instr);
+         break;
       case TR::Instruction::IsRegRegImm:
          print(pOutFile, (TR::X86RegRegImmInstruction  *)instr);
          break;
@@ -1044,14 +1047,10 @@ TR_Debug::print(TR::FILE *pOutFile, TR::X86RegRegRegInstruction  * instr)
    TR_RegisterSizes sourceSize = getSourceSizeFromInstruction(instr);
    if (!(instr->getOpCode().sourceRegIsImplicit() != 0))
       {
-      print(pOutFile, instr->getSourceRegister(), sourceSize);
+      print(pOutFile, instr->getSource2ndRegister(), sourceSize);
       trfprintf(pOutFile, ", ");
+      print(pOutFile, instr->getSourceRegister(), sourceSize);
       }
-
-   if (instr->getOpCodeValue() == SHLD4RegRegCL || instr->getOpCodeValue() <= SHRD4RegRegCL)
-      trfprintf(pOutFile, "cl");
-   else
-      print(pOutFile, instr->getSourceRightRegister(), sourceSize);
 
    printInstructionComment(pOutFile, 2, instr);
    dumpDependencies(pOutFile, instr);
@@ -1065,10 +1064,10 @@ TR_Debug::printReferencedRegisterInfo(TR::FILE *pOutFile, TR::X86RegRegRegInstru
       return;
 
    printRegisterInfoHeader(pOutFile, instr);
-   trfprintf(pOutFile,"    SourceRight       ");
-   printFullRegInfo(pOutFile, instr->getSourceRightRegister());
    trfprintf(pOutFile,"    Source            ");
    printFullRegInfo(pOutFile, instr->getSourceRegister());
+   trfprintf(pOutFile,"    2ndSource         ");
+   printFullRegInfo(pOutFile, instr->getSource2ndRegister());
    trfprintf(pOutFile,"    Target            ");
    printFullRegInfo(pOutFile, instr->getTargetRegister());
 
@@ -1262,7 +1261,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::X86MemRegRegInstruction  * instr)
    if (instr->getOpCodeValue() == SHLD4MemRegCL || instr->getOpCodeValue() == SHRD4MemRegCL)
       trfprintf(pOutFile, "cl");
    else
-      print(pOutFile, instr->getSourceRightRegister(), sourceSize);
+      print(pOutFile, instr->getSource2ndRegister(), sourceSize);
 
    printInstructionComment(pOutFile, 1, instr);
    printMemoryReferenceComment(pOutFile, instr->getMemoryReference());
@@ -1281,8 +1280,8 @@ TR_Debug::printReferencedRegisterInfo(TR::FILE *pOutFile, TR::X86MemRegRegInstru
       return;
 
    printRegisterInfoHeader(pOutFile, instr);
-   trfprintf(pOutFile,"    SourceRight       ");
-   printFullRegInfo(pOutFile, instr->getSourceRightRegister());
+   trfprintf(pOutFile,"    2ndSource         ");
+   printFullRegInfo(pOutFile, instr->getSource2ndRegister());
    trfprintf(pOutFile,"    Source            ");
    printFullRegInfo(pOutFile, instr->getSourceRegister());
 

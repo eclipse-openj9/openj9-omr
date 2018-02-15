@@ -4083,8 +4083,8 @@ static const TR_X86OpCodes BinaryArithmeticOpCodes[TR::NumOMRTypes][NumBinaryAri
    { BADIA32Op, BADIA32Op,   BADIA32Op,   BADIA32Op,    BADIA32Op,   BADIA32Op,  BADIA32Op, BADIA32Op  }, // Int16
    { BADIA32Op, BADIA32Op,   BADIA32Op,   BADIA32Op,    BADIA32Op,   BADIA32Op,  BADIA32Op, BADIA32Op  }, // Int32
    { BADIA32Op, BADIA32Op,   BADIA32Op,   BADIA32Op,    BADIA32Op,   BADIA32Op,  BADIA32Op, BADIA32Op  }, // Int64
-   { BADIA32Op, BADIA32Op,   BADIA32Op,   BADIA32Op,    BADIA32Op,   BADIA32Op,  BADIA32Op, BADIA32Op  }, // Float
-   { BADIA32Op, BADIA32Op,   BADIA32Op,   BADIA32Op,    BADIA32Op,   BADIA32Op,  BADIA32Op, BADIA32Op  }, // Double
+   { BADIA32Op, ADDSSRegReg, SUBSSRegReg, MULSSRegReg,  DIVSSRegReg, BADIA32Op,  BADIA32Op, BADIA32Op  }, // Float
+   { BADIA32Op, ADDSDRegReg, SUBSDRegReg, MULSDRegReg,  DIVSDRegReg, BADIA32Op,  BADIA32Op, BADIA32Op  }, // Double
    { BADIA32Op, BADIA32Op,   BADIA32Op,   BADIA32Op,    BADIA32Op,   BADIA32Op,  BADIA32Op, BADIA32Op  }, // Address
    { BADIA32Op, BADIA32Op,   BADIA32Op,   BADIA32Op,    BADIA32Op,   BADIA32Op,  BADIA32Op, BADIA32Op  }, // VectorInt8
    { BADIA32Op, BADIA32Op,   BADIA32Op,   BADIA32Op,    BADIA32Op,   BADIA32Op,  BADIA32Op, BADIA32Op  }, // VectorInt16
@@ -4102,15 +4102,23 @@ TR::Register* OMR::X86::TreeEvaluator::FloatingPointAndVectorBinaryArithmeticEva
 
    switch (node->getOpCodeValue())
       {
+      case TR::fadd:
+      case TR::dadd:
       case TR::vadd:
          arithmetic = BinaryArithmeticAdd;
          break;
+      case TR::fsub:
+      case TR::dsub:
       case TR::vsub:
          arithmetic = BinaryArithmeticSub;
          break;
+      case TR::fmul:
+      case TR::dmul:
       case TR::vmul:
          arithmetic = BinaryArithmeticMul;
          break;
+      case TR::fdiv:
+      case TR::ddiv:
       case TR::vdiv:
          arithmetic = BinaryArithmeticDiv;
          break;
@@ -4133,12 +4141,18 @@ TR::Register* OMR::X86::TreeEvaluator::FloatingPointAndVectorBinaryArithmeticEva
    TR::Register* operandReg1 = cg->evaluate(operandNode1);
 
    TR::Register* resultReg = cg->allocateRegister(operandReg0->getKind());
-   generateRegRegInstruction(MOVDQURegReg, node, resultReg, operandReg0, cg);
-
    TR_X86OpCodes opCode = BinaryArithmeticOpCodes[node->getDataType()][arithmetic];
    TR_ASSERT(opCode != BADIA32Op, "FloatingPointAndVectorBinaryArithmeticEvaluator: unsupported data type or arithmetic.");
-   generateRegRegInstruction(opCode, node, resultReg, operandReg1, cg);
 
+   if (TR::CodeGenerator::getX86ProcessorInfo().supportsAVX())
+      {
+      generateRegRegRegInstruction(opCode, node, resultReg, operandReg0, operandReg1, cg);
+      }
+   else
+      {
+      generateRegRegInstruction(MOVDQURegReg, node, resultReg, operandReg0, cg);
+      generateRegRegInstruction(opCode, node, resultReg, operandReg1, cg);
+      }
    node->setRegister(resultReg);
    cg->decReferenceCount(operandNode0);
    cg->decReferenceCount(operandNode1);

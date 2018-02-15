@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2018 IBM Corp. and others
+ * Copyright (c) 2017, 2017 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -132,7 +132,7 @@ class VirtualMachineOperandArray : public VirtualMachineState
    private:
    TR::MethodBuilder *_mb;
    int32_t _numberOfElements;
-   OMR::VirtualMachineRegister *_arrayBaseRegister;
+   TR::VirtualMachineRegister *_arrayBaseRegister;
    TR::IlType *_elementType;
    TR::IlValue **_values;
    };

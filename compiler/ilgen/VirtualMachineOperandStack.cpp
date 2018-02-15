@@ -32,7 +32,7 @@ namespace OMR
 {
 
    VirtualMachineOperandStack::VirtualMachineOperandStack(TR::MethodBuilder *mb, int32_t sizeHint,
-   TR::IlType *elementType, OMR::VirtualMachineRegister *stackTopRegister, bool growsUp, int32_t stackInitialOffset)
+   TR::IlType *elementType, TR::VirtualMachineRegister *stackTopRegister, bool growsUp, int32_t stackInitialOffset)
    : VirtualMachineState(),
    _mb(mb),
    _stackTopRegister(stackTopRegister),

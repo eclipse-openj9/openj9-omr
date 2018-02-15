@@ -187,7 +187,7 @@ class VirtualMachineOperandStack : public VirtualMachineState
 
    private:
    TR::MethodBuilder *_mb;
-   OMR::VirtualMachineRegister *_stackTopRegister;
+   TR::VirtualMachineRegister *_stackTopRegister;
    int32_t _stackMax;
    int32_t _stackTop;
    TR::IlValue **_stack;

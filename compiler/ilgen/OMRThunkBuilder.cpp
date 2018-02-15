@@ -41,11 +41,8 @@
  * different method signatures.
  */
 
-namespace OMR
-{
-
-ThunkBuilder::ThunkBuilder(TR::TypeDictionary *types, const char *name, TR::IlType *returnType,
-                           uint32_t numCalleeParams, TR::IlType **calleeParamTypes)
+OMR::ThunkBuilder::ThunkBuilder(TR::TypeDictionary *types, const char *name, TR::IlType *returnType,
+                                uint32_t numCalleeParams, TR::IlType **calleeParamTypes)
    : TR::MethodBuilder(types),
    _numCalleeParams(numCalleeParams),
    _calleeParamTypes(calleeParamTypes)
@@ -67,7 +64,7 @@ ThunkBuilder::ThunkBuilder(TR::TypeDictionary *types, const char *name, TR::IlTy
    }
 
 bool
-ThunkBuilder::buildIL()
+OMR::ThunkBuilder::buildIL()
    {
    TR::IlType *pWord = typeDictionary()->PointerTo(Word);
 
@@ -97,5 +94,3 @@ ThunkBuilder::buildIL()
 
    return true;
    }
-
-} // namespace OMR

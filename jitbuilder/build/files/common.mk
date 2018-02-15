@@ -221,11 +221,11 @@ JIT_PRODUCT_BACKEND_SOURCES+=\
     $(JIT_OMR_DIRTY_DIR)/env/OMRIO.cpp \
     $(JIT_OMR_DIRTY_DIR)/env/OMRKnownObjectTable.cpp \
     $(JIT_OMR_DIRTY_DIR)/env/Globals.cpp \
-    $(JIT_OMR_DIRTY_DIR)/ilgen/IlValue.cpp \
     $(JIT_OMR_DIRTY_DIR)/ilgen/IlInjector.cpp \
     $(JIT_OMR_DIRTY_DIR)/ilgen/OMRBytecodeBuilder.cpp \
     $(JIT_OMR_DIRTY_DIR)/ilgen/OMRIlBuilder.cpp \
     $(JIT_OMR_DIRTY_DIR)/ilgen/OMRIlType.cpp \
+    $(JIT_OMR_DIRTY_DIR)/ilgen/OMRIlValue.cpp \
     $(JIT_OMR_DIRTY_DIR)/ilgen/OMRMethodBuilder.cpp \
     $(JIT_OMR_DIRTY_DIR)/ilgen/ThunkBuilder.cpp \
     $(JIT_OMR_DIRTY_DIR)/ilgen/OMRTypeDictionary.cpp \

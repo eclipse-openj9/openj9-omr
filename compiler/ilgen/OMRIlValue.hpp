@@ -88,8 +88,6 @@ protected:
     */
    void storeToAuto();
 
-private:
-
    /**
     * @brief identifying number for values guaranteed to be unique per MethodBuilder
     */

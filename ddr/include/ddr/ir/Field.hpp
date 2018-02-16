@@ -31,7 +31,6 @@ class Field : public Members
 {
 public:
 	Type *_fieldType;
-	size_t _sizeOf;
 	size_t _offset;
 	Modifiers _modifiers;
 	size_t _bitField;

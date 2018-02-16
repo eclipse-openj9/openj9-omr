@@ -65,14 +65,6 @@ NamespaceUDT::getSymbolKindName()
 }
 
 void
-NamespaceUDT::computeFieldOffsets()
-{
-	for (vector<UDT *>::const_iterator it = _subUDTs.begin(); it != _subUDTs.end(); ++it) {
-		(*it)->computeFieldOffsets();
-	}
-}
-
-void
 NamespaceUDT::addMacro(Macro *macro)
 {
 	/* Add or update a macro: The last of a #define/#undef sequence applies. */
@@ -107,7 +99,7 @@ NamespaceUDT::renameFieldsAndMacros(const FieldOverride &fieldOverride, Type *re
 	}
 	for (vector<UDT *>::iterator it = _subUDTs.begin(); it != _subUDTs.end(); ++it) {
 		(*it)->renameFieldsAndMacros(fieldOverride, replacementType);
-	}		
+	}
 }
 
 bool

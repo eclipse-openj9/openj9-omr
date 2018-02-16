@@ -252,16 +252,6 @@ closeFile:
 	return rc;
 }
 
-/* Compute the field offsets for all types in the IR from the sizes of the fields. */
-void
-Symbol_IR::computeOffsets()
-{
-	/* For each Type in the ir, compute the field offsets from the size of each field. */
-	for (vector<Type *>::const_iterator it = _types.begin(); it != _types.end(); ++it) {
-		(*it)->computeFieldOffsets();
-	}
-}
-
 void
 Symbol_IR::removeDuplicates()
 {

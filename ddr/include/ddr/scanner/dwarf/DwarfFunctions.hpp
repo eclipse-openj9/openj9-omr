@@ -107,6 +107,7 @@ typedef vector<string> str_vect;
 #define DW_AT_type 0x0a
 #define DW_AT_upper_bound 0x0b
 #define DW_AT_external 0x0c
+#define DW_AT_data_member_location 0xd
 
 #define DW_DLA_ATTR 0x01
 #define DW_DLA_DIE 0x02

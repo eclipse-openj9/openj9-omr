@@ -30,9 +30,7 @@
 #define cpuidex(CPUInfo, EAXValue, ECXValue) __cpuidex(CPUInfo, EAXValue, ECXValue)
 #else
 #include <cpuid.h>
-#ifdef TR_HOST_64BIT
 #include <emmintrin.h>
-#endif
 #define cpuid(CPUInfo, EAXValue)             __cpuid(EAXValue, CPUInfo[0], CPUInfo[1], CPUInfo[2], CPUInfo[3])
 #define cpuidex(CPUInfo, EAXValue, ECXValue) __cpuid_count(EAXValue, ECXValue, CPUInfo[0], CPUInfo[1], CPUInfo[2], CPUInfo[3])
 inline unsigned long long _xgetbv(unsigned int ecx)
@@ -111,12 +109,10 @@ inline bool AtomicCompareAndSwap(volatile uint16_t* ptr, uint16_t old_val, uint1
 
 inline void patchingFence16(void* addr)
    {
-#ifdef TR_HOST_64BIT
    _mm_mfence();
    _mm_clflush(addr);
    _mm_clflush(static_cast<char*>(addr)+8);
    _mm_mfence();
-#endif
    }
 
 #endif

@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2016, 2017 IBM Corp. and others
+# Copyright (c) 2016, 2018 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -145,12 +145,12 @@ ifeq ($(HOST_ARCH),p)
 endif
 
 ifeq ($(PLATFORM),amd64-linux-gcc)
-    CX_FLAGS+=-m32 -fpic -fno-strict-aliasing
+    CX_FLAGS+=-m32 -fpic -fno-strict-aliasing -mfpmath=sse -msse -msse2 -fno-math-errno -fno-rounding-math -fno-trapping-math -fno-signaling-nans
 endif
 
 ifeq ($(PLATFORM),amd64-linux64-gcc)
     CX_DEFINES+=J9HAMMER
-    CX_FLAGS+=-m64 -fPIC -fno-strict-aliasing
+    CX_FLAGS+=-m64 -fPIC -fno-strict-aliasing -mfpmath=sse -msse -msse2 -fno-math-errno -fno-rounding-math -fno-trapping-math -fno-signaling-nans
 endif
 
 ifeq ($(PLATFORM),ppc64-linux64-gcc)

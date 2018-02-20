@@ -166,7 +166,7 @@ nextTracePoint(PerThreadWrapBuffer *wrapBuffer, const UtTraceRecord *record, Tra
 	uint32_t offset = iter->currentPos;
 	uint32_t tpLength = 0;
 
-	if (iter->currentPos <= record->firstEntry) {
+	if (iter->currentPos < record->firstEntry) {
 		/* currentPos is at or before the start of the data - not possible to continue,
 		 * or the normal exit condition.
 		 */

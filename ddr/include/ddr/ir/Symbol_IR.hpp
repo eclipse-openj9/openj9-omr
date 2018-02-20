@@ -49,7 +49,7 @@ class TypeReplaceVisitor;
 class Symbol_IR {
 public:
 	vector<Type *> _types;
-	/* Keep a set of names of structures already printed, to avoid printing duplicates in the superset. 
+	/* Keep a set of names of structures already printed, to avoid printing duplicates in the superset.
 	 * Currently, only use this approach for AIX, where removeDuplicates() runs too slowly. Using this
 	 * method on other platforms has not been tested yet. There may still be issues related to differences
 	 * in the DWARF/intermediate representation structures between platforms which may be revealed by this
@@ -66,7 +66,6 @@ public:
 
 	DDR_RC applyOverridesFile(OMRPortLibrary *portLibrary, const char *overridesFile);
 	DDR_RC applyOverridesList(OMRPortLibrary *portLibrary, const char *overridesListFile);
-	void computeOffsets();
 	void removeDuplicates();
 	DDR_RC mergeIR(Symbol_IR *other);
 

@@ -105,8 +105,6 @@ main(int argc, char *argv[])
 	}
 
 	if (DDR_RC_OK == rc) {
-		/* Compute field offsets for UDTs. */
-		ir.computeOffsets();
 		/* Remove duplicate types. */
 		ir.removeDuplicates();
 	}

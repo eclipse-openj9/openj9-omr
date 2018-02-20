@@ -37,7 +37,6 @@ public:
 	virtual DDR_RC acceptVisitor(const TypeVisitor &visitor);
 	virtual bool insertUnique(Symbol_IR *ir);
 	virtual string getSymbolKindName();
-	virtual void computeFieldOffsets();
 	virtual void addMacro(Macro *macro);
 	virtual std::vector<UDT *> * getSubUDTS();
 	virtual void renameFieldsAndMacros(const FieldOverride &fieldOverride, Type *replacementType);

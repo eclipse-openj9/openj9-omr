@@ -26,7 +26,9 @@ UnionUDT::UnionUDT(size_t size, unsigned int lineNumber)
 {
 }
 
-UnionUDT::~UnionUDT() {};
+UnionUDT::~UnionUDT()
+{
+}
 
 DDR_RC
 UnionUDT::acceptVisitor(const TypeVisitor &visitor)

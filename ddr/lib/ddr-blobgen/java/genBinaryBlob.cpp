@@ -55,11 +55,23 @@ class BlobBuildVisitor : public TypeVisitor
 private:
 	JavaBlobGenerator * const _gen;
 	const bool _addFieldsOnly;
+	const size_t _baseOffset;
 	const string _prefix;
 
 public:
-	BlobBuildVisitor(JavaBlobGenerator *gen, bool addFieldsOnly, const string &prefix)
-		: _gen(gen), _addFieldsOnly(addFieldsOnly), _prefix(prefix)
+	explicit BlobBuildVisitor(JavaBlobGenerator *gen)
+		: _gen(gen)
+		, _addFieldsOnly(false)
+		, _baseOffset(0)
+		, _prefix()
+	{
+	}
+
+	BlobBuildVisitor(JavaBlobGenerator *gen, size_t baseOffset, const string &prefix)
+		: _gen(gen)
+		, _addFieldsOnly(true)
+		, _baseOffset(baseOffset)
+		, _prefix(prefix)
 	{
 	}
 
@@ -360,7 +372,7 @@ JavaBlobGenerator::buildBlobData(OMRPortLibrary *portLibrary, Symbol_IR *ir)
 	_buildInfo.curBlobStruct->constantCount = 0;
 	_buildInfo.curBlobStruct->fieldCount = 0;
 
-	const BlobBuildVisitor builder(this, false, "");
+	const BlobBuildVisitor builder(this);
 
 	for (vector<Type *>::iterator v = ir->_types.begin(); v != ir->_types.end(); ++v) {
 		Type *type = *v;
@@ -448,7 +460,7 @@ BlobBuildVisitor::visitUnion(UnionUDT *u) const
 		uint32_t constCount = 0;
 
 		for (vector<Field *>::iterator m = u->_fieldMembers.begin(); m != u->_fieldMembers.end(); ++m) {
-			rc = _gen->addBlobField(*m, &fieldCount, _prefix);
+			rc = _gen->addBlobField(*m, &fieldCount, _baseOffset, _prefix);
 			if (DDR_RC_OK != rc) {
 				break;
 			}
@@ -494,7 +506,7 @@ BlobBuildVisitor::visitUnion(UnionUDT *u) const
 	}
 
 	if ((DDR_RC_OK == rc) && !_addFieldsOnly) {
-		BlobBuildVisitor builder(_gen, false, "");
+		const BlobBuildVisitor builder(_gen);
 
 		for (vector<UDT *>::const_iterator it = u->_subUDTs.begin(); it != u->_subUDTs.end(); ++it) {
 			UDT *nested = *it;
@@ -522,7 +534,7 @@ BlobBuildVisitor::visitClass(ClassUDT *cu) const
 		uint32_t constCount = 0;
 
 		for (vector<Field *>::iterator m = cu->_fieldMembers.begin(); m != cu->_fieldMembers.end(); ++m) {
-			rc = _gen->addBlobField(*m, &fieldCount, _prefix);
+			rc = _gen->addBlobField(*m, &fieldCount, _baseOffset, _prefix);
 			if (DDR_RC_OK != rc) {
 				break;
 			}
@@ -580,7 +592,7 @@ BlobBuildVisitor::visitClass(ClassUDT *cu) const
 	}
 
 	if ((DDR_RC_OK == rc) && !_addFieldsOnly) {
-		const BlobBuildVisitor builder(_gen, false, "");
+		const BlobBuildVisitor builder(_gen);
 
 		for (vector<UDT *>::const_iterator it = cu->_subUDTs.begin(); it != cu->_subUDTs.end(); ++it) {
 			UDT *nested = *it;
@@ -623,7 +635,7 @@ BlobBuildVisitor::visitNamespace(NamespaceUDT *ns) const
 	}
 
 	if ((DDR_RC_OK == rc) && !_addFieldsOnly) {
-		const BlobBuildVisitor builder(_gen, false, "");
+		const BlobBuildVisitor builder(_gen);
 
 		for (vector<UDT *>::const_iterator it = ns->_subUDTs.begin(); it != ns->_subUDTs.end(); ++it) {
 			UDT *nested = *it;
@@ -689,9 +701,10 @@ BlobBuildVisitor::visitTypedef(TypedefUDT *type) const
 }
 
 DDR_RC
-JavaBlobGenerator::addBlobField(Field *field, uint32_t *fieldCount, const string &prefix)
+JavaBlobGenerator::addBlobField(Field *field, uint32_t *fieldCount, size_t baseOffset, const string &prefix)
 {
 	DDR_RC rc = DDR_RC_OK;
+	const size_t adjustedOffset = baseOffset + field->_offset;
 	Type *fieldType = field->_fieldType;
 
 	if (field->_isStatic) {
@@ -699,7 +712,8 @@ JavaBlobGenerator::addBlobField(Field *field, uint32_t *fieldCount, const string
 	} else if (NULL == fieldType) {
 		/* omit fields without a type */
 	} else if (fieldType->isAnonymousType()) {
-		rc = fieldType->acceptVisitor(BlobBuildVisitor(this, true, prefix + field->_name + "."));
+		const string adjustedPrefix = prefix + field->_name + ".";
+		rc = fieldType->acceptVisitor(BlobBuildVisitor(this, adjustedOffset, adjustedPrefix));
 	} else {
 		uint32_t nameOffset = UINT32_MAX;
 		uint32_t typeOffset = UINT32_MAX;
@@ -721,7 +735,7 @@ JavaBlobGenerator::addBlobField(Field *field, uint32_t *fieldCount, const string
 			*fieldCount += 1;
 			_buildInfo.curBlobField->nameOffset = nameOffset;
 			_buildInfo.curBlobField->typeOffset = typeOffset;
-			_buildInfo.curBlobField->offset = (uint32_t)field->_offset;
+			_buildInfo.curBlobField->offset = (uint32_t)adjustedOffset;
 
 			if ((uintptr_t)(_buildInfo.curBlobField - _buildInfo.blobFields) < (uintptr_t)_buildInfo.fieldCount) {
 				_buildInfo.curBlobField += 1;

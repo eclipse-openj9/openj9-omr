@@ -71,7 +71,6 @@ public:
 	virtual NamespaceUDT *getNamespace();
 	virtual size_t getPointerCount();
 	virtual size_t getArrayDimensions();
-	virtual void computeFieldOffsets();
 	virtual void addMacro(Macro *macro);
 	virtual vector<UDT *> *getSubUDTS();
 	virtual void renameFieldsAndMacros(const FieldOverride &fieldOverride, Type *replacementType);

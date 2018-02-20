@@ -39,7 +39,6 @@ public:
 	explicit ClassType(size_t size, unsigned int lineNumber = 0);
 	virtual ~ClassType();
 
-	virtual void computeFieldOffsets();
 	virtual void renameFieldsAndMacros(const FieldOverride &fieldOverride, Type *replacementType);
 
 	bool operator==(const Type & rhs) const;

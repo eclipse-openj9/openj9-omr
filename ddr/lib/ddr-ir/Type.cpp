@@ -21,10 +21,6 @@
 
 #include "ddr/ir/Type.hpp"
 
-// DEBUGGING
-#include "ddr/ir/Macro.hpp"
-#include <stdio.h>
-
 Type::Type(size_t size)
 	: _blacklisted(false)
 	, _name()
@@ -86,17 +82,9 @@ Type::getArrayDimensions()
 }
 
 void
-Type::computeFieldOffsets()
-{
-	/* No-op: base types have no fields. */
-}
-
-void
 Type::addMacro(Macro *macro)
 {
 	/* No-op: macros cannot be associated with base types. */
-	printf("Type::addMacro: ignore(%s::%s = %s)\n",
-			_name.c_str(), macro->_name.c_str(), macro->getValue().c_str());
 }
 
 vector<UDT *> *

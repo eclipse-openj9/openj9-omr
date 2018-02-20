@@ -47,28 +47,6 @@ ClassType::~ClassType()
 }
 
 void
-ClassType::computeFieldOffsets()
-{
-	NamespaceUDT::computeFieldOffsets();
-	
-	/* For classes, structs, and unions, find the field offsets. */
-	size_t offset = 0;
-	for (vector<Field *>::iterator it = _fieldMembers.begin(); it != _fieldMembers.end(); ++it) {
-		Field *field = *it;
-
-		if (!field->_isStatic) {
-			/* Use the field size to compute offsets. */
-			field->_offset = offset;
-			offset += field->_sizeOf;
-		}
-	}
-	/* If class has no total size, set it now. */
-	if (0 == _sizeOf) {
-		_sizeOf = offset;
-	}
-}
-
-void
 ClassType::renameFieldsAndMacros(const FieldOverride &fieldOverride, Type *replacementType)
 {
 	NamespaceUDT::renameFieldsAndMacros(fieldOverride, replacementType);

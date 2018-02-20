@@ -133,7 +133,7 @@ DwarfScanner::getSourcelist(Dwarf_Die die)
 		char *path = _fileNamesTable[i];
 		if (0 == strncmp(path, "../", 3)) {
 			/* For each file name beginning with "../", reformat the path as an absolute path. */
-			fileNamesTableConcat[i] = (char *)malloc(sizeof(char) * (strlen(compDir) + strlen(path) + 2));
+			fileNamesTableConcat[i] = (char *)malloc(strlen(compDir) + strlen(path) + 2);
 			strcpy(fileNamesTableConcat[i], compDir);
 
 			char *pathParent = path;
@@ -148,10 +148,10 @@ DwarfScanner::getSourcelist(Dwarf_Die die)
 			strcat(fileNamesTableConcat[i], "/");
 			strcat(fileNamesTableConcat[i], path);
 		} else if (0 == strncmp(path, "/", 1)) {
-			fileNamesTableConcat[i] = (char *)malloc(sizeof(char) * (strlen(path) + 1));
+			fileNamesTableConcat[i] = (char *)malloc(strlen(path) + 1);
 			strcpy(fileNamesTableConcat[i], path);
 		} else {
-			fileNamesTableConcat[i] = (char *)malloc(sizeof(char) * (strlen(compDir) + strlen(path) + 2));
+			fileNamesTableConcat[i] = (char *)malloc(strlen(compDir) + strlen(path) + 2);
 			strcpy(fileNamesTableConcat[i], compDir);
 			strcat(fileNamesTableConcat[i], "/");
 			strcat(fileNamesTableConcat[i], path);
@@ -1169,6 +1169,33 @@ DwarfScanner::addClassField(Dwarf_Die die, ClassType *newClass, const string &fi
 			}
 		}
 
+		if (!newField->_isStatic) {
+			/* Get the offset (member_location) attribute. */
+			Dwarf_Bool hasAttr = false;
+			if (DW_DLV_ERROR == dwarf_hasattr(die, DW_AT_data_member_location, &hasAttr, &error)) {
+				ERRMSG("Checking if die has offset attribute: %s\n", dwarf_errmsg(error));
+				goto AddUDTFieldDone;
+			}
+			if (hasAttr) {
+				Dwarf_Attribute attr = NULL;
+				Dwarf_Unsigned offset = 0;
+				if (DW_DLV_ERROR == dwarf_attr(die, DW_AT_data_member_location, &attr, &error)) {
+					ERRMSG("Getting offset attribute: %s\n", dwarf_errmsg(error));
+					goto AddUDTFieldDone;
+				}
+				int ret = dwarf_formudata(attr, &offset, &error);
+				dwarf_dealloc(_debug, attr, DW_DLA_ATTR);
+				if (DW_DLV_ERROR == ret) {
+					ERRMSG("Getting value of offset attribute: %s\n", dwarf_errmsg(error));
+					goto AddUDTFieldDone;
+				}
+				newField->_offset = offset;
+			} else if ("union" != newClass->getSymbolKindName()) {
+				ERRMSG("Missing offset attribute for %s.%s\n", newClass->_name.c_str(), fieldName.c_str());
+				goto AddUDTFieldDone;
+			}
+		}
+
 		if ((typeName == newClass->_name) && (!newClass->_name.empty())) {
 			newField->_fieldType = newClass;
 		} else if (NULL != baseDie) {
@@ -1178,7 +1205,6 @@ DwarfScanner::addClassField(Dwarf_Die die, ClassType *newClass, const string &fi
 			}
 		}
 		newField->_name = fieldName;
-		newField->_sizeOf = newField->_modifiers.getSize(typeSize);
 		rc = DDR_RC_OK;
 		dwarf_dealloc(_debug, baseDie, DW_DLA_DIE);
 	}

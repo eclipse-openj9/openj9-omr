@@ -24,7 +24,6 @@
 
 Field::Field()
 	: _fieldType(NULL)
-	, _sizeOf(0)
 	, _offset(0)
 	, _modifiers()
 	, _bitField(0)

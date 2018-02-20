@@ -65,7 +65,7 @@ dwarf_init(int fd,
 	int ret = DW_DLV_OK;
 	Dwarf_CU_Context::_currentCU = NULL;
 	Dwarf_CU_Context::_firstCU = NULL;
-	
+
 	/* Get the original file path of the opened file. */
 	char filepath[PATH_MAX] = {0};
 	if (0 > fcntl(fd, F_GETPATH, filepath)) {
@@ -453,6 +453,7 @@ static const tuple<const char *, Dwarf_Half, Dwarf_Half> attrStrings[] = {
 	make_tuple("bit_size", DW_AT_bit_size, DW_FORM_udata),
 	make_tuple("comp_dir", DW_AT_comp_dir, DW_FORM_string),
 	make_tuple("const_value", DW_AT_const_value, DW_FORM_sdata),
+	make_tuple("data_member_location", DW_AT_data_member_location, DW_FORM_udata),
 	make_tuple("decl_file", DW_AT_decl_file, DW_FORM_udata),
 	make_tuple("decl_line", DW_AT_decl_line, DW_FORM_udata),
 	make_tuple("external", DW_AT_external, DW_FORM_flag),

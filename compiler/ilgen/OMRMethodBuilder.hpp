@@ -41,6 +41,16 @@ namespace TR { class SegmentProvider; }
 namespace TR { class Region; }
 class TR_Memory;
 
+#ifndef TR_ALLOC
+#define TR_ALLOC(x)
+#endif
+
+
+extern "C"
+{
+typedef bool (*RequestFunctionCallback)(void *client, const char *name);
+}
+
 namespace OMR
 {
 
@@ -54,8 +64,6 @@ class MethodBuilder : public TR::IlBuilder
    virtual ~MethodBuilder();
 
    virtual void setupForBuildIL();
-
-   virtual bool injectIL();
 
    /**
     * @brief returns the next index to be used for new values
@@ -105,7 +113,7 @@ class MethodBuilder : public TR::IlBuilder
 
    TR::ResolvedMethod *lookupFunction(const char *name);
 
-   void AppendBuilder(TR::BytecodeBuilder *bb);
+   void AppendBuilder(TR::BytecodeBuilder *bb) { AppendBytecodeBuilder(bb); }
    void AppendBuilder(TR::IlBuilder *b)    { this->OMR::IlBuilder::AppendBuilder(b); }
 
    void DefineFile(const char *file)                         { _definingFile = file; }
@@ -133,13 +141,21 @@ class MethodBuilder : public TR::IlBuilder
                        int32_t          numParms,
                        TR::IlType     ** parmTypes);
 
+   int32_t Compile(void **entry);
+
    /**
     * @brief will be called if a Call is issued to a function that has not yet been defined, provides a
     *        mechanism for MethodBuilder subclasses to provide method lookup on demand rather than all up
     *        front via the constructor.
     * @returns true if the function was found and DefineFunction has been called for it, otherwise false
     */
-   virtual bool RequestFunction(const char *name) { return false; }
+   virtual bool RequestFunction(const char *name)
+      {
+      if (_clientCallbackRequestFunction)
+         return _clientCallbackRequestFunction(_client, name);
+
+      return false;
+      }
 
    /**
     * @brief append the first bytecode builder object to this method
@@ -233,6 +249,37 @@ class MethodBuilder : public TR::IlBuilder
     * @returns the directly inlining MethodBuilder or NULL if no MethodBuilder inlined this one
     */
    TR::MethodBuilder *callerMethodBuilder();
+   
+   /**
+    * @brief returns the client object associated with this object, allocating it if necessary
+    */
+   void *client();
+
+   /**
+    * @brief Store callback function to be called on client when RequestFunction is called
+    */
+   void setClientCallback_RequestFunction(void *callback)
+      {
+      _clientCallbackRequestFunction = (RequestFunctionCallback) callback;
+      }
+
+   /**
+    * @brief Set the Client Allocator function
+    */
+   static void setClientAllocator(ClientAllocator allocator)
+      {
+      _clientAllocator = allocator;
+      }
+
+   /**
+    * @brief Set the Get Impl function
+    *
+    * @param getter function pointer to the impl getter
+    */
+   static void setGetImpl(ImplGetter getter)
+      {
+      _getImpl = getter;
+      }
 
    protected:
    virtual uint32_t countBlocks();
@@ -261,6 +308,11 @@ class MethodBuilder : public TR::IlBuilder
       } MemoryManager;
 
    MemoryManager memoryManager;
+
+   /**
+    * @brief client callback function to call when RequestFunction is called
+    */
+   RequestFunctionCallback     _clientCallbackRequestFunction;
 
    // These values are typically defined outside of a compilation
    const char                * _methodName;
@@ -323,6 +375,10 @@ class MethodBuilder : public TR::IlBuilder
    int32_t                     _nextInlineSiteIndex;
    TR::IlBuilder             * _returnBuilder;
    const char                * _returnSymbolName;
+
+private:
+   static ClientAllocator      _clientAllocator;
+   static ImplGetter _getImpl;
    };
 
 } // namespace OMR

@@ -252,7 +252,7 @@ MacroScanner::validTypeCast(bool *isSigned, size_t *bitWidth)
 				*isSigned = true;
 			}
 			/* (1 >= numSigned + numUnsigned) checks that there can only be one
-			 *  of 'unsigned' or 'signed' in the types
+			 * of 'unsigned' or 'signed' in the types
 			 */
 			if ((1 == numChar) && (1 >= numSigned + numUnsigned) && (0 == numShort)
 					&& (0 == numInt) && (0 == numLong)) {
@@ -462,7 +462,7 @@ MacroScanner::readNumber(int64_t *ret)
 		if (('b' == _cursor[0]) || ('B' == _cursor[0])) {
 			base = 2;
 			_cursor += 1;
-		} else if (('x' == _cursor[0])  || ('X' == _cursor[0])) {
+		} else if (('x' == _cursor[0]) || ('X' == _cursor[0])) {
 			base = 16;
 			_cursor += 1;
 		} else {
@@ -878,7 +878,7 @@ MacroParser::multDivRem(int64_t *ret)
  * @param[out] ret: the integer value the unary expression evaluates to
  *
  * @return: whether at the current location can be evaluated as a unary
- * 			expression
+ *          expression
  */
 bool
 MacroParser::unaryExpression(int64_t *ret)
@@ -941,7 +941,7 @@ MacroParser::unaryExpression(int64_t *ret)
  * @param[out] ret: the integer value the expression evaluates to
  *
  * @return: whether at the current location can be evaluated as a parenthesized
- * 			expression
+ *          expression
  */
 bool
 MacroParser::parentheses(int64_t *ret)
@@ -970,7 +970,7 @@ MacroParser::parentheses(int64_t *ret)
 bool
 MacroParser::validSingleTerm(int64_t *ret)
 {
-	return unaryExpression(ret) || parentheses(ret)	|| _scanner.readNumber(ret);
+	return unaryExpression(ret) || parentheses(ret) || _scanner.readNumber(ret);
 }
 
 /*
@@ -986,8 +986,10 @@ Macro::getNumeric(long long *ret) const
 	DDR_RC rc = DDR_RC_ERROR;
 	int64_t retVal = 0;
 	MacroParser parser(_value.c_str());
-	if ((NULL != ret) && parser.evaluate(&retVal)) {
-		*ret = retVal;
+	if (parser.evaluate(&retVal)) {
+		if (NULL != ret) {
+			*ret = retVal;
+		}
 		rc = DDR_RC_OK;
 	}
 	return rc;

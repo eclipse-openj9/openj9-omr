@@ -113,9 +113,7 @@ TR::Register *OMR::X86::TreeEvaluator::ifxcmpoEvaluator(TR::Node *node, TR::Code
    else
       generateRegRegInstruction(CMPRegReg(nodeIs64Bit), node, rs1, rs2, cg);
 
-   cg->setVMThreadRequired(true);
    generateConditionalJumpInstruction(reverseBranch ? JNO4 : JO4, node, cg, true);
-   cg->setVMThreadRequired(false);
 
    cg->decReferenceCount(node->getFirstChild());
    cg->decReferenceCount(node->getSecondChild());
@@ -2258,8 +2256,6 @@ void OMR::X86::TreeEvaluator::genArithmeticInstructionsForOverflowCHK(TR::Node *
             break;
          }
       }
-
-   cg->setVMThreadRequired(true);
    }
 
 TR::Register *OMR::X86::TreeEvaluator::overflowCHKEvaluator(TR::Node *node, TR::CodeGenerator *cg)
@@ -2274,7 +2270,6 @@ TR::Register *OMR::X86::TreeEvaluator::overflowCHKEvaluator(TR::Node *node, TR::
    TR::Block *overflowCatchBlock = TR::TreeEvaluator::getOverflowCatchBlock(node, cg);
    TR::TreeEvaluator::genArithmeticInstructionsForOverflowCHK(node, cg);
    generateLabelInstruction(opcode, node, overflowCatchBlock->getEntry()->getNode()->getLabel(), cg);
-   cg->setVMThreadRequired(false);
    cg->decReferenceCount(node->getFirstChild());
    return NULL;
    }
@@ -4032,8 +4027,6 @@ TR::Register *OMR::X86::TreeEvaluator::BBStartEvaluator(TR::Node *node, TR::Code
          node->setLabel(label);
          }
 
-      cg->setVMThreadRequired(true);
-
       static bool doAlign = (feGetEnv("TR_DoNotAlignLoopEntries") == NULL);
       static bool alwaysAlignLoops = (feGetEnv("TR_AlwaysAlignLoopEntries") != NULL);
       if (doAlign && !block->isCold() && block->firstBlockInLoop() &&
@@ -4054,7 +4047,6 @@ TR::Register *OMR::X86::TreeEvaluator::BBStartEvaluator(TR::Node *node, TR::Code
 
       node->getLabel()->setInstruction(inst);
       block->setFirstInstruction(inst);
-      cg->setVMThreadRequired(false);
 
       // If this is the first BBStart of the method, its GlRegDeps determine
       // where parameters should be placed.

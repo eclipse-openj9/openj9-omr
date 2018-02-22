@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -384,9 +384,6 @@ public:
    inline void setEndInternalControlFlow();
    inline bool isEndInternalControlFlow();
 
-   inline void setVMThreadLive();
-   inline bool isVMThreadLive();
-
    inline void setInternalControlFlowMerge();
    inline bool isInternalControlFlowMerge();
 
@@ -534,7 +531,7 @@ public:
       StartInternalControlFlow     = 0x40000000,
       EndInternalControlFlow       = 0x20000000,
       // Available                 = 0x10000000,
-      IsVMThreadLive               = 0x08000000, // reg assigner has determined that vmthread must be in the proper register at this label
+      // Available                 = 0x08000000,
       // Available                 = 0x04000000,
       InternalControlFlowMerge     = 0x02000000, // mainline merge label for OOL instructions
       EndOfColdInstructionStream   = 0x01000000,

@@ -695,50 +695,6 @@ uint8_t *TR::X86FenceInstruction::generateBinaryEncoding()
    }
 
 
-// -----------------------------------------------------------------------------
-// TR::X86RestoreVMThreadInstruction:: member functions
-
-int32_t TR::X86RestoreVMThreadInstruction::estimateBinaryLength(int32_t currentEstimate)
-   {
-   if (TR::Compiler->target.is64Bit())
-      setEstimatedBinaryLength(9);
-   else
-      setEstimatedBinaryLength(7);
-   return currentEstimate + getEstimatedBinaryLength();
-   }
-
-uint8_t TR::X86RestoreVMThreadInstruction::getBinaryLengthLowerBound()
-   {
-   if (TR::Compiler->target.is64Bit())
-      return 9;
-   else
-      return 7;
-   }
-
-uint8_t *TR::X86RestoreVMThreadInstruction::generateBinaryEncoding()
-   {
-   uint8_t *instructionStart = cg()->getBinaryBufferCursor();
-   uint8_t *cursor           = instructionStart;
-
-   if (TR::Compiler->target.is64Bit())
-      {
-      // mov  rbp,qword ptr fs:[00000000h] ; 64 48 8B 2C 25 00 00 00 00
-      *cursor++ = 0x64; *cursor++ = 0x48; *cursor++ = 0x8b; *cursor++ = 0x2c; *cursor++ = 0x25;
-      *cursor++ = 0x00; *cursor++ = 0x00; *cursor++ = 0x00; *cursor++ = 0x00;
-      }
-   else
-      {
-      // mov ebp,dword ptr fs:[0] ; 64 8b 2d 00 00 00 00
-      *cursor++ = 0x64; *cursor++ = 0x8b; *cursor++ = 0x2d;
-      *cursor++ = 0x00; *cursor++ = 0x00; *cursor++ = 0x00; *cursor++ = 0x00;
-      }
-
-   setBinaryLength(cursor - instructionStart);
-   setBinaryEncoding(instructionStart);
-   cg()->addAccumulatedInstructionLengthError(getEstimatedBinaryLength() - getBinaryLength());
-   return cursor;
-   }
-
 #ifdef J9_PROJECT_SPECIFIC
 // -----------------------------------------------------------------------------
 // TR::X86VirtualGuardNOPInstruction

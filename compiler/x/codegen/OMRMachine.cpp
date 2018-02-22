@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -249,21 +249,6 @@ OMR::X86::Machine::findBestFreeGPRegister(TR::Instruction   *currentInstruction,
    bool useRegisterInterferences = self()->cg()->enableRegisterInterferences() ? true : false;
    bool useRegisterWeights = self()->cg()->enableRegisterWeights() ? true : false;
 
-   if (!debug("disableForceVMThreadToEBP") && virtReg == self()->cg()->getVMThreadRegister())
-      {
-      // Reg assigner gets confused if the virtual vmthread GPR gets a register other than ebp
-
-      // If the vmThread register is free then assign it straightaway.
-      //
-      if (_registerFile[TR::RealRegister::ebp]->getState() == TR::RealRegister::Free || _registerFile[TR::RealRegister::ebp]->getState() == TR::RealRegister::Unlatched)
-         {
-         return _registerFile[TR::RealRegister::ebp];
-         }
-
-      diagnostic("Refusing to give a free register for vmthread\n");
-      return NULL;
-      }
-
    if (useRegisterAssociations &&
        virtReg->getAssociation() != TR::RealRegister::NoReg &&
        self()->getVirtualAssociatedWithReal((TR::RealRegister::RegNum)virtReg->getAssociation()) == virtReg &&
@@ -511,67 +496,44 @@ TR::RealRegister *OMR::X86::Machine::freeBestGPRegister(TR::Instruction         
       bestDistances[i] = 0;
       }
 
-   if (!debug("disableForceVMThreadToEBP") && (virtReg == self()->cg()->getVMThreadRegister()))
+   // Identify all spillable candidates of the appropriate register type.
+   //
+   for (i = first; i <= last; i++)
       {
-      // Reg assigner gets confused if vmthread gets a register other than ebp
-      TR_ASSERT(_registerFile[TR::RealRegister::ebp]->getState() == TR::RealRegister::Assigned, "ebp must be spillable for vmthread");
-      diagnostic("Forcing use of ebp for vmthread\n");
-      candidates[0] = self()->getX86RealRegister(TR::RealRegister::ebp)->getAssignedRegister();
-      numCandidates = 1;
-      }
-   else
-      {
-
-      //cannot spill when inside an internal control flow
-      if(false)
-      TR_ASSERT(!self()->cg()->insideInternalControlFlow(), "The instruction %p from %s, should not be inside an Internal Control Flow with a depth of %d with a safe depth of %d\n", currentInstruction, currentInstruction->getNode()->getOpCode().getName(), self()->cg()->internalControlFlowNestingDepth(), self()->cg()->internalControlFlowSafeNestingDepth());
-
-      // Identify all spillable candidates of the appropriate register type.
+      // Don't consider registers that can't be assigned.
       //
-      for (i = first; i <= last; i++)
+      if (_registerFile[i]->getState() == TR::RealRegister::Locked)
          {
-         // Don't consider registers that can't be assigned.
-         //
-         if (_registerFile[i]->getState() == TR::RealRegister::Locked)
-            {
-            continue;
-            }
-
-         realReg = self()->getX86RealRegister((TR::RealRegister::RegNum)i);
-
-         if (i == TR::RealRegister::ebp && (interference & TR::RealRegister::ebpMask) && realReg->getAssignedRegister() == self()->cg()->getVMThreadRegister())
-            {
-            // The interference to the VM thread register is absolute.  Don't consider the thread
-            // register as a spillable candidate if it interferes.
-            continue;
-            }
-
-         if (realReg->getState() == TR::RealRegister::Assigned)
-            {
-            candidates[numCandidates++] = realReg->getAssignedRegister();
-            if (targetRegister == i)
-               {
-               if (useRegisterInterferences && (interference & (1 << (i-1)))) // TODO:AMD64: Use the proper mask value
-                  bestRegisters[InterferingTarget] = realReg->getAssignedRegister();
-               else
-                  bestRegisters[NonInterferingTarget] = realReg->getAssignedRegister();
-               }
-            }
+         continue;
          }
 
-      if (numCandidates == 0)
-         {
-         // If we are trying to find a suitable spill register for a virtual that currently occupies a
-         // register required in a register dependency, there may not be any suitable spill
-         // candidates if all available real registers are requested in the register dependency.  In
-         // such a case, where our virtual need not be in a register across the dependency, choose the
-         // virtual itself as a spill candidate.
-         //
-         TR_ASSERT(considerVirtAsSpillCandidate,
-                 "freeBestGPRegister(): could not find any GPR spill candidates for %s\n", self()->getDebug()->getName(virtReg));
+      realReg = self()->getX86RealRegister((TR::RealRegister::RegNum)i);
 
-         bestRegister = virtReg;
+      if (realReg->getState() == TR::RealRegister::Assigned)
+         {
+         candidates[numCandidates++] = realReg->getAssignedRegister();
+         if (targetRegister == i)
+            {
+            if (useRegisterInterferences && (interference & (1 << (i-1)))) // TODO:AMD64: Use the proper mask value
+               bestRegisters[InterferingTarget] = realReg->getAssignedRegister();
+            else
+               bestRegisters[NonInterferingTarget] = realReg->getAssignedRegister();
+            }
          }
+      }
+
+   if (numCandidates == 0)
+      {
+      // If we are trying to find a suitable spill register for a virtual that currently occupies a
+      // register required in a register dependency, there may not be any suitable spill
+      // candidates if all available real registers are requested in the register dependency.  In
+      // such a case, where our virtual need not be in a register across the dependency, choose the
+      // virtual itself as a spill candidate.
+      //
+      TR_ASSERT(considerVirtAsSpillCandidate,
+              "freeBestGPRegister(): could not find any GPR spill candidates for %s\n", self()->getDebug()->getName(virtReg));
+
+      bestRegister = virtReg;
       }
 
    // From all the spillable candidates identified, choose the most appropriate based on
@@ -896,19 +858,7 @@ TR::RealRegister *OMR::X86::Machine::freeBestGPRegister(TR::Instruction         
 
       TR_BackingStore *location = NULL;
       int32_t offset = 0;
-      if (bestRegister == self()->cg()->getVMThreadRegister())
-         {
-         if (bestRegister->getBackingStorage() == NULL)
-            {
-            location = self()->cg()->allocateVMThreadSpill();
-            self()->cg()->setVMThreadSpillInstruction((TR::Instruction *)0xffffffff);
-            }
-         else
-            {
-            location = bestRegister->getBackingStorage(); // note: vmthread is never spilled to a slot's second half
-            }
-         }
-      else if ((bestRegister->getKind() == TR_FPR))
+      if ((bestRegister->getKind() == TR_FPR))
          {
          if (bestRegister->getBackingStorage())
             {
@@ -1047,126 +997,113 @@ TR::RealRegister *OMR::X86::Machine::reverseGPRSpillState(TR::Instruction     *c
 
    TR_BackingStore *location = spilledRegister->getBackingStorage();
 
-   if (spilledRegister != self()->cg()->getVMThreadRegister())
+   // If the virtual register has better spill placement info, see if the spill
+   // can be moved to later in the instruction stream
+   //
+   if (self()->cg()->enableBetterSpillPlacements())
       {
-      // If the virtual register has better spill placement info, see if the spill
-      // can be moved to later in the instruction stream
+      if (spilledRegister->hasBetterSpillPlacement())
+         {
+         TR::Instruction *betterInstruction = self()->cg()->findBetterSpillPlacement(spilledRegister, targetRegister->getRegisterNumber());
+         if (betterInstruction)
+            {
+            self()->cg()->setRegisterAssignmentFlag(TR_HasBetterSpillPlacement);
+            currentInstruction = betterInstruction;
+            }
+         }
+
+      self()->cg()->removeBetterSpillPlacementCandidate(targetRegister);
+      }
+
+   if (self()->cg()->getUseNonLinearRegisterAssigner())
+      {
+      self()->cg()->getSpilledRegisterList()->remove(spilledRegister);
+      }
+
+   self()->cg()->getSpilledIntRegisters().remove(spilledRegister);
+
+   if (self()->cg()->enableRematerialisation())
+      {
+      self()->cg()->reactivateDependentDiscardableRegisters(spilledRegister);
+
+      // A store is not necessary if the register can be rematerialised.
       //
-      if (self()->cg()->enableBetterSpillPlacements())
+      if (spilledRegister->getRematerializationInfo() &&
+          spilledRegister->getRematerializationInfo()->isRematerialized())
          {
-         if (spilledRegister->hasBetterSpillPlacement())
+         if (debug("dumpRemat"))
             {
-            TR::Instruction *betterInstruction = self()->cg()->findBetterSpillPlacement(spilledRegister, targetRegister->getRegisterNumber());
-            if (betterInstruction)
-               {
-               self()->cg()->setRegisterAssignmentFlag(TR_HasBetterSpillPlacement);
-               currentInstruction = betterInstruction;
-               }
+            diagnostic("---> Avoiding storing %s rematerializable register %s to memory in %s\n",
+                        self()->getDebug()->toString(spilledRegister->getRematerializationInfo()),
+                        self()->getDebug()->getName(spilledRegister),
+                        comp->signature());
             }
 
-         self()->cg()->removeBetterSpillPlacementCandidate(targetRegister);
+         return targetRegister;
          }
+      }
 
-      if (self()->cg()->getUseNonLinearRegisterAssigner())
+   TR::MemoryReference *tempMR = generateX86MemoryReference(location->getSymbolReference(), spilledRegister->isSpilledToSecondHalf()? 4 : 0, self()->cg());
+   TR::Instruction        *instr  = NULL;
+
+   if (spilledRegister->getKind() == TR_FPR)
+      {
+      instr = new (self()->cg()->trHeapMemory())
+         TR::X86MemRegInstruction(
+            currentInstruction,
+            spilledRegister->isSinglePrecision() ? MOVSSMemReg : MOVSDMemReg,
+            tempMR,
+            targetRegister, self()->cg());
+
+      // Do not add a freed spill slot back onto the free list if the list is locked.
+      // This is to enforce re-use of the same spill slot for a virtual register
+      // while assigning non-linear control flow regions.
+      //
+      self()->cg()->freeSpill(location, spilledRegister->isSinglePrecision()? 4:8, spilledRegister->isSpilledToSecondHalf()? 4:0);
+      if (!self()->cg()->isFreeSpillListLocked())
          {
-         self()->cg()->getSpilledRegisterList()->remove(spilledRegister);
+         spilledRegister->setBackingStorage(NULL);
          }
+      }
+   else if (spilledRegister->getKind() == TR_VRF)
+      {
+      instr = new (self()->cg()->trHeapMemory())
+         TR::X86MemRegInstruction(
+            currentInstruction,
+            MOVDQUMemReg,
+            tempMR,
+            targetRegister, self()->cg());
 
-      self()->cg()->getSpilledIntRegisters().remove(spilledRegister);
-
-      if (self()->cg()->enableRematerialisation())
+      // Do not add a freed spill slot back onto the free list if the list is locked.
+      // This is to enforce re-use of the same spill slot for a virtual register
+      // while assigning non-linear control flow regions.
+      //
+      self()->cg()->freeSpill(location, 16, 0);
+      if (!self()->cg()->isFreeSpillListLocked())
          {
-         self()->cg()->reactivateDependentDiscardableRegisters(spilledRegister);
-
-         // A store is not necessary if the register can be rematerialised.
-         //
-         if (spilledRegister->getRematerializationInfo() &&
-             spilledRegister->getRematerializationInfo()->isRematerialized())
-            {
-            if (debug("dumpRemat"))
-               {
-               diagnostic("---> Avoiding storing %s rematerializable register %s to memory in %s\n",
-                           self()->getDebug()->toString(spilledRegister->getRematerializationInfo()),
-                           self()->getDebug()->getName(spilledRegister),
-                           comp->signature());
-               }
-
-            return targetRegister;
-            }
+         spilledRegister->setBackingStorage(NULL);
          }
-
-      TR::MemoryReference *tempMR = generateX86MemoryReference(location->getSymbolReference(), spilledRegister->isSpilledToSecondHalf()? 4 : 0, self()->cg());
-      TR::Instruction        *instr  = NULL;
-
-      if (spilledRegister->getKind() == TR_FPR)
-         {
-         instr = new (self()->cg()->trHeapMemory())
-            TR::X86MemRegInstruction(
-               currentInstruction,
-               spilledRegister->isSinglePrecision() ? MOVSSMemReg : MOVSDMemReg,
-               tempMR,
-               targetRegister, self()->cg());
-
-         // Do not add a freed spill slot back onto the free list if the list is locked.
-         // This is to enforce re-use of the same spill slot for a virtual register
-         // while assigning non-linear control flow regions.
-         //
-         self()->cg()->freeSpill(location, spilledRegister->isSinglePrecision()? 4:8, spilledRegister->isSpilledToSecondHalf()? 4:0);
-         if (!self()->cg()->isFreeSpillListLocked())
-            {
-            spilledRegister->setBackingStorage(NULL);
-            }
-         }
-      else if (spilledRegister->getKind() == TR_VRF)
-         {
-         instr = new (self()->cg()->trHeapMemory())
-            TR::X86MemRegInstruction(
-               currentInstruction,
-               MOVDQUMemReg,
-               tempMR,
-               targetRegister, self()->cg());
-
-         // Do not add a freed spill slot back onto the free list if the list is locked.
-         // This is to enforce re-use of the same spill slot for a virtual register
-         // while assigning non-linear control flow regions.
-         //
-         self()->cg()->freeSpill(location, 16, 0);
-         if (!self()->cg()->isFreeSpillListLocked())
-            {
-            spilledRegister->setBackingStorage(NULL);
-            }
-         }
-      else
-         {
-         instr = new (self()->cg()->trHeapMemory())
-            TR::X86MemRegInstruction(
-               currentInstruction,
-               SMemReg(),
-               tempMR,
-               targetRegister, self()->cg());
-         // Do not add a freed spill slot back onto the free list if the list is locked.
-         // This is to enforce re-use of the same spill slot for a virtual register
-         // while assigning non-linear control flow regions.
-         //
-         self()->cg()->freeSpill(location, TR::Compiler->om.sizeofReferenceAddress(), spilledRegister->isSpilledToSecondHalf()? 4:0);
-         if (!self()->cg()->isFreeSpillListLocked())
-            {
-            spilledRegister->setBackingStorage(NULL);
-            }
-         }
-
-      self()->cg()->traceRAInstruction(instr);
       }
    else
       {
-      self()->cg()->setVMThreadSpillInstruction(currentInstruction);
-      if (self()->getDebug())
+      instr = new (self()->cg()->trHeapMemory())
+         TR::X86MemRegInstruction(
+            currentInstruction,
+            SMemReg(),
+            tempMR,
+            targetRegister, self()->cg());
+      // Do not add a freed spill slot back onto the free list if the list is locked.
+      // This is to enforce re-use of the same spill slot for a virtual register
+      // while assigning non-linear control flow regions.
+      //
+      self()->cg()->freeSpill(location, TR::Compiler->om.sizeofReferenceAddress(), spilledRegister->isSpilledToSecondHalf()? 4:0);
+      if (!self()->cg()->isFreeSpillListLocked())
          {
-         self()->cg()->traceRegisterAssignment("VMThread spill instruction is now %s\n",
-                                      (self()->cg()->getVMThreadSpillInstruction() == (TR::Instruction *)0xffffffff) ?
-                                      "sentinel" : self()->getDebug()->getName(self()->cg()->getVMThreadSpillInstruction()));
+         spilledRegister->setBackingStorage(NULL);
          }
       }
+
+   self()->cg()->traceRAInstruction(instr);
 
    return targetRegister;
    }
@@ -1226,9 +1163,6 @@ void OMR::X86::Machine::coerceGPRegisterAssignment(TR::Instruction          *cur
          currentTargetVirtual->setAssignedRegister(currentAssignedRegister);
          self()->cg()->traceRegAssigned(currentTargetVirtual, currentAssignedRegister);
          self()->cg()->traceRAInstruction(instr);
-
-         if (toRealRegister(currentAssignedRegister)->getRegisterNumber() == self()->cg()->getProperties().getMethodMetaDataRegister())
-            self()->cg()->processDeferredSplits(currentTargetVirtual == self()->cg()->getVMThreadRegister());
          }
       else
          {
@@ -1260,9 +1194,6 @@ void OMR::X86::Machine::coerceGPRegisterAssignment(TR::Instruction          *cur
             self()->cg()->traceRegAssigned(currentTargetVirtual, candidate);
             self()->cg()->traceRAInstruction(instr);
             self()->cg()->resetRegisterAssignmentFlag(TR_RegisterSpilled); // the spill (if any) has been traced
-
-            if (candidate->getRegisterNumber() == self()->cg()->getProperties().getMethodMetaDataRegister())
-               self()->cg()->processDeferredSplits(currentTargetVirtual == self()->cg()->getVMThreadRegister());
             }
 
          if (virtualRegister->getTotalUseCount() != virtualRegister->getFutureUseCount())
@@ -1286,10 +1217,6 @@ void OMR::X86::Machine::coerceGPRegisterAssignment(TR::Instruction          *cur
    targetRegister->setAssignedRegister(virtualRegister);
    virtualRegister->setAssignedRegister(targetRegister);
    virtualRegister->setAssignedAsByteRegister(false);
-
-   if (registerNumber == self()->cg()->getProperties().getMethodMetaDataRegister())
-      self()->cg()->processDeferredSplits(virtualRegister == self()->cg()->getVMThreadRegister());
-
    }
 
 void OMR::X86::Machine::coerceXMMRegisterAssignment(TR::Instruction          *currentInstruction,
@@ -1487,8 +1414,6 @@ void OMR::X86::Machine::coerceXMMRegisterAssignment(TR::Instruction          *cu
             self()->cg()->traceRegAssigned(currentTargetVirtual, candidate);
             self()->cg()->traceRAInstruction(instr);
             self()->cg()->setRegisterAssignmentFlag(TR_RegisterSpilled); // the spill (if any) has been traced
-            if (candidate->getRegisterNumber() == self()->cg()->getProperties().getMethodMetaDataRegister())
-               self()->cg()->processDeferredSplits(currentTargetVirtual == self()->cg()->getVMThreadRegister());
             }
 
          if (virtualRegister->getTotalUseCount() != virtualRegister->getFutureUseCount())
@@ -1553,9 +1478,6 @@ void OMR::X86::Machine::coerceGPRegisterAssignment(TR::Instruction   *currentIns
    candidate->setAssignedRegister(virtualRegister);
    virtualRegister->setAssignedRegister(candidate);
    virtualRegister->setAssignedAsByteRegister(false);
-
-   if (candidate->getRegisterNumber() == self()->cg()->getProperties().getMethodMetaDataRegister())
-      self()->cg()->processDeferredSplits(virtualRegister == self()->cg()->getVMThreadRegister());
 
    self()->cg()->traceRegAssigned(virtualRegister, candidate);
    }

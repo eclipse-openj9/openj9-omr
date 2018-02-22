@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2017 IBM Corp. and others
+ * Copyright (c) 2017, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -565,18 +565,6 @@ bool
 OMR::Symbol::isEndInternalControlFlow()
    {
    return self()->isLabel() && !self()->isGlobalLabel() && _flags.testAny(EndInternalControlFlow) && !self()->isGlobalLabel();
-   }
-
-void
-OMR::Symbol::setVMThreadLive()
-   {
-   TR_ASSERT(self()->isLabel(), "assertion failure"); _flags.set(IsVMThreadLive);
-   }
-
-bool
-OMR::Symbol::isVMThreadLive()
-   {
-   return self()->isLabel() && _flags.testAny(IsVMThreadLive);
    }
 
 void

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -72,7 +72,6 @@ OMR::LabelSymbol::LabelSymbol() :
    _codeLocation(NULL),
    _estimatedCodeLocation(0),
    _snippet(NULL),
-   _vmThreadRestoringLabel(NULL),
    _directlyTargeted(false)
    {
    self()->setIsLabel();
@@ -87,8 +86,7 @@ OMR::LabelSymbol::LabelSymbol(TR::CodeGenerator *codeGen) :
    _instruction(NULL),
    _codeLocation(NULL),
    _estimatedCodeLocation(0),
-   _snippet(NULL),
-   _vmThreadRestoringLabel(NULL)
+   _snippet(NULL)
    {
    self()->setIsLabel();
 
@@ -102,8 +100,7 @@ OMR::LabelSymbol::LabelSymbol(TR::CodeGenerator *codeGen, TR::Block *labb) :
    _instruction(NULL),
    _codeLocation(NULL),
    _estimatedCodeLocation(0),
-   _snippet(NULL),
-   _vmThreadRestoringLabel(NULL)
+   _snippet(NULL)
    {
    self()->setIsLabel();
 

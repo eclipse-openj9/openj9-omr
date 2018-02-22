@@ -1381,9 +1381,7 @@ TR::Register *OMR::X86::TreeEvaluator::integerIfCmpeqEvaluator(TR::Node *node, T
             cg->evaluate(firstChild);
             cg->evaluate(secondChild);
 
-            cg->setVMThreadRequired(true);
             generateConditionalJumpInstruction(JO4, node, cg, true);
-            cg->setVMThreadRequired(false);
 
             cg->decReferenceCount(firstChild);
             cg->decReferenceCount(secondChild);
@@ -1403,9 +1401,7 @@ TR::Register *OMR::X86::TreeEvaluator::integerIfCmpeqEvaluator(TR::Node *node, T
 
       TR::TreeEvaluator::compareIntegersForEquality(node, cg);
 
-      cg->setVMThreadRequired(true);
       generateConditionalJumpInstruction(JE4, node, cg, true);
-      cg->setVMThreadRequired(false);
       return NULL;
       }
    }
@@ -1483,9 +1479,7 @@ TR::Register *OMR::X86::TreeEvaluator::integerIfCmpneEvaluator(TR::Node *node, T
             cg->evaluate(firstChild);
             cg->evaluate(secondChild);
 
-            cg->setVMThreadRequired(true);
             generateConditionalJumpInstruction(JNO4, node, cg, true);
-            cg->setVMThreadRequired(false);
 
             cg->decReferenceCount(firstChild);
             cg->decReferenceCount(secondChild);
@@ -1527,13 +1521,9 @@ TR::Register *OMR::X86::TreeEvaluator::integerIfCmpneEvaluator(TR::Node *node, T
              generateMemImmInstruction(TEST4MemImm4, node, sourceMR, ( ((int32_t)-1) << node->getFirstChild()->getSecondChild()->getInt() ), cg);
              }
 
-         cg->setVMThreadRequired(true);
-
          TR::X86LabelInstruction *instr = generateConditionalJumpInstruction(JNE4, node, cg, true);
          if (insertMergedHCRGuard)
             generateMergedHCRGuardCodeIfNeeded(node, cg, instr);
-
-         cg->setVMThreadRequired(false);
 
          cg->recursivelyDecReferenceCount(node->getFirstChild());
          cg->decReferenceCount(node->getSecondChild());
@@ -1541,7 +1531,6 @@ TR::Register *OMR::X86::TreeEvaluator::integerIfCmpneEvaluator(TR::Node *node, T
          }
 
       TR::TreeEvaluator::compareIntegersForEquality(node, cg);
-      cg->setVMThreadRequired(true);
 
       // If this is a guard that has not been NOPed, then
       // it might need to be registered in our internal data structures
@@ -1565,7 +1554,6 @@ TR::Register *OMR::X86::TreeEvaluator::integerIfCmpneEvaluator(TR::Node *node, T
       if (insertMergedHCRGuard)
          generateMergedHCRGuardCodeIfNeeded(node, cg, instr);
 
-      cg->setVMThreadRequired(false);
       return NULL;
       }
    }
@@ -1659,16 +1647,12 @@ TR::Register *OMR::X86::TreeEvaluator::integerIfCmpltEvaluator(TR::Node *node, T
          TR::TreeEvaluator::generateLAddOrSubForOverflowCheck(node, cg)
        : TR::TreeEvaluator::generateIAddOrSubForOverflowCheck(node, cg))
       {
-      cg->setVMThreadRequired(true);
       generateConditionalJumpInstruction(JO4, node, cg, true);
-      cg->setVMThreadRequired(false);
       }
    else
       {
       TR::TreeEvaluator::compareIntegersForOrder(node, cg);
-      cg->setVMThreadRequired(true);
       generateConditionalJumpInstruction(JL4, node, cg, true);
-      cg->setVMThreadRequired(false);
       }
    return NULL;
    }
@@ -1679,16 +1663,12 @@ TR::Register *OMR::X86::TreeEvaluator::integerIfCmpgeEvaluator(TR::Node *node, T
          TR::TreeEvaluator::generateLAddOrSubForOverflowCheck(node, cg)
        : TR::TreeEvaluator::generateIAddOrSubForOverflowCheck(node, cg))
       {
-      cg->setVMThreadRequired(true);
       generateConditionalJumpInstruction(JNO4, node, cg, true);
-      cg->setVMThreadRequired(false);
       }
    else
       {
       TR::TreeEvaluator::compareIntegersForOrder(node, cg);
-      cg->setVMThreadRequired(true);
       generateConditionalJumpInstruction(JGE4, node, cg, true);
-      cg->setVMThreadRequired(false);
       }
    return NULL;
    }
@@ -1696,54 +1676,42 @@ TR::Register *OMR::X86::TreeEvaluator::integerIfCmpgeEvaluator(TR::Node *node, T
 TR::Register *OMR::X86::TreeEvaluator::integerIfCmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::TreeEvaluator::compareIntegersForOrder(node, cg);
-   cg->setVMThreadRequired(true);
    generateConditionalJumpInstruction(JG4, node, cg, true);
-   cg->setVMThreadRequired(false);
    return NULL;
    }
 
 TR::Register *OMR::X86::TreeEvaluator::integerIfCmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::TreeEvaluator::compareIntegersForOrder(node, cg);
-   cg->setVMThreadRequired(true);
    generateConditionalJumpInstruction(JLE4, node, cg, true);
-   cg->setVMThreadRequired(false);
    return NULL;
    }
 
 TR::Register *OMR::X86::TreeEvaluator::unsignedIntegerIfCmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::TreeEvaluator::compareIntegersForOrder(node, cg);
-   cg->setVMThreadRequired(true);
    generateConditionalJumpInstruction(JB4, node, cg, true);
-   cg->setVMThreadRequired(false);
    return NULL;
    }
 
 TR::Register *OMR::X86::TreeEvaluator::unsignedIntegerIfCmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::TreeEvaluator::compareIntegersForOrder(node, cg);
-   cg->setVMThreadRequired(true);
    generateConditionalJumpInstruction(JAE4, node, cg, true);
-   cg->setVMThreadRequired(false);
    return NULL;
    }
 
 TR::Register *OMR::X86::TreeEvaluator::unsignedIntegerIfCmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::TreeEvaluator::compareIntegersForOrder(node, cg);
-   cg->setVMThreadRequired(true);
    generateConditionalJumpInstruction(JA4, node, cg, true);
-   cg->setVMThreadRequired(false);
    return NULL;
    }
 
 TR::Register *OMR::X86::TreeEvaluator::unsignedIntegerIfCmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::TreeEvaluator::compareIntegersForOrder(node, cg);
-   cg->setVMThreadRequired(true);
    generateConditionalJumpInstruction(JBE4, node, cg, true);
-   cg->setVMThreadRequired(false);
    return NULL;
    }
 
@@ -2429,8 +2397,6 @@ static bool virtualGuardHelper(TR::Node *node, TR::CodeGenerator *cg)
 
    TR::LabelSymbol *label = node->getBranchDestination()->getNode()->getLabel();
 
-   cg->setVMThreadRequired(true);
-
    TR::Instruction *vgnopInstr = generateVirtualGuardNOPInstruction(node, site, deps, label, cg);
    TR::Instruction *patchPoint = cg->getVirtualGuardForPatching(vgnopInstr);
 
@@ -2450,8 +2416,6 @@ static bool virtualGuardHelper(TR::Node *node, TR::CodeGenerator *cg)
          generatePatchableCodeAlignmentInstruction(TR::X86PatchableCodeAlignmentInstruction::spinLoopAtomicRegions, vgnopInstr, cg);
          }
       }
-
-   cg->setVMThreadRequired(false);
 
    cg->recursivelyDecReferenceCount(node->getFirstChild());
    cg->recursivelyDecReferenceCount(node->getSecondChild());

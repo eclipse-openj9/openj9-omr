@@ -800,9 +800,6 @@ class OMR_EXTENSIBLE CodeGenerator
 
    TR::RealRegister *getRealVMThreadRegister() {return _realVMThreadRegister;}
    void setRealVMThreadRegister(TR::RealRegister *defvmtr) {_realVMThreadRegister = defvmtr;}
-   uint32_t getVMThreadLiveCount() {return _vmThreadLiveCount;}
-   uint32_t decVMThreadLiveCount() {return (--_vmThreadLiveCount);}
-   uint32_t incVMThreadLiveCount() {return (++_vmThreadLiveCount);}
 
    TR::Instruction *getVMThreadSpillInstruction() {return _vmThreadSpillInstr;}
    void setVMThreadSpillInstruction(TR::Instruction *i);
@@ -1879,7 +1876,6 @@ class OMR_EXTENSIBLE CodeGenerator
 
    int32_t _lowestSavedReg;
 
-   uint32_t _vmThreadLiveCount;
    uint32_t _largestOutgoingArgSize;
 
    uint32_t _estimatedCodeLength;

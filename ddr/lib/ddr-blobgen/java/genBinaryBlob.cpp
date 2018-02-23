@@ -915,6 +915,10 @@ JavaBlobGenerator::formatFieldType(Field *field, string *fieldType)
 				stream << "]";
 			}
 			*fieldType += stream.str();
+		} else if (0 != field->_bitField) {
+			stringstream stream;
+			stream << ":" << field->_bitField;
+			*fieldType += stream.str();
 		}
 	}
 

@@ -242,12 +242,12 @@ waitingMain(void *arg)
 	J9AbstractThread *self = (J9AbstractThread *)omrthread_self();
 	J9ThreadAbstractMonitor *mon = (J9ThreadAbstractMonitor *)testdata->waitSync;
 
-	EXPECT_EQ(0, (self->flags & J9THREAD_FLAG_INTERRUPTABLE));
-	EXPECT_EQ(0, (self->flags & J9THREAD_FLAG_INTERRUPTED));
-	EXPECT_EQ(0, (self->flags & J9THREAD_FLAG_PRIORITY_INTERRUPTED));
-	EXPECT_EQ(0, (self->flags & J9THREAD_FLAG_BLOCKED));
-	EXPECT_EQ(0, (self->flags & J9THREAD_FLAG_WAITING));
-	EXPECT_EQ(J9THREAD_FLAG_ABORTED, (self->flags & J9THREAD_FLAG_ABORTED));
+	EXPECT_EQ(0u, (self->flags & J9THREAD_FLAG_INTERRUPTABLE));
+	EXPECT_EQ(0u, (self->flags & J9THREAD_FLAG_INTERRUPTED));
+	EXPECT_EQ(0u, (self->flags & J9THREAD_FLAG_PRIORITY_INTERRUPTED));
+	EXPECT_EQ(0u, (self->flags & J9THREAD_FLAG_BLOCKED));
+	EXPECT_EQ(0u, (self->flags & J9THREAD_FLAG_WAITING));
+	EXPECT_TRUE(J9THREAD_FLAG_ABORTED == (self->flags & J9THREAD_FLAG_ABORTED));
 	EXPECT_TRUE(NULL == self->monitor);
 	EXPECT_TRUE(NULL == mon->waiting);
 	/*assert((J9AbstractThread *)mon->owner == self);*/

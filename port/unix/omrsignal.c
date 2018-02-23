@@ -1099,7 +1099,7 @@ registerSignalHandlerWithOS(OMRPortLibrary *portLibrary, uint32_t portLibrarySig
 	newAction.sa_flags |= SA_NODEFER;
 
 #if defined(J9ZOS390)
-	/* z/OS doesn't have posix semaphores. 
+	/* z/OS doesn't have Posix semaphores.
 	 * A side effect of that is that we don't want to re-enter the masterASyncHandler
 	 * Therefore, mask all async signals for the masterASyncHandler. The signal(s) will be queued and delivered
 	 * to the masterASyncHandler once the handler returns. No signals will be lost.
@@ -1153,7 +1153,7 @@ registerSignalHandlerWithOS(OMRPortLibrary *portLibrary, uint32_t portLibrarySig
 }
 
 /**
- * The unix signal number is converted to the corresponding port library
+ * The Unix signal number is converted to the corresponding port library
  * signal number.
  *
  * Some signals have subtypes which are detailed in the siginfo_t structure.
@@ -1194,7 +1194,7 @@ mapUnixSignalToPortLib(uint32_t signalNo, siginfo_t *sigInfo)
 }
 
 /**
- * The defined port library signal is converted to the corresponding unix
+ * The defined port library signal is converted to the corresponding Unix
  * signal number.
  *
  * Note that FPE signal codes (subtypes) all map to the same signal number and are not included
@@ -1283,14 +1283,14 @@ registerMasterHandlers(OMRPortLibrary *portLibrary, uint32_t flags, uint32_t all
 	flagsWithoutHandlers = flagsSignalsOnly & (~signalsWithMasterHandlers);
 
 	if (0 != flagsWithoutHandlers) {
-		/* we be registerin' some handlers */
+		/* registering some handlers */
 		uint32_t portSignalType = 0;
 
 		/* portSignalType starts off at 4 as it is the smallest synch
 		 * signal. In the case that we are registering an asynch
 		 * signal, flagsWithoutHandlers already has masked off the
 		 * synchronous signals (eg. "4") so we are not at risk of registering a handler
-		 * for an incorrect sigal
+		 * for an incorrect signal
 		 */
 		for (portSignalType = 4; portSignalType < allowedSubsetOfFlags; portSignalType = portSignalType << 1) {
 			/* iterate through all the  signals and register the master handler for those that don't have one yet */
@@ -1321,7 +1321,7 @@ initializeSignalTools(OMRPortLibrary *portLibrary)
 		return -1;
 	}
 
-	/* use this to record the last signal that occured such that we can call omrsig_handler in omrexit_shutdown_and_exit */
+	/* use this to record the last signal that occurred such that we can call omrsig_handler in omrexit_shutdown_and_exit */
 	if (omrthread_tls_alloc(&tlsKeyCurrentSignal)) {
 		return -1;
 	}

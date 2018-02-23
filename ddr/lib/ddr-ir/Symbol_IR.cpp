@@ -300,6 +300,10 @@ MergeVisitor::visitNamespace(NamespaceUDT *type) const
 {
 	/* Merge by adding the fields/subtypes of '_other' into 'type'. */
 	NamespaceUDT *other = (NamespaceUDT *)_other;
+	/* This type may be derived from only a forward declaration; if so, update the size now. */
+	if (0 == type->_sizeOf) {
+		type->_sizeOf = other->_sizeOf;
+	}
 	_ir->mergeTypes(type->getSubUDTS(), other->getSubUDTS(), type, _merged);
 	return DDR_RC_OK;
 }

@@ -610,7 +610,7 @@ public:
 	}
 
 	/**
-	 * Subtracts a number from the value at a specific memory location asn an atomic operation.
+	 * Subtracts a number from the value at a specific memory location as an atomic operation.
 	 * Subtracts the value <b>value</b> from the value stored at memory location pointed
 	 * to by <b>address</b>.
 	 *

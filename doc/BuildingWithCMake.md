@@ -1,5 +1,5 @@
 <!--
-Copyright (c) 2016, 2017 IBM Corp. and others
+Copyright (c) 2016, 2018 IBM Corp. and others
 
 This program and the accompanying materials are made available under
 the terms of the Eclipse Public License 2.0 which accompanies this
@@ -66,10 +66,16 @@ Compilation of major components is controlled with the following On/Off flags:
 Additionally, most testing can be enabled with the `OMR_FVTEST` flag.
 For more information on testing, see below.
 
-### The glue directory
+### The glue libraries
 
-The `OMR_GLUE` variable points the build system at the glue directory. It defaults to `example/glue`. The glue directory
-is treated as a normal CMake subdirectory.
+With the move to CMake the glue as been separated out into a number of components, specified by the following variables:
+* `OMR_GC_GLUE_TARGET`
+* `OMR_UTIL_GLUE_TARGET`
+* `OMR_RAS_GLUE_TARGET`
+* `OMR_CORE_GLUE_TARGET`
+
+Each variable should specify the name of an interface library, which will be linked into the corresponding OMR library.
+Eg. `OMR_GC_GLUE_TARGET` will be linked into `omrgc`, `OMR_UTIL_GLUE_TARGET` will be linked into `omrutil` and so on.
 
 ## Running tests
 

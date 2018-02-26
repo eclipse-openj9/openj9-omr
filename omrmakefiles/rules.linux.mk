@@ -152,16 +152,10 @@ endif
 ### Platform Flags
 ###
 
-## Debugging Infomation
+## Debugging Information
 # Indicate that GNU debug symbols are being used
 ifeq (gcc,$(OMR_TOOLCHAIN))
-  ifeq (arm,$(OMR_HOST_ARCH))
-    USE_GNU_DEBUG:=1
-  endif
-  ifeq (ppc,$(OMR_HOST_ARCH))
-    USE_GNU_DEBUG:=1
-  endif
-  ifeq (x86,$(OMR_HOST_ARCH))
+  ifneq (,$(filter arm ppc s390 x86,$(OMR_HOST_ARCH)))
     USE_GNU_DEBUG:=1
   endif
 endif

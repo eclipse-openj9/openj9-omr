@@ -1063,7 +1063,7 @@ registerSignalHandlerWithOS(OMRPortLibrary *portLibrary, uint32_t portLibrarySig
 	int unixSignalNo = mapPortLibSignalToUnix(portLibrarySignalNo);
 	struct sigaction newAction;
 
-	memset(&newAction, 0, sizeof(sigaction));
+	memset(&newAction, 0, sizeof(struct sigaction));
 
 	/* do not block any signals */
 	if (0 != sigemptyset(&newAction.sa_mask)) {

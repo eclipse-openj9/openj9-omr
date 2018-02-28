@@ -615,8 +615,8 @@ MM_Scavenger::reportGCEnd(MM_EnvironmentStandard *env)
 void
 MM_Scavenger::masterClearHotFieldStats()
 {
-	if (_extensions->scavengerTraceHotFields) {
-		_extensions->scavengerHotFieldStats.clear();
+	if (NULL != _extensions->scavengerHotFieldStats) {
+		_extensions->scavengerHotFieldStats->clear();
 	}
 }
 
@@ -627,8 +627,8 @@ MM_Scavenger::masterClearHotFieldStats()
 void
 MM_Scavenger::masterReportHotFieldStats()
 {
-	if (_extensions->scavengerTraceHotFields) {
-		_extensions->scavengerHotFieldStats.reportStats(_omrVM);
+	if (NULL != _extensions->scavengerHotFieldStats) {
+		_extensions->scavengerHotFieldStats->reportStats(_omrVM);
 	}
 }
 
@@ -638,7 +638,7 @@ MM_Scavenger::masterReportHotFieldStats()
 void
 MM_Scavenger::clearHotFieldStats(MM_EnvironmentBase *env)
 {
-	if (_extensions->scavengerTraceHotFields) {
+	if (NULL != env->_hotFieldStats) {
 		getHotFieldStats(env)->clear();
 	}
 }
@@ -649,8 +649,8 @@ MM_Scavenger::clearHotFieldStats(MM_EnvironmentBase *env)
 void
 MM_Scavenger::mergeHotFieldStats(MM_EnvironmentBase *env)
 {
-	if (_extensions->scavengerTraceHotFields) {
-		_extensions->scavengerHotFieldStats.mergeStats(getHotFieldStats(env));
+	if (NULL != _extensions->scavengerHotFieldStats) {
+		_extensions->scavengerHotFieldStats->mergeStats(getHotFieldStats(env));
 	}
 }
 
@@ -1652,7 +1652,7 @@ MM_Scavenger::scavengeObjectSlots(MM_EnvironmentStandard *env, MM_CopyScanCacheS
 			/* scan to end of array if can't split */
 			((GC_IndexableObjectScanner *)objectScanner)->scanToLimit();
 		}
-	} else if (_extensions->scavengerTraceHotFields) {
+	} else if (NULL != env->_hotFieldStats) {
 		/* maintain hotness of fields copied from this object */
 		hotFieldStats = getHotFieldStats(env);
 		hotFieldStats->_objectPtr = objectPtr;
@@ -1756,7 +1756,7 @@ MM_Scavenger::incrementalScavengeObjectSlots(MM_EnvironmentStandard *env, omrobj
 
 	/* Set up for maintaining hot field stats for scalar objects */
 	MM_ScavengerHotFieldStats *hotFieldStats = NULL;
-	if (!objectScanner->isIndexableObject() && _extensions->scavengerTraceHotFields) {
+	if (!objectScanner->isIndexableObject() && (NULL != env->_hotFieldStats)) {
 		/* maintain hotness of fields copied from this object */
 		hotFieldStats = getHotFieldStats(env);
 		hotFieldStats->_objectPtr = objectPtr;

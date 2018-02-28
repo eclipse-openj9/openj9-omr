@@ -370,7 +370,7 @@ public:
 	void reportScavengeStart(MM_EnvironmentStandard *env);
 	void reportScavengeEnd(MM_EnvironmentStandard *env, bool lastIncrement);
 
-	MMINLINE MM_ScavengerHotFieldStats *getHotFieldStats(MM_EnvironmentBase *env) { return &(env->_hotFieldStats); }
+	MMINLINE MM_ScavengerHotFieldStats *getHotFieldStats(MM_EnvironmentBase *env) { return env->_hotFieldStats; }
 	void masterClearHotFieldStats();
 	void masterReportHotFieldStats();
 	void clearHotFieldStats(MM_EnvironmentBase *env);

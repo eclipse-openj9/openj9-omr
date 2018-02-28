@@ -27,11 +27,32 @@
 
 #if defined(OMR_GC_MODRON_SCAVENGER) || defined(OMR_GC_VLHGC)
 
-bool
-MM_ScavengerHotFieldStats::initialize(MM_EnvironmentBase *env)
+MM_ScavengerHotFieldStats*
+MM_ScavengerHotFieldStats::newInstance(MM_GCExtensionsBase *extensions)
 {
-	_objectModel = &(env->getExtensions()->objectModel);
+	MM_ScavengerHotFieldStats *scavengerHotFieldStats = (MM_ScavengerHotFieldStats *)extensions->getForge()->allocate(sizeof(MM_ScavengerHotFieldStats), OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
+	if (NULL != scavengerHotFieldStats) {
+		new(scavengerHotFieldStats) MM_ScavengerHotFieldStats();
+		if (!scavengerHotFieldStats->initialize(extensions)) {
+			scavengerHotFieldStats->kill(extensions);
+			scavengerHotFieldStats = NULL;
+		}
+	}
+	return scavengerHotFieldStats;
+}
+
+bool
+MM_ScavengerHotFieldStats::initialize(MM_GCExtensionsBase *extensions)
+{
+	_objectModel = &(extensions->objectModel);
 	return true;
+}
+
+void
+MM_ScavengerHotFieldStats::kill(MM_GCExtensionsBase *extensions)
+{
+	tearDown(extensions);
+	extensions->getForge()->free(this);
 }
 
 #endif /* defined(OMR_GC_MODRON_SCAVENGER) || defined(OMR_GC_VLHGC) */

@@ -167,41 +167,35 @@ AS_IF([test "$cross_compiling" = "yes"],
 	[OMR_CROSS_COMPILE=1],
 	[OMR_CROSS_COMPILE=0])
 
-AS_IF([test "$OMR_CROSS_CONFIGURE" = "yes"],
-# If we are cross-configuring, clear CC so that the default platform compiler can be detected.
-# Warn that compiler and feature detection tests will be invalid.
-# The user must configure all options manually.
-  [AS_UNSET([CC])
-	AS_ECHO([["## ------------------------------------------------------- ##"]])
-	AS_ECHO([["## WARNING                                                 ##"]])
-	AS_ECHO([["## The current machine cannot compile the target platform. ##"]])
-	AS_ECHO([["## Compiler and feature detection tests will not be valid. ##"]])
-	AS_ECHO([["## ------------------------------------------------------- ##"]])]
-)
-
-# If OMR_TARGET_DATASIZE is set, validate it and use it.
-# Otherwise, detect it with a compiler test.
-AS_IF([test "x$OMR_TARGET_DATASIZE" = "x"],
-	[AC_CHECK_SIZEOF([void *])])
-
+# If not cross-configuring and OMR_TARGET_DATASIZE is not set,
+# detect it with a compiler test and validate it, otherwise
+# just validate it.
 AC_MSG_CHECKING([OMR_TARGET_DATASIZE])
-AS_IF([test "x$OMR_TARGET_DATASIZE" != "x"],
-	[AS_CASE([$OMR_TARGET_DATASIZE],
-		[31],[],
-		[32],[],
-		[64],[],
-		[AC_MSG_ERROR([An invalid value was provided for OMR_TARGET_DATASIZE: $OMR_TARGET_DATASIZE])]
-	)],
-	[AS_IF([test "$ac_cv_sizeof_void_p" = 8],
-		[OMR_TARGET_DATASIZE=64],
-		[OMR_TARGET_DATASIZE=32]
-	)]
+if test "x$OMR_CROSS_CONFIGURE" != "xyes"
+then
+	AS_IF([test "x$OMR_TARGET_DATASIZE" = "x"],
+		[
+		AC_CHECK_SIZEOF([void *])
+		AS_IF([test "$ac_cv_sizeof_void_p" = 8],
+			[OMR_TARGET_DATASIZE=64],
+			[OMR_TARGET_DATASIZE=32])
+		]
+	)
+fi
+AS_CASE([$OMR_TARGET_DATASIZE],
+	[31],[],
+	[32],[],
+	[64],[],
+	[AC_MSG_ERROR([An invalid value was provided for OMR_TARGET_DATASIZE: $OMR_TARGET_DATASIZE])]
 )
 AC_MSG_RESULT([$OMR_TARGET_DATASIZE])
 
 AC_MSG_CHECKING([OMR_TOOLCHAIN])
-AS_IF([test "x$OMR_TOOLCHAIN" = "x"],
-	[OMRCFG_CATEGORIZE_TOOLCHAIN([OMR_TOOLCHAIN])])
+if test "x$OMR_CROSS_CONFIGURE" != "xyes"
+then
+	AS_IF([test "x$OMR_TOOLCHAIN" = "x"],
+		[OMRCFG_CATEGORIZE_TOOLCHAIN([OMR_TOOLCHAIN])])
+fi
 AS_CASE([$OMR_TOOLCHAIN],
 	[gcc],[],
 	[xlc],[],
@@ -447,13 +441,18 @@ OMRCFG_DEFINE_FLAG_OFF([OMR_THR_SPIN_WAKE_CONTROL])
 
 OMRCFG_DEFINE_FLAG_OFF([OMR_THR_YIELD_ALG])
 OMRCFG_DEFINE_FLAG_OFF([OMR_GC_OBJECT_MAP])
+
 OMRCFG_DEFINE_FLAG([OMR_ENV_LITTLE_ENDIAN],[],
-	[AC_C_BIGENDIAN(
+	[
+	if test "x$OMR_CROSS_CONFIGURE" != "xyes"
+	then
+	AC_C_BIGENDIAN(
 		[OMRCFG_DISABLE_FLAG([OMR_ENV_LITTLE_ENDIAN])],
 		[OMRCFG_ENABLE_FLAG([OMR_ENV_LITTLE_ENDIAN])],
 		[],
-		[OMRCFG_DISABLE_FLAG([OMR_ENV_LITTLE_ENDIAN])]
-	)]
+		[OMRCFG_DISABLE_FLAG([OMR_ENV_LITTLE_ENDIAN])])
+	fi
+	]
 )
 
 OMRCFG_DEFINE_FLAG([OMR_GC_TLH_PREFETCH_FTA],[],
@@ -466,19 +465,29 @@ OMRCFG_DEFINE_FLAG([OMR_GC_TLH_PREFETCH_FTA],[],
 OMRCFG_DEFINE_FLAG_OFF([OMR_ENV_GCC])
 
 OMRCFG_DEFINE_FLAG([OMR_PORT_NUMA_SUPPORT],[],
-	[AC_CHECK_HEADERS_ONCE([numa.h],
+	[
+	if test "x$OMR_CROSS_CONFIGURE" != "xyes"
+	then
+	# The no-op ":" prevents this if-then from being left empty
+	# if AC_CHECK_HEADERS_ONCE has already been evaluated.
+	:
+	AC_CHECK_HEADERS_ONCE([numa.h],
 		[OMRCFG_ENABLE_FLAG([OMR_PORT_NUMA_SUPPORT])],
-		[OMRCFG_DISABLE_FLAG([OMR_PORT_NUMA_SUPPORT])]
-	)]
+		[OMRCFG_DISABLE_FLAG([OMR_PORT_NUMA_SUPPORT])])
+	fi
+	]
 )
 
-AS_IF([test "$OMR_CROSS_CONFIGURE" != yes -a "$OMR_PORT_NUMA_SUPPORT" = 1 -a "$OMR_HOST_OS" = linux],
-	[AC_CHECK_HEADERS_ONCE([numa.h],
-		[],
-		[AC_MSG_ERROR([numa.h was not found. Please install numa-dev])]
-	)],
-	[]
-)
+if test "x$OMR_CROSS_CONFIGURE" != "xyes"
+then
+	AS_IF([test "$OMR_PORT_NUMA_SUPPORT" = 1 -a "$OMR_HOST_OS" = linux],
+		[AC_CHECK_HEADERS_ONCE([numa.h],
+			[],
+			[AC_MSG_ERROR([numa.h was not found. Please install numa-dev])])
+		],
+		[]
+	)
+fi
 
 OMRCFG_DEFINE_FLAG_OFF([OMR_OPT_CUDA])
 OMRCFG_DEFINE_FLAG_OFF([OMR_PORT_ALLOCATE_TOP_DOWN])
@@ -554,10 +563,19 @@ AS_IF([test "$enable_DDR" = yes -a "$cross_compiling" != "yes"],
 		],
 		[
 			# other host types: look for DWARF support
-			AC_CHECK_HEADERS([dwarf.h libdwarf/dwarf.h libdwarf.h libdwarf/libdwarf.h])
-			AC_SEARCH_LIBS([dwarf_init], [dwarf], [], [], [])
-			AC_SEARCH_LIBS([dwarf_init], [dwarf], [], [], [-lelf])
-			AC_SEARCH_LIBS([elf_begin], [elf], [], [], [])
+			if test "x$OMR_CROSS_CONFIGURE" != "xyes"
+			then
+				AC_CHECK_HEADERS([dwarf.h libdwarf/dwarf.h libdwarf.h libdwarf/libdwarf.h])
+				AC_SEARCH_LIBS([dwarf_init], [dwarf], [], [], [])
+				AC_SEARCH_LIBS([dwarf_init], [dwarf], [], [], [-lelf])
+				AC_SEARCH_LIBS([elf_begin], [elf], [], [], [])
+			else
+				# Can't run AC_CHECK_HEADERS when cross-configuring.
+				# If DDR is enabled set these flags and hope for the best,
+				# otherwise the build will fail even if the headers are available.
+				AC_DEFINE([HAVE_DWARF_H])
+				AC_DEFINE([HAVE_LIBDWARF_H])
+			fi
 		]
 	)]
 )

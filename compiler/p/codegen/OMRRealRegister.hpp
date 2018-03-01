@@ -110,10 +110,7 @@ class OMR_EXTENSIBLE RealRegister : public OMR::RealRegister
 
    void setRegisterFieldRA(uint32_t *instruction);
 
-   void setRegisterFieldRB(uint32_t *instruction)
-      {
-      *instruction |= fullRegBinaryEncodings[_registerNumber] << pos_RB;
-      }
+   void setRegisterFieldRB(uint32_t *instruction);
 
    void setRegisterFieldRC(uint32_t *instruction)
       {

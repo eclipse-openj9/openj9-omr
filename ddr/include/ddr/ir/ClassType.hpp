@@ -24,7 +24,6 @@
 
 #include "ddr/ir/NamespaceUDT.hpp"
 
-class EnumMember;
 class Field;
 
 using std::vector;
@@ -34,7 +33,6 @@ class ClassType : public NamespaceUDT
 public:
 	bool _isComplete; /* as opposed to just a forward declaration */
 	vector<Field *> _fieldMembers;
-	vector<EnumMember *> _enumMembers; /* used for anonymous enums*/
 
 	explicit ClassType(size_t size, unsigned int lineNumber = 0);
 	virtual ~ClassType();

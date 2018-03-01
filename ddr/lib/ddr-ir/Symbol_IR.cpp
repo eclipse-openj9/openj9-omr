@@ -19,8 +19,6 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#include "ddr/config.hpp"
-
 #include "ddr/ir/Symbol_IR.hpp"
 
 #include <assert.h>
@@ -32,15 +30,16 @@
 #include "ddr/std/unordered_map.hpp"
 #include <vector>
 
-#include "ddr/ir/ClassType.hpp"
 #include "ddr/ir/ClassUDT.hpp"
 #include "ddr/ir/EnumUDT.hpp"
-#include "ddr/ir/EnumUDT.hpp"
-#include "ddr/ir/NamespaceUDT.hpp"
-#include "ddr/ir/NamespaceUDT.hpp"
-#include "ddr/ir/TypedefUDT.hpp"
 #include "ddr/ir/TypedefUDT.hpp"
 #include "ddr/ir/UnionUDT.hpp"
+
+#undef DEBUG_PRINT_TYPES
+
+#if defined(DEBUG_PRINT_TYPES)
+#include "ddr/ir/TypePrinter.hpp"
+#endif
 
 using std::map;
 using std::stack;
@@ -304,6 +303,7 @@ MergeVisitor::visitNamespace(NamespaceUDT *type) const
 	if (0 == type->_sizeOf) {
 		type->_sizeOf = other->_sizeOf;
 	}
+	_ir->mergeEnums(&type->_enumMembers, &other->_enumMembers);
 	_ir->mergeTypes(type->getSubUDTS(), other->getSubUDTS(), type, _merged);
 	return DDR_RC_OK;
 }
@@ -331,7 +331,6 @@ MergeVisitor::visitComposite(ClassType *type) const
 	visitNamespace(type);
 	ClassType *other = (ClassType *)_other;
 	_ir->mergeFields(&type->_fieldMembers, &other->_fieldMembers, type, _merged);
-	_ir->mergeEnums(&type->_enumMembers, &other->_enumMembers);
 	return DDR_RC_OK;
 }
 
@@ -634,9 +633,27 @@ Symbol_IR::addTypeToMap(Type *type)
 	}
 }
 
+#if defined(DEBUG_PRINT_TYPES)
+static Symbol_IR *previousIR = NULL;
+#endif /* DEBUG_PRINT_TYPES */
+
 DDR_RC
 Symbol_IR::mergeIR(Symbol_IR *other)
 {
+#if defined(DEBUG_PRINT_TYPES)
+	TypePrinter printer(TypePrinter::LITERALS);
+
+	if (this != previousIR) {
+		printf("\n");
+		printf("== Merge before ==\n");
+		printer.printUDTs(_types);
+		previousIR = this;
+	}
+	printf("\n");
+	printf("== Merge source ==\n");
+	printer.printUDTs(other->_types);
+#endif /* DEBUG_PRINT_TYPES */
+
 	DDR_RC rc = DDR_RC_OK;
 
 	/* Create map of this source IR of type full name to type. Use it to replace all
@@ -662,6 +679,12 @@ Symbol_IR::mergeIR(Symbol_IR *other)
 			break;
 		}
 	}
+
+#if defined(DEBUG_PRINT_TYPES)
+	printf("\n");
+	printf("== Merge result ==\n");
+	printer.printUDTs(_types);
+#endif /* DEBUG_PRINT_TYPES */
 
 	return rc;
 }

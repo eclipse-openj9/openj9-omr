@@ -21,8 +21,6 @@
 
 #include "ddr/ir/EnumUDT.hpp"
 
-#include "ddr/config.hpp"
-
 EnumUDT::EnumUDT(unsigned int lineNumber)
 	: UDT(4, lineNumber)
 {
@@ -36,10 +34,12 @@ EnumUDT::~EnumUDT()
 	_enumMembers.clear();
 }
 
-string
-EnumUDT::getSymbolKindName()
+const string &
+EnumUDT::getSymbolKindName() const
 {
-	return "enum";
+	static const string enumKind("enum");
+
+	return enumKind;
 }
 
 DDR_RC

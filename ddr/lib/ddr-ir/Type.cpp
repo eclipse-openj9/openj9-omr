@@ -44,10 +44,12 @@ Type::getFullName()
 	return _name;
 }
 
-string
-Type::getSymbolKindName()
+const string &
+Type::getSymbolKindName() const
 {
-	return "";
+	static const string typeKind("");
+
+	return typeKind;
 }
 
 DDR_RC
@@ -59,7 +61,7 @@ Type::acceptVisitor(const TypeVisitor &visitor)
 bool
 Type::insertUnique(Symbol_IR *ir)
 {
-	/* No-op: since Types aren't printed, there's no need to check if they're duplicates either */
+	/* No-op: since Types aren't printed, there's no need to check if they're duplicates either. */
 	return false;
 }
 

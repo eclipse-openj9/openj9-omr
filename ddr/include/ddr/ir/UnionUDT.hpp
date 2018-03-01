@@ -31,7 +31,7 @@ public:
 	virtual ~UnionUDT();
 
 	virtual DDR_RC acceptVisitor(const TypeVisitor &visitor);
-	virtual string getSymbolKindName();
+	virtual const string &getSymbolKindName() const;
 
 	bool operator==(const Type & rhs) const;
 	virtual bool compareToUnion(const UnionUDT &) const;

@@ -35,7 +35,7 @@ public:
 	explicit ClassUDT(size_t size, bool isClass = true, unsigned int lineNumber = 0);
 	virtual ~ClassUDT();
 
-	virtual string getSymbolKindName();
+	virtual const string &getSymbolKindName() const;
 
 	virtual DDR_RC acceptVisitor(const TypeVisitor &visitor);
 

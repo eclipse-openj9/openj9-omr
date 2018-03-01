@@ -23,12 +23,12 @@
 #define GENSUPERSET_HPP
 
 #include "ddr/blobgen/genBlob.hpp"
-#include "ddr/ir/Symbol_IR.hpp"
-#include "ddr/std/sstream.hpp"
 #include "ddr/std/unordered_map.hpp"
 
+#include <set>
 #include <string.h>
 
+using std::set;
 using std::string;
 
 class Field;
@@ -46,13 +46,17 @@ private:
 	intptr_t _file;
 	OMRPortLibrary *_portLibrary;
 	bool _printEmptyTypes;
+	string _pendingTypeHeading;
 
 	void initBaseTypedefSet();
 	void convertJ9BaseTypedef(Type *type, string *name);
 	void replaceBaseTypedef(Type *type, string *name);
 	DDR_RC getFieldType(Field *field, string *assembledTypeName, string *simpleTypeName);
+	DDR_RC printType(Type *type, Type *superClass);
+	DDR_RC printPendingType();
 	DDR_RC printFieldMember(Field *field, const string &prefix);
-	void printConstantMember(const string &name);
+	DDR_RC printConstantMember(const string &name);
+	DDR_RC print(const string &text);
 
 	friend class SupersetFieldVisitor;
 	friend class SupersetVisitor;

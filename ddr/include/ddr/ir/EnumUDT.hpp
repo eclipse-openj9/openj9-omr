@@ -35,7 +35,7 @@ public:
 	explicit EnumUDT(unsigned int lineNumber = 0);
 	virtual ~EnumUDT();
 
-	virtual string getSymbolKindName();
+	virtual const string &getSymbolKindName() const;
 
 	virtual DDR_RC acceptVisitor(const TypeVisitor &visitor);
 

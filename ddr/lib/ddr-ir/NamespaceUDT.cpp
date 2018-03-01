@@ -21,18 +21,22 @@
 
 #include "ddr/ir/NamespaceUDT.hpp"
 
-#include <stdio.h>
-
 NamespaceUDT::NamespaceUDT(unsigned int lineNumber)
 	: UDT(0, lineNumber)
 	, _subUDTs()
 	, _macros()
+	, _enumMembers()
 {
 }
 
 NamespaceUDT::~NamespaceUDT()
 {
-	for (vector<UDT *>::const_iterator it = this->_subUDTs.begin(); it != this->_subUDTs.end(); ++it) {
+	for (vector<EnumMember *>::iterator it = _enumMembers.begin(); it != _enumMembers.end(); ++it) {
+		delete *it;
+	}
+	_enumMembers.clear();
+
+	for (vector<UDT *>::const_iterator it = _subUDTs.begin(); it != _subUDTs.end(); ++it) {
 		delete *it;
 	}
 	_subUDTs.clear();
@@ -58,10 +62,12 @@ NamespaceUDT::insertUnique(Symbol_IR *ir)
 	return UDT::insertUnique(ir);
 }
 
-string
-NamespaceUDT::getSymbolKindName()
+const string &
+NamespaceUDT::getSymbolKindName() const
 {
-	return "namespace";
+	static const string namespaceKind("namespace");
+
+	return namespaceKind;
 }
 
 void

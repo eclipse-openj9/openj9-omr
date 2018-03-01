@@ -48,6 +48,14 @@ DDR_RC getOptions(OMRPortLibrary *portLibrary, int argc, char *argv[], const cha
 	const char **blobFile, const char **overrideListFile, vector<string> *debugFiles, const char **blacklistFile, bool *printEmptyTypes);
 DDR_RC readFileList(OMRPortLibrary *portLibrary, const char *debugFileList, vector<string> *debugFiles);
 
+#undef DEBUG_PRINT_TYPES
+
+#if defined(DEBUG_PRINT_TYPES)
+#include "ddr/ir/TypePrinter.hpp"
+
+static const TypePrinter printer(TypePrinter::FIELDS | TypePrinter::LITERALS | TypePrinter::MACROS);
+#endif /* DEBUG_PRINT_TYPES */
+
 int
 main(int argc, char *argv[])
 {
@@ -102,11 +110,27 @@ main(int argc, char *argv[])
 	Symbol_IR ir;
 	if ((DDR_RC_OK == rc) && !debugFiles.empty()) {
 		rc = scanner.startScan(&portLibrary, &ir, &debugFiles, blacklistFile);
+
+#if defined(DEBUG_PRINT_TYPES)
+		printf("== scan results ==\n");
+		for (vector<Type *>::const_iterator type = ir._types.begin();
+				(DDR_RC_OK == rc) && (type != ir._types.end()); ++type) {
+			(*type)->acceptVisitor(printer);
+		}
+#endif /* DEBUG_PRINT_TYPES */
 	}
 
 	if (DDR_RC_OK == rc) {
 		/* Remove duplicate types. */
 		ir.removeDuplicates();
+
+#if defined(DEBUG_PRINT_TYPES)
+		printf("== after removing duplicates ==\n");
+		for (vector<Type *>::const_iterator type = ir._types.begin();
+				(DDR_RC_OK == rc) && (type != ir._types.end()); ++type) {
+			(*type)->acceptVisitor(printer);
+		}
+#endif /* DEBUG_PRINT_TYPES */
 	}
 
 	/* Read macros. */

@@ -46,11 +46,14 @@ class DwarfVisitor : public TypeVisitor
 {
 private:
 	DwarfScanner * const _scanner;
+	NamespaceUDT * const _outerUDT;
 	Dwarf_Die const _die;
 
 public:
-	DwarfVisitor(DwarfScanner *scanner, Dwarf_Die die)
-		: _scanner(scanner), _die(die)
+	DwarfVisitor(DwarfScanner *scanner, NamespaceUDT *outerUDT, Dwarf_Die die)
+		: _scanner(scanner)
+		, _outerUDT(outerUDT)
+		, _die(die)
 	{
 	}
 
@@ -690,7 +693,7 @@ DwarfScanner::addDieToIR(Dwarf_Die die, Dwarf_Half tag, NamespaceUDT *outerUDT, 
 			 * for types defined within namespaces, do not add it to the main list of types.
 			 */
 			isSubUDT = isSubUDT || (string::npos != newType->getFullName().find("::"));
-			rc = newType->acceptVisitor(DwarfVisitor(this, die));
+			rc = newType->acceptVisitor(DwarfVisitor(this, outerUDT, die));
 			DEBUGPRINTF("Done scanning child info for %s", newType->_name.c_str());
 		}
 
@@ -906,7 +909,7 @@ DwarfVisitor::visitEnum(EnumUDT *newUDT) const
 
 				if (DW_TAG_enumerator == childTag) {
 					/* The child is an enumerator member. */
-					if (DDR_RC_OK != _scanner->addEnumMember(childDie, (EnumUDT *)newUDT)) {
+					if (DDR_RC_OK != _scanner->addEnumMember(childDie, _outerUDT, newUDT)) {
 						rc = DDR_RC_ERROR;
 						break;
 					}
@@ -988,7 +991,7 @@ DwarfScanner::scanClassChildren(NamespaceUDT *newClass, Dwarf_Die die)
 					rc = DDR_RC_ERROR;
 					break;
 				} else if ((NULL != newClass) && (NULL != innerUDT) && (NULL == innerUDT->getNamespace())) {
-					/* We only add it to list of subUDTs if innerUDT's _outerNamespace is NULL, because there should only be one outer UDT per inner UDT */
+					/* We only add it to list of subUDTs if innerUDT's _outerNamespace is NULL, because there should only be one outer UDT per inner UDT. */
 					/* Check that the subUDT wasn't already added when the type was found as a stub type */
 					if (newClass->_subUDTs.end() == std::find(newClass->_subUDTs.begin(), newClass->_subUDTs.end(), innerUDT)) {
 						innerUDT->_outerNamespace = newClass;
@@ -1053,17 +1056,25 @@ DwarfVisitor::visitUnion(UnionUDT *newType) const
 
 /* Add an enum member to an enum UDT from a Die. */
 DDR_RC
-DwarfScanner::addEnumMember(Dwarf_Die die, EnumUDT *newEnum)
+DwarfScanner::addEnumMember(Dwarf_Die die, NamespaceUDT *outerUDT, EnumUDT *newEnum)
 {
 	Dwarf_Error error = NULL;
 	DDR_RC rc = DDR_RC_OK;
+	vector<EnumMember *> *members = NULL;
+
+	/* literals of a nested anonymous enum are collected in the enclosing namespace */
+	if ((NULL != outerUDT) && newEnum->isAnonymousType()) {
+		members = &outerUDT->_enumMembers;
+	} else {
+		members = &newEnum->_enumMembers;
+	}
 
 	/* Check if an enum member with this name is already present. */
 	string enumName = "";
 	rc = getName(die, &enumName);
 
 	bool memberAlreadyExists = false;
-	for (vector<EnumMember *>::iterator m = newEnum->_enumMembers.begin(); m != newEnum->_enumMembers.end(); ++m) {
+	for (vector<EnumMember *>::iterator m = members->begin(); m != members->end(); ++m) {
 		if ((*m)->_name == enumName) {
 			memberAlreadyExists = true;
 			break;
@@ -1095,7 +1106,7 @@ DwarfScanner::addEnumMember(Dwarf_Die die, EnumUDT *newEnum)
 			goto AddEnumMemberDone;
 		}
 		newEnumMember->_value = value;
-		newEnum->_enumMembers.push_back(newEnumMember);
+		members->push_back(newEnumMember);
 	}
 
 AddEnumMemberDone:

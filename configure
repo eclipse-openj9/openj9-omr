@@ -748,6 +748,8 @@ OMR_PRODUCT_DESCRIPTION
 OMR_COMPANY_COPYRIGHT
 OMR_COMPANY_NAME
 OMR_CROSS_CONFIGURE
+OMR_TOOLS_CXX
+OMR_TOOLS_CC
 OMR_TOOLCHAIN
 OMR_TARGET_DATASIZE
 OMR_HOST_ARCH
@@ -906,6 +908,8 @@ OMR_HOST_OS
 OMR_HOST_ARCH
 OMR_TARGET_DATASIZE
 OMR_TOOLCHAIN
+OMR_TOOLS_CC
+OMR_TOOLS_CXX
 OMR_CROSS_CONFIGURE
 OMR_COMPANY_NAME
 OMR_COMPANY_COPYRIGHT
@@ -1710,6 +1714,11 @@ Some influential environment variables:
               One of: 31,32,64
   OMR_TOOLCHAIN
               The toolchain used to build the package. One of: gcc,xlc,msvc
+  OMR_TOOLS_CC
+              The C compiler to use for building tools (can differ from CC).
+  OMR_TOOLS_CXX
+              The C++ compiler to use for building tools (can differ from
+              CXX).
   OMR_CROSS_CONFIGURE
               Indicates that configure is not being run on a system that is
               capable of building the package. Compiler and feature detection
@@ -8286,7 +8295,7 @@ cat >>$CONFIG_STATUS <<_ACEOF || ac_write_fail=1
 # INIT-COMMANDS
 #
 if test "$cross_compiling" = "yes"; then :
-  OMR_HOSTCONFIG_ENV="CC= CXX="
+  OMR_HOSTCONFIG_ENV="CC=$OMR_TOOLS_CC CXX=$OMR_TOOLS_CXX"
 fi
 
 _ACEOF

@@ -48,6 +48,8 @@ AC_ARG_VAR([OMR_HOST_OS], [The operating system where the package will run. One 
 AC_ARG_VAR([OMR_HOST_ARCH], [The architecture of the CPU where the package will run. One of: aarch64,arm,ppc,s390,x86])
 AC_ARG_VAR([OMR_TARGET_DATASIZE], [Specifies whether the package will run in 32- or 64-bit mode. One of: 31,32,64])
 AC_ARG_VAR([OMR_TOOLCHAIN], [The toolchain used to build the package. One of: gcc,xlc,msvc])
+AC_ARG_VAR([OMR_TOOLS_CC], [The C compiler to use for building tools (can differ from CC).])
+AC_ARG_VAR([OMR_TOOLS_CXX], [The C++ compiler to use for building tools (can differ from CXX).])
 AC_ARG_VAR([OMR_CROSS_CONFIGURE],
 	[Indicates that configure is not being run on a system that is capable of building the package.
 	Compiler and feature detection tests will be invalid. All options must be configured manually.
@@ -677,6 +679,6 @@ AC_CONFIG_HEADERS([include_core/omrcfg.h:include_core/omrcfg.h.in])
 AC_CONFIG_COMMANDS([toolconfigure],
 	[(cd tools && sh ./configure $OMR_HOSTCONFIG_ENV)],
 	[AS_IF([test "$cross_compiling" = "yes"],
-		[OMR_HOSTCONFIG_ENV="CC= CXX="])])
+		[OMR_HOSTCONFIG_ENV="CC=$OMR_TOOLS_CC CXX=$OMR_TOOLS_CXX"])])
 
 AC_OUTPUT

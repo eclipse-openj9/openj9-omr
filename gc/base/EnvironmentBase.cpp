@@ -100,8 +100,11 @@ MM_EnvironmentBase::initialize(MM_GCExtensionsBase *extensions)
 	}
 
 #if defined(OMR_GC_MODRON_SCAVENGER) || defined(OMR_GC_VLHGC)
-	if (!_hotFieldStats.initialize(this)) {
-		return false;
+	if (extensions->scavengerTraceHotFields) {
+		_hotFieldStats = MM_ScavengerHotFieldStats::newInstance(getExtensions());
+		if (NULL == _hotFieldStats) {
+			return false;
+		}
 	}
 #endif /* defined(OMR_GC_MODRON_SCAVENGER) || defined(OMR_GC_VLHGC) */
 
@@ -151,7 +154,10 @@ MM_EnvironmentBase::tearDown(MM_GCExtensionsBase *extensions)
 #endif /* OMR_GC_SEGREGATED_HEAP */
 
 #if defined(OMR_GC_MODRON_SCAVENGER) || defined(OMR_GC_VLHGC)
-	_hotFieldStats.tearDown(this);
+	if (NULL != _hotFieldStats) {
+		_hotFieldStats->kill(this->getExtensions());
+		_hotFieldStats = NULL;
+	}
 #endif /* defined(OMR_GC_MODRON_SCAVENGER) || defined(OMR_GC_VLHGC) */
 
 	if(NULL != _objectAllocationInterface) {

@@ -92,7 +92,15 @@ private:
 	 */
 	uintptr_t _connectionHistgm[sizeof(uintptr_t)*8][SizeScavengerHotness][SizeScavengerObjectConnectorType];
 
+protected:
+	bool initialize(MM_GCExtensionsBase *extensions);	
+	void tearDown(MM_GCExtensionsBase *extensions) {} 
+	
 public:
+
+	static MM_ScavengerHotFieldStats * newInstance(MM_GCExtensionsBase *extensions);	
+	void kill(MM_GCExtensionsBase *extensions); 
+
 	/**
 	 * When no information is known about the hotness of a field, then the default is hot.
 	 * This clears to this default value
@@ -117,13 +125,7 @@ public:
 			}
 		}
 	}
-	
-	MM_ScavengerHotFieldStats() { clear(); }
-	
-	bool initialize(MM_EnvironmentBase *env);
-	
-	void tearDown(MM_EnvironmentBase *env) {}
-	
+		
 	/**
 	 * Merges the given hot fields statistics into this one
 	 * @param statsToMerge the statistics to merge
@@ -295,6 +297,18 @@ public:
 		omrtty_printf(" }\n");
 		omrtty_printf("{ Hot Field Statistics nursery-tenured: end }\n");
 	}
+	
+	/**
+	 * Create a SvavengerHotFieldStats object.
+	 */
+
+	MM_ScavengerHotFieldStats() :
+		_objectModel(NULL)
+		, _hotness(0)
+	{
+		clear(); 
+	}	
 };
+
 #endif /* defined(OMR_GC_MODRON_SCAVENGER) || defined(OMR_GC_VLHGC) */
 #endif /* SCAVENGERHOTFIELDSTATS_HPP_ */

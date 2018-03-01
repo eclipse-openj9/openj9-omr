@@ -4804,6 +4804,9 @@ MM_Scavenger::scavengeIncremental(MM_EnvironmentBase *env)
 
 			_activeSubSpace->flip(env, MM_MemorySubSpaceSemiSpace::set_allocate);
 
+			/* prepare for the second pass (direct refs) */
+			_extensions->rememberedSet.startProcessingSublist();
+
 			_concurrentState = concurrent_state_scan;
 
 			if (isBackOutFlagRaised()) {
@@ -4953,9 +4956,6 @@ MM_Scavenger::masterThreadConcurrentCollect(MM_EnvironmentBase *env)
 	Assert_MM_true(concurrent_state_scan == _concurrentState);
 
 	clearIncrementGCStats(env, false);
-
-	/* prepare for the second pass (direct refs) */
-	_extensions->rememberedSet.startProcessingSublist();
 
 	MM_ConcurrentScavengeTask scavengeTask(env, _dispatcher, this, MM_ConcurrentScavengeTask::SCAVENGE_SCAN, UDATA_MAX, &_forceConcurrentTermination, env->_cycleState);
 	/* Concurrent background task will run with different (typically lower) number of threads. */

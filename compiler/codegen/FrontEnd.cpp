@@ -318,15 +318,6 @@ TR_FrontEnd::getLineNumberForMethodAndByteCodeIndex(TR_OpaqueMethodBlock *, int3
    return -1;
    }
 
-
-TR_OpaqueClassBlock *
-TR_FrontEnd::getClassFromStatic(void *p)
-   {
-   notImplemented("getClassFromStatic");
-   return 0;
-   }
-
-
 TR_OpaqueMethodBlock *
 TR_FrontEnd::getInlinedCallSiteMethod(TR_InlinedCallSite *ics)
    {

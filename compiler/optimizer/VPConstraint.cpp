@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1343,7 +1343,8 @@ TR::VPConstString *TR::VPConstString::create(OMR::ValuePropagation *vp, TR::Symb
 
    if (vpConstStringCriticalSection.hasVMAccess())
       {
-      void *string = *((void **) symRef->getSymbol()->castToStaticSymbol()->getStaticAddress());
+      uintptrj_t stringStaticAddr = (uintptrj_t) symRef->getSymbol()->castToStaticSymbol()->getStaticAddress();
+      uintptrj_t string = vp->comp()->fej9()->getStaticReferenceFieldAtAddress(stringStaticAddr);
       // with no vmaccess, staticAddress cannot be guaranteed to remain the same
       // during the analysis. so use a different hash input
       //
@@ -1352,11 +1353,11 @@ TR::VPConstString *TR::VPConstString::create(OMR::ValuePropagation *vp, TR::Symb
 
       // since vmaccess has been acquired already, chars cannot be null
       //
-      int32_t len = vp->comp()->fej9()->getStringLength((uintptrj_t)string);
+      int32_t len = vp->comp()->fej9()->getStringLength(string);
       int32_t i = 0;
       uint32_t hashValue = 0;
       for (int32_t i = 0; i < len && i < TR_MAX_CHARS_FOR_HASH; i++)
-         hashValue += TR::Compiler->cls.getStringCharacter(vp->comp(), (uintptrj_t)string, i);
+         hashValue += TR::Compiler->cls.getStringCharacter(vp->comp(), string, i);
 
       int32_t hash = (int32_t)(((uintptrj_t)hashValue) % VP_HASH_TABLE_SIZE);
 
@@ -1365,10 +1366,13 @@ TR::VPConstString *TR::VPConstString::create(OMR::ValuePropagation *vp, TR::Symb
       for (entry = vp->_constraintsHashTable[hash]; entry; entry = entry->next)
          {
          constraint = entry->constraint->asConstString();
-         if (constraint &&
-             string == *((void **) constraint->_symRef->getSymbol()->castToStaticSymbol()->getStaticAddress()))
+         if (constraint)
             {
-            return constraint;
+            uintptrj_t constraintStaticAddr = (uintptrj_t)constraint->_symRef->getSymbol()->castToStaticSymbol()->getStaticAddress();
+            if (string == vp->comp()->fej9()->getStaticReferenceFieldAtAddress(constraintStaticAddr))
+               {
+               return constraint;
+               }
             }
          }
       constraint = new (vp->trStackMemory()) TR::VPConstString(vp->comp()->getStringClassPointer(), vp->comp(), symRef);
@@ -1388,7 +1392,8 @@ uint16_t TR::VPConstString::charAt(int32_t i, TR::Compilation * comp)
                                                       TR::VMAccessCriticalSection::tryToAcquireVMAccess);
    if (charAtCriticalSection.hasVMAccess())
       {
-      uintptrj_t string = *(uintptrj_t*)_symRef->getSymbol()->castToStaticSymbol()->getStaticAddress();
+      uintptrj_t stringStaticAddr = (uintptrj_t)_symRef->getSymbol()->castToStaticSymbol()->getStaticAddress();
+      uintptrj_t string = comp->fej9()->getStaticReferenceFieldAtAddress(stringStaticAddr);
       int32_t len = comp->fej9()->getStringLength(string);
       bool canRead = true;
       if (i < 0 || i >= len)
@@ -5820,7 +5825,8 @@ void TR::VPConstString::print(TR::Compilation * comp, TR::FILE *outFile)
                                                                      TR::VMAccessCriticalSection::tryToAcquireVMAccess);
       if (vpConstStringPrintCriticalSection.hasVMAccess())
          {
-         uintptrj_t string = *(uintptrj_t*) _symRef->getSymbol()->castToStaticSymbol()->getStaticAddress();
+         uintptrj_t stringStaticAddr = (uintptrj_t)_symRef->getSymbol()->castToStaticSymbol()->getStaticAddress();
+         uintptrj_t string = comp->fej9()->getStaticReferenceFieldAtAddress(stringStaticAddr);
          int32_t len = comp->fej9()->getStringLength(string);
          for (int32_t i = 0; i < len; ++i)
             trfprintf(outFile, "%c", TR::Compiler->cls.getStringCharacter(comp, string, i));

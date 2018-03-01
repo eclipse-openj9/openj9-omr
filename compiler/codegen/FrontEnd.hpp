@@ -211,7 +211,6 @@ public:
 
    // to J9
    virtual uintptrj_t getClassDepthAndFlagsValue(TR_OpaqueClassBlock * classPointer);
-   virtual TR_OpaqueClassBlock * getClassFromStatic(void *p);
    virtual int32_t getStringLength(uintptrj_t objectPointer);
 
    // Null-terminated.  bufferSize >= 1+getStringUTF8Length(objectPointer).  Returns buffer just for convenience.

@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 1998, 2015 IBM Corp. and others
+// Copyright (c) 1998, 2018 IBM Corp. and others
 // 
 // This program and the accompanying materials are made available under
 // the terms of the Eclipse Public License 2.0 which accompanies this
@@ -747,7 +747,7 @@ TraceEvent=Trc_MM_CopyForwardScheme_setAllocationAgeForMergedRegion Overhead=1 L
 TraceEvent=Trc_MM_SchedulingDelegate_updateGMPStats Overhead=1 Level=1 Group=reclaim Template="historicTotalIncrementalScanTimePerGMP: %lluus, incrementalScanTime:%lluus, historicBytesScannedConcurrentlyPerGMP:%zu, concurrentBytesScanned:%zu"
 
 TraceEvent=Trc_MM_SchedulingDelegate_copyForwardCompleted_efficiency Overhead=1 Level=1 Group=reclaim Template="bytesCopied=%zu, bytesDiscarded=%zu, lost=%0.2f; avgBytesCopied=%0.2f, avgBytesDiscarded=%0.2f, avgLost=%0.2f survivorRegions=%zu (incl. %zu failed evacuate regions and %zu compact regions) avgSurvivorRegions=%0.2f copyForwardRate:%0.5f avgCopyForwardRate:%0.5f"
-TraceEvent=Trc_MM_SchedulingDelegate_calculatePGCCompactionRate_liveToFreeRatio Overhead=1 Level=1 Group=reclaim Template="bytesCompacted/freeBytes ratio %f (totalLiveData %zu, totalFreeMemory %zu, fullyCompactedData %zu, reservedFreeMemory %zu, emptinessThreshold=%0.2f) surivivorSize=%zu, defragmentedMemory=%zu, freeRegionMemory=%zu, edenSizeInBytes=%zu"
+TraceEvent=Trc_MM_SchedulingDelegate_calculatePGCCompactionRate_liveToFreeRatio Obsolete Overhead=1 Level=1 Group=reclaim Template="bytesCompacted/freeBytes ratio %f (totalLiveData %zu, totalFreeMemory %zu, fullyCompactedData %zu, reservedFreeMemory %zu, emptinessThreshold=%0.2f) surivivorSize=%zu, defragmentedMemory=%zu, freeRegionMemory=%zu, edenSizeInBytes=%zu"
 
 TraceEvent=Trc_MM_CompactGroupPersistentStats_decayProjectedLiveBytesForRegions Overhead=1 Level=1 Group=aging Template="decay region %zu projectedLiveBytes %.4fM->%.4fM regionCompactGroup %zu bytesRemaining %.2fM currentAge %.2fM multiply with PrISR %f (baseSurvivalRate  %f, ageUnitsInThisGroup %f)  group %zu"
 TraceEntry=Trc_MM_CompactGroupPersistentStats_updateProjectedSurvivalRate_Entry Overhead=1 Level=1 Group=aging Template="compactGroup %zu projectedLiveBytesForNonEdenNew  %.4fM projectedLiveBytesSelectedPreviousPGC  %.4fM measuredLiveBytesAfter %.4fM (%.4fM - %.4fM) projectedLiveBytesForNonEden %.4fM"
@@ -859,3 +859,8 @@ TraceEvent=Trc_MM_ParallelDispatcher_adjustThreadCount_ReducedCPU noEnv Overhead
 
 TraceEvent=Trc_MM_Scavenger_switchConcurrentOld Obsolete Overhead=1 Level=1 Group=scavenger Template="Concurrent switch %zu"
 TraceEvent=Trc_MM_Scavenger_switchConcurrent Overhead=1 Level=1 Group=scavenger Template="Concurrent switch state %zu global/local count %zu/%zu"
+
+TraceEvent=Trc_MM_SchedulingDelegate_calculatePGCCompactionRate_liveToFreeRatio1 Overhead=1 Level=1 Group=reclaim Template="totalLiveData %zu (totalLiveDataInCollectableRegions %zu, totalLiveDataInNonCollectibleRegions %zu, fullyCompactedData %zu)"
+TraceEvent=Trc_MM_SchedulingDelegate_calculatePGCCompactionRate_liveToFreeRatio2 Overhead=1 Level=1 Group=reclaim Template="totalFreeMemory %zu (freeMemoryInCollectibleRegions %zu, freeMemoryInNonCollectibleRegions %zu, freeRegionMemory %zu, freeMemoryInFullyCompactedRegions %zu)"
+TraceEvent=Trc_MM_SchedulingDelegate_calculatePGCCompactionRate_liveToFreeRatio3 Overhead=1 Level=1 Group=reclaim Template="totalRegions %zu (collectibleRegions %zu, nonCollectibleRegions %zu, fullyCompactedRegions %zu, freeRegions %zu)"
+TraceEvent=Trc_MM_SchedulingDelegate_calculatePGCCompactionRate_liveToFreeRatio4 Overhead=1 Level=1 Group=reclaim Template="bytesCompacted/freeBytes ratio %f (edenSizeInBytes %zu, surivivorSize %zu, reservedFreeMemory %zu), emptinessThreshold %0.2f, defragmentedMemory %zu, estimatedFreeMemory %zu"

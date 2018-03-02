@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -492,22 +492,38 @@ OMR::CodeGenPhase::performSetupForInstructionSelectionPhase(TR::CodeGenerator * 
                   }
                }
             }
-         else if (node->getOpCodeValue() == TR::aloadi &&
-                  !unAnchorableAloadiNodes->isSet(node->getGlobalIndex()))
+         else
             {
-            TR::TreeTop* anchorTreeTop = TR::TreeTop::create(comp, TR::Node::create(TR::treetop, 1, node));
-            TR::TreeTop* appendTreeTop = iter.currentTree();
+            bool shouldAnchorNode = false;
 
-            if (currentTreeTopToappendTreeTop.count(appendTreeTop) > 0)
+            if (node->getOpCodeValue() == TR::aloadi &&
+                !unAnchorableAloadiNodes->isSet(node->getGlobalIndex()))
                {
-               appendTreeTop = currentTreeTopToappendTreeTop[appendTreeTop];
+               shouldAnchorNode = true;
+               }
+            else if (node->getOpCodeValue() == TR::aload &&
+                     node->getSymbol()->isStatic() &&
+                     node->getSymbol()->isCollectedReference())
+               {
+               shouldAnchorNode = true;
                }
 
-            // Anchor the aloadi before the current treetop
-            appendTreeTop->insertBefore(anchorTreeTop);
-            currentTreeTopToappendTreeTop[iter.currentTree()] = anchorTreeTop;
+            if (shouldAnchorNode)
+               {
+               TR::TreeTop* anchorTreeTop = TR::TreeTop::create(comp, TR::Node::create(TR::treetop, 1, node));
+               TR::TreeTop* appendTreeTop = iter.currentTree();
 
-            traceMsg(comp, "GuardedStorage: Anchored  %p to treetop = %p\n", node, anchorTreeTop);
+               if (currentTreeTopToappendTreeTop.count(appendTreeTop) > 0)
+                  {
+                  appendTreeTop = currentTreeTopToappendTreeTop[appendTreeTop];
+                  }
+
+               // Anchor the aload/aloadi before the current treetop
+               appendTreeTop->insertBefore(anchorTreeTop);
+               currentTreeTopToappendTreeTop[iter.currentTree()] = anchorTreeTop;
+
+               traceMsg(comp, "GuardedStorage: Anchored  %p to treetop = %p\n", node, anchorTreeTop);
+               }
             }
          }
 

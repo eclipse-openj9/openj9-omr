@@ -21,53 +21,61 @@
 
 #include "ddr/ir/Macro.hpp"
 
-#include "ddr/std/sstream.hpp"
-#include <ctype.h>
-#include <string.h>
-#include <stdint.h>
 #include <algorithm>
+#include <ctype.h>
+#include <stdint.h>
+#include <string.h>
 #include <vector>
 
 using std::string;
-using std::stringstream;
 
 enum Symbol {
-	OR_OR,		/* || */
-	AND_AND,	/* && */
-	OR,			/* | */
-	XOR,		/* ^ */
-	AND,		/* & */
-	EQ_EQ,		/* == */
-	NOT_EQ,		/* != */
-	GT,			/* > */
-	LT,			/* < */
-	GT_EQ,		/* >= */
-	LT_EQ,		/* <= */
-	GT_GT,		/* >> */
-	LT_LT,		/* << */
-	PLUS,		/* + */
-	MINUS,		/* - */
-	MULT,		/* * */
-	DIV,		/* / */
-	REM,		/* % */
-	NOT,		/* ! */
-	TILDE,		/* ~ */
-	LPAREN,		/* ( */
-	RPAREN,		/* ) */
-	END			/* '\0' or null terminator */
+	OR_OR,   /* || */
+	AND_AND, /* && */
+	OR,      /* |  */
+	XOR,     /* ^  */
+	AND,     /* &  */
+	EQ_EQ,   /* == */
+	NOT_EQ,  /* != */
+	GT,      /* >  */
+	LT,      /* <  */
+	GT_EQ,   /* >= */
+	LT_EQ,   /* <= */
+	GT_GT,   /* >> */
+	LT_LT,   /* << */
+	PLUS,    /* +  */
+	MINUS,   /* -  */
+	MULT,    /* *  */
+	DIV,     /* /  */
+	REM,     /* %  */
+	NOT,     /* !  */
+	TILDE,   /* ~  */
+	LPAREN,  /* (  */
+	RPAREN,  /* )  */
+	END      /* '\0' or null terminator */
 };
 
 class MacroScanner
 {
 private:
+	struct KnownType
+	{
+		const char *name;
+		size_t bitWidth;
+		bool isSigned;
+	};
+
 	char const *_cursor;
 
-	static bool isadigit(char c, int base);
-	static int digitvalue(char c);
+	static bool isDigit(char c, int32_t base);
+	static int32_t digitValue(char c);
+
+	bool readIdentifier(string *ret);
+	void skipWhitespace();
 
 public:
-	MacroScanner(char const *cString) :
-		_cursor(cString)
+	MacroScanner(char const *cString)
+		: _cursor(cString)
 	{
 	}
 
@@ -80,7 +88,7 @@ class MacroParser
 {
 /* data members */
 private:
-	MacroScanner _scanner; /*handles reading characters from expression string*/
+	MacroScanner _scanner; /* handles reading characters from expression string */
 
 /* function members */
 private:
@@ -108,8 +116,7 @@ public:
 };
 
 /**
- * Helper function to read the value of a number from a string, this checks if
- * a character is a digit in a specified base
+ * Helper function to check if a character is a digit in a specified base.
  *
  * @param[in] c: character being checked
  * @param[in] base: the base used to check if the char is valid
@@ -117,13 +124,14 @@ public:
  * @return: if the character is a valid digit in the specified base
  */
 bool
-MacroScanner::isadigit(char c, int base)
+MacroScanner::isDigit(char c, int32_t base)
 {
 	if (base > 10) {
-		return ((c >= '0') && (c <= '9')) || ((c >= 'a') && (c < ('a' + base - 10)))
-				|| ((c >= 'A') && (c < ('A' + base - 10)));
+		return (('0' <= c) && (c <= '9'))
+			|| (('a' <= c) && (c < ('a' + base - 10)))
+			|| (('A' <= c) && (c < ('A' + base - 10)));
 	} else {
-		return (c >= '0') && (c < ('0' + base));
+		return ('0' <= c) && (c < ('0' + base));
 	}
 }
 
@@ -136,22 +144,49 @@ MacroScanner::isadigit(char c, int base)
  *
  * @return: integer value of the digit
  */
-int
-MacroScanner::digitvalue(char c)
+int32_t
+MacroScanner::digitValue(char c)
 {
-	if ((c >= 'a') && (c <= 'z')) {
+	if (('a' <= c) && (c <= 'z')) {
 		return 10 + c - 'a';
-	} else if ((c >= 'A') && (c <= 'Z')) {
+	} else if (('A' <= c) && (c <= 'Z')) {
 		return 10 + c - 'A';
 	} else {
 		return c - '0';
 	}
 }
 
+void
+MacroScanner::skipWhitespace()
+{
+	while (isspace(*_cursor)) {
+		_cursor += 1;
+	}
+}
+
+bool
+MacroScanner::readIdentifier(string *ret)
+{
+	skipWhitespace();
+
+	const char *start = _cursor;
+
+	if (isalpha(*start)) {
+		do {
+			_cursor += 1;
+		} while (('_' == *_cursor) || isalnum(*_cursor));
+
+		ret->assign(start, _cursor - start);
+		return true;
+	}
+
+	return false;
+}
+
 /**
- * Checks if the cursor is at a valid set of type cast expressions, after
- * encountering a left parenthesis. If it is, determine the signedness and bit
- * width of the type cast. If not, move the cursor back to the left parenthesis.
+ * Checks if the cursor is at a valid type cast expression, after encountering
+ * a left parenthesis. If it is, determine the signedness and bit width of the
+ * type cast. If not, move the cursor back to the left parenthesis.
  *
  * @param[out] isSigned: the signedness of the resulting typecast
  * @param[out] bitWidth: the bit width of the resulting typecast
@@ -161,130 +196,92 @@ MacroScanner::digitvalue(char c)
 bool
 MacroScanner::validTypeCast(bool *isSigned, size_t *bitWidth)
 {
-	static const string fixedWidthTypes[] = {"int8_t", "int16_t", "int32_t", "int64_t",
-	 "uint8_t", "uint16_t", "uint32_t", "uint64_t",
-	 "intptr_t", "uintptr_t"};
+	char const *const savedCursor = _cursor;
 
 	if (!atSymbol(LPAREN)) {
 		return false;
 	}
 
-	char const *typecastStart = _cursor;
-	_cursor = strchr(_cursor, ')');
-	if (NULL == _cursor) {
-		_cursor = typecastStart - 1;
+	std::vector<string> types;
+
+	for (string type; readIdentifier(&type);) {
+		types.push_back(type);
+	}
+
+	if (!atSymbol(RPAREN)) {
+		_cursor = savedCursor;
 		return false;
 	}
 
-	string typeExpr(typecastStart, _cursor);
-	stringstream ss(typeExpr);
-	std::vector<string> types;
-	string word;
-	bool validTypes = false;
+	if (1 == types.size()) {
+		static const KnownType knownTypes[] = {
+			/* signed standard types */
+			{ "int8_t",    8, true },
+			{ "int16_t",  16, true },
+			{ "int32_t",  32, true },
+			{ "int64_t",  64, true },
 
-	while (ss >> word) {
-		types.push_back(word);
-	}
-	if (ss.eof()) {
-		if (1 == types.size()) {
-			const string *found = std::find(fixedWidthTypes, fixedWidthTypes + 10, types.front());
-			if ((fixedWidthTypes + 0) == found) {
-				*bitWidth = 8;
-				*isSigned = true;
-				validTypes = true;
-			} else if ((fixedWidthTypes + 1) == found) {
-				*bitWidth = 16;
-				*isSigned = true;
-				validTypes = true;
-			} else if ((fixedWidthTypes + 2) == found) {
-				*bitWidth = 32;
-				*isSigned = true;
-				validTypes = true;
-			} else if ((fixedWidthTypes + 3) == found) {
-				*bitWidth = 64;
-				*isSigned = true;
-				validTypes = true;
-			} else if ((fixedWidthTypes + 4) == found) {
-				*bitWidth = 8;
-				*isSigned = false;
-				validTypes = true;
-			} else if ((fixedWidthTypes + 5) == found) {
-				*bitWidth = 16;
-				*isSigned = false;
-				validTypes = true;
-			} else if ((fixedWidthTypes + 6) == found) {
-				*bitWidth = 32;
-				*isSigned = false;
-				validTypes = true;
-			} else if ((fixedWidthTypes + 7) == found) {
-				*bitWidth = 64;
-				*isSigned = false;
-				validTypes = true;
-			} else if ((fixedWidthTypes + 8) == found) {
-				*bitWidth = sizeof(intptr_t);
-				*isSigned = true;
-				validTypes = true;
-			} else if ((fixedWidthTypes + 9) == found) {
-				*bitWidth = sizeof(uintptr_t);
-				*isSigned = false;
-				validTypes = true;
-			}
-			if (validTypes && atSymbol(RPAREN)) {
-				return validTypes;
+			/* unsigned standard types */
+			{ "uint8_t",    8, false },
+			{ "uint16_t",  16, false },
+			{ "uint32_t",  32, false },
+			{ "uint64_t",  64, false },
+
+			/* standard pointer types */
+			{ "intptr_t",  64, true },
+			{ "uintptr_t", 64, false },
+
+			/* terminator */
+			{ NULL, 0, false }
+		};
+
+		const char *type = types.front().c_str();
+
+		for (const KnownType *knownType = knownTypes; NULL != knownType->name; ++knownType) {
+			if (0 == strcmp(type, knownType->name)) {
+				*bitWidth = knownType->bitWidth;
+				*isSigned = knownType->isSigned;
+				return true;
 			}
 		}
+	}
 
-		/* C standard allows types and type modifiers in any order,
-		 * so we count the number of each type and verify it is correct
-		 */
-		size_t numChar = std::count(types.begin(), types.end(), "char");
-		size_t numShort = std::count(types.begin(), types.end(), "short");
-		size_t numInt = std::count(types.begin(), types.end(), "int");
-		size_t numLong = std::count(types.begin(), types.end(), "long");
-		size_t numSigned = std::count(types.begin(), types.end(), "signed");
-		size_t numUnsigned = std::count(types.begin(), types.end(), "unsigned");
+	/*
+	 * Standard C allows types and modifiers in any order, so we count
+	 * the number of occurrences of each word to verify it is reasonable.
+	 */
+	size_t numChar = std::count(types.begin(), types.end(), "char");
+	size_t numShort = std::count(types.begin(), types.end(), "short");
+	size_t numInt = std::count(types.begin(), types.end(), "int");
+	size_t numLong = std::count(types.begin(), types.end(), "long");
+	size_t numSigned = std::count(types.begin(), types.end(), "signed");
+	size_t numUnsigned = std::count(types.begin(), types.end(), "unsigned");
 
-		/* total count of valid types should equal the size of types vector */
-		if (types.size() == (numChar + numShort + numInt + numLong + numSigned + numUnsigned)) {
-			if (numUnsigned > 0) {
-				*isSigned = false;
-			} else {
-				*isSigned = true;
-			}
-			/* (1 >= numSigned + numUnsigned) checks that there can only be one
-			 * of 'unsigned' or 'signed' in the types
-			 */
-			if ((1 == numChar) && (1 >= numSigned + numUnsigned) && (0 == numShort)
-					&& (0 == numInt) && (0 == numLong)) {
+	/* Types are signed unless explicitly 'unsigned'. */
+	*isSigned = 0 == numUnsigned;
+
+	/* If this default width survives, this cast will be ignored. */
+	*bitWidth = 0;
+
+	/* total count of valid types should equal the size of types vector */
+	if (types.size() == (numChar + numShort + numInt + numLong + numSigned + numUnsigned)) {
+		/* recognize types that include at most one of 'signed' or 'unsigned' */
+		if (1 >= numSigned + numUnsigned) {
+			if ((1 == numChar) && (0 == numShort) && (0 == numInt) && (0 == numLong)) {
 				*bitWidth = sizeof(char) * 8;
-				validTypes = true;
-			} else if ((1 == numShort) && (1 >= numSigned + numUnsigned)
-					&& (0 == numChar) && (1 >= numInt) && (0 == numLong)) {
+			} else if ((1 == numShort) && (0 == numChar) && (1 >= numInt) && (0 == numLong)) {
 				*bitWidth = sizeof(short) * 8;
-				validTypes = true;
-			} else if ((1 == numInt) && (1 >= numSigned + numUnsigned)
-					&& (0 == numChar) && (0 == numShort) && (0 == numLong)) {
+			} else if ((1 == numInt) && (0 == numChar) && (0 == numShort) && (0 == numLong)) {
 				*bitWidth = sizeof(int) * 8;
-				validTypes = true;
-			} else if ((1 == numLong) && (1 >= numSigned + numUnsigned)
-					&& (0 == numChar) && (0 == numShort) && (1 >= numInt)) {
+			} else if ((1 == numLong) && (0 == numChar) && (0 == numShort) && (1 >= numInt)) {
 				*bitWidth = sizeof(long) * 8;
-				validTypes = true;
-			} else if ((2 == numLong) && (1 >= numSigned + numUnsigned)
-					&& (0 == numChar) && (0 == numShort) && (1 >= numInt)) {
+			} else if ((2 == numLong) && (0 == numChar) && (0 == numShort) && (1 >= numInt)) {
 				*bitWidth = sizeof(long long) * 8;
-				validTypes = true;
-			} else if ((1 >= numSigned + numUnsigned) && (0 == numChar)
-					&& (0 == numShort) && (0 == numInt) && (0 == numLong)) {
-				*bitWidth = 0;
-				validTypes = true;
 			}
 		}
 	}
-	if (!(validTypes && atSymbol(RPAREN))) {
-		_cursor = typecastStart - 1;
-	}
-	return validTypes;
+
+	return true;
 }
 
 /**
@@ -294,11 +291,9 @@ MacroScanner::validTypeCast(bool *isSigned, size_t *bitWidth)
 bool
 MacroScanner::atSymbol(Symbol sym)
 {
-	while (isspace(_cursor[0])) {
-		_cursor += 1;
-	}
+	skipWhitespace();
 
-	switch(sym) {
+	switch (sym) {
 	case OR_OR:
 		if (0 == strncmp(_cursor, "||", 2)) {
 			_cursor += 2;
@@ -447,11 +442,9 @@ bool
 MacroScanner::readNumber(int64_t *ret)
 {
 	uint64_t retval = 0;
-	int base = 0;
+	int32_t base = 0;
 
-	while (isspace(_cursor[0])) {
-		_cursor += 1;
-	}
+	skipWhitespace();
 
 	if (!(isdigit(_cursor[0]))) {
 		return false;
@@ -472,9 +465,9 @@ MacroScanner::readNumber(int64_t *ret)
 		base = 10;
 	}
 
-	while (isadigit(_cursor[0], base)) {
+	while (isDigit(_cursor[0], base)) {
 		retval *= base;
-		retval += digitvalue(_cursor[0]);
+		retval += digitValue(_cursor[0]);
 		_cursor += 1;
 	}
 
@@ -483,15 +476,15 @@ MacroScanner::readNumber(int64_t *ret)
 	 */
 	bool seenL = false;
 	bool seenU = false;
-	for (int i = 0; _cursor[0] && (i < 3); i++, _cursor++) {
+	for (int32_t i = 0; _cursor[0] && (i < 3); ++i, ++_cursor) {
 		if (('l' == _cursor[0]) || ('L' == _cursor[0])) {
 			if (seenL) {
 				return false;
 			}
 			seenL = true;
-			//case of 'L's must match
+			// case of 'L's must match
 			if (_cursor[0] == _cursor[1]) {
-				_cursor +=1;
+				_cursor += 1;
 			} else if (('l' == _cursor[1]) || ('L' == _cursor[1])) {
 				return false;
 			}
@@ -545,10 +538,9 @@ MacroParser::logicalOr(int64_t *ret)
 					return false;
 				}
 			} else {
-				break;
+				return true;
 			}
 		}
-		return true;
 	}
 	return false;
 }
@@ -574,10 +566,9 @@ MacroParser::logicalAnd(int64_t *ret)
 					return false;
 				}
 			} else {
-				break;
+				return true;
 			}
 		}
-		return true;
 	}
 	return false;
 }
@@ -603,10 +594,9 @@ MacroParser::bitwiseOr(int64_t *ret)
 					return false;
 				}
 			} else {
-				break;
+				return true;
 			}
 		}
-		return true;
 	}
 	return false;
 }
@@ -632,10 +622,9 @@ MacroParser::bitwiseXor(int64_t *ret)
 					return false;
 				}
 			} else {
-				break;
+				return true;
 			}
 		}
-		return true;
 	}
 	return false;
 }
@@ -661,10 +650,9 @@ MacroParser::bitwiseAnd(int64_t *ret)
 					return false;
 				}
 			} else {
-				break;
+				return true;
 			}
 		}
-		return true;
 	}
 	return false;
 }
@@ -697,10 +685,9 @@ MacroParser::equalNeq(int64_t *ret)
 					return false;
 				}
 			} else {
-				break;
+				return true;
 			}
 		}
-		return true;
 	}
 	return false;
 }
@@ -746,10 +733,9 @@ MacroParser::comparison(int64_t *ret)
 					return false;
 				}
 			} else {
-				break;
+				return true;
 			}
 		}
-		return true;
 	}
 	return false;
 }
@@ -782,10 +768,9 @@ MacroParser::bitshift(int64_t *ret)
 					return false;
 				}
 			} else {
-				break;
+				return true;
 			}
 		}
-		return true;
 	}
 	return false;
 }
@@ -818,10 +803,9 @@ MacroParser::addSub(int64_t *ret)
 					return false;
 				}
 			} else {
-				break;
+				return true;
 			}
 		}
-		return true;
 	}
 	return false;
 }
@@ -863,10 +847,9 @@ MacroParser::multDivRem(int64_t *ret)
 					return false;
 				}
 			} else {
-				break;
+				return true;
 			}
 		}
-		return true;
 	}
 	return false;
 }
@@ -908,24 +891,23 @@ MacroParser::unaryExpression(int64_t *ret)
 		}
 	} else if (_scanner.validTypeCast(&isSigned, &bitWidth) ) {
 		if (validSingleTerm(&operand)) {
-			switch(bitWidth) {
-			case 0:
-				*ret = (isSigned) ? (signed) operand : (unsigned) operand;
-				break;
+			switch (bitWidth) {
 			case 8:
-				*ret = (isSigned) ? (int8_t) operand : (uint8_t) operand;
+				*ret = isSigned ? (int8_t) operand : (uint8_t) operand;
 				break;
 			case 16:
-				*ret = (isSigned) ? (int16_t) operand : (uint16_t) operand;
+				*ret = isSigned ? (int16_t) operand : (uint16_t) operand;
 				break;
 			case 32:
-				*ret = (isSigned) ? (int32_t) operand : (uint32_t) operand;
-				break;
-			case 64:
-				*ret = (isSigned) ? (int64_t) operand : (uint64_t) operand;
+				*ret = isSigned ? (int32_t) operand : (uint32_t) operand;
 				break;
 			default:
-				return false;
+				/*
+				 * If the bit-width is 64 it has no meaningful effect.
+				 * Ignore casts of unknown widths.
+				 */
+				*ret = operand;
+				break;
 			}
 			return true;
 		}

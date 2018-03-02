@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2016 IBM Corp. and others
+ * Copyright (c) 2014, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -31,6 +31,8 @@
 namespace JitBuilder { class Optimizer; }
 namespace JitBuilder { typedef JitBuilder::Optimizer OptimizerConnector; }
 #endif
+
+#define TR_OVERRIDE_OPTIMIZATION_INITIALIZATION 1
 
 #include "optimizer/OMROptimizer.hpp"
 

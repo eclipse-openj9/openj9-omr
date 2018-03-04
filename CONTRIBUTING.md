@@ -1,5 +1,5 @@
 <!--
-Copyright (c) 2016, 2017 IBM Corp. and others
+Copyright (c) 2016, 2018 IBM Corp. and others
 
 This program and the accompanying materials are made available under
 the terms of the Eclipse Public License 2.0 which accompanies this
@@ -24,7 +24,7 @@ SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-excepti
 
 Thanks for your interest in this project.
 
-We welcome and enourage all kinds of contribution to the project, not only code.
+We welcome and encourage all kinds of contribution to the project, not only code.
 This includes bug reports, user experience feedback, assistance in reproducing
 issues and more.
 
@@ -64,6 +64,11 @@ A subset of the labels are documented below.
 
 * [**`cmake`**](https://github.com/eclipse/omr/labels/cmake) labels are similar
   to build/configure but they apply specifically to the Cmake configuration.
+
+* [**`compiler arch review`**](https://github.com/eclipse/omr/labels/compiler%20arch%20review)
+  labels are used to indicate a review of this issue or pull request at the
+  [OMR Compiler Architecture meeting](https://github.com/eclipse/omr/issues/2316)
+  is requested prior to committing.
 
 * [**`documentation`**](https://github.com/eclipse/omr/labels/documentation)
   labels are used for issues or enhancements to the documentation (either in
@@ -138,12 +143,22 @@ Following these guidelines will help us to merge your pull requests smoothly:
    create a better end product. Committers will wait until after you've removed
    the WIP prefix to merge your changes.
 
+8. If you are contributing a change to the compiler technology that involves modifications
+   to the Testarossa IL (including, but not limited to, adding a new IL opcode, changing
+   the properties of an opcode, or adding a new datatype) or, in the opinion of a committer,
+   a fundamental element of compiler infrastructure, a committer will request that this
+   pull request be presented at an upcoming
+   [OMR Compiler Architecture meeting](https://github.com/eclipse/omr/issues/2316)
+   to invite community discussion prior to merging.  Issues of the same nature may
+   also be asked to be discussed before the same architecture meeting prior to
+   producing a pull request.
+
 ### Downstream Dependencies
 
-If a downstream project consuming OMR has a dependency on the contents of your pull 
-request, i.e. the pull request should not be merged until all downstream preparations 
-have been complete, you as the contributor of the pull request may use the WIP prefix in 
-addition to comment in the said pull request to inform the committer of your 
+If a downstream project consuming OMR has a dependency on the contents of your pull
+request, i.e. the pull request should not be merged until all downstream preparations
+have been complete, you as the contributor of the pull request may use the WIP prefix in
+addition to comment in the said pull request to inform the committer of your
 particular circumstances for merging. That is, you may request a review of the pull
 request even though it's marked WIP, informing the committer of your desire to
 coordinate when the PR is merged. Once all downstream preparations have been complete

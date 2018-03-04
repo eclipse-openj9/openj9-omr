@@ -34,6 +34,7 @@
 
 #if defined(OMR_VALGRIND_MEMCHECK)
 #include "MemcheckWrapper.hpp"
+#undef OMR_VALGRIND_MEMCHECK
 #endif /* defined(OMR_VALGRIND_MEMCHECK) */
 
 /**

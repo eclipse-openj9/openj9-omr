@@ -1415,7 +1415,8 @@ MM_Scavenger::copy(MM_EnvironmentStandard *env, MM_ForwardedHeader* forwardedHea
 #endif /* J9VM_INTERP_NATIVE_SUPPORT */
 
 #if defined(OMR_VALGRIND_MEMCHECK)
-valgrindMempoolAlloc(_extensions,(uintptr_t) destinationObjectPtr,(uintptr_t)objectCopySizeInBytes);
+//		valgrindMempoolAlloc(_extensions,(uintptr_t) destinationObjectPtr,(uintptr_t)objectCopySizeInBytes);
+		VALGRIND_MAKE_MEM_UNDEFINED((uintptr_t) destinationObjectPtr,(uintptr_t)objectCopySizeInBytes);
 #endif /* defined(OMR_VALGRIND_MEMCHECK) */
 
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
@@ -1446,7 +1447,12 @@ valgrindMempoolAlloc(_extensions,(uintptr_t) destinationObjectPtr,(uintptr_t)obj
 		}
 
 #if defined(OMR_VALGRIND_MEMCHECK)
-valgrindResizeObject(_extensions, (uintptr_t) forwardedHeader->getObject(),objectCopySizeInBytes,sizeof(MM_ForwardedHeader));
+		uintptr_t ValgrindSizeCalc = (uintptr_t) _extensions->objectModel.getConsumedSizeInBytesWithHeader(destinationObjectPtr);
+		valgrindMempoolAlloc(_extensions, (uintptr_t) destinationObjectPtr, ValgrindSizeCalc);
+		valgrindFreeObject(_extensions,(uintptr_t) forwardedHeader->getObject());
+
+		//Object is freed (for now) but the header (of that object) is still intact and needed
+		VALGRIND_MAKE_MEM_DEFINED((uintptr_t) forwardedHeader->getObject(), sizeof(MM_ForwardedHeader));
 #endif /* defined(OMR_VALGRIND_MEMCHECK) */
 
 #if defined(OMR_SCAVENGER_TRACE_COPY)
@@ -3321,7 +3327,9 @@ MM_Scavenger::backoutFixupAndReverseForwardPointersInSurvivor(MM_EnvironmentStan
 					UDATA evacuateObjectSizeInBytes = _extensions->objectModel.getConsumedSizeInBytesWithHeader(forwardedObject);					
 #if defined(OMR_VALGRIND_MEMCHECK)
 					valgrindFreeObject(_extensions, (uintptr_t) forwardedObject);
-					valgrindResizeObject(_extensions, (uintptr_t) originalObject, (uintptr_t) sizeof(MM_ForwardedHeader), (uintptr_t) evacuateObjectSizeInBytes);
+					// valgrindResizeObject(_extensions, (uintptr_t) originalObject, (uintptr_t) sizeof(MM_ForwardedHeader), (uintptr_t) evacuateObjectSizeInBytes);
+					valgrindMempoolAlloc(_extensions,(uintptr_t) originalObject, (uintptr_t) evacuateObjectSizeInBytes);
+					VALGRIND_MAKE_MEM_UNDEFINED((uintptr_t)forwardedObject, (uintptr_t) sizeof(MM_HeapLinkedFreeHeader));
 #endif /* defined(OMR_VALGRIND_MEMCHECK) */
 					MM_HeapLinkedFreeHeader* freeHeader = MM_HeapLinkedFreeHeader::getHeapLinkedFreeHeader(forwardedObject);
 					freeHeader->setNext((MM_HeapLinkedFreeHeader*)originalObject);
@@ -3335,7 +3343,7 @@ MM_Scavenger::backoutFixupAndReverseForwardPointersInSurvivor(MM_EnvironmentStan
 					 * will make free header undefined
 					 * as they are mostly used in undefined memory. But here forwardedObject
 					 * is still alive. So we manually have to make it defined again. */
-					valgrindMakeMemDefined((uintptr_t)freeHeader, (uintptr_t) sizeof(MM_HeapLinkedFreeHeader));
+					// valgrindMakeMemDefined((uintptr_t)freeHeader, (uintptr_t) sizeof(MM_HeapLinkedFreeHeader));
 #endif /* defined(OMR_VALGRIND_MEMCHECK) */					
 				}
 			}

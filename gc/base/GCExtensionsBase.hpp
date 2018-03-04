@@ -729,7 +729,7 @@ public:
 
 #if defined(OMR_VALGRIND_MEMCHECK)
 	uintptr_t valgrindMempoolAddr; /** < Memory pool's address for valgrind **/
-	J9HashTable *MemcheckHashTable = NULL; /** <Hash table to store object addresses for valgrind> **/
+	J9HashTable *MemcheckHashTable; /** <Hash table to store object addresses for valgrind> **/
 	MUTEX MemcheckHashTable_mutex;
 #endif /* defined(OMR_VALGRIND_MEMCHECK) */
 

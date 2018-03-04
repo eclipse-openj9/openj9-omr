@@ -81,6 +81,7 @@ protected:
 		/* Determine if the heap chunk belongs in the free list */
 		uintptr_t freeEntrySize = ((uintptr_t)addrTop) - ((uintptr_t)addrBase);
 		Assert_MM_true((uintptr_t)addrTop >= (uintptr_t)addrBase);
+		VALGRIND_MAKE_MEM_UNDEFINED((uintptr_t) addrBase, freeEntrySize);
 		MM_HeapLinkedFreeHeader *freeEntry = MM_HeapLinkedFreeHeader::fillWithHoles(addrBase, freeEntrySize);
 		if ((NULL != freeEntry) && (freeEntrySize >= _minimumFreeEntrySize)) {
 			Assert_MM_true(freeEntry == addrBase);

@@ -33,7 +33,7 @@
 #include "stdint.h"
 #include <valgrind/memcheck.h>
 
-#if 1
+#if 0
 #define VALGRIND_REQUEST_LOGS
 #endif
 

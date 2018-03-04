@@ -855,9 +855,10 @@ MM_MemoryPoolAddressOrderedList::expandWithRange(MM_EnvironmentBase *env, uintpt
 	}
 
 	/* No coalescing available - build a free entry from the range that will be inserted into the list */
-	MM_HeapLinkedFreeHeader *freeEntry;
+	MM_HeapLinkedFreeHeader *freeEntry = (MM_HeapLinkedFreeHeader *)lowAddress;
 
-	freeEntry = (MM_HeapLinkedFreeHeader *)lowAddress;
+	VALGRIND_MAKE_MEM_UNDEFINED((uintptr_t) freeEntry, sizeof(MM_HeapLinkedFreeHeader));
+
 	assume0((NULL == nextFreeEntry) || (nextFreeEntry > freeEntry));
 	freeEntry->setNext(nextFreeEntry);
 	freeEntry->setSize(expandSize);

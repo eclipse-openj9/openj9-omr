@@ -54,6 +54,7 @@
 #endif /* (OMR_ENV_DATA64) */
 
 #include "omrmemtag_checks.h"
+#include <valgrind/memcheck.h>
 
 static void setTagSumCheck(J9MemTag *tag, uint32_t eyeCatcher);
 static void *wrapBlockAndSetTags(struct OMRPortLibrary *portLibrary, void *memoryPointer, uintptr_t byteAmount, const char *callSite, const uint32_t category);
@@ -182,6 +183,7 @@ omrmem_allocate_memory(struct OMRPortLibrary *portLibrary, uintptr_t byteAmount,
 		Trc_PRT_memory_alloc_returned_null_2(callSite, allocationByteAmount);
 	} else {
 		pointer = wrapBlockAndSetTags(portLibrary, pointer, byteAmount, callSite, category);
+		VALGRIND_MAKE_MEM_UNDEFINED((uintptr_t) pointer, byteAmount);
 	}
 	Trc_PRT_mem_omrmem_allocate_memory_Exit(pointer);
 	return pointer;

@@ -257,6 +257,7 @@ struct  {
 
 #define OMR_CGROUP_V1_MOUNT_POINT "/sys/fs/cgroup"
 #define ROOT_CGROUP "/"
+#define OMR_PROC_PID_ONE_CGROUP_FILE "/proc/1/cgroup"
 
 /* An entry in /proc/<pid>/cgroup is of following form:
  * 	<hierarchy ID>:<subsystem>[,<subsystem>]*:<cgroup name>
@@ -3343,9 +3344,12 @@ isCgroupV1Available(struct OMRPortLibrary *portLibrary)
 	/* If tmpfs is mounted on /sys/fs/cgroup, then it indicates cgroup v1 system is available */
 	rc = statfs(OMR_CGROUP_V1_MOUNT_POINT, &buf);
 	if (0 != rc) {
-		portLibrary->error_set_last_error(portLibrary, errno, OMRPORT_ERROR_SYSINFO_SYS_FS_CGROUP_STATFS_FAILED);
+		int32_t osErrCode = errno;
+		Trc_PRT_isCgroupV1Available_statfs_failed(OMR_CGROUP_V1_MOUNT_POINT, osErrCode);
+		portLibrary->error_set_last_error(portLibrary, osErrCode, OMRPORT_ERROR_SYSINFO_SYS_FS_CGROUP_STATFS_FAILED);
 		result = FALSE;
 	} else if (TMPFS_MAGIC != buf.f_type) {
+		Trc_PRT_isCgroupV1Available_tmpfs_not_mounted(OMR_CGROUP_V1_MOUNT_POINT);
 		portLibrary->error_set_last_error_with_message_format(portLibrary, OMRPORT_ERROR_SYSINFO_SYS_FS_CGROUP_TMPFS_NOT_MOUNTED, "tmpfs is not mounted on " OMR_CGROUP_V1_MOUNT_POINT);
 		result = FALSE;
 	}
@@ -3431,6 +3435,7 @@ addCgroupEntry(struct OMRPortLibrary *portLibrary, OMRCgroupEntry **cgEntryList,
 	OMRCgroupEntry *cgEntry = portLibrary->mem_allocate_memory(portLibrary, cgEntrySize, OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
 
 	if (NULL == cgEntry) {
+		Trc_PRT_addCgroupEntry_oom_for_cgroup_entry();
 		rc = portLibrary->error_set_last_error_with_message(portLibrary, OMRPORT_ERROR_SYSINFO_MEMORY_ALLOC_FAILED, "memory allocation for cgroup entry failed");
 		goto _end;
 	}
@@ -3449,6 +3454,8 @@ addCgroupEntry(struct OMRPortLibrary *portLibrary, OMRCgroupEntry **cgEntryList,
 		cgEntry->next = first->next;
 		first->next = cgEntry;
 	}
+
+	Trc_PRT_addCgroupEntry_added_new_entry(cgEntry->subsystem, cgEntry->cgroup);
 _end:
 	return rc;
 }
@@ -3487,7 +3494,9 @@ readCgroupFile(struct OMRPortLibrary *portLibrary, int pid, BOOLEAN inContainer,
 	/* Even if 'inContainer' is TRUE, we need to parse the cgroup file to get the list of subsystems */
 	cgroupFile = fopen(cgroupFilePath, "r");
 	if (NULL == cgroupFile) {
-		rc = portLibrary->error_set_last_error(portLibrary, errno, OMRPORT_ERROR_SYSINFO_PROCESS_CGROUP_FILE_FOPEN_FAILED);
+		int32_t osErrCode = errno;
+		Trc_PRT_readCgroupFile_fopen_failed(cgroupFilePath, osErrCode);
+		rc = portLibrary->error_set_last_error(portLibrary, osErrCode, OMRPORT_ERROR_SYSINFO_PROCESS_CGROUP_FILE_FOPEN_FAILED);
 		goto _end;
 	}
 
@@ -3507,7 +3516,8 @@ readCgroupFile(struct OMRPortLibrary *portLibrary, int pid, BOOLEAN inContainer,
 		if (EOF == rc) {
 			break;
 		} else if (3 != rc) {
-			rc = portLibrary->error_set_last_error_with_message_format(portLibrary, OMRPORT_ERROR_SYSINFO_PROCESS_CGROUP_FILE_READ_FAILED, "unexpcted format of /proc/%d/cgroup file", pid);
+			Trc_PRT_readCgroupFile_unexpected_format(cgroupFilePath);
+			rc = portLibrary->error_set_last_error_with_message_format(portLibrary, OMRPORT_ERROR_SYSINFO_PROCESS_CGROUP_FILE_READ_FAILED, "unexpected format of %s", cgroupFilePath);
 			goto _end;
 		}
 		cursor = subsystems;
@@ -3553,6 +3563,7 @@ _end:
 		*cgroupEntryList = cgEntryList;
 		if (NULL != availableSubsystems) {
 			*availableSubsystems = available;
+			Trc_PRT_readCgroupFile_available_subsystems(available);
 		}
 	}
 	
@@ -3607,13 +3618,17 @@ readCgroupSubsystemFile(struct OMRPortLibrary *portLibrary, uint64_t subsystemFl
 	uint64_t availableSubsystem = portLibrary->sysinfo_cgroup_are_subsystems_available(portLibrary, subsystemFlag);
 
 	if (availableSubsystem != subsystemFlag) {
+		Trc_PRT_readCgroupSubsystemFile_subsystem_not_available(subsystemFlag);
 		rc = portLibrary->error_set_last_error_with_message_format(portLibrary, OMRPORT_ERROR_SYSINFO_CGROUP_SUBSYSTEM_UNAVAILABLE, "cgroup subsystem %s is not available", subsystemNames[subsystem]);
 		goto _end;
 	}
 	
 	cgroup = getCgroupNameForSubsystem(portLibrary, PPG_cgroupEntryList, subsystemNames[subsystem]);
 	if (NULL == cgroup) {
+		/* If the subsystem is available and supported, cgroup must not be NULL */
+		Trc_PRT_readCgroupSubsystemFile_missing_cgroup(subsystemFlag);
 		rc = portLibrary->error_set_last_error_with_message_format(portLibrary, OMRPORT_ERROR_SYSINFO_CGROUP_NAME_NOT_AVAILABLE, "cgroup name for subsystem %s is not available", subsystemNames[MEMORY]);
+		Trc_PRT_Assert_ShouldNeverHappen();
 		goto _end;
 	}
 
@@ -3622,6 +3637,7 @@ readCgroupSubsystemFile(struct OMRPortLibrary *portLibrary, uint64_t subsystemFl
 	if (fileNameLen > PATH_MAX) {
 		fileNameBuf = portLibrary->mem_allocate_memory(portLibrary, fileNameLen, OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
 		if (NULL == fileNameBuf) {
+			Trc_PRT_readCgroupSubsystemFile_oom_for_filename();
 			rc = portLibrary->error_set_last_error_with_message(portLibrary, OMRPORT_ERROR_SYSINFO_MEMORY_ALLOC_FAILED, "memory allocation for filename buffer failed");
 			goto _end;
 			
@@ -3630,7 +3646,9 @@ readCgroupSubsystemFile(struct OMRPortLibrary *portLibrary, uint64_t subsystemFl
 	portLibrary->str_printf(portLibrary, fileNameBuf, fileNameLen, "%s/%s/%s/%s", OMR_CGROUP_V1_MOUNT_POINT, subsystemNames[subsystem], cgroup, fileName);
 	file = fopen(fileNameBuf, "r");
 	if (NULL == file) {
-		portLibrary->error_set_last_error(portLibrary, errno, OMRPORT_ERROR_SYSINFO_CGROUP_MEMLIMIT_FILE_FOPEN_FAILED);
+		int32_t osErrCode = errno;
+		Trc_PRT_readCgroupSubsystemFile_fopen_failed(fileNameBuf, osErrCode);
+		rc = portLibrary->error_set_last_error(portLibrary, osErrCode, OMRPORT_ERROR_SYSINFO_CGROUP_MEMLIMIT_FILE_FOPEN_FAILED);
 		goto _end;
 	}
 
@@ -3639,6 +3657,7 @@ readCgroupSubsystemFile(struct OMRPortLibrary *portLibrary, uint64_t subsystemFl
 	va_end(args);
 
 	if (numItemsToRead != rc) {
+		Trc_PRT_readCgroupSubsystemFile_unexpected_file_format(numItemsToRead, rc);
 		rc = portLibrary->error_set_last_error_with_message_format(portLibrary, OMRPORT_ERROR_SYSINFO_PROCESS_CGROUP_FILE_READ_FAILED, "unexpected format of file %s", fileNameBuf);
 		goto _end;
 	} else {
@@ -3677,10 +3696,12 @@ isRunningInContainer(struct OMRPortLibrary *portLibrary, BOOLEAN *inContainer)
 		 * then the process is not running in a container.
 		 * For any other cgroup name, assume we are in a container.
 		 */
-		FILE *cgroupFile = fopen("/proc/1/cgroup", "r");
+		FILE *cgroupFile = fopen(OMR_PROC_PID_ONE_CGROUP_FILE, "r");
 
 		if (NULL == cgroupFile) {
-			rc = portLibrary->error_set_last_error(portLibrary, errno, OMRPORT_ERROR_SYSINFO_PROCESS_CGROUP_FILE_FOPEN_FAILED);
+			int32_t osErrCode = errno;
+			Trc_PRT_isRunningInContainer_fopen_failed(OMR_PROC_PID_ONE_CGROUP_FILE, osErrCode);
+			rc = portLibrary->error_set_last_error(portLibrary, osErrCode, OMRPORT_ERROR_SYSINFO_PROCESS_CGROUP_FILE_FOPEN_FAILED);
 			goto _end;
 		}
 
@@ -3697,7 +3718,8 @@ isRunningInContainer(struct OMRPortLibrary *portLibrary, BOOLEAN *inContainer)
 			if (EOF == rc) {
 				break;
 			} else if (3 != rc) {
-				rc = portLibrary->error_set_last_error_with_message_format(portLibrary, OMRPORT_ERROR_SYSINFO_PROCESS_CGROUP_FILE_READ_FAILED, "unexpected format of /proc/1/cgroup file");
+				Trc_PRT_isRunningInContainer_unexpected_format(OMR_PROC_PID_ONE_CGROUP_FILE);
+				rc = portLibrary->error_set_last_error_with_message_format(portLibrary, OMRPORT_ERROR_SYSINFO_PROCESS_CGROUP_FILE_READ_FAILED, "unexpected format of %s file", OMR_PROC_PID_ONE_CGROUP_FILE);
 				goto _end;
 			}
 
@@ -3708,6 +3730,7 @@ isRunningInContainer(struct OMRPortLibrary *portLibrary, BOOLEAN *inContainer)
 		}
 		rc = 0;
 	}
+	Trc_PRT_isRunningInContainer_container_detected((uintptr_t)*inContainer);
 _end:
 	return rc;
 }
@@ -3721,6 +3744,7 @@ omrsysinfo_cgroup_is_system_available(struct OMRPortLibrary *portLibrary)
 #if defined(LINUX) && !defined(OMRZTPF)
 	int32_t rc = OMRPORT_ERROR_SYSINFO_CGROUP_UNSUPPORTED_PLATFORM;
 
+	Trc_PRT_sysinfo_cgroup_is_system_available_Entry();
 	if (NULL == PPG_cgroupEntryList) {
 		if (isCgroupV1Available(portLibrary)) {
 			BOOLEAN inContainer = FALSE;
@@ -3743,10 +3767,12 @@ omrsysinfo_cgroup_is_system_available(struct OMRPortLibrary *portLibrary)
 	}
 _end:
 	if (0 == rc) {
+		Trc_PRT_sysinfo_cgroup_is_system_available_subsystems(PPG_cgroupSubsystemsAvailable);
 		result = TRUE;
 	} else {
 		PPG_cgroupSubsystemsAvailable = 0;
 	}
+	Trc_PRT_sysinfo_cgroup_is_system_available_Exit((uintptr_t)result);
 #endif /* defined(LINUX) && !defined(OMRZTPF) */
 	return result;
 }
@@ -3755,9 +3781,11 @@ uint64_t
 omrsysinfo_cgroup_get_available_subsystems(struct OMRPortLibrary *portLibrary)
 {
 #if defined(LINUX) && !defined(OMRZTPF)
+	Trc_PRT_sysinfo_cgroup_get_available_subsystems_Entry();
 	if (NULL == PPG_cgroupEntryList) {
 		portLibrary->sysinfo_cgroup_is_system_available(portLibrary);
 	}
+	Trc_PRT_sysinfo_cgroup_get_available_subsystems_Exit(PPG_cgroupSubsystemsAvailable);
 	return PPG_cgroupSubsystemsAvailable;
 #else /* defined(LINUX) && !defined(OMRZTPF) */
 	return 0;
@@ -3768,8 +3796,17 @@ uint64_t
 omrsysinfo_cgroup_are_subsystems_available(struct OMRPortLibrary *portLibrary, uint64_t subsystemFlags)
 {
 #if defined(LINUX) && !defined(OMRZTPF)
-	uint64_t available = portLibrary->sysinfo_cgroup_get_available_subsystems(portLibrary);
-	return (available & subsystemFlags);
+	uint64_t available = 0;
+	uint64_t rc = 0;
+
+	Trc_PRT_sysinfo_cgroup_are_subsystems_available_Entry(subsystemFlags);
+
+	available = portLibrary->sysinfo_cgroup_get_available_subsystems(portLibrary);
+	rc = available & subsystemFlags;
+
+	Trc_PRT_sysinfo_cgroup_are_subsystems_available_Exit(rc);
+
+	return rc;
 #else /* defined(LINUX) && !defined(OMRZTPF) */
 	return 0;
 #endif /* defined(LINUX) && !defined(OMRZTPF) */
@@ -3789,8 +3826,15 @@ uint64_t
 omrsysinfo_cgroup_enable_subsystems(struct OMRPortLibrary *portLibrary, uint64_t requestedSubsystems)
 {
 #if defined(LINUX) && !defined(OMRZTPF)
-	uint64_t available = portLibrary->sysinfo_cgroup_get_available_subsystems(portLibrary);
+	uint64_t available = 0;
+
+	Trc_PRT_sysinfo_cgroup_enable_subsystems_Entry(requestedSubsystems);
+
+	available = portLibrary->sysinfo_cgroup_get_available_subsystems(portLibrary);
 	PPG_cgroupSubsystemsEnabled = available & requestedSubsystems;
+
+	Trc_PRT_sysinfo_cgroup_enable_subsystems_Exit(PPG_cgroupSubsystemsEnabled);
+
 	return PPG_cgroupSubsystemsEnabled;
 #else /* defined(LINUX) && !defined(OMRZTPF) */
 	return 0;
@@ -3819,9 +3863,11 @@ omrsysinfo_cgroup_get_memlimit(struct OMRPortLibrary *portLibrary, uint64_t *lim
 	uint64_t physicalMemLimit = 0;
 	int32_t numItemsToRead = 1; /* memory.limit_in_bytes file contains only one integer value */
 
-	rc = readCgroupSubsystemFile(portLibrary, OMR_CGROUP_SUBSYSTEM_MEMORY, "memory.limit_in_bytes", numItemsToRead, "%lu", &cgroupMemLimit);
+	Trc_PRT_sysinfo_cgroup_get_memlimit_Entry();
 
+	rc = readCgroupSubsystemFile(portLibrary, OMR_CGROUP_SUBSYSTEM_MEMORY, "memory.limit_in_bytes", numItemsToRead, "%lu", &cgroupMemLimit);
 	if (0 != rc) {
+		Trc_PRT_sysinfo_cgroup_get_memlimit_memory_limit_read_failed("memory.limit_in_bytes", rc);
 		goto _end;
 	}
 
@@ -3831,12 +3877,16 @@ omrsysinfo_cgroup_get_memlimit(struct OMRPortLibrary *portLibrary, uint64_t *lim
 	 * In such case, just return the amount of physical memory.
 	 */
 	if (cgroupMemLimit > physicalMemLimit) {
+		Trc_PRT_sysinfo_cgroup_get_memlimit_unlimited();
 		cgroupMemLimit = physicalMemLimit;
 	}
+
+	Trc_PRT_sysinfo_cgroup_get_memlimit(cgroupMemLimit);
 
 	*limit = cgroupMemLimit;
 	rc = 0;
 _end:
+	Trc_PRT_sysinfo_cgroup_get_memlimit_Exit(rc);
 #endif /* defined(LINUX) && !defined(OMRZTPF) */
 	return rc;
 }

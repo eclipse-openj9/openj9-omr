@@ -1013,3 +1013,42 @@ TraceExit=Trc_PRT_sysinfo_get_os_description_Exit Group=sysinfo Overhead=1 Level
 
 TraceEntry=Trc_PRT_sysinfo_os_has_feature_Entered Group=sysinfo Overhead=1 Level=5 NoEnv Template="sysinfo_os_has_feature: desc = %p, feature = %d"
 TraceExit=Trc_PRT_sysinfo_os_has_feature_Exit Group=sysinfo Overhead=1 Level=5 NoEnv Template="sysinfo_os_has_feature: returning with %zu."
+
+TraceException=Trc_PRT_isCgroupV1Available_statfs_failed Group=sysinfo Overhead=1 Level=1 NoEnv Template="isCgroupV1Available: statfs on %s failed with errno=%d"
+TraceException=Trc_PRT_isCgroupV1Available_tmpfs_not_mounted Group=sysinfo Overhead=1 Level=1 NoEnv Template="isCgroupV1Available: tmpfs is not mounted on %s"
+
+TraceException=Trc_PRT_addCgroupEntry_oom_for_cgroup_entry Group=sysinfo Overhead=1 Level=1 NoEnv Template="addCgroupEntry: failed to allocate memory for OMRCgroupEntry"
+TraceEvent=Trc_PRT_addCgroupEntry_added_new_entry Group=sysinfo Overhead=1 Level=3 NoEnv Template="addCgroupEntry: added new cgroup entry for subsystem %s and cgroup %s"
+
+TraceException=Trc_PRT_readCgroupFile_fopen_failed Group=sysinfo Overhead=1 Level=1 NoEnv Template="readCgroupFile: fopen failed for %s with errno=%d"
+TraceException=Trc_PRT_readCgroupFile_unexpected_format Group=sysinfo Overhead=1 Level=1 NoEnv Template="readCgroupFile: unexpected format of file %s"
+TraceEvent=Trc_PRT_readCgroupFile_available_subsystems Group=sysinfo Overhead=1 Level=3 NoEnv Template="readCgroupFile: available subsystems are 0x%llx"
+
+TraceException=Trc_PRT_readCgroupSubsystemFile_subsystem_not_available Overhead=1 Level=1 NoEnv Template="readCgroupSubsystemFile: requested subsystem 0x%llx is not available"
+TraceException=Trc_PRT_readCgroupSubsystemFile_oom_for_filename Overhead=1 Level=1 NoEnv Template="readCgroupSubsystemFile: failed to allocate memory for file name"
+TraceException=Trc_PRT_readCgroupSubsystemFile_fopen_failed Overhead=1 Level=1 NoEnv Template="readCgroupSubsystemFile: fopen failed for %s with errno=%d"
+TraceException=Trc_PRT_readCgroupSubsystemFile_unexpected_file_format Overhead=1 Level=1 NoEnv Template="readCgroupSubsystemFile: expected %d items to read, but read %d items"
+TraceException=Trc_PRT_readCgroupSubsystemFile_missing_cgroup Overhead=1 Level=1 NoEnv Template="readCgroupSubsystemFile: cgroup name for subsystem 0x%llx is not found"
+
+TraceException=Trc_PRT_isRunningInContainer_fopen_failed Group=sysinfo Overhead=1 Level=1 NoEnv Template="isRunningInContainer: fopen failed for %s with errno=%d"
+TraceException=Trc_PRT_isRunningInContainer_unexpected_format Group=sysinfo Overhead=1 Level=1 NoEnv Template="isRunningInContainer: unexpected format of file %s"
+TraceEvent=Trc_PRT_isRunningInContainer_container_detected Group=sysinfo Overhead=1 Level=3 NoEnv Template="isRunningInContainer: %zu"
+
+TraceEntry=Trc_PRT_sysinfo_cgroup_is_system_available_Entry Group=sysinfo Overhead=1 Level=3 NoEnv Template="omrsysinfo_cgroup_is_system_available entered"
+TraceEvent=Trc_PRT_sysinfo_cgroup_is_system_available_subsystems Group=sysinfo Overhead=1 Level=2 NoEnv Template="omrsysinfo_cgroup_is_system_available: available subsystems 0x%llx"
+TraceExit=Trc_PRT_sysinfo_cgroup_is_system_available_Exit Group=sysinfo Overhead=1 Level=3 NoEnv Template="omrsysinfo_cgroup_is_system_available returning %zu"
+
+TraceEntry=Trc_PRT_sysinfo_cgroup_get_available_subsystems_Entry Group=sysinfo Overhead=1 Level=3 NoEnv Template="omrsysinfo_cgroup_get_available_subsystems entered"
+TraceExit=Trc_PRT_sysinfo_cgroup_get_available_subsystems_Exit Group=sysinfo Overhead=1 Level=3 NoEnv Template="omrsysinfo_cgroup_get_available_subsystems returning available subsystems 0x%llx"
+
+TraceEntry=Trc_PRT_sysinfo_cgroup_are_subsystems_available_Entry Group=sysinfo Overhead=1 Level=3 NoEnv Template="omrsysinfo_cgroup_are_subsystems_available entered, subsystems to check: 0x%llx"
+TraceExit=Trc_PRT_sysinfo_cgroup_are_subsystems_available_Exit Group=sysinfo Overhead=1 Level=3 NoEnv Template="omrsysinfo_cgroup_are_subsystems_available exiting, subsystems available: 0x%llx"
+
+TraceEntry=Trc_PRT_sysinfo_cgroup_enable_subsystems_Entry Group=sysinfo Overhead=1 Level=3 NoEnv Template="omrsysinfo_cgroup_enable_subsystems entered, requested subsystems: 0x%llx"
+TraceExit=Trc_PRT_sysinfo_cgroup_enable_subsystems_Exit Group=sysinfo Overhead=1 Level=3 NoEnv Template="omrsysinfo_cgroup_enable_subsystems exiting, subsystems enabled: 0x%llx"
+
+TraceEntry=Trc_PRT_sysinfo_cgroup_get_memlimit_Entry Group=sysinfo Overhead=1 Level=3 NoEnv Template="omrsysinfo_cgroup_get_memlimit entered"
+TraceException=Trc_PRT_sysinfo_cgroup_get_memlimit_memory_limit_read_failed Group=sysinfo Overhead=1 Level=1 NoEnv Template="omrsysinfo_cgroup_get_memlimit: failed to read memory limit from %s with portable error code=%d"
+TraceEvent=Trc_PRT_sysinfo_cgroup_get_memlimit_unlimited Group=sysinfo Overhead=1 Level=2 NoEnv Template="omrsysinfo_cgroup_get_memlimit: no memory limit is defined by the cgroup of memory subsystem, using physical memory as the limit"
+TraceEvent=Trc_PRT_sysinfo_cgroup_get_memlimit Group=sysinfo Overhead=1 Level=1 NoEnv Template="omrsysinfo_cgroup_get_memlimit: memory limit is 0x%llx bytes" 
+TraceExit=Trc_PRT_sysinfo_cgroup_get_memlimit_Exit Group=sysinfo Overhead=1 Level=3 NoEnv Template="omrsysinfo_cgroup_get_memlimit exiting with rc=%d"

@@ -100,6 +100,19 @@ target_compile_options(sltestlib
 		${OMR_PLATFORM_SHARED_COMPILE_OPTIONS}
 )
 
+if(OMR_HOST_OS STREQUAL "aix")
+	add_library(aixbaddep SHARED
+		aixbaddep/sltest.c
+	)
+
+	target_compile_options(aixbaddep
+		PRIVATE
+			${OMR_PLATFORM_SHARED_COMPILE_OPTIONS}
+	)
+	
+	set_target_properties(aixbaddep PROPERTIES LINK_FLAGS "-bI:${CMAKE_CURRENT_SOURCE_DIR}/aixbaddep/dummy.imp" FOLDER fvtest)
+endif()
+
 set_target_properties(omrporttest sltestlib PROPERTIES FOLDER fvtest)
 
 add_test(NAME porttest COMMAND omrporttest)

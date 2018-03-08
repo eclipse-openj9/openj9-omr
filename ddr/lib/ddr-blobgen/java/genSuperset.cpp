@@ -24,6 +24,7 @@
 #include "ddr/ir/ClassUDT.hpp"
 #include "ddr/ir/EnumMember.hpp"
 #include "ddr/ir/EnumUDT.hpp"
+#include "ddr/ir/Symbol_IR.hpp"
 #include "ddr/ir/TypedefUDT.hpp"
 #include "ddr/ir/UnionUDT.hpp"
 #include "ddr/std/sstream.hpp"
@@ -57,6 +58,7 @@ JavaSupersetGenerator::JavaSupersetGenerator(bool printEmptyTypes)
 	, _file(0)
 	, _portLibrary(NULL)
 	, _printEmptyTypes(printEmptyTypes)
+	, _pendingTypeHeading()
 {
 	initBaseTypedefSet();
 }
@@ -381,9 +383,16 @@ private:
 	const bool _addFieldsOnly;
 	const string _prefix;
 
-	DDR_RC writeType(Type *type, Type *superClass) const;
+	DDR_RC visitComposite(ClassType *type, Type *superClass) const;
 
 public:
+	explicit SupersetVisitor(JavaSupersetGenerator *supersetGen)
+		: _supersetGen(supersetGen)
+		, _addFieldsOnly(false)
+		, _prefix()
+	{
+	}
+
 	SupersetVisitor(JavaSupersetGenerator *supersetGen, bool addFieldsOnly, const string &prefix)
 		: _supersetGen(supersetGen)
 		, _addFieldsOnly(addFieldsOnly)
@@ -406,7 +415,6 @@ public:
 DDR_RC
 JavaSupersetGenerator::printFieldMember(Field *field, const string &prefix)
 {
-	OMRPORT_ACCESS_FROM_OMRPORT(_portLibrary);
 	DDR_RC rc = DDR_RC_OK;
 
 	/* If the type of a field is an anonymous inner type, print its fields prefixed by its field
@@ -416,7 +424,7 @@ JavaSupersetGenerator::printFieldMember(Field *field, const string &prefix)
 		Type *fieldType = field->_fieldType;
 
 		if ((NULL != fieldType) && fieldType->isAnonymousType()) {
-			fieldType->acceptVisitor(SupersetVisitor(this, true, prefix + field->_name + "."));
+			rc = fieldType->acceptVisitor(SupersetVisitor(this, true, prefix + field->_name + "."));
 		} else {
 			string assembledTypeName;
 			string simpleTypeName;
@@ -425,13 +433,17 @@ JavaSupersetGenerator::printFieldMember(Field *field, const string &prefix)
 			if (DDR_RC_OK != rc) {
 				ERRMSG("Could not assemble field type name");
 			} else {
-				string nameFormatted = prefix + (field->_name == "class" ? "klass" : field->_name);
-				string lineToPrint = "F|" + replaceAll(nameFormatted, ".", "$")
-								    + "|" + nameFormatted
-								    + "|" + replaceAll(assembledTypeName, "::", "$")
-								    + "|" + simpleTypeName + "\n";
+				rc = printPendingType();
 
-				omrfile_write(_file, lineToPrint.c_str(), lineToPrint.length());
+				if (DDR_RC_OK == rc) {
+					string nameFormatted = prefix + (field->_name == "class" ? "klass" : field->_name);
+					string lineToPrint = "F|" + replaceAll(nameFormatted, ".", "$")
+									    + "|" + nameFormatted
+									    + "|" + replaceAll(assembledTypeName, "::", "$")
+									    + "|" + simpleTypeName + "\n";
+
+					rc = print(lineToPrint);
+				}
 			}
 		}
 	}
@@ -439,19 +451,9 @@ JavaSupersetGenerator::printFieldMember(Field *field, const string &prefix)
 	return rc;
 }
 
-void
-JavaSupersetGenerator::printConstantMember(const string &name)
-{
-	OMRPORT_ACCESS_FROM_OMRPORT(_portLibrary);
-	string lineToPrint = "C|" + name + "\n";
-
-	omrfile_write(_file, lineToPrint.c_str(), lineToPrint.length());
-}
-
 DDR_RC
-SupersetVisitor::writeType(Type *type, Type *superClass) const
+JavaSupersetGenerator::printType(Type *type, Type *superClass)
 {
-	OMRPORT_ACCESS_FROM_OMRPORT(_supersetGen->_portLibrary);
 	const string nameFormatted = replaceAll(type->getFullName(), "::", "$");
 	string superFormatted;
 
@@ -459,11 +461,46 @@ SupersetVisitor::writeType(Type *type, Type *superClass) const
 		superFormatted = replaceAll(superClass->getFullName(), "::", "$");
 	}
 
-	const string lineToPrint = "S|" + nameFormatted + "|" + nameFormatted + "Pointer|" + superFormatted + "\n";
-	const size_t lengthToPrint = lineToPrint.length();
+	_pendingTypeHeading = "S|" + nameFormatted + "|" + nameFormatted + "Pointer|" + superFormatted + "\n";
+
+	return _printEmptyTypes ? printPendingType() : DDR_RC_OK;
+}
+
+DDR_RC
+JavaSupersetGenerator::printPendingType()
+{
 	DDR_RC rc = DDR_RC_OK;
 
-	if (lengthToPrint != (size_t)omrfile_write(_supersetGen->_file, lineToPrint.c_str(), lengthToPrint)) {
+	if (0 != _pendingTypeHeading.length()) {
+		rc = print(_pendingTypeHeading);
+		_pendingTypeHeading = "";
+	}
+
+	return rc;
+}
+
+DDR_RC
+JavaSupersetGenerator::printConstantMember(const string &name)
+{
+	DDR_RC rc = printPendingType();
+
+	if (DDR_RC_OK == rc) {
+		const string lineToPrint = "C|" + name + "\n";
+
+		rc = print(lineToPrint);
+	}
+
+	return rc;
+}
+
+DDR_RC
+JavaSupersetGenerator::print(const string &text)
+{
+	OMRPORT_ACCESS_FROM_OMRPORT(_portLibrary);
+	const size_t lengthToPrint = text.length();
+	DDR_RC rc = DDR_RC_OK;
+
+	if (lengthToPrint != (size_t)omrfile_write(_file, text.c_str(), lengthToPrint)) {
 		ERRMSG("Write failed");
 		rc = DDR_RC_ERROR;
 	}
@@ -488,7 +525,7 @@ SupersetVisitor::visitTypedef(TypedefUDT *type) const
 
 		/* print this typedef if its name is different than its baseType */
 		if (baseType->_name != type->_name) {
-			rc = writeType(type, NULL);
+			rc = _supersetGen->printType(type, NULL);
 			if (DDR_RC_OK == rc) {
 				rc = baseType->acceptVisitor(SupersetVisitor(_supersetGen, true, _prefix));
 			}
@@ -499,40 +536,38 @@ SupersetVisitor::visitTypedef(TypedefUDT *type) const
 }
 
 DDR_RC
-SupersetVisitor::visitClass(ClassUDT *type) const
+SupersetVisitor::visitComposite(ClassType *type, Type *superClass) const
 {
 	DDR_RC rc = DDR_RC_OK;
 
-	if ((_addFieldsOnly || !type->isAnonymousType())
-			&& (_supersetGen->_printEmptyTypes || !type->_fieldMembers.empty())) {
-		if (!_addFieldsOnly) {
-			rc = writeType(type, type->_superClass);
+	if (!_addFieldsOnly) {
+		if (!type->isAnonymousType()) {
+			rc = _supersetGen->printType(type, superClass);
 		}
 
-		if (DDR_RC_OK == rc) {
-			for (vector<EnumMember *>::const_iterator m = type->_enumMembers.begin(); m != type->_enumMembers.end(); ++m) {
-				_supersetGen->printConstantMember((*m)->_name);
-			}
+		for (vector<EnumMember *>::const_iterator m = type->_enumMembers.begin();
+				(DDR_RC_OK == rc) && (m != type->_enumMembers.end()); ++m) {
+			rc = _supersetGen->printConstantMember((*m)->_name);
 		}
 
-		if (DDR_RC_OK == rc) {
-			for (vector<Macro>::const_iterator m = type->_macros.begin(); m != type->_macros.end(); ++m) {
-				if (DDR_RC_OK == m->getNumeric(NULL)) {
-					_supersetGen->printConstantMember(m->_name);
-				}
-			}
-		}
-
-		for (vector<Field *>::const_iterator m = type->_fieldMembers.begin(); m != type->_fieldMembers.end(); ++m) {
-			rc = _supersetGen->printFieldMember(*m, _prefix);
-			if (DDR_RC_OK != rc) {
-				break;
+		for (vector<Macro>::const_iterator m = type->_macros.begin();
+				(DDR_RC_OK == rc) && (m != type->_macros.end()); ++m) {
+			if (DDR_RC_OK == m->getNumeric(NULL)) {
+				rc = _supersetGen->printConstantMember(m->_name);
 			}
 		}
 	}
 
-	if ((DDR_RC_OK == rc) && !_addFieldsOnly) {
-		for (vector<UDT *>::const_iterator it = type->_subUDTs.begin(); it != type->_subUDTs.end(); ++it) {
+	if (_addFieldsOnly || !type->isAnonymousType()) {
+		for (vector<Field *>::const_iterator m = type->_fieldMembers.begin();
+				(DDR_RC_OK == rc) && (m != type->_fieldMembers.end()); ++m) {
+			rc = _supersetGen->printFieldMember(*m, _prefix);
+		}
+	}
+
+	if (!_addFieldsOnly) {
+		for (vector<UDT *>::const_iterator it = type->_subUDTs.begin();
+				(DDR_RC_OK == rc) && (it != type->_subUDTs.end()); ++it) {
 			UDT *nested = *it;
 			bool includeSubUDT = true;
 
@@ -547,10 +582,7 @@ SupersetVisitor::visitClass(ClassUDT *type) const
 			}
 
 			if (includeSubUDT) {
-				rc = nested->acceptVisitor(SupersetVisitor(_supersetGen, false, _prefix));
-				if (DDR_RC_OK != rc) {
-					break;
-				}
+				rc = nested->acceptVisitor(*this);
 			}
 		}
 	}
@@ -559,50 +591,15 @@ SupersetVisitor::visitClass(ClassUDT *type) const
 }
 
 DDR_RC
+SupersetVisitor::visitClass(ClassUDT *type) const
+{
+	return visitComposite(type, type->_superClass);
+}
+
+DDR_RC
 SupersetVisitor::visitUnion(UnionUDT *type) const
 {
-	DDR_RC rc = DDR_RC_OK;
-
-	if ((_addFieldsOnly || !type->isAnonymousType())
-			&& (_supersetGen->_printEmptyTypes || !type->_fieldMembers.empty())) {
-		if (!_addFieldsOnly) {
-			rc = writeType(type, NULL);
-		}
-
-		if (DDR_RC_OK == rc) {
-			for (vector<EnumMember *>::const_iterator m = type->_enumMembers.begin(); m != type->_enumMembers.end(); ++m) {
-				_supersetGen->printConstantMember((*m)->_name);
-			}
-		}
-
-		if (DDR_RC_OK == rc) {
-			for (vector<Field *>::const_iterator m = type->_fieldMembers.begin(); m != type->_fieldMembers.end(); ++m) {
-				rc = _supersetGen->printFieldMember(*m, _prefix);
-				if (DDR_RC_OK != rc) {
-					break;
-				}
-			}
-		}
-
-		if (DDR_RC_OK == rc) {
-			for (vector<Macro>::const_iterator m = type->_macros.begin(); m != type->_macros.end(); ++m) {
-				if (DDR_RC_OK == m->getNumeric(NULL)) {
-					_supersetGen->printConstantMember(m->_name);
-				}
-			}
-		}
-	}
-
-	if ((DDR_RC_OK == rc) && !_addFieldsOnly) {
-		for (vector<UDT *>::const_iterator v = type->_subUDTs.begin(); v != type->_subUDTs.end(); ++v) {
-			rc = (*v)->acceptVisitor(SupersetVisitor(_supersetGen, false, ""));
-			if (DDR_RC_OK != rc) {
-				break;
-			}
-		}
-	}
-
-	return rc;
+	return visitComposite(type, NULL);
 }
 
 DDR_RC
@@ -610,16 +607,14 @@ SupersetVisitor::visitEnum(EnumUDT *type) const
 {
 	DDR_RC rc = DDR_RC_OK;
 
-	if ((_addFieldsOnly || !type->isAnonymousType())
-			&& (_supersetGen->_printEmptyTypes || !type->_enumMembers.empty())) {
+	if (_addFieldsOnly || !type->isAnonymousType()) {
 		if (!_addFieldsOnly) {
-			rc = writeType(type, NULL);
+			rc = _supersetGen->printType(type, NULL);
 		}
 
-		if (DDR_RC_OK == rc) {
-			for (vector<EnumMember *>::const_iterator m = type->_enumMembers.begin(); m != type->_enumMembers.end(); ++m) {
-				_supersetGen->printConstantMember((*m)->_name);
-			}
+		for (vector<EnumMember *>::const_iterator m = type->_enumMembers.begin();
+				(DDR_RC_OK == rc) && (m != type->_enumMembers.end()); ++m) {
+			rc = _supersetGen->printConstantMember((*m)->_name);
 		}
 	}
 
@@ -633,27 +628,24 @@ SupersetVisitor::visitNamespace(NamespaceUDT *type) const
 
 	if (_addFieldsOnly || !type->isAnonymousType()) {
 		if (!_addFieldsOnly) {
-			rc = writeType(type, NULL);
+			rc = _supersetGen->printType(type, NULL);
 		}
 
-		if (DDR_RC_OK == rc) {
-			for (vector<Macro>::const_iterator m = type->_macros.begin(); m != type->_macros.end(); ++m) {
-				if (DDR_RC_OK == m->getNumeric(NULL)) {
-					_supersetGen->printConstantMember(m->_name);
-				}
+		for (vector<Macro>::const_iterator m = type->_macros.begin();
+				(DDR_RC_OK == rc) && (m != type->_macros.end()); ++m) {
+			if (DDR_RC_OK == m->getNumeric(NULL)) {
+				rc = _supersetGen->printConstantMember(m->_name);
 			}
 		}
 	}
 
 	if (!_addFieldsOnly) {
-		for (vector<UDT *>::const_iterator v = type->_subUDTs.begin(); v != type->_subUDTs.end(); ++v) {
+		for (vector<UDT *>::const_iterator v = type->_subUDTs.begin();
+				(DDR_RC_OK == rc) && (v != type->_subUDTs.end()); ++v) {
 			UDT *nested = *v;
 
 			if (!nested->isAnonymousType()) {
 				rc = nested->acceptVisitor(*this);
-				if (DDR_RC_OK != rc) {
-					break;
-				}
 			}
 		}
 	}
@@ -672,15 +664,13 @@ JavaSupersetGenerator::printSuperset(OMRPortLibrary *portLibrary, Symbol_IR *ir,
 
 	_opaqueTypeNames.insert(ir->_opaqueTypeNames.begin(), ir->_opaqueTypeNames.end());
 
-	const SupersetVisitor printer(this, false, "");
+	const SupersetVisitor printer(this);
 
-	for (vector<Type *>::const_iterator v = ir->_types.begin(); v != ir->_types.end(); ++v) {
+	for (vector<Type *>::const_iterator v = ir->_types.begin();
+			(DDR_RC_OK == rc) && (v != ir->_types.end()); ++v) {
 		Type *type = *v;
 		if (!type->_blacklisted) {
 			rc = type->acceptVisitor(printer);
-			if (DDR_RC_OK != rc) {
-				break;
-			}
 		}
 	}
 

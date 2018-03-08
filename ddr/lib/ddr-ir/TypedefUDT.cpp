@@ -36,17 +36,12 @@ TypedefUDT::acceptVisitor(const TypeVisitor &visitor)
 	return visitor.visitTypedef(this);
 }
 
-bool
-TypedefUDT::insertUnique(Symbol_IR *ir)
+const string &
+TypedefUDT::getSymbolKindName() const
 {
-	// FIXME remove this method?
-	return UDT::insertUnique(ir);
-}
+	static const string typedefKind("");
 
-string
-TypedefUDT::getSymbolKindName()
-{
-	return "";
+	return typedefKind;
 }
 
 size_t

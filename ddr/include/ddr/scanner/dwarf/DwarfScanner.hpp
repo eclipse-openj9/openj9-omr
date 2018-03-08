@@ -88,7 +88,7 @@ private:
 	DDR_RC getOrCreateNewType(Dwarf_Die die, Dwarf_Half tag, Type **newUDT, NamespaceUDT *outerUDT, bool *isNewType);
 	DDR_RC createNewType(Dwarf_Die die, Dwarf_Half tag, const char *dieName, Type **newUDT);
 	DDR_RC scanClassChildren(NamespaceUDT *newClass, Dwarf_Die die);
-	DDR_RC addEnumMember(Dwarf_Die die, EnumUDT *udt);
+	DDR_RC addEnumMember(Dwarf_Die die, NamespaceUDT *outerUDT, EnumUDT *udt);
 	DDR_RC addClassField(Dwarf_Die die, ClassType *newClass, const string &fieldName);
 	DDR_RC getSuperUDT(Dwarf_Die die, ClassUDT *udt);
 	DDR_RC getTypeInfo(Dwarf_Die die, Dwarf_Die *dieout, string *typeName, Modifiers *modifiers, size_t *typeSize, size_t *bitField);

@@ -21,25 +21,16 @@
 
 #include "ddr/ir/ClassType.hpp"
 
-#include "ddr/config.hpp"
-
 ClassType::ClassType(size_t size, unsigned int lineNumber)
 	: NamespaceUDT(lineNumber)
 	, _isComplete(false)
 	, _fieldMembers()
-	, _enumMembers()
 {
 	_sizeOf = size;
 }
 
 ClassType::~ClassType()
 {
-	/* enum members may be added to a classType in the case of anonymous enums */
-	for (vector<EnumMember *>::iterator it = _enumMembers.begin(); it != _enumMembers.end(); ++it) {
-		delete *it;
-	}
-	_enumMembers.clear();
-
 	for (vector<Field *>::iterator it = _fieldMembers.begin(); it != _fieldMembers.end(); ++it) {
 		delete *it;
 	}

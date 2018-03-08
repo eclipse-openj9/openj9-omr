@@ -30,10 +30,13 @@ ClassUDT::~ClassUDT()
 {
 }
 
-string
-ClassUDT::getSymbolKindName()
+const string &
+ClassUDT::getSymbolKindName() const
 {
-	return _isClass ? "class" : "struct";
+	static const string classKind("class");
+	static const string structKind("struct");
+
+	return _isClass ? classKind : structKind;
 }
 
 DDR_RC

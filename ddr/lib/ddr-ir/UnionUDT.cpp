@@ -36,10 +36,12 @@ UnionUDT::acceptVisitor(const TypeVisitor &visitor)
 	return visitor.visitUnion(this);
 }
 
-string
-UnionUDT::getSymbolKindName()
+const string &
+UnionUDT::getSymbolKindName() const
 {
-	return "union";
+	static const string unionKind("union");
+
+	return unionKind;
 }
 
 bool

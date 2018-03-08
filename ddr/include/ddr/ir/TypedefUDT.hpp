@@ -35,8 +35,7 @@ public:
 	~TypedefUDT();
 
 	virtual DDR_RC acceptVisitor(const TypeVisitor &visitor);
-	virtual bool insertUnique(Symbol_IR *ir);
-	virtual string getSymbolKindName();
+	virtual const string &getSymbolKindName() const;
 	virtual size_t getPointerCount();
 	virtual size_t getArrayDimensions();
 	virtual Type *getBaseType();

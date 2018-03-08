@@ -25,18 +25,21 @@
 #include "ddr/ir/Macro.hpp"
 #include "ddr/ir/UDT.hpp"
 
+class EnumMember;
+
 class NamespaceUDT : public UDT
 {
 public:
 	std::vector<UDT *> _subUDTs;
 	std::vector<Macro> _macros;
+	vector<EnumMember *> _enumMembers; /* used for anonymous enums */
 
 	explicit NamespaceUDT(unsigned int lineNumber = 0);
 	~NamespaceUDT();
 
 	virtual DDR_RC acceptVisitor(const TypeVisitor &visitor);
 	virtual bool insertUnique(Symbol_IR *ir);
-	virtual string getSymbolKindName();
+	virtual const string &getSymbolKindName() const;
 	virtual void addMacro(Macro *macro);
 	virtual std::vector<UDT *> * getSubUDTS();
 	virtual void renameFieldsAndMacros(const FieldOverride &fieldOverride, Type *replacementType);

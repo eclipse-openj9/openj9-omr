@@ -38,10 +38,11 @@
  */
 typedef U_8 Card;
 
-enum {
-	CARD_SIZE_SHIFT	= 9,	/* base2 log of CARD_SIZE, used to change division into shift */
-	CARD_SIZE = 512	/* size of a "card" of the heap - in a sense:  the granule of deferred mark map update */
-};
+/* base2 log of CARD_SIZE, used to change division into shift */
+#define CARD_SIZE_SHIFT 9
+
+/* size of a "card" of the heap - in a sense:  the granule of deferred mark map update */
+#define CARD_SIZE 512
 
 /*
  * The following definitions are duplicated in j9modron.h.
@@ -72,7 +73,7 @@ enum {
 /**
  * The following definitions are duplicated in j9modron.h.
  * Both versions of each definition must match exactly.
- * 
+ *
  * #defines representing the vmState that should be set during various GC activities
  * @note J9VMSTATE_GC is the "major mask" representing a "GC" activity - we OR in a minor mask
  * representing the specific activity.

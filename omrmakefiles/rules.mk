@@ -1,19 +1,19 @@
 ###############################################################################
-# Copyright (c) 2015, 2017 IBM Corp. and others
-# 
+# Copyright (c) 2015, 2018 IBM Corp. and others
+#
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
 # distribution and is available at https://www.eclipse.org/legal/epl-2.0/
 # or the Apache License, Version 2.0 which accompanies this distribution and
 # is available at https://www.apache.org/licenses/LICENSE-2.0.
-#      
+#
 # This Source Code may also be made available under the following
 # Secondary Licenses when the conditions for such availability set
 # forth in the Eclipse Public License, v. 2.0 are satisfied: GNU
 # General Public License, version 2 with the GNU Classpath
 # Exception [1] and GNU General Public License, version 2 with the
 # OpenJDK Assembly Exception [2].
-#    
+#
 # [1] https://www.gnu.org/software/classpath/license.html
 # [2] http://openjdk.java.net/legal/assembly-exception.html
 #
@@ -40,7 +40,6 @@
 # OBJECTS = <list of objects>
 #      The list of object files to include in the artifact.
 #
-
 
 ###
 ### Default Targets
@@ -136,7 +135,7 @@ GLOBAL_LDFLAGS += $(call buildLibPathFlags,$(GLOBAL_LIBPATH))
 
 # Static Libraries
 ifeq (zos,$(OMR_HOST_OS))
-  # zOS has really strange dependencies on the order of options.  Create separate variables so they 
+  # zOS has really strange dependencies on the order of options.  Create separate variables so they
   # can be added at the correct place on the link lines.
   LD_STATIC_LIBS = $(call buildLinkGroup,$(call buildStaticLibLinkFlags,$(MODULE_STATIC_LIBS)))
   LD_STATIC_LIBS += $(call buildLinkGroup,$(call buildStaticLibLinkFlags,$(GLOBAL_STATIC_LIBS)))
@@ -147,7 +146,7 @@ endif
 
 # Shared Libraries. Must be after static libraries.
 ifeq (zos,$(OMR_HOST_OS))
-  # zOS has really strange dependencies on the order of options.  Create separate variables so they 
+  # zOS has really strange dependencies on the order of options.  Create separate variables so they
   # can be added at the correct place on the link lines.
   LD_SHARED_LIBS = $(call buildSharedLibLinkFlags,$(MODULE_SHARED_LIBS))
   LD_SHARED_LIBS += $(call buildSharedLibLinkFlags,$(GLOBAL_SHARED_LIBS))
@@ -155,7 +154,6 @@ else
   MODULE_LDFLAGS += $(call buildSharedLibLinkFlags,$(MODULE_SHARED_LIBS))
   GLOBAL_LDFLAGS += $(call buildSharedLibLinkFlags,$(GLOBAL_SHARED_LIBS))
 endif
-
 
 ###
 ### Default build commands
@@ -212,11 +210,11 @@ $(CC) $(CPPFLAGS) $(MODULE_CPPFLAGS) $(GLOBAL_CPPFLAGS) -P $< -Fi $@
 endef
 else
 define DDR_C_COMMAND
-$(CC) $(CFLAGS) $(MODULE_CPPFLAGS) $(GLOBAL_CPPFLAGS) -E $< -o $@
+$(CC) $(CFLAGS) $(MODULE_CPPFLAGS) $(GLOBAL_CPPFLAGS) -E $< | grep '^@' > $@
 endef
 
 define DDR_CPP_COMMAND
-$(CC) $(CPPFLAGS) $(MODULE_CPPFLAGS) $(GLOBAL_CPPFLAGS) -E $< -o $@
+$(CC) $(CPPFLAGS) $(MODULE_CPPFLAGS) $(GLOBAL_CPPFLAGS) -E $< | grep '^@' > $@
 endef
 endif
 
@@ -283,11 +281,9 @@ clean: $(MODULE_NAME)_cleanexecutable
 
 endif
 
-
 ###
 ### Shared Library Rules
 ###
-
 
 ## C Shared Library
 ifeq ($(ARTIFACT_TYPE),c_shared)
@@ -364,7 +360,6 @@ clean: $(MODULE_NAME)_cleanlib
 .PHONY: $(MODULE_NAME)_cleanlib
 
 endif
-
 
 ###
 ### Object File Rules

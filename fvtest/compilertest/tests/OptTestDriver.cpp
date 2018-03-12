@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2016 IBM Corp. and others
+ * Copyright (c) 2016, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -72,7 +72,6 @@ void TestCompiler::OptTestDriver::Verify()
    TR::Optimizer::setMockStrategy(NULL);
 
    ASSERT_EQ(true, noCodegenVerifier.hasRun()) << "Did not run verifiers.";
-   ASSERT_EQ(0, noCodegenVerifier.getReturnCode()) << "One or more verifiers failed.";
    }
 
 /**

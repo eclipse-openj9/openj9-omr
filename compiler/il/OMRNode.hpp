@@ -521,9 +521,6 @@ public:
    inline TR::Node *      getArgument(int32_t index);
    inline TR::Node *      getFirstArgument();
 
-   TR::Node *             getReturnCode(bool isReason=false);
-   TR::Node *             getReturnReason();
-
    uint32_t               getSize();
    uint32_t               getRoundedSize();
 

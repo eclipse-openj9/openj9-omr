@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -397,7 +397,6 @@ enum TR_DispatchType
    virtual void setUsedRegisters(TR::Instruction *instruction, bool *regs, int32_t regsSize);
    virtual bool checkPreservedRegisterUsage(bool *regs, int32_t regsSize);
    virtual void replaceCallWithJumpInstruction(TR::Instruction *callInstruction);
-   virtual bool checkEpilogKillsReturnCodeReason() { return false; }
 
    TR::InstOpCode::Mnemonic getOpCodeForLinkage(TR::Node * child, bool isStore, bool isRegReg);
    TR::InstOpCode::Mnemonic getRegCopyOpCodeForLinkage(TR::Node * child);

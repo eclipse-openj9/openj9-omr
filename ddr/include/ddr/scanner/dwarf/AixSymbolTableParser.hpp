@@ -50,7 +50,7 @@ const string BUILT_IN_TYPES_THAT_ARE_TYPEDEFS[NUM_BUILT_IN_TYPES + 1] = {"", "",
 "", "", "integer*1", "integer*2", "integer*4", "wchar", "", "", "logical*8", "integer*8", "", "", ""
 };
 const int BUILT_IN_TYPE_SIZES[NUM_BUILT_IN_TYPES +1 ] = {0, 32, 8, 16, 32, 8, 8, 16, 32, 32,
-32, 0, 32, 64, 128, 32, 32, 32, 64, PTR_SIZE, 8, 8, 16, 32, 32, 64, 128,
+32, 0, 32, 64, 128, 32, 8, 32, 64, PTR_SIZE, 8, 8, 16, 32, 32, 64, 128,
 8, 16, 32, 16, 64, 64, 64, 64, 64, 64, 64};
 
 const string START_OF_FILE[3] = {"debug", "3", "FILE"};

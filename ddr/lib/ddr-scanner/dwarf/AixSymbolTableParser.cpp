@@ -967,7 +967,7 @@ parseEnum(const string data,
 	int ret = DW_DLV_OK;
 	/* Parse the declaration line for the required fields. */
 	string members = stripLeading(data, 'e');
-	size_t indexOfFirstNonInteger = members.find_first_not_of("123456790-");
+	size_t indexOfFirstNonInteger = members.find_first_not_of("1234567890-");
 	if (string::npos != indexOfFirstNonInteger) {
 		members = stripLeading(members.substr(indexOfFirstNonInteger), ':');
 		members = stripTrailing(members, ';');
@@ -1008,6 +1008,7 @@ parseEnum(const string data,
 							tempDie->_tag = DW_TAG_enumerator;
 							tempDie->_parent = currentDie;
 							tempDie->_previous = newDie;
+							tempDie->_sibling = NULL;
 							tempDie->_child = NULL;
 							tempDie->_context = Dwarf_CU_Context::_currentCU;
 							tempDie->_attribute = NULL;
@@ -1080,8 +1081,9 @@ parseFields(const string data, Dwarf_Die currentDie, Dwarf_Error *error)
 	Dwarf_Attribute name = new Dwarf_Attribute_s;
 	Dwarf_Attribute type = new Dwarf_Attribute_s;
 	Dwarf_Attribute declFile = new Dwarf_Attribute_s;
+	Dwarf_Attribute offset = new Dwarf_Attribute_s;
 
-	if ((NULL == name) || (NULL == type) || (NULL == declFile)) {
+	if ((NULL == name) || (NULL == type) || (NULL == declFile) || (NULL == offset)) {
 		ret = DW_DLV_ERROR;
 		setError(error, DW_DLE_MAF);
 	} else {
@@ -1108,12 +1110,23 @@ parseFields(const string data, Dwarf_Die currentDie, Dwarf_Error *error)
 		refsToPopulate.push_back(make_pair<int, Dwarf_Attribute>((int)ID, (Dwarf_Attribute)type));
 		declFile->_type = DW_AT_decl_file;
 		declFile->_form = DW_FORM_udata;
-		declFile->_nextAttr = NULL;
+		declFile->_nextAttr = offset;
 		declFile->_sdata = 0;
 		/* The declaration file number starts at 1. */
 		declFile->_udata = Dwarf_CU_Context::_fileList.size();
 		declFile->_refdata = 0;
 		declFile->_ref = NULL;
+
+		offset->_type = DW_AT_data_member_location;
+		offset->_form = DW_FORM_udata;
+		offset->_nextAttr = NULL;
+		offset->_sdata = 0;
+		offset->_udata = 0;
+		offset->_refdata = 0;
+		offset->_ref = NULL;
+		if (fieldAttributes.size() >= 2) {
+			offset->_udata = toInt(fieldAttributes[1]) / 8;
+		}
 
 		if (fieldAttributes.size() >= 3) {
 			/* Do a preliminary check of if the field requires a bitSize or not. */
@@ -1126,7 +1139,7 @@ parseFields(const string data, Dwarf_Die currentDie, Dwarf_Error *error)
 			}
 			if (bitSizeNeeded) {
 				Dwarf_Attribute bitSize = new Dwarf_Attribute_s;
-				declFile->_nextAttr = bitSize;
+				offset->_nextAttr = bitSize;
 
 				/* Set the bit size. */
 				bitSize->_type = DW_AT_bit_size;

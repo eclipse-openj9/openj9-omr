@@ -128,11 +128,13 @@ endef
 define LINK_C_SHARED_COMMAND
 -$(RM) $@
 $(CCLINKSHARED) -o $@ $(OBJECTS) $(LDFLAGS) $(MODULE_LDFLAGS) $(GLOBAL_LDFLAGS)
+cp $@ $@.dbg
 endef
 
 define LINK_CXX_SHARED_COMMAND
 -$(RM) $@
 $(CXXLINKSHARED) -o $@ $(OBJECTS) $(LDFLAGS) $(MODULE_LDFLAGS) $(GLOBAL_LDFLAGS)
+cp $@ $@.dbg
 endef
 
 endif # ARTIFACT_TYPE contains "shared"

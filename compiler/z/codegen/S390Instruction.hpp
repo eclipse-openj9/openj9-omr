@@ -2550,9 +2550,11 @@ class S390RSInstruction : public TR::S390RegInstruction
 
    int16_t                 _sourceImmediate;
    int8_t                  _maskImmediate;
-   /// _hasMaskImmediate evaluates to true if a value for the _maskImmediate field has been specified, false otherwise
+   /// Set to true if a mask value was specified during the construction of this object, indicating an RS instruction of RS-b format 
+   /// where the third operand is a mask
    bool                    _hasMaskImmediate;
-   /// _hasSourceImmediate evaluates to true if a value for the _sourceImmediate field has been specified, false otherwise
+   /// Set to true if a mask value was specified during the construction of this object, indicating an RS instruction of RS-b format 
+   /// where the third operand is a mask
    bool                    _hasSourceImmediate;
    int8_t                  _idx;
    Kind                    _kind;
@@ -2852,9 +2854,11 @@ class S390RSInstruction : public TR::S390RegInstruction
    uint32_t setSourceImmediate(uint32_t si) {return _sourceImmediate = si;}
    uint32_t getMaskImmediate()              {return _maskImmediate;}
    uint32_t setMaskImmediate(uint32_t mi)   {return _maskImmediate = mi;}
-   /// Returns true if a value for the _maskImmediate field was specified, false otherwise
+   /// Determines whether a mask value was specified during the construction of this object, indicating an RS instruction of RS-b format 
+   /// where the third operand is a mask
    bool     hasMaskImmediate()              {return _hasMaskImmediate;}
-   /// Returns true if a value for the _sourceImmediate field was specified, false otherwise
+   /// Determines whether a mask value was specified during the construction of this object, indicating an RS instruction of RS-b format 
+   /// where the third operand is a mask
    bool     hasSourceImmediate()            {return _hasSourceImmediate;}
 
    TR::Register* getFirstRegister() { return isTargetPair()? S390RegInstruction::getFirstRegister() : getRegisterOperand(1); }

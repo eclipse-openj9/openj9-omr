@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -53,7 +53,7 @@ class TR_PrexArgument
          TR_OpaqueClassBlock *profiledClazz = 0,
          bool p = false) :
       _classKind(classKind),
-      _fixedClass(clazz),
+      _class(clazz),
       _profiledClazz(profiledClazz),
       _knownObjectIndex(TR::KnownObjectTable::UNKNOWN)
       { }
@@ -68,7 +68,7 @@ class TR_PrexArgument
    void setClassIsFixed(TR_OpaqueClassBlock *fixedClass=0, TR_OpaqueClassBlock *profiledClazz=0)
       {
       _classKind     = ClassIsFixed;
-      _fixedClass    = fixedClass;
+      _class    = fixedClass;
       _profiledClazz = profiledClazz;
       }
 
@@ -76,7 +76,7 @@ class TR_PrexArgument
 
    bool usedProfiledInfo() { return _profiledClazz != NULL; }
 
-   TR_OpaqueClassBlock *getFixedClass() { return _fixedClass;    }
+   TR_OpaqueClassBlock *getClass() { return _class;    }
    TR_OpaqueClassBlock *getFixedProfiledClass() { return _profiledClazz; }
 
    TR::KnownObjectTable::Index getKnownObjectIndex() { return _knownObjectIndex; }
@@ -89,7 +89,7 @@ class TR_PrexArgument
    // optionally provided - when ClassIsFixed and the type is known to be
    // more specialized and different from the declared type
    //
-   TR_OpaqueClassBlock  *_fixedClass;
+   TR_OpaqueClassBlock  *_class;
    TR_OpaqueClassBlock  *_profiledClazz;
 
    // optionally provided - when ObjectIsKnown

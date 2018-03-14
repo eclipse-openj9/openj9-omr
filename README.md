@@ -35,7 +35,7 @@ and operating system platforms.
 Our current components are:
 
 * **`gc`**:             Garbage collection framework for managed heaps
-* **`compiler`**:       Components for builing compiler technology, such as JIT
+* **`compiler`**:       Components for building compiler technology, such as JIT
                         compilers.
 * **`jitbuilder`**:     An easy to use high level abstraction on top of the
                         compiler technology.

@@ -1416,7 +1416,13 @@ MM_Scavenger::copy(MM_EnvironmentStandard *env, MM_ForwardedHeader* forwardedHea
 
 #if defined(OMR_VALGRIND_MEMCHECK)
 //		valgrindMempoolAlloc(_extensions,(uintptr_t) destinationObjectPtr,(uintptr_t)objectCopySizeInBytes);
-		VALGRIND_MAKE_MEM_UNDEFINED((uintptr_t) destinationObjectPtr,(uintptr_t)objectCopySizeInBytes);
+//		valgrindMakeMemDefined((uintptr_t) destinationObjectPtr,(uintptr_t)objectCopySizeInBytes);
+//		VALGRIND_MAKE_MEM_UNDEFINED((uintptr_t) destinationObjectPtr,(uintptr_t)objectCopySizeInBytes);
+
+		// uintptr_t ValgrindSizeCalc = (uintptr_t) _extensions->objectModel.getConsumedSizeInBytesWithHeader(destinationObjectPtr);
+		valgrindMempoolAlloc(_extensions, (uintptr_t) destinationObjectPtr, objectReserveSizeInBytes);
+		//objectReserveSizeInBytes also takes care of hashcode offset in openj9
+
 #endif /* defined(OMR_VALGRIND_MEMCHECK) */
 
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
@@ -1447,12 +1453,19 @@ MM_Scavenger::copy(MM_EnvironmentStandard *env, MM_ForwardedHeader* forwardedHea
 		}
 
 #if defined(OMR_VALGRIND_MEMCHECK)
-		uintptr_t ValgrindSizeCalc = (uintptr_t) _extensions->objectModel.getConsumedSizeInBytesWithHeader(destinationObjectPtr);
-		valgrindMempoolAlloc(_extensions, (uintptr_t) destinationObjectPtr, ValgrindSizeCalc);
-		valgrindFreeObject(_extensions,(uintptr_t) forwardedHeader->getObject());
+		//(omrobjectptr_t) 
 
 		//Object is freed (for now) but the header (of that object) is still intact and needed
+		// uintptr_t valgrindHeaderAddress = (uintptr_t) _extensions->objectModel.ValgrindGetObjectHeaderSlotAddress(forwardedHeader->getObject());
+		// uintptr_t valgrindHeaderSize = (uintptr_t) _extensions->objectModel.getHeaderSize(forwardedHeader->getObject());
+		// MM_ForwardedHeader ValgrindFwdHeader(forwardedHeader->getObject());
+		valgrindFreeObject(_extensions,(uintptr_t) forwardedHeader->getObject());
+		// valgrindMakeMemDefined(valgrindHeaderAddress,valgrindHeaderSize);
+
+		// object is definitely dead but at many places (glue : ScavangerRootScanner)
+		// we use forwardedHeader to check it.
 		VALGRIND_MAKE_MEM_DEFINED((uintptr_t) forwardedHeader->getObject(), sizeof(MM_ForwardedHeader));
+
 #endif /* defined(OMR_VALGRIND_MEMCHECK) */
 
 #if defined(OMR_SCAVENGER_TRACE_COPY)
@@ -3325,13 +3338,18 @@ MM_Scavenger::backoutFixupAndReverseForwardPointersInSurvivor(MM_EnvironmentStan
 					 * This keeps tenure space walkable once the reverse forwarded objects are abandoned.
 					 */
 					UDATA evacuateObjectSizeInBytes = _extensions->objectModel.getConsumedSizeInBytesWithHeader(forwardedObject);					
+					MM_HeapLinkedFreeHeader* freeHeader = MM_HeapLinkedFreeHeader::getHeapLinkedFreeHeader(forwardedObject);
 #if defined(OMR_VALGRIND_MEMCHECK)
-					valgrindFreeObject(_extensions, (uintptr_t) forwardedObject);
 					// valgrindResizeObject(_extensions, (uintptr_t) originalObject, (uintptr_t) sizeof(MM_ForwardedHeader), (uintptr_t) evacuateObjectSizeInBytes);
 					valgrindMempoolAlloc(_extensions,(uintptr_t) originalObject, (uintptr_t) evacuateObjectSizeInBytes);
-					VALGRIND_MAKE_MEM_UNDEFINED((uintptr_t)forwardedObject, (uintptr_t) sizeof(MM_HeapLinkedFreeHeader));
+					valgrindFreeObject(_extensions, (uintptr_t) forwardedObject);
+					VALGRIND_MAKE_MEM_UNDEFINED((uintptr_t)freeHeader, (uintptr_t) sizeof(MM_HeapLinkedFreeHeader));
+				
+					// uintptr_t valgrindHeaderAddress = (uintptr_t) _extensions->objectModel.ValgrindGetObjectHeaderSlotAddress(forwardedObject);
+					// uintptr_t valgrindHeaderSize = (uintptr_t) _extensions->objectModel.getHeaderSize(forwardedObject);
+					// valgrindMakeMemDefined(valgrindHeaderAddress,valgrindHeaderSize);
+
 #endif /* defined(OMR_VALGRIND_MEMCHECK) */
-					MM_HeapLinkedFreeHeader* freeHeader = MM_HeapLinkedFreeHeader::getHeapLinkedFreeHeader(forwardedObject);
 					freeHeader->setNext((MM_HeapLinkedFreeHeader*)originalObject);
 					freeHeader->setSize(evacuateObjectSizeInBytes);
 #if defined(OMR_SCAVENGER_TRACE_BACKOUT)

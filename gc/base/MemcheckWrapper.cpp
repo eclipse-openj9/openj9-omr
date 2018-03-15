@@ -41,18 +41,19 @@ static uintptr_t hashEqualFn(void *leftKey, void *rightKey, void *userData)
 	return *(uintptr_t *)leftKey == *(uintptr_t *)rightKey;
 }
 
-static uintptr_t memcheckHashFn(uintptr_t x) //64 bit hash function
-{
-    x = (x ^ (x >> 30)) * UINT64_C(0xbf58476d1ce4e5b9);
-    x = (x ^ (x >> 27)) * UINT64_C(0x94d049bb133111eb);
-    x = x ^ (x >> 31);
-    return x;
-}
+// static uintptr_t memcheckHashFn(uintptr_t x) //64 bit hash function
+// {
+//     x = (x ^ (x >> 30)) * UINT64_C(0xbf58476d1ce4e5b9);
+//     x = (x ^ (x >> 27)) * UINT64_C(0x94d049bb133111eb);
+//     x = x ^ (x >> 31);
+//     return x;
+// }
 
 
 static uintptr_t hashFn(void *key, void *userData)
 {
- 	return memcheckHashFn(*(uintptr_t *)key);
+ 	// return memcheckHashFn(*(uintptr_t *)key);
+     return *(uintptr_t *)key;
 }
 
 static J9HashTable * allocateHashtable(OMRPortLibrary *portLib)
@@ -112,6 +113,11 @@ void valgrindMempoolAlloc(MM_GCExtensionsBase *extensions, uintptr_t baseAddress
     VALGRIND_PRINTF_BACKTRACE("Allocating object at 0x%lx of size %lu\n", baseAddress, size);
 #endif /* defined(VALGRIND_REQUEST_LOGS) */
 
+    // if(0xb44c0118 >= baseAddress && 0xb44c0118 <= (baseAddress + size))
+    //      VALGRIND_PRINTF_BACKTRACE("found the buggy object allocation (0xb44c0118) at %lx size %lu\n", 
+    //          baseAddress, size);
+
+
     /* Allocate object in Valgrind memory pool. */  
     VALGRIND_MEMPOOL_ALLOC(extensions->valgrindMempoolAddr, baseAddress, size);
     MUTEX_ENTER(extensions->MemcheckHashTable_mutex);
@@ -131,9 +137,9 @@ void valgrindMakeMemDefined(uintptr_t address, uintptr_t size)
 void valgrindMakeMemNoaccess(uintptr_t address, uintptr_t size)
 {
 
-    // if(0x6f94e50 >= address && 0x6f94e50 <= (address + size))
-    //     VALGRIND_PRINTF_BACKTRACE("found the buggy noaccess (0x6f94e50) at %lx size %lu\n", 
-    //         address, size);
+    //  if(0xb44c0118 >= address && 0xb44c0118 <= (address + size))
+    //      VALGRIND_PRINTF_BACKTRACE("found the buggy noaccess (0xb44c0118) at %lx size %lu\n", 
+    //          address, size);
 
 #if defined(VALGRIND_REQUEST_LOGS)
     VALGRIND_PRINTF_BACKTRACE("Marking area noaccess at 0x%lx of size %lu\n", address, size);
@@ -144,6 +150,10 @@ void valgrindMakeMemNoaccess(uintptr_t address, uintptr_t size)
 
 void valgrindClearRange(MM_GCExtensionsBase *extensions, uintptr_t baseAddress, uintptr_t size)
 {
+    //  if(0xb44c0118 >= baseAddress && 0xb44c0118 <= (baseAddress + size))
+    //      VALGRIND_PRINTF_BACKTRACE("found the buggy noaccess (0xb44c0118) at %lx size %lu\n", 
+    //          baseAddress, size);
+
     if(size == 0)
         return;
     uintptr_t topInclusiveAddr = baseAddress + size - 1;
@@ -173,18 +183,25 @@ void valgrindClearRange(MM_GCExtensionsBase *extensions, uintptr_t baseAddress, 
 
 void valgrindFreeObject(MM_GCExtensionsBase *extensions, uintptr_t baseAddress)
 {
-    if(NULL == hashTableFind(extensions->MemcheckHashTable,&baseAddress))
-    {
-        VALGRIND_PRINTF_BACKTRACE("Internal error: Unable to free object at 0x%lx. Object does not exist",
-         baseAddress);
-        return;
-    }
-
     int objSize;
     if(MM_ForwardedHeader((omrobjectptr_t) baseAddress).isForwardedPointer())
-        objSize = sizeof(MM_ForwardedHeader);
-    else
+    {
+        omrobjectptr_t fwObject = MM_ForwardedHeader((omrobjectptr_t) baseAddress).getForwardedObject();
+        objSize = (int) ((GC_ObjectModel)extensions->objectModel).getConsumedSizeInBytesWithHeader(fwObject);
+    }
+    else 
         objSize = (int) ((GC_ObjectModel)extensions->objectModel).getConsumedSizeInBytesWithHeader((omrobjectptr_t) baseAddress);
+
+    // if(0xb44c0118 >= baseAddress && 0xb44c0118 <= (baseAddress + objSize))
+    //     VALGRIND_PRINTF_BACKTRACE("found the buggy noaccess (0xb44c0118) at %lx size %d\n", 
+    //          baseAddress, objSize);
+
+    // if(NULL == hashTableFind(extensions->MemcheckHashTable,&baseAddress))
+    // {
+    //     VALGRIND_PRINTF_BACKTRACE("Internal error: Unable to free object at 0x%lx. Object does not exist",
+    //      baseAddress);
+    //     return;
+    // }
 
 #if defined(VALGRIND_REQUEST_LOGS)
     VALGRIND_PRINTF_BACKTRACE("Clearing object at 0x%lx of size %d\n",baseAddress,objSize);
@@ -200,14 +217,7 @@ void valgrindFreeObject(MM_GCExtensionsBase *extensions, uintptr_t baseAddress)
 
 MMINLINE void valgrindFreeObjectDirect(MM_GCExtensionsBase *extensions, uintptr_t baseAddress)
 {
-    int objSize;
-    if(MM_ForwardedHeader((omrobjectptr_t) baseAddress).isForwardedPointer())
-    {
-        VALGRIND_PRINTF_BACKTRACE("Internal error: got a forwarded pointer at 0x%lx\n", baseAddress);
-        objSize = sizeof(MM_ForwardedHeader);
-    }
-    else
-        objSize = (int) ((GC_ObjectModel)extensions->objectModel).getConsumedSizeInBytesWithHeader((omrobjectptr_t) baseAddress);
+    int objSize = (int) ((GC_ObjectModel)extensions->objectModel).getConsumedSizeInBytesWithHeader((omrobjectptr_t) baseAddress);
 
 #if defined(VALGRIND_REQUEST_LOGS)
     VALGRIND_PRINTF_BACKTRACE("Clearing object at 0x%lx of size %d\n",baseAddress,objSize);

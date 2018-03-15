@@ -607,7 +607,7 @@ MM_MemorySubSpaceSemiSpace::poisonEvacuateSpace()
 		current += 1;
 	}
 
-#if defined(OMR_VALGRIND_MEMCHECK)			
+#if defined(OMR_VALGRIND_MEMCHECK)
 	valgrindMakeMemNoaccess((uintptr_t) _allocateSpaceBase, (uintptr_t) _allocateSpaceTop - (uintptr_t) _allocateSpaceBase);	
 #endif /* defined(OMR_VALGRIND_MEMCHECK) */	
 }

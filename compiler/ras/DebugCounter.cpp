@@ -284,7 +284,7 @@ void TR::DebugCounterAggregation::aggregate(TR::DebugCounter *counter, int32_t d
    {
    if (!counter || delta == 0)
       return;
-   _counterDeltas->add(new (_mem->trPersistentMemory()) CounterDelta(counter, delta));
+   _counterDeltas->add(new (_mem) CounterDelta(counter, delta));
    }
 
 void TR::DebugCounterAggregation::aggregateStandardCounters(TR::Compilation *comp, TR::Node *node, const char *counterName, int32_t delta, int8_t fidelity, int32_t staticDelta)
@@ -336,10 +336,10 @@ TR::SymbolReference *TR::DebugCounterAggregation::getBumpCountSymRef(TR::Compila
    {
    if (_symRef == NULL)
       {
-      TR::StaticSymbol *symbol = TR::StaticSymbol::create(_mem->trPersistentMemory(),TR::Int64);
+      TR::StaticSymbol *symbol = TR::StaticSymbol::create(_mem,TR::Int64);
       TR_ASSERT(symbol, "StaticSymbol *symbol must not be null. Ensure availability of persistent memory");
       symbol->setStaticAddress(&_bumpCount);
-      _symRef = new (_mem->trPersistentMemory()) TR::SymbolReference(comp->getSymRefTab(), symbol);
+      _symRef = new (_mem) TR::SymbolReference(comp->getSymRefTab(), symbol);
       TR_ASSERT(_symRef, "SymbolReference *_symRef must not be null. Ensure availability of persistent memory");
       }
    return _symRef;
@@ -377,7 +377,7 @@ TR::DebugCounter *TR::DebugCounterGroup::findCounter(const char *nameChars, int3
 
 TR::DebugCounterAggregation *TR::DebugCounterGroup::createAggregation(TR::Compilation *comp)
    {
-   TR::DebugCounterAggregation *aggregatedCounters = new (comp->trPersistentMemory()) TR::DebugCounterAggregation(comp->trMemory());
+   TR::DebugCounterAggregation *aggregatedCounters = new (comp->trPersistentMemory()) TR::DebugCounterAggregation(comp->trPersistentMemory());
    _aggregations.add(aggregatedCounters);
    return aggregatedCounters;
    }

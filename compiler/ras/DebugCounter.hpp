@@ -203,7 +203,7 @@ class DebugCounterAggregation : public DebugCounterBase
       int32_t delta;
       };
 
-   TR_Memory *_mem;
+   TR_PersistentMemory *_mem;
    TR::SymbolReference *_symRef;
    TR_PersistentList<CounterDelta> *_counterDeltas;
    int64_t _bumpCount;
@@ -213,8 +213,8 @@ class DebugCounterAggregation : public DebugCounterBase
    void aggregateDebugCounterHistogram (TR::Compilation *comp, TR::Node *node, DebugCounter *counter, int32_t delta, int8_t fidelity, int32_t staticDelta);
 
 protected:
-   DebugCounterAggregation(TR_Memory *mem)
-         : _mem(mem), _counterDeltas(new (mem->trPersistentMemory()) TR_PersistentList<CounterDelta>()),
+   DebugCounterAggregation(TR_PersistentMemory *mem)
+         : _mem(mem), _counterDeltas(new (mem) TR_PersistentList<CounterDelta>()),
            _symRef(NULL), _bumpCount(0), _lastBumpCount(0){}
 public:
    TR_ALLOC(TR_Memory::DebugCounter)

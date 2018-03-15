@@ -255,6 +255,18 @@ public:
    TR::IlValue *ConvertTo(TR::IlType *t, TR::IlValue *v);
    TR::IlValue *UnsignedConvertTo(TR::IlType *t, TR::IlValue *v);
 
+   /**
+    * @brief Convert the bit representation of an IlValue to a given type
+    * @param type is the target type of the conversion
+    * @param value is the value to be converted
+    * @return the IlValue converted to the specified type
+    *
+    * This service allows the bit representation of a floating-point
+    * IlValue to be converted to an integer IlValue and vice versa.
+    * The floating-point and integer types must be of the same bit-width.
+    */
+   TR::IlValue* ConvertBitsTo(TR::IlType* type, TR::IlValue* value);
+
    // memory
    TR::IlValue *CreateLocalArray(int32_t numElements, TR::IlType *elementType);
    TR::IlValue *CreateLocalStruct(TR::IlType *structType);

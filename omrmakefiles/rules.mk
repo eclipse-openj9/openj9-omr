@@ -210,11 +210,11 @@ $(CC) $(CPPFLAGS) $(MODULE_CPPFLAGS) $(GLOBAL_CPPFLAGS) -P $< -Fi $@
 endef
 else
 define DDR_C_COMMAND
-$(CC) $(CFLAGS) $(MODULE_CPPFLAGS) $(GLOBAL_CPPFLAGS) -E $< | grep '^@' > $@
+$(CC) $(CFLAGS) $(MODULE_CPPFLAGS) $(GLOBAL_CPPFLAGS) -E $< | sed -n -e '/^@/p' > $@
 endef
 
 define DDR_CPP_COMMAND
-$(CC) $(CPPFLAGS) $(MODULE_CPPFLAGS) $(GLOBAL_CPPFLAGS) -E $< | grep '^@' > $@
+$(CC) $(CPPFLAGS) $(MODULE_CPPFLAGS) $(GLOBAL_CPPFLAGS) -E $< | sed -n -e '/^@/p' > $@
 endef
 endif
 

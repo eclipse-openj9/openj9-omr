@@ -180,8 +180,8 @@ WIN32_WINNT version constants :
 #define _WIN32_WINNT_WIN7                   0x0601
 #define _WIN32_WINNT_WIN8                   0x0602
 #define _WIN32_WINNT_WINBLUE                0x0603
-#define _WIN32_WINNT_WINTHRESHOLD           0x0A00 /* ABRACADABRA_THRESHOLD * /
-#define _WIN32_WINNT_WIN10                  0x0A00 /* ABRACADABRA_THRESHOLD * /
+#define _WIN32_WINNT_WINTHRESHOLD           0x0A00 / * ABRACADABRA_THRESHOLD * /
+#define _WIN32_WINNT_WIN10                  0x0A00 / * ABRACADABRA_THRESHOLD * /
 */
 
 	if (NULL == PPG_si_osType) {

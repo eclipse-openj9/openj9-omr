@@ -161,6 +161,9 @@ Testing/
 Debug/
 gc/example/Debug/
 omr_test/Debug/
+port/*/omrsyslogmessages.h
+port/*/omrsyslogmessages.rc
+port/*/MSG00001.bin
 port/omrsyslogmessages.h
 port/omrsyslogmessages.rc
 port/MSG00001.bin

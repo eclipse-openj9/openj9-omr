@@ -41,18 +41,8 @@ static uintptr_t hashEqualFn(void *leftKey, void *rightKey, void *userData)
 	return *(uintptr_t *)leftKey == *(uintptr_t *)rightKey;
 }
 
-// static uintptr_t memcheckHashFn(uintptr_t x) //64 bit hash function
-// {
-//     x = (x ^ (x >> 30)) * UINT64_C(0xbf58476d1ce4e5b9);
-//     x = (x ^ (x >> 27)) * UINT64_C(0x94d049bb133111eb);
-//     x = x ^ (x >> 31);
-//     return x;
-// }
-
-
 static uintptr_t hashFn(void *key, void *userData)
 {
- 	// return memcheckHashFn(*(uintptr_t *)key);
      return *(uintptr_t *)key;
 }
 
@@ -64,8 +54,7 @@ static J9HashTable * allocateHashtable(OMRPortLibrary *portLib)
 
 	hashtable = hashTableNew(portLib,
 			tableName,
-			//HASH_TABLE_SIZE_MAX,
-			2200103,
+			0,
 			entrySize,
 			0,
 			0,
@@ -96,7 +85,6 @@ void valgrindDestroyMempool(MM_GCExtensionsBase *extensions)
     if(extensions->valgrindMempoolAddr != 0)
 	{
         //All objects should have been freed by now!
-        // Assert_MM_true(extensions->_allocatedObjects.empty());
         VALGRIND_DESTROY_MEMPOOL(extensions->valgrindMempoolAddr);
         MUTEX_ENTER(extensions->MemcheckHashTable_mutex);
         extensions->valgrindMempoolAddr = 0;
@@ -112,11 +100,6 @@ void valgrindMempoolAlloc(MM_GCExtensionsBase *extensions, uintptr_t baseAddress
 #if defined(VALGRIND_REQUEST_LOGS)
     VALGRIND_PRINTF_BACKTRACE("Allocating object at 0x%lx of size %lu\n", baseAddress, size);
 #endif /* defined(VALGRIND_REQUEST_LOGS) */
-
-    // if(0xb44c0118 >= baseAddress && 0xb44c0118 <= (baseAddress + size))
-    //      VALGRIND_PRINTF_BACKTRACE("found the buggy object allocation (0xb44c0118) at %lx size %lu\n", 
-    //          baseAddress, size);
-
 
     /* Allocate object in Valgrind memory pool. */  
     VALGRIND_MEMPOOL_ALLOC(extensions->valgrindMempoolAddr, baseAddress, size);
@@ -137,10 +120,6 @@ void valgrindMakeMemDefined(uintptr_t address, uintptr_t size)
 void valgrindMakeMemNoaccess(uintptr_t address, uintptr_t size)
 {
 
-    //  if(0xb44c0118 >= address && 0xb44c0118 <= (address + size))
-    //      VALGRIND_PRINTF_BACKTRACE("found the buggy noaccess (0xb44c0118) at %lx size %lu\n", 
-    //          address, size);
-
 #if defined(VALGRIND_REQUEST_LOGS)
     VALGRIND_PRINTF_BACKTRACE("Marking area noaccess at 0x%lx of size %lu\n", address, size);
 #endif /* defined(VALGRIND_REQUEST_LOGS) */
@@ -148,12 +127,18 @@ void valgrindMakeMemNoaccess(uintptr_t address, uintptr_t size)
     VALGRIND_MAKE_MEM_NOACCESS(address, size);
 }
 
+void valgrindMakeMemUndefined(uintptr_t address, uintptr_t size)
+{
+
+#if defined(VALGRIND_REQUEST_LOGS)
+    VALGRIND_PRINTF_BACKTRACE("Marking area undefined at 0x%lx of size %lu\n", address, size);
+#endif /* defined(VALGRIND_REQUEST_LOGS) */
+
+    VALGRIND_MAKE_MEM_UNDEFINED(address, size);
+}
+
 void valgrindClearRange(MM_GCExtensionsBase *extensions, uintptr_t baseAddress, uintptr_t size)
 {
-    //  if(0xb44c0118 >= baseAddress && 0xb44c0118 <= (baseAddress + size))
-    //      VALGRIND_PRINTF_BACKTRACE("found the buggy noaccess (0xb44c0118) at %lx size %lu\n", 
-    //          baseAddress, size);
-
     if(size == 0)
         return;
     uintptr_t topInclusiveAddr = baseAddress + size - 1;
@@ -192,17 +177,6 @@ void valgrindFreeObject(MM_GCExtensionsBase *extensions, uintptr_t baseAddress)
     else 
         objSize = (int) ((GC_ObjectModel)extensions->objectModel).getConsumedSizeInBytesWithHeader((omrobjectptr_t) baseAddress);
 
-    // if(0xb44c0118 >= baseAddress && 0xb44c0118 <= (baseAddress + objSize))
-    //     VALGRIND_PRINTF_BACKTRACE("found the buggy noaccess (0xb44c0118) at %lx size %d\n", 
-    //          baseAddress, objSize);
-
-    // if(NULL == hashTableFind(extensions->MemcheckHashTable,&baseAddress))
-    // {
-    //     VALGRIND_PRINTF_BACKTRACE("Internal error: Unable to free object at 0x%lx. Object does not exist",
-    //      baseAddress);
-    //     return;
-    // }
-
 #if defined(VALGRIND_REQUEST_LOGS)
     VALGRIND_PRINTF_BACKTRACE("Clearing object at 0x%lx of size %d\n",baseAddress,objSize);
 #endif /* defined(VALGRIND_REQUEST_LOGS) */
@@ -234,16 +208,9 @@ bool valgrindCheckObjectInPool(MM_GCExtensionsBase *extensions, uintptr_t baseAd
 #endif /* defined(VALGRIND_REQUEST_LOGS) */
 
     MUTEX_ENTER(extensions->MemcheckHashTable_mutex);
-    if(hashTableFind(extensions->MemcheckHashTable,&baseAddress) != NULL)
-    {
-        MUTEX_EXIT(extensions->MemcheckHashTable_mutex);
-        return true;
-    }
-    else
-    {   
-        MUTEX_EXIT(extensions->MemcheckHashTable_mutex); 
-        return false;
-    }
+    bool exists = hashTableFind(extensions->MemcheckHashTable,&baseAddress) != NULL? true : false;
+    MUTEX_EXIT(extensions->MemcheckHashTable_mutex);
+    return exists;
 }
 
 void valgrindResizeObject(MM_GCExtensionsBase *extensions, uintptr_t baseAddress, uintptr_t oldSize, uintptr_t newSize)

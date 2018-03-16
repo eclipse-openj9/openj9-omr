@@ -88,6 +88,16 @@ void valgrindMakeMemDefined(uintptr_t address, uintptr_t size);
 void valgrindMakeMemNoaccess(uintptr_t address, uintptr_t size);
 
 /**
+ * Mark a address range as undefined
+ *
+ * @param[in] starting address of the range.
+ * @param[in] size size of the range.
+ *
+*/
+void valgrindMakeMemUndefined(uintptr_t address, uintptr_t size);
+
+
+/**
  * Free objects in given range from memory pool
  * Objects will become unaccessable after this request.
  *

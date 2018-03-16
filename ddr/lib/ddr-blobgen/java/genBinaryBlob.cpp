@@ -398,7 +398,9 @@ isNeededBy(UDT *type, const vector<Field *> &fields)
 {
 	bool referenced = true;
 
-	if (type->isAnonymousType()) {
+	if (type->_blacklisted) {
+		referenced = false;
+	} else if (type->isAnonymousType()) {
 		referenced = false;
 		for (vector<Field *>::const_iterator it = fields.begin(); it != fields.end(); ++it) {
 			if ((*it)->_fieldType == type) {
@@ -640,7 +642,7 @@ BlobBuildVisitor::visitNamespace(NamespaceUDT *ns) const
 		for (vector<UDT *>::const_iterator it = ns->_subUDTs.begin(); it != ns->_subUDTs.end(); ++it) {
 			UDT *nested = *it;
 
-			if (!nested->isAnonymousType()) {
+			if (!nested->_blacklisted && !nested->isAnonymousType()) {
 				rc = nested->acceptVisitor(builder);
 				if (DDR_RC_OK != rc) {
 					break;
@@ -984,7 +986,7 @@ BlobEnumerateVisitor::visitNamespace(NamespaceUDT *type) const
 		for (vector<UDT *>::const_iterator it = type->_subUDTs.begin(); it != type->_subUDTs.end(); ++it) {
 			UDT *nested = *it;
 
-			if (!nested->isAnonymousType()) {
+			if (!nested->_blacklisted && !nested->isAnonymousType()) {
 				rc = nested->acceptVisitor(*this);
 				if (DDR_RC_OK != rc) {
 					break;

@@ -42,7 +42,7 @@
 using std::ios;
 using std::stringstream;
 
-const char * const baseTypeArray[] = {
+static const char * const baseTypeArray[] = {
 	"<NoType>",
 	"void",
 	"I8", /* This could also be char. */
@@ -57,7 +57,7 @@ const char * const baseTypeArray[] = {
 	"short",
 	"unsigned short",
 	"I32", /* This should be just a long */
-	"U32", /* his should be unsigned long */
+	"U32", /* This should be unsigned long */
 	"I8",
 	"I16",
 	"I32",
@@ -79,11 +79,8 @@ const char * const baseTypeArray[] = {
 	"double"
 };
 
-/* temporary global variable to be removed once PdbScanner is complete */
-static string errorNoType = "ERROR_PDBSCANNER_MISSING_THIS_TYPE";
-
 void
-PdbScanner::addType(Type *type, bool addToIR = true)
+PdbScanner::addType(UDT *type, NamespaceUDT *outerNamespace)
 {
 	/* Add the type to the map of found types. Subtypes should
 	 * not be added to the IR. Types are mapped by their size and
@@ -91,19 +88,19 @@ PdbScanner::addType(Type *type, bool addToIR = true)
 	 */
 	string fullName = type->getFullName();
 	if (!fullName.empty() && _typeMap.end() == _typeMap.find(fullName)) {
-		if (addToIR) {
-			_ir->_types.push_back(type);
-		}
 		_typeMap[fullName] = type;
+	}
+	if (NULL != outerNamespace) {
+		outerNamespace->_subUDTs.push_back(type);
+	} else {
+		_ir->_types.push_back(type);
 	}
 }
 
 void
 PdbScanner::initBaseTypeList()
 {
-	/* Add the base types with the typemap, to be referenced as
-	 * fields but not added to the IR at this time.
-	 */
+	/* Add the base types to the typemap and to the IR. */
 	size_t length = sizeof(baseTypeArray) / sizeof(*baseTypeArray);
 	for (size_t i = 0; i < length; ++i) {
 		Type *type = new Type(0);
@@ -111,43 +108,6 @@ PdbScanner::initBaseTypeList()
 		_typeMap[type->_name] = type;
 		_ir->_types.push_back(type);
 	}
-
-	Type *type = new Type(0);
-	type->_name = errorNoType;
-	_typeMap[type->_name] = type;
-	_ir->_types.push_back(type);
-}
-
-
-DDR_RC
-getName(IDiaSymbol *symbol, string *name)
-{
-	DDR_RC rc = DDR_RC_OK;
-	/* Attempt to get the name associated with a symbol. */
-	BSTR nameBstr;
-	HRESULT hr = symbol->get_name(&nameBstr);
-	if (FAILED(hr)) {
-		ERRMSG("get_name failed with HRESULT = %08X", hr);
-		rc = DDR_RC_ERROR;
-	} else {
-		char *nameChar = _com_util::ConvertBSTRToString(nameBstr);
-		if (NULL == nameChar) {
-			ERRMSG("Could not convert Bstr");
-		} else {
-			*name = string(nameChar);
-			size_t pos = name->find("`anonymous-namespace'::");
-			if (string::npos == pos) {
-				pos = name->find("`anonymous namespace'::");
-			}
-			if (string::npos != pos) {
-				*name = name->replace(pos, 23, "");
-			}
-			free(nameChar);
-		}
-		SysFreeString(nameBstr);
-	}
-
-	return rc;
 }
 
 DDR_RC
@@ -178,19 +138,9 @@ PdbScanner::startScan(OMRPortLibrary *portLibrary, Symbol_IR *ir, vector<string>
 		 * Finding UDT and enum children separately seems to work around this
 		 * quirk in the PDB API.
 		 */
-		std::size_t lastProgressUpdate = 0;
-		std::size_t count = 0;
 		for (vector<string>::iterator it = debugFiles->begin(); it != debugFiles->end(); ++it) {
-			if (count ++ > lastProgressUpdate + debugFiles->size() / 10) {
-				printf("Completed scanning %zu of %zu files...\n", count, debugFiles->size());
-				lastProgressUpdate = count;
-			}
-
-			string file = *it;
-			size_t first = file.find_first_not_of(" \r\n\t");
-			size_t last = file.find_last_not_of(" \r\n\t");
-			file = file.substr(first, last - first + 1);
-			const size_t len = strlen(file.c_str());
+			const string &file = *it;
+			const size_t len = file.length();
 			wchar_t *filename = new wchar_t[len + 1];
 			mbstowcs(filename, file.c_str(), len + 1);
 			rc = loadDataFromPdb(filename, &diaDataSource, &diaSession, &diaSymbol);
@@ -232,50 +182,10 @@ PdbScanner::startScan(OMRPortLibrary *portLibrary, Symbol_IR *ir, vector<string>
 	if (DDR_RC_OK == rc) {
 		rc = updatePostponedFieldNames();
 	}
-	if (DDR_RC_OK == rc) {
-		renameAnonymousTypes();
-	}
+
 	CoUninitialize();
 
 	return rc;
-}
-
-void
-PdbScanner::renameAnonymousTypes()
-{
-	/* Anonymous types have the name format "<unnamed-type-[fieldName]".
-	 * Instead of handling them in the Pdb scanner, add as much info to
-	 * the IR as possible and let the output generators decide how to
-	 * print it.
-	 */
-	ULONGLONG unnamedTypeCount = 0;
-	for (vector<Type *>::iterator it = _ir->_types.begin(); it != _ir->_types.end(); ++it) {
-		renameAnonymousType(*it, &unnamedTypeCount);
-	}
-}
-
-void
-PdbScanner::renameAnonymousType(Type *type, ULONGLONG *unnamedTypeCount)
-{
-	if ((string::npos != type->_name.find("<unnamed-type-")) || ("<unnamed-tag>" == type->_name)) {
-		if ((NULL == type->getNamespace()) && (string::npos == type->_name.find("::"))) {
-			/* Anonymous global types would ideally be named by file name,
-			 * but PDB info does not associate types with source files.
-			 * Since they also cannot be referenced by outer type, give them
-			 * a placeholder name.
-			 */
-			stringstream ss;
-			ss << "AnonymousType" << (*unnamedTypeCount)++;
-			type->_name = ss.str();
-		} else {
-			type->_name = "";
-		}
-	}
-	if (NULL != type->getSubUDTS()) {
-		for (vector<UDT *>::iterator it = type->getSubUDTS()->begin(); it != type->getSubUDTS()->end(); ++it) {
-			renameAnonymousType(*it, unnamedTypeCount);
-		}
-	}
 }
 
 DDR_RC
@@ -287,24 +197,25 @@ PdbScanner::loadDataFromPdb(const wchar_t *filename, IDiaDataSource **dataSource
 	 */
 	HRESULT hr = CoCreateInstance(__uuidof(DiaSource), NULL, CLSCTX_INPROC_SERVER, __uuidof(IDiaDataSource), (void **)dataSource);
 	if (FAILED(hr)) {
-		const char *libraries[] = {"MSDIA100", "MSDIA80", "MSDIA70", "MSDIA60"};
+		static const char * const libraries[] = { "MSDIA120", "MSDIA100", "MSDIA80", "MSDIA70", "MSDIA60" };
 		rc = DDR_RC_ERROR;
 		for (size_t i = 0; i < sizeof(libraries) / sizeof(*libraries); ++i) {
 			HMODULE hmodule = LoadLibrary(libraries[i]);
-			BOOL (WINAPI *DllGetClassObject)(REFCLSID, REFIID, LPVOID) = NULL;
-			if (NULL != hmodule) {
-				DllGetClassObject = (BOOL (WINAPI *)(REFCLSID, REFIID, LPVOID))GetProcAddress(hmodule, "DllGetClassObject");
-			} else {
-				ERRMSG("Cannot find %s.dll\n", libraries[i]);
+			if (NULL == hmodule) {
+				continue;
 			}
-
+			BOOL (WINAPI *DllGetClassObject)(REFCLSID, REFIID, LPVOID) =
+					(BOOL (WINAPI *)(REFCLSID, REFIID, LPVOID))
+					GetProcAddress(hmodule, "DllGetClassObject");
+			if (NULL == DllGetClassObject) {
+				continue;
+			}
 			IClassFactory *classFactory = NULL;
-			if (NULL != DllGetClassObject) {
-				hr = DllGetClassObject(__uuidof(DiaSource), IID_IClassFactory, &classFactory);
+			hr = DllGetClassObject(__uuidof(DiaSource), IID_IClassFactory, &classFactory);
+			if (FAILED(hr)) {
+				continue;
 			}
-			if (SUCCEEDED(hr)) {
-				hr = classFactory->CreateInstance(NULL, __uuidof(IDiaDataSource), (void **)dataSource);
-			}
+			hr = classFactory->CreateInstance(NULL, __uuidof(IDiaDataSource), (void **)dataSource);
 			if (SUCCEEDED(hr)) {
 				rc = DDR_RC_OK;
 				break;
@@ -353,11 +264,14 @@ PdbScanner::updatePostponedFieldNames()
 	 */
 	for (vector<PostponedType>::iterator it = _postponedFields.begin(); it != _postponedFields.end(); ++it) {
 		Type **type = it->type;
-		if (_typeMap.end() != _typeMap.find(it->name)) {
-			*type = _typeMap[it->name];
+		const string &fullName = it->name;
+		unordered_map<string, Type *>::const_iterator map_it = _typeMap.find(fullName);
+		if (_typeMap.end() != map_it) {
+			*type = map_it->second;
 		} else {
 			*type = new ClassUDT(0);
-			(*type)->_name = it->name;
+			(*type)->_name = getSimpleName(fullName);
+			(*type)->_blacklisted = checkBlacklistedType((*type)->_name);
 		}
 	}
 
@@ -412,13 +326,13 @@ PdbScanner::addChildrenSymbols(IDiaSymbol *symbol, enum SymTagEnum symTag, Names
 		}
 		for (ULONG index = 0; index < celt; ++index) {
 			string udtName = "";
-			DWORD symTag = 0;
-			hr = childSymbols[index]->get_symTag(&symTag);
+			DWORD childTag = 0;
+			hr = childSymbols[index]->get_symTag(&childTag);
 			if (FAILED(hr)) {
-				rc = DDR_RC_ERROR;
 				ERRMSG("Failed to get child symbol SymTag with HRESULT = %08X", hr);
+				rc = DDR_RC_ERROR;
 			}
-			if ((DDR_RC_OK == rc) && ((SymTagEnum == symTag) || (SymTagUDT == symTag))) {
+			if ((DDR_RC_OK == rc) && ((SymTagEnum == childTag) || (SymTagUDT == childTag))) {
 				rc = getName(childSymbols[index], &udtName);
 			}
 			if (DDR_RC_OK == rc) {
@@ -428,12 +342,13 @@ PdbScanner::addChildrenSymbols(IDiaSymbol *symbol, enum SymTagEnum symTag, Names
 					 * fields/subtypes when scanning multiple files. Children symbols must be processed
 					 * for already existing symbols because fields and subtypes can appear separately.
 					 */
-					if (!alreadyCheckedFields && (SymTagData == symTag)) {
+					if (!alreadyCheckedFields && (SymTagData == childTag)) {
 						alreadyCheckedFields = true;
 						alreadyHadFields = !((ClassType *)outerNamespace)->_fieldMembers.empty();
 					}
-					if ((SymTagData == symTag && !alreadyHadFields) || (SymTagData != symTag && !alreadyHadSubtypes)) {
-						addSymbol(childSymbols[index], outerNamespace);
+
+					if (!((SymTagData == childTag) ? alreadyHadFields : alreadyHadSubtypes)) {
+						rc = addSymbol(childSymbols[index], outerNamespace);
 					}
 					childSymbols[index]->Release();
 				} else {
@@ -451,7 +366,7 @@ PdbScanner::addChildrenSymbols(IDiaSymbol *symbol, enum SymTagEnum symTag, Names
 	 */
 	if (DDR_RC_OK == rc) {
 		for (vector<ULONG>::iterator it = innerTypeSymbols.begin(); it != innerTypeSymbols.end() && DDR_RC_OK == rc; ++it) {
-			rc = addSymbol(childSymbols[*it], NULL);
+			rc = addSymbol(childSymbols[*it], outerNamespace);
 			childSymbols[*it]->Release();
 		}
 	}
@@ -468,63 +383,23 @@ PdbScanner::addChildrenSymbols(IDiaSymbol *symbol, enum SymTagEnum symTag, Names
 DDR_RC
 PdbScanner::createTypedef(IDiaSymbol *symbol, NamespaceUDT *outerNamespace)
 {
-	DDR_RC rc = DDR_RC_OK;
 	/* Get the typedef name and check if it is blacklisted. */
-	string typedefName = "";
-	rc = getName(symbol, &typedefName);
+	string symbolName = "";
+	DDR_RC rc = getName(symbol, &symbolName);
 
-	if ((DDR_RC_OK == rc) && (!checkBlacklistedType(typedefName))) {
-		/* Get the typedef's type's name to check the blacklist. */
-		IDiaSymbol *baseSymbol = symbol;
-		DWORD symTag = 0;
-		while (SymTagUDT != symTag
-			&& SymTagEnum != symTag
-			&& SymTagBaseType != symTag
-			&& SymTagFunctionType != symTag
-		) {
-			/* Ignore sym tags Array and Pointer to find the actual type of the typedef.
-			 * setType() has similar logic, but black listed types would not be found
-			 * and errenously added to the postponed type list.
-			 */
-			HRESULT hr = baseSymbol->get_type(&baseSymbol);
-			if (FAILED(hr)) {
-				rc = DDR_RC_ERROR;
-				ERRMSG("Failed to get type of typedef");
-			}
-			if (DDR_RC_OK == rc) {
-				hr = baseSymbol->get_symTag(&symTag);
-				if (FAILED(hr)) {
-					ERRMSG("get_symTag() failed with HRESULT = %08X", hr);
-					rc = DDR_RC_ERROR;
-				}
-			}
-		}
-		/* NOTE: Cannot get the name of function and base types -- attempting to causes crash. */
-		string baseName = "";
-		if ((DDR_RC_OK == rc) && ((SymTagUDT == symTag) || (SymTagEnum == symTag))) {
-			rc = getName(baseSymbol, &baseName);
-		}
+	if (DDR_RC_OK == rc) {
+		string typedefName = getSimpleName(symbolName);
+		TypedefUDT *newTypedef = new TypedefUDT;
+		newTypedef->_name = typedefName;
+		newTypedef->_blacklisted = checkBlacklistedType(typedefName);
+		newTypedef->_outerNamespace = outerNamespace;
+		/* Get the base type. */
+		rc = setType(symbol, &newTypedef->_aliasedType, &newTypedef->_modifiers, NULL);
 		if (DDR_RC_OK == rc) {
-			if (!checkBlacklistedType(baseName)) {
-				TypedefUDT *newTypedef = new TypedefUDT;
-				newTypedef->_name = typedefName;
-				newTypedef->_aliasedType = NULL;
-				newTypedef->_outerNamespace = outerNamespace;
-				if (NULL != outerNamespace) {
-					outerNamespace->_subUDTs.push_back(newTypedef);
-				}
-				/* Get the typedef type. */
-				rc = setType(symbol, &newTypedef->_aliasedType, &newTypedef->_modifiers, NULL);
-				if (DDR_RC_OK == rc) {
-					newTypedef->_sizeOf = newTypedef->_aliasedType->_sizeOf;
-					addType(newTypedef, NULL == outerNamespace);
-				} else {
-					delete newTypedef;
-				}
-			}
-		}
-		if (NULL != baseSymbol) {
-			baseSymbol->Release();
+			newTypedef->_sizeOf = newTypedef->_aliasedType->_sizeOf;
+			addType(newTypedef, outerNamespace);
+		} else {
+			delete newTypedef;
 		}
 	}
 	return rc;
@@ -546,22 +421,81 @@ PdbScanner::addEnumMembers(IDiaSymbol *symbol, EnumUDT *enumUDT)
 	}
 
 	if (DDR_RC_OK == rc) {
+		vector<EnumMember *> *members = NULL;
+		NamespaceUDT *outerUDT = enumUDT->_outerNamespace;
+		/* literals of a nested anonymous enum are collected in the enclosing namespace */
+		if ((NULL != outerUDT) && enumUDT->isAnonymousType()) {
+			members = &outerUDT->_enumMembers;
+		} else {
+			members = &enumUDT->_enumMembers;
+		}
+		set<string> memberNames;
+		for (vector<EnumMember *>::iterator m = members->begin(); m != members->end(); ++m) {
+			memberNames.insert((*m)->_name);
+		}
 		IDiaSymbol *childSymbol = NULL;
 		ULONG celt = 0;
 		LONG count = 0;
 		enumSymbols->get_Count(&count);
-		enumUDT->_enumMembers.reserve(count);
+		members->reserve(count);
 		while (SUCCEEDED(enumSymbols->Next(1, &childSymbol, &celt))
 			&& (1 == celt)
 			&& (DDR_RC_OK == rc)
 		) {
 			string name = "";
+			int value = 0;
 			rc = getName(childSymbol, &name);
 
 			if (DDR_RC_OK == rc) {
-				EnumMember *enumMember = new EnumMember;
-				enumMember->_name = name;
-				enumUDT->_enumMembers.push_back(enumMember);
+				VARIANT variantValue;
+				variantValue.vt = VT_EMPTY;
+
+				hr = childSymbol->get_value(&variantValue);
+				if (FAILED(hr)) {
+					ERRMSG("get_value() failed with HRESULT = %08X", hr);
+					rc = DDR_RC_ERROR;
+				} else {
+					switch (variantValue.vt) {
+					case VT_I1:
+						value = variantValue.cVal;
+						break;
+					case VT_I2:
+						value = variantValue.iVal;
+						break;
+					case VT_I4:
+						value = (int)variantValue.lVal;
+						break;
+					case VT_UI1:
+						value = variantValue.bVal;
+						break;
+					case VT_UI2:
+						value = variantValue.uiVal;
+						break;
+					case VT_UI4:
+						value = (int)variantValue.ulVal;
+						break;
+					case VT_INT:
+						value = variantValue.intVal;
+						break;
+					case VT_UINT:
+						value = (int)variantValue.uintVal;
+						break;
+					default:
+						ERRMSG("get_value() unexpected variant: 0x%02X", variantValue.vt);
+						rc = DDR_RC_ERROR;
+						break;
+					}
+				}
+			}
+
+			if (DDR_RC_OK == rc) {
+				if (memberNames.end() == memberNames.find(name)) {
+					EnumMember *enumMember = new EnumMember;
+					enumMember->_name = name;
+					enumMember->_value = value;
+					members->push_back(enumMember);
+					memberNames.insert(name);
+				}
 			}
 			childSymbol->Release();
 		}
@@ -588,9 +522,9 @@ PdbScanner::createEnumUDT(IDiaSymbol *symbol, NamespaceUDT *outerNamespace)
 		rc = DDR_RC_ERROR;
 	}
 
-	string name = "";
+	string symbolName = "";
 	if (DDR_RC_OK == rc) {
-		 rc = getName(symbol, &name);
+		 rc = getName(symbol, &symbolName);
 	}
 
 	if (DDR_RC_OK == rc) {
@@ -598,45 +532,39 @@ PdbScanner::createEnumUDT(IDiaSymbol *symbol, NamespaceUDT *outerNamespace)
 		 * child symbol of another UDT symbol. They are also found with
 		 * a decorated "Parent::SubUDT" name again while iterating all Enums.
 		 */
-		if (!checkBlacklistedType(name)) {
-			ULONGLONG size = 0ULL;
-			if (DDR_RC_OK == rc) {
-				rc = getSize(symbol, &size);
+		ULONGLONG size = 0ULL;
+		rc = getSize(symbol, &size);
+		if (DDR_RC_OK == rc) {
+			getNamespaceFromName(symbolName, &outerNamespace);
+			string name = getSimpleName(symbolName);
+			string fullName = "";
+			if (NULL == outerNamespace) {
+				fullName = name;
+			} else {
+				fullName = outerNamespace->getFullName() + "::" + name;
 			}
-			if (DDR_RC_OK == rc) {
-				string fullName = "";
-				if (NULL == outerNamespace) {
-					fullName = name;
+			if (_typeMap.end() == _typeMap.find(fullName)) {
+				/* If this is a new enum, get its members and add it to the IR. */
+				EnumUDT *enumUDT = new EnumUDT;
+				enumUDT->_name = name;
+				enumUDT->_blacklisted = checkBlacklistedType(name);
+				enumUDT->_outerNamespace = outerNamespace;
+				rc = addEnumMembers(symbol, enumUDT);
+
+				/* If successful, add the new enum to the IR. */
+				if (DDR_RC_OK == rc) {
+					addType(enumUDT, outerNamespace);
 				} else {
-					fullName = outerNamespace->_name + "::" + name;
+					delete enumUDT;
 				}
-				if (fullName.empty() || (_typeMap.end() == _typeMap.find(fullName)) || ("<unnamed-tag>" == name)) {
-					getNamespaceFromName(&name, &outerNamespace);
-
-					/* If this is a new enum, get its members and add it to the IR. */
-					EnumUDT *enumUDT = new EnumUDT;
-					enumUDT->_name = name;
+			} else {
+				EnumUDT *enumUDT = (EnumUDT *)getType(fullName);
+				if ((NULL != outerNamespace) && (NULL == enumUDT->_outerNamespace)) {
+					enumUDT->_outerNamespace = outerNamespace;
+					outerNamespace->_subUDTs.push_back(enumUDT);
+				}
+				if (enumUDT->_enumMembers.empty()) {
 					rc = addEnumMembers(symbol, enumUDT);
-
-					/* If successful, add the new enum to the IR. */
-					if (DDR_RC_OK == rc) {
-						enumUDT->_outerNamespace = outerNamespace;
-						if (NULL != outerNamespace) {
-							outerNamespace->_subUDTs.push_back(enumUDT);
-						}
-						addType(enumUDT, NULL == outerNamespace);
-					} else {
-						delete enumUDT;
-					}
-				} else if (_typeMap.end() != _typeMap.find(fullName)) {
-					EnumUDT *enumUDT = (EnumUDT *)(getType(fullName));
-					if ((NULL == enumUDT->_outerNamespace) && (NULL != outerNamespace)) {
-						enumUDT->_outerNamespace = outerNamespace;
-						outerNamespace->_subUDTs.push_back(enumUDT);
-					}
-					if (enumUDT->_enumMembers.empty()) {
-						rc = addEnumMembers(symbol, enumUDT);
-					}
 				}
 			}
 		}
@@ -707,6 +635,7 @@ PdbScanner::setMemberOffset(IDiaSymbol *symbol, Field *newField)
 		default:
 			ERRMSG("Unknown offset type: %d, name: %s", locType, newField->_name.c_str());
 			rc = DDR_RC_ERROR;
+			break;
 		}
 	}
 
@@ -766,24 +695,34 @@ PdbScanner::setTypeUDT(IDiaSymbol *typeSymbol, Type **type, NamespaceUDT *outerU
 		rc = DDR_RC_ERROR;
 	}
 
-	string name = "";
+	string symbolName = "";
 	if (DDR_RC_OK == rc) {
-		rc = getName(typeSymbol, &name);
+		rc = getName(typeSymbol, &symbolName);
 	}
 	if (DDR_RC_OK == rc) {
-		if (!name.empty() && _typeMap.end() != _typeMap.find(name)) {
-			*type = _typeMap[name];
-		} else if (("<unnamed-tag>" == name) && (NULL != outerUDT)) {
+		getNamespaceFromName(symbolName, &outerUDT);
+		string name = getSimpleName(symbolName);
+		string fullName = "";
+		if (NULL == outerUDT) {
+			fullName = name;
+		} else {
+			fullName = outerUDT->getFullName() + "::" + name;
+		}
+		unordered_map<string, Type *>::const_iterator map_it = _typeMap.find(fullName);
+		if (!fullName.empty() && _typeMap.end() != map_it) {
+			*type = map_it->second;
+		} else if (fullName.empty() && (NULL != outerUDT)) {
 			/* Anonymous inner union UDTs are missing the parent
 			 * relationship and cannot be added later.
 			 */
-			rc = createClassUDT(typeSymbol, outerUDT);
-			if (DDR_RC_OK == rc) {
-				*type = outerUDT->_subUDTs.back();
-				(*type)->_name = "";
+			ClassUDT *newClass = NULL;
+			rc = createClassUDT(typeSymbol, &newClass, outerUDT);
+			if ((DDR_RC_OK == rc) && (NULL != newClass)) {
+				newClass->_name = "";
+				*type = newClass;
 			}
 		} else if (!name.empty()) {
-			PostponedType p = {type, name};
+			PostponedType p = { type, fullName };
 			_postponedFields.push_back(p);
 		}
 	}
@@ -811,12 +750,13 @@ PdbScanner::setPointerType(IDiaSymbol *symbol, Modifiers *modifiers)
 }
 
 Type *
-PdbScanner::getType(string s)
+PdbScanner::getType(const string &name)
 {
 	/* Get a type in the map by name. This used only for base types. */
 	Type *type = NULL;
-	if (!s.empty() && _typeMap.end() != _typeMap.find(s)) {
-		type = _typeMap[s];
+	unordered_map<string, Type *>::const_iterator map_it = _typeMap.find(name);
+	if (!name.empty() && _typeMap.end() != map_it) {
+		type = map_it->second;
 	}
 
 	return type;
@@ -870,7 +810,6 @@ PdbScanner::setBaseTypeFloat(ULONGLONG ulLen, Type **type)
 	return rc;
 }
 
-
 DDR_RC
 PdbScanner::setBaseTypeUInt(ULONGLONG ulLen, Type **type)
 {
@@ -922,29 +861,27 @@ PdbScanner::setBaseType(IDiaSymbol *typeSymbol, Type **type)
 
 	if (DDR_RC_OK == rc) {
 		switch (baseType) {
+		case btChar:
+		case btWChar:
 		case btUInt:
 			rc = setBaseTypeUInt(ulLen, type);
-			baseType = 0xFFFFFFFF;
 			break;
 		case btInt:
 			rc = setBaseTypeInt(ulLen, type);
-			baseType = 0xFFFFFFFF;
 			break;
 		case btFloat:
 			rc = setBaseTypeFloat(ulLen, type);
-			baseType = 0xFFFFFFFF;
 			break;
-		}
-
-		if (0xFFFFFFFF != baseType) {
+		default:
 			*type = getType(string(baseTypeArray[baseType])); /* This could also be an unsigned char */
+			break;
 		}
 	}
 
 	return rc;
 }
 
-static const char *
+static string
 symTagToString(DWORD value)
 {
 	switch (value) {
@@ -991,7 +928,7 @@ symTagToString(DWORD value)
 	case SymTagFunctionArgType:
 		return "SymTagFunctionArgType";
 	case SymTagFuncDebugStart:
-		return "SymTagFuncDebugStart"; 
+		return "SymTagFuncDebugStart";
 	case SymTagFuncDebugEnd:
 		return "SymTagFuncDebugEnd";
 	case SymTagUsingNamespace:
@@ -1010,8 +947,8 @@ symTagToString(DWORD value)
 		return "SymTagManagedType";
 	case SymTagDimension:
 		return "SymTagDimension";
-	/* Note: The following are not present in all versions. */
-	/*case SymTagCallSite:
+#if 0 /* Note: The following are not present in all versions. */
+	case SymTagCallSite:
 		return "SymTagCallSite";
 	case SymTagInlineSite:
 		return "SymTagInlineSite";
@@ -1022,9 +959,12 @@ symTagToString(DWORD value)
 	case SymTagMatrixType:
 		return "SymTagMatrixType";
 	case SymTagHLSLType:
-		return "SymTagHLSLType";*/
-	};
-	return "value " + value;
+		return "SymTagHLSLType";
+#endif
+	}
+	stringstream result;
+	result << "value " << value;
+	return result.str();
 }
 
 DDR_RC
@@ -1050,7 +990,6 @@ PdbScanner::setType(IDiaSymbol *symbol, Type **type, Modifiers *modifiers, Names
 		hr = typeSymbol->get_symTag(&symTag);
 		if (FAILED(hr)) {
 			ERRMSG("get_symTag failed with HRESULT = %08X", hr);
-			typeSymbol->Release();
 			rc = DDR_RC_ERROR;
 		}
 	}
@@ -1088,10 +1027,14 @@ PdbScanner::setType(IDiaSymbol *symbol, Type **type, Modifiers *modifiers, Names
 		default:
 			ERRMSG("unknown symtag: %d", symTag);
 			rc = DDR_RC_ERROR;
+			break;
 		}
 	}
 
-	typeSymbol->Release();
+	if (NULL != typeSymbol) {
+		typeSymbol->Release();
+	}
+
 	return rc;
 }
 
@@ -1109,21 +1052,28 @@ PdbScanner::getName(IDiaSymbol *symbol, string *name)
 		char *nameChar = _com_util::ConvertBSTRToString(nameBstr);
 		if (NULL == nameChar) {
 			ERRMSG("Could not convert Bstr");
+			rc = DDR_RC_ERROR;
 		} else {
-			*name = string(nameChar);
-			size_t pos = name->find("`anonymous-namespace'::");
-			if (string::npos == pos) {
-				pos = name->find("`anonymous namespace'::");
-			}
-			if (string::npos != pos) {
-				*name = name->replace(pos, 23, "");
-			}
+			*name = nameChar;
 			free(nameChar);
 		}
 		SysFreeString(nameBstr);
 	}
 
 	return rc;
+}
+
+string
+PdbScanner::getSimpleName(const string &name)
+{
+	size_t pos = name.rfind("::");
+	string simple = (string::npos == pos) ? name : name.substr(pos + 2);
+
+	if (0 == simple.compare(0, 9, "<unnamed-", 9)) {
+		simple = "";
+	}
+
+	return simple;
 }
 
 DDR_RC
@@ -1176,19 +1126,21 @@ PdbScanner::setSuperClassName(IDiaSymbol *symbol, ClassUDT *newUDT)
 		 * If its not found, add it to a list to check later.
 		 */
 		if (!name.empty()) {
-			if (_typeMap.end() == _typeMap.find(name)) {
-				PostponedType p = {(Type **)&newUDT->_superClass, name};
-				_postponedFields.push_back(p);
+			unordered_map<string, Type *>::const_iterator map_it = _typeMap.find(name);
+			if (_typeMap.end() != map_it) {
+				newUDT->_superClass = (ClassUDT *)map_it->second;
 			} else {
-				newUDT->_superClass = (ClassUDT *)_typeMap[name];
+				PostponedType p = { (Type **)&newUDT->_superClass, name };
+				_postponedFields.push_back(p);
 			}
 		}
 	}
+
 	return DDR_RC_OK;
 }
 
 DDR_RC
-PdbScanner::createClassUDT(IDiaSymbol *symbol, NamespaceUDT *outerUDT)
+PdbScanner::createClassUDT(IDiaSymbol *symbol, ClassUDT **newClass, NamespaceUDT *outerUDT)
 {
 	DDR_RC rc = DDR_RC_OK;
 
@@ -1203,62 +1155,61 @@ PdbScanner::createClassUDT(IDiaSymbol *symbol, NamespaceUDT *outerUDT)
 		rc = DDR_RC_ERROR;
 	}
 
-	string name = "";
+	string symbolName = "";
 	if (DDR_RC_OK == rc) {
-		rc = getName(symbol, &name);
+		rc = getName(symbol, &symbolName);
 	}
 
+	/* Sub UDTs are added by their undecorated name when found as a
+	 * child symbol of another UDT symbol. They are also found with
+	 * a decorated "Parent::SubUDT" name again while iterating all UDTs.
+	 */
+	ULONGLONG size = 0ULL;
 	if (DDR_RC_OK == rc) {
-		/* Sub UDT's are added by their undecorated name when found as a
-		 * child symbol of another UDT symbol. They are also found with
-		 * a decorated "Parent::SubUDT" name again while iterating all UDTs.
-		 */
-		if (!checkBlacklistedType(name)) {
-			ULONGLONG size = 0ULL;
+		rc = getSize(symbol, &size);
+	}
+	if (DDR_RC_OK == rc) {
+		getNamespaceFromName(symbolName, &outerUDT);
+		string name = getSimpleName(symbolName);
+		string fullName = "";
+		if (NULL == outerUDT) {
+			fullName = name;
+		} else {
+			fullName = outerUDT->getFullName() + "::" + name;
+		}
+		if (_typeMap.end() == _typeMap.find(fullName)) {
+			ClassUDT *classUDT = new ClassUDT((size_t)size);
+			classUDT->_name = name;
+			classUDT->_blacklisted = checkBlacklistedType(name);
+			classUDT->_outerNamespace = outerUDT;
+			rc = addChildrenSymbols(symbol, SymTagNull, classUDT);
+
+			/* If successful, add the new UDT to the IR. Otherwise, free it. */
 			if (DDR_RC_OK == rc) {
-				rc = getSize(symbol, &size);
+				addType(classUDT, outerUDT);
+				if (NULL != newClass) {
+					*newClass = classUDT;
+				}
+			} else {
+				delete classUDT;
+				classUDT = NULL;
 			}
-			if (DDR_RC_OK == rc) {
-				string fullName = "";
-				if (NULL == outerUDT) {
-					fullName = name;
-				} else {
-					fullName = outerUDT->_name + "::" + name;
-				}
-				if (fullName.empty() || (_typeMap.end() == _typeMap.find(fullName)) || ("<unnamed-tag>" == name)) {
-					getNamespaceFromName(&name, &outerUDT);
-
-					ClassUDT *classUDT = new ClassUDT(0);
-					classUDT->_sizeOf = (size_t)size;
-					classUDT->_name = name;
-					classUDT->_outerNamespace = outerUDT;
-					if (NULL != outerUDT) {
-						outerUDT->_subUDTs.push_back(classUDT);
-					}
-					rc = addChildrenSymbols(symbol, SymTagNull, classUDT); 
-
-					/* If successful, add the new UDT to the IR. Otherwise, free it. */
-					if (DDR_RC_OK == rc) {
-						addType(classUDT, NULL == classUDT->_outerNamespace);
-					} else {
-						delete classUDT;
-						classUDT = NULL;
-					}
-				} else if (_typeMap.end() != _typeMap.find(fullName)) {
-					/* If a type of this name has already been added before, it may
-					 * have been either as a class or a typedef of a class.
-					 */
-					Type *previouslyCreatedType = getType(fullName);
-					while (NULL != previouslyCreatedType->getBaseType()) {
-						previouslyCreatedType = previouslyCreatedType->getBaseType();
-					}
-					ClassUDT *classUDT = (ClassUDT *)previouslyCreatedType;
-					if ((NULL == classUDT->_outerNamespace) && (NULL != outerUDT)) {
-						classUDT->_outerNamespace = outerUDT;
-						outerUDT->_subUDTs.push_back(classUDT);
-					}
-					rc = addChildrenSymbols(symbol, SymTagNull, classUDT);
-				}
+		} else {
+			/* If a type of this name has already been added before, it may
+			 * have been either as a class or a typedef of a class.
+			 */
+			Type *previouslyCreatedType = getType(fullName);
+			while (NULL != previouslyCreatedType->getBaseType()) {
+				previouslyCreatedType = previouslyCreatedType->getBaseType();
+			}
+			ClassUDT *classUDT = (ClassUDT *)previouslyCreatedType;
+			if ((NULL == classUDT->_outerNamespace) && (NULL != outerUDT)) {
+				classUDT->_outerNamespace = outerUDT;
+				outerUDT->_subUDTs.push_back(classUDT);
+			}
+			rc = addChildrenSymbols(symbol, SymTagNull, classUDT);
+			if (NULL != newClass) {
+				*newClass = classUDT;
 			}
 		}
 	}
@@ -1267,7 +1218,7 @@ PdbScanner::createClassUDT(IDiaSymbol *symbol, NamespaceUDT *outerUDT)
 }
 
 void
-PdbScanner::getNamespaceFromName(string *name, NamespaceUDT **outerUDT)
+PdbScanner::getNamespaceFromName(const string &name, NamespaceUDT **outerUDT)
 {
 	/* In Pdb info, namespaces do not have their own symbol. If a symbol has
 	 * a name of the format "OuterType::InnerType" and no separate symbol for
@@ -1275,36 +1226,39 @@ PdbScanner::getNamespaceFromName(string *name, NamespaceUDT **outerUDT)
 	 * yet.
 	 */
 	if (NULL == *outerUDT) {
-		size_t pos = 0;
 		size_t previousPos = 0;
 		NamespaceUDT *outerNamespace = NULL;
-		while (string::npos != pos) {
-			pos = name->find("::", previousPos);
-			if (string::npos != pos) {
-				string namespaceName = name->substr(previousPos, pos - previousPos);
-				NamespaceUDT *ns = (NamespaceUDT *)getType(namespaceName);
-				if (NULL == ns) {
-					/* If no previously created type exists, create class for it.
-					 * It could be a class or a namespace, but class derives from
-					 * namespace and thus works for both cases.
-					 */
-					ns = new ClassUDT(0);
-					ns->_name = namespaceName;
-					ns->_outerNamespace = outerNamespace;
-					addType(ns, previousPos == 0);
-				}
-				if ((NULL != outerNamespace) && (NULL == ns->_outerNamespace)) {
-					ns->_outerNamespace = outerNamespace;
-					outerNamespace->_subUDTs.push_back(ns);
-					_ir->_types.erase(remove(_ir->_types.begin(), _ir->_types.end(), ns));
-				}
-
-				outerNamespace = ns;
-				previousPos = pos + 2;
+		for (;;) {
+			size_t pos = name.find("::", previousPos);
+			if (string::npos == pos) {
+				*outerUDT = outerNamespace;
+				break;
 			}
+			string namespaceName = name.substr(previousPos, pos - previousPos);
+			if (0 == namespaceName.compare(0, 9, "<unnamed-", 9)) {
+				*outerUDT = outerNamespace;
+				break;
+			}
+			NamespaceUDT *ns = (NamespaceUDT *)getType(namespaceName);
+			if (NULL == ns) {
+				/* If no previously created type exists, create class for it.
+				 * It could be a class or a namespace, but class derives from
+				 * namespace and thus works for both cases.
+				 */
+				ns = new ClassUDT(0);
+				ns->_name = namespaceName;
+				ns->_blacklisted = checkBlacklistedType(namespaceName);
+				ns->_outerNamespace = outerNamespace;
+				addType(ns, outerNamespace);
+			} else if ((NULL != outerNamespace) && (NULL == ns->_outerNamespace)) {
+				ns->_outerNamespace = outerNamespace;
+				outerNamespace->_subUDTs.push_back(ns);
+				_ir->_types.erase(remove(_ir->_types.begin(), _ir->_types.end(), ns));
+			}
+
+			outerNamespace = ns;
+			previousPos = pos + 2;
 		}
-		*name = name->substr(previousPos);
-		*outerUDT = outerNamespace;
 	}
 }
 
@@ -1325,7 +1279,7 @@ PdbScanner::addSymbol(IDiaSymbol *symbol, NamespaceUDT *outerNamespace)
 			rc = createEnumUDT(symbol, outerNamespace);
 			break;
 		case SymTagUDT:
-			rc = createClassUDT(symbol, outerNamespace);
+			rc = createClassUDT(symbol, NULL, outerNamespace);
 			break;
 		case SymTagData:
 			rc = addFieldMember(symbol, (ClassUDT *)outerNamespace);
@@ -1352,23 +1306,9 @@ PdbScanner::addSymbol(IDiaSymbol *symbol, NamespaceUDT *outerNamespace)
 		default:
 			ERRMSG("Unhandled symbol returned by get_symTag: %s", symTagToString(symTag));
 			rc = DDR_RC_ERROR;
+			break;
 		}
 	}
 
 	return rc;
-}
-
-string
-PdbScanner::getUDTname(UDT *u)
-{
-	assert(NULL != u);
-
-	string name = "";
-	if (NULL != u->_outerNamespace) {
-		name = getUDTname(u->_outerNamespace) + "::" + u->_name;
-	} else {
-		name = u->_name;
-	}
-
-	return name;
 }

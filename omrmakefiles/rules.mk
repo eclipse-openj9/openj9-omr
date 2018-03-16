@@ -200,15 +200,6 @@ define CLEAN_COMMAND
 -$(RM) $(OBJECTS) $(OBJECTS:$(OBJEXT)=.i) *.d
 endef
 
-ifeq (win,$(OMR_HOST_OS))
-define DDR_C_COMMAND
-$(CC) $(CFLAGS) $(MODULE_CPPFLAGS) $(GLOBAL_CPPFLAGS) -P $< -Fi $@
-endef
-
-define DDR_CPP_COMMAND
-$(CC) $(CPPFLAGS) $(MODULE_CPPFLAGS) $(GLOBAL_CPPFLAGS) -P $< -Fi $@
-endef
-else
 define DDR_C_COMMAND
 $(CC) $(CFLAGS) $(MODULE_CPPFLAGS) $(GLOBAL_CPPFLAGS) -E $< | sed -n -e '/^@/p' > $@
 endef
@@ -216,7 +207,6 @@ endef
 define DDR_CPP_COMMAND
 $(CC) $(CPPFLAGS) $(MODULE_CPPFLAGS) $(GLOBAL_CPPFLAGS) -E $< | sed -n -e '/^@/p' > $@
 endef
-endif
 
 ###
 ### Platform-Specific Options

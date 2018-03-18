@@ -96,3 +96,6 @@ list(APPEND TR_C_COMPILE_OPTIONS
 
 set(SPP_CMD ${CMAKE_C_COMPILER})
 set(SPP_FLAGS -E -P)
+
+# Configure the platform dependent library for multithreading
+set(OMR_PLATFORM_THREAD_LIBRARY -lpthread)

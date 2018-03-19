@@ -998,7 +998,7 @@ TEST(PortFileStreamTest, omrfilestream_test_long_file_name)
 
 		/* Reopen the same file, read back what we wrote (verifying the contents), and close the file */
 		fd = omrfile_open(filePathName, EsOpenRead, 0444);
-		if (file < 0) {
+		if (fd < 0) {
 			outputErrorMessage(PORTTEST_ERROR_ARGS, "omrfile_open() returned error, expected valid file handle\n", -1);
 			goto unlinkFile;
 		}

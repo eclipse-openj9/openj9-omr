@@ -2127,7 +2127,7 @@ TEST(PortSysinfoTest, sysinfo_cgroup_get_memlimit)
 	enabledSubsystems = omrsysinfo_cgroup_enable_subsystems(OMR_CGROUP_SUBSYSTEM_MEMORY);
 	if (OMR_ARE_ALL_BITS_SET(enabledSubsystems, OMR_CGROUP_SUBSYSTEM_MEMORY)) {
 		rc = omrsysinfo_cgroup_get_memlimit(&cgroupMemLimit);
-		if (0 != rc) {
+		if ((0 != rc) && (OMRPORT_ERROR_SYSINFO_CGROUP_MEMLIMIT_NOT_SET != rc)) {
 			outputErrorMessage(PORTTEST_ERROR_ARGS, "omrsysinfo_cgroup_get_memlimit failed with error code %d\n", rc);
 		} else if (0 == rc) {
 			uint64_t physicalMemLimit = 0;

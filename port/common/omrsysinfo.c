@@ -239,6 +239,21 @@ omrsysinfo_get_memory_info(struct OMRPortLibrary *portLibrary, struct J9MemoryIn
 {
 	return -1;
 }
+
+/**
+ * Determine the size of the total usable physical memory in the system, in bytes.
+ * It takes into account limitation on address space to compute usable physical memory.
+ *
+ * @param[in] portLibrary The port library.
+ *
+ * @return 0 if the information was unavailable, otherwise total usable physical memory in bytes.
+ */
+uint64_t
+omrsysinfo_get_addressable_physical_memory(struct OMRPortLibrary *portLibrary)
+{
+	return 0;
+}
+
 /**
  * Determine the size of the total physical memory in the system, in bytes.
  * Note that if cgroups limits is enabled (see omrsysinfo_cgroup_enable_limits())

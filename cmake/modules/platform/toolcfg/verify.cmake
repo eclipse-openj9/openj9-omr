@@ -20,3 +20,4 @@
 #############################################################################
 
 omr_assert(WARNING TEST DEFINED OMR_WARNING_AS_ERROR_FLAG)
+omr_assert(FATAL_ERROR TEST DEFINED OMR_PLATFORM_THREAD_LIBRARY)

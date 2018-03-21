@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2015, 2016 IBM Corp. and others
+# Copyright (c) 2015, 2018 IBM Corp. and others
 # 
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -157,19 +157,21 @@ test_targets += fvtest/vmtest
 
 # Test Compiler
 ifeq (1,$(OMR_TEST_COMPILER))
-main_targets += fvtest/compilertest
+  main_targets += fvtest/compilertest
 endif
 
 # JitBuilder
 ifeq (1,$(OMR_JITBUILDER))
-main_targets += jitbuilder
-test_targets += fvtest/jitbuildertest jitbuilder/release
+  main_targets += jitbuilder
+  test_targets += fvtest/jitbuildertest jitbuilder/release
 endif
 
 ifeq (yes,$(ENABLE_DDR))
   postbuild_targets += ddr
   ddr:: staticlib
 endif
+
+compiler_prereqs += port thread util/pool util/omrutil util/avl util/hashtable util/hookable
 
 DO_TEST_TARGET := yes
 # ENABLE_FVTEST_AGENT forces rastest to build, even if fvtests are disabled.
@@ -187,7 +189,8 @@ postbuild_targets += tests
 main_targets := $(sort $(main_targets))
 test_targets := $(sort $(test_targets))
 
-targets += $(tool_targets) $(prebuild_targets) $(main_targets) omr_static_lib $(test_targets) ddr
+targets += $(tool_targets) $(prebuild_targets) $(main_targets) omr_static_lib $(test_targets) ddr $(compiler_prereqs)
+targets := $(sort $(targets)) #remove potential duplicates
 targets_clean := $(addsuffix _clean,$(targets))
 targets_ddrgen := $(addsuffix _ddrgen,$(filter-out omr_static_lib jitbuilder/% fvtest/% perftest/% third_party/% tools/% ddr ddr/% example/%,$(targets)))
 
@@ -216,7 +219,7 @@ prebuild: tools
 tools:
 	@$(MAKE) -f GNUmakefile $(tool_targets)
 
-.PHONY: tools prebuild mainbuild staticbuild tests postbuild
+.PHONY: tools prebuild mainbuild staticlib tests postbuild
 
 ###
 ### Inter-target Dependencies
@@ -257,6 +260,18 @@ fvtest/utiltest:: $(test_prereqs)
 fvtest/vmtest:: $(test_prereqs)
 
 perftest/gctest:: $(test_prereqs)
+
+# Test Compiler dependencies
+ifeq (1,$(OMR_TEST_COMPILER))
+  fvtest/compilertest:: $(compiler_prereqs)
+endif
+
+# JitBuilder dependencies
+ifeq (1,$(OMR_JITBUILDER))
+  fvtest/jitbuildertest:: $(compiler_prereqs)
+  jitbuilder:: $(compiler_prereqs)
+  jitbuilder/release:: $(compiler_prereqs)
+endif
 
 ###
 ### Targets

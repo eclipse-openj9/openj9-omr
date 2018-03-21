@@ -70,7 +70,6 @@ GLOBAL_CPPFLAGS+=-D_DLL
 ifeq ($(OMR_OPTIMIZE),1)
   COPTFLAGS=/Ox
 endif
-COPTFLAGS+=/GS- # /GS-: disable buffer security check (that is on by default)
 GLOBAL_CFLAGS+=$(COPTFLAGS)
 GLOBAL_CXXFLAGS+=$(COPTFLAGS)
 

@@ -564,7 +564,7 @@ OMR::Z::CodeGenerator::CodeGenerator()
       _processorInfo.disableArch(TR_S390ProcessorInfo::TR_z196);
       }
 
-   if (comp->getOption(TR_DisableZHelix))
+   if (comp->getOption(TR_DisableZEC12))
       {
       _processorInfo.disableArch(TR_S390ProcessorInfo::TR_zEC12);
       }

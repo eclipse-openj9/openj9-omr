@@ -5857,7 +5857,7 @@ TR_S390Peephole::perform()
 
                   bool instrMatch =
                         (cast_na->getFirstRegister() == cast_nb->getFirstRegister()) &&
-                        (!cast_na->hasMask()) && (!cast_nb->hasMask()) &&
+                        (!cast_na->hasMaskImmediate()) && (!cast_nb->hasMaskImmediate()) &&
                         (cast_na->getMemoryReference() == NULL) && (cast_nb->getMemoryReference() == NULL);
 
                   if (instrMatch)

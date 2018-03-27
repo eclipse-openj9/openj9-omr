@@ -2123,6 +2123,9 @@ TR::Instruction * generateVSIInstruction(
                       TR::MemoryReference    * mr ,
                       uint8_t                  imm3)  /* 8 bits */
    {
+   TR_ASSERT_FATAL(mr != NULL, "NULL memory reference for VSI instruction\n");
+   mr->separateIndexRegister(n, cg, true, NULL);
+
    return new (INSN_HEAP) TR::S390VSIInstruction(cg, op, n, reg, mr, imm3);
    }
 

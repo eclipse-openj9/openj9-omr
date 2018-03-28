@@ -221,7 +221,7 @@ private:
 
    friend class OMR::X86::CodeGenerator;
 
-   void initialize(TR::Compilation *);
+   void initialize();
    };
 
 enum TR_PaddingProperties

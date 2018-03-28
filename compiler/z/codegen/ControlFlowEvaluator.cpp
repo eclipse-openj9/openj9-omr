@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1092,23 +1092,7 @@ OMR::Z::TreeEvaluator::returnEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    TR::Register * CAARegister = NULL;
    TR::Linkage * linkage = cg->getS390Linkage();
 
-   // Some asm macros in epilog can kill return code and reason registers.
-   // defer loading constants to avoid caching these values around the macros
-   bool returnCodeDeferred = false;
-   bool returnReasonDeferrred = false;
-   if (linkage->checkEpilogKillsReturnCodeReason())
-      {
-      TR::Node *returnCode = node->getReturnCode();
-      TR::Node *returnReason = node->getReturnReason();
-      if (returnCode && returnCode->getOpCode().isLoadConst())
-         returnCodeDeferred = true;
-      if (returnReason && returnReason->getOpCode().isLoadConst())
-         returnReasonDeferrred = true;
-      }
-
-   if ((node->getOpCodeValue() != TR::Return)
-         && !returnCodeDeferred
-          )
+   if (node->getOpCodeValue() != TR::Return)
       returnValRegister = cg->evaluate(node->getFirstChild());
 
    // GRA needs to tell LRA about the register type

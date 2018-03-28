@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2016 IBM Corp. and others
+ * Copyright (c) 2016, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -71,9 +71,6 @@ class AllIlVerifier : public TR::IlVerifier
 /**
  * Throws an exception after IL verification. This allows
  * a test to skip codegen, but still verify the optimized IL.
- * Since this exception will cause a different return code to
- * be returned, #getReturnCode can be used to get the actual
- * return code.
  */
 class NoCodegenVerifier : public TR::IlVerifier
    {
@@ -117,15 +114,6 @@ class NoCodegenVerifier : public TR::IlVerifier
     * @return `true` if the verifier was run, otherwise `false`.
     */
    bool hasRun() const { return _hasRun; }
-
-   /**
-    * Get the true return code of a compilation. Since #verify throws an
-    * exception, the compilation does not return the true return code.
-    *
-    * @param result The compilation return code.
-    * @return The true return code.
-    */
-   int32_t getReturnCode() const { return _rc; }
 
    private:
    TR::IlVerifier *_ilVerifier;

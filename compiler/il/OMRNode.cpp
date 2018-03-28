@@ -3131,44 +3131,6 @@ OMR::Node::getFirstArgumentIndex()
    return 0;
    }
 
-
-
-TR::Node *
-OMR::Node::getReturnReason()
-   {
-   return self()->getReturnCode(true);
-   }
-
-TR::Node *
-OMR::Node::getReturnCode(bool isReason)
-   {
-   TR::Compilation *c = TR::comp();
-   TR::Node *codeChild = NULL;
-   TR::Node *reasonChild = NULL;
-
-   if (!self()->getOpCode().isReturn())
-      return NULL;
-
-   // just return code
-   else if (self()->getOpCodeValue() == TR::ireturn &&
-            self()->getNumChildren() == 1)
-      codeChild = self()->getChild(0);
-
-   // return code and return reason
-   else if ((self()->getOpCodeValue() == TR::Return) &&
-            (self()->getNumChildren() == 2 ||
-             (self()->getNumChildren() == 3 &&
-              self()->getChild(2)->getOpCodeValue() == TR::GlRegDeps)))
-      {
-      codeChild = self()->getChild(0);
-      reasonChild = self()->getChild(1);
-      }
-
-   return isReason ? reasonChild : codeChild;
-   }
-
-
-
 uint32_t
 OMR::Node::getSize()
    {

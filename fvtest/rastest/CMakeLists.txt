@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2017 IBM Corp. and others
+# Copyright (c) 2017, 2018 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -113,12 +113,7 @@ target_link_libraries(omrrastest
 		omrcore
 		omrgc
 )
-#  With MSVC Rastest can stack overflow with default stack size
-# depending on debugging and optimization settings
-if(CMAKE_C_COMPILER_ID STREQUAL "MSVC")
-	math(EXPR new_stack_size "8 * 1024 * 1024")
-	set_property(TARGET omrrastest APPEND PROPERTY LINK_FLAGS " /STACK:${new_stack_size}")
-endif()
+
 add_dependencies(omrrastest
 	bindthreadagent
 	cpuLoadAgent

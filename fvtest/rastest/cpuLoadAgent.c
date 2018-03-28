@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2016 IBM Corp. and others
+ * Copyright (c) 2014, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -27,11 +27,11 @@
 
 #include "omragent.h"
 
-#define MATRIX_SIZE 1000
+#define MATRIX_ORDER 1000
 #define NUM_ITERATIONS_SYSTEM_CPU_BURN	3000
 
 static intptr_t dummy_omrsysinfo_get_CPU_utilization(struct OMRPortLibrary *portLibrary, struct J9SysinfoCPUTime *cpuTimeStats);
-static void matrixSquare(void);
+static void matrixSquare(OMR_VMThread *vmThread);
 static void systemTimeCPUBurn(void);
 static omr_error_t testProcessCpuLoad(OMR_VMThread *vmThread, OMR_TI const *ti, omr_error_t expectedRc, BOOLEAN dummyPort, BOOLEAN checkRc);
 static omr_error_t testSystemCpuLoad(OMR_VMThread *vmThread, OMR_TI const *ti, omr_error_t expectedRc, BOOLEAN dummyPort, BOOLEAN checkRc);
@@ -132,7 +132,7 @@ testProcessCpuLoad(OMR_VMThread *vmThread, OMR_TI const *ti, omr_error_t expecte
 	OMRPORT_ACCESS_FROM_OMRVMTHREAD(vmThread);
 
 	real_omrsysinfo_get_CPU_utilization = OMRPORTLIB->sysinfo_get_CPU_utilization;
-	matrixSquare();
+	matrixSquare(vmThread);
 	systemTimeCPUBurn();
 	if (TRUE == dummyPort) {
 		/* use dummy_omrsysinfo_get_CPU_utilization */
@@ -175,7 +175,7 @@ testSystemCpuLoad(OMR_VMThread *vmThread, OMR_TI const *ti, omr_error_t expected
 	OMRPORT_ACCESS_FROM_OMRVMTHREAD(vmThread);
 
 	real_omrsysinfo_get_CPU_utilization = OMRPORTLIB->sysinfo_get_CPU_utilization;
-	matrixSquare();
+	matrixSquare(vmThread);
 	systemTimeCPUBurn();
 	if (TRUE == dummyPort) {
 		/* use dummy_omrsysinfo_get_CPU_utilization */
@@ -397,19 +397,34 @@ testTICpuLoad(OMR_VMThread *vmThread, OMR_TI const *ti)
  * This implementation is copied from thrbasetest/processtimetest.c
  */
 static void
-matrixSquare(void)
+matrixSquare(OMR_VMThread *vmThread)
 {
-	/* Declare and initialize the matrix. memset works here since this is a true 2D
-	 * array defined in the same scope as the memset. */
-	uintptr_t matrix[MATRIX_SIZE][MATRIX_SIZE];
+	uintptr_t matrix_size = 0;
+	uintptr_t *matrix = NULL;
 	uintptr_t i = 0;
 	uintptr_t j = 0;
 
-	memset(matrix, 0, sizeof(matrix));
+	/* OMRPORT specific functions for memory management will be used here */
+	OMRPORT_ACCESS_FROM_OMRVMTHREAD(vmThread);
 
-	for (j = 0; j < MATRIX_SIZE; j++) {
-		matrix[i][j] = (uintptr_t) pow((double)100, 2.0);
+	/* Declare and initialize the matrix. memset works here since this is a true 2D
+	 * array defined in the same scope as the memset. */
+	matrix_size = MATRIX_ORDER * MATRIX_ORDER * sizeof(uintptr_t);
+	matrix = (uintptr_t*) omrmem_allocate_memory(matrix_size,
+			OMRMEM_CATEGORY_UNKNOWN);
+	if (NULL == matrix) {
+		omrtty_err_printf("Unable to allocate %d bytes in the matrixSquare(vmThread) function.\n",
+				matrix_size);
+		return;
 	}
+
+	memset(matrix, 0, matrix_size);
+
+	for (j = 0; j < MATRIX_ORDER; j++) {
+		*(matrix + i * MATRIX_ORDER + j) = (uintptr_t) pow((double)100, 2.0);
+	}
+
+	omrmem_free_memory(matrix);
 }
 
 /**

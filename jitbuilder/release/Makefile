@@ -109,19 +109,19 @@ testall: all_goal all
 testexperimental: experimental_goal all
 
 # Linker args
-JITBUILDER_LINK_FLAGS=\
-	-L. \
-	-L../../lib \
-	-ljitbuilder \
-	-lj9prtstatic \
-	-lj9thrstatic \
-	-lj9hashtable \
-	-lomrutil \
-	-lj9pool \
-	-lj9avl \
-	-lj9hookstatic \
-	-lpthread \
-	-ldl
+JITBUILDER_LINK_FLAGS= \
+  -L. \
+  -L../../lib \
+  -ljitbuilder \
+  -lj9prtstatic \
+  -lj9thrstatic \
+  -lj9hashtable \
+  -lomrutil \
+  -lj9pool \
+  -lj9avl \
+  -lj9hookstatic \
+  -lpthread \
+  -ldl
 
 # Rules for individual examples
 

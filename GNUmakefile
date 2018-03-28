@@ -155,6 +155,9 @@ endif
 # VM Tests
 test_targets += fvtest/vmtest
 
+# List of targets that are needed for the test compil
+compiler_prereqs = port thread util/pool util/omrutil util/avl util/hashtable util/hookable
+
 # Test Compiler
 ifeq (1,$(OMR_TEST_COMPILER))
   main_targets += fvtest/compilertest
@@ -170,8 +173,6 @@ ifeq (yes,$(ENABLE_DDR))
   postbuild_targets += ddr
   ddr:: staticlib
 endif
-
-compiler_prereqs += port thread util/pool util/omrutil util/avl util/hashtable util/hookable
 
 DO_TEST_TARGET := yes
 # ENABLE_FVTEST_AGENT forces rastest to build, even if fvtests are disabled.
@@ -189,8 +190,7 @@ postbuild_targets += tests
 main_targets := $(sort $(main_targets))
 test_targets := $(sort $(test_targets))
 
-targets += $(tool_targets) $(prebuild_targets) $(main_targets) omr_static_lib $(test_targets) ddr $(compiler_prereqs)
-targets := $(sort $(targets)) #remove potential duplicates
+targets += $(tool_targets) $(prebuild_targets) $(main_targets) omr_static_lib $(test_targets) ddr
 targets_clean := $(addsuffix _clean,$(targets))
 targets_ddrgen := $(addsuffix _ddrgen,$(filter-out omr_static_lib jitbuilder/% fvtest/% perftest/% third_party/% tools/% ddr ddr/% example/%,$(targets)))
 

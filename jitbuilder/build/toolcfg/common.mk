@@ -55,13 +55,13 @@ PRODUCT_NAME?=jitbuilder
 
 PRODUCT_LIBPATH= $(top_srcdir)/lib
 PRODUCT_SLINK= \
-    j9prtstatic \
-    j9thrstatic \
-    j9hashtable \
-    omrutil \
-    j9pool \
-    j9avl \
-    j9hookstatic 
+  j9prtstatic \
+  j9thrstatic \
+  j9hashtable \
+  omrutil \
+  j9pool \
+  j9avl \
+  j9hookstatic 
 
 #
 # Now we include the host and target tool config

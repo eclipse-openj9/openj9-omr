@@ -3533,6 +3533,7 @@ TR::Node *constrainInstanceOf(OMR::ValuePropagation *vp, TR::Node *node)
                TR::Node::recreate(node, TR::acmpne);
                vp->removeNode(node->getChild(1), true);
                node->setAndIncChild(1, TR::Node::create(node, TR::aconst, 0, 0));
+               vp->addGlobalConstraint(node->getChild(1), TR::VPNullObject::create(vp));
                }
 
 
@@ -3628,6 +3629,7 @@ TR::Node *constrainInstanceOf(OMR::ValuePropagation *vp, TR::Node *node)
                   TR::Node::recreate(node, TR::acmpne);
                   vp->removeNode(node->getChild(1), true);
                   node->setAndIncChild(1, TR::Node::create(node, TR::aconst, 0, 0));
+                  vp->addGlobalConstraint(node->getChild(1), TR::VPNullObject::create(vp));
                      }
 
 
@@ -9269,6 +9271,43 @@ static TR::Node *constrainIfcmpeqne(OMR::ValuePropagation *vp, TR::Node *node, b
    TR::VPConstraint *rhs = NULL;
    TR::VPConstraint *rel = NULL;
 
+   if (rhsChild->getOpCodeValue() == TR::iconst
+       && lhsChild->getOpCode().isCompareForEquality())
+      {
+      int32_t rhsConst = rhsChild->getInt();
+      if (rhsConst == 0 || rhsConst == 1)
+         {
+         TR::Node * lhsGrandchild = lhsChild->getChild(0);
+         TR::Node * rhsGrandchild = lhsChild->getChild(1);
+         TR::ILOpCode lhsOp = lhsGrandchild->getOpCode();
+         if (lhsOp.isInt() || lhsOp.isLong() || lhsOp.isRef())
+            {
+            TR::ILOpCode lhsCmp = lhsChild->getOpCode();
+            TR::ILOpCode newIfOp = lhsCmp.convertCmpToIfCmp();
+            if (branchOnEqual != bool(rhsConst))
+               newIfOp = newIfOp.getOpCodeForReverseBranch();
+
+            if (performTransformation(vp->comp(),
+                  "%sChanging n%un (%s (%s ...) %d) to (%s ...)\n",
+                  OPT_DETAILS,
+                  node->getGlobalIndex(),
+                  node->getOpCode().getName(),
+                  lhsCmp.getName(),
+                  rhsConst,
+                  newIfOp.getName()))
+               {
+               TR::Node::recreate(node, newIfOp.getOpCodeValue());
+               node->setAndIncChild(0, lhsGrandchild);
+               node->setAndIncChild(1, rhsGrandchild);
+               lhsChild->recursivelyDecReferenceCount();
+               rhsChild->recursivelyDecReferenceCount();
+               lhsChild = lhsGrandchild;
+               rhsChild = rhsGrandchild;
+               branchOnEqual = newIfOp.isCompareTrueIfEqual();
+               }
+            }
+         }
+      }
 
    TR::CFGEdge *edge = vp->findOutEdge(vp->_curBlock->getSuccessors(), target);
 

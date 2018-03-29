@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2000, 2017 IBM Corp. and others
+# Copyright (c) 2000, 2018 IBM Corp. and others
 #  
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -55,7 +55,6 @@ ALL_TESTS = \
             union \
             worklist \
 
-
 # Compile all the tests by default
 all: $(ALL_TESTS)
 
@@ -109,189 +108,203 @@ testall: all_goal all
 # Even experimental stuff:
 testexperimental: experimental_goal all
 
+# Linker args
+JITBUILDER_LINK_FLAGS= \
+  -L. \
+  -L../../lib \
+  -ljitbuilder \
+  -lj9prtstatic \
+  -lj9thrstatic \
+  -lj9hashtable \
+  -lomrutil \
+  -lj9pool \
+  -lj9avl \
+  -lj9hookstatic \
+  -lpthread \
+  -ldl
 
 # Rules for individual examples
 
 atomicoperations : libjitbuilder.a AtomicOperations.o
-	$(CXX) -g -fno-rtti -o $@ AtomicOperations.o -L. -ljitbuilder -ldl
+	$(CXX) -g -fno-rtti -o $@ AtomicOperations.o $(JITBUILDER_LINK_FLAGS)
 
 AtomicOperations.o: src/AtomicOperations.cpp src/AtomicOperations.hpp
 	$(CXX) -o $@ $(CXXFLAGS) $<
 
 badtoiltype : libjitbuilder.a BadToIlType.o
-	$(CXX) -g -fno-rtti -o $@ BadToIlType.o -L. -ljitbuilder -ldl
+	$(CXX) -g -fno-rtti -o $@ BadToIlType.o $(JITBUILDER_LINK_FLAGS)
 
 BadToIlType.o: src/ToIlType.cpp
 	$(CXX) -o $@ -DEXPECTED_FAIL $(CXXFLAGS) $<
 
 
 call : libjitbuilder.a Call.o
-	$(CXX) -g -fno-rtti -o $@ Call.o -L. -ljitbuilder -ldl
+	$(CXX) -g -fno-rtti -o $@ Call.o $(JITBUILDER_LINK_FLAGS)
 
 Call.o: src/Call.cpp src/Call.hpp
 	$(CXX) -o $@ $(CXXFLAGS) $<
 
 
 conditionals : libjitbuilder.a Conditionals.o	
-	$(CXX) -g -fno-rtti -o $@ Conditionals.o -L. -ljitbuilder -ldl
+	$(CXX) -g -fno-rtti -o $@ Conditionals.o $(JITBUILDER_LINK_FLAGS)
 
 Conditionals.o: src/Conditionals.cpp src/Conditionals.hpp
 	$(CXX) -o $@ $(CXXFLAGS) $<
 
 
 conststring : libjitbuilder.a ConstString.o	
-	$(CXX) -g -fno-rtti -o $@ ConstString.o -L. -ljitbuilder -ldl
+	$(CXX) -g -fno-rtti -o $@ ConstString.o $(JITBUILDER_LINK_FLAGS)
 
 ConstString.o: src/ConstString.cpp src/ConstString.hpp
 	$(CXX) -o $@ $(CXXFLAGS) $<
 
 
 dotproduct : libjitbuilder.a DotProduct.o
-	$(CXX) -g -fno-rtti -o $@ DotProduct.o -L. -ljitbuilder -ldl
+	$(CXX) -g -fno-rtti -o $@ DotProduct.o $(JITBUILDER_LINK_FLAGS)
 
 DotProduct.o: src/DotProduct.cpp src/DotProduct.hpp
 	$(CXX) -o $@ $(CXXFLAGS) $<
 
 
 fieldaddress : libjitbuilder.a FieldAddress.o
-	$(CXX) -g -fno-rtti -o $@ FieldAddress.o -L. -ljitbuilder -ldl
+	$(CXX) -g -fno-rtti -o $@ FieldAddress.o $(JITBUILDER_LINK_FLAGS)
 
 FieldAddress.o: src/FieldAddress.cpp src/FieldAddress.hpp
 	$(CXX) -o $@ $(CXXFLAGS) $<
 
 
 issupportedtype : libjitbuilder.a IsSupportedType.o
-	$(CXX) -g -fno-rtti -o $@ IsSupportedType.o -L. -ljitbuilder -ldl
+	$(CXX) -g -fno-rtti -o $@ IsSupportedType.o $(JITBUILDER_LINK_FLAGS)
 
 IsSupportedType.o: src/IsSupportedType.cpp
 	$(CXX) -o $@ $(CXXFLAGS) $<
 
 
 iterfib : libjitbuilder.a IterativeFib.o
-	$(CXX) -g -fno-rtti -o $@ IterativeFib.o -L. -ljitbuilder -ldl
+	$(CXX) -g -fno-rtti -o $@ IterativeFib.o $(JITBUILDER_LINK_FLAGS)
 
 IterativeFib.o: src/IterativeFib.cpp src/IterativeFib.hpp
 	$(CXX) -o $@ $(CXXFLAGS) $<
 
 
 linkedlist : libjitbuilder.a LinkedList.o
-	$(CXX) -g -fno-rtti -o $@ LinkedList.o -L. -ljitbuilder -ldl
+	$(CXX) -g -fno-rtti -o $@ LinkedList.o $(JITBUILDER_LINK_FLAGS)
 
 LinkedList.o: src/LinkedList.cpp src/LinkedList.hpp
 	$(CXX) -o $@ $(CXXFLAGS) $<
 
 
 localarray : libjitbuilder.a LocalArray.o
-	$(CXX) -g -fno-rtti -o $@ LocalArray.o -L. -ljitbuilder -ldl
+	$(CXX) -g -fno-rtti -o $@ LocalArray.o $(JITBUILDER_LINK_FLAGS)
 
 LocalArray.o: src/LocalArray.cpp src/LocalArray.hpp
 	$(CXX) -o $@ $(CXXFLAGS) $<
 
 
 mandelbrot : libjitbuilder.a Mandelbrot.o
-	$(CXX) -g -fno-rtti -o $@ Mandelbrot.o -L. -ljitbuilder -ldl
+	$(CXX) -g -fno-rtti -o $@ Mandelbrot.o $(JITBUILDER_LINK_FLAGS)
 
 Mandelbrot.o: src/Mandelbrot.cpp src/Mandelbrot.hpp
 	$(CXX) -o $@ $(CXXFLAGS) $<
 
 
 matmult : libjitbuilder.a MatMult.o
-	$(CXX) -g -fno-rtti -o $@ MatMult.o -L. -ljitbuilder -ldl
+	$(CXX) -g -fno-rtti -o $@ MatMult.o $(JITBUILDER_LINK_FLAGS)
 
 MatMult.o: src/MatMult.cpp src/MatMult.hpp
 	$(CXX) -o $@ $(CXXFLAGS) $<
 
 
 nestedloop : libjitbuilder.a NestedLoop.o
-	$(CXX) -g -fno-rtti -o $@ NestedLoop.o -L. -ljitbuilder -ldl
+	$(CXX) -g -fno-rtti -o $@ NestedLoop.o $(JITBUILDER_LINK_FLAGS)
 
 NestedLoop.o: src/NestedLoop.cpp src/NestedLoop.hpp
 	$(CXX) -o $@ $(CXXFLAGS) $<
 
 
 operandarraytests : libjitbuilder.a OperandArrayTests.o
-	$(CXX) -g -fno-rtti -o $@ OperandArrayTests.o -L. -ljitbuilder -ldl
+	$(CXX) -g -fno-rtti -o $@ OperandArrayTests.o $(JITBUILDER_LINK_FLAGS)
 
 OperandArrayTests.o: src/OperandArrayTests.cpp src/OperandArrayTests.hpp
 	$(CXX) -o $@ $(CXXFLAGS) $<
 
 
 operandstacktests : libjitbuilder.a OperandStackTests.o
-	$(CXX) -g -fno-rtti -o $@ OperandStackTests.o -L. -ljitbuilder -ldl
+	$(CXX) -g -fno-rtti -o $@ OperandStackTests.o $(JITBUILDER_LINK_FLAGS)
 
 OperandStackTests.o: src/OperandStackTests.cpp src/OperandStackTests.hpp
 	$(CXX) -o $@ $(CXXFLAGS) $<
 
 
 pointer : libjitbuilder.a Pointer.o
-	$(CXX) -g -fno-rtti -o $@ Pointer.o -L. -ljitbuilder -ldl
+	$(CXX) -g -fno-rtti -o $@ Pointer.o $(JITBUILDER_LINK_FLAGS)
 
 Pointer.o: src/Pointer.cpp src/Pointer.hpp
 	$(CXX) -o $@ $(CXXFLAGS) $<
 
 
 pow2 : libjitbuilder.a Pow2.o
-	$(CXX) -g -fno-rtti -o $@ Pow2.o -L. -ljitbuilder -ldl
+	$(CXX) -g -fno-rtti -o $@ Pow2.o $(JITBUILDER_LINK_FLAGS)
 
 Pow2.o: src/Pow2.cpp src/Pow2.hpp
 	$(CXX) -o $@ $(CXXFLAGS) $<
 
 
 recfib : libjitbuilder.a RecursiveFib.o
-	$(CXX) -g -fno-rtti -o $@ RecursiveFib.o -L. -ljitbuilder -ldl
+	$(CXX) -g -fno-rtti -o $@ RecursiveFib.o $(JITBUILDER_LINK_FLAGS)
 
 RecursiveFib.o: src/RecursiveFib.cpp src/RecursiveFib.hpp
 	$(CXX) -o $@ $(CXXFLAGS) $<
 
 
 simple : libjitbuilder.a Simple.o
-	$(CXX) -g -fno-rtti -o $@ Simple.o -L. -ljitbuilder -ldl
+	$(CXX) -g -fno-rtti -o $@ Simple.o $(JITBUILDER_LINK_FLAGS)
 
 Simple.o: src/Simple.cpp src/Simple.hpp
 	$(CXX) -o $@ $(CXXFLAGS) $<
 
 
 structarray : libjitbuilder.a StructArray.o
-	$(CXX) -g -fno-rtti -o $@ StructArray.o -L. -ljitbuilder -ldl
+	$(CXX) -g -fno-rtti -o $@ StructArray.o $(JITBUILDER_LINK_FLAGS)
 
 StructArray.o: src/StructArray.cpp src/StructArray.hpp
 	$(CXX) -o $@ $(CXXFLAGS) $<
 
 
 switch : libjitbuilder.a Switch.o
-	$(CXX) -g -fno-rtti -o $@ Switch.o -L. -ljitbuilder -ldl
+	$(CXX) -g -fno-rtti -o $@ Switch.o $(JITBUILDER_LINK_FLAGS)
 
 Switch.o: src/Switch.cpp src/Switch.hpp
 	$(CXX) -o $@ $(CXXFLAGS) $<
 
 
 toiltype : libjitbuilder.a ToIlType.o
-	$(CXX) -g -fno-rtti -o $@ ToIlType.o -L. -ljitbuilder -ldl
+	$(CXX) -g -fno-rtti -o $@ ToIlType.o $(JITBUILDER_LINK_FLAGS)
 
 ToIlType.o: src/ToIlType.cpp
 	$(CXX) -o $@ $(CXXFLAGS) $<
 
 transactionaloperations : libjitbuilder.a TransactionalOperations.o
-	$(CXX) -g -fno-rtti -o $@ TransactionalOperations.o -L. -ljitbuilder -ldl
+	$(CXX) -g -fno-rtti -o $@ TransactionalOperations.o $(JITBUILDER_LINK_FLAGS)
 
 TransactionalOperations.o: src/TransactionalOperations.cpp src/TransactionalOperations.hpp
 	$(CXX) -o $@ $(CXXFLAGS) $<
 
 union : libjitbuilder.a Union.o
-	$(CXX) -g -fno-rtti -o $@ Union.o -L. -ljitbuilder -ldl
+	$(CXX) -g -fno-rtti -o $@ Union.o $(JITBUILDER_LINK_FLAGS)
 
 Union.o: src/Union.cpp src/Union.hpp
 	$(CXX) -o $@ $(CXXFLAGS) $<
 
 worklist : libjitbuilder.a Worklist.o
-	$(CXX) -g -fno-rtti -o $@ Worklist.o -L. -ljitbuilder -ldl
+	$(CXX) -g -fno-rtti -o $@ Worklist.o $(JITBUILDER_LINK_FLAGS)
 
 Worklist.o: src/Worklist.cpp
 	$(CXX) -o $@ $(CXXFLAGS) $<
 
 
 thunks : libjitbuilder.a Thunk.o
-	$(CXX) -g -fno-rtti -o $@ Thunk.o -L. -ljitbuilder -ldl
+	$(CXX) -g -fno-rtti -o $@ Thunk.o $(JITBUILDER_LINK_FLAGS)
 
 Thunk.o: src/Thunk.cpp
 	$(CXX) -o $@ $(CXXFLAGS) $<

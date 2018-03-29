@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2017 IBM Corp. and others
+# Copyright (c) 2017, 2018 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -47,10 +47,18 @@ MODULE_CXXFLAGS += -std=c++0x $(OMR_GTEST_CXXFLAGS)
 
 MODULE_STATIC_LIBS += \
   jitbuilder \
-  omrGtest
+  omrGtest \
+  j9prtstatic \
+  j9thrstatic \
+  j9hashtable \
+  omrutil \
+  j9pool \
+  j9avl \
+  j9hookstatic
 
 MODULE_LIBPATH += \
-  $(top_srcdir)/jitbuilder/release
+  $(top_srcdir)/jitbuilder/release \
+  $(top_srcdir)/lib
 
 MODULE_CXXFLAGS += "-Wno-unused-variable"
 

@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2015, 2016 IBM Corp. and others
+# Copyright (c) 2015, 2018 IBM Corp. and others
 # 
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -155,15 +155,18 @@ endif
 # VM Tests
 test_targets += fvtest/vmtest
 
+# List of targets that are needed for the test compil
+compiler_prereqs = port thread util/pool util/omrutil util/avl util/hashtable util/hookable
+
 # Test Compiler
 ifeq (1,$(OMR_TEST_COMPILER))
-main_targets += fvtest/compilertest
+  main_targets += fvtest/compilertest
 endif
 
 # JitBuilder
 ifeq (1,$(OMR_JITBUILDER))
-main_targets += jitbuilder
-test_targets += fvtest/jitbuildertest jitbuilder/release
+  main_targets += jitbuilder
+  test_targets += fvtest/jitbuildertest jitbuilder/release
 endif
 
 ifeq (yes,$(ENABLE_DDR))
@@ -216,7 +219,7 @@ prebuild: tools
 tools:
 	@$(MAKE) -f GNUmakefile $(tool_targets)
 
-.PHONY: tools prebuild mainbuild staticbuild tests postbuild
+.PHONY: tools prebuild mainbuild staticlib tests postbuild
 
 ###
 ### Inter-target Dependencies
@@ -257,6 +260,18 @@ fvtest/utiltest:: $(test_prereqs)
 fvtest/vmtest:: $(test_prereqs)
 
 perftest/gctest:: $(test_prereqs)
+
+# Test Compiler dependencies
+ifeq (1,$(OMR_TEST_COMPILER))
+  fvtest/compilertest:: $(compiler_prereqs)
+endif
+
+# JitBuilder dependencies
+ifeq (1,$(OMR_JITBUILDER))
+  fvtest/jitbuildertest:: $(compiler_prereqs)
+  jitbuilder:: $(compiler_prereqs)
+  jitbuilder/release:: $(compiler_prereqs)
+endif
 
 ###
 ### Targets

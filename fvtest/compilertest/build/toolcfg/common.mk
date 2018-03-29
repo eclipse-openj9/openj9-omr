@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2016, 2017 IBM Corp. and others
+# Copyright (c) 2016, 2018 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -58,9 +58,16 @@ PRODUCT_RELEASE?=tr.open.test
 
 PRODUCT_NAME?=testjit
 
-PRODUCT_LIBPATH=
-PRODUCT_SLINK=
-
+PRODUCT_LIBPATH= $(top_srcdir)/lib
+PRODUCT_SLINK= \
+  j9prtstatic \
+  j9thrstatic \
+  j9hashtable \
+  omrutil \
+  j9pool \
+  j9avl \
+  j9hookstatic 
+    
 #
 # Now we include the host and target tool config
 # These don't really do much generally... They set a few defines but there really

@@ -498,11 +498,16 @@ void TR::DeadTreesElimination::prePerformOnBlocks()
         tt != 0;
         tt = tt->getNextTreeTop())
       {
+      bool removed = false;
+
       TR::Node *node = tt->getNode();
       if (node->getOpCodeValue() == TR::treetop &&
           node->getFirstChild()->getVisitCount() == visitCount &&
           performTransformation(comp(), "%sRemove trivial dead tree: %p\n", optDetailString(), node))
+         {
          TR::TransformUtil::removeTree(comp(), tt);
+         removed = true;
+         }
       else
          {
          if (node->getOpCode().isCheck() &&
@@ -511,7 +516,18 @@ void TR::DeadTreesElimination::prePerformOnBlocks()
              node->getFirstChild()->getSymbolReference()->getSymbol()->isResolvedMethod() &&
              node->getFirstChild()->getSymbolReference()->getSymbol()->castToResolvedMethodSymbol()->isSideEffectFree() &&
              performTransformation(comp(), "%sRemove dead check of side-effect free call: %p\n", optDetailString(), node))
+            {
             TR::TransformUtil::removeTree(comp(), tt);
+            removed = true;
+            }
+         }
+
+      if (removed
+          && tt->getNextTreeTop()->getNode()->getOpCodeValue() == TR::Goto
+          && tt->getPrevTreeTop()->getNode()->getOpCodeValue() == TR::BBStart
+          && !tt->getPrevTreeTop()->getNode()->getBlock()->isExtensionOfPreviousBlock())
+         {
+         requestOpt(OMR::redundantGotoElimination, tt->getEnclosingBlock());
          }
 
       if (node->getVisitCount() >= visitCount)
@@ -847,6 +863,15 @@ int32_t TR::DeadTreesElimination::process(TR::TreeTop *startTree, TR::TreeTop *e
                iter.jumpTo(prevTree);
                if (child->getReferenceCount() == 1)
                   requestOpt(OMR::treeSimplification, true, block);
+
+               if (nextTree->getNode()->getOpCodeValue() == TR::Goto
+                   && prevTree->getNode()->getOpCodeValue() == TR::BBStart
+                   && !prevTree->getNode()->getBlock()->isExtensionOfPreviousBlock())
+                  {
+                  requestOpt(
+                     OMR::redundantGotoElimination,
+                     prevTree->getNode()->getBlock());
+                  }
                }
             }
          else

@@ -3329,7 +3329,7 @@ TR::TreeTop * OMR_InlinerUtil::storeValueInATemp(
              value->getSymbolReference()->getSymbol()->castToAutoSymbol()->isInternalPointer()))
          isInternalPointer = true;
 
-      if ((value->isNotCollected() && dataType != TR::Aggregate) || isIndirect)
+      if ((value->isNotCollected() && dataType == TR::Address) || isIndirect)
          {
          TR::SymbolReference *valueRef;
          if (tempSymRef!=NULL)

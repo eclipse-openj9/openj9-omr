@@ -3562,39 +3562,7 @@ int32_t TR_EliminateRedundantGotos::process(TR::TreeTop *startTree, TR::TreeTop 
 
          // Fixup all the CFGEdges to goto destBlock
          //
-         for (auto edge = block->getPredecessors().begin(); edge != block->getPredecessors().end();)
-            {
-            TR::CFGEdge* current = *(edge++);
-            TR::Block *predBlock = current->getFrom()->asBlock();
-            requestOpt(OMR::treeSimplification, true, predBlock);
-
-            if (asyncMessagesFlag && comp()->getHCRMode() != TR::osr)
-               placeAsyncCheckBefore(predBlock->getLastRealTreeTop());
-
-            if (predBlock->getLastRealTreeTop()->getNode()->getOpCode().isBranch() &&
-                predBlock->getLastRealTreeTop()->getNode()->getBranchDestination() == block->getEntry())
-                predBlock->changeBranchDestination(destBlock->getEntry(), cfg);
-            else
-                predBlock->redirectFlowToNewDestination(comp(), current, destBlock, false);
-
-            if (predBlock->getNextBlock() == destBlock)
-               {
-               TR::Node *last = predBlock->getLastRealTreeTop()->getNode();
-               if (last->getOpCodeValue() == TR::Goto)
-                  {
-                  int32_t i = 0;
-                  while (i < last->getNumChildren())
-                     {
-                     last->getChild(i)->recursivelyDecReferenceCount();
-                     i++;
-                     }
-
-                  TR::TreeTop *prev = predBlock->getLastRealTreeTop()->getPrevTreeTop();
-                  TR::TreeTop *next = predBlock->getLastRealTreeTop()->getNextTreeTop();
-                  prev->join(next);
-                  }
-               }
-            }
+         redirectPredecessors(block, destBlock, block->getPredecessors(), asyncMessagesFlag);
 
          if (!cannotRepairStructure)
             {
@@ -3614,42 +3582,7 @@ int32_t TR_EliminateRedundantGotos::process(TR::TreeTop *startTree, TR::TreeTop 
          {
          // Okay to allow automatic structure fixup (if it exists)
          //
-         for (auto inEdge = block->getPredecessors().begin(); inEdge != block->getPredecessors().end();)
-            {
-            TR::CFGEdge* current = *(inEdge++);
-            TR::Block *prevBlock = toBlock(current->getFrom());
-
-            if (asyncMessagesFlag && comp()->getHCRMode() != TR::osr)
-               placeAsyncCheckBefore(prevBlock->getLastRealTreeTop());
-
-            if (prevBlock->getLastRealTreeTop()->getNode()->getOpCode().isBranch() &&
-                prevBlock->getLastRealTreeTop()->getNode()->getBranchDestination() == block->getEntry())
-               {
-               prevBlock->changeBranchDestination(destBlock->getEntry(), cfg);
-               }
-            else
-               {
-               prevBlock->redirectFlowToNewDestination(comp(), current, destBlock, false);
-               }
-
-            if (prevBlock->getNextBlock() == destBlock)
-               {
-               TR::Node *last = prevBlock->getLastRealTreeTop()->getNode();
-               if (last->getOpCodeValue() == TR::Goto)
-                  {
-                  int32_t i = 0;
-                  while (i < last->getNumChildren())
-                     {
-                     last->getChild(i)->recursivelyDecReferenceCount();
-                     i++;
-                     }
-
-                  TR::TreeTop *prev = prevBlock->getLastRealTreeTop()->getPrevTreeTop();
-                  TR::TreeTop *next = prevBlock->getLastRealTreeTop()->getNextTreeTop();
-                  prev->join(next);
-                  }
-               }
-            }
+         redirectPredecessors(block, destBlock, block->getPredecessors(), asyncMessagesFlag);
 
          if (!emptyBlock)
             optimizer()->prepareForTreeRemoval(lastNonFenceTree);
@@ -3670,6 +3603,52 @@ int32_t TR_EliminateRedundantGotos::process(TR::TreeTop *startTree, TR::TreeTop 
       }
 
    return 0; // actual cost
+   }
+
+void TR_EliminateRedundantGotos::redirectPredecessors(
+   TR::Block *block,
+   TR::Block *destBlock,
+   const TR::CFGEdgeList &preds,
+   bool asyncMessagesFlag)
+   {
+   TR::CFG *cfg = comp()->getFlowGraph();
+   for (auto edge = preds.begin(); edge != preds.end(); ++edge)
+      {
+      TR::CFGEdge* current = *edge;
+      TR::Block *predBlock = toBlock(current->getFrom());
+      requestOpt(OMR::treeSimplification, true, predBlock);
+
+      if (asyncMessagesFlag && comp()->getHCRMode() != TR::osr)
+         placeAsyncCheckBefore(predBlock->getLastRealTreeTop());
+
+      if (predBlock->getLastRealTreeTop()->getNode()->getOpCode().isBranch() &&
+          predBlock->getLastRealTreeTop()->getNode()->getBranchDestination() == block->getEntry())
+         {
+         predBlock->changeBranchDestination(destBlock->getEntry(), cfg);
+         }
+      else
+         {
+         predBlock->redirectFlowToNewDestination(comp(), current, destBlock, false);
+         }
+
+      if (predBlock->getNextBlock() == destBlock)
+         {
+         TR::Node *last = predBlock->getLastRealTreeTop()->getNode();
+         if (last->getOpCodeValue() == TR::Goto)
+            {
+            int32_t i = 0;
+            while (i < last->getNumChildren())
+               {
+               last->getChild(i)->recursivelyDecReferenceCount();
+               i++;
+               }
+
+            TR::TreeTop *prev = predBlock->getLastRealTreeTop()->getPrevTreeTop();
+            TR::TreeTop *next = predBlock->getLastRealTreeTop()->getNextTreeTop();
+            prev->join(next);
+            }
+         }
+      }
    }
 
 const char *

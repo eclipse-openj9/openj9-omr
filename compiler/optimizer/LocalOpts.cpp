@@ -3432,36 +3432,31 @@ int32_t TR_EliminateRedundantGotos::process(TR::TreeTop *startTree, TR::TreeTop 
       if (block->getPredecessors().empty())
          continue;
 
-      bool gotoBlockRemovable = true;
+      if (block->isLoopInvariantBlock())
+         continue;
+
       TR::Block *destBlock = block->getSuccessors().front()->getTo()->asBlock();
-      auto inEdge = block->getPredecessors().begin();
-      while (inEdge != block->getPredecessors().end())
+      TR::CFGEdgeList fixablePreds(comp()->trMemory()->currentStackRegion());
+      auto preds = block->getPredecessors();
+      for (auto inEdge = preds.begin(); inEdge != preds.end(); ++inEdge)
          {
          if (((*inEdge)->getFrom() == cfg->getStart()) || ((*inEdge)->getFrom() == block))
-            {
-            gotoBlockRemovable = false;
-            break;
-            }
+            continue;
 
-         TR::TreeTop *tt = toBlock((*inEdge)->getFrom())->getLastRealTreeTop();
+         TR::Block *pred = toBlock((*inEdge)->getFrom());
+         TR::TreeTop *tt = pred->getLastRealTreeTop();
          TR::Node *ttNode = tt->getNode();
          if(ttNode->getOpCodeValue() == TR::treetop)
              ttNode = ttNode->getFirstChild();
 
          if (tt->getNode()->getOpCode().isJumpWithMultipleTargets() ||
              tt->getNode()->isTheVirtualGuardForAGuardedInlinedCall())
-            {
-            gotoBlockRemovable = false;
-            break;
-            }
+            continue;
 
          if (!emptyBlock &&
              (!tt->getNode()->getOpCode().isBranch() ||
                tt->getNode()->getBranchDestination() != block->getEntry()))
-            {
-            gotoBlockRemovable = false;
-            break;
-            }
+            continue;
 
          if (tt->getNode()->getOpCode().isBranch()  &&
              ((tt->getNode()->getBranchDestination() != block->getEntry()) &&
@@ -3469,39 +3464,36 @@ int32_t TR_EliminateRedundantGotos::process(TR::TreeTop *startTree, TR::TreeTop 
                !(destBlock->getSuccessors().size() == 1) ||
                !(destBlock->getPredecessors().size() == 1) ||
                !destBlock->getLastRealTreeTop()->getNode()->getOpCode().isBranch())))
-            {
-            gotoBlockRemovable = false;
-            break;
-            }
+            continue;
 
          // PR 65144: The transformation logic later in this loop doesn't cope
          // with a branch whose target is also the fallthrough block.  Protect
          // against that case, whether it appears in the incoming trees, or
          // arises after an earlier transformation by this very loop.
          //
-         TR::Block *pred = toBlock((*inEdge)->getFrom());
          if (  tt->getNode()->getOpCode().isBranch()
             && tt->getNode()->getBranchDestination() == block->getEntry()
             && pred->getNextBlock() == block)
-            {
-            gotoBlockRemovable = false;
-            break;
-            }
+            continue;
 
          //if (asyncMessagesFlag && (tt->getNode()->getOpCodeValue() != TR::Goto))
          //   {
          //   gotoBlockRemovable = false;
          //   break;
          //   }
-         //
-         ++inEdge;
+
+         fixablePreds.push_front(*inEdge);
          }
-      if (!gotoBlockRemovable)
+
+      if (fixablePreds.empty())
          continue;
 
-
-      if (block->getStructureOf() && block->getStructureOf()->isLoopInvariantBlock())
-         continue;
+      if (fixablePreds.size() < preds.size())
+         {
+         // Not all predecessors can be adjusted, so block cannot be removed.
+         if (emptyBlock || manuallyFixStructure)
+            continue;
+         }
 
       if (containsTreesOtherThanGoto)
          {
@@ -3603,7 +3595,7 @@ int32_t TR_EliminateRedundantGotos::process(TR::TreeTop *startTree, TR::TreeTop 
 
          // Fixup all the CFGEdges to goto destBlock
          //
-         redirectPredecessors(block, destBlock, block->getPredecessors(), emptyBlock, asyncMessagesFlag);
+         redirectPredecessors(block, destBlock, fixablePreds, emptyBlock, asyncMessagesFlag);
 
          if (!cannotRepairStructure)
             {
@@ -3623,12 +3615,7 @@ int32_t TR_EliminateRedundantGotos::process(TR::TreeTop *startTree, TR::TreeTop 
          {
          // Okay to allow automatic structure fixup (if it exists)
          //
-         redirectPredecessors(block, destBlock, block->getPredecessors(), emptyBlock, asyncMessagesFlag);
-
-         if (!emptyBlock)
-            optimizer()->prepareForTreeRemoval(lastNonFenceTree);
-
-         cfg->removeNode(block);
+         redirectPredecessors(block, destBlock, fixablePreds, emptyBlock, asyncMessagesFlag);
          }
 
       // Place an asynccheck as the first treetop of the successor, if there was one in the removed block

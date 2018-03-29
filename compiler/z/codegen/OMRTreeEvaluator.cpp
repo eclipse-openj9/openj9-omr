@@ -6121,7 +6121,8 @@ aloadHelper(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference * tempM
                   auto loadMnemonic = TR::InstOpCode::BAD;
 
                   if (TR::Compiler->om.shouldGenerateReadBarriersForFieldLoads() &&
-                      node->getOpCodeValue() == TR::aloadi &&
+                      ((node->getOpCodeValue() == TR::aloadi) ||
+                       (node->getOpCodeValue() == TR::aload && node->getSymbol()->isStatic())) &&
                       tempReg->containsCollectedReference())
                      {
                      if (comp->useCompressedPointers() &&

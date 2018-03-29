@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1168,7 +1168,6 @@ TR::Node *constrainAnyIntLoad(OMR::ValuePropagation *vp, TR::Node *node)
          if (baseVPConstraint && baseVPConstraint->isConstString())
             {
             TR::VPConstString *constString = baseVPConstraint->getClassType()->asConstString();
-            uintptrj_t string = *(uintptrj_t*)constString->getSymRef()->getSymbol()->castToStaticSymbol()->getStaticAddress();
 
             uint16_t ch = constString->charAt(((TR::Compiler->target.is64Bit() ? index->getLongIntLow() : index->getInt())
                                                - TR::Compiler->om.contiguousArrayHeaderSizeInBytes()) / 2, vp->comp());
@@ -1491,7 +1490,8 @@ static bool addKnownObjectConstraints(OMR::ValuePropagation *vp, TR::Node *node)
 
          {
          TR::VMAccessCriticalSection getObjectReferenceLocation(vp->comp());
-         clazz   = TR::Compiler->cls.objectClass(vp->comp(), *objectReferenceLocation);
+         uintptrj_t objectReference = vp->comp()->fej9()->getStaticReferenceFieldAtAddress((uintptrj_t)objectReferenceLocation);
+         clazz   = TR::Compiler->cls.objectClass(vp->comp(), objectReference);
          isString = TR::Compiler->cls.isString(vp->comp(), clazz);
          jlClass = vp->fe()->getClassClassPointer(clazz);
          isFixedJavaLangClass = (jlClass == clazz);
@@ -1500,9 +1500,9 @@ static bool addKnownObjectConstraints(OMR::ValuePropagation *vp, TR::Node *node)
             // A FixedClass constraint means something different when the class happens to be java/lang/Class.
             // Must add constraints pertaining to the class that the java/lang/Class object represents.
             //
-            clazz = TR::Compiler->cls.classFromJavaLangClass(vp->comp(), *objectReferenceLocation);
+            clazz = TR::Compiler->cls.classFromJavaLangClass(vp->comp(), objectReference);
             }
-         knownObjectIndex = knot->getIndex(*objectReferenceLocation);
+         knownObjectIndex = knot->getIndex(objectReference);
          }
 
 
@@ -1634,29 +1634,26 @@ TR::Node *constrainAload(OMR::ValuePropagation *vp, TR::Node *node)
                   {
                   TR::VMAccessCriticalSection constrainAloadCriticalSection(vp->comp(),
                                                                              TR::VMAccessCriticalSection::tryToAcquireVMAccess);
-                  void * p = symbol->getStaticAddress();
-                  if ((*(void **)p != 0) &&
-                      constrainAloadCriticalSection.hasVMAccess())
+                  if (constrainAloadCriticalSection.hasVMAccess())
                      {
-                     int32_t arrLength = *((int32_t *) (((uintptrj_t) *(void ***)p) + (uintptrj_t) vp->fe()->getOffsetOfContiguousArraySizeField() ));
-
-                    if (arrLength == 0 && TR::Compiler->om.useHybridArraylets())
-                       {
-                       arrLength = *((int32_t *) (((uintptrj_t) *(void ***)p) + (uintptrj_t) vp->fe()->getOffsetOfDiscontiguousArraySizeField() ));
-                       }
-
-                     int32_t len;
-                     const char *sig = symRef->getTypeSignature(len);
-                     if (sig && (len > 0) &&
-                         (sig[0] == '[' || sig[0] == 'L'))
+                     uintptrj_t arrayStaticAddress = (uintptrj_t)symbol->getStaticAddress();
+                     uintptrj_t arrayObject = vp->comp()->fej9()->getStaticReferenceFieldAtAddress(arrayStaticAddress);
+                     if (arrayObject != 0)
                         {
-                        int32_t elementSize = arrayElementSize(sig, len, node, vp);
-                        if (elementSize != 0)
+                        int32_t arrLength = TR::Compiler->om.getArrayLengthInElements(vp->comp(), arrayObject);
+                        int32_t len;
+                        const char *sig = symRef->getTypeSignature(len);
+                        if (sig && (len > 0) &&
+                            (sig[0] == '[' || sig[0] == 'L'))
                            {
-                           vp->addGlobalConstraint(node, TR::VPNonNullObject::create(vp));
-                           vp->addGlobalConstraint(node, TR::VPArrayInfo::create(vp, arrLength, arrLength, elementSize));
-                           vp->addGlobalConstraint(node, TR::VPObjectLocation::create(vp, TR::VPObjectLocation::NotClassObject));
-                           foundInfo = true;
+                           int32_t elementSize = arrayElementSize(sig, len, node, vp);
+                           if (elementSize != 0)
+                              {
+                              vp->addGlobalConstraint(node, TR::VPNonNullObject::create(vp));
+                              vp->addGlobalConstraint(node, TR::VPArrayInfo::create(vp, arrLength, arrLength, elementSize));
+                              vp->addGlobalConstraint(node, TR::VPObjectLocation::create(vp, TR::VPObjectLocation::NotClassObject));
+                              foundInfo = true;
+                              }
                            }
                         }
                      }
@@ -2387,28 +2384,31 @@ TR::Node *constrainIaload(OMR::ValuePropagation *vp, TR::Node *node)
                   {
                   TR::VMAccessCriticalSection constrainIaloadCriticalSection(vp->comp(),
                                                                               TR::VMAccessCriticalSection::tryToAcquireVMAccess);
-                  void * p = symbol->getStaticAddress();
-                  if ((*(void **)p != 0) &&
-                      constrainIaloadCriticalSection.hasVMAccess())
+                  if (constrainIaloadCriticalSection.hasVMAccess())
                      {
-                     arrLength = *((int32_t *) (((uintptrj_t) *(void ***)p) + (uintptrj_t) vp->fe()->getOffsetOfContiguousArraySizeField()));
-
-                     if (arrLength == 0 && TR::Compiler->om.useHybridArraylets())
+                     uintptrj_t arrayStaticAddress = (uintptrj_t)symbol->getStaticAddress();
+                     uintptrj_t arrayObject = vp->comp()->fej9()->getStaticReferenceFieldAtAddress(arrayStaticAddress);
+                     if (arrayObject != 0)
                         {
-                        arrLength = *((int32_t *) (((uintptrj_t) *(void ***)p) + (uintptrj_t) vp->fe()->getOffsetOfDiscontiguousArraySizeField()));
-                        }
+                        /*
+                         * This line is left commented because of the commented lines further below which make use
+                         * of the arrLength variable. This can be removed once it is determined that the commented
+                         * out lines below will never be needed.
+                         */
+                        //int32_t arrLength = TR::Compiler->om.getArrayLengthInElements(vp->comp(), arrayObject);
 
-                     sig = symRef->getTypeSignature(len);
-                     if (sig && (len > 0) &&
-                         (sig[0] == '[' || sig[0] == 'L'))
-                        {
-                        elementSize = arrayElementSize(sig, len, node, vp);
-                        if (elementSize != 0)
+                        sig = symRef->getTypeSignature(len);
+                        if (sig && (len > 0) &&
+                            (sig[0] == '[' || sig[0] == 'L'))
                            {
-                           //vp->addGlobalConstraint(node, TR::VPNonNullObject::create(vp));
-                           //vp->addGlobalConstraint(node, TR::VPArrayInfo::create(vp, arrLength, arrLength, elementSize));
-                           foundInfo = true;
-                           isFixed = true;
+                           elementSize = arrayElementSize(sig, len, node, vp);
+                           if (elementSize != 0)
+                              {
+                              //vp->addGlobalConstraint(node, TR::VPNonNullObject::create(vp));
+                              //vp->addGlobalConstraint(node, TR::VPArrayInfo::create(vp, arrLength, arrLength, elementSize));
+                              foundInfo = true;
+                              isFixed = true;
+                              }
                            }
                         }
                      }

@@ -1933,10 +1933,10 @@ TR_Debug::getStaticName(TR::SymbolReference * symRef)
                                                                    TR::VMAccessCriticalSection::tryToAcquireVMAccess);
          if (!symRef->isUnresolved() && getStaticNameCriticalSection.acquiredVMAccess())
             {
-            uintptrj_t *stringLocation = (uintptrj_t*)sym->castToStaticSymbol()->getStaticAddress();
+            uintptrj_t stringLocation = (uintptrj_t)sym->castToStaticSymbol()->getStaticAddress();
             if (stringLocation)
                {
-               uintptrj_t string = *stringLocation;
+               uintptrj_t string = comp()->fej9()->getStaticReferenceFieldAtAddress(stringLocation);
                length = comp()->fej9()->getStringUTF8Length(string);
                contents = (char*)comp()->trMemory()->allocateMemory(length+1, stackAlloc, TR_MemoryBase::UnknownType);
                comp()->fej9()->getStringUTF8(string, contents, length+1);

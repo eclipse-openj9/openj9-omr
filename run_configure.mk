@@ -83,7 +83,7 @@ endif
 ifneq (,$(findstring win_x86,$(SPEC)))
   include $(CONFIG_INCL_DIR)/configure_win_x86.mk
   # OMRTODO: this is J9 buildfarm specific code.
-  export PATH:=$(DEV_TOOLS)\jtc-toolchain\java7\windows\mingw-msys\msys\1.0\bin;$(PATH)
+  export PATH:=$(DEV_TOOLS)/jtc-toolchain/java7/windows/mingw-msys/msys/1.0/bin:$(PATH)
 endif
 ifneq (,$(findstring zos_390,$(SPEC)))
   include $(CONFIG_INCL_DIR)/configure_zos_390.mk

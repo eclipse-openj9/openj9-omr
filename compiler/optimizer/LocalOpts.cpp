@@ -3386,6 +3386,45 @@ int32_t TR_EliminateRedundantGotos::process(TR::TreeTop *startTree, TR::TreeTop 
          //////dumpOptDetails(comp(), "Contains trees other than gotos when at block number : %d\n", block->getNumber());
          }
 
+      bool blockIsRegionEntry = false;
+      TR_Structure *rootStructure = cfg->getStructure();
+      TR_RegionStructure *blockRegion = NULL;
+      if (rootStructure != NULL)
+         {
+         blockRegion = block->getParentStructureIfExists(cfg);
+         blockIsRegionEntry =
+            blockRegion != NULL && blockRegion->getNumber() == block->getNumber();
+         }
+
+      bool manuallyFixStructure = blockIsRegionEntry;
+
+      if (!block->isExtensionOfPreviousBlock())
+         {
+         // Check register dependencies
+         TR::TreeTop *lastTT = emptyBlock ? block->getExit() : lastNonFenceTree;
+         TR::Node *exit = lastTT->getNode();
+         if (exit->getNumChildren() > 0)
+            {
+            TR::Node *exitDeps = exit->getChild(0);
+
+            // If every child of the outgoing GlRegDeps is a register load,
+            // then the outgoing registers agree with the incoming registers,
+            // because each register load must appear first under BBStart.
+            bool depsOK = true;
+            for (int i = 0; i < exitDeps->getNumChildren(); i++)
+               {
+               if (!exitDeps->getChild(i)->getOpCode().isLoadReg())
+                  {
+                  depsOK = false;
+                  break;
+                  }
+               }
+
+            if (!depsOK)
+               continue;
+            }
+         }
+
       // This block consists of just a goto with maybe an async check as well.
       //
       // Look at the predecessors and see if they can all absorb the goto
@@ -3466,6 +3505,10 @@ int32_t TR_EliminateRedundantGotos::process(TR::TreeTop *startTree, TR::TreeTop 
 
       if (containsTreesOtherThanGoto)
          {
+         if (block->getEntry()->getNode()->getNumChildren() > 0
+             || destBlock->getEntry()->getNode()->getNumChildren() > 0)
+            continue; // to move the trees we would need to deal with regdeps
+
          if (!(destBlock->getPredecessors().size() == 1))
             continue;
 
@@ -3509,9 +3552,7 @@ int32_t TR_EliminateRedundantGotos::process(TR::TreeTop *startTree, TR::TreeTop 
             !performTransformation(comp(), "%sEliminating goto at the end of block_%d with BBStart %p\n", optDetailString(), block->getNumber(), block->getEntry()->getNode()))
         continue;
 
-      TR_Structure *rootStructure     = cfg->getStructure();
-      TR_RegionStructure *blockRegion = block->getParentStructureIfExists(cfg);
-      if (rootStructure && blockRegion && blockRegion->getNumber() == block->getNumber())
+      if (manuallyFixStructure)
          {
          // We are removing a goto block that is the head of a structure region.
          // Attempt to remove the goto block will result in the collapse of blockStrucutre
@@ -3562,7 +3603,7 @@ int32_t TR_EliminateRedundantGotos::process(TR::TreeTop *startTree, TR::TreeTop 
 
          // Fixup all the CFGEdges to goto destBlock
          //
-         redirectPredecessors(block, destBlock, block->getPredecessors(), asyncMessagesFlag);
+         redirectPredecessors(block, destBlock, block->getPredecessors(), emptyBlock, asyncMessagesFlag);
 
          if (!cannotRepairStructure)
             {
@@ -3582,7 +3623,7 @@ int32_t TR_EliminateRedundantGotos::process(TR::TreeTop *startTree, TR::TreeTop 
          {
          // Okay to allow automatic structure fixup (if it exists)
          //
-         redirectPredecessors(block, destBlock, block->getPredecessors(), asyncMessagesFlag);
+         redirectPredecessors(block, destBlock, block->getPredecessors(), emptyBlock, asyncMessagesFlag);
 
          if (!emptyBlock)
             optimizer()->prepareForTreeRemoval(lastNonFenceTree);
@@ -3609,9 +3650,65 @@ void TR_EliminateRedundantGotos::redirectPredecessors(
    TR::Block *block,
    TR::Block *destBlock,
    const TR::CFGEdgeList &preds,
+   bool emptyBlock,
    bool asyncMessagesFlag)
    {
    TR::CFG *cfg = comp()->getFlowGraph();
+
+   TR::Node *regdepsToMove = NULL;
+   TR::Node *newRegdepParent = NULL;
+
+   // In case we're deleting an empty block at the beginning or end of a larger
+   // extended block, take care to move any incoming regdeps forward, or
+   // outgoing ones backward, to ensure they aren't lost.
+   bool regdepsAreOutgoing = block->isExtensionOfPreviousBlock();
+   if (regdepsAreOutgoing)
+      {
+      TR::Node *exitNode = block->getExit()->getNode();
+      if (exitNode->getNumChildren() > 0)
+         {
+         // block is the last in its extended block. It must be empty because
+         // it has only one predecessor, and the predecessor falls through into
+         // block. Predecessor edges that don't branch to block are rejected
+         // unless emptyBlock holds.
+         TR_ASSERT_FATAL(
+            emptyBlock,
+            "expected block_%d to be empty\n",
+            block->getNumber());
+
+         regdepsToMove = exitNode->getChild(0);
+         exitNode->setChild(0, NULL);
+         exitNode->setNumChildren(0);
+         newRegdepParent = toBlock(preds.front()->getFrom())->getExit()->getNode();
+         }
+      }
+   else
+      {
+      TR::Node *entryNode = block->getEntry()->getNode();
+      if (emptyBlock &&
+          entryNode->getNumChildren() > 0 &&
+          destBlock->isExtensionOfPreviousBlock())
+         {
+         regdepsToMove = entryNode->getChild(0);
+         entryNode->setChild(0, NULL);
+         entryNode->setNumChildren(0);
+         newRegdepParent = destBlock->getEntry()->getNode();
+         }
+      }
+
+   if (regdepsToMove != NULL)
+      {
+      TR_ASSERT_FATAL(
+         newRegdepParent->getNumChildren() == 0,
+         "n%un %s has unexpected register dependencies\n",
+         newRegdepParent->getGlobalIndex(),
+         newRegdepParent->getOpCode().getName());
+
+      newRegdepParent->setNumChildren(1);
+      newRegdepParent->setChild(0, regdepsToMove);
+      }
+
+   // Update predecessors now that the regdeps have been moved as appropriate
    for (auto edge = preds.begin(); edge != preds.end(); ++edge)
       {
       TR::CFGEdge* current = *edge;
@@ -3624,7 +3721,10 @@ void TR_EliminateRedundantGotos::redirectPredecessors(
       if (predBlock->getLastRealTreeTop()->getNode()->getOpCode().isBranch() &&
           predBlock->getLastRealTreeTop()->getNode()->getBranchDestination() == block->getEntry())
          {
-         predBlock->changeBranchDestination(destBlock->getEntry(), cfg);
+         predBlock->changeBranchDestination(
+            destBlock->getEntry(),
+            cfg,
+            /* callerFixesRegdeps = */ true);
          }
       else
          {
@@ -3636,11 +3736,24 @@ void TR_EliminateRedundantGotos::redirectPredecessors(
          TR::Node *last = predBlock->getLastRealTreeTop()->getNode();
          if (last->getOpCodeValue() == TR::Goto)
             {
-            int32_t i = 0;
-            while (i < last->getNumChildren())
+            TR::Node *exit = predBlock->getExit()->getNode();
+            TR_ASSERT_FATAL(
+               exit->getNumChildren() == 0,
+               "n%un BBEnd has GlRegDeps even though it follows goto\n",
+               exit->getGlobalIndex());
+
+            if (last->getNumChildren() > 0)
                {
-               last->getChild(i)->recursivelyDecReferenceCount();
-               i++;
+               TR_ASSERT_FATAL(
+                  last->getNumChildren() == 1,
+                  "n%un goto has %d children\n",
+                  last->getGlobalIndex(),
+                  last->getNumChildren());
+
+               exit->setNumChildren(1);
+               exit->setChild(0, last->getChild(0));
+               last->setChild(0, NULL);
+               last->setNumChildren(0);
                }
 
             TR::TreeTop *prev = predBlock->getLastRealTreeTop()->getPrevTreeTop();

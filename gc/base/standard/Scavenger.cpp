@@ -121,7 +121,9 @@
 
 extern "C" {
 	uintptr_t allocateMemoryForSublistFragment(void *vmThreadRawPtr, J9VMGC_SublistFragment *fragmentPrimitive);
+#if defined(OMR_GC_MODRON_CONCURRENT_MARK)
 	void oldToOldReferenceCreated(MM_EnvironmentBase *env, omrobjectptr_t objectPtr);
+#endif /* OMR_GC_MODRON_CONCURRENT_MARK */
 }
 
 
@@ -1690,12 +1692,13 @@ MM_Scavenger::scavengeObjectSlots(MM_EnvironmentStandard *env, MM_CopyScanCacheS
 		/* Set the remembered set slot to the object pointer in case it was still marked for removal. */
 		*rememberedSetSlot = objectPtr;
 	}
-
+#if defined(OMR_GC_MODRON_CONCURRENT_MARK)
 	if (_extensions->shouldScavengeNotifyGlobalGCOfOldToOldReference() && IS_CONCURRENT_ENABLED && !isParentInNewSpace && !shouldRemember) {
 		/* Old object that has only references to old objects. If parent object has already been scanned (in Marking sense)
 		 * since it has been tenured, let Concurrent Marker know it has a newly created old reference, otherwise it may miss to find it. */
 		oldToOldReferenceCreated(env, objectPtr);
 	}
+#endif /* OMR_GC_MODRON_CONCURRENT_MARK */
 
 	return shouldRemember;
 }
@@ -1809,11 +1812,13 @@ MM_Scavenger::incrementalScavengeObjectSlots(MM_EnvironmentStandard *env, omrobj
 		scanCache->_shouldBeRemembered = false;
 	}
 
+#if defined(OMR_GC_MODRON_CONCURRENT_MARK)
 	if (_extensions->shouldScavengeNotifyGlobalGCOfOldToOldReference() && IS_CONCURRENT_ENABLED && !isParentInNewSpace && !scanCache->_shouldBeRemembered) {
 		/* Old object that has only references to old objects. If parent object has already been scanned (in Marking sense)
 		 * since it has been tenured, let Concurrent Marker know it has a newly created old reference, otherwise it may miss to find it. */
 		oldToOldReferenceCreated(env, objectPtr);
 	}
+#endif /* OMR_GC_MODRON_CONCURRENT_MARK */
 }
 
 /****************************************
@@ -2466,6 +2471,7 @@ MM_Scavenger::pruneRememberedSetOverflow(MM_EnvironmentStandard *env)
 					} else {
 						/* Tenured object remembered flags can be cleared */
 						_extensions->objectModel.clearRemembered(objectPtr);
+#if defined(OMR_GC_MODRON_CONCURRENT_MARK)
 						if (_extensions->shouldScavengeNotifyGlobalGCOfOldToOldReference() && !IS_CONCURRENT_ENABLED) {
 							/* Inform interested parties (Concurrent Marker) that an object has been removed from the remembered set.
 							 * In non-concurrent Scavenger this is the only way to create an old-to-old reference, that has parent object being marked.
@@ -2474,6 +2480,7 @@ MM_Scavenger::pruneRememberedSetOverflow(MM_EnvironmentStandard *env)
 							 */
 							oldToOldReferenceCreated(env, objectPtr);
 						}
+#endif /* OMR_GC_MODRON_CONCURRENT_MARK */
 					}
 				}
 			}
@@ -2534,9 +2541,11 @@ MM_Scavenger::pruneRememberedSetList(MM_EnvironmentStandard *env)
 						 * In Concurrent Scavenger, it can be created even with parent object that was not in RS to start with. So this is handled
 						 * in a more generic spot when object is scavenged and is unnecessary to do it here.
 						 */
+#if defined(OMR_GC_MODRON_CONCURRENT_MARK)
 						if (_extensions->shouldScavengeNotifyGlobalGCOfOldToOldReference() && !IS_CONCURRENT_ENABLED) {
 							oldToOldReferenceCreated(env, objectPtr);
 						}
+#endif /* OMR_GC_MODRON_CONCURRENT_MARK */
 					}
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
 					else {

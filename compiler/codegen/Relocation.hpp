@@ -29,6 +29,7 @@
 #include "infra/Flags.hpp"                  // for flags8_t
 #include "infra/Link.hpp"                   // for TR_Link
 #include "runtime/Runtime.hpp"
+#include "ras/DebugCounter.hpp"             // for TR::DebugCounter
 
 namespace TR { class CodeGenerator; }
 namespace TR { class Compilation; }

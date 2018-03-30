@@ -273,6 +273,9 @@ public:
    void setHoldsMonitoredObject()           { _flags.set(HoldsMonitoredObject); }
    bool holdsMonitoredObject()              { return _flags.testAny(HoldsMonitoredObject); }
 
+   void setIsDebugCounter()                 { _flags2.set(DebugCounter); }
+   bool isDebugCounter()                    { return _flags2.testAny(DebugCounter); }
+
    inline bool isNamed();
 
    // flag methods specific to Autos
@@ -554,7 +557,7 @@ public:
       HasAddrTaken              = 0x00000010, // used to denote that we have a loadaddr of this symbol
       MethodTypeTableEntry      = 0x00000020, // JSR292
       NotDataAddress            = 0x00000040, // isStatic only: AOT
-      // Available              = 0x00000080,
+      DebugCounter              = 0x00000080, // Debug Counter for AOT
       UnsafeShadow              = 0x00000100,
       NamedShadow               = 0x00000200,
       ImmutableField            = 0x00000400,

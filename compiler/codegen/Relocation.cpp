@@ -135,7 +135,7 @@ uint8_t TR::ExternalRelocation::collectModifier()
 
    if (TR::Compiler->target.cpu.isPower() &&
           (_kind == TR_ArrayCopyHelper || _kind == TR_ArrayCopyToc || _kind == TR_RamMethod || _kind == TR_GlobalValue || _kind == TR_BodyInfoAddressLoad || _kind == TR_DataAddress || _kind == TR_JNISpecialTargetAddress || _kind == TR_JNIStaticTargetAddress || _kind == TR_JNIVirtualTargetAddress
-                || _kind == TR_StaticRamMethodConst || _kind == TR_VirtualRamMethodConst || _kind == TR_SpecialRamMethodConst))
+                || _kind == TR_StaticRamMethodConst || _kind == TR_VirtualRamMethodConst || _kind == TR_SpecialRamMethodConst || _kind == TR_DebugCounter))
       {
       TR::Instruction *instr = (TR::Instruction *)getUpdateLocation();
       updateLocation = instr->getBinaryEncoding();
@@ -316,7 +316,7 @@ uint8_t TR::ExternalOrderedPair32BitRelocation::collectModifier()
    TR_ExternalRelocationTargetKind kind = getTargetKind();
 
    if (TR::Compiler->target.cpu.isPower() &&
-          (kind == TR_ArrayCopyHelper || kind == TR_ArrayCopyToc || kind == TR_RamMethod || kind == TR_GlobalValue || kind == TR_BodyInfoAddressLoad || kind == TR_DataAddress))
+          (kind == TR_ArrayCopyHelper || kind == TR_ArrayCopyToc || kind == TR_RamMethod || kind == TR_GlobalValue || kind == TR_BodyInfoAddressLoad || kind == TR_DataAddress || kind == TR_DebugCounter))
       {
       TR::Instruction *instr = (TR::Instruction *)getUpdateLocation();
       TR::Instruction *instr2 = (TR::Instruction *)getLocation2();
@@ -349,7 +349,7 @@ void TR::ExternalOrderedPair32BitRelocation::apply(TR::CodeGenerator *codeGen)
       uint8_t *codeStart = (uint8_t *)comp->getAotMethodCodeStart();
       TR_ExternalRelocationTargetKind kind = getRelocationRecord()->getTargetKind();
       if (TR::Compiler->target.cpu.isPower() &&
-          (kind == TR_ArrayCopyHelper || kind == TR_ArrayCopyToc || kind == TR_RamMethodSequence || kind == TR_GlobalValue || kind == TR_BodyInfoAddressLoad || kind == TR_DataAddress))
+          (kind == TR_ArrayCopyHelper || kind == TR_ArrayCopyToc || kind == TR_RamMethodSequence || kind == TR_GlobalValue || kind == TR_BodyInfoAddressLoad || kind == TR_DataAddress || kind == TR_DebugCounter))
          {
          TR::Instruction *instr = (TR::Instruction *)getUpdateLocation();
          TR::Instruction *instr2 = (TR::Instruction *)getLocation2();
@@ -393,7 +393,7 @@ const char *TR::ExternalRelocation::_externalRelocationTargetKindNames[TR_NumExt
    "TR_RamMethodSequenceReg (23)",
    "TR_VerifyClassObjectForAlloc (24)",
    "TR_ConstantPoolOrderedPair (25)",
-   "TR_AbsoluteMethodAddressOrderedPair (36)",
+   "TR_AbsoluteMethodAddressOrderedPair (26)",
    "TR_VerifyRefArrayForAlloc (27)",
    "TR_J2IThunks (28)",
    "TR_GlobalValue (29)",
@@ -426,6 +426,7 @@ const char *TR::ExternalRelocation::_externalRelocationTargetKindNames[TR_NumExt
    "TR_NativeMethodAbsolute (56)",
    "TR_NativeMethodRelative (57)",
    "TR_ArbitraryClassAddress (58)",
+   "TR_DebugCounter (59)"
    };
 
 uintptr_t TR::ExternalRelocation::_globalValueList[TR_NumGlobalValueItems] =

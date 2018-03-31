@@ -998,8 +998,7 @@ postForkResetRWMutexes(omrthread_t self)
 uintptr_t
 omrthread_lib_get_flags(void)
 {
-	omrthread_t self;
-	self = MACRO_SELF();
+	omrthread_t self = MACRO_SELF();
 
 	ASSERT(self);
 	ASSERT(self->library);
@@ -1514,10 +1513,11 @@ static WRAPPER_TYPE
 thread_wrapper(WRAPPER_ARG arg)
 {
 	omrthread_t thread = (omrthread_t)arg;
-	omrthread_library_t lib = thread->library;
+	omrthread_library_t lib = NULL;
 	uintptr_t flags;
 
 	ASSERT(thread);
+	lib = thread->library;
 	ASSERT(lib);
 
 	thread->tid = omrthread_get_ras_tid();
@@ -2044,9 +2044,10 @@ threadDestroy(omrthread_t thread, int globalAlreadyLocked)
 static void
 threadFree(omrthread_t thread, int globalAlreadyLocked)
 {
-	omrthread_library_t lib = thread->library;
+	omrthread_library_t lib = NULL;
 
 	ASSERT(thread);
+	lib = thread->library;
 
 	if (!globalAlreadyLocked) {
 		GLOBAL_LOCK_SIMPLE(lib);
@@ -2075,10 +2076,11 @@ static void OMRNORETURN
 threadInternalExit(void)
 {
 	omrthread_t self = MACRO_SELF();
-	omrthread_library_t lib = self->library;
-	int detached;
+	omrthread_library_t lib = NULL;
+	int detached = 0;
 
 	ASSERT(self);
+	lib = self->library;
 	ASSERT(lib);
 
 	omrthread_tls_finalize(self);
@@ -3329,10 +3331,11 @@ omrthread_monitor_destroy_nolock(omrthread_t self, omrthread_monitor_t monitor)
 void
 omrthread_monitor_flush_destroyed_monitor_list(omrthread_t self)
 {
-	omrthread_library_t lib = self->library;
+	omrthread_library_t lib = NULL;
 	omrthread_monitor_t cacheTail = NULL;
 
 	ASSERT(self);
+	lib = self->library;
 	ASSERT(lib);
 
 	if (0 != self->destroyed_monitor_head) {
@@ -3367,13 +3370,15 @@ omrthread_monitor_flush_destroyed_monitor_list(omrthread_t self)
 static omrthread_monitor_t
 monitor_allocate(omrthread_t self, intptr_t policy, intptr_t policyData)
 {
-	omrthread_monitor_t newMonitor;
-	omrthread_library_t lib = self->library;
-	omrthread_monitor_pool_t pool = lib->monitor_pool;
-	intptr_t rc;
+	omrthread_monitor_t newMonitor = NULL;
+	omrthread_library_t lib = NULL; 
+	omrthread_monitor_pool_t pool = NULL;
+	intptr_t rc = 0;
 
 	ASSERT(self);
+	lib = self->library;
 	ASSERT(lib);
+	pool = lib->monitor_pool;
 	ASSERT(pool);
 
 	GLOBAL_LOCK(self, CALLER_MONITOR_ACQUIRE);
@@ -3922,10 +3927,13 @@ unblock_spinlock_threads(omrthread_t self, omrthread_monitor_t monitor)
 {
 	omrthread_t queue, next;
 #if defined(OMR_THR_SPIN_WAKE_CONTROL)
-	uintptr_t i = self->library->maxWakeThreads;
+	uintptr_t i = 0;
 #endif /* defined(OMR_THR_SPIN_WAKE_CONTROL) */
 
 	ASSERT(self);
+#if defined(OMR_THR_SPIN_WAKE_CONTROL)
+	i = self->library->maxWakeThreads;
+#endif /* defined(OMR_THR_SPIN_WAKE_CONTROL) */
 	ASSERT(monitor);
 
 	next = monitor->blocking;
@@ -5113,9 +5121,10 @@ static void
 free_monitor_pools(void)
 {
 	omrthread_library_t lib = GLOBAL_DATA(default_library);
-	omrthread_monitor_pool_t pool = lib->monitor_pool;
+	omrthread_monitor_pool_t pool = NULL;
 
 	ASSERT(lib);
+	pool = lib->monitor_pool;
 	ASSERT(pool);
 
 	while (pool) {

@@ -3524,6 +3524,19 @@ OMR::Power::CodeGenerator::addMetaDataForLoadAddressConstantFixed(
                                     node);
                   }
                }
+            else if (typeAddress == TR_DebugCounter)
+               {
+               if (doAOTRelocation)
+                  {
+                  TR::DebugCounterBase *counter = comp->getCounterFromStaticAddress(node->getSymbolReference());
+                  if (counter == NULL)
+                     {
+                     comp->failCompilation<TR::CompilationException>("Could not generate relocation for debug counter in OMR::Power::CodeGenerator::addMetaDataForLoadAddressConstantFixed\n");
+                     }
+
+                  TR::DebugCounter::generateRelocation(comp, firstInstruction, node, counter, seqKind);
+                  }
+               }
             else
                {
                if (doAOTRelocation)
@@ -3585,6 +3598,19 @@ OMR::Power::CodeGenerator::addMetaDataForLoadAddressConstantFixed(
                                     __FILE__,
                                     __LINE__,
                                     node);
+                  }
+               }
+            else if (typeAddress == TR_DebugCounter)
+               {
+               if (doAOTRelocation)
+                  {
+                  TR::DebugCounterBase *counter = comp->getCounterFromStaticAddress(node->getSymbolReference());
+                  if (counter == NULL)
+                     {
+                     comp->failCompilation<TR::CompilationException>("Could not generate relocation for debug counter in OMR::Power::CodeGenerator::addMetaDataForLoadAddressConstantFixed\n");
+                     }
+
+                  TR::DebugCounter::generateRelocation(comp, firstInstruction, node, counter, seqKind);
                   }
                }
             else
@@ -3694,6 +3720,16 @@ OMR::Power::CodeGenerator::addMetaDataForLoadIntConstantFixed(
                                                                                           (uint8_t *)recordInfo,
                                                                                           (TR_ExternalRelocationTargetKind)TR_DataAddress, self()),
                            __FILE__, __LINE__, node);
+      }
+   else if (typeAddress == TR_DebugCounter)
+      {
+      TR::DebugCounterBase *counter = comp->getCounterFromStaticAddress(node->getSymbolReference());
+      if (counter == NULL)
+         {
+         comp->failCompilation<TR::CompilationException>("Could not generate relocation for debug counter in OMR::Power::CodeGenerator::addMetaDataForLoadAddressConstantFixed\n");
+         }
+
+      TR::DebugCounter::generateRelocation(comp, firstInstruction, secondInstruction, node, counter, orderedPairSequence2);
       }
    else if (typeAddress != -1)
       {

@@ -1559,40 +1559,46 @@ void OMR::Power::MemoryReference::accessStaticItem(TR::Node *node, TR::SymbolRef
 
       if (cg->comp()->compileRelocatableCode())
          {
-         /* don't want to trash node prematurely by the code for handling guarded counting recompilations symbols */
-         TR::Node *GCRnode = node;
-         if (!GCRnode)
-            GCRnode = cg->getCurrentEvaluationTreeTop()->getNode();
+         /* don't want to trash node prematurely by the code for handling other symbols */
+         TR::Node *nodeForSymbol = node;
+         if (!nodeForSymbol)
+            nodeForSymbol = cg->getCurrentEvaluationTreeTop()->getNode();
 
+         if (symbol->isDebugCounter())
+            {
+            TR::Register *reg = _baseRegister = cg->allocateRegister();
+            loadAddressConstant(cg, nodeForSymbol, 1, reg, NULL, false, TR_DebugCounter);
+            return;
+            }
          if (symbol->isCountForRecompile())
             {
             TR::Register *reg = _baseRegister = cg->allocateRegister();
-            loadAddressConstant(cg, GCRnode, TR_CountForRecompile, reg, NULL, false, TR_GlobalValue);
+            loadAddressConstant(cg, nodeForSymbol, TR_CountForRecompile, reg, NULL, false, TR_GlobalValue);
             return;
             }
          else if (symbol->isRecompilationCounter())
             {
             TR::Register *reg = _baseRegister = cg->allocateRegister();
-            loadAddressConstant(cg, GCRnode, 1, reg, NULL, false, TR_BodyInfoAddressLoad);
+            loadAddressConstant(cg, nodeForSymbol, 1, reg, NULL, false, TR_BodyInfoAddressLoad);
             return;
             }
          else if (symbol->isCompiledMethod())
             {
             TR::Register *reg = _baseRegister = cg->allocateRegister();
-            loadAddressConstant(cg, GCRnode, 1, reg, NULL, false, TR_RamMethodSequence);
+            loadAddressConstant(cg, nodeForSymbol, 1, reg, NULL, false, TR_RamMethodSequence);
             return;
             }
          else if (symbol->isStartPC())
             {
             // use inSnippet, as the relocation mechanism is already set up there
             TR::Register *reg = _baseRegister = cg->allocateRegister();
-            loadAddressConstantInSnippet(cg, GCRnode, 0, reg, NULL, TR::InstOpCode::addi, false, NULL);
+            loadAddressConstantInSnippet(cg, nodeForSymbol, 0, reg, NULL, TR::InstOpCode::addi, false, NULL);
             return;
             }
          else if (isStaticField && !ref->isUnresolved())
             {
             TR::Register *reg = _baseRegister = cg->allocateRegister();
-            loadAddressConstant(cg, GCRnode, 1, reg, NULL, false, TR_DataAddress);
+            loadAddressConstant(cg, nodeForSymbol, 1, reg, NULL, false, TR_DataAddress);
             return;
             }
          }
@@ -1643,40 +1649,46 @@ void OMR::Power::MemoryReference::accessStaticItem(TR::Node *node, TR::SymbolRef
       {
       if (ref->isUnresolved() || comp->compileRelocatableCode())
          {
-         /* don't want to trash node prematurely by the code for handling guarded counting recompilations symbols */
-         TR::Node *GCRnode = node;
-         if (!GCRnode)
-            GCRnode = cg->getCurrentEvaluationTreeTop()->getNode();
+         /* don't want to trash node prematurely by the code for handling other symbols */
+         TR::Node *nodeForSymbol = node;
+         if (!nodeForSymbol)
+            nodeForSymbol = cg->getCurrentEvaluationTreeTop()->getNode();
 
-         if (symbol->isCountForRecompile())
+         if (symbol->isDebugCounter())
             {
             TR::Register *reg = _baseRegister = cg->allocateRegister();
-            loadAddressConstant(cg, GCRnode, TR_CountForRecompile, reg, NULL, false, TR_GlobalValue);
+            loadAddressConstant(cg, nodeForSymbol, 1, reg, NULL, false, TR_DebugCounter);
+            return;
+            }
+         else if (symbol->isCountForRecompile())
+            {
+            TR::Register *reg = _baseRegister = cg->allocateRegister();
+            loadAddressConstant(cg, nodeForSymbol, TR_CountForRecompile, reg, NULL, false, TR_GlobalValue);
             return;
             }
          else if (symbol->isRecompilationCounter())
             {
             TR::Register *reg = _baseRegister = cg->allocateRegister();
-            loadAddressConstant(cg, GCRnode, 0, reg, NULL, false, TR_BodyInfoAddressLoad);
+            loadAddressConstant(cg, nodeForSymbol, 0, reg, NULL, false, TR_BodyInfoAddressLoad);
             return;
             }
          else if (symbol->isCompiledMethod())
             {
             TR::Register *reg = _baseRegister = cg->allocateRegister();
-            loadAddressConstant(cg, GCRnode, 0, reg, NULL, false, TR_RamMethodSequence);
+            loadAddressConstant(cg, nodeForSymbol, 0, reg, NULL, false, TR_RamMethodSequence);
             return;
             }
          else if (symbol->isStartPC())
             {
             // use inSnippet, as the relocation mechanism is already set up there
             TR::Register *reg = _baseRegister = cg->allocateRegister();
-            loadAddressConstantInSnippet(cg, GCRnode, 0, reg, NULL, TR::InstOpCode::addi, false, NULL);
+            loadAddressConstantInSnippet(cg, nodeForSymbol, 0, reg, NULL, TR::InstOpCode::addi, false, NULL);
             return;
             }
          else if (isStaticField && !ref->isUnresolved())
             {
             TR::Register *reg = _baseRegister = cg->allocateRegister();
-            loadAddressConstant(cg, GCRnode, 1, reg, NULL, false, TR_DataAddress);
+            loadAddressConstant(cg, nodeForSymbol, 1, reg, NULL, false, TR_DataAddress);
             return;
             }
          else if (ref->isUnresolved() || useUnresSnippetToAvoidRelo)

@@ -671,3 +671,12 @@ void TR_ResolvedMethod::makeParameterList(TR::ResolvedMethodSymbol *methodSym)
 
    methodSym->setFirstJitTempIndex(methodSym->getTempIndex());
    }
+
+TR::SymbolReferenceTable*
+TR_ResolvedMethod::genMethodILForPeeking(TR::ResolvedMethodSymbol *methodSymbol, TR::Compilation  *comp, bool resetVisitCount, TR_PrexArgInfo  *argInfo)
+   {
+   if (comp->getOption(TR_EnableHCR))
+      return NULL;
+
+   return _genMethodILForPeeking(methodSymbol, comp, resetVisitCount, argInfo);
+   }

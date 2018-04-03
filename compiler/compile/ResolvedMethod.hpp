@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -244,10 +244,34 @@ public:
    TR::SymbolReferenceTable *genMethodILForPeeking(TR::ResolvedMethodSymbol *methodSymbol,
                                                           TR::Compilation  *comp,
                                                           bool resetVisitCount = false,
+                                                          TR_PrexArgInfo  *argInfo = NULL);
+
+   /** \brief
+    *     Generate IL for a method for peeking even under method redefinition mode. To be called by optimizations that have protections
+    *     against method redefinition, e.g. inlining with TR_HCRGuard.
+    *
+    *  \param methodSymbol
+    *     The symbol for the method whose IL is generated.
+    *
+    *  \param comp
+    *     The compilation object.
+    *
+    *  \param resetVisitCount
+    *     Boolean to indicate whether to reset the visit count.
+    *
+    *  \param argInfo
+    *     The TR_PrexArgInfo for the method to peek.
+    *
+    *  \return
+    *     The SymbolReferenceTable for the method to peek if peeking succeeds; 0 otherwise.
+    */
+   TR::SymbolReferenceTable *genMethodILForPeekingEvenUnderMethodRedefinition(TR::ResolvedMethodSymbol *methodSymbol,
+                                                          TR::Compilation  *comp,
+                                                          bool resetVisitCount = false,
                                                           TR_PrexArgInfo  *argInfo = NULL)
       {
-      return _genMethodILForPeeking (methodSymbol, comp, resetVisitCount, argInfo);
-      };
+      return _genMethodILForPeeking(methodSymbol, comp, resetVisitCount, argInfo);
+      }
 
    virtual TR::SymbolReferenceTable *_genMethodILForPeeking(TR::ResolvedMethodSymbol     *methodSymbol,
                                                                       TR::Compilation  *,

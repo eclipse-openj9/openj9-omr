@@ -591,6 +591,79 @@ TR::Register *OMR::X86::TreeEvaluator::fpBinaryArithmeticEvaluator(TR::Node     
       }
    }
 
+TR::Register *OMR::X86::TreeEvaluator::fpUnaryMaskEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   static uint8_t MASK_FABS[] =
+      {
+      0xff, 0xff, 0xff, 0x7f,
+      0x00, 0x00, 0x00, 0x00,
+      0x00, 0x00, 0x00, 0x00,
+      0x00, 0x00, 0x00, 0x00,
+      };
+   static uint8_t MASK_DABS[] =
+      {
+      0xff, 0xff, 0xff, 0xff,
+      0xff, 0xff, 0xff, 0x7f,
+      0x00, 0x00, 0x00, 0x00,
+      0x00, 0x00, 0x00, 0x00,
+      };
+
+   uint8_t*      mask;
+   TR_X86OpCodes opcode;
+   TR_X86OpCodes x87op;
+   switch (node->getOpCodeValue())
+      {
+      case TR::fabs:
+         mask = MASK_FABS;
+         opcode = PANDRegMem;
+         x87op = FABSReg;
+         break;
+      case TR::dabs:
+         mask = MASK_DABS;
+         opcode = PANDRegMem;
+         x87op = DABSReg;
+         break;
+      default:
+         TR_ASSERT(false, "Unsupported OpCode");
+      }
+
+   auto child = node->getFirstChild();
+   auto value = cg->evaluate(child);
+   auto result = child->getReferenceCount() == 1 ? value : cg->allocateRegister(value->getKind());
+
+   if (result != value && value->isSinglePrecision())
+      {
+      result->setIsSinglePrecision();
+      }
+
+   if (value->getKind() != TR_FPR) // Legacy supported for X87, to be deleted
+      {
+      if (value->needsPrecisionAdjustment())
+         TR::TreeEvaluator::insertPrecisionAdjustment(value, node, cg);
+      if (value->mayNeedPrecisionAdjustment())
+         result->setMayNeedPrecisionAdjustment();
+
+      if (result != value)
+         {
+         generateFPST0STiRegRegInstruction(value->isSinglePrecision() ? FLDRegReg : DLDRegReg, node, result, value, cg);
+         }
+      generateFPRegInstruction(x87op, node, result, cg);
+      }
+   else
+      {
+      // TODO 3-OP Optimization
+      if (result != value)
+         {
+         generateRegRegInstruction(MOVDQURegReg, node, result, value, cg);
+         }
+      generateRegMemInstruction(opcode, node, result, generateX86MemoryReference(cg->findOrCreate16ByteConstant(node, mask), cg), cg);
+      }
+
+   node->setRegister(result);
+   cg->decReferenceCount(child);
+   return result;
+   }
+
 TR::Register *OMR::X86::TreeEvaluator::faddEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return TR::TreeEvaluator::fpBinaryArithmeticEvaluator(node, true, cg);

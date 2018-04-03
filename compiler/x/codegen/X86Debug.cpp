@@ -1560,10 +1560,18 @@ TR_Debug::print(TR::FILE *pOutFile, TR::MemoryReference  * mr, TR_RegisterSizes 
          {
          printIntConstant(pOutFile, (int32_t)disp, 16, TR_WordReg, true);
          }
+      else if (cds)
+         {
+         trfprintf(pOutFile, "DATA SNIPPET: ");
+         auto data = cds->getValue();
+         for (auto i = 0; i < cds->getDataSize(); i++)
+            {
+            trfprintf(pOutFile, "%02x ", 0xff & (unsigned int)(data[i]));
+            }
+         }
       else
          {
-         trfprintf(pOutFile, "FPRCONSTANT");
-         //         printFPConstant(pOutFile, void *value, int8_t numBits);
+         trfprintf(pOutFile, "UNKNOWN DATA");
          }
       }
 
@@ -1731,12 +1739,6 @@ TR_Debug::getImmediateSizeFromInstruction(TR::Instruction  *instr)
       immedSize = TR_WordReg;
 
    return immedSize;
-   }
-
-int32_t
-TR_Debug::printFPConstant(TR::FILE *pOutFile, void *value, int8_t numBits, bool printAsBytes)
-   {
-   return 0;
    }
 
 void

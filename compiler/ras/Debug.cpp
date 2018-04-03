@@ -2703,12 +2703,11 @@ TR_Debug::dumpMixedModeDisassembly()
 
       print(pOutFile, inst);
       }
-   trfprintf(pOutFile,"\n");
-   trfprintf(pOutFile,"</instructions>\n");
+   trfprintf(pOutFile,"\n</instructions>\n");
 
    trfprintf(pOutFile,"<snippets>");
    print(pOutFile, _comp->cg()->getSnippetList());
-   trfprintf(pOutFile,"</snippets>\n");
+   trfprintf(pOutFile,"\n</snippets>\n");
    }
 
 

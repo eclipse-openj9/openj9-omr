@@ -798,7 +798,6 @@ public:
    int32_t printIntConstant(TR::FILE *pOutFile, int64_t value, int8_t radix, TR_RegisterSizes size = TR_WordReg, bool padWithZeros = false);
    int32_t printDecimalConstant(TR::FILE *pOutFile, int64_t value, int8_t width, bool padWithZeros);
    int32_t printHexConstant(TR::FILE *pOutFile, int64_t value, int8_t width, bool padWithZeros);
-   int32_t printFPConstant(TR::FILE *pOutFile, void *value, int8_t numBits, bool printAsBytes = false);
    void printInstructionComment(TR::FILE *pOutFile, int32_t tabStops, TR::Instruction *instr);
    void printFPRegisterComment(TR::FILE *pOutFile, TR::Register *target, TR::Register *source);
    void printMemoryReferenceComment(TR::FILE *pOutFile, TR::MemoryReference *mr);

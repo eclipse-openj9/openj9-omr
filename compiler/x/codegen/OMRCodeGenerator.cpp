@@ -3596,8 +3596,6 @@ void OMR::X86::CodeGenerator::removeUnavailableRegisters(TR_RegisterCandidate * 
       }
    }
 
-#if DEBUG
-
 void OMR::X86::CodeGenerator::dumpDataSnippets(TR::FILE *outFile)
    {
 
@@ -3607,7 +3605,7 @@ void OMR::X86::CodeGenerator::dumpDataSnippets(TR::FILE *outFile)
    TR::IA32DataSnippet              * cursor;
    int32_t                                  size;
 
-   for (int exp=3; exp > 0; exp--)
+   for (int exp=4; exp > 0; exp--)
       {
       size = 1 << exp;
       for (auto iterator = _dataSnippetList.begin(); iterator != _dataSnippetList.end(); ++iterator)
@@ -3620,7 +3618,6 @@ void OMR::X86::CodeGenerator::dumpDataSnippets(TR::FILE *outFile)
       }
    }
 
-#endif
 #if defined(DEBUG)
 // Dump the instruction before FP register assignment to
 // reveal the virtual registers prior to stack register assignment.

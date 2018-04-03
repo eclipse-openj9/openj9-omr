@@ -336,6 +336,7 @@ MM_ParallelGlobalGC::cleanupAfterGC(MM_EnvironmentBase *env, MM_AllocateDescript
 	/* Heap size now fixed for next cycle so reset heap statistics */
 	_extensions->heap->resetHeapStatistics(true);
 
+#if defined(OMR_GC_MODRON_SCAVENGER)
 	GC_OMRVMThreadListIterator threadIterator(_extensions->getOmrVM());
 	OMR_VMThread *walkThread = NULL;
 
@@ -348,6 +349,7 @@ MM_ParallelGlobalGC::cleanupAfterGC(MM_EnvironmentBase *env, MM_AllocateDescript
 
 	_extensions->_masterThreadTenureTLHRemainderTop = NULL;
 	_extensions->_masterThreadTenureTLHRemainderBase = NULL;
+#endif /* OMR_GC_MODRON_SCAVENGER */
 }
 
 void

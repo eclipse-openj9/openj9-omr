@@ -252,7 +252,7 @@ OMR::CodeGenPhase::performEmitSnippetsPhase(TR::CodeGenerator * cg, TR::CodeGenP
 
       traceMsg(comp,"<snippets>");
       comp->getDebug()->print(comp->getOutFile(), cg->getSnippetList());
-      traceMsg(comp,"</snippets>\n");
+      traceMsg(comp,"\n</snippets>\n");
 
       auto iterator = cg->getSnippetList().begin();
       int32_t estimatedSnippetStart = cg->getEstimatedSnippetStart();

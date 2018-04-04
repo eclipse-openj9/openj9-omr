@@ -521,9 +521,8 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    void dumpPreGPRegisterAssignment(TR::Instruction *);
    void dumpPostGPRegisterAssignment(TR::Instruction *, TR::Instruction *);
 #endif
-#ifdef DEBUG
+
    void dumpDataSnippets(TR::FILE *pOutFile);
-#endif
 
    TR::IA32ConstantDataSnippet *findOrCreate2ByteConstant(TR::Node *, int16_t c);
    TR::IA32ConstantDataSnippet *findOrCreate4ByteConstant(TR::Node *, int32_t c);

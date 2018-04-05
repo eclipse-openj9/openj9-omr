@@ -7260,7 +7260,7 @@ int32_t TR_InvariantArgumentPreexistence::perform()
                TR_ASSERT(((*sig == 'L') || (*sig == '[')), "non address argument cannot be fixed/preexistent");
 
                parmInfo.setSymbol(p);
-               TR_OpaqueClassBlock *clazz = arg->getFixedClass();
+               TR_OpaqueClassBlock *clazz = arg->getClass();
                if (clazz)
                   {
                   TR_ASSERT(classIsFixed, "assertion failure");
@@ -7372,7 +7372,7 @@ int32_t TR_InvariantArgumentPreexistence::perform()
                {
                if (arg->classIsFixed())
                   {
-                  symbol->setFixedType(arg->getFixedClass());
+                  symbol->setFixedType(arg->getClass());
                   if (trace())
                      traceMsg(comp(), "PREX:      Parm %d symbol [%p] has fixed type %p\n", index, symbol, symbol->getFixedType());
                   }

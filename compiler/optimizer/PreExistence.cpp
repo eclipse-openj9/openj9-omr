@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -36,7 +36,7 @@ TR_PrexArgument::knowledgeLevel(TR_PrexArgument *pa)
       return NONE;
    else if (pa->hasKnownObjectIndex())
       return KNOWN_OBJECT;
-   else if (pa->getFixedClass())
+   else if (pa->classIsFixed())
       return FIXED_CLASS;
    else if (pa->classIsPreexistent())
       return PREEXISTENT;
@@ -48,7 +48,7 @@ TR_PrexArgument::TR_PrexArgument(
       TR::KnownObjectTable::Index knownObjectIndex,
       TR::Compilation *comp) :
    _classKind(ClassIsUnknown),
-   _fixedClass(0),
+   _class(0),
    _profiledClazz(0),
    _knownObjectIndex(knownObjectIndex)
    {
@@ -58,7 +58,7 @@ TR_PrexArgument::TR_PrexArgument(
 
    if (prexArgumentCriticalSection.hasVMAccess())
       {
-      _fixedClass = TR::Compiler->cls.objectClass(comp, comp->getKnownObjectTable()->getPointer(knownObjectIndex));
+      _class = TR::Compiler->cls.objectClass(comp, comp->getKnownObjectTable()->getPointer(knownObjectIndex));
       _classKind = ClassIsFixed;
       }
 #endif

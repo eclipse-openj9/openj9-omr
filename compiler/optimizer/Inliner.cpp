@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -3746,15 +3746,15 @@ bool TR_IndirectCallSite::hasFixedTypeArgInfo()
 bool TR_IndirectCallSite::hasResolvedTypeArgInfo()
    {
    return _ecsPrexArgInfo && _ecsPrexArgInfo->get(0) &&
-      _ecsPrexArgInfo->get(0)->classIsPreexistent() && _ecsPrexArgInfo->get(0)->getFixedClass();
+      _ecsPrexArgInfo->get(0)->classIsPreexistent() && _ecsPrexArgInfo->get(0)->getClass();
    }
 
 TR_OpaqueClassBlock* TR_IndirectCallSite::getClassFromArgInfo()
    {
    TR_ASSERT(_ecsPrexArgInfo && _ecsPrexArgInfo->get(0) &&
-         _ecsPrexArgInfo->get(0)->getFixedClass(), "getClassFromArgInfo is NOT guarded by hasFixedTypeArgInfo,hasResolvedTypeArgInfo");
+         _ecsPrexArgInfo->get(0)->getClass(), "getClassFromArgInfo is NOT guarded by hasFixedTypeArgInfo,hasResolvedTypeArgInfo");
 
-   return _ecsPrexArgInfo->get(0)->getFixedClass();
+   return _ecsPrexArgInfo->get(0)->getClass();
    }
 
 bool TR_IndirectCallSite::tryToRefineReceiverClassBasedOnResolvedTypeArgInfo(TR_InlinerBase* inliner)
@@ -6285,11 +6285,11 @@ void TR_InlinerTracer::dumpPrexArgInfo(TR_PrexArgInfo* argInfo)
 
       {
       TR_PrexArgument* arg = argInfo->get(i);
-      if (arg && arg->getFixedClass())
+      if (arg && arg->getClass())
          {
-         char* className = TR::Compiler->cls.classSignature(comp(), arg->getFixedClass(), trMemory());
+         char* className = TR::Compiler->cls.classSignature(comp(), arg->getClass(), trMemory());
          traceMsg( comp(),  "<Argument no=%d address=%p classIsFixed=%d classIsPreexistent=%d class=%p className= %s/>\n",
-         i, arg, arg->classIsFixed(), arg->classIsPreexistent(), arg->getFixedClass(), className);
+         i, arg, arg->classIsFixed(), arg->classIsPreexistent(), arg->getClass(), className);
          }
       else
          {

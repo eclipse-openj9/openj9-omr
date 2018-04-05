@@ -101,6 +101,8 @@ X86OpCodesTest::compileUnaryTestMethods()
    compileOpCodeMethod(_fNeg, _numberOfUnaryArgs, TR::fneg, "fNeg", _argTypesUnaryFloat, TR::Float, rc);
    compileOpCodeMethod(_lNeg, _numberOfUnaryArgs, TR::lneg, "lNeg", _argTypesUnaryLong, TR::Int64, rc);
 
+   compileOpCodeMethod(_dAbs, _numberOfUnaryArgs, TR::dabs, "dAbs", _argTypesUnaryDouble, TR::Double, rc);
+   compileOpCodeMethod(_fAbs, _numberOfUnaryArgs, TR::fabs, "fAbs", _argTypesUnaryFloat, TR::Float, rc);
    compileOpCodeMethod(_lAbs, _numberOfUnaryArgs, TR::labs, "lAbs", _argTypesUnaryLong, TR::Int64, rc);
 
    compileOpCodeMethod(_lReturn, _numberOfUnaryArgs, TR::lreturn, "lReturn", _argTypesUnaryLong, TR::Int64, rc);
@@ -1494,6 +1496,28 @@ X86OpCodesTest::invokeUnaryTests()
       compileOpCodeMethod(lUnaryCons, _numberOfUnaryArgs, TR::labs,
             resolvedMethodName, _argTypesUnaryLong, TR::Int64, rc, 2, 1, &longDataArray[i]);
       OMR_CT_EXPECT_EQ(lUnaryCons, abs(longDataArray[i]), lUnaryCons(LONG_PLACEHOLDER_1));
+      }
+
+   //fabs
+   testCaseNum = sizeof(floatDataArray) / sizeof(floatDataArray[0]);
+   for (uint32_t i = 0; i < testCaseNum; ++i)
+      {
+      OMR_CT_EXPECT_EQ(_fAbs, abs(floatDataArray[i]), _fAbs(floatDataArray[i]));
+      sprintf(resolvedMethodName, "fAbsConst%d", i + 1);
+      compileOpCodeMethod(fUnaryCons, 
+            _numberOfUnaryArgs, TR::fabs, resolvedMethodName, _argTypesUnaryFloat, TR::Float, rc, 2, 1, &floatDataArray[i]);
+      OMR_CT_EXPECT_EQ(fUnaryCons, abs(floatDataArray[i]), fUnaryCons(FLOAT_PLACEHOLDER_1));
+      }
+
+   //dabs
+   testCaseNum = sizeof(doubleDataArray) / sizeof(doubleDataArray[0]);
+   for (uint32_t i = 0; i < testCaseNum; ++i)
+      {
+      OMR_CT_EXPECT_EQ(_dAbs, abs(doubleDataArray[i]), _dAbs(doubleDataArray[i]));
+      sprintf(resolvedMethodName, "dAbsConst%d", i + 1);
+      compileOpCodeMethod(dUnaryCons, 
+            _numberOfUnaryArgs, TR::dabs, resolvedMethodName, _argTypesUnaryDouble, TR::Double, rc, 2, 1, &doubleDataArray[i]);
+      OMR_CT_EXPECT_EQ(dUnaryCons, abs(doubleDataArray[i]), dUnaryCons(DOUBLE_PLACEHOLDER_1));
       }
 
    //lReturn
@@ -4661,10 +4685,6 @@ X86OpCodesTest::UnsupportedOpCodesTests()
    addUnsupportedOpCodeTest(_numberOfTernaryArgs, TR::sternary, "sTernary", _argTypesTernaryShort, TR::Int16);
    addUnsupportedOpCodeTest(_numberOfTernaryArgs, TR::fternary, "fTernary", _argTypesTernaryFloat, TR::Float);
    addUnsupportedOpCodeTest(_numberOfTernaryArgs, TR::dternary, "dTernary", _argTypesTernaryDouble, TR::Double);
-
-   //fabs, dabs
-   addUnsupportedOpCodeTest(_numberOfUnaryArgs, TR::fabs, "fAbs", _argTypesUnaryFloat, TR::Float);
-   addUnsupportedOpCodeTest(_numberOfUnaryArgs, TR::dabs, "dAbs", _argTypesUnaryDouble, TR::Double);
 
    //iu2f, iu2d
    addUnsupportedOpCodeTest(_numberOfUnaryArgs, TR::iu2f, "iu2f", _argTypesUnaryInt, TR::Float);

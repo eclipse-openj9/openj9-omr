@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -120,8 +120,8 @@
    TR::TreeEvaluator::snegEvaluator,                    // TR::sneg
    TR::TreeEvaluator::integerAbsEvaluator,              // TR::iabs
    TR::TreeEvaluator::integerAbsEvaluator,              // TR::labs
-   TR::TreeEvaluator::badILOpEvaluator,                    // TR::fabs
-   TR::TreeEvaluator::badILOpEvaluator,                    // TR::dabs
+   TR::TreeEvaluator::fpUnaryMaskEvaluator,             // TR::fabs
+   TR::TreeEvaluator::fpUnaryMaskEvaluator,             // TR::dabs
    TR::TreeEvaluator::integerShlEvaluator,              // TR::ishl
    TR::TreeEvaluator::integerShlEvaluator,              // TR::lshl
    TR::TreeEvaluator::bshlEvaluator,                    // TR::bshl

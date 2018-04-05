@@ -1114,6 +1114,9 @@ registerSignalHandlerWithOS(OMRPortLibrary *portLibrary, uint32_t portLibrarySig
 	newAction.sa_sigaction = handler;
 #endif
 
+	/* Initialize oldAction. */
+	memset(&oldActions[unixSignalNo].action, 0, sizeof(struct sigaction));
+
 	/* now that we've set up the sigaction struct the way we want it, register the handler with the OS */
 	if (OMRSIG_SIGACTION(unixSignalNo, &newAction, &oldActions[unixSignalNo].action)) {
 		Trc_PRT_signal_registerSignalHandlerWithOS_failed_to_registerHandler(portLibrarySignalNo, unixSignalNo, handler);

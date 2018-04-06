@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2017 IBM Corp. and others
+ * Copyright (c) 1991, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1367,27 +1367,33 @@ typedef struct OMRPortLibrary {
 	const char *(*nls_lookup_message)(struct OMRPortLibrary *portLibrary, uintptr_t flags, uint32_t module_name, uint32_t message_num, const char *default_string) ;
 	/** see @ref omrportcontrol.c::omrport_control "omrport_control"*/
 	int32_t (*port_control)(struct OMRPortLibrary *portLibrary, const char *key, uintptr_t value) ;
-	/** see @ref omrsig.c::omrsig_startup "omrsig_startup"*/
+	/** see @ref omrsignal.c::omrsig_startup "omrsig_startup"*/
 	int32_t (*sig_startup)(struct OMRPortLibrary *portLibrary) ;
-	/** see @ref omrsig.c::omrsig_shutdown "omrsig_shutdown"*/
+	/** see @ref omrsignal.c::omrsig_shutdown "omrsig_shutdown"*/
 	void (*sig_shutdown)(struct OMRPortLibrary *portLibrary) ;
-	/** see @ref omrsig.c::omrsig_protect "omrsig_protect"*/
+	/** see @ref omrsignal.c::omrsig_protect "omrsig_protect"*/
 	int32_t (*sig_protect)(struct OMRPortLibrary *portLibrary,  omrsig_protected_fn fn, void *fn_arg, omrsig_handler_fn handler, void *handler_arg, uint32_t flags, uintptr_t *result) ;
-	/** see @ref omrsig.c::omrsig_can_protect "omrsig_can_protect"*/
+	/** see @ref omrsignal.c::omrsig_can_protect "omrsig_can_protect"*/
 	int32_t (*sig_can_protect)(struct OMRPortLibrary *portLibrary,  uint32_t flags) ;
-	/** see @ref omrsig.c::omrsig_set_async_signal_handler "omrsig_set_async_signal_handler"*/
-	uint32_t (*sig_set_async_signal_handler)(struct OMRPortLibrary *portLibrary,  omrsig_handler_fn handler, void *handler_arg, uint32_t flags) ;
-	/** see @ref omrsig.c::omrsig_info "omrsig_info"*/
+	/** see @ref omrsignal.c::omrsig_set_async_signal_handler "omrsig_set_async_signal_handler"*/
+	uint32_t (*sig_set_async_signal_handler)(struct OMRPortLibrary *portLibrary, omrsig_handler_fn handler, void *handler_arg, uint32_t flags) ;
+	/** see @ref omrsignal.c::omrsig_set_single_async_signal_handler "omrsig_set_single_async_signal_handler"*/
+	void *(*sig_set_single_async_signal_handler)(struct OMRPortLibrary *portLibrary, omrsig_handler_fn handler, void *handler_arg, uint32_t portlibSignalFlag) ;
+	/** see @ref omrsignal.c::omrsig_map_os_signal_to_portlib_signal "omrsig_map_os_signal_to_portlib_signal"*/
+	uint32_t (*sig_map_os_signal_to_portlib_signal)(struct OMRPortLibrary *portLibrary, uint32_t osSignalValue) ;
+	/** see @ref omrsignal.c::omrsig_map_portlib_signal_to_os_signal "omrsig_map_portlib_signal_to_os_signal"*/
+	int32_t (*sig_map_portlib_signal_to_os_signal)(struct OMRPortLibrary *portLibrary, uint32_t portlibSignalFlag) ;
+	/** see @ref omrsignal.c::omrsig_info "omrsig_info"*/
 	uint32_t (*sig_info)(struct OMRPortLibrary *portLibrary, void *info, uint32_t category, int32_t index, const char **name, void **value) ;
-	/** see @ref omrsig.c::omrsig_info_count "omrsig_info_count"*/
+	/** see @ref omrsignal.c::omrsig_info_count "omrsig_info_count"*/
 	uint32_t (*sig_info_count)(struct OMRPortLibrary *portLibrary, void *info, uint32_t category) ;
-	/** see @ref omrsig.c::omrsig_set_options "omrsig_set_options"*/
+	/** see @ref omrsignal.c::omrsig_set_options "omrsig_set_options"*/
 	int32_t (*sig_set_options)(struct OMRPortLibrary *portLibrary, uint32_t options) ;
-	/** see @ref omrsig.c::omrsig_get_options "omrsig_get_options"*/
+	/** see @ref omrsignal.c::omrsig_get_options "omrsig_get_options"*/
 	uint32_t (*sig_get_options)(struct OMRPortLibrary *portLibrary) ;
-	/** see @ref omrsig.c::omrsig_get_current_signal "omrsig_get_current_signal"*/
+	/** see @ref omrsignal.c::omrsig_get_current_signal "omrsig_get_current_signal"*/
 	intptr_t (*sig_get_current_signal)(struct OMRPortLibrary *portLibrary) ;
-	/** see @ref omrsig.c::omrsig_set_reporter_priority "omrsig_set_reporter_priority"*/
+	/** see @ref omrsignal.c::omrsig_set_reporter_priority "omrsig_set_reporter_priority"*/
 	int32_t (*sig_set_reporter_priority)(struct OMRPortLibrary *portLibrary, uintptr_t priority) ;
 	/** see @ref omrfile.c::omrfile_read_text "omrfile_read_text"*/
 	char  *(*file_read_text)(struct OMRPortLibrary *portLibrary, intptr_t fd, char *buf, intptr_t nbytes) ;
@@ -1874,6 +1880,9 @@ extern J9_CFUNC int32_t omrport_getVersion(struct OMRPortLibrary *portLibrary);
 #define omrsig_protect(param1,param2,param3,param4,param5,param6) privateOmrPortLibrary->sig_protect(privateOmrPortLibrary, (param1), (param2), (param3), (param4), (param5), (param6))
 #define omrsig_can_protect(param1) privateOmrPortLibrary->sig_can_protect(privateOmrPortLibrary, (param1))
 #define omrsig_set_async_signal_handler(param1,param2,param3) privateOmrPortLibrary->sig_set_async_signal_handler(privateOmrPortLibrary, (param1), (param2), (param3))
+#define omrsig_set_single_async_signal_handler(param1,param2,param3) privateOmrPortLibrary->sig_set_single_async_signal_handler(privateOmrPortLibrary, (param1), (param2), (param3))
+#define omrsig_map_os_signal_to_portlib_signal(param1) privateOmrPortLibrary->sig_map_os_signal_to_portlib_signal(privateOmrPortLibrary, (param1))
+#define omrsig_map_portlib_signal_to_os_signal(param1) privateOmrPortLibrary->sig_map_portlib_signal_to_os_signal(privateOmrPortLibrary, (param1))
 #define omrsig_info(param1,param2,param3,param4,param5) privateOmrPortLibrary->sig_info(privateOmrPortLibrary, (param1), (param2), (param3), (param4), (param5))
 #define omrsig_info_count(param1,param2) privateOmrPortLibrary->sig_info_count(privateOmrPortLibrary, (param1), (param2))
 #define omrsig_set_options(param1) privateOmrPortLibrary->sig_set_options(privateOmrPortLibrary, (param1))

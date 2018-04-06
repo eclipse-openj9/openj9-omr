@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2015 IBM Corp. and others
+ * Copyright (c) 1991, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -166,9 +166,57 @@ omrsig_protect(struct OMRPortLibrary *portLibrary,  omrsig_protected_fn fn, void
  * @return 0 on success
  */
 uint32_t
-omrsig_set_async_signal_handler(struct OMRPortLibrary *portLibrary,  omrsig_handler_fn handler, void *handler_arg, uint32_t flags)
+omrsig_set_async_signal_handler(struct OMRPortLibrary *portLibrary, omrsig_handler_fn handler, void *handler_arg, uint32_t flags)
 {
 	return 1;
+}
+
+
+/*
+ * @brief Similar to omrsig_set_async_signal_handler. Refer to omrsig_set_async_signal_handler's description above.
+ * Differences: 1) one omrsig_handler_fn handler is registered with a signal at any time instead of multiple handlers.
+ * 2) The old OS handler is returned on success and NULL is returned on failure instead of returning 0 on success and
+ * non-zero on failure. TODO: Add a detailed description once implementation is done.
+ *
+ * @param[in] portLibrary The port library
+ * @param[in] handler the function to call if an asynchronous signal arrives
+ * @param[in] handler_arg the argument to handler
+ * @param[in] portlibSignalFlag port library signal flag
+ *
+ * @return old OS handler on success or NULL on failure
+ */
+void *
+omrsig_set_single_async_signal_handler(struct OMRPortLibrary *portLibrary, omrsig_handler_fn handler, void *handler_arg, uint32_t portlibSignalFlag)
+{
+	return NULL;
+}
+
+/*
+ * @brief Given an OS signal value, return the corresponding port library signal flag.
+ *
+ * @param[in] portLibrary The port library
+ * @param[in] osSignalValue OS signal value
+ *
+ * @return port library signal flag on success and 0 on failure
+*/
+uint32_t
+omrsig_map_os_signal_to_portlib_signal(struct OMRPortLibrary *portLibrary, uint32_t osSignalValue)
+{
+	return 0;
+}
+
+/*
+ * @brief Given a port library signal flag, return the corresponding OS signal value.
+ *
+ * @param[in] portLibrary The port library
+ * @param[in] portlibSignalFlag port library signal flag
+ *
+ * @return OS signal value on success and -1 on failure
+ */
+int32_t
+omrsig_map_portlib_signal_to_os_signal(struct OMRPortLibrary *portLibrary, uint32_t portlibSignalFlag)
+{
+	return -1;
 }
 
 /**

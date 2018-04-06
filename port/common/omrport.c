@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2016 IBM Corp. and others
+ * Copyright (c) 2015, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -215,6 +215,9 @@ static OMRPortLibrary MasterPortLibraryTable = {
 	omrsig_protect,  /* sig_protect */
 	omrsig_can_protect, /* sig_can_protect */
 	omrsig_set_async_signal_handler, /* sig_set_async_signal_handler */
+	omrsig_set_single_async_signal_handler, /* sig_set_single_async_signal_handler */
+	omrsig_map_os_signal_to_portlib_signal, /* sig_map_os_signal_to_portlib_signal */
+	omrsig_map_portlib_signal_to_os_signal, /* sig_map_portlib_signal_to_os_signal */
 	omrsig_info, /* sig_info */
 	omrsig_info_count, /* sig_info_count */
 	omrsig_set_options, /* sig_set_options */

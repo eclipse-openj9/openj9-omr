@@ -322,14 +322,6 @@ OMR_GC_ShutdownHeap(OMR_VM *omrVM)
 			extensions->verboseGCManager = NULL;
 		}
 
-		if ((NULL != extensions) && (NULL != extensions->heap)) {
-			MM_MemorySpace *defaultSpace = extensions->heap->getDefaultMemorySpace();
-			if (NULL != defaultSpace) {
-				defaultSpace->kill(&env);
-				extensions->heap->setDefaultMemorySpace(NULL);
-			}
-		}
-
 		if (NULL != extensions->configuration) {
 			extensions->configuration->kill(&env);
 		}

@@ -63,6 +63,19 @@ MM_ConfigurationGenerational::newInstance(MM_EnvironmentBase *env)
 	return configuration;
 }
 
+void
+MM_ConfigurationGenerational::tearDown(MM_EnvironmentBase* env)
+{
+	MM_GCExtensionsBase* extensions = env->getExtensions();
+
+	/* Set pointer to scavenger in extensions to NULL
+	 * before Scavenger is teared down as part of clean up of defaultMemorySpace
+	 * in MM_Configuration::tearDown. */
+	extensions->scavenger = NULL;
+
+	MM_ConfigurationStandard::tearDown(env);
+}
+
 MM_MemorySubSpaceSemiSpace *
 MM_ConfigurationGenerational::createSemiSpace(MM_EnvironmentBase *envBase, MM_Heap *heap, MM_Scavenger *scavenger, MM_InitializationParameters *parameters, UDATA numaNode)
 {

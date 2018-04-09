@@ -52,6 +52,17 @@
 void
 MM_Configuration::kill(MM_EnvironmentBase* env)
 {
+	MM_GCExtensionsBase *ext = env->getExtensions();
+
+	/* DefaultMemorySpace needs to be killed before
+	 * ext->heap is freed in MM_Configuration::tearDown. */
+	if (NULL != ext->heap) {
+		MM_MemorySpace *modronMemorySpace = ext->heap->getDefaultMemorySpace();
+		if  (NULL != modronMemorySpace) {
+			modronMemorySpace->kill(env);
+		}
+		ext->heap->setDefaultMemorySpace(NULL);
+	}
 	tearDown(env);
 	env->getForge()->free(this);
 }

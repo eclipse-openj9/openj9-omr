@@ -8489,7 +8489,20 @@ bool TR_LoopVersioner::isStoreInRequiredForm(int32_t symRefNum, TR_Structure *lo
    TR::Node *secondChild = _constNode;
    if (!secondChild->getOpCode().isLoadConst() && (secondChild->getType().isInt32() || secondChild->getType().isInt64()))
       {
-      if (secondChild->getOpCode().isLoadVarDirect())
+      // This case is currently not handled correctly:
+      // 1. Versioning tests think the step is zero, and they divide by zero.
+      // 2. The initial versioning test (that checks the sign of the variable
+      // loaded by _constNode) always checks that the step is positive, even if
+      // it should be negative in order to agree with the direction of the loop
+      // test comparison.
+      static const bool allowVariableStep =
+         feGetEnv("TR_loopVersionerAllowVariableStep") != NULL;
+      if (!allowVariableStep)
+         return false;
+
+      // This requires isAutoOrParm() because other threads can write to statics
+      if (secondChild->getOpCode().isLoadVarDirect()
+          && secondChild->getSymbol()->isAutoOrParm())
          {
          int32_t timesWritten = 0;
          if (!isSymbolReferenceWrittenNumberOfTimesInStructure(loopStructure, secondChild->getSymbolReference()->getReferenceNumber(), &timesWritten, 0))

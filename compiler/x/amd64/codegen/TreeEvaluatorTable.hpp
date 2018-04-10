@@ -114,8 +114,8 @@
    TR::TreeEvaluator::integerDivOrRemEvaluator,         // TR::iurem
    TR::TreeEvaluator::integerNegEvaluator,              // TR::ineg
    TR::TreeEvaluator::integerNegEvaluator,              // TR::lneg
-   TR::TreeEvaluator::fnegEvaluator,                    // TR::fneg
-   TR::TreeEvaluator::dnegEvaluator,                    // TR::dneg
+   TR::TreeEvaluator::fpUnaryMaskEvaluator,             // TR::fneg
+   TR::TreeEvaluator::fpUnaryMaskEvaluator,             // TR::dneg
    TR::TreeEvaluator::bnegEvaluator,                    // TR::bneg
    TR::TreeEvaluator::snegEvaluator,                    // TR::sneg
    TR::TreeEvaluator::integerAbsEvaluator,              // TR::iabs

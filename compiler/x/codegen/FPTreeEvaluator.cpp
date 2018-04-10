@@ -607,6 +607,20 @@ TR::Register *OMR::X86::TreeEvaluator::fpUnaryMaskEvaluator(TR::Node *node, TR::
       0x00, 0x00, 0x00, 0x00,
       0x00, 0x00, 0x00, 0x00,
       };
+   static uint8_t MASK_FNEG[] =
+      {
+      0x00, 0x00, 0x00, 0x80,
+      0x00, 0x00, 0x00, 0x00,
+      0x00, 0x00, 0x00, 0x00,
+      0x00, 0x00, 0x00, 0x00,
+      };
+   static uint8_t MASK_DNEG[] =
+      {
+      0x00, 0x00, 0x00, 0x00,
+      0x00, 0x00, 0x00, 0x80,
+      0x00, 0x00, 0x00, 0x00,
+      0x00, 0x00, 0x00, 0x00,
+      };
 
    uint8_t*      mask;
    TR_X86OpCodes opcode;
@@ -622,6 +636,16 @@ TR::Register *OMR::X86::TreeEvaluator::fpUnaryMaskEvaluator(TR::Node *node, TR::
          mask = MASK_DABS;
          opcode = PANDRegMem;
          x87op = DABSReg;
+         break;
+      case TR::fneg:
+         mask = MASK_FNEG;
+         opcode = PXORRegMem;
+         x87op = FCHSReg;
+         break;
+      case TR::dneg:
+         mask = MASK_DNEG;
+         opcode = PXORRegMem;
+         x87op = DCHSReg;
          break;
       default:
          TR_ASSERT(false, "Unsupported OpCode");
@@ -810,51 +834,6 @@ TR::Register *OMR::X86::TreeEvaluator::commonFPRemEvaluator(TR::Node          *n
 
    return dividendReg;
    }
-
-TR::Register *OMR::X86::TreeEvaluator::fnegEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   TR::Node     *child          = node->getFirstChild();
-   TR::Register *sourceRegister = cg->evaluate(child);
-   TR::Register *targetRegister;
-   if (sourceRegister->getKind() == TR_FPR)
-      {
-      TR::IA32ConstantDataSnippet *cds = cg->findOrCreate4ByteConstant(node, FLOAT_NEG_ZERO);
-      targetRegister = cg->allocateSinglePrecisionRegister(TR_FPR);
-      generateRegMemInstruction(MOVSSRegMem, node, targetRegister, generateX86MemoryReference(cds, cg), cg);
-      generateRegRegInstruction(XORPSRegReg, node, targetRegister, sourceRegister, cg);
-      }
-   else
-      {
-      targetRegister = cg->floatClobberEvaluate(child);
-      generateFPRegInstruction(FCHSReg, node, targetRegister, cg);
-      }
-   node->setRegister(targetRegister);
-   cg->decReferenceCount(child);
-   return targetRegister;
-   }
-
-TR::Register *OMR::X86::TreeEvaluator::dnegEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   TR::Node     *child          = node->getFirstChild();
-   TR::Register *sourceRegister = cg->evaluate(child);
-   TR::Register *targetRegister;
-   if (sourceRegister->getKind() == TR_FPR)
-      {
-      TR::IA32ConstantDataSnippet *cds = cg->findOrCreate8ByteConstant(node, DOUBLE_NEG_ZERO);
-      targetRegister = cg->allocateRegister(TR_FPR);
-      generateRegMemInstruction(cg->getXMMDoubleLoadOpCode(), node, targetRegister, generateX86MemoryReference(cds, cg), cg);
-      generateRegRegInstruction(XORPDRegReg, node, targetRegister, sourceRegister, cg);
-      }
-   else
-      {
-      targetRegister = cg->doubleClobberEvaluate(child);
-      generateFPRegInstruction(DCHSReg, node, targetRegister, cg);
-      }
-   node->setRegister(targetRegister);
-   cg->decReferenceCount(child);
-   return targetRegister;
-   }
-
 
 // also handles b2f, bu2f, s2f, su2f evaluators
 TR::Register *OMR::X86::TreeEvaluator::i2fEvaluator(TR::Node *node, TR::CodeGenerator *cg)

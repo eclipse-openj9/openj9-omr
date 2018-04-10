@@ -72,7 +72,7 @@ DDR_RC
 TypePrinter::visitType(Type *type) const
 {
 	printIndent();
-	printf("type '%s' size(%zu)\n", type->_name.c_str(), type->_sizeOf);
+	printf("type '%s' size(%lu)\n", type->_name.c_str(), (unsigned long)type->_sizeOf);
 	return DDR_RC_OK;
 }
 
@@ -80,10 +80,10 @@ DDR_RC
 TypePrinter::visitClass(ClassUDT *type) const
 {
 	printIndent();
-	printf("%s '%s' size(%zu)",
+	printf("%s '%s' size(%lu)",
 			type->_isClass ? "class" : "struct",
 			type->_name.c_str(),
-			type->_sizeOf);
+			(unsigned long)type->_sizeOf);
 	if (NULL != type->_superClass) {
 		printf(":  %s", type->_superClass->_name.c_str());
 	}
@@ -108,7 +108,7 @@ DDR_RC
 TypePrinter::visitEnum(EnumUDT *type) const
 {
 	printIndent();
-	printf("enum '%s' size(%zu) {\n", type->_name.c_str(), type->_sizeOf);
+	printf("enum '%s' size(%lu) {\n", type->_name.c_str(), (unsigned long)type->_sizeOf);
 
 	{
 		const TypePrinter indented(this);
@@ -155,7 +155,7 @@ DDR_RC
 TypePrinter::visitUnion(UnionUDT *type) const
 {
 	printIndent();
-	printf("union '%s' size(%zu) {\n", type->_name.c_str(), type->_sizeOf);
+	printf("union '%s' size(%lu) {\n", type->_name.c_str(), type->_sizeOf);
 
 	{
 		const TypePrinter indented(this);

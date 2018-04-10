@@ -569,6 +569,11 @@ SupersetVisitor::visitComposite(ClassType *type, Type *superClass) const
 		for (vector<UDT *>::const_iterator it = type->_subUDTs.begin();
 				(DDR_RC_OK == rc) && (it != type->_subUDTs.end()); ++it) {
 			UDT *nested = *it;
+
+			if (nested->_blacklisted) {
+				continue;
+			}
+
 			bool includeSubUDT = true;
 
 			if (nested->isAnonymousType()) {
@@ -644,7 +649,7 @@ SupersetVisitor::visitNamespace(NamespaceUDT *type) const
 				(DDR_RC_OK == rc) && (v != type->_subUDTs.end()); ++v) {
 			UDT *nested = *v;
 
-			if (!nested->isAnonymousType()) {
+			if (!nested->_blacklisted && !nested->isAnonymousType()) {
 				rc = nested->acceptVisitor(*this);
 			}
 		}

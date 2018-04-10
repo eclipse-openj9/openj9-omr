@@ -166,11 +166,14 @@ parse_namespace_policy_files() {
 
 			# Gather qualifying macro definitions.
 			# We use sed to replace tabs with spaces and trim trailing spaces
-			# to simplify patterns for grep and this script.
-			sed -e 's|\t| |g' -e 's| *$||' < ${f} \
-			| grep -E \
-				-e '@ddr_namespace: *(default|map_to_type=)' \
-				-e '^ *# *(define|undef) +[A-Za-z_]' \
+			# to simplify patterns for this script; it also filters out the
+			# bulk of irrelevant content.
+			sed -n < ${f} \
+				-e 's|\t| |g' \
+				-e 's| *$||' \
+				-e '/@ddr_namespace:/p' \
+				-e '/^ *# *define /p' \
+				-e '/^ *# *undef /p' \
 			| while read -r line; do
 				if [[ ${line} =~ ${default_regex} ]]; then
 					set_default_namespaces

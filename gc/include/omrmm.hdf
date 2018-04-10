@@ -1,24 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-	Copyright (c) 2014, 2016 IBM Corp. and others
+Copyright (c) 2014, 2018 IBM Corp. and others
 
-	This program and the accompanying materials are made available under
-	the terms of the Eclipse Public License 2.0 which accompanies this
-	distribution and is available at https://www.eclipse.org/legal/epl-2.0/
-	or the Apache License, Version 2.0 which accompanies this distribution and
-	is available at https://www.apache.org/licenses/LICENSE-2.0.
+This program and the accompanying materials are made available under
+the terms of the Eclipse Public License 2.0 which accompanies this
+distribution and is available at https://www.eclipse.org/legal/epl-2.0/
+or the Apache License, Version 2.0 which accompanies this distribution and
+is available at https://www.apache.org/licenses/LICENSE-2.0.
 
-	This Source Code may also be made available under the following
-	Secondary Licenses when the conditions for such availability set
-	forth in the Eclipse Public License, v. 2.0 are satisfied: GNU
-	General Public License, version 2 with the GNU Classpath 
-	Exception [1] and GNU General Public License, version 2 with the
-	OpenJDK Assembly Exception [2].
+This Source Code may also be made available under the following
+Secondary Licenses when the conditions for such availability set
+forth in the Eclipse Public License, v. 2.0 are satisfied: GNU
+General Public License, version 2 with the GNU Classpath
+Exception [1] and GNU General Public License, version 2 with the
+OpenJDK Assembly Exception [2].
 
-	[1] https://www.gnu.org/software/classpath/license.html
-	[2] http://openjdk.java.net/legal/assembly-exception.html
+[1] https://www.gnu.org/software/classpath/license.html
+[2] http://openjdk.java.net/legal/assembly-exception.html
 
-	SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
+SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
 -->
 <interface>
 	<publicHeader>../../include_core/mmomrhook.h</publicHeader>
@@ -27,7 +27,6 @@
 	<description>Memory manager OMR hookable events</description>
 
 	<declarations>
-
 /*
  * @ddr_namespace: default
  */
@@ -35,8 +34,9 @@
 #include "omr.h"
 #include "objectdescription.h"
 
-typedef uintptr_t (*condYieldFromGCFunctionPtr) (OMR_VMThread *omrVMThread, uintptr_t componentType);
+struct MM_CommonGCData;
 
+typedef uintptr_t (*condYieldFromGCFunctionPtr) (OMR_VMThread *omrVMThread, uintptr_t componentType);
 	</declarations>
 
 	<event>
@@ -51,10 +51,10 @@ typedef uintptr_t (*condYieldFromGCFunctionPtr) (OMR_VMThread *omrVMThread, uint
 		<data type="uintptr_t" name="globalGCCount" description="the count of global gc's" />
 		<data type="uintptr_t" name="localGCCount" description="the count of local gc's" />
 		<data type="uintptr_t" name="systemGC" description="flag to indicate if an explicit GC request" />
-		<data type="uintptr_t" name="aggressive" description="flag to indicate if this is a aggressive collect" /> 
+		<data type="uintptr_t" name="aggressive" description="flag to indicate if this is a aggressive collect" />
 		<data type="uintptr_t" name="bytesRequested" description="number of bytes requested" />
 	</event>
-	
+
 	<event>
 		<name>J9HOOK_MM_OMR_GLOBAL_GC_END</name>
 		<description>
@@ -132,7 +132,7 @@ typedef uintptr_t (*condYieldFromGCFunctionPtr) (OMR_VMThread *omrVMThread, uint
 	<event>
 		<name>J9HOOK_MM_OMR_OOM_DUE_TO_SOFTMX</name>
 		<description>
-			Triggered when an OOM is about to occur due to the current softmx 
+			Triggered when an OOM is about to occur due to the current softmx
 		</description>
 		<struct>MM_SoftmxOOMEvent</struct>
 		<data type="struct OMR_VMThread*" name="currentThread" description="current thread" />
@@ -142,7 +142,7 @@ typedef uintptr_t (*condYieldFromGCFunctionPtr) (OMR_VMThread *omrVMThread, uint
 		<data type="uintptr_t" name="currentSoftMX" description="The current value for softMX" />
 		<data type="uintptr_t" name="bytesRequired" description="The amount needed to expand by to avoid OOM" />
 	</event>
-	
+
 		<event>
 		<name>J9HOOK_MM_OMR_COMPACT_END</name>
 		<description>
@@ -153,7 +153,7 @@ typedef uintptr_t (*condYieldFromGCFunctionPtr) (OMR_VMThread *omrVMThread, uint
 		<data type="uint64_t" name="timestamp" description="time of event" />
 		<data type="uintptr_t" name="eventid" description="unique identifier for event" />
 	</event>
-	
+
 	<event>
 		<name>J9HOOK_MM_OMR_GC_CYCLE_START</name>
 		<description>
@@ -166,7 +166,7 @@ typedef uintptr_t (*condYieldFromGCFunctionPtr) (OMR_VMThread *omrVMThread, uint
 		<data type="struct MM_CommonGCData*" name="commonData" description="common heap data" />
 		<data type="uintptr_t" name="cycleType" description="the type of cycle" />
 	</event>
-	
+
 	<event>
 		<name>J9HOOK_MM_OMR_GC_CYCLE_CONTINUE</name>
 		<description>
@@ -194,7 +194,7 @@ typedef uintptr_t (*condYieldFromGCFunctionPtr) (OMR_VMThread *omrVMThread, uint
 		<data type="uintptr_t" name="cycleType" description="the type of cycle" />
 		<data type="condYieldFromGCFunctionPtr" name="condYieldFromGCFunction" description="Pointer to GC conditional yield function" />
 	</event>
-	
+
 		<event>
 		<name>J9HOOK_MM_OMR_INITIALIZED</name>
 		<description>
@@ -202,7 +202,7 @@ typedef uintptr_t (*condYieldFromGCFunctionPtr) (OMR_VMThread *omrVMThread, uint
 		</description>
 		<struct>MM_InitializedEvent</struct>
 		<data type="struct OMR_VMThread*" name="currentThread" description="current thread" />
-		<data type="uint64_t" name="timestamp" description="time of event" />		
+		<data type="uint64_t" name="timestamp" description="time of event" />
 		<data type="const char*" name="gcPolicy" description="-Xgcpolicy value" />
 		<data type="uintptr_t" name="concurrentScavenger" description="Scavenger running Concurrently flag" />
 		<data type="uintptr_t" name="maxHeapSize" description="-Xmx value" />
@@ -228,7 +228,7 @@ typedef uintptr_t (*condYieldFromGCFunctionPtr) (OMR_VMThread *omrVMThread, uint
 		<data type="uintptr_t" name="regionCount" description="total heap region count" />
 		<data type="uintptr_t" name="arrayletLeafSize" description="arraylet leaf size" />
 	</event>
-	
+
 	<event>
 		<name>J9HOOK_MM_OMR_VERBOSE_GC_OUTPUT</name>
 		<description>
@@ -239,7 +239,7 @@ typedef uintptr_t (*condYieldFromGCFunctionPtr) (OMR_VMThread *omrVMThread, uint
 		<data type="uint64_t" name="timestamp" description="time of event" />
 		<data type="const char*" name="string" description="the string output by verbose GC" />
 	</event>
-	
+
 	<event>
 		<name>J9HOOK_MM_OMR_EXCESSIVEGC_RAISED</name>
 		<description>
@@ -256,7 +256,7 @@ typedef uintptr_t (*condYieldFromGCFunctionPtr) (OMR_VMThread *omrVMThread, uint
 		<data type="float" name="triggerPercent" description="Minimum percentage which needs to be reclaimed; otherwise OOM raised" />
 		<data type="uintptr_t" name="excessiveLevel" description="The level of excessive gc, only fail to allocate on fatal level" />
 	</event>
-	
+
 	<event>
 		<name>J9HOOK_MM_OMR_OBJECT_DELETE</name>
 		<description>Report the deletion of an object. Hooking this event can significantly impact GC times.</description>
@@ -264,8 +264,8 @@ typedef uintptr_t (*condYieldFromGCFunctionPtr) (OMR_VMThread *omrVMThread, uint
 		<data type="struct OMR_VMThread *" name="currentThread" description="the current thread" />
 		<data type="omrobjectptr_t" name="object" description="the object which has been deleted." />
 		<data type="void*" name="heap" description="an opaque pointer to the heap the object belongs to" />
-	</event>	
-	
+	</event>
+
 	<event>
 		<name>J9HOOK_MM_OMR_OBJECT_RENAME</name>
 		<description>Report the relocation of an object. Hooking this event can significantly impact GC times.</description>
@@ -273,6 +273,6 @@ typedef uintptr_t (*condYieldFromGCFunctionPtr) (OMR_VMThread *omrVMThread, uint
 		<data type="struct OMR_VMThread *" name="currentThread" description="the current thread" />
 		<data type="omrobjectptr_t" name="oldObject" description="the old pointer to the object." />
 		<data type="omrobjectptr_t" name="newObject" description="the new pointer to the object." />
-	</event>	
+	</event>
 
 </interface>

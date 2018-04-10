@@ -10443,7 +10443,7 @@ bool OMR::Z::CodeGenerator::nodeRequiresATemporary(TR::Node *node)
          return true;
          }
       }
-   else if (node->getOpCodeValue() == TR::pddiv || node->getOpCodeValue() == TR::pddivSelect)
+   else if (node->getOpCodeValue() == TR::pddiv)
       {
       // The DP instruction places the quotient left aligned in the result field so a temporary must be used.
       if (self()->traceBCDCodeGen())

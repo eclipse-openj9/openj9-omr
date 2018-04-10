@@ -19,20 +19,13 @@
 # SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
 #############################################################################
 
-set(OMR_WINVER "0x501")
-
 list(APPEND OMR_PLATFORM_DEFINITIONS
 	-DWIN32
 	-D_CRT_SECURE_NO_WARNINGS
 	-DCRTAPI1=_cdecl
 	-DCRTAPI2=_cdecl
-	-D_WIN_95
-	-D_WIN32_WINDOWS=0x0500
-	-D_WIN32_DCOM
 	-D_MT
 	-D_WINSOCKAPI_
-	-D_WIN32_WINVER=${OMR_WINVER}
-	-D_WIN32_WINNT=${OMR_WINVER}
 	-D_DLL
 	-D_HAS_EXCEPTIONS=0
 	-D_VARIADIC_MAX=10

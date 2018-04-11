@@ -2071,6 +2071,7 @@ TR::Instruction *
 generateVRSbInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register * targetReg, TR::Register * sourceReg, TR::MemoryReference * mr,
                         uint8_t mask4 /* 4 bits */)
    {
+   mr->separateIndexRegister(n, cg, true, NULL);
    return new (INSN_HEAP) TR::S390VRSbInstruction(cg, op, n, targetReg, sourceReg, mr, mask4);
    }
 

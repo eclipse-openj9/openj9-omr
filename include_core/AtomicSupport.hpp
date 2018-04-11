@@ -179,6 +179,28 @@ public:
 	}
 
 	/**
+	 * Prevents compiler reordering of reads and writes across the barrier.
+	 * This does not prevent processor reordering.
+	 */
+	VMINLINE static void
+	compilerReorderingBarrier()
+	{
+#if !defined(ATOMIC_SUPPORT_STUB)
+#if defined(__GNUC__)
+		asm volatile("":::"memory");
+#elif defined(_MSC_VER) /* __GNUC__ */
+		_ReadWriteBarrier();
+#elif defined(J9ZOS390) /* _MSC_VER */
+		__fence();
+#elif defined(__xlC__) /* J9ZOS390 */
+		asm volatile("");
+#else /* __xlC__ */
+#error Unknown compiler
+#endif /* __xlC__ */
+#endif /* !defined(ATOMIC_SUPPORT_STUB) */
+	}
+
+	/**
 	 * Creates a memory barrier.
 	 * On a given processor, any load or store instructions ahead
 	 * of the sync instruction in the program sequence must complete their accesses to memory
@@ -191,6 +213,12 @@ public:
 #if defined(AIXPPC) || defined(LINUXPPC)
 		__sync();
 #elif defined(_MSC_VER)
+		_ReadWriteBarrier();
+#if defined(J9HAMMER)
+		__faststorefence();
+#else /* J9HAMMER */
+		__asm { lock or dword ptr [esp],0 }
+#endif /* J9HAMMER */
 		_ReadWriteBarrier();
 #elif defined(__GNUC__)
 #if defined(J9X86)
@@ -206,6 +234,7 @@ public:
 #endif /* defined(J9X86) || defined(J9HAMMER) */
 #elif defined(J9ZOS390)
 		/* Replace this with an inline "bcr 15,0" whenever possible */
+		__fence();
 		J9ZOSRWB();
 		__fence();
 #endif /* defined(AIXPPC) || defined(LINUXPPC) */
@@ -226,7 +255,7 @@ public:
 #if defined(AIXPPC) || defined(LINUXPPC)
 		__lwsync();
 #elif defined(_MSC_VER)
-		_WriteBarrier();
+		_ReadWriteBarrier();
 #elif defined(__GNUC__)
 #if defined(J9X86) || defined(J9HAMMER)
 		asm volatile("":::"memory");
@@ -258,7 +287,13 @@ public:
 #if defined(AIXPPC) || defined(LINUXPPC)
 		__isync();
 #elif defined(_MSC_VER)
-		_ReadBarrier();
+		_ReadWriteBarrier();
+#if defined(J9HAMMER)
+		__faststorefence();
+#else /* J9HAMMER */
+		__asm { lock or dword ptr [esp],0 }
+#endif /* J9HAMMER */
+		_ReadWriteBarrier();
 #elif defined(__GNUC__)
 #if defined(J9X86)
 		asm volatile("lock orl $0x0,(%%esp)" ::: "memory");

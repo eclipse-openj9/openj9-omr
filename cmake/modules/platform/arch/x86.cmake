@@ -27,6 +27,7 @@ if(OMR_ENV_DATA64)
 else()
 	list(APPEND OMR_PLATFORM_DEFINITIONS
 		-DJ9X86
+		-D_X86_
 	)
 endif()
 

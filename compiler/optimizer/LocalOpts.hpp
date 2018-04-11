@@ -158,6 +158,7 @@ private:
    void renumberInAncestors(TR_Structure *str, int32_t newNumber);
    void renumberExitEdges(TR_RegionStructure *region, int32_t oldN, int32_t newN);
    void redirectPredecessors(TR::Block *block, TR::Block *destBlock, const TR::CFGEdgeList &preds, bool emptyBlock, bool asyncMessagesFlag);
+   void fixPredecessorRegDeps(TR::Node *regdepsParent, TR::Block *destBlock);
    };
 
 /*

@@ -3718,6 +3718,7 @@ void TR_EliminateRedundantGotos::redirectPredecessors(
       if (asyncMessagesFlag && comp()->getHCRMode() != TR::osr)
          placeAsyncCheckBefore(predBlock->getLastRealTreeTop());
 
+      TR::TreeTop *predExitTree = NULL;
       if (predBlock->getLastRealTreeTop()->getNode()->getOpCode().isBranch() &&
           predBlock->getLastRealTreeTop()->getNode()->getBranchDestination() == block->getEntry())
          {
@@ -3725,10 +3726,22 @@ void TR_EliminateRedundantGotos::redirectPredecessors(
             destBlock->getEntry(),
             cfg,
             /* callerFixesRegdeps = */ true);
+         predExitTree = predBlock->getLastRealTreeTop();
          }
       else
          {
          predBlock->redirectFlowToNewDestination(comp(), current, destBlock, false);
+         predExitTree = predBlock->getExit();
+         }
+
+      if (regdepsToMove == NULL && block->getEntry()->getNode()->getNumChildren() > 0)
+         {
+         fixPredecessorRegDeps(predExitTree->getNode(), destBlock);
+         }
+      else
+         {
+         TR::DebugCounter::incStaticDebugCounter(comp(),
+            "redundantGotoElimination.regDeps/none");
          }
 
       if (predBlock->getNextBlock() == destBlock)
@@ -3762,6 +3775,92 @@ void TR_EliminateRedundantGotos::redirectPredecessors(
             }
          }
       }
+   }
+
+void TR_EliminateRedundantGotos::fixPredecessorRegDeps(
+   TR::Node *regdepsParent,
+   TR::Block *destBlock)
+   {
+   const int childIndex = regdepsParent->getNumChildren() - 1;
+   TR_ASSERT_FATAL(
+      childIndex >= 0,
+      "n%un should have at least one child "
+      "because it leads to a block with incoming regdeps\n",
+      regdepsParent->getGlobalIndex());
+
+   TR::Node *regdeps = regdepsParent->getChild(childIndex);
+   TR_ASSERT_FATAL(
+      regdeps->getOpCodeValue() == TR::GlRegDeps,
+      "expected n%un to be a GlRegDeps\n",
+      regdeps->getGlobalIndex());
+
+   TR::Node *destEntry = destBlock->getEntry()->getNode();
+   if (destEntry->getNumChildren() == 0)
+      {
+      // No regdeps necessary
+      TR::DebugCounter::incStaticDebugCounter(comp(),
+         TR::DebugCounter::debugCounterName(comp(),
+            "redundantGotoElimination.regDeps/wiped/%s/(%s)/block_%d",
+            comp()->getHotnessName(comp()->getMethodHotness()),
+            comp()->signature(),
+            destBlock->getNumber()));
+      regdeps->recursivelyDecReferenceCount();
+      regdepsParent->setChild(childIndex, NULL);
+      regdepsParent->setNumChildren(childIndex);
+      return;
+      }
+
+   TR::Node *newReceivingRegdeps = destEntry->getChild(0);
+   TR_ASSERT_FATAL(
+      newReceivingRegdeps->getOpCodeValue() == TR::GlRegDeps,
+      "expected n%un child of n%un BBStart <block_%d> to be GlRegDeps\n",
+      newReceivingRegdeps->getGlobalIndex(),
+      destEntry->getGlobalIndex(),
+      destBlock->getNumber());
+
+   if (regdeps->getNumChildren() == newReceivingRegdeps->getNumChildren())
+      {
+      TR::DebugCounter::incStaticDebugCounter(comp(),
+         "redundantGotoElimination.regDeps/retained");
+      }
+   else
+      {
+      TR::DebugCounter::incStaticDebugCounter(comp(),
+         TR::DebugCounter::debugCounterName(comp(),
+            "redundantGotoElimination.regDeps/dropped/%s/(%s)/block_%d",
+            comp()->getHotnessName(comp()->getMethodHotness()),
+            comp()->signature(),
+            destBlock->getNumber()));
+      }
+
+   int remainingDeps = 0;
+   for (int i = 0; i < regdeps->getNumChildren(); i++)
+      {
+      TR::Node *dep = regdeps->getChild(i);
+      auto reg = dep->getGlobalRegisterNumber();
+      bool needed = false;
+      for (int j = 0; j < newReceivingRegdeps->getNumChildren(); j++)
+         {
+         if (newReceivingRegdeps->getChild(j)->getGlobalRegisterNumber() == reg)
+            {
+            needed = true;
+            break;
+            }
+         }
+
+      if (needed)
+         regdeps->setChild(remainingDeps++, dep);
+      else
+         dep->recursivelyDecReferenceCount();
+      }
+
+   TR_ASSERT_FATAL(
+      remainingDeps == newReceivingRegdeps->getNumChildren(),
+      "n%un: bad number %d of remaining regdeps\n",
+      regdeps->getGlobalIndex(),
+      remainingDeps);
+
+   regdeps->setNumChildren(remainingDeps);
    }
 
 const char *

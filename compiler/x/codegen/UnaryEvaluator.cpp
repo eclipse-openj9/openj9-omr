@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -87,18 +87,18 @@ TR::Register *OMR::X86::TreeEvaluator::integerNegEvaluator(TR::Node *node, TR::C
 
 TR::Register *OMR::X86::TreeEvaluator::integerAbsEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR::Node *child = node->getFirstChild();
-   bool is64Bit = TR::TreeEvaluator::getNodeIs64Bit(node, cg);
-   TR::Register *targetRegister = TR::TreeEvaluator::intOrLongClobberEvaluate(child, is64Bit, cg);
-   node->setRegister(targetRegister);
-   TR::Register *signRegister = cg->allocateRegister(TR_GPR);
-   generateRegRegInstruction(MOVRegReg(is64Bit), node, signRegister, targetRegister, cg);
-   generateRegImmInstruction(SARRegImm1(is64Bit), node, signRegister, is64Bit ? 63 : 31, cg);
-   generateRegRegInstruction(ADDRegReg(is64Bit), node, targetRegister, signRegister, cg);
-   generateRegRegInstruction(XORRegReg(is64Bit), node, targetRegister, signRegister, cg);
-   cg->stopUsingRegister(signRegister);
+   auto child = node->getFirstChild();
+   auto value = cg->evaluate(child);
+   auto result = cg->allocateRegister(value->getKind());
+
+   auto is64Bit = TR::TreeEvaluator::getNodeIs64Bit(node, cg);
+   generateRegRegInstruction(MOVRegReg(is64Bit), node, result, value, cg);
+   generateRegInstruction(NEGReg(is64Bit), node, result, cg);
+   generateRegRegInstruction(CMOVSRegReg(is64Bit), node, result, value, cg);
+
+   node->setRegister(result);
    cg->decReferenceCount(child);
-   return targetRegister;
+   return result;
    }
 
 TR::Register *OMR::X86::TreeEvaluator::bnegEvaluator(TR::Node *node, TR::CodeGenerator *cg)

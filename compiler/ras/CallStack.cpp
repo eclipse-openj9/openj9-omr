@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -327,7 +327,7 @@ bool TR_MvsCallStackIterator::getNext ()
    return true;
    }
 
-#elif defined(WINDOWS) && defined(TR_HOST_X86) && defined(TR_HOST_32BIT)
+#elif defined(OMR_OS_WINDOWS) && defined(TR_HOST_X86) && defined(TR_HOST_32BIT)
 
 #include "ras/CallStack.hpp"
 #include <windows.h>
@@ -497,6 +497,6 @@ bool TR_WinCallStackIterator::getNext()
    return !_done;
    }
 
-#elif !(defined(WINDOWS) && defined(TR_HOST_X86) && defined(TR_HOST_32BIT))
+#elif !(defined(OMR_OS_WINDOWS) && defined(TR_HOST_X86) && defined(TR_HOST_32BIT))
 
-#endif
+#endif /* defined(AIXPPC) */

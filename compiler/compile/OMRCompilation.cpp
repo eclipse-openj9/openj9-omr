@@ -886,7 +886,7 @@ OMR::Compilation::isJProfilingCompilation()
    return false;
    }
 
-#if defined(AIXPPC) || defined(LINUX) || defined(J9ZOS390) || defined(WINDOWS)
+#if defined(AIXPPC) || defined(LINUX) || defined(J9ZOS390) || defined(OMR_OS_WINDOWS)
 static void stopBeforeCompile()
    {
    static int first = 1;
@@ -897,7 +897,7 @@ static void stopBeforeCompile()
       first = 0;
       }
    }
-#endif
+#endif /* defined(AIXPPC) || defined(LINUX) || defined(J9ZOS390) || defined(OMR_OS_WINDOWS) */
 
 static int32_t strHash(const char *str)
    {
@@ -961,17 +961,17 @@ int32_t OMR::Compilation::compile()
       self()->getDebug()->setupDebugger((void *) *((long*)&(stopBeforeCompile)));
       stopBeforeCompile();
       }
-#elif defined(LINUX) || defined(J9ZOS390) || defined(WINDOWS)
+#elif defined(LINUX) || defined(J9ZOS390) || defined(OMR_OS_WINDOWS)
    if (self()->getOption(TR_DebugBeforeCompile))
       {
 #if defined(LINUXPPC64)
       self()->getDebug()->setupDebugger((void *) *((long*)&(stopBeforeCompile)),(void *) *((long*)&(stopBeforeCompile)), true);
 #else
       self()->getDebug()->setupDebugger((void *) &stopBeforeCompile,(void *) &stopBeforeCompile,true);
-#endif
+#endif /* defined(LINUXPPC64) */
       stopBeforeCompile();
       }
-#endif
+#endif /* defined(AIXPPC) */
 
    if (self()->getOutFile() != NULL && (self()->getOption(TR_TraceAll) || debug("traceStartCompile") || self()->getOptions()->getAnyTraceCGOption() || self()->getOption(TR_Timing)))
       {
@@ -1209,7 +1209,7 @@ int32_t OMR::Compilation::compile()
       if (chTable)
          self()->getDebug()->dump(self()->getOutFile(), chTable);
       }
-#endif
+#endif /* ifdef(J9_PROJECT_SPECIFIC) */
 
 #if defined(AIXPPC) || defined(LINUXPPC)
    if (self()->getOption(TR_DebugOnEntry))
@@ -1220,14 +1220,14 @@ int32_t OMR::Compilation::compile()
       self()->getDebug()->setupDebugger((void *)jitTojitStart);
 #else
       self()->getDebug()->setupDebugger((void *)jitTojitStart, self()->cg()->getCodeEnd(), false);
-#endif
+#endif /* defined(AIXPPC) */
       }
-#elif defined(LINUX) || defined(J9ZOS390) || defined(WINDOWS)
+#elif defined(LINUX) || defined(J9ZOS390) || defined(OMR_OS_WINDOWS)
    if (self()->getOption(TR_DebugOnEntry))
       {
       self()->getDebug()->setupDebugger(self()->cg()->getCodeStart(),self()->cg()->getCodeEnd(),false);
       }
-#endif
+#endif /* defined(LINUX) || defined(J9ZOS390) || defined(OMR_OS_WINDOWS) */
 
    return COMPILATION_SUCCEEDED;
    }

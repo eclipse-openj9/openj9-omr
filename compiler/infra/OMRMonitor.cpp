@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -81,36 +81,36 @@ OMR::Monitor::destroy(TR::Monitor *monitor)
 void
 OMR::Monitor::destroy()
    {
-#ifdef WINDOWS
+#if defined(OMR_OS_WINDOWS)
    MUTEX_DESTROY(_monitor);
 #else
    int32_t rc = MUTEX_DESTROY(_monitor);
    TR_ASSERT(rc == 0, "error destroying monitor\n");
-#endif
+#endif /* defined(OMR_OS_WINDOWS) */
    }
 
 void
 OMR::Monitor::enter()
    {
-#ifdef WINDOWS
+#if defined(OMR_OS_WINDOWS)
    MUTEX_ENTER(_monitor);
 #else
    int32_t rc = MUTEX_ENTER(_monitor);
    TR_ASSERT(rc == 0, "error locking monitor\n");
-#endif
+#endif /* defined(OMR_OS_WINDOWS) */
    }
 
 int32_t
 OMR::Monitor::exit()
    {
-#ifdef WINDOWS
+#if defined(OMR_OS_WINDOWS)
    MUTEX_EXIT(_monitor);
    return 0;
 #else
    int32_t rc = MUTEX_EXIT(_monitor);
    TR_ASSERT(rc == 0, "error unlocking monitor\n");
    return rc;
-#endif
+#endif /* defined(OMR_OS_WINDOWS) */
    }
 
 char const *

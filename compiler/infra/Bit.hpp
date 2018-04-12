@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -30,11 +30,11 @@
 #include "il/DataTypes.hpp"  // for CONSTANT64, TR::getMaxSignedPrecision<TR::Int64>(), etc
 #include "infra/Assert.hpp"  // for TR_ASSERT
 
-#if defined(TR_TARGET_X86) && defined(WINDOWS)
+#if defined(TR_TARGET_X86) && defined(OMR_OS_WINDOWS)
    #define abs64 _abs64
 #else
    #define abs64 labs
-#endif
+#endif /* defined(TR_TARGET_X86) && defined(OMR_OS_WINDOWS) */
 
 // For getting at different parts of a 32 bit integer
 class intParts  {

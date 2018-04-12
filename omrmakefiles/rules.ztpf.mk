@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2017 IBM Corp. and others
+# Copyright (c) 2017, 2018 IBM Corp. and others
 # 
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -188,16 +188,16 @@ ifneq (,$(findstring shared,$(ARTIFACT_TYPE)))
 
 			define LINK_C_SHARED_COMMAND
 				$(CCLINKSHARED) -o $@ $(OBJECTS) $(LDFLAGS) $(MODULE_LDFLAGS) $(GLOBAL_LDFLAGS)
-				cp $@ $@.dbg
+				$(OBJCOPY) --only-keep-debug $@ $@.dbg
 				$(OBJCOPY) --strip-debug $@
-				$(OBJCOPY) --add-gnu-debuglink=$@ $@.dbg
+				$(OBJCOPY) --add-gnu-debuglink=$@.dbg $@
 			endef
 
 			define LINK_CXX_SHARED_COMMAND
 				$(CXXLINKSHARED) -o $@ $(OBJECTS) $(LDFLAGS) $(MODULE_LDFLAGS) $(GLOBAL_LDFLAGS)
-				cp $@ $@.dbg
+				$(OBJCOPY) --only-keep-debug $@ $@.dbg
 				$(OBJCOPY) --strip-debug $@
-				$(OBJCOPY) --add-gnu-debuglink=$@ $@.dbg
+				$(OBJCOPY) --add-gnu-debuglink=$@.dbg $@
 			endef
 
 			## Files to clean

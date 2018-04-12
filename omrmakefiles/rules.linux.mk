@@ -390,16 +390,16 @@ ifeq (1,$(USE_GNU_DEBUG))
 
 define LINK_C_SHARED_COMMAND
 $(CCLINKSHARED) -o $@ $(OBJECTS) $(LDFLAGS) $(MODULE_LDFLAGS) $(GLOBAL_LDFLAGS)
-cp $@ $@.dbg
+$(OBJCOPY) --only-keep-debug $@ $@.dbg
 $(OBJCOPY) --strip-debug $@
-$(OBJCOPY) --add-gnu-debuglink=$@ $@.dbg
+$(OBJCOPY) --add-gnu-debuglink=$@.dbg $@
 endef
 
 define LINK_CXX_SHARED_COMMAND
 $(CXXLINKSHARED) -o $@ $(OBJECTS) $(LDFLAGS) $(MODULE_LDFLAGS) $(GLOBAL_LDFLAGS)
-cp $@ $@.dbg
+$(OBJCOPY) --only-keep-debug $@ $@.dbg
 $(OBJCOPY) --strip-debug $@
-$(OBJCOPY) --add-gnu-debuglink=$@ $@.dbg
+$(OBJCOPY) --add-gnu-debuglink=$@.dbg $@
 endef
 
 ## Files to clean

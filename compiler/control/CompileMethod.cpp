@@ -401,14 +401,15 @@ compileMethodFromDetails(
             }
 
          if (
-               TR::Options::getCmdLineOptions()->getOption(TR_PerfTool)
-            || TR::Options::getCmdLineOptions()->getOption(TR_EnableObjectFileGeneration)
+               TR::Options::getCmdLineOptions()->getOption(TR_PerfTool) 
+            || TR::Options::getCmdLineOptions()->getOption(TR_EmitExecutableELFFile)
+            || TR::Options::getCmdLineOptions()->getOption(TR_EmitRelocatableELFFile)
             )
             {
             TR::CodeCacheManager &codeCacheManager(fe.codeCacheManager());
             TR::CodeGenerator &codeGenerator(*compiler.cg());
             codeCacheManager.registerCompiledMethod(compiler.externalName(), startPC, codeGenerator.getCodeLength());
-            if (TR::Options::getCmdLineOptions()->getOption(TR_EnableObjectFileGeneration))
+            if (TR::Options::getCmdLineOptions()->getOption(TR_EmitRelocatableELFFile))
                {
                auto &relocations = codeGenerator.getStaticRelocations();
                for (auto it = relocations.begin(); it != relocations.end(); ++it)

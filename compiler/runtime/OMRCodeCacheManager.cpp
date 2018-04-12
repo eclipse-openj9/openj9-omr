@@ -43,11 +43,14 @@
 #include "runtime/CodeCacheConfig.hpp"  // for CodeCacheConfig, etc
 #include "runtime/Runtime.hpp"
 
-#ifdef LINUX
+#if (HOST_OS == OMR_LINUX)
 #include <elf.h>                        // for EV_CURRENT, SHT_STRTAB, etc
 #include <unistd.h>                     // for getpid, pid_t
-#include "codegen/ELFObjectFileGenerator.hpp"
-#endif
+#include "codegen/ELFGenerator.hpp"
+
+TR::CodeCacheSymbolContainer * OMR::CodeCacheManager::_symbolContainer = NULL;
+
+#endif //HOST_OS == OMR_LINUX
 
 OMR::CodeCacheManager::CodeCacheManager(TR::RawAllocator rawAllocator) :
    _rawAllocator(rawAllocator),
@@ -83,12 +86,21 @@ OMR::CodeCacheManager::initialize(
    TR_ASSERT(!self()->initialized(), "cannot initialize code cache manager more than once");
 
 #if (HOST_OS == OMR_LINUX)
-   _objectFileGenerator = NULL;
-   _elfHeader = NULL;
+   _elfRelocatableGenerator = NULL;
+   _elfExecutableGenerator = NULL;
+
+   if (_symbolContainer == NULL){
+         TR::CodeCacheSymbolContainer * symbolContainer = static_cast<TR::CodeCacheSymbolContainer *>(self()->getMemory(sizeof(TR::CodeCacheSymbolContainer)));
+         symbolContainer->_head = NULL;
+         symbolContainer->_tail = NULL;
+         symbolContainer->_numSymbols = 0; //does not include UNDEF symbol
+         symbolContainer->_totalSymbolNameLength = 1; //precount for the UNDEF symbol
+        _symbolContainer = symbolContainer;
+   }
 #endif // HOST_OS == OMR_LINUX
 
    TR::CodeCacheConfig &config = self()->codeCacheConfig();
-
+      
    if (allocateMonolithicCodeCache)
       {
       size_t size = config.codeCacheTotalKB() * 1024;
@@ -187,33 +199,34 @@ OMR::CodeCacheManager::destroy()
    {
 #if (HOST_OS == OMR_LINUX)
    // if code cache should be written out as shared object, do that now before destroying anything
-   if (_objectFileGenerator)
-      {
-      _objectFileGenerator->emitObjectFile();
-      }
 
-   if (_elfHeader)
-      {
-      self()->initializeELFTrailer();
+   if (_elfRelocatableGenerator)
+   {
+         TR_ASSERT(_elfRelocatableGenerator->emitELF((const char*)_objectFileName,
+                                              _relocatableSymbolContainer->_head,
+                                              _relocatableSymbolContainer->_numSymbols,
+                                              _relocatableSymbolContainer->_totalSymbolNameLength,
+                                              _relocations->_head,
+                                              _relocations->_numRelocations),
+                                          "Failed to write code cache symbols to executable ELF file.");
+   }
 
+   if (_elfExecutableGenerator)
+   {
       pid_t jvmPid = getpid();
-      static const int maxElfFilenameSize = 15 + sizeof(jvmPid)* 3; // "/tmp/perf-%ld.jit"
+      static const int maxElfFilenameSize = 15 + sizeof(jvmPid)* 3; // "written to file: /tmp/perf-%d.jit, where d is the pid"
       char elfFilename[maxElfFilenameSize] = { 0 };
 
       int numCharsWritten = snprintf(elfFilename, maxElfFilenameSize, "/tmp/perf-%d.jit", jvmPid);
       if (numCharsWritten > 0 && numCharsWritten < maxElfFilenameSize)
-         {
-         FILE *elfFile = fopen(elfFilename, "wb");
-         fwrite(_elfHeader, sizeof(uint8_t), sizeof(ELFCodeCacheHeader), elfFile);
-
-         TR::CodeCacheMemorySegment *repositorySegment = _codeCacheRepositorySegment;
-         fwrite(repositorySegment->segmentBase(), sizeof(uint8_t), repositorySegment->segmentTop() - repositorySegment->segmentBase(), elfFile);
-
-         fwrite(_elfTrailer, sizeof(uint8_t), _elfTrailerSize, elfFile);
-
-         fclose(elfFile);
-         }
+      {
+         TR_ASSERT(_elfExecutableGenerator->emitELF((const char*) &elfFilename, 
+                                _symbolContainer->_head,
+                                _symbolContainer->_numSymbols,
+                                _symbolContainer->_totalSymbolNameLength),
+                              "Failed to write code cache symbols to relocatable ELF file.");
       }
+   }
 #endif // HOST_OS == OMR_LINUX
 
    TR::CodeCache *codeCache = self()->getFirstCodeCache();
@@ -969,11 +982,11 @@ OMR::CodeCacheManager::repositoryCodeCacheCreated()
    {
 #if (HOST_OS == OMR_LINUX)
    TR::CodeCacheConfig &config = self()->codeCacheConfig();
-   if (config.emitElfObject())
-      self()->initializeELFHeader();
-   if (config.emitELFObjectFile())
+   if (config.emitExecutableELF())
+      self()->initializeExecutableELFGenerator();
+   if (config.emitRelocatableELF())
       {
-      self()->initializeObjectFileGenerator();
+      self()->initializeRelocatableELFGenerator();
       }
 #endif // HOST_OS == OMR_LINUX
    }
@@ -982,13 +995,8 @@ void
 OMR::CodeCacheManager::registerCompiledMethod(const char *sig, uint8_t *startPC, uint32_t codeSize)
    {
 #if (HOST_OS == OMR_LINUX)
-   if (_objectFileGenerator)
-      {
-      _objectFileGenerator->registerCompiledMethod(sig, startPC, codeSize);
-      }
 
-   CodeCacheSymbol *newSymbol = static_cast<CodeCacheSymbol *> (self()->getMemory(sizeof(CodeCacheSymbol)));
-
+   TR::CodeCacheSymbol *newSymbol = static_cast<TR::CodeCacheSymbol *> (self()->getMemory(sizeof(TR::CodeCacheSymbol)));
    uint32_t nameLength = strlen(sig) + 1;
    char *name = static_cast<char *> (self()->getMemory(nameLength * sizeof(char)));
    memcpy(name, sig, nameLength);
@@ -996,10 +1004,31 @@ OMR::CodeCacheManager::registerCompiledMethod(const char *sig, uint8_t *startPC,
    newSymbol->_nameLength = nameLength;
    newSymbol->_start = startPC;
    newSymbol->_size = codeSize;
-   newSymbol->_next = _symbols;
-   _symbols = newSymbol;
-   _numELFSymbols++;
-   _totalELFSymbolNamesLength += nameLength;
+   newSymbol->_next = NULL;
+   if(_symbolContainer->_head){
+      _symbolContainer->_tail->_next = newSymbol;
+      _symbolContainer->_tail = newSymbol;
+   } else {
+      _symbolContainer->_head = newSymbol;
+      _symbolContainer->_tail = newSymbol;
+   }
+   _symbolContainer->_numSymbols++;
+   _symbolContainer->_totalSymbolNameLength += nameLength;
+
+   if (_elfRelocatableGenerator){
+      TR::CodeCacheSymbol *newRelocSymbol = static_cast<TR::CodeCacheSymbol *> (self()->getMemory(sizeof(TR::CodeCacheSymbol)));
+      memcpy(newRelocSymbol, newSymbol, sizeof(TR::CodeCacheSymbol));
+      newRelocSymbol->_next = NULL;
+      if(_relocatableSymbolContainer->_head){
+            _relocatableSymbolContainer->_tail->_next = newRelocSymbol;
+            _relocatableSymbolContainer->_tail = newRelocSymbol;
+      } else {
+            _relocatableSymbolContainer->_head = newRelocSymbol;
+            _relocatableSymbolContainer->_tail = newRelocSymbol;
+      }
+      _relocatableSymbolContainer->_numSymbols++;
+      _relocatableSymbolContainer->_totalSymbolNameLength += nameLength;
+   }
 #endif // HOST_OS == OMR_LINUX
    }
 
@@ -1007,9 +1036,42 @@ void
 OMR::CodeCacheManager::registerStaticRelocation(const TR::StaticRelocation &relocation)
    {
 #if (HOST_OS == OMR_LINUX)
-   if (_objectFileGenerator)
+   if (_elfRelocatableGenerator)
       {
-      _objectFileGenerator->registerStaticRelocation(relocation);
+      const char * const symbolName(relocation.symbol());
+      uint32_t nameLength = strlen(symbolName) + 1;
+      char *name = static_cast<char *>(self()->getMemory(nameLength * sizeof(char)));
+      memcpy(name, symbolName, nameLength);
+      TR::CodeCacheSymbol *newRelocSymbol = static_cast<TR::CodeCacheSymbol *> (self()->getMemory(sizeof(TR::CodeCacheSymbol)));
+      newRelocSymbol->_name = name;
+      newRelocSymbol->_nameLength = nameLength;
+      newRelocSymbol->_start = 0;
+      newRelocSymbol->_size = 0;
+      newRelocSymbol->_next = NULL;
+      if(_relocatableSymbolContainer->_head){
+            _relocatableSymbolContainer->_tail->_next = newRelocSymbol;
+            _relocatableSymbolContainer->_tail = newRelocSymbol;
+      } else {
+            _relocatableSymbolContainer->_head = newRelocSymbol;
+            _relocatableSymbolContainer->_tail = newRelocSymbol;
+      }
+      _relocatableSymbolContainer->_numSymbols++;
+      _relocatableSymbolContainer->_totalSymbolNameLength += nameLength;
+
+      uint32_t symbolNumber = static_cast<uint32_t>(_relocatableSymbolContainer->_numSymbols - 1); //symbol index in the linked list
+      uint32_t relocationType = _resolver.resolveRelocationType(relocation);
+      TR::CodeCacheRelocationInfo *newRelocation = static_cast<TR::CodeCacheRelocationInfo *> (self()->getMemory(sizeof(TR::CodeCacheRelocationInfo)));
+      newRelocation->_location = relocation.location();
+      newRelocation->_type = relocationType;
+      newRelocation->_symbol = symbolNumber; //symbol index along the linked list
+      if(_relocations->_head){
+            _relocations->_tail->_next = newRelocation;
+            _relocations->_tail = newRelocation;
+      } else{
+            _relocations->_head = newRelocation;
+            _relocations->_tail = newRelocation;
+      }
+      _relocations->_numRelocations++;
       }
 #endif
    }
@@ -1179,213 +1241,41 @@ OMR::CodeCacheManager::reservationInterfaceCache(void *callSite, TR_OpaqueMethod
 
 #if (HOST_OS == OMR_LINUX)
 
-OMR::CodeCacheSymbol * OMR::CodeCacheManager::_symbols = NULL;
-uint32_t OMR::CodeCacheManager::_numELFSymbols = 0; // does not include UNDEF symbol: embedded in ELfCodeCacheTrailer
-uint32_t OMR::CodeCacheManager::_totalELFSymbolNamesLength = 1; // pre-count 0 for the UNDEF symbol name
-
-
 void
-OMR::CodeCacheManager::initializeObjectFileGenerator()
+OMR::CodeCacheManager::initializeRelocatableELFGenerator(void)
    {
-   _objectFileGenerator =
-      new (_rawAllocator) TR::ELFObjectFileGenerator(
+   _objectFileName = TR::Options::getCmdLineOptions()->getObjectFileName();
+   
+   TR::CodeCacheSymbolContainer * symbolContainer = static_cast<TR::CodeCacheSymbolContainer *>(self()->getMemory(sizeof(TR::CodeCacheSymbolContainer)));
+   symbolContainer->_head = NULL;
+   symbolContainer->_tail = NULL;
+   symbolContainer->_numSymbols = 0; //does not include UNDEF symbol
+   symbolContainer->_totalSymbolNameLength = 1; //precount for the UNDEF symbol
+   _relocatableSymbolContainer = symbolContainer;
+
+   
+   TR::CodeCacheRelocationInfoContainer * relInfo = static_cast<TR::CodeCacheRelocationInfoContainer *>(self()->getMemory(sizeof(TR::CodeCacheRelocationInfoContainer)));
+   relInfo->_head = NULL;
+   relInfo->_tail = NULL;
+   relInfo->_numRelocations = 0;
+   _relocations = relInfo;
+
+   _elfRelocatableGenerator =
+      new (_rawAllocator) TR::ELFRelocatableGenerator(
          _rawAllocator,
          _codeCacheRepositorySegment->segmentBase(),
-         _codeCacheRepositorySegment->segmentTop() - _codeCacheRepositorySegment->segmentBase(),
-         TR::Options::getCmdLineOptions()->getObjectFileName()
+         _codeCacheRepositorySegment->segmentTop() - _codeCacheRepositorySegment->segmentBase());
+   }
+
+void
+OMR::CodeCacheManager::initializeExecutableELFGenerator(void)
+   {
+
+   _elfExecutableGenerator =
+      new (_rawAllocator) TR::ELFExecutableGenerator(
+         _rawAllocator,
+         _codeCacheRepositorySegment->segmentBase(),
+         _codeCacheRepositorySegment->segmentTop() - _codeCacheRepositorySegment->segmentBase()
          );
    }
-
-void
-OMR::CodeCacheManager::initializeELFHeader()
-   {
-   //fprintf(stderr,"segmentAlloc: %p, base %p, diff %d\n", _codeCacheRepositorySegment->segmentAlloc(), _codeCacheRepositorySegment->segmentBase(), _codeCacheRepositorySegment->segmentAlloc() - _codeCacheRepositorySegment->segmentBase());
-   ELFCodeCacheHeader *hdr = static_cast<ELFCodeCacheHeader *>(_rawAllocator.allocate(sizeof(ELFCodeCacheHeader), std::nothrow));
-
-   // main elf header
-   hdr->hdr.e_ident[EI_MAG0] = ELFMAG0;
-   hdr->hdr.e_ident[EI_MAG1] = ELFMAG1;
-   hdr->hdr.e_ident[EI_MAG2] = ELFMAG2;
-   hdr->hdr.e_ident[EI_MAG3] = ELFMAG3;
-   hdr->hdr.e_ident[EI_CLASS] = ELFClass;
-   hdr->hdr.e_ident[EI_VERSION] = EV_CURRENT;
-   for (auto b = EI_PAD;b < EI_NIDENT;b++)
-      hdr->hdr.e_ident[b] = 0;
-
-   self()->initializeELFHeaderForPlatform(hdr);
-
-   hdr->hdr.e_type = ET_EXEC;
-   hdr->hdr.e_version = EV_CURRENT;
-
-   uint32_t cacheSize = _codeCacheRepositorySegment->segmentTop() - _codeCacheRepositorySegment->segmentBase();
-   hdr->hdr.e_entry = (ELFAddress) _codeCacheRepositorySegment->segmentBase();
-   hdr->hdr.e_phoff = offsetof(ELFCodeCacheHeader, phdr);
-   hdr->hdr.e_shoff = sizeof(ELFCodeCacheHeader) + cacheSize;
-   hdr->hdr.e_flags = 0;
-
-   hdr->hdr.e_ehsize = sizeof(ELFHeader);
-
-   hdr->hdr.e_phentsize = sizeof(ELFProgramHeader);
-   hdr->hdr.e_phnum = 1;
-   hdr->hdr.e_shentsize = sizeof(ELFSectionHeader);
-   hdr->hdr.e_shnum = 5; // number of sections in trailer
-   hdr->hdr.e_shstrndx = 3; // index to shared string table section in trailer
-
-   // program header
-   hdr->phdr.p_type = PT_LOAD;
-   hdr->phdr.p_offset = sizeof(ELFCodeCacheHeader);
-   hdr->phdr.p_vaddr = (ELFAddress) _codeCacheRepositorySegment->segmentBase();
-   hdr->phdr.p_paddr = (ELFAddress) _codeCacheRepositorySegment->segmentBase();
-   hdr->phdr.p_filesz = cacheSize;
-   hdr->phdr.p_memsz = cacheSize;
-   hdr->phdr.p_flags = PF_X | PF_R; // should add PF_W if we get around to loading patchable code
-   hdr->phdr.p_align = 0x1000;  //0x10000;
-   _elfHeader = hdr;
-   }
-
-
-void
-OMR::CodeCacheManager::initializeELFTrailer()
-   {
-   _elfTrailerSize = sizeof(ELFCodeCacheTrailer) +
-                     _numELFSymbols * sizeof(ELFSymbol) + // NOTE: ELFCodeCacheTrailer includes 1 ELFSymbol: UNDEF
-                     _totalELFSymbolNamesLength;
-   ELFCodeCacheTrailer *trlr = static_cast<ELFCodeCacheTrailer *>(self()->getMemory(_elfTrailerSize));
-
-   uint32_t trailerStartOffset = sizeof(ELFCodeCacheHeader) + _elfHeader->phdr.p_filesz;
-   uint32_t symbolsStartOffset = trailerStartOffset + offsetof(ELFCodeCacheTrailer, symbols);
-   uint32_t symbolNamesStartOffset = symbolsStartOffset + (_numELFSymbols+1) * sizeof(ELFSymbol);
-
-   trlr->zeroSection.sh_name = 0;
-   trlr->zeroSection.sh_type = 0;
-   trlr->zeroSection.sh_flags = 0;
-   trlr->zeroSection.sh_addr = 0;
-   trlr->zeroSection.sh_offset = 0;
-   trlr->zeroSection.sh_size = 0;
-   trlr->zeroSection.sh_link = 0;
-   trlr->zeroSection.sh_info = 0;
-   trlr->zeroSection.sh_addralign = 0;
-   trlr->zeroSection.sh_entsize = 0;
-
-   trlr->textSection.sh_name = trlr->textSectionName - trlr->zeroSectionName;
-   trlr->textSection.sh_type = SHT_PROGBITS;
-   trlr->textSection.sh_flags = SHF_ALLOC | SHF_EXECINSTR;
-   trlr->textSection.sh_addr = (ELFAddress) _codeCacheRepositorySegment->segmentBase();
-   trlr->textSection.sh_offset = sizeof(ELFCodeCacheHeader);
-   trlr->textSection.sh_size = _codeCacheRepositorySegment->segmentTop() - _codeCacheRepositorySegment->segmentBase();
-   trlr->textSection.sh_link = 0;
-   trlr->textSection.sh_info = 0;
-   trlr->textSection.sh_addralign = 32; // code cache alignment?
-   trlr->textSection.sh_entsize = 0;
-
-   trlr->dynsymSection.sh_name = trlr->dynsymSectionName - trlr->zeroSectionName;
-   trlr->dynsymSection.sh_type = SHT_SYMTAB; // SHT_DYNSYM
-   trlr->dynsymSection.sh_flags = 0; //SHF_ALLOC;
-   trlr->dynsymSection.sh_addr = 0; //(ELFAddress) &((uint8_t *)_elfHeader + symbolStartOffset); // fake address because not continuous
-   trlr->dynsymSection.sh_offset = symbolsStartOffset;
-   trlr->dynsymSection.sh_size = (_numELFSymbols + 1)*sizeof(ELFSymbol);
-   trlr->dynsymSection.sh_link = 4; // dynamic string table index
-   trlr->dynsymSection.sh_info = 1; // index of first non-local symbol: for now all symbols are global
-   trlr->dynsymSection.sh_addralign = 8;
-   trlr->dynsymSection.sh_entsize = sizeof(ELFSymbol);
-
-   trlr->shstrtabSection.sh_name = trlr->shstrtabSectionName - trlr->zeroSectionName;
-   trlr->shstrtabSection.sh_type = SHT_STRTAB;
-   trlr->shstrtabSection.sh_flags = 0;
-   trlr->shstrtabSection.sh_addr = 0;
-   trlr->shstrtabSection.sh_offset = trailerStartOffset + offsetof(ELFCodeCacheTrailer, zeroSectionName);
-   trlr->shstrtabSection.sh_size = sizeof(trlr->zeroSectionName) +
-                                   sizeof(trlr->shstrtabSectionName) +
-                                   sizeof(trlr->textSectionName) +
-                                   sizeof(trlr->dynsymSectionName) +
-                                   sizeof(trlr->dynstrSectionName);
-   trlr->shstrtabSection.sh_link = 0;
-   trlr->shstrtabSection.sh_info = 0;
-   trlr->shstrtabSection.sh_addralign = 1;
-   trlr->shstrtabSection.sh_entsize = 0;
-
-   trlr->dynstrSection.sh_name = trlr->dynstrSectionName - trlr->zeroSectionName;
-   trlr->dynstrSection.sh_type = SHT_STRTAB;
-   trlr->dynstrSection.sh_flags = 0;
-   trlr->dynstrSection.sh_addr = 0;
-   trlr->dynstrSection.sh_offset = symbolNamesStartOffset;
-   trlr->dynstrSection.sh_size = _totalELFSymbolNamesLength;
-   trlr->dynstrSection.sh_link = 0;
-   trlr->dynstrSection.sh_info = 0;
-   trlr->dynstrSection.sh_addralign = 1;
-   trlr->dynstrSection.sh_entsize = 0;
-
-   trlr->zeroSectionName[0] = 0;
-   strcpy(trlr->shstrtabSectionName, ".shstrtab");
-   strcpy(trlr->textSectionName, ".text");
-   strcpy(trlr->dynsymSectionName, ".symtab");
-   strcpy(trlr->dynstrSectionName, ".dynstr");
-
-   // now walk list of compiled code symbols building up the symbol names and filling in array of ELFSymbol structures
-   ELFSymbol *elfSymbols = trlr->symbols + 0;
-   char *elfSymbolNames = (char *) (elfSymbols + (_numELFSymbols+1));
-
-   // first symbol is UNDEF symbol: all zeros, even name is zero-terminated empty string
-   elfSymbolNames[0] = 0;
-   elfSymbols[0].st_name = 0;
-   elfSymbols[0].st_info = ELF_ST_INFO(0,0);
-   elfSymbols[0].st_other = 0;
-   elfSymbols[0].st_shndx = 0;
-   elfSymbols[0].st_value = 0;
-   elfSymbols[0].st_size = 0;
-
-   CodeCacheSymbol *sym = _symbols;
-   ELFSymbol *elfSym = elfSymbols + 1;
-   char *names = elfSymbolNames + 1;
-   while (sym)
-      {
-      //fprintf(stderr, "Writing elf symbol %d, name(%d) = %s\n", (elfSym - elfSymbols), sym->_nameLength, sym->_name);
-      memcpy(names, sym->_name, sym->_nameLength);
-
-      elfSym->st_name = names - elfSymbolNames;
-      elfSym->st_info = ELF_ST_INFO(STB_GLOBAL,STT_FUNC);
-      elfSym->st_other = 0;
-      elfSym->st_shndx = 1;
-      elfSym->st_value = (ELFAddress) sym->_start;
-      elfSym->st_size = sym->_size;
-
-      names += sym->_nameLength;
-      elfSym++;
-
-      sym = sym->_next;
-      }
-
-   _elfTrailer = trlr;
-   }
-
-void
-OMR::CodeCacheManager::initializeELFHeaderForPlatform(ELFCodeCacheHeader *hdr)
-   {
-   #if (HOST_ARCH == ARCH_X86)
-      hdr->hdr.e_machine = EM_386;
-   #elif (HOST_ARCH == ARCH_POWER)
-      #if defined(TR_TARGET_64BIT)
-         hdr->hdr.e_machine = EM_PPC64;
-      #else
-         hdr->hdr.e_machine = EM_PPC;
-      #endif
-   #elif (HOST_ARCH == ARCH_ZARCH)
-      hdr->hdr.e_machine = EM_S390;
-   #else
-      TR_ASSERT(0, "unrecognized architecture: cannot initialize code cache elf header");
-   #endif
-
-   #if (HOST_OS == OMR_LINUX)
-      hdr->hdr.e_ident[EI_OSABI] = ELFOSABI_LINUX;
-   #elif defined(AIXPPC)
-      hdr->hdr.e_ident[EI_OSABI] = ELFOSABI_AIX;
-   #else
-      TR_ASSERT(0, "unrecognized operating system: cannot initialize code cache elf header");
-   #endif
-
-   hdr->hdr.e_ident[EI_ABIVERSION] = 0;
-
-   hdr->hdr.e_ident[EI_DATA] = TR::Compiler->host.cpu.isLittleEndian() ? ELFDATA2LSB : ELFDATA2MSB;
-   }
-
 #endif // HOST_OS==OMR_LINUX

@@ -1573,6 +1573,19 @@ omrsysinfo_get_memory_info(struct OMRPortLibrary *portLibrary, struct J9MemoryIn
 }
 
 uint64_t
+omrsysinfo_get_addressable_physical_memory(struct OMRPortLibrary *portLibrary)
+{
+	uint64_t memoryLimit = 0;
+	uint64_t usableMemory = portLibrary->sysinfo_get_physical_memory(portLibrary);
+	
+	if (OMRPORT_LIMIT_LIMITED == portLibrary->sysinfo_get_limit(portLibrary, OMRPORT_RESOURCE_ADDRESS_SPACE, &memoryLimit)) {
+		/* there is a limit on the memory we can use so take the minimum of this usable amount and the physical memory */
+		usableMemory = OMR_MIN(memoryLimit, usableMemory);
+	}
+	return usableMemory;
+}
+
+uint64_t
 omrsysinfo_get_physical_memory(struct OMRPortLibrary *portLibrary)
 {
 	uint64_t result = 0;
@@ -3874,17 +3887,15 @@ omrsysinfo_cgroup_get_memlimit(struct OMRPortLibrary *portLibrary, uint64_t *lim
 	physicalMemLimit = getPhysicalMemory(portLibrary);
 	/* If the cgroup is not imposing any memory limit then the value in memory.limit_in_bytes
 	 * is close to max value of 64-bit integer, and is more than the physical memory in the system.
-	 * In such case, just return the amount of physical memory.
 	 */
 	if (cgroupMemLimit > physicalMemLimit) {
 		Trc_PRT_sysinfo_cgroup_get_memlimit_unlimited();
-		cgroupMemLimit = physicalMemLimit;
+		rc = portLibrary->error_set_last_error_with_message(portLibrary, OMRPORT_ERROR_SYSINFO_CGROUP_MEMLIMIT_NOT_SET, "memory limit is not set");
+                goto _end;
+	} else {
+		*limit = cgroupMemLimit;
+		rc = 0;
 	}
-
-	Trc_PRT_sysinfo_cgroup_get_memlimit(cgroupMemLimit);
-
-	*limit = cgroupMemLimit;
-	rc = 0;
 _end:
 	Trc_PRT_sysinfo_cgroup_get_memlimit_Exit(rc);
 #endif /* defined(LINUX) && !defined(OMRZTPF) */

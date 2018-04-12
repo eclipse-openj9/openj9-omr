@@ -773,6 +773,19 @@ omrsysinfo_get_memory_info(struct OMRPortLibrary *portLibrary, struct J9MemoryIn
 	return 0;
 }
 
+uint64_t
+omrsysinfo_get_addressable_physical_memory(struct OMRPortLibrary *portLibrary)
+{
+	uint64_t memoryLimit = 0;
+	uint64_t usableMemory = portLibrary->sysinfo_get_physical_memory(portLibrary);
+	
+	if (OMRPORT_LIMIT_LIMITED == portLibrary->sysinfo_get_limit(portLibrary, OMRPORT_RESOURCE_ADDRESS_SPACE, &memoryLimit)) {
+		/* there is a limit on the memory we can use so take the minimum of this usable amount and the physical memory */
+		usableMemory = OMR_MIN(memoryLimit, usableMemory);
+	}
+	return usableMemory;
+}
+
 /**
  * Determine the size of the total physical memory in the system, in bytes.
  *

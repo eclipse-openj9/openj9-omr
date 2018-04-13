@@ -316,7 +316,7 @@ enum TR_CompilationOptions
    TR_DisableCodeCacheSnippets            = 0x00000020 + 7,
    TR_EnableReassociation                 = 0x00000040 + 7,
    TR_DisableSSOpts                       = 0x00000080 + 7,
-   TR_TraceObjectFileGeneration           = 0x00000100 + 7,
+   //Available                            = 0x00000100 + 7,
    TR_DisableDelayRelocationForAOTCompilations   = 0x00000200 + 7,
    TR_DisableRecompDueToInlinedMethodRedefinition = 0x00000400 + 7,
    TR_DisableLoopReplicatorColdSideEntryCheck = 0x00000800 + 7,

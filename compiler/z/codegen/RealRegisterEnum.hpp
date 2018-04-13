@@ -72,7 +72,7 @@
       LastFPR           = FPR15,
       LastAssignableFPR = FPR15,
 
-      VRFBase           = FPRBase,
+      VRFBase           = FPRBase, /* The base is same because VRF0-15 overlap with FPR0-15 */
 
       VRF0              = VRFBase + 1,
       VRF1              = VRFBase + 2,

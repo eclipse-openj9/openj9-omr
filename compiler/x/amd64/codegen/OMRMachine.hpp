@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -25,12 +25,12 @@
 /*
  * The following #define and typedef must appear before any #includes in this file
  */
-#ifndef OMR_MACHINEBASE_CONNECTOR
-#define OMR_MACHINEBASE_CONNECTOR
+#ifndef OMR_MACHINE_CONNECTOR
+#define OMR_MACHINE_CONNECTOR
 namespace OMR { namespace X86 { namespace AMD64 { class Machine; } } }
 namespace OMR { typedef OMR::X86::AMD64::Machine MachineConnector; }
 #else
-#error OMR::X86::AMD64::Machine expected to be a primary connector, but a OMR connector is already defined
+#error OMR::X86::AMD64::Machine expected to be a primary connector, but an OMR connector is already defined
 #endif
 
 #include "x/codegen/OMRMachine.hpp"

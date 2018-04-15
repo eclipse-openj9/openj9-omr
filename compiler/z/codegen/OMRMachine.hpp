@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -19,17 +19,17 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#ifndef OMR_Z_MACHINEBASE_INCL
-#define OMR_Z_MACHINEBASE_INCL
+#ifndef OMR_Z_MACHINE_INCL
+#define OMR_Z_MACHINE_INCL
 /*
  * The following #define and typedef must appear before any #includes in this file
  */
-#ifndef OMR_MACHINEBASE_CONNECTOR
-#define OMR_MACHINEBASE_CONNECTOR
+#ifndef OMR_MACHINE_CONNECTOR
+#define OMR_MACHINE_CONNECTOR
 namespace OMR {namespace Z { class Machine; } }
 namespace OMR { typedef OMR::Z::Machine MachineConnector; }
 #else
-#error OMR::Z::Machine expected to be a primary connector, but a OMR connector is already defined
+#error OMR::Z::Machine expected to be a primary connector, but an OMR connector is already defined
 #endif
 
 #include "compiler/codegen/OMRMachine.hpp"

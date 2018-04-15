@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -19,8 +19,8 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#ifndef OMR_X86_INSTRUCTIONBASE_INCL
-#define OMR_X86_INSTRUCTIONBASE_INCL
+#ifndef OMR_X86_INSTRUCTION_INCL
+#define OMR_X86_INSTRUCTION_INCL
 
 /*
  * The following #define and typedef must appear before any #includes in this file
@@ -30,7 +30,7 @@
 namespace OMR { namespace X86 { class Instruction; } }
 namespace OMR { typedef OMR::X86::Instruction InstructionConnector; }
 #else
-#error OMR::X86::Instruction expected to be a primary connector, but a OMR connector is already defined
+#error OMR::X86::Instruction expected to be a primary connector, but an OMR connector is already defined
 #endif
 
 #include "compiler/codegen/OMRInstruction.hpp"

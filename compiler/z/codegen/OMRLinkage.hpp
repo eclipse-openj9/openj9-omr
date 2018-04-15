@@ -739,4 +739,4 @@ private:
 }
 }
 
-#endif /* S390LINKAGEBASE_INCL */
+#endif

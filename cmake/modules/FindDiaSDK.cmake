@@ -28,14 +28,22 @@
 #   DIASDK_LIBRARIES
 #   DIASDK_DEFINITIONS
 
+# Use the DiaSDK from the compiler if you are using Visual Studio.
+# This works for a default instal of VS2012.  As others are tested
+# we may be able to rely on it for all machines. Currently I will
+# leave the other hints as well.
+get_filename_component(VSPath ${CMAKE_CXX_COMPILER} DIRECTORY CACHE)
+
 find_path(DIA2_H_DIR "dia2.h"
 	HINTS
+		"${VSPath}/../../../DIA SDK/include"
 		"$ENV{DIASDK}\\include"
 		"$ENV{VSSDK140Install}..\\DIA SDK\\include"
 )
 
 find_library(DIAGUIDS_LIBRARY "diaguids"
 	HINTS
+		"${VSPath}/../../../DIA SDK/lib"
 		"$ENV{DIASDK}\\lib"
 		"$ENV{VSSDK140Install}..\\DIA SDK\\lib"
 )

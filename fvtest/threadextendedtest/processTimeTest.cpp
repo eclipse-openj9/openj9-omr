@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2008, 2016 IBM Corp. and others
+ * Copyright (c) 2008, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -37,11 +37,11 @@ systemTimeCpuBurn(void)
 	FILE * tempFile = NULL;
 
 	for (j = 0; j < 100; j++) {
-#if defined(WIN32) || defined(WIN64)
+#if defined(OMR_OS_WINDOWS)
 		tempFile = fopen("nul", "w");
 #else
 		tempFile = fopen("/dev/null", "w");
-#endif
+#endif /* defined(OMR_OS_WINDOWS) */
 		fwrite("garbage", 1, sizeof("garbage"), tempFile);
 		fclose(tempFile);
 	}

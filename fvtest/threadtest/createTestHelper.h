@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2001, 2017 IBM Corp. and others
+ * Copyright (c) 2001, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -34,9 +34,9 @@
 #include "omrthread.h"
 #include "omrport.h"
 
-#if defined(WIN32)
+#if defined(OMR_OS_WINDOWS)
 #define SPEC_WIN_API
-#endif
+#endif /* defined(OMR_OS_WINDOWS) */
 
 #if defined(AIXPPC) || defined(LINUX) || defined(J9ZOS390) || defined(OSX)
 #define SPEC_PTHREAD_API

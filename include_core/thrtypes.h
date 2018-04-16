@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2016 IBM Corp. and others
+ * Copyright (c) 1991, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -37,9 +37,9 @@ typedef struct J9Thread {
 	J9OSCond condition;
 	J9OSMutex mutex;
 	uintptr_t stacksize;
-#if defined(WIN32)
+#if defined(OMR_OS_WINDOWS)
 	uintptr_t *tos;
-#endif /* WIN32 */
+#endif /* OMR_OS_WINDOWS */
 #if defined(LINUX)
 	void *jumpBuffer;
 #endif /* LINUX */
@@ -51,9 +51,9 @@ typedef struct J9Thread {
 #if defined(J9ZOS390)
 	omrthread_os_errno_t os_errno2;
 #endif   /* J9ZOS390 */
-#if !defined(WIN32)
+#if !defined(OMR_OS_WINDOWS)
 	uintptr_t key_deletion_attempts;
-#endif /* !WIN32 */
+#endif /* !OMR_OS_WINDOWS */
 } J9Thread;
 
 /*
@@ -94,9 +94,9 @@ typedef struct J9ThreadLibrary {
 	struct J9ThreadMonitorPool *monitor_pool;
 	struct J9Pool *thread_pool;
 	uintptr_t threadCount;
-#if defined(WIN32)
+#if defined(OMR_OS_WINDOWS)
 	uintptr_t stack_usage;
-#endif /* WIN32 */
+#endif /* OMR_OS_WINDOWS */
 	intptr_t initStatus;
 	uintptr_t flags;
 	struct J9ThreadGlobal *globals;

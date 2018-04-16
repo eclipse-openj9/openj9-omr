@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2017 IBM Corp. and others
+ * Copyright (c) 1991, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -107,11 +107,11 @@ TEST(PortSlTest, sl_testOpenPathLengths)
 	const char *testName = "omrsl_testOpenPathLengths";
 	uintptr_t handle = 0;
 	uintptr_t rc = 0;
-#if defined(WIN32)
+#if defined(OMR_OS_WINDOWS)
 	const char *fakeName = "\\temp";
-#else /* defined(WIN32) */
+#else /* defined(OMR_OS_WINDOWS) */
 	const char *fakeName = "/temp";
-#endif /* defined(WIN32) */
+#endif /* defined(OMR_OS_WINDOWS) */
 	size_t fakeNameLength = strlen(fakeName);
 	char sharedLibName[2*EsMaxPath] = "temp";
 	size_t pathLength = strlen(sharedLibName);
@@ -123,9 +123,9 @@ TEST(PortSlTest, sl_testOpenPathLengths)
 	 * AIX - "lib.so", "lib.a" and ".srvpgm" are added to the input path consecutively
 	 */
 
-#if defined(WIN32)
+#if defined(OMR_OS_WINDOWS)
 	const char *extension = ".dll";
-#elif defined(AIXPPC) /* defined(WIN32) */
+#elif defined(AIXPPC) /* defined(OMR_OS_WINDOWS) */
 #if defined(J9OS_I5)
 	const char *extension = ".srvpgm";
 #else /* defined(J9OS_I5) */
@@ -137,7 +137,7 @@ TEST(PortSlTest, sl_testOpenPathLengths)
 #else /* defined(OSX) */
 	const char *extension = "lib.so";
 #endif /* defined(OSX) */
-#endif /* defined(WIN32) */
+#endif /* defined(OMR_OS_WINDOWS) */
 
 	size_t extensionLength = strlen(extension);
 

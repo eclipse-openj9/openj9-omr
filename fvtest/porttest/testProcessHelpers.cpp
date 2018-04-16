@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2001, 2017 IBM Corp. and others
+ * Copyright (c) 2001, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -20,13 +20,13 @@
  *******************************************************************************/
 
 /* These headers are required for ChildrenTest */
-#if defined(WIN32)
+#if defined(OMR_OS_WINDOWS)
 #include <process.h>
 #include <Windows.h>
-#else /* defined(WIN32) */
+#else /* defined(OMR_OS_WINDOWS) */
 #include <fcntl.h>
 #include <stdlib.h>
-#endif /* defined(WIN32) */
+#endif /* defined(OMR_OS_WINDOWS) */
 
 #if defined(LINUX) || defined(J9ZOS390) || defined(AIXPPC) || defined(OSX)
 #include <sys/types.h>
@@ -68,12 +68,12 @@ union semun {
 };
 #endif
 
-#if !defined(WIN32)
+#if !defined(OMR_OS_WINDOWS)
 static int setFdCloexec(int fd);
 #if !defined(OSX)
 static intptr_t translateModifiedUtf8ToPlatform(OMRPortLibrary *portLibrary, const char *inBuffer, uintptr_t inBufferSize, char **outBuffer);
 #endif /* !defined(OSX) */
-#endif /* !defined(WIN32) */
+#endif /* !defined(OMR_OS_WINDOWS) */
 
 intptr_t
 openLaunchSemaphore(OMRPortLibrary *portLibrary, const char *name, uintptr_t nProcess)
@@ -139,7 +139,7 @@ CloseLaunchSemaphore(OMRPortLibrary *portLibrary, intptr_t semaphore)
 	return semctl(semaphore, 0, IPC_RMID, 0);
 }
 
-#elif defined(WIN32)
+#elif defined(OMR_OS_WINDOWS)
 intptr_t
 openLaunchSemaphore(OMRPortLibrary *portLibrary, const char *name, uintptr_t nProcess)
 {
@@ -332,14 +332,14 @@ done:
 void
 SleepFor(intptr_t second)
 {
-#if defined(WIN32)
+#if defined(OMR_OS_WINDOWS)
 	Sleep((DWORD)second * 1000);
 #elif defined(LINUX) || defined(J9ZOS390) || defined(AIXPPC) || defined(OSX)
 	sleep(second);
-#endif /* defined(LINUX) || defined(J9ZOS390) || defined(AIXPPC) || defined(OSX) */
+#endif /* defined(OMR_OS_WINDOWS) */
 }
 
-#if !defined(WIN32)
+#if !defined(OMR_OS_WINDOWS)
 static int
 setFdCloexec(int fd)
 {
@@ -394,7 +394,7 @@ translateModifiedUtf8ToPlatform(OMRPortLibrary *portLibrary, const char *inBuffe
 	}
 }
 #endif /* !defined(OSX) */
-#endif /*!defined(WIN32) */
+#endif /* !defined(OMR_OS_WINDOWS) */
 
 intptr_t
 j9process_close(OMRPortLibrary *portLibrary, OMRProcessHandle *processHandle, uint32_t options)
@@ -403,7 +403,7 @@ j9process_close(OMRPortLibrary *portLibrary, OMRProcessHandle *processHandle, ui
 	int32_t rc = 0;
 	OMRProcessHandleStruct *processHandleStruct = (OMRProcessHandleStruct *)*processHandle;
 
-#if defined(WIN32)
+#if defined(OMR_OS_WINDOWS)
 	if (!CloseHandle((HANDLE)processHandleStruct->procHandle)) {
 		rc = OMRPROCESS_ERROR;
 	}
@@ -423,7 +423,7 @@ j9process_close(OMRPortLibrary *portLibrary, OMRProcessHandle *processHandle, ui
 			rc = OMRPROCESS_ERROR;
 		}
 	}
-#else /* defined(WIN32) */
+#else /* defined(OMR_OS_WINDOWS) */
 	if (OMRPROCESS_INVALID_FD != processHandleStruct->inHandle) {
 		if (0 != close((int) processHandleStruct->inHandle)) {
 			rc = OMRPROCESS_ERROR;
@@ -439,7 +439,7 @@ j9process_close(OMRPortLibrary *portLibrary, OMRProcessHandle *processHandle, ui
 			rc = OMRPROCESS_ERROR;
 		}
 	}
-#endif /* defined(WIN32) */
+#endif /* defined(OMR_OS_WINDOWS) */
 	omrmem_free_memory(processHandleStruct);
 	processHandleStruct = *processHandle = NULL;
 
@@ -450,7 +450,7 @@ intptr_t j9process_waitfor(OMRPortLibrary *portLibrary, OMRProcessHandle process
 {
 	OMRProcessHandleStruct *processHandleStruct = (OMRProcessHandleStruct *) processHandle;
 	intptr_t rc = OMRPROCESS_ERROR;
-#if defined(WIN32)
+#if defined(OMR_OS_WINDOWS)
 	if (WAIT_OBJECT_0 == WaitForSingleObject((HANDLE) processHandleStruct->procHandle, INFINITE)) {
 		DWORD procstat = 0;
 
@@ -461,7 +461,7 @@ intptr_t j9process_waitfor(OMRPortLibrary *portLibrary, OMRProcessHandle process
 	}
 
 	return rc;
-#else /* defined(WIN32) */
+#else /* defined(OMR_OS_WINDOWS) */
 	int statusLocation = -1;
 	pid_t retVal = waitpid((pid_t)processHandleStruct->procHandle, &statusLocation, 0);
 
@@ -473,7 +473,7 @@ intptr_t j9process_waitfor(OMRPortLibrary *portLibrary, OMRProcessHandle process
 	} else {
 		rc = OMRPROCESS_ERROR;
 	}
-#endif /* defined(WIN32) */
+#endif /* defined(OMR_OS_WINDOWS) */
 	return rc;
 }
 
@@ -484,7 +484,7 @@ j9process_get_exitCode(OMRPortLibrary *portLibrary, OMRProcessHandle processHand
 	return processHandleStruct->exitCode;
 }
 
-#if defined(WIN32)
+#if defined(OMR_OS_WINDOWS)
 typedef struct OMRProcessWin32Pipes {
 	HANDLE inR;
 	HANDLE inW;
@@ -644,7 +644,7 @@ getUnicodeCmdline(struct OMRPortLibrary *portLibrary, const char *command[], uin
 	return rc;
 }
 
-#endif /* defined(WIN32) */
+#endif /* defined(OMR_OS_WINDOWS) */
 
 intptr_t
 j9process_create(OMRPortLibrary *portLibrary, const char *command[], uintptr_t commandLength, const char *dir, uint32_t options, OMRProcessHandle *processHandle)
@@ -653,7 +653,7 @@ j9process_create(OMRPortLibrary *portLibrary, const char *command[], uintptr_t c
 	intptr_t rc = 0;
 	OMRProcessHandleStruct *processHandleStruct = NULL;
 
-#if defined(WIN32)
+#if defined(OMR_OS_WINDOWS)
 	STARTUPINFOW sinfo;
 	PROCESS_INFORMATION pinfo;
 	SECURITY_ATTRIBUTES sAttrib;
@@ -813,7 +813,7 @@ j9process_create(OMRPortLibrary *portLibrary, const char *command[], uintptr_t c
 	}
 
 	return rc;
-#else /* defined(WIN32) */
+#else /* defined(OMR_OS_WINDOWS) */
 	const char *cmd = NULL;
 	int grdpid;
 	unsigned int i;
@@ -1033,5 +1033,5 @@ j9process_create(OMRPortLibrary *portLibrary, const char *command[], uintptr_t c
 	}
 
 	return OMRPROCESS_ERROR;
-#endif /* defined(WIN32) */
+#endif /* defined(OMR_OS_WINDOWS) */
 }

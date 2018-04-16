@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2016 IBM Corp. and others
+ * Copyright (c) 2014, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -24,13 +24,13 @@
 #include <stdlib.h>
 #include <string.h>
 
-#if !defined(WIN32)
+#if !defined(OMR_OS_WINDOWS)
 #include <dirent.h>
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/types.h>
 #include <unistd.h>
-#endif /* !defined(WIN32) */
+#endif /* !defined(OMR_OS_WINDOWS) */
 
 #include "ArgParser.hpp"
 #include "CFileWriter.hpp"

@@ -30,7 +30,7 @@
  * correctly when it is located in a library.
  */
 
-#if defined(WIN32)
+#if defined(OMR_OS_WINDOWS)
 #include <windows.h>
 #endif
 #include <stdlib.h>
@@ -41,7 +41,7 @@
 #endif
 
 /* Define a macro for the name of the main function that takes char args */
-#if defined(WIN32)
+#if defined(OMR_OS_WINDOWS)
 #define CHARMAIN translated_main
 #else
 #define CHARMAIN main
@@ -66,7 +66,7 @@ CHARMAIN(int argc, char **argv, char **envp)
 	return omr_main_entry(argc, argv, envp);
 }
 
-#if defined(WIN32)
+#if defined(OMR_OS_WINDOWS)
 int
 wmain(int argc, wchar_t **argv, wchar_t **envp)
 {
@@ -129,4 +129,4 @@ wmain(int argc, wchar_t **argv, wchar_t **envp)
 
 	return rc;
 }
-#endif /* defined(WIN32) */
+#endif /* defined(OMR_OS_WINDOWS) */

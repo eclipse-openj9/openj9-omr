@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2016 IBM Corp. and others
+ * Copyright (c) 2015, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -22,13 +22,13 @@
 
 #include "omrcfg.h"
 
-#if defined(WIN32)
+#if defined(OMR_OS_WINDOWS)
 #include <windows.h>
-#endif /* defined(WIN32) */
+#endif /* defined(OMR_OS_WINDOWS) */
 
 #include "omrutil.h"
 
-#if defined(WIN32)
+#if defined(OMR_OS_WINDOWS)
 omr_error_t
 detectVMDirectory(wchar_t *vmDirectory, size_t vmDirectoryLength, wchar_t **vmDirectoryEnd)
 {
@@ -53,4 +53,4 @@ detectVMDirectory(wchar_t *vmDirectory, size_t vmDirectoryLength, wchar_t **vmDi
 	}
 	return rc;
 }
-#endif /* defined(WIN32) */
+#endif /* defined(OMR_OS_WINDOWS) */

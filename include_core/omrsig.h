@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2016 IBM Corp. and others
+ * Copyright (c) 2015, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -21,12 +21,12 @@
  *******************************************************************************/
 
 #include <signal.h>
-#if defined(WIN32)
+#if defined(OMR_OS_WINDOWS)
 /* windows.h defined UDATA.  Ignore its definition */
 #define UDATA UDATA_win32_
 #include <windows.h>
 #undef UDATA	/* this is safe because our UDATA is a typedef, not a macro */
-#endif /* defined(WIN32) */
+#endif /* defined(OMR_OS_WINDOWS) */
 
 #ifdef __cplusplus
 extern "C" {
@@ -43,12 +43,12 @@ typedef void (*sighandler_t)(int sig);
 #elif defined(J9ZOS390) || defined(AIXPPC)
 typedef void (*sighandler_t)(int sig);
 #define __THROW
-#elif defined(WIN32)
+#elif defined(OMR_OS_WINDOWS)
 /* Use sig_handler_t instead of sighandler_t for Windows. Define it for compatibility. */
 #define sig_handler_t sighandler_t
 typedef void (__cdecl *sighandler_t)(int signum);
 #define __THROW
-#endif /* defined(WIN32) */
+#endif /* defined(OMR_OS_WINDOWS) */
 
 #define OMRSIG_RC_ERROR -1
 #define OMRSIG_RC_SIGNAL_HANDLED 0
@@ -80,11 +80,11 @@ int omrsig_handler(int sig, void *siginfo, void *uc);
  */
 sighandler_t omrsig_primary_signal(int signum, sighandler_t handler);
 
-#if defined(WIN32)
+#if defined(OMR_OS_WINDOWS)
 
 _CRTIMP void (__cdecl * __cdecl signal(_In_ int _SigNum, _In_opt_ void (__cdecl * _Func)(int)))(int);
 
-#else /* defined(WIN32) */
+#else /* defined(OMR_OS_WINDOWS) */
 
 /**
  * Register a primary signal handler function, emulating the behavior, parameters, and return of sigaction().
@@ -114,7 +114,7 @@ sighandler_t ssignal(int sig, sighandler_t handler) __THROW;
 #endif /* defined(LINUX) */
 
 
-#endif /* !defined(WIN32) */
+#endif /* !defined(OMR_OS_WINDOWS) */
 
 #if defined(J9ZOS390)
 int __sigactionset(size_t newct, const __sigactionset_t newsets[], size_t *oldct, __sigactionset_t oldsets[], int options);

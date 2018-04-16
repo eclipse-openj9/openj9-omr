@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2016 IBM Corp. and others
+ * Copyright (c) 2014, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -21,13 +21,13 @@
 
 #include "omrcfg.h"
 
-#if defined(WIN32)
+#if defined(OMR_OS_WINDOWS)
 /* Undefine the winsockapi because winsock2 defines it.  Removes warnings. */
 #if defined(_WINSOCKAPI_) && !defined(_WINSOCK2API_)
 #undef _WINSOCKAPI_
 #endif
 #include <winsock2.h>
-#endif
+#endif /* defined(OMR_OS_WINDOWS) */
 
 #include "omrport.h"
 #include "omr.h"
@@ -44,21 +44,21 @@ protected:
 	SetUp()
 	{
 		OMRTEST_ASSERT_ERROR_NONE(omrTestVMInit(&testVM, rasTestEnv->getPortLibrary()));
-#if defined(WIN32)
+#if defined(OMR_OS_WINDOWS)
 		/* initialize sockets so that we can use gethostname() */
 		WORD wsaVersionRequested = MAKEWORD(2, 2);
 		WSADATA wsaData;
 		int wsaErr = WSAStartup(wsaVersionRequested, &wsaData);
 		ASSERT_EQ(0, wsaErr);
-#endif /* defined(WIN32) */
+#endif /* defined(OMR_OS_WINDOWS) */
 	}
 
 	virtual void
 	TearDown()
 	{
-#if defined(WIN32)
+#if defined(OMR_OS_WINDOWS)
 		WSACleanup();
-#endif /* defined(WIN32) */
+#endif /* defined(OMR_OS_WINDOWS) */
 		OMRTEST_ASSERT_ERROR_NONE(omrTestVMFini(&testVM));
 	}
 
@@ -170,13 +170,13 @@ TEST_F(RASAgentNegativeTest, CorruptedAgent)
 	 *  for Unix, fileName = libcorruptedAgent_<hostname>.so
 	 *  for OSX, fileName = libcorruptedAgent_<hostname>.dylib
 	 */
-#if defined(WIN32) || defined(WIN64)
+#if defined(OMR_OS_WINDOWS)
 	omrstr_printf(fileName, sizeof(fileName), "%s.dll", agentName);
 #elif defined(OSX)
 	omrstr_printf(fileName, sizeof(fileName), "lib%s.dylib", agentName);
 #else /* defined(OSX) */
 	omrstr_printf(fileName, sizeof(fileName), "lib%s.so", agentName);
-#endif /* defined(WIN32) || defined(WIN64) */
+#endif /* defined(OMR_OS_WINDOWS) */
 
 	/* create the empty agent file with permission 751*/
 	fileDescriptor = omrfile_open(fileName, EsOpenCreate | EsOpenWrite, 0751);

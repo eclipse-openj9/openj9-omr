@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2017 IBM Corp. and others
+ * Copyright (c) 2015, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -57,9 +57,9 @@
  * CRLFNEWLINES will be defined when we require changing newlines from '\n' to '\r\n'
  */
 #undef CRLFNEWLINES
-#if defined(WIN32) || defined(WIN64)
+#if defined(OMR_OS_WINDOWS)
 #define CRLFNEWLINES
-#endif /* defined(WIN32) || defined(WIN64) */
+#endif /* defined(OMR_OS_WINDOWS) */
 
 static intptr_t
 write_all(struct OMRPortLibrary *portLibrary, OMRFileStream *fileStream, const char *buf, intptr_t nbytes);

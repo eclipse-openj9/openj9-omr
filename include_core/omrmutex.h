@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2016 IBM Corp. and others
+ * Copyright (c) 2014, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -24,8 +24,8 @@
 
 #include "omrcomp.h"
 
-#if defined(WIN32)
+#if defined(OMR_OS_WINDOWS)
 #include "win/omrmutex.h"
 #else
 #include "unix/omrmutex.h"
-#endif
+#endif /* defined(OMR_OS_WINDOWS) */

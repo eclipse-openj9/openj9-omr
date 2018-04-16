@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1998, 2016 IBM Corp. and others
+ * Copyright (c) 1998, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -97,7 +97,7 @@ extern "C" {
 /* assert() and abort() are a bit useless on Windows - they
  * just print a message. Force a GPF instead.
  */
-#if defined(WIN32) && !defined(__clang__)
+#if defined(OMR_OS_WINDOWS) && !defined(__clang__)
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -109,12 +109,12 @@ extern "C" {
 		} \
 	} while (0)
 
-#else /* defined(WIN32) */
+#else /* defined(OMR_OS_WINDOWS) */
 
 #include <assert.h>
 #define UT_ASSERT(expr) assert(expr)
 
-#endif /* defined(WIN32) */
+#endif /* defined(OMR_OS_WINDOWS) */
 
 #define DBG_ASSERT(expr) \
 	if (OMR_TRACEGLOBAL(traceDebug) > 0) { \

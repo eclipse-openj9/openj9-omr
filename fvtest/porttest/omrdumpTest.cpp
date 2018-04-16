@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2001, 2017 IBM Corp. and others
+ * Copyright (c) 2001, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -40,11 +40,11 @@
 
 #include <signal.h>
 
-#if defined(WIN32) || defined(WIN64)
+#if defined(OMR_OS_WINDOWS)
 /* for getcwd() */
 #include <direct.h>
 #define getcwd _getcwd
-#endif
+#endif /* defined(OMR_OS_WINDOWS) */
 
 #include "testHelpers.hpp"
 #include "omrport.h"

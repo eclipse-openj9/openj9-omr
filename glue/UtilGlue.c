@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2016 IBM Corp. and others
+ * Copyright (c) 2015, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -26,7 +26,7 @@
  * it can be used without requiring all the dependencies of LanguageVMGlue.
  * (Since LanguageVMGlue interacts with OMR_VM initialization, it prereqs all GC/RAS/OMR core modules.)
  */
-#if defined(WIN32)
+#if defined(OMR_OS_WINDOWS)
 omr_error_t
 OMR_Glue_GetVMDirectoryToken(void **token)
 {
@@ -34,7 +34,7 @@ OMR_Glue_GetVMDirectoryToken(void **token)
 	*token = NULL;
 	return OMR_ERROR_NONE;
 }
-#endif /* defined(WIN32) */
+#endif /* defined(OMR_OS_WINDOWS) */
 
 /**
  * Provides the thread name to be used when no name is given.

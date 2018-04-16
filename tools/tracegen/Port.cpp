@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2017 IBM Corp. and others
+ * Copyright (c) 2014, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -28,21 +28,21 @@
 #endif /* defined(LINUX) */
 #include <string.h>
 
-#if defined(WIN32)
+#if defined(OMR_OS_WINDOWS)
 #include <direct.h>
 #define J9FILE_UNC_EXTENDED_LENGTH_PREFIX (L"\\\\?\\")
-#else /* defined(WIN32) */
+#else /* defined(OMR_OS_WINDOWS) */
 #include <sys/types.h>
 #if !defined(OMRZTPF)
 #include <sys/statvfs.h>
 #endif
 #include <dirent.h>
-#endif /* defined(WIN32)*/
+#endif /* defined(OMR_OS_WINDOWS)*/
 
 #include "Port.hpp"
 
 
-#if defined(WIN32)
+#if defined(OMR_OS_WINDOWS)
 RCType
 Port::omrfile_findfirst(const char *path, char **resultbuf, intptr_t *handle)
 {
@@ -494,7 +494,7 @@ cleanup:
 
 	return resolved_path;
 }
-#else /* defined(WIN32) */
+#else /* defined(OMR_OS_WINDOWS) */
 
 FILE *
 Port::fopen(const char *path, const char *mode)
@@ -718,16 +718,16 @@ Port::omrfile_realpath(const char *path)
 	}
 	return result;
 }
-#endif /* #if defined(WIN32) */
+#endif /* defined(OMR_OS_WINDOWS) */
 
 int
 Port::strncasecmp(const char *s1, const char *s2, size_t n)
 {
-#if defined(WIN32)
+#if defined(OMR_OS_WINDOWS)
 	return ::_strnicmp(s1, s2, n);
 #elif defined(J9ZOS390)
 	return ::strncasecmp(s1, s2, (int) n);
-#else /* defined(WIN32) */
+#else /* defined(OMR_OS_WINDOWS) */
 	return ::strncasecmp(s1, s2, n);
-#endif /* defined(WIN32) */
+#endif /* defined(OMR_OS_WINDOWS) */
 }

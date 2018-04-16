@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2016 IBM Corp. and others
+ * Copyright (c) 2013, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -475,7 +475,7 @@ omr_error_t OMR_Glue_FreeLanguageThread(void *languageThread);
  */
 omr_error_t OMR_Glue_LinkLanguageThreadToOMRThread(void *languageThread, OMR_VMThread *omrVMThread);
 
-#if defined(WIN32)
+#if defined(OMR_OS_WINDOWS)
 /**
  * @brief Get a platform-dependent token that can be used to locate the VM directory.
  *
@@ -493,7 +493,7 @@ omr_error_t OMR_Glue_LinkLanguageThreadToOMRThread(void *languageThread, OMR_VMT
  * @return an OMR error code
  */
 omr_error_t OMR_Glue_GetVMDirectoryToken(void **token);
-#endif /* defined(WIN32) */
+#endif /* defined(OMR_OS_WINDOWS) */
 
 char *OMR_Glue_GetThreadNameForUnamedThread(OMR_VMThread *vmThread);
 

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2016 IBM Corp. and others
+ * Copyright (c) 2014, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -110,11 +110,11 @@ TEST(RASTraceTest, TraceAgent)
 #endif /* TEST_TRACEAGENT */
 
 	/* Load sampleSubscriber agent */
-#if defined(WIN32)
+#if defined(OMR_OS_WINDOWS)
 	agent = omr_agent_create(&testVM.omrVM, "sampleSubscriber=NUL");
-#else /* defined(WIN32) */
+#else /* defined(OMR_OS_WINDOWS) */
 	agent = omr_agent_create(&testVM.omrVM, "sampleSubscriber=/dev/null");
-#endif /* defined(WIN32) */
+#endif /* defined(OMR_OS_WINDOWS) */
 	ASSERT_FALSE(NULL == agent) << "testAgent: createAgent() sampleSubscriber failed";
 
 	OMRTEST_ASSERT_ERROR_NONE(omr_agent_openLibrary(agent));

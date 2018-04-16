@@ -1065,7 +1065,7 @@ TEST(PortSigTest, sig_test8)
 							flags,
 							&result);
 		portTestEnv->log("omrsig_test8 protectResult=%d\n", protectResult);
-#if defined(WIN64)
+#if defined(OMR_OS_WINDOWS) && defined(OMR_ENV_DATA64)
 		if (protectResult != OMRPORT_SIG_EXCEPTION_CONTINUE_SEARCH) {
 			outputErrorMessage(PORTTEST_ERROR_ARGS, "portLibrary->sig_protect -- expected OMRPORT_SIG_EXCEPTION_CONTINUE_SEARCH in protectResult\n");
 		}
@@ -1073,7 +1073,7 @@ TEST(PortSigTest, sig_test8)
 		if (protectResult != OMRPORT_SIG_EXCEPTION_OCCURRED) {
 			outputErrorMessage(PORTTEST_ERROR_ARGS, "portLibrary->sig_protect -- expected OMRPORT_SIG_EXCEPTION_CONTINUE_SEARCH in protectResult\n");
 		}
-#endif
+#endif /* defined(OMR_OS_WINDOWS) && defined(OMR_ENV_DATA64) */
 		if (result != 0) {
 			outputErrorMessage(PORTTEST_ERROR_ARGS, "portLibrary->sig_protect -- expected 0 in *result\n");
 		}

@@ -1093,13 +1093,13 @@ omrvmem_testReserveMemoryEx_impl(struct OMRPortLibrary *portLibrary, const char 
 				params[j].startAddress = (void *)(pageSizes[i] * 2);
 #if defined(LINUX) || defined(OSX)
 				params[j].endAddress = (void *)(pageSizes[i] * 100);
-#elif defined(WIN64)
+#elif defined(OMR_OS_WINDOWS) && defined(OMR_ENV_DATA64)
 				params[j].endAddress = (void *)0x7FFFFFFFFFF;
 #elif defined(OMR_ENV_DATA64)
 				params[j].endAddress = (void *)0xffffffffffffffff;
 #else /* defined(OMR_ENV_DATA64) */
 				params[j].endAddress = (void *)TWO_GIG_BAR;
-#endif /* defined(OMR_ENV_DATA64) */
+#endif /* defined(LINUX) || defined(OSX) */
 			}
 			params[j].byteAmount = pageSizes[i];
 			params[j].mode |= OMRPORT_VMEM_MEMORY_MODE_READ | OMRPORT_VMEM_MEMORY_MODE_WRITE | OMRPORT_VMEM_MEMORY_MODE_COMMIT;
@@ -1289,7 +1289,7 @@ memoryIsAvailable(struct OMRPortLibrary *portLibrary, BOOLEAN strictAddress)
 			params[j].startAddress = (void *)(pageSizes[i] * 2);
 #if defined(LINUX) || defined(OSX)
 			params[j].endAddress = (void *)(pageSizes[i] * 100);
-#elif defined(WIN64)
+#elif defined(OMR_OS_WINDOWS) && defined(OMR_ENV_DATA64)
 			params[j].endAddress = (void *) 0x7FFFFFFFFFF;
 #endif /* defined(LINUX) || defined(OSX) */
 			params[j].byteAmount = pageSizes[i];

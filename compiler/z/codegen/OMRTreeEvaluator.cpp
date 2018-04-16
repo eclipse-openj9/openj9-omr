@@ -14117,6 +14117,203 @@ bool isSettingOp(uint8_t byteValue, TR::InstOpCode::Mnemonic SI_opcode)
       return false;
    }
 
+TR::Register *
+OMR::Z::TreeEvaluator::bitpermuteEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   TR::Node *value = node->getChild(0);
+   TR::Node *addr = node->getChild(1);
+   TR::Node *length = node->getChild(2);
+
+   auto valueReg = cg->evaluate(value);
+   auto addrReg = cg->evaluate(addr);
+
+   TR::Register *tmpReg = cg->allocateRegister(TR_GPR);
+
+   // The bitpermuteEvaluator uses loop unrolling to do the vector bit permute operation required by the IL
+   // However, the bitPermuteConstantUnrollThreshold constant defined below defines the cap for this technique 
+   // (i.e. the maximum array size for which this implementation can be used). 
+   // 
+   // Currently it is set at 4. The reasons are as follows:
+   //
+   // 1. This technique scales linearly as the array size grows and is also expensive for the iCache.
+   // 2. Additionally, on z14 and newer hardware, the vector implementation performs better than the loop unrolling
+   //    technique for arrays of size > 4. Moreover, if a slightly modified version of the IL was available (better
+   //    suited for BigEndian architectures) then the Vector implementation is on par or better than the loop
+   //    unrolling technique for all array sizes.
+   //
+   // More info on the measurements is available here: https://github.com/eclipse/omr/pull/2330#issuecomment-378380538
+   // The differences between the generated code for the different 
+   // implementations can be seen here: https://github.com/eclipse/omr/pull/2330#issuecomment-378387516
+   static const int8_t bitPermuteConstantUnrollThreshold = 4;
+
+   bool isLoadConst = length->getOpCode().isLoadConst();
+   int32_t arrayLen = isLoadConst ? length->getIntegerNodeValue<int32_t>() : 0;
+
+   TR::Register *resultReg = cg->allocateRegister(TR_GPR);
+
+   if (isLoadConst && arrayLen <= bitPermuteConstantUnrollThreshold)
+      {
+      // Manage the constant length case
+      generateRRInstruction(cg, TR::InstOpCode::getXORRegOpCode(), node, resultReg, resultReg);
+
+      for (int32_t x = 0; x < arrayLen; ++x)
+         {
+         // Load the shift amount into tmpReg
+         TR::MemoryReference *sourceMR = generateS390MemoryReference(addrReg, x, cg, NULL);
+         generateRXYInstruction(cg, TR::InstOpCode::LGB, node, tmpReg, sourceMR);
+
+         // Create memory reference using tmpReg (which holds the shift amount), then shift valueReg by the shift amount
+         TR::MemoryReference *shiftAmountMR = generateS390MemoryReference(tmpReg, 0, cg);
+         generateRSInstruction(cg, TR::InstOpCode::getShiftRightLogicalSingleOpCode(), node, tmpReg, valueReg, shiftAmountMR); 
+         if (node->getDataType() == TR::Int64)
+            {
+            // This will generate a RISBG instruction (if it's supported, otherwise two shift instructions).
+            // A RISBG instruction is equivalent to doing a `(tmpReg & 0x1) << x`. But for a 64-bit value we would have to use
+            // two AND immediate instructions and a shift instruction to do this. So instead we use a single RISBG instruction. 
+            generateShiftAndKeepSelected64Bit(node, cg, tmpReg, tmpReg, 63 - x, 63 - x, x, true, false);
+            }
+         else
+            {
+            // Same as above, but generate a RISBLG instead of RISBG for 32, 16, and 8-bit integers 
+            generateShiftAndKeepSelected31Bit(node, cg, tmpReg, tmpReg, 63 - x, 63 - x, x, true, false);
+            }
+
+         // Now OR the result into the resultReg
+         generateRRInstruction(cg, TR::InstOpCode::getOrRegOpCode(), node, resultReg, tmpReg);
+         }
+      }
+   // Use z14's VBPERM instruction if possible. (Note: VBPERM supports permutation on arrays
+   // of up to size 16, and beats the performance of the loop unrolling technique used above 
+   // for arrays with size greater than the bitPermuteConstantUnrollThreshold constant defined above)
+   else if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z14) &&
+         isLoadConst  &&
+         arrayLen <= 16 )
+      {
+      char mask[16] = {15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0};
+      char inverse[16] = {63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63};
+   
+      TR::Register *vectorIndices = cg->allocateRegister(TR_VRF);
+      TR::Register *vectorSource = cg->allocateRegister(TR_VRF);
+      TR::Register *tmpVector = cg->allocateRegister(TR_VRF);
+
+      // load the value to permute into a vector register
+      generateRILInstruction(cg, TR::InstOpCode::LGFI, node, resultReg, 0, NULL);
+      TR::MemoryReference *vectorSourceMR = generateS390MemoryReference(resultReg, 0, cg, NULL);
+      generateVRSbInstruction(cg, TR::InstOpCode::VLVG, node, vectorSource, valueReg, vectorSourceMR, 3);
+
+      // load the array of indices into a vector register
+      TR::MemoryReference *vectorIndicesMR = generateS390MemoryReference(addrReg, 0, cg, NULL);
+      generateVSIInstruction(cg, TR::InstOpCode::VLRL, node, vectorIndices, vectorIndicesMR, 15);
+
+      // Since we are on BigEndian architecture, bit positions in a register are numbered left to right. Hence
+      // the most significant byte in the array is loaded into the right most byte (i.e least significant byte in the register)
+      // The VPERM instruction below uses a mask to reverse the order of the array so we can do the computation correctly.
+      TR::MemoryReference *maskAddrMR = generateS390MemoryReference(cg->findOrCreateConstant(node, mask, 16), cg, 0, node);
+      generateVSIInstruction(cg, TR::InstOpCode::VLRL, node, tmpVector, maskAddrMR, 15);
+      generateVRReInstruction(cg, TR::InstOpCode::VPERM, node, vectorIndices, vectorIndices, vectorIndices, tmpVector, 0, 0);
+
+      // Registers on the Z hardware have their bit and byte positions numbered from left to right in registers. Thus, a bit position
+      // of 2 specified by the bitPermute IL is equivalent to 63 - 2 = 61 on Z. Thus the VS instruction below does a "packed subtraction" to
+      // subtract all bit indices by 63.
+      TR::MemoryReference *inverseAddrMR = generateS390MemoryReference(cg->findOrCreateConstant(node, inverse, 16), cg, 0, node);
+      generateVSIInstruction(cg, TR::InstOpCode::VLRL, node, tmpVector, inverseAddrMR, 15);
+      generateVRRcInstruction(cg, TR::InstOpCode::VS, node, vectorIndices, tmpVector, vectorIndices, 0);
+
+      // The VBPERM instruction now maps perfectly to the IL, so do the operation.
+      generateVRRcInstruction(cg, TR::InstOpCode::VBPERM, node, vectorSource, vectorSource, vectorIndices, 0);
+
+      generateRILInstruction(cg, TR::InstOpCode::LGFI, node, resultReg, 3, NULL);
+
+      // load result back into GPR
+      TR::MemoryReference *loadBackToGPRMR = generateS390MemoryReference(resultReg, 0, cg, NULL);
+      generateVRScInstruction(cg, TR::InstOpCode::VLGV, node, resultReg, vectorSource, loadBackToGPRMR, 1);
+
+      // The result of the VBPERM op is now in resultReg's 48-63 bit locations. Extract the bits you want via a mask
+      // and store the final result in resultReg. This is necessary because VBPERM operates on 16 bit positions at a time.
+      // If the array specified by the bitPermute IL was smaller than 16, then invalid bits can be selected. 
+      int32_t resultMask = (1 << arrayLen) - 1;
+
+      generateRIInstruction(cg, TR::InstOpCode::NILL, node, resultReg, resultMask);
+
+      cg->stopUsingRegister(vectorIndices); 
+      cg->stopUsingRegister(vectorSource); 
+      cg->stopUsingRegister(tmpVector);
+      }
+   else
+      {
+      auto lengthReg = cg->evaluate(length);
+      auto indexReg = cg->allocateRegister(TR_GPR);
+
+      TR::RegisterDependencyConditions *deps = generateRegisterDependencyConditions(0, 4, cg);
+      deps->addPostCondition(addrReg, TR::RealRegister::AssignAny);
+      deps->addPostCondition(indexReg, TR::RealRegister::AssignAny);
+      deps->addPostCondition(valueReg, TR::RealRegister::AssignAny);
+      deps->addPostCondition(tmpReg, TR::RealRegister::AssignAny);
+
+      TR::LabelSymbol *startLabel = generateLabelSymbol(cg);
+      TR::LabelSymbol *endLabel = generateLabelSymbol(cg);
+      startLabel->setStartInternalControlFlow();
+      endLabel->setEndInternalControlFlow();
+
+      generateRRInstruction(cg, TR::InstOpCode::getXORRegOpCode(), node, indexReg, indexReg);
+      generateRRInstruction(cg, TR::InstOpCode::getXORRegOpCode(), node, resultReg, resultReg);
+
+      // Load array length into index and test to see if it's already zero by checking the Condition Code (CC)
+      // CC=0 if register value is 0, CC=1 if value < 1, CC=2 if value>0
+      generateRRInstruction(cg, TR::InstOpCode::LTR, node, indexReg, lengthReg); 
+      
+      // Start of internal control flow 
+      generateS390LabelInstruction(cg,TR::InstOpCode::LABEL, node, startLabel);
+
+      // Now subtract 1 from indexReg 
+      generateRIInstruction(cg, TR::InstOpCode::AHI, node, indexReg, -1);
+      // Conditionally jump to end of control flow if index is less than 0.  
+      generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_CC1, node, endLabel);
+      
+      // Load the bit index into tmpReg
+      TR::MemoryReference *sourceMR = generateS390MemoryReference(addrReg, indexReg, 0, cg);
+      generateRXYInstruction(cg, TR::InstOpCode::LGB, node, tmpReg, sourceMR);
+
+      // Shift value reg by location in shiftAmountMR and store in tmpReg 
+      TR::MemoryReference *shiftAmountMR = generateS390MemoryReference(tmpReg, 0, cg);
+      generateRSInstruction(cg, TR::InstOpCode::getShiftRightLogicalSingleOpCode(), node, tmpReg, valueReg, shiftAmountMR); 
+
+      if (node->getDataType() == TR::Int64)
+         {         
+         // This will generate a RISBG instruction (if supported).
+         // This is equivalent to doing a `tmpReg & 0x1`. But on 64-bit we would have to use
+         // two AND immediate instructions. So instead we use a single RISBG instruction.          
+         generateShiftAndKeepSelected64Bit(node, cg, tmpReg, tmpReg, 63, 63, 0, true, false);
+         }
+      else
+         {
+         // Now AND the value in tmpReg by 1 to get the relevant bit
+         generateRILInstruction(cg, TR::InstOpCode::NILF, node, tmpReg,0x1);
+         }
+      // Now shift your bit to the appropriate position beforing ORing it to the result register
+      // and conditionally jumping back up to the start of internal control flow
+      shiftAmountMR = generateS390MemoryReference(indexReg, 0, cg);
+      generateRSInstruction(cg, TR::InstOpCode::getShiftLeftLogicalSingleOpCode(), node, tmpReg, tmpReg, shiftAmountMR);
+
+      generateRRInstruction(cg, TR::InstOpCode::getOrRegOpCode(), node, resultReg, tmpReg);
+
+      generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_MASK15, node, startLabel);
+
+      // Generate endLabel Instruction here:
+      generateS390LabelInstruction(cg,TR::InstOpCode::LABEL, node, endLabel, deps);
+
+      cg->stopUsingRegister(indexReg);
+      }
+
+   cg->stopUsingRegister(tmpReg);
+
+   node->setRegister(resultReg);
+   cg->decReferenceCount(value);
+   cg->decReferenceCount(addr);
+   cg->decReferenceCount(length);
+
+   return resultReg;
+   }
 
 /**
  * bitOpMemEvaluator - bit operations (OR, AND, XOR) for memory to memory

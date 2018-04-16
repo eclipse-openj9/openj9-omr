@@ -828,6 +828,12 @@ OMR::Z::CodeGenerator::CodeGenerator()
    self()->setAccessStaticsIndirectly(true);
    }
 
+bool
+OMR::Z::CodeGenerator::getSupportsBitPermute()
+   {
+   return TR::Compiler->target.is64Bit() || self()->use64BitRegsOn32Bit();
+   }
+
 TR_GlobalRegisterNumber
 OMR::Z::CodeGenerator::getGlobalHPRFromGPR (TR_GlobalRegisterNumber n)
    {

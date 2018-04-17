@@ -1385,7 +1385,6 @@ const ValuePropagationPtr constraintHandlers[] =
    constrainChildren,           // TR::pdSetSign
 
    constrainChildren,           // TR::pddivrem
-   constrainChildren,           // TR::pdremSelect
 
    constrainChildren,           // TR::pdModifyPrecision
 

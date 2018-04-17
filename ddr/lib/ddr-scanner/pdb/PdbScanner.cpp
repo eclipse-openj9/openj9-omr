@@ -1304,7 +1304,7 @@ PdbScanner::addSymbol(IDiaSymbol *symbol, NamespaceUDT *outerNamespace)
 			}
 			break;
 		default:
-			ERRMSG("Unhandled symbol returned by get_symTag: %s", symTagToString(symTag));
+			ERRMSG("Unhandled symbol returned by get_symTag: %s", symTagToString(symTag).c_str());
 			rc = DDR_RC_ERROR;
 			break;
 		}

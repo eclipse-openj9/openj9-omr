@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2017 IBM Corp. and others
+# Copyright (c) 2017, 2018 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -29,7 +29,7 @@
 #   DIASDK_DEFINITIONS
 
 # Use the DiaSDK from the compiler if you are using Visual Studio.
-# This works for a default instal of VS2012.  As others are tested
+# This works for a default install of VS2012.  As others are tested
 # we may be able to rely on it for all machines. Currently I will
 # leave the other hints as well.
 get_filename_component(VSPath ${CMAKE_CXX_COMPILER} DIRECTORY CACHE)

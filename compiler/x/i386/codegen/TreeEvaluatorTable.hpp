@@ -596,8 +596,8 @@
    TR::TreeEvaluator::caddEvaluator,                    // TR::cadd
    TR::TreeEvaluator::integerAddEvaluator,              // TR::aiadd
    TR::TreeEvaluator::integerAddEvaluator,              // TR::aiuadd
-   TR::TreeEvaluator::integerAddEvaluator,              // TR::aladd
-   TR::TreeEvaluator::integerAddEvaluator,              // TR::aluadd
+   TR::TreeEvaluator::badILOpEvaluator,                 // TR::aladd
+   TR::TreeEvaluator::badILOpEvaluator,                 // TR::aluadd
    TR::TreeEvaluator::badILOpEvaluator,                    // TR::lusubh
    TR::TreeEvaluator::csubEvaluator,                    // TR::csub
    TR::TreeEvaluator::integerMulhEvaluator,             // TR::imulh

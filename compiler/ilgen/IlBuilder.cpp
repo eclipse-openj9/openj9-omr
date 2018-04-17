@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1162,13 +1162,21 @@ IlBuilder::Sub(TR::IlValue *left, TR::IlValue *right)
    TR::IlValue *returnValue = NULL;
    if (left->getDataType() == TR::Address)
       {
-      if (right->getDataType() == TR::Int32)
-         returnValue = binaryOpFromNodes(TR::aiadd, loadValue(left), loadValue(Sub(ConstInt32(0), right)));
-      else if (right->getDataType() == TR::Int64)
-         returnValue = binaryOpFromNodes(TR::aladd, loadValue(left), loadValue(Sub(ConstInt64(0), right)));
+      if (TR::Compiler->target.is64Bit() && right->getDataType() == TR::Int32)
+         {
+         right = unaryOp(TR::i2l, right);
+         }
+      else if (TR::Compiler->target.is32Bit() && right->getDataType() == TR::Int64)
+         {
+         right = unaryOp(TR::l2i, right);
+         }
+      right = Sub(TR::Compiler->target.is32Bit() ? ConstInt32(0) : ConstInt64(0), right);
+      returnValue = binaryOpFromNodes(TR::Compiler->target.is32Bit() ? TR::aiadd : TR::aladd, loadValue(left), loadValue(right));
       }
-   if (returnValue == NULL)
+   else
+      {
       returnValue=binaryOpFromOpMap(TR::ILOpCode::subtractOpCode, left, right);
+      }
    TraceIL("IlBuilder[ %p ]::%d is Sub %d - %d\n", this, returnValue->getID(), left->getID(), right->getID());
    return returnValue;
    }
@@ -1189,13 +1197,20 @@ IlBuilder::Add(TR::IlValue *left, TR::IlValue *right)
    TR::IlValue *returnValue = NULL;
    if (left->getDataType() == TR::Address)
       {
-      if (right->getDataType() == TR::Int32)
-         returnValue = binaryOpFromNodes(TR::aiadd, loadValue(left), loadValue(right));
-      else if (right->getDataType() == TR::Int64)
-         returnValue = binaryOpFromNodes(TR::aladd, loadValue(left), loadValue(right));
+      if (TR::Compiler->target.is64Bit() && right->getDataType() == TR::Int32)
+         {
+         right = unaryOp(TR::i2l, right);
+         }
+      else if (TR::Compiler->target.is32Bit() && right->getDataType() == TR::Int64)
+         {
+         right = unaryOp(TR::l2i, right);
+         }
+      returnValue = binaryOpFromNodes(TR::Compiler->target.is32Bit() ? TR::aiadd : TR::aladd, loadValue(left), loadValue(right));
       }
-   if (returnValue == NULL)
+   else
+      {
       returnValue = binaryOpFromOpMap(addOpCode, left, right);
+      }
    TraceIL("IlBuilder[ %p ]::%d is Add %d + %d\n", this, returnValue->getID(), left->getID(), right->getID());
    return returnValue;
    }
@@ -1290,13 +1305,10 @@ IlBuilder::getOpCode(TR::IlValue *leftValue, TR::IlValue *rightValue)
    TR::ILOpCodes op;
    if (leftValue->getDataType() == TR::Address)
       {
-      if (rightValue->getDataType() == TR::Int32)
-         op = TR::aiadd;
-      else if (rightValue->getDataType() == TR::Int64)
-         op = TR::aladd;
-      else 
-         TR_ASSERT(0, "the right child type must be either TR::Int32 or TR::Int64 when the left child of Add is TR::Address\n");
-      }    
+      TR_ASSERT((TR::Compiler->target.is64Bit() && rightValue->getDataType() == TR::Int64) || (TR::Compiler->target.is32Bit() && rightValue->getDataType() == TR::Int32),
+                "the right child type must be either TR::Int32 (on 32-bit ISA) or TR::Int64 (on 64-bit ISA) when the left child of Add is TR::Address\n");
+      op = TR::Compiler->target.is32Bit() ? TR::aiadd : TR::aladd;
+      }
    else 
       {
       op = addOpCode(leftValue->getDataType());

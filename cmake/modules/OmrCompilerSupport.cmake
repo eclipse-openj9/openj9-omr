@@ -254,6 +254,7 @@ macro(set_tr_compile_options)
 	set(CMAKE_C_FLAGS ${CMAKE_C_FLAGS} PARENT_SCOPE)
 	# message("[set_tr_compile_options] Set CMAKE_CXX_FLAGS to ${CMAKE_CXX_FLAGS}")
 	# message("[set_tr_compile_options] Set CMAKE_C_FLAGS to ${CMAKE_C_FLAGS}")
+	set(CMAKE_ASM_FLAGS ${TR_ASM_FLAGS} PARENT_SCOPE)
 endmacro(set_tr_compile_options)
 
 # Create an OMR Compiler component

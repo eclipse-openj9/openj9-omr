@@ -42,10 +42,13 @@ if(OMR_ENV_DATA64)
 
 	set(TR_HOST_SUBARCH amd64)
 	set(TR_HOST_BITS    64)
-	set(CMAKE_ASM-ATT_FLAGS "--64 --defsym TR_HOST_X86=1 --defsym TR_HOST_64BIT=1 --defsym BITVECTOR_64BIT=1 --defsym LINUX=1 --defsym TR_TARGET_X86=1 --defsym TR_TARGET_64BIT=1")
+	#TODO the asm flags only work for GNU right now.
+	if(CMAKE_ASM_COMPILER_ID STREQUAL "GNU")
+		set(TR_ASM_FLAGS "-Wa,--64,--defsym,TR_HOST_X86=1,--defsym,TR_HOST_64BIT=1,--defsym,BITVECTOR_64BIT=1,--defsym,LINUX=1,--defsym,TR_TARGET_X86=1,--defsym,TR_TARGET_64BIT=1")
+	endif()
 else()
 	list(APPEND TR_COMPILE_DEFINITIONS -DTR_HOST_32BIT -DTR_TARGET_32BIT)
-	
+
 	set(TR_HOST_SUBARCH i386)
 	set(TR_HOST_BITS    32)
 endif()

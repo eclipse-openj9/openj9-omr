@@ -169,7 +169,7 @@ PdbScanner::startScan(OMRPortLibrary *portLibrary, Symbol_IR *ir, vector<string>
 				diaSymbol->Release();
 				diaSymbol = NULL;
 			}
-			delete filename;
+			delete[] filename;
 			if (DDR_RC_OK != rc) {
 				break;
 			}

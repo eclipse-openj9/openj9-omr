@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2015, 2015 IBM Corp. and others
+# Copyright (c) 2015, 2018 IBM Corp. and others
 # 
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -106,8 +106,8 @@ ifeq (ld,$(LINKTOOL))
   endif
   GLOBAL_LDFLAGS+=-G -bnoentry -bernotok
   GLOBAL_LDFLAGS+=-bmap:$(MODULE_NAME).map
-  GLOBAL_LDFLAGS+=-bE:$($(MODULE_NAME)_LINKER_EXPORT_SCRIPT)
-  GLOBAL_SHARED_LIBS+=c_r C_r m pthread
+  GLOBAL_LDFLAGS+=-bE:$($(MODULE_NAME)_LINKER_EXPORT_SCRIPT) -L/usr/vac/lib
+  GLOBAL_SHARED_LIBS+=c_r C_r m pthread xlopt
 else
   ifeq (1,$(OMR_ENV_DATA64))
     GLOBAL_LDFLAGS+=-X64

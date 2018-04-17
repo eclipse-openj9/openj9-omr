@@ -633,7 +633,7 @@ PdbScanner::setMemberOffset(IDiaSymbol *symbol, Field *newField)
 			break;
 		}
 		default:
-			ERRMSG("Unknown offset type: %d, name: %s", locType, newField->_name.c_str());
+			ERRMSG("Unknown offset type: %lu, name: %s", locType, newField->_name.c_str());
 			rc = DDR_RC_ERROR;
 			break;
 		}
@@ -1025,7 +1025,7 @@ PdbScanner::setType(IDiaSymbol *symbol, Type **type, Modifiers *modifiers, Names
 			*type = getType("void");
 			break;
 		default:
-			ERRMSG("unknown symtag: %d", symTag);
+			ERRMSG("unknown symtag: %lu", symTag);
 			rc = DDR_RC_ERROR;
 			break;
 		}

@@ -87,7 +87,7 @@ add_custom_command(OUTPUT tracemerge.stamp
 	DEPENDS run_tracegen $<TARGET_PROPERTY:run_tracegen,OMR_TRACE_PDATS>
 	WORKING_DIRECTORY ${OMR_TRACE_ROOT}
 )
-add_custom_target(run_tracemerge
+add_custom_target(run_tracemerge ALL
 	DEPENDS tracemerge.stamp
 )
 set_property(TARGET run_tracemerge PROPERTY FOLDER tracegen)

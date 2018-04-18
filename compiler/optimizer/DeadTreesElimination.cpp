@@ -23,6 +23,7 @@
 
 #include <stddef.h>                             // for NULL
 #include <stdint.h>                             // for int32_t, uint32_t
+#include "infra/forward_list.hpp"               // for TR::forward_list
 #include "codegen/CodeGenerator.hpp"            // for CodeGenerator
 #include "codegen/FrontEnd.hpp"                 // for TR_FrontEnd, etc
 #include "compile/Compilation.hpp"              // for Compilation
@@ -591,10 +592,24 @@ void TR::DeadTreesElimination::prePerformOnBlocks()
       }
    }
 
+namespace
+   {
+   struct CRAnchor
+      {
+      TR::TreeTop *tree;
+      TR::Block *block;
+      CRAnchor(TR::TreeTop *tree, TR::Block *block) : tree(tree), block(block) { }
+      };
+   }
+
 int32_t TR::DeadTreesElimination::process(TR::TreeTop *startTree, TR::TreeTop *endTree)
    {
    TR::StackMemoryRegion stackRegion(*comp()->trMemory());
    LongestPathMap longestPaths(std::less<TR::Node*>(), stackRegion);
+
+   typedef TR::typed_allocator<CRAnchor, TR::Region&> CRAnchorAlloc;
+   typedef TR::forward_list<CRAnchor, CRAnchorAlloc> CRAnchorList;
+   CRAnchorList anchors(stackRegion);
 
    vcount_t visitCount = comp()->incOrResetVisitCount();
    TR::TreeTop *treeTop;
@@ -636,6 +651,9 @@ int32_t TR::DeadTreesElimination::process(TR::TreeTop *startTree, TR::TreeTop *e
            !node->getOpCode().isStoreReg() ||
            (node->getVisitCount() == visitCount)))
          {
+         if (node->getOpCode().isAnchor() && node->getFirstChild()->getOpCode().isLoadIndirect())
+            anchors.push_front(CRAnchor(iter.currentTree(), block));
+
          TR::TransformUtil::recursivelySetNodeVisitCount(node, visitCount);
          continue;
          }
@@ -881,6 +899,40 @@ int32_t TR::DeadTreesElimination::process(TR::TreeTop *startTree, TR::TreeTop *e
                }
             }
          }
+      }
+
+   for (auto it = anchors.begin(); it != anchors.end(); ++it)
+      {
+      TR::Node *anchor = it->tree->getNode();
+      TR::Node *load = anchor->getChild(0);
+      if (load->getReferenceCount() > 1)
+         continue;
+
+      // We can eliminate the indirect load immediately, but for the moment the
+      // subtree providing the base object has to be anchored.
+
+      TR::Node *heapBase = anchor->getChild(1);
+
+      TR::Node::recreate(anchor, TR::treetop);
+      anchor->setAndIncChild(0, load->getChild(0));
+      anchor->setChild(1, NULL);
+      anchor->setNumChildren(1);
+
+      if (!heapBase->getOpCode().isLoadConst())
+         {
+         it->tree->insertAfter(
+            TR::TreeTop::create(
+               comp(),
+               TR::Node::create(heapBase, TR::treetop, 1, heapBase)));
+         }
+
+      load->recursivelyDecReferenceCount();
+      heapBase->recursivelyDecReferenceCount();
+
+      // A later pass of dead trees can likely move (or even remove) the base
+      // object expression.
+
+      requestOpt(OMR::deadTreesElimination, true, it->block);
       }
 
    return 1; // actual cost

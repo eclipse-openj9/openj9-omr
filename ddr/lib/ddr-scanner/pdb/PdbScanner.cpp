@@ -169,7 +169,7 @@ PdbScanner::startScan(OMRPortLibrary *portLibrary, Symbol_IR *ir, vector<string>
 				diaSymbol->Release();
 				diaSymbol = NULL;
 			}
-			delete filename;
+			delete[] filename;
 			if (DDR_RC_OK != rc) {
 				break;
 			}
@@ -223,14 +223,14 @@ PdbScanner::loadDataFromPdb(const wchar_t *filename, IDiaDataSource **dataSource
 		}
 
 		if (DDR_RC_OK != rc) {
-			ERRMSG("Creating instance of IDiaDataSource failed with HRESULT = %08X\n", hr);
+			ERRMSG("Creating instance of IDiaDataSource failed with HRESULT = %08lX\n", hr);
 		}
 	}
 
 	if (DDR_RC_OK == rc) {
 		hr = (*dataSource)->loadDataFromPdb(filename);
 		if (FAILED(hr)) {
-			ERRMSG("loadDataFromPdb() failed for file with HRESULT = %08X. Ensure the input is a pdb and not an exe.\nFile: %ls", hr, filename);
+			ERRMSG("loadDataFromPdb() failed for file with HRESULT = %08lX. Ensure the input is a pdb and not an exe.\nFile: %ls", hr, filename);
 			rc = DDR_RC_ERROR;
 		}
 	}
@@ -238,7 +238,7 @@ PdbScanner::loadDataFromPdb(const wchar_t *filename, IDiaDataSource **dataSource
 	if (DDR_RC_OK == rc) {
 		hr = (*dataSource)->openSession(session);
 		if (FAILED(hr)) {
-			ERRMSG("openSession() failed with HRESULT = %08x", hr);
+			ERRMSG("openSession() failed with HRESULT = %08lX", hr);
 			rc = DDR_RC_ERROR;
 		}
 	}
@@ -246,7 +246,7 @@ PdbScanner::loadDataFromPdb(const wchar_t *filename, IDiaDataSource **dataSource
 	if (DDR_RC_OK == rc) {
 		hr = (*session)->get_globalScope(symbol);
 		if (FAILED(hr)) {
-			ERRMSG("get_globalScope() failed with HRESULT = %08x", hr);
+			ERRMSG("get_globalScope() failed with HRESULT = %08lX", hr);
 			rc = DDR_RC_ERROR;
 		}
 	}
@@ -287,7 +287,7 @@ PdbScanner::addChildrenSymbols(IDiaSymbol *symbol, enum SymTagEnum symTag, Names
 	/* Find children symbols. SymTagUDT covers struct, union, and class symbols. */
 	HRESULT hr = symbol->findChildren(symTag, NULL, nsNone, &classSymbols);
 	if (FAILED(hr)) {
-		ERRMSG("findChildren() failed with HRESULT = %08X", hr);
+		ERRMSG("findChildren() failed with HRESULT = %08lX", hr);
 		rc = DDR_RC_ERROR;
 	}
 
@@ -296,7 +296,7 @@ PdbScanner::addChildrenSymbols(IDiaSymbol *symbol, enum SymTagEnum symTag, Names
 	if (DDR_RC_OK == rc) {
 		hr = classSymbols->get_Count(&count);
 		if (FAILED(hr)) {
-			ERRMSG("Failed to get count of children symbols with HRESULT = %08X", hr);
+			ERRMSG("Failed to get count of children symbols with HRESULT = %08lX", hr);
 			rc = DDR_RC_ERROR;
 		}
 	}
@@ -306,7 +306,7 @@ PdbScanner::addChildrenSymbols(IDiaSymbol *symbol, enum SymTagEnum symTag, Names
 		childSymbols = new IDiaSymbol*[count];
 		hr = classSymbols->Next(count, childSymbols, &celt);
 		if (FAILED(hr)) {
-			ERRMSG("Failed to get children symbols with HRESULT = %08X", hr);
+			ERRMSG("Failed to get children symbols with HRESULT = %08lX", hr);
 			rc = DDR_RC_ERROR;
 		}
 	}
@@ -329,7 +329,7 @@ PdbScanner::addChildrenSymbols(IDiaSymbol *symbol, enum SymTagEnum symTag, Names
 			DWORD childTag = 0;
 			hr = childSymbols[index]->get_symTag(&childTag);
 			if (FAILED(hr)) {
-				ERRMSG("Failed to get child symbol SymTag with HRESULT = %08X", hr);
+				ERRMSG("Failed to get child symbol SymTag with HRESULT = %08lX", hr);
 				rc = DDR_RC_ERROR;
 			}
 			if ((DDR_RC_OK == rc) && ((SymTagEnum == childTag) || (SymTagUDT == childTag))) {
@@ -416,7 +416,7 @@ PdbScanner::addEnumMembers(IDiaSymbol *symbol, EnumUDT *enumUDT)
 	IDiaEnumSymbols *enumSymbols = NULL;
 	HRESULT hr = symbol->findChildren(SymTagNull, NULL, nsNone, &enumSymbols);
 	if (FAILED(hr)) {
-		ERRMSG("findChildren() failed with HRESULT = %08X", hr);
+		ERRMSG("findChildren() failed with HRESULT = %08lX", hr);
 		rc = DDR_RC_ERROR;
 	}
 
@@ -452,7 +452,7 @@ PdbScanner::addEnumMembers(IDiaSymbol *symbol, EnumUDT *enumUDT)
 
 				hr = childSymbol->get_value(&variantValue);
 				if (FAILED(hr)) {
-					ERRMSG("get_value() failed with HRESULT = %08X", hr);
+					ERRMSG("get_value() failed with HRESULT = %08lX", hr);
 					rc = DDR_RC_ERROR;
 				} else {
 					switch (variantValue.vt) {
@@ -515,7 +515,7 @@ PdbScanner::createEnumUDT(IDiaSymbol *symbol, NamespaceUDT *outerNamespace)
 	DWORD symTag = 0;
 	HRESULT hr = symbol->get_symTag(&symTag);
 	if (FAILED(hr)) {
-		ERRMSG("get_symTag() failed with HRESULT = %08X", hr);
+		ERRMSG("get_symTag() failed with HRESULT = %08lX", hr);
 		rc = DDR_RC_ERROR;
 	} else if (SymTagEnum != symTag) {
 		ERRMSG("symTag is not Enum");
@@ -592,7 +592,7 @@ PdbScanner::setMemberOffset(IDiaSymbol *symbol, Field *newField)
 			LONG loffset = 0;
 			hr = symbol->get_offset(&loffset);
 			if (FAILED(hr)) {
-				ERRMSG("get_offset() failed with HRESULT = %08X", hr);
+				ERRMSG("get_offset() failed with HRESULT = %08lX", hr);
 				rc = DDR_RC_ERROR;
 			} else {
 				offset = (size_t)loffset;
@@ -615,7 +615,7 @@ PdbScanner::setMemberOffset(IDiaSymbol *symbol, Field *newField)
 			LONG loffset = 0;
 			hr = symbol->get_offset(&loffset);
 			if (FAILED(hr)) {
-				ERRMSG("get_offset() failed with HRESULT = %08X", hr);
+				ERRMSG("get_offset() failed with HRESULT = %08lX", hr);
 				rc = DDR_RC_ERROR;
 			} else {
 				offset = (size_t)loffset;
@@ -624,7 +624,7 @@ PdbScanner::setMemberOffset(IDiaSymbol *symbol, Field *newField)
 				DWORD bitposition = 0;
 				hr = symbol->get_bitPosition(&bitposition);
 				if (FAILED(hr)) {
-					ERRMSG("get_offset() failed with HRESULT = %08X", hr);
+					ERRMSG("get_offset() failed with HRESULT = %08lX", hr);
 					rc = DDR_RC_ERROR;
 				} else {
 					newField->_bitField = bitposition;
@@ -633,7 +633,7 @@ PdbScanner::setMemberOffset(IDiaSymbol *symbol, Field *newField)
 			break;
 		}
 		default:
-			ERRMSG("Unknown offset type: %d, name: %s", locType, newField->_name.c_str());
+			ERRMSG("Unknown offset type: %lu, name: %s", locType, newField->_name.c_str());
 			rc = DDR_RC_ERROR;
 			break;
 		}
@@ -654,7 +654,7 @@ PdbScanner::setTypeModifier(IDiaSymbol *symbol, Modifiers *modifiers)
 	BOOL bSet = TRUE;
 	HRESULT hr = symbol->get_constType(&bSet);
 	if (FAILED(hr)) {
-		ERRMSG("get_constType() failed with HRESULT = %08X", hr);
+		ERRMSG("get_constType() failed with HRESULT = %08lX", hr);
 		rc = DDR_RC_ERROR;
 	} else if (bSet) {
 		modifiers->_modifierFlags |= Modifiers::CONST_TYPE;
@@ -663,7 +663,7 @@ PdbScanner::setTypeModifier(IDiaSymbol *symbol, Modifiers *modifiers)
 	if (DDR_RC_OK == rc) {
 		hr = symbol->get_volatileType(&bSet);
 		if (FAILED(hr)) {
-			ERRMSG("get_volatileType() failed with HRESULT = %08X", hr);
+			ERRMSG("get_volatileType() failed with HRESULT = %08lX", hr);
 			rc = DDR_RC_ERROR;
 		} else if (bSet) {
 			modifiers->_modifierFlags |= Modifiers::VOLATILE_TYPE;
@@ -673,7 +673,7 @@ PdbScanner::setTypeModifier(IDiaSymbol *symbol, Modifiers *modifiers)
 	if (DDR_RC_OK == rc) {
 		hr = symbol->get_unalignedType(&bSet);
 		if (FAILED(hr)) {
-			ERRMSG("get_unalignedType() failed with HRESULT = %08X", hr);
+			ERRMSG("get_unalignedType() failed with HRESULT = %08lX", hr);
 			rc = DDR_RC_ERROR;
 		} else if (bSet) {
 			modifiers->_modifierFlags |= Modifiers::UNALIGNED_TYPE;
@@ -691,7 +691,7 @@ PdbScanner::setTypeUDT(IDiaSymbol *typeSymbol, Type **type, NamespaceUDT *outerU
 	DWORD udtKind = 0;
 	HRESULT hr = typeSymbol->get_udtKind(&udtKind);
 	if (FAILED(hr)) {
-		ERRMSG("get_udtKind() failed with HRESULT = %08X", hr);
+		ERRMSG("get_udtKind() failed with HRESULT = %08lX", hr);
 		rc = DDR_RC_ERROR;
 	}
 
@@ -738,7 +738,7 @@ PdbScanner::setPointerType(IDiaSymbol *symbol, Modifiers *modifiers)
 	BOOL bSet = TRUE;
 	HRESULT hr = symbol->get_reference(&bSet);
 	if (FAILED(hr)) {
-		ERRMSG("get_reference failed with HRESULT = %08X", hr);
+		ERRMSG("get_reference failed with HRESULT = %08lX", hr);
 		rc = DDR_RC_ERROR;
 	} else if (bSet) {
 		modifiers->_referenceCount += 1;
@@ -781,7 +781,7 @@ PdbScanner::setBaseTypeInt(ULONGLONG ulLen, Type **type)
 		*type = getType("I64");
 		break;
 	default:
-		ERRMSG("Unknown int length: %zu", ulLen);
+		ERRMSG("Unknown int length: %llu", ulLen);
 		rc = DDR_RC_ERROR;
 		break;
 	}
@@ -802,7 +802,7 @@ PdbScanner::setBaseTypeFloat(ULONGLONG ulLen, Type **type)
 		*type = getType("double");
 		break;
 	default:
-		ERRMSG("Unknown float length: %zu", ulLen);
+		ERRMSG("Unknown float length: %llu", ulLen);
 		rc = DDR_RC_ERROR;
 		break;
 	}
@@ -832,7 +832,7 @@ PdbScanner::setBaseTypeUInt(ULONGLONG ulLen, Type **type)
 		*type = getType("U128");
 		break;
 	default:
-		ERRMSG("Unknown int length: %zu", ulLen);
+		ERRMSG("Unknown int length: %llu", ulLen);
 		rc = DDR_RC_ERROR;
 		break;
 	}
@@ -850,7 +850,7 @@ PdbScanner::setBaseType(IDiaSymbol *typeSymbol, Type **type)
 	DWORD baseType = 0;
 	HRESULT hr = typeSymbol->get_baseType(&baseType);
 	if (FAILED(hr)) {
-		ERRMSG("get_baseType() failed with HRESULT = %08X", hr);
+		ERRMSG("get_baseType() failed with HRESULT = %08lX", hr);
 		rc = DDR_RC_ERROR;
 	}
 
@@ -977,7 +977,7 @@ PdbScanner::setType(IDiaSymbol *symbol, Type **type, Modifiers *modifiers, Names
 	IDiaSymbol *typeSymbol = NULL;
 	HRESULT hr = symbol->get_type(&typeSymbol);
 	if (FAILED(hr)) {
-		ERRMSG("get_type failed with HRESULT = %08X", hr);
+		ERRMSG("get_type failed with HRESULT = %08lX", hr);
 		rc = DDR_RC_ERROR;
 	}
 
@@ -989,7 +989,7 @@ PdbScanner::setType(IDiaSymbol *symbol, Type **type, Modifiers *modifiers, Names
 	if (DDR_RC_OK == rc) {
 		hr = typeSymbol->get_symTag(&symTag);
 		if (FAILED(hr)) {
-			ERRMSG("get_symTag failed with HRESULT = %08X", hr);
+			ERRMSG("get_symTag failed with HRESULT = %08lX", hr);
 			rc = DDR_RC_ERROR;
 		}
 	}
@@ -1025,7 +1025,7 @@ PdbScanner::setType(IDiaSymbol *symbol, Type **type, Modifiers *modifiers, Names
 			*type = getType("void");
 			break;
 		default:
-			ERRMSG("unknown symtag: %d", symTag);
+			ERRMSG("unknown symtag: %lu", symTag);
 			rc = DDR_RC_ERROR;
 			break;
 		}
@@ -1046,7 +1046,7 @@ PdbScanner::getName(IDiaSymbol *symbol, string *name)
 	BSTR nameBstr;
 	HRESULT hr = symbol->get_name(&nameBstr);
 	if (FAILED(hr)) {
-		ERRMSG("get_name failed with HRESULT = %08X", hr);
+		ERRMSG("get_name failed with HRESULT = %08lX", hr);
 		rc = DDR_RC_ERROR;
 	} else {
 		char *nameChar = _com_util::ConvertBSTRToString(nameBstr);
@@ -1084,7 +1084,7 @@ PdbScanner::getSize(IDiaSymbol *symbol, ULONGLONG *size)
 	ULONGLONG ul = 0ULL;
 	HRESULT hr = symbol->get_length(&ul);
 	if (FAILED(hr)) {
-		ERRMSG("get_length() failed for symbol with HRESULT = %08X", hr);
+		ERRMSG("get_length() failed for symbol with HRESULT = %08lX", hr);
 		rc = DDR_RC_ERROR;
 	} else {
 		*size = ul;
@@ -1148,7 +1148,7 @@ PdbScanner::createClassUDT(IDiaSymbol *symbol, ClassUDT **newClass, NamespaceUDT
 	DWORD symTag = 0;
 	HRESULT hr = symbol->get_symTag(&symTag);
 	if (FAILED(hr)) {
-		ERRMSG("get_symTag() failed with HRESULT = %08X", hr);
+		ERRMSG("get_symTag() failed with HRESULT = %08lX", hr);
 		rc = DDR_RC_ERROR;
 	} else if (SymTagUDT != symTag) {
 		ERRMSG("symTag is unexpectedly not UDT");
@@ -1269,7 +1269,7 @@ PdbScanner::addSymbol(IDiaSymbol *symbol, NamespaceUDT *outerNamespace)
 	DWORD symTag = 0;
 	HRESULT hr = symbol->get_symTag(&symTag);
 	if (FAILED(hr)) {
-		ERRMSG("get_symTag() failed with HRESULT = %08X", hr);
+		ERRMSG("get_symTag() failed with HRESULT = %08lX", hr);
 		rc = DDR_RC_ERROR;
 	}
 
@@ -1304,7 +1304,7 @@ PdbScanner::addSymbol(IDiaSymbol *symbol, NamespaceUDT *outerNamespace)
 			}
 			break;
 		default:
-			ERRMSG("Unhandled symbol returned by get_symTag: %s", symTagToString(symTag));
+			ERRMSG("Unhandled symbol returned by get_symTag: %s", symTagToString(symTag).c_str());
 			rc = DDR_RC_ERROR;
 			break;
 		}

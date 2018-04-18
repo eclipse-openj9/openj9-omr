@@ -781,7 +781,7 @@ PdbScanner::setBaseTypeInt(ULONGLONG ulLen, Type **type)
 		*type = getType("I64");
 		break;
 	default:
-		ERRMSG("Unknown int length: %zu", ulLen);
+		ERRMSG("Unknown int length: %llu", ulLen);
 		rc = DDR_RC_ERROR;
 		break;
 	}
@@ -802,7 +802,7 @@ PdbScanner::setBaseTypeFloat(ULONGLONG ulLen, Type **type)
 		*type = getType("double");
 		break;
 	default:
-		ERRMSG("Unknown float length: %zu", ulLen);
+		ERRMSG("Unknown float length: %llu", ulLen);
 		rc = DDR_RC_ERROR;
 		break;
 	}
@@ -832,7 +832,7 @@ PdbScanner::setBaseTypeUInt(ULONGLONG ulLen, Type **type)
 		*type = getType("U128");
 		break;
 	default:
-		ERRMSG("Unknown int length: %zu", ulLen);
+		ERRMSG("Unknown int length: %llu", ulLen);
 		rc = DDR_RC_ERROR;
 		break;
 	}

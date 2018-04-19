@@ -47,7 +47,7 @@ namespace ARM64
 
 class OMR_EXTENSIBLE RealRegister : public OMR::RealRegister
    {
-protected:
+   protected:
 
    /**
     * @param[in] cg : the TR::CodeGenerator object
@@ -64,6 +64,85 @@ protected:
     */
    RealRegister(TR_RegisterKinds rk, uint16_t w, RegState s, RegNum rn, RegMask m, TR::CodeGenerator *cg) :
           OMR::RealRegister(rk, w, s, (uint16_t)0, rn, m, cg) {}
+
+   public:
+
+   typedef enum  {
+      pos_RD     = 0,
+      pos_RN     = 5,
+      pos_RM     = 16,
+      pos_RT     = 0,
+      pos_RT2    = 10,
+      pos_RS     = 16,
+      pos_RA     = 10
+   } ARM64OperandPosition;
+
+   /**
+    * @brief Set the RealRegister in the Rd field of the specified instruction
+    * @param[in] instruction : target instruction
+    */
+   void setRegisterFieldRD(uint32_t *instruction)
+      {
+      *instruction |= fullRegBinaryEncodings[_registerNumber] << pos_RD;
+      }
+
+   /**
+    * @brief Set the RealRegister in the Rn field of the specified instruction
+    * @param[in] instruction : target instruction
+    */
+   void setRegisterFieldRN(uint32_t *instruction)
+      {
+      *instruction |= fullRegBinaryEncodings[_registerNumber] << pos_RN;
+      }
+
+   /**
+    * @brief Set the RealRegister in the Rm field of the specified instruction
+    * @param[in] instruction : target instruction
+    */
+   void setRegisterFieldRM(uint32_t *instruction)
+      {
+      *instruction |= fullRegBinaryEncodings[_registerNumber] << pos_RM;
+      }
+
+   /**
+    * @brief Set the RealRegister in the Rt field of the specified instruction
+    * @param[in] instruction : target instruction
+    */
+   void setRegisterFieldRT(uint32_t *instruction)
+      {
+      *instruction |= fullRegBinaryEncodings[_registerNumber] << pos_RT;
+      }
+
+   /**
+    * @brief Set the RealRegister in the Rt2 field of the specified instruction
+    * @param[in] instruction : target instruction
+    */
+   void setRegisterFieldRT2(uint32_t *instruction)
+      {
+      *instruction |= fullRegBinaryEncodings[_registerNumber] << pos_RT2;
+      }
+
+   /**
+    * @brief Set the RealRegister in the Rs field of the specified instruction
+    * @param[in] instruction : target instruction
+    */
+   void setRegisterFieldRS(uint32_t *instruction)
+      {
+      *instruction |= fullRegBinaryEncodings[_registerNumber] << pos_RS;
+      }
+
+   /**
+    * @brief Set the RealRegister in the Ra field of the specified instruction
+    * @param[in] instruction : target instruction
+    */
+   void setRegisterFieldRA(uint32_t *instruction)
+      {
+      *instruction |= fullRegBinaryEncodings[_registerNumber] << pos_RA;
+      }
+
+   private:
+
+   static const uint8_t fullRegBinaryEncodings[NumRegisters];
 
    };
 

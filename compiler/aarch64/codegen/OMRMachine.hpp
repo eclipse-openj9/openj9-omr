@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2018, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -19,27 +19,48 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#ifndef TR_CODEGENERATOR_INCL
-#define TR_CODEGENERATOR_INCL
+#ifndef OMR_ARM64_MACHINE_INCL
+#define OMR_ARM64_MACHINE_INCL
 
-#include "codegen/OMRCodeGenerator.hpp"
+/*
+ * The following #define and typedef must appear before any #includes in this file
+ */
+#ifndef OMR_MACHINE_CONNECTOR
+#define OMR_MACHINE_CONNECTOR
+namespace OMR { namespace ARM64 { class Machine; } }
+namespace OMR { typedef OMR::ARM64::Machine MachineConnector; }
+#else
+#error OMR::ARM64::Machine expected to be a primary connector, but an OMR connector is already defined
+#endif
+
+#include "compiler/codegen/OMRMachine.hpp"
+
 #include "infra/Annotations.hpp"
 
-namespace TR { class Compilation; }
+namespace TR { class CodeGenerator; }
 
-namespace TR
+
+namespace OMR
 {
 
-class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGeneratorConnector
+namespace ARM64
+{
+
+class OMR_EXTENSIBLE Machine : public OMR::Machine
    {
+
 public:
 
    /**
-    * @param[in] comp : the TR::Compilaation object
+    * @param[in] cg : the TR::CodeGenerator object
     */
-   CodeGenerator(TR::Compilation *comp) :
-      OMR::CodeGeneratorConnector() {}
+   Machine(TR::CodeGenerator *cg);
+
+private:
+
+   TR::CodeGenerator *_cg;
+
    };
 }
-
+}
 #endif

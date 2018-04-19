@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -22,20 +22,19 @@
 #ifndef OMR_CODECACHE_INCL
 #define OMR_CODECACHE_INCL
 
-#include "env/defines.h"                    // for HOST_OS, OMR_LINUX, etc
-
 /*
  * The following #defines and typedefs must appear before any #includes in this file
  */
 
-#ifndef OMR_CODECACHE_COMPOSED
-#define OMR_CODECACHE_COMPOSED
+#ifndef OMR_CODECACHE_CONNECTOR
+#define OMR_CODECACHE_CONNECTOR
 namespace OMR { class CodeCache; }
 namespace OMR { typedef CodeCache CodeCacheConnector; }
 #endif
 
 #include <stddef.h>                            // for size_t
 #include <stdint.h>                            // for uint8_t, int32_t, etc
+#include "env/defines.h"                       // for HOST_OS, OMR_LINUX, etc
 #include "il/DataTypes.hpp"                    // for TR_YesNoMaybe
 #include "infra/CriticalSection.hpp"           // for CriticalSection
 #include "runtime/CodeCacheConfig.hpp"         // for CodeCacheConfig

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -30,8 +30,8 @@
 namespace TR
 {
 
-#ifndef TR_CODECACHEMEMORYSEGMENT_COMPOSED
-#define TR_CODECACHEMEMORYSEGMENT_COMPOSED
+#ifndef TR_CODECACHEMEMORYSEGMENT_CONNECTOR
+#define TR_CODECACHEMEMORYSEGMENT_CONNECTOR
 
 class OMR_EXTENSIBLE CodeCacheMemorySegment : public OMR::CodeCacheMemorySegmentConnector
    {

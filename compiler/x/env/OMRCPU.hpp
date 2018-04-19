@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -30,7 +30,7 @@
 namespace OMR { namespace X86 { class CPU; } }
 namespace OMR { typedef OMR::X86::CPU CPUConnector; }
 #else
-#error OMR::X86::CPU expected to be a primary connector, but a OMR connector is already defined
+#error OMR::X86::CPU expected to be a primary connector, but an OMR connector is already defined
 #endif
 
 #include <stdint.h>
@@ -69,4 +69,4 @@ public:
 
 }
 
-#endif /* OMR_X86_CPU_BASE_INCL */
+#endif

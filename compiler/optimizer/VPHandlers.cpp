@@ -2651,10 +2651,39 @@ TR::Node *constrainIaload(OMR::ValuePropagation *vp, TR::Node *node)
       {
       vp->comp()->fej9()->markHotField(vp->comp(), node->getSymbolReference(), base->getClass(), base->isFixedClass());
       }
+
+   if (node->getSymbolReference())
+      {
+      if (!node->getSymbolReference()->isUnresolved() &&
+          (node->getSymbolReference()->getSymbol()->getKind() == TR::Symbol::IsShadow) &&
+          (node->getSymbolReference()->getCPIndex() >= 0) &&
+          node->getSymbolReference()->getOwningMethod(vp->comp()))
+         {
+         int32_t fieldSigLen;
+         const char *fieldSig = node->getSymbolReference()->getOwningMethod(vp->comp())->fieldSignatureChars(
+                                      node->getSymbolReference()->getCPIndex(), fieldSigLen);
+         int32_t fieldNameLen;
+         const char *fieldName = node->getSymbolReference()->getOwningMethod(vp->comp())->fieldNameChars(
+                                      node->getSymbolReference()->getCPIndex(), fieldNameLen);
+         char *className = node->getSymbolReference()->getOwningMethod(vp->comp())->classNameChars();
+         uint16_t classNameLen = node->getSymbolReference()->getOwningMethod(vp->comp())->classNameLength();
+         if (fieldName && !strncmp(fieldName, "this$0", 6) &&
+              className && !strncmp(className, "java/util/", 10))
+            {
+            if (vp->trace())
+               traceMsg(vp->comp(), "NonNull node %d className %.*s fieldSig %.*s fieldName %.*s\n",
+                       node->getGlobalIndex(),
+                       classNameLen,className,
+                       fieldSigLen,fieldSig,
+                       fieldNameLen,fieldName);
+            vp->addBlockConstraint(node, TR::VPNonNullObject::create(vp));
+            }
+         }
+      }
 #endif
 
 
-  if (node->isNonNull())
+   if (node->isNonNull())
       vp->addBlockConstraint(node, TR::VPNonNullObject::create(vp));
    else if (node->isNull())
       vp->addBlockConstraint(node, TR::VPNullObject::create(vp));

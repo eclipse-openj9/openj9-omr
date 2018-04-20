@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1998, 2016 IBM Corp. and others
+ * Copyright (c) 1998, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -92,7 +92,7 @@ moduleLoaded(OMR_TraceThread *thr, UtModuleInfo *modInfo)
 	if (modInfo->intf == NULL) {
 		modInfo->intf = internalUtIntfS.module;
 
-		rc = initialiseComponentData(&compData, modInfo, modInfo->name);
+		rc = initializeComponentData(&compData, modInfo, modInfo->name);
 		if (OMR_ERROR_NONE == rc) {
 			rc = addComponentToList(compData, OMR_TRACEGLOBAL(componentList));
 		}
@@ -523,13 +523,13 @@ initializeTrace(OMR_VM *vm, const char *datDir, const OMR_TraceLanguageInterface
 		}
 	}
 
-	rc = initialiseComponentList(&OMR_TRACEGLOBAL(componentList));
+	rc = initializeComponentList(&OMR_TRACEGLOBAL(componentList));
 	if (OMR_ERROR_NONE != rc) {
 		UT_DBGOUT(1, ("<UT> Error initializing component list\n"));
 		goto fail;
 	}
 
-	rc = initialiseComponentList(&OMR_TRACEGLOBAL(unloadedComponentList));
+	rc = initializeComponentList(&OMR_TRACEGLOBAL(unloadedComponentList));
 	if (OMR_ERROR_NONE != rc) {
 		UT_DBGOUT(1, ("<UT> Error initializing unloaded component list\n"));
 		goto fail;
@@ -774,7 +774,7 @@ trcGetTraceMetadata(void **data, int32_t *length)
 {
 	UtTraceFileHdr *traceHeader;
 
-	/* Ensure we have initialised the trace header */
+	/* Ensure we have initialized the trace header */
 	if (initTraceHeader() != OMR_ERROR_NONE) {
 		return OMR_ERROR_INTERNAL;
 	}
@@ -843,7 +843,7 @@ fillInUTInterfaces(UtInterface **utIntf, OMR_TraceInterface *omrTraceIntf, UtMod
 		omrTraceIntf->SetOptions					= trcSetOptions;
 
 		/*
-		 * Initialise the direct module interface, these are
+		 * Initialize the direct module interface, these are
 		 * wrappers to calls within trace that obtain a OMR_TraceThread
 		 * before calling the real function.
 		 */

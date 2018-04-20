@@ -32,7 +32,7 @@ OMR::ARM64::Machine::Machine(TR::CodeGenerator *cg) :
    OMR::Machine(cg, NUM_ARM64_GPR, NUM_ARM64_FPR)
    {
    _registerFile = (TR::RealRegister **)cg->trMemory()->allocateMemory(sizeof(TR::RealRegister *)*TR::RealRegister::NumRegisters, heapAlloc);
-   self()->initialiseRegisterFile();
+   self()->initializeRegisterFile();
    }
 
 TR::RealRegister *OMR::ARM64::Machine::findBestFreeRegister(TR_RegisterKinds rk,
@@ -132,7 +132,7 @@ void OMR::ARM64::Machine::coerceRegisterAssignment(TR::Instruction *currentInstr
    TR_ASSERT(false, "Not implemented yet.");
    }
 
-void OMR::ARM64::Machine::initialiseRegisterFile()
+void OMR::ARM64::Machine::initializeRegisterFile()
    {
    _registerFile[TR::RealRegister::NoReg] = NULL;
    _registerFile[TR::RealRegister::SpilledReg] = NULL;

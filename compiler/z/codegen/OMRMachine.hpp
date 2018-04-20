@@ -228,7 +228,7 @@ class OMR_EXTENSIBLE Machine : public OMR::Machine
    TR_GlobalRegisterNumber  _globalEntryPointRegisterNumber;
    TR_GlobalRegisterNumber  _globalReturnAddressRegisterNumber;
 
-   void initialiseRegisterFile();
+   void initializeRegisterFile();
    void initializeFPRegPairTable();
 
    public:

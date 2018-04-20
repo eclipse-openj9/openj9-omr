@@ -65,7 +65,7 @@ class OMR_EXTENSIBLE Machine : public OMR::Machine
    TR::RealRegister   **_registerFile;
    TR::Register          *_registerAssociations[TR::RealRegister::NumRegisters];
 
-   void initialiseRegisterFile();
+   void initializeRegisterFile();
 
    int _4thLastGPRAssigned;
    int _3rdLastGPRAssigned;

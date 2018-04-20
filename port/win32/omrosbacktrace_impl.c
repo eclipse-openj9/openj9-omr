@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2015 IBM Corp. and others
+ * Copyright (c) 1991, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -176,7 +176,7 @@ load_dbg_functions(struct OMRPortLibrary *portLibrary)
 }
 
 /* This function sets symbol options and initializes the debug PDB path and symbol handler, if not already
- * initialised. We reset the symbol options and free loaded symbols on completion of the native stack walk
+ * initialized. We reset the symbol options and free loaded symbols on completion of the native stack walk
  * for javacores. PPG_pdbData.numberOfModules indicates whether we have currently initialized symbols.
  *
  * Note - this is called single threaded, e.g. under PPG_osBacktrace_Mutex

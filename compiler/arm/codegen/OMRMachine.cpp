@@ -45,7 +45,7 @@ static void registerCopy(TR::Instruction     *precedingI,
 
 OMR::ARM::Machine::Machine(TR::CodeGenerator *cg): OMR::Machine(cg, NUM_ARM_GPR, NUM_ARM_FPR)
    {
-   self()->initialiseRegisterFile();
+   self()->initializeRegisterFile();
    }
 
 
@@ -619,7 +619,7 @@ void OMR::ARM::Machine::coerceRegisterAssignment(TR::Instruction                
    }
 
 
-void OMR::ARM::Machine::initialiseRegisterFile()
+void OMR::ARM::Machine::initializeRegisterFile()
    {
    self()->cg()->_unlatchedRegisterList =
    (TR::RealRegister**)self()->cg()->trMemory()->allocateHeapMemory(sizeof(TR::RealRegister*)*(TR::RealRegister::NumRegisters + 1));

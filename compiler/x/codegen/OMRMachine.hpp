@@ -123,7 +123,7 @@ class OMR_EXTENSIBLE Machine : public OMR::Machine
    int32_t                 _fpStackShape[TR_X86FPStackRegister::NumRegisters];
    int32_t                 _fpTopOfStack;
 
-   void initialiseFPStackRegisterFile();
+   void initializeFPStackRegisterFile();
 
    protected:
 
@@ -131,7 +131,7 @@ class OMR_EXTENSIBLE Machine : public OMR::Machine
 
 
    public:
-   void initialiseRegisterFile(const struct TR::X86LinkageProperties&);
+   void initializeRegisterFile(const struct TR::X86LinkageProperties&);
    uint32_t* getGlobalRegisterTable(const struct TR::X86LinkageProperties&);
    int32_t getGlobalReg(TR::RealRegister::RegNum reg);
 

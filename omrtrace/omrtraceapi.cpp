@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2016 IBM Corp. and others
+ * Copyright (c) 2014, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -42,7 +42,7 @@ extern const char *UT_NO_THREAD_NAME;
  * 						- Trace should be notified about about threads beginning and ending via calls to threadStart and
  * 						  threadStop when they start and end.
  * [6] - setOptions 	- set any additional default options or process any options specified on the command line.
- * 8 - Initialise port, thread and any other modules that may have loaded before trace was ready.
+ * 8 - Initialize port, thread and any other modules that may have loaded before trace was ready.
  * 9 - The real work happens here, hopefully for a long time.
  * 10 - utTerminateTrace - Tell the trace engine to shutdown.
  * 11 - freeTrace - Tell the trace engine to free its internal data structures.

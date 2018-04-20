@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2015 IBM Corp. and others
+ * Copyright (c) 1991, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -158,7 +158,7 @@ omrintrospect_backtrace_thread_raw(struct OMRPortLibrary *portLibrary, J9Platfor
 
 	struct _FEEDBACK fc;
 
-	/* initialise the return code and loop control prior to making the calls */
+	/* initialize the return code and loop control prior to making the calls */
 	fc.tok_sev = 0;
 
 #else
@@ -341,7 +341,7 @@ omrintrospect_backtrace_symbols_raw(struct OMRPortLibrary *portLibrary, J9Platfo
 
 	struct _FEEDBACK fc;
 
-	/* initialise the return code and loop control prior to making the calls */
+	/* initialize the return code and loop control prior to making the calls */
 	fc.tok_sev = 0;
 
 #else

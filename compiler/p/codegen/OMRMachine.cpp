@@ -143,7 +143,7 @@ numLockedFPRs(-1),
 numLockedVRFs(-1)
    {
    _registerFile = (TR::RealRegister **)cg->trMemory()->allocateMemory(sizeof(TR::RealRegister *)*TR::RealRegister::NumRegisters, heapAlloc);
-   self()->initialiseRegisterFile();
+   self()->initializeRegisterFile();
    memset( _registerAssociations, 0, sizeof(TR::Register*)*TR::RealRegister::NumRegisters );
    }
 
@@ -1318,7 +1318,7 @@ void OMR::Power::Machine::coerceRegisterAssignment(TR::Instruction              
    }
 
 
-void OMR::Power::Machine::initialiseRegisterFile()
+void OMR::Power::Machine::initializeRegisterFile()
    {
 
    _registerFile[TR::RealRegister::NoReg] = NULL;

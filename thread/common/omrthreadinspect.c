@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2017 IBM Corp. and others
+ * Copyright (c) 1991, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -52,7 +52,7 @@ static omrthread_library_t get_default_library(void);
 
 
 /**
- * Initialise a omrthread_monitor_walk_state_t structure used to walk the monitor pools.
+ * Initialize a omrthread_monitor_walk_state_t structure used to walk the monitor pools.
  *
  * @param[in] walkState This is a pointer to a omrthread_monitor_walk_state_t. When this call returns it
  * will be ready to use on the first call to omrthread_monitor_walk
@@ -83,7 +83,7 @@ omrthread_monitor_init_walk(omrthread_monitor_walk_state_t *walkState)
  * these GLOBAL_* macros become nops, so no call is made to MACRO_SELF(),
  * and therefore there's no required reference to 'default_library'.
  *
- * @param[in] walkState This is a pointer to a omrthread_monitor_walk_state_t. It should be initialised using omrthread_monitor_init_walk
+ * @param[in] walkState This is a pointer to a omrthread_monitor_walk_state_t. It should be initialized using omrthread_monitor_init_walk
  * before calling omrthread_monitor_walk to start a new walk. (thread lib will be globally locked on the first call)
  * @return a pointer to a monitor, or NULL if all monitors walked (thread lib will be globally unlocked when NULL is returned).
  *
@@ -123,7 +123,7 @@ omrthread_monitor_walk(omrthread_monitor_walk_state_t *walkState)
  *
  * The caller MUST own the global lock.
  *
- * @param[in] walkState This is a pointer to a omrthread_monitor_walk_state_t. It should be initialised
+ * @param[in] walkState This is a pointer to a omrthread_monitor_walk_state_t. It should be initialized
  * using omrthread_monitor_init_walk before calling omrthread_monitor_walk_no_locking to start a new walk.
  * @return a pointer to a monitor, or NULL if all monitors walked
  *

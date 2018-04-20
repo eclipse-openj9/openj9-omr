@@ -38,7 +38,7 @@
 
 
    FirstOMROp,
-   BadILOp = 0,  // illegal op hopefully help with uninitialised nodes
+   BadILOp = 0,  // illegal op hopefully help with uninitialized nodes
    aconst,   // load address constant (zero value means NULL)
    iconst,   // load integer constant (32-bit signed 2's complement)
    lconst,   // load long integer constant (64-bit signed 2's complement)
@@ -653,7 +653,7 @@
    Case,     // case nodes that are children of TR_switch.  Uses the branchdestination and the int const field
    table,    // tableswitch (child1 is the selector, child2 the default destination, subsequent children are the branch targets
              // (the last child may be a branch table address, use getCaseIndexUpperBound() when iterating over branch targets)
-   exceptionRangeFence,    // (J9) SymbolReference is the aliasing effect, initialiser is where the code address gets put when binary is generated
+   exceptionRangeFence,    // (J9) SymbolReference is the aliasing effect, initializer is where the code address gets put when binary is generated
                            // used for delimiting function, try blocks, catch clauses, finally clauses, etc.
    dbgFence, // used to delimit code (stmts) for debug info.  Has no symbol reference.
    NULLCHK,  // Null check a pointer.  child 1 is indirect reference. Symbolref indicates failure action/destination

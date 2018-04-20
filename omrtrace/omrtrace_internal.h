@@ -259,9 +259,9 @@ struct OMR_TraceGlobal {
  * =============================================================================
  */
 
-omr_error_t initialiseComponentData(UtComponentData **componentDataPtr, UtModuleInfo *moduleInfo, const char *componentName);
+omr_error_t initializeComponentData(UtComponentData **componentDataPtr, UtModuleInfo *moduleInfo, const char *componentName);
 void freeComponentData(OMR_TraceGlobal *global, UtComponentData *componentDataPtr);
-omr_error_t initialiseComponentList(UtComponentList **componentListPtr);
+omr_error_t initializeComponentList(UtComponentList **componentListPtr);
 omr_error_t freeComponentList(OMR_TraceGlobal *global, UtComponentList *componentList);
 omr_error_t addComponentToList(UtComponentData *componentData, UtComponentList *componentList);
 omr_error_t removeModuleFromList(UtModuleInfo *module, UtComponentList *componentList);
@@ -281,7 +281,7 @@ omr_error_t addTraceConfigKeyValuePair(OMR_TraceThread *thr, const char *cmdKey,
 /*
  * =============================================================================
  *  Functions called by users of the trace library at initialisation/shutdown time.
- *  (Runtime functions are called vi OMR_TraceInterface once initialised)
+ *  (Runtime functions are called vi OMR_TraceInterface once initialized)
  * =============================================================================
  */
 

@@ -35,10 +35,15 @@ namespace OMR { typedef OMR::ARM64::Machine MachineConnector; }
 
 #include "compiler/codegen/OMRMachine.hpp"
 
+#include "codegen/RealRegister.hpp"
 #include "infra/Annotations.hpp"
 
 namespace TR { class CodeGenerator; }
+namespace TR { class Instruction; }
+namespace TR { class Register; }
 
+#define NUM_ARM64_GPR 32
+#define NUM_ARM64_FPR 32
 
 namespace OMR
 {
@@ -52,13 +57,113 @@ class OMR_EXTENSIBLE Machine : public OMR::Machine
 public:
 
    /**
+    * @brief Constructor
     * @param[in] cg : the TR::CodeGenerator object
     */
    Machine(TR::CodeGenerator *cg);
 
+   /**
+    * @brief Converts RegNum to RealRegister
+    * @param[in] regNum : register number
+    * @return RealRegister for specified register number
+    */
+   TR::RealRegister *getARM64RealRegister(TR::RealRegister::RegNum regNum)
+      {
+      return _registerFile[regNum];
+      }
+
+   /**
+    * @brief Finds the best free register
+    * @param[in] rk : register kind
+    * @param[in] considerUnlatched : consider unlatched state or not
+    * @return Free RealRegister
+    */
+   TR::RealRegister *findBestFreeRegister(TR_RegisterKinds rk,
+                                            bool considerUnlatched = false);
+
+   /**
+    * @brief Frees the best register
+    * @param[in] currentInstruction : current instruction
+    * @param[in] virtualRegister : virtual register
+    * @param[in] forced : register to be freed
+    * @return Freed RealRegister
+    */
+   TR::RealRegister *freeBestRegister(TR::Instruction *currentInstruction,
+                                        TR::Register *virtualRegister,
+                                        TR::RealRegister *forced = NULL);
+
+   /**
+    * @brief Reverses the spill state
+    * @param[in] currentInstruction : current instruction
+    * @param[in] spilledRegister : spilled register
+    * @param[in] targetRegister : target register
+    * @return Target register
+    */
+   TR::RealRegister *reverseSpillState(TR::Instruction *currentInstruction,
+                                         TR::Register *spilledRegister,
+                                         TR::RealRegister *targetRegister = NULL);
+
+   /**
+    * @brief Assign a RealRegister for specified Register
+    * @param[in] currentInstruction : current instruction
+    * @param[in] virtualRegister : virtual register
+    * @return Assigned RealRegister
+    */
+   TR::RealRegister *assignOneRegister(TR::Instruction *currentInstruction,
+                                         TR::Register *virtualRegister);
+
+   /**
+    * @brief Coerce register assignment
+    * @param[in] currentInstruction : current instruction
+    * @param[in] virtualRegister : virtual register
+    * @param[in] registerNumber : register number
+    */
+   void coerceRegisterAssignment(TR::Instruction *currentInstruction,
+                                 TR::Register *virtualRegister,
+                                 TR::RealRegister::RegNum registerNumber);
+
+   /**
+    * @brief Returns the "killed" state of Link Register
+    * @return true if LR is killed in the method, false otherwise
+    */
+   bool getLinkRegisterKilled()
+      {
+      return _registerFile[TR::RealRegister::lr]->getHasBeenAssignedInMethod();
+      }
+
+   /**
+    * @brief Changes the "killed" state of Link Register
+    * @param[in] b : true if LR is killed in the method, false otherwise
+    * @return The "killed" state set by the function
+    */
+   bool setLinkRegisterKilled(bool b)
+      {
+      return _registerFile[TR::RealRegister::lr]->setHasBeenAssignedInMethod(b);
+      }
+
+   TR::CodeGenerator *cg() {return _cg;}
+
+   /**
+    * @brief Take snapshot of the register file
+    */
+   void takeRegisterStateSnapShot();
+
+   /**
+    * @brief Restore the register file from snapshot
+    */
+   void restoreRegisterStateFromSnapShot();
+
 private:
 
    TR::CodeGenerator *_cg;
+   TR::RealRegister  **_registerFile;
+
+   // For register snap shot
+   uint16_t                   _registerFlagsSnapShot[TR::RealRegister::NumRegisters];
+   TR::RealRegister::RegState _registerStatesSnapShot[TR::RealRegister::NumRegisters];
+   TR::Register               *_assignedRegisterSnapShot[TR::RealRegister::NumRegisters];
+
+   void initialiseRegisterFile();
 
    };
 }

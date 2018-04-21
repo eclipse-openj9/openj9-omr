@@ -112,7 +112,6 @@ target_link_libraries(omrrastest
 		omrvmstartup
 		${OMR_GC_LIB}
 		${OMR_PORT_LIB}
-		${OMR_THREAD_LIB}
 )
 
 add_dependencies(omrrastest
@@ -143,7 +142,6 @@ target_link_libraries(omrsubscribertest
 		omrvmstartup
 		${OMR_GC_LIB}
 		${OMR_PORT_LIB}
-		${OMR_THREAD_LIB}
 		${OMR_TRACE_LIB}
 )
 add_dependencies(omrsubscribertest
@@ -165,7 +163,6 @@ target_link_libraries(omrtraceoptiontest
 		omrvmstartup
 		${OMR_GC_LIB}
 		${OMR_PORT_LIB}
-		${OMR_THREAD_LIB}
 )
 add_dependencies(omrtraceoptiontest
 	traceOptionAgent

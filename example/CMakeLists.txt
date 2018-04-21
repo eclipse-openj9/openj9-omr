@@ -45,7 +45,6 @@ if(OMR_GC)
 		${OMR_HOOK_LIB}
 		${OMR_TRACE_LIB}
 		${OMR_GC_LIB}
-		${OMR_THREAD_LIB}
 		${OMR_PORT_LIB}
 	)
 

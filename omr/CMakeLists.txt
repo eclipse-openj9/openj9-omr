@@ -58,7 +58,6 @@ target_include_directories(omrcore
 		${CMAKE_CURRENT_BINARY_DIR}
 )
 
-
 target_link_libraries(omrcore
 	PRIVATE
 		${OMR_CORE_GLUE_TARGET}
@@ -73,7 +72,7 @@ if(OMR_GC)
 
 	target_include_directories(omrcore
 		PRIVATE
-			$<TARGET_PROPERTY:omrgc,INTERFACE_INCLUDE_DIRECTORIES>
+			$<TARGET_PROPERTY:${OMR_GC_LIB},INTERFACE_INCLUDE_DIRECTORIES>
 			$<TARGET_PROPERTY:${OMR_GC_GLUE_TARGET},INTERFACE_INCLUDE_DIRECTORIES>
 	)
 endif(OMR_GC)

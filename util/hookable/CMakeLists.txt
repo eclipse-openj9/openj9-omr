@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2017 IBM Corp. and others
+# Copyright (c) 2017, 2018 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -53,9 +53,8 @@ target_include_directories(j9hookstatic
 	$<TARGET_PROPERTY:j9hook_obj,INTERFACE_INCLUDE_DIRECTORIES>
 )
 target_link_libraries(j9hookstatic PUBLIC
-	j9thrstatic
+	${OMR_PORT_LIB}
 	j9pool
-	omrport
 )
 add_tracegen(j9hook.tdf)
 

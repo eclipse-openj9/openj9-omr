@@ -79,7 +79,6 @@ target_link_libraries(omrporttest
 	omrGtestGlue
 	omrtestutil
 	${OMR_PORT_LIB}
-	${OMR_THREAD_LIB}
 )
 if(OMR_HOST_OS STREQUAL "win")
 	target_link_libraries(omrporttest

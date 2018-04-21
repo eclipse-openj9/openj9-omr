@@ -30,24 +30,29 @@ target_include_directories(omr_example_base
 		glue
 )
 
-add_executable(example
-	main.cpp
-)
+# The current implementation of the example depends on the ${OMR_GC_LIB} library
+# and is not able to be compiled without a GC implementation.
+if(OMR_GC)
+	add_executable(example
+		main.cpp
+	)
 
-target_link_libraries(example
-	omr_main_function
-	pugixml
-	omrcore
-	omrvmstartup
-	${OMR_HOOK_LIB}
-	${OMR_TRACE_LIB}
-	${OMR_GC_LIB}
-	${OMR_THREAD_LIB}
-	${OMR_PORT_LIB}
-)
+	target_link_libraries(example
+		omr_main_function
+		pugixml
+		omrcore
+		omrvmstartup
+		${OMR_HOOK_LIB}
+		${OMR_TRACE_LIB}
+		${OMR_GC_LIB}
+		${OMR_THREAD_LIB}
+		${OMR_PORT_LIB}
+	)
 
-# TODO: The example is currently broken.
-# Hashtable iteration appears to be broken, which in turn breaks root marking, and causes the example to spin forever.
-# add_test(example example)
+	# TODO: The example is currently broken.
+	# Hashtable iteration appears to be broken, which in turn breaks root
+	# marking, and causes the example to spin forever.
+	# add_test(example example)
+endif(OMR_GC)
 
 add_subdirectory(glue)

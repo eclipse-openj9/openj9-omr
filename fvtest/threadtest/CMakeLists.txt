@@ -55,12 +55,11 @@ add_executable(omrthreadtest
 
 
 target_link_libraries(omrthreadtest
-	omrtestutil
 	omrGtestGlue
+	omrtestutil
 	j9hashtable
 	omrcore
 	omrvmstartup
-	${OMR_GC_LIB}
 	${OMR_PORT_LIB}
 	${OMR_THREAD_LIB}
 )

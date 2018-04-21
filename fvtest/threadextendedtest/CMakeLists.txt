@@ -29,12 +29,11 @@ add_executable(omrthreadextendedtest
 
 
 target_link_libraries(omrthreadextendedtest
-	omrtestutil
 	omrGtestGlue
+	omrtestutil
 	omrutil
 	omrcore
 	omrvmstartup
-	${OMR_GC_LIB}
 	${OMR_PORT_LIB}
 )
 

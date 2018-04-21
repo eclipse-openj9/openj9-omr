@@ -27,7 +27,12 @@ add_subdirectory(startup)
 
 omr_assert(
 	TEST OMR_CORE_GLUE_TARGET
-	MESSAGE "OMR_CORE_GLUE_TARGET must be set. Try using the example with OMR_EXAMPLE=On"
+	MESSAGE "OMR_CORE_GLUE_TARGET must be set. Try using the example with OMR_EXAMPLE=ON"
+)
+
+omr_assert(
+	TEST OMR_RAS_GLUE_TARGET
+	MESSAGE "OMR_RAS_GLUE_TARGET must be set. Try using the example with OMR_EXAMPLE=ON"
 )
 
 add_library(omrcore STATIC

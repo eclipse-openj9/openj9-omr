@@ -73,11 +73,13 @@ typedef void (*unix_sigaction)(int, siginfo_t *, void *, uintptr_t);
 typedef void (*unix_sigaction)(int, siginfo_t *, void *);
 #endif
 
+#define ARRAY_SIZE_SIGNALS  (MAX_UNIX_SIGNAL_TYPES + 1)
+
 /* Store the previous signal handlers, we need to restore them when we're done */
 static struct {
 	struct sigaction action;
 	uint32_t restore;
-}	oldActions[MAX_UNIX_SIGNAL_TYPES];
+}	oldActions[ARRAY_SIZE_SIGNALS];
 
 /* Records the (port library defined) signals for which we have registered a master handler.
  * Access to this must be protected by the masterHandlerMonitor */
@@ -611,7 +613,7 @@ omrsig_startup(struct OMRPortLibrary *portLibrary)
 
 	int32_t result = 0;
 	omrthread_monitor_t globalMonitor = NULL;
-	uint32_t index = 0;
+	uint32_t index = 1;
 
 	Trc_PRT_signal_omrsig_startup_entered(portLibrary);
 
@@ -621,7 +623,7 @@ omrsig_startup(struct OMRPortLibrary *portLibrary)
 	if (attachedPortLibraries++ == 0) {
 
 		/* initialize the old actions */
-		for (index = 0; index < MAX_UNIX_SIGNAL_TYPES; index++) {
+		for (index = 1; index < ARRAY_SIZE_SIGNALS; index++) {
 			oldActions[index].restore = 0;
 		}
 
@@ -1666,7 +1668,7 @@ static void
 sig_full_shutdown(struct OMRPortLibrary *portLibrary)
 {
 	omrthread_monitor_t globalMonitor = NULL;
-	uint32_t index = 0;
+	uint32_t index = 1;
 
 	Trc_PRT_signal_sig_full_shutdown_enter(portLibrary);
 	globalMonitor = omrthread_global_monitor();
@@ -1675,7 +1677,7 @@ sig_full_shutdown(struct OMRPortLibrary *portLibrary)
 	if (--attachedPortLibraries == 0) {
 
 		/* register the old actions we overwrote with our own */
-		for (index = 0; index < MAX_UNIX_SIGNAL_TYPES; index++) {
+		for (index = 1; index < ARRAY_SIZE_SIGNALS; index++) {
 			if (oldActions[index].restore) {
 				OMRSIG_SIGACTION(index, &oldActions[index].action, NULL);
 				/* record that we no longer have a handler installed with the OS for this signal */

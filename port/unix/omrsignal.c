@@ -1308,6 +1308,7 @@ mapUnixSignalToPortLib(uint32_t signalNo, siginfo_t *sigInfo)
 		}
 	}
 
+	Trc_PRT_signal_mapOSSignalToPortLib_ERROR_unknown_signal(signalNo);
 	return 0;
 }
 

@@ -67,8 +67,6 @@
 #include "omrsig.h"
 #endif /* defined(OMRPORT_OMRSIG_SUPPORT) */
 
-#define MAX_PORTLIB_SIGNAL_TYPES  8
-
 #if defined(S390) && defined(LINUX)
 typedef void (*unix_sigaction)(int, siginfo_t *, void *, uintptr_t);
 #else

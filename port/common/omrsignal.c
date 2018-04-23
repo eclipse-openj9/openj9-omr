@@ -211,12 +211,12 @@ omrsig_map_os_signal_to_portlib_signal(struct OMRPortLibrary *portLibrary, uint3
  * @param[in] portLibrary The port library
  * @param[in] portlibSignalFlag port library signal flag
  *
- * @return OS signal value on success and -1 on failure
+ * @return OS signal value on success and OMRPORT_SIG_ERROR (-1) on failure
  */
 int32_t
 omrsig_map_portlib_signal_to_os_signal(struct OMRPortLibrary *portLibrary, uint32_t portlibSignalFlag)
 {
-	return -1;
+	return OMRPORT_SIG_ERROR;
 }
 
 /**

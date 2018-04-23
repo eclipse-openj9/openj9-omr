@@ -1319,19 +1319,14 @@ mapUnixSignalToPortLib(uint32_t signalNo, siginfo_t *sigInfo)
  * Note that FPE signal codes (subtypes) all map to the same signal number and are not included
  *
  * @param portLibSignal The internal J9 Port Library signal number
- * @return The corresponding Unix signal number or -1 if the portLibSignal could not be mapped
+ *
+ * @return The corresponding Unix signal number or OMRPORT_SIG_ERROR (-1) if the portLibSignal
+ *         could not be mapped
  */
 static int
 mapPortLibSignalToUnix(uint32_t portLibSignal)
 {
 	uint32_t index = 0;
-
-	/* mask out subtypes */
-#if defined(AIXPPC)
-	portLibSignal &= OMRPORT_SIG_FLAG_SIGALLSYNC | OMRPORT_SIG_FLAG_SIGQUIT | OMRPORT_SIG_FLAG_SIGABRT | OMRPORT_SIG_FLAG_SIGTERM | OMRPORT_SIG_FLAG_SIGXFSZ | OMRPORT_SIG_FLAG_SIGRECONFIG;
-#else
-	portLibSignal &= OMRPORT_SIG_FLAG_SIGALLSYNC | OMRPORT_SIG_FLAG_SIGQUIT | OMRPORT_SIG_FLAG_SIGABRT | OMRPORT_SIG_FLAG_SIGTERM | OMRPORT_SIG_FLAG_SIGXFSZ;
-#endif
 
 	for (index = 0; index < sizeof(signalMap) / sizeof(signalMap[0]); index++) {
 
@@ -1340,7 +1335,7 @@ mapPortLibSignalToUnix(uint32_t portLibSignal)
 		}
 	}
 	Trc_PRT_signal_mapPortLibSignalToUnix_ERROR_unknown_signal(portLibSignal);
-	return -1;
+	return OMRPORT_SIG_ERROR;
 }
 
 #if defined(J9ZOS390)

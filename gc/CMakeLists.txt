@@ -20,6 +20,13 @@
 # SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
 ###############################################################################
 
+omr_assert(TEST OMR_GC)
+
+omr_assert(
+	TEST OMR_GC_GLUE_TARGET
+	MESSAGE "OMR_GC_GLUE_TARGET must be set."
+)
+
 omr_add_hookgen(
 	INPUT include/omrmm.hdf
 	PUBLIC_DIR "${omr_BINARY_DIR}"

@@ -23,12 +23,18 @@ set(OMR_WARNINGS_AS_ERRORS ON CACHE BOOL "Treat compile warnings as errors")
 set(OMR_ENHANCED_WARNINGS ON CACHE BOOL "Enable enhanced compiler warnings")
 
 ###
+### Built-in OMR Applications
+###
+
+set(OMR_EXAMPLE ON CACHE BOOL "Enable the Example application")
+
+###
 ### Major Feature Flags
 ###
 
 set(OMR_COMPILER OFF CACHE BOOL "Enable the compiler")
 set(OMR_DDR OFF CACHE BOOL "Enable DDR")
-set(OMR_FVTEST OFF CACHE BOOL "Enable the FV Testing.")
+set(OMR_FVTEST ON CACHE BOOL "Enable the FV Testing.")
 set(OMR_GC ON CACHE BOOL "Enable the GC")
 set(OMR_JITBUILDER OFF CACHE BOOL "Enable building JitBuilder")
 set(OMR_OMRSIG ON CACHE BOOL "Enable the OMR signal compatibility library")
@@ -54,6 +60,15 @@ set(OMR_HOOK_LIB "j9hookstatic" CACHE STRING "Name of the hook library to link a
 set(OMR_PORT_LIB "omrport" CACHE STRING "Name of the port library to link against")
 set(OMR_THREAD_LIB "j9thrstatic" CACHE STRING "Name of the thread library to link against")
 set(OMR_TRACE_LIB "omrtrace" CACHE STRING "Name of the trace library to link against")
+
+###
+### Glue library names
+###
+
+set(OMR_GC_GLUE_TARGET "NOTFOUND" CACHE STRING "The gc glue target, must be interface library")
+set(OMR_UTIL_GLUE_TARGET "NOTFOUND" CACHE STRING "The util glue target, must be interface library")
+set(OMR_RAS_GLUE_TARGET "NOTFOUND" CACHE STRING "The ras glue target, must be interface library")
+set(OMR_CORE_GLUE_TARGET "NOTFOUND" CACHE STRING "The core glue target, must be and interface library")
 
 ###
 ### Boolean Feature Flags

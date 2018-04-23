@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2017 IBM Corp. and others
+# Copyright (c) 2017, 2018 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -19,15 +19,40 @@
 # SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
 ###############################################################################
 
+include(OmrAssert)
+
+omr_assert(TEST OMR_EXAMPLE)
+
+omr_assert(FATAL_ERROR
+	TEST OMR_FVTEST
+	MESSAGE "The example requires OMR_FVTEST=On"
+)
+
+add_library(omr_example_base INTERFACE)
+
+target_include_directories(omr_example_base
+	INTERFACE
+		glue
+)
+
 add_executable(example
 	main.cpp
 )
 
 target_link_libraries(example
-	PRIVATE
-	omrgc
+	omrGtestGlue
+	pugixml
+	omrtestutil
+	omrcore
+	${OMR_HOOK_LIB}
+	${OMR_TRACE_LIB}
+	${OMR_GC_LIB}
+	${OMR_THREAD_LIB}
+	${OMR_PORT_LIB}
 )
 
-add_test(example example)
+# TODO: The example is currently broken.
+# Hashtable iteration appears to be broken, which in turn breaks root marking, and causes the example to spin forever.
+# add_test(example example)
 
 add_subdirectory(glue)

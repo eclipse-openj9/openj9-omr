@@ -28,9 +28,9 @@ debug=1
 id='[A-Za-z_][A-Za-z0-9_]*' # matches an identifier
 default_regex="@ddr_namespace: *default"
 map_to_type_regex="@ddr_namespace: *map_to_type="
-flag_define_regex="^ *# *define +${id} *($|//|/\*)"
-flag_undef_regex="^ *# *undef +${id} *($|//|/\*)"
-value_define_regex="^ *# *define +${id} +[^ /].*($|//|/\*)"
+flag_define_regex="^ *# *define +(${id}) *($|//|/\*)"
+flag_undef_regex="^ *# *undef +(${id}) *($|//|/\*)"
+value_define_regex="^ *# *define +(${id}) +[^ /].*($|//|/\*)"
 include_guard_regex=".*_[Hh]([Pp][Pp])?_? *($|//|/\*)"
 
 ##
@@ -66,7 +66,7 @@ begin_namespace() {
 	old_namespace=${namespace}
 	namespace="${1}"
 	if [ "${namespace}" != "${old_namespace}" ]; then
-		echo "@TYPE_${namespace}" >> "${f}"
+		echo "@TYPE_${namespace}"
 	fi
 }
 
@@ -87,45 +87,101 @@ set_map_to_type_namespaces() {
 # invoked with the name of the flag macro
 write_flag_macro() {
 	begin_namespace "${const_space}"
-	echo "${1}" | sed -e 's|^\(.*\)$|#ifdef \1\n@MACRO_\1 1\n#else\n@MACRO_\1 0\n#endif|' >> "${f}"
+
+	echo "#ifdef ${1}"
+	echo "@MACRO_${1} 1"
+	echo "#else"
+	echo "@MACRO_${1} 0"
+	echo "#endif"
 }
 
 # invoked with the name of the flag macro
 write_flag_defined() {
 	begin_namespace "${flag_space}"
-	echo "${1}" | sed -e 's|^\(.*\)$|#ifdef \1\n@MACRO_\1_DEFINED 1\n#else\n@MACRO_\1_DEFINED 0\n#endif|' >> "${f}"
+
+	echo "#ifdef ${1}"
+	echo "@MACRO_${1}_DEFINED 1"
+	echo "#else"
+	echo "@MACRO_${1}_DEFINED 0"
+	echo "#endif"
 }
 
+# macro name supplied as only argument
 define_flag_macro() {
+	name="$1"
 	# Filter include guards and print the macro as a constant.
 	if ! [[ ${line} =~ ${include_guard_regex} ]]; then
-		# Capture macro name
-		name=$(echo "${line}" | sed -e "s|^ *# *define  *\(${id}\).*$|\1|")
 		write_flag_macro "${name}"
 		write_flag_defined "${name}"
 	fi
 }
 
+# macro name supplied as only argument
 undef_flag_macro() {
-	# Capture macro name
-	name=$(echo "${line}" | sed -e "s|^ *# *undef  *\(${id}\).*$|\1|")
+	name="$1"
 	write_flag_macro "${name}"
 	write_flag_defined "${name}"
 }
 
+# macro name supplied as only argument
 define_value_macro() {
-	# Capture macro name
-	name=$(echo "${line}" | sed -e "s|^ *# *define  *\(${id}\) .*$|\1|")
+	name="$1"
 
 	if [ ${addValues} -ne 0 ]; then
 		# Print the macro in the constants space.
 		begin_namespace "${const_space}"
-		echo "${name}" | sed -e "s|^\(.*\)$|#ifdef \1\n@MACRO_\1 \1\n#endif|" >> "${f}"
+
+		echo "#ifdef ${name}"
+		echo "@MACRO_${name} ${name}"
+		echo "#endif"
 	fi
 
 	if [ ${addFlags} -ne 0 ]; then
 		write_flag_defined "${name}"
 	fi
+}
+
+process_one_policy_file() {
+	# Inject repeated include guard and file delimiter
+	(( filenum++ ))
+	echo ""
+	echo "#ifndef DDRGEN_F${filenum}_GUARD_H"
+	echo "#define DDRGEN_F${filenum}_GUARD_H"
+	echo "@DDRFILE_BEGIN ${f}"
+
+	set_default_namespaces
+	namespace=''
+
+	# Gather qualifying macro definitions.
+	# We use sed to replace tabs with spaces and trim trailing spaces
+	# to simplify patterns for this script; it also filters out the
+	# bulk of irrelevant content.
+	sed -n \
+		-e 's|\t| |g' \
+		-e 's| *$||' \
+		-e '/@ddr_namespace:/p' \
+		-e '/^ *# *define /p' \
+		-e '/^ *# *undef /p' \
+	| while read -r line; do
+		if [[ ${line} =~ ${default_regex} ]]; then
+			set_default_namespaces
+		elif [[ ${line} =~ ${map_to_type_regex} ]]; then
+			set_map_to_type_namespaces
+		elif [[ ${addValues} -ne 0 && ${line} =~ ${value_define_regex} ]]; then
+			# Print a value define.
+			define_value_macro "${BASH_REMATCH[1]}"
+		elif [[ ${addFlags} -ne 0 && ${line} =~ ${flag_define_regex} ]]; then
+			# Print a define flag as a constant of 1.
+			define_flag_macro "${BASH_REMATCH[1]}"
+		elif [[ ${addFlags} -ne 0 && ${line} =~ ${flag_undef_regex} ]]; then
+			# Print an undef flag as a constant of 0.
+			undef_flag_macro "${BASH_REMATCH[1]}"
+		fi
+	done
+
+	# close repeated include guard and file delimiter
+	echo "@DDRFILE_END ${f}"
+	echo "#endif"
 }
 
 ##
@@ -154,62 +210,19 @@ parse_namespace_policy_files() {
 			mv ${f} ${f}.orig
 			cp ${f}.orig ${f}
 
-			# Inject repeated include guard and file delimiter
-			(( filenum++ ))
-			echo >> ${f}
-			echo "#ifndef DDRGEN_F${filenum}_GUARD_H" >> ${f}
-			echo "#define DDRGEN_F${filenum}_GUARD_H" >> ${f}
-			echo "@DDRFILE_BEGIN ${f}" >> ${f}
-
-			set_default_namespaces
-			namespace=''
-
-			# Gather qualifying macro definitions.
-			# We use sed to replace tabs with spaces and trim trailing spaces
-			# to simplify patterns for this script; it also filters out the
-			# bulk of irrelevant content.
-			sed -n < ${f} \
-				-e 's|\t| |g' \
-				-e 's| *$||' \
-				-e '/@ddr_namespace:/p' \
-				-e '/^ *# *define /p' \
-				-e '/^ *# *undef /p' \
-			| while read -r line; do
-				if [[ ${line} =~ ${default_regex} ]]; then
-					set_default_namespaces
-				elif [[ ${line} =~ ${map_to_type_regex} ]]; then
-					set_map_to_type_namespaces
-				elif [[ ${addValues} -ne 0 && ${line} =~ ${value_define_regex} ]]; then
-					# Print a value define.
-					define_value_macro
-				elif [[ ${addFlags} -ne 0 && ${line} =~ ${flag_define_regex} ]]; then
-					# Print a define flag as a constant of 1.
-					define_flag_macro
-				elif [[ ${addFlags} -ne 0 && ${line} =~ ${flag_undef_regex} ]]; then
-					# Print an undef flag as a constant of 0.
-					undef_flag_macro
-				fi
-			done
-
-			# close repeated include guard and file delimiter
-			echo "@DDRFILE_END ${f}" >> ${f}
-			echo "#endif" >> ${f}
+			# read from the backup, rather than the file to which we're appending
+			process_one_policy_file < ${f}.orig >> ${f}
 		fi
 	done
 }
 
 restore_annotated_files() {
-	echo "Restoring annotated files ..."
+	date "+[%F %T] Restoring annotated files ..."
 	for f in "${annotated_files[@]}"; do
-		# Find ddr_options or use the default.
-		get_ddr_options
-
-		if [ ${addFlags} -ne 0 -o ${addValues} -ne 0 ]; then
-			# restore the original file (retaining its timestamp)
-			if [[ -e ${f}.orig ]]; then
-				rm -f ${f}
-				mv ${f}.orig ${f}
-			fi
+		# restore the original file (retaining its timestamp)
+		if [[ -e ${f}.orig ]]; then
+			mv ${f} ${f}.annt
+			mv ${f}.orig ${f}
 		fi
 	done
 }
@@ -230,9 +243,10 @@ main() {
 	# Overwrite the output file if it exists. This file will contain all of the final macro/type info.
 	echo "" > ${macroList_file}
 
-	echo "Annotating source files containing macros ..."
+	date "+[%F %T] Annotating source files containing macros ..."
 	# Deal with specific policies.
 	parse_namespace_policy_files
+	date "+[%F %T] Annotating source files containing macros complete."
 
 	# preprocess annotated source code
 	if [[ $(command -v gmake) ]]; then
@@ -240,7 +254,7 @@ main() {
 	else
 		make=make
 	fi
-	${make} --ignore-errors --keep-going -C ${scan_dir} ddrgen
+	${make} --ignore-errors --jobs=8 --keep-going -C ${scan_dir} ddrgen
 
 	# Build an awk filter that removes duplicate information.
 	declare -ar dedup_filter=(
@@ -250,7 +264,7 @@ main() {
 		'/^@DDRFILE_END / { include = 0 }'
 	)
 
-	echo "Scraping anotations from preprocessed code ..."
+	date "+[%F %T] Scraping anotations from preprocessed code ..."
 	find ${scan_dir} -type f -name '*.i' \
 		| sort \
 		| xargs -d '\n' grep -hE -e '^@(DDRFILE|MACRO|TYPE)_' \
@@ -258,6 +272,8 @@ main() {
 		> ${macroList_file}
 
 	restore_annotated_files
+
+	date "+[%F %T] All done."
 }
 
 # Command line arg 1.

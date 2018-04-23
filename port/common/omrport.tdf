@@ -1052,3 +1052,5 @@ TraceException=Trc_PRT_sysinfo_cgroup_get_memlimit_memory_limit_read_failed Grou
 TraceEvent=Trc_PRT_sysinfo_cgroup_get_memlimit_unlimited Group=sysinfo Overhead=1 Level=2 NoEnv Template="omrsysinfo_cgroup_get_memlimit: no memory limit is defined by the cgroup of memory subsystem, using physical memory as the limit"
 TraceEvent=Trc_PRT_sysinfo_cgroup_get_memlimit Group=sysinfo Overhead=1 Level=1 NoEnv Template="omrsysinfo_cgroup_get_memlimit: memory limit is 0x%llx bytes" 
 TraceExit=Trc_PRT_sysinfo_cgroup_get_memlimit_Exit Group=sysinfo Overhead=1 Level=3 NoEnv Template="omrsysinfo_cgroup_get_memlimit exiting with rc=%d"
+
+TraceEvent=Trc_PRT_signal_registerSignalHandlerWithOS_registeredHandler1 Group=signal Overhead=1 Level=1 NoEnv Template="registerSignalHandlerWithOS, registered signal handler with OS, portLibrarySignalNo=0x%X, unixSignalNo=0x%X, handler=%p, oldOSHandler=%p" 

@@ -212,7 +212,7 @@ static struct {
 };
 
 static omrthread_t asynchSignalReporterThread = NULL;
-static int32_t registerMasterHandlers(OMRPortLibrary *portLibrary, uint32_t flags, uint32_t allowedSubsetOfFlags);
+static int32_t registerMasterHandlers(OMRPortLibrary *portLibrary, uint32_t flags, uint32_t allowedSubsetOfFlags, void **oldOSHandler);
 static void removeAsyncHandlers(OMRPortLibrary *portLibrary);
 static uint32_t mapUnixSignalToPortLib(uint32_t signalNo, siginfo_t *sigInfo);
 #if defined(J9ZOS390)
@@ -221,7 +221,7 @@ static intptr_t addAsyncSignalsToSet(sigset_t *ss);
 #if defined(OMR_PORT_ASYNC_HANDLER)
 static int J9THREAD_PROC asynchSignalReporter(void *userData);
 #endif
-static uint32_t registerSignalHandlerWithOS(OMRPortLibrary *portLibrary, uint32_t portLibrarySignalNo, unix_sigaction handler);
+static uint32_t registerSignalHandlerWithOS(OMRPortLibrary *portLibrary, uint32_t portLibrarySignalNo, unix_sigaction handler, void **oldOSHandler);
 static uint32_t destroySignalTools(OMRPortLibrary *portLibrary);
 static int mapPortLibSignalToUnix(uint32_t portLibSignal);
 static uint32_t countInfoInCategory(struct OMRPortLibrary *portLibrary, void *info, uint32_t category);
@@ -337,7 +337,7 @@ omrsig_protect(struct OMRPortLibrary *portLibrary, omrsig_protected_fn fn, void 
 
 		/* Acquire the masterHandlerMonitor and install the handler via registerMasterHandlers. */
 		omrthread_monitor_enter(masterHandlerMonitor);
-		rc = registerMasterHandlers(portLibrary, flags, OMRPORT_SIG_FLAG_SIGALLSYNC);
+		rc = registerMasterHandlers(portLibrary, flags, OMRPORT_SIG_FLAG_SIGALLSYNC, NULL);
 		omrthread_monitor_exit(masterHandlerMonitor);
 
 		if (0 != rc) {
@@ -406,13 +406,13 @@ omrsig_set_async_signal_handler(struct OMRPortLibrary *portLibrary, omrsig_handl
 	if (OMR_ARE_ANY_BITS_SET(signalOptionsGlobal, OMRPORT_SIG_OPTIONS_REDUCED_SIGNALS_ASYNCHRONOUS)) {
 		/* -Xrs was set, we can't protect against any signals, do not install any handlers except SIGXFSZ*/
 		if (OMR_ARE_ANY_BITS_SET(flags, OMRPORT_SIG_FLAG_SIGXFSZ) && OMR_ARE_ANY_BITS_SET(signalOptionsGlobal, OMRPORT_SIG_OPTIONS_SIGXFSZ)) {
-			rc = registerMasterHandlers(portLibrary, OMRPORT_SIG_FLAG_SIGXFSZ, OMRPORT_SIG_FLAG_SIGALLASYNC);
+			rc = registerMasterHandlers(portLibrary, OMRPORT_SIG_FLAG_SIGXFSZ, OMRPORT_SIG_FLAG_SIGALLASYNC, NULL);
 		} else {
 			Trc_PRT_signal_omrsig_set_async_signal_handler_will_not_set_handler_due_to_Xrs(handler, handler_arg, flags);
 			rc = -1;
 		}
 	} else {
-		rc = registerMasterHandlers(portLibrary, flags, OMRPORT_SIG_FLAG_SIGALLASYNC);
+		rc = registerMasterHandlers(portLibrary, flags, OMRPORT_SIG_FLAG_SIGALLASYNC, NULL);
 	}
 	omrthread_monitor_exit(masterHandlerMonitor);
 
@@ -1063,12 +1063,14 @@ masterASynchSignalHandler(int signal, siginfo_t *sigInfo, void *contextInfo)
  *
  * The use of this function forces the flags SA_RESTART | SA_SIGINFO | SA_NODEFER to be set for the new signal action
  *
+ * oldOSHandler points to the old signal handler function.
+ *
  * The old action for the signal handler is stored in oldActions. These must be restored before the portlibrary is shut down.
  *
  * @return 0 upon success, non-zero otherwise.
  */
 static uint32_t
-registerSignalHandlerWithOS(OMRPortLibrary *portLibrary, uint32_t portLibrarySignalNo,  unix_sigaction handler)
+registerSignalHandlerWithOS(OMRPortLibrary *portLibrary, uint32_t portLibrarySignalNo,  unix_sigaction handler, void **oldOSHandler)
 {
 	int unixSignalNo = mapPortLibSignalToUnix(portLibrarySignalNo);
 	struct sigaction newAction;
@@ -1136,8 +1138,11 @@ registerSignalHandlerWithOS(OMRPortLibrary *portLibrary, uint32_t portLibrarySig
 		Trc_PRT_signal_registerSignalHandlerWithOS_failed_to_registerHandler(portLibrarySignalNo, unixSignalNo, handler);
 		return -1;
 	} else {
-		Trc_PRT_signal_registerSignalHandlerWithOS_registeredHandler(portLibrarySignalNo, unixSignalNo, handler);
+		Trc_PRT_signal_registerSignalHandlerWithOS_registeredHandler1(portLibrarySignalNo, unixSignalNo, handler, oldActions[unixSignalNo].action.sa_sigaction);
 		oldActions[unixSignalNo].restore = 1;
+		if (NULL != oldOSHandler) {
+			*oldOSHandler = (void *)oldActions[unixSignalNo].action.sa_sigaction;
+		}
 	}
 
 	/* CMVC 96193 signalsWithMasterHandlers is checked without acquiring the masterHandlerMonitor */
@@ -1255,15 +1260,16 @@ addAsyncSignalsToSet(sigset_t *ss)
  * Calls to this function must be synchronized using masterHandlerMonitor.
  *
  * @param[in] flags the flags that we want signals for
- * @param[in] allowedSubsetOfFlags must be one of
- * OMRPORT_SIG_FLAG_SIGALLSYNC, or OMRPORT_SIG_FLAG_SIGALLASYNC
+ * @param[in] allowedSubsetOfFlags must be one of OMRPORT_SIG_FLAG_SIGALLSYNC, or
+ *            OMRPORT_SIG_FLAG_SIGALLASYNC
+ * @param[out] oldOSHandler points to the old signal handler function
  *
  * @return	0 upon success; OMRPORT_SIG_ERROR otherwise.
  *			Possible failure scenarios include attempting to register a handler for
  *			a signal that is not included in the allowedSubsetOfFlags
 */
 static int32_t
-registerMasterHandlers(OMRPortLibrary *portLibrary, uint32_t flags, uint32_t allowedSubsetOfFlags)
+registerMasterHandlers(OMRPortLibrary *portLibrary, uint32_t flags, uint32_t allowedSubsetOfFlags, void **oldOSHandler)
 {
 	uint32_t flagsSignalsOnly = 0;
 	unix_sigaction handler = NULL;
@@ -1294,7 +1300,7 @@ registerMasterHandlers(OMRPortLibrary *portLibrary, uint32_t flags, uint32_t all
 			if (OMR_ARE_ANY_BITS_SET(flagsSignalsOnly, portSignalType)) {
 				/* we need a master handler for this (portSignalType's) signal */
 
-				if (0 != registerSignalHandlerWithOS(portLibrary, portSignalType, handler)) {
+				if (0 != registerSignalHandlerWithOS(portLibrary, portSignalType, handler, oldOSHandler)) {
 					return OMRPORT_SIG_ERROR;
 				}
 			}

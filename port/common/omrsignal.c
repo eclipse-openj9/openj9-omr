@@ -174,13 +174,19 @@ omrsig_set_async_signal_handler(struct OMRPortLibrary *portLibrary, omrsig_handl
 
 /*
  * @brief Similar to omrsig_set_async_signal_handler. Refer to omrsig_set_async_signal_handler's description above.
- * Differences: 1) one omrsig_handler_fn handler is registered with a signal at any time instead of multiple handlers.
- * 2) The address to the old signal handler function is stored in oldOSHandler.
+ * A new element is added to the asyncHandlerList for omrsig_handler_fn, and masterASynchSignalHandler is registered
+ * with the OS for the signal corresponding to the specified portlibSignalFlag. masterASynchSignalHandler invokes
+ * asyncHandlerList elements when a relevant signal is raised. If portlibSignalFlag is 0, then the asyncHandlerList
+ * entry corresponding to omrsig_handler_fn is removed, and related resources are freed. portlibSignalFlag can only
+ * have one signal flag set; otherwise, OMRPORT_SIG_ERROR is returned. One omrsig_handler_fn handler is registered
+ * with a signal at any time instead of multiple handlers. When associating a new omrsig_handler_fn with a signal,
+ * prior omrsig_handler_fn(s) are dissociated from the signal. The address of the old signal handler function is
+ * stored in oldOSHandler. This function supports all signals listed in OMRPORT_SIG_FLAG_SIGALLASYNC.
  *
  * @param[in] portLibrary The port library
  * @param[in] handler the function to call if an asynchronous signal arrives
  * @param[in] handler_arg the argument to handler
- * @param[in] portlibSignalFlag port library signal flag
+ * @param[in] portlibSignalFlag a single port library signal flag, or 0 to remove the omrsig_handler_fn entry
  * @param[out] oldOSHandler points to the old signal handler function
  *
  * @return 0 on success or non-zero on failure

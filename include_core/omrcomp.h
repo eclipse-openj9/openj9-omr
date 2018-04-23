@@ -575,6 +575,7 @@ typedef struct U_128 {
 #define OMR_ARE_ANY_BITS_SET(value, bits) (0 != ((value) & (bits)))
 #define OMR_ARE_ALL_BITS_SET(value, bits) ((bits) == ((value) & (bits)))
 #define OMR_ARE_NO_BITS_SET(value, bits) (!OMR_ARE_ANY_BITS_SET(value, bits))
+#define OMR_IS_ONLY_ONE_BIT_SET(value) (0 == (value & (value - 1)))
 
 /* Workaround for gcc -Wunused-result, which was added in 4.5.4 */
 #if defined(__GNUC__) && ((__GNUC__ > 4) || ((__GNUC__ == 4) && (__GNUC_MINOR__ >= 5)))

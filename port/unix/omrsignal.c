@@ -320,7 +320,6 @@ omrsig_protect(struct OMRPortLibrary *portLibrary, omrsig_protected_fn fn, void 
 	omrthread_t thisThread = NULL;
 	uint32_t rc = 0;
 	uint32_t flagsSignalsOnly = 0;
-	uint32_t flagsWithoutMasterHandlers = 0;
 
 	Trc_PRT_signal_omrsig_protect_entered(fn, fn_arg, handler, handler_arg, flags);
 
@@ -332,16 +331,11 @@ omrsig_protect(struct OMRPortLibrary *portLibrary, omrsig_protected_fn fn, void 
 		return 0;
 	}
 
-	/* Check to see if we have already installed a masterHandler for these signal(s).
-	 * We will need to aquire the masterHandlerMonitor if flagsWithoutMasterHandlers is not 0 in order to install the handlers (and to check if another thread had "just" taken care of it).
-	 * If we do have masterHandlers installed already then OMRPORT_SIG_OPTIONS_REDUCED_SIGNALS_SYNCHRONOUS has not been set.
-	 */
 	flagsSignalsOnly = flags & OMRPORT_SIG_FLAG_SIGALLSYNC;
-	flagsWithoutMasterHandlers = flagsSignalsOnly & (~signalsWithMasterHandlers);
 
-	if (0 != flagsWithoutMasterHandlers) {
+	if (0 != flagsSignalsOnly) {
 
-		/* we have not installed handlers for all the signals, aquire the masterHandlerMonitor, check again and install handlers as required all done in registerMasterHandlers */
+		/* Acquire the masterHandlerMonitor and install the handler via registerMasterHandlers. */
 		omrthread_monitor_enter(masterHandlerMonitor);
 		rc = registerMasterHandlers(portLibrary, flags, OMRPORT_SIG_FLAG_SIGALLSYNC);
 		omrthread_monitor_exit(masterHandlerMonitor);
@@ -1272,7 +1266,6 @@ static int32_t
 registerMasterHandlers(OMRPortLibrary *portLibrary, uint32_t flags, uint32_t allowedSubsetOfFlags)
 {
 	uint32_t flagsSignalsOnly = 0;
-	uint32_t flagsWithoutHandlers = 0;
 	unix_sigaction handler = NULL;
 
 	if (OMRPORT_SIG_FLAG_SIGALLSYNC == allowedSubsetOfFlags) {
@@ -1284,22 +1277,21 @@ registerMasterHandlers(OMRPortLibrary *portLibrary, uint32_t flags, uint32_t all
 	}
 
 	flagsSignalsOnly = flags & allowedSubsetOfFlags;
-	flagsWithoutHandlers = flagsSignalsOnly & (~signalsWithMasterHandlers);
 
-	if (0 != flagsWithoutHandlers) {
+	if (0 != flagsSignalsOnly) {
 		/* registering some handlers */
 		uint32_t portSignalType = 0;
 
 		/* portSignalType starts off at 4 as it is the smallest synch
 		 * signal. In the case that we are registering an asynch
-		 * signal, flagsWithoutHandlers already has masked off the
+		 * signal, flagsSignalsOnly already has masked off the
 		 * synchronous signals (eg. "4") so we are not at risk of registering a handler
 		 * for an incorrect signal
 		 */
 		for (portSignalType = 4; portSignalType < allowedSubsetOfFlags; portSignalType = portSignalType << 1) {
 			/* iterate through all the  signals and register the master handler for those that don't have one yet */
 
-			if (OMR_ARE_ANY_BITS_SET(flagsWithoutHandlers, portSignalType)) {
+			if (OMR_ARE_ANY_BITS_SET(flagsSignalsOnly, portSignalType)) {
 				/* we need a master handler for this (portSignalType's) signal */
 
 				if (0 != registerSignalHandlerWithOS(portLibrary, portSignalType, handler)) {

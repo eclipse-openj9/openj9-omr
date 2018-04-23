@@ -44,9 +44,34 @@
 #include "ddr/scanner/Scanner.hpp"
 #include "ddr/ir/Symbol_IR.hpp"
 
-DDR_RC getOptions(OMRPortLibrary *portLibrary, int argc, char *argv[], const char **macroFile, const char **supersetFile,
-	const char **blobFile, const char **overrideListFile, vector<string> *debugFiles, const char **blacklistFile, bool *printEmptyTypes);
-DDR_RC readFileList(OMRPortLibrary *portLibrary, const char *debugFileList, vector<string> *debugFiles);
+struct Options
+{
+	const char *macroFile;
+	const char *supersetFile;
+	const char *blobFile;
+	const char *overrideListFile;
+	vector<string> debugFiles;
+	const char *blacklistFile;
+	bool printEmptyTypes;
+	bool showBlacklisted;
+
+	Options()
+		: macroFile(NULL)
+		, supersetFile(NULL)
+		, blobFile(NULL)
+		, overrideListFile(NULL)
+		, debugFiles()
+		, blacklistFile(NULL)
+		, printEmptyTypes(false)
+		, showBlacklisted(false)
+	{
+	}
+
+	DDR_RC configure(OMRPortLibrary *portLibrary, int argc, char *argv[]);
+
+private:
+	DDR_RC readFileList(OMRPortLibrary *portLibrary, const char *listFileName, vector<string> *fileNameList);
+};
 
 #undef DEBUG_PRINT_TYPES
 
@@ -89,16 +114,10 @@ main(int argc, char *argv[])
 #endif /* defined(J9ZOS390) */
 
 	/* Get options. */
-	const char *macroFile = NULL;
-	const char *supersetFile = NULL;
-	const char *blobFile = NULL;
-	const char *overrideListFile = NULL;
-	const char *blacklistFile = NULL;
-	bool printEmptyTypes = false;
-	vector<string> debugFiles;
+	Options options;
+
 	if (DDR_RC_OK == rc) {
-		rc = getOptions(&portLibrary, argc, argv, &macroFile, &supersetFile,
-			&blobFile, &overrideListFile, &debugFiles, &blacklistFile, &printEmptyTypes);
+		rc = options.configure(&portLibrary, argc, argv);
 	}
 
 	/* Create IR from input. */
@@ -108,13 +127,12 @@ main(int argc, char *argv[])
 	DwarfScanner scanner;
 #endif /* defined(_MSC_VER) */
 	Symbol_IR ir;
-	if ((DDR_RC_OK == rc) && !debugFiles.empty()) {
-		rc = scanner.startScan(&portLibrary, &ir, &debugFiles, blacklistFile);
+	if ((DDR_RC_OK == rc) && !options.debugFiles.empty()) {
+		rc = scanner.startScan(&portLibrary, &ir, &options.debugFiles, options.blacklistFile);
 
 #if defined(DEBUG_PRINT_TYPES)
 		printf("== scan results ==\n");
-		for (vector<Type *>::const_iterator type = ir._types.begin();
-				(DDR_RC_OK == rc) && (type != ir._types.end()); ++type) {
+		for (vector<Type *>::const_iterator type = ir._types.begin(); type != ir._types.end(); ++type) {
 			(*type)->acceptVisitor(printer);
 		}
 #endif /* DEBUG_PRINT_TYPES */
@@ -126,18 +144,17 @@ main(int argc, char *argv[])
 
 #if defined(DEBUG_PRINT_TYPES)
 		printf("== after removing duplicates ==\n");
-		for (vector<Type *>::const_iterator type = ir._types.begin();
-				(DDR_RC_OK == rc) && (type != ir._types.end()); ++type) {
+		for (vector<Type *>::const_iterator type = ir._types.begin(); type != ir._types.end(); ++type) {
 			(*type)->acceptVisitor(printer);
 		}
 #endif /* DEBUG_PRINT_TYPES */
 	}
 
 	/* Read macros. */
-	if ((DDR_RC_OK == rc) && (NULL != macroFile)) {
+	if ((DDR_RC_OK == rc) && (NULL != options.macroFile)) {
 		MacroTool macroTool;
 
-		rc = macroTool.getMacros(macroFile);
+		rc = macroTool.getMacros(options.macroFile);
 		/* Add Macros to IR. */
 		if (DDR_RC_OK == rc) {
 			rc = macroTool.addMacrosToIR(&ir);
@@ -145,13 +162,32 @@ main(int argc, char *argv[])
 	}
 
 	/* Apply Type Overrides; must be after scanning and loading macros. */
-	if ((DDR_RC_OK == rc) && (NULL != overrideListFile)) {
-		rc = ir.applyOverridesList(&portLibrary, overrideListFile);
+	if ((DDR_RC_OK == rc) && (NULL != options.overrideListFile)) {
+		rc = ir.applyOverridesList(&portLibrary, options.overrideListFile);
+	}
+
+	if ((DDR_RC_OK == rc) && options.showBlacklisted) {
+		OMRPORT_ACCESS_FROM_OMRPORT(&portLibrary);
+		bool none = true;
+
+		for (vector<Type *>::const_iterator type = ir._types.begin(); type != ir._types.end(); ++type) {
+			if ((*type)->_blacklisted) {
+				if (none) {
+					none = false;
+					omrtty_printf("Blacklisted types:\n");
+				}
+				omrtty_printf("  %s\n", (*type)->_name.c_str());
+			}
+		}
+
+		if (none) {
+			omrtty_printf("No blacklisted types.\n");
+		}
 	}
 
 	/* Generate output. */
 	if ((DDR_RC_OK == rc) && !ir._types.empty()) {
-		rc = genBlob(&portLibrary, &ir, supersetFile, blobFile, printEmptyTypes);
+		rc = genBlob(&portLibrary, &ir, options.supersetFile, options.blobFile, options.printEmptyTypes);
 	}
 
 	portLibrary.port_shutdown_library(&portLibrary);
@@ -168,20 +204,17 @@ matchesEither(const char *string, const char *match1, const char *match2)
 }
 
 DDR_RC
-getOptions(OMRPortLibrary *portLibrary, int argc, char *argv[], const char **macroFile, const char **supersetFile,
-	const char **blobFile, const char **overrideListFile, vector<string> *debugFiles, const char **blacklistFile,
-	bool *printEmptyTypes)
+Options::configure(OMRPortLibrary *portLibrary, int argc, char *argv[])
 {
 	DDR_RC rc = DDR_RC_OK;
 	bool showHelp = (argc < 2);
 	bool showVersion = false;
-	*printEmptyTypes = false;
 	for (int i = 1; i < argc; ++i) {
 		if (matchesEither(argv[i], "-f", "--filelist")) {
 			if (argc < i + 2) {
 				showHelp = true;
 			} else {
-				rc = readFileList(portLibrary, argv[++i], debugFiles);
+				rc = readFileList(portLibrary, argv[++i], &debugFiles);
 				if (DDR_RC_OK != rc) {
 					break;
 				}
@@ -190,40 +223,42 @@ getOptions(OMRPortLibrary *portLibrary, int argc, char *argv[], const char **mac
 			if (argc < i + 2) {
 				showHelp = true;
 			} else {
-				*macroFile = argv[++i];
+				macroFile = argv[++i];
 			}
 		} else if (matchesEither(argv[i], "-s", "--superset")) {
 			if (argc < i + 2) {
 				showHelp = true;
 			} else {
-				*supersetFile = argv[++i];
+				supersetFile = argv[++i];
 			}
 		} else if (matchesEither(argv[i], "-b", "--blob")) {
 			if (argc < i + 2) {
 				showHelp = true;
 			} else {
-				*blobFile = argv[++i];
+				blobFile = argv[++i];
 			}
 		} else if (matchesEither(argv[i], "-o", "--overrides")) {
 			if (argc < i + 2) {
 				showHelp = true;
 			} else {
-				*overrideListFile = argv[++i];
+				overrideListFile = argv[++i];
 			}
 		} else if (matchesEither(argv[i], "-l", "--blacklist")) {
 			if (argc < i + 2) {
 				showHelp = true;
 			} else {
-				*blacklistFile = argv[++i];
+				blacklistFile = argv[++i];
 			}
 		} else if (matchesEither(argv[i], "-e", "--show-empty")) {
-			*printEmptyTypes = true;
+			printEmptyTypes = true;
+		} else if (matchesEither(argv[i], "-sb", "--show-blacklisted")) {
+			showBlacklisted = true;
 		} else if (matchesEither(argv[i], "-v", "--version")) {
 			showVersion = true;
 		} else if ('-' == argv[i][0]) {
 			showHelp = true;
 		} else {
-			debugFiles->push_back(argv[i]);
+			debugFiles.push_back(argv[i]);
 		}
 	}
 
@@ -260,6 +295,8 @@ getOptions(OMRPortLibrary *portLibrary, int argc, char *argv[], const char **mac
 			"  -e, --show-empty\n"
 			"      Print structures, enums, and unions to the superset and blob even if\n"
 			"      they do not contain any fields. The default behaviour is to hide them.\n"
+			"  -sb, --show-blacklisted\n"
+			"      Print names of types that were blacklisted.\n"
 		  );
 	} else if (showVersion) {
 		printf("Version 0.1\n");
@@ -268,33 +305,33 @@ getOptions(OMRPortLibrary *portLibrary, int argc, char *argv[], const char **mac
 }
 
 DDR_RC
-readFileList(OMRPortLibrary *portLibrary, const char *debugFileList, vector<string> *debugFiles)
+Options::readFileList(OMRPortLibrary *portLibrary, const char *listFileName, vector<string> *fileNameList)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portLibrary);
 	DDR_RC rc = DDR_RC_ERROR;
 
 	/* Read list of debug files to scan from the input file. */
-	intptr_t fd = omrfile_open(debugFileList, EsOpenRead, 0660);
+	intptr_t fd = omrfile_open(listFileName, EsOpenRead, 0660);
 	if (0 > fd) {
-		ERRMSG("Failure attempting to open %s", debugFileList);
+		ERRMSG("Failure attempting to open %s", listFileName);
 	} else {
-		int64_t offset = omrfile_seek(fd, 0, SEEK_END);
-		if (-1 != offset) {
-			char *buff = (char *)malloc(offset + 1);
+		int64_t length = omrfile_seek(fd, 0, SEEK_END);
+		if (-1 != length) {
+			char *buff = (char *)malloc(length + 1);
 			if (NULL == buff) {
-				ERRMSG("Unable to allocate memory for file contents: %s", debugFileList);
+				ERRMSG("Unable to allocate memory for file contents: %s", listFileName);
 			} else {
-				memset(buff, 0, offset + 1);
+				memset(buff, 0, length + 1);
 				omrfile_seek(fd, 0, SEEK_SET);
 
-				if (offset != omrfile_read(fd, buff, offset)) {
-					ERRMSG("Failure reading %s", debugFileList);
+				if (length != omrfile_read(fd, buff, length)) {
+					ERRMSG("Failure reading %s", listFileName);
 				} else {
 					const char *delimiters = "\r\n";
 					char *fileName = strtok(buff, delimiters);
 					while (NULL != fileName) {
 						if ('\0' != *fileName) {
-							debugFiles->push_back(string(fileName));
+							fileNameList->push_back(string(fileName));
 						}
 						fileName = strtok(NULL, delimiters);
 					}

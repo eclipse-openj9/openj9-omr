@@ -1065,7 +1065,10 @@ masterASynchSignalHandler(int signal, siginfo_t *sigInfo, void *contextInfo)
  *
  * oldOSHandler points to the old signal handler function.
  *
- * The old action for the signal handler is stored in oldActions. These must be restored before the portlibrary is shut down.
+ * During first registration, the old action for the signal handler is stored in oldActions. The original OS handler must
+ * be restored before the portlibrary is shut down. For subsequent registrations, old action is not stored in oldActions
+ * in order to avoid overwriting the original OS handler. Instead, a local sigaction variable is used to store old action
+ * for subsequent registrations. oldOSHandler is updated to point to oldAction.sa_sigaction (signal handler function).
  *
  * @return 0 upon success, non-zero otherwise.
  */
@@ -1079,7 +1082,7 @@ registerSignalHandlerWithOS(OMRPortLibrary *portLibrary, uint32_t portLibrarySig
 
 	/* do not block any signals */
 	if (0 != sigemptyset(&newAction.sa_mask)) {
-		return -1;
+		return OMRPORT_SIG_ERROR;
 	}
 
 	/* Automatically restart system calls that get interrupted by any signal
@@ -1105,7 +1108,7 @@ registerSignalHandlerWithOS(OMRPortLibrary *portLibrary, uint32_t portLibrarySig
 	 */
 	if (OMR_ARE_ANY_BITS_SET(portLibrarySignalNo, OMRPORT_SIG_FLAG_SIGALLASYNC)) {
 		if (0 != addAsyncSignalsToSet(&newAction.sa_mask)) {
-			return -1;
+			return OMRPORT_SIG_ERROR;
 		}
 	}
 #endif /* defined(J9ZOS390) */
@@ -1114,7 +1117,7 @@ registerSignalHandlerWithOS(OMRPortLibrary *portLibrary, uint32_t portLibrarySig
 	/* if we are installing a handler for an asynchronous signal block SIGTRAP */
 	if (OMR_ARE_ANY_BITS_SET(portLibrarySignalNo, OMRPORT_SIG_FLAG_SIGALLASYNC)) {
 		if (sigaddset(&newAction.sa_mask, SIGTRAP)) {
-			return -1;
+			return OMRPORT_SIG_ERROR;
 		}
 	}
 #endif
@@ -1133,15 +1136,36 @@ registerSignalHandlerWithOS(OMRPortLibrary *portLibrary, uint32_t portLibrarySig
 	newAction.sa_sigaction = handler;
 #endif
 
-	/* now that we've set up the sigaction struct the way we want it, register the handler with the OS */
-	if (OMRSIG_SIGACTION(unixSignalNo, &newAction, &oldActions[unixSignalNo].action)) {
-		Trc_PRT_signal_registerSignalHandlerWithOS_failed_to_registerHandler(portLibrarySignalNo, unixSignalNo, handler);
-		return -1;
+	/* Now that we've set up the sigaction struct the way we want it, register the handler with the OS.
+	 * When registering the handler for the first time, we store the old OS handler in
+	 * oldActions[unixSignalNo].action. This allows us to restore to the original OS handler during shutdown.
+	 * For subsequent registrations, we don't update oldActions[unixSignalNo].action since this would overwrite
+	 * the original OS handler. Instead, we use a local sigaction variable to store the old OS handler.
+	 */
+	if (0 == oldActions[unixSignalNo].restore) {
+		/* Initialize oldAction. */
+		memset(&oldActions[unixSignalNo].action, 0, sizeof(struct sigaction));
+		if (OMRSIG_SIGACTION(unixSignalNo, &newAction, &oldActions[unixSignalNo].action)) {
+			Trc_PRT_signal_registerSignalHandlerWithOS_failed_to_registerHandler(portLibrarySignalNo, unixSignalNo, handler);
+			return OMRPORT_SIG_ERROR;
+		} else {
+			Trc_PRT_signal_registerSignalHandlerWithOS_registeredHandler1(portLibrarySignalNo, unixSignalNo, handler, oldActions[unixSignalNo].action.sa_sigaction);
+			oldActions[unixSignalNo].restore = 1;
+			if (NULL != oldOSHandler) {
+				*oldOSHandler = (void *)oldActions[unixSignalNo].action.sa_sigaction;
+			}
+		}
 	} else {
-		Trc_PRT_signal_registerSignalHandlerWithOS_registeredHandler1(portLibrarySignalNo, unixSignalNo, handler, oldActions[unixSignalNo].action.sa_sigaction);
-		oldActions[unixSignalNo].restore = 1;
-		if (NULL != oldOSHandler) {
-			*oldOSHandler = (void *)oldActions[unixSignalNo].action.sa_sigaction;
+		struct sigaction oldAction;
+		memset(&oldAction, 0, sizeof(struct sigaction));
+		if (OMRSIG_SIGACTION(unixSignalNo, &newAction, &oldAction)) {
+			Trc_PRT_signal_registerSignalHandlerWithOS_failed_to_registerHandler(portLibrarySignalNo, unixSignalNo, handler);
+			return OMRPORT_SIG_ERROR;
+		} else {
+			Trc_PRT_signal_registerSignalHandlerWithOS_registeredHandler1(portLibrarySignalNo, unixSignalNo, handler, oldAction.sa_sigaction);
+			if (NULL != oldOSHandler) {
+				*oldOSHandler = (void *)oldAction.sa_sigaction;
+			}
 		}
 	}
 

@@ -497,7 +497,7 @@ omrsig_set_single_async_signal_handler(struct OMRPortLibrary *portLibrary, omrsi
 uint32_t
 omrsig_map_os_signal_to_portlib_signal(struct OMRPortLibrary *portLibrary, uint32_t osSignalValue)
 {
-	return 0;
+	return mapUnixSignalToPortLib(osSignalValue, NULL);
 }
 
 int32_t

@@ -35,9 +35,7 @@ target_link_libraries(omrgctest
 	omrcore
 	omrvmstartup
 	${OMR_GC_LIB}
-	${OMR_HOOK_LIB}
 	${OMR_PORT_LIB}
-	${OMR_TRACE_LIB}
 )
 
 # TODO check linker flags from makefile are ported properly.

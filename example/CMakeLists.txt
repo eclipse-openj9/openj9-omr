@@ -42,8 +42,6 @@ if(OMR_GC)
 		pugixml
 		omrcore
 		omrvmstartup
-		${OMR_HOOK_LIB}
-		${OMR_TRACE_LIB}
 		${OMR_GC_LIB}
 		${OMR_PORT_LIB}
 	)

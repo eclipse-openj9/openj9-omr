@@ -139,8 +139,6 @@ target_link_libraries(omrsubscribertest
 		omrtestutil
 		omrcore
 		omrvmstartup
-		${OMR_TRACE_LIB}
-		${OMR_HOOK_LIB}
 		${OMR_PORT_LIB}
 )
 add_dependencies(omrsubscribertest
@@ -160,8 +158,6 @@ target_link_libraries(omrtraceoptiontest
 		omrtestutil
 		omrcore
 		omrvmstartup
-		${OMR_TRACE_LIB}
-		${OMR_HOOK_LIB}
 		${OMR_PORT_LIB}
 )
 add_dependencies(omrtraceoptiontest

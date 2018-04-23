@@ -58,10 +58,6 @@ if(OMR_HOST_OS STREQUAL "win")
 	)
 endif()
 
-target_link_libraries(omralgotest
-	${OMR_HOOK_LIB}
-)
-
 if(OMR_HOST_OS STREQUAL "zos")
 	target_link_libraries(omralgotest j9a2e)
 endif()

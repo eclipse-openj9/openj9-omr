@@ -34,7 +34,7 @@ vpath main_function.cpp $(top_srcdir)/util/main_function
 
 MODULE_INCLUDES += ./configuration $(OMR_PUGIXML_DIR) $(OMR_GTEST_INCLUDES) ../util
 MODULE_INCLUDES += \
-  $(top_srcdir)/example/glue \
+  $(OMRGLUE_INCLUDES) \
   $(OMR_IPATH) \
   $(OMRGC_IPATH)
 

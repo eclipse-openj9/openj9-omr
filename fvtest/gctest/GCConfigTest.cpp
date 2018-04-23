@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2017 IBM Corp. and others
+ * Copyright (c) 2015, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -613,11 +613,11 @@ GCConfigTest::attachChildEntry(ObjectEntry *parentEntry, ObjectEntry *childEntry
 		fomrobject_t *childSlot = firstSlot + parentEntry->numOfRef;
 		standardWriteBarrierStore(exampleVM->_omrVMThread, parentEntry->objPtr, childSlot, childEntry->objPtr);
 		gcTestEnv->log(LEVEL_VERBOSE, "\tadd child %s(%p[0x%llx]) to parent %s(%p[0x%llx]) slot %p[%llx].\n", 
-        			childEntry->name, childEntry->objPtr, *(childEntry->objPtr), parentEntry->name, parentEntry->objPtr, *(parentEntry->objPtr), childSlot, (uintptr_t)*childSlot);
+		               childEntry->name, childEntry->objPtr, childEntry->objPtr->header.raw(), parentEntry->name, parentEntry->objPtr, parentEntry->objPtr->header.raw(), childSlot, (uintptr_t)*childSlot);
 		parentEntry->numOfRef += 1;
 	} else {
 		gcTestEnv->log(LEVEL_ERROR, "%s:%d Invalid XML input: numOfFields %d defined for %s(%p[0x%llx]) is not enough to hold child reference for %s(%p[0x%llx]).\n",
-				__FILE__, __LINE__, parentEntry->numOfRef, parentEntry->name, parentEntry->objPtr, *(parentEntry->objPtr), childEntry->name, childEntry->objPtr, *(childEntry->objPtr));
+				__FILE__, __LINE__, parentEntry->numOfRef, parentEntry->name, parentEntry->objPtr, parentEntry->objPtr->header.raw(), childEntry->name, childEntry->objPtr, childEntry->objPtr->header.raw());
 		rc = 1;
 	}
 	return rc;
@@ -638,7 +638,7 @@ GCConfigTest::removeObjectFromRootTable(const char *name)
 		gcTestEnv->log(LEVEL_ERROR, "%s:%d Failed to remove root object %s from root table!\n", __FILE__, __LINE__, name);
 		goto done;
 	}
-	gcTestEnv->log(LEVEL_VERBOSE, "Remove object %s(%p[0x%llx]) from root table.\n", name, rootEntry->rootPtr, *(rootEntry->rootPtr));
+	gcTestEnv->log(LEVEL_VERBOSE, "Remove object %s(%p[0x%llx]) from root table.\n", name, rootEntry->rootPtr, rootEntry->rootPtr->header.raw());
 
 	rt = 0;
 done:
@@ -658,7 +658,7 @@ GCConfigTest::removeObjectFromObjectTable(const char *name)
 		gcTestEnv->log(LEVEL_ERROR, "%s:%d Failed to remove object %s from object table!\n", __FILE__, __LINE__, name);
 		goto done;
 	}
-	gcTestEnv->log(LEVEL_VERBOSE, "Remove object %s(%p[0x%llx]) from object table.\n", name, foundEntry->objPtr, *(foundEntry->objPtr));
+	gcTestEnv->log(LEVEL_VERBOSE, "Remove object %s(%p[0x%llx]) from object table.\n", name, foundEntry->objPtr, foundEntry->objPtr->header.raw());
 
 	rt = 0;
 done:
@@ -683,7 +683,7 @@ GCConfigTest::removeObjectFromParentSlot(const char *name, ObjectEntry *parentEn
 	while (currentSlot < endSlot) {
 		GC_SlotObject slotObject(exampleVM->_omrVM, currentSlot);
 		if (objEntry->objPtr == slotObject.readReferenceFromSlot()) {
-			gcTestEnv->log(LEVEL_VERBOSE, "Remove object %s(%p[0x%llx]) from parent %s(%p[0x%llx]) slot %p.\n", name, objEntry->objPtr, *(objEntry->objPtr), parentEntry->name, parentEntry->objPtr, *(parentEntry->objPtr), slotObject.readAddressFromSlot());
+			gcTestEnv->log(LEVEL_VERBOSE, "Remove object %s(%p[0x%llx]) from parent %s(%p[0x%llx]) slot %p.\n", name, objEntry->objPtr, objEntry->objPtr->header.raw(), parentEntry->name, parentEntry->objPtr, parentEntry->objPtr->header.raw(), slotObject.readAddressFromSlot());
 			slotObject.writeReferenceToSlot(NULL);
 			rt = 0;
 			break;

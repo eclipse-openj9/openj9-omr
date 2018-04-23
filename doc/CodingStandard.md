@@ -1,5 +1,5 @@
 <!--
-Copyright (c) 2016, 2016 IBM Corp. and others
+Copyright (c) 2016, 2018 IBM Corp. and others
 
 This program and the accompanying materials are made available under
 the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1462,4 +1462,97 @@ Foo::Func(int*) ...
 Good 
 ```
 OMR::Foo::Func(int*) 
+```
+
+## Platform Codes
+
+Platform-specific macro usages and compile definitions is a topic of standartization. Today the following macros are used
+to check which platform is the host for compilation OMR in three dimensions.
+
+### Platform Architecture
+
+<table>
+    <tr>
+        <th>Macro</th>
+        <th>Architecture</th>
+    </tr>
+    <tr>
+        <td>J9ARM</td>
+        <td>ARM</td>
+    </tr>
+    <tr>
+        <td>PPC</td>
+        <td>IBM Power Systems</td>
+    </tr>
+    <tr>
+        <td>OMRZTPF</td>
+        <td>IBM z/TPF</td>
+    </tr>
+    <tr>
+        <td>TODO: code for s390</td>
+        <td>IBM System z</td>
+    </tr>
+    <tr>
+        <td>_X86_</td>
+        <td>x86</td>
+    </tr>
+    <tr>
+        <td>_AMD64_</td>
+        <td>x86-64</td>
+    </tr>
+</table>
+
+### Bit Capacity
+
+<table>
+    <tr>
+        <th>Macro</th>
+        <th>Bit Capacity</th>
+    </tr>
+    <tr>
+        <td>OMR_ENV_DATA64</td>
+        <td>64</td>
+    </tr>
+</table>
+
+### Operating System
+
+TODO: in the future, we would like to have OMR_OS_xxx flags for operating system similar to OMR_ARCH_xxx ones.
+
+<table>
+    <tr>
+        <th>Macro</th>
+        <th>Operating System</th>
+    </tr>
+    <tr>
+        <td>AIX</td>
+        <td>IBM AIX</td>
+    </tr>
+    <tr>
+        <td>LINUX</td>
+        <td>GNU/Linux</td>
+    </tr>
+    <tr>
+        <td>OMR_OS_WINDOWS</td>
+        <td>Microsoft Windows</td>
+    </tr>
+    <tr>
+        <td>OSX</td>
+        <td>Apple OS X</td>
+    </tr>
+    <tr>
+        <td>J9ZOS390</td>
+        <td>IBM z/OS</td>
+    </tr>
+</table>
+
+### Examples
+
+Correct
+```c
+#if defined(LINUX) && !defined(OMRZTPF)
+
+#if defined(OMR_OS_WINDOWS) && defined(OMR_ENV_DATA64)
+
+#if defined( _AMD64_)
 ```

@@ -503,7 +503,7 @@ omrsig_map_os_signal_to_portlib_signal(struct OMRPortLibrary *portLibrary, uint3
 int32_t
 omrsig_map_portlib_signal_to_os_signal(struct OMRPortLibrary *portLibrary, uint32_t portlibSignalFlag)
 {
-	return OMRPORT_SIG_ERROR;
+	return (int32_t)mapPortLibSignalToUnix(portlibSignalFlag);
 }
 
 /*

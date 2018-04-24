@@ -20,6 +20,8 @@
 # SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
 ###############################################################################
 
+set(GC_SRC_LIST "")
+
 omr_add_hookgen(
 	INPUT include/omrmm.hdf
 	PUBLIC_DIR "${omr_BINARY_DIR}"
@@ -49,7 +51,7 @@ add_library(omrgc_tracegen OBJECT
 	${CMAKE_CURRENT_BINARY_DIR}/ut_j9vgc.c
 )
 
-set (GC_SRC_LIST
+list(APPEND GC_SRC_LIST
 	base/AddressOrderedListPopulator.cpp
 	base/AllocationContext.cpp
 	base/AllocationInterfaceGeneric.cpp
@@ -57,10 +59,7 @@ set (GC_SRC_LIST
 	base/BumpAllocatedListPopulator.cpp
 	base/CardTable.cpp
 	base/Collector.cpp
-	base/CollectorLanguageInterface.cpp
 	base/Configuration.cpp
-	base/CopyScanCache.cpp
-	base/CycleState.cpp
 	base/Dispatcher.cpp
 	base/EmptyListPopulator.cpp
 	base/EnvironmentBase.cpp
@@ -77,7 +76,6 @@ set (GC_SRC_LIST
 	base/HeapRegionIterator.cpp
 	base/HeapRegionManager.cpp
 	base/HeapRegionManagerTarok.cpp
-	base/HeapSplit.cpp
 	base/HeapVirtualMemory.cpp
 	base/LightweightNonReentrantLock.cpp
 	base/LightweightNonReentrantReaderWriterLock.cpp
@@ -100,11 +98,9 @@ set (GC_SRC_LIST
 	base/MemorySubSpace.cpp
 	base/MemorySubSpaceChildIterator.cpp
 	base/MemorySubSpaceFlat.cpp
-	base/MemorySubSpaceGenerational.cpp
 	base/MemorySubSpaceGeneric.cpp
 	base/MemorySubSpacePoolIterator.cpp
 	base/MemorySubSpaceRegionIterator.cpp
-	base/MemorySubSpaceSemiSpace.cpp
 	base/MemorySubSpaceUniSpace.cpp
 	base/ModronAssertions.cpp
 	base/NUMAManager.cpp
@@ -114,14 +110,12 @@ set (GC_SRC_LIST
 	base/ObjectAllocationInterface.cpp
 	base/ObjectHeapBufferedIterator.cpp
 	base/ObjectHeapIteratorAddressOrderedList.cpp
-	base/ObjectMap.cpp
 	base/Packet.cpp
 	base/PacketList.cpp
 	base/ParallelDispatcher.cpp
 	base/ParallelHeapWalker.cpp
 	base/ParallelObjectHeapIterator.cpp
 	base/ParallelMarkTask.cpp
-	base/ParallelSweepChunk.cpp
 	base/ParallelTask.cpp
 	base/PhysicalArena.cpp
 	base/PhysicalArenaRegionBased.cpp
@@ -144,7 +138,6 @@ set (GC_SRC_LIST
 	base/TLHAllocationInterface.cpp
 	base/TLHAllocationSupport.cpp
 	base/Task.cpp
-	base/Validator.cpp
 	base/VirtualMemory.cpp
 	base/WorkPacketOverflow.cpp
 	base/WorkPackets.cpp
@@ -152,96 +145,27 @@ set (GC_SRC_LIST
 	base/gcspinlock.cpp
 	base/gcutils.cpp
 	base/modronapicore.cpp
-	base/segregated/AllocationContextSegregated.cpp
-	base/segregated/ConfigurationSegregated.cpp
-	base/segregated/GlobalAllocationManagerSegregated.cpp
-	base/segregated/HeapRegionDescriptorSegregated.cpp
-	base/segregated/LockingFreeHeapRegionList.cpp
-	base/segregated/LockingHeapRegionQueue.cpp
-	base/segregated/MemoryPoolAggregatedCellList.cpp
-	base/segregated/MemoryPoolSegregated.cpp
-	base/segregated/MemorySubSpaceSegregated.cpp
-	base/segregated/ObjectHeapIteratorSegregated.cpp
-	base/segregated/OverflowSegregated.cpp
-	base/segregated/RegionPoolSegregated.cpp
-	base/segregated/SegregatedAllocationInterface.cpp
-	base/segregated/SegregatedAllocationTracker.cpp
-	base/segregated/SegregatedGC.cpp
-	base/segregated/SegregatedListPopulator.cpp
-	base/segregated/SegregatedMarkingScheme.cpp
-	base/segregated/SegregatedSweepTask.cpp
-	base/segregated/SizeClasses.cpp
-	base/segregated/SweepSchemeSegregated.cpp
-	base/segregated/WorkPacketsSegregated.cpp
-	base/standard/CompactFixHeapForWalkTask.cpp
-	base/standard/CompactScheme.cpp
-	base/standard/ConcurrentCardTable.cpp
-	base/standard/ConcurrentCardTableForWC.cpp
-	base/standard/ConcurrentClearNewMarkBitsTask.cpp
-	base/standard/ConcurrentCompleteTracingTask.cpp
-	base/standard/ConcurrentFinalCleanCardsTask.cpp
-	base/standard/ConcurrentGC.cpp
-	base/standard/ConcurrentOverflow.cpp
-	base/standard/ConcurrentPrepareCardTableTask.cpp
-	base/standard/ConcurrentSafepointCallback.cpp
-	base/standard/ConcurrentScanRememberedSetTask.cpp
-	base/standard/ConcurrentScavengeTask.cpp
-	base/standard/ConcurrentSweepScheme.cpp
-	base/standard/ConfigurationFlat.cpp
-	base/standard/ConfigurationGenerational.cpp
-	base/standard/ConfigurationStandard.cpp
-	base/standard/CopyScanCacheChunk.cpp
-	base/standard/CopyScanCacheChunkInHeap.cpp
-	base/standard/CopyScanCacheList.cpp
-	base/standard/CopyScanCacheStandard.cpp
-	base/standard/EnvironmentStandard.cpp
-	base/standard/HeapMemoryPoolIterator.cpp
-	base/standard/HeapRegionDescriptorStandard.cpp
-	base/standard/HeapRegionManagerStandard.cpp
-	base/standard/HeapWalker.cpp
-	base/standard/OverflowStandard.cpp
-	base/standard/ParallelCompactTask.cpp
-	base/standard/ParallelGlobalGC.cpp
-	base/standard/ParallelScavengeTask.cpp
-	base/standard/ParallelSweepScheme.cpp
-	base/standard/PhysicalSubArenaVirtualMemorySemiSpace.cpp
-	base/standard/RSOverflow.cpp
-	base/standard/Scavenger.cpp
-	base/standard/SweepHeapSectioningSegmented.cpp
-	base/standard/WorkPacketsConcurrent.cpp
-	base/standard/WorkPacketsStandard.cpp
 
 	startup/mminitcore.cpp
 	startup/omrgcalloc.cpp
 	startup/omrgcstartup.cpp
 
-	stats/AllocationFailureStats.cpp
 	stats/AllocationStats.cpp
 	stats/CardCleaningStats.cpp
 	stats/ClassUnloadStats.cpp
-	stats/CompactStats.cpp
-	stats/ConcurrentCardTableStats.cpp
-	stats/ConcurrentGCStats.cpp
-	stats/ConcurrentSweepStats.cpp
-	stats/CopyForwardStatsCore.cpp
-	stats/HeapMemorySnapshot.cpp
+
 	stats/HeapResizeStats.cpp
-	stats/HeapStats.cpp
 	stats/LargeObjectAllocateStats.cpp
 	stats/MarkStats.cpp
 	stats/MetronomeStats.cpp
-	stats/PercolateStats.cpp
 	stats/RootScannerStats.cpp
-	stats/ScavengerCopyScanRatio.cpp
-	stats/ScavengerHotFieldStats.cpp
-	stats/ScavengerStats.cpp
+	stats/ScavengerHotFieldStats.cpp # TODO only compile if scavenger or VLHGC
+	stats/ScavengerStats.cpp # TODO only compile if scavenger or VLHGC. Is this actually used by VLHGC?
 	stats/SweepStats.cpp
 
 	structs/ForwardedHeader.cpp
 	structs/HashTableIterator.cpp
 	structs/OMRVMThreadListIterator.cpp
-	structs/ObjectHeapIterator.cpp
-	structs/ObjectIteratorState.cpp
 	structs/PoolIterator.cpp
 	structs/SublistFragment.cpp
 	structs/SublistIterator.cpp
@@ -262,6 +186,113 @@ set (GC_SRC_LIST
 	verbose/VerboseWriterStreamOutput.cpp
 	verbose/handler_standard/VerboseHandlerOutputStandard.cpp
 )
+
+if(OMR_GC_OBJECT_MAP)
+	list(APPEND GC_SRC_LIST
+		base/ObjectMap.cpp
+	)
+endif()
+
+if(OMR_GC_MODRON_STANDARD)
+	list(APPEND GC_SRC_LIST
+		base/standard/ConfigurationFlat.cpp
+		base/standard/ConfigurationStandard.cpp
+		base/standard/CopyScanCacheChunk.cpp
+		base/standard/CopyScanCacheChunkInHeap.cpp
+		base/standard/EnvironmentStandard.cpp
+		base/standard/HeapMemoryPoolIterator.cpp
+		base/standard/HeapRegionDescriptorStandard.cpp
+		base/standard/HeapRegionManagerStandard.cpp
+		base/standard/HeapWalker.cpp
+		base/standard/OverflowStandard.cpp
+		base/standard/ParallelGlobalGC.cpp
+		base/standard/ParallelSweepScheme.cpp
+		base/standard/SweepHeapSectioningSegmented.cpp
+		base/standard/WorkPacketsStandard.cpp
+	)
+	if (OMR_GC_MODRON_COMPACTION)
+		list(APPEND GC_SRC_LIST
+			base/standard/CompactFixHeapForWalkTask.cpp
+			base/standard/CompactScheme.cpp
+			base/standard/ParallelCompactTask.cpp
+			
+			stats/CompactStats.cpp
+		)
+	endif()
+	if(OMR_GC_MODRON_CONCURRENT_MARK)
+		list(APPEND GC_SRC_LIST
+			base/standard/ConcurrentCardTable.cpp
+			base/standard/ConcurrentCardTableForWC.cpp
+			base/standard/ConcurrentClearNewMarkBitsTask.cpp
+			base/standard/ConcurrentCompleteTracingTask.cpp
+			base/standard/ConcurrentFinalCleanCardsTask.cpp
+			base/standard/ConcurrentGC.cpp
+			base/standard/ConcurrentOverflow.cpp
+			base/standard/ConcurrentPrepareCardTableTask.cpp
+			base/standard/ConcurrentSafepointCallback.cpp
+			base/standard/WorkPacketsConcurrent.cpp
+			
+			stats/ConcurrentGCStats.cpp
+		)
+		if(OMR_GC_MODRON_SCAVENGER)
+			list(APPEND GC_SRC_LIST
+				base/standard/ConcurrentScanRememberedSetTask.cpp
+			)
+		endif()
+	endif()
+	if(OMR_GC_CONCURRENT_SWEEP)
+		list(APPEND GC_SRC_LIST
+			base/standard/ConcurrentSweepScheme.cpp
+		)
+	endif()
+	if(OMR_GC_MODRON_SCAVENGER)
+		list(APPEND GC_SRC_LIST
+			base/HeapSplit.cpp # TODO delete as this should not be used anymore!
+			base/MemorySubSpaceGenerational.cpp
+			base/MemorySubSpaceSemiSpace.cpp
+			
+			base/standard/ConfigurationGenerational.cpp
+			base/standard/CopyScanCacheList.cpp
+			base/standard/ParallelScavengeTask.cpp
+			base/standard/PhysicalSubArenaVirtualMemorySemiSpace.cpp
+			base/standard/RSOverflow.cpp
+			base/standard/Scavenger.cpp
+			
+			stats/ScavengerCopyScanRatio.cpp
+		)
+		if(OMR_GC_CONCURRENT_SCAVENGER)
+			list(APPEND GC_SRC_LIST
+				base/standard/ConcurrentScavengeTask.cpp
+			)
+		endif()
+	endif()
+endif()
+
+if(OMR_GC_SEGREGATED_HEAP)
+	list(APPEND GC_SRC_LIST
+		base/segregated/AllocationContextSegregated.cpp
+		base/segregated/ConfigurationSegregated.cpp
+		base/segregated/GlobalAllocationManagerSegregated.cpp
+		base/segregated/HeapRegionDescriptorSegregated.cpp
+		base/segregated/LockingFreeHeapRegionList.cpp
+		base/segregated/LockingHeapRegionQueue.cpp
+		base/segregated/MemoryPoolAggregatedCellList.cpp
+		base/segregated/MemoryPoolSegregated.cpp
+		base/segregated/MemorySubSpaceSegregated.cpp
+		base/segregated/ObjectHeapIteratorSegregated.cpp
+		base/segregated/OverflowSegregated.cpp
+		base/segregated/RegionPoolSegregated.cpp
+		base/segregated/SegregatedAllocationInterface.cpp
+		base/segregated/SegregatedAllocationTracker.cpp
+		base/segregated/SegregatedGC.cpp
+		base/segregated/SegregatedListPopulator.cpp
+		base/segregated/SegregatedMarkingScheme.cpp
+		base/segregated/SegregatedSweepTask.cpp
+		base/segregated/SizeClasses.cpp
+		base/segregated/SweepSchemeSegregated.cpp
+		base/segregated/WorkPacketsSegregated.cpp
+	)
+endif()
 
 add_library(omrgc STATIC
 	${GC_SRC_LIST}

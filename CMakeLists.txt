@@ -124,7 +124,6 @@ else()
 	message(FATAL_ERROR "OMR: Build tools are required. See OMR_TOOLS and OMR_TOOLS_IMPORTFILE")
 endif()
 
-add_subdirectory(compiler)
 add_subdirectory(thread)
 add_subdirectory(port)
 add_subdirectory(util)
@@ -140,6 +139,10 @@ endif(OMR_GC)
 if(OMR_DDR)
 	add_subdirectory(ddr)
 endif(OMR_DDR)
+
+if(OMR_JIT)
+	add_subdirectory(compiler)
+endif()
 
 if(OMR_JITBUILDER)
 	add_subdirectory(jitbuilder)

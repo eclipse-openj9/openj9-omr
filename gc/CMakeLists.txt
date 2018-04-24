@@ -20,8 +20,6 @@
 # SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
 ###############################################################################
 
-set(GC_SRC_LIST "")
-
 omr_add_hookgen(
 	INPUT include/omrmm.hdf
 	PUBLIC_DIR "${omr_BINARY_DIR}"
@@ -51,7 +49,7 @@ add_library(omrgc_tracegen OBJECT
 	${CMAKE_CURRENT_BINARY_DIR}/ut_j9vgc.c
 )
 
-list(APPEND GC_SRC_LIST
+add_library(omrgc STATIC
 	base/AddressOrderedListPopulator.cpp
 	base/AllocationContext.cpp
 	base/AllocationInterfaceGeneric.cpp
@@ -185,119 +183,125 @@ list(APPEND GC_SRC_LIST
 	verbose/VerboseWriterHook.cpp
 	verbose/VerboseWriterStreamOutput.cpp
 	verbose/handler_standard/VerboseHandlerOutputStandard.cpp
+	$<TARGET_OBJECTS:omrgc_tracegen>
 )
 
 if(OMR_GC_OBJECT_MAP)
-	list(APPEND GC_SRC_LIST
-		base/ObjectMap.cpp
+	target_sources(omrgc
+		PRIVATE
+			base/ObjectMap.cpp
 	)
 endif()
 
 if(OMR_GC_MODRON_STANDARD)
-	list(APPEND GC_SRC_LIST
-		base/standard/ConfigurationFlat.cpp
-		base/standard/ConfigurationStandard.cpp
-		base/standard/CopyScanCacheChunk.cpp
-		base/standard/CopyScanCacheChunkInHeap.cpp
-		base/standard/EnvironmentStandard.cpp
-		base/standard/HeapMemoryPoolIterator.cpp
-		base/standard/HeapRegionDescriptorStandard.cpp
-		base/standard/HeapRegionManagerStandard.cpp
-		base/standard/HeapWalker.cpp
-		base/standard/OverflowStandard.cpp
-		base/standard/ParallelGlobalGC.cpp
-		base/standard/ParallelSweepScheme.cpp
-		base/standard/SweepHeapSectioningSegmented.cpp
-		base/standard/WorkPacketsStandard.cpp
+	target_sources(omrgc
+		PRIVATE
+			base/standard/ConfigurationFlat.cpp
+			base/standard/ConfigurationStandard.cpp
+			base/standard/CopyScanCacheChunk.cpp
+			base/standard/CopyScanCacheChunkInHeap.cpp
+			base/standard/EnvironmentStandard.cpp
+			base/standard/HeapMemoryPoolIterator.cpp
+			base/standard/HeapRegionDescriptorStandard.cpp
+			base/standard/HeapRegionManagerStandard.cpp
+			base/standard/HeapWalker.cpp
+			base/standard/OverflowStandard.cpp
+			base/standard/ParallelGlobalGC.cpp
+			base/standard/ParallelSweepScheme.cpp
+			base/standard/SweepHeapSectioningSegmented.cpp
+			base/standard/WorkPacketsStandard.cpp
 	)
 	if (OMR_GC_MODRON_COMPACTION)
-		list(APPEND GC_SRC_LIST
-			base/standard/CompactFixHeapForWalkTask.cpp
-			base/standard/CompactScheme.cpp
-			base/standard/ParallelCompactTask.cpp
-			
-			stats/CompactStats.cpp
+		target_sources(omrgc
+			PRIVATE
+				base/standard/CompactFixHeapForWalkTask.cpp
+				base/standard/CompactScheme.cpp
+				base/standard/ParallelCompactTask.cpp
+				
+				stats/CompactStats.cpp
 		)
 	endif()
 	if(OMR_GC_MODRON_CONCURRENT_MARK)
-		list(APPEND GC_SRC_LIST
-			base/standard/ConcurrentCardTable.cpp
-			base/standard/ConcurrentCardTableForWC.cpp
-			base/standard/ConcurrentClearNewMarkBitsTask.cpp
-			base/standard/ConcurrentCompleteTracingTask.cpp
-			base/standard/ConcurrentFinalCleanCardsTask.cpp
-			base/standard/ConcurrentGC.cpp
-			base/standard/ConcurrentOverflow.cpp
-			base/standard/ConcurrentPrepareCardTableTask.cpp
-			base/standard/ConcurrentSafepointCallback.cpp
-			base/standard/WorkPacketsConcurrent.cpp
-			
-			stats/ConcurrentGCStats.cpp
+		target_sources(omrgc
+			PRIVATE
+				base/standard/ConcurrentCardTable.cpp
+				base/standard/ConcurrentCardTableForWC.cpp
+				base/standard/ConcurrentClearNewMarkBitsTask.cpp
+				base/standard/ConcurrentCompleteTracingTask.cpp
+				base/standard/ConcurrentFinalCleanCardsTask.cpp
+				base/standard/ConcurrentGC.cpp
+				base/standard/ConcurrentOverflow.cpp
+				base/standard/ConcurrentPrepareCardTableTask.cpp
+				base/standard/ConcurrentSafepointCallback.cpp
+				base/standard/WorkPacketsConcurrent.cpp
+				
+				stats/ConcurrentGCStats.cpp
 		)
 		if(OMR_GC_MODRON_SCAVENGER)
-			list(APPEND GC_SRC_LIST
-				base/standard/ConcurrentScanRememberedSetTask.cpp
+			target_sources(omrgc
+				PRIVATE
+					base/standard/ConcurrentScanRememberedSetTask.cpp
 			)
 		endif()
 	endif()
 	if(OMR_GC_CONCURRENT_SWEEP)
-		list(APPEND GC_SRC_LIST
-			base/standard/ConcurrentSweepScheme.cpp
+		target_sources(omrgc
+			PRIVATE
+				base/standard/ConcurrentSweepScheme.cpp
 		)
 	endif()
 	if(OMR_GC_MODRON_SCAVENGER)
-		list(APPEND GC_SRC_LIST
-			base/HeapSplit.cpp # TODO delete as this should not be used anymore!
-			base/MemorySubSpaceGenerational.cpp
-			base/MemorySubSpaceSemiSpace.cpp
-			
-			base/standard/ConfigurationGenerational.cpp
-			base/standard/CopyScanCacheList.cpp
-			base/standard/ParallelScavengeTask.cpp
-			base/standard/PhysicalSubArenaVirtualMemorySemiSpace.cpp
-			base/standard/RSOverflow.cpp
-			base/standard/Scavenger.cpp
-			
-			stats/ScavengerCopyScanRatio.cpp
+		target_sources(omrgc
+			PRIVATE
+				base/HeapSplit.cpp # TODO delete as this should not be used anymore!
+				base/MemorySubSpaceGenerational.cpp
+				base/MemorySubSpaceSemiSpace.cpp
+				
+				base/standard/ConfigurationGenerational.cpp
+				base/standard/CopyScanCacheList.cpp
+				base/standard/ParallelScavengeTask.cpp
+				base/standard/PhysicalSubArenaVirtualMemorySemiSpace.cpp
+				base/standard/RSOverflow.cpp
+				base/standard/Scavenger.cpp
+				
+				stats/ScavengerCopyScanRatio.cpp
 		)
 		if(OMR_GC_CONCURRENT_SCAVENGER)
-			list(APPEND GC_SRC_LIST
-				base/standard/ConcurrentScavengeTask.cpp
+			ltarget_sources(omrgc
+				PRIVATE
+					base/standard/ConcurrentScavengeTask.cpp
 			)
 		endif()
 	endif()
 endif()
 
 if(OMR_GC_SEGREGATED_HEAP)
-	list(APPEND GC_SRC_LIST
-		base/segregated/AllocationContextSegregated.cpp
-		base/segregated/ConfigurationSegregated.cpp
-		base/segregated/GlobalAllocationManagerSegregated.cpp
-		base/segregated/HeapRegionDescriptorSegregated.cpp
-		base/segregated/LockingFreeHeapRegionList.cpp
-		base/segregated/LockingHeapRegionQueue.cpp
-		base/segregated/MemoryPoolAggregatedCellList.cpp
-		base/segregated/MemoryPoolSegregated.cpp
-		base/segregated/MemorySubSpaceSegregated.cpp
-		base/segregated/ObjectHeapIteratorSegregated.cpp
-		base/segregated/OverflowSegregated.cpp
-		base/segregated/RegionPoolSegregated.cpp
-		base/segregated/SegregatedAllocationInterface.cpp
-		base/segregated/SegregatedAllocationTracker.cpp
-		base/segregated/SegregatedGC.cpp
-		base/segregated/SegregatedListPopulator.cpp
-		base/segregated/SegregatedMarkingScheme.cpp
-		base/segregated/SegregatedSweepTask.cpp
-		base/segregated/SizeClasses.cpp
-		base/segregated/SweepSchemeSegregated.cpp
-		base/segregated/WorkPacketsSegregated.cpp
+	target_sources(omrgc
+		PRIVATE
+			base/segregated/AllocationContextSegregated.cpp
+			base/segregated/ConfigurationSegregated.cpp
+			base/segregated/GlobalAllocationManagerSegregated.cpp
+			base/segregated/HeapRegionDescriptorSegregated.cpp
+			base/segregated/LockingFreeHeapRegionList.cpp
+			base/segregated/LockingHeapRegionQueue.cpp
+			base/segregated/MemoryPoolAggregatedCellList.cpp
+			base/segregated/MemoryPoolSegregated.cpp
+			base/segregated/MemorySubSpaceSegregated.cpp
+			base/segregated/ObjectHeapIteratorSegregated.cpp
+			base/segregated/OverflowSegregated.cpp
+			base/segregated/RegionPoolSegregated.cpp
+			base/segregated/SegregatedAllocationInterface.cpp
+			base/segregated/SegregatedAllocationTracker.cpp
+			base/segregated/SegregatedGC.cpp
+			base/segregated/SegregatedListPopulator.cpp
+			base/segregated/SegregatedMarkingScheme.cpp
+			base/segregated/SegregatedSweepTask.cpp
+			base/segregated/SizeClasses.cpp
+			base/segregated/SweepSchemeSegregated.cpp
+			base/segregated/WorkPacketsSegregated.cpp
 	)
 endif()
 
-add_library(omrgc STATIC
-	${GC_SRC_LIST}
-	$<TARGET_OBJECTS:omrgc_tracegen>
-)
 add_dependencies(omrgc omrgc_hookgen)
 
 if(OMR_WARNINGS_AS_ERRORS)

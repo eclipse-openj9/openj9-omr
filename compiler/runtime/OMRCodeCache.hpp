@@ -208,6 +208,76 @@ public:
                                                         char *file,
                                                         uint32_t lineNumber);
 
+   /**
+    * @brief Getter for cached CodeCacheManager object
+    *
+    * @returns The cached CodeCacheManager object
+    */
+   TR::CodeCacheManager *manager() { return _manager; }
+
+   /**
+    * @brief Setter for CodeCacheManager object
+    *
+    * @param[in] m : The CodeCacheManager object
+    */
+   void setManager(TR::CodeCacheManager *m) { _manager = m; }
+
+   /**
+    * @brief Getter for trampolineSyncList
+    *
+    * @returns The head of the trampolineSyncList
+    */
+   CodeCacheTempTrampolineSyncBlock *trampolineSyncList() { return _trampolineSyncList; }
+
+   /**
+    * @brief Setter for trampolineSyncList
+    *
+    * @param[in] sl : A CodeCacheTempTrampolineSyncBlock to be the new head of the trampolineSyncList
+    */
+   void setTrampolineSyncList(CodeCacheTempTrampolineSyncBlock *sl) { _trampolineSyncList = sl; }
+
+   /**
+    * @brief Getter for the current hashEntrySlab
+    *
+    * @returns The head of the hashEntrySlab list (i.e., the current hashEntrySlab)
+    */
+   CodeCacheHashEntrySlab *hashEntrySlab() { return _hashEntrySlab; }
+
+   /**
+    * @brief Setter for hashEntrySlab
+    *
+    * @param[in] hes : A CodeCacheHashEntrySlab to be the new head of the hashEntrySlab list
+    */
+   void setHashEntrySlab(CodeCacheHashEntrySlab *hes) { _hashEntrySlab = hes; }
+
+   /**
+    * @brief Getter for the current hashEntryFreeList
+    *
+    * @returns The head of the hashEntryFreeList list
+    */
+   CodeCacheHashEntry *hashEntryFreeList() { return _hashEntryFreeList; }
+
+   /**
+    * @brief Setter for hashEntryFreeList
+    *
+    * @param[in] : The new head of the list of free CodeCacheHashEntry's
+    */
+   void setHashEntryFreeList(CodeCacheHashEntry *fl) { _hashEntryFreeList = fl; }
+
+   /**
+    * @brief Getter for the current freeBlockList
+    *
+    * @returns The head of the freeBlockList list
+    */
+   CodeCacheFreeCacheBlock *freeBlockList() { return _freeBlockList; }
+
+   /**
+    * @brief Setter for freeBlockList
+    *
+    * @param[in] : The new head of the CodeCacheFreeCacheBlock list
+    */
+   void setFreeBlockList(CodeCacheFreeCacheBlock *fcb) { _freeBlockList = fcb; }
+
    TR::CodeCacheManager *_manager;
 
    TR::Monitor *_mutex;

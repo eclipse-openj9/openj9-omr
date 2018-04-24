@@ -3007,7 +3007,7 @@ OMR::Z::Machine::findBestFreeRegister(TR::Instruction   *currentInstruction,
       preference = 0;
       }
 
-   uint64_t prefRegMask = _registerFile[preference] ? _registerFile[preference]->getRealRegisterMask() : 0;
+   uint64_t prefRegMask = TR::RealRegister::isRealReg((TR::RealRegister::RegNum)preference) ? _registerFile[preference]->getRealRegisterMask() : 0;
 
    if (liveRegOn && virtualReg != NULL)
       {
@@ -3300,7 +3300,7 @@ OMR::Z::Machine::findBestFreeRegister(TR::Instruction   *currentInstruction,
             {
             preference = 0;
             }
-         prefRegMask = _registerFile[preference] ? _registerFile[preference]->getRealRegisterMask() : 0;
+         prefRegMask = TR::RealRegister::isRealReg((TR::RealRegister::RegNum)preference) ? _registerFile[preference]->getRealRegisterMask() : 0;
          }
 
       if (!enableHighWordRA)

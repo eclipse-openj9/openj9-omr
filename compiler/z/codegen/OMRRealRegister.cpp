@@ -304,23 +304,14 @@ OMR::Z::RealRegister::setRegister4Field(uint32_t *instruction,RegNum reg)
 bool
 OMR::Z::RealRegister::isPseudoRealReg(RegNum reg)
   {
-  if (reg < FirstGPR                              ||
-      (reg > LastAssignableGPR && reg < FirstFPR) ||
-       reg > LastAssignableFPR)
-     {
-     return true;
-     }
-  else
-     {
-    return false;
-    }
+  return (reg < FirstGPR || reg > LastHPR);
   }
 
 // static method
 bool
 OMR::Z::RealRegister::isRealReg(RegNum reg)
    {
-   return !TR::RealRegister::isPseudoRealReg(reg);
+   return (reg >= FirstGPR && reg <= LastHPR);
    }
 
 // static method

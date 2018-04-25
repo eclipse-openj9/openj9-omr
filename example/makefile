@@ -45,16 +45,12 @@ SRCS := $(wildcard *.cpp)
 #
 # Here, OBJECTS is initialized with the list of source files in this directory,
 # and the .cpp file extension is stripped from each filename.
-OBJECTS := $(SRCS:%.cpp=%)
-
-# argmain.cpp is a helper file supplied by the fvtest framework. It defines a
-# portable main() function, which handles conversion of wchar_t or EBCDIC
-# command-line options into OMR's internal string format (UTF-8).
-OBJECTS += argmain
+OBJECTS := $(SRCS:%.cpp=%) main_function
 
 # Append the object file extension (.o or .obj) to each filename.
 OBJECTS := $(addsuffix $(OBJEXT),$(OBJECTS))
 
+vpath main_function.cpp $(top_srcdir)/util/main_function
 
 # MODULE_INCLUDES is a special variable that contains additional include paths.
 # These include paths take precedence over include paths specified by the
@@ -69,10 +65,8 @@ MODULE_INCLUDES += \
   $(OMR_GTEST_INCLUDES) \
   ./glue
 
-# Specify the search path for argmain.cpp.
 # OMR_GTEST_DIR is a special variable defined by configure.mk. It contains the
 # location of the googletest source code.
-vpath argmain.cpp $(top_srcdir)/fvtest/omrGtestGlue
 
 # MODULE_STATIC_LIBS is a special variable that contains a list of static
 # libraries needed to build this artifact.

@@ -27,20 +27,20 @@ MODULE_NAME := omrthreadextendedtest
 ARTIFACT_TYPE := cxx_executable
 
 OBJECTS := \
-  argmain \
   processTimeTest \
   threadCpuTimeTest \
   threadExtendedTestHelpers \
   threadExtendedTestMain \
-  timeBaseTest
+  timeBaseTest \
+  main_function
 
 OBJECTS := $(addsuffix $(OBJEXT),$(OBJECTS))
+
+vpath main_function.cpp $(top_srcdir)/util/main_function
 
 MODULE_INCLUDES +=  $(top_srcdir)/fvtest/util
 MODULE_INCLUDES += $(OMR_GTEST_INCLUDES)
 MODULE_CXXFLAGS += $(OMR_GTEST_CXXFLAGS)
-
-vpath argmain.cpp $(top_srcdir)/fvtest/omrGtestGlue
 
 MODULE_STATIC_LIBS += \
   omrGtest \

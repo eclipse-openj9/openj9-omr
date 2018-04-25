@@ -28,7 +28,6 @@ ARTIFACT_TYPE := cxx_executable
 
 OBJECTS := \
   abortTest \
-  argmain \
   CEnterExit \
   CMonitor \
   createTest \
@@ -42,7 +41,10 @@ OBJECTS := \
   rwMutexTest \
   sanityTest \
   sanityTestHelper \
-  threadTestHelp 
+  threadTestHelp \
+  main_function
+
+vpath main_function.cpp $(top_srcdir)/util/main_function
 
 ifeq (1,$(OMR_THR_FORK_SUPPORT))
   OBJECTS += forkResetTest forkResetRWMutexTest
@@ -53,8 +55,6 @@ OBJECTS := $(addsuffix $(OBJEXT),$(OBJECTS))
 MODULE_INCLUDES +=  $(top_srcdir)/fvtest/util
 MODULE_INCLUDES += $(OMR_GTEST_INCLUDES) $(top_srcdir)/thread
 MODULE_CXXFLAGS += $(OMR_GTEST_CXXFLAGS)
-
-vpath argmain.cpp $(top_srcdir)/fvtest/omrGtestGlue
 
 MODULE_STATIC_LIBS += \
   omrGtest \

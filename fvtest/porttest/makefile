@@ -26,7 +26,6 @@ MODULE_NAME := omrporttest
 ARTIFACT_TYPE := cxx_executable
 
 OBJECTS := \
-  argmain \
   fileTest \
   heapTest \
   omrportTest \
@@ -52,7 +51,11 @@ OBJECTS := \
   si_numcpusTest \
   testHelpers \
   testProcessHelpers \
-  vmemTest
+  vmemTest \
+  main_function
+
+vpath main_function.cpp $(top_srcdir)/util/main_function
+
 ifeq (1,$(OMR_OPT_CUDA))
   OBJECTS += \
     cudaBasic \
@@ -74,8 +77,6 @@ OBJECTS := $(addsuffix $(OBJEXT),$(OBJECTS))
 MODULE_INCLUDES += $(top_srcdir)/port/common ../util
 MODULE_INCLUDES += $(OMR_GTEST_INCLUDES)
 MODULE_CXXFLAGS += $(OMR_GTEST_CXXFLAGS)
-
-vpath argmain.cpp $(top_srcdir)/fvtest/omrGtestGlue
 
 MODULE_STATIC_LIBS += \
   omrGtest \

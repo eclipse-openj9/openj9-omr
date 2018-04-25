@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2017 IBM Corp. and others
+# Copyright (c) 2018, 2018 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -20,12 +20,9 @@
 # SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
 ###############################################################################
 
-if(OMR_HOST_OS STREQUAL "zos")
-	add_subdirectory(a2e)
-endif()
-add_subdirectory(avl)
-add_subdirectory(hashtable)
-add_subdirectory(hookable)
-add_subdirectory(main_function)
-add_subdirectory(omrutil)
-add_subdirectory(pool)
+add_library(omr_main_function INTERFACE)
+
+target_sources(omr_main_function
+	INTERFACE
+		${CMAKE_CURRENT_SOURCE_DIR}/main_function.cpp
+)

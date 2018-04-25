@@ -20,7 +20,9 @@
 ###############################################################################
 
 add_library(omrGtest STATIC
-	omrGtest.cpp)
+	omrGtest.cpp
+)
+
 target_include_directories(omrGtest
 	PRIVATE
 		${PROJECT_SOURCE_DIR}/third_party/gtest-1.8.0/
@@ -28,6 +30,7 @@ target_include_directories(omrGtest
 	PUBLIC
 		${PROJECT_SOURCE_DIR}/third_party/gtest-1.8.0/include
 )
+
 add_library(omrGtestGlue INTERFACE)
 
 target_include_directories(omrGtestGlue
@@ -35,11 +38,11 @@ target_include_directories(omrGtestGlue
 		.
 )
 
-target_sources(omrGtestGlue INTERFACE
-	${CMAKE_CURRENT_SOURCE_DIR}/argmain.cpp
+target_link_libraries(omrGtestGlue
+	INTERFACE
+		omrGtest
+		omr_main_function
 )
-
-target_link_libraries(omrGtestGlue INTERFACE omrGtest)
 
 #TODO  system thread library should be linked in a more generic way.
 if(NOT OMR_HOST_OS STREQUAL "win")

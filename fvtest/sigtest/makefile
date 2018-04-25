@@ -25,14 +25,14 @@ include $(top_srcdir)/omrmakefiles/configure.mk
 MODULE_NAME := omrsigtest
 ARTIFACT_TYPE := cxx_executable
 
-OBJECTS := argmain main sigTest sigTestHelpers
+OBJECTS := main sigTest sigTestHelpers main_function
 OBJECTS := $(addsuffix $(OBJEXT),$(OBJECTS))
+
+vpath main_function.cpp $(top_srcdir)/util/main_function
 
 MODULE_INCLUDES += ../util
 MODULE_INCLUDES += $(OMR_GTEST_INCLUDES)
 MODULE_CXXFLAGS += $(OMR_GTEST_CXXFLAGS)
-
-vpath argmain.cpp $(top_srcdir)/fvtest/omrGtestGlue
 
 MODULE_STATIC_LIBS += \
   omrGtest \

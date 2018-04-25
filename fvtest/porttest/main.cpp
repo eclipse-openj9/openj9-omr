@@ -31,7 +31,7 @@ extern int omrmmap_runTests(struct OMRPortLibrary *portLibrary, char *argv0, cha
 PortTestEnvironment *portTestEnv;
 
 extern "C" int
-testMain(int argc, char **argv, char **envp)
+omr_main_entry(int argc, char **argv, char **envp)
 {
 	bool isChild = false;
 	bool earlyExit = false;
@@ -80,7 +80,7 @@ testMain(int argc, char **argv, char **envp)
 	DETACH_AND_DESTROY_THREADLIBRARY();
 
 	if (earlyExit) {
-		printf("exiting from testMain\n");
+		printf("exiting from omr_main_entry\n");
 		exit(result);
 	}
 

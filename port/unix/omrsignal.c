@@ -581,6 +581,12 @@ omrsig_map_portlib_signal_to_os_signal(struct OMRPortLibrary *portLibrary, uint3
 	return (int32_t)mapPortLibSignalToUnix(portlibSignalFlag);
 }
 
+int32_t
+omrsig_register_os_handler(struct OMRPortLibrary *portLibrary, uint32_t portlibSignalFlag, void *newOSHandler, void **oldOSHandler)
+{
+	return OMRPORT_SIG_ERROR;
+}
+
 /*
  * The full shutdown routine "sig_full_shutdown" overwrites this once we've completed startup
  */

@@ -226,6 +226,51 @@ omrsig_map_portlib_signal_to_os_signal(struct OMRPortLibrary *portLibrary, uint3
 }
 
 /**
+ * @brief Register a handler with the OS. For an invalid portlibSignalFlag, an error is returned.
+ * portlibSignalFlag is invalid: if it is zero or if multiple signal bits are specified or if the
+ * specified flag is not supported. If OS fails to register newOSHandler for the specified signal,
+ * then an error is returned. In error cases, oldOSHandler won't be updated.
+ *
+ * This function may override a master handler which was previously set by omrsig_protect or
+ * omrsig_set_*_async_signal_handler variant. The records associated with the master handler
+ * for the portlibSignalFlag signal are left unchanged when this function overrides the master
+ * handler. When the master handler is re-registered with the portlibSignalFlag signal, then
+ * the records associated with master handler don't need to be restored. An example of records
+ * is J9*AsyncHandlerRecord(s) in asyncHandlerList.
+ *
+ * Each platform variant of omrsignal.c should have a signalMap. signalMap should have a list of
+ * signals, which are supported on a platform. This function supports all signals listed in
+ * omrsignal.c::signalMap.
+ *
+ * On Unix variants, sigaction is used to register the handler. SA_SIGINFO flag is set.
+ * So, the signature of the signal handling function should be void (*)(int, siginfo_t *, void *).
+ * On zLinux, the signature changes to void (*)(int, siginfo_t *, void *, uintptr_t).
+ *
+ * sigaction isn't available on Windows. On Windows, signal is used to register the handler.
+ * The signature of the signal handling function should be void (*)(int).
+ *
+ * On Unix variants, original OS handler is cached in oldActions while registering the first handler
+ * with the OS. The original OS handler is restored during shutdown. If OMRSIG_SIGACTION is called outside
+ * OMR, then the original OS handler can get overwritten without being cached in oldActions. Subsequently,
+ * the oldActions can cache a user handler instead of the original OS handler. During shutdown, the
+ * original OS handler can be restored incorrectly. omrsig_register_os_handler lets a user register a
+ * handler with the OS while properly caching the original OS handler. The original OS handler is properly
+ * restored during shutdown.
+ *
+ * @param[in] portLibrary The port library
+ * @param[in] portlibSignalFlag a single port library signal flag
+ * @param[in] newOSHandler the new signal handler function to register
+ * @param[out] oldOSHandler points to the old signal handler function
+ *
+ * @return 0 on success or non-zero on failure
+ */
+int32_t
+omrsig_register_os_handler(struct OMRPortLibrary *portLibrary, uint32_t portlibSignalFlag, void *newOSHandler, void **oldOSHandler)
+{
+	return OMRPORT_SIG_ERROR;
+}
+
+/**
  * Determine if the port library is capable of protecting a function from the indicated signals in the indicated way.
  *
  * @param[in] portLibrary The port library

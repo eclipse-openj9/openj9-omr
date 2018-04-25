@@ -23,11 +23,6 @@ include(OmrAssert)
 
 omr_assert(TEST OMR_EXAMPLE)
 
-omr_assert(FATAL_ERROR
-	TEST OMR_FVTEST
-	MESSAGE "The example requires OMR_FVTEST=On"
-)
-
 add_library(omr_example_base INTERFACE)
 
 target_include_directories(omr_example_base
@@ -40,7 +35,7 @@ add_executable(example
 )
 
 target_link_libraries(example
-	omrGtestGlue
+	omr_main_function
 	pugixml
 	omrtestutil
 	omrcore

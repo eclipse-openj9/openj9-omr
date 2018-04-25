@@ -1203,86 +1203,113 @@ OMR::Z::TreeEvaluator::fbits2iEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    TR::Register * targetReg;
    TR::Register * sourceReg;
-   TR::Instruction * cursor = NULL;
-   TR::RegisterDependencyConditions * deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 2, cg);
-   //Disable FPE Version For Now Due To Performance Reasons
-   bool disabled = true;
-   sourceReg = cg->evaluate(node->getFirstChild());
 
-   TR::SymbolReference * f2iSR = cg->allocateLocalTemp(TR::Int32);
-   TR::MemoryReference * tempMR = generateS390MemoryReference(node, f2iSR, cg);
+   // Disable FPE version for now due to performance reasons.
+   bool disableFPInstructions = true;
 
-   TR::LabelSymbol * infinityNumber = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-   TR::LabelSymbol * negativeInfinityNumber = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-   TR::LabelSymbol * positiveInfinityNumber = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-   TR::LabelSymbol * cleansedNumber = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-   TR::Register * litBase = NULL;
-   if (node->getNumChildren() == 2)
+   // If child is a load with refCount == 1, then just use a regular load
+   // to load as an integer. 
+   if (node->getFirstChild()->isSingleRefUnevaluated() &&
+          node->getFirstChild()->getOpCode().isLoadVar())
       {
-      litBase = cg->evaluate(node->getSecondChild());
+      TR::MemoryReference * tempmemref = generateS390MemoryReference(node->getFirstChild(), cg);
+      targetReg = genericLoadHelper<32, 32, MemReg>(node, cg, tempmemref, NULL, false, true);
       }
-   else if (cg->isLiteralPoolOnDemandOn())
+   else
       {
-      litBase = cg->allocateRegister();
-      generateLoadLiteralPoolAddress(cg, node, litBase);
-      }
-   cleansedNumber->setEndInternalControlFlow();
-   generateRXInstruction(cg, TR::InstOpCode::TCEB, node, sourceReg, (uint32_t) 0x03f);
-   cursor = generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BZ, node, cleansedNumber);
-   cursor->setStartInternalControlFlow();
-   TR::MemoryReference * positiveInfinity = generateS390MemoryReference((int32_t)0x7f800000, TR::Int32, cg, litBase);
-   TR::MemoryReference * negativeInfinity = generateS390MemoryReference((int32_t)0xff800000, TR::Int32, cg, litBase);
-   TR::MemoryReference * NaN              = generateS390MemoryReference((int32_t)0x7fc00000, TR::Int32, cg, litBase);
-   if (litBase)
-      {
-      deps->addPostCondition(litBase, TR::RealRegister::AssignAny);
-      }
-   generateRXInstruction(cg, TR::InstOpCode::TCEB, node, sourceReg, (uint32_t) 0x00f);
-   generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BZ, node, infinityNumber);
-   if (node->normalizeNanValues())
-      {
-      generateRXInstruction(cg, TR::InstOpCode::LE, node, sourceReg, NaN);
-      }
-   generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BRC, node, cleansedNumber);
-   generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, infinityNumber);
-   generateRXInstruction(cg, TR::InstOpCode::TCEB, node, sourceReg, (uint32_t) 0x010);
-   generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BZ, node, positiveInfinityNumber);
-   generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, negativeInfinityNumber);
-   generateRXInstruction(cg, TR::InstOpCode::LE, node, sourceReg, negativeInfinity);
-   generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BRC, node, cleansedNumber);
-   generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, positiveInfinityNumber);
-   generateRXInstruction(cg, TR::InstOpCode::LE, node, sourceReg, positiveInfinity);
-   deps->addPostCondition(sourceReg, TR::RealRegister::AssignAny);
-   generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cleansedNumber, deps);
-   generateRXInstruction(cg, TR::InstOpCode::STE, node, sourceReg, tempMR);
-   if((TR::Compiler->target.cpu.getS390SupportsFPE()) && (!disabled))
-      {
-      TR::Register *targetReg = cg->allocate64bitRegister();
-      generateRRInstruction(cg, TR::InstOpCode::LGDR, node, targetReg, sourceReg);
-      generateRSInstruction(cg, TR::InstOpCode::SRLG, node, targetReg, targetReg, 32);
-      node->setRegister(targetReg);
-      cg->decReferenceCount(node->getFirstChild());
-      if (node->getNumChildren() == 2)
-         cg->decReferenceCount(node->getSecondChild());
-      return targetReg;
-      }
+      // Evaluate child, where sourceReg should be an FPR.
+      sourceReg = cg->evaluate(node->getFirstChild());
+      if ((TR::Compiler->target.cpu.getS390SupportsFPE()) && (!disableFPInstructions))
+         {
+         targetReg = cg->allocateRegister();
+         // Load into GR from the FPR
+         generateRRInstruction(cg, TR::InstOpCode::LGDR, node, targetReg, sourceReg);
 
-   TR::MemoryReference * tempMR1 = generateS390MemoryReference(node, f2iSR, cg);
-   generateRXInstruction(cg, TR::InstOpCode::STE, node, sourceReg, tempMR1);
+         // PoPs doesn't say much about this instruction, but it seems the data from the
+         // above LGDR instruction is loaded into the leftmost 32 bits. We must shift it
+         // to the rightmost 32 bits using the instruction below.
+         generateRSInstruction(cg, TR::InstOpCode::SRLG, node, targetReg, targetReg, 32);
+         }
+      else
+         {
+         TR::SymbolReference * f2iSR = cg->allocateLocalTemp(TR::Int32);
+         // It seems the FP instruction performance is sub-optimal (i.e. LGDR), and we're better
+         // off storing to memory and then loading into a GPR. 
+         TR::MemoryReference * tempMR1 = generateS390MemoryReference(node, f2iSR, cg);
+         generateRXInstruction(cg, TR::InstOpCode::STE, node, sourceReg, tempMR1);
 
-   TR::MemoryReference * tempMR2 = generateS390MemoryReference(node, f2iSR, cg);
-   targetReg = genericLoadHelper<32, 32, MemReg>(node, cg, tempMR2, NULL, false, true);
+         targetReg = genericLoadHelper<32, 32, MemReg>(node, cg, tempMR1, NULL, false, true);
+         }
+      }
+    
+    // The instructions below will normalize infinity values and NaN values if the normalizeNaNValues flag is set.
+    TR::RegisterDependencyConditions * deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 2, cg);
+
+
+    TR::LabelSymbol * infinityNumber = generateLabelSymbol(cg);
+    TR::LabelSymbol * positiveInfinityNumber = generateLabelSymbol(cg);
+    TR::LabelSymbol * startLabel = generateLabelSymbol(cg);
+    startLabel->setStartInternalControlFlow();
+    TR::LabelSymbol * cleansedNumber = generateLabelSymbol(cg);
+    cleansedNumber->setEndInternalControlFlow();
+       
+    TR::Register * litBase = NULL;       
+
+    if (node->getNumChildren() == 2)
+       {
+       litBase = cg->evaluate(node->getSecondChild());
+       }
+    else if (cg->isLiteralPoolOnDemandOn())
+       {
+       litBase = cg->allocateRegister();
+       generateLoadLiteralPoolAddress(cg, node, litBase);
+       }
+    TR::MemoryReference * positiveInfinity = generateS390MemoryReference((int32_t)0x7f800000, TR::Int32, cg, litBase);
+    TR::MemoryReference * negativeInfinity = generateS390MemoryReference((int32_t)0xff800000, TR::Int32, cg, litBase);
+    TR::MemoryReference * NaN              = generateS390MemoryReference((int32_t)0x7fc00000, TR::Int32, cg, litBase);
+
+    if (litBase)
+       {
+       deps->addPostCondition(litBase, TR::RealRegister::AssignAny);
+       }
+    deps->addPostCondition(targetReg, TR::RealRegister::AssignAny);
+
+    generateRXInstruction(cg, TR::InstOpCode::TCEB, node, targetReg, (uint32_t) 0x03f);
+
+    generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BZ, node, cleansedNumber);
+
+    generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, startLabel);
+
+    generateRXInstruction(cg, TR::InstOpCode::TCEB, node, targetReg, (uint32_t) 0x00f);
+    generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BZ, node, infinityNumber);
+
+    if (node->normalizeNanValues())
+       generateRXInstruction(cg, TR::InstOpCode::LE, node, targetReg, NaN);
+
+    generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BRC, node, cleansedNumber);
+
+    generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, infinityNumber);
+    generateRXInstruction(cg, TR::InstOpCode::TCEB, node, targetReg, (uint32_t) 0x010);
+    generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BZ, node, positiveInfinityNumber);
+
+    generateRXInstruction(cg, TR::InstOpCode::LE, node, targetReg, negativeInfinity);
+    generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BRC, node, cleansedNumber);
+
+    generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, positiveInfinityNumber);
+    generateRXInstruction(cg, TR::InstOpCode::LE, node, targetReg, positiveInfinity);
+
+    generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cleansedNumber, deps);
+
+    if (cg->isLiteralPoolOnDemandOn())
+       {
+       cg->stopUsingRegister(litBase);
+       }
+
    node->setRegister(targetReg);
-   tempMR2->stopUsingMemRefRegister(cg);
-
    cg->decReferenceCount(node->getFirstChild());
+
    if (node->getNumChildren() == 2)
       cg->decReferenceCount(node->getSecondChild());
-
-   if (cg->isLiteralPoolOnDemandOn())
-      {
-      cg->stopUsingRegister(litBase);
-      }
 
    return targetReg;
    }

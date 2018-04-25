@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2016 IBM Corp. and others
+ * Copyright (c) 2014, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -139,7 +139,8 @@ OMR_Agent::createAgent(OMR_VM *vm, char const *arg)
 
 	if (NULL != arg) {
 		OMRPORT_ACCESS_FROM_OMRVM(vm);
-		newAgent = (OMR_Agent *)omrmem_allocate_memory(sizeof(*newAgent), OMRMEM_CATEGORY_VM);
+		newAgent = static_cast<OMR_Agent *>(omrmem_allocate_memory(sizeof(*newAgent),
+				OMRMEM_CATEGORY_VM));
 		if (NULL != newAgent) {
 			new(newAgent) OMR_Agent(vm, arg);
 			if (INITIALIZED != newAgent->_state) {

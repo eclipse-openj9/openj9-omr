@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2016 IBM Corp. and others
+ * Copyright (c) 2014, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -136,6 +136,11 @@ private:
 	void *operator new(size_t size, void *memoryPtr)
 	{
 		return memoryPtr;
+	}
+
+	void operator delete(void *agent, void *memoryPtr)
+	{
+		destroyAgent(static_cast<OMR_Agent *>(agent));
 	}
 
 	static omr_error_t onPreForkDefault(void);

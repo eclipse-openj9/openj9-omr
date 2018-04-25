@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1996, 2016 IBM Corp. and others
+ * Copyright (c) 1996, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -481,7 +481,7 @@ template <class AElementType, class Allocator, size_t segmentBits = 8, class Ini
     if (newSize < fNumInitialized) {
       Cursor c(*this);
       for (c.SetTo(newSize); c.Valid(); c.SetToNext())
-        (*c.DerivedElement()).CS2_BASEARDECL::DerivedElement::~DerivedElement();
+        c.DerivedElement()->~DerivedElement();
 
       fNumInitialized = newSize;
       CS2_BASEARDECL::ShrinkTo(newSize);

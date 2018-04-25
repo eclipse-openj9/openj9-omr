@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2015 IBM Corp. and others
+ * Copyright (c) 1991, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -142,15 +142,18 @@ MM_MemorySubSpaceFlat::allocationRequestFailed(MM_EnvironmentBase* env, MM_Alloc
 			return addr;
 		}
 
-		allocateDescription->saveObjects(env);
-		/* The collect wasn't good enough to satisfy the allocate so attempt an aggressive collection */
-		addr = _collector->garbageCollect(env, this, allocateDescription, J9MMCONSTANT_IMPLICIT_GC_AGGRESSIVE, objectAllocationInterface, baseSubSpace, NULL);
-		allocateDescription->restoreObjects(env);
+		/* do not launch aggressive gc in -Xgcpolicy:nogc */
+		if (!_collector->isDisabled(env)) {
+			allocateDescription->saveObjects(env);
+			/* The collect wasn't good enough to satisfy the allocate so attempt an aggressive collection */
+			addr = _collector->garbageCollect(env, this, allocateDescription, J9MMCONSTANT_IMPLICIT_GC_AGGRESSIVE, objectAllocationInterface, baseSubSpace, NULL);
+			allocateDescription->restoreObjects(env);
 
-		reportAllocationFailureEnd(env);
+			reportAllocationFailureEnd(env);
 
-		if (addr) {
-			return addr;
+			if (addr) {
+				return addr;
+			}
 		}
 		/* there was nothing we could do to satisfy the allocate at this level (we will either OOM or attempt a collect at the higher level in our parent) */
 	}

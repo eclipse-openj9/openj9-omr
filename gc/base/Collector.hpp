@@ -1,5 +1,5 @@
 /*******************************************************************************
- * (c) Copyright 1991, 2017 IBM Corp. and others
+ * (c) Copyright 1991, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -58,6 +58,8 @@ protected:
 	bool _globalCollector;
 	bool _gcCompleted;
 	bool _isRecursiveGC;
+	bool _disableGC;
+
 	uintptr_t _collectorExpandedSize;
 	uintptr_t _cycleType;
 
@@ -283,6 +285,7 @@ public:
 	virtual	void postConcurrentUpdateStatsAndReport(MM_EnvironmentBase *env, MM_ConcurrentPhaseStatsBase *stats, UDATA bytesConcurrentlyScanned) {}
 	virtual void forceConcurrentFinish() {}
 	virtual void completeExternalConcurrentCycle(MM_EnvironmentBase *env) {}
+	virtual bool isDisabled(MM_EnvironmentBase *env) { return _disableGC; }
 	/**
 	 * @return pointer to collector/phase specific concurrent stats structure
 	 */
@@ -295,6 +298,7 @@ public:
 		, _globalCollector(false)
 		, _gcCompleted(false)
 		, _isRecursiveGC(false)
+		, _disableGC(false)
 		, _collectorExpandedSize(0)
 		, _cycleType(OMR_GC_CYCLE_TYPE_DEFAULT)
 		, _masterThreadCpuTimeStart(0)

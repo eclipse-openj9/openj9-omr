@@ -172,7 +172,7 @@ omrsig_set_async_signal_handler(struct OMRPortLibrary *portLibrary, omrsig_handl
 }
 
 
-/*
+/**
  * @brief Similar to omrsig_set_async_signal_handler. Refer to omrsig_set_async_signal_handler's description above.
  * A new element is added to the asyncHandlerList for omrsig_handler_fn, and masterASynchSignalHandler is registered
  * with the OS for the signal corresponding to the specified portlibSignalFlag. masterASynchSignalHandler invokes
@@ -197,21 +197,21 @@ omrsig_set_single_async_signal_handler(struct OMRPortLibrary *portLibrary, omrsi
 	return OMRPORT_SIG_ERROR;
 }
 
-/*
+/**
  * @brief Given an OS signal value, return the corresponding port library signal flag.
  *
  * @param[in] portLibrary The port library
  * @param[in] osSignalValue OS signal value
  *
  * @return port library signal flag on success and 0 on failure
-*/
+ */
 uint32_t
 omrsig_map_os_signal_to_portlib_signal(struct OMRPortLibrary *portLibrary, uint32_t osSignalValue)
 {
 	return 0;
 }
 
-/*
+/**
  * @brief Given a port library signal flag, return the corresponding OS signal value.
  *
  * @param[in] portLibrary The port library

@@ -1381,7 +1381,7 @@ typedef struct OMRPortLibrary {
 	/** see @ref omrsignal.c::omrsig_can_protect "omrsig_can_protect"*/
 	int32_t (*sig_can_protect)(struct OMRPortLibrary *portLibrary,  uint32_t flags) ;
 	/** see @ref omrsignal.c::omrsig_set_async_signal_handler "omrsig_set_async_signal_handler"*/
-	uint32_t (*sig_set_async_signal_handler)(struct OMRPortLibrary *portLibrary, omrsig_handler_fn handler, void *handler_arg, uint32_t flags) ;
+	int32_t (*sig_set_async_signal_handler)(struct OMRPortLibrary *portLibrary, omrsig_handler_fn handler, void *handler_arg, uint32_t flags) ;
 	/** see @ref omrsignal.c::omrsig_set_single_async_signal_handler "omrsig_set_single_async_signal_handler"*/
 	int32_t (*sig_set_single_async_signal_handler)(struct OMRPortLibrary *portLibrary, omrsig_handler_fn handler, void *handler_arg, uint32_t portlibSignalFlag, void **oldOSHandler) ;
 	/** see @ref omrsignal.c::omrsig_map_os_signal_to_portlib_signal "omrsig_map_os_signal_to_portlib_signal"*/

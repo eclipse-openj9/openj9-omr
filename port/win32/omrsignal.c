@@ -106,11 +106,10 @@ omrsig_protect(struct OMRPortLibrary *portLibrary,  omrsig_protected_fn fn, void
 	return 0;
 }
 
-uint32_t
+int32_t
 omrsig_set_async_signal_handler(struct OMRPortLibrary *portLibrary, omrsig_handler_fn handler, void *handler_arg, uint32_t flags)
 {
-
-	uint32_t rc = 0;
+	int32_t rc = 0;
 	J9Win32AsyncHandlerRecord *cursor;
 	J9Win32AsyncHandlerRecord **previousLink;
 

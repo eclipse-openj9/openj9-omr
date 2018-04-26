@@ -163,12 +163,12 @@ omrsig_protect(struct OMRPortLibrary *portLibrary,  omrsig_protected_fn fn, void
  * @note A handler should not do anything to cause the reporting thread to terminate (e.g. call omrthread_exit()) as that may prevent
  *  future signals from being reported.
  *
- * @return 0 on success
+ * @return 0 on success or non-zero on failure
  */
-uint32_t
+int32_t
 omrsig_set_async_signal_handler(struct OMRPortLibrary *portLibrary, omrsig_handler_fn handler, void *handler_arg, uint32_t flags)
 {
-	return 1;
+	return OMRPORT_SIG_ERROR;
 }
 
 

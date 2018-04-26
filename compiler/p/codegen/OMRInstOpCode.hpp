@@ -128,6 +128,8 @@ class InstOpCode: public OMR::InstOpCode
 
         bool usesCTR() {return (properties[_mnemonic] & PPCOpProp_UsesCtr)!=0;}
 
+        bool isCRLogical() {return (properties[_mnemonic] & PPCOpProp_CRLogical)!=0;}
+
         bool isLongRunningFPOp() {return _mnemonic==fdiv  ||
                                          _mnemonic==fdivs ||
                                          _mnemonic==fsqrt ||

@@ -120,6 +120,7 @@ class OMR_EXTENSIBLE Instruction : public OMR::Instruction
    bool     isCompare()             {return _opcode.isCompare();}
    bool     isLongRunningFPOp()     {return _opcode.isLongRunningFPOp();}
    bool     isFXMult()              {return _opcode.isFXMult();}
+   bool     isCRLogical()           {return _opcode.isCRLogical();}
 
    virtual bool     isLoad()           {return _opcode.isLoad();}
    virtual bool     isStore()          {return _opcode.isStore();}

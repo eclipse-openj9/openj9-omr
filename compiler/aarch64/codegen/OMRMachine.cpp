@@ -29,7 +29,7 @@
 #include "infra/Assert.hpp"
 
 OMR::ARM64::Machine::Machine(TR::CodeGenerator *cg) :
-   OMR::Machine(NUM_ARM64_GPR, NUM_ARM64_FPR), _cg(cg)
+   OMR::Machine(cg, NUM_ARM64_GPR, NUM_ARM64_FPR)
    {
    _registerFile = (TR::RealRegister **)cg->trMemory()->allocateMemory(sizeof(TR::RealRegister *)*TR::RealRegister::NumRegisters, heapAlloc);
    self()->initialiseRegisterFile();

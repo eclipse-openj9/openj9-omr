@@ -64,7 +64,6 @@ class OMR_EXTENSIBLE Machine : public OMR::Machine
    {
    TR::RealRegister   **_registerFile;
    TR::Register          *_registerAssociations[TR::RealRegister::NumRegisters];
-   TR::CodeGenerator *_cg;
 
    void initialiseRegisterFile();
 
@@ -156,8 +155,6 @@ class OMR_EXTENSIBLE Machine : public OMR::Machine
       {return _registerFile[TR::RealRegister::lr]->getHasBeenAssignedInMethod();}
 
    bool setLinkRegisterKilled(bool b);
-
-   TR::CodeGenerator *cg() {return _cg;}
 
    static uint8_t getGlobalGPRPartitionLimit() {return 12;}
    static uint8_t getGlobalFPRPartitionLimit() {return 12;}

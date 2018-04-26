@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2015, 2017 IBM Corp. and others
+# Copyright (c) 2015, 2018 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -36,6 +36,14 @@ endif
 
 # Make DEBUG_FORMAT visible to src/cmdline_tool/makefile
 export DEBUG_FORMAT
+
+ifeq (win,$(OMR_HOST_OS))
+  ifneq (,$(DIASDK_HOME))
+    # DIASDK_HOME almost certainly has embedded spaces, so we can't just append
+    # to MODULE_INCLUDES; instead, adjust the INCLUDE environment variable.
+    export INCLUDE := $(if $(INCLUDE),$(INCLUDE);)$(DIASDK_HOME)/include
+  endif
+endif
 
 targets = \
   lib \

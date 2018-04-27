@@ -1332,13 +1332,15 @@ registerMasterHandlers(OMRPortLibrary *portLibrary, uint32_t flags, uint32_t all
 		/* registering some handlers */
 		uint32_t portSignalType = 0;
 
-		/* portSignalType starts off at 4 as it is the smallest synch
-		 * signal. In the case that we are registering an asynch
-		 * signal, flagsSignalsOnly already has masked off the
-		 * synchronous signals (eg. "4") so we are not at risk of registering a handler
-		 * for an incorrect signal
+		/* OMRPORT_SIG_SMALLEST_SIGNAL_FLAG represents the smallest signal
+		 * flag. portSignalType is initialized to the smallest signal flag
+		 * in order to avoid non-signal flags. Any non-signal flags greater
+		 * than the smallest signal flag are ignored via a bitwise-and
+		 * operation with allowedSubsetOfFlags. allowedSubsetOfFlags either
+		 * represents all synchronous signal flags (OMRPORT_SIG_FLAG_SIGALLSYNC)
+		 * or all asynchronous signal flags (OMRPORT_SIG_FLAG_SIGALLASYNC).
 		 */
-		for (portSignalType = 4; portSignalType < allowedSubsetOfFlags; portSignalType = portSignalType << 1) {
+		for (portSignalType = OMRPORT_SIG_SMALLEST_SIGNAL_FLAG; portSignalType < allowedSubsetOfFlags; portSignalType = portSignalType << 1) {
 			/* iterate through all the  signals and register the master handler for those that don't have one yet */
 
 			if (OMR_ARE_ANY_BITS_SET(flagsSignalsOnly, portSignalType)) {

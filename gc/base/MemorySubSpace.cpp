@@ -30,11 +30,11 @@
 #include "omrport.h"
 
 #include "AllocateDescription.hpp"
-#include "Collector.hpp"
 #include "EnvironmentBase.hpp"
 #include "Forge.hpp"
 #include "GCCode.hpp"
 #include "GCExtensionsBase.hpp"
+#include "GlobalCollector.hpp"
 #include "Heap.hpp"
 #include "HeapRegionDescriptor.hpp"
 #include "HeapResizeStats.hpp"

@@ -1562,7 +1562,9 @@ TR_Debug::print(TR::FILE *pOutFile, TR::MemoryReference  * mr, TR_RegisterSizes 
          }
       else if (cds)
          {
-         trfprintf(pOutFile, "DATA SNIPPET: ");
+         trfprintf(pOutFile, "Data ");
+         print(pOutFile, cds->getSnippetLabel());
+         trfprintf(pOutFile, ": ");
          auto data = cds->getValue();
          for (auto i = 0; i < cds->getDataSize(); i++)
             {

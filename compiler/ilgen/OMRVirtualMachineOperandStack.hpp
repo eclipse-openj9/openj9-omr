@@ -184,7 +184,28 @@ class VirtualMachineOperandStack : public TR::VirtualMachineState
     */
    virtual void Dup(TR::IlBuilder *b);
 
- 
+   /**
+    * @brief returns the client object associated with this object
+    */
+   virtual void *client();
+
+   /**
+    * @brief Set the Client Allocator function
+    */
+   static void setClientAllocator(ClientAllocator allocator)
+      {
+      _clientAllocator = allocator;
+      }
+
+   /**
+    * @brief Set the Get Impl function
+    *
+    * @param getter function pointer to the impl getter
+    */
+   static void setGetImpl(ImplGetter getter)
+      {
+      _getImpl = getter;
+      }
 
    protected:
    void copyTo(TR::VirtualMachineOperandStack *copy);
@@ -202,6 +223,9 @@ class VirtualMachineOperandStack : public TR::VirtualMachineState
    int32_t _pushAmount;
    int32_t _stackOffset;
    const char *_stackBaseName;
+
+   static ClientAllocator _clientAllocator;
+   static ImplGetter _getImpl;
    };
 }
 

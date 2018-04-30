@@ -102,6 +102,10 @@ MM_GCExtensionsBase::initialize(MM_EnvironmentBase* env)
 	excessiveGCStats.endGCTimeStamp = omrtime_hires_clock();
 	excessiveGCStats.lastEndGlobalGCTimeStamp = excessiveGCStats.endGCTimeStamp;
 
+        /* Get usable physical memory from portlibrary. This is used by computeDefaultMaxHeap().
+	 * It can also be used by downstream projects to compute project specific GC parameters.
+	 */
+	usablePhysicalMemory = omrsysinfo_get_addressable_physical_memory();
 
 	computeDefaultMaxHeap(env);
 
@@ -289,16 +293,10 @@ MM_GCExtensionsBase::identityHashDataRemoveRange(MM_EnvironmentBase* env, MM_Mem
 void
 MM_GCExtensionsBase::computeDefaultMaxHeap(MM_EnvironmentBase* env)
 {
-	uint64_t usableMemory = 0;
 	uint64_t memoryToRequest = 0;
 
-	OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
-
-	/* Initial memory as returned by port library API. */
-	usableMemory = omrsysinfo_get_addressable_physical_memory();
-
 	/* we are going to try to request a slice of half the usable memory */
-	memoryToRequest = (usableMemory / 2);
+	memoryToRequest = (usablePhysicalMemory / 2);
 
 #define J9_PHYSICAL_MEMORY_MAX (uint64_t)(512 * 1024 * 1024)
 #define J9_PHYSICAL_MEMORY_DEFAULT (16 * 1024 * 1024)

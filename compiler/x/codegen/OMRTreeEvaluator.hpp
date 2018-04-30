@@ -444,7 +444,6 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
 
    static TR::Register *SSE2ArraycmpEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *SSE2ArraycmpLenEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *SSE2IfArraycmpEvaluator(TR::Node *node, TR::LabelSymbol *targetLabel, bool branchonEqual, TR::CodeGenerator *cg);
 
    static bool stopUsingCopyRegAddr(TR::Node *node, TR::Register*& reg, TR::CodeGenerator *cg);
    static bool stopUsingCopyRegInteger(TR::Node *node, TR::Register*& reg, TR::CodeGenerator *cg);

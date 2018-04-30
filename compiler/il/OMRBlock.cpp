@@ -702,7 +702,7 @@ OMR::Block::findVirtualGuardBlock(TR::CFG *cfg)
    }
 
 void
-OMR::Block::changeBranchDestination(TR::TreeTop * newDestination, TR::CFG *cfg)
+OMR::Block::changeBranchDestination(TR::TreeTop * newDestination, TR::CFG *cfg, bool callerFixesRegdeps)
    {
 
    TR::Node * branchNode = self()->getLastRealTreeTop()->getNode();
@@ -725,6 +725,9 @@ OMR::Block::changeBranchDestination(TR::TreeTop * newDestination, TR::CFG *cfg)
       }
 
    cfg->removeEdge(prevEdge);
+
+   if (callerFixesRegdeps)
+      return;
 
    int32_t numChildren = branchNode->getNumChildren();
    if (numChildren >0 &&

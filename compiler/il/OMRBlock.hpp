@@ -204,7 +204,7 @@ class OMR_EXTENSIBLE Block : public TR::CFGNode
    // change the target of the branch in the block, add an edge to the new block,
    // remove the edge from the previous destination block and update any GlRegDep Nodes
    //
-   void changeBranchDestination(TR::TreeTop * newDestination,  TR::CFG *cfg);
+   void changeBranchDestination(TR::TreeTop * newDestination,  TR::CFG *cfg, bool callerFixesRegdeps = false);
 
    TR::Node * findFirstReference(TR::Symbol * sym, vcount_t visitCount);
    void collectReferencedAutoSymRefsIn(TR::Compilation *comp, TR_BitVector *, vcount_t);

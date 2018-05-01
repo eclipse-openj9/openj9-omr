@@ -37,7 +37,6 @@ add_executable(example
 target_link_libraries(example
 	omr_main_function
 	pugixml
-	omrtestutil
 	omrcore
 	${OMR_HOOK_LIB}
 	${OMR_TRACE_LIB}

@@ -67,19 +67,22 @@
 #include "omrsig.h"
 #endif /* defined(OMRPORT_OMRSIG_SUPPORT) */
 
-#define MAX_PORTLIB_SIGNAL_TYPES  8
-
 #if defined(S390) && defined(LINUX)
 typedef void (*unix_sigaction)(int, siginfo_t *, void *, uintptr_t);
 #else
 typedef void (*unix_sigaction)(int, siginfo_t *, void *);
 #endif
 
-/* Store the previous signal handlers, we need to restore them when we're done */
+#define ARRAY_SIZE_SIGNALS  (MAX_UNIX_SIGNAL_TYPES + 1)
+
+/* Keep track of signal counts. */
+static volatile uintptr_t signalCounts[ARRAY_SIZE_SIGNALS] = {0};
+
+/* Store the previous signal handlers. We need to restore them during shutdown. */
 static struct {
 	struct sigaction action;
 	uint32_t restore;
-}	oldActions[MAX_UNIX_SIGNAL_TYPES];
+}	oldActions[ARRAY_SIZE_SIGNALS];
 
 /* Records the (port library defined) signals for which we have registered a master handler.
  * Access to this must be protected by the masterHandlerMonitor */
@@ -127,34 +130,14 @@ static J9UnixAsyncHandlerRecord *asyncHandlerList;
 #endif /* defined(OSX) */
 
 static SIGSEM_T wakeUpASyncReporter;
-static SIGSEM_T sigQuitPendingSem;
-static SIGSEM_T sigAbrtPendingSem;
-static SIGSEM_T sigTermPendingSem;
-static SIGSEM_T sigReconfigPendingSem;
-static SIGSEM_T sigXfszPendingSem;
-
 #else /* !defined(J9ZOS390) */
-
-/* The asyncSignalReporter synchronization has to be
- * done differently on ZOS
- */
-
-#define NUM_ASYNC_SIGNALS 4
-#define SIGQUIT_PENDING 0
-#define SIGABRT_PENDING 1
-#define SIGTERM_PENDING 2
-#define SIGXFSZ_PENDING 3
-
-/* holds the current asynch signal type */
-static uint32_t signalCounts[NUM_ASYNC_SIGNALS];
-
-/* z/OS does not have system semaphores, yet we can't rely on thread library
- *  being present for the masterASyncSignalHandler, so use pthread synchronization
+/* The asyncSignalReporter synchronization has to be done differently on ZOS.
+ * z/OS does not have system semaphores, yet we can't rely on thread library
+ * being present for the masterASyncSignalHandler, so use pthread synchronization.
  * Note: the use of pthread functions is allowed on z/OS
  */
 static pthread_cond_t wakeUpASyncReporterCond;
 static pthread_mutex_t wakeUpASyncReporterMutex;
-
 #endif /* !defined(J9ZOS390) */
 
 static omrthread_monitor_t asyncMonitor;
@@ -203,7 +186,10 @@ static struct {
 	{OMRPORT_SIG_FLAG_SIGQUIT, SIGQUIT},
 	{OMRPORT_SIG_FLAG_SIGABRT, SIGABRT},
 	{OMRPORT_SIG_FLAG_SIGTERM, SIGTERM},
-	{OMRPORT_SIG_FLAG_SIGXFSZ, SIGXFSZ}
+	{OMRPORT_SIG_FLAG_SIGXFSZ, SIGXFSZ},
+	{OMRPORT_SIG_FLAG_SIGINT, SIGINT},
+	{OMRPORT_SIG_FLAG_SIGHUP, SIGHUP},
+	{OMRPORT_SIG_FLAG_SIGCONT, SIGCONT}
 #if defined(AIXPPC)
 	, {OMRPORT_SIG_FLAG_SIGRECONFIG, SIGRECONFIG}
 #endif
@@ -214,16 +200,19 @@ static struct {
 };
 
 static omrthread_t asynchSignalReporterThread = NULL;
-static int32_t registerMasterHandlers(OMRPortLibrary *portLibrary, uint32_t flags, uint32_t allowedSubsetOfFlags);
+static int32_t registerMasterHandlers(OMRPortLibrary *portLibrary, uint32_t flags, uint32_t allowedSubsetOfFlags, void **oldOSHandler);
 static void removeAsyncHandlers(OMRPortLibrary *portLibrary);
 static uint32_t mapUnixSignalToPortLib(uint32_t signalNo, siginfo_t *sigInfo);
 #if defined(J9ZOS390)
 static intptr_t addAsyncSignalsToSet(sigset_t *ss);
 #endif /* defined(J9ZOS390) */
+
 #if defined(OMR_PORT_ASYNC_HANDLER)
+static void runHandlers(uint32_t asyncSignalFlag, int unixSignal);
 static int J9THREAD_PROC asynchSignalReporter(void *userData);
-#endif
-static uint32_t registerSignalHandlerWithOS(OMRPortLibrary *portLibrary, uint32_t portLibrarySignalNo, unix_sigaction handler);
+#endif /* defined(OMR_PORT_ASYNC_HANDLER) */
+
+static uint32_t registerSignalHandlerWithOS(OMRPortLibrary *portLibrary, uint32_t portLibrarySignalNo, unix_sigaction handler, void **oldOSHandler);
 static uint32_t destroySignalTools(OMRPortLibrary *portLibrary);
 static int mapPortLibSignalToUnix(uint32_t portLibSignal);
 static uint32_t countInfoInCategory(struct OMRPortLibrary *portLibrary, void *info, uint32_t category);
@@ -322,7 +311,6 @@ omrsig_protect(struct OMRPortLibrary *portLibrary, omrsig_protected_fn fn, void 
 	omrthread_t thisThread = NULL;
 	uint32_t rc = 0;
 	uint32_t flagsSignalsOnly = 0;
-	uint32_t flagsWithoutMasterHandlers = 0;
 
 	Trc_PRT_signal_omrsig_protect_entered(fn, fn_arg, handler, handler_arg, flags);
 
@@ -334,18 +322,13 @@ omrsig_protect(struct OMRPortLibrary *portLibrary, omrsig_protected_fn fn, void 
 		return 0;
 	}
 
-	/* Check to see if we have already installed a masterHandler for these signal(s).
-	 * We will need to aquire the masterHandlerMonitor if flagsWithoutMasterHandlers is not 0 in order to install the handlers (and to check if another thread had "just" taken care of it).
-	 * If we do have masterHandlers installed already then OMRPORT_SIG_OPTIONS_REDUCED_SIGNALS_SYNCHRONOUS has not been set.
-	 */
 	flagsSignalsOnly = flags & OMRPORT_SIG_FLAG_SIGALLSYNC;
-	flagsWithoutMasterHandlers = flagsSignalsOnly & (~signalsWithMasterHandlers);
 
-	if (0 != flagsWithoutMasterHandlers) {
+	if (0 != flagsSignalsOnly) {
 
-		/* we have not installed handlers for all the signals, aquire the masterHandlerMonitor, check again and install handlers as required all done in registerMasterHandlers */
+		/* Acquire the masterHandlerMonitor and install the handler via registerMasterHandlers. */
 		omrthread_monitor_enter(masterHandlerMonitor);
-		rc = registerMasterHandlers(portLibrary, flags, OMRPORT_SIG_FLAG_SIGALLSYNC);
+		rc = registerMasterHandlers(portLibrary, flags, OMRPORT_SIG_FLAG_SIGALLSYNC, NULL);
 		omrthread_monitor_exit(masterHandlerMonitor);
 
 		if (0 != rc) {
@@ -414,13 +397,13 @@ omrsig_set_async_signal_handler(struct OMRPortLibrary *portLibrary, omrsig_handl
 	if (OMR_ARE_ANY_BITS_SET(signalOptionsGlobal, OMRPORT_SIG_OPTIONS_REDUCED_SIGNALS_ASYNCHRONOUS)) {
 		/* -Xrs was set, we can't protect against any signals, do not install any handlers except SIGXFSZ*/
 		if (OMR_ARE_ANY_BITS_SET(flags, OMRPORT_SIG_FLAG_SIGXFSZ) && OMR_ARE_ANY_BITS_SET(signalOptionsGlobal, OMRPORT_SIG_OPTIONS_SIGXFSZ)) {
-			rc = registerMasterHandlers(portLibrary, OMRPORT_SIG_FLAG_SIGXFSZ, OMRPORT_SIG_FLAG_SIGALLASYNC);
+			rc = registerMasterHandlers(portLibrary, OMRPORT_SIG_FLAG_SIGXFSZ, OMRPORT_SIG_FLAG_SIGALLASYNC, NULL);
 		} else {
 			Trc_PRT_signal_omrsig_set_async_signal_handler_will_not_set_handler_due_to_Xrs(handler, handler_arg, flags);
 			rc = -1;
 		}
 	} else {
-		rc = registerMasterHandlers(portLibrary, flags, OMRPORT_SIG_FLAG_SIGALLASYNC);
+		rc = registerMasterHandlers(portLibrary, flags, OMRPORT_SIG_FLAG_SIGALLASYNC, NULL);
 	}
 	omrthread_monitor_exit(masterHandlerMonitor);
 
@@ -488,22 +471,114 @@ omrsig_set_async_signal_handler(struct OMRPortLibrary *portLibrary, omrsig_handl
 	return rc;
 }
 
-void *
-omrsig_set_single_async_signal_handler(struct OMRPortLibrary *portLibrary, omrsig_handler_fn handler, void *handler_arg, uint32_t portlibSignalFlag)
+int32_t
+omrsig_set_single_async_signal_handler(struct OMRPortLibrary *portLibrary, omrsig_handler_fn handler, void *handler_arg, uint32_t portlibSignalFlag, void **oldOSHandler)
 {
-	return NULL;
+	uint32_t rc = 0;
+	J9UnixAsyncHandlerRecord *cursor = NULL;
+	J9UnixAsyncHandlerRecord **previousLink = NULL;
+	BOOLEAN foundHandler = FALSE;
+
+	Trc_PRT_signal_omrsig_set_single_async_signal_handler_entered(handler, handler_arg, portlibSignalFlag);
+
+	if (0 != portlibSignalFlag) {
+		/* For non-zero portlibSignalFlag, check if only one signal bit is set. Otherwise, fail. */
+		if (!OMR_IS_ONLY_ONE_BIT_SET(portlibSignalFlag)) {
+			Trc_PRT_signal_omrsig_set_single_async_signal_handler_error_multiple_signal_flags_found(portlibSignalFlag);
+			return OMRPORT_SIG_ERROR;
+		}
+	}
+
+	omrthread_monitor_enter(masterHandlerMonitor);
+
+	if (OMR_ARE_ANY_BITS_SET(signalOptionsGlobal, OMRPORT_SIG_OPTIONS_REDUCED_SIGNALS_ASYNCHRONOUS)) {
+		/* -Xrs was set, we can't protect against any signals, do not install any handlers except SIGXFSZ*/
+		if (OMR_ARE_ANY_BITS_SET(portlibSignalFlag, OMRPORT_SIG_FLAG_SIGXFSZ) && OMR_ARE_ANY_BITS_SET(signalOptionsGlobal, OMRPORT_SIG_OPTIONS_SIGXFSZ)) {
+			rc = registerMasterHandlers(portLibrary, OMRPORT_SIG_FLAG_SIGXFSZ, OMRPORT_SIG_FLAG_SIGALLASYNC, oldOSHandler);
+		} else {
+			Trc_PRT_signal_omrsig_set_single_async_signal_handler_will_not_set_handler_due_to_Xrs(handler, handler_arg, portlibSignalFlag);
+			rc = OMRPORT_SIG_ERROR;
+		}
+	} else {
+		rc = registerMasterHandlers(portLibrary, portlibSignalFlag, OMRPORT_SIG_FLAG_SIGALLASYNC, oldOSHandler);
+	}
+	omrthread_monitor_exit(masterHandlerMonitor);
+
+	if (0 != rc) {
+		Trc_PRT_signal_omrsig_set_single_async_signal_handler_exiting_did_nothing_possible_error(rc, handler, handler_arg, portlibSignalFlag);
+		return rc;
+	}
+
+	omrthread_monitor_enter(asyncMonitor);
+
+	/* wait until no signals are being reported */
+	while (asyncThreadCount > 0) {
+		omrthread_monitor_wait(asyncMonitor);
+	}
+
+	/* is this handler already registered? */
+	previousLink = &asyncHandlerList;
+	cursor = asyncHandlerList;
+
+	while (NULL != cursor) {
+		if (cursor->portLib == portLibrary) {
+			if ((cursor->handler == handler) && (cursor->handler_arg == handler_arg)) {
+				foundHandler = TRUE;
+				if (0 == portlibSignalFlag) {
+					/* Remove the listener. Remove this handler record.
+					 * NOTE: masterHandlers get removed at omrsignal shutdown
+					 */
+					*previousLink = cursor->next;
+					portLibrary->mem_free_memory(portLibrary, cursor);
+					Trc_PRT_signal_omrsig_set_single_async_signal_handler_user_handler_removed(handler, handler_arg, portlibSignalFlag);
+					break;
+				} else {
+					/* Update the listener with the new portlibSignalFlag */
+					Trc_PRT_signal_omrsig_set_single_async_signal_handler_user_handler_added_1(handler, handler_arg, portlibSignalFlag);
+					cursor->flags |= portlibSignalFlag;
+				}
+			} else {
+				/* Unset the portlibSignalFlag for other handlers. One signal must be associated to only one handler. */
+				cursor->flags &= ~portlibSignalFlag;
+			}
+		}
+		previousLink = &cursor->next;
+		cursor = cursor->next;
+	}
+
+	if (!foundHandler && (0 != portlibSignalFlag)) {
+		J9UnixAsyncHandlerRecord *record = portLibrary->mem_allocate_memory(portLibrary, sizeof(*record), OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
+		if (NULL == record) {
+			rc = 1;
+		} else {
+			record->portLib = portLibrary;
+			record->handler = handler;
+			record->handler_arg = handler_arg;
+			record->flags = portlibSignalFlag;
+			record->next = NULL;
+
+			/* add the new record to the end of the list */
+			Trc_PRT_signal_omrsig_set_single_async_signal_handler_user_handler_added_2(handler, handler_arg, portlibSignalFlag);
+			*previousLink = record;
+		}
+	}
+
+	omrthread_monitor_exit(asyncMonitor);
+
+	Trc_PRT_signal_omrsig_set_single_async_signal_handler_exiting(rc, handler, handler_arg, portlibSignalFlag, *oldOSHandler);
+	return rc;
 }
 
 uint32_t
 omrsig_map_os_signal_to_portlib_signal(struct OMRPortLibrary *portLibrary, uint32_t osSignalValue)
 {
-	return 0;
+	return mapUnixSignalToPortLib(osSignalValue, NULL);
 }
 
 int32_t
 omrsig_map_portlib_signal_to_os_signal(struct OMRPortLibrary *portLibrary, uint32_t portlibSignalFlag)
 {
-	return -1;
+	return (int32_t)mapPortLibSignalToUnix(portlibSignalFlag);
 }
 
 /*
@@ -527,7 +602,7 @@ omrsig_startup(struct OMRPortLibrary *portLibrary)
 
 	int32_t result = 0;
 	omrthread_monitor_t globalMonitor = NULL;
-	uint32_t index = 0;
+	uint32_t index = 1;
 
 	Trc_PRT_signal_omrsig_startup_entered(portLibrary);
 
@@ -537,7 +612,7 @@ omrsig_startup(struct OMRPortLibrary *portLibrary)
 	if (attachedPortLibraries++ == 0) {
 
 		/* initialize the old actions */
-		for (index = 0; index < MAX_UNIX_SIGNAL_TYPES; index++) {
+		for (index = 1; index < ARRAY_SIZE_SIGNALS; index++) {
 			oldActions[index].restore = 0;
 		}
 
@@ -569,16 +644,58 @@ countInfoInCategory(struct OMRPortLibrary *portLibrary, void *info, uint32_t cat
 	return count;
 }
 
+#if defined(OMR_PORT_ASYNC_HANDLER)
+/**
+ * Given a port library signal flag and Unix signal value, execute the associated handlers
+ * stored within asyncHandlerList (list of J9UnixAsyncHandlerRecord).
+ *
+ * @param asyncSignalFlag port library signal flag
+ * @param unixSignal Unix signal value
+ *
+ * @return void
+ */
+static void
+runHandlers(uint32_t asyncSignalFlag, int unixSignal)
+{
+	J9UnixAsyncHandlerRecord *cursor = asyncHandlerList;
+
+	/* report the signal recorded in signalType to all registered listeners (for this signal).
+	 * incrementing the asyncThreadCount will prevent the list from being modified while we use it.
+	 */
+	omrthread_monitor_enter(asyncMonitor);
+	asyncThreadCount++;
+	omrthread_monitor_exit(asyncMonitor);
+
+	while (NULL != cursor) {
+		if (OMR_ARE_ANY_BITS_SET(cursor->flags, asyncSignalFlag)) {
+			Trc_PRT_signal_omrsig_asynchSignalReporter_calling_handler(cursor->portLib, asyncSignalFlag, cursor->handler_arg);
+			cursor->handler(cursor->portLib, asyncSignalFlag, NULL, cursor->handler_arg);
+		}
+		cursor = cursor->next;
+	}
+
+	omrthread_monitor_enter(asyncMonitor);
+	if (--asyncThreadCount == 0) {
+		omrthread_monitor_notify_all(asyncMonitor);
+	}
+	omrthread_monitor_exit(asyncMonitor);
+
+#if defined(OMRPORT_OMRSIG_SUPPORT)
+	if (OMR_ARE_NO_BITS_SET(signalOptionsGlobal, OMRPORT_SIG_OPTIONS_OMRSIG_NO_CHAIN)) {
+		/* mapPortLibSignalToUnix returns OMRPORT_SIG_ERROR (-1) on unknown mapping */
+		if (OMRPORT_SIG_ERROR != unixSignal) {
+			omrsig_handler(unixSignal, NULL, NULL);
+		}
+	}
+#endif /* defined(OMRPORT_OMRSIG_SUPPORT) */
+}
+
 /**
  * Reports the asynchronous signal to all listeners.
  */
-#if defined(OMR_PORT_ASYNC_HANDLER)
 static int J9THREAD_PROC
 asynchSignalReporter(void *userData)
 {
-	J9UnixAsyncHandlerRecord *cursor;
-	uint32_t asyncSignalFlag = 0;
-
 #if defined(J9ZOS390)
 	/*
 	 * CMVC 192198
@@ -610,119 +727,55 @@ asynchSignalReporter(void *userData)
 
 	omrthread_set_name(omrthread_self(), "Signal Reporter");
 
-	for (;;) {
-		Trc_PRT_signal_omrsig_asynchSignalReporterThread_going_to_sleep();
+	while (0 == shutDownASynchReporter) {
+		int unixSignal = 1;
+		uint32_t asyncSignalFlag = 0;
 
-#if defined(J9ZOS390)
-		/* I won't attempt to generate diagnostics if the following pthread
-		 * functions return errors because it may interfere with diagnostics
-		 * we are attempting to generate for earlier events.
-		 */
-		pthread_mutex_lock(&wakeUpASyncReporterMutex);
-		Trc_PRT_signal_omrsig_asynchSignalReporter_woken_up();
-
-		for (;;) {
-			if (0 != signalCounts[SIGQUIT_PENDING]) {
-				Trc_PRT_signal_omrsig_asynchSignalReporter_woken_up_for_SIGQUIT();
-				asyncSignalFlag = OMRPORT_SIG_FLAG_SIGQUIT;
-				signalCounts[SIGQUIT_PENDING]--;
-				break;
-			} else if (0 != signalCounts[SIGABRT_PENDING]) {
-				Trc_PRT_signal_omrsig_asynchSignalReporter_woken_up_for_SIGABRT();
-				asyncSignalFlag = OMRPORT_SIG_FLAG_SIGABRT;
-				signalCounts[SIGABRT_PENDING]--;
-				break;
-			} else if (0 != signalCounts[SIGTERM_PENDING]) {
-				Trc_PRT_signal_omrsig_asynchSignalReporter_woken_up_for_SIGTERM();
-				asyncSignalFlag = OMRPORT_SIG_FLAG_SIGTERM;
-				signalCounts[SIGTERM_PENDING]--;
-				break;
-			} else if (0 != signalCounts[SIGXFSZ_PENDING]) {
-				Trc_PRT_signal_omrsig_asynchSignalReporter_woken_up_for_SIGXFSZ();
-				asyncSignalFlag = OMRPORT_SIG_FLAG_SIGXFSZ;
-				signalCounts[SIGXFSZ_PENDING]--;
-				break;
-			} else if (0 != shutDownASynchReporter) {
-				Trc_PRT_signal_omrsig_asynchSignalReporter_woken_up_for_shutdown();
-				asyncSignalFlag = 0;
-				break;
-			} else {
-				pthread_cond_wait(&wakeUpASyncReporterCond, &wakeUpASyncReporterMutex);
-			}
-		}
-		pthread_mutex_unlock(&wakeUpASyncReporterMutex);
-
-		/* we get woken up if there is a signal pending or it is time to shutdown */
-		if (0 != shutDownASynchReporter) {
-			break;
-		}
-#else /* defined(J9ZOS390) */
-
+#if !defined(J9ZOS390)
 		/* CMVC  119663 sem_wait can return -1/EINTR on signal in NPTL */
 		while (0 != SIGSEM_WAIT(wakeUpASyncReporter));
-
-		Trc_PRT_signal_omrsig_asynchSignalReporter_woken_up();
-
-		/* we get woken up if there is a signal pending or it is time to shutdown */
-		if (0 != shutDownASynchReporter) {
-			Trc_PRT_signal_omrsig_asynchSignalReporter_woken_up_for_shutdown();
-			break;
-		}
+#endif /* !defined(J9ZOS390) */
 
 		/* determine which signal we've been woken up for */
-		if (0 == SIGSEM_TRY_WAIT(sigQuitPendingSem)) {
-			Trc_PRT_signal_omrsig_asynchSignalReporter_woken_up_for_SIGQUIT();
-			asyncSignalFlag = OMRPORT_SIG_FLAG_SIGQUIT;
-		} else if (0 == SIGSEM_TRY_WAIT(sigAbrtPendingSem)) {
-			Trc_PRT_signal_omrsig_asynchSignalReporter_woken_up_for_SIGABRT();
-			asyncSignalFlag = OMRPORT_SIG_FLAG_SIGABRT;
-		} else if (0 == SIGSEM_TRY_WAIT(sigTermPendingSem)) {
-			Trc_PRT_signal_omrsig_asynchSignalReporter_woken_up_for_SIGTERM();
-			asyncSignalFlag = OMRPORT_SIG_FLAG_SIGTERM;
-		} else if (0 == SIGSEM_TRY_WAIT(sigXfszPendingSem)) {
-			Trc_PRT_signal_omrsig_asynchSignalReporter_woken_up_for_SIGXFSZ();
-			asyncSignalFlag = OMRPORT_SIG_FLAG_SIGXFSZ;
-#if defined(AIXPPC)
-		} else if (0 == SIGSEM_TRY_WAIT(sigReconfigPendingSem)) {
-			Trc_PRT_signal_omrsig_asynchSignalReporter_woken_up_for_SIGRECONFIG();
-			asyncSignalFlag = OMRPORT_SIG_FLAG_SIGRECONFIG;
-#endif
+		for (unixSignal = 1; unixSignal < ARRAY_SIZE_SIGNALS; unixSignal++) {
+			uintptr_t signalCount = signalCounts[unixSignal];
+
+			if (signalCount > 0) {
+				asyncSignalFlag = mapUnixSignalToPortLib(unixSignal, NULL);
+				runHandlers(asyncSignalFlag, unixSignal);
+				subtractAtomic(&signalCounts[unixSignal], 1);
+#if defined(J9ZOS390)
+				/* Before waiting on the condvar, we need to make sure all
+				 * signals are handled. This will allow us to handle all signals
+				 * even if some wake signals for the condvar are missed. Reset
+				 * unixSignal to 0. for loop will start again with unixSignal = 1.
+				 */
+				unixSignal = 0;
+#else /* defined(J9ZOS390) */
+				/* sem_wait will fall-through for each sem_post. We can handle
+				 * one signal at a time. Ultimately, all signals will be handled
+				 * So, break out of the for loop.
+				 */
+				break;
+#endif /* defined(J9ZOS390) */
+			}
+		}
+
+#if defined(J9ZOS390)
+		/* Only wait if no signal is pending and shutdown isn't requested. */
+		if (0 == shutDownASynchReporter) {
+			/* I won't attempt to generate diagnostics if the following pthread
+			 * functions return errors because it may interfere with diagnostics
+			 * we are attempting to generate for earlier events.
+			 */
+			Trc_PRT_signal_omrsig_asynchSignalReporterThread_going_to_sleep();
+			pthread_mutex_lock(&wakeUpASyncReporterMutex);
+			pthread_cond_wait(&wakeUpASyncReporterCond, &wakeUpASyncReporterMutex);
+			pthread_mutex_unlock(&wakeUpASyncReporterMutex);
 		}
 #endif /* defined(J9ZOS390) */
 
-		/* report the signal recorded in signalType to all registered listeners (for this signal) */
-		/* incrementing the asyncThreadCount will prevent the list from being modified while we use it */
-		omrthread_monitor_enter(asyncMonitor);
-		asyncThreadCount++;
-		omrthread_monitor_exit(asyncMonitor);
-
-		cursor = asyncHandlerList;
-		while (NULL != cursor) {
-			if (OMR_ARE_ANY_BITS_SET(cursor->flags, asyncSignalFlag)) {
-				Trc_PRT_signal_omrsig_asynchSignalReporter_calling_handler(cursor->portLib, asyncSignalFlag, cursor->handler_arg);
-				cursor->handler(cursor->portLib, asyncSignalFlag, NULL, cursor->handler_arg);
-			}
-			cursor = cursor->next;
-		}
-
-		omrthread_monitor_enter(asyncMonitor);
-		if (--asyncThreadCount == 0) {
-			omrthread_monitor_notify_all(asyncMonitor);
-		}
-		omrthread_monitor_exit(asyncMonitor);
-
-#if defined(OMRPORT_OMRSIG_SUPPORT)
-		if (OMR_ARE_NO_BITS_SET(signalOptionsGlobal, OMRPORT_SIG_OPTIONS_OMRSIG_NO_CHAIN)) {
-			int unixSignal = mapPortLibSignalToUnix(asyncSignalFlag);
-			/* mapPortLibSignalToUnix returns -1 on unknown mapping */
-			if (-1 != unixSignal) {
-				omrsig_handler(unixSignal, NULL, NULL);
-			}
-		}
-#endif /* defined(OMRPORT_OMRSIG_SUPPORT) */
-
-		/* reset the signal store */
-		asyncSignalFlag = 0;
+		Trc_PRT_signal_omrsig_asynchSignalReporter_woken_up();
 	}
 
 	omrthread_monitor_enter(asyncReporterShutdownMonitor);
@@ -1014,48 +1067,11 @@ static void
 masterASynchSignalHandler(int signal, siginfo_t *sigInfo, void *contextInfo)
 #endif
 {
-	uint32_t portLibSignalType = mapUnixSignalToPortLib(signal, sigInfo);
-
+	addAtomic(&signalCounts[signal], 1);
 #if !defined(J9ZOS390)
-
-	/* Todo: default? */
-	switch (portLibSignalType) {
-	case OMRPORT_SIG_FLAG_SIGQUIT:
-		SIGSEM_POST(sigQuitPendingSem);
-		break;
-	case OMRPORT_SIG_FLAG_SIGABRT:
-		SIGSEM_POST(sigAbrtPendingSem);
-		break;
-	case OMRPORT_SIG_FLAG_SIGTERM:
-		SIGSEM_POST(sigTermPendingSem);
-		break;
-	case OMRPORT_SIG_FLAG_SIGRECONFIG:
-		SIGSEM_POST(sigReconfigPendingSem);
-		break;
-	case OMRPORT_SIG_FLAG_SIGXFSZ:
-		SIGSEM_POST(sigXfszPendingSem);
-		break;
-	}
-
 	SIGSEM_POST(wakeUpASyncReporter);
-
 #else /* !defined(J9ZOS390) */
-
 	pthread_mutex_lock(&wakeUpASyncReporterMutex);
-	switch (portLibSignalType) {
-	case OMRPORT_SIG_FLAG_SIGQUIT:
-		signalCounts[SIGQUIT_PENDING]++;
-		break;
-	case OMRPORT_SIG_FLAG_SIGABRT:
-		signalCounts[SIGABRT_PENDING]++;
-		break;
-	case OMRPORT_SIG_FLAG_SIGTERM:
-		signalCounts[SIGTERM_PENDING]++;
-		break;
-	case OMRPORT_SIG_FLAG_SIGXFSZ:
-		signalCounts[SIGXFSZ_PENDING]++;
-		break;
-	}
 	pthread_cond_signal(&wakeUpASyncReporterCond);
 	pthread_mutex_unlock(&wakeUpASyncReporterMutex);
 #endif /* !defined(J9ZOS390) */
@@ -1071,12 +1087,17 @@ masterASynchSignalHandler(int signal, siginfo_t *sigInfo, void *contextInfo)
  *
  * The use of this function forces the flags SA_RESTART | SA_SIGINFO | SA_NODEFER to be set for the new signal action
  *
- * The old action for the signal handler is stored in oldActions. These must be restored before the portlibrary is shut down.
+ * oldOSHandler points to the old signal handler function.
+ *
+ * During first registration, the old action for the signal handler is stored in oldActions. The original OS handler must
+ * be restored before the portlibrary is shut down. For subsequent registrations, old action is not stored in oldActions
+ * in order to avoid overwriting the original OS handler. Instead, a local sigaction variable is used to store old action
+ * for subsequent registrations. oldOSHandler is updated to point to oldAction.sa_sigaction (signal handler function).
  *
  * @return 0 upon success, non-zero otherwise.
  */
 static uint32_t
-registerSignalHandlerWithOS(OMRPortLibrary *portLibrary, uint32_t portLibrarySignalNo,  unix_sigaction handler)
+registerSignalHandlerWithOS(OMRPortLibrary *portLibrary, uint32_t portLibrarySignalNo, unix_sigaction handler, void **oldOSHandler)
 {
 	int unixSignalNo = mapPortLibSignalToUnix(portLibrarySignalNo);
 	struct sigaction newAction;
@@ -1085,7 +1106,7 @@ registerSignalHandlerWithOS(OMRPortLibrary *portLibrary, uint32_t portLibrarySig
 
 	/* do not block any signals */
 	if (0 != sigemptyset(&newAction.sa_mask)) {
-		return -1;
+		return OMRPORT_SIG_ERROR;
 	}
 
 	/* Automatically restart system calls that get interrupted by any signal
@@ -1111,7 +1132,7 @@ registerSignalHandlerWithOS(OMRPortLibrary *portLibrary, uint32_t portLibrarySig
 	 */
 	if (OMR_ARE_ANY_BITS_SET(portLibrarySignalNo, OMRPORT_SIG_FLAG_SIGALLASYNC)) {
 		if (0 != addAsyncSignalsToSet(&newAction.sa_mask)) {
-			return -1;
+			return OMRPORT_SIG_ERROR;
 		}
 	}
 #endif /* defined(J9ZOS390) */
@@ -1120,7 +1141,7 @@ registerSignalHandlerWithOS(OMRPortLibrary *portLibrary, uint32_t portLibrarySig
 	/* if we are installing a handler for an asynchronous signal block SIGTRAP */
 	if (OMR_ARE_ANY_BITS_SET(portLibrarySignalNo, OMRPORT_SIG_FLAG_SIGALLASYNC)) {
 		if (sigaddset(&newAction.sa_mask, SIGTRAP)) {
-			return -1;
+			return OMRPORT_SIG_ERROR;
 		}
 	}
 #endif
@@ -1139,13 +1160,37 @@ registerSignalHandlerWithOS(OMRPortLibrary *portLibrary, uint32_t portLibrarySig
 	newAction.sa_sigaction = handler;
 #endif
 
-	/* now that we've set up the sigaction struct the way we want it, register the handler with the OS */
-	if (OMRSIG_SIGACTION(unixSignalNo, &newAction, &oldActions[unixSignalNo].action)) {
-		Trc_PRT_signal_registerSignalHandlerWithOS_failed_to_registerHandler(portLibrarySignalNo, unixSignalNo, handler);
-		return -1;
+	/* Now that we've set up the sigaction struct the way we want it, register the handler with the OS.
+	 * When registering the handler for the first time, we store the old OS handler in
+	 * oldActions[unixSignalNo].action. This allows us to restore to the original OS handler during shutdown.
+	 * For subsequent registrations, we don't update oldActions[unixSignalNo].action since this would overwrite
+	 * the original OS handler. Instead, we use a local sigaction variable to store the old OS handler.
+	 */
+	if (0 == oldActions[unixSignalNo].restore) {
+		/* Initialize oldAction. */
+		memset(&oldActions[unixSignalNo].action, 0, sizeof(struct sigaction));
+		if (OMRSIG_SIGACTION(unixSignalNo, &newAction, &oldActions[unixSignalNo].action)) {
+			Trc_PRT_signal_registerSignalHandlerWithOS_failed_to_registerHandler(portLibrarySignalNo, unixSignalNo, handler);
+			return OMRPORT_SIG_ERROR;
+		} else {
+			Trc_PRT_signal_registerSignalHandlerWithOS_registeredHandler1(portLibrarySignalNo, unixSignalNo, handler, oldActions[unixSignalNo].action.sa_sigaction);
+			oldActions[unixSignalNo].restore = 1;
+			if (NULL != oldOSHandler) {
+				*oldOSHandler = (void *)oldActions[unixSignalNo].action.sa_sigaction;
+			}
+		}
 	} else {
-		Trc_PRT_signal_registerSignalHandlerWithOS_registeredHandler(portLibrarySignalNo, unixSignalNo, handler);
-		oldActions[unixSignalNo].restore = 1;
+		struct sigaction oldAction;
+		memset(&oldAction, 0, sizeof(struct sigaction));
+		if (OMRSIG_SIGACTION(unixSignalNo, &newAction, &oldAction)) {
+			Trc_PRT_signal_registerSignalHandlerWithOS_failed_to_registerHandler(portLibrarySignalNo, unixSignalNo, handler);
+			return OMRPORT_SIG_ERROR;
+		} else {
+			Trc_PRT_signal_registerSignalHandlerWithOS_registeredHandler1(portLibrarySignalNo, unixSignalNo, handler, oldAction.sa_sigaction);
+			if (NULL != oldOSHandler) {
+				*oldOSHandler = (void *)oldAction.sa_sigaction;
+			}
+		}
 	}
 
 	/* CMVC 96193 signalsWithMasterHandlers is checked without acquiring the masterHandlerMonitor */
@@ -1195,6 +1240,7 @@ mapUnixSignalToPortLib(uint32_t signalNo, siginfo_t *sigInfo)
 		}
 	}
 
+	Trc_PRT_signal_mapOSSignalToPortLib_ERROR_unknown_signal(signalNo);
 	return 0;
 }
 
@@ -1205,19 +1251,14 @@ mapUnixSignalToPortLib(uint32_t signalNo, siginfo_t *sigInfo)
  * Note that FPE signal codes (subtypes) all map to the same signal number and are not included
  *
  * @param portLibSignal The internal J9 Port Library signal number
- * @return The corresponding Unix signal number or -1 if the portLibSignal could not be mapped
+ *
+ * @return The corresponding Unix signal number or OMRPORT_SIG_ERROR (-1) if the portLibSignal
+ *         could not be mapped
  */
 static int
 mapPortLibSignalToUnix(uint32_t portLibSignal)
 {
 	uint32_t index = 0;
-
-	/* mask out subtypes */
-#if defined(AIXPPC)
-	portLibSignal &= OMRPORT_SIG_FLAG_SIGALLSYNC | OMRPORT_SIG_FLAG_SIGQUIT | OMRPORT_SIG_FLAG_SIGABRT | OMRPORT_SIG_FLAG_SIGTERM | OMRPORT_SIG_FLAG_SIGXFSZ | OMRPORT_SIG_FLAG_SIGRECONFIG;
-#else
-	portLibSignal &= OMRPORT_SIG_FLAG_SIGALLSYNC | OMRPORT_SIG_FLAG_SIGQUIT | OMRPORT_SIG_FLAG_SIGABRT | OMRPORT_SIG_FLAG_SIGTERM | OMRPORT_SIG_FLAG_SIGXFSZ;
-#endif
 
 	for (index = 0; index < sizeof(signalMap) / sizeof(signalMap[0]); index++) {
 
@@ -1226,7 +1267,7 @@ mapPortLibSignalToUnix(uint32_t portLibSignal)
 		}
 	}
 	Trc_PRT_signal_mapPortLibSignalToUnix_ERROR_unknown_signal(portLibSignal);
-	return -1;
+	return OMRPORT_SIG_ERROR;
 }
 
 #if defined(J9ZOS390)
@@ -1263,18 +1304,18 @@ addAsyncSignalsToSet(sigset_t *ss)
  * Calls to this function must be synchronized using masterHandlerMonitor.
  *
  * @param[in] flags the flags that we want signals for
- * @param[in] allowedSubsetOfFlags must be one of
- * OMRPORT_SIG_FLAG_SIGALLSYNC, or OMRPORT_SIG_FLAG_SIGALLASYNC
+ * @param[in] allowedSubsetOfFlags must be one of OMRPORT_SIG_FLAG_SIGALLSYNC, or
+ *            OMRPORT_SIG_FLAG_SIGALLASYNC
+ * @param[out] oldOSHandler points to the old signal handler function
  *
  * @return	0 upon success; OMRPORT_SIG_ERROR otherwise.
  *			Possible failure scenarios include attempting to register a handler for
  *			a signal that is not included in the allowedSubsetOfFlags
 */
 static int32_t
-registerMasterHandlers(OMRPortLibrary *portLibrary, uint32_t flags, uint32_t allowedSubsetOfFlags)
+registerMasterHandlers(OMRPortLibrary *portLibrary, uint32_t flags, uint32_t allowedSubsetOfFlags, void **oldOSHandler)
 {
 	uint32_t flagsSignalsOnly = 0;
-	uint32_t flagsWithoutHandlers = 0;
 	unix_sigaction handler = NULL;
 
 	if (OMRPORT_SIG_FLAG_SIGALLSYNC == allowedSubsetOfFlags) {
@@ -1286,25 +1327,26 @@ registerMasterHandlers(OMRPortLibrary *portLibrary, uint32_t flags, uint32_t all
 	}
 
 	flagsSignalsOnly = flags & allowedSubsetOfFlags;
-	flagsWithoutHandlers = flagsSignalsOnly & (~signalsWithMasterHandlers);
 
-	if (0 != flagsWithoutHandlers) {
+	if (0 != flagsSignalsOnly) {
 		/* registering some handlers */
 		uint32_t portSignalType = 0;
 
-		/* portSignalType starts off at 4 as it is the smallest synch
-		 * signal. In the case that we are registering an asynch
-		 * signal, flagsWithoutHandlers already has masked off the
-		 * synchronous signals (eg. "4") so we are not at risk of registering a handler
-		 * for an incorrect signal
+		/* OMRPORT_SIG_SMALLEST_SIGNAL_FLAG represents the smallest signal
+		 * flag. portSignalType is initialized to the smallest signal flag
+		 * in order to avoid non-signal flags. Any non-signal flags greater
+		 * than the smallest signal flag are ignored via a bitwise-and
+		 * operation with allowedSubsetOfFlags. allowedSubsetOfFlags either
+		 * represents all synchronous signal flags (OMRPORT_SIG_FLAG_SIGALLSYNC)
+		 * or all asynchronous signal flags (OMRPORT_SIG_FLAG_SIGALLASYNC).
 		 */
-		for (portSignalType = 4; portSignalType < allowedSubsetOfFlags; portSignalType = portSignalType << 1) {
+		for (portSignalType = OMRPORT_SIG_SMALLEST_SIGNAL_FLAG; portSignalType < allowedSubsetOfFlags; portSignalType = portSignalType << 1) {
 			/* iterate through all the  signals and register the master handler for those that don't have one yet */
 
-			if (OMR_ARE_ANY_BITS_SET(flagsWithoutHandlers, portSignalType)) {
+			if (OMR_ARE_ANY_BITS_SET(flagsSignalsOnly, portSignalType)) {
 				/* we need a master handler for this (portSignalType's) signal */
 
-				if (0 != registerSignalHandlerWithOS(portLibrary, portSignalType, handler)) {
+				if (0 != registerSignalHandlerWithOS(portLibrary, portSignalType, handler, oldOSHandler)) {
 					return OMRPORT_SIG_ERROR;
 				}
 			}
@@ -1354,11 +1396,6 @@ initializeSignalTools(OMRPortLibrary *portLibrary)
 #if defined(OSX)
 	/* OSX only has named semaphores. They are not shared across processes, so unlink immediately. */
 	portLibrary->str_printf(portLibrary, semNames[0], 128, "/omr/wakeUpASyncReporter-%d", getpid());
-	portLibrary->str_printf(portLibrary, semNames[1], 128, "/omr/sigQuitPending-%d", getpid());
-	portLibrary->str_printf(portLibrary, semNames[2], 128, "/omr/sigAbrtPending-%d", getpid());
-	portLibrary->str_printf(portLibrary, semNames[3], 128, "/omr/sigTermPending-%d", getpid());
-	portLibrary->str_printf(portLibrary, semNames[4], 128, "/omr/sigReconfigPending-%d", getpid());
-	portLibrary->str_printf(portLibrary, semNames[5], 128, "/omr/sigXfszPending-%d", getpid());
 #define SIGSEM_NAME(_i) semNames[_i]
 #else /* defined(OSX) */
 #define SIGSEM_NAME(_i) NULL
@@ -1369,28 +1406,6 @@ initializeSignalTools(OMRPortLibrary *portLibrary)
 		return -1;
 	}
 	SIGSEM_UNLINK(SIGSEM_NAME(0));
-
-	/* The asynchronous signal reporter keeps track of the number of pending singals with these... */
-	if (SIGSEM_ERROR == SIGSEM_INIT(sigQuitPendingSem, SIGSEM_NAME(1)))	 {
-		return -1;
-	}
-	SIGSEM_UNLINK(SIGSEM_NAME(1));
-	if (SIGSEM_ERROR == SIGSEM_INIT(sigAbrtPendingSem, SIGSEM_NAME(2)))	 {
-		return -1;
-	}
-	SIGSEM_UNLINK(SIGSEM_NAME(2));
-	if (SIGSEM_ERROR == SIGSEM_INIT(sigTermPendingSem, SIGSEM_NAME(3)))	 {
-		return -1;
-	}
-	SIGSEM_UNLINK(SIGSEM_NAME(3));
-	if (SIGSEM_ERROR == SIGSEM_INIT(sigReconfigPendingSem, SIGSEM_NAME(4)))	 {
-		return -1;
-	}
-	SIGSEM_UNLINK(SIGSEM_NAME(4));
-	if (SIGSEM_ERROR == SIGSEM_INIT(sigXfszPendingSem, SIGSEM_NAME(5)))	 {
-		return -1;
-	}
-	SIGSEM_UNLINK(SIGSEM_NAME(5));
 #undef SIGSEM_NAME
 
 #else /* !defined(J9ZOS390) */
@@ -1469,11 +1484,6 @@ destroySignalTools(OMRPortLibrary *portLibrary)
 	omrthread_monitor_destroy(asyncMonitor);
 #if !defined(J9ZOS390)
 	SIGSEM_DESTROY(wakeUpASyncReporter);
-	SIGSEM_DESTROY(sigQuitPendingSem);
-	SIGSEM_DESTROY(sigAbrtPendingSem);
-	SIGSEM_DESTROY(sigTermPendingSem);
-	SIGSEM_DESTROY(sigReconfigPendingSem);
-	SIGSEM_DESTROY(sigXfszPendingSem);
 #else /* !defined(J9ZOS390) */
 	pthread_mutex_destroy(&wakeUpASyncReporterMutex);
 	pthread_cond_destroy(&wakeUpASyncReporterCond);
@@ -1558,7 +1568,7 @@ static void
 sig_full_shutdown(struct OMRPortLibrary *portLibrary)
 {
 	omrthread_monitor_t globalMonitor = NULL;
-	uint32_t index = 0;
+	uint32_t index = 1;
 
 	Trc_PRT_signal_sig_full_shutdown_enter(portLibrary);
 	globalMonitor = omrthread_global_monitor();
@@ -1567,7 +1577,7 @@ sig_full_shutdown(struct OMRPortLibrary *portLibrary)
 	if (--attachedPortLibraries == 0) {
 
 		/* register the old actions we overwrote with our own */
-		for (index = 0; index < MAX_UNIX_SIGNAL_TYPES; index++) {
+		for (index = 1; index < ARRAY_SIZE_SIGNALS; index++) {
 			if (oldActions[index].restore) {
 				OMRSIG_SIGACTION(index, &oldActions[index].action, NULL);
 				/* record that we no longer have a handler installed with the OS for this signal */

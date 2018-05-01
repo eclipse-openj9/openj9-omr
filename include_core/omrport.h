@@ -703,6 +703,7 @@ typedef struct J9ProcessorInfos {
 
 #define OMRPORT_SIG_FLAG_MAY_RETURN  1
 #define OMRPORT_SIG_FLAG_MAY_CONTINUE_EXECUTION  2
+#define OMRPORT_SIG_SMALLEST_SIGNAL_FLAG  4
 #define OMRPORT_SIG_FLAG_SIGSEGV  4
 #define OMRPORT_SIG_FLAG_SIGBUS  8
 #define OMRPORT_SIG_FLAG_SIGILL  16
@@ -724,11 +725,13 @@ typedef struct J9ProcessorInfos {
 #define OMRPORT_SIG_FLAG_SIGXFSZ  0x8000
 #define OMRPORT_SIG_FLAG_SIGRESERVED16  0x10000
 #define OMRPORT_SIG_FLAG_SIGRESERVED17  0x20000
-#define OMRPORT_SIG_FLAG_SIGALLASYNC  (OMRPORT_SIG_FLAG_SIGQUIT | OMRPORT_SIG_FLAG_SIGABRT | OMRPORT_SIG_FLAG_SIGTERM | OMRPORT_SIG_FLAG_SIGRECONFIG | OMRPORT_SIG_FLAG_SIGXFSZ)
 #define OMRPORT_SIG_FLAG_SIGFPE_DIV_BY_ZERO  (OMRPORT_SIG_FLAG_SIGFPE | 0x40000)
 #define OMRPORT_SIG_FLAG_SIGFPE_INT_DIV_BY_ZERO  (OMRPORT_SIG_FLAG_SIGFPE | 0x80000)
 #define OMRPORT_SIG_FLAG_SIGFPE_INT_OVERFLOW  (OMRPORT_SIG_FLAG_SIGFPE | 0x100000)
 #define OMRPORT_SIG_FLAG_DOES_NOT_MAP_TO_POSIX  0x200000
+#define OMRPORT_SIG_FLAG_SIGHUP  0x400000
+#define OMRPORT_SIG_FLAG_SIGCONT  0x800000
+#define OMRPORT_SIG_FLAG_SIGALLASYNC  (OMRPORT_SIG_FLAG_SIGQUIT | OMRPORT_SIG_FLAG_SIGABRT | OMRPORT_SIG_FLAG_SIGTERM | OMRPORT_SIG_FLAG_SIGRECONFIG | OMRPORT_SIG_FLAG_SIGXFSZ | OMRPORT_SIG_FLAG_SIGINT | OMRPORT_SIG_FLAG_SIGHUP | OMRPORT_SIG_FLAG_SIGCONT)
 
 #define OMRPORT_SIG_EXCEPTION_CONTINUE_SEARCH  0
 #define OMRPORT_SIG_EXCEPTION_CONTINUE_EXECUTION  1
@@ -1380,7 +1383,7 @@ typedef struct OMRPortLibrary {
 	/** see @ref omrsignal.c::omrsig_set_async_signal_handler "omrsig_set_async_signal_handler"*/
 	uint32_t (*sig_set_async_signal_handler)(struct OMRPortLibrary *portLibrary, omrsig_handler_fn handler, void *handler_arg, uint32_t flags) ;
 	/** see @ref omrsignal.c::omrsig_set_single_async_signal_handler "omrsig_set_single_async_signal_handler"*/
-	void *(*sig_set_single_async_signal_handler)(struct OMRPortLibrary *portLibrary, omrsig_handler_fn handler, void *handler_arg, uint32_t portlibSignalFlag) ;
+	int32_t (*sig_set_single_async_signal_handler)(struct OMRPortLibrary *portLibrary, omrsig_handler_fn handler, void *handler_arg, uint32_t portlibSignalFlag, void **oldOSHandler) ;
 	/** see @ref omrsignal.c::omrsig_map_os_signal_to_portlib_signal "omrsig_map_os_signal_to_portlib_signal"*/
 	uint32_t (*sig_map_os_signal_to_portlib_signal)(struct OMRPortLibrary *portLibrary, uint32_t osSignalValue) ;
 	/** see @ref omrsignal.c::omrsig_map_portlib_signal_to_os_signal "omrsig_map_portlib_signal_to_os_signal"*/
@@ -1883,7 +1886,7 @@ extern J9_CFUNC int32_t omrport_getVersion(struct OMRPortLibrary *portLibrary);
 #define omrsig_protect(param1,param2,param3,param4,param5,param6) privateOmrPortLibrary->sig_protect(privateOmrPortLibrary, (param1), (param2), (param3), (param4), (param5), (param6))
 #define omrsig_can_protect(param1) privateOmrPortLibrary->sig_can_protect(privateOmrPortLibrary, (param1))
 #define omrsig_set_async_signal_handler(param1,param2,param3) privateOmrPortLibrary->sig_set_async_signal_handler(privateOmrPortLibrary, (param1), (param2), (param3))
-#define omrsig_set_single_async_signal_handler(param1,param2,param3) privateOmrPortLibrary->sig_set_single_async_signal_handler(privateOmrPortLibrary, (param1), (param2), (param3))
+#define omrsig_set_single_async_signal_handler(param1,param2,param3,param4) privateOmrPortLibrary->sig_set_single_async_signal_handler(privateOmrPortLibrary, (param1), (param2), (param3), (param4))
 #define omrsig_map_os_signal_to_portlib_signal(param1) privateOmrPortLibrary->sig_map_os_signal_to_portlib_signal(privateOmrPortLibrary, (param1))
 #define omrsig_map_portlib_signal_to_os_signal(param1) privateOmrPortLibrary->sig_map_portlib_signal_to_os_signal(privateOmrPortLibrary, (param1))
 #define omrsig_info(param1,param2,param3,param4,param5) privateOmrPortLibrary->sig_info(privateOmrPortLibrary, (param1), (param2), (param3), (param4), (param5))

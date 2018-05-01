@@ -174,21 +174,27 @@ omrsig_set_async_signal_handler(struct OMRPortLibrary *portLibrary, omrsig_handl
 
 /*
  * @brief Similar to omrsig_set_async_signal_handler. Refer to omrsig_set_async_signal_handler's description above.
- * Differences: 1) one omrsig_handler_fn handler is registered with a signal at any time instead of multiple handlers.
- * 2) The old OS handler is returned on success and NULL is returned on failure instead of returning 0 on success and
- * non-zero on failure. TODO: Add a detailed description once implementation is done.
+ * A new element is added to the asyncHandlerList for omrsig_handler_fn, and masterASynchSignalHandler is registered
+ * with the OS for the signal corresponding to the specified portlibSignalFlag. masterASynchSignalHandler invokes
+ * asyncHandlerList elements when a relevant signal is raised. If portlibSignalFlag is 0, then the asyncHandlerList
+ * entry corresponding to omrsig_handler_fn is removed, and related resources are freed. portlibSignalFlag can only
+ * have one signal flag set; otherwise, OMRPORT_SIG_ERROR is returned. One omrsig_handler_fn handler is registered
+ * with a signal at any time instead of multiple handlers. When associating a new omrsig_handler_fn with a signal,
+ * prior omrsig_handler_fn(s) are dissociated from the signal. The address of the old signal handler function is
+ * stored in oldOSHandler. This function supports all signals listed in OMRPORT_SIG_FLAG_SIGALLASYNC.
  *
  * @param[in] portLibrary The port library
  * @param[in] handler the function to call if an asynchronous signal arrives
  * @param[in] handler_arg the argument to handler
- * @param[in] portlibSignalFlag port library signal flag
+ * @param[in] portlibSignalFlag a single port library signal flag, or 0 to remove the omrsig_handler_fn entry
+ * @param[out] oldOSHandler points to the old signal handler function
  *
- * @return old OS handler on success or NULL on failure
+ * @return 0 on success or non-zero on failure
  */
-void *
-omrsig_set_single_async_signal_handler(struct OMRPortLibrary *portLibrary, omrsig_handler_fn handler, void *handler_arg, uint32_t portlibSignalFlag)
+int32_t
+omrsig_set_single_async_signal_handler(struct OMRPortLibrary *portLibrary, omrsig_handler_fn handler, void *handler_arg, uint32_t portlibSignalFlag, void **oldOSHandler)
 {
-	return NULL;
+	return OMRPORT_SIG_ERROR;
 }
 
 /*
@@ -211,12 +217,12 @@ omrsig_map_os_signal_to_portlib_signal(struct OMRPortLibrary *portLibrary, uint3
  * @param[in] portLibrary The port library
  * @param[in] portlibSignalFlag port library signal flag
  *
- * @return OS signal value on success and -1 on failure
+ * @return OS signal value on success and OMRPORT_SIG_ERROR (-1) on failure
  */
 int32_t
 omrsig_map_portlib_signal_to_os_signal(struct OMRPortLibrary *portLibrary, uint32_t portlibSignalFlag)
 {
-	return -1;
+	return OMRPORT_SIG_ERROR;
 }
 
 /**

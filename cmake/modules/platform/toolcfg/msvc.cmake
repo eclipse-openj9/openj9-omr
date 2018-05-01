@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2017 IBM Corp. and others
+# Copyright (c) 2017, 2018 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -71,6 +71,17 @@ endif(OMR_ENV_DATA64)
 
 # Configure the platform dependent library for multithreading
 set(OMR_PLATFORM_THREAD_LIBRARY Ws2_32.lib)
+
+# TR_CXX_COMPILE_OPTIONS are appended to CMAKE_CXX_FLAGS, and so apply only to
+# C++ file compilation
+list(APPEND TR_CXX_COMPILE_OPTIONS
+	/EHsc   # Enable exception handling (Clang doesn't enable exception handling by default)
+)
+
+# TR_C_COMPILE_OPTIONS are appended to CMAKE_C_FLAGS, and so apply only to
+# C file compilation
+list(APPEND TR_C_COMPILE_OPTIONS
+)
 
 macro(omr_toolconfig_global_setup)
 	# Make sure we are building without incremental linking

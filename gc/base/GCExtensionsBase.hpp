@@ -546,7 +546,7 @@ public:
 
 	uintptr_t overflowSafeAllocSize;
 
-	uintptr_t usablePhysicalMemory; /**< Physical memory available to the process */
+	uint64_t usablePhysicalMemory; /**< Physical memory available to the process */
 
 #if defined(OMR_GC_REALTIME)
 	/* Parameters */

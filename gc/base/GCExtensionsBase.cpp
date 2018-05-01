@@ -293,10 +293,8 @@ MM_GCExtensionsBase::identityHashDataRemoveRange(MM_EnvironmentBase* env, MM_Mem
 void
 MM_GCExtensionsBase::computeDefaultMaxHeap(MM_EnvironmentBase* env)
 {
-	uint64_t memoryToRequest = 0;
-
 	/* we are going to try to request a slice of half the usable memory */
-	memoryToRequest = (usablePhysicalMemory / 2);
+	uint64_t memoryToRequest = (usablePhysicalMemory / 2);
 
 #define J9_PHYSICAL_MEMORY_MAX (uint64_t)(512 * 1024 * 1024)
 #define J9_PHYSICAL_MEMORY_DEFAULT (16 * 1024 * 1024)

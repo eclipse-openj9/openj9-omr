@@ -23,6 +23,9 @@
 #define OMR_ILVALUE_INCL
 
 #include "il/DataTypes.hpp" // for TR::DataType
+#ifndef TR_ALLOC
+#define TR_ALLOC(x)
+#endif
 
 namespace TR { class Node; }
 namespace TR { class TreeTop; }

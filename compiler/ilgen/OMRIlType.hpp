@@ -25,6 +25,10 @@
 #include "il/DataTypes.hpp"
 
 class TR_Memory;
+#ifndef TR_ALLOC
+#define TR_ALLOC(x)
+#endif
+
 
 namespace TR { class IlType; }
 

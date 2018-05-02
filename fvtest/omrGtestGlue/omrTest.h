@@ -139,7 +139,7 @@ public:
 extern "C" {
 #endif
 
-int testMain(int argc, char **argv, char **envp);
+int omr_main_entry(int argc, char **argv, char **envp);
 
 #ifdef __cplusplus
 } /* extern "C" */

@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2015, 2016 IBM Corp. and others
+# Copyright (c) 2015, 2018 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -19,17 +19,12 @@
 # SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
 ###############################################################################
 
-GLUE_OBJECTS := \
-  argmain
-
-GLUE_OBJECTS := $(addsuffix $(OBJEXT),$(GLUE_OBJECTS))
-OBJECTS += $(GLUE_OBJECTS)
+OBJECTS += main_function$(OBJEXT)
+vpath main_function.cpp $(top_srcdir)/util/main_function
 
 MODULE_INCLUDES += $(OMR_GTEST_INCLUDES) ../util
 MODULE_INCLUDES += $(OMR_IPATH)
 MODULE_CXXFLAGS += $(OMR_GTEST_CXXFLAGS)
-
-vpath argmain.cpp $(top_srcdir)/fvtest/omrGtestGlue
 
 MODULE_STATIC_LIBS += \
   j9prtstatic \

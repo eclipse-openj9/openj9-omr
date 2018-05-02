@@ -23,6 +23,11 @@ include(OmrAssert)
 
 omr_assert(TEST OMR_FVTEST)
 
+omr_assert(
+	TEST OMR_EXAMPLE
+	MESSAGE "The fv test component relies on the example glue"
+)
+
 add_subdirectory(util)
 
 add_subdirectory(omrGtestGlue)

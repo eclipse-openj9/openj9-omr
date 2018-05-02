@@ -23,13 +23,13 @@
 #include "gcTestHelpers.hpp"
 
 extern "C" {
-int testMain(int argc, char **argv, char **envp);
+int omr_main_entry(int argc, char **argv, char **envp);
 }
 
 GCTestEnvironment *gcTestEnv;
 
 int
-testMain(int argc, char **argv, char **envp)
+omr_main_entry(int argc, char **argv, char **envp)
 {
 	::testing::InitGoogleTest(&argc, argv);
 

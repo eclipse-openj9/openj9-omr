@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2017 IBM Corp. and others
+# Copyright (c) 2017, 2018 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -19,7 +19,13 @@
 # SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
 ###############################################################################
 
+set(OMR_GC_GLUE_TARGET "omr_example_gc_glue" CACHE STRING "The gc glue target, must be interface library" FORCE)
+set(OMR_UTIL_GLUE_TARGET "omr_example_util_glue" CACHE STRING "The util glue target, must be interface library" FORCE)
+set(OMR_RAS_GLUE_TARGET "omr_example_ras_glue" CACHE STRING "The ras glue target, must be interface library" FORCE)
+set(OMR_CORE_GLUE_TARGET "omr_example_core_glue" CACHE STRING "The core glue target, must be and interface library" FORCE)
+
 add_library(omr_example_gc_glue INTERFACE)
+
 target_sources(omr_example_gc_glue INTERFACE
 	${CMAKE_CURRENT_SOURCE_DIR}/CollectorLanguageInterfaceImpl.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/CompactSchemeFixupObject.cpp
@@ -30,43 +36,45 @@ target_sources(omr_example_gc_glue INTERFACE
 	${CMAKE_CURRENT_SOURCE_DIR}/MarkingDelegate.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/ObjectIterator.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/ObjectModelDelegate.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/Profiling.c
 	${CMAKE_CURRENT_SOURCE_DIR}/StartupManagerImpl.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/VerboseManagerImpl.cpp
 )
 
-target_include_directories(omr_example_gc_glue INTERFACE
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_SOURCE_DIR}/..
+target_link_libraries(omr_example_gc_glue
+	INTERFACE
+		omr_example_base
 )
 
 add_library(omr_example_util_glue INTERFACE)
+
 target_sources(omr_example_util_glue INTERFACE
 	${CMAKE_CURRENT_SOURCE_DIR}/UtilGlue.c
 )
 
-target_include_directories(omr_example_util_glue INTERFACE
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_SOURCE_DIR}/..
-)
-
-add_library(omr_example_core_glue INTERFACE)
-target_sources(omr_example_core_glue INTERFACE
-	${CMAKE_CURRENT_SOURCE_DIR}/LanguageVMGlue.c
-	${CMAKE_CURRENT_SOURCE_DIR}/omrExampleVM.cpp
-)
-
-target_include_directories(omr_example_core_glue INTERFACE
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_SOURCE_DIR}/..
+target_link_libraries(omr_example_util_glue
+	INTERFACE
+		omr_example_base
 )
 
 add_library(omr_example_ras_glue INTERFACE)
+
 target_sources(omr_example_ras_glue INTERFACE
+)
+
+target_link_libraries(omr_example_ras_glue
+	INTERFACE
+		omr_example_base
+)
+
+add_library(omr_example_core_glue INTERFACE)
+
+target_sources(omr_example_core_glue INTERFACE
+	${CMAKE_CURRENT_SOURCE_DIR}/LanguageVMGlue.c
+	${CMAKE_CURRENT_SOURCE_DIR}/omrExampleVM.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/Profiling.c
 )
 
-target_include_directories(omr_example_ras_glue INTERFACE
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_SOURCE_DIR}/..
+target_link_libraries(omr_example_core_glue
+	INTERFACE
+		omr_example_base
 )

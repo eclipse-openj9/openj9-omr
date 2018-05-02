@@ -25,8 +25,11 @@ include $(top_srcdir)/omrmakefiles/configure.mk
 MODULE_NAME := omrvmtest
 ARTIFACT_TYPE := cxx_executable
 
-OBJECTS := main \
-  argmain
+OBJECTS := \
+  main \
+  main_function
+
+vpath main_function.cpp $(top_srcdir)/util/main_function
 
 ifeq (1,$(OMR_THR_FORK_SUPPORT))
   OBJECTS += vmForkTest
@@ -37,8 +40,6 @@ MODULE_INCLUDES += ../util
 MODULE_INCLUDES += $(OMR_GTEST_INCLUDES)
 MODULE_INCLUDES += $(OMR_IPATH)
 MODULE_CXXFLAGS += $(OMR_GTEST_CXXFLAGS)
-
-vpath argmain.cpp $(top_srcdir)/fvtest/omrGtestGlue
 
 MODULE_STATIC_LIBS += \
   omrGtest \

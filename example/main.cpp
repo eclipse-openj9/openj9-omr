@@ -43,7 +43,7 @@
 extern "C" {
 
 int
-testMain(int argc, char ** argv, char **envp)
+omr_main_entry(int argc, char ** argv, char **envp)
 {
 	/* Start up */
 	OMR_VM_Example exampleVM;

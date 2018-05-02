@@ -27,12 +27,10 @@ ARTIFACT_TYPE := cxx_executable
 
 # source files in this directory
 SRCS := $(wildcard *.cpp)
-OBJECTS := $(SRCS:%.cpp=%)
-
-# glue and utility source files
-OBJECTS +=\
-  argmain
+OBJECTS := $(SRCS:%.cpp=%) main_function
 OBJECTS := $(addsuffix $(OBJEXT),$(OBJECTS))
+
+vpath main_function.cpp $(top_srcdir)/util/main_function
 
 MODULE_INCLUDES += ./configuration $(OMR_PUGIXML_DIR) $(OMR_GTEST_INCLUDES) ../util
 MODULE_INCLUDES += \
@@ -41,8 +39,6 @@ MODULE_INCLUDES += \
   $(OMRGC_IPATH)
 
 MODULE_CXXFLAGS += $(OMR_GTEST_CXXFLAGS) -DSPEC=$(SPEC)
-
-vpath argmain.cpp $(top_srcdir)/fvtest/omrGtestGlue
 
 MODULE_STATIC_LIBS += \
   omrGtest \

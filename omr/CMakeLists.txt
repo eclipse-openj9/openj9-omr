@@ -20,6 +20,11 @@
 # SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
 ###############################################################################
 
+omr_assert(
+	TEST OMR_CORE_GLUE_TARGET
+	MESSAGE "OMR_CORE_GLUE_TARGET must be set. Try using the example with OMR_EXAMPLE=On"
+)
+
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 add_tracegen(omrti.tdf)
@@ -65,6 +70,8 @@ if(OMR_GC)
 	)
 
 	target_link_libraries(omrcore
+		PUBLIC
+			omrgc
 		PRIVATE
 			${OMR_CORE_GLUE_TARGET}
 	)

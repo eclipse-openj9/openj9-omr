@@ -488,14 +488,6 @@ TR_InlinerBase::cleanup(TR::ResolvedMethodSymbol * callerSymbol, bool inlinedSit
 
    }
 
-//check if the interface implementation we found meet certain requirements
-bool
-OMR_InlinerUtil::validateInterfaceImplementation(TR_ResolvedMethod *interfaceMethod)
-   {
-   return true;
-   }
-
-
 bool
 OMR_InlinerPolicy::mustBeInlinedEvenInDebug(TR_ResolvedMethod * calleeMethod, TR::TreeTop *callNodeTreeTop)
    {

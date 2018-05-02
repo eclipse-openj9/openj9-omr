@@ -33,7 +33,6 @@ else
 fi
 
 if test "x$BUILD_WITH_CMAKE" = "xyes"; then
-
   if test "x$CMAKE_GENERATOR" = "x"; then
     export CMAKE_GENERATOR="Ninja"
   fi
@@ -46,7 +45,7 @@ if test "x$BUILD_WITH_CMAKE" = "xyes"; then
 
   mkdir build
   cd build
-  time cmake -Wdev -G "$CMAKE_GENERATOR" -C../cmake/caches/Travis.cmake ..
+  time cmake -Wdev -G "$CMAKE_GENERATOR" $CMAKE_DEFINES -C../cmake/caches/Travis.cmake ..
   if test "x$RUN_BUILD" != "xno"; then
     time cmake --build . -- -j $BUILD_JOBS
     if test "x$RUN_TESTS" != "xno"; then
@@ -54,12 +53,9 @@ if test "x$BUILD_WITH_CMAKE" = "xyes"; then
     fi
   fi
 else
-  # Disable ddrgen on 32 bit builds--libdwarf in 32bit is unavailable.
-  if test "x$SPEC" = "xlinux_x86"; then
-    export EXTRA_CONFIGURE_ARGS="--disable-DDR"
-  else
-    export EXTRA_CONFIGURE_ARGS="--enable-DDR"
-  fi
+  # Linux 64 compressed references build and the 	Lint builds do not run in CMake
+  # Remove the Linux 64 compressed references build once the Autotool build infrastructure is retired
+  export EXTRA_CONFIGURE_ARGS="--enable-DDR"
   time make -f run_configure.mk OMRGLUE=./example/glue SPEC="$SPEC" PLATFORM="$PLATFORM"
   if test "x$RUN_BUILD" != "xno"; then
     # Normal build system

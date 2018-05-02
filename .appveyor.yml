@@ -20,7 +20,6 @@
 # SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
 ###############################################################################
 
-platform: x64
 configuration: Debug
 shallow_clone: true
 clone_depth: 1
@@ -33,7 +32,7 @@ environment:
 
 before_build:
   - del "C:\Program Files (x86)\MSBuild\14.0\Microsoft.Common.targets\ImportAfter\Xamarin.Common.targets"
-  - cmd: cmake -Wdev -G "Visual Studio 11 2012 Win64" -Ccmake\caches\Appveyor.cmake.
+  - cmd: cmake -Wdev -G "Visual Studio 11 2012" -DOMR_ENV_DATA32=ON -Ccmake\caches\Appveyor.cmake.
 
 build:
   project: omr.sln

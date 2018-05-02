@@ -40,6 +40,7 @@
 #include "OMR_VM.hpp"
 #include "OMR_VMThread.hpp"
 #include "MemoryManager.hpp"
+#include "MemorySpace.hpp"
 #include "ParallelDispatcher.hpp"
 #include "ReferenceChainWalkerMarkMap.hpp"
 #if defined(OMR_GC_THREAD_LOCAL_HEAP)

@@ -62,6 +62,7 @@ public:
 	
 protected:
 	MM_MemorySubSpaceSemiSpace *createSemiSpace(MM_EnvironmentBase *envBase, MM_Heap *heap, MM_Scavenger *scavenger, MM_InitializationParameters *parameters, UDATA numaNode = UDATA_MAX);
+	virtual void tearDown(MM_EnvironmentBase* env);
 private:
 	uintptr_t calculateDefaultRegionSize(MM_EnvironmentBase *env);
 };

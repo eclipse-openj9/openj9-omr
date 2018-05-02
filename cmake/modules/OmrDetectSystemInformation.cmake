@@ -135,5 +135,6 @@ macro(omr_detect_system_information)
 	message(STATUS "OMR: The CPU architecture is ${OMR_HOST_ARCH}")
 	message(STATUS "OMR: The OS is ${OMR_HOST_OS}")
 	message(STATUS "OMR: The tool configuration is ${OMR_TOOLCONFIG}")
+	message(STATUS "OMR: The target data size is ${OMR_ENV_TARGET_DATASIZE}")
 
 endmacro(omr_detect_system_information)

@@ -197,33 +197,36 @@ PdbScanner::loadDataFromPdb(const wchar_t *filename, IDiaDataSource **dataSource
 	 */
 	HRESULT hr = CoCreateInstance(__uuidof(DiaSource), NULL, CLSCTX_INPROC_SERVER, __uuidof(IDiaDataSource), (void **)dataSource);
 	if (FAILED(hr)) {
+		ERRMSG("CoCreateInstance failed with HRESULT = %08lX", hr);
 		static const char * const libraries[] = { "MSDIA120", "MSDIA100", "MSDIA80", "MSDIA70", "MSDIA60" };
 		rc = DDR_RC_ERROR;
 		for (size_t i = 0; i < sizeof(libraries) / sizeof(*libraries); ++i) {
 			HMODULE hmodule = LoadLibrary(libraries[i]);
 			if (NULL == hmodule) {
+				ERRMSG("LoadLibrary failed for %s.dll", libraries[i]);
 				continue;
 			}
 			BOOL (WINAPI *DllGetClassObject)(REFCLSID, REFIID, LPVOID) =
 					(BOOL (WINAPI *)(REFCLSID, REFIID, LPVOID))
 					GetProcAddress(hmodule, "DllGetClassObject");
 			if (NULL == DllGetClassObject) {
+				ERRMSG("Could not find DllGetClassObject in %s.dll", libraries[i]);
 				continue;
 			}
 			IClassFactory *classFactory = NULL;
 			hr = DllGetClassObject(__uuidof(DiaSource), IID_IClassFactory, &classFactory);
 			if (FAILED(hr)) {
+				ERRMSG("DllGetClassObject failed with HRESULT = %08lX", hr);
 				continue;
 			}
 			hr = classFactory->CreateInstance(NULL, __uuidof(IDiaDataSource), (void **)dataSource);
-			if (SUCCEEDED(hr)) {
+			if (FAILED(hr)) {
+				ERRMSG("CreateInstance failed with HRESULT = %08lX", hr);
+			} else {
+				ERRMSG("Instance of IDiaDataSource created using %s.dll", libraries[i]);
 				rc = DDR_RC_OK;
 				break;
 			}
-		}
-
-		if (DDR_RC_OK != rc) {
-			ERRMSG("Creating instance of IDiaDataSource failed with HRESULT = %08lX\n", hr);
 		}
 	}
 

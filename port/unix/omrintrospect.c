@@ -48,6 +48,7 @@
 #include <dirent.h>
 #include <dlfcn.h>
 #include <sys/utsname.h>
+#include <inttypes.h>
 #elif defined(AIXPPC)
 #include <sys/ldr.h>
 #include <sys/debug.h>
@@ -1464,7 +1465,7 @@ sigqueue_is_reliable(void)
 	 * will stay zero and we'll consider sigqueue() unreliable.
 	 */
 	if (0 == uname(&sysinfo)) {
-		sscanf(sysinfo.release, "%lu.%lu", &release_major, &release_minor);
+		sscanf(sysinfo.release, "%" SCNuPTR ".%" SCNuPTR, &release_major, &release_minor);
 	}
 
 	/* sigqueue() is sufficiently reliable on newer Linux kernels (version 3.11 and later). */

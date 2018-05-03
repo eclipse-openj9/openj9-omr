@@ -52,22 +52,10 @@ matrix:
       compiler: gcc
     - os: linux
       compiler: clang
+    - os: linux
+      env: BUILD_WITH_CMAKE=yes CMAKE_GENERATOR="Unix Makefiles"
   include:
     ## Auto tool builds
-    #  32 bit Linux x86
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - libnuma-dev
-            - gcc-multilib
-            - g++-multilib
-      env: SPEC=linux_x86 PLATFORM=amd64-linux-gcc
-    # 64 bit Linux x86
-    - os: linux
-      env: SPEC=linux_x86-64 PLATFORM=amd64-linux64-gcc
     # 64 bit Linux x86 compressed pointers
     - os: linux
       env: SPEC=linux_x86-64_cmprssptrs PLATFORM=amd64-linux64-gcc
@@ -88,7 +76,7 @@ matrix:
       dist: trusty
     ## CMake builds
     #  Ninja builds
-    #  64 bit Linux x86
+    #  32 bit Linux x86
     - os: linux
       addons:
         apt:
@@ -100,7 +88,9 @@ matrix:
             - libdwarf-dev
             - libelf-dev 
             - ninja-build
-      env: BUILD_WITH_CMAKE=yes CMAKE_GENERATOR=Ninja
+            - gcc-multilib
+            - g++-multilib
+      env: BUILD_WITH_CMAKE=yes CMAKE_GENERATOR=Ninja CMAKE_DEFINES="-DOMR_ENV_DATA32=ON -DOMR_DDR=OFF -DOMR_JITBUILDER=OFF"
 before_script:
   - ulimit -c unlimited
   - if [ "$TRAVIS_OS_NAME" == "osx" ]; then export PATH=/usr/local/opt/ccache/libexec:$PATH ; fi

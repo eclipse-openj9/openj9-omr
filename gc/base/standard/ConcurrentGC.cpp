@@ -3281,27 +3281,6 @@ MM_ConcurrentGC::heapAddRange(MM_EnvironmentBase *env, MM_MemorySubSpace *subspa
 
 	_heapAlloc = _extensions->heap->getHeapTop();
 
-	/* If called outside a global collection for a heap expand...
-	 */
-	if( !_globalCollectionInProgress) {
-		/* ... and a concurrent cycle has not yet started then we
-		 *  tune to heap here to reflect new heap size
-		 *  Note: CMVC 153167 : Under gencon, there is a timing hole where
-		 *  if we are in the middle of initializing the heap ranges while a
-		 *  scavenge occurs, and if the scavenge causes the heap to contract,
-		 *  we will try to memset ranges that are now contracted (decommitted memory)
-		 *  when we resume the init work.
-		 */
-		if (_stats.getExecutionMode() < CONCURRENT_INIT_COMPLETE) {
-			tuneToHeap(env);
-		} else {
-			/* Heap expand is during a concurrent cycle..we need to adjust the trace target so
-		 	* that the trace rate is adjusted correctly on subsequent allocates.
-		 	*/
-			adjustTraceTarget();
-		}
-	}
-
 	Trc_MM_ConcurrentGC_heapAddRange_Exit(env->getLanguageVMThread());
 
 	return result;
@@ -3336,27 +3315,6 @@ MM_ConcurrentGC::heapRemoveRange(MM_EnvironmentBase *env, MM_MemorySubSpace *sub
 	result = result && ((MM_ConcurrentCardTable *)_cardTable)->heapRemoveRange(env, subspace, size, lowAddress, highAddress, lowValidAddress, highValidAddress);
 	_heapAlloc = (void *)_extensions->heap->getHeapTop();
 
-	/* If called outside a global collection for a heap contract..
-	 */
-	if( !_globalCollectionInProgress) {
-		/* ... and a concurrent cycle has not yet started then we
-		 *  tune to heap here to refelect new heap size
-		 *  Note: CMVC 153167 : Under gencon, there is a timing hole where
-		 *  if we are in the middle of initializing the heap ranges while a
-		 *  scavenge occurs, and if the scavenge causes the heap to contract,
-		 *  we will try to memset ranges that are now contracted (decommitted memory)
-		 *  when we resume the init work.
-		 */
-		if (_stats.getExecutionMode() < CONCURRENT_INIT_COMPLETE) {
-			tuneToHeap(env);
-		} else {
-			/* Heap contract is during a concurrent cycle..we need to adjust the trace target so
-			 * that the trace rate is adjusted correctly on  subsequent allocates.
-			 */
-			adjustTraceTarget();
-		}
-	}
-
 	Trc_MM_ConcurrentGC_heapRemoveRange_Exit(env->getLanguageVMThread());
 
 	return result;
@@ -3368,17 +3326,33 @@ MM_ConcurrentGC::heapRemoveRange(MM_EnvironmentBase *env, MM_MemorySubSpace *sub
 void
 MM_ConcurrentGC::heapReconfigured(MM_EnvironmentBase *env)
 {
+
+	/* If called outside a global collection for a heap expand/contract..
+	 */
+	if( !_globalCollectionInProgress && _rebuildInitWork) {
+		/* ... and a concurrent cycle has not yet started then we
+		 *  tune to heap here to reflect new heap size
+		 *  Note: CMVC 153167 : Under gencon, there is a timing hole where
+		 *  if we are in the middle of initializing the heap ranges while a
+		 *  scavenge occurs, and if the scavenge causes the heap to contract,
+		 *  we will try to memset ranges that are now contracted (decommitted memory)
+		 *  when we resume the init work.
+		 */
+		if (_stats.getExecutionMode() < CONCURRENT_INIT_COMPLETE) {
+			tuneToHeap(env);
+		} else {
+			/* Heap expand/contract is during a concurrent cycle..we need to adjust the trace target so
+			 * that the trace rate is adjusted correctly on  subsequent allocates.
+			 */
+			adjustTraceTarget();
+		}
+	}
+
 	/* Expand any superclass structures */
 	MM_ParallelGlobalGC::heapReconfigured(env);
 
 	/* ...and then expand the card table */
 	((MM_ConcurrentCardTable *)_cardTable)->heapReconfigured(env);
-
-	/* The heap has been reconfigured; most likely a change in scavenger tilt ratio
-	 * so flag we need to recalculate the intialization work
-	 */
-	_rebuildInitWork = true;
-
 }
 
 /**

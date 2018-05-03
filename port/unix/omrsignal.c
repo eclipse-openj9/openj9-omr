@@ -89,6 +89,15 @@ static struct {
  */
 static uint32_t signalsWithHandlers;
 
+/* Records the (port library defined) signals for which a master handler is
+ * registered. A master handler can be either masterSynchSignalHandler or
+ * masterASynchSignalHandler. A signal can only be associated to one master
+ * handler. If a master handler is already registered for a signal, then avoid
+ * re-registering a master handler for that signal. Access to this variable
+ * must be protected by the registerHandlerMonitor.
+ */
+static uint32_t signalsWithMasterHandlers;
+
 #if defined(OMR_PORT_ASYNC_HANDLER)
 static uint32_t shutDownASynchReporter;
 #endif
@@ -596,6 +605,23 @@ omrsig_register_os_handler(struct OMRPortLibrary *portLibrary, uint32_t portlibS
 	} else {
 		omrthread_monitor_enter(registerHandlerMonitor);
 		rc = registerSignalHandlerWithOS(portLibrary, portlibSignalFlag, (unix_sigaction)newOSHandler, oldOSHandler);
+		if (0 == rc) {
+			/*  A user-specified handler has been successfully registered for a signal. */
+			if ((newOSHandler == (void *)masterSynchSignalHandler)
+				|| (newOSHandler == (void *)masterASynchSignalHandler)
+			) {
+				/* User-specified handler is a master handler. So, set the portlibSignalFlag bit in
+				 * signalsWithMasterHandlers.
+				 */
+				signalsWithMasterHandlers |= portlibSignalFlag;
+			} else {
+				/* If the user-specified handler is not a master handler, then unset the
+				 * portlibSignalFlag bit in signalsWithMasterHandlers. This suggests that a
+				 * master handler is no longer registered with the portlibSignalFlag's signal.
+				 */
+				signalsWithMasterHandlers &= ~portlibSignalFlag;
+			}
+		}
 		omrthread_monitor_exit(registerHandlerMonitor);
 	}
 
@@ -1331,6 +1357,8 @@ addAsyncSignalsToSet(sigset_t *ss)
 
 /**
  * Registers the master handler for the signals in flags that don't have one.
+ * If signalsWithMasterHandlers suggests a master handler is already registered
+ * with a signal, then a master handler isn't registered again for that signal.
  *
  * Calls to this function must be synchronized using registerHandlerMonitor.
  *
@@ -1374,11 +1402,24 @@ registerMasterHandlers(OMRPortLibrary *portLibrary, uint32_t flags, uint32_t all
 		for (portSignalType = OMRPORT_SIG_SMALLEST_SIGNAL_FLAG; portSignalType < allowedSubsetOfFlags; portSignalType = portSignalType << 1) {
 			/* iterate through all the  signals and register the master handler for those that don't have one yet */
 
-			if (OMR_ARE_ANY_BITS_SET(flagsSignalsOnly, portSignalType)) {
-				/* we need a master handler for this (portSignalType's) signal */
+			if (OMR_ARE_ALL_BITS_SET(flagsSignalsOnly, portSignalType)) {
+				if (OMR_ARE_NO_BITS_SET(signalsWithMasterHandlers, portSignalType)) {
+					/* Register a master handler for this (portSignalType's) signal. */
+					if (0 != registerSignalHandlerWithOS(portLibrary, portSignalType, handler, oldOSHandler)) {
+						return OMRPORT_SIG_ERROR;
+					}
 
-				if (0 != registerSignalHandlerWithOS(portLibrary, portSignalType, handler, oldOSHandler)) {
-					return OMRPORT_SIG_ERROR;
+					/* After successfully registering the master handler, set the signal
+					 * bit in signalsWithMasterHandlers.
+					 */
+					signalsWithMasterHandlers |= portSignalType;
+				} else {
+					/* If the master handler is already registered, then the oldOSHandler must represent the
+					 * master handler.
+					 */
+					if (NULL != oldOSHandler) {
+						*oldOSHandler = (void *)handler;
+					}
 				}
 			}
 		}
@@ -1610,10 +1651,12 @@ sig_full_shutdown(struct OMRPortLibrary *portLibrary)
 		/* register the old actions we overwrote with our own */
 		for (index = 1; index < ARRAY_SIZE_SIGNALS; index++) {
 			if (oldActions[index].restore) {
+				uint32_t portlibSignalFlag = mapUnixSignalToPortLib(index, 0);
 				OMRSIG_SIGACTION(index, &oldActions[index].action, NULL);
 				/* record that we no longer have a handler installed with the OS for this signal */
 				Trc_PRT_signal_sig_full_shutdown_deregistered_handler_with_OS(portLibrary, index);
-				signalsWithHandlers &= ~mapUnixSignalToPortLib(index, 0);
+				signalsWithHandlers &= ~portlibSignalFlag;
+				signalsWithMasterHandlers &= ~portlibSignalFlag;
 				oldActions[index].restore = 0;
 			}
 		}

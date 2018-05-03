@@ -1258,9 +1258,6 @@ registerSignalHandlerWithOS(OMRPortLibrary *portLibrary, uint32_t portLibrarySig
 		}
 	}
 
-	/* CMVC 96193 signalsWithHandlers is checked without acquiring the registerHandlerMonitor */
-	issueWriteBarrier();
-
 	/* Set the portLibrarySignalNo bit in signalsWithHandlers to record successful registration
 	 * of the handler. */
 	signalsWithHandlers |= portLibrarySignalNo;

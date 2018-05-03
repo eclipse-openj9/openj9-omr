@@ -401,7 +401,7 @@ omrsig_set_async_signal_handler(struct OMRPortLibrary *portLibrary, omrsig_handl
 			rc = registerMasterHandlers(portLibrary, OMRPORT_SIG_FLAG_SIGXFSZ, OMRPORT_SIG_FLAG_SIGALLASYNC, NULL);
 		} else {
 			Trc_PRT_signal_omrsig_set_async_signal_handler_will_not_set_handler_due_to_Xrs(handler, handler_arg, flags);
-			rc = -1;
+			rc = OMRPORT_SIG_ERROR;
 		}
 	} else {
 		rc = registerMasterHandlers(portLibrary, flags, OMRPORT_SIG_FLAG_SIGALLASYNC, NULL);
@@ -410,7 +410,7 @@ omrsig_set_async_signal_handler(struct OMRPortLibrary *portLibrary, omrsig_handl
 
 	if (0 != rc) {
 		Trc_PRT_signal_omrsig_set_async_signal_handler_exiting_did_nothing_possible_error(handler, handler_arg, flags);
-		return OMRPORT_SIG_ERROR;
+		return rc;
 	}
 
 	omrthread_monitor_enter(asyncMonitor);
@@ -451,7 +451,7 @@ omrsig_set_async_signal_handler(struct OMRPortLibrary *portLibrary, omrsig_handl
 			J9UnixAsyncHandlerRecord *record = portLibrary->mem_allocate_memory(portLibrary, sizeof(*record), OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
 
 			if (NULL == record) {
-				rc = 1;
+				rc = OMRPORT_SIG_ERROR;
 			} else {
 				record->portLib = portLibrary;
 				record->handler = handler;
@@ -550,7 +550,7 @@ omrsig_set_single_async_signal_handler(struct OMRPortLibrary *portLibrary, omrsi
 	if (!foundHandler && (0 != portlibSignalFlag)) {
 		J9UnixAsyncHandlerRecord *record = portLibrary->mem_allocate_memory(portLibrary, sizeof(*record), OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
 		if (NULL == record) {
-			rc = 1;
+			rc = OMRPORT_SIG_ERROR;
 		} else {
 			record->portLib = portLibrary;
 			record->handler = handler;

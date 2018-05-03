@@ -237,7 +237,7 @@ omrsig_set_async_signal_handler(struct OMRPortLibrary *portLibrary, omrsig_handl
 
 	if (OMRPORT_SIG_OPTIONS_REDUCED_SIGNALS_ASYNCHRONOUS & signalOptions) {
 		/* -Xrs was set, do not install any handlers */
-		return 1;
+		return OMRPORT_SIG_ERROR;
 	}
 
 	omrthread_monitor_enter(asyncMonitor);
@@ -275,7 +275,7 @@ omrsig_set_async_signal_handler(struct OMRPortLibrary *portLibrary, omrsig_handl
 			J9WinAMD64AsyncHandlerRecord *record = portLibrary->mem_allocate_memory(portLibrary, sizeof(*record), OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
 
 			if (record == NULL) {
-				rc = 1;
+				rc = OMRPORT_SIG_ERROR;
 			} else {
 				record->portLib = portLibrary;
 				record->handler = handler;

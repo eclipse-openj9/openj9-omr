@@ -30,14 +30,13 @@ target_include_directories(omr_example_base
 		glue
 )
 
-# The current implementation of the example depends on the ${OMR_GC_LIB} library
-# and is not able to be compiled without a GC implementation.
+# The GC example shows how to use OMR's GC component
 if(OMR_GC)
-	add_executable(example
-		main.cpp
+	add_executable(gcexample
+		gcmain.cpp
 	)
 
-	target_link_libraries(example
+	target_link_libraries(gcexample
 		omr_main_function
 		pugixml
 		omrcore
@@ -49,7 +48,7 @@ if(OMR_GC)
 	# TODO: The example is currently broken.
 	# Hashtable iteration appears to be broken, which in turn breaks root
 	# marking, and causes the example to spin forever.
-	# add_test(example example)
+	# add_test(gcexample gcexample)
 endif(OMR_GC)
 
 add_subdirectory(glue)

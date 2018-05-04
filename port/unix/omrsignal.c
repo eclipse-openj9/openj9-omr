@@ -575,7 +575,12 @@ omrsig_set_single_async_signal_handler(struct OMRPortLibrary *portLibrary, omrsi
 
 	omrthread_monitor_exit(asyncMonitor);
 
-	Trc_PRT_signal_omrsig_set_single_async_signal_handler_exiting(rc, handler, handler_arg, portlibSignalFlag, *oldOSHandler);
+	if (NULL != oldOSHandler) {
+		Trc_PRT_signal_omrsig_set_single_async_signal_handler_exiting(rc, handler, handler_arg, portlibSignalFlag, *oldOSHandler);
+	} else {
+		Trc_PRT_signal_omrsig_set_single_async_signal_handler_exiting(rc, handler, handler_arg, portlibSignalFlag, NULL);
+	}
+
 	return rc;
 }
 
@@ -625,7 +630,11 @@ omrsig_register_os_handler(struct OMRPortLibrary *portLibrary, uint32_t portlibS
 		omrthread_monitor_exit(registerHandlerMonitor);
 	}
 
-	Trc_PRT_signal_omrsig_register_os_handler_exiting(rc, portlibSignalFlag, newOSHandler, *oldOSHandler);
+	if (NULL != oldOSHandler) {
+		Trc_PRT_signal_omrsig_register_os_handler_exiting(rc, portlibSignalFlag, newOSHandler, *oldOSHandler);
+	} else {
+		Trc_PRT_signal_omrsig_register_os_handler_exiting(rc, portlibSignalFlag, newOSHandler, NULL);
+	}
 
 	return rc;
 }

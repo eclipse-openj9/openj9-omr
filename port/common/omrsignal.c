@@ -180,8 +180,11 @@ omrsig_set_async_signal_handler(struct OMRPortLibrary *portLibrary, omrsig_handl
  * entry corresponding to omrsig_handler_fn is removed, and related resources are freed. portlibSignalFlag can only
  * have one signal flag set; otherwise, OMRPORT_SIG_ERROR is returned. One omrsig_handler_fn handler is registered
  * with a signal at any time instead of multiple handlers. When associating a new omrsig_handler_fn with a signal,
- * prior omrsig_handler_fn(s) are dissociated from the signal. The address of the old signal handler function is
- * stored in oldOSHandler. This function supports all signals listed in OMRPORT_SIG_FLAG_SIGALLASYNC.
+ * prior omrsig_handler_fn(s) are dissociated from the signal. This function supports all signals listed in
+ * OMRPORT_SIG_FLAG_SIGALLASYNC.
+ *
+ * The address of the old signal handler function is stored in *oldOSHandler. In case of error or if NULL is provided
+ * for oldOSHandler, then *oldOSHandler is not updated to reflect the old signal handler function.
  *
  * @param[in] portLibrary The port library
  * @param[in] handler the function to call if an asynchronous signal arrives
@@ -229,7 +232,11 @@ omrsig_map_portlib_signal_to_os_signal(struct OMRPortLibrary *portLibrary, uint3
  * @brief Register a handler with the OS. For an invalid portlibSignalFlag, an error is returned.
  * portlibSignalFlag is invalid: if it is zero or if multiple signal bits are specified or if the
  * specified flag is not supported. If OS fails to register newOSHandler for the specified signal,
- * then an error is returned. In error cases, oldOSHandler won't be updated.
+ * then an error is returned.
+ *
+ * The address of the old signal handler function is stored in *oldOSHandler. In case of error or
+ * if NULL is provided for oldOSHandler, then *oldOSHandler is not updated to reflect the old
+ * signal handler function.
  *
  * This function may override a master handler which was previously set by omrsig_protect or
  * omrsig_set_*_async_signal_handler variant. The records associated with the master handler

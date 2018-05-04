@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2015 IBM Corp. and others
+ * Copyright (c) 2015, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -67,7 +67,7 @@ public:
 	omrobjectptr_t _objectPtr; /**< current object being scanned, parent of current object being copied */
 private:
 	GC_ObjectModel *_objectModel; /**< pointer to object model (from GC extensions) */
-	
+
 	uint8_t _hotness; /**< hotness of current slot being scanned */
 
 	/**
@@ -93,13 +93,13 @@ private:
 	uintptr_t _connectionHistgm[sizeof(uintptr_t)*8][SizeScavengerHotness][SizeScavengerObjectConnectorType];
 
 protected:
-	bool initialize(MM_GCExtensionsBase *extensions);	
-	void tearDown(MM_GCExtensionsBase *extensions) {} 
-	
+	bool initialize(MM_GCExtensionsBase *extensions);
+	void tearDown(MM_GCExtensionsBase *extensions) {}
+
 public:
 
-	static MM_ScavengerHotFieldStats * newInstance(MM_GCExtensionsBase *extensions);	
-	void kill(MM_GCExtensionsBase *extensions); 
+	static MM_ScavengerHotFieldStats * newInstance(MM_GCExtensionsBase *extensions);
+	void kill(MM_GCExtensionsBase *extensions);
 
 	/**
 	 * When no information is known about the hotness of a field, then the default is hot.
@@ -125,7 +125,7 @@ public:
 			}
 		}
 	}
-		
+
 	/**
 	 * Merges the given hot fields statistics into this one
 	 * @param statsToMerge the statistics to merge
@@ -159,7 +159,7 @@ public:
 			fomrobject_t *startOfObjectAfterHeader = (fomrobject_t*)(_objectPtr + 1);
 			/* NOTE: pointer math means that slotIndex is calculated in terms of sizeof(fomrobject_t) */
 			uintptr_t slotIndex = (uintptr_t) (slotPtr - startOfObjectAfterHeader);
-	
+
 			/* x >> y is undefined if y >= #bits in word, but we know it should be zero! This feature of right shift caught me out! */
 			if (slotIndex >= sizeof(hotFieldsDescriptor)*8) {
 				hotFieldsDescriptor = 0;
@@ -186,7 +186,7 @@ public:
 			/* don't update statistics - if objectPtr is not set we don't update */
 			return;
 		}
-		ScavengerObjectConnectorType connector;	
+		ScavengerObjectConnectorType connector;
 		if (!isParentInNewSpace == isChildInNewSpace) {
 			/* not both in same space */
 			connector = DiffSubSpace;
@@ -197,7 +197,7 @@ public:
 				connector = TenSubSpace;
 			}
 		}
-		
+
 		uintptr_t distance = ABS_UINTPTR_DISTANCE((uintptr_t) _objectPtr, (uintptr_t) childPtr);
 		uintptr_t bin = 0;
 		if (0 != distance) {
@@ -297,7 +297,7 @@ public:
 		omrtty_printf(" }\n");
 		omrtty_printf("{ Hot Field Statistics nursery-tenured: end }\n");
 	}
-	
+
 	/**
 	 * Create a SvavengerHotFieldStats object.
 	 */
@@ -306,8 +306,8 @@ public:
 		_objectModel(NULL)
 		, _hotness(0)
 	{
-		clear(); 
-	}	
+		clear();
+	}
 };
 
 #endif /* defined(OMR_GC_MODRON_SCAVENGER) || defined(OMR_GC_VLHGC) */

@@ -1,18 +1,18 @@
-// Copyright (c) 2010, 2016 IBM Corp. and others
-// 
+// Copyright (c) 2010, 2018 IBM Corp. and others
+//
 // This program and the accompanying materials are made available under
 // the terms of the Eclipse Public License 2.0 which accompanies this
 // distribution and is available at https://www.eclipse.org/legal/epl-2.0/
 // or the Apache License, Version 2.0 which accompanies this distribution and
 // is available at https://www.apache.org/licenses/LICENSE-2.0.
-//      
+//
 // This Source Code may also be made available under the following
 // Secondary Licenses when the conditions for such availability set
 // forth in the Eclipse Public License, v. 2.0 are satisfied: GNU
 // General Public License, version 2 with the GNU Classpath
 // Exception [1] and GNU General Public License, version 2 with the
 // OpenJDK Assembly Exception [2].
-//    
+//
 // [1] https://www.gnu.org/software/classpath/license.html
 // [2] http://openjdk.java.net/legal/assembly-exception.html
 //
@@ -71,6 +71,5 @@ TraceException=Trc_THR_omrthread_get_cpu_time_ex_pthread_getcpuclockid_failed Ov
 TraceException=Trc_THR_omrthread_get_jvm_cpu_usage_info_get_cpu_time_ex_failed Overhead=1 Level=1 NoEnv Test Template="omrthread_get_cpu_time_ex failed for thread=0x%p, result=%zd"
 TraceException=Trc_THR_omrthread_get_cpu_time_ex_clock_gettime_failed Overhead=1 Level=1 NoEnv Test Template="clock_gettime failed for clock_id=%d with error=%zd for thread=0x%p"
 TraceException=Trc_THR_fixupThreadAccounting_omrthread_get_cpu_time_ex_error Overhead=1 Level=1 NoEnv Test Template="omrthread_get_cpu_time_ex returned error=%zd for thread=0x%p"
-
 
 TraceEvent=Trc_THR_EnableRawMonitorSpin_CustomSpinOption Overhead=1 Level=3 NoEnv Test Template="(ENABLE_RAW_MONITOR_SPIN) Using custom spin counts: %s, monitor: %p, threeTierSpinCount1: %zu, threeTierSpinCount2: %zu, threeTierSpinCount3: %zu, adaptSpin: %zu"

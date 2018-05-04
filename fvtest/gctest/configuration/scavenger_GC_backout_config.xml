@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <!--
-Copyright (c) 2016, 2016 IBM Corp. and others
+Copyright (c) 2016, 2018 IBM Corp. and others
 
 This program and the accompanying materials are made available under
 the terms of the Eclipse Public License 2.0 which accompanies this
@@ -20,9 +20,9 @@ License, version 2 with the OpenJDK Assembly Exception [2].
 SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
 -->
 <gc-config>
-	<option GCPolicy="gencon" concurrentMark="false" forceBackOut="true" forcePoisonEvacuate="true" 
-		verboseLog="VerboseGC-gencon_GC_backout" sizeUnit="MB" 
-		initialMemorySize="11" memoryMax="11" maxSizeDefaultMemorySpace="11" 
+	<option GCPolicy="gencon" concurrentMark="false" forceBackOut="true" forcePoisonEvacuate="true"
+		verboseLog="VerboseGC-gencon_GC_backout" sizeUnit="MB"
+		initialMemorySize="11" memoryMax="11" maxSizeDefaultMemorySpace="11"
 		minNewSpaceSize="3" newSpaceSize="3" maxNewSpaceSize="3"
 		minOldSpaceSize="8" oldSpaceSize="8" maxOldSpaceSize="8" />
 	<allocation>
@@ -42,15 +42,15 @@ SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-excepti
 				<object namePrefix="objH" type="normal" numOfFields="100" />
 			</object>
 		</object>
-		
+
 		<object namePrefix="objI" type="root" numOfFields="100" breadth="2" depth="2" />
 
 		<object namePrefix="objJ" type="root" numOfFields="200" >
 
 			<object namePrefix="objK" type="normal" numOfFields="150,300,600" breadth="1,2" depth="4" />
-			
+
 			<object namePrefix="objL" type="normal" numOfFields="70,140,180" breadth="1" depth="4" />
-			
+
 			<object namePrefix="objM" type="normal" numOfFields="150,400,700" breadth="2" depth="10" />
 		</object>
 	</allocation>

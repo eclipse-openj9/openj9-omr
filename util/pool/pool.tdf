@@ -1,28 +1,28 @@
-// Copyright (c) 1998, 2013 IBM Corp. and others
-// 
+// Copyright (c) 1998, 2018 IBM Corp. and others
+//
 // This program and the accompanying materials are made available under
 // the terms of the Eclipse Public License 2.0 which accompanies this
 // distribution and is available at https://www.eclipse.org/legal/epl-2.0/
 // or the Apache License, Version 2.0 which accompanies this distribution and
 // is available at https://www.apache.org/licenses/LICENSE-2.0.
-// 
+//
 // This Source Code may also be made available under the following
 // Secondary Licenses when the conditions for such availability set
 // forth in the Eclipse Public License, v. 2.0 are satisfied: GNU
-// General Public License, version 2 with the GNU Classpath 
+// General Public License, version 2 with the GNU Classpath
 // Exception [1] and GNU General Public License, version 2 with the
 // OpenJDK Assembly Exception [2].
-// 
+//
 // [1] https://www.gnu.org/software/classpath/license.html
 // [2] http://openjdk.java.net/legal/assembly-exception.html
-// 
+//
 // SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
 
 Executable=pool
 DATFileName=J9TraceFormat.dat
 
 TraceEntry=Trc_pool_new_Entry Overhead=1 Level=3 Noenv Template="pool_new(structSize=%u, minNumberElements=%u elementAlignment=%u poolFlags=0x%zx, memAlloc=%p, memFree=%p, userData=%p)"
-TraceExit=Trc_pool_new_TooLargeExit Overhead=1 Level=1 Noenv Template="pool_new too large (puddleAllocSize=%u)" 
+TraceExit=Trc_pool_new_TooLargeExit Overhead=1 Level=1 Noenv Template="pool_new too large (puddleAllocSize=%u)"
 TraceExit=Trc_pool_new_Exit Overhead=1 Level=3 Noenv Template="pool_new(result=%p)"
 
 TraceEntry=Trc_pool_kill_Entry Overhead=1 Level=3 Noenv Template="pool_kill(%p)"
@@ -104,6 +104,6 @@ TraceExit=Trc_pool_verify_ExitNoPuddleList Overhead=1 Level=1 Noenv Template="po
 TraceExit=Trc_pool_verify_ExitNoNextAvailablePuddle Overhead=1 Level=1 Noenv Template="pool_verify failed pool %p next available puddle %p not found"
 TraceExit=Trc_pool_verify_ExitNumElementsMismatch Overhead=1 Level=1 Noenv Template="pool_verify failed pool %p element count mismatch found %d expected %d"
 
-TraceExit=Trc_pool_new_ArgumentTooLargeExit Overhead=1 Level=1 Noenv Template="pool_new too large (structSize=%zu, minNumberElements=%zu elementAlignment=%zu)" 
-TraceExit=Trc_pool_new_NoVerifyWithHolesExit Overhead=1 Level=1 Noenv Template="pool_new POOL_VERIFY_FREE_LIST unsupported when POOL_USES_HOLES" 
+TraceExit=Trc_pool_new_ArgumentTooLargeExit Overhead=1 Level=1 Noenv Template="pool_new too large (structSize=%zu, minNumberElements=%zu elementAlignment=%zu)"
+TraceExit=Trc_pool_new_NoVerifyWithHolesExit Overhead=1 Level=1 Noenv Template="pool_new POOL_VERIFY_FREE_LIST unsupported when POOL_USES_HOLES"
 TraceExit=Trc_pool_verify_ExitPrevPuddleMismatch Overhead=1 Level=1 Noenv Template="pool_verify failed pool %p puddle %p prev puddle not %p avail %d"

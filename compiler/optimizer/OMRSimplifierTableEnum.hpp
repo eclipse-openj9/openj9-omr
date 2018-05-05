@@ -117,11 +117,10 @@
    bnegSimplifier,          // TR::bneg
    snegSimplifier,          // TR::sneg
 
-
-   iabsSimplifier,           // TR::iabs
-   labsSimplifier,           // TR::labs
-   dftSimplifier,            // TR::fabs   todo
-   dftSimplifier,            // TR::dabs   todo
+   ilfdabsSimplifier,       // TR::iabs
+   ilfdabsSimplifier,       // TR::labs
+   ilfdabsSimplifier,       // TR::fabs
+   ilfdabsSimplifier,       // TR::dabs
 
    ishlSimplifier,          // TR::ishl
    lshlSimplifier,          // TR::lshl

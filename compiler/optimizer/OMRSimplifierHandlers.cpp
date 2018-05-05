@@ -9805,12 +9805,12 @@ TR::Node *fnegSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    // Make this  work for -(0-0)
    //
    if (firstChild->getOpCodeValue() == TR::fneg)
-     {
+      {
       if (performTransformation(s->comp(), "%sTransforming [" POINTER_PRINTF_FORMAT "] --A -> A\n", s->optDetailString(), node))
-        {
-        node= s->replaceNode(node,firstChild->getFirstChild(), s->_curTree); // remove neg
-        }
-     }
+         {
+         node= s->replaceNode(node,firstChild->getFirstChild(), s->_curTree); // remove neg
+         }
+      }
    // don't just do -A op B -> -(A op B) as not always a win, so catch opportunity here
    else if ((firstChild->getOpCodeValue() == TR::fmul ||
            firstChild->getOpCodeValue() == TR::fdiv ||
@@ -9835,14 +9835,14 @@ TR::Node *fnegSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
          childNo=1;
          }
       if (child2Change && child2Change->getReferenceCount() == 1 && performTransformation(s->comp(), "%sTransforming [" POINTER_PRINTF_FORMAT "] -(-A op B) -> A op B (op=*,/,%%)\n", s->optDetailString(), node))
-        {
-        // remove neg
-        TR::Node * newChild= s->replaceNode(child2Change,child2Change->getFirstChild(), s->_curTree);
-        firstChild->setChild(childNo,newChild);
-        // now replace current node with fmul,fdiv or frem
-        node= s->replaceNode(node,node->getFirstChild(), s->_curTree);
-        }
-   }
+         {
+         // remove neg
+         TR::Node * newChild= s->replaceNode(child2Change,child2Change->getFirstChild(), s->_curTree);
+         firstChild->setChild(childNo,newChild);
+         // now replace current node with fmul,fdiv or frem
+         node= s->replaceNode(node,node->getFirstChild(), s->_curTree);
+         }
+      }
    else if (s->comp()->cg()->supportsNegativeFusedMultiplyAdd())
       {
       // unless we've already got an inserted multiply, transformit
@@ -9889,11 +9889,17 @@ TR::Node *dnegSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
       }
 
    // Make this work for -(0-0)
-
-   if (s->comp()->cg()->supportsNegativeFusedMultiplyAdd())
+   if (firstChild->getOpCodeValue() == TR::dneg)
+      {
+      if (performTransformation(s->comp(), "%sTransforming [" POINTER_PRINTF_FORMAT "] --A -> A\n", s->optDetailString(), node))
+         {
+         node= s->replaceNode(node,firstChild->getFirstChild(), s->_curTree); // remove neg
+         }
+      }
+   else if (s->comp()->cg()->supportsNegativeFusedMultiplyAdd())
       {
       if ((firstChild->getOpCode().isAdd() || firstChild->getOpCode().isSub()) &&
-     !(firstChild->getFirstChild()->isFPStrictCompliant() || firstChild->getSecondChild()->isFPStrictCompliant()) &&
+          !(firstChild->getFirstChild()->isFPStrictCompliant() || firstChild->getSecondChild()->isFPStrictCompliant()) &&
           performTransformation(s->comp(), "%sTransforming [" POINTER_PRINTF_FORMAT "] -(-A +/- B) -> -((A*1)+/-B)\n", s->optDetailString(), node))
          {
          TR::Node * newConst = TR::Node::create(firstChild->getFirstChild(), TR::dconst, 0);
@@ -9907,7 +9913,7 @@ TR::Node *dnegSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
          newMul->setIsFPStrictCompliant(true);
          }
       else if (firstChild->getOpCode().isMul() &&
-          performTransformation(s->comp(), "%sTransforming [" POINTER_PRINTF_FORMAT "] -(A*B) -> -((A*B)-0)\n", s->optDetailString(), node))
+               performTransformation(s->comp(), "%sTransforming [" POINTER_PRINTF_FORMAT "] -(A*B) -> -((A*B)-0)\n", s->optDetailString(), node))
          {
          TR::Node * newConst = TR::Node::create(firstChild, TR::dconst, 0);
          TR::Node * newAdd = TR::Node::create(firstChild, TR::dsub, 2);
@@ -9962,28 +9968,56 @@ TR::Node *lconstSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * 
    return node;
    }
 
-TR::Node *iabsSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
+TR::Node *ilfdabsSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
    simplifyChildren(node, block, s);
+
+   static bool AllowFlagBasedTransformationForFloatOrDouble = feGetEnv("TR_AllowFlagBasedTransformationForFloatOrDouble") != NULL;
+
+   TR::ILOpCodes abs = node->getOpCodeValue();
+   TR::ILOpCodes neg = TR::BadILOp;
+   bool performFlagBasedTransformation = false;
+   switch (abs)
+      {
+      case TR::iabs:
+         neg = TR::ineg;
+         performFlagBasedTransformation = true;
+         break;
+      case TR::labs:
+         neg = TR::lneg;
+         performFlagBasedTransformation = true;
+         break;
+      case TR::fabs:
+         neg = TR::fneg;
+         performFlagBasedTransformation = AllowFlagBasedTransformationForFloatOrDouble;
+         break;
+      case TR::dabs:
+         neg = TR::dneg;
+         performFlagBasedTransformation = AllowFlagBasedTransformationForFloatOrDouble;
+         break;
+      default:
+         TR_ASSERT(0, "unexpected opcode %d\n", node->getOpCodeValue());
+      }
    auto child = node->getChild(0);
    if (child->isNonNegative() &&
-       performTransformation(s->comp(), "%sSimplify iabs of non-negative child at [" POINTER_PRINTF_FORMAT "]\n",
-             s->optDetailString(), node))
+       performFlagBasedTransformation &&
+       performTransformation(s->comp(), "%sSimplify abs of non-negative child at [" POINTER_PRINTF_FORMAT "]\n", s->optDetailString(), node))
       {
       return s->replaceNodeWithChild(node, child, s->_curTree, block);
       }
-   return node;
-   }
-
-TR::Node *labsSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
-   {
-   simplifyChildren(node, block, s);
-   auto child = node->getChild(0);
-   if (child->isNonNegative() &&
-       performTransformation(s->comp(), "%sSimplify labs of non-negative child at [" POINTER_PRINTF_FORMAT "]\n",
-             s->optDetailString(), node))
+   else if (child->isNegative() &&
+            performFlagBasedTransformation &&
+            performTransformation(s->comp(), "%sSimplify abs of non-positive child at [" POINTER_PRINTF_FORMAT "]\n", s->optDetailString(), node))
       {
-      return s->replaceNodeWithChild(node, child, s->_curTree, block);
+      TR::Node::recreate(node, neg);
+      return s->simplify(node, block);
+      }
+   else if ((child->getOpCodeValue() == abs || child->getOpCodeValue() == neg) &&
+            performTransformation(s->comp(), "%sSimplify abs of abs/neg child at [" POINTER_PRINTF_FORMAT "]\n", s->optDetailString(), node))
+      {
+      node->setAndIncChild(0, child->getFirstChild());
+      child->recursivelyDecReferenceCount();
+      return s->simplify(node, block);
       }
    return node;
    }

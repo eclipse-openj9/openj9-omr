@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2017 IBM Corp. and others
+# Copyright (c) 2017, 2018 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -23,7 +23,7 @@ list(APPEND OMR_PLATFORM_DEFINITIONS
 	-DJ9VM_TIERED_CODE_CACHE
 )
 
-# Testarossa build variables. Longer term the distinction between TR and the rest 
+# Testarossa build variables. Longer term the distinction between TR and the rest
 # of the OMR code should be heavily reduced. In the mean time, we keep
 # the distinction
 set(TR_HOST_ARCH    z)

@@ -152,7 +152,7 @@ calcGap(DBFITEM *curr, DBFITEM *next, uint64_t *gap)
  * \internal Make sure the DBF table, which points to all the memory regions collected
  * by CCCPSE, is as compact as possible. The goal is to cut the number of ELF
  * Phdrs down as much as possible by merging adjoining memory regions. In order to do
- * this, it needs to mark each DBFITEM, which is in protected memory, SPK=0. This 
+ * this, it needs to mark each DBFITEM, which is in protected memory, SPK=0. This
  * function is therefore in SPK=0 for its duration, and restores SPK1 prior to return.
  *
  * \param[in] dbfHdr Address of the Java dump buffer as returned from CCCPSE.
@@ -229,7 +229,7 @@ adjustDBFTable(DBFHDR *dbfHdr)
 }
 
 /*
- * \internal   Calculate the path to where the dump should be written, 
+ * \internal   Calculate the path to where the dump should be written,
  *               isolating it into the <TT>fullpath</TT> parameter, and
  *               placing the filename portion of the path string into the
  *               <TT>filename</TT> argument.
@@ -277,13 +277,13 @@ splitPathName(char *finalname, char *pathname)
  *
  * First figure out the absolute file path (starts with a '/' and
  * ends with a file suffix) we are to write the dump to, then ensure we
- * have enough room left over in the Java dump buffer left for us by 
+ * have enough room left over in the Java dump buffer left for us by
  * CCCPSE. If we do not, return an error. Otherwise, section the buffer
  * space off, building in order:
  *    - The ELF64 header
  *    - The ELF64 Program Header section
  *    - The ELF64 NOTE section
- *      
+ *
  * Finally, write all the above to the indicated filename, and follow it
  * with a copy of storage contents from the Java dump buffer, which is
  * laid out in ascending address order, with the ELF64_Phdrs created to
@@ -291,11 +291,11 @@ splitPathName(char *finalname, char *pathname)
  * of megabytes.
  *
  * As a matter of protocol, set the first 8 bytes of the Java Dump
- * Buffer (struct ijavdbf) to zeros so CCCPSE knows it's okay to 
+ * Buffer (struct ijavdbf) to zeros so CCCPSE knows it's okay to
  * write over its contents once we're done working with it.
  *
  * The arg block is used for the bi-directional passing of data. Those of its
- * members which are pointers (most of them, in fact) are used mainly for 
+ * members which are pointers (most of them, in fact) are used mainly for
  * output or at least have an output role. The fields of <arg> which are
  * required are shown as input parameters below. The fields of <arg> which
  * are used for output are detailed as return values.
@@ -304,13 +304,13 @@ splitPathName(char *finalname, char *pathname)
  * function's input, and the function is required to return a void pointer, this
  * function will take the address of the <arg> block as the input parameter, and
  * will return a pointer to type char which represents the file name which now
- * contains the full path name of the ELF-format core dump file. There are also 
+ * contains the full path name of the ELF-format core dump file. There are also
  * fields in <arg> that will be updated as described below.
  *
  * \param[in][out]     arg   pointer to a user-created datatype 'args', declared
  *                           in header file j9osdump_helpers.h
  * \param[in]        arg->OSFilename        Pointer to scratch storage for a path +
- *                                        file name string. It will be presumed 
+ *                                        file name string. It will be presumed
  *                                        to be at least PATH_MAX+1 in size.
  * \param[in]        arg->wkspcSize        32-bit quantity representing the size in
  *                                        bytes of the wkSpace field, following.
@@ -320,11 +320,11 @@ splitPathName(char *finalname, char *pathname)
  *                                        path names will be built in this space.
  * \param[in][out]    arg->flags            Indicators as to what is present and what
  *                                        is not.
- * \param[in]        arg->sii            Pointer to scratch storage to be used 
+ * \param[in]        arg->sii            Pointer to scratch storage to be used
  *                                        forever more as a siginfo_t block
- * \param[in]        arg->uct            Pointer to scratch storage to be used 
+ * \param[in]        arg->uct            Pointer to scratch storage to be used
  *                                        forever more as a ucontext_t block
- * \param[in]        arg->sct            Pointer to scratch storage to be used 
+ * \param[in]        arg->sct            Pointer to scratch storage to be used
  *                                        forever more as a sigcontext block
  * \param[in]        arg->portLibrary    Pointer to an initialized OMRPortLibrary
  *                                        block. If there isn't one at call time,
@@ -332,10 +332,10 @@ splitPathName(char *finalname, char *pathname)
  *                                        J9ZTPF_NO_PORT_LIBRARY
  * \param[in]        arg->dibPtr            Address of the DIB attached to the faulting
  *                                        UOW at post-interrupt time.
- * 
+ *
  * \returns    Pointer to a hz-terminated string representing the absolute path
  *               name at which the core dump file was written.
- *            
+ *
  * \returns    arg->sii                   Filled in.
  * \returns    arg->uct                   Filled in.
  * \returns    arg->sct                   Filled in.
@@ -592,7 +592,7 @@ buildELFHeader(Elf64_Ehdr *buffer)
  *
  * Build the ELF64 program header block in memory.
  *
- * The Elf64_Phdr looks like this:<b><tt> 
+ * The Elf64_Phdr looks like this:<b><tt>
  * 0000 0004    p_type        Type of memory this Phdr represents.<b>
  * 0004 0004    p_flags        Phdr flags (permissions +OS_specific bits)<b>
  * 0008 0008    p_offset    Offset in file (0-relative) of memory image<b>
@@ -604,7 +604,7 @@ buildELFHeader(Elf64_Ehdr *buffer)
  * ---- ----<b>
  * 0038 0038    Total length (56 decimal), natural alignment/size.<b></tt>
  *
- *    p_type should be obvious. Unlike relocatable/absolute ELF forms, the 
+ *    p_type should be obvious. Unlike relocatable/absolute ELF forms, the
  *    The 0th element does not have to be a PT_NULL. In fact, observed core
  *    files often are of type PT_NOTE; we'll follow that pattern. The 2nd
  *    through last elements are PT_LOAD.
@@ -613,18 +613,18 @@ buildELFHeader(Elf64_Ehdr *buffer)
  *    they're zero (not loaded to memory), and the PT_LOADs are rwx (7).
  *
  *    p_offset is the offset from zero in the file at which the image starts.
- *    Each file-resident image runs continuously & sequentially for p_filesz. 
+ *    Each file-resident image runs continuously & sequentially for p_filesz.
  *    We'll have to calculate the offset value and keep a running total, starting
  *    from p_offset for the PT_NOTE segment, then incrementing it by each
  *    p_filesz value.
- *    
- *    p_vaddr is the virtual address at which the segment resides. It's truly 
- *    meant more for executables & shared objects, its content of of little 
- *    consequence; but we'll take a policy of making it the physical address. 
+ *
+ *    p_vaddr is the virtual address at which the segment resides. It's truly
+ *    meant more for executables & shared objects, its content of of little
+ *    consequence; but we'll take a policy of making it the physical address.
  *    Same for p_addr, which is meant to describe the physical address. App-
  *    ropriate for a core file, not so much for a typical executable/DSO.
  *
- *    p_memsz is the image's size when loaded to memory. For a core file, 
+ *    p_memsz is the image's size when loaded to memory. For a core file,
  *    p_filesz = p_memsz. This would make a difference for an executable or
  *    DSO (this is how the .bss segment, for example, is described: memsz as
  *    required, 0 filesz.
@@ -633,8 +633,8 @@ buildELFHeader(Elf64_Ehdr *buffer)
  *    by this phdr. A value of 0 or 1 means no alignment required. Otherwise,
  *    the value should be modulo of a page size. For a core file, just use 1.
  *
- * 
- * \param[in]  buffer    Address of writeable memory large enough to house all 
+ *
+ * \param[in]  buffer    Address of writeable memory large enough to house all
  *                        required Phdr elements (phnum * sizeof(Elf64_Phdr)).
  * \param[in]  dbfHdr    Address of the Java dump buffer given to us by CCCPSE
  * \param[in]  phnum    The number of program headers to write
@@ -725,20 +725,20 @@ buildELFPheaderBlk(Elf64_Phdr *buffer, DBFHDR *dbfHdr,
 
 /**
  * \internal
- *      
+ *
  * \details Build the data (in the user-passed <TT>buffer</TT> address)
- * block to which an Elf64_Phdr will point. Its role is to extract 
+ * block to which an Elf64_Phdr will point. Its role is to extract
  * information passed to it in CE2DIB and IJAVDBF and put them in the
- * proper places. Sometimes these values require translation to put 
+ * proper places. Sometimes these values require translation to put
  * them into proper contextual meaning, for example, a hardware PIC code
  * can infer a signal value. As long as we get close enough, it's good.
  * The contents of the NOTE section are very poorly documented.
  *
- * \note The final sub-section, tagged <i><tt>NT_ZTPF_SERRC</tt></i>, is invented 
- * for this routine's purposes: its role is to express the SE number associated 
- * with the already-written traditional SERRC dump as requested during design. Its 
- * existence may require addition of a method to the Java class which processes 
- * ELF NOTEs in <b><tt>jdmpview</tt></b> - there is no ELF NOTE tag otherwise 
+ * \note The final sub-section, tagged <i><tt>NT_ZTPF_SERRC</tt></i>, is invented
+ * for this routine's purposes: its role is to express the SE number associated
+ * with the already-written traditional SERRC dump as requested during design. Its
+ * existence may require addition of a method to the Java class which processes
+ * ELF NOTEs in <b><tt>jdmpview</tt></b> - there is no ELF NOTE tag otherwise
  * suited for this purpose. Otherwise, this information stays buried.
  *
  * This function returns the total size of the buffer as its Elf64_Phdr

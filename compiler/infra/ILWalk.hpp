@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -344,7 +344,7 @@ class AllBlockIterator: protected BlockIterator
    };
 
 /** \brief
- *     Iterates through extended basic block sequences in a treetop order, where treetop order means the order in 
+ *     Iterates through extended basic block sequences in a treetop order, where treetop order means the order in
  *     which the extended basic blocks appear in a trace log file.
  */
 class TreeTopOrderExtendedBlockIterator : protected BlockIterator

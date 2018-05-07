@@ -26,6 +26,7 @@
 #define OMR_SCAVENGER_TRACE_REMEMBERED_SET
 #define OMR_SCAVENGER_TRACE_BACKOUT
 #define OMR_SCAVENGER_TRACE_COPY
+#define OMR_SCAVENGER_TRACK_COPY_DISTANCE
 #endif
 
 #include <math.h>
@@ -734,9 +735,11 @@ MM_Scavenger::mergeGCStatsBase(MM_EnvironmentBase *env, MM_ScavengerStats *final
 	finalGCStats->_tenureExpandedCount += scavStats->_tenureExpandedCount;
 	finalGCStats->_tenureExpandedTime += scavStats->_tenureExpandedTime;
 
+#if defined(OMR_SCAVENGER_TRACK_COPY_DISTANCE)
 	for (uintptr_t i = 0; i < OMR_SCAVENGER_DISTANCE_BINS; i++) {
 		finalGCStats->_copy_distance_counts[i] += scavStats->_copy_distance_counts[i];
 	}
+#endif /* OMR_SCAVENGER_TRACK_COPY_DISTANCE */
 	for (uintptr_t i = 0; i < OMR_SCAVENGER_CACHESIZE_BINS; i++) {
 		finalGCStats->_copy_cachesize_counts[i] += scavStats->_copy_cachesize_counts[i];
 	}
@@ -1232,11 +1235,11 @@ MM_Scavenger::copyAndForward(MM_EnvironmentStandard *env, GC_SlotObject *slotObj
 	{
 		slotObject->writeReferenceToSlot(slot);
 	}
-
+#if defined(OMR_SCAVENGER_TRACK_COPY_DISTANCE)
 	if (NULL != env->_effectiveCopyScanCache) {
 		env->_scavengerStats.countCopyDistance((uintptr_t)slotObject->readAddressFromSlot(), (uintptr_t)slotObject->readReferenceFromSlot());
 	}
-
+#endif /* OMR_SCAVENGER_TRACK_COPY_DISTANCE */
 	return result;
 }
 

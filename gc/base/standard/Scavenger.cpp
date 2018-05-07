@@ -3159,50 +3159,61 @@ MM_Scavenger::aliasToCopyCache(MM_EnvironmentStandard *env, GC_SlotObject *scann
 	/* Only alias a copy cache IF there are 0 threads waiting.  If the current thread is the only producer and
 	 * it aliases a copy cache then it will be the only thread able to consume.  This will alleviate the stalling issues
 	 * described in VMDESIGN 1359.
+	 *
+	 * @NOTE this is likely too aggressive and should be relaxed.
 	 */
 	if (0 == _waitingCount) {
-		/* was the object received by an unaliased copy cache or aliased scan cache? */
-		if (scanCache != copyCache) {
-			/* unaliased copy cache received the object; alias and switch to it if possible */
-			if ((0 == (scanCache->flags & OMR_SCAVENGER_CACHE_TYPE_COPY))
-				|| (copyCacheDistanceMetric(copyCache) < scanCacheDistanceMetric(scanCache, scannedSlot))
-			) {
-				env->_scavengerStats._aliasToCopyCacheCount += 1;
-				scanCache->_hasPartiallyScannedObject = true;
-				return copyCache;
-			}
-		} else {
-			/* scan cache is aliased and received the object so identify the other copy cache */
-			if (0 == (scanCache->flags & OMR_SCAVENGER_CACHE_TYPE_SEMISPACE)) {
-				copyCache = env->_survivorCopyScanCache;
-			} else {
-				copyCache = env->_tenureCopyScanCache;
-			}
-			/* alias and switch to copy cache if it has scan work available and a shorter copy distance */
-			if ((NULL != copyCache)
-				&& (copyCacheDistanceMetric(copyCache) < scanCacheDistanceMetric(scanCache, scannedSlot))
-				&& (copyCache->cacheAlloc != copyCache->scanCurrent)
-			) {
+		/* Only alias if the scanCache != copyCache. IF the caches are the same there is no benefit
+		 * to aliasing. The checks afterwards will ensure that a very similar copy order will happen
+		 * if the copyCache changes from the currently aliased scan cache
+		 *
+		 * Perform this check first since these values are likely in the threads L1 cache */
+		if (scanCache == copyCache) {
+			return NULL;
+		}
+
+		/* If the scanCache is not an aliased copy cache try to alias to the copy cache since the copy cache will always
+		 * be better if it has objects to scan */
+		if (0 == (scanCache->flags & OMR_SCAVENGER_CACHE_TYPE_COPY)) {
+			if (copyCache->cacheAlloc != copyCache->scanCurrent) {
 				env->_scavengerStats._aliasToCopyCacheCount += 1;
 				scanCache->_hasPartiallyScannedObject = true;
 				return copyCache;
 			}
 		}
+
+		/* alias and switch to copy cache if it has scan work available and a shorter copy distance */
+		if (copyCacheDistanceMetric(copyCache) < scanCacheDistanceMetric(scanCache, scannedSlot)) {
+			if (copyCache->cacheAlloc != copyCache->scanCurrent) {
+				env->_scavengerStats._aliasToCopyCacheCount += 1;
+				scanCache->_hasPartiallyScannedObject = true;
+				return copyCache;
+			}
+		}
+	} else if (NULL != env->_deferredScanCache) {
+		/* If there are threads waiting and this thread has a deferredScanCache push
+		 * it to the scanCache to make work for the stalled threads.
+		 */
+#if defined(J9MODRON_TGC_PARALLEL_STATISTICS)
+		env->_scavengerStats._releaseScanListCount += 1;
+#endif /* J9MODRON_TGC_PARALLEL_STATISTICS */
+		addCacheEntryToScanListAndNotify(env, env->_deferredScanCache);
+		env->_deferredScanCache = NULL;
 	}
 	return NULL;
-		}
+}
 
 MMINLINE MM_CopyScanCacheStandard *
 MM_Scavenger::getNextScanCacheFromList(MM_EnvironmentStandard *env)
 {
 	return _scavengeCacheScanList.popCache(env);
-	}
+}
 
 MMINLINE MM_CopyScanCacheStandard *
 MM_Scavenger::getDeferredCopyCache(MM_EnvironmentStandard *env)
 {
 	return env->_deferredCopyCache;
-	}
+}
 
 MMINLINE MM_CopyScanCacheStandard *
 MM_Scavenger::getSurvivorCopyCache(MM_EnvironmentStandard *env)

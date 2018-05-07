@@ -293,13 +293,20 @@ public:
 	MMINLINE uintptr_t copyCacheDistanceMetric(MM_CopyScanCacheStandard* cache);
 
 	MMINLINE MM_CopyScanCacheStandard *getNextScanCacheFromList(MM_EnvironmentStandard *env);
-	MMINLINE MM_CopyScanCacheStandard *getSurvivorCopyCache(MM_EnvironmentStandard *env);
-	MMINLINE MM_CopyScanCacheStandard *getDeferredCopyCache(MM_EnvironmentStandard *env);
-
 	void addCopyCachesToFreeList(MM_EnvironmentStandard *env);
-
-	MMINLINE bool isWorkAvailableInCache(MM_CopyScanCacheStandard *scanCache);
 	MMINLINE void addCacheEntryToScanListAndNotify(MM_EnvironmentStandard *env, MM_CopyScanCacheStandard *newCacheEntry);
+
+	MMINLINE bool
+	isWorkAvailableInCache(MM_CopyScanCacheStandard *cache)
+	{
+		return (cache->scanCurrent < cache->cacheAlloc);
+	}
+
+	MMINLINE bool
+	isWorkAvailableInCacheWithCheck(MM_CopyScanCacheStandard *cache)
+	{
+		return ((NULL != cache) && isWorkAvailableInCache(cache));
+	}
 
 	/**
 	 * reinitializes the cache with the given base and top addresses.

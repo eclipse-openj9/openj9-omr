@@ -1841,23 +1841,26 @@ MM_Scavenger::getNextScanCache(MM_EnvironmentStandard *env)
 	volatile uintptr_t doneIndex = _doneIndex;
 
 	/* Preference is to use survivor copy cache */
-	if (NULL != (cache = getSurvivorCopyCache(env))) {
+	cache = env->_survivorCopyScanCache;
+	if (isWorkAvailableInCacheWithCheck(cache)) {
 		return cache;
 	}
 
 	/* Otherwise the tenure copy cache */
-	if (isWorkAvailableInCache(env->_tenureCopyScanCache)) {
-		return env->_tenureCopyScanCache;
+	cache = env->_tenureCopyScanCache;
+	if (isWorkAvailableInCacheWithCheck(cache)) {
+		return cache;
 	}
 
-	if (NULL != env->_deferredScanCache) {
+	cache = env->_deferredScanCache;
+	if (NULL != cache) {
 		/* there is deferred scanning to do from partial depth first scanning */
-		cache = env->_deferredScanCache;
 		env->_deferredScanCache = NULL;
 		return cache;
 	}
 
-	if (NULL != (cache = getDeferredCopyCache(env))) {
+	cache = env->_deferredCopyCache;
+	if (NULL != cache) {
 		/* deferred copy caches are used to merge memory-contiguous caches that got chopped up due to large objects not fitting and resuing remainder.
 		 * we want to delay scanning them as much as possible (up to the size of the original cache size being chopped up),
 		 * but we still want to do it before we synchronizing on scan queue and realizing no more work is awailable */
@@ -1870,9 +1873,11 @@ MM_Scavenger::getNextScanCache(MM_EnvironmentStandard *env)
 #if defined(J9MODRON_TGC_PARALLEL_STATISTICS)
 	env->_scavengerStats._acquireScanListCount += 1;
 #endif /* J9MODRON_TGC_PARALLEL_STATISTICS */
+
 #if defined(OMR_SCAVENGER_TRACE) || defined(J9MODRON_TGC_PARALLEL_STATISTICS)
 	OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
 #endif /* OMR_SCAVENGER_TRACE || J9MODRON_TGC_PARALLEL_STATISTICS */
+
  	while (!doneFlag && !shouldAbortScanLoop()) {
  		while (_cachedEntryCount > 0) {
  			cache = getNextScanCacheFromList(env);
@@ -2807,15 +2812,6 @@ MM_Scavenger::reinitCache(MM_CopyScanCacheStandard *cache, void *base, void *top
 	cache->cacheTop = top;
 }
 
-/**
- * @return whether there is scanning work on the given cache
- */
-MMINLINE bool
-MM_Scavenger::isWorkAvailableInCache(MM_CopyScanCacheStandard *cache)
-{
-	return ((NULL != cache) && (cache->scanCurrent < cache->cacheAlloc));
-}
-
 MMINLINE MM_CopyScanCacheStandard *
 MM_Scavenger::getFreeCache(MM_EnvironmentStandard *env)
 {
@@ -3207,24 +3203,6 @@ MMINLINE MM_CopyScanCacheStandard *
 MM_Scavenger::getNextScanCacheFromList(MM_EnvironmentStandard *env)
 {
 	return _scavengeCacheScanList.popCache(env);
-}
-
-MMINLINE MM_CopyScanCacheStandard *
-MM_Scavenger::getDeferredCopyCache(MM_EnvironmentStandard *env)
-{
-	return env->_deferredCopyCache;
-}
-
-MMINLINE MM_CopyScanCacheStandard *
-MM_Scavenger::getSurvivorCopyCache(MM_EnvironmentStandard *env)
-{
-	MM_CopyScanCacheStandard *cache = NULL;
-
-	if (isWorkAvailableInCache(env->_survivorCopyScanCache)) {
-		cache = env->_survivorCopyScanCache;
-	}
-
-	return cache;
 }
 
 /**

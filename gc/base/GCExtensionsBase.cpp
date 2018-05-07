@@ -180,15 +180,6 @@ MM_GCExtensionsBase::initialize(MM_EnvironmentBase* env)
 		goto failed;
 	}
 
-#if defined(OMR_GC_MODRON_SCAVENGER) || defined(OMR_GC_VLHGC)
-	if(scavengerTraceHotFields) {
-		scavengerHotFieldStats = MM_ScavengerHotFieldStats::newInstance(this);
-		if (NULL == scavengerHotFieldStats) {
-			goto failed;
-		}
-	}
-#endif /* defined(OMR_GC_MODRON_SCAVENGER) || defined(OMR_GC_VLHGC) */
-
 	return true;
 
 failed:
@@ -215,13 +206,6 @@ MM_GCExtensionsBase::validateDefaultPageParameters(uintptr_t pageSize, uintptr_t
 void
 MM_GCExtensionsBase::tearDown(MM_EnvironmentBase* env)
 {
-#if defined(OMR_GC_MODRON_SCAVENGER) || defined(OMR_GC_VLHGC)
-	if (NULL != scavengerHotFieldStats) {
-		scavengerHotFieldStats->kill(this);
-		scavengerHotFieldStats = NULL;
-	}
-#endif /* defined(OMR_GC_MODRON_SCAVENGER) || defined(OMR_GC_VLHGC) */
-
 #if defined(OMR_GC_MODRON_SCAVENGER)
 	rememberedSet.tearDown(env);
 #endif /* OMR_GC_MODRON_SCAVENGER */

@@ -422,9 +422,6 @@ MM_Scavenger::workerSetupForGC(MM_EnvironmentStandard *env)
 {
 	clearThreadGCStats(env, true);
 
-	/* Clear the worker hot field statistics */
-	clearHotFieldStats(env);
-
 	/* Clear local language-specific stats */
 	_cli->scavenger_workerSetupForGC_clearEnvironmentLangStats(env);
 
@@ -611,51 +608,6 @@ MM_Scavenger::reportGCEnd(MM_EnvironmentStandard *env)
 	);
 }
 
-/**
- * Clears Master hot field statistics, if tracing hot fields is enabled.
- */
-void
-MM_Scavenger::masterClearHotFieldStats()
-{
-	if (NULL != _extensions->scavengerHotFieldStats) {
-		_extensions->scavengerHotFieldStats->clear();
-	}
-}
-
-/**
- * Reports master hot field statistics, if tracing hot fields is enabled.
- * Assumes all the worker thread statistics have been merged.
- */
-void
-MM_Scavenger::masterReportHotFieldStats()
-{
-	if (NULL != _extensions->scavengerHotFieldStats) {
-		_extensions->scavengerHotFieldStats->reportStats(_omrVM);
-	}
-}
-
-/**
- * Clears hot field statistics for worker, if tracing hot fields is enabled.
- */
-void
-MM_Scavenger::clearHotFieldStats(MM_EnvironmentBase *env)
-{
-	if (NULL != env->_hotFieldStats) {
-		getHotFieldStats(env)->clear();
-	}
-}
-
-/**
- * Merges hot field statistics for worker into master, if tracing hot fields is enabled.
- */
-void
-MM_Scavenger::mergeHotFieldStats(MM_EnvironmentBase *env)
-{
-	if (NULL != _extensions->scavengerHotFieldStats) {
-		_extensions->scavengerHotFieldStats->mergeStats(getHotFieldStats(env));
-	}
-}
-
 void
 MM_Scavenger::clearThreadGCStats(MM_EnvironmentBase *env, bool firstIncrement)
 {
@@ -750,8 +702,6 @@ MM_Scavenger::mergeGCStatsBase(MM_EnvironmentBase *env, MM_ScavengerStats *final
 	finalGCStats->_workStallCount += scavStats->_workStallCount;
 	finalGCStats->_completeStallCount += scavStats->_completeStallCount;
 	_extensions->scavengerStats._syncStallCount += scavStats->_syncStallCount;
-
-	mergeHotFieldStats(env);
 }
 
 
@@ -1648,7 +1598,6 @@ MM_Scavenger::scavengeObjectSlots(MM_EnvironmentStandard *env, MM_CopyScanCacheS
 	}
 #endif /* defined(OMR_GC_MODRON_SCAVENGER_STRICT) */
 
-	MM_ScavengerHotFieldStats *hotFieldStats = NULL;
 	if (objectScanner->isIndexableObject()) {
 		/* set scanning bounds for this scanner; if non-empty tail, clone scanner into split array cache and add cache to worklist */
 		uintptr_t splitIndex = (NULL != scanCache) ? scanCache->_arraySplitIndex : 0;
@@ -1656,11 +1605,6 @@ MM_Scavenger::scavengeObjectSlots(MM_EnvironmentStandard *env, MM_CopyScanCacheS
 			/* scan to end of array if can't split */
 			((GC_IndexableObjectScanner *)objectScanner)->scanToLimit();
 		}
-	} else if (NULL != env->_hotFieldStats) {
-		/* maintain hotness of fields copied from this object */
-		hotFieldStats = getHotFieldStats(env);
-		hotFieldStats->_objectPtr = objectPtr;
-		hotFieldStats->clearHotnessOfField();
 	}
 
 	uint64_t slotsCopied = 0;
@@ -1673,20 +1617,12 @@ MM_Scavenger::scavengeObjectSlots(MM_EnvironmentStandard *env, MM_CopyScanCacheS
 		bool isSlotObjectInNewSpace = copyAndForward(env, slotObject);
 		shouldRemember |= isSlotObjectInNewSpace;
 		if (NULL != *copyCache) {
-			if (NULL != hotFieldStats) {
-				hotFieldStats->setHotnessOfField(slotObject->readAddressFromSlot(), objectScanner->getHotFieldsDescriptor());
-				hotFieldStats->updateStats(isParentInNewSpace, isSlotObjectInNewSpace, slotObject->readReferenceFromSlot());
-			}
 			slotsCopied += 1;
 		}
 		slotsScanned += 1;
 	}
 	updateCopyScanCounts(env, slotsScanned, slotsCopied);
 
-	if (NULL != hotFieldStats) {
-		hotFieldStats->_objectPtr = NULL;
-		hotFieldStats->clearHotnessOfField();
-	}
 	if (shouldRemember && (NULL != rememberedSetSlot)) {
 		Assert_MM_true(!isObjectInNewSpace(objectPtr));
 		Assert_MM_true(_extensions->objectModel.isRemembered(objectPtr));
@@ -1759,15 +1695,6 @@ MM_Scavenger::incrementalScavengeObjectSlots(MM_EnvironmentStandard *env, omrobj
 	}
 #endif /* defined(OMR_GC_MODRON_SCAVENGER_STRICT) */
 
-	/* Set up for maintaining hot field stats for scalar objects */
-	MM_ScavengerHotFieldStats *hotFieldStats = NULL;
-	if (!objectScanner->isIndexableObject() && (NULL != env->_hotFieldStats)) {
-		/* maintain hotness of fields copied from this object */
-		hotFieldStats = getHotFieldStats(env);
-		hotFieldStats->_objectPtr = objectPtr;
-		hotFieldStats->clearHotnessOfField();
-	}
-
 	GC_SlotObject *slotObject;
 	uint64_t slotsCopied = 0;
 	uint64_t slotsScanned = 0;
@@ -1782,10 +1709,6 @@ MM_Scavenger::incrementalScavengeObjectSlots(MM_EnvironmentStandard *env, omrobj
 		if (NULL != copyCache) {
 			/* Copy cache will be set only if a referent object is copied (ie, if not previously forwarded) */
 			slotsCopied += 1;
-			if (NULL != hotFieldStats) {
-				hotFieldStats->setHotnessOfField(slotObject->readAddressFromSlot(), objectScanner->getHotFieldsDescriptor());
-				hotFieldStats->updateStats(isParentInNewSpace, isSlotObjectInNewSpace, slotObject->readReferenceFromSlot());
-			}
 
 			MM_CopyScanCacheStandard *nextScanCache = aliasToCopyCache(env, slotObject, scanCache, copyCache);
 			if (NULL != nextScanCache) {
@@ -1797,10 +1720,6 @@ MM_Scavenger::incrementalScavengeObjectSlots(MM_EnvironmentStandard *env, omrobj
 	}
 	updateCopyScanCounts(env, slotsScanned, slotsCopied);
 
-	if (NULL != hotFieldStats) {
-		hotFieldStats->_objectPtr = NULL;
-		hotFieldStats->clearHotnessOfField();
-	}
 	scanCache->_hasPartiallyScannedObject = false;
 	if (scanCache->_shouldBeRemembered) {
 		if (NULL != scanCache->_arraySplitRememberedSlot) {
@@ -4201,8 +4120,6 @@ MM_Scavenger::internalGarbageCollect(MM_EnvironmentBase *envBase, MM_MemorySubSp
 	env->_cycleState->_activeSubSpace = subSpace;
 	_collectorExpandedSize = 0;
 
-	masterClearHotFieldStats();
-
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
 	if (_extensions->concurrentScavenger) {
 		/* this may trigger either start or end of Concurrent Scavenge cycle */
@@ -4213,8 +4130,6 @@ MM_Scavenger::internalGarbageCollect(MM_EnvironmentBase *envBase, MM_MemorySubSp
 	{
 		masterThreadGarbageCollect(env, allocDescription);
 	}
-
-	masterReportHotFieldStats();
 
 	/* If we know now that the next scavenge will cause a peroclate broadcast
 	 * the fact so other parties can react, e.g concurrrent can adjust KO threshold

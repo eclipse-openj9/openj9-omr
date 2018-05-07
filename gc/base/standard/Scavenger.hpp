@@ -378,12 +378,6 @@ public:
 	void reportScavengeStart(MM_EnvironmentStandard *env);
 	void reportScavengeEnd(MM_EnvironmentStandard *env, bool lastIncrement);
 
-	MMINLINE MM_ScavengerHotFieldStats *getHotFieldStats(MM_EnvironmentBase *env) { return env->_hotFieldStats; }
-	void masterClearHotFieldStats();
-	void masterReportHotFieldStats();
-	void clearHotFieldStats(MM_EnvironmentBase *env);
-	void mergeHotFieldStats(MM_EnvironmentBase *env);
-
 	/**
 	 * Add the specified object to the remembered set.
 	 * Grow the remembered set if necessary and, if that fails, overflow.

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2016 IBM Corp. and others
+ * Copyright (c) 1991, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -99,15 +99,6 @@ MM_EnvironmentBase::initialize(MM_GCExtensionsBase *extensions)
 		}
 	}
 
-#if defined(OMR_GC_MODRON_SCAVENGER) || defined(OMR_GC_VLHGC)
-	if (extensions->scavengerTraceHotFields) {
-		_hotFieldStats = MM_ScavengerHotFieldStats::newInstance(getExtensions());
-		if (NULL == _hotFieldStats) {
-			return false;
-		}
-	}
-#endif /* defined(OMR_GC_MODRON_SCAVENGER) || defined(OMR_GC_VLHGC) */
-
 #if defined(OMR_GC_SEGREGATED_HEAP)
 	if (extensions->isSegregatedHeap()) {
 		_regionWorkList = MM_RegionPoolSegregated::allocateHeapRegionQueue(this, MM_HeapRegionList::HRL_KIND_LOCAL_WORK, true, false, false);
@@ -152,13 +143,6 @@ MM_EnvironmentBase::tearDown(MM_GCExtensionsBase *extensions)
 		_allocationTracker = NULL;
 	}
 #endif /* OMR_GC_SEGREGATED_HEAP */
-
-#if defined(OMR_GC_MODRON_SCAVENGER) || defined(OMR_GC_VLHGC)
-	if (NULL != _hotFieldStats) {
-		_hotFieldStats->kill(this->getExtensions());
-		_hotFieldStats = NULL;
-	}
-#endif /* defined(OMR_GC_MODRON_SCAVENGER) || defined(OMR_GC_VLHGC) */
 
 	if(NULL != _objectAllocationInterface) {
 		_objectAllocationInterface->kill(this);

@@ -441,7 +441,6 @@ MM_Scavenger::workerSetupForGC(MM_EnvironmentStandard *env)
 	/* caches should all be reset */
 	Assert_MM_true(NULL == env->_survivorCopyScanCache);
 	Assert_MM_true(NULL == env->_tenureCopyScanCache);
-	Assert_MM_true(NULL == env->_scanCache);
 	Assert_MM_true(NULL == env->_deferredScanCache);
 	Assert_MM_true(NULL == env->_deferredCopyCache);
 	Assert_MM_false(env->_loaAllocation);
@@ -1588,10 +1587,10 @@ MM_Scavenger::splitIndexableObjectScanner(MM_EnvironmentStandard *env, GC_Object
 				splitCache->flags &= OMR_SCAVENGER_CACHE_TYPE_HEAP;
 				splitCache->flags |= OMR_SCAVENGER_CACHE_TYPE_SPLIT_ARRAY;
 				indexableScanner->splitTo(env, splitCache->getObjectScanner(), scvArraySplitAmount);
-		#if defined(J9MODRON_TGC_PARALLEL_STATISTICS)
+#if defined(J9MODRON_TGC_PARALLEL_STATISTICS)
 				env->_scavengerStats._arraySplitCount += 1;
 				env->_scavengerStats._arraySplitAmount += scvArraySplitAmount;
-		#endif /* J9MODRON_TGC_PARALLEL_STATISTICS */
+#endif /* J9MODRON_TGC_PARALLEL_STATISTICS */
 				addCacheEntryToScanListAndNotify(env, splitCache);
 				result = true;
 			}
@@ -1715,8 +1714,8 @@ MM_Scavenger::scavengeObjectSlots(MM_EnvironmentStandard *env, MM_CopyScanCacheS
  * @param objectPtr current object being scanned
  * @param nextScanCache the updated scanCache after re-aliasing.
  */
-MMINLINE void
-MM_Scavenger::incrementalScavengeObjectSlots(MM_EnvironmentStandard *env, omrobjectptr_t objectPtr, MM_CopyScanCacheStandard *scanCache, MM_CopyScanCacheStandard **nextScanCache)
+MMINLINE MM_CopyScanCacheStandard *
+MM_Scavenger::incrementalScavengeObjectSlots(MM_EnvironmentStandard *env, omrobjectptr_t objectPtr, MM_CopyScanCacheStandard *scanCache)
 {
 	/* Get an object scanner from the CLI if not resuming from a scan cache that was previously suspended */
 	GC_ObjectScanner *objectScanner = NULL;
@@ -1730,7 +1729,7 @@ MM_Scavenger::incrementalScavengeObjectSlots(MM_EnvironmentStandard *env, omrobj
 					/* Otherwise this is a leaf object -- contains no reference slots */
 					env->_scavengerStats._leafObjectCount += 1;
 				}
-				return;
+				return NULL;
 			}
 		} else {
 			/* reuse scanner cloned into this split array scan cache */
@@ -1769,29 +1768,30 @@ MM_Scavenger::incrementalScavengeObjectSlots(MM_EnvironmentStandard *env, omrobj
 		hotFieldStats->clearHotnessOfField();
 	}
 
-	*nextScanCache = NULL;
 	GC_SlotObject *slotObject;
 	uint64_t slotsCopied = 0;
 	uint64_t slotsScanned = 0;
 	bool isParentInNewSpace = isObjectInNewSpace(objectPtr);
-	MM_CopyScanCacheStandard **copyCache = &(env->_effectiveCopyScanCache);
 	while (NULL != (slotObject = objectScanner->getNextSlot())) {
 		/* If the object should be remembered and it is in old space, remember it */
 		bool isSlotObjectInNewSpace = copyAndForward(env, slotObject);
 		scanCache->_shouldBeRemembered |= isSlotObjectInNewSpace;
 		slotsScanned += 1;
-		/* Copy cache will be set only if a referent object is copied (ie, if not previously forwarded) */
-		if (NULL != *copyCache) {
+
+		MM_CopyScanCacheStandard *copyCache = env->_effectiveCopyScanCache;
+		if (NULL != copyCache) {
+			/* Copy cache will be set only if a referent object is copied (ie, if not previously forwarded) */
 			slotsCopied += 1;
 			if (NULL != hotFieldStats) {
 				hotFieldStats->setHotnessOfField(slotObject->readAddressFromSlot(), objectScanner->getHotFieldsDescriptor());
 				hotFieldStats->updateStats(isParentInNewSpace, isSlotObjectInNewSpace, slotObject->readReferenceFromSlot());
 			}
-			*nextScanCache = aliasToCopyCache(env, slotObject, scanCache, *copyCache);
-			/* alias and switch to nextScanCache if it was selected */
-			if (NULL != *nextScanCache) {
+
+			MM_CopyScanCacheStandard *nextScanCache = aliasToCopyCache(env, slotObject, scanCache, copyCache);
+			if (NULL != nextScanCache) {
+				/* alias and switch to nextScanCache if it was selected */
 				updateCopyScanCounts(env, slotsScanned, slotsCopied);
-				return;
+				return nextScanCache;
 			}
 		}
 	}
@@ -1822,6 +1822,8 @@ MM_Scavenger::incrementalScavengeObjectSlots(MM_EnvironmentStandard *env, omrobj
 		oldToOldReferenceCreated(env, objectPtr);
 	}
 #endif /* OMR_GC_MODRON_CONCURRENT_MARK */
+
+	return NULL;
 }
 
 /****************************************
@@ -1947,16 +1949,15 @@ MM_Scavenger::getNextScanCache(MM_EnvironmentStandard *env)
 }
 
 /**
- * Scans all the objects to scan in the env->_scanCache, remembering objects as required,
+ * Scans all the objects to scan in the scanCache, remembering objects as required,
  * and flushing the cache at the end.
  */
 void
-MM_Scavenger::completeScanCache(MM_EnvironmentStandard *env)
+MM_Scavenger::completeScanCache(MM_EnvironmentStandard *env, MM_CopyScanCacheStandard* scanCache)
 {
-	omrobjectptr_t objectPtr;
+	omrobjectptr_t objectPtr = NULL;
 
 	/* mark that cache is in use as a scan cache */
-	MM_CopyScanCacheStandard* scanCache = (MM_CopyScanCacheStandard*)env->_scanCache;
 	Assert_MM_true(0 == (scanCache->flags & OMR_SCAVENGER_CACHE_TYPE_SCAN));
 	scanCache->flags |= OMR_SCAVENGER_CACHE_TYPE_SCAN;
 
@@ -1997,7 +1998,7 @@ MM_Scavenger::completeScanCache(MM_EnvironmentStandard *env)
 
 
  /**
- * Scans the objects to scan in the env->_scanCache, remembering objects as required.
+ * Scans the objects to scan in the scanCache, remembering objects as required.
  * Slots are scanned until there is an opportunity to alias the scan cache to a copy cache. When
  * this happens, scanning is interrupted and the present scan cache is either pushed onto the scan
  * list or "deferred" in thread-local storage. Deferring is done to reduce contention due to the
@@ -2005,12 +2006,9 @@ MM_Scavenger::completeScanCache(MM_EnvironmentStandard *env)
  * the cache is flushed at the end.
  */
 void
-MM_Scavenger::incrementalScanCacheBySlot(MM_EnvironmentStandard *env)
+MM_Scavenger::incrementalScanCacheBySlot(MM_EnvironmentStandard *env, MM_CopyScanCacheStandard* scanCache)
 {
-	MM_CopyScanCacheStandard* scanCache = env->_scanCache;
-	MM_CopyScanCacheStandard* nextScanCache = scanCache;
-
-	nextCache:
+nextCache:
 	/* mark that cache is in use as a scan cache */
 	Assert_MM_true(0 == (scanCache->flags & OMR_SCAVENGER_CACHE_TYPE_SCAN));
 	scanCache->flags |= OMR_SCAVENGER_CACHE_TYPE_SCAN;
@@ -2025,13 +2023,17 @@ MM_Scavenger::incrementalScanCacheBySlot(MM_EnvironmentStandard *env)
 		omrobjectptr_t objectPtr;
 		/* Scan the chunk for live objects, incrementally slot by slot */
 		while ((objectPtr = heapChunkIterator.nextObjectNoAdvance()) != NULL) {
-			incrementalScavengeObjectSlots(env, objectPtr, scanCache, &nextScanCache);
+			MM_CopyScanCacheStandard* nextScanCache = incrementalScavengeObjectSlots(env, objectPtr, scanCache);
 
 			/* object was not completely scanned in order to interrupt scan */
 			if (scanCache->_hasPartiallyScannedObject) {
 #if defined(OMR_GC_MODRON_SCAVENGER_STRICT)
 				Assert_MM_true(0 != (scanCache->flags & OMR_SCAVENGER_CACHE_TYPE_SCAN));
 #endif /* defined(OMR_GC_MODRON_SCAVENGER_STRICT) */
+				/* If the scanCache has partially scanned objects then we must be aliasing to one of the copy caches,
+				 * which means the nextScanCache has to have a value!
+				 */
+				Assert_MM_true(NULL != nextScanCache);
 				/* interrupt scan, save scan state of cache before deferring */
 				scanCache->scanCurrent = objectPtr;
 				/* Only save scan cache if it is not a copy cache, and then don't add to scanlist - this
@@ -2049,7 +2051,7 @@ MM_Scavenger::incrementalScanCacheBySlot(MM_EnvironmentStandard *env)
 						addCacheEntryToScanListAndNotify(env, scanCache);
 					}
 				}
-				env->_scanCache = scanCache = nextScanCache;
+				scanCache = nextScanCache;
 				goto nextCache;
 			}
 		}
@@ -2087,21 +2089,18 @@ MM_Scavenger::completeScan(MM_EnvironmentStandard *env)
 
 	env->_scavengerStats.resetCopyScanCounts();
 
-	while((env->_scanCache = getNextScanCache(env)) != NULL) {
+	MM_CopyScanCacheStandard *scanCache = NULL;
+	while(NULL != (scanCache = getNextScanCache(env))) {
 #if defined(OMR_SCAVENGER_TRACE)
-		omrtty_printf("{SCAV: Completing scan (%p) %p-%p-%p-%p}\n", env->_scanCache, env->_scanCache->cacheBase, env->_scanCache->cacheAlloc, env->_scanCache->scanCurrent, env->_scanCache->cacheTop);
+		omrtty_printf("{SCAV: Completing scan (%p) %p-%p-%p-%p}\n", scanCache, scanCache->cacheBase, scanCache->cacheAlloc, scanCache->scanCurrent, scanCache->cacheTop);
 #endif /* OMR_SCAVENGER_TRACE */
-
-		assume0(env->_scanCache->cacheBase <= env->_scanCache->cacheAlloc);
-		assume0(env->_scanCache->cacheAlloc <= env->_scanCache->cacheTop);
-		assume0(env->_scanCache->scanCurrent <= env->_scanCache->cacheAlloc);
 
 		switch (_extensions->scavengerScanOrdering) {
 		case MM_GCExtensionsBase::OMR_GC_SCAVENGER_SCANORDERING_BREADTH_FIRST:
-			completeScanCache(env);
+			completeScanCache(env, scanCache);
 			break;
 		case MM_GCExtensionsBase::OMR_GC_SCAVENGER_SCANORDERING_HIERARCHICAL:
-			incrementalScanCacheBySlot(env);
+			incrementalScanCacheBySlot(env, scanCache);
 			break;
 		default:
 			Assert_MM_unreachable();
@@ -2994,8 +2993,7 @@ MM_Scavenger::releaseLocalCopyCache(MM_EnvironmentStandard *env, MM_CopyScanCach
 				/* Preceding code made sure that if there is a cache to push, it has some scan work */
 				Assert_MM_true(cache->isScanWorkAvailable());
 
-				/* assert that deferred or scan cache is not this cache */
-				Assert_MM_true(cache != env->_scanCache);
+				/* assert that deferred cache is not this cache */
 				Assert_MM_true(cache != env->_deferredScanCache);
 
 				/* It is not being scanned, and it does have entries to scan - add to scan list */
@@ -4716,7 +4714,6 @@ MM_Scavenger::mutatorSetupForGC(MM_EnvironmentBase *envBase)
 		/* caches should all be reset */
 		Assert_MM_true(NULL == env->_survivorCopyScanCache);
 		Assert_MM_true(NULL == env->_tenureCopyScanCache);
-		Assert_MM_true(NULL == env->_scanCache);
 		Assert_MM_true(NULL == env->_deferredScanCache);
 		Assert_MM_true(NULL == env->_deferredCopyCache);
 		Assert_MM_false(env->_loaAllocation);
@@ -4737,7 +4734,6 @@ MM_Scavenger::threadFinalReleaseCopyCaches(MM_EnvironmentBase *envBase, MM_Envir
 		 */
 
 		Assert_MM_true(NULL == threadEnvironment->_deferredScanCache);
-		Assert_MM_true(NULL == threadEnvironment->_scanCache);
 
 		if (threadEnvironment->_survivorCopyScanCache) {
 			Assert_MM_true(threadEnvironment->_survivorCopyScanCache->flags & OMR_SCAVENGER_CACHE_TYPE_COPY);

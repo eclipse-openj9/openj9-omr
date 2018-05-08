@@ -182,8 +182,7 @@ OMR::X86::Machine::Machine
    TR::Register **xmmGlobalRegisters,
    uint32_t *globalRegisterNumberToRealRegisterMap
    )
-   : OMR::Machine(numIntRegs, numFPRegs),
-   _cg(cg),
+   : OMR::Machine(cg, numIntRegs, numFPRegs),
    _registerFile(registerFile),
    _registerAssociations(registerAssociations),
    _numGlobalGPRs(numGlobalGPRs),

@@ -202,8 +202,6 @@ class OMR_EXTENSIBLE Machine : public OMR::Machine
    /** Used to keep track of blocked registers (HPR/GPR) that upgrades/spill's etc should not use. Typical stores ~0-3 registers. */
    TR_Stack<TR::RealRegister *>               *_blockedUpgradedRegList;
 
-   TR::CodeGenerator *_cg;
-
    TR_GlobalRegisterNumber  _firstGlobalAccessRegisterNumber;
    TR_GlobalRegisterNumber  _lastGlobalAccessRegisterNumber;
    TR_GlobalRegisterNumber  _firstGlobalGPRRegisterNumber;
@@ -381,8 +379,6 @@ class OMR_EXTENSIBLE Machine : public OMR::Machine
                                             TR::RealRegister::RegNum registerNumber,
                                             flags32_t       instFlags);
 
-
-   TR::CodeGenerator *cg() {return _cg;}
    TR_Debug         *getDebug();
 
    uint32_t *initializeGlobalRegisterTable();

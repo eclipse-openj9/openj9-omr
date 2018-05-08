@@ -119,7 +119,6 @@ class OMR_EXTENSIBLE Machine : public OMR::Machine
    List<TR::Register>      *_spilledRegistersList;
 
    TR::SymbolReference     *_dummyLocal[TR::NumTypes];
-   TR::CodeGenerator *_cg;
 
    int32_t                 _fpStackShape[TR_X86FPStackRegister::NumRegisters];
    int32_t                 _fpTopOfStack;
@@ -288,7 +287,6 @@ class OMR_EXTENSIBLE Machine : public OMR::Machine
    void resetXMMGlobalRegisters();
 
    TR_Debug         *getDebug();
-   TR::CodeGenerator *cg() {return _cg;}
 
    uint8_t _numGlobalGPRs, _numGlobal8BitGPRs, _numGlobalFPRs;
 

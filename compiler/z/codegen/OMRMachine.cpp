@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -92,7 +92,7 @@
 TR_Debug *
 OMR::Z::Machine::getDebug()
    {
-   return _cg->getDebug();
+   return self()->cg()->getDebug();
    }
 
 
@@ -727,7 +727,7 @@ OMR::Z::Machine::getGPRSize()
 //  Constructor
 
 OMR::Z::Machine::Machine(TR::CodeGenerator * cg)
-   : OMR::Machine(NUM_S390_GPR, NUM_S390_FPR, NUM_S390_VRF), _cg(cg), _lastGlobalGPRRegisterNumber(-1), _last8BitGlobalGPRRegisterNumber(-1),
+   : OMR::Machine(cg, NUM_S390_GPR, NUM_S390_FPR, NUM_S390_VRF), _lastGlobalGPRRegisterNumber(-1), _last8BitGlobalGPRRegisterNumber(-1),
    _lastGlobalFPRRegisterNumber(-1), _lastGlobalCCRRegisterNumber(-1), _lastVolatileNonLinkGPR(-1), _lastLinkageGPR(-1),
      _lastVolatileNonLinkFPR(-1), _lastLinkageFPR(-1), _firstGlobalAccessRegisterNumber(-1), _lastGlobalAccessRegisterNumber(-1), _globalEnvironmentRegisterNumber(-1), _globalCAARegisterNumber(-1), _globalParentDSARegisterNumber(-1),
     _globalReturnAddressRegisterNumber(-1),_globalEntryPointRegisterNumber(-1)
@@ -1038,12 +1038,12 @@ OMR::Z::Machine::findBestLegalOddRegister(uint64_t availRegMask)
    if (freeRegister == NULL)
       {
       if (lastOddReg)
-         _cg->traceRegisterAssignment("BEST LEGAL ODD: %R", lastOddReg);
+         self()->cg()->traceRegisterAssignment("BEST LEGAL ODD: %R", lastOddReg);
       return lastOddReg;
       }
    else
       {
-      _cg->traceRegisterAssignment("BEST LEGAL ODD: %R", freeRegister);
+      self()->cg()->traceRegisterAssignment("BEST LEGAL ODD: %R", freeRegister);
       return freeRegister;
       }
    }
@@ -1108,7 +1108,7 @@ OMR::Z::Machine::findBestLegalEvenRegister(uint64_t availRegMask)
          }
 
       lastEvenReg = _registerFile[i];
-      //_cg->traceRegWeight(lastEvenReg, lastEvenReg->getWeight());
+      //self()->cg()->traceRegWeight(lastEvenReg, lastEvenReg->getWeight());
 
       if ((_registerFile[i + 0]->getState() == TR::RealRegister::Free || _registerFile[i + 0]->getState() == TR::RealRegister::Unlatched) &&
           (_registerFile[i + 1]->getState() == TR::RealRegister::Free || _registerFile[i + 1]->getState() == TR::RealRegister::Unlatched) &&
@@ -1131,12 +1131,12 @@ OMR::Z::Machine::findBestLegalEvenRegister(uint64_t availRegMask)
    if (freeRegister == NULL)
       {
       if (lastEvenReg)
-         _cg->traceRegisterAssignment("BEST LAST LEGAL EVEN: %R", lastEvenReg);
+         self()->cg()->traceRegisterAssignment("BEST LAST LEGAL EVEN: %R", lastEvenReg);
       return lastEvenReg;
       }
    else
       {
-      _cg->traceRegisterAssignment("BEST LEGAL EVEN: %R", freeRegister);
+      self()->cg()->traceRegisterAssignment("BEST LEGAL EVEN: %R", freeRegister);
       return freeRegister;
       }
    }
@@ -1175,7 +1175,7 @@ OMR::Z::Machine::findBestLegalSiblingFPRegister(bool isFirst, uint64_t availRegM
 
       lastSiblingFPReg = isFirst ? lastFirstOfPair : lastSecondOfPair;
 
-      //_cg->traceRegWeight(lastSiblingFPReg, lastSiblingFPReg->getWeight());
+      //self()->cg()->traceRegWeight(lastSiblingFPReg, lastSiblingFPReg->getWeight());
 
       if ((lastFirstOfPair->getState() == TR::RealRegister::Free || lastFirstOfPair->getState() == TR::RealRegister::Unlatched)
          && (lastSecondOfPair->getState() == TR::RealRegister::Free || lastSecondOfPair->getState() == TR::RealRegister::Unlatched)
@@ -1196,12 +1196,12 @@ OMR::Z::Machine::findBestLegalSiblingFPRegister(bool isFirst, uint64_t availRegM
 
    if (freeRegister == NULL)
       {
-      _cg->traceRegisterAssignment("BEST LEGAL sibling FP Reg: %R", lastSiblingFPReg);
+      self()->cg()->traceRegisterAssignment("BEST LEGAL sibling FP Reg: %R", lastSiblingFPReg);
       return lastSiblingFPReg;
       }
    else
       {
-      _cg->traceRegisterAssignment("BEST LEGAL sibling FP Reg: %R", freeRegister);
+      self()->cg()->traceRegisterAssignment("BEST LEGAL sibling FP Reg: %R", freeRegister);
       return freeRegister;
       }
    }
@@ -1267,7 +1267,7 @@ OMR::Z::Machine::findBestRegisterForShuffle(TR::Instruction *currentInstruction,
    if (blockingRegister)
       targetRegister->getRealRegister()->unblock();
 
-   _cg->traceRegisterAssignment("%R is assigned to invalid register in this instruction. Shuffling %R => %R...",
+   self()->cg()->traceRegisterAssignment("%R is assigned to invalid register in this instruction. Shuffling %R => %R...",
                                 currentAssignedRegister, currentAssignedRegister->getAssignedRegister(), newRegister);
    return newRegister;
    }
@@ -1292,7 +1292,7 @@ OMR::Z::Machine::shuffleOrSpillRegister(TR::Instruction *currInst,
       self()->spillRegister(currInst, toFreeReg);
    else
       {
-      TR::Instruction * cursor = self()->registerCopy(currInst, toFreeReg->getKind(), assignedRegister, bestRegister, _cg, 0);
+      TR::Instruction * cursor = self()->registerCopy(currInst, toFreeReg->getKind(), assignedRegister, bestRegister, self()->cg(), 0);
       toFreeReg->setAssignedRegister(bestRegister);
       bestRegister->setAssignedRegister(toFreeReg);
       bestRegister->setState(TR::RealRegister::Assigned);
@@ -1315,20 +1315,20 @@ OMR::Z::Machine::assignBestRegisterSingle(TR::Register    *targetRegister,
    {
    TR_RegisterKinds kindOfRegister = targetRegister->getKind();
    TR::RealRegister * assignedRegister = targetRegister->getAssignedRealRegister();
-   TR::Compilation *comp = _cg->comp();
+   TR::Compilation *comp = self()->cg()->comp();
 
    bool reverseSpilled = false;
 
-   bool enableHighWordRA = _cg->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) &&
+   bool enableHighWordRA = self()->cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) &&
                            kindOfRegister != TR_FPR && kindOfRegister != TR_VRF;
    // Return virtual AR in first pass of RA
-   if (!_cg->getRAPassAR() && kindOfRegister == TR_AR)
+   if (!self()->cg()->getRAPassAR() && kindOfRegister == TR_AR)
       return targetRegister;
 
    bool defsRegister=currInst->defsRegister(targetRegister);
    if (assignedRegister == NULL)
       {
-      if (_cg->insideInternalControlFlow())
+      if (self()->cg()->insideInternalControlFlow())
          {
          TR_ASSERT(0, "ASSERTION assignBestRegisterSingle inside Internal Control Flow on currInst=%p.\n"
                       "Ensure all registers within ICF have a dependency anchored at the end-ICF label\n",currInst);
@@ -1350,7 +1350,7 @@ OMR::Z::Machine::assignBestRegisterSingle(TR::Register    *targetRegister,
            // Oh no.. targetRegister is assigned something it shouldn't be assigned to. Do some shuffling
            // find a new register to shuffle to
            TR::RealRegister * newAssignedRegister = self()->findBestRegisterForShuffle(currInst, targetRegister, availRegMask);
-           TR::Instruction *cursor = self()->registerCopy(appendInst, kindOfRegister, toRealRegister(assignedRegister), newAssignedRegister, _cg, 0);
+           TR::Instruction *cursor = self()->registerCopy(appendInst, kindOfRegister, toRealRegister(assignedRegister), newAssignedRegister, self()->cg(), 0);
            assignedRegister->setAssignedRegister(NULL);
            assignedRegister->setState(TR::RealRegister::Free);
            assignedRegister = newAssignedRegister;
@@ -1358,13 +1358,13 @@ OMR::Z::Machine::assignBestRegisterSingle(TR::Register    *targetRegister,
          else if (toRealRegister(assignedRegister)->isLowWordRegister() &&
              toRealRegister(assignedRegister)->getHighWordRegister()->getAssignedRegister() != targetRegister)
             {
-            _cg->traceRegisterAssignment("%R is 64bit but HPR is assigned to a different vreg, freeing up HPR", targetRegister);
+            self()->cg()->traceRegisterAssignment("%R is 64bit but HPR is assigned to a different vreg, freeing up HPR", targetRegister);
             if (toRealRegister(assignedRegister)->getHighWordRegister()->getState() == TR::RealRegister::Assigned)
                {
                assignedRegister->block();
                TR::Instruction * cursor = self()->freeHighWordRegister(currInst, toRealRegister(assignedRegister)->getHighWordRegister(), 0);
                assignedRegister->unblock();
-               _cg->traceRAInstruction(cursor);
+               self()->cg()->traceRAInstruction(cursor);
                }
             else if (toRealRegister(assignedRegister)->getHighWordRegister()->getState() == TR::RealRegister::Blocked ||
                      toRealRegister(assignedRegister)->getHighWordRegister()->getState() == TR::RealRegister::Locked)
@@ -1374,14 +1374,14 @@ OMR::Z::Machine::assignBestRegisterSingle(TR::Register    *targetRegister,
             }
         else if (toRealRegister(assignedRegister)->isHighWordRegister())
             {
-            _cg->traceRegisterAssignment("%R is 64bit but currently assigned to HPR, shuffling", targetRegister);
+            self()->cg()->traceRegisterAssignment("%R is 64bit but currently assigned to HPR, shuffling", targetRegister);
 
             // find a new 64-bit register and shuffle HPR there
             assignedRegister->block();
             TR::RealRegister * assignedRegister64 = self()->findBestRegisterForShuffle(currInst, targetRegister, availRegMask);
             assignedRegister->unblock();
-            TR::Instruction * cursor = generateExtendedHighWordInstruction(currInst->getNode(), _cg, TR::InstOpCode::LHLR, assignedRegister, assignedRegister64, 0, appendInst);
-            _cg->traceRAInstruction(cursor);
+            TR::Instruction * cursor = generateExtendedHighWordInstruction(currInst->getNode(), self()->cg(), TR::InstOpCode::LHLR, assignedRegister, assignedRegister64, 0, appendInst);
+            self()->cg()->traceRAInstruction(cursor);
             assignedRegister->setAssignedRegister(NULL);
             assignedRegister->setState(TR::RealRegister::Free);
             assignedRegister = assignedRegister64;
@@ -1415,7 +1415,7 @@ OMR::Z::Machine::assignBestRegisterSingle(TR::Register    *targetRegister,
                //assignedRegister->unblock();
                }
 
-            TR::Instruction * cursor = generateExtendedHighWordInstruction(currInst->getNode(), _cg, TR::InstOpCode::LLHFR, assignedRegister, assignedHighWordRegister, 0, appendInst);
+            TR::Instruction * cursor = generateExtendedHighWordInstruction(currInst->getNode(), self()->cg(), TR::InstOpCode::LLHFR, assignedRegister, assignedHighWordRegister, 0, appendInst);
 
             self()->addToUpgradedBlockedList(assignedRegister) ? assignedRegister->setState(TR::RealRegister::Blocked) :
                                                          assignedRegister->setState(TR::RealRegister::Free);
@@ -1424,7 +1424,7 @@ OMR::Z::Machine::assignBestRegisterSingle(TR::Register    *targetRegister,
             assignedHighWordRegister->setState(TR::RealRegister::Assigned);
             assignedRegister->setAssignedRegister(NULL);
             assignedRegister = assignedHighWordRegister;
-            _cg->traceRAInstruction(cursor);
+            self()->cg()->traceRAInstruction(cursor);
             }
          else if ((toRealRegister(assignedRegister))->isHighWordRegister() && targetRegister->assignToGPR())
             {
@@ -1445,7 +1445,7 @@ OMR::Z::Machine::assignBestRegisterSingle(TR::Register    *targetRegister,
                   //assignedRegister->unblock();
                   }
 
-               TR::Instruction * cursor = generateExtendedHighWordInstruction(currInst->getNode(), _cg, TR::InstOpCode::LHLR, assignedRegister, assignedLowWordRegister, 0, appendInst);
+               TR::Instruction * cursor = generateExtendedHighWordInstruction(currInst->getNode(), self()->cg(), TR::InstOpCode::LHLR, assignedRegister, assignedLowWordRegister, 0, appendInst);
 
                self()->addToUpgradedBlockedList(assignedRegister) ? assignedRegister->setState(TR::RealRegister::Blocked):
                                                             assignedRegister->setState(TR::RealRegister::Free);
@@ -1454,7 +1454,7 @@ OMR::Z::Machine::assignBestRegisterSingle(TR::Register    *targetRegister,
                assignedLowWordRegister->setState(TR::RealRegister::Assigned);
                assignedRegister->setAssignedRegister(NULL);
                assignedRegister = assignedLowWordRegister;
-               _cg->traceRAInstruction(cursor);
+               self()->cg()->traceRAInstruction(cursor);
                }
             }
          else if ((toRealRegister(assignedRegister)->getRealRegisterMask() & availRegMask) == 0)
@@ -1462,7 +1462,7 @@ OMR::Z::Machine::assignBestRegisterSingle(TR::Register    *targetRegister,
            // Oh no.. targetRegister is assigned something it shouldn't be assigned to. Do some shuffling
            // find a new register to shuffle to
            TR::RealRegister * newAssignedRegister = self()->findBestRegisterForShuffle(currInst, targetRegister, availRegMask);
-           TR::Instruction *cursor = self()->registerCopy(appendInst, kindOfRegister, toRealRegister(assignedRegister), newAssignedRegister, _cg, 0);
+           TR::Instruction *cursor = self()->registerCopy(appendInst, kindOfRegister, toRealRegister(assignedRegister), newAssignedRegister, self()->cg(), 0);
            newAssignedRegister->setAssignedRegister(targetRegister);
            newAssignedRegister->setState(TR::RealRegister::Assigned);
            assignedRegister->setAssignedRegister(NULL);
@@ -1479,9 +1479,9 @@ OMR::Z::Machine::assignBestRegisterSingle(TR::Register    *targetRegister,
       assignedRegister->block();
       TR::RealRegister * newAssignedRegister = self()->findBestRegisterForShuffle(currInst, targetRegister, availRegMask);
       assignedRegister->unblock();
-      TR::Instruction *cursor=self()->registerCopy(currInst, kindOfRegister, toRealRegister(assignedRegister), newAssignedRegister, _cg, 0);
-      _cg->setRegisterAssignmentFlag(TR_IndirectCoercion);
-      _cg->traceRegAssigned(targetRegister,assignedRegister);
+      TR::Instruction *cursor=self()->registerCopy(currInst, kindOfRegister, toRealRegister(assignedRegister), newAssignedRegister, self()->cg(), 0);
+      self()->cg()->setRegisterAssignmentFlag(TR_IndirectCoercion);
+      self()->cg()->traceRegAssigned(targetRegister,assignedRegister);
       targetRegister->setAssignedRegister(newAssignedRegister);
       newAssignedRegister->setAssignedRegister(targetRegister);
       newAssignedRegister->setState(TR::RealRegister::Assigned);
@@ -1519,7 +1519,7 @@ OMR::Z::Machine::assignBestRegisterSingle(TR::Register    *targetRegister,
          if (cr && cr->getAssignedRegister() == NULL && cr->getRealRegister()->getState() != TR::RealRegister::Blocked)
            {
            assignedRegister = cr->getRealRegister();
-           _cg->setRegisterAssignmentFlag(TR_ByColouring);
+           self()->cg()->setRegisterAssignmentFlag(TR_ByColouring);
            }
          // New reg assignment, find a free reg.
          // If no free reg available,  free one up
@@ -1555,8 +1555,8 @@ OMR::Z::Machine::assignBestRegisterSingle(TR::Register    *targetRegister,
          toRealRegister(assignedRegister)->getHighWordRegister()->setAssignedRegister(targetRegister);
          toRealRegister(assignedRegister)->getHighWordRegister()->setState(TR::RealRegister::Assigned);
          }
-      _cg->traceRegAssigned(targetRegister, assignedRegister);
-      _cg->clearRegisterAssignmentFlags();
+      self()->cg()->traceRegAssigned(targetRegister, assignedRegister);
+      self()->cg()->clearRegisterAssignmentFlags();
       }
 
    // Handle a definition that requires the register's spill location to be updated
@@ -1580,8 +1580,8 @@ OMR::Z::Machine::assignBestRegisterSingle(TR::Register    *targetRegister,
 
       TR_ASSERT(targetRegister->getFutureUseCount() >= 0,
                "\nRegister assignment: register [%s] futureUseCount should not be negative (for node [%s], ref count=%d) !\n",
-               _cg->getDebug()->getName(targetRegister),
-               _cg->getDebug()->getName(currInst->getNode()),
+               self()->cg()->getDebug()->getName(targetRegister),
+               self()->cg()->getDebug()->getName(currInst->getNode()),
                currInst->getNode()->getReferenceCount());
 
       // If we arn't re-using this reg anymore, kill assignment
@@ -1614,17 +1614,17 @@ OMR::Z::Machine::assignBestRegisterSingle(TR::Register    *targetRegister,
            {
            traceMsg(comp,
                     "Start of live range for a non global virtual yet its future count is not zero. Reg=%s Instr=[%p]\n",
-                    _cg->getDebug()->getName(targetRegister),
+                    self()->cg()->getDebug()->getName(targetRegister),
                     currInst);
            }
 #endif
-         _cg->traceRegFreed(targetRegister, assignedRegister);
+         self()->cg()->traceRegFreed(targetRegister, assignedRegister);
          targetRegister->resetIsLive();
          if (enableHighWordRA && targetRegister->is64BitReg())
             {
             toRealRegister(assignedRegister)->getHighWordRegister()->setAssignedRegister(NULL);
             toRealRegister(assignedRegister)->getHighWordRegister()->setState(TR::RealRegister::Free);
-            _cg->traceRegFreed(targetRegister, toRealRegister(assignedRegister)->getHighWordRegister());
+            self()->cg()->traceRegFreed(targetRegister, toRealRegister(assignedRegister)->getHighWordRegister());
             }
          if (assignedRegister->getState() == TR::RealRegister::Locked )
             {
@@ -1687,11 +1687,11 @@ OMR::Z::Machine::assignBestRegisterPair(TR::Register    *regPair,
 
    TR::Register * firstVirtualBaseAR = NULL;
    TR::Register * lastVirtualBaseAR = NULL;
-   TR::Compilation *comp = _cg->comp();
+   TR::Compilation *comp = self()->cg()->comp();
 
    if (regPair->isArGprPair())
       {
-      if (_cg->getRAPassAR())
+      if (self()->cg()->getRAPassAR())
          {
          regPair->getARofArGprPair()->decFutureUseCount();
          }
@@ -1729,22 +1729,22 @@ OMR::Z::Machine::assignBestRegisterPair(TR::Register    *regPair,
    TR::RealRegister * freeRegisterLow = lastReg->getAssignedRealRegister();
    TR_RegisterKinds regPairKind = regPair->getKind();
 
-  _cg->traceRegisterAssignment("attempt to assign components of register pair ( %R %R )", firstReg, lastReg);
+  self()->cg()->traceRegisterAssignment("attempt to assign components of register pair ( %R %R )", firstReg, lastReg);
 
-   bool enableHighWordRA = _cg->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) &&
+   bool enableHighWordRA = self()->cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) &&
                            regPairKind != TR_FPR && regPairKind != TR_VRF;
 
    if (enableHighWordRA)
       {
       if (firstReg->is64BitReg())
-         _cg->traceRegisterAssignment("%R is64BitReg", firstReg);
+         self()->cg()->traceRegisterAssignment("%R is64BitReg", firstReg);
       if (lastReg->is64BitReg())
-         _cg->traceRegisterAssignment("%R is64BitReg", lastReg);
+         self()->cg()->traceRegisterAssignment("%R is64BitReg", lastReg);
       }
 
    if (freeRegisterHigh == NULL || freeRegisterLow == NULL)
       {
-      if (_cg->insideInternalControlFlow())
+      if (self()->cg()->insideInternalControlFlow())
          {
          TR_ASSERT(0, "ASSERTION assignBestRegisterPair inside Internal Control Flow for inst %p.\n"
                       "Ensure all registers within ICF have a dependency anchored at the end-ICF label\n",currInst);
@@ -1765,7 +1765,7 @@ OMR::Z::Machine::assignBestRegisterPair(TR::Register    *regPair,
 
    // We need a new placeholder for the pair that will stay with the instruction, leaving the
    // input pair free to change under further allocation.
-   TR::RegisterPair * assignedRegPair = new (_cg->trHeapMemory(), TR_MemoryBase::RegisterPair) TR::RegisterPair(lastReg, firstReg);
+   TR::RegisterPair * assignedRegPair = new (self()->cg()->trHeapMemory(), TR_MemoryBase::RegisterPair) TR::RegisterPair(lastReg, firstReg);
    if (regPair->getKind() == TR_FPR)
      assignedRegPair->setKind(TR_FPR);
 
@@ -1861,9 +1861,9 @@ OMR::Z::Machine::assignBestRegisterPair(TR::Register    *regPair,
          firstCr->setAssignedRegister(firstReg);
          firstReg->setAssignedRegister(firstCr);
          freeRegisterHigh->setState(TR::RealRegister::Assigned);
-         _cg->setRegisterAssignmentFlag(TR_ByColouring);
-         _cg->traceRegAssigned(firstReg,freeRegisterHigh);
-         _cg->clearRegisterAssignmentFlags();
+         self()->cg()->setRegisterAssignmentFlag(TR_ByColouring);
+         self()->cg()->traceRegAssigned(firstReg,freeRegisterHigh);
+         self()->cg()->clearRegisterAssignmentFlags();
          }
        else if(firstCr->getAssignedRegister() != firstReg)
          {
@@ -1896,9 +1896,9 @@ OMR::Z::Machine::assignBestRegisterPair(TR::Register    *regPair,
          lastCr->setAssignedRegister(lastReg);
          lastReg->setAssignedRegister(lastCr);
          freeRegisterLow->setState(TR::RealRegister::Assigned);
-         _cg->setRegisterAssignmentFlag(TR_ByColouring);
-         _cg->traceRegAssigned(lastReg,freeRegisterLow);
-         _cg->clearRegisterAssignmentFlags();
+         self()->cg()->setRegisterAssignmentFlag(TR_ByColouring);
+         self()->cg()->traceRegAssigned(lastReg,freeRegisterLow);
+         self()->cg()->clearRegisterAssignmentFlags();
          }
        else if(lastCr->getAssignedRegister() != lastReg)
          {
@@ -2187,7 +2187,7 @@ OMR::Z::Machine::findBestFreeRegisterPair(TR::RealRegister ** firstRegister, TR:
    {
    uint32_t interference = 0;
 
-   TR::Compilation *comp = _cg->comp();
+   TR::Compilation *comp = self()->cg()->comp();
 
    TR::RealRegister * freeRegisterLow = NULL;
    TR::RealRegister * freeRegisterHigh = NULL;
@@ -2195,7 +2195,7 @@ OMR::Z::Machine::findBestFreeRegisterPair(TR::RealRegister ** firstRegister, TR:
    uint64_t bestWeightSoFar = (uint64_t) (-1);
    int32_t iOld = 0, iNew;
 
-   bool enableHighWordRA = _cg->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) &&
+   bool enableHighWordRA = self()->cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) &&
                            rk != TR_FPR && rk != TR_VRF;
    bool highWordPairIsFree = true;
 
@@ -2213,8 +2213,8 @@ OMR::Z::Machine::findBestFreeRegisterPair(TR::RealRegister ** firstRegister, TR:
             continue;
             }
 
-         //_cg->traceRegWeight(_registerFile[i], _registerFile[i]->getWeight());
-         //_cg->traceRegWeight(_registerFile[i + 1], _registerFile[i + 1]->getWeight());
+         //self()->cg()->traceRegWeight(_registerFile[i], _registerFile[i]->getWeight());
+         //self()->cg()->traceRegWeight(_registerFile[i + 1], _registerFile[i + 1]->getWeight());
 
          if (enableHighWordRA && rk == TR_GPR64)
             {
@@ -2305,7 +2305,7 @@ OMR::Z::Machine::findBestFreeRegisterPair(TR::RealRegister ** firstRegister, TR:
       *firstRegister = freeRegisterHigh;
       *lastRegister = freeRegisterLow;
 
-      _cg->traceRegisterAssignment("BEST FREE PAIR: (%R, %R)", freeRegisterHigh, freeRegisterLow);
+      self()->cg()->traceRegisterAssignment("BEST FREE PAIR: (%R, %R)", freeRegisterHigh, freeRegisterLow);
       return true;
       }
    else
@@ -2512,7 +2512,7 @@ void
 OMR::Z::Machine::freeBestRegisterPair(TR::RealRegister ** firstReg, TR::RealRegister ** lastReg, TR_RegisterKinds rk, TR::Instruction * currInst,
    uint64_t          availRegMask)
    {
-   _cg->traceRegisterAssignment("FREE BEST REGISTER PAIR");
+   self()->cg()->traceRegisterAssignment("FREE BEST REGISTER PAIR");
    if ( rk == TR_FPR )
      {
      self()->freeBestFPRegisterPair(firstReg,lastReg,currInst, availRegMask);
@@ -2521,7 +2521,7 @@ OMR::Z::Machine::freeBestRegisterPair(TR::RealRegister ** firstReg, TR::RealRegi
    TR::Node * currentNode = currInst->getNode();
 
    TR::Instruction * cursor = NULL;
-   TR::Compilation *comp = _cg->comp();
+   TR::Compilation *comp = self()->cg()->comp();
    TR::Machine *machine = self()->cg()->machine();
 
    TR_BackingStore * locationLow;
@@ -2533,7 +2533,7 @@ OMR::Z::Machine::freeBestRegisterPair(TR::RealRegister ** firstReg, TR::RealRegi
 
    TR_Debug * debugObj = self()->cg()->getDebug();
 
-   bool enableHighWordRA = _cg->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) &&
+   bool enableHighWordRA = self()->cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) &&
                            rk != TR_FPR &&  rk != TR_VRF;
 
    // Look at all reg pairs (starting with an even reg)
@@ -2588,10 +2588,10 @@ OMR::Z::Machine::freeBestRegisterPair(TR::RealRegister ** firstReg, TR::RealRegi
    if (enableHighWordRA && rk== TR_GPR64)
       {
       // this is to prevent us from spilling into the high word of candidates
-      _cg->setAvailableHPRSpillMask(availRegMask);
+      self()->cg()->setAvailableHPRSpillMask(availRegMask);
 
-      _cg->maskAvailableHPRSpillMask(bestCandidateHigh->getHighWordRegister()->getRealRegisterMask());
-      _cg->maskAvailableHPRSpillMask(bestCandidateLow->getHighWordRegister()->getRealRegisterMask());
+      self()->cg()->maskAvailableHPRSpillMask(bestCandidateHigh->getHighWordRegister()->getRealRegisterMask());
+      self()->cg()->maskAvailableHPRSpillMask(bestCandidateLow->getHighWordRegister()->getRealRegisterMask());
       }
    if (bestVirtCandidateLow != NULL)
       {
@@ -2615,13 +2615,13 @@ OMR::Z::Machine::freeBestRegisterPair(TR::RealRegister ** firstReg, TR::RealRegi
 
          //if we selected the VM Thread Register to be freed, check to see if the value has already been spilled
          locationLow = bestVirtCandidateLow->getBackingStorage();
-         if (_cg->needsVMThreadDependency() && bestVirtCandidateLow == _cg->getVMThreadRegister())
+         if (self()->cg()->needsVMThreadDependency() && bestVirtCandidateLow == self()->cg()->getVMThreadRegister())
             {
             traceMsg(comp, "\ns390machine: freeBestRegisterPair - low reg is GPR13\n");
             if (bestVirtCandidateLow->getBackingStorage() == NULL)
                {
                traceMsg(comp, "\ns390machine: allocateVMThreadSpill called\n");
-               locationLow = _cg->allocateVMThreadSpill();
+               locationLow = self()->cg()->allocateVMThreadSpill();
                traceMsg(comp, "\ns390machine: allocateVMThreadSpill call completed\n");
                }
             }
@@ -2775,13 +2775,13 @@ OMR::Z::Machine::freeBestRegisterPair(TR::RealRegister ** firstReg, TR::RealRegi
 
          //if we selected the VM Thread Register to be freed, check to see if the value has already been spilled
          locationHigh = bestVirtCandidateHigh->getBackingStorage();
-         if (_cg->needsVMThreadDependency() && bestVirtCandidateHigh == _cg->getVMThreadRegister())
+         if (self()->cg()->needsVMThreadDependency() && bestVirtCandidateHigh == self()->cg()->getVMThreadRegister())
             {
             traceMsg(comp, "\ns390machine: freeBestRegisterPair - high reg is GPR13\n");
             if (bestVirtCandidateHigh->getBackingStorage() == NULL)
                {
                traceMsg(comp, "\ns390machine: allocateVMThreadSpill called\n");
-               locationHigh = _cg->allocateVMThreadSpill();
+               locationHigh = self()->cg()->allocateVMThreadSpill();
                traceMsg(comp, "\ns390machine: allocateVMThreadSpill call completed\n");
                }
             }
@@ -2954,7 +2954,7 @@ OMR::Z::Machine::findBestFreeRegister(TR::Instruction   *currentInstruction,
    uint32_t randomInterference;
    int32_t randomWeight;
    uint32_t randomPreference;
-   TR::Compilation *comp = _cg->comp();
+   TR::Compilation *comp = self()->cg()->comp();
 
    uint32_t preference = 0;
    if(virtualReg != NULL)
@@ -2966,8 +2966,8 @@ OMR::Z::Machine::findBestFreeRegister(TR::Instruction   *currentInstruction,
        preference = virtualReg->getAssociation();
      }
    bool useGPR0 = (virtualReg == NULL) ? false : (virtualReg->isUsedInMemRef() == false);
-   bool liveRegOn = (_cg->getLiveRegisters(rk) != NULL);
-   bool enableHighWordRA = _cg->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) &&
+   bool liveRegOn = (self()->cg()->getLiveRegisters(rk) != NULL);
+   bool enableHighWordRA = self()->cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) &&
                           (rk == TR_GPR || rk == TR_GPR64);
 
    if (comp->getOption(TR_Randomize))
@@ -2975,25 +2975,25 @@ OMR::Z::Machine::findBestFreeRegister(TR::Instruction   *currentInstruction,
       randomPreference = preference;
       if (TR::RealRegister::isHPR((TR::RealRegister::RegNum)preference))
          {
-         randomPreference = _cg->randomizer.randomInt(TR::RealRegister::FirstHPR,TR::RealRegister::LastHPR);
+         randomPreference = self()->cg()->randomizer.randomInt(TR::RealRegister::FirstHPR,TR::RealRegister::LastHPR);
          }
       else if (TR::RealRegister::isFPR((TR::RealRegister::RegNum)preference))
          {
-         randomPreference = _cg->randomizer.randomInt(TR::RealRegister::FirstFPR,TR::RealRegister::LastFPR);
+         randomPreference = self()->cg()->randomizer.randomInt(TR::RealRegister::FirstFPR,TR::RealRegister::LastFPR);
          }
       else if (TR::RealRegister::isVRF((TR::RealRegister::RegNum)preference))
          {
-         randomPreference = _cg->randomizer.randomInt(TR::RealRegister::FirstVRF,TR::RealRegister::LastVRF);
+         randomPreference = self()->cg()->randomizer.randomInt(TR::RealRegister::FirstVRF,TR::RealRegister::LastVRF);
          }
       else if (TR::RealRegister::isGPR((TR::RealRegister::RegNum)preference))
          {
          if (useGPR0)
             {
-            randomPreference = _cg->randomizer.randomInt(TR::RealRegister::GPR0,TR::RealRegister::LastGPR);
+            randomPreference = self()->cg()->randomizer.randomInt(TR::RealRegister::GPR0,TR::RealRegister::LastGPR);
             }
          else
             {
-            randomPreference = _cg->randomizer.randomInt(TR::RealRegister::GPR1,TR::RealRegister::LastGPR);
+            randomPreference = self()->cg()->randomizer.randomInt(TR::RealRegister::GPR1,TR::RealRegister::LastGPR);
             }
          }
        if (preference != randomPreference && performTransformation(comp,"O^O Random Codegen - Randomizing Preference from: %d to: %d\n", preference, randomPreference))
@@ -3014,8 +3014,8 @@ OMR::Z::Machine::findBestFreeRegister(TR::Instruction   *currentInstruction,
       interference = virtualReg->getInterference();
       if (comp->getOption(TR_Randomize))
          {
-         randomInterference = _cg->randomizer.randomInt(0, 65535);
-         if (performTransformation(comp , "O^O Random Codegen - Randomizing Interference for %s: Original=%x Random=%x\n" , _cg->getDebug()->getName(virtualReg) , interference , randomInterference))
+         randomInterference = self()->cg()->randomizer.randomInt(0, 65535);
+         if (performTransformation(comp , "O^O Random Codegen - Randomizing Interference for %s: Original=%x Random=%x\n" , self()->cg()->getDebug()->getName(virtualReg) , interference , randomInterference))
             {
             interference = randomInterference;
             }
@@ -3317,7 +3317,7 @@ OMR::Z::Machine::findBestFreeRegister(TR::Instruction   *currentInstruction,
                bestRegister->setAssignedRegister(NULL);
                bestRegister->setState(TR::RealRegister::Free);
                }
-            _cg->setRegisterAssignmentFlag(TR_ByAssociation);
+            self()->cg()->setRegisterAssignmentFlag(TR_ByAssociation);
             return bestRegister;
             }
          }
@@ -3356,13 +3356,13 @@ OMR::Z::Machine::findBestFreeRegister(TR::Instruction   *currentInstruction,
                   bestRegister->getHighWordRegister()->setAssignedRegister(NULL);
                   bestRegister->getHighWordRegister()->setState(TR::RealRegister::Free);
                   }
-               _cg->setRegisterAssignmentFlag(TR_ByAssociation);
+               self()->cg()->setRegisterAssignmentFlag(TR_ByAssociation);
 
 
                if (bestRegister != NULL)
-                  _cg->traceRegisterAssignment("BEST FREE REG by pref for %R is %R", virtualReg, bestRegister);
+                  self()->cg()->traceRegisterAssignment("BEST FREE REG by pref for %R is %R", virtualReg, bestRegister);
                else
-                  _cg->traceRegisterAssignment("BEST FREE REG by pref for %R is NULL", virtualReg);
+                  self()->cg()->traceRegisterAssignment("BEST FREE REG by pref for %R is NULL", virtualReg);
 
                return bestRegister;
                }
@@ -3390,13 +3390,13 @@ OMR::Z::Machine::findBestFreeRegister(TR::Instruction   *currentInstruction,
                   bestRegister->setAssignedRegister(NULL);
                   bestRegister->setState(TR::RealRegister::Free);
                   }
-               _cg->setRegisterAssignmentFlag(TR_ByAssociation);
+               self()->cg()->setRegisterAssignmentFlag(TR_ByAssociation);
 
 
                if (bestRegister != NULL)
-                  _cg->traceRegisterAssignment("BEST FREE REG by pref for %R is %R", virtualReg, bestRegister);
+                  self()->cg()->traceRegisterAssignment("BEST FREE REG by pref for %R is %R", virtualReg, bestRegister);
                else
-                  _cg->traceRegisterAssignment("BEST FREE REG by pref for %R is NULL", virtualReg);
+                  self()->cg()->traceRegisterAssignment("BEST FREE REG by pref for %R is NULL", virtualReg);
 
                return bestRegister;
                }
@@ -3419,7 +3419,7 @@ OMR::Z::Machine::findBestFreeRegister(TR::Instruction   *currentInstruction,
             {
             continue;
             }
-         //_cg->traceRegWeight(_registerFile[i], _registerFile[i]->getWeight());
+         //self()->cg()->traceRegWeight(_registerFile[i], _registerFile[i]->getWeight());
 
          iNew = interference & (1 << (i - maskI));
          if ((_registerFile[i]->getState() == TR::RealRegister::Free || (_registerFile[i]->getState() == TR::RealRegister::Unlatched)) &&
@@ -3431,8 +3431,8 @@ OMR::Z::Machine::findBestFreeRegister(TR::Instruction   *currentInstruction,
             bestWeightSoFar = freeRegister->getWeight();
             if (comp->getOption(TR_Randomize))
                {
-               randomWeight = _cg->randomizer.randomInt(0, 0xFFF);
-               if (performTransformation(comp, "O^O Random Codegen - Randomizing Weight for %s, Original bestWeightSoFar: %x randomized to: %x\n", _cg->getDebug()->getName(_registerFile[i]), bestWeightSoFar, randomWeight))
+               randomWeight = self()->cg()->randomizer.randomInt(0, 0xFFF);
+               if (performTransformation(comp, "O^O Random Codegen - Randomizing Weight for %s, Original bestWeightSoFar: %x randomized to: %x\n", self()->cg()->getDebug()->getName(_registerFile[i]), bestWeightSoFar, randomWeight))
                   {
                   bestWeightSoFar =  randomWeight;
                   }
@@ -3468,7 +3468,7 @@ OMR::Z::Machine::findBestFreeRegister(TR::Instruction   *currentInstruction,
                {
                continue;
                }
-            //_cg->traceRegWeight(candidate, candidate->getWeight());
+            //self()->cg()->traceRegWeight(candidate, candidate->getWeight());
 
             iNew = interference & (1 << (i - maskI));
             if (candidateLWFree && candidateHWFree &&
@@ -3480,8 +3480,8 @@ OMR::Z::Machine::findBestFreeRegister(TR::Instruction   *currentInstruction,
                bestWeightSoFar = freeRegister->getWeight();
                if (comp->getOption(TR_Randomize))
                   {
-                  randomWeight = _cg->randomizer.randomInt(0, 0xFFF);
-                  if (performTransformation(comp, "O^O Random Codegen - Randomizing Weight for %s, Original bestWeightSoFar: %x randomized to: %x\n", _cg->getDebug()->getName(_registerFile[i]), bestWeightSoFar, randomWeight))
+                  randomWeight = self()->cg()->randomizer.randomInt(0, 0xFFF);
+                  if (performTransformation(comp, "O^O Random Codegen - Randomizing Weight for %s, Original bestWeightSoFar: %x randomized to: %x\n", self()->cg()->getDebug()->getName(_registerFile[i]), bestWeightSoFar, randomWeight))
                      {
                      bestWeightSoFar =  randomWeight;
                      }
@@ -3500,7 +3500,7 @@ OMR::Z::Machine::findBestFreeRegister(TR::Instruction   *currentInstruction,
                candidate = _registerFile[i]->getLowWordRegister();
                }
 
-            //_cg->traceRegWeight(candidate, candidate->getWeight());
+            //self()->cg()->traceRegWeight(candidate, candidate->getWeight());
             // Don't consider registers that can't be assigned.
             if ((candidate->getState() == TR::RealRegister::Locked) || ((tRegMask & availRegMask) == 0))
                {
@@ -3517,8 +3517,8 @@ OMR::Z::Machine::findBestFreeRegister(TR::Instruction   *currentInstruction,
                bestWeightSoFar = freeRegister->getWeight();
                if (comp->getOption(TR_Randomize))
                   {
-                  randomWeight = _cg->randomizer.randomInt(0, 0xFFF);
-                  if (performTransformation(comp, "O^O Random Codegen - Randomizing Weight for %s, Original bestWeightSoFar: %x randomized to: %x\n", _cg->getDebug()->getName(_registerFile[i]), bestWeightSoFar, randomWeight))
+                  randomWeight = self()->cg()->randomizer.randomInt(0, 0xFFF);
+                  if (performTransformation(comp, "O^O Random Codegen - Randomizing Weight for %s, Original bestWeightSoFar: %x randomized to: %x\n", self()->cg()->getDebug()->getName(_registerFile[i]), bestWeightSoFar, randomWeight))
                      {
                      bestWeightSoFar =  randomWeight;
                      }
@@ -3546,9 +3546,9 @@ OMR::Z::Machine::findBestFreeRegister(TR::Instruction   *currentInstruction,
 
 
    if (freeRegister != NULL)
-      _cg->traceRegisterAssignment("BEST FREE REG for %R is %R", virtualReg, freeRegister);
+      self()->cg()->traceRegisterAssignment("BEST FREE REG for %R is %R", virtualReg, freeRegister);
    else
-      _cg->traceRegisterAssignment("BEST FREE REG for %R is NULL (could not find one)", virtualReg);
+      self()->cg()->traceRegisterAssignment("BEST FREE REG for %R is NULL (could not find one)", virtualReg);
 
 
    return freeRegister;
@@ -3565,7 +3565,7 @@ OMR::Z::Machine::findBestFreeRegister(TR::Instruction   *currentInstruction,
 uint64_t
 OMR::Z::Machine::constructFreeRegBitVector(TR::Instruction  *currentInstruction)
    {
-   TR::Linkage * linkage = _cg->getS390Linkage();
+   TR::Linkage * linkage = self()->cg()->getS390Linkage();
    int32_t first = TR::RealRegister::FirstGPR + 1;  // skip GPR0
    int32_t last  = TR::RealRegister::LastAssignableGPR;
    uint64_t vector = 0;
@@ -3683,7 +3683,7 @@ OMR::Z::Machine::blockVolatileAccessRegisters()
    int32_t first = TR::RealRegister::FirstAR;
    int32_t last  = TR::RealRegister::LastAR;
    TR::Machine *machine = self()->cg()->machine();
-   TR::Linkage * linkage = _cg->getS390Linkage();
+   TR::Linkage * linkage = self()->cg()->getS390Linkage();
 
    for (int32_t i = first; i <= last; i++)
       {
@@ -3710,7 +3710,7 @@ OMR::Z::Machine::unblockVolatileAccessRegisters()
    int32_t first = TR::RealRegister::FirstAR;
    int32_t last  = TR::RealRegister::LastAR;
    TR::Machine *machine = self()->cg()->machine();
-   TR::Linkage * linkage = _cg->getS390Linkage();
+   TR::Linkage * linkage = self()->cg()->getS390Linkage();
 
    for (int32_t i = first; i <= last; i++)
       {
@@ -3735,7 +3735,7 @@ OMR::Z::Machine::spillAllVolatileHighRegisters(TR::Instruction *currentInstructi
    int32_t first = TR::RealRegister::FirstGPR;
    int32_t last  = TR::RealRegister::LastGPR;
    TR::Machine *machine = self()->cg()->machine();
-   TR::Linkage * linkage = _cg->getS390Linkage();
+   TR::Linkage * linkage = self()->cg()->getS390Linkage();
    TR::Node * node = currentInstruction->getNode();
 
    for (int32_t i = first; i <= last; i++)
@@ -3766,7 +3766,7 @@ OMR::Z::Machine::blockVolatileHighRegisters()
    int32_t first = TR::RealRegister::FirstGPR;
    int32_t last  = TR::RealRegister::LastGPR;
    TR::Machine *machine = self()->cg()->machine();
-   TR::Linkage * linkage = _cg->getS390Linkage();
+   TR::Linkage * linkage = self()->cg()->getS390Linkage();
 
    for (int32_t i = first; i <= last; i++)
       {
@@ -3794,7 +3794,7 @@ OMR::Z::Machine::unblockVolatileHighRegisters()
    int32_t first = TR::RealRegister::FirstGPR;
    int32_t last  = TR::RealRegister::LastGPR;
    TR::Machine *machine = self()->cg()->machine();
-   TR::Linkage * linkage = _cg->getS390Linkage();
+   TR::Linkage * linkage = self()->cg()->getS390Linkage();
 
    for (int32_t i = first; i <= last; i++)
       {
@@ -3817,17 +3817,17 @@ TR::RealRegister *
 OMR::Z::Machine::freeBestRegister(TR::Instruction * currentInstruction, TR::Register * virtReg, TR_RegisterKinds rk,
                                  uint64_t availRegMask, bool allowNullReturn, bool doNotSpillToSiblingHPR)
    {
-   _cg->traceRegisterAssignment("FREE BEST REGISTER FOR %R", virtReg);
-   TR::Compilation *comp = _cg->comp();
+   self()->cg()->traceRegisterAssignment("FREE BEST REGISTER FOR %R", virtReg);
+   TR::Compilation *comp = self()->cg()->comp();
 
    if (virtReg->containsCollectedReference())
-      _cg->traceRegisterAssignment("%R contains collected", virtReg);
+      self()->cg()->traceRegisterAssignment("%R contains collected", virtReg);
    int32_t numCandidates = 0, interference = 0, first, last, maskI;
    TR::Register * candidates[TR::RealRegister::LastVRF];
    TR::Machine *machine = self()->cg()->machine();
    bool useGPR0 = (virtReg == NULL) ? false : (virtReg->isUsedInMemRef() == false);
 
-   bool enableHighWordRA = _cg->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) &&
+   bool enableHighWordRA = self()->cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) &&
                            rk != TR_FPR && rk != TR_VRF;
 
    switch (rk)
@@ -3889,8 +3889,8 @@ OMR::Z::Machine::freeBestRegister(TR::Instruction * currentInstruction, TR::Regi
                 currentInstruction->getDependencyConditions()->searchPostConditionRegister(associatedVirtual))
                {
                // we just assigned this virtual in the reg deps, do not free it
-               traceMsg(_cg, "  Reg[@%d] associatedVirtual[%s] was excluded from spill target because of reg dependency\n",
-                       realReg->getRegisterNumber()-1, _cg->getDebug()->getName(associatedVirtual));
+               traceMsg(self()->cg(), "  Reg[@%d] associatedVirtual[%s] was excluded from spill target because of reg dependency\n",
+                       realReg->getRegisterNumber()-1, self()->cg()->getDebug()->getName(associatedVirtual));
                continue;
                }
 
@@ -4114,7 +4114,7 @@ OMR::Z::Machine::freeBestRegister(TR::Instruction * currentInstruction, TR::Regi
       {
       // todo, merge the two spills to 1 load
       // bug can't spill 2ice yet
-      _cg->traceRegisterAssignment("HW RA: freeBestReg Spill %R for fullsize reg: %R ", best->getHighWordRegister(), virtReg);
+      self()->cg()->traceRegisterAssignment("HW RA: freeBestReg Spill %R for fullsize reg: %R ", best->getHighWordRegister(), virtReg);
       self()->spillRegister(currentInstruction, best->getHighWordRegister()->getAssignedRegister());
       }
    else if (enableHighWordRA && virtReg->assignToHPR())
@@ -4144,9 +4144,9 @@ OMR::Z::Machine::freeBestRegister(TR::Instruction * currentInstruction, TR::Regi
  */
 void OMR::Z::Machine::freeRealRegister(TR::Instruction *currentInstruction, TR::RealRegister *targetReal, bool is64BitReg)
   {
-  TR::Compilation *comp = _cg->comp();
+  TR::Compilation *comp = self()->cg()->comp();
   TR::Register *virtReg=targetReal->getAssignedRegister();
-  bool enableHighWordRA = _cg->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) &&
+  bool enableHighWordRA = self()->cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) &&
                           targetReal->getKind() != TR_FPR && targetReal->getKind() != TR_VRF;
 
   if(virtReg)
@@ -4176,7 +4176,7 @@ OMR::Z::Machine::freeHighWordRegister(TR::Instruction *currentInstruction, TR::R
    TR_RegisterKinds rk = virtRegHW->getKind();
    TR::Instruction * cursor = currentInstruction;
 
-   _cg->traceRegisterAssignment(" freeHighWordRegister: %R:%R ", virtRegHW, targetRegisterHW);
+   self()->cg()->traceRegisterAssignment(" freeHighWordRegister: %R:%R ", virtRegHW, targetRegisterHW);
 
    TR_ASSERT(targetRegisterHW != NULL, "freeHighWordRegister called but targetReg HW is null?");
    TR_ASSERT(targetRegisterHW->isHighWordRegister(), "freeHighWordRegister called for non HPR?");
@@ -4184,7 +4184,7 @@ OMR::Z::Machine::freeHighWordRegister(TR::Instruction *currentInstruction, TR::R
    // if we are trying to free up the HPR that was used for a 32-bit GPR spill
    if (virtRegHW->getAssignedRegister() == NULL && targetRegisterHW->getState() == TR::RealRegister::Assigned)
       {
-      _cg->traceRegisterAssignment(" HW RA %R was spilled to %R, now need to spill again", virtRegHW, targetRegisterHW);
+      self()->cg()->traceRegisterAssignment(" HW RA %R was spilled to %R, now need to spill again", virtRegHW, targetRegisterHW);
 
       // try to find another free HPR
       spareReg = self()->findBestFreeRegister(currentInstruction, rk, virtRegHW, self()->cg()->getAvailableHPRSpillMask(), true);
@@ -4219,7 +4219,7 @@ OMR::Z::Machine::freeHighWordRegister(TR::Instruction *currentInstruction, TR::R
       TR_ASSERT(spareReg != NULL, "freeHighWordRegister: blocked, must find a spareReg");
 
       cursor = self()->registerCopy(currentInstruction, TR_HPR, targetRegisterHW, spareReg, self()->cg(), instFlags);
-      //TR_ASSERTC( spareReg->isHighWordRegister(),_cg->comp(), "\nfreeHighWordRegister: spareReg is not an HPR?\n");
+      //TR_ASSERTC( spareReg->isHighWordRegister(),self()->cg()->comp(), "\nfreeHighWordRegister: spareReg is not an HPR?\n");
       spareReg->setAssignedRegister(virtRegHW);
       spareReg->setState(TR::RealRegister::Assigned);
       virtRegHW->setAssignedRegister(spareReg);
@@ -4229,7 +4229,7 @@ OMR::Z::Machine::freeHighWordRegister(TR::Instruction *currentInstruction, TR::R
       if (spareReg)
          {
          cursor = self()->registerCopy(currentInstruction, TR_HPR, targetRegisterHW, spareReg, self()->cg(), instFlags);
-         //TR_ASSERTC( spareReg->isHighWordRegister(),_cg->comp(), "\nfreeHighWordRegister: spareReg is not an HPR?\n");
+         //TR_ASSERTC( spareReg->isHighWordRegister(),self()->cg()->comp(), "\nfreeHighWordRegister: spareReg is not an HPR?\n");
          spareReg->setAssignedRegister(virtRegHW);
          spareReg->setState(TR::RealRegister::Assigned);
          virtRegHW->setAssignedRegister(spareReg);
@@ -4257,7 +4257,7 @@ OMR::Z::Machine::freeHighWordRegister(TR::Instruction *currentInstruction, TR::R
 void
 OMR::Z::Machine::spillRegister(TR::Instruction * currentInstruction, TR::Register* virtReg, uint32_t availHighWordRegMap)
    {
-   TR::Compilation *comp = _cg->comp();
+   TR::Compilation *comp = self()->cg()->comp();
    TR::InstOpCode::Mnemonic opCode;
    bool containsInternalPointer = false;
    bool containsCollectedReg    = false;
@@ -4276,7 +4276,7 @@ OMR::Z::Machine::spillRegister(TR::Instruction * currentInstruction, TR::Registe
 
    // Highword RA flags
    // check: what if virtReg is actually a real Reg??
-   bool enableHighWordRA = _cg->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) &&
+   bool enableHighWordRA = self()->cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) &&
                            rk != TR_FPR && rk != TR_VRF;
    TR::RealRegister * freeHighWordReg = NULL;
    bool alreadySpilledToHPR = false;
@@ -4364,7 +4364,7 @@ OMR::Z::Machine::spillRegister(TR::Instruction * currentInstruction, TR::Registe
          // spill to HW
          if (alreadySpilledToHPR)
             {
-            cursor = generateExtendedHighWordInstruction(currentNode, _cg, TR::InstOpCode::LHHR, best, freeHighWordReg, 0, currentInstruction);
+            cursor = generateExtendedHighWordInstruction(currentNode, self()->cg(), TR::InstOpCode::LHHR, best, freeHighWordReg, 0, currentInstruction);
             }
          else
             {
@@ -4378,22 +4378,22 @@ OMR::Z::Machine::spillRegister(TR::Instruction * currentInstruction, TR::Registe
                // need to assert heapbase, offset = 0
                if (compressShift == 0)
                   {
-                  cursor = generateExtendedHighWordInstruction(currentNode, _cg, TR::InstOpCode::LLHFR, best, freeHighWordReg, 0, currentInstruction);
+                  cursor = generateExtendedHighWordInstruction(currentNode, self()->cg(), TR::InstOpCode::LLHFR, best, freeHighWordReg, 0, currentInstruction);
                   self()->cg()->traceRAInstruction(cursor);
-                  cursor = generateRILInstruction(_cg, TR::InstOpCode::IIHF, currentNode, best, 0, cursor);
+                  cursor = generateRILInstruction(self()->cg(), TR::InstOpCode::IIHF, currentNode, best, 0, cursor);
                   self()->cg()->traceRAInstruction(cursor);
                   }
                else
                   {
-                  cursor = generateRIEInstruction(_cg, TR::InstOpCode::RISBLG, currentNode, best, freeHighWordReg, 0, 31+0x80-compressShift, 32+compressShift, currentInstruction);
+                  cursor = generateRIEInstruction(self()->cg(), TR::InstOpCode::RISBLG, currentNode, best, freeHighWordReg, 0, 31+0x80-compressShift, 32+compressShift, currentInstruction);
                   self()->cg()->traceRAInstruction(cursor);
-                  cursor = generateRIEInstruction(_cg, TR::InstOpCode::RISBHG, currentNode, best, freeHighWordReg, 32-compressShift, 31+0x80, 32+compressShift, currentInstruction);
+                  cursor = generateRIEInstruction(self()->cg(), TR::InstOpCode::RISBHG, currentNode, best, freeHighWordReg, 32-compressShift, 31+0x80, 32+compressShift, currentInstruction);
                   self()->cg()->traceRAInstruction(cursor);
                   }
                }
             else
                {
-               cursor = generateExtendedHighWordInstruction(currentNode, _cg, TR::InstOpCode::LLHFR, best, freeHighWordReg, 0, currentInstruction);
+               cursor = generateExtendedHighWordInstruction(currentNode, self()->cg(), TR::InstOpCode::LLHFR, best, freeHighWordReg, 0, currentInstruction);
                }
             }
          if (debugHPR)
@@ -4458,12 +4458,12 @@ OMR::Z::Machine::spillRegister(TR::Instruction * currentInstruction, TR::Registe
          }
        //if we selected the VM Thread Register to be freed, check to see if the value has already been spilled
        else if (comp->getOption(TR_DisableOOL) &&
-                _cg->needsVMThreadDependency() && virtReg == _cg->getVMThreadRegister())
+                self()->cg()->needsVMThreadDependency() && virtReg == self()->cg()->getVMThreadRegister())
          {
          if (virtReg->getBackingStorage() == NULL)
            {
            traceMsg(comp, "\ns390machine: allocateVMThreadSpill called\n");
-           location = _cg->allocateVMThreadSpill();
+           location = self()->cg()->allocateVMThreadSpill();
            traceMsg(comp, "\ns390machine: allocateVMThreadSpill call completed\n");
            }
          else
@@ -4672,12 +4672,12 @@ OMR::Z::Machine::reverseSpillState(TR::Instruction      *currentInstruction,
    //This may not actually need to be reversed if
    //this is a dummy register used for OOL dependencies
 
-   _cg->traceRegisterAssignment("REVERSE SPILL STATE FOR %R", spilledRegister);
+   self()->cg()->traceRegisterAssignment("REVERSE SPILL STATE FOR %R", spilledRegister);
 
    spilledRegister->resetValueLiveOnExit();
    spilledRegister->resetPendingSpillOnDef();
 
-   bool enableHighWordRA = _cg->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) &&
+   bool enableHighWordRA = self()->cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) &&
                            rk != TR_FPR && rk != TR_VRF;
 
    if (spilledRegister->isPlaceholderReg())
@@ -4694,10 +4694,10 @@ OMR::Z::Machine::reverseSpillState(TR::Instruction      *currentInstruction,
 
    if (enableHighWordRA)
       {
-      //TR_ASSERTC( !location,_cg->comp(), "\nHW RA: reg spilled to both HW and stack??\n");
+      //TR_ASSERTC( !location,self()->cg()->comp(), "\nHW RA: reg spilled to both HW and stack??\n");
       freeHighWordReg = self()->findVirtRegInHighWordRegister(spilledRegister);
       if (freeHighWordReg)
-         _cg->traceRegisterAssignment("reverseSpillState: found GPR spilled to %R", freeHighWordReg);
+         self()->cg()->traceRegisterAssignment("reverseSpillState: found GPR spilled to %R", freeHighWordReg);
       }
 
    // no real reg is assigned to targetRegister yet
@@ -4711,7 +4711,7 @@ OMR::Z::Machine::reverseSpillState(TR::Instruction      *currentInstruction,
          }
       }
 
-   if (_cg->isOutOfLineColdPath())
+   if (self()->cg()->isOutOfLineColdPath())
       {
       // the future and total use count might not always reflect register spill state
       // for example a new register assignment in the hot path would cause FC != TC
@@ -4767,7 +4767,7 @@ OMR::Z::Machine::reverseSpillState(TR::Instruction      *currentInstruction,
    if (comp->getOption(TR_Enable390FreeVMThreadReg) && spilledRegister == self()->cg()->getVMThreadRegister())
       {
       traceMsg(comp, "\ns390machine: setVMThreadSpillInstruction\n");
-      _cg->setVMThreadSpillInstruction(currentInstruction);
+      self()->cg()->setVMThreadSpillInstruction(currentInstruction);
       }
    else
       {
@@ -4786,7 +4786,7 @@ OMR::Z::Machine::reverseSpillState(TR::Instruction      *currentInstruction,
          {
          if (targetRegister->isHighWordRegister())
             {
-            cursor = generateExtendedHighWordInstruction(currentNode, _cg, TR::InstOpCode::LHHR, freeHighWordReg, targetRegister, 0, currentInstruction);
+            cursor = generateExtendedHighWordInstruction(currentNode, self()->cg(), TR::InstOpCode::LHHR, freeHighWordReg, targetRegister, 0, currentInstruction);
             }
          else
             {
@@ -4796,16 +4796,16 @@ OMR::Z::Machine::reverseSpillState(TR::Instruction      *currentInstruction,
                // need to assert heapbase, offset = 0
                if (compressShift == 0)
                   {
-                  cursor = generateExtendedHighWordInstruction(currentNode, _cg, TR::InstOpCode::LHLR, freeHighWordReg, targetRegister, 0, currentInstruction);
+                  cursor = generateExtendedHighWordInstruction(currentNode, self()->cg(), TR::InstOpCode::LHLR, freeHighWordReg, targetRegister, 0, currentInstruction);
                   }
                else
                   {
-                  cursor = generateRIEInstruction(_cg, TR::InstOpCode::RISBHG, currentNode, freeHighWordReg, targetRegister, 0, 31+0x80, 32-compressShift, currentInstruction);
+                  cursor = generateRIEInstruction(self()->cg(), TR::InstOpCode::RISBHG, currentNode, freeHighWordReg, targetRegister, 0, 31+0x80, 32-compressShift, currentInstruction);
                   }
                }
             else
                {
-               cursor = generateExtendedHighWordInstruction(currentNode, _cg, TR::InstOpCode::LHLR, freeHighWordReg, targetRegister, 0, currentInstruction);
+               cursor = generateExtendedHighWordInstruction(currentNode, self()->cg(), TR::InstOpCode::LHLR, freeHighWordReg, targetRegister, 0, currentInstruction);
                }
             }
          if (debugObj)
@@ -5004,7 +5004,7 @@ OMR::Z::Machine::isAssignable(TR::Register * virtReg, TR::RealRegister * realReg
       }
    else
       {
-      if (_cg->supportsHighWordFacility() && !_cg->comp()->getOption(TR_DisableHighWordRA) &&
+      if (self()->cg()->supportsHighWordFacility() && !self()->cg()->comp()->getOption(TR_DisableHighWordRA) &&
           virtReg->getKind() != TR_FPR && virtReg->getKind() != TR_VRF)
          {
          if ((virtReg->is64BitReg() && realReg->getLowWordRegister()->getAssignedRegister() == realReg->getHighWordRegister()->getAssignedRegister()) ||
@@ -5047,24 +5047,24 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
    TR::Instruction * cursor = NULL;
    TR::Node * currentNode = currentInstruction->getNode();
    bool doNotRegCopy = false;
-   TR::Compilation *comp = _cg->comp();
+   TR::Compilation *comp = self()->cg()->comp();
 
    if(virtualRegister->isArGprPair())
      virtualRegister->getGPRofArGprPair()->setIsLive();
    else
      virtualRegister->setIsLive();
 
-   if (!_cg->getRAPassAR() && (rk == TR_AR || targetRegister->getKind() == TR_AR))
+   if (!self()->cg()->getRAPassAR() && (rk == TR_AR || targetRegister->getKind() == TR_AR))
       TR_ASSERT(false, "Should only process AR dependencies in AR register allocator pass");
 
-   bool enableHighWordRA = _cg->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) &&
+   bool enableHighWordRA = self()->cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) &&
                            rk != TR_FPR && rk != TR_VRF;
    uint32_t availHighWordRegMap;
    if (enableHighWordRA)
       {
       availHighWordRegMap = ~(toRealRegister(targetRegister)->getHighWordRegister()->getRealRegisterMask());
       }
-    _cg->traceRegisterAssignment("COERCE %R into %R", virtualRegister, targetRegister);
+    self()->cg()->traceRegisterAssignment("COERCE %R into %R", virtualRegister, targetRegister);
 
    // If either the virtual we are coercing or the assigned reg we are
    //
@@ -5113,11 +5113,11 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
 
       if (virtualRegister->is64BitReg())
          {
-         _cg->traceRegisterAssignment(" HW RA coerceRA: %R needs 64 bit reg ", virtualRegister);
+         self()->cg()->traceRegisterAssignment(" HW RA coerceRA: %R needs 64 bit reg ", virtualRegister);
          }
       else
          {
-         _cg->traceRegisterAssignment(" HW RA coerceRA: %R needs 32 bit reg ", virtualRegister);
+         self()->cg()->traceRegisterAssignment(" HW RA coerceRA: %R needs 32 bit reg ", virtualRegister);
          }
       }
 
@@ -5132,7 +5132,7 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
       {
       if(virtualRegister->isPlaceholderReg())
         targetRegister->setIsAssignedMoreThanOnce(); // Register is killed invalidate it for moving spill out of loop
-      _cg->traceRegisterAssignment("target %R is free", targetRegister);
+      self()->cg()->traceRegisterAssignment("target %R is free", targetRegister);
       if (enableHighWordRA && virtualRegister->is64BitReg())
          {
          if (targetRegister->isHighWordRegister() && !virtualRegister->isPlaceholderReg())
@@ -5146,8 +5146,8 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
             if (virtualRegister->getAssignedRegister() == NULL && currentHighWordReg)
                {
                // already spilled to HPR, so simply move
-               cursor = generateExtendedHighWordInstruction(currentNode, _cg, TR::InstOpCode::LHHR, currentHighWordReg, targetRegister, 0, currentInstruction);
-               _cg->traceRAInstruction(cursor);
+               cursor = generateExtendedHighWordInstruction(currentNode, self()->cg(), TR::InstOpCode::LHHR, currentHighWordReg, targetRegister, 0, currentInstruction);
+               self()->cg()->traceRAInstruction(cursor);
 
                //fix up states
                currentHighWordReg->setAssignedRegister(NULL);
@@ -5163,19 +5163,19 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
                      // the virtual register is currently spilled to stack, now we need to spill it onto HPR
                      // load it back from the stack into HPR with STFH
                      // since we are working with compressed refs shift = 0, simply load 32-bit value into HPR.
-                     TR::MemoryReference * tempMR = generateS390MemoryReference(currentNode, virtualRegister->getBackingStorage()->getSymbolReference(), _cg);
+                     TR::MemoryReference * tempMR = generateS390MemoryReference(currentNode, virtualRegister->getBackingStorage()->getSymbolReference(), self()->cg());
 
                      // is the offset correct?  +4 big endian?
-                     TR::MemoryReference * mr = generateS390MemoryReference(*tempMR, 4, _cg);
+                     TR::MemoryReference * mr = generateS390MemoryReference(*tempMR, 4, self()->cg());
 
                      cursor = generateSILInstruction(self()->cg(), TR::InstOpCode::MVHI, currentNode, tempMR, 0, currentInstruction);
-                     _cg->traceRAInstruction(cursor);
+                     self()->cg()->traceRAInstruction(cursor);
                      cursor = generateRXInstruction(self()->cg(), TR::InstOpCode::STFH, currentNode, targetRegister, mr, cursor);
-                     _cg->traceRAInstruction(cursor);
+                     self()->cg()->traceRAInstruction(cursor);
 
                      // fix up states
                      // don't need to worry about protecting backing storage because we are leaving cold path OOL now
-                     _cg->freeSpill(virtualRegister->getBackingStorage(), 8, 0);
+                     self()->cg()->freeSpill(virtualRegister->getBackingStorage(), 8, 0);
                      virtualRegister->setBackingStorage(NULL);
                      virtualRegister->setSpilledToHPR(true);
                      }
@@ -5189,10 +5189,10 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
                   // the virtual register is currently assigned to a 64 bit real reg
                   // simply spill it to HPR and decompress
                   TR_ASSERT(currentAssignedRegister->isLowWordRegister(), " OOL HPR spill: 64-bit reg assigned to HPR and is not spilled to HPR");
-                  cursor = generateExtendedHighWordInstruction(currentNode, _cg, TR::InstOpCode::LLHFR, currentAssignedRegister, targetRegister, 0, currentInstruction);
-                  _cg->traceRAInstruction(cursor);
-                  cursor = generateRILInstruction(_cg, TR::InstOpCode::IIHF, currentNode, currentAssignedRegister, 0, cursor);
-                  _cg->traceRAInstruction(cursor);
+                  cursor = generateExtendedHighWordInstruction(currentNode, self()->cg(), TR::InstOpCode::LLHFR, currentAssignedRegister, targetRegister, 0, currentInstruction);
+                  self()->cg()->traceRAInstruction(cursor);
+                  cursor = generateRILInstruction(self()->cg(), TR::InstOpCode::IIHF, currentNode, currentAssignedRegister, 0, cursor);
+                  self()->cg()->traceRAInstruction(cursor);
 
                   // fix up states
                   currentAssignedRegister->setAssignedRegister(NULL);
@@ -5226,14 +5226,14 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
          // get the value of virtual register back from spill state if not first use
          if (virtualRegister->getTotalUseCount() != virtualRegister->getFutureUseCount())
             {
-            _cg->setRegisterAssignmentFlag(TR_RegisterReloaded);
+            self()->cg()->setRegisterAssignmentFlag(TR_RegisterReloaded);
             self()->reverseSpillState(currentInstruction, virtualRegister, targetRegister);
             }
          else
             {
             if (!comp->getOption(TR_DisableOOL) && self()->cg()->isOutOfLineColdPath())
                {
-               _cg->getFirstTimeLiveOOLRegisterList()->push_front(virtualRegister);
+               self()->cg()->getFirstTimeLiveOOLRegisterList()->push_front(virtualRegister);
                }
             }
          }
@@ -5258,7 +5258,7 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
    else if (targetRegister->getState() == TR::RealRegister::Blocked)
       {
       currentTargetVirtual = targetRegister->getAssignedRegister();
-      _cg->traceRegisterAssignment("target %R is blocked, assigned to %R", targetRegister, currentTargetVirtual);
+      self()->cg()->traceRegisterAssignment("target %R is blocked, assigned to %R", targetRegister, currentTargetVirtual);
 
       if (enableHighWordRA && currentTargetVirtual)
          {
@@ -5281,12 +5281,12 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
          spareReg = self()->findBestFreeRegister(currentInstruction, rk, currentTargetVirtual, availHighWordRegMap);
       else
          spareReg = self()->findBestFreeRegister(currentInstruction, rk, currentTargetVirtual);
-      _cg->setRegisterAssignmentFlag(TR_IndirectCoercion);
+      self()->cg()->setRegisterAssignmentFlag(TR_IndirectCoercion);
 
       // We may need spare reg no matter what
       if ( spareReg == NULL )
          {
-         _cg->setRegisterAssignmentFlag(TR_RegisterSpilled);
+         self()->cg()->setRegisterAssignmentFlag(TR_RegisterSpilled);
          virtualRegister->block();
          currentTargetVirtual->block();
 
@@ -5321,7 +5321,7 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
             if (targetRegisterHW->getAssignedRegister() &&
                 targetRegisterHW->getAssignedRegister() != targetRegister->getAssignedRegister())
                {
-               //TR_ASSERTC( currentTargetVirtual->isLowWordOnly(),_cg->comp(), "currentTargetVirtual is not LWOnly but HW is clobbered by another vreg?");
+               //TR_ASSERTC( currentTargetVirtual->isLowWordOnly(),self()->cg()->comp(), "currentTargetVirtual is not LWOnly but HW is clobbered by another vreg?");
                virtualRegister->block();
                currentTargetVirtual->block();
                spareReg->block(); //to do: is this necessary? only need to block HPR?
@@ -5402,7 +5402,7 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
             else
                {
                TR_ASSERT(spareReg!=NULL, "coerce reg - blocked, sparereg cannot be NULL.");
-               _cg->traceRegAssigned(currentTargetVirtual, spareReg);
+               self()->cg()->traceRegAssigned(currentTargetVirtual, spareReg);
 
                cursor = self()->registerCopy(currentInstruction, currentTargetVirtualRK, targetRegister, spareReg, self()->cg(), instFlags);
                cursor = self()->registerCopy(currentInstruction, currentAssignedRegisterRK, currentAssignedRegister, targetRegister, self()->cg(), instFlags);
@@ -5432,7 +5432,7 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
             }
          else
             {
-            _cg->traceRegAssigned(currentTargetVirtual, currentAssignedRegister);
+            self()->cg()->traceRegAssigned(currentTargetVirtual, currentAssignedRegister);
             if (enableHighWordRA)
                {
                cursor = self()->registerExchange(currentInstruction, currentAssignedRegisterRK, targetRegister, currentAssignedRegister, spareReg, self()->cg(), instFlags);
@@ -5455,7 +5455,7 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
          }
       else
          {
-         _cg->traceRegAssigned(currentTargetVirtual, spareReg);
+         self()->cg()->traceRegAssigned(currentTargetVirtual, spareReg);
 
          // virtual register is not assigned yet, copy register
          cursor = self()->registerCopy(currentInstruction, currentTargetVirtualRK, targetRegister, spareReg, self()->cg(), instFlags);
@@ -5478,14 +5478,14 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
             }
          if (virtualRegister->getTotalUseCount() != virtualRegister->getFutureUseCount())
             {
-            _cg->setRegisterAssignmentFlag(TR_RegisterReloaded);
+            self()->cg()->setRegisterAssignmentFlag(TR_RegisterReloaded);
             self()->reverseSpillState(currentInstruction, virtualRegister, targetRegister);
             }
          else
             {
             if (!comp->getOption(TR_DisableOOL) && self()->cg()->isOutOfLineColdPath())
                {
-               _cg->getFirstTimeLiveOOLRegisterList()->push_front(virtualRegister);
+               self()->cg()->getFirstTimeLiveOOLRegisterList()->push_front(virtualRegister);
                }
             }
          // spareReg is assigned.
@@ -5496,7 +5496,7 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
       {
       //  Since target is assigned, it must have a virtReg associated to it
       currentTargetVirtual = targetRegister->getAssignedRegister();
-      _cg->traceRegisterAssignment("target %R is assigned, assigned to %R", targetRegister, currentTargetVirtual);
+      self()->cg()->traceRegisterAssignment("target %R is assigned, assigned to %R", targetRegister, currentTargetVirtual);
 
       if (enableHighWordRA && currentTargetVirtual)
          {
@@ -5504,8 +5504,8 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
          if (currentTargetVirtual == virtualRegister)
             {
             virtualRegister->setAssignedRegister(targetRegister);
-            _cg->traceRegAssigned(virtualRegister, targetRegister);
-            _cg->clearRegisterAssignmentFlags();
+            self()->cg()->traceRegAssigned(virtualRegister, targetRegister);
+            self()->cg()->clearRegisterAssignmentFlags();
             return cursor;
             }
          if (targetRegister->isHighWordRegister() &&
@@ -5527,7 +5527,7 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
           currentTargetVirtual->getAssignedRegister() == NULL &&
           targetRegister->isHighWordRegister())
          {
-         _cg->traceRegisterAssignment(" HW RA %R was spilled to %R, now need to spill again", currentTargetVirtual, targetRegister);
+         self()->cg()->traceRegisterAssignment(" HW RA %R was spilled to %R, now need to spill again", currentTargetVirtual, targetRegister);
 
          // free this spill slot up first
          // block virtual reg?
@@ -5544,8 +5544,8 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
             if (virtualRegister->getAssignedRegister() == NULL && currentHighWordReg)
                {
                // already spilled to HPR, so simply move
-               cursor = generateExtendedHighWordInstruction(currentNode, _cg, TR::InstOpCode::LHHR, currentHighWordReg, targetRegister, 0, currentInstruction);
-               _cg->traceRAInstruction(cursor);
+               cursor = generateExtendedHighWordInstruction(currentNode, self()->cg(), TR::InstOpCode::LHHR, currentHighWordReg, targetRegister, 0, currentInstruction);
+               self()->cg()->traceRAInstruction(cursor);
 
                //fix up states
                currentHighWordReg->setAssignedRegister(NULL);
@@ -5561,19 +5561,19 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
                      // the virtual register is currently spilled to stack, now we need to spill it onto HPR
                      // load it back from the stack into HPR with STFH
                      // since we are working with compressed refs shift = 0, simply load 32-bit value into HPR.
-                     TR::MemoryReference * tempMR = generateS390MemoryReference(currentNode, virtualRegister->getBackingStorage()->getSymbolReference(), _cg);
+                     TR::MemoryReference * tempMR = generateS390MemoryReference(currentNode, virtualRegister->getBackingStorage()->getSymbolReference(), self()->cg());
 
                      // is the offset correct?  +4 big endian?
-                     TR::MemoryReference * mr = generateS390MemoryReference(*tempMR, 4, _cg);
+                     TR::MemoryReference * mr = generateS390MemoryReference(*tempMR, 4, self()->cg());
 
                      cursor = generateSILInstruction(self()->cg(), TR::InstOpCode::MVHI, currentNode, tempMR, 0, currentInstruction);
-                     _cg->traceRAInstruction(cursor);
+                     self()->cg()->traceRAInstruction(cursor);
                      cursor = generateRXInstruction(self()->cg(), TR::InstOpCode::STFH, currentNode, targetRegister, mr, cursor);
-                     _cg->traceRAInstruction(cursor);
+                     self()->cg()->traceRAInstruction(cursor);
 
                      // fix up states
                      // don't need to worry about protecting backing storage because we are leaving cold path OOL now
-                     _cg->freeSpill(virtualRegister->getBackingStorage(), 8, 0);
+                     self()->cg()->freeSpill(virtualRegister->getBackingStorage(), 8, 0);
                      virtualRegister->setBackingStorage(NULL);
                      virtualRegister->setSpilledToHPR(true);
                      }
@@ -5587,10 +5587,10 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
                   // the virtual register is currently assigned to a 64 bit real reg
                   // simply spill it to HPR and decompress
                   TR_ASSERT(currentAssignedRegister->isLowWordRegister(), " OOL HPR spill: 64-bit reg assigned to HPR and is not spilled to HPR");
-                  cursor = generateExtendedHighWordInstruction(currentNode, _cg, TR::InstOpCode::LLHFR, currentAssignedRegister, targetRegister, 0, currentInstruction);
-                  _cg->traceRAInstruction(cursor);
-                  cursor = generateRILInstruction(_cg, TR::InstOpCode::IIHF, currentNode, currentAssignedRegister, 0, cursor);
-                  _cg->traceRAInstruction(cursor);
+                  cursor = generateExtendedHighWordInstruction(currentNode, self()->cg(), TR::InstOpCode::LLHFR, currentAssignedRegister, targetRegister, 0, currentInstruction);
+                  self()->cg()->traceRAInstruction(cursor);
+                  cursor = generateRILInstruction(self()->cg(), TR::InstOpCode::IIHF, currentNode, currentAssignedRegister, 0, cursor);
+                  self()->cg()->traceRAInstruction(cursor);
 
                   // fix up states
                   currentAssignedRegister->setAssignedRegister(NULL);
@@ -5615,8 +5615,8 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
                if (currentHighWordReg)
                   {
                   // if it is spilled to HPR, simply move it
-                  cursor = generateExtendedHighWordInstruction(currentNode, _cg, TR::InstOpCode::LHHR, currentHighWordReg, targetRegister, 0, currentInstruction);
-                  _cg->traceRAInstruction(cursor);
+                  cursor = generateExtendedHighWordInstruction(currentNode, self()->cg(), TR::InstOpCode::LHHR, currentHighWordReg, targetRegister, 0, currentInstruction);
+                  self()->cg()->traceRAInstruction(cursor);
 
                   //fix up states
                   currentHighWordReg->setState(TR::RealRegister::Free);
@@ -5627,18 +5627,18 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
                   {
                   // if it is spilled to stack, load it back into HPR
                   TR_ASSERT(virtualRegister->getBackingStorage(), " OOL HPR spill: virtual reg is not spilled to stack nor HPR");
-                  TR::MemoryReference * tempMR = generateS390MemoryReference(currentNode, virtualRegister->getBackingStorage()->getSymbolReference(), _cg);
+                  TR::MemoryReference * tempMR = generateS390MemoryReference(currentNode, virtualRegister->getBackingStorage()->getSymbolReference(), self()->cg());
 
                   TR::MemoryReference * mr = generateS390MemoryReference(*tempMR, 4, self()->cg());
 
                   cursor = generateSILInstruction(self()->cg(), TR::InstOpCode::MVHI, currentNode, tempMR, 0, currentInstruction);
-                  _cg->traceRAInstruction(cursor);
+                  self()->cg()->traceRAInstruction(cursor);
                   cursor = generateRXInstruction(self()->cg(), TR::InstOpCode::STFH, currentNode, targetRegister, mr, cursor);
-                  _cg->traceRAInstruction(cursor);
+                  self()->cg()->traceRAInstruction(cursor);
 
                   // fix up states
                   // don't need to worry about protecting backing storage because we are leaving cold path OOL now
-                  _cg->freeSpill(virtualRegister->getBackingStorage(), 8, 0);
+                  self()->cg()->freeSpill(virtualRegister->getBackingStorage(), 8, 0);
                   virtualRegister->setBackingStorage(NULL);
                   virtualRegister->setSpilledToHPR(true);
                   }
@@ -5669,7 +5669,7 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
             // Look for a free reg in case we need a spare.
             spareReg = self()->findBestFreeRegister(currentInstruction, rk, currentTargetVirtual);
          }
-      _cg->setRegisterAssignmentFlag(TR_IndirectCoercion);
+      self()->cg()->setRegisterAssignmentFlag(TR_IndirectCoercion);
 
       // If the source register is already assigned a realReg, we will try and
       // keep both source and target in real regs by:
@@ -5691,7 +5691,7 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
             //   2. freeBestReg found a better choice to be spilled
             if (spareReg == NULL)
                {
-               _cg->setRegisterAssignmentFlag(TR_RegisterSpilled);
+               self()->cg()->setRegisterAssignmentFlag(TR_RegisterSpilled);
 
                //  The current source reg's assignment is automatically blocked out
                virtualRegister->block();
@@ -5737,7 +5737,7 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
                   if (targetRegisterHW->getAssignedRegister() &&
                       targetRegisterHW->getAssignedRegister() != targetRegister->getAssignedRegister())
                      {
-                     //TR_ASSERTC( currentTargetVirtual->isLowWordOnly(),_cg->comp(), "currentTargetVirtual is not LWOnly but HW is clobbered by another vreg?");
+                     //TR_ASSERTC( currentTargetVirtual->isLowWordOnly(),self()->cg()->comp(), "currentTargetVirtual is not LWOnly but HW is clobbered by another vreg?");
                      virtualRegister->block();
                      currentTargetVirtual->block();
                      spareReg->block(); //to do: is this necessary? only need to block HPR?
@@ -5754,7 +5754,7 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
             // to the spareReg, and move the source reg to the target.
             if (targetRegister->getRegisterNumber() != spareReg->getRegisterNumber() && !doNotRegCopy)
                {
-               _cg->traceRegAssigned(currentTargetVirtual, spareReg);
+               self()->cg()->traceRegAssigned(currentTargetVirtual, spareReg);
 
                cursor = self()->registerCopy(currentInstruction, currentTargetVirtualRK, targetRegister, spareReg, self()->cg(), instFlags);
                if (enableHighWordRA && currentTargetVirtual->is64BitReg())
@@ -5800,8 +5800,8 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
                {
                self()->spillRegister(currentInstruction, currentTargetVirtual);
 
-               _cg->traceRegAssigned(currentTargetVirtual, currentAssignedRegister);
-               _cg->setRegisterAssignmentFlag(TR_RegisterSpilled);
+               self()->cg()->traceRegAssigned(currentTargetVirtual, currentAssignedRegister);
+               self()->cg()->setRegisterAssignmentFlag(TR_RegisterSpilled);
 
                cursor = self()->registerCopy(currentInstruction, rk, currentAssignedRegister, targetRegister, self()->cg(), instFlags);
                currentAssignedRegister->setState(TR::RealRegister::Unlatched);
@@ -5874,7 +5874,7 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
             // The worst case situation is that only the target is left to spill.
             if (spareReg == NULL)
                {
-               _cg->setRegisterAssignmentFlag(TR_RegisterSpilled);
+               self()->cg()->setRegisterAssignmentFlag(TR_RegisterSpilled);
 
                virtualRegister->block();
                if (enableHighWordRA && virtualRegister->is64BitReg())
@@ -5918,7 +5918,7 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
                   if (targetRegisterHW->getAssignedRegister() &&
                       targetRegisterHW->getAssignedRegister() != targetRegister->getAssignedRegister())
                      {
-                     //TR_ASSERTC( currentTargetVirtual->isLowWordOnly(),_cg->comp(), "currentTargetVirtual is not LWOnly but HW is clobbered by another vreg?");
+                     //TR_ASSERTC( currentTargetVirtual->isLowWordOnly(),self()->cg()->comp(), "currentTargetVirtual is not LWOnly but HW is clobbered by another vreg?");
                      virtualRegister->block();
                      currentTargetVirtual->block();
                      spareReg->block(); //to do: is this necessary? only need to block HPR?
@@ -5935,8 +5935,8 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
             //  to free up the target.
             if (targetRegister->getRegisterNumber() != spareReg->getRegisterNumber() && !doNotRegCopy)
                {
-               _cg->resetRegisterAssignmentFlag(TR_RegisterSpilled);
-               _cg->traceRegAssigned(currentTargetVirtual, spareReg);
+               self()->cg()->resetRegisterAssignmentFlag(TR_RegisterSpilled);
+               self()->cg()->traceRegAssigned(currentTargetVirtual, spareReg);
 
                cursor = self()->registerCopy(currentInstruction, currentTargetVirtualRK, targetRegister, spareReg, self()->cg(), instFlags);
                spareReg->setState(TR::RealRegister::Assigned);
@@ -5958,20 +5958,20 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
             //  Draw the source reg back out of SPILL state
             if (virtualRegister->getTotalUseCount() != virtualRegister->getFutureUseCount())
                {
-               _cg->setRegisterAssignmentFlag(TR_RegisterReloaded);
+               self()->cg()->setRegisterAssignmentFlag(TR_RegisterReloaded);
                self()->reverseSpillState(currentInstruction, virtualRegister, targetRegister);
                }
             else
                {
                if (!comp->getOption(TR_DisableOOL) && self()->cg()->isOutOfLineColdPath())
                   {
-                  _cg->getFirstTimeLiveOOLRegisterList()->push_front(virtualRegister);
+                  self()->cg()->getFirstTimeLiveOOLRegisterList()->push_front(virtualRegister);
                   }
                }
             }
          }
 
-      _cg->resetRegisterAssignmentFlag(TR_IndirectCoercion);
+      self()->cg()->resetRegisterAssignmentFlag(TR_IndirectCoercion);
       }
 
    //  We will allow Locked regs to be pointed to, but do not allow
@@ -5988,10 +5988,10 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
    else
       {
       traceMsg(comp, "    WARNING: Assigning a Locked register %s to %s\n",
-                                         getRegisterName(targetRegister,_cg),
-                                         getRegisterName(virtualRegister,_cg));
+                                         getRegisterName(targetRegister,self()->cg()),
+                                         getRegisterName(virtualRegister,self()->cg()));
       traceMsg(comp, "             This assignment is equivalent to using a hard coded real register.\n");
-      if (_cg->getRAPassAR() && virtualRegister->getAssignedRegister() && virtualRegister->getAssignedRegister() != targetRegister)
+      if (self()->cg()->getRAPassAR() && virtualRegister->getAssignedRegister() && virtualRegister->getAssignedRegister() != targetRegister)
          TR_ASSERT(false, "shouldn't re-assign to a locked register\n");
 
 
@@ -6001,14 +6001,14 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
          // get the value of virtual register back from spill state if not first use
          if (virtualRegister->getTotalUseCount() != virtualRegister->getFutureUseCount())
             {
-            _cg->setRegisterAssignmentFlag(TR_RegisterReloaded);
+            self()->cg()->setRegisterAssignmentFlag(TR_RegisterReloaded);
             self()->reverseSpillState(currentInstruction, virtualRegister, targetRegister);
             }
          else
             {
             if (!comp->getOption(TR_DisableOOL) && self()->cg()->isOutOfLineColdPath())
                {
-               _cg->getFirstTimeLiveOOLRegisterList()->push_front(virtualRegister);
+               self()->cg()->getFirstTimeLiveOOLRegisterList()->push_front(virtualRegister);
                }
             }
          }
@@ -6034,13 +6034,13 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
       	 // the AR check is to avoid false errors for biit call
       	 // like "LAM(R1,R1,...)" and needs to be re-visited
 
-      	 if (!_cg->getRAPassAR() &&
+      	 if (!self()->cg()->getRAPassAR() &&
       	 	   targetRegister->getAssignedRegister() != NULL &&
       	 	   targetRegister->getAssignedRegister() != targetRegister)
       	 	   {
       	     TR::Register * toFreeRegister = targetRegister->getAssignedRegister();
              // register is locked but assigned to a VR, need to re-assign VR to another reg via reg copy or spill it
-             _cg->traceRegisterAssignment(" Freeing locked register %R ", targetRegister);
+             self()->cg()->traceRegisterAssignment(" Freeing locked register %R ", targetRegister);
              uint64_t availRegMask = 0xffffffff;
              if (toFreeRegister->isUsedInMemRef())
                 {
@@ -6052,7 +6052,7 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
                 {
                 bestRegister = self()->freeBestRegister(currentInstruction, toFreeRegister, toFreeRegister->getKind(), availRegMask);
                 }
-             self()->registerCopy(currentInstruction, toFreeRegister->getKind(), toRealRegister(targetRegister), bestRegister, _cg, 0);
+             self()->registerCopy(currentInstruction, toFreeRegister->getKind(), toRealRegister(targetRegister), bestRegister, self()->cg(), 0);
              toFreeRegister->setAssignedRegister(bestRegister);
              bestRegister->setAssignedRegister(toFreeRegister);
              bestRegister->setState(TR::RealRegister::Assigned);
@@ -6068,9 +6068,9 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
       targetRegisterHW->setAssignedRegister(virtualRegister);
       targetRegisterHW->setState(TR::RealRegister::Assigned);
       }
-   _cg->traceRegAssigned(virtualRegister, targetRegister);
+   self()->cg()->traceRegAssigned(virtualRegister, targetRegister);
 
-   _cg->clearRegisterAssignmentFlags();
+   self()->cg()->clearRegisterAssignmentFlags();
    return cursor;
    }
 
@@ -6078,7 +6078,7 @@ uint64_t OMR::Z::Machine::filterColouredRegisterConflicts(TR::Register *targetRe
                                                              TR::Instruction *currInst)
   {
   uint64_t mask=0xffffffff;
-  TR::Compilation *comp = _cg->comp();
+  TR::Compilation *comp = self()->cg()->comp();
   TR::list<TR::Register *> conflictRegs(getTypedAllocator<TR::Register*>(comp->allocator()));
 
   if(currInst->defsAnyRegister(targetRegister))
@@ -6126,53 +6126,53 @@ OMR::Z::Machine::initialiseRegisterFile()
    _registerFile[TR::RealRegister::NoReg] = NULL;
    _registerFile[TR::RealRegister::SpilledReg] = NULL;
 
-   _registerFile[TR::RealRegister::GPR0] = new (_cg->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
-                                                     TR::RealRegister::GPR0, TR::RealRegister::GPR0Mask, _cg);
+   _registerFile[TR::RealRegister::GPR0] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
+                                                     TR::RealRegister::GPR0, TR::RealRegister::GPR0Mask, self()->cg());
 
-   _registerFile[TR::RealRegister::GPR1] = new (_cg->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
-                                                     TR::RealRegister::GPR1, TR::RealRegister::GPR1Mask, _cg);
+   _registerFile[TR::RealRegister::GPR1] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
+                                                     TR::RealRegister::GPR1, TR::RealRegister::GPR1Mask, self()->cg());
 
-   _registerFile[TR::RealRegister::GPR2] = new (_cg->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
-                                                     TR::RealRegister::GPR2, TR::RealRegister::GPR2Mask, _cg);
+   _registerFile[TR::RealRegister::GPR2] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
+                                                     TR::RealRegister::GPR2, TR::RealRegister::GPR2Mask, self()->cg());
 
-   _registerFile[TR::RealRegister::GPR3] = new (_cg->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
-                                                     TR::RealRegister::GPR3, TR::RealRegister::GPR3Mask, _cg);
+   _registerFile[TR::RealRegister::GPR3] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
+                                                     TR::RealRegister::GPR3, TR::RealRegister::GPR3Mask, self()->cg());
 
-   _registerFile[TR::RealRegister::GPR4] = new (_cg->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
-                                                     TR::RealRegister::GPR4, TR::RealRegister::GPR4Mask, _cg);
+   _registerFile[TR::RealRegister::GPR4] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
+                                                     TR::RealRegister::GPR4, TR::RealRegister::GPR4Mask, self()->cg());
 
-   _registerFile[TR::RealRegister::GPR5] = new (_cg->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
-                                                     TR::RealRegister::GPR5, TR::RealRegister::GPR5Mask, _cg);
+   _registerFile[TR::RealRegister::GPR5] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
+                                                     TR::RealRegister::GPR5, TR::RealRegister::GPR5Mask, self()->cg());
 
-   _registerFile[TR::RealRegister::GPR6] = new (_cg->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
-                                                     TR::RealRegister::GPR6, TR::RealRegister::GPR6Mask, _cg);
+   _registerFile[TR::RealRegister::GPR6] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
+                                                     TR::RealRegister::GPR6, TR::RealRegister::GPR6Mask, self()->cg());
 
-   _registerFile[TR::RealRegister::GPR7] = new (_cg->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
-                                                     TR::RealRegister::GPR7, TR::RealRegister::GPR7Mask, _cg);
+   _registerFile[TR::RealRegister::GPR7] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
+                                                     TR::RealRegister::GPR7, TR::RealRegister::GPR7Mask, self()->cg());
 
-   _registerFile[TR::RealRegister::GPR8] = new (_cg->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
-                                                     TR::RealRegister::GPR8, TR::RealRegister::GPR8Mask, _cg);
+   _registerFile[TR::RealRegister::GPR8] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
+                                                     TR::RealRegister::GPR8, TR::RealRegister::GPR8Mask, self()->cg());
 
-   _registerFile[TR::RealRegister::GPR9] = new (_cg->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
-                                                     TR::RealRegister::GPR9, TR::RealRegister::GPR9Mask, _cg);
+   _registerFile[TR::RealRegister::GPR9] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
+                                                     TR::RealRegister::GPR9, TR::RealRegister::GPR9Mask, self()->cg());
 
-   _registerFile[TR::RealRegister::GPR10] = new (_cg->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
-                                                      TR::RealRegister::GPR10, TR::RealRegister::GPR10Mask, _cg);
+   _registerFile[TR::RealRegister::GPR10] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
+                                                      TR::RealRegister::GPR10, TR::RealRegister::GPR10Mask, self()->cg());
 
-   _registerFile[TR::RealRegister::GPR11] = new (_cg->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
-                                                      TR::RealRegister::GPR11, TR::RealRegister::GPR11Mask, _cg);
+   _registerFile[TR::RealRegister::GPR11] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
+                                                      TR::RealRegister::GPR11, TR::RealRegister::GPR11Mask, self()->cg());
 
-   _registerFile[TR::RealRegister::GPR12] = new (_cg->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
-                                                      TR::RealRegister::GPR12, TR::RealRegister::GPR12Mask, _cg);
+   _registerFile[TR::RealRegister::GPR12] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
+                                                      TR::RealRegister::GPR12, TR::RealRegister::GPR12Mask, self()->cg());
 
-   _registerFile[TR::RealRegister::GPR13] = new (_cg->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
-                                                      TR::RealRegister::GPR13, TR::RealRegister::GPR13Mask, _cg);
+   _registerFile[TR::RealRegister::GPR13] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
+                                                      TR::RealRegister::GPR13, TR::RealRegister::GPR13Mask, self()->cg());
 
-   _registerFile[TR::RealRegister::GPR14] = new (_cg->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
-                                                      TR::RealRegister::GPR14, TR::RealRegister::GPR14Mask, _cg);
+   _registerFile[TR::RealRegister::GPR14] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
+                                                      TR::RealRegister::GPR14, TR::RealRegister::GPR14Mask, self()->cg());
 
-   _registerFile[TR::RealRegister::GPR15] = new (_cg->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
-                                                      TR::RealRegister::GPR15, TR::RealRegister::GPR15Mask, _cg);
+   _registerFile[TR::RealRegister::GPR15] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
+                                                      TR::RealRegister::GPR15, TR::RealRegister::GPR15Mask, self()->cg());
 
    _registerFile[TR::RealRegister::GPR0]->setSiblingRegister(_registerFile[TR::RealRegister::GPR1]);
    _registerFile[TR::RealRegister::GPR1]->setSiblingRegister(_registerFile[TR::RealRegister::GPR0]);
@@ -6193,151 +6193,151 @@ OMR::Z::Machine::initialiseRegisterFile()
 
    // Initialize FPRs
 
-   _registerFile[TR::RealRegister::FPR0] = new (_cg->trHeapMemory()) TR::RealRegister(TR_FPR, 0, TR::RealRegister::Free,
-                                                     TR::RealRegister::FPR0, TR::RealRegister::FPR0Mask, _cg);
+   _registerFile[TR::RealRegister::FPR0] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_FPR, 0, TR::RealRegister::Free,
+                                                     TR::RealRegister::FPR0, TR::RealRegister::FPR0Mask, self()->cg());
 
-   _registerFile[TR::RealRegister::FPR1] = new (_cg->trHeapMemory()) TR::RealRegister(TR_FPR, 0, TR::RealRegister::Free,
-                                                     TR::RealRegister::FPR1, TR::RealRegister::FPR1Mask, _cg);
+   _registerFile[TR::RealRegister::FPR1] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_FPR, 0, TR::RealRegister::Free,
+                                                     TR::RealRegister::FPR1, TR::RealRegister::FPR1Mask, self()->cg());
 
-   _registerFile[TR::RealRegister::FPR2] = new (_cg->trHeapMemory()) TR::RealRegister(TR_FPR, 0, TR::RealRegister::Free,
-                                                     TR::RealRegister::FPR2, TR::RealRegister::FPR2Mask, _cg);
+   _registerFile[TR::RealRegister::FPR2] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_FPR, 0, TR::RealRegister::Free,
+                                                     TR::RealRegister::FPR2, TR::RealRegister::FPR2Mask, self()->cg());
 
-   _registerFile[TR::RealRegister::FPR3] = new (_cg->trHeapMemory()) TR::RealRegister(TR_FPR, 0, TR::RealRegister::Free,
-                                                     TR::RealRegister::FPR3, TR::RealRegister::FPR3Mask, _cg);
+   _registerFile[TR::RealRegister::FPR3] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_FPR, 0, TR::RealRegister::Free,
+                                                     TR::RealRegister::FPR3, TR::RealRegister::FPR3Mask, self()->cg());
 
-   _registerFile[TR::RealRegister::FPR4] = new (_cg->trHeapMemory()) TR::RealRegister(TR_FPR, 0, TR::RealRegister::Free,
-                                                     TR::RealRegister::FPR4, TR::RealRegister::FPR4Mask, _cg);
+   _registerFile[TR::RealRegister::FPR4] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_FPR, 0, TR::RealRegister::Free,
+                                                     TR::RealRegister::FPR4, TR::RealRegister::FPR4Mask, self()->cg());
 
-   _registerFile[TR::RealRegister::FPR5] = new (_cg->trHeapMemory()) TR::RealRegister(TR_FPR, 0, TR::RealRegister::Free,
-                                                     TR::RealRegister::FPR5, TR::RealRegister::FPR5Mask, _cg);
+   _registerFile[TR::RealRegister::FPR5] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_FPR, 0, TR::RealRegister::Free,
+                                                     TR::RealRegister::FPR5, TR::RealRegister::FPR5Mask, self()->cg());
 
-   _registerFile[TR::RealRegister::FPR6] = new (_cg->trHeapMemory()) TR::RealRegister(TR_FPR, 0, TR::RealRegister::Free,
-                                                     TR::RealRegister::FPR6, TR::RealRegister::FPR6Mask, _cg);
+   _registerFile[TR::RealRegister::FPR6] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_FPR, 0, TR::RealRegister::Free,
+                                                     TR::RealRegister::FPR6, TR::RealRegister::FPR6Mask, self()->cg());
 
-   _registerFile[TR::RealRegister::FPR7] = new (_cg->trHeapMemory()) TR::RealRegister(TR_FPR, 0, TR::RealRegister::Free,
-                                                     TR::RealRegister::FPR7, TR::RealRegister::FPR7Mask, _cg);
+   _registerFile[TR::RealRegister::FPR7] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_FPR, 0, TR::RealRegister::Free,
+                                                     TR::RealRegister::FPR7, TR::RealRegister::FPR7Mask, self()->cg());
 
-   _registerFile[TR::RealRegister::FPR8] = new (_cg->trHeapMemory()) TR::RealRegister(TR_FPR, 0, TR::RealRegister::Free,
-                                                     TR::RealRegister::FPR8, TR::RealRegister::FPR8Mask, _cg);
+   _registerFile[TR::RealRegister::FPR8] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_FPR, 0, TR::RealRegister::Free,
+                                                     TR::RealRegister::FPR8, TR::RealRegister::FPR8Mask, self()->cg());
 
-   _registerFile[TR::RealRegister::FPR9] = new (_cg->trHeapMemory()) TR::RealRegister(TR_FPR, 0, TR::RealRegister::Free,
-                                                     TR::RealRegister::FPR9, TR::RealRegister::FPR9Mask, _cg);
+   _registerFile[TR::RealRegister::FPR9] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_FPR, 0, TR::RealRegister::Free,
+                                                     TR::RealRegister::FPR9, TR::RealRegister::FPR9Mask, self()->cg());
 
-   _registerFile[TR::RealRegister::FPR10] = new (_cg->trHeapMemory()) TR::RealRegister(TR_FPR, 0, TR::RealRegister::Free,
-                                                      TR::RealRegister::FPR10, TR::RealRegister::FPR10Mask, _cg);
+   _registerFile[TR::RealRegister::FPR10] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_FPR, 0, TR::RealRegister::Free,
+                                                      TR::RealRegister::FPR10, TR::RealRegister::FPR10Mask, self()->cg());
 
-   _registerFile[TR::RealRegister::FPR11] = new (_cg->trHeapMemory()) TR::RealRegister(TR_FPR, 0, TR::RealRegister::Free,
-                                                      TR::RealRegister::FPR11, TR::RealRegister::FPR11Mask, _cg);
+   _registerFile[TR::RealRegister::FPR11] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_FPR, 0, TR::RealRegister::Free,
+                                                      TR::RealRegister::FPR11, TR::RealRegister::FPR11Mask, self()->cg());
 
-   _registerFile[TR::RealRegister::FPR12] = new (_cg->trHeapMemory()) TR::RealRegister(TR_FPR, 0, TR::RealRegister::Free,
-                                                      TR::RealRegister::FPR12, TR::RealRegister::FPR12Mask, _cg);
+   _registerFile[TR::RealRegister::FPR12] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_FPR, 0, TR::RealRegister::Free,
+                                                      TR::RealRegister::FPR12, TR::RealRegister::FPR12Mask, self()->cg());
 
-   _registerFile[TR::RealRegister::FPR13] = new (_cg->trHeapMemory()) TR::RealRegister(TR_FPR, 0, TR::RealRegister::Free,
-                                                      TR::RealRegister::FPR13, TR::RealRegister::FPR13Mask, _cg);
+   _registerFile[TR::RealRegister::FPR13] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_FPR, 0, TR::RealRegister::Free,
+                                                      TR::RealRegister::FPR13, TR::RealRegister::FPR13Mask, self()->cg());
 
-   _registerFile[TR::RealRegister::FPR14] = new (_cg->trHeapMemory()) TR::RealRegister(TR_FPR, 0, TR::RealRegister::Free,
-                                                      TR::RealRegister::FPR14, TR::RealRegister::FPR14Mask, _cg);
+   _registerFile[TR::RealRegister::FPR14] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_FPR, 0, TR::RealRegister::Free,
+                                                      TR::RealRegister::FPR14, TR::RealRegister::FPR14Mask, self()->cg());
 
-   _registerFile[TR::RealRegister::FPR15] = new (_cg->trHeapMemory()) TR::RealRegister(TR_FPR, 0, TR::RealRegister::Free,
-                                                      TR::RealRegister::FPR15, TR::RealRegister::FPR15Mask, _cg);
+   _registerFile[TR::RealRegister::FPR15] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_FPR, 0, TR::RealRegister::Free,
+                                                      TR::RealRegister::FPR15, TR::RealRegister::FPR15Mask, self()->cg());
 
    // Initialize Access Regs
-   _registerFile[TR::RealRegister::AR0] = new (_cg->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
-                                                     TR::RealRegister::AR0, TR::RealRegister::AR0Mask, _cg);
+   _registerFile[TR::RealRegister::AR0] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
+                                                     TR::RealRegister::AR0, TR::RealRegister::AR0Mask, self()->cg());
 
-   _registerFile[TR::RealRegister::AR1] = new (_cg->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
-                                                     TR::RealRegister::AR1, TR::RealRegister::AR1Mask, _cg);
+   _registerFile[TR::RealRegister::AR1] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
+                                                     TR::RealRegister::AR1, TR::RealRegister::AR1Mask, self()->cg());
 
-   _registerFile[TR::RealRegister::AR2] = new (_cg->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
-                                                     TR::RealRegister::AR2, TR::RealRegister::AR2Mask, _cg);
+   _registerFile[TR::RealRegister::AR2] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
+                                                     TR::RealRegister::AR2, TR::RealRegister::AR2Mask, self()->cg());
 
-   _registerFile[TR::RealRegister::AR3] = new (_cg->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
-                                                     TR::RealRegister::AR3, TR::RealRegister::AR3Mask, _cg);
+   _registerFile[TR::RealRegister::AR3] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
+                                                     TR::RealRegister::AR3, TR::RealRegister::AR3Mask, self()->cg());
 
-   _registerFile[TR::RealRegister::AR4] = new (_cg->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
-                                                     TR::RealRegister::AR4, TR::RealRegister::AR4Mask, _cg);
+   _registerFile[TR::RealRegister::AR4] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
+                                                     TR::RealRegister::AR4, TR::RealRegister::AR4Mask, self()->cg());
 
-   _registerFile[TR::RealRegister::AR5] = new (_cg->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
-                                                     TR::RealRegister::AR5, TR::RealRegister::AR5Mask, _cg);
+   _registerFile[TR::RealRegister::AR5] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
+                                                     TR::RealRegister::AR5, TR::RealRegister::AR5Mask, self()->cg());
 
-   _registerFile[TR::RealRegister::AR6] = new (_cg->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
-                                                     TR::RealRegister::AR6, TR::RealRegister::AR6Mask, _cg);
+   _registerFile[TR::RealRegister::AR6] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
+                                                     TR::RealRegister::AR6, TR::RealRegister::AR6Mask, self()->cg());
 
-   _registerFile[TR::RealRegister::AR7] = new (_cg->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
-                                                     TR::RealRegister::AR7, TR::RealRegister::AR7Mask, _cg);
+   _registerFile[TR::RealRegister::AR7] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
+                                                     TR::RealRegister::AR7, TR::RealRegister::AR7Mask, self()->cg());
 
-   _registerFile[TR::RealRegister::AR8] = new (_cg->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
-                                                     TR::RealRegister::AR8, TR::RealRegister::AR8Mask, _cg);
+   _registerFile[TR::RealRegister::AR8] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
+                                                     TR::RealRegister::AR8, TR::RealRegister::AR8Mask, self()->cg());
 
-   _registerFile[TR::RealRegister::AR9] = new (_cg->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
-                                                     TR::RealRegister::AR9, TR::RealRegister::AR9Mask, _cg);
+   _registerFile[TR::RealRegister::AR9] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
+                                                     TR::RealRegister::AR9, TR::RealRegister::AR9Mask, self()->cg());
 
-   _registerFile[TR::RealRegister::AR10] = new (_cg->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
-                                                     TR::RealRegister::AR10, TR::RealRegister::AR10Mask, _cg);
+   _registerFile[TR::RealRegister::AR10] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
+                                                     TR::RealRegister::AR10, TR::RealRegister::AR10Mask, self()->cg());
 
-   _registerFile[TR::RealRegister::AR11] = new (_cg->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
-                                                     TR::RealRegister::AR11, TR::RealRegister::AR11Mask, _cg);
+   _registerFile[TR::RealRegister::AR11] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
+                                                     TR::RealRegister::AR11, TR::RealRegister::AR11Mask, self()->cg());
 
-   _registerFile[TR::RealRegister::AR12] = new (_cg->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
-                                                     TR::RealRegister::AR12, TR::RealRegister::AR12Mask, _cg);
+   _registerFile[TR::RealRegister::AR12] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
+                                                     TR::RealRegister::AR12, TR::RealRegister::AR12Mask, self()->cg());
 
-   _registerFile[TR::RealRegister::AR13] = new (_cg->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
-                                                     TR::RealRegister::AR13, TR::RealRegister::AR13Mask, _cg);
+   _registerFile[TR::RealRegister::AR13] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
+                                                     TR::RealRegister::AR13, TR::RealRegister::AR13Mask, self()->cg());
 
-   _registerFile[TR::RealRegister::AR14] = new (_cg->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
-                                                     TR::RealRegister::AR14, TR::RealRegister::AR14Mask, _cg);
+   _registerFile[TR::RealRegister::AR14] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
+                                                     TR::RealRegister::AR14, TR::RealRegister::AR14Mask, self()->cg());
 
-   _registerFile[TR::RealRegister::AR15] = new (_cg->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
-                                                     TR::RealRegister::AR15, TR::RealRegister::AR15Mask, _cg);
+   _registerFile[TR::RealRegister::AR15] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
+                                                     TR::RealRegister::AR15, TR::RealRegister::AR15Mask, self()->cg());
 
    // Initialize High Regs
-   _registerFile[TR::RealRegister::HPR0] = new (_cg->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
-                                                     TR::RealRegister::HPR0, TR::RealRegister::HPR0Mask, _cg);
+   _registerFile[TR::RealRegister::HPR0] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
+                                                     TR::RealRegister::HPR0, TR::RealRegister::HPR0Mask, self()->cg());
 
-   _registerFile[TR::RealRegister::HPR1] = new (_cg->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
-                                                     TR::RealRegister::HPR1, TR::RealRegister::HPR1Mask, _cg);
+   _registerFile[TR::RealRegister::HPR1] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
+                                                     TR::RealRegister::HPR1, TR::RealRegister::HPR1Mask, self()->cg());
 
-   _registerFile[TR::RealRegister::HPR2] = new (_cg->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
-                                                     TR::RealRegister::HPR2, TR::RealRegister::HPR2Mask, _cg);
+   _registerFile[TR::RealRegister::HPR2] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
+                                                     TR::RealRegister::HPR2, TR::RealRegister::HPR2Mask, self()->cg());
 
-   _registerFile[TR::RealRegister::HPR3] = new (_cg->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
-                                                     TR::RealRegister::HPR3, TR::RealRegister::HPR3Mask, _cg);
+   _registerFile[TR::RealRegister::HPR3] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
+                                                     TR::RealRegister::HPR3, TR::RealRegister::HPR3Mask, self()->cg());
 
-   _registerFile[TR::RealRegister::HPR4] = new (_cg->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
-                                                     TR::RealRegister::HPR4, TR::RealRegister::HPR4Mask, _cg);
+   _registerFile[TR::RealRegister::HPR4] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
+                                                     TR::RealRegister::HPR4, TR::RealRegister::HPR4Mask, self()->cg());
 
-   _registerFile[TR::RealRegister::HPR5] = new (_cg->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
-                                                     TR::RealRegister::HPR5, TR::RealRegister::HPR5Mask, _cg);
+   _registerFile[TR::RealRegister::HPR5] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
+                                                     TR::RealRegister::HPR5, TR::RealRegister::HPR5Mask, self()->cg());
 
-   _registerFile[TR::RealRegister::HPR6] = new (_cg->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
-                                                     TR::RealRegister::HPR6, TR::RealRegister::HPR6Mask, _cg);
+   _registerFile[TR::RealRegister::HPR6] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
+                                                     TR::RealRegister::HPR6, TR::RealRegister::HPR6Mask, self()->cg());
 
-   _registerFile[TR::RealRegister::HPR7] = new (_cg->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
-                                                     TR::RealRegister::HPR7, TR::RealRegister::HPR7Mask, _cg);
+   _registerFile[TR::RealRegister::HPR7] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
+                                                     TR::RealRegister::HPR7, TR::RealRegister::HPR7Mask, self()->cg());
 
-   _registerFile[TR::RealRegister::HPR8] = new (_cg->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
-                                                     TR::RealRegister::HPR8, TR::RealRegister::HPR8Mask, _cg);
+   _registerFile[TR::RealRegister::HPR8] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
+                                                     TR::RealRegister::HPR8, TR::RealRegister::HPR8Mask, self()->cg());
 
-   _registerFile[TR::RealRegister::HPR9] = new (_cg->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
-                                                     TR::RealRegister::HPR9, TR::RealRegister::HPR9Mask, _cg);
+   _registerFile[TR::RealRegister::HPR9] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
+                                                     TR::RealRegister::HPR9, TR::RealRegister::HPR9Mask, self()->cg());
 
-   _registerFile[TR::RealRegister::HPR10] = new (_cg->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
-                                                     TR::RealRegister::HPR10, TR::RealRegister::HPR10Mask, _cg);
+   _registerFile[TR::RealRegister::HPR10] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
+                                                     TR::RealRegister::HPR10, TR::RealRegister::HPR10Mask, self()->cg());
 
-   _registerFile[TR::RealRegister::HPR11] = new (_cg->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
-                                                     TR::RealRegister::HPR11, TR::RealRegister::HPR11Mask, _cg);
+   _registerFile[TR::RealRegister::HPR11] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
+                                                     TR::RealRegister::HPR11, TR::RealRegister::HPR11Mask, self()->cg());
 
-   _registerFile[TR::RealRegister::HPR12] = new (_cg->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
-                                                     TR::RealRegister::HPR12, TR::RealRegister::HPR12Mask, _cg);
+   _registerFile[TR::RealRegister::HPR12] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
+                                                     TR::RealRegister::HPR12, TR::RealRegister::HPR12Mask, self()->cg());
 
-   _registerFile[TR::RealRegister::HPR13] = new (_cg->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
-                                                     TR::RealRegister::HPR13, TR::RealRegister::HPR13Mask, _cg);
+   _registerFile[TR::RealRegister::HPR13] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
+                                                     TR::RealRegister::HPR13, TR::RealRegister::HPR13Mask, self()->cg());
 
-   _registerFile[TR::RealRegister::HPR14] = new (_cg->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
-                                                     TR::RealRegister::HPR14, TR::RealRegister::HPR14Mask, _cg);
+   _registerFile[TR::RealRegister::HPR14] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
+                                                     TR::RealRegister::HPR14, TR::RealRegister::HPR14Mask, self()->cg());
 
-   _registerFile[TR::RealRegister::HPR15] = new (_cg->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
-                                                     TR::RealRegister::HPR15, TR::RealRegister::HPR15Mask, _cg);
+   _registerFile[TR::RealRegister::HPR15] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
+                                                     TR::RealRegister::HPR15, TR::RealRegister::HPR15Mask, self()->cg());
 
    // Initialize Vector Regs
    // first 16 overlaps with FPRs
@@ -6358,53 +6358,53 @@ OMR::Z::Machine::initialiseRegisterFile()
    _registerFile[TR::RealRegister::VRF14] = _registerFile[TR::RealRegister::FPR14];
    _registerFile[TR::RealRegister::VRF15] = _registerFile[TR::RealRegister::FPR15];
 
-   _registerFile[TR::RealRegister::VRF16] = new (_cg->trHeapMemory()) TR::RealRegister(TR_VRF, 0, TR::RealRegister::Free,
-                                                     TR::RealRegister::VRF16, TR::RealRegister::VRF16Mask, _cg);
+   _registerFile[TR::RealRegister::VRF16] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_VRF, 0, TR::RealRegister::Free,
+                                                     TR::RealRegister::VRF16, TR::RealRegister::VRF16Mask, self()->cg());
 
-   _registerFile[TR::RealRegister::VRF17] = new (_cg->trHeapMemory()) TR::RealRegister(TR_VRF, 0, TR::RealRegister::Free,
-                                                     TR::RealRegister::VRF17, TR::RealRegister::VRF17Mask, _cg);
+   _registerFile[TR::RealRegister::VRF17] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_VRF, 0, TR::RealRegister::Free,
+                                                     TR::RealRegister::VRF17, TR::RealRegister::VRF17Mask, self()->cg());
 
-   _registerFile[TR::RealRegister::VRF18] = new (_cg->trHeapMemory()) TR::RealRegister(TR_VRF, 0, TR::RealRegister::Free,
-                                                     TR::RealRegister::VRF18, TR::RealRegister::VRF18Mask, _cg);
+   _registerFile[TR::RealRegister::VRF18] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_VRF, 0, TR::RealRegister::Free,
+                                                     TR::RealRegister::VRF18, TR::RealRegister::VRF18Mask, self()->cg());
 
-   _registerFile[TR::RealRegister::VRF19] = new (_cg->trHeapMemory()) TR::RealRegister(TR_VRF, 0, TR::RealRegister::Free,
-                                                     TR::RealRegister::VRF19, TR::RealRegister::VRF19Mask, _cg);
+   _registerFile[TR::RealRegister::VRF19] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_VRF, 0, TR::RealRegister::Free,
+                                                     TR::RealRegister::VRF19, TR::RealRegister::VRF19Mask, self()->cg());
 
-   _registerFile[TR::RealRegister::VRF20] = new (_cg->trHeapMemory()) TR::RealRegister(TR_VRF, 0, TR::RealRegister::Free,
-                                                     TR::RealRegister::VRF20, TR::RealRegister::VRF20Mask, _cg);
+   _registerFile[TR::RealRegister::VRF20] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_VRF, 0, TR::RealRegister::Free,
+                                                     TR::RealRegister::VRF20, TR::RealRegister::VRF20Mask, self()->cg());
 
-   _registerFile[TR::RealRegister::VRF21] = new (_cg->trHeapMemory()) TR::RealRegister(TR_VRF, 0, TR::RealRegister::Free,
-                                                     TR::RealRegister::VRF21, TR::RealRegister::VRF21Mask, _cg);
+   _registerFile[TR::RealRegister::VRF21] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_VRF, 0, TR::RealRegister::Free,
+                                                     TR::RealRegister::VRF21, TR::RealRegister::VRF21Mask, self()->cg());
 
-   _registerFile[TR::RealRegister::VRF22] = new (_cg->trHeapMemory()) TR::RealRegister(TR_VRF, 0, TR::RealRegister::Free,
-                                                     TR::RealRegister::VRF22, TR::RealRegister::VRF22Mask, _cg);
+   _registerFile[TR::RealRegister::VRF22] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_VRF, 0, TR::RealRegister::Free,
+                                                     TR::RealRegister::VRF22, TR::RealRegister::VRF22Mask, self()->cg());
 
-   _registerFile[TR::RealRegister::VRF23] = new (_cg->trHeapMemory()) TR::RealRegister(TR_VRF, 0, TR::RealRegister::Free,
-                                                     TR::RealRegister::VRF23, TR::RealRegister::VRF23Mask, _cg);
+   _registerFile[TR::RealRegister::VRF23] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_VRF, 0, TR::RealRegister::Free,
+                                                     TR::RealRegister::VRF23, TR::RealRegister::VRF23Mask, self()->cg());
 
-   _registerFile[TR::RealRegister::VRF24] = new (_cg->trHeapMemory()) TR::RealRegister(TR_VRF, 0, TR::RealRegister::Free,
-                                                     TR::RealRegister::VRF24, TR::RealRegister::VRF24Mask, _cg);
+   _registerFile[TR::RealRegister::VRF24] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_VRF, 0, TR::RealRegister::Free,
+                                                     TR::RealRegister::VRF24, TR::RealRegister::VRF24Mask, self()->cg());
 
-   _registerFile[TR::RealRegister::VRF25] = new (_cg->trHeapMemory()) TR::RealRegister(TR_VRF, 0, TR::RealRegister::Free,
-                                                     TR::RealRegister::VRF25, TR::RealRegister::VRF25Mask, _cg);
+   _registerFile[TR::RealRegister::VRF25] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_VRF, 0, TR::RealRegister::Free,
+                                                     TR::RealRegister::VRF25, TR::RealRegister::VRF25Mask, self()->cg());
 
-   _registerFile[TR::RealRegister::VRF26] = new (_cg->trHeapMemory()) TR::RealRegister(TR_VRF, 0, TR::RealRegister::Free,
-                                                     TR::RealRegister::VRF26, TR::RealRegister::VRF26Mask, _cg);
+   _registerFile[TR::RealRegister::VRF26] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_VRF, 0, TR::RealRegister::Free,
+                                                     TR::RealRegister::VRF26, TR::RealRegister::VRF26Mask, self()->cg());
 
-   _registerFile[TR::RealRegister::VRF27] = new (_cg->trHeapMemory()) TR::RealRegister(TR_VRF, 0, TR::RealRegister::Free,
-                                                     TR::RealRegister::VRF27, TR::RealRegister::VRF27Mask, _cg);
+   _registerFile[TR::RealRegister::VRF27] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_VRF, 0, TR::RealRegister::Free,
+                                                     TR::RealRegister::VRF27, TR::RealRegister::VRF27Mask, self()->cg());
 
-   _registerFile[TR::RealRegister::VRF28] = new (_cg->trHeapMemory()) TR::RealRegister(TR_VRF, 0, TR::RealRegister::Free,
-                                                     TR::RealRegister::VRF28, TR::RealRegister::VRF28Mask, _cg);
+   _registerFile[TR::RealRegister::VRF28] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_VRF, 0, TR::RealRegister::Free,
+                                                     TR::RealRegister::VRF28, TR::RealRegister::VRF28Mask, self()->cg());
 
-  _registerFile[TR::RealRegister::VRF29] = new (_cg->trHeapMemory()) TR::RealRegister(TR_VRF, 0, TR::RealRegister::Free,
-                                                     TR::RealRegister::VRF29, TR::RealRegister::VRF29Mask, _cg);
+  _registerFile[TR::RealRegister::VRF29] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_VRF, 0, TR::RealRegister::Free,
+                                                     TR::RealRegister::VRF29, TR::RealRegister::VRF29Mask, self()->cg());
 
-  _registerFile[TR::RealRegister::VRF30] = new (_cg->trHeapMemory()) TR::RealRegister(TR_VRF, 0, TR::RealRegister::Free,
-                                                     TR::RealRegister::VRF30, TR::RealRegister::VRF30Mask, _cg);
+  _registerFile[TR::RealRegister::VRF30] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_VRF, 0, TR::RealRegister::Free,
+                                                     TR::RealRegister::VRF30, TR::RealRegister::VRF30Mask, self()->cg());
 
-  _registerFile[TR::RealRegister::VRF31] = new (_cg->trHeapMemory()) TR::RealRegister(TR_VRF, 0, TR::RealRegister::Free,
-                                                     TR::RealRegister::VRF31, TR::RealRegister::VRF31Mask, _cg);
+  _registerFile[TR::RealRegister::VRF31] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_VRF, 0, TR::RealRegister::Free,
+                                                     TR::RealRegister::VRF31, TR::RealRegister::VRF31Mask, self()->cg());
    _registerFile[TR::RealRegister::HPR0]->setLowWordRegister(_registerFile[TR::RealRegister::GPR0]);
    _registerFile[TR::RealRegister::HPR1]->setLowWordRegister(_registerFile[TR::RealRegister::GPR1]);
    _registerFile[TR::RealRegister::HPR2]->setLowWordRegister(_registerFile[TR::RealRegister::GPR2]);
@@ -6532,13 +6532,13 @@ OMR::Z::Machine::initializeFPRegPairTable()
 uint32_t *
 OMR::Z::Machine::initializeGlobalRegisterTable()
    {
-   TR::Compilation *comp = _cg->comp();
+   TR::Compilation *comp = self()->cg()->comp();
 
    if (!comp->getOption(TR_DisableRegisterPressureSimulation))
       {
       int32_t p = 0;
       static char *dontInitializeGlobalRegisterTableFromLinkage = feGetEnv("TR_dontInitializeGlobalRegisterTableFromLinkage");
-      bool enableHighWordGRA = _cg->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA);
+      bool enableHighWordGRA = self()->cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA);
       if (dontInitializeGlobalRegisterTableFromLinkage)
          {
          self()->setFirstGlobalGPRRegisterNumber(0);
@@ -6561,7 +6561,7 @@ OMR::Z::Machine::initializeGlobalRegisterTable()
          // Exclude GPR7 if we are not on Freeway+ hardware
          if (  !noGraFIX
             && !comp->getOption(TR_DisableLongDispStackSlot)
-            && _cg->getExtCodeBaseRegisterIsFree()
+            && self()->cg()->getExtCodeBaseRegisterIsFree()
             )
             {
             p = self()->addGlobalReg(TR::RealRegister::GPR7, p);
@@ -6650,7 +6650,7 @@ OMR::Z::Machine::initializeGlobalRegisterTable()
          }
       else
          {
-      TR::Linkage *linkage = _cg->getS390Linkage();
+      TR::Linkage *linkage = self()->cg()->getS390Linkage();
          int32_t i;
          TR::RealRegister::RegNum reg;
          self()->setFirstGlobalGPRRegisterNumber(0);
@@ -6686,11 +6686,11 @@ OMR::Z::Machine::initializeGlobalRegisterTable()
 
          self()->setLastLinkageGPR(p-1);
 
-         if ( (_cg->isLiteralPoolOnDemandOn() && !linkage->isZLinuxLinkageType()) || (_cg->isLiteralPoolOnDemandOn() && !linkage->getPreserved(linkage->getLitPoolRegister())) )
+         if ( (self()->cg()->isLiteralPoolOnDemandOn() && !linkage->isZLinuxLinkageType()) || (self()->cg()->isLiteralPoolOnDemandOn() && !linkage->getPreserved(linkage->getLitPoolRegister())) )
             p = self()->addGlobalReg(linkage->getLitPoolRegister(), p);
-         if (!_cg->isGlobalStaticBaseRegisterOn())
+         if (!self()->cg()->isGlobalStaticBaseRegisterOn())
             p = self()->addGlobalReg(linkage->getStaticBaseRegister(), p);
-         if (!_cg->isGlobalPrivateStaticBaseRegisterOn())
+         if (!self()->cg()->isGlobalPrivateStaticBaseRegisterOn())
             p = self()->addGlobalReg(linkage->getPrivateStaticBaseRegister(), p);
          for (i = linkage->getNumSpecialArgumentRegisters(); i >= 0; i--)
             p = self()->addGlobalReg(linkage->getSpecialArgumentRegister(i), p);
@@ -6717,7 +6717,7 @@ OMR::Z::Machine::initializeGlobalRegisterTable()
                      // Dangling else above
                      if (reg == linkage->getExtCodeBaseRegister())
                         {
-                        if (_cg->isExtCodeBaseFreeForAssignment())
+                        if (self()->cg()->isExtCodeBaseFreeForAssignment())
                            p = self()->addGlobalReg(reg, p);
                         }
                      else if (reg != linkage->getStaticBaseRegister() &&
@@ -6742,7 +6742,7 @@ OMR::Z::Machine::initializeGlobalRegisterTable()
                      // Dangling else above
                      if (reg == linkage->getExtCodeBaseRegister())
                         {
-                        if (_cg->isExtCodeBaseFreeForAssignment())
+                        if (self()->cg()->isExtCodeBaseFreeForAssignment())
                            p = self()->addGlobalReg(reg, p);
                         }
                      else if (reg != linkage->getLitPoolRegister() &&
@@ -6757,7 +6757,7 @@ OMR::Z::Machine::initializeGlobalRegisterTable()
          p = self()->addGlobalRegLater(linkage->getMethodMetaDataRegister(), p);
          if (TR::Compiler->target.isZOS())
             {
-            p = self()->addGlobalRegLater(_cg->getS390Linkage()->getStackPointerRegister(), p);
+            p = self()->addGlobalRegLater(self()->cg()->getS390Linkage()->getStackPointerRegister(), p);
             }
 
          // Special regs that add to prologue cost
@@ -6785,7 +6785,7 @@ OMR::Z::Machine::initializeGlobalRegisterTable()
                // might use GPR6 on 64-bit for lit pool reg
                p = self()->addGlobalReg(TR::RealRegister::HPR6, p);
                }
-            if (linkage->getExtCodeBaseRegister() == TR::RealRegister::GPR7 && _cg->isExtCodeBaseFreeForAssignment())
+            if (linkage->getExtCodeBaseRegister() == TR::RealRegister::GPR7 && self()->cg()->isExtCodeBaseFreeForAssignment())
                {
                // register 7 is hard coded for now
                p = self()->addGlobalReg(TR::RealRegister::HPR7, p);
@@ -6801,7 +6801,7 @@ OMR::Z::Machine::initializeGlobalRegisterTable()
 
          self()->setLastGlobalGPRRegisterNumber(p-1);
 
-         if (_cg->globalAccessRegistersSupported())
+         if (self()->cg()->globalAccessRegistersSupported())
             {
             self()->setFirstGlobalAccessRegisterNumber(p);
 
@@ -6842,7 +6842,7 @@ OMR::Z::Machine::initializeGlobalRegisterTable()
            self()->setLastGlobalFPRRegisterNumber(p-1);
 
            // initGlobalVectorRegisterMap sets first/last global grns and overlapped grns
-           if (_cg->getSupportsVectorRegisters())
+           if (self()->cg()->getSupportsVectorRegisters())
               p = self()->initGlobalVectorRegisterMap(p);
 
           self()->setLastGlobalVRFRegisterNumber(p-1);
@@ -6888,7 +6888,7 @@ OMR::Z::Machine::initializeGlobalRegisterTable()
    // Exclude GPR7 if we are not on Freeway+ hardware
    if ( !noGraFIX                                                     &&
         !comp->getOption(TR_DisableLongDispStackSlot)          &&
-        _cg->getExtCodeBaseRegisterIsFree()
+        self()->cg()->getExtCodeBaseRegisterIsFree()
       )
       {
       _globalRegisterNumberToRealRegisterMap[4] = TR::RealRegister::GPR7;  // preserved
@@ -7027,7 +7027,7 @@ OMR::Z::Machine::initializeGlobalRegisterTable()
 uint32_t
 OMR::Z::Machine::initGlobalVectorRegisterMap(uint32_t vectorOffset)
    {
-   if (!_cg->getSupportsVectorRegisters() && !_cg->comp()->getOption(TR_DisableVectorRegGRA))
+   if (!self()->cg()->getSupportsVectorRegisters() && !self()->cg()->comp()->getOption(TR_DisableVectorRegGRA))
       {
       self()->setFirstGlobalVRFRegisterNumber(-1);
       self()->setLastGlobalVRFRegisterNumber(-1);
@@ -7042,7 +7042,7 @@ OMR::Z::Machine::initGlobalVectorRegisterMap(uint32_t vectorOffset)
    // This flag prevents the low reg file (VRF0-15 from being part of GRA). This ensures no overlap.
 
    static const char * hideLowerHalf = feGetEnv("TR_hideOverlappingVecRegsFromGRA");
-   const bool useEntireRegFile = ((hideLowerHalf == NULL) && _cg->getSupportsVectorRegisters());
+   const bool useEntireRegFile = ((hideLowerHalf == NULL) && self()->cg()->getSupportsVectorRegisters());
 
    TR_GlobalRegisterNumber firstOverlappingVecOffset = -1;
    TR_GlobalRegisterNumber lastOverlappingVecOffset  = -1;
@@ -7113,7 +7113,7 @@ OMR::Z::Machine::initGlobalVectorRegisterMap(uint32_t vectorOffset)
 
    if (traceVectorGRN)
       {
-      printf("Java func: %s func: %s\n", _cg->comp()->getCurrentMethod()->nameChars(), __FUNCTION__);
+      printf("Java func: %s func: %s\n", self()->cg()->comp()->getCurrentMethod()->nameChars(), __FUNCTION__);
       printf("ff %d\t", self()->getFirstGlobalFPRRegisterNumber());
       printf("lf %d\t", self()->getLastGlobalFPRRegisterNumber());
       printf("fof %d\t", self()->getFirstOverlappedGlobalFPRRegisterNumber());
@@ -7133,7 +7133,7 @@ OMR::Z::Machine::initGlobalVectorRegisterMap(uint32_t vectorOffset)
 void
 OMR::Z::Machine::lockGlobalRegister(int32_t globalRegisterTableIndex)
    {
-   TR::Compilation *comp = _cg->comp();
+   TR::Compilation *comp = self()->cg()->comp();
    if (comp->getOption(TR_DisableRegisterPressureSimulation))
       {
       _globalRegisterNumberToRealRegisterMap[globalRegisterTableIndex] = (uint32_t) (-1);
@@ -7171,7 +7171,7 @@ OMR::Z::Machine::findGlobalRegisterIndex(TR::RealRegister::RegNum gReg)
 void
 OMR::Z::Machine::releaseLiteralPoolRegister()
    {
-   TR::Compilation *comp = _cg->comp();
+   TR::Compilation *comp = self()->cg()->comp();
    if (comp->getOption(TR_DisableRegisterPressureSimulation))
       {
       _globalRegisterNumberToRealRegisterMap[GLOBAL_REG_FOR_LITPOOL] = TR::RealRegister::GPR6;
@@ -7306,11 +7306,11 @@ OMR::Z::Machine::getHPRFromGlobalRegisterNumber(TR_GlobalRegisterNumber reg)
 void
 OMR::Z::Machine::setRegisterWeightsFromAssociations()
    {
-   TR::Linkage * linkage = _cg->getS390Linkage();
+   TR::Linkage * linkage = self()->cg()->getS390Linkage();
    int32_t first = TR::RealRegister::FirstGPR;
-   TR::Compilation *comp = _cg->comp();
+   TR::Compilation *comp = self()->cg()->comp();
    int32_t last = TR::RealRegister::LastAssignableVRF;
-   if (_cg->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA))
+   if (self()->cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA))
       last = TR::RealRegister::LastHPR;
 
    for (int32_t i = first; i <= last; ++i)
@@ -7353,18 +7353,18 @@ OMR::Z::Machine::setRegisterWeightsFromAssociations()
 void
 OMR::Z::Machine::createRegisterAssociationDirective(TR::Instruction * cursor)
    {
-   TR::Compilation *comp = _cg->comp();
+   TR::Compilation *comp = self()->cg()->comp();
    int32_t last = TR::RealRegister::LastAssignableVRF;
    TR::RegisterDependencyConditions * associations;
 
-   if (_cg->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA))
+   if (self()->cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA))
       {
       int32_t lastHPR = last + TR::RealRegister::LastHPR - TR::RealRegister::FirstHPR;
-      associations = new (_cg->trHeapMemory(), TR_MemoryBase::RegisterDependencyConditions) TR::RegisterDependencyConditions(0, lastHPR, _cg);
+      associations = new (self()->cg()->trHeapMemory(), TR_MemoryBase::RegisterDependencyConditions) TR::RegisterDependencyConditions(0, lastHPR, self()->cg());
       }
    else
       {
-      associations = new (_cg->trHeapMemory(), TR_MemoryBase::RegisterDependencyConditions) TR::RegisterDependencyConditions(0, last, _cg);
+      associations = new (self()->cg()->trHeapMemory(), TR_MemoryBase::RegisterDependencyConditions) TR::RegisterDependencyConditions(0, last, self()->cg());
       }
    // Go through the current associations held in the machine and put a copy of
    // that state out into the stream after the cursor
@@ -7377,7 +7377,7 @@ OMR::Z::Machine::createRegisterAssociationDirective(TR::Instruction * cursor)
       associations->addPostCondition(self()->getVirtualAssociatedWithReal(regNum), regNum);
       }
 
-   if (_cg->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA))
+   if (self()->cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA))
       {
       for (int32_t i = TR::RealRegister::FirstHPR; i < TR::RealRegister::LastHPR+1; i++)
          {
@@ -7387,11 +7387,11 @@ OMR::Z::Machine::createRegisterAssociationDirective(TR::Instruction * cursor)
       }
 
 
-   TR::Instruction *cursor1 = new (_cg->trHeapMemory(), TR_MemoryBase::S390Instruction) TR::Instruction(cursor, TR::InstOpCode::ASSOCREGS, associations, self()->cg());
+   TR::Instruction *cursor1 = new (self()->cg()->trHeapMemory(), TR_MemoryBase::S390Instruction) TR::Instruction(cursor, TR::InstOpCode::ASSOCREGS, associations, self()->cg());
 
-   if (cursor == _cg->getAppendInstruction())
+   if (cursor == self()->cg()->getAppendInstruction())
       {
-      _cg->setAppendInstruction(cursor->getNext());
+      self()->cg()->setAppendInstruction(cursor->getNext());
       }
    }
 
@@ -7437,7 +7437,7 @@ OMR::Z::Machine::isRestrictedReg(TR::RealRegister::RegNum reg)
       TR::RealRegister::GPR11,
       TR::RealRegister::GPR12,
       };
-   TR::Compilation *comp = _cg->comp();
+   TR::Compilation *comp = self()->cg()->comp();
    static const int32_t regListSize = (sizeof(regList) / sizeof(TR::RealRegister::RegNum));
 
    int32_t numRestrictedRegs = comp->getOptions()->getNumRestrictedGPRs();
@@ -7493,7 +7493,7 @@ OMR::Z::Machine::takeRegisterStateSnapShot()
       _containsHPRSpillSnapShot[i] = false;
       if (_assignedRegisterSnapShot[i] && _assignedRegisterSnapShot[i]->getAssignedRegister() == NULL)
          {
-         _cg->traceRegisterAssignment("\nOOL: %R : %R", _registerFile[i], _assignedRegisterSnapShot[i]);
+         self()->cg()->traceRegisterAssignment("\nOOL: %R : %R", _registerFile[i], _assignedRegisterSnapShot[i]);
          TR_ASSERT(_registerFile[i]->isHighWordRegister(), "OOL: HPR spill?? %d", i);
          _containsHPRSpillSnapShot[i] = true;
          }
@@ -7557,7 +7557,7 @@ OMR::Z::Machine::restoreRegisterStateFromSnapShot()
       // make sure to double link virt - real reg if assigned
       if (_registerFile[i]->getState() == TR::RealRegister::Assigned && !_containsHPRSpillSnapShot[i])
          {
-         //_cg->traceRegisterAssignment("\nOOL: restoring %R : %R", _registerFile[i], _registerFile[i]->getAssignedRegister());
+         //self()->cg()->traceRegisterAssignment("\nOOL: restoring %R : %R", _registerFile[i], _registerFile[i]->getAssignedRegister());
          if (!_registerFile[i]->getAssignedRegister()->is64BitReg() || !_registerFile[i]->isHighWordRegister())
             {
             _registerFile[i]->getAssignedRegister()->setAssignedRegister(_registerFile[i]);
@@ -7596,7 +7596,7 @@ TR::RegisterDependencyConditions * OMR::Z::Machine::createDepCondForLiveGPRs(TR:
    // Calculate number of register dependencies required. This step is not really necessary, but
    // it is space conscious
    //
-   TR::Compilation *comp = _cg->comp();
+   TR::Compilation *comp = self()->cg()->comp();
    for (i = TR::RealRegister::FirstGPR; i <= TR::RealRegister::LastVRF; i = ((i == TR::RealRegister::LastAssignableGPR) ? TR::RealRegister::FirstVRF : i+1) )
       {
       TR::RealRegister *realReg = self()->getS390RealRegister(i);
@@ -7612,7 +7612,7 @@ TR::RegisterDependencyConditions * OMR::Z::Machine::createDepCondForLiveGPRs(TR:
 
    c += spilledRegisterList ? spilledRegisterList->size() : 0;
 
-   if (_cg->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA))
+   if (self()->cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA))
       {
       for (i = TR::RealRegister::FirstHPR; i <= TR::RealRegister::LastHPR; i++)
          {
@@ -7631,7 +7631,7 @@ TR::RegisterDependencyConditions * OMR::Z::Machine::createDepCondForLiveGPRs(TR:
 
    if (c)
       {
-      deps = new (_cg->trHeapMemory(), TR_MemoryBase::RegisterDependencyConditions) TR::RegisterDependencyConditions(0, c, _cg);
+      deps = new (self()->cg()->trHeapMemory(), TR_MemoryBase::RegisterDependencyConditions) TR::RegisterDependencyConditions(0, c, self()->cg());
       for (i = TR::RealRegister::FirstGPR; i <= TR::RealRegister::LastVRF; i = ((i==TR::RealRegister::LastAssignableGPR)? TR::RealRegister::FirstVRF : i+1))
          {
          TR::RealRegister *realReg = self()->getS390RealRegister(i);
@@ -7649,7 +7649,7 @@ TR::RegisterDependencyConditions * OMR::Z::Machine::createDepCondForLiveGPRs(TR:
             virtReg->incFutureUseCount();
             }
          }
-      if (_cg->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA))
+      if (self()->cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA))
          {
          for (i = TR::RealRegister::FirstHPR; i <= TR::RealRegister::LastHPR; i++)
             {

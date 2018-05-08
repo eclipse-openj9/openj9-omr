@@ -141,8 +141,6 @@ public:
       return _registerFile[TR::RealRegister::lr]->setHasBeenAssignedInMethod(b);
       }
 
-   TR::CodeGenerator *cg() {return _cg;}
-
    /**
     * @brief Take snapshot of the register file
     */
@@ -155,7 +153,6 @@ public:
 
 private:
 
-   TR::CodeGenerator *_cg;
    TR::RealRegister  **_registerFile;
 
    // For register snap shot

@@ -64,7 +64,6 @@ namespace ARM
 class OMR_EXTENSIBLE Machine : public OMR::Machine
    {
    TR::RealRegister   *_registerFile[TR::RealRegister::NumRegisters];
-   TR::CodeGenerator *_cg;
 
    static uint32_t       _globalRegisterNumberToRealRegisterMap[MAX_ARM_GLOBAL_GPRS + MAX_ARM_GLOBAL_FPRS];
 
@@ -123,8 +122,6 @@ class OMR_EXTENSIBLE Machine : public OMR::Machine
    TR::RegisterDependencyConditions  *createCondForLiveAndSpilledGPRs(bool cleanRegState, TR::list<TR::Register*> *spilledRegisterList = NULL);
 
    TR::RealRegister *assignSingleRegister(TR::Register *virtualRegister, TR::Instruction *currentInstruction);
-
-   TR::CodeGenerator *cg()           {return _cg;}
 
    // TODO:Are these two still used? Are values correct?  What are they?
    static uint8_t getGlobalGPRPartitionLimit() {return 1;}

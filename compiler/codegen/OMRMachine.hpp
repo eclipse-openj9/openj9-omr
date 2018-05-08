@@ -37,6 +37,7 @@ namespace OMR { typedef OMR::Machine MachineConnector; }
 #include "infra/Annotations.hpp"               // for OMR_EXTENSIBLE
 #include "codegen/RegisterConstants.hpp"
 
+namespace TR { class CodeGenerator; }
 namespace TR { class RealRegister; }
 namespace TR { class Machine; }
 
@@ -50,6 +51,7 @@ class OMR_EXTENSIBLE Machine
    TR_GlobalRegisterNumber _lastGlobalRegisterNumber[NumRegisterKinds];
    TR_GlobalRegisterNumber _lastRealRegisterGlobalRegisterNumber;
    TR_GlobalRegisterNumber _overallLastGlobalRegisterNumber;
+   TR::CodeGenerator *_cg;
 
    public:
 
@@ -66,7 +68,7 @@ class OMR_EXTENSIBLE Machine
       }
 
    // TODO: numVRFRegs should probably be explicitly set to 0 instead of defaulting to 0
-   Machine(uint8_t numIntRegs, uint8_t numFPRegs, uint8_t numVRFRegs = 0) : _lastRealRegisterGlobalRegisterNumber(-1), _overallLastGlobalRegisterNumber(-1)
+   Machine(TR::CodeGenerator *cg, uint8_t numIntRegs, uint8_t numFPRegs, uint8_t numVRFRegs = 0) : _lastRealRegisterGlobalRegisterNumber(-1), _overallLastGlobalRegisterNumber(-1), _cg(cg)
       {
        for(uint32_t i=0;i<NumRegisterKinds;i++)
          {
@@ -80,6 +82,8 @@ class OMR_EXTENSIBLE Machine
       }
 
    inline TR::Machine * self();
+
+   TR::CodeGenerator *cg() {return _cg;}
 
    uint8_t getNumberOfRegisters(TR_RegisterKinds rk) { return _numberRegisters[rk]; }
 

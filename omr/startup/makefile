@@ -30,6 +30,7 @@ OBJECTS := $(patsubst %.cpp,%$(OBJEXT),$(wildcard *.cpp))
 OBJECTS += $(patsubst %.c,%$(OBJEXT),$(wildcard *.c))
 
 MODULE_INCLUDES += \
+  .. \
   $(top_srcdir)/gc/base \
   $(top_srcdir)/gc/base/standard \
   $(top_srcdir)/gc/include \

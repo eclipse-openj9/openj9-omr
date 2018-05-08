@@ -7442,9 +7442,15 @@ int32_t TR_InvariantArgumentPreexistence::perform()
 
                parmInfo.setSymbol(p);
                TR_OpaqueClassBlock *clazz = arg->getClass();
-               if (clazz)
+               TR_OpaqueClassBlock *clazzFromMethod = fe()->getClassFromSignature(sig, len, feMethod);
+               TR_ASSERT(!clazz ||
+                         !clazzFromMethod ||
+                         clazz == clazzFromMethod ||
+                         fe()->isInstanceOf(clazz, clazzFromMethod, true, true, true) == TR_yes,
+                         "Type from argInfo should be more specific clazz %p clazzFromMethod %p", clazz, clazzFromMethod);
+
+               if (classIsFixed)
                   {
-                  TR_ASSERT(classIsFixed, "assertion failure");
                   parmInfo.setClassIsFixed();
                   parmInfo.setClass(clazz);
                   parmInfo.setClassIsCurrentlyFinal();
@@ -7453,7 +7459,7 @@ int32_t TR_InvariantArgumentPreexistence::perform()
                      char *clazzSig = TR::Compiler->cls.classSignature(comp(), clazz, trMemory());
                      traceMsg(comp(), "PREX:        Parm %d class %p is currently final %s\n", index, clazz, clazzSig);
                      }
-                  if (clazz != fe()->getClassFromSignature(sig, len, feMethod))
+                  if (clazz != clazzFromMethod)
                      {
                      parmInfo.setClassIsRefined();
                      if (trace())
@@ -7462,18 +7468,12 @@ int32_t TR_InvariantArgumentPreexistence::perform()
                   }
                else
                   {
-                  clazz = fe()->getClassFromSignature(sig, len, feMethod);
+                  clazz = clazz ? clazz : clazzFromMethod;
                   if (clazz)
                      {
                      if (trace())
                         traceMsg(comp(), "PREX:        Parm %d class %p is %.*s\n", index, clazz, len, sig);
-                     if (classIsFixed)
-                        {
-                        parmInfo.setClassIsFixed();
-                        if (trace())
-                           traceMsg(comp(), "PREX:            Parm %d class is fixed\n", index);
-                        }
-                     if (classIsFixed || !fe()->classHasBeenExtended(clazz))
+                     if (!fe()->classHasBeenExtended(clazz))
                         {
                         parmInfo.setClassIsCurrentlyFinal();
                         if (trace())
@@ -7796,6 +7796,7 @@ void TR_InvariantArgumentPreexistence::processIndirectCall(TR::Node *node, TR::T
       TR::SymbolReference *symRef = node->getSymbolReference();
       int32_t offset = symRef->getOffset();
       TR_ResolvedMethod *refinedMethod = symRef->getOwningMethod(comp())->getResolvedVirtualMethod(comp(), receiverInfo.getClass(), offset);
+
 
       if (refinedMethod)
          {

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2017 IBM Corp. and others
+ * Copyright (c) 1991, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -540,8 +540,6 @@ public:
 	uintptr_t allowMergedSpaces;
 	uintptr_t maxSizeDefaultMemorySpace;
 	bool allocationIncrementSetByUser;
-
-	uintptr_t heapTailPadding; /** < Minimum amount of readable space past the end of the heap. See Jazz 31620. */
 	/* End command line options temporary home */
 
 	uintptr_t overflowSafeAllocSize;
@@ -1459,11 +1457,6 @@ public:
 		, allowMergedSpaces(1)
 		, maxSizeDefaultMemorySpace(0)
 		, allocationIncrementSetByUser(0)
-#if defined(J9_GC_OBJECT_HEAP_TAIL_PADDING)
-		, heapTailPadding(J9_GC_OBJECT_HEAP_TAIL_PADDING)  /* Minimum amount of readable space past the end of the heap. See Jazz 31620. */
-#else /* J9_GC_OBJECT_HEAP_TAIL_PADDING */
-		, heapTailPadding(0)
-#endif /* J9_GC_OBJECT_HEAP_TAIL_PADDING */
 		, overflowSafeAllocSize(0)
 #if defined(OMR_GC_REALTIME)
 		, RTC_Frequency(2048) // must be power of 2 - translates to ~488us delay

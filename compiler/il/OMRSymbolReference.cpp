@@ -136,7 +136,8 @@ OMR::SymbolReference::SymbolReference(
       TR::Symbol *sym,
       mcount_t owningMethodIndex,
       int32_t cpIndex,
-      int32_t unresolvedIndex)
+      int32_t unresolvedIndex,
+      TR::KnownObjectTable::Index knownObjectIndex)
    {
    self()->init(symRefTab,
         symRefTab->assignSymRefNumber(self()),
@@ -145,6 +146,8 @@ OMR::SymbolReference::SymbolReference(
         owningMethodIndex,
         cpIndex,
         unresolvedIndex);
+
+   _knownObjectIndex = knownObjectIndex;
 
    if (sym->isResolvedMethod())
       symRefTab->comp()->registerResolvedMethodSymbolReference(self());

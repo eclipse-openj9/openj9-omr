@@ -1335,7 +1335,7 @@ OMR::SymbolReferenceTable::findOrCreateClassSymbol(
 
 TR::SymbolReference *
 OMR::SymbolReferenceTable::findOrCreateCPSymbol(
-   TR::ResolvedMethodSymbol * owningMethodSymbol, int32_t cpIndex, TR::DataType dataType, bool resolved, void * dataAddress)
+   TR::ResolvedMethodSymbol * owningMethodSymbol, int32_t cpIndex, TR::DataType dataType, bool resolved, void * dataAddress, TR::KnownObjectTable::Index knownObjectIndex)
    {
    TR::StaticSymbol *sym;
    TR_SymRefIterator i(aliasBuilder.cpConstantSymRefs(), self());
@@ -1368,7 +1368,7 @@ OMR::SymbolReferenceTable::findOrCreateCPSymbol(
    sym = TR::StaticSymbol::create(trHeapMemory(),dataType);
    int32_t unresolvedIndex = resolved ? 0 : _numUnresolvedSymbols++;
 
-   symRef = new (trHeapMemory()) TR::SymbolReference(self(), sym, owningMethodSymbol->getResolvedMethodIndex(), cpIndex, unresolvedIndex);
+   symRef = new (trHeapMemory()) TR::SymbolReference(self(), sym, owningMethodSymbol->getResolvedMethodIndex(), cpIndex, unresolvedIndex, knownObjectIndex);
 
    if (resolved)
       sym->setStaticAddress(dataAddress);

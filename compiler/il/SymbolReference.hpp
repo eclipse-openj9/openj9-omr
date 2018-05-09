@@ -73,12 +73,14 @@ public:
                    TR::Symbol *sym,
                    mcount_t owningMethodIndex,
                    int32_t cpIndex,
-                   int32_t unresolvedIndex = 0) :
+                   int32_t unresolvedIndex = 0,
+                   TR::KnownObjectTable::Index knownObjectIndex = TR::KnownObjectTable::UNKNOWN) :
       OMR::SymbolReferenceConnector(symRefTab,
                                     sym,
                                     owningMethodIndex,
                                     cpIndex,
-                                    unresolvedIndex) {}
+                                    unresolvedIndex,
+                                    knownObjectIndex) {}
 
    SymbolReference(TR::SymbolReferenceTable *symRefTab,
                    TR::SymbolReference& sr,

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2017 IBM Corp. and others
+ * Copyright (c) 1991, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -227,7 +227,9 @@ public:
 		asm volatile("lock orq $0x0,(%%rsp)" ::: "memory");
 #elif defined(ARM) /* defined(J9HAMMER) */
 		__sync_synchronize();
-#elif defined(S390) /* defined(ARM) */
+#elif defined(AARCH64) /* defined(ARM) */
+		__asm __volatile ("dmb ish":::"memory")
+#elif defined(S390) /* defined(AARCH64) */
 		asm volatile("bcr 15,0":::"memory");
 #else /* defined(S390) */
 		asm volatile("":::"memory");
@@ -264,7 +266,9 @@ public:
 		*/
 #elif defined(ARM) /* defined(J9X86) || defined(J9HAMMER) */
 		__sync_synchronize();
-#else /* defined(ARM) */
+#elif defined(AARCH64) /* defined(ARM) */
+		__asm __volatile ("dmb ishst":::"memory")
+#else /* defined(AARCH64) */
 		asm volatile("":::"memory");
 #endif /* defined(J9X86) || defined(J9HAMMER) */
 #elif defined(J9ZOS390)
@@ -307,7 +311,9 @@ public:
 		*/
 #elif defined(ARM) /* defined(J9HAMMER) */
 		__sync_synchronize();
-#else /* defined(ARM) */
+#elif defined(AARCH64) /* defined(ARM) */
+		__asm __volatile ("dmb ishld":::"memory")
+#else /* defined(AARCH64) */
 		asm volatile("":::"memory");
 #endif /* defined(J9X86) || defined(J9HAMMER) */
 #elif defined(J9ZOS390)

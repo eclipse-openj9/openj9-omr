@@ -646,14 +646,15 @@ typedef struct J9ProcessorInfos {
 #define OMRPORT_SLOPEN_NO_LOOKUP_MSG_FOR_NOT_FOUND  4
 #define OMRPORT_SLOPEN_OPEN_EXECUTABLE 8     /* Can be ORed without affecting existing flags. */
 
-#define OMRPORT_ARCH_X86  "x86"
-#define OMRPORT_ARCH_PPC  "ppc" 				/* in line with IBM JDK 1.22 and above for AIX and Linux/PPC */
-#define OMRPORT_ARCH_PPC64  "ppc64"
-#define OMRPORT_ARCH_PPC64LE  "ppc64le"
-#define OMRPORT_ARCH_S390  "s390"
-#define OMRPORT_ARCH_S390X  "s390x"
-#define OMRPORT_ARCH_HAMMER  "amd64"
-#define OMRPORT_ARCH_ARM     "arm"
+#define OMRPORT_ARCH_X86       "x86"
+#define OMRPORT_ARCH_PPC       "ppc" 				/* in line with IBM JDK 1.22 and above for AIX and Linux/PPC */
+#define OMRPORT_ARCH_PPC64     "ppc64"
+#define OMRPORT_ARCH_PPC64LE   "ppc64le"
+#define OMRPORT_ARCH_S390      "s390"
+#define OMRPORT_ARCH_S390X     "s390x"
+#define OMRPORT_ARCH_HAMMER    "amd64"
+#define OMRPORT_ARCH_ARM       "arm"
+#define OMRPORT_ARCH_AARCH64   "aarch64"
 
 #define OMRPORT_TTY_IN  0
 #define OMRPORT_TTY_OUT  1

@@ -1514,16 +1514,9 @@ OMR::Z::Machine::assignBestRegisterSingle(TR::Register    *targetRegister,
          }
       else
          {
-         TR::Register *cr=targetRegister->getColouredRegister();
-         // if nothing is using my coloured register use it
-         if (cr && cr->getAssignedRegister() == NULL && cr->getRealRegister()->getState() != TR::RealRegister::Blocked)
-           {
-           assignedRegister = cr->getRealRegister();
-           self()->cg()->setRegisterAssignmentFlag(TR_ByColouring);
-           }
          // New reg assignment, find a free reg.
          // If no free reg available,  free one up
-         if (assignedRegister == NULL && (assignedRegister = self()->findBestFreeRegister(currInst, kindOfRegister, targetRegister, availRegMask)) == NULL)
+         if ((assignedRegister = self()->findBestFreeRegister(currInst, kindOfRegister, targetRegister, availRegMask)) == NULL)
             {
             if (enableHighWordRA && targetRegister->is64BitReg())
                {
@@ -1839,77 +1832,6 @@ OMR::Z::Machine::assignBestRegisterPair(TR::Register    *regPair,
          freeRegisterLow->unblock();
          }
       }
-
-   // Propose coloured registers
-   if(freeRegisterHigh == NULL)
-     {
-     TR::Register *firstCr=firstReg->getColouredRegister();
-     // Lets check to see if partner is assigned to a legal register and partner's match is free
-     bool colouredIsGood=true;
-     if( freeRegisterLow && TR_FPR != regPair->getKind() && self()->isLegalOddRegister(freeRegisterLow, DISALLOWBLOCKED, availRegMask) &&
-         toRealRegister(toRealRegister(freeRegisterLow)->getSiblingRegister())->getState() == TR::RealRegister::Free )
-       colouredIsGood=false; // Default algorithm should pick a better register
-     else if( freeRegisterLow && TR_FPR == regPair->getKind() && self()->isLegalSecondOfFPRegister(freeRegisterLow, DISALLOWBLOCKED, availRegMask) &&
-              toRealRegister(toRealRegister(freeRegisterLow)->getSiblingRegister())->getState() == TR::RealRegister::Free )
-       colouredIsGood=false; // Default algorithm should pick a better register
-     // if nothing is using my coloured register use it
-     if (colouredIsGood && firstCr && toRealRegister(firstCr)->getState() != TR::RealRegister::Blocked)
-       {
-       if(firstCr->getAssignedRegister() == NULL)
-         {
-         freeRegisterHigh = firstCr->getRealRegister();
-         firstCr->setAssignedRegister(firstReg);
-         firstReg->setAssignedRegister(firstCr);
-         freeRegisterHigh->setState(TR::RealRegister::Assigned);
-         self()->cg()->setRegisterAssignmentFlag(TR_ByColouring);
-         self()->cg()->traceRegAssigned(firstReg,freeRegisterHigh);
-         self()->cg()->clearRegisterAssignmentFlags();
-         }
-       else if(firstCr->getAssignedRegister() != firstReg)
-         {
-         // wrong register in coloured
-         freeRegisterHigh = firstCr->getRealRegister();
-         // make sure to block low order reg so whoever is in my register doesn't get placed in my partner's reg
-         freeRegisterHigh->getSiblingRegister()->block();
-         self()->coerceRegisterAssignment(currInst, firstReg, toRealRegister(freeRegisterHigh)->getRegisterNumber(), PAIRREG);
-         freeRegisterHigh->getSiblingRegister()->unblock();
-         }
-       }
-     }
-   if(freeRegisterLow == NULL)
-     {
-     TR::Register *lastCr=lastReg->getColouredRegister();
-     // Lets check to see if partner is assigned to a legal register and partner's match is free
-     bool colouredIsGood=true;
-     if( freeRegisterHigh && TR_FPR != regPair->getKind() && self()->isLegalEvenRegister(freeRegisterHigh, DISALLOWBLOCKED, availRegMask) &&
-         toRealRegister(toRealRegister(freeRegisterHigh)->getSiblingRegister())->getState() == TR::RealRegister::Free )
-       colouredIsGood=false; // Default algorithm should pick a better register
-     else if( freeRegisterHigh && TR_FPR == regPair->getKind() && self()->isLegalFirstOfFPRegister(freeRegisterHigh, DISALLOWBLOCKED, availRegMask) &&
-              toRealRegister(toRealRegister(freeRegisterHigh)->getSiblingRegister())->getState() == TR::RealRegister::Free )
-       colouredIsGood=false; // Default algorithm should pick a better register
-     // if nothing is using my coloured register use it
-     if (colouredIsGood && lastCr && toRealRegister(lastCr)->getState() != TR::RealRegister::Blocked)
-       {
-       if(lastCr->getAssignedRegister() == NULL)
-         {
-         freeRegisterLow = lastCr->getRealRegister();
-         lastCr->setAssignedRegister(lastReg);
-         lastReg->setAssignedRegister(lastCr);
-         freeRegisterLow->setState(TR::RealRegister::Assigned);
-         self()->cg()->setRegisterAssignmentFlag(TR_ByColouring);
-         self()->cg()->traceRegAssigned(lastReg,freeRegisterLow);
-         self()->cg()->clearRegisterAssignmentFlags();
-         }
-       else if(lastCr->getAssignedRegister() != lastReg)
-         {
-         // wrong register in coloured
-         freeRegisterLow = lastCr->getRealRegister();
-         freeRegisterLow->getSiblingRegister()->block();
-         self()->coerceRegisterAssignment(currInst, lastReg, toRealRegister(freeRegisterLow)->getRegisterNumber(), PAIRREG);
-         freeRegisterLow->getSiblingRegister()->unblock();
-         }
-       }
-     }
 
    if ( ((regPair->getKind() != TR_FPR) && (regPair->getKind() != TR_VRF) &&
           self()->isLegalEvenOddPair(freeRegisterHigh, freeRegisterLow, availRegMask))
@@ -2956,15 +2878,8 @@ OMR::Z::Machine::findBestFreeRegister(TR::Instruction   *currentInstruction,
    uint32_t randomPreference;
    TR::Compilation *comp = self()->cg()->comp();
 
-   uint32_t preference = 0;
-   if(virtualReg != NULL)
-     {
-     TR::Register *cr=virtualReg->getColouredRegister();
-     if(cr)
-       preference = toRealRegister(cr)->getRegisterNumber();
-     else
-       preference = virtualReg->getAssociation();
-     }
+   uint32_t preference = (virtualReg != NULL) ? virtualReg->getAssociation() : 0;
+
    bool useGPR0 = (virtualReg == NULL) ? false : (virtualReg->isUsedInMemRef() == false);
    bool liveRegOn = (self()->cg()->getLiveRegisters(rk) != NULL);
    bool enableHighWordRA = self()->cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) &&
@@ -6087,8 +6002,6 @@ uint64_t OMR::Z::Machine::filterColouredRegisterConflicts(TR::Register *targetRe
     for(auto reg = conflictRegs.begin(); reg != conflictRegs.end(); ++reg)
       {
       TR::Register *cr=(*reg)->getRealRegister() ? NULL : (*reg)->getAssignedRegister();
-      if(cr==NULL)
-        cr=(*reg)->getRealRegister() ? NULL : (*reg)->getColouredRegister();
       if (cr && targetRegister != (*reg) && (*reg)->getAssignedRegister() != targetRegister &&
          (siblingRegister == NULL || (*reg) != siblingRegister))
          {
@@ -6101,8 +6014,6 @@ uint64_t OMR::Z::Machine::filterColouredRegisterConflicts(TR::Register *targetRe
   for(auto reg = conflictRegs.begin(); reg != conflictRegs.end(); ++reg)
     {
     TR::Register *cr=(*reg)->getRealRegister() ? NULL : (*reg)->getAssignedRegister();
-    if(cr==NULL)
-      cr=(*reg)->getRealRegister() ? NULL : (*reg)->getColouredRegister();
     if (cr && targetRegister != (*reg) && (*reg)->getAssignedRegister() != targetRegister &&
        (siblingRegister == NULL || (*reg) != siblingRegister))
        {

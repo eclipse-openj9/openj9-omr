@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -78,9 +78,6 @@ class OMR_EXTENSIBLE Register
 
    TR::Register *getAssignedRegister()               {return _assignedRegister;}
    TR::Register *setAssignedRegister(TR::Register *r) {return (_assignedRegister = r);}
-
-   TR::Register *getColouredRegister()               {return _colouredRegister;}
-   TR::Register *setColouredRegister(TR::Register *r) {return (_colouredRegister = r);}
 
    TR::Register *getSiblingRegister()               {return _siblingRegister;}
    TR::Register *setSiblingRegister(TR::Register *r) {return (_siblingRegister = r);}
@@ -200,7 +197,6 @@ class OMR_EXTENSIBLE Register
    TR::AutomaticSymbol       *_pinningArrayPointer;   // pinning array object if containing internal ptr
 
    TR::Register              *_assignedRegister;      // register to which this register is assigned
-   TR::Register              *_colouredRegister;      // register to which this register has been coloured to
    TR::Register              *_siblingRegister;       // Sibling to a register pair
 
    TR::Instruction   *_startOfRange;    // start of live range

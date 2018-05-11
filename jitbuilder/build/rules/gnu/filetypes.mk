@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2016, 2016 IBM Corp. and others
+# Copyright (c) 2016, 2018 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -246,4 +246,42 @@ endef
 RULE.spp=$(eval $(DEF_RULE.spp))
 
 endif # ($(HOST_ARCH),arm)
+##### END ARM SPECIFIC RULES #####
+
+##### START ARM SPECIFIC RULES #####
+ifeq ($(HOST_ARCH),aarch64)
+
+#
+# Preprocess .aarch64asm file into .spp
+#
+define DEF_RULE.aarch64asm
+$(1).spp: $(2)
+	@mkdir -p $$(dir $$@)
+	$$(ARMASM_CMD) -f $$(ARMASM_SCRIPT) $$< > $$@
+
+jit_clean::
+	rm -f $(1).spp
+
+$(call RULE.spp,$(1),$(1).spp)
+endef
+
+RULE.armasm=$(eval $(DEF_RULE.armasm))
+
+#
+# Preprocess .spp file into .s
+#
+define DEF_RULE.spp
+$(1).s: $(2)
+	@mkdir -p $$(dir $$@)
+	$$(SPP_CMD) $$(SPP_FLAGS) $$(patsubst %,-D%,$$(SPP_DEFINES)) $$(patsubst %,-I'%',$$(SPP_INCLUDES)) -o $$@ -x assembler-with-cpp -E -P $$<
+
+jit_clean::
+	rm -f $(1).s
+
+$(call RULE.s,$(1),$(1).s)
+endef
+
+RULE.spp=$(eval $(DEF_RULE.spp))
+
+endif # ($(HOST_ARCH),aarch64)
 ##### END ARM SPECIFIC RULES #####

@@ -2263,6 +2263,8 @@ $as_echo_n "checking OMR_BUILD_ARCH... " >&6; }
 case $build_cpu in #(
   *arm*) :
     OMR_BUILD_ARCH=arm ;; #(
+  aarch64) :
+    OMR_BUILD_ARCH=aarch64 ;; #(
   powerpc*) :
     OMR_BUILD_ARCH=ppc ;; #(
   i370) :

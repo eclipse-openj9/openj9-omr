@@ -1,5 +1,5 @@
 <!--
-Copyright (c) 2016, 2017 IBM Corp. and others
+Copyright (c) 2016, 2018 IBM Corp. and others
 
 This program and the accompanying materials are made available under
 the terms of the Eclipse Public License 2.0 which accompanies this
@@ -51,6 +51,7 @@ Each project also provides some specializations for the various supported
 architectures. These are also assigned namespaces as follows:
 
 - `ARM`: for the ARM architecture
+- `ARM64`: for the ARM architecture
 - `Power`: for IBM Power architecture
 - `X86`: for general x86
   - `AMD64`: for 64-bit x86 (x86-64)
@@ -67,7 +68,7 @@ namespace (rooted in the code name for the compiler technology which was
 _Testasrossa_). 
 
 In the case of extensible classes, we expose them to consumers by providing a
-terminating subclass in the `TR::` namespace, which we call the _Concrete_ 
+terminating subclass in the `TR::` namespace, which we call the _Concrete_
 class. 
 
 In the case of classes that aren't extensible, It is perfectly legitimate to
@@ -85,7 +86,7 @@ specializations. The project directories are:
 - `test`
 
 The architecture sub-directories are:
-
+- `AArch64`: for ARM 64-Bit
 - `arm`: for ARM
 - `p`: for IBM's Power architecture
 - `x`: for x86

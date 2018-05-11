@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2016, 2016 IBM Corp. and others
+# Copyright (c) 2016, 2018 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -52,6 +52,13 @@ ifeq ($(PLATFORM),arm-linux-gcc-cross)
     export CXX_PATH?=arm-bcm2708hardfp-linux-gnueabi-g++
     export AS_PATH?=arm-bcm2708hardfp-linux-gnueabi-as
     PLATFORM=arm-linux-gcc
+endif
+
+ifeq ($(PLATFORM),aarch64-linux-gcc-cross)
+    export CC_PATH?=aarch64-linux-gnueabi-gcc
+    export CXX_PATH?=aarch64-linux-gnueabi-g++
+    export AS_PATH?=aarch64-linux-gnueabi-as
+    PLATFORM=aarch64-linux-gcc
 endif
 
 

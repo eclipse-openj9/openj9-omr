@@ -1,5 +1,5 @@
 <!--
-Copyright (c) 2016, 2017 IBM Corp. and others
+Copyright (c) 2016, 2018 IBM Corp. and others
 
 This program and the accompanying materials are made available under
 the terms of the Eclipse Public License 2.0 which accompanies this
@@ -74,6 +74,7 @@ infra/     | Support infrastructure.
 optimizer/ | High-level, IL tree-based optimizations and utilities.
 ras/       | Debug and servicability utilities, including tracing and logging.
 runtime/   | Post-compilation services available to compiled code at runtime.
+aarch64/   | AArch64 processor specializations
 arm/       | ARM processor specializations
 x/         | X86 processor specializations
 p/         | Power processor specializations

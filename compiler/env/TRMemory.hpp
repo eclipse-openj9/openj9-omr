@@ -503,6 +503,65 @@ public:
 
 extern TR_PersistentMemory * trPersistentMemory;
 
+class TR_TypedPersistentAllocatorBase
+   {
+public:
+
+   void *allocate(size_t size, void * hint = 0)
+      {
+      return trPersistentMemory->allocatePersistentMemory(size, TR_MemoryBase::UnknownType);
+      }
+   void deallocate(void * p, size_t sizeHint = 0) throw()
+      {
+      trPersistentMemory->freePersistentMemory(p);
+      }
+
+   friend bool operator ==(const TR_TypedPersistentAllocatorBase &left, const TR_TypedPersistentAllocatorBase &right)
+      {
+      return &left == &right;
+      }
+   friend bool operator !=(const TR_TypedPersistentAllocatorBase &left, const TR_TypedPersistentAllocatorBase &right)
+      {
+      return !operator ==(left, right);
+      }
+
+   // Enable automatic conversion into a form compatible with C++ standard library containers
+   template<typename T> operator TR::typed_allocator<T, TR_TypedPersistentAllocatorBase& >()
+      {
+      return TR::typed_allocator<T, TR_TypedPersistentAllocatorBase& >(*this);
+      }
+   };
+
+template <TR_MemoryBase::ObjectType O>
+class TR_TypedPersistentAllocator : public TR_TypedPersistentAllocatorBase
+   {
+public:
+
+   void *allocate(size_t size, void * hint = 0)
+      {
+      return trPersistentMemory->allocatePersistentMemory(size, O);
+      }
+   void deallocate(void * p, size_t sizeHint = 0) throw()
+      {
+      trPersistentMemory->freePersistentMemory(p);
+      }
+
+   friend bool operator ==(const TR_TypedPersistentAllocator<O> &left, const TR_TypedPersistentAllocator<O> &right)
+      {
+      return &left == &right;
+      }
+   friend bool operator !=(const TR_TypedPersistentAllocator<O> &left, const TR_TypedPersistentAllocator<O> &right)
+      {
+      return !operator ==(left, right);
+      }
+
+   // Enable automatic conversion into a form compatible with C++ standard library containers
+   template<typename T> operator TR::typed_allocator<T, TR_TypedPersistentAllocator<O>& >()
+      {
+      return TR::typed_allocator<T, TR_TypedPersistentAllocator<O>& >(*this);
+      }
+   };
+
 class TR_MemoryAllocationType
    {
 protected:
@@ -705,7 +764,7 @@ TR_HeapMemory::allocate(size_t size, TR_MemoryBase::ObjectType ot)
    TR_PERSISTENT_ALLOC_WITHOUT_NEW(a) \
    TR_PERSISTENT_NEW(a)
 
-#define TR_ALLOC(a) \
+#define TR_ALLOC_IMPL(a) \
    TR_ALLOC_WITHOUT_NEW(a) \
    TR_PERSISTENT_NEW(a) \
    void * operator new (size_t s, TR_ArenaAllocator *m)                  {return m->allocate(s);} \
@@ -727,7 +786,15 @@ TR_HeapMemory::allocate(size_t size, TR_MemoryBase::ObjectType ot)
    void operator delete(void * p, TR::Region &region) { region.deallocate(p); } \
    void * operator new[](size_t size, TR::Region &region) { return region.allocate(size); } \
    void operator delete[](void * p, TR::Region &region) { region.deallocate(p); } \
+   static TrackedPersistentAllocator getPersistentAllocator() { return TrackedPersistentAllocator(); } \
 
+#define TR_ALLOC(a) \
+   typedef TR_TypedPersistentAllocatorBase TrackedPersistentAllocator; \
+   TR_ALLOC_IMPL(a) \
+
+#define TR_ALLOC_SPECIALIZED(a) \
+   typedef TR_TypedPersistentAllocator<a> TrackedPersistentAllocator; \
+   TR_ALLOC_IMPL(a) \
 
 class TRPersistentMemoryAllocator
    {
@@ -1159,6 +1226,12 @@ typedef CS2::arena_allocator  <65536, TR::Allocator> TR_ArenaAllocator;
  * reduce the verbosity involved in declaring a typed_allocator
  * everytime we need an stl object.
  */
+template <typename T, class Alloc>
+static inline TR::typed_allocator<T, Alloc> getTypedAllocator(Alloc al)
+{
+   TR::typed_allocator<T, Alloc> ta(al);
+   return ta;
+}
 
 template <typename T>
 static inline TR::typed_allocator<T, TR::Allocator> getTypedAllocator(TR::Allocator al)

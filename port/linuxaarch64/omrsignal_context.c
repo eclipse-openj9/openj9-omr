@@ -136,7 +136,7 @@ walkReserveSpace(uint32_t magic_to_find, uint8_t *reserved_space)
 	int i = 0;
 	while ( RESERVED_SPACE_SZ > i ) {
 		struct _aarch64_ctx *header = (struct _aarch64_ctx *)&reserved_space[i];
-		if ( NULL == header || 0 < header->size ) {
+		if ( NULL == header || 0 == header->size ) {
 			return NULL;
 		} else if ( magic_to_find == header->magic ) {
 			return (void*)&reserved_space[i];

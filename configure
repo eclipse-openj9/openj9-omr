@@ -686,6 +686,7 @@ OMR_GC_COMPRESSED_POINTERS
 OMR_ENV_DATA64
 OMR_ARCH_S390
 OMR_ARCH_X86
+OMR_ARCH_AARCH64
 OMR_ARCH_ARM
 OMR_ARCH_POWER
 OMR_PORT_ASYNC_HANDLER
@@ -861,6 +862,7 @@ enable_OMR_GC_VLHGC
 enable_OMR_PORT_ASYNC_HANDLER
 enable_OMR_ARCH_POWER
 enable_OMR_ARCH_ARM
+enable_OMR_ARCH_AARCH64
 enable_OMR_ARCH_X86
 enable_OMR_ARCH_S390
 enable_OMR_ENV_DATA64
@@ -1627,6 +1629,7 @@ Optional Features:
 
   --enable-OMR_ARCH_POWER
   --enable-OMR_ARCH_ARM
+  --enable-OMR_ARCH_AARCH64
   --enable-OMR_ARCH_X86
   --enable-OMR_ARCH_S390
   --enable-OMR_ENV_DATA64
@@ -1701,7 +1704,7 @@ Some influential environment variables:
               aix,linux,osx,win,zos
   OMR_HOST_ARCH
               The architecture of the CPU where the package will run. One of:
-              arm,ppc,s390,x86
+              aarch64,arm,ppc,s390,x86
   OMR_TARGET_DATASIZE
               Specifies whether the package will run in 32- or 64-bit mode.
               One of: 31,32,64
@@ -2669,7 +2672,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 ###############################################################################
-# Copyright (c) 2015, 2016 IBM Corp. and others
+# Copyright (c) 2015, 2018 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -2991,6 +2994,8 @@ if test "x$OMR_HOST_ARCH" = "x"; then :
   case $host_cpu in #(
   *arm*) :
     OMR_HOST_ARCH=arm ;; #(
+  aarch64) :
+    OMR_HOST_ARCH=aarch64 ;; #(
   powerpc*) :
     OMR_HOST_ARCH=ppc ;; #(
   i370) :
@@ -6143,6 +6148,25 @@ else
 fi
 else
   OMR_ARCH_ARM=0
+
+
+fi
+
+
+# Check whether --enable-OMR_ARCH_AARCH64 was given.
+if test "${enable_OMR_ARCH_AARCH64+set}" = set; then :
+  enableval=$enable_OMR_ARCH_AARCH64; if test "x${enableval}" = xyes; then :
+  OMR_ARCH_AARCH64=1
+
+   $as_echo "#define OMR_ARCH_AARCH64 1" >>confdefs.h
+
+else
+  OMR_ARCH_AARCH64=0
+
+
+fi
+else
+  OMR_ARCH_AARCH64=0
 
 
 fi

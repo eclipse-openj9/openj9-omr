@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2017 IBM Corp. and others
+# Copyright (c) 2017, 2018 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -258,6 +258,11 @@ if(OMR_HOST_OS STREQUAL "linux")
 	if(OMR_ARCH_ARM)
 		list(APPEND VPATH linuxarm)
 		target_include_directories(omrport_obj PRIVATE linuxarm)
+	endif()
+
+	if(OMR_ARCH_AARCH64)
+		list(APPEND VPATH linuxaarch64)
+		target_include_directories(omrport_obj PRIVATE linuxaarch64)
 	endif()
 
 	if(OMR_ARCH_X86)

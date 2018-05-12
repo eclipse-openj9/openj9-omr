@@ -356,6 +356,33 @@ ifeq ($(HOST_ARCH),arm)
 endif
 
 #
+# Now setup stuff for AARCH64 assembly
+#
+ifeq ($(HOST_ARCH),aarch64)
+    AARCH64ASM_CMD?=$(SED_PATH)
+
+    SPP_CMD?=$(CC_PATH)
+    
+    SPP_INCLUDES=$(PRODUCT_INCLUDES)
+    
+    SPP_DEFINES+=$(CX_DEFINES)
+    SPP_FLAGS+=$(CX_FLAGS)
+    
+    ifeq ($(BUILD_CONFIG),debug)
+        SPP_DEFINES+=$(SPP_DEFINES_DEBUG)
+        SPP_FLAGS+=$(SPP_FLAGS_DEBUG)
+    endif
+
+    ifeq ($(BUILD_CONFIG),prod)
+        SPP_DEFINES+=$(SPP_DEFINES_PROD)
+        SPP_FLAGS+=$(SPP_FLAGS_PROD)
+    endif
+    
+    SPP_DEFINES+=$(SPP_DEFINES_EXTRA)
+    SPP_FLAGS+=$(SPP_FLAGS_EXTRA)
+endif
+
+#
 # Setup the archiver
 #
 AR_CMD?=$(AR_PATH)

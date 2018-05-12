@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2017 IBM Corp. and others
+# Copyright (c) 2017, 2018 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -21,7 +21,7 @@
 
 # Translate from CMake's view of the system to the OMR view of the system.
 # Exports a number of variables indicicating platform, os, endianness, etc.
-# - OMR_ARCH_{X86,ARM,S390} # TODO: Add POWER
+# - OMR_ARCH_{AARCH64,X86,ARM,S390} # TODO: Add POWER
 # - OMR_ENV_DATA{32,64}
 # - OMR_ENV_TARGET_DATASIZE (either 32 or 64)
 # - OMR_ENV_LITTLE_ENDIAN
@@ -45,6 +45,11 @@ macro(omr_detect_system_information)
 		set(OMR_ARCH_ARM ON)
 		set(OMR_ENV_LITTLE_ENDIAN ON)
 		set(OMR_TEMP_DATA_SIZE "32")
+	elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64")
+		set(OMR_HOST_ARCH "aarch64")
+		set(OMR_ARCH_AARCH64 ON)
+		set(OMR_ENV_LITTLE_ENDIAN ON)
+		set(OMR_TEMP_DATA_SIZE "64")
 	elseif(CMAKE_SYSTEM_NAME MATCHES "OS390")
 		set(OMR_HOST_ARCH "s390")
 		set(OMR_ARCH_S390 ON)

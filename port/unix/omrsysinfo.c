@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2017 IBM Corp. and others
+ * Copyright (c) 2015, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -451,6 +451,8 @@ omrsysinfo_get_CPU_architecture(struct OMRPortLibrary *portLibrary)
 	return OMRPORT_ARCH_HAMMER;
 #elif defined(J9ARM)
 	return OMRPORT_ARCH_ARM;
+#elif defined(J9AARCH64)
+	return OMRPORT_ARCH_AARCH64;
 #else
 	return "unknown";
 #endif

@@ -106,17 +106,16 @@ omrsig_protect(struct OMRPortLibrary *portLibrary,  omrsig_protected_fn fn, void
 	return 0;
 }
 
-uint32_t
+int32_t
 omrsig_set_async_signal_handler(struct OMRPortLibrary *portLibrary, omrsig_handler_fn handler, void *handler_arg, uint32_t flags)
 {
-
-	uint32_t rc = 0;
+	int32_t rc = 0;
 	J9Win32AsyncHandlerRecord *cursor;
 	J9Win32AsyncHandlerRecord **previousLink;
 
 	if (OMRPORT_SIG_OPTIONS_REDUCED_SIGNALS_ASYNCHRONOUS & signalOptions) {
 		/* -Xrs was set, do not install any handlers */
-		return 1;
+		return OMRPORT_SIG_ERROR;
 	}
 
 	omrthread_monitor_enter(asyncMonitor);
@@ -154,7 +153,7 @@ omrsig_set_async_signal_handler(struct OMRPortLibrary *portLibrary, omrsig_handl
 			J9Win32AsyncHandlerRecord *record = portLibrary->mem_allocate_memory(portLibrary, sizeof(*record), OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
 
 			if (record == NULL) {
-				rc = 1;
+				rc = OMRPORT_SIG_ERROR;
 			} else {
 				record->portLib = portLibrary;
 				record->handler = handler;
@@ -193,6 +192,12 @@ omrsig_map_os_signal_to_portlib_signal(struct OMRPortLibrary *portLibrary, uint3
 
 int32_t
 omrsig_map_portlib_signal_to_os_signal(struct OMRPortLibrary *portLibrary, uint32_t portlibSignalFlag)
+{
+	return OMRPORT_SIG_ERROR;
+}
+
+int32_t
+omrsig_register_os_handler(struct OMRPortLibrary *portLibrary, uint32_t portlibSignalFlag, void *newOSHandler, void **oldOSHandler)
 {
 	return OMRPORT_SIG_ERROR;
 }

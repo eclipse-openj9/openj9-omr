@@ -1100,7 +1100,7 @@ TEST(PortSigTest, sig_test_async_unix_handler)
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
 	const char *testName = "omrsig_test_async_unix_handler";
 	AsyncHandlerInfo handlerInfo;
-	uint32_t setAsyncRC;
+	int32_t setAsyncRC;
 	unsigned int index;
 	omrthread_monitor_t asyncMonitor;
 	intptr_t monitorRC;

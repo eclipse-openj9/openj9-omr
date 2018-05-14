@@ -163,16 +163,16 @@ omrsig_protect(struct OMRPortLibrary *portLibrary,  omrsig_protected_fn fn, void
  * @note A handler should not do anything to cause the reporting thread to terminate (e.g. call omrthread_exit()) as that may prevent
  *  future signals from being reported.
  *
- * @return 0 on success
+ * @return 0 on success or non-zero on failure
  */
-uint32_t
+int32_t
 omrsig_set_async_signal_handler(struct OMRPortLibrary *portLibrary, omrsig_handler_fn handler, void *handler_arg, uint32_t flags)
 {
-	return 1;
+	return OMRPORT_SIG_ERROR;
 }
 
 
-/*
+/**
  * @brief Similar to omrsig_set_async_signal_handler. Refer to omrsig_set_async_signal_handler's description above.
  * A new element is added to the asyncHandlerList for omrsig_handler_fn, and masterASynchSignalHandler is registered
  * with the OS for the signal corresponding to the specified portlibSignalFlag. masterASynchSignalHandler invokes
@@ -180,8 +180,11 @@ omrsig_set_async_signal_handler(struct OMRPortLibrary *portLibrary, omrsig_handl
  * entry corresponding to omrsig_handler_fn is removed, and related resources are freed. portlibSignalFlag can only
  * have one signal flag set; otherwise, OMRPORT_SIG_ERROR is returned. One omrsig_handler_fn handler is registered
  * with a signal at any time instead of multiple handlers. When associating a new omrsig_handler_fn with a signal,
- * prior omrsig_handler_fn(s) are dissociated from the signal. The address of the old signal handler function is
- * stored in oldOSHandler. This function supports all signals listed in OMRPORT_SIG_FLAG_SIGALLASYNC.
+ * prior omrsig_handler_fn(s) are dissociated from the signal. This function supports all signals listed in
+ * OMRPORT_SIG_FLAG_SIGALLASYNC.
+ *
+ * The address of the old signal handler function is stored in *oldOSHandler. In case of error or if NULL is provided
+ * for oldOSHandler, then *oldOSHandler is not updated to reflect the old signal handler function.
  *
  * @param[in] portLibrary The port library
  * @param[in] handler the function to call if an asynchronous signal arrives
@@ -197,21 +200,21 @@ omrsig_set_single_async_signal_handler(struct OMRPortLibrary *portLibrary, omrsi
 	return OMRPORT_SIG_ERROR;
 }
 
-/*
+/**
  * @brief Given an OS signal value, return the corresponding port library signal flag.
  *
  * @param[in] portLibrary The port library
  * @param[in] osSignalValue OS signal value
  *
  * @return port library signal flag on success and 0 on failure
-*/
+ */
 uint32_t
 omrsig_map_os_signal_to_portlib_signal(struct OMRPortLibrary *portLibrary, uint32_t osSignalValue)
 {
 	return 0;
 }
 
-/*
+/**
  * @brief Given a port library signal flag, return the corresponding OS signal value.
  *
  * @param[in] portLibrary The port library
@@ -221,6 +224,55 @@ omrsig_map_os_signal_to_portlib_signal(struct OMRPortLibrary *portLibrary, uint3
  */
 int32_t
 omrsig_map_portlib_signal_to_os_signal(struct OMRPortLibrary *portLibrary, uint32_t portlibSignalFlag)
+{
+	return OMRPORT_SIG_ERROR;
+}
+
+/**
+ * @brief Register a handler with the OS. For an invalid portlibSignalFlag, an error is returned.
+ * portlibSignalFlag is invalid: if it is zero or if multiple signal bits are specified or if the
+ * specified flag is not supported. If OS fails to register newOSHandler for the specified signal,
+ * then an error is returned.
+ *
+ * The address of the old signal handler function is stored in *oldOSHandler. In case of error or
+ * if NULL is provided for oldOSHandler, then *oldOSHandler is not updated to reflect the old
+ * signal handler function.
+ *
+ * This function may override a master handler which was previously set by omrsig_protect or
+ * omrsig_set_*_async_signal_handler variant. The records associated with the master handler
+ * for the portlibSignalFlag signal are left unchanged when this function overrides the master
+ * handler. When the master handler is re-registered with the portlibSignalFlag signal, then
+ * the records associated with master handler don't need to be restored. An example of records
+ * is J9*AsyncHandlerRecord(s) in asyncHandlerList.
+ *
+ * Each platform variant of omrsignal.c should have a signalMap. signalMap should have a list of
+ * signals, which are supported on a platform. This function supports all signals listed in
+ * omrsignal.c::signalMap.
+ *
+ * On Unix variants, sigaction is used to register the handler. SA_SIGINFO flag is set.
+ * So, the signature of the signal handling function should be void (*)(int, siginfo_t *, void *).
+ * On zLinux, the signature changes to void (*)(int, siginfo_t *, void *, uintptr_t).
+ *
+ * sigaction isn't available on Windows. On Windows, signal is used to register the handler.
+ * The signature of the signal handling function should be void (*)(int).
+ *
+ * On Unix variants, original OS handler is cached in oldActions while registering the first handler
+ * with the OS. The original OS handler is restored during shutdown. If OMRSIG_SIGACTION is called outside
+ * OMR, then the original OS handler can get overwritten without being cached in oldActions. Subsequently,
+ * the oldActions can cache a user handler instead of the original OS handler. During shutdown, the
+ * original OS handler can be restored incorrectly. omrsig_register_os_handler lets a user register a
+ * handler with the OS while properly caching the original OS handler. The original OS handler is properly
+ * restored during shutdown.
+ *
+ * @param[in] portLibrary The port library
+ * @param[in] portlibSignalFlag a single port library signal flag
+ * @param[in] newOSHandler the new signal handler function to register
+ * @param[out] oldOSHandler points to the old signal handler function
+ *
+ * @return 0 on success or non-zero on failure
+ */
+int32_t
+omrsig_register_os_handler(struct OMRPortLibrary *portLibrary, uint32_t portlibSignalFlag, void *newOSHandler, void **oldOSHandler)
 {
 	return OMRPORT_SIG_ERROR;
 }

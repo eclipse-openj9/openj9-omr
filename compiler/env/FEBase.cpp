@@ -20,9 +20,6 @@
  *******************************************************************************/
 
 #include <stddef.h>
-#include <unistd.h> // for getpid
-#include <sys/time.h>
-#include <sys/types.h> // for getpid
 #include "codegen/CodeGenerator.hpp"
 #include "compile/CompilationTypes.hpp"
 #include "compile/ResolvedMethod.hpp"

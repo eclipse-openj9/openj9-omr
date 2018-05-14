@@ -472,7 +472,7 @@ TR::forward_list< T, Alloc >::insert_after(iterator position, const value_type &
    {
    ListElement *newElement = _allocator.allocate(1);
    _allocator.construct(newElement, ListElement(position._element->_next, value));
-   position.element->_next = newElement;
+   position._element->_next = newElement;
    }
 
 //template < typename T, typename Alloc >

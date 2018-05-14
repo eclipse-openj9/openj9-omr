@@ -166,7 +166,7 @@ private:
    SymbolContainer _symbols;
 
    typedef TR::typed_allocator< ELFObjectFileRelocation, TR::RawAllocator > RelocationContainerAllocator;
-   typedef std::vector< ELFObjectFileRelocation, SymbolContainerAllocator > RelocationContainer;
+   typedef std::vector< ELFObjectFileRelocation, RelocationContainerAllocator > RelocationContainer;
    RelocationContainer _relocations;
 
    size_t _totalELFSymbolNamesLength;

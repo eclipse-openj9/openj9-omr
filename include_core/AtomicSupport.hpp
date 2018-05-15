@@ -228,7 +228,7 @@ public:
 #elif defined(ARM) /* defined(J9HAMMER) */
 		__sync_synchronize();
 #elif defined(AARCH64) /* defined(ARM) */
-		__asm __volatile ("dmb ish":::"memory")
+		__asm __volatile ("dmb ish":::"memory");
 #elif defined(S390) /* defined(AARCH64) */
 		asm volatile("bcr 15,0":::"memory");
 #else /* defined(S390) */
@@ -267,7 +267,7 @@ public:
 #elif defined(ARM) /* defined(J9X86) || defined(J9HAMMER) */
 		__sync_synchronize();
 #elif defined(AARCH64) /* defined(ARM) */
-		__asm __volatile ("dmb ishst":::"memory")
+		__asm __volatile ("dmb ishst":::"memory");
 #else /* defined(AARCH64) */
 		asm volatile("":::"memory");
 #endif /* defined(J9X86) || defined(J9HAMMER) */
@@ -312,7 +312,7 @@ public:
 #elif defined(ARM) /* defined(J9HAMMER) */
 		__sync_synchronize();
 #elif defined(AARCH64) /* defined(ARM) */
-		__asm __volatile ("dmb ishld":::"memory")
+		__asm __volatile ("dmb ishld":::"memory");
 #else /* defined(AARCH64) */
 		asm volatile("":::"memory");
 #endif /* defined(J9X86) || defined(J9HAMMER) */

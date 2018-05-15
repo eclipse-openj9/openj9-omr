@@ -175,6 +175,11 @@ public:
       return m.allocate(s);
       }
 
+   void operator delete(void *gcStackMap, TR_HeapMemory m, uint32_t numberOfSlotsToMap)
+      {
+          m.deallocate(gcStackMap);
+      }
+
    void allocateLiveMonitorBits(TR_Memory * m)
       {
       _liveMonitorBits = (uint8_t *)m->allocateHeapMemory(getMapSizeInBytes());

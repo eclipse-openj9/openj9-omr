@@ -629,12 +629,7 @@ MM_MemorySubSpaceGeneric::expanded(MM_EnvironmentBase* env, MM_PhysicalSubArena*
 	bool result = heapAddRange(env, this, size, lowAddress, highAddress);
 
 	if (result) {
-		/* Feed the range to the memory pool */
-		_memoryPool->expandWithRange(env, size, lowAddress, highAddress, canCoalesce);
-
-		if (MEMORY_TYPE_OLD == (getTypeFlags() & MEMORY_TYPE_OLD)) {
-			addTenureRange(env, size, lowAddress, highAddress);
-		}
+		addExistingMemory(env, subArena, size, lowAddress, highAddress, canCoalesce);
 	}
 	return result;
 }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -447,13 +447,13 @@ namespace Z
 #define S390OpProp_ImplicitlySetsGPR1     static_cast<uint64_t>(0x0000080000000000ull)
 #define S390OpProp_ImplicitlySetsGPR2     static_cast<uint64_t>(0x0000100000000000ull)
 #define S390OpProp_IsCompare              static_cast<uint64_t>(0x0000200000000000ull)
-// Available                              static_cast<uint64_t>(0x0000400000000000ull)
-// Available                              static_cast<uint64_t>(0x0000800000000000ull)
-// Available                              static_cast<uint64_t>(0x0001000000000000ull)
-// Available                              static_cast<uint64_t>(0x0002000000000000ull)
-// Available                              static_cast<uint64_t>(0x0004000000000000ull)
-// Available                              static_cast<uint64_t>(0x0008000000000000ull)
-// Available                              static_cast<uint64_t>(0x0010000000000000ull)
+#define S390OpProp_UsesM3                 static_cast<uint64_t>(0x0000400000000000ull)
+#define S390OpProp_UsesM4                 static_cast<uint64_t>(0x0000800000000000ull)
+#define S390OpProp_UsesM5                 static_cast<uint64_t>(0x0001000000000000ull)
+#define S390OpProp_UsesM6                 static_cast<uint64_t>(0x0002000000000000ull)
+#define S390OpProp_HasExtendedMnemonic    static_cast<uint64_t>(0x0004000000000000ull)
+#define S390OpProp_VectorStringOp         static_cast<uint64_t>(0x0008000000000000ull)
+#define S390OpProp_VectorFPOp             static_cast<uint64_t>(0x0010000000000000ull)
 // Available                              static_cast<uint64_t>(0x0020000000000000ull)
 // Available                              static_cast<uint64_t>(0x0040000000000000ull)
 // Available                              static_cast<uint64_t>(0x0080000000000000ull)
@@ -465,15 +465,6 @@ namespace Z
 #define S390OpProp_ImplicitlySetsGPR4     static_cast<uint64_t>(0x2000000000000000ull)
 #define S390OpProp_ImplicitlySetsGPR5     static_cast<uint64_t>(0x4000000000000000ull)
 // Available                              static_cast<uint64_t>(0x8000000000000000ull)
-
-/* Instruction Properties 2 (One hot encoding) */
-#define S390OpProp2_UsesM3                static_cast<uint64_t>(0x0000000000000001ull)
-#define S390OpProp2_UsesM4                static_cast<uint64_t>(0x0000000000000002ull)
-#define S390OpProp2_UsesM5                static_cast<uint64_t>(0x0000000000000004ull)
-#define S390OpProp2_UsesM6                static_cast<uint64_t>(0x0000000000000008ull)
-#define S390OpProp2_HasExtendedMnemonic   static_cast<uint64_t>(0x0000000000000010ull)
-#define S390OpProp2_VectorStringOp        static_cast<uint64_t>(0x0000000000000020ull)
-#define S390OpProp2_VectorFPOp            static_cast<uint64_t>(0x0000000000000040ull)
 
 class InstOpCode: public OMR::InstOpCode
    {
@@ -579,7 +570,6 @@ class InstOpCode: public OMR::InstOpCode
 
    /* Static tables(array) that uses the OpCode as the index */
    static const uint64_t            properties[NumOpCodes];
-   static const uint64_t            properties2[NumOpCodes];
    static const OpCodeBinaryEntry   binaryEncodings[NumOpCodes];
    static const char *              opCodeToNameMap[NumOpCodes];
 
@@ -672,13 +662,13 @@ class InstOpCode: public OMR::InstOpCode
    uint64_t isLabel() {return _mnemonic == LABEL;}
    uint64_t isBeginBlock() {return _mnemonic == LABEL;}
 
-   uint64_t usesM3() {return properties2[_mnemonic] & S390OpProp2_UsesM3;}
-   uint64_t usesM4() {return properties2[_mnemonic] & S390OpProp2_UsesM4;}
-   uint64_t usesM5() {return properties2[_mnemonic] & S390OpProp2_UsesM5;}
-   uint64_t usesM6() {return properties2[_mnemonic] & S390OpProp2_UsesM6;}
-   uint64_t hasExtendedMnemonic() {return properties2[_mnemonic] & S390OpProp2_HasExtendedMnemonic;}
-   uint64_t isVectorStringOp() {return properties2[_mnemonic] & S390OpProp2_VectorStringOp;}
-   uint64_t isVectorFPOp() {return properties2[_mnemonic] & S390OpProp2_VectorFPOp;}
+   uint64_t usesM3() {return properties[_mnemonic] & S390OpProp2_UsesM3;}
+   uint64_t usesM4() {return properties[_mnemonic] & S390OpProp2_UsesM4;}
+   uint64_t usesM5() {return properties[_mnemonic] & S390OpProp2_UsesM5;}
+   uint64_t usesM6() {return properties[_mnemonic] & S390OpProp2_UsesM6;}
+   uint64_t hasExtendedMnemonic() {return properties[_mnemonic] & S390OpProp2_HasExtendedMnemonic;}
+   uint64_t isVectorStringOp() {return properties[_mnemonic] & S390OpProp2_VectorStringOp;}
+   uint64_t isVectorFPOp() {return properties[_mnemonic] & S390OpProp2_VectorFPOp;}
 
    /* Static */
    static void copyBinaryToBufferWithoutClear(uint8_t *cursor, Mnemonic i_opCode);

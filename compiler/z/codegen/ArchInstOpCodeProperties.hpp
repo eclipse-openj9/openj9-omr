@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1935,7 +1935,7 @@
    S390OpProp_IsLoad |
    S390OpProp_SetsOperand1,
 
-   // LLGFRL
+      // LLGFRL
    S390OpProp_Is64Bit |
    S390OpProp_IsLoad |
    S390OpProp_SetsOperand1,
@@ -2864,7 +2864,6 @@
    S390OpProp_UsesRegPairForSource |
    S390OpProp_UsesRegPairForTarget |
    S390OpProp_SetsOperand1,
-
 
       // RISBG
    S390OpProp_Is64Bit |
@@ -5674,17 +5673,21 @@
 
       // VGEF
    S390OpProp_UsesTarget |
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_UsesM3,
 
       // VGEG
    S390OpProp_UsesTarget |
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_UsesM3,
 
       // VGBM
    S390OpProp_SetsOperand1,
 
       // VGM
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM4,
 
       // VL
    S390OpProp_IsLoad |
@@ -5696,51 +5699,65 @@
 
       // VLREP
    S390OpProp_IsLoad |
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM3,
 
       // VLEB
    S390OpProp_IsLoad |
    S390OpProp_UsesTarget |
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_UsesM3,
 
       // VLEH
    S390OpProp_IsLoad |
    S390OpProp_UsesTarget |
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_UsesM3,
 
       // VLEF
    S390OpProp_IsLoad |
    S390OpProp_UsesTarget |
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_UsesM3,
 
       // VLEG
    S390OpProp_IsLoad |
    S390OpProp_UsesTarget |
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_UsesM3,
 
       // VLEIB
    S390OpProp_UsesTarget |
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_UsesM3,
 
       // VLEIH
    S390OpProp_UsesTarget |
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_UsesM3,
 
       // VLEIF
    S390OpProp_UsesTarget |
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_UsesM3,
 
       // VLEIG
    S390OpProp_UsesTarget |
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_UsesM3,
 
       // VLGV
    S390OpProp_SetsOperand1 |
-   S390OpProp_Is64Bit,
+   S390OpProp_Is64Bit |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM4,
 
       // VLLEZ
    S390OpProp_IsLoad |
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM3,
 
       // VLM
    S390OpProp_IsLoad |
@@ -5750,13 +5767,16 @@
 
       // VLBB
    S390OpProp_IsLoad |
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_UsesM3,
 
       // VLVG
    S390OpProp_IsLoad |
    S390OpProp_UsesTarget |
    S390OpProp_SetsOperand1 |
-   S390OpProp_Is64Bit,
+   S390OpProp_Is64Bit |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM4,
 
       // VLVGP
    S390OpProp_SetsOperand1 |
@@ -5767,60 +5787,85 @@
    S390OpProp_SetsOperand1,
 
       // VMRH
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM4,
 
       // VMRL
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM4,
 
       // VPK
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM4,
 
       // VPKS
    S390OpProp_SetsOperand1 |
-   S390OpProp_SetsCC,
+   S390OpProp_SetsCC |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM4 |
+   S390OpProp_UsesM5,
 
       // VPKLS
    S390OpProp_SetsOperand1 |
-   S390OpProp_SetsCC,
+   S390OpProp_SetsCC |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM4 |
+   S390OpProp_UsesM5,
 
       // VPERM
    S390OpProp_SetsOperand1,
 
       // VPDI
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_UsesM4,
 
       // VREP
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM4,
 
       // VREPI
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM3,
 
       // VSCEF
-   S390OpProp_IsStore,
+   S390OpProp_IsStore |
+   S390OpProp_UsesM3,
 
       // VSCEG
-   S390OpProp_IsStore,
+   S390OpProp_IsStore |
+   S390OpProp_UsesM3,
 
       // VSEL
    S390OpProp_SetsOperand1,
 
       // VSEG
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM3,
 
       // VST
    S390OpProp_IsStore,
 
       // VSTEB
-   S390OpProp_IsStore,
+   S390OpProp_IsStore |
+   S390OpProp_UsesM3,
 
       // VSTEH
-   S390OpProp_IsStore,
+   S390OpProp_IsStore |
+   S390OpProp_UsesM3,
 
       // VSTEF
-   S390OpProp_IsStore,
+   S390OpProp_IsStore |
+   S390OpProp_UsesM3,
 
       // VSTEG
-   S390OpProp_IsStore,
+   S390OpProp_IsStore |
+   S390OpProp_UsesM3,
 
       // VSTM
    S390OpProp_IsStore |
@@ -5830,28 +5875,44 @@
    S390OpProp_IsStore,
 
       // VUPH
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM3,
 
       // VUPLH
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM3,
 
       // VUPL
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM3,
 
       // VUPLL
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM3,
 
       // VA
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM4,
 
       // VACC
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM4,
 
       // VAC
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM5,
 
       // VACCC
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM5,
 
       // VN
    S390OpProp_SetsOperand1,
@@ -5860,106 +5921,171 @@
    S390OpProp_SetsOperand1,
 
       // VAVG
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM4,
 
       // VAVGL
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM4,
 
       // VCKSM
    S390OpProp_SetsOperand1,
 
       // VEC
-   S390OpProp_SetsCC,
+   S390OpProp_SetsCC |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM3,
 
       // VECL
-   S390OpProp_SetsCC,
+   S390OpProp_SetsCC |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM3,
 
       // VCEQ
    S390OpProp_SetsCC |
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM4 |
+   S390OpProp_UsesM5,
 
       // VCH
    S390OpProp_SetsCC |
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM4 |
+   S390OpProp_UsesM5,
 
       // VCHL
    S390OpProp_SetsCC |
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM4 |
+   S390OpProp_UsesM5,
 
       // VCLZ
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM3,
 
       // VCTZ
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM3,
 
       // VX
    S390OpProp_SetsOperand1,
 
       // VGFM
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM4,
 
       // VGFMA
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM5,
 
       // VLC
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM3,
 
       // VLP
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM3,
 
       // VMX
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM4,
 
       // VMXL
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM4,
 
       // VMN
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM4,
 
       // VMNL
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM4,
 
       // VMAL
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM5,
 
       // VMAH
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM5,
 
       // VMALH
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM5,
 
       // VMAE
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM5,
 
       // VMALE
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM5,
 
       // VMAO
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM5,
 
       // VMALO
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM5,
 
       // VMH
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM4,
 
       // VMLH
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM4,
 
       // VML
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM4,
 
       // VME
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM4,
 
       // VMLE
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM4,
 
       // VMO
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM4,
 
       // VMLO
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM4,
 
       // VNO
    S390OpProp_SetsOperand1,
@@ -5968,35 +6094,55 @@
    S390OpProp_SetsOperand1,
 
       // VPOPCT
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM3,
 
       // VERLLV
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM4,
 
       // VERLL
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM4,
 
       // VERIM
    S390OpProp_UsesTarget |
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM5,
 
       // VESLV
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM4,
 
       // VESL
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM4,
 
       // VESRAV
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM4,
 
       // VESRA
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM4,
 
       // VESRLV
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM4,
 
       // VESRL
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM4,
 
       // VSL
    S390OpProp_SetsOperand1,
@@ -6020,117 +6166,245 @@
    S390OpProp_SetsOperand1,
 
       // VS
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM4,
 
       // VSCBI
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM4,
 
       // VSBI
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM5,
 
       // VSBCBI
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM5,
 
       // VSUMG
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM4,
 
       // VSUMQ
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM4,
 
       // VSUM
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM4,
 
       // VTM
    S390OpProp_SetsCC,
 
       // VFAE
    S390OpProp_SetsCC |
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_VectorStringOp |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM4 |
+   S390OpProp_UsesM5,
 
       // VFEE
    S390OpProp_SetsCC |
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_VectorStringOp |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM4 |
+   S390OpProp_UsesM5,
 
       // VFENE
    S390OpProp_SetsCC |
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_VectorStringOp |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM4 |
+   S390OpProp_UsesM5,
 
       // VISTR
    S390OpProp_SetsCC |
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_VectorStringOp |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM3 |
+   S390OpProp_UsesM5,
 
       // VSTRC
    S390OpProp_SetsCC |
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_VectorStringOp |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM5 |
+   S390OpProp_UsesM6,
 
       // VFA
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_VectorFPOp |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM4 |
+   S390OpProp_UsesM5,
 
       // WFC
    S390OpProp_UsesTarget |
-   S390OpProp_SetsCC,
+   S390OpProp_SetsCC |
+   S390OpProp_VectorFPOp |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM3 |
+   S390OpProp_UsesM4,
 
       // WFK
    S390OpProp_UsesTarget |
-   S390OpProp_SetsCC,
+   S390OpProp_SetsCC |
+   S390OpProp_VectorFPOp |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM3 |
+   S390OpProp_UsesM4,
 
       // VFCE
    S390OpProp_SetsCC |
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_VectorFPOp |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM4 |
+   S390OpProp_UsesM5 |
+   S390OpProp_UsesM6,
 
       // VFCH
    S390OpProp_SetsCC |
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_VectorFPOp |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM4 |
+   S390OpProp_UsesM5 |
+   S390OpProp_UsesM6,
 
       // VFCHE
    S390OpProp_SetsCC |
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_VectorFPOp |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM4 |
+   S390OpProp_UsesM5 |
+   S390OpProp_UsesM6,
 
       // VCDG
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_VectorFPOp |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM3 |
+   S390OpProp_UsesM4 |
+   S390OpProp_UsesM5,
 
       // VCDLG
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_VectorFPOp |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM3 |
+   S390OpProp_UsesM4 |
+   S390OpProp_UsesM5,
 
       // VCGD
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_VectorFPOp |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM3 |
+   S390OpProp_UsesM4 |
+   S390OpProp_UsesM5,
 
       // VCLGD
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_VectorFPOp |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM3 |
+   S390OpProp_UsesM4 |
+   S390OpProp_UsesM5,
 
       // VFD
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_VectorFPOp |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM4 |
+   S390OpProp_UsesM5,
 
       // VFI
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_VectorFPOp |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM3 |
+   S390OpProp_UsesM4 |
+   S390OpProp_UsesM5,
 
       // VLDE
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_VectorFPOp |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM3 |
+   S390OpProp_UsesM4,
 
       // VLED
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_VectorFPOp |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM3 |
+   S390OpProp_UsesM4 |
+   S390OpProp_UsesM5,
 
       // VFM
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_VectorFPOp |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM4 |
+   S390OpProp_UsesM5,
 
       // VFMA
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_VectorFPOp |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM5 |
+   S390OpProp_UsesM6,
 
       // VFMS
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_VectorFPOp |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM5 |
+   S390OpProp_UsesM6,
 
       // VFPSO
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_VectorFPOp |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM3 |
+   S390OpProp_UsesM4 |
+   S390OpProp_UsesM5,
 
       // VFSQ
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_VectorFPOp |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM3 |
+   S390OpProp_UsesM4,
 
       // VFS
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_VectorFPOp |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM4 |
+   S390OpProp_UsesM5,
 
       // VFTCI
    S390OpProp_SetsCC |
-   S390OpProp_SetsOperand1,
+   S390OpProp_SetsOperand1 |
+   S390OpProp_VectorFPOp |
+   S390OpProp_HasExtendedMnemonic |
+   S390OpProp_UsesM4 |
+   S390OpProp_UsesM5,
 
       // RIEMIT
    S390OpProp_UsesTarget,
@@ -6201,127 +6475,170 @@
    S390OpProp_IsLoad |
    S390OpProp_IsStore,
 
-   // VLRLR
+      // VLRLR
    S390OpProp_IsLoad |
    S390OpProp_SetsOperand1,
 
-   // VLRL
+      // VLRL
    S390OpProp_IsLoad |
    S390OpProp_SetsOperand1,
 
-   // VSTRLR
+      // VSTRLR
    S390OpProp_IsStore,
 
-   // VSTRL
+      // VSTRL
    S390OpProp_IsStore,
 
-   // VAP
+      // VAP
    S390OpProp_SetsCC |
+   S390OpProp_SetsOperand1 |
+   S390OpProp_UsesM5,
+
+      // VCP
+   S390OpProp_SetsCC |
+   S390OpProp_UsesM3,
+
+      // VCVB
+   S390OpProp_SetsCC |
+   S390OpProp_SetsOperand1 |
+   S390OpProp_UsesM3,
+
+      // VCVBG
+   S390OpProp_SetsCC |
+   S390OpProp_SetsOperand1 |
+   S390OpProp_UsesM3,
+
+      // VCVD
+   S390OpProp_SetsCC |
+   S390OpProp_SetsOperand1 |
+   S390OpProp_UsesM4,
+
+      // VCVDG
+   S390OpProp_SetsCC |
+   S390OpProp_SetsOperand1 |
+   S390OpProp_UsesM4,
+
+      // VDP
+   S390OpProp_SetsCC |
+   S390OpProp_SetsOperand1 |
+   S390OpProp_UsesM5,
+
+      // VLIP
    S390OpProp_SetsOperand1,
 
-   // VCP
+      // VMP
+   S390OpProp_SetsCC |
+   S390OpProp_SetsOperand1 |
+   S390OpProp_UsesM5,
+
+      // VMSP
+   S390OpProp_SetsCC |
+   S390OpProp_SetsOperand1 |
+   S390OpProp_UsesM5,
+
+      // VPKZ
+   S390OpProp_SetsOperand1,
+
+      // VPSOP
+   S390OpProp_SetsCC |
+   S390OpProp_SetsOperand1 |
+   S390OpProp_UsesM5,
+
+      // VRP
+   S390OpProp_SetsCC |
+   S390OpProp_SetsOperand1 |
+   S390OpProp_UsesM5,
+
+      // VSDP
+   S390OpProp_SetsCC |
+   S390OpProp_SetsOperand1 |
+   S390OpProp_UsesM5,
+
+      // VSRP
+   S390OpProp_SetsCC |
+   S390OpProp_SetsOperand1 |
+   S390OpProp_UsesM5,
+
+      // VSP
+   S390OpProp_SetsCC |
+   S390OpProp_SetsOperand1 |
+   S390OpProp_UsesM5,
+
+      // VTP
    S390OpProp_SetsCC,
 
-   // VCVB
-   S390OpProp_SetsCC |
-   S390OpProp_SetsOperand1,
-
-   // VCVBG
-   S390OpProp_SetsCC |
-   S390OpProp_SetsOperand1,
-
-   // VCVD
-   S390OpProp_SetsCC |
-   S390OpProp_SetsOperand1,
-
-   // VCVDG
-   S390OpProp_SetsCC |
-   S390OpProp_SetsOperand1,
-
-   // VDP
-   S390OpProp_SetsCC |
-   S390OpProp_SetsOperand1,
-
-   // VLIP
-   S390OpProp_SetsOperand1,
-
-   // VMP
-   S390OpProp_SetsCC |
-   S390OpProp_SetsOperand1,
-
-   // VMSP
-   S390OpProp_SetsCC |
-   S390OpProp_SetsOperand1,
-
-   // VPKZ
-   S390OpProp_SetsOperand1,
-
-   // VPSOP
-   S390OpProp_SetsCC |
-   S390OpProp_SetsOperand1,
-
-   // VRP
-   S390OpProp_SetsCC |
-   S390OpProp_SetsOperand1,
-
-   // VSDP
-   S390OpProp_SetsCC |
-   S390OpProp_SetsOperand1,
-
-   // VSRP
-   S390OpProp_SetsCC |
-   S390OpProp_SetsOperand1,
-
-   // VSP
-   S390OpProp_SetsCC |
-   S390OpProp_SetsOperand1,
-
-   // VTP
-   S390OpProp_SetsCC,
-
-   // VUPKZ
+      // VUPKZ
    S390OpProp_IsStore,
 
-   // VBPERM
+      // VBPERM
    S390OpProp_SetsOperand1,
 
-   // VNX
+      // VNX
    S390OpProp_SetsOperand1,
 
-   // VMSL
+      // VMSL
+   S390OpProp_SetsOperand1 |
+   S390OpProp_UsesM5 |
+   S390OpProp_HasExtendedMnemonic,
+
+      // VNN
    S390OpProp_SetsOperand1,
 
-   // VNN
+      // VOC
    S390OpProp_SetsOperand1,
 
-   // VOC
-   S390OpProp_SetsOperand1,
+      // VFLL
+   S390OpProp_SetsOperand1 |
+   S390OpProp_UsesM3 |
+   S390OpProp_UsesM4 |
+   S390OpProp_VectorFPOp |
+   S390OpProp_HasExtendedMnemonic,
 
-   // VFLL
-   S390OpProp_SetsOperand1,
+      // VFLR
+   S390OpProp_SetsOperand1 |
+   S390OpProp_UsesM3 |
+   S390OpProp_UsesM4 |
+   S390OpProp_UsesM5 |
+   S390OpProp_VectorFPOp |
+   S390OpProp_HasExtendedMnemonic,
 
-   // VFLR
-   S390OpProp_SetsOperand1,
+      // VFMAX
+   S390OpProp_SetsOperand1 |
+   S390OpProp_UsesM4 |
+   S390OpProp_UsesM5 |
+   S390OpProp_UsesM6 |
+   S390OpProp_VectorFPOp |
+   S390OpProp_HasExtendedMnemonic,
 
-   // VFMAX
-   S390OpProp_SetsOperand1,
+      // VFMIN
+   S390OpProp_SetsOperand1 |
+   S390OpProp_UsesM4 |
+   S390OpProp_UsesM5 |
+   S390OpProp_UsesM6 |
+   S390OpProp_VectorFPOp |
+   S390OpProp_HasExtendedMnemonic,
 
-   // VFMIN
-   S390OpProp_SetsOperand1,
+      // VFNMA
+   S390OpProp_SetsOperand1 |
+   S390OpProp_UsesM5 |
+   S390OpProp_UsesM6 |
+   S390OpProp_VectorFPOp |
+   S390OpProp_HasExtendedMnemonic,
 
-   // VFNMA
-   S390OpProp_SetsOperand1,
+      // VFNMS
+   S390OpProp_SetsOperand1 |
+   S390OpProp_UsesM5 |
+   S390OpProp_UsesM6 |
+   S390OpProp_VectorFPOp |
+   S390OpProp_HasExtendedMnemonic,
 
-   // VFNMS
-   S390OpProp_SetsOperand1,
-
-   // KMGCM
+      // KMGCM
    S390OpProp_SetsCC,
 
-   // PRNO
+      // PRNO
    S390OpProp_None,
 
-   // LGG
+      // LGG
    S390OpProp_IsLoad |
    S390OpProp_Is64Bit |
    S390OpProp_LongDispSupported |
@@ -6335,7 +6652,7 @@
    // code.
    S390OpProp_SetsCC,
 
-   // LLGFSG
+      // LLGFSG
    S390OpProp_IsLoad |
    S390OpProp_Is64Bit |
    S390OpProp_LongDispSupported |
@@ -6344,15 +6661,15 @@
    // Note: See note for LGG regarding condition codes and guarded load instructions
    S390OpProp_SetsCC,
 
-   // LGSC
+      // LGSC
    S390OpProp_IsLoad |
    S390OpProp_LongDispSupported,
 
-   // STGSC
+      // STGSC
    S390OpProp_IsStore |
    S390OpProp_LongDispSupported,
 
-   // AGH
+      // AGH
    S390OpProp_Is64Bit |
    S390OpProp_SetsSignFlag |
    S390OpProp_SetsOverflowFlag |
@@ -6362,30 +6679,30 @@
    S390OpProp_SetsOperand1 |
    S390OpProp_SetsCC,
 
-   // BIC
+      // BIC
    S390OpProp_IsLoad |
    S390OpProp_LongDispSupported |
    S390OpProp_BranchOp |
    S390OpProp_ReadsCC,
 
-   // MG
+      // MG
    S390OpProp_UsesTarget |
    S390OpProp_IsLoad |
    S390OpProp_UsesRegPairForTarget |
    S390OpProp_SetsOperand1 |
    S390OpProp_LongDispSupported,
 
-   // MGRK
+      // MGRK
    S390OpProp_UsesRegPairForTarget |
    S390OpProp_SetsOperand3,
 
-   // MGH
+      // MGH
    S390OpProp_UsesTarget |
    S390OpProp_IsLoad |
    S390OpProp_LongDispSupported |
    S390OpProp_SetsOperand1,
 
-   // MSC
+      // MSC
    S390OpProp_Is32Bit |
    S390OpProp_UsesTarget |
    S390OpProp_IsLoad |
@@ -6394,13 +6711,13 @@
    S390OpProp_SetsOverflowFlag |
    S390OpProp_SetsCC,
 
-   // MSRKC
+      // MSRKC
    S390OpProp_Is32Bit |
    S390OpProp_SetsOperand3 |
    S390OpProp_SetsOverflowFlag |
    S390OpProp_SetsCC,
 
-   // MSGC
+      // MSGC
    S390OpProp_Is64Bit |
    S390OpProp_UsesTarget |
    S390OpProp_IsLoad |
@@ -6409,13 +6726,13 @@
    S390OpProp_SetsOverflowFlag |
    S390OpProp_SetsCC,
 
-   // MSGRKC
+      // MSGRKC
    S390OpProp_Is64Bit |
    S390OpProp_SetsOperand3 |
    S390OpProp_SetsOverflowFlag |
    S390OpProp_SetsCC,
 
-   // SGH
+      // SGH
    S390OpProp_Is64Bit |
    S390OpProp_SetsOperand1 |
    S390OpProp_IsLoad |

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -24,11 +24,6 @@
 const uint64_t OMR::Z::InstOpCode::properties[NumOpCodes] =
    {
    #include "codegen/ArchInstOpCodeProperties.hpp"
-   };
-
-const uint64_t OMR::Z::InstOpCode::properties2[NumOpCodes] =
-   {
-   #include "codegen/ArchInstOpCodeProperties2.hpp"
    };
 
 const OMR::Z::InstOpCode::OpCodeBinaryEntry OMR::Z::InstOpCode::binaryEncodings[NumOpCodes] =

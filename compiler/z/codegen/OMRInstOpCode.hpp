@@ -555,7 +555,13 @@ class InstOpCode: public OMR::InstOpCode
       S390NumBranchConditions = lastBranchCondition +1
       };
 
-   struct OpCodeBinaryEntry
+   /**
+    *  \brief
+    *      Defines various metadata of an instruction including the name, description, opcodes, format, the minimum
+	 *      architecture level set (ALS) which introduced the instruction, and the various properties which model the
+	 *      instruction in a way that the code generator understands.
+    */
+   struct OpCodeMetaData
       {
 		/**
        *  \brief
@@ -600,12 +606,10 @@ class InstOpCode: public OMR::InstOpCode
 		uint64_t properties;
       };
 
+   static const OpCodeMetaData metadata[NumOpCodes];
 
-   /* Static tables(array) that uses the OpCode as the index */
-   static const OpCodeBinaryEntry   binaryEncodings[NumOpCodes];
-
-   uint8_t getFirstByte(){return binaryEncodings[_mnemonic].opcode[0];}
-   uint8_t getSecondByte() {return binaryEncodings[_mnemonic].opcode[1];}
+   uint8_t getFirstByte(){return metadata[_mnemonic].opcode[0];}
+   uint8_t getSecondByte() {return metadata[_mnemonic].opcode[1];}
 
    /**
     * \brief
@@ -616,7 +620,7 @@ class InstOpCode: public OMR::InstOpCode
     */
    TR_S390ProcessorInfo::TR_S390ProcessorArchitectures getMinimumALS() const
       {
-      return binaryEncodings[_mnemonic].minimumALS;
+      return metadata[_mnemonic].minimumALS;
       }
 
    /* Queries for instruction properties */
@@ -627,85 +631,85 @@ class InstOpCode: public OMR::InstOpCode
    uint64_t isOperandLW(uint32_t i);
    uint64_t setsOperand(uint32_t opNum);
 
-   uint64_t singleFPOp() {return binaryEncodings[_mnemonic].properties & S390OpProp_SingleFP;}
-   uint64_t doubleFPOp() {return binaryEncodings[_mnemonic].properties & S390OpProp_DoubleFP;}
-   uint64_t gprOp() {return (binaryEncodings[_mnemonic].properties & (S390OpProp_DoubleFP | S390OpProp_SingleFP)) == 0;}
-   uint64_t fprOp() {return binaryEncodings[_mnemonic].properties & (S390OpProp_DoubleFP | S390OpProp_SingleFP);}
+   uint64_t singleFPOp() {return metadata[_mnemonic].properties & S390OpProp_SingleFP;}
+   uint64_t doubleFPOp() {return metadata[_mnemonic].properties & S390OpProp_DoubleFP;}
+   uint64_t gprOp() {return (metadata[_mnemonic].properties & (S390OpProp_DoubleFP | S390OpProp_SingleFP)) == 0;}
+   uint64_t fprOp() {return metadata[_mnemonic].properties & (S390OpProp_DoubleFP | S390OpProp_SingleFP);}
 
-   uint64_t isBranchOp() {return binaryEncodings[_mnemonic].properties & S390OpProp_BranchOp;}
-   uint64_t isTrap() {return (binaryEncodings[_mnemonic].properties & S390OpProp_Trap)!=0;}
-   uint64_t isLoad() {return binaryEncodings[_mnemonic].properties & S390OpProp_IsLoad;}
-   uint64_t isStore() {return binaryEncodings[_mnemonic].properties & S390OpProp_IsStore;}
-   uint64_t isCall() {return binaryEncodings[_mnemonic].properties & S390OpProp_IsCall;}
-   uint64_t isCompare() {return binaryEncodings[_mnemonic].properties & S390OpProp_IsCompare;}
-   uint64_t isExtendedImmediate() {return binaryEncodings[_mnemonic].properties & S390OpProp_IsExtendedImmediate;}
-   uint64_t isTargetHW() {return binaryEncodings[_mnemonic].properties & S390OpProp_TargetHW;}
-   uint64_t isTargetLW() {return binaryEncodings[_mnemonic].properties & S390OpProp_TargetLW;}
-   uint64_t isSrcHW() {return binaryEncodings[_mnemonic].properties & S390OpProp_SrcHW;}
-   uint64_t isSrcLW() {return binaryEncodings[_mnemonic].properties & S390OpProp_SrcLW;}
-   uint64_t isSrc2HW() {return binaryEncodings[_mnemonic].properties & S390OpProp_Src2HW;}
-   uint64_t isSrc2LW() {return binaryEncodings[_mnemonic].properties & S390OpProp_Src2LW;}
-   uint64_t usesTarget() {return binaryEncodings[_mnemonic].properties & S390OpProp_UsesTarget;}
+   uint64_t isBranchOp() {return metadata[_mnemonic].properties & S390OpProp_BranchOp;}
+   uint64_t isTrap() {return (metadata[_mnemonic].properties & S390OpProp_Trap)!=0;}
+   uint64_t isLoad() {return metadata[_mnemonic].properties & S390OpProp_IsLoad;}
+   uint64_t isStore() {return metadata[_mnemonic].properties & S390OpProp_IsStore;}
+   uint64_t isCall() {return metadata[_mnemonic].properties & S390OpProp_IsCall;}
+   uint64_t isCompare() {return metadata[_mnemonic].properties & S390OpProp_IsCompare;}
+   uint64_t isExtendedImmediate() {return metadata[_mnemonic].properties & S390OpProp_IsExtendedImmediate;}
+   uint64_t isTargetHW() {return metadata[_mnemonic].properties & S390OpProp_TargetHW;}
+   uint64_t isTargetLW() {return metadata[_mnemonic].properties & S390OpProp_TargetLW;}
+   uint64_t isSrcHW() {return metadata[_mnemonic].properties & S390OpProp_SrcHW;}
+   uint64_t isSrcLW() {return metadata[_mnemonic].properties & S390OpProp_SrcLW;}
+   uint64_t isSrc2HW() {return metadata[_mnemonic].properties & S390OpProp_Src2HW;}
+   uint64_t isSrc2LW() {return metadata[_mnemonic].properties & S390OpProp_Src2LW;}
+   uint64_t usesTarget() {return metadata[_mnemonic].properties & S390OpProp_UsesTarget;}
 
-   uint64_t is64bit() {return binaryEncodings[_mnemonic].properties & S390OpProp_Is64Bit;}
-   uint64_t is32bit() {return binaryEncodings[_mnemonic].properties & S390OpProp_Is32Bit;}
-   uint64_t is32to64bit() {return binaryEncodings[_mnemonic].properties & S390OpProp_Is32To64Bit;}
+   uint64_t is64bit() {return metadata[_mnemonic].properties & S390OpProp_Is64Bit;}
+   uint64_t is32bit() {return metadata[_mnemonic].properties & S390OpProp_Is32Bit;}
+   uint64_t is32to64bit() {return metadata[_mnemonic].properties & S390OpProp_Is32To64Bit;}
 
-   uint64_t hasLongDispSupport() {return binaryEncodings[_mnemonic].properties & S390OpProp_LongDispSupported;}
-   uint64_t usesRegPairForTarget() {return binaryEncodings[_mnemonic].properties & S390OpProp_UsesRegPairForTarget; }
-   uint64_t usesRegPairForSource() {return binaryEncodings[_mnemonic].properties & S390OpProp_UsesRegPairForSource; }
-   uint64_t usesRegRangeForTarget(){return binaryEncodings[_mnemonic].properties & S390OpProp_UsesRegRangeForTarget; }
+   uint64_t hasLongDispSupport() {return metadata[_mnemonic].properties & S390OpProp_LongDispSupported;}
+   uint64_t usesRegPairForTarget() {return metadata[_mnemonic].properties & S390OpProp_UsesRegPairForTarget; }
+   uint64_t usesRegPairForSource() {return metadata[_mnemonic].properties & S390OpProp_UsesRegPairForSource; }
+   uint64_t usesRegRangeForTarget(){return metadata[_mnemonic].properties & S390OpProp_UsesRegRangeForTarget; }
    uint64_t canUseRegPairForTarget() {return usesRegPairForTarget() || usesRegRangeForTarget(); }
    uint64_t shouldUseRegPairForTarget() {return usesRegPairForTarget(); }
 
-   uint64_t implicitlyUsesGPR0() { return binaryEncodings[_mnemonic].properties & S390OpProp_ImplicitlyUsesGPR0; }
-   uint64_t implicitlyUsesGPR1() { return binaryEncodings[_mnemonic].properties & S390OpProp_ImplicitlyUsesGPR1; }
-   uint64_t implicitlyUsesGPR2() { return binaryEncodings[_mnemonic].properties & S390OpProp_ImplicitlyUsesGPR2; }
+   uint64_t implicitlyUsesGPR0() { return metadata[_mnemonic].properties & S390OpProp_ImplicitlyUsesGPR0; }
+   uint64_t implicitlyUsesGPR1() { return metadata[_mnemonic].properties & S390OpProp_ImplicitlyUsesGPR1; }
+   uint64_t implicitlyUsesGPR2() { return metadata[_mnemonic].properties & S390OpProp_ImplicitlyUsesGPR2; }
 
-   uint64_t implicitlySetsGPR0() { return binaryEncodings[_mnemonic].properties & S390OpProp_ImplicitlySetsGPR0; }
-   uint64_t implicitlySetsGPR1() { return binaryEncodings[_mnemonic].properties & S390OpProp_ImplicitlySetsGPR1; }
-   uint64_t implicitlySetsGPR2() { return binaryEncodings[_mnemonic].properties & S390OpProp_ImplicitlySetsGPR2; }
-   uint64_t implicitlySetsGPR3() { return binaryEncodings[_mnemonic].properties & S390OpProp_ImplicitlySetsGPR3; }
-   uint64_t implicitlySetsGPR4() { return binaryEncodings[_mnemonic].properties & S390OpProp_ImplicitlySetsGPR4; }
-   uint64_t implicitlySetsGPR5() { return binaryEncodings[_mnemonic].properties & S390OpProp_ImplicitlySetsGPR5; }
+   uint64_t implicitlySetsGPR0() { return metadata[_mnemonic].properties & S390OpProp_ImplicitlySetsGPR0; }
+   uint64_t implicitlySetsGPR1() { return metadata[_mnemonic].properties & S390OpProp_ImplicitlySetsGPR1; }
+   uint64_t implicitlySetsGPR2() { return metadata[_mnemonic].properties & S390OpProp_ImplicitlySetsGPR2; }
+   uint64_t implicitlySetsGPR3() { return metadata[_mnemonic].properties & S390OpProp_ImplicitlySetsGPR3; }
+   uint64_t implicitlySetsGPR4() { return metadata[_mnemonic].properties & S390OpProp_ImplicitlySetsGPR4; }
+   uint64_t implicitlySetsGPR5() { return metadata[_mnemonic].properties & S390OpProp_ImplicitlySetsGPR5; }
 
-   uint64_t setsOperand1() { return binaryEncodings[_mnemonic].properties & S390OpProp_SetsOperand1; }
-   uint64_t setsOperand2() { return binaryEncodings[_mnemonic].properties & S390OpProp_SetsOperand2; }
-   uint64_t setsOperand3() { return binaryEncodings[_mnemonic].properties & S390OpProp_SetsOperand3; }
-   uint64_t setsOperand4() { return binaryEncodings[_mnemonic].properties & S390OpProp_SetsOperand4; }
+   uint64_t setsOperand1() { return metadata[_mnemonic].properties & S390OpProp_SetsOperand1; }
+   uint64_t setsOperand2() { return metadata[_mnemonic].properties & S390OpProp_SetsOperand2; }
+   uint64_t setsOperand3() { return metadata[_mnemonic].properties & S390OpProp_SetsOperand3; }
+   uint64_t setsOperand4() { return metadata[_mnemonic].properties & S390OpProp_SetsOperand4; }
 
-   uint64_t setsCC() {return (setsZeroFlag() || setsSignFlag() || setsOverflowFlag() || setsCompareFlag() || setsCarryFlag() || (binaryEncodings[_mnemonic].properties & S390OpProp_SetsCC));}
-   uint64_t readsCC() {return binaryEncodings[_mnemonic].properties & S390OpProp_ReadsCC;}
+   uint64_t setsCC() {return (setsZeroFlag() || setsSignFlag() || setsOverflowFlag() || setsCompareFlag() || setsCarryFlag() || (metadata[_mnemonic].properties & S390OpProp_SetsCC));}
+   uint64_t readsCC() {return metadata[_mnemonic].properties & S390OpProp_ReadsCC;}
 
-   uint64_t setsZeroFlag() {return binaryEncodings[_mnemonic].properties & S390OpProp_SetsZeroFlag;}
-   uint64_t setsSignFlag() {return binaryEncodings[_mnemonic].properties & S390OpProp_SetsSignFlag;}
-   uint64_t setsOverflowFlag() {return binaryEncodings[_mnemonic].properties & S390OpProp_SetsOverflowFlag;}
-   uint64_t setsCompareFlag() {return binaryEncodings[_mnemonic].properties & S390OpProp_SetsCompareFlag;}
+   uint64_t setsZeroFlag() {return metadata[_mnemonic].properties & S390OpProp_SetsZeroFlag;}
+   uint64_t setsSignFlag() {return metadata[_mnemonic].properties & S390OpProp_SetsSignFlag;}
+   uint64_t setsOverflowFlag() {return metadata[_mnemonic].properties & S390OpProp_SetsOverflowFlag;}
+   uint64_t setsCompareFlag() {return metadata[_mnemonic].properties & S390OpProp_SetsCompareFlag;}
    uint64_t setsCarryFlag() { return setsZeroFlag(); }
 
-   uint64_t isRegCopy() {return binaryEncodings[_mnemonic].properties & S390OpProp_IsRegCopy; }
-   uint64_t hasTwoMemoryReferences() {return binaryEncodings[_mnemonic].properties & S390OpProp_HasTwoMemoryReferences;}
+   uint64_t isRegCopy() {return metadata[_mnemonic].properties & S390OpProp_IsRegCopy; }
+   uint64_t hasTwoMemoryReferences() {return metadata[_mnemonic].properties & S390OpProp_HasTwoMemoryReferences;}
 
-   uint64_t readsFPC() {return binaryEncodings[_mnemonic].properties & S390OpProp_ReadsFPC; }
-   uint64_t setsFPC() {return binaryEncodings[_mnemonic].properties & S390OpProp_SetsFPC; }
+   uint64_t readsFPC() {return metadata[_mnemonic].properties & S390OpProp_ReadsFPC; }
+   uint64_t setsFPC() {return metadata[_mnemonic].properties & S390OpProp_SetsFPC; }
 
    uint64_t isLabel() {return _mnemonic == LABEL;}
    uint64_t isBeginBlock() {return _mnemonic == LABEL;}
 
-   uint64_t usesM3() {return binaryEncodings[_mnemonic].properties & S390OpProp_UsesM3;}
-   uint64_t usesM4() {return binaryEncodings[_mnemonic].properties & S390OpProp_UsesM4;}
-   uint64_t usesM5() {return binaryEncodings[_mnemonic].properties & S390OpProp_UsesM5;}
-   uint64_t usesM6() {return binaryEncodings[_mnemonic].properties & S390OpProp_UsesM6;}
-   uint64_t hasExtendedMnemonic() {return binaryEncodings[_mnemonic].properties & S390OpProp_HasExtendedMnemonic;}
-   uint64_t isVectorStringOp() {return binaryEncodings[_mnemonic].properties & S390OpProp_VectorStringOp;}
-   uint64_t isVectorFPOp() {return binaryEncodings[_mnemonic].properties & S390OpProp_VectorFPOp;}
+   uint64_t usesM3() {return metadata[_mnemonic].properties & S390OpProp_UsesM3;}
+   uint64_t usesM4() {return metadata[_mnemonic].properties & S390OpProp_UsesM4;}
+   uint64_t usesM5() {return metadata[_mnemonic].properties & S390OpProp_UsesM5;}
+   uint64_t usesM6() {return metadata[_mnemonic].properties & S390OpProp_UsesM6;}
+   uint64_t hasExtendedMnemonic() {return metadata[_mnemonic].properties & S390OpProp_HasExtendedMnemonic;}
+   uint64_t isVectorStringOp() {return metadata[_mnemonic].properties & S390OpProp_VectorStringOp;}
+   uint64_t isVectorFPOp() {return metadata[_mnemonic].properties & S390OpProp_VectorFPOp;}
 
    /* Static */
    static void copyBinaryToBufferWithoutClear(uint8_t *cursor, Mnemonic i_opCode);
    static void copyBinaryToBuffer(uint8_t *cursor, Mnemonic i_opCode);
    static uint8_t getInstructionLength(Mnemonic i_opCode); /* Using a table that maps values of bit 0-1 to instruction length from POP chapter 5,  topic: Instruction formats (page 5.5)*/
-   static uint8_t  getInstructionFormat(Mnemonic i_opCode)  { return binaryEncodings[i_opCode].format; }
-   static const uint8_t * getOpCodeBinaryRepresentation(Mnemonic i_opCode) { return binaryEncodings[i_opCode].opcode ;}
+   static uint8_t  getInstructionFormat(Mnemonic i_opCode)  { return metadata[i_opCode].format; }
+   static const uint8_t * getOpCodeBinaryRepresentation(Mnemonic i_opCode) { return metadata[i_opCode].opcode ;}
 
 
    /* Non-Static methods that calls static implementations */

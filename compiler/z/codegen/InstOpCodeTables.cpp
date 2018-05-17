@@ -21,7 +21,4 @@
 
 #include "compiler/z/codegen/OMRInstOpCode.hpp"
 
-const OMR::Z::InstOpCode::OpCodeBinaryEntry OMR::Z::InstOpCode::binaryEncodings[NumOpCodes] =
-   {
-   #include "codegen/OMRInstOpCodeProperties.hpp"
-   };
+

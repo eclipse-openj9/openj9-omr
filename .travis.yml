@@ -59,6 +59,9 @@ matrix:
     # 64 bit Linux x86 compressed pointers
     - os: linux
       env: SPEC=linux_x86-64_cmprssptrs PLATFORM=amd64-linux64-gcc
+    # 64 bit Linux AArch64
+    - os: linux
+      env: SPEC=linux_aarch64 PLATFORM=aarch64-linux64-gcc
     # Linter
     - os: linux
       addons:

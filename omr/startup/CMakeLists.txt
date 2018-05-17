@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2018 IBM Corp. and others
+# Copyright (c) 2018, 2018 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -20,60 +20,33 @@
 # SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
 ###############################################################################
 
-omr_add_tracegen(omrti.tdf)
-omr_add_tracegen(omrvm.tdf)
-
-add_subdirectory(startup)
-
-omr_assert(
-	TEST OMR_CORE_GLUE_TARGET
-	MESSAGE "OMR_CORE_GLUE_TARGET must be set. Try using the example with OMR_EXAMPLE=On"
+add_library(omrvmstartup STATIC
+	omrvmstartup.cpp
+	omrrasinit.c
+	omrtrcinit.c
 )
 
-add_library(omrcore STATIC
-	OMR_Agent.cpp
-	OMR_MethodDictionary.cpp
-	OMR_Profiler.cpp
-	OMR_Runtime.cpp
-	OMR_TI.cpp
-	OMR_TIMemorySize.cpp
-	OMR_VM.cpp
-	OMR_VMThread.cpp
-	ut_omrti.c
-	ut_omrvm.c
-)
-
-if(OMR_WARNINGS_AS_ERRORS)
-	target_compile_options(omrcore PRIVATE ${OMR_WARNING_AS_ERROR_FLAG})
-endif()
-
-if(OMR_ENHANCED_WARNINGS)
-	target_compile_options(omrcore PRIVATE ${OMR_ENHANCED_WARNING_FLAG})
-endif()
-
-target_include_directories(omrcore
-	PUBLIC
-		.
+# We need some tracegen files from omrcore
+target_include_directories(omrvmstartup
 	PRIVATE
-		${CMAKE_CURRENT_BINARY_DIR}
+		${omr_BINARY_DIR}/omr
+)
+add_dependencies(omrvmstartup
+	trc_omrvm
+	trc_omrti
 )
 
 
-target_link_libraries(omrcore
+target_link_libraries(omrvmstartup
 	PRIVATE
-		${OMR_CORE_GLUE_TARGET}
-		${OMR_RAS_GLUE_TARGET}
+		omrcore
+		${OMR_HOOK_LIB}
+		${OMR_TRACE_LIB}
 )
 
 if(OMR_GC)
-	add_dependencies(omrcore
-		omrgc_tracegen
-		omrgc_hookgen
-	)
-
-	target_include_directories(omrcore
+	target_link_libraries(omrvmstartup
 		PRIVATE
-			$<TARGET_PROPERTY:omrgc,INTERFACE_INCLUDE_DIRECTORIES>
-			$<TARGET_PROPERTY:${OMR_GC_GLUE_TARGET},INTERFACE_INCLUDE_DIRECTORIES>
+			${OMR_GC_LIB}
 	)
-endif(OMR_GC)
+endif()

@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2017 IBM Corp. and others
+# Copyright (c) 2017, 2018 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -30,16 +30,15 @@ target_link_libraries(omrvmtest
 	omrGtestGlue
 	omrtestutil
 	omrcore
-	omrtrace
-	omrgc
-	j9hookstatic
-	j9thrstatic
 	omrutil
-	omrport
 	j9hashtable
 	j9avl
 	j9pool
-
+	omrvmstartup
+	${OMR_HOOK_LIB}
+	${OMR_GC_LIB}
+	${OMR_PORT_LIB}
+	${OMR_TRACE_LIB}
 )
 
 set_property(TARGET omrvmtest PROPERTY FOLDER fvtest)

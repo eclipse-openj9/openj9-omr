@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2017 IBM Corp. and others
+# Copyright (c) 2017, 2018 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -32,11 +32,11 @@ target_link_libraries(omrthreadextendedtest
 	omrtestutil
 	omrGtestGlue
 	omrutil
-	${OMR_PORT_LIB}
-	omrutil
-	${OMR_THREAD_LIB}
 	omrcore
+	omrvmstartup
 	${OMR_GC_LIB}
+	${OMR_PORT_LIB}
+	${OMR_THREAD_LIB}
 )
 
 if(OMR_HOST_OS STREQUAL "zos")

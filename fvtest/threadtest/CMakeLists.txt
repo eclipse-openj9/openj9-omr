@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2017 IBM Corp. and others
+# Copyright (c) 2017, 2018 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -42,18 +42,6 @@ add_executable(omrthreadtest
 	#OBJECTS += forkResetTest forkResetRWMutexTest
 #endif
 
-#OBJECTS := $(addsuffix $(OBJEXT),$(OBJECTS))
-
-#MODULE_INCLUDES +=  $(top_srcdir)/fvtest/util
-#MODULE_INCLUDES += $(OMR_GTEST_INCLUDES) $(top_srcdir)/thread
-#MODULE_CXXFLAGS += $(OMR_GTEST_CXXFLAGS)
-
-#vpath argmain.cpp $(top_srcdir)/fvtest/omrGtestGlue
-
-#MODULE_STATIC_LIBS += \
-	#omrGtest \
-	#testutil \
-	#omrstatic
 
 #ifeq (linux,$(OMR_HOST_OS))
 	#MODULE_SHARED_LIBS += rt pthread
@@ -64,20 +52,17 @@ add_executable(omrthreadtest
 #ifeq (aix,$(OMR_HOST_OS))
 	#MODULE_SHARED_LIBS += iconv perfstat
 #endif
-#ifeq (win,$(OMR_HOST_OS))
-	#MODULE_SHARED_LIBS += ws2_32 shell32 Iphlpapi psapi pdh
-#endif
 
-#include $(top_srcdir)/omrmakefiles/rules.mk
 
 target_link_libraries(omrthreadtest
 	omrtestutil
 	omrGtestGlue
-	j9thrstatic
 	j9hashtable
-	${OMR_PORT_LIB}
 	omrcore
+	omrvmstartup
 	${OMR_GC_LIB}
+	${OMR_PORT_LIB}
+	${OMR_THREAD_LIB}
 )
 if(OMR_HOST_OS STREQUAL "win")
 	target_link_libraries(omrthreadtest

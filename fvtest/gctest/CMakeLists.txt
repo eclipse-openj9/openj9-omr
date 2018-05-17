@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2017 IBM Corp. and others
+# Copyright (c) 2017, 2018 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -33,11 +33,12 @@ target_link_libraries(omrgctest
 	pugixml
 	omrtestutil
 	omrcore
-	${OMR_HOOK_LIB}
-	${OMR_TRACE_LIB}
+	omrvmstartup
 	${OMR_GC_LIB}
-	${OMR_THREAD_LIB}
+	${OMR_HOOK_LIB}
 	${OMR_PORT_LIB}
+	${OMR_THREAD_LIB}
+	${OMR_TRACE_LIB}
 )
 
 # TODO check linker flags from makefile are ported properly.

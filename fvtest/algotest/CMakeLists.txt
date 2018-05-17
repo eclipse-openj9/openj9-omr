@@ -42,6 +42,7 @@ target_link_libraries(omralgotest
 	omrport
 	omrtestutil
 	omrcore
+	omrvmstartup
 	${OMR_GC_LIB}
 )
 

@@ -38,6 +38,7 @@ target_link_libraries(example
 	omr_main_function
 	pugixml
 	omrcore
+	omrvmstartup
 	${OMR_HOOK_LIB}
 	${OMR_TRACE_LIB}
 	${OMR_GC_LIB}

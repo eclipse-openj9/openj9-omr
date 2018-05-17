@@ -108,10 +108,11 @@ target_link_libraries(omrrastest
 	PRIVATE
 		omrGtestGlue
 		omrtestutil
-		omrport
-		j9thrstatic
 		omrcore
-		omrgc
+		omrvmstartup
+		${OMR_GC_LIB}
+		${OMR_PORT_LIB}
+		${OMR_THREAD_LIB}
 )
 
 add_dependencies(omrrastest
@@ -138,11 +139,12 @@ target_link_libraries(omrsubscribertest
 	PRIVATE
 		omrGtestGlue
 		omrtestutil
-		j9thrstatic
 		omrcore
-		omrtrace
-		omrport
-		omrgc
+		omrvmstartup
+		${OMR_GC_LIB}
+		${OMR_PORT_LIB}
+		${OMR_THREAD_LIB}
+		${OMR_TRACE_LIB}
 )
 add_dependencies(omrsubscribertest
 	subscriberAgent
@@ -159,10 +161,11 @@ target_link_libraries(omrtraceoptiontest
 	PRIVATE
 		omrGtestGlue
 		omrtestutil
-		j9thrstatic
 		omrcore
-		omrport
-		omrgc
+		omrvmstartup
+		${OMR_GC_LIB}
+		${OMR_PORT_LIB}
+		${OMR_THREAD_LIB}
 )
 add_dependencies(omrtraceoptiontest
 	traceOptionAgent

@@ -10,7 +10,7 @@ is available at https://www.apache.org/licenses/LICENSE-2.0.
 This Source Code may also be made available under the following
 Secondary Licenses when the conditions for such availability set
 forth in the Eclipse Public License, v. 2.0 are satisfied: GNU
-General Public License, version 2 with the GNU Classpath 
+General Public License, version 2 with the GNU Classpath
 Exception [1] and GNU General Public License, version 2 with the
 OpenJDK Assembly Exception [2].
 
@@ -20,11 +20,12 @@ OpenJDK Assembly Exception [2].
 SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
 -->
 
-[![Travis Status](https://api.travis-ci.org/eclipse/omr.svg?branch=master)](https://travis-ci.org/eclipse/omr)
-[![Appveyor Status](https://ci.appveyor.com/api/projects/status/github/eclipse/omr?svg=true&branch=master)](https://ci.appveyor.com/project/eclipsewebmaster/omr)
-[![Build-linux_390-64 Status](https://ci.eclipse.org/omr/job/Build-linux_390-64/badge/icon)](https://ci.eclipse.org/omr/job/Build-linux_390-64/)
-[![Build-linux_ppc-64_le_gcc Status](https://ci.eclipse.org/omr/job/Build-linux_ppc-64_le_gcc/badge/icon)](https://ci.eclipse.org/omr/job/Build-linux_ppc-64_le_gcc/)
-[![Build-aix_ppc-64 Status](https://ci.eclipse.org/omr/job/Build-aix_ppc-64/badge/icon)](https://ci.eclipse.org/omr/job/Build-aix_ppc-64/)
+# Eclipse OMR
+
+| **Travis CI** | **Windows x86** | **Windows x86-64** | **Linux x86-64** | **Power 64-bit Linux** | **Power 64-bit AIX** | **Linux on Z 64-bit** |
+|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+|[![Travis Status](https://api.travis-ci.org/eclipse/omr.svg?branch=master)](https://travis-ci.org/eclipse/omr)|[![Appveyor Status](https://ci.appveyor.com/api/projects/status/github/eclipse/omr?svg=true&branch=master)](https://ci.appveyor.com/project/eclipsewebmaster/omr)|[![Windows x86-64 Status](https://ci.eclipse.org/omr/job/Build-win_x86-64/badge/icon)](https://ci.eclipse.org/omr/job/Build-win_x86-64/)|[![Linux x86-64 Status](https://ci.eclipse.org/omr/job/Build-linux_x86-64/badge/icon)](https://ci.eclipse.org/omr/job/Build-linux_x86-64/)|[![Build-linux_ppc-64_le_gcc Status](https://ci.eclipse.org/omr/job/Build-linux_ppc-64_le_gcc/badge/icon)](https://ci.eclipse.org/omr/job/Build-linux_ppc-64_le_gcc/)|[![Build-aix_ppc-64 Status](https://ci.eclipse.org/omr/job/Build-aix_ppc-64/badge/icon)](https://ci.eclipse.org/omr/job/Build-aix_ppc-64/)|[![Build-linux_390-64 Status](https://ci.eclipse.org/omr/job/Build-linux_390-64/badge/icon)](https://ci.eclipse.org/omr/job/Build-linux_390-64/)|
+
 
 What Is Eclipse OMR?
 ====================
@@ -78,8 +79,8 @@ Who is using Eclipse OMR?
 * The most comprehensive consumer of the Eclipse OMR technology is the [Eclipse
   OpenJ9 Virtual Machine](https://github.com/eclipse/openj9): a high
   performance, scalable, enterprise class Java Virtual Machine implementation
-  representing hundreds of person years of effort, built on top of the core 
-  technologies provided by Eclipse OMR. 
+  representing hundreds of person years of effort, built on top of the core
+  technologies provided by Eclipse OMR.
 * The Ruby+OMR Technology Preview has used Eclipse OMR components to add a JIT
   compiler to the CRuby implementation, and to experiment with replacing the
   garbage collector in CRuby.
@@ -124,7 +125,7 @@ How Do I Use it?
 
 The best way to get an initial understanding of the Eclipse OMR technology is to
 look at a 'standalone' build, which hooks Eclipse OMR up to the its testing system
-only. 
+only.
 
 ### Basic configuration and compile
 To build standalone Eclipse OMR, run the following commands from the top of the

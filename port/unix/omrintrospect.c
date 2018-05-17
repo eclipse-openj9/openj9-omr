@@ -847,11 +847,19 @@ count_threads(struct PlatformWalkData *data)
 		while ((file = readdir(proc)) != NULL) {
 			/* we need a directory who's name starts with a '.' - we filter out '.' and '..' */
 			if (file->d_type == DT_DIR && file->d_name[0] == '.' && file->d_name[1] != '\0' && file->d_name[1] != '.') {
-				/* "/proc/.<pid>/status" 13 for /proc/ and /status, 11 for the .pid, 1 for the null */
-				char buf[13 + 11 + 1] = "/proc/";
+				/* The needed buffer size to store the path to status is calculated as:
+				 *  /proc/.<pid>/status\0
+				 *  |-----|-----|------|-|
+				 *   6     11    7      1
+				 */
+				char buf[6 + 11 + 7 + 1];
 				int tgid;
+
+				strcat(buf, "/proc/");
+				/* If d_name is longer than 11 characters, it will be truncated */
 				strncat(buf, file->d_name, 11);
-				strncat(buf, "/status", 7);
+				strcat(buf, "/status");
+
 				FILE *status = fopen(buf, "r");
 				if (status != NULL) {
 					if (fscanf(status, "%*[^\n]\n%*[^\n]\nTgid:%d", &tgid) == 1 && tgid == pid) {

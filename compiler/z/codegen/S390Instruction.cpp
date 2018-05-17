@@ -3666,7 +3666,7 @@ void appendElementSizeMnemonic(char * opCodeBuffer, int8_t elementSize)
 const char *
 getOpCodeName(TR::InstOpCode * opCode)
    {
-   return TR::InstOpCode::opCodeToNameMap[opCode->getOpCodeValue()];
+   return TR::InstOpCode::binaryEncodings[opCode->getOpCodeValue()].name;
    }
 
 TR::S390VInstruction::~S390VInstruction()

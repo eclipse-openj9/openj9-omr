@@ -21,18 +21,7 @@
 
 #include "compiler/z/codegen/OMRInstOpCode.hpp"
 
-const uint64_t OMR::Z::InstOpCode::properties[NumOpCodes] =
-   {
-   #include "codegen/ArchInstOpCodeProperties.hpp"
-   };
-
 const OMR::Z::InstOpCode::OpCodeBinaryEntry OMR::Z::InstOpCode::binaryEncodings[NumOpCodes] =
    {
-   #include "codegen/ArchInstOpCodeEncoding.hpp"
-   };
-
-
-const char * OMR::Z::InstOpCode::opCodeToNameMap[NumOpCodes] =
-   {
-   #include "codegen/ArchInstOpCodeNameMap.hpp"
+   #include "codegen/OMRInstOpCodeProperties.hpp"
    };

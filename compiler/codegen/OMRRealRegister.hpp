@@ -58,6 +58,7 @@ class OMR_EXTENSIBLE RealRegister : public TR::Register
       Locked    = 4
       } RegState;
 
+   // All hardware backed registers
    typedef enum
       {
       #include "codegen/RealRegisterEnum.hpp"
@@ -69,6 +70,22 @@ class OMR_EXTENSIBLE RealRegister : public TR::Register
       #include "codegen/RealRegisterMaskEnum.hpp"
 
       } RegMask;
+
+    // PseudoRegisters are the union of all hardware backed registers (ex. GPR0)
+    // and constructs such as TR::RealRegister::NoReg or TR::RealRegister::AssignAny. 
+    // These pseudo registers are used to assign register dependencies during the 
+    // Register Allocation phase. The enum below is meant to hold all pseudo registers.
+    // However, to avoid compilation failures, we cannot include 
+    // codegen/RealRegisterEnum.hpp again. In order to include it twice, these two enums
+    // must be scoped. However, not all of our minimum compiler toolchains support this
+    // feature yet (MSVC 2010). So we only include PseudoRegisterEnum below, and cast any 
+    // RegNum to RegDep when using it to set a register dependency. If MSVC 2010 support is 
+    // no longer required, then this can be cleaned up by using scoped enums instead. An issue
+    // to track this is open here: https://github.com/eclipse/omr/issues/2590 
+    typedef enum
+       {
+       #include "codegen/PseudoRegisterEnum.hpp"
+       } RegDep;
 
 
    protected:

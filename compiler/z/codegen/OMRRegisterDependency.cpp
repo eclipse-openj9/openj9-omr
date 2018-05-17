@@ -1834,6 +1834,13 @@ bool OMR::Z::RegisterDependencyConditions::doesPostConditionExist( TR::Register 
    }
 
 
+bool OMR::Z::RegisterDependencyConditions::addPreConditionIfNotAlreadyInserted(TR::Register *vr,
+                                                                                  TR::RealRegister::RegNum rr,
+                                                                                  uint8_t flag)
+   {
+   return addPreConditionIfNotAlreadyInserted(vr, static_cast<TR::RealRegister::RegDep>(rr), flag);  
+   }
+
 /**
  * Checks for an existing pre-condition for given virtual register.  If found,
  * the flags are updated.  If not found, a new pre-condition is created with
@@ -1845,7 +1852,7 @@ bool OMR::Z::RegisterDependencyConditions::doesPostConditionExist( TR::Register 
  * @sa addPostConditionIfNotAlreadyInserted()
  */
 bool OMR::Z::RegisterDependencyConditions::addPreConditionIfNotAlreadyInserted(TR::Register *vr,
-                                                                                  TR::RealRegister::RegNum rr,
+                                                                                  TR::RealRegister::RegDep rr,
                                                                                   uint8_t flag)
    {
    int32_t pos = -1;
@@ -1863,6 +1870,12 @@ bool OMR::Z::RegisterDependencyConditions::addPreConditionIfNotAlreadyInserted(T
    return false;
    }
 
+bool OMR::Z::RegisterDependencyConditions::addPostConditionIfNotAlreadyInserted(TR::Register *vr,
+                                                                                   TR::RealRegister::RegNum rr,
+                                                                                   uint8_t flag)
+   {
+   return addPostConditionIfNotAlreadyInserted(vr, static_cast<TR::RealRegister::RegDep>(rr), flag);
+   }
 
 /**
  * Checks for an existing post-condition for given virtual register.  If found,
@@ -1875,7 +1888,7 @@ bool OMR::Z::RegisterDependencyConditions::addPreConditionIfNotAlreadyInserted(T
  * @sa addPreConditionIfNotAlreadyInserted()
  */
 bool OMR::Z::RegisterDependencyConditions::addPostConditionIfNotAlreadyInserted(TR::Register *vr,
-                                                                                   TR::RealRegister::RegNum rr,
+                                                                                   TR::RealRegister::RegDep rr,
                                                                                    uint8_t flag)
    {
    int32_t pos = -1;

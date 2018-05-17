@@ -6035,7 +6035,6 @@ OMR::Z::Machine::initialiseRegisterFile()
 
    // Initialize GPRs
    _registerFile[TR::RealRegister::NoReg] = NULL;
-   _registerFile[TR::RealRegister::SpilledReg] = NULL;
 
    _registerFile[TR::RealRegister::GPR0] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR, 0, TR::RealRegister::Free,
                                                      TR::RealRegister::GPR0, TR::RealRegister::GPR0Mask, self()->cg());

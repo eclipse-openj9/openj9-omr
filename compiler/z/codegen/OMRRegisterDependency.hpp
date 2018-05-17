@@ -103,6 +103,14 @@ class TR_S390RegisterDependencyGroup
 
    void setDependencyInfo(uint32_t                                  index,
                           TR::Register                              *vr,
+                          TR::RealRegister::RegDep rr,
+                          uint8_t                                   flag)
+     {
+     setDependencyInfo(index, vr, static_cast<TR::RealRegister::RegNum>(rr), flag);
+     }
+
+   void setDependencyInfo(uint32_t                                  index,
+                          TR::Register                              *vr,
                           TR::RealRegister::RegNum rr,
                           uint8_t                                   flag)
       {
@@ -391,6 +399,13 @@ class RegisterDependencyConditions: public OMR::RegisterDependencyConditions
    void addPreCondition(TR::Register                              *vr,
                         TR::RealRegister::RegNum rr,
                         uint8_t                                   flag = ReferencesDependentRegister)
+       {
+       addPreCondition(vr, static_cast<TR::RealRegister::RegDep>(rr), flag);
+       }
+
+   void addPreCondition(TR::Register                              *vr,
+                        TR::RealRegister::RegDep rr,
+                        uint8_t                                   flag = ReferencesDependentRegister)
       {
       TR_ASSERT(!getIsUsed(), "ERROR: cannot add pre conditions to an used dependency, create a copy first\n");
 
@@ -427,6 +442,13 @@ class RegisterDependencyConditions: public OMR::RegisterDependencyConditions
 
    void addPostCondition(TR::Register                              *vr,
                          TR::RealRegister::RegNum rr,
+                         uint8_t                                   flag = ReferencesDependentRegister)
+      {
+      addPostCondition(vr, static_cast<TR::RealRegister::RegDep>(rr), flag);
+      }
+
+   void addPostCondition(TR::Register                              *vr,
+                         TR::RealRegister::RegDep rr,
                          uint8_t                                   flag = ReferencesDependentRegister)
       {
       TR_ASSERT(!getIsUsed(), "ERROR: cannot add post conditions to an used dependency, create a copy first\n");
@@ -511,8 +533,15 @@ class RegisterDependencyConditions: public OMR::RegisterDependencyConditions
    bool addPreConditionIfNotAlreadyInserted(TR::Register *vr,
                                             TR::RealRegister::RegNum rr,
 				                                uint8_t flag = ReferencesDependentRegister);
+   bool addPreConditionIfNotAlreadyInserted(TR::Register *vr,
+                                            TR::RealRegister::RegDep rr,
+				                                uint8_t flag = ReferencesDependentRegister);
+
    bool addPostConditionIfNotAlreadyInserted(TR::Register *vr,
                                              TR::RealRegister::RegNum rr,
+				                                 uint8_t flag = ReferencesDependentRegister);                                     
+   bool addPostConditionIfNotAlreadyInserted(TR::Register *vr,
+                                             TR::RealRegister::RegDep rr,
 				                                 uint8_t flag = ReferencesDependentRegister);
 
    TR::RegisterDependencyConditions *clone(TR::CodeGenerator *cg, int32_t additionalRegDeps);

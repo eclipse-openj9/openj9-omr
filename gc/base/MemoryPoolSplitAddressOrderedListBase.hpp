@@ -39,7 +39,8 @@
 
 class MM_AllocateDescription;
 
-typedef struct J9ModronHeapFreeList {
+class J9ModronFreeList {
+public:
 	MM_LightweightNonReentrantLock _lock;
 	MM_HeapLinkedFreeHeader* _freeList;
 	uintptr_t _timesLocked;
@@ -235,7 +236,18 @@ typedef struct J9ModronHeapFreeList {
 			}
 		}
 	}
-} J9ModronFreeList;
+
+	J9ModronFreeList()
+		: _freeList(NULL)
+		, _timesLocked(0)
+		, _freeSize(0)
+		, _freeCount(0)
+		, _hintActive(NULL)
+		, _hintInactive(NULL)
+		, _hintLru(0)
+	{
+	}
+};
 
 /**
  * @todo Provide class documentation
@@ -368,7 +380,7 @@ public:
 		, _largeObjectAllocateStatsForFreeList(NULL)
 		, _largeObjectCollectorAllocateStatsForFreeList(NULL)
 	{
-	};
+	}
 
 	MM_MemoryPoolSplitAddressOrderedListBase(MM_EnvironmentBase* env, uintptr_t minimumFreeEntrySize, uintptr_t splitAmount, const char* name)
 		: MM_MemoryPoolAddressOrderedListBase(env, minimumFreeEntrySize, name)
@@ -379,7 +391,7 @@ public:
 		, _largeObjectAllocateStatsForFreeList(NULL)
 		, _largeObjectCollectorAllocateStatsForFreeList(NULL)
 	{
-	};
+	}
 
 	/*
 	 * Friends

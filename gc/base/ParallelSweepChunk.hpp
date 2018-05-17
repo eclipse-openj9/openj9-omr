@@ -89,7 +89,7 @@ public:
 	 */	
 	MMINLINE void clear()
 	{
-		memset(this, 0, sizeof (*this));
+		*this = MM_ParallelSweepChunk();
 	}
 
 	/**
@@ -140,6 +140,10 @@ public:
 		_previousLargestFreeEntry(NULL),
 		_previous(NULL),
 		_next(NULL),
+#if defined(OMR_GC_CONCURRENT_SWEEP)
+		_nextChunk(NULL),
+		_concurrentSweepState(0),
+#endif /* OMR_GC_CONCURRENT_SWEEP */
 		_splitCandidate(NULL),
 		_splitCandidatePreviousEntry(NULL),
 		_accumulatedFreeSize(0),

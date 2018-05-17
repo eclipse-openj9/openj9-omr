@@ -40,9 +40,9 @@ MM_PacketList::initialize(MM_EnvironmentBase *env)
 	if (NULL == _sublists) {
 		result = false;
 	} else {
-		memset(_sublists, 0, sizeof(struct PacketSublist) * _sublistCount);
 		for (uintptr_t i = 0; i < _sublistCount; i++) {
-			if (!_sublists[i]._lock.initialize(env, &extensions->lnrlOptions, "MM_PacketList:_sublists[]._lock")) {
+			_sublists[i] = PacketSublist();
+			if (!_sublists[i].initialize(env)) {
 				result = false;
 				break;
 			}

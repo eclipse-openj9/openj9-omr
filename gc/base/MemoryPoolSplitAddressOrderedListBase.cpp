@@ -54,24 +54,18 @@
 #include "SweepPoolState.hpp"
 
 bool
-J9ModronHeapFreeList::initialize(MM_EnvironmentBase* env)
+J9ModronFreeList::initialize(MM_EnvironmentBase* env)
 {
-	if (!_lock.initialize(env, &env->getExtensions()->lnrlOptions, "J9ModronHeapFreeList:_lock")) {
+	if (!_lock.initialize(env, &env->getExtensions()->lnrlOptions, "J9ModronFreeList:_lock")) {
 		return false;
 	}
-	_freeList = NULL;
-	_timesLocked = 0;
 
-	_freeSize = 0;
-	_freeCount = 0;
+	_freeList = NULL;
 
 	/* Link up the inactive hints */
 	J9ModronAllocateHint* inactiveHint = (J9ModronAllocateHint*)_hintStorage;
 	J9ModronAllocateHint* previousInactiveHint = NULL;
 	uintptr_t inactiveCount = HINT_ELEMENT_COUNT;
-
-	_hintActive = NULL;
-	_hintLru = 0;
 
 	while (inactiveCount) {
 		inactiveHint->next = previousInactiveHint;
@@ -85,7 +79,7 @@ J9ModronHeapFreeList::initialize(MM_EnvironmentBase* env)
 }
 
 void
-J9ModronHeapFreeList::tearDown()
+J9ModronFreeList::tearDown()
 {
 	_lock.tearDown();
 }
@@ -95,7 +89,7 @@ J9ModronHeapFreeList::tearDown()
  ****************************************
  */
 void
-J9ModronHeapFreeList::clearHints()
+J9ModronFreeList::clearHints()
 {
 	J9ModronAllocateHint* activeHint = _hintActive;
 	J9ModronAllocateHint* nextActiveHint = NULL;
@@ -112,7 +106,7 @@ J9ModronHeapFreeList::clearHints()
 	_hintLru = 1;
 }
 
-void J9ModronHeapFreeList::reset()
+void J9ModronFreeList::reset()
 {
 	_freeList = NULL;
 	_freeSize = 0;
@@ -156,12 +150,12 @@ MM_MemoryPoolSplitAddressOrderedListBase::initialize(MM_EnvironmentBase* env)
 		}
 	}
 
-	_heapFreeLists = (J9ModronHeapFreeList*)extensions->getForge()->allocate(sizeof(J9ModronHeapFreeList) * _heapFreeListCountExtended, OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
+	_heapFreeLists = (J9ModronFreeList*)extensions->getForge()->allocate(sizeof(J9ModronFreeList) * _heapFreeListCountExtended, OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
 	if (NULL == _heapFreeLists) {
 		return false;
 	} else {
-		memset(_heapFreeLists, 0, sizeof(J9ModronHeapFreeList) * _heapFreeListCountExtended);
 		for (uintptr_t i = 0; i < _heapFreeListCountExtended; ++i) {
+			_heapFreeLists[i] = J9ModronFreeList();
 			if (!_heapFreeLists[i].initialize(env)) {
 				return false;
 			}

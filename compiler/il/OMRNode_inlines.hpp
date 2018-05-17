@@ -614,6 +614,8 @@ template <> inline uint32_t Node::getConst<uint32_t>() { return self()->getUnsig
 template <> inline  int32_t Node::getConst< int32_t>() { return self()->getInt(); }
 template <> inline uint64_t Node::getConst<uint64_t>() { return self()->getUnsignedLongInt(); }
 template <> inline  int64_t Node::getConst< int64_t>() { return self()->getLongInt(); }
+template <> inline    float Node::getConst<   float>() { return self()->getFloat(); }
+template <> inline   double Node::getConst<  double>() { return self()->getDouble(); }
 
 template <> inline  uint8_t Node::setConst< uint8_t>( uint8_t b) { return self()->setUnsignedByte(b); }
 template <> inline   int8_t Node::setConst<  int8_t>(  int8_t b) { return self()->setByte(b); }
@@ -623,6 +625,8 @@ template <> inline uint32_t Node::setConst<uint32_t>(uint32_t i) { return self()
 template <> inline  int32_t Node::setConst< int32_t>( int32_t i) { return self()->setInt(i); }
 template <> inline uint64_t Node::setConst<uint64_t>(uint64_t l) { return self()->setUnsignedLongInt(l); }
 template <> inline  int64_t Node::setConst< int64_t>( int64_t l) { return self()->setLongInt(l); }
+template <> inline    float Node::setConst<   float>(   float f) { return self()->setFloat(f); }
+template <> inline   double Node::setConst<  double>(  double d) { return self()->setDouble(d); }
 }
 
 template <class T> T

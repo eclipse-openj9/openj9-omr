@@ -3436,11 +3436,14 @@ int32_t TR_EliminateRedundantGotos::process(TR::TreeTop *startTree, TR::TreeTop 
          continue;
 
       TR::Block *destBlock = block->getSuccessors().front()->getTo()->asBlock();
+      if (destBlock == block)
+         continue; // No point trying to "update" predecessors
+
       TR::CFGEdgeList fixablePreds(comp()->trMemory()->currentStackRegion());
       auto preds = block->getPredecessors();
       for (auto inEdge = preds.begin(); inEdge != preds.end(); ++inEdge)
          {
-         if (((*inEdge)->getFrom() == cfg->getStart()) || ((*inEdge)->getFrom() == block))
+         if ((*inEdge)->getFrom() == cfg->getStart())
             continue;
 
          TR::Block *pred = toBlock((*inEdge)->getFrom());

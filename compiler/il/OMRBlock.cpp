@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -708,7 +708,12 @@ OMR::Block::changeBranchDestination(TR::TreeTop * newDestination, TR::CFG *cfg, 
    TR::Node * branchNode = self()->getLastRealTreeTop()->getNode();
    TR_ASSERT(branchNode->getOpCode().isBranch(), "OMR::Block::changeBranchDestination: can't find the existing branch node");
 
-   TR::Block * prevDestinationBlock = branchNode->getBranchDestination()->getNode()->getBlock();
+   TR::TreeTop * prevDestinationTree = branchNode->getBranchDestination();
+   if (newDestination == prevDestinationTree)
+      return; // Nothing to do. Stop here so we don't remove the edge.
+
+   TR::Block * prevDestinationBlock = prevDestinationTree->getNode()->getBlock();
+
    branchNode->setBranchDestination(newDestination);
 
    TR::Block * newDestinationBlock = newDestination->getNode()->getBlock();

@@ -49,6 +49,21 @@ public:
 		MM_Packet * _head;  /**< Head of the list */
 		MM_Packet * _tail;  /**< Tail of the list */
 		MM_LightweightNonReentrantLock _lock;  /**< Lock for getting/putting packets */
+
+		bool
+		initialize(MM_EnvironmentBase *env)
+		{
+			if (!_lock.initialize(env, &env->getExtensions()->lnrlOptions, "MM_PacketList:_sublists[]._lock")) {
+				return false;
+			}
+			return true;
+		}
+
+		PacketSublist()
+			: _head(NULL)
+			, _tail(NULL)
+		{
+		}
 	};
 	
 protected:

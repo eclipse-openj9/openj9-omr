@@ -1,6 +1,6 @@
 #!/bin/bash
 ###############################################################################
-# Copyright (c) 2017, 2017 IBM Corp. and others
+# Copyright (c) 2017, 2018 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -22,6 +22,22 @@
 ###############################################################################
 
 set -evx
+
+function aarch64_cross_compile_setup
+{
+  #TODO:ARM64: Setup DDR Support for AArch64
+  export EXTRA_CONFIGURE_ARGS="--disable-DDR"
+
+  #TODO:ARM64: Test AArch64 with QEMU?
+  export RUN_TESTS="no"
+
+  # Get the toolchain
+  wget https://releases.linaro.org/components/toolchain/binaries/4.9-2017.01/aarch64-linux-gnu/gcc-linaro-4.9.4-2017.01-x86_64_aarch64-linux-gnu.tar.xz
+
+  tar xf gcc-linaro-4.9.4-2017.01-x86_64_aarch64-linux-gnu.tar.xz
+
+  export PATH="`pwd`/gcc-linaro-4.9.4-2017.01-x86_64_aarch64-linux-gnu/bin:${PATH}"
+}
 
 if test "x$TRAVIS_OS_NAME" = "xosx"; then
   export GTEST_FILTER=-*dump_test_create_dump_*:*NumaSetAffinity:*NumaSetAffinitySuspended:*DeathTest*
@@ -56,6 +72,12 @@ else
   # Linux 64 compressed references build and the 	Lint builds do not run in CMake
   # Remove the Linux 64 compressed references build once the Autotool build infrastructure is retired
   export EXTRA_CONFIGURE_ARGS="--enable-DDR"
+
+  # Cross Compile Toolchain and Configuration Options for AArch64
+  if test "x$SPEC" = "xlinux_aarch64"; then
+    aarch64_cross_compile_setup
+  fi
+
   time make -f run_configure.mk OMRGLUE=./example/glue SPEC="$SPEC" PLATFORM="$PLATFORM"
   if test "x$RUN_BUILD" != "xno"; then
     # Normal build system

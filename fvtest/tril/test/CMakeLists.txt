@@ -43,7 +43,15 @@ target_link_libraries(triltest
 	omrGtest
 )
 
-target_compile_options(triltest PRIVATE "-Wno-write-strings")
+# The platform specific ${TR_CXX_COMPILE_OPTIONS} and ${TR_C_COMPILE_OPTIONS} compile options
+# should been added, on Windows, for example, these options enable exception handling
+# what is required for Clang.
+target_compile_options(triltest
+	PUBLIC
+		${TR_COMPILE_OPTIONS}
+		$<$<COMPILE_LANGUAGE:CXX>:${TR_CXX_COMPILE_OPTIONS}>
+		$<$<COMPILE_LANGUAGE:C>:${TR_C_COMPILE_OPTIONS}>
+)
 
 set_property(TARGET triltest PROPERTY FOLDER fvtest/tril)
 

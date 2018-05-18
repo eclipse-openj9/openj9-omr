@@ -186,12 +186,6 @@ int32_t getVectorElementSize(TR::Node *node);
 int32_t getVectorElementSizeMask(TR::Node *node);
 int32_t getVectorElementSizeMask(int8_t size);
 
-TR::Register * generateS390ComplexCompareBool(TR::Node * node, TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic branchOp,
-                                                TR::InstOpCode::S390BranchCondition branchOpCond);
-void asmNodeBookKeeping(TR::CodeGenerator * cg, TR::Node * node, TR::Node * child, int8_t i, TR::RegisterDependencyConditions * conditions);
-
-
-
 #ifndef _MSC_VER
 // Because these templates are not defined in headers, but the cpp TreeEvaluator.cpp, suppress implicit instantiation
 // using these extern definitions. Unfortunately, Visual Studio likes doing things differently, so for VS, this chunk

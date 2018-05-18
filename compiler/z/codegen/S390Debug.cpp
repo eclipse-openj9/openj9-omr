@@ -87,7 +87,6 @@ namespace TR { class Block; }
 #define OPCODE_SPACING           8
 
 extern const char *BranchConditionToNameMap[];
-extern const char *BranchConditionToNameMap_ForListing[];
 
 /** Need to use this since xlc doesn't seem to understand %hx modifier for fprintf */
 #define maskHalf(val) (0x0000FFFF & (val))

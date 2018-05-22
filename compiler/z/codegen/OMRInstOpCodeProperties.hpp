@@ -262,17 +262,6 @@
    },
 
    {
-   /* .mnemonic    = */ OMR::InstOpCode::KMGCM,
-   /* .name        = */ "KMGCM",
-   /* .description = */ "cipher message with galois counter mode",
-   /* .opcode[0]   = */ 0xB9,
-   /* .opcode[1]   = */ 0x29,
-   /* .format      = */ RRF_FORMAT,
-   /* .minimumALS  = */ TR_S390ProcessorInfo::TR_UnknownArchitecture,
-   /* .properties  = */ S390OpProp_SetsCC
-   },
-
-   {
    /* .mnemonic    = */ OMR::InstOpCode::LABEL,
    /* .name        = */ "LABEL",
    /* .description = */ "Destination of a jump",
@@ -15255,6 +15244,17 @@
                         S390OpProp_LongDispSupported |
                         S390OpProp_BranchOp |
                         S390OpProp_ReadsCC
+   },
+
+   {
+   /* .mnemonic    = */ OMR::InstOpCode::KMA,
+   /* .name        = */ "KMGCM",
+   /* .description = */ "Cipher Message with Authentication",
+   /* .opcode[0]   = */ 0xB9,
+   /* .opcode[1]   = */ 0x29,
+   /* .format      = */ RRF_FORMAT,
+   /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z14,
+   /* .properties  = */ S390OpProp_SetsCC
    },
 
    {

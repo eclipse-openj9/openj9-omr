@@ -45,7 +45,6 @@
    DIRECTIVE,           // WCode DIR related
    DS,                  // DS
    FENCE,               // Fence
-   KMGCM,               // cipher message with galois counter mode
    LABEL,               // Destination of a jump
    LHHR,                // Load (High <- High)
    LHLR,                // Load (High <- Low)
@@ -1145,6 +1144,7 @@
 
    AGH,                 // add halfword (64 <- 16)
    BIC,                 // branch indirect on condition
+   KMA,                 // Cipher Message with Authentication
    LGG,                 // load guarded
    LGSC,                // load guarded storage controls
    LLGFSG,              // load logical and shift guarded (64 <- 32)

@@ -124,7 +124,7 @@ class typed_allocator : public typed_allocator<void, Alloc>
       typed_allocator<void, untyped_allocator>::deallocate(p, n * sizeof(value_type));
       }
 
-   static void construct(pointer p, const_reference prototype) { new(p) value_type(prototype); }
+   static void construct(pointer p, const_reference prototype) { ::new(p) value_type(prototype); }
    static void destroy(pointer p) { p->~value_type(); }
 
    static size_type max_size() throw()

@@ -608,9 +608,6 @@ class InstOpCode: public OMR::InstOpCode
 
    static const OpCodeMetaData metadata[NumOpCodes];
 
-   uint8_t getFirstByte(){return metadata[_mnemonic].opcode[0];}
-   uint8_t getSecondByte() {return metadata[_mnemonic].opcode[1];}
-
    /**
     * \brief
     *    Gets the minimum architecture level set (ALS) which introduced this instruction.

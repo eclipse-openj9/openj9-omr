@@ -15248,7 +15248,7 @@
 
    {
    /* .mnemonic    = */ OMR::InstOpCode::KMA,
-   /* .name        = */ "KMGCM",
+   /* .name        = */ "KMA",
    /* .description = */ "Cipher Message with Authentication",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0x29,

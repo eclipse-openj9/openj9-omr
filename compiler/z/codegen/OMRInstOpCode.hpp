@@ -558,36 +558,36 @@ class InstOpCode: public OMR::InstOpCode
    /**
     *  \brief
     *      Defines various metadata of an instruction including the name, description, opcodes, format, the minimum
-	 *      architecture level set (ALS) which introduced the instruction, and the various properties which model the
-	 *      instruction in a way that the code generator understands.
+    *      architecture level set (ALS) which introduced the instruction, and the various properties which model the
+    *      instruction in a way that the code generator understands.
     */
    struct OpCodeMetaData
       {
-		/**
+      /**
        *  \brief
        *      The instruction mnemonic.
        */
       OMR::InstOpCode::Mnemonic mnemonic;
 
-		/**
+      /**
        *  \brief
        *      The instruction mnemonic as defined by Principles of Operation.
        */
-		const char* name;
+      const char* name;
 
-		/**
+      /**
        *  \brief
        *      The fully qualified instruction name as defined by Principles of Operation.
        */
-		const char* description;
+      const char* description;
 
-		/**
+      /**
        *  \brief
        *      The instruction opcode which is at most two bytes in length.
        */
       uint8_t opcode[2];
 
-		/**
+      /**
        *  \brief
        *      The instruction format as defined by Principles of Operation.
        */
@@ -599,11 +599,11 @@ class InstOpCode: public OMR::InstOpCode
        */
       TR_S390ProcessorInfo::TR_S390ProcessorArchitectures minimumALS;
 
-		/**
+      /**
        *  \brief
        *      The properties describing the behavior of this instruction to the codegen.
        */
-		uint64_t properties;
+      uint64_t properties;
       };
 
    static const OpCodeMetaData metadata[NumOpCodes];

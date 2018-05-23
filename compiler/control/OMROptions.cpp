@@ -490,6 +490,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"disableReadMonitors",                 "O\tdisable read monitors",                         SET_OPTION_BIT(TR_DisableReadMonitors), "F"},
    {"disableRecognizedCallTransformer",    "O\tdisable recognized call transformer",           TR::Options::disableOptimization, recognizedCallTransformer, 0, "P"},
    {"disableRecognizedMethods",            "O\tdisable recognized methods",                    SET_OPTION_BIT(TR_DisableRecognizedMethods), "F"},
+   {"disableRecompDueToInlinedMethodRedefinition", "O\tdisable recompilation for method body with patched HCR guard",  SET_OPTION_BIT(TR_DisableRecompDueToInlinedMethodRedefinition), "F"},
    {"disableReducedPriorityForCustomMethodHandleThunks",  "R\tcompile custom MethodHandle invoke exact thunks at the same priority as normal java methods", SET_OPTION_BIT(TR_DisableReducedPriorityForCustomMethodHandleThunks), "F", NOT_IN_SUBSET},
    {"disableRedundantAsyncCheckRemoval",  "O\tdisable redundant async check removal",          TR::Options::disableOptimization, redundantAsyncCheckRemoval, 0, "P"},
    {"disableRedundantBCDSignElimination",  "I\tdisable redundant BCD sign elimination", SET_OPTION_BIT(TR_DisableRedundantBCDSignElimination),"F"},

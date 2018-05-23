@@ -20,6 +20,8 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
+#include <new>
+
 #include "omrcfg.h"
 #include "omrport.h"
 
@@ -46,9 +48,9 @@ MM_CopyScanCacheList::initialize(MM_EnvironmentBase *env, volatile uintptr_t *ca
 	if (NULL == _sublists) {
 		result = false;
 	} else {
-		memset(_sublists, 0, sizeof(struct CopyScanCacheSublist) * _sublistCount);
 		for (uintptr_t i = 0; i < _sublistCount; i++) {
-			if (!_sublists[i]._cacheLock.initialize(env, &extensions->lnrlOptions, "MM_CopyScanCacheList:_sublists[]._cacheLock")) {
+			new (&_sublists[i]) CopyScanCacheSublist();
+			if(_sublists[i].initialize(env)) {
 				result = false;
 				break;
 			}

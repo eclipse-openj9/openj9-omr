@@ -195,13 +195,6 @@ enum TR_S390LinkageConventions
                                  VRFREGINDEX(i) :                                   \
                                  FPREGINDEX(i) :                                    \
                               REGINDEX(i))
-/**
- * 390 Specific linkage relocation types
- */
-enum TR_S390LinkageRelocations
-   {
-   TR_S390RelocXPLinkOffsetToEntryPtMarker = 1 ///<XPLink specific relocation types
-   };
 
 /**
  * Starting special linkage index for linkages that have "special arguments"

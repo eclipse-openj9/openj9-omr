@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -91,24 +91,3 @@ const char *BranchConditionToNameMap[TR::InstOpCode::S390NumBranchConditions] =
    "MASK14",
    "MASK15"
    };
-
-
-const char *BranchConditionToNameMap_ForListing[S390_MAX_BRANCH_MASK] =
-{
-    "",         // 0x0
-    "O",        // 0x1
-    "HT",       // 0x2
-    "",         // 0x3
-    "LT",       // 0x4
-    "",         // 0x5
-    "NE",       // 0x6
-    "",         // 0x7
-    "EQ",       // 0x8
-    "",         // 0x9
-    "HE",       // 0xA - same as NL (not less than)
-    "",         // 0xB
-    "LE",       // 0xC - same as NH (not higer than)
-    "",         // 0xD
-    "NO",       // 0xE
-    "UNCOND"    // 0xF
-};

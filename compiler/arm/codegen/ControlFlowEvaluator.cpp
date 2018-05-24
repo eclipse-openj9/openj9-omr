@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -44,7 +44,7 @@
 #include "il/TreeTop_inlines.hpp"
 
 #ifdef J9_PROJECT_SPECIFIC
-#include "trj9/env/CHTable.hpp"                      // for TR_AOTGuardSite, etc
+#include "env/CHTable.hpp"                      // for TR_AOTGuardSite, etc
 #endif
 
 static void lookupScheme1(TR::CodeGenerator *cg, TR::Node *node, bool unbalanced);

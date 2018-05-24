@@ -127,7 +127,7 @@
 
 #if J9_PROJECT_SPECIFIC
 #include "z/codegen/S390Register.hpp"
-#include "trj9/z/codegen/J9S390PrivateLinkage.hpp"
+#include "z/codegen/J9S390PrivateLinkage.hpp"
 #endif
 
 class TR_IGNode;

@@ -829,32 +829,61 @@ MM_Scavenger::calcGCStats(MM_EnvironmentStandard *env)
  ****************************************
  */
 
+uintptr_t
+MM_Scavenger::calculateCopyScanCacheSizeForWaitingThreads(uintptr_t maxCacheSize, uintptr_t threadCount, uintptr_t waitingThreads)
+{
+	uintptr_t minCacheSize = _extensions->scavengerScanCacheMinimumSize;
+	uintptr_t range = maxCacheSize - minCacheSize;
+	uintptr_t minTLHSize = _extensions->tlhMinimumSize;
+	uintptr_t step = range / minTLHSize;
+	uintptr_t multiplier = (step * (threadCount - waitingThreads)) / threadCount;
+	uintptr_t cacheSize = (minTLHSize * multiplier) + minCacheSize;
+
+	return cacheSize;
+}
+
+uintptr_t
+MM_Scavenger::calculateCopyScanCacheSizeForQueueLength(uintptr_t maxCacheSize, uintptr_t threadCount, uintptr_t scanCacheCount)
+{
+	uintptr_t minCacheSize = _extensions->scavengerScanCacheMinimumSize;
+	uintptr_t range = maxCacheSize - minCacheSize;
+	uintptr_t cacheSize =  minCacheSize + ((range / threadCount) * (scanCacheCount + 1));
+
+	return cacheSize;
+}
+
 /**
  * Calculate optimum copyscancache size.
+ *
+ * Perform the hot path checks inline but if calculations are required call helper functions.
  * @return the optimum copyscancache size
  */
 MMINLINE uintptr_t
 MM_Scavenger::calculateOptimumCopyScanCacheSize(MM_EnvironmentStandard *env)
 {
-	/* scale down maximal scan cache size using wait/copy/scan factor and round up to nearest tlh size */
-	uintptr_t scaleSize = (uintptr_t)(_extensions->copyScanRatio.getScalingFactor(env) * _extensions->scavengerScanCacheMaximumSize);
-	uintptr_t cacheSize = MM_Math::roundToCeiling(_extensions->tlhMinimumSize, scaleSize);
-
-	/* Fit result into allowable cache size range */
-	if (cacheSize < _extensions->scavengerScanCacheMinimumSize) {
-		cacheSize = _extensions->scavengerScanCacheMinimumSize;
-	} else if (cacheSize > _extensions->scavengerScanCacheMaximumSize) {
-		cacheSize = _extensions->scavengerScanCacheMaximumSize;
+	uintptr_t threadCount = _dispatcher->threadCount();
+	uintptr_t maxCacheSize = _extensions->scavengerScanCacheMaximumSize;
+	uintptr_t cacheSize = maxCacheSize;
+	uintptr_t waitingThreads = _waitingCount;
+	if (waitingThreads > 0) {
+		uintptr_t cacheSizeBasedOnWaitingCount = calculateCopyScanCacheSizeForWaitingThreads(maxCacheSize, threadCount, waitingThreads);
+		cacheSize = OMR_MIN(cacheSizeBasedOnWaitingCount, cacheSize);
 	}
 
-	env->_scavengerStats.countCopyCacheSize(cacheSize, _extensions->scavengerScanCacheMaximumSize);
+	uintptr_t scanCacheCount = _scavengeCacheScanList.getApproximateEntryCount();
+	if (scanCacheCount < threadCount) {
+		uintptr_t cacheSizeBasedOnScanCacheCount = calculateCopyScanCacheSizeForQueueLength(maxCacheSize, threadCount, scanCacheCount);
+		cacheSize = OMR_MIN(cacheSizeBasedOnScanCacheCount, cacheSize);
+	}
 
-#if defined(OMR_SCAVENGER_TRACE)
-	OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
-	omrtty_printf("{SCAV: scanCacheSize %zu}\n", cacheSize);
-#endif /* OMR_SCAVENGER_TRACE */
+	env->_scavengerStats.countCopyCacheSize(cacheSize, maxCacheSize);
 
-	return cacheSize;
+#if defined(J9MODRON_SCAVENGER_TRACE)
+    PORT_ACCESS_FROM_ENVIRONMENT(env);
+    j9tty_printf(PORTLIB, "{SCAV: scanCacheSize %zu}\n", cacheSize);
+#endif /* J9MODRON_SCAVENGER_TRACE */
+
+    return cacheSize;
 }
 
 MMINLINE MM_CopyScanCacheStandard *

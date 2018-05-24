@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2018, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -19,75 +19,12 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#include "codegen/InstOpCode.hpp"  // for InstOpCode::S390NumBranchConditions
+/*
+ * This file will be included within an enum. Only comments and enumerator
+ * definitions are permitted.
+ */
 
-const char *BranchConditionToNameMap[TR::InstOpCode::S390NumBranchConditions] =
-   {
-   "NOPR",
-   "BRO",
-   "BRH",
-   "BRP",
-   "BRL",
-   "BRM",
-   "BRNE",
-   "BRNZ",
-   "BRE",
-   "BRZ",
-   "BRNH",
-   "BRNL",
-   "BRNM",
-   "BRNP",
-   "BRNO",
-   "B",
-   "BR",
-   "BRU",
-   "BRUL",
-   "BC",
-   "BCR",
-   "BE",
-   "BER",
-   "BH",
-   "BHR",
-   "BL",
-   "BLR",
-   "BM",
-   "BMR",
-   "BNE",
-   "BNER",
-   "BNH",
-   "BNHR",
-   "BNL",
-   "BNLR",
-   "BNM",
-   "BNMR",
-   "BNO",
-   "BNOR",
-   "BNP",
-   "BNPR",
-   "BNZ",
-   "BNZR",
-   "BO",
-   "BOR",
-   "BP",
-   "BPR",
-   "BZ",
-   "BZR",
-   "NOP",
-   "VGNOP",
-   "MASK0",
-   "MASK1",
-   "MASK2",
-   "MASK3",
-   "MASK4",
-   "MASK5",
-   "MASK6",
-   "MASK7",
-   "MASK8",
-   "MASK9",
-   "MASK10",
-   "MASK11",
-   "MASK12",
-   "MASK13",
-   "MASK14",
-   "MASK15"
-   };
+   bad,              // Illegal Opcode
+   label,            // Destination of a jump
+   ARM64LastOp = label,
+   ARM64NumOpCodes = ARM64LastOp + 1,

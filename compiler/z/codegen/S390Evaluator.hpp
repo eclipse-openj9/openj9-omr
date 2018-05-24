@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -185,12 +185,6 @@ TR::Register * generateS390CompareBranch(TR::Node * node, TR::CodeGenerator * cg
 int32_t getVectorElementSize(TR::Node *node);
 int32_t getVectorElementSizeMask(TR::Node *node);
 int32_t getVectorElementSizeMask(int8_t size);
-
-TR::Register * generateS390ComplexCompareBool(TR::Node * node, TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic branchOp,
-                                                TR::InstOpCode::S390BranchCondition branchOpCond);
-void asmNodeBookKeeping(TR::CodeGenerator * cg, TR::Node * node, TR::Node * child, int8_t i, TR::RegisterDependencyConditions * conditions);
-
-
 
 #ifndef _MSC_VER
 // Because these templates are not defined in headers, but the cpp TreeEvaluator.cpp, suppress implicit instantiation

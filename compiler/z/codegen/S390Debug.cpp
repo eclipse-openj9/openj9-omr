@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -75,40 +75,12 @@
 
 namespace TR { class Block; }
 
-#if defined (J9ZOS390)
-#define GPR_EP " " GPR15 " "
-#else
-#define GPR_EP " " GPR4 " "
-#endif
-
-#define PRINT_START_COMMENT         true
-#define DO_NOT_PRINT_START_COMMENT  false
-
 #define OPCODE_SPACING           8
 
 extern const char *BranchConditionToNameMap[];
-extern const char *BranchConditionToNameMap_ForListing[];
 
 /** Need to use this since xlc doesn't seem to understand %hx modifier for fprintf */
 #define maskHalf(val) (0x0000FFFF & (val))
-
-/**
- * Given a value, return a string in binary, max bits = 64
- */
-static char *binary_string(int numbits, int val)
-   {
-   static char b[64];  int z=0,i=0;
-
-   if (numbits > 64) numbits=64;
-   memset(b,0,64);
-   z = 1 << (numbits-1);
-   for (i=0 ; z > 0; i++)
-     {
-     b[i] =  ((val & z) == z) ? '1' : '0';
-     z >>= 1;
-     }
-   return b;
-   }
 
 void
 TR_Debug::printPrefix(TR::FILE *pOutFile, TR::Instruction * instr)
@@ -589,7 +561,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390IEInstruction * instr)
    printPrefix(pOutFile, instr);
    trfprintf(pOutFile, "%-*s%d,%d", OPCODE_SPACING, getOpCodeName(&instr->getOpCode()), instr->getImmediateField1(), instr->getImmediateField2());
 
-   printInstructionComment(pOutFile, 1, instr, PRINT_START_COMMENT);
+   printInstructionComment(pOutFile, 1, instr, true);
    trfflush(pOutFile);
    }
 
@@ -717,7 +689,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390RIEInstruction * instr)
 
       trfprintf(pOutFile, "%s(mask=0x%1x), ", brCondName, mask );
       }
-   printInstructionComment(pOutFile, 1, instr, PRINT_START_COMMENT);
+   printInstructionComment(pOutFile, 1, instr, true);
    trfflush(pOutFile);
 
    }
@@ -802,7 +774,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390LabelInstruction * instr)
          }
       }
 
-   printInstructionComment(pOutFile, 1, instr, PRINT_START_COMMENT);
+   printInstructionComment(pOutFile, 1, instr, true);
 
    trfflush(pOutFile);
    }
@@ -824,7 +796,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390VirtualGuardNOPInstruction * instr)
       {
       trfprintf(pOutFile, ", labelTargetAddr=0x%p", labelLoc);
       }
-   printInstructionComment(pOutFile, 1, instr, PRINT_START_COMMENT);
+   printInstructionComment(pOutFile, 1, instr, true);
 
    trfflush(pOutFile);
    }
@@ -866,7 +838,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390BranchInstruction * instr)
           }
        }
 
-   printInstructionComment(pOutFile, 1, instr, PRINT_START_COMMENT);
+   printInstructionComment(pOutFile, 1, instr, true);
    trfflush(pOutFile);
    }
 
@@ -886,7 +858,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390BranchOnCountInstruction * instr)
       {
       trfprintf(pOutFile, ", labelTargetAddr=0x%p", labelLoc);
       }
-   printInstructionComment(pOutFile, 1, instr, PRINT_START_COMMENT);
+   printInstructionComment(pOutFile, 1, instr, true);
 
    trfflush(pOutFile);
    }
@@ -922,7 +894,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390BranchOnIndexInstruction * instr)
       {
       trfprintf(pOutFile, ", labelTargetAddr=0x%p", labelLoc);
       }
-   printInstructionComment(pOutFile, 1, instr, PRINT_START_COMMENT);
+   printInstructionComment(pOutFile, 1, instr, true);
    trfflush(pOutFile);
    }
 
@@ -1012,7 +984,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390PseudoInstruction * instr)
       trfprintf(pOutFile, "; DC <0x%llX>", instr->getCallDescValue());
       trfflush(pOutFile);
       }
-   printInstructionComment(pOutFile, 1, instr, PRINT_START_COMMENT);
+   printInstructionComment(pOutFile, 1, instr, true);
    trfflush(pOutFile);
    }
 
@@ -1026,7 +998,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390ImmInstruction * instr)
    printPrefix(pOutFile, instr);
    trfprintf(pOutFile, "%-*s0x%08x", OPCODE_SPACING, getOpCodeName(&instr->getOpCode()), instr->getSourceImmediate());
 
-   printInstructionComment(pOutFile, 1, instr, PRINT_START_COMMENT);
+   printInstructionComment(pOutFile, 1, instr, true);
    trfflush(pOutFile);
    }
 
@@ -1040,7 +1012,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390Imm2Instruction * instr)
    printPrefix(pOutFile, instr);
    // DC looks better in the tracefile than DC2 does....
    trfprintf(pOutFile, "%-*s0x%04x", OPCODE_SPACING, "DC", instr->getSourceImmediate());
-   printInstructionComment(pOutFile, 1, instr, PRINT_START_COMMENT);
+   printInstructionComment(pOutFile, 1, instr, true);
    trfflush(pOutFile);
    }
 
@@ -1091,7 +1063,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390RegInstruction * instr)
          print(pOutFile, targetRegister);
          }
 
-   printInstructionComment(pOutFile, 1, instr, PRINT_START_COMMENT);
+   printInstructionComment(pOutFile, 1, instr, true);
 
    trfflush(pOutFile);
    }
@@ -1149,7 +1121,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390RRInstruction * instr)
       trfprintf(pOutFile, " \t\t# Call \"%s\"", getName(instr->getNode()->getSymbolReference()));
       }
 
-   printInstructionComment(pOutFile, 1, instr, PRINT_START_COMMENT);
+   printInstructionComment(pOutFile, 1, instr, true);
    trfflush(pOutFile);
    }
 
@@ -1183,7 +1155,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390TranslateInstruction * instr)
       {
       trfprintf(pOutFile, " \t\t# Call \"%s\"", getName(instr->getNode()->getSymbolReference()));
       }
-   printInstructionComment(pOutFile, 1, instr, PRINT_START_COMMENT);
+   printInstructionComment(pOutFile, 1, instr, true);
    trfflush(pOutFile);
    }
 
@@ -1218,7 +1190,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390RRFInstruction * instr)
       {
       trfprintf(pOutFile, " \t\t# Call \"%s\"", getName(instr->getNode()->getSymbolReference()));
       }
-   printInstructionComment(pOutFile, 1, instr, PRINT_START_COMMENT);
+   printInstructionComment(pOutFile, 1, instr, true);
    trfflush(pOutFile);
    }
 
@@ -1234,7 +1206,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390RRRInstruction * instr)
    print(pOutFile, instr->getRegisterOperand(2));
    trfprintf(pOutFile, ",");
    print(pOutFile, instr->getRegisterOperand(3));
-   printInstructionComment(pOutFile, 1, instr, PRINT_START_COMMENT);
+   printInstructionComment(pOutFile, 1, instr, true);
    trfflush(pOutFile);
    }
 
@@ -1252,7 +1224,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390RIInstruction * instr)
    if (instr->isImm())
       trfprintf(pOutFile, ",0x%x", maskHalf(imm));
 
-   printInstructionComment(pOutFile, 1, instr, PRINT_START_COMMENT);
+   printInstructionComment(pOutFile, 1, instr, true);
    trfflush(pOutFile);
    }
 
@@ -1317,7 +1289,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390RILInstruction * instr)
          }
       }
 
-   printInstructionComment(pOutFile, 1, instr, PRINT_START_COMMENT);
+   printInstructionComment(pOutFile, 1, instr, true);
    trfflush(pOutFile);
    }
 
@@ -1905,7 +1877,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::MemoryReference * mr, TR::Instruction * 
    bool fullyMapped = true;
    bool sawWcodeName = false;
    char comments[1024] ;
-   bool firstPrint = PRINT_START_COMMENT;
+   bool firstPrint = true;
    bool useTobeyFormat = true;
 
    // For some indirect loads and stores the _originalSymbolReference
@@ -2084,7 +2056,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::MemoryReference * mr, TR::Instruction * 
      if (regex && TR::SimpleRegex::match(regex, comments))
         {
         trfprintf(pOutFile, "\t ; %s", comments);
-        firstPrint = DO_NOT_PRINT_START_COMMENT;
+        firstPrint = false;
         }
      }
 

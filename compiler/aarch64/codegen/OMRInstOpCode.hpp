@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2018, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -19,75 +19,43 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#include "codegen/InstOpCode.hpp"  // for InstOpCode::S390NumBranchConditions
+#ifndef OMR_ARM64_INSTOPCODE_INCL
+#define OMR_ARM64_INSTOPCODE_INCL
 
-const char *BranchConditionToNameMap[TR::InstOpCode::S390NumBranchConditions] =
+/*
+ * The following #define and typedef must appear before any #includes in this file
+ */
+#ifndef OMR_INSTOPCODE_CONNECTOR
+#define OMR_INSTOPCODE_CONNECTOR
+namespace OMR { namespace ARM64 { class InstOpCode; } }
+namespace OMR { typedef OMR::ARM64::InstOpCode InstOpCodeConnector; }
+#else
+#error OMR::ARM64::InstOpCode expected to be a primary connector, but a OMR connector is already defined
+#endif
+
+#include "compiler/codegen/OMRInstOpCode.hpp"
+
+namespace OMR
+{
+
+namespace ARM64
+{
+
+class InstOpCode: public OMR::InstOpCode
    {
-   "NOPR",
-   "BRO",
-   "BRH",
-   "BRP",
-   "BRL",
-   "BRM",
-   "BRNE",
-   "BRNZ",
-   "BRE",
-   "BRZ",
-   "BRNH",
-   "BRNL",
-   "BRNM",
-   "BRNP",
-   "BRNO",
-   "B",
-   "BR",
-   "BRU",
-   "BRUL",
-   "BC",
-   "BCR",
-   "BE",
-   "BER",
-   "BH",
-   "BHR",
-   "BL",
-   "BLR",
-   "BM",
-   "BMR",
-   "BNE",
-   "BNER",
-   "BNH",
-   "BNHR",
-   "BNL",
-   "BNLR",
-   "BNM",
-   "BNMR",
-   "BNO",
-   "BNOR",
-   "BNP",
-   "BNPR",
-   "BNZ",
-   "BNZR",
-   "BO",
-   "BOR",
-   "BP",
-   "BPR",
-   "BZ",
-   "BZR",
-   "NOP",
-   "VGNOP",
-   "MASK0",
-   "MASK1",
-   "MASK2",
-   "MASK3",
-   "MASK4",
-   "MASK5",
-   "MASK6",
-   "MASK7",
-   "MASK8",
-   "MASK9",
-   "MASK10",
-   "MASK11",
-   "MASK12",
-   "MASK13",
-   "MASK14",
-   "MASK15"
+   protected:
+
+   /**
+    * @brief Constructor
+    */
+   InstOpCode() : OMR::InstOpCode(bad) {}
+   /**
+    * @brief Constructor
+    * @param[in] m : mnemonic
+    */
+   InstOpCode(Mnemonic m) : OMR::InstOpCode(m) {}
    };
+
+}
+}
+#endif

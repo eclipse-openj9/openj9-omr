@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2017 IBM Corp. and others
+# Copyright (c) 2017, 2018 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -132,10 +132,13 @@ endif (OMR_EXAMPLE)
 add_subdirectory(thread)
 add_subdirectory(port)
 add_subdirectory(util)
-add_subdirectory(omrtrace)
 add_subdirectory(omr)
 add_subdirectory(third_party)
 add_subdirectory(omrsigcompat)
+
+if(OMR_RAS_TDF_TRACE)
+	add_subdirectory(omrtrace)
+endif(OMR_RAS_TDF_TRACE)
 
 if(OMR_GC)
 	add_subdirectory(gc)

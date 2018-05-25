@@ -74,8 +74,8 @@ void
 nls_determine_locale(struct OMRPortLibrary *portLibrary)
 {
 	J9NLSDataCache *nls = &portLibrary->portGlobals->nls_data;
-	char languageProp[4] = "en\0";
-	char countryProp[3] = "US";
+	char languageProp[4] = "en";
+	char regionProp[4] = "US";
 	char *lang = NULL;
 	int langlen = 0;
 #if defined(LINUX) || defined(OSX)
@@ -132,13 +132,15 @@ nls_determine_locale(struct OMRPortLibrary *portLibrary)
 	if (!strcmp(languageProp, "jp")) {
 		languageProp[1] = 'a';
 	}
-	strncpy(nls->language, languageProp, 3);
+	/* J9NLSDataCache language is 4 bytes long */
+	strncpy(nls->language, languageProp, 4);
 
 	/* Get the region */
 	if (langlen >= (3 + countryStart) && lang[countryStart] == '_') {
-		countryProp[0] = lang[countryStart + 1];
-		countryProp[1] = lang[countryStart + 2];
+		regionProp[0] = lang[countryStart + 1];
+		regionProp[1] = lang[countryStart + 2];
 	}
-	strncpy(nls->region, countryProp, 2);
+	/* J9NLSDataCache region is 4 bytes long */
+	strncpy(nls->region, regionProp, 4);
 }
 

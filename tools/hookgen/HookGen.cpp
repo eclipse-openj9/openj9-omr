@@ -372,22 +372,21 @@ HookGen::getAbsolutePath(const char *filename)
 FILE *
 HookGen::createFile(char *path, const char *fileName)
 {
-	size_t pathLength = strlen(path);
-	size_t publicFileNameLength = strlen(fileName);
-	char *temp = (char *)malloc(pathLength + publicFileNameLength + 1);
-	if (NULL == temp) {
+	size_t bufferSize = (strlen(path) + strlen(fileName) + 1);
+	char *buff = (char *)malloc(bufferSize);
+	if (NULL == buff) {
 		return NULL;
 	}
-	strncpy(temp, path, pathLength);
-	strncpy(temp + pathLength, fileName, publicFileNameLength);
-	temp[pathLength + publicFileNameLength] = '\0';
 
-	FILE *file = fopen(temp, "wb");
+	strcpy(buff, path);
+	strcat(buff, fileName);
+
+	FILE *file = fopen(buff, "wb");
 #if defined(DEBUG)
 	fprintf(stderr, "Opening %s for writing\n", temp);
 #endif /* DEBUG */
 
-	free(temp);
+	free(buff);
 
 	return file;
 }

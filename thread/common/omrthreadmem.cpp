@@ -23,6 +23,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <new>
 #include "thread_internal.h"
 #include "omrmemcategories.h"
 #include "AtomicSupport.hpp"
@@ -58,11 +59,11 @@ typedef struct J9ThreadMemoryHeader {
 void
 omrthread_mem_init(omrthread_library_t threadLibrary)
 {
-	memcpy(&threadLibrary->threadLibraryCategory, &threadCategoryTemplate, sizeof(OMRMemCategory));
-	memcpy(&threadLibrary->nativeStackCategory, &nativeStackCategoryTemplate, sizeof(OMRMemCategory));
+	new (&threadLibrary->threadLibraryCategory) OMRMemCategory(threadCategoryTemplate);
+	new (&threadLibrary->nativeStackCategory) OMRMemCategory(nativeStackCategoryTemplate);
 #if defined(OMR_THR_FORK_SUPPORT)
-	memcpy(&threadLibrary->mutexCategory, &mutexCategoryTemplate, sizeof(OMRMemCategory));
-	memcpy(&threadLibrary->condvarCategory, &condvarCategoryTemplate, sizeof(OMRMemCategory));
+	new (&threadLibrary->mutexCategory) OMRMemCategory(mutexCategoryTemplate);
+	new (&threadLibrary->condvarCategory) OMRMemCategory(condvarCategoryTemplate);
 #endif /* defined(OMR_THR_FORK_SUPPORT) */
 }
 

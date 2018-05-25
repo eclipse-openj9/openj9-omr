@@ -58,6 +58,19 @@ private:
 		MM_CopyScanCacheStandard * volatile _cacheHead;  /**< Head of the list */
 		MM_LightweightNonReentrantLock _cacheLock;  /**< Lock for getting/putting caches */
 		uintptr_t _entryCount;	/**< number of entries in sublist */
+
+		CopyScanCacheSublist () 
+			: _cacheHead(NULL)
+			, _entryCount(0) {
+		}
+
+		bool initialize(MM_EnvironmentBase *env) {
+			MM_GCExtensionsBase *extensions = env->getExtensions();
+			if (_cacheLock.initialize(env, &extensions->lnrlOptions, "MM_CopyScanCacheList:_sublists[]._cacheLock")) {
+				return false;
+			}
+			return true;
+		}
 	};
 	
 	struct CopyScanCacheSublist *_sublists;	/**< An array of CopyScanCacheSublist structures which is _sublistCount elements long */

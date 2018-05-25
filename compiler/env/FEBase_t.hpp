@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -19,7 +19,11 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
+#if defined(OMR_OS_WINDOWS)
+#include <windows.h>
+#else
 #include <sys/mman.h>
+#endif /* OMR_OS_WINDOWS */
 #include "compile/Compilation.hpp"
 #include "env/FEBase.hpp"
 #include "env/jittypes.h"
@@ -79,14 +83,16 @@ FEBase<Derived>::allocateCodeMemory(TR::Compilation *comp, uint32_t warmCodeSize
 // We should be relying on the port library to allocate memory, but this connection
 // has not yet been made, so as a quick workaround for platforms like OS X <= 10.9,
 // where MAP_ANONYMOUS is not defined, is to map MAP_ANON to MAP_ANONYMOUS ourselves
-#if !defined(MAP_ANONYMOUS)
-  #define NO_MAP_ANONYMOUS
-  #if defined(MAP_ANON)
-    #define MAP_ANONYMOUS MAP_ANON
-  #else
-    #error unexpectedly, no MAP_ANONYMOUS or MAP_ANON definition
-  #endif
-#endif
+#if !defined(OMR_OS_WINDOWS)
+   #if !defined(MAP_ANONYMOUS)
+      #define NO_MAP_ANONYMOUS
+      #if defined(MAP_ANON)
+         #define MAP_ANONYMOUS MAP_ANON
+      #else
+         #error unexpectedly, no MAP_ANONYMOUS or MAP_ANON definition
+      #endif
+   #endif
+#endif /* OMR_OS_WINDOWS */
 
 template <class Derived>
 uint8_t *
@@ -96,12 +102,22 @@ FEBase<Derived>::allocateRelocationData(TR::Compilation* comp, uint32_t size)
       way to allocate this */
    if (size == 0) return 0;
    TR_ASSERT(size >= 2048, "allocateRelocationData should be used for whole-sale memory allocation only");
-   return (uint8_t *) mmap(0,
-                           size,
-                           PROT_READ | PROT_WRITE,
-                           MAP_PRIVATE | MAP_ANONYMOUS,
-                           -1,
-                           0);
+
+#if defined(OMR_OS_WINDOWS)
+   return reinterpret_cast<uint8_t *>(
+         VirtualAlloc(nullptr,
+            size,
+            MEM_COMMIT,
+            PAGE_READWRITE));
+#else
+   return reinterpret_cast<uint8_t *>(
+         mmap(0,
+              size,
+              PROT_READ | PROT_WRITE,
+              MAP_PRIVATE | MAP_ANONYMOUS,
+              -1,
+              0));
+#endif /* OMR_OS_WINDOWS */
    }
 
 // keep the impact of this fix localized

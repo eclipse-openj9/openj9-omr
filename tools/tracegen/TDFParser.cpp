@@ -135,7 +135,7 @@ TDFParser::parse()
 			goto failed;
 		}
 
-		strncpy(tdf->header.datfilename, DEFAULT_DAT_FILE, strlen(DEFAULT_DAT_FILE));
+		strcpy(tdf->header.datfilename, DEFAULT_DAT_FILE);
 	}
 
 	return tdf;
@@ -295,7 +295,7 @@ TDFParser::processTracePointDetail(const char *line, J9TDFTracepoint *tp, const 
 
 	if (NULL == tp->format) {
 		tp ->format = (char *)Port::omrmem_calloc(1, (strlen("null") + 1));
-		strncpy(tp ->format,  "null", strlen("null"));
+		strcpy(tp ->format,  "null");
 	}
 
 	if (UT_ASSERT_TYPE == tp->type) {

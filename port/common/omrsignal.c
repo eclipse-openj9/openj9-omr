@@ -278,6 +278,21 @@ omrsig_register_os_handler(struct OMRPortLibrary *portLibrary, uint32_t portlibS
 }
 
 /**
+ * Determine if the osHandler is a predefined master signal handler. masterASynchSignalHandler is used for
+ * asynchronous signals and masterSynchSignalHandler is used for synchronous signals.
+ *
+ * @param[in] portLibrary The port library
+ * @param[in] osHandler A signal handler function
+ *
+ * @return TRUE if osHandler is a predefined master handler. Otherwise, return FALSE.
+ */
+BOOLEAN
+omrsig_is_master_signal_handler(struct OMRPortLibrary *portLibrary, void *osHandler)
+{
+	return FALSE;
+}
+
+/**
  * Determine if the port library is capable of protecting a function from the indicated signals in the indicated way.
  *
  * @param[in] portLibrary The port library

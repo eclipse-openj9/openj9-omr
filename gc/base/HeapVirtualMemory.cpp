@@ -27,7 +27,7 @@
 #include "EnvironmentBase.hpp"
 #include "Forge.hpp"
 #include "GCExtensionsBase.hpp"
-#include "Collector.hpp"
+#include "GlobalCollector.hpp"
 #include "HeapRegionManager.hpp"
 #include "Math.hpp"
 #include "MemoryManager.hpp"
@@ -340,7 +340,7 @@ MM_HeapVirtualMemory::calculateOffsetFromHeapBase(void* address)
 bool
 MM_HeapVirtualMemory::heapAddRange(MM_EnvironmentBase* env, MM_MemorySubSpace* subspace, uintptr_t size, void* lowAddress, void* highAddress)
 {
-	MM_Collector* globalCollector = env->getExtensions()->getGlobalCollector();
+	MM_GlobalCollector* globalCollector = env->getExtensions()->getGlobalCollector();
 
 	bool result = true;
 	if (NULL != globalCollector) {
@@ -366,7 +366,7 @@ MM_HeapVirtualMemory::heapAddRange(MM_EnvironmentBase* env, MM_MemorySubSpace* s
 bool
 MM_HeapVirtualMemory::heapRemoveRange(MM_EnvironmentBase* env, MM_MemorySubSpace* subspace, uintptr_t size, void* lowAddress, void* highAddress, void* lowValidAddress, void* highValidAddress)
 {
-	MM_Collector* globalCollector = env->getExtensions()->getGlobalCollector();
+	MM_GlobalCollector* globalCollector = env->getExtensions()->getGlobalCollector();
 
 	bool result = true;
 	if (NULL != globalCollector) {

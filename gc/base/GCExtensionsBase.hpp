@@ -52,7 +52,6 @@
 
 class MM_CardTable;
 class MM_ClassLoaderRememberedSet;
-class MM_Collector;
 class MM_CollectorLanguageInterface;
 class MM_CompactGroupPersistentStats;
 class MM_CompressedCardTable;
@@ -61,6 +60,7 @@ class MM_Dispatcher;
 class MM_EnvironmentBase;
 class MM_FrequentObjectsStats;
 class MM_GlobalAllocationManager;
+class MM_GlobalCollector;
 class MM_Heap;
 class MM_HeapMap;
 class MM_HeapRegionManager;
@@ -200,7 +200,7 @@ private:
 protected:
 	OMR_VM* _omrVM;
 	OMR::GC::Forge _forge;
-	MM_Collector* _globalCollector; /**< The global collector for the system */
+	MM_GlobalCollector* _globalCollector; /**< The global collector for the system */
 #if defined(OMR_GC_OBJECT_MAP)
 	MM_ObjectMap *_objectMap;
 #endif /* defined(OMR_GC_OBJECT_MAP) */
@@ -792,8 +792,8 @@ public:
 		}
 	}
 
-	MMINLINE MM_Collector* getGlobalCollector() { return _globalCollector; }
-	MMINLINE void setGlobalCollector(MM_Collector* collector) { _globalCollector = collector; }
+	MMINLINE MM_GlobalCollector* getGlobalCollector() { return _globalCollector; }
+	MMINLINE void setGlobalCollector(MM_GlobalCollector* collector) { _globalCollector = collector; }
 
 #if defined(OMR_GC_OBJECT_MAP)
 	MMINLINE MM_ObjectMap *getObjectMap() { return _objectMap; }

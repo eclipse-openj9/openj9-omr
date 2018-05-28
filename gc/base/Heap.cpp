@@ -28,7 +28,7 @@
 #include "EnvironmentBase.hpp"
 #include "Forge.hpp"
 #include "GCExtensionsBase.hpp"
-#include "Collector.hpp"
+#include "GlobalCollector.hpp"
 #include "HeapRegionManager.hpp"
 #include "HeapStats.hpp"
 #include "MemorySpace.hpp"
@@ -400,7 +400,7 @@ bool
 MM_Heap::heapAddRange(MM_EnvironmentBase* env, MM_MemorySubSpace* subspace, uintptr_t size, void* lowAddress, void* highAddress)
 {
 	MM_GCExtensionsBase* extensions = env->getExtensions();
-	MM_Collector* globalCollector = extensions->getGlobalCollector();
+	MM_GlobalCollector* globalCollector = extensions->getGlobalCollector();
 
 	bool result = true;
 	if (NULL != globalCollector) {
@@ -420,7 +420,7 @@ bool
 MM_Heap::heapRemoveRange(MM_EnvironmentBase* env, MM_MemorySubSpace* subspace, uintptr_t size, void* lowAddress, void* highAddress, void* lowValidAddress, void* highValidAddress)
 {
 	MM_GCExtensionsBase* extensions = env->getExtensions();
-	MM_Collector* globalCollector = extensions->getGlobalCollector();
+	MM_GlobalCollector* globalCollector = extensions->getGlobalCollector();
 
 	bool result = true;
 	if (NULL != globalCollector) {
@@ -435,7 +435,7 @@ MM_Heap::heapRemoveRange(MM_EnvironmentBase* env, MM_MemorySubSpace* subspace, u
 void
 MM_Heap::heapReconfigured(MM_EnvironmentBase* env)
 {
-	MM_Collector* globalCollector = env->getExtensions()->getGlobalCollector();
+	MM_GlobalCollector* globalCollector = env->getExtensions()->getGlobalCollector();
 
 	if (NULL != globalCollector) {
 		globalCollector->heapReconfigured(env);

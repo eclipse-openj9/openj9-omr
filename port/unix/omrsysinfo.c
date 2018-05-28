@@ -349,6 +349,7 @@ static int32_t readCgroupFile(struct OMRPortLibrary *portLibrary, int pid, BOOLE
 static OMRCgroupSubsystem getCgroupSubsystemFromFlag(uint64_t subsystemFlag);
 static int32_t readCgroupSubsystemFile(struct OMRPortLibrary *portLibrary, uint64_t subsystemFlag, const char *fileName, int32_t numItemsToRead, const char *format, ...);
 static int32_t isRunningInContainer(struct OMRPortLibrary *portLibrary, BOOLEAN *inContainer);
+static int32_t getCgroupMemoryLimit(struct OMRPortLibrary *portLibrary, uint64_t *limit);
 #endif /* defined(LINUX) */
 
 
@@ -3750,6 +3751,40 @@ _end:
 	return rc;
 }
 
+static int32_t
+getCgroupMemoryLimit(struct OMRPortLibrary *portLibrary, uint64_t *limit)
+{
+	uint64_t cgroupMemLimit = 0;
+	uint64_t physicalMemLimit = 0;
+	int32_t numItemsToRead = 1; /* memory.limit_in_bytes file contains only one integer value */
+	int32_t rc = 0;
+
+	Trc_PRT_sysinfo_cgroup_get_memlimit_Entry();
+
+	rc = readCgroupSubsystemFile(portLibrary, OMR_CGROUP_SUBSYSTEM_MEMORY, "memory.limit_in_bytes", numItemsToRead, "%lu", &cgroupMemLimit);
+	if (0 != rc) {
+		Trc_PRT_sysinfo_cgroup_get_memlimit_memory_limit_read_failed("memory.limit_in_bytes", rc);
+		goto _end;
+	}
+
+	physicalMemLimit = getPhysicalMemory(portLibrary);
+	/* If the cgroup is not imposing any memory limit then the value in memory.limit_in_bytes
+	 * is close to max value of 64-bit integer, and is more than the physical memory in the system.
+	 */
+	if (cgroupMemLimit > physicalMemLimit) {
+		Trc_PRT_sysinfo_cgroup_get_memlimit_unlimited();
+		rc = portLibrary->error_set_last_error_with_message(portLibrary, OMRPORT_ERROR_SYSINFO_CGROUP_MEMLIMIT_NOT_SET, "memory limit is not set");
+                goto _end;
+	}
+	if (NULL != limit) {
+		*limit = cgroupMemLimit;
+	}
+
+_end:
+	Trc_PRT_sysinfo_cgroup_get_memlimit_Exit(rc);
+	return rc;
+}
+
 #endif /* defined(LINUX) */
 
 BOOLEAN
@@ -3874,34 +3909,26 @@ omrsysinfo_cgroup_get_memlimit(struct OMRPortLibrary *portLibrary, uint64_t *lim
 	Assert_PRT_true(NULL != limit);
 
 #if defined(LINUX) && !defined(OMRZTPF)
-	uint64_t cgroupMemLimit = 0;
-	uint64_t physicalMemLimit = 0;
-	int32_t numItemsToRead = 1; /* memory.limit_in_bytes file contains only one integer value */
-
-	Trc_PRT_sysinfo_cgroup_get_memlimit_Entry();
-
-	rc = readCgroupSubsystemFile(portLibrary, OMR_CGROUP_SUBSYSTEM_MEMORY, "memory.limit_in_bytes", numItemsToRead, "%lu", &cgroupMemLimit);
-	if (0 != rc) {
-		Trc_PRT_sysinfo_cgroup_get_memlimit_memory_limit_read_failed("memory.limit_in_bytes", rc);
-		goto _end;
-	}
-
-	physicalMemLimit = getPhysicalMemory(portLibrary);
-	/* If the cgroup is not imposing any memory limit then the value in memory.limit_in_bytes
-	 * is close to max value of 64-bit integer, and is more than the physical memory in the system.
-	 */
-	if (cgroupMemLimit > physicalMemLimit) {
-		Trc_PRT_sysinfo_cgroup_get_memlimit_unlimited();
-		rc = portLibrary->error_set_last_error_with_message(portLibrary, OMRPORT_ERROR_SYSINFO_CGROUP_MEMLIMIT_NOT_SET, "memory limit is not set");
-                goto _end;
-	} else {
-		*limit = cgroupMemLimit;
-		rc = 0;
-	}
-_end:
-	Trc_PRT_sysinfo_cgroup_get_memlimit_Exit(rc);
+	rc = getCgroupMemoryLimit(portLibrary, limit);
 #endif /* defined(LINUX) && !defined(OMRZTPF) */
+
 	return rc;
+}
+
+
+BOOLEAN
+omrsysinfo_cgroup_is_memlimit_set(struct OMRPortLibrary *portLibrary)
+{
+#if defined(LINUX) && !defined(OMRZTPF)
+	int32_t rc = getCgroupMemoryLimit(portLibrary, NULL);
+	if (0 == rc) {
+		return TRUE;
+	} else {
+		return FALSE;
+	}
+#else /* defined(LINUX) && !defined(OMRZTPF) */
+	return FALSE;
+#endif /* defined(LINUX) && !defined(OMRZTPF) */
 }
 
 #if defined(OMRZTPF)

@@ -929,3 +929,16 @@ omrsysinfo_cgroup_get_memlimit(struct OMRPortLibrary *portLibrary, uint64_t *lim
 {
 	return OMRPORT_ERROR_SYSINFO_CGROUP_UNSUPPORTED_PLATFORM;
 }
+
+/**
+ * Checks if memory limit is set by the process's cgroup for memory subsystem
+ *
+ * @param[in] portLibrary pointer to OMRPortLibrary
+ *
+ * @return TRUE if memory limit is set by the process's cgroup, FALSE otherwise
+ */
+BOOLEAN
+omrsysinfo_cgroup_is_memlimit_set(struct OMRPortLibrary *portLibrary)
+{
+	return FALSE;
+}

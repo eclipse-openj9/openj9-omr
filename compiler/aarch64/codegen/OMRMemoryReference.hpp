@@ -1,0 +1,297 @@
+/*******************************************************************************
+ * Copyright (c) 2018, 2018 IBM Corp. and others
+ *
+ * This program and the accompanying materials are made available under
+ * the terms of the Eclipse Public License 2.0 which accompanies this
+ * distribution and is available at http://eclipse.org/legal/epl-2.0
+ * or the Apache License, Version 2.0 which accompanies this distribution
+ * and is available at https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * This Source Code may also be made available under the following Secondary
+ * Licenses when the conditions for such availability set forth in the
+ * Eclipse Public License, v. 2.0 are satisfied: GNU General Public License,
+ * version 2 with the GNU Classpath Exception [1] and GNU General Public
+ * License, version 2 with the OpenJDK Assembly Exception [2].
+ *
+ * [1] https://www.gnu.org/software/classpath/license.html
+ * [2] http://openjdk.java.net/legal/assembly-exception.html
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
+ *******************************************************************************/
+
+#ifndef OMR_ARM64_MEMORY_REFERENCE_INCL
+#define OMR_ARM64_MEMORY_REFERENCE_INCL
+
+/*
+ * The following #define and typedef must appear before any #includes in this file
+ */
+#ifndef OMR_MEMREF_CONNECTOR
+#define OMR_MEMREF_CONNECTOR
+namespace OMR { namespace ARM64 { class MemoryReference; } }
+namespace OMR { typedef OMR::ARM64::MemoryReference MemoryReferenceConnector; }
+#else
+#error OMR::ARM64::MemoryReference expected to be a primary connector, but a OMR connector is already defined
+#endif
+
+#include "compiler/codegen/OMRMemoryReference.hpp"
+
+#include <stddef.h>
+#include <stdint.h>
+#include "codegen/Register.hpp"
+#include "env/TRMemory.hpp"
+#include "il/SymbolReference.hpp"
+
+namespace TR { class CodeGenerator; }
+namespace TR { class Instruction; }
+namespace TR { class Node; }
+namespace TR { class UnresolvedDataSnippet; }
+
+namespace OMR
+{
+
+namespace ARM64
+{
+
+class OMR_EXTENSIBLE MemoryReference : public OMR::MemoryReference
+   {
+   TR::Register *_baseRegister;
+   TR::Node *_baseNode;
+   TR::Register *_indexRegister;
+   TR::Node *_indexNode;
+   int32_t _offset;
+
+   TR::UnresolvedDataSnippet *_unresolvedSnippet;
+   TR::SymbolReference *_symbolReference;
+
+   uint8_t _flag;
+   uint8_t _length;
+   uint8_t _scale;
+
+   public:
+
+   TR_ALLOC(TR_Memory::MemoryReference)
+
+   typedef enum
+      {
+      TR_ARM64MemoryReferenceControl_Base_Modifiable  = 0x01,
+      TR_ARM64MemoryReferenceControl_Index_Modifiable = 0x02,
+      /* To be added more if necessary */
+      } TR_ARM64MemoryReferenceControl;
+
+   /**
+    * @brief Constructor
+    * @param[in] cg : CodeGenerator object
+    */
+   MemoryReference(TR::CodeGenerator *cg);
+
+   /**
+    * @brief Constructor
+    * @param[in] br : base register
+    * @param[in] ir : index register
+    * @param[in] cg : CodeGenerator object
+    */
+   MemoryReference(
+         TR::Register *br,
+         TR::Register *ir,
+         TR::CodeGenerator *cg);
+
+   /**
+    * @brief Constructor
+    * @param[in] br : base register
+    * @param[in] ir : index register
+    * @param[in] scale : scale of index
+    * @param[in] cg : CodeGenerator object
+    */
+   MemoryReference(
+         TR::Register *br,
+         TR::Register *ir,
+         uint8_t scale,
+         TR::CodeGenerator *cg);
+
+   /**
+    * @brief Constructor
+    * @param[in] br : base register
+    * @param[in] disp : displacement
+    * @param[in] cg : CodeGenerator object
+    */
+   MemoryReference(
+         TR::Register *br,
+         int32_t disp,
+         TR::CodeGenerator *cg);
+
+   /**
+    * @brief Gets base register
+    * @return base register
+    */
+   TR::Register *getBaseRegister() {return _baseRegister;}
+   /**
+    * @brief Sets base register
+    * @param[in] br : base register
+    * @return base register
+    */
+   TR::Register *setBaseRegister(TR::Register *br) {return (_baseRegister = br);}
+
+   /**
+    * @brief Gets base node
+    * @return base node
+    */
+   TR::Node *getBaseNode() {return _baseNode;}
+   /**
+    * @brief Sets base node
+    * @param[in] bn : base node
+    * @return base node
+    */
+   TR::Node *setBaseNode(TR::Node *bn) {return (_baseNode = bn);}
+
+   /**
+    * @brief Gets index register
+    * @return index register
+    */
+   TR::Register *getIndexRegister() {return _indexRegister;}
+   /**
+    * @brief Sets index register
+    * @param[in] ir : index register
+    * @return index register
+    */
+   TR::Register *setIndexRegister(TR::Register *ir) {return (_indexRegister = ir);}
+
+   /**
+    * @brief Gets index node
+    * @return index node
+    */
+   TR::Node *getIndexNode() {return _indexNode;}
+   /**
+    * @brief Sets index node
+    * @param[in] in : index node
+    * @return index node
+    */
+   TR::Node *setIndexNode(TR::Node *in) {return (_indexNode = in);}
+
+   /**
+    * @brief Gets length
+    * @return length
+    */
+   uint32_t getLength() {return _length;}
+   /**
+    * @brief Sets length
+    * @param[in] len : length
+    * @return length
+    */
+   uint32_t setLength(uint32_t len) {return (_length = len);}
+
+   /**
+    * @brief Gets scale
+    * @return scale
+    */
+   uint8_t getScale() { return _scale; }
+
+   /**
+    * @brief Uses indexed form or not
+    * @return true when index form is used
+    */
+   bool useIndexedForm();
+
+   /**
+    * @brief Has delayed offset or not
+    * @return true when it has delayed offset
+    */
+   bool hasDelayedOffset()
+      {
+      if (_symbolReference->getSymbol() != NULL &&
+         _symbolReference->getSymbol()->isRegisterMappedSymbol())
+         {
+         return true;
+         }
+
+      return false;
+      }
+
+   /**
+    * @brief Gets offset
+    * @return offset
+    */
+   int32_t getOffset()
+      {
+      int32_t displacement = _offset;
+      if (_symbolReference->getSymbol() != NULL &&
+          _symbolReference->getSymbol()->isRegisterMappedSymbol())
+         displacement += _symbolReference->getSymbol()->getOffset();
+
+      return displacement;
+      }
+
+   /**
+    * @brief Base register is modifiable or not
+    * @return true when base register is modifiable
+    */
+   bool isBaseModifiable()
+      {
+      return ((_flag & TR_ARM64MemoryReferenceControl_Base_Modifiable) != 0);
+      }
+   /**
+    * @brief Sets the BaseModifiable flag
+    */
+   void setBaseModifiable() {_flag |= TR_ARM64MemoryReferenceControl_Base_Modifiable;}
+   /**
+    * @brief Clears the BaseModifiable flag
+    */
+   void clearBaseModifiable() {_flag &= ~TR_ARM64MemoryReferenceControl_Base_Modifiable;}
+
+   /**
+    * @brief Index register is modifiable or not
+    * @return true when index register is modifiable
+    */
+   bool isIndexModifiable()
+      {
+      return ((_flag & TR_ARM64MemoryReferenceControl_Index_Modifiable) != 0);
+      }
+   /**
+    * @brief Sets the IndexModifiable flag
+    */
+   void setIndexModifiable() {_flag |= TR_ARM64MemoryReferenceControl_Index_Modifiable;}
+   /**
+    * @brief Clears the IndexModifiable flag
+    */
+   void clearIndexModifiable() {_flag &= ~TR_ARM64MemoryReferenceControl_Index_Modifiable;}
+
+   /**
+    * @brief Gets the unresolved data snippet
+    * @return the unresolved data snippet
+    */
+   TR::UnresolvedDataSnippet *getUnresolvedSnippet() {return _unresolvedSnippet;}
+   /**
+    * @brief Sets an unresolved data snippet
+    * @return the unresolved data snippet
+    */
+   TR::UnresolvedDataSnippet *setUnresolvedSnippet(TR::UnresolvedDataSnippet *s)
+      {
+      return (_unresolvedSnippet = s);
+      }
+
+   /**
+    * @brief Gets the symbol reference
+    * @return the symbol reference
+    */
+   TR::SymbolReference *getSymbolReference() {return _symbolReference;}
+
+   /**
+    * @brief Estimates the length of generated binary
+    * @param[in] cg : CodeGenerator
+    * @return estimated binary length
+    */
+   uint32_t estimateBinaryLength(TR::CodeGenerator&);
+
+   /**
+    * @brief Generates binary encoding
+    * @param[in] ci : current instruction
+    * @param[in] cursor : instruction cursor
+    * @param[in] cg : CodeGenerator
+    * @return estimated binary length
+    */
+   uint8_t *generateBinaryEncoding(TR::Instruction *ci, uint8_t *cursor, TR::CodeGenerator *cg);
+   };
+
+} // ARM64
+} // OMR
+
+#endif

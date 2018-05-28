@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -468,19 +468,31 @@ protected:
    char                  _nameArray[48];
    };
 
+// Note: _memoryRegion and the corresponding TR::SegmentProvider and TR::Memory instances are stored as pointers within TypeDictionary
+// in order to avoid increasing the number of header files needed to compile against the JitBuilder library. Because we are storing
+// them as pointers, we cannot rely on the default C++ destruction semantic to destruct and deallocate the memory region, but rather
+// have to do it explicitly in the TypeDictionary::MemoryManager destructor. And since C++ destroys the other members *after* executing
+// the user defined destructor, we need to make sure that any members (and their contents) that are allocated in _memoryRegion are
+// explicitly destroyed and deallocated *before* _memoryRegion in the TypeDictionary::MemoryManager destructor.
+TypeDictionary::MemoryManager::MemoryManager() :
+      _segmentProvider( new(TR::Compiler->persistentAllocator()) TR::SystemSegmentProvider(1 << 16, TR::Compiler->rawAllocator) ),
+      _memoryRegion( new(TR::Compiler->persistentAllocator()) TR::Region(*_segmentProvider, TR::Compiler->rawAllocator) ),
+      _trMemory( new(TR::Compiler->persistentAllocator()) TR_Memory(*::trPersistentMemory, *_memoryRegion) )
+   {}
+
+TypeDictionary::MemoryManager::~MemoryManager()
+   {
+   _trMemory->~TR_Memory();
+   ::operator delete(_trMemory, TR::Compiler->persistentAllocator());
+   _memoryRegion->~Region();
+   ::operator delete(_memoryRegion, TR::Compiler->persistentAllocator());
+   static_cast<TR::SystemSegmentProvider *>(_segmentProvider)->~SystemSegmentProvider();
+   ::operator delete(_segmentProvider, TR::Compiler->persistentAllocator());
+   }
 
 TypeDictionary::TypeDictionary() :
-   // Note: _memoryRegion and the corresponding TR::SegmentProvider and TR::Memory instances are stored as pointers within TypeDictionary
-   // in order to avoid increasing the number of header files needed to compile against the JitBuilder library. Because we are storing
-   // them as pointers, we cannot rely on the default C++ destruction semantic to destruct and deallocate the memory region, but rather
-   // have to do it explicitly in the TypeDictionary destructor. And since C++ destroys the other members *after* executing the user defined
-   // destructor, we need to make sure that any members (and their contents) that are allocated in _memoryRegion are explicitly destroyed
-   // and deallocated *before* _memoryRegion in the TypeDictionary destructor.
-   _segmentProvider( new(TR::Compiler->persistentAllocator()) TR::SystemSegmentProvider(1 << 16, TR::Compiler->rawAllocator) ),
-   _memoryRegion( new(TR::Compiler->persistentAllocator()) TR::Region(*_segmentProvider, TR::Compiler->rawAllocator) ),
-   _trMemory( new(TR::Compiler->persistentAllocator()) TR_Memory(*::trPersistentMemory, *_memoryRegion) ),
-   _structsByName(str_comparator, _trMemory->heapMemoryRegion()),
-   _unionsByName(str_comparator, _trMemory->heapMemoryRegion())
+   _structsByName(str_comparator, trMemory()->heapMemoryRegion()),
+   _unionsByName(str_comparator, trMemory()->heapMemoryRegion())
    {
    // primitive types
    NoType       = _primitiveType[TR::NoType]                = new (PERSISTENT_NEW) OMR::PrimitiveType("NoType", TR::NoType);
@@ -528,16 +540,10 @@ TypeDictionary::TypeDictionary() :
 
 TypeDictionary::~TypeDictionary() throw()
    {
-   // Cleanup allocations in _memoryRegion *before* its destroyed below (see note in constructor)
+   // Cleanup allocations in _memoryRegion *before* its destroyed in
+   // the TypeDictionary::MemoryManager destructor
    _structsByName.clear();
    _unionsByName.clear();
-
-   _trMemory->~TR_Memory();
-   ::operator delete(_trMemory, TR::Compiler->persistentAllocator());
-   _memoryRegion->~Region();
-   ::operator delete(_memoryRegion, TR::Compiler->persistentAllocator());
-   static_cast<TR::SystemSegmentProvider *>(_segmentProvider)->~SystemSegmentProvider();
-   ::operator delete(_segmentProvider, TR::Compiler->persistentAllocator());
    }
 
 TR::IlType *
@@ -604,7 +610,7 @@ TypeDictionary::DefineUnion(const char *unionName)
    {
    TR_ASSERT_FATAL(_unionsByName.find(unionName) == _unionsByName.end(), "Union '%s' already exists", unionName);
    
-   UnionType *newType = new (PERSISTENT_NEW) UnionType(unionName, _trMemory);
+   UnionType *newType = new (PERSISTENT_NEW) UnionType(unionName, trMemory());
    _unionsByName.insert(std::make_pair(unionName, newType));
 
    return newType;

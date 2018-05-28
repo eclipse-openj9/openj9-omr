@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2016 IBM Corp. and others
+ * Copyright (c) 2016, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -240,7 +240,7 @@ public:
    TR::IlType *PointerTo(TR::DataType baseType)  { return PointerTo(_primitiveType[baseType]); }
 
    TR::IlReference *FieldReference(const char *typeName, const char *fieldName);
-   TR_Memory *trMemory() { return _trMemory; }
+   TR_Memory *trMemory() { return memoryManager._trMemory; }
 
    //TR::IlReference *ArrayReference(TR::IlType *arrayType);
 
@@ -420,9 +420,20 @@ public:
    void NotifyCompilationDone();
 
 protected:
-   TR::SegmentProvider *_segmentProvider;
-   TR::Region *_memoryRegion;
-   TR_Memory *_trMemory;
+   // We have MemoryManager as the first member of TypeDictionary, so that
+   // it is the last one to get destroyed and all objects allocated using
+   // MemoryManager->_memoryRegion may be safely destroyed in the destructor.
+   typedef struct MemoryManager
+      {
+      MemoryManager();
+      ~MemoryManager();
+
+      TR::SegmentProvider *_segmentProvider;
+      TR::Region *_memoryRegion;
+      TR_Memory *_trMemory;
+      } MemoryManager;
+
+   MemoryManager memoryManager;
 
    typedef bool (*StrComparator)(const char *, const char *);
 

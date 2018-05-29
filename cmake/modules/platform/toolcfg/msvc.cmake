@@ -100,7 +100,7 @@ macro(omr_toolconfig_global_setup)
 	# FIXME: disable several warnings while compiling with CLang.
 	if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 		omr_append_flags(CMAKE_C_FLAGS -Wno-error=unused-command-line-argument -Wno-error=comment -Wno-error=deprecated)
-		omr_append_flags(CMAKE_CXX_FLAGS -Wno-error=unused-command-line-argument -Wno-error=comment -Wno-error=deprecated)
+		omr_append_flags(CMAKE_CXX_FLAGS -Wno-error=unused-command-line-argument -Wno-error=comment -Wno-error=deprecated -Wno-unused-private-field -Wno-unused-function)
 	endif()
 
 	# Hack up output dir to fix dll dependency issues on windows

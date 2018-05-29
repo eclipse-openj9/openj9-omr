@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2016 IBM Corp. and others
+ * Copyright (c) 2016, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -177,11 +177,23 @@ class MethodBuilder : public TR::IlBuilder
    protected:
    virtual uint32_t countBlocks();
    virtual bool connectTrees();
+   TR_Memory *trMemory() { return memoryManager._trMemory; }
 
    private:
-   TR::SegmentProvider *_segmentProvider;
-   TR::Region *_memoryRegion;
-   TR_Memory *_trMemory;
+   // We have MemoryManager as the first member of TypeDictionary, so that
+   // it is the last one to get destroyed and all objects allocated using
+   // MemoryManager->_memoryRegion may be safely destroyed in the destructor.
+   typedef struct MemoryManager
+      {
+      MemoryManager();
+      ~MemoryManager();
+
+      TR::SegmentProvider *_segmentProvider;
+      TR::Region *_memoryRegion;
+      TR_Memory *_trMemory;
+      } MemoryManager;
+
+   MemoryManager memoryManager;
 
    // These values are typically defined outside of a compilation
    const char                * _methodName;

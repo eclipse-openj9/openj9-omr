@@ -383,7 +383,8 @@ MM_MarkingScheme::markLiveObjectsComplete(MM_EnvironmentBase *env)
 }
 
 MM_WorkPackets *
-MM_MarkingScheme::createWorkPackets(MM_EnvironmentBase *env) {
+MM_MarkingScheme::createWorkPackets(MM_EnvironmentBase *env)
+{
 	MM_WorkPackets *workPackets = NULL;
 
 	if (_extensions->isConcurrentMarkEnabled()) {
@@ -397,17 +398,38 @@ MM_MarkingScheme::createWorkPackets(MM_EnvironmentBase *env) {
 	return workPackets;
 }
 
-
-#if defined(OMR_GC_CONCURRENT_SCAVENGER)
-bool
-MM_MarkingScheme::isConcurrentMarkInProgress() {
-#if defined(OMR_GC_MODRON_CONCURRENT_MARK)
-	uintptr_t mode = ((MM_ConcurrentGC *)_extensions->getGlobalCollector())->getConcurrentGCStats()->getExecutionMode();
-	return (CONCURRENT_ROOT_TRACING <= mode) && (mode < CONCURRENT_EXHAUSTED);
-#else
-	return false;
-#endif /* OMR_GC_MODRON_CONCURRENT_MARK */
+void
+MM_MarkingScheme::assertNotForwardedPointer(MM_EnvironmentBase *env, omrobjectptr_t objectPtr)
+{
+	/* This is an expensive assert - fetching class slot during marking operation, thus invalidating benefits of leaf optimization.
+	 * TODO: after some soaking remove it!
+	 */
+	if (_extensions->isConcurrentScavengerEnabled()) {
+		MM_ForwardedHeader forwardHeader(objectPtr);
+		omrobjectptr_t forwardPtr = forwardHeader.getNonStrictForwardedObject();
+		/* It is ok to encounter a forwarded object during overlapped concurrent scavenger/marking (or even root scanning),
+		 * but we must do nothing about it (if in backout, STW global phase will recover them).
+		 */
+		Assert_GC_true_with_message3(env, ((NULL == forwardPtr) || (!_extensions->getGlobalCollector()->isStwCollectionInProgress() && _extensions->isConcurrentScavengerInProgress())),
+			"Encountered object %p forwarded to %p (header %p) while Concurrent Scavenger/Marking not in progress\n", objectPtr, forwardPtr, &forwardHeader);
+	}
 }
+
+void
+MM_MarkingScheme::fixupForwardedSlotOutline(GC_SlotObject *slotObject) {
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+	MM_ForwardedHeader forwardHeader(slotObject->readReferenceFromSlot());
+	omrobjectptr_t forwardPtr = forwardHeader.getNonStrictForwardedObject();
+
+	if ((NULL != forwardPtr) && _extensions->getGlobalCollector()->isStwCollectionInProgress()) {
+		if (forwardHeader.isSelfForwardedPointer()) {
+			forwardHeader.restoreSelfForwardedPointer();
+		} else {
+			slotObject->writeReferenceToSlot(forwardPtr);
+		}
+	}
 #endif /* OMR_GC_CONCURRENT_SCAVENGER */
+}
+
 
 

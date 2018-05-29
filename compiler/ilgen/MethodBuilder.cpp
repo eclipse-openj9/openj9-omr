@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2016 IBM Corp. and others
+ * Copyright (c) 2016, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -73,27 +73,40 @@
 namespace OMR
 {
 
+// Note: _memoryRegion and the corresponding TR::SegmentProvider and TR::Memory instances are stored as pointers within MethodBuilder
+// in order to avoid increasing the number of header files needed to compile against the JitBuilder library. Because we are storing
+// them as pointers, we cannot rely on the default C++ destruction semantic to destruct and deallocate the memory region, but rather
+// have to do it explicitly in the MethodBuilder::MemoryManager destructor. And since C++ destroys the other members *after* executing the user defined
+// destructor, we need to make sure that any members (and their contents) that are allocated in _memoryRegion are explicitly destroyed
+// and deallocated *before* _memoryRegion in the MethodBuilder::MemoryManager destructor.
+MethodBuilder::MemoryManager::MemoryManager() :
+      _segmentProvider(new(TR::Compiler->persistentAllocator()) TR::SystemSegmentProvider(MEM_SEGMENT_SIZE, TR::Compiler->rawAllocator)),
+      _memoryRegion(new(TR::Compiler->persistentAllocator()) TR::Region(*_segmentProvider, TR::Compiler->rawAllocator)),
+      _trMemory(new(TR::Compiler->persistentAllocator()) TR_Memory(*::trPersistentMemory, *_memoryRegion))
+   {}
+
+MethodBuilder::MemoryManager::~MemoryManager()
+   {
+   _trMemory->~TR_Memory();
+   ::operator delete(_trMemory, TR::Compiler->persistentAllocator());
+   _memoryRegion->~Region();
+   ::operator delete(_memoryRegion, TR::Compiler->persistentAllocator());
+   static_cast<TR::SystemSegmentProvider *>(_segmentProvider)->~SystemSegmentProvider();
+   ::operator delete(_segmentProvider, TR::Compiler->persistentAllocator());
+   }
+
 MethodBuilder::MethodBuilder(TR::TypeDictionary *types, OMR::VirtualMachineState *vmState)
    : TR::IlBuilder(asMethodBuilder(), types),
-   // Note: _memoryRegion and the corresponding TR::SegmentProvider and TR::Memory instances are stored as pointers within MethodBuilder
-   // in order to avoid increasing the number of header files needed to compile against the JitBuilder library. Because we are storing
-   // them as pointers, we cannot rely on the default C++ destruction semantic to destruct and deallocate the memory region, but rather
-   // have to do it explicitly in the MethodBuilder destructor. And since C++ destroys the other members *after* executing the user defined
-   // destructor, we need to make sure that any members (and their contents) that are allocated in _memoryRegion are explicitly destroyed
-   // and deallocated *before* _memoryRegion in the MethodBuilder destructor.
-   _segmentProvider(new(TR::Compiler->persistentAllocator()) TR::SystemSegmentProvider(MEM_SEGMENT_SIZE, TR::Compiler->rawAllocator)),
-   _memoryRegion(new(TR::Compiler->persistentAllocator()) TR::Region(*_segmentProvider, TR::Compiler->rawAllocator)),
-   _trMemory(new(TR::Compiler->persistentAllocator()) TR_Memory(*::trPersistentMemory, *_memoryRegion)),
    _methodName("NoName"),
    _returnType(NoType),
    _numParameters(0),
-   _symbols(str_comparator, *_memoryRegion),
-   _parameterSlot(str_comparator, *_memoryRegion),
-   _symbolTypes(str_comparator, *_memoryRegion),
-   _symbolNameFromSlot(std::less<int32_t>(), *_memoryRegion),
-   _symbolIsArray(str_comparator, *_memoryRegion),
-   _memoryLocations(str_comparator, *_memoryRegion),
-   _functions(str_comparator, *_memoryRegion),
+   _symbols(str_comparator, trMemory()->heapMemoryRegion()),
+   _parameterSlot(str_comparator, trMemory()->heapMemoryRegion()),
+   _symbolTypes(str_comparator, trMemory()->heapMemoryRegion()),
+   _symbolNameFromSlot(std::less<int32_t>(), trMemory()->heapMemoryRegion()),
+   _symbolIsArray(str_comparator, trMemory()->heapMemoryRegion()),
+   _memoryLocations(str_comparator, trMemory()->heapMemoryRegion()),
+   _functions(str_comparator, trMemory()->heapMemoryRegion()),
    _cachedParameterTypes(0),
    _definingFile(""),
    _newSymbolsAreTemps(false),
@@ -106,13 +119,13 @@ MethodBuilder::MethodBuilder(TR::TypeDictionary *types, OMR::VirtualMachineState
    _bytecodeWorklist(NULL),
    _bytecodeHasBeenInWorklist(NULL)
    {
-
    _definingLine[0] = '\0';
    }
 
 MethodBuilder::~MethodBuilder()
    {
-   // Cleanup allocations in _memoryRegion *before* its destroyed below (see note in constructor)
+   // Cleanup allocations in _memoryRegion *before* its destroyed in
+   // the MethodBuilder::MemoryManager destructor
    _symbols.clear();
    _parameterSlot.clear();
    _symbolTypes.clear();
@@ -120,13 +133,6 @@ MethodBuilder::~MethodBuilder()
    _symbolIsArray.clear();
    _memoryLocations.clear();
    _functions.clear();
-
-   _trMemory->~TR_Memory();
-   ::operator delete(_trMemory, TR::Compiler->persistentAllocator());
-   _memoryRegion->~Region();
-   ::operator delete(_memoryRegion, TR::Compiler->persistentAllocator());
-   static_cast<TR::SystemSegmentProvider *>(_segmentProvider)->~SystemSegmentProvider();
-   ::operator delete(_segmentProvider, TR::Compiler->persistentAllocator());
    }
 
 TR::MethodBuilder *
@@ -487,7 +493,8 @@ MethodBuilder::DefineFunction(const char* const name,
                               TR::IlType     ** parmTypes)
    {   
    TR_ASSERT_FATAL(_functions.find(name) == _functions.end(), "Function '%s' already defined", name);
-   TR::ResolvedMethod *method = new (*_memoryRegion) TR::ResolvedMethod((char*)fileName,
+   TR::ResolvedMethod *method = new (trMemory()->heapMemoryRegion()) TR::ResolvedMethod(
+                                                                        (char*)fileName,
                                                                         (char*)lineNumber,
                                                                         (char*)name,
                                                                         numParms,

@@ -470,7 +470,7 @@ public:
 	/*
 	 * Return value of _stwCollectionInProgress flag
 	 */
-	MMINLINE bool isStwCollectionInProgress()
+	virtual bool isStwCollectionInProgress()
 	{
 		return _stwCollectionInProgress;
 	}

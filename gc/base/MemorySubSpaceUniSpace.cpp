@@ -24,8 +24,8 @@
 #include "MemorySubSpaceUniSpace.hpp"
 
 #include "AllocateDescription.hpp"
-#include "Collector.hpp"
 #include "GCExtensionsBase.hpp"
+#include "GlobalCollector.hpp"
 #include "PhysicalSubArena.hpp"
 #include "MemorySpace.hpp"
 

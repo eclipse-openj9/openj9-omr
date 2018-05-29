@@ -55,7 +55,7 @@ collectorCreationHelper(OMR_VM *omrVM, MM_EnvironmentBase *env)
 {
 	OMRPORT_ACCESS_FROM_OMRVM(omrVM);
 	MM_GCExtensionsBase *extensions = MM_GCExtensionsBase::getExtensions(omrVM);
-	MM_Collector *globalCollector = extensions->configuration->createGlobalCollector(env);
+	MM_GlobalCollector *globalCollector = extensions->configuration->createGlobalCollector(env);
 	omr_error_t rc = OMR_ERROR_NONE;
 
 	if (NULL == globalCollector) {

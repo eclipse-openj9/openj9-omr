@@ -202,6 +202,12 @@ omrsig_register_os_handler(struct OMRPortLibrary *portLibrary, uint32_t portlibS
 	return OMRPORT_SIG_ERROR;
 }
 
+BOOLEAN
+omrsig_is_master_signal_handler(struct OMRPortLibrary *portLibrary, void *osHandler)
+{
+	return FALSE;
+}
+
 int32_t
 omrsig_can_protect(struct OMRPortLibrary *portLibrary,  uint32_t flags)
 {

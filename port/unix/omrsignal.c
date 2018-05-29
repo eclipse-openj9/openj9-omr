@@ -639,6 +639,22 @@ omrsig_register_os_handler(struct OMRPortLibrary *portLibrary, uint32_t portlibS
 	return rc;
 }
 
+BOOLEAN
+omrsig_is_master_signal_handler(struct OMRPortLibrary *portLibrary, void *osHandler)
+{
+	BOOLEAN rc = FALSE;
+	Trc_PRT_signal_omrsig_is_master_signal_handler_entered(osHandler);
+
+	if ((osHandler == (void *)masterSynchSignalHandler)
+		|| (osHandler == (void *)masterASynchSignalHandler)
+	) {
+		rc = TRUE;
+	}
+
+	Trc_PRT_signal_omrsig_is_master_signal_handler_exiting(rc);
+	return rc;
+}
+
 /*
  * The full shutdown routine "sig_full_shutdown" overwrites this once we've completed startup
  */

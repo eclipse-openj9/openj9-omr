@@ -1069,3 +1069,6 @@ TraceException=Trc_PRT_signal_mapOSSignalToPortLib_ERROR_unknown_signal Group=si
 TraceEntry=Trc_PRT_signal_omrsig_register_os_handler_entered Group=signal Overhead=1 Level=1 NoEnv Template="omrsig_register_os_handler: Entered, portLibrarySignalFlag=0x%X, newOSHandler=%p"
 TraceExit=Trc_PRT_signal_omrsig_register_os_handler_exiting Group=signal Overhead=1 Level=1 NoEnv Template="omrsig_register_os_handler: Exiting, rc=%d, portLibrarySignalFlag=0x%X, newOSHandler=%p, oldOSHandler=%p"
 TraceException=Trc_PRT_signal_omrsig_register_os_handler_invalid_portlibSignalFlag Group=signal Overhead=1 Level=1 NoEnv Template="omrsig_register_os_handler: ERROR, portlibSignalFlag=0x%X is either zero or has multiple signal bits set."
+
+TraceEntry=Trc_PRT_signal_omrsig_is_master_signal_handler_entered Group=signal Overhead=1 Level=3 NoEnv Template="omrsig_is_master_signal_handler: Entered, osHandler=%p"
+TraceExit=Trc_PRT_signal_omrsig_is_master_signal_handler_exiting Group=signal Overhead=1 Level=3 NoEnv Template="omrsig_is_master_signal_handler: Exiting, rc=%d"

@@ -220,6 +220,7 @@ static OMRPortLibrary MasterPortLibraryTable = {
 	omrsig_map_os_signal_to_portlib_signal, /* sig_map_os_signal_to_portlib_signal */
 	omrsig_map_portlib_signal_to_os_signal, /* sig_map_portlib_signal_to_os_signal */
 	omrsig_register_os_handler, /* sig_register_os_handler */
+	omrsig_is_master_signal_handler, /* sig_is_master_signal_handler */
 	omrsig_info, /* sig_info */
 	omrsig_info_count, /* sig_info_count */
 	omrsig_set_options, /* sig_set_options */

@@ -40,7 +40,7 @@ int jitDebugARM;
 #include "il/Node_inlines.hpp"
 
 #ifdef J9_PROJECT_SPECIFIC
-#include "trj9/arm/codegen/ARMHelperCallSnippet.hpp"
+#include "arm/codegen/ARMHelperCallSnippet.hpp"
 #endif
 
 // change the following lines to not get the instruction addr during

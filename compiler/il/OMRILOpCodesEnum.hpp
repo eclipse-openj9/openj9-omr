@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -25,7 +25,6 @@
 //  NOTE: IF you add opcodes or change the order then you must fix the following
 //        files (at least): ./ILOpCodeProperties.hpp
 //                          compiler/ras/Tree.cpp (2 tables)
-//                          trj9/codegen/CodeGenGPU.cpp
 //                          compiler/optimizer/SimplifierTable.hpp
 //                          compiler/optimizer/ValuePropagationTable.hpp
 //                          compiler/x/amd64/codegen/TreeEvaluatorTable.cpp

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2016 IBM Corp. and others
+ * Copyright (c) 1991, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -922,7 +922,8 @@ MM_MemorySubSpace::systemGarbageCollect(MM_EnvironmentBase* env, uint32_t gcCode
 		return;
 	}
 
-	if (_collector && _usesGlobalCollector) {
+	/* do not launch system gc in -Xgcpolicy:nogc */
+	if (_collector && _usesGlobalCollector && !_collector->isDisabled(env)) {
 		bool invokeGC = true;
 #if defined(OMR_GC_IDLE_HEAP_MANAGER)
 		if ((J9MMCONSTANT_EXPLICIT_GC_IDLE_GC == gcCode) && (_extensions->gcOnIdle || _extensions->compactOnIdle)) {

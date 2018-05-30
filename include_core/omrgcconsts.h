@@ -36,6 +36,7 @@
 #define OMR_GC_POLICY_METRONOME 0x5
 #define OMR_GC_POLICY_OPTAVGPAUSE 0x2
 #define OMR_GC_POLICY_OPTTHRUPUT 0x1
+#define OMR_GC_POLICY_NOGC 0x6
 
 /*
  * list of available GC policies
@@ -46,7 +47,8 @@ typedef enum MM_GCPolicy {
 	gc_policy_optavgpause = OMR_GC_POLICY_OPTAVGPAUSE,
 	gc_policy_gencon = OMR_GC_POLICY_GENCON,
 	gc_policy_balanced = OMR_GC_POLICY_BALANCED,
-	gc_policy_metronome = OMR_GC_POLICY_METRONOME
+	gc_policy_metronome = OMR_GC_POLICY_METRONOME,
+	gc_policy_nogc = OMR_GC_POLICY_NOGC
 } MM_GCPolicy;
 
 #define OMR_GC_WRITE_BARRIER_TYPE_ILLEGAL 0x0
@@ -103,6 +105,7 @@ typedef enum MM_MarkingSchemeScanReason {
 #define OMR_GC_CYCLE_TYPE_DEFAULT     0
 #define OMR_GC_CYCLE_TYPE_GLOBAL      1
 #define OMR_GC_CYCLE_TYPE_SCAVENGE    2
+#define OMR_GC_CYCLE_TYPE_EPSILON	 6
 
 /* Core allocation flags defined for OMR are < OMR_GC_ALLOCATE_OBJECT_LANGUAGE_DEFINED_BASE */
 #define OMR_GC_ALLOCATE_OBJECT_NON_INSTRUMENTABLE 0x0

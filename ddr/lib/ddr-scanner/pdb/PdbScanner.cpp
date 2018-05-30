@@ -624,13 +624,14 @@ PdbScanner::setMemberOffset(IDiaSymbol *symbol, Field *newField)
 				offset = (size_t)loffset;
 			}
 			if (DDR_RC_OK == rc) {
-				DWORD bitposition = 0;
-				hr = symbol->get_bitPosition(&bitposition);
+				ULONGLONG bitwidth = 0;
+				/* For bit-fields, the 'length' is measured in bits. */
+				hr = symbol->get_length(&bitwidth);
 				if (FAILED(hr)) {
 					ERRMSG("get_offset() failed with HRESULT = %08lX", hr);
 					rc = DDR_RC_ERROR;
 				} else {
-					newField->_bitField = bitposition;
+					newField->_bitField = (size_t)bitwidth;
 				}
 			}
 			break;

@@ -51,7 +51,6 @@ target_link_libraries(omrsigtest
 	j9hashtable
 	omrsig
 	omrvmstartup
-	${OMR_THREAD_LIB}
 	${OMR_PORT_LIB}
 )
 

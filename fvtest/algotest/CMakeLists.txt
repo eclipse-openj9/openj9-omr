@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2017 IBM Corp. and others
+# Copyright (c) 2017, 2018 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -39,11 +39,10 @@ add_executable(omralgotest
 
 target_link_libraries(omralgotest
 	omrGtestGlue
-	omrport
 	omrtestutil
 	omrcore
 	omrvmstartup
-	${OMR_GC_LIB}
+	${OMR_PORT_LIB}
 )
 
 target_include_directories(omralgotest PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
@@ -58,10 +57,6 @@ if(OMR_HOST_OS STREQUAL "win")
 		pdh
 	)
 endif()
-
-target_link_libraries(omralgotest
-	j9hookstatic
-)
 
 if(OMR_HOST_OS STREQUAL "zos")
 	target_link_libraries(omralgotest j9a2e)

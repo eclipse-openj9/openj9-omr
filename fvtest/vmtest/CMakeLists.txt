@@ -29,16 +29,13 @@ endif()
 target_link_libraries(omrvmtest
 	omrGtestGlue
 	omrtestutil
-	omrcore
 	omrutil
+	omrcore
+	omrvmstartup
 	j9hashtable
 	j9avl
 	j9pool
-	omrvmstartup
-	${OMR_HOOK_LIB}
-	${OMR_GC_LIB}
 	${OMR_PORT_LIB}
-	${OMR_TRACE_LIB}
 )
 
 set_property(TARGET omrvmtest PROPERTY FOLDER fvtest)

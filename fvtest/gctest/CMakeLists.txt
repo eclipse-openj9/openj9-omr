@@ -19,6 +19,11 @@
 # SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
 ###############################################################################
 
+omr_assert(
+	TEST OMR_EXAMPLE
+	MESSAGE "The fv gctest component relies on the example glue"
+)
+
 add_executable(omrgctest
 	GCConfigObjectTable.cpp
 	GCConfigTest.cpp
@@ -35,10 +40,7 @@ target_link_libraries(omrgctest
 	omrcore
 	omrvmstartup
 	${OMR_GC_LIB}
-	${OMR_HOOK_LIB}
 	${OMR_PORT_LIB}
-	${OMR_THREAD_LIB}
-	${OMR_TRACE_LIB}
 )
 
 # TODO check linker flags from makefile are ported properly.

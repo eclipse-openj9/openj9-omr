@@ -27,7 +27,12 @@ add_subdirectory(startup)
 
 omr_assert(
 	TEST OMR_CORE_GLUE_TARGET
-	MESSAGE "OMR_CORE_GLUE_TARGET must be set. Try using the example with OMR_EXAMPLE=On"
+	MESSAGE "OMR_CORE_GLUE_TARGET must be set. Try using the example with OMR_EXAMPLE=ON"
+)
+
+omr_assert(
+	TEST OMR_RAS_GLUE_TARGET
+	MESSAGE "OMR_RAS_GLUE_TARGET must be set. Try using the example with OMR_EXAMPLE=ON"
 )
 
 add_library(omrcore STATIC
@@ -58,7 +63,6 @@ target_include_directories(omrcore
 		${CMAKE_CURRENT_BINARY_DIR}
 )
 
-
 target_link_libraries(omrcore
 	PRIVATE
 		${OMR_CORE_GLUE_TARGET}
@@ -73,7 +77,7 @@ if(OMR_GC)
 
 	target_include_directories(omrcore
 		PRIVATE
-			$<TARGET_PROPERTY:omrgc,INTERFACE_INCLUDE_DIRECTORIES>
+			$<TARGET_PROPERTY:${OMR_GC_LIB},INTERFACE_INCLUDE_DIRECTORIES>
 			$<TARGET_PROPERTY:${OMR_GC_GLUE_TARGET},INTERFACE_INCLUDE_DIRECTORIES>
 	)
 endif(OMR_GC)

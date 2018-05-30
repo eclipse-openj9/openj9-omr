@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2015 IBM Corp. and others
+ * Copyright (c) 2014, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -32,11 +32,11 @@
 #include "Port.hpp"
 
 int
-#if defined(WIN32)
+#if defined(OMR_OS_WINDOWS)
 translated_main(int argc, char **argv, char **envp)
 #else
 main(int argc, char **argv, char **envp)
-#endif /* defined(WIN32) */
+#endif /* defined(OMR_OS_WINDOWS) */
 {
 	RCType rc = RC_OK;
 #if defined(J9ZOS390)
@@ -62,7 +62,7 @@ main(int argc, char **argv, char **envp)
 	return (RC_OK == rc) ? 0 : -1;
 }
 
-#if defined(WIN32)
+#if defined(OMR_OS_WINDOWS)
 int
 wmain(int argc, wchar_t **argv, wchar_t **envp)
 {
@@ -125,4 +125,4 @@ wmain(int argc, wchar_t **argv, wchar_t **envp)
 
 	return rc;
 }
-#endif
+#endif /* defined(OMR_OS_WINDOWS) */

@@ -597,9 +597,9 @@ public:
 
 #if defined(AIXPPC)
    virtual void setupDebugger(void *);
-#elif defined(LINUX) || defined(J9ZOS390) || defined(WINDOWS)
+#elif defined(LINUX) || defined(J9ZOS390) || defined(OMR_OS_WINDOWS)
    virtual void setupDebugger(void *, void *, bool);
-#endif
+#endif /* defined(AIXPPC) */
 
    virtual void setSingleAllocMetaData(bool usesSingleAllocMetaData);
 

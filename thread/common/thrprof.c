@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2017 IBM Corp. and others
+ * Copyright (c) 1991, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -113,7 +113,7 @@ omrthread_get_cpu_time_ex(omrthread_t thread, int64_t *cpuTime)
 		return J9THREAD_ERR_NO_SUCH_THREAD;
 	}
 
-#if defined(WIN32) && !defined(BREW)
+#if defined(OMR_OS_WINDOWS) && !defined(BREW)
 	{
 		intptr_t ret = 0;
 		FILETIME creationTime, exitTime, kernelTime, userTime;
@@ -144,7 +144,7 @@ omrthread_get_cpu_time_ex(omrthread_t thread, int64_t *cpuTime)
 		ret |= J9THREAD_ERR;
 		return ret;
 	}
-#endif	/* WIN32 */
+#endif	/* defined(OMR_OS_WINDOWS) && !defined(BREW) */
 
 #ifdef AIXPPC
 	{
@@ -396,7 +396,7 @@ omrthread_get_self_cpu_time(omrthread_t self)
 int64_t
 omrthread_get_user_time(omrthread_t thread)
 {
-#if defined(WIN32) && !defined(BREW)
+#if defined(OMR_OS_WINDOWS) && !defined(BREW)
 
 	/* In Windows, the time spent in user mode is easily acquired.
 	 * Note that this function is not supported in Win95.
@@ -415,7 +415,7 @@ omrthread_get_user_time(omrthread_t thread)
 		return totalTime * 100;
 	}
 
-#endif	/* WIN32 */
+#endif	/* defined(OMR_OS_WINDOWS) && !defined(BREW) */
 
 #if defined(AIXPPC)
 
@@ -487,10 +487,10 @@ omrthread_get_handle(omrthread_t thread)
 void
 omrthread_enable_stack_usage(uintptr_t enable)
 {
-#if defined(WIN32)
+#if defined(OMR_OS_WINDOWS)
 	omrthread_library_t lib = GLOBAL_DATA(default_library);
 	lib->stack_usage = enable;
-#endif /* WIN32 */
+#endif /* defined(OMR_OS_WINDOWS) */
 }
 
 
@@ -544,7 +544,7 @@ void
 paint_stack(omrthread_t thread)
 {
 	/* Only supported on Windows */
-#if defined(WIN32)
+#if defined(OMR_OS_WINDOWS)
 	MEMORY_BASIC_INFORMATION memInfo;
 	SYSTEM_INFO sysInfo;
 	uintptr_t *curr;
@@ -567,7 +567,7 @@ paint_stack(omrthread_t thread)
 	/* Round up to the system page size. */
 	GetSystemInfo(&sysInfo);
 	thread->stacksize = ((uintptr_t)stack - (uintptr_t)thread->tos + sysInfo.dwPageSize) & ~((uintptr_t)sysInfo.dwPageSize - 1);
-#endif /* defined(WIN32) */
+#endif /* defined(OMR_OS_WINDOWS) */
 }
 
 
@@ -617,7 +617,7 @@ omrthread_get_os_priority(omrthread_t thread, intptr_t *policy, intptr_t *priori
 		*policy = osPolicy;
 	}
 
-#elif defined(WIN32) && !defined(BREW)
+#elif defined(OMR_OS_WINDOWS) && !defined(BREW)
 
 	*priority = GetThreadPriority(thread->handle);
 	if (*priority == THREAD_PRIORITY_ERROR_RETURN) {
@@ -666,7 +666,7 @@ omrthread_get_os_priority(omrthread_t thread, intptr_t *policy, intptr_t *priori
 int64_t
 omrthread_get_process_cpu_time(void)
 {
-#if defined(WIN32) && !defined(BREW)
+#if defined(OMR_OS_WINDOWS) && !defined(BREW)
 	FILETIME creationTime, exitTime, kernelTime, userTime;
 	int64_t totalTime;
 
@@ -677,7 +677,7 @@ omrthread_get_process_cpu_time(void)
 		/* totalTime is in 100's of nanos.  Convert to nanos */
 		return totalTime * GET_PROCESS_TIMES_IN_NANO;
 	}
-#endif	/* WIN32 */
+#endif	/* defined(OMR_OS_WINDOWS) && !defined(BREW) */
 
 	return -1;
 
@@ -692,7 +692,7 @@ intptr_t
 omrthread_get_process_times(omrthread_process_time_t *processTime)
 {
 	if (processTime != NULL) {
-#if defined(WIN32) || defined(WIN64)
+#if defined(OMR_OS_WINDOWS)
 
 		/* We don't use creationTime and exitTime but GetProcessTimes() needs them */
 		FILETIME creationTime;
@@ -719,7 +719,7 @@ omrthread_get_process_times(omrthread_process_time_t *processTime)
 			Trc_THR_ThreadGetProcessTimes_GetProcessTimesFailed(GetLastError());
 			return -2;
 		}
-#endif	/* WIN32 || WIN64*/
+#endif	/* defined(OMR_OS_WINDOWS) */
 
 #if (defined(LINUX) && !defined(J9ZTPF)) || defined(AIXPPC) || defined(OSX)
 		struct rusage rUsage;
@@ -833,7 +833,7 @@ omrthread_get_hires_clock(void)
 	}
 
 	return hiresTime;
-#elif defined(WIN32) /* defined(LINUX) && (defined(J9HAMMER) || defined(J9X86)) */
+#elif defined(OMR_OS_WINDOWS) /* defined(LINUX) && (defined(J9HAMMER) || defined(J9X86)) */
 	LARGE_INTEGER i;
 
 	if (QueryPerformanceCounter(&i)) {
@@ -841,7 +841,7 @@ omrthread_get_hires_clock(void)
 	} else {
 		return (uint64_t)GetTickCount();
 	}
-#elif defined(OSX) /* defined(WIN32) */
+#elif defined(OSX) /* defined(OMR_OS_WINDOWS) */
 #define J9TIME_NANOSECONDS_PER_SECOND	J9CONST_U64(1000000000)
 	omrthread_library_t lib = GLOBAL_DATA(default_library);
 	mach_timespec_t mt;

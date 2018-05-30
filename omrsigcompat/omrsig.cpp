@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2017 IBM Corp. and others
+ * Copyright (c) 2015, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -25,18 +25,18 @@
 #define _UNIX03_SOURCE
 #endif /* defined(J9ZOS390) */
 
-#if defined(WIN32)
+#if defined(OMR_OS_WINDOWS)
 /* windows.h defined UDATA.  Ignore its definition */
 #define UDATA UDATA_win32_
 #include <windows.h>
 #undef UDATA	/* this is safe because our UDATA is a typedef, not a macro */
-#else /* defined(WIN32) */
+#else /* defined(OMR_OS_WINDOWS) */
 #include <dlfcn.h>
-#endif /* defined(WIN32) */
+#endif /* defined(OMR_OS_WINDOWS) */
 #include <errno.h>
-#if !defined(WIN32)
+#if !defined(OMR_OS_WINDOWS)
 #include <pthread.h>
-#endif /* !defined(WIN32) */
+#endif /* !defined(OMR_OS_WINDOWS) */
 #include <string.h>
 
 #include "omrsig.h"
@@ -52,7 +52,7 @@ static int omrsig_sigaction_internal(int signum, const struct sigaction *act, st
 static bool validSignalNum(int signum, bool nullAction);
 static bool handlerIsFunction(const struct sigaction *act);
 
-#if defined(WIN32)
+#if defined(OMR_OS_WINDOWS)
 
 typedef void (__cdecl * (__cdecl *SIGNAL)(_In_ int _SigNum, _In_opt_ void (__cdecl * _Func)(int)))(int);
 static SIGNAL signalOS = NULL;
@@ -93,7 +93,7 @@ handlerIsFunction(const struct sigaction *act)
 static bool
 validSignalNum(int signum, bool nullAction)
 {
-#if defined(WIN32)
+#if defined(OMR_OS_WINDOWS)
 	return (SIGABRT == signum) || (SIGFPE == signum) || (SIGILL == signum) || (SIGINT == signum)
 		|| (SIGSEGV == signum) || (SIGTERM == signum);
 #elif defined(J9ZOS390)
@@ -226,7 +226,7 @@ omrsig_primary_sigaction(int signum, const struct sigaction *act, struct sigacti
 }
 #endif /* defined(POSIX_SIGNAL) */
 
-#if defined(WIN32)
+#if defined(OMR_OS_WINDOWS)
 #if defined(__clang__)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Winconsistent-dllimport"
@@ -236,20 +236,20 @@ omrsig_primary_sigaction(int signum, const struct sigaction *act, struct sigacti
 #endif /* defined (__clang__) */
 void (__cdecl * __cdecl
 signal(_In_ int signum, _In_opt_ void (__cdecl * handler)(int)))(int)
-#else /* defined(WIN32) */
+#else /* defined(OMR_OS_WINDOWS) */
 sighandler_t
 signal(int signum, sighandler_t handler) __THROW
-#endif /* defined(WIN32) */
+#endif /* defined(OMR_OS_WINDOWS) */
 {
 	return omrsig_signal_internal(signum, handler);
 }
-#if defined(WIN32)
+#if defined(OMR_OS_WINDOWS)
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #else
 #pragma warning(pop)
 #endif /* defined (__clang__) */
-#endif /* defined(WIN32) */
+#endif /* defined(OMR_OS_WINDOWS) */
 
 static sighandler_t
 omrsig_signal_internal(int signum, sighandler_t handler)
@@ -268,7 +268,7 @@ omrsig_signal_internal(int signum, sighandler_t handler)
 #endif /* defined(POSIX_SIGNAL) */
 
 	sighandler_t ret = SIG_DFL;
-#if defined(WIN32)
+#if defined(OMR_OS_WINDOWS)
 	if (SIG_GET == handler) {
 		if (0 == omrsig_sigaction_internal(signum, NULL, &oldact, false)) {
 			ret = oldact.sa_handler;
@@ -276,15 +276,15 @@ omrsig_signal_internal(int signum, sighandler_t handler)
 			ret = SIG_ERR;
 		}
 	} else {
-#endif /* defined(WIN32) */
+#endif /* defined(OMR_OS_WINDOWS) */
 		if (0 == omrsig_sigaction_internal(signum, &act, &oldact, false)) {
 			ret = oldact.sa_handler;
 		} else {
 			ret = SIG_ERR;
 		}
-#if defined(WIN32)
+#if defined(OMR_OS_WINDOWS)
 	}
-#endif /* defined(WIN32) */
+#endif /* defined(OMR_OS_WINDOWS) */
 	return ret;
 }
 
@@ -569,7 +569,7 @@ failed:
 
 #endif /* defined(J9ZOS390) */
 
-#if !defined(WIN32)
+#if !defined(OMR_OS_WINDOWS)
 
 sighandler_t
 sigset(int sig, sighandler_t disp) __THROW
@@ -658,6 +658,6 @@ sysv_signal(int signum, sighandler_t handler) __THROW
 }
 
 #endif /* !defined(J9ZOS390) */
-#endif /* !defined(WIN32) */
+#endif /* !defined(OMR_OS_WINDOWS) */
 
 } /* extern "C" { */

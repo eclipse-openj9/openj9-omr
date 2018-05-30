@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2017 IBM Corp. and others
+ * Copyright (c) 1991, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -35,9 +35,9 @@
  *
  */
 
-#if !defined(WIN32)
+#if !defined(OMR_OS_WINDOWS)
 #include <signal.h>
-#endif
+#endif /* defined(OMR_OS_WINDOWS) */
 
 #if defined(J9ZOS390)
 #include "atoe.h"
@@ -54,9 +54,9 @@
 #include "testProcessHelpers.hpp"
 #include "omrport.h"
 
-#if !defined(WIN32) && defined(OMR_PORT_ASYNC_HANDLER)
+#if !defined(OMR_OS_WINDOWS) && defined(OMR_PORT_ASYNC_HANDLER)
 #define J9SIGNAL_TEST_RUN_ASYNC_UNIX_TESTS
-#endif
+#endif /* !defined(OMR_OS_WINDOWS) && defined(OMR_PORT_ASYNC_HANDLER) */
 
 #define SIG_TEST_SIZE_EXENAME 1024
 
@@ -931,7 +931,7 @@ TEST(PortSigTest, sig_test6)
 		 * to run this test you need to port/unix/omrsignal.c (remove static from declaration of tlsKeyCurrentSignal)
 		 * and add "<export name="tlsKeyCurrentSignal" />" to port/module.xml, to export tlsKeyCurrentSignal.
 		 */
-#if ! defined(WIN32)
+#if !defined(OMR_OS_WINDOWS)
 		{
 			extern omrthread_tls_key_t tlsKeyCurrentSignal;
 			int signo = (int)(uintptr_t)omrthread_tls_get(omrthread_self(), tlsKeyCurrentSignal);
@@ -942,7 +942,7 @@ TEST(PortSigTest, sig_test6)
 				outputErrorMessage(PORTTEST_ERROR_ARGS, "currentSignal corrupt -- got: %d expected: %d\n", signo, expectedSigno);
 			}
 		}
-#endif
+#endif /* !defined(OMR_OS_WINDOWS) */
 #endif
 
 	}
@@ -1065,7 +1065,7 @@ TEST(PortSigTest, sig_test8)
 							flags,
 							&result);
 		portTestEnv->log("omrsig_test8 protectResult=%d\n", protectResult);
-#if defined(WIN64)
+#if defined(OMR_OS_WINDOWS) && defined(OMR_ENV_DATA64)
 		if (protectResult != OMRPORT_SIG_EXCEPTION_CONTINUE_SEARCH) {
 			outputErrorMessage(PORTTEST_ERROR_ARGS, "portLibrary->sig_protect -- expected OMRPORT_SIG_EXCEPTION_CONTINUE_SEARCH in protectResult\n");
 		}
@@ -1073,7 +1073,7 @@ TEST(PortSigTest, sig_test8)
 		if (protectResult != OMRPORT_SIG_EXCEPTION_OCCURRED) {
 			outputErrorMessage(PORTTEST_ERROR_ARGS, "portLibrary->sig_protect -- expected OMRPORT_SIG_EXCEPTION_CONTINUE_SEARCH in protectResult\n");
 		}
-#endif
+#endif /* defined(OMR_OS_WINDOWS) && defined(OMR_ENV_DATA64) */
 		if (result != 0) {
 			outputErrorMessage(PORTTEST_ERROR_ARGS, "portLibrary->sig_protect -- expected 0 in *result\n");
 		}

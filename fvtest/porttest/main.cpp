@@ -63,10 +63,10 @@ omr_main_entry(int argc, char **argv, char **envp)
 		portTestEnv->initPort();
 		if (startsWith(testName, "omrfile")) {
 			return omrfile_runTests(portTestEnv->getPortLibrary(), argv[0], testName, FALSE);
-#if defined (WIN32) | defined (WIN64)
+#if defined(OMR_OS_WINDOWS)
 		} else if (startsWith(testName, "omrfile_blockingasync")) {
 			return omrfile_runTests(portTestEnv->getPortLibrary(), argv[0], testName, TRUE);
-#endif
+#endif /* defined(OMR_OS_WINDOWS) */
 		} else if (startsWith(testName, "omrmmap")) {
 			return omrmmap_runTests(portTestEnv->getPortLibrary(), argv[0], testName);
 		} else if (startsWith(testName, "omrsig")) {

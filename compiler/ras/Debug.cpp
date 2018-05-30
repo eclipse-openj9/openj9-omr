@@ -165,7 +165,7 @@ TR_Debug * createDebugObject(TR::Compilation * comp)
 
 
 
-#if defined(AIXPPC) || defined(LINUX) || defined(J9ZOS390) || defined(WINDOWS)
+#if defined(AIXPPC) || defined(LINUX) || defined(J9ZOS390) || defined(OMR_OS_WINDOWS)
 static void stopOnCreate()
    {
    static int first = 1;
@@ -176,7 +176,7 @@ static void stopOnCreate()
       first = 0;
       }
    }
-#endif
+#endif /* defined(AIXPPC) || defined(LINUX) || defined(J9ZOS390) || defined(OMR_OS_WINDOWS) */
 
 
 void
@@ -210,10 +210,10 @@ TR_Debug::debugOnCreate()
 #elif defined(AIXPPC)
    setupDebugger((void *) *((long*)&(stopOnCreate)));
    stopOnCreate();
-#elif defined(LINUX) || defined(J9ZOS390) || (defined(WINDOWS))
+#elif defined(LINUX) || defined(J9ZOS390) || (defined(OMR_OS_WINDOWS))
    setupDebugger((void *) &stopOnCreate,(void *) &stopOnCreate,true);
    stopOnCreate();
-#endif
+#endif /* defined(TR_HOST_X86) */
    }
 
 
@@ -5349,7 +5349,7 @@ void TR_Debug::setupDebugger(void *startaddr, void *endaddr, bool before)
          else printf("Could not open %s, skipping break !\n",cfname);
          }
    }
-#elif defined(WINDOWS)
+#elif defined(OMR_OS_WINDOWS)
 #ifndef WINDOWS_API_INCLUDED
 extern "C"
    {
@@ -5414,7 +5414,7 @@ void TR_Debug::setupDebugger(void *startaddr, void *endaddr, bool before)
       started = true;
       }
    }
-#endif
+#endif /* defined(AIXPPC) */
 
 void TR_Debug::setSingleAllocMetaData(bool usesSingleAllocMetaData)
    {

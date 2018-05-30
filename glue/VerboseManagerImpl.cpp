@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2016 IBM Corp. and others
+ * Copyright (c) 1991, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -30,9 +30,9 @@
 
 #include "VerboseHandlerOutputStandard.hpp"
 
-#if defined(WIN32)
+#if defined(OMR_OS_WINDOWS)
 #define snprintf _snprintf
-#endif /* defined(WIN32) */
+#endif /* defined(OMR_OS_WINDOWS) */
 
 MM_VerboseManagerImpl *
 MM_VerboseManagerImpl::newInstance(MM_EnvironmentBase *env, OMR_VM* vm)

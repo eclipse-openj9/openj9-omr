@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2016 IBM Corp. and others
+ * Copyright (c) 2015, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -33,8 +33,8 @@ void createThread(omrthread_t *newThread, uintptr_t suspend, omrthread_detachsta
 				  omrthread_entrypoint_t entryProc, void *entryArg);
 intptr_t joinThread(omrthread_t threadToJoin);
 bool handlerIsFunction(sighandler_t handler);
-#if !defined(WIN32)
+#if !defined(OMR_OS_WINDOWS)
 bool handlerIsFunction(const struct sigaction *act);
-#endif /* !defined(WIN32) */
+#endif /* !defined(OMR_OS_WINDOWS) */
 
 #endif /* OMRSIGTESTHELPERS_H_INCLUDED */

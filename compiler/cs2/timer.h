@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1996, 2016 IBM Corp. and others
+ * Copyright (c) 1996, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -36,12 +36,12 @@
 #include "cs2/listof.h"
 #include "cs2/hashtab.h"
 
-#if defined(WINDOWS)
+#if defined(OMR_OS_WINDOWS)
 #include <time.h>
 #include "windows_api.h"
 #else
 #include <sys/time.h>
-#endif
+#endif /* defined(OMR_OS_WINDOWS) */
 
 
 #ifdef CS2_ALLOCINFO
@@ -110,7 +110,7 @@ private:
 };
 
 typedef BSDTimer PlatformTimer;
-#elif defined(WINDOWS)
+#elif defined(OMR_OS_WINDOWS)
 /**
  * \brief Windows-specific timer class.
  *
@@ -166,7 +166,7 @@ class BaseTimer {
 };
 
 typedef BaseTimer PlatformTimer;
-#endif
+#endif /* defined(_AIX) */
 
 /**
  * \brief A general purpose timer class.

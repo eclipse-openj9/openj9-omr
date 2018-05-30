@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2016 IBM Corp. and others
+ * Copyright (c) 1991, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -30,9 +30,9 @@
  */
 #include <string.h>
 #include <stdio.h>
-#if defined(WIN32)
+#if defined(OMR_OS_WINDOWS)
 #include <windows.h>
-#endif /* defined(WIN32) */
+#endif /* defined(OMR_OS_WINDOWS) */
 
 #include "testHelpers.hpp"
 #include "omrport.h"
@@ -42,7 +42,7 @@
  *
  * Call omrtty_daemonize, then call omrtty_printf/omrtty_vprintf. If we crash or print anything, then the test has failed.
  */
-#if defined(WIN32)
+#if defined(OMR_OS_WINDOWS)
 TEST(PortTtyTest, tty_daemonize_test)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
@@ -90,4 +90,4 @@ TEST(PortTtyTest, tty_daemonize_test)
 
 	reportTestExit(OMRPORTLIB, testName);
 }
-#endif /* defined(WIN32) */
+#endif /* defined(OMR_OS_WINDOWS) */

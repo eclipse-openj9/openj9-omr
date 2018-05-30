@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2016 IBM Corp. and others
+ * Copyright (c) 2014, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -140,11 +140,11 @@ waitForTestChildThread(OMR_TI const *ti, OMR_VM *testVM, omrthread_t childThead,
 	 * Sleep for 0.2 sec to avoid unloading the agent library before the child thread has completed.
 	 * For more detail, please see JAZZ103 74016
 	 */
-#ifdef WIN32
+#if defined(OMR_OS_WINDOWS)
 	Sleep(200);
 #else
 	usleep(200000);
-#endif
+#endif /* defined(OMR_OS_WINDOWS) */
 
 	return childRc;
 }

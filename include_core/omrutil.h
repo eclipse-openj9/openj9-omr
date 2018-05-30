@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2016 IBM Corp. and others
+ * Copyright (c) 1991, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -143,8 +143,7 @@ uintptr_t findSmallestPrimeGreaterThanOrEqualTo(uintptr_t number);
  */
 uintptr_t getSupportedBiggestNumberByPrimeNumberHelper(void);
 
-#if defined(WIN32) && !defined(WIN32_IBMC)
-
+#if defined(OMR_OS_WINDOWS)
 /* ---------------- omrgetdbghelp.c ---------------- */
 
 /**
@@ -166,8 +165,7 @@ uintptr_t omrgetdbghelp_getDLL(void);
 */
 void omrgetdbghelp_freeDLL(uintptr_t dbgHelpDLL);
 
-#endif  /* defined(WIN32) && !defined(WIN32_IBMC) */
-
+#endif  /* defined(OMR_OS_WINDOWS) */
 
 /* ---------------- stricmp.c ---------------- */
 
@@ -267,7 +265,7 @@ uintptr_t try_scan(char **scan_start, const char *search_string);
 
 
 /* ---------------- detectVMDirectory.c ---------------- */
-#if defined(WIN32)
+#if defined(OMR_OS_WINDOWS)
 /**
  * @brief Detect the directory where the VM library or executable resides.
  *
@@ -281,7 +279,7 @@ uintptr_t try_scan(char **scan_start, const char *search_string);
  * @return OMR_ERROR_NONE on success, an OMR error code otherwise.
  */
 omr_error_t detectVMDirectory(wchar_t *vmDirectory, size_t vmDirectoryLength, wchar_t **vmDirectoryEnd);
-#endif /* defined(WIN32) */
+#endif /* defined(OMR_OS_WINDOWS) */
 
 #if defined(J9ZOS390)
 /* ---------------- getstoragekey.c ---------------- */

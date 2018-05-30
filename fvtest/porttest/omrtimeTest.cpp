@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2017 IBM Corp. and others
+ * Copyright (c) 1991, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -38,9 +38,9 @@
  */
 #include <stdlib.h>
 #include <string.h>
-#if defined(WIN32) || defined(WIN64)
+#if defined(OMR_OS_WINDOWS)
 #include <windows.h>
-#endif /* defined(WIN32) || defined(WIN64) */
+#endif /* defined(OMR_OS_WINDOWS) */
 
 #include "testHelpers.hpp"
 #include "omrport.h"
@@ -526,7 +526,7 @@ TEST(PortTimeTest, time_nano_time_direction)
 
 	reportTestEntry(OMRPORTLIB, testName);
 
-#if defined(WIN32) || defined(WIN64)
+#if defined(OMR_OS_WINDOWS)
 	/**
 	 * On Windows, if QueryPerformanceCounter is used on a multiprocessor computer,
 	 * time might be different accross CPUs. Therefore skip this test and only
@@ -539,7 +539,7 @@ TEST(PortTimeTest, time_nano_time_direction)
 			reportTestExit(OMRPORTLIB, testName);
 		}
 	}
-#endif /* defined(WIN32) || defined(WIN64) */
+#endif /* defined(OMR_OS_WINDOWS) */
 
 	if (0 == omrthread_attach_ex(&self, J9THREAD_ATTR_DEFAULT)) {
 		/* success in starting up thread library and attaching */

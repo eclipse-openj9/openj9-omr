@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -19,13 +19,13 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#ifdef MS_WINDOWS
+#if defined(OMR_OS_WINDOWS)
 #undef BYTE
 #include "windows.h"
 #define PATH_MAX MAXPATHLEN
 #else
 #include <dlfcn.h>
-#endif
+#endif /* defined(OMR_OS_WINDOWS) */
 #include <errno.h>
 #include "OMRTestEnv.hpp"
 

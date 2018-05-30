@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2016 IBM Corp. and others
+ * Copyright (c) 2014, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -33,11 +33,11 @@
 
 /* On all platforms operate on UTF-8 encoding */
 int
-#if defined(WIN32)
+#if defined(OMR_OS_WINDOWS)
 translated_main(int argc, char **argv, char **envp)
-#else /* defined(WIN32) */
+#else /* defined(OMR_OS_WINDOWS) */
 main(int argc, char **argv, char **envp)
-#endif /* defined(WIN32) */
+#endif /* defined(OMR_OS_WINDOWS) */
 {
 	RCType rc = RC_OK;
 #if defined(J9ZOS390)
@@ -64,7 +64,7 @@ main(int argc, char **argv, char **envp)
 }
 
 /* Convert Windows wide character encoding to UTF-8 */
-#if defined(WIN32)
+#if defined(OMR_OS_WINDOWS)
 int
 wmain(int argc, wchar_t **argv, wchar_t **envp)
 {
@@ -128,4 +128,4 @@ wmain(int argc, wchar_t **argv, wchar_t **envp)
 
 	return rc;
 }
-#endif /* defined(WIN32) */
+#endif /* defined(OMR_OS_WINDOWS) */

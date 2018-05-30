@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2017 IBM Corp. and others
+ * Copyright (c) 2017, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -24,12 +24,12 @@
 #if defined(__APPLE__) || !defined(MAP_ANONYMOUS)
 #define MAP_ANONYMOUS MAP_ANON
 #endif
-#elif defined(_WIN32)
+#elif defined(OMR_OS_WINDOWS)
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #else
 #include <string.h>
-#endif
+#endif /* defined(OMR_OS_WINDOWS) */
 
 #include "env/MemorySegment.hpp"
 #include "env/DebugSegmentProvider.hpp"
@@ -47,11 +47,11 @@ TR::DebugSegmentProvider::~DebugSegmentProvider() throw()
       {
 #if (defined(LINUX) && !defined(OMRZTPF)) || defined(__APPLE__) || defined(_AIX)
       munmap(it->base(), it->size());
-#elif defined(_WIN32)
+#elif defined(OMR_OS_WINDOWS)
       VirtualFree(it->base(), 0, MEM_RELEASE);
 #else
       _rawAllocator.deallocate(it->base(), it->size());
-#endif
+#endif /* (defined(LINUX) && !defined(OMRZTPF)) || defined(__APPLE__) || defined(_AIX) */
       _segments.erase(it);
       }
    }
@@ -63,12 +63,12 @@ TR::DebugSegmentProvider::request(size_t requiredSize)
 #if (defined(LINUX) && !defined(OMRZTPF)) || defined(__APPLE__) || defined(_AIX)
    void *newSegmentArea = mmap(NULL, adjustedSize, PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
    if (newSegmentArea == MAP_FAILED) throw std::bad_alloc();
-#elif defined(_WIN32)
+#elif defined(OMR_OS_WINDOWS)
    void *newSegmentArea = VirtualAlloc(NULL, adjustedSize, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
    if (!newSegmentArea) throw std::bad_alloc();
 #else
    void *newSegmentArea = _rawAllocator.allocate(requiredSize);
-#endif
+#endif /* (defined(LINUX) && !defined(OMRZTPF)) || defined(__APPLE__) || defined(_AIX) */
    try
       {
       auto result = _segments.insert( TR::MemorySegment(newSegmentArea, adjustedSize) );
@@ -81,11 +81,11 @@ TR::DebugSegmentProvider::request(size_t requiredSize)
       {
 #if (defined(LINUX) && !defined(OMRZTPF)) || defined(__APPLE__) || defined(_AIX)
       munmap(newSegmentArea, adjustedSize);
-#elif defined(_WIN32)
+#elif defined(OMR_OS_WINDOWS)
       VirtualFree(newSegmentArea, 0, MEM_RELEASE);
 #else
      _rawAllocator.deallocate(newSegmentArea, adjustedSize);
-#endif
+#endif /* (defined(LINUX) && !defined(OMRZTPF)) || defined(__APPLE__) || defined(_AIX) */
       throw;
       }
    }
@@ -96,12 +96,12 @@ TR::DebugSegmentProvider::release(TR::MemorySegment &segment) throw()
 #if (defined(LINUX) && !defined(OMRZTPF)) || defined(__APPLE__) || defined(_AIX)
    void * remap = mmap(segment.base(), segment.size(), PROT_NONE, MAP_ANONYMOUS | MAP_PRIVATE | MAP_FIXED, -1, 0);
    TR_ASSERT(remap == segment.base(), "Remapping of memory failed!");
-#elif defined(_WIN32)
+#elif defined(OMR_OS_WINDOWS)
    VirtualFree(segment.base(), segment.size(), MEM_DECOMMIT);
    VirtualAlloc(segment.base(), segment.size(), MEM_COMMIT, PAGE_NOACCESS);
 #else
    memset(segment.base(), 0xEF, segment.size());
-#endif
+#endif /* (defined(LINUX) && !defined(OMRZTPF)) || defined(__APPLE__) || defined(_AIX) */
    }
 
 size_t

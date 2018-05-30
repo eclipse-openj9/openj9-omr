@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2015 IBM Corp. and others
+ * Copyright (c) 1991, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -31,7 +31,7 @@
 #define J9BITS_BITS_IN_SLOT 64
 #else
 #define J9BITS_BITS_IN_SLOT 32
-#endif
+#endif /* defined(OMR_ENV_DATA64) */
 
 class MM_Bits {
 private:
@@ -50,7 +50,7 @@ private:
 		conversionBitShift = 2,
 		conversionObjectFieldBitShift = 2
 		};
-#endif
+#endif /* defined(OMR_ENV_DATA64) */
 
 public:
 	static MMINLINE uintptr_t convertBytesToSlots(uintptr_t x) {
@@ -117,17 +117,17 @@ public:
 		work = work + (work << 16);
 		work = work + (work << 32);
 		return work >> 56;
-#endif /* OMR_ENV_DATA64 */
+#endif /* !defined(OMR_ENV_DATA64) */
 	}
 
-#if defined(WIN32) && !defined(OMR_ENV_DATA64)
+#if defined(OMR_OS_WINDOWS) && !defined(OMR_ENV_DATA64)
 	/**
 	 * Return the number of bits set to 0 before the first bit set to one starting at the lowest
 	 * significant bit.
 	 * @note If the input is 0, the result is undefined.
 	 * @return Number of non-zero bits starting at the lowest significant bit.
 	 */
-#if defined(WIN32)
+#if defined(OMR_OS_WINDOWS)
 	/* Implicit return in eax, not seen by compiler.  Disable compile warning C4035: no return value */
 #pragma warning(disable:4035)
 	MMINLINE static uintptr_t leadingZeroes(uintptr_t input)
@@ -137,7 +137,7 @@ public:
 		}
 	}
 #pragma warning(default:4035) /* re-enable warning */
-#endif /* WIN32 */
+#endif /* defined(OMR_OS_WINDOWS) */
 
 	/**
 	 * Return the number of bits set to 0 before the first bit set to one starting at the highest
@@ -145,7 +145,7 @@ public:
 	 * @note If the input is 0, the result is undefined.
 	 * @return Number of non-zero bits starting at the highest significant bit.
 	 */
-#if defined(WIN32)
+#if defined(OMR_OS_WINDOWS)
 	/* Implicit return in eax, not seen by compiler.  Disable compile warning C4035: no return value */
 #pragma warning(disable:4035)
 	MMINLINE static uintptr_t trailingZeroes(uintptr_t input)
@@ -157,7 +157,7 @@ public:
 		}
 	}
 #pragma warning(default:4035) /* re-enable warning */
-#endif /* WIN32 */
+#endif /* defined(OMR_OS_WINDOWS) */
 
 #elif defined(LINUX) && defined(J9HAMMER)
 	/**
@@ -224,7 +224,7 @@ public:
 		carry = (work < (((uintptr_t)1) << 32)) ? 0 : 32;
 		result += carry;
 		work = work >> carry;
-#endif /* OMR_ENV_DATA64 */
+#endif /* defined(OMR_ENV_DATA64) */
 
 		carry = (work < (((uintptr_t)1) << 16)) ? 0 : 16;
 		result += carry;
@@ -246,7 +246,7 @@ public:
 
 		return J9BITS_BITS_IN_SLOT - 1 - result;
 	}
-#endif /* defined(WIN32) && !defined(OMR_ENV_DATA64)*/
+#endif /* defined(OMR_OS_WINDOWS) && !defined(OMR_ENV_DATA64) */
 };
 
 #endif /*BITS_HPP_*/

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2016 IBM Corp. and others
+ * Copyright (c) 1991, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -29,11 +29,11 @@
 
 #include "omrport.h"
 
-#if !defined(WIN32)
+#if !defined(OMR_OS_WINDOWS)
 #if defined(OMRPORT_OMRSIG_SUPPORT)
 extern void omrsig_chain_at_shutdown_and_exit(struct OMRPortLibrary *portLibrary);
 #endif /* defined(OMRPORT_OMRSIG_SUPPORT) */
-#endif /* !defined(WIN32) */
+#endif /* !defined(OMR_OS_WINDOWS) */
 
 
 /**
@@ -72,11 +72,11 @@ omrexit_shutdown_and_exit(struct OMRPortLibrary *portLibrary, int32_t exitCode)
 	portLibrary->cuda_shutdown(portLibrary);
 #endif /* defined(OMR_OPT_CUDA) */
 
-#if !defined(WIN32)
+#if !defined(OMR_OS_WINDOWS)
 #if defined(OMRPORT_OMRSIG_SUPPORT)
 	omrsig_chain_at_shutdown_and_exit(portLibrary);
 #endif /* defined(OMRPORT_OMRSIG_SUPPORT) */
-#endif
+#endif /* !defined(OMR_OS_WINDOWS) */
 
 	exit((int)exitCode);
 }

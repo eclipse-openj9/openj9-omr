@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -34,7 +34,7 @@ int strnicmp_ignore_locale(const char *s1, const char *s2, size_t n);
 #include <strings.h>
    #define STRICMP strcasecmp
    #define STRNICMP strncasecmp
-#elif defined(WINDOWS)
+#elif defined(OMR_OS_WINDOWS)
    #define STRICMP _stricmp
    #define STRNICMP _strnicmp
 #elif PILOT
@@ -67,4 +67,4 @@ int strnicmp_ignore_locale(const char *s1, const char *s2, size_t n);
       }
       return 0;
    }
-#endif
+#endif /* J9ZOS390 || AIXPPC || LINUX || OSX */

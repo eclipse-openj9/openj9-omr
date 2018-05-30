@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2016 IBM Corp. and others
+ * Copyright (c) 2014, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -32,12 +32,12 @@
  * The structures defined in this file may be changed without notice.
  */
 
-#if defined(WIN32)
+#if defined(OMR_OS_WINDOWS)
 /* pdh.h include windows.h which defined uintptr_t.  Ignore its definition */
 #define UDATA UDATA_win32_
 #include <pdh.h>
 #undef UDATA	/* this is safe because our UDATA is a typedef, not a macro */
-#endif /* defined(WIN32) */
+#endif /* defined(OMR_OS_WINDOWS) */
 
 #include "omrcomp.h"
 #include "omragent.h"

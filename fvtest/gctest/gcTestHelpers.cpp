@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2016 IBM Corp. and others
+ * Copyright (c) 2015, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -20,13 +20,13 @@
  *******************************************************************************/
 
 #include "gcTestHelpers.hpp"
-#if defined(WIN32) || defined(WIN64)
+#if defined(OMR_OS_WINDOWS)
 /* windows.h defined uintptr_t.  Ignore its definition */
 #define UDATA UDATA_win_
 #include <windows.h>
 #undef UDATA	/* this is safe because our UDATA is a typedef, not a macro */
 #include <psapi.h>
-#endif /* defined(WIN32) || defined(WIN64) */
+#endif /* defined(OMR_OS_WINDOWS) */
 
 void
 GCTestEnvironment::initParams()
@@ -96,7 +96,7 @@ GCTestEnvironment::GCTestTearDown()
 void
 printMemUsed(const char *where, OMRPortLibrary *portLib)
 {
-#if defined(WIN32) || defined(WIN64)
+#if defined(OMR_OS_WINDOWS)
 	OMRPORT_ACCESS_FROM_OMRPORT(portLib);
 	PROCESS_MEMORY_COUNTERS_EX pmc;
 	GetProcessMemoryInfo(GetCurrentProcess(), (PPROCESS_MEMORY_COUNTERS)&pmc, sizeof(pmc));
@@ -129,5 +129,5 @@ printMemUsed(const char *where, OMRPortLibrary *portLib)
 	omrfile_close(fileDescriptor);
 #else
 	/* memory info not supported */
-#endif
+#endif /* defined(OMR_OS_WINDOWS) */
 }

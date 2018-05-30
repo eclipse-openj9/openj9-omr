@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2015 IBM Corp. and others
+ * Copyright (c) 2015, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -36,7 +36,7 @@ main(int argc, char **argv, char **envp)
 
 TEST(UtilTest, detectVMDirectory)
 {
-#if defined(WIN32)
+#if defined(OMR_OS_WINDOWS)
 	void *token = NULL;
 	ASSERT_EQ(OMR_ERROR_NONE, OMR_Glue_GetVMDirectoryToken(&token));
 
@@ -52,5 +52,5 @@ TEST(UtilTest, detectVMDirectory)
 		_snwprintf(pathEnd, length, L"\\abc");
 		wprintf(L"Mangled VM Directory: '%s'\n", path);
 	}
-#endif /* defined(WIN32) */
+#endif /* defined(OMR_OS_WINDOWS) */
 }

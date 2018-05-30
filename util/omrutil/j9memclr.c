@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2015 IBM Corp. and others
+ * Copyright (c) 1991, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -116,7 +116,7 @@ OMRZeroMemory(void *ptr, uintptr_t length)
 		*((uintptr_t *)addr) = 0;
 	}
 
-#elif defined(WIN32) && !defined (WIN64)
+#elif defined(OMR_OS_WINDOWS) && !defined(OMR_ENV_DATA64)
 #if defined(REENABLE_WHEN_THIS_WORKS)
 	/* NOTE: memset on WIN64 (AMD64) seems to do a fine job all on its own,
 	 * so we don't use our own SSE2 code there

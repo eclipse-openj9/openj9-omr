@@ -878,12 +878,12 @@ typedef struct J9ProcessorInfos {
  * Use J9STR_CODE_PLATFORM_OMR_INTERNAL to when processing the output of these calls.  Otherwise, use J9STR_CODE_PLATFORM_RAW.
  */
 #define J9STR_CODE_PLATFORM_OMR_INTERNAL J9STR_CODE_LATIN1
-#elif defined(WIN32)
+#elif defined(OMR_OS_WINDOWS)
 /*
  * Most system calls on Windows use the "wide" versions which return UTF-16, which OMR then converts to UTF-8.
  */
 #define J9STR_CODE_PLATFORM_OMR_INTERNAL J9STR_CODE_UTF8
-#else /* defined(WIN32) */
+#else /* defined(OMR_OS_WINDOWS) */
 /* on other platforms the internal encoding is the actual operating system encoding */
 #define J9STR_CODE_PLATFORM_OMR_INTERNAL J9STR_CODE_PLATFORM_RAW
 #endif /* defined(J9ZOS390) */
@@ -928,7 +928,7 @@ typedef struct J9MmapHandle {
 #include "omrcuda.h"
 #endif /* OMR_OPT_CUDA */
 
-#if !defined(WIN32)
+#if !defined(OMR_OS_WINDOWS)
 #if defined(OSX)
 #define _XOPEN_SOURCE
 #endif /* defined(OSX) */
@@ -936,7 +936,7 @@ typedef struct J9MmapHandle {
 #if defined(OSX)
 #undef _XOPEN_SOURCE
 #endif /* OSX */
-#endif /* !WIN32 */
+#endif /* !OMR_OS_WINDOWS */
 
 #if defined(J9ZOS390)
 struct __mcontext;
@@ -959,7 +959,7 @@ typedef struct J9PlatformThread {
 	uintptr_t stack_base;
 	uintptr_t stack_end;
 	uintptr_t priority;
-#if defined(WIN32)
+#if defined(OMR_OS_WINDOWS)
 	void *context;
 #elif defined(J9ZOS390)
 	/* This should really be 'struct __mcontext*' however DDR cannot parse the zos system header
@@ -971,11 +971,11 @@ typedef struct J9PlatformThread {
 	ucontext_t *context;
 #endif
 	struct J9PlatformStackFrame *callstack;
-#if defined(WIN32)
+#if defined(OMR_OS_WINDOWS)
 	void *sigmask;
-#else /* WIN32 */
+#else /* OMR_OS_WINDOWS */
 	sigset_t *sigmask;
-#endif /* WIN32 */
+#endif /* OMR_OS_WINDOWS */
 	intptr_t error;
 	void *dsa;
 	uintptr_t dsa_format;

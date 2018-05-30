@@ -21,8 +21,6 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  ******************************************************************************/
 
-#if !defined(WIN32_IBMC)
-
 #include <windows.h>
 #include <winnt.h>
 #include <stdlib.h>
@@ -139,5 +137,3 @@ getDbgHelpDLLLocation(wchar_t *dbghelpPath)
 	}
 	return 1;
 }
-
-#endif /* !defined(WIN32_IBMC) */

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2016 IBM Corp. and others
+ * Copyright (c) 2015, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -27,7 +27,7 @@ handlerIsFunction(sighandler_t handler)
 	return (SIG_DFL != handler) && (SIG_IGN != handler) && (NULL != handler);
 }
 
-#if !defined(WIN32)
+#if !defined(OMR_OS_WINDOWS)
 bool
 handlerIsFunction(const struct sigaction *act)
 {
@@ -36,7 +36,7 @@ handlerIsFunction(const struct sigaction *act)
 			   && (SIG_DFL != (sighandler_t)act->sa_sigaction)
 			   && (SIG_IGN != (sighandler_t)act->sa_sigaction));
 }
-#endif /* !defined(WIN32) */
+#endif /* !defined(OMR_OS_WINDOWS) */
 
 void
 createThread(omrthread_t *newThread, uintptr_t suspend, omrthread_detachstate_t detachstate,

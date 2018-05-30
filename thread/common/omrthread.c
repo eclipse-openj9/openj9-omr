@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2017 IBM Corp. and others
+ * Copyright (c) 1991, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -166,9 +166,9 @@ omrthread_t global_lock_owner = UNOWNED;
 #define J9THR_WAIT_INTERRUPTED(flags) (((flags) & J9THREAD_FLAG_INTERRUPTED) != 0)
 #define J9THR_WAIT_PRI_INTERRUPTED(flags) (((flags) & (J9THREAD_FLAG_PRIORITY_INTERRUPTED | J9THREAD_FLAG_ABORTED)) != 0)
 
-#if defined(WIN32) || !defined(OMR_NOTIFY_POLICY_CONTROL)
+#if defined(OMR_OS_WINDOWS) || !defined(OMR_NOTIFY_POLICY_CONTROL)
 #define NOTIFY_WRAPPER(thread) OMROSCOND_NOTIFY_ALL((thread)->condition);
-#else /* defined(WIN32) || !defined(OMR_NOTIFY_POLICY_CONTROL) */
+#else /* defined(OMR_OS_WINDOWS) || !defined(OMR_NOTIFY_POLICY_CONTROL) */
 #define NOTIFY_WRAPPER(thread) \
 	do { \
 		if (OMR_ARE_ALL_BITS_SET((thread)->library->flags, J9THREAD_LIB_FLAG_NOTIFY_POLICY_BROADCAST)) { \
@@ -177,13 +177,13 @@ omrthread_t global_lock_owner = UNOWNED;
 			OMROSCOND_NOTIFY((thread)->condition); \
 		} \
 	} while (0)
-#endif /* defined(WIN32) || !defined(OMR_NOTIFY_POLICY_CONTROL) */
+#endif /* defined(OMR_OS_WINDOWS) || !defined(OMR_NOTIFY_POLICY_CONTROL) */
 
 /*
  * Thread Library
  */
 
-#if !defined(WIN32)
+#if !defined(OMR_OS_WINDOWS)
 
 /**
  * pthread TLS key destructor for self_ptr
@@ -216,7 +216,7 @@ self_key_destructor(void *current_omr_thread)
 
 #undef OMR_MAX_KEY_DELETION_ATTEMPTS
 
-#endif /* !WIN32 */
+#endif /* !defined(OMR_OS_WINDOWS) */
 
 /**
  * Initialize a J9 threading library.
@@ -240,9 +240,9 @@ omrthread_init(omrthread_library_t lib)
 	lib->spinlock = 0;
 	lib->threadCount = 0;
 	lib->globals = NULL;
-#if defined(WIN32)
+#if defined(OMR_OS_WINDOWS)
 	lib->stack_usage = 0;
-#endif /* WIN32 */
+#endif /* defined(OMR_OS_WINDOWS) */
 	lib->flags = 0;
 
 	omrthread_mem_init(lib);
@@ -254,11 +254,11 @@ omrthread_init(omrthread_library_t lib)
 #error "CALLER_LAST_INDEX must be <= MAX_CALLER_INDEX"
 #endif
 
-#if defined(WIN32)
+#if defined(OMR_OS_WINDOWS)
 	if (TLS_ALLOC(lib->self_ptr))
-#else /* WIN32 */
+#else /* defined(OMR_OS_WINDOWS) */
 	if (TLS_ALLOC_WITH_DESTRUCTOR(lib->self_ptr, self_key_destructor))
-#endif /* WIN32 */
+#endif /* defined(OMR_OS_WINDOWS) */
 	{
 		goto init_cleanup1;
 	}
@@ -314,9 +314,9 @@ omrthread_init(omrthread_library_t lib)
 	lib->gc_lock_tracing = NULL;
 #endif
 
-#if	(defined(WIN32) || defined(WIN64))
+#if	defined(OMR_OS_WINDOWS)
 	lib->flags |= J9THREAD_LIB_FLAG_DESTROY_MUTEX_ON_MONITOR_FREE;
-#endif
+#endif /* defined(OMR_OS_WINDOWS) */
 
 	if (omrthread_attr_init(&lib->systemThreadAttr) != J9THREAD_SUCCESS) {
 		goto init_cleanup10;
@@ -855,9 +855,9 @@ postForkResetThreads(omrthread_t self)
 			OMROSCOND_INIT(threadIterator->condition);
 			OMROSMUTEX_INIT(threadIterator->mutex);
 			threadIterator->tid = omrthread_get_ras_tid();
-#if defined(WIN32)
+#if defined(OMR_OS_WINDOWS)
 #error "The implementation of postForkResetThreads() is not complete in WIN32."
-#endif /* defined(WIN32) */
+#endif /* defined(OMR_OS_WINDOWS) */
 			threadIterator->handle = THREAD_SELF();
 		} else {
 			omrthread_tls_finalizeNoLock(threadIterator);
@@ -1221,11 +1221,11 @@ omrthread_attach_ex(omrthread_t *handle, omrthread_attr_t *attr)
 		goto cleanup2;
 	}
 
-#if defined(WIN32) && !defined(BREW)
+#if defined(OMR_OS_WINDOWS) && !defined(BREW)
 	DuplicateHandle(GetCurrentProcess(), GetCurrentThread(), GetCurrentProcess(), &thread->handle, 0, TRUE, DUPLICATE_SAME_ACCESS);
 #else
 	thread->handle = THREAD_SELF();
-#endif
+#endif /* defined(OMR_OS_WINDOWS) && !defined(BREW) */
 
 	initialize_thread_priority(thread);
 
@@ -1524,11 +1524,11 @@ thread_wrapper(WRAPPER_ARG arg)
 
 	TLS_SET(lib->self_ptr, thread);
 
-#if defined(WIN32)
+#if defined(OMR_OS_WINDOWS)
 	if (lib->stack_usage) {
 		paint_stack(thread);
 	}
-#endif /* WIN32 */
+#endif /* defined(OMR_OS_WINDOWS) */
 
 
 	if (thread->flags & J9THREAD_FLAG_CANCELED) {
@@ -2000,7 +2000,7 @@ threadDestroy(omrthread_t thread, int globalAlreadyLocked)
 	omrthread_dump_trace(thread);
 #endif
 
-#if defined(WIN32)
+#if defined(OMR_OS_WINDOWS)
 	/* Acquire the global monitor mutex (if needed) while performing handle closing and freeing. */
 	if (!globalAlreadyLocked) {
 		GLOBAL_LOCK_SIMPLE(lib);
@@ -2017,14 +2017,14 @@ threadDestroy(omrthread_t thread, int globalAlreadyLocked)
 		GLOBAL_UNLOCK_SIMPLE(lib);
 	}
 
-#else /* defined(WIN32) */
+#else /* defined(OMR_OS_WINDOWS) */
 
 	/* On z/OS, we cannot call GLOBAL_LOCK_SIMPLE(lib) before calling threadFree(), since this leads to
 	 * seg faults in the JVM. See PR 82332: [zOS S390] 80 VM_Extended.TestJvmCpuMonitorMXBeanLocal : crash
 	 */
 	threadFree(thread, globalAlreadyLocked);
 
-#endif /* defined(WIN32) */
+#endif /* defined(OMR_OS_WINDOWS) */
 
 	return 0;
 }
@@ -3189,7 +3189,7 @@ omrthread_unpark(omrthread_t thread)
 uintptr_t
 omrthread_current_stack_free(void)
 {
-#if defined(WIN32)
+#if defined(OMR_OS_WINDOWS)
 	MEMORY_BASIC_INFORMATION memInfo;
 	SYSTEM_INFO sysInfo;
 	uintptr_t stackFree;
@@ -3205,7 +3205,7 @@ omrthread_current_stack_free(void)
 	return (stackFree < guardPageSize) ? 0 : stackFree - guardPageSize;
 #else
 	return 0;
-#endif
+#endif /* defined(OMR_OS_WINDOWS) */
 }
 
 

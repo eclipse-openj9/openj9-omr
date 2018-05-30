@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -34,8 +34,8 @@
 
 #if defined(SUPPORTS_THREAD_LOCAL)
 
-#if defined(WINDOWS) || (defined(LINUX) && !defined(OMRZTPF)) || defined(OSX) || defined(AIXPPC)
- #if defined(WINDOWS)
+#if defined(OMR_OS_WINDOWS) || (defined(LINUX) && !defined(OMRZTPF)) || defined(OSX) || defined(AIXPPC)
+ #if defined(OMR_OS_WINDOWS)
   #include "windows.h"
   #define tlsDeclare(type, variable) extern DWORD variable
   #define tlsDefine(type, variable) DWORD variable = TLS_OUT_OF_INDEXES
@@ -50,8 +50,8 @@
   #define tlsFree(variable)  // not required on win, linux or AIX
   #define tlsSet(variable, value) variable = value
   #define tlsGet(variable, type) (variable)
- #endif
-#else /* !(defined(WINDOWS) || (defined(LINUX) && !defined(OMRZTPF)) || defined(OSX) || defined(AIXPPC)) */  /* Mainly for defined(OMRZTPF) or defined(J9ZOS390) */
+ #endif /* defined(OMR_OS_WINDOWS) */
+#else /* !(defined(OMR_OS_WINDOWS) || (defined(LINUX) && !defined(OMRZTPF)) || defined(OSX) || defined(AIXPPC)) */  /* Mainly for defined(OMRZTPF) or defined(J9ZOS390) */
  #include <pthread.h>
 
  #define tlsDeclare(type, variable) extern pthread_key_t variable
@@ -64,7 +64,7 @@
  #else
   #define tlsGet(variable, type) ((type) pthread_getspecific(variable))
  #endif
-#endif
+#endif /* defined(OMR_OS_WINDOWS) || (defined(LINUX) && !defined(OMRZTPF)) || defined(OSX) || defined(AIXPPC) */
 
 #else /* !defined(SUPPORTS_THREAD_LOCAL) */
  #define tlsDeclare(type, variable) extern type variable

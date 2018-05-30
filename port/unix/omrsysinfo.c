@@ -257,6 +257,7 @@ struct  {
 
 #define OMR_CGROUP_V1_MOUNT_POINT "/sys/fs/cgroup"
 #define ROOT_CGROUP "/"
+#define SYSTEMD_INIT_CGROUP "/init.scope"
 #define OMR_PROC_PID_ONE_CGROUP_FILE "/proc/1/cgroup"
 
 /* An entry in /proc/<pid>/cgroup is of following form:
@@ -3739,7 +3740,7 @@ isRunningInContainer(struct OMRPortLibrary *portLibrary, BOOLEAN *inContainer)
 				goto _end;
 			}
 
-			if (0 != strcmp(ROOT_CGROUP, cgroup)) {
+			if ((0 != strcmp(ROOT_CGROUP, cgroup)) && (0 != strcmp(SYSTEMD_INIT_CGROUP, cgroup))) {
 				*inContainer = TRUE;
 				break;
 			}

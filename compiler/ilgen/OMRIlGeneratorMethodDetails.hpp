@@ -74,7 +74,7 @@ protected:
    void *operator new(size_t size, TR::IlGeneratorMethodDetails &p){ return (void*)&p; }
    void operator delete(void *pMem, TR::IlGeneratorMethodDetails *p) {};
    void operator delete(void *pMem, TR::IlGeneratorMethodDetails &p) {};
-   void operator delete(void *pMem, std::size_t size) { ::operator delete(pMem); };
+   void operator delete(void *pMem, size_t size) { ::operator delete(pMem); };
 
    TR::IlVerifier     * _ilVerifier;
    };

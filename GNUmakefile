@@ -138,24 +138,26 @@ test_targets += fvtest/porttest/aixbaddep
 endif
 endif
 
+ifeq (1, $(OMR_RAS_TDF_TRACE))
 # RAS Libraries
 main_targets += omrtrace
+# RAS Tests
+test_targets += fvtest/rastest
+endif
 
 # OMR Startup
 main_targets += omr omr/startup
 
-# RAS Tests
-test_targets += fvtest/rastest
-
 # OMR Example Targets
 ifeq (1,$(OMR_EXAMPLE))
 test_targets += example
+main_targets += omrtrace
 endif
 
 # VM Tests
 test_targets += fvtest/vmtest
 
-# List of targets that are needed for the test compil
+# List of targets that are needed for the test compiler and jitbuilder
 compiler_prereqs = port thread util/pool util/omrutil util/avl util/hashtable util/hookable
 
 # Test Compiler
@@ -181,6 +183,7 @@ DO_TEST_TARGET := no
 ifeq (yes,$(ENABLE_FVTEST_AGENT))
 DO_TEST_TARGET := yes
 test_targets := $(test_prereqs)
+main_targets += omrtrace
 test_targets += fvtest/rastest fvtest/util
 endif
 endif

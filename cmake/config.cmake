@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2017 IBM Corp. and others
+# Copyright (c) 2017, 2018 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -43,6 +43,7 @@ set(OMR_PORT ON CACHE BOOL "Enable portability library")
 set(OMR_TEST_COMPILER OFF CACHE BOOL "Enable building the test compiler")
 set(OMR_THREAD ON CACHE BOOL "Enable thread library")
 set(OMR_TOOLS ON CACHE BOOL "Enable the native build tools")
+set(OMR_RAS_TDF_TRACE ON CACHE BOOL "Enable trace engine")
 
 ## OMR_JIT is required for OMR_JITBUILDER and OMR_TEST_COMPILER
 if(OMR_JITBUILDER OR OMR_TEST_COMPILER)
@@ -113,8 +114,6 @@ set(OMR_GC_VLHGC OFF CACHE BOOL "TODO: Document")
 set(OMR_INTERP_HAS_SEMAPHORES ON CACHE BOOL "TODO: Document")
 set(OMR_INTERP_COMPRESSED_OBJECT_HEADER OFF CACHE BOOL "TODO: Document")
 set(OMR_INTERP_SMALL_MONITOR_SLOT OFF CACHE BOOL "TODO: Document")
-
-set(OMR_RAS_TDF_TRACE ON CACHE BOOL "TODO: Document")
 
 set(OMR_THR_ADAPTIVE_SPIN ON CACHE BOOL "TODO: Document")
 set(OMR_THR_JLM ON CACHE BOOL "TODO: Document")

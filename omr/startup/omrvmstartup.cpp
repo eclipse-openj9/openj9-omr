@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2016 IBM Corp. and others
+ * Copyright (c) 2015, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -73,7 +73,7 @@ OMR_Initialize(void *languageVM, OMR_VM **vmSlot)
 	 * it is more efficient to call omrthread_attach_ex() before the entire block.
 	 */
 	if (0 != omrthread_attach_ex(&j9self, J9THREAD_ATTR_DEFAULT)) {
-		omrtty_printf("Failed to attach main thread.\n");
+		fprintf(stderr, "Failed to attach main thread.\n");
 		rc = OMR_ERROR_FAILED_TO_ATTACH_NATIVE_THREAD;
 		goto done;
 	}
@@ -338,7 +338,7 @@ OMR_Initialize_VM(OMR_VM **omrVMSlot, OMR_VMThread **omrVMThreadSlot, void *lang
 	 * it is more efficient to call omrthread_attach_ex() before the entire block.
 	 */
 	if (0 != omrthread_attach_ex(&j9self, J9THREAD_ATTR_DEFAULT)) {
-		omrtty_printf("Failed to attach main thread.\n");
+		fprintf(stderr, "Failed to attach main thread.\n");
 		rc = OMR_ERROR_FAILED_TO_ATTACH_NATIVE_THREAD;
 		goto failed;
 	}
@@ -348,6 +348,8 @@ OMR_Initialize_VM(OMR_VM **omrVMSlot, OMR_VMThread **omrVMThreadSlot, void *lang
 		rc = OMR_ERROR_INTERNAL;
 		goto failed;
 	}
+
+	/* omrtty_printf can be used from now on */
 
 	/* Disable port library signal handling. This mechanism disables everything except SIGXFSZ.
 	 * Handling other signals in the port library will interfere with language-specific signal handlers.
@@ -441,6 +443,7 @@ OMR_Initialize_VM(OMR_VM **omrVMSlot, OMR_VMThread **omrVMThreadSlot, void *lang
 	}
 #endif /* OMR_GC */
 
+#if defined(OMR_RAS_TDF_TRACE)
 	{
 		/* Take agent options from OMR_AGENT_OPTIONS */
 		const char *healthCenterOpt = getenv("OMR_AGENT_OPTIONS");
@@ -457,6 +460,7 @@ OMR_Initialize_VM(OMR_VM **omrVMSlot, OMR_VMThread **omrVMThreadSlot, void *lang
 			goto failed;
 		}
 	}
+#endif /* OMR_RAS_TDF_TRACE */
 
 failed:
 	return rc;
@@ -481,6 +485,7 @@ OMR_Shutdown_VM(OMR_VM *omrVM, OMR_VMThread *omrVMThread)
 		}
 #endif /* OMR_GC */
 
+#if defined(OMR_RAS_TDF_TRACE)
 		omr_ras_cleanupMethodDictionary(omrVM);
 
 		omr_ras_cleanupHealthCenter(omrVM, &(omrVM->_hcAgent));
@@ -489,6 +494,7 @@ OMR_Shutdown_VM(OMR_VM *omrVM, OMR_VMThread *omrVMThread)
 		if (OMR_ERROR_NONE != rc) {
 			omrtty_printf("Failed to cleanup trace engine, rc=%d.\n", rc);
 		}
+#endif /* OMR_RAS_TDF_TRACE */
 
 		rc = OMR_Thread_Free(omrVMThread);
 		if (OMR_ERROR_NONE != rc) {

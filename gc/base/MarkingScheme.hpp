@@ -278,7 +278,7 @@ public:
 	{
 		return ((_heapBase <= (uint8_t *)objectPtr) && (_heapTop > (uint8_t *)objectPtr));
 	}
-	
+
 	/**
 	 * Update the slot value to point to (Scavenger) forwarded object. If self-forwarded,
 	 * the slot is unchanged, but the class slot of the self-forwarded object is restored (self-forwarded bits are reset).
@@ -289,11 +289,13 @@ public:
 	 * during Scavenger aborted cycle to prevent duplicate copies). The fixup will be done after Scavenger Cycle is done, 
 	 * in the final phase of Concurrent GC when we scan Nursery. 
 	 */
-	
+
 	void fixupForwardedSlot(GC_SlotObject *slotObject) {
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
 		if (_extensions->isConcurrentScavengerEnabled() && _extensions->isScavengerBackOutFlagRaised()) {
 			fixupForwardedSlotOutline(slotObject);
 		}
+#endif /* OMR_GC_CONCURRENT_SCAVENGER */
 	}
 	
 	void fixupForwardedSlotOutline(GC_SlotObject *slotObject);

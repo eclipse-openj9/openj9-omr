@@ -23,6 +23,7 @@
 #include "omrcfg.h"
 #include "omr.h"
 #include "ModronAssertions.h"
+#include "GlobalCollector.hpp"
 
 #include <string.h>
 
@@ -430,6 +431,3 @@ MM_MarkingScheme::fixupForwardedSlotOutline(GC_SlotObject *slotObject) {
 	}
 #endif /* OMR_GC_CONCURRENT_SCAVENGER */
 }
-
-
-

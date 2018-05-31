@@ -36,12 +36,18 @@ set(OMR_COMPILER OFF CACHE BOOL "Enable the compiler")
 set(OMR_DDR OFF CACHE BOOL "Enable DDR")
 set(OMR_FVTEST ON CACHE BOOL "Enable the FV Testing.")
 set(OMR_GC ON CACHE BOOL "Enable the GC")
+set(OMR_JIT OFF CACHE BOOL "Enable building the JIT compiler")
 set(OMR_JITBUILDER OFF CACHE BOOL "Enable building JitBuilder")
 set(OMR_OMRSIG ON CACHE BOOL "Enable the OMR signal compatibility library")
 set(OMR_PORT ON CACHE BOOL "Enable portability library")
 set(OMR_TEST_COMPILER OFF CACHE BOOL "Enable building the test compiler")
 set(OMR_THREAD ON CACHE BOOL "Enable thread library")
 set(OMR_TOOLS ON CACHE BOOL "Enable the native build tools")
+
+## OMR_JIT is required for OMR_JITBUILDER and OMR_TEST_COMPILER
+if(OMR_JITBUILDER OR OMR_TEST_COMPILER)
+	set(OMR_JIT ON CACHE BOOL "" FORCE)
+endif()
 
 ###
 ### Tooling

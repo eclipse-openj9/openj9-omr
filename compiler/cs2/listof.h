@@ -263,7 +263,7 @@ CS2_LI_DECL::~ListOf() {
   // Destroy the existing elements.
   for (listIndex = 0; listIndex < NumberOfElements(); ++listIndex) {
     typename CS2_AR_DECL::DerivedElement *derivedElement = (typename CS2_AR_DECL::DerivedElement *) & ElementAt(listIndex);
-    derivedElement->CS2_AR_DECL::DerivedElement::~DerivedElement();
+    derivedElement->~DerivedElement();
   }
 }
 
@@ -307,7 +307,7 @@ CS2_LI_DECL &CS2_LI_DECL::operator= (const CS2_LI_DECL &list) {
     // Destroy extra list members
     for (; listIndex < NumberOfElements(); ++listIndex) {
       typename CS2_AR_DECL::DerivedElement *currentElement = CS2_AR_DECL::DerivedElementAt(listIndex);
-      currentElement->CS2_AR_DECL::DerivedElement::~DerivedElement();
+      currentElement->~DerivedElement();
     }
   } else {
     // Copy construct additional list members.
@@ -333,7 +333,7 @@ void CS2_LI_DECL::MakeEmpty (bool freeStorage) {
   // Destroy the existing elements.
   for (listIndex = 0; listIndex < NumberOfElements(); ++listIndex) {
     typename CS2_AR_DECL::DerivedElement *derivedElement = (typename CS2_AR_DECL::DerivedElement *) & ElementAt(listIndex);
-    derivedElement->CS2_AR_DECL::DerivedElement::~DerivedElement();
+    derivedElement->~DerivedElement();
   }
 
   fNextAvailable = 0;

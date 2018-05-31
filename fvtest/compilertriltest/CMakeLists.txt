@@ -50,8 +50,6 @@ target_link_libraries(comptest
 	tril
 )
 
-target_compile_options(comptest PRIVATE "-Wno-write-strings")
-
 set_property(TARGET comptest PROPERTY FOLDER fvtest)
 
 add_test(

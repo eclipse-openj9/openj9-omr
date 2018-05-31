@@ -57,7 +57,7 @@ void TestCompiler::OptTestDriver::makeOptimizationStrategyArray(OptimizationStra
  */
 void TestCompiler::OptTestDriver::Verify()
    {
-   OptimizationStrategy strategy[_optimizations.size() + 1];
+   OptimizationStrategy *strategy = new OptimizationStrategy[_optimizations.size() + 1];
    makeOptimizationStrategyArray(strategy);
    TR::Optimizer::setMockStrategy(strategy);
 
@@ -70,6 +70,7 @@ void TestCompiler::OptTestDriver::Verify()
 
    setIlVerifier(oldVerifier);
    TR::Optimizer::setMockStrategy(NULL);
+   delete[] strategy;
 
    ASSERT_EQ(true, noCodegenVerifier.hasRun()) << "Did not run verifiers.";
    }
@@ -84,13 +85,14 @@ void TestCompiler::OptTestDriver::Verify()
  */
 void TestCompiler::OptTestDriver::VerifyAndInvoke()
    {
-   OptimizationStrategy strategy[_optimizations.size() + 1];
+   OptimizationStrategy *strategy = new OptimizationStrategy[_optimizations.size() + 1];
    makeOptimizationStrategyArray(strategy);
    TR::Optimizer::setMockStrategy(strategy);
 
    RunTest();
 
    TR::Optimizer::setMockStrategy(NULL);
+   delete[] strategy;
    }
 
 /**

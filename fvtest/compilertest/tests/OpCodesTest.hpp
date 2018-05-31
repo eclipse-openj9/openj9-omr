@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -962,8 +962,8 @@ class OpCodesTest : public TestDriver
    template <typename T> static int32_t compareGE(T a, T b) { return a >= b;}
    template <typename T> static int32_t compareGT(T a, T b) { return a > b;}
    template <typename T> static int32_t compareLE(T a, T b) { return a <= b;}
-   template <typename T> static int32_t comparel(T a, T b) { return std::isnan(a) ? -1 : std::isnan(b) ? -1 : a > b ? 1 : a == b ? 0 : -1 ; }
-   template <typename T> static int32_t compareg(T a, T b) { return std::isnan(a) ? 1 :  std::isnan(b) ? 1 : a > b ? 1 : a == b ? 0 : -1 ; }
+   template <typename T> static int32_t comparel(T a, T b) { return std::isnan(static_cast<long double>(a)) ? -1 : std::isnan(static_cast<long double>(b)) ? -1 : a > b ? 1 : a == b ? 0 : -1 ; }
+   template <typename T> static int32_t compareg(T a, T b) { return std::isnan(static_cast<long double>(a)) ? 1 :  std::isnan(static_cast<long double>(b)) ? 1 : a > b ? 1 : a == b ? 0 : -1 ; }
    template <typename C, typename T> static T ternary(C a, T b, T c) {return a ? b : c;}
    };
 

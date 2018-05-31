@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -21,7 +21,6 @@
 
 #include <limits.h>
 #include <float.h>
-#include <math.h>
 #include <stdint.h>
 #include <stdio.h>
 #include "compile/Compilation.hpp"

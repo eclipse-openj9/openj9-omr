@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2017 IBM Corp. and others
+ * Copyright (c) 2017, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -150,8 +150,8 @@ public:
       const_iterator &operator =(const const_iterator &other);
       const_iterator &operator ++();
       const_iterator operator ++(int);
-      const_reference operator *() throw();
-      const_pointer operator ->() throw();
+      const_reference operator *() const throw();
+      const_pointer operator ->() const throw();
       friend bool operator ==(const const_iterator &left, const const_iterator &right) { return left._element == right._element; }
       friend bool operator !=(const const_iterator &left, const const_iterator &right) { return !(left == right); }
 
@@ -183,8 +183,8 @@ public:
       iterator &operator =(const iterator &other);
       iterator &operator ++();
       iterator operator ++(int);
-      reference operator *() throw();
-      pointer operator ->() throw();
+      reference operator *() const throw();
+      pointer operator ->() const throw();
       friend bool operator ==(const iterator &left, const iterator &right) { return left._element == right._element; }
       friend bool operator !=(const iterator &left, const iterator &right) { return !(left == right); }
       operator const_iterator() { return const_iterator(_element); }
@@ -472,7 +472,7 @@ TR::forward_list< T, Alloc >::insert_after(iterator position, const value_type &
    {
    ListElement *newElement = _allocator.allocate(1);
    _allocator.construct(newElement, ListElement(position._element->_next, value));
-   position.element->_next = newElement;
+   position._element->_next = newElement;
    }
 
 //template < typename T, typename Alloc >
@@ -660,14 +660,14 @@ TR::forward_list< T, Alloc >::const_iterator::operator ++(int)
 
 template < typename T, typename Alloc >
 typename TR::forward_list< T, Alloc >::const_reference
-TR::forward_list< T, Alloc >::const_iterator::operator *() throw()
+TR::forward_list< T, Alloc >::const_iterator::operator *() const throw()
    {
    return static_cast<const ListElement &>(*_element)._value;
    }
 
 template < typename T, typename Alloc >
 typename TR::forward_list< T, Alloc >::const_pointer
-TR::forward_list< T, Alloc >::const_iterator::operator ->() throw()
+TR::forward_list< T, Alloc >::const_iterator::operator ->() const throw()
    {
    return &static_cast<const ListElement &>(*_element)._value;
    }
@@ -724,14 +724,14 @@ TR::forward_list< T, Alloc >::iterator::operator ++(int)
 
 template < typename T, typename Alloc >
 typename TR::forward_list< T, Alloc >::reference
-TR::forward_list< T, Alloc >::iterator::operator *() throw()
+TR::forward_list< T, Alloc >::iterator::operator *() const throw()
    {
    return static_cast<ListElement &>(*_element)._value;
    }
 
 template < typename T, typename Alloc >
 typename TR::forward_list< T, Alloc >::pointer
-TR::forward_list< T, Alloc >::iterator::operator ->() throw()
+TR::forward_list< T, Alloc >::iterator::operator ->() const throw()
    {
    return &static_cast<ListElement &>(*_element)._value;
    }

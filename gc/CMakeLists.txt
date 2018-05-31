@@ -347,6 +347,8 @@ target_link_libraries(omrgc
 		omrutil
 		omrcore
 		${OMR_THREAD_LIB}
+		${OMR_PORT_LIB}
+		${OMR_HOOK_LIB}
 )
 
 set_target_properties(omrgc omrgc_hookgen omrgc_tracegen PROPERTIES FOLDER gc)

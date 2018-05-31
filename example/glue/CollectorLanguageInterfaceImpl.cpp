@@ -207,7 +207,10 @@ MM_CollectorLanguageInterfaceImpl::scavenger_reverseForwardedObject(MM_Environme
 
 		/* Restore the original object header from the forwarded object */
 		GC_ObjectModel *objectModel = &(env->getExtensions()->objectModel);
-		objectModel->setObjectSizeAndFlags(originalObject, objectModel->getConsumedSizeInBytesWithHeader(forwardedObject), objectModel->getObjectFlags(forwardedObject));
+
+		originalObject->header.assign(
+			objectModel->getConsumedSizeInBytesWithHeader(forwardedObject),
+			(uint8_t)objectModel->getObjectFlags(forwardedObject));
 
 #if defined (OMR_INTERP_COMPRESSED_OBJECT_HEADER)
 		/* Restore destroyed overlapped slot in the original object. This slot might need to be reversed

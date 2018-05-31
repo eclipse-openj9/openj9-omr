@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2016 IBM Corp. and others
+ * Copyright (c) 1991, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -26,6 +26,7 @@
  * @ddr_namespace: default
  */
 
+#include "Object.hpp"
 #include "Bits.hpp"
 #include "ObjectModelBase.hpp"
 #include "ObjectModelDelegate.hpp"
@@ -65,31 +66,6 @@ public:
 	 * acquired for the object model in the initialize() implementation should be disposed of here.
 	 */
 	virtual void tearDown(MM_GCExtensionsBase *extensions) {}
-
-	/**
-	 * Set size in object header, with header flags.
-	 * @param objectPtr Pointer to an object
-	 * @param size consumed size in bytes of object
-	 * @param flags flag bits to set
-	 */
-	MMINLINE void
-	setObjectSizeAndFlags(omrobjectptr_t objectPtr, uintptr_t size, uintptr_t flags)
-	{
-		uintptr_t sizeBits = size << OMR_OBJECT_METADATA_FLAGS_BIT_COUNT;
-		uintptr_t flagsBits = flags & (uintptr_t)OMR_OBJECT_METADATA_FLAGS_MASK;
-		*(getObjectHeaderSlotAddress(objectPtr)) = (fomrobject_t)(sizeBits | flagsBits);
-	}
-
-	/**
-	 * Set size in object header, preserving header flags
-	 * @param objectPtr Pointer to an object
-	 * @param size consumed size in bytes of object
-	 */
-	MMINLINE void
-	setObjectSize(omrobjectptr_t objectPtr, uintptr_t size)
-	{
-		setObjectSizeAndFlags(objectPtr, size, getObjectFlags(objectPtr));
-	}
 
 	/**
 	 * Constructor.

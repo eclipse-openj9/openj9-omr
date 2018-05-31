@@ -948,6 +948,11 @@ namespace TR
 
    typedef CS2::shared_allocator < GlobalSingletonAllocator > GlobalAllocator;
 
+   static GlobalAllocator globalAllocator(const char *name = NULL)
+      {
+      return GlobalAllocator(GlobalSingletonAllocator::instance());
+      }
+ 
    /*
     * some common CS2 datatypes
     */

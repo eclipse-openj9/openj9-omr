@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2017 IBM Corp. and others
+ * Copyright (c) 2017, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -28,8 +28,8 @@ int32_t oracleBoracle(int32_t x) { return x + 1123; } // Randomish number to avo
 
 TEST_F(CallTest, icallOracle) { 
     char inputTrees[200] = {0};
-    const auto format_string = "(method return=Int32 args=[Int32] (block (ireturn (icall address=%p args=[Int32] (iload parm=0)) )  ))";
-    std::snprintf(inputTrees, 200, format_string, &oracleBoracle);
+    const auto format_string = "(method return=Int32 args=[Int32] (block (ireturn (icall address=0x%jX args=[Int32] (iload parm=0)) )  ))";
+    std::snprintf(inputTrees, 200, format_string, reinterpret_cast<uintmax_t>(&oracleBoracle));
     auto trees = parseString(inputTrees);
 
     ASSERT_NOTNULL(trees) << "Trees failed to parse\n" << inputTrees;

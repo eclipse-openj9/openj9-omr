@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2017 IBM Corp. and others
+ * Copyright (c) 2017, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -20,6 +20,7 @@
  *******************************************************************************/
 
 #include "ilgen.hpp"
+#include "omrcfg.h"
 #include "compiler_util.hpp"
 
 #include "il/Block.hpp"
@@ -260,11 +261,15 @@ TR::Node* Tril::TRLangBuilder::toTRNode(const ASTNode* const tree) {
            return NULL;
         }
 
-         TraceIL("  is call with target %s", addressArg);
         /* I don't want to extend the ASTValue type system to include pointers at this moment,
          * so for now, we do the reinterpret_cast to pointer type from long
          */
-        const auto targetAddress = reinterpret_cast<void*>(addressArg->getValue()->get<long>()); 
+#if defined(OMR_ENV_DATA64)
+        TraceIL("  is call with target 0x%016llX", addressArg->getValue()->get<uintptr_t>());
+#else
+        TraceIL("  is call with target 0x%08lX", addressArg->getValue()->get<uintptr_t>());
+#endif /* OMR_ENV_DATA64 */
+        const auto targetAddress = reinterpret_cast<void*>(addressArg->getValue()->get<uintptr_t>());
 
         /* To generate a call, will create a ResolvedMethodSymbol, but we need to know the 
          * signature. The return type is intuitable from the call node, but the arguments 

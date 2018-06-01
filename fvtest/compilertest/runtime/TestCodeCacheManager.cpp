@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -18,8 +18,11 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
-
+#if defined(OMR_OS_WINDOWS)
+#include <windows.h>
+#else
 #include <sys/mman.h>
+#endif /* OMR_OS_WINDOWS */
 #include "runtime/CodeCache.hpp"
 #include "runtime/CodeCacheManager.hpp"
 #include "runtime/CodeCacheMemorySegment.hpp"
@@ -57,13 +60,22 @@ TestCompiler::CodeCacheManager::allocateCodeCacheSegment(size_t segmentSize,
    TR::CodeCacheConfig & config = self()->codeCacheConfig();
    if (segmentSize < config.codeCachePadKB() << 10)
       codeCacheSizeToAllocate = config.codeCachePadKB() << 10;
-   uint8_t *memorySlab = (uint8_t *) mmap(NULL,
-                                          codeCacheSizeToAllocate,
-                                          PROT_READ | PROT_WRITE | PROT_EXEC,
-                                          MAP_ANONYMOUS | MAP_PRIVATE,
-                                          0,
-                                          0);
-
+   uint8_t *memorySlab = nullptr;
+#if defined(OMR_OS_WINDOWS)
+   memorySlab = reinterpret_cast<uint8_t *>(
+         VirtualAlloc(nullptr,
+            codeCacheSizeToAllocate,
+            MEM_COMMIT,
+            PAGE_EXECUTE_READWRITE));
+#else
+   memorySlab = reinterpret_cast<uint8_t *>(
+         mmap(NULL,
+              codeCacheSizeToAllocate,
+              PROT_READ | PROT_WRITE | PROT_EXEC,
+              MAP_ANONYMOUS | MAP_PRIVATE,
+              0,
+              0));
+#endif /* OMR_OS_WINDOWS */
    TR::CodeCacheMemorySegment *memSegment = (TR::CodeCacheMemorySegment *) ((size_t)memorySlab + codeCacheSizeToAllocate - sizeof(TR::CodeCacheMemorySegment));
    new (memSegment) TR::CodeCacheMemorySegment(memorySlab, reinterpret_cast<uint8_t *>(memSegment));
    return memSegment;

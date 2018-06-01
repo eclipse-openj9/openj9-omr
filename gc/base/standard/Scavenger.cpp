@@ -849,7 +849,7 @@ MM_Scavenger::calculateCopyScanCacheSizeForQueueLength(uintptr_t maxCacheSize, u
 	uintptr_t range = maxCacheSize - minCacheSize;
 	uintptr_t cacheSize =  minCacheSize + ((range / threadCount) * (scanCacheCount + 1));
 
-	return cacheSize;
+	return MM_Math::roundToCeiling(_extensions->getObjectAlignmentInBytes(), cacheSize);
 }
 
 /**

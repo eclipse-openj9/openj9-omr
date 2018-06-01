@@ -1190,8 +1190,32 @@ omrsysinfo_get_number_CPUs_by_type(struct OMRPortLibrary *portLibrary, uintptr_t
 				}
 			}
 		}
+
+		/* If system calls failed to retrieve info, do not check cgroup at all, and give an error */
 		if (0 == toReturn) {
 			Trc_PRT_sysinfo_get_number_CPUs_by_type_failedBound("errno: ", errno);
+		} else if (portLibrary->sysinfo_cgroup_are_subsystems_enabled(portLibrary, OMR_CGROUP_SUBSYSTEM_CPU)) {
+			int32_t rc = 0;
+			int64_t cpuQuota = 0;
+			uint64_t cpuPeriod = 0;
+			int32_t numItemsToRead = 1; /* cpu.cfs_quota_us and cpu.cfs_period_us files each contain only one integer value */
+
+			/* If either file read fails, ignore cgroup cpu quota limits and continue */
+			rc = readCgroupSubsystemFile(portLibrary, OMR_CGROUP_SUBSYSTEM_CPU, "cpu.cfs_quota_us", numItemsToRead, "%ld", &cpuQuota);
+			if (0 == rc) {
+				rc = readCgroupSubsystemFile(portLibrary, OMR_CGROUP_SUBSYSTEM_CPU, "cpu.cfs_period_us", numItemsToRead, "%lu", &cpuPeriod);
+				if (0 == rc) {
+					int32_t numCpusQuota = (int32_t) (((double) cpuQuota / cpuPeriod) + 0.5);
+
+					if ((cpuQuota > 0) && (numCpusQuota < toReturn)) {
+						toReturn = numCpusQuota;
+						/* If the CPU quota rounds down to 0, then just return 1 as the closest usable value */
+						if (0 == toReturn) {
+							toReturn = 1;
+						}
+					}
+				}
+			}
 		}
 #elif defined(OMRZTPF)
 		toReturn = get_Dispatch_IstreamCount();

@@ -424,6 +424,8 @@ public:
    TR::ResolvedMethodSymbol *getMethodSymbol();
    TR_ResolvedMethod *getCurrentMethod();
 
+   TR_ResolvedMethod *getMethodBeingCompiled() { return _method; }
+
    TR::PersistentInfo *getPersistentInfo();
 
    int32_t getCompThreadID() const { return _compThreadID; }

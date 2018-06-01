@@ -1460,7 +1460,7 @@ TR::Node *
 OMR::Node::createConstOne(TR::Node *originatingByteCodeNode, TR::DataType dt)
    {
    TR::Node *constOne = NULL;
-   char buf[20];
+
    switch (dt)
       {
       case TR::Int8:

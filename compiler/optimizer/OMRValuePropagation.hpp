@@ -722,7 +722,6 @@ class ValuePropagation : public TR::Optimization
    TR_ScratchList<TR_OpaqueClassBlock> _prexClassesThatShouldNotBeNewlyExtended;
    TR_ScratchList<TR_PersistentClassInfo> _resetClassesThatShouldNotBeNewlyExtended;
 
-
    // Calls that have been devirtualized
    //
    struct CallInfo : public TR_Link<CallInfo>
@@ -890,9 +889,6 @@ class ValuePropagation : public TR::Optimization
 
 
    TR::Node    *_currentParent;
-   List<TR::TreeTop> _objectCloneCallTreeTops;
-   List<TR::Node> _objectCloneCallNodes;
-   List<TR_OpaqueClassBlock> _objectCloneInstanceClasses;
    List<TR::Node> _arraylengthNodes;
    List<TR::Node> _javaLangClassGetComponentTypeCalls;
    List<TR_TreeTopWrtBarFlag> _unknownTypeArrayCopyTrees;

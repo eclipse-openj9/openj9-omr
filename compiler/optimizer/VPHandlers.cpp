@@ -5685,35 +5685,6 @@ void transformToOptimizedCloneCall(OMR::ValuePropagation *vp, TR::Node *node, bo
 #endif
 
 
-TR::Node *transformCloneCallSetup(OMR::ValuePropagation *vp, TR::Node *node, TR::VPConstraint *constraint, bool isDirectCall)
-   {
-   //Change the call and agruments from object.clone to optimizedClone.
-   //
-   vp->_objectCloneCallNodes.add(node);
-   vp->_objectCloneCallTreeTops.add(vp->_curTree);
-   /*
-   if (isDirectCall && constraint && constraint->getClass())
-      {
-      //Determine is we can create a new instance object of the source's class.
-      //
-      TR_OpaqueClassBlock *clazz = constraint->getClass();
-      if (constraint->isClassObject() == TR_yes)
-         clazz = vp->fe()->getClassClassPointer(clazz);
-
-      //If we do not know the class, or the class is an array, pass NULL as the second parameter.
-      if (clazz && (((TR::Compiler->cls.classDepthOf(clazz) == 0) && !constraint->isFixedClass()) || (constraint->getClassType()->isArray() != TR_no)))
-        clazz = NULL;
-
-      vp->_objectCloneInstanceClasses.add(clazz);
-      }
-   else
-      {
-      vp->_objectCloneInstanceClasses.add(NULL);
-      }
-   */
-   return node;
-   }
-
 #ifdef J9_PROJECT_SPECIFIC
 TR::Node *setCloneClassInNode(OMR::ValuePropagation *vp, TR::Node *node, TR::VPConstraint *constraint, bool isGlobal)
    {

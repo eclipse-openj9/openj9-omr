@@ -446,7 +446,7 @@ class SymbolReferenceTable
 
    protected:
 
-   TR::SymbolReference * findOrCreateCPSymbol(TR::ResolvedMethodSymbol *, int32_t, TR::DataType, bool, void *);
+   TR::SymbolReference * findOrCreateCPSymbol(TR::ResolvedMethodSymbol *, int32_t, TR::DataType, bool, void *, TR::KnownObjectTable::Index knownObjectIndex = TR::KnownObjectTable::UNKNOWN);
 
    bool shouldMarkBlockAsCold(TR_ResolvedMethod * owningMethod, bool isUnresolvedInCP);
    void markBlockAsCold();

@@ -22,11 +22,11 @@ SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-excepti
 
 # Debug Counters
 
-A **debug counter** is a facility in the JIT Compiler for adding instrumentation to jitted code to count arbitrary things.
+A **debug counter** is a facility in the Compiler for adding instrumentation to compiled code to count arbitrary things.
 
 ## Using Debug Counters
 
-Debug counters can be inserted either at the tree level or the instruction level. Note that counters are not actually inserted unless the counter name and type matches the provided JIT options (see Specifying Output below).
+Debug counters can be inserted either at the tree level or the instruction level. Note that counters are not actually inserted unless the counter name and type matches the provided Compiler options (see Specifying Output below).
 
 ### In Trees
 
@@ -75,7 +75,7 @@ You may end up with a report that looks like this:
 3: callSites/notInlined     |        2000 |     20.00% |  __   3 __
 ```
 
-The first column is the raw counter values. To the right are additional columns that give ratios between counters. In this example, the second column has a header of "__ 1__" meaning that the values below are relative to counter #1. The rightmost column just lists the counter numbers again, making it easier visually to follow the (sometimes very long) lines horizontally. Note that the jitted code would only contain counters 2 & 3, and the denominator (1) is computed from them.
+The first column is the raw counter values. To the right are additional columns that give ratios between counters. In this example, the second column has a header of "__ 1__" meaning that the values below are relative to counter #1. The rightmost column just lists the counter numbers again, making it easier visually to follow the (sometimes very long) lines horizontally. Note that the compiled code would only contain counters 2 & 3, and the denominator (1) is computed from them.
 
 ### Colon
 
@@ -89,7 +89,7 @@ prependDebugCounter("frames", tt);
 ...
 prependDebugCounter("frames:#autos", tt, numAutos);
 ```
-This produces two counters that are unrelated except that the jit will report their ratio when the run is complete:
+This produces two counters that are unrelated except that the compiler will report their ratio when the run is complete:
 ```
 1: frames         |  3914036134 |   __   1 __
 2: frames:#autos  | 22680880758 |      5.79  |  __   2 __
@@ -120,7 +120,7 @@ The hash symbol has no particular special meaning, but is used by convention to 
 
 Counters can have arbitrary names, though care should be taken with certain special characters:
 - Whitespace and other shell-control characters may make them awkward to specify on the command line
-- Characters with special meanings in the JIT Compiler's regular expressions will make them awkward to filter
+- Characters with special meanings in the Compiler's regular expressions will make them awkward to filter
 
 ## Specifying Output
 
@@ -131,9 +131,9 @@ TR_DebugCounterFileName
 ````
 Specifies the file to which the debug counter output should be appended (creating the file if necessary), relative to the current working directory. If not specified, debug counter output is written to stdout.
 
-### JIT Options
+### Compiler Options
 
-A full listing of debug counter-related JIT options can be found by using a command like the following:
+A full listing of debug counter-related Compiler options can be found by using a command like the following:
 ```
 java -Xjit:help={*debugCounter*} -version
 ```

@@ -321,6 +321,7 @@ omrsig_protect(struct OMRPortLibrary *portLibrary, omrsig_protected_fn fn, void 
 	omrthread_t thisThread = NULL;
 	uint32_t rc = 0;
 	uint32_t flagsSignalsOnly = 0;
+	uint32_t flagsWithoutMasterHandlers = 0;
 
 	Trc_PRT_signal_omrsig_protect_entered(fn, fn_arg, handler, handler_arg, flags);
 
@@ -333,9 +334,9 @@ omrsig_protect(struct OMRPortLibrary *portLibrary, omrsig_protected_fn fn, void 
 	}
 
 	flagsSignalsOnly = flags & OMRPORT_SIG_FLAG_SIGALLSYNC;
+	flagsWithoutMasterHandlers = flagsSignalsOnly & (~signalsWithMasterHandlers);
 
-	if (0 != flagsSignalsOnly) {
-
+	if (0 != flagsWithoutMasterHandlers) {
 		/* Acquire the registerHandlerMonitor and install the handler via registerMasterHandlers. */
 		omrthread_monitor_enter(registerHandlerMonitor);
 		rc = registerMasterHandlers(portLibrary, flags, OMRPORT_SIG_FLAG_SIGALLSYNC, NULL);
@@ -610,23 +611,6 @@ omrsig_register_os_handler(struct OMRPortLibrary *portLibrary, uint32_t portlibS
 	} else {
 		omrthread_monitor_enter(registerHandlerMonitor);
 		rc = registerSignalHandlerWithOS(portLibrary, portlibSignalFlag, (unix_sigaction)newOSHandler, oldOSHandler);
-		if (0 == rc) {
-			/*  A user-specified handler has been successfully registered for a signal. */
-			if ((newOSHandler == (void *)masterSynchSignalHandler)
-				|| (newOSHandler == (void *)masterASynchSignalHandler)
-			) {
-				/* User-specified handler is a master handler. So, set the portlibSignalFlag bit in
-				 * signalsWithMasterHandlers.
-				 */
-				signalsWithMasterHandlers |= portlibSignalFlag;
-			} else {
-				/* If the user-specified handler is not a master handler, then unset the
-				 * portlibSignalFlag bit in signalsWithMasterHandlers. This suggests that a
-				 * master handler is no longer registered with the portlibSignalFlag's signal.
-				 */
-				signalsWithMasterHandlers &= ~portlibSignalFlag;
-			}
-		}
 		omrthread_monitor_exit(registerHandlerMonitor);
 	}
 
@@ -1274,9 +1258,21 @@ registerSignalHandlerWithOS(OMRPortLibrary *portLibrary, uint32_t portLibrarySig
 		}
 	}
 
+	issueWriteBarrier();
+
 	/* Set the portLibrarySignalNo bit in signalsWithHandlers to record successful registration
 	 * of the handler. */
 	signalsWithHandlers |= portLibrarySignalNo;
+
+	if ((handler == masterSynchSignalHandler) || (handler == masterASynchSignalHandler)) {
+		/* Signal handler is a master handler. So, set the portlibSignalFlag bit in signalsWithMasterHandlers. */
+		signalsWithMasterHandlers |= portLibrarySignalNo;
+	} else {
+		/* Handler is not a master handler. So, unset the portlibSignalFlag bit in signalsWithMasterHandlers.
+		 * This suggests that a master handler is no longer registered with the portlibSignalFlag's signal.
+		 */
+		signalsWithMasterHandlers &= ~portLibrarySignalNo;
+	}
 
 	return 0;
 }
@@ -1430,11 +1426,6 @@ registerMasterHandlers(OMRPortLibrary *portLibrary, uint32_t flags, uint32_t all
 					if (0 != registerSignalHandlerWithOS(portLibrary, portSignalType, handler, oldOSHandler)) {
 						return OMRPORT_SIG_ERROR;
 					}
-
-					/* After successfully registering the master handler, set the signal
-					 * bit in signalsWithMasterHandlers.
-					 */
-					signalsWithMasterHandlers |= portSignalType;
 				} else {
 					/* If the master handler is already registered, then the oldOSHandler must represent the
 					 * master handler.

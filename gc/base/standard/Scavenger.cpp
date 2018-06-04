@@ -2971,38 +2971,43 @@ MM_Scavenger::clearCache(MM_EnvironmentStandard *env, MM_CopyScanCacheStandard *
 	Assert_MM_false(cache->flags & OMR_SCAVENGER_CACHE_TYPE_CLEARED);
 	bool remainderCreated = false;
 
-	if (cache->flags & OMR_SCAVENGER_CACHE_TYPE_TENURESPACE) {
-		allocSubSpace = _tenureMemorySubSpace;
-
-		if(discardSize < env->getExtensions()->tlhTenureDiscardThreshold) {
-			env->_scavengerStats._tenureDiscardBytes += discardSize;
-			/* Abandon the current entry in the cache */
-			allocSubSpace->abandonHeapChunk(cache->cacheAlloc, cache->cacheTop);
+	if (0 < discardSize) {
+		if (cache->flags & OMR_SCAVENGER_CACHE_TYPE_TENURESPACE) {
+			allocSubSpace = _tenureMemorySubSpace;
+			if (discardSize < env->getExtensions()->tlhTenureDiscardThreshold) {
+				env->_scavengerStats._tenureDiscardBytes += discardSize;
+				/* Abandon the current entry in the cache */
+				allocSubSpace->abandonHeapChunk(cache->cacheAlloc, cache->cacheTop);
+			} else {
+				remainderCreated = true;
+				env->_scavengerStats._tenureTLHRemainderCount += 1;
+				Assert_MM_true(NULL == env->_tenureTLHRemainderBase);
+				Assert_MM_true(NULL == env->_tenureTLHRemainderTop);
+				env->_tenureTLHRemainderBase = cache->cacheAlloc;
+				env->_tenureTLHRemainderTop = cache->cacheTop;
+				env->_loaAllocation = (OMR_SCAVENGER_CACHE_TYPE_LOA == (cache->flags & OMR_SCAVENGER_CACHE_TYPE_LOA));
+			}
+		} else if (cache->flags & OMR_SCAVENGER_CACHE_TYPE_SEMISPACE) {
+			allocSubSpace = _survivorMemorySubSpace;
+			if (discardSize < env->getExtensions()->tlhSurvivorDiscardThreshold) {
+				env->_scavengerStats._flipDiscardBytes += discardSize;
+				allocSubSpace->abandonHeapChunk(cache->cacheAlloc, cache->cacheTop);
+			} else {
+				remainderCreated = true;
+				env->_scavengerStats._survivorTLHRemainderCount += 1;
+				Assert_MM_true(NULL == env->_survivorTLHRemainderBase);
+				Assert_MM_true(NULL == env->_survivorTLHRemainderTop);
+				env->_survivorTLHRemainderBase = cache->cacheAlloc;
+				env->_survivorTLHRemainderTop = cache->cacheTop;
+			}
 		} else {
-			remainderCreated = true;
-			env->_scavengerStats._tenureTLHRemainderCount += 1;
-			Assert_MM_true(NULL == env->_tenureTLHRemainderBase);
-			Assert_MM_true(NULL == env->_tenureTLHRemainderTop);
-			env->_tenureTLHRemainderBase = cache->cacheAlloc;
-			env->_tenureTLHRemainderTop = cache->cacheTop;
-			env->_loaAllocation = (OMR_SCAVENGER_CACHE_TYPE_LOA == (cache->flags & OMR_SCAVENGER_CACHE_TYPE_LOA));
+			/*
+			 * In case if OMR_SCAVENGER_CACHE_TYPE_SPLIT_ARRAY flag is set none of
+			 * OMR_SCAVENGER_CACHE_TYPE_TENURESPACE or OMR_SCAVENGER_CACHE_TYPE_SEMISPACE might be set.
+			 * However discardSize must be zero in this case and we should not go here
+			 */
+			Assert_MM_unreachable();
 		}
-	} else if (cache->flags & OMR_SCAVENGER_CACHE_TYPE_SEMISPACE) {
-		allocSubSpace = _survivorMemorySubSpace;
-		if(discardSize < env->getExtensions()->tlhSurvivorDiscardThreshold) {
-			env->_scavengerStats._flipDiscardBytes += discardSize;
-			allocSubSpace->abandonHeapChunk(cache->cacheAlloc, cache->cacheTop);
-		} else {
-			remainderCreated = true;
-			env->_scavengerStats._survivorTLHRemainderCount += 1;
-			Assert_MM_true(NULL == env->_survivorTLHRemainderBase);
-			Assert_MM_true(NULL == env->_survivorTLHRemainderTop);
-			env->_survivorTLHRemainderBase = cache->cacheAlloc;
-			env->_survivorTLHRemainderTop = cache->cacheTop;
-		}
-	} else {
-		Assert_MM_true(cache->flags & OMR_SCAVENGER_CACHE_TYPE_SPLIT_ARRAY);
-		Assert_MM_true(0 == discardSize);
 	}
 
 	/* Broadcast details of that portion of memory within which objects have been allocated */

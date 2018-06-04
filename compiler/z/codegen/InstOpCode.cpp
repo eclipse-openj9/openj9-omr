@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -364,6 +364,9 @@ OMR::Z::InstOpCode::getCmpImmOpCode() { return TR::Compiler->target.is64Bit() ? 
 
 TR::InstOpCode::Mnemonic
 OMR::Z::InstOpCode::getCmpImmTrapOpCode() { return TR::Compiler->target.is64Bit() ? TR::InstOpCode::CGIT : TR::InstOpCode::CIT; }
+
+TR::InstOpCode::Mnemonic
+OMR::Z::InstOpCode::getCmpImmBranchRelOpCode() { return TR::Compiler->target.is64Bit() ? TR::InstOpCode::CGIJ : TR::InstOpCode::CIJ; }
 
 TR::InstOpCode::Mnemonic
 OMR::Z::InstOpCode::getCmpLogicalTrapOpCode() { return TR::Compiler->target.is64Bit() ? TR::InstOpCode::CLGRT : TR::InstOpCode::CLRT; }

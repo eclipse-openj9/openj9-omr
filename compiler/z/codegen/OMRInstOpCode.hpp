@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -742,6 +742,7 @@ class InstOpCode: public OMR::InstOpCode
    static Mnemonic getCmpWidenTrapOpCode();
    static Mnemonic getCmpImmOpCode();
    static Mnemonic getCmpImmTrapOpCode();
+   static Mnemonic getCmpImmBranchRelOpCode();
    static Mnemonic getCmpLogicalTrapOpCode();
    static Mnemonic getCmpLogicalWidenTrapOpCode();
    static Mnemonic getCmpLogicalImmTrapOpCode();

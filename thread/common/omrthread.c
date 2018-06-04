@@ -2805,6 +2805,7 @@ interrupt_waiting_thread(omrthread_t self, omrthread_t threadToInterrupt)
 	 * interruptServer thread.
 	 */
 	monitor = threadToInterrupt->monitor;
+	ASSERT(monitor);
 
 	/*
 	 * Holding THREAD_LOCK here prevents threadToInterrupt from exiting monitor_wait.
@@ -3996,6 +3997,7 @@ omrthread_monitor_try_enter_using_threadId(omrthread_monitor_t monitor, omrthrea
 	intptr_t lockAcquired = -1;
 	ASSERT(threadId != 0);
 	ASSERT(threadId == MACRO_SELF());
+	ASSERT(monitor);
 	ASSERT(FREE_TAG != monitor->count);
 
 	/* Are we already the owner? */

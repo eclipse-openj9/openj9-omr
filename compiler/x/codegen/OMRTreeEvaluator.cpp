@@ -1782,17 +1782,15 @@ static void arrayCopy16BitPrimitive(TR::Node* node, TR::Register* dstReg, TR::Re
       generateRegMemInstruction(L2RegMem, node, sizeReg, generateX86MemoryReference(srcReg, 0, cg), cg);
       generateMemRegInstruction(S2MemReg, node, generateX86MemoryReference(dstReg, 0, cg), sizeReg, cg);
 
-      TR_OutlinedInstructions* backwardPath = new (cg->trHeapMemory()) TR_OutlinedInstructions(backwardLabel, cg);
-      cg->getOutlinedInstructionsList().push_front(backwardPath);
-      backwardPath->swapInstructionListsWithCompilation();
-      generateLabelInstruction(LABEL, node, backwardLabel, cg);
+      {
+      TR_OutlinedInstructionsGenerator og(backwardLabel, node, cg);
       generateRegMemInstruction(LEARegMem(), node, srcReg, generateX86MemoryReference(srcReg, sizeReg, 0, -2, cg), cg);
       generateRegMemInstruction(LEARegMem(), node, dstReg, generateX86MemoryReference(dstReg, sizeReg, 0, -2, cg), cg);
       generateInstruction(STD, node, cg);
       generateRepMovsInstruction(REPMOVSW, node, sizeReg, NULL, cg);
       generateInstruction(CLD, node, cg);
       generateLabelInstruction(JMP4, node, mainEndLabel, cg);
-      backwardPath->swapInstructionListsWithCompilation();
+      }
       }
    generateLabelInstruction(LABEL, node, mainEndLabel, dependencies, cg);
    }
@@ -1864,17 +1862,15 @@ static void arrayCopyDefault(TR::Node* node, uint8_t elementSize, TR::Register* 
       generateLabelInstruction(JB4, node, backwardLabel, cg);   // jb, skip backward copy setup
       generateRepMovsInstruction(repmovs, node, sizeReg, NULL, cg);
 
-      TR_OutlinedInstructions* backwardPath = new (cg->trHeapMemory()) TR_OutlinedInstructions(backwardLabel, cg);
-      cg->getOutlinedInstructionsList().push_front(backwardPath);
-      backwardPath->swapInstructionListsWithCompilation();
-      generateLabelInstruction(LABEL, node, backwardLabel, cg);
+      {
+      TR_OutlinedInstructionsGenerator og(backwardLabel, node, cg);
       generateRegMemInstruction(LEARegMem(), node, srcReg, generateX86MemoryReference(srcReg, sizeReg, 0, -(intptr_t)elementSize, cg), cg);
       generateRegMemInstruction(LEARegMem(), node, dstReg, generateX86MemoryReference(dstReg, sizeReg, 0, -(intptr_t)elementSize, cg), cg);
       generateInstruction(STD, node, cg);
       generateRepMovsInstruction(repmovs, node, sizeReg, NULL, cg);
       generateInstruction(CLD, node, cg);
       generateLabelInstruction(JMP4, node, mainEndLabel, cg);
-      backwardPath->swapInstructionListsWithCompilation();
+      }
 
       generateLabelInstruction(LABEL, node, mainEndLabel, dependencies, cg);
       }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -427,13 +427,11 @@ TR::Register *OMR::X86::AMD64::TreeEvaluator::dbits2lEvaluator(TR::Node *node, T
 
          // Slow path
          //
-         TR_OutlinedInstructions *slowPath = new (cg->trHeapMemory()) TR_OutlinedInstructions(slowPathLabel, cg);
-         cg->getOutlinedInstructionsList().push_front(slowPath);
-         slowPath->swapInstructionListsWithCompilation();
-         generateLabelInstruction(NULL, LABEL,       slowPathLabel,          cg)->setNode(node);
+         {
+         TR_OutlinedInstructionsGenerator og(slowPathLabel, node, cg);
          generateRegImm64Instruction(MOV8RegImm64, node, treg, DOUBLE_NAN, cg);
-         generateLabelInstruction(      JMP4,        node, endLabel,         cg);
-         slowPath->swapInstructionListsWithCompilation();
+         generateLabelInstruction(JMP4, node, endLabel, cg);
+         }
 
          // Merge point
          //

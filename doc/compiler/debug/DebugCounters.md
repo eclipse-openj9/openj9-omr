@@ -30,21 +30,21 @@ Debug counters can be inserted either at the tree level or the instruction level
 
 ### In Trees
 
-The different overloads of `TR_Compilation::prependDebugCounter` allow you to inject counter bumps into trees.
+The different overloads of `TR::Compilation::prependDebugCounter` allow you to inject counter bumps into trees.
 
 ### In Instructions
 
-The different overloads of `TR_CodeGenerator::generateDebugCounter` allow you to inject counter bumps into instructions.
+The different overloads of `TR::CodeGenerator::generateDebugCounter` allow you to inject counter bumps into instructions.
 
 ### Fidelity
 
-One (optional) argument when calling `TR_Compilation::prependDebugCounter` or `TR_CodeGenerator::generateDebugCounter` is fidelity. Consumers typically use values from the TR_DebugCounter::Fidelities enum. This allows the caller to estimate how expensive the debug counter will be to compute at runtime (e.g. Exorbitant for counters that frequently occur in hot paths, or Moderate for counters in cold paths).
+One (optional) argument when calling `TR::Compilation::prependDebugCounter` or `TR::CodeGenerator::generateDebugCounter` is fidelity. Consumers typically use values from the TR::DebugCounter::Fidelities enum. This allows the caller to estimate how expensive the debug counter will be to compute at runtime (e.g. Exorbitant for counters that frequently occur in hot paths, or Moderate for counters in cold paths).
 
 Counters below a certain fidelity can be excluded by using the `-Xjit:debugCounterFidelity=##` option.
 
 ## Static and Dynamic Counters
 
-Whenever you use a counter using either `TR_Compilation::prependDebugCounter` or `TR_CodeGenerator::generateDebugCounter`, two counters are actually created: one static, one dynamic. Dynamic counters are implemented by injecting nodes into trees or instructions into the generated code, and they count how often the particular code path is reached at runtime. Static counters are incremented at compilation, when the `prependDebugCounter` or `generateDebugCounter` method is called. The delta used for each counter can be specified separately using the available overloads, though they are the same by default.
+Whenever you use a counter using either `TR::Compilation::prependDebugCounter` or `TR::CodeGenerator::generateDebugCounter`, two counters are actually created: one static, one dynamic. Dynamic counters are implemented by injecting nodes into trees or instructions into the generated code, and they count how often the particular code path is reached at runtime. Static counters are incremented at compilation, when the `prependDebugCounter` or `generateDebugCounter` method is called. The delta used for each counter can be specified separately using the available overloads, though they are the same by default.
 
 ## Naming Scheme
 

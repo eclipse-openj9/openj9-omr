@@ -79,15 +79,15 @@ JitBuilder::CodeCacheManager::allocateCodeCacheSegment(size_t segmentSize,
    TR::CodeCacheConfig & config = self()->codeCacheConfig();
    if (segmentSize < config.codeCachePadKB() << 10)
       codeCacheSizeToAllocate = config.codeCachePadKB() << 10;
-   uint8_t *memorySlab = nullptr;
+
 #if defined(OMR_OS_WINDOWS)
-   memorySlab = reinterpret_cast<uint8_t *>(
+   auto memorySlab = reinterpret_cast<uint8_t *>(
          VirtualAlloc(nullptr,
             codeCacheSizeToAllocate,
             MEM_COMMIT,
             PAGE_EXECUTE_READWRITE));
 #else
-   memorySlab = reinterpret_cast<uint8_t *>(
+   auto memorySlab = reinterpret_cast<uint8_t *>(
          mmap(NULL,
               codeCacheSizeToAllocate,
               PROT_READ | PROT_WRITE | PROT_EXEC,

@@ -1,0 +1,221 @@
+<!--
+Copyright (c) 2018, 2018 IBM Corp. and others
+
+This program and the accompanying materials are made available under
+the terms of the Eclipse Public License 2.0 which accompanies this
+distribution and is available at https://www.eclipse.org/legal/epl-2.0/
+or the Apache License, Version 2.0 which accompanies this distribution and
+is available at https://www.apache.org/licenses/LICENSE-2.0.
+
+This Source Code may also be made available under the following
+Secondary Licenses when the conditions for such availability set
+forth in the Eclipse Public License, v. 2.0 are satisfied: GNU
+General Public License, version 2 with the GNU Classpath 
+Exception [1] and GNU General Public License, version 2 with the
+OpenJDK Assembly Exception [2].
+
+[1] https://www.gnu.org/software/classpath/license.html
+[2] http://openjdk.java.net/legal/assembly-exception.html
+
+SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH 
+Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
+-->
+
+# Debug Counters
+
+A **debug counter** is a facility in the Compiler for adding 
+instrumentation to compiled code to count arbitrary things.
+
+## Using Debug Counters
+
+Debug counters can be inserted either at the tree level or the 
+instruction level. Note that counters are not actually inserted unless 
+the counter name and type matches the provided Compiler options 
+(see Specifying Output below).
+
+### In Trees
+
+The different overloads of `TR::Compilation::prependDebugCounter` allow 
+you to inject counter bumps into trees.
+
+### In Instructions
+
+The different overloads of `TR::CodeGenerator::generateDebugCounter` 
+allow you to inject counter bumps into instructions.
+
+### Fidelity
+
+One (optional) argument when calling `TR::Compilation::prependDebugCounter` 
+or `TR::CodeGenerator::generateDebugCounter` is fidelity. Consumers 
+typically use values from the `TR::DebugCounter::Fidelities` enum. This 
+allows the caller to estimate how expensive the debug counter will be 
+to compute at runtime (e.g. Exorbitant for counters that frequently 
+occur in hot paths, or Moderate for counters in cold paths).
+
+Counters below a certain fidelity can be excluded by using the 
+`-Xjit:debugCounterFidelity=##` option.
+
+## Static and Dynamic Counters
+
+Whenever you use a counter using either `TR::Compilation::prependDebugCounter` 
+or `TR::CodeGenerator::generateDebugCounter`, two counters are actually 
+created: one static, one dynamic. Dynamic counters are implemented by 
+injecting nodes into trees or instructions into the generated code, and
+they count how often the particular code path is reached at runtime. 
+Static counters are incremented at compilation, when the `prependDebugCounter` 
+or `generateDebugCounter` method is called. The delta used for each 
+counter can be specified separately using the available overloads, 
+though they are the same by default.
+
+## Naming Scheme
+
+The name of a counter can affect its behaviour, and its relationship 
+with other counters. Special characters in a counter name signal the 
+debug counter facility to treat a counter in a special way.
+
+### Slash
+
+`/`
+
+The most important special character is the slash. A slash in a counter 
+name is meant to resemble a slash in a filename: it represents a 
+**hierarchical containment relation** between counters. Asking for a 
+counter with a name like "a/b" actually provides two counters: "a" and 
+"a/b". The debug counter runtime will ensure that each increment of 
+"a/b" also increments "a".
+
+For example, suppose you added the following counters to the inliner:
+```
+prependDebugCounter("callSites/inlined", tt);
+...
+prependDebugCounter("callSites/notInlined", tt);
+```
+This will actually produce three counters with the following names:
+1. `callSites`
+2. `callSites/inlined`
+3. `callSites/notInlined`
+
+Increment trees will be inserted for counters 2 and 3, and the runtime 
+will make sure their values are rolled into counter 1. Counter 1 is 
+referred to as a "denominator counter" of counters 2 and 3.
+You may end up with a report that looks like this:
+```
+1: callSites                |       10000 |   __   1 __
+2: callSites/inlined        |        8000 |     80.00% |  __   2 __
+3: callSites/notInlined     |        2000 |     20.00% |  __   3 __
+```
+
+The first column is the raw counter values. To the right are additional 
+columns that give ratios between counters. In this example, the second 
+column has a header of "__ 1__" meaning that the values below are 
+relative to counter #1. The rightmost column just lists the counter 
+numbers again, making it easier visually to follow the (sometimes very 
+long) lines horizontally. Note that the compiled code would only contain
+counters 2 & 3, and the denominator (1) is computed from them.
+
+### Colon
+
+`:`
+
+A colon in a counter name is similar to a slash, except it indicates 
+that the denominator should not be computed automatically. Rather, the 
+developer will insert the denominator counter separately. The colon 
+simply indicates that the user wants to compute the ratio between two 
+counters. Asking for a counter with a name of the form "a:b" actually 
+provides two counters: "a" and "a:b". The ratio between these two 
+counters will be displayed in the counter report, but increments to 
+"a:b" will not be counted as increments to "a".
+
+For example:
+```
+prependDebugCounter("frames", tt);
+...
+prependDebugCounter("frames:#autos", tt, numAutos);
+```
+This produces two counters that are unrelated except that the compiler 
+will report their ratio when the run is complete:
+```
+1: frames         |  3914036134 |   __   1 __
+2: frames:#autos  | 22680880758 |      5.79  |  __   2 __
+```
+Looking down from the "__ 1__" heading, you can see that each frame has 
+an average of 5.79 autos.
+
+### Equals
+
+`=`
+
+The equals sign indicates to the debug counter display routine that the 
+remainder of the counter name should be **sorted numerically** rather 
+than alphabetically. It has no other special meaning.
+
+### Parentheses
+
+`()`
+
+Parentheses are used to mark a **verbatim section** of a counter name, 
+within which the other special characters lose their special meaning. 
+For example, asking for a counter with a name of the form "(a/b)" 
+produces just one counter. Without the special meaning of parentheses, 
+this would have produced two counters: "(a" and "(a/b)".
+
+Parentheses can be nested.
+
+### Hash
+
+`#`
+
+The hash symbol has no particular special meaning, but is used by 
+convention to signify counters that are **suitable for producing a 
+histogram**. Generally you can include a hash symbol in any debug 
+counter that is incremented by some value other than 1, such as 
+"#parameters".
+
+### Other naming considerations
+
+Counters can have arbitrary names, though care should be taken with 
+certain special characters:
+- Whitespace and other shell-control characters may make them awkward 
+  to specify on the command line
+- Characters with special meanings in the Compiler's regular expressions
+   will make them awkward to filter
+
+## Specifying Output
+
+### Environment Variables
+
+```
+TR_DebugCounterFileName
+````
+Specifies the file to which the debug counter output should be appended 
+(creating the file if necessary), relative to the current working 
+directory. If not specified, debug counter output is written to stdout.
+
+### Compiler Options
+
+A full listing of debug counter-related Compiler options can be found by
+exporting {*debugCounter*} to the `TR_Options` environment variable. If you
+are running with testjit, then you can use a command such as the one below:
+```
+TR_Options='help={*debugCounter*}' testjit
+```
+At least one debug counter option must be specified for debug counter 
+output to be produced.
+
+```
+debugCounters=
+```
+Specifies a regular expression that is matched against dynamic debug 
+counter names to determine which are included in the output.
+
+```
+staticDebugCounters=
+```
+Specifies a regular expression that is matched against static debug 
+counter names to determine which are included in the output.
+
+#### Example
+```
+export TR_DebugCounterFileName=debugcounters.txt
+TR_Options='debugCounters={*}' testjit # output all dynamic debug counters
+```

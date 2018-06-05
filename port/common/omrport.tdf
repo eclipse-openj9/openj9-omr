@@ -1072,3 +1072,6 @@ TraceException=Trc_PRT_signal_omrsig_register_os_handler_invalid_portlibSignalFl
 
 TraceEntry=Trc_PRT_signal_omrsig_is_master_signal_handler_entered Group=signal Overhead=1 Level=3 NoEnv Template="omrsig_is_master_signal_handler: Entered, osHandler=%p"
 TraceExit=Trc_PRT_signal_omrsig_is_master_signal_handler_exiting Group=signal Overhead=1 Level=3 NoEnv Template="omrsig_is_master_signal_handler: Exiting, rc=%d"
+
+TraceException=Trc_PRT_readCgroupFile_fgets_failed Group=sysinfo Overhead=1 Level=3 NoEnv Template="readCgroupFile: fgets failed for %s with errno=%d"
+TraceException=Trc_PRT_isRunningInContainer_fgets_failed Group=sysinfo Overhead=1 Level=3 NoEnv Template="isRunningInContainer: unexpected format of file %s with errno=%d"

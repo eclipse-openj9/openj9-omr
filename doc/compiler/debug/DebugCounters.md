@@ -194,9 +194,10 @@ directory. If not specified, debug counter output is written to stdout.
 ### Compiler Options
 
 A full listing of debug counter-related Compiler options can be found by
-using a command like the following:
+exporting {*debugCounter*} to the `TR_Options` environment variable. If you
+are running with testjit, then you can use a command such as the one below:
 ```
-java -Xjit:help={*debugCounter*} -version
+TR_Options='help={*debugCounter*}' testjit
 ```
 At least one debug counter option must be specified for debug counter 
 output to be produced.
@@ -216,5 +217,5 @@ counter names to determine which are included in the output.
 #### Example
 ```
 export TR_DebugCounterFileName=debugcounters.txt
-java -Xjit:debugCounters={*} # output all dynamic debug counters
+TR_Options='debugCounters={*}' testjit # output all dynamic debug counters
 ```

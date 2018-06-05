@@ -325,12 +325,12 @@ ifeq (linux,$(OMR_HOST_OS))
 
 # Linux standard headers have some functions marked with the attribute "warn_unused_result".
   ifeq (gcc,$(OMR_TOOLCHAIN))
-omrfile.o: MODULE_CFLAGS+=-Wno-error
-omrfiletext.o: MODULE_CFLAGS+=-Wno-error
-omrintrospect.o: MODULE_CFLAGS+=-Wno-error
-omrosdump.o: MODULE_CFLAGS+=-Wno-error
-omrosdump_helpers.o: MODULE_CFLAGS+=-Wno-error
-omrsysinfo.o: MODULE_CFLAGS+=-Wno-error
+omrfile.o: MODULE_CFLAGS+=-Wno-error=unused-result
+omrfiletext.o: MODULE_CFLAGS+=-Wno-error=unused-result
+omrintrospect.o: MODULE_CFLAGS+=-Wno-error=unused-result
+omrosdump.o: MODULE_CFLAGS+=-Wno-error=unused-result
+omrosdump_helpers.o: MODULE_CFLAGS+=-Wno-error=unused-result
+omrsysinfo.o: MODULE_CFLAGS+=-Wno-error=unused-result
   endif
 
   ifeq (s390,$(OMR_HOST_ARCH))

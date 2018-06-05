@@ -47,7 +47,7 @@ allow you to inject counter bumps into instructions.
 
 One (optional) argument when calling `TR::Compilation::prependDebugCounter` 
 or `TR::CodeGenerator::generateDebugCounter` is fidelity. Consumers 
-typically use values from the TR::DebugCounter::Fidelities enum. This 
+typically use values from the `TR::DebugCounter::Fidelities` enum. This 
 allows the caller to estimate how expensive the debug counter will be 
 to compute at runtime (e.g. Exorbitant for counters that frequently 
 occur in hot paths, or Moderate for counters in cold paths).

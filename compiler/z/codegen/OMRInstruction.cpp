@@ -909,7 +909,7 @@ bool OMR::Z::Instruction::getUsedRegisters(TR::list<TR::Register *> &usedRegs)
             else
               {
               TR::RealRegister::RegNum rr = dep->getRealRegister();
-              if(rr>TR::RealRegister::NoReg && rr<=TR::RealRegister::MISC)
+              if(rr>TR::RealRegister::NoReg && rr<=TR::RealRegister::LastHPR)
                 {
                 usedRegs.push_back(machine->getS390RealRegister(rr));
                 }
@@ -942,7 +942,7 @@ bool OMR::Z::Instruction::getUsedRegisters(TR::list<TR::Register *> &usedRegs)
             else
               {
               TR::RealRegister::RegNum rr = dep->getRealRegister();
-              if(rr>TR::RealRegister::NoReg && rr<=TR::RealRegister::MISC)
+              if(rr>TR::RealRegister::NoReg && rr<=TR::RealRegister::LastHPR)
                 {
                 usedRegs.push_back(machine->getS390RealRegister(rr));
                 }
@@ -1030,7 +1030,7 @@ bool OMR::Z::Instruction::getDefinedRegisters(TR::list<TR::Register *> &defedReg
             else
               {
               TR::RealRegister::RegNum rr = dep->getRealRegister();
-              if(rr>TR::RealRegister::NoReg && rr<=TR::RealRegister::MISC)
+              if(rr>TR::RealRegister::NoReg && rr<=TR::RealRegister::LastHPR)
                 {
                 defedRegs.push_back(machine->getS390RealRegister(rr));
                 }
@@ -1063,7 +1063,7 @@ bool OMR::Z::Instruction::getDefinedRegisters(TR::list<TR::Register *> &defedReg
             else
               {
               TR::RealRegister::RegNum rr = dep->getRealRegister();
-              if(rr>TR::RealRegister::NoReg && rr<=TR::RealRegister::MISC)
+              if(rr>TR::RealRegister::NoReg && rr<=TR::RealRegister::LastHPR)
                 {
                 defedRegs.push_back(machine->getS390RealRegister(rr));
                 }

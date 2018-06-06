@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -154,23 +154,4 @@
       HPR15             = HPRBase + 16,
 
       FirstHPR          = HPR0,
-      LastHPR           = HPR15,
-
-      MISC              = LastHPR,
-
-      EvenOddPair         = MISC + 1,      // Assign an even/odd pair to the reg pair
-      LegalEvenOfPair     = MISC + 2,      // Assign an even reg that is followed by an unlocked odd register
-      LegalOddOfPair      = MISC + 3,      // Assign an odd reg that is preceded by an unlocked even register
-      FPPair              = MISC + 4,      // Assign an FP pair to the reg pair
-      LegalFirstOfFPPair  = MISC + 5,      // Assign first FP reg of a FP reg Pair
-      LegalSecondOfFPPair = MISC + 6,      // Assign second FP reg of a FP reg Pair
-      AssignAny           = MISC + 7,      // Assign any register
-      KillVolAccessRegs   = MISC + 8,      // Kill all volatile access regs
-      KillVolHighRegs     = MISC + 9,      // Kill all volatile access regs
-      MayDefine           = MISC + 10,     // This instruction's result should be modelled as live before as this instruction only 'may defines' the register
-      SpilledReg          = MISC + 11,     // OOL: Any Spilled register cross OOL sequences
-      ArGprPair           = MISC + 12,     // Assign an ar/gpr pair to the reg pair
-      ArOfArGprPair       = MISC + 13,     // Assign AR register corresponding to GPR in the second RA pass
-      GprOfArGprPair      = MISC + 14,     // Assign GPR register in the first RA pass
-
-      NumRegisters        = LastHPR + 1    // (include noReg)
+      LastHPR           = HPR15

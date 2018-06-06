@@ -7098,7 +7098,7 @@ void OMR::Z::CodeGenerator::startInternalControlFlow(TR::Instruction *instr)
         else
           {
           TR::RealRegister::RegNum rr = postConds->getRegisterDependency(i)->getRealRegister();
-          if(rr>TR::RealRegister::NoReg && rr<=TR::RealRegister::MISC)
+          if(rr>TR::RealRegister::NoReg && rr<=TR::RealRegister::LastHPR)
             r = mach->getS390RealRegister(rr);
           }
         if(r) _internalControlFlowRegisters.push_back(r);
@@ -10142,7 +10142,7 @@ OMR::Z::CodeGenerator::addVMThreadPreCondition(TR::RegisterDependencyConditions 
       //TODO: using addPreConditionIfNotAlreadyInserted() is slower than using addPreCondition()
       //think about changing the name of this method to addVMThreadPreConditionIfNotAlreadyInserted()
       //and add one for addVMThreadPreCondition, which uses deps->addPreCondition()
-      deps->addPreConditionIfNotAlreadyInserted(reg,(TR::RealRegister::RegNum)self()->getVMThreadRegister()->getAssociation());
+      deps->addPreConditionIfNotAlreadyInserted(reg, static_cast<TR::RealRegister::RegDep>(self()->getVMThreadRegister()->getAssociation()));
       }
    return deps;
    }
@@ -10167,7 +10167,7 @@ OMR::Z::CodeGenerator::addVMThreadPostCondition(TR::RegisterDependencyConditions
       //TODO: using addPostConditionIfNotAlreadyInserted() is slower than using addPostCondition()
       //think about changing the name of this method to addVMThreadPostConditionIfNotAlreadyInserted()
       //and add one for addVMThreadPostCondition, which uses deps->addPostCondition()
-      deps->addPostConditionIfNotAlreadyInserted(reg,(TR::RealRegister::RegNum)self()->getVMThreadRegister()->getAssociation());
+      deps->addPostConditionIfNotAlreadyInserted(reg, static_cast<TR::RealRegister::RegDep>(self()->getVMThreadRegister()->getAssociation()));
       }
    return deps;
    }

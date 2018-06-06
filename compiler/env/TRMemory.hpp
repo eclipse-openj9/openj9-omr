@@ -488,6 +488,9 @@ public:
 
    TR::PersistentInfo * getPersistentInfo() { return &_persistentInfo; }
 
+   void printMemStats();
+   void printMemStatsToVlog();
+
    uintptr_t _signature;        // eyecatcher
 
    friend class TR_Memory;

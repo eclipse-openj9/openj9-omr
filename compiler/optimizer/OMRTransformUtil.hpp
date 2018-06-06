@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -36,6 +36,7 @@ namespace OMR { typedef OMR::TransformUtil TransformUtilConnector; }
 #include "il/DataTypes.hpp"       // for DataTypes
 #include "il/Node.hpp"            // for Node, vcount_t
 #include "env/KnownObjectTable.hpp"
+#include "optimizer/Optimization.hpp"
 
 namespace TR { class Compilation; }
 namespace TR { class Node; }
@@ -96,6 +97,29 @@ class OMR_EXTENSIBLE TransformUtil
    static bool fieldShouldBeCompressed(TR::Node *node, TR::Compilation *comp);
 
    static void removeTree(TR::Compilation *, TR::TreeTop * tt);
+
+   /**
+    * \brief
+    *    This function serves as a tool to transform a call node to a TR::PassThrough node with one child in place
+    *    as a safe way to eliminate the call.
+    *
+    * \parm opt
+    *    The optimization asking for this transformation.
+    *
+    * \parm node
+    *    The call node to be transformed.
+    *
+    * \parm anchorTree
+    *    The tree before which the children of the call node are to be anchored.
+    *
+    * \parm child
+    *    The child for node after the transformation. It's the receiver of the call or any node for a static call.
+    *
+    * \note
+    *    The call node's refcount has to be 1 since the transformation is equivalent to eliminating the call,
+    *    otherwise the resulting node will cause problems in other optimizations.
+    */
+   static void transformCallNodeToPassThrough(TR::Optimization* opt, TR::Node* node, TR::TreeTop * anchorTree, TR::Node* child);
    
    private:
 

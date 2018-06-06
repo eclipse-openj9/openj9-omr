@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -42,6 +42,7 @@
 #include "optimizer/VPConstraint.hpp"           // for TR::VPConstraint, etc
 #include "optimizer/OMRValuePropagation.hpp"
 #include "runtime/Runtime.hpp"
+#include "optimizer/TransformUtil.hpp"
 
 #ifdef J9_PROJECT_SPECIFIC
 #include "env/VMJ9.h"
@@ -383,8 +384,7 @@ TR::Node *constrainVcall(OMR::ValuePropagation *vp, TR::Node *node)
          {
          ///printf("found opportunity in %s to remove call to checkfinalize\n", vp->comp()->signature());fflush(stdout);
          ///traceMsg(vp->comp(), "found opportunity to remove call %p to checkfinalize\n", node);
-         vp->removeNode(node);
-         vp->_curTree->setNode(NULL);
+         TR::TransformUtil::transformCallNodeToPassThrough(vp, node, vp->_curTree, receiver);
          return node;
          }
       }

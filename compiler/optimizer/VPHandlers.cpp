@@ -5563,9 +5563,9 @@ TR::Node *constrainCall(OMR::ValuePropagation *vp, TR::Node *node)
                 TR::Compiler->cls.isClassInitialized(vp->comp(), j9class) &&
                 performTransformation(vp->comp(), "%s Remove TR::sun_misc_Unsafe_ensureClassInitialized call, class already initialized [%p]\n", OPT_DETAILS, node))
                 {
-                vp->removeNode(node);
-                vp->_curTree->setNode(NULL);
-                return NULL;
+                TR::Node* receiver = node->getChild(0);
+                TR::TransformUtil::transformCallNodeToPassThrough(vp, node, vp->_curTree, receiver);
+                return node;
                 }
             }
          }

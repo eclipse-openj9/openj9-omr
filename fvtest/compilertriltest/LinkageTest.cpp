@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2017 IBM Corp. and others
+ * Copyright (c) 2017, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -57,27 +57,27 @@ typedef ::testing::Types<int32_t, int64_t, float, double> InputTypes;
 TYPED_TEST_CASE(LinkageTest, InputTypes);
 
 TYPED_TEST(LinkageTest, InvalidLinkageTest) { 
-   char inputTrees[200] = {0};
-   const auto format_string = "(method return=Int32  args=[Int32] (block (ireturn (icall address=%p args=[Int32] linkage=noexist  (iload parm=0)) )  ))"; 
-   std::snprintf(inputTrees, 200, format_string, static_cast<TypeParam (*)(TypeParam)>(passThrough<TypeParam>)); 
+    char inputTrees[200] = {0};
+    const auto format_string = "(method return=Int32  args=[Int32] (block (ireturn (icall address=0x%jX args=[Int32] linkage=noexist  (iload parm=0)) )  ))";
+    std::snprintf(inputTrees, 200, format_string, reinterpret_cast<uintmax_t>(static_cast<TypeParam (*)(TypeParam)>(passThrough<TypeParam>)));
 
-   auto trees = parseString(inputTrees);
-   ASSERT_NOTNULL(trees) << "Trees failed to parse\n" << inputTrees;
+    auto trees = parseString(inputTrees);
+    ASSERT_NOTNULL(trees) << "Trees failed to parse\n" << inputTrees;
 
 #ifdef TR_TARGET_X86
-   Tril::DefaultCompiler compiler{trees};
-   ASSERT_NE(0, compiler.compile()) << "Compilation succeeded unexpectedly\n" << "Input trees: " << inputTrees;
+    Tril::DefaultCompiler compiler{trees};
+    ASSERT_NE(0, compiler.compile()) << "Compilation succeeded unexpectedly\n" << "Input trees: " << inputTrees;
 #endif
 }
 
 TYPED_TEST(LinkageTest, SystemLinkageParameterPassingSingleArg) {
     char inputTrees[200] = {0};
-    const auto format_string = "(method return=%s args=[%s] (block (%sreturn (%scall address=%p args=[%s] linkage=system (%sload parm=0)) )  ))";
+    const auto format_string = "(method return=%s args=[%s] (block (%sreturn (%scall address=0x%jX args=[%s] linkage=system (%sload parm=0)) )  ))";
     std::snprintf(inputTrees, 200, format_string, TypeToString<TypeParam>::type, // Return
                                                   TypeToString<TypeParam>::type, //Args
                                                   TypeToString<TypeParam>::prefix, //return
                                                   TypeToString<TypeParam>::prefix, //call
-                                                  static_cast<TypeParam (*)(TypeParam)>(passThrough<TypeParam>),//address
+                                                  reinterpret_cast<uintmax_t>(static_cast<TypeParam (*)(TypeParam)>(passThrough<TypeParam>)),//address
                                                   TypeToString<TypeParam>::type, //args
                                                   TypeToString<TypeParam>::prefix //load
                                                   );
@@ -108,7 +108,7 @@ T fourthArg(T a, T b, T c, T d) { return d; }
 
 TYPED_TEST(LinkageTest, SystemLinkageParameterPassingFourArg) {
     char inputTrees[400] = {0};
-    const auto format_string = "(method return=%s args=[%s,%s,%s,%s] (block (%sreturn (%scall address=%p args=[%s,%s,%s,%s] linkage=system"
+    const auto format_string = "(method return=%s args=[%s,%s,%s,%s] (block (%sreturn (%scall address=0x%jX args=[%s,%s,%s,%s] linkage=system"
                                  " (%sload parm=0)"
                                  " (%sload parm=1)"
                                  " (%sload parm=2)"
@@ -121,7 +121,7 @@ TYPED_TEST(LinkageTest, SystemLinkageParameterPassingFourArg) {
                                                   TypeToString<TypeParam>::type,   // Args
                                                   TypeToString<TypeParam>::prefix, // return
                                                   TypeToString<TypeParam>::prefix, // call
-                                                  static_cast<TypeParam (*)(TypeParam,TypeParam,TypeParam,TypeParam)>(fourthArg<TypeParam>),// address
+                                                  reinterpret_cast<uintmax_t>(static_cast<TypeParam (*)(TypeParam,TypeParam,TypeParam,TypeParam)>(fourthArg<TypeParam>)),// address
                                                   TypeToString<TypeParam>::type,   // args
                                                   TypeToString<TypeParam>::type,   // args
                                                   TypeToString<TypeParam>::type,   // args

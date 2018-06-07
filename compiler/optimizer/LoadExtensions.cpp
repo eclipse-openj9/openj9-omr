@@ -237,7 +237,7 @@ void TR_LoadExtensions::findPreferredLoadExtensions(TR::Node* parent)
             // exists at least one def (store) of this particular use which feeds from a non-load operation (an
             // addition for example). These are not candidates for skipping extension because we cannot easily extend
             // a non-load operation.
-            if (useDefInfo != NULL && useDefInfo->infoIsValid() && useRegLoad->getUseDefIndex() != 0 && useDefInfo->isUseIndex(useRegLoad->getUseDefIndex() != 0))
+            if (useDefInfo != NULL && useDefInfo->infoIsValid() && useRegLoad->getUseDefIndex() != 0 && useDefInfo->isUseIndex(useRegLoad->getUseDefIndex()))
                {
                TR_UseDefInfo::BitVector info(comp()->allocator());
                if (useDefInfo->getUseDef(info, useRegLoad->getUseDefIndex()))
@@ -366,7 +366,7 @@ void TR_LoadExtensions::flagPreferredLoadExtensions(TR::Node* parent)
 
                TR_UseDefInfo* useDefInfo = optimizer()->getUseDefInfo();
 
-               if (useDefInfo != NULL && useDefInfo->infoIsValid() && useRegLoad->getUseDefIndex() != 0 && useDefInfo->isUseIndex(useRegLoad->getUseDefIndex() != 0))
+               if (useDefInfo != NULL && useDefInfo->infoIsValid() && useRegLoad->getUseDefIndex() != 0 && useDefInfo->isUseIndex(useRegLoad->getUseDefIndex()))
                   {
                   TR_UseDefInfo::BitVector info(comp()->allocator());
 

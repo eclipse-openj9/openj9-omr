@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -471,8 +471,6 @@ bool TR_RedundantAsyncCheckRemoval::callDoesAnImplicitAsyncCheck(TR::Node *callN
        (symbol->getRecognizedMethod()==TR::com_ibm_dataaccess_DecimalData_setlaside) ||
        (symbol->getRecognizedMethod()==TR::com_ibm_dataaccess_DecimalData_getflags) ||
        (symbol->getRecognizedMethod()==TR::com_ibm_dataaccess_DecimalData_setflags))
-      return false;
-   if (symbol->getRecognizedMethod()==TR::java_lang_String_StrHWAvailable)
       return false;
 #endif
    return true;

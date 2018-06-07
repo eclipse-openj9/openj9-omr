@@ -135,6 +135,43 @@ to allocate memory. It receives this allocator via the
 an automatic conversion (which wraps it in a `TR::typed_allocator`) 
 for ease of use with STL containers.
 
+#### TR_TypedPersistentAllocator
+`TR_TypedPersistentAllocator` is a wrapper around `TR_PersistentMemory`.
+Its purpose is to allow the compiler to track memory per type (as 
+defined in `TR_MemoryBase::ObjectType`) when using STL containers for
+persistent data types; it contains an automatic conversion (which 
+wraps it in a `TR::typed_allocator`) for ease of use with STL containers.
+
+For example, given:
+```
+class Test
+   {
+public:
+   Test(uintptr_t f1, uintptr_t f2)
+      : _field1(f1),
+        _field2(f2)
+      { }
+
+   uintptr_t _field1;
+   uintptr_t _field2;
+   };
+```
+1. Add (or replace the existing `TR_ALLOC` with) `TR_ALLOC_SPECIALIZED` 
+with the appropriate `TR_MemoryBase::ObjectType` enum value to the 
+class definition
+2. Declare and use the container, eg:
+```
+typedef TR::list<Test, Test::TrackedPersistentAllocator> TestList;
+TestList myList(getTypedAllocator<Test, Test::TrackedPersistentAllocator>(Test::getPersistentAllocator()));
+```
+If the desire is to allocate the container using persistent memory 
+(ie not a local on the stack), then:
+```
+typedef TR::list<Test, Test::TrackedPersistentAllocator> TestList;
+void *storage = TR_Memory::jitPersistentAlloc(sizeof(TestList));
+TestList *myList = new (storage) TestList(getTypedAllocator<Test, Test::TrackedPersistentAllocator>(Test::getPersistentAllocator()));
+```
+
 #### TR::RawAllocator
 `TR::RawAllocator` uses `malloc` (or equivalent) to allocate memory. 
 It contains an automatic conversion (which wraps it in a 
@@ -223,8 +260,8 @@ it is first initialized (close to bootstrap time). For the most
 part it allocates persistent memory either directly using the global 
 `jitPersistentAlloc`/`jitPersistentFree` or via the object methods 
 added through `TR_ALLOC` (and related macros). Again, 
-`TR::PersistentAllocator` should be the allocator used for all new 
-code as much as possible.
+`TR::PersistentAllocator` or `TR_TypedPersistentAllocator` should 
+be the allocator used for all new code as much as possible.
 
 
 ## Subtleties and Miscellaneous Information

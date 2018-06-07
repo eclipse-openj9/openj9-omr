@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2017 IBM Corp. and others
+ * Copyright (c) 1991, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -101,21 +101,18 @@ static void unlimitCoreFileSize(struct OMRPortLibrary *portLibrary);
 uintptr_t
 omrdump_create(struct OMRPortLibrary *portLibrary, char *filename, char *dumpType, void *userData)
 {
-
 #if !defined(J9OS_I5)
-	char *lastSep;
-	intptr_t pid;
+	char *lastSep = NULL;
+	intptr_t pid = 0;
 
 #if defined(AIXPPC)
-	int rc = -1;
 	struct vario myvar;
-	int sys_parmRC;
 
 	/* check to see if full core dumps are enabled */
-	sys_parmRC = sys_parm(SYSP_GET, SYSP_V_FULLCORE, &myvar);
+	int sys_parmRC = sys_parm(SYSP_GET, SYSP_V_FULLCORE, &myvar);
 
 	if ((sys_parmRC == 0) && (myvar.v.v_fullcore.value == 1)) {
-
+		int rc = 0;
 		/* full core dumps are enabled, go ahead and use gencore */
 		unlimitCoreFileSize(portLibrary);
 		rc = genSystemCoreUsingGencore(portLibrary, filename);
@@ -129,7 +126,9 @@ omrdump_create(struct OMRPortLibrary *portLibrary, char *filename, char *dumpTyp
 	}
 #endif /* aix_ppc */
 
-	lastSep = filename ? strrchr(filename, DIR_SEPARATOR) : NULL;
+	if (NULL != filename) {
+		lastSep =  strrchr(filename, DIR_SEPARATOR);
+	}
 
 	/*
 	 * Ensure that ulimit doesn't get in our way.
@@ -137,7 +136,8 @@ omrdump_create(struct OMRPortLibrary *portLibrary, char *filename, char *dumpTyp
 	unlimitCoreFileSize(portLibrary);
 
 	/* fork a child process from which we'll dump a core file */
-	if ((pid = fork()) == 0) {
+	pid = fork();
+	if (0 == pid) {
 		/* in the child process */
 
 #if defined(LINUX)
@@ -174,7 +174,14 @@ omrdump_create(struct OMRPortLibrary *portLibrary, char *filename, char *dumpTyp
 		/* Move to specified folder before dumping? */
 		if (lastSep != NULL) {
 			lastSep[1] = '\0';
-			chdir(filename);
+			/*
+			 * There isn't much we can do if chdir() fails, but we don't want
+			 * compilers warning that we're ignoring the return value, so we
+			 * conditionally repeat the assignment above which has no real effect.
+			 */
+			if (0 != chdir(filename)) {
+				lastSep[1] = '\0';
+			}
 		}
 
 #if defined(LINUX) || defined(OSX)
@@ -193,7 +200,6 @@ omrdump_create(struct OMRPortLibrary *portLibrary, char *filename, char *dumpTyp
 #if defined(LINUX) || defined(OSX)
 
 	if (NULL != filename) {
-
 		/* Wait for child process that is generating core file to finish */
 		waitpid(pid, NULL, 0);
 
@@ -298,7 +304,6 @@ omrdump_create(struct OMRPortLibrary *portLibrary, char *filename, char *dumpTyp
 static void
 unlimitCoreFileSize(struct OMRPortLibrary *portLibrary)
 {
-
 	struct rlimit limit;
 
 	/* read the current value (to initialize limit.rlim_max) */

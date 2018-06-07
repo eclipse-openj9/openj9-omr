@@ -294,7 +294,9 @@ barrier_release_r(barrier_r *barrier, uintptr_t seconds)
 		 * converts this to a busy wait
 		 */
 		barrier->released = 1;
-		write(barrier->descriptor_pair[1], &byte, 1);
+		if (1 != write(barrier->descriptor_pair[1], &byte, 1)) {
+			return -1;
+		}
 	}
 
 	/* wait until all entrants have arrived */
@@ -305,7 +307,10 @@ barrier_release_r(barrier_r *barrier, uintptr_t seconds)
 		}
 	}
 
-	write(barrier->descriptor_pair[1], &byte, 1);
+	if (1 != write(barrier->descriptor_pair[1], &byte, 1)) {
+		return -1;
+	}
+
 #if !defined(J9ZOS390) && !defined(AIXPPC)
 	/* On AIX it is not legal to call fdatasync() inside a signal handler */
 	fdatasync(barrier->descriptor_pair[1]);
@@ -337,7 +342,9 @@ barrier_enter_r(barrier_r *barrier, uintptr_t deadline)
 
 	if (old_value == 1 && (compareAndSwapUDATA((uintptr_t *)&barrier->released, 0, 0))) {
 		/* we're the last through the barrier so wake everyone up */
-		write(barrier->descriptor_pair[1], &byte, 1);
+		if (1 != write(barrier->descriptor_pair[1], &byte, 1)) {
+			return -1;
+		}
 	}
 
 	/* if we're entering a barrier with a negative count then count us out but we don't need to do anything */
@@ -404,21 +411,26 @@ barrier_update_r(barrier_r *barrier, int new_value)
 }
 
 /*
- * This function destroys a barrier created by barrier_init_r. It first wakes up any waiters then waits for them
- * to exit the barrier before returning if requested.
+ * This function destroys a barrier created by barrier_init_r. It first
+ * wakes up any waiters, then, if requested, waits for them to exit the
+ * barrier before returning.
  *
  * @param barrier the barrier to destroy
  * @int block if non-zero the barrier will block until waiters have exited
+ *
+ * @return 0 on success, -1 on failure
  */
-static void
+static int
 barrier_destroy_r(barrier_r *barrier, int block)
 {
-	int current = 0;
-	int in = 0;
+	int rc = 0;
 	char byte = 1;
 
 	/* clean up and wait for all waiters to exit */
-	write(barrier->descriptor_pair[1], &byte, 1);
+	if (1 != write(barrier->descriptor_pair[1], &byte, 1)) {
+		rc = -1;
+	}
+
 #if !defined(J9ZOS390) && !defined(AIXPPC)
 	/* On AIX it is not legal to call fdatasync() inside a signal handler */
 	fdatasync(barrier->descriptor_pair[1]);
@@ -428,11 +440,15 @@ barrier_destroy_r(barrier_r *barrier, int block)
 
 	/* decrement the wait count */
 	if (block) {
+		int current = 0;
+		int in = 0;
 		do {
 			current = compareAndSwapUDATA((uintptr_t *)&barrier->out_count, -1, -1);
 			in = compareAndSwapUDATA((uintptr_t *)&barrier->in_count, -1, -1);
 		} while (current + in < barrier->initial_value);
 	}
+
+	return rc;
 }
 
 /*
@@ -831,7 +847,7 @@ static int
 count_threads(struct PlatformWalkData *data)
 {
 	int thread_count = 0;
-	struct dirent *file;
+	struct dirent *file = NULL;
 	int pid = getpid();
 	DIR *tids = opendir("/proc/self/task");
 	if (tids == NULL) {
@@ -847,21 +863,22 @@ count_threads(struct PlatformWalkData *data)
 		while ((file = readdir(proc)) != NULL) {
 			/* we need a directory who's name starts with a '.' - we filter out '.' and '..' */
 			if (file->d_type == DT_DIR && file->d_name[0] == '.' && file->d_name[1] != '\0' && file->d_name[1] != '.') {
+				FILE *status = NULL;
 				/* The needed buffer size to store the path to status is calculated as:
 				 *  /proc/.<pid>/status\0
 				 *  |-----|-----|------|-|
 				 *   6     11    7      1
 				 */
 				char buf[6 + 11 + 7 + 1];
-				int tgid;
 
-				strcat(buf, "/proc/");
+				strcpy(buf, "/proc/");
 				/* If d_name is longer than 11 characters, it will be truncated */
 				strncat(buf, file->d_name, 11);
 				strcat(buf, "/status");
 
-				FILE *status = fopen(buf, "r");
+				status = fopen(buf, "r");
 				if (status != NULL) {
+					int tgid = 0;
 					if (fscanf(status, "%*[^\n]\n%*[^\n]\nTgid:%d", &tgid) == 1 && tgid == pid) {
 						thread_count++;
 					}
@@ -1302,7 +1319,9 @@ resume_all_preempted(struct PlatformWalkData *data)
 		/* release the threads from the upcall handler */
 		barrier_release_r(&data->release_barrier, timeout(data->state->deadline2));
 		/* make sure they've all exited. 1 means we block until all threads that have entered the barrier leave */
-		barrier_destroy_r(&data->release_barrier, 1);
+		if (0 != barrier_destroy_r(&data->release_barrier, 1)) {
+			RECORD_ERROR(state, RESUME_FAILURE, -1);
+		}
 	}
 
 	if (data->error) {

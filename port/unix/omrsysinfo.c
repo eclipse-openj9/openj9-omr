@@ -1319,8 +1319,10 @@ retrieveLinuxMemoryStats(struct OMRPortLibrary *portLibrary, struct J9MemoryInfo
 	while (0 == feof(memStatFs)) {
 		char *endPtr = NULL;
 
-		/* read off a line from MEMSTATPATH. */
-		fgets((char *)lineString, MAX_LINE_LENGTH, memStatFs);
+		/* read a line from MEMSTATPATH. */
+		if (NULL == fgets(lineString, MAX_LINE_LENGTH, memStatFs)) {
+			break;
+		}
 		tmpPtr = (char *)lineString;
 
 		/* Get the various fields that we are interested in and extract the corresponding value. */
@@ -3526,7 +3528,9 @@ readCgroupFile(struct OMRPortLibrary *portLibrary, int pid, BOOLEAN inContainer,
 		char *separator = NULL;
 		int32_t hierId = -1;
 		
-		fgets(buffer, PATH_MAX, cgroupFile);
+		if (NULL == fgets(buffer, PATH_MAX, cgroupFile)) {
+			break;
+		}
 		if (0 != ferror(cgroupFile)) {
 			int32_t osErrCode = errno;
 			Trc_PRT_readCgroupFile_fgets_failed(cgroupFilePath, osErrCode);
@@ -3745,8 +3749,10 @@ isRunningInContainer(struct OMRPortLibrary *portLibrary, BOOLEAN *inContainer)
 			char subsystems[PATH_MAX];
 			int32_t hierId = -1;
 
-			fgets(buffer, PATH_MAX, cgroupFile);
-			if(0 != ferror(cgroupFile)){
+			if (NULL == fgets(buffer, PATH_MAX, cgroupFile)) {
+				break;
+			}
+			if (0 != ferror(cgroupFile)) {
 				int32_t osErrCode = errno;
 				Trc_PRT_isRunningInContainer_fgets_failed(OMR_PROC_PID_ONE_CGROUP_FILE, osErrCode);
 				rc = portLibrary->error_set_last_error_with_message_format(portLibrary, OMRPORT_ERROR_SYSINFO_PROCESS_CGROUP_FILE_READ_FAILED, "fgets failed to read %s file stream with errno=%d", OMR_PROC_PID_ONE_CGROUP_FILE, osErrCode);

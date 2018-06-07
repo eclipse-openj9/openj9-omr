@@ -323,16 +323,6 @@ endif
 
 ifeq (linux,$(OMR_HOST_OS))
 
-# Linux standard headers have some functions marked with the attribute "warn_unused_result".
-  ifeq (gcc,$(OMR_TOOLCHAIN))
-omrfile.o: MODULE_CFLAGS+=-Wno-error=unused-result
-omrfiletext.o: MODULE_CFLAGS+=-Wno-error=unused-result
-omrintrospect.o: MODULE_CFLAGS+=-Wno-error=unused-result
-omrosdump.o: MODULE_CFLAGS+=-Wno-error=unused-result
-omrosdump_helpers.o: MODULE_CFLAGS+=-Wno-error=unused-result
-omrsysinfo.o: MODULE_CFLAGS+=-Wno-error=unused-result
-  endif
-
   ifeq (s390,$(OMR_HOST_ARCH))
     # OMRTODO: This is to get around a compiler bug:
     # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=53119

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2017 IBM Corp. and others
+ * Copyright (c) 1991, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -68,11 +68,11 @@ static void translateUTF8String(const uint8_t *in, uint8_t *out, intptr_t nbytes
 static intptr_t file_write_using_wctomb(struct OMRPortLibrary *portLibrary, intptr_t fd, const char *buf, intptr_t nbytes);
 #endif
 
-
 intptr_t
 omrfile_write_text(struct OMRPortLibrary *portLibrary, intptr_t fd, const char *buf, intptr_t nbytes)
 {
-	intptr_t result, i;
+	intptr_t result = 0;
+	intptr_t i = 0;
 	int requiresTranslation = 0;
 
 #ifdef J9ZOS390
@@ -107,7 +107,6 @@ omrfile_write_text(struct OMRPortLibrary *portLibrary, intptr_t fd, const char *
 #else
 	return file_write_using_iconv(portLibrary, fd, buf, nbytes);
 #endif
-
 }
 
 #if defined(J9VM_USE_WCTOMB)
@@ -124,19 +123,18 @@ omrfile_write_text(struct OMRPortLibrary *portLibrary, intptr_t fd, const char *
 static intptr_t
 walkUTF8String(const uint8_t *buf, intptr_t nbytes)
 {
-	const uint8_t *end = buf + nbytes;
 	const uint8_t *cursor = buf;
+	const uint8_t * const end = cursor + nbytes;
 	intptr_t newLength = 0;
 	int hasHighChars = 0;
 
 	/* reset the shift state */
-	wctomb(NULL, 0);
+	int wcresult = wctomb(NULL, 0);
 
 	while (cursor < end) {
 		if ((*cursor & 0x80) == 0x80) {
 			char temp[MB_CUR_MAX];
-			int wcresult;
-			uint16_t unicode;
+			uint16_t unicode = 0;
 			uint32_t numberU8Consumed = decodeUTF8CharN(cursor, &unicode, end - cursor);
 
 			if (numberU8Consumed == 0) {
@@ -154,7 +152,6 @@ walkUTF8String(const uint8_t *buf, intptr_t nbytes)
 				newLength += wcresult;
 			}
 			hasHighChars = 1;
-
 		} else {
 			newLength += 1;
 			cursor += 1;
@@ -163,28 +160,24 @@ walkUTF8String(const uint8_t *buf, intptr_t nbytes)
 
 	return hasHighChars ? newLength : 0;
 }
-
 #endif /* J9VM_USE_WCTOMB */
 
-
 #if defined(J9VM_USE_WCTOMB)
-
 /**
  * @internal assumes that the input has already been validated by walkUTF8String
  */
 static void
 translateUTF8String(const uint8_t *in, uint8_t *out, intptr_t nbytes)
 {
-	const uint8_t *end = in + nbytes;
 	const uint8_t *cursor = in;
+	const uint8_t *const end = cursor + nbytes;
 
 	/* walk the string again, translating it */
 	while (cursor < end) {
-		uint32_t numberU8Consumed;
 		if ((*cursor & 0x80) == 0x80) {
-			uint16_t unicode;
-			int wcresult;
-			numberU8Consumed = decodeUTF8Char(cursor, &unicode);
+			uint16_t unicode = 0;
+			int wcresult = 0;
+			uint32_t numberU8Consumed = decodeUTF8Char(cursor, &unicode);
 			cursor += numberU8Consumed;
 			wcresult = wctomb((char *)out, (wchar_t)unicode);
 			if (wcresult == -1) {
@@ -200,24 +193,23 @@ translateUTF8String(const uint8_t *in, uint8_t *out, intptr_t nbytes)
 
 #endif /* J9VM_USE_WCTOMB */
 
-
 #if defined(J9VM_USE_WCTOMB)
 
 static intptr_t
 file_write_using_wctomb(struct OMRPortLibrary *portLibrary, intptr_t fd, const char *buf, intptr_t nbytes)
 {
-	intptr_t result;
+	intptr_t result = 0;
 	intptr_t newLength = 0;
 	char stackBuf[512];
 	char *newBuf = stackBuf;
 
 	newLength = walkUTF8String((uint8_t *)buf, nbytes);
 
-	if (newLength) {
+	if (0 != newLength) {
 		if (newLength > sizeof(stackBuf)) {
 			newBuf = portLibrary->mem_allocate_memory(portLibrary, newLength, OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
 		}
-		if (newBuf) {
+		if (NULL != newBuf) {
 			translateUTF8String((uint8_t *)buf, (uint8_t *)newBuf, nbytes);
 			buf = newBuf;
 			nbytes = newLength;
@@ -260,7 +252,7 @@ growBuffer(struct OMRPortLibrary *portLibrary, char *stackBuf, char **bufStart, 
 {
 #define SIZE_OF_INCREMENT 512
 
-	char *newBuf;
+	char *newBuf = NULL;
 
 	*bufLen = *bufLen + SIZE_OF_INCREMENT;
 	newBuf = portLibrary->mem_allocate_memory(portLibrary, *bufLen, OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
@@ -289,21 +281,21 @@ growBuffer(struct OMRPortLibrary *portLibrary, char *stackBuf, char **bufStart, 
 static intptr_t
 file_write_using_iconv(struct OMRPortLibrary *portLibrary, intptr_t fd, const char *buf, intptr_t nbytes)
 {
-	intptr_t result;
+	intptr_t result = 0;
 	char stackBuf[512];
-	char *bufStart;
+	char *bufStart = NULL;
 	uintptr_t outBufLen = sizeof(stackBuf);
 
 	iconv_t converter = J9VM_INVALID_ICONV_DESCRIPTOR;
-	size_t inbytesleft, outbytesleft;
-	char *inbuf, *outbuf;
+	size_t inbytesleft = 0;
+	size_t outbytesleft = 0;
+	char *inbuf = NULL;
+	char *outbuf = NULL;
 	intptr_t bytesToWrite = 0;
 
 #ifdef J9ZOS390
-
 	/* LIR 1280 (z/OS only) - every failed call to iconv_open() is recorded on the operator console, so don't retry */
 	if (FALSE == PPG_file_text_iconv_open_failed) {
-
 		/* iconv_get is not an a2e function, so we need to pass it honest-to-goodness EBCDIC strings */
 #pragma convlit(suspend)
 #endif
@@ -319,10 +311,8 @@ file_write_using_iconv(struct OMRPortLibrary *portLibrary, intptr_t fd, const ch
 		if (J9VM_INVALID_ICONV_DESCRIPTOR == converter) {
 			PPG_file_text_iconv_open_failed = TRUE;
 		}
-
 	}
 #endif
-
 
 	if (J9VM_INVALID_ICONV_DESCRIPTOR == converter) {
 		/* no converter available for this code set. Just dump the UTF-8 chars */
@@ -358,11 +348,9 @@ file_write_using_iconv(struct OMRPortLibrary *portLibrary, intptr_t fd, const ch
 			char escapedStr[J9FILETEXT_ESCAPE_STR_SIZE];
 			char *escapedStrStart = escapedStr;
 
-			uint16_t unicodeC;
-			size_t utf8Length;
-			size_t escapedLength;
-
-			utf8Length = decodeUTF8CharN((const uint8_t *)inbuf, &unicodeC, inbytesleft);
+			uint16_t unicodeC = 0;
+			size_t escapedLength = 0;
+			size_t utf8Length = decodeUTF8CharN((const uint8_t *)inbuf, &unicodeC, inbytesleft);
 
 			if (utf8Length == 0) {
 				/* invalid encoding, including 4-byte UTF-8 */
@@ -392,7 +380,6 @@ file_write_using_iconv(struct OMRPortLibrary *portLibrary, intptr_t fd, const ch
 					}
 				}
 			}
-
 		} else {
 			/* input conversion stopped due to an incomplete character or shift sequence at the end of the input buffer */
 			break;
@@ -479,7 +466,8 @@ omrfile_read_text(struct OMRPortLibrary *portLibrary, intptr_t fd, char *buf, in
 int32_t
 omrfile_get_text_encoding(struct OMRPortLibrary *portLibrary, char *charsetName, uintptr_t nbytes)
 {
-	char *codepage, *c_ptr;
+	char *codepage = NULL;
+	char *c_ptr = NULL;
 
 	if (charsetName == NULL) {
 		return -1;

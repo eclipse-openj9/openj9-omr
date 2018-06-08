@@ -317,6 +317,9 @@ TR::InstOpCode::Mnemonic
 OMR::Z::InstOpCode::getAddLogicalThreeRegOpCode() { return TR::Compiler->target.is64Bit() ? TR::InstOpCode::ALGRK : TR::InstOpCode::ALRK; }
 
 TR::InstOpCode::Mnemonic
+OMR::Z::InstOpCode::getAddLogicalImmOpCode() { return TR::Compiler->target.is64Bit() ? TR::InstOpCode::ALGFI : TR::InstOpCode::ALFI; }
+
+TR::InstOpCode::Mnemonic
 OMR::Z::InstOpCode::getAddLogicalRegRegImmediateOpCode() { return TR::Compiler->target.is64Bit() ? TR::InstOpCode::ALGHSIK : TR::InstOpCode::ALHSIK; }
 
 TR::InstOpCode::Mnemonic

@@ -745,6 +745,7 @@ class InstOpCode: public OMR::InstOpCode
    static Mnemonic getAddRegOpCode();
    static Mnemonic getAddThreeRegOpCode();
    static Mnemonic getAddLogicalThreeRegOpCode();
+   static Mnemonic getAddLogicalImmOpCode();
    static Mnemonic getAddLogicalRegRegImmediateOpCode();
    static Mnemonic getSubstractOpCode();
    static Mnemonic getSubstractRegOpCode();

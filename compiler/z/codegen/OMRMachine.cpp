@@ -856,6 +856,26 @@ OMR::Z::Machine::isLegalEvenOddPair(TR::RealRegister * evenReg, TR::RealRegister
    }
 
 bool
+OMR::Z::Machine::isLegalEvenOddRestrictedPair(TR::RealRegister * evenReg, TR::RealRegister * oddReg, uint64_t availRegMask)
+   {
+   if (evenReg == NULL || oddReg == NULL)
+      {
+      return false;
+      }
+   if (toRealRegister(evenReg)->isHighWordRegister() || toRealRegister(oddReg)->isHighWordRegister())
+      {
+      return false;
+      }
+
+   else if (toRealRegister(evenReg)->getRegisterNumber() + 1 == toRealRegister(oddReg)->getRegisterNumber())
+      {
+      return self()->isLegalEvenRegister(evenReg, ALLOWBLOCKED, availRegMask, ALLOWLOCKED) && self()->isLegalOddRegister(oddReg, ALLOWBLOCKED, availRegMask, ALLOWLOCKED);
+      }
+   else
+      return false;
+   }
+
+bool
 OMR::Z::Machine::isLegalEvenRegister(TR::RealRegister * reg, bool allowBlocked, uint64_t availRegMask, bool allowLocked)
    {
    // Is the register assigned
@@ -6305,6 +6325,8 @@ int32_t OMR::Z::Machine::addGlobalReg(TR::RealRegister::RegNum reg, int32_t tabl
    {
    if (reg == TR::RealRegister::NoReg)
       return tableIndex;
+   if (OMR::Z::Machine::isRestrictedReg(reg))
+      return tableIndex;
    if (self()->getS390RealRegister(reg)->getState() == TR::RealRegister::Locked)
       return tableIndex;
    for (int32_t i = 0; i < tableIndex; i++)
@@ -6327,6 +6349,8 @@ int32_t OMR::Z::Machine::getGlobalReg(TR::RealRegister::RegNum reg)
 int32_t OMR::Z::Machine::addGlobalRegLater(TR::RealRegister::RegNum reg, int32_t tableIndex)
    {
    if (reg == TR::RealRegister::NoReg)
+      return tableIndex;
+   if (OMR::Z::Machine::isRestrictedReg(reg))
       return tableIndex;
    if (self()->getS390RealRegister(reg)->getState() == TR::RealRegister::Locked)
       return tableIndex;
@@ -6371,475 +6395,227 @@ OMR::Z::Machine::initializeGlobalRegisterTable()
    {
    TR::Compilation *comp = self()->cg()->comp();
 
-   if (!comp->getOption(TR_DisableRegisterPressureSimulation))
+   int32_t p = 0;
+   bool enableHighWordGRA = self()->cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA);
+
+   TR::Linkage *linkage = self()->cg()->getS390Linkage();
+   self()->setFirstGlobalGPRRegisterNumber(0);
+
+   if (linkage->isZLinuxLinkageType())
+      p = self()->addGlobalReg(TR::RealRegister::GPR1, p);
+
+   // Linkage regs in reverse order
+   //
+   // Note: the existence of getLastLinkageGPR unfortunately means
+   // linkage registers have to be in a contiguous chunk.  This never
+   // mattered as long as they were all volatile, because we'd want to
+   // put them together anyway, but with preserved linkage registers, it
+   // makes sense to separate them.  However, we can't do so until we
+   // eliminate getLastLinkageGPR etc.
+   //
+   // The best we can do is to add the volatile ones first, then the
+   // preserved ones.
+   //
+
+   if (linkage->isZLinuxLinkageType()) // ordering seems to make crashes on zos.
       {
-      int32_t p = 0;
-      static char *dontInitializeGlobalRegisterTableFromLinkage = feGetEnv("TR_dontInitializeGlobalRegisterTableFromLinkage");
-      bool enableHighWordGRA = self()->cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA);
-      if (dontInitializeGlobalRegisterTableFromLinkage)
+      for (uint32_t i = linkage->getNumIntegerArgumentRegisters(); i >= 0; i--)
          {
-         self()->setFirstGlobalGPRRegisterNumber(0);
-
-         // Volatiles that aren't linkage regs
-         //
-        // p = addGlobalReg(TR::RealRegister::GPR0, p); // Local register assigner can't handle virtuals assigned to GPR0 appearing in memrefs
-
-         // Linkage regs in reverse order
-         //
-         p = self()->addGlobalReg(TR::RealRegister::GPR3, p);
-         p = self()->addGlobalReg(TR::RealRegister::GPR2, p);
-         p = self()->addGlobalReg(TR::RealRegister::GPR1, p);
-         self()->setLastLinkageGPR(p-1);
-
-         // Preserved regs, vmthread last
-         //
-         p = self()->addGlobalReg(TR::RealRegister::GPR6, p); // NOTE: GPR6 must be avoided if on-demand literal pool opt isn't run
-         static char * noGraFIX= feGetEnv("TR_NOGRAFIX");
-         // Exclude GPR7 if we are not on Freeway+ hardware
-         if (  !noGraFIX
-            && !comp->getOption(TR_DisableLongDispStackSlot)
-            && self()->cg()->getExtCodeBaseRegisterIsFree()
-            )
-            {
-            p = self()->addGlobalReg(TR::RealRegister::GPR7, p);
-            }
-         p = self()->addGlobalReg(TR::RealRegister::GPR8,  p);
-         p = self()->addGlobalReg(TR::RealRegister::GPR9,  p);
-         p = self()->addGlobalReg(TR::RealRegister::GPR10, p);
-         p = self()->addGlobalReg(TR::RealRegister::GPR11, p);
-         p = self()->addGlobalReg(TR::RealRegister::GPR12, p);
-         p = self()->addGlobalReg(TR::RealRegister::GPR13, p); // vmthread
-
-         if (enableHighWordGRA)
-            {
-            // HPR
-            // this is a bit tricky, we consider Global HPRs part of Global GPRs
-            self()->setFirstGlobalHPRRegisterNumber(p);
-            // volatile HPRs
-            // might use HPR4 on 31-bit zLinux
-            p = self()->addGlobalReg(TR::RealRegister::HPR3, p);
-            p = self()->addGlobalReg(TR::RealRegister::HPR2, p);
-            p = self()->addGlobalReg(TR::RealRegister::HPR1, p);
-            // for preserved regs, we can only use HPR6-12 because VM only saves/restores those
-            if (TR::Compiler->target.is32Bit())
-               {
-               // might use GPR6 on 64-bit for lit pool reg
-               p = self()->addGlobalReg(TR::RealRegister::HPR6, p);
-               }
-            p = self()->addGlobalReg(TR::RealRegister::HPR7, p);
-            p = self()->addGlobalReg(TR::RealRegister::HPR8, p);
-            p = self()->addGlobalReg(TR::RealRegister::HPR9, p);
-            p = self()->addGlobalReg(TR::RealRegister::HPR10, p);
-            p = self()->addGlobalReg(TR::RealRegister::HPR11, p);
-            p = self()->addGlobalReg(TR::RealRegister::HPR12, p);
-            self()->setLastGlobalHPRRegisterNumber(p-1);
-            // might use HPR15 on 31-bit zOS
-            }
-         // Access regs
-         //
-         if (comp->getOption(TR_Enable390AccessRegs))
-            {
-            for (int32_t i = TR::RealRegister::FirstAR; i <= TR::RealRegister::LastAR; i++)
-               {
-               p = self()->addGlobalReg((TR::RealRegister::RegNum)i, p);
-               }
-            }
-
-         self()->setLastGlobalGPRRegisterNumber(p-1);
-
-         // Volatiles that aren't linkage regs
-         //
-         p = self()->addGlobalReg(TR::RealRegister::FPR1, p);
-         p = self()->addGlobalReg(TR::RealRegister::FPR3, p);
-         p = self()->addGlobalReg(TR::RealRegister::FPR5, p);
-         p = self()->addGlobalReg(TR::RealRegister::FPR7, p);
-   #if !defined(ENABLE_PRESERVED_FPRS)
-         p = self()->addGlobalReg(TR::RealRegister::FPR15, p);
-         p = self()->addGlobalReg(TR::RealRegister::FPR14, p);
-         p = self()->addGlobalReg(TR::RealRegister::FPR13, p);
-         p = self()->addGlobalReg(TR::RealRegister::FPR12, p);
-         p = self()->addGlobalReg(TR::RealRegister::FPR11, p);
-         p = self()->addGlobalReg(TR::RealRegister::FPR10, p);
-         p = self()->addGlobalReg(TR::RealRegister::FPR9,  p);
-         p = self()->addGlobalReg(TR::RealRegister::FPR8,  p);
-   #endif
-
-         // Linkage regs in reverse order
-         //
-         p = self()->addGlobalReg(TR::RealRegister::FPR6, p);
-         p = self()->addGlobalReg(TR::RealRegister::FPR4, p);
-         p = self()->addGlobalReg(TR::RealRegister::FPR2, p);
-         p = self()->addGlobalReg(TR::RealRegister::FPR0, p);
-         self()->setLastLinkageFPR(p-1);
-
-         // Preserved regs
-         //
-   #if defined(ENABLE_PRESERVED_FPRS)
-         p = addGlobalReg(TR::RealRegister::FPR15, p);
-         p = addGlobalReg(TR::RealRegister::FPR14, p);
-         p = addGlobalReg(TR::RealRegister::FPR13, p);
-         p = addGlobalReg(TR::RealRegister::FPR12, p);
-         p = addGlobalReg(TR::RealRegister::FPR11, p);
-         p = addGlobalReg(TR::RealRegister::FPR10, p);
-         p = addGlobalReg(TR::RealRegister::FPR9,  p);
-         p = addGlobalReg(TR::RealRegister::FPR8,  p);
-   #endif
-         }
-      else
-         {
-         TR::Linkage *linkage = self()->cg()->getS390Linkage();
-         self()->setFirstGlobalGPRRegisterNumber(0);
-
-         if (linkage->isZLinuxLinkageType())
-            p = self()->addGlobalReg(TR::RealRegister::GPR1, p); // WOOHOO!
-
-         // Linkage regs in reverse order
-         //
-         // Note: the existence of getLastLinkageGPR unfortunately means
-         // linkage registers have to be in a contiguous chunk.  This never
-         // mattered as long as they were all volatile, because we'd want to
-         // put them together anyway, but with preserved linkage registers, it
-         // makes sense to separate them.  However, we can't do so until we
-         // eliminate getLastLinkageGPR etc.
-         //
-         // The best we can do is to add the volatile ones first, then the
-         // preserved ones.
-         //
-
-         if (linkage->isZLinuxLinkageType()) // ordering seems to make crashes on zos.
-            {
-            for (uint32_t i = linkage->getNumIntegerArgumentRegisters(); i >= 0; i--)
-               {
-               if (!linkage->getPreserved(linkage->getIntegerArgumentRegister(i)))
-                  p = self()->addGlobalReg(linkage->getIntegerArgumentRegister(i), p);
-               }
-            }
-
-
-         for (uint32_t i = linkage->getNumIntegerArgumentRegisters() - 1; i >= 0; i--)
+         if (!linkage->getPreserved(linkage->getIntegerArgumentRegister(i)))
             p = self()->addGlobalReg(linkage->getIntegerArgumentRegister(i), p);
-
-         self()->setLastLinkageGPR(p-1);
-
-         if ( (self()->cg()->isLiteralPoolOnDemandOn() && !linkage->isZLinuxLinkageType()) || (self()->cg()->isLiteralPoolOnDemandOn() && !linkage->getPreserved(linkage->getLitPoolRegister())) )
-            p = self()->addGlobalReg(linkage->getLitPoolRegister(), p);
-         if (!self()->cg()->isGlobalStaticBaseRegisterOn())
-            p = self()->addGlobalReg(linkage->getStaticBaseRegister(), p);
-         if (!self()->cg()->isGlobalPrivateStaticBaseRegisterOn())
-            p = self()->addGlobalReg(linkage->getPrivateStaticBaseRegister(), p);
-         for (uint32_t i = linkage->getNumSpecialArgumentRegisters(); i >= 0; i--)
-            p = self()->addGlobalReg(linkage->getSpecialArgumentRegister(i), p);
-         p = self()->addGlobalReg(linkage->getIntegerReturnRegister(), p);
-         p = self()->addGlobalReg(linkage->getLongReturnRegister(), p);
-         p = self()->addGlobalReg(linkage->getLongLowReturnRegister(), p);
-         p = self()->addGlobalReg(linkage->getLongHighReturnRegister(), p);
-
-         // Preserved regs in descending order to encourage stmg with gpr15 and
-         // gpr14, which are commonly preserved in zLinux system linkage
-         //
-         if (linkage->isZLinuxLinkageType()) // ordering seems to make crashes on zos.
-            {
-            for (uint32_t i = TR::RealRegister::LastAssignableGPR; i >= TR::RealRegister::FirstGPR; --i)
-               {
-               auto regNum = static_cast<TR::RealRegister::RegNum>(i);
-
-               if (linkage->getPreserved(regNum))
-                  {
-                     // Dangling else above
-                     if (regNum == linkage->getExtCodeBaseRegister())
-                        {
-                        if (self()->cg()->isExtCodeBaseFreeForAssignment())
-                           p = self()->addGlobalReg(regNum, p);
-                        }
-                     else if (regNum != linkage->getStaticBaseRegister() &&
-                           regNum != linkage->getPrivateStaticBaseRegister() &&
-                           regNum != linkage->getStackPointerRegister())
-                        p = self()->addGlobalReg(regNum, p);
-                  }
-               }
-            }
-         else
-            {
-            // Preserved regs, with special heavily-used regs last
-            //
-            for (uint32_t i = TR::RealRegister::FirstGPR; i <= TR::RealRegister::LastAssignableGPR; i++)
-               {
-               auto regNum = static_cast<TR::RealRegister::RegNum>(i);
-
-               if (linkage->getPreserved(regNum))
-                  {
-                     // Dangling else above
-                     if (regNum == linkage->getExtCodeBaseRegister())
-                        {
-                        if (self()->cg()->isExtCodeBaseFreeForAssignment())
-                           p = self()->addGlobalReg(regNum, p);
-                        }
-                     else if (regNum != linkage->getLitPoolRegister() &&
-                           regNum != linkage->getStaticBaseRegister() &&
-                           regNum != linkage->getPrivateStaticBaseRegister() &&
-                           regNum != linkage->getStackPointerRegister())
-                        p = self()->addGlobalReg(regNum, p);
-                  }
-               }
-            }
-
-         p = self()->addGlobalRegLater(linkage->getMethodMetaDataRegister(), p);
-         if (TR::Compiler->target.isZOS())
-            {
-            p = self()->addGlobalRegLater(self()->cg()->getS390Linkage()->getStackPointerRegister(), p);
-            }
-
-         // Special regs that add to prologue cost
-         //
-         p = self()->addGlobalRegLater(linkage->getEnvironmentPointerRegister(), p);
-
-         //p = addGlobalRegLater(linkage->getLitPoolRegister(), p); // zOS private linkage might want this here?
-
-         if (linkage->isXPLinkLinkageType())
-            p = self()->addGlobalRegLater(TR::RealRegister::GPR7, p);
-
-         if (enableHighWordGRA)
-            {
-            // HPR
-            // this is a bit tricky, we consider Global HPRs part of Global GPRs
-            self()->setFirstGlobalHPRRegisterNumber(p);
-            // volatile HPRs
-            // might use HPR4 on 31-bit zLinux
-            p = self()->addGlobalReg(TR::RealRegister::HPR3, p);
-            p = self()->addGlobalReg(TR::RealRegister::HPR2, p);
-            p = self()->addGlobalReg(TR::RealRegister::HPR1, p);
-            // for preserved regs, we can only use HPR6-12 because VM only saves/restores those
-            if (TR::Compiler->target.is32Bit())
-               {
-               // might use GPR6 on 64-bit for lit pool reg
-               p = self()->addGlobalReg(TR::RealRegister::HPR6, p);
-               }
-            if (linkage->getExtCodeBaseRegister() == TR::RealRegister::GPR7 && self()->cg()->isExtCodeBaseFreeForAssignment())
-               {
-               // register 7 is hard coded for now
-               p = self()->addGlobalReg(TR::RealRegister::HPR7, p);
-               }
-            p = self()->addGlobalReg(TR::RealRegister::HPR8, p);
-            p = self()->addGlobalReg(TR::RealRegister::HPR9, p);
-            p = self()->addGlobalReg(TR::RealRegister::HPR10, p);
-            p = self()->addGlobalReg(TR::RealRegister::HPR11, p);
-            p = self()->addGlobalReg(TR::RealRegister::HPR12, p);
-            self()->setLastGlobalHPRRegisterNumber(p-1);
-            // might use HPR15 on 31-bit zOS
-            }
-
-         self()->setLastGlobalGPRRegisterNumber(p-1);
-
-         if (self()->cg()->globalAccessRegistersSupported())
-            {
-            self()->setFirstGlobalAccessRegisterNumber(p);
-
-            //add the same access registers as GPRs
-            for (TR_GlobalRegisterNumber i = self()->getFirstGlobalGPRRegisterNumber(); i <= self()->getLastGlobalGPRRegisterNumber(); i++)
-               {
-               auto regNum = static_cast<TR::RealRegister::RegNum>(_globalRegisterNumberToRealRegisterMap[i] - TR::RealRegister::FirstGPR + TR::RealRegister::FirstAR);
-
-               p = self()->addGlobalReg(regNum, p);
-               }
-
-            self()->setLastGlobalAccessRegisterNumber(p-1);
-            }
-
-          // Volatiles that aren't linkage regs
-          //
-          self()->setFirstGlobalFPRRegisterNumber(p);
-          for (uint32_t i = TR::RealRegister::FirstFPR; i <= TR::RealRegister::LastFPR; i++)
-             {
-             auto regNum = static_cast<TR::RealRegister::RegNum>(i);
-
-             if (!linkage->getPreserved(regNum) && !linkage->getFloatArgument(regNum))
-                {
-                p = self()->addGlobalReg(regNum, p);
-                }
-             }
-
-          // Linkage regs in reverse order
-          //
-          for (uint32_t i = linkage->getNumFloatArgumentRegisters(); i >= 0; i--)
-             {
-             p = self()->addGlobalReg(linkage->getFloatArgumentRegister(i), p);
-             }
-
-          self()->setLastLinkageFPR(p-1);
-
-          // Preserved regs, vmthread last
-          //
-          for (uint32_t i = TR::RealRegister::FirstFPR; i <= TR::RealRegister::LastFPR; i++)
-             {
-             auto regNum = static_cast<TR::RealRegister::RegNum>(i);
-
-             if (linkage->getPreserved(regNum))
-                {
-                p = self()->addGlobalReg(regNum, p);
-                }
-             }
-
-           self()->setLastGlobalFPRRegisterNumber(p-1);
-
-           // initGlobalVectorRegisterMap sets first/last global grns and overlapped grns
-           if (self()->cg()->getSupportsVectorRegisters())
-              p = self()->initGlobalVectorRegisterMap(p);
-
-          self()->setLastGlobalVRFRegisterNumber(p-1);
-
-          for (int32_t i = 0; i < p; i++)
-             {
-             if (_globalRegisterNumberToRealRegisterMap[i] == linkage->getCAAPointerRegister())
-                self()->setGlobalCAARegisterNumber(i);
-             if (_globalRegisterNumberToRealRegisterMap[i] == linkage->getEnvironmentPointerRegister())
-                self()->setGlobalEnvironmentRegisterNumber(i);
-             if (_globalRegisterNumberToRealRegisterMap[i] == linkage->getParentDSAPointerRegister())
-                self()->setGlobalParentDSARegisterNumber(i);
-             if (_globalRegisterNumberToRealRegisterMap[i] == linkage->getEntryPointRegister())
-                self()->setGlobalEntryPointRegisterNumber(i);
-             if (_globalRegisterNumberToRealRegisterMap[i] == linkage->getReturnAddressRegister())
-                self()->setGlobalReturnAddressRegisterNumber(i);
-             }
-          }
-
-      self()->setLastGlobalCCRRegisterNumber(p-1);
-
-      return _globalRegisterNumberToRealRegisterMap;
+         }
       }
-   // Initialize the array
-   //   _globalRegisterNumberToRealRegisterMap = new uint32_t[NUM_S390_GPR+NUM_S390_FPR]; // Make room for max num GPRs + FPRs
 
-   // GPRs
 
-   self()->setLastVolatileNonLinkGPR(0);
+   for (uint32_t i = linkage->getNumIntegerArgumentRegisters() - 1; i >= 0; i--)
+      p = self()->addGlobalReg(linkage->getIntegerArgumentRegister(i), p);
 
-   _globalRegisterNumberToRealRegisterMap[0] = TR::RealRegister::GPR3;     // volatile and 3rd param
-   _globalRegisterNumberToRealRegisterMap[1] = TR::RealRegister::GPR2;     // volatile and 3rd param
-   _globalRegisterNumberToRealRegisterMap[2] = TR::RealRegister::GPR1;     // volatile and 3rd param
-   self()->setLastLinkageGPR(2);
-   self()->setFirstGlobalGPRRegisterNumber(3);                                         // Index of first global GPR
+   self()->setLastLinkageGPR(p-1);
 
-   // Global register 3 will be assigned to GPR6 if dynamic litpool was run
-   // in OMR::Z::Machine::releaseLiteralPoolRegister()
-   _globalRegisterNumberToRealRegisterMap[GLOBAL_REG_FOR_LITPOOL] = (uint32_t) (-1);            // preserved
+   if ( (self()->cg()->isLiteralPoolOnDemandOn() && !linkage->isZLinuxLinkageType()) || (self()->cg()->isLiteralPoolOnDemandOn() && !linkage->getPreserved(linkage->getLitPoolRegister())) )
+      p = self()->addGlobalReg(linkage->getLitPoolRegister(), p);
+   if (!self()->cg()->isGlobalStaticBaseRegisterOn())
+      p = self()->addGlobalReg(linkage->getStaticBaseRegister(), p);
+   if (!self()->cg()->isGlobalPrivateStaticBaseRegisterOn())
+      p = self()->addGlobalReg(linkage->getPrivateStaticBaseRegister(), p);
+   for (uint32_t i = linkage->getNumSpecialArgumentRegisters(); i >= 0; i--)
+      p = self()->addGlobalReg(linkage->getSpecialArgumentRegister(i), p);
+   p = self()->addGlobalReg(linkage->getIntegerReturnRegister(), p);
+   p = self()->addGlobalReg(linkage->getLongReturnRegister(), p);
+   p = self()->addGlobalReg(linkage->getLongLowReturnRegister(), p);
+   p = self()->addGlobalReg(linkage->getLongHighReturnRegister(), p);
 
-   static char * noGraFIX= feGetEnv("TR_NOGRAFIX");
-   // Exclude GPR7 if we are not on Freeway+ hardware
-   if ( !noGraFIX                                                     &&
-        !comp->getOption(TR_DisableLongDispStackSlot)          &&
-        self()->cg()->getExtCodeBaseRegisterIsFree()
-      )
+   // Preserved regs in descending order to encourage stmg with gpr15 and
+   // gpr14, which are commonly preserved in zLinux system linkage
+   //
+   if (linkage->isZLinuxLinkageType()) // ordering seems to make crashes on zos.
       {
-      _globalRegisterNumberToRealRegisterMap[4] = TR::RealRegister::GPR7;  // preserved
+      for (uint32_t i = TR::RealRegister::LastAssignableGPR; i >= TR::RealRegister::FirstGPR; --i)
+         {
+         auto regNum = static_cast<TR::RealRegister::RegNum>(i);
+
+         if (linkage->getPreserved(regNum))
+            {
+               // Dangling else above
+               if (regNum == linkage->getExtCodeBaseRegister())
+                  {
+                  if (self()->cg()->isExtCodeBaseFreeForAssignment())
+                     p = self()->addGlobalReg(regNum, p);
+                  }
+               else if (regNum != linkage->getStaticBaseRegister() &&
+                     regNum != linkage->getPrivateStaticBaseRegister() &&
+                     regNum != linkage->getStackPointerRegister())
+                  p = self()->addGlobalReg(regNum, p);
+            }
+         }
       }
    else
       {
-      _globalRegisterNumberToRealRegisterMap[4] = (uint32_t) (-1);            // preserved
-      }
-
-   _globalRegisterNumberToRealRegisterMap[5] = TR::RealRegister::GPR8;     // preserved
-   _globalRegisterNumberToRealRegisterMap[6] = TR::RealRegister::GPR9;     // preserved
-   _globalRegisterNumberToRealRegisterMap[7] = TR::RealRegister::GPR10;    // preserved
-   _globalRegisterNumberToRealRegisterMap[8] = TR::RealRegister::GPR11;    // preserved -- non-Java may lock
-   _globalRegisterNumberToRealRegisterMap[9] = TR::RealRegister::GPR12;    // preserved -- non-Java may lock
-
-   // Access Registers
-   self()->setFirstGlobalAccessRegisterNumber(10);
-   _globalRegisterNumberToRealRegisterMap[10] = (uint32_t) (-1);              // TR::RealRegister::AR0; locked on zLinux
-   _globalRegisterNumberToRealRegisterMap[11] = (uint32_t) (-1);              // TR::RealRegister::AR1; locked on zLinux
-   // /// /// Disable and test on only on ZOS where the other ARs are protected by system linkage
-   _globalRegisterNumberToRealRegisterMap[12] = (uint32_t) (-1);              // TR::RealRegister::AR2;
-   _globalRegisterNumberToRealRegisterMap[13] = (uint32_t) (-1);              // TR::RealRegister::AR3;
-   _globalRegisterNumberToRealRegisterMap[14] = (uint32_t) (-1);              // TR::RealRegister::AR4;
-   _globalRegisterNumberToRealRegisterMap[15] = (uint32_t) (-1);              // TR::RealRegister::AR5;
-   _globalRegisterNumberToRealRegisterMap[16] = (uint32_t) (-1);              // TR::RealRegister::AR6;
-   _globalRegisterNumberToRealRegisterMap[17] = (uint32_t) (-1);              // TR::RealRegister::AR7;
-   // /// ///
-
-   _globalRegisterNumberToRealRegisterMap[18] = TR::RealRegister::AR8;      // preserved ZOS
-   _globalRegisterNumberToRealRegisterMap[19] = (uint32_t) (-1);               // TR::RealRegister::AR9;      // preserved ZOS
-   _globalRegisterNumberToRealRegisterMap[20] = (uint32_t) (-1);               // TR::RealRegister::AR10;     // preserved ZOS
-   _globalRegisterNumberToRealRegisterMap[21] = (uint32_t) (-1);               // TR::RealRegister::AR11;     // preserved ZOS
-   _globalRegisterNumberToRealRegisterMap[22] = (uint32_t) (-1);               // TR::RealRegister::AR12;     // preserved ZOS
-   _globalRegisterNumberToRealRegisterMap[23] = (uint32_t) (-1);               // TR::RealRegister::AR13;     // preserved ZOS
-   _globalRegisterNumberToRealRegisterMap[24] = (uint32_t) (-1);               // TR::RealRegister::AR14;     // preserved ZOS
-   _globalRegisterNumberToRealRegisterMap[25] = (uint32_t) (-1);               // TR::RealRegister::AR15;     // preserved ZOS
-   self()->setLastGlobalAccessRegisterNumber(25);
-
-   self()->setLastGlobalGPRRegisterNumber(25);        // Index of last global GPR
-   self()->setLast8BitGlobalGPRRegisterNumber(25);    // Index of last global 8bit Reg
-
-   // Disable GRA Access Regs
-   //
-   if (
-         TR::Compiler->target.is64Bit()                          ||
-        !comp->getOption(TR_Enable390AccessRegs)
-      )
-      {
-      for (int32_t i = self()->getFirstGlobalAccessRegisterNumber(); i <= self()->getLastGlobalAccessRegisterNumber(); ++i)
+      // Preserved regs, with special heavily-used regs last
+      //
+      for (uint32_t i = TR::RealRegister::FirstGPR; i <= TR::RealRegister::LastAssignableGPR; i++)
          {
-         _globalRegisterNumberToRealRegisterMap[i] = (uint32_t) (-1);
+         auto regNum = static_cast<TR::RealRegister::RegNum>(i);
+
+         if (linkage->getPreserved(regNum))
+            {
+               // Dangling else above
+               if (regNum == linkage->getExtCodeBaseRegister())
+                  {
+                  if (self()->cg()->isExtCodeBaseFreeForAssignment())
+                     p = self()->addGlobalReg(regNum, p);
+                  }
+               else if (regNum != linkage->getLitPoolRegister() &&
+                     regNum != linkage->getStaticBaseRegister() &&
+                     regNum != linkage->getPrivateStaticBaseRegister() &&
+                     regNum != linkage->getStackPointerRegister())
+                  p = self()->addGlobalReg(regNum, p);
+            }
          }
       }
 
-   // FPRs
-   _globalRegisterNumberToRealRegisterMap[26] = TR::RealRegister::FPR7;  // volatile float
-   _globalRegisterNumberToRealRegisterMap[27] = TR::RealRegister::FPR5;  // volatile float
-   _globalRegisterNumberToRealRegisterMap[28] = TR::RealRegister::FPR3;  // volatile float
-   _globalRegisterNumberToRealRegisterMap[29] = TR::RealRegister::FPR1;  // volatile float
-   self()->setLastVolatileNonLinkFPR(29);
+   p = self()->addGlobalRegLater(linkage->getMethodMetaDataRegister(), p);
+   if (TR::Compiler->target.isZOS())
+      {
+      p = self()->addGlobalRegLater(self()->cg()->getS390Linkage()->getStackPointerRegister(), p);
+      }
 
-#if defined(ENABLE_PRESERVED_FPRS)
-   setLastVolatileNonLinkFPR(29);
+   // Special regs that add to prologue cost
+   //
+   p = self()->addGlobalRegLater(linkage->getEnvironmentPointerRegister(), p);
 
-   _globalRegisterNumberToRealRegisterMap[30] = TR::RealRegister::FPR6;  // volatile and 4th param float
-   _globalRegisterNumberToRealRegisterMap[31] = TR::RealRegister::FPR4;  // volatile and 3rd param float
-   _globalRegisterNumberToRealRegisterMap[32] = TR::RealRegister::FPR2;  // volatile and 2nd param float
-   _globalRegisterNumberToRealRegisterMap[33] = TR::RealRegister::FPR0;  // volatile and 1st param float
-   setLastLinkageFPR(33);
+   //p = addGlobalRegLater(linkage->getLitPoolRegister(), p); // zOS private linkage might want this here?
 
-   _globalRegisterNumberToRealRegisterMap[34] = TR::RealRegister::FPR15;  // preserved float or vector
-   _globalRegisterNumberToRealRegisterMap[35] = TR::RealRegister::FPR14;  // preserved float or vector
-   _globalRegisterNumberToRealRegisterMap[36] = TR::RealRegister::FPR13;  // preserved float or vector
-   _globalRegisterNumberToRealRegisterMap[37] = TR::RealRegister::FPR12;  // preserved float or vector
-   _globalRegisterNumberToRealRegisterMap[38] = TR::RealRegister::FPR11;  // preserved float or vector
-   _globalRegisterNumberToRealRegisterMap[39] = TR::RealRegister::FPR10;  // preserved float or vector
-   _globalRegisterNumberToRealRegisterMap[40] = TR::RealRegister::FPR9;   // preserved float or vector
-   _globalRegisterNumberToRealRegisterMap[41] = TR::RealRegister::FPR8;   // preserved float or vector
-#else
-   _globalRegisterNumberToRealRegisterMap[30] = TR::RealRegister::FPR15;  // volatile float or vector
-   _globalRegisterNumberToRealRegisterMap[31] = TR::RealRegister::FPR14;  // volatile float or vector
-   _globalRegisterNumberToRealRegisterMap[32] = TR::RealRegister::FPR13;  // volatile float or vector
-   _globalRegisterNumberToRealRegisterMap[33] = TR::RealRegister::FPR12;  // volatile float or vector
-   _globalRegisterNumberToRealRegisterMap[34] = TR::RealRegister::FPR11;  // volatile float or vector
-   _globalRegisterNumberToRealRegisterMap[35] = TR::RealRegister::FPR10;  // volatile float or vector
-   _globalRegisterNumberToRealRegisterMap[36] = TR::RealRegister::FPR9;   // volatile float or vector
-   _globalRegisterNumberToRealRegisterMap[37] = TR::RealRegister::FPR8;   // volatile float or vector
+   if (linkage->isXPLinkLinkageType())
+      p = self()->addGlobalRegLater(TR::RealRegister::GPR7, p);
 
-   self()->setLastVolatileNonLinkFPR(37);
+   if (enableHighWordGRA)
+      {
+      // HPR
+      // this is a bit tricky, we consider Global HPRs part of Global GPRs
+      self()->setFirstGlobalHPRRegisterNumber(p);
+      // volatile HPRs
+      // might use HPR4 on 31-bit zLinux
+      p = self()->addGlobalReg(TR::RealRegister::HPR3, p);
+      p = self()->addGlobalReg(TR::RealRegister::HPR2, p);
+      p = self()->addGlobalReg(TR::RealRegister::HPR1, p);
+      // for preserved regs, we can only use HPR6-12 because VM only saves/restores those
+      if (TR::Compiler->target.is32Bit())
+         {
+         // might use GPR6 on 64-bit for lit pool reg
+         p = self()->addGlobalReg(TR::RealRegister::HPR6, p);
+         }
+      if (linkage->getExtCodeBaseRegister() == TR::RealRegister::GPR7 && self()->cg()->isExtCodeBaseFreeForAssignment())
+         {
+         // register 7 is hard coded for now
+         p = self()->addGlobalReg(TR::RealRegister::HPR7, p);
+         }
+      p = self()->addGlobalReg(TR::RealRegister::HPR8, p);
+      p = self()->addGlobalReg(TR::RealRegister::HPR9, p);
+      p = self()->addGlobalReg(TR::RealRegister::HPR10, p);
+      p = self()->addGlobalReg(TR::RealRegister::HPR11, p);
+      p = self()->addGlobalReg(TR::RealRegister::HPR12, p);
+      self()->setLastGlobalHPRRegisterNumber(p-1);
+      // might use HPR15 on 31-bit zOS
+      }
 
-   _globalRegisterNumberToRealRegisterMap[38] = TR::RealRegister::FPR6;  // volatile and 4th param float
-   _globalRegisterNumberToRealRegisterMap[39] = TR::RealRegister::FPR4;  // volatile and 3rd param float
-   _globalRegisterNumberToRealRegisterMap[40] = TR::RealRegister::FPR2;  // volatile and 2nd param float
-   _globalRegisterNumberToRealRegisterMap[41] = TR::RealRegister::FPR0;  // volatile and 1st param float
-   self()->setLastLinkageFPR(41);
-#endif
+   self()->setLastGlobalGPRRegisterNumber(p-1);
 
-   self()->setLastGlobalFPRRegisterNumber(41);        // Index of last global FPR
-   self()->setLastGlobalCCRRegisterNumber(41);        // Index of last global CCR
+   if (self()->cg()->globalAccessRegistersSupported())
+      {
+      self()->setFirstGlobalAccessRegisterNumber(p);
 
-   // reserved
-   _globalRegisterNumberToRealRegisterMap[42] = (uint32_t) (-1);   // reserved
-   _globalRegisterNumberToRealRegisterMap[43] = (uint32_t) (-1);   // reserved
-   _globalRegisterNumberToRealRegisterMap[44] = (uint32_t) (-1);   // reserved
-   _globalRegisterNumberToRealRegisterMap[45] = (uint32_t) (-1);   // reserved
-   _globalRegisterNumberToRealRegisterMap[46] = (uint32_t) (-1);   // reserved
-   _globalRegisterNumberToRealRegisterMap[47] = (uint32_t) (-1);   // reserved
+      //add the same access registers as GPRs
+      for (TR_GlobalRegisterNumber i = self()->getFirstGlobalGPRRegisterNumber(); i <= self()->getLastGlobalGPRRegisterNumber(); i++)
+         {
+         auto regNum = static_cast<TR::RealRegister::RegNum>(_globalRegisterNumberToRealRegisterMap[i] - TR::RealRegister::FirstGPR + TR::RealRegister::FirstAR);
 
-   uint32_t vectorOffset = 48;
-   self()->initGlobalVectorRegisterMap(vectorOffset);
+         p = self()->addGlobalReg(regNum, p);
+         }
 
-   return 0;
+      self()->setLastGlobalAccessRegisterNumber(p-1);
+      }
+
+   // Volatiles that aren't linkage regs
+   //
+   self()->setFirstGlobalFPRRegisterNumber(p);
+   for (uint32_t i = TR::RealRegister::FirstFPR; i <= TR::RealRegister::LastFPR; i++)
+      {
+      auto regNum = static_cast<TR::RealRegister::RegNum>(i);
+
+      if (!linkage->getPreserved(regNum) && !linkage->getFloatArgument(regNum))
+         {
+         p = self()->addGlobalReg(regNum, p);
+         }
+      }
+
+   // Linkage regs in reverse order
+   //
+   for (uint32_t i = linkage->getNumFloatArgumentRegisters(); i >= 0; i--)
+      {
+      p = self()->addGlobalReg(linkage->getFloatArgumentRegister(i), p);
+      }
+
+   self()->setLastLinkageFPR(p-1);
+
+   // Preserved regs, vmthread last
+   //
+   for (uint32_t i = TR::RealRegister::FirstFPR; i <= TR::RealRegister::LastFPR; i++)
+      {
+      auto regNum = static_cast<TR::RealRegister::RegNum>(i);
+
+      if (linkage->getPreserved(regNum))
+         {
+         p = self()->addGlobalReg(regNum, p);
+         }
+      }
+
+   self()->setLastGlobalFPRRegisterNumber(p-1);
+
+   // initGlobalVectorRegisterMap sets first/last global grns and overlapped grns
+   if (self()->cg()->getSupportsVectorRegisters())
+      p = self()->initGlobalVectorRegisterMap(p);
+
+   self()->setLastGlobalVRFRegisterNumber(p-1);
+
+   for (int32_t i = 0; i < p; i++)
+      {
+      if (_globalRegisterNumberToRealRegisterMap[i] == linkage->getCAAPointerRegister())
+         self()->setGlobalCAARegisterNumber(i);
+      if (_globalRegisterNumberToRealRegisterMap[i] == linkage->getEnvironmentPointerRegister())
+         self()->setGlobalEnvironmentRegisterNumber(i);
+      if (_globalRegisterNumberToRealRegisterMap[i] == linkage->getParentDSAPointerRegister())
+         self()->setGlobalParentDSARegisterNumber(i);
+      if (_globalRegisterNumberToRealRegisterMap[i] == linkage->getEntryPointRegister())
+         self()->setGlobalEntryPointRegisterNumber(i);
+      if (_globalRegisterNumberToRealRegisterMap[i] == linkage->getReturnAddressRegister())
+         self()->setGlobalReturnAddressRegisterNumber(i);
+      }
+
+   self()->setLastRealRegisterGlobalRegisterNumber(p-1);
+   self()->setLastGlobalCCRRegisterNumber(p-1);
+
+   return _globalRegisterNumberToRealRegisterMap;
    }
 
 /**
@@ -7234,6 +7010,50 @@ OMR::Z::Machine::setVirtualAssociatedWithReal(TR::RealRegister::RegNum regNum, T
       }
 
    return _registerAssociations[regNum] = virtReg;
+   }
+
+/**
+ * Longer term, once we clean up lit pool / extended lit pool regs and
+ * arbitrary usage of other regs, we can integrate this better, but for now,
+ * it is just a simple list of regs that are known to be 'safe'
+ */
+bool
+OMR::Z::Machine::isRestrictedReg(TR::RealRegister::RegNum reg)
+   {
+   static const TR::RealRegister::RegNum regList[] =
+      {
+      TR::RealRegister::GPR9,
+      TR::RealRegister::GPR10,
+      TR::RealRegister::GPR11,
+      TR::RealRegister::GPR12,
+      };
+   TR::Compilation *comp = self()->cg()->comp();
+   static const int32_t regListSize = (sizeof(regList) / sizeof(TR::RealRegister::RegNum));
+
+   int32_t numRestrictedRegs = comp->getOptions()->getNumRestrictedGPRs();
+   if (numRestrictedRegs < 0 || numRestrictedRegs > regListSize)
+      {
+      static bool printed = false;
+      #ifdef DEBUG
+      if (!printed)
+         {
+         fprintf(stderr, "Invalid value for numRestrictedRegs or on-demand lit pool is disabled. Needs to range from 0 to %d\n",
+            regListSize);
+         printed = true;
+         }
+      #endif
+      return false;
+      }
+
+   for (int32_t i = 0; i < numRestrictedRegs; ++i)
+      {
+      if (regList[i] == reg)
+         {
+         return true;
+         }
+      }
+
+   return false;
    }
 
 bool

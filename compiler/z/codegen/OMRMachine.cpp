@@ -6419,7 +6419,7 @@ OMR::Z::Machine::initializeGlobalRegisterTable()
 
    if (linkage->isZLinuxLinkageType()) // ordering seems to make crashes on zos.
       {
-      for (uint32_t i = linkage->getNumIntegerArgumentRegisters(); i >= 0; i--)
+      for (int32_t i = linkage->getNumIntegerArgumentRegisters(); i >= 0; i--)
          {
          if (!linkage->getPreserved(linkage->getIntegerArgumentRegister(i)))
             p = self()->addGlobalReg(linkage->getIntegerArgumentRegister(i), p);
@@ -6427,7 +6427,7 @@ OMR::Z::Machine::initializeGlobalRegisterTable()
       }
 
 
-   for (uint32_t i = linkage->getNumIntegerArgumentRegisters() - 1; i >= 0; i--)
+   for (int32_t i = linkage->getNumIntegerArgumentRegisters() - 1; i >= 0; i--)
       p = self()->addGlobalReg(linkage->getIntegerArgumentRegister(i), p);
 
    self()->setLastLinkageGPR(p-1);
@@ -6438,7 +6438,7 @@ OMR::Z::Machine::initializeGlobalRegisterTable()
       p = self()->addGlobalReg(linkage->getStaticBaseRegister(), p);
    if (!self()->cg()->isGlobalPrivateStaticBaseRegisterOn())
       p = self()->addGlobalReg(linkage->getPrivateStaticBaseRegister(), p);
-   for (uint32_t i = linkage->getNumSpecialArgumentRegisters(); i >= 0; i--)
+   for (int32_t i = linkage->getNumSpecialArgumentRegisters(); i >= 0; i--)
       p = self()->addGlobalReg(linkage->getSpecialArgumentRegister(i), p);
    p = self()->addGlobalReg(linkage->getIntegerReturnRegister(), p);
    p = self()->addGlobalReg(linkage->getLongReturnRegister(), p);
@@ -6450,7 +6450,7 @@ OMR::Z::Machine::initializeGlobalRegisterTable()
    //
    if (linkage->isZLinuxLinkageType()) // ordering seems to make crashes on zos.
       {
-      for (uint32_t i = TR::RealRegister::LastAssignableGPR; i >= TR::RealRegister::FirstGPR; --i)
+      for (int32_t i = TR::RealRegister::LastAssignableGPR; i >= TR::RealRegister::FirstGPR; --i)
          {
          auto regNum = static_cast<TR::RealRegister::RegNum>(i);
 
@@ -6473,7 +6473,7 @@ OMR::Z::Machine::initializeGlobalRegisterTable()
       {
       // Preserved regs, with special heavily-used regs last
       //
-      for (uint32_t i = TR::RealRegister::FirstGPR; i <= TR::RealRegister::LastAssignableGPR; i++)
+      for (int32_t i = TR::RealRegister::FirstGPR; i <= TR::RealRegister::LastAssignableGPR; i++)
          {
          auto regNum = static_cast<TR::RealRegister::RegNum>(i);
 
@@ -6559,7 +6559,7 @@ OMR::Z::Machine::initializeGlobalRegisterTable()
    // Volatiles that aren't linkage regs
    //
    self()->setFirstGlobalFPRRegisterNumber(p);
-   for (uint32_t i = TR::RealRegister::FirstFPR; i <= TR::RealRegister::LastFPR; i++)
+   for (int32_t i = TR::RealRegister::FirstFPR; i <= TR::RealRegister::LastFPR; i++)
       {
       auto regNum = static_cast<TR::RealRegister::RegNum>(i);
 
@@ -6571,7 +6571,7 @@ OMR::Z::Machine::initializeGlobalRegisterTable()
 
    // Linkage regs in reverse order
    //
-   for (uint32_t i = linkage->getNumFloatArgumentRegisters(); i >= 0; i--)
+   for (int32_t i = linkage->getNumFloatArgumentRegisters(); i >= 0; i--)
       {
       p = self()->addGlobalReg(linkage->getFloatArgumentRegister(i), p);
       }
@@ -6580,7 +6580,7 @@ OMR::Z::Machine::initializeGlobalRegisterTable()
 
    // Preserved regs, vmthread last
    //
-   for (uint32_t i = TR::RealRegister::FirstFPR; i <= TR::RealRegister::LastFPR; i++)
+   for (int32_t i = TR::RealRegister::FirstFPR; i <= TR::RealRegister::LastFPR; i++)
       {
       auto regNum = static_cast<TR::RealRegister::RegNum>(i);
 

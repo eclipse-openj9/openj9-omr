@@ -6536,8 +6536,6 @@ OMR::Z::Machine::initializeGlobalRegisterTable()
          p = self()->addGlobalReg(linkage->getLongLowReturnRegister(), p);
          p = self()->addGlobalReg(linkage->getLongHighReturnRegister(), p);
 
-         int32_t eReg = 0;
-
          // Preserved regs in descending order to encourage stmg with gpr15 and
          // gpr14, which are commonly preserved in zLinux system linkage
          //
@@ -6546,8 +6544,6 @@ OMR::Z::Machine::initializeGlobalRegisterTable()
             for (i = TR::RealRegister::LastAssignableGPR; i >= TR::RealRegister::FirstGPR; --i)
                {
                reg = (TR::RealRegister::RegNum)i;
-
-               if (eReg && reg == eReg) continue;
 
                if (linkage->getPreserved(reg))
                   {
@@ -6571,8 +6567,6 @@ OMR::Z::Machine::initializeGlobalRegisterTable()
             for (i = TR::RealRegister::FirstGPR; i <= TR::RealRegister::LastAssignableGPR; i++)
                {
                reg = (TR::RealRegister::RegNum)i;
-
-               if (eReg && reg == eReg) continue;
 
                if (linkage->getPreserved(reg))
                   {

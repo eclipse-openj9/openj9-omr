@@ -6518,7 +6518,7 @@ OMR::Z::Machine::initializeGlobalRegisterTable()
             }
 
 
-         for (i = linkage->getNumIntegerArgumentRegisters(); i >= 0; i--)
+         for (i = linkage->getNumIntegerArgumentRegisters() - 1; i >= 0; i--)
             p = self()->addGlobalReg(linkage->getIntegerArgumentRegister(i), p);
 
          self()->setLastLinkageGPR(p-1);

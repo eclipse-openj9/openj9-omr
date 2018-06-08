@@ -47,7 +47,6 @@ compiler_library(z
 	${CMAKE_CURRENT_LIST_DIR}/codegen/UnaryEvaluator.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codegen/OMRInstruction.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codegen/InstOpCode.cpp
-	${CMAKE_CURRENT_LIST_DIR}/codegen/InstOpCodeTables.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codegen/OMRRegister.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codegen/OMRRealRegister.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codegen/OMRRegisterIterator.cpp

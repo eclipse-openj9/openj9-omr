@@ -26,6 +26,11 @@
 #include "il/Node.hpp"                                         // for Node
 #include "il/Node_inlines.hpp"
 
+const OMR::Z::InstOpCode::OpCodeMetaData OMR::Z::InstOpCode::metadata[NumOpCodes] =
+   {
+   #include "codegen/OMRInstOpCodeProperties.hpp"
+   };
+
 uint32_t
 OMR::Z::InstOpCode::hasBypass()
    {
@@ -109,13 +114,13 @@ uint64_t
 OMR::Z::InstOpCode::setsOperand(uint32_t opNum)
    {
    if (opNum == 1)
-      return properties[_mnemonic] & S390OpProp_SetsOperand1;
+      return metadata[_mnemonic].properties & S390OpProp_SetsOperand1;
    else if (opNum == 2)
-      return properties[_mnemonic] & S390OpProp_SetsOperand2;
+      return metadata[_mnemonic].properties & S390OpProp_SetsOperand2;
    else if (opNum == 3)
-      return properties[_mnemonic] & S390OpProp_SetsOperand3;
+      return metadata[_mnemonic].properties & S390OpProp_SetsOperand3;
    else if (opNum == 4)
-      return properties[_mnemonic] & S390OpProp_SetsOperand4;
+      return metadata[_mnemonic].properties & S390OpProp_SetsOperand4;
    return false;
    }
 
@@ -123,14 +128,14 @@ uint64_t
 OMR::Z::InstOpCode::isOperandHW(uint32_t i)
    {
    uint64_t mask = ((i==1)? S390OpProp_TargetHW : 0) | ((i==2)? S390OpProp_SrcHW : 0) | ((i==3)? S390OpProp_Src2HW : 0);
-   return properties[_mnemonic] & mask;
+   return metadata[_mnemonic].properties & mask;
    }
 
 uint64_t
 OMR::Z::InstOpCode::isOperandLW(uint32_t i)
     {
     uint64_t mask = ((i==1)? S390OpProp_TargetLW : 0) | ((i==2)? S390OpProp_SrcLW : 0) | ((i==3)? S390OpProp_Src2LW : 0);
-    return properties[_mnemonic] & mask;
+    return metadata[_mnemonic].properties & mask;
     }
 
 
@@ -140,8 +145,8 @@ OMR::Z::InstOpCode::isOperandLW(uint32_t i)
 void
 OMR::Z::InstOpCode::copyBinaryToBufferWithoutClear(uint8_t *cursor, TR::InstOpCode::Mnemonic i_opCode)
   {
-  cursor[0] = binaryEncodings[i_opCode].bytes[0];
-  if( binaryEncodings[i_opCode].bytes[1] ) //Two byte opcode
+  cursor[0] = metadata[i_opCode].opcode[0];
+  if( metadata[i_opCode].opcode[1] ) //Two byte opcode
     {
     switch (getInstructionFormat(i_opCode))
       {
@@ -180,11 +185,11 @@ OMR::Z::InstOpCode::copyBinaryToBufferWithoutClear(uint8_t *cursor, TR::InstOpCo
       case VRV_FORMAT:
       case VRX_FORMAT:
       case VSI_FORMAT:
-         cursor[5] = binaryEncodings[i_opCode].bytes[1];
+         cursor[5] = metadata[i_opCode].opcode[1];
          //second byte of opcode begins at bit 47 (sixth byte)
          break;
        default:
-         cursor[1] = binaryEncodings[i_opCode].bytes[1];
+         cursor[1] = metadata[i_opCode].opcode[1];
          break;
        }
     }
@@ -207,9 +212,9 @@ OMR::Z::InstOpCode::copyBinaryToBuffer(uint8_t *cursor, TR::InstOpCode::Mnemonic
 uint8_t
 OMR::Z::InstOpCode::getInstructionLength(TR::InstOpCode::Mnemonic i_opCode)
   {
-  if (binaryEncodings[i_opCode].bytes[0])
+  if (metadata[i_opCode].opcode[0])
      {
-     switch(binaryEncodings[i_opCode].bytes[0] & 0xC0)
+     switch(metadata[i_opCode].opcode[0] & 0xC0)
        {
        case 0x00 : return 2;
        case 0x40 :

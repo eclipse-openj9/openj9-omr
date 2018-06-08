@@ -2925,7 +2925,7 @@ TR_Debug::printFullRegInfo(TR::FILE *pOutFile, TR::RealRegister * reg)
 const char *
 TR_Debug::getOpCodeName(TR::InstOpCode * opCode)
    {
-   return TR::InstOpCode::opCodeToNameMap[opCode->getOpCodeValue()];
+   return TR::InstOpCode::metadata[opCode->getOpCodeValue()].name;
    }
 
 void

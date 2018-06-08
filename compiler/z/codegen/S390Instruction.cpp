@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -3666,7 +3666,7 @@ void appendElementSizeMnemonic(char * opCodeBuffer, int8_t elementSize)
 const char *
 getOpCodeName(TR::InstOpCode * opCode)
    {
-   return TR::InstOpCode::opCodeToNameMap[opCode->getOpCodeValue()];
+   return TR::InstOpCode::metadata[opCode->getOpCodeValue()].name;
    }
 
 TR::S390VInstruction::~S390VInstruction()

@@ -48,6 +48,6 @@ compiler_library(codegen
 	${CMAKE_CURRENT_LIST_DIR}/OMRRealRegister.cpp
 	${CMAKE_CURRENT_LIST_DIR}/OMRRegisterPair.cpp
 	${CMAKE_CURRENT_LIST_DIR}/OMRInstruction.cpp
-	${CMAKE_CURRENT_LIST_DIR}/ELFObjectFileGenerator.cpp
+	${CMAKE_CURRENT_LIST_DIR}/ELFGenerator.cpp
 	${CMAKE_CURRENT_LIST_DIR}/OMRELFRelocationResolver.cpp
 )

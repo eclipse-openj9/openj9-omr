@@ -31,9 +31,13 @@
 #include "runtime/Runtime.hpp"                 // for TR_CCPreLoadedCode, etc
 #include "runtime/CodeCacheTypes.hpp"
 #include "env/RawAllocator.hpp"
+#include "codegen/StaticRelocation.hpp"
+#include "codegen/ELFRelocationResolver.hpp"
 
 class TR_FrontEnd;
 class TR_OpaqueMethodBlock;
+class TR_Memory;
+
 namespace TR { class CodeCache; }
 namespace TR { class CodeCacheManager; }
 namespace TR { class CodeCacheMemorySegment; }
@@ -48,61 +52,50 @@ namespace OMR { typedef CodeCacheManager CodeCacheManagerConnector; }
 
 #if (HOST_OS == OMR_LINUX)
 
-#include <elf.h>                            // for ELF64_ST_INFO, etc
-namespace TR { class ELFObjectFileGenerator; }
-#if defined(TR_HOST_64BIT)
-typedef Elf64_Ehdr ELFHeader;
-typedef Elf64_Shdr ELFSectionHeader;
-typedef Elf64_Phdr ELFProgramHeader;
-typedef Elf64_Addr ELFAddress;
-typedef Elf64_Sym ELFSymbol;
-#define ELF_ST_INFO(bind, type) ELF64_ST_INFO(bind, type)
-#define ELFClass ELFCLASS64;
-#else
-typedef Elf32_Ehdr ELFHeader;
-typedef Elf32_Shdr ELFSectionHeader;
-typedef Elf32_Phdr ELFProgramHeader;
-typedef Elf32_Addr ELFAddress;
-typedef Elf32_Sym ELFSymbol;
-#define ELF_ST_INFO(bind, type) ELF32_ST_INFO(bind, type)
-#define ELFClass ELFCLASS32;
-#endif
+namespace TR { class ELFRelocatableGenerator; }
+namespace TR { class ELFExecutableGenerator; }
 
-namespace OMR {
-struct ELFCodeCacheHeader
-   {
-   ELFHeader hdr;
-   ELFProgramHeader phdr;
-   };
+namespace TR {
 
-struct ELFCodeCacheTrailer
-   {
-   ELFSectionHeader zeroSection;
-   ELFSectionHeader textSection;
-   ELFSectionHeader dynsymSection;
-   ELFSectionHeader shstrtabSection;
-   ELFSectionHeader dynstrSection;
+/**
+ * Structure used to track regions of code cache that will become symbols
+*/
+typedef struct CodeCacheSymbol{
+      const char *_name; /**< Symbol name */
+      uint32_t _nameLength; /**< start of symbol name */
+      uint8_t *_start; /**< Start PC */
+      uint32_t _size; /**< Code size */
+      struct CodeCacheSymbol *_next; /**< ptr to next CodeCacheSymbol */
+} CodeCacheSymbol;
 
-   char zeroSectionName[1];
-   char shstrtabSectionName[10];
-   char textSectionName[6];
-   char dynsymSectionName[8];
-   char dynstrSectionName[8];
+/**
+ * Structure used to track the CodeCacheSymbol structs connected through a
+ * linked list data structure.
+*/
+typedef struct CodeCacheSymbolContainer{
+      CodeCacheSymbol *_head; /**< ptr to the first CodeCacheSymbol */
+      CodeCacheSymbol *_tail; /**< ptr to the latest CodeCacheSymbol */
+      uint32_t _numSymbols; /**< Number of symbols in the linked list */
+      uint32_t _totalSymbolNameLength; /**< Sum of the symbol names in the linked list */
+} CodeCacheSymbolContainer;
 
-   // start of a variable sized region: an ELFSymbol structure per symbol + total size of elf symbol names
-   ELFSymbol symbols[1];
-   };
+/**
+ * Structure used for tracking relocations
+*/
+typedef struct CodeCacheRelocationInfo{
+      uint8_t *_location; /**< the address requiring relocation */
+      uint32_t _type; /**< relocation type: absolute or relative */
+      uint32_t _symbol; /**< index of the symbol to be relocated in the linked list of CodeCacheSymbol, with head symbol being 0 */
+      struct CodeCacheRelocationInfo *_next; /**< link to the next symbol */
+} CodeCacheRelocationInfo;
 
-// structure used to track regions of code cache that will become symbols
-typedef struct CodeCacheSymbol
-   {
-   const char *_name;
-   uint32_t _nameLength;
-   uint8_t *_start;
-   uint32_t _size;
-   struct CodeCacheSymbol *_next;
-   } CodeCacheSymbol;
-} // namespace OMR
+typedef struct CodeCacheRelocationInfoContainer{
+      CodeCacheRelocationInfo *_head; /**< First CodeCacheRelocationInfo structure */
+      CodeCacheRelocationInfo *_tail; /**< Latest CodeCacheRelocationInfo structure added */
+      uint32_t _numRelocations; /**< Total number of CodeCacheRelocationInfor in the linked list */
+} CodeCacheRelocationInfoContainer;
+
+} // namespace TR
 
 #endif // HOST_OS == OMR_LINUX
 
@@ -264,21 +257,34 @@ protected:
 
 #if (HOST_OS == OMR_LINUX)
    public:
-   void initializeObjectFileGenerator();
-   void initializeELFHeader();
-   void initializeELFTrailer();
-   void initializeELFHeaderForPlatform(ELFCodeCacheHeader *hdr);
+   /**
+    * Initializes the Relocatable ELF Generator, if the option is enabled
+    * @param
+    * @return
+   */
+   void initializeRelocatableELFGenerator(void);
+
+   /**
+    * Initializes the Executable ELFGenerator if the option is enabled
+    * @param
+    * @return
+   */
+   void initializeExecutableELFGenerator(void);
 
    protected:
-   TR::ELFObjectFileGenerator    *_objectFileGenerator;
-   struct ELFCodeCacheHeader     *_elfHeader;
-   struct ELFCodeCacheTrailer    *_elfTrailer;
-   uint32_t                       _elfTrailerSize;
+
+   TR::ELFExecutableGenerator      *_elfExecutableGenerator; /**< Executable ELF generator */
+   TR::ELFRelocatableGenerator     *_elfRelocatableGenerator; /**< Relocatable ELF generator */
 
    // collect information on code cache symbols here, will be post processed into the elf trailer structure
-   static CodeCacheSymbol        *_symbols;
-   static uint32_t                _numELFSymbols;
-   static uint32_t                _totalELFSymbolNamesLength;
+   static TR::CodeCacheSymbolContainer   *_symbolContainer; /**< Symbol container used for tracking CodeCacheSymbols.
+                                                                  Note: This static member is not thread-safe. Synchronization is needed if multiple compilation threads are active */
+   TR::CodeCacheSymbolContainer          *_relocatableSymbolContainer; /**< Symbol container used for tracking CodeCacheSymbols, for the purpose of writing to relocatable ELF object file */
+   TR::CodeCacheRelocationInfoContainer  *_relocations; /**< for tracking relocation info */
+   TR::ELFRelocationResolver              _resolver; /**< this translates between a TR::StaticRelocation and the ELF relocation type required for the platform */
+   const char                            *_objectFileName; /**< filename of the object file to generate, obtained from cmd line options */
+
+
 #endif // HOST_OS == OMR_LINUX
    };
 

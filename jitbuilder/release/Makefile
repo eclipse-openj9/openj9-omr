@@ -317,7 +317,7 @@ UseIncrement.o : src/UseIncrement.c
 	$(CC) -g -o $@ -c $<
 
 increment.o : simple
-	TR_Options='enableObjectFileGeneration,objectFile=increment.o' ./simple
+	TR_Options='enableRelocatableELFGeneration,objectFile=increment.o' ./simple
 
 
 useCall : test_calls.o UseCall.o
@@ -327,7 +327,7 @@ UseCall.o : src/UseCall.c
 	$(CC) -g -o $@ -c $<
 
 test_calls.o : call
-	TR_Options='enableObjectFileGeneration,objectFile=test_calls.o' ./call
+	TR_Options='enableRelocatableELFGeneration,objectFile=test_calls.o' ./call
 
 
 clean:

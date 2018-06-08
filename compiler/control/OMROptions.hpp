@@ -309,14 +309,14 @@ enum TR_CompilationOptions
    TR_DisableNewLoopTransfer              = 0x10000000 + 6, // loop versioning for virtual guards
    TR_UseSamplingJProfilingForDLT                 = 0x20000000 + 6,
    TR_UseSamplingJProfilingForInterpSampledMethods= 0x40000000 + 6,
-   TR_EnableObjectFileGeneration          = 0x80000000 + 6,
+   TR_EmitRelocatableELFFile              = 0x80000000 + 6,
 
    // Option word 7
    //
    TR_DisableCodeCacheSnippets            = 0x00000020 + 7,
    TR_EnableReassociation                 = 0x00000040 + 7,
    TR_DisableSSOpts                       = 0x00000080 + 7,
-   TR_TraceObjectFileGeneration           = 0x00000100 + 7,
+   //Available                            = 0x00000100 + 7,
    TR_DisableDelayRelocationForAOTCompilations   = 0x00000200 + 7,
    TR_DisableRecompDueToInlinedMethodRedefinition = 0x00000400 + 7,
    TR_DisableLoopReplicatorColdSideEntryCheck = 0x00000800 + 7,
@@ -347,7 +347,7 @@ enum TR_CompilationOptions
                                           = 0x00000020 + 8,
    TR_DisableDirectToJNI                  = 0x00000040 + 8,
    TR_OldJVMPI                            = 0x00000080 + 8,
-   // Available                           = 0x00000100 + 8,
+   TR_EmitExecutableELFFile               = 0x00000100 + 8,
    // Available                           = 0x00000200 + 8,
    // Available                           = 0x00000800 + 8,
    TR_DisableLinkageRegisterAllocation    = 0x00001000 + 8,
@@ -2435,7 +2435,7 @@ private:
 
    int32_t                     _loopyAsyncCheckInsertionMaxEntryFreq;
 
-   char *                      _objectFileName;
+   char *                      _objectFileName; //Name of the relocatable ELF file *.o if one is to be generated
 
    }; // TR::Options
 

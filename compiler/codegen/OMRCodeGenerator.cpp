@@ -3156,7 +3156,7 @@ void OMR::CodeGenerator::addRelocation(TR::Relocation *r)
       }
    }
 
-void OMR::CodeGenerator::addAOTRelocation(TR::Relocation *r, const char *generatingFileName, uintptr_t generatingLineNumber, TR::Node *node)
+void OMR::CodeGenerator::addAOTRelocation(TR::Relocation *r, const char *generatingFileName, uintptr_t generatingLineNumber, TR::Node *node, TR::AOTRelocationPositionRequest where)
    {
    TR_ASSERT(generatingFileName, "AOT relocation location has improper NULL filename specified");
    if (self()->comp()->compileRelocatableCode())
@@ -3165,18 +3165,33 @@ void OMR::CodeGenerator::addAOTRelocation(TR::Relocation *r, const char *generat
       genData->file = generatingFileName;
       genData->line = generatingLineNumber;
       genData->node = node;
-      r->setDebugInfo(genData);
-      _aotRelocationList.push_back(r);
+      self()->addAOTRelocation(r, genData, where);
       }
    }
 
-void OMR::CodeGenerator::addAOTRelocation(TR::Relocation *r, TR::RelocationDebugInfo* info)
+void OMR::CodeGenerator::addAOTRelocation(TR::Relocation *r, TR::RelocationDebugInfo* info, TR::AOTRelocationPositionRequest where)
    {
    if (self()->comp()->compileRelocatableCode())
       {
       TR_ASSERT(info, "AOT relocation location does not have associated debug information");
       r->setDebugInfo(info);
-      _aotRelocationList.push_back(r);
+      switch (where)
+         {
+         case TR::AOTRelocationAtFront:
+            _aotRelocationList.push_front(r);
+            break;
+
+         case TR::AOTRelocationAtBack:
+            _aotRelocationList.push_back(r);
+            break;
+
+         default:
+            TR_ASSERT_FATAL(
+               false,
+               "invalid TR::AOTRelocationPositionRequest %d",
+               where);
+            break;
+         }
       }
    }
 

@@ -1303,11 +1303,18 @@ OMR::SymbolReferenceTable::findOrCreateClassSymbol(
    sym->setClassObject();
 
 #ifdef J9_PROJECT_SPECIFIC
-   TR_J9VMBase *fej9 = (TR_J9VMBase *)(comp()->fe());
-   if (fej9->getSupportsRecognizedMethods())
-   {
-   TR_ASSERT(cpIndex != -1 || !comp()->compileRelocatableCode() , "we missed one of the cases where enabling recognized methods triggers a creation of a classSymbol with CPI of -1");
-   }
+   if (cpIndex == -1 && comp()->compileRelocatableCode())
+      {
+      // Restricting TR_ArbitraryClassAddress to classes loaded by the
+      // bootstrap loader ensures that there is no ambiguity when correlating
+      // the class on AOT load.
+      TR_J9VMBase *fej9 = (TR_J9VMBase *)(comp()->fe());
+      void *loader = fej9->getClassLoader((TR_OpaqueClassBlock*)classObject);
+      void *bootstrapLoader = TR::Compiler->javaVM->systemClassLoader;
+      TR_ASSERT_FATAL(
+         loader == bootstrapLoader,
+         "class symref cpIndex=-1 in AOT not loaded by bootstrap loader\n");
+      }
 #endif
 
    if (cpIndexOfStatic)

@@ -1166,6 +1166,33 @@ uint8_t *OMR::Power::MemoryReference::generateBinaryEncoding(TR::Instruction *cu
             }
          else
             {
+            if (comp->compileRelocatableCode()
+                && symbol->isStatic()
+                && symbol->isClassObject())
+               {
+               TR::Node *node = currentInstruction->getNode();
+               TR_RelocationRecordInformation *recordInfo =
+                  (TR_RelocationRecordInformation*)comp->trMemory()->allocateMemory(
+                     sizeof(TR_RelocationRecordInformation),
+                     heapAlloc);
+               recordInfo->data1 = (uintptr_t)self()->getSymbolReference();
+               recordInfo->data2 = node == NULL ? -1 : node->getInlinedSiteIndex();
+               recordInfo->data3 = fixedSequence1;
+               cg->addAOTRelocation(
+                  new (cg->trHeapMemory()) TR::ExternalRelocation(
+                     cursor,
+                     (uint8_t*)recordInfo,
+                     TR_ClassAddress,
+                     cg),
+                  __FILE__,
+                  __LINE__,
+                  node);
+
+               // The relocation will OR its values into the immediates, so
+               // they have to be zero beforehand
+               addr = 0;
+               }
+
             *wcursor = 0x3c000000;                        // lis target, bits0-15
             target->setRegisterFieldRT(wcursor);
             *wcursor |= (addr>>48) & 0x0000ffff;
@@ -1509,6 +1536,21 @@ void OMR::Power::MemoryReference::accessStaticItem(TR::Node *node, TR::SymbolRef
       return;
       }
 
+   bool useUnresSnippetToAvoidRelo = cg->comp()->compileRelocatableCode();
+   if (useUnresSnippetToAvoidRelo)
+      {
+      // The unresolved snippet can't handle fabricated symrefs, so we'll have
+      // to do a relocation. For now, keep using the unresolved snippet for
+      // typical class symrefs even though they could generate relocations too.
+      bool reloIsRequired =
+         symbol->isStatic()
+         && symbol->isClassObject()
+         && ref->getCPIndex() == -1;
+
+      if (reloIsRequired)
+         useUnresSnippetToAvoidRelo = false;
+      }
+
    if (TR::Compiler->target.is64Bit())
       {
       TR::Node *topNode = cg->getCurrentEvaluationTreeTop()->getNode();
@@ -1569,7 +1611,8 @@ void OMR::Power::MemoryReference::accessStaticItem(TR::Node *node, TR::SymbolRef
       //  1. the load hasn't been resolved yet
       //  (otherwise optimizer will remove the ResolveCHK and we can be sure pTOC will contain the resolved address),
       //  2. we don't have a PTOC slot, we must always take the slow path
-      if ((ref->isUnresolved() || cg->comp()->compileRelocatableCode()) &&
+
+      if ((ref->isUnresolved() || useUnresSnippetToAvoidRelo) &&
           (topNode->getOpCodeValue() == TR::ResolveCHK || tocIndex == PTOC_FULL_INDEX))
          {
          snippet = new (cg->trHeapMemory()) TR::UnresolvedDataSnippet(cg, node, ref, isStore, false);
@@ -1598,7 +1641,7 @@ void OMR::Power::MemoryReference::accessStaticItem(TR::Node *node, TR::SymbolRef
       }
    else
       {
-      if (ref->isUnresolved()  || comp->compileRelocatableCode())
+      if (ref->isUnresolved() || comp->compileRelocatableCode())
          {
          /* don't want to trash node prematurely by the code for handling guarded counting recompilations symbols */
          TR::Node *GCRnode = node;
@@ -1609,106 +1652,76 @@ void OMR::Power::MemoryReference::accessStaticItem(TR::Node *node, TR::SymbolRef
             {
             TR::Register *reg = _baseRegister = cg->allocateRegister();
             loadAddressConstant(cg, GCRnode, TR_CountForRecompile, reg, NULL, false, TR_GlobalValue);
+            return;
             }
          else if (symbol->isRecompilationCounter())
             {
             TR::Register *reg = _baseRegister = cg->allocateRegister();
             loadAddressConstant(cg, GCRnode, 0, reg, NULL, false, TR_BodyInfoAddressLoad);
+            return;
             }
          else if (symbol->isCompiledMethod())
             {
             TR::Register *reg = _baseRegister = cg->allocateRegister();
             loadAddressConstant(cg, GCRnode, 0, reg, NULL, false, TR_RamMethodSequence);
+            return;
             }
          else if (symbol->isStartPC())
             {
             // use inSnippet, as the relocation mechanism is already set up there
             TR::Register *reg = _baseRegister = cg->allocateRegister();
             loadAddressConstantInSnippet(cg, GCRnode, 0, reg, NULL, TR::InstOpCode::addi, false, NULL);
+            return;
             }
          else if (isStaticField && !ref->isUnresolved())
             {
             TR::Register *reg = _baseRegister = cg->allocateRegister();
             loadAddressConstant(cg, GCRnode, 1, reg, NULL, false, TR_DataAddress);
+            return;
             }
-         else
+         else if (ref->isUnresolved() || useUnresSnippetToAvoidRelo)
             {
             self()->setUnresolvedSnippet(new (cg->trHeapMemory()) TR::UnresolvedDataSnippet(cg, node, ref, isStore, false));
             cg->addSnippet(self()->getUnresolvedSnippet());
-            }
-         }
-      else
-         {
-         TR::Instruction                 *rel1, *rel2;
-         uint8_t                        *relocationTarget;
-         TR::PPCPairedRelocation         *staticRelocation;
-         TR::Register                    *reg = _baseRegister = cg->allocateRegister();
-         TR_ExternalRelocationTargetKind relocationKind;
-         intptrj_t                        addr;
-         bool                            specialCase;
-
-         // Unless we get a new type of relocation, we have to totally load the address for
-         // AOT purpose for long data type since its low half can reuse the memory reference
-         // without appropriate relocation to fix it.
-         specialCase = symbol->isStatic() &&
-                       (symbol->getType().isInt64()) &&
-                       comp->getOption(TR_AOT);
-
-         addr = symbol->isStatic() ? (intptrj_t)symbol->getStaticSymbol()->getStaticAddress() :
-                                     (intptrj_t)symbol->getMethodSymbol()->getMethodAddress();
-
-         if (!node) node = cg->getCurrentEvaluationTreeTop()->getNode();
-
-         if (symbol->isStartPC())
-            {
-            loadAddressConstantInSnippet(cg, node, 0, reg, NULL, TR::InstOpCode::addi, false, NULL);
             return;
             }
+         }
 
-         self()->setBaseModifiable();
-         rel1 = generateTrg1ImmInstruction(cg, TR::InstOpCode::lis, node, reg, cg->hiValue(addr)&0x0000ffff);
-         if (specialCase)
-            {
-            rel2 = generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi2, node, reg, reg, LO_VALUE(addr));
-            }
-         else
-            {
-            rel2 = NULL;
-            self()->addToOffset(node, LO_VALUE(addr), cg);
-            }
+      TR::Instruction                 *rel1;
+      TR::PPCPairedRelocation         *staticRelocation;
+      TR::Register                    *reg = _baseRegister = cg->allocateRegister();
+      TR_ExternalRelocationTargetKind relocationKind;
+      intptrj_t                        addr;
 
-         if (symbol->isConst())
-            {
-            relocationTarget = (uint8_t *)ref->getOwningMethod(comp)->constantPool();
-            relocationKind   = TR_ConstantPoolOrderedPair;
-            }
-         else if (symbol->isClassObject())
-            {
-            relocationKind   = TR_ClassAddress;
-            }
-         else if (symbol->isMethod())
-            {
-            relocationTarget = (uint8_t *)ref;
-            relocationKind   = TR_MethodObject;
-            }
-         else
-            {
-            relocationTarget = (uint8_t *)ref;
-            relocationKind   = TR_DataAddress;
-            }
+      addr = symbol->isStatic() ? (intptrj_t)symbol->getStaticSymbol()->getStaticAddress() :
+                                  (intptrj_t)symbol->getMethodSymbol()->getMethodAddress();
 
-         if (comp->getOption(TR_AOT))
-            {
-             TR_RelocationRecordInformation *recordInfo = ( TR_RelocationRecordInformation *)comp->trMemory()->allocateMemory(sizeof( TR_RelocationRecordInformation), heapAlloc);
-            recordInfo->data1 = (uintptr_t)relocationTarget;
-            recordInfo->data2 = node ? (uintptr_t)node->getInlinedSiteIndex() : (uintptr_t)-1;
-            recordInfo->data3 = orderedPairSequence1;
-            staticRelocation = new (cg->trHeapMemory()) TR::PPCPairedRelocation(rel1, rel2, (uint8_t *)recordInfo, relocationKind, node);
-            cg->getAheadOfTimeCompile()->getRelocationList().push_front(staticRelocation);
+      if (!node) node = cg->getCurrentEvaluationTreeTop()->getNode();
 
-            if (!specialCase)
-               self()->setStaticRelocation(staticRelocation);
-            }
+      if (symbol->isStartPC())
+         {
+         loadAddressConstantInSnippet(cg, node, 0, reg, NULL, TR::InstOpCode::addi, false, NULL);
+         return;
+         }
+
+      self()->setBaseModifiable();
+      rel1 = generateTrg1ImmInstruction(cg, TR::InstOpCode::lis, node, reg, cg->hiValue(addr)&0x0000ffff);
+      self()->addToOffset(node, LO_VALUE(addr), cg);
+
+      if (comp->compileRelocatableCode())
+         {
+         TR_ASSERT_FATAL(
+            symbol->isClassObject(),
+            "expected a class symbol for symref #%d\n",
+            ref->getReferenceNumber());
+
+         TR_RelocationRecordInformation *recordInfo = ( TR_RelocationRecordInformation *)comp->trMemory()->allocateMemory(sizeof( TR_RelocationRecordInformation), heapAlloc);
+         recordInfo->data1 = (uintptr_t)ref;
+         recordInfo->data2 = node ? (uintptr_t)node->getInlinedSiteIndex() : (uintptr_t)-1;
+         recordInfo->data3 = orderedPairSequence1;
+         staticRelocation = new (cg->trHeapMemory()) TR::PPCPairedRelocation(rel1, NULL, (uint8_t *)recordInfo, TR_ClassAddress, node);
+         cg->getAheadOfTimeCompile()->getRelocationList().push_front(staticRelocation);
+         self()->setStaticRelocation(staticRelocation);
          }
       }
    }

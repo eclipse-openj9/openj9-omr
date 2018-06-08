@@ -209,7 +209,7 @@ MM_CollectorLanguageInterfaceImpl::scavenger_reverseForwardedObject(MM_Environme
 		GC_ObjectModel *objectModel = &(env->getExtensions()->objectModel);
 
 		originalObject->header.assign(
-			objectModel->getConsumedSizeInBytesWithHeader(forwardedObject),
+			(ObjectSize)objectModel->getConsumedSizeInBytesWithHeader(forwardedObject),
 			(uint8_t)objectModel->getObjectFlags(forwardedObject));
 
 #if defined (OMR_INTERP_COMPRESSED_OBJECT_HEADER)

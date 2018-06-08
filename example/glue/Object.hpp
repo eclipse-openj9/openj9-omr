@@ -32,8 +32,10 @@ typedef uint8_t ObjectFlags;
 
 #if defined(OMR_INTERP_COMPRESSED_OBJECT_HEADER)
 typedef uint32_t RawObjectHeader;
+typedef uint32_t ObjectSize;
 #else
 typedef uintptr_t RawObjectHeader;
+typedef uintptr_t ObjectSize;
 #endif
 
 /**
@@ -48,17 +50,17 @@ public:
 
 	explicit ObjectHeader(RawObjectHeader value) : _value(value) {}
 
-	explicit ObjectHeader(size_t sizeInBytes, ObjectFlags flags) { assign(sizeInBytes, flags); }
+	explicit ObjectHeader(ObjectSize sizeInBytes, ObjectFlags flags) { assign(sizeInBytes, flags); }
 
-	size_t sizeInBytes() const { return _value >> SIZE_SHIFT; }
+	ObjectSize sizeInBytes() const { return _value >> SIZE_SHIFT; }
 
-	void sizeInBytes(size_t value) { assign(value, flags()); }
+	void sizeInBytes(ObjectSize value) { assign(value, flags()); }
 
 	ObjectFlags flags() const { return (ObjectFlags)_value; }
 
 	void flags(ObjectFlags value) { assign(sizeInBytes(), value); }
 
-	void assign(size_t sizeInBytes, ObjectFlags flags) { _value = (sizeInBytes << SIZE_SHIFT) | flags; }
+	void assign(ObjectSize sizeInBytes, ObjectFlags flags) { _value = (sizeInBytes << SIZE_SHIFT) | flags; }
 
 	RawObjectHeader raw() const { return _value; }
 
@@ -73,11 +75,11 @@ private:
 class Object
 {
 public:
-	static size_t allocSize(size_t nslots) {
-		return sizeof(ObjectHeader) + sizeof(fomrobject_t) * nslots;
+	static ObjectSize allocSize(ObjectSize nslots) {
+		return ObjectSize(sizeof(ObjectHeader) + sizeof(fomrobject_t) * nslots);
 	}
 
-	explicit Object(size_t sizeInBytes, ObjectFlags flags = 0) : header(sizeInBytes, flags) {}
+	explicit Object(ObjectSize sizeInBytes, ObjectFlags flags = 0) : header(sizeInBytes, flags) {}
 
 	size_t sizeOfSlotsInBytes() const { return header.sizeInBytes() - sizeof(ObjectHeader); }
 

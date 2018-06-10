@@ -923,7 +923,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390PseudoInstruction * instr)
 
    if (instr->getOpCodeValue() == TR::InstOpCode::DCB)
       {
-      
+
       if (static_cast<TR::S390DebugCounterBumpInstruction*>(instr)->getAssignableReg())
          {
          print(pOutFile, static_cast<TR::S390DebugCounterBumpInstruction*>(instr)->getAssignableReg());
@@ -932,7 +932,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390PseudoInstruction * instr)
          {
          trfprintf(pOutFile, "Spill Reg");
          }
-         
+
       trfprintf(pOutFile, ", Debug Counter Bump");
       }
 
@@ -3062,22 +3062,6 @@ TR_Debug::getBitRegNum(TR::RealRegister * reg)
 uint8_t *
 TR_Debug::printLoadVMThreadInstruction(TR::FILE *pOutFile, uint8_t* cursor)
    {
-   if (_comp->getOption(TR_Enable390FreeVMThreadReg) && _comp->cg()->getVMThreadRegister()->getBackingStorage())
-      {
-      uint32_t offset = ( *(uint32_t *)cursor & 0xFFF);
-      if (TR::Compiler->target.is64Bit())
-         {
-         printPrefix(pOutFile, NULL, cursor, 6);
-         trfprintf(pOutFile, "LG \tGPR13, %d(,GPR5)\t#Load VM Thread value", offset);
-         cursor += 6;
-         }
-      else
-         {
-         printPrefix(pOutFile, NULL, cursor, 4);
-         trfprintf(pOutFile, "L \tGPR13, %d(,GPR5)\t#Load VM Thread value", offset);
-         cursor += 4;
-         }
-      }
    return cursor;
    }
 

@@ -2540,10 +2540,6 @@ TR_RegisterKinds
 OMR::Z::CodeGenerator::prepareRegistersForAssignment()
   {
    TR_RegisterKinds kindsMask = OMR::CodeGenerator::prepareRegistersForAssignment();
-   if ( self()->comp()->getOption(TR_Enable390FreeVMThreadReg))
-      {
-      self()->getVMThreadRegister()->setFutureUseCount(self()->getVMThreadRegister()->getTotalUseCount());
-      }
    if (!self()->isOutOfLineColdPath() && _extentOfLitPool < 0)
       {
       // ILGRA will call prepareRegistersForAssignment so when localRA calls it again lit pool will be set up already
@@ -5958,8 +5954,6 @@ OMR::Z::CodeGenerator::deleteInst(TR::Instruction* old)
 bool
 OMR::Z::CodeGenerator::needsVMThreadDependency()
    {
-   if (self()->comp()->getOption(TR_Enable390FreeVMThreadReg))
-      return true;
    return false;
    }
 

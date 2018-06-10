@@ -3883,12 +3883,6 @@ genCompareAndBranchInstructionIfPossible(TR::CodeGenerator * cg, TR::Node * node
          deps->addPostConditionIfNotAlreadyInserted(targetReg, TR::RealRegister::AssignAny);
          }
 
-      if (comp->getOption(TR_Enable390FreeVMThreadReg))
-         {
-         cg->addVMThreadPostCondition(deps, NULL);
-         }
-
-
       cursor = generateRIEInstruction(cg, opCodeToUse, node, targetReg, (int8_t)value, dest, branchCond);
       }
    else
@@ -3916,11 +3910,6 @@ genCompareAndBranchInstructionIfPossible(TR::CodeGenerator * cg, TR::Node * node
             //
             deps->addPostConditionIfNotAlreadyInserted(srcReg, TR::RealRegister::AssignAny);
             deps->addPostConditionIfNotAlreadyInserted(targetReg, TR::RealRegister::AssignAny);
-            }
-
-         if (comp->getOption(TR_Enable390FreeVMThreadReg))
-            {
-            cg->addVMThreadPostCondition(deps, NULL);
             }
 
          cursor = generateRIEInstruction(cg, opCodeToUse, node, targetReg, srcReg, dest, branchCond);
@@ -4708,11 +4697,6 @@ generateS390CompareBranch(TR::Node * node, TR::CodeGenerator * cg, TR::InstOpCod
          cg->evaluate(thirdChild);
          deps = generateRegisterDependencyConditions(cg, thirdChild, 0);
          cg->decReferenceCount(thirdChild);
-         }
-
-      if (comp->getOption(TR_Enable390FreeVMThreadReg))
-         {
-         cg->addVMThreadPostCondition(deps, NULL);
          }
 
       // We'll skip emitting the branch for LoadOrStoreOnCondition target blocks.
@@ -6420,7 +6404,7 @@ bool directMemoryStoreHelper(TR::CodeGenerator* cg, TR::Node* storeNode)
             // Force the memory references to not use an index register because MVC is an SS instruction
             // After generating a memory reference, Enforce it to generate LA instruction.
             // This will avoid scenarios when we have common base/index between destination and source
-            // And when generating the source memory reference, it clobber evaluates one of the node shared between 
+            // And when generating the source memory reference, it clobber evaluates one of the node shared between
             // target memory reference as well.
             TR::MemoryReference* targetMemRef = generateS390MemoryReference(storeNode, cg, false);
             targetMemRef->enforceSSFormatLimits(storeNode, cg, NULL);
@@ -11941,15 +11925,6 @@ OMR::Z::TreeEvaluator::BBStartEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    if (!firstInstr)
       firstInstr = fence;
 
-   //TODO remove this dependency once we can get the same dependency on the TR::InstOpCode::PROC instruction
-   //without causing an assertion error
-   if (comp->getOption(TR_Enable390FreeVMThreadReg))
-      {
-      TR::RegisterDependencyConditions * vmThreadConds = NULL;
-      vmThreadConds = cg->addVMThreadPostCondition(vmThreadConds, NULL);
-      fence->setDependencyConditions(vmThreadConds);
-      }
-
    if (block->isCatchBlock())
       {
       cg->generateCatchBlockBBStartPrologue(node, fence);
@@ -14130,9 +14105,9 @@ OMR::Z::TreeEvaluator::bitpermuteEvaluator(TR::Node *node, TR::CodeGenerator *cg
    TR::Register *tmpReg = cg->allocateRegister(TR_GPR);
 
    // The bitpermuteEvaluator uses loop unrolling to do the vector bit permute operation required by the IL
-   // However, the bitPermuteConstantUnrollThreshold constant defined below defines the cap for this technique 
-   // (i.e. the maximum array size for which this implementation can be used). 
-   // 
+   // However, the bitPermuteConstantUnrollThreshold constant defined below defines the cap for this technique
+   // (i.e. the maximum array size for which this implementation can be used).
+   //
    // Currently it is set at 4. The reasons are as follows:
    //
    // 1. This technique scales linearly as the array size grows and is also expensive for the iCache.
@@ -14142,7 +14117,7 @@ OMR::Z::TreeEvaluator::bitpermuteEvaluator(TR::Node *node, TR::CodeGenerator *cg
    //    unrolling technique for all array sizes.
    //
    // More info on the measurements is available here: https://github.com/eclipse/omr/pull/2330#issuecomment-378380538
-   // The differences between the generated code for the different 
+   // The differences between the generated code for the different
    // implementations can be seen here: https://github.com/eclipse/omr/pull/2330#issuecomment-378387516
    static const int8_t bitPermuteConstantUnrollThreshold = 4;
 
@@ -14164,17 +14139,17 @@ OMR::Z::TreeEvaluator::bitpermuteEvaluator(TR::Node *node, TR::CodeGenerator *cg
 
          // Create memory reference using tmpReg (which holds the shift amount), then shift valueReg by the shift amount
          TR::MemoryReference *shiftAmountMR = generateS390MemoryReference(tmpReg, 0, cg);
-         generateRSInstruction(cg, TR::InstOpCode::getShiftRightLogicalSingleOpCode(), node, tmpReg, valueReg, shiftAmountMR); 
+         generateRSInstruction(cg, TR::InstOpCode::getShiftRightLogicalSingleOpCode(), node, tmpReg, valueReg, shiftAmountMR);
          if (node->getDataType() == TR::Int64)
             {
             // This will generate a RISBG instruction (if it's supported, otherwise two shift instructions).
             // A RISBG instruction is equivalent to doing a `(tmpReg & 0x1) << x`. But for a 64-bit value we would have to use
-            // two AND immediate instructions and a shift instruction to do this. So instead we use a single RISBG instruction. 
+            // two AND immediate instructions and a shift instruction to do this. So instead we use a single RISBG instruction.
             generateShiftAndKeepSelected64Bit(node, cg, tmpReg, tmpReg, 63 - x, 63 - x, x, true, false);
             }
          else
             {
-            // Same as above, but generate a RISBLG instead of RISBG for 32, 16, and 8-bit integers 
+            // Same as above, but generate a RISBLG instead of RISBG for 32, 16, and 8-bit integers
             generateShiftAndKeepSelected31Bit(node, cg, tmpReg, tmpReg, 63 - x, 63 - x, x, true, false);
             }
 
@@ -14183,7 +14158,7 @@ OMR::Z::TreeEvaluator::bitpermuteEvaluator(TR::Node *node, TR::CodeGenerator *cg
          }
       }
    // Use z14's VBPERM instruction if possible. (Note: VBPERM supports permutation on arrays
-   // of up to size 16, and beats the performance of the loop unrolling technique used above 
+   // of up to size 16, and beats the performance of the loop unrolling technique used above
    // for arrays with size greater than the bitPermuteConstantUnrollThreshold constant defined above)
    else if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z14) &&
          isLoadConst  &&
@@ -14191,7 +14166,7 @@ OMR::Z::TreeEvaluator::bitpermuteEvaluator(TR::Node *node, TR::CodeGenerator *cg
       {
       char mask[16] = {15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0};
       char inverse[16] = {63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63};
-   
+
       TR::Register *vectorIndices = cg->allocateRegister(TR_VRF);
       TR::Register *vectorSource = cg->allocateRegister(TR_VRF);
       TR::Register *tmpVector = cg->allocateRegister(TR_VRF);
@@ -14230,13 +14205,13 @@ OMR::Z::TreeEvaluator::bitpermuteEvaluator(TR::Node *node, TR::CodeGenerator *cg
 
       // The result of the VBPERM op is now in resultReg's 48-63 bit locations. Extract the bits you want via a mask
       // and store the final result in resultReg. This is necessary because VBPERM operates on 16 bit positions at a time.
-      // If the array specified by the bitPermute IL was smaller than 16, then invalid bits can be selected. 
+      // If the array specified by the bitPermute IL was smaller than 16, then invalid bits can be selected.
       int32_t resultMask = (1 << arrayLen) - 1;
 
       generateRIInstruction(cg, TR::InstOpCode::NILL, node, resultReg, resultMask);
 
-      cg->stopUsingRegister(vectorIndices); 
-      cg->stopUsingRegister(vectorSource); 
+      cg->stopUsingRegister(vectorIndices);
+      cg->stopUsingRegister(vectorSource);
       cg->stopUsingRegister(tmpVector);
       }
    else
@@ -14260,29 +14235,29 @@ OMR::Z::TreeEvaluator::bitpermuteEvaluator(TR::Node *node, TR::CodeGenerator *cg
 
       // Load array length into index and test to see if it's already zero by checking the Condition Code (CC)
       // CC=0 if register value is 0, CC=1 if value < 1, CC=2 if value>0
-      generateRRInstruction(cg, TR::InstOpCode::LTR, node, indexReg, lengthReg); 
-      
-      // Start of internal control flow 
+      generateRRInstruction(cg, TR::InstOpCode::LTR, node, indexReg, lengthReg);
+
+      // Start of internal control flow
       generateS390LabelInstruction(cg,TR::InstOpCode::LABEL, node, startLabel);
 
-      // Now subtract 1 from indexReg 
+      // Now subtract 1 from indexReg
       generateRIInstruction(cg, TR::InstOpCode::AHI, node, indexReg, -1);
-      // Conditionally jump to end of control flow if index is less than 0.  
+      // Conditionally jump to end of control flow if index is less than 0.
       generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_CC1, node, endLabel);
-      
+
       // Load the bit index into tmpReg
       TR::MemoryReference *sourceMR = generateS390MemoryReference(addrReg, indexReg, 0, cg);
       generateRXYInstruction(cg, TR::InstOpCode::LGB, node, tmpReg, sourceMR);
 
-      // Shift value reg by location in shiftAmountMR and store in tmpReg 
+      // Shift value reg by location in shiftAmountMR and store in tmpReg
       TR::MemoryReference *shiftAmountMR = generateS390MemoryReference(tmpReg, 0, cg);
-      generateRSInstruction(cg, TR::InstOpCode::getShiftRightLogicalSingleOpCode(), node, tmpReg, valueReg, shiftAmountMR); 
+      generateRSInstruction(cg, TR::InstOpCode::getShiftRightLogicalSingleOpCode(), node, tmpReg, valueReg, shiftAmountMR);
 
       if (node->getDataType() == TR::Int64)
-         {         
+         {
          // This will generate a RISBG instruction (if supported).
          // This is equivalent to doing a `tmpReg & 0x1`. But on 64-bit we would have to use
-         // two AND immediate instructions. So instead we use a single RISBG instruction.          
+         // two AND immediate instructions. So instead we use a single RISBG instruction.
          generateShiftAndKeepSelected64Bit(node, cg, tmpReg, tmpReg, 63, 63, 0, true, false);
          }
       else

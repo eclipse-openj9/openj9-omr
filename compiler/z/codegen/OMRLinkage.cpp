@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -2649,13 +2649,6 @@ OMR::Z::Linkage::buildArgs(TR::Node * callNode, TR::RegisterDependencyConditions
       TR::Register *reg = self()->cg()->allocateRegister();
 
       dependencies->addPostCondition(reg, TR::RealRegister::KillVolHighRegs);
-      }
-
-
-   //VMThread work
-   if (self()->comp()->getOption(TR_Enable390FreeVMThreadReg))
-      {
-      dependencies = self()->cg()->addVMThreadPostCondition(dependencies, NULL);
       }
 
    // Adjust largest outgoing argument area

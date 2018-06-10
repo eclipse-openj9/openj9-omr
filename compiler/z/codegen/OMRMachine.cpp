@@ -2537,17 +2537,7 @@ OMR::Z::Machine::freeBestRegisterPair(TR::RealRegister ** firstReg, TR::RealRegi
 
          //if we selected the VM Thread Register to be freed, check to see if the value has already been spilled
          locationLow = bestVirtCandidateLow->getBackingStorage();
-         if (self()->cg()->needsVMThreadDependency() && bestVirtCandidateLow == self()->cg()->getVMThreadRegister())
-            {
-            traceMsg(comp, "\ns390machine: freeBestRegisterPair - low reg is GPR13\n");
-            if (bestVirtCandidateLow->getBackingStorage() == NULL)
-               {
-               traceMsg(comp, "\ns390machine: allocateVMThreadSpill called\n");
-               locationLow = self()->cg()->allocateVMThreadSpill();
-               traceMsg(comp, "\ns390machine: allocateVMThreadSpill call completed\n");
-               }
-            }
-         else if (locationLow == NULL && !bestVirtCandidateLow->containsInternalPointer())
+         if (locationLow == NULL && !bestVirtCandidateLow->containsInternalPointer())
             {
             if (bestVirtCandidateLow->getKind() == TR_GPR64)
                {
@@ -2697,17 +2687,7 @@ OMR::Z::Machine::freeBestRegisterPair(TR::RealRegister ** firstReg, TR::RealRegi
 
          //if we selected the VM Thread Register to be freed, check to see if the value has already been spilled
          locationHigh = bestVirtCandidateHigh->getBackingStorage();
-         if (self()->cg()->needsVMThreadDependency() && bestVirtCandidateHigh == self()->cg()->getVMThreadRegister())
-            {
-            traceMsg(comp, "\ns390machine: freeBestRegisterPair - high reg is GPR13\n");
-            if (bestVirtCandidateHigh->getBackingStorage() == NULL)
-               {
-               traceMsg(comp, "\ns390machine: allocateVMThreadSpill called\n");
-               locationHigh = self()->cg()->allocateVMThreadSpill();
-               traceMsg(comp, "\ns390machine: allocateVMThreadSpill call completed\n");
-               }
-            }
-         else if (locationHigh == NULL && !bestVirtCandidateHigh->containsInternalPointer())
+         if (locationHigh == NULL && !bestVirtCandidateHigh->containsInternalPointer())
             {
             if (bestVirtCandidateHigh->getKind() == TR_GPR64)
                {
@@ -4370,22 +4350,6 @@ OMR::Z::Machine::spillRegister(TR::Instruction * currentInstruction, TR::Registe
          if (debugObj)
            self()->cg()->traceRegisterAssignment("\nOOL: Reuse backing store (%p) for %s inside OOL\n",
                                          location,debugObj->getName(virtReg));
-         }
-       //if we selected the VM Thread Register to be freed, check to see if the value has already been spilled
-       else if (comp->getOption(TR_DisableOOL) &&
-                self()->cg()->needsVMThreadDependency() && virtReg == self()->cg()->getVMThreadRegister())
-         {
-         if (virtReg->getBackingStorage() == NULL)
-           {
-           traceMsg(comp, "\ns390machine: allocateVMThreadSpill called\n");
-           location = self()->cg()->allocateVMThreadSpill();
-           traceMsg(comp, "\ns390machine: allocateVMThreadSpill call completed\n");
-           }
-         else
-           {
-           traceMsg(comp, "\ns390machine: backing storage already assigned, re-use.\n");
-           location = virtReg->getBackingStorage();
-           }
          }
        else if (!containsInternalPointer)
          {

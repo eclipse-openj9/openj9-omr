@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -21,6 +21,19 @@
 
 #ifndef FRONTEND_INCL
 #define FRONTEND_INCL
+
+//  __   ___  __   __   ___  __       ___  ___  __
+// |  \ |__  |__) |__) |__  /  `  /\   |  |__  |  \
+// |__/ |___ |    |  \ |___ \__, /~~\  |  |___ |__/
+//
+
+// The FrontEnd interface is a legacy interface to a language frontend.
+// It is deprecated and new functions should not be added to this interface.
+//
+// If you need to ask a question of a language runtime the `ClassEnv`
+// structure in the `env` directory is the preferred means of doing so.
+// Add your query to the appropriate category, or create a new category if
+// it is warranted.
 
 #include "infra/List.hpp"
 #include "infra/Random.hpp"

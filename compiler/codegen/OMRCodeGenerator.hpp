@@ -231,6 +231,14 @@ class TR_ClobberEvalData
 
    };
 
+namespace TR
+   {
+   enum AOTRelocationPositionRequest
+      {
+      AOTRelocationAtFront,
+      AOTRelocationAtBack,
+      };
+   }
 
 TR::Node* generatePoisonNode(TR::Compilation *comp, TR::Block *currentBlock, TR::SymbolReference *liveAutoSymRef);
 
@@ -1041,8 +1049,8 @@ class OMR_EXTENSIBLE CodeGenerator
    TR::list<TR::StaticRelocation>& getStaticRelocations() { return _staticRelocationList; }
 
    void addRelocation(TR::Relocation *r);
-   void addAOTRelocation(TR::Relocation *r, const char *generatingFileName, uintptr_t generatingLineNumber, TR::Node *node);
-   void addAOTRelocation(TR::Relocation *r, TR::RelocationDebugInfo *info);
+   void addAOTRelocation(TR::Relocation *r, const char *generatingFileName, uintptr_t generatingLineNumber, TR::Node *node, TR::AOTRelocationPositionRequest where = TR::AOTRelocationAtBack);
+   void addAOTRelocation(TR::Relocation *r, TR::RelocationDebugInfo *info, TR::AOTRelocationPositionRequest where = TR::AOTRelocationAtBack);
    void addStaticRelocation(const TR::StaticRelocation &relocation);
 
    void addProjectSpecializedRelocation(uint8_t *location,

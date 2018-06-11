@@ -37,6 +37,7 @@ namespace OMR { typedef OMR::AheadOfTimeCompile AheadOfTimeCompileConnector; }
 #include "runtime/Runtime.hpp"      // for TR_ExternalRelocationTargetKind
 
 class TR_Debug;
+namespace TR { class ExternalRelocation; }
 namespace TR { class IteratedExternalRelocation; }
 namespace TR { class AheadOfTimeCompile; }
 
@@ -88,6 +89,11 @@ class OMR_EXTENSIBLE AheadOfTimeCompile
 
    void traceRelocationOffsets(uint8_t *&cursor, int32_t offsetSize, const uint8_t *endOfCurrentRecord, bool isOrderedPair);
 
+   /**
+    * Do project-specific processing of an AOT relocation just before combining
+    * it into an IteratedExternalRelocation.
+    */
+   static void interceptAOTRelocation(TR::ExternalRelocation *relocation) { }
 
    private:
    TR::Compilation *                           _comp;

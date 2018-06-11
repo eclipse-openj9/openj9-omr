@@ -368,13 +368,14 @@ void
 OMR::X86::AMD64::MemoryReference::addMetaDataForCodeAddressWithLoad(
       uint8_t *displacementLocation,
       TR::Instruction *containingInstruction,
-      TR::CodeGenerator *cg)
+      TR::CodeGenerator *cg,
+      TR::SymbolReference *srCopy)
    {
-   TR::SymbolReference &sr = self()->getSymbolReference();
    intptrj_t displacement = self()->getDisplacement();
 
    if (_symbolReference.getSymbol())
       {
+      TR::SymbolReference &sr = *srCopy;
       if (self()->getUnresolvedDataSnippet())
          {
          TR::Compilation *comp = cg->comp();
@@ -391,7 +392,7 @@ OMR::X86::AMD64::MemoryReference::addMetaDataForCodeAddressWithLoad(
          if (sr.getSymbol()->isStatic())
             {
             if (cg->needClassAndMethodPointerRelocations())
-               cg->addAOTRelocation(new (cg->trHeapMemory()) TR::ExternalRelocation(displacementLocation, (uint8_t *)&_symbolReference,
+               cg->addAOTRelocation(new (cg->trHeapMemory()) TR::ExternalRelocation(displacementLocation, (uint8_t *)srCopy,
                                                                                         (uint8_t *)(uintptr_t)containingInstruction->getNode()->getInlinedSiteIndex(),
                                                                                         TR_ClassAddress, cg),__FILE__, __LINE__,
                                                                                         containingInstruction->getNode());
@@ -520,11 +521,12 @@ OMR::X86::AMD64::MemoryReference::generateBinaryEncoding(
 
       // Create a mov immediate to load the address
       //
+      TR::SymbolReference *symRef = NULL;
       if (_symbolReference.getSymbol())
          {
          // Clone the symbol reference because we're going to clobber it shortly
          //
-         TR::SymbolReference *symRef = new (cg->trHeapMemory()) TR::SymbolReference(cg->symRefTab(), _symbolReference, 0);
+         symRef = new (cg->trHeapMemory()) TR::SymbolReference(cg->symRefTab(), _symbolReference, 0);
 
          addressLoadInstruction = generateRegImm64SymInstruction(
             containingInstruction->getPrev(),
@@ -558,7 +560,7 @@ OMR::X86::AMD64::MemoryReference::generateBinaryEncoding(
             );
          }
 
-      self()->addMetaDataForCodeAddressWithLoad(displacementLocation, containingInstruction, cg);
+      self()->addMetaDataForCodeAddressWithLoad(displacementLocation, containingInstruction, cg, symRef);
 
       // addressLoadInstruction's node should be that of containingInstruction
       //

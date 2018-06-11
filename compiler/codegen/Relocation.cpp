@@ -156,6 +156,8 @@ uint8_t TR::ExternalRelocation::collectModifier()
 
 void TR::ExternalRelocation::addAOTRelocation(TR::CodeGenerator *codeGen)
    {
+   TR::AheadOfTimeCompile::interceptAOTRelocation(this);
+
    TR::Compilation *comp = codeGen->comp();
    AOTcgDiag0(comp, "TR::ExternalRelocation::addAOTRelocation\n");
    if (comp->getOption(TR_AOT))
@@ -418,11 +420,12 @@ const char *TR::ExternalRelocation::_externalRelocationTargetKindNames[TR_NumExt
    "TR_ValidateArbitraryClass (50)",
    "TR_EmitClass (51)",
    "TR_JNISpecialTargetAddress (52)",
-   "TR_VirtualRamMethodConst (53)"
+   "TR_VirtualRamMethodConst (53)",
    "TR_InlinedInterfaceMethod (54)",
    "TR_InlinedVirtualMethod (55)",
    "TR_NativeMethodAbsolute (56)",
    "TR_NativeMethodRelative (57)",
+   "TR_ArbitraryClassAddress (58)",
    };
 
 uintptr_t TR::ExternalRelocation::_globalValueList[TR_NumGlobalValueItems] =

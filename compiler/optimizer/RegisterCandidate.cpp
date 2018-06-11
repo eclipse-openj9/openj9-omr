@@ -2862,21 +2862,37 @@ TR_RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, in
 
       if (comp()->cg()->supportsHighWordFacility() && !comp()->getOption(TR_DisableHighWordRA))
          {
-         // 64bit values clobber highword registers on zGryphon with HPR support
-         // if the HPR is not available, we cannot assign the corresponding GPR to 64bit symbols
          if (!rc->getType().isInt8() && !rc->getType().isInt16() && !rc->getType().isInt32())
             {
             for (int8_t i = firstRegister; i <= lastRegister; ++i)
                {
-               if (!availableRegisters.isSet(i) && cg->isGlobalHPR(i))
+               // Eliminate all GPRs from consideration whose HPRs are not available since the GPR and HPR overlapt
+               // and our register candidate is a 64-bit symbol
+               if (cg->isGlobalHPR(i) && !availableRegisters.isSet(i))
                   {
                   TR_GlobalRegisterNumber clobberedGPR = cg->getGlobalGPRFromHPR(i);
+
                   if (trace)
                      {
-                     traceMsg(comp(), "%s is unavailable and RC is 64bit, ", cg->getDebug()->getGlobalRegisterName(i));
-                     traceMsg(comp(), "removing %s from available list\n", cg->getDebug()->getGlobalRegisterName(clobberedGPR));
+                     traceMsg(comp(), "RC is 64bit and %s is unavailable - removing %s from available list\n", cg->getDebug()->getGlobalRegisterName(i), cg->getDebug()->getGlobalRegisterName(clobberedGPR));
                      }
+
                   availableRegisters.reset(clobberedGPR);
+                  }
+               }
+
+            // Now the only candidates remaining should be GPR-HPR pairs which are both available
+            for (int8_t i = firstRegister; i <= lastRegister; ++i)
+               {
+               // We should not consider HPRs for 64-bit register candidates
+               if (cg->isGlobalHPR(i) && availableRegisters.isSet(i))
+                  {
+                  availableRegisters.reset(i);
+
+                  if (trace)
+                     {
+                     traceMsg(comp(), "RC is 64bit - removing %s from available list\n", cg->getDebug()->getGlobalRegisterName(i));
+                     }
                   }
                }
             }

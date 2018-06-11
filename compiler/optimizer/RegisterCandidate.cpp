@@ -2860,9 +2860,7 @@ TR_RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, in
       TR::CodeGenerator * cg = comp()->cg();
       cg->removeUnavailableRegisters(rc, blocks, availableRegisters);
 
-      /* edTODO : This check should be enabled always, not only when reg pressure is enabled */
-      if (!comp()->getOption(TR_DisableRegisterPressureSimulation) &&
-           comp()->cg()->supportsHighWordFacility() && !comp()->getOption(TR_DisableHighWordRA))
+      if (comp()->cg()->supportsHighWordFacility() && !comp()->getOption(TR_DisableHighWordRA))
          {
          // 64bit values clobber highword registers on zGryphon with HPR support
          // if the HPR is not available, we cannot assign the corresponding GPR to 64bit symbols

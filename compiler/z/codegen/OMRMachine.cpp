@@ -2537,17 +2537,7 @@ OMR::Z::Machine::freeBestRegisterPair(TR::RealRegister ** firstReg, TR::RealRegi
 
          //if we selected the VM Thread Register to be freed, check to see if the value has already been spilled
          locationLow = bestVirtCandidateLow->getBackingStorage();
-         if (self()->cg()->needsVMThreadDependency() && bestVirtCandidateLow == self()->cg()->getVMThreadRegister())
-            {
-            traceMsg(comp, "\ns390machine: freeBestRegisterPair - low reg is GPR13\n");
-            if (bestVirtCandidateLow->getBackingStorage() == NULL)
-               {
-               traceMsg(comp, "\ns390machine: allocateVMThreadSpill called\n");
-               locationLow = self()->cg()->allocateVMThreadSpill();
-               traceMsg(comp, "\ns390machine: allocateVMThreadSpill call completed\n");
-               }
-            }
-         else if (locationLow == NULL && !bestVirtCandidateLow->containsInternalPointer())
+         if (locationLow == NULL && !bestVirtCandidateLow->containsInternalPointer())
             {
             if (bestVirtCandidateLow->getKind() == TR_GPR64)
                {
@@ -2697,17 +2687,7 @@ OMR::Z::Machine::freeBestRegisterPair(TR::RealRegister ** firstReg, TR::RealRegi
 
          //if we selected the VM Thread Register to be freed, check to see if the value has already been spilled
          locationHigh = bestVirtCandidateHigh->getBackingStorage();
-         if (self()->cg()->needsVMThreadDependency() && bestVirtCandidateHigh == self()->cg()->getVMThreadRegister())
-            {
-            traceMsg(comp, "\ns390machine: freeBestRegisterPair - high reg is GPR13\n");
-            if (bestVirtCandidateHigh->getBackingStorage() == NULL)
-               {
-               traceMsg(comp, "\ns390machine: allocateVMThreadSpill called\n");
-               locationHigh = self()->cg()->allocateVMThreadSpill();
-               traceMsg(comp, "\ns390machine: allocateVMThreadSpill call completed\n");
-               }
-            }
-         else if (locationHigh == NULL && !bestVirtCandidateHigh->containsInternalPointer())
+         if (locationHigh == NULL && !bestVirtCandidateHigh->containsInternalPointer())
             {
             if (bestVirtCandidateHigh->getKind() == TR_GPR64)
                {
@@ -4371,22 +4351,6 @@ OMR::Z::Machine::spillRegister(TR::Instruction * currentInstruction, TR::Registe
            self()->cg()->traceRegisterAssignment("\nOOL: Reuse backing store (%p) for %s inside OOL\n",
                                          location,debugObj->getName(virtReg));
          }
-       //if we selected the VM Thread Register to be freed, check to see if the value has already been spilled
-       else if (comp->getOption(TR_DisableOOL) &&
-                self()->cg()->needsVMThreadDependency() && virtReg == self()->cg()->getVMThreadRegister())
-         {
-         if (virtReg->getBackingStorage() == NULL)
-           {
-           traceMsg(comp, "\ns390machine: allocateVMThreadSpill called\n");
-           location = self()->cg()->allocateVMThreadSpill();
-           traceMsg(comp, "\ns390machine: allocateVMThreadSpill call completed\n");
-           }
-         else
-           {
-           traceMsg(comp, "\ns390machine: backing storage already assigned, re-use.\n");
-           location = virtReg->getBackingStorage();
-           }
-         }
        else if (!containsInternalPointer)
          {
          if((!comp->getOption(TR_EnableTrueRegisterModel)) || location==NULL)
@@ -4679,230 +4643,223 @@ OMR::Z::Machine::reverseSpillState(TR::Instruction      *currentInstruction,
       spilledRegister->setBackingStorage(location);
       }
 
-   if (comp->getOption(TR_Enable390FreeVMThreadReg) && spilledRegister == self()->cg()->getVMThreadRegister())
+   targetRegister->setState(TR::RealRegister::Assigned);
+   targetRegister->setAssignedRegister(spilledRegister);
+   spilledRegister->setAssignedRegister(targetRegister);
+
+   if (enableHighWordRA && spilledRegister->is64BitReg())
       {
-      traceMsg(comp, "\ns390machine: setVMThreadSpillInstruction\n");
-      self()->cg()->setVMThreadSpillInstruction(currentInstruction);
+      targetRegister->getHighWordRegister()->setState(TR::RealRegister::Assigned);
+      targetRegister->getHighWordRegister()->setAssignedRegister(spilledRegister);
       }
-   else
+
+   // the register was spilled to a HW reg
+   if (freeHighWordReg)
       {
-      targetRegister->setState(TR::RealRegister::Assigned);
-      targetRegister->setAssignedRegister(spilledRegister);
-      spilledRegister->setAssignedRegister(targetRegister);
-
-      if (enableHighWordRA && spilledRegister->is64BitReg())
+      if (targetRegister->isHighWordRegister())
          {
-         targetRegister->getHighWordRegister()->setState(TR::RealRegister::Assigned);
-         targetRegister->getHighWordRegister()->setAssignedRegister(spilledRegister);
+         cursor = generateExtendedHighWordInstruction(currentNode, self()->cg(), TR::InstOpCode::LHHR, freeHighWordReg, targetRegister, 0, currentInstruction);
          }
-
-      // the register was spilled to a HW reg
-      if (freeHighWordReg)
+      else
          {
-         if (targetRegister->isHighWordRegister())
+         if (spilledRegister->containsCollectedReference())
             {
-            cursor = generateExtendedHighWordInstruction(currentNode, self()->cg(), TR::InstOpCode::LHHR, freeHighWordReg, targetRegister, 0, currentInstruction);
-            }
-         else
-            {
-            if (spilledRegister->containsCollectedReference())
-               {
-               uint32_t compressShift = TR::Compiler->om.compressedReferenceShift();
-               // need to assert heapbase, offset = 0
-               if (compressShift == 0)
-                  {
-                  cursor = generateExtendedHighWordInstruction(currentNode, self()->cg(), TR::InstOpCode::LHLR, freeHighWordReg, targetRegister, 0, currentInstruction);
-                  }
-               else
-                  {
-                  cursor = generateRIEInstruction(self()->cg(), TR::InstOpCode::RISBHG, currentNode, freeHighWordReg, targetRegister, 0, 31+0x80, 32-compressShift, currentInstruction);
-                  }
-               }
-            else
+            uint32_t compressShift = TR::Compiler->om.compressedReferenceShift();
+            // need to assert heapbase, offset = 0
+            if (compressShift == 0)
                {
                cursor = generateExtendedHighWordInstruction(currentNode, self()->cg(), TR::InstOpCode::LHLR, freeHighWordReg, targetRegister, 0, currentInstruction);
                }
+            else
+               {
+               cursor = generateRIEInstruction(self()->cg(), TR::InstOpCode::RISBHG, currentNode, freeHighWordReg, targetRegister, 0, 31+0x80, 32-compressShift, currentInstruction);
+               }
             }
-         if (debugObj)
+         else
             {
-            debugObj->addInstructionComment(cursor, "Reverse spill Highword");
+            cursor = generateExtendedHighWordInstruction(currentNode, self()->cg(), TR::InstOpCode::LHLR, freeHighWordReg, targetRegister, 0, currentInstruction);
             }
-         self()->cg()->traceRAInstruction(cursor);
-         spilledRegister->setSpilledToHPR(false);
-         freeHighWordReg->setAssignedRegister(NULL);
-         freeHighWordReg->setState(TR::RealRegister::Free);
-         return targetRegister;
          }
-
-      TR::MemoryReference * tempMR = generateS390MemoryReference(currentNode, location->getSymbolReference(), self()->cg());
-
-      bool needMVHI = false;
-
-      switch (rk)
+      if (debugObj)
          {
-         case TR_GPR:
-            dataSize = TR::Compiler->om.sizeofReferenceAddress();
-            opCode = TR::InstOpCode::getStoreOpCode();
-            if (comp->getOption(TR_ForceLargeRAMoves))
+         debugObj->addInstructionComment(cursor, "Reverse spill Highword");
+         }
+      self()->cg()->traceRAInstruction(cursor);
+      spilledRegister->setSpilledToHPR(false);
+      freeHighWordReg->setAssignedRegister(NULL);
+      freeHighWordReg->setState(TR::RealRegister::Free);
+      return targetRegister;
+      }
+
+   TR::MemoryReference * tempMR = generateS390MemoryReference(currentNode, location->getSymbolReference(), self()->cg());
+
+   bool needMVHI = false;
+
+   switch (rk)
+      {
+      case TR_GPR:
+         dataSize = TR::Compiler->om.sizeofReferenceAddress();
+         opCode = TR::InstOpCode::getStoreOpCode();
+         if (comp->getOption(TR_ForceLargeRAMoves))
+            {
+            dataSize = 8;
+            opCode = TR::InstOpCode::STG;
+            }
+         if (enableHighWordRA)
+            {
+            if (spilledRegister->assignToHPR() || targetRegister->isHighWordRegister())
+               {
+               //dataSize = 4;
+               opCode = TR::InstOpCode::STFH;
+
+               if (spilledRegister->containsCollectedReference())
+                  {
+                  // decompressing: store into the lower bytes in memory
+                  // need to zero out the higher bytes later too
+                  needMVHI = true;
+                  }
+               else
+                  {
+                  TR_ASSERT(!spilledRegister->is64BitReg(), "ReverseSpill: HPR cannot be 64 bit!\n");
+                  }
+               }
+            if (spilledRegister->assignToGPR() || targetRegister->isLowWordRegister())
+               {
+               // dont want to involve halfslot spills yet
+               //dataSize = 4;
+               opCode = TR::InstOpCode::ST;
+               }
+            if (spilledRegister->is64BitReg())
                {
                dataSize = 8;
                opCode = TR::InstOpCode::STG;
                }
-            if (enableHighWordRA)
-               {
-               if (spilledRegister->assignToHPR() || targetRegister->isHighWordRegister())
-                  {
-                  //dataSize = 4;
-                  opCode = TR::InstOpCode::STFH;
-
-                  if (spilledRegister->containsCollectedReference())
-                     {
-                     // decompressing: store into the lower bytes in memory
-                     // need to zero out the higher bytes later too
-                     needMVHI = true;
-                     }
-                  else
-                     {
-                     TR_ASSERT(!spilledRegister->is64BitReg(), "ReverseSpill: HPR cannot be 64 bit!\n");
-                     }
-                  }
-               if (spilledRegister->assignToGPR() || targetRegister->isLowWordRegister())
-                  {
-                  // dont want to involve halfslot spills yet
-                  //dataSize = 4;
-                  opCode = TR::InstOpCode::ST;
-                  }
-               if (spilledRegister->is64BitReg())
-                  {
-                  dataSize = 8;
-                  opCode = TR::InstOpCode::STG;
-                  }
-               }
-            break;
-         case TR_GPR64:
-            dataSize = 8;
-            opCode = TR::InstOpCode::STG;
-            break;
-         case TR_FPR:
-            dataSize = 8;
-            opCode = TR::InstOpCode::STD;
-            break;
-         case TR_AR:
-            dataSize = 4;
-            opCode = TR::InstOpCode::STAM;
-            break;
-         case TR_VRF:
-            dataSize = 16;
-            opCode = TR::InstOpCode::VST;
-            break;
-         }
-
-      if(true) // Check to see if we should free spill location
-        {
-        if (comp->getOption(TR_DisableOOL))
-          {
-          self()->cg()->freeSpill(location, dataSize, 0);
-          }
-        else
-          {
-          if (self()->cg()->isOutOfLineColdPath())
-            {
-            bool isOOLentryReverseSpill = false;
-            if (currentInstruction->isLabel())
-              {
-              if (toS390LabelInstruction(currentInstruction)->getLabelSymbol()->isStartOfColdInstructionStream())
-                {
-                // indicates that we are at OOL entry point post conditions. Since
-                // we are now exiting the OOL cold path (going reverse order)
-                // and we called reverseSpillState(), the main line path
-                // expects the Virt reg to be assigned to a real register
-                // we can now safely unlock the protected backing storage
-                // This prevents locking backing storage for future OOL blocks
-                isOOLentryReverseSpill = true;
-                }
-              }
-
-            // OOL: only free the spill slot if the register was spilled in the same or less dominant path
-            // ex: spilled in cold path, reverse spill in hot path or main line
-            // we have to spill this register again when we reach OOL entry point due to post
-            // conditions. We want to guarantee that the same spill slot will be protected and reused.
-            // maxSpillDepth: 3:cold path, 2:hot path, 1:main line
-            if (location->getMaxSpillDepth() == 0 || location->getMaxSpillDepth() == 3 || isOOLentryReverseSpill)
-              {
-              location->setMaxSpillDepth(0);
-              self()->cg()->freeSpill(location, dataSize, 0);
-              spilledRegister->setBackingStorage(NULL);
-              }
-            else
-              {
-              if (debugObj)
-                self()->cg()->traceRegisterAssignment("\nOOL: reverse spill %s in less dominant path (%d / 3), protect spill slot (%p)\n",
-                                              debugObj->getName(spilledRegister), location->getMaxSpillDepth(), location);
-              }
             }
-          else if (self()->cg()->isOutOfLineHotPath())
-            {
-            // the spilledRegisterList contains all registers that are spilled before entering
-            // the OOL path (in backwards RA). Post dependencies will be generated using this list.
-            // Any registers reverse spilled before entering OOL should be removed from the spilled list
-            if (debugObj)
-              self()->cg()->traceRegisterAssignment("\nOOL: removing %s from the spilledRegisterList)\n", debugObj->getName(spilledRegister));
-            self()->cg()->getSpilledRegisterList()->remove(spilledRegister);
-            if (location->getMaxSpillDepth() == 2)
-              {
-              location->setMaxSpillDepth(0);
-              self()->cg()->freeSpill(location, dataSize, 0);
-              spilledRegister->setBackingStorage(NULL);
-              }
-            else
-              {
-              if (debugObj)
-                self()->cg()->traceRegisterAssignment("\nOOL: reverse spilling %s in less dominant path (%d / 2), protect spill slot (%p)\n",
-                                              debugObj->getName(spilledRegister), location->getMaxSpillDepth(), location);
-              location->setMaxSpillDepth(0);
-              }
-            }
-          else // main line
-            {
-            if (debugObj)
-              self()->cg()->traceRegisterAssignment("\nOOL: removing %s from the spilledRegisterList)\n", debugObj->getName(spilledRegister));
-            self()->cg()->getSpilledRegisterList()->remove(spilledRegister);
-            location->setMaxSpillDepth(0);
-            self()->cg()->freeSpill(location, dataSize, 0);
-            spilledRegister->setBackingStorage(NULL);
-            }
-          }
-        } // Need to free the spill location
-
-      if (needMVHI)
-         {
-         cursor = generateSILInstruction(self()->cg(), TR::InstOpCode::MVHI, currentNode, tempMR, 0, currentInstruction);
-         self()->cg()->traceRAInstruction(cursor);
-         cursor = generateRXInstruction(self()->cg(), TR::InstOpCode::STFH, currentNode, targetRegister, generateS390MemoryReference(*tempMR, 4, self()->cg()), cursor);
-         self()->cg()->traceRAInstruction(cursor);
-         spilledRegister->setSpilledToHPR(true);
-         }
-      else
-         {
-         if (opCode == TR::InstOpCode::STAM)
-            cursor = generateRSInstruction(self()->cg(), opCode, currentNode, targetRegister, targetRegister, tempMR, currentInstruction);
-         else if (opCode == TR::InstOpCode::VST)
-            cursor = generateVRXInstruction(self()->cg(), opCode, currentNode, targetRegister, tempMR, 0, currentInstruction);
-         else
-            cursor = generateRXInstruction(self()->cg(), opCode, currentNode, targetRegister, tempMR, currentInstruction);
-
-         self()->cg()->traceRAInstruction(cursor);
-         }
-
-      if (debugObj)
-         {
-         debugObj->addInstructionComment(cursor, "Spill");
-         }
-      if ( !cursor->assignFreeRegBitVector() )
-         {
-         cursor->assignBestSpillRegister();
-         }
+         break;
+      case TR_GPR64:
+         dataSize = 8;
+         opCode = TR::InstOpCode::STG;
+         break;
+      case TR_FPR:
+         dataSize = 8;
+         opCode = TR::InstOpCode::STD;
+         break;
+      case TR_AR:
+         dataSize = 4;
+         opCode = TR::InstOpCode::STAM;
+         break;
+      case TR_VRF:
+         dataSize = 16;
+         opCode = TR::InstOpCode::VST;
+         break;
       }
+
+   if(true) // Check to see if we should free spill location
+     {
+     if (comp->getOption(TR_DisableOOL))
+       {
+       self()->cg()->freeSpill(location, dataSize, 0);
+       }
+     else
+       {
+       if (self()->cg()->isOutOfLineColdPath())
+         {
+         bool isOOLentryReverseSpill = false;
+         if (currentInstruction->isLabel())
+           {
+           if (toS390LabelInstruction(currentInstruction)->getLabelSymbol()->isStartOfColdInstructionStream())
+             {
+             // indicates that we are at OOL entry point post conditions. Since
+             // we are now exiting the OOL cold path (going reverse order)
+             // and we called reverseSpillState(), the main line path
+             // expects the Virt reg to be assigned to a real register
+             // we can now safely unlock the protected backing storage
+             // This prevents locking backing storage for future OOL blocks
+             isOOLentryReverseSpill = true;
+             }
+           }
+
+         // OOL: only free the spill slot if the register was spilled in the same or less dominant path
+         // ex: spilled in cold path, reverse spill in hot path or main line
+         // we have to spill this register again when we reach OOL entry point due to post
+         // conditions. We want to guarantee that the same spill slot will be protected and reused.
+         // maxSpillDepth: 3:cold path, 2:hot path, 1:main line
+         if (location->getMaxSpillDepth() == 0 || location->getMaxSpillDepth() == 3 || isOOLentryReverseSpill)
+           {
+           location->setMaxSpillDepth(0);
+           self()->cg()->freeSpill(location, dataSize, 0);
+           spilledRegister->setBackingStorage(NULL);
+           }
+         else
+           {
+           if (debugObj)
+             self()->cg()->traceRegisterAssignment("\nOOL: reverse spill %s in less dominant path (%d / 3), protect spill slot (%p)\n",
+                                           debugObj->getName(spilledRegister), location->getMaxSpillDepth(), location);
+           }
+         }
+       else if (self()->cg()->isOutOfLineHotPath())
+         {
+         // the spilledRegisterList contains all registers that are spilled before entering
+         // the OOL path (in backwards RA). Post dependencies will be generated using this list.
+         // Any registers reverse spilled before entering OOL should be removed from the spilled list
+         if (debugObj)
+           self()->cg()->traceRegisterAssignment("\nOOL: removing %s from the spilledRegisterList)\n", debugObj->getName(spilledRegister));
+         self()->cg()->getSpilledRegisterList()->remove(spilledRegister);
+         if (location->getMaxSpillDepth() == 2)
+           {
+           location->setMaxSpillDepth(0);
+           self()->cg()->freeSpill(location, dataSize, 0);
+           spilledRegister->setBackingStorage(NULL);
+           }
+         else
+           {
+           if (debugObj)
+             self()->cg()->traceRegisterAssignment("\nOOL: reverse spilling %s in less dominant path (%d / 2), protect spill slot (%p)\n",
+                                           debugObj->getName(spilledRegister), location->getMaxSpillDepth(), location);
+           location->setMaxSpillDepth(0);
+           }
+         }
+       else // main line
+         {
+         if (debugObj)
+           self()->cg()->traceRegisterAssignment("\nOOL: removing %s from the spilledRegisterList)\n", debugObj->getName(spilledRegister));
+         self()->cg()->getSpilledRegisterList()->remove(spilledRegister);
+         location->setMaxSpillDepth(0);
+         self()->cg()->freeSpill(location, dataSize, 0);
+         spilledRegister->setBackingStorage(NULL);
+         }
+       }
+     } // Need to free the spill location
+
+   if (needMVHI)
+      {
+      cursor = generateSILInstruction(self()->cg(), TR::InstOpCode::MVHI, currentNode, tempMR, 0, currentInstruction);
+      self()->cg()->traceRAInstruction(cursor);
+      cursor = generateRXInstruction(self()->cg(), TR::InstOpCode::STFH, currentNode, targetRegister, generateS390MemoryReference(*tempMR, 4, self()->cg()), cursor);
+      self()->cg()->traceRAInstruction(cursor);
+      spilledRegister->setSpilledToHPR(true);
+      }
+   else
+      {
+      if (opCode == TR::InstOpCode::STAM)
+         cursor = generateRSInstruction(self()->cg(), opCode, currentNode, targetRegister, targetRegister, tempMR, currentInstruction);
+      else if (opCode == TR::InstOpCode::VST)
+         cursor = generateVRXInstruction(self()->cg(), opCode, currentNode, targetRegister, tempMR, 0, currentInstruction);
+      else
+         cursor = generateRXInstruction(self()->cg(), opCode, currentNode, targetRegister, tempMR, currentInstruction);
+
+      self()->cg()->traceRAInstruction(cursor);
+      }
+
+   if (debugObj)
+      {
+      debugObj->addInstructionComment(cursor, "Spill");
+      }
+   if ( !cursor->assignFreeRegBitVector() )
+      {
+      cursor->assignBestSpillRegister();
+      }
+
    return targetRegister;
    }
 

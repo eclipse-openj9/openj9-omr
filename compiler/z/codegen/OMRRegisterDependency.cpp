@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -73,14 +73,7 @@ OMR::Z::RegisterDependencyConditions::RegisterDependencyConditions(TR::CodeGener
    _cg = cg;
    List<TR::Register> regList(cg->trMemory());
    TR::Instruction * iCursor = (cursorPtr == NULL) ? NULL : *cursorPtr;
-   //VMThread work - implicitly add an extra post condition for a possible vm thread
-   //register post dependency.  Do not need for pre because they are so
-   //infrequent.
    int32_t totalNum = node->getNumChildren() + extranum;
-   if (comp->getOption(TR_Enable390FreeVMThreadReg))
-      {
-      totalNum += NUM_VM_THREAD_REG_DEPS;
-      }
    int32_t i;
 
    comp->incVisitCount();
@@ -1838,7 +1831,7 @@ bool OMR::Z::RegisterDependencyConditions::addPreConditionIfNotAlreadyInserted(T
                                                                                   TR::RealRegister::RegNum rr,
                                                                                   uint8_t flag)
    {
-   return addPreConditionIfNotAlreadyInserted(vr, static_cast<TR::RealRegister::RegDep>(rr), flag);  
+   return addPreConditionIfNotAlreadyInserted(vr, static_cast<TR::RealRegister::RegDep>(rr), flag);
    }
 
 /**

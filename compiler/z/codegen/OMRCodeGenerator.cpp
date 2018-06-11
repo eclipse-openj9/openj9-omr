@@ -2540,10 +2540,6 @@ TR_RegisterKinds
 OMR::Z::CodeGenerator::prepareRegistersForAssignment()
   {
    TR_RegisterKinds kindsMask = OMR::CodeGenerator::prepareRegistersForAssignment();
-   if ( self()->comp()->getOption(TR_Enable390FreeVMThreadReg))
-      {
-      self()->getVMThreadRegister()->setFutureUseCount(self()->getVMThreadRegister()->getTotalUseCount());
-      }
    if (!self()->isOutOfLineColdPath() && _extentOfLitPool < 0)
       {
       // ILGRA will call prepareRegistersForAssignment so when localRA calls it again lit pool will be set up already
@@ -5958,8 +5954,6 @@ OMR::Z::CodeGenerator::deleteInst(TR::Instruction* old)
 bool
 OMR::Z::CodeGenerator::needsVMThreadDependency()
    {
-   if (self()->comp()->getOption(TR_Enable390FreeVMThreadReg))
-      return true;
    return false;
    }
 
@@ -6881,8 +6875,7 @@ OMR::Z::CodeGenerator::getMaximumNumberOfAssignableGPRs()
 
    maxGPRs = 11 + (self()->isLiteralPoolOnDemandOn() ? 1 : 0)               // => Litpool ptr is available
                 + ((self()->getExtCodeBaseRegisterIsFree()                   &&
-                    !self()->comp()->getOption(TR_DisableLongDispStackSlot)     )? 1 : 0)  // => ExtCodeBase is free
-                + (self()->needsVMThreadDependency() ? 1 : 0);    //VM Thread Register is available
+                    !self()->comp()->getOption(TR_DisableLongDispStackSlot)     )? 1 : 0);  // => ExtCodeBase is free
 
    //traceMsg(comp(), " getMaximumNumberOfAssignableGPRs: %d\n",  maxGPRs);
    return maxGPRs;
@@ -10116,59 +10109,12 @@ OMR::Z::CodeGenerator::clearHighOrderBits( TR::Node * node, TR::Register * targe
 TR::RegisterDependencyConditions *
 OMR::Z::CodeGenerator::addVMThreadPreCondition(TR::RegisterDependencyConditions *deps, TR::Register *reg)
    {
-   if (self()->needsVMThreadDependency())
-      {
-      //TODO This IF statement is for codegen level vm thread work, where we
-      //allocate a fixed virtual register to represent the vm thread register.
-      //for IL level vm thread work, any register can be used, so we need to
-      //replace this IF statement with an TR_ASSERTC( reg,comp(), "reg cannot be NULL\n");
-      if (reg == NULL)
-         {
-         reg = self()->getVMThreadRegister();
-         }
-      if (deps == NULL)
-         {
-         deps = generateRegisterDependencyConditions(1,0, self());
-         }
-      else if (deps->getPreConditions() == NULL)
-         {
-         deps->setNumPreConditions(1, self()->trMemory());
-         }
-      else
-         {
-         traceMsg(self()->comp(), "copying and expanding dependency list, numPre = %i, numPost = %i\n", deps->getNumPreConditions(), deps->getNumPostConditions());
-         deps = new (self()->trHeapMemory()) TR::RegisterDependencyConditions(deps, 1, 0, self());
-         }
-      //TODO: using addPreConditionIfNotAlreadyInserted() is slower than using addPreCondition()
-      //think about changing the name of this method to addVMThreadPreConditionIfNotAlreadyInserted()
-      //and add one for addVMThreadPreCondition, which uses deps->addPreCondition()
-      deps->addPreConditionIfNotAlreadyInserted(reg, static_cast<TR::RealRegister::RegDep>(self()->getVMThreadRegister()->getAssociation()));
-      }
    return deps;
    }
 
 TR::RegisterDependencyConditions *
 OMR::Z::CodeGenerator::addVMThreadPostCondition(TR::RegisterDependencyConditions *deps, TR::Register *reg)
    {
-   if (self()->needsVMThreadDependency())
-      {
-      //TODO This IF statement is for codegen level vm thread work, where we
-      //allocate a fixed virtual register to represent the vm thread register.
-      //for IL level vm thread work, any register can be used, so we need to
-      //replace this IF statement with an TR_ASSERTC( reg,comp(), "reg cannot be NULL\n");
-      if (reg == NULL)
-         {
-         reg = self()->getVMThreadRegister();
-         }
-      if (deps == NULL)
-         {
-         deps = generateRegisterDependencyConditions(0,0, self());
-         }
-      //TODO: using addPostConditionIfNotAlreadyInserted() is slower than using addPostCondition()
-      //think about changing the name of this method to addVMThreadPostConditionIfNotAlreadyInserted()
-      //and add one for addVMThreadPostCondition, which uses deps->addPostCondition()
-      deps->addPostConditionIfNotAlreadyInserted(reg, static_cast<TR::RealRegister::RegDep>(self()->getVMThreadRegister()->getAssociation()));
-      }
    return deps;
    }
 
@@ -10183,8 +10129,6 @@ OMR::Z::CodeGenerator::addVMThreadDependencies(TR::RegisterDependencyConditions 
 void
 OMR::Z::CodeGenerator::setVMThreadRequired(bool v)
    {
-   if (self()->needsVMThreadDependency())
-      self()->setVMThreadRequired(v);
    }
 
 bool OMR::Z::CodeGenerator::ilOpCodeIsSupported(TR::ILOpCodes o)

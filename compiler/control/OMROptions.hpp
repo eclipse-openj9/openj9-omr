@@ -1150,8 +1150,8 @@ enum TR_VerboseFlags
    TR_VerboseHookDetailsClassLoading,
    TR_VerboseHookDetailsClassUnloading,
    TR_VerboseSampleDensity,
-
    TR_VerboseProfiling,
+   TR_VerboseJITaaS,
 
    //If adding new options add an entry to _verboseOptionNames as well
    TR_NumVerboseOptions        // Must be the last one;

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -385,4 +385,13 @@ void
 OMR::TransformUtil::removeTree(TR::Compilation *comp, TR::TreeTop * tt)
    {
    comp->getJittedMethodSymbol()->removeTree(tt);
+   }
+
+void
+OMR::TransformUtil::transformCallNodeToPassThrough(TR::Optimization* opt, TR::Node* node, TR::TreeTop * anchorTree, TR::Node* child)
+   {
+   TR_ASSERT(node->getReferenceCount() == 1, "Can't eliminate a call whose return value is used elsewhere");
+   opt->anchorAllChildren(node, anchorTree);
+   node->removeAllChildren();
+   node = TR::Node::recreateWithoutProperties(node, TR::PassThrough, 1, child);
    }

@@ -105,7 +105,7 @@ FEBase<Derived>::allocateRelocationData(TR::Compilation* comp, uint32_t size)
 
 #if defined(OMR_OS_WINDOWS)
    return reinterpret_cast<uint8_t *>(
-         VirtualAlloc(nullptr,
+         VirtualAlloc(NULL,
             size,
             MEM_COMMIT,
             PAGE_READWRITE));

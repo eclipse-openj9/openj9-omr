@@ -2377,7 +2377,7 @@ convertWithMBTOWC(struct OMRPortLibrary *portLibrary, char *inputBuffer, char *o
 #endif /* defined(OMRZTPF) */
 
 	/* reset the shift state */
-	mbtowc(NULL, NULL, 0);
+	J9_IGNORE_RETURNVAL(mbtowc(NULL, NULL, 0));
 
 	while (*walk) {
 		ret = mbtowc(&ch, walk, MB_CUR_MAX);

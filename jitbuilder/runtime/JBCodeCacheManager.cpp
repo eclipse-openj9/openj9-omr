@@ -82,7 +82,7 @@ JitBuilder::CodeCacheManager::allocateCodeCacheSegment(size_t segmentSize,
 
 #if defined(OMR_OS_WINDOWS)
    auto memorySlab = reinterpret_cast<uint8_t *>(
-         VirtualAlloc(nullptr,
+         VirtualAlloc(NULL,
             codeCacheSizeToAllocate,
             MEM_COMMIT,
             PAGE_EXECUTE_READWRITE));

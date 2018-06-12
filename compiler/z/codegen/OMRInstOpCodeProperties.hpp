@@ -56,6 +56,17 @@
    /* .format      = */ PSEUDO,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_UnknownArchitecture,
    /* .properties  = */ S390OpProp_None
+   },   
+
+   {
+   /* .mnemonic    = */ OMR::InstOpCode::BREAK,
+   /* .name        = */ "BREAK",
+   /* .description = */ "Breakpoint (debugger)",
+   /* .opcode[0]   = */ 0x00,
+   /* .opcode[1]   = */ 0x01,
+   /* .format      = */ E_FORMAT,
+   /* .minimumALS  = */ TR_S390ProcessorInfo::TR_UnknownArchitecture,
+   /* .properties  = */ S390OpProp_None
    },
 
    {

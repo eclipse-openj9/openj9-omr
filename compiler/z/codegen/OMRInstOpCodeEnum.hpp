@@ -29,6 +29,7 @@
    ASM,                 // ASM WCode Support
    ASSOCREGS,           // Register Association
    BAD,                 // Bad Opcode
+   BREAK,               // Breakpoint (debugger)
    CGFRB,               // Compare and Branch (64-32)
    CGFRJ,               // Compare and Branch Relative (64-32)
    CGFRT,               // Compare and Trap (64-32)

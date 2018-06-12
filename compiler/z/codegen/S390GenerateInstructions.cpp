@@ -2131,23 +2131,40 @@ TR::Instruction * generateVSIInstruction(
    }
 
 /************************************************************ Misc Instructions ************************************************************/
-TR::Instruction *
-generateS390PseudoInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Node * fenceNode, TR::Instruction * preced)
+TR::Instruction*
+generateS390PseudoInstruction(TR::CodeGenerator* cg, TR::InstOpCode::Mnemonic op, TR::Node* n, TR::Node* fenceNode, TR::Instruction* preced)
    {
-   TR::S390PseudoInstruction *instr;
-   TR::Compilation *comp = cg->comp();
+   TR::Instruction* cursor;
+
+   switch (op)
+      {
+      case TR::InstOpCode::PROC:
+         {
+         if (cg->comp()->getOption(TR_EntryBreakPoints))
+            {
+            if (preced)
+               {
+               preced = new (INSN_HEAP) TR::S390EInstruction(TR::InstOpCode::BREAK, n, preced, cg);
+               }
+            else
+               {
+               preced = new (INSN_HEAP) TR::S390EInstruction(TR::InstOpCode::BREAK, n, cg);
+               }
+            }
+         }
+         break;
+      }
 
    if (preced)
-   {
-     instr= new (INSN_HEAP) TR::S390PseudoInstruction(op, n, fenceNode, preced, cg);
-   }
+      {
+      cursor = new (INSN_HEAP) TR::S390PseudoInstruction(op, n, fenceNode, preced, cg);
+      }
    else
-   {
-     instr= new (INSN_HEAP) TR::S390PseudoInstruction(op, n, fenceNode, cg);
-   }
+      {
+      cursor = new (INSN_HEAP) TR::S390PseudoInstruction(op, n, fenceNode, cg);
+      }
 
-
-   return instr;
+   return cursor;
    }
 
 TR::Instruction *

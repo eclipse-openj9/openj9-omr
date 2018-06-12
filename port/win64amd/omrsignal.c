@@ -124,6 +124,8 @@ static int32_t initializeSignalTools(OMRPortLibrary *portLibrary);
 static int structuredExceptionHandler(struct OMRPortLibrary *portLibrary, omrsig_handler_fn handler, void *handler_arg, uint32_t flags, EXCEPTION_POINTERS *exceptionInfo);
 static int32_t runInTryExcept(struct OMRPortLibrary *portLibrary, omrsig_protected_fn fn, void *fn_arg, omrsig_handler_fn handler, void *handler_arg, uint32_t flags, uintptr_t *result);
 
+static uint32_t mapOSSignalToPortLib(uint32_t signalNo);
+
 uint32_t
 omrsig_info(struct OMRPortLibrary *portLibrary, void *info, uint32_t category, int32_t index, const char **name, void **value)
 {
@@ -321,7 +323,7 @@ omrsig_set_single_async_signal_handler(struct OMRPortLibrary *portLibrary, omrsi
 uint32_t
 omrsig_map_os_signal_to_portlib_signal(struct OMRPortLibrary *portLibrary, uint32_t osSignalValue)
 {
-	return 0;
+	return mapOSSignalToPortLib(osSignalValue);
 }
 
 int32_t
@@ -1291,4 +1293,26 @@ consoleCtrlHandler(DWORD dwCtrlType)
 	return result;
 }
 
+/**
+ * The OS signal number is converted to the corresponding port library
+ * signal flag.
+ *
+ * @param[in] signalNo OS signal number
+ *
+ * @return The corresponding port library signal flag on success.
+ *         Otherwise, return 0 in case of error.
+ */
+static uint32_t
+mapOSSignalToPortLib(uint32_t signalNo)
+{
+	uint32_t index = 0;
 
+	for (index = 0; index < sizeof(signalMap) / sizeof(signalMap[0]); index++) {
+		if (signalMap[index].osSignalNo == signalNo) {
+			return signalMap[index].portLibSignalNo;
+		}
+	}
+
+	Trc_PRT_signal_mapOSSignalToPortLib_ERROR_unknown_signal(signalNo);
+	return 0;
+}

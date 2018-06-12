@@ -355,7 +355,27 @@ omrsig_map_portlib_signal_to_os_signal(struct OMRPortLibrary *portLibrary, uint3
 int32_t
 omrsig_register_os_handler(struct OMRPortLibrary *portLibrary, uint32_t portlibSignalFlag, void *newOSHandler, void **oldOSHandler)
 {
-	return OMRPORT_SIG_ERROR;
+	int32_t rc = 0;
+
+	Trc_PRT_signal_omrsig_register_os_handler_entered(portlibSignalFlag, newOSHandler);
+
+	if ((0 == portlibSignalFlag) || !OMR_IS_ONLY_ONE_BIT_SET(portlibSignalFlag)) {
+		/* If portlibSignalFlag is 0 or if portlibSignalFlag has multiple signal bits set, then fail. */
+		Trc_PRT_signal_omrsig_register_os_handler_invalid_portlibSignalFlag(portlibSignalFlag);
+		rc = OMRPORT_SIG_ERROR;
+	} else {
+		omrthread_monitor_enter(registerHandlerMonitor);
+		rc = registerSignalHandlerWithOS(portLibrary, portlibSignalFlag, (win_signal)newOSHandler, oldOSHandler);
+		omrthread_monitor_exit(registerHandlerMonitor);
+	}
+
+	if (NULL != oldOSHandler) {
+		Trc_PRT_signal_omrsig_register_os_handler_exiting(rc, portlibSignalFlag, newOSHandler, *oldOSHandler);
+	} else {
+		Trc_PRT_signal_omrsig_register_os_handler_exiting(rc, portlibSignalFlag, newOSHandler, NULL);
+	}
+
+	return rc;
 }
 
 BOOLEAN

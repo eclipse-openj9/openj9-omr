@@ -441,6 +441,7 @@ omrsig_startup(struct OMRPortLibrary *portLibrary)
 
 	int32_t result = 0;
 	ULONG64 imageBase = 0;
+	uint32_t index = 1;
 	UNWIND_HISTORY_TABLE unwindHistoryTable;
 
 	omrthread_monitor_t globalMonitor = omrthread_global_monitor();
@@ -455,9 +456,11 @@ omrsig_startup(struct OMRPortLibrary *portLibrary)
 
 	omrthread_monitor_enter(globalMonitor);
 	if (attachedPortLibraries++ == 0) {
-
+		/* initialize handlerInfo */
+		for (index = 1; index < ARRAY_SIZE_SIGNALS; index++) {
+			handlerInfo[index].restore = 0;
+		}
 		result = initializeSignalTools(portLibrary);
-
 	}
 
 	memset(&unwindHistoryTable, 0, sizeof(UNWIND_HISTORY_TABLE));
@@ -1275,10 +1278,20 @@ error:
 static void
 sig_full_shutdown(struct OMRPortLibrary *portLibrary)
 {
+	uint32_t index = 1;
 	omrthread_monitor_t globalMonitor = omrthread_global_monitor();
 
 	omrthread_monitor_enter(globalMonitor);
 	if (--attachedPortLibraries == 0) {
+		/* Register the original signal handlers, which were overwritten. */
+		for (index = 1; index < ARRAY_SIZE_SIGNALS; index++) {
+			if (handlerInfo[index].restore) {
+				signal(index, handlerInfo[index].originalHandler);
+				/* record that we no longer have a handler installed with the OS for this signal */
+				Trc_PRT_signal_sig_full_shutdown_deregistered_handler_with_OS(portLibrary, index);
+				handlerInfo[index].restore = 0;
+			}
+		}
 
 		omrthread_tls_free(tlsKey);
 		RemoveVectoredExceptionHandler(masterVectoredExceptionHandler);

@@ -123,6 +123,11 @@ static omrthread_tls_key_t tlsKey;
 /* Calls to registerSignalHandlerWithOS are synchronized using registerHandlerMonitor */
 static omrthread_monitor_t registerHandlerMonitor;
 
+/* wakeUpASyncReporter semaphore coordinates between master async signal handler and
+ * async signal reporter thread.
+ */
+static j9sem_t wakeUpASyncReporter;
+
 static uint32_t mapWin32ExceptionToPortlibType(uint32_t exceptionCode);
 static uint32_t infoForGPR(struct OMRPortLibrary *portLibrary, struct J9Win32SignalInfo *info, int32_t index, const char **name, void **value);
 static uint32_t infoForFPR(struct OMRPortLibrary *portLibrary, struct J9Win32SignalInfo *info, int32_t index, const char **name, void **value);
@@ -1220,6 +1225,7 @@ destroySignalTools(OMRPortLibrary *portLibrary)
 	omrthread_monitor_destroy(asyncMonitor);
 	omrthread_monitor_destroy(masterExceptionMonitor);
 	omrthread_monitor_destroy(registerHandlerMonitor);
+	j9sem_destroy(wakeUpASyncReporter);
 }
 
 static int32_t
@@ -1237,8 +1243,14 @@ initializeSignalTools(OMRPortLibrary *portLibrary)
 		goto cleanup2;
 	}
 
+	if (0 != j9sem_init(&wakeUpASyncReporter, 0)) {
+		goto cleanup3;
+	}
+
 	return 0;
 
+cleanup3:
+	omrthread_monitor_destroy(registerHandlerMonitor);
 cleanup2:
 	omrthread_monitor_destroy(masterExceptionMonitor);
 cleanup1:

@@ -107,6 +107,9 @@ static struct {
 	uint32_t restore;
 } handlerInfo[ARRAY_SIZE_SIGNALS];
 
+/* Keep track of signal counts. */
+static volatile uintptr_t signalCounts[ARRAY_SIZE_SIGNALS] = {0};
+
 static omrthread_monitor_t masterExceptionMonitor;
 
 /* access to this must be synchronized using masterExceptionMonitor */

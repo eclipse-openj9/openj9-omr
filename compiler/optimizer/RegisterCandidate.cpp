@@ -2860,7 +2860,7 @@ TR_RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, in
       TR::CodeGenerator * cg = comp()->cg();
       cg->removeUnavailableRegisters(rc, blocks, availableRegisters);
 
-      if (comp()->cg()->supportsHighWordFacility() && !comp()->getOption(TR_DisableHighWordRA))
+      if (comp()->cg()->supportsHighWordFacility() && !comp()->getOption(TR_DisableHighWordRA) && !comp()->getOption(TR_DisableRegisterPressureSimulation))
          {
          if (!rc->getType().isInt8() && !rc->getType().isInt16() && !rc->getType().isInt32())
             {
@@ -2893,30 +2893,6 @@ TR_RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, in
                      {
                      traceMsg(comp(), "RC is 64bit - removing %s from available list\n", cg->getDebug()->getGlobalRegisterName(i));
                      }
-                  }
-               }
-            }
-         else if (comp()->getOption(TR_DisableRegisterPressureSimulation))
-            {
-            for (int8_t i = firstRegister; i <= lastRegister; ++i)
-               {
-               // Eliminate all HPRs from consideration whose GPRs are not available since the GPR and HPR overlap.
-               // Because the non-register pressure simulation global register picking algorithm doesn't know anything
-               // about HPRs we have to be pessimistic here. We do not know in general the width of the register 
-               // candidate which was assigned to the GPR, so we have to assume the worst and treat it as 64-bit which
-               // unfortunately eliminates the corresponding HPR from consideration.
-               //
-               // Note: HPR global register numbers are a part of GPR global register numbers but not vice versa.
-               if (cg->isGlobalGPR(i) && !cg->isGlobalHPR(i) && !availableRegisters.isSet(i))
-                  {
-                  TR_GlobalRegisterNumber clobberedHPR = cg->getGlobalHPRFromGPR(i);
-
-                  if (trace)
-                     {
-                     traceMsg(comp(), "RC is 32-bit and %s is unavailable - removing %s from available list\n", cg->getDebug()->getGlobalRegisterName(i), cg->getDebug()->getGlobalRegisterName(clobberedHPR));
-                     }
-
-                  availableRegisters.reset(clobberedHPR);
                   }
                }
             }

@@ -856,26 +856,6 @@ OMR::Z::Machine::isLegalEvenOddPair(TR::RealRegister * evenReg, TR::RealRegister
    }
 
 bool
-OMR::Z::Machine::isLegalEvenOddRestrictedPair(TR::RealRegister * evenReg, TR::RealRegister * oddReg, uint64_t availRegMask)
-   {
-   if (evenReg == NULL || oddReg == NULL)
-      {
-      return false;
-      }
-   if (toRealRegister(evenReg)->isHighWordRegister() || toRealRegister(oddReg)->isHighWordRegister())
-      {
-      return false;
-      }
-
-   else if (toRealRegister(evenReg)->getRegisterNumber() + 1 == toRealRegister(oddReg)->getRegisterNumber())
-      {
-      return self()->isLegalEvenRegister(evenReg, ALLOWBLOCKED, availRegMask, ALLOWLOCKED) && self()->isLegalOddRegister(oddReg, ALLOWBLOCKED, availRegMask, ALLOWLOCKED);
-      }
-   else
-      return false;
-   }
-
-bool
 OMR::Z::Machine::isLegalEvenRegister(TR::RealRegister * reg, bool allowBlocked, uint64_t availRegMask, bool allowLocked)
    {
    // Is the register assigned
@@ -6325,8 +6305,6 @@ int32_t OMR::Z::Machine::addGlobalReg(TR::RealRegister::RegNum reg, int32_t tabl
    {
    if (reg == TR::RealRegister::NoReg)
       return tableIndex;
-   if (OMR::Z::Machine::isRestrictedReg(reg))
-      return tableIndex;
    if (self()->getS390RealRegister(reg)->getState() == TR::RealRegister::Locked)
       return tableIndex;
    for (int32_t i = 0; i < tableIndex; i++)
@@ -6349,8 +6327,6 @@ int32_t OMR::Z::Machine::getGlobalReg(TR::RealRegister::RegNum reg)
 int32_t OMR::Z::Machine::addGlobalRegLater(TR::RealRegister::RegNum reg, int32_t tableIndex)
    {
    if (reg == TR::RealRegister::NoReg)
-      return tableIndex;
-   if (OMR::Z::Machine::isRestrictedReg(reg))
       return tableIndex;
    if (self()->getS390RealRegister(reg)->getState() == TR::RealRegister::Locked)
       return tableIndex;
@@ -6396,7 +6372,6 @@ OMR::Z::Machine::initializeGlobalRegisterTable()
    TR::Compilation *comp = self()->cg()->comp();
 
    int32_t p = 0;
-   bool enableHighWordGRA = self()->cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA);
 
    TR::Linkage *linkage = self()->cg()->getS390Linkage();
    self()->setFirstGlobalGPRRegisterNumber(0);
@@ -6509,7 +6484,33 @@ OMR::Z::Machine::initializeGlobalRegisterTable()
    if (linkage->isXPLinkLinkageType())
       p = self()->addGlobalRegLater(TR::RealRegister::GPR7, p);
 
-   if (enableHighWordGRA)
+   // Register pressure simulation is a prerequisite for HPR GRA because GRA and local RA need to make consistent
+   // choices and register pressure simulation is the only part of GRA that is HPR aware. As concrete examples, among
+   // others, consider the following:
+   //
+   // 1. A collected reference coming in as a parameter
+   //
+   // In this case GRA needs to know that on 64-bit such a register candidate should not be considered for HPRs, since
+   // they are really 32-bit registers. However GRA does not know anything about this. It is the register pressure
+   // simulation algorithm [1] that coordinates with the codegen on whether collected references are HPR elligible.
+   //
+   // 2. A valid HPR candidate is being used as a return value
+   //
+   // In this case GRA needs to be aware of the choices local RA will make. Because a value feeds into a return point
+   // of a method local RA must enforce that the virtual register corresponding to the return value is 64-bit [3].
+   // Otherwise the high order half of the register may get locally allocated to an HPR spill, and of course this
+   // would not be valid. As such GRA must know this fact and it must not globally allocate the return value to an
+   // HPR, otherwise we will get into an impossible scenario where local RA is forced to coerce a 64-bit GPR (the
+   // return value) into a 32-bit HPR.
+   // 
+   // The register pressure algorithm is once again aware of these interactions and prevents such values feeding
+   // into return points from being globally HPR allocated [2].
+   //
+   // [1] https://github.com/eclipse/omr/blob/9d1d8cf3048781bc6d87e6a1079167586cc5aa4d/compiler/codegen/CodeGenRA.cpp#L2691-L2702
+   // [2] https://github.com/eclipse/omr/blob/9d1d8cf3048781bc6d87e6a1079167586cc5aa4d/compiler/codegen/CodeGenRA.cpp#L2889-L2903
+   // [3] https://github.com/eclipse/omr/blob/9d1d8cf3048781bc6d87e6a1079167586cc5aa4d/compiler/z/codegen/ControlFlowEvaluator.cpp#L1098-L1102
+
+   if (self()->cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) && !comp->getOption(TR_DisableRegisterPressureSimulation))
       {
       // HPR
       // this is a bit tricky, we consider Global HPRs part of Global GPRs
@@ -6612,7 +6613,6 @@ OMR::Z::Machine::initializeGlobalRegisterTable()
          self()->setGlobalReturnAddressRegisterNumber(i);
       }
 
-   self()->setLastRealRegisterGlobalRegisterNumber(p-1);
    self()->setLastGlobalCCRRegisterNumber(p-1);
 
    return _globalRegisterNumberToRealRegisterMap;
@@ -6862,35 +6862,39 @@ OMR::Z::Machine::getAccessRegisterFromGlobalRegisterNumber(TR_GlobalRegisterNumb
   return NULL;
   }
 
-TR::Register *
+TR::Register*
 OMR::Z::Machine::getGPRFromGlobalRegisterNumber(TR_GlobalRegisterNumber reg)
-      {
-      if (
-          reg >= self()->getFirstGlobalGPRRegisterNumber() &&
-          reg <= self()->getFirstGlobalHPRRegisterNumber() &&
-          _globalRegisterNumberToRealRegisterMap[reg] >= 0
-          )
-         {
-         return _registerFile[_globalRegisterNumberToRealRegisterMap[reg]];
-         }
+   {
+   auto firstGlobalGPR = self()->getFirstGlobalGPRRegisterNumber();
+   auto firstGlobalHPR = self()->getFirstGlobalHPRRegisterNumber();
 
-      return NULL;
+   if (firstGlobalHPR != -1 && 
+         reg >= firstGlobalGPR &&
+         reg <= firstGlobalHPR && 
+         _globalRegisterNumberToRealRegisterMap[reg] >= 0)
+      {
+      return _registerFile[_globalRegisterNumberToRealRegisterMap[reg]];
       }
 
-TR::Register *
+   return NULL;
+   }
+
+TR::Register*
 OMR::Z::Machine::getHPRFromGlobalRegisterNumber(TR_GlobalRegisterNumber reg)
-      {
-      if (
-          reg >= self()->getFirstGlobalHPRRegisterNumber() &&
-          reg <= self()->getLastGlobalGPRRegisterNumber() &&
-          _globalRegisterNumberToRealRegisterMap[reg] >= 0
-          )
-         {
-         return _registerFile[_globalRegisterNumberToRealRegisterMap[reg]];
-         }
+   {
+   auto firstGlobalHPR = self()->getFirstGlobalHPRRegisterNumber();
+   auto lastGlobalHPR = self()->getLastGlobalHPRRegisterNumber();
 
-      return NULL;
+   if (firstGlobalHPR != -1 &&
+         reg >= firstGlobalHPR &&
+         reg <= lastGlobalHPR &&
+         _globalRegisterNumberToRealRegisterMap[reg] >= 0)
+      {
+      return _registerFile[_globalRegisterNumberToRealRegisterMap[reg]];
       }
+
+   return NULL;
+   }
 
 // Register Association ////////////////////////////////////////////
 void
@@ -7010,50 +7014,6 @@ OMR::Z::Machine::setVirtualAssociatedWithReal(TR::RealRegister::RegNum regNum, T
       }
 
    return _registerAssociations[regNum] = virtReg;
-   }
-
-/**
- * Longer term, once we clean up lit pool / extended lit pool regs and
- * arbitrary usage of other regs, we can integrate this better, but for now,
- * it is just a simple list of regs that are known to be 'safe'
- */
-bool
-OMR::Z::Machine::isRestrictedReg(TR::RealRegister::RegNum reg)
-   {
-   static const TR::RealRegister::RegNum regList[] =
-      {
-      TR::RealRegister::GPR9,
-      TR::RealRegister::GPR10,
-      TR::RealRegister::GPR11,
-      TR::RealRegister::GPR12,
-      };
-   TR::Compilation *comp = self()->cg()->comp();
-   static const int32_t regListSize = (sizeof(regList) / sizeof(TR::RealRegister::RegNum));
-
-   int32_t numRestrictedRegs = comp->getOptions()->getNumRestrictedGPRs();
-   if (numRestrictedRegs < 0 || numRestrictedRegs > regListSize)
-      {
-      static bool printed = false;
-      #ifdef DEBUG
-      if (!printed)
-         {
-         fprintf(stderr, "Invalid value for numRestrictedRegs or on-demand lit pool is disabled. Needs to range from 0 to %d\n",
-            regListSize);
-         printed = true;
-         }
-      #endif
-      return false;
-      }
-
-   for (int32_t i = 0; i < numRestrictedRegs; ++i)
-      {
-      if (regList[i] == reg)
-         {
-         return true;
-         }
-      }
-
-   return false;
    }
 
 bool

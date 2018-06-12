@@ -120,6 +120,9 @@ static uint32_t attachedPortLibraries;
 static uint32_t signalOptions;
 static omrthread_tls_key_t tlsKey;
 
+/* Calls to registerSignalHandlerWithOS are synchronized using registerHandlerMonitor */
+static omrthread_monitor_t registerHandlerMonitor;
+
 static uint32_t mapWin32ExceptionToPortlibType(uint32_t exceptionCode);
 static uint32_t infoForGPR(struct OMRPortLibrary *portLibrary, struct J9Win32SignalInfo *info, int32_t index, const char **name, void **value);
 static uint32_t infoForFPR(struct OMRPortLibrary *portLibrary, struct J9Win32SignalInfo *info, int32_t index, const char **name, void **value);
@@ -1196,21 +1199,32 @@ destroySignalTools(OMRPortLibrary *portLibrary)
 {
 	omrthread_monitor_destroy(asyncMonitor);
 	omrthread_monitor_destroy(masterExceptionMonitor);
+	omrthread_monitor_destroy(registerHandlerMonitor);
 }
 
 static int32_t
 initializeSignalTools(OMRPortLibrary *portLibrary)
 {
 	if (omrthread_monitor_init_with_name(&asyncMonitor, 0, "portLibrary_omrsig_async_monitor")) {
-		return -1;
+		goto error;
 	}
 
-	if (omrthread_monitor_init_with_name(&masterExceptionMonitor, 0, "portLibrary_omrsig_async_monitor")) {
-		omrthread_monitor_destroy(asyncMonitor);
-		return -1;
+	if (omrthread_monitor_init_with_name(&masterExceptionMonitor, 0, "portLibrary_omrsig_master_exception_monitor")) {
+		goto cleanup1;
+	}
+
+	if (omrthread_monitor_init_with_name(&registerHandlerMonitor, 0, "portLibrary_omrsig_register_handler_monitor")) {
+		goto cleanup2;
 	}
 
 	return 0;
+
+cleanup2:
+	omrthread_monitor_destroy(masterExceptionMonitor);
+cleanup1:
+	omrthread_monitor_destroy(asyncMonitor);
+error:
+	return OMRPORT_SIG_ERROR;
 }
 
 static void

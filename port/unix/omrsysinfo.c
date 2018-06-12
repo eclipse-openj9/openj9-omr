@@ -393,12 +393,11 @@ findError(int32_t errorCode)
 }
 
 void
-omrsysinfo_set_number_entitled_CPUs(struct OMRPortLibrary *portLibrary, uintptr_t number)
+omrsysinfo_set_number_user_specified_CPUs(struct OMRPortLibrary *portLibrary, uintptr_t number)
 {
-	Trc_PRT_sysinfo_set_number_entitled_CPUs_Entered();
-	portLibrary->portGlobals->entitledCPUs = number;
-	Trc_PRT_sysinfo_set_number_entitled_CPUs_Exit(number);
-	return;
+	Trc_PRT_sysinfo_set_number_user_specified_CPUs_Entered();
+	portLibrary->portGlobals->userSpecifiedCPUs = number;
+	Trc_PRT_sysinfo_set_number_user_specified_CPUs_Exit(number);
 }
 
 intptr_t
@@ -1100,7 +1099,7 @@ omrsysinfo_get_number_CPUs_by_type(struct OMRPortLibrary *portLibrary, uintptr_t
 		}
 #elif defined(J9ZOS390)
 		/* Temporarily using ONLINE for PHYSICAL on z/OS */
-		toReturn = omrsysinfo_get_number_CPUs_by_type(portLibrary, OMRPORT_CPU_ONLINE);
+		toReturn = portLibrary->sysinfo_get_number_CPUs_by_type(portLibrary, OMRPORT_CPU_ONLINE);
 
 		if (0 == toReturn) {
 			Trc_PRT_sysinfo_get_number_CPUs_by_type_failedPhysical("(no errno) ", 0);
@@ -1244,31 +1243,22 @@ omrsysinfo_get_number_CPUs_by_type(struct OMRPortLibrary *portLibrary, uintptr_t
 #endif
 		break;
 	}
-	case OMRPORT_CPU_ENTITLED:
-#if !defined(OMRZTPF)
-		toReturn = portLibrary->portGlobals->entitledCPUs;
-#else
-		toReturn = get_Dispatch_IstreamCount();
-#endif
-		break;
-
 	case OMRPORT_CPU_TARGET: {
-#if defined(J9OS_I5)
-		toReturn = _system_configuration.ncpus;
-		if (0 == toReturn) {
-			Trc_PRT_sysinfo_get_number_CPUs_by_type_failedOnline("(no errno) ", 0);
-		}
-#elif defined(OMRZTPF)
-		toReturn = get_Dispatch_IstreamCount();
-#else /* defined(J9OS_I5) */
-		uintptr_t entitled = portLibrary->portGlobals->entitledCPUs;
-		uintptr_t bound = omrsysinfo_get_number_CPUs_by_type(portLibrary, OMRPORT_CPU_BOUND);
-		if (entitled != 0 && entitled < bound) {
-			toReturn = entitled;
+		uintptr_t specified = portLibrary->portGlobals->userSpecifiedCPUs;
+		if (0 < specified) {
+			toReturn = specified;
 		} else {
-			toReturn = bound;
-		}
+#if defined(J9OS_I5)
+			toReturn = _system_configuration.ncpus;
+			if (0 == toReturn) {
+				Trc_PRT_sysinfo_get_number_CPUs_by_type_failedOnline("(no errno) ", 0);
+			}
+#elif defined(OMRZTPF)
+			toReturn = get_Dispatch_IstreamCount();
+#else /* defined(J9OS_I5) */
+			toReturn = portLibrary->sysinfo_get_number_CPUs_by_type(portLibrary, OMRPORT_CPU_BOUND);
 #endif /* defined(J9OS_I5) */
+		}
 		break;
 	}
 	default:

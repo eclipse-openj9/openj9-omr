@@ -54,12 +54,11 @@ typedef struct CopyEnvToBufferArgs {
 #endif
 
 void
-omrsysinfo_set_number_entitled_CPUs(struct OMRPortLibrary *portLibrary, uintptr_t number)
+omrsysinfo_set_number_user_specified_CPUs(struct OMRPortLibrary *portLibrary, uintptr_t number)
 {
-	Trc_PRT_sysinfo_set_number_entitled_CPUs_Entered();
-	portLibrary->portGlobals->entitledCPUs = number;
-	Trc_PRT_sysinfo_set_number_entitled_CPUs_Exit(number);
-	return;
+	Trc_PRT_sysinfo_set_number_user_specified_CPUs_Entered();
+	portLibrary->portGlobals->userSpecifiedCPUs = number;
+	Trc_PRT_sysinfo_set_number_user_specified_CPUs_Exit(number);
 }
 
 /**
@@ -621,16 +620,12 @@ omrsysinfo_get_number_CPUs_by_type(struct OMRPortLibrary *portLibrary, uintptr_t
 
 		break;
 	}
-	case OMRPORT_CPU_ENTITLED:
-		toReturn = portLibrary->portGlobals->entitledCPUs;
-		break;
 	case OMRPORT_CPU_TARGET: {
-		uintptr_t entitled = portLibrary->portGlobals->entitledCPUs;
-		uintptr_t bound = omrsysinfo_get_number_CPUs_by_type(portLibrary, OMRPORT_CPU_BOUND);
-		if (entitled != 0 && entitled < bound) {
-			toReturn = entitled;
+		uintptr_t specified = portLibrary->portGlobals->userSpecifiedCPUs;
+		if (0 < specified) {
+			toReturn = specified;
 		} else {
-			toReturn = bound;
+			toReturn = portLibrary->sysinfo_get_number_CPUs_by_type(portLibrary, OMRPORT_CPU_BOUND);
 		}
 		break;
 	}

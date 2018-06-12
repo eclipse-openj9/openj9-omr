@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2016 IBM Corp. and others
+ * Copyright (c) 2015, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -169,7 +169,7 @@ preforkSetup(OMR_VMThread **vmthread, struct OMR_Agent **agent, OMRTestVM *testV
 	OMRTEST_ASSERT_ERROR_NONE(omr_agent_openLibrary(*agent));
 	OMRTEST_ASSERT_ERROR_NONE(omr_agent_callOnLoad(*agent));
 
-	/*  Initialise the omr_test module for tracing */
+	/*  Initialize the omr_test module for tracing */
 	UT_OMR_TEST_MODULE_LOADED(testVM->omrVM._trcEngine->utIntf);
 
 	/* Initialize pipe before fork. */

@@ -1218,7 +1218,7 @@ namespace TR
          return offset;
          }
    private:
-      Metric _reading;     // meter reading while metering, uninitialised on construction
+      Metric _reading;     // meter reading while metering, uninitialized on construction
    };
 
    typedef CS2::RunnableMeter<AllocatedMemoryMeter> MemoryMeter;

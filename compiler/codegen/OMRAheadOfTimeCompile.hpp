@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -82,7 +82,7 @@ class OMR_EXTENSIBLE AheadOfTimeCompile
       }
 
    virtual void     processRelocations() = 0;
-   virtual uint8_t *initialiseAOTRelocationHeader(TR::IteratedExternalRelocation *relocation) = 0;
+   virtual uint8_t *initializeAOTRelocationHeader(TR::IteratedExternalRelocation *relocation) = 0;
 
    // virtual void dumpRelocationData() = 0;
    void dumpRelocationData() {}

@@ -2452,7 +2452,7 @@ convertWithMBTOWC(struct OMRPortLibrary *portLibrary, char *inputBuffer, char *o
 
 
 /**
- * Initialises the supplied buffer such that it can be used by the @ref omrsysinfo_env_iteraror_next() and @ref omrsysinfo_env_iterator_hasNext() APIs.
+ * Initializes the supplied buffer such that it can be used by the @ref omrsysinfo_env_iteraror_next() and @ref omrsysinfo_env_iterator_hasNext() APIs.
  *
  * If the caller supplies a non-NULL buffer that is not big enough to store all the name=value entries of the environment,
  * 	copyEnvToBuffer will store as many entries as possible, until the buffer is used up.

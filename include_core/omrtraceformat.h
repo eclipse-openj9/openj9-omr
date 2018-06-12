@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2016 IBM Corp. and others
+ * Copyright (c) 2014, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -73,9 +73,9 @@ typedef struct UtTracePointIterator UtTracePointIterator;
  * This iterator can then be used to obtain trace point iterators over each
  * buffer in the file via calls to omr_trc_getTracePointIteratorForNextBuffer
  *
- * @param[in] portLib An initialised OMRPortLibraryStructure.
+ * @param[in] portLib An initialized OMRPortLibraryStructure.
  * @param[in] fileName The name of the trace file to open.
- * @param[in,out] iteratorPtr A pointer to a location where the initialised UtTraceFileIterator pointer can be stored.
+ * @param[in,out] iteratorPtr A pointer to a location where the initialized UtTraceFileIterator pointer can be stored.
  * @param[in] getFormatString A callback the formatter can use to obtain a format string for a trace point id in a named module.
  *
  * @return OMR_ERROR_NONE on success
@@ -104,7 +104,7 @@ omr_error_t omr_trc_freeTraceFileIterator(UtTraceFileIterator *iter);
  * If there are no more trace buffers in the file *bufferIteratorPtr will point to NULL.
  *
  * @param[in] fileIter A pointer to the UtTraceFileIterator that will return an iterator over it's next buffer.
- * @param[in,out] bufferIteratorPtr A pointer to a location where the initialised UtTracePointIterator pointer can be stored.
+ * @param[in,out] bufferIteratorPtr A pointer to a location where the initialized UtTracePointIterator pointer can be stored.
  * @return OMR_ERROR_NONE on success, including if there are no more buffers in the file at EOF.
  * @return OMR_ERROR_OUT_OF_NATIVE_MEMORY if memory for the iterator structure cannot be allocated.
  * @return OMR_ERROR_INTERNAL if the file ends unexpectedly.

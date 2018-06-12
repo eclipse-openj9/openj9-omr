@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2016 IBM Corp. and others
+ * Copyright (c) 2016, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -384,7 +384,7 @@ omrintrospect_threads_startDo(struct OMRPortLibrary *portLibrary, J9Heap *heap, 
 /* This function is called repeatedly to get subsequent threads in the iteration. The only way to
  * resume suspended threads is to continue calling this function until it returns NULL.
  *
- * @param state state structure initialised by a call to one of the startDo functions.
+ * @param state state structure initialized by a call to one of the startDo functions.
  *
  * @return NULL if there is an error or if no more threads are available. Sets the error fields as
  * listed detailed for j9introspect_threads_startDo_with_signal.

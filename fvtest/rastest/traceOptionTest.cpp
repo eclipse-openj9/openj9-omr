@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2015 IBM Corp. and others
+ * Copyright (c) 2014, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -66,7 +66,7 @@ TEST(RASTraceOptionTest, TraceOptionAgent)
 
 	OMRTEST_ASSERT_ERROR_NONE(omr_agent_callOnLoad(agent));
 
-	/* Initialise the omr_test module for tracing */
+	/* Initialize the omr_test module for tracing */
 	UT_OMR_TEST_MODULE_LOADED(testVM.omrVM._trcEngine->utIntf);
 
 	/* Fire some trace points! */

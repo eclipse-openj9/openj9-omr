@@ -160,7 +160,7 @@ private:
    TR::RealRegister::RegState _registerStatesSnapShot[TR::RealRegister::NumRegisters];
    TR::Register               *_assignedRegisterSnapShot[TR::RealRegister::NumRegisters];
 
-   void initialiseRegisterFile();
+   void initializeRegisterFile();
 
    };
 }

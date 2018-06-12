@@ -192,7 +192,7 @@ OMR::X86::Machine::Machine
    _globalRegisterNumberToRealRegisterMap(globalRegisterNumberToRealRegisterMap),
    _spilledRegistersList(NULL)
    {
-   self()->initialiseFPStackRegisterFile();
+   self()->initializeFPStackRegisterFile();
    _fpTopOfStack = TR_X86FPStackRegister::fpStackEmpty;
    self()->resetFPStackRegisters();
    self()->resetXMMGlobalRegisters();
@@ -1580,7 +1580,7 @@ OMR::X86::Machine::createRegisterAssociationDirective(TR::Instruction *cursor)
 #define UNUSED_WEIGHT       0xFFFF
 
 void
-OMR::X86::Machine::initialiseRegisterFile(const struct TR::X86LinkageProperties &properties)
+OMR::X86::Machine::initializeRegisterFile(const struct TR::X86LinkageProperties &properties)
    {
    int reg;
 
@@ -2372,7 +2372,7 @@ void OMR::X86::Machine::resetFPStackRegisters()
    }
 
 
-void OMR::X86::Machine::initialiseFPStackRegisterFile()
+void OMR::X86::Machine::initializeFPStackRegisterFile()
    {
    _fpStack[TR_X86FPStackRegister::fp0] = new (self()->cg()->trHeapMemory()) TR_X86FPStackRegister(TR_X86FPStackRegister::Free,
                                                                     TR_X86FPStackRegister::fp0,

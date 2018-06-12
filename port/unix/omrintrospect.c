@@ -1584,13 +1584,13 @@ omrintrospect_threads_startDo_with_signal(struct OMRPortLibrary *portLibrary, J9
 		RECORD_ERROR(state, INITIALIZATION_ERROR, errno);
 		goto cleanup;
 	}
-	/* initialise client semaphore pipe to be non-blocking */
+	/* initialize client semaphore pipe to be non-blocking */
 	flag = fcntl(data->client_sem.descriptor_pair[0], F_GETFL);
 	fcntl(data->client_sem.descriptor_pair[0], F_SETFL, flag | O_NONBLOCK);
 
 	barrier_init_r(&data->release_barrier, 0);
 #ifdef AIXPPC
-	/* On AIX, initialise semaphore pipes to be sync-on-write (O_DSYNC flag). Previously we used the fdatasync()
+	/* On AIX, initialize semaphore pipes to be sync-on-write (O_DSYNC flag). Previously we used the fdatasync()
 	 * call after writing to the pipe, but on AIX it is not legal to call fdatasync() inside a signal handler.
 	 */
 	flag = fcntl(data->client_sem.descriptor_pair[1], F_GETFL);
@@ -1656,7 +1656,7 @@ omrintrospect_threads_startDo(struct OMRPortLibrary *portLibrary, J9Heap *heap, 
 /* This function is called repeatedly to get subsequent threads in the iteration. The only way to
  * resume suspended threads is to continue calling this function until it returns NULL.
  *
- * @param state state structure initialised by a call to one of the startDo functions.
+ * @param state state structure initialized by a call to one of the startDo functions.
  *
  * @return NULL if there is an error or if no more threads are available. Sets the error fields as
  * listed detailed for omrintrospect_threads_startDo_with_signal.

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2016 IBM Corp. and others
+ * Copyright (c) 2015, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -281,7 +281,7 @@ TEST(TraceLifecycleTest, traceAndModuleUnloadAfterTraceShutdown)
 	OMRTEST_ASSERT_ERROR_NONE(
 		ti->RegisterRecordSubscriber(vmthread, "traceAndModuleUnloadAfterTraceShutdown", countTracepointsMT, NULL, (void *)&tpCountsMT, &subscriptionID));
 
-	/* Initialise the omr_test module for tracing */
+	/* Initialize the omr_test module for tracing */
 	UT_OMR_TEST_MODULE_LOADED(testVM.omrVM._trcEngine->utIntf);
 
 	/* Shut down the trace engine */

@@ -83,7 +83,7 @@ TEST(RASTraceTest, TraceAgent)
 	}
 #endif /* TEST_TRACEAGENT */
 
-	/* Initialise the omr_test module for tracing */
+	/* Initialize the omr_test module for tracing */
 	UT_OMR_TEST_MODULE_LOADED(testVM.omrVM._trcEngine->utIntf);
 
 	/* Fire some trace points! */

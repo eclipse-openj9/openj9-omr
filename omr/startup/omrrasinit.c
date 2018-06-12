@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2016 IBM Corp. and others
+ * Copyright (c) 2014, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -173,7 +173,7 @@ omr_ras_initTI(OMR_VM *vm)
 	omr_error_t rc = OMR_ERROR_NONE;
 	OMRPORT_ACCESS_FROM_OMRVM(vm);
 
-	/* Initialise this mutex if it hasn't already been initialised. */
+	/* Initialize this mutex if it hasn't already been initialized. */
 	if (NULL == vm->_omrTIAccessMutex) {
 		if (0 != omrthread_monitor_init_with_name(&vm->_omrTIAccessMutex, 0, "OMRTI access mutex")) {
 			rc = OMR_ERROR_FAILED_TO_ALLOCATE_MONITOR;
@@ -221,7 +221,7 @@ omr_ras_cleanupTI(OMR_VM *vm)
 		vm->sysInfo = NULL;
 	}
 
-	/* Free the mutex if it has been initialised. */
+	/* Free the mutex if it has been initialized. */
 	if (NULL != vm->_omrTIAccessMutex) {
 		if (0 != omrthread_monitor_destroy(vm->_omrTIAccessMutex)) {
 			rc = OMR_ERROR_INTERNAL;

@@ -11542,7 +11542,7 @@ OMR::Z::TreeEvaluator::fenceEvaluator(TR::Node * node, TR::CodeGenerator *cg)
    }
 
 /**
- * exceptionRangeFenceEvaluator - SymbolReference is the aliasing effect, initialiser is where the
+ * exceptionRangeFenceEvaluator - SymbolReference is the aliasing effect, initializer is where the
  *   code address gets put when binary is generated
  */
 TR::Register *

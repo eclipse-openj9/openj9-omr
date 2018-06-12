@@ -3448,7 +3448,7 @@ TR::Register *OMR::X86::TreeEvaluator::BBEndEvaluator(TR::Node *node, TR::CodeGe
       {
       // We need to record the final state of the register associations at the end
       // of each extended basic block so that the register states and weights
-      // are initialised properly at the bottom of the block by the GP register
+      // are initialized properly at the bottom of the block by the GP register
       // assigner.
       //
       TR::Machine *machine = cg->machine();

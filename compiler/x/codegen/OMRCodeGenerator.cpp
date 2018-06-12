@@ -324,7 +324,7 @@ OMR::X86::CodeGenerator::initialize(TR::Compilation *comp)
 
    self()->setGlobalRegisterTable(self()->machine()->getGlobalRegisterTable(*_linkageProperties));
 
-   self()->machine()->initialiseRegisterFile(*_linkageProperties);
+   self()->machine()->initializeRegisterFile(*_linkageProperties);
 
    self()->getLinkage()->copyLinkageInfoToParameterSymbols();
 

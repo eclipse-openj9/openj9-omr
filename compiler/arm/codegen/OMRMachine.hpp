@@ -67,7 +67,7 @@ class OMR_EXTENSIBLE Machine : public OMR::Machine
 
    static uint32_t       _globalRegisterNumberToRealRegisterMap[MAX_ARM_GLOBAL_GPRS + MAX_ARM_GLOBAL_FPRS];
 
-   void initialiseRegisterFile();
+   void initializeRegisterFile();
 
    // For register snap shot
    uint16_t                    _registerFlagsSnapShot[TR::RealRegister::NumRegisters];

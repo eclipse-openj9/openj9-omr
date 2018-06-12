@@ -733,7 +733,7 @@ OMR::Z::Machine::Machine(TR::CodeGenerator * cg)
     _globalReturnAddressRegisterNumber(-1),_globalEntryPointRegisterNumber(-1)
    ,_lastGlobalHPRRegisterNumber(-1), _firstGlobalHPRRegisterNumber(-1)
    {
-   self()->initialiseRegisterFile();
+   self()->initializeRegisterFile();
    self()->initializeFPRegPairTable();
    self()->clearRegisterAssociations();
    }
@@ -5984,10 +5984,10 @@ uint64_t OMR::Z::Machine::filterColouredRegisterConflicts(TR::Register *targetRe
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// OMR::Z::Machine::initialiseRegisterFile
+// OMR::Z::Machine::initializeRegisterFile
 ////////////////////////////////////////////////////////////////////////////////
 void
-OMR::Z::Machine::initialiseRegisterFile()
+OMR::Z::Machine::initializeRegisterFile()
    {
 
    // Initialize GPRs

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2016 IBM Corp. and others
+ * Copyright (c) 1991, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -102,14 +102,14 @@ pool_getElementPuddleSlot(J9Pool *pool, J9PoolPuddle *puddle, void *element)
 }
 
 /**
- * Common code to initialise a puddle header. Used when creating
+ * Common code to initialize a puddle header. Used when creating
  * a new puddle, and when clearing the pool.
  *
  * The puddle's user data and its next, previous, next available,
  * and previous available SRP's are left unaltered.
  *
  * @param[in] pool    The pool containing the parameters to use for the puddle.
- * @param[in] puddle  The puddle that will be initialised.
+ * @param[in] puddle  The puddle that will be initialized.
  *
  * @return none
  */

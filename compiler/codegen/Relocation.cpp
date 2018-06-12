@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -483,10 +483,10 @@ TR::IteratedExternalRelocation::IteratedExternalRelocation(uint8_t *target, uint
       AOTcgDiag0(TR::comp(), "TR::IteratedExternalRelocation::IteratedExternalRelocation\n");
       }
 
-void TR::IteratedExternalRelocation::initialiseRelocation(TR::CodeGenerator *codeGen)
+void TR::IteratedExternalRelocation::initializeRelocation(TR::CodeGenerator *codeGen)
    {
-   AOTcgDiag0(TR::comp(), "TR::IteratedExternalRelocation::initialiseRelocation\n");
-   _relocationDataCursor = codeGen->getAheadOfTimeCompile()->initialiseAOTRelocationHeader(this);
+   AOTcgDiag0(TR::comp(), "TR::IteratedExternalRelocation::initializeRelocation\n");
+   _relocationDataCursor = codeGen->getAheadOfTimeCompile()->initializeAOTRelocationHeader(this);
    }
 
 void TR::IteratedExternalRelocation::addRelocationEntry(uint32_t locationOffset)

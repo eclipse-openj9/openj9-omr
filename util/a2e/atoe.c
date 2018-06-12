@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2001, 2015 IBM Corp. and others
+ * Copyright (c) 2001, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -2142,7 +2142,7 @@ atoe_getnameinfo(const struct sockaddr *sa, socklen_t salen, char *host, socklen
 #define _XLOWER_ASCII   0x20                                        /*ibm@4345*/
 
 /* Check for iconv_init() already done   */
-int iconv_initialised = 0;
+int iconv_initialized = 0;
 
 /* Table for integer test macros      */
 int _ascii_is_tab[CONV_TABLE_SIZE];
@@ -2179,7 +2179,7 @@ iconv_init(void)
 	dllhandle *libwrappersDll;
 	int (*piconv_init)();
 
-	if (iconv_initialised) {
+	if (iconv_initialized) {
 		return 0;
 	}
 
@@ -2401,8 +2401,8 @@ iconv_init(void)
 	/* initialize the mutex used by putEnv and getEnv */
 	pthread_mutex_init(&env_mutex, NULL);
 
-	/* If we get here, then we are initialised.                    /*ibm@54240*/
-	iconv_initialised = 1;                                         /*ibm@54240*/
+	/* If we get here, then we are initialized.                    /*ibm@54240*/
+	iconv_initialized = 1;                                         /*ibm@54240*/
 
 	return 0;
 }

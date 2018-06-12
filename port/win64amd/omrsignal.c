@@ -80,6 +80,19 @@ typedef struct J9WinAMD64AsyncHandlerRecord {
 	struct J9WinAMD64AsyncHandlerRecord *next;
 } J9WinAMD64AsyncHandlerRecord;
 
+static struct {
+	uint32_t portLibSignalNo;
+	int osSignalNo;
+} signalMap[] = {
+	{OMRPORT_SIG_FLAG_SIGSEGV, SIGSEGV},
+	{OMRPORT_SIG_FLAG_SIGILL, SIGILL},
+	{OMRPORT_SIG_FLAG_SIGFPE, SIGFPE},
+	{OMRPORT_SIG_FLAG_SIGABRT, SIGABRT},
+	{OMRPORT_SIG_FLAG_SIGTERM, SIGTERM},
+	{OMRPORT_SIG_FLAG_SIGINT, SIGINT},
+	{OMRPORT_SIG_FLAG_SIGBREAK, SIGBREAK},
+};
+
 static omrthread_monitor_t masterExceptionMonitor;
 
 /* access to this must be synchronized using masterExceptionMonitor */

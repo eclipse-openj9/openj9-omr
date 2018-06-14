@@ -35,13 +35,13 @@ malfunction. Typical symptoms include:
     or complex program;
   * the VM crashes, resulting in a core file and/or crash report.
 
-This document discusses troubleshooting methods with which you could try to
-determine whether the compiler is faulty, and which part of the compiler caused
-a problem.
+This document discusses troubleshooting procedures as well as some of the tools
+available to you with which you could try to determine whether the compiler is 
+faulty, as well as identifying the faulty component.
 
 #  Invocation
 
-The most common usecase of Testarossa is in JIT compilation where it is
+The most common use case of Testarossa is in JIT compilation where it is
 typically invoked by the VM automatically; the run-time behaviour of the JIT
 can only be controlled via options passed through VM command line or, in some
 cases, environment variables.
@@ -64,7 +64,7 @@ extremely useful for diagnosing JIT problems.
 
 # Isolating a Failure
 
-# Completely Disabling the Compiler
+### Completely Disabling the Compiler
 
 The first step in diagnosing a failure is to determine whether the problem is
 in fact related to the compiler. When Testarossa is being used as a JIT compiler,
@@ -80,13 +80,13 @@ Running the program with the compiler disabled leads to one of two outcomes:
   * The failure disappears. The problem is most likely, although _not
     definitely_, in the compiler.
 
-# Reducing Optimization Levels
+### Reducing Optimization Levels
 
 If the failure of your program appears to come from a problem within the
 compiler, you can try to narrow down the problem further by reducing the amount
 of optimizations performed by the compiler.
 
-The compile roptimizes methods at various optimization levels; that is, different
+The compiler optimizes methods at various optimization levels; that is, different
 selections of optimizations are applied to different methods, based on their
 call counts. Methods that are called more frequently are optimized at higher
 levels. By changing compiler parameters, you can control the optimization level at
@@ -133,7 +133,7 @@ contains a potentially faulty optimization. If the program still fails at
 `noOpt`, then the problem is most likely in the code generation phase (versus
 the optimization phase) of the compiler.
 
-# Locating the Failing Method
+### Locating the Failing Method
 
 When you have arrived at the lowest optimization level at which the compiler must
 compile methods to trigger the failure, you can try to find out which part of
@@ -198,7 +198,7 @@ compilation altogether, using the `exclude=method` parameter:
 
     exclude={test.rb:61:pass}
 
-# Identifying the failing Optimization.
+### Identifying the failing Optimization.
 
 Most transformations that can be elided are guarded in the source code by a special
 check called `performTransformation` that can be controlled by the option
@@ -209,10 +209,10 @@ even stronger property than `optLevel=noOpt`.
 By binary searching `lastOptIndex=` you can find the optimization that failed.
 
 
-# Identifying Compilation Failures
+### Identifying Compilation Failures
 
 If the VM crashes, and you can see that the crash has occurred in the compiler
-module, it means that either the compier has failed during an attempt to compile a
+module, it means that either the compiler has failed during an attempt to compile a
 method, or one of the JIT run-time routines, which are also contained in the
 JIT module, has failed. Usually the VM prints this information on standard
 error just before it terminates; the information is also recorded in the corefile
@@ -229,286 +229,272 @@ when it ends. If the compiler fails on a particular method (that is, it starts
 compiling, but crashes before it can end), use the `exclude=` parameter to
 prevent the compiler from compiling the method.
 
-# Options
+# Limit
 
-## Option Sets
+A limit is a mechanism for selecting methods to compile (additive limit), or to exclude
+from compilation (subtractive limit). Limits can be specified in a limit file
+or in the command line link.
 
-It is possible to apply a set of compile options ("option sets") only to a
-method, or group of methods. Furthermore, it is possible to apply different
-option sets to different (groups of) methods. An option set can be defined on
-the command line by enclosing the desired set of parameters in parentheses,
-and preceding it with a method filter expression, e.g.
+### Limit files
 
+A limit file (also known as a verbose log) contains the signatures of all 
+methods in a program that have been JIT-compiled. The limit file produced 
+by one run of the program can be edited to select individual methods, and 
+subsequently read by the JIT compiler to compile only those selected 
+methods. This allows a developer investigating a defect to concentrate on 
+only methods that, once compiled, will trigger a given failure. 
 
+Limit files can be generated using the compiler options
+`verbose,vlog=limit-file`. the `verbose` option instructs the compiler to
+enable verbose log, and the `vlog=limit-file` writes the verbose log to the
+specified file. To learn how to single out methods that cause compilation failures,
+follow the steps in the [section about locating failing method](#locating-the-failing-method) 
+that outlines how you can perform a manual binary search using the limit file.
 
-    {HelloWorld.main([Ljava/lang/String;)V}(count=0,optlevel=hot)
+### Command line limits
 
+An alternative to using limit files is to use the `-Xjit:limit={*method*}` option 
+on the command line. This is suitable if you know exactly what method(s) you 
+want to limit, and want a quick test run without having to create a text file.
+`method` can be specified in three ways:
 
-The option example below makes the compiler compile all methods at the warm
-optimization level, and trace the compilation of all methods that start
-with `Frobnicate` and `Brobnicate`  in two different log files.
+* The simplest way to use the option is to specify the (full or partial) name 
+of the method. For example, `-Xjit:limit={*main*}` will instruct the JIT compiler 
+to compile any method whose name contains the word "main".
+* You can also spell out the entire signature of the method, e.g. 
+`-Xjit:limit={*java/lang/Class.initialize()V*}.` Only the method with a 
+signature that matches exactly will be compiled.
+* Finally, you can use a regular expression to specify a group of methods. For 
+instance, `-Xjit:limit={SimpleLooper.*}` specifies all methods that are members 
+of the class SimpleLooper. The syntax of the regular expression used for 
+limiting is the same as discussed above. You can combine this with the binary 
+search approach to isolate a failure quickly without editing limit files, by 
+running the program repeatedly using increasingly restrictive regular 
+expressions such as `{[a-m]*}`, `{[a-f]*}`, and so on. Note that the brace 
+character is treated specially by some UNIX shells, in which case you will 
+need to escape the character with a backslash, or by surrounding the regular 
+expression in quotation marks.
 
+### Limit expressions
 
+You can use regular expressions with limit directives to control compilation 
+for methods based on whether their names match the patterns you specify. To 
+use this feature, instead of a method signature, put a regular expression, 
+enclosed in braces, in the limit file. Note that these "regular expressions" 
+are not the same as those used by Perl, or by grep, or even by the Sovereign 
+JIT compiler.
 
-    optlevel=warm,count=0,{Frobnicate*}(log=frob.log,traceFull),{Brobnicate*}(log=brob.log,traceFull)
+The following table gives some examples. 
 
+| **Limit expression** | **Meaning** |
+| ---------------------- | ------------------------------------------------------ |
+| `- {*(I)*}` | Skip all methods with a single integer parameter |
+| `+ {*.[^a]*}` | Compile all methods whose names do not begin with "a" |
+| `+ {java/lang/[A-M]*}` | Compile all methods of all classes in the `java.lang` 
+package whose names start with the letters `A` through `M` |
+| `+ {*)[[]*}` | Compile All methods that return any kind of array |
 
-Option sets can also be defined in a limit file, if one is used, by adding a
-non-zero integer immediately after the initial plus sign on the line with the
-selected method(s).
+### Limit file and its command line filter
 
+You can use filters to work with a limit file to further specify compilation options for
+a method. The table below lists the four kinds of available filters.
 
+| **Limit filter** | **Meaning** |
+| ----------------------- | ------------------------------------------------------- |
+| `{regular expression}` | Methods with its signature matching `regular expression`. |
+| `1-0 set index` | Methods specified with one digit number in the limit file 
+right after the + or - sign |
+| `[m,n]` | Methods between line `m` and `n` |
+| `[n]` | The method in line `n` in the limit file |
 
-    +1 (hot) HelloWorld.main([Ljava/lang/String;)V @ 0x10C11DA4-0x10C11DDD
+An example of using command line filters with a limit file:
 
+```sh
+-Xjit:optlevel=noOpt,limitFile=limit.log,[5-10](optlevel=hot) 
+```
 
-The number is the option set number, which can be used on the command line in
-lieu of a method filter expression, e.g.
+The example above would instruct the compiler to compile methods between line 5 and 10 inclusive
+at `hot` optimization level, and the rest of the methods in the limit file at minimal
+optimization (level `noOpt`).
 
+# Compilation Log
 
+The compilation log, or simply log, is a file that records the results of program
+analyses and code transformations performed by the compiler during one or more
+compilations. The information to output in the log file can controlled through the
+use of [compiler options](CompilerOptions.md).
 
-    1(count=0,optlevel=hot)
+### Generating the log
 
+To create a log file in the JVM, use the command line argument 
+`-Xjit:log=filename,traceFull`. This will record trace messages and listings 
+for all compiled methods in the specified file. For example:
 
-Note that some parameters are always applied globally and are illegal within
-option sets. The compiler will fail to start up if an option set contains such
-parameters.
+```sh
+java -Xjit:log=compile.log,traceFull HelloWorld
+```
 
-Here are some options, though, not all are connected up to all compiler technologies.
+The `traceFull` option would enable a number of important trace options. You can be
+more specific about the information you want in the log file by using the [list 
+of logging and tracing options](CompilerOptions.md#logging-and-trace-parameters).
 
-## Code Generation Parameters
+### Filtering methods
 
-| Option                                     | Description                                     |
-| ------------------------------------------ | ----------------------------------------------- |
-| bcLimit=<em>nnn</em>                       | bytecode size limit                             |
-| code=<em>nnn</em>                          | code cache size, in KB                          |
-| codetotal=<em>nnn</em>                     | total code memory limit, in KB                  |
-| noExceptions                               | fail compilation for methods with exceptions    |
-| noregmap                                   | generate GC maps without register maps          |
+You may also specify what methods or group of methods you would like to restrict the
+logging to by using [limits](#limit).
 
-## Optimization Parameters
+An example of using a limit file to specify methods to trace:
+```sh
+java -Xjit:limitFile=methods.txt,log=compile.log,traceFull HelloWorld
+```
 
-| Option                                           | Description                                                                                                                                                                                |
-| ------------------------------------------------ | ------------------------------------------------------------------------------- |
-| acceptHugeMethods                                | allow processing of really large methods                                        |
-| count=<em>nnn</em>                               | number of invocations before compiling methods without loops                    |
-| disableAndSimplification                         | disable and simplification                                                      |
-| disableBasicBlockExtension                       | disable basic block extension                                                   |
-| disableBasicBlockSlicing                         | disable basic block slicing                                                     |
-| disableBlockSplitter                             | disable block splitter                                                          |
-| disableBlockVersioner                            | disable block versioner                                                         |
-| disableCallGraphInlining                         | disable Interpreter Profiling based inlining and code size estimation           |
-| disableCatchBlockRemoval                         | disable catch block removal                                                     |
-| disableCFGSimplification                         | disable Control Flow Graph simplification                                       |
-| disableColdBlockMarker                           | disable detection of cold blocks                                                |
-| disableColdBlockOutlining                        | disable outlining of cold blocks                                                |
-| disableCompactLocals                             | disable compact locals                                                          |
-| disableCriticalEdgeSplitting                     | disable critical edge splitting                                                 |
-| disableDeadTreeElimination                       | disable dead tree elimination                                                   |
-| disableGlobalDSE                                 | disable global dead store elimination                                           |
-| disableGlobalRegisterCandidates                  | disable global register candidates                                              |
-| disableGlobalVP                                  | disable global value propagation                                                |
-| disableGLU                                       | disable general loop unroller                                                   |
-| disableGRA                                       | disable IL based global register allocator                                      |
-| disableInlining                                  | disable IL inlining                                                             |
-| disableInnerPreexistence                         | disable inner preexistence                                                      |
-| disableInternalPointers                          | disable internal pointer creation                                               |
-| disableIsolatedSE                                | disable isolated store elimination                                              |
-| disableLiveRegisterAnalysis                      | disable live register analysis                                                  |
-| disableLocalCSE                                  | disable local common subexpression elimination                                  |
-| disableLocalDSE                                  | disable local dead store elimination                                            |
-| disableLocalLiveVariablesForGC                   | disable local live variables for GC                                             |
-| disableLocalReordering                           | disable local reordering                                                        |
-| disableLocalVP                                   | disable local value propagation                                                 |
-| disableLongDispStackSlot                         | disable use of stack slot for handling long displacements on z                  |
-| disableLoopCanonicalization                      | disable loop canonicalization                                                   |
-| disableLoopInversion                             | disable loop inversion                                                          |
-| disableLoopReduction                             | disable loop reduction                                                          |
-| disableLoopReplicator                            | disable loop replicator                                                         |
-| disableLoopStrider                               | disable loop strider                                                            |
-| disableLoopUnroller                              | disable loop unroller                                                           |
-| disableLoopVersioner                             | disable loop versioner                                                          |
-| disableMergeStackMaps                            | disable stack map merging                                                       |
-| disableMoreOpts                                  | apply noOpt optimization level and disable codegen optimizations                |
-| disableNewBlockOrdering                          | disable new block ordering, instead use basic block extension                   |
-| disableNewBVA                                    | disable structure based bit vector analysis                                     |
-| disableNonvirtualInlining                        | disable inlining of non virtual methods                                         |
-| disableOpts={<em>regex</em>}                     | list of optimizations to disable                                                |
-| disableOptTransformations={<em>regex</em>}       | list of optimizer transformations to disable                                    |
-| disablePRE                                       | disable partial redudndancy elimination                                         |
-| disableRematerialization                         | disable rematerialization                                                       |
-| disableReorderArrayIndexExpr                     | disable reordering of index expressions                                         |
-| disableRXusage                                   | disable increased usage of RX instructions                                      |
-| disableSequenceSimplification                    | disable arithmetic sequence simplification                                      |
-| disableSequentialStoreSimplification             | disable sequential store simplification phase                                   |
-| disableTraceRegDeps                              | disable printing of register dependancies for each instruction in trace file    |
-| disableTreeCleansing                             | disable tree cleansing                                                          |
-| disableTreeSimplification                        | disable tree simplification                                                     |
-| disableTrex                                      | disable Trex Instructions on z/Architecture.                                    |
-| disableValueProfiling                            | disable value profiling                                                         |
-| disableVerification                              | disable verification of internal data structures between passes                 |
-| disableVirtualGuardNOPing                        | disable virtual guard NOPing                                                    |
-| disableVirtualGuardTailSplitter                  | disable virtual guard tail splitter                                             |
-| disableVirtualInlining                           | disable inlining of virtual methods                                             |
-| disableYieldVMAccess                             | disable yielding of VM access when GC is waiting                                |
-| disableZ6                                        | disable z6 Instructions on z.                                                   |
-| disableZArchitecture                             | disable zArchitecture Instructions on z.                                        |
-| dontInline={<em>regex</em>}                      | list of methods to not inline                                                   |
-| enable390FreeVMThreadReg                         | enable use of vm thread reg as assignable reg on z.                             |
-| enable390GlobalAccessRegs                        | enable use of access regs for global allocation on z.                           |
-| enableBasicBlockHoisting                         | enable basic block hoisting                                                     |
-| enableLocalLiveRangeReduction                    | enable local live range reduction                                               |
-| enableLoopyMethodForcedCompilations              | enable compiling loopy methods with noOpt,count=0                               |
-| enableRangeSplittingGRA                          | enable GRA splitting of live ranges to reduce register pressure                 |
-| enableReorderArrayIndexExpr                      | reorder array index expressions to encourage hoisting                           |
-| enableUpgradingAllColdCompilations               | try to upgrade to warm all cold compilations                                    |
-| enableVpic                                       | enable PIC for resolved virtual calls                                           |
-| firstOptIndex=<em>nnn</em>                       | index of the first optimization to perform                                      |
-| firstOptTransformationIndex=<em>nnn</em>         | index of the first optimization transformation to perform                       |
-| ignoreIEEE                                       | allow non-IEEE compliant optimizations                                          |
-| insertDebuggingCounters=<em>nnn</em>             | Insert instrumentation for debugging counters                                   |
-| lastOptIndex=<em>nnn</em>                        | index of the last optimization to perform                                       |
-| lastOptTransformationIndex=<em>nnn</em>          | index of the last optimization transformation to perform                        |
-| numRestrictedGPRs=<em>nnn</em>                   | number of restricted GPRS (0-5).  Currently z only                              |
-| onlyInline={<em>regex</em>}                      | list of methods that can be inlined                                             |
-| optLevel=cold                                    | compile all methods at cold level                                               |
-| optLevel=hot                                     | compile all methods at hot level                                                |
-| optLevel=noOpt                                   | compile all methods at noOpt level                                              |
-| optLevel=scorching                               | compile all methods at scorching level                                          |
-| optLevel=veryHot                                 | compile all methods at veryHot level                                            |
-| optLevel=warm                                    | compile all methods at warm level                                               |
-| paranoidOptCheck                                 | check the trees and cfgs after every optimization phase                         |
-| suffixLogs                                       | add the date/time/pid suffix to the file name of the logs                       |
-| suffixLogsFormat=                                | add the suffix in specified format to the file name of the logs                 |
-| tlhPrefetchSize=<em>nnn</em>                     | allocation prefetch size for X86 allocation prefetch                            |
+Alternatively, you may also specify the method(s) directly in the command line:
+```sh
+java -Xjit:limit={*hello*},log=compile.log,traceFull HelloWorld
+```
 
-## Logging and Trace Parameters
-| Option                                                                        | Description                                                                                            |
-| ----------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| debugCounters=                                                                | Activate dynamic Debug counters                                                                        |
-| firstVlogLine=<em>nnn</em>                                                    | first vlog line to be written                                                                          |
-| lastVlogLine=<em>nnn</em>                                                     | last vlog line to be written                                                                           |
-| log=<em>filename</em>                                                         | write log output to <em>filename</em>                                                                  |
-| optDetails                                                                    | log all optimizer transformations                                                                      |
-| stats                                                                         | dump statistics at end of run                                                                          |
-| traceAliases                                                                  | trace alias set generation                                                                             |
-| traceAllocationSplitter                                                       | trace allocation splitter                                                                              |
-| traceAndSimplification                                                        | trace and simplification                                                                               |
-| traceBasicBlockExtension                                                      | trace basic block extension                                                                            |
-| traceBasicBlockHoisting                                                       | trace basic block hoisting                                                                             |
-| traceBasicBlockSlicing                                                        | trace basic block slicing                                                                              |
-| traceBBVA                                                                     | trace backward bit vector analysis                                                                     |
-| traceBC                                                                       | dump bytecodes                                                                                         |
-| traceBin                                                                      | dump binary instructions                                                                               |
-| traceBlockFrequencyGeneration                                                 | trace block frequency generation                                                                       |
-| traceBlockSplitter                                                            | trace block splitter                                                                                   |
-| traceBVA                                                                      | trace bit vector analysis                                                                              |
-| traceCatchBlockRemoval                                                        | trace catch block removal                                                                              |
-| traceCFGSimplification                                                        | trace Control Flow Graph simplification                                                                |
-| traceCG                                                                       | dump output of code generation passes                                                                  |
-| traceCGStatistics                                                             | report code generation statistics per method                                                           |
-| traceColdBlockMarker                                                          | trace detection of cold blocks                                                                         |
-| traceColdBlockOutlining                                                       | trace outlining of cold blocks                                                                         |
-| traceCompactLocals                                                            | trace compact locals                                                                                   |
-| traceCompactNullChecks                                                        | trace compact null checks                                                                              |
-| traceCriticalEdgeSplitting                                                    | trace critical edge splitting                                                                          |
-| traceDeadTreeElimination                                                      | trace dead tree elimination                                                                            |
-| traceEscapeAnalysis                                                           | trace escape analysis                                                                                  |
-| traceExplicitNewInitialization                                                | trace explicit new initialization                                                                      |
-| traceFieldPrivatization                                                       | trace field privatization                                                                              |
-| traceForCodeMining={<em>regex</em>}                                           | add instruction annotations for code mining                                                            |
-| traceFull                                                                     | turn on all trace options                                                                              |
-| traceGlobalDSE                                                                | trace global dead store elimination                                                                    |
-| traceGlobalLiveVariablesForGC                                                 | trace global live variables for GC                                                                     |
-| traceGlobalRegisterCandidates                                                 | trace global register candidates                                                                       |
-| traceGlobalVP                                                                 | trace global value propagation                                                                         |
-| traceGLU                                                                      | trace general loop unroller                                                                            |
-| traceGRA                                                                      | trace IL based global register allocator                                                               |
-| traceInductionVariableAnalysis                                                | trace Induction Variable Analysis                                                                      |
-| traceInlining                                                                 | trace IL inlining                                                                                      |
-| traceInnerPreexistence                                                        | trace inner preexistence                                                                               |
-| traceInvariantArgumentPreexistence                                            | trace invariable argument preexistence                                                                 |
-| traceIsolatedSE                                                               | trace isolated store elimination                                                                       |
-| traceLiveness                                                                 | trace liveness analysis                                                                                |
-| traceLocalCSE                                                                 | trace local common subexpression elimination                                                           |
-| traceLocalDSE                                                                 | trace local dead store elimination                                                                     |
-| traceLocalLiveVariablesForGC                                                  | trace local live variables for GC                                                                      |
-| traceLocalReordering                                                          | trace local reordering                                                                                 |
-| traceLocalVP                                                                  | trace local value propagation                                                                          |
-| traceLoopCanonicalization                                                     | trace loop canonicalization                                                                            |
-| traceLoopInversion                                                            | trace loop inversion                                                                                   |
-| traceLoopReduction                                                            | trace loop reduction                                                                                   |
-| traceLoopReplicator                                                           | trace loop replicator                                                                                  |
-| traceLoopStrider                                                              | trace loop strider                                                                                     |
-| traceLoopUnroller                                                             | trace loop unroller                                                                                    |
-| traceMethodMetaData                                                           | dump method meta data                                                                                  |
-| traceMethodSpecializer                                                        | trace method specializer                                                                               |
-| traceMixedModeDisassembly                                                     | dump generated assembly with bytecodes                                                                 |
-| traceNodeFlags                                                                | trace setting/resetting of node flags                                                                  |
-| traceOpts={<em>regex</em>}                                                    | list of optimizations to trace                                                                         |
-| traceOptTrees                                                                 | dump trees after each optimization                                                                     |
-| tracePostBinaryEncoding                                                       | dump instructions (code cache addresses, real registers) after binary encoding                         |
-| tracePostInstructionSelection                                                 | dump instructions (virtual registers) after instruction selection                                      |
-| tracePostRegisterAssignment                                                   | dump instructions (real registers) after register assignment                                           |
-| tracePostScheduling                                                           | dump instructions (real registers) after instruction scheduling                                        |
-| tracePRE                                                                      | trace partial redudndancy elimination                                                                  |
-| tracePreInstructionSelection                                                  | dump trees prior to instruction selection                                                              |
-| traceProfileGenerator                                                         | trace profile generator                                                                                |
-| traceRA=                                                                      | trace register allocations                                                                             |
-| traceRedundantAsyncCheckRemoval                                               | trace redundant async check removal                                                                    |
-| traceRedundantGotoElimination                                                 | trace redundant goto elimination                                                                       |
-| traceRedundantMonitorElimination                                              | trace redundant monitor elimination                                                                    |
-| traceRegisterPressureDetails                                                  | include extra register pressure annotations in register pressure simulation and tree evaluation traces |
-| traceRematerialization                                                        | trace rematerialization                                                                                |
-| traceReorderArrayIndexExpr                                                    | trace reorder array index expressions                                                                  |
-| traceSequenceSimplification                                                   | trace arithmetic sequence simplification                                                               |
-| traceSplitMethod                                                              | trace method splitting                                                                                 |
-| traceStoreSinking                                                             | trace store sinking                                                                                    |
-| traceStringPeepholes                                                          | trace string peepholes                                                                                 |
-| traceSwitchAnalyzer                                                           | trace switch analyzer                                                                                  |
-| traceTreeCleansing                                                            | trace tree cleansing                                                                                   |
-| traceTrees                                                                    | dump trees after each compilation phase                                                                |
-| traceTreeSimplification                                                       | trace tree simplification                                                                              |
-| traceUseDefs                                                                  | trace use def info                                                                                     |
-| traceValueNumbers                                                             | trace value number info                                                                                |
-| traceVirtualGuardTailSplitter                                                 | trace virtual guard tail splitter                                                                      |
-| verbose                                                                       | write compiled method names to vlog file or stdout in limitfile format                                 |
-| verbose={<em>regex</em>}                                                      | list of verbose output to write to vlog or stdout                                                      |
-| version                                                                       | display the jit build version                                                                          |
-| vlog=<em>filename</em>                                                        | write verbose output to <em>filename</em>                                                              |
+The options used in the command line argument above will result in the JIT-ing of
+methods that contain "hello" in its name.
 
-## Debugging Parameters
+Whether you use a limit file or command line limits to specify methods to log,
+it will result in all other methods not being compiled. If you would like to trace the
+compilation of specific methods without affecting the compilation of the other methods,
+you may do so by using [option sets](##option-sets).
 
-| Option                                     | Description                                                                                                                                                                                                        |
-| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| breakAfterCompile                          | raise trap when method compilation ends                                                                                                                                                                            |
-| breakBeforeCompile                         | raise trap when method compilation begins                                                                                                                                                                          |
-| breakOnBBStart                             | raise trap on BBStarts of method                                                                                                                                                                                   |
-| breakOnCompile                             | deprecated; equivalent to breakBeforeCompile                                                                                                                                                                       |
-| breakOnCreate={<em>regex</em>}             | raise trap when creating an item whose name (given by <em>enumerate</em>) matches <em>regex</em>                                                                                                                   |
-| breakOnEntry                               | insert entry breakpoint instruction in generated code                                                                                                                                                              |
-| breakOnLoad                                | break after the options have been processed                                                                                                                                                                        |
-| breakOnOpts={<em>regex</em>}               | raise trap when performing opts with matching <em>regex</em>                                                                                                                                                       |
-| compile                                    | Compile these methods immediately.  Primarily for use with Compiler.command                                                                                                                                        |
-| debugBeforeCompile                         | invoke the debugger when method compilation begins                                                                                                                                                                 |
-| debugOnCompile                             | deprecated; equivalent to debugBeforeCompile                                                                                                                                                                       |
-| debugOnEntry                               | invoke the debugger at the entry of a method                                                                                                                                                                       |
-| enumerateAddresses=                        | select kinds of addresses to be replaced by unique identifiers in trace file                                                                                                                                       |
-| exclude=<em>xxx</em>                       | do not compile methods beginning with <em>xxx</em>                                                                                                                                                                 |
-| limit=<em>xxx</em>                         | only compile methods beginning with <em>xxx</em>                                                                                                                                                                   |
-| limitfile=<em>filename</em>                | filter method compilation as defined in <em>filename</em>.  Use <tt>limitfile=(<em>filename</em>,<em>firstLine</em>,<em>lastLine</em>)</tt> to limit lines considered from <em>firstLine</em> to <em>lastLine</em> |
-| maskAddresses                              | remove addresses from trace file                                                                                                                                                                                   |
-| noRecompile                                | do not recompile even when counts allow it                                                                                                                                                                         |
-| stopOnFailure                              | stop compilation if exceed memory threshold                                                                                                                                                                        |
-| tlhPrefetch                                | enable software prefetch on allocation for X86                                                                                                                                                                     |
-| tossCode                                   | throw code and data away after compiling                                                                                                                                                                           |
+### Deciphering the generated log
 
-## Other Parameters
+Each full method listing (i.e. when `-Xjit:traceFull` is used) consists of multiple sections.
 
-| Option                                     | Description                                                                                                     |
-| ------------------------------------------ | --------------------------------------------------------------------------------------------------------------- |
-| softFailOnAssume                           | fail the compilation quietly and use the interpreter if an assume fails                                         |
-| timing                                     | time individual phases and optimizations                                                                        |
-| timingCummulative                          | time cummulative phases (ILgen,Optimizer,codegen)                                                               |
-| traceMarkingOfHotFields                    | trace marking of Hot Fields                                                                                     |
+* **Bytecode listing:** A low-level disassembly of the Java bytecode that constitute the
+Java method.
+* **Initial Trees:** A listing of the trees immediately after IL generation,
+which should match the bytecode fairly closely. A trees listing is accompanied by the
+control flow graph and the structure graph (once structural analysis had been
+performed) for the method.
+* **Per-optimization diagnostic information:** This section starts with the 
+number and name of the optimization that was performed, e.g. "Performing 0: inlining", 
+"Performing 1: compactNullChecks", etc., followed by trace messages produced as the 
+optimization proceeded, e.g. "(Doing structural analysis)", "(Building use/def info)", 
+"Removing redundant resolve check node [001E6B24]", etc., and finally includes a 
+complete listing of the IL after any transformations.
+* **Post Optimization Trees, Pre Instruction Selection Trees:** Both are listings of the
+IL after all optimizations have been performed, the second differing only in that some
+trees are "lowered", i.e. translated into equivalent trees that are better for a
+particular architecture. The two listings should be largely similar.
+* **Post Instruction Selection Instructions:** A listing of pseudo-machine instructions
+that have been selected for the trees. Instruction sequences are annotated with the
+individual trees for which they were selected. Registers and memory references, etc.,
+remain symbolic in this listing.
+* **Post Scheduling Instructions, Post Register Assignment Instructions:** Both are 
+listings of the pseudo-machine instructions representing the jitted method, after the
+procedures for which they are named have been performed. In the second listing, the
+names of assigned physical registers as well as memory references are displayed in
+native notation.
+* **Post Binary Instructions:** A listing of the same pseudo-machine instructions after
+binary encoding has been performed, annotated with the actual code bytes encoded for the
+instructions, and the absolute addresses of the instructions in the code cache. This
+listing also includes additional instructions like the prologue, the epilogue, and
+out-of-line snippet code. In other words, it includes all instructions that consistute 
+the jitted method. This listing should look fairly close to a disassembly listing that
+one can obtain from a debugger.
+**Method Meta-data:** A dump of meta-data about the method, such as GC atlas, exception
+ranges and handlers, etc.
+**Mixed Mode Disassembly:** The same listing as Post Binary Instructions, but annotated
+with Java bytecode call stack information. This makes it easy to see what native
+instructions were generated for a particular Java bytecode instruction.
 
+**Trees Listing**  
+
+The IL used in the Testarossa JIT compiler consists of a doubly linked list of trees of
+nodes. Nodes are identified by their memory addresses, and their functions are described 
+by their opcodes. Every node is either associated with a data type that indicates the 
+type of expression represented by the node, or marked as "NoType", i.e. evaluating the 
+node's opcode returns no value. Conceptually, each node can have multiple children, and 
+either zero or one parent node; parent-less nodes (or root nodes) become children of 
+"treetops", which are used to organize individual trees into a list. In reality, 
+commoned nodes have more than one parent, and every node has a reference count that is 
+used to keep track of how many parents point to itself.
+
+The following snippet contains part of the listing of generated trees for method
+`SimpleLooper.main([Ljava/lang/String;)V`:
+
+```
+Call Stack Info
+CalleeIndex CallerIndex ByteCodeIndex CalleeMethod
+       0         -1          b        SimpleLooper.<init>V
+       1          0          1        java/lang/Object.<init>V
+       2         -1         15        SimpleLooper.createArray(I)V
+       3         -1         19        SimpleLooper.walkArray()V
+       4         -1         2b        SimpleLooper.counter()I
+
+    ------------ ByteCodeIndex
+    |   ------------- CallSiteIndex
+    |   |   ------------- Reference Count
+    |   |   |     -------------- Visit Count
+    |   |   |     |     -------------- Global Index
+    |   |   |     |     |     ------------ Side Table Index
+    |   |   |     |     |     |   ------------- Use/def Index
+    |   |   |     |     |     |   |  ------------- Number of Children
+    |   |   |     |     |     |   |  |  ------------- Size
+    |   |   |     |     |     |   |  |  |      ------------- Data Type
+    |   |   |     |     |     |   |  |  |      |           ------------- Node Address
+    |   |   |     |     |     |   |  |  |      |           |      ------------- Instruction
+    |   |   |     |     |     |   |  |  |      |           |      |
+    V   V   V     V     V     V   V  V  V      V           V      V
+[   0, -1,  0, 3234,    5,   -1, -1, 0, 0,    NoType [001E61F0]   BBStart (block 1)
+.
+.
+.
+[  1c,  3,  0, 3234,  232,   -1, -1, 1, 0,    NoType [001F267C]   treetop 
+[  13,  3,  2, 3234,  217,    2, -1, 1, 4,       Int [001F2440]     iiload #127[001EF32C]  Shadow[SimpleLooper.count I]+12
+[  16,  3,  2, 3234,  218,    2, 24, 0, 4,   Address [001F2464]       aload #106[001E624C] Auto[<auto slot 1>] 
+[  1f,  3,  0, 3234,  237,   -1, -1, 1, 4,   Address [001F28E4]   ResolveCHK #14[001E6580] Method[throwNullPointerException] 
+[  1f,  3,  2, 3234,  235,    2, -1, 2, 4,       Int [001F289C]     iicall #140[001F2884] unresolved Method[countB] 
+[  1f,  3,  1, 3234,  236,    1, -1, 1, 4,   Address [001F28C0]       iaload #99[001E6A08] Shadow[<vft-symbol>] 
+                                                                        ==>iaload at [001F21D8]
+                                                                      ==>iaload at [001F21D8]
+[  22,  3,  0, 3234,  436,   -1, -1, 1, 0,    NoType [02222958]   treetop 
+[  22,  3,  2, 3234,  238,    2, -1, 2, 4,       Int [001F2918]     iadd    
+                                                                      ==>iiload at [001F2440]
+                                                                      ==>iicall at [001F289C]
+[  23,  3,  0, 3234,  239,   -1, -1, 2, 4,       Int [001F293C]   iistore #127[001EF32C] Shadow[SimpleLooper.count I]+12 
+                                                                    ==>aload at [001F2464]
+                                                                    ==>iadd at [001F2918]
+.
+.
+.
+```
+
+The `Call Stack Info` table gives a list of methods that have been inlined into 
+the one being compiled. The numbers in the `CalleeIndex` and the `CallerIndex` columns 
+describe the relationship between the inlined methods; the caller index of an 
+inlined method is the callee index of its caller. The method being compiled is 
+always assigned the callee index -1. In this example, `main()` (index -1) calls the 
+constructor of `SimpleLooper` (index 0), which in turn calls the constructor of 
+`java/lang/Object` (index 1). `main()` then calls `createArray()`, `walkArray()` and 
+`counter()` (indices 2, 3 and 4, respectively). These indices are used in the IL 
+listing (in the `CallSiteIndex` column) to indicate which method generated a given 
+IL node.
+
+Nodes in a tree are indented according to their position in the tree. Note that 
+treetops do not have an opcode, only nodes have opcodes. However, some root nodes 
+(e.g. `[001F267C]` and `[02222958]` above) have the opcode `treetop`, which usually 
+mean that the nodes are merely placeholders that perform no computation other than 
+evaluate their children. You may view the full list of IL opcodes in
+ `<omr-root-dir>/compiler/il/OMRILOpCodesEnum.hpp`.
+
+A node of the form `==>iiload at [001F2440]` represents commoning, i.e. the value 
+of the expression has already been computed. Searching backwards for the node 
+address will reveal the actual first occurrence of the node. The `Reference Count` 
+column gives the number of times a node will be reused in subsequent trees. We
+first perform an indirect load (`[001F2440]`) of an integer from 
+the instance field count of a certain `SimpleLooper` object (`[001F2464]`). Then we 
+call the virtual method `countB()` which returns an integer (`[001F289C]`). The two 
+integer expressions are used again in an integer addition (`[001F2918]`). The sum is 
+finally stored (`[001F293C]`) back into the same instance field count of the same 
+`SimpleLooper` object.
+
+The Byte Code Index column indicates which bytecode an instruction originated 
+from. For example, the `iadd` node above `[001F2918]` was actually part of the 
+method `SimpleLooper.walkArray()V` (index 3), and was at bytecode offset `0x22` in 
+that method. 

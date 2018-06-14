@@ -349,7 +349,7 @@ static char * getCgroupNameForSubsystem(struct OMRPortLibrary *portLibrary, OMRC
 static int32_t addCgroupEntry(struct OMRPortLibrary *portLibrary, OMRCgroupEntry **cgEntryList, int32_t hierId, const char *subsystem, const char *cgroupName);
 static int32_t readCgroupFile(struct OMRPortLibrary *portLibrary, int pid, BOOLEAN inContainer, OMRCgroupEntry **cgroupEntryList, uint64_t *availableSubsystems);
 static OMRCgroupSubsystem getCgroupSubsystemFromFlag(uint64_t subsystemFlag);
-static FILE * getHandleOfCgroupSubsystemFile(struct OMRPortLibrary *portLibrary, uint64_t subsystemFlag, const char *fileName);
+static int32_t  getHandleOfCgroupSubsystemFile(struct OMRPortLibrary *portLibrary, uint64_t subsystemFlag, const char *fileName, FILE **subsystemFile);
 static int32_t readCgroupSubsystemFile(struct OMRPortLibrary *portLibrary, uint64_t subsystemFlag, const char *fileName, int32_t numItemsToRead, const char *format, ...);
 static int32_t isRunningInContainer(struct OMRPortLibrary *portLibrary, BOOLEAN *inContainer);
 static int32_t getCgroupMemoryLimit(struct OMRPortLibrary *portLibrary, uint64_t *limit);
@@ -1430,6 +1430,13 @@ retrieveLinuxMemoryStatsFromProcFS(struct OMRPortLibrary *portLibrary, struct J9
 		} /* end if else-if */
 	} /* end while() */
 
+	/* Set hostXXX fields with memory stats from proc fs.
+	 * These may be used for calculating available physical memory on the host.
+	 */
+	memInfo->hostAvailPhysical = memInfo->availPhysical;
+	memInfo->hostCached = memInfo->cached;
+	memInfo->hostBuffered = memInfo->buffered;
+
 _cleanup:
 	if (NULL != memStatFs) {
 		fclose(memStatFs);
@@ -1488,10 +1495,12 @@ retrieveLinuxCgroupMemoryStats(struct OMRPortLibrary *portLibrary, struct OMRCgr
 	}
 
 	/* Read value of page cache memory from memory.stat file */
-	memStatFs = getHandleOfCgroupSubsystemFile(portLibrary, OMR_CGROUP_SUBSYSTEM_MEMORY, CGROUP_MEMORY_STAT_FILE);
-	if (NULL == memStatFs) {
+	rc = getHandleOfCgroupSubsystemFile(portLibrary, OMR_CGROUP_SUBSYSTEM_MEMORY, CGROUP_MEMORY_STAT_FILE, &memStatFs);
+	if (0 != rc) {
 		goto _exit;
 	}
+
+	Assert_PRT_true(NULL != memStatFs);
 
 	while (0 == feof(memStatFs)) {
 		char statEntry[MAX_LINE_LENGTH] = {0};
@@ -1682,6 +1691,10 @@ retrieveOSXMemoryStats(struct OMRPortLibrary *portLibrary, struct J9MemoryInfo *
 	memInfo->cached = OMRPORT_MEMINFO_NOT_AVAILABLE;
 	memInfo->buffered = OMRPORT_MEMINFO_NOT_AVAILABLE;
 
+	memInfo->hostAvailPhysical = memInfo->availPhysical;
+	memInfo->hostCached = memInfo->cached;
+	memInfo->hostBuffered = memInfo->buffered;
+
 	return ret;
 }
 
@@ -1722,6 +1735,10 @@ retrieveAIXMemoryStats(struct OMRPortLibrary *portLibrary, struct J9MemoryInfo *
 	memInfo->cached = aixMemoryInfo.numperm * page_size;
 	/* AIX does not define buffers, so: memInfo->buffered = OMRPORT_MEMINFO_NOT_AVAILABLE; */
 
+	memInfo->hostAvailPhysical = memInfo->availPhysical;
+	memInfo->hostCached = memInfo->cached;
+	memInfo->hostBuffered = memInfo->buffered;
+
 	Trc_PRT_retrieveAIXMemoryStats_Exit(0);
 	return 0;
 #else
@@ -1752,6 +1769,10 @@ omrsysinfo_get_memory_info(struct OMRPortLibrary *portLibrary, struct J9MemoryIn
 	memInfo->availSwap = OMRPORT_MEMINFO_NOT_AVAILABLE;
 	memInfo->cached = OMRPORT_MEMINFO_NOT_AVAILABLE;
 	memInfo->buffered = OMRPORT_MEMINFO_NOT_AVAILABLE;
+
+	memInfo->hostAvailPhysical = OMRPORT_MEMINFO_NOT_AVAILABLE;
+	memInfo->hostCached = OMRPORT_MEMINFO_NOT_AVAILABLE;
+	memInfo->hostBuffered = OMRPORT_MEMINFO_NOT_AVAILABLE;
 
 #if defined(LINUX)
 	rc = retrieveLinuxMemoryStats(portLibrary, memInfo);
@@ -3828,23 +3849,26 @@ getCgroupSubsystemFromFlag(uint64_t subsystemFlag)
  * @param[in] portLibrary pointer to OMRPortLibrary
  * @param[in] subsystemFlag flag of type OMR_CGROUP_SUBSYSTEMS_* representing the cgroup subsystem
  * @param[in] fileName name of the file under cgroup subsystem
+ * @param[in/out] subsystemFile pointer to FILE * which stores the handle for the specified subsystem file
  *
  * @return 0 on success, negative error code on any error
  */
-static FILE *
-getHandleOfCgroupSubsystemFile(struct OMRPortLibrary *portLibrary, uint64_t subsystemFlag, const char *fileName)
+static int32_t
+getHandleOfCgroupSubsystemFile(struct OMRPortLibrary *portLibrary, uint64_t subsystemFlag, const char *fileName, FILE **subsystemFile)
 {
 	char *cgroup = NULL;
 	intptr_t fullPathLen = 0;
+	int32_t rc = 0;
 	char fullPathBuf[PATH_MAX];
 	char *fullPath = fullPathBuf;
-	FILE *subsystemFile = NULL;
 	OMRCgroupSubsystem subsystem = getCgroupSubsystemFromFlag(subsystemFlag);
 	uint64_t availableSubsystem = portLibrary->sysinfo_cgroup_are_subsystems_available(portLibrary, subsystemFlag);
 
+	Assert_PRT_true(NULL != subsystemFile);
+
 	if (availableSubsystem != subsystemFlag) {
 		Trc_PRT_readCgroupSubsystemFile_subsystem_not_available(subsystemFlag);
-		portLibrary->error_set_last_error_with_message_format(portLibrary, OMRPORT_ERROR_SYSINFO_CGROUP_SUBSYSTEM_UNAVAILABLE, "cgroup subsystem %s is not available", subsystemNames[subsystem]);
+		rc = portLibrary->error_set_last_error_with_message_format(portLibrary, OMRPORT_ERROR_SYSINFO_CGROUP_SUBSYSTEM_UNAVAILABLE, "cgroup subsystem %s is not available", subsystemNames[subsystem]);
 		goto _end;
 	}
 
@@ -3852,7 +3876,7 @@ getHandleOfCgroupSubsystemFile(struct OMRPortLibrary *portLibrary, uint64_t subs
 	if (NULL == cgroup) {
 		/* If the subsystem is available and supported, cgroup must not be NULL */
 		Trc_PRT_readCgroupSubsystemFile_missing_cgroup(subsystemFlag);
-		portLibrary->error_set_last_error_with_message_format(portLibrary, OMRPORT_ERROR_SYSINFO_CGROUP_NAME_NOT_AVAILABLE, "cgroup name for subsystem %s is not available", subsystemNames[MEMORY]);
+		rc = portLibrary->error_set_last_error_with_message_format(portLibrary, OMRPORT_ERROR_SYSINFO_CGROUP_NAME_NOT_AVAILABLE, "cgroup name for subsystem %s is not available", subsystemNames[MEMORY]);
 		Trc_PRT_Assert_ShouldNeverHappen();
 		goto _end;
 	}
@@ -3870,18 +3894,19 @@ getHandleOfCgroupSubsystemFile(struct OMRPortLibrary *portLibrary, uint64_t subs
 	}
 
 	portLibrary->str_printf(portLibrary, fullPath, fullPathLen, "%s/%s/%s/%s", OMR_CGROUP_V1_MOUNT_POINT, subsystemNames[subsystem], cgroup, fileName);
-	subsystemFile = fopen(fullPath, "r");
-	if (NULL == subsystemFile) {
+	*subsystemFile = fopen(fullPath, "r");
+	if (NULL == *subsystemFile) {
 		int32_t osErrCode = errno;
 		Trc_PRT_readCgroupSubsystemFile_fopen_failed(fullPath, osErrCode);
-		portLibrary->error_set_last_error(portLibrary, osErrCode, OMRPORT_ERROR_SYSINFO_CGROUP_SUBSYSTEM_FILE_FOPEN_FAILED);
+		rc = portLibrary->error_set_last_error(portLibrary, osErrCode, OMRPORT_ERROR_SYSINFO_CGROUP_SUBSYSTEM_FILE_FOPEN_FAILED);
 		goto _end;
 	}
 _end:
 	if (fullPath != fullPathBuf) {
 		portLibrary->mem_free_memory(portLibrary, fullPath);
 	}
-	return subsystemFile;
+
+	return rc;
 }
 
 /**
@@ -3902,10 +3927,12 @@ readCgroupSubsystemFile(struct OMRPortLibrary *portLibrary, uint64_t subsystemFl
 	int32_t rc = 0;
 	va_list args;
 
-	file = getHandleOfCgroupSubsystemFile(portLibrary, subsystemFlag, fileName);
-	if (NULL == file) {
+	rc = getHandleOfCgroupSubsystemFile(portLibrary, subsystemFlag, fileName, &file);
+	if (0 != rc) {
 		goto _end;
 	}
+
+	Assert_PRT_true(NULL != file);
 
 	va_start(args, format);
 	rc = vfscanf(file, format, args);

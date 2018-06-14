@@ -67,6 +67,10 @@ retrieveZOSMemoryStats(struct OMRPortLibrary *portLibrary, struct J9MemoryInfo *
 		memInfo->buffered = bufferCacheSize;
 	}
 
+	memInfo->hostAvailPhysical = memInfo->availPhysical;
+	memInfo->hostCached = memInfo->cached;
+	memInfo->hostBuffered = memInfo->buffered;
+
 	Trc_PRT_retrieveZOSMemoryStats_memUsageStats_v1(
 		memInfo->totalPhysical,
 		memInfo->availPhysical,

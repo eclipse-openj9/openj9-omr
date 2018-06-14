@@ -763,6 +763,10 @@ omrsysinfo_get_memory_info(struct OMRPortLibrary *portLibrary, struct J9MemoryIn
 
 	memInfo->timestamp = (portLibrary->time_nano_time(portLibrary) / NANOSECS_PER_USEC);
 
+	memInfo->hostAvailPhysical = memInfo->availPhysical;
+	memInfo->hostCached = memInfo->cached;
+	memInfo->hostBuffered = memInfo->buffered;
+
 	Trc_PRT_sysinfo_get_memory_info_Exit(0);
 	PdhCloseQuery(statsHandle);
 	return 0;

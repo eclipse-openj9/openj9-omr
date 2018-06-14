@@ -212,7 +212,7 @@ static struct {
 static omrthread_t asynchSignalReporterThread = NULL;
 static int32_t registerMasterHandlers(OMRPortLibrary *portLibrary, uint32_t flags, uint32_t allowedSubsetOfFlags, void **oldOSHandler);
 static void removeAsyncHandlers(OMRPortLibrary *portLibrary);
-static uint32_t mapUnixSignalToPortLib(uint32_t signalNo, siginfo_t *sigInfo);
+static uint32_t mapOSSignalToPortLib(uint32_t signalNo, siginfo_t *sigInfo);
 #if defined(J9ZOS390)
 static intptr_t addAsyncSignalsToSet(sigset_t *ss);
 #endif /* defined(J9ZOS390) */
@@ -588,7 +588,7 @@ omrsig_set_single_async_signal_handler(struct OMRPortLibrary *portLibrary, omrsi
 uint32_t
 omrsig_map_os_signal_to_portlib_signal(struct OMRPortLibrary *portLibrary, uint32_t osSignalValue)
 {
-	return mapUnixSignalToPortLib(osSignalValue, NULL);
+	return mapOSSignalToPortLib(osSignalValue, NULL);
 }
 
 int32_t
@@ -799,7 +799,7 @@ asynchSignalReporter(void *userData)
 			uintptr_t signalCount = signalCounts[unixSignal];
 
 			if (signalCount > 0) {
-				asyncSignalFlag = mapUnixSignalToPortLib(unixSignal, NULL);
+				asyncSignalFlag = mapOSSignalToPortLib(unixSignal, NULL);
 				runHandlers(asyncSignalFlag, unixSignal);
 				subtractAtomic(&signalCounts[unixSignal], 1);
 #if defined(J9ZOS390)
@@ -915,7 +915,7 @@ masterSynchSignalHandler(int signal, siginfo_t *sigInfo, void *contextInfo)
 		struct J9SignalHandlerRecord *thisRecord = NULL;
 		struct J9CurrentSignal currentSignal = {0};
 		struct J9CurrentSignal *previousSignal = NULL;
-		uint32_t portLibType = mapUnixSignalToPortLib(signal, sigInfo);
+		uint32_t portLibType = mapOSSignalToPortLib(signal, sigInfo);
 
 		/* record this signal in tls so that omrsig_handler can be called if any of the handlers decide we should be shutting down */
 		currentSignal.signal = signal;
@@ -1284,7 +1284,7 @@ registerSignalHandlerWithOS(OMRPortLibrary *portLibrary, uint32_t portLibrarySig
  * Some signals have subtypes which are detailed in the siginfo_t structure.
  */
 static uint32_t
-mapUnixSignalToPortLib(uint32_t signalNo, siginfo_t *sigInfo)
+mapOSSignalToPortLib(uint32_t signalNo, siginfo_t *sigInfo)
 {
 	uint32_t index = 0;
 
@@ -1665,7 +1665,7 @@ sig_full_shutdown(struct OMRPortLibrary *portLibrary)
 		/* register the old actions we overwrote with our own */
 		for (index = 1; index < ARRAY_SIZE_SIGNALS; index++) {
 			if (oldActions[index].restore) {
-				uint32_t portlibSignalFlag = mapUnixSignalToPortLib(index, 0);
+				uint32_t portlibSignalFlag = mapOSSignalToPortLib(index, 0);
 				OMRSIG_SIGACTION(index, &oldActions[index].action, NULL);
 				/* record that we no longer have a handler installed with the OS for this signal */
 				Trc_PRT_signal_sig_full_shutdown_deregistered_handler_with_OS(portLibrary, index);

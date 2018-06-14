@@ -146,10 +146,11 @@ uint8_t TR::ExternalRelocation::collectModifier()
       updateLocation = getUpdateLocation();
       }
 
-   int32_t distance = updateLocation - aotMethodCodeStart;
-   AOTcgDiag1(comp, "TR::ExternalRelocation::collectModifier distance=%x\n", distance);
+   int32_t distanceFromStartOfBuffer = updateLocation - aotMethodCodeStart;
+   int32_t distanceFromStartOfMethod = updateLocation - comp->cg()->getCodeStart();
+   AOTcgDiag2(comp, "TR::ExternalRelocation::collectModifier distance from start of buffer=%x, from start of method=%x\n", distanceFromStartOfBuffer, distanceFromStartOfMethod);
 
-   if (distance < MIN_SHORT_OFFSET || distance > MAX_SHORT_OFFSET)
+   if (distanceFromStartOfBuffer < MIN_SHORT_OFFSET || distanceFromStartOfBuffer > MAX_SHORT_OFFSET)
       return RELOCATION_TYPE_WIDE_OFFSET;
 
    return 0;

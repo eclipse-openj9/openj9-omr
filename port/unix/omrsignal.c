@@ -1341,7 +1341,8 @@ mapPortLibSignalToUnix(uint32_t portLibSignal)
 			return signalMap[index].unixSignalNo;
 		}
 	}
-	Trc_PRT_signal_mapPortLibSignalToUnix_ERROR_unknown_signal(portLibSignal);
+
+	Trc_PRT_signal_mapPortLibSignalToOSSignal_ERROR_unknown_signal(portLibSignal);
 	return OMRPORT_SIG_ERROR;
 }
 

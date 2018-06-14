@@ -67,16 +67,16 @@ Symbol_IR::applyOverridesList(OMRPortLibrary *portLibrary, const char *overrides
 	} else {
 		int64_t offset = omrfile_seek(fd, 0, EsSeekEnd);
 		if (-1 != offset) {
-			char *buff = (char *)malloc(offset + 1);
+			char *buff = (char *)malloc((size_t)(offset + 1));
 			if (NULL == buff) {
 				ERRMSG("Unable to allocate memory for file contents: %s", overridesListFile);
 				rc = DDR_RC_ERROR;
 				goto closeFile;
 			}
-			memset(buff, 0, offset + 1);
+			memset(buff, 0, (size_t)(offset + 1));
 			omrfile_seek(fd, 0, EsSeekSet);
 			/* Read each line as a file name. */
-			if (offset == omrfile_read(fd, buff, offset)) {
+			if (offset == omrfile_read(fd, buff, (intptr_t)offset)) {
 				for (char *nextLine = strtok(buff, "\r\n"); NULL != nextLine; nextLine = strtok(NULL, "\r\n")) {
 					string line(nextLine);
 					size_t commentPosition = line.find("#");
@@ -124,13 +124,13 @@ Symbol_IR::applyOverridesFile(OMRPortLibrary *portLibrary, const char *overrides
 	} else {
 		int64_t offset = omrfile_seek(fd, 0, EsSeekEnd);
 		if (-1 != offset) {
-			char *buff = (char *)malloc(offset + 1);
+			char *buff = (char *)malloc((size_t)(offset + 1));
 			if (NULL == buff) {
 				ERRMSG("Unable to allocate memory for file contents: %s", overridesFile);
 				rc = DDR_RC_ERROR;
 				goto closeFile;
 			}
-			memset(buff, 0, offset + 1);
+			memset(buff, 0, (size_t)(offset + 1));
 			omrfile_seek(fd, 0, EsSeekSet);
 
 			/*
@@ -139,7 +139,7 @@ Symbol_IR::applyOverridesFile(OMRPortLibrary *portLibrary, const char *overrides
 			 *   fieldoverride.{StructureName}.{fieldName}={newName}
 			 *   typeoverride.{StructureName}.{fieldName}={newType}"
 			 */
-			if (offset != omrfile_read(fd, buff, offset)) {
+			if (offset != omrfile_read(fd, buff, (intptr_t)offset)) {
 				ERRMSG("Failure reading %s", overridesFile);
 				rc = DDR_RC_ERROR;
 			} else {

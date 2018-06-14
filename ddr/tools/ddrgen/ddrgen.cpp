@@ -317,14 +317,14 @@ Options::readFileList(OMRPortLibrary *portLibrary, const char *listFileName, vec
 	} else {
 		int64_t length = omrfile_seek(fd, 0, SEEK_END);
 		if (-1 != length) {
-			char *buff = (char *)malloc(length + 1);
+			char *buff = (char *)malloc((size_t)(length + 1));
 			if (NULL == buff) {
 				ERRMSG("Unable to allocate memory for file contents: %s", listFileName);
 			} else {
-				memset(buff, 0, length + 1);
+				memset(buff, 0, (size_t)(length + 1));
 				omrfile_seek(fd, 0, SEEK_SET);
 
-				if (length != omrfile_read(fd, buff, length)) {
+				if (length != omrfile_read(fd, buff, (intptr_t)length)) {
 					ERRMSG("Failure reading %s", listFileName);
 				} else {
 					const char *delimiters = "\r\n";

@@ -224,7 +224,7 @@ static int J9THREAD_PROC asynchSignalReporter(void *userData);
 
 static uint32_t registerSignalHandlerWithOS(OMRPortLibrary *portLibrary, uint32_t portLibrarySignalNo, unix_sigaction handler, void **oldOSHandler);
 static uint32_t destroySignalTools(OMRPortLibrary *portLibrary);
-static int mapPortLibSignalToUnix(uint32_t portLibSignal);
+static int mapPortLibSignalToOSSignal(uint32_t portLibSignal);
 static uint32_t countInfoInCategory(struct OMRPortLibrary *portLibrary, void *info, uint32_t category);
 static void sig_full_shutdown(struct OMRPortLibrary *portLibrary);
 static int32_t initializeSignalTools(OMRPortLibrary *portLibrary);
@@ -594,7 +594,7 @@ omrsig_map_os_signal_to_portlib_signal(struct OMRPortLibrary *portLibrary, uint3
 int32_t
 omrsig_map_portlib_signal_to_os_signal(struct OMRPortLibrary *portLibrary, uint32_t portlibSignalFlag)
 {
-	return (int32_t)mapPortLibSignalToUnix(portlibSignalFlag);
+	return (int32_t)mapPortLibSignalToOSSignal(portlibSignalFlag);
 }
 
 int32_t
@@ -740,7 +740,7 @@ runHandlers(uint32_t asyncSignalFlag, int unixSignal)
 
 #if defined(OMRPORT_OMRSIG_SUPPORT)
 	if (OMR_ARE_NO_BITS_SET(signalOptionsGlobal, OMRPORT_SIG_OPTIONS_OMRSIG_NO_CHAIN)) {
-		/* mapPortLibSignalToUnix returns OMRPORT_SIG_ERROR (-1) on unknown mapping */
+		/* mapPortLibSignalToOSSignal returns OMRPORT_SIG_ERROR (-1) on unknown mapping */
 		if (OMRPORT_SIG_ERROR != unixSignal) {
 			omrsig_handler(unixSignal, NULL, NULL);
 		}
@@ -1157,7 +1157,7 @@ masterASynchSignalHandler(int signal, siginfo_t *sigInfo, void *contextInfo)
 static uint32_t
 registerSignalHandlerWithOS(OMRPortLibrary *portLibrary, uint32_t portLibrarySignalNo, unix_sigaction handler, void **oldOSHandler)
 {
-	int unixSignalNo = mapPortLibSignalToUnix(portLibrarySignalNo);
+	int unixSignalNo = mapPortLibSignalToOSSignal(portLibrarySignalNo);
 	struct sigaction newAction;
 
 	/* Don't register a handler for unrecognized OS signals.
@@ -1331,7 +1331,7 @@ mapUnixSignalToPortLib(uint32_t signalNo, siginfo_t *sigInfo)
  *         could not be mapped
  */
 static int
-mapPortLibSignalToUnix(uint32_t portLibSignal)
+mapPortLibSignalToOSSignal(uint32_t portLibSignal)
 {
 	uint32_t index = 0;
 

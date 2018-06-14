@@ -42,9 +42,10 @@ faulty, as well as identifying the faulty component.
 #  Invocation
 
 The most common use case of Testarossa is in JIT compilation where it is
-typically invoked by the VM automatically; the run-time behaviour of the JIT
-can only be controlled via options passed through VM command line or, in some
-cases, environment variables.
+typically invoked by the VM automatically.
+
+The the run-time behaviour can be controlled using options. Please see the
+CompilerOptions document to learn more about how options can be used.
 
 Generally speaking, the JIT can operate in two different modes:
 
@@ -58,7 +59,7 @@ JIT compilation while minimizing its cost.
 
 Alternatively, the JIT can operate at a fixed optimization level, which forces
 it to compile all methods (or only certain methods selected by the user) with
-the same aggresiveness. As you will see in this document, this mode is
+the same aggressiveness. As you will see in this document, this mode is
 extremely useful for diagnosing JIT problems.
 
 
@@ -84,7 +85,21 @@ Running the program with the compiler disabled leads to one of two outcomes:
 
 If the failure of your program appears to come from a problem within the
 compiler, you can try to narrow down the problem further by reducing the amount
-of optimizations performed by the compiler.
+of optimizations performed by the compiler through the use of compiler options.
+The option controlling optimization level is `optlevel`, and it is either used
+through environment variable:
+
+```sh
+TR_Options=`optLevel=noOpt`
+```
+
+or through command line options when the compiler is being used as part of a VM:
+
+```sh
+-Xjit:optLevel=noOpt
+```
+For more on compiler option usage, see the [OMR Compiler Options](CompilerOptions.md)
+document.
 
 The compiler optimizes methods at various optimization levels; that is, different
 selections of optimizations are applied to different methods, based on their
@@ -253,19 +268,19 @@ that outlines how you can perform a manual binary search using the limit file.
 
 ### Command line limits
 
-An alternative to using limit files is to use the `-Xjit:limit={*method*}` option 
-on the command line. This is suitable if you know exactly what method(s) you 
+An alternative to using limit files is to use the `limit={*method*}` option 
+in the command line. This is suitable if you know exactly what method(s) you 
 want to limit, and want a quick test run without having to create a text file.
 `method` can be specified in three ways:
 
 * The simplest way to use the option is to specify the (full or partial) name 
-of the method. For example, `-Xjit:limit={*main*}` will instruct the JIT compiler 
+of the method. For example, `limit={*main*}` will instruct the JIT compiler 
 to compile any method whose name contains the word "main".
 * You can also spell out the entire signature of the method, e.g. 
-`-Xjit:limit={*java/lang/Class.initialize()V*}.` Only the method with a 
+`limit={*java/lang/Class.initialize()V*}.` Only the method with a 
 signature that matches exactly will be compiled.
 * Finally, you can use a regular expression to specify a group of methods. For 
-instance, `-Xjit:limit={SimpleLooper.*}` specifies all methods that are members 
+instance, `-limit={SimpleLooper.*}` specifies all methods that are members 
 of the class SimpleLooper. The syntax of the regular expression used for 
 limiting is the same as discussed above. You can combine this with the binary 
 search approach to isolate a failure quickly without editing limit files, by 
@@ -310,7 +325,7 @@ right after the + or - sign |
 An example of using command line filters with a limit file:
 
 ```sh
--Xjit:optlevel=noOpt,limitFile=limit.log,[5-10](optlevel=hot) 
+optlevel=noOpt,limitFile=limit.log,[5-10](optlevel=hot) 
 ```
 
 The example above would instruct the compiler to compile methods between line 5 and 10 inclusive
@@ -326,17 +341,27 @@ use of [compiler options](CompilerOptions.md).
 
 ### Generating the log
 
-To create a log file in the JVM, use the command line argument 
-`-Xjit:log=filename,traceFull`. This will record trace messages and listings 
-for all compiled methods in the specified file. For example:
+To create a log file, use the options `log=filename,traceFull`. This will record trace messages
+and listings for all compiled methods a file. For example:
 
 ```sh
-java -Xjit:log=compile.log,traceFull HelloWorld
+log=compile.log,traceFull
 ```
 
-The `traceFull` option would enable a number of important trace options. You can be
-more specific about the information you want in the log file by using the [list 
-of logging and tracing options](CompilerOptions.md#logging-and-trace-parameters).
+The `traceFull` option would enable a number of important trace options. There are other options
+available that would allow you to be more specific about the information you want in the log file, and the
+table below lists a few commonly used ones:
+
+| Option                                                                        | Description |
+| ------------------- | --------------------------------------------------------------------- |
+| optDetails | Log all optimizer transformations. |
+| traceBC | Dump bytecodes at the beginning of the compilation. |
+| traceBin | Dump binary instructions at the end of compilation. |
+| traceCG | Trace code generation. |
+| traceOptTrees | Dump trees after each optimization. |
+| traceTrees | Dump trees after each compilation phase. |
+
+To see the complete set of trace options, see the [logging options listed in OMROptions.cpp](https://github.com/eclipse/omr/blob/e2f65411e67d21ef04e2062a8945e604d82cb19e/compiler/control/OMROptions.cpp#L1118).
 
 ### Filtering methods
 
@@ -345,12 +370,12 @@ logging to by using [limits](#limit).
 
 An example of using a limit file to specify methods to trace:
 ```sh
-java -Xjit:limitFile=methods.txt,log=compile.log,traceFull HelloWorld
+limitFile=methods.txt,log=compile.log,traceFull
 ```
 
 Alternatively, you may also specify the method(s) directly in the command line:
 ```sh
-java -Xjit:limit={*hello*},log=compile.log,traceFull HelloWorld
+limit={*hello*},log=compile.log,traceFull
 ```
 
 The options used in the command line argument above will result in the JIT-ing of
@@ -359,11 +384,11 @@ methods that contain "hello" in its name.
 Whether you use a limit file or command line limits to specify methods to log,
 it will result in all other methods not being compiled. If you would like to trace the
 compilation of specific methods without affecting the compilation of the other methods,
-you may do so by using [option sets](##option-sets).
+you may do so by using [option sets](CompilerOptions.md#option-sets).
 
 ### Deciphering the generated log
 
-Each full method listing (i.e. when `-Xjit:traceFull` is used) consists of multiple sections.
+Each full method listing (i.e. when `TR_Options='traceFull'` is used) consists of multiple sections.
 
 * **Bytecode listing:** A low-level disassembly of the Java bytecode that constitute the
 Java method.

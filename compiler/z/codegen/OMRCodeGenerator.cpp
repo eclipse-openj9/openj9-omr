@@ -6356,10 +6356,7 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
       if (data.cursorInstruction == data.preProcInstruction)
          {
          self()->setPrePrologueSize(self()->getBinaryBufferCursor() - self()->getBinaryBufferStart());
-         if ((!self()->comp()->getOptions()->getOption(TR_DisableGuardedCountingRecompilations) ||
-              self()->comp()->isJProfilingCompilation()) &&
-             TR::Options::getCmdLineOptions()->allowRecompilation())
-          self()->comp()->getSymRefTab()->findOrCreateStartPCSymbolRef()->getSymbol()->getStaticSymbol()->setStaticAddress(self()->getBinaryBufferCursor());
+         self()->comp()->getSymRefTab()->findOrCreateStartPCSymbolRef()->getSymbol()->getStaticSymbol()->setStaticAddress(self()->getBinaryBufferCursor());
          }
 
       data.cursorInstruction = data.cursorInstruction->getNext();

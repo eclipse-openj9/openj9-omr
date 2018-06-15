@@ -1147,7 +1147,9 @@ TR::VPConstraint *TR::VPClass::create(OMR::ValuePropagation *vp, TR::VPClassType
    // TR::VPFixedClass combined with JavaLangClassObject location picks out a
    // particular java/lang/Class instance, for which we can have a known
    // object. Inject one here if we don't already have one.
-   if (location != NULL
+   TR::KnownObjectTable *knot = vp->comp()->getOrCreateKnownObjectTable();
+   if (knot
+       && location != NULL
        && location->isJavaLangClassObject() == TR_yes
        && type != NULL
        && type->asFixedClass() != NULL
@@ -1157,7 +1159,6 @@ TR::VPConstraint *TR::VPClass::create(OMR::ValuePropagation *vp, TR::VPClassType
       TR_J9VMBase *fej9 = (TR_J9VMBase *)(vp->comp()->fe());
       uintptrj_t objRefOffs = fej9->getOffsetOfJavaLangClassFromClassField();
       uintptrj_t *objRef = (uintptrj_t*)(type->getClass() + objRefOffs);
-      TR::KnownObjectTable *knot = vp->comp()->getOrCreateKnownObjectTable();
       TR::KnownObjectTable::Index index = knot->getIndexAt(objRef);
       type = TR::VPKnownObject::createForJavaLangClass(vp, index);
       }
@@ -3557,6 +3558,7 @@ TR::VPConstraint *TR::VPKnownObject::intersect1(TR::VPConstraint *other, OMR::Va
       // - we should be looking at the string contents,
       // - known object should be more specific (though it allows null).
       TR::KnownObjectTable *knot = vp->comp()->getKnownObjectTable();
+      TR_ASSERT(knot, "Can't create a TR::VPKnownObject without a known-object table");
       if (getIndex() == knot->getIndexAt((uintptrj_t*)otherConstString->getSymRef()->getSymbol()->castToStaticSymbol()->getStaticAddress()))
          return other; // A const string constraint is more specific than known object
       else

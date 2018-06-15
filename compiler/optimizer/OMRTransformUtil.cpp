@@ -390,7 +390,6 @@ OMR::TransformUtil::removeTree(TR::Compilation *comp, TR::TreeTop * tt)
 void
 OMR::TransformUtil::transformCallNodeToPassThrough(TR::Optimization* opt, TR::Node* node, TR::TreeTop * anchorTree, TR::Node* child)
    {
-   TR_ASSERT(node->getReferenceCount() == 1, "Can't eliminate a call whose return value is used elsewhere");
    opt->anchorAllChildren(node, anchorTree);
    node->removeAllChildren();
    node = TR::Node::recreateWithoutProperties(node, TR::PassThrough, 1, child);

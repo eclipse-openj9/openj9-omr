@@ -1966,15 +1966,7 @@ void OMR::X86::CodeGenerator::doBinaryEncoding()
    //
    self()->setPrePrologueSize(self()->getBinaryBufferLength());
 
-#ifdef J9_PROJECT_SPECIFIC
-   if ((!self()->comp()->getOptions()->getOption(TR_DisableGuardedCountingRecompilations) && TR::Options::getCmdLineOptions()->allowRecompilation()) ||
-       (self()->comp()->getOptions()->getEnableGPU(TR_EnableGPU) && self()->comp()->hasIntStreamForEach()) ||
-       self()->comp()->isJProfilingCompilation())
-#else
-   if (!self()->comp()->getOptions()->getOption(TR_DisableGuardedCountingRecompilations) &&
-       TR::Options::getCmdLineOptions()->allowRecompilation())
-#endif
-      self()->comp()->getSymRefTab()->findOrCreateStartPCSymbolRef()->getSymbol()->getStaticSymbol()->setStaticAddress(self()->getBinaryBufferCursor());
+   self()->comp()->getSymRefTab()->findOrCreateStartPCSymbolRef()->getSymbol()->getStaticSymbol()->setStaticAddress(self()->getBinaryBufferCursor());
 
    // Generate binary for the rest of the instructions
    //

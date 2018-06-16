@@ -9679,9 +9679,9 @@ static TR::Node *constrainIfcmpeqne(OMR::ValuePropagation *vp, TR::Node *node, b
                      TR::VPConstraint *classConstraint = vp->getConstraint(classNode, isGlobal);
                      if (ignoreVirtualGuard && classConstraint && classConstraint->isFixedClass())
                         {
-                        uint8_t   *clazz            = (uint8_t*)classConstraint->getClass();
+                        TR_OpaqueClassBlock *clazz  = classConstraint->getClass();
                         int32_t    vftOffset        = vtableEntryNode->getSymbolReference()->getOffset();
-                        intptrj_t  vftEntry         = *(intptrj_t*)(clazz + vftOffset);
+                        intptrj_t  vftEntry         = TR::Compiler->cls.getVFTEntry(vp->comp(), clazz, vftOffset);
                         bool       childrenAreEqual = (vftEntry == methodPtrNode->getAddress());
                         bool       testForEquality  = (node->getOpCodeValue() == TR::ifacmpeq);
                         traceMsg(vp->comp(), "TR_MethodTest: node=%p, vtableEntryNode=%p, clazz=%p, vftOffset=%d, vftEntry=%p, childrenAreEqual=%d, testForEquality=%d\n",

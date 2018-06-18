@@ -3414,3 +3414,15 @@ OMR::CodeGenerator::lowerTree(TR::Node *root, TR::TreeTop *tt)
    TR_ASSERT(0, "Unimplemented lowerTree() called for an opcode that needs to be lowered");
    return NULL;
    }
+
+/*
+ * insertPrefetchIfNecessary
+ *
+ * This method can be used to emit a prefetch instruction. By default it does nothing. It can be overwritten
+ * to set the conditions for the generation of the prefetch instruction.
+ */
+void
+OMR::CodeGenerator::insertPrefetchIfNecessary(TR::Node *node, TR::Register *targetRegister)
+   {
+   return;
+   }

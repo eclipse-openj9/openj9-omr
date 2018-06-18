@@ -490,6 +490,15 @@ class OMR_EXTENSIBLE CodeGenerator
 
    TR::Recompilation *allocateRecompilationInfo() { return NULL; }
 
+   /**
+    * @brief This determines if it is necessary to emit a prefetch instruction.
+    *        If so, it also emits the prefetch instruction.
+    *
+    * @param node The node being evaluated.
+    * @param targetRegister A register holding the address where the prefetch location is generated from.
+    */
+   void insertPrefetchIfNecessary(TR::Node *node, TR::Register *targetRegister);
+
    // --------------------------------------------------------------------------
    // Capabilities
    //

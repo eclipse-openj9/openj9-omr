@@ -725,7 +725,6 @@ TR::Register *OMR::Power::TreeEvaluator::l2iEvaluator(TR::Node *node, TR::CodeGe
    return trgReg;
    }
 
-extern void addPrefetch(TR::CodeGenerator *cg, TR::Node *node, TR::Register *targetRegister);
 TR::Register *OMR::Power::TreeEvaluator::l2aEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Compilation *comp = cg->comp();
@@ -769,12 +768,8 @@ TR::Register *OMR::Power::TreeEvaluator::l2aEvaluator(TR::Node *node, TR::CodeGe
 
          node->setRegister(source);
          cg->decReferenceCount(firstChild);
-         if (comp->getMethodHotness() >= scorching &&
-            (TR::Compiler->om.compressedReferenceShiftOffset() == 0) &&
-             TR::Compiler->target.cpu.id() >= TR_PPCp6)
-            {
-            addPrefetch(cg, node, source);
-            }
+         cg->insertPrefetchIfNecessary(node, source);
+
          return source;
          }
       else

@@ -222,7 +222,7 @@ static void runHandlers(uint32_t asyncSignalFlag, int unixSignal);
 static int J9THREAD_PROC asynchSignalReporter(void *userData);
 #endif /* defined(OMR_PORT_ASYNC_HANDLER) */
 
-static uint32_t registerSignalHandlerWithOS(OMRPortLibrary *portLibrary, uint32_t portLibrarySignalNo, unix_sigaction handler, void **oldOSHandler);
+static int32_t registerSignalHandlerWithOS(OMRPortLibrary *portLibrary, uint32_t portLibrarySignalNo, unix_sigaction handler, void **oldOSHandler);
 static uint32_t destroySignalTools(OMRPortLibrary *portLibrary);
 static int mapPortLibSignalToOSSignal(uint32_t portLibSignal);
 static uint32_t countInfoInCategory(struct OMRPortLibrary *portLibrary, void *info, uint32_t category);
@@ -1154,7 +1154,7 @@ masterASynchSignalHandler(int signal, siginfo_t *sigInfo, void *contextInfo)
  *
  * @return 0 upon success, non-zero otherwise.
  */
-static uint32_t
+static int32_t
 registerSignalHandlerWithOS(OMRPortLibrary *portLibrary, uint32_t portLibrarySignalNo, unix_sigaction handler, void **oldOSHandler)
 {
 	int unixSignalNo = mapPortLibSignalToOSSignal(portLibrarySignalNo);

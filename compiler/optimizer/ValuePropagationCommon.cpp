@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -4109,6 +4109,7 @@ TR::LocalValuePropagation::optDetailString() const throw()
 
 void OMR::ValuePropagation::launchNode(TR::Node *node, TR::Node *parent, int32_t whichChild)
    {
+   TR::Node *newNode = node;
    if (node && node->getVisitCount() != _visitCount)
       {
       int32_t valueNumber = getValueNumber(node);
@@ -4118,7 +4119,6 @@ void OMR::ValuePropagation::launchNode(TR::Node *node, TR::Node *parent, int32_t
       _parentNode = parent;
       node->setVisitCount(_visitCount);
       ValuePropagationPtr handler = constraintHandlers[node->getOpCodeValue()];
-      TR::Node *newNode = NULL;
       if (handler)
          {
          newNode = handler(this, node);
@@ -4160,4 +4160,19 @@ void OMR::ValuePropagation::launchNode(TR::Node *node, TR::Node *parent, int32_t
             }
          }
       }
+
+   // Replace PassThrough with its child
+   if (newNode
+       && newNode->getOpCodeValue() == TR::PassThrough)
+      {
+      TR_ASSERT(parent, "PassThrough newNode %p must have a parent", newNode);
+      if (!parent->getOpCode().isNullCheck()
+          && performTransformation(comp(), "%sReplace PassThrough node [%p] with its child in its parent [%p]\n", OPT_DETAILS, newNode, parent))
+         {
+         TR::Node* child = newNode->getFirstChild();
+         parent->setAndIncChild(whichChild, child);
+         newNode->recursivelyDecReferenceCount();
+         }
+      }
+
    }

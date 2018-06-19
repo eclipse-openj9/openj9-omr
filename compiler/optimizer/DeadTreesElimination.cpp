@@ -738,13 +738,6 @@ int32_t TR::DeadTreesElimination::process(TR::TreeTop *startTree, TR::TreeTop *e
             if (child->getReferenceCount() == 1)
                {
                safeToReplaceNode = true;
-#ifdef J9_PROJECT_SPECIFIC
-               if (child->getOpCode().isPackedExponentiation())
-                  {
-                  // pdexp has a possible message side effect in truncating or no significant digits left cases
-                  safeToReplaceNode = false;
-                  }
-#endif
                if (opCodeValue == TR::loadaddr)
                   treeTopCanBeEliminated = true;
                }

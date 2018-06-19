@@ -565,7 +565,7 @@ bool isNZDoublePowerOfTwo(double value)
    }
 
 // Exponentiation operations must be sensitive to the signedness of the exponent (the base signedness does not matter)
-// If the exp operation itself is unsigned (for example from pduexp) then the exponent value is interpreted as an unsigned number.
+// If the exp operation itself is unsigned, then the exponent value is interpreted as an unsigned number.
 // This matters because otherwise (for example) an 8 bit exponent with the encoding 0xFF would be interpreted as base ** -1
 // instead of base ** 255
 bool isIntegralExponentInRange(TR::Node *parent, TR::Node *exponent, int64_t maxNegativeExponent, int64_t maxPositiveExponent, TR::Simplifier * s)

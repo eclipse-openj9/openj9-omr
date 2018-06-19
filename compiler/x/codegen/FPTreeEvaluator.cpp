@@ -1168,7 +1168,7 @@ TR::Register *OMR::X86::TreeEvaluator::fpConvertToLong(TR::Node *node, TR::Symbo
       StartLabel->setStartInternalControlFlow();
       reStartLabel->setEndInternalControlFlow();
 
-       // Attempt to convert a double in an XMM register to an integer using CVTTSD2SI.
+      // Attempt to convert a double in an XMM register to an integer using CVTTSD2SI.
       // If the conversion succeeds, put the integer in lowReg and sign-extend it to highReg.
       // If the conversion fails (the double is too large), call the helper.
       generateRegRegInstruction(CVTTSD2SIReg4Reg, node, lowReg, doubleReg, cg);
@@ -1197,22 +1197,6 @@ TR::Register *OMR::X86::TreeEvaluator::fpConvertToLong(TR::Node *node, TR::Symbo
       }
    else
       {
-      static const char *optString = feGetEnv("TR_FP2LONG");
-//    The code that uses optLevel>0 doesn't work because it's allocating the floating point registers without
-//    putting dependency on the end label. FP stack register dependencies aren't supported
-//    in the current register assigner implementation (except for ST0) and we can't use the sequence below.
-//    The current code will use slower sequence with reseting the control word for processors
-//    that don't support SSE and SSE2 (see above). In case we get performance complain we can
-//    engineer a better solution, which could involve adding FP stack dependencies support or making sure
-//    we have 2 slots on the FP stack and generating the code with fixed registers in some snippet.
-//    The change should have negative impact on PIII or older processors.
-      int            optLevel  = 0;
-
-      // TR_FP2LONG optimization levels: 0 = none, 1 = fcom/fsubr, 2+ = fcomi
-      //
-      if (optString)
-         sscanf(optString, "%d", &optLevel);
-
       TR::Register *accReg    = NULL;
       TR::Register *lowReg    = cg->allocateRegister(TR_GPR);
       TR::Register *highReg   = cg->allocateRegister(TR_GPR);
@@ -1228,15 +1212,6 @@ TR::Register *OMR::X86::TreeEvaluator::fpConvertToLong(TR::Node *node, TR::Symbo
 
       startLabel->setStartInternalControlFlow();
       reStartLabel->setEndInternalControlFlow();
-
-      TR::LabelSymbol *nonNanLabel = NULL;
-      TR::LabelSymbol *negativeLabel = NULL;
-
-      if (optLevel)
-         {
-         nonNanLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-         negativeLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-         }
 
       if (doubleReg && doubleReg->needsPrecisionAdjustment())
          {
@@ -1265,27 +1240,21 @@ TR::Register *OMR::X86::TreeEvaluator::fpConvertToLong(TR::Node *node, TR::Symbo
 
       // For slow conversion only, change the rounding mode on the FPU via its control word register.
       //
-      if (!optLevel)
-         {
-         int16_t fpcw = comp->getJittedMethodSymbol()->usesSinglePrecisionMode() ?
-                           SINGLE_PRECISION_ROUND_TO_ZERO : DOUBLE_PRECISION_ROUND_TO_ZERO;
+      int16_t fpcw = comp->getJittedMethodSymbol()->usesSinglePrecisionMode() ?
+                        SINGLE_PRECISION_ROUND_TO_ZERO : DOUBLE_PRECISION_ROUND_TO_ZERO;
 
-         TR::IA32ConstantDataSnippet *cds1 = cg->findOrCreate2ByteConstant(node, fpcw);
-         generateMemInstruction(LDCWMem, node, generateX86MemoryReference(cds1, cg), cg);
-         }
+      TR::IA32ConstantDataSnippet *cds1 = cg->findOrCreate2ByteConstant(node, fpcw);
+      generateMemInstruction(LDCWMem, node, generateX86MemoryReference(cds1, cg), cg);
 
       TR::MemoryReference  *convertedLongMR = (cg->machine())->getDummyLocalMR(TR::Int64);
       generateFPMemRegInstruction(FLSTPMem, node, convertedLongMR, tempFPR1, cg);
       cg->stopUsingRegister(tempFPR1);
 
-      if (!optLevel)
-         {
-         int16_t fpcw = comp->getJittedMethodSymbol()->usesSinglePrecisionMode() ?
-                           SINGLE_PRECISION_ROUND_TO_NEAREST : DOUBLE_PRECISION_ROUND_TO_NEAREST;
+      fpcw = comp->getJittedMethodSymbol()->usesSinglePrecisionMode() ?
+                SINGLE_PRECISION_ROUND_TO_NEAREST : DOUBLE_PRECISION_ROUND_TO_NEAREST;
 
-         TR::IA32ConstantDataSnippet *cds2 = cg->findOrCreate2ByteConstant(node, fpcw);
-         generateMemInstruction(LDCWMem, node, generateX86MemoryReference(cds2, cg), cg);
-         }
+      TR::IA32ConstantDataSnippet *cds2 = cg->findOrCreate2ByteConstant(node, fpcw);
+      generateMemInstruction(LDCWMem, node, generateX86MemoryReference(cds2, cg), cg);
 
       // WARNING:
       //
@@ -1301,82 +1270,9 @@ TR::Register *OMR::X86::TreeEvaluator::fpConvertToLong(TR::Node *node, TR::Symbo
       // Jump to the snippet if the converted value is an indefinite integer; otherwise continue.
       //
       generateRegImmInstruction(CMP4RegImm4, node, highReg, INT_MIN, cg);
-      generateLabelInstruction(JNE4, node, optLevel ? nonNanLabel : reStartLabel, cg);
+      generateLabelInstruction(JNE4, node, reStartLabel, cg);
       generateRegRegInstruction(TEST4RegReg, node, lowReg, lowReg, cg);
       generateLabelInstruction(JE4, node, snippetLabel, cg);
-
-      // For fast conversion only, we need to adjust the rounded long to emulate truncation.
-      //
-      if (optLevel)
-         {
-         generateLabelInstruction(LABEL, node, nonNanLabel, cg);
-
-         if (optLevel > 1 && cg->getX86ProcessorInfo().supportsFCOMIInstructions())
-            {
-            TR::Register *tempFPR2 = cg->allocateSinglePrecisionRegister(TR_X87);
-            generateFPRegInstruction(FLD0Reg, node, tempFPR2, cg);
-            generateFPCompareRegRegInstruction(FCOMIRegReg, node, tempFPR2, doubleReg, cg);
-            TR::LabelSymbol *negativeLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-            generateLabelInstruction(JAE4, node, negativeLabel, cg);
-            cg->stopUsingRegister(tempFPR2);
-
-            TR::Register *tempFPR3 = cg->allocateSinglePrecisionRegister(TR_X87);
-            generateFPRegMemInstruction(FLLDRegMem, node, tempFPR3, generateX86MemoryReference(*convertedLongMR, 0, cg), cg);
-            generateFPCompareRegRegInstruction(FCOMIRegReg, node, tempFPR3, doubleReg, cg);
-            generateLabelInstruction(JBE4, node, reStartLabel, cg);
-            generateRegImmInstruction(SUB4RegImms, node, lowReg, 1, cg);
-            generateRegImmInstruction(SBB4RegImms, node, highReg, 0, cg);
-            generateLabelInstruction(JMP4, node, reStartLabel, cg);
-            cg->stopUsingRegister(tempFPR3);
-
-            generateLabelInstruction(LABEL, node, negativeLabel, cg);
-            TR::Register *tempFPR4 = cg->allocateSinglePrecisionRegister(TR_X87);
-            generateFPRegMemInstruction(FLLDRegMem, node, tempFPR4, generateX86MemoryReference(*convertedLongMR, 0, cg), cg);
-            generateFPCompareRegRegInstruction(FCOMIRegReg, node, tempFPR4, doubleReg, cg);
-            generateLabelInstruction(JAE4, node, reStartLabel, cg);
-            generateRegImmInstruction(ADD4RegImms, node, lowReg, 1, cg);
-            generateRegImmInstruction(ADC4RegImms, node, highReg, 0, cg);
-            cg->stopUsingRegister(tempFPR4);
-            }
-         else
-            {
-            TR::Register *tempFPR2 = cg->allocateSinglePrecisionRegister(TR_X87);
-            generateFPRegInstruction(FLD0Reg, node, tempFPR2, cg);
-            generateFPCompareRegRegInstruction(FCOMRegReg, node, tempFPR2, doubleReg, cg);
-            cg->stopUsingRegister(tempFPR2);
-
-            accReg = cg->allocateRegister();
-            deps = generateRegisterDependencyConditions((uint8_t) 1, 1, cg);
-            deps->addPreCondition(accReg, TR::RealRegister::eax, cg);
-            deps->addPostCondition(accReg, TR::RealRegister::eax, cg);
-            generateRegInstruction(STSWAcc, node, accReg, deps, cg);
-
-            TR::Register *tempFPR3 = cg->allocateSinglePrecisionRegister(TR_X87);
-            generateFPRegMemInstruction(FLLDRegMem, node, tempFPR3, generateX86MemoryReference(*convertedLongMR, 0, cg), cg);
-            generateFPArithmeticRegRegInstruction(FSUBRRegReg, node, tempFPR3, doubleReg, cg);
-            generateFPMemRegInstruction(FSTMemReg, node, convertedLongMR, tempFPR3, cg);
-            cg->stopUsingRegister(tempFPR3);
-
-            generateRegImmInstruction(AND2RegImm2, node, accReg, 0x4500, cg);
-            generateLabelInstruction(JE4, node, negativeLabel, cg);
-
-            generateRegMemInstruction(L4RegMem, node, accReg, generateX86MemoryReference(*convertedLongMR, 0, cg), cg);
-            generateRegImmInstruction(ADD4RegImm4, node, accReg, INT_MAX, cg);
-            generateRegImmInstruction(SBB4RegImms, node, lowReg, 0, cg);
-            generateRegImmInstruction(SBB4RegImms, node, highReg, 0, cg);
-            generateLabelInstruction(JMP4, node, reStartLabel, cg);
-
-            generateLabelInstruction(LABEL, node, negativeLabel, cg);
-
-            generateRegMemInstruction(L4RegMem, node, accReg, generateX86MemoryReference(*convertedLongMR, 0, cg), cg);
-            generateRegImmInstruction(XOR4RegImm4, node, accReg, INT_MIN, cg);
-            generateRegImmInstruction(ADD4RegImm4, node, accReg, INT_MAX, cg);
-            generateRegImmInstruction(ADC4RegImms, node, lowReg, 0, cg);
-            generateRegImmInstruction(ADC4RegImms, node, highReg, 0, cg);
-
-            cg->stopUsingRegister(accReg);
-            }
-         }
 
       // Create the conversion snippet.
       //

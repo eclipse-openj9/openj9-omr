@@ -65,6 +65,8 @@ private:
 	MM_AllocateDescription *_allocDesc;	/** The allocation failure which triggered the collection */
 	MM_GCExtensionsBase *_extensions; /**< The GC extensions */
 	MM_Collector *_collector; /**< The garbage collector */
+	bool _runAsImplicit; /**< if true, STW GC (via garbageCollect()) is executed with the master thread being the caller's thread, otherwise the request is passed to the explicit master thread */
+	bool _acquireVMAccessDuringConcurrent; /**< if true, (explicit) master GC thread holds VM access, while running concurrent phase of a GC cycle */
 
 /*
  * Function members
@@ -75,7 +77,7 @@ public:
 	 * Early initialize: montior creation
 	 * globalCollector[in] the global collector (typically the caller)
 	 */
-	bool initialize(MM_Collector *globalCollector);
+	bool initialize(MM_Collector *collector, bool runAsImplicit = false, bool acquireVMAccessDuringConcurrent = false);
 
 	/**
 	 * Teardown resources created by initialize
@@ -129,6 +131,15 @@ private:
 	 * This is a helper function, used as a parameter to omrthread_create
 	 */
 	static int J9THREAD_PROC master_thread_proc(void *info);
+	
+	/**
+	 * Upon receiving a reguest for GC, and invoke concurrent API of the Collector, but also properly handle the state and acquire/release synchronization mutex and/or VM access
+	 */
+	bool handleConcurrent(MM_EnvironmentBase *env);
+	/**
+	 * Upon receiving a reguest for GC, and invoke STW API of the Collector, but also properly handle the state and acquire/release synchronization mutex and/or exclusive VM access
+	 */
+	void handleSTW(MM_EnvironmentBase *env);
 };
 
 #endif /* MASTERGCTHREAD_HPP_ */

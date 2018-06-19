@@ -72,6 +72,12 @@ public:
 	
 	virtual void flushNonAllocationCaches();
 	virtual void flushGCCaches();
+	
+	virtual void initializeGCThread() {
+		/* before a thread turning into a GC one, it shortly acted as a mutator (during thread attach sequence),
+		 * which means it may have allocated or exacuted an object access barrier. */
+		flushGCCaches();
+	}
 
 	MMINLINE static MM_EnvironmentStandard *getEnvironment(OMR_VMThread *omrVMThread) { return static_cast<MM_EnvironmentStandard*>(omrVMThread->_gcOmrVMThreadExtensions); }
 	MMINLINE static MM_EnvironmentStandard *getEnvironment(MM_EnvironmentBase *env) { return static_cast<MM_EnvironmentStandard*>(env); }

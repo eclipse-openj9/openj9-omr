@@ -44,6 +44,8 @@ MM_MasterGCThread::MM_MasterGCThread(MM_EnvironmentBase *env)
 	, _allocDesc(NULL)
 	, _extensions(env->getExtensions())
 	, _collector(NULL)
+	, _runAsImplicit(false)
+	, _acquireVMAccessDuringConcurrent(false)
 {
 	_typeId = __FUNCTION__;
 }
@@ -76,7 +78,7 @@ MM_MasterGCThread::master_thread_proc(void *info)
 
 
 bool
-MM_MasterGCThread::initialize(MM_Collector *collector)
+MM_MasterGCThread::initialize(MM_Collector *collector, bool runAsImplicit, bool acquireVMAccessDuringConcurrent)
 {
 	bool success = true;
 	if(omrthread_monitor_init_with_name(&_collectorControlMutex, 0, "MM_MasterGCThread::_collectorControlMutex")) {
@@ -84,6 +86,8 @@ MM_MasterGCThread::initialize(MM_Collector *collector)
 	}
 
 	_collector = collector;
+	_runAsImplicit = runAsImplicit;
+	_acquireVMAccessDuringConcurrent = acquireVMAccessDuringConcurrent;
 
 	return success;
 }
@@ -158,6 +162,67 @@ MM_MasterGCThread::shutdown()
 	}
 }
 
+
+void
+MM_MasterGCThread::handleSTW(MM_EnvironmentBase *env)
+{
+	Assert_MM_true(NULL != _incomingCycleState);
+	env->_cycleState = _incomingCycleState;
+
+	/* this thread effectively inherits exclusive access from the mutator thread -- set its state to indicate this */
+	env->assumeExclusiveVMAccess(1);
+
+	_collector->masterThreadGarbageCollect(env, _allocDesc);
+
+	uintptr_t exclusiveCount = env->relinquishExclusiveVMAccess();
+	Assert_MM_true(1 == exclusiveCount);
+
+	env->_cycleState = NULL;
+	_incomingCycleState = NULL;
+	_masterThreadState = STATE_WAITING;
+	omrthread_monitor_notify(_collectorControlMutex);
+}
+
+bool
+MM_MasterGCThread::handleConcurrent(MM_EnvironmentBase *env)
+{
+	bool workDone = false;
+
+	_masterThreadState = STATE_RUNNING_CONCURRENT;
+
+	if (_acquireVMAccessDuringConcurrent) {
+		omrthread_monitor_exit(_collectorControlMutex);
+		env->acquireVMAccess();
+	}
+	if (_collector->isConcurrentWorkAvailable(env)) {
+		MM_ConcurrentPhaseStatsBase *stats = _collector->getConcurrentPhaseStats();
+
+		_collector->preConcurrentInitializeStatsAndReport(env, stats);
+		if (!_acquireVMAccessDuringConcurrent) {
+			omrthread_monitor_exit(_collectorControlMutex);
+		}
+		uintptr_t bytesConcurrentlyScanned = _collector->masterThreadConcurrentCollect(env);
+
+		if (!_acquireVMAccessDuringConcurrent) {
+			omrthread_monitor_enter(_collectorControlMutex);
+		}
+
+		_collector->postConcurrentUpdateStatsAndReport(env, stats, bytesConcurrentlyScanned);
+		workDone = true;
+	}
+
+	if (_acquireVMAccessDuringConcurrent) {
+		env->releaseVMAccess();
+		omrthread_monitor_enter(_collectorControlMutex);
+	}
+
+	if (STATE_RUNNING_CONCURRENT == _masterThreadState) {
+		_masterThreadState = STATE_WAITING;
+	}
+
+	return workDone;
+}
+
 void
 MM_MasterGCThread::masterThreadEntryPoint()
 {
@@ -177,7 +242,11 @@ MM_MasterGCThread::masterThreadEntryPoint()
 	} else {
 		/* thread attached successfully */
 		MM_EnvironmentBase *env = MM_EnvironmentBase::getEnvironment(omrVMThread);
-		bool deferredVMAccessRelease = false;
+
+		/* attachVMThread could allocate an execute a barrier (since it that point, this thread acted as a mutator thread.
+		 * Flush GC chaches (like barrier buffers) before turning into the master thread */
+		env->flushGCCaches();
+
 		env->setThreadType(GC_MASTER_THREAD);
 
 		/* Begin running the thread */
@@ -185,66 +254,20 @@ MM_MasterGCThread::masterThreadEntryPoint()
 		
 		_collector->preMasterGCThreadInitialize(env);
 		
-		MM_ConcurrentPhaseStatsBase *stats = _collector->getConcurrentPhaseStats();
-
-		/* first, notify the thread that started us that we are ready to enter the waiting state */
 		_masterThreadState = STATE_WAITING;
 		_masterGCThread = omrthread_self();
 		omrthread_monitor_notify(_collectorControlMutex);
 		do {
 			if (STATE_GC_REQUESTED == _masterThreadState) {
-				/* Note that we might want to give up the _collectorControlMutex around the call to run the collect but it might allow
-				 * for some bugs to become harder to track down (consider the case of an additional thread entering the monitor during
-				 * the collect - this can't happen but allowing it to access the monitor would make the bug harder to find) and holding
-				 * the monitor does expose the thread dependency to the OS so it can potentially give the master GC thread priority
-				 * inheritance from the thread which requested the collect.
-				 */
-				Assert_MM_true(NULL != _incomingCycleState);
-				env->_cycleState = _incomingCycleState;
-
-				/* this thread effectively inherits exclusive access from the mutator thread -- set its state to indicate this */
-				env->assumeExclusiveVMAccess(1);
-
-				_collector->masterThreadGarbageCollect(env, _allocDesc);
-
-				/* clear the exclusive access state */
-				if (_extensions->isConcurrentScavengerEnabled()) {
-					/* Keep holding VM access by master GC thread if this STW phase is immediately followed by a concurrent phase,  since we want to
-					 * prevent/delay any other party from obtaining exclusive VM access while we are accessing/mutating the heap.
-					 * Language specific part may disobey our request to defer release and do it right away. It will notify as so we don't try to release it twice.
-					 */
-					deferredVMAccessRelease = _collector->isConcurrentWorkAvailable(env);
-				}
-				uintptr_t exclusiveCount = env->relinquishExclusiveVMAccess(&deferredVMAccessRelease);
-				Assert_MM_true(1 == exclusiveCount);
-
-				env->_cycleState = NULL;
-				_incomingCycleState = NULL;
-				_masterThreadState = STATE_WAITING;
-				omrthread_monitor_notify(_collectorControlMutex);
-			}
-			if (STATE_WAITING == _masterThreadState) {
-				/* now try the concurrent operation */
-				if (_collector->isConcurrentWorkAvailable(env)) {
-					_masterThreadState = STATE_RUNNING_CONCURRENT;
-					// todo: remove this VLHGC specific structure
-					_collector->preConcurrentInitializeStatsAndReport(env, stats);
-					/* ensure that we get out of this monitor so that the mutator can wake up */
-					omrthread_monitor_exit(_collectorControlMutex);
-					uintptr_t bytesConcurrentlyScanned = _collector->masterThreadConcurrentCollect(env);
-					omrthread_monitor_enter(_collectorControlMutex);
-					_collector->postConcurrentUpdateStatsAndReport(env, stats, bytesConcurrentlyScanned);
-					if (STATE_RUNNING_CONCURRENT == _masterThreadState) {
-						/* we are still in the concurrent state (might have changed if a GC was requested) so set it back to waiting */
-						_masterThreadState = STATE_WAITING;
-					}
-					/* Now that we are done with Concurrent phase, let's release VM Access */
-					if (deferredVMAccessRelease) {
-						deferredVMAccessRelease = false;
-						env->releaseVMAccess();
-					}
+				if (_runAsImplicit) {
+					handleConcurrent(env);
 				} else {
-					Assert_MM_false(deferredVMAccessRelease);
+					handleSTW(env);
+				}
+			}
+
+			if (STATE_WAITING == _masterThreadState) {
+				if (_runAsImplicit || !handleConcurrent(env)) {
 					omrthread_monitor_wait(_collectorControlMutex);
 				}
 			}
@@ -268,7 +291,7 @@ MM_MasterGCThread::garbageCollect(MM_EnvironmentBase *env, MM_AllocateDescriptio
 		/* the collector has started up so try to run */
 		/* once the master thread has stored itself in the _masterGCThread, it should never need to collect - this would hang */
 		Assert_MM_true(omrthread_self() != _masterGCThread);
-		if (NULL == _masterGCThread) {
+		if (_runAsImplicit || (NULL == _masterGCThread)) {
 			/* We might not have _masterGCThread in the startup phase or late in the shutdown phase.
 			 * For example, there may be a native out-of-memory during startup or RAS may 
 			 * trigger a GC after we've shutdown the master thread.
@@ -276,9 +299,17 @@ MM_MasterGCThread::garbageCollect(MM_EnvironmentBase *env, MM_AllocateDescriptio
 			Assert_MM_true(0 == env->getSlaveID());
 			_collector->preMasterGCThreadInitialize(env);
 			_collector->masterThreadGarbageCollect(env, allocDescription);
-			/* Another thread may act a Master GC => be nice and clean up our environment */
-			/* we should clean up _rememberedSetCardBucketPool, but we keep it for debugging purpose */
-			/* env->_rememberedSetCardBucketPool = NULL; */
+
+			if (_runAsImplicit && _collector->isConcurrentWorkAvailable(env)) {
+				omrthread_monitor_enter(_collectorControlMutex);
+
+				if (STATE_WAITING == _masterThreadState) {
+					_masterThreadState = STATE_GC_REQUESTED;
+					omrthread_monitor_notify(_collectorControlMutex);
+				}
+
+				omrthread_monitor_exit(_collectorControlMutex);
+			}
 		} else {
 			/* this is the general case, when the master thread is running internally */
 			omrthread_monitor_enter(_collectorControlMutex);

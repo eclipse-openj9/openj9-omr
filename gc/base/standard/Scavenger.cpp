@@ -313,7 +313,7 @@ MM_Scavenger::collectorStartup(MM_GCExtensionsBase* extensions)
 {
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
 	if (_extensions->concurrentScavenger) {
-		if (!_masterGCThread.initialize(this)) {
+		if (!_masterGCThread.initialize(this, true, true)) {
 			return false;
 		}
 		if (!_masterGCThread.startup()) {
@@ -4651,6 +4651,8 @@ MM_Scavenger::scavengeComplete(MM_EnvironmentBase *envBase)
 	MM_ConcurrentScavengeTask scavengeTask(env, _dispatcher, this, MM_ConcurrentScavengeTask::SCAVENGE_COMPLETE, U_64_MAX, NULL, env->_cycleState);
 	_dispatcher->run(env, &scavengeTask);
 
+	Assert_MM_true(_scavengeCacheFreeList.areAllCachesReturned());
+
 	return false;
 }
 
@@ -4777,15 +4779,10 @@ MM_Scavenger::scavengeIncremental(MM_EnvironmentBase *env)
 
 			_concurrentState = concurrent_state_complete;
 
-			if (isBackOutFlagRaised()) {
-				mergeIncrementGCStats(env, false);
-				clearIncrementGCStats(env, false);
-				continue;
-			}
-
-			timeout = true;
+			mergeIncrementGCStats(env, false);
+			clearIncrementGCStats(env, false);
+			continue;
 		}
-			break;
 
 		case concurrent_state_complete:
 		{
@@ -4903,23 +4900,29 @@ MM_Scavenger::workThreadComplete(MM_EnvironmentStandard *env)
 uintptr_t
 MM_Scavenger::masterThreadConcurrentCollect(MM_EnvironmentBase *env)
 {
-	Assert_MM_true(concurrent_state_scan == _concurrentState);
+	if (concurrent_state_scan == _concurrentState) {
+		Assert_MM_true(concurrent_state_scan == _concurrentState || concurrent_state_idle == _concurrentState);
 
-	clearIncrementGCStats(env, false);
+		clearIncrementGCStats(env, false);
 
-	MM_ConcurrentScavengeTask scavengeTask(env, _dispatcher, this, MM_ConcurrentScavengeTask::SCAVENGE_SCAN, UDATA_MAX, &_forceConcurrentTermination, env->_cycleState);
-	/* Concurrent background task will run with different (typically lower) number of threads. */
-	_dispatcher->run(env, &scavengeTask, _extensions->concurrentScavengerBackgroundThreads);
+		MM_ConcurrentScavengeTask scavengeTask(env, _dispatcher, this, MM_ConcurrentScavengeTask::SCAVENGE_SCAN, UDATA_MAX, &_forceConcurrentTermination, env->_cycleState);
+		/* Concurrent background task will run with different (typically lower) number of threads. */
+		_dispatcher->run(env, &scavengeTask, _extensions->concurrentScavengerBackgroundThreads);
 
-	/* we can't assert the work queue is empty. some mutator threads could have just flushed their copy caches, after the task terminated */
-	_concurrentState = concurrent_state_complete;
-	/* make allocate space non-allocatable to trigger the final GC phase */
-	_activeSubSpace->flip(env, MM_MemorySubSpaceSemiSpace::disable_allocation);
+		/* we can't assert the work queue is empty. some mutator threads could have just flushed their copy caches, after the task terminated */
+		_concurrentState = concurrent_state_complete;
+		/* make allocate space non-allocatable to trigger the final GC phase */
+		_activeSubSpace->flip(env, MM_MemorySubSpaceSemiSpace::disable_allocation);
 
-	mergeIncrementGCStats(env, false);
+		mergeIncrementGCStats(env, false);
 
-	/* return the number of bytes scanned since the caller needs to pass it into postConcurrentUpdateStatsAndReport for stats reporting */
-	return scavengeTask.getBytesScanned();
+		/* return the number of bytes scanned since the caller needs to pass it into postConcurrentUpdateStatsAndReport for stats reporting */
+		return scavengeTask.getBytesScanned();
+	} else {
+		/* someone else might have done this phase (and the rest of the cycle), forced in STW, before we even got a chance to run. */
+		Assert_MM_true(concurrent_state_idle == _concurrentState);
+		return 0;
+	}
 }
 
 void MM_Scavenger::preConcurrentInitializeStatsAndReport(MM_EnvironmentBase *env, MM_ConcurrentPhaseStatsBase *stats)

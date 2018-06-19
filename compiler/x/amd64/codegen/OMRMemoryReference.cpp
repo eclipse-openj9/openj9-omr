@@ -137,13 +137,18 @@ void OMR::X86::AMD64::MemoryReference::finishInitialization(
    {
    _preferRIPRelative = false;
    TR::Machine *machine = cg->machine();
-   TR::SymbolReference &sr      = self()->getSymbolReference();
+   TR::SymbolReference &sr = self()->getSymbolReference();
    TR::Compilation *comp = cg->comp();
 
    // Figure out whether we need to allocate a register for the address
    //
    bool mightNeedAddressRegister;
-   if (!self()->getBaseRegister() && !self()->getIndexRegister() && (cg->needRelocationsForStatics() || cg->needClassAndMethodPointerRelocations()))
+   if (!self()->getBaseRegister() &&
+       !self()->getIndexRegister() &&
+       (cg->needRelocationsForStatics() ||
+        cg->needClassAndMethodPointerRelocations() ||
+        cg->needRelocationsForBodyInfoData() ||
+        cg->needRelocationsForPersistentInfoData()))
       {
       mightNeedAddressRegister = true;
       }
@@ -253,6 +258,10 @@ bool OMR::X86::AMD64::MemoryReference::needsAddressLoadInstruction(intptrj_t rip
    else if (_baseRegister || _indexRegister)
       return !IS_32BIT_SIGNED(displacement);
    else if (cg->needClassAndMethodPointerRelocations() || cg->needRelocationsForStatics())
+      return true;
+   else if (sr.getSymbol() && sr.getSymbol()->isRecompilationCounter() && cg->needRelocationsForBodyInfoData())
+      return true;
+   else if (sr.getSymbol() && sr.getSymbol()->isCountForRecompile() && cg->needRelocationsForPersistentInfoData())
       return true;
    else if (comp->getOption(TR_EnableHCR) && sr.getSymbol() && sr.getSymbol()->isClassObject())
       return true; // If a class gets replaced, it may no longer fit in an immediate
@@ -404,7 +413,7 @@ OMR::X86::AMD64::MemoryReference::addMetaDataForCodeAddressWithLoad(
          }
       else if (sr.getSymbol()->isCountForRecompile())
          {
-         if (cg->needRelocationsForStatics())
+         if (cg->needRelocationsForStatics() || cg->needRelocationsForPersistentInfoData())
             cg->addExternalRelocation(new (cg->trHeapMemory()) TR::ExternalRelocation(
                                    displacementLocation, (uint8_t *) TR_CountForRecompile, TR_GlobalValue, cg),
                                  __FILE__,
@@ -413,7 +422,7 @@ OMR::X86::AMD64::MemoryReference::addMetaDataForCodeAddressWithLoad(
          }
       else if (sr.getSymbol()->isRecompilationCounter())
          {
-         if (cg->needRelocationsForStatics())
+         if (cg->needRelocationsForStatics() || cg->needRelocationsForBodyInfoData())
             cg->addExternalRelocation(new (cg->trHeapMemory()) TR::ExternalRelocation(displacementLocation, 0, TR_BodyInfoAddress, cg),
                                  __FILE__,__LINE__,containingInstruction->getNode());
          }

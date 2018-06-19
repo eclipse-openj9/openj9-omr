@@ -166,6 +166,7 @@ static void removeAsyncHandlers(OMRPortLibrary *portLibrary);
 
 #if defined(OMR_PORT_ASYNC_HANDLER)
 static int J9THREAD_PROC asynchSignalReporter(void *userData);
+static void runHandlers(uint32_t asyncSignalFlag);
 #endif /* defined(OMR_PORT_ASYNC_HANDLER) */
 
 static int32_t registerMasterHandlers(OMRPortLibrary *portLibrary, uint32_t flags, uint32_t allowedSubsetOfFlags, void **oldOSHandler);
@@ -1589,6 +1590,40 @@ removeAsyncHandlers(OMRPortLibrary *portLibrary)
 }
 
 #if defined(OMR_PORT_ASYNC_HANDLER)
+/**
+ * Given a port library signal flag, execute the associated handlers stored
+ * within asyncHandlerList (list of J9WinAMD64AsyncHandlerRecord).
+ *
+ * @param asyncSignalFlag port library signal flag
+ *
+ * @return void
+ */
+static void
+runHandlers(uint32_t asyncSignalFlag)
+{
+	J9WinAMD64AsyncHandlerRecord *cursor = NULL;
+
+	/* incrementing the asyncThreadCount will prevent the list from being modified while we use it */
+	omrthread_monitor_enter(asyncMonitor);
+	asyncThreadCount++;
+	omrthread_monitor_exit(asyncMonitor);
+
+	cursor = asyncHandlerList;
+	while (NULL != cursor) {
+		if (OMR_ARE_ANY_BITS_SET(cursor->flags, asyncSignalFlag)) {
+			Trc_PRT_signal_omrsig_asynchSignalReporter_calling_handler(cursor->portLib, asyncSignalFlag, cursor->handler_arg);
+			cursor->handler(cursor->portLib, asyncSignalFlag, NULL, cursor->handler_arg);
+		}
+		cursor = cursor->next;
+	}
+
+	omrthread_monitor_enter(asyncMonitor);
+	if (--asyncThreadCount == 0) {
+		omrthread_monitor_notify_all(asyncMonitor);
+	}
+	omrthread_monitor_exit(asyncMonitor);
+}
+
 /**
  * This is the main body of the asynchSignalReporterThread. It is supposed to execute
  * handlers (J9WinAMD64AsyncHandlerRecord->handler) associated to a signal once a

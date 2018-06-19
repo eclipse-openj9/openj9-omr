@@ -101,7 +101,7 @@ class OMR_EXTENSIBLE TransformUtil
    /**
     * \brief
     *    This function serves as a tool to transform a call node to a TR::PassThrough node with one child in place
-    *    as a safe way to eliminate the call.
+    *    as a safe way to eliminate the call while preserving a valid tree shape for potential null check.
     *
     * \parm opt
     *    The optimization asking for this transformation.
@@ -113,11 +113,12 @@ class OMR_EXTENSIBLE TransformUtil
     *    The tree before which the children of the call node are to be anchored.
     *
     * \parm child
-    *    The child for node after the transformation. It's the receiver of the call or any node for a static call.
+    *    The child for node after the transformation.
     *
     * \note
-    *    The call node's refcount has to be 1 since the transformation is equivalent to eliminating the call,
-    *    otherwise the resulting node will cause problems in other optimizations.
+    *    The child node might be used as the target of the potential null check or the result of the call that is
+    *    used elsewhere. The caller has to be aware of the two potential uses of child node and to avoid having an
+    *    invalid tree after transformation.
     */
    static void transformCallNodeToPassThrough(TR::Optimization* opt, TR::Node* node, TR::TreeTop * anchorTree, TR::Node* child);
    

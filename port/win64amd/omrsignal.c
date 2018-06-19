@@ -135,6 +135,9 @@ static omrthread_monitor_t registerHandlerMonitor;
  */
 static j9sem_t wakeUpASyncReporter;
 
+/* Used to synchronize shutdown of asynchSignalReporterThread. */
+static omrthread_monitor_t asyncReporterShutdownMonitor;
+
 static uint32_t mapWin32ExceptionToPortlibType(uint32_t exceptionCode);
 static uint32_t infoForGPR(struct OMRPortLibrary *portLibrary, struct J9Win32SignalInfo *info, int32_t index, const char **name, void **value);
 static uint32_t infoForFPR(struct OMRPortLibrary *portLibrary, struct J9Win32SignalInfo *info, int32_t index, const char **name, void **value);
@@ -1253,6 +1256,7 @@ destroySignalTools(OMRPortLibrary *portLibrary)
 	omrthread_monitor_destroy(masterExceptionMonitor);
 	omrthread_monitor_destroy(registerHandlerMonitor);
 	j9sem_destroy(wakeUpASyncReporter);
+	omrthread_monitor_destroy(asyncReporterShutdownMonitor);
 }
 
 static int32_t
@@ -1274,6 +1278,10 @@ initializeSignalTools(OMRPortLibrary *portLibrary)
 		goto cleanup3;
 	}
 
+	if (omrthread_monitor_init_with_name(&asyncReporterShutdownMonitor, 0, "portLibrary_omrsig_asynch_reporter_shutdown_monitor")) {
+			goto cleanup4;
+	}
+
 #if defined(OMR_PORT_ASYNC_HANDLER)
 	if (J9THREAD_SUCCESS != createThreadWithCategory(
 			&asynchSignalReporterThread,
@@ -1284,16 +1292,18 @@ initializeSignalTools(OMRPortLibrary *portLibrary)
 			NULL,
 			J9THREAD_CATEGORY_SYSTEM_THREAD)
 	) {
-		goto cleanup4;
+		goto cleanup5;
 	}
 #endif /* defined(OMR_PORT_ASYNC_HANDLER) */
 
 	return 0;
 
 #if defined(OMR_PORT_ASYNC_HANDLER)
+cleanup5:
+	omrthread_monitor_destroy(asyncReporterShutdownMonitor);
+#endif /* defined(OMR_PORT_ASYNC_HANDLER) */
 cleanup4:
 	j9sem_destroy(wakeUpASyncReporter);
-#endif /* defined(OMR_PORT_ASYNC_HANDLER) */
 cleanup3:
 	omrthread_monitor_destroy(registerHandlerMonitor);
 cleanup2:

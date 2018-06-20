@@ -1539,9 +1539,6 @@ class OMR_EXTENSIBLE CodeGenerator
    bool getSupportsPartialInlineOfMethodHooks() {return _flags1.testAny(SupportsPartialInlineOfMethodHooks);}
    void setSupportsPartialInlineOfMethodHooks() {_flags1.set(SupportsPartialInlineOfMethodHooks);}
 
-   bool getVMThreadRequired() {return _flags1.testAny(VMThreadRequired);}
-   void setVMThreadRequired(bool v);
-
    bool getSupportsMergedAllocations() {return _flags1.testAny(SupportsMergedAllocations);}
    void setSupportsMergedAllocations() {_flags1.set(SupportsMergedAllocations);}
 
@@ -1680,7 +1677,7 @@ class OMR_EXTENSIBLE CodeGenerator
       SupportsReferenceArrayCopy                         = 0x00000200,
       SupportsJavaFloatSemantics                         = 0x00000400,
       SupportsInliningOfTypeCoersionMethods              = 0x00000800,
-      VMThreadRequired                                   = 0x00001000,
+      // AVAILABLE                                       = 0x00001000,
       SupportsVectorRegisters                            = 0x00002000,
       SupportsGlRegDepOnFirstBlock                       = 0x00004000,
       SupportsRemAsThirdChildOfDiv                       = 0x00008000,

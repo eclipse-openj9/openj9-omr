@@ -593,8 +593,8 @@
    TR::TreeEvaluator::fenceEvaluator,                   // TR::fence
    TR::TreeEvaluator::integerAddEvaluator,              // TR::luaddh
    TR::TreeEvaluator::caddEvaluator,                    // TR::cadd
-   TR::TreeEvaluator::integerAddEvaluator,              // TR::aiadd
-   TR::TreeEvaluator::integerAddEvaluator,              // TR::aiuadd
+   TR::TreeEvaluator::badILOpEvaluator,                 // TR::aiadd
+   TR::TreeEvaluator::badILOpEvaluator,                 // TR::aiuadd
    TR::TreeEvaluator::integerAddEvaluator,              // TR::aladd
    TR::TreeEvaluator::integerAddEvaluator,              // TR::aluadd
    TR::TreeEvaluator::integerSubEvaluator,              // TR::lusubh

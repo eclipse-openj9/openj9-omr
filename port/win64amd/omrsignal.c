@@ -644,15 +644,27 @@ omrsig_get_options(struct OMRPortLibrary *portLibrary)
 }
 
 /**
- * sets the priority of the the async reporting thread
+ * Set the priority of the asynchronous signal reporting thread (asynchSignalReporterThread).
  *
- * In windows, a new thread is created to run the handlers each time a signal is received,
- * so this function does nothing.
-*/
+ * @param[in] portLibrary the OMR port library
+ * @param[in] priority the thread priority
+ *
+ * @return 0 upon success and non-zero upon failure.
+ */
 int32_t
 omrsig_set_reporter_priority(struct OMRPortLibrary *portLibrary, uintptr_t priority)
 {
-	return 0;
+	int32_t result = 0;
+
+	omrthread_monitor_t globalMonitor = omrthread_global_monitor();
+
+	omrthread_monitor_enter(globalMonitor);
+	if (attachedPortLibraries > 0) {
+		result = setReporterPriority(portLibrary, priority);
+	}
+	omrthread_monitor_exit(globalMonitor);
+
+	return result;
 }
 
 intptr_t

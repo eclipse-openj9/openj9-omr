@@ -150,6 +150,7 @@ typedef struct OMRPortPlatformGlobals {
 	J9Pool *bindingPool;	/**< The pool used for allocating the nodes which are stored in the bindingTree */
 	omrthread_monitor_t bindingAccessMonitor;
 	uintptr_t numa_platform_supports_numa;
+	uintptr_t numa_platform_interleave_memory;
 	BOOLEAN vmem_initialized;
 	char *si_executableName;
 	char managementCounterPath[PDH_MAX_COUNTER_PATH];		/* List of performance counters */
@@ -178,6 +179,7 @@ typedef struct OMRPortPlatformGlobals {
 #define PPG_mem_mem32_subAllocHeapMem32 (portLibrary->portGlobals->platformGlobals.subAllocHeapMem32)
 #endif
 #define PPG_numa_platform_supports_numa (portLibrary->portGlobals->platformGlobals.numa_platform_supports_numa)
+#define PPG_numa_platform_interleave_memory (portLibrary->portGlobals->platformGlobals.numa_platform_interleave_memory)
 #define PPG_syslog_handle (portLibrary->portGlobals->platformGlobals.hLoggingEventSource)
 #define PPG_syslog_flags (portLibrary->portGlobals->platformGlobals.systemLoggingFlags)
 #define PPG_dbgHlpLibraryFunctions (portLibrary->portGlobals->platformGlobals.dbgHlpLibraryFunctions)

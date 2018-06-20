@@ -383,7 +383,107 @@ omrsig_set_async_signal_handler(struct OMRPortLibrary *portLibrary, omrsig_handl
 int32_t
 omrsig_set_single_async_signal_handler(struct OMRPortLibrary *portLibrary, omrsig_handler_fn handler, void *handler_arg, uint32_t portlibSignalFlag, void **oldOSHandler)
 {
-	return OMRPORT_SIG_ERROR;
+	int32_t rc = 0;
+	J9WinAMD64AsyncHandlerRecord *cursor = NULL;
+	J9WinAMD64AsyncHandlerRecord **previousLink = NULL;
+	BOOLEAN foundHandler = FALSE;
+
+	Trc_PRT_signal_omrsig_set_single_async_signal_handler_entered(handler, handler_arg, portlibSignalFlag);
+
+	if (0 != portlibSignalFlag) {
+		/* For non-zero portlibSignalFlag, check if only one signal bit is set. Otherwise, fail. */
+		if (!OMR_IS_ONLY_ONE_BIT_SET(portlibSignalFlag)) {
+			Trc_PRT_signal_omrsig_set_single_async_signal_handler_error_multiple_signal_flags_found(portlibSignalFlag);
+			return OMRPORT_SIG_ERROR;
+		}
+	}
+
+	if (OMR_ARE_ALL_BITS_SET(signalOptions, OMRPORT_SIG_OPTIONS_REDUCED_SIGNALS_ASYNCHRONOUS)) {
+		/* Do not install any handlers if -Xrs is set. */
+		Trc_PRT_signal_omrsig_set_async_signal_handler_will_not_set_handler_due_to_Xrs(handler, handler_arg, portlibSignalFlag);
+		return OMRPORT_SIG_ERROR;
+	}
+
+	omrthread_monitor_enter(registerHandlerMonitor);
+	rc = registerMasterHandlers(portLibrary, portlibSignalFlag, OMRPORT_SIG_FLAG_SIGALLASYNC, oldOSHandler);
+	omrthread_monitor_exit(registerHandlerMonitor);
+
+	if (0 != rc) {
+		Trc_PRT_signal_omrsig_set_single_async_signal_handler_exiting_did_nothing_possible_error(rc, handler, handler_arg, portlibSignalFlag);
+		return rc;
+	}
+
+	omrthread_monitor_enter(asyncMonitor);
+
+	/* Wait until no signals are being reported. */
+	while (asyncThreadCount > 0) {
+		omrthread_monitor_wait(asyncMonitor);
+	}
+
+	/* Is this handler already registered? */
+	previousLink = &asyncHandlerList;
+	cursor = asyncHandlerList;
+	while (NULL != cursor) {
+		if (cursor->portLib == portLibrary) {
+			if ((cursor->handler == handler) && (cursor->handler_arg == handler_arg)) {
+				foundHandler = TRUE;
+				if (0 == portlibSignalFlag) {
+					/* Remove this handler record. */
+					*previousLink = cursor->next;
+					portLibrary->mem_free_memory(portLibrary, cursor);
+					Trc_PRT_signal_omrsig_set_single_async_signal_handler_user_handler_removed(handler, handler_arg, portlibSignalFlag);
+
+					/* If this is the last handler, then unregister the handler function. */
+					if (NULL == asyncHandlerList) {
+						SetConsoleCtrlHandler(consoleCtrlHandler, FALSE);
+					}
+					break;
+				} else {
+					/* Update the listener with the new portlibSignalFlag. */
+					Trc_PRT_signal_omrsig_set_single_async_signal_handler_user_handler_added_1(handler, handler_arg, portlibSignalFlag);
+					cursor->flags |= portlibSignalFlag;
+				}
+			} else {
+				/* Unset the portlibSignalFlag for other handlers. One signal must be associated to only one handler. */
+				cursor->flags &= ~portlibSignalFlag;
+			}
+		}
+		previousLink = &cursor->next;
+		cursor = cursor->next;
+	}
+
+	if (!foundHandler && (0 != portlibSignalFlag)) {
+		J9WinAMD64AsyncHandlerRecord *record = portLibrary->mem_allocate_memory(portLibrary, sizeof(*record), OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
+
+		if (NULL == record) {
+			rc = OMRPORT_SIG_ERROR;
+		} else {
+			record->portLib = portLibrary;
+			record->handler = handler;
+			record->handler_arg = handler_arg;
+			record->flags = portlibSignalFlag;
+			record->next = NULL;
+
+			/* If this is the first handler, register the handler function. */
+			if (NULL == asyncHandlerList) {
+				SetConsoleCtrlHandler(consoleCtrlHandler, TRUE);
+			}
+
+			/* Add the new record to the end of the list. */
+			Trc_PRT_signal_omrsig_set_single_async_signal_handler_user_handler_added_2(handler, handler_arg, portlibSignalFlag);
+			*previousLink = record;
+		}
+	}
+
+	omrthread_monitor_exit(asyncMonitor);
+
+	if (NULL != oldOSHandler) {
+		Trc_PRT_signal_omrsig_set_single_async_signal_handler_exiting(rc, handler, handler_arg, portlibSignalFlag, *oldOSHandler);
+	} else {
+		Trc_PRT_signal_omrsig_set_single_async_signal_handler_exiting(rc, handler, handler_arg, portlibSignalFlag, NULL);
+	}
+
+	return rc;
 }
 
 uint32_t

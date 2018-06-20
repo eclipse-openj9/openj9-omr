@@ -1497,61 +1497,39 @@ fillInWinAMD64SignalInfo(struct OMRPortLibrary *portLibrary, omrsig_handler_fn h
 	/* module info is filled on demand */
 }
 
+/**
+ * Translate the control signal into an OS signal, update signalCounts
+ * and notify asynchSignalReporterThread to execute the associated handlers.
+ *
+ * @param[in] dwCtrlType the type of control signal received
+ *
+ * @return TRUE if the control signal is handled. Otherwise, return FALSE.
+ */
 static BOOL WINAPI
 consoleCtrlHandler(DWORD dwCtrlType)
 {
-	uint32_t flags;
 	BOOL result = FALSE;
+	int osSignalNo = OMRPORT_SIG_ERROR;
 
 	switch (dwCtrlType) {
 	case CTRL_BREAK_EVENT:
-		flags = OMRPORT_SIG_FLAG_SIGQUIT;
+		osSignalNo = SIGBREAK;
 		break;
 	case CTRL_C_EVENT:
-		flags = OMRPORT_SIG_FLAG_SIGINT;
+		osSignalNo = SIGINT;
 		break;
 	case CTRL_CLOSE_EVENT:
-		flags = OMRPORT_SIG_FLAG_SIGTERM;
+	case CTRL_LOGOFF_EVENT:
+	case CTRL_SHUTDOWN_EVENT:
+		osSignalNo = SIGTERM;
 		break;
 	default:
-		return result;
+		break;
 	}
 
-	if (0 == omrthread_attach_ex(NULL, J9THREAD_ATTR_DEFAULT)) {
-		J9WinAMD64AsyncHandlerRecord *cursor;
-
-		/* incrementing the asyncThreadCount will prevent the list from being modified while we use it */
-		omrthread_monitor_enter(asyncMonitor);
-		asyncThreadCount++;
-		omrthread_monitor_exit(asyncMonitor);
-
-		cursor = asyncHandlerList;
-		while (cursor) {
-
-			if (cursor->flags & flags) {
-
-				cursor->handler(cursor->portLib, flags, NULL, cursor->handler_arg);
-
-				/* Returning TRUE stops control from being passed to the next handler routine. The OS default handler may be the next handler routine.
-				 * The default action of the OS default handler routine is to shut down the process
-				 */
-				if (flags & OMRPORT_SIG_FLAG_SIGQUIT) {
-					/* Continue executing */
-					result = TRUE;
-				}
-			}
-
-			cursor = cursor->next;
-		}
-
-		omrthread_monitor_enter(asyncMonitor);
-		if (--asyncThreadCount == 0) {
-			omrthread_monitor_notify_all(asyncMonitor);
-		}
-		omrthread_monitor_exit(asyncMonitor);
-
-		/* TODO: possible timing hole. The thread library could be unloaded by the time we reach this line. We can't use omrthread_exit(), as that kills the async reporting thread */
-		omrthread_detach(NULL);
+	if (OMRPORT_SIG_ERROR != osSignalNo) {
+		updateSignalCount(osSignalNo);
+		result = TRUE;
 	}
 
 	return result;

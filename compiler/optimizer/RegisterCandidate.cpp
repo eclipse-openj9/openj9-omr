@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -2003,64 +2003,61 @@ scanPressureSimulatorCacheForConflicts(TR_RegisterCandidate *rc, TR_BitVector &b
 
    int32_t i;
    for (i = firstRegister; i <= lastRegister; ++i)
-   {
-     if ((i == comp->cg()->getVMThreadGlobalRegisterNumber()) && rc->isDontAssignVMThreadRegister())
-       continue;
+      {
+      if(trace)
+         {
+         traceMsg(comp,"\t    reg %d: {",i);
+         }
+      TR_BitVectorIterator bvi(liveOnExitConflicts[i]);
+      while (bvi.hasMoreElements())
+         {
+         TR::Block *block = all_blocks[bvi.getNextElement()];
+         for (auto e = block->getSuccessors().begin(); e != block->getSuccessors().end(); ++e)
+            {
+            TR::Block *succ = toBlock((*e)->getTo());
 
-     if(trace)
-       {
-       traceMsg(comp,"\t    reg %d: {",i);
-       }
-     TR_BitVectorIterator bvi(liveOnExitConflicts[i]);
-     while (bvi.hasMoreElements())
-     {
-       TR::Block *block = all_blocks[bvi.getNextElement()];
-       for (auto e = block->getSuccessors().begin(); e != block->getSuccessors().end(); ++e)
-       {
-   TR::Block *succ = toBlock((*e)->getTo());
+            if (trace)
+               {
+               if(!liveOnEntryConflicts[i].isSet(succ->getNumber()))
+                  traceMsg(comp," Entry(%d)<-Exit(%d)",succ->getNumber(), block->getNumber());
+               }
 
-   if (trace)
-   {
-     if(!liveOnEntryConflicts[i].isSet(succ->getNumber()))
-             traceMsg(comp," Entry(%d)<-Exit(%d)",succ->getNumber(), block->getNumber());
-   }
+            liveOnEntryConflicts[i].set(succ->getNumber());
+            }
+         }
+      if(trace)
+         {
+         traceMsg(comp," }\n");
+         }
+      // In WCode, we allow entry-exit conflicts
+      if(trace)
+         {
+         traceMsg(comp,"\t    reg %d: {",i);
+         }
+      bvi.setBitVector(entryExitConflicts[i]);
+      while (bvi.hasMoreElements())
+         {
+         TR::Block *block = all_blocks[bvi.getNextElement()];
+         for (auto e = block->getSuccessors().begin(); e != block->getSuccessors().end(); ++e)
+            {
+            TR::Block *succ = toBlock((*e)->getTo());
 
-   liveOnEntryConflicts[i].set(succ->getNumber());
-       }
-     }
-     if(trace)
-       {
-       traceMsg(comp," }\n");
-       }
-     // In WCode, we allow entry-exit conflicts
-     if(trace)
-       {
-       traceMsg(comp,"\t    reg %d: {",i);
-       }
-     bvi.setBitVector(entryExitConflicts[i]);
-     while (bvi.hasMoreElements())
-     {
-       TR::Block *block = all_blocks[bvi.getNextElement()];
-       for (auto e = block->getSuccessors().begin(); e != block->getSuccessors().end(); ++e)
-       {
-   TR::Block *succ = toBlock((*e)->getTo());
+            if (trace)
+               if(!liveOnEntryConflicts[i].isSet(succ->getNumber()))
+                  traceMsg(comp," Entry(%d)<-EntryExit(%d)",succ->getNumber(), block->getNumber());
 
-   if (trace)
-     if(!liveOnEntryConflicts[i].isSet(succ->getNumber()))
-             traceMsg(comp," Entry(%d)<-EntryExit(%d)",succ->getNumber(), block->getNumber());
-
-   liveOnEntryConflicts[i].set(succ->getNumber());
-       }
-     }
-     if(trace)
-       {
-       traceMsg(comp," }\n");
-       }
-   }
+            liveOnEntryConflicts[i].set(succ->getNumber());
+            }
+         }
+      if(trace)
+         {
+         traceMsg(comp," }\n");
+         }
+      }
 
    if (trace)
-     {
-     traceMsg(comp, "\tDone scanning for conflicts\n");
+      {
+      traceMsg(comp, "\tDone scanning for conflicts\n");
       TR_BitVectorIterator regIterator(*spilledRegs);
       while (regIterator.hasMoreElements())
          {
@@ -2068,16 +2065,14 @@ scanPressureSimulatorCacheForConflicts(TR_RegisterCandidate *rc, TR_BitVector &b
          if (firstRegister <= regNum && regNum <= lastRegister)
             {
             traceMsg(comp, "\tFor candidate #%d, on entry block conflicts with register %d ", rc->getSymbolReference()->getReferenceNumber(), regNum);
-      liveOnEntryConflicts[regNum].print(comp);
-      // comp->getDebug()->print(comp->getOptions()->getLogFile(), &liveOnEntryConflicts[regNum]);
+            liveOnEntryConflicts[regNum].print(comp);
             traceMsg(comp, "\n");
             traceMsg(comp, "\tFor candidate #%d, on exit block conflicts with register %d ", rc->getSymbolReference()->getReferenceNumber(), regNum);
-      liveOnExitConflicts[regNum].print(comp);
-            // comp->getDebug()->print(comp->getOptions()->getLogFile(), &liveOnExitConflicts[regNum]);
+            liveOnExitConflicts[regNum].print(comp);
             traceMsg(comp, "\n");
             }
          }
-     }
+      }
    }
 
 
@@ -3058,8 +3053,7 @@ TR_RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, in
                  {
                  traceMsg(comp(),"Searching for blocks/structures with max frequency for reg: %d\n",i);
                  }
-              if ((!useRegisterPressureInfo && availableRegisters.get(i)) ||
-                  ((i == comp()->cg()->getVMThreadGlobalRegisterNumber()) && rc->isDontAssignVMThreadRegister()))
+              if (!useRegisterPressureInfo && availableRegisters.get(i))
                  {
                  // Without register pressure information, we have no idea
                  // what to do to make pickRegister pick an availableRegister,
@@ -3815,8 +3809,7 @@ TR_RegisterCandidates::computeAvailableRegisters(TR_RegisterCandidate *rc, int32
       if (liveOnEntryConflicts.isEmpty() && liveOnExitConflicts.isEmpty() &&
           exitEntryConflicts.isEmpty() &&
           entryExitConflicts.isEmpty() &&
-          comp()->cg()->isGlobalRegisterAvailable(i, rc->getDataType()) &&
-          ((i != comp()->cg()->getVMThreadGlobalRegisterNumber()) || !rc->isDontAssignVMThreadRegister()))
+          comp()->cg()->isGlobalRegisterAvailable(i, rc->getDataType()))
          {
          availableRegisters->set(i);
          }

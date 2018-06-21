@@ -1365,7 +1365,6 @@ class OMR_EXTENSIBLE CodeGenerator
    static bool treeContainsCall(TR::TreeTop * treeTop);
 
    // IA32 only?
-   int32_t getVMThreadGlobalRegisterNumber() {return -1;} // no virt
    int32_t arrayInitMinimumNumberOfBytes() {return 8;} // no virt
 
    TR::Instruction *saveOrRestoreRegisters(TR_BitVector *regs, TR::Instruction *cursor, bool doSaves);

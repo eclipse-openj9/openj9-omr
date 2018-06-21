@@ -50,7 +50,7 @@ TR_OutlinedInstructions::TR_OutlinedInstructions(TR::LabelSymbol *entryLabel, TR
    _firstInstruction(NULL),
    _appendInstruction(NULL),
    _restartLabel(NULL),
-   _block(NULL),
+   _block(cg->getCurrentEvaluationBlock()),
    _callNode(NULL),
    _targetReg(NULL),
    _hasBeenRegisterAssigned(false),
@@ -71,6 +71,7 @@ TR_OutlinedInstructions::TR_OutlinedInstructions(
    TR::LabelSymbol    *restartLabel,
    TR::CodeGenerator *cg) :
       _restartLabel(restartLabel),
+      _block(cg->getCurrentEvaluationBlock()),
       _firstInstruction(NULL),
       _appendInstruction(NULL),
       _targetReg(targetReg),
@@ -85,8 +86,6 @@ TR_OutlinedInstructions::TR_OutlinedInstructions(
       _cg(cg)
    {
    _entryLabel->setStartOfColdInstructionStream();
-   _block = callNode->getOpCode().hasSymbolReference()&&callNode->getSymbolReference()->canCauseGC()?cg->getCurrentEvaluationBlock():0;
-
    _callNode = createOutlinedCallNode(callNode, callOp);
    generateOutlinedInstructionsDispatch();
    }
@@ -100,22 +99,21 @@ TR_OutlinedInstructions::TR_OutlinedInstructions(
    bool              rematerializeVMThread,
    TR::CodeGenerator *cg) :
       _restartLabel(restartLabel),
+      _block(cg->getCurrentEvaluationBlock()),
       _firstInstruction(NULL),
       _appendInstruction(NULL),
       _targetReg(targetReg),
       _entryLabel(entryLabel),
       _targetRegMovOpcode(MOVRegReg()),
       _hasBeenRegisterAssigned(false),
+      _rematerializeVMThread(rematerializeVMThread),
       _postDependencyMergeList(NULL),
       _outlinedPathRegisterUsageList(NULL),
       _mainlinePathRegisterUsageList(NULL),
       _registerAssignerStateAtMerge(NULL),
       _cg(cg)
    {
-   _rematerializeVMThread = rematerializeVMThread;
    _entryLabel->setStartOfColdInstructionStream();
-   _block = callNode->getOpCode().hasSymbolReference()&&callNode->getSymbolReference()->canCauseGC() ? cg->getCurrentEvaluationBlock() : 0;
-
    _callNode = createOutlinedCallNode(callNode, callOp);
    generateOutlinedInstructionsDispatch();
    }
@@ -129,6 +127,7 @@ TR_OutlinedInstructions::TR_OutlinedInstructions(
    TR_X86OpCodes     targetRegMovOpcode,
    TR::CodeGenerator *cg) :
       _restartLabel(restartLabel),
+      _block(cg->getCurrentEvaluationBlock()),
       _firstInstruction(NULL),
       _appendInstruction(NULL),
       _targetReg(targetReg),
@@ -143,8 +142,6 @@ TR_OutlinedInstructions::TR_OutlinedInstructions(
       _cg(cg)
    {
    _entryLabel->setStartOfColdInstructionStream();
-   _block = callNode->getSymbolReference()->canCauseGC() ? cg->getCurrentEvaluationBlock() : 0;
-
    _callNode = createOutlinedCallNode(callNode, callOp);
    generateOutlinedInstructionsDispatch();
    }
@@ -419,7 +416,6 @@ TR::Node *TR_OutlinedInstructions::createOutlinedCallNode(TR::Node *callNode, TR
       else
          {
          if ((child->getOpCodeValue() == TR::loadaddr) &&
-             /*(callNode->getOpCodeValue() == TR::instanceof || callNode->getOpCodeValue() == TR::checkcast || callNode->getOpCodeValue() == TR::checkcastAndNULLCHK || callNode->getOpCodeValue() == TR::New || callNode->getOpCodeValue() == TR::anewarray)    &&*/
              (child->getSymbolReference()->getSymbol()) &&
              (child->getSymbolReference()->getSymbol()->getStaticSymbol()))
             {
@@ -447,4 +443,19 @@ TR::Node *TR_OutlinedInstructions::createOutlinedCallNode(TR::Node *callNode, TR
       }
 
    return newCallNode;
+   }
+
+TR_OutlinedInstructionsGenerator::TR_OutlinedInstructionsGenerator(TR::LabelSymbol* entryLabel, TR::Node* node, TR::CodeGenerator* cg)
+   {
+   _oi = new (cg->trHeapMemory()) TR_OutlinedInstructions(entryLabel, cg);
+   _oi->setCallNode(node);
+   cg->getOutlinedInstructionsList().push_front(_oi);
+   _oi->swapInstructionListsWithCompilation();
+   generateLabelInstruction(LABEL, node, entryLabel, cg);
+   }
+
+TR_OutlinedInstructionsGenerator::~TR_OutlinedInstructionsGenerator()
+   {
+   generateLabelInstruction(LABEL, _oi->_callNode, generateLabelSymbol(_oi->_cg), _oi->_cg);
+   _oi->swapInstructionListsWithCompilation();
    }

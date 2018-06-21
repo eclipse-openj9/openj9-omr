@@ -1398,11 +1398,8 @@ TR::Register *OMR::X86::TreeEvaluator::f2iEvaluator(TR::Node *node, TR::CodeGene
          generateLabelInstruction(JE4, node, exceptionLabel, cg);
          }
 
-      TR_OutlinedInstructions* exceptionPath = new (cg->trHeapMemory()) TR_OutlinedInstructions(exceptionLabel, cg);
-      cg->getOutlinedInstructionsList().push_front(exceptionPath);
-      exceptionPath->swapInstructionListsWithCompilation();
-
-      generateLabelInstruction(LABEL, node, exceptionLabel, cg);
+      {
+      TR_OutlinedInstructionsGenerator og(exceptionLabel, node, cg);
       // at this point, target is set to -INF and there can only be THREE possible results: -INF, +INF, NaN
       // compare source with ZERO
       generateRegMemInstruction(doubleSource ? UCOMISDRegMem : UCOMISSRegMem,
@@ -1424,7 +1421,7 @@ TR::Register *OMR::X86::TreeEvaluator::f2iEvaluator(TR::Node *node, TR::CodeGene
                                 cg);
 
       generateLabelInstruction(JMP4, node, endLabel, cg);
-      exceptionPath->swapInstructionListsWithCompilation();
+      }
 
       generateLabelInstruction(LABEL, node, endLabel, cg);
       if (longTarget)
@@ -1747,13 +1744,11 @@ TR::Register *OMR::X86::TreeEvaluator::fbits2iEvaluator(TR::Node *node, TR::Code
 
          // Slow path
          //
-         TR_OutlinedInstructions *slowPath = new (cg->trHeapMemory()) TR_OutlinedInstructions(slowPathLabel, cg);
-         cg->getOutlinedInstructionsList().push_front(slowPath);
-         slowPath->swapInstructionListsWithCompilation();
-         generateLabelInstruction(NULL, LABEL,             slowPathLabel,   cg)->setNode(node);
-         generateRegImmInstruction(     MOV4RegImm4, node, treg, FLOAT_NAN, cg);
-         generateLabelInstruction(      JMP4,        node, endLabel,        cg);
-         slowPath->swapInstructionListsWithCompilation();
+         {
+         TR_OutlinedInstructionsGenerator og(slowPathLabel, node, cg);
+         generateRegImmInstruction( MOV4RegImm4, node, treg, FLOAT_NAN, cg);
+         generateLabelInstruction(  JMP4,        node, endLabel,        cg);
+         }
 
          // Merge point
          //

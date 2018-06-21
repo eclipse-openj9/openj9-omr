@@ -2008,19 +2008,15 @@ void OMR::X86::CodeGenerator::doBinaryEncoding()
 
    // Create exception table entries for outlined instructions.
    //
-   auto oiIterator = self()->getOutlinedInstructionsList().begin();
-   while (oiIterator != self()->getOutlinedInstructionsList().end())
+   for(auto oiIterator = self()->getOutlinedInstructionsList().begin(); oiIterator != self()->getOutlinedInstructionsList().end(); ++oiIterator)
       {
       uint32_t startOffset = (*oiIterator)->getFirstInstruction()->getBinaryEncoding() - self()->getCodeStart();
       uint32_t endOffset   = (*oiIterator)->getAppendInstruction()->getBinaryEncoding() - self()->getCodeStart();
 
-      TR::Block * block = (*oiIterator)->getBlock();
-      bool      needsETE = (*oiIterator)->getCallNode() && (*oiIterator)->getCallNode()->getSymbolReference()->canCauseGC();
-
-      if (needsETE && block && !block->getExceptionSuccessors().empty())
+      TR::Block* block = (*oiIterator)->getBlock();
+      TR::Node*  node  = (*oiIterator)->getCallNode();
+      if (block && node && !block->getExceptionSuccessors().empty() && node->canGCandExcept())
          block->addExceptionRangeForSnippet(startOffset, endOffset);
-
-      ++oiIterator;
       }
 
 #ifdef J9_PROJECT_SPECIFIC

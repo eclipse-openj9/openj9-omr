@@ -628,7 +628,7 @@ PdbScanner::setMemberOffset(IDiaSymbol *symbol, Field *newField)
 				/* For bit-fields, the 'length' is measured in bits. */
 				hr = symbol->get_length(&bitwidth);
 				if (FAILED(hr)) {
-					ERRMSG("get_offset() failed with HRESULT = %08lX", hr);
+					ERRMSG("get_length() failed with HRESULT = %08lX", hr);
 					rc = DDR_RC_ERROR;
 				} else {
 					newField->_bitField = (size_t)bitwidth;

@@ -1607,7 +1607,7 @@ omrsysinfo_get_addressable_physical_memory(struct OMRPortLibrary *portLibrary)
 {
 	uint64_t memoryLimit = 0;
 	uint64_t usableMemory = portLibrary->sysinfo_get_physical_memory(portLibrary);
-	
+
 	if (OMRPORT_LIMIT_LIMITED == portLibrary->sysinfo_get_limit(portLibrary, OMRPORT_RESOURCE_ADDRESS_SPACE, &memoryLimit)) {
 		/* there is a limit on the memory we can use so take the minimum of this usable amount and the physical memory */
 		usableMemory = OMR_MIN(memoryLimit, usableMemory);
@@ -3367,17 +3367,17 @@ omrsysinfo_os_kernel_info(struct OMRPortLibrary *portLibrary, struct OMROSKernel
 	return success;
 }
 
-#if defined(LINUX)
+#if defined(LINUX) && !defined(OMRZTPF)
 
-/** 
+/**
  * @internal
  * Checks if cgroup v1 system is available
  *
  * @param[in] portLibrary pointer to OMRPortLibrary
  *
- * @return TRUE if cgroup v1 system is available, FALSE otherwise 
+ * @return TRUE if cgroup v1 system is available, FALSE otherwise
  */
-static BOOLEAN 
+static BOOLEAN
 isCgroupV1Available(struct OMRPortLibrary *portLibrary)
 {
 	struct statfs buf = {0};
@@ -3400,7 +3400,7 @@ isCgroupV1Available(struct OMRPortLibrary *portLibrary)
 	return result;
 }
 
-/** 
+/**
  * @internal
  * Free resources allocated for OMRCgroupEntry
  *
@@ -3428,7 +3428,7 @@ freeCgroupEntries(struct OMRPortLibrary *portLibrary, OMRCgroupEntry *cgEntryLis
 
 /**
  * Returns cgroup name for the subsystem/resource controller using the circular
- * linked list pointed by cgEntryList. 
+ * linked list pointed by cgEntryList.
  *
  * @param[in] portLibrary pointer to OMRPortLibrary
  * @param[in] cgEntryList pointer to OMRCgroupEntry* which points to circular linked list
@@ -3509,9 +3509,9 @@ _end:
  *
  * @param[in] portLibrary pointer to OMRPortLibrary
  * @param[in] pid process id
- * @param[in] inContainer if set to TRUE then ignore cgroup in /proc/<pid>/cgroup and use ROOT_CGROUP instead  
+ * @param[in] inContainer if set to TRUE then ignore cgroup in /proc/<pid>/cgroup and use ROOT_CGROUP instead
  * @param[out] cgroupEntryList pointer to OMRCgroupEntry *. On successful return, *cgroupEntry
- * points to a circular linked list. Each element of the list is populated based on the contents 
+ * points to a circular linked list. Each element of the list is populated based on the contents
  * of /proc/<pid>/cgroup file.
  * @param[out] availableSubsystems on successful return, contains bitwise-OR of flags of type OMR_CGROUP_SUBSYSTEMS_*
  * indicating the subsystems available for use
@@ -3522,14 +3522,14 @@ static int32_t
 readCgroupFile(struct OMRPortLibrary *portLibrary, int pid, BOOLEAN inContainer, OMRCgroupEntry **cgroupEntryList, uint64_t *availableSubsystems)
 {
 	char cgroupFilePath[PATH_MAX];
-	uintptr_t requiredSize = 0; 
+	uintptr_t requiredSize = 0;
 	FILE *cgroupFile = NULL;
 	OMRCgroupEntry *cgEntryList = NULL;
 	uint64_t available = 0;
 	int32_t rc = 0;
 
 	Assert_PRT_true(NULL != cgroupEntryList);
-	
+
 	requiredSize = portLibrary->str_printf(portLibrary, NULL, (uint32_t)-1, "/proc/%d/cgroup", pid);
 	Assert_PRT_true(requiredSize <= PATH_MAX);
 	portLibrary->str_printf(portLibrary, cgroupFilePath, sizeof(cgroupFilePath), "/proc/%d/cgroup", pid);
@@ -3551,7 +3551,7 @@ readCgroupFile(struct OMRPortLibrary *portLibrary, int pid, BOOLEAN inContainer,
 		char *cursor = NULL;
 		char *separator = NULL;
 		int32_t hierId = -1;
-		
+
 		if (NULL == fgets(buffer, PATH_MAX, cgroupFile)) {
 			break;
 		}
@@ -3564,7 +3564,7 @@ readCgroupFile(struct OMRPortLibrary *portLibrary, int pid, BOOLEAN inContainer,
 			break;
 		}
 		rc = sscanf(buffer, PROC_PID_CGROUP_ENTRY_FORMAT, &hierId, subsystems, cgroup);
-		
+
 		if (EOF == rc) {
 			break;
 		} else if (1 == rc) {
@@ -3628,7 +3628,7 @@ _end:
 			Trc_PRT_readCgroupFile_available_subsystems(available);
 		}
 	}
-	
+
 	return rc;
 }
 
@@ -3684,7 +3684,7 @@ readCgroupSubsystemFile(struct OMRPortLibrary *portLibrary, uint64_t subsystemFl
 		rc = portLibrary->error_set_last_error_with_message_format(portLibrary, OMRPORT_ERROR_SYSINFO_CGROUP_SUBSYSTEM_UNAVAILABLE, "cgroup subsystem %s is not available", subsystemNames[subsystem]);
 		goto _end;
 	}
-	
+
 	cgroup = getCgroupNameForSubsystem(portLibrary, PPG_cgroupEntryList, subsystemNames[subsystem]);
 	if (NULL == cgroup) {
 		/* If the subsystem is available and supported, cgroup must not be NULL */
@@ -3702,7 +3702,7 @@ readCgroupSubsystemFile(struct OMRPortLibrary *portLibrary, uint64_t subsystemFl
 			Trc_PRT_readCgroupSubsystemFile_oom_for_filename();
 			rc = portLibrary->error_set_last_error_with_message(portLibrary, OMRPORT_ERROR_SYSINFO_MEMORY_ALLOC_FAILED, "memory allocation for filename buffer failed");
 			goto _end;
-			
+
 		}
 	}
 	portLibrary->str_printf(portLibrary, fileNameBuf, fileNameLen, "%s/%s/%s/%s", OMR_CGROUP_V1_MOUNT_POINT, subsystemNames[subsystem], cgroup, fileName);
@@ -3714,7 +3714,7 @@ readCgroupSubsystemFile(struct OMRPortLibrary *portLibrary, uint64_t subsystemFl
 		goto _end;
 	}
 
-	va_start(args, format);	
+	va_start(args, format);
 	rc = vfscanf(file, format, args);
 	va_end(args);
 
@@ -3736,11 +3736,11 @@ _end:
 	return rc;
 }
 
-/** 
- * Checks if the process is running inside container 
+/**
+ * Checks if the process is running inside container
  *
  * @param[in] portLibrary pointer to OMRPortLibrary
- * @param[out] inContainer pointer to BOOLEAN which on successful return indicates if the process is running in container or not 
+ * @param[out] inContainer pointer to BOOLEAN which on successful return indicates if the process is running in container or not
  *
  * @return 0 on success, otherwise negative error code
  */
@@ -3848,7 +3848,7 @@ _end:
 	return rc;
 }
 
-#endif /* defined(LINUX) */
+#endif /* defined(LINUX) && !defined(OMRZTPF) */
 
 BOOLEAN
 omrsysinfo_cgroup_is_system_available(struct OMRPortLibrary *portLibrary)

@@ -198,7 +198,7 @@ PdbScanner::loadDataFromPdb(const wchar_t *filename, IDiaDataSource **dataSource
 	HRESULT hr = CoCreateInstance(__uuidof(DiaSource), NULL, CLSCTX_INPROC_SERVER, __uuidof(IDiaDataSource), (void **)dataSource);
 	if (FAILED(hr)) {
 		ERRMSG("CoCreateInstance failed with HRESULT = %08lX", hr);
-		static const char * const libraries[] = { "MSDIA120", "MSDIA100", "MSDIA80", "MSDIA70", "MSDIA60" };
+		static const char * const libraries[] = { "MSDIA140", "MSDIA120", "MSDIA100", "MSDIA80", "MSDIA70", "MSDIA60" };
 		rc = DDR_RC_ERROR;
 		for (size_t i = 0; i < sizeof(libraries) / sizeof(*libraries); ++i) {
 			HMODULE hmodule = LoadLibrary(libraries[i]);
@@ -603,6 +603,7 @@ PdbScanner::setMemberOffset(IDiaSymbol *symbol, Field *newField)
 			break;
 		}
 		case LocIsStatic:
+		case LocIsConstant:
 		{
 			/* Get offset of static class members. */
 			newField->_isStatic = true;

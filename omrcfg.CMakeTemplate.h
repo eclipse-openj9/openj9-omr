@@ -28,7 +28,10 @@
 #if !defined(OMRCFG_H_)
 #define OMRCFG_H_
 
-/* @ddr_namespace: map_to_type=OmrBuildFlags */
+/**
+ * @ddr_namespace: map_to_type=OmrBuildFlags
+ * @ddr_options: valuesandbuildflags
+ */
 
 #cmakedefine OMR_GC
 #cmakedefine OMR_JIT

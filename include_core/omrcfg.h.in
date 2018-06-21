@@ -29,7 +29,10 @@
 #if !defined(OMRCFG_H_)
 #define OMRCFG_H_
 
-/* @ddr_namespace: map_to_type=OmrBuildFlags */
+/**
+ * @ddr_namespace: map_to_type=OmrBuildFlags
+ * @ddr_options: valuesandbuildflags
+ */
 
 #undef OMR_GC
 #undef OMR_JIT

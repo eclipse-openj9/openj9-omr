@@ -30,6 +30,7 @@ default_regex="@ddr_namespace: *default"
 map_to_type_regex="@ddr_namespace: *map_to_type="
 flag_define_regex="^ *# *define +(${id}) *($|//|/\*)"
 flag_undef_regex="^ *# *undef +(${id}) *($|//|/\*)"
+flag_undef_regex_comment="^/\* #undef (${id}) \*/"
 value_define_regex="^ *# *define +(${id}) +[^ /].*($|//|/\*)"
 include_guard_regex=".*_[Hh]([Pp][Pp])?_? *($|//|/\*)"
 
@@ -162,6 +163,7 @@ process_one_policy_file() {
 		-e '/@ddr_namespace:/p' \
 		-e '/^ *# *define /p' \
 		-e '/^ *# *undef /p' \
+		-e '/^\/\* #undef /p' \
 	| while read -r line; do
 		if [[ ${line} =~ ${default_regex} ]]; then
 			set_default_namespaces
@@ -173,7 +175,7 @@ process_one_policy_file() {
 		elif [[ ${addFlags} -ne 0 && ${line} =~ ${flag_define_regex} ]]; then
 			# Print a define flag as a constant of 1.
 			define_flag_macro "${BASH_REMATCH[1]}"
-		elif [[ ${addFlags} -ne 0 && ${line} =~ ${flag_undef_regex} ]]; then
+		elif [[ ${addFlags} -ne 0 && ${line} =~ ${flag_undef_regex} || ${line} =~ ${flag_undef_regex_comment} ]]; then
 			# Print an undef flag as a constant of 0.
 			undef_flag_macro "${BASH_REMATCH[1]}"
 		fi

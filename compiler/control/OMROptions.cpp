@@ -579,7 +579,6 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"disableVirtualScratchMemory",        "M\tdisable scratch memory to be allocated using virtual memory allocators",
                                           RESET_OPTION_BIT(TR_EnableVirtualScratchMemory), "F", NOT_IN_SUBSET},
    {"disableVMCSProfiling",               "O\tdisable VM data for virtual call sites", SET_OPTION_BIT(TR_DisableVMCSProfiling), "F", NOT_IN_SUBSET},
-   {"disableVMThreadGRA",                 "O\tdisable reuse of the vmThread's real register as a global register", SET_OPTION_BIT(TR_DisableVMThreadGRA), "F"},
    {"disableVSSStackCompaction",          "O\tdisable VariableSizeSymbol stack compaction", SET_OPTION_BIT(TR_DisableVSSStackCompaction), "F"},
    {"disableWriteBarriersRangeCheck",     "O\tdisable adding range check to write barriers",   SET_OPTION_BIT(TR_DisableWriteBarriersRangeCheck), "F"},
    {"disableWrtBarSrcObjCheck",           "O\tdisable to not check srcObj location for wrtBar in gc", SET_OPTION_BIT(TR_DisableWrtBarSrcObjCheck), "F"},
@@ -3656,10 +3655,6 @@ OMR::Options::jitPostProcess()
 
    if (!_debug && (_enabledStaticCounterNames || _enabledDynamicCounterNames))
        TR::Options::createDebug();
-
-   if (self()->getOption(TR_MimicInterpreterFrameShape) && self()->getOption(TR_FSDGRA))  // If we are enabling FSDGRA, we must disable VmThreadGRA or bad things will happen.
-      self()->setOption(TR_DisableVMThreadGRA,true);
-
 
    uint8_t memUsageEnabled = 0;
    if (self()->getOption(TR_LexicalMemProfiler))

@@ -818,9 +818,6 @@ class OMR_EXTENSIBLE CodeGenerator
    TR::RealRegister *getRealVMThreadRegister() {return _realVMThreadRegister;}
    void setRealVMThreadRegister(TR::RealRegister *defvmtr) {_realVMThreadRegister = defvmtr;}
 
-   TR::Instruction *getVMThreadSpillInstruction() {return _vmThreadSpillInstr;}
-   void setVMThreadSpillInstruction(TR::Instruction *i);
-
    // --------------------------------------------------------------------------
    // GRA
    //
@@ -1013,7 +1010,6 @@ class OMR_EXTENSIBLE CodeGenerator
    TR::list<TR::Register*> *getFirstTimeLiveOOLRegisterList() {return _firstTimeLiveOOLRegisterList;}
    TR::list<TR::Register*> *setFirstTimeLiveOOLRegisterList(TR::list<TR::Register*> *r) {return _firstTimeLiveOOLRegisterList = r;}
 
-   TR_BackingStore * allocateVMThreadSpill();
    TR_BackingStore *allocateSpill(bool containsCollectedReference, int32_t *offset, bool reuse=true);
    TR_BackingStore *allocateSpill(int32_t size, bool containsCollectedReference, int32_t *offset, bool reuse=true);
    TR_BackingStore *allocateInternalPointerSpill(TR::AutomaticSymbol *pinningArrayPointer);
@@ -1827,7 +1823,6 @@ class OMR_EXTENSIBLE CodeGenerator
    TR::Linkage *_bodyLinkage;
    TR::Register *_vmThreadRegister;
    TR::RealRegister *_realVMThreadRegister;
-   TR::Instruction *_vmThreadSpillInstr;
    TR::GCStackAtlas *_stackAtlas;
    TR_GCStackMap *_methodStackMap;
    TR::list<TR::Block*> _counterBlocks;

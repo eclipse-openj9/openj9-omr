@@ -65,7 +65,6 @@ class TR_OutlinedInstructions
    TR_RegisterAssignerState *_registerAssignerStateAtMerge;
 
    bool                 _hasBeenRegisterAssigned;
-   bool                 _rematerializeVMThread;
 
    TR::Compilation *comp() { return TR::comp(); }
    TR::CodeGenerator *cg() { return _cg; }
@@ -148,8 +147,6 @@ class TR_OutlinedInstructions
    void generateOutlinedInstructionsDispatch();
 
    TR::RegisterDependencyConditions  *formEvaluatedArgumentDepList();
-
-   void setRematerializeVMThread() { _rematerializeVMThread = true; }
 
    };
 

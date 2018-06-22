@@ -4199,7 +4199,6 @@ TR::X86LabelInstruction  *
 generateLabelInstruction(TR_X86OpCodes   op,
                          TR::Node        * node,
                          TR::LabelSymbol * sym,
-                         bool             needsVMThreadRegister,
                          TR::CodeGenerator *cg)
    {
    return new (cg->trHeapMemory()) TR::X86LabelInstruction(op, node, sym, cg);
@@ -4209,7 +4208,6 @@ TR::X86LabelInstruction  *
 generateLabelInstruction(TR::Instruction * pred,
                          TR_X86OpCodes   op,
                          TR::LabelSymbol * sym,
-                         bool             needsVMThreadRegister,
                          TR::CodeGenerator *cg)
    {
    return new (cg->trHeapMemory()) TR::X86LabelInstruction(pred, op, sym, cg);;
@@ -4272,7 +4270,6 @@ generateLabelInstruction(TR_X86OpCodes     opCode,
                          TR::LabelSymbol     *label,
                          TR::Node           *glRegDep,
                          List<TR::Register> *popRegisters,
-                         bool               needsVMThreadRegister,
                          bool               evaluateGlRegDeps,
                          TR::CodeGenerator *cg)
    {
@@ -4314,13 +4311,11 @@ generateJumpInstruction(
                                       destinationLabel,
                                       jumpNode->getFirstChild(),
                                       0,
-                                      needsVMThreadRegister,
                                       evaluateGlRegDeps,
                                       cg) :
              inst = generateLabelInstruction(opCode,
                                       jumpNode,
                                       destinationLabel,
-                                      needsVMThreadRegister,
                                       cg);
 
    return inst;
@@ -4341,7 +4336,7 @@ generateConditionalJumpInstruction(
       {
       List<TR::Register> popRegisters(cg->trMemory());
       TR::Node* glRegDep = ifNode->getChild(2);
-      inst = generateLabelInstruction(opCode, ifNode, destinationLabel, glRegDep, &popRegisters, false, cg);
+      inst = generateLabelInstruction(opCode, ifNode, destinationLabel, glRegDep, &popRegisters, cg);
 
       if (inst->getDependencyConditions())
          {

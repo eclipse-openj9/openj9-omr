@@ -43,16 +43,17 @@ static void registerCopy(TR::Instruction     *precedingI,
                          TR::RealRegister *sReg,
                          TR::CodeGenerator   *cg);
 
-OMR::ARM::Machine::Machine(TR::CodeGenerator *cg): OMR::Machine(cg, NUM_ARM_GPR, NUM_ARM_FPR)
+OMR::ARM::Machine::Machine(TR::CodeGenerator *cg) :
+      OMR::Machine(cg)
    {
    self()->initializeRegisterFile();
    }
 
 
 TR::RealRegister *OMR::ARM::Machine::findBestFreeRegister(TR_RegisterKinds rk,
-							bool excludeGPR0,
-							bool considerUnlatched,
-							bool isSinglePrecision)
+      bool excludeGPR0,
+      bool considerUnlatched,
+      bool isSinglePrecision)
    {
    int first;
    int last;
@@ -104,7 +105,7 @@ TR::RealRegister *OMR::ARM::Machine::freeBestRegister(TR::Instruction     *curre
                                                     TR_RegisterKinds    rk,
                                                     TR::RealRegister *forced,
                                                     bool                excludeGPR0,
-                        							bool isSinglePrecision)
+                                                    bool isSinglePrecision)
    {
    TR::Register           *candidates[NUM_ARM_MAXR];
    TR::Compilation *comp = self()->cg()->comp();
@@ -116,7 +117,6 @@ TR::RealRegister *OMR::ARM::Machine::freeBestRegister(TR::Instruction     *curre
    TR_ARMOpCodes          opCode;
    int                    numCandidates = 0;
    int                    first, last;
-   //TR::RealRegister::TR_States crtemp_state;
 
    if (forced != NULL)
       {

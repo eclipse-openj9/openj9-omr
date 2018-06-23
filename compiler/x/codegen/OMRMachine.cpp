@@ -182,7 +182,7 @@ OMR::X86::Machine::Machine
    TR::Register **xmmGlobalRegisters,
    uint32_t *globalRegisterNumberToRealRegisterMap
    )
-   : OMR::Machine(cg, numIntRegs, numFPRegs),
+   : OMR::Machine(cg),
    _registerFile(registerFile),
    _registerAssociations(registerAssociations),
    _numGlobalGPRs(numGlobalGPRs),
@@ -190,7 +190,8 @@ OMR::X86::Machine::Machine
    _numGlobalFPRs(numGlobalFPRs),
    _xmmGlobalRegisters(xmmGlobalRegisters),
    _globalRegisterNumberToRealRegisterMap(globalRegisterNumberToRealRegisterMap),
-   _spilledRegistersList(NULL)
+   _spilledRegistersList(NULL),
+   _numGPRs(numIntRegs)
    {
    self()->initializeFPStackRegisterFile();
    _fpTopOfStack = TR_X86FPStackRegister::fpStackEmpty;

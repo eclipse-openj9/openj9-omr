@@ -137,10 +137,11 @@ static bool boundNext(TR::Instruction *currentInstruction, int32_t realNum, TR::
    return true;
    }
 
-OMR::Power::Machine::Machine(TR::CodeGenerator *cg): OMR::Machine(cg, NUM_PPC_GPR, NUM_PPC_FPR),
-numLockedGPRs(-1),
-numLockedFPRs(-1),
-numLockedVRFs(-1)
+OMR::Power::Machine::Machine(TR::CodeGenerator *cg) :
+      OMR::Machine(cg),
+   numLockedGPRs(-1),
+   numLockedFPRs(-1),
+   numLockedVRFs(-1)
    {
    _registerFile = (TR::RealRegister **)cg->trMemory()->allocateMemory(sizeof(TR::RealRegister *)*TR::RealRegister::NumRegisters, heapAlloc);
    self()->initializeRegisterFile();

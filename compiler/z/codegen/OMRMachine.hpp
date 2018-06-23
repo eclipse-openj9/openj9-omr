@@ -45,7 +45,6 @@ namespace TR { class CodeGenerator; }
 namespace TR { class Instruction; }
 namespace TR { class Register; }
 namespace TR { class RegisterDependencyConditions; }
-namespace TR { namespace Z { class MachineBase; } }
 template <class T> class TR_Stack;
 template <typename ListKind> class List;
 
@@ -70,8 +69,8 @@ template <typename ListKind> class List;
 
 // single byte Immediate field limit
 #define MAX_UNSIGNED_IMMEDIATE_BYTE_VAL    0xFF
-#define MAX_IMMEDIATE_BYTE_VAL   	       127           // 0x7f
-#define MIN_IMMEDIATE_BYTE_VAL  	         -128           // 0x80
+#define MAX_IMMEDIATE_BYTE_VAL             127           // 0x7f
+#define MIN_IMMEDIATE_BYTE_VAL            -128           // 0x80
 
 #define MAX_RELOCATION_VAL              65535
 #define MIN_RELOCATION_VAL             -65536
@@ -82,8 +81,8 @@ template <typename ListKind> class List;
 
 // Immediate field limit
 #define MAX_UNSIGNED_IMMEDIATE_VAL    0xFFFF
-#define MAX_IMMEDIATE_VAL   	       32767         // 0x7fff
-#define MIN_IMMEDIATE_VAL  	      -32768         // 0x8000
+#define MAX_IMMEDIATE_VAL             32767         // 0x7fff
+#define MIN_IMMEDIATE_VAL            -32768         // 0x8000
 
 // LL: Maximum Immediate field limit for Golden Eagle
 #define GE_MAX_IMMEDIATE_VAL          (int64_t)CONSTANT64(0x000000007FFFFFFF)
@@ -245,11 +244,6 @@ class OMR_EXTENSIBLE Machine : public OMR::Machine
       return _registerFile[regNum];
       }
 
-   TR::RealRegister *getRealRegister(TR_GlobalRegisterNumber grn)
-       {
-       return _registerFile[_globalRegisterNumberToRealRegisterMap[grn]];
-       }
-
    uint8_t getGPRSize();
    uint8_t getFPRSize() const { return 8;}
    uint8_t getARSize() const { return 4;}
@@ -267,9 +261,9 @@ class OMR_EXTENSIBLE Machine : public OMR::Machine
 
    /** GENERAL INTERFACE for OBTAINING ANY TYPE of REG */
    TR::Register *assignBestRegister(TR::Register    *targetRegister,
-				   TR::Instruction *currInst,
-                                   bool            doBookKeeping,
-                                   uint64_t        availRegMask = 0xffffffff);
+                                    TR::Instruction *currInst,
+                                    bool            doBookKeeping,
+                                    uint64_t        availRegMask = 0xffffffff);
 
 
    // EVENODD PAIR REGISTERS methods
@@ -307,12 +301,11 @@ class OMR_EXTENSIBLE Machine : public OMR::Machine
    TR::RealRegister* findBestLegalSiblingFPRegister(bool isFirst, uint64_t availRegMask=0x0000ffff);
 
    bool findBestFreeRegisterPair(TR::RealRegister** firstReg, TR::RealRegister** lastReg, TR_RegisterKinds rk,
-				    TR::Instruction* currInst, uint64_t availRegMask=0x0000ffff);
+                                 TR::Instruction* currInst, uint64_t availRegMask=0x0000ffff);
    void    freeBestRegisterPair(TR::RealRegister** firstReg, TR::RealRegister** lastReg, TR_RegisterKinds rk,
-			            TR::Instruction* currInst, uint64_t availRegMask=0x0000ffff);
+                                TR::Instruction* currInst, uint64_t availRegMask=0x0000ffff);
    void    freeBestFPRegisterPair(TR::RealRegister** firstReg, TR::RealRegister** lastReg,
-			            TR::Instruction* currInst, uint64_t availRegMask=0x0000ffff);
-   uint64_t filterColouredRegisterConflicts(TR::Register *targetRegister, TR::Register *siblingRegister, TR::Instruction *currInstr);
+                                  TR::Instruction* currInst, uint64_t availRegMask=0x0000ffff);
 
    // Access Register managed
    TR::RealRegister* findVirtRegInHighWordRegister(TR::Register *virtReg);

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -33,27 +33,3 @@
 
 #include "codegen/Machine.hpp"      // for TR::Machine
 #include "codegen/Machine_inlines.hpp"
-
-uint8_t
-OMR::Machine::getNumberOfGPRs()
-   {
-   return self()->getNumberOfRegisters(TR_GPR);
-   }
-
-uint8_t
-OMR::Machine::getNumberOfFPRs()
-   {
-   return self()->getNumberOfRegisters(TR_FPR);
-   }
-
-uint8_t
-OMR::Machine::setNumberOfGPRs(uint8_t numIntRegs)
-   {
-   return self()->setNumberOfRegisters(TR_GPR,numIntRegs);
-   }
-
-uint8_t
-OMR::Machine::setNumberOfFPRs(uint8_t numFPRegs)
-   {
-   return self()->setNumberOfRegisters(TR_FPR,numFPRegs);
-   }

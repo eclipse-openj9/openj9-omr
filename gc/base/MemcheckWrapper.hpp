@@ -30,8 +30,9 @@
 #include "omrcfg.h"
 #if defined(OMR_VALGRIND_MEMCHECK)
 
-#include "stdint.h"
 #include <valgrind/memcheck.h>
+
+#include "stdint.h"
 
 #if 0
 #define VALGRIND_REQUEST_LOGS

@@ -118,6 +118,20 @@ There are some active contribution projects underway right now:
 
 [beg]: https://github.com/eclipse/omr/issues?q=is%3Aopen+is%3Aissue+label%3Abeginner
 
+
+How Do I Interact With the Community?
+=====================================
+
+* Join the Eclipse OMR developer community [mailing list](https://accounts.eclipse.org/mailing-list/omr-dev).
+The community typically uses this list for project announcements and administrative
+discussions amongst committers.  Questions are welcome here as well.
+
+* Join the Eclipse OMR community [Slack workspace](https://join.slack.com/t/eclipse-omr/shared_invite/enQtMzg2ODIwODc4MTAyLTk4ZjJjNTZlZmMyMGRmYTczOTkzMGJiNTQ4NTA3YTA1NGU4MmJjNWI4NTBjOGNkNmNjMWQ3MmFmYjA4OGZjZjM).  You can join channels
+that interest you, ask questions, and receive answers from subject matter experts.
+
+* Ask a question or start a discussion via a [GitHub issue](https://github.com/eclipse/omr/issues).
+
+
 How Do I Use it?
 ================
 
@@ -207,4 +221,4 @@ Blog Posts about OMR technologies
 * [Introducing Eclipse OMR: Building Language Runtimes](https://developer.ibm.com/open/2016/03/08/introducing-omr-building-language-runtimes/)
 * [JitBuilder Library and Eclipse OMR: Just-In-Time Compilers made easy](https://developer.ibm.com/open/2016/07/19/jitbuilder-library-and-eclipse-omr-just-in-time-compilers-made-easy/)
 
-(c) Copyright IBM Corp. 2016, 2017
+(c) Copyright IBM Corp. 2016, 2018

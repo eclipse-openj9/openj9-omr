@@ -419,14 +419,16 @@ MM_MarkingScheme::assertNotForwardedPointer(MM_EnvironmentBase *env, omrobjectpt
 void
 MM_MarkingScheme::fixupForwardedSlotOutline(GC_SlotObject *slotObject) {
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
-	MM_ForwardedHeader forwardHeader(slotObject->readReferenceFromSlot());
-	omrobjectptr_t forwardPtr = forwardHeader.getNonStrictForwardedObject();
+	if (_extensions->getGlobalCollector()->isStwCollectionInProgress()) {
+		MM_ForwardedHeader forwardHeader(slotObject->readReferenceFromSlot());
+		omrobjectptr_t forwardPtr = forwardHeader.getNonStrictForwardedObject();
 
-	if ((NULL != forwardPtr) && _extensions->getGlobalCollector()->isStwCollectionInProgress()) {
-		if (forwardHeader.isSelfForwardedPointer()) {
-			forwardHeader.restoreSelfForwardedPointer();
-		} else {
-			slotObject->writeReferenceToSlot(forwardPtr);
+		if (NULL != forwardPtr) {
+			if (forwardHeader.isSelfForwardedPointer()) {
+				forwardHeader.restoreSelfForwardedPointer();
+			} else {
+				slotObject->writeReferenceToSlot(forwardPtr);
+			}
 		}
 	}
 #endif /* OMR_GC_CONCURRENT_SCAVENGER */

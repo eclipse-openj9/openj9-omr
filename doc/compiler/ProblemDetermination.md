@@ -1,5 +1,5 @@
 <!--
-Copyright (c) 2016, 2017 IBM Corp. and others
+Copyright (c) 2016, 2018 IBM Corp. and others
 
 This program and the accompanying materials are made available under
 the terms of the Eclipse Public License 2.0 which accompanies this
@@ -10,7 +10,7 @@ is available at https://www.apache.org/licenses/LICENSE-2.0.
 This Source Code may also be made available under the following
 Secondary Licenses when the conditions for such availability set
 forth in the Eclipse Public License, v. 2.0 are satisfied: GNU
-General Public License, version 2 with the GNU Classpath 
+General Public License, version 2 with the GNU Classpath
 Exception [1] and GNU General Public License, version 2 with the
 OpenJDK Assembly Exception [2].
 
@@ -33,7 +33,7 @@ malfunction. Typical symptoms include:
 
   * incorrect results or exceptions are produced by a correct but unusual,
     or complex program;
-  * the VM crashes, resulting in a core file and/or crash report. 
+  * the VM crashes, resulting in a core file and/or crash report.
 
 This document discusses troubleshooting methods with which you could try to
 determine whether the compiler is faulty, and which part of the compiler caused
@@ -60,16 +60,16 @@ Alternatively, the JIT can operate at a fixed optimization level, which forces
 it to compile all methods (or only certain methods selected by the user) with
 the same aggresiveness. As you will see in this document, this mode is
 extremely useful for diagnosing JIT problems.
-  
-    
+
+
 # Isolating a Failure
 
-# Completely Disabling the Compiler 
+# Completely Disabling the Compiler
 
 The first step in diagnosing a failure is to determine whether the problem is
-in fact related to the compiler. When Testarossa is being used as a JIT compiler, 
-there is almost certainly an interpreter to fall back to, which also means 
-a bug could be in the interpreter, not the compiler. 
+in fact related to the compiler. When Testarossa is being used as a JIT compiler,
+there is almost certainly an interpreter to fall back to, which also means
+a bug could be in the interpreter, not the compiler.
 
 Running the program with the compiler disabled leads to one of two outcomes:
 
@@ -80,7 +80,7 @@ Running the program with the compiler disabled leads to one of two outcomes:
   * The failure disappears. The problem is most likely, although _not
     definitely_, in the compiler.
 
-# Reducing Optimization Levels 
+# Reducing Optimization Levels
 
 If the failure of your program appears to come from a problem within the
 compiler, you can try to narrow down the problem further by reducing the amount
@@ -97,7 +97,7 @@ If it is supported in your VM, the first compiler parameter to try is `count=0`,
 which sets the compilation  threshold to zero and effectively causes the
 program to be run in purely compiled mode, and tends to simplify the remainder
 of the problem determination process. If the failure disappears when `count=0`
-is used, try other count values such as 1 and 10. 
+is used, try other count values such as 1 and 10.
 
 In systems with concurrency, Changing the compiler threshold could affect the order in
 which compilations and VM state changes occur. If the failure does not
@@ -109,7 +109,7 @@ effect of inlining, in an attempt to perform aggressive optimizations. If the
 failure disappears when `disableInlining` is used, omit the parameter.
 
 Now try decreasing the compiler optimization levels. The various optimization
-levels are, depending on the implementation, typically 
+levels are, depending on the implementation, typically
 
   1. `scorching`
   2. `veryHot`
@@ -122,9 +122,9 @@ from the most aggressive to the least expensive.
 
 Run the program with the `optlevel=` parameter:
 
-    
+
     count=0,disableInlining,optLevel=scorching
-    
+
 
 Try each of the optimization levels in turn, and record your observations,
 until the `noOpt` level is reached, or until the failure cannot be reproduced.
@@ -133,7 +133,7 @@ contains a potentially faulty optimization. If the program still fails at
 `noOpt`, then the problem is most likely in the code generation phase (versus
 the optimization phase) of the compiler.
 
-# Locating the Failing Method 
+# Locating the Failing Method
 
 When you have arrived at the lowest optimization level at which the compiler must
 compile methods to trigger the failure, you can try to find out which part of
@@ -149,11 +149,11 @@ To locate the method that is causing the failure, follow these steps:
 1. Run the program with the compiler options `verbose` and
    `vlog=filename`. With these options, the JIT reports its progress, as it
    compiles methods, in a verbose log file, also called a **limit file**. A
-   typical limit file contains lines that correspond to compiled methods, like: 
-    
-    
-        + (hot) java/lang/Math.max(II)I @ 0x10C11DA4-0x10C11DDD <... snipped ...> 
-       
+   typical limit file contains lines that correspond to compiled methods, like:
+
+
+        + (hot) java/lang/Math.max(II)I @ 0x10C11DA4-0x10C11DDD <... snipped ...>
+
 
    Lines that do not start with the plus sign are ignored by the JIT in the
    steps below, so you can edit them out of the file.
@@ -165,7 +165,7 @@ To locate the method that is causing the failure, follow these steps:
    methods listed on lines `m` to `n` in the limit file. Methods not listed in
    the limit file and methods listed on lines outside the range are not compiled.
    Repeat this step with a smaller range if the program still fails.
-   
+
    The recommended number of lines to select from the limit file in each
    repetition is half of the previous selection, such that this step consists of
    an efficient binary search for the failing method.
@@ -184,52 +184,52 @@ the failing method, so that the remainder of the application can run normally.
 For example, if the method `test.rb:61:pass` causes the program to
 fail when compiled with `optLevel=hot`, you can run the program with:
 
-    
-    
+
+
     {test.rb:61:pass}(optLevel=warm,count=0)
 
 
 which tells the compiler to compile only the troublesome method at the `warm`
 optimization level, but recompile all other methods normally. Note, in most shells
-the limit syntax uses special characters, and needs to be quoted. 
+the limit syntax uses special characters, and needs to be quoted.
 
 If a method fails when it is compiled at `noOpt`, you can exclude it from
 compilation altogether, using the `exclude=method` parameter:
-    
+
     exclude={test.rb:61:pass}
 
 # Identifying the failing Optimization.
 
 Most transformations that can be elided are guarded in the source code by a special
-check called `performTransformation` that can be controlled by the option 
-`lastOptIndex=N`. This tells the compiler to perform `N` optional transformations, 
+check called `performTransformation` that can be controlled by the option
+`lastOptIndex=N`. This tells the compiler to perform `N` optional transformations,
 then proceed to only do required operations. In this sense, `lastOptIndex=-1` is an
-even stronger property than `optLevel=noOpt`. 
+even stronger property than `optLevel=noOpt`.
 
-By binary searching `lastOptIndex=` you can find the optimization that failed.  
-    
+By binary searching `lastOptIndex=` you can find the optimization that failed.
+
 
 # Identifying Compilation Failures
 
-If the VM crashes, and you can see that the crash has occurred in the compiler 
+If the VM crashes, and you can see that the crash has occurred in the compiler
 module, it means that either the compier has failed during an attempt to compile a
 method, or one of the JIT run-time routines, which are also contained in the
 JIT module, has failed. Usually the VM prints this information on standard
 error just before it terminates; the information is also recorded in the corefile
-if one is produced. 
+if one is produced.
 
 To see if the compiler is crashing in the middle of a compilation, use the
 `verbose` option with the following additional settings:
-    
+
     verbose={compileStart|compileEnd}
-    
+
 
 These verbose settings report when the compiler starts to compile a method, and
 when it ends. If the compiler fails on a particular method (that is, it starts
 compiling, but crashes before it can end), use the `exclude=` parameter to
 prevent the compiler from compiling the method.
 
-# Options 
+# Options
 
 ## Option Sets
 
@@ -239,42 +239,42 @@ option sets to different (groups of) methods. An option set can be defined on
 the command line by enclosing the desired set of parameters in parentheses,
 and preceding it with a method filter expression, e.g.
 
-    
-    
+
+
     {HelloWorld.main([Ljava/lang/String;)V}(count=0,optlevel=hot)
-    
+
 
 The option example below makes the compiler compile all methods at the warm
-optimization level, and trace the compilation of all methods that start 
+optimization level, and trace the compilation of all methods that start
 with `Frobnicate` and `Brobnicate`  in two different log files.
 
-    
-    
+
+
     optlevel=warm,count=0,{Frobnicate*}(log=frob.log,traceFull),{Brobnicate*}(log=brob.log,traceFull)
-    
+
 
 Option sets can also be defined in a limit file, if one is used, by adding a
 non-zero integer immediately after the initial plus sign on the line with the
 selected method(s).
 
-    
-    
+
+
     +1 (hot) HelloWorld.main([Ljava/lang/String;)V @ 0x10C11DA4-0x10C11DDD
-    
+
 
 The number is the option set number, which can be used on the command line in
 lieu of a method filter expression, e.g.
 
-    
-    
+
+
     1(count=0,optlevel=hot)
-    
+
 
 Note that some parameters are always applied globally and are illegal within
 option sets. The compiler will fail to start up if an option set contains such
 parameters.
 
-Here are some options, though, not all are connected up to all compiler technologies. 
+Here are some options, though, not all are connected up to all compiler technologies.
 
 ## Code Generation Parameters
 
@@ -350,7 +350,6 @@ Here are some options, though, not all are connected up to all compiler technolo
 | disableVirtualGuardNOPing                        | disable virtual guard NOPing                                                    |
 | disableVirtualGuardTailSplitter                  | disable virtual guard tail splitter                                             |
 | disableVirtualInlining                           | disable inlining of virtual methods                                             |
-| disableVMThreadGRA                               | disable reuse of the vmThread's real register as a global register              |
 | disableYieldVMAccess                             | disable yielding of VM access when GC is waiting                                |
 | disableZ6                                        | disable z6 Instructions on z.                                                   |
 | disableZArchitecture                             | disable zArchitecture Instructions on z.                                        |

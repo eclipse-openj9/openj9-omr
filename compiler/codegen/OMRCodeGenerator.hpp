@@ -1365,7 +1365,6 @@ class OMR_EXTENSIBLE CodeGenerator
    static bool treeContainsCall(TR::TreeTop * treeTop);
 
    // IA32 only?
-   int32_t getVMThreadGlobalRegisterNumber() {return -1;} // no virt
    int32_t arrayInitMinimumNumberOfBytes() {return 8;} // no virt
 
    TR::Instruction *saveOrRestoreRegisters(TR_BitVector *regs, TR::Instruction *cursor, bool doSaves);
@@ -1396,10 +1395,6 @@ class OMR_EXTENSIBLE CodeGenerator
 
    bool getDisableFpGRA() {return _flags2.testAny(DisableFpGRA);}
    void setDisableFpGRA() {_flags2.set(DisableFpGRA);}
-
-   bool getSupportsVMThreadGRA() {return _flags2.testAny(SupportsVMThreadGRA);}
-   void setSupportsVMThreadGRA() {_flags2.set(SupportsVMThreadGRA);}
-   void resetSupportsVMThreadGRA() {_flags2.reset(SupportsVMThreadGRA);}
 
    bool usesRegisterMaps() {return _flags1.testAny(UsesRegisterMaps);}
    void setUsesRegisterMaps() {_flags1.set(UsesRegisterMaps);}
@@ -1539,9 +1534,6 @@ class OMR_EXTENSIBLE CodeGenerator
    bool getSupportsPartialInlineOfMethodHooks() {return _flags1.testAny(SupportsPartialInlineOfMethodHooks);}
    void setSupportsPartialInlineOfMethodHooks() {_flags1.set(SupportsPartialInlineOfMethodHooks);}
 
-   bool getVMThreadRequired() {return _flags1.testAny(VMThreadRequired);}
-   void setVMThreadRequired(bool v);
-
    bool getSupportsMergedAllocations() {return _flags1.testAny(SupportsMergedAllocations);}
    void setSupportsMergedAllocations() {_flags1.set(SupportsMergedAllocations);}
 
@@ -1680,7 +1672,7 @@ class OMR_EXTENSIBLE CodeGenerator
       SupportsReferenceArrayCopy                         = 0x00000200,
       SupportsJavaFloatSemantics                         = 0x00000400,
       SupportsInliningOfTypeCoersionMethods              = 0x00000800,
-      VMThreadRequired                                   = 0x00001000,
+      // AVAILABLE                                       = 0x00001000,
       SupportsVectorRegisters                            = 0x00002000,
       SupportsGlRegDepOnFirstBlock                       = 0x00004000,
       SupportsRemAsThirdChildOfDiv                       = 0x00008000,
@@ -1718,7 +1710,7 @@ class OMR_EXTENSIBLE CodeGenerator
       SupportsArrayTranslateAndTest                       = 0x00000800,
       // AVAILABLE                                        = 0x00001000,
       // AVAILABLE                                        = 0x00002000,
-      SupportsVMThreadGRA                                 = 0x00004000,
+      // AVAILABLE                                        = 0x00004000,
       SupportsPostProcessArrayCopy                        = 0x00008000,
       //                                                  = 0x00010000,   AVAILABLE FOR USE!!!
       SupportsCurrentTimeMaxPrecision                     = 0x00020000,

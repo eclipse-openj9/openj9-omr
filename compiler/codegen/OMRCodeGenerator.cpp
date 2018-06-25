@@ -973,11 +973,6 @@ OMR::CodeGenerator::canClobberNodesRegister(
       }
    }
 
-void
-OMR::CodeGenerator::setVMThreadRequired(bool v)
-   {
-   }
-
 bool
 OMR::CodeGenerator::getSupportsTLE()
    {

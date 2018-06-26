@@ -465,8 +465,6 @@ public:
 
    bool isStackBased(TR::MemoryReference *mr);
 
-   TR::Register* copyRestrictedVirtual(TR::Register * virtReg, TR::Node *node, TR::Instruction ** preced=NULL);
-
    bool directLoadAddressMatch(TR::Node *load1, TR::Node *load2, bool trace);
    bool isOutOf32BitPositiveRange(int64_t value, bool trace);
    int32_t getMaskSize(int32_t leftMostNibble, int32_t nibbleCount);

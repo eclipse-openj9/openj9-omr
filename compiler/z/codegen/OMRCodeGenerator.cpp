@@ -6895,8 +6895,6 @@ OMR::Z::CodeGenerator::getMaximumNumberOfGPRsAllowedAcrossEdge(TR::Node * node)
    bool isFloat = false;
    bool isBCD = false;
 
-   int32_t numRestrictedRegs = self()->comp()->getOptions()->getNumRestrictedGPRs();
-   maxGPRs -= numRestrictedRegs;
    bool longNeeds1Reg = TR::Compiler->target.is64Bit() || self()->use64BitRegsOn32Bit();
 
 
@@ -7018,8 +7016,6 @@ OMR::Z::CodeGenerator::getMaximumNumbersOfAssignableGPRs()
    return self()->getMaximumNumberOfAssignableGPRs();
 
    //int32_t maxNumberOfAssignableGPRS = (8 + (self()->isLiteralPoolOnDemandOn() ? 1 : 0));
-   //int32_t numRestrictedRegs = comp()->getOptions()->getNumRestrictedGPRs();
-   //maxNumberOfAssignableGPRS -= numRestrictedRegs;
    //return maxNumberOfAssignableGPRS;
    }
 
@@ -9466,26 +9462,6 @@ OMR::Z::CodeGenerator::buildRegisterMapForInstruction(TR_GCStackMap * map)
 
    map->setInternalPointerMap(internalPtrMap);
    }
-
-TR::Register*
-OMR::Z::CodeGenerator::copyRestrictedVirtual(TR::Register * virtReg, TR::Node *node, TR::Instruction ** preced)
-      {
-      TR::Register *copyReg;
-      TR::Instruction *i = NULL;
-      if (virtReg->getKind() == TR_GPR64)
-         {
-         copyReg = self()->allocate64bitRegister();
-         i = generateRRInstruction(self(), TR::InstOpCode::LGR, node, copyReg, virtReg, preced ? *preced : NULL);
-         }
-      else
-         {
-         copyReg = self()->allocateRegister();
-         i = generateRRInstruction(self(), TR::InstOpCode::LR, node, copyReg, virtReg, preced ? *preced : NULL);
-         }
-      if (preced && *preced)
-         *preced = i;
-      return copyReg;
-      }
 
 ////////////////////////////////////////////////////////////////////////////////
 // OMR::Z::CodeGenerator::dumpDataSnippets

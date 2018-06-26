@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -119,27 +119,6 @@ TR::S390SystemLinkage::initS390RealRegisterLinkage()
    gpr12Real->setAssignedRegister(gpr12Real);
    gpr12Real->setHasBeenAssignedInMethod(true);
 #endif
-
-   // additional (forced) restricted regs.
-   // Similar code in TR_S390Machine::initializeGlobalRegisterTable() for GRA tables
-
-   for (icount = TR::RealRegister::FirstGPR; icount < TR::RealRegister::LastGPR; ++icount)
-      {
-      TR::RealRegister * regReal = cg()->machine()->getS390RealRegister(icount);
-      if (cg()->machine()->isRestrictedReg(regReal->getRegisterNumber()))
-         {
-         regReal->setState(TR::RealRegister::Locked);
-         regReal->setAssignedRegister(regReal);
-         regReal->setHasBeenAssignedInMethod(true);
-         if (cg()->supportsHighWordFacility() && !comp()->getOption(TR_DisableHighWordRA) && TR::Compiler->target.is64Bit())
-            {
-            TR::RealRegister * tempHigh = toRealRegister(regReal)->getHighWordRegister();
-            tempHigh->setState(TR::RealRegister::Locked);
-            tempHigh->setAssignedRegister(tempHigh);
-            tempHigh->setHasBeenAssignedInMethod(true);
-            }
-         }
-      }
 
    // set register weight
    for (icount = TR::RealRegister::FirstGPR; icount >= TR::RealRegister::LastAssignableGPR; icount++)

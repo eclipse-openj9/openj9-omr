@@ -1575,7 +1575,6 @@ public:
    int32_t   getNumInterfaceCallCacheSlots()     {return _numInterfaceCallCacheSlots;}
    int32_t   getNumInterfaceCallStaticSlots()    {return _numInterfaceCallStaticSlots;}
    int32_t   getStoreSinkingLastOpt()          {return _storeSinkingLastOpt;}
-   int32_t   getNumRestrictedGPRs()            {return _numRestrictedGPRs;}
    int32_t   getFirstOptTransformationIndex()  {return _firstOptTransformationIndex;}
    int32_t   getLastOptTransformationIndex()   {return _lastOptTransformationIndex;}
    int32_t   getMinFirstOptTransformationIndex()  {return -1;}
@@ -2337,7 +2336,6 @@ private:
    char *                      _osVersionString;
    bool                        _allowRecompilation;
    bool                        _anOptionSetContainsACountValue;
-   int32_t                     _numRestrictedGPRs;
    int32_t                     _numInterfaceCallCacheSlots;
    int32_t                     _numInterfaceCallStaticSlots;
    int32_t                     _storeSinkingLastOpt;

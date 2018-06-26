@@ -675,7 +675,7 @@ public:
 
    void setIlVerifier(TR::IlVerifier *ilVerifier) { _ilVerifier = ilVerifier; }
 
-   typedef std::pair<const void *, TR::DebugCounterBase *> DebugCounterEntry;
+   typedef std::pair<const void * const, TR::DebugCounterBase *> DebugCounterEntry;
    typedef TR::typed_allocator<DebugCounterEntry, TR::Allocator> DebugCounterMapAllocator;
    typedef std::map<const void *, TR::DebugCounterBase *, std::less<const void *>, DebugCounterMapAllocator> DebugCounterMap;
 

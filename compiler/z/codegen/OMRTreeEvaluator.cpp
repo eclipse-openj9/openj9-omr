@@ -252,6 +252,8 @@ generateLoad32BitConstant(TR::CodeGenerator* cg, TR::Node* node, int32_t value, 
       {
       if (sym)
          {
+         if (cg->comp()->compileRelocatableCode() && sym->isDebugCounter())
+            return generateRegLitRefInstruction(cg, TR::InstOpCode::L, node, targetRegister, value, TR_DebugCounter, dependencies, cursor, literalPoolRegister);
          if (sym->isStatic() && !sym->isClassObject() && !sym->isNotDataAddress())
             return generateRegLitRefInstruction(cg, TR::InstOpCode::L, node, targetRegister, value, TR_DataAddress, dependencies, cursor, literalPoolRegister);
          if (sym->isCountForRecompile())
@@ -283,7 +285,11 @@ genLoadLongConstant(TR::CodeGenerator * cg, TR::Node * node, int64_t value, TR::
    if (node->getOpCode().hasSymbolReference())
       sym = node->getSymbol();
 
-   if (comp->compileRelocatableCode() && sym && (sym->isCountForRecompile()))
+   if (cg->comp()->compileRelocatableCode() && sym && sym->isDebugCounter())
+      {
+      cursor = generateRegLitRefInstruction(cg, TR::InstOpCode::LG, node, targetRegister, value, TR_DebugCounter, cond, cursor, base);
+      }
+   else if (comp->compileRelocatableCode() && sym && (sym->isCountForRecompile()))
       {
       TR::Instruction * temp = cursor;
       cursor = generateRegLitRefInstruction(cg, TR::InstOpCode::LG, node, targetRegister, value, TR_GlobalValue, cond, cursor, base);
@@ -6025,7 +6031,9 @@ aloadHelper(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference * tempM
          if (cg->comp()->compileRelocatableCode())
             {
             int32_t reloType;
-            if (node->getSymbol()->isConst())
+            if (node->getSymbol()->isDebugCounter())
+               reloType = TR_DebugCounter;
+            else if (node->getSymbol()->isConst())
                reloType = TR_ConstantPool;
             else if (node->getSymbol()->isClassObject())
                {
@@ -11645,7 +11653,9 @@ OMR::Z::TreeEvaluator::loadaddrEvaluator(TR::Node * node, TR::CodeGenerator * cg
             else if (comp->compileRelocatableCode())
                {
                int32_t reloType;
-               if (node->getSymbol()->isConst())
+               if (node->getSymbol()->isDebugCounter())
+                  reloType = TR_DebugCounter;
+               else if (node->getSymbol()->isConst())
                   reloType = TR_ConstantPool;
                else if (node->getSymbol()->isClassObject())
                   reloType = TR_ClassAddress;

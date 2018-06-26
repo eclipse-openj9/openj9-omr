@@ -1263,6 +1263,18 @@ OMR::X86::MemoryReference::addMetaDataForCodeAddress(
                                                       TR_AbsoluteMethodAddress, cg);
                         cg->addAOTRelocation(r, __FILE__, __LINE__, node);
                         }
+                     else if (symbol->isDebugCounter())
+                        {
+                        TR::DebugCounterBase *counter = cg->comp()->getCounterFromStaticAddress(&(self()->getSymbolReference()));
+                        if (counter == NULL)
+                           {
+                           cg->comp()->failCompilation<TR::CompilationException>("Could not generate relocation for debug counter in OMR::X86::MemoryReference::addMetaDataForCodeAddress\n");
+                           }
+                        TR::DebugCounter::generateRelocation(cg->comp(),
+                                                             cursor,
+                                                             node,
+                                                             counter);
+                        }
                      else
                         {
                         cg->addAOTRelocation(new (cg->trHeapMemory()) TR::ExternalRelocation(cursor,

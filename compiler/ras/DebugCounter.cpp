@@ -28,6 +28,8 @@
 #include "codegen/FrontEnd.hpp"              // for TR_FrontEnd
 #include "compile/Compilation.hpp"           // for Compilation
 #include "compile/SymbolReferenceTable.hpp"  // for SymbolReferenceTable
+#include "codegen/CodeGenerator.hpp"         // for CodeGenerator
+#include "codegen/Relocation.hpp"            // for Relocation
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"       // for TR::Options, etc
 #include "env/PersistentInfo.hpp"            // for PersistentInfo
@@ -86,10 +88,14 @@ TR::DebugCounter::prependDebugCounter(TR::Compilation *comp, const char *name, T
    if (delta == 0)
       return;
 
-   TR::DebugCounterAggregation *aggregatedCounters = comp->getPersistentInfo()->getDynamicCounters()->createAggregation(comp);
+   TR::DebugCounterAggregation *aggregatedCounters = comp->getPersistentInfo()->getDynamicCounters()->createAggregation(comp, name);
    aggregatedCounters->aggregateStandardCounters(comp, nextTreeTop->getNode(), name, delta, fidelity, staticDelta);
    if (!aggregatedCounters->hasAnyCounters())
       return;
+
+   if (comp->compileRelocatableCode() && !aggregatedCounters->initializeReloData(comp, delta, fidelity, staticDelta))
+      return;
+
    prependDebugCounterBump(comp, nextTreeTop, aggregatedCounters, 1);
    }
 
@@ -104,6 +110,10 @@ TR::DebugCounter::prependDebugCounter(TR::Compilation *comp, const char *name, T
    TR::DebugCounter *counter = TR::DebugCounter::getDebugCounter(comp, name, fidelity, staticDelta);
    if (!counter)
       return;
+
+   if (comp->compileRelocatableCode() && !counter->initializeReloData(comp, 0, fidelity, staticDelta))
+      return;
+
    prependDebugCounterBump(comp, nextTreeTop, counter, deltaNode);
    }
 
@@ -126,6 +136,53 @@ TR::DebugCounter::getDebugCounter(TR::Compilation *comp, const char *name, int8_
       }
    }
 
+void
+TR::DebugCounter::generateRelocation(TR::Compilation *comp, uint8_t *location, TR::Node *node, TR::DebugCounterBase *counter)
+   {
+   counter->finalizeReloData(comp, node);
+
+   TR::ExternalRelocation *r = new (comp->trHeapMemory()) TR::ExternalRelocation(location,
+                                                                                 (uint8_t *)counter,
+                                                                                 TR_DebugCounter,
+                                                                                 comp->cg());
+
+   comp->cg()->addAOTRelocation(r, __FILE__, __LINE__, node);
+   }
+
+void
+TR::DebugCounter::generateRelocation(TR::Compilation *comp, TR::Instruction *firstInstruction, TR::Node *node, TR::DebugCounterBase *counter, uint8_t seqKind)
+   {
+   counter->finalizeReloData(comp, node, seqKind);
+
+   TR::BeforeBinaryEncodingExternalRelocation *r = new (comp->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(
+                                                                                     firstInstruction,
+                                                                                     (uint8_t *)counter,
+                                                                                     TR_DebugCounter,
+                                                                                     comp->cg());
+
+   comp->cg()->addAOTRelocation(r, __FILE__, __LINE__, node);
+   }
+
+void
+TR::DebugCounter::generateRelocation(TR::Compilation *comp, TR::Instruction *firstInstruction, TR::Instruction *secondInstruction, TR::Node *node, TR::DebugCounterBase *counter, uint8_t seqKind)
+   {
+   counter->finalizeReloData(comp, node, seqKind);
+
+   TR::ExternalOrderedPair32BitRelocation *r = new (comp->trHeapMemory()) TR::ExternalOrderedPair32BitRelocation(
+                                                                                     (uint8_t *)firstInstruction,
+                                                                                     (uint8_t *)secondInstruction,
+                                                                                     (uint8_t *)counter,
+                                                                                     TR_DebugCounter,
+                                                                                     comp->cg());
+
+   comp->cg()->addAOTRelocation(r, __FILE__, __LINE__, node);
+   }
+
+bool
+TR::DebugCounter::relocatableDebugCounter(TR::Compilation *comp)
+   {
+   return comp->compileRelocatableCode();
+   }
 
 const char *TR::DebugCounter::debugCounterName(TR::Compilation *comp, const char *format, ...)
    {
@@ -230,12 +287,41 @@ TR::Node *TR::DebugCounterBase::createBumpCounterNode(TR::Compilation *comp, TR:
    TR::Node *load = TR::Node::createWithSymRef(deltaNode, TR::Compiler->target.is64Bit() ? TR::lload : TR::iload, 0, symref);
    TR::Node *add = TR::Node::create(TR::Compiler->target.is64Bit() ? TR::ladd : TR::iadd, 2, load, deltaNode);
    TR::Node *store = TR::Node::createWithSymRef(TR::Compiler->target.is64Bit() ? TR::lstore : TR::istore, 1, 1, add, symref);
+
+   if (comp->compileRelocatableCode())
+      comp->mapStaticAddressToCounter(symref, this);
+
    return store;
+   }
+
+bool
+TR::DebugCounterBase::initializeReloData(TR::Compilation *comp, int32_t delta, int8_t fidelity, int32_t staticDelta)
+   {
+   if (!_reloData)
+      {
+      _reloData = new (comp->trPersistentMemory()) TR::DebugCounterReloData(delta, fidelity, staticDelta);
+      }
+   return _reloData;
+   }
+
+void
+TR::DebugCounterBase::finalizeReloData(TR::Compilation *comp, TR::Node *node, uint8_t seqKind)
+   {
+   TR::DebugCounterReloData *reloData = getReloData();
+   if (!reloData)
+      comp->failCompilation<TR::CompilationException>("Failed to finalizeReloData\n");
+
+   TR_ByteCodeInfo &bci = node->getByteCodeInfo();
+   reloData->_callerIndex = bci.getCallerIndex();
+   reloData->_bytecodeIndex = bci.getByteCodeIndex();
+   reloData->_seqKind = seqKind;
    }
 
 TR::SymbolReference *TR::DebugCounter::getBumpCountSymRef(TR::Compilation *comp)
    {
-   return comp->getSymRefTab()->findOrCreateCounterSymRef(const_cast<char*>(_name), TR::Compiler->target.is64Bit() ? TR::Int64 : TR::Int32, &_bumpCount);
+   TR::SymbolReference *symRef = comp->getSymRefTab()->findOrCreateCounterSymRef(const_cast<char*>(_name), TR::Compiler->target.is64Bit() ? TR::Int64 : TR::Int32, &_bumpCount);
+   symRef->getSymbol()->setIsDebugCounter();
+   return symRef;
    }
 
 intptrj_t TR::DebugCounter::getBumpCountAddress()
@@ -243,7 +329,7 @@ intptrj_t TR::DebugCounter::getBumpCountAddress()
    return (intptrj_t)&_bumpCount;
    }
 
-void TR::DebugCounter::getInsertionCounterNames(TR::Compilation *comp, TR::Node *node, const char *(&counterNames)[3])
+void TR::DebugCounter::getInsertionCounterNames(TR::Compilation *comp, TR_OpaqueMethodBlock *method, int32_t bytecodeIndex, const char *(&counterNames)[3])
    {
    memset(counterNames, 0, sizeof(counterNames));
    bool insertByteCode = TR::Options::_debugCounterInsertByteCode && TR::SimpleRegex::match(TR::Options::_debugCounterInsertByteCode, getName(), true);
@@ -252,22 +338,20 @@ void TR::DebugCounter::getInsertionCounterNames(TR::Compilation *comp, TR::Node 
    if (!insertByteCode && !insertJittedBody && !insertMethod)
       return;
 
-   TR_ByteCodeInfo &bci = node->getByteCodeInfo();
-   const char *method;
+   const char *methodName;
    char methodBuf[200];
-   if (bci.getCallerIndex() == -1)
+   if (method == NULL)
       {
-      method = comp->signature();
+      methodName = comp->signature();
       }
    else
       {
-      TR_InlinedCallSite &ics = comp->getInlinedCallSite(bci.getCallerIndex());
-      method = comp->fe()->sampleSignature(ics._methodInfo, methodBuf, sizeof(methodBuf), comp->trMemory());
+      methodName = comp->fe()->sampleSignature(method, methodBuf, sizeof(methodBuf), comp->trMemory());
       }
    const char *jittedBody = comp->signature();
    if (insertByteCode)
       {
-      counterNames[0] = TR::DebugCounter::debugCounterName(comp, comp->getOptions()->debugCounterInsertedFormat(comp->trMemory(), getName(), "byByteCode.(%s)=%d"), method, bci.getByteCodeIndex());
+      counterNames[0] = TR::DebugCounter::debugCounterName(comp, comp->getOptions()->debugCounterInsertedFormat(comp->trMemory(), getName(), "byByteCode.(%s)=%d"), methodName, bytecodeIndex);
       }
    if (insertJittedBody)
       {
@@ -275,7 +359,7 @@ void TR::DebugCounter::getInsertionCounterNames(TR::Compilation *comp, TR::Node 
       }
    if (insertMethod)
       {
-      counterNames[2] = TR::DebugCounter::debugCounterName(comp, comp->getOptions()->debugCounterInsertedFormat(comp->trMemory(), getName(), "byMethod.(%s)"), method);
+      counterNames[2] = TR::DebugCounter::debugCounterName(comp, comp->getOptions()->debugCounterInsertedFormat(comp->trMemory(), getName(), "byMethod.(%s)"), methodName);
       }
    }
 
@@ -284,12 +368,28 @@ void TR::DebugCounterAggregation::aggregate(TR::DebugCounter *counter, int32_t d
    {
    if (!counter || delta == 0)
       return;
-   _counterDeltas->add(new (_mem->trPersistentMemory()) CounterDelta(counter, delta));
+   _counterDeltas->add(new (_mem) CounterDelta(counter, delta));
    }
 
 void TR::DebugCounterAggregation::aggregateStandardCounters(TR::Compilation *comp, TR::Node *node, const char *counterName, int32_t delta, int8_t fidelity, int32_t staticDelta)
    {
-   if (delta == 0)
+   TR_ByteCodeInfo &bci = node->getByteCodeInfo();
+   int16_t callerIndex = bci.getCallerIndex();
+   int32_t bytecodeIndex = bci.getByteCodeIndex();
+   TR_OpaqueMethodBlock *method = NULL;
+
+   if (callerIndex != -1)
+      {
+      TR_InlinedCallSite &ics = comp->getInlinedCallSite(callerIndex);
+      method = ics._methodInfo;
+      }
+
+   aggregateStandardCounters(comp, method, bytecodeIndex, counterName, delta, fidelity, staticDelta);
+   }
+
+void TR::DebugCounterAggregation::aggregateStandardCounters(TR::Compilation *comp, TR_OpaqueMethodBlock *method, int32_t bytecodeIndex, const char *counterName, int32_t delta, int8_t fidelity, int32_t staticDelta)
+   {
+   if (delta == 0 || method == (TR_OpaqueMethodBlock *)-1)
       return;
 
    TR::DebugCounter *counter = TR::DebugCounter::getDebugCounter(comp, counterName, fidelity, staticDelta);
@@ -297,17 +397,17 @@ void TR::DebugCounterAggregation::aggregateStandardCounters(TR::Compilation *com
       return;
 
    aggregate(counter, delta);
-   aggregateDebugCounterInsertions(comp, node, counter, delta, fidelity, staticDelta);
-   aggregateDebugCounterHistogram(comp, node, counter, delta, fidelity, staticDelta);
+   aggregateDebugCounterInsertions(comp, method, bytecodeIndex, counter, delta, fidelity, staticDelta);
+   aggregateDebugCounterHistogram(comp, counter, delta, fidelity, staticDelta);
    }
 
-void TR::DebugCounterAggregation::aggregateDebugCounterInsertions(TR::Compilation *comp, TR::Node *node, TR::DebugCounter *counter, int32_t delta, int8_t fidelity, int32_t staticDelta)
+void TR::DebugCounterAggregation::aggregateDebugCounterInsertions(TR::Compilation *comp, TR_OpaqueMethodBlock *method, int32_t bytecodeIndex, TR::DebugCounter *counter, int32_t delta, int8_t fidelity, int32_t staticDelta)
    {
    const char *counterNames[3];
-   counter->getInsertionCounterNames(comp, node, counterNames);
+   counter->getInsertionCounterNames(comp, method, bytecodeIndex, counterNames);
 
    if (counter && counter->getDenominator() && counter->contributesToDenominator())
-      aggregateDebugCounterInsertions(comp, node, counter->getDenominator(), delta, fidelity, staticDelta);
+      aggregateDebugCounterInsertions(comp, method, bytecodeIndex, counter->getDenominator(), delta, fidelity, staticDelta);
 
    for (int i = 0; i < sizeof(counterNames) / sizeof(counterNames[0]); i++)
       {
@@ -318,7 +418,7 @@ void TR::DebugCounterAggregation::aggregateDebugCounterInsertions(TR::Compilatio
       }
    }
 
-void TR::DebugCounterAggregation::aggregateDebugCounterHistogram(TR::Compilation *comp, TR::Node *node, TR::DebugCounter *counter, int32_t delta, int8_t fidelity, int32_t staticDelta)
+void TR::DebugCounterAggregation::aggregateDebugCounterHistogram(TR::Compilation *comp, TR::DebugCounter *counter, int32_t delta, int8_t fidelity, int32_t staticDelta)
    {
    if (comp->getOptions()->debugCounterHistogramIsEnabled(counter->getName(), fidelity))
       {
@@ -336,11 +436,13 @@ TR::SymbolReference *TR::DebugCounterAggregation::getBumpCountSymRef(TR::Compila
    {
    if (_symRef == NULL)
       {
-      TR::StaticSymbol *symbol = TR::StaticSymbol::create(_mem->trPersistentMemory(),TR::Int64);
+      TR::StaticSymbol *symbol = TR::StaticSymbol::create(_mem,TR::Int64);
       TR_ASSERT(symbol, "StaticSymbol *symbol must not be null. Ensure availability of persistent memory");
       symbol->setStaticAddress(&_bumpCount);
-      _symRef = new (_mem->trPersistentMemory()) TR::SymbolReference(comp->getSymRefTab(), symbol);
+      symbol->setNotDataAddress();
+      _symRef = new (_mem) TR::SymbolReference(comp->getSymRefTab(), symbol);
       TR_ASSERT(_symRef, "SymbolReference *_symRef must not be null. Ensure availability of persistent memory");
+      symbol->setIsDebugCounter();
       }
    return _symRef;
    }
@@ -365,8 +467,6 @@ TR::DebugCounter *TR::DebugCounterGroup::findCounter(const char *nameChars, int3
    strncpy(name, nameChars, nameLength);
    name[nameLength] = 0;
 
-   // There's a race here if we do parallel compilation
-
    OMR::CriticalSection findCounterLock(_countersMutex);
 
    CS2::HashIndex hi;
@@ -375,10 +475,32 @@ TR::DebugCounter *TR::DebugCounterGroup::findCounter(const char *nameChars, int3
    return _countersHashTable[hi];
    }
 
-TR::DebugCounterAggregation *TR::DebugCounterGroup::createAggregation(TR::Compilation *comp)
+TR::DebugCounterAggregation *TR::DebugCounterGroup::findAggregation(const char *nameChars, int32_t nameLength)
    {
-   TR::DebugCounterAggregation *aggregatedCounters = new (comp->trPersistentMemory()) TR::DebugCounterAggregation(comp->trMemory());
+   if (nameChars == NULL)
+      return NULL;
+   char *name = (char*)alloca(nameLength+1);
+   strncpy(name, nameChars, nameLength);
+   name[nameLength] = 0;
+
+   OMR::CriticalSection findAggregationLock(_countersMutex);
+
+   CS2::HashIndex hi;
+   if (!_aggregateCountersHashTable.Locate(name, hi))
+      return NULL;
+   return _aggregateCountersHashTable[hi];
+   }
+
+
+TR::DebugCounterAggregation *TR::DebugCounterGroup::createAggregation(TR::Compilation *comp, const char * name)
+   {
+   TR::DebugCounterAggregation *aggregatedCounters = new (comp->trPersistentMemory()) TR::DebugCounterAggregation(name, comp->trPersistentMemory());
    _aggregations.add(aggregatedCounters);
+
+   OMR::CriticalSection createAggregationCS(_countersMutex);
+
+   _aggregateCountersHashTable.Add(aggregatedCounters->getName(), aggregatedCounters);
+
    return aggregatedCounters;
    }
 
@@ -430,8 +552,6 @@ TR::DebugCounter *TR::DebugCounterGroup::createCounter(const char *name, int8_t 
    TR::DebugCounter *result = new (persistentMemory) TR::DebugCounter(name, fidelity, denominator, flags);
    TR_ASSERT(result, "DebugCounter *result must not be null. Ensure availability of persistent memory");
    _counters.add(result);
-   
-   // There's a race here if we do parallel compilation
 
    OMR::CriticalSection createCounterLock(_countersMutex);
 

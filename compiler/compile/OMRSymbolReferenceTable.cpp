@@ -1799,6 +1799,7 @@ OMR::SymbolReferenceTable::findOrCreateCounterSymRef(char *name, TR::DataType d,
    // No match
    //
    TR::StaticSymbol * sym = TR::StaticSymbol::createNamed(trHeapMemory(), d,address,name);
+   sym->setNotDataAddress();
    result = new (trHeapMemory()) TR::SymbolReference(self(),sym);
    _debugCounterSymbolRefs.add(result);
    return result;

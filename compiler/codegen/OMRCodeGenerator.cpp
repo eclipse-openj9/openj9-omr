@@ -86,6 +86,7 @@
 #include "il/symbol/LabelSymbol.hpp"                // for LabelSymbol
 #include "il/symbol/RegisterMappedSymbol.hpp"
 #include "il/symbol/ResolvedMethodSymbol.hpp"
+#include "il/symbol/StaticSymbol.hpp"
 #include "infra/Array.hpp"                          // for TR_Array
 #include "infra/Assert.hpp"                         // for TR_ASSERT
 #include "infra/Bit.hpp"                            // for isEven, etc
@@ -3033,10 +3034,19 @@ TR::Instruction *OMR::CodeGenerator::generateDebugCounter(TR::Instruction *curso
       return cursor;
    if (delta == 0)
       return cursor;
-   TR::DebugCounterAggregation *aggregatedCounters = self()->comp()->getPersistentInfo()->getDynamicCounters()->createAggregation(self()->comp());
+   TR::DebugCounterAggregation *aggregatedCounters = self()->comp()->getPersistentInfo()->getDynamicCounters()->createAggregation(self()->comp(), name);
    aggregatedCounters->aggregateStandardCounters(self()->comp(), cursor->getNode(), name, delta, fidelity, staticDelta);
    if (!aggregatedCounters->hasAnyCounters())
       return cursor;
+
+   if (TR::DebugCounter::relocatableDebugCounter(self()->comp()) && !aggregatedCounters->initializeReloData(self()->comp(), delta, fidelity, staticDelta))
+      return cursor;
+
+   TR::SymbolReference *symref = aggregatedCounters->getBumpCountSymRef(self()->comp());
+
+   if (TR::DebugCounter::relocatableDebugCounter(self()->comp()))
+      self()->comp()->mapStaticAddressToCounter(symref, aggregatedCounters);
+
    return self()->generateDebugCounterBump(cursor, aggregatedCounters, 1, NULL);
    }
 
@@ -3050,6 +3060,15 @@ TR::Instruction *OMR::CodeGenerator::generateDebugCounter(TR::Instruction *curso
    TR::DebugCounter *counter = TR::DebugCounter::getDebugCounter(self()->comp(), name, fidelity, staticDelta);
    if (!counter)
       return cursor;
+
+   if (TR::DebugCounter::relocatableDebugCounter(self()->comp()) && !counter->initializeReloData(self()->comp(), 0, fidelity, staticDelta))
+      return cursor;
+
+   TR::SymbolReference *symref = counter->getBumpCountSymRef(self()->comp());
+
+   if (TR::DebugCounter::relocatableDebugCounter(self()->comp()))
+      self()->comp()->mapStaticAddressToCounter(symref, counter);
+
    return self()->generateDebugCounterBump(cursor, counter, deltaReg, NULL);
    }
 
@@ -3061,10 +3080,19 @@ TR::Instruction *OMR::CodeGenerator::generateDebugCounter(const char *name, TR::
       return cursor;
    if (delta == 0)
       return cursor;
-   TR::DebugCounterAggregation *aggregatedCounters = self()->comp()->getPersistentInfo()->getDynamicCounters()->createAggregation(self()->comp());
+   TR::DebugCounterAggregation *aggregatedCounters = self()->comp()->getPersistentInfo()->getDynamicCounters()->createAggregation(self()->comp(), name);
    aggregatedCounters->aggregateStandardCounters(self()->comp(), cursor->getNode(), name, delta, fidelity, staticDelta);
    if (!aggregatedCounters->hasAnyCounters())
       return cursor;
+
+   if (TR::DebugCounter::relocatableDebugCounter(self()->comp()) && !aggregatedCounters->initializeReloData(self()->comp(), delta, fidelity, staticDelta))
+      return cursor;
+
+   TR::SymbolReference *symref = aggregatedCounters->getBumpCountSymRef(self()->comp());
+
+   if (TR::DebugCounter::relocatableDebugCounter(self()->comp()))
+      self()->comp()->mapStaticAddressToCounter(symref, aggregatedCounters);
+
    return self()->generateDebugCounterBump(cursor, aggregatedCounters, 1, &cond);
    }
 
@@ -3078,6 +3106,15 @@ TR::Instruction *OMR::CodeGenerator::generateDebugCounter(const char *name, TR::
    TR::DebugCounter *counter = TR::DebugCounter::getDebugCounter(self()->comp(), name, fidelity, staticDelta);
    if (!counter)
       return cursor;
+
+   if (TR::DebugCounter::relocatableDebugCounter(self()->comp()) && !counter->initializeReloData(self()->comp(), 0, fidelity, staticDelta))
+      return cursor;
+
+   TR::SymbolReference *symref = counter->getBumpCountSymRef(self()->comp());
+
+   if (TR::DebugCounter::relocatableDebugCounter(self()->comp()))
+      self()->comp()->mapStaticAddressToCounter(symref, counter);
+
    return self()->generateDebugCounterBump(cursor, counter, deltaReg, &cond);
    }
 
@@ -3089,10 +3126,19 @@ TR::Instruction *OMR::CodeGenerator::generateDebugCounter(const char *name, TR_S
       return cursor;
    if (delta == 0)
       return cursor;
-   TR::DebugCounterAggregation *aggregatedCounters = self()->comp()->getPersistentInfo()->getDynamicCounters()->createAggregation(self()->comp());
+   TR::DebugCounterAggregation *aggregatedCounters = self()->comp()->getPersistentInfo()->getDynamicCounters()->createAggregation(self()->comp(), name);
    aggregatedCounters->aggregateStandardCounters(self()->comp(), cursor->getNode(), name, delta, fidelity, staticDelta);
    if (!aggregatedCounters->hasAnyCounters())
       return cursor;
+
+   if (TR::DebugCounter::relocatableDebugCounter(self()->comp()) && !aggregatedCounters->initializeReloData(self()->comp(), delta, fidelity, staticDelta))
+      return cursor;
+
+   TR::SymbolReference *symref = aggregatedCounters->getBumpCountSymRef(self()->comp());
+
+   if (TR::DebugCounter::relocatableDebugCounter(self()->comp()))
+      self()->comp()->mapStaticAddressToCounter(symref, aggregatedCounters);
+
    return self()->generateDebugCounterBump(cursor, aggregatedCounters, 1, srm);
    }
 
@@ -3106,6 +3152,15 @@ TR::Instruction *OMR::CodeGenerator::generateDebugCounter(const char *name, TR::
    TR::DebugCounter *counter = TR::DebugCounter::getDebugCounter(self()->comp(), name, fidelity, staticDelta);
    if (!counter)
       return cursor;
+
+   if (TR::DebugCounter::relocatableDebugCounter(self()->comp()) && !counter->initializeReloData(self()->comp(), 0, fidelity, staticDelta))
+      return cursor;
+
+   TR::SymbolReference *symref = counter->getBumpCountSymRef(self()->comp());
+
+   if (TR::DebugCounter::relocatableDebugCounter(self()->comp()))
+      self()->comp()->mapStaticAddressToCounter(symref, counter);
+
    return self()->generateDebugCounterBump(cursor, counter, deltaReg, srm);
    }
 

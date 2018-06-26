@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -24,16 +24,16 @@
 
 #include "ras/Debug.hpp"
 
-#include <stdarg.h>            // for va_list
-#include <stddef.h>            // for NULL
-#include <stdint.h>            // for int32_t, int8_t, uint32_t, int64_t, etc
-#include "cs2/hashtab.h"       // for HashTable
-#include "env/CompilerEnv.hpp" // for target->is64Bit()
-#include "env/TRMemory.hpp"    // for TR_MemoryBase::ObjectType::DebugCounter, etc
-#include "env/jittypes.h"      // for intptrj_t
-#include "infra/Flags.hpp"     // for flags8_t
-#include "infra/List.hpp"      // for TR_PersistentList
-#include "infra/Monitor.hpp"   // for createCounter race conditions
+#include <stdarg.h>                // for va_list
+#include <stddef.h>                // for NULL
+#include <stdint.h>                // for int32_t, int8_t, uint32_t, int64_t, etc
+#include "cs2/hashtab.h"           // for HashTable
+#include "env/CompilerEnv.hpp"     // for target->is64Bit()
+#include "env/TRMemory.hpp"        // for TR_MemoryBase::ObjectType::DebugCounter, etc
+#include "env/jittypes.h"          // for intptrj_t
+#include "infra/Flags.hpp"         // for flags8_t
+#include "infra/List.hpp"          // for TR_PersistentList
+#include "infra/Monitor.hpp"       // for createCounter race conditions
 
 namespace TR { class Compilation; }
 namespace TR { class Node; }
@@ -49,14 +49,46 @@ enum DebugCounterInjectionPoint
    TR_AfterRegAlloc
    };
 
+enum DebugCounterType
+   {
+   NORMAL,
+   AGGREGATE
+   };
+
+struct DebugCounterReloData
+   {
+   TR_ALLOC(TR_Memory::DebugCounter)
+   DebugCounterReloData(int32_t delta, int8_t fidelity, int32_t staticDelta)
+      : _seqKind(0), _fidelity(fidelity), _callerIndex(-1), _bytecodeIndex(0),
+        _delta(delta), _staticDelta(staticDelta)
+      {}
+   uint8_t              _seqKind;
+   int8_t               _fidelity;
+   int16_t              _callerIndex;
+   int32_t              _bytecodeIndex;
+   int32_t              _delta;
+   int32_t              _staticDelta;
+   };
+
 class DebugCounterBase
    {
 public:
+   DebugCounterBase(const char *name) : _name(name), _reloData(NULL) {}
    virtual intptrj_t getBumpCountAddress() = 0;
    virtual TR::SymbolReference *getBumpCountSymRef(TR::Compilation *comp) = 0;
    TR::Node *createBumpCounterNode(TR::Compilation *comp, TR::Node *deltaNode);
+   bool initializeReloData(TR::Compilation *comp, int32_t delta, int8_t fidelity, int32_t staticDelta);
+   void finalizeReloData(TR::Compilation *comp, TR::Node *node, uint8_t seqKind=0);
 
    virtual void accumulate() = 0;
+
+   const char *getName() { return _name; }
+
+   DebugCounterReloData *getReloData() { return _reloData; }
+
+protected:
+   const char           *_name;
+   DebugCounterReloData *_reloData;
    };
 
 class DebugCounter : public DebugCounterBase
@@ -65,8 +97,7 @@ class DebugCounter : public DebugCounterBase
    TR_ALLOC(TR_Memory::DebugCounter)
 
    uint64_t            _totalCount;
-   const char         *_name;
-   DebugCounter    *_denominator;
+   DebugCounter       *_denominator;
    uint64_t            _bumpCount;     // The counter to be incremented directly
    uint64_t            _bumpCountBase; // The last value of bumpCount that was accumulated into totalCount
    int8_t              _fidelity;      // (See the Fidelities enumeration)
@@ -79,7 +110,8 @@ class DebugCounter : public DebugCounterBase
       };
 
    DebugCounter(const char *name, int8_t fidelity, DebugCounter *denominator=NULL, int8_t flags=0):
-      _name(name), _fidelity(fidelity),_denominator(denominator), _flags(flags),
+      DebugCounterBase(name),
+      _fidelity(fidelity),_denominator(denominator), _flags(flags),
       _totalCount(0),_bumpCount(0),_bumpCountBase(0)
       {
       if (_denominator != NULL)
@@ -119,7 +151,11 @@ class DebugCounter : public DebugCounterBase
    static void prependDebugCounterBump(TR::Compilation *comp, TR::TreeTop *nextTreeTop, DebugCounterBase *counter, int32_t delta);
    static void prependDebugCounterBump(TR::Compilation *comp, TR::TreeTop *nextTreeTop, DebugCounterBase *counter, TR::Node *deltaNode);
 
+   static void generateRelocation(TR::Compilation *comp, uint8_t *location, TR::Node *node, TR::DebugCounterBase *counter);
+   static void generateRelocation(TR::Compilation *comp, TR::Instruction *firstInstruction, TR::Node *node, TR::DebugCounterBase *counter, uint8_t seqKind=0);
+   static void generateRelocation(TR::Compilation *comp, TR::Instruction *firstInstruction, TR::Instruction *secondInstruction, TR::Node *node, TR::DebugCounterBase *counter, uint8_t seqKind=0);
 
+   static bool relocatableDebugCounter(TR::Compilation *comp);
 
    enum Fidelities // Signal-to-noise ratio (SNR) in decibels
       {
@@ -141,7 +177,6 @@ class DebugCounter : public DebugCounterBase
 
    // Queries
    //
-   const char      *getName()                  { return _name; }
    int8_t           getFidelity()              { return _fidelity; }
    /** On 32-bit platforms, dereference the address as uint32 pointer, since we use 32-bit operations*/
    int64_t          getCount()                 { return TR::Compiler->target.is64Bit() ? _totalCount : *(reinterpret_cast<uint32_t*>(&_totalCount)); }
@@ -149,7 +184,7 @@ class DebugCounter : public DebugCounterBase
    bool             isDenominator()            { return _flags.testAny(IsDenominator); }
    bool             contributesToDenominator() { return _flags.testAny(ContributesToDenominator); }
 
-   void             getInsertionCounterNames(TR::Compilation *comp, TR::Node *node, const char *(&counterNames)[3]);
+   void             getInsertionCounterNames(TR::Compilation *comp, TR_OpaqueMethodBlock *method, int32_t bytecodeIndex, const char *(&counterNames)[3]);
 
    TR::SymbolReference *getBumpCountSymRef(TR::Compilation *comp);
    intptrj_t getBumpCountAddress();
@@ -203,24 +238,26 @@ class DebugCounterAggregation : public DebugCounterBase
       int32_t delta;
       };
 
-   TR_Memory *_mem;
+   TR_PersistentMemory *_mem;
    TR::SymbolReference *_symRef;
    TR_PersistentList<CounterDelta> *_counterDeltas;
    int64_t _bumpCount;
    int64_t _lastBumpCount;
 
-   void aggregateDebugCounterInsertions(TR::Compilation *comp, TR::Node *node, DebugCounter *counter, int32_t delta, int8_t fidelity, int32_t staticDelta);
-   void aggregateDebugCounterHistogram (TR::Compilation *comp, TR::Node *node, DebugCounter *counter, int32_t delta, int8_t fidelity, int32_t staticDelta);
+   void aggregateDebugCounterInsertions(TR::Compilation *comp, TR_OpaqueMethodBlock *method, int32_t bytecodeIndex, TR::DebugCounter *counter, int32_t delta, int8_t fidelity, int32_t staticDelta);
+   void aggregateDebugCounterHistogram (TR::Compilation *comp, DebugCounter *counter, int32_t delta, int8_t fidelity, int32_t staticDelta);
 
 protected:
-   DebugCounterAggregation(TR_Memory *mem)
-         : _mem(mem), _counterDeltas(new (mem->trPersistentMemory()) TR_PersistentList<CounterDelta>()),
-           _symRef(NULL), _bumpCount(0), _lastBumpCount(0){}
+   DebugCounterAggregation(const char * name, TR_PersistentMemory *mem)
+         : DebugCounterBase(name),
+           _mem(mem), _counterDeltas(new (mem) TR_PersistentList<CounterDelta>()),
+           _symRef(NULL), _bumpCount(0), _lastBumpCount(0) {}
 public:
    TR_ALLOC(TR_Memory::DebugCounter)
 
    void aggregate(DebugCounter *counter, int32_t delta);
    void aggregateStandardCounters(TR::Compilation *comp, TR::Node *node, const char *counterName, int32_t delta, int8_t fidelity, int32_t staticDelta);
+   void aggregateStandardCounters(TR::Compilation *comp, TR_OpaqueMethodBlock *method, int32_t bytecodeIndex, const char *counterName, int32_t delta, int8_t fidelity, int32_t staticDelta);
 
    bool hasAnyCounters() { return !_counterDeltas->isEmpty(); }
 
@@ -233,6 +270,7 @@ public:
 class DebugCounterGroup
    {
    CS2::HashTable<const char*, DebugCounter*, TRPersistentMemoryAllocator> _countersHashTable;
+   CS2::HashTable<const char*, DebugCounterAggregation*, TRPersistentMemoryAllocator> _aggregateCountersHashTable;
    TR_PersistentList<DebugCounter> _counters;
    TR_PersistentList<DebugCounterAggregation> _aggregations;
    DebugCounter *createCounter (const char *name, int8_t fidelity, TR_PersistentMemory *mem);
@@ -245,7 +283,7 @@ class DebugCounterGroup
    TR_ALLOC(TR_MemoryBase::DebugCounter)
 
    DebugCounterGroup(TR_PersistentMemory *mem)
-         : _countersHashTable(TRPersistentMemoryAllocator(mem))
+         : _countersHashTable(TRPersistentMemoryAllocator(mem)), _aggregateCountersHashTable(TRPersistentMemoryAllocator(mem))
          {
          _countersMutex = TR::Monitor::create("countersMutex");
          }
@@ -254,7 +292,8 @@ class DebugCounterGroup
 
    DebugCounter *getCounter(TR::Compilation *comp, const char *name, int8_t fidelity=DebugCounter::Undetermined); // Returns NULL if counter is disabled
 
-   DebugCounterAggregation *createAggregation(TR::Compilation *comp);
+   DebugCounterAggregation *createAggregation(TR::Compilation *comp, const char * name);
+   DebugCounterAggregation * findAggregation(const char *nameChars, int32_t nameLength);
 
    void accumulate();
    void resetAll();

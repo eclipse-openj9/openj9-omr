@@ -66,6 +66,7 @@
 #include "il/NodePool.hpp"                     // for TR::NodePool
 #include "il/Node_inlines.hpp"                 // for Node::getType, etc
 #include "il/Symbol.hpp"                       // for Symbol
+#include "il/symbol/StaticSymbol.hpp"          // for StaticSymbol
 #include "il/SymbolReference.hpp"              // for SymbolReference
 #include "il/TreeTop.hpp"                      // for TreeTop
 #include "il/TreeTop_inlines.hpp"              // for TreeTop::getNode, etc
@@ -274,6 +275,7 @@ OMR::Compilation::Compilation(
    _checkcastNullChkInfo(getTypedAllocator<TR_Pair<TR_ByteCodeInfo, TR::Node> *>(self()->allocator())),
    _nodesThatShouldPrefetchOffset(getTypedAllocator<TR_Pair<TR::Node,uint32_t> *>(self()->allocator())),
    _extraPrefetchInfo(getTypedAllocator<TR_PrefetchInfo*>(self()->allocator())),
+   _debugCounterMap(std::less<const void *>(), getTypedAllocator<DebugCounterEntry>(self()->allocator())),
    _currentBlock(NULL),
    _verboseOptTransformationCount(0),
    _aotMethodCodeStart(NULL),
@@ -1976,6 +1978,28 @@ void OMR::Compilation::dumpFlowGraph(TR::CFG * cfg)
          trfprintf(self()->getOutFile(),"\nControl Flow Graph is empty\n");
       }
    trfflush(self()->getOutFile());
+   }
+
+void
+OMR::Compilation::mapStaticAddressToCounter(TR::SymbolReference *symRef, TR::DebugCounterBase *counter)
+   {
+   const void *staticAddress = (const void *)symRef->getSymbol()->castToStaticSymbol()->getStaticAddress();
+   self()->getDebugCounterMap().insert(std::make_pair(staticAddress, counter));
+   }
+
+TR::DebugCounterBase *
+OMR::Compilation::getCounterFromStaticAddress(TR::SymbolReference *symRef)
+   {
+   const void *staticAddress = (const void *)symRef->getSymbol()->castToStaticSymbol()->getStaticAddress();
+   TR::Compilation::DebugCounterMap::iterator entry = self()->getDebugCounterMap().find(staticAddress);
+   if (entry != self()->getDebugCounterMap().end())
+      {
+      return entry->second;
+      }
+   else
+      {
+      return NULL;
+      }
    }
 
 TR::CodeCache *

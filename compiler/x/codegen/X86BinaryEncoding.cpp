@@ -1135,6 +1135,18 @@ TR::X86ImmSymInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
                cg()->addAOTRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor,
                                    (uint8_t *) (staticSym->getStaticAddress()), TR_AbsoluteMethodAddress, cg()),
                                       __FILE__, __LINE__, getNode());
+            else if (sym->isDebugCounter())
+               {
+               TR::DebugCounterBase *counter = comp->getCounterFromStaticAddress(getSymbolReference());
+               if (counter == NULL)
+                  {
+                  comp->failCompilation<TR::CompilationException>("Could not generate relocation for debug counter in TR::X86ImmSymInstruction::addMetaDataForCodeAddress\n");
+                  }
+               TR::DebugCounter::generateRelocation(comp,
+                                                    cursor,
+                                                    getNode(),
+                                                    counter);
+               }
             else
                cg()->addAOTRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor,
                                    (uint8_t *)getSymbolReference(), getNode() ? (uint8_t *)(uintptr_t)getNode()->getInlinedSiteIndex() : (uint8_t *)-1, TR_DataAddress, cg()),
@@ -1638,6 +1650,19 @@ TR::X86RegImmSymInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
                                                            cg()),
                                 __FILE__, __LINE__, getNode());
          break;
+      case TR_DebugCounter:
+         {
+         TR::DebugCounterBase *counter = cg()->comp()->getCounterFromStaticAddress(getSymbolReference());
+         if (counter == NULL)
+            {
+            cg()->comp()->failCompilation<TR::CompilationException>("Could not generate relocation for debug counter in TR::X86RegImmSymInstruction::addMetaDataForCodeAddress\n");
+            }
+         TR::DebugCounter::generateRelocation(cg()->comp(),
+                                              cursor,
+                                              getNode(),
+                                              counter);
+         }
+         break;
 
       default:
          TR_ASSERT(0, "invalid relocation kind for TR::X86RegImmSymInstruction");
@@ -2016,6 +2041,18 @@ TR::X86MemImmSymInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
       {
       cg()->addAOTRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor, (uint8_t *)getSymbolReference(), getNode() ? (uint8_t *)(uintptr_t)getNode()->getInlinedSiteIndex() : (uint8_t *)-1, TR_MethodObject, cg()),
                               __FILE__, __LINE__, getNode());
+      }
+   else if (symbol->isDebugCounter())
+      {
+      TR::DebugCounterBase *counter = comp->getCounterFromStaticAddress(getSymbolReference());
+      if (counter == NULL)
+         {
+         comp->failCompilation<TR::CompilationException>("Could not generate relocation for debug counter in TR::X86MemImmSymInstruction::addMetaDataForCodeAddress\n");
+         }
+      TR::DebugCounter::generateRelocation(comp,
+                                           cursor,
+                                           getNode(),
+                                           counter);
       }
    else
       {
@@ -2644,6 +2681,21 @@ TR::AMD64RegImm64SymInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
                }
             break;
             }
+
+         case TR_DebugCounter:
+            {
+            TR::DebugCounterBase *counter = cg()->comp()->getCounterFromStaticAddress(getSymbolReference());
+            if (counter == NULL)
+               {
+               cg()->comp()->failCompilation<TR::CompilationException>("Could not generate relocation for debug counter in TR::AMD64RegImm64SymInstruction::addMetaDataForCodeAddress\n");
+               }
+            TR::DebugCounter::generateRelocation(cg()->comp(),
+                                                 cursor,
+                                                 getNode(),
+                                                 counter);
+            }
+            break;
+
          default:
             ;
          }

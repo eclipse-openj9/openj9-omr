@@ -440,6 +440,18 @@ OMR::X86::AMD64::MemoryReference::addMetaDataForCodeAddressWithLoad(
             cg->addAOTRelocation(new (cg->trHeapMemory()) TR::ExternalRelocation(displacementLocation, 0, TR_AbsoluteMethodAddress, cg),
                                  __FILE__,__LINE__,containingInstruction->getNode());
          }
+      else if (sr.getSymbol()->isDebugCounter())
+         {
+         TR::DebugCounterBase *counter = cg->comp()->getCounterFromStaticAddress(&sr);
+         if (counter == NULL)
+            {
+            cg->comp()->failCompilation<TR::CompilationException>("Could not generate relocation for debug counter in OMR::X86::AMD64::MemoryReference::addMetaDataForCodeAddressWithLoad\n");
+            }
+         TR::DebugCounter::generateRelocation(cg->comp(),
+                                              displacementLocation,
+                                              containingInstruction->getNode(),
+                                              counter);
+         }
       }
    else
       {

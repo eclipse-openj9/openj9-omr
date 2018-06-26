@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -201,6 +201,21 @@ TR::S390ConstantDataSnippet::addMetaDataForCodeAddress(uint8_t *cursor)
             }
          relo = new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor, (uint8_t *) getNode(), targetAdress2, (TR_ExternalRelocationTargetKind) reloType, cg());
          cg()->addAOTRelocation(relo, __FILE__, __LINE__, getNode());
+         }
+         break;
+
+      case TR_DebugCounter:
+         {
+         TR::DebugCounterBase *counter = cg()->comp()->getCounterFromStaticAddress(getNode()->getSymbolReference());
+         if (counter == NULL)
+            {
+            cg()->comp()->failCompilation<TR::CompilationException>("Could not generate relocation for debug counter in OMR::X86::MemoryReference::addMetaDataForCodeAddress\n");
+            }
+         AOTcgDiag3(comp, "add relocation (%d) cursor=%x counter=%x\n", reloType, cursor, counter);
+         TR::DebugCounter::generateRelocation(cg()->comp(),
+                                              cursor,
+                                              getNode(),
+                                              counter);
          }
          break;
 

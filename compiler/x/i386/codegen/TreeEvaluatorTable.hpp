@@ -201,7 +201,7 @@
    TR::TreeEvaluator::i2dEvaluator,                     // TR::su2d
    TR::TreeEvaluator::badILOpEvaluator,                    // TR::su2a
    TR::TreeEvaluator::passThroughEvaluator,             // TR::a2i
-   TR::TreeEvaluator::passThroughEvaluator,             // TR::a2l
+   TR::TreeEvaluator::badILOpEvaluator,                 // TR::a2l
    TR::TreeEvaluator::i2bEvaluator,                     // TR::a2b
    TR::TreeEvaluator::i2bEvaluator,                     // TR::a2s
    TR::TreeEvaluator::integerCmpeqEvaluator,            // TR::icmpeq

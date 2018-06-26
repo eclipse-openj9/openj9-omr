@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -339,13 +339,13 @@ OMR::TreeEvaluator::computeCCEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 
 TR::Register *OMR::TreeEvaluator::unImpOpEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR_ASSERT(false, "Opcode %s is not implemented\n",node->getOpCode().getName());
+   TR_ASSERT_FATAL(false, "Opcode %s is not implemented\n", node->getOpCode().getName());
    return NULL;
    }
 
 TR::Register *OMR::TreeEvaluator::badILOpEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR_ASSERT(false, "badILOp cannot be evaluated");
+   TR_ASSERT_FATAL(false, "badILOp %s cannot be evaluated\n", node->getOpCode().getName());
    return NULL;
    }
 

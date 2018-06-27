@@ -30,9 +30,6 @@
 TR_X86CPUIDBuffer *
 OMR::X86::CPU::queryX86TargetCPUID()
    {
-#ifdef J9_PROJECT_SPECIFIC
-   return NULL;
-#else
    static TR_X86CPUIDBuffer *buf = NULL;
    auto jitConfig = TR::JitConfig::instance();
 
@@ -71,7 +68,6 @@ OMR::X86::CPU::queryX86TargetCPUID()
       }
 
    return buf;
-#endif
    }
 
 const char *

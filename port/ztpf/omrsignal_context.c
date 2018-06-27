@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2017 IBM Corp. and others
+ * Copyright (c) 1991, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -26,12 +26,8 @@
  * \brief Saves and returns information about signals
  */
 
-#define ZTPF_NEEDS_GETCONTEXT
-
 #include <errno.h>
 #include <string.h>
-#include <sys/ucontext.h>
-#include "sys/sigcontext.h"
 #include <tpf/c_proc.h>
 #include "omrport.h"
 #include "omrsignal_context.h"

@@ -26,7 +26,8 @@
  * @brief process introspection support
  */
 #include <pthread.h>
-#include <sys/ucontext.h>
+#include <ucontext.h>
+#include "sys/sigcontext.h"
 #include <sched.h>
 #include <string.h>
 #include <signal.h>

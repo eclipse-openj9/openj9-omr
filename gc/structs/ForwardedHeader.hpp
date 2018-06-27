@@ -33,10 +33,6 @@
 #include "HeapLinkedFreeHeader.hpp"
 
 
-#if defined(OMR_VALGRIND_MEMCHECK)
-#include "MemcheckWrapper.hpp"
-#endif /* defined(OMR_VALGRIND_MEMCHECK) */
-
 #if defined(OMR_INTERP_COMPRESSED_OBJECT_HEADER) != defined(OMR_GC_COMPRESSED_POINTERS)
 #error "MutableHeaderFields requires sizeof(fomrobject_t) == sizeof(j9objectclass_t)"
 #endif /* defined(OMR_INTERP_COMPRESSED_OBJECT_HEADER) != defined(OMR_GC_COMPRESSED_POINTERS) */
@@ -418,13 +414,8 @@ public:
 	getReverseForwardedPointer()
 	{
 		ForwardedHeaderAssert(isReverseForwardedPointer());
-		omrobjectptr_t returnPtr;
 		MM_HeapLinkedFreeHeader* freeHeader = MM_HeapLinkedFreeHeader::getHeapLinkedFreeHeader(_objectPtr);
-		returnPtr = (omrobjectptr_t) freeHeader->getNext();
-#if defined(OMR_VALGRIND_MEMCHECK)		
-		valgrindMakeMemDefined((uintptr_t)freeHeader,(uintptr_t)sizeof(MM_HeapLinkedFreeHeader));
-#endif /* defined(OMR_VALGRIND_MEMCHECK) */
-		return returnPtr;
+		return (omrobjectptr_t) freeHeader->getNext();
 	}
 
 	/**

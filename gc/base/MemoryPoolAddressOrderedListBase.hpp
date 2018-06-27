@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2015 IBM Corp. and others
+ * Copyright (c) 1991, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -31,6 +31,10 @@
 #include "LightweightNonReentrantLock.hpp"
 #include "MemoryPool.hpp"
 #include "EnvironmentBase.hpp"
+
+#if defined(OMR_VALGRIND_MEMCHECK)
+#include "MemcheckWrapper.hpp"
+#endif /* defined(OMR_VALGRIND_MEMCHECK) */
 
 class MM_SweepPoolManager;
 class MM_SweepPoolState;
@@ -81,6 +85,11 @@ protected:
 		/* Determine if the heap chunk belongs in the free list */
 		uintptr_t freeEntrySize = ((uintptr_t)addrTop) - ((uintptr_t)addrBase);
 		Assert_MM_true((uintptr_t)addrTop >= (uintptr_t)addrBase);
+
+#if defined(OMR_VALGRIND_MEMCHECK)
+		valgrindMakeMemUndefined((uintptr_t) addrBase, freeEntrySize);
+#endif /* defined(OMR_VALGRIND_MEMCHECK) */
+
 		MM_HeapLinkedFreeHeader *freeEntry = MM_HeapLinkedFreeHeader::fillWithHoles(addrBase, freeEntrySize);
 		if ((NULL != freeEntry) && (freeEntrySize >= _minimumFreeEntrySize)) {
 			Assert_MM_true(freeEntry == addrBase);

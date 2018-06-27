@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2017 IBM Corp. and others
+ * Copyright (c) 1991, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -29,12 +29,8 @@
 #include "omrcfg.h"
 #include "ForwardedHeader.hpp"
 #include "ModronAssertions.h"
-
 #include "ObjectHeapIteratorAddressOrderedList.hpp"
 
-#if defined(OMR_VALGRIND_MEMCHECK)
-#include "MemcheckWrapper.hpp"
-#endif /* defined(OMR_VALGRIND_MEMCHECK) */
 
 /**
  * @see GC_ObjectHeapIterator::reset()
@@ -71,23 +67,10 @@ GC_ObjectHeapIteratorAddressOrderedList::advanceScanPtr(uintptr_t increment)
 
 bool
 GC_ObjectHeapIteratorAddressOrderedList::shouldReturnCurrentObject() {
-	if(_scanPtr < _scanPtrTop) {
-#if defined(OMR_VALGRIND_MEMCHECK)
-		bool scanPtrObjExists = valgrindCheckObjectInPool(_extensions,(uintptr_t) _scanPtr);
-		if(!scanPtrObjExists) valgrindMakeMemDefined(((uintptr_t) _scanPtr),sizeof(omrobjectptr_t));
-#endif /* defined(OMR_VALGRIND_MEMCHECK) */		
+	if(_scanPtr < _scanPtrTop) {	
 		_isDeadObject = _extensions->objectModel.isDeadObject(_scanPtr);
-#if defined(OMR_VALGRIND_MEMCHECK)
-		if(!scanPtrObjExists) valgrindMakeMemNoaccess(((uintptr_t) _scanPtr),sizeof(omrobjectptr_t));
-#endif /* defined(OMR_VALGRIND_MEMCHECK) */		
-		if (_isDeadObject) {
-#if defined(OMR_VALGRIND_MEMCHECK)			
-	if(!scanPtrObjExists) valgrindMakeMemDefined(((uintptr_t) _scanPtr),sizeof(omrobjectptr_t));
-#endif /* defined(OMR_VALGRIND_MEMCHECK) */					
-			_isSingleSlotHole = _extensions->objectModel.isSingleSlotDeadObject(_scanPtr);
-#if defined(OMR_VALGRIND_MEMCHECK)			
-	if(!scanPtrObjExists) valgrindMakeMemNoaccess(((uintptr_t) _scanPtr),sizeof(omrobjectptr_t));
-#endif /* defined(OMR_VALGRIND_MEMCHECK) */					
+		if (_isDeadObject) {				
+			_isSingleSlotHole = _extensions->objectModel.isSingleSlotDeadObject(_scanPtr);				
 			_deadObjectSize = computeDeadObjectSize();
 			return _includeDeadObjects;
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
@@ -113,21 +96,11 @@ GC_ObjectHeapIteratorAddressOrderedList::nextObjectNoAdvance() {
 			return _scanPtr;
 		}
 	}
-
-#if defined(OMR_VALGRIND_MEMCHECK)			
-	bool scanPtrObjExists;
-#endif /* defined(OMR_VALGRIND_MEMCHECK) */						
-	while(_scanPtr < _scanPtrTop) {
-#if defined(OMR_VALGRIND_MEMCHECK)				
-		scanPtrObjExists = valgrindCheckObjectInPool(_extensions,(uintptr_t) _scanPtr);
-		if(!scanPtrObjExists) valgrindMakeMemDefined(((uintptr_t) _scanPtr),sizeof(omrobjectptr_t));
-#endif /* defined(OMR_VALGRIND_MEMCHECK) */							
+					
+	while(_scanPtr < _scanPtrTop) {						
 		/* These flags were set before we returned the last object, but the object might have changed. */
 		_isDeadObject = _extensions->objectModel.isDeadObject(_scanPtr);
-		_isSingleSlotHole = _isDeadObject ? _extensions->objectModel.isSingleSlotDeadObject(_scanPtr) : false;
-#if defined(OMR_VALGRIND_MEMCHECK)				
-	if(!scanPtrObjExists) valgrindMakeMemNoaccess(((uintptr_t) _scanPtr),sizeof(omrobjectptr_t));
-#endif /* defined(OMR_VALGRIND_MEMCHECK) */					
+		_isSingleSlotHole = _isDeadObject ? _extensions->objectModel.isSingleSlotDeadObject(_scanPtr) : false;				
 		
 		if(!_isDeadObject) {
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)

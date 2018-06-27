@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2017 IBM Corp. and others
+ * Copyright (c) 1991, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -38,10 +38,6 @@
 #include "MemoryPoolAddressOrderedListBase.hpp"
 #include "SweepPoolManagerAddressOrderedListBase.hpp"
 #include "ModronAssertions.h"
-
-#if defined(OMR_VALGRIND_MEMCHECK)
-#include "MemcheckWrapper.hpp"
-#endif /* defined(OMR_VALGRIND_MEMCHECK) */
 
 /**
  * Initialize any internal structures.
@@ -455,10 +451,6 @@ MM_SweepPoolManagerAddressOrderedListBase::updateTrailingFreeMemory(MM_Environme
 bool
 MM_SweepPoolManagerAddressOrderedListBase::addFreeMemory(MM_EnvironmentBase *env, MM_ParallelSweepChunk *sweepChunk, uintptr_t *address, uintptr_t size)
 {
-#if defined(OMR_VALGRIND_MEMCHECK)
-	uintptr_t valgrindAreaSize = MM_Bits::convertSlotsToBytes(size);
-	valgrindClearRange(_extensions,(uintptr_t)address,valgrindAreaSize);	
-#endif /* defined(OMR_VALGRIND_MEMCHECK) */
 	bool result = false;
 	
 	/* This implementation is able to support SORTED pieces of memory ONLY!!! */

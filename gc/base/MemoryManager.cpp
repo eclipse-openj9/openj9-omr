@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2017 IBM Corp. and others
+ * Copyright (c) 1991, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -365,7 +365,7 @@ MM_MemoryManager::createVirtualMemoryForHeap(MM_EnvironmentBase* env, MM_MemoryH
 
 #if defined(OMR_VALGRIND_MEMCHECK)
 	//Use handle's Memory Base to refer valgrind memory pool
-	valgrindCreateMempool(extensions, (uintptr_t)handle->getMemoryBase());
+	valgrindCreateMempool(extensions, env, (uintptr_t)handle->getMemoryBase());
 #endif /* defined(OMR_VALGRIND_MEMCHECK) */
 
 	return NULL != instance;

@@ -1415,11 +1415,7 @@ MM_Scavenger::copy(MM_EnvironmentStandard *env, MM_ForwardedHeader* forwardedHea
 #endif /* J9VM_INTERP_NATIVE_SUPPORT */
 
 #if defined(OMR_VALGRIND_MEMCHECK)
-		valgrindMempoolAlloc(_extensions,(uintptr_t) destinationObjectPtr,(uintptr_t)objectCopySizeInBytes);
-		/* We don't free original object here or in copyAndForward function because
-		 * 1. It is  needed back in case of backout.
-		   2. It's care is already taken when MM_MemoryPoolAddressOrderedListBase::createFreeEntry
-			  is called during end of scavanger cycle. */
+		valgrindMempoolAlloc(_extensions, (uintptr_t) destinationObjectPtr, objectReserveSizeInBytes);
 #endif /* defined(OMR_VALGRIND_MEMCHECK) */
 
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
@@ -1448,6 +1444,15 @@ MM_Scavenger::copy(MM_EnvironmentStandard *env, MM_ForwardedHeader* forwardedHea
 
 			_extensions->objectModel.fixupForwardedObject(forwardedHeader, destinationObjectPtr, objectAge);
 		}
+
+#if defined(OMR_VALGRIND_MEMCHECK)
+		valgrindFreeObject(_extensions,(uintptr_t) forwardedHeader->getObject());
+	
+		// Object is definitely dead but at many places (glue : ScavangerRootScanner)
+		// We use it's forwardedHeader to check it.
+		valgrindMakeMemDefined((uintptr_t) forwardedHeader->getObject(), sizeof(MM_ForwardedHeader));
+
+#endif /* defined(OMR_VALGRIND_MEMCHECK) */
 
 #if defined(OMR_SCAVENGER_TRACE_COPY)
 		OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
@@ -3320,19 +3325,17 @@ MM_Scavenger::backoutFixupAndReverseForwardPointersInSurvivor(MM_EnvironmentStan
 					 */
 					UDATA evacuateObjectSizeInBytes = _extensions->objectModel.getConsumedSizeInBytesWithHeader(forwardedObject);					
 					MM_HeapLinkedFreeHeader* freeHeader = MM_HeapLinkedFreeHeader::getHeapLinkedFreeHeader(forwardedObject);
+#if defined(OMR_VALGRIND_MEMCHECK)
+					valgrindMempoolAlloc(_extensions,(uintptr_t) originalObject, (uintptr_t) evacuateObjectSizeInBytes);
+					valgrindFreeObject(_extensions, (uintptr_t) forwardedObject);
+					valgrindMakeMemUndefined((uintptr_t)freeHeader, (uintptr_t) sizeof(MM_HeapLinkedFreeHeader));
+#endif /* defined(OMR_VALGRIND_MEMCHECK) */
 					freeHeader->setNext((MM_HeapLinkedFreeHeader*)originalObject);
 					freeHeader->setSize(evacuateObjectSizeInBytes);
 #if defined(OMR_SCAVENGER_TRACE_BACKOUT)
 					omrtty_printf("{SCAV: Back out forward pointer %p[%p]@%p -> %p[%p]}\n", objectPtr, *objectPtr, forwardedObject, freeHeader->getNext(), freeHeader->getSize());
 					Assert_MM_true(objectPtr == originalObject);
-#endif /* OMR_SCAVENGER_TRACE_BACKOUT */
-#if defined(OMR_VALGRIND_MEMCHECK)
-					/* Above methods setNext(), setSize(), getNext() and getSize()
-					 * will make free header undefined
-					 * as they are mostly used in undefined memory. But here forwardedObject
-					 * is still alive. So we manually have to make it defined again. */
-					valgrindMakeMemDefined((uintptr_t)freeHeader,(uintptr_t) sizeof(MM_HeapLinkedFreeHeader));					
-#endif /* defined(OMR_VALGRIND_MEMCHECK) */					
+#endif /* OMR_SCAVENGER_TRACE_BACKOUT */			
 				}
 			}
 		}

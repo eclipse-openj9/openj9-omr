@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2017 IBM Corp. and others
+ * Copyright (c) 1991, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -178,6 +178,9 @@ MM_MemoryPoolAddressOrderedListBase::connectFinalMemoryToPool(MM_EnvironmentBase
 void
 MM_MemoryPoolAddressOrderedListBase::abandonMemoryInPool(MM_EnvironmentBase* env, void* address, uintptr_t size)
 {
+#if defined(OMR_VALGRIND_MEMCHECK)
+	valgrindClearRange(env->getExtensions(),(uintptr_t) address,size);
+#endif /* defined(OMR_VALGRIND_MEMCHECK) */
 	abandonHeapChunk((MM_HeapLinkedFreeHeader*)address, (uint8_t*)address + size);
 }
 

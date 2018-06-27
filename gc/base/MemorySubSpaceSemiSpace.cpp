@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2017 IBM Corp. and others
+ * Copyright (c) 1991, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -607,7 +607,7 @@ MM_MemorySubSpaceSemiSpace::poisonEvacuateSpace()
 		current += 1;
 	}
 
-#if defined(OMR_VALGRIND_MEMCHECK)			
+#if defined(OMR_VALGRIND_MEMCHECK)
 	valgrindMakeMemNoaccess((uintptr_t) _allocateSpaceBase, (uintptr_t) _allocateSpaceTop - (uintptr_t) _allocateSpaceBase);	
 #endif /* defined(OMR_VALGRIND_MEMCHECK) */	
 }

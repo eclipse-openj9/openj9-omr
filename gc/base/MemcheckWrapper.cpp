@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2017 IBM Corp. and others
+ * Copyright (c) 2017, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -28,114 +28,210 @@
 #if defined(OMR_VALGRIND_MEMCHECK)
 
 #include "MemcheckWrapper.hpp"
+
+#include "hashtable_api.h"
+
+#include "EnvironmentBase.hpp"
 #include "GCExtensionsBase.hpp"
+#include "HashTableIterator.hpp"
 
-#if defined(OMR_VALGRIND_MEMCHECK)
-#include <valgrind/memcheck.h>
-#endif /* defined(OMR_VALGRIND_MEMCHECK) */
+static uintptr_t hashFn(void *key, void *userData);
+static uintptr_t hashEqualFn(void *leftKey, void *rightKey, void *userData);
 
-void valgrindCreateMempool(MM_GCExtensionsBase *extensions,uintptr_t poolAddr)
+static uintptr_t hashEqualFn(void *leftKey, void *rightKey, void *userData)
+{
+    return *(uintptr_t *)leftKey == *(uintptr_t *)rightKey;
+}
+
+static uintptr_t hashFn(void *key, void *userData)
+{
+    return *(uintptr_t *)key;
+}
+
+void valgrindCreateMempool(MM_GCExtensionsBase *extensions, MM_EnvironmentBase *env, uintptr_t poolAddr)
 {
     //1 lets valgrind know that objects will be defined when allocated
     VALGRIND_CREATE_MEMPOOL(poolAddr, 0, 1);
     extensions->valgrindMempoolAddr = poolAddr;
+
+    MUTEX_INIT(extensions->memcheckHashTableMutex);
+    MUTEX_ENTER(extensions->memcheckHashTableMutex);
+    const char *tableName = "MemcheckWrapper";
+    uint32_t entrySize = sizeof(uintptr_t);
+
+    extensions->memcheckHashTable = hashTableNew(env->getPortLibrary(),
+                                                 tableName,
+                                                 0,
+                                                 entrySize,
+                                                 0,
+                                                 0,
+                                                 OMRMEM_CATEGORY_VM,
+                                                 hashFn,
+                                                 hashEqualFn,
+                                                 0,
+                                                 0);
+    MUTEX_EXIT(extensions->memcheckHashTableMutex);
 }
 
 void valgrindDestroyMempool(MM_GCExtensionsBase *extensions)
 {
-    if(extensions->valgrindMempoolAddr != 0)
-	{
+    if (extensions->valgrindMempoolAddr != 0)
+    {
         //All objects should have been freed by now!
-        Assert_MM_true(extensions->_allocatedObjects.empty());
         VALGRIND_DESTROY_MEMPOOL(extensions->valgrindMempoolAddr);
+        MUTEX_ENTER(extensions->memcheckHashTableMutex);
         extensions->valgrindMempoolAddr = 0;
+        hashTableFree(extensions->memcheckHashTable);
+        extensions->memcheckHashTable = NULL;
+        MUTEX_EXIT(extensions->memcheckHashTableMutex);
+        MUTEX_DESTROY(extensions->memcheckHashTableMutex);
     }
 }
 
 void valgrindMempoolAlloc(MM_GCExtensionsBase *extensions, uintptr_t baseAddress, uintptr_t size)
 {
 #if defined(VALGRIND_REQUEST_LOGS)
-    VALGRIND_PRINTF_BACKTRACE("Allocated object at 0x%lx of size %lu\n", baseAddress, size);
+    VALGRIND_PRINTF_BACKTRACE("Allocating an object at 0x%lx of size %lu\n", baseAddress, size);
 #endif /* defined(VALGRIND_REQUEST_LOGS) */
-    /* Allocate object in Valgrind memory pool. */ 		
+
+    /* Allocate object in Valgrind memory pool. */
     VALGRIND_MEMPOOL_ALLOC(extensions->valgrindMempoolAddr, baseAddress, size);
-    extensions->_allocatedObjects.insert(baseAddress);
+    MUTEX_ENTER(extensions->memcheckHashTableMutex);
+    hashTableAdd(extensions->memcheckHashTable, &baseAddress);
+    MUTEX_EXIT(extensions->memcheckHashTableMutex);
 }
 
 void valgrindMakeMemDefined(uintptr_t address, uintptr_t size)
 {
 #if defined(VALGRIND_REQUEST_LOGS)
-    VALGRIND_PRINTF_BACKTRACE("Marking area defined at 0x%lx of size %lu\n", address, size);
+    VALGRIND_PRINTF_BACKTRACE("Marking an area as defined at 0x%lx of size %lu\n", address, size);
 #endif /* defined(VALGRIND_REQUEST_LOGS) */
+
     VALGRIND_MAKE_MEM_DEFINED(address, size);
 }
 
 void valgrindMakeMemNoaccess(uintptr_t address, uintptr_t size)
 {
+
 #if defined(VALGRIND_REQUEST_LOGS)
-    VALGRIND_PRINTF_BACKTRACE("Marking area noaccess at 0x%lx of size %lu\n", address, size);
+    VALGRIND_PRINTF_BACKTRACE("Marking an area as noaccess at 0x%lx of size %lu\n", address, size);
 #endif /* defined(VALGRIND_REQUEST_LOGS) */
+
     VALGRIND_MAKE_MEM_NOACCESS(address, size);
+}
+
+void valgrindMakeMemUndefined(uintptr_t address, uintptr_t size)
+{
+
+#if defined(VALGRIND_REQUEST_LOGS)
+    VALGRIND_PRINTF_BACKTRACE("Marking an area as undefined at 0x%lx of size %lu\n", address, size);
+#endif /* defined(VALGRIND_REQUEST_LOGS) */
+
+    VALGRIND_MAKE_MEM_UNDEFINED(address, size);
+}
+
+MMINLINE void valgrindFreeObjectDirect(MM_GCExtensionsBase *extensions, uintptr_t baseAddress)
+{
+    int objSize = (int)((GC_ObjectModel)extensions->objectModel).getConsumedSizeInBytesWithHeader((omrobjectptr_t)baseAddress);
+
+#if defined(VALGRIND_REQUEST_LOGS)
+    VALGRIND_PRINTF_BACKTRACE("Clearing an object at 0x%lx of size %d\n", baseAddress, objSize);
+#endif /* defined(VALGRIND_REQUEST_LOGS) */
+
+    VALGRIND_CHECK_MEM_IS_DEFINED(baseAddress, objSize);
+    VALGRIND_MEMPOOL_FREE(extensions->valgrindMempoolAddr, baseAddress);
 }
 
 void valgrindClearRange(MM_GCExtensionsBase *extensions, uintptr_t baseAddress, uintptr_t size)
 {
-    if(size == 0)
+    if (size == 0)
+    {
         return;
-
+    }
     uintptr_t topInclusiveAddr = baseAddress + size - 1;
-#if defined(VALGRIND_REQUEST_LOGS)	
-    VALGRIND_PRINTF_BACKTRACE("Clearing objects in range b/w 0x%lx and  0x%lx\n", baseAddress,topInclusiveAddr);
+
+#if defined(VALGRIND_REQUEST_LOGS)
+    VALGRIND_PRINTF_BACKTRACE("Clearing objects in range b/w 0x%lx and  0x%lx\n", baseAddress, topInclusiveAddr);
 #endif /* defined(VALGRIND_REQUEST_LOGS) */
 
-    if(!extensions->_allocatedObjects.empty())
-    {	
-        std::set<uintptr_t>::iterator it;
-        std::set<uintptr_t>::iterator setEnd = extensions->_allocatedObjects.end();
-        std::set<uintptr_t>::iterator lBound = extensions->_allocatedObjects.lower_bound(baseAddress);
-        std::set<uintptr_t>::iterator uBound = --extensions->_allocatedObjects.end();	
-
-        while(uBound !=  extensions->_allocatedObjects.begin() && *uBound > topInclusiveAddr)
-            uBound--;
-
-#if defined(VALGRIND_REQUEST_LOGS)	
-        VALGRIND_PRINTF("lBound = %lx, uBound = %lx\n",*lBound,*uBound);			
-#endif /* defined(VALGRIND_REQUEST_LOGS) */			
-        
-        if(*uBound >topInclusiveAddr)
-            return; //all elements left in set are greater than our range
-
-        for(it = lBound;*it <= *uBound && it != setEnd;it++)
+    MUTEX_ENTER(extensions->memcheckHashTableMutex);
+    GC_HashTableIterator it(extensions->memcheckHashTable);
+    uintptr_t *currentSlotPointer = (uintptr_t *)it.nextSlot();
+    while (currentSlotPointer != NULL)
+    {
+        if (baseAddress <= *currentSlotPointer && topInclusiveAddr >= *currentSlotPointer)
         {
-#if defined(VALGRIND_REQUEST_LOGS)				
-            int objSize = (int) ( (GC_ObjectModel)extensions->objectModel ).getConsumedSizeInBytesWithHeader( (omrobjectptr_t) *it);
-            VALGRIND_PRINTF("Clearing object at 0x%lx of size %d\n", *it,objSize);
-#endif /* defined(VALGRIND_REQUEST_LOGS) */				
-            VALGRIND_MEMPOOL_FREE(extensions->valgrindMempoolAddr,*it);
+            valgrindFreeObjectDirect(extensions, *currentSlotPointer);
+            it.removeSlot();
         }
-        if(*uBound >= *lBound && uBound != setEnd)
-        {
-#if defined(VALGRIND_REQUEST_LOGS)				
-            VALGRIND_PRINTF("Erasing set from lBound = %lx to uBound = %lx\n",*lBound,*uBound);		
-#endif /* defined(VALGRIND_REQUEST_LOGS) */			
-            extensions->_allocatedObjects.erase(lBound,++uBound);//uBound is exclusive
-        }
+        currentSlotPointer = (uintptr_t *)it.nextSlot();
     }
+    MUTEX_EXIT(extensions->memcheckHashTableMutex);
+
+    /* Valgrind automatically marks free objects as noaccess.
+    We still mark the entire region as no access for any left out areas */
+    valgrindMakeMemNoaccess(baseAddress, size);
 }
 
 void valgrindFreeObject(MM_GCExtensionsBase *extensions, uintptr_t baseAddress)
 {
-#if defined(VALGRIND_REQUEST_LOGS)				    
-    int objSize = (int) ( (GC_ObjectModel)extensions->objectModel ).getConsumedSizeInBytesWithHeader( (omrobjectptr_t) baseAddress);
-    VALGRIND_PRINTF_BACKTRACE("Clearing object at 0x%lx of size %d\n",baseAddress,objSize);
-#endif /* defined(VALGRIND_REQUEST_LOGS) */			    
-    VALGRIND_MEMPOOL_FREE(extensions->valgrindMempoolAddr,baseAddress);	
-    extensions->_allocatedObjects.erase(baseAddress);
+    int objSize;
+    if (MM_ForwardedHeader((omrobjectptr_t)baseAddress).isForwardedPointer())
+    {
+        /* In scavanger an object may act as pointer to another object(it's replica in another region).
+           In this case, getConsumedSizeInBytesWithHeader returns some junk value.
+           So instead we calculate the size of the object (replica) it is pointing to 
+           and use it for freeing original object.
+        */
+        omrobjectptr_t fwObject = MM_ForwardedHeader((omrobjectptr_t)baseAddress).getForwardedObject();
+        objSize = (int)((GC_ObjectModel)extensions->objectModel).getConsumedSizeInBytesWithHeader(fwObject);
+    }
+    else
+    {
+        objSize = (int)((GC_ObjectModel)extensions->objectModel).getConsumedSizeInBytesWithHeader((omrobjectptr_t)baseAddress);
+    }
+
+#if defined(VALGRIND_REQUEST_LOGS)
+    VALGRIND_PRINTF_BACKTRACE("Clearing an object at 0x%lx of size %d\n", baseAddress, objSize);
+#endif /* defined(VALGRIND_REQUEST_LOGS) */
+
+    VALGRIND_CHECK_MEM_IS_DEFINED(baseAddress, objSize);
+    VALGRIND_MEMPOOL_FREE(extensions->valgrindMempoolAddr, baseAddress);
+
+    MUTEX_ENTER(extensions->memcheckHashTableMutex);
+    hashTableRemove(extensions->memcheckHashTable, &baseAddress);
+    MUTEX_EXIT(extensions->memcheckHashTableMutex);
 }
 
 bool valgrindCheckObjectInPool(MM_GCExtensionsBase *extensions, uintptr_t baseAddress)
 {
-    return (extensions->_allocatedObjects.find(baseAddress) != extensions->_allocatedObjects.end());
+#if defined(VALGRIND_REQUEST_LOGS)
+    VALGRIND_PRINTF("Checking for an object at 0x%lx\n", baseAddress);
+#endif /* defined(VALGRIND_REQUEST_LOGS) */
+
+    MUTEX_ENTER(extensions->memcheckHashTableMutex);
+    bool exists = hashTableFind(extensions->memcheckHashTable, &baseAddress) != NULL ? true : false;
+    MUTEX_EXIT(extensions->memcheckHashTableMutex);
+    return exists;
+}
+
+void valgrindResizeObject(MM_GCExtensionsBase *extensions, uintptr_t baseAddress, uintptr_t oldSize, uintptr_t newSize)
+{
+
+#if defined(VALGRIND_REQUEST_LOGS)
+    VALGRIND_PRINTF_BACKTRACE("Resizing an object at 0x%lx from size %d to %d\n", baseAddress, (int)oldSize, (int)newSize);
+#endif /* defined(VALGRIND_REQUEST_LOGS) */
+
+    /* We could have used VALGRIND_MEMPOOL_CHANGE request to let Valgrind know of moved object
+    but it is very slow without an internal hack. (https://bugs.kde.org/show_bug.cgi?id=366817)*/
+    // VALGRIND_CHECK_MEM_IS_DEFINED(baseAddress, oldSize);
+
+    /* Valgrind already knows former size of object allocated at baseAddress. So it will 
+    mark the area from baseAddress to oldSize-1 noaccess on a free request as desired*/
+    VALGRIND_MEMPOOL_FREE(extensions->valgrindMempoolAddr, baseAddress);
+
+    /* And we don't need to remove and add same address in extensions->_allocatedObjects */
+    VALGRIND_MEMPOOL_ALLOC(extensions->valgrindMempoolAddr, baseAddress, newSize);
 }
 
 #endif /* defined(OMR_VALGRIND_MEMCHECK) */

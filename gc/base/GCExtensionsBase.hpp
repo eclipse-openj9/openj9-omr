@@ -46,10 +46,6 @@
 #include "ScavengerStats.hpp"
 #include "SublistPool.hpp"
 
-#if defined(OMR_VALGRIND_MEMCHECK)
-#include <set>
-#endif /* defined(OMR_VALGRIND_MEMCHECK) */
-
 class MM_CardTable;
 class MM_ClassLoaderRememberedSet;
 class MM_CollectorLanguageInterface;
@@ -713,8 +709,8 @@ public:
 	bool alwaysCallReadBarrier; /**< was -Xgc:alwaysCallReadBarrier specified? */
 	
 	bool _holdRandomThreadBeforeHandlingWorkUnit; /**< Whether we should randomly hold up a thread entering MM_ParallelTask::handleNextWorkUnit() */
-	uintptr_t _holdRandomThreadBeforeHandlingWorkUnitPeriod; /** < How often (in terms of number of times MM_ParallelTask::handleNextWorkUnit() is called) to randomly hold up a thread entering MM_ParallelTask::handleNextWorkUnit() */
-	bool _forceRandomBackoutsAfterScan; /** < Whether we should force MM_Scavenger::completeScan() to randomly fail due to backout */
+	uintptr_t _holdRandomThreadBeforeHandlingWorkUnitPeriod; /**< How often (in terms of number of times MM_ParallelTask::handleNextWorkUnit() is called) to randomly hold up a thread entering MM_ParallelTask::handleNextWorkUnit() */
+	bool _forceRandomBackoutsAfterScan; /**< Whether we should force MM_Scavenger::completeScan() to randomly fail due to backout */
 	uintptr_t _forceRandomBackoutsAfterScanPeriod; /**< How often (in terms of number of times MM_Scavenger::completeScan() is called) to randomly have MM_Scavenger::completeScan() fail due to backout */
 
 	MM_ReferenceChainWalkerMarkMap* referenceChainWalkerMarkMap; /**< Reference to Reference Chain Walker mark map - will be created at first call and destroyed in Configuration tearDown*/
@@ -724,16 +720,17 @@ public:
 	uintptr_t darkMatterSampleRate;/**< the weight of darkMatterSample for standard gc, default:32, if the weight = 0, disable darkMatterSampling */
 
 #if defined(OMR_GC_IDLE_HEAP_MANAGER)
-	uintptr_t idleMinimumFree;   /** < percentage of free heap to be retained as committed, default=0 for gencon, complete tenture free memory will be decommitted */
-	uintptr_t lastGCFreeBytes;  /** < records the free memory size from last Global GC cycle */
+	uintptr_t idleMinimumFree;   /**< percentage of free heap to be retained as committed, default=0 for gencon, complete tenture free memory will be decommitted */
+	uintptr_t lastGCFreeBytes;  /**< records the free memory size from last Global GC cycle */
 	uintptr_t gcOnIdleRatio; /**< the percentage of allocation since the last GC allocation determines the invocation of global GC, default global GC is invoked if allocation is > 20% */
 	bool gcOnIdle; /**< Enables releasing free heap pages if true while systemGarbageCollect invoked with IDLE GC code, default is false */
 	bool compactOnIdle; /**< Forces compaction if global GC executed while VM Runtime State set to IDLE, default is false */
 #endif
 
 #if defined(OMR_VALGRIND_MEMCHECK)
-	uintptr_t valgrindMempoolAddr; /** <Memory pool's address for valgrind> **/
-	std::set<uintptr_t> _allocatedObjects;
+	uintptr_t valgrindMempoolAddr; /**< Memory pool's address for valgrind **/
+	J9HashTable *memcheckHashTable; /**< Hash table to store object addresses for valgrind> **/
+	MUTEX memcheckHashTableMutex;
 #endif /* defined(OMR_VALGRIND_MEMCHECK) */
 
 	/* Function Members */

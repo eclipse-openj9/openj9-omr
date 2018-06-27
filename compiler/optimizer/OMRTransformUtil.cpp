@@ -54,7 +54,7 @@ OMR::TransformUtil::scalarizeArrayCopy(
    didTransformArrayCopyNode = false;
 
    if ((comp->getOptLevel() == noOpt) ||
-       !comp->getOptions()->getOption(TR_ScalarizeSSOps) ||
+       !comp->getOption(TR_ScalarizeSSOps) ||
        node->getOpCodeValue() != TR::arraycopy ||
        node->getNumChildren() != 3 ||
        comp->requiresSpineChecks() ||

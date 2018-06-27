@@ -97,16 +97,7 @@ MM_EnvironmentStandard::flushGCCaches()
 {
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
 	if (getExtensions()->concurrentScavenger) {
-
-		/* When a GC Slave thread is created, a Thread object is created and is stored to a (Java) ThreadPool structure.
-		 * If this GC Slave thread created during active scavenger cycle and doesn't do any actual work,
-		 * it can still indirectly trigger a read barrier (if it's the first of 'mutator' threads to access ThreadPool),
-		 * and copy ThreadPool instance into its copy cache.
-		 * This special inactive GC thread will have non-empty copy cache at the beginning of the final STW phase of CS cycle,
-		 * and should be treated same as a mutator thread.
-		 */
-		if ((GC_SLAVE_THREAD == getThreadType() && !isGCSlaveThreadActivated()) ||
-				MUTATOR_THREAD == getThreadType()) {
+		if (MUTATOR_THREAD == getThreadType()) {
 			if (NULL != getExtensions()->scavenger) {
 				getExtensions()->scavenger->threadFinalReleaseCopyCaches(this, this);
 			}

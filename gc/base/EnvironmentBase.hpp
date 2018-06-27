@@ -521,11 +521,6 @@ public:
 	bool isInlineTLHAllocateEnabled() { return _delegate.isInlineTLHAllocateEnabled(); }
 #endif /* OMR_GC_THREAD_LOCAL_HEAP */
 
-	/* When a GC thread is created _workUnitIndex is initialized to 0, when a task is started _workUnitIndex is reset to 1.
-	 * _workUnitIndex can be used to check if a GC thread has done any work since it was created.
-	 */
-	MMINLINE bool isGCSlaveThreadActivated() { return _workUnitIndex != 0; }
-
 	MMINLINE uintptr_t getWorkUnitIndex() { return _workUnitIndex; }
 	MMINLINE uintptr_t getWorkUnitToHandle() { return _workUnitToHandle; }
 	MMINLINE void setWorkUnitToHandle(uintptr_t workUnitToHandle) { _workUnitToHandle = workUnitToHandle; }

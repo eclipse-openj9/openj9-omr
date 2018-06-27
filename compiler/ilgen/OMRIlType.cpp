@@ -25,7 +25,6 @@
 #include "il/SymbolReference.hpp"
 #include "compile/SymbolReferenceTable.hpp"
 #include "compile/Compilation.hpp"
-#include "env/FrontEnd.hpp"
 #include "ilgen/TypeDictionary.hpp"
 #include "env/Region.hpp"
 #include "env/SystemSegmentProvider.hpp"

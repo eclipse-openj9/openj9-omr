@@ -33,7 +33,7 @@
 
 using std::vector;
 
-typedef struct BlobHeaderV1 {
+struct BlobHeaderV1 {
 	uint32_t coreVersion;
 	uint8_t sizeofBool;
 	uint8_t sizeofUDATA;
@@ -42,37 +42,37 @@ typedef struct BlobHeaderV1 {
 	uint32_t structDataSize;
 	uint32_t stringTableDataSize;
 	uint32_t structureCount;
-} BlobHeaderV1;
+};
 
-typedef struct BlobString {
+struct BlobString {
 	uint16_t length;
 	char data[1]; /* flexible array member */
-} BlobString;
+};
 
-typedef struct BlobStruct {
+struct BlobStruct {
 	uint32_t nameOffset;
 	uint32_t superName;
 	uint32_t sizeOf;
 	uint32_t fieldCount;
 	uint32_t constCount;
-} BlobStruct;
+};
 
-typedef struct BlobField {
+struct BlobField {
 	uint32_t declaredName;
 	uint32_t declaredType;
 	uint32_t offset;
-} BlobField;
+};
 
-typedef struct BlobConstant {
+struct BlobConstant {
 	uint32_t name;
 	/* don't declare value as uint64_t to ensure that no padding is added between it and name */
 	uint32_t value[2];
-} BlobConstant;
+};
 
 struct Field;
 struct Constant;
 
-typedef struct Structure {
+struct Structure {
 	char *name;
 	uint32_t nameLength;
 	char *superName;
@@ -80,7 +80,7 @@ typedef struct Structure {
 	uint32_t size;
 	vector<Field *> fields;
 	vector<Constant *> constants;
-} Structure;
+};
 
 bool
 compareStructs(const Structure *first, const Structure *second)
@@ -88,19 +88,19 @@ compareStructs(const Structure *first, const Structure *second)
 	return strcmp(first->name, second->name) < 0;
 }
 
-typedef struct Field {
+struct Field {
 	char *name;
 	uint32_t nameLength;
 	char *type;
 	uint32_t typeLength;
 	uint32_t offset;
-} Field;
+};
 
-typedef struct Constant {
+struct Constant {
 	char *name;
 	uint32_t nameLength;
 	uint64_t value;
-} Constant;
+};
 
 int
 main(int argc, char *argv[])

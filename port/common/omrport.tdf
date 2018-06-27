@@ -623,7 +623,7 @@ TraceExit=Trc_PRT_signal_omrsig_set_async_signal_handler_exiting Group=signal Ov
 TraceEvent=Trc_PRT_signal_omrsig_shutdown_empty_routine Group=signal Overhead=1 Level=1 NoEnv Template="omrsig_shutdown: ERROR, empty shutdown routine indicates omrsig_startup failed, portLibrary=%p"
 TraceEvent=Trc_PRT_signal_omrsig_set_options Group=signal Overhead=1 Level=1 NoEnv Template="omrsig_set_options: options=0x%X"
 TraceEvent=Trc_PRT_signal_omrsig_set_options_too_late_handlers_installed Group=signal Overhead=1 Level=1 NoEnv Template="omrsig_set_options too late, handlers already installed: options=0x%X"
-TraceEvent=Trc_PRT_signal_mapPortLibSignalToUnix_ERROR_unknown_signal Group=signal Overhead=1 Level=1 NoEnv Template="omrsignal: mapPortLibSignalToUnix: ERROR, unknown signal, portLibSignal=0x%X"
+TraceEvent=Trc_PRT_signal_mapPortLibSignalToUnix_ERROR_unknown_signal Obsolete Group=signal Overhead=1 Level=1 NoEnv Template="omrsignal: mapPortLibSignalToUnix: ERROR, unknown signal, portLibSignal=0x%X"
 
 TraceEvent=Trc_PRT_signal_omrsig_asynchSignalReporterThread_going_to_sleep Group=signal Overhead=1 Level=1 NoEnv Template="asynchSignalReporter: going to sleep"
 TraceEvent=Trc_PRT_signal_omrsig_asynchSignalReporter_woken_up Group=signal Overhead=1 Level=1 NoEnv Template="asynchSignalReporter: woken up"

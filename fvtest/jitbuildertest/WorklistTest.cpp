@@ -117,7 +117,7 @@ DEFINE_BUILDER( WorklistTestMethod,
    for (int32_t i=0;i < 20;i++)
       builders[i] = OrphanBytecodeBuilder(i, (char *)bcName[i]);
 
-   OMR::VirtualMachineState *vmState = new OMR::VirtualMachineState();
+   TR::VirtualMachineState *vmState = new TR::VirtualMachineState();
    setVMState(vmState);
 
    Store("result",

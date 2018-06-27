@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2018 IBM Corp. and others
+ * Copyright (c) 2016, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -19,21 +19,16 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#ifndef TR_ILVALUE_INCL
-#define TR_ILVALUE_INCL
+#include "ilgen/VirtualMachineState.hpp"
 
-#include "ilgen/OMRIlValue.hpp"
+namespace TR { class IlBuilder; }
+class TR_Memory;
 
-namespace TR
-{
-   class IlValue : public OMR::IlValue
-      {
-      public:
-         IlValue(TR::Node *node, TR::TreeTop *treeTop, TR::Block *block, TR::MethodBuilder *methodBuilder)
-            : OMR::IlValue(node, treeTop, block, methodBuilder)
-            { }
-      };
+template <class T> class List;
+template <class T> class ListAppender;
 
-} // namespace TR
-
-#endif // !defined(TR_ILVALUE_INCL)
+TR::VirtualMachineState *
+OMR::VirtualMachineState::MakeCopy()
+   {
+   return static_cast<TR::VirtualMachineState *>(this);
+   }

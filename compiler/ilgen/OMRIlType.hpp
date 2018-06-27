@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2018 IBM Corp. and others
+ * Copyright (c) 2016, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -19,21 +19,56 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#ifndef TR_ILVALUE_INCL
-#define TR_ILVALUE_INCL
+#ifndef OMR_ILTYPE_INCL
+#define OMR_ILTYPE_INCL
 
-#include "ilgen/OMRIlValue.hpp"
+#include "il/DataTypes.hpp"
 
-namespace TR
+class TR_Memory;
+#ifndef TR_ALLOC
+#define TR_ALLOC(x)
+#endif
+
+
+namespace TR { class IlType; }
+
+namespace OMR
 {
-   class IlValue : public OMR::IlValue
-      {
-      public:
-         IlValue(TR::Node *node, TR::TreeTop *treeTop, TR::Block *block, TR::MethodBuilder *methodBuilder)
-            : OMR::IlValue(node, treeTop, block, methodBuilder)
-            { }
-      };
 
-} // namespace TR
+class IlType
+   {
+public:
+   TR_ALLOC(TR_Memory::IlGenerator)
 
-#endif // !defined(TR_ILVALUE_INCL)
+   IlType(const char *name) :
+      _name(name)
+      { }
+   IlType() :
+      _name(0)
+      { }
+   virtual ~IlType()
+      { }
+
+   const char *getName() { return _name; }
+   virtual char *getSignatureName();
+
+   virtual TR::DataType getPrimitiveType() { return TR::NoType; }
+
+   virtual bool isArray() { return false; }
+   virtual bool isPointer() { return false; }
+   virtual TR::IlType *baseType() { return NULL; }
+
+   virtual bool isStruct() {return false; }
+   virtual bool isUnion() { return false; }
+
+   virtual size_t getSize();
+
+protected:
+   const char *_name;
+   static const char * signatureNameForType[TR::NumOMRTypes];
+   static const uint8_t primitiveTypeAlignment[TR::NumOMRTypes];
+   };
+
+} // namespace OMR
+
+#endif // !defined(OMR_ILTYPE_INCL)

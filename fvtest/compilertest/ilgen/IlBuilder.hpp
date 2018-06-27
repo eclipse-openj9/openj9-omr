@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -19,48 +19,10 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#ifndef TEST_ILBUILDER_INCL
-#define TEST_ILBUILDER_INCL
+#ifndef TR_ILBUILDER_INCL
+#define TR_ILBUILDER_INCL
 
-#ifndef TR_ILBUILDER_DEFINED
-#define TR_ILBUILDER_DEFINED
-#define PUT_TEST_ILBUILDER_INTO_TR
-#endif
-
-
-#include "compiler/ilgen/IlBuilder.hpp"
-
-namespace TestCompiler
-{
-
-class TestDriver;
-
-class IlBuilder : public OMR::IlBuilder
-   {
-public:
-   TR_ALLOC(TR_Memory::IlGenerator)
-
-   IlBuilder(TR::MethodBuilder *methodBuilder, TR::TypeDictionary *types)
-      : OMR::IlBuilder(methodBuilder, types)
-      { }
-
-   IlBuilder(TR::IlBuilder *source)
-      : OMR::IlBuilder(source)
-      { }
-
-   IlBuilder(TestDriver *test, TR::MethodBuilder *methodBuilder, TR::TypeDictionary *types)
-      : OMR::IlBuilder(methodBuilder, types)
-      {
-      // need to explicitly initialize TestCompiler::IlInjector layer because
-      // it's hiding behind our OMR::IlBuilder base class
-      setMethodAndTest((TR::ResolvedMethod *)NULL, test);
-      }
-   };
-
-} // namespace TestCompiler
-
-
-#ifdef PUT_TEST_ILBUILDER_INTO_TR
+#include "ilgen/TestIlBuilder.hpp"
 
 namespace TR
 {
@@ -82,6 +44,4 @@ namespace TR
 
 } // namespace TR
 
-#endif // defined(PUT_TEST_ILBUILDER_INTO_TR)
-
-#endif // !defined(TEST_ILBUILDER_INCL)
+#endif // !defined(TR_ILBUILDER_INCL)

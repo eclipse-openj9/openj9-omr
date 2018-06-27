@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2017 IBM Corp. and others
+ * Copyright (c) 2017, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -195,10 +195,10 @@ OMR::BytecodeBuilder::setHandlerInfo(uint32_t catchType)
    }
 
 void
-OMR::BytecodeBuilder::propagateVMState(OMR::VirtualMachineState *fromVMState)
+OMR::BytecodeBuilder::propagateVMState(TR::VirtualMachineState *fromVMState)
    {
-   _initialVMState = (OMR::VirtualMachineState *) fromVMState->MakeCopy();
-   _vmState = (OMR::VirtualMachineState *) fromVMState->MakeCopy();
+   _initialVMState = fromVMState->MakeCopy();
+   _vmState = fromVMState->MakeCopy();
    }
 
 // transferVMState needs to be called before the actual transfer operation (Goto, IfCmp,

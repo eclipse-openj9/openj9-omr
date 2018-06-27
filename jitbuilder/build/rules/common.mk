@@ -93,38 +93,77 @@ $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/il/OMRILOpCodesEnum.hpp: $(FIXED_SRCBASE
 $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/il/ILHelpers.hpp: $(FIXED_SRCBASE)/$(JIT_OMR_DIRTY_DIR)/il/ILHelpers.hpp $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/il
 	cp $< $@ || cp $< $@
 
+$(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen/OMRIlType.hpp: $(FIXED_SRCBASE)/$(JIT_OMR_DIRTY_DIR)/ilgen/OMRIlType.hpp $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen
+	cp $< $@ || cp $< $@
+
+$(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen/IlType.hpp: $(FIXED_SRCBASE)/$(JIT_OMR_DIRTY_DIR)/ilgen/IlType.hpp $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen
+	cp $< $@ || cp $< $@
+
+$(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen/OMRIlValue.hpp: $(FIXED_SRCBASE)/$(JIT_OMR_DIRTY_DIR)/ilgen/OMRIlValue.hpp $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen
+	cp $< $@ || cp $< $@
+
 $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen/IlValue.hpp: $(FIXED_SRCBASE)/$(JIT_OMR_DIRTY_DIR)/ilgen/IlValue.hpp $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen
 	cp $< $@ || cp $< $@
 
 $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen/IlInjector.hpp: $(FIXED_SRCBASE)/$(JIT_OMR_DIRTY_DIR)/ilgen/IlInjector.hpp $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen
 	cp $< $@ || cp $< $@
 
+$(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen/OMRIlBuilder.hpp: $(FIXED_SRCBASE)/$(JIT_OMR_DIRTY_DIR)/ilgen/OMRIlBuilder.hpp $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen
+	cp $< $@ || cp $< $@
+
 $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen/IlBuilder.hpp: $(FIXED_SRCBASE)/$(JIT_OMR_DIRTY_DIR)/ilgen/IlBuilder.hpp $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen
+	cp $< $@ || cp $< $@
+
+$(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen/OMRMethodBuilder.hpp: $(FIXED_SRCBASE)/$(JIT_OMR_DIRTY_DIR)/ilgen/OMRMethodBuilder.hpp $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen
 	cp $< $@ || cp $< $@
 
 $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen/MethodBuilder.hpp: $(FIXED_SRCBASE)/$(JIT_OMR_DIRTY_DIR)/ilgen/MethodBuilder.hpp $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen
 	cp $< $@ || cp $< $@
 
+$(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen/OMRThunkBuilder.hpp: $(FIXED_SRCBASE)/$(JIT_OMR_DIRTY_DIR)/ilgen/OMRThunkBuilder.hpp $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen
+	cp $< $@ || cp $< $@
+
 $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen/ThunkBuilder.hpp: $(FIXED_SRCBASE)/$(JIT_OMR_DIRTY_DIR)/ilgen/ThunkBuilder.hpp $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen
+	cp $< $@ || cp $< $@
+
+$(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen/OMRBytecodeBuilder.hpp: $(FIXED_SRCBASE)/$(JIT_OMR_DIRTY_DIR)/ilgen/OMRBytecodeBuilder.hpp $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen
 	cp $< $@ || cp $< $@
 
 $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen/BytecodeBuilder.hpp: $(FIXED_SRCBASE)/$(JIT_OMR_DIRTY_DIR)/ilgen/BytecodeBuilder.hpp $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen
 	cp $< $@ || cp $< $@
 
+$(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen/OMRTypeDictionary.hpp: $(FIXED_SRCBASE)/$(JIT_OMR_DIRTY_DIR)/ilgen/OMRTypeDictionary.hpp $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen
+	cp $< $@ || cp $< $@
+
 $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen/TypeDictionary.hpp: $(FIXED_SRCBASE)/$(JIT_OMR_DIRTY_DIR)/ilgen/TypeDictionary.hpp $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen
+	cp $< $@ || cp $< $@
+
+$(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen/OMRVirtualMachineState.hpp: $(FIXED_SRCBASE)/$(JIT_OMR_DIRTY_DIR)/ilgen/OMRVirtualMachineState.hpp $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen
 	cp $< $@ || cp $< $@
 
 $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen/VirtualMachineState.hpp: $(FIXED_SRCBASE)/$(JIT_OMR_DIRTY_DIR)/ilgen/VirtualMachineState.hpp $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen
 	cp $< $@ || cp $< $@
 
+$(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen/OMRVirtualMachineRegister.hpp: $(FIXED_SRCBASE)/$(JIT_OMR_DIRTY_DIR)/ilgen/OMRVirtualMachineRegister.hpp $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen
+	cp $< $@ || cp $< $@
+
 $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen/VirtualMachineRegister.hpp: $(FIXED_SRCBASE)/$(JIT_OMR_DIRTY_DIR)/ilgen/VirtualMachineRegister.hpp $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen
+	cp $< $@ || cp $< $@
+
+$(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen/OMRVirtualMachineRegisterInStruct.hpp: $(FIXED_SRCBASE)/$(JIT_OMR_DIRTY_DIR)/ilgen/OMRVirtualMachineRegisterInStruct.hpp $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen
 	cp $< $@ || cp $< $@
 
 $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen/VirtualMachineRegisterInStruct.hpp: $(FIXED_SRCBASE)/$(JIT_OMR_DIRTY_DIR)/ilgen/VirtualMachineRegisterInStruct.hpp $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen
 	cp $< $@ || cp $< $@
 
+$(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen/OMRVirtualMachineOperandArray.hpp: $(FIXED_SRCBASE)/$(JIT_OMR_DIRTY_DIR)/ilgen/OMRVirtualMachineOperandArray.hpp $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen
+	cp -u $< $@ || cp $< $@
+
 $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen/VirtualMachineOperandArray.hpp: $(FIXED_SRCBASE)/$(JIT_OMR_DIRTY_DIR)/ilgen/VirtualMachineOperandArray.hpp $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen
 	cp -u $< $@ || cp $< $@
+
+$(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen/OMRVirtualMachineOperandStack.hpp: $(FIXED_SRCBASE)/$(JIT_OMR_DIRTY_DIR)/ilgen/OMRVirtualMachineOperandStack.hpp $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen
+	cp $< $@ || cp $< $@
 
 $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen/VirtualMachineOperandStack.hpp: $(FIXED_SRCBASE)/$(JIT_OMR_DIRTY_DIR)/ilgen/VirtualMachineOperandStack.hpp $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen
 	cp $< $@ || cp $< $@
@@ -148,17 +187,30 @@ JITBUILDER_FILES=$(RELEASE_DIR)/Makefile \
              $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/il/OMRDataTypes.hpp \
              $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/il/OMRDataTypes_inlines.hpp \
              $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/il/OMRILOpCodesEnum.hpp \
+             $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen/OMRIlType.hpp \
+             $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen/IlType.hpp \
+             $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen/OMRIlValue.hpp \
              $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen/IlValue.hpp \
              $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen/IlInjector.hpp \
+             $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen/OMRIlBuilder.hpp \
              $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen/IlBuilder.hpp \
+             $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen/OMRMethodBuilder.hpp \
              $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen/MethodBuilder.hpp \
+             $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen/OMRThunkBuilder.hpp \
              $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen/ThunkBuilder.hpp \
+             $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen/OMRBytecodeBuilder.hpp \
              $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen/BytecodeBuilder.hpp \
+             $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen/OMRTypeDictionary.hpp \
              $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen/TypeDictionary.hpp \
+             $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen/OMRVirtualMachineState.hpp \
              $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen/VirtualMachineState.hpp \
+             $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen/OMRVirtualMachineRegister.hpp \
              $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen/VirtualMachineRegister.hpp \
+             $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen/OMRVirtualMachineRegisterInStruct.hpp \
              $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen/VirtualMachineRegisterInStruct.hpp \
+             $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen/OMRVirtualMachineOperandArray.hpp \
              $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen/VirtualMachineOperandArray.hpp \
+             $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen/OMRVirtualMachineOperandStack.hpp \
              $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen/VirtualMachineOperandStack.hpp \
              $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/ilgen/IlGen.hpp \
              $(RELEASE_INCLUDE)/$(JIT_OMR_DIRTY_DIR)/infra/Annotations.hpp \

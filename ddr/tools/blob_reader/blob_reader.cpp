@@ -124,6 +124,7 @@ main(int argc, char *argv[])
 	size_t rb = fread(&blobHdrV1, 1, sizeof(blobHdrV1), fd);
 	if (sizeof(blobHdrV1) != rb) {
 		ERRMSG("read blob header returned %lu, expected %lu\n", (unsigned long)rb, (unsigned long)sizeof(blobHdrV1));
+		fclose(fd);
 		return -1;
 	}
 
@@ -153,16 +154,17 @@ main(int argc, char *argv[])
 	uint8_t *blobBuffer = (uint8_t *)malloc(blobLength);
 	if (NULL == blobBuffer) {
 		ERRMSG("malloc blobBuffer failed\n");
+		fclose(fd);
 		return -1;
 	}
 
 	rewind(fd);
 	rb = fread(blobBuffer, 1, blobLength, fd);
+	fclose(fd);
 	if (blobLength != rb) {
 		ERRMSG("read blob data returned %lu, expected %lu\n", (unsigned long)rb, (unsigned long)blobLength);
 		return -1;
 	}
-	fclose(fd);
 
 	/* Read strings */
 	{

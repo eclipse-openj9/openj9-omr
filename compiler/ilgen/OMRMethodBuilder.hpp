@@ -28,6 +28,10 @@
 #include "ilgen/IlBuilder.hpp"
 #include "env/TypedAllocator.hpp"
 
+#if defined (_MSC_VER) && _MSC_VER < 1900
+#define snprintf _snprintf
+#endif
+
 // Maximum length of _definingLine string (including null terminator)
 #define MAX_LINE_NUM_LEN 7
 

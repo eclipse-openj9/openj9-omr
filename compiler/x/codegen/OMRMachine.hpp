@@ -104,6 +104,11 @@ class OMR_EXTENSIBLE Machine : public OMR::Machine
    TR::RealRegister  **_registerFile;
    TR::Register         **_registerAssociations;
 
+   /**
+    * Number of general purpose registers
+    */
+   int8_t _numGPRs;
+
    // Floating point stack pseudo-registers: they can be mapped to real
    // registers on demand, based on their relative position from the top of
    // stack marker.
@@ -134,6 +139,8 @@ class OMR_EXTENSIBLE Machine : public OMR::Machine
    void initializeRegisterFile(const struct TR::X86LinkageProperties&);
    uint32_t* getGlobalRegisterTable(const struct TR::X86LinkageProperties&);
    int32_t getGlobalReg(TR::RealRegister::RegNum reg);
+
+   uint8_t getNumberOfGPRs() { return _numGPRs; }
 
    TR::RealRegister *getX86RealRegister(TR::RealRegister::RegNum regNum)
       {

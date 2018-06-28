@@ -727,7 +727,7 @@ OMR::Z::Machine::getGPRSize()
 //  Constructor
 
 OMR::Z::Machine::Machine(TR::CodeGenerator * cg)
-   : OMR::Machine(cg, NUM_S390_GPR, NUM_S390_FPR, NUM_S390_VRF), _lastGlobalGPRRegisterNumber(-1), _last8BitGlobalGPRRegisterNumber(-1),
+   : OMR::Machine(cg), _lastGlobalGPRRegisterNumber(-1), _last8BitGlobalGPRRegisterNumber(-1),
    _lastGlobalFPRRegisterNumber(-1), _lastGlobalCCRRegisterNumber(-1), _lastVolatileNonLinkGPR(-1), _lastLinkageGPR(-1),
      _lastVolatileNonLinkFPR(-1), _lastLinkageFPR(-1), _firstGlobalAccessRegisterNumber(-1), _lastGlobalAccessRegisterNumber(-1), _globalEnvironmentRegisterNumber(-1), _globalCAARegisterNumber(-1), _globalParentDSARegisterNumber(-1),
     _globalReturnAddressRegisterNumber(-1),_globalEntryPointRegisterNumber(-1)
@@ -5976,42 +5976,6 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
    return cursor;
    }
 
-uint64_t OMR::Z::Machine::filterColouredRegisterConflicts(TR::Register *targetRegister, TR::Register *siblingRegister,
-                                                             TR::Instruction *currInst)
-  {
-  uint64_t mask=0xffffffff;
-  TR::Compilation *comp = self()->cg()->comp();
-  TR::list<TR::Register *> conflictRegs(getTypedAllocator<TR::Register*>(comp->allocator()));
-
-  if(currInst->defsAnyRegister(targetRegister))
-    {
-    currInst->getDefinedRegisters(conflictRegs);
-    for(auto reg = conflictRegs.begin(); reg != conflictRegs.end(); ++reg)
-      {
-      TR::Register *cr=(*reg)->getRealRegister() ? NULL : (*reg)->getAssignedRegister();
-      if (cr && targetRegister != (*reg) && (*reg)->getAssignedRegister() != targetRegister &&
-         (siblingRegister == NULL || (*reg) != siblingRegister))
-         {
-         mask &= ~toRealRegister(cr)->getRealRegisterMask();
-         }
-      }
-    }
-
-  currInst->getUsedRegisters(conflictRegs);
-  for(auto reg = conflictRegs.begin(); reg != conflictRegs.end(); ++reg)
-    {
-    TR::Register *cr=(*reg)->getRealRegister() ? NULL : (*reg)->getAssignedRegister();
-    if (cr && targetRegister != (*reg) && (*reg)->getAssignedRegister() != targetRegister &&
-       (siblingRegister == NULL || (*reg) != siblingRegister))
-       {
-       mask &= ~toRealRegister(cr)->getRealRegisterMask();
-       }
-    }
-
-  return mask;
-
-  }
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // OMR::Z::Machine::initializeRegisterFile
@@ -6759,7 +6723,6 @@ OMR::Z::Machine::initializeGlobalRegisterTable()
              }
           }
 
-      self()->setLastRealRegisterGlobalRegisterNumber(p-1);
       self()->setLastGlobalCCRRegisterNumber(p-1);
 
       return _globalRegisterNumberToRealRegisterMap;
@@ -6894,8 +6857,6 @@ OMR::Z::Machine::initializeGlobalRegisterTable()
    _globalRegisterNumberToRealRegisterMap[41] = TR::RealRegister::FPR0;  // volatile and 1st param float
    self()->setLastLinkageFPR(41);
 #endif
-
-   self()->setLastRealRegisterGlobalRegisterNumber(41);
 
    self()->setLastGlobalFPRRegisterNumber(41);        // Index of last global FPR
    self()->setLastGlobalCCRRegisterNumber(41);        // Index of last global CCR
@@ -7078,49 +7039,42 @@ OMR::Z::Machine::releaseLiteralPoolRegister()
 TR_GlobalRegisterNumber
 OMR::Z::Machine::setFirstGlobalAccessRegisterNumber(TR_GlobalRegisterNumber reg)
    {
-   self()->setFirstGlobalRegisterNumber(TR_AR,reg);
    return _firstGlobalAccessRegisterNumber = reg;
    }
 
 TR_GlobalRegisterNumber
 OMR::Z::Machine::setLastGlobalAccessRegisterNumber(TR_GlobalRegisterNumber reg)
     {
-    self()->setLastGlobalRegisterNumber(TR_AR,reg);
     return _lastGlobalAccessRegisterNumber = reg;
     }
 
 TR_GlobalRegisterNumber
 OMR::Z::Machine::setLastGlobalGPRRegisterNumber(TR_GlobalRegisterNumber reg)
    {
-   self()->setLastGlobalRegisterNumber(TR_GPR,reg);
    return _lastGlobalGPRRegisterNumber = reg;
    }
 
 TR_GlobalRegisterNumber
 OMR::Z::Machine::setLastGlobalHPRRegisterNumber(TR_GlobalRegisterNumber reg)
    {
-   self()->setLastGlobalRegisterNumber(TR_HPR,reg);
    return _lastGlobalHPRRegisterNumber = reg;
    }
 
 TR_GlobalRegisterNumber
 OMR::Z::Machine::setFirstGlobalGPRRegisterNumber(TR_GlobalRegisterNumber reg)
    {
-   self()->setFirstGlobalRegisterNumber(TR_GPR,reg);
    return _firstGlobalGPRRegisterNumber = reg;
    }
 
 TR_GlobalRegisterNumber
 OMR::Z::Machine::setFirstGlobalHPRRegisterNumber(TR_GlobalRegisterNumber reg)
    {
-   self()->setFirstGlobalRegisterNumber(TR_HPR,reg);
    return _firstGlobalHPRRegisterNumber = reg;
    }
 
 TR_GlobalRegisterNumber
 OMR::Z::Machine::setFirstGlobalFPRRegisterNumber(TR_GlobalRegisterNumber reg)
    {
-   self()->setFirstGlobalRegisterNumber(TR_FPR, reg);
    self()->setFirstOverlappedGlobalFPRRegisterNumber(reg);
    return _firstGlobalFPRRegisterNumber = reg;
    }
@@ -7128,7 +7082,6 @@ OMR::Z::Machine::setFirstGlobalFPRRegisterNumber(TR_GlobalRegisterNumber reg)
 TR_GlobalRegisterNumber
 OMR::Z::Machine::setLastGlobalFPRRegisterNumber(TR_GlobalRegisterNumber reg)
    {
-   self()->setLastGlobalRegisterNumber(TR_FPR,reg);
    self()->setLastOverlappedGlobalFPRRegisterNumber(reg);
    return _lastGlobalFPRRegisterNumber = reg;
    }
@@ -7136,21 +7089,18 @@ OMR::Z::Machine::setLastGlobalFPRRegisterNumber(TR_GlobalRegisterNumber reg)
 TR_GlobalRegisterNumber
 OMR::Z::Machine::setFirstGlobalVRFRegisterNumber(TR_GlobalRegisterNumber reg)
    {
-   self()->setFirstGlobalRegisterNumber(TR_VRF,reg);
    return _firstGlobalVRFRegisterNumber = reg;
    }
 
 TR_GlobalRegisterNumber
 OMR::Z::Machine::setLastGlobalVRFRegisterNumber(TR_GlobalRegisterNumber reg)
    {
-   self()->setLastGlobalRegisterNumber(TR_VRF,reg);
    return _lastGlobalVRFRegisterNumber = reg;
    }
 
 TR_GlobalRegisterNumber
 OMR::Z::Machine::setLastGlobalCCRRegisterNumber(TR_GlobalRegisterNumber reg)
    {
-   self()->setLastGlobalRegisterNumber(TR_CCR,reg);
    return _lastGlobalCCRRegisterNumber=reg;
    }
 

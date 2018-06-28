@@ -20,6 +20,7 @@
  *******************************************************************************/
 
 #include <stdio.h>
+#include <string>
 #include "codegen/CodeGenerator.hpp"
 #include "compile/CompilationTypes.hpp"
 #include "control/CompileMethod.hpp"

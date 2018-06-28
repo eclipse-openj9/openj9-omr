@@ -38,6 +38,7 @@ set(OMR_FVTEST ON CACHE BOOL "Enable the FV Testing.")
 set(OMR_GC ON CACHE BOOL "Enable the GC")
 set(OMR_JIT OFF CACHE BOOL "Enable building the JIT compiler")
 set(OMR_JITBUILDER OFF CACHE BOOL "Enable building JitBuilder")
+set(OMR_JITBUILDER_TEST OFF CACHE BOOL "Enable building JitBuilder Tests")
 set(OMR_OMRSIG ON CACHE BOOL "Enable the OMR signal compatibility library")
 set(OMR_PORT ON CACHE BOOL "Enable portability library")
 set(OMR_TEST_COMPILER OFF CACHE BOOL "Enable building the test compiler")
@@ -48,6 +49,12 @@ set(OMR_RAS_TDF_TRACE ON CACHE BOOL "Enable trace engine")
 ## OMR_JIT is required for OMR_JITBUILDER and OMR_TEST_COMPILER
 if(OMR_JITBUILDER OR OMR_TEST_COMPILER)
 	set(OMR_JIT ON CACHE BOOL "" FORCE)
+endif()
+
+## Enable OMR_JITBUILDER_TEST if OMR_JITBUILDER AND OMR_ENV_DATA64 are enabled.
+## Do NOT force it since it is explicitly disabled on Windows for now.
+if(OMR_JITBUILDER)
+	set(OMR_JITBUILDER_TEST ON CACHE BOOL "")
 endif()
 
 ###

@@ -23,9 +23,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#if defined(J9ZOS390)
+#if defined(J9ZOS390) && !defined(OMR_EBCDIC)
 #include "atoe.h"
-#endif /* defined(J9ZOS390) */
+#endif /* defined(J9ZOS390)  && !defined(OMR_EBCDIC) */
 
 #include "FileUtils.hpp"
 #include "Port.hpp"
@@ -40,7 +40,7 @@ main(int argc, char **argv, char **envp)
 #endif /* defined(OMR_OS_WINDOWS) */
 {
 	RCType rc = RC_OK;
-#if defined(J9ZOS390)
+#if defined(J9ZOS390) && !defined(OMR_EBCDIC)
 	/* Convert EBCDIC to UTF-8 (ASCII) */
 	if (-1 != iconv_init()) {
 		/* translate argv strings to ascii */

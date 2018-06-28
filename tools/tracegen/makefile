@@ -25,6 +25,7 @@ include $(top_srcdir)/tools/toolconfigure.mk
 
 MODULE_NAME := tracegen
 ARTIFACT_TYPE := cxx_executable
+USE_NATIVE_ENCODING := 1
 OBJECTS := $(patsubst %.cpp,%$(OBJEXT), $(wildcard *.cpp))
 
 include $(top_srcdir)/omrmakefiles/rules.mk

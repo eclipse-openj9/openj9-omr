@@ -743,6 +743,7 @@ CPPFLAGS
 LDFLAGS
 CFLAGS
 CC
+OMR_ALLOW_NATIVE_ENCODING
 OMR_PRODUCT_VERSION
 OMR_PRODUCT_DESCRIPTION
 OMR_COMPANY_COPYRIGHT
@@ -818,6 +819,7 @@ enable_DDR
 enable_fvtest
 enable_fvtest_agent
 enable_tracegen
+enable_native_encoding
 enable_auto_build_flag
 enable_OMR_GC
 enable_OMR_JIT
@@ -1550,6 +1552,10 @@ Optional Features:
                           because if fvtests are being built, fvtest agents
                           must also be built. (Default: no)
   --enable-tracegen       Run tracegen and tracemerge. (Default: yes)
+  --enable-native-encoding
+                          Allow use of native character encoding where
+                          possible (currently only defined for z/OS).
+                          (Default: no)
   --enable-auto-build-flag
                           Automatically detect the value of build flags that
                           are not explicitly enabled or disabled. (Default:
@@ -1630,6 +1636,7 @@ Optional Features:
   --enable-OMR_ARCH_POWER
   --enable-OMR_ARCH_ARM
   --enable-OMR_ARCH_AARCH64
+
   --enable-OMR_ARCH_X86
   --enable-OMR_ARCH_S390
   --enable-OMR_ENV_DATA64
@@ -2934,6 +2941,20 @@ else
 
 fi
 
+
+# Check whether --enable-native-encoding was given.
+if test "${enable_native_encoding+set}" = set; then :
+  enableval=$enable_native_encoding;
+fi
+
+if test "x$enable_native_encoding" = "xyes"; then :
+  OMR_ALLOW_NATIVE_ENCODING=1
+
+else
+  OMR_ALLOW_NATIVE_ENCODING=0
+
+
+fi
 
 ###
 ### Build environment configuration

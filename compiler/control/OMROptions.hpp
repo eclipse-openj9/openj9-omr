@@ -1944,6 +1944,12 @@ public:
 
    int32_t getJitMethodEntryAlignmentBoundary(TR::CodeGenerator *cg);
    void setJitMethodEntryAlignmentBoundary(int32_t boundary) { _jitMethodEntryAlignmentBoundary = boundary; }
+/**   \brief Returns a threshold on the profiling method invocations to trip recompilation
+ */
+   int32_t getJProfilingMethodRecompThreshold() { return _jProfilingMethodRecompThreshold; }
+/**   \brief Returns a base threshold for loop to trip recompilation
+ */
+   int32_t getJProfilingLoopRecompThreshold() { return _jProfilingLoopRecompThreshold; }
 
    inline static float getMinProfiledCheckcastFrequency() { return _minProfiledCheckcastFrequency/((float)100.0); }
    static bool isQuickstartDetected() { return _quickstartDetected; }
@@ -2411,6 +2417,8 @@ private:
    bool                        _isAOTCompile;
 
    int32_t                     _jitMethodEntryAlignmentBoundary; /* Alignment boundary for JIT method entry */
+   int32_t                     _jProfilingMethodRecompThreshold;
+   int32_t                     _jProfilingLoopRecompThreshold;
    char *                      _blockShufflingSequence;
    int32_t                     _randomSeed;
    TR_MCTLogs *                _logListForOtherCompThreads;

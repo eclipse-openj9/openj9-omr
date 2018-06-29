@@ -274,9 +274,7 @@ SupersetFieldVisitor::visitTypedef(TypedefUDT *type) const
 	if (!_prefixBase->empty()) {
 		*_prefixBase += " ";
 	}
-	if ((NULL != type->_aliasedType) && (type->_aliasedType->_name == type->_name)) {
-		*_prefix = *_prefixBase;
-	}
+	*_prefix = *_prefixBase;
 
 	/* Get field pointer/array notation. */
 	for (size_t i = type->getPointerCount(); i != 0; i -= 1) {
@@ -518,21 +516,8 @@ SupersetVisitor::visitType(Type *type) const
 DDR_RC
 SupersetVisitor::visitTypedef(TypedefUDT *type) const
 {
-	DDR_RC rc = DDR_RC_OK;
-
-	if (!_addFieldsOnly) {
-		Type *baseType = getBaseType(type, _supersetGen->_opaqueTypeNames);
-
-		/* print this typedef if its name is different than its baseType */
-		if (baseType->_name != type->_name) {
-			rc = _supersetGen->printType(type, NULL);
-			if (DDR_RC_OK == rc) {
-				rc = baseType->acceptVisitor(SupersetVisitor(_supersetGen, true, _prefix));
-			}
-		}
-	}
-
-	return rc;
+	/* No need to write this typedef: references are expanded. */
+	return DDR_RC_OK;
 }
 
 DDR_RC

@@ -689,17 +689,8 @@ getBaseType(TypedefUDT *type)
 DDR_RC
 BlobBuildVisitor::visitTypedef(TypedefUDT *type) const
 {
-	DDR_RC rc = DDR_RC_OK;
-
-	if (!_addFieldsOnly) {
-		Type *baseType = getBaseType(type);
-		/* include this typedef if its name is different than its baseType */
-		if (baseType->_name != type->_name) {
-			// TODO
-		}
-	}
-
-	return rc;
+	/* No need to write this typedef: references are expanded. */
+	return DDR_RC_OK;
 }
 
 DDR_RC
@@ -852,11 +843,12 @@ DDR_RC
 BlobFieldVisitor::visitTypedef(TypedefUDT *type) const
 {
 	/* If typedef is void*, or otherwise known as a function pointer, return name as void*. */
-	Type *aliasedType = type->_aliasedType;
+	Type *aliasedType = getBaseType(type);
 
 	if ((NULL != aliasedType) && ("void" == aliasedType->_name) && (0 != type->_modifiers._pointerCount)) {
 		*_fieldString += "void*";
 	} else {
+		// FIXME use aliasedType?
 		string prefix = type->getSymbolKindName();
 		*_fieldString += prefix.empty() ? type->getFullName() : (prefix + " " + type->getFullName());
 	}
@@ -1014,17 +1006,8 @@ BlobEnumerateVisitor::visitEnum(EnumUDT *type) const
 DDR_RC
 BlobEnumerateVisitor::visitTypedef(TypedefUDT *type) const
 {
-	DDR_RC rc = DDR_RC_OK;
-
-	if (!_addFieldsOnly) {
-		Type *baseType = getBaseType(type);
-		/* include this typedef if its name is different than its baseType */
-		if (baseType->_name != type->_name) {
-			// TODO
-		}
-	}
-
-	return rc;
+	/* No need to write this typedef: references are expanded. */
+	return DDR_RC_OK;
 }
 
 DDR_RC

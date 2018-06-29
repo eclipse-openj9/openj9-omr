@@ -64,10 +64,12 @@ class OMR_EXTENSIBLE IL
    static TR::ILOpCodes opCodesForCompareGreaterOrEquals[];
    static TR::ILOpCodes opCodesForIfCompareGreaterThan[];
    static TR::ILOpCodes opCodesForIfCompareGreaterOrEquals[];
+   static TR::ILOpCodes opCodesForTernarySelect[];
 
    TR::ILOpCodes opCodeForCorrespondingIndirectLoad(TR::ILOpCodes loadOpCode);
    TR::ILOpCodes opCodeForCorrespondingIndirectStore(TR::ILOpCodes storeOpCode);
 
+   TR::ILOpCodes opCodeForTernarySelect(TR::DataType dt);
    TR::ILOpCodes opCodeForConst(TR::DataType dt);
    TR::ILOpCodes opCodeForDirectLoad(TR::DataType dt);
    TR::ILOpCodes opCodeForDirectStore(TR::DataType dt);

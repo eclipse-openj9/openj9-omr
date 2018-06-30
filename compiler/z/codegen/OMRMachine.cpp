@@ -6914,12 +6914,6 @@ OMR::Z::Machine::setVirtualAssociatedWithReal(TR::RealRegister::RegNum regNum, T
    return _registerAssociations[regNum] = virtReg;
    }
 
-TR::RealRegister *
-OMR::Z::Machine::getRegisterFile(int32_t i)
-   {
-   return  _registerFile[i];
-   }
-
 void
 OMR::Z::Machine::takeRegisterStateSnapShot()
    {

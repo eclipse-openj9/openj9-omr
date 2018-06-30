@@ -62,7 +62,6 @@ namespace Power
 
 class OMR_EXTENSIBLE Machine : public OMR::Machine
    {
-   TR::RealRegister   **_registerFile;
    TR::Register          *_registerAssociations[TR::RealRegister::NumRegisters];
 
    void initializeRegisterFile();
@@ -137,8 +136,6 @@ class OMR_EXTENSIBLE Machine : public OMR::Machine
    TR::RealRegister **cloneRegisterFile(TR::RealRegister **registerFile, TR_AllocationKind allocKind = heapAlloc);
    TR::RealRegister **cloneRegisterFileByType(TR::RealRegister **registerFileClone, TR::RealRegister **registerFile,
                                                 int32_t start, int32_t end, TR_RegisterKinds kind, TR_AllocationKind allocKind);
-   TR::RealRegister **getRegisterFile() { return _registerFile; }
-   TR::RealRegister **setRegisterFile(TR::RealRegister **r) { return _registerFile = r; }
    TR::RegisterDependencyConditions  *createCondForLiveAndSpilledGPRs(bool cleanRegState, TR::list<TR::Register*> *spilledRegisterList = NULL);
 
    void decFutureUseCountAndUnlatch(TR::Register *virtualRegister);

@@ -64,8 +64,7 @@ class OMR_EXTENSIBLE Machine : public OMR::X86::Machine
       IA32_MAX_GLOBAL_FPRS      = 8,
       };
 
-   TR::RealRegister  *_registerFileStorage[TR_X86_REGISTER_FILE_SIZE];
-   TR::Register         *_registerAssociationsStorage[TR_X86_REGISTER_FILE_SIZE];
+   TR::Register         *_registerAssociationsStorage[TR::RealRegister::NumRegisters];
    TR::Register         *_xmmGlobalRegisterStorage[IA32_NUM_XMMR];
    uint32_t _globalRegisterNumberToRealRegisterMapStorage[IA32_MAX_GLOBAL_GPRS + IA32_MAX_GLOBAL_FPRS];
 
@@ -77,7 +76,6 @@ class OMR_EXTENSIBLE Machine : public OMR::X86::Machine
          IA32_NUM_GPR,
          IA32_NUM_FPR,
          cg,
-         _registerFileStorage,
          _registerAssociationsStorage,
          IA32_MAX_GLOBAL_GPRS,
          IA32_MAX_8BIT_GLOBAL_GPRS,

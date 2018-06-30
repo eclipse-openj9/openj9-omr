@@ -2617,7 +2617,7 @@ OMR::Z::CodeGenerator::prepareRegistersForAssignment()
        {
        for (int32_t i = TR::RealRegister::LastAssignableVRF; i > (TR::RealRegister::LastAssignableVRF - TR::Options::_numVecRegsToLock); --i)
           {
-          machine->getRegisterFile(i)->setState(TR::RealRegister::Locked);
+          machine->realRegister(static_cast<TR::RealRegister::RegNum>(i))->setState(TR::RealRegister::Locked);
           }
        }
 
@@ -2754,7 +2754,7 @@ OMR::Z::CodeGenerator::doRegisterAssignment(TR_RegisterKinds kindsToAssign)
          uint8_t regMask = 0;
          for(int8_t i = TR::RealRegister::GPR0; i != TR::RealRegister::GPR15 + 1; i++)
             {
-            if (self()->machine()->getRegisterFile(i)->getState() == TR::RealRegister::Assigned)
+            if (self()->machine()->realRegister(static_cast<TR::RealRegister::RegNum>(i))->getState() == TR::RealRegister::Assigned)
                regMask |= (1 << (7 - ((i - 1) >> 1))); // bit 0 = GPR0/1, GPR0=1, GPR15=16. 'Or' with bit [(i-1)>>1]
             }
          immValue = immValue | (regMask<<8);
@@ -2775,7 +2775,7 @@ OMR::Z::CodeGenerator::doRegisterAssignment(TR_RegisterKinds kindsToAssign)
 
          for (int32_t i=first; i<=last; i++)
             {
-            realReg = self()->machine()->getRegisterFile(i);
+            realReg = self()->machine()->realRegister(static_cast<TR::RealRegister::RegNum>(i));
 
             if ( realReg->getState() == TR::RealRegister::Free && realReg->getHighWordRegister()->getState() == TR::RealRegister::Free)
                {

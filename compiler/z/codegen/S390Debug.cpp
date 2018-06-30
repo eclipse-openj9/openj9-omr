@@ -2938,15 +2938,17 @@ TR_Debug::printGPRegisterStatus(TR::FILE *pOutFile, TR::Machine *machine)
    trfprintf(pOutFile, "\n                         GP Reg Status:          Register         State        Assigned\n");
    for (int i = TR::RealRegister::FirstGPR; i <= TR::RealRegister::LastAssignableGPR; i++)
       {
-      trfprintf(pOutFile, "%p                      ", machine->getRegisterFile(i));
-      printFullRegInfo(pOutFile, machine->getRegisterFile(i));
+      TR::RealRegister *realReg = machine->realRegister(static_cast<TR::RealRegister::RegNum>(i));
+      trfprintf(pOutFile, "%p                      ", realReg);
+      printFullRegInfo(pOutFile, realReg);
       }
    if ( _comp->getOption(TR_Enable390AccessRegs) )
       {
       for (int i = TR::RealRegister::FirstAR; i <= TR::RealRegister::LastAR; i++)
          {
-         trfprintf(pOutFile, "%p                      ", machine->getRegisterFile(i));
-         printFullRegInfo(pOutFile, machine->getRegisterFile(i));
+         TR::RealRegister *realReg = machine->realRegister(static_cast<TR::RealRegister::RegNum>(i));
+         trfprintf(pOutFile, "%p                      ", realReg);
+         printFullRegInfo(pOutFile, realReg);
          }
       }
    trfflush(pOutFile);
@@ -2961,8 +2963,9 @@ TR_Debug::printFPRegisterStatus(TR::FILE *pOutFile, TR::Machine *machine)
    trfprintf(pOutFile, "\n                         FP Reg Status:          Register         State        Assigned\n");
    for (int i = TR::RealRegister::FirstFPR; i <= TR::RealRegister::LastFPR; i++)
       {
-      trfprintf(pOutFile, "%p                      ", machine->getRegisterFile(i));
-      printFullRegInfo(pOutFile, machine->getRegisterFile(i));
+      TR::RealRegister *realReg = machine->realRegister(static_cast<TR::RealRegister::RegNum>(i));
+      trfprintf(pOutFile, "%p                      ", realReg);
+      printFullRegInfo(pOutFile, realReg);
       }
    trfflush(pOutFile);
    }

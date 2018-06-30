@@ -1229,7 +1229,7 @@ class X86RegRegImmInstruction : public TR::X86RegRegInstruction
 
 class X86RegRegRegInstruction : public TR::X86RegRegInstruction
    {
-   TR::Register *_sourceRightRegister;
+   TR::Register *_source2ndRegister;
 
    public:
 
@@ -1240,9 +1240,9 @@ class X86RegRegRegInstruction : public TR::X86RegRegInstruction
                                TR::Node                             *node,
                                TR_X86OpCodes                       op,
                                TR::CodeGenerator                    *cg)
-      : TR::X86RegRegInstruction(cond, slreg, treg, node, op, cg), _sourceRightRegister(srreg)
+      : TR::X86RegRegInstruction(cond, srreg, treg, node, op, cg), _source2ndRegister(slreg)
       {
-      useRegister(srreg);
+      useRegister(slreg);
       }
 
    X86RegRegRegInstruction(TR::RegisterDependencyConditions  *cond,
@@ -1252,10 +1252,9 @@ class X86RegRegRegInstruction : public TR::X86RegRegInstruction
                                TR_X86OpCodes                       op,
                                TR::Instruction                      *precedingInstruction,
                                TR::CodeGenerator                    *cg)
-      : TR::X86RegRegInstruction(cond, slreg, treg, op, precedingInstruction, cg),
-        _sourceRightRegister(srreg)
+      : TR::X86RegRegInstruction(cond, srreg, treg, op, precedingInstruction, cg), _source2ndRegister(slreg)
       {
-      useRegister(srreg);
+      useRegister(slreg);
       }
 
    X86RegRegRegInstruction(TR::Register      *srreg,
@@ -1264,9 +1263,9 @@ class X86RegRegRegInstruction : public TR::X86RegRegInstruction
                                TR::Node          *node,
                                TR_X86OpCodes    op,
                                TR::CodeGenerator *cg)
-      : TR::X86RegRegInstruction(slreg, treg, node, op, cg), _sourceRightRegister(srreg)
+      : TR::X86RegRegInstruction(srreg, treg, node, op, cg), _source2ndRegister(slreg)
       {
-      useRegister(srreg);
+      useRegister(slreg);
       }
 
    X86RegRegRegInstruction(TR::Register      *srreg,
@@ -1275,10 +1274,9 @@ class X86RegRegRegInstruction : public TR::X86RegRegInstruction
                                TR_X86OpCodes   op,
                                TR::Instruction   *precedingInstruction,
                                TR::CodeGenerator *cg)
-      : TR::X86RegRegInstruction(slreg, treg, op, precedingInstruction, cg),
-        _sourceRightRegister(srreg)
+      : TR::X86RegRegInstruction(srreg, treg, op, precedingInstruction, cg), _source2ndRegister(slreg)
       {
-      useRegister(srreg);
+      useRegister(slreg);
       }
 
    X86RegRegRegInstruction(TR_X86OpCodes    op,
@@ -1315,13 +1313,51 @@ class X86RegRegRegInstruction : public TR::X86RegRegInstruction
 
    virtual Kind getKind() { return IsRegRegReg; }
 
-   virtual TR::Register *getSourceRightRegister()                 {return _sourceRightRegister;}
-   TR::Register *setSourceRightRegister(TR::Register *srr) {return (_sourceRightRegister = srr);}
+   /** \brief
+   *    Getter of the second source register
+   *
+   *  \return
+   *    The second source register
+   */
+   virtual TR::Register *getSource2ndRegister()         {return _source2ndRegister;}
+   /** \brief
+   *    Setter of the second source register
+   *
+   *  \param sr
+   *    The new second source register
+   *
+   *  \return
+   *    The second source register
+   */
+   TR::Register *setSource2ndRegister(TR::Register *sr) {return (_source2ndRegister = sr);}
+
+   /** \brief
+   *    Fill operand bytes
+   *
+   *  \param cursor
+   *    The address to the first operand byte
+   *
+   *  \return
+   *    The address after last operand byte
+   */
+   virtual uint8_t* generateOperand(uint8_t* cursor);
 
    virtual void assignRegisters(TR_RegisterKinds kindsToBeAssigned);
    virtual bool refsRegister(TR::Register *reg);
    virtual bool defsRegister(TR::Register *reg);
    virtual bool usesRegister(TR::Register *reg);
+
+   /** \brief
+   *    Fill vvvv field in a VEX prefix
+   *
+   *  \param opcodeByte
+   *    The address of VEX prefix byte containing vvvv field
+   */
+   void applySource2ndRegisterToVEX(uint8_t *vex)
+      {
+      TR::RealRegister *source = toRealRegister(_source2ndRegister);
+      source->setRegisterFieldInVEX(vex);
+      }
 
 #ifdef DEBUG
    virtual uint32_t getNumOperandReferencedGPRegisters() { return 3; }
@@ -1329,7 +1365,7 @@ class X86RegRegRegInstruction : public TR::X86RegRegInstruction
 
    protected:
 
-   void aboutToAssignSourceRightRegister() { aboutToAssignRegister(getSourceRightRegister(), TR_if64bitSource, TR_never); }
+   void aboutToAssignSourceRightRegister() { aboutToAssignRegister(getSource2ndRegister(), TR_if64bitSource, TR_never); }
 
    };
 
@@ -1838,7 +1874,7 @@ class X86MemRegImmInstruction : public TR::X86MemRegInstruction
 
 class X86MemRegRegInstruction : public TR::X86MemRegInstruction
    {
-   TR::Register *_sourceRightRegister;
+   TR::Register *_source2ndRegister;
 
    public:
 
@@ -1848,7 +1884,7 @@ class X86MemRegRegInstruction : public TR::X86MemRegInstruction
                                TR::Node                *node,
                                TR_X86OpCodes          op,
                                TR::CodeGenerator       *cg)
-      : TR::X86MemRegInstruction(slreg, mr, node, op, cg), _sourceRightRegister(srreg)
+      : TR::X86MemRegInstruction(slreg, mr, node, op, cg), _source2ndRegister(srreg)
       {
       useRegister(srreg);
       }
@@ -1859,7 +1895,7 @@ class X86MemRegRegInstruction : public TR::X86MemRegInstruction
                                TR_X86OpCodes          op,
                                TR::Instruction         *precedingInstruction,
                                TR::CodeGenerator       *cg)
-      : TR::X86MemRegInstruction(slreg, mr, op, precedingInstruction, cg), _sourceRightRegister(srreg)
+      : TR::X86MemRegInstruction(slreg, mr, op, precedingInstruction, cg), _source2ndRegister(srreg)
       {
       useRegister(srreg);
       }
@@ -1898,8 +1934,8 @@ class X86MemRegRegInstruction : public TR::X86MemRegInstruction
 
    virtual Kind getKind() { return IsMemRegReg; }
 
-   virtual TR::Register *getSourceRightRegister()                 {return _sourceRightRegister;}
-   TR::Register *setSourceRightRegister(TR::Register *srr) {return (_sourceRightRegister = srr);}
+   virtual TR::Register *getSource2ndRegister()                 {return _source2ndRegister;}
+   TR::Register *setSourceRightRegister(TR::Register *srr) {return (_source2ndRegister = srr);}
 
    virtual void assignRegisters(TR_RegisterKinds kindsToBeAssigned);
    virtual bool refsRegister(TR::Register *reg);
@@ -1911,7 +1947,7 @@ class X86MemRegRegInstruction : public TR::X86MemRegInstruction
 
    protected:
 
-   void aboutToAssignSourceRightRegister() { aboutToAssignRegister(getSourceRightRegister(), TR_if64bitSource, TR_never); }
+   void aboutToAssignSourceRightRegister() { aboutToAssignRegister(getSource2ndRegister(), TR_if64bitSource, TR_never); }
 
    };
 
@@ -3036,6 +3072,9 @@ TR::X86MemRegInstruction  * generateMemRegInstruction(TR_X86OpCodes op, TR::Node
 TR::X86MemRegInstruction  * generateMemRegInstruction(TR_X86OpCodes op, TR::Node *, TR::MemoryReference  * mr, TR::Register * reg1, TR::CodeGenerator *cg);
 TR::X86ImmSymInstruction  * generateImmSymInstruction(TR_X86OpCodes op, TR::Node *, int32_t imm, TR::SymbolReference *, TR::RegisterDependencyConditions  *, TR::CodeGenerator *cg);
 TR::X86ImmSymInstruction  * generateImmSymInstruction(TR_X86OpCodes op, TR::Node *, int32_t imm, TR::SymbolReference *, TR::CodeGenerator *cg);
+
+TR::X86RegRegRegInstruction  * generateRegRegRegInstruction(TR_X86OpCodes op, TR::Node *, TR::Register * reg1, TR::Register * reg2, TR::Register * reg3, TR::RegisterDependencyConditions  *deps, TR::CodeGenerator *cg);
+TR::X86RegRegRegInstruction  * generateRegRegRegInstruction(TR_X86OpCodes op, TR::Node *, TR::Register * reg1, TR::Register * reg2, TR::Register * reg3, TR::CodeGenerator *cg);
 
 TR::X86ImmSnippetInstruction  * generateImmSnippetInstruction(TR_X86OpCodes op, TR::Node *, int32_t imm, TR::UnresolvedDataSnippet *, TR::CodeGenerator *cg);
 

@@ -2629,7 +2629,7 @@ bool OMR::X86::CodeGenerator::processInstruction(TR::Instruction *instr, TR_BitV
          if (traceIt)
             traceMsg(self()->comp(), "instr [%p] USES register [%d]\n", x86Instr, srcRegNum);
 
-         int32_t srcRightRegNum = ((TR::RealRegister*)x86Instr->getSourceRightRegister())->getRegisterNumber();
+         int32_t srcRightRegNum = ((TR::RealRegister*)x86Instr->getSource2ndRegister())->getRegisterNumber();
          if (traceIt)
             traceMsg(self()->comp(), "instr [%p] USES register [%d]\n", x86Instr, srcRightRegNum);
 

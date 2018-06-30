@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -229,12 +229,22 @@ class OMR_EXTENSIBLE RealRegister : public OMR::X86::RealRegister
          }
       }
 
-
    void setRegisterNumber() { TR_ASSERT(0, "X86 RealRegister doesn't have setRegisterNumber() implementation"); }
 
    void setRegisterFieldInOpcode(uint8_t *opcodeByte)
       {
       *opcodeByte |= _fullRegisterBinaryEncodings[_registerNumber].id; // reg field is in bits 0-2 of opcode
+      }
+
+   /** \brief
+   *    Fill vvvv field in a VEX prefix
+   *
+   *  \param opcodeByte
+   *    The address of VEX prefix byte containing vvvv field
+   */
+   void setRegisterFieldInVEX(uint8_t *opcodeByte)
+      {
+      *opcodeByte ^= ((_fullRegisterBinaryEncodings[_registerNumber].needsRexForByte << 3) | _fullRegisterBinaryEncodings[_registerNumber].id) << 3; // vvvv is in bits 3-6 of last byte of VEX
       }
 
    void setRegisterFieldInModRM(uint8_t *modRMByte)

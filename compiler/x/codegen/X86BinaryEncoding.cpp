@@ -215,7 +215,10 @@ uint8_t* OMR::X86::Instruction::generateBinaryEncoding()
       // cursor is NULL when generateOperand() requests to regenerate the binary code, which may happen during encoding of memref with unresolved symbols on 64-bit
       if (cursor)
          {
-         self()->getOpCode().finalize(instructionStart);
+         if (!self()->getSource2ndRegister())
+            {
+            self()->getOpCode().finalize(instructionStart);
+            }
          self()->setBinaryLength(cursor - instructionStart);
          self()->cg()->addAccumulatedInstructionLengthError(self()->getEstimatedBinaryLength() - self()->getBinaryLength());
          return cursor;
@@ -1403,6 +1406,26 @@ uint8_t* TR::X86RegRegInstruction::generateOperand(uint8_t* cursor)
       {
       applySourceRegisterToModRMByte(modRM);
       }
+   return cursor;
+   }
+
+
+// -----------------------------------------------------------------------------
+// TR::X86RegRegRegInstruction:: member functions
+
+uint8_t* TR::X86RegRegRegInstruction::generateOperand(uint8_t* cursor)
+   {
+   TR_ASSERT(getOpCode().info().supportsAVX(), "TR::X86RegRegRegInstruction must be an AVX instruction.");
+   uint8_t *modRM = cursor - 1;
+   if (getOpCode().hasTargetRegisterIgnored() == 0)
+      {
+      applyTargetRegisterToModRMByte(modRM);
+      }
+   if (getOpCode().hasSourceRegisterIgnored() == 0)
+      {
+      applySourceRegisterToModRMByte(modRM);
+      }
+   applySource2ndRegisterToVEX(modRM - 2);
    return cursor;
    }
 

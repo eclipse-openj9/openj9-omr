@@ -567,6 +567,11 @@ TR::Register *OMR::X86::TreeEvaluator::fpBinaryArithmeticEvaluator(TR::Node     
                                                               bool              isFloat,
                                                               TR::CodeGenerator *cg)
    {
+   static auto Use3OpForFP = (bool)feGetEnv("TR_Use3OpForFP");
+   if (Use3OpForFP)
+      {
+      return TR::TreeEvaluator::FloatingPointAndVectorBinaryArithmeticEvaluator(node, cg);
+      }
    // Attempt to use SSE/SSE2 instructions if the CPU supports them, and
    // either neither child is in a register, or at least one of them is
    // already in an XMM register.

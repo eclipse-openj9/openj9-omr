@@ -33,7 +33,33 @@
 
 using std::vector;
 
-typedef struct BlobHeaderV1 {
+static void
+swap_bytes(uint8_t *left, uint8_t *right)
+{
+	uint8_t temp = *left;
+
+	*left = *right;
+	*right = temp;
+}
+
+static void
+swap_u16(uint16_t *value)
+{
+	uint8_t *bytes = (uint8_t *)value;
+
+	swap_bytes(&bytes[0], &bytes[1]);
+}
+
+static void
+swap_u32(uint32_t *value)
+{
+	uint8_t *bytes = (uint8_t *)value;
+
+	swap_bytes(&bytes[0], &bytes[3]);
+	swap_bytes(&bytes[1], &bytes[2]);
+}
+
+struct BlobHeaderV1 {
 	uint32_t coreVersion;
 	uint8_t sizeofBool;
 	uint8_t sizeofUDATA;
@@ -42,37 +68,79 @@ typedef struct BlobHeaderV1 {
 	uint32_t structDataSize;
 	uint32_t stringTableDataSize;
 	uint32_t structureCount;
-} BlobHeaderV1;
 
-typedef struct BlobString {
+	void endian_swap()
+	{
+		swap_u32(&coreVersion);
+		swap_u32(&structDataSize);
+		swap_u32(&stringTableDataSize);
+		swap_u32(&structureCount);
+	}
+};
+
+struct BlobString {
 	uint16_t length;
 	char data[1]; /* flexible array member */
-} BlobString;
 
-typedef struct BlobStruct {
+	void endian_swap()
+	{
+		swap_u16(&length);
+	}
+};
+
+struct BlobStruct {
 	uint32_t nameOffset;
 	uint32_t superName;
 	uint32_t sizeOf;
 	uint32_t fieldCount;
 	uint32_t constCount;
-} BlobStruct;
 
-typedef struct BlobField {
+	void endian_swap()
+	{
+		swap_u32(&nameOffset);
+		swap_u32(&superName);
+		swap_u32(&sizeOf);
+		swap_u32(&fieldCount);
+		swap_u32(&constCount);
+	}
+};
+
+struct BlobField {
 	uint32_t declaredName;
 	uint32_t declaredType;
 	uint32_t offset;
-} BlobField;
 
-typedef struct BlobConstant {
+	void endian_swap()
+	{
+		swap_u32(&declaredName);
+		swap_u32(&declaredType);
+		swap_u32(&offset);
+	}
+};
+
+struct BlobConstant {
 	uint32_t name;
 	/* don't declare value as uint64_t to ensure that no padding is added between it and name */
 	uint32_t value[2];
-} BlobConstant;
+
+	void endian_swap()
+	{
+		swap_u32(&name);
+
+		/* value may not be properly aligned to be treated as uint64_t - swap pairs of bytes */
+		uint8_t *bytes = (uint8_t *)value;
+
+		swap_bytes(&bytes[0], &bytes[7]);
+		swap_bytes(&bytes[1], &bytes[6]);
+		swap_bytes(&bytes[2], &bytes[5]);
+		swap_bytes(&bytes[3], &bytes[4]);
+	}
+};
 
 struct Field;
 struct Constant;
 
-typedef struct Structure {
+struct Structure {
 	char *name;
 	uint32_t nameLength;
 	char *superName;
@@ -80,7 +148,7 @@ typedef struct Structure {
 	uint32_t size;
 	vector<Field *> fields;
 	vector<Constant *> constants;
-} Structure;
+};
 
 bool
 compareStructs(const Structure *first, const Structure *second)
@@ -88,19 +156,19 @@ compareStructs(const Structure *first, const Structure *second)
 	return strcmp(first->name, second->name) < 0;
 }
 
-typedef struct Field {
+struct Field {
 	char *name;
 	uint32_t nameLength;
 	char *type;
 	uint32_t typeLength;
 	uint32_t offset;
-} Field;
+};
 
-typedef struct Constant {
+struct Constant {
 	char *name;
 	uint32_t nameLength;
 	uint64_t value;
-} Constant;
+};
 
 int
 main(int argc, char *argv[])
@@ -124,13 +192,19 @@ main(int argc, char *argv[])
 	size_t rb = fread(&blobHdrV1, 1, sizeof(blobHdrV1), fd);
 	if (sizeof(blobHdrV1) != rb) {
 		ERRMSG("read blob header returned %lu, expected %lu\n", (unsigned long)rb, (unsigned long)sizeof(blobHdrV1));
+		fclose(fd);
 		return -1;
 	}
 
-	/* NOTE Data appears to be written into the Blob using platform-dependent
-	 * integer endianness. bitfieldFormat is probably used to interpret the
-	 * values.
+	/* Data is written in the blob in the natural byte order of the originating system.
+	 * All version numbers thus far are small: a large version number is interpreted as
+	 * a mismatch between the byte order of this system and the originating system.
 	 */
+	const bool swapsNeeded = blobHdrV1.coreVersion > (uint32_t) 0xFFFF;
+
+	if (swapsNeeded) {
+		blobHdrV1.endian_swap();
+	}
 
 	printf("Blob Header:\n"
 		   " coreVersion: %u\n"
@@ -153,16 +227,17 @@ main(int argc, char *argv[])
 	uint8_t *blobBuffer = (uint8_t *)malloc(blobLength);
 	if (NULL == blobBuffer) {
 		ERRMSG("malloc blobBuffer failed\n");
+		fclose(fd);
 		return -1;
 	}
 
 	rewind(fd);
 	rb = fread(blobBuffer, 1, blobLength, fd);
+	fclose(fd);
 	if (blobLength != rb) {
 		ERRMSG("read blob data returned %lu, expected %lu\n", (unsigned long)rb, (unsigned long)blobLength);
 		return -1;
 	}
-	fclose(fd);
 
 	/* Read strings */
 	{
@@ -174,13 +249,17 @@ main(int argc, char *argv[])
 		unsigned int stringNum = 1; /* Numbers the strings in the printed list */
 
 		while (currentString < stringDataEnd) {
-			const BlobString *blobString = (const BlobString *)currentString;
+			BlobString *blobString = (BlobString *)currentString;
+
+			if (swapsNeeded) {
+				blobString->endian_swap();
+			}
 
 			/* NOTE string lengths appear to be padded to an even length */
 			const uint16_t padding = blobString->length & 1;
 
 			/* The format of the printed list is:
-			 * [#]: <offset in string data> [<string length>] <string data>
+			 * #: <offset in string data> [<string length>] <string data>
 			 */
 			printf("%5u: %8lx [%u] %.*s\n", stringNum, (long unsigned int)(currentString - stringDataStart), blobString->length, blobString->length, blobString->data);
 
@@ -206,7 +285,12 @@ main(int argc, char *argv[])
 		uint32_t structCount = 1;
 		vector<Structure *> structs;
 		while (structCount <= blobHdrV1.structureCount) {
-			const BlobStruct *blobStruct = (const BlobStruct *)currentStruct;
+			BlobStruct *blobStruct = (BlobStruct *)currentStruct;
+
+			if (swapsNeeded) {
+				blobStruct->endian_swap();
+			}
+
 			currentStruct += sizeof(BlobStruct);
 
 			Structure *builtStruct = (Structure *)malloc(sizeof(Structure));
@@ -225,7 +309,12 @@ main(int argc, char *argv[])
 
 			uint32_t fieldCount = 1;
 			while (fieldCount <= blobStruct->fieldCount) {
-				const BlobField *blobField = (const BlobField *)currentStruct;
+				BlobField *blobField = (BlobField *)currentStruct;
+
+				if (swapsNeeded) {
+					blobField->endian_swap();
+				}
+
 				currentStruct += sizeof(BlobField);
 
 				Field *field = (Field *)malloc(sizeof(Field));
@@ -241,7 +330,12 @@ main(int argc, char *argv[])
 
 			uint32_t constCount = 1;
 			while (constCount <= blobStruct->constCount) {
-				const BlobConstant *blobConst = (const BlobConstant *)currentStruct;
+				BlobConstant *blobConst = (BlobConstant *)currentStruct;
+
+				if (swapsNeeded) {
+					blobConst->endian_swap();
+				}
+
 				currentStruct += sizeof(BlobConstant);
 
 				Constant *constant = (Constant *)malloc(sizeof(Constant));

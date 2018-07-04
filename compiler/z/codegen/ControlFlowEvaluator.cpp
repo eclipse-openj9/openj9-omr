@@ -893,19 +893,89 @@ lcmpHelper(TR::Node * node, TR::CodeGenerator * cg)
    return targetRegister;
    }
 
+/**
+ *  \brief
+ *     Compares 2 numbers are returns the greater of the 2.
+ *     ONLY SUPPORTS imax, imin, lmax, lmin
+ *
+ *  \detail
+ *     Uses a load and conditional store to select the correct value.
+ *     ONLY SUPPORTS imax, imin, lmax, lmin
+ *
+ *  \param node
+ *     The node representing a call to max or min.
+ *
+ *  \param cg
+ *     The code generator used to generate the instructions.
+ *
+ *  \param isMax
+ *     Boolean representing the type of function, either a max or min call.
+ *
+ *  \return
+ *     A register containing the return value of the Java call. The return value
+ *     will be the greater or lesser of the 2 children for max and min functions, respectively.
+ */
+static TR::Register * maxMinHelper(TR::Node *node, TR::CodeGenerator *cg, bool isMax)
+   {
+   TR::Register *registerA = cg->gprClobberEvaluate(node->getFirstChild());
+   TR::Register *registerB = cg->evaluate(node->getSecondChild());
+   // Mask is 4 to pick b when a is Lower for max, 2 to pick b when a is higher for min
+   const uint8_t mask = isMax ? 0x4 : 0x2;
+
+   if (node->getOpCodeValue() == TR::imax || node->getOpCodeValue() == TR::imin)
+      {
+      generateRRInstruction(cg, TR::InstOpCode::CR, node, registerA, registerB);
+      generateRRFInstruction(cg, TR::InstOpCode::LOCR, node, registerA, registerB, mask, true);
+      }
+   else if (node->getOpCodeValue() == TR::lmax || node->getOpCodeValue() == TR::lmin)
+      {
+      if (TR::Compiler->target.is64Bit() || cg->use64BitRegsOn32Bit())
+         {
+         generateRREInstruction(cg, TR::InstOpCode::CGR, node, registerA, registerB);
+         generateRRFInstruction(cg, TR::InstOpCode::LOCGR, node, registerA, registerB, mask, true);
+         }
+      else
+         {
+         TR::LabelSymbol * done = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+         TR::Instruction* cursor = NULL;
+
+         generateRRInstruction(cg, TR::InstOpCode::CR, node, registerA->getHighOrder(), registerB->getHighOrder());
+         generateRRFInstruction(cg, TR::InstOpCode::LOCR, node, registerA->getHighOrder(), registerB->getHighOrder(), mask, true);
+         generateRRFInstruction(cg, TR::InstOpCode::LOCR, node, registerA->getLowOrder(), registerB->getLowOrder(), mask, true);
+         cursor = generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BRNE, node, done);
+         cursor->setStartInternalControlFlow();
+
+         generateRRInstruction(cg, TR::InstOpCode::CR, node, registerA->getLowOrder(), registerB->getLowOrder());
+         generateRRFInstruction(cg, TR::InstOpCode::LOCR, node, registerA->getHighOrder(), registerB->getHighOrder(), mask, true);
+         generateRRFInstruction(cg, TR::InstOpCode::LOCR, node, registerA->getLowOrder(), registerB->getLowOrder(), mask, true);
+
+         cursor = generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, done);
+         cursor->setEndInternalControlFlow();
+         }
+      }
+   else
+      {
+      TR_ASSERT_FATAL(node->getOpCodeValue(), "Opcode %s cannot be evaluated by maxMinHelper\n", node->getOpCode().getName());
+      }
+
+   node->setRegister(registerA);
+
+   cg->decReferenceCount(node->getFirstChild());
+   cg->decReferenceCount(node->getSecondChild());
+
+   return registerA;
+   }
 
 TR::Register *
 OMR::Z::TreeEvaluator::maxEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR_ASSERT( false,"Max opcode should have been expanded by TR_OpCodeExpansion\n");
-   return NULL;
+   return maxMinHelper(node, cg, true);
    }
 
 TR::Register *
 OMR::Z::TreeEvaluator::minEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR_ASSERT( false,"Min opcode should have been expanded by TR_OpCodeExpansion\n");
-   return NULL;
+   return maxMinHelper(node, cg, false);
    }
 
 

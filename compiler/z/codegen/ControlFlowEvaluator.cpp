@@ -893,6 +893,28 @@ lcmpHelper(TR::Node * node, TR::CodeGenerator * cg)
    return targetRegister;
    }
 
+/**
+ *  \brief
+ *     Compares 2 numbers are returns the greater of the 2.
+ *     ONLY SUPPORTS imax, imin, lmax, lmin
+ *
+ *  \detail
+ *     Uses a load and conditional store to select the correct value.
+ *     ONLY SUPPORTS imax, imin, lmax, lmin
+ *
+ *  \param node
+ *     The node representing a call to max or min.
+ *
+ *  \param cg
+ *     The code generator used to generate the instructions.
+ *
+ *  \param isMax
+ *     Boolean representing the type of function, either a max or min call.
+ *
+ *  \return
+ *     A register containing the return value of the Java call. The return value
+ *     will be the greater or lesser of the 2 children for max and min functions, respectively.
+ */
 static TR::Register * maxMinHelper(TR::Node *node, TR::CodeGenerator *cg, bool isMax)
    {
    TR::Register *registerA = cg->gprClobberEvaluate(node->getFirstChild());

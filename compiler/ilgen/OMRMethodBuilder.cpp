@@ -58,6 +58,9 @@
 #define TraceEnabled    (comp()->getOption(TR_TraceILGen))
 #define TraceIL(m, ...) {if (TraceEnabled) {traceMsg(comp(), m, ##__VA_ARGS__);}}
 
+#if defined (_MSC_VER) && _MSC_VER < 1900
+#define snprintf _snprintf
+#endif
 
 // MethodBuilder is an IlBuilder object representing an entire method /
 // function, so it conceptually has an entry point (though multiple entry
@@ -409,6 +412,18 @@ OMR::MethodBuilder::AppendBuilder(TR::BytecodeBuilder *bb)
    if (_vmState)
       bb->propagateVMState(_vmState);
    addBytecodeBuilderToWorklist(bb);
+   }
+
+void
+OMR::MethodBuilder::DefineLine(const char *line)
+   {
+   snprintf(_definingLine, MAX_LINE_NUM_LEN * sizeof(char), "%s", line);
+   }
+
+void
+OMR::MethodBuilder::DefineLine(int line)
+   {
+   snprintf(_definingLine, MAX_LINE_NUM_LEN * sizeof(char), "%d", line);
    }
 
 void

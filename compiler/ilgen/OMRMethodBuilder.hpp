@@ -28,10 +28,6 @@
 #include "ilgen/IlBuilder.hpp"
 #include "env/TypedAllocator.hpp"
 
-#if defined (_MSC_VER) && _MSC_VER < 1900
-#define snprintf _snprintf
-#endif
-
 // Maximum length of _definingLine string (including null terminator)
 #define MAX_LINE_NUM_LEN 7
 
@@ -109,15 +105,8 @@ class MethodBuilder : public TR::IlBuilder
 
    void DefineFile(const char *file)                         { _definingFile = file; }
 
-   void DefineLine(const char *line)
-      {
-      snprintf(_definingLine, MAX_LINE_NUM_LEN * sizeof(char), "%s", line);
-      }
-   void DefineLine(int line)
-      {
-      snprintf(_definingLine, MAX_LINE_NUM_LEN * sizeof(char), "%d", line);
-      }
-
+   void DefineLine(const char *line);
+   void DefineLine(int line);
    void DefineName(const char *name);
    void DefineParameter(const char *name, TR::IlType *type);
    void DefineArrayParameter(const char *name, TR::IlType *dt);

@@ -39,7 +39,7 @@ if(OMR_GC)
 	add_subdirectory(gctest)
 endif()
 
-if(OMR_JITBUILDER)
+if(OMR_JITBUILDER_TEST)
 	add_subdirectory(jitbuildertest)
 endif()
 
@@ -47,7 +47,7 @@ if(OMR_TEST_COMPILER)
 	add_subdirectory(compilertest)
 endif()
 
-if(OMR_JITBUILDER)
+if(OMR_JITBUILDER_TEST)
 	add_subdirectory(tril)
 	add_subdirectory(compilertriltest)
 endif()

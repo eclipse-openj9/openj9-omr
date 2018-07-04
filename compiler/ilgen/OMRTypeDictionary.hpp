@@ -92,7 +92,7 @@ public:
    TR_ALLOC(TR_Memory::IlGenerator)
 
    TypeDictionary();
-   TypeDictionary(const TypeDictionary &src) = delete;
+   TypeDictionary(const TypeDictionary &src); // = delete;
    ~TypeDictionary() throw();
 
    TR::IlType * LookupStruct(const char *structName);

@@ -77,7 +77,10 @@ target_link_libraries(jitbuilder
 	${OMR_PORT_LIB}
 )
 
-add_subdirectory(release)
+## JitBuilder examples only work on 64 bit currently.
+if(OMR_JITBUILDER AND OMR_ENV_DATA64)
+	add_subdirectory(release)
+endif()
 
 # install(TARGETS jitbuilder
 #         ARCHIVE       DESTINATION ${CMAKE_BINARY_DIR}/jitbuilder_release

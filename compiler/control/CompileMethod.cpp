@@ -58,6 +58,10 @@
 #include "env/DebugSegmentProvider.hpp"
 #include "runtime/CodeCacheManager.hpp"
 
+#if defined (_MSC_VER) && _MSC_VER < 1900
+#define snprintf _snprintf
+#endif
+
 static void
 writePerfToolEntry(void *start, uint32_t size, const char *name)
    {

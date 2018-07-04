@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2017 IBM Corp. and others
+# Copyright (c) 2017, 2018 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -21,16 +21,15 @@
 
 set(OMR_DDR ON CACHE BOOL "Enable DDR")
 set(OMR_EXAMPLE ON CACHE BOOL "")
-set(OMR_JIT OFF CACHE BOOL "")
-# TODO: JitBuilder built through CMake isn't quite ready for windows yet.
-set(OMR_JITBUILDER OFF CACHE BOOL "")
+set(OMR_JIT ON CACHE BOOL "")
+set(OMR_JITBUILDER ON CACHE BOOL "")
+set(OMR_JITBUILDER_TEST OFF CACHE BOOL "")
 set(OMR_GC ON CACHE BOOL "")
 set(OMR_PORT ON CACHE BOOL "")
 set(OMR_THREAD ON CACHE BOOL "")
 set(OMR_TEST_COMPILER OFF CACHE BOOL "")
 set(OMR_OMRSIG ON CACHE BOOL "")
 set(OMR_FVTEST ON CACHE BOOL "")
-set(OMR_GLUE ${CMAKE_SOURCE_DIR}/example/glue)
 set(OMR_GC_SEGREGATED_HEAP ON CACHE BOOL "")
 set(OMR_GC_MODRON_SCAVENGER ON CACHE BOOL "")
 set(OMR_GC_MODRON_CONCURRENT_MARK ON CACHE BOOL "")

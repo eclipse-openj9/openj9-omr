@@ -198,6 +198,9 @@ endef
 
 define CLEAN_COMMAND
 -$(RM) $(OBJECTS) $(OBJECTS:$(OBJEXT)=.i) *.d
+ifeq (linux_ztpf,$(OMR_HOST_OS))
+-$(RM) $(OBJECTS) $(OBJECTS:$(OBJEXT)=.lst) *.d
+endif
 endef
 
 define DDR_C_COMMAND
@@ -362,14 +365,14 @@ endif
 %$(OBJEXT): %.c
 	$(COMPILE_C_COMMAND)
 ifeq (linux_ztpf,$(OMR_HOST_OS))
-	tpfobjpp -O ONotApplicable -g gNotApplicable -c PUT14.1 $@
+	tpfobjpp -O ONotApplicable -g gNotApplicable $@
 endif
 
 # C++
 %$(OBJEXT): %.cpp
 	$(COMPILE_CXX_COMMAND)
 ifeq (linux_ztpf,$(OMR_HOST_OS))
-	tpfobjpp -O ONotApplicable -g gNotApplicable -c PUT14.1 $@
+	tpfobjpp -O ONotApplicable -g gNotApplicable $@
 endif
 
 # Assembly

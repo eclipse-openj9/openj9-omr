@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2017 IBM Corp. and others
+ * Copyright (c) 1991, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -26,8 +26,6 @@
  * \brief Dump formatting externals referenced from portLibrary
  */
 
-#define ZTPF_NEEDS_GETCONTEXT
-
 #include <signal.h>
 #include <tpf/c_proc.h>
 #include <tpf/c_cinfc.h>
@@ -35,7 +33,6 @@
 #include <tpf/sysapi.h>
 #include <tpf/c_idsprg.h>
 #include <tpf/c_stck.h>
-#include <sys/ucontext.h>
 #include <pthread.h>
 #define OSDUMP_SYMBOLS_ONLY
 

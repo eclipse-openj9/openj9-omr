@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2017 IBM Corp. and others
+ * Copyright (c) 1991, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -25,10 +25,10 @@
 #include "omrport.h"
 #include <errno.h>
 #include "omrosdump_helpers.h"
-#include <sys/sigcontext.h>
 
 #include <unistd.h>
 #include <sys/ucontext.h>
+#include "sys/sigcontext.h"
 
 #define MAX_UNIX_SIGNAL_TYPES  MNSIG
 

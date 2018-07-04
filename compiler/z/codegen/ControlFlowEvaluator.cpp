@@ -898,7 +898,7 @@ static TR::Register * maxMinHelper(TR::Node *node, TR::CodeGenerator *cg, bool i
    TR::Register *registerA = cg->gprClobberEvaluate(node->getFirstChild());
    TR::Register *registerB = cg->evaluate(node->getSecondChild());
    // Mask is 4 to pick b when a is Lower for max, 2 to pick b when a is higher for min
-   uint8_t mask = isMax ? 0x4 : 0x2;
+   const uint8_t mask = isMax ? 0x4 : 0x2;
 
    if (node->getOpCodeValue() == TR::imax || node->getOpCodeValue() == TR::imin)
       {

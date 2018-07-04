@@ -953,6 +953,10 @@ static TR::Register * maxMinHelper(TR::Node *node, TR::CodeGenerator *cg, bool i
          cursor->setEndInternalControlFlow();
          }
       }
+   else
+      {
+      TR_ASSERT_FATAL(node->getOpCodeValue(), "Opcode %s cannot be evaluated by maxMinHelper\n", node->getOpCode().getName());
+      }
 
    node->setRegister(registerA);
 

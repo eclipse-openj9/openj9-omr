@@ -332,6 +332,11 @@ static int cacheStringAppend(OMR::ValuePropagation *vp,TR::Node *node)
 TR::Node *constrainVcall(OMR::ValuePropagation *vp, TR::Node *node)
    {
    constrainCall(vp, node);
+
+   // Return if the node is not a call (xcall/xcalli) anymore
+   if (!node->getOpCode().isCall())
+      return node;
+
    // Look for System.arraycopy call. If the node is transformed into an arraycopy
    // re-process it.
    //

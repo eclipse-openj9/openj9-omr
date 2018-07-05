@@ -411,8 +411,6 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    bool supportsIndirectMemoryRematerialization();
    bool supportsAddressRematerialization();
    bool supportsXMMRRematerialization();
-   bool supportsFS0VMThreadRematerialization();
-   virtual bool allowVMThreadRematerialization();
 
    TR::Instruction *setLastCatchAppendInstruction(TR::Instruction *i) {return (_lastCatchAppendInstruction=i);}
    TR::Instruction *getLastCatchAppendInstruction()                  {return _lastCatchAppendInstruction;}

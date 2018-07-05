@@ -3371,7 +3371,7 @@ TR::Register *OMR::X86::TreeEvaluator::BBStartEvaluator(TR::Node *node, TR::Code
          }
 
       if (node->getNumChildren() > 0)
-         inst = generateLabelInstruction(LABEL, node, label, node->getFirstChild(), &popRegisters, true, cg);
+         inst = generateLabelInstruction(LABEL, node, label, node->getFirstChild(), &popRegisters, cg);
       else
          inst = generateLabelInstruction(LABEL, node, node->getLabel(), true, cg);
 
@@ -3460,7 +3460,7 @@ TR::Register *OMR::X86::TreeEvaluator::BBEndEvaluator(TR::Node *node, TR::CodeGe
       // This label is also used by RegisterDependency to detect the end of a block.
       TR::Instruction *labelInst = NULL;
       if (node->getNumChildren() > 0)
-         labelInst = generateLabelInstruction(LABEL, node, generateLabelSymbol(cg), node->getFirstChild(), NULL, needVMThreadDep, cg);
+         labelInst = generateLabelInstruction(LABEL, node, generateLabelSymbol(cg), node->getFirstChild(), NULL, cg);
       else
          labelInst = generateLabelInstruction(LABEL, node, generateLabelSymbol(cg), needVMThreadDep, cg);
 

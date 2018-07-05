@@ -186,7 +186,6 @@ OMR::CodeGenerator::CodeGenerator() :
       _ialoadUnneeded(self()->comp()->trMemory()),
      _symRefTab(self()->comp()->getSymRefTab()),
      _vmThreadRegister(NULL),
-     _vmThreadSpillInstr(NULL),
      _stackAtlas(NULL),
      _methodStackMap(NULL),
      _binaryBufferStart(NULL),
@@ -1129,22 +1128,6 @@ bool OMR::CodeGenerator::needGuardSitesEvenWhenGuardRemoved() { return self()->c
 bool OMR::CodeGenerator::supportVMInternalNatives() { return !self()->comp()->compileRelocatableCode(); }
 
 bool OMR::CodeGenerator::supportsNativeLongOperations() { return (TR::Compiler->target.is64Bit() || self()->use64BitRegsOn32Bit()); }
-
-void
-OMR::CodeGenerator::setVMThreadSpillInstruction(TR::Instruction *i)
-   {
-   if (_vmThreadSpillInstr == NULL)
-      {
-      _vmThreadSpillInstr = i;
-      }
-   else
-      {
-      _vmThreadSpillInstr = (TR::Instruction *)0xffffffff; // set to sentinel to indicate that
-                                                          // more than one location is needed and
-                                                          // should therefore simply spill in the prologue
-      }
-   }
-
 
 bool OMR::CodeGenerator::supportsInternalPointers()
    {

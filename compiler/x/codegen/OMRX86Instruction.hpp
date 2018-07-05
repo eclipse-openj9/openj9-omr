@@ -3018,13 +3018,14 @@ TR::X86AlignmentInstruction  * generateAlignmentInstruction(TR::Node * node, uin
 TR::X86AlignmentInstruction  * generateAlignmentInstruction(TR::Instruction *precedingInstruction, uint8_t boundary, TR::CodeGenerator *cg);
 TR::X86AlignmentInstruction  * generateAlignmentInstruction(TR::Instruction *precedingInstruction, uint8_t boundary, uint8_t margin, TR::CodeGenerator *cg);
 
-TR::X86LabelInstruction  * generateLabelInstruction(TR_X86OpCodes op, TR::Node *node, TR::LabelSymbol *sym, bool needsVMThreadRegister, TR::CodeGenerator *cg);
-inline TR::X86LabelInstruction  * generateLabelInstruction(TR_X86OpCodes op, TR::Node *node, TR::LabelSymbol *sym, TR::CodeGenerator *cg)
-   { return generateLabelInstruction(op, node, sym, false, cg); }
+TR::X86LabelInstruction  * generateLabelInstruction(TR_X86OpCodes op, TR::Node *node, TR::LabelSymbol *sym, TR::CodeGenerator *cg);
+inline TR::X86LabelInstruction  * generateLabelInstruction(TR_X86OpCodes op, TR::Node *node, TR::LabelSymbol *sym, bool needsVMThreadRegister, TR::CodeGenerator *cg)
+   { return generateLabelInstruction(op, node, sym, cg); }
 
-TR::X86LabelInstruction  * generateLabelInstruction(TR::Instruction *, TR_X86OpCodes op, TR::LabelSymbol *sym, bool needsVMThreadRegister, TR::CodeGenerator *cg);
-inline TR::X86LabelInstruction  * generateLabelInstruction(TR::Instruction *i, TR_X86OpCodes op, TR::LabelSymbol *sym, TR::CodeGenerator *cg)
-   { return generateLabelInstruction(i, op, sym, false, cg); }
+TR::X86LabelInstruction  * generateLabelInstruction(TR::Instruction *i, TR_X86OpCodes op, TR::LabelSymbol *sym, TR::CodeGenerator *cg);
+inline TR::X86LabelInstruction  * generateLabelInstruction(TR::Instruction *i, TR_X86OpCodes op, TR::LabelSymbol *sym, bool needsVMThreadRegister, TR::CodeGenerator *cg)
+   { return generateLabelInstruction(i, op, sym, cg); }
+
 
 TR::X86LabelInstruction  * generateLongLabelInstruction(TR_X86OpCodes op, TR::Node *, TR::LabelSymbol *sym, TR::RegisterDependencyConditions  * cond, TR::CodeGenerator *cg);
 TR::X86LabelInstruction  * generateLongLabelInstruction(TR_X86OpCodes op, TR::Node *, TR::LabelSymbol *sym, TR::CodeGenerator *cg);
@@ -3032,16 +3033,13 @@ TR::X86LabelInstruction  * generateLongLabelInstruction(TR_X86OpCodes op, TR::No
 TR::X86LabelInstruction  * generateLongLabelInstruction(TR_X86OpCodes op, TR::Node *node, TR::LabelSymbol *sym, bool needsVMThreadRegister, TR::CodeGenerator *cg);
 
 
-TR::X86LabelInstruction  * generateLabelInstruction(TR_X86OpCodes op, TR::Node *, TR::LabelSymbol *sym, TR::Node * glRegDep, List<TR::Register> *popRegs, bool needsVMThreadRegister, bool evaluateGlRegDeps, TR::CodeGenerator *cg);
-
-inline TR::X86LabelInstruction  * generateLabelInstruction(TR_X86OpCodes op, TR::Node *node, TR::LabelSymbol *sym, TR::Node * glRegDep, List<TR::Register> *popRegs, bool needsVMThreadRegister, TR::CodeGenerator *cg)
-   { return generateLabelInstruction(op, node, sym, glRegDep, popRegs, needsVMThreadRegister, true, cg); }
+TR::X86LabelInstruction  * generateLabelInstruction(TR_X86OpCodes op, TR::Node *, TR::LabelSymbol *sym, TR::Node * glRegDep, List<TR::Register> *popRegs, bool evaluateGlRegDeps, TR::CodeGenerator *cg);
 
 inline TR::X86LabelInstruction  * generateLabelInstruction(TR_X86OpCodes op, TR::Node *node, TR::LabelSymbol *sym, TR::Node * glRegDep, List<TR::Register> *popRegs, TR::CodeGenerator *cg)
-   { return generateLabelInstruction(op, node, sym, glRegDep, popRegs, false, true, cg); }
+   { return generateLabelInstruction(op, node, sym, glRegDep, popRegs, true, cg); }
 
 inline TR::X86LabelInstruction  * generateLabelInstruction(TR_X86OpCodes op, TR::Node *node, TR::LabelSymbol *sym, TR::Node * glRegDep, TR::CodeGenerator *cg)
-   { return generateLabelInstruction(op, node, sym, glRegDep, 0, false, true, cg); }
+   { return generateLabelInstruction(op, node, sym, glRegDep, 0, true, cg); }
 
 
 TR::X86LabelInstruction  * generateJumpInstruction(TR_X86OpCodes op, TR::Node * jumpNode, TR::CodeGenerator *cg, bool needsVMThreadRegister = false, bool evaluateGlRegDeps = true);

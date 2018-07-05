@@ -1538,10 +1538,6 @@ TR_RegisterCandidate::processLiveOnEntryBlocks(TR::Block * * blocks, int32_t *bl
          }
       }
 
-   setDontAssignVMThreadRegister(false);
-   if ((loadsAndStores - reduction) <= 0)
-      setDontAssignVMThreadRegister(true);
-
    if ((numberOfBlocks == 0) && (loadsAndStores > 0))
       numberOfBlocks = 1;
 

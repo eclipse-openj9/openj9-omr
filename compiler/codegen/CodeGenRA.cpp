@@ -418,22 +418,6 @@ OMR::CodeGenerator::prepareRegistersForAssignment()
 
 
 TR_BackingStore *
-OMR::CodeGenerator::allocateVMThreadSpill()
-   {
-   int32_t slot;
-   TR::AutomaticSymbol *spillSymbol = TR::AutomaticSymbol::create(self()->trHeapMemory(), self()->IntJ(), self()->comp()->getOption(TR_ForceLargeRAMoves) ? 8 : TR::Compiler->om.sizeofReferenceAddress());
-   spillSymbol->setSpillTempAuto();
-   self()->comp()->getMethodSymbol()->addAutomatic(spillSymbol);
-   TR_BackingStore *spill = new (self()->trHeapMemory()) TR_BackingStore(self()->comp()->getSymRefTab(), spillSymbol, 0);
-   spill->setIsOccupied();
-   slot = spill->getSymbolReference()->getCPIndex();
-   slot = (slot < 0) ? (-slot - 1) : slot;
-   self()->comp()->getJittedMethodSymbol()->getAutoSymRefs(slot).add(spill->getSymbolReference());
-   _allSpillList.push_front(spill);
-   return spill;
-   }
-
-TR_BackingStore *
 OMR::CodeGenerator::allocateInternalPointerSpill(TR::AutomaticSymbol *pinningArrayPointer)
    {
    // Search for an existing free spill slot for this pinningArrayPointer

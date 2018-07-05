@@ -966,16 +966,6 @@ bool OMR::X86::CodeGenerator::supportsXMMRRematerialization()            { stati
 bool OMR::X86::CodeGenerator::supportsIndirectMemoryRematerialization()  { static bool b = ALLOWED_TO_REMATERIALIZE("indirect"); return !CANT_REMATERIALIZE_ADDRESSES && b;}
 bool OMR::X86::CodeGenerator::supportsAddressRematerialization()         { static bool b = ALLOWED_TO_REMATERIALIZE("address"); return !CANT_REMATERIALIZE_ADDRESSES && b; }
 
-bool OMR::X86::CodeGenerator::allowVMThreadRematerialization()
-   {
-   return false;
-   }
-
-bool OMR::X86::CodeGenerator::supportsFS0VMThreadRematerialization()
-   {
-   return false;
-   }
-
 #undef ALLOWED_TO_REMATERIALIZE
 #undef CAN_REMATERIALIZE
 
@@ -1760,24 +1750,6 @@ void OMR::X86::CodeGenerator::doBinaryEncoding()
       }
    else
       self()->setPreJitMethodEntrySize(estimate);
-
-   // Emit the spill instruction to set up the vmThread reloads if needed
-   // (i.e., if the vmThread was ever spilled to make room for another register)
-   //
-   TR::Instruction *vmThreadSpillCursor = self()->getVMThreadSpillInstruction();
-   if (vmThreadSpillCursor && self()->getVMThreadRegister()->getBackingStorage())
-      {
-      if (vmThreadSpillCursor == (TR::Instruction *)0xffffffff ||
-         self()->comp()->mayHaveLoops())
-         {
-         vmThreadSpillCursor = estimateCursor;
-         }
-
-      new (self()->trHeapMemory()) TR::X86MemRegInstruction(vmThreadSpillCursor,
-                                 SMemReg(),
-                                 generateX86MemoryReference(self()->getVMThreadRegister()->getBackingStorage()->getSymbolReference(), self()),
-                                 self()->machine()->getX86RealRegister(_linkageProperties->getMethodMetaDataRegister()), self());
-      }
 
    // Create prologue
    //

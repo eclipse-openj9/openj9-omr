@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -61,7 +61,7 @@ public:
 
       auto lookup = _blocksPerAuto.find(symRefNum);
       if (lookup != _blocksPerAuto.end())
-         return lookup->second; 
+         return lookup->second;
       return &_EMPTY;
       }
 
@@ -147,7 +147,7 @@ public:
 
      TR_BitVector& getCandidateBlocks() { return _candidateBlocks; }
 
-     iterator getIterator() { return iterator(_candidateBlocks); }    
+     iterator getIterator() { return iterator(_candidateBlocks); }
    };
 
    struct LoopInfo : TR_Link<LoopInfo>
@@ -249,13 +249,11 @@ public:
    bool getValueModified()              { return _flags.testAny(valueModified); }
    bool isHighWordZero()                { return _flags.testAny(highWordZero); }
    bool isLiveAcrossExceptionEdge()     { return _flags.testAny(liveAcrossExceptionEdge); }
-   bool isDontAssignVMThreadRegister()  { return _flags.testAny(dontAssignVMThreadRegister); }
 
    void setExtendedLiveRange(bool b)    { _flags.set(extendLiveRange, b); }
    void setValueModified(bool b)        { _flags.set(valueModified, b); }
    void setHighWordZero(bool b)         { _flags.set(highWordZero, b); }
    void setLiveAcrossExceptionEdge(bool b) { _flags.set(liveAcrossExceptionEdge, b); }
-   void setDontAssignVMThreadRegister(bool b) { _flags.set(dontAssignVMThreadRegister, b); }
 private:
    friend class TR_RegisterCandidates;
    friend class TR_GlobalRegisterAllocator;
@@ -290,7 +288,7 @@ private:
       valueModified               = 0x0004,
       liveAcrossExceptionEdge     = 0x0008,
       highWordZero                = 0x0010,
-      dontAssignVMThreadRegister  = 0x0020,
+      // AVAILABLE                = 0x0020,
       extendLiveRange             = 0x0040,
       initialBlocksWeightComputedFlag = 0x0080,
       };

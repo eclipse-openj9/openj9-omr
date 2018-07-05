@@ -54,7 +54,6 @@ TR_OutlinedInstructions::TR_OutlinedInstructions(TR::LabelSymbol *entryLabel, TR
    _callNode(NULL),
    _targetReg(NULL),
    _hasBeenRegisterAssigned(false),
-   _rematerializeVMThread(false),
    _postDependencyMergeList(NULL),
    _outlinedPathRegisterUsageList(NULL),
    _mainlinePathRegisterUsageList(NULL),
@@ -78,7 +77,6 @@ TR_OutlinedInstructions::TR_OutlinedInstructions(
       _entryLabel(entryLabel),
       _targetRegMovOpcode(MOVRegReg()),
       _hasBeenRegisterAssigned(false),
-      _rematerializeVMThread(false),
       _postDependencyMergeList(NULL),
       _outlinedPathRegisterUsageList(NULL),
       _mainlinePathRegisterUsageList(NULL),
@@ -106,7 +104,6 @@ TR_OutlinedInstructions::TR_OutlinedInstructions(
       _entryLabel(entryLabel),
       _targetRegMovOpcode(MOVRegReg()),
       _hasBeenRegisterAssigned(false),
-      _rematerializeVMThread(rematerializeVMThread),
       _postDependencyMergeList(NULL),
       _outlinedPathRegisterUsageList(NULL),
       _mainlinePathRegisterUsageList(NULL),
@@ -134,7 +131,6 @@ TR_OutlinedInstructions::TR_OutlinedInstructions(
       _entryLabel(entryLabel),
       _targetRegMovOpcode(targetRegMovOpcode),
       _hasBeenRegisterAssigned(false),
-      _rematerializeVMThread(false),
       _postDependencyMergeList(NULL),
       _outlinedPathRegisterUsageList(NULL),
       _mainlinePathRegisterUsageList(NULL),
@@ -163,7 +159,6 @@ void TR_OutlinedInstructions::generateOutlinedInstructionsDispatch()
    {
    // Switch to cold helper instruction stream.
    //
-   TR::Register    *vmThreadReg = _cg->getMethodMetaDataRegister();
    TR::Instruction *savedFirstInstruction = cg()->getFirstInstruction();
    TR::Instruction *savedAppendInstruction = cg()->getAppendInstruction();
    cg()->setFirstInstruction(NULL);

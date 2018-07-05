@@ -184,7 +184,7 @@ TEST(PortSysinfoTest, sysinfo_numcpus_test4)
  * Measure run time for getting number of CPUs 10000 times.
  *
  * @param[in] portLibrary The port library under test
- * @param[in] type The type of CPU number to query (physical, bound, entitled, target).
+ * @param[in] type The type of CPU number to query (physical, bound, target).
  *
  * @return TEST_PASSED on success, TEST_FAILED on failure
  */
@@ -215,9 +215,6 @@ int omrsysinfo_numcpus_runTime(OMRPortLibrary *portLibrary, uintptr_t type)
 		break;
 	case OMRPORT_CPU_BOUND:
 		testType = "bound";
-		break;
-	case OMRPORT_CPU_ENTITLED:
-		testType = "entitled";
 		break;
 	case OMRPORT_CPU_TARGET:
 		testType = "target";

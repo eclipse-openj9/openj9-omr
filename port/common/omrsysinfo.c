@@ -28,19 +28,17 @@
 #include "omrport.h"
 #include <string.h>
 
-
-
 /**
- * Sets the number of entitled CPUs, which is specified by the user.
- *
+ * Sets the number of user-specified CPUs, value which overrides all other forms of CPU detection
+ * in omrsysinfo_get_number_CPUs_by_type for type OMRPORT_CPU_TARGET.
+ * 
  * @param[in] portLibrary The port library.
- * @param[in] number Number of entitled CPUs.
+ * @param[in] number Number of user-specified CPUs.
  */
 void
-omrsysinfo_set_number_entitled_CPUs(struct OMRPortLibrary *portLibrary, uintptr_t number)
+omrsysinfo_set_number_user_specified_CPUs(struct OMRPortLibrary *portLibrary, uintptr_t number)
 {
-	portLibrary->portGlobals->entitledCPUs = number;
-	return;
+	portLibrary->portGlobals->userSpecifiedCPUs = number;
 }
 
 /**
@@ -144,8 +142,8 @@ omrsysinfo_get_executable_name(struct OMRPortLibrary *portLibrary, const char *a
  * 	- OMRPORT_CPU_PHYSICAL: Number of physical CPU's on this machine
  * 	- OMRPORT_CPU_ONLINE: Number of online CPU's on this machine
  * 	- OMRPORT_CPU_BOUND: Number of physical CPU's bound to this process
- * 	- OMRPORT_CPU_ENTITLED: Number of CPU's the user has specified should be used by the process
- * 	- OMRPORT_CPU_TARGET: Number of CPU's that should be used by the process. This is OMR_MIN(BOUND, ENTITLED).
+ * 	- OMRPORT_CPU_TARGET: Number of CPU's that should be used by the process. This is normally BOUND, but is 
+ *    overridden by portLibrary->portGlobals->userSpecifiedCPUs if it is set.
  *
  * @param[in] portLibrary The port library.
  * @param[in] type Flag to indicate the information type (see function description).
@@ -154,7 +152,6 @@ omrsysinfo_get_executable_name(struct OMRPortLibrary *portLibrary, const char *a
  * 			Returns 0 if:
  * 			 - Physical failed (error)
  * 			 - Bound failed (error)
- * 			 - Entitled is disabled
  * 			 - For target if bound failed (error)
  */
 uintptr_t
@@ -171,9 +168,6 @@ omrsysinfo_get_number_CPUs_by_type(struct OMRPortLibrary *portLibrary, uintptr_t
 		break;
 	case OMRPORT_CPU_BOUND:
 		toReturn = 0;
-		break;
-	case OMRPORT_CPU_ENTITLED:
-		toReturn = portLibrary->portGlobals->entitledCPUs;
 		break;
 	case OMRPORT_CPU_TARGET:
 		toReturn = 0;

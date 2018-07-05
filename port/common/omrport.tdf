@@ -863,8 +863,8 @@ TraceException=Trc_PRT_sysinfo_get_number_CPUs_by_type_invalidType Group=sysinfo
 TraceEvent=Trc_PRT_sysinfo_get_number_CPUs_by_type_platformNotSupported Group=sysinfo Overhead=1 Level=5 NoEnv Template="omrsysinfo_get_number_CPUs_by_type: Platform not supported."
 TraceEntry=Trc_PRT_sysinfo_get_number_CPUs_by_type_Entered Group=sysinfo Overhead=1 Level=5 NoEnv Template="omrsysinfo_get_number_CPUs_by_type: Function entered."
 TraceExit=Trc_PRT_sysinfo_get_number_CPUs_by_type_Exit Group=sysinfo Overhead=1 Level=5 NoEnv Template="omrsysinfo_get_number_CPUs_by_type: Exiting function - Type %d returned %d."
-TraceEntry=Trc_PRT_sysinfo_set_number_entitled_CPUs_Entered Group=sysinfo Overhead=1 Level=5 NoEnv Template="omrsysinfo_set_number_entitled_CPUs: Function entered."
-TraceExit=Trc_PRT_sysinfo_set_number_entitled_CPUs_Exit Group=sysinfo Overhead=1 Level=5 NoEnv Template="omrsysinfo_set_number_entitled_CPUs: Exiting function. Entitled CPUs set to %d."
+TraceEntry=Trc_PRT_sysinfo_set_number_user_specified_CPUs_Entered Group=sysinfo Overhead=1 Level=5 NoEnv Template="omrsysinfo_set_number_user_specified_CPUs: Function entered."
+TraceExit=Trc_PRT_sysinfo_set_number_user_specified_CPUs_Exit Group=sysinfo Overhead=1 Level=5 NoEnv Template="omrsysinfo_set_number_user_specified_CPUs: Exiting function. User-specified CPUs set to %d."
 TraceException=Trc_PRT_sysinfo_get_number_CPUs_by_type_failedOnline Group=sysinfo Overhead=1 Level=1 NoEnv Template="omrsysinfo_get_number_CPUs_by_type: Error: Could not get online CPUs - %s%d"
 
 TraceEntry=Trc_PRT_sysinfo_get_limit_Entered Group=sysinfo Overhead=1 Level=5 NoEnv Template="omrsysinfo_get_limit: resourceID = %d"
@@ -1077,4 +1077,3 @@ TraceException=Trc_PRT_readCgroupFile_fgets_failed Group=sysinfo Overhead=1 Leve
 TraceException=Trc_PRT_isRunningInContainer_fgets_failed Group=sysinfo Overhead=1 Level=3 NoEnv Template="isRunningInContainer: unexpected format of file %s with errno=%d"
 
 TraceException=Trc_PRT_signal_mapPortLibSignalToOSSignal_ERROR_unknown_signal Group=signal Overhead=1 Level=3 NoEnv Template="omrsignal: mapPortLibSignalToOSSignal: ERROR, unknown signal, portLibSignal=0x%X" 
- 

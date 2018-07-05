@@ -256,7 +256,7 @@ static OMRPortLibrary MasterPortLibraryTable = {
 	omrsysinfo_get_number_CPUs_by_type, /* sysinfo_get_number_CPUs_by_type */
 	omrsysinfo_get_cwd, /* sysinfo_get_cwd */
 	omrsysinfo_get_tmp, /* sysinfo_get_tmp */
-	omrsysinfo_set_number_entitled_CPUs, /* sysinfo_set_number_entitled_CPUs */
+	omrsysinfo_set_number_user_specified_CPUs, /* sysinfo_set_number_user_specified_CPUs */
 	omrsysinfo_get_open_file_count, /* sysinfo_get_open_file_count */
 	omrsysinfo_get_os_description, /* sysinfo_get_os_description */
 	omrsysinfo_os_has_feature, /* sysinfo_os_has_feature */

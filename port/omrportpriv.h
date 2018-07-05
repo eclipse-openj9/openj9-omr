@@ -125,7 +125,7 @@ typedef struct OMRPortLibraryGlobalData {
 #endif
 	uintptr_t vmemAdviseOSonFree;					/** For softmx to determine whether OS should be advised of freed vmem */
 	uintptr_t vectorRegsSupportOn;				/* Turn on vector regs support */
-	uintptr_t entitledCPUs;							/** Number of entitled CPUs */
+	uintptr_t userSpecifiedCPUs;						/* Number of user-specified CPUs */
 #if defined(OMR_OPT_CUDA)
 	J9CudaGlobalData cudaGlobals;
 #endif /* OMR_OPT_CUDA */
@@ -504,7 +504,7 @@ omrsysinfo_env_iterator_next(struct OMRPortLibrary *portLibrary, J9SysinfoEnvIte
 extern J9_CFUNC intptr_t
 omrsysinfo_get_CPU_utilization(struct OMRPortLibrary *portLibrary, struct J9SysinfoCPUTime *cpuTime);
 extern J9_CFUNC void
-omrsysinfo_set_number_entitled_CPUs(struct OMRPortLibrary *portLibrary, uintptr_t number);
+omrsysinfo_set_number_user_specified_CPUs(struct OMRPortLibrary *portLibrary, uintptr_t number);
 extern J9_CFUNC intptr_t
 omrsysinfo_get_cwd(struct OMRPortLibrary *portLibrary, char *buf, uintptr_t bufLen);
 extern J9_CFUNC intptr_t

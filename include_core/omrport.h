@@ -628,8 +628,7 @@ typedef struct J9ProcessorInfos {
 #define OMRPORT_CPU_PHYSICAL 1
 #define OMRPORT_CPU_ONLINE 2
 #define OMRPORT_CPU_BOUND 3
-#define OMRPORT_CPU_ENTITLED 4
-#define OMRPORT_CPU_TARGET 5
+#define OMRPORT_CPU_TARGET 4
 
 #define OMRPORT_SL_FOUND  0
 #define OMRPORT_SL_NOT_FOUND  1
@@ -1464,8 +1463,8 @@ typedef struct OMRPortLibrary {
 	intptr_t (*sysinfo_get_cwd)(struct OMRPortLibrary *portLibrary, char *buf, uintptr_t bufLen) ;
 	/** see @ref omrsysinfo.c::omrsysinfo_get_tmp "omrsysinfo_get_tmp"*/
 	intptr_t (*sysinfo_get_tmp)(struct OMRPortLibrary *portLibrary, char *buf, uintptr_t bufLen, BOOLEAN ignoreEnvVariable) ;
-	/** see @ref omrsysinfo.c::omrsysinfo_get_number_CPUs_by_type "omrsysinfo_get_number_CPUs_by_type"*/
-	void (*sysinfo_set_number_entitled_CPUs)(struct OMRPortLibrary *portLibrary, uintptr_t number) ;
+	/** see @ref omrsysinfo.c::omrsysinfo_set_number_user_specified_CPUs "omrsysinfo_set_number_user_specified_CPUs"*/
+	void (*sysinfo_set_number_user_specified_CPUs)(struct OMRPortLibrary *portLibrary, uintptr_t number) ;
 	/** see @ref omrsysinfo.c::omrsysinfo_get_open_file_count "omrsysinfo_get_open_file_count"*/
 	int32_t (*sysinfo_get_open_file_count)(struct OMRPortLibrary *portLibrary, uint64_t *count) ;
 	/** see @ref omrsysinfo.c::omrsysinfo_get_os_description "omrsysinfo_get_os_description"*/
@@ -1767,7 +1766,7 @@ extern J9_CFUNC int32_t omrport_getVersion(struct OMRPortLibrary *portLibrary);
 #define omrsysinfo_env_iterator_init(param1,param2,param3) privateOmrPortLibrary->sysinfo_env_iterator_init(privateOmrPortLibrary, (param1), (param2), (param3))
 #define omrsysinfo_env_iterator_hasNext(param1) privateOmrPortLibrary->sysinfo_env_iterator_hasNext(privateOmrPortLibrary, (param1))
 #define omrsysinfo_env_iterator_next(param1,param2) privateOmrPortLibrary->sysinfo_env_iterator_next(privateOmrPortLibrary, (param1), (param2))
-#define omrsysinfo_set_number_entitled_CPUs(param1) privateOmrPortLibrary->sysinfo_set_number_entitled_CPUs(privateOmrPortLibrary, (param1))
+#define omrsysinfo_set_number_user_specified_CPUs(param1) privateOmrPortLibrary->sysinfo_set_number_user_specified_CPUs(privateOmrPortLibrary,(param1))
 #define omrfile_startup() privateOmrPortLibrary->file_startup(privateOmrPortLibrary)
 #define omrfile_shutdown() privateOmrPortLibrary->file_shutdown(privateOmrPortLibrary)
 #define omrfile_write(param1,param2,param3) privateOmrPortLibrary->file_write(privateOmrPortLibrary, (param1), (param2), (param3))

@@ -155,7 +155,7 @@ OMR::SymbolReference::getUseonlyAliasesBV(TR::SymbolReferenceTable * symRefTab)
       case TR::Symbol::IsResolvedMethod:
          {
          TR::ResolvedMethodSymbol * resolvedMethodSymbol = _symbol->castToResolvedMethodSymbol();
-         if (!TR::Options::getCmdLineOptions()->getOption(TR_EnableHCR))
+         if (!TR::comp()->getOption(TR_EnableHCR))
             {
             switch (resolvedMethodSymbol->getRecognizedMethod())
                {
@@ -352,7 +352,7 @@ OMR::SymbolReference::getUseDefAliasesBV(bool isDirectCall, bool includeGCSafePo
          {
          TR::ResolvedMethodSymbol * resolvedMethodSymbol = _symbol->castToResolvedMethodSymbol();
 
-         if (!TR::Options::getCmdLineOptions()->getOption(TR_EnableHCR))
+         if (!comp->getOption(TR_EnableHCR))
             {
             switch (resolvedMethodSymbol->getRecognizedMethod())
                {

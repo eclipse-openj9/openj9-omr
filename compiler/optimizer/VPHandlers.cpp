@@ -12769,7 +12769,7 @@ TR::Node *constrainArrayStoreChk(OMR::ValuePropagation *vp, TR::Node *node)
                   }
 
               else if ( !vp->comp()->compileRelocatableCode() &&
-                        !(TR::Options::getCmdLineOptions()->getOption(TR_DisableArrayStoreCheckOpts))  &&
+                        !(vp->comp()->getOption(TR_DisableArrayStoreCheckOpts))  &&
                         arrayComponentClass &&
                         objectClass  &&
                         vp->fe()->isInstanceOf(objectClass, arrayComponentClass,true,true)

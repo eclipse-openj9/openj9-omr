@@ -163,7 +163,7 @@ OMR::ARM::CodeGenerator::CodeGenerator()
       // wrapping-around.
       _maxObjectSizeGuaranteedNotToOverflow = 0x10000000;
       self()->setSupportsDivCheck();
-      if (!self()->comp()->getOptions()->getOption(TR_DisableTraps))
+      if (!self()->comp()->getOption(TR_DisableTraps))
          self()->setHasResumableTrapHandler();
       }
    else
@@ -691,7 +691,7 @@ TR_GlobalRegisterNumber OMR::ARM::CodeGenerator::pickRegister(TR_RegisterCandida
    {
    // Tactical GRA
    // We delegate the decision to use register pressure simulation to common code.
-   // if (!comp()->getOptions()->getOption(TR_DisableRegisterPressureSimulation))
+   // if (!comp()->getOption(TR_DisableRegisterPressureSimulation))
    return OMR::CodeGenerator::pickRegister(regCan, barr, availRegs, highRegisterNumber, candidates);
    // }
    }

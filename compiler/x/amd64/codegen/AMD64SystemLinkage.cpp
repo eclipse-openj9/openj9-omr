@@ -892,7 +892,7 @@ TR::Register *TR::AMD64SystemLinkage::buildDirectDispatch(
          methodSymRef,
          cg());
 
-      if( TR::Options::getCmdLineOptions()->getOption(TR_EmitRelocatableELFFile) )
+      if (comp()->getOption(TR_EmitRelocatableELFFile))
          {
          LoadRegisterInstruction->setReloKind(TR_NativeMethodAbsolute);
          }

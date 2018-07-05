@@ -2276,7 +2276,7 @@ bool TR_CompactNullChecks::replaceNullCheckIfPossible(TR::Node *cursorNode, TR::
       if (isEquivalent)
          {
          bool canBeRemoved = true; //comp()->cg()->canNullChkBeImplicit(cursorNode);
-         if (TR::comp()->getOptions()->getOption(TR_DisableTraps) ||
+         if (TR::comp()->getOption(TR_DisableTraps) ||
              TR::Compiler->om.offsetOfObjectVftField() >= comp()->cg()->getNumberBytesReadInaccessible())
            canBeRemoved = false;
 
@@ -5987,7 +5987,7 @@ int8_t TR_Rematerialization::getLoopNestingLevel(int32_t weight)
 
 void TR_Rematerialization::makeEarlyLongRegDecision()
    {
-   if (comp()->getOptions()->getOption(TR_Disable64BitRegsOn32Bit) ||
+   if (comp()->getOption(TR_Disable64BitRegsOn32Bit) ||
        !cg()->supportsLongRegAllocation() ||
        !comp()->getJittedMethodSymbol()->mayHaveLongOps())
       {
@@ -5997,8 +5997,8 @@ void TR_Rematerialization::makeEarlyLongRegDecision()
       return;
       }
 
-   if (!comp()->getOptions()->getOption(TR_Disable64BitRegsOn32Bit) &&
-        comp()->getOptions()->getOption(TR_Disable64BitRegsOn32BitHeuristic))
+   if (!comp()->getOption(TR_Disable64BitRegsOn32Bit) &&
+        comp()->getOption(TR_Disable64BitRegsOn32BitHeuristic))
        {
        comp()->setUseLongRegAllocation(true);
        setLongRegDecision(true);

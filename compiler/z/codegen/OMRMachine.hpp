@@ -289,7 +289,6 @@ class OMR_EXTENSIBLE Machine : public OMR::Machine
                                         flags32_t            instFlags);
 
    bool  isLegalEvenOddPair(TR::RealRegister* evenReg, TR::RealRegister* oddReg, uint64_t availRegMask=0x0000ffff);
-   bool  isLegalEvenOddRestrictedPair(TR::RealRegister* evenReg, TR::RealRegister* oddReg, uint64_t availRegMask=0x0000ffff);
    bool  isLegalEvenRegister(TR::RealRegister* reg, bool allowBlocked, uint64_t availRegMask=0x0000ffff, bool allowLocked=false);
    bool  isLegalOddRegister(TR::RealRegister* reg, bool allowBlocked, uint64_t availRegMask=0x0000ffff, bool allowLocked=false);
 
@@ -640,8 +639,6 @@ class OMR_EXTENSIBLE Machine : public OMR::Machine
       memset(_registerAssociations, 0, sizeof(TR::Register *) * (TR::RealRegister::NumRegisters));
       }
    bool supportLockedRegisterAssignment();
-
-   bool isRestrictedReg(TR::RealRegister::RegNum reg);
 
    TR::RealRegister *getRegisterFile(int32_t i);
 

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -541,7 +541,7 @@ bool TR_CFGSimplifier::simplifyBooleanStore()
    return true;
    }
 
-TR::TreeTop *TR_CFGSimplifier::getNextRealTreetop(TR::TreeTop *treeTop, bool skipRestrictedRegSaveAndLoad)
+TR::TreeTop *TR_CFGSimplifier::getNextRealTreetop(TR::TreeTop *treeTop)
    {
    treeTop = treeTop->getNextRealTreeTop();
    while (treeTop != NULL)
@@ -584,7 +584,7 @@ TR::Block *TR_CFGSimplifier::getFallThroughBlock(TR::Block *block)
 bool TR_CFGSimplifier::simplifyCondCodeBooleanStore(TR::Block *joinBlock, TR::Node *branchNode, TR::Node *store1Node, TR::Node *store2Node)
    {
    // The first node in the final block must be a compare-and-branch
-   TR::TreeTop *compareTreeTop = getNextRealTreetop(joinBlock->getEntry(), true);
+   TR::TreeTop *compareTreeTop = getNextRealTreetop(joinBlock->getEntry());
    if (compareTreeTop == NULL)
       return false;
    TR::Node *compareNode = compareTreeTop->getNode();

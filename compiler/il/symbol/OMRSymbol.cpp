@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -64,8 +64,7 @@ OMR::Symbol::Symbol(TR::DataType d) :
    _name(0),
    _flags(0),
    _flags2(0),
-   _localIndex(0),
-   _restrictedRegisterNumber(-1)
+   _localIndex(0)
    {
    self()->setDataType(d);
    }
@@ -74,8 +73,7 @@ OMR::Symbol::Symbol(TR::DataType d, uint32_t size) :
    _name(0),
    _flags(0),
    _flags2(0),
-   _localIndex(0),
-   _restrictedRegisterNumber(-1)
+   _localIndex(0)
    {
    self()->setDataType(d);
    _size = size;

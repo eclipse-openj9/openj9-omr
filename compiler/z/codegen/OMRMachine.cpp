@@ -856,26 +856,6 @@ OMR::Z::Machine::isLegalEvenOddPair(TR::RealRegister * evenReg, TR::RealRegister
    }
 
 bool
-OMR::Z::Machine::isLegalEvenOddRestrictedPair(TR::RealRegister * evenReg, TR::RealRegister * oddReg, uint64_t availRegMask)
-   {
-   if (evenReg == NULL || oddReg == NULL)
-      {
-      return false;
-      }
-   if (toRealRegister(evenReg)->isHighWordRegister() || toRealRegister(oddReg)->isHighWordRegister())
-      {
-      return false;
-      }
-
-   else if (toRealRegister(evenReg)->getRegisterNumber() + 1 == toRealRegister(oddReg)->getRegisterNumber())
-      {
-      return self()->isLegalEvenRegister(evenReg, ALLOWBLOCKED, availRegMask, ALLOWLOCKED) && self()->isLegalOddRegister(oddReg, ALLOWBLOCKED, availRegMask, ALLOWLOCKED);
-      }
-   else
-      return false;
-   }
-
-bool
 OMR::Z::Machine::isLegalEvenRegister(TR::RealRegister * reg, bool allowBlocked, uint64_t availRegMask, bool allowLocked)
    {
    // Is the register assigned
@@ -6325,8 +6305,6 @@ int32_t OMR::Z::Machine::addGlobalReg(TR::RealRegister::RegNum reg, int32_t tabl
    {
    if (reg == TR::RealRegister::NoReg)
       return tableIndex;
-   if (OMR::Z::Machine::isRestrictedReg(reg))
-      return tableIndex;
    if (self()->getS390RealRegister(reg)->getState() == TR::RealRegister::Locked)
       return tableIndex;
    for (int32_t i = 0; i < tableIndex; i++)
@@ -6349,8 +6327,6 @@ int32_t OMR::Z::Machine::getGlobalReg(TR::RealRegister::RegNum reg)
 int32_t OMR::Z::Machine::addGlobalRegLater(TR::RealRegister::RegNum reg, int32_t tableIndex)
    {
    if (reg == TR::RealRegister::NoReg)
-      return tableIndex;
-   if (OMR::Z::Machine::isRestrictedReg(reg))
       return tableIndex;
    if (self()->getS390RealRegister(reg)->getState() == TR::RealRegister::Locked)
       return tableIndex;
@@ -6789,18 +6765,6 @@ OMR::Z::Machine::initializeGlobalRegisterTable()
 
    self()->setLastGlobalGPRRegisterNumber(25);        // Index of last global GPR
    self()->setLast8BitGlobalGPRRegisterNumber(25);    // Index of last global 8bit Reg
-
-   // additional (forced) restricted regs.
-   // Similar code in TR::S390PrivateLinkage::initS390RealRegisterLinkage() for RA
-
-   for (int32_t i = self()->getFirstGlobalGPRRegisterNumber(); i < self()->getLastGlobalGPRRegisterNumber(); ++i)
-      {
-      uint32_t regReal = _globalRegisterNumberToRealRegisterMap[i];
-      if (self()->isRestrictedReg((TR::RealRegister::RegNum) regReal))
-         {
-         _globalRegisterNumberToRealRegisterMap[i] = (uint32_t) (-1);
-         }
-      }
 
    // Disable GRA Access Regs
    //
@@ -7267,50 +7231,6 @@ OMR::Z::Machine::setVirtualAssociatedWithReal(TR::RealRegister::RegNum regNum, T
       }
 
    return _registerAssociations[regNum] = virtReg;
-   }
-
-/**
- * Longer term, once we clean up lit pool / extended lit pool regs and
- * arbitrary usage of other regs, we can integrate this better, but for now,
- * it is just a simple list of regs that are known to be 'safe'
- */
-bool
-OMR::Z::Machine::isRestrictedReg(TR::RealRegister::RegNum reg)
-   {
-   static const TR::RealRegister::RegNum regList[] =
-      {
-      TR::RealRegister::GPR9,
-      TR::RealRegister::GPR10,
-      TR::RealRegister::GPR11,
-      TR::RealRegister::GPR12,
-      };
-   TR::Compilation *comp = self()->cg()->comp();
-   static const int32_t regListSize = (sizeof(regList) / sizeof(TR::RealRegister::RegNum));
-
-   int32_t numRestrictedRegs = comp->getOptions()->getNumRestrictedGPRs();
-   if (numRestrictedRegs < 0 || numRestrictedRegs > regListSize)
-      {
-      static bool printed = false;
-      #ifdef DEBUG
-      if (!printed)
-         {
-         fprintf(stderr, "Invalid value for numRestrictedRegs or on-demand lit pool is disabled. Needs to range from 0 to %d\n",
-            regListSize);
-         printed = true;
-         }
-      #endif
-      return false;
-      }
-
-   for (int32_t i = 0; i < numRestrictedRegs; ++i)
-      {
-      if (regList[i] == reg)
-         {
-         return true;
-         }
-      }
-
-   return false;
    }
 
 bool

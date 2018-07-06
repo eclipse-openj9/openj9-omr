@@ -103,8 +103,7 @@ protected:
       _name(0),
       _flags(0),
       _flags2(0),
-      _localIndex(0),
-      _restrictedRegisterNumber(-1)
+      _localIndex(0)
    { }
 
    /**
@@ -201,8 +200,6 @@ public:
 
    uint16_t getLocalIndex()                 { return _localIndex; }
    uint16_t setLocalIndex(uint16_t li)      { return (_localIndex = li); }
-
-   uint8_t getRestrictedRegisterNumber()    { return _restrictedRegisterNumber; }
 
    /**
     * Flag functions
@@ -571,8 +568,6 @@ protected:
    flags32_t     _flags;
    flags32_t     _flags2;
    uint16_t      _localIndex;
-   uint8_t       _restrictedRegisterNumber;
-
 
    /**
     * Shadow Symbol

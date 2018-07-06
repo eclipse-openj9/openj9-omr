@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -54,7 +54,7 @@ class TR_CFGSimplifier : public TR::Optimization
    bool simplify();
    bool simplifyBooleanStore();
    bool simplifyCondCodeBooleanStore(TR::Block *joinBlock, TR::Node *branchNode, TR::Node *store1Node, TR::Node *store2Node);
-   TR::TreeTop *getNextRealTreetop(TR::TreeTop *treeTop, bool skipRestrictedRegSaveAndLoad = false);
+   TR::TreeTop *getNextRealTreetop(TR::TreeTop *treeTop);
    TR::TreeTop *getLastRealTreetop(TR::Block *block);
    TR::Block   *getFallThroughBlock(TR::Block *block);
    bool canReverseBranchMask();

@@ -1173,6 +1173,10 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"traceInvariantArgumentPreexistence", "L\ttrace invariable argument preexistence",     TR::Options::traceOptimization, invariantArgumentPreexistence, 0, "P"},
    {"traceIsolatedSE",                  "L\ttrace isolated store elimination",             TR::Options::traceOptimization, isolatedStoreElimination, 0, "P"},
    {"traceIVTT",                        "L\ttrace IV Type transformation",                 TR::Options::traceOptimization, IVTypeTransformation, 0, "P"},
+#ifdef J9_PROJECT_SPECIFIC
+   {"traceJProfilingBlock",             "L\ttrace generation of block frequency counters",               TR::Options::traceOptimization, jProfilingBlock, 0, "P"},
+   {"traceJProfilingValue",             "L\ttrace insertion of jProfiling trees for value profiling",    TR::Options::traceOptimization, jProfilingValue, 0, "P"},
+#endif
    {"traceKnownObjectGraph",            "L\ttrace the relationships between objects in the known-object table", SET_OPTION_BIT(TR_TraceKnownObjectGraph), "P" },
    {"traceLabelTargetNOPs",             "L\ttrace inserting of NOPs before label targets", SET_OPTION_BIT(TR_TraceLabelTargetNOPs), "F"},
    {"traceLastOpt",                     "L\textra tracing for the opt corresponding to lastOptIndex; usually used with traceFull", SET_OPTION_BIT(TR_TraceLastOpt), "F"},

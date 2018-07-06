@@ -75,10 +75,6 @@ class OMR_EXTENSIBLE Machine : public OMR::Machine
    uint16_t _lastPreservedFPRAvail, _lastPreservedVRFAvail;
    uint16_t _inUseFPREnd, _inUseVFREnd, _lastFPRAlloc, _lastVRFAlloc;
 
-   int16_t numLockedGPRs;
-   int16_t numLockedFPRs;
-   int16_t numLockedVRFs;
-
    uint16_t _registerAllocationFPR[TR::RealRegister::LastAssignableVSR - TR::RealRegister::FirstVSR + 1]; // 64
 
    // For register snap shot
@@ -92,32 +88,6 @@ class OMR_EXTENSIBLE Machine : public OMR::Machine
    Machine(TR::CodeGenerator *cg);
 
    void initREGAssociations();
-
-   void setNumberOfLockedRegisters(TR_RegisterKinds kind, int numLocked)
-      {
-      TR_ASSERT(numLocked >= 0, "Expecting number of locked registers to be >= 0");
-      switch (kind)
-         {
-         case TR_GPR: numLockedGPRs = numLocked; break;
-         case TR_FPR: numLockedFPRs = numLocked; break;
-         case TR_VRF: numLockedVRFs = numLocked; break;
-         default:
-            TR_ASSERT(false, "Unknown register kind");
-         }
-      }
-
-   int getNumberOfLockedRegisters(TR_RegisterKinds kind)
-      {
-      switch (kind)
-         {
-         case TR_GPR: TR_ASSERT(numLockedGPRs >= 0, "Expecting number of locked registers to be >= 0"); return numLockedGPRs;
-         case TR_FPR: TR_ASSERT(numLockedFPRs >= 0, "Expecting number of locked registers to be >= 0"); return numLockedFPRs;
-         case TR_VRF: TR_ASSERT(numLockedVRFs >= 0, "Expecting number of locked registers to be >= 0"); return numLockedVRFs;
-         default:
-            TR_ASSERT(false, "Unknown register kind");
-            return -1;
-         }
-      }
 
    TR::Register *setVirtualAssociatedWithReal(TR::RealRegister::RegNum regNum, TR::Register * virtReg);
    TR::Register *getVirtualAssociatedWithReal(TR::RealRegister::RegNum regNum);

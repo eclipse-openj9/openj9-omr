@@ -612,7 +612,7 @@ TR::RegisterDependencyConditions *OMR::Power::RegisterDependencyConditions::clon
 
 static TR::RegisterDependency*
 findDependencyChainHead(TR::RegisterDependency *dep,
-                        TR_PPCRegisterDependencyMap& map)
+                        OMR::RegisterDependencyMap& map)
    {
    TR::RegisterDependency *cursor = map.getDependencyWithAssigned(dep->getRealRegister());
 
@@ -636,7 +636,7 @@ findDependencyChainHead(TR::RegisterDependency *dep,
 
 static void assignFreeRegisters(TR::Instruction              *currentInstruction,
                                 TR::RegisterDependency       *dep,
-                                TR_PPCRegisterDependencyMap&  map,
+                                OMR::RegisterDependencyMap&  map,
                                 TR::CodeGenerator            *cg)
    {
    TR::Machine *machine = cg->machine();
@@ -656,7 +656,7 @@ static void assignFreeRegisters(TR::Instruction              *currentInstruction
 
 static void assignContendedRegisters(TR::Instruction              *currentInstruction,
                                      TR::RegisterDependency       *dep,
-                                     TR_PPCRegisterDependencyMap&  map,
+                                     OMR::RegisterDependencyMap&  map,
                                      bool                          depsBlocked,
                                      TR::CodeGenerator            *cg)
    {
@@ -766,14 +766,6 @@ void TR_PPCRegisterDependencyGroup::assignRegisters(TR::Instruction   *currentIn
    int                       i, j;
    TR::Compilation          *comp = cg->comp();
 
-   int numGPRs = 0;
-   int numFPRs = 0;
-   int numVRFs = 0;
-   bool haveSpilledCCRs = false;
-
-   // Use to do lookups using real register numbers
-   TR_PPCRegisterDependencyMap map(_dependencies, numberOfRegisters);
-
    if (!comp->getOption(TR_DisableOOL))
       {
       for (i = 0; i < numberOfRegisters; i++)
@@ -823,6 +815,14 @@ void TR_PPCRegisterDependencyGroup::assignRegisters(TR::Instruction   *currentIn
             }
          }
       }
+
+   uint32_t numGPRs = 0;
+   uint32_t numFPRs = 0;
+   uint32_t numVRFs = 0;
+   bool haveSpilledCCRs = false;
+
+   // Used to do lookups using real register numbers
+   OMR::RegisterDependencyMap map(_dependencies, numberOfRegisters);
 
    for (i = 0; i < numberOfRegisters; i++)
       {
@@ -916,12 +916,11 @@ void TR_PPCRegisterDependencyGroup::assignRegisters(TR::Instruction   *currentIn
             }
          else
             {
-            TR::RealRegister::RegNum assignedRegNum;
-            assignedRegNum = toRealRegister(virtReg->getAssignedRealRegister())->getRegisterNumber();
+            TR::RealRegister::RegNum assignedRegNum = toRealRegister(virtReg->getAssignedRealRegister())->getRegisterNumber();
 
-            // always block if required register and assigned register match;
-            // block if assigned register is required by other dependency but only if
-            // any spare registers are left to avoid blocking all existing registers
+            // Always block if the required register and assigned register match or if the assigned register is 
+            // required by another dependency but only if there are any spare registers left so as to avoid blocking
+            // all existing registers
             if (_dependencies[i].getRealRegister() == assignedRegNum ||
                 (map.getDependencyWithTarget(assignedRegNum) &&
                  ((virtReg->getKind() != TR_GPR || haveSpareGPRs) &&

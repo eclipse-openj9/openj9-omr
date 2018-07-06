@@ -47,6 +47,102 @@ class RegisterDependencyConditions
 
    };
 
+/** \brief
+ *     Maps real register numbers to dependencies / virtuals to help speed up register dependency queries.
+ *
+ *  \note
+ *     This class does not support heap allocation and is currently meant to be used only as a stack allocated object.
+ */
+class RegisterDependencyMap
+   {
+   public:
+
+   RegisterDependencyMap(TR::RegisterDependency* deps, uint32_t numDeps)
+      : deps(deps)
+      {
+      TR_ASSERT(numDeps <= SENTINEL, "Number of dependencies supplied (%d) cannot exceed %d!", numDeps, SENTINEL);
+
+      for (auto i = 0; i < TR::RealRegister::NumRegisters; ++i)
+         {
+         targetTable[i] = SENTINEL;
+         assignedTable[i] = SENTINEL;
+         }
+      }
+
+   void addDependency(TR::RegisterDependency& dep, uint32_t index)
+      {
+      TR_ASSERT(&deps[index] == &dep, "Dep pointer/index mismatch");
+      addDependency(dep.getRealRegister(), dep.getRegister()->getAssignedRealRegister(), index);
+      }
+
+   void addDependency(TR::RegisterDependency* dep, uint32_t index)
+      {
+      TR_ASSERT(&deps[index] == dep, "Dep pointer/index mismatch");
+      addDependency(dep->getRealRegister(), dep->getRegister()->getAssignedRealRegister(), index);
+      }
+   
+   TR::RegisterDependency* getDependencyWithAssigned(TR::RealRegister::RegNum rr)
+      {
+      TR_ASSERT(rr >= 0 && rr < TR::RealRegister::NumRegisters, "Register number used as index but out of range");
+      return assignedTable[rr] != SENTINEL ? &deps[assignedTable[rr]] : NULL;
+      }
+
+   TR::RegisterDependency* getDependencyWithTarget(TR::RealRegister::RegNum rr)
+      {
+      TR_ASSERT(rr >= 0 && rr < TR::RealRegister::NumRegisters, "Register number used as index but out of range");
+      TR_ASSERT(rr != TR::RealRegister::NoReg, "Multiple dependencies can map to 'NoReg', can't return just one");
+      TR_ASSERT(rr != TR::RealRegister::SpilledReg, "Multiple dependencies can map to 'SpilledReg', can't return just one");
+      return targetTable[rr] != SENTINEL ? &deps[targetTable[rr]] : NULL;
+      }
+
+   TR::Register* getVirtualWithAssigned(TR::RealRegister::RegNum rr)
+      {
+      TR::RegisterDependency *d = getDependencyWithAssigned(rr);
+      return d ? d->getRegister() : NULL;
+      }
+
+   TR::Register* getVirtualWithTarget(TR::RealRegister::RegNum rr)
+      {
+      TR::RegisterDependency *d = getDependencyWithTarget(rr);
+      return d ? d->getRegister() : NULL;
+      }
+
+   uint8_t getTargetIndex(TR::RealRegister::RegNum rr)
+      {
+      TR_ASSERT(targetTable[rr] != SENTINEL, "No such target register in dependency condition");
+      return targetTable[rr];
+      }
+
+   private:
+
+   void addDependency(TR::RealRegister::RegNum rr, TR::RealRegister *assignedReg, uint32_t index)
+      {
+      if (rr != TR::RealRegister::NoReg && rr != TR::RealRegister::SpilledReg)
+         {
+         TR_ASSERT(rr >= 0 && rr < TR::RealRegister::NumRegisters, "Register number %d used as index but out of range", rr);
+         TR_ASSERT(targetTable[rr] == SENTINEL || deps[targetTable[rr]].getRegister() == deps[index].getRegister(),
+            "Multiple virtual registers depend on a single real register %d", rr);
+         targetTable[rr] = index;
+         }
+
+      if (assignedReg)
+         {
+         TR::RealRegister::RegNum arr = toRealRegister(assignedReg)->getRegisterNumber();
+         TR_ASSERT(arr >= 0 && arr < TR::RealRegister::NumRegisters, "Register number %d used as index but out of range", arr);
+         TR_ASSERT(assignedTable[arr] == SENTINEL || deps[assignedTable[arr]].getRegister() == deps[index].getRegister(),
+            "Multiple virtual registers assigned to a single real register %d", arr);
+         assignedTable[arr] = index;
+         }
+      }
+
+   private:
+
+   static const uint8_t SENTINEL = 255;
+
+   TR::RegisterDependency *deps;
+   uint8_t targetTable[TR::RealRegister::NumRegisters];
+   uint8_t assignedTable[TR::RealRegister::NumRegisters];
+   };
 }
 
 #endif

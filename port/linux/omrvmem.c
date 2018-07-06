@@ -1446,7 +1446,7 @@ omrvmem_numa_set_affinity(struct OMRPortLibrary *portLibrary, uintptr_t numaNode
 	Trc_PRT_vmem_port_numa_set_affinity_enter(numaNode, address, byteAmount);
 
 #if defined(OMR_PORT_NUMA_SUPPORT)
-	if (1 == PPG_numa_platform_supports_numa) {
+	if ((1 == PPG_numa_platform_supports_numa) && (OMR_ARE_NO_BITS_SET(identifier->mode, OMRPORT_VMEM_NO_AFFINITY))) {
 		unsigned long maxnode = sizeof(J9PortNodeMask) * 8;
 
 		if ((numaNode > 0) && (numaNode <= PPG_numa_max_node_bits) && (numaNode <= maxnode)) {

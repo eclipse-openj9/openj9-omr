@@ -1206,7 +1206,7 @@ getMemoryInRangeForDefaultPages(struct OMRPortLibrary *portLibrary, struct J9Por
 	 * 			- i.e. SLB(segment lookaside buffer), TLB(table lookaside buffer), and ERAT(effective address to real address table). In particular, each 256MB requires an SLB entry.
 	 *
 	 */
-	if (__ENHANCED_AFFINITY() && (OMRPORT_VMEM_MEMORY_MODE_EXECUTE != (OMRPORT_VMEM_MEMORY_MODE_EXECUTE & mode))) {
+	if (__ENHANCED_AFFINITY() && (OMR_ARE_NO_BITS_SET(mode, OMRPORT_VMEM_MEMORY_MODE_EXECUTE | OMRPORT_VMEM_NO_AFFINITY))) {
 		/* If we have __ENHANCED_AFFINITY() and we're not looking for executable memory */
 		return reserveLargePages(portLibrary, identifier, category, byteAmount, startAddress, endAddress, PPG_vmem_pageSize[0], alignmentInBytes, vmemOptions, mode);
 	} else {
@@ -1357,32 +1357,34 @@ omrvmem_numa_set_affinity(struct OMRPortLibrary *portLibrary, uintptr_t numaNode
 	 *
 	 * See CMVC 178983 for more detail regarding this limitation.
 	 */
+	if (OMR_ARE_NO_BITS_SET(identifier->mode, OMRPORT_VMEM_NO_AFFINITY)) {
 #ifndef _AIX61
-	int (*PTR_ra_attach)(rstype_t, rsid_t, rstype_t, rsid_t_MODIFIED, uint_t) = (int (*)(rstype_t, rsid_t, rstype_t, rsid_t_MODIFIED, uint_t))dlsym(RTLD_DEFAULT, "ra_attach");
-	rsid_t_MODIFIED targetSRADResourceID;
+		int (*PTR_ra_attach)(rstype_t, rsid_t, rstype_t, rsid_t_MODIFIED, uint_t) = (int (*)(rstype_t, rsid_t, rstype_t, rsid_t_MODIFIED, uint_t))dlsym(RTLD_DEFAULT, "ra_attach");
+		rsid_t_MODIFIED targetSRADResourceID;
 #else
-	int (*PTR_ra_attach)(rstype_t, rsid_t, rstype_t, rsid_t, uint_t) = (int (*)(rstype_t, rsid_t, rstype_t, rsid_t, uint_t))dlsym(RTLD_DEFAULT, "ra_attach");
-	rsid_t targetSRADResourceID;
+		int (*PTR_ra_attach)(rstype_t, rsid_t, rstype_t, rsid_t, uint_t) = (int (*)(rstype_t, rsid_t, rstype_t, rsid_t, uint_t))dlsym(RTLD_DEFAULT, "ra_attach");
+		rsid_t targetSRADResourceID;
 #endif
-	rsid_t thisSubrangeResourceID;
-	/* don't forget to subtract one from the numaNode to shift it into the 0-indexed numbering scheme used by the system */
-	sradid_t desiredSRADID = numaNode - 1;
-	subrange_t subrange;
+		rsid_t thisSubrangeResourceID;
+		/* don't forget to subtract one from the numaNode to shift it into the 0-indexed numbering scheme used by the system */
+		sradid_t desiredSRADID = numaNode - 1;
+		subrange_t subrange;
 
-	subrange.su_offset = (long long)address;
-	subrange.su_length = byteAmount;
-	/* the subrange is in this process's address space */
-	subrange.su_rstype = R_PROCMEM;
-	/* use this process's ID */
-	subrange.su_rsid.at_pid = RS_MYSELF;
-	/* subrange policy is ignored in favour of the ra_attach policy so set it to 0 */
-	subrange.su_policy = 0;
-	/* point the resource we are binding at this memory range structure */
-	thisSubrangeResourceID.at_subrange = &subrange;
-	targetSRADResourceID.at_sradid = desiredSRADID;
+		subrange.su_offset = (long long)address;
+		subrange.su_length = byteAmount;
+		/* the subrange is in this process's address space */
+		subrange.su_rstype = R_PROCMEM;
+		/* use this process's ID */
+		subrange.su_rsid.at_pid = RS_MYSELF;
+		/* subrange policy is ignored in favour of the ra_attach policy so set it to 0 */
+		subrange.su_policy = 0;
+		/* point the resource we are binding at this memory range structure */
+		thisSubrangeResourceID.at_subrange = &subrange;
+		targetSRADResourceID.at_sradid = desiredSRADID;
 
-	/* attach the specified subrange to the SRAD (allow the memory to be asynchronously migrated to the specified SRAD) */
-	result = PTR_ra_attach(R_SUBRANGE, thisSubrangeResourceID, R_SRADID, targetSRADResourceID, R_MIGRATE_ASYNC);
+		/* attach the specified subrange to the SRAD (allow the memory to be asynchronously migrated to the specified SRAD) */
+		result = PTR_ra_attach(R_SUBRANGE, thisSubrangeResourceID, R_SRADID, targetSRADResourceID, R_MIGRATE_ASYNC);
+	}
 #endif /* defined(OMR_ENV_DATA64) */
 	return (0 == result) ? 0 : OMRPORT_ERROR_VMEM_OPFAILED;
 }

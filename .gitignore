@@ -111,6 +111,7 @@ Testing/
 *.lo
 *.o
 *.obj
+*.dbg
 
 # Compiled Dynamic libraries
 *.so
@@ -121,6 +122,7 @@ Testing/
 *.dll
 *.exp
 *.map
+*.x
 
 # Compiled Static libraries
 *.lai

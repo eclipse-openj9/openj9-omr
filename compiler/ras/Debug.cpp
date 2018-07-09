@@ -3836,6 +3836,7 @@ TR_Debug::getRuntimeHelperName(int32_t index)
          case TR_checkCast:                 return "jitCheckCast";
          case TR_checkCastForArrayStore:    return "jitCheckCastForArrayStore";
          case TR_instanceOf:                return "jitInstanceOf";
+         case TR_checkAssignable:           return "jitCheckAssignable";
          case TR_induceOSRAtCurrentPC:      return "jitInduceOSRAtCurrentPC";
          case TR_monitorEntry:              return "jitMonitorEntry";
          case TR_methodMonitorEntry:        return "jitMethodMonitorEntry";
@@ -3900,6 +3901,7 @@ TR_Debug::getRuntimeHelperName(int32_t index)
          case TR_jitCheckIfFinalizeObject:  return "jitCheckIfFinalizeObject";
          case TR_releaseVMAccess:           return "jitReleaseVMAccess";
          case TR_throwCurrentException:     return "jitThrowCurrentException";
+         case TR_throwClassCastException:   return "jitThrowClassCastException";
 
          case TR_IncompatibleClassChangeError:return "jitThrowIncompatibleClassChangeError";
          case TR_AbstractMethodError:       return "jitThrowAbstractMethodError";

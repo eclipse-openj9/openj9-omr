@@ -661,31 +661,6 @@ BlobBuildVisitor::visitType(Type *type) const
 	return DDR_RC_OK;
 }
 
-static Type *
-getBaseType(TypedefUDT *type)
-{
-	Type *baseType = type;
-	set<Type *> baseTypes;
-
-	for (;;) {
-		baseTypes.insert(baseType);
-
-		Type * nextBase = baseType->getBaseType();
-
-		if (NULL == nextBase) {
-			/* this is the end of the chain */
-			break;
-		} else if (baseTypes.find(nextBase) != baseTypes.end()) {
-			/* this signals a cycle in the chain of base types */
-			break;
-		}
-
-		baseType = nextBase;
-	}
-
-	return baseType;
-}
-
 DDR_RC
 BlobBuildVisitor::visitTypedef(TypedefUDT *type) const
 {
@@ -843,12 +818,12 @@ DDR_RC
 BlobFieldVisitor::visitTypedef(TypedefUDT *type) const
 {
 	/* If typedef is void*, or otherwise known as a function pointer, return name as void*. */
-	Type *aliasedType = getBaseType(type);
+	Type *opaqueType = type->getOpaqueType();
 
-	if ((NULL != aliasedType) && ("void" == aliasedType->_name) && (0 != type->_modifiers._pointerCount)) {
+	if ((NULL != opaqueType) && ("void" == opaqueType->_name) && (0 != type->_modifiers._pointerCount)) {
 		*_fieldString += "void*";
 	} else {
-		// FIXME use aliasedType?
+		// FIXME use opaqueType?
 		string prefix = type->getSymbolKindName();
 		*_fieldString += prefix.empty() ? type->getFullName() : (prefix + " " + type->getFullName());
 	}

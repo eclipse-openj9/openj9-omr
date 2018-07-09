@@ -24,6 +24,8 @@
 TypedefUDT::TypedefUDT(unsigned int lineNumber)
 	: UDT(0, lineNumber), _aliasedType(NULL)
 {
+	/* A typedef is opaque only if an overrides file says so. */
+	_opaque = false;
 }
 
 TypedefUDT::~TypedefUDT()

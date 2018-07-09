@@ -26,10 +26,8 @@
 #include "ddr/std/unordered_map.hpp"
 
 #include <set>
-#include <string.h>
 
 using std::set;
-using std::string;
 
 class Field;
 class SupersetFieldVisitor;
@@ -42,7 +40,6 @@ private:
 	set<string> _baseTypedefSet; /* Set of types renamed to "[U/I][SIZE]" */
 	unordered_map<string, string> _baseTypedefMap; /* Types remapped for assembled type names. */
 	unordered_map<string, string> _baseTypedefReplace; /* Type names which are replaced everywhere. */
-	set<string> _opaqueTypeNames; /* Set of types to not rename when found as a typedef */
 	intptr_t _file;
 	OMRPortLibrary *_portLibrary;
 	bool _printEmptyTypes;

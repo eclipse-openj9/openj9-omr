@@ -22,6 +22,8 @@
 
 #include <windows.h>
 #include <setjmp.h>
+#include <signal.h>
+
 #include "omrsignal.h"
 #include "omrport.h"
 #include "omrutilbase.h"
@@ -93,6 +95,21 @@ static struct {
 	{OMRPORT_SIG_FLAG_SIGBREAK, SIGBREAK},
 };
 
+#define ARRAY_SIZE_SIGNALS (NSIG + 1)
+
+typedef void (*win_signal)(int);
+
+/* Store the original signal handler. During shutdown, we need to restore
+ * the signal handler to the original OS handler.
+ */
+static struct {
+	win_signal originalHandler;
+	uint32_t restore;
+} handlerInfo[ARRAY_SIZE_SIGNALS];
+
+/* Keep track of signal counts. */
+static volatile uintptr_t signalCounts[ARRAY_SIZE_SIGNALS] = {0};
+
 static omrthread_monitor_t masterExceptionMonitor;
 
 /* access to this must be synchronized using masterExceptionMonitor */
@@ -105,6 +122,14 @@ static uint32_t attachedPortLibraries;
 /* holds the options set by omrsig_set_options */
 static uint32_t signalOptions;
 static omrthread_tls_key_t tlsKey;
+
+/* Calls to registerSignalHandlerWithOS are synchronized using registerHandlerMonitor */
+static omrthread_monitor_t registerHandlerMonitor;
+
+/* wakeUpASyncReporter semaphore coordinates between master async signal handler and
+ * async signal reporter thread.
+ */
+static j9sem_t wakeUpASyncReporter;
 
 static uint32_t mapWin32ExceptionToPortlibType(uint32_t exceptionCode);
 static uint32_t infoForGPR(struct OMRPortLibrary *portLibrary, struct J9Win32SignalInfo *info, int32_t index, const char **name, void **value);
@@ -126,6 +151,11 @@ static int32_t runInTryExcept(struct OMRPortLibrary *portLibrary, omrsig_protect
 
 static uint32_t mapOSSignalToPortLib(uint32_t signalNo);
 static int mapPortLibSignalToOSSignal(uint32_t portLibSignal);
+
+static int32_t registerSignalHandlerWithOS(OMRPortLibrary *portLibrary, uint32_t portLibrarySignalNo, win_signal handler, void **oldOSHandler);
+static void updateSignalCount(int osSignalNo);
+static void masterASynchSignalHandler(int osSignalNo);
+static void removeAsyncHandlers(OMRPortLibrary *portLibrary);
 
 uint32_t
 omrsig_info(struct OMRPortLibrary *portLibrary, void *info, uint32_t category, int32_t index, const char **name, void **value)
@@ -336,13 +366,41 @@ omrsig_map_portlib_signal_to_os_signal(struct OMRPortLibrary *portLibrary, uint3
 int32_t
 omrsig_register_os_handler(struct OMRPortLibrary *portLibrary, uint32_t portlibSignalFlag, void *newOSHandler, void **oldOSHandler)
 {
-	return OMRPORT_SIG_ERROR;
+	int32_t rc = 0;
+
+	Trc_PRT_signal_omrsig_register_os_handler_entered(portlibSignalFlag, newOSHandler);
+
+	if ((0 == portlibSignalFlag) || !OMR_IS_ONLY_ONE_BIT_SET(portlibSignalFlag)) {
+		/* If portlibSignalFlag is 0 or if portlibSignalFlag has multiple signal bits set, then fail. */
+		Trc_PRT_signal_omrsig_register_os_handler_invalid_portlibSignalFlag(portlibSignalFlag);
+		rc = OMRPORT_SIG_ERROR;
+	} else {
+		omrthread_monitor_enter(registerHandlerMonitor);
+		rc = registerSignalHandlerWithOS(portLibrary, portlibSignalFlag, (win_signal)newOSHandler, oldOSHandler);
+		omrthread_monitor_exit(registerHandlerMonitor);
+	}
+
+	if (NULL != oldOSHandler) {
+		Trc_PRT_signal_omrsig_register_os_handler_exiting(rc, portlibSignalFlag, newOSHandler, *oldOSHandler);
+	} else {
+		Trc_PRT_signal_omrsig_register_os_handler_exiting(rc, portlibSignalFlag, newOSHandler, NULL);
+	}
+
+	return rc;
 }
 
 BOOLEAN
 omrsig_is_master_signal_handler(struct OMRPortLibrary *portLibrary, void *osHandler)
 {
-	return FALSE;
+	BOOLEAN rc = FALSE;
+	Trc_PRT_signal_omrsig_is_master_signal_handler_entered(osHandler);
+
+	if (osHandler == (void *)masterASynchSignalHandler) {
+		rc = TRUE;
+	}
+
+	Trc_PRT_signal_omrsig_is_master_signal_handler_exiting(rc);
+	return rc;
 }
 
 int32_t
@@ -384,6 +442,7 @@ omrsig_startup(struct OMRPortLibrary *portLibrary)
 
 	int32_t result = 0;
 	ULONG64 imageBase = 0;
+	uint32_t index = 1;
 	UNWIND_HISTORY_TABLE unwindHistoryTable;
 
 	omrthread_monitor_t globalMonitor = omrthread_global_monitor();
@@ -398,9 +457,11 @@ omrsig_startup(struct OMRPortLibrary *portLibrary)
 
 	omrthread_monitor_enter(globalMonitor);
 	if (attachedPortLibraries++ == 0) {
-
+		/* initialize handlerInfo */
+		for (index = 1; index < ARRAY_SIZE_SIGNALS; index++) {
+			handlerInfo[index].restore = 0;
+		}
 		result = initializeSignalTools(portLibrary);
-
 	}
 
 	memset(&unwindHistoryTable, 0, sizeof(UNWIND_HISTORY_TABLE));
@@ -1180,30 +1241,61 @@ destroySignalTools(OMRPortLibrary *portLibrary)
 {
 	omrthread_monitor_destroy(asyncMonitor);
 	omrthread_monitor_destroy(masterExceptionMonitor);
+	omrthread_monitor_destroy(registerHandlerMonitor);
+	j9sem_destroy(wakeUpASyncReporter);
 }
 
 static int32_t
 initializeSignalTools(OMRPortLibrary *portLibrary)
 {
 	if (omrthread_monitor_init_with_name(&asyncMonitor, 0, "portLibrary_omrsig_async_monitor")) {
-		return -1;
+		goto error;
 	}
 
-	if (omrthread_monitor_init_with_name(&masterExceptionMonitor, 0, "portLibrary_omrsig_async_monitor")) {
-		omrthread_monitor_destroy(asyncMonitor);
-		return -1;
+	if (omrthread_monitor_init_with_name(&masterExceptionMonitor, 0, "portLibrary_omrsig_master_exception_monitor")) {
+		goto cleanup1;
+	}
+
+	if (omrthread_monitor_init_with_name(&registerHandlerMonitor, 0, "portLibrary_omrsig_register_handler_monitor")) {
+		goto cleanup2;
+	}
+
+	if (0 != j9sem_init(&wakeUpASyncReporter, 0)) {
+		goto cleanup3;
 	}
 
 	return 0;
+
+cleanup3:
+	omrthread_monitor_destroy(registerHandlerMonitor);
+cleanup2:
+	omrthread_monitor_destroy(masterExceptionMonitor);
+cleanup1:
+	omrthread_monitor_destroy(asyncMonitor);
+error:
+	return OMRPORT_SIG_ERROR;
 }
 
 static void
 sig_full_shutdown(struct OMRPortLibrary *portLibrary)
 {
+	uint32_t index = 1;
 	omrthread_monitor_t globalMonitor = omrthread_global_monitor();
 
 	omrthread_monitor_enter(globalMonitor);
 	if (--attachedPortLibraries == 0) {
+		/* Register the original signal handlers, which were overwritten. */
+		for (index = 1; index < ARRAY_SIZE_SIGNALS; index++) {
+			if (handlerInfo[index].restore) {
+				signal(index, handlerInfo[index].originalHandler);
+				/* record that we no longer have a handler installed with the OS for this signal */
+				Trc_PRT_signal_sig_full_shutdown_deregistered_handler_with_OS(portLibrary, index);
+				handlerInfo[index].restore = 0;
+			}
+		}
+
+		/* Remove elements in asyncHandlerList, and free the associated memory. */
+		removeAsyncHandlers(portLibrary);
 
 		omrthread_tls_free(tlsKey);
 		RemoveVectoredExceptionHandler(masterVectoredExceptionHandler);
@@ -1339,4 +1431,121 @@ mapPortLibSignalToOSSignal(uint32_t portLibSignal)
 
 	Trc_PRT_signal_mapPortLibSignalToOSSignal_ERROR_unknown_signal(portLibSignal);
 	return OMRPORT_SIG_ERROR;
+}
+
+/**
+ * Register the signal handler with the OS. Calls to this function must be synchronized using
+ * "registerHandlerMonitor". *oldOSHandler points to the old signal handler function. It is only
+ * set if oldOSHandler is non-null. During the first registration, the old signal handler is
+ * stored in handlerInfo[osSignalNo].originalHandler. The original OS handler must be restored
+ * during port library shut down.
+ *
+ * @param[in] portLibrary the OMR port library
+ * @param[in] portLibrarySignalNo the port library signal flag
+ * @param[in] handler the OS handler to register
+ * @param[out] oldOSHandler points to the old OS handler, if oldOSHandler is non-null
+ *
+ * @return 0 upon success, non-zero otherwise.
+ */
+static int32_t
+registerSignalHandlerWithOS(OMRPortLibrary *portLibrary, uint32_t portLibrarySignalNo, win_signal handler, void **oldOSHandler)
+{
+    int osSignalNo = mapPortLibSignalToOSSignal(portLibrarySignalNo);
+    win_signal localOldOSHandler = NULL;
+
+    /* Don't register a handler for unrecognized OS signals.
+     * Unrecognized OS signals are the ones which aren't included in signalMap.
+     */
+    if (OMRPORT_SIG_ERROR == osSignalNo) {
+        return OMRPORT_SIG_ERROR;
+    }
+
+    localOldOSHandler = signal(osSignalNo, handler);
+    if (SIG_ERR == localOldOSHandler) {
+        Trc_PRT_signal_registerSignalHandlerWithOS_failed_to_registerHandler(portLibrarySignalNo, osSignalNo, handler);
+        return OMRPORT_SIG_ERROR;
+    }
+
+    Trc_PRT_signal_registerSignalHandlerWithOS_registeredHandler1(portLibrarySignalNo, osSignalNo, handler, localOldOSHandler);
+    if (0 == handlerInfo[osSignalNo].restore) {
+        handlerInfo[osSignalNo].originalHandler = localOldOSHandler;
+        handlerInfo[osSignalNo].restore = 1;
+    }
+
+    if (NULL != oldOSHandler) {
+        *oldOSHandler = (void *)localOldOSHandler;
+    }
+
+    return 0;
+}
+
+/**
+ * Atomically increment signalCounts[osSignalNo] and notify the async signal reporter thread
+ * that a signal is received.
+ *
+ * @param[in] osSignalNo the integer value of the signal that is raised
+ *
+ * @return void
+ */
+static void
+updateSignalCount(int osSignalNo)
+{
+	addAtomic(&signalCounts[osSignalNo], 1);
+	j9sem_post(wakeUpASyncReporter);
+}
+
+/**
+ * Invoke updateSignalCount(osSignalNo), and re-register masterASynchSignalHandler since the
+ * masterASynchSignalHandler is unregistered after invocation.
+ *
+ * @param[in] osSignalNo the integer value of the signal that is raised
+ *
+ * @return void
+ */
+static void
+masterASynchSignalHandler(int osSignalNo)
+{
+	updateSignalCount(osSignalNo);
+
+	/* Signal handler is reset after invocation. So, the signal handler needs to
+	 * be registered again after it is invoked.
+	 */
+	signal(osSignalNo, masterASynchSignalHandler);
+}
+
+/**
+ * Remove elements in asyncHandlerList, and free the associated memory.
+ *
+ * @param[in] portLibrary the OMR port library
+ *
+ * @return void
+ */
+static void
+removeAsyncHandlers(OMRPortLibrary *portLibrary)
+{
+	/* clean up the list of async handlers */
+	J9WinAMD64AsyncHandlerRecord *cursor = NULL;
+	J9WinAMD64AsyncHandlerRecord **previousLink = NULL;
+
+	omrthread_monitor_enter(asyncMonitor);
+
+	/* wait until no signals are being reported */
+	while (asyncThreadCount > 0) {
+		omrthread_monitor_wait(asyncMonitor);
+	}
+
+	previousLink = &asyncHandlerList;
+	cursor = asyncHandlerList;
+	while (cursor) {
+		if (cursor->portLib == portLibrary) {
+			*previousLink = cursor->next;
+			portLibrary->mem_free_memory(portLibrary, cursor);
+			cursor = *previousLink;
+		} else {
+			previousLink = &cursor->next;
+ 			cursor = cursor->next;
+ 		}
+	}
+
+	omrthread_monitor_exit(asyncMonitor);
 }

@@ -5311,10 +5311,12 @@ TR::Node *constrainCall(OMR::ValuePropagation *vp, TR::Node *node)
 
    vp->constrainRecognizedMethod(node);
 
-   // Return if the node is not a regular call (xcall/xcalli) anymore
-   if (!node->getOpCode().isCall() || node->getSymbol()->castToMethodSymbol()->isHelper())
+   // Return if the node is not a call anymore
+   if (!node->getOpCode().isCall())
       return node;
 
+   // Symbol might have been changed, get it from node again
+   symbol = node->getSymbol()->castToMethodSymbol();
    if ( symbol )
       {
 #ifdef J9_PROJECT_SPECIFIC
@@ -5729,8 +5731,8 @@ TR::Node *constrainAcall(OMR::ValuePropagation *vp, TR::Node *node)
    {
    constrainCall(vp, node);
 
-   // Return if the node is not a regular call (xcall/xcalli) anymore
-   if (!node->getOpCode().isCall() || node->getSymbol()->castToMethodSymbol()->isHelper())
+   // Return if the node is not a call anymore
+   if (!node->getOpCode().isCall())
       return node;
 
    // This node can be constrained by the return type of the method.

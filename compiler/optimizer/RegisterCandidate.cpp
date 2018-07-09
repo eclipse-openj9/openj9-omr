@@ -2860,44 +2860,39 @@ TR_RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, in
       TR::CodeGenerator * cg = comp()->cg();
       cg->removeUnavailableRegisters(rc, blocks, availableRegisters);
 
-      /* edTODO : This check should be enabled always, not only when reg pressure is enabled */
-      if (!comp()->getOption(TR_DisableRegisterPressureSimulation) &&
-           comp()->cg()->supportsHighWordFacility() && !comp()->getOption(TR_DisableHighWordRA))
+      if (comp()->cg()->supportsHighWordFacility() && !comp()->getOption(TR_DisableHighWordRA) && !comp()->getOption(TR_DisableRegisterPressureSimulation))
          {
-         // 64bit values clobber highword registers on zGryphon with HPR support
-         // if the HPR is not available, we cannot assign the corresponding GPR to 64bit symbols
          if (!rc->getType().isInt8() && !rc->getType().isInt16() && !rc->getType().isInt32())
             {
             for (int8_t i = firstRegister; i <= lastRegister; ++i)
                {
-               if (!availableRegisters.isSet(i) && cg->isGlobalHPR(i))
+               // Eliminate all GPRs from consideration whose HPRs are not available since the GPR and HPR overlap
+               // and our register candidate is a 64-bit symbol
+               if (cg->isGlobalHPR(i) && !availableRegisters.isSet(i))
                   {
                   TR_GlobalRegisterNumber clobberedGPR = cg->getGlobalGPRFromHPR(i);
+
                   if (trace)
                      {
-                     traceMsg(comp(), "%s is unavailable and RC is 64bit, ", cg->getDebug()->getGlobalRegisterName(i));
-                     traceMsg(comp(), "removing %s from available list\n", cg->getDebug()->getGlobalRegisterName(clobberedGPR));
+                     traceMsg(comp(), "RC is 64bit and %s is unavailable - removing %s from available list\n", cg->getDebug()->getGlobalRegisterName(i), cg->getDebug()->getGlobalRegisterName(clobberedGPR));
                      }
+
                   availableRegisters.reset(clobberedGPR);
                   }
                }
-            }
-         else
-            // For symmetry, the converse is done : if the GPR is used for 64-bit value, we cannot assign an HPR to its highword.
-            {
+
+            // Now the only candidates remaining should be GPR-HPR pairs which are both available
             for (int8_t i = firstRegister; i <= lastRegister; ++i)
                {
-               // HPR grn's are a part of GPR grn's but not vice versa!
-               if (!availableRegisters.isSet(i) && cg->isGlobalGPR(i) && !cg->isGlobalHPR(i))
+               // We should not consider HPRs for 64-bit register candidates
+               if (cg->isGlobalHPR(i) && availableRegisters.isSet(i))
                   {
-                  TR_GlobalRegisterNumber clobberedHPR = cg->getGlobalHPRFromGPR(i);
+                  availableRegisters.reset(i);
+
                   if (trace)
                      {
-                     traceMsg(comp(), "%s is unavailable, ", cg->getDebug()->getGlobalRegisterName(i));
-                     traceMsg(comp(), "removing HPR %s from available list since its use will clobber the corresponding GPR\n",
-                                       cg->getDebug()->getGlobalRegisterName(clobberedHPR));
+                     traceMsg(comp(), "RC is 64bit - removing %s from available list\n", cg->getDebug()->getGlobalRegisterName(i));
                      }
-                  availableRegisters.reset(clobberedHPR);
                   }
                }
             }

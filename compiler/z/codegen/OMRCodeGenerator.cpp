@@ -641,9 +641,6 @@ OMR::Z::CodeGenerator::CodeGenerator()
 
    self()->setIsOutOfLineHotPath(false);
 
-   if (comp->getOption(TR_DisableRegisterPressureSimulation))
-      self()->machine()->initializeGlobalRegisterTable();
-
    self()->setUsesRegisterPairsForLongs();
    self()->setSupportsDivCheck();
    self()->setSupportsLoweringConstIDiv();
@@ -765,8 +762,6 @@ OMR::Z::CodeGenerator::CodeGenerator()
 
    // This enables the tactical GRA
    self()->setSupportsGlRegDeps();
-   if (comp->getOption(TR_DisableRegisterPressureSimulation))
-      self()->prepareForGRA();
 
    self()->addSupportedLiveRegisterKind(TR_GPR);
    self()->addSupportedLiveRegisterKind(TR_FPR);

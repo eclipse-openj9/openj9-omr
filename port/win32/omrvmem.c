@@ -940,102 +940,106 @@ intptr_t
 omrvmem_numa_set_affinity(struct OMRPortLibrary *portLibrary, uintptr_t numaNode, void *address, uintptr_t byteAmount, struct J9PortVmemIdentifier *identifier)
 {
 	intptr_t returnValue = 0;
-	void *topAddress = (void *)((uintptr_t)address + byteAmount);
-	J9AVLTree *boundExtents = &portLibrary->portGlobals->platformGlobals.bindingTree;
-	J9Pool *extentPool = portLibrary->portGlobals->platformGlobals.bindingPool;
-	BindingNode *before = NULL;
-	BindingNode *after = NULL;
-	BindingNode *match = NULL;
-	BindingNode *end = NULL;
-	BindingNode *insertedNode = NULL;
-	void *nextSearchAddress = address;
+	if (OMR_ARE_ANY_BITS_SET(identifier->mode, OMRPORT_VMEM_NO_AFFINITY)) {
+		returnValue = OMRPORT_ERROR_VMEM_OPFAILED;
+	} else {
+		void *topAddress = (void *)((uintptr_t)address + byteAmount);
+		J9AVLTree *boundExtents = &portLibrary->portGlobals->platformGlobals.bindingTree;
+		J9Pool *extentPool = portLibrary->portGlobals->platformGlobals.bindingPool;
+		BindingNode *before = NULL;
+		BindingNode *after = NULL;
+		BindingNode *match = NULL;
+		BindingNode *end = NULL;
+		BindingNode *insertedNode = NULL;
+		void *nextSearchAddress = address;
 
-	omrthread_monitor_enter(PPG_bindingAccessMonitor);
-	before = (BindingNode *)avl_search(boundExtents, (uintptr_t)address - 1);
-	match = (BindingNode *)avl_search(boundExtents, (uintptr_t)address);
+		omrthread_monitor_enter(PPG_bindingAccessMonitor);
+		before = (BindingNode *)avl_search(boundExtents, (uintptr_t)address - 1);
+		match = (BindingNode *)avl_search(boundExtents, (uintptr_t)address);
 
-	/* Find where to store this extent in the AVL tree of extent descriptors */
-	Assert_PRT_true(NULL != match);
-	if (before == match) {
-		/* we need to split this one for the start */
-		uintptr_t newBeforeSize = (uintptr_t)address - (uintptr_t)before->baseAddress;
-		uintptr_t originalExtentLength = before->extentOfRangeInBytes;
-		BindingNode *newNode = (BindingNode *)pool_newElement(extentPool);
-		if (NULL != newNode) {
-			avl_delete(boundExtents, (J9AVLTreeNode *)before);
-			before->extentOfRangeInBytes = newBeforeSize;
-			newNode->baseAddress = address;
-			newNode->extentOfRangeInBytes = originalExtentLength - newBeforeSize;
-			newNode->j9NodeNumber = before->j9NodeNumber;
-			avl_insert(boundExtents, (J9AVLTreeNode *)before);
-			avl_insert(boundExtents, (J9AVLTreeNode *)newNode);
-			match = newNode;
-		} else {
-			returnValue = OMRPORT_ERROR_VMEM_OPFAILED;
-		}
-	}
-	if (0 == returnValue) {
-		after = (BindingNode *)avl_search(boundExtents, (uintptr_t)topAddress);
-		end = (BindingNode *)avl_search(boundExtents, (uintptr_t)topAddress - 1);
-		if (end == after) {
-			/* we need to split this one for the end */
-			uintptr_t newEndSize = (uintptr_t)topAddress - (uintptr_t)end->baseAddress;
-			uintptr_t originalExtentLength = end->extentOfRangeInBytes;
+		/* Find where to store this extent in the AVL tree of extent descriptors */
+		Assert_PRT_true(NULL != match);
+		if (before == match) {
+			/* we need to split this one for the start */
+			uintptr_t newBeforeSize = (uintptr_t)address - (uintptr_t)before->baseAddress;
+			uintptr_t originalExtentLength = before->extentOfRangeInBytes;
 			BindingNode *newNode = (BindingNode *)pool_newElement(extentPool);
 			if (NULL != newNode) {
-				avl_delete(boundExtents, (J9AVLTreeNode *)end);
-				end->extentOfRangeInBytes = newEndSize;
-				newNode->baseAddress = topAddress;
-				newNode->extentOfRangeInBytes = originalExtentLength - newEndSize;
-				newNode->j9NodeNumber = end->j9NodeNumber;
-				avl_insert(boundExtents, (J9AVLTreeNode *)end);
+				avl_delete(boundExtents, (J9AVLTreeNode *)before);
+				before->extentOfRangeInBytes = newBeforeSize;
+				newNode->baseAddress = address;
+				newNode->extentOfRangeInBytes = originalExtentLength - newBeforeSize;
+				newNode->j9NodeNumber = before->j9NodeNumber;
+				avl_insert(boundExtents, (J9AVLTreeNode *)before);
 				avl_insert(boundExtents, (J9AVLTreeNode *)newNode);
-				after = newNode;
+				match = newNode;
 			} else {
 				returnValue = OMRPORT_ERROR_VMEM_OPFAILED;
 			}
 		}
+		if (0 == returnValue) {
+			after = (BindingNode *)avl_search(boundExtents, (uintptr_t)topAddress);
+			end = (BindingNode *)avl_search(boundExtents, (uintptr_t)topAddress - 1);
+			if (end == after) {
+				/* we need to split this one for the end */
+				uintptr_t newEndSize = (uintptr_t)topAddress - (uintptr_t)end->baseAddress;
+				uintptr_t originalExtentLength = end->extentOfRangeInBytes;
+				BindingNode *newNode = (BindingNode *)pool_newElement(extentPool);
+				if (NULL != newNode) {
+					avl_delete(boundExtents, (J9AVLTreeNode *)end);
+					end->extentOfRangeInBytes = newEndSize;
+					newNode->baseAddress = topAddress;
+					newNode->extentOfRangeInBytes = originalExtentLength - newEndSize;
+					newNode->j9NodeNumber = end->j9NodeNumber;
+					avl_insert(boundExtents, (J9AVLTreeNode *)end);
+					avl_insert(boundExtents, (J9AVLTreeNode *)newNode);
+					after = newNode;
+				} else {
+					returnValue = OMRPORT_ERROR_VMEM_OPFAILED;
+				}
+			}
+		}
+		if (0 == returnValue) {
+			/* now, walk all the extents in the range [address, address+byteAmount) and delete them */
+			while (nextSearchAddress < topAddress) {
+				BindingNode *toDelete = (BindingNode *)avl_search(boundExtents, (uintptr_t)nextSearchAddress);
+				nextSearchAddress = (void *)((uintptr_t)nextSearchAddress + toDelete->extentOfRangeInBytes);
+				avl_delete(boundExtents, (J9AVLTreeNode *)toDelete);
+				pool_removeElement(extentPool, toDelete);
+			}
+			/* finally, insert the new node */
+			insertedNode = (BindingNode *)pool_newElement(extentPool);
+			if (NULL != insertedNode) {
+				insertedNode->baseAddress = address;
+				insertedNode->extentOfRangeInBytes = byteAmount;
+				insertedNode->j9NodeNumber = numaNode;
+				avl_insert(boundExtents, (J9AVLTreeNode *)insertedNode);
+			} else {
+				returnValue = OMRPORT_ERROR_VMEM_OPFAILED;
+			}
+		}
+		if (0 == returnValue) {
+			/* coalesce matches */
+			if ((NULL != before) && (before->j9NodeNumber == insertedNode->j9NodeNumber)) {
+				uintptr_t sizeToGrowTo = before->extentOfRangeInBytes + insertedNode->extentOfRangeInBytes;
+				avl_delete(boundExtents, (J9AVLTreeNode *)before);
+				avl_delete(boundExtents, (J9AVLTreeNode *)insertedNode);
+				pool_removeElement(extentPool, insertedNode);
+				before->extentOfRangeInBytes = sizeToGrowTo;
+				insertedNode = before;
+				avl_insert(boundExtents, (J9AVLTreeNode *)insertedNode);
+			}
+			if ((NULL != after) && (after->j9NodeNumber == insertedNode->j9NodeNumber)) {
+				uintptr_t sizeToGrowTo = after->extentOfRangeInBytes + insertedNode->extentOfRangeInBytes;
+				avl_delete(boundExtents, (J9AVLTreeNode *)after);
+				avl_delete(boundExtents, (J9AVLTreeNode *)insertedNode);
+				pool_removeElement(extentPool, after);
+				insertedNode->extentOfRangeInBytes = sizeToGrowTo;
+				avl_insert(boundExtents, (J9AVLTreeNode *)insertedNode);
+			}
+		}
+		omrthread_monitor_exit(PPG_bindingAccessMonitor);
 	}
-	if (0 == returnValue) {
-		/* now, walk all the extents in the range [address, address+byteAmount) and delete them */
-		while (nextSearchAddress < topAddress) {
-			BindingNode *toDelete = (BindingNode *)avl_search(boundExtents, (uintptr_t)nextSearchAddress);
-			nextSearchAddress = (void *)((uintptr_t)nextSearchAddress + toDelete->extentOfRangeInBytes);
-			avl_delete(boundExtents, (J9AVLTreeNode *)toDelete);
-			pool_removeElement(extentPool, toDelete);
-		}
-		/* finally, insert the new node */
-		insertedNode = (BindingNode *)pool_newElement(extentPool);
-		if (NULL != insertedNode) {
-			insertedNode->baseAddress = address;
-			insertedNode->extentOfRangeInBytes = byteAmount;
-			insertedNode->j9NodeNumber = numaNode;
-			avl_insert(boundExtents, (J9AVLTreeNode *)insertedNode);
-		} else {
-			returnValue = OMRPORT_ERROR_VMEM_OPFAILED;
-		}
-	}
-	if (0 == returnValue) {
-		/* coalesce matches */
-		if ((NULL != before) && (before->j9NodeNumber == insertedNode->j9NodeNumber)) {
-			uintptr_t sizeToGrowTo = before->extentOfRangeInBytes + insertedNode->extentOfRangeInBytes;
-			avl_delete(boundExtents, (J9AVLTreeNode *)before);
-			avl_delete(boundExtents, (J9AVLTreeNode *)insertedNode);
-			pool_removeElement(extentPool, insertedNode);
-			before->extentOfRangeInBytes = sizeToGrowTo;
-			insertedNode = before;
-			avl_insert(boundExtents, (J9AVLTreeNode *)insertedNode);
-		}
-		if ((NULL != after) && (after->j9NodeNumber == insertedNode->j9NodeNumber)) {
-			uintptr_t sizeToGrowTo = after->extentOfRangeInBytes + insertedNode->extentOfRangeInBytes;
-			avl_delete(boundExtents, (J9AVLTreeNode *)after);
-			avl_delete(boundExtents, (J9AVLTreeNode *)insertedNode);
-			pool_removeElement(extentPool, after);
-			insertedNode->extentOfRangeInBytes = sizeToGrowTo;
-			avl_insert(boundExtents, (J9AVLTreeNode *)insertedNode);
-		}
-	}
-	omrthread_monitor_exit(PPG_bindingAccessMonitor);
 	return returnValue;
 }
 

@@ -88,6 +88,7 @@ static uint32_t mapOSSignalToPortLib(uint32_t signalNo);
 static int mapPortLibSignalToOSSignal(uint32_t portLibSignal);
 
 static int32_t registerSignalHandlerWithOS(OMRPortLibrary *portLibrary, uint32_t portLibrarySignalNo, win_signal handler, void **oldOSHandler);
+static int32_t initializeSignalTools(OMRPortLibrary *portLibrary);
 
 uint32_t
 omrsig_info(struct OMRPortLibrary *portLibrary, void *info, uint32_t category, int32_t index, const char **name, void **value)
@@ -292,13 +293,7 @@ omrsig_startup(struct OMRPortLibrary *portLibrary)
 	omrthread_monitor_enter(globalMonitor);
 
 	if (attachedPortLibraries++ == 0) {
-		if (omrthread_monitor_init_with_name(&asyncMonitor, 0, "portLibrary_omrsig_async_monitor")) {
-			result = -1;
-		}
-
-		if (omrthread_tls_alloc(&tlsKeyCurrentSignal)) {
-			return -1;
-		}
+		result = initializeSignalTools(portLibrary);
 	}
 
 	omrthread_monitor_exit(globalMonitor);
@@ -864,4 +859,30 @@ registerSignalHandlerWithOS(OMRPortLibrary *portLibrary, uint32_t portLibrarySig
     }
 
     return 0;
+}
+
+/**
+ * Initialize signal tools at startup.
+ *
+ * @param[in] portLibrary the OMR port library
+ *
+ * @return 0 upon success, non-zero otherwise.
+ */
+static int32_t
+initializeSignalTools(OMRPortLibrary *portLibrary)
+{
+	if (0 != omrthread_monitor_init_with_name(&asyncMonitor, 0, "portLibrary_omrsig_async_monitor")) {
+		goto error;
+	}
+
+	if (0 != omrthread_tls_alloc(&tlsKeyCurrentSignal)) {
+		goto cleanup1;
+	}
+
+	return 0;
+
+cleanup1:
+	omrthread_monitor_destroy(asyncMonitor);
+error:
+	return OMRPORT_SIG_ERROR;
 }

@@ -48,6 +48,18 @@ static struct {
 	{OMRPORT_SIG_FLAG_SIGQUIT, SIGBREAK},
 };
 
+#define ARRAY_SIZE_SIGNALS (NSIG + 1)
+
+typedef void (*win_signal)(int);
+
+/* Store the original signal handler. During shutdown, we need to restore
+ * the signal handler to the original OS handler.
+ */
+static struct {
+	win_signal originalHandler;
+	uint32_t restore;
+} handlerInfo[ARRAY_SIZE_SIGNALS];
+
 static J9Win32AsyncHandlerRecord *asyncHandlerList;
 static omrthread_monitor_t asyncMonitor;
 static uint32_t asyncThreadCount;

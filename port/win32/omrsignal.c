@@ -71,6 +71,7 @@ static uint32_t infoForControl(struct OMRPortLibrary *portLibrary, struct J9Win3
 static intptr_t setCurrentSignal(struct OMRPortLibrary *portLibrary, intptr_t signal);
 
 static uint32_t mapOSSignalToPortLib(uint32_t signalNo);
+static int mapPortLibSignalToOSSignal(uint32_t portLibSignal);
 
 uint32_t
 omrsig_info(struct OMRPortLibrary *portLibrary, void *info, uint32_t category, int32_t index, const char **name, void **value)
@@ -207,7 +208,7 @@ omrsig_map_os_signal_to_portlib_signal(struct OMRPortLibrary *portLibrary, uint3
 int32_t
 omrsig_map_portlib_signal_to_os_signal(struct OMRPortLibrary *portLibrary, uint32_t portlibSignalFlag)
 {
-	return OMRPORT_SIG_ERROR;
+	return (int32_t)mapPortLibSignalToOSSignal(portlibSignalFlag);
 }
 
 int32_t
@@ -777,4 +778,28 @@ mapOSSignalToPortLib(uint32_t signalNo)
 
 	Trc_PRT_signal_mapOSSignalToPortLib_ERROR_unknown_signal(signalNo);
 	return 0;
+}
+
+
+/**
+ * The port library signal flag is converted to the corresponding OS signal number.
+ *
+ * @param portLibSignal the port library signal flag
+ *
+ * @return The corresponding OS signal number or OMRPORT_SIG_ERROR (-1) if the portLibSignal
+ *         can't be mapped.
+ */
+static int
+mapPortLibSignalToOSSignal(uint32_t portLibSignal)
+{
+	uint32_t index = 0;
+
+	for (index = 0; index < sizeof(signalMap) / sizeof(signalMap[0]); index++) {
+		if (signalMap[index].portLibSignalNo == portLibSignal) {
+			return signalMap[index].osSignalNo;
+		}
+	}
+
+	Trc_PRT_signal_mapPortLibSignalToOSSignal_ERROR_unknown_signal(portLibSignal);
+	return OMRPORT_SIG_ERROR;
 }

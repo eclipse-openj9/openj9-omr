@@ -1066,7 +1066,24 @@ TR_S390RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstru
          switch (virtReg->getKind())
             {
             case TR_GPR:
-               ++numGPRs;
+               // TODO (Issue #2739): Currently HPRs are not propperly tagged with TR_HPR register kind and are instead
+               // labeled as TR_GPR. This produces incorrect counts for the number of GPR vs. HPR dependencies that we
+               // have. We use a workaround here to circumvent the issue but a larger change is needed to properly tag
+               // the register kinds and eliminate this ugly code.
+               if ((dependentRegNum >= TR::RealRegister::FirstHPR && dependentRegNum <= TR::RealRegister::LastHPR) ||
+
+                     // This case is used to handle removed GPR / HPR dependencies in checkRegisterDependencyDuplicates
+                     // in which we don't actually remove the HPR dependency but simply set the target real register to
+                     // be TR::RealRegister::NoReg. This is also a hack that needs to be cleaned up, i.e. we shouldn't
+                     // be creating the duplicate register dependency in the first place.
+                     (virtReg->isPlaceholderReg() && dependentRegNum == TR::RealRegister::NoReg))
+                  {
+                  ++numHPRs;
+                  }
+               else
+                  {
+                  ++numGPRs;
+                  }
                break;
             case TR_HPR:
                ++numHPRs;

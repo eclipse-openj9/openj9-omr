@@ -67,6 +67,36 @@ OMR::Z::CodeGenPhase::performSetBranchOnCountFlagPhase(TR::CodeGenerator * cg, T
       }
    }
 
+void
+OMR::Z::CodeGenPhase::performPreRAPeepholePhase(TR::CodeGenerator * cg, TR::CodeGenPhase * phase)
+    {
+   TR::Compilation * comp = cg->comp();
+   phase->reportPhase(PreRAPeepholePhase);
+
+   TR::LexicalMemProfiler mp(phase->getName(), comp->phaseMemProfiler());
+   LexicalTimer pt(phase->getName(), comp->phaseTimer());
+
+   cg->doPreRAPeephole();
+
+   if (comp->getOption(TR_TraceCG))
+      comp->getDebug()->dumpMethodInstrs(comp->getOutFile(), "Pre Register Assignment Peephole Instructions", false);
+    }
+
+void
+OMR::Z::CodeGenPhase::performPeepholePhase(TR::CodeGenerator * cg, TR::CodeGenPhase * phase)
+   {
+   TR::Compilation * comp = cg->comp();
+   phase->reportPhase(PeepholePhase);
+
+   TR::LexicalMemProfiler mp(phase->getName(), comp->phaseMemProfiler());
+   LexicalTimer pt(phase->getName(), comp->phaseTimer());
+
+   cg->doPostRAPeephole();
+
+   if (comp->getOption(TR_TraceCG))
+      comp->getDebug()->dumpMethodInstrs(comp->getOutFile(), "Post Register Assignment Peephole Instructions", false);
+   }
+
 int
 OMR::Z::CodeGenPhase::getNumPhases()
    {
@@ -88,6 +118,10 @@ OMR::Z::CodeGenPhase::getName(PhaseValue phase)
          return "markLoadAsZeroOrSignExtension";
       case SetBranchOnCountFlagPhase:
          return "SetBranchOnCountFlagPhase";
+      case PreRAPeepholePhase:
+         return "PreRegisterAllocationPeepholePhase";
+      case PeepholePhase:
+         return "PostRegisterAllocationPeepholePhase";
       default:
          // call parent class for common phases
          return OMR::CodeGenPhase::getName(phase);

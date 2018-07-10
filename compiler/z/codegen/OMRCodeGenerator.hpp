@@ -310,7 +310,8 @@ public:
    void recordRegisterAssignment(TR::Register *assignedReg, TR::Register *virtualReg);
 
    void doBinaryEncoding();
-   void doPeephole();
+   void doPreRAPeephole();
+   void doPostRAPeephole();
    void setUseDefRegisters(bool resetRegs);
 
    void AddFoldedMemRefToStack(TR::MemoryReference * mr);
@@ -1019,92 +1020,6 @@ private:
 }
 
 }
-
-
-class TR_S390Peephole
-   {
-public:
-   TR_S390Peephole(TR::Compilation* comp, TR::CodeGenerator *cg);
-
-   void perform();
-
-private:
-   void printInfo(const char* info)
-      {
-      if (_outFile)
-         {
-         if ( !( !comp()->getOption(TR_TraceCG) && comp()->getOptions()->getTraceCGOption(TR_TraceCGPostBinaryEncoding) && comp()->getOptions()->getTraceCGOption(TR_TraceCGMixedModeDisassembly) )  )
-            {
-            trfprintf(_outFile, info);
-            }
-         }
-      }
-
-   void printInst()
-      {
-      if (_outFile)
-         {
-         if ( !( !comp()->getOption(TR_TraceCG) && comp()->getOptions()->getTraceCGOption(TR_TraceCGPostBinaryEncoding) && comp()->getOptions()->getTraceCGOption(TR_TraceCGMixedModeDisassembly) )  )
-            {
-            comp()->getDebug()->print(_outFile, _cursor);
-            }
-         }
-      }
-
-   bool LLCReduction();
-   bool LGFRReduction();
-   bool AGIReduction();
-   bool ICMReduction();
-   bool replaceGuardedLoadWithSoftwareReadBarrier();
-   bool LAReduction();
-   bool NILHReduction();
-   bool duplicateNILHReduction();
-   bool unnecessaryNILHReduction();
-   bool clearsHighBitOfAddressInReg(TR::Instruction *inst, TR::Register *reg);
-   bool branchReduction();
-   bool forwardBranchTarget();
-   bool seekRegInFutureMemRef(int32_t ,TR::Register *);
-   bool LRReduction();
-   bool ConditionalBranchReduction(TR::InstOpCode::Mnemonic branchOPReplacement);
-   bool CompareAndBranchReduction();
-   bool LoadAndMaskReduction(TR::InstOpCode::Mnemonic LZOpCode);
-   bool removeMergedNullCHK();
-   bool trueCompEliminationForCompareAndBranch();
-   bool trueCompEliminationForCompare();
-   bool trueCompEliminationForLoadComp();
-   bool attemptZ7distinctOperants();
-   bool DeadStoreToSpillReduction();
-   bool tryMoveImmediate();
-   bool isBarrierToPeepHoleLookback(TR::Instruction *current);
-
-   /** \brief
-    *     Attempts to reduce LHI R,0 instructions to XR R,R instruction to save 2 bytes of icache.
-    *
-    *  \return
-    *     true if the reduction was successful; false otherwise.
-    */
-   bool ReduceLHIToXR();
-
-   // DAA related Peephole optimizations
-   bool DAARemoveOutlinedLabelNop   (bool hasPadding);
-   bool DAARemoveOutlinedLabelNopCVB(bool hasPadding);
-
-   bool DAAHandleMemoryReferenceSpill(bool hasPadding);
-
-   bool revertTo32BitShift();
-   bool inlineEXtargetHelper(TR::Instruction *, TR::Instruction *);
-   bool inlineEXtarget();
-   void markBlockThatModifiesRegister(TR::Instruction *, TR::Register *);
-   void reloadLiteralPoolRegisterForCatchBlock();
-
-   TR::Compilation * comp() { return TR::comp(); }
-
-private:
-   TR_FrontEnd * _fe;
-   TR::FILE *_outFile;
-   TR::Instruction *_cursor;
-   TR::CodeGenerator *_cg;
-};
 
 class TR_S390ScratchRegisterManager : public TR_ScratchRegisterManager
    {

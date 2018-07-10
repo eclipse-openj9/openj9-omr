@@ -219,7 +219,8 @@ SupersetFieldVisitor::visitTypedef(TypedefUDT *type) const
 		opaqueType->acceptVisitor(SupersetFieldVisitor(_gen, _typeName, _simpleName, _prefixBase, _prefix, _pointerTypeBase));
 	}
 
-	if (type->getSymbolKindName().empty()) {
+	string symbolKind = type->getSymbolKindName();
+	if (symbolKind.empty()) {
 		*_simpleName = type->_name;
 		_gen->replaceBaseTypedef(type, _simpleName);
 	} else {
@@ -227,10 +228,11 @@ SupersetFieldVisitor::visitTypedef(TypedefUDT *type) const
 	}
 
 	/* Get the field type. */
-	/* Should "union " be printed in superset or is that not allowed? */
-	*_prefixBase = type->getSymbolKindName();
-	if (!_prefixBase->empty()) {
-		*_prefixBase += " ";
+	/* Prefix "union" should not be printed in superset */
+	if (symbolKind.empty() || ("union" == symbolKind)) {
+		*_prefixBase = "";
+	} else {
+		*_prefixBase = symbolKind + " ";
 	}
 	*_prefix = *_prefixBase;
 

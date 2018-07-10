@@ -312,6 +312,7 @@ omrsig_can_protect(struct OMRPortLibrary *portLibrary,  uint32_t flags)
 void
 omrsig_shutdown(struct OMRPortLibrary *portLibrary)
 {
+	uint32_t index = 1;
 	omrthread_monitor_t globalMonitor = omrthread_global_monitor();
 
 	removeAsyncHandlers(portLibrary);
@@ -319,6 +320,15 @@ omrsig_shutdown(struct OMRPortLibrary *portLibrary)
 	omrthread_monitor_enter(globalMonitor);
 
 	if (--attachedPortLibraries == 0) {
+		/* Register the original signal handlers, which were overwritten. */
+		for (index = 1; index < ARRAY_SIZE_SIGNALS; index++) {
+			if (0 != handlerInfo[index].restore) {
+				signal(index, handlerInfo[index].originalHandler);
+				/* record that we no longer have a handler installed with the OS for this signal */
+				Trc_PRT_signal_sig_full_shutdown_deregistered_handler_with_OS(portLibrary, index);
+				handlerInfo[index].restore = 0;
+			}
+		}
 		destroySignalTools(portLibrary);
 	}
 
@@ -332,10 +342,15 @@ omrsig_startup(struct OMRPortLibrary *portLibrary)
 {
 	omrthread_monitor_t globalMonitor = omrthread_global_monitor();
 	int32_t result = 0;
+	uint32_t index = 1;
 
 	omrthread_monitor_enter(globalMonitor);
 
 	if (attachedPortLibraries++ == 0) {
+		/* initialize handlerInfo */
+		for (index = 1; index < ARRAY_SIZE_SIGNALS; index++) {
+			handlerInfo[index].restore = 0;
+		}
 		result = initializeSignalTools(portLibrary);
 	}
 

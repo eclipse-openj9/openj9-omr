@@ -27,6 +27,7 @@
 #include "omrport.h"
 #include "omrthread.h"
 #include "omrsignal.h"
+#include "omrutilbase.h"
 #include "ut_omrport.h"
 
 typedef struct J9Win32AsyncHandlerRecord {
@@ -101,6 +102,9 @@ static int mapPortLibSignalToOSSignal(uint32_t portLibSignal);
 static int32_t registerSignalHandlerWithOS(OMRPortLibrary *portLibrary, uint32_t portLibrarySignalNo, win_signal handler, void **oldOSHandler);
 static int32_t initializeSignalTools(OMRPortLibrary *portLibrary);
 static void destroySignalTools(OMRPortLibrary *portLibrary);
+
+static void updateSignalCount(int osSignalNo);
+static void masterASynchSignalHandler(int osSignalNo);
 
 uint32_t
 omrsig_info(struct OMRPortLibrary *portLibrary, void *info, uint32_t category, int32_t index, const char **name, void **value)
@@ -944,4 +948,38 @@ destroySignalTools(OMRPortLibrary *portLibrary)
 	omrthread_monitor_destroy(registerHandlerMonitor);
 	j9sem_destroy(wakeUpASyncReporter);
 	omrthread_tls_free(tlsKeyCurrentSignal);
+}
+
+/**
+ * Atomically increment signalCounts[osSignalNo] and notify the async signal reporter thread
+ * that a signal is received.
+ *
+ * @param[in] osSignalNo the integer value of the signal that is raised
+ *
+ * @return void
+ */
+static void
+updateSignalCount(int osSignalNo)
+{
+	addAtomic(&signalCounts[osSignalNo], 1);
+	j9sem_post(wakeUpASyncReporter);
+}
+
+/**
+ * Invoke updateSignalCount(osSignalNo), and re-register masterASynchSignalHandler since the
+ * masterASynchSignalHandler is unregistered after invocation.
+ *
+ * @param[in] osSignalNo the integer value of the signal that is raised
+ *
+ * @return void
+ */
+static void
+masterASynchSignalHandler(int osSignalNo)
+{
+	updateSignalCount(osSignalNo);
+
+	/* Signal handler is reset after invocation. So, the signal handler needs to
+	 * be registered again after it is invoked.
+	 */
+	signal(osSignalNo, masterASynchSignalHandler);
 }

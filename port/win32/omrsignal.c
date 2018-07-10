@@ -34,6 +34,19 @@ typedef struct J9Win32AsyncHandlerRecord {
 	struct J9Win32AsyncHandlerRecord *next;
 } J9Win32AsyncHandlerRecord;
 
+static struct {
+	uint32_t portLibSignalNo;
+	int osSignalNo;
+} signalMap[] = {
+	{OMRPORT_SIG_FLAG_SIGSEGV, SIGSEGV},
+	{OMRPORT_SIG_FLAG_SIGILL, SIGILL},
+	{OMRPORT_SIG_FLAG_SIGFPE, SIGFPE},
+	{OMRPORT_SIG_FLAG_SIGABRT, SIGABRT},
+	{OMRPORT_SIG_FLAG_SIGTERM, SIGTERM},
+	{OMRPORT_SIG_FLAG_SIGINT, SIGINT},
+	{OMRPORT_SIG_FLAG_SIGQUIT, SIGBREAK},
+};
+
 static J9Win32AsyncHandlerRecord *asyncHandlerList;
 static omrthread_monitor_t asyncMonitor;
 static uint32_t asyncThreadCount;

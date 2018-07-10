@@ -22,6 +22,8 @@
 
 #include <windows.h>
 #include <stdlib.h>
+#include <signal.h>
+
 #include "omrport.h"
 #include "omrthread.h"
 #include "omrsignal.h"
@@ -84,6 +86,8 @@ static intptr_t setCurrentSignal(struct OMRPortLibrary *portLibrary, intptr_t si
 
 static uint32_t mapOSSignalToPortLib(uint32_t signalNo);
 static int mapPortLibSignalToOSSignal(uint32_t portLibSignal);
+
+static int32_t registerSignalHandlerWithOS(OMRPortLibrary *portLibrary, uint32_t portLibrarySignalNo, win_signal handler, void **oldOSHandler);
 
 uint32_t
 omrsig_info(struct OMRPortLibrary *portLibrary, void *info, uint32_t category, int32_t index, const char **name, void **value)
@@ -814,4 +818,50 @@ mapPortLibSignalToOSSignal(uint32_t portLibSignal)
 
 	Trc_PRT_signal_mapPortLibSignalToOSSignal_ERROR_unknown_signal(portLibSignal);
 	return OMRPORT_SIG_ERROR;
+}
+
+/**
+ * Register the signal handler with the OS. Calls to this function must be synchronized using
+ * "registerHandlerMonitor". *oldOSHandler points to the old signal handler function. It is only
+ * set if oldOSHandler is non-null. During the first registration, the old signal handler is
+ * stored in handlerInfo[osSignalNo].originalHandler. The original OS handler must be restored
+ * during port library shut down.
+ *
+ * @param[in] portLibrary the OMR port library
+ * @param[in] portLibrarySignalNo the port library signal flag
+ * @param[in] handler the OS handler to register
+ * @param[out] oldOSHandler points to the old OS handler, if oldOSHandler is non-null
+ *
+ * @return 0 upon success, non-zero otherwise.
+ */
+static int32_t
+registerSignalHandlerWithOS(OMRPortLibrary *portLibrary, uint32_t portLibrarySignalNo, win_signal handler, void **oldOSHandler)
+{
+    int osSignalNo = mapPortLibSignalToOSSignal(portLibrarySignalNo);
+    win_signal localOldOSHandler = NULL;
+
+    /* Don't register a handler for unrecognized OS signals.
+     * Unrecognized OS signals are the ones which aren't included in signalMap.
+     */
+    if (OMRPORT_SIG_ERROR == osSignalNo) {
+        return OMRPORT_SIG_ERROR;
+    }
+
+    localOldOSHandler = signal(osSignalNo, handler);
+    if (SIG_ERR == localOldOSHandler) {
+        Trc_PRT_signal_registerSignalHandlerWithOS_failed_to_registerHandler(portLibrarySignalNo, osSignalNo, handler);
+        return OMRPORT_SIG_ERROR;
+    }
+
+    Trc_PRT_signal_registerSignalHandlerWithOS_registeredHandler1(portLibrarySignalNo, osSignalNo, handler, localOldOSHandler);
+    if (0 == handlerInfo[osSignalNo].restore) {
+        handlerInfo[osSignalNo].originalHandler = localOldOSHandler;
+        handlerInfo[osSignalNo].restore = 1;
+    }
+
+    if (NULL != oldOSHandler) {
+        *oldOSHandler = (void *)localOldOSHandler;
+    }
+
+    return 0;
 }

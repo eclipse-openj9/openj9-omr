@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -614,7 +614,7 @@ static TR::RegisterDependency*
 findDependencyChainHead(TR::RegisterDependency *dep,
                         OMR::RegisterDependencyMap& map)
    {
-   TR::RegisterDependency *cursor = map.getDependencyWithAssigned(dep->getRealRegister());
+   TR::RegisterDependency *cursor = map.getDependencyWithSourceAssigned(dep->getRealRegister());
 
 
    // Already at head of chain
@@ -625,7 +625,7 @@ findDependencyChainHead(TR::RegisterDependency *dep,
    // or until we're back at the first dep
    while (cursor != dep)
       {
-      TR::RegisterDependency *nextDep = map.getDependencyWithAssigned(cursor->getRealRegister());
+      TR::RegisterDependency *nextDep = map.getDependencyWithSourceAssigned(cursor->getRealRegister());
       if (!nextDep)
          break;
       cursor = nextDep;
@@ -679,7 +679,7 @@ static void assignContendedRegisters(TR::Instruction              *currentInstru
       }
 
    // Chain of length 2, handled here instead of below to get 3*xor exchange on GPRs
-   if (map.getDependencyWithTarget(assignedReg->getRegisterNumber()) == map.getDependencyWithAssigned(targetRegNum))
+   if (map.getDependencyWithTarget(assignedReg->getRegisterNumber()) == map.getDependencyWithSourceAssigned(targetRegNum))
       {
       TR::Register *targetVirtReg = targetReg->getAssignedRegister();
       machine->coerceRegisterAssignment(currentInstruction, virtReg, targetRegNum);

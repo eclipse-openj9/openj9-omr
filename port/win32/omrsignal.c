@@ -72,6 +72,9 @@ static uint32_t signalOptions;
 /* key to get the current synchronous signal */
 static omrthread_tls_key_t tlsKeyCurrentSignal;
 
+/* Calls to registerSignalHandlerWithOS are synchronized using registerHandlerMonitor */
+static omrthread_monitor_t registerHandlerMonitor;
+
 static uint32_t mapWin32ExceptionToPortlibType(uint32_t exceptionCode);
 static uint32_t infoForGPR(struct OMRPortLibrary *portLibrary, struct J9Win32SignalInfo *info, int32_t index, const char **name, void **value);
 static void removeAsyncHandlers(OMRPortLibrary *portLibrary);
@@ -875,12 +878,18 @@ initializeSignalTools(OMRPortLibrary *portLibrary)
 		goto error;
 	}
 
-	if (0 != omrthread_tls_alloc(&tlsKeyCurrentSignal)) {
+	if (0 != omrthread_monitor_init_with_name(&registerHandlerMonitor, 0, "portLibrary_omrsig_register_handler_monitor")) {
 		goto cleanup1;
+	}
+
+	if (0 != omrthread_tls_alloc(&tlsKeyCurrentSignal)) {
+		goto cleanup2;
 	}
 
 	return 0;
 
+cleanup2:
+	omrthread_monitor_destroy(registerHandlerMonitor);
 cleanup1:
 	omrthread_monitor_destroy(asyncMonitor);
 error:
@@ -898,5 +907,6 @@ static void
 destroySignalTools(OMRPortLibrary *portLibrary)
 {
 	omrthread_monitor_destroy(asyncMonitor);
+	omrthread_monitor_destroy(registerHandlerMonitor);
 	omrthread_tls_free(tlsKeyCurrentSignal);
 }

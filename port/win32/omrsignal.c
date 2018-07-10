@@ -62,6 +62,9 @@ static struct {
 	uint32_t restore;
 } handlerInfo[ARRAY_SIZE_SIGNALS];
 
+/* Keep track of signal counts. */
+static volatile uintptr_t signalCounts[ARRAY_SIZE_SIGNALS] = {0};
+
 static J9Win32AsyncHandlerRecord *asyncHandlerList;
 static omrthread_monitor_t asyncMonitor;
 static uint32_t asyncThreadCount;

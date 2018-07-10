@@ -89,6 +89,7 @@ static int mapPortLibSignalToOSSignal(uint32_t portLibSignal);
 
 static int32_t registerSignalHandlerWithOS(OMRPortLibrary *portLibrary, uint32_t portLibrarySignalNo, win_signal handler, void **oldOSHandler);
 static int32_t initializeSignalTools(OMRPortLibrary *portLibrary);
+static void destroySignalTools(OMRPortLibrary *portLibrary);
 
 uint32_t
 omrsig_info(struct OMRPortLibrary *portLibrary, void *info, uint32_t category, int32_t index, const char **name, void **value)
@@ -275,8 +276,7 @@ omrsig_shutdown(struct OMRPortLibrary *portLibrary)
 	omrthread_monitor_enter(globalMonitor);
 
 	if (--attachedPortLibraries == 0) {
-		omrthread_monitor_destroy(asyncMonitor);
-		omrthread_tls_free(tlsKeyCurrentSignal);
+		destroySignalTools(portLibrary);
 	}
 
 	omrthread_monitor_exit(globalMonitor);
@@ -885,4 +885,18 @@ cleanup1:
 	omrthread_monitor_destroy(asyncMonitor);
 error:
 	return OMRPORT_SIG_ERROR;
+}
+
+/**
+ * Destroys the signal tools.
+ *
+ * @param[in] portLibrary the OMR port library
+ *
+ * @return void
+ */
+static void
+destroySignalTools(OMRPortLibrary *portLibrary)
+{
+	omrthread_monitor_destroy(asyncMonitor);
+	omrthread_tls_free(tlsKeyCurrentSignal);
 }

@@ -889,6 +889,10 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
 
    {"jitMethodEntryAlignmentBoundary=",      "C<nnn>\tAlignment boundary (in bytes) for JIT method entry",
         TR::Options::set32BitSignedNumeric, offsetof(OMR::Options,_jitMethodEntryAlignmentBoundary), 0, "F%d"},
+   {"jProfilingLoopRecompThreshold=",      "C<nnn>\tLoop recompilation threshold for jProfiling",
+        TR::Options::set32BitSignedNumeric, offsetof(OMR::Options,_jProfilingLoopRecompThreshold), 0, "F%d"},
+   {"jProfilingMethodRecompThreshold=",      "C<nnn>\tMethod invocations for jProfiling body",
+        TR::Options::set32BitSignedNumeric, offsetof(OMR::Options,_jProfilingMethodRecompThreshold), 0, "F%d"},
    {"keepBCDWidening",       "O\tstress testing option -- do not remove widening BCD operations", SET_OPTION_BIT(TR_KeepBCDWidening), "F" },
 
    {"labelTargetNOPLimit=", "C<nnn>\t(labelTargetAddress&0xff) > _labelTargetNOPLimit are padded out with NOPs until the next 256 byte boundary",
@@ -2576,6 +2580,8 @@ OMR::Options::jitPreProcess()
 #else
    _jitMethodEntryAlignmentBoundary = 0;
 #endif
+   _jProfilingMethodRecompThreshold = 4000;
+   _jProfilingLoopRecompThreshold = 2000;
    _blockShufflingSequence = "S";
    _delayCompile = 0;
    _largeNumberOfLoops = 6500;

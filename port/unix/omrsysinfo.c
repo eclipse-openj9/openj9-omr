@@ -334,7 +334,7 @@ static intptr_t getZOSDescription(struct OMRPortLibrary *portLibrary, struct OMR
 #if !defined(RS6000) && !defined(J9ZOS390) && !defined(OSX) && !defined(OMRZTPF)
 static uint64_t getPhysicalMemory(struct OMRPortLibrary *portLibrary);
 #elif defined(OMRZTPF) /* !defined(RS6000) && !defined(J9ZOS390) && !defined(OSX)  && !defined(OMRZTPF) */
-static uint16_t getPhysicalMemory();
+static uint64_t getPhysicalMemory();
 #endif /* !defined(RS6000) && !defined(J9ZOS390) && !defined(OSX) && !defined(OMRZTPF) */
 
 #if defined(OMRZTPF)
@@ -1598,10 +1598,15 @@ omrsysinfo_get_addressable_physical_memory(struct OMRPortLibrary *portLibrary)
 	uint64_t memoryLimit = 0;
 	uint64_t usableMemory = portLibrary->sysinfo_get_physical_memory(portLibrary);
 
+#if !defined(OMRZTPF)
 	if (OMRPORT_LIMIT_LIMITED == portLibrary->sysinfo_get_limit(portLibrary, OMRPORT_RESOURCE_ADDRESS_SPACE, &memoryLimit)) {
 		/* there is a limit on the memory we can use so take the minimum of this usable amount and the physical memory */
 		usableMemory = OMR_MIN(memoryLimit, usableMemory);
 	}
+#else /* !defined(OMRZTPF) */
+	usableMemory *= ZTPF_MEMORY_RESERVE_RATIO;
+#endif /* !defined(OMRZTPF) */
+
 	return usableMemory;
 }
 
@@ -1638,14 +1643,7 @@ omrsysinfo_get_physical_memory(struct OMRPortLibrary *portLibrary)
 		}
 	}
 #elif defined(OMRZTPF)
-	/* getPhysicalMemory is returning the number of 1 MB frames */
-	/* for our ECB that we can use - XMMES */
-	uint64_t pmem = (uint64_t)getPhysicalMemory();
-	if (pmem != 0) {
-		return pmem << 20;
-	} else {
-		return pmem;
-	}
+	result = getPhysicalMemory();
 #else /* defined (RS6000) */
 	result = getPhysicalMemory(portLibrary);
 #endif /* defined (RS6000) */
@@ -1677,7 +1675,8 @@ getPhysicalMemory(struct OMRPortLibrary *portLibrary)
 }
 #elif defined(OMRZTPF) /* !defined(RS6000) && !defined(J9ZOS390) && !defined(OSX) && !defined(OMRZTPF) */
 
-uint16_t getPhysicalMemory( void ) {
+static uint64_t
+getPhysicalMemory( void ) {
 
 	struct ebmaxc_parmlist newValues[] = {
 			{ MAX64HEAP, MAXVALUE},
@@ -1685,7 +1684,9 @@ uint16_t getPhysicalMemory( void ) {
 	};
 
 	tpf_ebmaxc(newValues);
-	uint16_t physMemory = *(uint16_t*)(cinfc_fast(CINFC_CMMMMES) + 8);
+	uint64_t physMemory = (uint64_t) (*(uint16_t*)(cinfc_fast(CINFC_CMMMMES) + 8));
+
+	/* Fetch available 1MB frames to system */
 	int numFRM1MB  = numbc(LFRM1MB);
 	/*
 	 * If the available memory, i.e. number of available 1MB frames, is
@@ -1695,7 +1696,7 @@ uint16_t getPhysicalMemory( void ) {
 		physMemory = 0;
 	}
 	else {
-		physMemory = physMemory * 4 / 5;
+		physMemory = physMemory << 20;
 	}
 	return physMemory;
 }

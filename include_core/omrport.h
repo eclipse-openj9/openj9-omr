@@ -46,6 +46,9 @@
 #if defined(OMR_OPT_CUDA)
 #include "omrcuda.h"
 #endif /* OMR_OPT_CUDA */
+#if defined(OMRZTPF)
+#include "omrgcconsts.h"
+#endif /* defined(OMRZTPF) */
 
 #if (defined(LINUX) || defined(RS6000) || defined (OSX))
 #include <unistd.h>

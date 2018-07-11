@@ -73,6 +73,14 @@ public:
    void perform();
 
 private:
+   /** \brief
+    *     Attempts to reduce L[' '|FH|G] R,MR1  ST[' '|FH|G] R,MR2 sequences to MVC MR2, MR1
+    *     to save a register and instruction.
+    *
+    *  \return
+    *     true if the reduction was successful; false otherwise.
+    */
+   bool LoadStoreReduction(TR::InstOpCode::Mnemonic storeOpCode, uint16_t size);
    };
 
 class TR_S390PostRAPeephole : private TR_S390Peephole

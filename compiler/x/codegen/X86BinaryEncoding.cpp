@@ -2518,7 +2518,39 @@ TR::AMD64RegImm64Instruction::addMetaDataForCodeAddress(uint8_t *cursor)
                                                          cg()),
                              __FILE__, __LINE__, getNode());
          }
-      else if (((getNode()->getOpCodeValue() == TR::aconst) && getNode()->isMethodPointerConstant() && needsAOTRelocation()) || staticHCRPIC)
+      }
+
+   if (comp->fej9()->needRelocationsForStatics())
+      {
+      switch (_reloKind)
+         {
+         case TR_HEAP_BASE_FOR_BARRIER_RANGE:
+            cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor,
+                                                            (uint8_t*)TR_HeapBaseForBarrierRange0,
+                                                            TR_GlobalValue,
+                                                            cg()),
+                                __FILE__, __LINE__, getNode());
+            break;
+         case TR_HEAP_SIZE_FOR_BARRIER_RANGE:
+            cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor,
+                                                            (uint8_t*)TR_HeapSizeForBarrierRange0,
+                                                            TR_GlobalValue,
+                                                            cg()),
+                                __FILE__, __LINE__, getNode());
+            break;
+         case TR_ACTIVE_CARD_TABLE_BASE:
+            cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor,
+                                                            (uint8_t*)TR_ActiveCardTableBase,
+                                                            TR_GlobalValue,
+                                                            cg()),
+                                __FILE__, __LINE__, getNode());
+            break;
+         }
+      }
+
+   if (comp->fej9()->needClassAndMethodPointerRelocations())
+      {
+      if (((getNode()->getOpCodeValue() == TR::aconst) && getNode()->isMethodPointerConstant() && needsAOTRelocation()) || staticHCRPIC)
          {
          cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor,
                                                          NULL,
@@ -2530,28 +2562,6 @@ TR::AMD64RegImm64Instruction::addMetaDataForCodeAddress(uint8_t *cursor)
          {
          switch (_reloKind)
             {
-            case TR_HEAP_BASE_FOR_BARRIER_RANGE:
-               cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor,
-                                                                 (uint8_t*)TR_HeapBaseForBarrierRange0,
-                                                                 TR_GlobalValue,
-                                                                 cg()),
-                                      __FILE__, __LINE__, getNode());
-               break;
-
-            case TR_HEAP_SIZE_FOR_BARRIER_RANGE:
-               cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor,
-                                                               (uint8_t*)TR_HeapSizeForBarrierRange0,
-                                                               TR_GlobalValue,
-                                                               cg()),
-                                   __FILE__, __LINE__, getNode());
-               break;
-            case TR_ACTIVE_CARD_TABLE_BASE:
-               cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor,
-                                                               (uint8_t*)TR_ActiveCardTableBase,
-                                                               TR_GlobalValue,
-                                                               cg()),
-                                   __FILE__, __LINE__, getNode());
-               break;
             case TR_ClassAddress:
                TR_ASSERT(getNode(), "node assumed to be non-NULL here");
                cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor,
@@ -2582,10 +2592,8 @@ TR::AMD64RegImm64Instruction::addMetaDataForCodeAddress(uint8_t *cursor)
             case TR_StaticRamMethodConst:
             case TR_VirtualRamMethodConst:
             case TR_SpecialRamMethodConst:
-
-                cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor, (uint8_t *) getNode()->getSymbolReference(), getNode() ? (uint8_t *)(intptr_t)getNode()->getInlinedSiteIndex() : (uint8_t *)-1,  (TR_ExternalRelocationTargetKind) _reloKind, cg()),  __FILE__,__LINE__, getNode());
+               cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor, (uint8_t *) getNode()->getSymbolReference(), getNode() ? (uint8_t *)(intptr_t)getNode()->getInlinedSiteIndex() : (uint8_t *)-1,  (TR_ExternalRelocationTargetKind) _reloKind, cg()),  __FILE__,__LINE__, getNode());
                break;
-
             }
          }
       }

@@ -118,6 +118,7 @@ OMR::SymbolReference::getUseonlyAliasesBV(TR::SymbolReferenceTable * symRefTab)
 
             // helpers that don't throw have no use aliases
             case TR_instanceOf:
+            case TR_checkAssignable:
             case TR_monitorEntry:
             case TR_transactionEntry:
             case TR_reportMethodEnter:
@@ -299,6 +300,7 @@ OMR::SymbolReference::getUseDefAliasesBV(bool isDirectCall, bool includeGCSafePo
             case TR_reportMethodExit:
             case TR_acquireVMAccess:
             case TR_instanceOf:
+            case TR_checkAssignable:
             case TR_throwCurrentException:
             case TR_releaseVMAccess:
             case TR_stackOverflow:

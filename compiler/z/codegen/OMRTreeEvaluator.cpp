@@ -4970,20 +4970,26 @@ genericLoadHelper(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference *
       TR::InstOpCode::Mnemonic load = loadInstrs[form][numberOfBytesLog2][isSourceSigned][numberOfExtendBits/32-1];
       if (form == RegReg)
          {
-         generateRRInstruction(cg, load, node, targetRegister, srcRegister);
+         if (TR::InstOpCode::getInstructionFormat(load) == RR_FORMAT)
+            generateRRInstruction(cg, load, node, targetRegister, srcRegister);
+         else
+            generateRREInstruction(cg, load, node, targetRegister, srcRegister);
          }
       else //if (form == MemReg)
          {
-         generateRXInstruction(cg, load, node, targetRegister, tempMR);
+         if (TR::InstOpCode::getInstructionFormat(load) == RX_FORMAT)
+            generateRXInstruction(cg, load, node, targetRegister, tempMR);
+         else
+            generateRXYInstruction(cg, load, node, targetRegister, tempMR);
          }
       }
    else if (numberOfBits == 31 && !useRegPairs)
       {
       TR_ASSERT(isSourceSigned==false && numberOfExtendBits==64, "Not Implemented: not expecting to see addresses sign extended, only zero extended.");
       if (form == RegReg)
-         generateRRInstruction(cg, TR::InstOpCode::LLGTR, node, targetRegister, srcRegister);
+         generateRREInstruction(cg, TR::InstOpCode::LLGTR, node, targetRegister, srcRegister);
       else //form == MemReg
-         generateRXInstruction(cg, TR::InstOpCode::LLGT, node, targetRegister, tempMR);
+         generateRXYInstruction(cg, TR::InstOpCode::LLGT, node, targetRegister, tempMR);
       }
    else if (form == MemReg)
       {

@@ -219,7 +219,7 @@ omrsig_can_protect(struct OMRPortLibrary *portLibrary,  uint32_t flags)
 
 	/* split this up into OMRPORT_SIG_FLAG_SIGALLSYNC and OMRPORT_SIG_FLAG_SIGALLASYNC */
 	if (0 == (signalOptions & OMRPORT_SIG_OPTIONS_REDUCED_SIGNALS_ASYNCHRONOUS)) {
-		supportedFlags |= OMRPORT_SIG_FLAG_SIGQUIT | OMRPORT_SIG_FLAG_SIGTERM;
+		supportedFlags |= OMRPORT_SIG_FLAG_SIGBREAK | OMRPORT_SIG_FLAG_SIGTERM;
 	}
 
 	if ((flags & supportedFlags) == flags) {
@@ -604,7 +604,7 @@ consoleCtrlHandler(DWORD dwCtrlType)
 
 	switch (dwCtrlType) {
 	case CTRL_BREAK_EVENT:
-		flags = OMRPORT_SIG_FLAG_SIGQUIT;
+		flags = OMRPORT_SIG_FLAG_SIGBREAK;
 		break;
 	case CTRL_C_EVENT:
 		flags = OMRPORT_SIG_FLAG_SIGINT;
@@ -634,7 +634,7 @@ consoleCtrlHandler(DWORD dwCtrlType)
 				/* Returning TRUE stops control from being passed to the next handler routine. The OS default handler may be the next handler routine.
 				 * The default action of the OS default handler routine is to shut down the process
 				 */
-				if (flags & OMRPORT_SIG_FLAG_SIGQUIT) {
+				if (flags & OMRPORT_SIG_FLAG_SIGBREAK) {
 					/* Continue executing */
 					result = TRUE;
 				}

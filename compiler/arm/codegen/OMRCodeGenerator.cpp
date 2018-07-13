@@ -228,6 +228,9 @@ OMR::ARM::CodeGenerator::CodeGenerator()
       {
       self()->setSupportsProfiledInlining();
       }
+
+   // Disable optimizations for max min by default on arm
+   self()->comp()->setOption(TR_DisableMaxMinOptimization);
    }
 
 

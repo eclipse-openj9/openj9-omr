@@ -75,61 +75,6 @@ TR_OutlinedInstructions::TR_OutlinedInstructions(
       _appendInstruction(NULL),
       _targetReg(targetReg),
       _entryLabel(entryLabel),
-      _targetRegMovOpcode(MOVRegReg()),
-      _hasBeenRegisterAssigned(false),
-      _postDependencyMergeList(NULL),
-      _outlinedPathRegisterUsageList(NULL),
-      _mainlinePathRegisterUsageList(NULL),
-      _registerAssignerStateAtMerge(NULL),
-      _cg(cg)
-   {
-   _entryLabel->setStartOfColdInstructionStream();
-   _callNode = createOutlinedCallNode(callNode, callOp);
-   generateOutlinedInstructionsDispatch();
-   }
-
-TR_OutlinedInstructions::TR_OutlinedInstructions(
-   TR::Node          *callNode,
-   TR::ILOpCodes      callOp,
-   TR::Register      *targetReg,
-   TR::LabelSymbol    *entryLabel,
-   TR::LabelSymbol    *restartLabel,
-   bool              rematerializeVMThread,
-   TR::CodeGenerator *cg) :
-      _restartLabel(restartLabel),
-      _block(cg->getCurrentEvaluationBlock()),
-      _firstInstruction(NULL),
-      _appendInstruction(NULL),
-      _targetReg(targetReg),
-      _entryLabel(entryLabel),
-      _targetRegMovOpcode(MOVRegReg()),
-      _hasBeenRegisterAssigned(false),
-      _postDependencyMergeList(NULL),
-      _outlinedPathRegisterUsageList(NULL),
-      _mainlinePathRegisterUsageList(NULL),
-      _registerAssignerStateAtMerge(NULL),
-      _cg(cg)
-   {
-   _entryLabel->setStartOfColdInstructionStream();
-   _callNode = createOutlinedCallNode(callNode, callOp);
-   generateOutlinedInstructionsDispatch();
-   }
-
-TR_OutlinedInstructions::TR_OutlinedInstructions(
-   TR::Node          *callNode,
-   TR::ILOpCodes      callOp,
-   TR::Register      *targetReg,
-   TR::LabelSymbol    *entryLabel,
-   TR::LabelSymbol    *restartLabel,
-   TR_X86OpCodes     targetRegMovOpcode,
-   TR::CodeGenerator *cg) :
-      _restartLabel(restartLabel),
-      _block(cg->getCurrentEvaluationBlock()),
-      _firstInstruction(NULL),
-      _appendInstruction(NULL),
-      _targetReg(targetReg),
-      _entryLabel(entryLabel),
-      _targetRegMovOpcode(targetRegMovOpcode),
       _hasBeenRegisterAssigned(false),
       _postDependencyMergeList(NULL),
       _outlinedPathRegisterUsageList(NULL),
@@ -175,18 +120,36 @@ void TR_OutlinedInstructions::generateOutlinedInstructionsDispatch()
    if (_targetReg)
       {
       TR_ASSERT(resultReg, "assertion failure");
+      TR_ASSERT(resultReg->getKind() == _targetReg->getKind(), "OutlinedInstructions: targetReg must have same kind as resultReg.");
+
       TR::RegisterPair *targetRegPair = _targetReg->getRegisterPair();
       TR::RegisterPair *resultRegPair =  resultReg->getRegisterPair();
+
+      TR_ASSERT((targetRegPair == NULL && resultRegPair == NULL) ||
+                (targetRegPair != NULL && resultRegPair != NULL),
+                "OutlinedInstructions: targetReg and resultReg must be both register pairs or neither register pairs.");
       if (targetRegPair)
          {
-         TR_ASSERT(resultRegPair, "OutlinedInstructions: targetReg is a register pair and resultReg is not");
-         generateRegRegInstruction(_targetRegMovOpcode, _callNode, targetRegPair->getLowOrder(),  resultRegPair->getLowOrder(),  _cg);
-         generateRegRegInstruction(_targetRegMovOpcode, _callNode, targetRegPair->getHighOrder(), resultRegPair->getHighOrder(), _cg);
+         generateRegRegInstruction(MOVRegReg(), _callNode, targetRegPair->getLowOrder(),  resultRegPair->getLowOrder(),  _cg);
+         generateRegRegInstruction(MOVRegReg(), _callNode, targetRegPair->getHighOrder(), resultRegPair->getHighOrder(), _cg);
          }
       else
          {
-         TR_ASSERT(!resultRegPair, "OutlinedInstructions: resultReg is a register pair and targetReg is not");
-         generateRegRegInstruction(_targetRegMovOpcode, _callNode, _targetReg, resultReg, _cg);
+         TR_X86OpCodes mov = BADIA32Op;
+         switch (resultReg->getKind())
+            {
+            case TR_GPR:
+               mov = MOVRegReg();
+               break;
+            case TR_FPR:
+            case TR_VRF:
+               mov = MOVDQURegReg;
+               break;
+            default:
+               TR_ASSERT(false, "OutlinedInstructions: unsupported result register kind.");
+               break;
+            }
+         generateRegRegInstruction(mov, _callNode, _targetReg, resultReg, _cg);
          }
       }
 
@@ -285,37 +248,6 @@ void TR_OutlinedInstructions::assignRegisters(TR_RegisterKinds kindsToBeAssigned
    TR::RegisterDependencyConditions *liveRealRegDeps = _cg->machine()->createDepCondForLiveGPRs();
    _firstInstruction->setDependencyConditions(liveRealRegDeps);
 
-#if 0
-   // If the outlined section jumps back to a section that's expecting a certain register
-   // state then add register dependencies on the exit branch to set that state.
-   //
-   if (_postDependencyMergeList)
-      {
-      TR::RegisterDependencyConditions *mergeDeps = _postDependencyMergeList->clone(_cg);
-
-      TR_ASSERT(_appendInstruction->getDependencyConditions() == NULL, "unexpected reg deps on OOL append instruction");
-
-      _appendInstruction->setDependencyConditions(mergeDeps);
-
-      TR_X86RegisterDependencyGroup *depGroup = mergeDeps->getPostConditions();
-      for (int32_t i=0; i<mergeDeps->getNumPostConditions(); i++)
-         {
-         TR::RegisterDependency *dependency = depGroup->getRegisterDependency(i);
-         TR::Register *virtReg = dependency->getRegister();
-         virtReg->incTotalUseCount();
-         virtReg->incFutureUseCount();
-
-#ifdef DEBUG
-         // Ensure all register dependencies have been assigned.
-         //
-         TR_ASSERT(dependency->getRealRegister() != TR::RealRegister::NoReg, "unassigned merge dep register");
-         TR_ASSERT(virtReg->getAssignedRealRegister() == _cg->machine()->getX86RealRegister(dependency->getRealRegister()), "unexpected(?) register assignment");
-#endif
-         }
-      }
-#endif
-
-
    // TODO:AMD64: Fix excessive register assignment exchanges in outlined instruction dispatch.
 
    // Ensure correct VFP state at the start of the outlined instruction sequence.
@@ -334,8 +266,6 @@ void TR_OutlinedInstructions::assignRegisters(TR_RegisterKinds kindsToBeAssigned
 
    // Returning to mainline, reset this counter
    _cg->setInternalControlFlowSafeNestingDepth(0);
-
-
 
    setHasBeenRegisterAssigned(true);
    }

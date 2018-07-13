@@ -1656,7 +1656,7 @@ removeAsyncHandlers(OMRPortLibrary *portLibrary)
 
 	previousLink = &asyncHandlerList;
 	cursor = asyncHandlerList;
-	while (cursor) {
+	while (NULL != cursor) {
 		if (cursor->portLib == portLibrary) {
 			*previousLink = cursor->next;
 			portLibrary->mem_free_memory(portLibrary, cursor);
@@ -1665,6 +1665,10 @@ removeAsyncHandlers(OMRPortLibrary *portLibrary)
 			previousLink = &cursor->next;
  			cursor = cursor->next;
  		}
+	}
+
+	if (NULL == asyncHandlerList) {
+		SetConsoleCtrlHandler(consoleCtrlHandler, FALSE);
 	}
 
 	omrthread_monitor_exit(asyncMonitor);

@@ -50,7 +50,7 @@ class MethodBuilder : public TR::IlBuilder
    TR_ALLOC(TR_Memory::IlGenerator)
 
    MethodBuilder(TR::TypeDictionary *types, TR::VirtualMachineState *vmState = NULL);
-   MethodBuilder(const MethodBuilder &src);
+   MethodBuilder(TR::MethodBuilder *callerMB, TR::VirtualMachineState *vmState = NULL);
    virtual ~MethodBuilder();
 
    virtual void setupForBuildIL();
@@ -194,6 +194,8 @@ class MethodBuilder : public TR::IlBuilder
    virtual uint32_t countBlocks();
    virtual bool connectTrees();
    TR_Memory *trMemory() { return memoryManager._trMemory; }
+
+   const char * adjustNameForInlinedSite(const char *name);
 
    private:
    // We have MemoryManager as the first member of TypeDictionary, so that

@@ -232,6 +232,8 @@ public:
 
    // control
    void AppendBuilder(TR::IlBuilder *builder);
+   TR::IlValue *Call(TR::MethodBuilder *calleeMB, int32_t numArgs, ...);
+   TR::IlValue *Call(TR::MethodBuilder *calleeMB, int32_t numArgs, TR::IlValue **argValues);
    TR::IlValue *Call(const char *name, int32_t numArgs, ...);
    TR::IlValue *Call(const char *name, int32_t numArgs, TR::IlValue **argValues);
    TR::IlValue *ComputedCall(const char *name, int32_t numArgs, ...);

@@ -303,16 +303,7 @@ omrsig_set_async_signal_handler(struct OMRPortLibrary *portLibrary, omrsig_handl
 
 	Trc_PRT_signal_omrsig_set_async_signal_handler_entered(handler, handler_arg, flags);
 
-	if (OMR_ARE_ALL_BITS_SET(signalOptions, OMRPORT_SIG_OPTIONS_REDUCED_SIGNALS_ASYNCHRONOUS)) {
-		/* Do not install any handlers if -Xrs is set. */
-		Trc_PRT_signal_omrsig_set_async_signal_handler_will_not_set_handler_due_to_Xrs(handler, handler_arg, flags);
-		return OMRPORT_SIG_ERROR;
-	}
-
-	omrthread_monitor_enter(registerHandlerMonitor);
 	rc = registerMasterHandlers(portLibrary, flags, OMRPORT_SIG_FLAG_SIGALLASYNC, NULL);
-	omrthread_monitor_exit(registerHandlerMonitor);
-
 	if (0 != rc) {
 		Trc_PRT_signal_omrsig_set_async_signal_handler_exiting_did_nothing_possible_error(handler, handler_arg, flags);
 		return rc;
@@ -387,16 +378,7 @@ omrsig_set_single_async_signal_handler(struct OMRPortLibrary *portLibrary, omrsi
 		}
 	}
 
-	if (OMR_ARE_ALL_BITS_SET(signalOptions, OMRPORT_SIG_OPTIONS_REDUCED_SIGNALS_ASYNCHRONOUS)) {
-		/* Do not install any handlers if -Xrs is set. */
-		Trc_PRT_signal_omrsig_set_async_signal_handler_will_not_set_handler_due_to_Xrs(handler, handler_arg, portlibSignalFlag);
-		return OMRPORT_SIG_ERROR;
-	}
-
-	omrthread_monitor_enter(registerHandlerMonitor);
 	rc = registerMasterHandlers(portLibrary, portlibSignalFlag, OMRPORT_SIG_FLAG_SIGALLASYNC, oldOSHandler);
-	omrthread_monitor_exit(registerHandlerMonitor);
-
 	if (0 != rc) {
 		Trc_PRT_signal_omrsig_set_single_async_signal_handler_exiting_did_nothing_possible_error(rc, handler, handler_arg, portlibSignalFlag);
 		return rc;
@@ -1775,11 +1757,9 @@ asynchSignalReporter(void *userData)
 #endif /* defined(OMR_PORT_ASYNC_HANDLER) */
 
 /**
- * Register the master handler for the signals in flags that don't have one.
- * Only masterASynchSignalHandler/OMRPORT_SIG_FLAG_SIGALLASYNC is supported
+ * Register the master handler for the signals indicated in the flags. Only
+ * masterASynchSignalHandler/OMRPORT_SIG_FLAG_SIGALLASYNC is supported
  * on win64amd. OMRPORT_SIG_FLAG_SIGALLSYNC is not supported on win64amd.
- *
- * Calls to this function must be synchronized using registerHandlerMonitor.
  *
  * @param[in] flags the flags that we want signals for
  * @param[in] allowedSubsetOfFlags must be OMRPORT_SIG_FLAG_SIGALLASYNC for
@@ -1789,22 +1769,29 @@ asynchSignalReporter(void *userData)
  *             oldOSHandler is non-null
  *
  * @return	0 upon success; OMRPORT_SIG_ERROR otherwise.
- *			Possible failure scenarios include attempting to register a handler for
- *			a signal that is not included in the allowedSubsetOfFlags
+ *			Possible failure scenarios include:
+ *			1) Master handlers are not registered if -Xrs is set.
+ *			2) Attempting to register a handler for a signal that is not included
+ *			   in the allowedSubsetOfFlags.
+ *			3) Failure to register the OS signal handler.
  */
 static int32_t
 registerMasterHandlers(OMRPortLibrary *portLibrary, uint32_t flags, uint32_t allowedSubsetOfFlags, void **oldOSHandler)
 {
-	uint32_t flagsSignalsOnly = 0;
+	int32_t rc = 0;
+	uint32_t flagsSignalsOnly = (flags & allowedSubsetOfFlags);
 	win_signal handler = NULL;
+
+	if (OMR_ARE_ALL_BITS_SET(signalOptions, OMRPORT_SIG_OPTIONS_REDUCED_SIGNALS_ASYNCHRONOUS)) {
+		/* Do not install any handlers if -Xrs is set. */
+		return OMRPORT_SIG_ERROR;
+	}
 
 	if (OMRPORT_SIG_FLAG_SIGALLASYNC == allowedSubsetOfFlags) {
 		handler = masterASynchSignalHandler;
 	} else {
 		return OMRPORT_SIG_ERROR;
 	}
-
-	flagsSignalsOnly = flags & allowedSubsetOfFlags;
 
 	if (0 != flagsSignalsOnly) {
 		/* registering some handlers */
@@ -1818,19 +1805,22 @@ registerMasterHandlers(OMRPortLibrary *portLibrary, uint32_t flags, uint32_t all
 		 * represents all synchronous signal flags (OMRPORT_SIG_FLAG_SIGALLSYNC)
 		 * or all asynchronous signal flags (OMRPORT_SIG_FLAG_SIGALLASYNC).
 		 */
+		omrthread_monitor_enter(registerHandlerMonitor);
 		for (portSignalType = OMRPORT_SIG_SMALLEST_SIGNAL_FLAG; portSignalType < allowedSubsetOfFlags; portSignalType = portSignalType << 1) {
 			/* Iterate through all the  signals and register the master handler for the signals
 			 * specified in flagsSignalsOnly.
 			 */
 			if (OMR_ARE_ALL_BITS_SET(flagsSignalsOnly, portSignalType)) {
 				if (0 != registerSignalHandlerWithOS(portLibrary, portSignalType, handler, oldOSHandler)) {
-					return OMRPORT_SIG_ERROR;
+					rc = OMRPORT_SIG_ERROR;
+					break;
 				}
 			}
 		}
+		omrthread_monitor_exit(registerHandlerMonitor);
 	}
 
-	return 0;
+	return rc;
 }
 
 /**

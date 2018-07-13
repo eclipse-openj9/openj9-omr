@@ -1355,15 +1355,15 @@ destroySignalTools(OMRPortLibrary *portLibrary)
 static int32_t
 initializeSignalTools(OMRPortLibrary *portLibrary)
 {
-	if (omrthread_monitor_init_with_name(&asyncMonitor, 0, "portLibrary_omrsig_async_monitor")) {
+	if (0 != omrthread_monitor_init_with_name(&asyncMonitor, 0, "portLibrary_omrsig_async_monitor")) {
 		goto error;
 	}
 
-	if (omrthread_monitor_init_with_name(&masterExceptionMonitor, 0, "portLibrary_omrsig_master_exception_monitor")) {
+	if (0 != omrthread_monitor_init_with_name(&masterExceptionMonitor, 0, "portLibrary_omrsig_master_exception_monitor")) {
 		goto cleanup1;
 	}
 
-	if (omrthread_monitor_init_with_name(&registerHandlerMonitor, 0, "portLibrary_omrsig_register_handler_monitor")) {
+	if (0 != omrthread_monitor_init_with_name(&registerHandlerMonitor, 0, "portLibrary_omrsig_register_handler_monitor")) {
 		goto cleanup2;
 	}
 
@@ -1371,8 +1371,8 @@ initializeSignalTools(OMRPortLibrary *portLibrary)
 		goto cleanup3;
 	}
 
-	if (omrthread_monitor_init_with_name(&asyncReporterShutdownMonitor, 0, "portLibrary_omrsig_asynch_reporter_shutdown_monitor")) {
-			goto cleanup4;
+	if (0 != omrthread_monitor_init_with_name(&asyncReporterShutdownMonitor, 0, "portLibrary_omrsig_asynch_reporter_shutdown_monitor")) {
+		goto cleanup4;
 	}
 
 #if defined(OMR_PORT_ASYNC_HANDLER)

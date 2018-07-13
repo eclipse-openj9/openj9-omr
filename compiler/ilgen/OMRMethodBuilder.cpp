@@ -117,7 +117,10 @@ OMR::MethodBuilder::MethodBuilder(TR::TypeDictionary *types, TR::VirtualMachineS
    _allBytecodeBuilders(0),
    _vmState(vmState),
    _bytecodeWorklist(NULL),
-   _bytecodeHasBeenInWorklist(NULL)
+   _bytecodeHasBeenInWorklist(NULL),
+   _inlineSiteIndex(-1),
+   _returnBuilder(NULL),
+   _returnSymbol(NULL)
    {
    _definingLine[0] = '\0';
    }
@@ -139,6 +142,36 @@ TR::MethodBuilder *
 OMR::MethodBuilder::asMethodBuilder()
    {
    return static_cast<TR::MethodBuilder *>(this);
+   }
+
+int32_t
+OMR::MethodBuilder::getNextValueID()
+   {
+   TR::MethodBuilder *caller = callerMethodBuilder();
+   if (caller)
+      // let top most method assign value IDs
+      return caller->getNextValueID();
+
+   return _nextValueID++;
+   }
+
+int32_t
+OMR::MethodBuilder::getNextInlineSiteIndex()
+   {
+   TR::MethodBuilder *caller = callerMethodBuilder();
+   if (caller != NULL)
+      // let top most method assign inlined site indices
+      return caller->getNextInlineSiteIndex();
+
+   return ++_nextInlineSiteIndex;
+   }
+
+TR::MethodBuilder *
+OMR::MethodBuilder::callerMethodBuilder()
+   {
+   if (_returnBuilder == NULL)
+      return NULL;
+   return _returnBuilder->_methodBuilder;
    }
 
 void

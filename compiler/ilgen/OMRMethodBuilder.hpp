@@ -57,7 +57,7 @@ class MethodBuilder : public TR::IlBuilder
 
    virtual bool injectIL();
 
-   int32_t getNextValueID()                                  { return _nextValueID++; }
+   int32_t getNextValueID();
 
    bool usesBytecodeBuilders()                               { return _useBytecodeBuilders; }
    void setUseBytecodeBuilders()                             { _useBytecodeBuilders = true; }
@@ -159,7 +159,37 @@ class MethodBuilder : public TR::IlBuilder
     * BytecodeBuilder object.
     */
    int32_t GetNextBytecodeFromWorklist();
-   
+
+   void setInlineSiteIndex(int32_t siteIndex)
+      {
+      _inlineSiteIndex = siteIndex;
+      }
+   int32_t inlineSiteIndex()
+      {
+      return _inlineSiteIndex;
+      }
+   int32_t getNextInlineSiteIndex();
+
+   void setReturnBuilder(TR::IlBuilder *returnBuilder)
+      {
+      _returnBuilder = returnBuilder;
+      }
+   TR::IlBuilder *returnBuilder()
+      {
+      return _returnBuilder;
+      }
+
+   void setReturnSymbol(const char *symbolName)
+      {
+      _returnSymbolName = symbolName;
+      }
+   const char *returnSymbol()
+      {
+      return _returnSymbolName;
+      }
+
+   TR::MethodBuilder *callerMethodBuilder();
+
    protected:
    virtual uint32_t countBlocks();
    virtual bool connectTrees();
@@ -237,6 +267,11 @@ class MethodBuilder : public TR::IlBuilder
 
    TR_BitVector              * _bytecodeWorklist;
    TR_BitVector              * _bytecodeHasBeenInWorklist;
+
+   int32_t                     _inlineSiteIndex;
+   int32_t                     _nextInlineSiteIndex;
+   TR::IlBuilder             * _returnBuilder;
+   const char                * _returnSymbolName;
    };
 
 } // namespace OMR

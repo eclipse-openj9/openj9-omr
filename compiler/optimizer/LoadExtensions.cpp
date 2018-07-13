@@ -62,7 +62,7 @@ TR_LoadExtensions::TR_LoadExtensions(TR::OptimizationManager *manager)
 
 int32_t TR_LoadExtensions::perform()
    {
-   if (comp()->getOptLevel() >= warm && !optimizer()->cantBuildGlobalsUseDefInfo())
+   if (comp()->getOptLevel() >= hot && !optimizer()->cantBuildGlobalsUseDefInfo())
       {
       if (!comp()->getFlowGraph()->getStructure())
          {

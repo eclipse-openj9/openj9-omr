@@ -1311,13 +1311,13 @@ bool OMR::Z::TreeEvaluator::isSingleRefUnevalAndCompareOrBu2iOverCompare(TR::Nod
 
 
 /**
- * This helper is for generating a VGNOP for HCR guard when the guard it was merged with cannot be NOPed.
- * 1. HCR guard is merged with ProfiledGuard
+ * This helper is for generating a VGNOP for HCR or OSR guard when the guard it was merged with cannot be NOPed.
+ * 1. HCR or OSR guard is merged with ProfiledGuard
  * 2. Any NOPable guards when node is switched from icmpne to icmpeq (can potentially happen during block reordering)
  *
- * When the condition is switched on node from eq to ne, HCR guard has to be patch to go to the fall through path
+ * When the condition is switched on node from eq to ne, HCR or OSR guard has to be patch to go to the fall through path
  */
-static inline void generateMergedHCRGuardCodeIfNeeded(TR::Node *node, TR::CodeGenerator *cg)
+static inline void generateMergedGuardCodeIfNeeded(TR::Node *node, TR::CodeGenerator *cg)
    {
 #ifdef J9_PROJECT_SPECIFIC
    TR::Compilation *comp = cg->comp();
@@ -1325,12 +1325,12 @@ static inline void generateMergedHCRGuardCodeIfNeeded(TR::Node *node, TR::CodeGe
       {
       TR_VirtualGuard *virtualGuard = comp->findVirtualGuardInfo(node);
 
-      if (virtualGuard && virtualGuard->mergedWithHCRGuard())
+      if (virtualGuard && (virtualGuard->mergedWithOSRGuard() || virtualGuard->mergedWithHCRGuard()))
          {
-         TR::RegisterDependencyConditions  *mergedHCRDeps = NULL;
+         TR::RegisterDependencyConditions  *mergedGuardDeps = NULL;
          TR::Instruction *instr = cg->getAppendInstruction();
          if (instr && instr->getNode() == node && instr->getDependencyConditions())
-            mergedHCRDeps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(instr->getDependencyConditions(), 1, 0, cg);
+            mergedGuardDeps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(instr->getDependencyConditions(), 1, 0, cg);
 
          TR_VirtualGuardSite *site = virtualGuard->addNOPSite();
          if (node->getOpCodeValue() == TR::ificmpeq ||
@@ -1346,18 +1346,18 @@ static inline void generateMergedHCRGuardCodeIfNeeded(TR::Node *node, TR::CodeGe
             TR::Instruction *vgnopInstr = generateVirtualGuardNOPInstruction(cg, node, site, deps, fallThroughLabel, instr ? instr->getPrev() : NULL);
             vgnopInstr->setNext(instr);
             cg->setAppendInstruction(instr);
-            generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, fallThroughLabel, mergedHCRDeps);
+            generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, fallThroughLabel, mergedGuardDeps);
             }
          else
             {
             TR::LabelSymbol *label = node->getBranchDestination()->getNode()->getLabel();
 
-            TR::Instruction *vgnopInstr = generateVirtualGuardNOPInstruction(cg, node, site, mergedHCRDeps, label, instr ? instr->getPrev() : NULL);
+            TR::Instruction *vgnopInstr = generateVirtualGuardNOPInstruction(cg, node, site, mergedGuardDeps, label, instr ? instr->getPrev() : NULL);
             vgnopInstr->setNext(instr);
             cg->setAppendInstruction(instr);
             }
-         traceMsg(comp, "generateMergedHCRGuardCodeIfNeeded for %s %s\n",
-                  comp->getDebug()?comp->getDebug()->getVirtualGuardKindName(virtualGuard->getKind()):"???Guard" , virtualGuard->mergedWithHCRGuard()?"merged with HCRGuard":"");
+         traceMsg(comp, "generateMergedGuardCodeIfNeeded for %s %s\n",
+                  comp->getDebug()?comp->getDebug()->getVirtualGuardKindName(virtualGuard->getKind()):"???Guard" , virtualGuard->mergedWithHCRGuard()?"merged with HCRGuard": virtualGuard->mergedWithOSRGuard() ? "merged with OSRGuard" : "");
 
          }
       }
@@ -1426,14 +1426,14 @@ OMR::Z::TreeEvaluator::ificmpeqEvaluator(TR::Node * node, TR::CodeGenerator * cg
    reg = TR::TreeEvaluator::inlineIfArraycmpEvaluator(node, cg, inlined);
    if (inlined)
       {
-      generateMergedHCRGuardCodeIfNeeded(node, cg);
+      generateMergedGuardCodeIfNeeded(node, cg);
       return reg;
       }
 
    reg = TR::TreeEvaluator::inlineIfTestDataClassHelper(node, cg, inlined);
    if(inlined)
       {
-      generateMergedHCRGuardCodeIfNeeded(node, cg);
+      generateMergedGuardCodeIfNeeded(node, cg);
       return reg;
       }
 
@@ -1461,7 +1461,7 @@ OMR::Z::TreeEvaluator::ificmpeqEvaluator(TR::Node * node, TR::CodeGenerator * cg
       {
       reg = generateS390CompareBranch(node, cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BNE, TR::InstOpCode::COND_BNE);
       }
-   generateMergedHCRGuardCodeIfNeeded(node, cg);
+   generateMergedGuardCodeIfNeeded(node, cg);
    return reg;
    }
 
@@ -1594,7 +1594,7 @@ OMR::Z::TreeEvaluator::iflcmpeqEvaluator(TR::Node * node, TR::CodeGenerator * cg
       {
       generateS390lcmpEvaluator(node, cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BNE, TR::InstOpCode::COND_NOP, TR::InstOpCode::COND_BE, CMP4CONTROLFLOW);
       }
-   generateMergedHCRGuardCodeIfNeeded(node, cg);
+   generateMergedGuardCodeIfNeeded(node, cg);
    return NULL;
    }
 
@@ -1620,7 +1620,7 @@ OMR::Z::TreeEvaluator::iflcmpneEvaluator(TR::Node * node, TR::CodeGenerator * cg
       generateS390lcmpEvaluator(node, cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_NOP, TR::InstOpCode::COND_BNE, TR::InstOpCode::COND_BNE, CMP4CONTROLFLOW);
       }
 
-   generateMergedHCRGuardCodeIfNeeded(node, cg);
+   generateMergedGuardCodeIfNeeded(node, cg);
 
    return NULL;
    }

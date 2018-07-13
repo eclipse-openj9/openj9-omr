@@ -1406,29 +1406,14 @@ TR::Register *OMR::X86::TreeEvaluator::integerIfCmpeqEvaluator(TR::Node *node, T
       }
    }
 
-static inline bool needsMergedHCRGuardCode(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   if (node->isTheVirtualGuardForAGuardedInlinedCall() && cg->getSupportsVirtualGuardNOPing())
-      {
-      TR_VirtualGuard *virtualGuard = cg->comp()->findVirtualGuardInfo(node);
-
-      if (virtualGuard && virtualGuard->mergedWithHCRGuard())
-         {
-         return true;
-         }
-      }
-
-   return false;
-   }
-
-static inline void generateMergedHCRGuardCodeIfNeeded(TR::Node *node, TR::CodeGenerator *cg, TR::Instruction *runtimeGuard)
+static inline void generateMergedGuardCodeIfNeeded(TR::Node *node, TR::CodeGenerator *cg, TR::Instruction *runtimeGuard)
    {
 #ifdef J9_PROJECT_SPECIFIC
    if (node->isTheVirtualGuardForAGuardedInlinedCall() && cg->getSupportsVirtualGuardNOPing())
       {
       TR_VirtualGuard *virtualGuard = cg->comp()->findVirtualGuardInfo(node);
 
-      if (virtualGuard && virtualGuard->mergedWithHCRGuard())
+      if (virtualGuard && (virtualGuard->mergedWithOSRGuard() || virtualGuard->mergedWithHCRGuard()))
          {
          TR_VirtualGuardSite *site = virtualGuard->addNOPSite();
          TR::LabelSymbol *label = node->getBranchDestination()->getNode()->getLabel();
@@ -1497,8 +1482,6 @@ TR::Register *OMR::X86::TreeEvaluator::integerIfCmpneEvaluator(TR::Node *node, T
          cg->evaluate(firstChild);
          }
 
-      bool insertMergedHCRGuard = needsMergedHCRGuardCode(node, cg);
-
      if ( node->getFirstChild()->getOpCodeValue() == TR::ishr &&
             node->getFirstChild()->getRegister() == NULL &&
             node->getFirstChild()->getReferenceCount() == 1 &&
@@ -1522,8 +1505,7 @@ TR::Register *OMR::X86::TreeEvaluator::integerIfCmpneEvaluator(TR::Node *node, T
              }
 
          TR::X86LabelInstruction *instr = generateConditionalJumpInstruction(JNE4, node, cg, true);
-         if (insertMergedHCRGuard)
-            generateMergedHCRGuardCodeIfNeeded(node, cg, instr);
+         generateMergedGuardCodeIfNeeded(node, cg, instr);
 
          cg->recursivelyDecReferenceCount(node->getFirstChild());
          cg->decReferenceCount(node->getSecondChild());
@@ -1551,8 +1533,7 @@ TR::Register *OMR::X86::TreeEvaluator::integerIfCmpneEvaluator(TR::Node *node, T
       //         }
 
       TR::X86LabelInstruction *instr = generateConditionalJumpInstruction(JNE4, node, cg, true);
-      if (insertMergedHCRGuard)
-         generateMergedHCRGuardCodeIfNeeded(node, cg, instr);
+      generateMergedGuardCodeIfNeeded(node, cg, instr);
 
       return NULL;
       }

@@ -38,7 +38,6 @@ set(OMR_FVTEST ON CACHE BOOL "Enable the FV Testing.")
 set(OMR_GC ON CACHE BOOL "Enable the GC")
 set(OMR_JIT OFF CACHE BOOL "Enable building the JIT compiler")
 set(OMR_JITBUILDER OFF CACHE BOOL "Enable building JitBuilder")
-set(OMR_JITBUILDER_TEST OFF CACHE BOOL "Enable building JitBuilder Tests")
 set(OMR_OMRSIG ON CACHE BOOL "Enable the OMR signal compatibility library")
 set(OMR_PORT ON CACHE BOOL "Enable portability library")
 set(OMR_TEST_COMPILER OFF CACHE BOOL "Enable building the test compiler")
@@ -55,6 +54,9 @@ endif()
 ## Do NOT force it since it is explicitly disabled on Windows for now.
 if(OMR_JITBUILDER)
 	set(OMR_JITBUILDER_TEST ON CACHE BOOL "")
+else()
+    # if JitBuilder isn't enabled, the tests can't be built
+    set(OMR_JITBUILDER_TEST OFF CACHE BOOL "" FORCE)
 endif()
 
 ###
@@ -169,4 +171,4 @@ set(OMR_ENV_GCC OFF CACHE BOOL "TODO: Document")
 
 set(OMR_OPT_CUDA OFF CACHE BOOL "TODO: Document")
 
-set(OMR_SANITIZE OFF CACHE STRING "Sanitizer selection. Only has an effect on GNU or Clang") 
+set(OMR_SANITIZE OFF CACHE STRING "Sanitizer selection. Only has an effect on GNU or Clang")

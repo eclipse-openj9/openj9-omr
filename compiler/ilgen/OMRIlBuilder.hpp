@@ -38,6 +38,7 @@ namespace TR { class IlBuilder; }
 namespace TR { class ResolvedMethodSymbol; } 
 namespace TR { class SymbolReference; }
 namespace TR { class SymbolReferenceTable; }
+namespace TR { class VirtualMachineState; }
 
 namespace TR { class IlType; }
 namespace TR { class TypeDictionary; }
@@ -112,6 +113,10 @@ public:
    virtual TR::MethodBuilder *asMethodBuilder() { return NULL; }
 
    virtual bool isBytecodeBuilder()             { return false; }
+
+   virtual TR::VirtualMachineState *initialVMState()         { return NULL; }
+   virtual TR::VirtualMachineState *vmState()                { return NULL; }
+   virtual void setVMState(TR::VirtualMachineState *vmState) { }
 
    //char *getName();
 

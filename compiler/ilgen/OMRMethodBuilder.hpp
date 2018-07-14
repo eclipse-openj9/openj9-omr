@@ -66,8 +66,8 @@ class MethodBuilder : public TR::IlBuilder
    void addToTreeConnectingWorklist(TR::BytecodeBuilder *builder);
    void addToBlockCountingWorklist(TR::BytecodeBuilder *builder);
 
-   TR::VirtualMachineState *vmState()                        { return _vmState; }
-   void setVMState(TR::VirtualMachineState *vmState)         { _vmState = vmState; }
+   virtual TR::VirtualMachineState *vmState()                { return _vmState; }
+   virtual void setVMState(TR::VirtualMachineState *vmState) { _vmState = vmState; }
 
    virtual bool isMethodBuilder()                            { return true; }
    virtual TR::MethodBuilder *asMethodBuilder();

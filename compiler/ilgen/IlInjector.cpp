@@ -407,7 +407,7 @@ OMR::IlInjector::generateFallThrough()
  * OMR::Node::createWithoutSymRef() instead once it is available publicly.
  * */
 TR::Node *
-OMR::IlInjector::createWithoutSymRef(TR::ILOpCodes opCode, uint16_t numArgs, ...)
+OMR::IlInjector::createWithoutSymRef(TR::ILOpCodes opCode, uint32_t numArgs, ...)
    {
    TR_ASSERT(numArgs > 0, "Must be called with at least one child, but numChildArgs = %d", numArgs);
    va_list args;

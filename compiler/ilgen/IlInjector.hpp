@@ -128,7 +128,7 @@ public:
    void                           gotoBlock(TR::Block *block);
    void                           branchToBlock(int32_t num) { gotoBlock(_blocks[num]); }
    void                           generateFallThrough();
-   TR::Node                     * createWithoutSymRef(TR::ILOpCodes opCode, uint16_t numArgs, ...);
+   TR::Node                     * createWithoutSymRef(TR::ILOpCodes opCode, uint32_t numArgs, ...);
 
 private:
    void                           validateTargetBlock();

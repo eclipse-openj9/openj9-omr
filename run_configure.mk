@@ -47,10 +47,6 @@ help:
 # Remove all built-in rules
 .SUFFIXES:
 
-
-# Set a default value for CONFIG_SHELL
-CONFIG_SHELL ?= sh
-
 ###
 ### SPEC Specific Configure Arguments
 ###
@@ -132,7 +128,7 @@ clean: clean-environment-variables
 ###
 
 define CONFIGURE_RECIPE
-$(CONFIG_SHELL) configure --disable-auto-build-flag 'OMRGLUE=$(OMRGLUE)' 'SPEC=$(SPEC)' $(CONFIGURE_ARGS)
+sh configure --disable-auto-build-flag 'OMRGLUE=$(OMRGLUE)' 'SPEC=$(SPEC)' $(CONFIGURE_ARGS)
 # Force the timestamps of unchanged files to be updated
 touch $(CONFIGURE_OUTPUT_FILES)
 endef

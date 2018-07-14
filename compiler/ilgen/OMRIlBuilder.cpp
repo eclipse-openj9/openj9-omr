@@ -731,13 +731,13 @@ OMR::IlBuilder::CreateLocalStruct(TR::IlType *structType)
 
 void
 OMR::IlBuilder::StoreIndirect(const char *type, const char *field, TR::IlValue *object, TR::IlValue *value)
-  {
-  TR::SymbolReference *symRef = (TR::SymbolReference*)_types->FieldReference(type, field);
-  TR::DataType fieldType = symRef->getSymbol()->getDataType();
-  TraceIL("IlBuilder[ %p ]::StoreIndirect %s.%s (%d) into (%d)\n", this, type, field, value->getID(), object->getID());
-  TR::ILOpCodes storeOp = comp()->il.opCodeForIndirectStore(fieldType);
-  genTreeTop(TR::Node::createWithSymRef(storeOp, 2, loadValue(object), loadValue(value), 0, symRef));
-  }
+   {
+   TR::SymbolReference *symRef = (TR::SymbolReference*)_types->FieldReference(type, field);
+   TR::DataType fieldType = symRef->getSymbol()->getDataType();
+   TraceIL("IlBuilder[ %p ]::StoreIndirect %s.%s (%d) into (%d)\n", this, type, field, value->getID(), object->getID());
+   TR::ILOpCodes storeOp = comp()->il.opCodeForIndirectStore(fieldType);
+   genTreeTop(TR::Node::createWithSymRef(storeOp, 2, loadValue(object), loadValue(value), 0, symRef));
+   }
 
 TR::IlValue *
 OMR::IlBuilder::Load(const char *name)
@@ -745,6 +745,7 @@ OMR::IlBuilder::Load(const char *name)
    TR::SymbolReference *symRef = lookupSymbol(name);
    TR::Node *valueNode = TR::Node::createLoad(symRef);
    TR::IlValue *returnValue = newValue(symRef->getSymbol()->getDataType(), valueNode);
+   TraceIL("IlBuilder[ %p ]::Load %s into %d from symref %d\n", this, name, returnValue->getID(), symRef->getReferenceNumber());
    return returnValue;
    }
 

@@ -611,7 +611,7 @@ OMR::IlBuilder::Store(const char *varName, TR::IlValue *value)
       _methodBuilder->defineValue(varName, _types->PrimitiveType(value->getDataType()));
    TR::SymbolReference *symRef = lookupSymbol(varName);
 
-   TraceIL("IlBuilder[ %p ]::Store %s %d gets %d\n", this, varName, symRef->getCPIndex(), value->getID());
+   TraceIL("IlBuilder[ %p ]::Store %s %d (%d) gets %d\n", this, varName, symRef->getCPIndex(), symRef->getReferenceNumber(), value->getID());
    storeNode(symRef, loadValue(value));
    }
 

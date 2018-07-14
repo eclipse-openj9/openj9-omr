@@ -49,7 +49,7 @@ printInt32(int32_t value)
    fprintf(stderr, "%d", value);
    }
 
-RecursiveFibonnaciMethod::RecursiveFibonnaciMethod(TR::TypeDictionary *types)
+RecursiveFibonacciMethod::RecursiveFibonacciMethod(TR::TypeDictionary *types)
    : MethodBuilder(types)
    {
    DefineLine(LINETOSTR(__LINE__));
@@ -80,7 +80,7 @@ static const char *middle=") = ";
 static const char *suffix="\n";
 
 bool
-RecursiveFibonnaciMethod::buildIL()
+RecursiveFibonacciMethod::buildIL()
    {
    TR::IlBuilder *baseCase=NULL, *recursiveCase=NULL;
    IfThenElse(&baseCase, &recursiveCase,
@@ -138,7 +138,7 @@ main(int argc, char *argv[])
    TR::TypeDictionary types;
 
    printf("Step 3: compile method builder\n");
-   RecursiveFibonnaciMethod method(&types);
+   RecursiveFibonacciMethod method(&types);
    uint8_t *entry=0;
    int32_t rc = compileMethodBuilder(&method, &entry);
    if (rc != 0)

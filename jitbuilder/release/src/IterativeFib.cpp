@@ -31,7 +31,7 @@
 #include "ilgen/MethodBuilder.hpp"
 #include "IterativeFib.hpp"
 
-IterativeFibonnaciMethod::IterativeFibonnaciMethod(TR::TypeDictionary *types)
+IterativeFibonacciMethod::IterativeFibonacciMethod(TR::TypeDictionary *types)
    : MethodBuilder(types)
    {
    DefineLine(LINETOSTR(__LINE__));
@@ -43,7 +43,7 @@ IterativeFibonnaciMethod::IterativeFibonnaciMethod(TR::TypeDictionary *types)
    }
 
 bool
-IterativeFibonnaciMethod::buildIL()
+IterativeFibonacciMethod::buildIL()
    {
    TR::IlBuilder *returnN = NULL;
    IfThen(&returnN,
@@ -97,7 +97,7 @@ main(int argc, char *argv[])
    TR::TypeDictionary types;
 
    printf("Step 3: compile method builder\n");
-   IterativeFibonnaciMethod iterFibMethodBuilder(&types);
+   IterativeFibonacciMethod iterFibMethodBuilder(&types);
    uint8_t *entry=0;
    int32_t rc = compileMethodBuilder(&iterFibMethodBuilder, &entry);
    if (rc != 0)

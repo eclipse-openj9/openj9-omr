@@ -30,10 +30,10 @@ namespace TR { class TypeDictionary; }
 
 typedef int32_t (RecursiveFibFunctionType)(int32_t);
 
-class RecursiveFibonnaciMethod : public TR::MethodBuilder
+class RecursiveFibonacciMethod : public TR::MethodBuilder
    {
    public:
-   RecursiveFibonnaciMethod(TR::TypeDictionary *types);
+   RecursiveFibonacciMethod(TR::TypeDictionary *types);
    virtual bool buildIL();
    };
 

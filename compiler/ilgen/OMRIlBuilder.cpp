@@ -19,6 +19,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
+#include "env/TRMemory.hpp"    // must precede IlBuilder.hpp to get TR_ALLOC
 #include "ilgen/IlBuilder.hpp"
 
 #include <stdint.h>

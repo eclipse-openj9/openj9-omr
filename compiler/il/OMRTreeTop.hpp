@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -71,6 +71,7 @@ public:
    static void removeDeadTrees(TR::Compilation * comp, TR::TreeTop* first, TR::TreeTop* last);
 
    void * operator new(size_t s, bool trace, TR_Memory *m);
+   void operator delete(void *ptr, bool trace, TR_Memory *m);
 
    explicit TreeTop(
             TR::Node  *node = NULL,

@@ -54,6 +54,13 @@ template <class T> class ListElement
          }
       return rc;
       }
+
+   void operator delete(void *ptr, List<T>& freeList)
+      {
+	  // the freeList was modified during the new operator invocation
+	  operator delete(ptr, freeList.getRegion());
+      }
+
    ListElement(T *p, ListElement<T> *q = NULL) : _pNext(q), _pDatum(p) {}
 
    T *getData()     {return _pDatum;}

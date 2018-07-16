@@ -570,6 +570,18 @@ typedef struct J9MemoryInfo {
 	uint64_t cached;			/* The physical RAM used as cache memory (in bytes). */
 	uint64_t buffered;			/* The physical RAM used for file buffers (in bytes). */
 	int64_t timestamp;			/* Sampling timestamp (in microseconds). */
+	/* Available physical memory on the host (in bytes) when process is in a cgroup.
+	 * When not in a cgroup, this will be identical to 'availPhysical' field above.
+	 */
+	uint64_t hostAvailPhysical;
+	/* The physical RAM used as cache memory (in bytes) when process is in a cgroup.
+	 * When not in a cgroup, this will be identical to 'cached' field above.
+	 */
+	uint64_t hostCached;
+	/* The physical RAM used for file buffers (in bytes) when process is in a cgroup.
+	 * When not in a cgroup, this will be identical to 'buffered' field above.
+	 */
+	uint64_t hostBuffered;
 } J9MemoryInfo;
 
 #define OMRPORT_MEMINFO_NOT_AVAILABLE ((uint64_t) -1)

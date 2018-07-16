@@ -349,11 +349,23 @@ static char * getCgroupNameForSubsystem(struct OMRPortLibrary *portLibrary, OMRC
 static int32_t addCgroupEntry(struct OMRPortLibrary *portLibrary, OMRCgroupEntry **cgEntryList, int32_t hierId, const char *subsystem, const char *cgroupName);
 static int32_t readCgroupFile(struct OMRPortLibrary *portLibrary, int pid, BOOLEAN inContainer, OMRCgroupEntry **cgroupEntryList, uint64_t *availableSubsystems);
 static OMRCgroupSubsystem getCgroupSubsystemFromFlag(uint64_t subsystemFlag);
+static int32_t  getHandleOfCgroupSubsystemFile(struct OMRPortLibrary *portLibrary, uint64_t subsystemFlag, const char *fileName, FILE **subsystemFile);
 static int32_t readCgroupSubsystemFile(struct OMRPortLibrary *portLibrary, uint64_t subsystemFlag, const char *fileName, int32_t numItemsToRead, const char *format, ...);
 static int32_t isRunningInContainer(struct OMRPortLibrary *portLibrary, BOOLEAN *inContainer);
 static int32_t getCgroupMemoryLimit(struct OMRPortLibrary *portLibrary, uint64_t *limit);
 #endif /* defined(LINUX) */
 
+#if defined(LINUX)
+static int32_t retrieveLinuxMemoryStatsFromProcFS(struct OMRPortLibrary *portLibrary, struct J9MemoryInfo *memInfo);
+static int32_t retrieveLinuxCgroupMemoryStats(struct OMRPortLibrary *portLibrary, struct OMRCgroupMemoryInfo *cgroupMemInfo);
+static int32_t retrieveLinuxMemoryStats(struct OMRPortLibrary *portLibrary, struct J9MemoryInfo *memInfo);
+#elif defined(OSX)
+static int32_t retrieveOSXMemoryStats(struct OMRPortLibrary *portLibrary, struct J9MemoryInfo *memInfo);
+#elif defined(AIXPPC)
+static int32_t retrieveAIXMemoryStats(struct OMRPortLibrary *portLibrary, struct J9MemoryInfo *memInfo);
+#elif defined(J9ZOS390)
+static int32_t retrieveZOSMemoryStats(struct OMRPortLibrary *portLibrary, struct J9MemoryInfo *memInfo);
+#endif
 
 /**
  * @internal
@@ -1302,36 +1314,33 @@ omrsysinfo_get_number_CPUs_by_type(struct OMRPortLibrary *portLibrary, uintptr_t
 #define BUFFERS_PREFIX_SZ	(sizeof(BUFFERS_PREFIX) - 1)
 
 /**
- * Function collects memory usage statistics on Linux platforms and returns the same.
+ * Function collects memory usage statistics by reading /proc/meminfo on Linux platforms.
  *
  * @param[in] portLibrary The port library.
  * @param[in] memInfo A pointer to the J9MemoryInfo struct which we populate with memory usage.
  *
- * @return 0 on success and -1 on failure.
+ * @return 0 on success and negative error code on failure.
  */
 static int32_t
-retrieveLinuxMemoryStats(struct OMRPortLibrary *portLibrary, struct J9MemoryInfo *memInfo)
+retrieveLinuxMemoryStatsFromProcFS(struct OMRPortLibrary *portLibrary, struct J9MemoryInfo *memInfo)
 {
-	int32_t rc = -1;
-	register char *tmpPtr = NULL;
-	char lineString[MAX_LINE_LENGTH] = {0};
+	int32_t rc = 0;
 	FILE *memStatFs = NULL;
-	uint64_t maxVirtual = 0;
-
-	Trc_PRT_retrieveLinuxMemoryStats_Entered();
+	char lineString[MAX_LINE_LENGTH] = {0};
 
 	/* Open the memstat file on Linux for reading; this is readonly. */
 	memStatFs = fopen(MEMSTATPATH, "r");
 	if (NULL == memStatFs) {
 		Trc_PRT_retrieveLinuxMemoryStats_failedOpeningMemFs(errno);
-		Trc_PRT_retrieveLinuxMemoryStats_Exit(OMRPORT_ERROR_SYSINFO_ERROR_READING_MEMORY_INFO);
-		return OMRPORT_ERROR_SYSINFO_ERROR_READING_MEMORY_INFO;
+		rc = OMRPORT_ERROR_SYSINFO_ERROR_READING_MEMORY_INFO;
+		goto _cleanup;
 	}
 
 	Trc_PRT_retrieveLinuxMemoryStats_openedMemFs();
 
 	while (0 == feof(memStatFs)) {
 		char *endPtr = NULL;
+		char *tmpPtr = NULL;
 
 		/* read a line from MEMSTATPATH. */
 		if (NULL == fgets(lineString, MAX_LINE_LENGTH, memStatFs)) {
@@ -1421,18 +1430,195 @@ retrieveLinuxMemoryStats(struct OMRPortLibrary *portLibrary, struct J9MemoryInfo
 		} /* end if else-if */
 	} /* end while() */
 
+	/* Set hostXXX fields with memory stats from proc fs.
+	 * These may be used for calculating available physical memory on the host.
+	 */
+	memInfo->hostAvailPhysical = memInfo->availPhysical;
+	memInfo->hostCached = memInfo->cached;
+	memInfo->hostBuffered = memInfo->buffered;
+
+_cleanup:
+	if (NULL != memStatFs) {
+		fclose(memStatFs);
+	}
+
+	return rc;
+}
+
+#define CGROUP_MEMORY_LIMIT_IN_BYTES_FILE "memory.limit_in_bytes"
+#define CGROUP_MEMORY_USAGE_IN_BYTES_FILE "memory.usage_in_bytes"
+#define CGROUP_MEMORY_SWAP_LIMIT_IN_BYTES_FILE "memory.memsw.limit_in_bytes"
+#define CGROUP_MEMORY_SWAP_USAGE_IN_BYTES_FILE "memory.memsw.usage_in_bytes"
+#define CGROUP_MEMORY_STAT_FILE "memory.stat"
+
+#define CGROUP_MEMORY_STAT_CACHE "cache"
+#define CGROUP_MEMORY_STAT_CACHE_SZ (sizeof(CGROUP_MEMORY_STAT_CACHE)-1)
+
+/**
+ * Function collects memory usage statistics from the memory subsystem of the process's cgroup.
+ *
+ * @param[in] portLibrary The port library.
+ * @param[in] cgroupMemInfo A pointer to the OMRCgroupMemoryInfo struct which will be populated with memory usage.
+ *
+ * @return 0 on success and negative error code on failure.
+ */
+static int32_t
+retrieveLinuxCgroupMemoryStats(struct OMRPortLibrary *portLibrary, struct OMRCgroupMemoryInfo *cgroupMemInfo)
+{
+	int32_t rc = 0;
+	FILE *memStatFs = NULL;
+	int32_t numItemsToRead = 1;
+
+	Assert_PRT_true(NULL != cgroupMemInfo);
+
+	cgroupMemInfo->memoryLimit = OMRPORT_MEMINFO_NOT_AVAILABLE;
+	cgroupMemInfo->memoryUsage = OMRPORT_MEMINFO_NOT_AVAILABLE;
+	cgroupMemInfo->memoryAndSwapLimit = OMRPORT_MEMINFO_NOT_AVAILABLE;
+	cgroupMemInfo->memoryAndSwapUsage = OMRPORT_MEMINFO_NOT_AVAILABLE;
+	cgroupMemInfo->cached = OMRPORT_MEMINFO_NOT_AVAILABLE;
+
+	rc = readCgroupSubsystemFile(portLibrary, OMR_CGROUP_SUBSYSTEM_MEMORY, CGROUP_MEMORY_LIMIT_IN_BYTES_FILE, numItemsToRead, "%lu", &cgroupMemInfo->memoryLimit);
+	if (0 != rc) {
+		goto _exit;
+	}
+	rc = readCgroupSubsystemFile(portLibrary, OMR_CGROUP_SUBSYSTEM_MEMORY, CGROUP_MEMORY_USAGE_IN_BYTES_FILE, numItemsToRead, "%lu", &cgroupMemInfo->memoryUsage);
+	if (0 != rc) {
+		goto _exit;
+	}
+	rc = readCgroupSubsystemFile(portLibrary, OMR_CGROUP_SUBSYSTEM_MEMORY, CGROUP_MEMORY_SWAP_LIMIT_IN_BYTES_FILE, numItemsToRead, "%lu", &cgroupMemInfo->memoryAndSwapLimit);
+	if (0 != rc) {
+		goto _exit;
+	}
+	rc = readCgroupSubsystemFile(portLibrary, OMR_CGROUP_SUBSYSTEM_MEMORY, CGROUP_MEMORY_SWAP_USAGE_IN_BYTES_FILE, numItemsToRead, "%lu", &cgroupMemInfo->memoryAndSwapUsage);
+	if (0 != rc) {
+		goto _exit;
+	}
+
+	/* Read value of page cache memory from memory.stat file */
+	rc = getHandleOfCgroupSubsystemFile(portLibrary, OMR_CGROUP_SUBSYSTEM_MEMORY, CGROUP_MEMORY_STAT_FILE, &memStatFs);
+	if (0 != rc) {
+		goto _exit;
+	}
+
+	Assert_PRT_true(NULL != memStatFs);
+
+	while (0 == feof(memStatFs)) {
+		char statEntry[MAX_LINE_LENGTH] = {0};
+		char *tmpPtr = NULL;
+
+		if (NULL == fgets((char *)statEntry, MAX_LINE_LENGTH, memStatFs)) {
+			break;
+		}
+		tmpPtr = (char *)statEntry;
+
+		/* Extract "cache" value */
+		if (0 == strncmp(tmpPtr, CGROUP_MEMORY_STAT_CACHE, CGROUP_MEMORY_STAT_CACHE_SZ)) {
+			tmpPtr += CGROUP_MEMORY_STAT_CACHE_SZ;
+			rc = sscanf(tmpPtr, "%" SCNu64, &cgroupMemInfo->cached);
+			if (1 != rc) {
+				Trc_PRT_retrieveLinuxCgroupMemoryStats_invalidValue(CGROUP_MEMORY_STAT_CACHE, CGROUP_MEMORY_STAT_FILE);
+				rc = portLibrary->error_set_last_error_with_message_format(portLibrary, OMRPORT_ERROR_SYSINFO_CGROUP_SUBSYSTEM_FILE_INVALID_VALUE, "invalid value for field %s in file %s", CGROUP_MEMORY_STAT_CACHE, CGROUP_MEMORY_STAT_FILE);
+			}
+			break;
+		}
+	}
+
+_exit:
+	if (NULL != memStatFs) {
+		fclose(memStatFs);
+	}
+
+	return rc;
+}
+
+/**
+ * Function collects memory usage statistics on Linux platforms and returns the same.
+ * This function takes into account cgroup limits if available.
+ *
+ * @param[in] portLibrary The port library.
+ * @param[in] memInfo A pointer to the J9MemoryInfo struct which we populate with memory usage.
+ *
+ * @return 0 on success and -1 on failure.
+ */
+static int32_t
+retrieveLinuxMemoryStats(struct OMRPortLibrary *portLibrary, struct J9MemoryInfo *memInfo)
+{
+	int32_t rc = 0;
+	uint64_t maxVirtual = 0;
+#if !defined(OMRZTPF)
+	struct OMRCgroupMemoryInfo cgroupMemInfo = {0};
+	BOOLEAN isCgroupMemUsageValid = FALSE;
+	BOOLEAN isCgroupMemAndSwapLimitValid = FALSE;
+	uint64_t swapLimit = 0;
+#endif /* !defined(OMRZTPF) */
+	Trc_PRT_retrieveLinuxMemoryStats_Entered();
+
 	rc = portLibrary->sysinfo_get_limit(portLibrary, OMRPORT_RESOURCE_ADDRESS_SPACE | OMRPORT_LIMIT_HARD, &maxVirtual);
 	if ((OMRPORT_LIMIT_UNKNOWN != rc) && (RLIM_INFINITY != maxVirtual)) {
 		memInfo->totalVirtual = maxVirtual;
 	}
-	/* Reset return code to 0, since we are successful in retrieving memory usage. Failure
-	 * conditions would have jumped over to _cleanup section and shall return an appropriately
-	 * set error code.
-	 */
-	rc = 0;
 
-_cleanup:
-	fclose(memStatFs);
+	rc = retrieveLinuxMemoryStatsFromProcFS(portLibrary, memInfo);
+	if (0 != rc) {
+		goto _exit;
+	}
+
+#if !defined(OMRZTPF)
+	if (OMRPORT_MEMINFO_NOT_AVAILABLE == memInfo->totalPhysical) {
+		goto _exit;
+	}
+
+	/* If cgroup memory subsystem is enabled, retrieve memory limits of the cgroup */
+	if (!portLibrary->sysinfo_cgroup_are_subsystems_enabled(portLibrary, OMR_CGROUP_SUBSYSTEM_MEMORY)) {
+		goto _exit;
+	}
+
+	rc = retrieveLinuxCgroupMemoryStats(portLibrary, &cgroupMemInfo);
+	if (0 != rc) {
+		Trc_PRT_retrieveLinuxMemoryStats_CgroupMemoryStatsFailed(rc);
+		/* If we failed to retrieve memory stats for cgroup, just use values for the host; don't consider it as failure */
+		rc = 0;
+		goto _exit;
+	}
+
+	/* Update memInfo based on cgroup limits */
+	if (cgroupMemInfo.memoryLimit > memInfo->totalPhysical) {
+		/* cgroup limit is not set; use host limits */
+		goto _exit;
+	}
+	memInfo->totalPhysical = cgroupMemInfo.memoryLimit;
+
+	if (cgroupMemInfo.memoryUsage <= cgroupMemInfo.memoryLimit) {
+		memInfo->availPhysical = cgroupMemInfo.memoryLimit - cgroupMemInfo.memoryUsage;
+		isCgroupMemUsageValid = TRUE;
+	} else {
+		memInfo->availPhysical = OMRPORT_MEMINFO_NOT_AVAILABLE;
+	}
+
+	swapLimit = cgroupMemInfo.memoryAndSwapLimit - cgroupMemInfo.memoryLimit;
+	if (swapLimit < memInfo->totalSwap) {
+		memInfo->totalSwap = swapLimit;
+		isCgroupMemAndSwapLimitValid = TRUE;
+	}
+
+	if (isCgroupMemUsageValid && isCgroupMemAndSwapLimitValid) {
+		if (cgroupMemInfo.memoryAndSwapUsage < cgroupMemInfo.memoryAndSwapLimit) {
+			memInfo->availSwap = memInfo->totalSwap - (cgroupMemInfo.memoryAndSwapUsage - cgroupMemInfo.memoryUsage);
+		} else {
+			memInfo->availSwap = OMRPORT_MEMINFO_NOT_AVAILABLE;
+		}
+	}
+
+	memInfo->cached = cgroupMemInfo.cached;
+	/* Buffered value is not available when running in a cgroup.
+	 * See https://www.kernel.org/doc/Documentation/cgroup-v1/memory.txt
+	 * for details of memory statistics available in cgroup.
+	 */
+	memInfo->buffered = OMRPORT_MEMINFO_NOT_AVAILABLE;
+
+#endif /* !defined(OMRZTPF) */
+
+_exit:
 	Trc_PRT_retrieveLinuxMemoryStats_Exit(rc);
 	return rc;
 }
@@ -1505,6 +1691,10 @@ retrieveOSXMemoryStats(struct OMRPortLibrary *portLibrary, struct J9MemoryInfo *
 	memInfo->cached = OMRPORT_MEMINFO_NOT_AVAILABLE;
 	memInfo->buffered = OMRPORT_MEMINFO_NOT_AVAILABLE;
 
+	memInfo->hostAvailPhysical = memInfo->availPhysical;
+	memInfo->hostCached = memInfo->cached;
+	memInfo->hostBuffered = memInfo->buffered;
+
 	return ret;
 }
 
@@ -1545,6 +1735,10 @@ retrieveAIXMemoryStats(struct OMRPortLibrary *portLibrary, struct J9MemoryInfo *
 	memInfo->cached = aixMemoryInfo.numperm * page_size;
 	/* AIX does not define buffers, so: memInfo->buffered = OMRPORT_MEMINFO_NOT_AVAILABLE; */
 
+	memInfo->hostAvailPhysical = memInfo->availPhysical;
+	memInfo->hostCached = memInfo->cached;
+	memInfo->hostBuffered = memInfo->buffered;
+
 	Trc_PRT_retrieveAIXMemoryStats_Exit(0);
 	return 0;
 #else
@@ -1575,6 +1769,10 @@ omrsysinfo_get_memory_info(struct OMRPortLibrary *portLibrary, struct J9MemoryIn
 	memInfo->availSwap = OMRPORT_MEMINFO_NOT_AVAILABLE;
 	memInfo->cached = OMRPORT_MEMINFO_NOT_AVAILABLE;
 	memInfo->buffered = OMRPORT_MEMINFO_NOT_AVAILABLE;
+
+	memInfo->hostAvailPhysical = OMRPORT_MEMINFO_NOT_AVAILABLE;
+	memInfo->hostCached = OMRPORT_MEMINFO_NOT_AVAILABLE;
+	memInfo->hostBuffered = OMRPORT_MEMINFO_NOT_AVAILABLE;
 
 #if defined(LINUX)
 	rc = retrieveLinuxMemoryStats(portLibrary, memInfo);
@@ -3647,28 +3845,27 @@ getCgroupSubsystemFromFlag(uint64_t subsystemFlag)
 }
 
 /**
- * Read a file under a subsystem in cgroup hierarchy based on the format specified
+ * Returns FILE pointer for the specified file in the cgroup subsystem.
  *
  * @param[in] portLibrary pointer to OMRPortLibrary
- * @param[in] subsystemFlag flag bitwise-OR of flags of type OMR_CGROUP_SUBSYSTEMS_* representing the cgroup subsystem
+ * @param[in] subsystemFlag flag of type OMR_CGROUP_SUBSYSTEMS_* representing the cgroup subsystem
  * @param[in] fileName name of the file under cgroup subsystem
- * @param[in] numItemsToRead number of items to be read from the file
- * @param[in] format format to be used for reading the file
+ * @param[in/out] subsystemFile pointer to FILE * which stores the handle for the specified subsystem file
  *
- * @return 0 on successfully reading 'numItemsToRead' items from the file, negative error code on any error
+ * @return 0 on success, negative error code on any error
  */
 static int32_t
-readCgroupSubsystemFile(struct OMRPortLibrary *portLibrary, uint64_t subsystemFlag, const char *fileName, int32_t numItemsToRead, const char *format, ...)
+getHandleOfCgroupSubsystemFile(struct OMRPortLibrary *portLibrary, uint64_t subsystemFlag, const char *fileName, FILE **subsystemFile)
 {
-	char fileToRead[PATH_MAX];
-	char *fileNameBuf = fileToRead;
-	intptr_t fileNameLen = 0;
 	char *cgroup = NULL;
-	FILE *file = NULL;
+	intptr_t fullPathLen = 0;
 	int32_t rc = 0;
-	va_list args;
+	char fullPathBuf[PATH_MAX];
+	char *fullPath = fullPathBuf;
 	OMRCgroupSubsystem subsystem = getCgroupSubsystemFromFlag(subsystemFlag);
 	uint64_t availableSubsystem = portLibrary->sysinfo_cgroup_are_subsystems_available(portLibrary, subsystemFlag);
+
+	Assert_PRT_true(NULL != subsystemFile);
 
 	if (availableSubsystem != subsystemFlag) {
 		Trc_PRT_readCgroupSubsystemFile_subsystem_not_available(subsystemFlag);
@@ -3686,24 +3883,57 @@ readCgroupSubsystemFile(struct OMRPortLibrary *portLibrary, uint64_t subsystemFl
 	}
 
 	/* absolute path of the file to be read is: /sys/fs/cgroup/subsystemNames[subsystem]/cgroup/filenName */
-	fileNameLen = portLibrary->str_printf(portLibrary, NULL, (uint32_t)-1, "%s/%s/%s/%s", OMR_CGROUP_V1_MOUNT_POINT, subsystemNames[subsystem], cgroup, fileName);
-	if (fileNameLen > PATH_MAX) {
-		fileNameBuf = portLibrary->mem_allocate_memory(portLibrary, fileNameLen, OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
-		if (NULL == fileNameBuf) {
+	fullPathLen = portLibrary->str_printf(portLibrary, NULL, (uint32_t)-1, "%s/%s/%s/%s", OMR_CGROUP_V1_MOUNT_POINT, subsystemNames[subsystem], cgroup, fileName);
+	if (fullPathLen > PATH_MAX) {
+		fullPath = portLibrary->mem_allocate_memory(portLibrary, fullPathLen, OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
+		if (NULL == fullPath) {
 			Trc_PRT_readCgroupSubsystemFile_oom_for_filename();
 			rc = portLibrary->error_set_last_error_with_message(portLibrary, OMRPORT_ERROR_SYSINFO_MEMORY_ALLOC_FAILED, "memory allocation for filename buffer failed");
 			goto _end;
 
 		}
 	}
-	portLibrary->str_printf(portLibrary, fileNameBuf, fileNameLen, "%s/%s/%s/%s", OMR_CGROUP_V1_MOUNT_POINT, subsystemNames[subsystem], cgroup, fileName);
-	file = fopen(fileNameBuf, "r");
-	if (NULL == file) {
+
+	portLibrary->str_printf(portLibrary, fullPath, fullPathLen, "%s/%s/%s/%s", OMR_CGROUP_V1_MOUNT_POINT, subsystemNames[subsystem], cgroup, fileName);
+	*subsystemFile = fopen(fullPath, "r");
+	if (NULL == *subsystemFile) {
 		int32_t osErrCode = errno;
-		Trc_PRT_readCgroupSubsystemFile_fopen_failed(fileNameBuf, osErrCode);
-		rc = portLibrary->error_set_last_error(portLibrary, osErrCode, OMRPORT_ERROR_SYSINFO_CGROUP_MEMLIMIT_FILE_FOPEN_FAILED);
+		Trc_PRT_readCgroupSubsystemFile_fopen_failed(fullPath, osErrCode);
+		rc = portLibrary->error_set_last_error(portLibrary, osErrCode, OMRPORT_ERROR_SYSINFO_CGROUP_SUBSYSTEM_FILE_FOPEN_FAILED);
 		goto _end;
 	}
+_end:
+	if (fullPath != fullPathBuf) {
+		portLibrary->mem_free_memory(portLibrary, fullPath);
+	}
+
+	return rc;
+}
+
+/**
+ * Read a file under a subsystem in cgroup hierarchy based on the format specified
+ *
+ * @param[in] portLibrary pointer to OMRPortLibrary
+ * @param[in] subsystemFlag flag of type OMR_CGROUP_SUBSYSTEMS_* representing the cgroup subsystem
+ * @param[in] fileName name of the file under cgroup subsystem
+ * @param[in] numItemsToRead number of items to be read from the file
+ * @param[in] format format to be used for reading the file
+ *
+ * @return 0 on successfully reading 'numItemsToRead' items from the file, negative error code on any error
+ */
+static int32_t
+readCgroupSubsystemFile(struct OMRPortLibrary *portLibrary, uint64_t subsystemFlag, const char *fileName, int32_t numItemsToRead, const char *format, ...)
+{
+	FILE *file = NULL;
+	int32_t rc = 0;
+	va_list args;
+
+	rc = getHandleOfCgroupSubsystemFile(portLibrary, subsystemFlag, fileName, &file);
+	if (0 != rc) {
+		goto _end;
+	}
+
+	Assert_PRT_true(NULL != file);
 
 	va_start(args, format);
 	rc = vfscanf(file, format, args);
@@ -3711,16 +3941,13 @@ readCgroupSubsystemFile(struct OMRPortLibrary *portLibrary, uint64_t subsystemFl
 
 	if (numItemsToRead != rc) {
 		Trc_PRT_readCgroupSubsystemFile_unexpected_file_format(numItemsToRead, rc);
-		rc = portLibrary->error_set_last_error_with_message_format(portLibrary, OMRPORT_ERROR_SYSINFO_PROCESS_CGROUP_FILE_READ_FAILED, "unexpected format of file %s", fileNameBuf);
+		rc = portLibrary->error_set_last_error_with_message_format(portLibrary, OMRPORT_ERROR_SYSINFO_PROCESS_CGROUP_FILE_READ_FAILED, "unexpected format of file %s", fileName);
 		goto _end;
 	} else {
 		rc = 0;
 	}
 
 _end:
-	if (fileToRead != fileNameBuf) {
-		portLibrary->mem_free_memory(portLibrary, fileNameBuf);
-	}
 	if (NULL != file) {
 		fclose(file);
 	}
@@ -3815,7 +4042,7 @@ getCgroupMemoryLimit(struct OMRPortLibrary *portLibrary, uint64_t *limit)
 
 	Trc_PRT_sysinfo_cgroup_get_memlimit_Entry();
 
-	rc = readCgroupSubsystemFile(portLibrary, OMR_CGROUP_SUBSYSTEM_MEMORY, "memory.limit_in_bytes", numItemsToRead, "%lu", &cgroupMemLimit);
+	rc = readCgroupSubsystemFile(portLibrary, OMR_CGROUP_SUBSYSTEM_MEMORY, "memory.limit_in_bytes", numItemsToRead, "%" SCNu64, &cgroupMemLimit);
 	if (0 != rc) {
 		Trc_PRT_sysinfo_cgroup_get_memlimit_memory_limit_read_failed("memory.limit_in_bytes", rc);
 		goto _end;

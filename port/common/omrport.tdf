@@ -1077,3 +1077,6 @@ TraceException=Trc_PRT_readCgroupFile_fgets_failed Group=sysinfo Overhead=1 Leve
 TraceException=Trc_PRT_isRunningInContainer_fgets_failed Group=sysinfo Overhead=1 Level=3 NoEnv Template="isRunningInContainer: unexpected format of file %s with errno=%d"
 
 TraceException=Trc_PRT_signal_mapPortLibSignalToOSSignal_ERROR_unknown_signal Group=signal Overhead=1 Level=3 NoEnv Template="omrsignal: mapPortLibSignalToOSSignal: ERROR, unknown signal, portLibSignal=0x%X" 
+ 
+TraceException=Trc_PRT_retrieveLinuxCgroupMemoryStats_invalidValue Group=sysinfo Overhead=1 Level=1 NoEnv Template="retrieveLinuxCgroupMemoryStats: Value of field \"%s\" in file %s is invalid"
+TraceEvent=Trc_PRT_retrieveLinuxMemoryStats_CgroupMemoryStatsFailed Group=sysinfo Overhead=1 Level=1 NoEnv Template="retrieveLinuxMemoryStats: Failed to retrieve memory stats of cgroup with error code=%d"

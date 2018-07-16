@@ -34,31 +34,20 @@ cleandll:
 
 ifeq ($(PLATFORM),amd64-linux64-clang)
     # Luckily we can just use the default path for Clang :)
-endif
-
-ifeq ($(PLATFORM),ppc64-linux64-clang)
+else ifeq ($(PLATFORM),ppc64-linux64-clang)
     export CC_PATH?=/tr/llvm_checker/ppc-64/sles11/bin/clang
     export CXX_PATH?=/tr/llvm_checker/ppc-64/sles11/bin/clang++
-endif
-
-ifeq ($(PLATFORM),s390-zos64-vacpp)
+else ifeq ($(PLATFORM),s390-zos64-vacpp)
     export CC_PATH?=/usr/lpp/cbclib/xlc/bin/xlc
     export CXX_PATH?=/usr/lpp/cbclib/xlc/bin/xlC
     export A2E_INCLUDE_PATH?=/usr/lpp/cbclib/include
-endif
-
-ifeq ($(PLATFORM),arm-linux-gcc-cross)
-    export CC_PATH?=arm-bcm2708hardfp-linux-gnueabi-gcc
-    export CXX_PATH?=arm-bcm2708hardfp-linux-gnueabi-g++
-    export AS_PATH?=arm-bcm2708hardfp-linux-gnueabi-as
-    PLATFORM=arm-linux-gcc
-endif
-
-ifeq ($(PLATFORM),aarch64-linux-gcc-cross)
-    export CC_PATH?=aarch64-linux-gnueabi-gcc
-    export CXX_PATH?=aarch64-linux-gnueabi-g++
-    export AS_PATH?=aarch64-linux-gnueabi-as
-    PLATFORM=aarch64-linux-gcc
+else
+    # we can use default path for gcc
+    # ($(PLATFORM),aarch64-linux-gcc)
+    # ($(PLATFORM),arm-linux-gcc)
+    export CC_PATH?=$(shell which $(CC))
+    export CXX_PATH?=$(shell which $(CXX))
+    export AS_PATH?=$(shell which $(AS))
 endif
 
 

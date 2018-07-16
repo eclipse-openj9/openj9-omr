@@ -351,12 +351,20 @@ ifeq ($(HOST_BITS),32)
     ifeq ($(HOST_ARCH),z)
         SOLINK_FLAGS+=-m31
     else
-        SOLINK_FLAGS+=-m32
+        ifneq ($(HOST_ARCH),arm)
+            ifneq ($(HOST_ARCH),aarch64)
+                SOLINK_FLAGS+=-m32
+            endif
+        endif
     endif
 endif
 
 ifeq ($(HOST_BITS),64)
-    SOLINK_FLAGS+=-m64
+    ifneq ($(HOST_ARCH),arm)
+        ifneq ($(HOST_ARCH),aarch64)
+            SOLINK_FLAGS+=-m64
+        endif
+    endif
 endif
 
 ifeq ($(HOST_ARCH),p)

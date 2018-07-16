@@ -2890,18 +2890,14 @@ OMR::Z::Linkage::setupBuildArgForLinkage(TR::Node * callNode, TR_DispatchType di
       for(int i = 0; i < glRegDeps->getAddCursorForPre(); i++)
          {
          regDep = glRegDeps->getPreConditions()->getRegisterDependency(i);
-         deps->addPreConditionIfNotAlreadyInserted(regDep->getRegister(self()->cg()), regDep->getRealRegister());
-//         TR_ASSERTC(deps->addPreConditionIfNotAlreadyInserted(regDep->getRegister(cg()), regDep->getRealRegister()), cg()->comp(),
-//                     "Duplicate precondition found while merging call deps with global reg deps");
+         deps->addPreConditionIfNotAlreadyInserted(regDep->getRegister(), regDep->getRealRegister());
          }
 
       //Add postconditions
       for(int i = 0; i < glRegDeps->getAddCursorForPost(); i++)
          {
          regDep = glRegDeps->getPostConditions()->getRegisterDependency(i);
-         deps->addPostConditionIfNotAlreadyInserted(regDep->getRegister(self()->cg()), regDep->getRealRegister());
-//         TR_ASSERTC(deps->addPostConditionIfNotAlreadyInserted(regDep->getRegister(cg()), regDep->getRealRegister()), cg()->comp(),
-//                     "Duplicate postcondition found while merging call deps with global reg deps");
+         deps->addPostConditionIfNotAlreadyInserted(regDep->getRegister(), regDep->getRealRegister());
          }
       }
    }

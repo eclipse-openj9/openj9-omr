@@ -705,7 +705,7 @@ bool CheckForRegisterDependencyConditionsRealRegisterMergeConflict( TR_S390Regis
             }
 
          if(( conds1_real == conds2_real ) &&
-             ( conds1->getRegisterDependency( i )->getRegister(cg) != conds2->getRegisterDependency( j )->getRegister(cg) ))
+             ( conds1->getRegisterDependency(i)->getRegister() != conds2->getRegisterDependency(j)->getRegister() ))
             {
             // Conflict found
             if( conflict1 && conflict2 )

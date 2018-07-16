@@ -138,10 +138,7 @@ static bool boundNext(TR::Instruction *currentInstruction, int32_t realNum, TR::
    }
 
 OMR::Power::Machine::Machine(TR::CodeGenerator *cg) :
-      OMR::Machine(cg),
-   numLockedGPRs(-1),
-   numLockedFPRs(-1),
-   numLockedVRFs(-1)
+      OMR::Machine(cg)
    {
    _registerFile = (TR::RealRegister **)cg->trMemory()->allocateMemory(sizeof(TR::RealRegister *)*TR::RealRegister::NumRegisters, heapAlloc);
    self()->initializeRegisterFile();

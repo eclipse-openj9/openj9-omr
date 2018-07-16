@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -718,7 +718,7 @@ bool OMR::Z::Instruction::getRegisters(TR::list<TR::Register *> &regs)
     for (i = 0; i < n; i++)
       {
       TR::RegisterDependency* dep=preConds->getRegisterDependency(i);
-      TR::Register *r=dep->getRegister(self()->cg());
+      TR::Register *r=dep->getRegister();
       if(r && !r->isPlaceholderReg())
         {
         TR::RegisterPair *rp=r->getRegisterPair();
@@ -737,7 +737,7 @@ bool OMR::Z::Instruction::getRegisters(TR::list<TR::Register *> &regs)
     for (i = 0; i < n; i++)
       {
       TR::RegisterDependency* dep=postConds->getRegisterDependency(i);
-      TR::Register *r=dep->getRegister(self()->cg());
+      TR::Register *r=dep->getRegister();
       if(r && !r->isPlaceholderReg())
         {
         TR::RegisterPair *rp=r->getRegisterPair();
@@ -893,7 +893,7 @@ bool OMR::Z::Instruction::getUsedRegisters(TR::list<TR::Register *> &usedRegs)
       if (preConds->getRegisterDependency(i)->getRefsRegister())
         {
         TR::RegisterDependency* dep=preConds->getRegisterDependency(i);
-        TR::Register *r=dep->getRegister(self()->cg());
+        TR::Register *r=dep->getRegister();
         if(r && !r->isPlaceholderReg())
           {
           TR::RegisterPair *rp=r->getRegisterPair();
@@ -926,7 +926,7 @@ bool OMR::Z::Instruction::getUsedRegisters(TR::list<TR::Register *> &usedRegs)
       if (postConds->getRegisterDependency(i)->getRefsRegister())
         {
         TR::RegisterDependency* dep=postConds->getRegisterDependency(i);
-        TR::Register *r=dep->getRegister(self()->cg());
+        TR::Register *r=dep->getRegister();
         if(r && !r->isPlaceholderReg())
           {
           TR::RegisterPair *rp=r->getRegisterPair();
@@ -1014,7 +1014,7 @@ bool OMR::Z::Instruction::getDefinedRegisters(TR::list<TR::Register *> &defedReg
       if (preConds->getRegisterDependency(i)->getDefsRegister())
         {
         TR::RegisterDependency* dep=preConds->getRegisterDependency(i);
-        TR::Register *r=dep->getRegister(self()->cg());
+        TR::Register *r=dep->getRegister();
         if(r && !r->isPlaceholderReg())
           {
           TR::RegisterPair *rp=r->getRegisterPair();
@@ -1047,7 +1047,7 @@ bool OMR::Z::Instruction::getDefinedRegisters(TR::list<TR::Register *> &defedReg
       if (postConds->getRegisterDependency(i)->getDefsRegister())
         {
         TR::RegisterDependency* dep=postConds->getRegisterDependency(i);
-        TR::Register *r=dep->getRegister(self()->cg());
+        TR::Register *r=dep->getRegister();
         if(r && !r->isPlaceholderReg())
           {
           TR::RegisterPair *rp=r->getRegisterPair();
@@ -1115,7 +1115,7 @@ bool OMR::Z::Instruction::getKilledRegisters(TR::list<TR::Register *> &killedReg
       if (postConds->getRegisterDependency(i)->getDefsRegister())
         {
         TR::RegisterDependency* dep=postConds->getRegisterDependency(i);
-        TR::Register *r=dep->getRegister(self()->cg());
+        TR::Register *r=dep->getRegister();
         if(r && r->isPlaceholderReg())
           killedRegs.push_back(machine->getS390RealRegister(dep->getRealRegister()));
         }
@@ -1352,7 +1352,7 @@ OMR::Z::Instruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
          TR_S390RegisterDependencyGroup * depGroup = self()->getDependencyConditions()->getPostConditions();
          for (int32_t j = 0; j < last; ++j)
             {
-            TR::Register * virtReg = depGroup->getRegisterDependency(j)->getRegister(self()->cg());
+            TR::Register * virtReg = depGroup->getRegisterDependency(j)->getRegister();
             machine->setVirtualAssociatedWithReal((TR::RealRegister::RegNum) (j + 1), virtReg);
             }
 
@@ -1360,7 +1360,7 @@ OMR::Z::Instruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
             {
             for (int32_t j = 0; j < TR::RealRegister::LastHPR-TR::RealRegister::FirstHPR; ++j)
                {
-               TR::Register * virtReg = depGroup->getRegisterDependency(j+last)->getRegister(self()->cg());
+               TR::Register * virtReg = depGroup->getRegisterDependency(j+last)->getRegister();
                machine->setVirtualAssociatedWithReal((TR::RealRegister::RegNum) (j + TR::RealRegister::FirstHPR), virtReg);
                }
             }
@@ -2679,7 +2679,7 @@ OMR::Z::Instruction::renameRegister(TR::Register *from, TR::Register *to)
     for (i = 0; i < n; i++)
       {
       TR::RegisterDependency* dep = preConds->getRegisterDependency(i);
-      TR::Register *r = dep->getRegister(self()->cg());
+      TR::Register *r = dep->getRegister();
       if (r == from)
         {
         dep->setRegister(to);
@@ -2690,7 +2690,7 @@ OMR::Z::Instruction::renameRegister(TR::Register *from, TR::Register *to)
     for (i = 0; i < n; i++)
       {
       TR::RegisterDependency* dep = postConds->getRegisterDependency(i);
-      TR::Register *r = dep->getRegister(self()->cg());
+      TR::Register *r = dep->getRegister();
       if (r == from)
         {
         dep->setRegister(to);
@@ -3114,7 +3114,7 @@ OMR::Z::Instruction::setUseDefRegisters(bool updateDependencies)
             {
             for (i = 0; i < dependencies->getNumPreConditions(); i++)
                {
-              tempRegister=preConditions->getRegisterDependency(i)->getRegister(self()->cg());
+              tempRegister=preConditions->getRegisterDependency(i)->getRegister();
               if (tempRegister && tempRegister->getRegisterPair()==NULL)
                 (*_defRegs)[indexTarget++]=tempRegister;
                }
@@ -3123,7 +3123,7 @@ OMR::Z::Instruction::setUseDefRegisters(bool updateDependencies)
             {
             for (i = 0; i < dependencies->getNumPostConditions(); i++)
                {
-             tempRegister=postConditions->getRegisterDependency(i)->getRegister(self()->cg());
+             tempRegister=postConditions->getRegisterDependency(i)->getRegister();
               if (tempRegister && tempRegister->getRegisterPair()==NULL)
                 (*_defRegs)[indexTarget++]=tempRegister;
                }

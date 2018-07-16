@@ -33,6 +33,7 @@ namespace OMR { typedef OMR::Machine MachineConnector; }
 
 #include <stddef.h>                            // for NULL
 #include <stdint.h>                            // for uint8_t, uint32_t
+#include "codegen/RegisterConstants.hpp"
 #include "env/TRMemory.hpp"                    // for TR_Memory, etc
 #include "infra/Annotations.hpp"               // for OMR_EXTENSIBLE
 
@@ -46,12 +47,22 @@ class OMR_EXTENSIBLE Machine
    {
    TR::CodeGenerator *_cg;
 
-public:
+   int16_t numLockedGPRs;
+   int16_t numLockedHPRs;
+   int16_t numLockedFPRs;
+   int16_t numLockedVRFs;
+
+   public:
 
    TR_ALLOC(TR_Memory::Machine)
 
-   Machine(TR::CodeGenerator *cg) :
-         _cg(cg)
+   Machine(TR::CodeGenerator *cg)
+      :
+      _cg(cg),
+      numLockedGPRs(-1),
+      numLockedHPRs(-1),
+      numLockedFPRs(-1),
+      numLockedVRFs(-1)
       {
       }
 
@@ -59,8 +70,56 @@ public:
 
    TR::CodeGenerator *cg() {return _cg;}
 
-   };
+   /** \brief
+    *     Sets the number of locked registers of a specific register kind for use as a cache lookup.
+    *
+    *  \param kind
+    *     The register kind to count.
+    *
+    *  \param numLocked
+    *     The number of registers of the respective kind that are in the locked state.
+    *
+    *  \return
+    *     The number of registers of the respective kind that are in the locked state.
+    */
+   int16_t setNumberOfLockedRegisters(TR_RegisterKinds kind, int16_t numLocked)
+      {
+      TR_ASSERT(numLocked >= 0, "Expecting number of locked registers to be >= 0");
+      switch (kind)
+         {
+         case TR_GPR: numLockedGPRs = numLocked; return numLockedGPRs;
+         case TR_HPR: numLockedHPRs = numLocked; return numLockedHPRs;
+         case TR_FPR: numLockedFPRs = numLocked; return numLockedFPRs;
+         case TR_VRF: numLockedVRFs = numLocked; return numLockedVRFs;
+         default:
+            TR_ASSERT_FATAL(false, "Unknown register kind");
+            return -1;
+         }
+      }
 
+   /** \brief
+    *     Gets the number of locked registers of a specific register kind.
+    *
+    *  \param kind
+    *     The register kind to count.
+    *
+    *  \return
+    *     The number of registers of the respective kind that are in the locked state.
+    */
+   int16_t getNumberOfLockedRegisters(TR_RegisterKinds kind)
+      {
+      switch (kind)
+         {
+         case TR_GPR: TR_ASSERT(numLockedGPRs >= 0, "Expecting number of locked registers to be >= 0"); return numLockedGPRs;
+         case TR_HPR: TR_ASSERT(numLockedHPRs >= 0, "Expecting number of locked registers to be >= 0"); return numLockedHPRs;
+         case TR_FPR: TR_ASSERT(numLockedFPRs >= 0, "Expecting number of locked registers to be >= 0"); return numLockedFPRs;
+         case TR_VRF: TR_ASSERT(numLockedVRFs >= 0, "Expecting number of locked registers to be >= 0"); return numLockedVRFs;
+         default:
+            TR_ASSERT_FATAL(false, "Unknown register kind");
+            return -1;
+         }
+      }
+   };
 }
 
 #endif

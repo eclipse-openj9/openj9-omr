@@ -145,7 +145,7 @@ class TR_ARMRegisterDependencyGroup
 
    void setDependencyInfo(uint32_t                                index,
                           TR::Register                            *vr,
-                          OMR::ARM::RealRegister::RegNum rr,
+                          TR::RealRegister::RegNum rr,
                           uint8_t                                 flag)
       {
       dependencies[index].setRegister(vr);
@@ -153,7 +153,7 @@ class TR_ARMRegisterDependencyGroup
       dependencies[index].setRealRegister(rr);
       }
 
-   TR::Register *searchForRegister(OMR::ARM::RealRegister::RegNum rr, uint32_t numberOfRegisters)
+   TR::Register *searchForRegister(TR::RealRegister::RegNum rr, uint32_t numberOfRegisters)
       {
       for (uint32_t i=0; i<numberOfRegisters; i++)
 	 {
@@ -264,7 +264,7 @@ class RegisterDependencyConditions: public OMR::RegisterDependencyConditions
    uint32_t setAddCursorForPost(uint8_t a) {return (_addCursorForPost = a);}
 
    void addPreCondition(TR::Register                            *vr,
-                        OMR::ARM::RealRegister::RegNum rr,
+                        TR::RealRegister::RegNum rr,
                         uint8_t                                 flag = UsesDependentRegister)
       {
       _preConditions->setDependencyInfo(_addCursorForPre++, vr, rr, flag);
@@ -273,7 +273,7 @@ class RegisterDependencyConditions: public OMR::RegisterDependencyConditions
    TR_ARMRegisterDependencyGroup *getPostConditions() {return _postConditions;}
 
    void addPostCondition(TR::Register                            *vr,
-                         OMR::ARM::RealRegister::RegNum rr,
+                         TR::RealRegister::RegNum rr,
                          uint8_t                                 flag = UsesDependentRegister)
       {
       _postConditions->setDependencyInfo(_addCursorForPost++, vr, rr, flag);

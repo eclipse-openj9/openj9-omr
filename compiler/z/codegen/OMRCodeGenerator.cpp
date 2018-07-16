@@ -2533,7 +2533,7 @@ void OMR::Z::CodeGenerator::recordRegisterAssignment(TR::Register *assignedReg, 
 
 TR_RegisterKinds
 OMR::Z::CodeGenerator::prepareRegistersForAssignment()
-  {
+   {
    TR_RegisterKinds kindsMask = OMR::CodeGenerator::prepareRegistersForAssignment();
    if (!self()->isOutOfLineColdPath() && _extentOfLitPool < 0)
       {
@@ -2609,21 +2609,59 @@ OMR::Z::CodeGenerator::prepareRegistersForAssignment()
          }
       }
 
+   TR::Machine* machine = self()->machine();
+
    // Lock vector registers. This is done for testing purposes and to artificially increase register pressure
    // We go from the end since in most cases, we want to test functionality of the first half i.e 0-15 for overlap with FPR etc
-   if (TR::Options::_numVecRegsToLock > 0  &&
-       TR::Options::_numVecRegsToLock <= (TR::RealRegister::LastAssignableVRF - TR::RealRegister::FirstAssignableVRF))
-      {
-      for(int32_t i = TR::RealRegister::LastAssignableVRF;
-              i > (TR::RealRegister::LastAssignableVRF - TR::Options::_numVecRegsToLock);
-              i--)
-         {
+   if (TR::Options::_numVecRegsToLock > 0  && TR::Options::_numVecRegsToLock <= (TR::RealRegister::LastAssignableVRF - TR::RealRegister::FirstAssignableVRF))
+       {
+       for (int32_t i = TR::RealRegister::LastAssignableVRF; i > (TR::RealRegister::LastAssignableVRF - TR::Options::_numVecRegsToLock); --i)
+          {
+          machine->getRegisterFile(i)->setState(TR::RealRegister::Locked);
+          }
+       }
 
-         self()->machine()->getRegisterFile(i)->setState(TR::RealRegister::Locked);
-         }
+   int32_t lockedGPRs = 0;
+   int32_t lockedHPRs = 0;
+   int32_t lockedFPRs = 0;
+   int32_t lockedVRFs = 0;
+
+   // count up how many registers are locked for each type
+   for (int32_t i = TR::RealRegister::FirstGPR; i <= TR::RealRegister::LastGPR; ++i)
+      {
+      TR::RealRegister* realReg = machine->getS390RealRegister((TR::RealRegister::RegNum)i);
+      if (realReg->getState() == TR::RealRegister::Locked)
+         ++lockedGPRs;
       }
+
+   for (int32_t i = TR::RealRegister::FirstHPR; i <= TR::RealRegister::LastHPR; ++i)
+      {
+      TR::RealRegister* realReg = machine->getS390RealRegister((TR::RealRegister::RegNum)i);
+      if (realReg->getState() == TR::RealRegister::Locked)
+         ++lockedHPRs;
+      }
+
+   for (int32_t i = TR::RealRegister::FirstFPR; i <= TR::RealRegister::LastFPR; ++i)
+      {
+      TR::RealRegister* realReg = machine->getS390RealRegister((TR::RealRegister::RegNum)i);
+      if (realReg->getState() == TR::RealRegister::Locked)
+         ++lockedFPRs;
+      }
+
+   for (int32_t i = TR::RealRegister::FirstVRF; i <= TR::RealRegister::LastVRF; ++i)
+      {
+      TR::RealRegister* realReg = machine->getS390RealRegister((TR::RealRegister::RegNum)i);
+      if (realReg->getState() == TR::RealRegister::Locked)
+         ++lockedVRFs;
+      }
+
+   machine->setNumberOfLockedRegisters(TR_GPR, lockedGPRs);
+   machine->setNumberOfLockedRegisters(TR_HPR, lockedHPRs);
+   machine->setNumberOfLockedRegisters(TR_FPR, lockedFPRs);
+   machine->setNumberOfLockedRegisters(TR_VRF, lockedVRFs);
+
    return kindsMask;
-  }
+   }
 
 void
 OMR::Z::CodeGenerator::doRegisterAssignment(TR_RegisterKinds kindsToAssign)
@@ -7068,7 +7106,7 @@ void OMR::Z::CodeGenerator::startInternalControlFlow(TR::Instruction *instr)
         {
         TR::Register *r=NULL;
         if(!self()->afterRA())
-          r = postConds->getRegisterDependency(i)->getRegister(self());
+          r = postConds->getRegisterDependency(i)->getRegister();
         else
           {
           TR::RealRegister::RegNum rr = postConds->getRegisterDependency(i)->getRealRegister();

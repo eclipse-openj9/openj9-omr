@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -126,13 +126,13 @@ class TR_S390RegisterDependencyGroup
       {
       for (int32_t i=0; i<numberOfRegisters; i++)
          {
-         if (_dependencies[i].getRegister(cg) == vr && (_dependencies[i].getFlags() & flag))
-            return _dependencies[i].getRegister(cg);
+         if (_dependencies[i].getRegister() == vr && (_dependencies[i].getFlags() & flag))
+            return _dependencies[i].getRegister();
          if (vr->isArGprPair() &&
-         	  _dependencies[i].getRegister(cg)->isArGprPair() &&
-         	  vr->getARofArGprPair() == _dependencies[i].getRegister(cg)->getARofArGprPair() &&
-         	  vr->getGPRofArGprPair() == _dependencies[i].getRegister(cg)->getGPRofArGprPair())
-            return _dependencies[i].getRegister(cg);
+         	  _dependencies[i].getRegister()->isArGprPair() &&
+         	  vr->getARofArGprPair() == _dependencies[i].getRegister()->getARofArGprPair() &&
+         	  vr->getGPRofArGprPair() == _dependencies[i].getRegister()->getGPRofArGprPair())
+            return _dependencies[i].getRegister();
          }
       return NULL;
       }
@@ -142,7 +142,7 @@ class TR_S390RegisterDependencyGroup
       for (int32_t i=0; i<numberOfRegisters; i++)
          {
          if (_dependencies[i].getRealRegister() == rr && (_dependencies[i].getFlags() & flag))
-            return _dependencies[i].getRegister(cg);
+            return _dependencies[i].getRegister();
          }
       return NULL;
       }
@@ -151,7 +151,7 @@ class TR_S390RegisterDependencyGroup
       {
       for (int32_t i=0; i<numberOfRegisters; i++)
          {
-         if (_dependencies[i].getRegister(cg) == vr && (_dependencies[i].getFlags() & flag))
+         if (_dependencies[i].getRegister() == vr && (_dependencies[i].getFlags() & flag))
             return i;
          }
       return -1;
@@ -185,7 +185,7 @@ class TR_S390RegisterDependencyGroup
       {
       for (uint32_t i = 0; i< numberOfRegisters; i++)
          {
-         TR::Register *virtReg = _dependencies[i].getRegister(cg);
+         TR::Register *virtReg = _dependencies[i].getRegister();
          virtReg->decFutureUseCount();
          }
       }
@@ -193,8 +193,8 @@ class TR_S390RegisterDependencyGroup
       {
       for (uint32_t i = 0; i < numberOfRegisters; i++)
          {
-         if (_dependencies[i].getRegister(cg))
-           _dependencies[i].getRegister(cg)->block();
+         if (_dependencies[i].getRegister())
+           _dependencies[i].getRegister()->block();
          }
       }
 
@@ -202,8 +202,8 @@ class TR_S390RegisterDependencyGroup
       {
       for (uint32_t i = 0; i < numberOfRegisters; i++)
          {
-         if (_dependencies[i].getRegister(cg))
-           _dependencies[i].getRegister(cg)->unblock();
+         if (_dependencies[i].getRegister())
+           _dependencies[i].getRegister()->unblock();
          }
       }
 
@@ -211,7 +211,7 @@ class TR_S390RegisterDependencyGroup
       {
       for (uint32_t i = 0; i < numberOfRegisters; i++)
          {
-         TR::Register *depReg = _dependencies[i].getRegister(cg);
+         TR::Register *depReg = _dependencies[i].getRegister();
          if (depReg != ret1 && depReg != ret2)
             cg->stopUsingRegister(depReg);
          }
@@ -221,7 +221,7 @@ class TR_S390RegisterDependencyGroup
          {
          for (int32_t i=0; i<numberOfRegisters; i++)
             {
-            _dependencies[i].getRegister(cg)->setIs64BitReg(true);
+            _dependencies[i].getRegister()->setIs64BitReg(true);
             }
          }
 

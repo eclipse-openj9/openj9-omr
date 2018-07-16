@@ -34,9 +34,8 @@
 #endif
 
 #include "compiler/codegen/OMRRegisterDependencyStruct.hpp"
-#include "codegen/Register.hpp"
-#include "codegen/OMRRegisterDependency.hpp"
-#include "codegen/OMRRealRegister.hpp"
+
+#include "codegen/RealRegister.hpp"
 
 #define DefinesDependentRegister    0x01
 #define ReferencesDependentRegister 0x02
@@ -51,10 +50,10 @@ namespace ARM
 
 struct RegisterDependencyExt: OMR::RegisterDependencyExt
    {
-   OMR::ARM::RealRegister::RegNum  _realRegister;
+   TR::RealRegister::RegNum  _realRegister;
 
-   OMR::ARM::RealRegister::RegNum getRealRegister() {return _realRegister;}
-   OMR::ARM::RealRegister::RegNum setRealRegister(OMR::ARM::RealRegister::RegNum r) { return (_realRegister = r); }
+   TR::RealRegister::RegNum getRealRegister() {return _realRegister;}
+   TR::RealRegister::RegNum setRealRegister(TR::RealRegister::RegNum r) { return (_realRegister = r); }
 
    uint32_t getExcludeGPR0()    {return _flags & ExcludeGPR0InAssigner;}
    uint32_t setExcludeGPR0()    {return (_flags |= ExcludeGPR0InAssigner);}

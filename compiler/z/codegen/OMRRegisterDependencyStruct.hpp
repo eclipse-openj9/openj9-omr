@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -42,59 +42,16 @@ namespace OMR { typedef OMR::Z::RegisterDependencyExt RegisterDependency; }
 #include "infra/Array.hpp"            // for TR_Array
 #include "infra/Assert.hpp"           // for TR_ASSERT
 
-namespace TR { struct RegisterDependency; }
-
 namespace OMR
 {
 namespace Z
 {
-struct RegisterDependencyExt
+struct RegisterDependencyExt : OMR::RegisterDependencyExt
    {
-   uint32_t                   _realRegister:7;
-   uint32_t                   _flags:2;
-   uint32_t                   _virtualRegIndex:23;
+   TR::RealRegister::RegNum  _realRegister;
 
-   #define   BAD_VIRTUAL_IDX  0x7FFFFF
-   void operator=(const TR::RegisterDependency &other);
-
-   TR::RealRegister::RegNum getRealRegister() {return (TR::RealRegister::RegNum) _realRegister;}
-   void setRealRegister(TR::RealRegister::RegNum r)
-      {
-      _realRegister = (uint32_t) r;
-      }
-
-   uint32_t getFlags()             {return _flags;}
-   uint32_t assignFlags(uint8_t f) {return _flags = f;}
-   uint32_t setFlags(uint8_t f)    {return _flags |= f;}
-   uint32_t resetFlags(uint8_t f)  {return _flags &= ~f;}
-
-   uint32_t getDefsRegister()   {return _flags & DefinesDependentRegister;}
-   uint32_t setDefsRegister()   {return _flags |= DefinesDependentRegister;}
-   uint32_t resetDefsRegister() {return _flags &= ~DefinesDependentRegister;}
-
-   uint32_t getRefsRegister()   {return _flags & ReferencesDependentRegister;}
-   uint32_t setRefsRegister()   {return _flags |= ReferencesDependentRegister;}
-   uint32_t resetRefsRegister() {return _flags &= ~ReferencesDependentRegister;}
-
-   TR::Register * getRegister(TR::CodeGenerator *cg)
-      {
-       if (_virtualRegIndex==BAD_VIRTUAL_IDX)
-          return NULL;
-       else
-          return (cg->getRegisterArray())[_virtualRegIndex];
-      }
-
-   TR::Register * setRegister(TR::Register *r)
-      {
-      if (r==NULL)
-         _virtualRegIndex=BAD_VIRTUAL_IDX;
-      else
-          {
-          TR_ASSERT(r->getRealRegister()==NULL, "Saw a real register where a virtual is expected");
-          _virtualRegIndex=r->getIndex();
-          }
-      return r;
-      }
+   TR::RealRegister::RegNum getRealRegister() {return _realRegister;}
+   TR::RealRegister::RegNum setRealRegister(TR::RealRegister::RegNum r) { return (_realRegister = r); }
    };
 }
 }

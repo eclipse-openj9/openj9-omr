@@ -489,9 +489,9 @@ TR_Debug::printAssocRegDirective(TR::FILE *pOutFile, TR::Instruction * instr)
    for (int j = 0; j < last; ++j)
       {
       TR::RegisterDependency * dependency = depGroup->getRegisterDependency(j);
-      if ((intptr_t) dependency->getRegister(_comp->cg()) > 0)
+      if ((intptr_t) dependency->getRegister() > 0)
          {
-         TR::Register * virtReg = dependency->getRegister(_comp->cg());
+         TR::Register * virtReg = dependency->getRegister();
          printS390RegisterDependency(pOutFile, virtReg, j+1, dependency->getRefsRegister(), dependency->getDefsRegister());
          }
       }
@@ -502,9 +502,9 @@ TR_Debug::printAssocRegDirective(TR::FILE *pOutFile, TR::Instruction * instr)
       for (int j = 0; j <= TR::RealRegister::LastHPR - TR::RealRegister::FirstHPR; ++j)
          {
          TR::RegisterDependency * dependency = depGroup->getRegisterDependency(j+last);
-         if ((intptr_t) dependency->getRegister(_comp->cg()) > 0)
+         if ((intptr_t) dependency->getRegister() > 0)
             {
-            TR::Register * virtReg = dependency->getRegister(_comp->cg());
+            TR::Register * virtReg = dependency->getRegister();
             printS390RegisterDependency(pOutFile, virtReg, j+TR::RealRegister::FirstHPR, dependency->getRefsRegister(), dependency->getDefsRegister());
             }
          }
@@ -2987,7 +2987,7 @@ TR_Debug::printRegisterDependencies(TR::FILE *pOutFile, TR_S390RegisterDependenc
       }
    for (int i = 0; i < numberOfRegisters; i++)
       {
-      TR::Register * virtReg = rgd->getRegisterDependency(i)->getRegister(_comp->cg());
+      TR::Register * virtReg = rgd->getRegisterDependency(i)->getRegister();
       TR::RealRegister::RegNum realReg = rgd->getRegisterDependency(i)->getRealRegister();
 
       if (virtReg != NULL)

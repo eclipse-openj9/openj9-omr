@@ -150,6 +150,14 @@ omrport_control(struct OMRPortLibrary *portLibrary, const char *key, uintptr_t v
 
 
 	/* enable or disable NUMA memory interleave */
+	if (0 == strcmp(OMRPORT_CTLDATA_VMEM_NUMA_INTERLEAVE_MEM, key)) {
+#if defined(PPG_numa_platform_interleave_memory)
+		Assert_PRT_true((0 == value) || (1 == value));
+		PPG_numa_platform_interleave_memory = value;
+#endif /* PPG_numa_platform_interleave_memory */
+		return 0;
+	}
+
 	if (0 == strcmp(OMRPORT_CTLDATA_VMEM_NUMA_ENABLE, key)) {
 #if defined(PPG_numa_platform_supports_numa)
 		Assert_PRT_true((0 == value) || (1 == value));

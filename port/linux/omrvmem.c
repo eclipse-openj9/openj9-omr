@@ -1015,7 +1015,7 @@ port_numa_interleave_memory(struct OMRPortLibrary *portLibrary, void  *start, ui
 {
 	Trc_PRT_vmem_port_numa_interleave_memory_enter();
 
-	if (1 == PPG_numa_platform_supports_numa) {
+	if (1 == PPG_numa_platform_interleave_memory) {
 		/* There seem to be variations in different kernel levels regarding how they treat the maxnode argument.
 		 * Depending on the system we're running on, it may fail if we specify a mask that is greater than the number of nodes.
 		 *

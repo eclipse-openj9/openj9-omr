@@ -54,6 +54,7 @@ typedef struct J9PortNodeMask {
 
 typedef struct OMRPortPlatformGlobals {
 	uintptr_t numa_platform_supports_numa;
+	uintptr_t numa_platform_interleave_memory;
 #if defined(OMR_PORT_NUMA_SUPPORT) && defined (LINUX)
 	J9PortNodeMask numa_available_node_mask;
 	unsigned long numa_max_node_bits;
@@ -94,6 +95,8 @@ typedef struct OMRPortPlatformGlobals {
 #define PPG_mem_ppcCacheLineSize (portLibrary->portGlobals->platformGlobals.mem_ppcCacheLineSize)
 #endif
 #define PPG_numa_platform_supports_numa (portLibrary->portGlobals->platformGlobals.numa_platform_supports_numa)
+#define PPG_numa_platform_interleave_memory (portLibrary->portGlobals->platformGlobals.numa_platform_interleave_memory)
+
 #if defined(OMR_PORT_NUMA_SUPPORT) && defined (LINUX)
 #define PPG_numa_available_node_mask (portLibrary->portGlobals->platformGlobals.numa_available_node_mask)
 #define PPG_numa_max_node_bits (portLibrary->portGlobals->platformGlobals.numa_max_node_bits)

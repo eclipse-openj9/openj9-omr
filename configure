@@ -748,6 +748,8 @@ OMR_PRODUCT_DESCRIPTION
 OMR_COMPANY_COPYRIGHT
 OMR_COMPANY_NAME
 OMR_CROSS_CONFIGURE
+OMR_TOOLS_CXX
+OMR_TOOLS_CC
 OMR_TOOLCHAIN
 OMR_TARGET_DATASIZE
 OMR_HOST_ARCH
@@ -787,6 +789,7 @@ infodir
 docdir
 oldincludedir
 includedir
+runstatedir
 localstatedir
 sharedstatedir
 sysconfdir
@@ -906,6 +909,8 @@ OMR_HOST_OS
 OMR_HOST_ARCH
 OMR_TARGET_DATASIZE
 OMR_TOOLCHAIN
+OMR_TOOLS_CC
+OMR_TOOLS_CXX
 OMR_CROSS_CONFIGURE
 OMR_COMPANY_NAME
 OMR_COMPANY_COPYRIGHT
@@ -959,6 +964,7 @@ datadir='${datarootdir}'
 sysconfdir='${prefix}/etc'
 sharedstatedir='${prefix}/com'
 localstatedir='${prefix}/var'
+runstatedir='${localstatedir}/run'
 includedir='${prefix}/include'
 oldincludedir='/usr/include'
 docdir='${datarootdir}/doc/${PACKAGE_TARNAME}'
@@ -1211,6 +1217,15 @@ do
   | -silent | --silent | --silen | --sile | --sil)
     silent=yes ;;
 
+  -runstatedir | --runstatedir | --runstatedi | --runstated \
+  | --runstate | --runstat | --runsta | --runst | --runs \
+  | --run | --ru | --r)
+    ac_prev=runstatedir ;;
+  -runstatedir=* | --runstatedir=* | --runstatedi=* | --runstated=* \
+  | --runstate=* | --runstat=* | --runsta=* | --runst=* | --runs=* \
+  | --run=* | --ru=* | --r=*)
+    runstatedir=$ac_optarg ;;
+
   -sbindir | --sbindir | --sbindi | --sbind | --sbin | --sbi | --sb)
     ac_prev=sbindir ;;
   -sbindir=* | --sbindir=* | --sbindi=* | --sbind=* | --sbin=* \
@@ -1348,7 +1363,7 @@ fi
 for ac_var in	exec_prefix prefix bindir sbindir libexecdir datarootdir \
 		datadir sysconfdir sharedstatedir localstatedir includedir \
 		oldincludedir docdir infodir htmldir dvidir pdfdir psdir \
-		libdir localedir mandir
+		libdir localedir mandir runstatedir
 do
   eval ac_val=\$$ac_var
   # Remove trailing slashes.
@@ -1501,6 +1516,7 @@ Fine tuning of the installation directories:
   --sysconfdir=DIR        read-only single-machine data [PREFIX/etc]
   --sharedstatedir=DIR    modifiable architecture-independent data [PREFIX/com]
   --localstatedir=DIR     modifiable single-machine data [PREFIX/var]
+  --runstatedir=DIR       modifiable per-process data [LOCALSTATEDIR/run]
   --libdir=DIR            object code libraries [EPREFIX/lib]
   --includedir=DIR        C header files [PREFIX/include]
   --oldincludedir=DIR     C header files for non-gcc [/usr/include]
@@ -1630,6 +1646,7 @@ Optional Features:
   --enable-OMR_ARCH_POWER
   --enable-OMR_ARCH_ARM
   --enable-OMR_ARCH_AARCH64
+
   --enable-OMR_ARCH_X86
   --enable-OMR_ARCH_S390
   --enable-OMR_ENV_DATA64
@@ -1710,6 +1727,11 @@ Some influential environment variables:
               One of: 31,32,64
   OMR_TOOLCHAIN
               The toolchain used to build the package. One of: gcc,xlc,msvc
+  OMR_TOOLS_CC
+              The C compiler to use for building tools (can differ from CC).
+  OMR_TOOLS_CXX
+              The C++ compiler to use for building tools (can differ from
+              CXX).
   OMR_CROSS_CONFIGURE
               Indicates that configure is not being run on a system that is
               capable of building the package. Compiler and feature detection
@@ -2835,6 +2857,8 @@ case $host_os in *\ *) host_os=`echo "$host_os" | sed 's/ /-/g'`;; esac
 
 
 
+
+
 OMR_COMPANY_NAME=${OMR_COMPANY_NAME:-""}
 OMR_COMPANY_COPYRIGHT=${OMR_COMPANY_COPYRIGHT:-""}
 OMR_PRODUCT_DESCRIPTION=${OMR_PRODUCT_DESCRIPTION:-"OMR 0.1 "}
@@ -3032,22 +3056,14 @@ else
   OMR_CROSS_COMPILE=0
 fi
 
-if test "$OMR_CROSS_CONFIGURE" = "yes"; then :
-  # If we are cross-configuring, clear CC so that the default platform compiler can be detected.
-# Warn that compiler and feature detection tests will be invalid.
-# The user must configure all options manually.
-  { CC=; unset CC;}
-	$as_echo "## ------------------------------------------------------- ##"
-	$as_echo "## WARNING                                                 ##"
-	$as_echo "## The current machine cannot compile the target platform. ##"
-	$as_echo "## Compiler and feature detection tests will not be valid. ##"
-	$as_echo "## ------------------------------------------------------- ##"
-
-fi
-
-# If OMR_TARGET_DATASIZE is set, validate it and use it.
-# Otherwise, detect it with a compiler test.
-ac_ext=c
+# If not cross-configuring and OMR_TARGET_DATASIZE is not set,
+# detect it with a compiler test and validate it, otherwise
+# just validate it.
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking OMR_TARGET_DATASIZE" >&5
+$as_echo_n "checking OMR_TARGET_DATASIZE... " >&6; }
+if test "x$OMR_CROSS_CONFIGURE" != "xyes"
+then
+	ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
@@ -4235,7 +4251,8 @@ done
 
 
 if test "x$OMR_TARGET_DATASIZE" = "x"; then :
-  # The cast to long int works around a bug in the HP C Compiler
+
+		# The cast to long int works around a bug in the HP C Compiler
 # version HP92453-01 B.11.11.23709.GP, which incorrectly rejects
 # declarations like `int a3[[(sizeof (unsigned char)) >= 0]];'.
 # This bug is HP SR number 8606223364.
@@ -4268,12 +4285,16 @@ cat >>confdefs.h <<_ACEOF
 _ACEOF
 
 
+		if test "$ac_cv_sizeof_void_p" = 8; then :
+  OMR_TARGET_DATASIZE=64
+else
+  OMR_TARGET_DATASIZE=32
 fi
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking OMR_TARGET_DATASIZE" >&5
-$as_echo_n "checking OMR_TARGET_DATASIZE... " >&6; }
-if test "x$OMR_TARGET_DATASIZE" != "x"; then :
-  case $OMR_TARGET_DATASIZE in #(
+
+fi
+fi
+case $OMR_TARGET_DATASIZE in #(
   31) :
      ;; #(
   32) :
@@ -4282,23 +4303,16 @@ if test "x$OMR_TARGET_DATASIZE" != "x"; then :
      ;; #(
   *) :
     as_fn_error $? "An invalid value was provided for OMR_TARGET_DATASIZE: $OMR_TARGET_DATASIZE" "$LINENO" 5
-	 ;;
+ ;;
 esac
-else
-  if test "$ac_cv_sizeof_void_p" = 8; then :
-  OMR_TARGET_DATASIZE=64
-else
-  OMR_TARGET_DATASIZE=32
-
-fi
-
-fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $OMR_TARGET_DATASIZE" >&5
 $as_echo "$OMR_TARGET_DATASIZE" >&6; }
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking OMR_TOOLCHAIN" >&5
 $as_echo_n "checking OMR_TOOLCHAIN... " >&6; }
-if test "x$OMR_TOOLCHAIN" = "x"; then :
+if test "x$OMR_CROSS_CONFIGURE" != "xyes"
+then
+	if test "x$OMR_TOOLCHAIN" = "x"; then :
   ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
@@ -4353,6 +4367,7 @@ fi
 
 fi
 
+fi
 fi
 case $OMR_TOOLCHAIN in #(
   gcc) :
@@ -6490,6 +6505,7 @@ else
 fi
 
 
+
 # Check whether --enable-OMR_ENV_LITTLE_ENDIAN was given.
 if test "${enable_OMR_ENV_LITTLE_ENDIAN+set}" = set; then :
   enableval=$enable_OMR_ENV_LITTLE_ENDIAN; if test "x${enableval}" = xyes; then :
@@ -6505,7 +6521,10 @@ else
   if test "x${enable_auto_build_flag}" = xyes; then :
   if test "3" -gt 2; then :
 
-					 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether byte ordering is bigendian" >&5
+
+	if test "x$OMR_CROSS_CONFIGURE" != "xyes"
+	then
+	 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether byte ordering is bigendian" >&5
 $as_echo_n "checking whether byte ordering is bigendian... " >&6; }
 if ${ac_cv_c_bigendian+:} false; then :
   $as_echo_n "(cached) " >&6
@@ -6725,12 +6744,13 @@ $as_echo "$ac_cv_c_bigendian" >&6; }
    universal)
      OMR_ENV_LITTLE_ENDIAN=0
 
-
      ;; #(
    *)
      as_fn_error $? "unknown endianness
  presetting ac_cv_c_bigendian=no (or yes) will help" "$LINENO" 5 ;;
  esac
+
+	fi
 
 
 					:
@@ -6848,6 +6868,14 @@ else
   if test "3" -gt 2; then :
 
 
+	if test "x$OMR_CROSS_CONFIGURE" != "xyes"
+	then
+	# The no-op ":" prevents this if-then from being left empty
+	# if AC_CHECK_HEADERS_ONCE has already been evaluated.
+	:
+
+	fi
+
 
 					:
 
@@ -6866,8 +6894,12 @@ fi
 
 
 
-if test "$OMR_CROSS_CONFIGURE" != yes -a "$OMR_PORT_NUMA_SUPPORT" = 1 -a "$OMR_HOST_OS" = linux; then :
+if test "x$OMR_CROSS_CONFIGURE" != "xyes"
+then
+	if test "$OMR_PORT_NUMA_SUPPORT" = 1 -a "$OMR_HOST_OS" = linux; then :
 
+
+fi
 fi
 
 # Check whether --enable-OMR_OPT_CUDA was given.
@@ -7212,7 +7244,9 @@ fi
   *) :
 
 			# other host types: look for DWARF support
-			for ac_header in dwarf.h libdwarf/dwarf.h libdwarf.h libdwarf/libdwarf.h
+			if test "x$OMR_CROSS_CONFIGURE" != "xyes"
+			then
+				for ac_header in dwarf.h libdwarf/dwarf.h libdwarf.h libdwarf/libdwarf.h
 do :
   as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
 ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
@@ -7225,7 +7259,7 @@ fi
 
 done
 
-			{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing dwarf_init" >&5
+				{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing dwarf_init" >&5
 $as_echo_n "checking for library containing dwarf_init... " >&6; }
 if ${ac_cv_search_dwarf_init+:} false; then :
   $as_echo_n "(cached) " >&6
@@ -7281,7 +7315,7 @@ if test "$ac_res" != no; then :
 
 fi
 
-			{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing dwarf_init" >&5
+				{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing dwarf_init" >&5
 $as_echo_n "checking for library containing dwarf_init... " >&6; }
 if ${ac_cv_search_dwarf_init+:} false; then :
   $as_echo_n "(cached) " >&6
@@ -7337,7 +7371,7 @@ if test "$ac_res" != no; then :
 
 fi
 
-			{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing elf_begin" >&5
+				{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing elf_begin" >&5
 $as_echo_n "checking for library containing elf_begin... " >&6; }
 if ${ac_cv_search_elf_begin+:} false; then :
   $as_echo_n "(cached) " >&6
@@ -7393,6 +7427,15 @@ if test "$ac_res" != no; then :
 
 fi
 
+			else
+				# Can't run AC_CHECK_HEADERS when cross-configuring.
+				# If DDR is enabled set these flags and hope for the best,
+				# otherwise the build will fail even if the headers are available.
+				$as_echo "#define HAVE_DWARF_H 1" >>confdefs.h
+
+				$as_echo "#define HAVE_LIBDWARF_H 1" >>confdefs.h
+
+			fi
 
 	 ;;
 esac
@@ -8286,7 +8329,7 @@ cat >>$CONFIG_STATUS <<_ACEOF || ac_write_fail=1
 # INIT-COMMANDS
 #
 if test "$cross_compiling" = "yes"; then :
-  OMR_HOSTCONFIG_ENV="CC= CXX="
+  OMR_HOSTCONFIG_ENV="CC=$OMR_TOOLS_CC CXX=$OMR_TOOLS_CXX"
 fi
 
 _ACEOF

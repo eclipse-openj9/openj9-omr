@@ -196,12 +196,15 @@ define AR_COMMAND
 $(AR) $(ARFLAGS) $(MODULE_ARFLAGS) $(GLOBAL_ARFLAGS) rcv $@ $(OBJECTS)
 endef
 
+ifeq (linux_ztpf,$(OMR_HOST_OS))
+define CLEAN_COMMAND
+-$(RM) $(OBJECTS) $(OBJECTS:$(OBJEXT)=.i) $(OBJECTS:$(OBJEXT)=.lst) *.d
+endef
+else
 define CLEAN_COMMAND
 -$(RM) $(OBJECTS) $(OBJECTS:$(OBJEXT)=.i) *.d
-ifeq (linux_ztpf,$(OMR_HOST_OS))
--$(RM) $(OBJECTS) $(OBJECTS:$(OBJEXT)=.lst) *.d
-endif
 endef
+endif
 
 define DDR_C_COMMAND
 $(CC) $(CFLAGS) $(MODULE_CPPFLAGS) $(GLOBAL_CPPFLAGS) -E $< | sed -n -e '/^@/p' > $@

@@ -164,7 +164,7 @@ endif
 
 ifeq (1,$(OMR_DEBUG))
   ifeq (1,$(USE_GNU_DEBUG))
-    GLOBAL_ASFLAGS+=-gddb
+    GLOBAL_ASFLAGS+=-ggdb
     GLOBAL_CXXFLAGS+=-ggdb
     GLOBAL_CFLAGS+=-ggdb
     GLOBAL_LDFLAGS+=-ggdb

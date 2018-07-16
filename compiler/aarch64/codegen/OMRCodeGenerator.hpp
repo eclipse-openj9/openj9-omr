@@ -176,6 +176,7 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
     * @param[in] node : node
     * @return maximum number of GPRs allowed across edge
     */
+   using OMR::CodeGenerator::getMaximumNumberOfGPRsAllowedAcrossEdge;
    int32_t getMaximumNumberOfGPRsAllowedAcrossEdge(TR::Node *node);
    /**
     * @brief Gets the maximum number of FPRs allowed across edge
@@ -218,6 +219,18 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
     * @return the maximum number of assignable FPRs
     */
    int32_t getMaximumNumbersOfAssignableFPRs();
+
+   /**
+     * @brief give the largest negative constant that must be materialized
+     * @return the largest negative constant that must be materialized
+     */
+    int64_t getLargestNegConstThatMustBeMaterialized();
+
+    /**
+     * @brief give the largest positive constant that must be materialized
+     * @return the largest positive constant that must be materialized
+     */
+    int64_t getSmallestPosConstThatMustBeMaterialized();
 
    /**
     * @brief Builds register map

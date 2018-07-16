@@ -743,6 +743,8 @@ SETVAL(TR_ARMlong2Float,TR_FSRH+109)
 SETVAL(TR_ARMfloat2Long,TR_FSRH+110)
 SETVAL(TR_ARMnumRuntimeHelpers,TR_FSRH+111)
 
+SETVAL(TR_ARM64numRuntimeHelpers,TR_FSRH+0)
+
 SETVAL(TR_S390longDivide,TR_FSRH)
 SETVAL(TR_S390interfaceCallHelper,TR_FSRH+1)
 SETVAL(TR_S390nativeStaticHelper,TR_FSRH+2)

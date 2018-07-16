@@ -159,6 +159,8 @@ enum TR_RuntimeHelper
    TR_numRuntimeHelpers = TR_PPCnumRuntimeHelpers
 #elif defined(TR_HOST_ARM)
    TR_numRuntimeHelpers = TR_ARMnumRuntimeHelpers
+#elif defined(TR_HOST_ARM64)
+   TR_numRuntimeHelpers = TR_ARM64numRuntimeHelpers
 #elif defined(TR_HOST_S390)
    TR_numRuntimeHelpers = TR_S390numRuntimeHelpers
 #endif
@@ -348,7 +350,7 @@ typedef enum
 // Routine to check trampoline range for x86-64
 #define IS_32BIT_RIP_JUMP(x,rip)  ((intptrj_t)(x) == (intptrj_t)(rip) + (int32_t)((intptrj_t)(x) - (intptrj_t)(rip)))
 
-// Branch limit for PPC and ARM
+// Branch limit for PPC and ARM ARM64
 #define BRANCH_FORWARD_LIMIT      (0x01fffffc)
 #define BRANCH_BACKWARD_LIMIT     ((int32_t)0xfe000000)
 

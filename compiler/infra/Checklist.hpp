@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -26,6 +26,8 @@
 #define __TPF_DO_NOT_MAP_ATOE_REMOVE
 #endif
 
+#include "infra/BitVector.hpp"         // for TR_BitVector
+
 class TR_BitVector;
 
 namespace TR
@@ -44,6 +46,7 @@ class Checklist
    public :
    Checklist(TR::Compilation* c);
    ~Checklist();
+   bool isEmpty(){ return _v->isEmpty(); }
    };
 
 class NodeChecklist: public Checklist

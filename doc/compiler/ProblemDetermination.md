@@ -386,140 +386,230 @@ it will result in all other methods not being compiled. If you would like to tra
 compilation of specific methods without affecting the compilation of the other methods,
 you may do so by using [option sets](CompilerOptions.md#option-sets).
 
-### Deciphering the generated log
+## Deciphering the generated log
 
-Each full method listing (i.e. when `TR_Options='traceFull'` is used) consists of multiple sections.
+Each full compilation log (i.e. when `TR_Options='traceFull'` is used) consists
+of multiple sections. It can be overwhelming at first,  and even more so when
+you do not restrict logging to specific methods. This section aims to provide
+an explanation on some of the important components of the compilation logs.
 
-* **Bytecode listing:** A low-level disassembly of the Java bytecode that constitute the
-Java method.
-* **Initial Trees:** A listing of the trees immediately after IL generation,
-which should match the bytecode fairly closely. A trees listing is accompanied by the
-control flow graph and the structure graph (once structural analysis had been
-performed) for the method.
-* **Per-optimization diagnostic information:** This section starts with the 
-number and name of the optimization that was performed, e.g. "Performing 0: inlining", 
-"Performing 1: compactNullChecks", etc., followed by trace messages produced as the 
-optimization proceeded, e.g. "(Doing structural analysis)", "(Building use/def info)", 
-"Removing redundant resolve check node [001E6B24]", etc., and finally includes a 
-complete listing of the IL after any transformations.
-* **Post Optimization Trees, Pre Instruction Selection Trees:** Both are listings of the
-IL after all optimizations have been performed, the second differing only in that some
-trees are "lowered", i.e. translated into equivalent trees that are better for a
-particular architecture. The two listings should be largely similar.
-* **Post Instruction Selection Instructions:** A listing of pseudo-machine instructions
-that have been selected for the trees. Instruction sequences are annotated with the
-individual trees for which they were selected. Registers and memory references, etc.,
-remain symbolic in this listing.
-* **Post Scheduling Instructions, Post Register Assignment Instructions:** Both are 
-listings of the pseudo-machine instructions representing the jitted method, after the
-procedures for which they are named have been performed. In the second listing, the
-names of assigned physical registers as well as memory references are displayed in
-native notation.
-* **Post Binary Instructions:** A listing of the same pseudo-machine instructions after
-binary encoding has been performed, annotated with the actual code bytes encoded for the
-instructions, and the absolute addresses of the instructions in the code cache. This
-listing also includes additional instructions like the prologue, the epilogue, and
-out-of-line snippet code. In other words, it includes all instructions that consistute 
-the jitted method. This listing should look fairly close to a disassembly listing that
-one can obtain from a debugger.
-**Method Meta-data:** A dump of meta-data about the method, such as GC atlas, exception
-ranges and handlers, etc.
-**Mixed Mode Disassembly:** The same listing as Post Binary Instructions, but annotated
-with Java bytecode call stack information. This makes it easy to see what native
-instructions were generated for a particular Java bytecode instruction.
+For this section, we will mostly use the compilation log generated from a simple
+Java *hello world* program through the OpenJ9 JVM.
 
-**Trees Listing**  
+### Pre ILGenOpt Trees and Initial Trees
 
-The IL used in the Testarossa JIT compiler consists of a doubly linked list of trees of
-nodes. Nodes are identified by their memory addresses, and their functions are described 
-by their opcodes. Every node is either associated with a data type that indicates the 
-type of expression represented by the node, or marked as "NoType", i.e. evaluating the 
-node's opcode returns no value. Conceptually, each node can have multiple children, and 
-either zero or one parent node; parent-less nodes (or root nodes) become children of 
-"treetops", which are used to organize individual trees into a list. In reality, 
-commoned nodes have more than one parent, and every node has a reference count that is 
-used to keep track of how many parents point to itself.
+The IL used in the Testarossa JIT compiler consists of doubly linked list of trees
+of nodes. Nodes can be identified by their global indices or their memory addresses,
+and their functions are described by their opcodes. Conceptually, each node can have
+multiple children, and either zero or one parent node; parent-less nodes
+(or root nodes) become children of "treetops", which are used to organize individual
+trees into a list. In reality, commoned nodes have more than one parent, and every
+node has a reference count that is used to keep track of how many parents point to itself.
 
-The following snippet contains part of the listing of generated trees for method
-`SimpleLooper.main([Ljava/lang/String;)V`:
+Pre-ILGenOpt Trees are the listing of trees immediately after ILGeneration, and
+Initial Trees is the listing of trees after transformations due to ILGen
+optimizations. The following snippet contains the Initial Trees
+generated from method `HelloWorld.main(Ljava/lang/String;)V`.
 
 ```
-Call Stack Info
-CalleeIndex CallerIndex ByteCodeIndex CalleeMethod
-       0         -1          b        SimpleLooper.<init>V
-       1          0          1        java/lang/Object.<init>V
-       2         -1         15        SimpleLooper.createArray(I)V
-       3         -1         19        SimpleLooper.walkArray()V
-       4         -1         2b        SimpleLooper.counter()I
+<trees
+	title="Initial Trees"
+	method="testfield/HelloWorld.main([Ljava/lang/String;)V"
+	hotness="warm">
 
-    ------------ ByteCodeIndex
-    |   ------------- CallSiteIndex
-    |   |   ------------- Reference Count
-    |   |   |     -------------- Visit Count
-    |   |   |     |     -------------- Global Index
-    |   |   |     |     |     ------------ Side Table Index
-    |   |   |     |     |     |   ------------- Use/def Index
-    |   |   |     |     |     |   |  ------------- Number of Children
-    |   |   |     |     |     |   |  |  ------------- Size
-    |   |   |     |     |     |   |  |  |      ------------- Data Type
-    |   |   |     |     |     |   |  |  |      |           ------------- Node Address
-    |   |   |     |     |     |   |  |  |      |           |      ------------- Instruction
-    |   |   |     |     |     |   |  |  |      |           |      |
-    V   V   V     V     V     V   V  V  V      V           V      V
-[   0, -1,  0, 3234,    5,   -1, -1, 0, 0,    NoType [001E61F0]   BBStart (block 1)
-.
-.
-.
-[  1c,  3,  0, 3234,  232,   -1, -1, 1, 0,    NoType [001F267C]   treetop 
-[  13,  3,  2, 3234,  217,    2, -1, 1, 4,       Int [001F2440]     iiload #127[001EF32C]  Shadow[SimpleLooper.count I]+12
-[  16,  3,  2, 3234,  218,    2, 24, 0, 4,   Address [001F2464]       aload #106[001E624C] Auto[<auto slot 1>] 
-[  1f,  3,  0, 3234,  237,   -1, -1, 1, 4,   Address [001F28E4]   ResolveCHK #14[001E6580] Method[throwNullPointerException] 
-[  1f,  3,  2, 3234,  235,    2, -1, 2, 4,       Int [001F289C]     iicall #140[001F2884] unresolved Method[countB] 
-[  1f,  3,  1, 3234,  236,    1, -1, 1, 4,   Address [001F28C0]       iaload #99[001E6A08] Shadow[<vft-symbol>] 
-                                                                        ==>iaload at [001F21D8]
-                                                                      ==>iaload at [001F21D8]
-[  22,  3,  0, 3234,  436,   -1, -1, 1, 0,    NoType [02222958]   treetop 
-[  22,  3,  2, 3234,  238,    2, -1, 2, 4,       Int [001F2918]     iadd    
-                                                                      ==>iiload at [001F2440]
-                                                                      ==>iicall at [001F289C]
-[  23,  3,  0, 3234,  239,   -1, -1, 2, 4,       Int [001F293C]   iistore #127[001EF32C] Shadow[SimpleLooper.count I]+12 
-                                                                    ==>aload at [001F2464]
-                                                                    ==>iadd at [001F2918]
-.
-.
-.
+Initial Trees: for testfield/HelloWorld.main([Ljava/lang/String;)V
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+n1n       BBStart <block_2>                                                                   [0x7f8981868920] bci=[-1,0,6] rc=0 vc=6 vn=- li=- udi=- nc=0
+n4n       ResolveCHK [#548]                                                                   [0x7f8981868a10] bci=[-1,0,6] rc=0 vc=6 vn=- li=- udi=- nc=1
+n3n         aload  java/lang/System.out Ljava/io/PrintStream;[#611  unresolved notAccessed volatile Static] [flags 0x2307 0x0 ]  [0x7f89818689c0] bci=[-1,0,6] rc=3 vc=6 vn=- li=3 udi=- nc=0
+n6n       ResolveCHK [#548]                                                                   [0x7f8981868ab0] bci=[-1,3,6] rc=0 vc=6 vn=- li=- udi=- nc=1
+n5n         aload  <string>[#612  unresolved Static +35577232] [flags 0x80000307 0x0 ]        [0x7f8981868a60] bci=[-1,3,6] rc=2 vc=6 vn=- li=2 udi=- nc=0
+n9n       ResolveAndNULLCHK on n3n [#30]                                                      [0x7f8981868ba0] bci=[-1,5,6] rc=0 vc=6 vn=- li=- udi=- nc=1
+n8n         calli  java/io/PrintStream.println(Ljava/lang/String;)V[#613  unresolved virtual Method] [flags 0x400 0x0 ] ()  [0x7f8981868b50] bci=[-1,5,6] rc=1 vc=6 vn=- li=1 udi=- nc=3 flg=0x20
+n7n           aloadi  <vft-symbol>[#543  Shadow] [flags 0x18607 0x0 ]                         [0x7f8981868b00] bci=[-1,5,6] rc=1 vc=6 vn=- li=1 udi=- nc=1
+n3n             ==>aload
+n3n           ==>aload
+n5n           ==>aload
+n10n      return                                                                              [0x7f8981868bf0] bci=[-1,8,7] rc=0 vc=6 vn=- li=- udi=- nc=0
+n2n       BBEnd </block_2> =====                                                              [0x7f8981868970] bci=[-1,8,7] rc=0 vc=6 vn=- li=- udi=- nc=0
+
+n13n      BBStart <block_3> (freq 0) (catches ...) (OSR handler) (cold)                       [0x7f8981868ce0] bci=[-1,0,6] rc=0 vc=6 vn=- li=- udi=- nc=0
+n14n      BBEnd </block_3> (cold) =====                                                       [0x7f8981868d30] bci=[-1,0,6] rc=0 vc=6 vn=- li=- udi=- nc=0
+
+n11n      BBStart <block_4> (freq 0) (cold)                                                   [0x7f8981868c40] bci=[-1,0,6] rc=0 vc=6 vn=- li=- udi=- nc=0
+n21n      treetop                                                                             [0x7f8981868f60] bci=[-1,0,6] rc=0 vc=6 vn=- li=- udi=- nc=1
+n20n        call  prepareForOSR[#53  helper Method] [flags 0x400 0x0 ] ()                     [0x7f8981868f10] bci=[-1,0,6] rc=1 vc=6 vn=- li=1 udi=- nc=5 flg=0x20
+n15n          loadaddr  vmThread[#614  MethodMeta] [flags 0x200 0x0 ]                         [0x7f8981868d80] bci=[-1,0,6] rc=1 vc=6 vn=- li=1 udi=- nc=0
+n16n          iconst -1                                                                       [0x7f8981868dd0] bci=[-1,0,6] rc=1 vc=6 vn=- li=1 udi=- nc=0
+n17n          aload  args<parm 0 [Ljava/lang/String;>[#610  Parm] [flags 0x40000107 0x0 ]     [0x7f8981868e20] bci=[-1,0,6] rc=1 vc=6 vn=- li=1 udi=- nc=0
+n18n          iconst 610                                                                      [0x7f8981868e70] bci=[-1,0,6] rc=1 vc=6 vn=- li=1 udi=- nc=0
+n19n          iconst -1                                                                       [0x7f8981868ec0] bci=[-1,0,6] rc=1 vc=6 vn=- li=1 udi=- nc=0
+n23n      igoto                                                                               [0x7f8981869000] bci=[-1,0,6] rc=0 vc=6 vn=- li=- udi=- nc=1
+n22n        aload  osrReturnAddress[#573  MethodMeta +2288] [flags 0x10207 0x0 ]              [0x7f8981868fb0] bci=[-1,0,6] rc=1 vc=6 vn=- li=1 udi=- nc=0
+n12n      BBEnd </block_4> (cold)                                                             [0x7f8981868c90] bci=[-1,0,6] rc=0 vc=6 vn=- li=- udi=- nc=0
+
+index:       node global index
+bci=[x,y,z]: byte-code-info [callee-index, bytecode-index, line-number]
+rc:          reference count
+vc:          visit count
+vn:          value number
+li:          local index
+udi:         use/def index
+nc:          number of children
+addr:        address size in bytes
+flg:         node flags
+
+Number of nodes = 23, symRefCount = 615
+</trees>
 ```
 
-The `Call Stack Info` table gives a list of methods that have been inlined into 
-the one being compiled. The numbers in the `CalleeIndex` and the `CallerIndex` columns 
-describe the relationship between the inlined methods; the caller index of an 
-inlined method is the callee index of its caller. The method being compiled is 
-always assigned the callee index -1. In this example, `main()` (index -1) calls the 
-constructor of `SimpleLooper` (index 0), which in turn calls the constructor of 
-`java/lang/Object` (index 1). `main()` then calls `createArray()`, `walkArray()` and 
-`counter()` (indices 2, 3 and 4, respectively). These indices are used in the IL 
-listing (in the `CallSiteIndex` column) to indicate which method generated a given 
-IL node.
+Near the beginning of the trees listing for some methods, you may see a
+`Call Stack Info` table, which gives a list of methods that have been inlined
+into the one being compiled.
 
-Nodes in a tree are indented according to their position in the tree. Note that 
-treetops do not have an opcode, only nodes have opcodes. However, some root nodes 
-(e.g. `[001F267C]` and `[02222958]` above) have the opcode `treetop`, which usually 
-mean that the nodes are merely placeholders that perform no computation other than 
-evaluate their children. You may view the full list of IL opcodes in
- `<omr-root-dir>/compiler/il/OMRILOpCodesEnum.hpp`.
+Nodes in a tree are indented according to their position in the tree. Note that
+treetops/root nodes (left-most indented nodes) do not have opcodes, only their
+children have opcodes. The root nodes with the opcode `treetop` (eg, node `n21n`)
+are merely placeholders that do nothing more than evaluate their children.
 
-A node of the form `==>iiload at [001F2440]` represents commoning, i.e. the value 
-of the expression has already been computed. Searching backwards for the node 
-address will reveal the actual first occurrence of the node. The `Reference Count` 
-column gives the number of times a node will be reused in subsequent trees. We
-first perform an indirect load (`[001F2440]`) of an integer from 
-the instance field count of a certain `SimpleLooper` object (`[001F2464]`). Then we 
-call the virtual method `countB()` which returns an integer (`[001F289C]`). The two 
-integer expressions are used again in an integer addition (`[001F2918]`). The sum is 
-finally stored (`[001F293C]`) back into the same instance field count of the same 
-`SimpleLooper` object.
+Nodes with their opcodes prepended with `==>`, such as `n3n` and `n5n` represents
+commoning, i.e. the value of the expression has been already computed.
 
-The Byte Code Index column indicates which bytecode an instruction originated 
-from. For example, the `iadd` node above `[001F2918]` was actually part of the 
-method `SimpleLooper.walkArray()V` (index 3), and was at bytecode offset `0x22` in 
-that method. 
+On the right hand side of the trees listing, there's more information about the
+nodes such its address in memory, `bci` (indicating which bytecode the instruction
+originated from), and `rc` (indicating how many parent nodes point to the node).
+
+You may have noticed the symbol references in some of the nodes (eg. `#548` in
+`n4n`). They refer to the entries in the symbol table. The symbol table can be
+found at the end of the pre-ILGenOpt trees, which in this case was:
+
+```
+.
+.
+.
+Symbol References (incremental):
+--------------------------------
+#30:   jitThrowNullPointerException[ helper Method] [flags 0x400 0x0 ] [0x7f89818b3370] (NoType)
+#53:   prepareForOSR[ helper Method] [flags 0x400 0x0 ] [0x7f89818f3440] (NoType)
+#543:  <vft-symbol>[ Shadow] [flags 0x18607 0x0 ] [0x7f89818b3740] (Address)
+#548:  <resolve check>[ helper Method] [flags 0x400 0x0 ] [0x7f89818b3370] (NoType)
+#573:  osrReturnAddress[ MethodMeta +2288] [flags 0x10207 0x0 ] [0x7f89818f3530] (Address)
+#610:  args<parm 0 [Ljava/lang/String;>[ Parm] [flags 0x40000107 0x0 ] [0x7f8981869b00] (Address)
+#611:  java/lang/System.out Ljava/io/PrintStream;[ unresolved notAccessed volatile Static] [flags 0x2307 0x0 ] [0x7f89818b32a0] (Address) [volatile]
+#612:  <string>[ unresolved Static +35577232] [flags 0x80000307 0x0 ] [0x7f89818b34b0] (Address)
+#613:  java/io/PrintStream.println(Ljava/lang/String;)V[ unresolved virtual Method] [flags 0x400 0x0 ] [0x7f89818b3660] (NoType)
+#614:  vmThread[ MethodMeta] [flags 0x200 0x0 ] [0x7f89818f33c0] (NoType)
+
+Number of nodes = 23, symRefCount = 615
+</trees>
+```
+
+### Control Flow Graph
+
+A control flow graph or CFG is printed right after each trees listing. A CFG
+is a flowchart-like representation of the different paths of execution through
+the instructions constituting a single function, method, or trace. Each vertex
+in the graph is a basic block: a sequence of instructions with a single entry
+point at the start, and a single exit point at the end. Each edge in the graph
+joins a predecessor block to a successor; each block could have multiple 
+predecessors and successors. A loop is represented as a cycle in the graph.
+Below is the CFG printed after the Initial Trees listing for the
+`HelloWorld.main(Ljava/lang/String;)V` method.
+
+```
+<cfg>
+         0 [0x7f89818841f0] entry
+                 in        = []
+                 out       = [2(0) ]
+                 exception in  = []
+                 exception out = []
+         1 [0x7f89818840f0] exit
+                 in        = [4(0) 2(0) ]
+                 out       = []
+                 exception in  = []
+                 exception out = []
+         2 [0x7f89818b3170] BBStart at 0x7f8981868920
+                 in        = [0(0) ]
+                 out       = [1(0) ]
+                 exception in  = []
+                 exception out = [3(0) ]
+         3 [0x7f89818f31c0] BBStart at 0x7f8981868ce0, frequency = 0
+                 in        = []
+                 out       = [4(0) ]
+                 exception in  = [2(0) ]
+                 exception out = []
+         4 [0x7f89818f3080] BBStart at 0x7f8981868c40, frequency = 0
+                 in        = [3(0) ]
+                 out       = [1(0) ]
+                 exception in  = []
+                 exception out = []
+
+</cfg>
+```
+
+The CFG is is printed in the order of increasing basic block numbers. Each of the
+entries have the memory address of the basic block, its corresponding address in
+the IL (eg. block at index 2 corresponds to node `n1n` in the trees listing in 
+the last section), followed by 4 entries:
+* **in**: blocks that fall through or branch to the current block
+* **out**: blocks to which the current block falls through or branches 
+* **exception-in**: blocks that throw exceptions for which the current block is the catcher
+* **exception-out**: blocks that catch exceptions thrown by the current block
+
+The CFG will also include the structure graph if structural analysis has
+already been performed.
+
+### Per-optimization diagnostic information
+This section starts with the number and name of each of the optimizations that
+were performed, e.g:
+
+```
+<optimize
+	method="testfield/HelloWorld.main([Ljava/lang/String;)V"
+	hotness="warm">
+<optimization id=10 name=coldBlockOutlining method=testfield/HelloWorld.main([Ljava/lang/String;)V>
+Performing 10: coldBlockOutlining
+         No transformations done by this pass -- omitting listings
+</optimization>
+```
+
+If an optimization does not result in transformation of the trees, then the
+trees are not listed again, as is the case in the example above. Otherwise, the
+transformed trees are printed.
+
+### Post Optimization Trees and Pre Instruction Selection Trees
+Both are listings of the IL after all optimizations have been performed, the
+second differing only in that some trees are "lowered", i.e. translated into
+equivalent trees that are better for a particular architecture. The two listings
+should be largely similar.
+
+### Post Instruction Selection Instructions:
+A listing of pseudo-machine instructions that have been selected for the trees.
+Instruction sequences are annotated with the individual trees for which they
+were selected. Registers and memory references, etc., remain symbolic in this
+listing.
+
+### Post Scheduling Instructions and Post Register Assignment Instructions
+Both are listings of the pseudo-machine instructions representing the jitted
+method, after the procedures for which they are named have been performed.
+In post register assignment instructions listing, the names of assigned physical
+registers as well as memory references are displayed in native notation.
+
+### Post Binary Instructions
+A listing of the same pseudo-machine instructions after binary encoding has been
+performed, annotated with the actual code bytes encoded for the instructions,
+and the absolute addresses of the instructions in the code cache. This listing
+also includes additional instructions like the prologue, the epilogue, and
+out-of-line snippet code. In other words, it includes all instructions that
+constitute the jitted method. This listing should look fairly close to a
+disassembly listing that one can obtain from a debugger.
+
+### Method Meta-data
+A dump of meta-data about the method, such as GC atlas, exception ranges and
+handlers, etc.
+
+### Mixed Mode Disassembly
+The same listing as Post Binary Instructions, but annotated with Java bytecode call
+stack information. This makes it easy to see what native instructions were generated
+for a particular Java bytecode instruction.

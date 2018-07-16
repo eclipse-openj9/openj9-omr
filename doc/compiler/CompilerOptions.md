@@ -129,52 +129,18 @@ options, etc).
 | ------------------------------------------------ | ------------------------------------------------------------------------------- |
 | acceptHugeMethods                                | allow processing of really large methods                                        |
 | count=<em>nnn</em>                               | number of invocations before compiling methods without loops                    |
-| disableAndSimplification                         | disable and simplification                                                      |
-| disableBasicBlockExtension                       | disable basic block extension                                                   |
-| disableBasicBlockSlicing                         | disable basic block slicing                                                     |
-| disableBlockSplitter                             | disable block splitter                                                          |
-| disableBlockVersioner                            | disable block versioner                                                         |
-| disableCallGraphInlining                         | disable Interpreter Profiling based inlining and code size estimation           |
-| disableCatchBlockRemoval                         | disable catch block removal                                                     |
 | disableCFGSimplification                         | disable Control Flow Graph simplification                                       |
-| disableColdBlockMarker                           | disable detection of cold blocks                                                |
-| disableColdBlockOutlining                        | disable outlining of cold blocks                                                |
-| disableCompactLocals                             | disable compact locals                                                          |
-| disableCriticalEdgeSplitting                     | disable critical edge splitting                                                 |
 | disableDeadTreeElimination                       | disable dead tree elimination                                                   |
 | disableGlobalDSE                                 | disable global dead store elimination                                           |
-| disableGlobalRegisterCandidates                  | disable global register candidates                                              |
-| disableGlobalVP                                  | disable global value propagation                                                |
-| disableGLU                                       | disable general loop unroller                                                   |
 | disableGRA                                       | disable IL based global register allocator                                      |
 | disableInlining                                  | disable IL inlining                                                             |
-| disableInnerPreexistence                         | disable inner preexistence                                                      |
-| disableInternalPointers                          | disable internal pointer creation                                               |
-| disableIsolatedSE                                | disable isolated store elimination                                              |
 | disableLiveRegisterAnalysis                      | disable live register analysis                                                  |
-| disableLocalCSE                                  | disable local common subexpression elimination                                  |
-| disableLocalVP                                   | disable local value propagation                                                 |
-| disableLoopCanonicalization                      | disable loop canonicalization                                                   |
-| disableLoopInversion                             | disable loop inversion                                                          |
 | disableLoopUnroller                              | disable loop unroller                                                           |
-| disableMergeStackMaps                            | disable stack map merging                                                       |
-| disableNewBVA                                    | disable structure based bit vector analysis                                     |
-| disableNonvirtualInlining                        | disable inlining of non virtual methods                                         |
 | disableOpts={<em>regex</em>}                     | list of optimizations to disable                                                |
 | disableOptTransformations={<em>regex</em>}       | list of optimizer transformations to disable                                    |
-| disablePRE                                       | disable partial redudndancy elimination                                         |
-| disableSequenceSimplification                    | disable arithmetic sequence simplification                                      |
-| disableSequentialStoreSimplification             | disable sequential store simplification phase                                   |
 | disableTreeCleansing                             | disable tree cleansing                                                          |
-| disableTreeSimplification                        | disable tree simplification                                                     |
-| disableValueProfiling                            | disable value profiling                                                         |
-| disableVerification                              | disable verification of internal data structures between passes                 |
-| disableVirtualGuardTailSplitter                  | disable virtual guard tail splitter                                             |
 | disableVirtualInlining                           | disable inlining of virtual methods                                             |
 | dontInline={<em>regex</em>}                      | list of methods to not inline                                                   |
-| enableBasicBlockHoisting                         | enable basic block hoisting                                                     |
-| enableLocalLiveRangeReduction                    | enable local live range reduction                                               |
-| enableLoopyMethodForcedCompilations              | enable compiling loopy methods with noOpt,count=0                               |
 | firstOptIndex=<em>nnn</em>                       | index of the first optimization to perform                                      |
 | firstOptTransformationIndex=<em>nnn</em>         | index of the first optimization transformation to perform                       |
 | ignoreIEEE                                       | allow non-IEEE compliant optimizations                                          |
@@ -183,7 +149,7 @@ options, etc).
 | lastOptTransformationIndex=<em>nnn</em>          | index of the last optimization transformation to perform                        |
 | numRestrictedGPRs=<em>nnn</em>                   | number of restricted GPRS (0-5).  Currently z only                              |
 | onlyInline={<em>regex</em>}                      | list of methods that can be inlined                                             |
-| optLevel=noOpt/cold/warm/hot/veryHot/scorching   | compile all methods at specified opt level                                      |
+| optLevel=<em>level</em>                          | compile all methods at specified level (cold, warm, hot, veryHot, scorching)    |
 | paranoidOptCheck                                 | check the trees and cfgs after every optimization phase                         |
 
 ### Logging and Trace Options
@@ -195,43 +161,19 @@ options, etc).
 | log=<em>filename</em>                                                         | write log output to <em>filename</em>                                                                  |
 | optDetails                                                                    | log all optimizer transformations                                                                      |
 | stats                                                                         | dump statistics at end of run                                                                          |
-| traceAliases                                                                  | trace alias set generation                                                                             |
-| traceBasicBlockExtension                                                      | trace basic block extension                                                                            |
 | traceBC                                                                       | dump bytecodes                                                                                         |
 | traceBin                                                                      | dump binary instructions                                                                               |
-| traceBlockFrequencyGeneration                                                 | trace block frequency generation                                                                       |
 | traceBlockSplitter                                                            | trace block splitter                                                                                   |
-| traceBVA                                                                      | trace bit vector analysis                                                                              |
-| traceCatchBlockRemoval                                                        | trace catch block removal                                                                              |
 | traceCG                                                                       | dump output of code generation passes                                                                  |
-| traceCompactNullChecks                                                        | trace compact null checks                                                                              |
-| traceDeadTreeElimination                                                      | trace dead tree elimination                                                                            |
-| traceForCodeMining={<em>regex</em>}                                           | add instruction annotations for code mining                                                            |
 | traceFull                                                                     | turn on all trace options                                                                              |
 | traceGlobalDSE                                                                | trace global dead store elimination                                                                    |
-| traceGlobalLiveVariablesForGC                                                 | trace global live variables for GC                                                                     |
-| traceGlobalRegisterCandidates                                                 | trace global register candidates                                                                       |
-| traceGlobalVP                                                                 | trace global value propagation                                                                         |
 | traceInlining                                                                 | trace IL inlining                                                                                      |
-| traceInvariantArgumentPreexistence                                            | trace invariable argument preexistence                                                                 |
-| traceLiveness                                                                 | trace liveness analysis                                                                                |
-| traceLocalCSE                                                                 | trace local common subexpression elimination                                                           |
-| traceLoopUnroller                                                             | trace loop unroller                                                                                    |
-| traceMethodMetaData                                                           | dump method meta data                                                                                  |
-| traceMethodSpecializer                                                        | trace method specializer                                                                               |
-| traceMixedModeDisassembly                                                     | dump generated assembly with bytecodes                                                                 |
-| traceNodeFlags                                                                | trace setting/resetting of node flags                                                                  |
 | traceOpts={<em>regex</em>}                                                    | list of optimizations to trace                                                                         |
 | traceOptTrees                                                                 | dump trees after each optimization                                                                     |
-| tracePostBinaryEncoding                                                       | dump instructions (code cache addresses, real registers) after binary encoding                         |
-| tracePostInstructionSelection                                                 | dump instructions (virtual registers) after instruction selection                                      |
-| tracePostRegisterAssignment                                                   | dump instructions (real registers) after register assignment                                           |
-| tracePostScheduling                                                           | dump instructions (real registers) after instruction scheduling                                        |
 | tracePRE                                                                      | trace partial redudndancy elimination                                                                  |
 | traceRedundantMonitorElimination                                              | trace redundant monitor elimination                                                                    |
 | traceRegisterPressureDetails                                                  | include extra register pressure annotations in register pressure simulation and tree evaluation traces |
 | traceTrees                                                                    | dump trees after each compilation phase                                                                |
-| traceUseDefs                                                                  | trace use def info                                                                                     |
 | verbose                                                                       | write compiled method names to vlog file or stdout in limitfile format                                 |
 | verbose={<em>regex</em>}                                                      | list of verbose output to write to vlog or stdout                                                      |
 | version                                                                       | display the jit build version                                                                          |

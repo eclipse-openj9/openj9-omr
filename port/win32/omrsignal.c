@@ -337,6 +337,17 @@ omrsig_shutdown(struct OMRPortLibrary *portLibrary)
 	omrthread_monitor_enter(globalMonitor);
 
 	if (--attachedPortLibraries == 0) {
+#if defined(OMR_PORT_ASYNC_HANDLER)
+		/* Terminate asynchSignalReporterThread. */
+		omrthread_monitor_enter(asyncReporterShutdownMonitor);
+		shutDownASynchReporter = 1;
+		j9sem_post(wakeUpASyncReporter);
+		while (0 != shutDownASynchReporter) {
+			omrthread_monitor_wait(asyncReporterShutdownMonitor);
+		}
+		omrthread_monitor_exit(asyncReporterShutdownMonitor);
+#endif /* defined(OMR_PORT_ASYNC_HANDLER) */
+
 		/* Register the original signal handlers, which were overwritten. */
 		for (index = 1; index < ARRAY_SIZE_SIGNALS; index++) {
 			if (0 != handlerInfo[index].restore) {

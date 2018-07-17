@@ -114,6 +114,8 @@ static void masterASynchSignalHandler(int osSignalNo);
 static int J9THREAD_PROC asynchSignalReporter(void *userData);
 #endif /* defined(OMR_PORT_ASYNC_HANDLER) */
 
+static int32_t registerMasterHandlers(OMRPortLibrary *portLibrary, uint32_t flags, uint32_t allowedSubsetOfFlags, void **oldOSHandler);
+
 uint32_t
 omrsig_info(struct OMRPortLibrary *portLibrary, void *info, uint32_t category, int32_t index, const char **name, void **value)
 {
@@ -1055,3 +1057,70 @@ asynchSignalReporter(void *userData)
 	return 0;
 }
 #endif /* defined(OMR_PORT_ASYNC_HANDLER) */
+
+/**
+ * Register the master handler for the signals indicated in the flags. Only
+ * masterASynchSignalHandler/OMRPORT_SIG_FLAG_SIGALLASYNC is supported
+ * on win32. OMRPORT_SIG_FLAG_SIGALLSYNC is not supported on win32.
+ *
+ * @param[in] flags the flags that we want signals for
+ * @param[in] allowedSubsetOfFlags must be OMRPORT_SIG_FLAG_SIGALLASYNC for
+ *            asynchronous signals. OMRPORT_SIG_FLAG_SIGALLSYNC is not
+ *            supported on win32.
+ * @param[out] *oldOSHandler points to the old signal handler function, if
+ *             oldOSHandler is non-null
+ *
+ * @return	0 upon success; OMRPORT_SIG_ERROR otherwise.
+ *			Possible failure scenarios include:
+ *			1) Master handlers are not registered if -Xrs is set.
+ *			2) Attempting to register a handler for a signal that is not included
+ *			   in the allowedSubsetOfFlags.
+ *			3) Failure to register the OS signal handler.
+ */
+static int32_t
+registerMasterHandlers(OMRPortLibrary *portLibrary, uint32_t flags, uint32_t allowedSubsetOfFlags, void **oldOSHandler)
+{
+	int32_t rc = 0;
+	uint32_t flagsSignalsOnly = (flags & allowedSubsetOfFlags);
+	win_signal handler = NULL;
+
+	if (OMR_ARE_ALL_BITS_SET(signalOptions, OMRPORT_SIG_OPTIONS_REDUCED_SIGNALS_ASYNCHRONOUS)) {
+		/* Do not install any handlers if -Xrs is set. */
+		return OMRPORT_SIG_ERROR;
+	}
+
+	if (OMRPORT_SIG_FLAG_SIGALLASYNC == allowedSubsetOfFlags) {
+		handler = masterASynchSignalHandler;
+	} else {
+		return OMRPORT_SIG_ERROR;
+	}
+
+	if (0 != flagsSignalsOnly) {
+		/* registering some handlers */
+		uint32_t portSignalType = 0;
+
+		/* OMRPORT_SIG_SMALLEST_SIGNAL_FLAG represents the smallest signal
+		 * flag. portSignalType is initialized to the smallest signal flag
+		 * in order to avoid non-signal flags. Any non-signal flags greater
+		 * than the smallest signal flag are ignored via a bitwise-and
+		 * operation with allowedSubsetOfFlags. allowedSubsetOfFlags either
+		 * represents all synchronous signal flags (OMRPORT_SIG_FLAG_SIGALLSYNC)
+		 * or all asynchronous signal flags (OMRPORT_SIG_FLAG_SIGALLASYNC).
+		 */
+		omrthread_monitor_enter(registerHandlerMonitor);
+		for (portSignalType = OMRPORT_SIG_SMALLEST_SIGNAL_FLAG; portSignalType < allowedSubsetOfFlags; portSignalType = portSignalType << 1) {
+			/* Iterate through all the  signals and register the master handler for the signals
+			 * specified in flagsSignalsOnly.
+			 */
+			if (OMR_ARE_ALL_BITS_SET(flagsSignalsOnly, portSignalType)) {
+				if (0 != registerSignalHandlerWithOS(portLibrary, portSignalType, handler, oldOSHandler)) {
+					rc = OMRPORT_SIG_ERROR;
+					break;
+				}
+			}
+		}
+		omrthread_monitor_exit(registerHandlerMonitor);
+	}
+
+	return rc;
+}

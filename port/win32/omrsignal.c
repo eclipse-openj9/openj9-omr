@@ -27,6 +27,7 @@
 #include "omrport.h"
 #include "omrthread.h"
 #include "omrsignal.h"
+#include "omrutil.h"
 #include "omrutilbase.h"
 #include "ut_omrport.h"
 
@@ -65,6 +66,9 @@ static struct {
 
 /* Keep track of signal counts. */
 static volatile uintptr_t signalCounts[ARRAY_SIZE_SIGNALS] = {0};
+
+/* Thread to invoke signal handlers for asynchronous signals. */
+static omrthread_t asynchSignalReporterThread;
 
 static J9Win32AsyncHandlerRecord *asyncHandlerList;
 static omrthread_monitor_t asyncMonitor;
@@ -105,6 +109,10 @@ static void destroySignalTools(OMRPortLibrary *portLibrary);
 
 static void updateSignalCount(int osSignalNo);
 static void masterASynchSignalHandler(int osSignalNo);
+
+#if defined(OMR_PORT_ASYNC_HANDLER)
+static int J9THREAD_PROC asynchSignalReporter(void *userData);
+#endif /* defined(OMR_PORT_ASYNC_HANDLER) */
 
 uint32_t
 omrsig_info(struct OMRPortLibrary *portLibrary, void *info, uint32_t category, int32_t index, const char **name, void **value)
@@ -945,8 +953,26 @@ initializeSignalTools(OMRPortLibrary *portLibrary)
 		goto cleanup3;
 	}
 
+#if defined(OMR_PORT_ASYNC_HANDLER)
+	if (J9THREAD_SUCCESS != createThreadWithCategory(
+			&asynchSignalReporterThread,
+			256 * 1024,
+			J9THREAD_PRIORITY_MAX,
+			0,
+			&asynchSignalReporter,
+			NULL,
+			J9THREAD_CATEGORY_SYSTEM_THREAD)
+	) {
+		goto cleanup4;
+	}
+#endif /* defined(OMR_PORT_ASYNC_HANDLER) */
+
 	return 0;
 
+#if defined(OMR_PORT_ASYNC_HANDLER)
+cleanup4:
+	omrthread_tls_free(tlsKeyCurrentSignal);
+#endif /* defined(OMR_PORT_ASYNC_HANDLER) */
 cleanup3:
 	j9sem_destroy(wakeUpASyncReporter);
 cleanup2:
@@ -1006,3 +1032,26 @@ masterASynchSignalHandler(int osSignalNo)
 	 */
 	signal(osSignalNo, masterASynchSignalHandler);
 }
+
+#if defined(OMR_PORT_ASYNC_HANDLER)
+/**
+ * This is the main body of the asynchSignalReporterThread. It is supposed to execute
+ * handlers (J9Win32AsyncHandlerRecord->handler) associated to a signal once a
+ * signal is raised.
+ *
+ * @param[in] userData the user data provided during thread creation
+ *
+ * @return return statement won't be executed since the thread exits before executing
+ *         the return statement
+ */
+static int J9THREAD_PROC
+asynchSignalReporter(void *userData)
+{
+	omrthread_set_name(omrthread_self(), "Signal Reporter");
+
+	omrthread_exit(NULL);
+
+	/* Unreachable. */
+	return 0;
+}
+#endif /* defined(OMR_PORT_ASYNC_HANDLER) */

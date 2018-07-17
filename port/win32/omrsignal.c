@@ -91,6 +91,9 @@ static j9sem_t wakeUpASyncReporter;
 /* Used to synchronize shutdown of asynchSignalReporterThread. */
 static omrthread_monitor_t asyncReporterShutdownMonitor;
 
+/* Used to indicate start and end of asynchSignalReporterThread termination. */
+static uint32_t shutDownASynchReporter;
+
 static uint32_t mapWin32ExceptionToPortlibType(uint32_t exceptionCode);
 static uint32_t infoForGPR(struct OMRPortLibrary *portLibrary, struct J9Win32SignalInfo *info, int32_t index, const char **name, void **value);
 static void removeAsyncHandlers(OMRPortLibrary *portLibrary);
@@ -1082,21 +1085,50 @@ runHandlers(uint32_t asyncSignalFlag)
 }
 
 /**
- * This is the main body of the asynchSignalReporterThread. It is supposed to execute
- * handlers (J9Win32AsyncHandlerRecord->handler) associated to a signal once a
- * signal is raised.
+ * This is the main body of the asynchSignalReporterThread. It executes handlers
+ * (J9Win32AsyncHandlerRecord->handler) associated to a signal once a signal
+ * is raised.
  *
  * @param[in] userData the user data provided during thread creation
  *
- * @return return statement won't be executed since the thread exits before executing
- *         the return statement
+ * @return the return statement won't be executed since the thread exits before
+ *         executing the return statement
  */
 static int J9THREAD_PROC
 asynchSignalReporter(void *userData)
 {
 	omrthread_set_name(omrthread_self(), "Signal Reporter");
 
-	omrthread_exit(NULL);
+	while (0 == shutDownASynchReporter) {
+		int osSignal = 1;
+		uint32_t asyncSignalFlag = 0;
+
+		/* determine which signal we've been woken up for */
+		for (osSignal = 1; osSignal < ARRAY_SIZE_SIGNALS; osSignal++) {
+			uintptr_t signalCount = signalCounts[osSignal];
+
+			if (signalCount > 0) {
+				asyncSignalFlag = mapOSSignalToPortLib(osSignal);
+				runHandlers(asyncSignalFlag);
+				subtractAtomic(&signalCounts[osSignal], 1);
+				/* j9sem_wait will fall-through for each j9sem_post. We can handle
+				 * one signal at a time. Ultimately, all signals will be handled
+				 * So, break out of the for loop.
+				 */
+				break;
+			}
+		}
+
+		j9sem_wait(wakeUpASyncReporter);
+
+		Trc_PRT_signal_omrsig_asynchSignalReporter_woken_up();
+	}
+
+	omrthread_monitor_enter(asyncReporterShutdownMonitor);
+	shutDownASynchReporter = 0;
+	omrthread_monitor_notify(asyncReporterShutdownMonitor);
+
+	omrthread_exit(asyncReporterShutdownMonitor);
 
 	/* Unreachable. */
 	return 0;

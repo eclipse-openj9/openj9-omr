@@ -3496,7 +3496,7 @@ OMR::Power::CodeGenerator::addMetaDataForLoadAddressConstantFixed(
          if (typeAddress == -1)
             {
             if (doAOTRelocation)
-               self()->addAOTRelocation(new (self()->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(
+               self()->addExternalRelocation(new (self()->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(
                                  firstInstruction,
                                  (uint8_t *)value,
                                  (uint8_t *)seqKind,
@@ -3515,7 +3515,7 @@ OMR::Power::CodeGenerator::addMetaDataForLoadAddressConstantFixed(
                   recordInfo->data1 = (uintptr_t)node->getSymbolReference();
                   recordInfo->data2 = (uintptr_t)node->getInlinedSiteIndex();
                   recordInfo->data3 = (uintptr_t)seqKind;
-                  self()->addAOTRelocation(new (self()->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(
+                  self()->addExternalRelocation(new (self()->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(
                                     firstInstruction,
                                     (uint8_t *)recordInfo,
                                     TR_DataAddress, self()),
@@ -3540,7 +3540,7 @@ OMR::Power::CodeGenerator::addMetaDataForLoadAddressConstantFixed(
             else
                {
                if (doAOTRelocation)
-                  self()->addAOTRelocation(new (self()->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(
+                  self()->addExternalRelocation(new (self()->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(
                                     firstInstruction,
                                     (uint8_t *)value,
                                     (uint8_t *)seqKind,
@@ -3560,7 +3560,7 @@ OMR::Power::CodeGenerator::addMetaDataForLoadAddressConstantFixed(
          if (typeAddress == -1)
             {
             if (doAOTRelocation)
-               self()->addAOTRelocation(new (self()->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(
+               self()->addExternalRelocation(new (self()->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(
                                  firstInstruction,
                                  (uint8_t *)value,
                                  (uint8_t *)seqKind,
@@ -3574,7 +3574,7 @@ OMR::Power::CodeGenerator::addMetaDataForLoadAddressConstantFixed(
             if (typeAddress == TR_RamMethodSequence) // NOTE: 32 bit changed to use TR_RamMethodSequence for ordered pair, hence, we should check this instead
                {
                if (doAOTRelocation)
-                  self()->addAOTRelocation(new (self()->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(
+                  self()->addExternalRelocation(new (self()->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(
                                     firstInstruction,
                                     (uint8_t *)value,
                                     (uint8_t *)seqKind,
@@ -3591,7 +3591,7 @@ OMR::Power::CodeGenerator::addMetaDataForLoadAddressConstantFixed(
                   recordInfo->data1 = (uintptr_t)node->getSymbolReference();
                   recordInfo->data2 = (uintptr_t)node->getInlinedSiteIndex();
                   recordInfo->data3 = (uintptr_t)seqKind;
-                  self()->addAOTRelocation(new (self()->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(
+                  self()->addExternalRelocation(new (self()->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(
                                     firstInstruction,
                                     (uint8_t *)recordInfo,
                                     TR_DataAddress, self()),
@@ -3616,7 +3616,7 @@ OMR::Power::CodeGenerator::addMetaDataForLoadAddressConstantFixed(
             else
                {
                if (doAOTRelocation)
-                  self()->addAOTRelocation(new (self()->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(
+                  self()->addExternalRelocation(new (self()->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(
                                     firstInstruction,
                                     (uint8_t *)value,
                                     (uint8_t *)seqKind,
@@ -3715,7 +3715,7 @@ OMR::Power::CodeGenerator::addMetaDataForLoadIntConstantFixed(
       recordInfo->data1 = (uintptr_t)node->getSymbolReference();
       recordInfo->data2 = node ? (uintptr_t)node->getInlinedSiteIndex() : (uintptr_t)-1;
       recordInfo->data3 = orderedPairSequence2;
-      self()->addAOTRelocation(new (self()->trHeapMemory()) TR::ExternalOrderedPair32BitRelocation((uint8_t *)firstInstruction,
+      self()->addExternalRelocation(new (self()->trHeapMemory()) TR::ExternalOrderedPair32BitRelocation((uint8_t *)firstInstruction,
                                                                                           (uint8_t *)secondInstruction,
                                                                                           (uint8_t *)recordInfo,
                                                                                           (TR_ExternalRelocationTargetKind)TR_DataAddress, self()),
@@ -3736,7 +3736,7 @@ OMR::Power::CodeGenerator::addMetaDataForLoadIntConstantFixed(
       TR_RelocationRecordInformation *recordInfo = ( TR_RelocationRecordInformation *)comp->trMemory()->allocateMemory(sizeof( TR_RelocationRecordInformation), heapAlloc);
       recordInfo->data1 = (uintptr_t)value;
       recordInfo->data3 = orderedPairSequence2;
-      self()->addAOTRelocation(new (self()->trHeapMemory()) TR::ExternalOrderedPair32BitRelocation((uint8_t *)firstInstruction,
+      self()->addExternalRelocation(new (self()->trHeapMemory()) TR::ExternalOrderedPair32BitRelocation((uint8_t *)firstInstruction,
                                                                                           (uint8_t *)secondInstruction,
                                                                                           (uint8_t *)recordInfo,
                                                                                           (TR_ExternalRelocationTargetKind)typeAddress, self()),
@@ -3816,7 +3816,7 @@ OMR::Power::CodeGenerator::addMetaDataFor64BitFixedLoadLabelAddressIntoReg(
       self()->addRelocation(new (self()->trHeapMemory()) TR::PPCPairedLabelAbsoluteRelocation(q[0], q[1], q[2], q[3], label));
       }
 
-   self()->addAOTRelocation(new (self()->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(q[0],
+   self()->addExternalRelocation(new (self()->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(q[0],
                                                                             (uint8_t *)(label),
                                                                             (uint8_t *) (tempReg ? fixedSequence4 : fixedSequence2),
                                                                             TR_FixedSequenceAddress, self()),

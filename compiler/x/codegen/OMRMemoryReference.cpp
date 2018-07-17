@@ -1181,14 +1181,14 @@ OMR::X86::MemoryReference::addMetaDataForCodeAddress(
          {
          if (self()->needsCodeAbsoluteExternalRelocation())
             {
-            cg->addAOTRelocation(new (cg->trHeapMemory()) TR::ExternalRelocation(cursor,
+            cg->addExternalRelocation(new (cg->trHeapMemory()) TR::ExternalRelocation(cursor,
                                                                   0,
                                                                   TR_AbsoluteMethodAddress, cg),
                                  __FILE__,__LINE__, node);
             }
          else if (self()->getReloKind() == TR_ACTIVE_CARD_TABLE_BASE)
             {
-            cg->addAOTRelocation(new (cg->trHeapMemory()) TR::ExternalRelocation(cursor,
+            cg->addExternalRelocation(new (cg->trHeapMemory()) TR::ExternalRelocation(cursor,
                                                                   (uint8_t*)TR_ActiveCardTableBase,
                                                                   TR_GlobalValue, cg),
                                  __FILE__,__LINE__, node);
@@ -1218,7 +1218,7 @@ OMR::X86::MemoryReference::addMetaDataForCodeAddress(
                   if (symbol->isConst())
                      {
                      TR::Compilation *comp = cg->comp();
-                     cg->addAOTRelocation(new (cg->trHeapMemory()) TR::ExternalRelocation(cursor,
+                     cg->addExternalRelocation(new (cg->trHeapMemory()) TR::ExternalRelocation(cursor,
                                                                             (uint8_t *)self()->getSymbolReference().getOwningMethod(comp)->constantPool(),
                                                                             node ? (uint8_t *)(intptrj_t)node->getInlinedSiteIndex() : (uint8_t *)-1,
                                                                            TR_ConstantPool, cg),
@@ -1229,7 +1229,7 @@ OMR::X86::MemoryReference::addMetaDataForCodeAddress(
                      if (cg->needClassAndMethodPointerRelocations())
                         {
                         *(int32_t *)cursor = (int32_t)(TR::Compiler->cls.persistentClassPointerFromClassPointer(cg->comp(), (TR_OpaqueClassBlock*)(self()->getSymbolReference().getOffset() + (intptrj_t)staticSym->getStaticAddress())));
-                        cg->addAOTRelocation(new (cg->trHeapMemory()) TR::ExternalRelocation(cursor, (uint8_t *)&self()->getSymbolReference(),
+                        cg->addExternalRelocation(new (cg->trHeapMemory()) TR::ExternalRelocation(cursor, (uint8_t *)&self()->getSymbolReference(),
                                                                                                  node ? (uint8_t *)(intptrj_t)node->getInlinedSiteIndex() : (uint8_t *)-1,
                                                                                                  TR_ClassAddress, cg), __FILE__, __LINE__, node);
                         }
@@ -1243,14 +1243,14 @@ OMR::X86::MemoryReference::addMetaDataForCodeAddress(
                      {
                      if (staticSym->isCountForRecompile())
                         {
-                        cg->addAOTRelocation(new (cg->trHeapMemory()) TR::ExternalRelocation(cursor, (uint8_t *) TR_CountForRecompile, TR_GlobalValue, cg),
+                        cg->addExternalRelocation(new (cg->trHeapMemory()) TR::ExternalRelocation(cursor, (uint8_t *) TR_CountForRecompile, TR_GlobalValue, cg),
                                              __FILE__,
                                              __LINE__,
                                              node);
                         }
                      else if (staticSym->isRecompilationCounter())
                         {
-                        cg->addAOTRelocation(new (cg->trHeapMemory()) TR::ExternalRelocation(cursor, 0, TR_BodyInfoAddress, cg),
+                        cg->addExternalRelocation(new (cg->trHeapMemory()) TR::ExternalRelocation(cursor, 0, TR_BodyInfoAddress, cg),
                                              __FILE__,
                                              __LINE__,
                                              node);
@@ -1261,7 +1261,7 @@ OMR::X86::MemoryReference::addMetaDataForCodeAddress(
                            TR::ExternalRelocation(cursor,
                                                       0,
                                                       TR_AbsoluteMethodAddress, cg);
-                        cg->addAOTRelocation(r, __FILE__, __LINE__, node);
+                        cg->addExternalRelocation(r, __FILE__, __LINE__, node);
                         }
                      else if (symbol->isDebugCounter())
                         {
@@ -1277,7 +1277,7 @@ OMR::X86::MemoryReference::addMetaDataForCodeAddress(
                         }
                      else
                         {
-                        cg->addAOTRelocation(new (cg->trHeapMemory()) TR::ExternalRelocation(cursor,
+                        cg->addExternalRelocation(new (cg->trHeapMemory()) TR::ExternalRelocation(cursor,
                                                                            (uint8_t *)&self()->getSymbolReference(),
                                                                            node ? (uint8_t *)(uintptr_t)node->getInlinedSiteIndex() : (uint8_t *)-1,
                                                                            TR_DataAddress, cg),
@@ -1317,7 +1317,7 @@ OMR::X86::MemoryReference::addMetaDataForCodeAddress(
                else
                   {
                   cg->addRelocation(new (cg->trHeapMemory()) TR::LabelAbsoluteRelocation(cursor, label));
-                  cg->addAOTRelocation(new (cg->trHeapMemory()) TR::ExternalRelocation(cursor,
+                  cg->addExternalRelocation(new (cg->trHeapMemory()) TR::ExternalRelocation(cursor,
                                                                         0,
                                                                         TR_AbsoluteMethodAddress, cg),
                                        __FILE__, __LINE__, node);

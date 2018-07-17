@@ -48,7 +48,7 @@ void TR::PPCPairedRelocation::mapRelocation(TR::CodeGenerator *cg)
       // those are already in the AOT relocation list by this point. Add it at
       // the beginning to maintain the correct relative ordering.
 
-      cg->addAOTRelocation(
+      cg->addExternalRelocation(
          new (cg->trHeapMemory()) TR::ExternalOrderedPair32BitRelocation(
             getSourceInstruction()->getBinaryEncoding(),
             getSource2Instruction()->getBinaryEncoding(),
@@ -57,7 +57,7 @@ void TR::PPCPairedRelocation::mapRelocation(TR::CodeGenerator *cg)
          __FILE__,
          __LINE__,
          getNode(),
-         TR::AOTRelocationAtFront);
+         TR::ExternalRelocationAtFront);
       }
    }
 

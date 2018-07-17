@@ -82,7 +82,7 @@ uint32_t encodeHelperBranch(bool isBranchAndLink, TR::SymbolReference *symRef, u
              "CodeCache is more than 32MB.\n");
       }
 
-   cg->addAOTRelocation(
+   cg->addExternalRelocation(
       new (cg->trHeapMemory()) TR::ExternalRelocation(cursor,
                                      (uint8_t *)symRef,
                                      TR_HelperAddress, cg),
@@ -219,13 +219,13 @@ uint8_t *TR::ARMImmInstruction::generateBinaryEncoding()
       switch(getReloKind())
          {
          case TR_AbsoluteHelperAddress:
-            cg()->addAOTRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor, (uint8_t *)getSymbolReference(), TR_AbsoluteHelperAddress, cg()), __FILE__, __LINE__, getNode());
+            cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor, (uint8_t *)getSymbolReference(), TR_AbsoluteHelperAddress, cg()), __FILE__, __LINE__, getNode());
             break;
          case TR_RamMethod:
-            cg()->addAOTRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor, NULL, TR_RamMethod, cg()), __FILE__, __LINE__, getNode());
+            cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor, NULL, TR_RamMethod, cg()), __FILE__, __LINE__, getNode());
             break;
          case TR_BodyInfoAddress:
-            cg()->addAOTRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor, 0, TR_BodyInfoAddress, cg()), __FILE__, __LINE__, getNode());
+            cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor, 0, TR_BodyInfoAddress, cg()), __FILE__, __LINE__, getNode());
             break;
          default:
             TR_ASSERT(false, "Unsupported AOT relocation type specified.");
@@ -237,7 +237,7 @@ uint8_t *TR::ARMImmInstruction::generateBinaryEncoding()
       //
       void **locationToPatch = (void**)cursor;
       cg()->jitAddPicToPatchOnClassRedefinition(*locationToPatch, locationToPatch);
-      cg()->addAOTRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation((uint8_t *)locationToPatch, (uint8_t *)*locationToPatch, TR_HCR, cg()), __FILE__,__LINE__, getNode());
+      cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation((uint8_t *)locationToPatch, (uint8_t *)*locationToPatch, TR_HCR, cg()), __FILE__,__LINE__, getNode());
       }
 
    cursor += ARM_INSTRUCTION_LENGTH;
@@ -347,7 +347,7 @@ uint8_t *TR::ARMImmSymInstruction::generateBinaryEncoding()
 #endif
                // no need to add 4 to cursor, it is done below in the
                // common path
-               cg()->addAOTRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(
+               cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(
                   cursor,
                   NULL,
                   TR_AbsoluteMethodAddress,

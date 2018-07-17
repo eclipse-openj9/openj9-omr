@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -57,6 +57,7 @@ SimpleRegex *SimpleRegex::create(char *&s)
    {
    if (s == NULL || s[0] != '{')
       return NULL;
+   char *origStr = s;
    ++s;
    bool negate = (s[0] == '^');
    if (negate)
@@ -69,6 +70,8 @@ SimpleRegex *SimpleRegex::create(char *&s)
    SimpleRegex *result = (SimpleRegex *)jitPersistentAlloc(sizeof(SimpleRegex));
    result->_regex = regex;
    result->_negate = negate;
+   result->_regexStr = origStr;
+   result->_regexStrLen = s - origStr;
    return result;
    }
 

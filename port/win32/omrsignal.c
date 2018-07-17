@@ -88,6 +88,9 @@ static omrthread_monitor_t registerHandlerMonitor;
  */
 static j9sem_t wakeUpASyncReporter;
 
+/* Used to synchronize shutdown of asynchSignalReporterThread. */
+static omrthread_monitor_t asyncReporterShutdownMonitor;
+
 static uint32_t mapWin32ExceptionToPortlibType(uint32_t exceptionCode);
 static uint32_t infoForGPR(struct OMRPortLibrary *portLibrary, struct J9Win32SignalInfo *info, int32_t index, const char **name, void **value);
 static void removeAsyncHandlers(OMRPortLibrary *portLibrary);
@@ -951,8 +954,12 @@ initializeSignalTools(OMRPortLibrary *portLibrary)
 		goto cleanup2;
 	}
 
-	if (omrthread_tls_alloc(&tlsKeyCurrentSignal)) {
+	if (0 != omrthread_tls_alloc(&tlsKeyCurrentSignal)) {
 		goto cleanup3;
+	}
+
+	if (0 != omrthread_monitor_init_with_name(&asyncReporterShutdownMonitor, 0, "portLibrary_omrsig_asynch_reporter_shutdown_monitor")) {
+		goto cleanup4;
 	}
 
 #if defined(OMR_PORT_ASYNC_HANDLER)
@@ -965,16 +972,18 @@ initializeSignalTools(OMRPortLibrary *portLibrary)
 			NULL,
 			J9THREAD_CATEGORY_SYSTEM_THREAD)
 	) {
-		goto cleanup4;
+		goto cleanup5;
 	}
 #endif /* defined(OMR_PORT_ASYNC_HANDLER) */
 
 	return 0;
 
 #if defined(OMR_PORT_ASYNC_HANDLER)
+cleanup5:
+	omrthread_monitor_destroy(asyncReporterShutdownMonitor);
+#endif /* defined(OMR_PORT_ASYNC_HANDLER) */
 cleanup4:
 	omrthread_tls_free(tlsKeyCurrentSignal);
-#endif /* defined(OMR_PORT_ASYNC_HANDLER) */
 cleanup3:
 	j9sem_destroy(wakeUpASyncReporter);
 cleanup2:
@@ -999,6 +1008,7 @@ destroySignalTools(OMRPortLibrary *portLibrary)
 	omrthread_monitor_destroy(registerHandlerMonitor);
 	j9sem_destroy(wakeUpASyncReporter);
 	omrthread_tls_free(tlsKeyCurrentSignal);
+	omrthread_monitor_destroy(asyncReporterShutdownMonitor);
 }
 
 /**

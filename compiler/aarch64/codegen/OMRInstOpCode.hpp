@@ -54,8 +54,24 @@ class InstOpCode: public OMR::InstOpCode
     * @param[in] m : mnemonic
     */
    InstOpCode(Mnemonic m) : OMR::InstOpCode(m) {}
+
+   public:
+
+   typedef uint32_t OpCodeBinaryEntry;
+   static const OpCodeBinaryEntry binaryEncodings[ARM64NumOpCodes];
+
+   /*
+    * @brief Copies binary encoding of the opcode to buffer
+    * @param[in] cursor : instruction cursor
+    * @return instruction cursor
+    */
+   uint8_t *copyBinaryToBuffer(uint8_t *cursor)
+      {
+      *(uint32_t *)cursor = *(uint32_t *)&binaryEncodings[_mnemonic];
+      return cursor;
+      }
    };
 
-}
-}
+} // ARM64
+} // OMR
 #endif

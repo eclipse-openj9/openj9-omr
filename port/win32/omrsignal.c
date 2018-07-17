@@ -125,6 +125,8 @@ static int32_t registerMasterHandlers(OMRPortLibrary *portLibrary, uint32_t flag
 
 static J9Win32AsyncHandlerRecord *createAsyncHandlerRecord(struct OMRPortLibrary *portLibrary, omrsig_handler_fn handler, void *handler_arg, uint32_t flags);
 
+static int32_t setReporterPriority(OMRPortLibrary *portLibrary, uintptr_t priority);
+
 uint32_t
 omrsig_info(struct OMRPortLibrary *portLibrary, void *info, uint32_t category, int32_t index, const char **name, void **value)
 {
@@ -1297,4 +1299,24 @@ createAsyncHandlerRecord(struct OMRPortLibrary *portLibrary, omrsig_handler_fn h
 	}
 
 	return record;
+}
+
+/**
+ * Set the thread priority for asynchronous signal reporting thread (asynchSignalReporterThread).
+ *
+ * @param[in] portLibrary the OMR port library
+ * @param[in] priority the thread priority
+ *
+ * @return 0 upon success and non-zero upon failure.
+ */
+static int32_t
+setReporterPriority(OMRPortLibrary *portLibrary, uintptr_t priority)
+{
+	Trc_PRT_signal_setReporterPriority(portLibrary, priority);
+
+	if (NULL == asynchSignalReporterThread) {
+		return OMRPORT_SIG_ERROR;
+	}
+
+	return (int32_t)omrthread_set_priority(asynchSignalReporterThread, priority);
 }

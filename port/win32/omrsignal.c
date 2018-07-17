@@ -175,36 +175,42 @@ int32_t
 omrsig_set_async_signal_handler(struct OMRPortLibrary *portLibrary, omrsig_handler_fn handler, void *handler_arg, uint32_t flags)
 {
 	int32_t rc = 0;
-	J9Win32AsyncHandlerRecord *cursor;
-	J9Win32AsyncHandlerRecord **previousLink;
+	J9Win32AsyncHandlerRecord *cursor = NULL;
+	J9Win32AsyncHandlerRecord **previousLink = NULL;
 
-	if (OMRPORT_SIG_OPTIONS_REDUCED_SIGNALS_ASYNCHRONOUS & signalOptions) {
-		/* -Xrs was set, do not install any handlers */
-		return OMRPORT_SIG_ERROR;
+	Trc_PRT_signal_omrsig_set_async_signal_handler_entered(handler, handler_arg, flags);
+
+	rc = registerMasterHandlers(portLibrary, flags, OMRPORT_SIG_FLAG_SIGALLASYNC, NULL);
+	if (0 != rc) {
+		Trc_PRT_signal_omrsig_set_async_signal_handler_exiting_did_nothing_possible_error(handler, handler_arg, flags);
+		return rc;
 	}
 
 	omrthread_monitor_enter(asyncMonitor);
 
-	/* wait until no signals are being reported */
+	/* Wait until no signals are being reported. */
 	while (asyncThreadCount > 0) {
 		omrthread_monitor_wait(asyncMonitor);
 	}
 
-	/* is this handler already registered? */
+	/* Is this handler already registered? */
 	previousLink = &asyncHandlerList;
 	cursor = asyncHandlerList;
-	while (cursor) {
+	while (NULL != cursor) {
 		if ((cursor->portLib == portLibrary) && (cursor->handler == handler) && (cursor->handler_arg == handler_arg)) {
-			if (flags == 0) {
+			if (0 == flags) {
 				*previousLink = cursor->next;
 				portLibrary->mem_free_memory(portLibrary, cursor);
+				Trc_PRT_signal_omrsig_set_async_signal_handler_user_handler_removed(handler, handler_arg, flags);
 
-				/* if this is the last handler, unregister the Win32 handler function */
-				if (asyncHandlerList == NULL) {
+				/* If this is the last handler, unregister the handler function. */
+				if (NULL == asyncHandlerList) {
 					SetConsoleCtrlHandler(consoleCtrlHandler, FALSE);
 				}
 			} else {
-				cursor->flags = flags;
+				/* Update the listener with the new flags. */
+				Trc_PRT_signal_omrsig_set_async_signal_handler_user_handler_added_1(handler, handler_arg, flags);
+				cursor->flags |= flags;
 			}
 			break;
 		}
@@ -212,12 +218,12 @@ omrsig_set_async_signal_handler(struct OMRPortLibrary *portLibrary, omrsig_handl
 		cursor = cursor->next;
 	}
 
-	if (cursor == NULL) {
-		/* cursor will only be NULL if we failed to find it in the list */
-		if (flags != 0) {
+	if (NULL == cursor) {
+		/* Cursor will only be NULL if we failed to find it in the list. */
+		if (0 != flags) {
 			J9Win32AsyncHandlerRecord *record = portLibrary->mem_allocate_memory(portLibrary, sizeof(*record), OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
 
-			if (record == NULL) {
+			if (NULL == record) {
 				rc = OMRPORT_SIG_ERROR;
 			} else {
 				record->portLib = portLibrary;
@@ -226,12 +232,13 @@ omrsig_set_async_signal_handler(struct OMRPortLibrary *portLibrary, omrsig_handl
 				record->flags = flags;
 				record->next = NULL;
 
-				/* if this is the first handler, register the Win32 handler function */
-				if (asyncHandlerList == NULL) {
+				/* If this is the first handler, register the handler function. */
+				if (NULL == asyncHandlerList) {
 					SetConsoleCtrlHandler(consoleCtrlHandler, TRUE);
 				}
 
-				/* add the new record to the end of the list */
+				/* Add the new record to the end of the list. */
+				Trc_PRT_signal_omrsig_set_async_signal_handler_user_handler_added_2(handler, handler_arg, flags);
 				*previousLink = record;
 			}
 		}
@@ -239,6 +246,7 @@ omrsig_set_async_signal_handler(struct OMRPortLibrary *portLibrary, omrsig_handl
 
 	omrthread_monitor_exit(asyncMonitor);
 
+	Trc_PRT_signal_omrsig_set_async_signal_handler_exiting(handler, handler_arg, flags);
 	return rc;
 
 }

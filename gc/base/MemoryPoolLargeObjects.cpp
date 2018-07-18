@@ -309,7 +309,9 @@ MM_MemoryPoolLargeObjects::resizeLOA(MM_EnvironmentBase* env)
 				spaceDelta = (NULL != newLOABase) ? (uintptr_t)newLOABase - (uintptr_t)_currentLOABase : _loaSize;
 				oldLOARatio = _currentLOARatio;
 
-				if ((_loaSize - spaceDelta) < _memoryPoolLargeObjects->getMinimumFreeEntrySize()) {
+				/* Does this leave a reasonable sized LOA ? */
+				if (!isSizeEnoughForLOA(env, _loaSize - spaceDelta)) {
+					/* No.. make LOA empty as not even big enough for one free chunk of LOA */
 					spaceDelta = _loaSize;
 					_soaSize += spaceDelta;
 					_loaSize = 0;
@@ -490,7 +492,7 @@ MM_MemoryPoolLargeObjects::resetLOASize(MM_EnvironmentBase* env, double newLOARa
 
 		uintptr_t resizeSize = 0;
 		/* Does this leave a reasonable sized LOA ? */
-		if (newLOASize < _extensions->largeObjectMinimumSize) {
+		if (!isSizeEnoughForLOA(env, newLOASize)) {
 			/* No.. make LOA empty as not even big enough for one free chunk */
 			_currentLOARatio = 0;
 			_soaSize = oldAreaSize;

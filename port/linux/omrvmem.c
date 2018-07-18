@@ -93,6 +93,27 @@ static BOOLEAN addressRange_IsValid(AddressRange *range);
 static uintptr_t addressRange_Width(AddressRange *range);
 static ADDRESS findAvailableMemoryBlockNoMalloc(struct OMRPortLibrary *portLibrary, ADDRESS start, ADDRESS end, uintptr_t byteAmount, BOOLEAN reverse);
 
+/*
+ * This structure captures the state of an iterator of addresses between minimum
+ * and maximum (inclusive). Each address returned will be a multiple of alignment
+ * which must be a power of two.
+ */
+typedef struct AddressIterator {
+	/* the minimum address (NULL will not be returned even if this is NULL) */
+	ADDRESS minimum;
+	/* the maximum address to return */
+	ADDRESS maximum;
+	/* all returned addresses will be a multiple of this */
+	uintptr_t alignment;
+	/* addresses are returned in increasing order if this is positive, decreasing order otherwise */
+	intptr_t direction;
+	/* the next address to be returned or NULL if the iterator has been exhausted */
+	ADDRESS next;
+} AddressIterator;
+
+static void addressIterator_init(AddressIterator *iterator, ADDRESS minimum, ADDRESS maximum, uintptr_t alignment, intptr_t direction);
+static BOOLEAN addressIterator_next(AddressIterator *iterator, ADDRESS *address);
+
 static void *getMemoryInRangeForLargePages(struct OMRPortLibrary *portLibrary, struct J9PortVmemIdentifier *identifier, key_t addressKey, OMRMemCategory *category, uintptr_t byteAmount, void *startAddress, void *endAddress, uintptr_t alignmentInBytes, uintptr_t vmemOptions, uintptr_t pageSize, uintptr_t mode);
 static void *getMemoryInRangeForDefaultPages(struct OMRPortLibrary *portLibrary, struct J9PortVmemIdentifier *identifier, OMRMemCategory *category, uintptr_t byteAmount, void *startAddress, void *endAddress, uintptr_t alignmentInBytes, uintptr_t vmemOptions, uintptr_t mode);
 static void *allocateMemoryForLargePages(struct OMRPortLibrary *portLibrary, struct J9PortVmemIdentifier *identifier, void *currentAddress, key_t addressKey, OMRMemCategory *category, uintptr_t byteAmount, uintptr_t pageSize, uintptr_t mode);
@@ -724,7 +745,7 @@ omrvmem_reserve_memory_ex(struct OMRPortLibrary *portLibrary, struct J9PortVmemI
 		}
 		if (NULL == memoryPointer) {
 			/* If strict page size flag is not set try again with default page size */
-			if (0 == (OMRPORT_VMEM_STRICT_PAGE_SIZE & params->options)) {
+			if (OMR_ARE_NO_BITS_SET(params->options, OMRPORT_VMEM_STRICT_PAGE_SIZE)) {
 #if defined(OMRVMEM_DEBUG)
 				printf("\t\t\tNULL == memoryPointer, reverting to default pages\n");
 				fflush(stdout);
@@ -1190,77 +1211,60 @@ static void *
 getMemoryInRangeForDefaultPages(struct OMRPortLibrary *portLibrary, struct J9PortVmemIdentifier *identifier, OMRMemCategory *category, uintptr_t byteAmount, void *startAddress, void *endAddress, uintptr_t alignmentInBytes, uintptr_t vmemOptions, uintptr_t mode)
 {
 	intptr_t direction = 1;
-	void *currentAddress = startAddress;
-	void *oldAddress = NULL;
 	void *memoryPointer = NULL;
 
 	/* check allocation direction */
-	if (0 != (vmemOptions & OMRPORT_VMEM_ALLOC_DIR_TOP_DOWN)) {
+	if (OMR_ARE_ANY_BITS_SET(vmemOptions, OMRPORT_VMEM_ALLOC_DIR_TOP_DOWN)) {
 		direction = -1;
-		currentAddress = endAddress;
-	} else if (0 != (vmemOptions & OMRPORT_VMEM_ALLOC_DIR_BOTTOM_UP)) {
-		if (startAddress == NULL) {
-			currentAddress += direction * alignmentInBytes;
-		}
-	} else if (NULL == startAddress) {
-		if (OMRPORT_VMEM_MAX_ADDRESS == endAddress) {
-			/* if caller specified the entire address range and does not care about the direction
-			 * save time by letting OS choose where to allocate the memory
-			 */
-			goto allocAnywhere;
-		} else {
-			/* if the startAddress is NULL but the endAddress is not we
-			 * need to change the startAddress so that we have a better chance
-			 * of getting memory within the range because NULL means don't care
-			 */
-			currentAddress = (void *)alignmentInBytes;
-		}
+	} else if (OMR_ARE_ANY_BITS_SET(vmemOptions, OMRPORT_VMEM_ALLOC_DIR_BOTTOM_UP)) {
+		direction = 1;
+	} else if ((NULL == startAddress) && (OMRPORT_VMEM_MAX_ADDRESS == endAddress)) {
+		/* if caller specified the entire address range and does not care about the direction
+		 * save time by letting OS choose where to allocate the memory
+		 */
+		goto allocAnywhere;
 	}
 
 	/* check if we should use quick search for fast performance */
 	if (OMR_ARE_ANY_BITS_SET(vmemOptions, OMRPORT_VMEM_ALLOC_QUICK)) {
-		void *smartAddress = NULL;
-		void *allocatedAddress = NULL;
+		void *smartAddress = findAvailableMemoryBlockNoMalloc(portLibrary, startAddress, endAddress, byteAmount, (1 == direction)? FALSE : TRUE);
 
-		if (1 == direction) {
-			smartAddress = findAvailableMemoryBlockNoMalloc(portLibrary, currentAddress, endAddress, byteAmount, FALSE);
-		} else {
-			smartAddress = findAvailableMemoryBlockNoMalloc(portLibrary, startAddress, currentAddress, byteAmount, TRUE);
-		}
 		/* only allocate when smartAddress is not NULL */
 		if (NULL != smartAddress) {
-			allocatedAddress = default_pageSize_reserve_memory(portLibrary, smartAddress, byteAmount, identifier, mode, PPG_vmem_pageSize[0], category);
-		}
-		if (NULL != allocatedAddress) {
-			/* if OMRPORT_VMEM_STRICT_ADDRESS is not set we accept whatever we get back */
-			if (0 == (vmemOptions & OMRPORT_VMEM_STRICT_ADDRESS)) {
-				return allocatedAddress;
-			} else if ((startAddress <= allocatedAddress) && (endAddress >= allocatedAddress)) {
-				memoryPointer = allocatedAddress;
-			} else if (0 != omrvmem_free_memory(portLibrary, allocatedAddress, byteAmount, identifier)) {
-				/* If the memoryPointer located outside of the range, free it and set the pointer to NULL */
-				return NULL;
+			void *allocatedAddress = default_pageSize_reserve_memory(portLibrary, smartAddress, byteAmount, identifier, mode, PPG_vmem_pageSize[0], category);
+			if (NULL != allocatedAddress) {
+				/* if OMRPORT_VMEM_STRICT_ADDRESS is not set we accept whatever we get back */
+				if (OMR_ARE_NO_BITS_SET(vmemOptions, OMRPORT_VMEM_STRICT_ADDRESS)) {
+					return allocatedAddress;
+				} else if ((startAddress <= allocatedAddress) && (allocatedAddress <= endAddress)) {
+					memoryPointer = allocatedAddress;
+				} else if (0 != omrvmem_free_memory(portLibrary, allocatedAddress, byteAmount, identifier)) {
+					/* If the memoryPointer located outside of the range, free it and return NULL. */
+					return NULL;
+				}
 			}
 		}
 		/*
 		 * memoryPointer != NULL means that available address was found.
-		 * Otherwise, in case NULL == memoryPointer
-		 * the below logic will continue trying.
+		 * Otherwise, the below logic will continue trying.
 		 */
 	}
 
 	if (NULL == memoryPointer) {
+		AddressIterator iterator;
+		void *currentAddress = NULL;
 		/* return after first attempt when OMRPORT_VMEM_ADDRESS_HINT is set */
 		if (0 != (vmemOptions & OMRPORT_VMEM_ADDRESS_HINT)) {
-			return default_pageSize_reserve_memory(portLibrary, currentAddress, byteAmount, identifier, mode, PPG_vmem_pageSize[0], category);			
+			return default_pageSize_reserve_memory(portLibrary, startAddress, byteAmount, identifier, mode, PPG_vmem_pageSize[0], category);
 		}
 		/* try all addresses within range */
-		while ((startAddress <= currentAddress) && (endAddress >= currentAddress)) {
+		addressIterator_init(&iterator, startAddress, endAddress, alignmentInBytes, direction);
+		while (addressIterator_next(&iterator, &currentAddress)) {
 			memoryPointer = default_pageSize_reserve_memory(portLibrary, currentAddress, byteAmount, identifier, mode, PPG_vmem_pageSize[0], category);
 
 			if (NULL != memoryPointer) {
 				/* stop if returned pointer is within range */
-				if ((startAddress <= memoryPointer) && (endAddress >= memoryPointer)) {
+				if ((startAddress <= memoryPointer) && (memoryPointer <= endAddress)) {
 					break;
 				}
 				if (0 != omrvmem_free_memory(portLibrary, memoryPointer, byteAmount, identifier)) {
@@ -1268,21 +1272,11 @@ getMemoryInRangeForDefaultPages(struct OMRPortLibrary *portLibrary, struct J9Por
 				}
 				memoryPointer = NULL;
 			}
-
-			oldAddress = currentAddress;
-
-			currentAddress += direction * alignmentInBytes;
-
-			/* protect against loop around */
-			if (((1 == direction) && ((uintptr_t)oldAddress > (uintptr_t)currentAddress)) ||
-				((-1 == direction) && ((uintptr_t)oldAddress < (uintptr_t)currentAddress))) {
-				break;
-			}
 		}
 	}
 
 	/* if strict flag is not set and we did not get any memory, attempt to get memory at any address */
-	if (0 == (OMRPORT_VMEM_STRICT_ADDRESS & vmemOptions) && (NULL == memoryPointer)) {
+	if (OMR_ARE_NO_BITS_SET(vmemOptions, OMRPORT_VMEM_STRICT_ADDRESS) && (NULL == memoryPointer)) {
 allocAnywhere:
 		memoryPointer = default_pageSize_reserve_memory(portLibrary, NULL, byteAmount, identifier, mode, PPG_vmem_pageSize[0], category);
 	}
@@ -1309,39 +1303,29 @@ allocAnywhere:
 static void *
 getMemoryInRangeForLargePages(struct OMRPortLibrary *portLibrary, struct J9PortVmemIdentifier *identifier, key_t addressKey, OMRMemCategory *category, uintptr_t byteAmount, void *startAddress, void *endAddress, uintptr_t alignmentInBytes, uintptr_t vmemOptions, uintptr_t pageSize, uintptr_t mode)
 {
+	AddressIterator iterator;
 	intptr_t direction = 1;
-	void *currentAddress = startAddress;
-	void *oldAddress = NULL;
+	void *currentAddress = NULL;
 	void *memoryPointer = NULL;
 
 	/* check allocation direction */
-	if (0 != (vmemOptions & OMRPORT_VMEM_ALLOC_DIR_TOP_DOWN)) {
+	if (OMR_ARE_ANY_BITS_SET(vmemOptions, OMRPORT_VMEM_ALLOC_DIR_TOP_DOWN)) {
 		direction = -1;
-		currentAddress = endAddress;
-	} else if (0 != (vmemOptions & OMRPORT_VMEM_ALLOC_DIR_BOTTOM_UP)) {
-		if (startAddress == NULL) {
-			currentAddress += direction * alignmentInBytes;
-		}
-	} else if (NULL == startAddress) {
-		if (OMRPORT_VMEM_MAX_ADDRESS == endAddress) {
-			/* if caller specified the entire address range and does not care about the direction
-			 * save time by letting OS choose where to allocate the memory
-			 */
-			goto allocAnywhere;
-		} else {
-			/* if the startAddress is NULL but the endAddress is not we
-			 * need to change the startAddress so that we have a better chance
-			 * of getting memory within the range because NULL means don't care
-			 */
-			currentAddress = (void *)alignmentInBytes;
-		}
+	} else if (OMR_ARE_ANY_BITS_SET(vmemOptions, OMRPORT_VMEM_ALLOC_DIR_BOTTOM_UP)) {
+		direction = 1;
+	} else if ((NULL == startAddress) && (OMRPORT_VMEM_MAX_ADDRESS == endAddress)) {
+		/* if caller specified the entire address range and does not care about the direction
+		 * save time by letting OS choose where to allocate the memory
+		 */
+		goto allocAnywhere;
 	}
 
 	/* prevent while loop from attempting to free memory on first entry */
 	memoryPointer = MAP_FAILED;
 
 	/* try all addresses within range */
-	while ((startAddress <= currentAddress) && (endAddress >= currentAddress)) {
+	addressIterator_init(&iterator, startAddress, endAddress, alignmentInBytes, direction);
+	while (addressIterator_next(&iterator, &currentAddress)) {
 		/* free previously attached memory and attempt to get new memory */
 		if (memoryPointer != MAP_FAILED) {
 			if (0 != omrvmem_free_memory(portLibrary, memoryPointer, byteAmount, identifier)) {
@@ -1352,23 +1336,13 @@ getMemoryInRangeForLargePages(struct OMRPortLibrary *portLibrary, struct J9PortV
 		memoryPointer = allocateMemoryForLargePages(portLibrary, identifier, currentAddress, addressKey, category, byteAmount, pageSize, mode);
 
 		/* stop if returned pointer is within range */
-		if ((MAP_FAILED != memoryPointer) && (startAddress <= memoryPointer) && (endAddress >= memoryPointer)) {
-			break;
-		}
-
-		oldAddress = currentAddress;
-
-		currentAddress += direction * alignmentInBytes;
-
-		/* protect against loop around */
-		if (((1 == direction) && ((uintptr_t)oldAddress > (uintptr_t)currentAddress)) ||
-			((-1 == direction) && ((uintptr_t)oldAddress < (uintptr_t)currentAddress))) {
+		if ((MAP_FAILED != memoryPointer) && (startAddress <= memoryPointer) && (memoryPointer <= endAddress)) {
 			break;
 		}
 	}
 
 	/* if strict flag is not set and we did not get any memory, attempt to get memory at any address */
-	if (0 == (OMRPORT_VMEM_STRICT_ADDRESS & vmemOptions) && (MAP_FAILED == memoryPointer)) {
+	if (OMR_ARE_NO_BITS_SET(vmemOptions, OMRPORT_VMEM_STRICT_ADDRESS) && (MAP_FAILED == memoryPointer)) {
 allocAnywhere:
 		memoryPointer = allocateMemoryForLargePages(portLibrary, identifier, NULL, addressKey, category, byteAmount, pageSize, mode);
 	}
@@ -1414,7 +1388,7 @@ allocateMemoryForLargePages(struct OMRPortLibrary *portLibrary, struct J9PortVme
 static BOOLEAN
 isStrictAndOutOfRange(void *memoryPointer, void *startAddress, void *endAddress, uintptr_t vmemOptions)
 {
-	if ((0 != (OMRPORT_VMEM_STRICT_ADDRESS & vmemOptions)) &&
+	if (OMR_ARE_ANY_BITS_SET(vmemOptions, OMRPORT_VMEM_STRICT_ADDRESS) &&
 		((memoryPointer > endAddress) || (memoryPointer < startAddress))) {
 		return TRUE;
 	} else {
@@ -1705,4 +1679,82 @@ omrvmem_get_process_memory_size(struct OMRPortLibrary *portLibrary, J9VMemMemory
 	}
 	Trc_PRT_vmem_get_process_memory_exit(result, *memorySize);
 	return result;
+}
+
+static void
+addressIterator_init(AddressIterator *iterator, ADDRESS minimum, ADDRESS maximum, uintptr_t alignment, intptr_t direction)
+{
+	uintptr_t multiple = 0;
+	ADDRESS first = NULL;
+
+	Assert_PRT_true(minimum <= maximum);
+	/* alignment must be a power of two */
+	Assert_PRT_true((0 != alignment) && (0 == (alignment & (alignment - 1))));
+
+#if defined(OMRVMEM_DEBUG)
+	printf("addressIterator_init(%p,%p,%zx,%ld)\n", minimum, maximum, (size_t)alignment, direction);
+	fflush(stdout);
+#endif
+
+	if (direction > 0) {
+		if ((uintptr_t)minimum < alignment) {
+			multiple = 1;
+		} else {
+			multiple = ((uintptr_t)minimum + alignment - 1) / alignment;
+		}
+		first = (ADDRESS)(multiple * alignment);
+		if (first > maximum) {
+			first = NULL;
+		}
+	} else {
+		multiple = ((uintptr_t)maximum) / alignment;
+		first = (ADDRESS)(multiple * alignment);
+		if (first < minimum) {
+			first = NULL;
+		}
+	}
+
+	iterator->minimum = minimum;
+	iterator->maximum = maximum;
+	iterator->alignment = alignment;
+	iterator->direction = direction;
+	iterator->next = first;
+}
+
+static BOOLEAN
+addressIterator_next(AddressIterator *iterator, ADDRESS *address)
+{
+	BOOLEAN hasNext = FALSE;
+
+	if (NULL != iterator->next) {
+		uintptr_t step = iterator->alignment;
+
+		*address = iterator->next;
+		hasNext = TRUE;
+
+		if (iterator->direction > 0) {
+			if (iterator->maximum - iterator->next >= step) {
+				iterator->next += step;
+			} else {
+				iterator->next = NULL;
+			}
+		} else {
+			if (iterator->next - iterator->minimum >= step) {
+				iterator->next -= step;
+			} else {
+				iterator->next = NULL;
+			}
+		}
+	}
+
+#if defined(OMRVMEM_DEBUG)
+	if (hasNext) {
+		printf("addressIterator_next() -> %p\n", *address);
+	} else {
+		printf("addressIterator_next() -> done\n");
+	}
+	fflush(stdout);
+#endif
+
+	return hasNext;
 }

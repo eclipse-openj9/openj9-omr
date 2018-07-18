@@ -23,7 +23,6 @@ compiler_library(x
 	${CMAKE_CURRENT_LIST_DIR}/codegen/BinaryCommutativeAnalyser.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codegen/BinaryEvaluator.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codegen/CompareAnalyser.cpp
-	${CMAKE_CURRENT_LIST_DIR}/codegen/ConstantDataSnippet.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codegen/ControlFlowEvaluator.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codegen/DataSnippet.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codegen/DivideCheckSnippet.cpp

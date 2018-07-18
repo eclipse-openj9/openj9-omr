@@ -1668,6 +1668,13 @@ bool OMR::X86::CodeGenerator::isAlignmentInstruction(TR::Instruction *instr)
    return (instr->getKind() == TR::Instruction::IsAlignment);
    }
 
+struct DescendingSortIA32DataSnippetByDataSize
+   {
+   inline bool operator()(TR::IA32DataSnippet* const& a, TR::IA32DataSnippet* const& b)
+      {
+      return a->getDataSize() > b->getDataSize();
+      }
+   };
 void OMR::X86::CodeGenerator::doBinaryEncoding()
    {
    LexicalTimer pt1("code generation", self()->comp()->phaseTimer());
@@ -1720,6 +1727,10 @@ void OMR::X86::CodeGenerator::doBinaryEncoding()
       }
    else
       interpreterEntryInstruction = procEntryInstruction;
+
+   // Sort data snippets before encoding to compact spaces
+   //
+   std::sort(_dataSnippetList.begin(), _dataSnippetList.end(), DescendingSortIA32DataSnippetByDataSize());
 
    /////////////////////////////////////////////////////////////////
    //
@@ -2172,175 +2183,96 @@ TR_OutlinedInstructions * OMR::X86::CodeGenerator::findOutlinedInstructionsFromM
    return NULL;
    }
 
-
-
-TR::IA32ConstantDataSnippet * OMR::X86::CodeGenerator::findOrCreateConstant(TR::Node * n, void * c, uint8_t size)
+TR::IA32DataSnippet * OMR::X86::CodeGenerator::createDataSnippet(TR::Node * n, void * c, uint8_t s)
    {
+   auto snippet = new (self()->trHeapMemory()) TR::IA32DataSnippet(self(), n, c, s);
+   _dataSnippetList.push_back(snippet);
+   return snippet;
+   }
 
-    TR::IA32DataSnippet * cursor;
-
-   // A simple linear search should suffice for now since the number of FP constants
+TR::IA32ConstantDataSnippet * OMR::X86::CodeGenerator::findOrCreateConstantDataSnippet(TR::Node * n, void * c, uint8_t s)
+   {
+   // A simple linear search should suffice for now since the number of data constants
    // produced is typically very small.  Eventually, this should be implemented as an
    // ordered list or a hash table.
    for (auto iterator = _dataSnippetList.begin(); iterator != _dataSnippetList.end(); ++iterator)
       {
       if ((*iterator)->getKind() == TR::Snippet::IsConstantData &&
-          ((TR::IA32ConstantDataSnippet*)(*iterator))->getConstantSize() == size)
+          (*iterator)->getDataSize() == s)
          {
-         switch (size)
+         if (!memcmp((*iterator)->getRawData(), c, s))
             {
-            case 4:
-               if ((*iterator)->getDataAs4Bytes() == *((int32_t *)c))
-                  {
-                  return (TR::IA32ConstantDataSnippet*)(*iterator);
-                  }
-               break;
-
-            case 8:
-               if ((*iterator)->getDataAs8Bytes() == *((int64_t *)c))
-                  {
-                  return (TR::IA32ConstantDataSnippet*)(*iterator);
-                  }
-               break;
-
-            case 2:
-               if ((*iterator)->getDataAs2Bytes() == *((int16_t *)c))
-                  {
-                  return (TR::IA32ConstantDataSnippet*)(*iterator);
-                  }
-               break;
-
-            case 16:
-               if (!memcmp((*iterator)->getValue(), c, 16))
-                  {
-                  return (TR::IA32ConstantDataSnippet*)(*iterator);
-                  }
-               break;
-
-            default:
-               // Currently, only 2, 4, and 8 byte constants can be created.
-               //
-               TR_ASSERT( 0, "findOrCreateConstant ==> unexpected constant size" );
-               break;
+            return (TR::IA32ConstantDataSnippet*)(*iterator);
             }
          }
       }
 
    // Constant was not found: create a new snippet for it and add it to the constant list.
    //
-   cursor = new (self()->trHeapMemory()) TR::IA32ConstantDataSnippet(self(), n, c, size);
-   _dataSnippetList.push_front(cursor);
-
-   return (TR::IA32ConstantDataSnippet*)cursor;
+   auto snippet = new (self()->trHeapMemory()) TR::IA32ConstantDataSnippet(self(), n, c, s);
+   _dataSnippetList.push_back(snippet);
+   return snippet;
    }
 
 int32_t OMR::X86::CodeGenerator::setEstimatedLocationsForDataSnippetLabels(int32_t estimatedSnippetStart)
    {
-   bool                                     first;
-   int32_t                                  size;
-
-   // Assume constants will be emitted in order of decreasing size.  Constants should be aligned
-   // according to their size.
-   for (int exp=4; exp > 0; exp--)
+   // Assume constants should be aligned according to their size.
+   for (auto iterator = _dataSnippetList.begin(); iterator != _dataSnippetList.end(); ++iterator)
       {
-      size = 1 << exp;
-      first = true;
-      for (auto iterator = _dataSnippetList.begin(); iterator != _dataSnippetList.end(); ++iterator)
-         {
-         if ((*iterator)->getDataSize() == size)
-            {
-            if (first)
-               {
-               first = false;
-               estimatedSnippetStart = ((estimatedSnippetStart+size-1)/size) * size;
-               }
-            (*iterator)->getSnippetLabel()->setEstimatedCodeLocation(estimatedSnippetStart);
-            estimatedSnippetStart += (*iterator)->getLength(estimatedSnippetStart);
-            }
-         }
+      auto size = (*iterator)->getDataSize();
+      estimatedSnippetStart = ((estimatedSnippetStart+size-1)/size) * size;
+      (*iterator)->getSnippetLabel()->setEstimatedCodeLocation(estimatedSnippetStart);
+      estimatedSnippetStart += (*iterator)->getLength(estimatedSnippetStart);
       }
-
    return estimatedSnippetStart;
    }
 
 void OMR::X86::CodeGenerator::emitDataSnippets()
    {
-
-   TR::IA32DataSnippet              * cursor;
-   uint8_t                                 * codeOffset;
-   bool                                     first;
-   int32_t                                  size;
-
-   // Emit constants in order of decreasing size.  Constants will be aligned according to
-   // their size.
-   //
-   for (int exp=4; exp > 0; exp--)
+   for (auto iterator = _dataSnippetList.begin(); iterator != _dataSnippetList.end(); ++iterator)
       {
-      size = 1 << exp;
-      first = true;
-      for (auto iterator = _dataSnippetList.begin(); iterator != _dataSnippetList.end(); ++iterator)
-         {
-         if ((*iterator)->getDataSize() == size)
-            {
-            if (first)
-               {
-               first = false;
-               self()->setBinaryBufferCursor( (uint8_t *)(((uintptrj_t)(self()->getBinaryBufferCursor()+size-1)/size) * size) );
-               }
-            codeOffset = (*iterator)->emitSnippetBody();
-            if (codeOffset != NULL)
-               self()->setBinaryBufferCursor(codeOffset);
-            }
-         }
+      self()->setBinaryBufferCursor((*iterator)->emitSnippetBody());
       }
    }
 
 TR::IA32ConstantDataSnippet *OMR::X86::CodeGenerator::findOrCreate2ByteConstant(TR::Node * n, int16_t c)
    {
-   return self()->findOrCreateConstant(n, &c, 2);
+   return self()->findOrCreateConstantDataSnippet(n, &c, 2);
    }
 
 TR::IA32ConstantDataSnippet *OMR::X86::CodeGenerator::findOrCreate4ByteConstant(TR::Node * n, int32_t c)
    {
-   return self()->findOrCreateConstant(n, &c, 4);
+   return self()->findOrCreateConstantDataSnippet(n, &c, 4);
    }
 
 TR::IA32ConstantDataSnippet *OMR::X86::CodeGenerator::findOrCreate8ByteConstant(TR::Node * n, int64_t c)
    {
-   return self()->findOrCreateConstant(n, &c, 8);
+   return self()->findOrCreateConstantDataSnippet(n, &c, 8);
    }
 
 TR::IA32ConstantDataSnippet *OMR::X86::CodeGenerator::findOrCreate16ByteConstant(TR::Node * n, void *c)
    {
-   return self()->findOrCreateConstant(n, c, 16);
+   return self()->findOrCreateConstantDataSnippet(n, c, 16);
    }
 
 TR::IA32DataSnippet *OMR::X86::CodeGenerator::create2ByteData(TR::Node *n, int16_t c)
    {
-   TR::IA32DataSnippet *cursor = new (self()->trHeapMemory()) TR::IA32DataSnippet(self(), n, &c, 2);
-   _dataSnippetList.push_front(cursor);
-   return cursor;
+   return self()->createDataSnippet(n, &c, 2);
    }
 
 TR::IA32DataSnippet *OMR::X86::CodeGenerator::create4ByteData(TR::Node *n, int32_t c)
    {
-   TR::IA32DataSnippet *cursor = new (self()->trHeapMemory()) TR::IA32DataSnippet(self(), n, &c, 4);
-   _dataSnippetList.push_front(cursor);
-   return cursor;
+   return self()->createDataSnippet(n, &c, 4);
    }
 
 TR::IA32DataSnippet *OMR::X86::CodeGenerator::create8ByteData(TR::Node *n, int64_t c)
    {
-   TR::IA32DataSnippet *cursor = new (self()->trHeapMemory()) TR::IA32DataSnippet(self(), n, &c, 8);
-   _dataSnippetList.push_front(cursor);
-   return cursor;
+   return self()->createDataSnippet(n, &c, 8);
    }
 
 TR::IA32DataSnippet *OMR::X86::CodeGenerator::create16ByteData(TR::Node *n, void *c)
    {
-   TR::IA32DataSnippet *cursor = new (self()->trHeapMemory()) TR::IA32DataSnippet(self(), n, c, 16);
-   _dataSnippetList.push_front(cursor);
-   return cursor;
+   return self()->createDataSnippet(n, c, 16);
    }
 
 static uint32_t registerBitMask(int32_t reg)
@@ -3521,23 +3453,12 @@ void OMR::X86::CodeGenerator::removeUnavailableRegisters(TR_RegisterCandidate * 
 
 void OMR::X86::CodeGenerator::dumpDataSnippets(TR::FILE *outFile)
    {
-
    if (outFile == NULL)
       return;
 
-   TR::IA32DataSnippet              * cursor;
-   int32_t                                  size;
-
-   for (int exp=4; exp > 0; exp--)
+   for (auto iterator = _dataSnippetList.begin(); iterator != _dataSnippetList.end(); ++iterator)
       {
-      size = 1 << exp;
-      for (auto iterator = _dataSnippetList.begin(); iterator != _dataSnippetList.end(); ++iterator)
-         {
-         if ((*iterator)->getDataSize() == size)
-            {
-            self()->getDebug()->print(outFile, *iterator);
-            }
-         }
+      (*iterator)->print(outFile, self()->getDebug());
       }
    }
 

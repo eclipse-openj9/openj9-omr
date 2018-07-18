@@ -24,7 +24,6 @@ JIT_PRODUCT_BACKEND_SOURCES+=\
     $(JIT_OMR_DIRTY_DIR)/x/codegen/BinaryCommutativeAnalyser.cpp \
     $(JIT_OMR_DIRTY_DIR)/x/codegen/BinaryEvaluator.cpp \
     $(JIT_OMR_DIRTY_DIR)/x/codegen/CompareAnalyser.cpp \
-    $(JIT_OMR_DIRTY_DIR)/x/codegen/ConstantDataSnippet.cpp \
     $(JIT_OMR_DIRTY_DIR)/x/codegen/ControlFlowEvaluator.cpp \
     $(JIT_OMR_DIRTY_DIR)/x/codegen/DataSnippet.cpp \
     $(JIT_OMR_DIRTY_DIR)/x/codegen/DivideCheckSnippet.cpp \

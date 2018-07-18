@@ -1571,11 +1571,13 @@ TR_Debug::print(TR::FILE *pOutFile, TR::MemoryReference  * mr, TR_RegisterSizes 
          trfprintf(pOutFile, "Data ");
          print(pOutFile, cds->getSnippetLabel());
          trfprintf(pOutFile, ": ");
-         auto data = cds->getValue();
+         auto data = cds->getRawData();
          for (auto i = 0; i < cds->getDataSize(); i++)
             {
             trfprintf(pOutFile, "%02x ", 0xff & (unsigned int)(data[i]));
             }
+         trfprintf(pOutFile, "| ");
+         cds->printValue(pOutFile, this);
          }
       else
          {

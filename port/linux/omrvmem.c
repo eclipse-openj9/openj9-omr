@@ -344,8 +344,16 @@ findAvailableMemoryBlockNoMalloc(struct OMRPortLibrary *portLibrary, ADDRESS sta
 	BOOLEAN dataCorrupt = FALSE;
 	BOOLEAN matchFound = FALSE;
 
+	/*
+	 * The caller provides start and end addresses that constrain a non-null
+	 * address that can be returned by this function. Internally, however,
+	 * this function operates on ranges which are inclusive of the space
+	 * requested by the caller: the allowed range must be initialized taking
+	 * this difference into account by adding the requested block size to the
+	 * end address.
+	 */
 	AddressRange allowedRange;
-	addressRange_Init(&allowedRange, start, end);
+	addressRange_Init(&allowedRange, start, end + byteAmount);
 
 	AddressRange lastAvailableRange;
 	addressRange_Init(&lastAvailableRange, NULL, NULL);

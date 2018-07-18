@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2017 IBM Corp. and others
+ * Copyright (c) 1991, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -31,7 +31,6 @@
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
-
 
 #include "omrport.h"
 #include "omrportpriv.h"
@@ -350,7 +349,7 @@ addressRange_Width(AddressRange* range)
  * @param ADDRESS 		start			[in] The start address allowed, see also @param end
  * @param ADDRESS 		end				[in] The end address allowed, see also @param start.
  * 											 The returned memory address should be within the range defined by the @param start and the @param end.
- * @param uintptr_t 		byteAmount		[in] The block size required.
+ * @param uintptr_t 	byteAmount		[in] The block size required.
  * @param BOOLEAN 		reverse			[in] Returns the first available memory block when this param equals FALSE, returns the last available memory block when this param equals TRUE
  *
  * returns the address available.
@@ -362,8 +361,16 @@ findAvailableMemoryBlockNoMalloc(struct OMRPortLibrary *portLibrary,
 	BOOLEAN dataCorrupt = FALSE;
 	BOOLEAN matchFound = FALSE;
 
+	/*
+	 * The caller provides start and end addresses that constrain a non-null
+	 * address that can be returned by this function. Internally, however,
+	 * this function operates on ranges which are inclusive of the space
+	 * requested by the caller: the allowed range must be initialized taking
+	 * this difference into account by adding the requested block size to the
+	 * end address.
+	 */
 	AddressRange allowedRange;
-	addressRange_Init(&allowedRange, start, end);
+	addressRange_Init(&allowedRange, start, end + byteAmount);
 
 	AddressRange lastAvailableRange;
 	addressRange_Init(&lastAvailableRange, NULL, NULL);

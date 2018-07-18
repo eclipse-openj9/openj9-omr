@@ -141,7 +141,7 @@ MM_EnvironmentDelegate::releaseExclusiveVMAccess()
  * @see assumeExclusiveVMAccess(uintptr_t)
  */
 uintptr_t
-MM_EnvironmentDelegate::relinquishExclusiveVMAccess(bool *deferredVMAccessRelease)
+MM_EnvironmentDelegate::relinquishExclusiveVMAccess()
 {
 	uintptr_t relinquishedExclusiveCount = _env->getOmrVMThread()->exclusiveCount;
 	_env->getOmrVMThread()->exclusiveCount = 0;

@@ -487,9 +487,9 @@ MM_EnvironmentBase::unwindExclusiveVMAccessForGC()
 }
 
 uintptr_t
-MM_EnvironmentBase::relinquishExclusiveVMAccess(bool *deferredVMAccessRelease)
+MM_EnvironmentBase::relinquishExclusiveVMAccess()
 {
-	return _delegate.relinquishExclusiveVMAccess(deferredVMAccessRelease);
+	return _delegate.relinquishExclusiveVMAccess();
 }
 
 void

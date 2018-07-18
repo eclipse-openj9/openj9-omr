@@ -308,12 +308,12 @@ struct {
 	uint64_t flag;
 } supportedSubsystems[] = {
 	{ "cpu", OMR_CGROUP_SUBSYSTEM_CPU },
-	{ "memory", OMR_CGROUP_SUBSYSTEM_MEMORY }
+	{ "memory", OMR_CGROUP_SUBSYSTEM_MEMORY },
+	{ "cpuset", OMR_CGROUP_SUBSYSTEM_CPUSET}
 };
 
 static uint32_t attachedPortLibraries;
 static omrthread_monitor_t cgroupEntryListMonitor;
-
 #endif /* defined(LINUX) */
 
 static intptr_t cwdname(struct OMRPortLibrary *portLibrary, char **result);
@@ -346,9 +346,10 @@ static uint64_t getPhysicalMemory();
 static BOOLEAN isCgroupV1Available(struct OMRPortLibrary *portLibrary);
 static void freeCgroupEntries(struct OMRPortLibrary *portLibrary, OMRCgroupEntry *cgEntryList);
 static char * getCgroupNameForSubsystem(struct OMRPortLibrary *portLibrary, OMRCgroupEntry *cgEntryList, const char *subsystem);
-static int32_t addCgroupEntry(struct OMRPortLibrary *portLibrary, OMRCgroupEntry **cgEntryList, int32_t hierId, const char *subsystem, const char *cgroupName);
+static int32_t addCgroupEntry(struct OMRPortLibrary *portLibrary, OMRCgroupEntry **cgEntryList, int32_t hierId, const char *subsystem, const char *cgroupName, uint64_t flag);
 static int32_t readCgroupFile(struct OMRPortLibrary *portLibrary, int pid, BOOLEAN inContainer, OMRCgroupEntry **cgroupEntryList, uint64_t *availableSubsystems);
 static OMRCgroupSubsystem getCgroupSubsystemFromFlag(uint64_t subsystemFlag);
+static int32_t getAbsolutePathOfCgroupSubsystemFile(struct OMRPortLibrary *portLibrary, uint64_t subsystemFlag, const char *fileName, char *fullPath, intptr_t *bufferLength);
 static int32_t  getHandleOfCgroupSubsystemFile(struct OMRPortLibrary *portLibrary, uint64_t subsystemFlag, const char *fileName, FILE **subsystemFile);
 static int32_t readCgroupSubsystemFile(struct OMRPortLibrary *portLibrary, uint64_t subsystemFlag, const char *fileName, int32_t numItemsToRead, const char *format, ...);
 static int32_t isRunningInContainer(struct OMRPortLibrary *portLibrary, BOOLEAN *inContainer);
@@ -3663,7 +3664,7 @@ _end:
  * @return 0 on success, negative error code on failure
  */
 static int32_t
-addCgroupEntry(struct OMRPortLibrary *portLibrary, OMRCgroupEntry **cgEntryList, int32_t hierId, const char *subsystem, const char *cgroupName)
+addCgroupEntry(struct OMRPortLibrary *portLibrary, OMRCgroupEntry **cgEntryList, int32_t hierId, const char *subsystem, const char *cgroupName, uint64_t flag)
 {
 	int32_t rc = 0;
 	int32_t cgEntrySize = sizeof(OMRCgroupEntry) + strlen(subsystem) + 1 + strlen(cgroupName) + 1;
@@ -3679,6 +3680,7 @@ addCgroupEntry(struct OMRPortLibrary *portLibrary, OMRCgroupEntry **cgEntryList,
 	strcpy(cgEntry->subsystem, subsystem);
 	cgEntry->cgroup = cgEntry->subsystem + strlen(subsystem) + 1;
 	strcpy(cgEntry->cgroup, cgroupName);
+	cgEntry->flag = flag;
 
 	if (NULL == *cgEntryList) {
 		*cgEntryList = cgEntry;
@@ -3792,7 +3794,7 @@ readCgroupFile(struct OMRPortLibrary *portLibrary, int pid, BOOLEAN inContainer,
 					if (TRUE == inContainer) {
 						cgroupToUse = ROOT_CGROUP;
 					}
-					rc = addCgroupEntry(portLibrary, &cgEntryList, hierId, cursor, cgroupToUse);
+					rc = addCgroupEntry(portLibrary, &cgEntryList, hierId, cursor, cgroupToUse, supportedSubsystems[i].flag);
 					if (0 != rc) {
 						goto _end;
 					}
@@ -3840,6 +3842,8 @@ getCgroupSubsystemFromFlag(uint64_t subsystemFlag)
 		return CPU;
 	case OMR_CGROUP_SUBSYSTEM_MEMORY:
 		return MEMORY;
+	case OMR_CGROUP_SUBSYSTEM_CPUSET:
+		return CPUSET;
 	default:
 		Trc_PRT_Assert_ShouldNeverHappen();
 	}
@@ -3848,27 +3852,24 @@ getCgroupSubsystemFromFlag(uint64_t subsystemFlag)
 }
 
 /**
- * Returns FILE pointer for the specified file in the cgroup subsystem.
+ * Returns Absolute Path for the specified file in the cgroup subsystem.
  *
  * @param[in] portLibrary pointer to OMRPortLibrary
  * @param[in] subsystemFlag flag of type OMR_CGROUP_SUBSYSTEMS_* representing the cgroup subsystem
  * @param[in] fileName name of the file under cgroup subsystem
- * @param[in/out] subsystemFile pointer to FILE * which stores the handle for the specified subsystem file
+ * @param[in/out] fullPath Absolute Path for the specified file in the cgroup subsystem
+ * @param[in/out] bufferLength to specify the size required for full path
  *
  * @return 0 on success, negative error code on any error
  */
 static int32_t
-getHandleOfCgroupSubsystemFile(struct OMRPortLibrary *portLibrary, uint64_t subsystemFlag, const char *fileName, FILE **subsystemFile)
+getAbsolutePathOfCgroupSubsystemFile(struct OMRPortLibrary *portLibrary, uint64_t subsystemFlag, const char *fileName, char *fullPath, intptr_t *bufferLength)
 {
 	char *cgroup = NULL;
 	intptr_t fullPathLen = 0;
 	int32_t rc = 0;
-	char fullPathBuf[PATH_MAX];
-	char *fullPath = fullPathBuf;
 	OMRCgroupSubsystem subsystem = getCgroupSubsystemFromFlag(subsystemFlag);
 	uint64_t availableSubsystem = portLibrary->sysinfo_cgroup_are_subsystems_available(portLibrary, subsystemFlag);
-
-	Assert_PRT_true(NULL != subsystemFile);
 
 	if (availableSubsystem != subsystemFlag) {
 		Trc_PRT_readCgroupSubsystemFile_subsystem_not_available(subsystemFlag);
@@ -3887,26 +3888,60 @@ getHandleOfCgroupSubsystemFile(struct OMRPortLibrary *portLibrary, uint64_t subs
 
 	/* absolute path of the file to be read is: /sys/fs/cgroup/subsystemNames[subsystem]/cgroup/filenName */
 	fullPathLen = portLibrary->str_printf(portLibrary, NULL, (uint32_t)-1, "%s/%s/%s/%s", OMR_CGROUP_V1_MOUNT_POINT, subsystemNames[subsystem], cgroup, fileName);
-	if (fullPathLen > PATH_MAX) {
-		fullPath = portLibrary->mem_allocate_memory(portLibrary, fullPathLen, OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
+	if (fullPathLen > *bufferLength) {
+		*bufferLength = fullPathLen;
+		rc = portLibrary->error_set_last_error_with_message_format(portLibrary, OMRPORT_ERROR_STRING_BUFFER_TOO_SMALL, "buffer size should be %d bytes", fullPathLen);
+		goto _end;
+	}
+
+	portLibrary->str_printf(portLibrary, fullPath, fullPathLen, "%s/%s/%s/%s", OMR_CGROUP_V1_MOUNT_POINT, subsystemNames[subsystem], cgroup, fileName);
+
+_end:
+	return rc;
+}
+
+/**
+ * Returns FILE pointer for the specified file in the cgroup subsystem.
+ *
+ * @param[in] portLibrary pointer to OMRPortLibrary
+ * @param[in] subsystemFlag flag of type OMR_CGROUP_SUBSYSTEMS_* representing the cgroup subsystem
+ * @param[in] fileName name of the file under cgroup subsystem
+ * @param[in/out] subsystemFile pointer to FILE * which stores the handle for the specified subsystem file
+ *
+ * @return 0 on success, negative error code on any error
+ */
+static int32_t
+getHandleOfCgroupSubsystemFile(struct OMRPortLibrary *portLibrary, uint64_t subsystemFlag, const char *fileName, FILE **subsystemFile)
+{
+	int32_t rc = 0;
+	char fullPathBuf[PATH_MAX];
+	char *fullPath = fullPathBuf;
+	intptr_t bufferLength = PATH_MAX;
+	BOOLEAN allocateMemory = FALSE;
+	Assert_PRT_true(NULL != subsystemFile);
+	rc = getAbsolutePathOfCgroupSubsystemFile(portLibrary, subsystemFlag, fileName, fullPath, &bufferLength);
+	if (OMRPORT_ERROR_STRING_BUFFER_TOO_SMALL == rc) {
+		fullPath = portLibrary->mem_allocate_memory(portLibrary, bufferLength, OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
 		if (NULL == fullPath) {
 			Trc_PRT_readCgroupSubsystemFile_oom_for_filename();
 			rc = portLibrary->error_set_last_error_with_message(portLibrary, OMRPORT_ERROR_SYSINFO_MEMORY_ALLOC_FAILED, "memory allocation for filename buffer failed");
 			goto _end;
-
+		}
+		allocateMemory = TRUE;
+		rc = getAbsolutePathOfCgroupSubsystemFile(portLibrary, subsystemFlag, fileName, fullPath, &bufferLength);
+	}
+	if (0 == rc) {
+		*subsystemFile = fopen(fullPath, "r");
+		if (NULL == *subsystemFile) {
+			int32_t osErrCode = errno;
+			Trc_PRT_readCgroupSubsystemFile_fopen_failed(fullPath, osErrCode);
+			rc = portLibrary->error_set_last_error(portLibrary, osErrCode, OMRPORT_ERROR_SYSINFO_CGROUP_SUBSYSTEM_FILE_FOPEN_FAILED);
+			goto _end;
 		}
 	}
-
-	portLibrary->str_printf(portLibrary, fullPath, fullPathLen, "%s/%s/%s/%s", OMR_CGROUP_V1_MOUNT_POINT, subsystemNames[subsystem], cgroup, fileName);
-	*subsystemFile = fopen(fullPath, "r");
-	if (NULL == *subsystemFile) {
-		int32_t osErrCode = errno;
-		Trc_PRT_readCgroupSubsystemFile_fopen_failed(fullPath, osErrCode);
-		rc = portLibrary->error_set_last_error(portLibrary, osErrCode, OMRPORT_ERROR_SYSINFO_CGROUP_SUBSYSTEM_FILE_FOPEN_FAILED);
-		goto _end;
-	}
+	
 _end:
-	if (fullPath != fullPathBuf) {
+	if (allocateMemory) {
 		portLibrary->mem_free_memory(portLibrary, fullPath);
 	}
 
@@ -4214,6 +4249,72 @@ omrsysinfo_cgroup_is_memlimit_set(struct OMRPortLibrary *portLibrary)
 	return FALSE;
 #endif /* defined(LINUX) && !defined(OMRZTPF) */
 }
+
+intptr_t
+omrsysinfo_cgroup_get_handle_subsystem_file(struct OMRPortLibrary *portLibrary,  uint64_t subsystemFlag, const char *fileName)
+{
+	intptr_t fd = 0;
+#if defined(LINUX) && !defined(OMRZTPF)
+	int32_t rc = OMRPORT_ERROR_SYSINFO_CGROUP_UNSUPPORTED_PLATFORM;
+	char fullPathBuf[PATH_MAX];
+	char *fullPath = fullPathBuf;
+	intptr_t bufferLength = PATH_MAX;
+	BOOLEAN allocateMemory = FALSE;
+	rc = getAbsolutePathOfCgroupSubsystemFile(portLibrary, subsystemFlag, fileName, fullPath, &bufferLength);
+	if (OMRPORT_ERROR_STRING_BUFFER_TOO_SMALL == rc) {
+		fullPath = portLibrary->mem_allocate_memory(portLibrary, bufferLength, OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
+		if (NULL == fullPath) {
+			Trc_PRT_readCgroupSubsystemFile_oom_for_filename();
+			rc = portLibrary->error_set_last_error_with_message(portLibrary, OMRPORT_ERROR_SYSINFO_MEMORY_ALLOC_FAILED, "memory allocation for filename buffer failed");
+			goto _end;
+		}
+		allocateMemory = TRUE;
+		rc = getAbsolutePathOfCgroupSubsystemFile(portLibrary, subsystemFlag, fileName, fullPath, &bufferLength);
+	}
+	if (0 == rc) {
+		fd = portLibrary->file_open(portLibrary, fullPath, EsOpenRead, 0);
+	}
+	if (allocateMemory) {
+		portLibrary->mem_free_memory(portLibrary, fullPath);
+	}
+
+_end:
+	
+#endif /* defined(LINUX) && !defined(OMRZTPF) */
+
+	return fd;
+}
+
+/*
+ * Returns the cgroup subsystems list
+ */
+struct OMRCgroupEntry *
+omrsysinfo_get_cgroup_subsystem_list(struct OMRPortLibrary *portLibrary)
+{
+#if defined(LINUX) && !defined(OMRZTPF)
+	return PPG_cgroupEntryList;
+#else
+	return NULL;
+#endif 
+}
+
+/*
+ * Returns 0 on success and error on failure
+ * Gets if the JVM is running in a Container by assigning the BOOLEAN value to inContainer param
+ * TRUE if running inside a container and FALSE if not
+ */
+int32_t
+omrsysinfo_is_running_in_container(struct OMRPortLibrary *portLibrary, BOOLEAN *inContainer)
+{
+	int32_t rc = 0;
+	Assert_PRT_true(NULL != inContainer);
+	*inContainer = FALSE;
+#if defined(LINUX) && !defined(OMRZTPF)
+	rc = isRunningInContainer(portLibrary, inContainer);
+#endif /* defined(LINUX) && !defined(OMRZTPF) */
+	return rc;
+}
+
 
 #if defined(OMRZTPF)
 /*

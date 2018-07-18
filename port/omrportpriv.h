@@ -533,6 +533,12 @@ extern J9_CFUNC int32_t
 omrsysinfo_cgroup_get_memlimit(struct OMRPortLibrary *portLibrary, uint64_t *limit);
 extern J9_CFUNC BOOLEAN
 omrsysinfo_cgroup_is_memlimit_set(struct OMRPortLibrary *portLibrary);
+extern J9_CFUNC intptr_t
+omrsysinfo_cgroup_get_handle_subsystem_file(struct OMRPortLibrary *portLibrary,  uint64_t subsystemFlag, const char *fileName);
+extern J9_CFUNC struct OMRCgroupEntry *
+omrsysinfo_get_cgroup_subsystem_list(struct OMRPortLibrary *portLibrary);
+extern J9_CFUNC int32_t
+omrsysinfo_is_running_in_container(struct OMRPortLibrary *portLibrary, BOOLEAN *inContainer);
 
 /* J9SourceJ9Signal*/
 extern J9_CFUNC int32_t

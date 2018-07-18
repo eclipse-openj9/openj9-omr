@@ -397,6 +397,18 @@ typedef enum J9VMemMemoryQuery {
 	OMRPORT_VMEM_PROCESS_EnsureWideEnum = 0x1000000
 } J9VMemMemoryQuery;
 
+#if defined(LINUX)
+
+typedef struct OMRCgroupEntry {
+	int32_t hierarchyId; /**< cgroup hierarch ID*/
+	char *subsystem; /**< name of the subsystem*/
+	char *cgroup; /**< name of the cgroup*/
+	uint64_t flag; /**< a bit-wise flag of type OMR_CGROUP_SUBSYSTEM_* representing the cgroup*/
+	struct OMRCgroupEntry *next; /**< pointer to next OMRCgroupEntry*/
+} OMRCgroupEntry;
+
+#endif /* defined(LINUX) */
+
 /**
  * @name Virtual Memory Options
  * Flags used to create bitmap indicating vmem options
@@ -1038,7 +1050,8 @@ typedef struct OMROSKernelInfo {
 /* bitwise flags indicating cgroup subsystems supported by portlibrary */
 #define OMR_CGROUP_SUBSYSTEM_CPU ((uint64_t)0x1)
 #define OMR_CGROUP_SUBSYSTEM_MEMORY ((uint64_t)0x2)
-#define OMR_CGROUP_SUBSYSTEM_ALL (OMR_CGROUP_SUBSYSTEM_CPU | OMR_CGROUP_SUBSYSTEM_MEMORY)
+#define OMR_CGROUP_SUBSYSTEM_CPUSET ((uint64_t)0x4)
+#define OMR_CGROUP_SUBSYSTEM_ALL (OMR_CGROUP_SUBSYSTEM_CPU | OMR_CGROUP_SUBSYSTEM_MEMORY | OMR_CGROUP_SUBSYSTEM_CPUSET)
 
 struct OMRPortLibrary;
 typedef struct J9Heap J9Heap;
@@ -1507,6 +1520,12 @@ typedef struct OMRPortLibrary {
 	int32_t (*sysinfo_cgroup_get_memlimit)(struct OMRPortLibrary *portLibrary, uint64_t *limit);
 	/** see @ref omrsysinfo.c::omrsysinfo_cgroup_is_memlimit_set "omrsysinfo_cgroup_is_memlimit_set"*/
 	BOOLEAN (*sysinfo_cgroup_is_memlimit_set)(struct OMRPortLibrary *portLibrary);
+	/** see @ref omrsysinfo.c::omrsysinfo_cgroup_get_handle_subsystem_file "omrsysinfo_cgroup_get_handle_subsystem_file"*/
+	intptr_t (*sysinfo_cgroup_get_handle_subsystem_file)(struct OMRPortLibrary *portLibrary,  uint64_t subsystemFlag, const char *fileName);
+	/** see @ref omrsysinfo.c::omrsysinfo_get_cgroup_subsystem_list "omrsysinfo_get_cgroup_subsystem_list"*/
+	struct OMRCgroupEntry *(*sysinfo_get_cgroup_subsystem_list)(struct OMRPortLibrary *portLibrary);
+	/** see @ref omrsysinfo.c::omrsysinfo_is_running_in_container "omrsysinfo_is_running_in_container"*/
+	int32_t (*sysinfo_is_running_in_container)(struct OMRPortLibrary *portLibrary, BOOLEAN *inContainer);
 	/** see @ref omrport.c::omrport_init_library "omrport_init_library"*/
 	int32_t (*port_init_library)(struct OMRPortLibrary *portLibrary, uintptr_t size) ;
 	/** see @ref omrport.c::omrport_startup_library "omrport_startup_library"*/
@@ -1962,6 +1981,9 @@ extern J9_CFUNC int32_t omrport_getVersion(struct OMRPortLibrary *portLibrary);
 #define omrsysinfo_cgroup_are_subsystems_enabled(param1) privateOmrPortLibrary->sysinfo_cgroup_are_subsystems_enabled(privateOmrPortLibrary, param1)
 #define omrsysinfo_cgroup_get_memlimit(param1) privateOmrPortLibrary->sysinfo_cgroup_get_memlimit(privateOmrPortLibrary, param1)
 #define omrsysinfo_cgroup_is_memlimit_set() privateOmrPortLibrary->sysinfo_cgroup_is_memlimit_set(privateOmrPortLibrary)
+#define omrsysinfo_cgroup_get_handle_subsystem_file(param1,param2) privateOmrPortLibrary->sysinfo_cgroup_get_handle_subsystem_file(privateOmrPortLibrary, param1, param2)
+#define omrsysinfo_get_cgroup_subsystem_list() privateOmrPortLibrary->sysinfo_get_cgroup_subsystem_list(privateOmrPortLibrary)
+#define omrsysinfo_is_running_in_container(param1) privateOmrPortLibrary->sysinfo_is_running_in_container(privateOmrPortLibrary, param1)
 #define omrintrospect_startup() privateOmrPortLibrary->introspect_startup(privateOmrPortLibrary)
 #define omrintrospect_shutdown() privateOmrPortLibrary->introspect_shutdown(privateOmrPortLibrary)
 #define omrintrospect_set_suspend_signal_offset(param1) privateOmrPortLibrary->introspect_set_suspend_signal_offset(privateOmrPortLibrary, param1)

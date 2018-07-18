@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2016 IBM Corp. and others
+ * Copyright (c) 1991, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -935,4 +935,50 @@ BOOLEAN
 omrsysinfo_cgroup_is_memlimit_set(struct OMRPortLibrary *portLibrary)
 {
 	return FALSE;
+}
+
+/**
+ * Gets the file descriptor by opening the file passed as a param fileName with PortLibrary file_open API.
+ * Caller should be using "omrfile_close" (Port Library API) to close the file descriptor after calling this API.
+ *
+ * @param[in] portLibrary pointer to OMRPortLibrary
+ *
+ * @param[in] subsystemFlag for checking the index of the subsystem
+ *
+ * @param[in] fileName pointer to cgroup subsystem filename
+ *
+ * @return file descriptor of file on success and OMRPORT_ERROR_SYSINFO_CGROUP_UNSUPPORTED_PLATFORM on failure
+ */
+intptr_t
+omrsysinfo_cgroup_get_handle_subsystem_file(struct OMRPortLibrary *portLibrary,  uint64_t subsystemFlag, const char *fileName)
+{
+	return OMRPORT_ERROR_SYSINFO_CGROUP_UNSUPPORTED_PLATFORM;
+}
+
+/**
+ * Gets the list of subsystems available
+ *
+ * @param[in] portLibrary pointer to OMRPortLibrary
+ *
+ * @return OMRCgroupEntry struct pointer of the linked list if available, NULL otherwise
+ */
+struct OMRCgroupEntry *
+omrsysinfo_get_cgroup_subsystem_list(struct OMRPortLibrary *portLibrary)
+{
+	return NULL;
+}
+
+/**
+ * States if JVM is running in a container
+ *
+ * @param[in] portLibrary pointer to OMRPortLibrary
+ *
+ * @param[in] inContainer BOOLEAN pointer to state running in container or not
+ *
+ * @return 0 on success and OMRPORT_ERROR_SYSINFO_CGROUP_UNSUPPORTED_PLATFORM on failure
+ */
+int32_t
+omrsysinfo_is_running_in_container(struct OMRPortLibrary *portLibrary, BOOLEAN *inContainer)
+{
+	return OMRPORT_ERROR_SYSINFO_CGROUP_UNSUPPORTED_PLATFORM;
 }

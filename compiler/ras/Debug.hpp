@@ -594,6 +594,9 @@ public:
    virtual void printRegisterDependencies(TR::FILE *pOutFile, TR_S390RegisterDependencyGroup *rgd, int numberOfRegisters);
    const char * getName(TR::RealRegister *, TR_RegisterSizes size = TR_WordReg);
 #endif
+#if defined(TR_TARGET_ARM64)
+   void print(TR::FILE *pOutFile, TR::UnresolvedDataSnippet * snippet);
+#endif
 
 #if defined(AIXPPC)
    virtual void setupDebugger(void *);

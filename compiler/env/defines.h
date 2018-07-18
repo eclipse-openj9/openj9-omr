@@ -67,6 +67,9 @@
 #ifndef ARCH_ARM
 #  define ARCH_ARM     104
 #endif
+#ifndef ARCH_ARM64
+#  define ARCH_ARM64     105
+#endif
 
 /* Compilers */
 #ifndef COMPILER_GCC
@@ -130,6 +133,9 @@
 #elif defined(__arm__)
 #  define HOST_ARCH ARCH_ARM
 #  define TR_HOST_32BIT 1
+#elif defined(__aarch64__)
+#  define HOST_ARCH ARCH_ARM64
+# define TR_HOST_64BIT 1
 #else
 #  error "defines.h: unknown architecture"
 #endif
@@ -168,6 +174,10 @@
 
 #if (HOST_ARCH == ARCH_ARM)
 #  define TR_HOST_ARM    1
+#endif
+
+#if (HOST_ARCH == ARCH_ARM64)
+#  define TR_HOST_ARM64    1
 #endif
 
 /* @ddr_namespace: default */

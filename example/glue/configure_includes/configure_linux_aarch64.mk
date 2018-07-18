@@ -18,44 +18,57 @@
 #
 # SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
 ###############################################################################
-
 include $(CONFIG_INCL_DIR)/configure_common.mk
 
-#	TODO:AARCH64 Disable fvtest ???
+#target for this file
+TARGET=aarch64
+OS=linux
 
-ifeq (linux_aarch64, $(SPEC))
-	CONFIGURE_ARGS += \
-    --host=aarch64-linux-gnu \
-    --target=aarch64-linux-gnu \
-    --build=x86_64-pc-linux-gnu \
-    --enable-OMRTHREAD_LIB_UNIX \
-    --enable-OMR_ARCH_AARCH64 \
-    --enable-OMR_ENV_LITTLE_ENDIAN \
-    --enable-OMR_GC_TLH_PREFETCH_FTA \
-    --enable-OMR_PORT_CAN_RESERVE_SPECIFIC_ADDRESS \
-    --enable-OMR_THR_FORK_SUPPORT \
-    --enable-OMR_GC_ARRAYLETS \
-    --enable-fvtest \
-    --enable-OMR_ENV_DATA64
-endif
+#variables for this file
+TOOLCHAIN=gcc
+
+#we expect you to export your host triplet to CHOST
+CONFIGURE_ARGS += \
+	--build=$(shell eval ${TOOLCHAIN} -dumpmachine) \
+	--host=$(shell eval '${CHOST}-${TOOLCHAIN}' -dumpmachine) \
+	--enable-OMR_ARCH_AARCH64 \
+	--enable-OMR_ENV_LITTLE_ENDIAN \
+	--enable-OMR_EXAMPLE \
+	--enable-OMR_GC \
+	--enable-OMR_GC_ARRAYLETS \
+	--enable-OMR_GC_TLH_PREFETCH_FTA \
+	--enable-OMR_PORT \
+	--enable-OMR_PORT_CAN_RESERVE_SPECIFIC_ADDRESS \
+	--enable-OMR_THREAD \
+	--enable-OMRTHREAD_LIB_UNIX \
+	--enable-OMR_THR_FORK_SUPPORT \
+	--enable-OMR_OMRSIG \
+	--enable-OMR_THR_THREE_TIER_LOCKING \
+	--enable-OMR_THR_YIELD_ALG \
+	--enable-OMR_THR_SPIN_WAKE_CONTROL \
+	--enable-OMR_JITBUILDER \
+	--enable-OMR_ENV_DATA64
+
+CONFIGURE_ARGS += \
+	--disable-DDR \
+	--disable-fvtest
 
 CONFIGURE_ARGS += \
 	libprefix=lib exeext= solibext=.so arlibext=.a objext=.o
 
-#	Customize this include path for your build environment
-CONFIGURE_ARGS += \
-	'GLOBAL_INCLUDES=/tools/aarch64-linux-gnu/include' \
-	'AS=aarch64-linux-gnu-as' \
-	'CC=aarch64-linux-gnu-gcc' \
-	'CXX=aarch64-linux-gnu-g++' \
-	'CPP=aarch64-linux-gnu-cpp' \
-	'AR=aarch64-linux-gnu-ar' \
-	'OBJCOPY=aarch64-linux-gnu-objcopy' \
+CONFIGURE_ARGS +=\
+	'CC=${CHOST}-gcc' \
+	'CXX=${CHOST}-g++' \
+	'AR=${CHOST}-ar' \
+	'AS=${CHOST}-as' \
+	'LD=${CHOST}-ld' \
+	'OBJCOPY=${CHOST}-objcopy' \
 	'CCLINKEXE=$$(CC)' \
 	'CCLINKSHARED=$$(CC)' \
 	'CXXLINKEXE=$$(CXX)' \
 	'CXXLINKSHARED=$$(CC)' \
-	'OMR_HOST_OS=linux' \
-	'OMR_HOST_ARCH=aarch64' \
+	'OMR_HOST_OS=$(OS)' \
+	'OMR_HOST_ARCH=$(TARGET)' \
 	'OMR_TARGET_DATASIZE=64' \
-	'OMR_TOOLCHAIN=gcc'
+	'OMR_TOOLCHAIN=$(TOOLCHAIN)' \
+	'PLATFORM=$(TARGET)-$(OS)-$(TOOLCHAIN)'

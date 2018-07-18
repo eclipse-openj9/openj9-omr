@@ -55,6 +55,7 @@ enum MajorArchitecture
    arch_z,
    arch_power,
    arch_arm,
+   arch_arm64,
    arch_unknown
    };
 
@@ -123,6 +124,7 @@ public:
    bool isZ() { return _majorArch == TR::arch_z; }
    bool isPower() { return _majorArch == TR::arch_power; }
    bool isARM() { return _majorArch == TR::arch_arm; }
+   bool isARM64() { return _majorArch == TR::arch_arm64; }
 
    TR::MinorArchitecture minorArch() { return _minorArch; }
    void setMinorArch(TR::MinorArchitecture a) { _minorArch = a; }

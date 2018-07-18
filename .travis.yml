@@ -61,7 +61,10 @@ matrix:
       env: SPEC=linux_x86-64_cmprssptrs PLATFORM=amd64-linux64-gcc
     # 64 bit Linux AArch64
     - os: linux
-      env: SPEC=linux_aarch64 PLATFORM=aarch64-linux64-gcc
+      env: SPEC=linux_aarch64 PLATFORM=aarch64-linux-gcc RUN_TEST=no
+    # 32-bit linux arm
+    - os: linux
+      env: SPEC=linux_arm PLATFORM=arm-linux-gcc RUN_TEST=no
     # Linter
     - os: linux
       addons:

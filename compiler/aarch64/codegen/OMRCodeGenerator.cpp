@@ -23,6 +23,7 @@
 #include "codegen/CodeGenerator_inlines.hpp"
 #include "codegen/GCStackMap.hpp"
 #include "codegen/RegisterConstants.hpp"
+#include "codegen/TreeEvaluator.hpp"
 
 OMR::ARM64::CodeGenerator::CodeGenerator() :
       OMR::CodeGenerator(),
@@ -191,4 +192,16 @@ TR_GlobalRegisterNumber OMR::ARM64::CodeGenerator::getLinkageGlobalRegisterNumbe
    TR_ASSERT(false, "Not implemented yet.");
 
    return 0;
+   }
+
+int64_t getLargestNegConstThatMustBeMaterialized() 
+   { 
+   TR_ASSERT(0, "Not Implemented on AArch64"); 
+   return 0; 
+   }
+
+int64_t getSmallestPosConstThatMustBeMaterialized() 
+   { 
+   TR_ASSERT(0, "Not Implemented on AArch64"); 
+   return 0; 
    }

@@ -23,20 +23,20 @@
 
 set -evx
 
-function aarch64_cross_compile_setup
+AARCH64_TOOLCHAIN_URL="https://releases.linaro.org/components/toolchain/binaries/latest-7/aarch64-linux-gnu/gcc-linaro-7.3.1-2018.05-x86_64_aarch64-linux-gnu.tar.xz"
+ARM_TOOLCHAIN_URL="https://releases.linaro.org/components/toolchain/binaries/latest-7/arm-linux-gnueabihf/gcc-linaro-7.3.1-2018.05-x86_64_arm-linux-gnueabihf.tar.xz"
+
+function get_cc_toolchain
 {
-  #TODO:ARM64: Setup DDR Support for AArch64
-  export EXTRA_CONFIGURE_ARGS="--disable-DDR"
+  URL=$1
+  # Get the toolchain from input
+  
+  wget ${URL} -O toolchain.tar.xz
+  mkdir toolchain && tar xf toolchain.tar.xz --directory toolchain --strip-components 1
+  ls toolchain
 
-  #TODO:ARM64: Test AArch64 with QEMU?
-  export RUN_TESTS="no"
-
-  # Get the toolchain
-  wget https://releases.linaro.org/components/toolchain/binaries/4.9-2017.01/aarch64-linux-gnu/gcc-linaro-4.9.4-2017.01-x86_64_aarch64-linux-gnu.tar.xz
-
-  tar xf gcc-linaro-4.9.4-2017.01-x86_64_aarch64-linux-gnu.tar.xz
-
-  export PATH="`pwd`/gcc-linaro-4.9.4-2017.01-x86_64_aarch64-linux-gnu/bin:${PATH}"
+  export PATH="`pwd`/toolchain/bin:${PATH}"
+  export CHOST=$(eval $(find `pwd`/toolchain/bin -name "*-gcc") -dumpmachine)
 }
 
 if test "x$TRAVIS_OS_NAME" = "xosx"; then
@@ -69,16 +69,18 @@ if test "x$BUILD_WITH_CMAKE" = "xyes"; then
     fi
   fi
 else
-  # Linux 64 compressed references build and the 	Lint builds do not run in CMake
-  # Remove the Linux 64 compressed references build once the Autotool build infrastructure is retired
-  export EXTRA_CONFIGURE_ARGS="--enable-DDR"
-
   # Cross Compile Toolchain and Configuration Options for AArch64
-  if test "x$SPEC" = "xlinux_aarch64"; then
-    aarch64_cross_compile_setup
+  if test $SPEC = "linux_aarch64"; then
+    get_cc_toolchain ${AARCH64_TOOLCHAIN_URL}
+  elif test $SPEC = "linux_arm"; then
+    get_cc_toolchain ${ARM_TOOLCHAIN_URL}
+  else
+    # Linux 64 compressed references build and the 	Lint builds do not run in CMake
+    # Remove the Linux 64 compressed references build once the Autotool build infrastructure is retired
+    export EXTRA_CONFIGURE_ARGS="--enable-DDR"
   fi
 
-  time make -f run_configure.mk OMRGLUE=./example/glue SPEC="$SPEC" PLATFORM="$PLATFORM"
+  time make -f run_configure.mk OMRGLUE=./example/glue SPEC=${SPEC} PLATFORM=${PLATFORM} HAS_AUTOCONF=1 distclean all
   if test "x$RUN_BUILD" != "xno"; then
     # Normal build system
     time make --jobs $BUILD_JOBS

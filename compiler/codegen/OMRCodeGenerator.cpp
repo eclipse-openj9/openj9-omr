@@ -135,10 +135,11 @@ OMR::CodeGenerator::_nodeToInstrEvaluators[] =
    #include "codegen/TreeEvaluatorTable.hpp"
    };
 
-
+#if !defined(TR_TARGET_ARM64)
 static_assert(TR::NumIlOps ==
               (sizeof(OMR::CodeGenerator::_nodeToInstrEvaluators) / sizeof(OMR::CodeGenerator::_nodeToInstrEvaluators[0])),
               "NodeToInstrEvaluators is not the correct size");
+#endif
 
 #define OPT_DETAILS "O^O CODE GENERATION: "
 

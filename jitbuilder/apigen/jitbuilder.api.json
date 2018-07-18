@@ -100,12 +100,156 @@
             "types": [
                 ],
             "fields": [
+                { "name": "NoType", "type": "IlType", "assign_at_init": true },
+                { "name": "Int8", "type": "IlType", "assign_at_init": true },
+                { "name": "Int16", "type": "IlType", "assign_at_init": true },
+                { "name": "Int32", "type": "IlType", "assign_at_init": true },
+                { "name": "Int64", "type": "IlType", "assign_at_init": true },
+                { "name": "Float", "type": "IlType", "assign_at_init": true },
+                { "name": "Double", "type": "IlType", "assign_at_init": true },
+                { "name": "Address", "type": "IlType", "assign_at_init": true },
+                { "name": "VectorInt8", "type": "IlType", "assign_at_init": true },
+                { "name": "VectorInt16", "type": "IlType", "assign_at_init": true },
+                { "name": "VectorInt32", "type": "IlType", "assign_at_init": true },
+                { "name": "VectorInt64", "type": "IlType", "assign_at_init": true },
+                { "name": "VectorFloat", "type": "IlType", "assign_at_init": true },
+                { "name": "VectorDouble", "type": "IlType", "assign_at_init": true },
+                { "name": "Word", "type": "IlType", "assign_at_init": true },
+                { "name": "pNoType", "type": "IlType", "assign_at_init": true },
+                { "name": "pInt8", "type": "IlType", "assign_at_init": true },
+                { "name": "pInt16", "type": "IlType", "assign_at_init": true },
+                { "name": "pInt32", "type": "IlType", "assign_at_init": true },
+                { "name": "pInt64", "type": "IlType", "assign_at_init": true },
+                { "name": "pFloat", "type": "IlType", "assign_at_init": true },
+                { "name": "pDouble", "type": "IlType", "assign_at_init": true },
+                { "name": "pAddress", "type": "IlType", "assign_at_init": true },
+                { "name": "pVectorInt8", "type": "IlType", "assign_at_init": true },
+                { "name": "pVectorInt16", "type": "IlType", "assign_at_init": true },
+                { "name": "pVectorInt32", "type": "IlType", "assign_at_init": true },
+                { "name": "pVectorInt64", "type": "IlType", "assign_at_init": true },
+                { "name": "pVectorFloat", "type": "IlType", "assign_at_init": true },
+                { "name": "pVectorDouble", "type": "IlType", "assign_at_init": true },
+                { "name": "pWord", "type": "IlType", "assign_at_init": true }
                 ],
             "constructors": [
+                { "name": ""
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "none"
+                , "parms": []
+                }
                 ],
             "callbacks": [
                 ],
             "services": [
+                { "name": "CloseStruct"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "none"
+                , "parms": [ {"name":"structName","type":"constString"} ]
+                },
+                { "name": "CloseStruct"
+                , "overloadsuffix": "WithSize"
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"structName","type":"constString"},
+                    {"name":"size","type":"unsignedInteger"} ]
+                },
+                { "name": "CloseUnion"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "none"
+                , "parms": [ {"name":"unionName","type":"constString"} ]
+                },
+                { "name": "DefineField"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"structName","type":"constString"},
+                    {"name":"fieldName","type":"constString"},
+                    {"name":"type","type":"IlType"} ]
+                },
+                { "name": "DefineField"
+                , "overloadsuffix": "AtOffset"
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"structName","type":"constString"},
+                    {"name":"fieldName","type":"constString"},
+                    {"name":"type","type":"IlType"},
+                    {"name":"offset","type":"unsignedInteger"} ]
+                },
+                { "name": "DefineStruct"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "IlType"
+                , "parms": [ {"name":"structName","type":"constString"} ]
+                },
+                { "name": "DefineUnion"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "IlType"
+                , "parms": [ {"name":"unionName","type":"constString"} ]
+                },
+                { "name": "GetFieldType"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "IlType"
+                , "parms": [
+                    {"name":"structName","type":"constString"},
+                    {"name":"fieldName","type":"constString"} ]
+                },
+                { "name": "LookupStruct"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "IlType"
+                , "parms": [ {"name":"structName","type":"constString"} ]
+                },
+                { "name": "LookupUnion"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "IlType"
+                , "parms": [ {"name":"unionName","type":"constString"} ]
+                },
+                { "name": "OffsetOf"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "unsignedInteger"
+                , "parms": [
+                    {"name":"structName","type":"constString"},
+                    {"name":"fieldName","type":"constString"} ]
+                },
+                { "name": "PointerTo"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "IlType"
+                , "parms": [ {"name":"baseType","type":"IlType"} ]
+                },
+                { "name": "PointerTo"
+                , "overloadsuffix": "StructName"
+                , "flags": []
+                , "return": "IlType"
+                , "parms": [ {"name":"structName","type":"constString"} ]
+                },
+                { "name": "UnionField"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"unionName","type":"constString"},
+                    {"name":"fieldName","type":"constString"},
+                    {"name":"fieldType","type":"IlType"} ]
+                },
+                { "name": "UnionFieldType"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "IlType"
+                , "parms": [
+                    {"name":"unionName","type":"constString"},
+                    {"name":"fieldName","type":"constString"} ]
+                }
                 ]
         },
         {

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2016 IBM Corp. and others
+ * Copyright (c) 1991, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -273,7 +273,6 @@ addressRange_Intersect(AddressRange *a, AddressRange *b, AddressRange *result)
 	return addressRange_IsValid(result);
 }
 
-
 /*
  * Calculate if a range is valid.
  * A valid range should have start < its end
@@ -313,7 +312,7 @@ addressRange_Width(AddressRange *range)
  * @param ADDRESS 		start			[in] The start address allowed, see also @param end
  * @param ADDRESS 		end				[in] The end address allowed, see also @param start.
  * 											 The returned memory address should be within the range defined by the @param start and the @param end.
- * @param uintptr_t 		byteAmount		[in] The block size required.
+ * @param uintptr_t 	byteAmount		[in] The block size required.
  * @param BOOLEAN 		reverse			[in] Returns the first available memory block when this param equals FALSE, returns the last available memory block when this param equals TRUE
  *
  * returns the address available.
@@ -438,10 +437,19 @@ findAvailableMemoryBlockNoMalloc(struct OMRPortLibrary *portLibrary, ADDRESS sta
 						addressRange_Init(&freeRange, lastMmapRange.end, currentMmapRange.start);
 						memcpy(&lastMmapRange, &currentMmapRange, sizeof(AddressRange));
 
+#if defined(OMRVMEM_DEBUG)
+						printf("block free %p-%p\n", freeRange.start, freeRange.end);
+						fflush(stdout);
+#endif
+
 						/* check if the free block has intersection with the allowed range */
 						haveIntersect = addressRange_Intersect(&allowedRange, &freeRange, &intersectAvailable);
 						if (TRUE == haveIntersect) {
 							uintptr_t intersectSize = addressRange_Width(&intersectAvailable);
+#if defined(OMRVMEM_DEBUG)
+							printf("intersection %p-%p\n", intersectAvailable.start, intersectAvailable.end);
+							fflush(stdout);
+#endif
 							if (intersectSize >= byteAmount) {
 								memcpy(&lastAvailableRange, &intersectAvailable, sizeof(AddressRange));
 								matchFound = TRUE;
@@ -546,7 +554,7 @@ omrvmem_commit_memory(struct OMRPortLibrary *portLibrary, void *address, uintptr
 		) {
 			if (0 == mprotect(address, byteAmount, get_protectionBits(identifier->mode))) {
 #if defined(OMRVMEM_DEBUG)
-				printf("\t\t omrvmem_commit_memory called mprotect, returning 0x%zx\n", address);
+				printf("\t\tomrvmem_commit_memory called mprotect, returning 0x%zx\n", (size_t)address);
 				fflush(stdout);
 #endif
 				rc = address;
@@ -563,7 +571,7 @@ omrvmem_commit_memory(struct OMRPortLibrary *portLibrary, void *address, uintptr
 	}
 
 #if defined(OMRVMEM_DEBUG)
-	printf("\t\t omrvmem_commit_memory returning 0x%x\n", rc);
+	printf("\t\tomrvmem_commit_memory returning 0x%zx\n", (size_t)rc);
 	fflush(stdout);
 #endif
 	Trc_PRT_vmem_omrvmem_commit_memory_Exit(rc);
@@ -718,7 +726,7 @@ omrvmem_reserve_memory_ex(struct OMRPortLibrary *portLibrary, struct J9PortVmemI
 			/* If strict page size flag is not set try again with default page size */
 			if (0 == (OMRPORT_VMEM_STRICT_PAGE_SIZE & params->options)) {
 #if defined(OMRVMEM_DEBUG)
-				printf("\t\t\t NULL == memoryPointer, reverting to default pages\n");
+				printf("\t\t\tNULL == memoryPointer, reverting to default pages\n");
 				fflush(stdout);
 #endif
 				uintptr_t defaultPageSize = PPG_vmem_pageSize[0];
@@ -745,7 +753,8 @@ omrvmem_reserve_memory_ex(struct OMRPortLibrary *portLibrary, struct J9PortVmemI
 #endif
 
 #if defined(OMRVMEM_DEBUG)
-	printf("\tomrvmem_reserve_memory_ex returning %p\n", memoryPointer);
+	printf("\tomrvmem_reserve_memory_ex(start=%p,end=%p,size=%zx,page=%zx,options=%zx) returning %p\n",
+			params->startAddress, params->endAddress, params->byteAmount, params->pageSize, (size_t)params->options, memoryPointer);
 	fflush(stdout);
 #endif
 
@@ -808,7 +817,7 @@ reserveLargePages(struct OMRPortLibrary *portLibrary, struct J9PortVmemIdentifie
 	}
 
 #if defined(OMRVMEM_DEBUG)
-	printf("\treserveLargePages returning 0x%zx\n", memoryPointer);
+	printf("\treserveLargePages returning 0x%zx\n", (size_t)memoryPointer);
 	fflush(stdout);
 #endif
 	return memoryPointer;
@@ -870,7 +879,7 @@ get_hugepages_info(struct OMRPortLibrary *portLibrary, vmem_hugepage_info_t *pag
 		int tokens_assigned = sscanf(line_ptr, "%127s %" SCNuPTR " %*s", token_name, &token_value);
 
 #ifdef LPDEBUG
-		portLibrary->tty_printf(portLibrary, "/proc/meminfo => %s [%" PRIuPTR "] %d\n", token_name, token_value, tokens_assigned);
+		portLibrary->tty_printf(portLibrary, VMEM_PROC_MEMINFO_FNAME " => %s [%" PRIuPTR "] %d\n", token_name, token_value, tokens_assigned);
 #endif
 
 		if (2 == tokens_assigned) {
@@ -879,7 +888,7 @@ get_hugepages_info(struct OMRPortLibrary *portLibrary, vmem_hugepage_info_t *pag
 			} else if (!strcmp(token_name, "HugePages_Free:")) {
 				page_info->pages_free = token_value;
 			} else if (!strcmp(token_name, "Hugepagesize:")) {
-				page_info->page_size = token_value * 1024;	/* value is in KB, convert to bytes */
+				page_info->page_size = token_value * 1024;	/* value is in kB, convert to bytes */
 			}
 		}
 
@@ -1209,7 +1218,6 @@ getMemoryInRangeForDefaultPages(struct OMRPortLibrary *portLibrary, struct J9Por
 
 	/* check if we should use quick search for fast performance */
 	if (OMR_ARE_ANY_BITS_SET(vmemOptions, OMRPORT_VMEM_ALLOC_QUICK)) {
-
 		void *smartAddress = NULL;
 		void *allocatedAddress = NULL;
 
@@ -1536,12 +1544,12 @@ omrvmem_numa_get_node_details(struct OMRPortLibrary *portLibrary, J9MemoryNodeDe
 			}
 
 			/* walk through the /sys/devices/system/node/ directory to find each individual node */
-			
+
 			/*
-			from readdir man page: 
-			If the end of the directory stream is reached, 
-			NULL is returned and errno is not changed. If an error occurs, 
-			NULL is returned and errno is set appropriately. 
+			from readdir man page:
+			If the end of the directory stream is reached,
+			NULL is returned and errno is not changed. If an error occurs,
+			NULL is returned and errno is set appropriately.
 			*/
 			errno = 0;
 			while (NULL != (node = readdir(nodes))) {

@@ -87,11 +87,11 @@ typedef struct AddressRange {
 	ADDRESS end;
 } AddressRange;
 
-void addressRange_Init(AddressRange *range, ADDRESS start, ADDRESS end);
-BOOLEAN addressRange_Intersect(AddressRange *a, AddressRange *b, AddressRange *result);
-BOOLEAN addressRange_IsValid(AddressRange *range);
-uintptr_t addressRange_Width(AddressRange *range);
-ADDRESS findAvailableMemoryBlockNoMalloc(struct OMRPortLibrary *portLibrary, ADDRESS start, ADDRESS end, uintptr_t byteAmount, BOOLEAN reverse);
+static void addressRange_Init(AddressRange *range, ADDRESS start, ADDRESS end);
+static BOOLEAN addressRange_Intersect(AddressRange *a, AddressRange *b, AddressRange *result);
+static BOOLEAN addressRange_IsValid(AddressRange *range);
+static uintptr_t addressRange_Width(AddressRange *range);
+static ADDRESS findAvailableMemoryBlockNoMalloc(struct OMRPortLibrary *portLibrary, ADDRESS start, ADDRESS end, uintptr_t byteAmount, BOOLEAN reverse);
 
 static void *getMemoryInRangeForLargePages(struct OMRPortLibrary *portLibrary, struct J9PortVmemIdentifier *identifier, key_t addressKey, OMRMemCategory *category, uintptr_t byteAmount, void *startAddress, void *endAddress, uintptr_t alignmentInBytes, uintptr_t vmemOptions, uintptr_t pageSize, uintptr_t mode);
 static void *getMemoryInRangeForDefaultPages(struct OMRPortLibrary *portLibrary, struct J9PortVmemIdentifier *identifier, OMRMemCategory *category, uintptr_t byteAmount, void *startAddress, void *endAddress, uintptr_t alignmentInBytes, uintptr_t vmemOptions, uintptr_t mode);
@@ -100,13 +100,13 @@ static BOOLEAN isStrictAndOutOfRange(void *memoryPointer, void *startAddress, vo
 static BOOLEAN rangeIsValid(struct J9PortVmemIdentifier *identifier, void *address, uintptr_t byteAmount);
 static void *reserveLargePages(struct OMRPortLibrary *portLibrary, struct J9PortVmemIdentifier *identifier, OMRMemCategory *category, uintptr_t byteAmount, void *startAddress, void *endAddress, uintptr_t pageSize, uintptr_t alignmentInBytes, uintptr_t vmemOptions, uintptr_t mode);
 
-void *default_pageSize_reserve_memory(struct OMRPortLibrary *portLibrary, void *address, uintptr_t byteAmount, struct J9PortVmemIdentifier *identifier, uintptr_t mode, uintptr_t pageSize, OMRMemCategory *category);
+static void *default_pageSize_reserve_memory(struct OMRPortLibrary *portLibrary, void *address, uintptr_t byteAmount, struct J9PortVmemIdentifier *identifier, uintptr_t mode, uintptr_t pageSize, OMRMemCategory *category);
 #if defined(OMR_PORT_NUMA_SUPPORT)
 static void port_numa_interleave_memory(struct OMRPortLibrary *portLibrary, void *start, uintptr_t size);
 #endif /* OMR_PORT_NUMA_SUPPORT */
-void update_vmemIdentifier(J9PortVmemIdentifier *identifier, void *address, void *handle, uintptr_t byteAmount, uintptr_t mode, uintptr_t pageSize, uintptr_t pageFlags, uintptr_t allocator, OMRMemCategory *category);
+static void update_vmemIdentifier(J9PortVmemIdentifier *identifier, void *address, void *handle, uintptr_t byteAmount, uintptr_t mode, uintptr_t pageSize, uintptr_t pageFlags, uintptr_t allocator, OMRMemCategory *category);
 static uintptr_t get_hugepages_info(struct OMRPortLibrary *portLibrary, vmem_hugepage_info_t *page_info);
-int get_protectionBits(uintptr_t mode);
+static int get_protectionBits(uintptr_t mode);
 
 #if defined(OMR_PORT_NUMA_SUPPORT)
 /*
@@ -248,7 +248,7 @@ initializeNumaGlobals(struct OMRPortLibrary *portLibrary)
  * @param void* 		start	[in] 	The start address of the range
  * @param void*  		end		[in]	The end address of the range
  */
-void
+static void
 addressRange_Init(AddressRange *range, ADDRESS start, ADDRESS end)
 {
 	range->start = start;
@@ -264,7 +264,7 @@ addressRange_Init(AddressRange *range, ADDRESS start, ADDRESS end)
  *
  * Returns TRUE if they have intersection.
  */
-BOOLEAN
+static BOOLEAN
 addressRange_Intersect(AddressRange *a, AddressRange *b, AddressRange *result)
 {
 	result->start = a->start > b->start ? a->start : b->start;
@@ -281,7 +281,7 @@ addressRange_Intersect(AddressRange *a, AddressRange *b, AddressRange *result)
  *
  * Returns TRUE if range's start < end.
  */
-BOOLEAN
+static BOOLEAN
 addressRange_IsValid(AddressRange *range)
 {
 	return (range->end > range->start) ? TRUE : FALSE;
@@ -296,7 +296,7 @@ addressRange_IsValid(AddressRange *range)
  * Caller should make sure the input parameter 'range' is valid,
  * otherwise, unexpected value may be returned.
  */
-uintptr_t
+static uintptr_t
 addressRange_Width(AddressRange *range)
 {
 	Assert_PRT_true(TRUE == addressRange_IsValid(range));
@@ -317,7 +317,7 @@ addressRange_Width(AddressRange *range)
  *
  * returns the address available.
  */
-ADDRESS
+static ADDRESS
 findAvailableMemoryBlockNoMalloc(struct OMRPortLibrary *portLibrary, ADDRESS start, ADDRESS end, uintptr_t byteAmount, BOOLEAN reverse)
 {
 	BOOLEAN dataCorrupt = FALSE;
@@ -907,7 +907,8 @@ get_hugepages_info(struct OMRPortLibrary *portLibrary, vmem_hugepage_info_t *pag
 
 	return 1;
 }
-void *
+
+static void *
 default_pageSize_reserve_memory(struct OMRPortLibrary *portLibrary, void *address, uintptr_t byteAmount, struct J9PortVmemIdentifier *identifier, uintptr_t mode, uintptr_t pageSize, OMRMemCategory *category)
 {
 	/* This function is cloned in J9SourceUnixJ9VMem (omrvmem_reserve_memory).
@@ -984,7 +985,7 @@ default_pageSize_reserve_memory(struct OMRPortLibrary *portLibrary, void *addres
  * @param[in] allocator Constant describing how the virtual memory was allocated.
  * @param[in] category Memory allocation category
  */
-void
+static void
 update_vmemIdentifier(J9PortVmemIdentifier *identifier, void *address, void *handle, uintptr_t byteAmount, uintptr_t mode, uintptr_t pageSize, uintptr_t pageFlags, uintptr_t allocator, OMRMemCategory *category)
 {
 	identifier->address = address;
@@ -997,7 +998,7 @@ update_vmemIdentifier(J9PortVmemIdentifier *identifier, void *address, void *han
 	identifier->category = category;
 }
 
-int
+static int
 get_protectionBits(uintptr_t mode)
 {
 	int protectionFlags = 0;

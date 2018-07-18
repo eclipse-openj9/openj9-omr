@@ -299,7 +299,7 @@ addressRange_IsValid(AddressRange *range)
 static uintptr_t
 addressRange_Width(AddressRange *range)
 {
-	Assert_PRT_true(TRUE == addressRange_IsValid(range));
+	Assert_PRT_true(addressRange_IsValid(range));
 	return range->end - range->start;
 }
 
@@ -386,12 +386,12 @@ findAvailableMemoryBlockNoMalloc(struct OMRPortLibrary *portLibrary, ADDRESS sta
 					lineBuf[lineCursor - 1] = '\0';
 				}
 
-				if (TRUE == lineEnd) { /* proc-line-data */
+				if (lineEnd) { /* proc-line-data */
 					AddressRange currentMmapRange;
 					addressRange_Init(&currentMmapRange, NULL, NULL);
 					Assert_PRT_true(lineBuf[lineCursor - 1] == '\0');
 
-					if (TRUE == gotEOF) {
+					if (gotEOF) {
 						/* We reach the end of the file. */
 						addressRange_Init(&currentMmapRange, (ADDRESS)(uintptr_t)(-1), (ADDRESS)(uintptr_t)(-1));
 					} else {
@@ -444,7 +444,7 @@ findAvailableMemoryBlockNoMalloc(struct OMRPortLibrary *portLibrary, ADDRESS sta
 
 						/* check if the free block has intersection with the allowed range */
 						haveIntersect = addressRange_Intersect(&allowedRange, &freeRange, &intersectAvailable);
-						if (TRUE == haveIntersect) {
+						if (haveIntersect) {
 							uintptr_t intersectSize = addressRange_Width(&intersectAvailable);
 #if defined(OMRVMEM_DEBUG)
 							printf("intersection %p-%p\n", intersectAvailable.start, intersectAvailable.end);
@@ -463,11 +463,11 @@ findAvailableMemoryBlockNoMalloc(struct OMRPortLibrary *portLibrary, ADDRESS sta
 				} /* end proc-line-data */
 			} while (readCursor < bytesRead); /* end proc-chars-loop */
 
-			if ((FALSE == reverse) && (TRUE == matchFound)) {
+			if ((FALSE == reverse) && matchFound) {
 				break;
 			}
 
-			if (TRUE == (gotEOF | dataCorrupt)) {
+			if (gotEOF || dataCorrupt) {
 				break;
 			}
 		} /* end read-file-loop */
@@ -476,11 +476,11 @@ findAvailableMemoryBlockNoMalloc(struct OMRPortLibrary *portLibrary, ADDRESS sta
 		dataCorrupt = TRUE;
 	}
 
-	if (TRUE == dataCorrupt) {
+	if (dataCorrupt) {
 		return NULL;
 	}
 
-	if (TRUE == matchFound) {
+	if (matchFound) {
 		if (FALSE == reverse) {
 			return lastAvailableRange.start;
 		} else {
@@ -1137,7 +1137,7 @@ omrvmem_find_valid_page_size(struct OMRPortLibrary *portLibrary, uintptr_t mode,
 			}
 		}
 		if ((OMRPORT_VMEM_MEMORY_MODE_EXECUTE != (OMRPORT_VMEM_MEMORY_MODE_EXECUTE & mode)) ||
-			((TRUE == codeCacheConsolidationEnabled) && (SIXTEEN_M == validPageSize)))
+			(codeCacheConsolidationEnabled && (SIXTEEN_M == validPageSize)))
 #endif /* defined(OMR_ENV_DATA64) */
 #endif /* defined(LINUXPPC) */
 		{

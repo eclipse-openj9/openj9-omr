@@ -3783,7 +3783,7 @@ void OMR::Options::openLogFile(int32_t idSuffix)
          fn = filename;
          }
 
-      char *fmodeString = "wb";
+      char *fmodeString = "wb+";
       if (self()->getOption(TR_EnablePIDExtension))
          {
          if (!_suffixLogsFormat)

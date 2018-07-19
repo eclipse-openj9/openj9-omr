@@ -2593,41 +2593,6 @@ bool OMR::X86::CodeGenerator::processInstruction(TR::Instruction *instr, TR_BitV
                traceMsg(self()->comp(), "instr [%p] USES mr no addressRegister\n", x86Instr);
          return true;
          }
-      case TR::Instruction::IsMemRegReg:
-         {
-         // get sourceRegister, sourceRightRegister and memoryReference: baseRegister, indexRegister
-         //
-         int32_t srcRegNum = ((TR::RealRegister*)x86Instr->getSourceRegister())->getRegisterNumber();
-         if (traceIt)
-            traceMsg(self()->comp(), "instr [%p] USES register [%d]\n", x86Instr, srcRegNum);
-
-         int32_t srcRightRegNum = ((TR::RealRegister*)x86Instr->getSource2ndRegister())->getRegisterNumber();
-         if (traceIt)
-            traceMsg(self()->comp(), "instr [%p] USES register [%d]\n", x86Instr, srcRightRegNum);
-
-         TR::MemoryReference *mr = x86Instr->getMemoryReference();
-         if (mr->getBaseRegister())
-            {
-            if (traceIt)
-               traceMsg(self()->comp(), "instr [%p] USES mr baseRegister [%d]\n", x86Instr, ((TR::RealRegister*)mr->getBaseRegister())->getRegisterNumber());
-            }
-         if (mr->getIndexRegister())
-            {
-            if (traceIt)
-               traceMsg(self()->comp(), "instr [%p] USES mr indexRegister [%d]\n", x86Instr, ((TR::RealRegister*)mr->getIndexRegister())->getRegisterNumber());
-            ////registerUsageInfo[blockNum]->set(((TR::RealRegister*)mr->getIndexRegister())->getRegisterNumber());
-            }
-         if (TR::Compiler->target.is64Bit() && mr->getAddressRegister())
-            {
-            if (traceIt)
-               traceMsg(self()->comp(), "instr [%p] USES mr addressRegister [%d]\n", x86Instr, ((TR::RealRegister*)mr->getAddressRegister())->getRegisterNumber());
-            registerUsageInfo[blockNum]->set(((TR::RealRegister*)mr->getAddressRegister())->getRegisterNumber());
-            }
-         else if (traceIt)
-               traceMsg(self()->comp(), "instr [%p] USES mr no addressRegister\n", x86Instr);
-
-         return true;
-         }
       default:
          {
          if (traceIt)

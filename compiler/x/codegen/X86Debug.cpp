@@ -146,6 +146,9 @@ TR_Debug::printx(TR::FILE *pOutFile, TR::Instruction  * instr)
       case TR::Instruction::IsRegMemImm:
          print(pOutFile, (TR::X86RegMemImmInstruction  *)instr);
          break;
+      case TR::Instruction::IsRegRegMem:
+         print(pOutFile, (TR::X86RegRegMemInstruction  *)instr);
+         break;
       case TR::Instruction::IsFPRegMem:
          print(pOutFile, (TR::X86FPRegMemInstruction  *)instr);
          break;
@@ -166,10 +169,7 @@ TR_Debug::printx(TR::FILE *pOutFile, TR::Instruction  * instr)
          print(pOutFile, (TR::X86MemRegInstruction  *)instr);
          break;
       case TR::Instruction::IsMemRegImm:
-         print(pOutFile, (TR::X86MemRegRegInstruction  *)instr);
-         break;
-      case TR::Instruction::IsMemRegReg:
-         print(pOutFile, (TR::X86MemRegRegInstruction  *)instr);
+         print(pOutFile, (TR::X86MemRegImmInstruction  *)instr);
          break;
       case TR::Instruction::IsFPMemReg:
          print(pOutFile, (TR::X86FPMemRegInstruction  *)instr);
@@ -1241,61 +1241,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::X86MemRegImmInstruction  * instr)
    }
 
 void
-TR_Debug::print(TR::FILE *pOutFile, TR::X86MemRegRegInstruction  * instr)
-   {
-   if (pOutFile == NULL)
-      return;
-
-   int32_t barrier = memoryBarrierRequired(instr->getOpCode(), instr->getMemoryReference(), _cg, false);
-   int32_t barrierOffset = printPrefixAndMnemonicWithoutBarrier(pOutFile, instr, barrier);
-
-   print(pOutFile, instr->getMemoryReference(), getTargetSizeFromInstruction(instr));
-   trfprintf(pOutFile, ", ");
-   TR_RegisterSizes sourceSize = getSourceSizeFromInstruction(instr);
-   if (!(instr->getOpCode().sourceRegIsImplicit() != 0))
-      {
-      print(pOutFile, instr->getSourceRegister(), sourceSize);
-      trfprintf(pOutFile, ", ");
-      }
-
-   if (instr->getOpCodeValue() == SHLD4MemRegCL || instr->getOpCodeValue() == SHRD4MemRegCL)
-      trfprintf(pOutFile, "cl");
-   else
-      print(pOutFile, instr->getSource2ndRegister(), sourceSize);
-
-   printInstructionComment(pOutFile, 1, instr);
-   printMemoryReferenceComment(pOutFile, instr->getMemoryReference());
-
-   if (barrier & NeedsExplicitBarrier)
-      printPrefixAndMemoryBarrier(pOutFile, instr, barrier, barrierOffset);
-
-   dumpDependencies(pOutFile, instr);
-   trfflush(pOutFile);
-   }
-
-void
-TR_Debug::printReferencedRegisterInfo(TR::FILE *pOutFile, TR::X86MemRegRegInstruction  * instr)
-   {
-   if (pOutFile == NULL)
-      return;
-
-   printRegisterInfoHeader(pOutFile, instr);
-   trfprintf(pOutFile,"    2ndSource         ");
-   printFullRegInfo(pOutFile, instr->getSource2ndRegister());
-   trfprintf(pOutFile,"    Source            ");
-   printFullRegInfo(pOutFile, instr->getSourceRegister());
-
-   printReferencedRegisterInfo(pOutFile, instr->getMemoryReference());
-
-   if (instr->getDependencyConditions())
-      {
-      printFullRegisterDependencyInfo(pOutFile, instr->getDependencyConditions());
-      }
-
-   trfflush(pOutFile);
-   }
-
-void
 TR_Debug::print(TR::FILE *pOutFile, TR::X86RegMemInstruction  * instr)
    {
    if (pOutFile == NULL)
@@ -1372,6 +1317,65 @@ TR_Debug::print(TR::FILE *pOutFile, TR::X86RegMemImmInstruction  * instr)
       printPrefixAndMemoryBarrier(pOutFile, instr, barrier, barrierOffset);
 
    dumpDependencies(pOutFile, instr);
+   trfflush(pOutFile);
+   }
+
+void
+TR_Debug::print(TR::FILE *pOutFile, TR::X86RegRegMemInstruction  * instr)
+   {
+   if (pOutFile == NULL)
+      return;
+
+   int32_t barrier = memoryBarrierRequired(instr->getOpCode(), instr->getMemoryReference(), _cg, false);
+   int32_t barrierOffset = printPrefixAndMnemonicWithoutBarrier(pOutFile, instr, barrier);
+
+   if (!(instr->getOpCode().targetRegIsImplicit() != 0))
+      {
+      print(pOutFile, instr->getTargetRegister(), getTargetSizeFromInstruction(instr));
+      trfprintf(pOutFile, ", ");
+      }
+   if (!(instr->getOpCode().sourceRegIsImplicit() != 0))
+      {
+      print(pOutFile, instr->getSource2ndRegister(), getSourceSizeFromInstruction(instr));
+      trfprintf(pOutFile, ", ");
+      }
+   print(pOutFile, instr->getMemoryReference(), getSourceSizeFromInstruction(instr));
+   printInstructionComment(pOutFile, 2, instr);
+   printMemoryReferenceComment(pOutFile, instr->getMemoryReference());
+   TR::Symbol *symbol = instr->getMemoryReference()->getSymbolReference().getSymbol();
+   if (symbol && symbol->isSpillTempAuto())
+      {
+      trfprintf(pOutFile, "%s, spilled for %s",
+                    commentString(),
+                    getName(instr->getNode()->getOpCode()));
+      }
+
+   if (barrier & NeedsExplicitBarrier)
+      printPrefixAndMemoryBarrier(pOutFile, instr, barrier, barrierOffset);
+
+   dumpDependencies(pOutFile, instr);
+   trfflush(pOutFile);
+   }
+
+void
+TR_Debug::printReferencedRegisterInfo(TR::FILE *pOutFile, TR::X86RegRegMemInstruction  * instr)
+   {
+   if (pOutFile == NULL)
+      return;
+
+   printReferencedRegisterInfo(pOutFile, instr->getMemoryReference());
+
+   printFullRegInfo(pOutFile, instr->getSourceRegister());
+   trfprintf(pOutFile,"    2ndSource         ");
+   printFullRegInfo(pOutFile, instr->getSource2ndRegister());
+   trfprintf(pOutFile,"    Target            ");
+   printFullRegInfo(pOutFile, instr->getTargetRegister());
+
+   if (instr->getDependencyConditions())
+      {
+      printFullRegisterDependencyInfo(pOutFile, instr->getDependencyConditions());
+      }
+
    trfflush(pOutFile);
    }
 

@@ -4069,7 +4069,7 @@ enum BinaryArithmeticOps : uint32_t
    NumBinaryArithmeticOps
    };
 
-static const TR_X86OpCodes BinaryArithmeticOpCodes[TR::NumOMRTypes][NumBinaryArithmeticOps] =
+static const TR_X86OpCodes BinaryArithmeticOpCodesForReg[TR::NumOMRTypes][NumBinaryArithmeticOps] =
    {
    //  Invalid,       Add,         Sub,         Mul,         Div,          And,         Or,       Xor
    { BADIA32Op, BADIA32Op,   BADIA32Op,   BADIA32Op,    BADIA32Op,   BADIA32Op,  BADIA32Op, BADIA32Op  }, // NoType
@@ -4080,13 +4080,52 @@ static const TR_X86OpCodes BinaryArithmeticOpCodes[TR::NumOMRTypes][NumBinaryAri
    { BADIA32Op, ADDSSRegReg, SUBSSRegReg, MULSSRegReg,  DIVSSRegReg, BADIA32Op,  BADIA32Op, BADIA32Op  }, // Float
    { BADIA32Op, ADDSDRegReg, SUBSDRegReg, MULSDRegReg,  DIVSDRegReg, BADIA32Op,  BADIA32Op, BADIA32Op  }, // Double
    { BADIA32Op, BADIA32Op,   BADIA32Op,   BADIA32Op,    BADIA32Op,   BADIA32Op,  BADIA32Op, BADIA32Op  }, // Address
-   { BADIA32Op, BADIA32Op,   BADIA32Op,   BADIA32Op,    BADIA32Op,   BADIA32Op,  BADIA32Op, BADIA32Op  }, // VectorInt8
-   { BADIA32Op, BADIA32Op,   BADIA32Op,   BADIA32Op,    BADIA32Op,   BADIA32Op,  BADIA32Op, BADIA32Op  }, // VectorInt16
+   { BADIA32Op, PADDBRegReg, PSUBBRegReg, BADIA32Op,    BADIA32Op,   BADIA32Op,  BADIA32Op, BADIA32Op  }, // VectorInt8
+   { BADIA32Op, PADDWRegReg, PSUBWRegReg, PMULLWRegReg, BADIA32Op,   BADIA32Op,  BADIA32Op, BADIA32Op  }, // VectorInt16
    { BADIA32Op, PADDDRegReg, PSUBDRegReg, PMULLDRegReg, BADIA32Op,   PANDRegReg, PORRegReg, PXORRegReg }, // VectorInt32
    { BADIA32Op, PADDQRegReg, PSUBQRegReg, BADIA32Op,    BADIA32Op,   PANDRegReg, PORRegReg, PXORRegReg }, // VectorInt64
    { BADIA32Op, ADDPSRegReg, SUBPSRegReg, MULPSRegReg,  DIVPSRegReg, BADIA32Op,  BADIA32Op, BADIA32Op  }, // VectorFloat
    { BADIA32Op, ADDPDRegReg, SUBPDRegReg, MULPDRegReg,  DIVPDRegReg, BADIA32Op,  BADIA32Op, BADIA32Op  }, // VectorDouble
    { BADIA32Op, BADIA32Op,   BADIA32Op,   BADIA32Op,    BADIA32Op,   BADIA32Op,  BADIA32Op, BADIA32Op  }, // Aggregate
+   };
+
+static const TR_X86OpCodes BinaryArithmeticOpCodesForMem[TR::NumOMRTypes][NumBinaryArithmeticOps] =
+   {
+   //  Invalid,       Add,         Sub,         Mul,         Div,          And,         Or,       Xor
+   { BADIA32Op, BADIA32Op,   BADIA32Op,   BADIA32Op,    BADIA32Op,   BADIA32Op,  BADIA32Op, BADIA32Op  }, // NoType
+   { BADIA32Op, BADIA32Op,   BADIA32Op,   BADIA32Op,    BADIA32Op,   BADIA32Op,  BADIA32Op, BADIA32Op  }, // Int8
+   { BADIA32Op, BADIA32Op,   BADIA32Op,   BADIA32Op,    BADIA32Op,   BADIA32Op,  BADIA32Op, BADIA32Op  }, // Int16
+   { BADIA32Op, BADIA32Op,   BADIA32Op,   BADIA32Op,    BADIA32Op,   BADIA32Op,  BADIA32Op, BADIA32Op  }, // Int32
+   { BADIA32Op, BADIA32Op,   BADIA32Op,   BADIA32Op,    BADIA32Op,   BADIA32Op,  BADIA32Op, BADIA32Op  }, // Int64
+   { BADIA32Op, ADDSSRegMem, SUBSSRegMem, MULSSRegMem,  DIVSSRegMem, BADIA32Op,  BADIA32Op, BADIA32Op  }, // Float
+   { BADIA32Op, ADDSDRegMem, SUBSDRegMem, MULSDRegMem,  DIVSDRegMem, BADIA32Op,  BADIA32Op, BADIA32Op  }, // Double
+   { BADIA32Op, BADIA32Op,   BADIA32Op,   BADIA32Op,    BADIA32Op,   BADIA32Op,  BADIA32Op, BADIA32Op  }, // Address
+   { BADIA32Op, PADDBRegMem, PSUBBRegMem, BADIA32Op,    BADIA32Op,   BADIA32Op,  BADIA32Op, BADIA32Op  }, // VectorInt8
+   { BADIA32Op, PADDWRegMem, PSUBWRegMem, PMULLWRegMem, BADIA32Op,   BADIA32Op,  BADIA32Op, BADIA32Op  }, // VectorInt16
+   { BADIA32Op, PADDDRegMem, PSUBDRegMem, PMULLDRegMem, BADIA32Op,   PANDRegMem, PORRegMem, PXORRegMem }, // VectorInt32
+   { BADIA32Op, PADDQRegMem, PSUBQRegMem, BADIA32Op,    BADIA32Op,   PANDRegMem, PORRegMem, PXORRegMem }, // VectorInt64
+   { BADIA32Op, ADDPSRegMem, SUBPSRegMem, MULPSRegMem,  DIVPSRegMem, BADIA32Op,  BADIA32Op, BADIA32Op  }, // VectorFloat
+   { BADIA32Op, ADDPDRegMem, SUBPDRegMem, MULPDRegMem,  DIVPDRegMem, BADIA32Op,  BADIA32Op, BADIA32Op  }, // VectorDouble
+   { BADIA32Op, BADIA32Op,   BADIA32Op,   BADIA32Op,    BADIA32Op,   BADIA32Op,  BADIA32Op, BADIA32Op  }, // Aggregate
+   };
+
+static const TR::ILOpCodes MemoryLoadOpCodes[TR::NumOMRTypes] =
+   {
+   TR::BadILOp, // NoType
+   TR::BadILOp, // Int8
+   TR::BadILOp, // Int16
+   TR::BadILOp, // Int32
+   TR::BadILOp, // Int64
+   TR::fload  , // Float
+   TR::dload  , // Double
+   TR::BadILOp, // Address
+   TR::vload  , // VectorInt8
+   TR::vload  , // VectorInt16
+   TR::vload  , // VectorInt32
+   TR::vload  , // VectorInt64
+   TR::vload  , // VectorFloat
+   TR::vload  , // VectorDouble
+   TR::BadILOp, // Aggregate
    };
 
 // For ILOpCode that can be translated to single SSE/AVX instructions
@@ -4129,27 +4168,50 @@ TR::Register* OMR::X86::TreeEvaluator::FloatingPointAndVectorBinaryArithmeticEva
          TR_ASSERT(false, "Unsupported OpCode");
       }
 
+   TR::DataType type = node->getDataType();
+
    TR::Node* operandNode0 = node->getChild(0);
    TR::Node* operandNode1 = node->getChild(1);
-   TR::Register* operandReg0 = cg->evaluate(operandNode0);
-   TR::Register* operandReg1 = cg->evaluate(operandNode1);
 
+   bool useRegMemForm = TR::CodeGenerator::getX86ProcessorInfo().supportsAVX();
+
+   if (useRegMemForm)
+      {
+      if (operandNode1->getReferenceCount() != 1 ||
+          operandNode1->getOpCodeValue() != MemoryLoadOpCodes[type] ||
+          BinaryArithmeticOpCodesForMem[type][arithmetic] == BADIA32Op)
+         {
+         useRegMemForm = false;
+         }
+      }
+
+   TR::Register* operandReg0 = cg->evaluate(operandNode0);
+   TR::Register* operandReg1 = useRegMemForm ? NULL : cg->evaluate(operandNode1);
    TR::Register* resultReg = cg->allocateRegister(operandReg0->getKind());
-   TR_X86OpCodes opCode = BinaryArithmeticOpCodes[node->getDataType()][arithmetic];
+   resultReg->setIsSinglePrecision(operandReg0->isSinglePrecision());
+
+   TR_X86OpCodes opCode = useRegMemForm ? BinaryArithmeticOpCodesForMem[type][arithmetic] : BinaryArithmeticOpCodesForReg[type][arithmetic];
    TR_ASSERT(opCode != BADIA32Op, "FloatingPointAndVectorBinaryArithmeticEvaluator: unsupported data type or arithmetic.");
 
    if (TR::CodeGenerator::getX86ProcessorInfo().supportsAVX())
       {
-      generateRegRegRegInstruction(opCode, node, resultReg, operandReg0, operandReg1, cg);
+      if (useRegMemForm)
+         generateRegRegMemInstruction(opCode, node, resultReg, operandReg0, generateX86MemoryReference(operandNode1, cg), cg);
+      else
+         generateRegRegRegInstruction(opCode, node, resultReg, operandReg0, operandReg1, cg);
       }
    else
       {
       generateRegRegInstruction(MOVDQURegReg, node, resultReg, operandReg0, cg);
       generateRegRegInstruction(opCode, node, resultReg, operandReg1, cg);
       }
+
    node->setRegister(resultReg);
    cg->decReferenceCount(operandNode0);
-   cg->decReferenceCount(operandNode1);
+   if (operandReg1)
+      cg->decReferenceCount(operandNode1);
+   else
+      cg->recursivelyDecReferenceCount(operandNode1);
    return resultReg;
    }
 

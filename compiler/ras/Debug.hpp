@@ -132,9 +132,9 @@ namespace TR { class X86MemInstruction;                    }
 namespace TR { class X86MemImmInstruction;                 }
 namespace TR { class X86MemRegInstruction;                 }
 namespace TR { class X86MemRegImmInstruction;              }
-namespace TR { class X86MemRegRegInstruction;              }
 namespace TR { class X86RegMemInstruction;                 }
 namespace TR { class X86RegMemImmInstruction;              }
+namespace TR { class X86RegRegMemInstruction;              }
 namespace TR { class X86FPRegInstruction;                  }
 namespace TR { class X86FPRegRegInstruction;               }
 namespace TR { class X86FPMemRegInstruction;               }
@@ -768,9 +768,9 @@ public:
    void print(TR::FILE *, TR::X86MemImmInstruction *);
    void print(TR::FILE *, TR::X86MemRegInstruction *);
    void print(TR::FILE *, TR::X86MemRegImmInstruction *);
-   void print(TR::FILE *, TR::X86MemRegRegInstruction *);
    void print(TR::FILE *, TR::X86RegMemInstruction *);
    void print(TR::FILE *, TR::X86RegMemImmInstruction *);
+   void print(TR::FILE *, TR::X86RegRegMemInstruction *);
    void print(TR::FILE *, TR::X86FPRegInstruction *);
    void print(TR::FILE *, TR::X86FPRegRegInstruction *);
    void print(TR::FILE *, TR::X86FPMemRegInstruction *);
@@ -789,8 +789,8 @@ public:
    void printReferencedRegisterInfo(TR::FILE *, TR::X86RegRegInstruction *);
    void printReferencedRegisterInfo(TR::FILE *, TR::X86MemInstruction *);
    void printReferencedRegisterInfo(TR::FILE *, TR::X86MemRegInstruction *);
-   void printReferencedRegisterInfo(TR::FILE *, TR::X86MemRegRegInstruction *);
    void printReferencedRegisterInfo(TR::FILE *, TR::X86RegMemInstruction *);
+   void printReferencedRegisterInfo(TR::FILE *, TR::X86RegRegMemInstruction *);
 
    void printFullRegisterDependencyInfo(TR::FILE *, TR::RegisterDependencyConditions * conditions);
    void printDependencyConditions(TR_X86RegisterDependencyGroup *, uint8_t, char *, TR::FILE *);

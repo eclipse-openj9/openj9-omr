@@ -221,7 +221,23 @@ OMR::CodeGenPhase::performProcessRelocationsPhase(TR::CodeGenerator * cg, TR::Co
         setDllSlip((char*)cg->getCodeStart(),(char*)cg->getCodeStart()+cg->getCodeLength(),"SLIPDLL31", comp);
         }
      }
+   if (comp->getOption(TR_TraceCG) || comp->getOptions()->getTraceCGOption(TR_TraceCGPostBinaryEncoding))
+      {
+      const char * title = "Post Relocation Instructions";
+      comp->getDebug()->dumpMethodInstrs(comp->getOutFile(), title, false, true);
 
+      traceMsg(comp,"<snippets>");
+      comp->getDebug()->print(comp->getOutFile(), cg->getSnippetList());
+      traceMsg(comp,"\n</snippets>\n");
+
+      auto iterator = cg->getSnippetList().begin();
+      int32_t estimatedSnippetStart = cg->getEstimatedSnippetStart();
+      while (iterator != cg->getSnippetList().end())
+         {
+         estimatedSnippetStart += (*iterator)->getLength(estimatedSnippetStart);
+         ++iterator;
+         }
+      }
    }
 
 

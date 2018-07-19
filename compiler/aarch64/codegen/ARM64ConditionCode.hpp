@@ -22,9 +22,30 @@
 #ifndef ARM64CONDITIONCODE_INCL
 #define ARM64CONDITIONCODE_INCL
 
-typedef enum 
-{
-} 
-ARM64ConditionCode;
+namespace TR {
 
-#endif //ARM64CONDITIONCODE_INCL
+/*
+ * Condition codes used in B.cond and other instructions
+ */
+typedef enum {
+   CC_EQ = 0,
+   CC_NE,
+   CC_CS,
+   CC_CC,
+   CC_MI,
+   CC_PL,
+   CC_VS,
+   CC_VC,
+   CC_HI,
+   CC_LS,
+   CC_GE,
+   CC_LT,
+   CC_GT,
+   CC_LE,
+   CC_AL,
+   CC_Illegal
+} ARM64ConditionCode;
+
+} // TR
+
+#endif

@@ -1328,38 +1328,11 @@ static bool canBeHandledByIfInstanceOfHelper(TR::Node *node, TR::CodeGenerator *
       }
    }
 
-
-static bool canBeHandledByIfArrayCmpHelper(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return false;
-   TR::Node *firstChild  = node->getFirstChild();
-   TR::Node *secondChild = node->getSecondChild();
-
-   if (secondChild->getOpCode().isLoadConst() &&
-       (cg->getX86ProcessorInfo().supportsSSE2()))
-      {
-      intptrj_t constValue = integerConstNodeValue(secondChild, cg);
-      return (firstChild->getOpCodeValue() == TR::arraycmp &&
-              !firstChild->isArrayCmpLen() &&
-              firstChild->getRegister() == NULL &&
-              firstChild->getReferenceCount() == 1 &&
-              constValue == 0);
-      }
-   else
-      {
-      return false;
-      }
-   }
-
 TR::Register *OMR::X86::TreeEvaluator::integerIfCmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    if (canBeHandledByIfInstanceOfHelper(node, cg))
       {
       return TR::TreeEvaluator::VMifInstanceOfEvaluator(node, cg);
-      }
-   else if (canBeHandledByIfArrayCmpHelper(node, cg))
-      {
-      return TR::TreeEvaluator::VMifArrayCmpEvaluator(node, cg);
       }
    else
       {
@@ -1439,10 +1412,6 @@ TR::Register *OMR::X86::TreeEvaluator::integerIfCmpneEvaluator(TR::Node *node, T
    else if (canBeHandledByIfInstanceOfHelper(node, cg))
       {
       return TR::TreeEvaluator::VMifInstanceOfEvaluator(node, cg);
-      }
-   else if (canBeHandledByIfArrayCmpHelper(node, cg))
-      {
-      return TR::TreeEvaluator::VMifArrayCmpEvaluator(node, cg);
       }
    else
       {

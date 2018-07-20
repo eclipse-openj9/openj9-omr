@@ -115,6 +115,10 @@ private:
 	double resetTargetLOARatio(MM_EnvironmentBase*);
 	void resetLOASize(MM_EnvironmentBase*, double newLOARatio);
 	void redistributeFreeMemory(MM_EnvironmentBase*, uintptr_t newOldAreaSize);
+	bool isSizeEnoughForLOA(MM_EnvironmentBase* env, uintptr_t newOldAreaSize)
+	{
+		return (newOldAreaSize >= _extensions->largeObjectMinimumSize);
+	}
 
 protected:
 public:

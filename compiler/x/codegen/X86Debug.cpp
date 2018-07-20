@@ -1557,7 +1557,10 @@ TR_Debug::print(TR::FILE *pOutFile, TR::MemoryReference  * mr, TR_RegisterSizes 
          }
       else if (disp)
          {
-         printIntConstant(pOutFile, (int32_t)disp, 16, TR_WordReg, true);
+         printHexConstant(pOutFile,
+                          TR::Compiler->target.is64Bit() ? disp : (uint32_t)disp,
+                          TR::Compiler->target.is64Bit() ? 16 : 8,
+                          true);
          }
       else if (cds)
          {

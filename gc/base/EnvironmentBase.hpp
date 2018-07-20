@@ -441,10 +441,9 @@ public:
 	
 	/**
 	 * Give up exclusive access in preparation for transferring it to a collaborating thread (i.e. main-to-master or master-to-main)
-	 * @deferredVMAccessRelease Set to true if caller wants to defer releasing VM access (for the calling thread) at a later point (to be done explicitly by the caller). The method may set it back to false, if unable to obey the request.
 	 * @return the exclusive count of the current thread before relinquishing 
 	 */
-	uintptr_t relinquishExclusiveVMAccess(bool *deferredVMAccessRelease = NULL);
+	uintptr_t relinquishExclusiveVMAccess();
 
 	/**
 	 * Assume exclusive access from a collaborating thread i.e. main-to-master or master-to-main)

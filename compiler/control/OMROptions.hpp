@@ -2028,9 +2028,11 @@ private:
    static void     safelyCloseLogs(TR::Options *options, TR_MCTLogs * &closedLogs, TR_FrontEnd * fe);
    static void     closeLogsForOtherCompilationThreads(TR_FrontEnd * fe);
 
+protected:
    void  openLogFile (int32_t idSuffix = -1);
    static void  closeLogFile(TR_FrontEnd *fe, TR::FILE * file);
 
+private:
    // Standard option processing methods
 
    // Set bit(s) defined by "mask" at offset "offset" from the base
@@ -2218,6 +2220,7 @@ private:
    void setDefaultsForDeterministicMode();
    void setMoreAggressiveInlining();
 
+protected:
    static bool           _optionsTablesValidated;
    static TR::OptionTable _jitOptions[];
    static TR::OptionTable _feOptions[];

@@ -83,16 +83,16 @@ changes that should not otherwise be logically squashed with other commits in th
 same pull request.
 
 * When commits are pushed to a pull request, TravisCI and AppVeyor builds launch
-automatically to test the changes on x86 Linux, macOS, and Windows platforms.
-If the change affects multiple platforms, you must initiate a pull request build
-on all affected platforms prior to merging.  To launch a pull request build, add
-a comment to the pull request that follows the syntax:
+automatically to test the changes on x86 Linux, macOS, and Windows 32-bit platforms.
+If the change affects multiple platforms or 64-bit Windows, you must initiate a pull
+request build on all affected platforms prior to merging.  To launch a pull request
+build, add a comment to the pull request that follows the syntax:
    ```
-   @genie-omr build { all | zlinux | zos | plinux }
+   @genie-omr build { all | zlinux | zos | plinux | aix | xlinux | win }
    ```
    Combinations of platforms can be specified separated by commas.
 
-   For example, to launch a pull request build on all non-x86 platforms:
+   For example, to launch a pull request build on all platforms:
    ```
    @genie-omr build all
    ```

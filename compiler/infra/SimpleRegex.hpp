@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -63,6 +63,13 @@ class SimpleRegex
 
    void print(bool negate);
 
+   // Get the original string the regex was parsed from.
+   // This pointer is only valid as long as the original string is not freed.
+   // It is NOT null terminated.
+   //
+   const char *regexStr() const { return _regexStr; }
+   size_t regexStrLen() const { return _regexStrLen; }
+
    enum ComponentType{simple_string, wildcards, char_alternatives};
 
    struct Component
@@ -105,6 +112,10 @@ class SimpleRegex
 
    Regex *_regex;
    bool   _negate;
+
+   // Length and pointer to the original string that the regex was parsed from
+   size_t _regexStrLen;
+   char *_regexStr;
    };
 
 }

@@ -19,9 +19,9 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#include "codegen/ARM64Ops.hpp"
+#include "codegen/InstOpCode.hpp"
 
-const TR_ARM64OpCode::TR_OpCodeBinaryEntry TR_ARM64OpCode::binaryEncodings[ARM64NumOpCodes] =
+const OMR::ARM64::InstOpCode::OpCodeBinaryEntry OMR::ARM64::InstOpCode::binaryEncodings[ARM64NumOpCodes] =
 {
 //		BINARY			Opcode    	Opcode		comments
 /* UNALLOCATED */
@@ -271,7 +271,7 @@ const TR_ARM64OpCode::TR_OpCodeBinaryEntry TR_ARM64OpCode::binaryEncodings[ARM64
 		0xFD000000,	/* STR       	vstrimmd	 */
 		0xFD400000,	/* LDR       	vldrimmd	 */
 		0xF9800000,	/* PRFM      	prfmimm	 */
-/* Data processing – Immediate */
+/* Data processing - Immediate */
 	/* PC-rel. addressing */
 		0x10000000,	/* ADR       	adr	 */
 		0x90000000,	/* ADRP      	adrp	 */
@@ -310,7 +310,7 @@ const TR_ARM64OpCode::TR_OpCodeBinaryEntry TR_ARM64OpCode::binaryEncodings[ARM64
 	/* Extract */
 		0x13800000,	/* EXTR      	extrw	 */
 		0x93C00000,	/* EXTR      	extrx	 */
-/* Data Processing – register */
+/* Data Processing - register */
 	/* Logical (shifted register) */
 		0x0A000000,	/* AND       	andw	 */
 		0x0A200000,	/* BIC       	bicw	 */

@@ -306,7 +306,6 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static bool VMinlineCallEvaluator(TR::Node *node, bool isIndirect, TR::CodeGenerator *cg);
    static TR::Instruction *VMtestForReferenceArray(TR::Node *, TR::Register *objectReg, TR::CodeGenerator *cg);
    static bool genNullTestSequence(TR::Node *node, TR::Register *opReg, TR::Register *targetReg, TR::CodeGenerator *cg);
-   static TR::Register *VMifArrayCmpEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Instruction *insertLoadConstant(TR::Node *node,
                                              TR::Register *target,
                                              intptrj_t value,

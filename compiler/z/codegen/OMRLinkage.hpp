@@ -370,9 +370,6 @@ enum TR_DispatchType
    virtual void lockAccessRegisters();
    virtual void lockRegister(TR::RealRegister * lpReal);
    virtual void unlockRegister(TR::RealRegister * lpReal);
-
-   void lockGPR(int32_t registerNo);
-   void unlockGPR(int32_t registerNo);
    void lockAR(int32_t registerNo);
    void unlockAR(int32_t registerNo);
 

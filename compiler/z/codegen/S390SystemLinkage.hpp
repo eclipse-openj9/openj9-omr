@@ -76,17 +76,6 @@ public:
       }
    };
 
-class VaStartPatchGroup
-   {
-public:
-   TR::Instruction * instrToBePatched[4];
-   VaStartPatchGroup()
-      {
-      for (int i = 0; i < 4; ++i)
-         instrToBePatched[i] = NULL;
-      }
-   };
-
 
 class S390SystemLinkage : public TR::Linkage
    {

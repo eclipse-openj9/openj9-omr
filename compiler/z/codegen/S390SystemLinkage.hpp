@@ -245,8 +245,6 @@ public:
    virtual void mapSingleAutomatic(TR::AutomaticSymbol * p, uint32_t & stackIndex);
    virtual bool hasToBeOnStack(TR::ParameterSymbol * parm);
 
-   virtual void notifyHasalloca();
-
    virtual void createPrologue(TR::Instruction * cursor);
    virtual void createEpilogue(TR::Instruction * cursor);
 

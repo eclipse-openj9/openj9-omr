@@ -6700,22 +6700,6 @@ OMR::Z::Machine::initGlobalVectorRegisterMap(uint32_t vectorOffset)
 #undef addToGRAMap
    }
 
-
-void
-OMR::Z::Machine::lockGlobalRegister(int32_t globalRegisterTableIndex)
-   {
-   TR::Compilation *comp = self()->cg()->comp();
-   if (comp->getOption(TR_DisableRegisterPressureSimulation))
-      {
-      _globalRegisterNumberToRealRegisterMap[globalRegisterTableIndex] = (uint32_t) (-1);
-      }
-   else
-      {
-      // TODO: make sure this method is not called without TR_DisableRegisterPressureSimulation
-      // TR_ASSERTC( false,comp, "lockGlobalRegister() does not work with new pickRegister\n");
-      }
-   }
-
 void
 OMR::Z::Machine::releaseGlobalRegister(int32_t globalRegisterTableIndex, TR::RealRegister::RegNum gReg)
    {

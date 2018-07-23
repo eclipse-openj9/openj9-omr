@@ -6371,6 +6371,14 @@ storeToStaticBaseNodeHelper(TR::Node * node, TR::Node * valueChild, TR::CodeGene
 /** \brief
  *     Attempts to perform a direct memory-memory copy while evaluating a store node.
  *
+ *  \details
+ *     The source value node must be resolved for now. An unresolved field requires an UnresolvedDataSnippet
+ *     to patch the instruction's displacement field. This snippet is designed to patch most
+ *     load instructions' displacement field, which is bit 20-31.
+ *     MVC instruction has both a source and a destination displacement field. Its source is
+ *     at bit 36-47 and can't be handled by the current UnresolvedDataSnippet; but the destination
+ *     displacement can still , in theory, be patchable.
+ *
  *  \param cg
  *     The code generator used to generate the instructions.
  *
@@ -6388,7 +6396,9 @@ bool directMemoryStoreHelper(TR::CodeGenerator* cg, TR::Node* storeNode)
    {
    if (!cg->getConditionalMovesEvaluationMode())
       {
-      if (!storeNode->getOpCode().isReverseLoadOrStore() && storeNode->getType().isIntegral())
+      if (!storeNode->getOpCode().isReverseLoadOrStore()
+              && storeNode->getType().isIntegral()
+              && !(storeNode->getOpCode().isIndirect() && storeNode->hasUnresolvedSymbolReference()))
          {
          TR::Node* valueNode = storeNode->getOpCode().isIndirect() ? storeNode->getChild(1) : storeNode->getChild(0);
 
@@ -6433,7 +6443,10 @@ bool directMemoryStoreHelper(TR::CodeGenerator* cg, TR::Node* storeNode)
             TR::Node* valueNode = conversionNode->getChild(0);
 
             // Make sure this is an integral truncation conversion
-            if (valueNode->getOpCode().isIntegralLoadVar() && !valueNode->getOpCode().isReverseLoadOrStore () && valueNode->isSingleRefUnevaluated())
+            if (valueNode->getOpCode().isIntegralLoadVar()
+                    && !valueNode->getOpCode().isReverseLoadOrStore()
+                    && valueNode->isSingleRefUnevaluated()
+                    && !valueNode->hasUnresolvedSymbolReference())
                {
                if (valueNode->getSize() > storeNode->getSize())
                   {

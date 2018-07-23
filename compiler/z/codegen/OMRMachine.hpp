@@ -375,7 +375,6 @@ class OMR_EXTENSIBLE Machine : public OMR::Machine
 
    uint32_t *initializeGlobalRegisterTable();
    uint32_t initGlobalVectorRegisterMap(uint32_t vectorOffset);
-   void releaseGlobalRegister(int32_t globalRegisterTableIndex, TR::RealRegister::RegNum gReg);
    int32_t findGlobalRegisterIndex(TR::RealRegister::RegNum gReg);
 
    void releaseLiteralPoolRegister();    // free up GPR6

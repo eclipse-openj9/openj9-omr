@@ -6700,12 +6700,6 @@ OMR::Z::Machine::initGlobalVectorRegisterMap(uint32_t vectorOffset)
 #undef addToGRAMap
    }
 
-void
-OMR::Z::Machine::releaseGlobalRegister(int32_t globalRegisterTableIndex, TR::RealRegister::RegNum gReg)
-   {
-   _globalRegisterNumberToRealRegisterMap[globalRegisterTableIndex] = gReg;
-   }
-
 int
 OMR::Z::Machine::findGlobalRegisterIndex(TR::RealRegister::RegNum gReg)
    {

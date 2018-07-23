@@ -6700,22 +6700,6 @@ OMR::Z::Machine::initGlobalVectorRegisterMap(uint32_t vectorOffset)
 #undef addToGRAMap
    }
 
-int
-OMR::Z::Machine::findGlobalRegisterIndex(TR::RealRegister::RegNum gReg)
-   {
-   int32_t index = -1;
-   int32_t last = self()->getLastGlobalCCRRegisterNumber();
-   for (int32_t i = 0; i < last; i++)
-      {
-      if (_globalRegisterNumberToRealRegisterMap[i] == gReg)
-         {
-         index = i;
-         break;
-         }
-      }
-   return index;
-   }
-
 // call this if optimizer run TR_DynamicLiteralPool pass
 void
 OMR::Z::Machine::releaseLiteralPoolRegister()

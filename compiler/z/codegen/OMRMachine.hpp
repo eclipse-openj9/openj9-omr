@@ -635,7 +635,6 @@ class OMR_EXTENSIBLE Machine : public OMR::Machine
       {
       memset(_registerAssociations, 0, sizeof(TR::Register *) * (TR::RealRegister::NumRegisters));
       }
-   bool supportLockedRegisterAssignment();
 
    TR::RealRegister *getRegisterFile(int32_t i);
 

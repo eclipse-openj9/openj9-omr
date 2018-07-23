@@ -1544,9 +1544,7 @@ OMR::Z::Machine::assignBestRegisterSingle(TR::Register    *targetRegister,
      }
 
    // Bookkeeping to update the future use count
-      if (doBookKeeping &&
-         (assignedRegister->getState() != TR::RealRegister::Locked ||
-         self()->supportLockedRegisterAssignment()))
+      if (doBookKeeping && (assignedRegister->getState() != TR::RealRegister::Locked))
       {
       targetRegister->decFutureUseCount();
       targetRegister->setIsLive();
@@ -2032,7 +2030,7 @@ OMR::Z::Machine::assignBestRegisterPair(TR::Register    *regPair,
       if (((firstReg->decFutureUseCount() == 0) ||
            ((comp->getOption(TR_EnableTrueRegisterModel)) && currInst->startOfLiveRange(firstReg)) ||
            (self()->cg()->isOutOfLineHotPath() && firstReg->getStartOfRange() == currInst)) &&
-           (freeRegisterHigh->getState() != TR::RealRegister::Locked || self()->supportLockedRegisterAssignment()))
+           (freeRegisterHigh->getState() != TR::RealRegister::Locked))
          {
          firstReg->resetIsLive();
          firstReg->setAssignedRegister(NULL);
@@ -2049,7 +2047,7 @@ OMR::Z::Machine::assignBestRegisterPair(TR::Register    *regPair,
       if (((lastReg->decFutureUseCount() == 0) ||
            ((comp->getOption(TR_EnableTrueRegisterModel)) && currInst->startOfLiveRange(lastReg)) ||
            (self()->cg()->isOutOfLineHotPath() && lastReg->getStartOfRange() == currInst)) &&
-          (freeRegisterLow->getState() != TR::RealRegister::Locked || self()->supportLockedRegisterAssignment()))
+          (freeRegisterLow->getState() != TR::RealRegister::Locked))
          {
          lastReg->resetIsLive();
          lastReg->setAssignedRegister(NULL);
@@ -5880,38 +5878,6 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
          currentAssignedRegister->setState(TR::RealRegister::Free);
          currentAssignedRegister->setAssignedRegister(NULL);
          }
-
-      if (self()->supportLockedRegisterAssignment())
-      	 {
-      	 // the AR check is to avoid false errors for biit call
-      	 // like "LAM(R1,R1,...)" and needs to be re-visited
-
-      	 if (!self()->cg()->getRAPassAR() &&
-      	 	   targetRegister->getAssignedRegister() != NULL &&
-      	 	   targetRegister->getAssignedRegister() != targetRegister)
-      	 	   {
-      	     TR::Register * toFreeRegister = targetRegister->getAssignedRegister();
-             // register is locked but assigned to a VR, need to re-assign VR to another reg via reg copy or spill it
-             self()->cg()->traceRegisterAssignment(" Freeing locked register %R ", targetRegister);
-             uint64_t availRegMask = 0xffffffff;
-             if (toFreeRegister->isUsedInMemRef())
-                {
-                availRegMask &= ~TR::RealRegister::GPR0Mask;
-                }
-
-             TR::RealRegister * bestRegister = NULL;
-             if ((bestRegister = self()->findBestFreeRegister(currentInstruction, toFreeRegister->getKind(), toFreeRegister, availRegMask)) == NULL)
-                {
-                bestRegister = self()->freeBestRegister(currentInstruction, toFreeRegister, toFreeRegister->getKind(), availRegMask);
-                }
-             self()->registerCopy(currentInstruction, toFreeRegister->getKind(), toRealRegister(targetRegister), bestRegister, self()->cg(), 0);
-             toFreeRegister->setAssignedRegister(bestRegister);
-             bestRegister->setAssignedRegister(toFreeRegister);
-             bestRegister->setState(TR::RealRegister::Assigned);
-
-             }
-      	 targetRegister->setAssignedRegister(virtualRegister);
-         }
       }
 
    virtualRegister->setAssignedRegister(targetRegister);
@@ -6946,12 +6912,6 @@ OMR::Z::Machine::setVirtualAssociatedWithReal(TR::RealRegister::RegNum regNum, T
       }
 
    return _registerAssociations[regNum] = virtReg;
-   }
-
-bool
-OMR::Z::Machine::supportLockedRegisterAssignment()
-   {
-   return false; // TODO : Identity needs folding
    }
 
 TR::RealRegister *

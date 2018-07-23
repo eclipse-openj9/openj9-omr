@@ -184,12 +184,13 @@ static bool valueIsProbablyHex(TR::Node *node)
    }
 
 void
-TR_Debug::printLoadConst(TR::FILE *pOutFile, TR::Node *node) {
-  TR_PrettyPrinterString output(this);
-  printLoadConst(node, output);
-  trfprintf(pOutFile, "%s", output.getStr());
-  _comp->incrNodeOpCodeLength(output.getLength());
-}
+TR_Debug::printLoadConst(TR::FILE *pOutFile, TR::Node *node)
+   {
+   TR_PrettyPrinterString output(this);
+   printLoadConst(node, output);
+   trfprintf(pOutFile, "%s", output.getStr());
+   _comp->incrNodeOpCodeLength(output.getLength());
+   }
 
 void
 TR_Debug::printLoadConst(TR::Node *node, TR_PrettyPrinterString& output)
@@ -243,29 +244,29 @@ TR_Debug::printLoadConst(TR::Node *node, TR_PrettyPrinterString& output)
          break;
       case TR::Float:
             {
-            output.append(" %f", node->getFloat());
+            output.append(" %g [0x%08x]", node->getFloat(), node->getFloatBits());
             }
          break;
       case TR::Double:
             {
-            output.append(" %f", node->getDouble());
+            output.append(" %g [" UINT64_PRINTF_FORMAT_HEX "]", node->getDouble(), node->getDoubleBits());
             }
          break;
 #ifdef J9_PROJECT_SPECIFIC
       case TR::DecimalFloat:
             {
-            output.append(" %f", node->getFloat());
+            output.append(" %g [0x%08x]", node->getFloat(), node->getFloatBits());
             }
          break;
       case TR::DecimalDouble:
             {
-            output.append(" %f", node->getDouble());
+            output.append(" %g [" UINT64_PRINTF_FORMAT_HEX "]", node->getDouble(), node->getDouble(), node->getDoubleBits());
             }
          break;
 #ifdef SUPPORT_DFP
       case TR::DecimalLongDouble:
             {
-            output.append(" %llf", node->getLongDouble());
+            output.append(" %llg", node->getLongDouble());
             }
          break;
 #endif

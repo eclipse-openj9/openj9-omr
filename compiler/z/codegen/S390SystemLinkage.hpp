@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -64,19 +64,6 @@ namespace TR {
 ////////////////////////////////////////////////////////////////////////////////
 //  TR::S390SystemLinkage Definition
 ////////////////////////////////////////////////////////////////////////////////
-class AllocaPatchGroup
-   {
-public:
-   TR::Instruction *ahi;
-   TR::Instruction *mvc;
-   TR::Instruction *auxMvc;
-
-   AllocaPatchGroup() : ahi(NULL), mvc(NULL), auxMvc(NULL)
-      {
-      }
-   };
-
-
 class S390SystemLinkage : public TR::Linkage
    {
    TR::RealRegister::RegNum _normalStackPointerRegister;

@@ -531,8 +531,6 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    TR::IA32DataSnippet *create8ByteData(TR::Node *, int64_t c);
    TR::IA32DataSnippet *create16ByteData(TR::Node *, void *c);
 
-   bool supportsCMOV() {return (_targetProcessorInfo.supportsCMOVInstructions());}
-
    static TR_X86ProcessorInfo _targetProcessorInfo;
 
    // The core "clobberEvaluate" logic for single registers (not register

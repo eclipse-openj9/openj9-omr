@@ -75,13 +75,10 @@ add_executable(compilertest
 	tests/OMRTestEnv.cpp
 	tests/OptionSetTest.cpp
 	tests/OpCodesTest.cpp
-	tests/PPCOpCodesTest.cpp
 	tests/Qux2Test.cpp
 	tests/SimplifierFoldAndTest.cpp
-	tests/S390OpCodesTest.cpp
 	tests/OptTestDriver.cpp
 	tests/TestDriver.cpp
-	tests/X86OpCodesTest.cpp
 	tests/SingleBitContainerTest.cpp
 	tests/injectors/BarIlInjector.cpp
 	tests/injectors/BinaryOpIlInjector.cpp
@@ -97,6 +94,24 @@ add_executable(compilertest
 	tests/injectors/TernaryOpIlInjector.cpp
 	tests/injectors/UnaryOpIlInjector.cpp
 )
+
+if(OMR_ARCH_X86)
+	target_sources(compilertest
+		PRIVATE
+			tests/X86OpCodesTest.cpp
+	)
+elseif(OMR_ARCH_POWER)
+	target_sources(compilertest
+		PRIVATE
+			tests/PPCOpCodesTest.cpp
+	)
+elseif(OMR_ARCH_S390)
+	target_sources(compilertest
+		PRIVATE
+			tests/S390OpCodesTest.cpp
+	)
+endif()
+
 
 
 # target_include_directories(compilertest PRIVATE

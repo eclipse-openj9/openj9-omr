@@ -61,4 +61,11 @@ class OMR_EXTENSIBLE Instruction : public OMR::InstructionConnector
 
 #include "codegen/OMRInstruction_inlines.hpp"
 
+/**
+ * @brief Type cast for instruction cursor
+ * @param[in] i : instruction cursor
+ * @return instruction cursor
+ */
+inline uint32_t *toARM64Cursor(uint8_t *i) { return (uint32_t *)i; }
+
 #endif

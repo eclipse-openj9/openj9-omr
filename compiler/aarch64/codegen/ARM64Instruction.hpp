@@ -306,6 +306,13 @@ class ARM64LabelInstruction : public TR::Instruction
     * @return instruction cursor
     */
    virtual uint8_t *generateBinaryEncoding();
+
+   /**
+    * @brief Estimates binary length
+    * @param[in] currentEstimate : current estimated length
+    * @return estimated binary length
+    */
+   virtual int32_t estimateBinaryLength(int32_t currentEstimate);
    };
 
 class ARM64DepLabelInstruction : public ARM64LabelInstruction
@@ -468,6 +475,13 @@ class ARM64ConditionalBranchInstruction : public ARM64LabelInstruction
     * @return instruction cursor
     */
    virtual uint8_t *generateBinaryEncoding();
+
+   /**
+    * @brief Estimates binary length
+    * @param[in] currentEstimate : current estimated length
+    * @return estimated binary length
+    */
+   virtual int32_t estimateBinaryLength(int32_t currentEstimate);
    };
 
 class ARM64DepConditionalBranchInstruction : public ARM64ConditionalBranchInstruction
@@ -602,6 +616,13 @@ class ARM64AdminInstruction : public TR::Instruction
     * @return instruction cursor
     */
    virtual uint8_t *generateBinaryEncoding();
+
+   /**
+    * @brief Estimates binary length
+    * @param[in] currentEstimate : current estimated length
+    * @return estimated binary length
+    */
+   virtual int32_t estimateBinaryLength(int32_t currentEstimate);
    };
 
 class ARM64Trg1Instruction : public TR::Instruction
@@ -877,6 +898,15 @@ class ARM64Trg1Src1ImmInstruction : public ARM64Trg1Src1Instruction
    uint32_t setSourceImmediate(uint32_t si) {return (_source1Immediate = si);}
 
    /**
+    * @brief Sets immediate field in binary encoding
+    * @param[in] instruction : instruction cursor
+    */
+   void insertImmediateField(uint32_t *instruction)
+      {
+      *instruction |= ((_source1Immediate & 0xfff) << 10); /* imm12 */
+      }
+
+   /**
     * @brief Generates binary encoding of the instruction
     * @return instruction cursor
     */
@@ -1053,6 +1083,13 @@ class ARM64Trg1MemInstruction : public ARM64Trg1Instruction
     * @return instruction cursor
     */
    virtual uint8_t *generateBinaryEncoding();
+
+   /**
+    * @brief Estimates binary length
+    * @param[in] currentEstimate : current estimated length
+    * @return estimated binary length
+    */
+   virtual int32_t estimateBinaryLength(int32_t currentEstimate);
    };
 
 class ARM64MemInstruction : public TR::Instruction
@@ -1128,6 +1165,12 @@ class ARM64MemInstruction : public TR::Instruction
     */
    virtual uint8_t *generateBinaryEncoding();
 
+   /**
+    * @brief Estimates binary length
+    * @param[in] currentEstimate : current estimated length
+    * @return estimated binary length
+    */
+   virtual int32_t estimateBinaryLength(int32_t currentEstimate);
    };
 
 class ARM64MemSrc1Instruction : public ARM64MemInstruction
@@ -1203,6 +1246,13 @@ class ARM64MemSrc1Instruction : public ARM64MemInstruction
     * @return instruction cursor
     */
    virtual uint8_t *generateBinaryEncoding();
+
+   /**
+    * @brief Estimates binary length
+    * @param[in] currentEstimate : current estimated length
+    * @return estimated binary length
+    */
+   virtual int32_t estimateBinaryLength(int32_t currentEstimate);
    };
 
 } // TR

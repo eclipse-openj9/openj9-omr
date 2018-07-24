@@ -19,28 +19,35 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-/*
- * This file will be included within an enum.  Only comments and enumerator
- * definitions are permitted.
- */
+#ifndef ARM64SHIFTCODE_INCL
+#define ARM64SHIFTCODE_INCL
 
-   IsNotExtended,
-   IsImm,
-   IsDep,
-   IsLabel,
-      IsDepLabel,
-      IsConditionalBranch,
-         IsDepConditionalBranch,
-      IsCompareBranch,
-   IsAdmin,
-   IsTrg1,
-      IsTrg1Imm,
-      IsTrg1Src1,
-         IsTrg1Src1Imm,
-         IsTrg1Src2,
-            IsTrg1Src2Shifted,
-            IsTrg1Src2Extended,
-            IsTrg1Src3,
-      IsTrg1Mem,
-   IsMem,
-      IsMemSrc1,
+namespace TR {
+
+/*
+ * Shift codes used in "shifted register" instructions
+ */
+typedef enum {
+   SH_LSL = 0,
+   SH_LSR,
+   SH_ASR,
+   SH_Reserved
+} ARM64ShiftCode;
+
+/*
+ * Extend codes used in "extended register" instructions
+ */
+typedef enum {
+   EXT_UXTB = 0,
+   EXT_UXTH,
+   EXT_UXTW,
+   EXT_UXTX,
+   EXT_SXTB,
+   EXT_SXTH,
+   EXT_SXTW,
+   EXT_SXTX,
+} ARM64ExtendCode;
+
+} // TR
+
+#endif

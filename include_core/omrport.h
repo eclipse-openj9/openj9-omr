@@ -370,16 +370,16 @@ typedef struct J9PortVmemParams {
 	 * 			- do not use allocator that requests memory exclusively in 2to32G region if not set
 	 * 			- if this flag is set and the 2to32G support is not there omrvmem_reserve_memory_ex will return failure
 	 * \arg OMRPORT_VMEM_ALLOC_QUICK
-	 *  		- enabled for Linux only,
-	 *  		- If not set, search memory in linear scan method
-	 *  		- If set, scan memory in a quick way, using memory information in file /proc/self/maps. (still use linear search if failed)
+	 *  		- enabled for Linux only
+	 *  		- If set, information from /proc/self/maps is used to decide quickly if a request
+	 *  		  can be satisfied. If not, NULL is returned without doing a linear search.
+	 *  		- If not set, do a linear search for a memory block.
 	 * \arg OMRPORT_VMEM_ADDRESS_HINT
 	 *		- enabled for Linux and default page allocations only (has no effect on large page allocations)
 	 *		- If not set, search memory in linear scan method
 	 *		- If set, return whatever mmap gives us (only one allocation attempt)
 	 *		- this option is based on the observation that mmap would take the given address as a hint about where to place the mapping
 	 *		- this option does not apply to large page allocations as the allocation is done with shmat instead of mmap
-	 *
 	 */
 	uintptr_t options;
 

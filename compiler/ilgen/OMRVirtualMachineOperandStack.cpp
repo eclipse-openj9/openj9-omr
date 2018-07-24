@@ -28,8 +28,8 @@
 #include "ilgen/MethodBuilder.hpp"
 #include "ilgen/TypeDictionary.hpp"
 
-OMR::VirtualMachineOperandStack::VirtualMachineOperandStack(TR::MethodBuilder *mb, int32_t sizeHint,
-   TR::IlType *elementType, TR::VirtualMachineRegister *stackTopRegister, bool growsUp, int32_t stackInitialOffset)
+OMR::VirtualMachineOperandStack::VirtualMachineOperandStack(TR::MethodBuilder *mb, int32_t sizeHint, TR::IlType *elementType,
+   TR::VirtualMachineRegister *stackTopRegister, bool growsUp, int32_t stackInitialOffset)
    : TR::VirtualMachineState(),
    _mb(mb),
    _stackTopRegister(stackTopRegister),
@@ -39,13 +39,7 @@ OMR::VirtualMachineOperandStack::VirtualMachineOperandStack(TR::MethodBuilder *m
    _pushAmount(growsUp ? +1 : -1),
    _stackOffset(stackInitialOffset)
    {
-   int32_t numBytes = _stackMax * sizeof(TR::IlValue *);
-   _stack = (TR::IlValue **) TR::comp()->trMemory()->allocateHeapMemory(numBytes);
-   memset(_stack, 0, numBytes);
-
-   // store current operand stack pointer base address so we can use it whenever we need
-   // to recreate the stack as the interpreter would have
-   mb->Store("OperandStack_base", stackTopRegister->Load(mb));
+   init();
    }
 
 OMR::VirtualMachineOperandStack::VirtualMachineOperandStack(TR::VirtualMachineOperandStack *other)
@@ -56,7 +50,8 @@ OMR::VirtualMachineOperandStack::VirtualMachineOperandStack(TR::VirtualMachineOp
    _stackTop(other->_stackTop),
    _elementType(other->_elementType),
    _pushAmount(other->_pushAmount),
-   _stackOffset(other->_stackOffset)
+   _stackOffset(other->_stackOffset),
+   _stackBaseName(other->_stackBaseName)
    {
    int32_t numBytes = _stackMax * sizeof(TR::IlValue *);
    _stack = (TR::IlValue **) TR::comp()->trMemory()->allocateHeapMemory(numBytes);
@@ -74,7 +69,7 @@ OMR::VirtualMachineOperandStack::Commit(TR::IlBuilder *b)
    TR::IlType *Element = _elementType;
    TR::IlType *pElement = _mb->typeDictionary()->PointerTo(Element);
 
-   TR::IlValue *stack = b->Load("OperandStack_base");
+   TR::IlValue *stack = b->Load(_stackBaseName);
 
    // Adjust the vm _stackTopRegister by number of elements that have been pushed onto the stack.
    // _stackTop is -1 at 0 pushes, 0 for 1 push, so # of elements to adjust by is _stackTop+1
@@ -101,7 +96,7 @@ OMR::VirtualMachineOperandStack::Reload(TR::IlBuilder* b)
    // reload the elements back into the simulated operand stack
    // If the # of stack element has changed, the user should adjust the # of elements
    // using Drop beforehand to add/delete stack elements.
-   TR::IlValue* stack = b->Load("OperandStack_base");
+   TR::IlValue* stack = b->Load(_stackBaseName);
    for (int32_t i = _stackTop; i >= 0; i--)
       {
       _stack[i] = b->LoadAt(pElement,
@@ -136,7 +131,7 @@ OMR::VirtualMachineOperandStack::MergeInto(TR::VirtualMachineOperandStack* other
 void
 OMR::VirtualMachineOperandStack::UpdateStack(TR::IlBuilder *b, TR::IlValue *stack)
    {
-   b->Store("OperandStack_base", stack);
+   b->Store(_stackBaseName, stack);
    }
 
 // Allocate a new operand stack and copy everything in this state
@@ -226,4 +221,27 @@ OMR::VirtualMachineOperandStack::grow(int32_t growAmount)
 
    _stack = newStack;
    _stackMax = newMax;
+   }
+
+void
+OMR::VirtualMachineOperandStack::init()
+   {
+   int32_t numBytes = _stackMax * sizeof(TR::IlValue *);
+   _stack = (TR::IlValue **) TR::comp()->trMemory()->allocateHeapMemory(numBytes);
+   memset(_stack, 0, numBytes);
+
+   TR::Compilation *comp = TR::comp();
+   // Create a temp for the OperandStack base
+   TR::SymbolReference *symRef = comp->getSymRefTab()->createTemporary(_mb->methodSymbol(), _mb->typeDictionary()->PointerTo(_elementType)->getPrimitiveType());
+   symRef->getSymbol()->setNotCollected();
+   char *name = (char *) comp->trMemory()->allocateHeapMemory((11+10+1) * sizeof(char)); // 11 ("_StackBase_") + max 10 digits + trailing zero
+   sprintf(name, "_StackBase_%u", symRef->getCPIndex());
+   symRef->getSymbol()->getAutoSymbol()->setName(name);
+   _mb->defineSymbol(name, symRef);
+
+   _stackBaseName = symRef->getSymbol()->getAutoSymbol()->getName();
+
+   // store current operand stack pointer base address so we can use it whenever we need
+   // to recreate the stack as the interpreter would have
+   _mb->Store(_stackBaseName, _stackTopRegister->Load(_mb));
    }

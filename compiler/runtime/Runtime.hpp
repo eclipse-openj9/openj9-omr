@@ -170,31 +170,70 @@ enum TR_RuntimeHelper
 class TR_RuntimeHelperTable
    {
 public:
-   void* getAddress(TR_RuntimeHelper h)
-      {
-      return h < TR_numRuntimeHelpers ? _helpers[h] : (void *) (uintptr_t) 0xDEADB00F;
-      }
+
+    static const intptrj_t INVALID_FUNCTION_POINTER = 0xdeadb00f;
+
+    /**
+     * \brief
+     *
+     * Looks up the given helper table and returns the function pointer if it's a function index.
+     * For constant number entries, return INVALID_FUNCTION_POINTER.
+     */
+    void* getFunctionPointer(TR_RuntimeHelper h);
+
+   /**
+    * \brief
+    *
+    * For helper functions, this API returns the raw entry address. If the runtime
+    * helper's corresponding linkage is not a function, return the helper as data.
+    *
+    */
+   void* getFunctionEntryPointOrConst(TR_RuntimeHelper h);
+
+   /**
+    * \brief
+    *
+    * Returns the linkage type of the given helper index. The linkage types are set during
+    * the JIT initilization phase.
+    */
    TR_LinkageConventions getLinkage(TR_RuntimeHelper h)
       {
       return h < TR_numRuntimeHelpers ? _linkage[h] : TR_None;
       }
-   // Linkage convention is essential when calling a helper
-   // For example, on X86, there are private linkage, System V ABI, fastcall, cdecl, etc.
+
+   /**
+    * \brief
+    *
+    * Sets the address and linkage convention.
+    *
+    * Linkage convention is essential when calling a helper
+    * For example, on X86, there are private linkage, System V ABI, fastcall, cdecl, etc.
+    */
    void setAddress(TR_RuntimeHelper h, void * a, TR_LinkageConventions lc = TR_Helper)
       {
-      _helpers[h] = translateAddress(a);
+      _helpers[h] = a;
       _linkage[h] = lc;
       }
 
+   /**
+    * \brief
+    *
+    * Stores the given pointer as a helper constant.
+    */
    void setConstant(TR_RuntimeHelper h, void * a)
       {
       _helpers[h] = a;
+      _linkage[h] = TR_None;
       }
 
 private:
-   // translate address is to allow each platform converting a C function pointer
-   // to an address callable by assembly, which is essential for P and Z.
+   /**
+    * \brief
+    * Translate address is to allow converting a C function pointer
+    * to an address callable by assembly.
+    */
    void* translateAddress(void* a);
+
    void*                 _helpers[TR_numRuntimeHelpers];
    TR_LinkageConventions _linkage[TR_numRuntimeHelpers];
    };
@@ -202,8 +241,13 @@ private:
 extern TR_RuntimeHelperTable runtimeHelpers;
 
 
-
-inline void*                 runtimeHelperValue(TR_RuntimeHelper h) { return runtimeHelpers.getAddress(h); }
+/**
+ * \brief
+ * Returns the value to which the runtime helper index corresponds to.
+ * The values stored in the helper table are either entry point addresses or constant values, depending on the
+ * linkage type.
+*/
+inline void*                 runtimeHelperValue(TR_RuntimeHelper h) { return runtimeHelpers.getFunctionEntryPointOrConst(h); }
 inline TR_LinkageConventions runtimeHelperLinkage(TR_RuntimeHelper h) { return runtimeHelpers.getLinkage(h); }
 
 

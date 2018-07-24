@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -45,6 +45,28 @@ void*
 TR_RuntimeHelperTable::translateAddress(void * a)
    {
    return a;
+   }
+
+void* TR_RuntimeHelperTable::getFunctionEntryPointOrConst(TR_RuntimeHelper h)
+   {
+   if (h < TR_numRuntimeHelpers)
+      {
+      if (_linkage[h] == TR_Helper)
+         return translateAddress(_helpers[h]);
+      else
+         return _helpers[h];
+      }
+   else
+      return reinterpret_cast<void*>(TR_RuntimeHelperTable::INVALID_FUNCTION_POINTER);
+   }
+
+void*
+TR_RuntimeHelperTable::getFunctionPointer(TR_RuntimeHelper h)
+   {
+   if ((h < TR_numRuntimeHelpers) && (_linkage[h] == TR_Helper))
+      return _helpers[h];
+   else
+      return reinterpret_cast<void*>(TR_RuntimeHelperTable::INVALID_FUNCTION_POINTER);
    }
 
 void

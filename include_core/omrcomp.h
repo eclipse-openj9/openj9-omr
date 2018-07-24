@@ -318,6 +318,10 @@ typedef struct {
 	void *rawFnAddress;
 } J9FunctionDescriptor_T;
 
+// Set the Address Enviroment pointer.  Same for all routines from
+// same library, so doesn't matter which routine, but currently only
+// used when calling jitProfile* in zOS, so use one of them
+#define TOC_UNWRAP_ENV(wrappedPointer) (wrappedPointer ? ((J9FunctionDescriptor_T *) (wrappedPointer))->ada : NULL)
 #define TOC_UNWRAP_ADDRESS(wrappedPointer) (wrappedPointer ? ((J9FunctionDescriptor_T *)(uintptr_t)(wrappedPointer))->rawFnAddress : NULL)
 
 
@@ -335,6 +339,8 @@ typedef struct {
 
 #endif /* __cplusplus */
 
+#else
+#define TOC_UNWRAP_ENV(wrappedPointer) 0xdeafbeef
 #endif /* J9ZOS390 */
 
 #ifndef J9CONST64

@@ -2274,6 +2274,23 @@ TR::X86RegMemInstruction::enlarge(int32_t requestedEnlargementSize, int32_t maxE
 
 
 // -----------------------------------------------------------------------------
+// TR::X86RegRegMemInstruction:: member functions
+
+uint8_t* TR::X86RegRegMemInstruction::generateOperand(uint8_t* cursor)
+   {
+   TR_ASSERT(getOpCode().info().supportsAVX(), "TR::X86RegRegRegInstruction must be an AVX instruction.");
+   uint8_t *modRM = cursor - 1;
+   if (getOpCode().hasTargetRegisterIgnored() == 0)
+      {
+      applyTargetRegisterToModRMByte(modRM);
+      }
+   applySource2ndRegisterToVEX(modRM - 2);
+   cursor = getMemoryReference()->generateBinaryEncoding(modRM, this, cg());
+   return cursor;
+   }
+
+
+// -----------------------------------------------------------------------------
 // TR::X86RegMemImmInstruction:: member functions
 
 void TR::X86RegMemImmInstruction::addMetaDataForCodeAddress(uint8_t *cursor)

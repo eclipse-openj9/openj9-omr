@@ -567,8 +567,8 @@ TR::Register *OMR::X86::TreeEvaluator::fpBinaryArithmeticEvaluator(TR::Node     
                                                               bool              isFloat,
                                                               TR::CodeGenerator *cg)
    {
-   static auto Use3OpForFP = (bool)feGetEnv("TR_Use3OpForFP");
-   if (Use3OpForFP)
+   static auto Disable3OpForFP = (bool)feGetEnv("TR_Disable3OpForFP");
+   if (!Disable3OpForFP && cg->useSSEForSinglePrecision() && cg->useSSEForDoublePrecision())
       {
       return TR::TreeEvaluator::FloatingPointAndVectorBinaryArithmeticEvaluator(node, cg);
       }

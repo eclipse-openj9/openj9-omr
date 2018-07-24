@@ -112,13 +112,6 @@ elseif(OMR_ARCH_S390)
 	)
 endif()
 
-
-
-# target_include_directories(compilertest PRIVATE
-# 	${PROJECT_SOURCE_DIR}/third_party/gtest-1.7.0/
-# 	${PROJECT_SOURCE_DIR}/third_party/gtest-1.7.0/include
-# )
-
 target_link_libraries(compilertest
 	testcompiler
 	omrGtest

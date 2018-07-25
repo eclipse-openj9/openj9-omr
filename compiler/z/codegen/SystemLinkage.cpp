@@ -2320,30 +2320,6 @@ void TR::S390SystemLinkage::createEpilogue(TR::Instruction * cursor)
    ((TR::S390RegInstruction *)cursor)->setBranchCondition(TR::InstOpCode::COND_BCR);
    }
 
-void TR::S390SystemLinkage::notifyHasalloca()
-   {
-   TR::RealRegister::RegNum alternateSP = getAlternateStackPointerRegister();
-   TR::RealRegister * alternateStackReg = getS390RealRegister(getAlternateStackPointerRegister());
-   alternateStackReg->setState(TR::RealRegister::Locked);
-   alternateStackReg->setAssignedRegister(alternateStackReg);
-   alternateStackReg->setHasBeenAssignedInMethod(true);
-   if (cg()->supportsHighWordFacility() && !comp()->getOption(TR_DisableHighWordRA) && TR::Compiler->target.is64Bit())
-      {
-      TR::RealRegister * tempHigh = toRealRegister(alternateStackReg)->getHighWordRegister();
-      tempHigh->setState(TR::RealRegister::Locked);
-      tempHigh->setAssignedRegister(tempHigh);
-      tempHigh->setHasBeenAssignedInMethod(true);
-      }
-   _notifiedOfalloca = true;
-   setStackPointerRegister(getAlternateStackPointerRegister());
-
-    int32_t globalAltStackReg = cg()->machine()->findGlobalRegisterIndex(alternateSP);
-    if (globalAltStackReg != -1)
-       {
-       cg()->machine()->lockGlobalRegister(globalAltStackReg);
-       }
-   }
-
 int32_t
 TR::S390zLinuxSystemLinkage::getRegisterSaveOffset(TR::RealRegister::RegNum srcReg)
    {

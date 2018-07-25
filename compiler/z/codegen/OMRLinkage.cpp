@@ -3039,29 +3039,6 @@ OMR::Z::Linkage::unlockRegister(TR::RealRegister * lpReal)
    }
 
 void
-OMR::Z::Linkage::lockGPR(int32_t registerNo)
-   {
-      // +1 beacuse TR::RealRegister::GPR0 is 1
-   TR::RealRegister * tempRegister=self()->cg()->machine()->getS390RealRegister(REGNUM(registerNo+1));
-
-   tempRegister->setAssignedRegister(tempRegister);
-   tempRegister->setState(TR::RealRegister::Locked);
-   tempRegister->setHasBeenAssignedInMethod(true);
-
-   }
-
-void
-OMR::Z::Linkage::unlockGPR(int32_t registerNo)
-   {
-     // +1 beacuse TR::RealRegister::GPR0 is 1
-   TR::RealRegister * tempRegister=self()->cg()->machine()->getS390RealRegister(REGNUM(registerNo+1));
-
-   tempRegister->resetState(TR::RealRegister::Free);
-   tempRegister->setHasBeenAssignedInMethod(false);
-   tempRegister->setAssignedRegister(NULL);
-   }
-
-void
 OMR::Z::Linkage::lockAR(int32_t registerNo)
    {
    // registerNo is 1 less than the ARxx number.  i.e. AR05, registerNo = 4

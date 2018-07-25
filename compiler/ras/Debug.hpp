@@ -143,8 +143,6 @@ class TR_X86RegisterDependencyGroup;
 namespace TR { class X86RestartSnippet; }
 namespace TR { class S390LookupSwitchSnippet; }
 namespace TR { class X86PicDataSnippet; }
-namespace TR { class IA32ConstantDataSnippet; }
-namespace TR { class IA32DataSnippet; }
 namespace TR { class X86DivideCheckSnippet; }
 namespace TR { class X86FPConvertToIntSnippet; }
 namespace TR { class X86FPConvertToLongSnippet; }
@@ -835,8 +833,6 @@ public:
    void print(TR::FILE *, TR::X86RecompilationSnippet *);
 #endif
 
-   void print(TR::FILE *, TR::IA32ConstantDataSnippet *);
-   void print(TR::FILE *, TR::IA32DataSnippet *);
    void print(TR::FILE *, TR::X86DivideCheckSnippet *);
    void print(TR::FILE *, TR::X86FPConvertToIntSnippet *);
    void print(TR::FILE *, TR::X86FPConvertToLongSnippet *);

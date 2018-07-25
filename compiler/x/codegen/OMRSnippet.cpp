@@ -217,12 +217,6 @@ TR_Debug::printx(TR::FILE *pOutFile, TR::Snippet *snippet)
          print(pOutFile, (TR::X86RecompilationSnippet *)snippet);
          break;
 #endif
-      case TR::Snippet::IsConstantData:
-         print(pOutFile, (TR::IA32ConstantDataSnippet *)snippet);
-         break;
-      case TR::Snippet::IsData:
-         print(pOutFile, (TR::IA32DataSnippet *)snippet);
-         break;
       case TR::Snippet::IsDivideCheck:
          print(pOutFile, (TR::X86DivideCheckSnippet  *)snippet);
          break;
@@ -250,8 +244,11 @@ TR_Debug::printx(TR::FILE *pOutFile, TR::Snippet *snippet)
          break;
 #endif
       case TR::Snippet::IsRestart:
-      default:
          TR_ASSERT(0, "unexpected snippet kind: %d", snippet->getKind());
+         break;
+      default:
+         snippet->print(pOutFile, this);
+         break;
       }
    }
 

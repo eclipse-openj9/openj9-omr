@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -23,8 +23,8 @@
 #define IA32DATASNIPPET_INCL
 
 #include "codegen/Snippet.hpp"
-
-#include <stdint.h>                  // for uint8_t, int32_t, int64_t, etc
+#include "infra/vector.hpp"    // for TR::vector
+#include <stdint.h>            // for uint8_t, int32_t, int64_t, etc
 
 namespace TR { class CodeGenerator; }
 namespace TR { class Node; }
@@ -33,26 +33,26 @@ namespace TR {
 
 class IA32DataSnippet : public TR::Snippet
    {
-   uint8_t _length;
-   bool    _isClassAddress;
-   protected:
-   uint8_t _value[16];
    public:
 
    IA32DataSnippet(TR::CodeGenerator *cg, TR::Node *, void *c, uint8_t size);
 
    virtual Kind getKind() { return IsData; }
-   uint8_t* getValue()  { return _value; }
+   uint8_t* getRawData()  { return _data.data(); }
    virtual uint8_t *emitSnippetBody();
-   virtual uint8_t getDataSize() { return _length; }
-   virtual uint32_t getLength(int32_t estimatedSnippetStart);
+   virtual uint8_t getDataSize() const { return _data.size(); }
+   virtual void print(TR::FILE* pOutFile, TR_Debug* debug);
+   virtual void printValue(TR::FILE* pOutFile, TR_Debug* debug);
+   virtual uint32_t getLength(int32_t estimatedSnippetStart) { return _data.size(); }
    virtual bool setClassAddress(bool isClassAddress) { return _isClassAddress = isClassAddress;}
 
    void addMetaDataForCodeAddress(uint8_t *cursor);
 
-   int32_t getDataAs2Bytes() { return *((int16_t *) &_value); }
-   int32_t getDataAs4Bytes() { return *((int32_t *) &_value); }
-   int64_t getDataAs8Bytes() { return *((int64_t *) &_value); }
+   template <typename T> inline T getData() { return *((T*)getRawData()); }
+
+   private:
+   bool    _isClassAddress;
+   TR::vector<uint8_t> _data;
    };
 
 }

@@ -87,6 +87,26 @@ MM_ConfigurationStandard::initialize(MM_EnvironmentBase* env)
 	return result;
 }
 
+
+void
+MM_ConfigurationStandard::initializeGCThreadCount(MM_EnvironmentBase* env)
+{
+
+	MM_Configuration::initializeGCThreadCount(env);
+
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+	MM_GCExtensionsBase* extensions = env->getExtensions();
+
+	/* If not explicitly set, concurrent phase of CS runs with approx 1/4 the thread count (relative to STW phases thread count */
+	if (!extensions->concurrentScavengerBackgroundThreadsForced) {
+		extensions->concurrentScavengerBackgroundThreads = OMR_MAX(1, (extensions->gcThreadCount + 1) / 4);
+	} else if (extensions->concurrentScavengerBackgroundThreads > extensions->gcThreadCount) {
+		extensions->concurrentScavengerBackgroundThreads = extensions->gcThreadCount;
+	}
+#endif
+}
+
+
 /**
  * Create the global collector for a Standard configuration
  */

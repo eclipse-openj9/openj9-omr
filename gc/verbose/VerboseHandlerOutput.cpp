@@ -251,7 +251,9 @@ MM_VerboseHandlerOutput::handleInitialized(J9HookInterface** hook, uintptr_t eve
 	writer->formatAndOutput(env, 0, "<initialized %s>", tagTemplate);
 	writer->formatAndOutput(env, 1, "<attribute name=\"gcPolicy\" value=\"%s\" />", event->gcPolicy);
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
-	writer->formatAndOutput(env, 1, "<attribute name=\"concurrentScavenger\" value=\"%s\" />", event->concurrentScavenger ? "true" : "false");
+	if (gc_policy_gencon == _extensions->configurationOptions._gcPolicy) {
+		writer->formatAndOutput(env, 1, "<attribute name=\"concurrentScavenger\" value=\"%s\" />", event->concurrentScavenger ? "true" : "false");
+	}
 #endif /* OMR_GC_CONCURRENT_SCAVENGER */
 	writer->formatAndOutput(env, 1, "<attribute name=\"maxHeapSize\" value=\"0x%zx\" />", event->maxHeapSize);
 	writer->formatAndOutput(env, 1, "<attribute name=\"initialHeapSize\" value=\"0x%zx\" />", event->initialHeapSize);
@@ -267,6 +269,19 @@ MM_VerboseHandlerOutput::handleInitialized(J9HookInterface** hook, uintptr_t eve
 	writer->formatAndOutput(env, 1, "<attribute name=\"requestedPageSize\" value=\"0x%zx\" />", event->heapRequestedPageSize);
 	writer->formatAndOutput(env, 1, "<attribute name=\"requestedPageType\" value=\"%s\" />", event->heapRequestedPageType);
 	writer->formatAndOutput(env, 1, "<attribute name=\"gcthreads\" value=\"%zu\" />", event->gcThreads);
+	if (gc_policy_gencon == _extensions->configurationOptions._gcPolicy) {
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+		if (_extensions->isConcurrentScavengerEnabled()) {
+			writer->formatAndOutput(env, 1, "<attribute name=\"gcthreads Concurrent Scavenger\" value=\"%zu\" />", _extensions->concurrentScavengerBackgroundThreads);
+		}
+#endif /* OMR_GC_CONCURRENT_SCAVENGER */
+#if defined(OMR_GC_MODRON_CONCURRENT_MARK)
+		if (_extensions->isConcurrentMarkEnabled()) {
+			writer->formatAndOutput(env, 1, "<attribute name=\"gcthreads Concurrent Mark\" value=\"%zu\" />", _extensions->concurrentBackground);
+		}
+#endif /* OMR_GC_MODRON_CONCURRENT_MARK */
+	}
+
 	writer->formatAndOutput(env, 1, "<attribute name=\"numaNodes\" value=\"%zu\" />", event->numaNodes);
 
 	handleInitializedInnerStanzas(hook, eventNum, eventData);

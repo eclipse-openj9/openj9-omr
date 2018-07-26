@@ -4816,74 +4816,6 @@ static const TR::InstOpCode::Mnemonic loadInstrs[2/*Form*/][4/*numberOfBits*/][2
 /*32*/   { { TR::InstOpCode::L,     TR::InstOpCode::LLGF  }, { TR::InstOpCode::L,     TR::InstOpCode::LGF } },
 /*64*/   { { TR::InstOpCode::BAD,   TR::InstOpCode::LG    }, { TR::InstOpCode::BAD,   TR::InstOpCode::LG  } }
       }
-#if 0
-/*   32          64          32          64    */
-/*RegRegTest*/{
-/* 8*/   { { TR::InstOpCode::BAD,   TR::InstOpCode::BAD   }, { TR::InstOpCode::BAD,   TR::InstOpCode::BAD  } },
-/*16*/   { { TR::InstOpCode::BAD,   TR::InstOpCode::BAD   }, { TR::InstOpCode::BAD,   TR::InstOpCode::BAD  } },
-/*32*/   { { TR::InstOpCode::LTR,   TR::InstOpCode::BAD   }, { TR::InstOpCode::LTR,   TR::InstOpCode::LTGFR} },
-/*64*/   { { TR::InstOpCode::BAD,   TR::InstOpCode::LTGR  }, { TR::InstOpCode::BAD,   TR::InstOpCode::LTGR } }
-      },
-/*MemRegTest*/{
-/* 8*/   { { TR::InstOpCode::BAD,   TR::InstOpCode::BAD   }, { TR::InstOpCode::BAD,   TR::InstOpCode::LGB  } },
-/*16*/   { { TR::InstOpCode::BAD,   TR::InstOpCode::BAD   }, { TR::InstOpCode::BAD,   TR::InstOpCode::LGH  } },
-/*32*/   { { TR::InstOpCode::LT,    TR::InstOpCode::BAD   }, { TR::InstOpCode::LT,    TR::InstOpCode::LTGF } },
-/*64*/   { { TR::InstOpCode::BAD,   TR::InstOpCode::LTG   }, { TR::InstOpCode::BAD,   TR::InstOpCode::LTG  } }
-      }
-#endif
-   };
-
-/**
- * Numbers as per "z/Architecture Instructions Sorted by Machine" AR-99999-00-POK
- */
-static const TR_S390ProcessorInfo::TR_S390ProcessorArchitectures ARCH[] =
-   {
-/* 0*/   TR_S390ProcessorInfo::TR_z900,
-/* 1*/   TR_S390ProcessorInfo::TR_z900,
-/* 2*/   TR_S390ProcessorInfo::TR_z990,
-/* 3*/   TR_S390ProcessorInfo::TR_z990,
-/* 4*/   TR_S390ProcessorInfo::TR_z990,
-/* 5*/   TR_S390ProcessorInfo::TR_z9,
-/* 6*/   TR_S390ProcessorInfo::TR_z9,
-/* 7*/   TR_S390ProcessorInfo::TR_z10,
-/* 8*/   TR_S390ProcessorInfo::TR_z10,
-/* 9*/   TR_S390ProcessorInfo::TR_z196,
-/*10*/   TR_S390ProcessorInfo::TR_zEC12,
-/*11*/   TR_S390ProcessorInfo::TR_z13,
-/*12*/   TR_S390ProcessorInfo::TR_z14,
-/*13*/   TR_S390ProcessorInfo::TR_zNext
-   };
-
-static const TR_S390ProcessorInfo::TR_S390ProcessorArchitectures reqArchForLoad[4/*Form*/][4/*numberOfBits*/][2/*isSigned*/][2/*numberOfExtendBits*/] =
-   {
-         /* ----- Logical -------   ----- Signed -------*/
-         /*   32          64          32          64    */
-/*RegReg*/{
-/* 8*/   { { ARCH[5],  ARCH[5] }, { ARCH[5],   ARCH[5] } },
-/*16*/   { { ARCH[5],  ARCH[5] }, { ARCH[5],   ARCH[5] } },
-/*32*/   { { ARCH[0],  ARCH[1] }, { ARCH[0],   ARCH[1] } },
-/*64*/   { { TR_S390ProcessorInfo::TR_UnknownArchitecture,     ARCH[1] }, { TR_S390ProcessorInfo::TR_UnknownArchitecture,      ARCH[1] } }
-      },
-/*MemReg*/{
-/* 8*/   { { ARCH[5],   ARCH[1] }, { ARCH[2],  ARCH[2] } },
-/*16*/   { { ARCH[5],   ARCH[1] }, { ARCH[0],  ARCH[1] } },
-/*32*/   { { ARCH[0],   ARCH[1] }, { ARCH[0],  ARCH[1] } },
-/*64*/   { { TR_S390ProcessorInfo::TR_UnknownArchitecture,      ARCH[1] }, { TR_S390ProcessorInfo::TR_UnknownArchitecture,     ARCH[1] } },
-      }
-#if 0
-/*RegRegTest*/{
-/* 8*/   { { ARCH[5],  ARCH[5] }, { ARCH[5],   ARCH[5] } },
-/*16*/   { { ARCH[5],  ARCH[5] }, { ARCH[5],   ARCH[5] } },
-/*32*/   { { ARCH[0],  ARCH[1] }, { ARCH[0],   ARCH[1] } },
-/*64*/   { { TR_S390ProcessorInfo::TR_UnknownArchitecture,     ARCH[1] }, { TR_S390ProcessorInfo::TR_UnknownArchitecture,      ARCH[1] } }
-      },
-/*MemRegTest*/{
-/* 8*/   { { ARCH[5],   ARCH[1] }, { ARCH[2],  ARCH[2] } },
-/*16*/   { { ARCH[5],   ARCH[1] }, { ARCH[0],  ARCH[1] } },
-/*32*/   { { ARCH[0],   ARCH[1] }, { ARCH[0],  ARCH[1] } },
-/*64*/   { { TR_S390ProcessorInfo::TR_UnknownArchitecture,      ARCH[1] }, { TR_S390ProcessorInfo::TR_UnknownArchitecture,     ARCH[1] } },
-      }
-#endif
    };
 
 template <uint32_t numberOfBits>
@@ -4968,22 +4900,6 @@ genericLoadHelper(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference *
    // 64 8 1000  7 ->  3 0011
    const static int numberOfBytesLog2 = (bool)(numberOfBytes&0xA)+2*(bool)(numberOfBytes&0xC);
 
-   // Prepare ICM mask, just in case ICM will be used for loading.
-   // (0xF << (4 - numberOfBits / 8)) & 0xF   numberOfBits/8 is 1|2|3, will pass 0b1000|0b1100=12|0b1110=14
-   // (0xF << (8 - numberOfBits / 8)) & 0xF   numberOfBits/8 is 5|6|7, will pass 0b1000|0b1100=12|0b1110=14
-   // (0x1 << (numberOfBits / 8))     - 1     numberOfBits/8 is 1|2|3, will pass 0b0001|0b0011=3|0b0111=7
-   // (0x1 << (numberOfBits / 8 - 4)) - 1     numberOfBits/8 is 5|6|7, will pass 0b0001|0b0011=3|0b0111=7
-   uint32_t icmMask = numberOfBytes;
-   if (couldIgnoreExtend)
-      icmMask = icmMask - (numberOfBytes>4 ?  4 : 0);
-   else
-      icmMask = (numberOfBytes>4 ?  8 : 4) - icmMask;
-   icmMask = (couldIgnoreExtend ? 0x1 : 0xF) << icmMask;
-   icmMask = couldIgnoreExtend ? icmMask - 1 : icmMask & 0xF;
-
-   // Function pointer for checking if the particular instruction is available on the hardware we run on.
-   TR_S390ProcessorInfo::TR_S390ProcessorArchitectures ReqArch = reqArchForLoad[form][numberOfBytesLog2][isSourceSigned][numberOfExtendBits/32-1];
-
    if (cg->comp()->getOption(TR_TraceCG))
       traceMsg(cg, "Calling genericLoadHelper with %c%d(%d)>%d %s %s\n",
             isSourceSigned? '-' : '0', numberOfBits, numberOfBytesLog2, numberOfExtendBits,
@@ -5001,9 +4917,6 @@ genericLoadHelper(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference *
          (numberOfExtendBits == 64 &&
          ((!useRegPairs && srcRegister->getKind() == TR_GPR && cg->use64BitRegsOn32Bit()) || (useRegPairs && targetRegister->getRegisterPair() == NULL)))))
       {
-      bool c1 = (useRegPairs && numberOfBytes<=4);
-      bool c2 = numberOfExtendBits == 64 && !useRegPairs && srcRegister->getKind() == TR_GPR;
-      bool c3 = numberOfExtendBits == 64 && useRegPairs && targetRegister->getRegisterPair() == NULL;
       if (numberOfExtendBits == 64 && !useRegPairs)
          targetRegister = cg->allocate64bitRegister();
       else if (numberOfExtendBits == 64) //useRegPairs
@@ -5048,8 +4961,7 @@ genericLoadHelper(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference *
    // Real Code starts here.....................................................................
    //-------------------------------------------------------------------------------------------
    if ((numberOfBits&(numberOfBits-1)) == 0 &&  // Clever way to check if numberOfBits is a power-of-two, i.e. 8, 16, 32, 64
-         !useRegPairs &&
-         cg->getS390ProcessorInfo()->supportsArch(ReqArch))                   // Are we running on awesome hardware and OS?
+         !useRegPairs)
       {
       CASE(1);
       // Use a single load to load and extend in one shot
@@ -5058,20 +4970,26 @@ genericLoadHelper(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference *
       TR::InstOpCode::Mnemonic load = loadInstrs[form][numberOfBytesLog2][isSourceSigned][numberOfExtendBits/32-1];
       if (form == RegReg)
          {
-         generateRRInstruction(cg, load, node, targetRegister, srcRegister);
+         if (TR::InstOpCode::getInstructionFormat(load) == RR_FORMAT)
+            generateRRInstruction(cg, load, node, targetRegister, srcRegister);
+         else
+            generateRREInstruction(cg, load, node, targetRegister, srcRegister);
          }
       else //if (form == MemReg)
          {
-         generateRXInstruction(cg, load, node, targetRegister, tempMR);
+         if (TR::InstOpCode::getInstructionFormat(load) == RX_FORMAT)
+            generateRXInstruction(cg, load, node, targetRegister, tempMR);
+         else
+            generateRXYInstruction(cg, load, node, targetRegister, tempMR);
          }
       }
    else if (numberOfBits == 31 && !useRegPairs)
       {
       TR_ASSERT(isSourceSigned==false && numberOfExtendBits==64, "Not Implemented: not expecting to see addresses sign extended, only zero extended.");
       if (form == RegReg)
-         generateRRInstruction(cg, TR::InstOpCode::LLGTR, node, targetRegister, srcRegister);
+         generateRREInstruction(cg, TR::InstOpCode::LLGTR, node, targetRegister, srcRegister);
       else //form == MemReg
-         generateRXInstruction(cg, TR::InstOpCode::LLGT, node, targetRegister, tempMR);
+         generateRXYInstruction(cg, TR::InstOpCode::LLGT, node, targetRegister, tempMR);
       }
    else if (form == MemReg)
       {
@@ -5098,6 +5016,18 @@ genericLoadHelper(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference *
          {
          CASE(5);
          tempMR->separateIndexRegister(node, cg, true, NULL); // Make it so that we _can_ use ICM
+
+         // (0xF << (4 - numberOfBits / 8)) & 0xF   numberOfBits/8 is 1|2|3, will pass 0b1000|0b1100=12|0b1110=14
+         // (0xF << (8 - numberOfBits / 8)) & 0xF   numberOfBits/8 is 5|6|7, will pass 0b1000|0b1100=12|0b1110=14
+         // (0x1 << (numberOfBits / 8))     - 1     numberOfBits/8 is 1|2|3, will pass 0b0001|0b0011=3|0b0111=7
+         // (0x1 << (numberOfBits / 8 - 4)) - 1     numberOfBits/8 is 5|6|7, will pass 0b0001|0b0011=3|0b0111=7
+         uint32_t icmMask = numberOfBytes;
+         if (couldIgnoreExtend)
+            icmMask = icmMask - (numberOfBytes>4 ?  4 : 0);
+         else
+            icmMask = (numberOfBytes>4 ?  8 : 4) - icmMask;
+         icmMask = (couldIgnoreExtend ? 0x1 : 0xF) << icmMask;
+         icmMask = couldIgnoreExtend ? icmMask - 1 : icmMask & 0xF;
 
          if (useRegPairs)
             {
@@ -5134,7 +5064,6 @@ genericLoadHelper(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference *
             if (!couldIgnoreExtend)
                {
                CASE(10);
-               TR::InstOpCode::Mnemonic rightShift;
                if (numberOfExtendBits == 32)
                   generateRSInstruction(cg, isSourceSigned ? TR::InstOpCode::SRA : TR::InstOpCode::SRL, node, targetRegister, numberOfExtendBits-numberOfBits);
                else

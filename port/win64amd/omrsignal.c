@@ -138,8 +138,10 @@ static j9sem_t wakeUpASyncReporter;
 /* Used to synchronize shutdown of asynchSignalReporterThread. */
 static omrthread_monitor_t asyncReporterShutdownMonitor;
 
+#if defined(OMR_PORT_ASYNC_HANDLER)
 /* Used to indicate start and end of asynchSignalReporterThread termination. */
 static uint32_t shutDownASynchReporter;
+#endif /* defined(OMR_PORT_ASYNC_HANDLER) */
 
 static uint32_t mapWin32ExceptionToPortlibType(uint32_t exceptionCode);
 static uint32_t infoForGPR(struct OMRPortLibrary *portLibrary, struct J9Win32SignalInfo *info, int32_t index, const char **name, void **value);

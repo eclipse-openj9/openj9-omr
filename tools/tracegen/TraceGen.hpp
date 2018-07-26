@@ -92,7 +92,7 @@ private:
 	 * @param[out] groupCount Number of trace groups in TDF file
 	 * @return On success trace groups. On failure NULL.
 	 */
-	J9TDFGroup *calculateGroups(J9TDFFile *tdf, unsigned int *groupCount);
+	J9TDFGroup *calculateGroups(J9TDFOptions *options, J9TDFFile *tdf, unsigned int *groupCount);
 protected:
 public:
 	TraceGen()

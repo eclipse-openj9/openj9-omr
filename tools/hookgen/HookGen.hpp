@@ -51,6 +51,7 @@ private:
 	FILE *_publicFile; /**< FILE handle for public header file.  close in tearDown if non-NULL */
 	const char *_privateFileName; /**< value (or substring) from XML parsing so no need to free */
 	FILE *_privateFile; /**< FILE handle for prviate header file.  close in tearDown if non-NULL */
+	bool _verbose; /**< If we want to print verbose information to stderr */
 protected:
 public:
 
@@ -92,6 +93,7 @@ public:
 		, _publicFile(NULL)
 		, _privateFileName(NULL)
 		, _privateFile(NULL)
+		, _verbose(false)
 	{
 	}
 
@@ -106,6 +108,7 @@ public:
 	const char *getFileName() const {return _fileName;}
 	const char *getPublicFileName() const {return _publicFileName;}
 	const char *getPrivateFileName() const {return _privateFileName;}
+	bool isVerbose() const {return _verbose;}
 };
 
 #endif /* HOOKGEN_HPP_ */

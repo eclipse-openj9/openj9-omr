@@ -521,19 +521,32 @@ HookGen::processFile()
 void
 HookGen::displayUsage()
 {
-	fprintf(stderr, "hookgen {fileName}\n");
+	fprintf(stderr, "hookgen [-v] fileName\n");
 }
 
 RCType
 HookGen::parseOptions(int argc, char *argv[])
 {
-	if (argc != 2) {
+	for (int i = 1; i < argc; i++) {
+		printf("%d: %s", i, argv[i]);
+		if(0 == strcmp(argv[i], "-v")) {
+			_verbose = true;
+		} else {
+			if (NULL != _fileName) {
+				fprintf(stderr, "Please specify only one filename\n");
+				displayUsage();
+				return RC_FAILED;
+			}
+			_fileName = argv[i];
+		}
+	}
+
+	if (NULL == _fileName) {
 		fprintf(stderr, "Please provide a file to process\n");
 		displayUsage();
 		return RC_FAILED;
 	}
 
-	_fileName = argv[1];
 
 	return RC_OK;
 }
@@ -564,7 +577,9 @@ startHookGen(int argc, char *argv[])
 		goto finish;
 	}
 
-	fprintf(stderr, "Processed %s to create public header %s and private header %s\n", hookGen.getFileName(), hookGen.getPublicFileName(), hookGen.getPrivateFileName());
+	if(hookGen.isVerbose()) {
+		fprintf(stderr, "Processed %s to create public header %s and private header %s\n", hookGen.getFileName(), hookGen.getPublicFileName(), hookGen.getPrivateFileName());
+	}
 
 finish:
 	hookGen.tearDown();

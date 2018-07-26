@@ -101,6 +101,8 @@ ArgParser::parseOptions(int argc, char *argv[], J9TDFOptions *options)
 			} else {
 				options->rasMinorVersion = atoi(argv[i]);
 			}
+		} else if (StringUtils::startsWithUpperLower(argv[i], "-verbose")) {
+			options->verboseOutput = true;
 		} else if (StringUtils::startsWithUpperLower(argv[i], "-debug")) {
 			options->debugOutput = true;
 		} else if (StringUtils::startsWithUpperLower(argv[i], "-w2cd"))	{

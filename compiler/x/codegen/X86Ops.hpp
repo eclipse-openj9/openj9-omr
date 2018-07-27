@@ -377,7 +377,7 @@ class TR_X86OpCode
       // check if the instruction has mandatory prefix(es)
       inline bool hasMandatoryPrefix() const
          {
-         return prefixes == PREFIX___;
+         return prefixes != PREFIX___;
          }
       // check if the instruction is part of Group 7 OpCode Extension
       inline bool isGroup07() const

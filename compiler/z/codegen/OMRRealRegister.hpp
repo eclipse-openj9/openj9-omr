@@ -109,7 +109,6 @@ class OMR_EXTENSIBLE RealRegister : public OMR::RealRegister
    static bool isRealReg(RegNum reg);
    static bool isGPR(RegNum reg);
    static bool isFPR(RegNum reg);
-   static bool isAR(RegNum reg);
    static bool isHPR(RegNum reg);
    static bool isVRF(RegNum reg);
 

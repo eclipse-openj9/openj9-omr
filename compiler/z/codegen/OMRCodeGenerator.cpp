@@ -534,7 +534,6 @@ OMR::Z::CodeGenerator::CodeGenerator()
      _snippetDataList(getTypedAllocator<TR::S390ConstantDataSnippet*>(self()->comp()->allocator())),
      _outOfLineCodeSectionList(getTypedAllocator<TR_S390OutOfLineCodeSection*>(self()->comp()->allocator())),
      _returnTypeInfoInstruction(NULL),
-     _ARSaveAreaForTM(NULL),
      _notPrintLabelHashTab(NULL),
      _interfaceSnippetToPICsListHashTab(NULL),
      _currentCheckNode(NULL),
@@ -766,13 +765,11 @@ OMR::Z::CodeGenerator::CodeGenerator()
    self()->addSupportedLiveRegisterKind(TR_GPR);
    self()->addSupportedLiveRegisterKind(TR_FPR);
    self()->addSupportedLiveRegisterKind(TR_GPR64);
-   self()->addSupportedLiveRegisterKind(TR_AR);
    self()->addSupportedLiveRegisterKind(TR_VRF);
 
    self()->setLiveRegisters(new (self()->trHeapMemory()) TR_LiveRegisters(comp), TR_GPR);
    self()->setLiveRegisters(new (self()->trHeapMemory()) TR_LiveRegisters(comp), TR_FPR);
    self()->setLiveRegisters(new (self()->trHeapMemory()) TR_LiveRegisters(comp), TR_GPR64);
-   self()->setLiveRegisters(new (self()->trHeapMemory()) TR_LiveRegisters(comp), TR_AR);
    self()->setLiveRegisters(new (self()->trHeapMemory()) TR_LiveRegisters(comp), TR_VRF);
 
    self()->setSupportsPrimitiveArrayCopy();
@@ -802,7 +799,6 @@ OMR::Z::CodeGenerator::CodeGenerator()
       {
       self()->setGPRegisterIterator(new (self()->trHeapMemory()) TR::RegisterIterator(self()->machine(), TR_GPR));
       self()->setFPRegisterIterator(new (self()->trHeapMemory()) TR::RegisterIterator(self()->machine(), TR_FPR));
-      self()->setARegisterIterator(new (self()->trHeapMemory())  TR::RegisterIterator(self()->machine(), TR_AR));
       self()->setHPRegisterIterator(new (self()->trHeapMemory()) TR::RegisterIterator(self()->machine(), TR_HPR));
       self()->setVRFRegisterIterator(new (self()->trHeapMemory()) TR::RegisterIterator(self()->machine(), TR_VRF));
       }
@@ -850,16 +846,6 @@ OMR::Z::CodeGenerator::getGlobalGPRFromHPR (TR_GlobalRegisterNumber n)
    return self()->machine()->getGlobalReg(gpr->getRegisterNumber());
    }
 
-bool OMR::Z::CodeGenerator::isStackBased(TR::MemoryReference *mr)
-   {
-   if (mr->getBaseRegister() && mr->getBaseRegister()->getGPRofArGprPair()->getRealRegister()) // need to consider AR register pair as base reg
-      {
-      return (toRealRegister(mr->getBaseRegister()->getGPRofArGprPair()->getRealRegister())->getRegisterNumber() ==
-              self()->getStackPointerRealRegister()->getRegisterNumber());
-      }
-   return false;
-   }
-
 bool OMR::Z::CodeGenerator::prepareForGRA()
    {
    bool enableHighWordGRA = self()->supportsHighWordFacility() && !self()->comp()->getOption(TR_DisableHighWordRA);
@@ -892,8 +878,6 @@ bool OMR::Z::CodeGenerator::prepareForGRA()
 
       self()->setFirstGlobalVRF(self()->machine()->getFirstGlobalVRFRegisterNumber());
       self()->setLastGlobalVRF(self()->machine()->getLastGlobalVRFRegisterNumber());
-      self()->setFirstGlobalAR(self()->machine()->getFirstGlobalAccessRegisterNumber());
-      self()->setLastGlobalAR(self()->machine()->getLastGlobalAccessRegisterNumber());
 
       if (enableVectorGRA)
          {
@@ -2559,11 +2543,6 @@ OMR::Z::CodeGenerator::prepareRegistersForAssignment()
       _extentOfLitPool = self()->setEstimatedOffsetForConstantDataSnippets(_extentOfLitPool);
 
       TR::Linkage *s390PrivateLinkage = self()->getS390Linkage();
-
-      if ( self()->comp()->getOption(TR_Enable390AccessRegs) )
-         {
-         s390PrivateLinkage->lockAccessRegisters();
-         }
 
       // Check to see if we need to lock the litpool reg
       if ( self()->isLitPoolFreeForAssignment() )
@@ -6525,36 +6504,6 @@ OMR::Z::CodeGenerator::allocateConsecutiveRegisterPair(TR::Register * lowRegiste
    return regPair;
    }
 
-TR::RegisterPair *
-OMR::Z::CodeGenerator::allocateArGprPair(TR::Register * lowRegister, TR::Register * highRegister)
-   {
-   TR::RegisterPair * regPair = NULL;
-   TR_ASSERT((highRegister->getKind() == TR_GPR64 || highRegister->getKind() == TR_GPR) &&
-           lowRegister->getKind() == TR_AR, "expecting AR<->GPR pair\n");
-
-   if (highRegister->getKind() == TR_GPR64)
-      {
-      regPair = self()->allocate64bitRegisterPair(lowRegister, highRegister);
-      }
-   else
-      {
-      regPair = self()->allocateRegisterPair(lowRegister, highRegister);
-      }
-
-   // Set associations for providing hint to RA
-   regPair->setAssociation(TR::RealRegister::ArGprPair);
-
-   highRegister->setAssociation(TR::RealRegister::GprOfArGprPair);
-   highRegister->setSiblingRegister(lowRegister);
-   highRegister->setIsUsedInMemRef();
-
-   lowRegister->setAssociation(TR::RealRegister::ArOfArGprPair);
-   lowRegister->setSiblingRegister(highRegister);
-   lowRegister->setIsUsedInMemRef();
-
-   return regPair;
-   }
-
 void
 OMR::Z::CodeGenerator::processUnusedNodeDuringEvaluation(TR::Node *node)
    {
@@ -6609,71 +6558,6 @@ OMR::Z::CodeGenerator::processUnusedNodeDuringEvaluation(TR::Node *node)
 #endif
          }
       }
-   }
-
-/**
- * RR-type Memory-Memory instructions like MVCL and CLCL
- * need special handling in AR mode if both src and dest pair use the same GPR but different AR's
- * as well as the opposite: same ARs but different GPR's:
- *
- * for example for the MVCL below, we need to create copy of AR_1600 via CPYA and use different ARs for different GPRs
- *
- * MVCL    GPR_1792:AR_1600(GPR_1792:AR_1600),GPR_1760:AR_1600(GPR_1760:AR_1600)
- */
-void
-OMR::Z::CodeGenerator::splitBaseRegisterPairsForRRMemoryInstructions(TR::Node *node, TR::RegisterPair * sourceReg, TR::RegisterPair * targetReg)
-   {
-   TR::Register *sourceRegHigh = sourceReg->getHighOrder();
-   TR::Register *targetRegHigh = targetReg->getHighOrder();
-
-   if (!sourceRegHigh->isArGprPair() || !targetRegHigh->isArGprPair()) return ;
-
-   if (sourceRegHigh->getGPRofArGprPair() == targetRegHigh->getGPRofArGprPair())
-      {
-      // same GPR's and same AR's - all good
-      if (sourceRegHigh->getARofArGprPair() == targetRegHigh->getARofArGprPair()) return ;
-
-      TR::Register * sourceRegHighGPR = sourceRegHigh->getGPRofArGprPair();
-      TR::Register * sourceRegHighAR = sourceRegHigh->getARofArGprPair();
-
-      TR::Register * tempReg = self()->allocateRegister(sourceRegHighGPR->getKind());
-
-      TR::InstOpCode::Mnemonic copyOp = TR::InstOpCode::LR;
-
-      if (sourceRegHighGPR->getKind() == TR_GPR64) copyOp = TR::InstOpCode::LGR;
-
-      generateRRInstruction(self(), copyOp, node, tempReg, sourceRegHighGPR);
-
-      TR::RegisterPair *regpair = self()->allocateArGprPair(sourceRegHighAR, tempReg);
-      sourceReg->setHighOrder(regpair, self());
-      sourceReg->getHighOrder()->setSiblingRegister(sourceReg->getLowOrder());
-      sourceReg->getLowOrder()->setSiblingRegister(sourceReg->getHighOrder());
-      self()->stopUsingRegister(sourceRegHigh);
-      self()->stopUsingRegister(regpair);
-      self()->stopUsingRegister(tempReg);
-    }
-   else
-      {
-      // different GPR's and different AR's - all good
-      if (sourceRegHigh->getARofArGprPair() != targetRegHigh->getARofArGprPair()) return ;
-
-      TR::Register * sourceRegHighGPR = sourceRegHigh->getGPRofArGprPair();
-      TR::Register * sourceRegHighAR = sourceRegHigh->getARofArGprPair();
-
-      TR::Register * tempReg = self()->allocateRegister(sourceRegHighAR->getKind());
-
-      generateRRInstruction(self(), TR::InstOpCode::CPYA, node, tempReg, sourceRegHighAR);
-
-      TR::RegisterPair *regpair = self()->allocateArGprPair(tempReg, sourceRegHighGPR);
-
-      sourceReg->setHighOrder(regpair, self());
-      sourceReg->getHighOrder()->setSiblingRegister(sourceReg->getLowOrder());
-      sourceReg->getLowOrder()->setSiblingRegister(sourceReg->getHighOrder());
-      self()->stopUsingRegister(sourceRegHigh);
-      self()->stopUsingRegister(regpair);
-      self()->stopUsingRegister(tempReg);
-      }
-   return ;
    }
 
 TR::RegisterDependencyConditions*
@@ -7153,8 +7037,7 @@ OMR::Z::CodeGenerator::allocateClobberableRegister(TR::Register *srcRegister)
       targetRegister->setContainsInternalPointer();
       targetRegister->setPinningArrayPointer(srcRegister->getPinningArrayPointer());
       }
-   if (srcRegister->isArGprPair())
-      return self()->allocateArGprPair(srcRegister->getARofArGprPair() , targetRegister);
+
    return targetRegister;
    }
 
@@ -7290,7 +7173,7 @@ OMR::Z::CodeGenerator::gprClobberEvaluate(TR::Node * node, bool force_copy, bool
                loadRegOpCode = TR::InstOpCode::LGR;
                }
             }
-         cursor = generateRRInstruction(self(), loadRegOpCode, node, targetRegister->getGPRofArGprPair(), srcRegister);
+         cursor = generateRRInstruction(self(), loadRegOpCode, node, targetRegister, srcRegister);
 
          if (debugObj)
             {
@@ -10149,12 +10032,6 @@ OMR::Z::CodeGenerator::setUnavailableRegistersUsage(TR_Array<TR_BitVector>  & li
             liveOnEntryUsage[globalRegNum].set(b->getNumber());
             liveOnExitUsage[globalRegNum].set(b->getNumber());
             }
-         int32_t globalRegNumAR = globalRegNum - self()->getFirstGlobalGPR() + self()->getFirstGlobalAR();
-         if (globalRegNum!=-1 && globalRegNumAR!=-1)
-            {
-            liveOnEntryUsage[globalRegNumAR].set(b->getNumber());
-            liveOnExitUsage[globalRegNumAR].set(b->getNumber());
-            }
          }
       unavailableRegisters.empty();
 
@@ -10678,19 +10555,16 @@ void handleLoadWithRegRanges(TR::Instruction *inst, TR::CodeGenerator *cg)
    TR::Compilation * comp = cg->comp();
    TR::InstOpCode::Mnemonic opCodeToUse = inst->getOpCodeValue();
    if (!(opCodeToUse == TR::InstOpCode::LM  || opCodeToUse == TR::InstOpCode::LMG || opCodeToUse == TR::InstOpCode::LMH ||
-         opCodeToUse == TR::InstOpCode::LAM || opCodeToUse == TR::InstOpCode::LMY || opCodeToUse == TR::InstOpCode::VLM))
+         opCodeToUse == TR::InstOpCode::LMY || opCodeToUse == TR::InstOpCode::VLM))
       return;
 
-   bool isAR = opCodeToUse == TR::InstOpCode::LAM;
    bool isVector = opCodeToUse == TR::InstOpCode::VLM ? true : false;
    uint32_t numVRFs = TR::RealRegister::LastAssignableVRF - TR::RealRegister::FirstAssignableVRF;
 
    TR::Register *lowReg  = isVector ? toS390VRSInstruction(inst)->getFirstRegister()  : toS390RSInstruction(inst)->getFirstRegister();
    TR::Register *highReg = isVector ? toS390VRSInstruction(inst)->getSecondRegister() : toS390RSInstruction(inst)->getSecondRegister();
 
-   if (!cg->getRAPassAR() && lowReg->getKind() == TR_AR)
-      return;
-   else if (inst->getRegisterOperand(1)->getRegisterPair())
+   if (inst->getRegisterOperand(1)->getRegisterPair())
       highReg = inst->getRegisterOperand(1)->getRegisterPair()->getHighOrder();
    uint32_t lowRegNum = ANYREGINDEX(toRealRegister(lowReg)->getRegisterNumber());
    uint32_t highRegNum = ANYREGINDEX(toRealRegister(highReg)->getRegisterNumber());
@@ -10714,7 +10588,7 @@ void handleLoadWithRegRanges(TR::Instruction *inst, TR::CodeGenerator *cg)
                  i != highRegNum ;
                  i  = ((i == (isVector ? numVRFs - 1 : 15)) ? 0 : i+1))
       {
-      TR::RealRegister *reg = cg->machine()->getS390RealRegister(i + (isAR ? TR::RealRegister::AR0 : TR::RealRegister::GPR0));
+      TR::RealRegister *reg = cg->machine()->getS390RealRegister(i + TR::RealRegister::GPR0);
 
       // Registers that are assigned need to be checked whether they have a matching STM--otherwise we spill.
       // Since we are called post RA for the LM, we check if assigned registers are last used on the LM so we can
@@ -10849,25 +10723,6 @@ OMR::Z::CodeGenerator::getSupportsConstantOffsetInAddressing(int64_t value)
    {
    return self()->isDispInRange(value);
    }
-
-bool
-OMR::Z::CodeGenerator::globalAccessRegistersSupported()
-   {
-   return false; // TODO : Identitiy needs folding
-   }
-
-void
-OMR::Z::CodeGenerator::setRAPassAR()
-   {
-   TR_ASSERT(0, "ASC Mode AR not supported");
-   }
-
-void
-OMR::Z::CodeGenerator::resetRAPassAR()
-   {
-   TR_ASSERT(0, "ASC Mode AR not supported");
-   }
-
 
 /**
  * On 390, except for long, address and widened instructions, they all

@@ -200,8 +200,6 @@ class OMR_EXTENSIBLE Machine : public OMR::Machine
    /** Used to keep track of blocked registers (HPR/GPR) that upgrades/spill's etc should not use. Typical stores ~0-3 registers. */
    TR_Stack<TR::RealRegister *>               *_blockedUpgradedRegList;
 
-   TR_GlobalRegisterNumber  _firstGlobalAccessRegisterNumber;
-   TR_GlobalRegisterNumber  _lastGlobalAccessRegisterNumber;
    TR_GlobalRegisterNumber  _firstGlobalGPRRegisterNumber;
    TR_GlobalRegisterNumber  _lastGlobalGPRRegisterNumber;
    TR_GlobalRegisterNumber  _firstGlobalHPRRegisterNumber;
@@ -313,9 +311,6 @@ class OMR_EXTENSIBLE Machine : public OMR::Machine
    void allocateUpgradedBlockedList(TR_Stack<TR::RealRegister*> * mem);
    TR::RealRegister * getNextRegFromUpgradedBlockedList();
 
-   void blockVolatileAccessRegisters();
-   void unblockVolatileAccessRegisters();
-
    // High Register managed
    void spillAllVolatileHighRegisters(TR::Instruction  *currentInstruction);
    void blockVolatileHighRegisters();
@@ -382,24 +377,6 @@ class OMR_EXTENSIBLE Machine : public OMR::Machine
       {
       return _globalRegisterNumberToRealRegisterMap;
       }
-
-
-   /*************************** Access regs ***************************/
-
-
-   TR_GlobalRegisterNumber getFirstGlobalAccessRegisterNumber()
-      {
-      return _firstGlobalAccessRegisterNumber;
-      }
-
-   TR_GlobalRegisterNumber setFirstGlobalAccessRegisterNumber(TR_GlobalRegisterNumber reg);
-
-   TR_GlobalRegisterNumber getLastGlobalAccessRegisterNumber()
-       {
-       return _lastGlobalAccessRegisterNumber;
-       }
-
-   TR_GlobalRegisterNumber setLastGlobalAccessRegisterNumber(TR_GlobalRegisterNumber reg);
 
    TR_GlobalRegisterNumber getLastGlobalGPRRegisterNumber()
       {
@@ -610,8 +587,6 @@ class OMR_EXTENSIBLE Machine : public OMR::Machine
      {
      return _lastLinkageFPR=reg;
      }
-
-   TR::Register * getAccessRegisterFromGlobalRegisterNumber(TR_GlobalRegisterNumber reg);
 
    TR::Register * getGPRFromGlobalRegisterNumber(TR_GlobalRegisterNumber reg);
 

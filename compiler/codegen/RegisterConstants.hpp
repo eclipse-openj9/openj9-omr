@@ -43,8 +43,7 @@ enum TR_RegisterKinds
    TR_SSR           = 8,   // used for TR_PseudoRegisters for SS (storage to storage) instructions to return results
    TR_HPR           = 9,   // High word register for zGryphon
    TR_GPRL          = 10,  // Low word register for zGryphon
-   TR_AR            = 11,  // access registers
-   LastRegisterKind = TR_AR,
+   LastRegisterKind = TR_GPRL,
    NumRegisterKinds = LastRegisterKind+1,
 
    TR_NoRegister    = LastRegisterKind+1,
@@ -60,8 +59,7 @@ enum TR_RegisterKinds
    TR_GPR64_Mask  = TO_KIND_MASK(TR_GPR64),
    TR_SSR_Mask    = TO_KIND_MASK(TR_SSR),
    TR_HPR_Mask    = TO_KIND_MASK(TR_HPR),
-   TR_GPRL_Mask   = TO_KIND_MASK(TR_GPRL),
-   TR_AR_Mask     = TO_KIND_MASK(TR_AR)
+   TR_GPRL_Mask   = TO_KIND_MASK(TR_GPRL)
    };
 
 enum TR_RegisterSizes

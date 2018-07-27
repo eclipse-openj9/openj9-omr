@@ -3100,7 +3100,6 @@ TR_Debug::getRegisterKindName(TR_RegisterKinds rk)
       case TR_VSX_VECTOR:   return "VSX_VECTOR";
       case TR_GPR64: return "GPR64";
       case TR_SSR:   return "SSR";
-      case TR_AR:    return "AR";
       default:       return "??R";
       }
    }
@@ -4896,7 +4895,6 @@ TR_Debug::traceRegisterAssignment(TR::Instruction *instr, bool insertedByRA, boo
             const bool isHPR = _registerKindsToAssign & TR_HPR_Mask;
             const bool isVRF = _registerKindsToAssign & TR_VRF_Mask;
             const bool isFPR = _registerKindsToAssign & TR_FPR_Mask;
-            const bool isAR  = _registerKindsToAssign & TR_AR_Mask;
             const bool isX87 = _registerKindsToAssign & TR_X87_Mask;
 
             TR::RegisterIterator *gprIter = _comp->cg()->getGPRegisterIterator();
@@ -4947,18 +4945,6 @@ TR_Debug::traceRegisterAssignment(TR::Instruction *instr, bool insertedByRA, boo
                   printFullRegInfo(_file, vrf);
                   }
                trfprintf(_file, "</vrfs>\n");
-               }
-#endif
-#if defined(TR_TARGET_S390)
-            if (_registerKindsToAssign & TR_AR_Mask)
-               {
-               trfprintf(_file, "<ars>\n");
-               TR::RegisterIterator *iter = _cg->getARegisterIterator();
-               for (TR::Register *ar = iter->getFirst(); ar; ar = iter->getNext())
-                  {
-                  printFullRegInfo(_file, ar);
-                  }
-               trfprintf(_file, "</ars>\n");
                }
 #endif
             if (_registerKindsToAssign & TR_FPR_Mask)

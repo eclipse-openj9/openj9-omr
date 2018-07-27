@@ -144,13 +144,6 @@ class OMR_EXTENSIBLE Register: public OMR::Register
    virtual bool usesAnyRegister(TR::Register* reg);
 
    /*
-    * Ar GPR Pairs
-    */
-   virtual TR::Register * getARofArGprPair();
-   virtual TR::Register * getGPRofArGprPair();
-   virtual bool isArGprPair();
-
-   /*
     * Pseudo and Opaque Registers
     */
    virtual TR_OpaquePseudoRegister  *getOpaquePseudoRegister() {return NULL;}

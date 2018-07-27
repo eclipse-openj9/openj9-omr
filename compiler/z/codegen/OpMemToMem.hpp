@@ -67,8 +67,6 @@ class MemToMemMacroOp
          _srcRegTemp = NULL;
          _dstRegTemp = NULL;
          _litReg = NULL;
-         _srcArGprPairTemp = NULL;
-         _dstArGprPairTemp = NULL;
          TR::Compilation *comp = TR::comp();
 
          if(cursorBefore == NULL) cursorBefore = comp->cg()->getAppendInstruction();
@@ -98,10 +96,6 @@ class MemToMemMacroOp
                }
             }
 
-         if (_srcArGprPairTemp)
-            _cg->stopUsingRegister(_srcArGprPairTemp);
-         if (_dstArGprPairTemp)
-            _cg->stopUsingRegister(_dstArGprPairTemp);
          if (_srcRegTemp)
             _cg->stopUsingRegister(_srcRegTemp);
          if (_dstRegTemp)
@@ -230,8 +224,6 @@ class MemToMemMacroOp
       TR::Register* _dstReg;
       TR::Register* _srcRegTemp;
       TR::Register* _dstRegTemp;
-      TR::Register* _srcArGprPairTemp;
-      TR::Register* _dstArGprPairTemp;
       TR::Register* _itersReg;
       TR::Register* _tmpReg;
       TR::Register* _litReg;

@@ -2994,17 +2994,6 @@ TR::Register * OMR::Z::Linkage::buildSystemLinkageDispatch(TR::Node * callNode)
 ////////////////////////////////////////////////////////////////////////////////
 
 void
-OMR::Z::Linkage::lockAccessRegisters()
-   {
-   // AR0/AR1 are used by gclibs, for now don't use them
-   if ( TR::Compiler->target.isLinux() )
-      {
-      self()->cg()->machine()->getS390RealRegister(TR::RealRegister::AR0)->setState(TR::RealRegister::Locked);
-      self()->cg()->machine()->getS390RealRegister(TR::RealRegister::AR1)->setState(TR::RealRegister::Locked);
-      }
-   }
-
-void
 OMR::Z::Linkage::lockRegister(TR::RealRegister * lpReal)
    {
    // literal pool register
@@ -3036,30 +3025,6 @@ OMR::Z::Linkage::unlockRegister(TR::RealRegister * lpReal)
       lpRealHigh->setAssignedRegister(NULL);
       lpRealHigh->setHasBeenAssignedInMethod(false);
       }
-   }
-
-void
-OMR::Z::Linkage::lockAR(int32_t registerNo)
-   {
-   // registerNo is 1 less than the ARxx number.  i.e. AR05, registerNo = 4
-   TR::RealRegister * tempRegister=self()->cg()->machine()->getS390RealRegister(REGNUM(registerNo + TR::RealRegister::FirstAR));
-
-   tempRegister->setAssignedRegister(tempRegister);
-   tempRegister->setState(TR::RealRegister::Locked);
-   tempRegister->setHasBeenAssignedInMethod(true);
-   }
-
-// registerNo is the number from S390Register.hpp that corresponds to this AR
-// i.e. AR05, registerNo=38
-void
-OMR::Z::Linkage::unlockAR(int32_t registerNo)
-   {
-   // registerNo is 1 less than the ARxx number.  i.e. AR05, registerNo = 4
-   TR::RealRegister * tempRegister=self()->cg()->machine()->getS390RealRegister(REGNUM(registerNo + TR::RealRegister::FirstAR));
-
-   tempRegister->resetState(TR::RealRegister::Free);
-   tempRegister->setHasBeenAssignedInMethod(false);
-   tempRegister->setAssignedRegister(NULL);
    }
 
 bool OMR::Z::Linkage::needsAlignment(TR::DataType dt, TR::CodeGenerator * cg)

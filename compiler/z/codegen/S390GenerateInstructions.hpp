@@ -1552,13 +1552,6 @@ TR::Instruction * generateS390IEInstruction(
                    TR::Node          *n,
                    TR::Instruction   *preced = NULL);
 
-TR::Instruction *
-splitBaseRegisterIfNeeded(TR::MemoryReference *mf1,
-                          TR::MemoryReference *mf2,
-                          TR::CodeGenerator *cg,
-                          TR::Node *node,
-                          TR::Instruction *preced);
-
 TR::Instruction *generateRuntimeInstrumentationInstruction(
                    TR::CodeGenerator *cg,
                    TR::InstOpCode::Mnemonic   op,

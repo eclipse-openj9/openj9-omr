@@ -42,11 +42,6 @@ OMR::Z::RegisterIterator::RegisterIterator ( TR::Machine * machine, TR_RegisterK
       _firstRegIndex = TR::RealRegister::FirstHPR;
       _lastRegIndex = TR::RealRegister::LastHPR;
       }
-   else if (kind == TR_AR)
-      {
-      _firstRegIndex = TR::RealRegister::FirstAR;
-      _lastRegIndex = TR::RealRegister::LastAR;
-      }
    else if (kind == TR_VRF)
       {
       _firstRegIndex = TR::RealRegister::FirstVRF;

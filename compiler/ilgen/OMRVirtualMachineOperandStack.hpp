@@ -101,8 +101,9 @@ class VirtualMachineOperandStack : public TR::VirtualMachineState
     * Default behaviour for compatibility constructor will be optional arguments, growsUp is true, and stackInitialOffset is -1.
     */
 
-   VirtualMachineOperandStack(TR::MethodBuilder *mb, int32_t sizeHint, TR::IlType *elementType, TR::VirtualMachineRegister *stackTop,
+   VirtualMachineOperandStack(TR::MethodBuilder *mb, int32_t sizeHint, TR::IlType *elementType, TR::VirtualMachineRegister *stackTopRegister,
     bool growsUp = true, int32_t stackInitialOffset = -1);
+
    /**
     * @brief constructor used to copy the stack from another state
     * @param other the operand stack whose values should be used to initialize this object
@@ -189,6 +190,7 @@ class VirtualMachineOperandStack : public TR::VirtualMachineState
    void copyTo(TR::VirtualMachineOperandStack *copy);
    void checkSize();
    void grow(int32_t growAmount = 0);
+   void init();
 
    private:
    TR::MethodBuilder *_mb;
@@ -199,6 +201,7 @@ class VirtualMachineOperandStack : public TR::VirtualMachineState
    TR::IlType *_elementType;
    int32_t _pushAmount;
    int32_t _stackOffset;
+   const char *_stackBaseName;
    };
 }
 

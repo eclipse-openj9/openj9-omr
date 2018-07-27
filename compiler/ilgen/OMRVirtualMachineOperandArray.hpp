@@ -59,7 +59,7 @@ namespace OMR
  *   expressions are stored in the TR::IlValue's for the state being merged
  *   *to*. So the purpose of MergeInto() is to store the values of the current
  *   state into the same variables as in the "other" state.
- * UpdateArray() update OperandArray_base so Reload/Commit will use the right
+ * UpdateArray() update OperandArray_base so Reload/Commit will use the right one
  *    if the array moves in memory
  *
  */
@@ -71,8 +71,11 @@ class VirtualMachineOperandArray : public TR::VirtualMachineState
     * @brief public constructor, must be instantiated inside a compilation because uses heap memory
     * @param mb TR::MethodBuilder object of the method currently being compiled
     * @param numOfElements the number of elements in the array
+    * @param elementType TR::IlType representing the underlying type of the virtual machine's operand array entries
+    * @param arrayBase previously allocated and initialized VirtualMachineRegister representing the base of the array
     */
    VirtualMachineOperandArray(TR::MethodBuilder *mb, int32_t numOfElements, TR::IlType *elementType, TR::VirtualMachineRegister *arrayBase);
+
    /**
     * @brief constructor used to copy the array from another state
     * @param other the operand array whose values should be used to initialize this object
@@ -133,12 +136,16 @@ class VirtualMachineOperandArray : public TR::VirtualMachineState
     */ 
    virtual void Move(TR::IlBuilder *b, int32_t dstIndex, int32_t srcIndex);
 
+   protected:
+   void init();
+
    private:
    TR::MethodBuilder *_mb;
    int32_t _numberOfElements;
    TR::VirtualMachineRegister *_arrayBaseRegister;
    TR::IlType *_elementType;
    TR::IlValue **_values;
+   const char *_arrayBaseName;
    };
 }
 

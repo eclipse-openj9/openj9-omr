@@ -1310,6 +1310,9 @@ TR::Register *OMR::X86::TreeEvaluator::iternaryEvaluator(TR::Node *node, TR::Cod
 
 static bool canBeHandledByIfInstanceOfHelper(TR::Node *node, TR::CodeGenerator *cg)
    {
+   static const auto ForceOldIfInstanceOf = (bool)feGetEnv("TR_ForceOldIfInstanceOf");
+   if (!ForceOldIfInstanceOf)
+      return false;
    TR::Node *firstChild  = node->getFirstChild();
    TR::Node *secondChild = node->getSecondChild();
    if (secondChild->getOpCode().isLoadConst() &&

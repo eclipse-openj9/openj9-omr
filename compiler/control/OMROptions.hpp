@@ -456,9 +456,9 @@ enum TR_CompilationOptions
    TR_DisablePrexistenceDuringGracePeriod     = 0x02000000 + 11,
    // Available                               = 0x04000000 + 11,
    TR_DisableInlineWriteBarriersRT            = 0x08000000 + 11, // RTJ
-   // Available                               = 0x10000000 + 11, // WCODE
+   // Available                               = 0x10000000 + 11,
    TR_DisableNewInliningInfrastructure        = 0x20000000 + 11,
-   // Available                               = 0x40000000 + 11, // WCODE
+   // Available                               = 0x40000000 + 11,
    // Avaiable                                = 0x80000000 + 11,
 
    // Option word 12
@@ -567,7 +567,7 @@ enum TR_CompilationOptions
    TR_DisableOSRLiveRangeAnalysis                     = 0x00200000 + 15,
    // Available                                       = 0x00400000 + 15,
    // Available                                       = 0x00800000 + 15,
-   //                                                 = 0x01000000 + 15,   AVAILABLE
+   // Available                                       = 0x01000000 + 15,
    // Available                                       = 0x02000000 + 15,
    TR_DisableDowngradeToColdOnVMPhaseStartup          = 0x04000000 + 15,
    TR_DontDowngradeToCold                             = 0x08000000 + 15,
@@ -647,10 +647,10 @@ enum TR_CompilationOptions
    // Available                                       = 0x00008000 + 18,
    // Available                                       = 0x00010000 + 18,
    // Available                                       = 0x00040000 + 18,
-   TR_DisableProloguePushes                           = 0x00080000 + 18, // Use stores instead of pushes in x86 prologues
-   TR_EnableOutlinedPrologues                         = 0x00100000 + 18, // Call a helper to do some of the prologue logic
+   // Available                                       = 0x00080000 + 18,
+   // Available                                       = 0x00100000 + 18,
    TR_DisableOutlinedNew                              = 0x00200000 + 18, // Expand object allocation logic inline instead of using a fast jit helper
-   // Available                                       = 0x00400000 + 18, // enable register(*) support in PLX
+   // Available                                       = 0x00400000 + 18,
    // Available                                       = 0x00800000 + 18,
    // Available                                       = 0x01000000 + 18,
    TR_TraceOpts                                       = 0x02000000 + 18, // list optimization group in its dynamic order
@@ -664,24 +664,24 @@ enum TR_CompilationOptions
    // Option word 19
    // Available                                       = 0x00000020 + 19,
    TR_NoClassGC                                       = 0x00000040 + 19,  // -Xnoclassgc
-   // Available                                       = 0x00000080 + 19,  //disable assign unique index for defs on entry
+   // Available                                       = 0x00000080 + 19,
    // Available                                       = 0x00000400 + 19,
    // Available                                       = 0x00000800 + 19,
    // Available                                       = 0x00001000 + 19,
    // Available                                       = 0x00002000 + 19,
-   // Available                                       = 0x00004000 + 19,  //enable pretty printing of IL trees
+   // Available                                       = 0x00004000 + 19,
    TR_Server                                          = 0x00008000 + 19,  // -server
    // Available                                       = 0x00010000 + 19,
    // Available                                       = 0x00020000 + 19,
    // Available                                       = 0x00040000 + 19,
    // Available                                       = 0x00080000 + 19,
    // Available                                       = 0x00100000 + 19,
-   // Available                                       = 0x00200000 + 19,  // only propagate const nodes and not conversions of const nodes in VariableInitializerPropagation
+   // Available                                       = 0x00200000 + 19,
    // Available                                       = 0x00400000 + 19,
    // Available                                       = 0x00800000 + 19,
    TR_EnableRATPurging                                = 0x01000000 + 19,  // enable periodic RAT table purging
    // Available                                       = 0x02000000 + 19,
-   // Available                                       = 0x04000000 + 19,  // disable refining exit use
+   // Available                                       = 0x04000000 + 19,
    // Available                                       = 0x08000000 + 19,
    TR_UpgradeBootstrapAtWarm                          = 0x10000000 + 19,
    TR_ForceLargeRAMoves                               = 0x20000000 + 19,  // force 64 register moves in RA
@@ -694,8 +694,8 @@ enum TR_CompilationOptions
    TR_PrivatizeOverlaps                               = 0x00000080 + 20,  // avoid overlapping BCD stores
    // Available                                       = 0x00000100 + 20,
    TR_DisableKnownObjectTable                         = 0x00000200 + 20,
-   // Available                                       = 0x00000400 + 20,  // enable support for packed objects/arrays
-   // Available                                       = 0x00000800 + 20,  // disable passing nested autos as parameters
+   // Available                                       = 0x00000400 + 20,
+   // Available                                       = 0x00000800 + 20,
    TR_DisableAOTResolveDiffCLMethods                  = 0x00001000 + 20,  // disable passing nested autos as parameters
    TR_DisableMethodHandleInvokeOpts                   = 0x00002000 + 20,  // JSR292
    TR_InhibitRecompilation                            = 0x00004000 + 20,
@@ -851,7 +851,7 @@ enum TR_CompilationOptions
    // Available                                       = 0x08000000 + 25,
    // Available                                       = 0x10000000 + 25,
    // Available                                       = 0x20000000 + 25,
-   // Available                                       = 0x40000000 + 25, //MGMSTARTHERE
+   // Available                                       = 0x40000000 + 25,
    TR_DisableSIMDArrayTranslate                       = 0x80000000 + 25,
 
    //Option word 26

@@ -469,7 +469,6 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"disableOSRLocalRemat",               "O\tdisable use of remat when inserting guards for on-stack replacement", SET_OPTION_BIT(TR_DisableOSRLocalRemat), "F"},
    {"disableOSRSharedSlots",              "O\tdisable support for shared slots in on-stack replacement", SET_OPTION_BIT(TR_DisableOSRSharedSlots), "F"},
    {"disableOutlinedNew",                 "O\tdo object allocation logic inline instead of using a fast jit helper",  SET_OPTION_BIT(TR_DisableOutlinedNew), "F"},
-   {"disableOutlinedPrologues",           "O\tdo all prologue logic in-line",      RESET_OPTION_BIT(TR_EnableOutlinedPrologues), "F"},
    {"disablePackedDecimalIntrinsics",     "O\tDisables packed decimal function optimizations and avoid generating exception triggering packed decimal instructions on z/Architecture.", SET_OPTION_BIT(TR_DisablePackedDecimalIntrinsics), "F"},
    {"disablePartialInlining",             "O\tdisable  partial Inlining ",        SET_OPTION_BIT(TR_DisablePartialInlining), "F"},
    {"disablePostProfileCompPriorityBoost","M\tdisable boosting the priority of post profiling compilations",  SET_OPTION_BIT(TR_DisablePostProfileCompPriorityBoost), "F"},
@@ -485,7 +484,6 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
 #endif
    {"disableProfiling",                   "O\tdisable profiling",                              SET_OPTION_BIT(TR_DisableProfiling), "P"},
    {"disableProfilingDataReclamation",    "O\tdisable reclamation for profiling data",         SET_OPTION_BIT(TR_DisableProfilingDataReclamation), "F", NOT_IN_SUBSET},
-   {"disableProloguePushes",              "O\tuse stores instead of pushes in x86 prologues",  SET_OPTION_BIT(TR_DisableProloguePushes), "P"},
    {"disableRampupImprovements",          "M\tDisable various changes that improve rampup",    SET_OPTION_BIT(TR_DisableRampupImprovements), "F", NOT_IN_SUBSET},
    {"disableReadMonitors",                 "O\tdisable read monitors",                         SET_OPTION_BIT(TR_DisableReadMonitors), "F"},
    {"disableRecognizedCallTransformer",    "O\tdisable recognized call transformer",           TR::Options::disableOptimization, recognizedCallTransformer, 0, "P"},
@@ -725,7 +723,6 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"enableOSROnGuardFailure",            "O\tperform a decompile using on-stack replacement every time a virtual guard fails", SET_OPTION_BIT(TR_EnableOSROnGuardFailure), "F"},
    {"enableOSRSharedSlots",               "O\tenable support for shared slots in OSR", RESET_OPTION_BIT(TR_DisableOSRSharedSlots), "F"},
    {"enableOutlinedNew",                 "O\tdo object allocation logic with a fast jit helper",  SET_OPTION_BIT(TR_EnableOutlinedNew), "F"},
-   {"enableOutlinedPrologues",            "O\tcall a helper routine to do some prologue logic",  SET_OPTION_BIT(TR_EnableOutlinedPrologues), "F"},
    {"enableParanoidRefCountChecks",      "O\tenable extra reference count verification", SET_OPTION_BIT(TR_EnableParanoidRefCountChecks), "F"},
    {"enablePerfAsserts",                 "O\tenable asserts for serious performance problems found during compilation",   SET_OPTION_BIT(TR_EnablePerfAsserts), "F"},
    {"enableProfiledDevirtualization",     "O\tenable devirtualization based on interpreter profiling", SET_OPTION_BIT(TR_enableProfiledDevirtualization), "F"},
@@ -2628,7 +2625,6 @@ OMR::Options::jitPreProcess()
          // which metronome doesn't have.
          //
          self()->setOption(TR_DisableOutlinedNew);
-         self()->setOption(TR_EnableOutlinedPrologues, false);
          }
 
       self()->setOption(TR_EnableAnnotations);

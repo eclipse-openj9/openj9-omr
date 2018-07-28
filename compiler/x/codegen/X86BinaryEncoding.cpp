@@ -2520,14 +2520,7 @@ TR::AMD64RegImm64Instruction::addMetaDataForCodeAddress(uint8_t *cursor)
       {
       if (getNode()->getOpCode().hasSymbolReference() &&
           methodSymRef &&
-            (methodSymRef->getReferenceNumber()==TR_referenceArrayCopy ||
-#if defined(LINUX) || defined(OSX)  // AOT_JIT_GAP
-             methodSymRef->getReferenceNumber()==TR_AMD64getTimeOfDay
-#else
-             methodSymRef->getReferenceNumber()==TR_AMD64GetSystemTimeAsFileTime
-#endif
-            )
-         )
+          methodSymRef->getReferenceNumber()==TR_referenceArrayCopy)
          {// the reference number is set in j9x86evaluator.cpp/VMarrayStoreCheckArrayCopyEvaluator
          cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor,
                                                          (uint8_t *)methodSymRef,

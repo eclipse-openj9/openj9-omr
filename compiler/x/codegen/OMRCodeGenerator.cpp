@@ -730,7 +730,7 @@ void OMR::X86::CodeGenerator::removeLiveDiscardableRegister(TR::Register * reg)
 
 bool OMR::X86::CodeGenerator::canNullChkBeImplicit(TR::Node * node)
    {
-   return self()->comp()->cg()->canNullChkBeImplicit(node, true);
+   return self()->canNullChkBeImplicit(node, true);
    }
 
 void OMR::X86::CodeGenerator::clobberLiveDiscardableRegisters(
@@ -2712,7 +2712,7 @@ int32_t OMR::X86::CodeGenerator::computeRegisterSaveDescription(TR_BitVector *re
    // metadata for the method
    //
    if (populateInfo)
-      self()->comp()->cg()->setLowestSavedRegister(rsd & 0xFFFF);
+      self()->setLowestSavedRegister(rsd & 0xFFFF);
 
    return rsd;
    }

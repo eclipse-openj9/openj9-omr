@@ -75,7 +75,6 @@
 #include "optimizer/Structure.hpp"
 #include "ras/Debug.hpp"                       // for TR_DebugBase
 
-
 #define OPT_DETAILS "O^O CODE GENERATION: "
 
 #define NUM_REGS_USED_BY_COMPLEX_OPCODES 3
@@ -91,9 +90,6 @@ int OMR::CodeGenerator::_totalNumRematerializedIndirects = 0;
 int OMR::CodeGenerator::_totalNumRematerializedAddresses = 0;
 int OMR::CodeGenerator::_totalNumRematerializedXMMRs = 0;
 #endif
-
-
-
 
 #if defined(DEBUG) || defined(PROD_WITH_ASSUMES)
 void
@@ -346,10 +342,10 @@ OMR::CodeGenerator::estimateRegisterPressure(TR::Block *block, vcount_t visitCou
    while (treeTop)
       {
       TR::Node *node = treeTop->getNode();
-      self()->estimateRegisterPressure(node, currRegisterPressure, maxRegisterPressure, self()->comp()->cg()->getMaximumNumbersOfAssignableGPRs(), valuesInGlobalRegs, isCold, visitCount, symRef, symRefIsLive, checkForIMuls, vmThreadUsed);
+      self()->estimateRegisterPressure(node, currRegisterPressure, maxRegisterPressure, self()->getMaximumNumbersOfAssignableGPRs(), valuesInGlobalRegs, isCold, visitCount, symRef, symRefIsLive, checkForIMuls, vmThreadUsed);
 
       if (vmThreadUsed &&
-          (maxRegisterPressure >= self()->comp()->cg()->getMaximumNumbersOfAssignableGPRs()))
+          (maxRegisterPressure >= self()->getMaximumNumbersOfAssignableGPRs()))
          {
          //dumpOptDetails("For global register candidate %d reg pressure reached limit %d at block_%d isCold %d maxFreq %d\n", rc->getSymbolReference()->getReferenceNumber(), maxRegisterPressure, liveBlockNum, isCold, maxFrequency);
          break;
@@ -1167,7 +1163,7 @@ OMR::CodeGenerator::pickRegister(TR_RegisterCandidate     *rc,
                                TR_GlobalRegisterNumber & highRegisterNumber,
                                TR_LinkHead<TR_RegisterCandidate> *candidatesAlreadyAssigned)
    {
-   bool enableHighWordGRA =  self()->comp()->cg()->supportsHighWordFacility() && !self()->comp()->getOption(TR_DisableHighWordRA);
+   bool enableHighWordGRA =  self()->supportsHighWordFacility() && !self()->comp()->getOption(TR_DisableHighWordRA);
    static volatile bool isInitialized=false;
    static volatile uint8_t gprsWithheldFromPickRegister=0, fprsWithheldFromPickRegister=0, vrfWithheldFromPickRegister=0, gprsWithheldFromPickRegisterWhenWarm=0;
    int32_t currentCandidateWeight =-1;
@@ -2591,7 +2587,7 @@ nodeGotFoldedIntoMemref(
 void
 OMR::CodeGenerator::simulateTreeEvaluation(TR::Node *node, TR_RegisterPressureState *state, TR_RegisterPressureSummary *summary)
    {
-   bool enableHighWordGRA = self()->comp()->cg()->supportsHighWordFacility() && !self()->comp()->getOption(TR_DisableHighWordRA);
+   bool enableHighWordGRA = self()->supportsHighWordFacility() && !self()->comp()->getOption(TR_DisableHighWordRA);
    // Analogous to cg->evaluate(node).
    //
    // This can be called on nodes that have already been evaluated, and it does
@@ -2733,7 +2729,7 @@ OMR::CodeGenerator::simulateTreeEvaluation(TR::Node *node, TR_RegisterPressureSt
 
       if (isCall)
          {
-         isCall = self()->comp()->cg()->willBeEvaluatedAsCallByCodeGen(node, self()->comp());
+         isCall = self()->willBeEvaluatedAsCallByCodeGen(node, self()->comp());
          }
 
       if (isCall && node->isTheVirtualCallNodeForAGuardedInlinedCall())
@@ -2906,7 +2902,7 @@ OMR::CodeGenerator::simulateTreeEvaluation(TR::Node *node, TR_RegisterPressureSt
             summary->spill(TR_volatileSpill, self());
 
             TR::Symbol * rcSymbol = state->_candidate->getSymbolReference()->getSymbol();
-            TR::Linkage *linkage = self()->comp()->cg()->getLinkage();
+            TR::Linkage *linkage = self()->getLinkage();
 
 #if defined(TR_TARGET_S390)
             TR_BitVector* killedRegisters = linkage->getKilledRegisters(node);

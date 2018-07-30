@@ -6331,7 +6331,7 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
          self()->addBreakPointAddress(instructionStart);
          }
 
-      if (self()->comp()->cg()->isBranchInstruction(data.cursorInstruction))
+      if (self()->isBranchInstruction(data.cursorInstruction))
          {
          TR::LabelSymbol * branchLabelSymbol = ((TR::S390BranchInstruction *)data.cursorInstruction)->getLabelSymbol();
          if (data.cursorInstruction->getKind() == TR::Instruction::IsRIE &&
@@ -6355,7 +6355,7 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
             branchHashTable->add((void *)targetLabel, hashIndex, (void *)targetLabel);
             }
          }
-      else if (self()->comp()->cg()->isLabelInstruction(data.cursorInstruction))
+      else if (self()->isLabelInstruction(data.cursorInstruction))
          {
          TR::LabelSymbol * labelSymbol = ((TR::S390BranchInstruction *)data.cursorInstruction)->getLabelSymbol();
          TR_HashId hashIndex = 0;
@@ -7003,7 +7003,7 @@ OMR::Z::CodeGenerator::getMaximumNumberOfGPRsAllowedAcrossEdge(TR::Node * node)
          {
          int64_t value = getIntegralValue(node->getSecondChild());
 
-         if (self()->comp()->cg()->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_zEC12) && value >= MIN_IMMEDIATE_BYTE_VAL && value <= MAX_IMMEDIATE_BYTE_VAL)
+         if (self()->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_zEC12) && value >= MIN_IMMEDIATE_BYTE_VAL && value <= MAX_IMMEDIATE_BYTE_VAL)
             {
             return maxGPRs - 2;   // CLGIJ R,IMM,LAB,MASK, last instruction on block boundary
             }
@@ -7470,7 +7470,7 @@ OMR::Z::CodeGenerator::ssrClobberEvaluate(TR::Node * node, TR::MemoryReference *
       int32_t digitsInSrc = isBCD ? TR::DataType::getBCDPrecisionFromSize(node->getDataType(), byteLength) : 0;
       int32_t digitsToClear = srcRegister->getLeftAlignedZeroDigits() > 0 ? srcRegister->getDigitsToClear(0, digitsInSrc) : digitsInSrc;
       int32_t alreadyClearedDigits = digitsInSrc - digitsToClear;
-      if (self()->comp()->cg()->traceBCDCodeGen())
+      if (self()->traceBCDCodeGen())
          traceMsg(self()->comp(),"\tupdate srcRegister %s with copy ref #%d (%s)\n",
             self()->getDebug()->getName(srcRegister),copyStorageReference->getReferenceNumber(),self()->getDebug()->getName(copyStorageReference->getSymbol()));
       srcRegister->setStorageReference(copyStorageReference, node); // clears leftAlignedZeroDigits so query getDigitsToClear above
@@ -7541,7 +7541,7 @@ OMR::Z::CodeGenerator::ssrClobberEvaluate(TR::Node * node, TR::MemoryReference *
                   // prevent the symA -> VTS_3 update as symA != the orig VTS_2
                   // if the update is done then the last pdModPrecA ref is now using VTS_3 and the final decReferenceCount of the symA aload is never done (live reg alive bug)
                   //
-                  if (self()->comp()->cg()->traceBCDCodeGen())
+                  if (self()->traceBCDCodeGen())
                      traceMsg(self()->comp(),"\ty^y : skip update on reg %s node %s (%p), storageRef has already changed -- was #%d (%s), now #%d (%s)\n",
                         self()->getDebug()->getName(listReg),
                         listNode->getOpCode().getName(),listNode,
@@ -7550,7 +7550,7 @@ OMR::Z::CodeGenerator::ssrClobberEvaluate(TR::Node * node, TR::MemoryReference *
                   }
                else
                   {
-                  if (self()->comp()->cg()->traceBCDCodeGen())
+                  if (self()->traceBCDCodeGen())
                      traceMsg(self()->comp(),"\ty^y : update reg %s with ref #%d (%s) on node %s (%p) refCount %d from _nodesToUpdateOnClobber with copy ref #%d (%s) (skip if refCount == 0)\n",
                         self()->getDebug()->getName(listReg),
                         listReg->getStorageReference()->getReferenceNumber(),self()->getDebug()->getName(listReg->getStorageReference()->getSymbol()),
@@ -10207,7 +10207,7 @@ OMR::Z::CodeGenerator::removeUnavailableRegisters(TR_RegisterCandidate * rc, TR:
          {
          TR_LinkageConventions callLinkage= lastTreeTopNode->getFirstChild()->getSymbol()->castToMethodSymbol()->getLinkageConvention();
 
-         TR_BitVector *volatileRegs = self()->comp()->cg()->getGlobalRegisters(TR_volatileSpill, callLinkage);
+         TR_BitVector *volatileRegs = self()->getGlobalRegisters(TR_volatileSpill, callLinkage);
 
 //         traceMsg(comp(), "volatileRegs = \n");
 //         volatileRegs->print(comp());

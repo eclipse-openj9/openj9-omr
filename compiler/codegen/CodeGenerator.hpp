@@ -35,7 +35,7 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGeneratorConnector
 public:
 
    /**
-    * @param[in] comp : the TR::Compilaation object
+    * @param[in] comp : the TR::Compilation object
     */
    CodeGenerator(TR::Compilation *comp) :
       OMR::CodeGeneratorConnector() {}

@@ -1152,7 +1152,7 @@ OMR::CodeGenerator::getNumberOfGlobalRegisters()
 #ifdef TR_HOST_S390
 uint16_t OMR::CodeGenerator::getNumberOfGlobalGPRs()
    {
-   if (self()->comp()->cg()->supportsHighWordFacility() && !self()->comp()->getOption(TR_DisableHighWordRA))
+   if (self()->supportsHighWordFacility() && !self()->comp()->getOption(TR_DisableHighWordRA))
       {
       return _firstGlobalHPR;
       }
@@ -2311,7 +2311,7 @@ OMR::CodeGenerator::alignBinaryBufferCursor()
    if (boundary && (boundary & boundary - 1) == 0)
       {
       uintptr_t round = boundary - 1;
-      uintptr_t offset = self()->comp()->cg()->getPreJitMethodEntrySize();
+      uintptr_t offset = self()->getPreJitMethodEntrySize();
 
       _binaryBufferCursor += offset;
       _binaryBufferCursor = (uint8_t *)(((uintptr_t)_binaryBufferCursor + round) & ~round);

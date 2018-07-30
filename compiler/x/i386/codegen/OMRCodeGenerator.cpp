@@ -301,15 +301,15 @@ OMR::X86::I386::CodeGenerator::pickRegister(
 
          maxRegisterPressure = self()->estimateRegisterPressure(block, visitCount, maxStaticFrequency, maxFrequency, vmThreadUsed, numAssignedGlobalRegs, _assignedGlobalRegisters, rc->getSymbolReference(), assigningEDX);
 
-         if (maxRegisterPressure >= self()->comp()->cg()->getMaximumNumbersOfAssignableGPRs())
+         if (maxRegisterPressure >= self()->getMaximumNumbersOfAssignableGPRs())
             break;
          }
 
       // Determine if we can spare any extra registers for this candidate without spilling
       // in any hot (critical) blocks
       //
-      if (maxRegisterPressure < self()->comp()->cg()->getMaximumNumbersOfAssignableGPRs())
-         numExtraRegs = self()->comp()->cg()->getMaximumNumbersOfAssignableGPRs() - maxRegisterPressure;
+      if (maxRegisterPressure < self()->getMaximumNumbersOfAssignableGPRs())
+         numExtraRegs = self()->getMaximumNumbersOfAssignableGPRs() - maxRegisterPressure;
 
       //dumpOptDetails("For global register candidate %d reg pressure is %d maxRegs %d numExtraRegs %d\n", rc->getSymbolReference()->getReferenceNumber(), maxRegisterPressure, comp()->cg()->getMaximumNumbersOfAssignableGPRs(), numExtraRegs);
 

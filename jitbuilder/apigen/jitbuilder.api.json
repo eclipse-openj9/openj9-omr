@@ -28,14 +28,1137 @@
             "name": "IlBuilder",
             "short-name": "IB",
             "types": [
+                { "name": "JBCase",
+                  "short-name": "JBCase",
+                  "flags": [],
+                  "types": [],
+                  "fields": [],
+                  "constructors": [
+                      { "name": ""
+                      , "overloadsuffix": ""
+                      , "flags": []
+                      , "return": "none"
+                      , "parms": [
+                          {"name":"caseValue","type":"int32"},
+                          {"name":"caseBuilder","type":"IlBuilder"},
+                          {"name":"caseFallsThrough","type":"int32"}
+                          ]
+                      }
+                      ],
+                  "services": [],
+                  "callbacks": []
+                },
+                { "name": "JBCondition",
+                  "short-name": "JBCondition",
+                  "flags": [],
+                  "types": [],
+                  "fields": [],
+                  "constructors": [
+                      { "name": ""
+                      , "overloadsuffix": ""
+                      , "flags": []
+                      , "return": "none"
+                      , "parms": [
+                          {"name":"conditionBuilder","type":"IlBuilder"},
+                          {"name":"conditionValue","type":"IlValue"}
+                          ]
+                      }
+                      ],
+                  "services": [],
+                  "callbacks": []
+                }
                 ],
             "fields": [
+                { "name": "NoType", "type": "IlType", "assign_at_init": true },
+                { "name": "Int8", "type": "IlType", "assign_at_init": true },
+                { "name": "Int16", "type": "IlType", "assign_at_init": true },
+                { "name": "Int32", "type": "IlType", "assign_at_init": true },
+                { "name": "Int64", "type": "IlType", "assign_at_init": true },
+                { "name": "Float", "type": "IlType", "assign_at_init": true },
+                { "name": "Double", "type": "IlType", "assign_at_init": true },
+                { "name": "Address", "type": "IlType", "assign_at_init": true },
+                { "name": "VectorInt8", "type": "IlType", "assign_at_init": true },
+                { "name": "VectorInt16", "type": "IlType", "assign_at_init": true },
+                { "name": "VectorInt32", "type": "IlType", "assign_at_init": true },
+                { "name": "VectorInt64", "type": "IlType", "assign_at_init": true },
+                { "name": "VectorFloat", "type": "IlType", "assign_at_init": true },
+                { "name": "VectorDouble", "type": "IlType", "assign_at_init": true },
+                { "name": "Word", "type": "IlType", "assign_at_init": true }
                 ],
             "constructors": [
                 ],
             "callbacks": [
+                { "name": "buildIL"
+                , "overloadsuffix": ""
+                , "flags": [ "impl-default" ]
+                , "return": "boolean"
+                , "parms": []
+                }
                 ],
             "services": [
+                { "name": "OrphanBuilder"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "IlBuilder"
+                , "parms": []
+                },
+                { "name": "OrphanBytecodeBuilder"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "BytecodeBuilder"
+                , "parms": [
+                    {"name":"bcIndex","type":"int32"},
+                    {"name":"name","type":"string"}
+                    ]
+                },
+                { "name": "Copy"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "IlValue"
+                , "parms": [{"name":"value","type":"IlValue"}]
+                },
+                { "name": "typeDictionary"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "TypeDictionary"
+                , "parms": []
+                },
+                { "name": "ConstInteger"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "IlValue"
+                , "parms": [
+                    {"name":"type","type":"IlType"},
+                    {"name":"value","type":"int64"}
+                    ]
+                },
+                { "name": "ConstAddress"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "IlValue"
+                , "parms": [{"name":"value","type":"pointer"}]
+                },
+                { "name": "ConstDouble"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "IlValue"
+                , "parms": [{"name":"value","type":"double"}]
+                },
+                { "name": "ConstFloat"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "IlValue"
+                , "parms": [{"name":"value","type":"float"}]
+                },
+                { "name": "ConstInt8"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "IlValue"
+                , "parms": [{"name":"value","type":"int8"}]
+                },
+                { "name": "ConstInt16"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "IlValue"
+                , "parms": [{"name":"value","type":"int16"}]
+                },
+                { "name": "ConstInt32"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "IlValue"
+                , "parms": [{"name":"value","type":"int32"}]
+                },
+                { "name": "ConstInt64"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "IlValue"
+                , "parms": [{"name":"value","type":"int64"}]
+                },
+                { "name": "ConstString"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "IlValue"
+                , "parms": [{"name":"value","type":"string"}]
+                },
+                { "name": "Const"
+                , "overloadsuffix": "Address"
+                , "flags": []
+                , "return": "IlValue"
+                , "parms": [{"name":"value","type":"pointer"}]
+                },
+                { "name": "Const"
+                , "overloadsuffix": "Double"
+                , "flags": []
+                , "return": "IlValue"
+                , "parms": [{"name":"value","type":"double"}]
+                },
+                { "name": "Const"
+                , "overloadsuffix": "Float"
+                , "flags": []
+                , "return": "IlValue"
+                , "parms": [{"name":"value","type":"float"}]
+                },
+                { "name": "Const"
+                , "overloadsuffix": "Int8"
+                , "flags": []
+                , "return": "IlValue"
+                , "parms": [{"name":"value","type":"int8"}]
+                },
+                { "name": "Const"
+                , "overloadsuffix": "Int16"
+                , "flags": []
+                , "return": "IlValue"
+                , "parms": [{"name":"value","type":"int16"}]
+                },
+                { "name": "Const"
+                , "overloadsuffix": "Int32"
+                , "flags": []
+                , "return": "IlValue"
+                , "parms": [{"name":"value","type":"int32"}]
+                },
+                { "name": "Const"
+                , "overloadsuffix": "Int64"
+                , "flags": []
+                , "return": "IlValue"
+                , "parms": [{"name":"value","type":"int64"}]
+                },
+                { "name": "NullAddress"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "IlValue"
+                , "parms": []
+                },
+                { "name": "Add"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "IlValue"
+                , "parms": [
+                    {"name":"left","type":"IlValue"},
+                    {"name":"right","type":"IlValue"}
+                    ]
+                },
+                { "name": "AddWithOverflow"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "IlValue"
+                , "parms": [
+                    {"name":"overflowHandler","type":"IlBuilder","attributes":["in_out"]},
+                    {"name":"left","type":"IlValue"},
+                    {"name":"right","type":"IlValue"}
+                    ]
+                },
+                { "name": "AddWithUnsignedOverflow"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "IlValue"
+                , "parms": [
+                    {"name":"overflowHandler","type":"IlBuilder","attributes":["in_out"]},
+                    {"name":"left","type":"IlValue"},
+                    {"name":"right","type":"IlValue"}
+                    ]
+                },
+                { "name": "And"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "IlValue"
+                , "parms": [
+                    {"name":"left","type":"IlValue"},
+                    {"name":"right","type":"IlValue"}
+                    ]
+                },
+                { "name": "Div"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "IlValue"
+                , "parms": [
+                    {"name":"left","type":"IlValue"},
+                    {"name":"right","type":"IlValue"}
+                    ]
+                },
+                { "name": "IndexAt"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "IlValue"
+                , "parms": [
+                    {"name":"dt","type":"IlType"},
+                    {"name":"base","type":"IlValue"},
+                    {"name":"index","type":"IlValue"}
+                    ]
+                },
+                { "name": "Mul"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "IlValue"
+                , "parms": [
+                    {"name":"left","type":"IlValue"},
+                    {"name":"right","type":"IlValue"}
+                    ]
+                },
+                { "name": "MulWithOverflow"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "IlValue"
+                , "parms": [
+                    {"name":"overflowHandler","type":"IlBuilder","attributes":["in_out"]},
+                    {"name":"left","type":"IlValue"},
+                    {"name":"right","type":"IlValue"}
+                    ]
+                },
+                { "name": "Negate"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "IlValue"
+                , "parms": [ {"name":"v","type":"IlValue"} ]
+                },
+                { "name": "Or"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "IlValue"
+                , "parms": [
+                    {"name":"left","type":"IlValue"},
+                    {"name":"right","type":"IlValue"}
+                    ]
+                },
+                { "name": "Rem"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "IlValue"
+                , "parms": [
+                    {"name":"left","type":"IlValue"},
+                    {"name":"right","type":"IlValue"}
+                    ]
+                },
+                { "name": "ShiftL"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "IlValue"
+                , "parms": [
+                    {"name":"left","type":"IlValue"},
+                    {"name":"right","type":"IlValue"}
+                    ]
+                },
+                { "name": "ShiftR"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "IlValue"
+                , "parms": [
+                    {"name":"left","type":"IlValue"},
+                    {"name":"right","type":"IlValue"}
+                    ]
+                },
+                { "name": "Sub"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "IlValue"
+                , "parms": [
+                    {"name":"left","type":"IlValue"},
+                    {"name":"right","type":"IlValue"}
+                    ]
+                },
+                { "name": "SubWithOverflow"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "IlValue"
+                , "parms": [
+                    {"name":"overflowHandler","type":"IlBuilder","attributes":["in_out"]},
+                    {"name":"left","type":"IlValue"},
+                    {"name":"right","type":"IlValue"}
+                    ]
+                },
+                { "name": "SubWithUnsignedOverflow"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "IlValue"
+                , "parms": [
+                    {"name":"overflowHandler","type":"IlBuilder","attributes":["in_out"]},
+                    {"name":"left","type":"IlValue"},
+                    {"name":"right","type":"IlValue"}
+                    ]
+                },
+                { "name": "UnsignedShiftR"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "IlValue"
+                , "parms": [
+                    {"name":"left","type":"IlValue"},
+                    {"name":"right","type":"IlValue"}
+                    ]
+                },
+                { "name": "Xor"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "IlValue"
+                , "parms": [
+                    {"name":"left","type":"IlValue"},
+                    {"name":"right","type":"IlValue"}
+                    ]
+                },
+                { "name": "EqualTo"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "IlValue"
+                , "parms": [
+                    {"name":"left","type":"IlValue"},
+                    {"name":"right","type":"IlValue"}
+                    ]
+                },
+                { "name": "LessOrEqualTo"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "IlValue"
+                , "parms": [
+                    {"name":"left","type":"IlValue"},
+                    {"name":"right","type":"IlValue"}
+                    ]
+                },
+                { "name": "LessThan"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "IlValue"
+                , "parms": [
+                    {"name":"left","type":"IlValue"},
+                    {"name":"right","type":"IlValue"}
+                    ]
+                },
+                { "name": "GreaterOrEqualTo"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "IlValue"
+                , "parms": [
+                    {"name":"left","type":"IlValue"},
+                    {"name":"right","type":"IlValue"}
+                    ]
+                },
+                { "name": "GreaterThan"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "IlValue"
+                , "parms": [
+                    {"name":"left","type":"IlValue"},
+                    {"name":"right","type":"IlValue"}
+                    ]
+                },
+                { "name": "NotEqualTo"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "IlValue"
+                , "parms": [
+                    {"name":"left","type":"IlValue"},
+                    {"name":"right","type":"IlValue"}
+                    ]
+                },
+                { "name": "UnsignedLessOrEqualTo"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "IlValue"
+                , "parms": [
+                    {"name":"left","type":"IlValue"},
+                    {"name":"right","type":"IlValue"}
+                    ]
+                },
+                { "name": "UnsignedLessThan"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "IlValue"
+                , "parms": [
+                    {"name":"left","type":"IlValue"},
+                    {"name":"right","type":"IlValue"}
+                    ]
+                },
+                { "name": "UnsignedGreaterOrEqualTo"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "IlValue"
+                , "parms": [
+                    {"name":"left","type":"IlValue"},
+                    {"name":"right","type":"IlValue"}
+                    ]
+                },
+                { "name": "UnsignedGreaterThan"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "IlValue"
+                , "parms": [
+                    {"name":"left","type":"IlValue"},
+                    {"name":"right","type":"IlValue"}
+                    ]
+                },
+                { "name": "ConvertBitsTo"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "IlValue"
+                , "parms": [
+                    {"name":"type","type":"IlType"},
+                    {"name":"value","type":"IlValue"}
+                    ]
+                },
+                { "name": "ConvertTo"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "IlValue"
+                , "parms": [
+                    {"name":"type","type":"IlType"},
+                    {"name":"value","type":"IlValue"}
+                    ]
+                },
+                { "name": "UnsignedConvertTo"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "IlValue"
+                , "parms": [
+                    {"name":"type","type":"IlType"},
+                    {"name":"value","type":"IlValue"}
+                    ]
+                },
+                { "name": "AtomicAdd"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "IlValue"
+                , "parms": [
+                    {"name":"baseAddress","type":"IlValue"},
+                    {"name":"value","type":"IlValue"}
+                    ]
+                },
+                { "name": "CreateLocalArray"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "IlValue"
+                , "parms": [
+                    {"name":"numElements","type":"int32"},
+                    {"name":"elementType","type":"IlType"}
+                    ]
+                },
+                { "name": "CreateLocalStruct"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "IlValue"
+                , "parms": [{"name":"structType","type":"IlType"}]
+                },
+                { "name": "Load"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "IlValue"
+                , "parms": [{"name":"name","type":"constString"}]
+                },
+                { "name": "LoadAt"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "IlValue"
+                , "parms": [
+                    {"name":"type","type":"IlType"},
+                    {"name":"address","type":"IlValue"}
+                    ]
+                },
+                { "name": "LoadIndirect"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "IlValue"
+                , "parms": [
+                    {"name":"type","type":"constString"},
+                    {"name":"field","type":"constString"},
+                    {"name":"object","type":"IlValue"}
+                    ]
+                },
+                { "name": "Store"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"name","type":"constString"},
+                    {"name":"value","type":"IlValue"}
+                    ]
+                },
+                { "name": "StoreAt"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"address","type":"IlValue"},
+                    {"name":"value","type":"IlValue"}
+                    ]
+                },
+                { "name": "StoreIndirect"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"type","type":"constString"},
+                    {"name":"field","type":"constString"},
+                    {"name":"object","type":"IlValue"},
+                    {"name":"value","type":"IlValue"}
+                    ]
+                },
+                { "name": "StoreOver"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "none"
+                , "parms" : [
+                    {"name":"dest","type":"IlValue"},
+                    {"name":"value","type":"IlValue"}
+                    ]
+                },
+                { "name": "Transaction"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"persistentFailureBuilder","type":"IlBuilder","attributes":["in_out"]},
+                    {"name":"transientFailureBuilder","type":"IlBuilder","attributes":["in_out"]},
+                    {"name":"transactionBuilder","type":"IlBuilder","attributes":["in_out"]}
+                    ]
+                },
+                { "name": "TransactionAbort"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "none"
+                , "parms": []
+                },
+                { "name": "StructFieldInstanceAddress"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "IlValue"
+                , "parms": [
+                    {"name":"structName","type":"constString"},
+                    {"name":"fieldName","type":"constString"},
+                    {"name":"obj","type":"IlValue"}
+                    ]
+                },
+                { "name": "UnionFieldInstanceAddress"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "IlValue"
+                , "parms": [
+                    {"name":"unionName","type":"constString"},
+                    {"name":"fieldName","type":"constString"},
+                    {"name":"obj","type":"IlValue"}
+                    ]
+                },
+                { "name": "VectorLoad"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "IlValue"
+                , "parms": [{"name":"name","type":"string"}]
+                },
+                { "name": "VectorLoadAt"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "IlValue"
+                , "parms": [
+                    {"name":"type","type":"IlType"},
+                    {"name":"address","type":"IlValue"}
+                    ]
+                },
+                { "name": "VectorStore"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"name","type":"string"},
+                    {"name":"value","type":"IlValue"}
+                    ]
+                },
+                { "name": "VectorStoreAt"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"address","type":"IlValue"},
+                    {"name":"value","type":"IlValue"}
+                    ]
+                },
+                { "name": "AppendBuilder"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "none"
+                , "parms": [{"name":"b","type":"IlBuilder"}]
+                },
+                { "name": "Call"
+                , "overloadsuffix": "WithArgArray"
+                , "flags": []
+                , "return": "IlValue"
+                , "parms": [
+                    {"name":"name","type":"constString"},
+                    {"name":"numArgs","type":"int32"},
+                    {"name":"arguments","type":"IlValue","attributes":["array","can_be_vararg"],"array-len":"numArgs"}
+                    ]
+                },
+                { "name": "ComputedCall"
+                , "overloadsuffix":"WithArgArray"
+                , "flags": []
+                , "return": "IlValue"
+                , "parms": [
+                    {"name":"name","type":"string"},
+                    {"name":"numArgs","type":"int32"},
+                    {"name":"arguments","type":"IlValue","attributes":["array","can_be_vararg"],"array-len":"numArgs"}
+                    ]
+                },
+                { "name": "DoWhileLoop"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"exitCondition","type":"string"},
+                    {"name":"body","type":"IlBuilder","attributes":["in_out"]}
+                    ]
+                },
+                { "name": "DoWhileLoop"
+                , "overloadsuffix": "WithBreakAndContinue"
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"exitCondition","type":"string"},
+                    {"name":"body","type":"IlBuilder","attributes":["in_out"]},
+                    {"name":"breakBuilder","type":"IlBuilder","attributes":["in_out"]},
+                    {"name":"continueBuilder","type":"IlBuilder","attributes":["in_out"]}
+                    ]
+                },
+                { "name": "DoWhileLoopWithBreak"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"exitCondition","type":"string"},
+                    {"name":"body","type":"IlBuilder","attributes":["in_out"]},
+                    {"name":"breakBuilder","type":"IlBuilder","attributes":["in_out"]}
+                    ]
+                },
+                { "name": "DoWhileLoopWithContinue"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"exitCondition","type":"string"},
+                    {"name":"body","type":"IlBuilder","attributes":["in_out"]},
+                    {"name":"continueBuilder","type":"IlBuilder","attributes":["in_out"]}
+                    ]
+                },
+                { "name": "Goto"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "none"
+                , "parms": [ {"name":"b","type":"IlBuilder"} ]
+                },
+                { "name": "Goto"
+                , "overloadsuffix": "New"
+                , "flags": []
+                , "return": "none"
+                , "parms": [ {"name":"b","type":"IlBuilder","attributes":["in_out"]} ]
+                },
+                { "name": "MakeCondition"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "JBCondition"
+                , "parms": [
+                    {"name":"conditionBuilder","type":"IlBuilder"},
+                    {"name":"conditionValue","type":"IlValue"}
+                    ]
+                },
+                { "name": "IfAnd"
+                , "overloadsuffix": "WithArgArray"
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"allTrueBuilder","type":"IlBuilder","attributes":["in_out"]},
+                    {"name":"anyFalseBuilder","type":"IlBuilder","attributes":["in_out"]},
+                    {"name":"numTerms","type":"int32"},
+                    {"name":"terms","type":"JBCondition","attributes":["array","can_be_vararg"],"array-len":"numTerms"}
+                    ]
+                },
+                { "name": "IfCmpEqual"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"target","type":"IlBuilder"},
+                    {"name":"left","type":"IlValue"},
+                    {"name":"right","type":"IlValue"}
+                    ]
+                },
+                { "name": "IfCmpEqual"
+                , "overloadsuffix": "New"
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"target","type":"IlBuilder","attributes":["in_out"]},
+                    {"name":"left","type":"IlValue"},
+                    {"name":"right","type":"IlValue"}
+                    ]
+                },
+                { "name": "IfCmpLessOrEqual"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"target","type":"IlBuilder"},
+                    {"name":"left","type":"IlValue"},
+                    {"name":"right","type":"IlValue"}
+                    ]
+                },
+                { "name": "IfCmpLessOrEqual"
+                , "overloadsuffix": "New"
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"target","type":"IlBuilder","attributes":["in_out"]},
+                    {"name":"left","type":"IlValue"},
+                    {"name":"right","type":"IlValue"}
+                    ]
+                },
+                { "name": "IfCmpLessThan"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"target","type":"IlBuilder"},
+                    {"name":"left","type":"IlValue"},
+                    {"name":"right","type":"IlValue"}
+                    ]
+                },
+                { "name": "IfCmpLessThan"
+                , "overloadsuffix": "New"
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"target","type":"IlBuilder","attributes":["in_out"]},
+                    {"name":"left","type":"IlValue"},
+                    {"name":"right","type":"IlValue"}
+                    ]
+                },
+                { "name": "IfCmpGreaterOrEqual"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"target","type":"IlBuilder"},
+                    {"name":"left","type":"IlValue"},
+                    {"name":"right","type":"IlValue"}
+                    ]
+                },
+                { "name": "IfCmpGreaterOrEqual"
+                , "overloadsuffix": "New"
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"target","type":"IlBuilder","attributes":["in_out"]},
+                    {"name":"left","type":"IlValue"},
+                    {"name":"right","type":"IlValue"}
+                    ]
+                },
+                { "name": "IfCmpGreaterThan"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"target","type":"IlBuilder"},
+                    {"name":"left","type":"IlValue"},
+                    {"name":"right","type":"IlValue"}
+                    ]
+                },
+                { "name": "IfCmpGreaterThan"
+                , "overloadsuffix": "New"
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"target","type":"IlBuilder","attributes":["in_out"]},
+                    {"name":"left","type":"IlValue"},
+                    {"name":"right","type":"IlValue"}
+                    ]
+                },
+                { "name": "IfCmpNotEqual"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"target","type":"IlBuilder"},
+                    {"name":"left","type":"IlValue"},
+                    {"name":"right","type":"IlValue"}
+                    ]
+                },
+                { "name": "IfCmpNotEqual"
+                , "overloadsuffix": "New"
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"target","type":"IlBuilder","attributes":["in_out"]},
+                    {"name":"left","type":"IlValue"},
+                    {"name":"right","type":"IlValue"}
+                    ]
+                },
+                { "name": "IfCmpUnsignedLessOrEqual"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"target","type":"IlBuilder"},
+                    {"name":"left","type":"IlValue"},
+                    {"name":"right","type":"IlValue"}
+                    ]
+                },
+                { "name": "IfCmpUnsignedLessOrEqual"
+                , "overloadsuffix": "New"
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"target","type":"IlBuilder","attributes":["in_out"]},
+                    {"name":"left","type":"IlValue"},
+                    {"name":"right","type":"IlValue"}
+                    ]
+                },
+                { "name": "IfCmpUnsignedLessThan"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"target","type":"IlBuilder"},
+                    {"name":"left","type":"IlValue"},
+                    {"name":"right","type":"IlValue"}
+                    ]
+                },
+                { "name": "IfCmpUnsignedLessThan"
+                , "overloadsuffix": "New"
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"target","type":"IlBuilder","attributes":["in_out"]},
+                    {"name":"left","type":"IlValue"},
+                    {"name":"right","type":"IlValue"}
+                    ]
+                },
+                { "name": "IfCmpUnsignedGreaterOrEqual"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"target","type":"IlBuilder"},
+                    {"name":"left","type":"IlValue"},
+                    {"name":"right","type":"IlValue"}
+                    ]
+                },
+                { "name": "IfCmpUnsignedGreaterOrEqual"
+                , "overloadsuffix": "New"
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"target","type":"IlBuilder","attributes":["in_out"]},
+                    {"name":"left","type":"IlValue"},
+                    {"name":"right","type":"IlValue"}
+                    ]
+                },
+                { "name": "IfCmpUnsignedGreaterThan"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"target","type":"IlBuilder"},
+                    {"name":"left","type":"IlValue"},
+                    {"name":"right","type":"IlValue"}
+                    ]
+                },
+                { "name": "IfCmpUnsignedGreaterThan"
+                , "overloadsuffix": "New"
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"target","type":"IlBuilder","attributes":["in_out"]},
+                    {"name":"left","type":"IlValue"},
+                    {"name":"right","type":"IlValue"}
+                    ]
+                },
+                { "name": "IfCmpEqualZero"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"target","type":"IlBuilder"},
+                    {"name":"condition","type":"IlValue"}
+                    ]
+                },
+                { "name": "IfCmpEqualZero"
+                , "overloadsuffix": "New"
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"target","type":"IlBuilder","attributes":["in_out"]},
+                    {"name":"condition","type":"IlValue"}
+                    ]
+                },
+                { "name": "IfCmpNotEqualZero"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"target","type":"IlBuilder"},
+                    {"name":"condition","type":"IlValue"}
+                    ]
+                },
+                { "name": "IfCmpNotEqualZero"
+                , "overloadsuffix": "New"
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"target","type":"IlBuilder","attributes":["in_out"]},
+                    {"name":"condition","type":"IlValue"}
+                    ]
+                },
+                { "name": "IfOr"
+                , "overloadsuffix": "WithArgArray"
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"anyTrueBuilder","type":"IlBuilder","attributes":["in_out"]},
+                    {"name":"allFalseBuilder","type":"IlBuilder","attributes":["in_out"]},
+                    {"name":"numTerms","type":"int32"},
+                    {"name":"terms","type":"JBCondition","attributes":["array","can_be_vararg"],"array-len":"numTerms"}
+                    ]
+                },
+                { "name": "IfThen"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"thenPath","type":"IlBuilder","attributes":["in_out"]},
+                    {"name":"condition","type":"IlValue"}
+                    ]
+                },
+                { "name": "IfThenElse"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"thenPath","type":"IlBuilder","attributes":["in_out"]},
+                    {"name":"elsePath","type":"IlBuilder","attributes":["in_out"]},
+                    {"name":"condition","type":"IlValue"}
+                    ]
+                },
+                { "name": "ForLoop"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"countsUp","type":"boolean"},
+                    {"name":"indVar","type":"string"},
+                    {"name":"body","type":"IlBuilder","attributes":["in_out"]},
+                    {"name":"breakBuilder","type":"IlBuilder","attributes":["in_out"]},
+                    {"name":"continueBuilder","type":"IlBuilder","attributes":["in_out"]},
+                    {"name":"initial","type":"IlValue"},
+                    {"name":"iterateWhile","type":"IlValue"},
+                    {"name":"increment","type":"IlValue"}
+                    ]
+                },
+                { "name": "ForLoopDown"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"indVar","type":"string"},
+                    {"name":"body","type":"IlBuilder","attributes":["in_out"]},
+                    {"name":"initial","type":"IlValue"},
+                    {"name":"iterateWhile","type":"IlValue"},
+                    {"name":"increment","type":"IlValue"}
+                    ]
+                },
+                { "name": "ForLoopUp"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"indVar","type":"string"},
+                    {"name":"body","type":"IlBuilder","attributes":["in_out"]},
+                    {"name":"initial","type":"IlValue"},
+                    {"name":"iterateWhile","type":"IlValue"},
+                    {"name":"increment","type":"IlValue"}
+                    ]
+                },
+                { "name": "ForLoopWithBreak"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"countsUp","type":"boolean"},
+                    {"name":"indVar","type":"string"},
+                    {"name":"body","type":"IlBuilder","attributes":["in_out"]},
+                    {"name":"breakBuilder","type":"IlBuilder","attributes":["in_out"]},
+                    {"name":"initial","type":"IlValue"},
+                    {"name":"iterateWhile","type":"IlValue"},
+                    {"name":"increment","type":"IlValue"}
+                    ]
+                },
+                { "name": "ForLoopWithContinue"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"countsUp","type":"boolean"},
+                    {"name":"indVar","type":"string"},
+                    {"name":"body","type":"IlBuilder","attributes":["in_out"]},
+                    {"name":"continueBuilder","type":"IlBuilder","attributes":["in_out"]},
+                    {"name":"initial","type":"IlValue"},
+                    {"name":"iterateWhile","type":"IlValue"},
+                    {"name":"increment","type":"IlValue"}
+                    ]
+                },
+                { "name": "Return"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "none"
+                , "parms": []
+                },
+                { "name": "Return"
+                , "overloadsuffix": "Value"
+                , "flags": []
+                , "return": "none"
+                , "parms": [ {"name":"value","type":"IlValue"} ]
+                },
+                { "name": "Switch"
+                , "overloadsuffix": "WithArgArray"
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"selectionVar","type":"constString"},
+                    {"name":"defaultBuilder","type":"IlBuilder","attributes":["in_out"]},
+                    {"name":"numCases","type":"int32"},
+                    {"name":"cases","type":"JBCase","attributes":["array","can_be_vararg"],"array-len":"numCases"}
+                    ]
+                },
+                { "name": "MakeCase"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "JBCase"
+                , "parms": [
+                    {"name":"value","type":"int32"},
+                    {"name":"builder","type":"IlBuilder","attributes":["in_out"]},
+                    {"name":"fallsThrough","type":"int32"}
+                    ]
+                },
+                { "name": "WhileDoLoop"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"exitCondition","type":"string"},
+                    {"name":"body","type":"IlBuilder","attributes":["in_out"]}
+                    ]
+                },
+                { "name": "WhileDoLoopWithBreak"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"exitCondition","type":"string"},
+                    {"name":"body","type":"IlBuilder","attributes":["in_out"]},
+                    {"name":"breakBuilder","type":"IlBuilder","attributes":["in_out"]}
+                    ]
+                },
+                { "name": "WhileDoLoopWithContinue"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"exitCondition","type":"string"},
+                    {"name":"body","type":"IlBuilder","attributes":["in_out"]},
+                    {"name":"continueBuilder","type":"IlBuilder","attributes":["in_out"]}
+                    ]
+                }
                 ]
         },
         {

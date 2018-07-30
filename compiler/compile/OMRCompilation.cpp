@@ -326,7 +326,7 @@ OMR::Compilation::Compilation(
    // while the PersistentMethodInfo is allocated during codegen creation
    // Access to this list must be performed with assumptionTableMutex in hand
    //
-   if (!options.getOption(TR_DisableFastAssumptionReclamation))
+   if (!TR::Options::getCmdLineOptions()->getOption(TR_DisableFastAssumptionReclamation))
       _metadataAssumptionList = new (m->trPersistentMemory()) TR::SentinelRuntimeAssumption();
 #endif
 
@@ -916,7 +916,7 @@ int32_t OMR::Compilation::compile()
    if (!self()->getOption(TR_DisableSupportForCpuSpentInCompilation))
       _cpuTimeAtStartOfCompilation = TR::Compiler->vm.cpuTimeSpentInCompilationThread(self());
 
-   bool printCodegenTime = self()->getOption(TR_CummTiming);
+   bool printCodegenTime = TR::Options::getCmdLineOptions()->getOption(TR_CummTiming);
 
    if (self()->isOptServer())
       {
@@ -924,7 +924,7 @@ int32_t OMR::Compilation::compile()
       if( (self()->getMethodHotness() <= warm))
          {
          if (!TR::Compiler->target.cpu.isPower())
-            self()->getOptions()->setOption(TR_DisableInternalPointers);
+            TR::Options::getCmdLineOptions()->setOption(TR_DisableInternalPointers);
          }
       self()->getOptions()->setOption(TR_DisablePartialInlining);
       }
@@ -1841,7 +1841,7 @@ void OMR::Compilation::resetVisitCounts(vcount_t count, TR::TreeTop *start)
 void OMR::Compilation::reportFailure(const char *reason)
    {
    traceMsg(self(), "Compilation Failed Because: %s\n", reason);
-   if (self()->getOption(TR_PrintErrorInfoOnCompFailure))
+   if (TR::Options::getCmdLineOptions()->getOption(TR_PrintErrorInfoOnCompFailure))
       fprintf(stderr, "Compilation Failed Because: %s\n", reason);
    }
 

@@ -177,6 +177,8 @@ static void runHandlers(uint32_t asyncSignalFlag);
 static int32_t registerMasterHandlers(OMRPortLibrary *portLibrary, uint32_t flags, uint32_t allowedSubsetOfFlags, void **oldOSHandler);
 static int32_t setReporterPriority(OMRPortLibrary *portLibrary, uintptr_t priority);
 
+static J9WinAMD64AsyncHandlerRecord *createAsyncHandlerRecord(struct OMRPortLibrary *portLibrary, omrsig_handler_fn handler, void *handler_arg, uint32_t flags);
+
 uint32_t
 omrsig_info(struct OMRPortLibrary *portLibrary, void *info, uint32_t category, int32_t index, const char **name, void **value)
 {
@@ -303,16 +305,7 @@ omrsig_set_async_signal_handler(struct OMRPortLibrary *portLibrary, omrsig_handl
 
 	Trc_PRT_signal_omrsig_set_async_signal_handler_entered(handler, handler_arg, flags);
 
-	if (OMR_ARE_ALL_BITS_SET(signalOptions, OMRPORT_SIG_OPTIONS_REDUCED_SIGNALS_ASYNCHRONOUS)) {
-		/* Do not install any handlers if -Xrs is set. */
-		Trc_PRT_signal_omrsig_set_async_signal_handler_will_not_set_handler_due_to_Xrs(handler, handler_arg, flags);
-		return OMRPORT_SIG_ERROR;
-	}
-
-	omrthread_monitor_enter(registerHandlerMonitor);
 	rc = registerMasterHandlers(portLibrary, flags, OMRPORT_SIG_FLAG_SIGALLASYNC, NULL);
-	omrthread_monitor_exit(registerHandlerMonitor);
-
 	if (0 != rc) {
 		Trc_PRT_signal_omrsig_set_async_signal_handler_exiting_did_nothing_possible_error(handler, handler_arg, flags);
 		return rc;
@@ -351,29 +344,15 @@ omrsig_set_async_signal_handler(struct OMRPortLibrary *portLibrary, omrsig_handl
 		cursor = cursor->next;
 	}
 
-	if (NULL == cursor) {
-		/* Cursor will only be NULL if we failed to find it in the list. */
-		if (0 != flags) {
-			J9WinAMD64AsyncHandlerRecord *record = portLibrary->mem_allocate_memory(portLibrary, sizeof(*record), OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
-
-			if (NULL == record) {
-				rc = OMRPORT_SIG_ERROR;
-			} else {
-				record->portLib = portLibrary;
-				record->handler = handler;
-				record->handler_arg = handler_arg;
-				record->flags = flags;
-				record->next = NULL;
-
-				/* If this is the first handler, register the handler function. */
-				if (NULL == asyncHandlerList) {
-					SetConsoleCtrlHandler(consoleCtrlHandler, TRUE);
-				}
-
-				/* Add the new record to the end of the list. */
-				Trc_PRT_signal_omrsig_set_async_signal_handler_user_handler_added_2(handler, handler_arg, flags);
-				*previousLink = record;
-			}
+	/* Cursor will only be NULL if we failed to find it in the list. */
+	if ((NULL == cursor) && (0 != flags)) {
+		J9WinAMD64AsyncHandlerRecord *record = createAsyncHandlerRecord(portLibrary, handler, handler_arg, flags);
+		if (NULL != record) {
+			/* Add the new record to the end of the list. */
+			Trc_PRT_signal_omrsig_set_async_signal_handler_user_handler_added_2(handler, handler_arg, flags);
+			*previousLink = record;
+		} else {
+			rc = OMRPORT_SIG_ERROR;
 		}
 	}
 
@@ -401,16 +380,7 @@ omrsig_set_single_async_signal_handler(struct OMRPortLibrary *portLibrary, omrsi
 		}
 	}
 
-	if (OMR_ARE_ALL_BITS_SET(signalOptions, OMRPORT_SIG_OPTIONS_REDUCED_SIGNALS_ASYNCHRONOUS)) {
-		/* Do not install any handlers if -Xrs is set. */
-		Trc_PRT_signal_omrsig_set_async_signal_handler_will_not_set_handler_due_to_Xrs(handler, handler_arg, portlibSignalFlag);
-		return OMRPORT_SIG_ERROR;
-	}
-
-	omrthread_monitor_enter(registerHandlerMonitor);
 	rc = registerMasterHandlers(portLibrary, portlibSignalFlag, OMRPORT_SIG_FLAG_SIGALLASYNC, oldOSHandler);
-	omrthread_monitor_exit(registerHandlerMonitor);
-
 	if (0 != rc) {
 		Trc_PRT_signal_omrsig_set_single_async_signal_handler_exiting_did_nothing_possible_error(rc, handler, handler_arg, portlibSignalFlag);
 		return rc;
@@ -456,25 +426,13 @@ omrsig_set_single_async_signal_handler(struct OMRPortLibrary *portLibrary, omrsi
 	}
 
 	if (!foundHandler && (0 != portlibSignalFlag)) {
-		J9WinAMD64AsyncHandlerRecord *record = portLibrary->mem_allocate_memory(portLibrary, sizeof(*record), OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
-
-		if (NULL == record) {
-			rc = OMRPORT_SIG_ERROR;
-		} else {
-			record->portLib = portLibrary;
-			record->handler = handler;
-			record->handler_arg = handler_arg;
-			record->flags = portlibSignalFlag;
-			record->next = NULL;
-
-			/* If this is the first handler, register the handler function. */
-			if (NULL == asyncHandlerList) {
-				SetConsoleCtrlHandler(consoleCtrlHandler, TRUE);
-			}
-
+		J9WinAMD64AsyncHandlerRecord *record = createAsyncHandlerRecord(portLibrary, handler, handler_arg, portlibSignalFlag);
+		if (NULL != record) {
 			/* Add the new record to the end of the list. */
 			Trc_PRT_signal_omrsig_set_single_async_signal_handler_user_handler_added_2(handler, handler_arg, portlibSignalFlag);
 			*previousLink = record;
+		} else {
+			rc = OMRPORT_SIG_ERROR;
 		}
 	}
 
@@ -1399,15 +1357,15 @@ destroySignalTools(OMRPortLibrary *portLibrary)
 static int32_t
 initializeSignalTools(OMRPortLibrary *portLibrary)
 {
-	if (omrthread_monitor_init_with_name(&asyncMonitor, 0, "portLibrary_omrsig_async_monitor")) {
+	if (0 != omrthread_monitor_init_with_name(&asyncMonitor, 0, "portLibrary_omrsig_async_monitor")) {
 		goto error;
 	}
 
-	if (omrthread_monitor_init_with_name(&masterExceptionMonitor, 0, "portLibrary_omrsig_master_exception_monitor")) {
+	if (0 != omrthread_monitor_init_with_name(&masterExceptionMonitor, 0, "portLibrary_omrsig_master_exception_monitor")) {
 		goto cleanup1;
 	}
 
-	if (omrthread_monitor_init_with_name(&registerHandlerMonitor, 0, "portLibrary_omrsig_register_handler_monitor")) {
+	if (0 != omrthread_monitor_init_with_name(&registerHandlerMonitor, 0, "portLibrary_omrsig_register_handler_monitor")) {
 		goto cleanup2;
 	}
 
@@ -1415,8 +1373,8 @@ initializeSignalTools(OMRPortLibrary *portLibrary)
 		goto cleanup3;
 	}
 
-	if (omrthread_monitor_init_with_name(&asyncReporterShutdownMonitor, 0, "portLibrary_omrsig_asynch_reporter_shutdown_monitor")) {
-			goto cleanup4;
+	if (0 != omrthread_monitor_init_with_name(&asyncReporterShutdownMonitor, 0, "portLibrary_omrsig_asynch_reporter_shutdown_monitor")) {
+		goto cleanup4;
 	}
 
 #if defined(OMR_PORT_ASYNC_HANDLER)
@@ -1700,7 +1658,7 @@ removeAsyncHandlers(OMRPortLibrary *portLibrary)
 
 	previousLink = &asyncHandlerList;
 	cursor = asyncHandlerList;
-	while (cursor) {
+	while (NULL != cursor) {
 		if (cursor->portLib == portLibrary) {
 			*previousLink = cursor->next;
 			portLibrary->mem_free_memory(portLibrary, cursor);
@@ -1709,6 +1667,10 @@ removeAsyncHandlers(OMRPortLibrary *portLibrary)
 			previousLink = &cursor->next;
  			cursor = cursor->next;
  		}
+	}
+
+	if (NULL == asyncHandlerList) {
+		SetConsoleCtrlHandler(consoleCtrlHandler, FALSE);
 	}
 
 	omrthread_monitor_exit(asyncMonitor);
@@ -1801,11 +1763,9 @@ asynchSignalReporter(void *userData)
 #endif /* defined(OMR_PORT_ASYNC_HANDLER) */
 
 /**
- * Register the master handler for the signals in flags that don't have one.
- * Only masterASynchSignalHandler/OMRPORT_SIG_FLAG_SIGALLASYNC is supported
+ * Register the master handler for the signals indicated in the flags. Only
+ * masterASynchSignalHandler/OMRPORT_SIG_FLAG_SIGALLASYNC is supported
  * on win64amd. OMRPORT_SIG_FLAG_SIGALLSYNC is not supported on win64amd.
- *
- * Calls to this function must be synchronized using registerHandlerMonitor.
  *
  * @param[in] flags the flags that we want signals for
  * @param[in] allowedSubsetOfFlags must be OMRPORT_SIG_FLAG_SIGALLASYNC for
@@ -1815,22 +1775,29 @@ asynchSignalReporter(void *userData)
  *             oldOSHandler is non-null
  *
  * @return	0 upon success; OMRPORT_SIG_ERROR otherwise.
- *			Possible failure scenarios include attempting to register a handler for
- *			a signal that is not included in the allowedSubsetOfFlags
+ *			Possible failure scenarios include:
+ *			1) Master handlers are not registered if -Xrs is set.
+ *			2) Attempting to register a handler for a signal that is not included
+ *			   in the allowedSubsetOfFlags.
+ *			3) Failure to register the OS signal handler.
  */
 static int32_t
 registerMasterHandlers(OMRPortLibrary *portLibrary, uint32_t flags, uint32_t allowedSubsetOfFlags, void **oldOSHandler)
 {
-	uint32_t flagsSignalsOnly = 0;
+	int32_t rc = 0;
+	uint32_t flagsSignalsOnly = (flags & allowedSubsetOfFlags);
 	win_signal handler = NULL;
+
+	if (OMR_ARE_ALL_BITS_SET(signalOptions, OMRPORT_SIG_OPTIONS_REDUCED_SIGNALS_ASYNCHRONOUS)) {
+		/* Do not install any handlers if -Xrs is set. */
+		return OMRPORT_SIG_ERROR;
+	}
 
 	if (OMRPORT_SIG_FLAG_SIGALLASYNC == allowedSubsetOfFlags) {
 		handler = masterASynchSignalHandler;
 	} else {
 		return OMRPORT_SIG_ERROR;
 	}
-
-	flagsSignalsOnly = flags & allowedSubsetOfFlags;
 
 	if (0 != flagsSignalsOnly) {
 		/* registering some handlers */
@@ -1844,19 +1811,22 @@ registerMasterHandlers(OMRPortLibrary *portLibrary, uint32_t flags, uint32_t all
 		 * represents all synchronous signal flags (OMRPORT_SIG_FLAG_SIGALLSYNC)
 		 * or all asynchronous signal flags (OMRPORT_SIG_FLAG_SIGALLASYNC).
 		 */
+		omrthread_monitor_enter(registerHandlerMonitor);
 		for (portSignalType = OMRPORT_SIG_SMALLEST_SIGNAL_FLAG; portSignalType < allowedSubsetOfFlags; portSignalType = portSignalType << 1) {
 			/* Iterate through all the  signals and register the master handler for the signals
 			 * specified in flagsSignalsOnly.
 			 */
 			if (OMR_ARE_ALL_BITS_SET(flagsSignalsOnly, portSignalType)) {
 				if (0 != registerSignalHandlerWithOS(portLibrary, portSignalType, handler, oldOSHandler)) {
-					return OMRPORT_SIG_ERROR;
+					rc = OMRPORT_SIG_ERROR;
+					break;
 				}
 			}
 		}
+		omrthread_monitor_exit(registerHandlerMonitor);
 	}
 
-	return 0;
+	return rc;
 }
 
 /**
@@ -1877,4 +1847,36 @@ setReporterPriority(OMRPortLibrary *portLibrary, uintptr_t priority)
 	}
 
 	return (int32_t)omrthread_set_priority(asynchSignalReporterThread, priority);
+}
+
+/**
+ * Create a new async handler record. If this is the first handler in asyncHandlerList,
+ * then register consoleCtrlHandler (HandlerRoutine) using SetConsoleCtrlHandler.
+ *
+ * @param[in] portLibrary The OMR port library
+ * @param[in] handler the function to call if an asynchronous signal arrives
+ * @param[in] handler_arg the argument to handler
+ * @param[in] flags indicates the asynchronous signals handled
+ *
+ * @return pointer to the new async handler record on success and NULL on failure.
+ */
+static J9WinAMD64AsyncHandlerRecord *
+createAsyncHandlerRecord(struct OMRPortLibrary *portLibrary, omrsig_handler_fn handler, void *handler_arg, uint32_t flags)
+{
+	J9WinAMD64AsyncHandlerRecord *record = (J9WinAMD64AsyncHandlerRecord *)portLibrary->mem_allocate_memory(portLibrary, sizeof(*record), OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
+
+	if (NULL != record) {
+		record->portLib = portLibrary;
+		record->handler = handler;
+		record->handler_arg = handler_arg;
+		record->flags = flags;
+		record->next = NULL;
+
+		/* If this is the first handler, register the handler function. */
+		if (NULL == asyncHandlerList) {
+			SetConsoleCtrlHandler(consoleCtrlHandler, TRUE);
+		}
+	}
+
+	return record;
 }

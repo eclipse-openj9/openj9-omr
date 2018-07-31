@@ -85,6 +85,36 @@ protected:
 public:
    TR_ALLOC(TR_Memory::IlGenerator)
 
+   /**
+    * @brief A class encapsulating the information needed for a switch-case
+    *
+    * This class encapsulates the different pieces needed to construct a Case
+    * for IlBuilder's Switch() service. It's constructor is private, so instances
+    * can only be created by calling IlBuilder::MakeCase().
+    */
+   class JBCase
+      {
+      private:
+         /**
+          * @brief Construct a new JBCase object.
+          *
+          * This constructor should not be called directly outside of this classs.
+          * A call to `MakeCase()` should be used instead.
+          *
+          * @param v the value matched by the case
+          * @param b the builder implementing the case body
+          * @param f whether the case falls-through or not
+          */
+         JBCase(int32_t v, TR::IlBuilder *b, int32_t f)
+             : _value(v), _builder(b), _fallsThrough(f) {}
+
+         int32_t _value;          // value matched by the case
+         TR::IlBuilder *_builder; // builder for the case body
+         int32_t _fallsThrough;   // whether the case falls-through
+
+         friend class OMR::IlBuilder;
+      };
+
    friend class OMR::MethodBuilder;
 
    IlBuilder(TR::MethodBuilder *methodBuilder, TR::TypeDictionary *types)
@@ -399,16 +429,48 @@ public:
       {
       IfThenElse(thenPath, NULL, condition);
       }
+
+   /**
+    * @brief Generates a switch-case control flow structure.
+    *
+    * @param selectionVar the variable to switch on.
+    * @param defaultBuilder the builder for the default case.
+    * @param numCases the number of cases.
+    * @param cases array of pointers to JBCase instances corresponding to each case.
+    */
    void Switch(const char *selectionVar,
                TR::IlBuilder **defaultBuilder,
                uint32_t numCases,
-               int32_t *caseValues,
-               TR::IlBuilder **caseBuilders,
-               bool *caseFallsThrough);
+               JBCase** cases);
+
+   /**
+    * @brief Generates a switch-case control flow structure (vararg overload).
+    *
+    * Instead of taking an array of pointers to JBCase instances, this overload
+    * takes a pointer to each instance as a separate varargs argument.
+    *
+    * @param selectionVar the variable to switch on.
+    * @param defaultBuilder the builder for the default case.
+    * @param numCases the number of cases.
+    * @param ... the list of pointers to JBCase instances corresponding to each case.
+    */
    void Switch(const char *selectionVar,
                TR::IlBuilder **defaultBuilder,
                uint32_t numCases,
                ...);
+
+   /**
+    * @brief Construct an instance for JBCase.
+    *
+    * @param caseValue the value matched by the case.
+    * @param caseBuilder pointer to pointer to IlBuilder for the case (automatically allocated if pointed-to pointer is null).
+    * @param caseFallsThrough flag specifying whether the case falls-through to the next case.
+    * @return JBCase* pointer to instance of JBCase representing the specified case.
+    */
+   JBCase * MakeCase(int32_t caseValue,
+                     TR::IlBuilder **caseBuilder,
+                     int32_t caseFallsThrough);
+
 
 protected:
 

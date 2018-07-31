@@ -178,7 +178,10 @@ TraceGen::generate(J9TDFOptions *options, const char *currentTDFFile)
 		goto done;
 	}
 
-	printf("Processing tdf file %s\n", currentTDFFile);
+	if (true == options->verboseOutput) {
+		printf("Processing tdf file %s\n", currentTDFFile);
+	}
+
 
 	rc = reader.init(currentTDFFile);
 	if (RC_OK != rc) {
@@ -200,7 +203,7 @@ TraceGen::generate(J9TDFOptions *options, const char *currentTDFFile)
 		goto done;
 	}
 
-	groups = calculateGroups(tdf, &groupCount);
+	groups = calculateGroups(options, tdf, &groupCount);
 	if (NULL == groups) {
 		FileUtils::printError("Failed to calculate tracepoint groups");
 		rc = RC_FAILED;
@@ -387,7 +390,7 @@ failed:
 }
 
 J9TDFGroup *
-TraceGen::calculateGroups(J9TDFFile *tdf, unsigned int *groupCount)
+TraceGen::calculateGroups(J9TDFOptions *options, J9TDFFile *tdf, unsigned int *groupCount)
 {
 	const char *EVENT_TYPES[] = {
 		"Event",
@@ -415,7 +418,9 @@ TraceGen::calculateGroups(J9TDFFile *tdf, unsigned int *groupCount)
 	}
 
 
-	printf("Calculating groups for %s\n", tdf->header.executable);
+	if (true == options->verboseOutput) {
+		printf("Calculating groups for %s\n", tdf->header.executable);
+	}
 
 	/* Add tracepoint ID to tracegroup */
 	while (NULL != tp) {

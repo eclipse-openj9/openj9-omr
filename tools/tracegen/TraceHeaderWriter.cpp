@@ -158,7 +158,9 @@ TraceHeaderWriter::writeOutputFiles(J9TDFOptions *options, J9TDFFile *tdf)
 		return RC_OK;
 	}
 
-	printf("Creating header file: %s\n", fileName);
+	if (true == options->verboseOutput) {
+		printf("Creating header file: %s\n", fileName);
+	}
 
 	fd = Port::fopen(fileName, "wb");
 

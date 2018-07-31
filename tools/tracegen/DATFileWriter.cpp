@@ -54,7 +54,9 @@ DATFileWriter::writeOutputFiles(J9TDFOptions *options, J9TDFFile *tdf)
 		return RC_OK;
 	}
 
-	printf("Creating pdat file: %s\n", fileName);
+	if (options->verboseOutput) {
+		printf("Creating pdat file: %s\n", fileName);
+	}
 
 	FILE *datFile = Port::fopen(fileName, "w");
 	if (NULL == datFile) {

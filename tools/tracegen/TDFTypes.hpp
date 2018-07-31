@@ -142,6 +142,7 @@ typedef struct J9TDFOptions {
 
 	/* debug options */
 	bool debugOutput;
+	bool verboseOutput;
 	bool treatWarningAsError;
 
 	J9TDFOptions()
@@ -154,6 +155,7 @@ typedef struct J9TDFOptions {
 		, rootDirectory(NULL)
 		, files(NULL)
 		, debugOutput(false)
+		, verboseOutput(false)
 		, treatWarningAsError(false)
 	{
 	}

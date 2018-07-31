@@ -50,7 +50,9 @@ CFileWriter::writeOutputFiles(J9TDFOptions *options, J9TDFFile *tdf, J9TDFGroup 
 		return RC_OK;
 	}
 
-	printf("Creating c file: %s\n", fileName);
+	if (options->verboseOutput) {
+		printf("Creating c file: %s\n", fileName);
+	}
 
 	fd = Port::fopen(fileName, "wb");
 

@@ -228,13 +228,16 @@ DATMerge::merge(J9TDFOptions *options, const char *fromFileName)
 			perror("fopen error");
 			goto failed;
 		}
-		printf("tracemerge creating dat file: %s\n", toFileName);
+		if (true == options->verboseOutput) {
+			printf("tracemerge creating dat file: %s\n", toFileName);
+		}
 
 		fprintf(toFile, "%u.%u\n", options->rasMajorVersion, options->rasMinorVersion);
 	}
 
-
-	printf("Adding %s to dat file: %s\n", fromFileName, toFileName);
+	if (true == options->verboseOutput) {
+		printf("Adding %s to dat file: %s\n", fromFileName, toFileName);
+	}
 
 	while (fromFilereader.hasNext()) {
 		const char *line = fromFilereader.next();

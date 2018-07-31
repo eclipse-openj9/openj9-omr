@@ -399,7 +399,6 @@ findAvailableMemoryBlockNoMalloc(struct OMRPortLibrary *portLibrary,
 			BOOLEAN gotEOF = FALSE;
 			bytesRead = omrfile_read(portLibrary, fd, readBuf, sizeof(readBuf));
 			if (-1 == bytesRead) {
-				dataCorrupt = TRUE;
 				break;
 			}
 
@@ -1379,9 +1378,7 @@ getMemoryInRangeForDefaultPages(struct OMRPortLibrary *portLibrary,
 
 	/* check if we should use quick search for fast performance */
 	if (OMR_ARE_ANY_BITS_SET(vmemOptions, OMRPORT_VMEM_ALLOC_QUICK)) {
-
 		void *smartAddress = NULL;
-		void *allocatedAddress = NULL;
 
 		if (1 == direction) {
 			smartAddress = findAvailableMemoryBlockNoMalloc(portLibrary,
@@ -1391,30 +1388,39 @@ getMemoryInRangeForDefaultPages(struct OMRPortLibrary *portLibrary,
 					startAddress, currentAddress, byteAmount, TRUE);
 		}
 
-		allocatedAddress = default_pageSize_reserve_memory(portLibrary,
+		if (NULL == smartAddress) {
+			/* None of the available regions are suitable. There's no point in performing
+			 * the linear search below: it would (slowly) arrive at the same conclusion.
+			 */
+			return NULL;
+		}
+
+		/* smartAddress is not NULL: try to get memory there */
+		memoryPointer = default_pageSize_reserve_memory(portLibrary,
 				smartAddress, byteAmount, identifier, mode,
 				PPG_vmem_pageSize[0], category);
-
-		if (NULL != allocatedAddress) {
-			/* If the memoryPointer located outside of the range, free it and set the pointer to NULL */
-			if ((startAddress <= allocatedAddress)
-					&& (endAddress >= allocatedAddress)) {
-				memoryPointer = allocatedAddress;
-			} else if (0
-					!= omrvmem_free_memory(portLibrary, allocatedAddress,
-							byteAmount, identifier)) {
-				return NULL;
+		if (NULL != memoryPointer) {
+			if (OMR_ARE_NO_BITS_SET(vmemOptions, OMRPORT_VMEM_STRICT_ADDRESS)) {
+				/* OMRPORT_VMEM_STRICT_ADDRESS is not set: accept whatever we get */
+			} else if ((startAddress <= memoryPointer) && (memoryPointer <= endAddress)) {
+				/* the address is in the requested range */
+			} else {
+				/* the address is outside of the range, free it */
+				if (0 != omrvmem_free_memory(portLibrary, memoryPointer, byteAmount, identifier)) {
+					/* free failed: we fail too */
+					return NULL;
+				}
+				/* try a linear search below */
+				memoryPointer = NULL;
 			}
 		}
 		/*
 		 * memoryPointer != NULL means that available address was found.
-		 * Otherwise, in case NULL == memoryPointer
-		 * the below logic will continue trying.
+		 * Otherwise, the below logic will continue trying.
 		 */
 	}
 
 	if (NULL == memoryPointer) {
-
 		/* Let's check for a 32bit or under request first. */
 		if (0 != (vmemOptions & OMRPORT_VMEM_ZTPF_USE_31BIT_MALLOC)) {
 			memoryPointer = default_pageSize_reserve_memory_32bit(portLibrary,

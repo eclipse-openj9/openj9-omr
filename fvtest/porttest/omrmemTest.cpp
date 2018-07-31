@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2017 IBM Corp. and others
+ * Copyright (c) 1991, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -99,7 +99,7 @@ verifyMemory(struct OMRPortLibrary *portLibrary, const char *testName, char *mem
 	OMRPORT_ACCESS_FROM_OMRPORT(portLibrary);
 	const char testCharA = 'A';
 	const char testCharC = 'c';
-	uintptr_t testSize;
+	uintptr_t testSize = 0;
 	char stackMemory[MAX_ALLOC_SIZE];
 
 	if (NULL == memPtr) {
@@ -218,7 +218,7 @@ TEST(PortMemTest, mem_test1)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
 	const char *testName = "omrmem_test1";
-	char *memPtr;
+	char *memPtr = NULL;
 
 	reportTestEntry(OMRPORTLIB, testName);
 
@@ -258,9 +258,9 @@ TEST(PortMemTest, mem_test2)
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
 	const char *testName = "omrmem_test2";
 
-	char *memPtr;
+	char *memPtr = NULL;
 	char allocName[allocNameSize];
-	uint32_t byteAmount;
+	uint32_t byteAmount = 0;
 
 	reportTestEntry(OMRPORTLIB, testName);
 
@@ -328,11 +328,11 @@ TEST(PortMemTest, mem_test4)
 	 * outside the portlibrary?
 	 */
 #if 0
-	void *memPtr;
-	void *saveMemPtr;
+	void *memPtr = 0;
+	void *saveMemPtr = NULL;
 	char allocName[allocNameSize];
-	int32_t rc;
-	uint32_t byteAmount;
+	int32_t rc = 0;
+	uint32_t byteAmount = 0;
 
 	reportTestEntry(OMRPORTLIB, testName);
 
@@ -415,7 +415,7 @@ TEST(PortMemTest, mem_test5)
 	 * outside the portlibrary?
 	 */
 #if 0
-	OMRPortLibrary *memPtr;
+	OMRPortLibrary *memPtr = NULL;
 
 	reportTestEntry(OMRPORTLIB, testName);
 
@@ -468,10 +468,10 @@ TEST(PortMemTest, mem_test6)
 	 * outside the portlibrary?
 	 */
 #if 0
-	char *memPtr;
+	char *memPtr = NULL;
 	char allocName[allocNameSize];
-	int32_t rc;
-	uint32_t byteAmount;
+	int32_t rc = 0;
+	uint32_t byteAmount = 0;
 
 	reportTestEntry(OMRPORTLIB, testName);
 
@@ -530,7 +530,7 @@ TEST(PortMemTest, mem_test6)
 static void
 shuffleArray(struct OMRPortLibrary *portLibrary, uintptr_t *array, uintptr_t length)
 {
-	uintptr_t i;
+	uintptr_t i = 0;
 
 	for (i = 0; i < length; i++) {
 		intptr_t randNum = (intptr_t)(rand() % length);
@@ -561,32 +561,28 @@ shuffleArray(struct OMRPortLibrary *portLibrary, uintptr_t *array, uintptr_t len
 TEST(PortMemTest, mem_test7_allocate32)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
-	void *pointer;
+	void *pointer = NULL;
 #if defined(OMR_ENV_DATA64)
-	uintptr_t finalAllocSize;
+	uintptr_t finalAllocSize = 0;
 #endif
 	char allocName[allocNameSize];
 	const char *testName = "omrmem_test7_allocate32";
 	int randomSeed = 0;
 	char rand[99] = "";
-	int i;
+	int i = 0;
 
-	/* Use a more exhausive size array for 64 bit platforms to exercise the omrheap API.
-	 * Retain the old sizes for regular 32 bit VMs, including ME platforms with very limited amount of physical memory.
-	 */
+	uintptr_t allocBlockSizes[] = {
+			0, 1, 512, 4096, 1024 * 1024,
 #if defined(OMR_ENV_DATA64)
-	uintptr_t allocBlockSizes[] = {0, 1, 512, 4096, 1024 * 1024,
-								   HEAP_SIZE_BYTES / 8, HEAP_SIZE_BYTES / 4, HEAP_SIZE_BYTES / 3, HEAP_SIZE_BYTES / 2,
-								   HEAP_SIZE_BYTES - 6, HEAP_SIZE_BYTES - 10,
-								   HEAP_SIZE_BYTES, HEAP_SIZE_BYTES + 6
-								  };
-#else
-	uintptr_t allocBlockSizes[] = {0, 1, 512, 4096, 4096 * 1024};
-#endif
+			/* Extra sizes for 64-bit platforms to exercise the omrheap API. */
+			HEAP_SIZE_BYTES / 8, HEAP_SIZE_BYTES / 4, HEAP_SIZE_BYTES / 3, HEAP_SIZE_BYTES / 2,
+			HEAP_SIZE_BYTES - 6, HEAP_SIZE_BYTES - 10,
+			HEAP_SIZE_BYTES, HEAP_SIZE_BYTES + 6
+#endif /* OMR_ENV_DATA64 */
+	};
 	uintptr_t allocBlockSizesLength = sizeof(allocBlockSizes) / sizeof(allocBlockSizes[0]);
 	void *allocBlockReturnPtrs[sizeof(allocBlockSizes) / sizeof(allocBlockSizes[0])];
 	uintptr_t allocBlockCursor = 0;
-
 
 	reportTestEntry(OMRPORTLIB, testName);
 
@@ -631,6 +627,7 @@ TEST(PortMemTest, mem_test7_allocate32)
 	omrstr_printf(allocName, allocNameSize, "\nomrmem_allocate_memory32(%d)", finalAllocSize);
 	pointer = omrmem_allocate_memory32(finalAllocSize, OMRMEM_CATEGORY_PORT_LIBRARY);
 	verifyMemory(OMRPORTLIB, testName, (char *)pointer, finalAllocSize, allocName);
+	omrmem_free_memory32(pointer);
 #endif
 
 	/* should not result in a crash */
@@ -669,7 +666,6 @@ struct CategoriesState {
 #if defined(OMR_ENV_DATA64)
 	BOOLEAN unused32bitSlabWalked;
 #endif
-
 
 	BOOLEAN otherError;
 
@@ -873,13 +869,13 @@ TEST(PortMemTest, mem_test8_categories)
 
 	/* Try allocating under the port library category and check the block and byte counters are incremented */
 	{
-		uintptr_t initialBlocks;
-		uintptr_t initialBytes;
-		uintptr_t finalBlocks;
-		uintptr_t finalBytes;
-		uintptr_t expectedBlocks;
-		uintptr_t expectedBytes;
-		void *ptr;
+		uintptr_t initialBlocks = 0;
+		uintptr_t initialBytes = 0;
+		uintptr_t finalBlocks = 0;
+		uintptr_t finalBytes = 0;
+		uintptr_t expectedBlocks = 0;
+		uintptr_t expectedBytes = 0;
+		void *ptr = NULL;
 
 		getCategoriesState(OMRPORTLIB, &categoriesState);
 		initialBlocks = categoriesState.portLibraryBlocks;
@@ -939,13 +935,13 @@ TEST(PortMemTest, mem_test8_categories)
 
 	/* Try allocating with a user category code - having not registered any categories. Check it maps to unknown */
 	{
-		uintptr_t initialBlocks;
-		uintptr_t initialBytes;
-		uintptr_t finalBlocks;
-		uintptr_t finalBytes;
-		uintptr_t expectedBlocks;
-		uintptr_t expectedBytes;
-		void *ptr;
+		uintptr_t initialBlocks = 0;
+		uintptr_t initialBytes = 0;
+		uintptr_t finalBlocks = 0;
+		uintptr_t finalBytes = 0;
+		uintptr_t expectedBlocks = 0;
+		uintptr_t expectedBytes = 0;
+		void *ptr = NULL;
 
 		getCategoriesState(OMRPORTLIB, &categoriesState);
 		initialBlocks = categoriesState.unknownBlocks;
@@ -1006,13 +1002,13 @@ TEST(PortMemTest, mem_test8_categories)
 
 	/* Try allocating to one of our user category codes - check the arithmetic is done correctly */
 	{
-		uintptr_t initialBlocks;
-		uintptr_t initialBytes;
-		uintptr_t finalBlocks;
-		uintptr_t finalBytes;
-		uintptr_t expectedBlocks;
-		uintptr_t expectedBytes;
-		void *ptr;
+		uintptr_t initialBlocks = 0;
+		uintptr_t initialBytes = 0;
+		uintptr_t finalBlocks = 0;
+		uintptr_t finalBytes = 0;
+		uintptr_t expectedBlocks = 0;
+		uintptr_t expectedBytes = 0;
+		void *ptr = NULL;
 
 		getCategoriesState(OMRPORTLIB, &categoriesState);
 		initialBlocks = categoriesState.dummyCategoryOneBlocks;
@@ -1072,13 +1068,13 @@ TEST(PortMemTest, mem_test8_categories)
 #if !(defined(OSX) && defined(OMR_ENV_DATA64))
 	/* Try allocating with allocate32 */
 	{
-		uintptr_t initialBlocks;
-		uintptr_t initialBytes;
-		uintptr_t finalBlocks;
-		uintptr_t finalBytes;
-		uintptr_t expectedBlocks;
-		uintptr_t expectedBytes;
-		void *ptr;
+		uintptr_t initialBlocks = 0;
+		uintptr_t initialBytes = 0;
+		uintptr_t finalBlocks = 0;
+		uintptr_t finalBytes = 0;
+		uintptr_t expectedBlocks = 0;
+		uintptr_t expectedBytes = 0;
+		void *ptr = NULL;
 
 		getCategoriesState(OMRPORTLIB, &categoriesState);
 		initialBlocks = categoriesState.dummyCategoryOneBlocks;
@@ -1138,18 +1134,18 @@ TEST(PortMemTest, mem_test8_categories)
 	/* n.b. we're reliant on previous tests having initialized the 32bithelpers. */
 #if defined(OMR_ENV_DATA64)
 	{
-		uintptr_t initialBlocks;
-		uintptr_t initialBytes;
-		uintptr_t finalBlocks;
-		uintptr_t finalBytes;
-		uintptr_t expectedBlocks;
-		uintptr_t expectedBytes;
-		uintptr_t initialUnused32BitSlabBytes;
-		uintptr_t initialUnused32BitSlabBlocks;
-		uintptr_t minimumExpectedUnused32BitSlabBytes;
-		uintptr_t finalUnused32BitSlabBytes;
-		uintptr_t finalUnused32BitSlabBlocks;
-		void *ptr;
+		uintptr_t initialBlocks = 0;
+		uintptr_t initialBytes = 0;
+		uintptr_t finalBlocks = 0;
+		uintptr_t finalBytes = 0;
+		uintptr_t expectedBlocks = 0;
+		uintptr_t expectedBytes = 0;
+		uintptr_t initialUnused32BitSlabBytes = 0;
+		uintptr_t initialUnused32BitSlabBlocks = 0;
+		uintptr_t minimumExpectedUnused32BitSlabBytes = 0;
+		uintptr_t finalUnused32BitSlabBytes = 0;
+		uintptr_t finalUnused32BitSlabBlocks = 0;
+		void *ptr = NULL;
 
 		getCategoriesState(OMRPORTLIB, &categoriesState);
 		initialBlocks = categoriesState.dummyCategoryOneBlocks;
@@ -1235,19 +1231,19 @@ TEST(PortMemTest, mem_test8_categories)
 
 	/* Try allocating and reallocating */
 	{
-		uintptr_t initialBlocksCat1;
-		uintptr_t initialBytesCat1;
-		uintptr_t initialBlocksCat2;
-		uintptr_t initialBytesCat2;
-		uintptr_t finalBlocksCat1;
-		uintptr_t finalBytesCat1;
-		uintptr_t finalBlocksCat2;
-		uintptr_t finalBytesCat2;
-		uintptr_t expectedBlocks1;
-		uintptr_t expectedBytes1;
-		uintptr_t expectedBlocks2;
-		uintptr_t expectedBytes2;
-		void *ptr;
+		uintptr_t initialBlocksCat1 = 0;
+		uintptr_t initialBytesCat1 = 0;
+		uintptr_t initialBlocksCat2 = 0;
+		uintptr_t initialBytesCat2 = 0;
+		uintptr_t finalBlocksCat1 = 0;
+		uintptr_t finalBytesCat1 = 0;
+		uintptr_t finalBlocksCat2 = 0;
+		uintptr_t finalBytesCat2 = 0;
+		uintptr_t expectedBlocks1 = 0;
+		uintptr_t expectedBytes1 = 0;
+		uintptr_t expectedBlocks2 = 0;
+		uintptr_t expectedBytes2 = 0;
+		void *ptr = NULL;
 
 		getCategoriesState(OMRPORTLIB, &categoriesState);
 		initialBlocksCat1 = categoriesState.dummyCategoryOneBlocks;
@@ -1353,17 +1349,15 @@ TEST(PortMemTest, mem_test8_categories)
 		}
 	}
 
-
-
 	/* Try allocating to an unknown category code - check it maps to unknown properly */
 	{
-		uintptr_t initialBlocks;
-		uintptr_t initialBytes;
-		uintptr_t finalBlocks;
-		uintptr_t finalBytes;
-		uintptr_t expectedBlocks;
-		uintptr_t expectedBytes;
-		void *ptr;
+		uintptr_t initialBlocks = 0;
+		uintptr_t initialBytes = 0;
+		uintptr_t finalBlocks = 0;
+		uintptr_t finalBytes = 0;
+		uintptr_t expectedBlocks = 0;
+		uintptr_t expectedBytes = 0;
+		void *ptr = NULL;
 
 		getCategoriesState(OMRPORTLIB, &categoriesState);
 		initialBlocks = categoriesState.unknownBlocks;
@@ -1387,10 +1381,12 @@ TEST(PortMemTest, mem_test8_categories)
 		finalBytes = categoriesState.unknownBytes;
 		if (!categoriesState.unknownWalked) {
 			outputErrorMessage(PORTTEST_ERROR_ARGS, "Category walk didn't cover unknown category.\n");
+			omrmem_free_memory(ptr);
 			goto end;
 		}
 		if (categoriesState.otherError) {
 			outputErrorMessage(PORTTEST_ERROR_ARGS, "Some other error hit while walking categories (see messages above).\n");
+			omrmem_free_memory(ptr);
 			goto end;
 		}
 
@@ -1482,13 +1478,12 @@ TEST(PortMemTest, mem_test9_category_walk)
 static void
 freeMemPointers(struct OMRPortLibrary *portLibrary, void **memPtrs, uintptr_t length)
 {
-	void *mem32Ptr = NULL;
-	uintptr_t i;
+	uintptr_t i = 0;
 
 	OMRPORT_ACCESS_FROM_OMRPORT(portLibrary);
 
 	for (i = 0; i < length; i++) {
-		mem32Ptr = memPtrs[i];
+		void *mem32Ptr = memPtrs[i];
 		omrmem_free_memory32(mem32Ptr);
 	}
 }

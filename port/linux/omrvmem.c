@@ -91,7 +91,7 @@ static void addressRange_Init(AddressRange *range, ADDRESS start, ADDRESS end);
 static BOOLEAN addressRange_Intersect(AddressRange *a, AddressRange *b, AddressRange *result);
 static BOOLEAN addressRange_IsValid(AddressRange *range);
 static uintptr_t addressRange_Width(AddressRange *range);
-static ADDRESS findAvailableMemoryBlockNoMalloc(struct OMRPortLibrary *portLibrary, ADDRESS start, ADDRESS end, uintptr_t byteAmount, BOOLEAN reverse);
+static ADDRESS findAvailableMemoryBlockNoMalloc(struct OMRPortLibrary *portLibrary, ADDRESS start, ADDRESS end, uintptr_t byteAmount, BOOLEAN reverse, BOOLEAN strictRange);
 
 /*
  * This structure captures the state of an iterator of addresses between minimum
@@ -328,21 +328,22 @@ addressRange_Width(AddressRange *range)
  * Find a memory block using maps information from file /proc/self/maps
  * In order to avoid file context corruption, this method implemented without memory operation such as malloc/free
  *
- *
  * @param OMRPortLibrary *portLibrary	[in] The portLibrary object
  * @param ADDRESS 		start			[in] The start address allowed, see also @param end
  * @param ADDRESS 		end				[in] The end address allowed, see also @param start.
  * 											 The returned memory address should be within the range defined by the @param start and the @param end.
  * @param uintptr_t 	byteAmount		[in] The block size required.
  * @param BOOLEAN 		reverse			[in] Returns the first available memory block when this param equals FALSE, returns the last available memory block when this param equals TRUE
+ * @param BOOLEAN       strictRange     [in] Must the returned address within the range defined by @param start and @param end?
  *
  * returns the address available.
  */
 static ADDRESS
-findAvailableMemoryBlockNoMalloc(struct OMRPortLibrary *portLibrary, ADDRESS start, ADDRESS end, uintptr_t byteAmount, BOOLEAN reverse)
+findAvailableMemoryBlockNoMalloc(struct OMRPortLibrary *portLibrary, ADDRESS start, ADDRESS end, uintptr_t byteAmount, BOOLEAN reverse, BOOLEAN strictRange)
 {
 	BOOLEAN dataCorrupt = FALSE;
 	BOOLEAN matchFound = FALSE;
+	BOOLEAN strictMatchFound = FALSE;
 
 	/*
 	 * The caller provides start and end addresses that constrain a non-null
@@ -374,14 +375,13 @@ findAvailableMemoryBlockNoMalloc(struct OMRPortLibrary *portLibrary, ADDRESS sta
 		char lineBuf[100];
 		intptr_t lineCursor = 0;
 		AddressRange lastMmapRange;
-		addressRange_Init(&lastMmapRange, NULL, NULL);
+		addressRange_Init(&lastMmapRange, NULL, (ADDRESS)PPG_vmem_pageSize[0]);
 
 		while (TRUE) { /* read-file-loop */
 			BOOLEAN lineEnd = FALSE;
 			BOOLEAN gotEOF = FALSE;
 			bytesRead = omrfile_read(portLibrary, fd, readBuf, sizeof(readBuf));
 			if (-1 == bytesRead) {
-				dataCorrupt = TRUE;
 				break;
 			}
 
@@ -473,18 +473,29 @@ findAvailableMemoryBlockNoMalloc(struct OMRPortLibrary *portLibrary, ADDRESS sta
 
 						/* check if the free block has intersection with the allowed range */
 						haveIntersect = addressRange_Intersect(&allowedRange, &freeRange, &intersectAvailable);
-						if (haveIntersect) {
-							uintptr_t intersectSize = addressRange_Width(&intersectAvailable);
+						if (haveIntersect && addressRange_Width(&intersectAvailable) >= byteAmount) {
 #if defined(OMRVMEM_DEBUG)
 							printf("intersection %p-%p\n", intersectAvailable.start, intersectAvailable.end);
 							fflush(stdout);
 #endif
-							if (intersectSize >= byteAmount) {
-								memcpy(&lastAvailableRange, &intersectAvailable, sizeof(AddressRange));
+							memcpy(&lastAvailableRange, &intersectAvailable, sizeof(AddressRange));
+							matchFound = TRUE;
+							strictMatchFound = TRUE;
+							if (FALSE == reverse) {
+								break;
+							}
+						} else if (!strictRange && (addressRange_Width(&freeRange) >= byteAmount)) {
+							/* This range is large enough and the caller isn't being strict.
+							 * Remember the first such range when low addresses are preferred,
+							 * or the last otherwise.
+							 */
+							if (reverse || !matchFound) {
+#if defined(OMRVMEM_DEBUG)
+								printf("considering %p-%p\n", freeRange.start, freeRange.end);
+								fflush(stdout);
+#endif
+								memcpy(&lastAvailableRange, &freeRange, sizeof(AddressRange));
 								matchFound = TRUE;
-								if (FALSE == reverse) {
-									break;
-								}
 							}
 						}
 					}
@@ -492,7 +503,7 @@ findAvailableMemoryBlockNoMalloc(struct OMRPortLibrary *portLibrary, ADDRESS sta
 				} /* end proc-line-data */
 			} while (readCursor < bytesRead); /* end proc-chars-loop */
 
-			if ((FALSE == reverse) && matchFound) {
+			if ((FALSE == reverse) && strictMatchFound) {
 				break;
 			}
 
@@ -583,7 +594,7 @@ omrvmem_commit_memory(struct OMRPortLibrary *portLibrary, void *address, uintptr
 		) {
 			if (0 == mprotect(address, byteAmount, get_protectionBits(identifier->mode))) {
 #if defined(OMRVMEM_DEBUG)
-				printf("\t\tomrvmem_commit_memory called mprotect, returning 0x%zx\n", (size_t)address);
+				printf("\t\tomrvmem_commit_memory called mprotect, returning %p\n", address);
 				fflush(stdout);
 #endif
 				rc = address;
@@ -600,7 +611,7 @@ omrvmem_commit_memory(struct OMRPortLibrary *portLibrary, void *address, uintptr
 	}
 
 #if defined(OMRVMEM_DEBUG)
-	printf("\t\tomrvmem_commit_memory returning 0x%zx\n", (size_t)rc);
+	printf("\t\tomrvmem_commit_memory returning %p\n", rc);
 	fflush(stdout);
 #endif
 	Trc_PRT_vmem_omrvmem_commit_memory_Exit(rc);
@@ -782,7 +793,7 @@ omrvmem_reserve_memory_ex(struct OMRPortLibrary *portLibrary, struct J9PortVmemI
 #endif
 
 #if defined(OMRVMEM_DEBUG)
-	printf("\tomrvmem_reserve_memory_ex(start=%p,end=%p,size=%zx,page=%zx,options=%zx) returning %p\n",
+	printf("\tomrvmem_reserve_memory_ex(start=%p,end=%p,size=0x%zx,page=0x%zx,options=0x%zx) returning %p\n",
 			params->startAddress, params->endAddress, params->byteAmount, params->pageSize, (size_t)params->options, memoryPointer);
 	fflush(stdout);
 #endif
@@ -846,7 +857,7 @@ reserveLargePages(struct OMRPortLibrary *portLibrary, struct J9PortVmemIdentifie
 	}
 
 #if defined(OMRVMEM_DEBUG)
-	printf("\treserveLargePages returning 0x%zx\n", (size_t)memoryPointer);
+	printf("\treserveLargePages returning %p\n", memoryPointer);
 	fflush(stdout);
 #endif
 	return memoryPointer;
@@ -941,7 +952,7 @@ static void *
 default_pageSize_reserve_memory(struct OMRPortLibrary *portLibrary, void *address, uintptr_t byteAmount, struct J9PortVmemIdentifier *identifier, uintptr_t mode, uintptr_t pageSize, OMRMemCategory *category)
 {
 	/* This function is cloned in J9SourceUnixJ9VMem (omrvmem_reserve_memory).
-	 * Any changes made here may need to be reflected in that version .
+	 * Any changes made here may need to be reflected in that version.
 	 */
 	int fd = -1;
 	int flags = MAP_PRIVATE;
@@ -968,7 +979,6 @@ default_pageSize_reserve_memory(struct OMRPortLibrary *portLibrary, void *addres
 		/* do NOT use the MAP_FIXED flag on Linux. With this flag, Linux may return
 		 * an address that has already been reserved.
 		 */
-
 		result = mmap(address, (size_t)byteAmount, protectionFlags, flags, fd, 0);
 
 #if !defined(MAP_ANONYMOUS) && !defined(MAP_ANON)
@@ -1235,21 +1245,33 @@ getMemoryInRangeForDefaultPages(struct OMRPortLibrary *portLibrary, struct J9Por
 
 	/* check if we should use quick search for fast performance */
 	if (OMR_ARE_ANY_BITS_SET(vmemOptions, OMRPORT_VMEM_ALLOC_QUICK)) {
-		void *smartAddress = findAvailableMemoryBlockNoMalloc(portLibrary, startAddress, endAddress, byteAmount, (1 == direction)? FALSE : TRUE);
+		void *smartAddress = findAvailableMemoryBlockNoMalloc(portLibrary,
+				startAddress, endAddress, byteAmount,
+				(1 == direction) ? FALSE : TRUE,
+	 			OMR_ARE_ANY_BITS_SET(vmemOptions, OMRPORT_VMEM_STRICT_ADDRESS) ? TRUE : FALSE);
 
-		/* only allocate when smartAddress is not NULL */
-		if (NULL != smartAddress) {
-			void *allocatedAddress = default_pageSize_reserve_memory(portLibrary, smartAddress, byteAmount, identifier, mode, PPG_vmem_pageSize[0], category);
-			if (NULL != allocatedAddress) {
-				/* if OMRPORT_VMEM_STRICT_ADDRESS is not set we accept whatever we get back */
-				if (OMR_ARE_NO_BITS_SET(vmemOptions, OMRPORT_VMEM_STRICT_ADDRESS)) {
-					return allocatedAddress;
-				} else if ((startAddress <= allocatedAddress) && (allocatedAddress <= endAddress)) {
-					memoryPointer = allocatedAddress;
-				} else if (0 != omrvmem_free_memory(portLibrary, allocatedAddress, byteAmount, identifier)) {
-					/* If the memoryPointer located outside of the range, free it and return NULL. */
+		if (NULL == smartAddress) {
+			/* None of the available regions are suitable. There's no point in performing
+			 * the linear search below: it would (slowly) arrive at the same conclusion.
+			 */
+			return NULL;
+		}
+
+		/* smartAddress is not NULL: try to get memory there */
+		memoryPointer = default_pageSize_reserve_memory(portLibrary, smartAddress, byteAmount, identifier, mode, PPG_vmem_pageSize[0], category);
+		if (NULL != memoryPointer) {
+			if (OMR_ARE_NO_BITS_SET(vmemOptions, OMRPORT_VMEM_STRICT_ADDRESS)) {
+				/* OMRPORT_VMEM_STRICT_ADDRESS is not set: accept whatever we get */
+			} else if ((startAddress <= memoryPointer) && (memoryPointer <= endAddress)) {
+				/* the address is in the requested range */
+			} else {
+				/* the address is outside of the range, free it */
+				if (0 != omrvmem_free_memory(portLibrary, memoryPointer, byteAmount, identifier)) {
+					/* free failed: we fail too */
 					return NULL;
 				}
+				/* try a linear search below */
+				memoryPointer = NULL;
 			}
 		}
 		/*
@@ -1262,7 +1284,7 @@ getMemoryInRangeForDefaultPages(struct OMRPortLibrary *portLibrary, struct J9Por
 		AddressIterator iterator;
 		void *currentAddress = NULL;
 		/* return after first attempt when OMRPORT_VMEM_ADDRESS_HINT is set */
-		if (0 != (vmemOptions & OMRPORT_VMEM_ADDRESS_HINT)) {
+		if (OMR_ARE_ANY_BITS_SET(vmemOptions, OMRPORT_VMEM_ADDRESS_HINT)) {
 			return default_pageSize_reserve_memory(portLibrary, startAddress, byteAmount, identifier, mode, PPG_vmem_pageSize[0], category);
 		}
 		/* try all addresses within range */
@@ -1700,7 +1722,7 @@ addressIterator_init(AddressIterator *iterator, ADDRESS minimum, ADDRESS maximum
 	Assert_PRT_true((0 != alignment) && (0 == (alignment & (alignment - 1))));
 
 #if defined(OMRVMEM_DEBUG)
-	printf("addressIterator_init(%p,%p,%zx,%ld)\n", minimum, maximum, (size_t)alignment, direction);
+	printf("addressIterator_init(%p,%p,0x%zx,%ld)\n", minimum, maximum, (size_t)alignment, direction);
 	fflush(stdout);
 #endif
 

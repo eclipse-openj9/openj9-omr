@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -64,6 +64,11 @@ class OMR_EXTENSIBLE OptimizationManager
 
    static void *operator new(size_t size, TR::Allocator a)
       { return a.allocate(size); }
+   static void  operator delete(void *ptr, TR::Allocator a)
+      {
+      // If there is an exception thrown during construction, the compilation
+      // will be aborted, and all memory associated with that compilation will get freed.
+      }
    static void  operator delete(void *ptr, size_t size)
       { ((OptimizationManager*)ptr)->allocator().deallocate(ptr, size); } /* t->allocator() must return the same allocator as used for new */
 

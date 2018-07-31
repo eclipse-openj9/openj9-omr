@@ -746,10 +746,14 @@ TR_HeapMemory::allocate(size_t size, TR_MemoryBase::ObjectType ot)
    static void   jitPersistentFree(void *mem)                                 {TR_Memory::jitPersistentFree(mem); }
 
 #define TR_PERSISTENT_NEW(a) \
-   void * operator new   (size_t s, PERSISTENT_NEW_DECLARE)   throw()   {return TR_Memory::jitPersistentAlloc(s, a);} \
-   void * operator new[] (size_t s, PERSISTENT_NEW_DECLARE)   throw()   {return TR_Memory::jitPersistentAlloc(s, a);} \
-   void * operator new   (size_t s, TR_PersistentMemory * m)  throw()   {return m->allocatePersistentMemory(s, a);} \
-   void * operator new[] (size_t s, TR_PersistentMemory * m)  throw()   {return m->allocatePersistentMemory(s, a);} \
+   void * operator new    (size_t s, PERSISTENT_NEW_DECLARE)   throw()   { return TR_Memory::jitPersistentAlloc(s, a); } \
+   void operator delete   (void *p, PERSISTENT_NEW_DECLARE)    throw()   { TR_Memory::jitPersistentFree(p); } \
+   void * operator new[]  (size_t s, PERSISTENT_NEW_DECLARE)   throw()   { return TR_Memory::jitPersistentAlloc(s, a); } \
+   void operator delete[] (void *p, PERSISTENT_NEW_DECLARE)    throw()   { TR_Memory::jitPersistentFree(p); } \
+   void * operator new    (size_t s, TR_PersistentMemory * m)  throw()   { return m->allocatePersistentMemory(s, a); } \
+   void operator delete   (void *p, TR_PersistentMemory *m)    throw()   { m->freePersistentMemory(p); } \
+   void * operator new[]  (size_t s, TR_PersistentMemory * m)  throw()   { return m->allocatePersistentMemory(s, a); } \
+   void operator delete[] (void *p, TR_PersistentMemory *m)    throw()   { m->freePersistentMemory(p); } \
    void operator delete  (void *p, size_t s) throw() { TR_ASSERT(false, "Invalid use of operator delete"); }
 
 #define TR_ALLOC_WITHOUT_NEW(a) \
@@ -773,7 +777,8 @@ TR_HeapMemory::allocate(size_t size, TR_MemoryBase::ObjectType ot)
 #define TR_ALLOC_IMPL(a) \
    TR_ALLOC_WITHOUT_NEW(a) \
    TR_PERSISTENT_NEW(a) \
-   void * operator new (size_t s, TR_ArenaAllocator *m)                  {return m->allocate(s);} \
+   void * operator new (size_t s, TR_ArenaAllocator *m) { return m->allocate(s); } \
+   void operator delete(void *p, TR_ArenaAllocator *m) { /* TR_ArenaAllocator contains an empty deallocator */ } \
    void * operator new (size_t s, TR_HeapMemory m, TR_MemoryBase::ObjectType ot = a) { return m.allocate(s,ot); } \
    void operator delete(void *p, TR_HeapMemory m, TR_MemoryBase::ObjectType ot) { return m.deallocate(p); } \
    void * operator new[] (size_t s, TR_HeapMemory m, TR_MemoryBase::ObjectType ot = a) { return m.allocate(s,ot); } \
@@ -792,7 +797,7 @@ TR_HeapMemory::allocate(size_t size, TR_MemoryBase::ObjectType ot)
    void operator delete(void * p, TR::Region &region) { region.deallocate(p); } \
    void * operator new[](size_t size, TR::Region &region) { return region.allocate(size); } \
    void operator delete[](void * p, TR::Region &region) { region.deallocate(p); } \
-   static TrackedPersistentAllocator getPersistentAllocator() { return TrackedPersistentAllocator(); } \
+   static TrackedPersistentAllocator getPersistentAllocator() { return TrackedPersistentAllocator(); }
 
 #define TR_ALLOC(a) \
    typedef TR_TypedPersistentAllocatorBase TrackedPersistentAllocator; \

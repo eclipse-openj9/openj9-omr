@@ -91,6 +91,7 @@ public:
    CodeCache() { }
 
    void *operator new(size_t s, TR::CodeCache *cache) { return cache; }
+   void operator delete(void *p, TR::CodeCache *cache) { /* do nothing */ }
 
 
    class CacheCriticalSection : public CriticalSection

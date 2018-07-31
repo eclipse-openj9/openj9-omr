@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -49,8 +49,14 @@ public:
 
     void * operator new (size_t s, uint16_t arrayElems, TR_NodeExtAllocator & m)
        {
-       s+= (arrayElems-NUM_DEFAULT_ELEMS) * sizeof(uintptr_t);
+       s += (arrayElems - NUM_DEFAULT_ELEMS) * sizeof(uintptr_t);
        return m.allocate(s);
+       }
+
+    void   operator delete(void * ptr, uint16_t arrayElems, TR_NodeExtAllocator & m)
+       {
+       size_t size = sizeof(NodeExtension) + (arrayElems - NUM_DEFAULT_ELEMS) * sizeof(uintptr_t);
+       return m.deallocate(ptr, size);
        }
 
     void   operator delete(void * ptr, size_t s, TR_NodeExtAllocator & m)

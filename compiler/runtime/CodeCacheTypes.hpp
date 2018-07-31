@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -76,6 +76,8 @@ public:
 
    void *operator new(size_t s, CodeCacheHashEntrySlab *slab) { return slab; }
 
+   void operator delete(void *ptr, CodeCacheHashEntrySlab *slab) { /* do nothing */ }
+
    static CodeCacheHashEntrySlab *allocate(TR::CodeCacheManager *manager, size_t slabSize);
    void free(TR::CodeCacheManager *manager);
 
@@ -112,6 +114,7 @@ public:
    CodeCacheHashTable() { }
 
    void *operator new(size_t s, CodeCacheHashTable *table) { return table; }
+   void operator delete(void *p, CodeCacheHashTable *table) { /* do nothing */ }
 
    static CodeCacheHashTable *allocate(TR::CodeCacheManager *codeCacheManager);
    static size_t hashUnresolvedMethod(void *constPool, int32_t constPoolIndex);

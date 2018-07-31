@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -217,6 +217,12 @@ OMR::TreeTop::operator new(size_t s, bool trace, TR_Memory * m)
    TR::TreeTop * tt = (TR::TreeTop *)(p + sizeof(void *));
    tt->setLastInstruction(0);
    return tt;
+   }
+
+void
+OMR::TreeTop::operator delete(void *p, bool trace, TR_Memory *m)
+   {
+   m->freeMemory(p, TR_AllocationKind::heapAlloc);
    }
 
 OMR::TreeTop::TreeTop(TR::TreeTop *precedingTreeTop, TR::Node *node, TR::Compilation * c) :

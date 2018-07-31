@@ -55,6 +55,8 @@ public:
 
    void *operator new(size_t size, TR::CodeCacheMemorySegment *segment) { return segment; }
 
+   void operator delete(void *pmem, TR::CodeCacheMemorySegment *segment) { /* do nothing */ }
+
    uint8_t *segmentBase() const  { return _base; }
    uint8_t *segmentAlloc() const { return _alloc; }
    uint8_t *segmentTop() const   { return _top; }

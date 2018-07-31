@@ -999,6 +999,14 @@ const J9CudaLibraryDescriptor runtimeLibraries[] = {
 /*
  * Include forward-compatible support for runtime libraries.
  */
+#if CUDA_VERSION <= 9020
+	OMRCUDA_LIBRARY_ENTRY(9, 2),
+#endif /* CUDA_VERSION <= 9020 */
+
+#if CUDA_VERSION <= 9010
+	OMRCUDA_LIBRARY_ENTRY(9, 1),
+#endif /* CUDA_VERSION <= 9010 */
+
 #if CUDA_VERSION <= 9000
 	OMRCUDA_LIBRARY_ENTRY(9, 0),
 #endif /* CUDA_VERSION <= 9000 */

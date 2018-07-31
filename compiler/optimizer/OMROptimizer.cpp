@@ -1139,7 +1139,7 @@ void OMR::Optimizer::optimize()
          }
       }
 
-   if (TR::Options::getCmdLineOptions()->getOption(TR_EnableDeterministicOrientedCompilation) &&
+   if (comp()->getOption(TR_EnableDeterministicOrientedCompilation) &&
        comp()->isOutermostMethod() &&
        (comp()->getMethodHotness() > cold) &&
        (comp()->getMethodHotness() < scorching))
@@ -1353,13 +1353,13 @@ int32_t OMR::Optimizer::performOptimization(const OptimizationStrategy *optimiza
 #ifdef J9_PROJECT_SPECIFIC
       case IfNotClassLoadPhase:
          if (!comp()->getPersistentInfo()->isClassLoadingPhase() ||
-             TR::Options::getCmdLineOptions()->getOption(TR_DontDowngradeToCold))
+             comp()->getOption(TR_DontDowngradeToCold))
             doThisOptimization = true;
          break;
 
       case IfNotClassLoadPhaseAndNotProfiling:
          if ((!comp()->getPersistentInfo()->isClassLoadingPhase() ||
-              TR::Options::getCmdLineOptions()->getOption(TR_DontDowngradeToCold))
+              comp()->getOption(TR_DontDowngradeToCold))
                &&
              (!comp()->isProfilingCompilation() || debug("ignoreIfNotProfiling"))
             )

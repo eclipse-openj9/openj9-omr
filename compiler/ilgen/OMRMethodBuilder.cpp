@@ -119,6 +119,7 @@ OMR::MethodBuilder::MethodBuilder(TR::TypeDictionary *types, TR::VirtualMachineS
    _bytecodeWorklist(NULL),
    _bytecodeHasBeenInWorklist(NULL),
    _inlineSiteIndex(-1),
+   _nextInlineSiteIndex(0),
    _returnBuilder(NULL),
    _returnSymbolName(NULL)
    {
@@ -150,6 +151,7 @@ OMR::MethodBuilder::MethodBuilder(TR::MethodBuilder *callerMB, TR::VirtualMachin
    _bytecodeWorklist(NULL),
    _bytecodeHasBeenInWorklist(NULL),
    _inlineSiteIndex(callerMB->getNextInlineSiteIndex()),
+   _nextInlineSiteIndex(0),
    _returnBuilder(NULL),
    _returnSymbolName(NULL)
    {

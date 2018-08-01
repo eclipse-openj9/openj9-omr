@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -26,6 +26,13 @@
 #include <stdarg.h>
 #include <stdint.h>
 #include <stdio.h>
+
+#define IS_8BIT_SIGNED(x)    ((x) == (  int8_t)(x))
+#define IS_8BIT_UNSIGNED(x)  ((x) == ( uint8_t)(x))
+#define IS_16BIT_SIGNED(x)   ((x) == ( int16_t)(x))
+#define IS_16BIT_UNSIGNED(x) ((x) == (uint16_t)(x))
+#define IS_32BIT_SIGNED(x)   ((x) == ( int32_t)(x))
+#define IS_32BIT_UNSIGNED(x) ((x) == (uint32_t)(x))
 
 /*
  * -----------------------------------------------------------------------------

@@ -30,7 +30,6 @@
 #include "codegen/RegisterConstants.hpp"
 #include "codegen/Relocation.hpp"
 #include "codegen/ScratchRegisterManager.hpp"
-#include "codegen/TreeEvaluator.hpp"               // for IS_32BIT_SIGNED
 #include "codegen/UnresolvedDataSnippet.hpp"
 #include "compile/Compilation.hpp"                 // for Compilation, isSMP
 #include "control/Options.hpp"

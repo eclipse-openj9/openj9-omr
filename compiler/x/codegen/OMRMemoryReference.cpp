@@ -30,7 +30,6 @@
 #include "codegen/Register.hpp"                    // for Register
 #include "codegen/RegisterConstants.hpp"
 #include "codegen/Relocation.hpp"
-#include "codegen/TreeEvaluator.hpp"               // for IS_32BIT_SIGNED, etc
 #include "codegen/UnresolvedDataSnippet.hpp"
 #include "compile/Compilation.hpp"                 // for Compilation
 #include "compile/ResolvedMethod.hpp"              // for TR_ResolvedMethod

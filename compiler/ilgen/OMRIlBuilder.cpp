@@ -1827,7 +1827,7 @@ OMR::IlBuilder::Call(TR::MethodBuilder *calleeMB, int32_t numArgs, TR::IlValue *
    calleeMB->setInlineSiteIndex(_methodBuilder->getNextInlineSiteIndex());
 
    // set up callee's return builder for return control flows
-   TR::IlBuilder *returnBuilder = OrphanBuilder(); // should really be OrphanByecodeBuilder
+   TR::IlBuilder *returnBuilder = OrphanBuilder();
    calleeMB->setReturnBuilder(returnBuilder);
 
    // get calleeMB ready to be part of this compilation

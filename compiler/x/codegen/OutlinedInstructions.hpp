@@ -155,7 +155,6 @@ class TR_OutlinedInstructions
 class TR_OutlinedInstructionsGenerator
    {
    public:
-
    /**
       @brief Switch to outlined code generation.
 
@@ -168,6 +167,11 @@ class TR_OutlinedInstructionsGenerator
       @brief Switch back to mainline code generation.
    */
    ~TR_OutlinedInstructionsGenerator();
+   /**
+      @brief Obtain the underlying TR_OutlinedInstructions.
+   */
+   inline TR_OutlinedInstructions* obtain()     { return _oi; }
+   inline TR_OutlinedInstructions* operator->() { return obtain(); }
 
    private:
    TR_OutlinedInstructions* _oi;

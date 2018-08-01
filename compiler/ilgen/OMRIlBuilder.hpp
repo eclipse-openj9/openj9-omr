@@ -232,12 +232,61 @@ public:
 
    // control
    void AppendBuilder(TR::IlBuilder *builder);
+
+   /**
+    * @brief Call a function via a TR::MethodBuilder object, possibly inlining it
+    * @param calleeMB the target function's TR::MethodBuilder object
+    * @param numArgs the number of actual arguments for the method
+    * @param ... arguments to pass to the function, provided as TR::IlValue pointers
+    * @returns the TR::IlValue corresponding to the called function's return value or NULL if return type is None
+    */
    TR::IlValue *Call(TR::MethodBuilder *calleeMB, int32_t numArgs, ...);
+
+   /**
+    * @brief Call a function via a TR::MethodBuilder object, possibly inlining it
+    * @param calleeMB the target function's TR::MethodBuilder object
+    * @param numArgs the number of actual arguments for the method
+    * @param argValues array of arguments to pass to the function
+    * @returns the TR::IlValue corresponding to the called function's return value or NULL if return type is None
+    */
    TR::IlValue *Call(TR::MethodBuilder *calleeMB, int32_t numArgs, TR::IlValue **argValues);
+
+   /**
+    * @brief Call a function via its name using a list of arguments
+    * @param name the name of the target function
+    * @param numArgs the number of actual arguments for the method
+    * @param ... arguments to pass to the function, provided as TR::IlValue pointers
+    * @returns the TR::IlValue corresponding to the called function's return value or NULL if return type is None
+    */
    TR::IlValue *Call(const char *name, int32_t numArgs, ...);
+
+   /**
+    * @brief Call a function via its name using an array of arguments
+    * @param name the name of the target function
+    * @param numArgs the number of actual arguments for the method
+    * @param argValues array of arguments to pass to the function
+    * @returns the TR::IlValue corresponding to the called function's return value or NULL if return type is None
+    */
    TR::IlValue *Call(const char *name, int32_t numArgs, TR::IlValue **argValues);
+
+   /**
+    * @brief Call a function by address using a list of arguments (and providing a name)
+    * @param name the name of the target function (used primarily in logs)
+    * @param numArgs the number of actual arguments for the method
+    * @param ... arguments to pass to the function, provided as TR::IlValue pointers, with the first argument providing the function address
+    * @returns the TR::IlValue corresponding to the called function's return value or NULL if return type is None
+    */
    TR::IlValue *ComputedCall(const char *name, int32_t numArgs, ...);
+
+   /**
+    * @brief Call a function by address using an array of arguments (and providing a name)
+    * @param name the name of the target function
+    * @param numArgs the number of actual arguments for the method
+    * @param argValues array of arguments to pass to the function, with the first argument providing the function address
+    * @returns the TR::IlValue corresponding to the called function's return value or NULL if return type is None
+    */
    TR::IlValue *ComputedCall(const char *name, int32_t numArgs, TR::IlValue **args);
+
    TR::IlValue *genCall(TR::SymbolReference *methodSymRef, int32_t numArgs, TR::IlValue ** paramValues, bool isDirectCall = true);
    void Goto(TR::IlBuilder **dest);
    void Goto(TR::IlBuilder *dest);

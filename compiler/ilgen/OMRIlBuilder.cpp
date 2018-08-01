@@ -1785,6 +1785,17 @@ OMR::IlBuilder::ComputedCall(const char *functionName, int32_t numArgs, TR::IlVa
    return genCall(methodSymRef, numArgs, argValues, false /*isDirectCall*/);
    }
 
+/*
+ * This service takes a MethodBuilder object as the target and will, for
+ * now, inline the code for that MethodBuilder into the current builder
+ * object. Really, this API does not promise to inline the provided
+ * MethodBuilder object, but this current implementation will inline.
+ * In future, as inlining support moves deeper into the OMR compiler,
+ * this service may or may not inline the provided MethodBuilder.
+ * This particular implementation does not handle VirtualMachineState
+ * propagation well, but does work for simpler examples (code sample
+ * coming in a subsequent commit).
+ */
 TR::IlValue *
 OMR::IlBuilder::Call(TR::MethodBuilder *calleeMB, int32_t numArgs, ...)
    {
@@ -1796,6 +1807,17 @@ OMR::IlBuilder::Call(TR::MethodBuilder *calleeMB, int32_t numArgs, ...)
    return Call(calleeMB, numArgs, argValues);
    }
 
+/*
+ * This service takes a MethodBuilder object as the target and will, for
+ * now, inline the code for that MethodBuilder into the current builder
+ * object. Really, this API does not promise to inline the provided
+ * MethodBuilder object, but this current implementation will inline.
+ * In future, as inlining support moves deeper into the OMR compiler,
+ * this service may or may not inline the provided MethodBuilder.
+ * This particular implementation does not handle VirtualMachineState
+ * propagation well, but does work for simpler examples (code sample
+ * coming in a subsequent commit).
+ */
 TR::IlValue *
 OMR::IlBuilder::Call(TR::MethodBuilder *calleeMB, int32_t numArgs, TR::IlValue **argValues)
    {

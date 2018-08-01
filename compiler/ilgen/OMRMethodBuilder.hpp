@@ -57,6 +57,13 @@ class MethodBuilder : public TR::IlBuilder
 
    virtual bool injectIL();
 
+   /**
+    * @brief returns the next index to be used for new values
+    * @returns the next value index
+    * If this method build is an inlined MethodBuilder, then the answer to
+    * this query is delegated to the caller's MethodBuilder, which means
+    * only the top-level MethodBuilder object assigns value IDs.
+    */
    int32_t getNextValueID();
 
    bool usesBytecodeBuilders()                               { return _useBytecodeBuilders; }
@@ -160,34 +167,73 @@ class MethodBuilder : public TR::IlBuilder
     */
    int32_t GetNextBytecodeFromWorklist();
 
+   /**
+    * @brief Override this MethodBuilder's inline site index
+    * @param siteIndex the inline site index to use for this MethodBuilder
+    */
    void setInlineSiteIndex(int32_t siteIndex)
       {
       _inlineSiteIndex = siteIndex;
       }
+
+   /**
+    * @brief returns this MethodBuilder's inline site index
+    * @returns the inlined site index
+    */
    int32_t inlineSiteIndex()
       {
       return _inlineSiteIndex;
       }
+
+   /**
+    * @brief returns the next inline site index to be used for inlined methods
+    * @returns the next inlined site index
+    * If this method build is an inlined MethodBuilder, then the answer to
+    * this query is delegated to the caller's MethodBuilder, which means
+    * only the top-level MethodBuilder object assigns inlined site IDs.
+    */
    int32_t getNextInlineSiteIndex();
 
+   /**
+    * @brief associate a particular IlBuilder object as the return landing pad for this (inlined) MethodBuilder
+    * @param returnBuilder the IlBuilder object to use as a return landing pad
+    */
    void setReturnBuilder(TR::IlBuilder *returnBuilder)
       {
       _returnBuilder = returnBuilder;
       }
+
+   /**
+    * @brief get the return landing pad IlBuilder for this (inlined) MethodBuilder
+    * @returns the return landing pad IlBUilder object
+    */
    TR::IlBuilder *returnBuilder()
       {
       return _returnBuilder;
       }
 
+   /**
+    * @brief set the name of the symbol to use to store the return value from this (inined) MethodBuilder
+    * @param symbolName the name of the symbol to store any return value
+    */
    void setReturnSymbol(const char *symbolName)
       {
       _returnSymbolName = symbolName;
       }
+
+   /**
+    * @brief get the return symbol name to store any return value from this (inlined) MethodBuilder
+    * @returns the return symbol name
+    */
    const char *returnSymbol()
       {
       return _returnSymbolName;
       }
 
+   /*
+    * @brief If this is an inlined MethodBuilder, return the MethodBuilder that directly inlined it
+    * @returns the directly inlining MethodBuilder or NULL if no MethodBuilder inlined this one
+    */
    TR::MethodBuilder *callerMethodBuilder();
 
    protected:
@@ -195,6 +241,11 @@ class MethodBuilder : public TR::IlBuilder
    virtual bool connectTrees();
    TR_Memory *trMemory() { return memoryManager._trMemory; }
 
+   /*
+    * @brief adjusts a local variable name so that it will be unique to the current inlined site to prevent inlining-induced name aliasing
+    * @param name the original local variable name
+    * @returns an adjusted name that will be unique to the current inlined site
+    */
    const char * adjustNameForInlinedSite(const char *name);
 
    private:

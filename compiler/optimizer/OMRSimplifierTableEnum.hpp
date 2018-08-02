@@ -37,6 +37,13 @@
    directLoadSimplifier,    // TR::bload
    directLoadSimplifier,    // TR::sload
    directLoadSimplifier,    // TR::lload
+   directLoadSimplifier,    // TR::irdbar
+   directLoadSimplifier,    // TR::frdbar
+   directLoadSimplifier,    // TR::drdbar
+   directLoadSimplifier,    // TR::ardbar
+   directLoadSimplifier,    // TR::brdbar
+   directLoadSimplifier,    // TR::srdbar
+   directLoadSimplifier,    // TR::lrdbar
    indirectLoadSimplifier,  // TR::iloadi
    indirectLoadSimplifier,  // TR::floadi
    indirectLoadSimplifier,  // TR::dloadi
@@ -44,6 +51,13 @@
    indirectLoadSimplifier,  // TR::bloadi
    indirectLoadSimplifier,  // TR::sloadi
    indirectLoadSimplifier,  // TR::lloadi
+   indirectLoadSimplifier,  // TR::irdbari
+   indirectLoadSimplifier,  // TR::frdbari
+   indirectLoadSimplifier,  // TR::drdbari
+   indirectLoadSimplifier,  // TR::ardbari
+   indirectLoadSimplifier,  // TR::brdbari
+   indirectLoadSimplifier,  // TR::srdbari
+   indirectLoadSimplifier,  // TR::lrdbari
    directStoreSimplifier,   // TR::istore
    lstoreSimplifier,        // TR::lstore
    dftSimplifier,           // TR::fstore

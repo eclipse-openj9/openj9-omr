@@ -39,13 +39,27 @@
    TR::TreeEvaluator::bloadEvaluator,                   // TR::bload
    TR::TreeEvaluator::sloadEvaluator,                   // TR::sload
    TR::TreeEvaluator::lloadEvaluator,                  // TR::lload
-   TR::TreeEvaluator::iloadEvaluator,                   // TR::iloadi
-   TR::TreeEvaluator::floadEvaluator,                   // TR::floadi
-   TR::TreeEvaluator::dloadEvaluator,                   // TR::dloadi
+   TR::TreeEvaluator::irdbarEvaluator,                 // TR::irdbar
+   TR::TreeEvaluator::frdbarEvaluator,                 // TR::frdbar
+   TR::TreeEvaluator::drdbarEvaluator,                 // TR::drdbar
+   TR::TreeEvaluator::ardbarEvaluator,                 // TR::ardbar
+   TR::TreeEvaluator::brdbarEvaluator,                 // TR::brdbar
+   TR::TreeEvaluator::srdbarEvaluator,                 // TR::srdbar
+   TR::TreeEvaluator::lrdbarEvaluator,                 // TR::lrdbar
+   TR::TreeEvaluator::iloadEvaluator,                  // TR::iloadi
+   TR::TreeEvaluator::floadEvaluator,                  // TR::floadi
+   TR::TreeEvaluator::dloadEvaluator,                  // TR::dloadi
    TR::TreeEvaluator::aloadEvaluator,                  // TR::aloadi
    TR::TreeEvaluator::bloadEvaluator,                   // TR::bloadi
    TR::TreeEvaluator::sloadEvaluator,                   // TR::sloadi
    TR::TreeEvaluator::lloadEvaluator,                  // TR::lloadi
+   TR::TreeEvaluator::irdbarEvaluator,                // TR::irdbari
+   TR::TreeEvaluator::frdbarEvaluator,                // TR::frdbari
+   TR::TreeEvaluator::drdbarEvaluator,                // TR::drdbari
+   TR::TreeEvaluator::ardbarEvaluator,                // TR::ardbari
+   TR::TreeEvaluator::brdbarEvaluator,                // TR::brdbari
+   TR::TreeEvaluator::srdbarEvaluator,                // TR::srdbari
+   TR::TreeEvaluator::lrdbarEvaluator,                // TR::lrdbari
    TR::TreeEvaluator::istoreEvaluator,                  // TR::istore
    TR::TreeEvaluator::lstoreEvaluator,                 // TR::lstore
    TR::TreeEvaluator::floatingPointStoreEvaluator,      // TR::fstore

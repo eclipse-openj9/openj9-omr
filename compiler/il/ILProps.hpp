@@ -210,7 +210,7 @@ namespace ILProp2
       ResolveCheck                 = 0x00000040,
       BndCheck                     = 0x00000080,
       CheckCast                    = 0x00000100,
-      // Available                 = 0x00000200,
+      ReadBarrierLoad              = 0x00000200,
       MayUseSystemStack            = 0x00000400,
       SupportedForPRE              = 0x00000800,
       LeftRotate                   = 0x00001000,

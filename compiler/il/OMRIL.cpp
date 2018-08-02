@@ -62,6 +62,25 @@ TR::ILOpCodes OMR::IL::opCodesForDirectLoad[] =
    TR::BadILOp,  // TR::Aggregate
    };
 
+TR::ILOpCodes OMR::IL::opCodesForDirectReadBarrier[] =
+   {
+   TR::BadILOp,  // NoType
+   TR::brdbar,   // Int8
+   TR::srdbar,   // Int16
+   TR::irdbar,   // Int32
+   TR::lrdbar,   // Int64
+   TR::frdbar,   // Float
+   TR::drdbar,   // Double
+   TR::ardbar,   // Address
+   TR::BadILOp,  // VectorInt8
+   TR::BadILOp,  // VectorInt16
+   TR::BadILOp,  // VectorInt32
+   TR::BadILOp,  // VectorInt64
+   TR::BadILOp,  // VectorFloat
+   TR::BadILOp,  // VectorDouble
+   TR::BadILOp,  // TR::Aggregate
+   };
+
 TR::ILOpCodes OMR::IL::opCodesForDirectStore[] =
    {
    TR::BadILOp,  // NoType
@@ -97,6 +116,25 @@ TR::ILOpCodes OMR::IL::opCodesForIndirectLoad[] =
    TR::vloadi,   // TR::VectorInt64
    TR::vloadi,   // TR::VectorFloat
    TR::vloadi,   // TR::VectorDouble
+   TR::BadILOp,  // TR::Aggregate
+   };
+
+TR::ILOpCodes OMR::IL::opCodesForIndirectReadBarrier[] =
+   {
+   TR::BadILOp,  // NoType
+   TR::brdbari,  // Int8
+   TR::srdbari,  // Int16
+   TR::irdbari,  // Int32
+   TR::lrdbari,  // Int64
+   TR::frdbari,  // Float
+   TR::drdbari,  // Double
+   TR::ardbari,  // Address
+   TR::BadILOp,  // TR::VectorInt8
+   TR::BadILOp,  // TR::VectorInt16
+   TR::BadILOp,  // TR::VectorInt32
+   TR::BadILOp,  // TR::VectorInt64
+   TR::BadILOp,  // TR::VectorFloat
+   TR::BadILOp,  // TR::VectorDouble
    TR::BadILOp,  // TR::Aggregate
    };
 
@@ -586,6 +624,14 @@ OMR::IL::opCodeForDirectLoad(TR::DataType dt)
    }
 
 TR::ILOpCodes
+OMR::IL::opCodeForDirectReadBarrier(TR::DataType dt)
+   {
+   TR_ASSERT(dt < TR::NumOMRTypes, "unexpected opcode");
+
+   return OMR::IL::opCodesForDirectReadBarrier[dt];
+   }
+
+TR::ILOpCodes
 OMR::IL::opCodeForDirectStore(TR::DataType dt)
    {
    TR_ASSERT(dt < TR::NumOMRTypes, "unexpected opcode");
@@ -599,6 +645,14 @@ OMR::IL::opCodeForIndirectLoad(TR::DataType dt)
    TR_ASSERT(dt < TR::NumOMRTypes, "unexpected opcode");
 
    return OMR::IL::opCodesForIndirectLoad[dt];
+   }
+
+TR::ILOpCodes
+OMR::IL::opCodeForIndirectReadBarrier(TR::DataType dt)
+   {
+   TR_ASSERT(dt < TR::NumOMRTypes, "unexpected opcode");
+
+   return OMR::IL::opCodesForIndirectReadBarrier[dt];
    }
 
 TR::ILOpCodes

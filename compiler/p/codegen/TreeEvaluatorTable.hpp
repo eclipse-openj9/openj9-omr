@@ -34,29 +34,43 @@
    TR::TreeEvaluator::iloadEvaluator,                   // TR::iload
    TR::TreeEvaluator::floadEvaluator,                   // TR::fload
    TR::TreeEvaluator::dloadEvaluator,                   // TR::dload
-   TR::TreeEvaluator::aloadEvaluator,                   // TR::aload ibm@59591
+   TR::TreeEvaluator::aloadEvaluator,                   // TR::aload
    TR::TreeEvaluator::bloadEvaluator,                   // TR::bload
    TR::TreeEvaluator::sloadEvaluator,                   // TR::sload
    TR::TreeEvaluator::lloadEvaluator,                   // TR::lload
+   TR::TreeEvaluator::unImpOpEvaluator,                 // TR::irdbar
+   TR::TreeEvaluator::unImpOpEvaluator,                 // TR::frdbar
+   TR::TreeEvaluator::unImpOpEvaluator,                 // TR::drdbar
+   TR::TreeEvaluator::unImpOpEvaluator,                 // TR::ardbar
+   TR::TreeEvaluator::unImpOpEvaluator,                 // TR::brdbar
+   TR::TreeEvaluator::unImpOpEvaluator,                 // TR::srdbar
+   TR::TreeEvaluator::unImpOpEvaluator,                 // TR::lrdbar
    TR::TreeEvaluator::iloadEvaluator,                   // TR::iloadi
    TR::TreeEvaluator::floadEvaluator,                   // TR::floadi
    TR::TreeEvaluator::dloadEvaluator,                   // TR::dloadi
-   TR::TreeEvaluator::aloadEvaluator,                   // TR::aloadi ibm@59591
+   TR::TreeEvaluator::aloadEvaluator,                   // TR::aloadi
    TR::TreeEvaluator::bloadEvaluator,                   // TR::bloadi
    TR::TreeEvaluator::sloadEvaluator,                   // TR::sloadi
    TR::TreeEvaluator::lloadEvaluator,                   // TR::lloadi
+   TR::TreeEvaluator::unImpOpEvaluator,                 // TR::irdbari
+   TR::TreeEvaluator::unImpOpEvaluator,                 // TR::frdbari
+   TR::TreeEvaluator::unImpOpEvaluator,                 // TR::drdbari
+   TR::TreeEvaluator::unImpOpEvaluator,                 // TR::ardbari
+   TR::TreeEvaluator::unImpOpEvaluator,                 // TR::brdbari
+   TR::TreeEvaluator::unImpOpEvaluator,                 // TR::srdbari
+   TR::TreeEvaluator::unImpOpEvaluator,                 // TR::lrdbari
    TR::TreeEvaluator::istoreEvaluator,                  // TR::istore
    TR::TreeEvaluator::lstoreEvaluator,                  // TR::lstore
    TR::TreeEvaluator::fstoreEvaluator,                  // TR::fstore
    TR::TreeEvaluator::dstoreEvaluator,                  // TR::dstore
-   TR::TreeEvaluator::astoreEvaluator,                  // TR::astore ibm@59591
+   TR::TreeEvaluator::astoreEvaluator,                  // TR::astore
    TR::TreeEvaluator::badILOpEvaluator,                    // TR::wrtbar (J9)
    TR::TreeEvaluator::bstoreEvaluator,                  // TR::bstore
    TR::TreeEvaluator::sstoreEvaluator,                  // TR::sstore
    TR::TreeEvaluator::lstoreEvaluator,                  // TR::lstorei
    TR::TreeEvaluator::fstoreEvaluator,                  // TR::fstorei
    TR::TreeEvaluator::dstoreEvaluator,                  // TR::dstorei
-   TR::TreeEvaluator::astoreEvaluator,                  // TR::astorei ibm@59591
+   TR::TreeEvaluator::astoreEvaluator,                  // TR::astorei
    TR::TreeEvaluator::badILOpEvaluator,                    // TR::wrtbari (J9)
    TR::TreeEvaluator::bstoreEvaluator,                  // TR::bstorei
    TR::TreeEvaluator::sstoreEvaluator,                  // TR::sstorei

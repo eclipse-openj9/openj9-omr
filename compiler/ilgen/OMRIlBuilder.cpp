@@ -19,6 +19,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
+#include "env/TRMemory.hpp"    // must precede IlBuilder.hpp to get TR_ALLOC
 #include "ilgen/IlBuilder.hpp"
 
 #include <stdint.h>
@@ -309,7 +310,7 @@ OMR::IlBuilder::countBlocks()
          count += entry->_builder->countBlocks();
       }
 
-   if (this != _methodBuilder)
+   if (this != _methodBuilder || _methodBuilder->callerMethodBuilder() != NULL)
       {
       // exit block isn't in the sequence except for method builders
       //            gets tacked in late by connectTrees
@@ -324,9 +325,9 @@ OMR::IlBuilder::countBlocks()
 
 void
 OMR::IlBuilder::pullInBuilderTrees(TR::IlBuilder *builder,
-                              uint32_t *currentBlock,
-                              TR::TreeTop **firstTree,
-                              TR::TreeTop **newLastTree)
+                                   uint32_t *currentBlock,
+                                   TR::TreeTop **firstTree,
+                                   TR::TreeTop **newLastTree)
    {
    TraceIL("\n[ %p ] Calling connectTrees on inner builder %p\n", this, builder);
    builder->connectTrees();
@@ -413,7 +414,7 @@ OMR::IlBuilder::connectTrees()
       lastTree = newLastTree;
       }
 
-   if (_methodBuilder != this)
+   if (_methodBuilder != this || _methodBuilder->callerMethodBuilder() != NULL)
       {
       // non-method builders need to append the "EXIT" block trees
       // (method builders have EXIT as the special block 1)
@@ -611,7 +612,7 @@ OMR::IlBuilder::Store(const char *varName, TR::IlValue *value)
       _methodBuilder->defineValue(varName, _types->PrimitiveType(value->getDataType()));
    TR::SymbolReference *symRef = lookupSymbol(varName);
 
-   TraceIL("IlBuilder[ %p ]::Store %s %d gets %d\n", this, varName, symRef->getCPIndex(), value->getID());
+   TraceIL("IlBuilder[ %p ]::Store %s %d (%d) gets %d\n", this, varName, symRef->getCPIndex(), symRef->getReferenceNumber(), value->getID());
    storeNode(symRef, loadValue(value));
    }
 
@@ -731,13 +732,13 @@ OMR::IlBuilder::CreateLocalStruct(TR::IlType *structType)
 
 void
 OMR::IlBuilder::StoreIndirect(const char *type, const char *field, TR::IlValue *object, TR::IlValue *value)
-  {
-  TR::SymbolReference *symRef = (TR::SymbolReference*)_types->FieldReference(type, field);
-  TR::DataType fieldType = symRef->getSymbol()->getDataType();
-  TraceIL("IlBuilder[ %p ]::StoreIndirect %s.%s (%d) into (%d)\n", this, type, field, value->getID(), object->getID());
-  TR::ILOpCodes storeOp = comp()->il.opCodeForIndirectStore(fieldType);
-  genTreeTop(TR::Node::createWithSymRef(storeOp, 2, loadValue(object), loadValue(value), 0, symRef));
-  }
+   {
+   TR::SymbolReference *symRef = (TR::SymbolReference*)_types->FieldReference(type, field);
+   TR::DataType fieldType = symRef->getSymbol()->getDataType();
+   TraceIL("IlBuilder[ %p ]::StoreIndirect %s.%s (%d) into (%d)\n", this, type, field, value->getID(), object->getID());
+   TR::ILOpCodes storeOp = comp()->il.opCodeForIndirectStore(fieldType);
+   genTreeTop(TR::Node::createWithSymRef(storeOp, 2, loadValue(object), loadValue(value), 0, symRef));
+   }
 
 TR::IlValue *
 OMR::IlBuilder::Load(const char *name)
@@ -745,6 +746,7 @@ OMR::IlBuilder::Load(const char *name)
    TR::SymbolReference *symRef = lookupSymbol(name);
    TR::Node *valueNode = TR::Node::createLoad(symRef);
    TR::IlValue *returnValue = newValue(symRef->getSymbol()->getDataType(), valueNode);
+   TraceIL("IlBuilder[ %p ]::Load %s into %d from symref %d\n", this, name, returnValue->getID(), symRef->getReferenceNumber());
    return returnValue;
    }
 
@@ -1136,21 +1138,59 @@ OMR::IlBuilder::Goto(TR::IlBuilder *dest)
 void
 OMR::IlBuilder::Return()
    {
-   TraceIL("IlBuilder[ %p ]::Return\n", this);
-   TR::Node *returnNode = TR::Node::create(TR::ILOpCode::returnOpCode(TR::NoType));
-   genTreeTop(returnNode);
-   cfg()->addEdge(_currentBlock, cfg()->getEnd());
-   setDoesNotComeBack();
+   TR::IlBuilder *returnBuilder = _methodBuilder->returnBuilder();
+   if (returnBuilder != NULL)
+      {
+      TR_ASSERT(_methodBuilder->returnSymbol() == NULL, "Return() from inlined call did not expect a pre-existing returnSymbol");
+      TraceIL("IlBuilder[ %p ]::Return back to caller's returnBuilder [ %p ]\n", this, returnBuilder);
+
+      // redirect flow back to the caller's return block
+      Goto(returnBuilder);
+      }
+   else
+      {
+      TraceIL("IlBuilder[ %p ]::Return\n", this);
+      TR::Node *returnNode = TR::Node::create(TR::ILOpCode::returnOpCode(TR::NoType));
+      genTreeTop(returnNode);
+      cfg()->addEdge(_currentBlock, cfg()->getEnd());
+      setDoesNotComeBack();
+      }
    }
 
 void
 OMR::IlBuilder::Return(TR::IlValue *value)
-   {
-   TraceIL("IlBuilder[ %p ]::Return %d\n", this, value->getID());
-   TR::Node *returnNode = TR::Node::create(TR::ILOpCode::returnOpCode(value->getDataType()), 1, loadValue(value));
-   genTreeTop(returnNode);
-   cfg()->addEdge(_currentBlock, cfg()->getEnd());
-   setDoesNotComeBack();
+   { 
+   TR::IlBuilder *returnBuilder = _methodBuilder->returnBuilder();
+   if (returnBuilder != NULL)
+      {
+      char *returnSymbol = (char *)_methodBuilder->returnSymbol();
+      if (returnSymbol == NULL)
+         {
+         TR::DataType dt = value->getDataType();
+         TR::SymbolReference *newSymRef = symRefTab()->createTemporary(_methodSymbol, dt);
+         returnSymbol = (char *) _comp->trMemory()->allocateHeapMemory((3+10+1) * sizeof(char)); // 3 ("_RV") + max 10 digits + trailing zero
+         sprintf(returnSymbol, "_RV%u", newSymRef->getCPIndex());
+         newSymRef->getSymbol()->getAutoSymbol()->setName(returnSymbol);
+         newSymRef->getSymbol()->setNotCollected();
+         _methodBuilder->defineSymbol(returnSymbol, newSymRef);
+         _methodBuilder->setReturnSymbol(returnSymbol);
+
+         // also proactively define this symbol in the caller, so that it can access it after the inlined body!
+         _methodBuilder->callerMethodBuilder()->defineSymbol(returnSymbol, newSymRef);
+         }
+
+      TraceIL("IlBuilder[ %p ]::Return %d back to caller's returnBuilder [ %p ] via return symbol called %s\n", this, value->getID(), returnBuilder, returnSymbol);
+      Store(returnSymbol, value);
+      Goto(returnBuilder);
+      }
+   else
+      {
+      TraceIL("IlBuilder[ %p ]::Return %d\n", this, value->getID());
+      TR::Node *returnNode = TR::Node::create(TR::ILOpCode::returnOpCode(value->getDataType()), 1, loadValue(value));
+      genTreeTop(returnNode);
+      cfg()->addEdge(_currentBlock, cfg()->getEnd());
+      setDoesNotComeBack();
+      }
    }
 
 TR::IlValue *
@@ -1743,6 +1783,89 @@ OMR::IlBuilder::ComputedCall(const char *functionName, int32_t numArgs, TR::IlVa
 
    TR::SymbolReference *methodSymRef = symRefTab()->findOrCreateComputedStaticMethodSymbol(JITTED_METHOD_INDEX, -1, resolvedMethod);
    return genCall(methodSymRef, numArgs, argValues, false /*isDirectCall*/);
+   }
+
+/*
+ * This service takes a MethodBuilder object as the target and will, for
+ * now, inline the code for that MethodBuilder into the current builder
+ * object. Really, this API does not promise to inline the provided
+ * MethodBuilder object, but this current implementation will inline.
+ * In future, as inlining support moves deeper into the OMR compiler,
+ * this service may or may not inline the provided MethodBuilder.
+ * This particular implementation does not handle VirtualMachineState
+ * propagation well, but does work for simpler examples (code sample
+ * coming in a subsequent commit).
+ */
+TR::IlValue *
+OMR::IlBuilder::Call(TR::MethodBuilder *calleeMB, int32_t numArgs, ...)
+   {
+   va_list args;
+   va_start(args, numArgs);
+   TR::IlValue **argValues = processCallArgs(_comp, numArgs, args);
+   va_end(args);
+
+   return Call(calleeMB, numArgs, argValues);
+   }
+
+/*
+ * This service takes a MethodBuilder object as the target and will, for
+ * now, inline the code for that MethodBuilder into the current builder
+ * object. Really, this API does not promise to inline the provided
+ * MethodBuilder object, but this current implementation will inline.
+ * In future, as inlining support moves deeper into the OMR compiler,
+ * this service may or may not inline the provided MethodBuilder.
+ * This particular implementation does not handle VirtualMachineState
+ * propagation well, but does work for simpler examples (code sample
+ * coming in a subsequent commit).
+ */
+TR::IlValue *
+OMR::IlBuilder::Call(TR::MethodBuilder *calleeMB, int32_t numArgs, TR::IlValue **argValues)
+   {
+   TraceIL("IlBuilder[ %p ]::Call %s\n", this, calleeMB->getMethodName());
+
+   // set up callee's inline site index
+   calleeMB->setInlineSiteIndex(_methodBuilder->getNextInlineSiteIndex());
+
+   // set up callee's return builder for return control flows
+   TR::IlBuilder *returnBuilder = OrphanBuilder();
+   calleeMB->setReturnBuilder(returnBuilder);
+
+   // get calleeMB ready to be part of this compilation
+   // MUST be the OMR::IlBuilder implementation, not the OMR::MethodBuilder one
+   calleeMB->OMR::IlBuilder::setupForBuildIL();
+
+   // store arguments into parameter values
+   for (int32_t a=0;a < numArgs;a++)
+      {
+      calleeMB->Store(calleeMB->getSymbolName(a), argValues[a]);
+      }
+
+   // propagate vm state into the callee
+   if (vmState() != NULL)
+      calleeMB->setVMState(vmState());
+
+   // now flow control into the callee
+   AppendBuilder(calleeMB);
+
+   bool rc = calleeMB->buildIL();
+   TraceIL("callee's buildIL() returned %d\n", rc);
+   if (!rc)
+      return NULL;
+
+   // there shouldn't be any fall-through, but if there is it should go to the return block and we need to put it somewhere anyway
+   AppendBuilder(returnBuilder);
+
+   setVMState(returnBuilder->vmState());
+
+   // if no return value, then we're done
+   const char *returnSymbol = calleeMB->returnSymbol();
+   if (!returnSymbol)
+      return NULL;
+
+   // otherwise, return callee's return value
+   TR::IlValue *returnValue = returnBuilder->Load(returnSymbol);
+   TraceIL("IlBuilder[ %p ]::Call callee return value is %d loaded from %s\n", this, returnValue->getID(), returnSymbol);
+   return returnValue;
    }
 
 TR::IlValue *

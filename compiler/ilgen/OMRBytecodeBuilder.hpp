@@ -59,8 +59,8 @@ public:
    void AddSuccessorBuilders(uint32_t numBuilders, ...);
    void AddSuccessorBuilder(TR::BytecodeBuilder **b) { AddSuccessorBuilders(1, b); }
 
-   TR::VirtualMachineState *initialVMState()                { return _initialVMState; }
-   TR::VirtualMachineState *vmState()                       { return _vmState; }
+   virtual TR::VirtualMachineState *initialVMState()        { return _initialVMState; }
+   virtual TR::VirtualMachineState *vmState()               { return _vmState; }
    void setVMState(TR::VirtualMachineState *vmState)        { _vmState = vmState; }
 
    void propagateVMState(TR::VirtualMachineState *fromVMState);

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2016 IBM Corp. and others
+ * Copyright (c) 2016, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -30,10 +30,10 @@ namespace TR { class TypeDictionary; }
 
 typedef int32_t (RecursiveFibFunctionType)(int32_t);
 
-class RecursiveFibonnaciMethod : public TR::MethodBuilder
+class RecursiveFibonacciMethod : public TR::MethodBuilder
    {
    public:
-   RecursiveFibonnaciMethod(TR::TypeDictionary *types);
+   RecursiveFibonacciMethod(TR::TypeDictionary *types);
    virtual bool buildIL();
    };
 

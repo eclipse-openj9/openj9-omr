@@ -29,7 +29,7 @@
 #include "Jit.hpp"
 #include "ilgen/TypeDictionary.hpp"
 #include "ilgen/MethodBuilder.hpp"
-#include "RecursiveFib.hpp"
+#include "InliningRecFib.hpp"
 
 /* Un comment to enable debug output */
 /* #define RFIB_DEBUG_OUTPUT */
@@ -49,8 +49,22 @@ printInt32(int32_t value)
    fprintf(stderr, "%d", value);
    }
 
-RecursiveFibonacciMethod::RecursiveFibonacciMethod(TR::TypeDictionary *types)
-   : MethodBuilder(types)
+InliningRecursiveFibonacciMethod::InliningRecursiveFibonacciMethod(TR::TypeDictionary *types, int32_t inlineDepth)
+   : MethodBuilder(types),
+     _inlineDepth(inlineDepth)
+   {
+   defineStuff();
+   }
+
+InliningRecursiveFibonacciMethod::InliningRecursiveFibonacciMethod(InliningRecursiveFibonacciMethod *callerMB)
+   : MethodBuilder(callerMB),
+     _inlineDepth(callerMB->_inlineDepth-1)
+   {
+   defineStuff();
+   }
+
+void
+InliningRecursiveFibonacciMethod::defineStuff()
    {
    DefineLine(LINETOSTR(__LINE__));
    DefineFile(__FILE__);
@@ -80,7 +94,7 @@ static const char *middle=") = ";
 static const char *suffix="\n";
 
 bool
-RecursiveFibonacciMethod::buildIL()
+InliningRecursiveFibonacciMethod::buildIL()
    {
    TR::IlBuilder *baseCase=NULL, *recursiveCase=NULL;
    IfThenElse(&baseCase, &recursiveCase,
@@ -93,16 +107,38 @@ RecursiveFibonacciMethod::buildIL()
    baseCase->Store("result",
    baseCase->   Load("n"));
 
+   TR::IlValue *nMinusOne =
+   recursiveCase->         Sub(
+   recursiveCase->            Load("n"),
+   recursiveCase->            ConstInt32(1));
+
+   TR::IlValue *fib_nMinusOne;
+   if (_inlineDepth > 0)
+      {
+      // memory leak here, but just an example
+      InliningRecursiveFibonacciMethod *inlineFib = new InliningRecursiveFibonacciMethod(this);
+      fib_nMinusOne = recursiveCase->Call(inlineFib, 1, nMinusOne);
+      }
+   else
+      fib_nMinusOne = recursiveCase->Call("fib", 1, nMinusOne);
+
+   TR::IlValue *nMinusTwo =
+   recursiveCase->         Sub(
+   recursiveCase->            Load("n"),
+   recursiveCase->            ConstInt32(2));
+   
+   TR::IlValue *fib_nMinusTwo;
+   if (_inlineDepth > 0)
+      {
+      // memory leak here, but just an example
+      InliningRecursiveFibonacciMethod *inlineFib = new InliningRecursiveFibonacciMethod(this);
+      fib_nMinusTwo = recursiveCase->Call(inlineFib, 1, nMinusTwo);
+      }
+   else
+      fib_nMinusTwo = recursiveCase->Call("fib", 1, nMinusTwo);
+
    recursiveCase->Store("result",
-   recursiveCase->   Add(
-   recursiveCase->      Call("fib", 1,
-   recursiveCase->         Sub(
-   recursiveCase->            Load("n"),
-   recursiveCase->            ConstInt32(1))),
-   recursiveCase->      Call("fib", 1,
-   recursiveCase->         Sub(
-   recursiveCase->            Load("n"),
-   recursiveCase->            ConstInt32(2)))));
+   recursiveCase->   Add(fib_nMinusOne, fib_nMinusTwo));
 
 #if defined(RFIB_DEBUG_OUTPUT)
    Call("printString", 1,
@@ -126,6 +162,10 @@ RecursiveFibonacciMethod::buildIL()
 int
 main(int argc, char *argv[])
    {
+   int32_t inliningDepth = 1;   // by default, inline one level of calls
+   if (argc == 2)
+      inliningDepth = atoi(argv[1]);
+
    printf("Step 1: initialize JIT\n");
    bool initialized = initializeJit();
    if (!initialized)
@@ -137,8 +177,8 @@ main(int argc, char *argv[])
    printf("Step 2: define relevant types\n");
    TR::TypeDictionary types;
 
-   printf("Step 3: compile method builder\n");
-   RecursiveFibonacciMethod method(&types);
+   printf("Step 3: compile method builder, inlining one level\n");
+   InliningRecursiveFibonacciMethod method(&types, inliningDepth);
    uint8_t *entry=0;
    int32_t rc = compileMethodBuilder(&method, &entry);
    if (rc != 0)

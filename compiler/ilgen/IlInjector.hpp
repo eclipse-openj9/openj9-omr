@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2016 IBM Corp. and others
+ * Copyright (c) 2016, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -128,7 +128,7 @@ public:
    void                           gotoBlock(TR::Block *block);
    void                           branchToBlock(int32_t num) { gotoBlock(_blocks[num]); }
    void                           generateFallThrough();
-   TR::Node                     * createWithoutSymRef(TR::ILOpCodes opCode, uint16_t numArgs, ...);
+   TR::Node                     * createWithoutSymRef(TR::ILOpCodes opCode, uint32_t numArgs, ...);
 
 private:
    void                           validateTargetBlock();

@@ -117,9 +117,46 @@ OMR::MethodBuilder::MethodBuilder(TR::TypeDictionary *types, TR::VirtualMachineS
    _allBytecodeBuilders(0),
    _vmState(vmState),
    _bytecodeWorklist(NULL),
-   _bytecodeHasBeenInWorklist(NULL)
+   _bytecodeHasBeenInWorklist(NULL),
+   _inlineSiteIndex(-1),
+   _nextInlineSiteIndex(0),
+   _returnBuilder(NULL),
+   _returnSymbolName(NULL)
    {
    _definingLine[0] = '\0';
+   }
+
+// used when inlining: 
+OMR::MethodBuilder::MethodBuilder(TR::MethodBuilder *callerMB, TR::VirtualMachineState *vmState)
+   : TR::IlBuilder(asMethodBuilder(), callerMB->typeDictionary()),
+   _methodName("NoName"),
+   _returnType(NoType),
+   _numParameters(0),
+   _symbols(str_comparator, trMemory()->heapMemoryRegion()),
+   _parameterSlot(str_comparator, trMemory()->heapMemoryRegion()),
+   _symbolTypes(str_comparator, trMemory()->heapMemoryRegion()),
+   _symbolNameFromSlot(std::less<int32_t>(), trMemory()->heapMemoryRegion()),
+   _symbolIsArray(str_comparator, trMemory()->heapMemoryRegion()),
+   _memoryLocations(str_comparator, trMemory()->heapMemoryRegion()),
+   _functions(str_comparator, trMemory()->heapMemoryRegion()),
+   _cachedParameterTypes(0),
+   _definingFile(""),
+   _newSymbolsAreTemps(false),
+   _nextValueID(0),
+   _useBytecodeBuilders(false),
+   _countBlocksWorklist(0),
+   _connectTreesWorklist(0),
+   _allBytecodeBuilders(0),
+   _vmState(vmState),
+   _bytecodeWorklist(NULL),
+   _bytecodeHasBeenInWorklist(NULL),
+   _inlineSiteIndex(callerMB->getNextInlineSiteIndex()),
+   _nextInlineSiteIndex(0),
+   _returnBuilder(NULL),
+   _returnSymbolName(NULL)
+   {
+   _definingLine[0] = '\0';
+   initialize(callerMB->_details, callerMB->_methodSymbol, callerMB->_fe, callerMB->_symRefTab);
    }
 
 OMR::MethodBuilder::~MethodBuilder()
@@ -139,6 +176,36 @@ TR::MethodBuilder *
 OMR::MethodBuilder::asMethodBuilder()
    {
    return static_cast<TR::MethodBuilder *>(this);
+   }
+
+int32_t
+OMR::MethodBuilder::getNextValueID()
+   {
+   TR::MethodBuilder *caller = callerMethodBuilder();
+   if (caller)
+      // let top most method assign value IDs
+      return caller->getNextValueID();
+
+   return _nextValueID++;
+   }
+
+int32_t
+OMR::MethodBuilder::getNextInlineSiteIndex()
+   {
+   TR::MethodBuilder *caller = callerMethodBuilder();
+   if (caller != NULL)
+      // let top most method assign inlined site indices
+      return caller->getNextInlineSiteIndex();
+
+   return ++_nextInlineSiteIndex;
+   }
+
+TR::MethodBuilder *
+OMR::MethodBuilder::callerMethodBuilder()
+   {
+   if (_returnBuilder == NULL)
+      return NULL;
+   return _returnBuilder->_methodBuilder;
    }
 
 void
@@ -332,6 +399,18 @@ OMR::MethodBuilder::defineSymbol(const char *name, TR::SymbolReference *symRef)
       _methodSymbol->setFirstJitTempIndex(_methodSymbol->getTempIndex());
    }
 
+const char *
+OMR::MethodBuilder::adjustNameForInlinedSite(const char *name)
+   {
+   if (_inlineSiteIndex == -1)
+      return name;
+
+   // prefix with _INL<index>_ and return
+   char *newName = (char *) _comp->trMemory()->allocateHeapMemory((4+10+1+1+strlen(name)) * sizeof(char)); // 4 ("_INL") + max 10 digits + 1 ("_") + original name string + trailing zero
+   sprintf(newName, "_INL%u_%s", _inlineSiteIndex, name);
+   return (const char *)newName;
+   }
+
 TR::SymbolReference *
 OMR::MethodBuilder::lookupSymbol(const char *name)
    {
@@ -352,7 +431,8 @@ OMR::MethodBuilder::lookupSymbol(const char *name)
    TR::DataType primitiveType = symbolType->getPrimitiveType();
 
    ParameterMap::iterator paramSlotsIterator = _parameterSlot.find(name);
-   if (paramSlotsIterator != _parameterSlot.end())
+   // if this MethodBuilder is inlined, even parameters should just be temps
+   if (_inlineSiteIndex == -1 && paramSlotsIterator != _parameterSlot.end())
       {
       int32_t slot = paramSlotsIterator->second;
       symRef = symRefTab()->findOrCreateAutoSymbol(_methodSymbol,
@@ -363,8 +443,14 @@ OMR::MethodBuilder::lookupSymbol(const char *name)
    else
       {
       symRef = symRefTab()->createTemporary(_methodSymbol, primitiveType);
-      symRef->getSymbol()->getAutoSymbol()->setName(name);
+      const char *adjustedName = adjustNameForInlinedSite(name); 
+      symRef->getSymbol()->getAutoSymbol()->setName(adjustedName);
       _symbolNameFromSlot.insert(std::make_pair(symRef->getCPIndex(), name));
+
+      // also do the symbol name mapping in caller so references to parameters can be shown in logs
+      TR::MethodBuilder *callerMB = callerMethodBuilder();
+      if (callerMB)
+         callerMB->_symbolNameFromSlot.insert(std::make_pair(symRef->getCPIndex(), name));
       }
    symRef->getSymbol()->setNotCollected();
 

@@ -21,20 +21,27 @@
  *******************************************************************************/
 
 
-#ifndef ITERATIVEFIB_INCL
-#define ITERATIVEFIB_INCL
+#ifndef INLINING_RECURSIVEFIB_INCL
+#define INLINING_RECURSIVEFIB_INCL
 
 #include "ilgen/MethodBuilder.hpp"
 
 namespace TR { class TypeDictionary; }
 
-typedef int32_t (IterativeFibFunctionType)(int32_t);
+typedef int32_t (RecursiveFibFunctionType)(int32_t);
 
-class IterativeFibonacciMethod : public TR::MethodBuilder
+class InliningRecursiveFibonacciMethod : public TR::MethodBuilder
    {
    public:
-   IterativeFibonacciMethod(TR::TypeDictionary *types);
+   InliningRecursiveFibonacciMethod(TR::TypeDictionary *types, int32_t inlineDepth);
+   InliningRecursiveFibonacciMethod(InliningRecursiveFibonacciMethod *callerMB);
+
    virtual bool buildIL();
+
+   private:
+   void defineStuff();
+
+   int32_t _inlineDepth;
    };
 
-#endif // !defined(ITERATIVEFIB_INCL)
+#endif // !defined(INLINING_RECURSIVEFIB_INCL)

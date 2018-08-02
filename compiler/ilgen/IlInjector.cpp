@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -407,7 +407,7 @@ OMR::IlInjector::generateFallThrough()
  * OMR::Node::createWithoutSymRef() instead once it is available publicly.
  * */
 TR::Node *
-OMR::IlInjector::createWithoutSymRef(TR::ILOpCodes opCode, uint16_t numArgs, ...)
+OMR::IlInjector::createWithoutSymRef(TR::ILOpCodes opCode, uint32_t numArgs, ...)
    {
    TR_ASSERT(numArgs > 0, "Must be called with at least one child, but numChildArgs = %d", numArgs);
    va_list args;

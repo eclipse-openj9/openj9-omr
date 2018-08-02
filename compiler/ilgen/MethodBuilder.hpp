@@ -35,6 +35,12 @@ namespace TR
          MethodBuilder(TR::TypeDictionary *types, TR::VirtualMachineState *vmState)
             : OMR::MethodBuilder(types, vmState)
             { }
+         MethodBuilder(TR::MethodBuilder *callerMB)
+            : OMR::MethodBuilder(callerMB)
+            { }
+         MethodBuilder(TR::MethodBuilder *callerMB, TR::VirtualMachineState *vmState)
+            : OMR::MethodBuilder(callerMB, vmState)
+            { }
       };
 
 } // namespace TR

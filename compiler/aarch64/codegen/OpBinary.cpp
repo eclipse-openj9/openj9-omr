@@ -23,7 +23,7 @@
 
 const TR_ARM64OpCode::TR_OpCodeBinaryEntry TR_ARM64OpCode::binaryEncodings[ARM64NumOpCodes] =
 {
-//		BINARY    	Opcode    	Opcode	comments
+//		BINARY			Opcode    	Opcode		comments
 /* UNALLOCATED */
 		0x00000000,	/* BAD       	bad	invalid operation */
 /* Branch,exception generation and system Instruction */
@@ -39,10 +39,12 @@ const TR_ARM64OpCode::TR_OpCodeBinaryEntry TR_ARM64OpCode::binaryEncodings[ARM64
 		0x54000000,	/* B_cond    	b_cond	 */
 	/* Exception generation */
 		0xD4200000,	/* BRK       	brkarm64	AArch64 Specific BRK */
+	/* System */
 	/* Unconditional branch (register) */
 		0xD61F0000,	/* BR        	br	 */
 		0xD63F0000,	/* BLR       	blr	 */
 		0xD65F0000,	/* RET       	ret	 */
+	/* Unconditional branch (immediate) */
 /* Loads and stores */
 	/* Load/store exclusive */
 		0x08000000,	/* STXRB     	stxrb	 */
@@ -79,108 +81,108 @@ const TR_ARM64OpCode::TR_OpCodeBinaryEntry TR_ARM64OpCode::binaryEncodings[ARM64
 		0xC8C08000,	/* LDAR      	ldarx	 */
 	/* Load register (literal) */
 		0x18000000,	/* LDR       	ldrw	 */
-		0x1C000000,	/* LDR       	ldrs	 */
+		0x1C000000,	/* LDR       	vldrs	 */
 		0x58000000,	/* LDR       	ldrx	 */
-		0x5C000000,	/* LDR       	ldrd	 */
+		0x5C000000,	/* LDR       	vldrd	 */
 		0x98000000,	/* LDRSW     	ldrsw	 */
-		0x9C000000,	/* LDR       	ldrq	 */
+		0x9C000000,	/* LDR       	vldrq	 */
 		0xD8000000,	/* PRFM      	prfm	 */
 	/* Load/store no-allocate pair (offset) */
 		0x28000000,	/* STNP      	stnpw	 */
 		0x28400000,	/* LDNP      	ldnpw	 */
-		0x2C000000,	/* STNP      	stnps	 */
-		0x2C400000,	/* LDNP      	ldnps	 */
-		0x6C000000,	/* STNP      	stnpd	 */
-		0x6C400000,	/* LDNP      	ldnpd	 */
+		0x2C000000,	/* STNP      	vstnps	 */
+		0x2C400000,	/* LDNP      	vldnps	 */
+		0x6C000000,	/* STNP      	vstnpd	 */
+		0x6C400000,	/* LDNP      	vldnpd	 */
 		0xA8000000,	/* STNP      	stnpx	 */
 		0xA8400000,	/* LDNP      	ldnpx	 */
-		0xAC000000,	/* STNP      	stnpq	 */
-		0xAC400000,	/* LDNP      	ldnpq	 */
+		0xAC000000,	/* STNP      	vstnpq	 */
+		0xAC400000,	/* LDNP      	vldnpq	 */
 	/* Load/store register pair (post-indexed) */
 		0x28800000,	/* STP       	stppostw	 */
 		0x28C00000,	/* LDP       	ldppostw	 */
-		0x2C800000,	/* STP       	stpposts	 */
-		0x2CC00000,	/* LDP       	ldpposts	 */
+		0x2C800000,	/* STP       	vstpposts	 */
+		0x2CC00000,	/* LDP       	vldpposts	 */
 		0x68C00000,	/* LDPSW     	ldpswpost	 */
-		0x6C800000,	/* STP       	stppostd	 */
-		0x6CC00000,	/* LDP       	ldppostd	 */
+		0x6C800000,	/* STP       	vstppostd	 */
+		0x6CC00000,	/* LDP       	vldppostd	 */
 		0xA8800000,	/* STP       	stppostx	 */
 		0xA8C00000,	/* LDP       	ldppostx	 */
-		0xAC800000,	/* STP       	stppostq	 */
-		0xACC00000,	/* LDP       	ldppostq	 */
+		0xAC800000,	/* STP       	vstppostq	 */
+		0xACC00000,	/* LDP       	vldppostq	 */
 	/* Load/store register pair (offset) */
 		0x29000000,	/* STP       	stpoffw	 */
 		0x29400000,	/* LDP       	ldpoffw	 */
-		0x2D000000,	/* STP       	stpoffs	 */
-		0x2D400000,	/* LDP       	ldpoffs	 */
+		0x2D000000,	/* STP       	vstpoffs	 */
+		0x2D400000,	/* LDP       	vldpoffs	 */
 		0x69400000,	/* LDPSW     	ldpswoff	 */
-		0x6D000000,	/* STP       	stpoffd	 */
-		0x6D400000,	/* LDP       	ldpoffd	 */
+		0x6D000000,	/* STP       	vstpoffd	 */
+		0x6D400000,	/* LDP       	vldpoffd	 */
 		0xA9000000,	/* STP       	stpoffx	 */
 		0xA9400000,	/* LDP       	ldpoffx	 */
-		0xAD000000,	/* STP       	stpoffq	 */
-		0xAD400000,	/* LDP       	ldpoffq	 */
+		0xAD000000,	/* STP       	vstpoffq	 */
+		0xAD400000,	/* LDP       	vldpoffq	 */
 	/* Load/store register pair (pre-indexed) */
 		0x29800000,	/* STP       	stpprew	 */
 		0x29C00000,	/* LDP       	ldpprew	 */
-		0x2D800000,	/* STP       	stppres	 */
-		0x2DC00000,	/* LDP       	ldppres	 */
+		0x2D800000,	/* STP       	vstppres	 */
+		0x2DC00000,	/* LDP       	vldppres	 */
 		0x69C00000,	/* LDPSW     	ldpswpre	 */
-		0x6D800000,	/* STP       	stppred	 */
-		0x6DC00000,	/* LDP       	ldppred	 */
+		0x6D800000,	/* STP       	vstppred	 */
+		0x6DC00000,	/* LDP       	vldppred	 */
 		0xA9800000,	/* STP       	stpprex	 */
 		0xA9C00000,	/* LDP       	ldpprex	 */
-		0xAD800000,	/* STP       	stppreq	 */
-		0xADC00000,	/* LDP       	ldppreq	 */
+		0xAD800000,	/* STP       	vstppreq	 */
+		0xADC00000,	/* LDP       	vldppreq	 */
 	/* Load/store register (unscaled immediate) */
 		0x38000000,	/* STURB     	sturb	 */
 		0x38400000,	/* LDURB     	ldurb	 */
 		0x38800000,	/* LDURSB    	ldursbx	 */
 		0x38C00000,	/* LDURSB    	ldursbw	 */
-		0x3C000000,	/* STUR      	sturb	 */
-		0x3C400000,	/* LDUR      	ldurb	 */
-		0x3C800000,	/* STUR      	sturq	 */
-		0x3CC00000,	/* LDUR      	ldurq	 */
+		0x3C000000,	/* STUR      	vsturb	 */
+		0x3C400000,	/* LDUR      	vldurb	 */
+		0x3C800000,	/* STUR      	vsturq	 */
+		0x3CC00000,	/* LDUR      	vldurq	 */
 		0x78000000,	/* STURH     	sturh	 */
 		0x78400000,	/* LDURH     	ldurh	 */
 		0x78800000,	/* LDURSH    	ldurshx	 */
 		0x78C00000,	/* LDURSH    	ldurshw	 */
-		0x7C000000,	/* STUR      	sturh	 */
-		0x7C400000,	/* LDUR      	ldurh	 */
+		0x7C000000,	/* STUR      	vsturh	 */
+		0x7C400000,	/* LDUR      	vldurh	 */
 		0xB8000000,	/* STUR      	sturw	 */
 		0xB8400000,	/* LDUR      	ldurw	 */
 		0xB8800000,	/* LDURSW    	ldursw	 */
-		0xBC000000,	/* STUR      	sturs	 */
-		0xBC400000,	/* LDUR      	ldurs	 */
+		0xBC000000,	/* STUR      	vsturs	 */
+		0xBC400000,	/* LDUR      	vldurs	 */
 		0xF8000000,	/* STUR      	sturx	 */
 		0xF8400000,	/* LDUR      	ldurx	 */
 		0xF8800000,	/* PRFUM     	prfum	 */
-		0xFC000000,	/* STUR      	sturd	 */
-		0xFC400000,	/* LDUR      	ldurd	 */
+		0xFC000000,	/* STUR      	vsturd	 */
+		0xFC400000,	/* LDUR      	vldurd	 */
 	/* Load/store register (immediate post-indexed) */
 		0x38000400,	/* STRB      	strbpost	 */
 		0x38400400,	/* LDRB      	ldrbpost	 */
 		0x38800400,	/* LDRSB     	ldrsbpostx	 */
 		0x38C00400,	/* LDRSB     	ldrsbpostw	 */
-		0x3C000400,	/* STR       	strpostb	 */
-		0x3C400400,	/* LDR       	ldrpostb	 */
-		0x3C800400,	/* STR       	strpostq	 */
-		0x3CC00400,	/* LDR       	ldrpostq	 */
+		0x3C000400,	/* STR       	vstrpostb	 */
+		0x3C400400,	/* LDR       	vldrpostb	 */
+		0x3C800400,	/* STR       	vstrpostq	 */
+		0x3CC00400,	/* LDR       	vldrpostq	 */
 		0x78000400,	/* STRH      	strhpost	 */
 		0x78400400,	/* LDRH      	ldrhpost	 */
 		0x78800400,	/* LDRSH     	ldrshpostx	 */
 		0x78C00400,	/* LDRSH     	ldrshpostw	 */
-		0x7C000400,	/* STR       	strposth	 */
-		0x7C400400,	/* LDR       	ldrposth	 */
+		0x7C000400,	/* STR       	vstrposth	 */
+		0x7C400400,	/* LDR       	vldrposth	 */
 		0xB8000400,	/* STR       	strpostw	 */
 		0xB8400400,	/* LDR       	ldrpostw	 */
 		0xB8800400,	/* LDRSW     	ldrswpost	 */
-		0xBC000400,	/* STR       	strposts	 */
-		0xBC400400,	/* LDR       	ldrposts	 */
+		0xBC000400,	/* STR       	vstrposts	 */
+		0xBC400400,	/* LDR       	vldrposts	 */
 		0xF8000400,	/* STR       	strpostx	 */
 		0xF8400400,	/* LDR       	ldrpostx	 */
-		0xFC000400,	/* STR       	strpostd	 */
-		0xFC400400,	/* LDR       	ldrpostd	 */
+		0xFC000400,	/* STR       	vstrpostd	 */
+		0xFC400400,	/* LDR       	vldrpostd	 */
 	/* Load/store register (unprivileged) */
 		0x38000800,	/* STTRB     	sttrb	 */
 		0x38400800,	/* LDTRB     	ldtrb	 */
@@ -200,74 +202,74 @@ const TR_ARM64OpCode::TR_OpCodeBinaryEntry TR_ARM64OpCode::binaryEncodings[ARM64
 		0x38400C00,	/* LDRB      	ldrbpre	 */
 		0x38800C00,	/* LDRSB     	ldrsbprex	 */
 		0x38C00C00,	/* LDRSB     	ldrsbprew	 */
-		0x3C000C00,	/* STR       	strpreb	 */
-		0x3C400C00,	/* LDR       	ldrpreb	 */
-		0x3C800C00,	/* STR       	strpreq	 */
-		0x3CC00C00,	/* LDR       	ldrpreq	 */
+		0x3C000C00,	/* STR       	vstrpreb	 */
+		0x3C400C00,	/* LDR       	vldrpreb	 */
+		0x3C800C00,	/* STR       	vstrpreq	 */
+		0x3CC00C00,	/* LDR       	vldrpreq	 */
 		0x78000C00,	/* STRH      	strhpre	 */
 		0x78400C00,	/* LDRH      	ldrhpre	 */
 		0x78800C00,	/* LDRSH     	ldrshprex	 */
 		0x78C00C00,	/* LDRSH     	ldrshprew	 */
-		0x7C000C00,	/* STR       	strpreh	 */
-		0x7C400C00,	/* LDR       	ldrpreh	 */
+		0x7C000C00,	/* STR       	vstrpreh	 */
+		0x7C400C00,	/* LDR       	vldrpreh	 */
 		0xB8000C00,	/* STR       	strprew	 */
 		0xB8400C00,	/* LDR       	ldrprew	 */
 		0xB8800C00,	/* LDRSW     	ldrswpre	 */
-		0xBC000C00,	/* STR       	strpres	 */
-		0xBC400C00,	/* LDR       	ldrpres	 */
+		0xBC000C00,	/* STR       	vstrpres	 */
+		0xBC400C00,	/* LDR       	vldrpres	 */
 		0xF8000C00,	/* STR       	strprex	 */
 		0xF8400C00,	/* LDR       	ldrprex	 */
-		0xFC000C00,	/* STR       	strpred	 */
-		0xFC400C00,	/* LDR       	ldrpred	 */
+		0xFC000C00,	/* STR       	vstrpred	 */
+		0xFC400C00,	/* LDR       	vldrpred	 */
 	/* Load/store register (register offset) */
 		0x38200800,	/* STRB      	strboff	 */
 		0x38600800,	/* LDRB      	ldrboff	 */
 		0x38A00800,	/* LDRSB     	ldrsboffx	 */
 		0x38E00800,	/* LDRSB     	ldrsboffw	 */
-		0x3C200800,	/* STR       	stroffb	 */
-		0x3C600800,	/* LDR       	ldroffb	 */
-		0x3CA00800,	/* STR       	stroffq	 */
-		0x3CE00800,	/* LDR       	ldroffq	 */
+		0x3C200800,	/* STR       	vstroffb	 */
+		0x3C600800,	/* LDR       	vldroffb	 */
+		0x3CA00800,	/* STR       	vstroffq	 */
+		0x3CE00800,	/* LDR       	vldroffq	 */
 		0x78200800,	/* STRH      	strhoff	 */
 		0x78600800,	/* LDRH      	ldrhoff	 */
 		0x78A00800,	/* LDRSH     	ldrshoffx	 */
 		0x78E00800,	/* LDRSH     	ldrshoffw	 */
-		0x7C200800,	/* STR       	stroffh	 */
-		0x7C600800,	/* LDR       	ldroffh	 */
+		0x7C200800,	/* STR       	vstroffh	 */
+		0x7C600800,	/* LDR       	vldroffh	 */
 		0xB8200800,	/* STR       	stroffw	 */
 		0xB8600800,	/* LDR       	ldroffw	 */
 		0xB8A00800,	/* LDRSW     	ldrswoff	 */
-		0xBC200800,	/* STR       	stroffs	 */
-		0xBC600800,	/* LDR       	ldroffs	 */
+		0xBC200800,	/* STR       	vstroffs	 */
+		0xBC600800,	/* LDR       	vldroffs	 */
 		0xF8200800,	/* STR       	stroffx	 */
 		0xF8600800,	/* LDR       	ldroffx	 */
-		0xFC200800,	/* STR       	stroffd	 */
-		0xFC600800,	/* LDR       	ldroffd	 */
+		0xFC200800,	/* STR       	vstroffd	 */
+		0xFC600800,	/* LDR       	vldroffd	 */
 		0xF8A00800,	/* PRFM      	prfmoff	 */
 	/* Load/store register (unsigned immediate) */
 		0x39000000,	/* STRB      	strbimm	 */
 		0x39400000,	/* LDRB      	ldrbimm	 */
 		0x39800000,	/* LDRSB     	ldrsbimmx	 */
 		0x39C00000,	/* LDRSB     	ldrsbimmw	 */
-		0x3D000000,	/* STR       	strimmb	 */
-		0x3D400000,	/* LDR       	ldrimmb	 */
-		0x3D800000,	/* STR       	strimmq	 */
-		0x3DC00000,	/* LDR       	ldrimmq	 */
+		0x3D000000,	/* STR       	vstrimmb	 */
+		0x3D400000,	/* LDR       	vldrimmb	 */
+		0x3D800000,	/* STR       	vstrimmq	 */
+		0x3DC00000,	/* LDR       	vldrimmq	 */
 		0x79000000,	/* STRH      	strhimm	 */
 		0x79400000,	/* LDRH      	ldrhimm	 */
 		0x79800000,	/* LDRSH     	ldrshimmx	 */
 		0x79C00000,	/* LDRSH     	ldrshimmw	 */
-		0x7D000000,	/* STR       	strimmh	 */
-		0x7D400000,	/* LDR       	ldrimmh	 */
+		0x7D000000,	/* STR       	vstrimmh	 */
+		0x7D400000,	/* LDR       	vldrimmh	 */
 		0xB9000000,	/* STR       	strimmw	 */
 		0xB9400000,	/* LDR       	ldrimmw	 */
 		0xB9800000,	/* LDRSW     	ldrswimm	 */
-		0xBD000000,	/* STR       	strimms	 */
-		0xBD400000,	/* LDR       	ldrimms	 */
+		0xBD000000,	/* STR       	vstrimms	 */
+		0xBD400000,	/* LDR       	vldrimms	 */
 		0xF9000000,	/* STR       	strimmx	 */
 		0xF9400000,	/* LDR       	ldrimmx	 */
-		0xFD000000,	/* STR       	strimmd	 */
-		0xFD400000,	/* LDR       	ldrimmd	 */
+		0xFD000000,	/* STR       	vstrimmd	 */
+		0xFD400000,	/* LDR       	vldrimmd	 */
 		0xF9800000,	/* PRFM      	prfmimm	 */
 /* Data processing – Immediate */
 	/* PC-rel. addressing */

@@ -1840,8 +1840,8 @@ OMR::CodeCache::reserveNTrampolines(int64_t n)
 //
 TR::CodeCache *
 OMR::CodeCache::allocate(TR::CodeCacheManager *manager,
-                       size_t segmentSize,
-                       int32_t reservingCompThreadID)
+                         size_t segmentSize,
+                         int32_t reservingCompThreadID)
    {
    TR::CodeCacheConfig & config = manager->codeCacheConfig();
    bool verboseCodeCache = config.verboseCodeCache();
@@ -1851,40 +1851,29 @@ OMR::CodeCache::allocate(TR::CodeCacheManager *manager,
 
    if (codeCacheSegment)
       {
-      // allocate hash entry slab now, instead of after codeCache allocation as its less expensive and easier to
-      // fully unroll
-      CodeCacheHashEntrySlab *hashEntrySlab = CodeCacheHashEntrySlab::allocate(manager, config.codeCacheHashEntryAllocatorSlabSize());
-      if (hashEntrySlab)
+      TR::CodeCache *codeCache = manager->allocateCodeCacheObject(codeCacheSegment,
+                                                                  codeCacheSizeAllocated);
+
+      if (codeCache)
          {
-         uint8_t *start = NULL;
-         TR::CodeCache *codeCache = manager->allocateCodeCacheObject(codeCacheSegment,
-                                                                     codeCacheSizeAllocated,
-                                                                     hashEntrySlab);
-
-         if (codeCache)
+         // If we wanted to reserve this code cache, then mark it as reserved now
+         if (reservingCompThreadID >= -1)
             {
-            // If we wanted to reserve this code cache, then mark it as reserved now
-            if (reservingCompThreadID >= -1)
-               {
-               codeCache->reserve(reservingCompThreadID);
-               }
-
-            // Add it to our list of code caches
-            manager->addCodeCache(codeCache);
-
-            if (verboseCodeCache)
-               {
-               TR_VerboseLog::writeLineLocked(TR_Vlog_CODECACHE, "CodeCache allocated %p @ " POINTER_PRINTF_FORMAT "-" POINTER_PRINTF_FORMAT " HelperBase:" POINTER_PRINTF_FORMAT, codeCache, codeCache->getCodeBase(), codeCache->getCodeTop(), codeCache->_helperBase);
-               }
-
-            return codeCache;
+            codeCache->reserve(reservingCompThreadID);
             }
 
-         // failed to allocate code cache so need to free hash entry slab
-         hashEntrySlab->free(manager);
+         // Add it to our list of code caches
+         manager->addCodeCache(codeCache);
+
+         if (verboseCodeCache)
+            {
+            TR_VerboseLog::writeLineLocked(TR_Vlog_CODECACHE, "CodeCache allocated %p @ " POINTER_PRINTF_FORMAT "-" POINTER_PRINTF_FORMAT " HelperBase:" POINTER_PRINTF_FORMAT, codeCache, codeCache->getCodeBase(), codeCache->getCodeTop(), codeCache->_helperBase);
+            }
+
+         return codeCache;
          }
 
-      // failed to allocate hash entry slab so need to free code cache segment
+      // Free code cache segment
       if (manager->usingRepository())
          {
          // return back the portion we carved

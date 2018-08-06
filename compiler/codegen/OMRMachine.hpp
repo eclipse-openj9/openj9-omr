@@ -34,6 +34,7 @@ namespace OMR { typedef OMR::Machine MachineConnector; }
 #include <stddef.h>                            // for NULL
 #include <stdint.h>                            // for uint8_t, uint32_t
 #include "codegen/RegisterConstants.hpp"
+#include "codegen/RealRegister.hpp"
 #include "env/TRMemory.hpp"                    // for TR_Memory, etc
 #include "infra/Annotations.hpp"               // for OMR_EXTENSIBLE
 
@@ -45,7 +46,6 @@ namespace OMR
 
 class OMR_EXTENSIBLE Machine
    {
-   TR::CodeGenerator *_cg;
 
    int16_t numLockedGPRs;
    int16_t numLockedHPRs;
@@ -68,6 +68,9 @@ class OMR_EXTENSIBLE Machine
 
    inline TR::Machine * self();
 
+   /**
+    * \return : the cached TR::CodeGenerator object
+    */
    TR::CodeGenerator *cg() {return _cg;}
 
    /** \brief
@@ -119,6 +122,29 @@ class OMR_EXTENSIBLE Machine
             return -1;
          }
       }
+
+   /**
+    * \brief Retrieve a pointer to the register file
+    */
+   TR::RealRegister **registerFile() { return _registerFile; }
+
+   /**
+    * \brief Retrieves the TR::RealRegister object for the given real register
+    *
+    * \param[in] rn : the desired real register
+    *
+    * \return : the desired TR::RealRegister object
+    */
+   TR::RealRegister *realRegister(TR::RealRegister::RegNum rn) { return _registerFile[rn]; }
+
+private:
+
+   TR::CodeGenerator *_cg;
+
+protected:
+
+   TR::RealRegister *_registerFile[TR::RealRegister::NumRegisters];
+
    };
 }
 

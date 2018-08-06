@@ -174,7 +174,6 @@ OMR::X86::Machine::Machine
    uint8_t numIntRegs,
    uint8_t numFPRegs,
    TR::CodeGenerator *cg,
-   TR::RealRegister **registerFile,
    TR::Register **registerAssociations,
    uint8_t numGlobalGPRs,
    uint8_t numGlobal8BitGPRs,
@@ -183,7 +182,6 @@ OMR::X86::Machine::Machine
    uint32_t *globalRegisterNumberToRealRegisterMap
    )
    : OMR::Machine(cg),
-   _registerFile(registerFile),
    _registerAssociations(registerAssociations),
    _numGlobalGPRs(numGlobalGPRs),
    _numGlobal8BitGPRs(numGlobal8BitGPRs),
@@ -1722,7 +1720,7 @@ OMR::X86::Machine::getGlobalRegisterTable(const struct TR::X86LinkageProperties&
 TR::RealRegister **
 OMR::X86::Machine::cloneRegisterFile(TR::RealRegister **registerFile, TR_AllocationKind allocKind)
    {
-   int32_t arraySize = sizeof(TR::RealRegister *)*TR_X86_REGISTER_FILE_SIZE;
+   int32_t arraySize = sizeof(TR::RealRegister *) * TR::RealRegister::NumRegisters;
    TR::RealRegister  **registerFileClone = (TR::RealRegister **)self()->cg()->trMemory()->allocateMemory(arraySize, allocKind);
    int32_t i = 0;
    int32_t endReg = TR::RealRegister::LastAssignableGPR;
@@ -1875,7 +1873,7 @@ TR::RegisterDependencyConditions * OMR::X86::Machine::createCondForLiveAndSpille
 //
 TR::RealRegister **OMR::X86::Machine::captureRegisterFile()
    {
-   int32_t arraySize = sizeof(TR::RealRegister *) * TR_X86_REGISTER_FILE_SIZE;
+   int32_t arraySize = sizeof(TR::RealRegister *) * TR::RealRegister::NumRegisters;
 
    TR::RealRegister **registerFileClone =
       (TR::RealRegister **)self()->cg()->trMemory()->allocateMemory(arraySize, heapAlloc);
@@ -1950,7 +1948,7 @@ void OMR::X86::Machine::installRegisterFile(TR::RealRegister **registerFileCopy)
 
 TR::Register **OMR::X86::Machine::captureRegisterAssociations()
    {
-   int32_t arraySize = sizeof(TR::Register *) * TR_X86_REGISTER_FILE_SIZE;
+   int32_t arraySize = sizeof(TR::Register *) * TR::RealRegister::NumRegisters;
 
    TR::Register **registerAssociationsClone =
       (TR::Register **)self()->cg()->trMemory()->allocateMemory(arraySize, heapAlloc);

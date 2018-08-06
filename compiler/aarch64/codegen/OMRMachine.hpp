@@ -153,8 +153,6 @@ public:
 
 private:
 
-   TR::RealRegister  **_registerFile;
-
    // For register snap shot
    uint16_t                   _registerFlagsSnapShot[TR::RealRegister::NumRegisters];
    TR::RealRegister::RegState _registerStatesSnapShot[TR::RealRegister::NumRegisters];

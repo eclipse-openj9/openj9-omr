@@ -31,7 +31,6 @@
 OMR::ARM64::Machine::Machine(TR::CodeGenerator *cg) :
       OMR::Machine(cg)
    {
-   _registerFile = (TR::RealRegister **)cg->trMemory()->allocateMemory(sizeof(TR::RealRegister *)*TR::RealRegister::NumRegisters, heapAlloc);
    self()->initializeRegisterFile();
    }
 

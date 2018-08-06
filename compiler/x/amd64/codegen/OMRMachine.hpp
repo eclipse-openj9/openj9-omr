@@ -63,8 +63,7 @@ class OMR_EXTENSIBLE Machine : public OMR::X86::Machine
       AMD64_MAX_GLOBAL_FPRS      = 16,
       };
 
-   TR::RealRegister  *_registerFileStorage[TR_X86_REGISTER_FILE_SIZE];
-   TR::Register         *_registerAssociationsStorage[TR_X86_REGISTER_FILE_SIZE];
+   TR::Register         *_registerAssociationsStorage[TR::RealRegister::NumRegisters];
    TR::Register         *_xmmGlobalRegisterStorage[AMD64_NUM_XMMR];
    uint32_t _globalRegisterNumberToRealRegisterMapStorage[AMD64_MAX_GLOBAL_GPRS + AMD64_MAX_GLOBAL_FPRS];
 

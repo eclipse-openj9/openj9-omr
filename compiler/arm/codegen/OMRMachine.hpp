@@ -63,7 +63,6 @@ namespace ARM
 
 class OMR_EXTENSIBLE Machine : public OMR::Machine
    {
-   TR::RealRegister   *_registerFile[TR::RealRegister::NumRegisters];
 
    static uint32_t       _globalRegisterNumberToRealRegisterMap[MAX_ARM_GLOBAL_GPRS + MAX_ARM_GLOBAL_FPRS];
 

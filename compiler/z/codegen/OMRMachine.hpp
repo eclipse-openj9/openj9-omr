@@ -182,7 +182,6 @@ namespace Z
 
 class OMR_EXTENSIBLE Machine : public OMR::Machine
    {
-   TR::RealRegister            *_registerFile[TR::RealRegister::NumRegisters];
    TR::Register                *_registerAssociations[TR::RealRegister::NumRegisters];
    uint32_t                     _globalRegisterNumberToRealRegisterMap[NUM_S390_GPR+NUM_S390_FPR+NUM_S390_VRF+NUM_S390_HPR];
    TR::RealRegister::RegNum     _S390FirstOfFPRegisterPairs[NUM_S390_FPR_PAIRS];
@@ -635,8 +634,6 @@ class OMR_EXTENSIBLE Machine : public OMR::Machine
       {
       memset(_registerAssociations, 0, sizeof(TR::Register *) * (TR::RealRegister::NumRegisters));
       }
-
-   TR::RealRegister *getRegisterFile(int32_t i);
 
    void takeRegisterStateSnapShot();
    void restoreRegisterStateFromSnapShot();

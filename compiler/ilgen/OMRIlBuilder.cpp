@@ -1640,6 +1640,14 @@ OMR::IlBuilder::IfOr(TR::IlBuilder **anyTrueBuilder, TR::IlBuilder **allFalseBui
    setComesBack();
    }
 
+TR::IlBuilder::JBCondition *
+OMR::IlBuilder::MakeCondition(TR::IlBuilder *conditionBuilder, TR::IlValue *conditionValue)
+   {
+   TR_ASSERT(conditionBuilder != NULL, "MakeCondition needs to have non-null conditionBuilder");
+   TR_ASSERT(conditionValue != NULL, "MakeCondition needs to have non-null conditionValue");
+   return new (_comp->trHeapMemory()) JBCondition(conditionBuilder, conditionValue);
+   }
+
 TR::IlValue *
 OMR::IlBuilder::EqualTo(TR::IlValue *left, TR::IlValue *right)
    {

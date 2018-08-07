@@ -25,6 +25,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include "codegen/ARM64ConditionCode.hpp"
+#include "codegen/ARM64ShiftCode.hpp"
 #include "codegen/InstOpCode.hpp"
 #include "codegen/Instruction.hpp"
 #include "env/jittypes.h"
@@ -197,6 +198,24 @@ TR::Instruction *generateDepConditionalBranchInstruction(
                    TR::Instruction *preced = NULL);
 
 /*
+ * @brief Generates compare and branch instruction
+ * @param[in] cg : CodeGenerator
+ * @param[in] op : instruction opcode
+ * @param[in] node : node
+ * @param[in] sreg : source register
+ * @param[in] sym : label symbol
+ * @param[in] preced : preceding instruction
+ * @return generated instruction
+ */
+TR::Instruction *generateCompareBranchInstruction(
+                   TR::CodeGenerator *cg,
+                   TR::InstOpCode::Mnemonic op,
+                   TR::Node *node,
+                   TR::Register *sreg,
+                   TR::LabelSymbol *sym,
+                   TR::Instruction *preced = NULL);
+
+/*
  * @brief Generates admin instruction
  * @param[in] cg : CodeGenerator
  * @param[in] op : instruction opcode
@@ -286,6 +305,76 @@ TR::Instruction *generateTrg1Src2Instruction(
                    TR::Register *treg,
                    TR::Register *s1reg,
                    TR::Register *s2reg,
+                   TR::Instruction *preced = NULL);
+
+/*
+ * @brief Generates src2-to-trg instruction (shifted register)
+ * @param[in] cg : CodeGenerator
+ * @param[in] op : instruction opcode
+ * @param[in] node : node
+ * @param[in] treg : target register
+ * @param[in] s1reg : source register 1
+ * @param[in] s2reg : source register 2
+ * @param[in] shiftType : shift type
+ * @param[in] shiftAmount : shift amount
+ * @param[in] preced : preceding instruction
+ * @return generated instruction
+ */
+TR::Instruction *generateTrg1Src2ShiftedInstruction(
+                   TR::CodeGenerator *cg,
+                   TR::InstOpCode::Mnemonic op,
+                   TR::Node *node,
+                   TR::Register *treg,
+                   TR::Register *s1reg,
+                   TR::Register *s2reg,
+                   TR::ARM64ShiftCode shiftType,
+                   uint32_t shiftAmount,
+                   TR::Instruction *preced = NULL);
+
+/*
+ * @brief Generates src2-to-trg instruction (extended register)
+ * @param[in] cg : CodeGenerator
+ * @param[in] op : instruction opcode
+ * @param[in] node : node
+ * @param[in] treg : target register
+ * @param[in] s1reg : source register 1
+ * @param[in] s2reg : source register 2
+ * @param[in] extendType : extend type
+ * @param[in] shiftAmount : shift amount
+ * @param[in] preced : preceding instruction
+ * @return generated instruction
+ */
+TR::Instruction *generateTrg1Src2ExtendedInstruction(
+                   TR::CodeGenerator *cg,
+                   TR::InstOpCode::Mnemonic op,
+                   TR::Node *node,
+                   TR::Register *treg,
+                   TR::Register *s1reg,
+                   TR::Register *s2reg,
+                   TR::ARM64ExtendCode extendType,
+                   uint32_t shiftAmount,
+                   TR::Instruction *preced = NULL);
+
+/*
+ * @brief Generates src3-to-trg instruction
+ * @param[in] cg : CodeGenerator
+ * @param[in] op : instruction opcode
+ * @param[in] node : node
+ * @param[in] treg : target register
+ * @param[in] s1reg : source register 1
+ * @param[in] s2reg : source register 2
+ * @param[in] s3reg : source register 3
+ * @param[in] preced : preceding instruction
+ * @return generated instruction
+ */
+TR::Instruction *generateTrg1Src3Instruction(
+                   TR::CodeGenerator *cg,
+                   TR::InstOpCode::Mnemonic op,
+                   TR::Node *node,
+                   TR::Register *treg,
+                   TR::Register *s1reg,
+                   TR::Register *s2reg,
+                   TR::Register *s3reg,
                    TR::Instruction *preced = NULL);
 
 /*

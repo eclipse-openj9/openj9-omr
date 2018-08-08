@@ -972,7 +972,7 @@ OMR::IlBuilder::ConvertTo(TR::IlType *t, TR::IlValue *v)
       TraceIL("IlBuilder[ %p ]::%d is ConvertTo (already has type %s) %d\n", this, v->getID(), t->getName(), v->getID());
       return v;
       }
-   TR::IlValue *convertedValue = convertTo(t, v, false);
+   TR::IlValue *convertedValue = convertTo(typeTo, v, false);
    TraceIL("IlBuilder[ %p ]::%d is ConvertTo(%s) %d\n", this, convertedValue->getID(), t->getName(), v->getID());
    return convertedValue;
    }
@@ -987,22 +987,21 @@ OMR::IlBuilder::UnsignedConvertTo(TR::IlType *t, TR::IlValue *v)
       TraceIL("IlBuilder[ %p ]::%d is UnsignedConvertTo (already has type %s) %d\n", this, v->getID(), t->getName(), v->getID());
       return v;
       }
-   TR::IlValue *convertedValue = convertTo(t, v, true);
+   TR::IlValue *convertedValue = convertTo(typeTo, v, true);
    TraceIL("IlBuilder[ %p ]::%d is UnsignedConvertTo(%s) %d\n", this, convertedValue->getID(), t->getName(), v->getID());
    return convertedValue;
    }
 
 TR::IlValue *
-OMR::IlBuilder::convertTo(TR::IlType *t, TR::IlValue *v, bool needUnsigned)
+OMR::IlBuilder::convertTo(TR::DataType typeTo, TR::IlValue *v, bool needUnsigned)
    {
    TR::DataType typeFrom = v->getDataType();
-   TR::DataType typeTo = t->getPrimitiveType();
 
    TR::ILOpCodes convertOp = ILOpCode::getProperConversion(typeFrom, typeTo, needUnsigned);
-   TR_ASSERT(convertOp != TR::BadILOp, "Builder [ %p ] unknown conversion requested for value %d (TR::DataType %d) to type %s", this, v->getID(), (int)typeFrom, t->getName());
+   TR_ASSERT(convertOp != TR::BadILOp, "Builder [ %p ] unknown conversion requested for value %d %s to %s", this, v->getID(), typeFrom.toString(), typeTo.toString());
 
    TR::Node *result = TR::Node::create(convertOp, 1, loadValue(v));
-   TR::IlValue *convertedValue = newValue(t, result);
+   TR::IlValue *convertedValue = newValue(typeTo, result);
    return convertedValue;
    }
 
@@ -2006,6 +2005,9 @@ OMR::IlBuilder::genCall(TR::SymbolReference *methodSymRef, int32_t numArgs, TR::
    if (returnType != TR::NoType)
       {
       TR::IlValue *returnValue = newValue(callNode->getDataType(), callNode);
+      if (returnType != callNode->getDataType())
+         returnValue = convertTo(returnType, returnValue, false);
+
       return returnValue;
       }
 

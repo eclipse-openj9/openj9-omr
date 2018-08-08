@@ -34,7 +34,8 @@ OBJECTS := \
 	ControlFlowTest \
 	SystemLinkageTest \
 	WorklistTest \
-	IfThenElseTest
+	IfThenElseTest \
+	CallReturnTest
 
 OBJECTS := $(addsuffix $(OBJEXT),$(OBJECTS))
 

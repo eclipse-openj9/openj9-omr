@@ -25,6 +25,8 @@
 #include "codegen/CodeGenerator.hpp"
 #include "codegen/InstOpCode.hpp"
 #include "codegen/ARM64Instruction.hpp"
+#include "il/DataTypes_inlines.hpp"
+#include "il/Node_inlines.hpp"
 
 namespace TR { class LabelSymbol; }
 namespace TR { class Node; }
@@ -190,4 +192,61 @@ TR::Instruction *generateMemSrc1Instruction(TR::CodeGenerator *cg, TR::InstOpCod
    if (preced)
       return new (cg->trHeapMemory()) TR::ARM64MemSrc1Instruction(op, node, mr, sreg, preced, cg);
    return new (cg->trHeapMemory()) TR::ARM64MemSrc1Instruction(op, node, mr, sreg, cg);
+   }
+
+TR::Instruction *generateArithmeticShiftRightImmInstruction(TR::CodeGenerator *cg, TR::Node *node,
+   TR::Register *treg, TR::Register *sreg, uint32_t shiftAmount, TR::Instruction *preced)
+   {
+   /* Alias of SBFM instruction */
+
+   bool is64bit = node->getDataType().isInt64();
+   TR_ASSERT(shiftAmount < (is64bit ? 64 : 32), "Shift amount out of range.");
+
+   TR::InstOpCode::Mnemonic op = is64bit ? TR::InstOpCode::Mnemonic::sbfmx : TR::InstOpCode::Mnemonic::sbfmw;
+   uint32_t imms = is64bit ? 0x3f : 0x1f;
+   uint32_t immr = shiftAmount;
+   uint32_t n = is64bit ? 1 : 0;
+   uint32_t imm = (n << 12) | (immr << 6) | imms;
+
+   if (preced)
+      return new (cg->trHeapMemory()) TR::ARM64Trg1Src1ImmInstruction(op, node, treg, sreg, imm, preced, cg);
+   return new (cg->trHeapMemory()) TR::ARM64Trg1Src1ImmInstruction(op, node, treg, sreg, imm, cg);
+   }
+
+TR::Instruction *generateLogicalShiftRightImmInstruction(TR::CodeGenerator *cg, TR::Node *node,
+   TR::Register *treg, TR::Register *sreg, uint32_t shiftAmount, TR::Instruction *preced)
+   {
+   /* Alias of UBFM instruction */
+
+   bool is64bit = node->getDataType().isInt64();
+   TR_ASSERT(shiftAmount < (is64bit ? 64 : 32), "Shift amount out of range.");
+
+   TR::InstOpCode::Mnemonic op = is64bit ? TR::InstOpCode::Mnemonic::ubfmx : TR::InstOpCode::Mnemonic::ubfmw;
+   uint32_t imms = is64bit ? 0x3f : 0x1f;
+   uint32_t immr = shiftAmount;
+   uint32_t n = is64bit ? 1 : 0;
+   uint32_t imm = (n << 12) | (immr << 6) | imms;
+
+   if (preced)
+      return new (cg->trHeapMemory()) TR::ARM64Trg1Src1ImmInstruction(op, node, treg, sreg, imm, preced, cg);
+   return new (cg->trHeapMemory()) TR::ARM64Trg1Src1ImmInstruction(op, node, treg, sreg, imm, cg);
+   }
+
+TR::Instruction *generateLogicalShiftLeftImmInstruction(TR::CodeGenerator *cg, TR::Node *node,
+   TR::Register *treg, TR::Register *sreg, uint32_t shiftAmount, TR::Instruction *preced)
+   {
+   /* Alias of UBFM instruction */
+
+   bool is64bit = node->getDataType().isInt64();
+   TR_ASSERT(shiftAmount < (is64bit ? 64 : 32), "Shift amount out of range.");
+
+   TR::InstOpCode::Mnemonic op = is64bit ? TR::InstOpCode::Mnemonic::ubfmx : TR::InstOpCode::Mnemonic::ubfmw;
+   uint32_t imms = (is64bit ? 63 : 31) - shiftAmount;
+   uint32_t immr = imms + 1;
+   uint32_t n = is64bit ? 1 : 0;
+   uint32_t imm = (n << 12) | (immr << 6) | imms;
+
+   if (preced)
+      return new (cg->trHeapMemory()) TR::ARM64Trg1Src1ImmInstruction(op, node, treg, sreg, imm, preced, cg);
+   return new (cg->trHeapMemory()) TR::ARM64Trg1Src1ImmInstruction(op, node, treg, sreg, imm, cg);
    }

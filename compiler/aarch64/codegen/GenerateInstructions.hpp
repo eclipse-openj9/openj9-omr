@@ -413,4 +413,58 @@ TR::Instruction *generateMemSrc1Instruction(
                    TR::Register *sreg,
                    TR::Instruction *preced = NULL);
 
+/*
+ * @brief Generates ASR instruction
+ * @param[in] cg : CodeGenerator
+ * @param[in] node : node
+ * @param[in] treg : target register
+ * @param[in] sreg : source register
+ * @param[in] shiftAmount : shift amount
+ * @param[in] preced : preceding instruction
+ * @return generated instruction
+ */
+TR::Instruction *generateArithmeticShiftRightImmInstruction(
+                   TR::CodeGenerator *cg,
+                   TR::Node *node,
+                   TR::Register *treg,
+                   TR::Register *sreg,
+                   uint32_t shiftAmount,
+                   TR::Instruction *preced = NULL);
+
+/*
+ * @brief Generates LSR instruction
+ * @param[in] cg : CodeGenerator
+ * @param[in] node : node
+ * @param[in] treg : target register
+ * @param[in] sreg : source register
+ * @param[in] shiftAmount : shift amount
+ * @param[in] preced : preceding instruction
+ * @return generated instruction
+ */
+TR::Instruction *generateLogicalShiftRightImmInstruction(
+                   TR::CodeGenerator *cg,
+                   TR::Node *node,
+                   TR::Register *treg,
+                   TR::Register *sreg,
+                   uint32_t shiftAmount,
+                   TR::Instruction *preced);
+
+/*
+ * @brief Generates LSL instruction
+ * @param[in] cg : CodeGenerator
+ * @param[in] node : node
+ * @param[in] treg : target register
+ * @param[in] sreg : source register
+ * @param[in] shiftAmount : shift amount
+ * @param[in] preced : preceding instruction
+ * @return generated instruction
+ */
+TR::Instruction *generateLogicalShiftLeftImmInstruction(
+                   TR::CodeGenerator *cg,
+                   TR::Node *node,
+                   TR::Register *treg,
+                   TR::Register *sreg,
+                   uint32_t shiftAmount,
+                   TR::Instruction *preced = NULL);
+
 #endif

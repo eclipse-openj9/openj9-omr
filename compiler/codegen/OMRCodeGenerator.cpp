@@ -208,8 +208,6 @@ OMR::CodeGenerator::CodeGenerator() :
      _lastGlobalFPR(0),
      _firstOverlappedGlobalFPR(0),
      _lastOverlappedGlobalFPR(0),
-     _firstGlobalAR(0),
-     _lastGlobalAR(0),
      _last8BitGlobalGPR(0),
      _globalGPRPartitionLimit(0),
      _globalFPRPartitionLimit(0),

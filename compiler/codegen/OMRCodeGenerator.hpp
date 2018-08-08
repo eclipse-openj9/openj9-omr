@@ -858,11 +858,6 @@ class OMR_EXTENSIBLE CodeGenerator
    TR_GlobalRegisterNumber getLastOverlappedGlobalFPR()                           { return _lastOverlappedGlobalFPR     ;}
    TR_GlobalRegisterNumber setLastOverlappedGlobalFPR(TR_GlobalRegisterNumber n)  { return _lastOverlappedGlobalFPR = n ;}
 
-   TR_GlobalRegisterNumber getFirstGlobalAR() {return _firstGlobalAR;}
-   TR_GlobalRegisterNumber setFirstGlobalAR(TR_GlobalRegisterNumber n) {return (_firstGlobalAR = n);}
-   TR_GlobalRegisterNumber getLastGlobalAR() {return _lastGlobalAR;}
-   TR_GlobalRegisterNumber setLastGlobalAR(TR_GlobalRegisterNumber n) {return (_lastGlobalAR = n);}
-
    TR_GlobalRegisterNumber getFirstGlobalVRF() {return _firstGlobalVRF;}
    TR_GlobalRegisterNumber setFirstGlobalVRF(TR_GlobalRegisterNumber n) {return (_firstGlobalVRF = n);}
    TR_GlobalRegisterNumber getLastGlobalVRF() {return _lastGlobalVRF;}
@@ -1779,7 +1774,7 @@ class OMR_EXTENSIBLE CodeGenerator
       //                                                  = 0x00000002,  AVAILABLE FOR USE!
       //                                                  = 0x00000004,  AVAILABLE FOR USE!
       OptimizationPhaseIsComplete                         = 0x00000008,
-      RequireRAPassAR                                     = 0x00000010,
+      // Available                                        = 0x00000010,
       IsInOOLSection                                      = 0x00000020,
       SupportsBCDToDFPReduction                           = 0x00000040,
       GRACompleted                                        = 0x00000080,
@@ -1920,8 +1915,6 @@ class OMR_EXTENSIBLE CodeGenerator
    TR_GlobalRegisterNumber _lastGlobalFPR;
    TR_GlobalRegisterNumber _firstOverlappedGlobalFPR;
    TR_GlobalRegisterNumber _lastOverlappedGlobalFPR;
-   TR_GlobalRegisterNumber _firstGlobalAR;
-   TR_GlobalRegisterNumber _lastGlobalAR;
    TR_GlobalRegisterNumber _last8BitGlobalGPR;
    TR_GlobalRegisterNumber _firstGlobalVRF;
    TR_GlobalRegisterNumber _lastGlobalVRF;

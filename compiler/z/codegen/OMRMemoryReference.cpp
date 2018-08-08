@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1909,7 +1909,7 @@ OMR::Z::MemoryReference::populateMemoryReference(TR::Node * subTree, TR::CodeGen
 
    if (noopNode && noopNode->getRegister() == NULL)
       {
-      if (subTree->getRegister() && subTree->getRegister()->getRegisterPair() && !subTree->getRegister()->getRegisterPair()->isArGprPair())
+      if (subTree->getRegister() && subTree->getRegister()->getRegisterPair())
          noopNode->setRegister(subTree->getRegister()->getRegisterPair()->getLowOrder());
       else
          noopNode->setRegister(subTree->getRegister());
@@ -1996,19 +1996,9 @@ bool OMR::Z::MemoryReference::ignoreNegativeOffset()
 
 TR::Register *OMR::Z::MemoryReference::swapBaseRegister(TR::Register *br, TR::CodeGenerator * cg)
    {
-   TR::Register *base = self()->getBaseRegister();
    br->setIsUsedInMemRef();
-   if (base && base->isArGprPair())
-      {
-      TR::RegisterPair *regpair = cg->allocateArGprPair(base->getARofArGprPair(), br);
-      self()->setBaseRegister(regpair, cg);
-      return regpair;
-      }
-   else
-      {
-      self()->setBaseRegister(br, cg);
-      return br;
-      }
+   self()->setBaseRegister(br, cg);
+   return br;
    }
 
 TR::Instruction *
@@ -2380,17 +2370,7 @@ OMR::Z::MemoryReference::assignRegisters(TR::Instruction * currentInstruction, T
    TR::Machine *machine = cg->machine();
    TR::RealRegister * assignedBaseRegister;
    TR::RealRegister * assignedIndexRegister;
-   TR::Register * virtualBaseAR = NULL;
    TR::Compilation *comp = cg->comp();
-
-   if (_indexRegister &&
-       _indexRegister->isArGprPair() &&
-       _baseRegister == NULL)
-      {
-      self()->setBaseRegister(_indexRegister, cg);
-      _indexRegister = NULL;
-      }
-
 
    // If the base reg has a virt reg assignment
    if (_baseRegister != NULL && _baseRegister->getRealRegister() == NULL)
@@ -2405,12 +2385,6 @@ OMR::Z::MemoryReference::assignRegisters(TR::Instruction * currentInstruction, T
       // We postpone bookkeeping until after _indexRegister is assigned to avoid assigning
       // the same reg to both _indexRegister and _baseRegister
 
-      if (_baseRegister->isArGprPair())
-         {
-         virtualBaseAR = _baseRegister->getARofArGprPair();
-         self()->setBaseRegister(_baseRegister->getGPRofArGprPair(), cg);
-         }
-
       if (_baseRegister != NULL && _baseRegister->getRealRegister() == NULL)
          {
          assignedBaseRegister = static_cast<TR::RealRegister*>(machine->assignBestRegisterSingle(_baseRegister, currentInstruction, NOBOOKKEEPING, ~TR::RealRegister::GPR0Mask));
@@ -2418,10 +2392,6 @@ OMR::Z::MemoryReference::assignRegisters(TR::Instruction * currentInstruction, T
       else if (_baseRegister != NULL && _baseRegister->getRealRegister() != NULL)
          assignedBaseRegister = _baseRegister->getRealRegister();
 
-      if (virtualBaseAR != NULL)
-         {
-         currentInstruction->addARDependencyCondition(virtualBaseAR, assignedBaseRegister);
-         }
       if (_indexRegister != NULL)
          {
          _indexRegister->unblock();

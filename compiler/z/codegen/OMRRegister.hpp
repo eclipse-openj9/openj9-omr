@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -142,13 +142,6 @@ class OMR_EXTENSIBLE Register: public OMR::Register
    virtual int32_t             FlattenRegisterPairs(TR_Queue<TR::Register> * Pairs) {return 0;}
    virtual bool usesRegister(TR::Register* reg);  //ppc may duplicate this
    virtual bool usesAnyRegister(TR::Register* reg);
-
-   /*
-    * Ar GPR Pairs
-    */
-   virtual TR::Register * getARofArGprPair();
-   virtual TR::Register * getGPRofArGprPair();
-   virtual bool isArGprPair();
 
    /*
     * Pseudo and Opaque Registers

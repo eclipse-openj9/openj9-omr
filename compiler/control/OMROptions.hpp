@@ -205,7 +205,7 @@ enum TR_CompilationOptions
    TR_DisableAsyncCompilation             = 0x00004000 + 3,
    TR_DisableCompilationThread            = 0x00008000 + 3,
    TR_EnableCompilationThread             = 0x00010000 + 3,
-   TR_Enable390AccessRegs                 = 0x00020000 + 3,
+   // Available                           = 0x00020000 + 3,
    TR_SoftFailOnAssume                    = 0x00040000 + 3,
    TR_DisableNewBlockOrdering             = 0x00080000 + 3,
    TR_DisableZNext                        = 0x00100000 + 3,

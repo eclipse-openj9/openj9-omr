@@ -381,13 +381,7 @@ void OMR::Z::RegisterDependencyConditions::resolveSplitDependencies(
       TR::InstOpCode::Mnemonic opCode;
       TR_RegisterKinds kind = reg->getKind();
       bool isVector = kind == TR_VRF ? true : false;
-      if (regPair && regPair->isArGprPair())
-         {
-         if (foundHigh) reg = regPair->getHighOrder();
-         if (foundLow) reg = regPair->getLowOrder();
-         kind = reg->getKind();
-         }
-      else if (kind == TR_GPR || kind == TR_FPR)
+      if (kind == TR_GPR || kind == TR_FPR)
          {
          if (regPair)
             {
@@ -440,9 +434,6 @@ void OMR::Z::RegisterDependencyConditions::resolveSplitDependencies(
             break;
          case TR_FPR:
             opCode = TR::InstOpCode::LDR;
-            break;
-         case TR_AR:
-            opCode = TR::InstOpCode::CPYA;
             break;
          case TR_VRF:
             opCode = TR::InstOpCode::VLR;
@@ -1460,9 +1451,6 @@ TR_S390RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstru
 
          dependentRealReg = machine->getS390RealRegister(dependentRegNum);
 
-         if (!cg->getRAPassAR() && virtReg->getKind() == TR_AR)
-            continue;
-
          // If dep requires a specific real reg, and the real reg is free
          if (dependentRegNum != TR::RealRegister::NoReg     &&
              dependentRegNum != TR::RealRegister::AssignAny &&
@@ -1509,9 +1497,6 @@ TR_S390RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstru
 
          dependentRegNum = _dependencies[i].getRealRegister();
          dependentRealReg = machine->getS390RealRegister(dependentRegNum);
-
-         if (!cg->getRAPassAR() && virtReg->getKind() == TR_AR)
-            continue;
 
          // If the dependency requires a real reg
          // and the assigned real reg is not equal to the required one
@@ -1606,14 +1591,6 @@ TR_S390RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstru
 
             // Disable this dependency
             _dependencies[i].setRealRegister(toRealRegister(targetReg)->getRegisterNumber());
-
-            // Assigning an AR-GPR pair will assign the GPR and create a new AR dependency.
-            if(virtReg->isArGprPair())
-              {
-              _dependencies[i].setRegister(virtReg->getGPRofArGprPair());
-              virtReg->getARofArGprPair()->decFutureUseCount(getNumUses()-1);
-              virtReg->getARofArGprPair()->decTotalUseCount(getNumUses()-1);
-              }
             virtReg->block();
             if(comp->getOption(TR_EnableTrueRegisterModel) && _dependencies[i].getDefsRegister() &&
                 virtReg->isPendingSpillOnDef())
@@ -1642,14 +1619,6 @@ TR_S390RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstru
 
             // Disable this dependency
             _dependencies[i].setRealRegister(toRealRegister(targetReg)->getRegisterNumber());
-
-            // Assigning an AR-GPR pair will assign the GPR and create a new AR dependency.
-            if(virtReg->isArGprPair())
-              {
-              _dependencies[i].setRegister(virtReg->getGPRofArGprPair());
-              virtReg->getARofArGprPair()->decFutureUseCount(getNumUses()-1);
-              virtReg->getARofArGprPair()->decTotalUseCount(getNumUses()-1);
-              }
 
             virtReg->block();
             if(comp->getOption(TR_EnableTrueRegisterModel) && _dependencies[i].getDefsRegister() &&
@@ -1681,9 +1650,6 @@ TR_S390RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstru
    for (i = 0; i < numOfDependencies; i++)
       {
       TR::Register * dependentRegister = getRegisterDependency(i)->getRegister();
-
-      if (cg->getRAPassAR() && dependentRegister->getKind() == TR_GPR)
-         continue;
 
       // We decrement the use count, and kill if there are no further uses
       // We pay special attention to pairs, as it is not the parent placeholder
@@ -1731,9 +1697,6 @@ TR_S390RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstru
          {
          TR::Register * dependentRegisterHigh = dependentRegister->getHighOrder();
 
-         if (dependentRegisterHigh->isArGprPair())
-            dependentRegisterHigh = dependentRegisterHigh->getGPRofArGprPair();
-
          dependentRegisterHigh->decFutureUseCount();
          dependentRegisterHigh->setIsLive();
          TR::Register * highAssignedRegister = dependentRegisterHigh->getAssignedRegister();
@@ -1768,15 +1731,8 @@ TR_S390RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstru
 
          TR::Register * dependentRegisterLow = dependentRegister->getLowOrder();
 
-         if (dependentRegisterLow->isArGprPair())
-            dependentRegisterLow = dependentRegisterLow->getGPRofArGprPair();
-
-
-         if ((dependentRegisterLow->getKind() != TR_AR) || cg->getRAPassAR())
-           {
-            dependentRegisterLow->decFutureUseCount();
-            dependentRegisterLow->setIsLive();
-           }
+         dependentRegisterLow->decFutureUseCount();
+         dependentRegisterLow->setIsLive();
 
          TR::Register * lowAssignedRegister = dependentRegisterLow->getAssignedRegister();
 

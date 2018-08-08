@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -109,7 +109,6 @@ class OMR_EXTENSIBLE RealRegister : public OMR::RealRegister
    static bool isRealReg(RegNum reg);
    static bool isGPR(RegNum reg);
    static bool isFPR(RegNum reg);
-   static bool isAR(RegNum reg);
    static bool isHPR(RegNum reg);
    static bool isVRF(RegNum reg);
 

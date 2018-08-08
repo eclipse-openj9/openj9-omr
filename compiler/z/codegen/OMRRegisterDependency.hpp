@@ -128,11 +128,6 @@ class TR_S390RegisterDependencyGroup
          {
          if (_dependencies[i].getRegister() == vr && (_dependencies[i].getFlags() & flag))
             return _dependencies[i].getRegister();
-         if (vr->isArGprPair() &&
-         	  _dependencies[i].getRegister()->isArGprPair() &&
-         	  vr->getARofArGprPair() == _dependencies[i].getRegister()->getARofArGprPair() &&
-         	  vr->getGPRofArGprPair() == _dependencies[i].getRegister()->getGPRofArGprPair())
-            return _dependencies[i].getRegister();
          }
       return NULL;
       }

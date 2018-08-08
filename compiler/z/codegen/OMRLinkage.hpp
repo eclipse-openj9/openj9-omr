@@ -168,9 +168,7 @@ enum TR_S390LinkageConventions
 // of a BASR.
 
 #define  REGNUM(ri)      ((TR::RealRegister::RegNum)(ri))
-#define  AREGNUM(ri)     ((TR::RealRegister::RegNum)(ri+TR::RealRegister::AR0))
 #define  REGINDEX(i)     (i-TR::RealRegister::FirstGPR)
-#define  AREGINDEX(i)    (i-TR::RealRegister::FirstAR)
 #define  FPREGINDEX(i)   (i-TR::RealRegister::FirstFPR)
 #define  VRFREGINDEX(i)  (i-TR::RealRegister::FirstAssignableVRF)
 
@@ -188,13 +186,11 @@ enum TR_S390LinkageConventions
  *
  * Feel free to refactor this into if/else conditions :)
  */
-#define  ANYREGINDEX(i)  ((i >= TR::RealRegister::FirstAR) ?                     \
-                           AREGINDEX(i) :                                           \
-                           (i >= TR::RealRegister::FirstFPR) ?                   \
-                              (i >= TR::RealRegister::FirstAssignableVRF) ?      \
-                                 VRFREGINDEX(i) :                                   \
-                                 FPREGINDEX(i) :                                    \
-                              REGINDEX(i))
+#define  ANYREGINDEX(i)  ((i >= TR::RealRegister::FirstFPR) ?                   \
+                            ((i >= TR::RealRegister::FirstAssignableVRF) ?      \
+                              VRFREGINDEX(i) :                                   \
+                              FPREGINDEX(i)) :                                    \
+                            REGINDEX(i))
 
 /**
  * Starting special linkage index for linkages that have "special arguments"
@@ -367,11 +363,8 @@ enum TR_DispatchType
    virtual void initS390RealRegisterLinkage() = 0;
    virtual TR::RealRegister * getARWithZeroValue() {return NULL;}
 
-   virtual void lockAccessRegisters();
    virtual void lockRegister(TR::RealRegister * lpReal);
    virtual void unlockRegister(TR::RealRegister * lpReal);
-   void lockAR(int32_t registerNo);
-   void unlockAR(int32_t registerNo);
 
    virtual TR::Register * buildDirectDispatch(TR::Node * callNode) = 0;
    virtual TR::Register * buildIndirectDispatch(TR::Node * callNode) = 0;

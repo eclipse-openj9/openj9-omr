@@ -434,19 +434,6 @@ OMR::Z::Instruction::useRegister(TR::Register * reg, bool isDummy)
 
       OMR::Instruction::useRegister(firstRegister);
       OMR::Instruction::useRegister(lastRegister);
-
-      if (firstRegister->isArGprPair())
-         {
-        OMR::Instruction::useRegister(firstRegister->getARofArGprPair());
-        OMR::Instruction::useRegister(firstRegister->getGPRofArGprPair());
-         }
-
-      if (lastRegister->isArGprPair())
-         {
-        OMR::Instruction::useRegister(lastRegister->getARofArGprPair());
-        OMR::Instruction::useRegister(lastRegister->getGPRofArGprPair());
-         }
-
       }
    else
       {
@@ -1379,16 +1366,13 @@ OMR::Z::Instruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
       self()->cg()->tracePreRAInstruction(outOfLineEXInstr);
       self()->cg()->setCurrentBlockIndex(outOfLineEXInstr->getBlockIndex());
       outOfLineEXInstr->assignRegisters(kindToBeAssigned);
-      if (!self()->cg()->getRAPassAR())
+      TR::RegisterDependencyConditions *deps = outOfLineEXInstr->getDependencyConditions();
+      if (deps) // merge the dependency into the EX deps
          {
-         TR::RegisterDependencyConditions *deps = outOfLineEXInstr->getDependencyConditions();
-         if (deps) // merge the dependency into the EX deps
-            {
-            outOfLineEXInstr->resetDependencyConditions();
-            TR::RegisterDependencyConditions * exDeps = (self())->getDependencyConditions();
-            TR::RegisterDependencyConditions * newDeps = new (self()->cg()->trHeapMemory()) TR::RegisterDependencyConditions(deps, exDeps, self()->cg());
-            (self())->setDependencyConditionsNoBookKeeping(newDeps);
-            }
+         outOfLineEXInstr->resetDependencyConditions();
+         TR::RegisterDependencyConditions * exDeps = (self())->getDependencyConditions();
+         TR::RegisterDependencyConditions * newDeps = new (self()->cg()->trHeapMemory()) TR::RegisterDependencyConditions(deps, exDeps, self()->cg());
+         (self())->setDependencyConditionsNoBookKeeping(newDeps);
          }
 
       outOfLineEXInstr->setPrev(savePrev); // Restore Prev() of snippet
@@ -1816,8 +1800,6 @@ TR::InstOpCode::Mnemonic OMR::Z::Instruction::opCodeCanBeAdjustedTo(TR::InstOpCo
          return TR::InstOpCode::LAY;
       case TR::InstOpCode::LAE:
          return TR::InstOpCode::LAEY;
-      case TR::InstOpCode::LAM:
-         return TR::InstOpCode::LAMY;
       case TR::InstOpCode::LRA:
          return TR::InstOpCode::LRAY;
       case TR::InstOpCode::LH:
@@ -1844,8 +1826,6 @@ TR::InstOpCode::Mnemonic OMR::Z::Instruction::opCodeCanBeAdjustedTo(TR::InstOpCo
          return TR::InstOpCode::SLY;
       case TR::InstOpCode::ST:
          return TR::InstOpCode::STY;
-       case TR::InstOpCode::STAM:
-         return TR::InstOpCode::STAMY;
       case TR::InstOpCode::STC:
          return TR::InstOpCode::STCY;
       case TR::InstOpCode::STH:
@@ -1981,9 +1961,6 @@ OMR::Z::Instruction::gatherRegPairsAtFrontOfArray(TR::Register** regArr, int32_t
 TR::Register *
 OMR::Z::Instruction::assignRegisterNoDependencies(TR::Register * reg)
    {
-   // don't assign gpr in AR pass (preserve futureUseCount)
-   if (self()->cg()->getRAPassAR() && reg->getKind() != TR_AR)
-      return reg;
    TR::Compilation *comp = self()->cg()->comp();
    bool enableHighWordRA = self()->cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA);
 
@@ -2962,7 +2939,7 @@ OMR::Z::Instruction::setUseDefRegisters(bool updateDependencies)
                (*_useRegs)[indexSource++] = _sourceReg[i];
                }
             else if (self()->getOpCodeValue() != TR::InstOpCode::LM && self()->getOpCodeValue() != TR::InstOpCode::LMG && self()->getOpCodeValue() != TR::InstOpCode::LMH &&
-                self()->getOpCodeValue() != TR::InstOpCode::LAM && self()->getOpCodeValue() != TR::InstOpCode::LMY)
+                self()->getOpCodeValue() != TR::InstOpCode::LMY)
                {
                (*_useRegs)[indexSource++] = _sourceReg[i];
                }
@@ -3008,10 +2985,10 @@ OMR::Z::Instruction::setUseDefRegisters(bool updateDependencies)
       }
 
    if (self()->getOpCodeValue() == TR::InstOpCode::LM || self()->getOpCodeValue() == TR::InstOpCode::LMG || self()->getOpCodeValue() == TR::InstOpCode::LMH ||
-       self()->getOpCodeValue() == TR::InstOpCode::LAM || self()->getOpCodeValue() == TR::InstOpCode::LMY)
+       self()->getOpCodeValue() == TR::InstOpCode::LMY)
      loadOrStoreMultiple = 0; //load
    else if (self()->getOpCodeValue() == TR::InstOpCode::STM || self()->getOpCodeValue() == TR::InstOpCode::STMG || self()->getOpCodeValue() == TR::InstOpCode::STMH ||
-            self()->getOpCodeValue() == TR::InstOpCode::STAM || self()->getOpCodeValue() == TR::InstOpCode::STMY)
+            self()->getOpCodeValue() == TR::InstOpCode::STMY)
      loadOrStoreMultiple = 1; //store
 
    if (loadOrStoreMultiple >= 0)
@@ -3041,7 +3018,6 @@ OMR::Z::Instruction::setUseDefRegisters(bool updateDependencies)
          fReg = toRealRegister(firstReg->getAssignedRealRegister());
          }
 
-      bool isAR = ((self()->getOpCodeValue() == TR::InstOpCode::LAM) || (self()->getOpCodeValue() == TR::InstOpCode::STAM));
       uint32_t lowRegNum = ANYREGINDEX(fReg->getRegisterNumber());
       uint32_t highRegNum = ANYREGINDEX(lReg->getRegisterNumber());
 
@@ -3056,7 +3032,7 @@ OMR::Z::Instruction::setUseDefRegisters(bool updateDependencies)
          lowRegNum = (lowRegNum == 15) ? 0 : lowRegNum + 1;
          for (uint32_t i = lowRegNum; i != highRegNum; i = ((i == 15) ? 0 : i + 1))  // wrap around to 0 at 15
             {
-            TR::RealRegister *reg = self()->cg()->machine()->getS390RealRegister(i + (isAR ? TR::RealRegister::AR0 : TR::RealRegister::GPR0));
+            TR::RealRegister *reg = self()->cg()->machine()->getS390RealRegister(i + TR::RealRegister::GPR0);
             if (loadOrStoreMultiple == 0) // load
                (*_defRegs)[indexTarget++] = reg;
             else if (loadOrStoreMultiple == 1) // store
@@ -3307,84 +3283,6 @@ OMR::Z::Instruction::isCall()
       return false;
    }
 
-
-
-void
-OMR::Z::Instruction::addARDependencyCondition(TR::Register * virtAR, TR::Register * assignedGPR)
-   {
-   bool assignPreCondition = false;
-   bool newCondition = false;
-
-   // AR register for stack pointer doesn't need to be set
-   for (uint32_t x=1; x <= self()->cg()->getS390Linkage()->getNumStackPointerRegisters(); x++)
-      {
-      if (REGINDEX((toRealRegister(assignedGPR->getRealRegister()))->getRegisterNumber()) ==
-          REGINDEX(self()->cg()->getS390Linkage()->getStackPointerRealRegister(x)->getRegisterNumber()))
-         {
-         virtAR->decTotalUseCount();
-         virtAR->decFutureUseCount();
-         return;
-         }
-      }
-
-   if (self()->getDependencyConditions())
-      {
-      if (self()->getDependencyConditions()->searchPreConditionRegister(assignedGPR->getAssignedRegister()))
-          {
-          // add another pre condition to current list
-          TR::RegisterDependencyConditions * tmp = new (self()->cg()->trHeapMemory()) TR::RegisterDependencyConditions(self()->getDependencyConditions(), 1, 0, self()->cg());
-          self()->resetDependencyConditions(tmp);
-          assignPreCondition = true;
-          }
-       else
-          {
-          // add another post condition to current list
-          TR::RegisterDependencyConditions * tmp = new (self()->cg()->trHeapMemory()) TR::RegisterDependencyConditions(self()->getDependencyConditions(), 0, 1, self()->cg());
-          self()->resetDependencyConditions(tmp);
-         }
-      }
-   else
-      {
-      // add new post condition
-      TR::RegisterDependencyConditions * tmp = new (self()->cg()->trHeapMemory()) TR::RegisterDependencyConditions(0, 1, self()->cg());
-      self()->resetDependencyConditions(tmp);
-      }
-   if (assignPreCondition)
-      {
-       self()->cg()->traceRegisterAssignment("PRE dependancy for instruction %p on virtual reg %s -> %s to be added\n",
-      self(),self()->cg()->getDebug()->getName(virtAR), self()->cg()->getDebug()->getName(assignedGPR));
-      newCondition = self()->getDependencyConditions()->addPreConditionIfNotAlreadyInserted(virtAR, REGNUM(TR::RealRegister::FirstAR - TR::RealRegister::FirstGPR + toRealRegister(assignedGPR)->getRegisterNumber()));
-      }
-   else
-      {
-      self()->cg()->traceRegisterAssignment("POST dependancy for instruction %p on virtual reg %s -> %s to be added\n",
-      self(),self()->cg()->getDebug()->getName(virtAR), self()->cg()->getDebug()->getName(assignedGPR));
-      newCondition = self()->getDependencyConditions()->addPostConditionIfNotAlreadyInserted(virtAR, REGNUM(TR::RealRegister::FirstAR - TR::RealRegister::FirstGPR + toRealRegister(assignedGPR)->getRegisterNumber()));
-      }
-
-   if (newCondition)
-      {
-      self()->cg()->traceRegisterAssignment("dependancy for instruction %p on virtual reg %s -> %s added\n",
-        self(),self()->cg()->getDebug()->getName(virtAR), self()->cg()->getDebug()->getName(assignedGPR));
-      }
-   else
-        {
-
-        self()->cg()->traceRegisterAssignment("duplicate dependancy for instruction %p on virtual reg %s ->  %s not added\n",
-        self(),self()->cg()->getDebug()->getName(virtAR), self()->cg()->getDebug()->getName(assignedGPR));
-      virtAR->decTotalUseCount();
-      virtAR->decFutureUseCount();
-      }
-   //account for merged EX deps from the 1st RA pass
-   if (self()->getOpCodeValue() == TR::InstOpCode::EX || self()->getOpCodeValue() == TR::InstOpCode::EXRL )
-      {
-      virtAR->decTotalUseCount();
-      virtAR->decFutureUseCount();
-      }
-   self()->cg()->traceRegAssigned(virtAR, assignedGPR);
-   }
-
-
 void OMR::Z::Instruction::setMaskField(uint32_t *instruction, int8_t mask, int8_t nibbleIndex)
   {
   TR_ASSERT(nibbleIndex>=0 && nibbleIndex<=7,
@@ -3393,8 +3291,6 @@ void OMR::Z::Instruction::setMaskField(uint32_t *instruction, int8_t mask, int8_
   *instruction ^= maskInstruction; // clear out the memory of byte
   *instruction |= (mask << nibbleIndex*4);
   }
-
-
 
 TR::Register *
 OMR::Z::Instruction::tgtRegArrElem(int32_t i)

@@ -6638,10 +6638,6 @@ istoreHelper(TR::Node * node, TR::CodeGenerator * cg, bool isReversed)
             {
             generateRSInstruction(cg, TR::InstOpCode::STOC, node, sourceRegister, cg->getRCondMoveBranchOpCond(), tempMR);
             }
-         else if (sourceRegister->getKind() == TR_AR)
-            {
-            generateRSInstruction(cg, TR::InstOpCode::STAM, node, sourceRegister, sourceRegister, tempMR);
-            }
          else
             {
             generateRXInstruction(cg, TR::InstOpCode::ST, node, sourceRegister, tempMR);
@@ -6953,9 +6949,6 @@ astoreHelper(TR::Node * node, TR::CodeGenerator * cg)
          sourceRegister = cg->evaluate(valueChild);
          tempMR = generateS390MemoryReference(node, cg);
          }
-
-
-      TR_ASSERT(!(sourceRegister && sourceRegister->isArGprPair()) , "not expecting AR reg pair");
 
       // Generate the Store instruction unless storeOp is TR::InstOpCode::BAD (i.e. Move
       // Halfword Immediate instruction was generated).
@@ -10291,13 +10284,13 @@ OMR::Z::TreeEvaluator::arraycmpHelper(TR::Node *node,
                regDeps->addPostConditionIfNotAlreadyInserted(baseSource1Ref->getIndexRegister(), TR::RealRegister::AssignAny);
 
             if (baseSource1Ref->getBaseRegister())
-               regDeps->addPostConditionIfNotAlreadyInserted(baseSource1Ref->getBaseRegister()->getGPRofArGprPair(), TR::RealRegister::AssignAny);
+               regDeps->addPostConditionIfNotAlreadyInserted(baseSource1Ref->getBaseRegister(), TR::RealRegister::AssignAny);
 
             if (baseSource2Ref->getIndexRegister() && (baseSource2Ref->getIndexRegister() != baseSource1Ref->getIndexRegister()))
                regDeps->addPostConditionIfNotAlreadyInserted(baseSource2Ref->getIndexRegister(), TR::RealRegister::AssignAny);
 
             if (baseSource2Ref->getBaseRegister() && (baseSource2Ref->getBaseRegister() != baseSource1Ref->getBaseRegister()))
-               regDeps->addPostConditionIfNotAlreadyInserted(baseSource2Ref->getBaseRegister()->getGPRofArGprPair(), TR::RealRegister::AssignAny);
+               regDeps->addPostConditionIfNotAlreadyInserted(baseSource2Ref->getBaseRegister(), TR::RealRegister::AssignAny);
             }
          }
 
@@ -10696,8 +10689,8 @@ OMR::Z::TreeEvaluator::arraycmpHelper(TR::Node *node,
                setStartInternalControlFlow(generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_MASK6, node, outOfCompare),
                                            isStartInternalControlFlowSet);
 
-            generateRXInstruction(cg, TR::InstOpCode::LA, node, source1Reg->getGPRofArGprPair(), generateS390MemoryReference(source1Reg->getGPRofArGprPair(), 256, cg));
-            generateRXInstruction(cg, TR::InstOpCode::LA, node, source2Reg->getGPRofArGprPair(), generateS390MemoryReference(source2Reg->getGPRofArGprPair(), 256, cg));
+            generateRXInstruction(cg, TR::InstOpCode::LA, node, source1Reg, generateS390MemoryReference(source1Reg, 256, cg));
+            generateRXInstruction(cg, TR::InstOpCode::LA, node, source2Reg, generateS390MemoryReference(source2Reg, 256, cg));
             generateS390BranchInstruction(cg, TR::InstOpCode::BRCT, node, loopCountReg, topOfLoop);
             generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, bottomOfLoop);
 
@@ -11721,10 +11714,7 @@ OMR::Z::TreeEvaluator::passThroughEvaluator(TR::Node * node, TR::CodeGenerator *
             break;
          case TR_FPR:
             opCode = TR::InstOpCode::LDR;
-               break;
-         case TR_AR:
-            opCode = TR::InstOpCode::CPYA;
-               break;
+            break;
          case TR_VRF:
             opCode = TR::InstOpCode::VLR;
             break;
@@ -15350,8 +15340,8 @@ void arraycmpWithPadHelper::generateVarCLCMainLoop()
 
    generateS390BranchInstruction(cg, TR::InstOpCode::BRC, brCond, node, skipUnequal ? cmpDoneLabel : unequalLabel, branchDeps);
 
-   generateRXInstruction(cg, TR::InstOpCode::LA, node, source1Reg->getGPRofArGprPair(), generateS390MemoryReference(source1Reg->getGPRofArGprPair(), 256, cg));
-   generateRXInstruction(cg, TR::InstOpCode::LA, node, source2Reg->getGPRofArGprPair(), generateS390MemoryReference(source2Reg->getGPRofArGprPair(), 256, cg));
+   generateRXInstruction(cg, TR::InstOpCode::LA, node, source1Reg, generateS390MemoryReference(source1Reg, 256, cg));
+   generateRXInstruction(cg, TR::InstOpCode::LA, node, source2Reg, generateS390MemoryReference(source2Reg, 256, cg));
 
    generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, loopStartLabel);
 

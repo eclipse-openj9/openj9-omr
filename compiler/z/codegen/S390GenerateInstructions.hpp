@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1551,13 +1551,6 @@ TR::Instruction * generateS390IEInstruction(
                    uint8_t          imm2,
                    TR::Node          *n,
                    TR::Instruction   *preced = NULL);
-
-TR::Instruction *
-splitBaseRegisterIfNeeded(TR::MemoryReference *mf1,
-                          TR::MemoryReference *mf2,
-                          TR::CodeGenerator *cg,
-                          TR::Node *node,
-                          TR::Instruction *preced);
 
 TR::Instruction *generateRuntimeInstrumentationInstruction(
                    TR::CodeGenerator *cg,

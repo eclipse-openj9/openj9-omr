@@ -269,11 +269,6 @@ public:
 
    void changeRegisterKind(TR::Register * temp, TR_RegisterKinds rk);
 
-
-   TR::SymbolReference * _ARSaveAreaForTM;
-   void setARSaveAreaForTM(TR::SymbolReference * symRef) {_ARSaveAreaForTM = symRef;}
-   TR::SymbolReference * getARSaveAreaForTM() {return _ARSaveAreaForTM;}
-
    void beginInstructionSelection();
    void endInstructionSelection();
 
@@ -353,8 +348,6 @@ public:
 
    virtual TR_GlobalRegisterNumber getGlobalRegisterNumber(uint32_t realRegNum);
 
-   TR::RegisterPair* allocateArGprPair(TR::Register* lowRegister, TR::Register* highRegister);
-   void splitBaseRegisterPairsForRRMemoryInstructions(TR::Node *node, TR::RegisterPair * sourceReg, TR::RegisterPair * targetReg);
    TR::RegisterDependencyConditions* createDepsForRRMemoryInstructions(TR::Node *node, TR::RegisterPair * sourceReg, TR::RegisterPair * targetReg, uint8_t extraDeps=0);
 
    // Allocate a pair with inherent consecutive association
@@ -462,8 +455,6 @@ public:
    void setCurrentBlockIndex(int32_t blockIndex) { _currentBlockIndex = blockIndex; }
    int32_t getCurrentBlockIndex() { return _currentBlockIndex; }
    int32_t arrayInitMinimumNumberOfBytes() {return 16;}
-
-   bool isStackBased(TR::MemoryReference *mr);
 
    bool directLoadAddressMatch(TR::Node *load1, TR::Node *load2, bool trace);
    bool isOutOf32BitPositiveRange(int64_t value, bool trace);
@@ -625,13 +616,6 @@ public:
    void ensure64BitRegister(TR::Register *reg);
 
    virtual bool isAddMemoryUpdate(TR::Node * node, TR::Node * valueChild);
-
-   bool globalAccessRegistersSupported();
-
-   // AR mode
-   bool getRAPassAR() {return false;}
-   void setRAPassAR();
-   void resetRAPassAR();
 
 #ifdef DEBUG
    void dumpPreGPRegisterAssignment(TR::Instruction *);

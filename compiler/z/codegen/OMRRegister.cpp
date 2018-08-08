@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -42,18 +42,6 @@ OMR::Z::Register::Register(TR_RegisterKinds rk): OMR::Register(rk)
 OMR::Z::Register::Register(TR_RegisterKinds rk, uint16_t ar): OMR::Register(rk,ar)
    { _liveRegisterInfo._liveRegister = NULL; _memRef=NULL;}
 
-
-bool
-OMR::Z::Register::isArGprPair()
-   {
-   if (self()->getRegisterPair() &&
-         self()->getLowOrder()->getKind() == TR_AR &&
-         (self()->getHighOrder()->getKind() == TR_GPR || self()->getHighOrder()->getKind() == TR_GPR64))
-   return true;
-
-   return false;
-   }
-
 bool
 OMR::Z::Register::usesRegister(TR::Register* reg)
    {
@@ -77,19 +65,6 @@ bool OMR::Z::Register::usesAnyRegister(TR::Register *reg)
          return (reg == self());
       }
    }
-
-TR::Register *
-OMR::Z::Register::getARofArGprPair()
-   {
-   return self()->getLowOrder();
-   }
-
-TR::Register *
-OMR::Z::Register::getGPRofArGprPair()
-   {
-   if (self()->isArGprPair()) return self()->getHighOrder(); else return self();
-   }
-
 
 void
 OMR::Z::Register::setPlaceholderReg()

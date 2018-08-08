@@ -1790,7 +1790,6 @@ TR_RegisterCandidates::prioritizeCandidate(
    TR_RegisterCandidate * newRC, TR_RegisterCandidate * & first)
    {
    LexicalTimer t("prioritizeCandidate", comp()->phaseTimer());
-   bool isARCandidate = false;
 
    if (newRC->getWeight() != 0)
       {
@@ -2329,7 +2328,6 @@ TR_RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, in
                       );
       bool isVector = rc->getDataType().isVector();
       bool needs2Regs = false;
-      bool isARCandidate = false;
 
       if (rc->rcNeeds2Regs(comp())) needs2Regs = true;
 
@@ -2354,7 +2352,7 @@ TR_RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, in
                {
                ++totalVRFCount[blockNum];
                }
-            else if (!isARCandidate)
+            else
                {
                ++totalGPRCount[blockNum];
                //dumpOptDetails(comp(), "Block %d has %d gprs live\n", blockNum, totalGPRCount[blockNum]);
@@ -2384,7 +2382,7 @@ TR_RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, in
                {
                ++totalVRFCountOnEntry[blockNum];
                }
-            else if (!isARCandidate)
+            else
                {
                ++totalGPRCountOnEntry[blockNum];
                // dumpOptDetails(comp(), "Block %d has %d gprs live\n", blockNum, totalGPRCount[blockNum]);
@@ -2609,14 +2607,8 @@ TR_RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, in
                       );
       bool isVector = dt.isVector();
       int32_t firstRegister, lastRegister;
-      bool isARCandidate = false;
-
-      if (isARCandidate)
-         {
-         firstRegister = cg->getFirstGlobalAR();
-         lastRegister = cg->getLastGlobalAR();
-         }
-      else if (isFloat)
+      
+      if (isFloat)
          {
            if (debug("disableGlobalFPRs")
                || cg->getDisableFpGRA()
@@ -3349,7 +3341,7 @@ TR_RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, in
             {
             ++totalVRFCount[blockNum];
             }
-         else if (!isARCandidate)
+         else
             {
             ++totalGPRCount[blockNum];
             if (needs2Regs)
@@ -3379,7 +3371,7 @@ TR_RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, in
             {
             ++totalVRFCountOnEntry[blockNum];
             }
-         else if (!isARCandidate)
+         else
             {
             ++totalGPRCountOnEntry[blockNum];
             if (needs2Regs)

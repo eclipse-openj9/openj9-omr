@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1422,26 +1422,9 @@ class S390RegInstruction : public TR::Instruction
             return realReg == targetReg1;
             }
 
-         if (reg->getRealRegister() && getRegisterOperand(1)->getRealRegister() &&
-            TR::RealRegister::isAR(((TR::RealRegister *)getRegisterOperand(1))->getRegisterNumber()) &&
-             GPRmatchesAR(
-             toRealRegister(reg),
-             (TR::RealRegister *)getRegisterOperand(1))
-             )
-            return true;
-
          // if we are matching virt regs
          return reg == getRegisterOperand(1);
          }
-      return false;
-      }
-
-   bool GPRmatchesAR(TR::RealRegister* gprReg, TR::RealRegister* arReg)
-      {
-      TR_ASSERT(gprReg, "expecting valid gpr");
-      TR_ASSERT(arReg,  "expecting valid ar");
-      if (gprReg->getRegisterNumber()==arReg->getRegisterNumber()-TR::RealRegister::FirstAR+1)
-         return true;
       return false;
       }
 

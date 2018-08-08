@@ -264,7 +264,6 @@ class OMR_EXTENSIBLE Instruction : public OMR::Instruction
    void setCCInfo();
    void readCCInfo();
    void clearCCInfo();
-   void addARDependencyCondition(TR::Register * virtAR, TR::Register * assignedGPR);
 
    const char *getName(TR_Debug * debug);
    bool isBreakPoint() {return (_index & BreakPoint) != 0;}

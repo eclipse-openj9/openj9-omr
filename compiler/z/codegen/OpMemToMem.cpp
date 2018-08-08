@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -162,10 +162,10 @@ MemToMemVarLenMacroOp::generateLoop()
    generateS390LabelInstruction(_cg, TR::InstOpCode::LABEL, _rootNode, topOfLoop);
 
    generateInstruction(0, 256);
-   generateRXInstruction(_cg, TR::InstOpCode::LA, _srcNode, _srcReg->getGPRofArGprPair(), new (_cg->trHeapMemory()) TR::MemoryReference(_srcReg->getGPRofArGprPair(), 256, _cg));
+   generateRXInstruction(_cg, TR::InstOpCode::LA, _srcNode, _srcReg, new (_cg->trHeapMemory()) TR::MemoryReference(_srcReg, 256, _cg));
    if (_srcReg != _dstReg)
       {
-      generateRXInstruction(_cg, TR::InstOpCode::LA, _dstNode, _dstReg->getGPRofArGprPair(), new (_cg->trHeapMemory()) TR::MemoryReference(_dstReg->getGPRofArGprPair(), 256, _cg));
+      generateRXInstruction(_cg, TR::InstOpCode::LA, _dstNode, _dstReg, new (_cg->trHeapMemory()) TR::MemoryReference(_dstReg, 256, _cg));
       }
 
    generateS390BranchInstruction(_cg, TR::InstOpCode::BRCT, _rootNode, _itersReg, topOfLoop);
@@ -217,17 +217,7 @@ MemToMemMacroOp::genSrcLoadAddress(int32_t offset, TR::Instruction *cursor)
    _srcRegTemp = _cg->allocateRegister();
    cursor = _cg->genLoadAddressToRegister(_srcRegTemp, reuseS390MemoryReference(_srcMR, offset, _srcNode, _cg, false), _srcNode, cursor);
 
-   if (_srcMR->getBaseRegister() && _srcMR->getBaseRegister()->isArGprPair())
-      {
-      TR::Register *arReg=_srcMR->getBaseRegister()->getARofArGprPair();
-      _srcArGprPairTemp = _cg->allocateArGprPair(arReg, _srcRegTemp);
-      _srcReg = _srcArGprPairTemp;
-      }
-   else
-      {
-      _srcReg = _srcRegTemp;
-      }
-
+   _srcReg = _srcRegTemp;
    _srcMR = NULL; // use _srcReg from here on out in generateInstruction
 
    return cursor;
@@ -240,17 +230,8 @@ MemToMemMacroOp::genDstLoadAddress(int32_t offset, TR::Instruction *cursor)
    _dstRegTemp = _cg->allocateRegister();
 
    cursor = _cg->genLoadAddressToRegister(_dstRegTemp, reuseS390MemoryReference(_dstMR, offset, _dstNode, _cg, false), _dstNode, cursor);
-   if (_dstMR->getBaseRegister() && _dstMR->getBaseRegister()->isArGprPair())
-      {
-      TR::Register *arReg=_dstMR->getBaseRegister()->getARofArGprPair();
-      _dstArGprPairTemp = _cg->allocateArGprPair(arReg, _dstRegTemp);
-      _dstReg = _dstArGprPairTemp;
-      }
-   else
-      {
-      _dstReg = _dstRegTemp;
-      }
 
+   _dstReg = _dstRegTemp;
    _dstMR = NULL; // use _dstReg from here on out in generateInstruction
 
    return cursor;
@@ -308,7 +289,7 @@ MemToMemConstLenMacroOp::generateLoop()
          if (_srcReg == NULL)
             cursor = genSrcLoadAddress(_offset, cursor);
          else
-            cursor = generateRXInstruction(_cg, TR::InstOpCode::LA, _srcNode, _srcReg->getGPRofArGprPair(), new (_cg->trHeapMemory()) TR::MemoryReference(_srcReg->getGPRofArGprPair(), _offset, _cg), cursor);
+            cursor = generateRXInstruction(_cg, TR::InstOpCode::LA, _srcNode, _srcReg, new (_cg->trHeapMemory()) TR::MemoryReference(_srcReg, _offset, _cg), cursor);
          _offset = 0;
          }
 
@@ -325,7 +306,7 @@ MemToMemConstLenMacroOp::generateLoop()
             if (_dstReg == NULL)
                cursor = genDstLoadAddress(0, cursor);
             else
-               cursor = generateRXInstruction(_cg, TR::InstOpCode::LA, _dstNode, _dstReg->getGPRofArGprPair(), new (_cg->trHeapMemory()) TR::MemoryReference(_dstReg->getGPRofArGprPair(), 0, _cg), cursor);
+               cursor = generateRXInstruction(_cg, TR::InstOpCode::LA, _dstNode, _dstReg, new (_cg->trHeapMemory()) TR::MemoryReference(_dstReg, 0, _cg), cursor);
             }
          }
 
@@ -443,10 +424,10 @@ MemToMemConstLenMacroOp::generateLoop()
    _startControlFlow = cursor = generateS390LabelInstruction(_cg, TR::InstOpCode::LABEL, _rootNode, topOfLoop, cursor);
 
    cursor = generateInstruction(_offset, 256, cursor);
-   cursor = generateRXInstruction(_cg, TR::InstOpCode::LA, _srcNode, _srcReg->getGPRofArGprPair(), new (_cg->trHeapMemory()) TR::MemoryReference(_srcReg->getGPRofArGprPair(), 256, _cg), cursor);
+   cursor = generateRXInstruction(_cg, TR::InstOpCode::LA, _srcNode, _srcReg, new (_cg->trHeapMemory()) TR::MemoryReference(_srcReg, 256, _cg), cursor);
    if (_srcReg != _dstReg)
       {
-      cursor = generateRXInstruction(_cg, TR::InstOpCode::LA, _dstNode, _dstReg->getGPRofArGprPair(), new (_cg->trHeapMemory()) TR::MemoryReference(_dstReg->getGPRofArGprPair(), 256, _cg), cursor);
+      cursor = generateRXInstruction(_cg, TR::InstOpCode::LA, _dstNode, _dstReg, new (_cg->trHeapMemory()) TR::MemoryReference(_dstReg, 256, _cg), cursor);
       }
 
    cursor = generateS390BranchInstruction(_cg, TR::InstOpCode::BRCT, _rootNode, _itersReg, topOfLoop, cursor);
@@ -531,7 +512,7 @@ MemInitConstLenMacroOp::generateLoop()
       // the offset may put the displacement beyond 4K
       if (largeCopies * 256 + _offset >= 4096)
          {
-         cursor = generateRXInstruction(_cg, TR::InstOpCode::LA, _srcNode, _srcReg->getGPRofArGprPair(), new (_cg->trHeapMemory()) TR::MemoryReference(_srcReg->getGPRofArGprPair(), _offset, _cg), cursor);
+         cursor = generateRXInstruction(_cg, TR::InstOpCode::LA, _srcNode, _srcReg, new (_cg->trHeapMemory()) TR::MemoryReference(_srcReg, _offset, _cg), cursor);
          _offset = 0;
          }
 
@@ -569,10 +550,10 @@ MemInitConstLenMacroOp::generateLoop()
 
    cursor = generateSS1Instruction(_cg, TR::InstOpCode::MVC, _rootNode, 255, new (_cg->trHeapMemory()) TR::MemoryReference(_dstReg, _offset + 1, _cg),
                new (_cg->trHeapMemory()) TR::MemoryReference(_srcReg, _offset, _cg), cursor);
-   cursor = generateRXInstruction(_cg, TR::InstOpCode::LA, _srcNode, _srcReg->getGPRofArGprPair(), new (_cg->trHeapMemory()) TR::MemoryReference(_srcReg->getGPRofArGprPair(), 256, _cg), cursor);
+   cursor = generateRXInstruction(_cg, TR::InstOpCode::LA, _srcNode, _srcReg, new (_cg->trHeapMemory()) TR::MemoryReference(_srcReg, 256, _cg), cursor);
    if (_srcReg != _dstReg)
       {
-      cursor = generateRXInstruction(_cg, TR::InstOpCode::LA, _dstNode, _dstReg->getGPRofArGprPair(), new (_cg->trHeapMemory()) TR::MemoryReference(_dstReg->getGPRofArGprPair(), 256, _cg), cursor);
+      cursor = generateRXInstruction(_cg, TR::InstOpCode::LA, _dstNode, _dstReg, new (_cg->trHeapMemory()) TR::MemoryReference(_dstReg, 256, _cg), cursor);
       }
 
    cursor = generateS390BranchInstruction(_cg, TR::InstOpCode::BRCT, _rootNode, _itersReg, topOfLoop, cursor);
@@ -1827,7 +1808,7 @@ MemToMemTypedVarLenMacroOp::generateLoop()
       generateInstruction();
 
       if (_srcReg != _startReg)
-         generateRXInstruction(_cg, TR::InstOpCode::LA, _srcNode, _srcReg->getGPRofArGprPair(), new (_cg->trHeapMemory()) TR::MemoryReference(_srcReg->getGPRofArGprPair(), strideSize(), _cg));
+         generateRXInstruction(_cg, TR::InstOpCode::LA, _srcNode, _srcReg, new (_cg->trHeapMemory()) TR::MemoryReference(_srcReg, strideSize(), _cg));
 
       generateS390BranchInstruction(_cg, TR::InstOpCode::getBranchRelIndexEqOrLowOpCode(), _dstNode, _bxhReg, _endReg, topOfLoop);
       }
@@ -1859,7 +1840,7 @@ MemToMemTypedVarLenMacroOp::generateLoop()
 
       if (_srcReg != _startReg)
          {
-         generateRXYInstruction(_cg, TR::InstOpCode::LAY, _srcNode, _srcReg->getGPRofArGprPair(), new (_cg->trHeapMemory()) TR::MemoryReference(_srcReg->getGPRofArGprPair(), -1 * strideSize(), _cg));
+         generateRXYInstruction(_cg, TR::InstOpCode::LAY, _srcNode, _srcReg, new (_cg->trHeapMemory()) TR::MemoryReference(_srcReg, -1 * strideSize(), _cg));
          }
 
       // _dstReg is decremented as part of BRXH

@@ -3478,60 +3478,6 @@ OMR::Z::Machine::spillAllVolatileHighRegisters(TR::Instruction *currentInstructi
       }
    }
 
-/**
- * Block all volatile high registers
- */
-void
-OMR::Z::Machine::blockVolatileHighRegisters()
-   {
-   int32_t first = TR::RealRegister::FirstGPR;
-   int32_t last  = TR::RealRegister::LastGPR;
-   TR::Machine *machine = self()->cg()->machine();
-   TR::Linkage * linkage = self()->cg()->getS390Linkage();
-
-   for (int32_t i = first; i <= last; i++)
-      {
-      TR::RealRegister * realReg =
-         machine->getS390RealRegister((TR::RealRegister::RegNum) i);
-
-      bool volatileReg = true; // All high regs are volatile
-                               //!linkage->getPreserved((TR::RealRegister::RegNum) i);
-
-      if (volatileReg)
-         {
-         TR_ASSERT(realReg->getState() == TR::RealRegister::Free || realReg->getState() == TR::RealRegister::Locked,
-            "OMR::Z::Machine::blockVolatileAccessRegister -- all volatile access regs should be free.");
-         realReg->setState(TR::RealRegister::Blocked);
-         }
-      }
-   }
-
-/**
- * Unblock all volatile high registers
- */
-void
-OMR::Z::Machine::unblockVolatileHighRegisters()
-   {
-   int32_t first = TR::RealRegister::FirstGPR;
-   int32_t last  = TR::RealRegister::LastGPR;
-   TR::Machine *machine = self()->cg()->machine();
-   TR::Linkage * linkage = self()->cg()->getS390Linkage();
-
-   for (int32_t i = first; i <= last; i++)
-      {
-      TR::RealRegister * realReg =
-         machine->getS390RealRegister((TR::RealRegister::RegNum) i);
-      bool volatileReg = true; // All high regs are volatile
-                               //!linkage->getPreserved((TR::RealRegister::RegNum) i);
-      if (volatileReg)
-         {
-         realReg->setState(TR::RealRegister::Free);
-         }
-      }
-
-   }
-
-
 ////////////////////////////////////////////////////
 
 TR::RealRegister *
@@ -6641,12 +6587,6 @@ OMR::Z::Machine::takeRegisterStateSnapShot()
          _containsHPRSpillSnapShot[i] = true;
          }
       }
-   /* this should not change
-   for (int32_t i=0;i<(NUM_S390_GPR+NUM_S390_FPR+NUM_S390_AR);i++)
-      {
-      _globalRegisterNumberToRealRegisterMapSnapShot[i] = _globalRegisterNumberToRealRegisterMap[i];
-      }
-   */
    }
 
 void
@@ -6725,12 +6665,6 @@ OMR::Z::Machine::restoreRegisterStateFromSnapShot()
          _registerFile[i]->setState(TR::RealRegister::Free);
          }
       }
-   /*
-   for (int32_t i=0;i<(NUM_S390_GPR+NUM_S390_FPR+NUM_S390_AR);i++)
-      {
-      _globalRegisterNumberToRealRegisterMap[i]=_globalRegisterNumberToRealRegisterMapSnapShot[i];
-      }
-   */
    }
 
 TR::RegisterDependencyConditions * OMR::Z::Machine::createDepCondForLiveGPRs(TR::list<TR::Register*> *spilledRegisterList)

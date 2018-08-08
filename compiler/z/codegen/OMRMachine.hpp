@@ -57,7 +57,6 @@ template <typename ListKind> class List;
 #define NUM_S390_HPR 16
 #define NUM_S390_FPR 16
 #define NUM_S390_VRF 16 ///< 32 after full RA complete
-#define NUM_S390_AR  16
 #define NUM_S390_FPR_PAIRS 8
 
 /** Max. displacement */
@@ -313,8 +312,6 @@ class OMR_EXTENSIBLE Machine : public OMR::Machine
 
    // High Register managed
    void spillAllVolatileHighRegisters(TR::Instruction  *currentInstruction);
-   void blockVolatileHighRegisters();
-   void unblockVolatileHighRegisters();
 
    // SINGLE REGISTERs methods
    uint64_t constructFreeRegBitVector(TR::Instruction  *currentInstruction);

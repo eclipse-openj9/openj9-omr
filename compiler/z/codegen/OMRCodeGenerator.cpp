@@ -923,13 +923,13 @@ bool OMR::Z::CodeGenerator::prepareForGRA()
       //
       if (enableHighWordGRA)
          {
-         _globalGPRsPreservedAcrossCalls.init(NUM_S390_GPR+NUM_S390_FPR+NUM_S390_AR+NUM_S390_HPR, self()->trMemory());
-         _globalFPRsPreservedAcrossCalls.init(NUM_S390_GPR+NUM_S390_FPR+NUM_S390_AR+NUM_S390_HPR, self()->trMemory());
+         _globalGPRsPreservedAcrossCalls.init(NUM_S390_GPR + NUM_S390_FPR + NUM_S390_HPR, self()->trMemory());
+         _globalFPRsPreservedAcrossCalls.init(NUM_S390_GPR + NUM_S390_FPR + NUM_S390_HPR, self()->trMemory());
          }
       else
          {
-         _globalGPRsPreservedAcrossCalls.init(NUM_S390_GPR+NUM_S390_FPR+NUM_S390_AR, self()->trMemory());
-         _globalFPRsPreservedAcrossCalls.init(NUM_S390_GPR+NUM_S390_FPR+NUM_S390_AR, self()->trMemory());
+         _globalGPRsPreservedAcrossCalls.init(NUM_S390_GPR + NUM_S390_FPR, self()->trMemory());
+         _globalFPRsPreservedAcrossCalls.init(NUM_S390_GPR + NUM_S390_FPR, self()->trMemory());
          }
 
       TR_GlobalRegisterNumber grn;

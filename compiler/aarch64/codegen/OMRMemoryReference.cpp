@@ -23,6 +23,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include "codegen/ARM64Instruction.hpp"
 #include "codegen/CodeGenerator.hpp"
 
 
@@ -86,17 +87,136 @@ bool OMR::ARM64::MemoryReference::useIndexedForm()
    }
 
 
+/* register offset */
+static bool isRegisterOffsetInstruction(uint32_t enc)
+   {
+   return (enc & 0x3b200c00 == 0x38200800);
+   }
+
+
+/* post-index/pre-index/unscaled immediate offset */
+static bool isImm9OffsetInstruction(uint32_t enc)
+   {
+   return (enc & 0x3b200000 == 0x38000000);
+   }
+
+
+/* unsigned immediate offset */
+static bool isImm12OffsetInstruction(uint32_t enc)
+   {
+   return (enc & 0x3b200000 == 0x39000000);
+   }
+
+
 uint8_t *OMR::ARM64::MemoryReference::generateBinaryEncoding(TR::Instruction *currentInstruction, uint8_t *cursor, TR::CodeGenerator *cg)
    {
-   TR_ASSERT(false, "Not implemented yet.");
+   uint32_t *wcursor = (uint32_t *)cursor;
+   TR::RealRegister *base = self()->getBaseRegister() ? toRealRegister(self()->getBaseRegister()) : NULL;
+   TR::RealRegister *index = self()->getIndexRegister() ? toRealRegister(self()->getIndexRegister()) : NULL;
+   TR::RealRegister *target = toRealRegister(currentInstruction->getMemoryDataRegister());
+
+   if (self()->getUnresolvedSnippet())
+      {
+      TR_ASSERT(false, "Not implemented yet.");
+      }
+   else
+      {
+      int32_t displacement = self()->getOffset();
+
+      TR::InstOpCode op = currentInstruction->getOpCode();
+      uint32_t enc = (uint32_t)op.getOpCodeBinaryEncoding();
+
+      if (index)
+         {
+         TR_ASSERT(displacement == 0, "Non-zero offset with index register.");
+
+         if (isRegisterOffsetInstruction(enc))
+            {
+            base->setRegisterFieldRN(wcursor);
+            index->setRegisterFieldRM(wcursor);
+            target->setRegisterFieldRT(wcursor);
+
+            if (self()->getScale() != 0)
+               {
+               TR_ASSERT(false, "Not implemented yet.");
+               }
+
+            cursor += ARM64_INSTRUCTION_LENGTH;
+            }
+         else
+            {
+            TR_ASSERT(false, "Unsupported instruction type.");
+            }
+         }
+      else
+         {
+         /* no index register */
+         base->setRegisterFieldRN(wcursor);
+         target->setRegisterFieldRT(wcursor);
+
+         if (isImm9OffsetInstruction(enc))
+            {
+            if (constantIsImmed9(displacement))
+               {
+               *wcursor |= (displacement & 0x1ff) << 12; /* imm9 */
+               cursor += ARM64_INSTRUCTION_LENGTH;
+               }
+            else
+               {
+               /* Need additional instructions for large offset */
+               TR_ASSERT(false, "Not implemented yet.");
+               }
+            }
+         else if (isImm12OffsetInstruction(enc))
+            {
+            int32_t size = (enc >> 30) & 3; /* b=0, h=1, w=2, x=3 */
+            int32_t shifted = displacement >> size;
+
+            if (size > 0)
+               {
+               TR_ASSERT((displacement & ((1 << size) - 1)) == 0, "Non-aligned offset in halfword memory access.");
+               }
+
+            if (constantIsUnsignedImmed12(shifted))
+               {
+               *wcursor |= (shifted & 0xfff) << 10; /* imm12 */
+               cursor += ARM64_INSTRUCTION_LENGTH;
+               }
+            else
+               {
+               /* Need additional instructions for large offset */
+               TR_ASSERT(false, "Not implemented yet.");
+               }
+            }
+         else
+            {
+            /* Register pair, literal, exclusive instructions to be supported */
+            TR_ASSERT(false, "Not implemented yet.");
+            }
+         }
+      }
 
    return cursor;
    }
 
 
-uint32_t OMR::ARM64::MemoryReference::estimateBinaryLength(TR::CodeGenerator& codeGen)
+uint32_t OMR::ARM64::MemoryReference::estimateBinaryLength()
    {
-   TR_ASSERT(false, "Not implemented yet.");
+   if (self()->getUnresolvedSnippet() != NULL)
+      {
+      TR_ASSERT(false, "Not implemented yet.");
+      }
+   else
+      {
+      if (self()->getIndexRegister())
+         {
+         return ARM64_INSTRUCTION_LENGTH;
+         }
+      else
+         {
+         TR_ASSERT(false, "Not implemented yet.");
+         }
+      }
 
    return 0;
    }

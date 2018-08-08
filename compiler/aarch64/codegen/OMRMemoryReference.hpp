@@ -276,10 +276,9 @@ class OMR_EXTENSIBLE MemoryReference : public OMR::MemoryReference
 
    /**
     * @brief Estimates the length of generated binary
-    * @param[in] cg : CodeGenerator
     * @return estimated binary length
     */
-   uint32_t estimateBinaryLength(TR::CodeGenerator&);
+   uint32_t estimateBinaryLength();
 
    /**
     * @brief Generates binary encoding

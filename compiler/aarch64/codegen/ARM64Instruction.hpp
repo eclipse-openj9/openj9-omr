@@ -36,6 +36,26 @@ namespace TR { class SymbolReference; }
 
 #define ARM64_INSTRUCTION_LENGTH 4
 
+/*
+ * @brief Answers if the signed integer value can be placed in 9-bit field
+ * @param[in] intValue : signed integer value
+ * @return true if the value can be placed in 9-bit field, false otherwise
+ */
+inline bool constantIsImmed9(int32_t intValue)
+   {
+   return (-256 <= intValue && intValue < 256);
+   }
+
+/*
+ * @brief Answers if the unsigned integer value can be placed in 12-bit field
+ * @param[in] intValue : unsigned integer value
+ * @return true if the value can be placed in 12-bit field, false otherwise
+ */
+inline bool constantIsUnsignedImmed12(uint32_t intValue)
+   {
+   return (intValue < 4096);
+   }
+
 namespace TR
 {
 

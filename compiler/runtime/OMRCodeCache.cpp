@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -381,6 +381,163 @@ OMR::CodeCache::initialize(TR::CodeCacheManager *manager,
       _unresolvedMethodHT = CodeCacheHashTable::allocate(manager);
       if (_resolvedMethodHT==NULL || _unresolvedMethodHT==NULL)
          return false;
+      }
+
+   // Before returning, let's adjust the free space seen by VM.
+   // Usable space is between _warmCodeAlloc and _trampolineBase. Everything else is overhead
+   // Only relevant if code cache repository is used
+   size_t spaceLost = (_warmCodeAlloc - _segment->segmentBase()) + (_segment->segmentTop() - _trampolineBase);
+   _manager->decreaseFreeSpaceInCodeCacheRepository(spaceLost);
+
+   return true;
+   }
+
+
+// Initialize a code cache
+//
+bool
+OMR::CodeCache::initialize(TR::CodeCacheManager *manager,
+                           TR::CodeCacheMemorySegment *codeCacheSegment,
+                           size_t allocatedCodeCacheSizeInBytes)
+   {
+   _manager = manager;
+
+   // heapSize can be calculated as (codeCache->helperTop - codeCacheSegment->heapBase), which is equal to segmentSize
+   // If codeCachePadKB is set, this will make the system believe that we allocated segmentSize bytes,
+   // instead of _jitConfig->codeCachePadKB * 1024 bytes
+   // If codeCachePadKB is not set, heapSize is segmentSize anyway
+   _segment = codeCacheSegment;
+
+   // helperTop is heapTop, usually
+   // When codeCachePadKB > segmentSize, the helperTop is not at the very end of the segemnt
+   _helperTop = _segment->segmentBase() + allocatedCodeCacheSizeInBytes;
+
+   TR::CodeCacheConfig &config = manager->codeCacheConfig();
+
+   // Allocate the CodeCacheHashEntrySlab object and the initial slab
+   //
+   _hashEntrySlab = CodeCacheHashEntrySlab::allocate(manager, config.codeCacheHashEntryAllocatorSlabSize());
+   if (!_hashEntrySlab)
+      {
+      return false;
+      }
+
+   // FIXME: try to provide different names to the mutex based on the codecache
+   if (!(_mutex = TR::Monitor::create("JIT-CodeCacheMonitor-??")))
+      {
+      _hashEntrySlab->free(manager);
+      return false;
+      }
+
+   _hashEntryFreeList = NULL;
+   _freeBlockList     = NULL;
+   _flags = 0;
+   _CCPreLoadedCodeInitialized = false;
+   self()->unreserve();
+   _almostFull = TR_no;
+   _sizeOfLargestFreeColdBlock = 0;
+   _sizeOfLargestFreeWarmBlock = 0;
+   _lastAllocatedBlock = NULL; // MP
+
+   *((TR::CodeCache **)(_segment->segmentBase())) = self(); // Write a pointer to this cache at the beginning of the segment
+   _warmCodeAlloc = _segment->segmentBase() + sizeof(this);
+
+   _warmCodeAlloc = align(_warmCodeAlloc, config.codeCacheAlignment() -  1);
+
+   if (!config.trampolineCodeSize())
+      {
+      // _helperTop is heapTop
+      _trampolineBase = _helperTop;
+      _helperBase = _helperTop;
+      _trampolineReservationMark = _trampolineAllocationMark = _trampolineBase;
+
+      // set the pre loaded per Cache Helper slab
+      _CCPreLoadedCodeTop = (uint8_t *)(((size_t)_trampolineBase) & (~config.codeCacheHelperAlignmentMask()));
+      _CCPreLoadedCodeBase = _CCPreLoadedCodeTop - config.ccPreLoadedCodeSize();
+      TR_ASSERT( (((size_t)_CCPreLoadedCodeBase) & config.codeCacheHelperAlignmentMask()) == 0, "Per-code cache helper sizes do not account for alignment requirements." );
+      _coldCodeAlloc = _CCPreLoadedCodeBase;
+      _trampolineSyncList = NULL;
+
+      return true;
+      }
+
+   // Helpers are located at the top of the code cache (offset N), growing down towards the base (offset 0)
+   size_t trampolineSpaceSize = config.trampolineCodeSize() * config.numRuntimeHelpers();
+   // _helperTop is heapTop
+   _helperBase = _helperTop - trampolineSpaceSize;
+   _helperBase = (uint8_t *)(((size_t)_helperBase) & (~config.codeCacheTrampolineAlignmentBytes()));
+
+   if (!config.needsMethodTrampolines())
+      {
+      // There is no need in method trampolines when there is going to be
+      // only one code cache segment
+      //
+      _trampolineBase = _helperBase;
+      _tempTrampolinesMax = 0;
+      }
+   else
+      {
+      // _helperTop is heapTop
+      // (_helperTop - segment->heapBase) is heapSize
+
+      _trampolineBase = _helperBase -
+                        ((_helperBase - _segment->segmentBase())*config.trampolineSpacePercentage()/100);
+
+      // Grab the configuration details from the JIT platform code
+      //
+      // (_helperTop - segment->heapBase) is heapSize
+      config.mccCallbacks().codeCacheConfig((_helperTop - _segment->segmentBase()), &_tempTrampolinesMax);
+      }
+
+   mcc_printf("mcc_initialize: trampoline base %p\n",  _trampolineBase);
+
+   // set the temporary trampoline slab right under the helper trampolines, should be already aligned
+   _tempTrampolineTop  = _helperBase;
+   _tempTrampolineBase = _tempTrampolineTop - (config.trampolineCodeSize() * _tempTrampolinesMax);
+   _tempTrampolineNext = _tempTrampolineBase;
+
+   // Check if we have enough space in the code cache to contain the trampolines
+   if (_trampolineBase >= _tempTrampolineNext && config.needsMethodTrampolines())
+      {
+      _hashEntrySlab->free(manager);
+      return false;
+      }
+
+   // set the allocation pointer to right after the temporary trampolines
+   _trampolineAllocationMark  = _tempTrampolineBase;
+   _trampolineReservationMark = _trampolineAllocationMark;
+
+   // set the pre loaded per Cache Helper slab
+   _CCPreLoadedCodeTop = (uint8_t *)(((size_t)_trampolineBase) & (~config.codeCacheHelperAlignmentMask()));
+   _CCPreLoadedCodeBase = _CCPreLoadedCodeTop - config.ccPreLoadedCodeSize();
+   TR_ASSERT( (((size_t)_CCPreLoadedCodeBase) & config.codeCacheHelperAlignmentMask()) == 0, "Per-code cache helper sizes do not account for alignment requirements." );
+   _coldCodeAlloc = _CCPreLoadedCodeBase;
+
+   // Set helper trampoline table available
+   //
+   config.mccCallbacks().createHelperTrampolines((uint8_t *)_helperBase, config.numRuntimeHelpers());
+
+   _trampolineSyncList = NULL;
+   if (_tempTrampolinesMax)
+      {
+      // Initialize temporary trampoline synchronization list
+      if (!self()->allocateTempTrampolineSyncBlock())
+         {
+         _hashEntrySlab->free(manager);
+         return false;
+         }
+      }
+
+   if (config.needsMethodTrampolines())
+      {
+      // Initialize hashtables to hold trampolines for resolved and unresolved methods
+      _resolvedMethodHT   = CodeCacheHashTable::allocate(manager);
+      _unresolvedMethodHT = CodeCacheHashTable::allocate(manager);
+      if (_resolvedMethodHT==NULL || _unresolvedMethodHT==NULL)
+         {
+         _hashEntrySlab->free(manager);
+         return false;
+         }
       }
 
    // Before returning, let's adjust the free space seen by VM.

@@ -128,6 +128,7 @@ TR_S390PreRAPeephole::attemptLoadStoreReduction(TR::InstOpCode::Mnemonic storeOp
       TR::S390RXInstruction* loadInst = static_cast<TR::S390RXInstruction*> (_cursor);
       TR::S390RXInstruction* storeInst = static_cast<TR::S390RXInstruction*> (_cursor->getNext());
 
+      // Cannot change to MVC if symbol references are unresolved, MVC doesn't follow same format as load and store so patching won't work
       if ( loadInst->getMemoryReference()->getSymbolReference() && loadInst->getMemoryReference()->getSymbolReference()->isUnresolved() ||
           storeInst->getMemoryReference()->getSymbolReference() && storeInst->getMemoryReference()->getSymbolReference()->isUnresolved())
          {

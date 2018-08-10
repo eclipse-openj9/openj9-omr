@@ -156,8 +156,7 @@ TR_S390PreRAPeephole::attemptLoadStoreReduction(TR::InstOpCode::Mnemonic storeOp
       // Bail out if register could have future uses, or if either instruction has dependencies.
       // Since 2 instructions are replaced with one before RA, we can't handle things like merging
       // dependencies.
-      if (reg->getTotalUseCount() != uses || reg->isDependencySet() ||
-         loadInst->getDependencyConditions() || storeInst->getDependencyConditions())
+      if (reg->getTotalUseCount() != uses || loadInst->getDependencyConditions() || storeInst->getDependencyConditions())
          {
          return false;
          }

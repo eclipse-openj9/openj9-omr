@@ -70,8 +70,6 @@ TR_S390PreRAPeephole::perform()
    if (comp()->getOption(TR_TraceCG))
       printInfo("\nPost PreRegister Assignment Peephole Optimization Instructions:\n");
 
-   bool moveInstr;
-
    while (_cursor != NULL)
       {
       switch(_cursor->getOpCodeValue())

@@ -52,14 +52,13 @@ class OMR_EXTENSIBLE CodeGenPhase : public OMR::CodeGenPhase
    static void performMarkLoadAsZeroOrSignExtensionPhase(TR::CodeGenerator * cg, TR::CodeGenPhase *);
    static void performSetBranchOnCountFlagPhase(TR::CodeGenerator * cg, TR::CodeGenPhase *);
    static void performPreRAPeepholePhase(TR::CodeGenerator * cg, TR::CodeGenPhase *);
+   // override base class implementation so that tracelog includes Post RA in phase title
+   static void performPeepholePhase(TR::CodeGenerator * cg, TR::CodeGenPhase *);
 
    // override base class implementation because new phases are being added
    static int getNumPhases();
    const char * getName();
    static const char* getName(PhaseValue phase);
-
-   // override base class to call new post RA peephole
-   static void performPeepholePhase(TR::CodeGenerator * cg, TR::CodeGenPhase *);
    };
 }
 

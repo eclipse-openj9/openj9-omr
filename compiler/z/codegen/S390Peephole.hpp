@@ -80,7 +80,7 @@ private:
     *  \return
     *     true if the reduction was successful; false otherwise.
     */
-   bool LoadStoreReduction(TR::InstOpCode::Mnemonic storeOpCode, uint16_t size);
+   bool attemptLoadStoreReduction(TR::InstOpCode::Mnemonic storeOpCode, uint16_t size);
    };
 
 class TR_S390PostRAPeephole : private TR_S390Peephole

@@ -78,7 +78,7 @@ TR_S390PreRAPeephole::perform()
          {
          case TR::InstOpCode::L:
             {
-            LoadStoreReduction(TR::InstOpCode::ST, 4);
+            attemptLoadStoreReduction(TR::InstOpCode::ST, 4);
             if (comp()->getOption(TR_TraceCG))
                {
                printInst();
@@ -87,7 +87,7 @@ TR_S390PreRAPeephole::perform()
             }
          case TR::InstOpCode::LFH:
             {
-            LoadStoreReduction(TR::InstOpCode::STFH, 4);
+            attemptLoadStoreReduction(TR::InstOpCode::STFH, 4);
             if (comp()->getOption(TR_TraceCG))
                {
                printInst();
@@ -96,7 +96,7 @@ TR_S390PreRAPeephole::perform()
             }
          case TR::InstOpCode::LG:
             {
-            LoadStoreReduction(TR::InstOpCode::STG, 8);
+            attemptLoadStoreReduction(TR::InstOpCode::STG, 8);
             if (comp()->getOption(TR_TraceCG))
                {
                printInst();
@@ -123,7 +123,7 @@ TR_S390PreRAPeephole::perform()
    }
 
 bool
-TR_S390PreRAPeephole::LoadStoreReduction(TR::InstOpCode::Mnemonic storeOpCode, uint16_t size)
+TR_S390PreRAPeephole::attemptLoadStoreReduction(TR::InstOpCode::Mnemonic storeOpCode, uint16_t size)
    {
    if (_cursor->getNext()->getOpCodeValue() == storeOpCode)
       {

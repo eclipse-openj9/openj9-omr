@@ -378,7 +378,7 @@ void TR::DebugCounterAggregation::aggregateStandardCounters(TR::Compilation *com
    int32_t bytecodeIndex = bci.getByteCodeIndex();
    TR_OpaqueMethodBlock *method = NULL;
 
-   if (callerIndex != -1)
+   if (callerIndex > -1)
       {
       TR_InlinedCallSite &ics = comp->getInlinedCallSite(callerIndex);
       method = ics._methodInfo;

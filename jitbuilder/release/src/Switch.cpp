@@ -90,9 +90,9 @@ SwitchMethod::buildIL()
    TR::IlBuilder *defaultBldr=NULL;
    TR::IlBuilder *case1Bldr=NULL, *case2Bldr=NULL, *case3Bldr=NULL;
    Switch("selector", &defaultBldr, 3,
-          1, &case1Bldr, false,
-          2, &case2Bldr, false,
-          3, &case3Bldr, false);
+          MakeCase(1, &case1Bldr, false),
+          MakeCase(2, &case2Bldr, false),
+          MakeCase(3, &case3Bldr, false));
 
    PrintString(case1Bldr, "\tcase 1 reached\n");
 

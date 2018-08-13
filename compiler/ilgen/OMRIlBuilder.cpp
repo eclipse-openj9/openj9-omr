@@ -2397,9 +2397,7 @@ void
 OMR::IlBuilder::Switch(const char *selectionVar,
                   TR::IlBuilder **defaultBuilder,
                   uint32_t numCases,
-                  int32_t *caseValues,
-                  TR::IlBuilder **caseBuilders,
-                  bool *caseFallsThrough)
+                  JBCase **cases)
    {
    TR::IlValue *selectorValue = Load(selectionVar);
    TR_ASSERT(selectorValue->getDataType() == TR::Int32, "Switch only supports selector having type Int32");
@@ -2417,18 +2415,18 @@ OMR::IlBuilder::Switch(const char *selectionVar,
 
    TR::IlBuilder *breakBuilder = OrphanBuilder();
 
-   // each case handler is a sequence of two builder objects: first the one passed in via caseBuilder (or will be passed
-   //   back via caseBuilders, and second a builder that branches to the breakBuilder (unless this case falls through)
+   // each case handler is a sequence of two builder objects: first the one passed in via `cases`,
+   //   and second a builder that branches to the breakBuilder (unless this case falls through)
    for (int32_t c=0;c < numCases;c++)
       {
-      int32_t value = caseValues[c];
+      int32_t value = cases[c]->_value;
       TR::IlBuilder *handler = NULL;
-      if (!caseFallsThrough[c])
+      TR::IlBuilder *builder = cases[c]->_builder;
+      if (!cases[c]->_fallsThrough)
          {
          handler = OrphanBuilder();
 
-         caseBuilders[c] = createBuilderIfNeeded(caseBuilders[c]);
-         handler->AppendBuilder(caseBuilders[c]);
+         handler->AppendBuilder(builder);
 
          // handle "break" with a separate builder so user can add whatever they want into caseBuilders[c]
          TR::IlBuilder *branchToBreak = OrphanBuilder();
@@ -2437,8 +2435,7 @@ OMR::IlBuilder::Switch(const char *selectionVar,
          }
       else
          {
-         caseBuilders[c] = createBuilderIfNeeded(caseBuilders[c]);
-         handler = caseBuilders[c];
+         handler = builder;
          }
 
       TR::Block *caseBlock = handler->getEntry();
@@ -2455,43 +2452,33 @@ OMR::IlBuilder::Switch(const char *selectionVar,
    AppendBuilder(breakBuilder);
    }
 
+TR::IlBuilder::JBCase *
+OMR::IlBuilder::MakeCase(int32_t caseValue, TR::IlBuilder **caseBuilder, int32_t caseFallsThrough)
+   {
+   TR_ASSERT(caseBuilder != NULL, "MakeCase, needs to have non-null caseBuilder");
+   *caseBuilder = createBuilderIfNeeded(*caseBuilder);
+   auto * c = new (_comp->trHeapMemory()) JBCase(caseValue, *caseBuilder, caseFallsThrough);
+   return c;
+   }
+
 void
 OMR::IlBuilder::Switch(const char *selectionVar,
                   TR::IlBuilder **defaultBuilder,
                   uint32_t numCases,
                   ...)
    {
-   int32_t *caseValues = (int32_t *) _comp->trMemory()->allocateHeapMemory(numCases * sizeof(int32_t));
-   TR_ASSERT(0 != caseValues, "out of memory");
+   JBCase **cases = (JBCase **) _comp->trMemory()->allocateHeapMemory(numCases * sizeof(JBCase *));
+   TR_ASSERT(NULL != cases, "out of memory");
 
-   TR::IlBuilder **caseBuilders = (TR::IlBuilder **) _comp->trMemory()->allocateHeapMemory(numCases * sizeof(TR::IlBuilder *));
-   TR_ASSERT(0 != caseBuilders, "out of memory");
-
-   bool *caseFallsThrough = (bool *) _comp->trMemory()->allocateHeapMemory(numCases * sizeof(bool));
-   TR_ASSERT(0 != caseFallsThrough, "out of memory");
-
-   va_list cases;
-   va_start(cases, numCases);
-   for (int32_t c=0;c < numCases;c++)
+   va_list args;
+   va_start(args, numCases);
+   for (uint32_t c = 0; c < numCases; ++c)
       {
-      caseValues[c] = (int32_t) va_arg(cases, int);
-      caseBuilders[c] = *(TR::IlBuilder **) va_arg(cases, TR::IlBuilder **);
-      caseFallsThrough[c] = (bool) va_arg(cases, int);
+      cases[c] = va_arg(args, JBCase *);
       }
-   va_end(cases);
+   va_end(args);
 
-   Switch(selectionVar, defaultBuilder, numCases, caseValues, caseBuilders, caseFallsThrough);
-
-   // if Switch created any new builders, we need to put those back into the arguments passed into this Switch call
-   va_start(cases, numCases);
-   for (int32_t c=0;c < numCases;c++)
-      {
-      int throwawayValue = va_arg(cases, int);
-      TR::IlBuilder **caseBuilder = va_arg(cases, TR::IlBuilder **);
-      (*caseBuilder) = caseBuilders[c];
-      int throwAwayFallsThrough = va_arg(cases, int);
-      }
-   va_end(cases);
+   Switch(selectionVar, defaultBuilder, numCases, cases);
    }
 
 

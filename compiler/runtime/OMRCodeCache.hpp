@@ -196,6 +196,19 @@ public:
                                          size_t codeCacheSizeAllocated,
                                          CodeCacheHashEntrySlab *hashEntrySlab);
 
+   /**
+    * @brief Initialize an allocated CodeCache object
+    *
+    * @param[in] manager : the TR::CodeCacheManager
+    * @param[in] codeCacheSegment : the code cache memory segment that has been allocated
+    * @param[in] allocatedCodeCacheSizeInBytes : the size (in bytes) of the allocated code cache
+    *
+    * @return true on a successful initialization; false otherwise.
+    */
+   bool                       initialize(TR::CodeCacheManager *manager,
+                                         TR::CodeCacheMemorySegment *codeCacheSegment,
+                                         size_t allocatedCodeCacheSizeInBytes);
+
 private:
    void                       updateMaxSizeOfFreeBlocks(CodeCacheFreeCacheBlock *blockPtr, size_t blockSize);
 

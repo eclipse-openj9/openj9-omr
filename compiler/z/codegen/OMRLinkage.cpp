@@ -379,8 +379,6 @@ OMR::Z::Linkage::saveArguments(void * cursor, bool genBinary, bool InPreProlog, 
 
    TR::ResolvedMethodSymbol * bodySymbol = self()->comp()->getJittedMethodSymbol();
 
-   bool argsAre32Bits = false;
-
    ListIterator<TR::ParameterSymbol> paramIterator((parameterList!=NULL) ? parameterList : &(bodySymbol->getParameterList()));
 
    TR::ParameterSymbol * paramCursor;
@@ -561,7 +559,7 @@ OMR::Z::Linkage::saveArguments(void * cursor, bool genBinary, bool InPreProlog, 
             loadOpCode = TR::InstOpCode::L;
             break;
          case 8:
-            if (TR::Compiler->target.is64Bit() || (self()->cg()->use64BitRegsOn32Bit() && !argsAre32Bits))
+            if (TR::Compiler->target.is64Bit())
                {
                storeOpCode = TR::InstOpCode::STG;
                loadOpCode = TR::InstOpCode::LG;
@@ -1585,15 +1583,34 @@ OMR::Z::Linkage::copyArgRegister(TR::Node * callNode, TR::Node * child, TR::Regi
 
    TR_Debug * debugObj = self()->cg()->getDebug();
    char * REG_PARAM = "LR=Reg_param";
-   if (!self()->cg()->canClobberNodesRegister(child, 0))
+   if (TR::Compiler->target.is32Bit() && self()->cg()->use64BitRegsOn32Bit() && child->getDataType() == TR::Int64 && !argRegister->getRegisterPair())
       {
-      if (!(TR::Compiler->target.is64Bit()) &&
-           ((child->getDataType() == TR::Int64 ) || (child->getDataType() == TR::Int64 )))
+      TR::Register * tempRegH = self()->cg()->allocateRegister();
+      TR::Register * tempRegL = self()->cg()->allocateRegister();
+
+      cursor = generateRSInstruction(self()->cg(), TR::InstOpCode::SRLG,
+          callNode, tempRegH, argRegister, 32);
+      if (debugObj)
          {
-         TR::Register * tempRegH=NULL;
-         TR::Register * tempRegL=NULL;
-         tempRegH = self()->cg()->allocateRegister();
-         tempRegL = self()->cg()->allocateRegister();
+         debugObj->addInstructionComment(toS390RSInstruction(cursor), REG_PARAM);
+         }
+
+      cursor = generateRRInstruction(self()->cg(), copyOpCode,
+        callNode, tempRegL, argRegister);
+      if (debugObj)
+         {
+         debugObj->addInstructionComment(toS390RRInstruction(cursor), REG_PARAM);
+         }
+
+      argRegister = self()->cg()->allocateConsecutiveRegisterPair(tempRegL, tempRegH);
+      self()->cg()->stopUsingRegister(argRegister);
+      }
+   else if (!self()->cg()->canClobberNodesRegister(child, 0))
+      {
+      if (!(TR::Compiler->target.is64Bit()) && child->getDataType() == TR::Int64)
+         {
+         TR::Register * tempRegH = self()->cg()->allocateRegister();
+         TR::Register * tempRegL = self()->cg()->allocateRegister();
 
          cursor = generateRRInstruction(self()->cg(), copyOpCode,
              callNode, tempRegH, argRegister->getRegisterPair()->getHighOrder());
@@ -1666,18 +1683,6 @@ OMR::Z::Linkage::pushLongArg32(TR::Node * callNode, TR::Node * child, int32_t nu
 
    argRegister = self()->cg()->evaluate(child);
    self()->cg()->decReferenceCount(child);
-
-   if (self()->cg()->use64BitRegsOn32Bit())
-      {
-      TR::Register * highRegister = self()->cg()->allocate64bitRegister();
-      generateRSInstruction(self()->cg(), TR::InstOpCode::SRLG, callNode, highRegister, argRegister, 32);
-      TR::Register * tempReg = argRegister;
-
-      argRegister = self()->cg()->allocateConsecutiveRegisterPair(tempReg, highRegister);
-
-      self()->cg()->stopUsingRegister(highRegister);
-      self()->cg()->stopUsingRegister(argRegister);
-      }
 
    argRegister = self()->copyArgRegister(callNode, child, argRegister);
 

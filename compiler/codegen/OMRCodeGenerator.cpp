@@ -852,17 +852,11 @@ bool
 OMR::CodeGenerator::use64BitRegsOn32Bit()
    {
 #ifdef TR_TARGET_S390
-   if (!(TR::Compiler->target.isZOS() || TR::Compiler->target.isLinux()))
-      return false;
-   else if (TR::Compiler->target.is64Bit())
+   if (TR::Compiler->target.is64Bit())
       return false;
    else
       {
-      bool longReg = self()->comp()->getOption(TR_Enable64BitRegsOn32Bit);
-      bool longRegHeur = self()->comp()->getOption(TR_Enable64BitRegsOn32BitHeuristic);
-      bool use64BitRegs = (longReg && !longRegHeur && self()->comp()->getJittedMethodSymbol()->mayHaveLongOps()) ||
-                          (longReg && longRegHeur && self()->comp()->useLongRegAllocation());
-      return use64BitRegs;
+      return self()->comp()->getOption(TR_Enable64BitRegsOn32Bit);
       }
 #endif // TR_TARGET_S390
    return false;

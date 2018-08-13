@@ -13105,7 +13105,7 @@
    /* .description = */ "Perform Processor Assist",
    /* .opcode[0]   = */ 0xB2,
    /* .opcode[1]   = */ 0xE8,
-   /* .format      = */ RRF_FORMAT,
+   /* .format      = */ RRF2_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_zEC12,
    /* .properties  = */ S390OpProp_UsesTarget
    },

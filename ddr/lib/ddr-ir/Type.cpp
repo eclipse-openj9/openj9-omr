@@ -23,6 +23,7 @@
 
 Type::Type(size_t size)
 	: _blacklisted(false)
+	, _opaque(true)
 	, _name()
 	, _sizeOf(size)
 {
@@ -105,6 +106,34 @@ Type *
 Type::getBaseType()
 {
 	return NULL;
+}
+
+Type *
+Type::getOpaqueType()
+{
+	Type *type = this;
+	set<Type *> visitedTypes;
+
+	/* stop if we find a type that should treated as opaque */
+	while (!type->_opaque) {
+		Type * baseType = type->getBaseType();
+
+		if (NULL == baseType) {
+			/* this is the end of the chain */
+			break;
+		}
+
+		visitedTypes.insert(type);
+
+		if (visitedTypes.find(baseType) != visitedTypes.end()) {
+			/* this signals a cycle in the chain of base types */
+			break;
+		}
+
+		type = baseType;
+	}
+
+	return type;
 }
 
 bool

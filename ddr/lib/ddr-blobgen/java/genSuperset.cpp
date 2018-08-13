@@ -54,7 +54,6 @@ JavaSupersetGenerator::JavaSupersetGenerator(bool printEmptyTypes)
 	: _baseTypedefSet()
 	, _baseTypedefMap()
 	, _baseTypedefReplace()
-	, _opaqueTypeNames()
 	, _file(0)
 	, _portLibrary(NULL)
 	, _printEmptyTypes(printEmptyTypes)
@@ -119,19 +118,6 @@ JavaSupersetGenerator::initBaseTypedefSet()
 	_baseTypedefReplace["I_32"] = "I32";
 	_baseTypedefReplace["I_64"] = "I64";
 	_baseTypedefReplace["I_128"] = "I128";
-
-	_opaqueTypeNames.insert("IDATA");
-	_opaqueTypeNames.insert("UDATA");
-
-	for (unordered_map<string, string>::const_iterator it = _baseTypedefReplace.begin(); it != _baseTypedefReplace.end(); ++ it) {
-		_opaqueTypeNames.insert(it->first);
-		_opaqueTypeNames.insert(it->second);
-	}
-
-	for (unordered_map<string, string>::const_iterator it = _baseTypedefMap.begin(); it != _baseTypedefMap.end(); ++ it) {
-		_opaqueTypeNames.insert(it->first);
-		_opaqueTypeNames.insert(it->second);
-	}
 }
 
 void
@@ -222,46 +208,19 @@ SupersetFieldVisitor::visitEnum(EnumUDT *type) const
 	return DDR_RC_OK;
 }
 
-static Type *
-getBaseType(TypedefUDT *type, const set<string> &opaqueNames)
-{
-	Type *baseType = type;
-	const string *name = &baseType->_name;
-	set<Type *> baseTypes;
-
-	/* stop if we find a name that should treated as opaque */
-	while (opaqueNames.find(*name) == opaqueNames.end()) {
-		baseTypes.insert(baseType);
-
-		Type * nextBase = baseType->getBaseType();
-
-		if (NULL == nextBase) {
-			/* this is the end of the chain */
-			break;
-		} else if (baseTypes.find(nextBase) != baseTypes.end()) {
-			/* this signals a cycle in the chain of base types */
-			break;
-		}
-
-		baseType = nextBase;
-		name = &baseType->_name;
-	}
-
-	return baseType;
-}
-
 DDR_RC
 SupersetFieldVisitor::visitTypedef(TypedefUDT *type) const
 {
-	Type *baseType = getBaseType(type, _gen->_opaqueTypeNames);
-	if (baseType == type) {
+	Type *opaqueType = type->getOpaqueType();
+	if (opaqueType == type) {
 		*_typeName = replaceAll(type->getFullName(), "::", "$");
 		_gen->convertJ9BaseTypedef(type, _typeName);
 	} else {
-		baseType->acceptVisitor(SupersetFieldVisitor(_gen, _typeName, _simpleName, _prefixBase, _prefix, _pointerTypeBase));
+		opaqueType->acceptVisitor(SupersetFieldVisitor(_gen, _typeName, _simpleName, _prefixBase, _prefix, _pointerTypeBase));
 	}
 
-	if (type->getSymbolKindName().empty()) {
+	string symbolKind = type->getSymbolKindName();
+	if (symbolKind.empty()) {
 		*_simpleName = type->_name;
 		_gen->replaceBaseTypedef(type, _simpleName);
 	} else {
@@ -269,14 +228,13 @@ SupersetFieldVisitor::visitTypedef(TypedefUDT *type) const
 	}
 
 	/* Get the field type. */
-	/* Should "union " be printed in superset or is that not allowed? */
-	*_prefixBase = type->getSymbolKindName();
-	if (!_prefixBase->empty()) {
-		*_prefixBase += " ";
+	/* Prefix "union" should not be printed in superset */
+	if (symbolKind.empty() || ("union" == symbolKind)) {
+		*_prefixBase = "";
+	} else {
+		*_prefixBase = symbolKind + " ";
 	}
-	if ((NULL != type->_aliasedType) && (type->_aliasedType->_name == type->_name)) {
-		*_prefix = *_prefixBase;
-	}
+	*_prefix = *_prefixBase;
 
 	/* Get field pointer/array notation. */
 	for (size_t i = type->getPointerCount(); i != 0; i -= 1) {
@@ -518,21 +476,8 @@ SupersetVisitor::visitType(Type *type) const
 DDR_RC
 SupersetVisitor::visitTypedef(TypedefUDT *type) const
 {
-	DDR_RC rc = DDR_RC_OK;
-
-	if (!_addFieldsOnly) {
-		Type *baseType = getBaseType(type, _supersetGen->_opaqueTypeNames);
-
-		/* print this typedef if its name is different than its baseType */
-		if (baseType->_name != type->_name) {
-			rc = _supersetGen->printType(type, NULL);
-			if (DDR_RC_OK == rc) {
-				rc = baseType->acceptVisitor(SupersetVisitor(_supersetGen, true, _prefix));
-			}
-		}
-	}
-
-	return rc;
+	/* No need to write this typedef: references are expanded. */
+	return DDR_RC_OK;
 }
 
 DDR_RC
@@ -666,8 +611,6 @@ JavaSupersetGenerator::printSuperset(OMRPortLibrary *portLibrary, Symbol_IR *ir,
 
 	_portLibrary = portLibrary;
 	_file = omrfile_open(supersetFile, EsOpenCreate | EsOpenWrite | EsOpenAppend | EsOpenTruncate, 0644);
-
-	_opaqueTypeNames.insert(ir->_opaqueTypeNames.begin(), ir->_opaqueTypeNames.end());
 
 	const SupersetVisitor printer(this);
 

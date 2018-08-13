@@ -44,6 +44,26 @@
 using std::map;
 using std::stack;
 
+Symbol_IR::OverrideInfo::OverrideInfo()
+	: opaqueTypeNames()
+	, fieldOverrides()
+{
+	static const char * const scalarTypes[] = {
+		"char",
+		"I8", "I_8", "U8", "U_8",
+		"I16", "I_16", "U16", "U_16",
+		"I32", "I_32", "U32", "U_32",
+		"I64", "I_64", "U64", "U_64",
+		"I128", "I_128", "U128", "U_128",
+		"IDATA", "intptr_t", "UDATA", "uintptr_t",
+		NULL
+	};
+
+	for (const char * const *cursor = scalarTypes; NULL != *cursor; ++cursor) {
+		opaqueTypeNames.insert(*cursor);
+	}
+}
+
 Symbol_IR::~Symbol_IR()
 {
 	for (std::vector<Type *>::const_iterator it = _types.begin(); it != _types.end(); ++it) {
@@ -58,6 +78,7 @@ Symbol_IR::applyOverridesList(OMRPortLibrary *portLibrary, const char *overrides
 	DDR_RC rc = DDR_RC_OK;
 	OMRPORT_ACCESS_FROM_OMRPORT(portLibrary);
 	vector<string> filenames;
+	OverrideInfo overrideInfo;
 
 	/* Read list of type override files from specified file. */
 	intptr_t fd = omrfile_open(overridesListFile, EsOpenRead, 0);
@@ -94,12 +115,60 @@ Symbol_IR::applyOverridesList(OMRPortLibrary *portLibrary, const char *overrides
 closeFile:
 		omrfile_close(fd);
 	}
+
 	for (vector<string>::const_iterator it = filenames.begin(); filenames.end() != it; ++it) {
-		rc = applyOverridesFile(portLibrary, it->c_str());
+		rc = readOverridesFile(portLibrary, it->c_str(), &overrideInfo);
 		if (DDR_RC_OK != rc) {
 			break;
 		}
 	}
+
+	if (DDR_RC_OK == rc) {
+		/* mark opaque types */
+		for (vector<Type *>::const_iterator it = _types.begin(); it != _types.end(); ++it) {
+			Type *type = *it;
+			if (overrideInfo.opaqueTypeNames.find(type->_name) != overrideInfo.opaqueTypeNames.end()) {
+				type->_opaque = true;
+			}
+		}
+
+		/* Create a map of type name to vector of types to check all types
+		 * by name for type overrides.
+		 */
+		map<string, vector<Type *> > typeNames;
+		for (vector<Type *>::const_iterator it = _types.begin(); it != _types.end(); ++it) {
+			Type *type = *it;
+			typeNames[type->_name].push_back(type);
+		}
+
+		/* Apply the type overrides. */
+		for (vector<FieldOverride>::const_iterator it = overrideInfo.fieldOverrides.begin(); it != overrideInfo.fieldOverrides.end(); ++it) {
+			const FieldOverride &type = *it;
+			/* Check if the structure to override exists. */
+			map<string, vector<Type *> >::const_iterator typeEntry = typeNames.find(type.structName);
+			if (typeNames.end() != typeEntry) {
+				Type *replacementType = NULL;
+				if (type.isTypeOverride) {
+					/* If the type for the override exists in the IR, use it. Otherwise, create it. */
+					map<string, vector<Type *> >::const_iterator overEntry = typeNames.find(type.overrideName);
+					if (typeNames.end() != overEntry) {
+						replacementType = overEntry->second.front();
+					} else {
+						replacementType = new Type(0);
+						replacementType->_name = type.overrideName;
+						typeNames[replacementType->_name].push_back(replacementType);
+					}
+				}
+
+				/* Iterate over the types with a matching name for the override. */
+				const vector<Type *> &typesWithName = typeEntry->second;
+				for (vector<Type *>::const_iterator it2 = typesWithName.begin(); it2 != typesWithName.end(); ++it2) {
+					(*it2)->renameFieldsAndMacros(type, replacementType);
+				}
+			}
+		}
+	}
+
 	return rc;
 }
 
@@ -110,13 +179,12 @@ startsWith(const string &str, const string &prefix)
 }
 
 DDR_RC
-Symbol_IR::applyOverridesFile(OMRPortLibrary *portLibrary, const char *overridesFile)
+Symbol_IR::readOverridesFile(OMRPortLibrary *portLibrary, const char *overridesFile, OverrideInfo *overrideInfo)
 {
 	DDR_RC rc = DDR_RC_OK;
 	OMRPORT_ACCESS_FROM_OMRPORT(portLibrary);
 
 	/* Read list of type overrides from specified file. */
-	vector<FieldOverride> overrideList;
 	intptr_t fd = omrfile_open(overridesFile, EsOpenRead, 0);
 	if (0 > fd) {
 		ERRMSG("Failure attempting to open %s\nExiting...\n", overridesFile);
@@ -169,7 +237,7 @@ Symbol_IR::applyOverridesFile(OMRPortLibrary *portLibrary, const char *overrides
 					if (startsWith(line, opaquetype)) {
 						line.erase(0, opaquetype.length());
 						if (!line.empty()) {
-							_opaqueTypeNames.insert(line);
+							overrideInfo->opaqueTypeNames.insert(line);
 						}
 						continue;
 					}
@@ -203,49 +271,13 @@ Symbol_IR::applyOverridesFile(OMRPortLibrary *portLibrary, const char *overrides
 						line.substr(equalsPosition + 1),
 						isTypeOverride
 					};
-					overrideList.push_back(override);
+					overrideInfo->fieldOverrides.push_back(override);
 				}
 			}
 			free(buff);
 		}
 closeFile:
 		omrfile_close(fd);
-	}
-
-	/* Create a map of type name to vector of types to check all types
-	 * by name for type overrides.
-	 */
-	map<string, vector<Type *> > typeNames;
-	for (vector<Type *>::const_iterator it = _types.begin(); it != _types.end(); ++it) {
-		Type *type = *it;
-		typeNames[type->_name].push_back(type);
-	}
-
-	/* Apply the type overrides. */
-	for (vector<FieldOverride>::const_iterator it = overrideList.begin(); it != overrideList.end(); ++it) {
-		const FieldOverride &type = *it;
-		/* Check if the structure to override exists. */
-		map<string, vector<Type *> >::const_iterator typeEntry = typeNames.find(type.structName);
-		if (typeNames.end() != typeEntry) {
-			Type *replacementType = NULL;
-			if (type.isTypeOverride) {
-				/* If the type for the override exists in the IR, use it. Otherwise, create it. */
-				map<string, vector<Type *> >::const_iterator overEntry = typeNames.find(type.overrideName);
-				if (typeNames.end() != overEntry) {
-					replacementType = overEntry->second.front();
-				} else {
-					replacementType = new Type(0);
-					replacementType->_name = type.overrideName;
-					typeNames[replacementType->_name].push_back(replacementType);
-				}
-			}
-
-			/* Iterate over the types with a matching name for the override. */
-			const vector<Type *> &typesWithName = typeEntry->second;
-			for (vector<Type *>::const_iterator it2 = typesWithName.begin(); it2 != typesWithName.end(); ++it2) {
-				(*it2)->renameFieldsAndMacros(type, replacementType);
-			}
-		}
 	}
 
 	return rc;

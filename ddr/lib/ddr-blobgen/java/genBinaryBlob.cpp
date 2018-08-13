@@ -184,6 +184,22 @@ stringTableEquals(void *leftKey, void *rightKey, void *userData)
 	return (left_s == right_s) || (0 == strcmp(left_s, right_s));
 }
 
+static string
+getBlobFullName(Type *type)
+{
+	string blobName = type->getFullName();
+
+	for (size_t i = 0;;) {
+		i = blobName.find("::", i);
+		if (string::npos == i) {
+			break;
+		}
+		blobName.replace(i, 2, "__");
+	}
+
+	return blobName;
+}
+
 void
 JavaBlobGenerator::copyStringTable()
 {
@@ -437,13 +453,7 @@ BlobBuildVisitor::visitEnum(EnumUDT *e) const
 			if (_addFieldsOnly) {
 				_gen->_buildInfo.curBlobStruct->constantCount += constCount;
 			} else {
-				string nameFormatted = e->_name;
-
-				if (NULL != e->_outerNamespace) {
-					nameFormatted = e->_outerNamespace->_name + "__" + nameFormatted;
-				}
-
-				rc = _gen->addBlobStruct(nameFormatted, "", constCount, 0, (uint32_t)e->_sizeOf);
+				rc = _gen->addBlobStruct(getBlobFullName(e), "", constCount, 0, (uint32_t)e->_sizeOf);
 			}
 		}
 	}
@@ -497,12 +507,7 @@ BlobBuildVisitor::visitUnion(UnionUDT *u) const
 				_gen->_buildInfo.curBlobStruct->constantCount += constCount;
 				_gen->_buildInfo.curBlobStruct->fieldCount += fieldCount;
 			} else {
-				string nameFormatted = u->_name;
-				if (NULL != u->_outerNamespace) {
-					nameFormatted = u->_outerNamespace->_name + "__" + nameFormatted;
-				}
-
-				rc = _gen->addBlobStruct(nameFormatted, "", constCount, fieldCount, (uint32_t)u->_sizeOf);
+				rc = _gen->addBlobStruct(getBlobFullName(u), "", constCount, fieldCount, (uint32_t)u->_sizeOf);
 			}
 		}
 	}
@@ -571,21 +576,11 @@ BlobBuildVisitor::visitClass(ClassUDT *cu) const
 				_gen->_buildInfo.curBlobStruct->constantCount += constCount;
 				_gen->_buildInfo.curBlobStruct->fieldCount += fieldCount;
 			} else {
-				string nameFormatted = cu->_name;
-
-				if (NULL != cu->_outerNamespace) {
-					nameFormatted = cu->_outerNamespace->_name + "__" + nameFormatted;
-				}
-
-				/* Find super class name offset */
+				string nameFormatted = getBlobFullName(cu);
 				string superName;
 
 				if (NULL != cu->_superClass) {
-					superName = cu->_superClass->_name;
-
-					if (NULL != cu->_superClass->_outerNamespace) {
-						superName = cu->_superClass->_outerNamespace->_name + "__" + superName;
-					}
+					superName = getBlobFullName(cu->_superClass);
 				}
 
 				rc = _gen->addBlobStruct(nameFormatted, superName, constCount, fieldCount, (uint32_t)cu->_sizeOf);
@@ -632,7 +627,7 @@ BlobBuildVisitor::visitNamespace(NamespaceUDT *ns) const
 		if (_addFieldsOnly) {
 			_gen->_buildInfo.curBlobStruct->constantCount += constCount;
 		} else {
-			rc = _gen->addBlobStruct(ns->_name, "", constCount, 0, 0);
+			rc = _gen->addBlobStruct(getBlobFullName(ns), "", constCount, 0, 0);
 		}
 	}
 
@@ -661,45 +656,11 @@ BlobBuildVisitor::visitType(Type *type) const
 	return DDR_RC_OK;
 }
 
-static Type *
-getBaseType(TypedefUDT *type)
-{
-	Type *baseType = type;
-	set<Type *> baseTypes;
-
-	for (;;) {
-		baseTypes.insert(baseType);
-
-		Type * nextBase = baseType->getBaseType();
-
-		if (NULL == nextBase) {
-			/* this is the end of the chain */
-			break;
-		} else if (baseTypes.find(nextBase) != baseTypes.end()) {
-			/* this signals a cycle in the chain of base types */
-			break;
-		}
-
-		baseType = nextBase;
-	}
-
-	return baseType;
-}
-
 DDR_RC
 BlobBuildVisitor::visitTypedef(TypedefUDT *type) const
 {
-	DDR_RC rc = DDR_RC_OK;
-
-	if (!_addFieldsOnly) {
-		Type *baseType = getBaseType(type);
-		/* include this typedef if its name is different than its baseType */
-		if (baseType->_name != type->_name) {
-			// TODO
-		}
-	}
-
-	return rc;
+	/* No need to write this typedef: references are expanded. */
+	return DDR_RC_OK;
 }
 
 DDR_RC
@@ -811,11 +772,13 @@ JavaBlobGenerator::addBlobStruct(const string &name, const string &superName, ui
 class BlobFieldVisitor : public TypeVisitor
 {
 private:
-	string * const _fieldString;
+	string * const _typePrefix;
+	string * const _typeSuffix;
 
 public:
-	explicit BlobFieldVisitor(string *fieldString)
-		: _fieldString(fieldString)
+	explicit BlobFieldVisitor(string *prefix, string *suffix)
+		: _typePrefix(prefix)
+		, _typeSuffix(suffix)
 	{
 	}
 
@@ -830,21 +793,29 @@ public:
 DDR_RC
 BlobFieldVisitor::visitType(Type *type) const
 {
-	*_fieldString += type->_name;
+	*_typePrefix += type->_name;
 	return DDR_RC_OK;
 }
 
 DDR_RC
 BlobFieldVisitor::visitNamespace(NamespaceUDT *type) const
 {
-	*_fieldString += type->getSymbolKindName() + " " + type->getFullName();
+	string prefix = type->getSymbolKindName();
+
+	/* prefix "union" should not be included */
+	if (prefix.empty() || ("union" == prefix)) {
+		*_typePrefix += type->getFullName();
+	} else {
+		*_typePrefix += prefix + " " + type->getFullName();
+	}
+
 	return DDR_RC_OK;
 }
 
 DDR_RC
 BlobFieldVisitor::visitEnum(EnumUDT *type) const
 {
-	*_fieldString += type->getSymbolKindName() + " " + type->getFullName();
+	*_typePrefix += type->getSymbolKindName() + " " + type->getFullName();
 	return DDR_RC_OK;
 }
 
@@ -852,13 +823,27 @@ DDR_RC
 BlobFieldVisitor::visitTypedef(TypedefUDT *type) const
 {
 	/* If typedef is void*, or otherwise known as a function pointer, return name as void*. */
-	Type *aliasedType = type->_aliasedType;
+	Type *opaqueType = type->getOpaqueType();
 
-	if ((NULL != aliasedType) && ("void" == aliasedType->_name) && (0 != type->_modifiers._pointerCount)) {
-		*_fieldString += "void*";
+	if ((NULL != opaqueType) && ("void" == opaqueType->_name) && (0 != type->_modifiers._pointerCount)) {
+		*_typePrefix += "void";
 	} else {
-		string prefix = type->getSymbolKindName();
-		*_fieldString += prefix.empty() ? type->getFullName() : (prefix + " " + type->getFullName());
+		string prefix = opaqueType->getSymbolKindName();
+
+		/* prefix "union" should not be included */
+		if (prefix.empty() || ("union" == prefix)) {
+			*_typePrefix += opaqueType->getFullName();
+		} else {
+			*_typePrefix += prefix + " " + opaqueType->getFullName();
+		}
+	}
+
+	for (size_t i = type->getPointerCount(); i > 0; --i) {
+		*_typeSuffix = "*" + *_typeSuffix;
+	}
+
+	for (size_t i = type->getArrayDimensions(); i > 0; --i) {
+		*_typeSuffix = *_typeSuffix + "[]";
 	}
 
 	return DDR_RC_OK;
@@ -880,6 +865,9 @@ DDR_RC
 JavaBlobGenerator::formatFieldType(Field *field, string *fieldType)
 {
 	DDR_RC rc = DDR_RC_OK;
+	Type *type = field->_fieldType;
+	string typePrefix;
+	string typeSuffix;
 
 	*fieldType = "";
 
@@ -887,41 +875,25 @@ JavaBlobGenerator::formatFieldType(Field *field, string *fieldType)
 		ERRMSG("Unhandled field modifer flags: %d", field->_modifiers._modifierFlags);
 		rc = DDR_RC_ERROR;
 	} else {
-		*fieldType = field->_modifiers.getModifierNames();
-	}
-
-	if (DDR_RC_OK == rc) {
-		Type *type = field->_fieldType;
+		typeSuffix = field->_modifiers.getPointerType();
 
 		if ((NULL == type) || type->_blacklisted || (field->_modifiers._pointerCount > 1)) {
-			*fieldType = "void";
+			typePrefix = "void";
 		} else {
-			rc = type->acceptVisitor(BlobFieldVisitor(fieldType));
+			typePrefix = field->_modifiers.getModifierNames();
+
+			rc = type->acceptVisitor(BlobFieldVisitor(&typePrefix, &typeSuffix));
 		}
 	}
 
-	if (DDR_RC_OK == rc) {
-		for (size_t i = field->_modifiers._pointerCount; i > 0; --i) {
-			*fieldType += "*";
+	if ((DDR_RC_OK == rc) && (NULL != type)) {
+		stringstream bits;
+
+		if (0 != field->_bitField) {
+			bits << ":" << field->_bitField;
 		}
 
-		if (field->_modifiers.isArray()) {
-			stringstream stream;
-			size_t dimensionCount = field->_modifiers.getArrayDimensions();
-			for (size_t i = 0; i < dimensionCount; ++i) {
-				size_t length = field->_modifiers.getArrayLength(i);
-				stream << "[";
-				if (0 != length) {
-					stream << length;
-				}
-				stream << "]";
-			}
-			*fieldType += stream.str();
-		} else if (0 != field->_bitField) {
-			stringstream stream;
-			stream << ":" << field->_bitField;
-			*fieldType += stream.str();
-		}
+		*fieldType = typePrefix + typeSuffix + bits.str();
 	}
 
 	return rc;
@@ -1014,17 +986,8 @@ BlobEnumerateVisitor::visitEnum(EnumUDT *type) const
 DDR_RC
 BlobEnumerateVisitor::visitTypedef(TypedefUDT *type) const
 {
-	DDR_RC rc = DDR_RC_OK;
-
-	if (!_addFieldsOnly) {
-		Type *baseType = getBaseType(type);
-		/* include this typedef if its name is different than its baseType */
-		if (baseType->_name != type->_name) {
-			// TODO
-		}
-	}
-
-	return rc;
+	/* No need to write this typedef: references are expanded. */
+	return DDR_RC_OK;
 }
 
 DDR_RC

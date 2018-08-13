@@ -48,6 +48,7 @@ class Type
 {
 public:
 	bool _blacklisted;
+	bool _opaque;
 	string _name;
 	size_t _sizeOf; /* Size of type in bytes */
 
@@ -75,6 +76,7 @@ public:
 	virtual vector<UDT *> *getSubUDTS();
 	virtual void renameFieldsAndMacros(const FieldOverride &fieldOverride, Type *replacementType);
 	virtual Type *getBaseType();
+	Type *getOpaqueType();
 
 	bool operator==(const Type & rhs) const;
 	virtual bool compareToClass(const ClassUDT &) const;

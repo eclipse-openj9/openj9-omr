@@ -1164,15 +1164,160 @@
         {
             "name": "MethodBuilder",
             "short-name": "MB",
+            "extends": "IlBuilder",
             "types": [
                 ],
             "fields": [
                 ],
             "constructors": [
+                { "name": ""
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "MethodBuilder"
+                , "parms": [{"name":"dict","type":"TypeDictionary"}]
+                },
+                { "name": ""
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "MethodBuilder"
+                , "parms": [
+                    {"name":"dict","type":"TypeDictionary"},
+                    {"name":"vmState","type":"VirtualMachineState"}
+                    ]
+                }
                 ],
             "callbacks": [
+                { "name": "RequestFunction"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "boolean"
+                , "parms": [ {"name":"name","type":"constString"} ]
+                }
                 ],
             "services": [
+                { "name": "AllLocalsHaveBeenDefined"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "none"
+                , "parms": []
+                },
+                { "name": "AppendBuilder"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "none"
+                , "parms": [ {"name":"b","type":"IlBuilder"} ]
+                },
+                { "name": "AppendBuilder"
+                , "overloadsuffix": "_BytecodeBuilder"
+                , "flags": []
+                , "return": "none"
+                , "parms": [ {"name":"b","type":"BytecodeBuilder"} ]
+                },
+                { "name": "AppendBytecodeBuilder"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "none"
+                , "parms": [ {"name":"b","type":"BytecodeBuilder"} ]
+                },
+                { "name": "DefineFile"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "none"
+                , "parms": [ {"name":"fileName","type":"constString"} ]
+                },
+                { "name": "DefineLine"
+                , "overloadsuffix": "String"
+                , "flags": []
+                , "return": "none"
+                , "parms": [ {"name":"line","type":"constString"} ]
+                },
+                { "name": "DefineLine"
+                , "overloadsuffix": "Integer"
+                , "flags": []
+                , "return": "none"
+                , "parms": [ {"name":"line","type":"int32"} ]
+                },
+                { "name": "DefineName"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "none"
+                , "parms": [ {"name":"name","type":"constString"} ]
+                },
+                { "name": "DefineParameter"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"name","type":"constString"},
+                    {"name":"type","type":"IlType"}
+                    ]
+                },
+                { "name": "DefineArrayParameter"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"name","type":"constString"},
+                    {"name":"type","type":"IlType"}
+                    ]
+                },
+                { "name": "DefineReturnType"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "none"
+                , "parms": [ {"name":"type","type":"IlType"} ]
+                },
+                { "name": "DefineLocal"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"name","type":"constString"},
+                    {"name":"type","type":"IlType"}
+                    ]
+                },
+                { "name": "DefineMemory"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"name","type":"constString"},
+                    {"name":"type","type":"IlType"},
+                    {"name":"location","type":"pointer"}
+                    ]
+                },
+                { "name": "DefineFunction"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"name","type":"constString"},
+                    {"name":"fileName","type":"constString"},
+                    {"name":"lineNumber","type":"constString"},
+                    {"name":"entryPoint","type":"pointer"},
+                    {"name":"returnType","type":"IlType"},
+                    {"name":"numParms","type":"int32"},
+                    {"name":"parmTypes","type":"IlType","attributes":["array","can_be_vararg"],"array-len":"numParms"}
+                    ]
+                },
+                { "name": "GetMethodName"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "constString"
+                , "parms": []
+                },
+                { "name": "GetNextBytecodeFromWorklist"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "int32"
+                , "parms": []
+                },
+                { "name": "setVMState"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "none"
+                , "parms": [ {"name":"vmState","type":"VirtualMachineState"} ]
+                }
                 ]
         },
         {

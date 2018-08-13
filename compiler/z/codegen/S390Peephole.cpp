@@ -111,9 +111,7 @@ TR_S390PreRAPeephole::perform()
             }
          }
 
-      moveInstr = true;
-      if(moveInstr)
-         _cursor = _cursor->getNext();
+      _cursor = _cursor->getNext();
       }
 
    if (comp()->getOption(TR_TraceCG))

@@ -15784,7 +15784,7 @@ void arraycmpWithPadHelper::generateCLCLitPoolPadding()
 
       constSpacePadding = true;
 
-      paddingLitPoolOffset = cg->fe()->findOrCreateLiteral(comp, paddingValue, paddingByteLength);
+      paddingLitPoolOffset = cg->findOrCreateLiteral(paddingValue, paddingByteLength);
       newLitPoolReg = cg->isLiteralPoolOnDemandOn();
       if (newLitPoolReg)
          litPoolBaseReg = cg->allocateRegister();
@@ -19157,24 +19157,24 @@ OMR::Z::TreeEvaluator::vsetelemEvaluator(TR::Node *node, TR::CodeGenerator *cg)
             if (size == 1)
                {
                uint8_t value = valueNode->getIntegerNodeValue<uint8_t>();
-               offset = cg->fe()->findOrCreateLiteral(cg->comp(), &value, size);
+               offset = cg->findOrCreateLiteral(&value, size);
                }
             else if (size == 2)
                {
                uint16_t value = valueNode->getIntegerNodeValue<uint16_t>();
-               offset = cg->fe()->findOrCreateLiteral(cg->comp(), &value, size);
+               offset = cg->findOrCreateLiteral(&value, size);
                }
             else if (size == 4)
                {
                if (valueNode->getOpCode().isFloat())
                   {
                   float value = valueNode->getFloat();
-                  offset = cg->fe()->findOrCreateLiteral(cg->comp(), &value, size);
+                  offset = cg->findOrCreateLiteral(&value, size);
                   }
                else
                   {
                   uint32_t value = valueNode->getIntegerNodeValue<uint32_t>();
-                  offset = cg->fe()->findOrCreateLiteral(cg->comp(), &value, size);
+                  offset = cg->findOrCreateLiteral(&value, size);
                   }
                }
             else if (size == 8)
@@ -19182,12 +19182,12 @@ OMR::Z::TreeEvaluator::vsetelemEvaluator(TR::Node *node, TR::CodeGenerator *cg)
                if (valueNode->getOpCode().isDouble())
                   {
                   double value = valueNode->getDouble();
-                  offset = cg->fe()->findOrCreateLiteral(cg->comp(), &value, size);
+                  offset = cg->findOrCreateLiteral(&value, size);
                   }
                else
                   {
                   uint64_t value = valueNode->getIntegerNodeValue<uint64_t>();
-                  offset = cg->fe()->findOrCreateLiteral(cg->comp(), &value, size);
+                  offset = cg->findOrCreateLiteral(&value, size);
                   }
                }
 

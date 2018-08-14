@@ -606,6 +606,17 @@ class OMR_InlinerPolicy : public TR::OptimizationPolicy, public OMR_InlinerHelpe
 
       virtual bool dontPrivatizeArgumentsForRecognizedMethod(TR::RecognizedMethod recognizedMethod);
       virtual bool replaceSoftwareCheckWithHardwareCheck(TR_ResolvedMethod *calleeMethod);
+
+      /**
+       * \brief Answers whether the provided ResolvedMethodSymbol is a native method that can be inlined
+       *
+       * \param[in] comp : the TR::Compilation object
+       * \param[in] methodSymbol : the ResolvedMethodSymbol to check
+       *
+       * \return true if the method is inlineable; false otherwise
+       */
+      virtual bool isInlineableNativeMethod(TR::Compilation *comp, TR::ResolvedMethodSymbol *methodSymbol) { return false; }
+
    protected:
       virtual bool tryToInlineTrivialMethod (TR_CallStack* callStack, TR_CallTarget* calltarget);
       virtual bool alwaysWorthInlining(TR_ResolvedMethod * calleeMethod, TR::Node *callNode);

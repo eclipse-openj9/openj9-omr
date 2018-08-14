@@ -37,6 +37,7 @@ JIT_PRODUCT_BACKEND_SOURCES+=\
     $(JIT_OMR_DIRTY_DIR)/z/codegen/S390GenerateInstructions.cpp \
     $(JIT_OMR_DIRTY_DIR)/z/codegen/S390HelperCallSnippet.cpp \
     $(JIT_OMR_DIRTY_DIR)/z/codegen/S390Instruction.cpp \
+    $(JIT_OMR_DIRTY_DIR)/z/codegen/S390Peephole.cpp \
     $(JIT_OMR_DIRTY_DIR)/z/codegen/OMRLinkage.cpp \
     $(JIT_OMR_DIRTY_DIR)/z/codegen/SystemLinkage.cpp \
     $(JIT_OMR_DIRTY_DIR)/z/codegen/S390OutOfLineCodeSection.cpp \

@@ -67,6 +67,10 @@ ifeq (msvc,$(OMR_TOOLCHAIN))
   MODULE_CXXFLAGS += /EHsc
 endif
 
+ifeq (1,$(OMRPORT_OMRSIG_SUPPORT))
+  MODULE_SHARED_LIBS += omrsig
+endif
+
 DDRGEN_STATIC_LIBS = \
   ddr-scanner \
   ddr-ir \

@@ -36,3 +36,7 @@ target_link_libraries(omr_ddrgen
 	omr_ddr_scanner
 	${OMR_PORT_LIB}
 )
+
+if(OMRPORT_OMRSIG_SUPPORT)
+	target_link_libraries(omr_ddrgen omrsig)
+endif()

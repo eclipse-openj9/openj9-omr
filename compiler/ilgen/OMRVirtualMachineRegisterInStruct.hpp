@@ -67,8 +67,22 @@ class VirtualMachineRegisterInStruct : public TR::VirtualMachineRegister
       _fieldName(fieldName),
       _localNameHoldingStructAddress(localNameHoldingStructAddress)
       {
-      _elementType = b->typeDictionary()->GetFieldType(structName, fieldName)->baseType()->baseType();
-      _adjustByStep = _elementType->getSize();
+      _integerTypeForAdjustments = b->typeDictionary()->GetFieldType(structName, fieldName);
+      if (_integerTypeForAdjustments->isPointer())
+         {
+         _integerTypeForAdjustments = _integerTypeForAdjustments->baseType();
+         if (_integerTypeForAdjustments->isPointer())
+            {
+            _integerTypeForAdjustments = b->typeDictionary()->getWord();
+            }
+         _isAdjustable = true;
+         _adjustByStep = _integerTypeForAdjustments->getSize();
+         }
+      else
+         {
+         _isAdjustable = false;
+         _adjustByStep = 0;
+         }
       Reload(b);
       }
 

@@ -22,8 +22,7 @@
 #ifndef OMR_VIRTUALMACHINEREGISTER_INCL
 #define OMR_VIRTUALMACHINEREGISTER_INCL
 
-
-#include "ilgen/VirtualMachineRegister.hpp"
+#include "ilgen/VirtualMachineState.hpp"
 #include "ilgen/IlBuilder.hpp"
 #include "ilgen/TypeDictionary.hpp"
 
@@ -84,17 +83,7 @@ class VirtualMachineRegister : public TR::VirtualMachineState
                           const char * const localName,
                           TR::IlType * pointerToRegisterType,
                           uint32_t adjustByStep,
-                          TR::IlValue * addressOfRegister)
-      : TR::VirtualMachineState(),
-      _localName(localName),
-      _addressOfRegister(addressOfRegister),
-      _pointerToRegisterType(pointerToRegisterType),
-      _elementType(pointerToRegisterType->baseType()->baseType()),
-      _adjustByStep(adjustByStep)
-      {
-      Reload(b);
-      }
-
+                          TR::IlValue * addressOfRegister);
   
    /**
     * @brief write the simulated register value to the virtual machine
@@ -147,7 +136,7 @@ class VirtualMachineRegister : public TR::VirtualMachineState
    virtual void Adjust(TR::IlBuilder *b, TR::IlValue *amount)
       {
       TR::IlValue *off=b->Mul(amount,
-                       b->    ConstInteger(_elementType, _adjustByStep));
+                       b->    ConstInteger(_integerTypeForAdjustments, _adjustByStep));
       adjust(b, off);
       }
 
@@ -160,22 +149,18 @@ class VirtualMachineRegister : public TR::VirtualMachineState
     */
    virtual void Adjust(TR::IlBuilder *b, int64_t amount)
       {
-      adjust(b, b->ConstInteger(_elementType, amount * _adjustByStep));
+      adjust(b, b->ConstInteger(_integerTypeForAdjustments, amount * _adjustByStep));
       }
 
    protected:
-   void adjust(TR::IlBuilder *b, TR::IlValue *rawAmount)
-      {
-      b->Store(_localName,
-      b->   Add(
-      b->      Load(_localName),
-               rawAmount));
-      }
+   void adjust(TR::IlBuilder *b, TR::IlValue *rawAmount);
+
    const char  * const _localName;
    TR::IlValue * _addressOfRegister;
    TR::IlType  * _pointerToRegisterType;
-   TR::IlType  * _elementType;
+   TR::IlType  * _integerTypeForAdjustments;
    uint32_t      _adjustByStep;
+   bool          _isAdjustable;
    };
 }
 

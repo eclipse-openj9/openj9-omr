@@ -2136,14 +2136,14 @@ TR_OutlinedInstructions * OMR::X86::CodeGenerator::findOutlinedInstructionsFromM
    return NULL;
    }
 
-TR::X86DataSnippet * OMR::X86::CodeGenerator::createDataSnippet(TR::Node * n, void * c, uint8_t s)
+TR::X86DataSnippet * OMR::X86::CodeGenerator::createDataSnippet(TR::Node * n, void * c, size_t s)
    {
    auto snippet = new (self()->trHeapMemory()) TR::X86DataSnippet(self(), n, c, s);
    _dataSnippetList.push_back(snippet);
    return snippet;
    }
 
-TR::X86ConstantDataSnippet * OMR::X86::CodeGenerator::findOrCreateConstantDataSnippet(TR::Node * n, void * c, uint8_t s)
+TR::X86ConstantDataSnippet * OMR::X86::CodeGenerator::findOrCreateConstantDataSnippet(TR::Node * n, void * c, size_t s)
    {
    // A simple linear search should suffice for now since the number of data constants
    // produced is typically very small.  Eventually, this should be implemented as an
@@ -2232,7 +2232,6 @@ static uint32_t registerBitMask(int32_t reg)
    {
    return 1 << (reg-1); // TODO:AMD64: Use the proper mask value
    }
-
 
 void OMR::X86::CodeGenerator::buildRegisterMapForInstruction(TR_GCStackMap * map)
    {

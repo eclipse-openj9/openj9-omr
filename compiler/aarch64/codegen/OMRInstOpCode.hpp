@@ -61,6 +61,25 @@ class InstOpCode: public OMR::InstOpCode
    static const OpCodeBinaryEntry binaryEncodings[ARM64NumOpCodes];
 
    /*
+    * @brief Answers binary encoding of Mnemonic
+    * @param[in] m : mnemonic
+    * @return binary encoding
+    */
+   static const OpCodeBinaryEntry getOpCodeBinaryEncoding(Mnemonic m)
+      {
+      return binaryEncodings[m];
+      }
+
+   /*
+    * @brief Answers binary encoding of InstOpCode
+    * @return binary encoding
+    */
+   const OpCodeBinaryEntry getOpCodeBinaryEncoding()
+      {
+      return getOpCodeBinaryEncoding(_mnemonic);
+      }
+
+   /*
     * @brief Copies binary encoding of the opcode to buffer
     * @param[in] cursor : instruction cursor
     * @return instruction cursor

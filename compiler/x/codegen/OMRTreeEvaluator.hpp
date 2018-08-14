@@ -300,7 +300,6 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static TR::Register *bztestnsetEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 
    // VM dependent routines
-   static TR::Register *VMifInstanceOfEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *VMmergenewEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register *VMarrayStoreCheckArrayCopyEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static bool VMinlineCallEvaluator(TR::Node *node, bool isIndirect, TR::CodeGenerator *cg);

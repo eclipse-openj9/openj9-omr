@@ -1160,9 +1160,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390ConstantDataSnippet * snippet)
       return;
       }
 
-   uint32_t size=0, start_addr=0, offset=0;
-
-
    uint8_t * bufferPos = snippet->getSnippetLabel()->getCodeLocation();
    if (snippet->getKind() == TR::Snippet::IsWritableData)
       {
@@ -1198,6 +1195,118 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390ConstantDataSnippet * snippet)
             }
          else
             trfprintf(pOutFile, "[NULL] ");
+         }
+      return;
+      }
+   else if (snippet->getKind() == TR::Snippet::IsInterfaceCallData)
+      {
+      // This follows the snippet format in TR::S390InterfaceCallDataSnippet::emitSnippetBody
+      uint8_t refSize = TR::Compiler->om.sizeofReferenceAddress();
+
+      printSnippetLabel(pOutFile, snippet->getSnippetLabel(), bufferPos, "Interface call cache data snippet");
+      printPrefix(pOutFile, NULL, bufferPos, sizeof(intptrj_t));
+      trfprintf(pOutFile, "DC   \t0x%016lx  # Call site RA", *(intptrj_t*)bufferPos);
+      bufferPos += refSize;
+
+      printPrefix(pOutFile, NULL, bufferPos, sizeof(intptrj_t));
+      trfprintf(pOutFile, "DC   \t0x%016lx  # Address of constant pool", *(intptrj_t*)bufferPos);
+      bufferPos += refSize;
+
+      printPrefix(pOutFile, NULL, bufferPos, sizeof(intptrj_t));
+      trfprintf(pOutFile, "DC   \t0x%016lx  # CP index", *(intptrj_t*)bufferPos);
+      bufferPos += refSize;
+
+      printPrefix(pOutFile, NULL, bufferPos, sizeof(intptrj_t));
+      trfprintf(pOutFile, "DC   \t0x%016lx  # Interface class", *(intptrj_t*)bufferPos);
+      bufferPos += refSize;
+
+      printPrefix(pOutFile, NULL, bufferPos, sizeof(intptrj_t));
+      trfprintf(pOutFile, "DC   \t0x%016lx  # Method index", *(intptrj_t*)bufferPos);
+      bufferPos += refSize;
+
+      // zero cache slot
+      if (static_cast<TR::S390InterfaceCallDataSnippet*>(snippet)->getNumInterfaceCallCacheSlots() == 0)
+         {
+         printPrefix(pOutFile, NULL, bufferPos, sizeof(intptrj_t));
+         trfprintf(pOutFile, "DC   \t0x%016lx  # flags", *(intptrj_t*)bufferPos);
+         bufferPos += refSize;
+         }
+
+      // non-single cache slots
+      bool isSingleDynamicSlot = comp()->getOption(TR_enableInterfaceCallCachingSingleDynamicSlot);
+      if (!isSingleDynamicSlot)
+         {
+         // flags
+         printPrefix(pOutFile, NULL, bufferPos, sizeof(intptrj_t));
+         trfprintf(pOutFile, "DC   \t0x%016lx  # flags", *(intptrj_t*)bufferPos);
+         bufferPos += refSize;
+
+         // lastCachedSlot
+         printPrefix(pOutFile, NULL, bufferPos, sizeof(intptrj_t));
+         trfprintf(pOutFile, "DC   \t0x%016lx  # last cached slot", *(intptrj_t*)bufferPos);
+         bufferPos += refSize;
+
+         // firstSlot
+         printPrefix(pOutFile, NULL, bufferPos, sizeof(intptrj_t));
+         trfprintf(pOutFile, "DC   \t0x%016lx  # first slot", *(intptrj_t*)bufferPos);
+         bufferPos += refSize;
+
+         // lastSlot
+         printPrefix(pOutFile, NULL, bufferPos, sizeof(intptrj_t));
+         trfprintf(pOutFile, "DC   \t0x%016lx  # last slot", *(intptrj_t*)bufferPos);
+         bufferPos += refSize;
+         }
+
+      // print profiled class list
+      int32_t numInterfaceCallCacheSlots = static_cast<TR::S390InterfaceCallDataSnippet*>(snippet)->getNumInterfaceCallCacheSlots();
+      bool isUseCLFIandBRCL = static_cast<TR::S390InterfaceCallDataSnippet*>(snippet)->isUseCLFIandBRCL();
+      TR::list<TR_OpaqueClassBlock*> * profiledClassesList = comp()->cg()->getPICsListForInterfaceSnippet(snippet);
+
+      if (profiledClassesList)
+         {
+         for (auto iter = profiledClassesList->begin(); iter != profiledClassesList->end(); ++iter)
+            {
+            numInterfaceCallCacheSlots--;
+            printPrefix(pOutFile, NULL, bufferPos, sizeof(intptrj_t));
+            trfprintf(pOutFile, "DC   \t0x%016lx  # profiled class", *(intptrj_t*)bufferPos);
+            bufferPos += refSize;
+
+            printPrefix(pOutFile, NULL, bufferPos, sizeof(intptrj_t));
+            trfprintf(pOutFile, "DC   \t0x%016lx  # profiled method", *(intptrj_t*)bufferPos);
+            bufferPos += refSize;
+            }
+         }
+
+      // print remaining class list
+      for (uint32_t i = 0; i < numInterfaceCallCacheSlots; i++)
+         {
+         if (isUseCLFIandBRCL)
+            {
+            // address of CLFI's immediate field
+            printPrefix(pOutFile, NULL, bufferPos, sizeof(intptrj_t));
+            trfprintf(pOutFile, "DC   \t0x%016lx  # address of CLFI's immediate field", *(intptrj_t*)bufferPos);
+            bufferPos += refSize;
+            }
+         else
+            {
+            // class pointer
+            printPrefix(pOutFile, NULL, bufferPos, sizeof(intptrj_t));
+            trfprintf(pOutFile, "DC   \t0x%016lx  # class pointer %d", *(intptrj_t*)bufferPos, i);
+            bufferPos += refSize;
+
+            // method pointer
+            printPrefix(pOutFile, NULL, bufferPos, sizeof(intptrj_t));
+            trfprintf(pOutFile, "DC   \t0x%016lx  # method pointer %d", *(intptrj_t*)bufferPos, i);
+            bufferPos += refSize;
+            }
+         }
+
+      if (isSingleDynamicSlot)
+         {
+         // flags
+         printPrefix(pOutFile, NULL, bufferPos, sizeof(intptrj_t));
+         trfprintf(pOutFile, "DC   \t0x%016lx # method pointer", *(intptrj_t*)bufferPos);
+         bufferPos += refSize;
          }
       return;
       }

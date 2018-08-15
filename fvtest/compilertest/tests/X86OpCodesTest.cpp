@@ -170,10 +170,7 @@ X86OpCodesTest::compileDirectCallTestMethods()
    compileDirectCallOpCodeMethod(_iCall, _numberOfUnaryArgs, TR::ireturn, TR::icall, "iCompiledMethod", "iCall", _argTypesUnaryInt, TR::Int32, rc);
    compileDirectCallOpCodeMethod(_dCall, _numberOfUnaryArgs, TR::dreturn, TR::dcall, "dCompiledMethod", "dCall", _argTypesUnaryDouble, TR::Double, rc);
    compileDirectCallOpCodeMethod(_fCall, _numberOfUnaryArgs, TR::freturn, TR::fcall, "fCompiledMethod", "fCall", _argTypesUnaryFloat, TR::Float, rc);
-
-#if defined(TR_TARGET_64BIT)
    compileDirectCallOpCodeMethod(_lCall, _numberOfUnaryArgs, TR::lreturn, TR::lcall, "lCompiledMethod", "lCall", _argTypesUnaryLong, TR::Int64, rc);
-#endif
    }
 
 void
@@ -4734,9 +4731,7 @@ X86OpCodesTest::invokeDirectCallTests()
       OMR_CT_EXPECT_EQ(_iCall, intDataArray[i], _iCall(intDataArray[i]));
       OMR_CT_EXPECT_DOUBLE_EQ(_dCall, doubleDataArray[i], _dCall(doubleDataArray[i]));
       OMR_CT_EXPECT_FLOAT_EQ(_fCall, floatDataArray[i], _fCall(floatDataArray[i]));
-#if defined(TR_TARGET_64BIT)
       OMR_CT_EXPECT_EQ(_lCall, longDataArray[i], _lCall(longDataArray[i]));
-#endif
       }
    }
 

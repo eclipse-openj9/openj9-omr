@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -246,6 +246,7 @@ TR::IA32SystemLinkage::buildVolatileAndReturnDependencies(
    // Allocate virtual register for return value
    //
    TR::Register     *integerReturnReg = NULL;
+   TR::Register     *longReturnReg    = NULL;
    TR::Register     *fpReturnReg      = NULL;
    TR::Register     *returnReg        = NULL; // An alias for one of the above
    switch (callNode->getDataType())
@@ -267,6 +268,8 @@ TR::IA32SystemLinkage::buildVolatileAndReturnDependencies(
          returnReg = fpReturnReg = cg()->allocateRegister(TR_X87);
          break;
       case TR::Int64:
+         returnReg = longReturnReg = (TR::Register*)cg()->allocateRegisterPair(cg()->allocateRegister(), cg()->allocateRegister());
+         break;
       case TR::Aggregate:
       default:
          TR_ASSERT(false, "return type still not supported");
@@ -282,13 +285,23 @@ TR::IA32SystemLinkage::buildVolatileAndReturnDependencies(
    TR_ASSERT(_properties.getLongHighReturnRegister() == TR::RealRegister::edx, "assertion failure");
    TR_ASSERT(_properties.getFloatReturnRegister()    == TR::RealRegister::st0, "assertion failure");
 
-   if (integerReturnReg)
+   if (longReturnReg)
+      {
+      deps->addPostCondition(returnReg->getLowOrder(), TR::RealRegister::eax, cg());
+      deps->addPostCondition(returnReg->getHighOrder(), TR::RealRegister::edx, cg());
+      }
+   else if (integerReturnReg)
+      {
       deps->addPostCondition(returnReg, TR::RealRegister::eax, cg());
+      deps->addPostCondition(cg()->allocateRegister(), TR::RealRegister::edx, cg());
+      }
    else
+      {
       deps->addPostCondition(cg()->allocateRegister(), TR::RealRegister::eax, cg());
+      deps->addPostCondition(cg()->allocateRegister(), TR::RealRegister::edx, cg());
+      }
 
    deps->addPostCondition(cg()->allocateRegister(), TR::RealRegister::ecx, cg());
-   deps->addPostCondition(cg()->allocateRegister(), TR::RealRegister::edx, cg());
 
    // st0
    if (fpReturnReg)
@@ -336,8 +349,11 @@ int32_t TR::IA32SystemLinkage::buildArgs(
             TR::IA32LinkageUtils::pushDoubleArg(child, cg());
             argSize += 8;
             break;
-         case TR::Aggregate:
          case TR::Int64:
+            TR::IA32LinkageUtils::pushLongArg(child, cg());
+            argSize += 8;
+            break;
+         case TR::Aggregate:
          default:
             TR_ASSERT(0, "Attempted to push unknown type");
             break;

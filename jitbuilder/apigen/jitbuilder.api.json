@@ -1921,8 +1921,41 @@
             "fields": [
                 ],
             "constructors": [
+                { "name": ""
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "VirtualMachineState"
+                , "parms": []
+                }
                 ],
             "callbacks": [
+                { "name": "Commit"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "none"
+                , "parms": [ {"name":"b","type":"IlBuilder"} ]
+                },
+                { "name": "Reload"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "none"
+                , "parms": [ {"name":"b","type":"IlBuilder"} ]
+                },
+                { "name": "MakeCopy"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "VirtualMachineState"
+                , "parms": []
+                },
+                { "name": "MergeInto"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"vmState","type":"VirtualMachineState"},
+                    {"name":"b","type":"IlBuilder"}
+                    ]
+                }
                 ],
             "services": [
                 ]

@@ -1238,7 +1238,7 @@ OMR::Z::TreeEvaluator::fbits2iEvaluator(TR::Node * node, TR::CodeGenerator * cg)
          TR::MemoryReference * tempMR1 = generateS390MemoryReference(node, f2iSR, cg);
          generateRXInstruction(cg, TR::InstOpCode::STE, node, sourceReg, tempMR1);
 
-         TR::MemoryReference * tempMR2 = generateS390MemoryReference(node, f2iSR, cg);
+         TR::MemoryReference * tempMR2 = generateS390MemoryReference(*tempMR1, 0, cg);
          targetReg = genericLoadHelper<32, 32, MemReg>(node, cg, tempMR2, NULL, false, true);
          }
       }

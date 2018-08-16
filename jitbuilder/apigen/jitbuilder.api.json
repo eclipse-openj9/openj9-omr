@@ -1664,6 +1664,12 @@
             "callbacks": [
                 ],
             "services": [
+                { "name": "getID"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "int32"
+                , "parms": []
+                }
                 ]
         },
         {

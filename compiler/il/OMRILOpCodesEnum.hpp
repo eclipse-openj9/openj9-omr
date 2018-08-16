@@ -31,6 +31,7 @@
 //                          compiler/x/i386/codegen/TreeEvaluatorTable.cpp
 //                          compiler/p/codegen/TreeEvaluatorTable.cpp
 //                          compiler/z/codegen/TreeEvaluatorTable.cpp
+//                          compiler/aarch64/codegen/TreeEvaluatorTable.cpp
 //                          compiler/arm/codegen/TreeEvaluatorTable.cpp
 //                          compiler/il/OMRILOpCodesEnum.hpp
 //                          compiler/il/ILOpCodes.hpp

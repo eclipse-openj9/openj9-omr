@@ -2950,7 +2950,7 @@ static TR::Register * inlineSinglePrecisionSQRT(TR::Node *node, TR::CodeGenerato
       else
    targetRegister = cg->allocateSinglePrecisionRegister(TR_FPR);
 
-      generateRegRegInstruction(SQRTSFRegReg, node, targetRegister, opRegister, cg);
+      generateRegRegInstruction(SQRTSSRegReg, node, targetRegister, opRegister, cg);
     }
   else
     {

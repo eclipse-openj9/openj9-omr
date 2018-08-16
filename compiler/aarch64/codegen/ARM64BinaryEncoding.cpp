@@ -246,7 +246,7 @@ uint8_t *TR::ARM64Trg1MemInstruction::generateBinaryEncoding()
 
 int32_t TR::ARM64Trg1MemInstruction::estimateBinaryLength(int32_t currentEstimate)
    {
-   setEstimatedBinaryLength(getMemoryReference()->estimateBinaryLength(*cg()));
+   setEstimatedBinaryLength(getMemoryReference()->estimateBinaryLength());
    return currentEstimate + getEstimatedBinaryLength();
    }
 
@@ -264,7 +264,7 @@ uint8_t *TR::ARM64MemInstruction::generateBinaryEncoding()
 
 int32_t TR::ARM64MemInstruction::estimateBinaryLength(int32_t currentEstimate)
    {
-   setEstimatedBinaryLength(getMemoryReference()->estimateBinaryLength(*cg()));
+   setEstimatedBinaryLength(getMemoryReference()->estimateBinaryLength());
    return(currentEstimate + getEstimatedBinaryLength());
    }
 
@@ -283,6 +283,6 @@ uint8_t *TR::ARM64MemSrc1Instruction::generateBinaryEncoding()
 
 int32_t TR::ARM64MemSrc1Instruction::estimateBinaryLength(int32_t currentEstimate)
    {
-   setEstimatedBinaryLength(getMemoryReference()->estimateBinaryLength(*cg()));
+   setEstimatedBinaryLength(getMemoryReference()->estimateBinaryLength());
    return(currentEstimate + getEstimatedBinaryLength());
    }

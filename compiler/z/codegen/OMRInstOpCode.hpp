@@ -428,7 +428,6 @@ namespace Z
 #define   VRX_FORMAT    91
 #define   VSI_FORMAT    92
 
-#define   RSE_FORMAT    93 // TODO: This format does not even exist and should be change to the ones above
 #define   RRR_FORMAT    94 // TODO: This format does not even exist and should be change to the ones above
 
 /* Instruction Properties (One hot encoding) */

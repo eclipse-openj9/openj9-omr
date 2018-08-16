@@ -153,7 +153,6 @@ OMR::Z::InstOpCode::copyBinaryToBufferWithoutClear(uint8_t *cursor, TR::InstOpCo
       case RXE_FORMAT:
       case RXY_FORMAT:
       case RXF_FORMAT:
-      case RSE_FORMAT:
       case RSY_FORMAT:
       case RSL_FORMAT:
       case RIE_FORMAT:

@@ -72,14 +72,16 @@ omrthread_spinlock_acquire(omrthread_t self, omrthread_monitor_t monitor)
 
 #if defined(OMR_THR_SPIN_WAKE_CONTROL)
 	BOOLEAN spinning = TRUE;
- 	if (monitor->spinThreads < lib->maxSpinThreads) {
- 		VM_AtomicSupport::add(&monitor->spinThreads, 1);
- 	} else {
- 		spinCount1Init = 1;
- 		spinCount2Init = 1;
- 		spinCount3Init = 1;
- 		spinning = FALSE;
- 	}
+	if (OMRTHREAD_IGNORE_SPIN_THREAD_BOUND != lib->maxSpinThreads) {
+		if (monitor->spinThreads < lib->maxSpinThreads) {
+			VM_AtomicSupport::add(&monitor->spinThreads, 1);
+		} else {
+			spinCount1Init = 1;
+			spinCount2Init = 1;
+			spinCount3Init = 1;
+			spinning = FALSE;
+		}
+	}
 #endif /* defined(OMR_THR_SPIN_WAKE_CONTROL) */
 
 	uintptr_t spinCount3 = spinCount3Init;
@@ -134,7 +136,7 @@ update_jlm:
 #endif /* OMR_THR_JLM */
 
 #if defined(OMR_THR_SPIN_WAKE_CONTROL)
-	if (spinning) {
+	if (spinning && (OMRTHREAD_IGNORE_SPIN_THREAD_BOUND != lib->maxSpinThreads)) {
 		VM_AtomicSupport::subtract(&monitor->spinThreads, 1);
 	}
 #endif /* defined(OMR_THR_SPIN_WAKE_CONTROL) */

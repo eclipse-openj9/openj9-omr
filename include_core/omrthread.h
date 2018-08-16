@@ -109,6 +109,7 @@ or omrthread priority value.
 
 #define OMRTHREAD_MINIMUM_SPIN_THREADS 1
 #define OMRTHREAD_MINIMUM_WAKE_THREADS 1
+#define OMRTHREAD_IGNORE_SPIN_THREAD_BOUND 0
 
 #include "thread_api.h"
 

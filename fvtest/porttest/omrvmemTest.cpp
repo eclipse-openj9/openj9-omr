@@ -3651,15 +3651,15 @@ TEST(PortVmemTest, vmem_testGetProcessMemorySize)
 #if defined(J9ZOS390)
 	result = omrvmem_get_process_memory_size(OMRPORT_VMEM_PROCESS_PRIVATE, &size);
 	EXPECT_TRUE(result < 0) << "OMRPORT_VMEM_PROCESS_PRIVATE did not fail";
-	EXPECT_EQ(0, size) << "value updated when query invalid";
+	EXPECT_EQ(0u, size) << "value updated when query invalid";
 
 	result = omrvmem_get_process_memory_size(OMRPORT_VMEM_PROCESS_PHYSICAL, &size);
 	EXPECT_TRUE(result < 0) << "OMRPORT_VMEM_PROCESS_PHYSICAL did not fail";
-	EXPECT_EQ(0, size) << "value updated when query invalid";
+	EXPECT_EQ(0u, size) << "value updated when query invalid";
 
 	result = omrvmem_get_process_memory_size(OMRPORT_VMEM_PROCESS_VIRTUAL, &size);
 	EXPECT_TRUE(result < 0) << "OMRPORT_VMEM_PROCESS_VIRTUAL did not fail";
-	EXPECT_EQ(0, size) << "value updated when query invalid";
+	EXPECT_EQ(0u, size) << "value updated when query invalid";
 #else
 #if !defined(OSX)
 	result = omrvmem_get_process_memory_size(OMRPORT_VMEM_PROCESS_PRIVATE, &size);
@@ -3682,17 +3682,17 @@ TEST(PortVmemTest, vmem_testGetProcessMemorySize)
 	size = 0;
 	result = omrvmem_get_process_memory_size(OMRPORT_VMEM_PROCESS_PHYSICAL, &size);
 	EXPECT_TRUE(result < 0) << "OMRPORT_VMEM_PROCESS_PHYSICAL did not fail";
-	EXPECT_EQ(0, size) << "value updated when query invalid";
+	EXPECT_EQ(0u, size) << "value updated when query invalid";
 
 	result = omrvmem_get_process_memory_size(OMRPORT_VMEM_PROCESS_VIRTUAL, &size);
 	EXPECT_TRUE(result < 0) << "OMRPORT_VMEM_PROCESS_VIRTUAL did not fail";
-	EXPECT_EQ(0, size) << "value updated when query invalid";
+	EXPECT_EQ(0u, size) << "value updated when query invalid";
 #endif /* defined(LINUX) || defined(OMR_OS_WINDOWS) || defined(OSX) */
 #endif /* defined(J9ZOS390) */
 	size = 0;
 	result = omrvmem_get_process_memory_size(OMRPORT_VMEM_PROCESS_EnsureWideEnum, &size);
 	EXPECT_TRUE(result < 0) << "Invalid query not detected";
-	EXPECT_EQ(0, size) << "value updated when query invalid";
+	EXPECT_EQ(0u, size) << "value updated when query invalid";
 }
 
 /* This function is used by omrvmem_test_reserveExecutableMemory */

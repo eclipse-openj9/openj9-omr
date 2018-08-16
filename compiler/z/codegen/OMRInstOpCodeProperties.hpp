@@ -8987,7 +8987,7 @@
    /* .description = */ "Add (DFP128)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0xDA,
-   /* .format      = */ RRR_FORMAT,
+   /* .format      = */ RRFa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z9,
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_Is64Bit |
@@ -9413,7 +9413,7 @@
    /* .description = */ "Divide (DFP128)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0xD9,
-   /* .format      = */ RRR_FORMAT,
+   /* .format      = */ RRFa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z9,
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_Is64Bit |
@@ -10048,7 +10048,7 @@
    /* .description = */ "Multiply (DFP128)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0xD8,
-   /* .format      = */ RRR_FORMAT,
+   /* .format      = */ RRFa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z9,
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_Is64Bit |
@@ -10438,7 +10438,7 @@
    /* .description = */ "Subtract (DFP128)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0xDB,
-   /* .format      = */ RRR_FORMAT,
+   /* .format      = */ RRFa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z9,
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_Is64Bit |
@@ -11632,7 +11632,7 @@
    /* .description = */ "Add (32)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0xE8,
-   /* .format      = */ RRR_FORMAT,
+   /* .format      = */ RRFa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_SetsSignFlag |
@@ -11646,7 +11646,7 @@
    /* .description = */ "Add High (32)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0xC8,
-   /* .format      = */ RRR_FORMAT,
+   /* .format      = */ RRFa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOverflowFlag |
@@ -11663,7 +11663,7 @@
    /* .description = */ "Add High (32)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0xD8,
-   /* .format      = */ RRR_FORMAT,
+   /* .format      = */ RRFa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOverflowFlag |
@@ -11725,7 +11725,7 @@
    /* .description = */ "Add Logical (64)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0xEA,
-   /* .format      = */ RRR_FORMAT,
+   /* .format      = */ RRFa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_SetsZeroFlag |
@@ -11738,7 +11738,7 @@
    /* .description = */ "Add Logical High (32)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0xCA,
-   /* .format      = */ RRR_FORMAT,
+   /* .format      = */ RRFa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_SetsZeroFlag |
                         S390OpProp_UsesTarget |
@@ -11754,7 +11754,7 @@
    /* .description = */ "Add Logical High (32)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0xDA,
-   /* .format      = */ RRR_FORMAT,
+   /* .format      = */ RRFa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_SetsZeroFlag |
                         S390OpProp_UsesTarget |
@@ -11784,7 +11784,7 @@
    /* .description = */ "Add Logical (32)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0xFA,
-   /* .format      = */ RRR_FORMAT,
+   /* .format      = */ RRFa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_SetsZeroFlag |
@@ -11826,7 +11826,7 @@
    /* .description = */ "Add (32)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0xF8,
-   /* .format      = */ RRR_FORMAT,
+   /* .format      = */ RRFa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_SetsSignFlag |
@@ -12525,7 +12525,7 @@
    /* .description = */ "And (64)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0xE4,
-   /* .format      = */ RRR_FORMAT,
+   /* .format      = */ RRFa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_SetsZeroFlag |
@@ -12538,7 +12538,7 @@
    /* .description = */ "And (32)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0xF4,
-   /* .format      = */ RRR_FORMAT,
+   /* .format      = */ RRFa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_SetsZeroFlag |
@@ -12551,7 +12551,7 @@
    /* .description = */ "Or (64)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0xE6,
-   /* .format      = */ RRR_FORMAT,
+   /* .format      = */ RRFa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_SetsZeroFlag |
@@ -12564,7 +12564,7 @@
    /* .description = */ "Or (32)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0xF6,
-   /* .format      = */ RRR_FORMAT,
+   /* .format      = */ RRFa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_SetsZeroFlag |
@@ -12621,7 +12621,7 @@
    /* .description = */ "Subtract (64)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0xE9,
-   /* .format      = */ RRR_FORMAT,
+   /* .format      = */ RRFa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_SetsSignFlag |
@@ -12635,7 +12635,7 @@
    /* .description = */ "Subtract High (32)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0xC9,
-   /* .format      = */ RRR_FORMAT,
+   /* .format      = */ RRFa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_UsesTarget |
                         S390OpProp_TargetHW |
@@ -12651,7 +12651,7 @@
    /* .description = */ "Subtract High (32)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0xD9,
-   /* .format      = */ RRR_FORMAT,
+   /* .format      = */ RRFa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_UsesTarget |
                         S390OpProp_TargetHW |
@@ -12682,7 +12682,7 @@
    /* .description = */ "Subtract (64)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0xEB,
-   /* .format      = */ RRR_FORMAT,
+   /* .format      = */ RRFa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_SetsZeroFlag |
@@ -12695,7 +12695,7 @@
    /* .description = */ "Subtract High (32)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0xCB,
-   /* .format      = */ RRR_FORMAT,
+   /* .format      = */ RRFa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_UsesTarget |
                         S390OpProp_TargetHW |
@@ -12710,7 +12710,7 @@
    /* .description = */ "Subtract High (32)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0xDB,
-   /* .format      = */ RRR_FORMAT,
+   /* .format      = */ RRFa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_UsesTarget |
                         S390OpProp_TargetHW |
@@ -12738,7 +12738,7 @@
    /* .description = */ "Subtract (32)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0xFB,
-   /* .format      = */ RRR_FORMAT,
+   /* .format      = */ RRFa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_SetsZeroFlag |
@@ -12765,7 +12765,7 @@
    /* .description = */ "Subtract (32)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0xF9,
-   /* .format      = */ RRR_FORMAT,
+   /* .format      = */ RRFa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_SetsSignFlag |
@@ -12859,7 +12859,7 @@
    /* .description = */ "Exclusive Or (64)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0xE7,
-   /* .format      = */ RRR_FORMAT,
+   /* .format      = */ RRFa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_SetsZeroFlag |
@@ -12872,7 +12872,7 @@
    /* .description = */ "Exclusive Or (32)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0xF7,
-   /* .format      = */ RRR_FORMAT,
+   /* .format      = */ RRFa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_SetsZeroFlag |

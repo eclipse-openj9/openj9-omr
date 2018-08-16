@@ -428,8 +428,6 @@ namespace Z
 #define   VRX_FORMAT    91
 #define   VSI_FORMAT    92
 
-#define   RRR_FORMAT    94 // TODO: This format does not even exist and should be change to the ones above
-
 /* Instruction Properties (One hot encoding) */
 #define S390OpProp_None                   static_cast<uint64_t>(0x0000000000000000ull)
 #define S390OpProp_UsesTarget             static_cast<uint64_t>(0x0000000000000001ull)

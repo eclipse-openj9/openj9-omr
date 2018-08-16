@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2016 IBM Corp. and others
+ * Copyright (c) 2016, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -101,6 +101,10 @@ public:
 		uint64_t threads;	/* number of active or stalled threads */
 		uint64_t lists;		/* number of nonempty scan lists */
 		uint64_t caches;	/* number of caches in scan queues */
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+		uint64_t readObjectBarrierCopy; /* number of object copied by read barrier */
+		uint64_t readObjectBarrierUpdate; /* number of reference slots updates by read barrier */
+#endif /* OMR_GC_CONCURRENT_SCAVENGER */
 		uint64_t time;		/* timestamp of most recent sample included in this record */
 	} UpdateHistory;
 

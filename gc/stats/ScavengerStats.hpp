@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2016 IBM Corp. and others
+ * Copyright (c) 1991, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -135,7 +135,11 @@ public:
 
 	uint64_t _slotsCopied; /**< The number of slots copied by the thread since _slotsScanned was last sampled and reset */
 	uint64_t _slotsScanned; /**< The number of slots scanned by the thread since _slotsCopied was last sampled and reset */
-
+	
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+	uint64_t _readObjectBarrierCopy; /**< Number of objects copied by read barrier */
+	uint64_t _readObjectBarrierUpdate; /**< Number of reference slots updates, which may be (often is) preceded by object copy */ 
+#endif /* OMR_GC_CONCURRENT_SCAVENGER */
 
 protected:
 

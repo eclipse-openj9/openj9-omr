@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2016 IBM Corp. and others
+ * Copyright (c) 2016, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -50,6 +50,7 @@ uintptr_t
 MM_ScavengerCopyScanRatio::record(MM_EnvironmentBase* env, uintptr_t nonEmptyScanLists, uintptr_t cachesQueued)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
+
 	if (SCAVENGER_UPDATE_HISTORY_SIZE <= _historyTableIndex) {
 		Assert_MM_true(SCAVENGER_UPDATE_HISTORY_SIZE == _historyTableIndex);
 		/* table full -- sum adjacent pairs of records and shift results to top half of table */
@@ -65,6 +66,10 @@ MM_ScavengerCopyScanRatio::record(MM_EnvironmentBase* env, uintptr_t nonEmptySca
 			prev->threads += tail->threads;
 			prev->lists += tail->lists;
 			prev->caches += tail->caches;
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+			prev->readObjectBarrierUpdate = tail->readObjectBarrierUpdate;
+			prev->readObjectBarrierCopy = tail->readObjectBarrierCopy;
+#endif /* OMR_GC_CONCURRENT_SCAVENGER */
 			prev->time = tail->time;
 			if (prev > head) {
 				memcpy(head, prev, sizeof(UpdateHistory));
@@ -89,6 +94,12 @@ MM_ScavengerCopyScanRatio::record(MM_EnvironmentBase* env, uintptr_t nonEmptySca
 	historyRecord->threads += threadCount;
 	historyRecord->lists += nonEmptyScanLists;
 	historyRecord->caches += cachesQueued;
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+	/* record current read barries values (we do not want to sum them up and average, we want last value) */
+	MM_GCExtensionsBase *ext = env->getExtensions();
+	historyRecord->readObjectBarrierUpdate = ext->scavengerStats._readObjectBarrierUpdate;
+	historyRecord->readObjectBarrierCopy = ext->scavengerStats._readObjectBarrierCopy;
+#endif /* OMR_GC_CONCURRENT_SCAVENGER */
 	historyRecord->time = omrtime_hires_clock();
 
 	/* advance table index if current record is maxed out */

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2016 IBM Corp. and others
+ * Copyright (c) 1991, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -87,7 +87,10 @@ MM_ScavengerStats::MM_ScavengerStats()
 	,_copy_cachesize_sum(0)
 	,_slotsCopied(0)
 	,_slotsScanned(0)
-
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+	,_readObjectBarrierCopy(0)
+	,_readObjectBarrierUpdate(0)
+#endif /* OMR_GC_CONCURRENT_SCAVENGER */
 	,_flipHistoryNewIndex(0)
 {
 	memset(_flipHistory, 0, sizeof(_flipHistory));
@@ -181,6 +184,12 @@ MM_ScavengerStats::clear(bool firstIncrement)
 
 	_slotsCopied = 0;
 	_slotsScanned = 0;
+
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+	_readObjectBarrierCopy = 0;
+	_readObjectBarrierUpdate = 0;
+#endif /* OMR_GC_CONCURRENT_SCAVENGER */
+
 	_leafObjectCount = 0;
 	_copy_cachesize_sum = 0;
 	memset(_copy_distance_counts, 0, sizeof(_copy_distance_counts));

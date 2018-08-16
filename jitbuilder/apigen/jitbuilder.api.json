@@ -1675,11 +1675,24 @@
         {
             "name":"ThunkBuilder",
             "short-name": "TB",
+            "extends": "MethodBuilder",
             "types": [
                 ],
             "fields": [
                 ],
             "constructors": [
+                { "name": ""
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "ThunkBuilder"
+                , "parms": [
+                    {"name":"dict","type":"TypeDictionary"},
+                    {"name":"name","type":"constString"},
+                    {"name":"returnType","type":"IlType"},
+                    {"name":"numCalleeParms","type":"uint32"},
+                    {"name":"calleeParms","type":"IlType","attributes":["array"],"array-len":"numCalleeParms"}
+                    ]
+                }
                 ],
             "callbacks": [
                 ],

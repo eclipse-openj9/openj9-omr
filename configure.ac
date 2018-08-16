@@ -540,15 +540,12 @@ AS_IF([test "$enable_DDR" = yes -a "$cross_compiling" != "yes"],
 					[
 					# this should yield .../VC/bin/cl.exe or .../VC/bin/amd64/cl.exe
 					vc_bin_dir=$(AS_DIRNAME(["$VS_CL_PATH"]))
-					diasdk_dir="$vc_bin_dir/../../DIA SDK"
-					AS_IF([test -f "$diasdk_dir/include/dia2.h"]
-						[DIASDK_HOME="$(cygpath -a -w "$diasdk_dir")"],
-						[
-						diasdk_dir="$vc_bin_dir/../../../DIA SDK"
-						AS_IF([test -f "$diasdk_dir/include/dia2.h"],
-							[DIASDK_HOME="$(cygpath -a -w "$diasdk_dir")"]
-						)
-						]
+					diasdk_dir1="$vc_bin_dir/../../DIA SDK"
+					diasdk_dir2="$vc_bin_dir/../../../DIA SDK"
+					diasdk_dir3="$vc_bin_dir/../../../../../../../DIA SDK"
+					AS_IF([test -f "$diasdk_dir1/include/dia2.h"], [DIASDK_HOME="$(cygpath -a -w "$diasdk_dir1")"],
+						[test -f "$diasdk_dir2/include/dia2.h"], [DIASDK_HOME="$(cygpath -a -w "$diasdk_dir2")"],
+						[test -f "$diasdk_dir3/include/dia2.h"], [DIASDK_HOME="$(cygpath -a -w "$diasdk_dir3")"]
 					)
 					]
 				)

@@ -1620,6 +1620,36 @@
             "callbacks": [
                 ],
             "services": [
+                { "name": "baseType"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "IlType"
+                , "parms": []
+                },
+                { "name": "getName"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "constString"
+                , "parms": []
+                },
+                { "name": "primitiveType"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "IlType"
+                , "parms": [ {"name":"d","type":"TypeDictionary"} ]
+                },
+                { "name": "getSize"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "unsignedInteger"
+                , "parms": []
+                },
+                { "name": "isPointer"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "boolean"
+                , "parms": []
+                }
                 ]
         },
         {

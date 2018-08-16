@@ -36,7 +36,6 @@ template <typename TBuffer> inline typename TBuffer::cursor_t TR_X86OpCode::OpCo
    // Prefixes
    TR::Instruction::REX rex(rexbits);
    rex.W = rex_w;
-   TR_ASSERT(TR::Compiler->target.is64Bit() || !rex.value(), "ERROR: REX.W used on X86-32. OpCode = %d; rex = %02x", opcode, (uint32_t)(uint8_t)rex.value());
    // Use AVX if possible
    if (supportsAVX() && TR::CodeGenerator::getX86ProcessorInfo().supportsAVX())
       {

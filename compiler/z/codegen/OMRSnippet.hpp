@@ -99,8 +99,6 @@ class OMR_EXTENSIBLE Snippet : public OMR::Snippet
 
    virtual Kind getKind() { return IsUnknown; }
 
-   virtual bool isCallSnippet() { return false; }
-
    int32_t setCodeBaseOffset(int32_t offset) { return _codeBaseOffset=offset; }
    int32_t getCodeBaseOffset() { return _codeBaseOffset; }
 

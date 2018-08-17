@@ -64,8 +64,6 @@ class S390CallSnippet : public TR::Snippet
 
    virtual Kind getKind() { return IsCall; }
 
-   virtual bool isCallSnippet() { return true; }
-
    /** Get call Return Address */
    virtual uint8_t *getCallRA();
 

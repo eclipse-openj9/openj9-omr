@@ -2448,7 +2448,6 @@ generateSnippetCall(TR::CodeGenerator * cg, TR::Node * callNode, TR::Snippet * s
       callInstr = new (INSN_HEAP) TR::S390RILInstruction(TR::InstOpCode::BRASL, callNode, RegRA, s, cond, callSymRef, cg);
       }
 
-   TR_ASSERT( s->isCallSnippet(), "targetSnippet is NOT CallSnippet ");
    ((TR::S390CallSnippet *) s)->setBranchInstruction(callInstr);
    return callInstr;
    }

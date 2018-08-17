@@ -669,12 +669,6 @@ class InstOpCode: public OMR::InstOpCode
    uint64_t isCall() {return metadata[_mnemonic].properties & S390OpProp_IsCall;}
    uint64_t isCompare() {return metadata[_mnemonic].properties & S390OpProp_IsCompare;}
    uint64_t isExtendedImmediate() {return metadata[_mnemonic].properties & S390OpProp_IsExtendedImmediate;}
-   uint64_t isTargetHW() {return metadata[_mnemonic].properties & S390OpProp_TargetHW;}
-   uint64_t isTargetLW() {return metadata[_mnemonic].properties & S390OpProp_TargetLW;}
-   uint64_t isSrcHW() {return metadata[_mnemonic].properties & S390OpProp_SrcHW;}
-   uint64_t isSrcLW() {return metadata[_mnemonic].properties & S390OpProp_SrcLW;}
-   uint64_t isSrc2HW() {return metadata[_mnemonic].properties & S390OpProp_Src2HW;}
-   uint64_t isSrc2LW() {return metadata[_mnemonic].properties & S390OpProp_Src2LW;}
    uint64_t usesTarget() {return metadata[_mnemonic].properties & S390OpProp_UsesTarget;}
 
    uint64_t is64bit() {return metadata[_mnemonic].properties & S390OpProp_Is64Bit;}

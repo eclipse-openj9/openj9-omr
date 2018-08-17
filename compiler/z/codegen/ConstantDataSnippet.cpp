@@ -984,25 +984,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390ConstantDataSnippet * snippet)
       print(pOutFile, ((TR::S390ConstantInstructionSnippet *)snippet)->getInstruction());
       return;
       }
-   else if (snippet->getKind() == TR::Snippet::IsLabelTable)
-      {
-      printSnippetLabel(pOutFile, snippet->getSnippetLabel(), bufferPos, "Label Table Snippet");
-      trfprintf(pOutFile, "\n");
-      TR::S390LabelTableSnippet *labelTable = (TR::S390LabelTableSnippet *) snippet;
-      for (int32_t i = 0; i < labelTable->getSize(); i++)
-         {
-         TR::LabelSymbol *label = labelTable->getLabel(i);
-         if (label)
-            {
-            trfprintf(pOutFile, "[");
-            print(pOutFile, label);
-            trfprintf(pOutFile, "] ");
-            }
-         else
-            trfprintf(pOutFile, "[NULL] ");
-         }
-      return;
-      }
    else if (snippet->getKind() == TR::Snippet::IsInterfaceCallData)
       {
       // This follows the snippet format in TR::S390InterfaceCallDataSnippet::emitSnippetBody
@@ -1245,39 +1226,4 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390InterfaceCallDataSnippet * snippet)
          bufferPos += sizeof(intptrj_t);
          }
       }
-   }
-
-
-TR::S390LabelTableSnippet::S390LabelTableSnippet(TR::CodeGenerator *cg, TR::Node *node, uint32_t size)
-   : TR::S390ConstantDataSnippet(cg, node, NULL, 0), _size(size)
-   {
-   TR_ASSERT(TR::Compiler->target.is32Bit(), "only 31bit mode supported for TR::S390LabelTableSnippet\n");
-   _labelTable = (TR::LabelSymbol **) cg->trMemory()->allocateMemory(sizeof(TR::LabelSymbol *) * size, heapAlloc);
-   setLength(0);
-   }
-
-uint8_t *
-TR::S390LabelTableSnippet::emitSnippetBody()
-   {
-   uint8_t * snip = cg()->getBinaryBufferCursor();
-   getSnippetLabel()->setCodeLocation(snip);
-   uint8_t * cursor = snip;
-   for (int32_t i = 0; i < _size; i++)
-      {
-      if (_labelTable[i])
-         {
-         cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelTable32BitRelocation(cursor, _labelTable[i]));
-         *(uint32_t *) cursor = cursor - snip;
-         }
-      else
-         *(uint32_t *) cursor = 0xdeadbeaf;
-      cursor += 4;
-      }
-   return cursor;
-   }
-
-uint32_t
-TR::S390LabelTableSnippet::getLength(int32_t estimatedSnippetStart)
-   {
-   return _size * 4;
    }

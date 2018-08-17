@@ -318,7 +318,6 @@ TR::S390ConstantInstructionSnippet::S390ConstantInstructionSnippet(TR::CodeGener
    {
    _instruction = instr;
    setLength(instr->getOpCode().getInstructionLength());
-   setIsRefed(true);
    }
 
 uint8_t *

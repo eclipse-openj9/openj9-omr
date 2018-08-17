@@ -102,7 +102,6 @@ class S390ConstantDataSnippet : public TR::Snippet
 class S390ConstantInstructionSnippet : public TR::S390ConstantDataSnippet
    {
    TR::Instruction * _instruction;
-   bool             _isRefed;
 
    public:
 
@@ -113,8 +112,6 @@ class S390ConstantInstructionSnippet : public TR::S390ConstantDataSnippet
    uint32_t getConstantSize() { return 8; }
    virtual int64_t getDataAs8Bytes();
    uint8_t * emitSnippetBody();
-   bool      isRefed() { return _isRefed; }
-   void      setIsRefed(bool v) { _isRefed = v; }
    };
 
 /**

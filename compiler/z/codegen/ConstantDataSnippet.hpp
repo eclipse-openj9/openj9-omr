@@ -49,25 +49,17 @@ namespace TR {
 class S390ConstantDataSnippet : public TR::Snippet
    {
    protected:
-   union
-      {
-      uint8_t                       _value[1<<TR_DEFAULT_DATA_SNIPPET_EXPONENT];
-      char *                        _string;
-      };
+
+   uint8_t _value[1<<TR_DEFAULT_DATA_SNIPPET_EXPONENT];
 
    uint32_t                      _length;
    TR::UnresolvedDataSnippet *_unresolvedDataSnippet;
    TR::SymbolReference*           _symbolReference;
    uint32_t                      _reloType;
 
-   uint32_t                      _extraInfo;
-
-   bool                          _isString;
-
    public:
 
    S390ConstantDataSnippet(TR::CodeGenerator *cg, TR::Node *, void *c, uint16_t size);
-   S390ConstantDataSnippet(TR::CodeGenerator *cg, TR::Node *, char *c);
 
    virtual Kind getKind() { return IsConstantData; }
 
@@ -76,17 +68,6 @@ class S390ConstantDataSnippet : public TR::Snippet
    virtual int32_t getDataAs2Bytes() { return *((int16_t *) &_value); }
    virtual int32_t getDataAs4Bytes() { return *((int32_t *) &_value); }
    virtual int64_t getDataAs8Bytes() { return *((int64_t *) &_value); }
-   virtual uint8_t * setRawData(uint8_t *value)
-      {
-      TR_ASSERT(false,"setRawData not implemented\n");
-      return NULL;
-      }
-
-   virtual char * getDataAsString()
-      {
-      TR_ASSERT(_isString, "Data is not a string\n");
-      return _string;
-      }
 
    virtual uint8_t * getRawData()
       {
@@ -114,14 +95,6 @@ class S390ConstantDataSnippet : public TR::Snippet
       {
       return _reloType = rt;
       }
-   uint32_t            getExtraInfo() {return _extraInfo;}
-   void                setExtraInfo(uint32_t ei) {_extraInfo = ei;}
-   bool                getValueIsInLitPool() { return false; }
-   void                setValueIsInLitPool() { }
-
-   bool                getValueIsString() { return _isString; }
-   void                setValueIsString() { _isString = true; }
-
    TR::Compilation* comp() { return TR::comp(); }
 
    };

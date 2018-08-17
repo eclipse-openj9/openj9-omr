@@ -76,21 +76,7 @@ TR::S390ConstantDataSnippet::S390ConstantDataSnippet(TR::CodeGenerator * cg, TR:
    _length = size;
    _symbolReference = NULL;
    _reloType = 0;
-   _isString = false;
    }
-
-TR::S390ConstantDataSnippet::S390ConstantDataSnippet(TR::CodeGenerator * cg, TR::Node * n, char* c) :
-   TR::Snippet(cg, n, TR::LabelSymbol::create(cg->trHeapMemory(),cg), false)
-   {
-   _length = strlen(c);
-   _string = (char *) cg->trMemory()->allocateMemory(_length, heapAlloc);
-   memcpy(_string, c, strlen(c));
-   _unresolvedDataSnippet = NULL;
-   _symbolReference = NULL;
-   _reloType = 0;
-   _isString = true;
-   }
-
 
 void
 TR::S390ConstantDataSnippet::addMetaDataForCodeAddress(uint8_t *cursor)

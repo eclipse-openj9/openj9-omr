@@ -103,7 +103,7 @@ class TR_S390RegisterDependencyGroup
 
    void setDependencyInfo(uint32_t                                  index,
                           TR::Register                              *vr,
-                          TR::RealRegister::RegDep rr,
+                          TR::RealRegister::RegDep                  rr,
                           uint8_t                                   flag)
      {
      setDependencyInfo(index, vr, static_cast<TR::RealRegister::RegNum>(rr), flag);
@@ -111,7 +111,7 @@ class TR_S390RegisterDependencyGroup
 
    void setDependencyInfo(uint32_t                                  index,
                           TR::Register                              *vr,
-                          TR::RealRegister::RegNum rr,
+                          TR::RealRegister::RegNum                  rr,
                           uint8_t                                   flag)
       {
       _dependencies[index].setRegister(vr);

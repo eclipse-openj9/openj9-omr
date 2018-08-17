@@ -355,7 +355,7 @@ enum TR_DispatchType
    virtual void setParameterLinkageRegisterIndex(TR::ResolvedMethodSymbol *method, List<TR::ParameterSymbol>&parmList);
 
    virtual TR::Instruction * loadUpArguments(TR::Instruction * cursor);
-   virtual void removeOSCOnSavedArgument(TR::Instruction* instr, TR::Register* sReg, int stackOffset);
+   virtual void removeOSCOnSavedArgument(TR::Instruction* instr, TR::Register* sReg, int32_t stackOffset);
 
    virtual void * saveArguments(void * cursor, bool genBinary, bool InPreProlog = false, int32_t frameOffset = 0, List<TR::ParameterSymbol> *parameterList=NULL
    );

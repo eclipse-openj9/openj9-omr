@@ -309,7 +309,6 @@ public:
    void doBinaryEncoding();
    void doPreRAPeephole();
    void doPostRAPeephole();
-   void setUseDefRegisters(bool resetRegs);
 
    void AddFoldedMemRefToStack(TR::MemoryReference * mr);
    void RemoveMemRefFromStack(TR::MemoryReference * mr);

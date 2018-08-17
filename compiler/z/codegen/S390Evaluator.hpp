@@ -226,23 +226,15 @@ TR::Register *getConditionCode(TR::Node *node, TR::CodeGenerator *cg, TR::Regist
 TR::RegisterDependencyConditions *getGLRegDepsDependenciesFromIfNode(TR::CodeGenerator *cg, TR::Node* ificmpNode);
 void generateLongDoubleStore(TR::Node *node, TR::CodeGenerator *cg, TR::Register *reg, TR::Register *addressReg);
 
-#define VOID_BODY
-#define NULL_BODY
-#define BOOL_BODY
-
 class TR_S390ComputeCC : public TR::TreeEvaluator
    {
    public:
-   static bool setCarryBorrow(TR::Node *flagNode, bool invertValue, TR::CodeGenerator *cg) BOOL_BODY;
-   static void computeCC(TR::Node *node, TR::Register *ccReg, TR::CodeGenerator *cg) VOID_BODY;
-   static void computeCCLogical(TR::Node *node, TR::Register *ccReg, TR::Register *targetReg, TR::CodeGenerator *cg, bool is64Bit=false) VOID_BODY;
+   static bool setCarryBorrow(TR::Node *flagNode, bool invertValue, TR::CodeGenerator *cg);
+   static void computeCC(TR::Node *node, TR::Register *ccReg, TR::CodeGenerator *cg);
+   static void computeCCLogical(TR::Node *node, TR::Register *ccReg, TR::Register *targetReg, TR::CodeGenerator *cg, bool is64Bit=false);
    private:
-   static void saveHostCC(TR::Node *node, TR::Register *ccReg, TR::CodeGenerator *cg) VOID_BODY;
+   static void saveHostCC(TR::Node *node, TR::Register *ccReg, TR::CodeGenerator *cg);
    };
-
-#undef NULL_BODY
-#undef VOID_BODY
-
 
 TR::InstOpCode::S390BranchCondition getStandardIfBranchConditionForArraycmp(TR::Node * ifxcmpXXNode, TR::CodeGenerator *cg);
 

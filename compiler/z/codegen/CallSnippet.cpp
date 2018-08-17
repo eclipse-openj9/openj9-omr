@@ -66,20 +66,6 @@ TR::S390CallSnippet::storeArgumentItem(TR::InstOpCode::Mnemonic op, uint8_t * bu
    }
 
 uint8_t *
-TR::S390CallSnippet::loadArgumentItem(TR::InstOpCode::Mnemonic op, uint8_t * buffer, TR::RealRegister * reg, int32_t offset)
-   {
-   TR::RealRegister * stackPtr = cg()->getStackPointerRealRegister();
-   TR::InstOpCode opCode(op);
-   opCode.copyBinaryToBuffer(buffer);
-   reg->setRegisterField(toS390Cursor(buffer));
-   stackPtr->setBaseRegisterField(toS390Cursor(buffer));
-   TR_ASSERT( (offset & 0xfffff000) == 0, "CallSnippet: Unexpected displacement for loadArgumentItem");
-   *toS390Cursor(buffer) |= offset & 0x00000fff;
-   return buffer + opCode.getInstructionLength();
-   }
-
-
-uint8_t *
 TR::S390CallSnippet::S390flushArgumentsToStack(uint8_t * buffer, TR::Node * callNode, int32_t argSize, TR::CodeGenerator * cg)
    {
    int32_t intArgNum = 0, floatArgNum = 0, offset;

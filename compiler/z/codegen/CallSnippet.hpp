@@ -80,8 +80,6 @@ class S390CallSnippet : public TR::Snippet
    TR::SymbolReference *setRealMethodSymbolReference(TR::SymbolReference *s) {return _realMethodSymbolReference = s;}
    TR::SymbolReference *getRealMethodSymbolReference() {return _realMethodSymbolReference;}
 
-   uint8_t *loadArgumentItem(TR::InstOpCode::Mnemonic op, uint8_t *buffer, TR::RealRegister *reg, int32_t offset);
-
    static TR_RuntimeHelper getHelper(TR::MethodSymbol *, TR::DataType, TR::CodeGenerator *);
 
    static uint8_t *storeArgumentItem(TR::InstOpCode::Mnemonic op, uint8_t *buffer, TR::RealRegister *reg, int32_t offset, TR::CodeGenerator *cg);

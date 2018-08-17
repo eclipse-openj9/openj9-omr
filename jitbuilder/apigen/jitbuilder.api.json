@@ -1888,15 +1888,79 @@
         {
             "name": "VirtualMachineRegister",
             "short-name": "VMR",
+            "extends": "VirtualMachineState",
             "types": [
                 ],
             "fields": [
                 ],
             "constructors": [
+                { "name": ""
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "VirtualMachineRegister"
+                , "parms": [
+                    {"name":"b","type":"IlBuilder"},
+                    {"name":"localName","type":"constString"},
+                    {"name":"pointerToRegisterType","type":"IlType"},
+                    {"name":"adjustByStep","type":"uint32"},
+                    {"name":"addressOfRegister","type":"IlValue"}
+                    ]
+                }
                 ],
             "callbacks": [
+                { "name": "Commit"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "none"
+                , "parms": [ {"name":"b","type":"IlBuilder"} ]
+                },
+                { "name": "Reload"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "none"
+                , "parms": [ {"name":"b","type":"IlBuilder"} ]
+                },
+                { "name": "MakeCopy"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "VirtualMachineState"
+                , "parms": []
+                }
                 ],
             "services": [
+                { "name": "Adjust"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"b","type":"IlBuilder"},
+                    {"name":"amount","type":"IlValue"}
+                    ]
+                },
+                { "name": "Adjust"
+                , "overloadsuffix": "ByConst"
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"b","type":"IlBuilder"},
+                    {"name":"amount","type":"int64"}
+                    ]
+                },
+                { "name": "Load"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "IlValue"
+                , "parms": [ {"name":"b","type":"IlBuilder"} ]
+                },
+                { "name": "Store"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"b","type":"IlBuilder"},
+                    {"name":"value","type":"IlValue"}
+                    ]
+                }
                 ]
         },
         {

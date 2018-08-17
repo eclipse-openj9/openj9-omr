@@ -2327,8 +2327,6 @@ generateDirectCall(TR::CodeGenerator * cg, TR::Node * callNode, bool myself, TR:
 
    AOTcgDiag2(comp, "\nimm=%x isHelper=%x\n", imm, isHelper);
 
-   TR::S390TargetAddressSnippet * targetsnippet;
-
    // Since N3 generate TR::InstOpCode::BRASL -- only need 1 instruction, and no worry
    // about the displacement
    // Calling myself

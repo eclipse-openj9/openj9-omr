@@ -96,11 +96,9 @@ namespace TR { class S390ConstantInstructionSnippet; }
 namespace TR { class S390EyeCatcherDataSnippet; }
 namespace TR { class S390ImmInstruction; }
 namespace TR { class S390LabelTableSnippet; }
-namespace TR { class S390LookupSwitchSnippet; }
 class TR_S390OutOfLineCodeSection;
 namespace TR { class S390PrivateLinkage; }
 class TR_S390ScratchRegisterManager;
-namespace TR { class S390TargetAddressSnippet; }
 namespace TR { class S390WritableDataSnippet; }
 class TR_StorageReference;
 namespace OMR { class Linkage; }
@@ -585,7 +583,6 @@ public:
    bool doRematerialization() {return true;}
 
    void dumpDataSnippets(TR::FILE *outFile);
-   void dumpTargetAddressSnippets(TR::FILE *outFile);
 
    bool getSupportsBitOpCodes() { return true;}
 
@@ -711,7 +708,7 @@ public:
    /** First Snippet (can be AddressSnippet or ConstantSnippet) */
    TR::Snippet *getFirstSnippet();
    // Constant Data List functions
-   int32_t setEstimatedOffsetForConstantDataSnippets(int32_t targetAddressSnippetSize);
+   int32_t setEstimatedOffsetForConstantDataSnippets();
    int32_t setEstimatedLocationsForDataSnippetLabels(int32_t estimatedSnippetStart);
    void emitDataSnippets();
    bool hasDataSnippets() { return (_constantList.empty() && _writableList.empty() && _snippetDataList.empty() && _constantHash.IsEmpty()) ? false : true; }
@@ -753,18 +750,6 @@ public:
 
    // Snippet Data functions
    void addDataConstantSnippet(TR::S390ConstantDataSnippet * snippet);
-
-   // Target Address List functions
-   int32_t setEstimatedOffsetForTargetAddressSnippets();
-   int32_t setEstimatedLocationsForTargetAddressSnippetLabels(int32_t estimatedSnippetStart);
-   void emitTargetAddressSnippets();
-   bool hasTargetAddressSnippets() { return _targetList.empty() ? false : true; }
-   TR::S390LookupSwitchSnippet  *CreateLookupSwitchSnippet(TR::Node *,  TR::Snippet* s);
-   TR::S390TargetAddressSnippet *CreateTargetAddressSnippet(TR::Node *, TR::Snippet* s);
-   TR::S390TargetAddressSnippet *CreateTargetAddressSnippet(TR::Node *, TR::LabelSymbol * s);
-   TR::S390TargetAddressSnippet *CreateTargetAddressSnippet(TR::Node *, TR::Symbol* s);
-   TR::S390TargetAddressSnippet *findOrCreateTargetAddressSnippet(TR::Node *, uintptrj_t s);
-   TR::S390TargetAddressSnippet *getFirstTargetAddress();
 
    // Transient Long Registers
 
@@ -923,8 +908,6 @@ public:
    TR::S390ImmInstruction          *_returnTypeInfoInstruction;
    int32_t                        _extentOfLitPool;  // excludes snippets
    uint64_t                       _availableHPRSpillMask;
-
-   TR::list<TR::S390TargetAddressSnippet*> _targetList;
 
 protected:
    TR::list<TR::S390ConstantDataSnippet*>  _constantList;

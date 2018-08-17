@@ -2276,7 +2276,6 @@ TR_S390PostRAPeephole::inlineEXtargetHelper(TR::Instruction *inst, TR::Instructi
       _cg->replaceInst(oldCursor, newEXRLInst);
 
       // remove the instr constant data snippet
-      ((TR::S390ConstantInstructionSnippet *)cnstDataSnip)->setIsRefed(false);
       (_cg->getConstantInstructionSnippets()).remove(cnstDataSnip);
 
       return true;

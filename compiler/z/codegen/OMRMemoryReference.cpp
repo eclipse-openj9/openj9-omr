@@ -819,19 +819,11 @@ OMR::Z::MemoryReference::initSnippetPointers(TR::Snippet * s, TR::CodeGenerator 
       {
       self()->setUnresolvedSnippet((TR::UnresolvedDataSnippet *) s);
       }
-   else if (s->getKind() == TR::Snippet::IsTargetAddress)
-      {
-      self()->setTargetAddressSnippet((TR::S390TargetAddressSnippet *) s);
-      }
    else if (s->getKind() == TR::Snippet::IsWritableData ||
             s->getKind() == TR::Snippet::IsConstantInstruction ||
             s->getKind() == TR::Snippet::IsConstantData)
       {
       self()->setConstantDataSnippet((TR::S390ConstantDataSnippet *) s);
-      }
-   else if (s->getKind() == TR::Snippet::IsLookupSwitch)
-      {
-      self()->setLookupSwitchSnippet((TR::S390LookupSwitchSnippet *) s);
       }
    }
 
@@ -1062,19 +1054,6 @@ OMR::Z::MemoryReference::setUnresolvedSnippet(TR::UnresolvedDataSnippet *s)
    return (TR::UnresolvedDataSnippet *) (_targetSnippet = (TR::Snippet *) s);
    }
 
-TR::S390TargetAddressSnippet *
-OMR::Z::MemoryReference::getTargetAddressSnippet()
-   {
-   return self()->isTargetAddressSnippet() ? (TR::S390TargetAddressSnippet *)_targetSnippet : NULL;
-   }
-
-TR::S390TargetAddressSnippet *
-OMR::Z::MemoryReference::setTargetAddressSnippet(TR::S390TargetAddressSnippet *s)
-   {
-   self()->setTargetAddressSnippet();
-   return (TR::S390TargetAddressSnippet *) (_targetSnippet = s);
-   }
-
 TR::S390ConstantDataSnippet *
 OMR::Z::MemoryReference::getConstantDataSnippet()
    {
@@ -1086,19 +1065,6 @@ OMR::Z::MemoryReference::setConstantDataSnippet(TR::S390ConstantDataSnippet *s)
    {
    self()->setConstantDataSnippet();
    return (TR::S390ConstantDataSnippet *) (_targetSnippet = s);
-   }
-
-TR::S390LookupSwitchSnippet *
-OMR::Z::MemoryReference::getLookupSwitchSnippet()
-   {
-   return self()->isLookupSwitchSnippet() ? (TR::S390LookupSwitchSnippet *)_targetSnippet : NULL;
-   }
-
-TR::S390LookupSwitchSnippet *
-OMR::Z::MemoryReference::setLookupSwitchSnippet(TR::S390LookupSwitchSnippet *s)
-   {
-   self()->setLookupSwitchSnippet();
-   return (TR::S390LookupSwitchSnippet *) (_targetSnippet = s);
    }
 
 void
@@ -2527,20 +2493,10 @@ OMR::Z::MemoryReference::getSnippet()
       {
       self()->setMemRefAndGetUnresolvedData(snippet);
       }
-   else // add writable data snippet address relocation
-   if (self()->getConstantDataSnippet() != NULL)
+   // add writable data snippet address relocation
+   else if (self()->getConstantDataSnippet() != NULL)
       {
       snippet = self()->getConstantDataSnippet();
-      }
-   else if (self()->getTargetAddressSnippet() != NULL)
-      {
-      // add target address snippet address relocation
-      snippet = self()->getTargetAddressSnippet();
-      }
-   else if (self()->getLookupSwitchSnippet() != NULL)
-      {
-      // add lookup switch snippet address relocation
-      snippet = self()->getLookupSwitchSnippet();
       }
 
    return snippet;

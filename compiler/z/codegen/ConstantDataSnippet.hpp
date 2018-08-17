@@ -141,45 +141,6 @@ class S390WritableDataSnippet : public TR::S390ConstantDataSnippet
    virtual Kind getKind() { return IsWritableData; }
    };
 
-/**
- * TargetAddress Snippet is used to hold address of snippet which exceed the branch limit
- */
-class S390TargetAddressSnippet : public TR::Snippet
-   {
-   uintptrj_t   _targetaddress;
-   TR::Snippet *_targetsnippet;
-   TR::Symbol   *_targetsym;
-   TR::LabelSymbol   *_targetlabel;
-
-   public:
-
-   S390TargetAddressSnippet(TR::CodeGenerator *cg, TR::Node *, TR::LabelSymbol *targetLabel);
-   S390TargetAddressSnippet(TR::CodeGenerator *cg, TR::Node *, TR::Snippet *s);
-   S390TargetAddressSnippet(TR::CodeGenerator *cg, TR::Node *, uintptrj_t addr);
-   S390TargetAddressSnippet(TR::CodeGenerator *cg, TR::Node *, TR::Symbol *sym);
-
-   TR::Snippet *getTargetSnippet()   { return _targetsnippet; }
-   uintptrj_t  getTargetAddress()   { return _targetaddress; }
-   TR::Symbol   *getTargetSym()       { return _targetsym; }
-   TR::LabelSymbol   *getTargetLabel()   { return _targetlabel; }
-
-   virtual Kind getKind() { return IsTargetAddress; }
-   virtual uint8_t *emitSnippetBody();
-   virtual uint32_t getLength(int32_t estimatedSnippetStart);
-   };
-
-
-class S390LookupSwitchSnippet : public TR::S390TargetAddressSnippet
-   {
-   public:
-
-   S390LookupSwitchSnippet(TR::CodeGenerator *cg, TR::Node* switchNode);
-
-   virtual Kind getKind() { return IsLookupSwitch; }
-   virtual uint8_t *emitSnippetBody();
-   virtual uint32_t getLength(int32_t estimatedSnippetStart);
-   };
-
 
 class S390InterfaceCallDataSnippet : public TR::S390ConstantDataSnippet
    {

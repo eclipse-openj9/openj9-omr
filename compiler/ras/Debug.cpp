@@ -2875,9 +2875,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::list<TR::Snippet*> & snippetList, bool i
    if (pOutFile == NULL)
       return;
 
-   if (_comp->cg()->hasTargetAddressSnippets())
-      _comp->cg()->dumpTargetAddressSnippets(pOutFile);
-
    for (auto snippets = snippetList.begin(); snippets != snippetList.end(); ++snippets)
       {
       print(pOutFile, *snippets);
@@ -2893,9 +2890,6 @@ TR_Debug::print(TR::FILE *pOutFile, List<TR::Snippet> & snippetList, bool isWarm
    {
    if (pOutFile == NULL)
       return;
-
-   if (_comp->cg()->hasTargetAddressSnippets())
-      _comp->cg()->dumpTargetAddressSnippets(pOutFile);
 
    ListIterator<TR::Snippet> snippets(&snippetList);
    for (TR::Snippet * snippet = snippets.getFirst(); snippet; snippet = snippets.getNext())

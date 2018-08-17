@@ -530,7 +530,6 @@ OMR::Z::CodeGenerator::CodeGenerator()
      _processorInfo(),
      _extentOfLitPool(-1),
      _recompPatchInsnList(getTypedAllocator<TR::Instruction*>(self()->comp()->allocator())),
-     _targetList(getTypedAllocator<TR::S390TargetAddressSnippet*>(self()->comp()->allocator())),
      _constantHash(self()->comp()->allocator()),
      _constantHashCur(_constantHash),
      _constantList(getTypedAllocator<TR::S390ConstantDataSnippet*>(self()->comp()->allocator())),
@@ -2544,8 +2543,7 @@ OMR::Z::CodeGenerator::prepareRegistersForAssignment()
       // Compute extent of litpool on N3 (exclude snippets)
       // for 31-bit systems, we add 4 to offset estimate because of possible alignment padding
       // between target addresses (4-byte aligned) and any 8-byte constant data.
-      _extentOfLitPool = self()->setEstimatedOffsetForTargetAddressSnippets();
-      _extentOfLitPool = self()->setEstimatedOffsetForConstantDataSnippets(_extentOfLitPool);
+      _extentOfLitPool = self()->setEstimatedOffsetForConstantDataSnippets();
 
       TR::Linkage *s390PrivateLinkage = self()->getS390Linkage();
 
@@ -3125,9 +3123,7 @@ OMR::Z::CodeGenerator::anyNonConstantSnippets()
       {
       if ((*iterator)->getKind()!=TR::Snippet::IsConstantData   ||
            (*iterator)->getKind()!=TR::Snippet::IsWritableData   ||
-           (*iterator)->getKind()!=TR::Snippet::IsEyeCatcherData ||
-           (*iterator)->getKind()!=TR::Snippet::IsTargetAddress  ||
-           (*iterator)->getKind()!=TR::Snippet::IsLookupSwitch
+           (*iterator)->getKind()!=TR::Snippet::IsEyeCatcherData
           )
           {
           return true;
@@ -3145,10 +3141,6 @@ OMR::Z::CodeGenerator::anyLitPoolSnippets()
    {
    CS2::HashIndex hi;
    TR::S390ConstantDataSnippet *cursor1 = NULL;
-    if (!_targetList.empty())
-      {
-      return true;
-      }
 
     for (auto constantiterator = _constantList.begin(); constantiterator != _constantList.end(); ++constantiterator)
       {
@@ -3301,8 +3293,7 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
    static char * disableEXRLDispatch = feGetEnv("TR_DisableEXRLDispatch");
    if (!(bool)disableEXRLDispatch && self()->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10))
       {
-      _extentOfLitPool = self()->setEstimatedOffsetForTargetAddressSnippets();
-      _extentOfLitPool = self()->setEstimatedOffsetForConstantDataSnippets(_extentOfLitPool);
+      _extentOfLitPool = self()->setEstimatedOffsetForConstantDataSnippets();
       }
 
    self()->setEstimatedCodeLength(data.estimate);
@@ -4669,11 +4660,7 @@ OMR::Z::CodeGenerator::getFirstSnippet()
    {
    TR::Snippet * s = NULL;
 
-   if ((s = self()->getFirstTargetAddress()) != NULL)
-      {
-      return s;
-      }
-   else if ((s = self()->getFirstConstantData()) != NULL)
+   if ((s = self()->getFirstConstantData()) != NULL)
       {
       return s;
       }
@@ -4804,16 +4791,14 @@ OMR::Z::CodeGenerator::addDataConstantSnippet(TR::S390ConstantDataSnippet * snip
 
 /**
  * Estimate the offsets for constant snippets from code base
- * the size of the targetAddressSnippet should be passed as input
- * since the constant is emitted after all the target address snippets
  */
 int32_t
-OMR::Z::CodeGenerator::setEstimatedOffsetForConstantDataSnippets(int32_t targetAddressSnippetSize)
+OMR::Z::CodeGenerator::setEstimatedOffsetForConstantDataSnippets()
    {
    TR::S390ConstantDataSnippet * cursor;
    bool first;
    int32_t size;
-   int32_t offset = targetAddressSnippetSize;
+   int32_t offset = 0;
    int32_t exp;
 
    // We align this stucture on 8bytes to guarantee full predictability of
@@ -5321,146 +5306,6 @@ OMR::Z::CodeGenerator::getFirstConstantData()
       }
 
    return cursor;
-   }
-
-
-
-/**
- * This method sets estimated offset for each targetAddressSnippets
- * from the codebase (points to the 1st snippet)
- * this method is called in generateBinaryEncoding phase where the
- * displacement is required to decide if a index register should be
- * set up for RX instructions
- * @return the total size of the targetAddressSnippets
- *
- * Logic in this method should always be kept in sync with
- * logic in void OMR::Z::CodeGenerator::emitDataSnippets()
- * Constants are emited in order of decreasing size,
- * hense the first emited constant may not be iterator.getFirst(),
- * but the first constant with biggest size
- */
-int32_t
-OMR::Z::CodeGenerator::setEstimatedOffsetForTargetAddressSnippets()
-   {
-   int32_t estimatedOffset = 0;
-
-   for (auto iterator = _targetList.begin(); iterator != _targetList.end(); ++iterator)
-      {
-      (*iterator)->setCodeBaseOffset(estimatedOffset);
-      estimatedOffset += (*iterator)->getLength(0);
-      }
-
-   return estimatedOffset;
-   }
-
-
-////////////////////////////////////////////////////////////////////////////////
-// OMR::Z::CodeGenerator::TargetAddressSnippet Functions
-////////////////////////////////////////////////////////////////////////////////
-int32_t
-OMR::Z::CodeGenerator::setEstimatedLocationsForTargetAddressSnippetLabels(int32_t estimatedSnippetStart)
-   {
-   self()->setEstimatedSnippetStart(estimatedSnippetStart);
-   // Conservatively add maximum padding to get to 8 byte alignment.
-   estimatedSnippetStart += 6;
-   for (auto iterator = _targetList.begin(); iterator != _targetList.end(); ++iterator)
-      {
-      (*iterator)->setEstimatedCodeLocation(estimatedSnippetStart);
-      estimatedSnippetStart += (*iterator)->getLength(estimatedSnippetStart);
-      }
-   return estimatedSnippetStart;
-   }
-
-void
-OMR::Z::CodeGenerator::emitTargetAddressSnippets()
-   {
-   uint8_t * codeOffset;
-   int8_t size = 8;
-
-   // We align this stucture on 8bytes to guarantee full predictability of
-   // of the lit pool layout.
-   //
-   self()->setBinaryBufferCursor((uint8_t *) (((uintptrj_t) (self()->getBinaryBufferCursor() + size - 1) / size) * size));
-
-   for (auto iterator = _targetList.begin(); iterator != _targetList.end(); ++iterator)
-      {
-      codeOffset = (*iterator)->emitSnippetBody();
-      if (codeOffset != NULL)
-         {
-         self()->setBinaryBufferCursor(codeOffset);
-         }
-      }
-   }
-
-
-
-TR::S390LookupSwitchSnippet *
-OMR::Z::CodeGenerator::CreateLookupSwitchSnippet(TR::Node * node, TR::Snippet * s)
-   {
-   _targetList.push_front((TR::S390LookupSwitchSnippet *) s);
-   return (TR::S390LookupSwitchSnippet *) s;
-   }
-
-
-
-TR::S390TargetAddressSnippet *
-OMR::Z::CodeGenerator::CreateTargetAddressSnippet(TR::Node * node, TR::Snippet * s)
-   {
-   TR::S390TargetAddressSnippet * targetsnippet;
-   targetsnippet = new (self()->trHeapMemory()) TR::S390TargetAddressSnippet(self(), node, s);
-   _targetList.push_front(targetsnippet);
-   return targetsnippet;
-   }
-
-TR::S390TargetAddressSnippet *
-OMR::Z::CodeGenerator::CreateTargetAddressSnippet(TR::Node * node, TR::LabelSymbol * s)
-   {
-   TR::S390TargetAddressSnippet * targetsnippet;
-   targetsnippet = new (self()->trHeapMemory()) TR::S390TargetAddressSnippet(self(), node, s);
-   _targetList.push_front(targetsnippet);
-   return targetsnippet;
-   }
-
-TR::S390TargetAddressSnippet *
-OMR::Z::CodeGenerator::CreateTargetAddressSnippet(TR::Node * node, TR::Symbol * s)
-   {
-   TR_ASSERT(self()->supportsOnDemandLiteralPool() == false, "May not be here with Literal Pool On Demand enabled\n");
-   TR::S390TargetAddressSnippet * targetsnippet;
-   targetsnippet = new (self()->trHeapMemory()) TR::S390TargetAddressSnippet(self(), node, s);
-   _targetList.push_front(targetsnippet);
-   return targetsnippet;
-   }
-
-TR::S390TargetAddressSnippet *
-OMR::Z::CodeGenerator::findOrCreateTargetAddressSnippet(TR::Node * node, uintptrj_t addr)
-   {
-   TR_ASSERT(self()->supportsOnDemandLiteralPool() == false, "May not be here with Literal Pool On Demand enabled\n");
-   // A simple linear search should suffice for now since the number of FP constants
-   // produced is typically very small.  Eventually, this should be implemented as an
-   // ordered list or a hash table.
-   //
-   for (auto iterator = _targetList.begin(); iterator != _targetList.end(); ++iterator)
-      {
-      if ((*iterator)->getKind() == TR::Snippet::IsTargetAddress && (*iterator)->getTargetAddress() == addr)
-         {
-         return *iterator;
-         }
-      }
-
-   TR::S390TargetAddressSnippet * targetsnippet;
-
-   targetsnippet = new (self()->trHeapMemory()) TR::S390TargetAddressSnippet(self(), node, addr);
-   _targetList.push_front(targetsnippet);
-   return targetsnippet;
-   }
-
-TR::S390TargetAddressSnippet *
-OMR::Z::CodeGenerator::getFirstTargetAddress()
-   {
-   if(_targetList.empty())
-      return NULL;
-   else
-      return _targetList.front();
    }
 
 void
@@ -6473,26 +6318,6 @@ OMR::Z::CodeGenerator::dumpDataSnippets(TR::FILE *outFile)
    if (eyeCatcher != NULL) //WCODE
       {
       self()->getDebug()->print(outFile, eyeCatcher);
-      }
-   }
-
-////////////////////////////////////////////////////////////////////////////////
-// OMR::Z::CodeGenerator::dumpTargetAddressSnippets
-////////////////////////////////////////////////////////////////////////////////
-void
-OMR::Z::CodeGenerator::dumpTargetAddressSnippets(TR::FILE *outFile)
-   {
-
-   if (outFile == NULL)
-      {
-      return;
-      }
-
-   int32_t size;
-
-   for (auto iterator = _targetList.begin(); iterator != _targetList.end(); ++iterator)
-      {
-      self()->getDebug()->print(outFile, *iterator);
       }
    }
 

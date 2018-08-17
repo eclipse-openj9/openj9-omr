@@ -141,7 +141,6 @@ namespace TR { class X86FPMemRegInstruction;               }
 namespace TR { class X86FPRegMemInstruction;               }
 class TR_X86RegisterDependencyGroup;
 namespace TR { class X86RestartSnippet; }
-namespace TR { class S390LookupSwitchSnippet; }
 namespace TR { class X86PicDataSnippet; }
 namespace TR { class X86DivideCheckSnippet; }
 namespace TR { class X86FPConvertToIntSnippet; }
@@ -318,7 +317,6 @@ namespace TR { class S390RestoreGPR7Snippet; }
 namespace TR { class S390CallSnippet; }
 namespace TR { class S390ConstantDataSnippet; }
 namespace TR { class S390WritableDataSnippet; }
-namespace TR { class S390TargetAddressSnippet; }
 namespace TR { class S390HelperCallSnippet; }
 namespace TR { class S390InterfaceCallDataSnippet; }
 namespace TR { class S390JNICallDataSnippet; }
@@ -1066,9 +1064,7 @@ public:
    void print(TR::FILE *, TR::S390CallSnippet *);
 
    void print(TR::FILE *, TR::S390ConstantDataSnippet *);
-   void print(TR::FILE *, TR::S390TargetAddressSnippet *);
 
-   void print(TR::FILE *, TR::S390LookupSwitchSnippet *);
    void print(TR::FILE *, TR::S390HelperCallSnippet *);
 #ifdef J9_PROJECT_SPECIFIC
    void print(TR::FILE *, TR::S390ForceRecompilationSnippet *);

@@ -2327,11 +2327,6 @@ OMR::CodeGenerator::setEstimatedLocationsForSnippetLabels(int32_t estimatedSnipp
 
    self()->setEstimatedSnippetStart(estimatedSnippetStart);
 
-   if (self()->hasTargetAddressSnippets())
-      {
-      estimatedSnippetStart = self()->setEstimatedLocationsForTargetAddressSnippetLabels(estimatedSnippetStart);
-      }
-
    for (auto iterator = _snippetList.begin(); iterator != _snippetList.end(); ++iterator)
       {
       (*iterator)->setEstimatedCodeLocation(estimatedSnippetStart);
@@ -2367,13 +2362,6 @@ OMR::CodeGenerator::emitSnippets()
       }
 
    retVal = self()->getBinaryBufferCursor();
-
-   // Emit target address snippets first.
-   //
-   if (self()->hasTargetAddressSnippets())
-      {
-      self()->emitTargetAddressSnippets();
-      }
 
    // Emit constant data snippets last.
    //

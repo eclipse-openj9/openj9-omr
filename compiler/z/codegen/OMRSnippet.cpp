@@ -270,12 +270,6 @@ TR_Debug::printz(TR::FILE *pOutFile, TR::Snippet * snippet)
       case TR::Snippet::IsEyeCatcherData:
          print(pOutFile, (TR::S390ConstantDataSnippet *) snippet);
          break;
-      case TR::Snippet::IsTargetAddress:
-         print(pOutFile, (TR::S390TargetAddressSnippet *) snippet);
-         break;
-      case TR::Snippet::IsLookupSwitch:
-         print(pOutFile, (TR::S390LookupSwitchSnippet *) snippet);
-         break;
       case TR::Snippet::IsUnresolvedData:
          print(pOutFile, (TR::UnresolvedDataSnippet *) snippet);
          break;

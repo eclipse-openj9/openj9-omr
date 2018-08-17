@@ -1409,6 +1409,8 @@ typedef struct OMRPortLibrary {
 	int32_t (*sig_register_os_handler)(struct OMRPortLibrary *portLibrary, uint32_t portlibSignalFlag, void *newOSHandler, void **oldOSHandler) ;
 	/** see @ref omrsignal.c::omrsig_is_master_signal_handler "omrsig_is_master_signal_handler"*/
 	BOOLEAN (*sig_is_master_signal_handler)(struct OMRPortLibrary *portLibrary, void *osHandler) ;
+	/** see @ref omrsignal.c::omrsig_is_signal_ignored "omrsig_is_signal_ignored"*/
+	int32_t (*sig_is_signal_ignored)(struct OMRPortLibrary *portLibrary, uint32_t portlibSignalFlag, BOOLEAN *isSignalIgnored) ;
 	/** see @ref omrsignal.c::omrsig_info "omrsig_info"*/
 	uint32_t (*sig_info)(struct OMRPortLibrary *portLibrary, void *info, uint32_t category, int32_t index, const char **name, void **value) ;
 	/** see @ref omrsignal.c::omrsig_info_count "omrsig_info_count"*/
@@ -1914,6 +1916,7 @@ extern J9_CFUNC int32_t omrport_getVersion(struct OMRPortLibrary *portLibrary);
 #define omrsig_map_portlib_signal_to_os_signal(param1) privateOmrPortLibrary->sig_map_portlib_signal_to_os_signal(privateOmrPortLibrary, (param1))
 #define omrsig_register_os_handler(param1,param2,param3) privateOmrPortLibrary->sig_register_os_handler(privateOmrPortLibrary, (param1), (param2), (param3))
 #define omrsig_is_master_signal_handler(param1) privateOmrPortLibrary->sig_is_master_signal_handler(privateOmrPortLibrary, (param1))
+#define omrsig_is_signal_ignored(param1, param2) privateOmrPortLibrary->sig_is_signal_ignored(privateOmrPortLibrary, (param1), (param2))
 #define omrsig_info(param1,param2,param3,param4,param5) privateOmrPortLibrary->sig_info(privateOmrPortLibrary, (param1), (param2), (param3), (param4), (param5))
 #define omrsig_info_count(param1,param2) privateOmrPortLibrary->sig_info_count(privateOmrPortLibrary, (param1), (param2))
 #define omrsig_set_options(param1) privateOmrPortLibrary->sig_set_options(privateOmrPortLibrary, (param1))

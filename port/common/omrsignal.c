@@ -293,6 +293,29 @@ omrsig_is_master_signal_handler(struct OMRPortLibrary *portLibrary, void *osHand
 }
 
 /**
+ * Determine if a signal is ignored by the OS.
+ *
+ * @param[in] portLibrary the port library
+ * @param[in] portlibSignalFlag a single port library signal flag
+ * @param[out] *isSignalIgnored will contain either TRUE if the signal
+ *             is ignored or FALSE if the signal is not ignored
+ *
+ * @return 0 on success and OMRPORT_SIG_ERROR (-1) on failure
+ */
+int32_t
+omrsig_is_signal_ignored(struct OMRPortLibrary *portLibrary, uint32_t portlibSignalFlag, BOOLEAN *isSignalIgnored)
+{
+	int32_t rc = 0;
+	Trc_PRT_signal_omrsig_is_signal_ignored_entered(portlibSignalFlag);
+
+	*isSignalIgnored = FALSE;
+
+	Trc_PRT_signal_omrsig_is_signal_ignored_exiting(rc, *isSignalIgnored);
+	return rc;
+}
+
+
+/**
  * Determine if the port library is capable of protecting a function from the indicated signals in the indicated way.
  *
  * @param[in] portLibrary The port library

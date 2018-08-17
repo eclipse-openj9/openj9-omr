@@ -561,6 +561,8 @@ extern J9_CFUNC int32_t
 omrsig_register_os_handler(struct OMRPortLibrary *portLibrary, uint32_t portlibSignalFlag, void *newOSHandler, void **oldOSHandler);
 extern J9_CFUNC BOOLEAN
 omrsig_is_master_signal_handler(struct OMRPortLibrary *portLibrary, void *osHandler);
+extern J9_CFUNC int32_t
+omrsig_is_signal_ignored(struct OMRPortLibrary *portLibrary, uint32_t portlibSignalFlag, BOOLEAN *isSignalIgnored);
 extern J9_CFUNC uint32_t
 omrsig_info(struct OMRPortLibrary *portLibrary, void *info, uint32_t category, int32_t index, const char **name, void **value);
 extern J9_CFUNC int32_t

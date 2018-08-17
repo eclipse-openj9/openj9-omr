@@ -639,6 +639,49 @@ omrsig_is_master_signal_handler(struct OMRPortLibrary *portLibrary, void *osHand
 	return rc;
 }
 
+int32_t
+omrsig_is_signal_ignored(struct OMRPortLibrary *portLibrary, uint32_t portlibSignalFlag, BOOLEAN *isSignalIgnored)
+{
+	int32_t rc = 0;
+	int osSignalNo = OMRPORT_SIG_ERROR;
+	void *oldHandler = NULL;
+	struct sigaction oldSignalAction;
+
+	Trc_PRT_signal_omrsig_is_signal_ignored_entered(portlibSignalFlag);
+
+	*isSignalIgnored = FALSE;
+
+	if (0 != portlibSignalFlag) {
+		/* For non-zero portlibSignalFlag, check if only one signal bit is set. Otherwise, fail. */
+		if (!OMR_IS_ONLY_ONE_BIT_SET(portlibSignalFlag)) {
+			rc = OMRPORT_SIG_ERROR;
+			goto exit;
+		}
+	}
+
+	osSignalNo = mapPortLibSignalToOSSignal(portlibSignalFlag);
+	if (OMRPORT_SIG_ERROR == osSignalNo) {
+		rc = OMRPORT_SIG_ERROR;
+		goto exit;
+	}
+
+	memset(&oldSignalAction, 0, sizeof(struct sigaction));
+	OMRSIG_SIGACTION(osSignalNo, NULL, &oldSignalAction);
+
+	oldHandler = (void *)oldSignalAction.sa_sigaction;
+	if (NULL == oldHandler) {
+		oldHandler = (void *)oldSignalAction.sa_handler;
+	}
+
+	if (oldHandler == (void *)SIG_IGN) {
+		*isSignalIgnored = TRUE;
+	}
+
+exit:
+	Trc_PRT_signal_omrsig_is_signal_ignored_exiting(rc, *isSignalIgnored);
+	return rc;
+}
+
 /*
  * The full shutdown routine "sig_full_shutdown" overwrites this once we've completed startup
  */

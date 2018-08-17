@@ -379,6 +379,18 @@ omrsig_is_master_signal_handler(struct OMRPortLibrary *portLibrary, void *osHand
 }
 
 int32_t
+omrsig_is_signal_ignored(struct OMRPortLibrary *portLibrary, uint32_t portlibSignalFlag, BOOLEAN *isSignalIgnored)
+{
+	int32_t rc = 0;
+	Trc_PRT_signal_omrsig_is_signal_ignored_entered(portlibSignalFlag);
+
+	*isSignalIgnored = FALSE;
+
+	Trc_PRT_signal_omrsig_is_signal_ignored_exiting(rc, *isSignalIgnored);
+	return rc;
+}
+
+int32_t
 omrsig_can_protect(struct OMRPortLibrary *portLibrary,  uint32_t flags)
 {
 	uint32_t supportedFlags = OMRPORT_SIG_FLAG_MAY_RETURN | OMRPORT_SIG_FLAG_MAY_CONTINUE_EXECUTION;

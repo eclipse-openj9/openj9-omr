@@ -4774,15 +4774,6 @@ OMR::Z::CodeGenerator::CreateConstant(TR::Node * node, void * c, uint16_t size, 
       }
    }
 
-TR::S390LabelTableSnippet *
-OMR::Z::CodeGenerator::createLabelTable(TR::Node * node, int32_t size)
-   {
-   TR::S390LabelTableSnippet * labelTableSnippet = new (self()->trHeapMemory()) TR::S390LabelTableSnippet(self(), node, size);
-   _snippetDataList.push_front(labelTableSnippet);
-   return labelTableSnippet;
-   }
-
-
 void
 OMR::Z::CodeGenerator::addDataConstantSnippet(TR::S390ConstantDataSnippet * snippet)
    {

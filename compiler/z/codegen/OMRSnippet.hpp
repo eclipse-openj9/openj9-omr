@@ -86,7 +86,6 @@ class OMR_EXTENSIBLE Snippet : public OMR::Snippet
          IsInterfaceCallData,
          IsForceRecompData,
          IsJNICallData,
-         IsLabelTable,
       IsHeapAlloc,
       IsForceRecomp,
       IsMonitorEnter,

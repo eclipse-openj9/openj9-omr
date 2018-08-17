@@ -95,7 +95,6 @@ namespace TR { class S390ConstantDataSnippet; }
 namespace TR { class S390ConstantInstructionSnippet; }
 namespace TR { class S390EyeCatcherDataSnippet; }
 namespace TR { class S390ImmInstruction; }
-namespace TR { class S390LabelTableSnippet; }
 class TR_S390OutOfLineCodeSection;
 namespace TR { class S390PrivateLinkage; }
 class TR_S390ScratchRegisterManager;
@@ -729,8 +728,6 @@ public:
    TR::S390ConstantDataSnippet *Create8ByteConstant(TR::Node *, int64_t c, bool writable);
    TR::S390ConstantDataSnippet *CreateConstant(TR::Node *, void *c, uint16_t size, bool writable);
    TR::S390ConstantDataSnippet *getFirstConstantData();
-
-   TR::S390LabelTableSnippet *createLabelTable(TR::Node *, int32_t);
 
    // Writable Data List functions
    bool hasWritableDataSnippets() { return _writableList.empty() ? false : true; }

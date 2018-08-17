@@ -259,24 +259,6 @@ class S390JNICallDataSnippet : public TR::S390ConstantDataSnippet
 
    uint32_t getLength(int32_t estimatedSnippetStart);
   };
-
-class S390LabelTableSnippet : public TR::S390ConstantDataSnippet
-   {
-   public:
-   S390LabelTableSnippet(TR::CodeGenerator *cg, TR::Node *node, uint32_t size);
-   virtual Kind getKind() { return IsLabelTable; }
-   virtual uint8_t *emitSnippetBody();
-   virtual uint32_t getLength(int32_t estimatedSnippetStart);
-
-   int32_t getSize() { return _size; }
-   TR::LabelSymbol *getLabel(int32_t index) { TR_ASSERT(index < _size, "out of range, index %d, size %d",index,_size); return _labelTable[index]; }
-   TR::LabelSymbol *setLabel(int32_t index, TR::LabelSymbol *label) { TR_ASSERT(index < _size, "out of range, index %d, size %d",index,_size); return _labelTable[index] = label; }
-
-   private:
-   int32_t _size;
-   TR::LabelSymbol **_labelTable;
-   };
-
 }
 
 #endif

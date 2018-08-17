@@ -262,9 +262,6 @@ TR_Debug::printz(TR::FILE *pOutFile, TR::Snippet * snippet)
          print(pOutFile, (TR::S390StackCheckFailureSnippet *) snippet);
          break;
 #endif
-      case TR::Snippet::IsLabelTable:
-         print(pOutFile, (TR::S390LabelTableSnippet *) snippet);
-         break;
       case TR::Snippet::IsConstantData:
       case TR::Snippet::IsWritableData:
       case TR::Snippet::IsEyeCatcherData:

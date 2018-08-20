@@ -445,6 +445,10 @@ class OMR_EXTENSIBLE Instruction : public OMR::Instruction
    virtual void assignRegistersAndDependencies(TR_RegisterKinds kindToBeAssigned);
    void blockHPR(TR::Register * reg);
    void unblockHPR(TR::Register * reg);
+   void block(TR::Register** sourceReg, int32_t _sourceRegSize, TR::Register** targetReg, int targetRegSize,
+              TR::MemoryReference** sourceMem, TR::MemoryReference** targetMem);
+   void unblock(TR::Register** sourceReg, int32_t sourceRegSize, TR::Register** targetReg, int targetRegSize,
+                TR::MemoryReference** sourceMem, TR::MemoryReference** targetMem);
 
    void  recordOperand(void *operand, int8_t &operandCount);
 

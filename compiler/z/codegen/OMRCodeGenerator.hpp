@@ -290,9 +290,7 @@ public:
 
    bool supportsTrapsInTMRegion()
       {
-      if(!TR::Compiler->target.isZOS())
-         return false;
-      return true;
+      return TR::Compiler->target.isZOS();
       }
 
    bool inlineNDmemcpyWithPad(TR::Node * node, int64_t * maxLengthPtr = NULL);

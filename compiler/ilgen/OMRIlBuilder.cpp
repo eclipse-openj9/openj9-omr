@@ -1532,10 +1532,12 @@ OMR::IlBuilder::UnsignedShiftR(TR::IlValue *v, TR::IlValue *amount)
 
 /*
  * @brief IfAnd service for constructing short circuit AND conditional nests (like the && operator)
- * @param allTrueBuilder builder containing operations to execute if all conditional tests evaluate to true
+ * @param allTrueBuilder builder containing operations to execute if all conditional tests evaluate 
+ *        to true (automatically allocated if pointed-to pointer is null)
  * @param anyFalseBuilder builder containing operations to execute if any conditional test is false
+ *        (automatically allocated if pointed-to pointer is null)
  * @param numTerms the number of conditional terms
- * @param ... for each term, provide a TR::IlBuilder object and a TR::IlValue object that evaluates a condition (builder is where all the operations to evaluate the condition go, the value is the final result of the condition)
+ * @param terms array of JBCondition instances that evaluate a condition
  *
  * Example:
  * TR::IlBuilder *cond1Builder = OrphanBuilder();
@@ -1547,26 +1549,24 @@ OMR::IlBuilder::UnsignedShiftR(TR::IlValue *v, TR::IlValue *amount)
  *                      cond2Builder->   Load("x"),
  *                      cond2Builder->   Load("upper"));
  * TR::IlBuilder *inRange = NULL, *outOfRange = NULL;
- * IfAnd(&inRange, &outOfRange, 2, cond1Builder, cond1, cond2Builder, cond2);
+ * TR::IlBuilder *conditions[] = {MakeCondition(cond1Builder, cond1), MakeCondition(cond2Builder, cond2)};
+ * IfAnd(&inRange, &outOfRange, 2, conditions);
  */
 void
-OMR::IlBuilder::IfAnd(TR::IlBuilder **allTrueBuilder, TR::IlBuilder **anyFalseBuilder, int32_t numTerms, ...)
+OMR::IlBuilder::IfAnd(TR::IlBuilder **allTrueBuilder, TR::IlBuilder **anyFalseBuilder, int32_t numTerms, JBCondition **terms)
    {
    TR::IlBuilder *mergePoint = OrphanBuilder();
    *allTrueBuilder = createBuilderIfNeeded(*allTrueBuilder);
    *anyFalseBuilder = createBuilderIfNeeded(*anyFalseBuilder);
 
-   va_list terms;
-   va_start(terms, numTerms);
    for (int32_t t=0;t < numTerms;t++)
       {
-      TR::IlBuilder *condBuilder = va_arg(terms, TR::IlBuilder*);
-      TR::IlValue *condValue = va_arg(terms, TR::IlValue*);
+      TR::IlBuilder *condBuilder = terms[t]->_builder;
+      TR::IlValue *condValue = terms[t]->_condition;
       AppendBuilder(condBuilder);
       condBuilder->IfCmpEqualZero(anyFalseBuilder, condValue);
       // otherwise fall through to test next term
       }
-   va_end(terms);
 
    // if control gets here, all the provided terms were true
    AppendBuilder(*allTrueBuilder);
@@ -1582,12 +1582,53 @@ OMR::IlBuilder::IfAnd(TR::IlBuilder **allTrueBuilder, TR::IlBuilder **anyFalseBu
    setComesBack();
    }
 
+/**
+ * @brief Overload taking a varargs instead of an array of JBCondition pointers
+ *
+ * @param allTrueBuilder builder containing operations to execute if all conditional tests 
+ *        evaluate to true (automatically allocated if pointed-to pointer is null)
+ * @param anyFalseBuilder builder containing operations to execute if any conditional test
+ *        is false (automatically allocated if pointed-to pointer is null)
+ * @param numTerms the number of conditional terms
+ * @param ... for each term, provide a TR::IlBuilder::JBCondition object for the condition
+ *
+ * Example:
+ * TR::IlBuilder *cond1Builder = OrphanBuilder();
+ * TR::IlValue *cond1 = cond1Builder->GreaterOrEqual(
+ *                      cond1Builder->   Load("x"),
+ *                      cond1Builder->   Load("lower"));
+ * TR::IlBuilder *cond2Builder = OrphanBuilder();
+ * TR::IlValue *cond2 = cond2Builder->LessThan(
+ *                      cond2Builder->   Load("x"),
+ *                      cond2Builder->   Load("upper"));
+ * TR::IlBuilder *inRange = NULL, *outOfRange = NULL;
+ * IfAnd(&inRange, &outOfRange, 2, MakeCondition(cond1Builder, cond1), MakeCondition(cond2Builder, cond2));
+ */
+void
+OMR::IlBuilder::IfAnd(TR::IlBuilder **allTrueBuilder, TR::IlBuilder **anyFalseBuilder, int32_t numTerms, ...)
+   {
+   JBCondition **terms = (JBCondition **) _comp->trMemory()->allocateHeapMemory(numTerms * sizeof(JBCondition *));
+   TR_ASSERT(NULL != terms, "out of memory");
+
+   va_list args;
+   va_start(args, numTerms);
+   for (int32_t c = 0; c < numTerms; ++c)
+      {
+      terms[c] = va_arg(args, JBCondition *);
+      }
+   va_end(args);
+
+   IfAnd(allTrueBuilder, anyFalseBuilder, numTerms, terms);
+   }
+
 /*
  * @brief IfOr service for constructing short circuit OR conditional nests (like the || operator)
- * @param anyTrueBuilder builder containing operations to execute if any conditional test evaluates to true
- * @param allFalseBuilder builder containing operations to execute if all conditional tests are false
+ * @param anyTrueBuilder builder containing operations to execute if any conditional test evaluates
+ *        to true (automatically allocated if pointed-to pointer is null)
+ * @param allFalseBuilder builder containing operations to execute if all conditional tests are
+ *        false (automatically allocated if pointed-to pointer is null)
  * @param numTerms the number of conditional terms
- * @param ... for each term, provide a TR::IlBuilder object and a TR::IlValue object that evaluates a condition (builder is where all the operations to evaluate the condition go, the value is the final result of the condition)
+ * @param terms array of JBCondition instances that evaluate a condition
  *
  * Example:
  * TR::IlBuilder *cond1Builder = OrphanBuilder();
@@ -1599,32 +1640,30 @@ OMR::IlBuilder::IfAnd(TR::IlBuilder **allTrueBuilder, TR::IlBuilder **anyFalseBu
  *                      cond2Builder->   Load("x"),
  *                      cond2Builder->   Load("upper"));
  * TR::IlBuilder *inRange = NULL, *outOfRange = NULL;
- * IfOr(&outOfRange, &inRange, 2, cond1Builder, cond1, cond2Builder, cond2);
+ * TR::IlBuilder *conditions[] = {MakeCondition(cond1Builder, cond1), MakeCondition(cond2Builder, cond2)};
+ * IfOr(&outOfRange, &inRange, 2, conditions);
  */
 void
-OMR::IlBuilder::IfOr(TR::IlBuilder **anyTrueBuilder, TR::IlBuilder **allFalseBuilder, int32_t numTerms, ...)
+OMR::IlBuilder::IfOr(TR::IlBuilder **anyTrueBuilder, TR::IlBuilder **allFalseBuilder, int32_t numTerms, JBCondition **terms)
    {
    TR::IlBuilder *mergePoint = OrphanBuilder();
    *anyTrueBuilder = createBuilderIfNeeded(*anyTrueBuilder);
    *allFalseBuilder = createBuilderIfNeeded(*allFalseBuilder);
 
-   va_list terms;
-   va_start(terms, numTerms);
    for (int32_t t=0;t < numTerms-1;t++)
       {
-      TR::IlBuilder *condBuilder = va_arg(terms, TR::IlBuilder*);
-      TR::IlValue *condValue = va_arg(terms, TR::IlValue*);
+      TR::IlBuilder *condBuilder = terms[t]->_builder;
+      TR::IlValue *condValue = terms[t]->_condition;
       AppendBuilder(condBuilder);
       condBuilder->IfCmpNotEqualZero(anyTrueBuilder, condValue);
       // otherwise fall through to test next term
       }
 
    // reverse condition on last term so that it can fall through to anyTrueBuilder
-   TR::IlBuilder *condBuilder = va_arg(terms, TR::IlBuilder*);
-   TR::IlValue *condValue = va_arg(terms, TR::IlValue*);
+   TR::IlBuilder *condBuilder = terms[numTerms - 1]->_builder;
+   TR::IlValue *condValue = terms[numTerms - 1]->_condition;
    AppendBuilder(condBuilder);
    condBuilder->IfCmpEqualZero(allFalseBuilder, condValue);
-   va_end(terms);
 
    // any true term will end up here
    AppendBuilder(*anyTrueBuilder);
@@ -1638,6 +1677,53 @@ OMR::IlBuilder::IfOr(TR::IlBuilder **anyTrueBuilder, TR::IlBuilder **allFalseBui
 
    // return state for "this" can get confused by the Goto's in this service
    setComesBack();
+   }
+
+/**
+ * @brief Overload taking a varargs instead of an array of JBCondition pointers
+ *
+ * @param anyTrueBuilder builder containing operations to execute if any conditional test 
+ *        evaluates to true (automatically allocated if pointed-to pointer is null)
+ * @param allFalseBuilder builder containing operations to execute if all conditional
+ *        tests are false (automatically allocated if pointed-to pointer is null)
+ * @param numTerms the number of conditional terms
+ * @param ... for each term, provide a TR::IlBuilder::JBCondition object for the condition
+ *
+ * Example:
+ * TR::IlBuilder *cond1Builder = OrphanBuilder();
+ * TR::IlValue *cond1 = cond1Builder->LessThan(
+ *                      cond1Builder->   Load("x"),
+ *                      cond1Builder->   Load("lower"));
+ * TR::IlBuilder *cond2Builder = OrphanBuilder();
+ * TR::IlValue *cond2 = cond2Builder->GreaterOrEqual(
+ *                      cond2Builder->   Load("x"),
+ *                      cond2Builder->   Load("upper"));
+ * TR::IlBuilder *inRange = NULL, *outOfRange = NULL;
+ * IfOr(&outOfRange, &inRange, 2, MakeCondition(cond1Builder, cond1), MakeCondition(cond2Builder, cond2));
+ */
+void
+OMR::IlBuilder::IfOr(TR::IlBuilder **anyTrueBuilder, TR::IlBuilder **allFalseBuilder, int32_t numTerms, ...)
+   {
+   JBCondition **terms = (JBCondition **) _comp->trMemory()->allocateHeapMemory(numTerms * sizeof(JBCondition *));
+   TR_ASSERT(NULL != terms, "out of memory");
+
+   va_list args;
+   va_start(args, numTerms);
+   for (int32_t c = 0; c < numTerms; ++c)
+      {
+      terms[c] = va_arg(args, JBCondition *);
+      }
+   va_end(args);
+
+   IfOr(anyTrueBuilder, allFalseBuilder, numTerms, terms);
+   }
+
+TR::IlBuilder::JBCondition *
+OMR::IlBuilder::MakeCondition(TR::IlBuilder *conditionBuilder, TR::IlValue *conditionValue)
+   {
+   TR_ASSERT(conditionBuilder != NULL, "MakeCondition needs to have non-null conditionBuilder");
+   TR_ASSERT(conditionValue != NULL, "MakeCondition needs to have non-null conditionValue");
+   return new (_comp->trHeapMemory()) JBCondition(conditionBuilder, conditionValue);
    }
 
 TR::IlValue *

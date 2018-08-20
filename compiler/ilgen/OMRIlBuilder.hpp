@@ -115,6 +115,33 @@ public:
          friend class OMR::IlBuilder;
       };
 
+   /**
+    * @brief A class encapsulating the information needed for IfAnd and IfOr.
+    *
+    * This class encapsulates the value of the condition and the builder
+    * object used generate the value (used to evaluate the condition).
+    */
+   class JBCondition
+      {
+      private:
+         /**
+          * @brief Construct a new JBCondition object.
+          *
+          * This constructor should not be called directly outside of the JitBuilder
+          * implementation. A call to `MakeCondition()` should be used instead.
+          *
+          * @param conditionBuilder pointer to the builder used to generate the condition value
+          * @param conditionValue the IlValue representing value for the condition
+          */
+         JBCondition(TR::IlBuilder *conditionBuilder, TR::IlValue *conditionValue)
+            : _builder(conditionBuilder), _condition(conditionValue) {}
+
+         TR::IlBuilder *_builder; // builder used to generate the condition value
+         TR::IlValue *_condition; // value for the condition
+
+         friend class OMR::IlBuilder;
+      };
+
    friend class OMR::MethodBuilder;
 
    IlBuilder(TR::MethodBuilder *methodBuilder, TR::TypeDictionary *types)
@@ -392,10 +419,21 @@ public:
       DoWhileLoop(exitCondition, body, NULL, continueBuilder);
       }
 
-   /* @brief creates an AND nest of short-circuited conditions, for each term pass an IlBuilder containing the condition and the IlValue that computes the condition */
+   /* @brief creates an AND nest of short-circuited conditions, for each term pass a JBCondition instance */
+   void IfAnd(TR::IlBuilder **allTrueBuilder, TR::IlBuilder **anyFalseBuilder, int32_t numTerms, JBCondition **terms);
    void IfAnd(TR::IlBuilder **allTrueBuilder, TR::IlBuilder **anyFalseBuilder, int32_t numTerms, ... );
-   /* @brief creates an OR nest of short-circuited conditions, for each term pass an IlBuilder containing the condition and the IlValue that computes the condition */
+   /* @brief creates an OR nest of short-circuited conditions, for each term pass a JBCondition instance */
+   void IfOr(TR::IlBuilder **anyTrueBuilder, TR::IlBuilder **allFalseBuilder, int32_t numTerms, JBCondition **terms);
    void IfOr(TR::IlBuilder **anyTrueBuilder, TR::IlBuilder **allFalseBuilder, int32_t numTerms, ... );
+
+   /**
+    * @brief Construct an Instance of JBCondition.
+    *
+    * @param conditionBuilder the Builder used to generate the condition value
+    * @param conditionValue the IlValue instance representing the condition value
+    * @return JBCondition* pointer to the constructed JBCondition instance
+    */
+   JBCondition * MakeCondition(TR::IlBuilder *conditionBuilder, TR::IlValue *conditionValue);
 
    void IfCmpNotEqualZero(TR::IlBuilder **target, TR::IlValue *condition);
    void IfCmpNotEqualZero(TR::IlBuilder *target, TR::IlValue *condition);

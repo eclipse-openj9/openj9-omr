@@ -328,7 +328,6 @@ public:
 
    void genCopyFromLiteralPool(TR::Node *node, int32_t bytesToCopy, TR::MemoryReference *targetMR, size_t litPoolOffset, TR::InstOpCode::Mnemonic op = TR::InstOpCode::MVC);
 
-   bool isMemcpyWithPadIfFoldable(TR::Node *node, TR_MemCpyPadTypes type);
    bool useMVCLForMemcpyWithPad(TR::Node *node, TR_MemCpyPadTypes type);
    bool isValidCompareConst(int64_t compareConst);
    bool isIfFoldable(TR::Node *node, int64_t compareConst);

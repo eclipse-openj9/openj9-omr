@@ -4494,35 +4494,6 @@ bool OMR::Z::CodeGenerator::useMVCLForMemcpyWithPad(TR::Node *node, TR_MemCpyPad
    return useMVCL;
    }
 
-bool OMR::Z::CodeGenerator::isMemcpyWithPadIfFoldable(TR::Node *node, TR_MemCpyPadTypes type)
-   {
-   TR::Node *equalNode =node->getChild(TR_MEMCPY_PAD_EQU_LEN_INDEX);
-
-   if (type == OneByte || type == TwoByte) // non-ND cases are always foldable
-      {
-      return true;
-      }
-   else if (self()->inlineNDmemcpyWithPad(node) &&
-            equalNode->getOpCode().isLoadConst() &&
-            equalNode->get64bitIntegralValue() == 1)
-      {
-      // In the equal case of NDmemcpyWithPad, the evaluation to MVCL can be avoided. Thus CC is not established.
-      // Therefore NDmemcpyWithPad is not foldable. Ref: inlineMemcpyWithPadEvaluator.
-      return false;
-      }
-   else if (self()->useMVCLForMemcpyWithPad(node, type)) // smaller (fits in MVCL) ND cases are also foldable
-      {
-      return true;
-      }
-   else
-      {
-      // what remains is large or unknown max length ND cases that require an explicit overlap check in the evaluator
-      // that make if folding not possible (leads to reg assigner bugs due to complex control flow and avoiding this
-      // ends up needing code on par with the non-folded case anyway)
-      return false;
-      }
-   }
-
 bool OMR::Z::CodeGenerator::isValidCompareConst(int64_t compareConst)
    {
    const int MIN_FOLDABLE_CC = 0;

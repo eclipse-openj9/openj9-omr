@@ -226,9 +226,6 @@ public:
    int64_t getLargestNegConstThatMustBeMaterialized() {return ((-1ll) << 31) - 1;}   // min 32bit signed integer minus 1
    int64_t getSmallestPosConstThatMustBeMaterialized() {return ((int64_t)0x000000007FFFFFFF) + 1;}   // max 32bit signed integer plus 1
 
-   void setNodeAddressOfCachedStaticTree(TR::Node *n) { _nodeAddressOfCachedStatic=n; }
-   TR::Node *getNodeAddressOfCachedStatic() { return _nodeAddressOfCachedStatic; }
-
    TR::SparseBitVector & getBucketPlusIndexRegisters()  { return _bucketPlusIndexRegisters; }
 
    // For hanging multiple loads from register symbols onto one common DEPEND
@@ -965,9 +962,7 @@ protected:
       S390CG_enableBranchPreloadForCalls = 0x00100000,
       S390CG_globalPrivateStaticBaseRegisterOn = 0x00200000
       } TR_S390CGFlags;
-private:
 
-   TR::Node *_nodeAddressOfCachedStatic;
    protected:
 
    TR::SparseBitVector _bucketPlusIndexRegisters;

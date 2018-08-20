@@ -3645,29 +3645,12 @@ static TR::SymbolReference * findBestSymRefForArrayCopy(TR::CodeGenerator *cg, T
 
       if (firstChildOp==TR::loadaddr || firstChildOp==TR::aload)
          {
-         sym=firstChild->getSymbolReference();
-         }
-      else if ((firstChildOp==TR::aiuadd) || (firstChildOp==TR::aiadd)  ||
-               (firstChildOp==TR::aluadd) || (firstChildOp==TR::aladd))
-         {
-         // We're looking an address computation of a static symbol. If we
-         // find one, we can return the symref of the static symbol itself.
-
-         if (firstChild == cg->getNodeAddressOfCachedStatic())
-            {
-            TR::Node *immNode = srcNode->getSecondChild();
-            uint32_t offset = immNode->get64bitIntegralValue();
-
-            // If this is not a contant, punt and use the original generic sym
-            if (!immNode->getOpCode().isLoadConst())
-               return sym;
-
-            }
+         sym = firstChild->getSymbolReference();
          }
       }
    else if (srcNode->getOpCodeValue()==TR::loadaddr)
       {
-      sym=srcNode->getSymbolReference();
+      sym = srcNode->getSymbolReference();
       }
 
    return sym;

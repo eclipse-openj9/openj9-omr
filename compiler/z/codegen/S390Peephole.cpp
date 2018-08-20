@@ -705,7 +705,6 @@ TR_S390PostRAPeephole::LAReduction()
          }
 
       if (mr &&
-          mr->isBucketBaseRegMemRef() &&
           mr->getOffset() == 0 &&
           laBaseReg && laTargetReg &&
           laBaseReg == laTargetReg &&

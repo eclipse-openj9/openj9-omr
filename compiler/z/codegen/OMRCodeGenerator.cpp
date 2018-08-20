@@ -547,7 +547,6 @@ OMR::Z::CodeGenerator::CodeGenerator()
      _nodeAddressOfCachedStatic(NULL),
      _ccInstruction(NULL),
      _previouslyAssignedTo(self()->comp()->allocator("LocalRA")),
-     _bucketPlusIndexRegisters(self()->comp()->allocator()),
      _currentDEPEND(NULL)
    {
    TR::Compilation *comp = self()->comp();

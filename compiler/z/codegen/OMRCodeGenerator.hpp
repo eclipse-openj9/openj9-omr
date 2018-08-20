@@ -225,9 +225,7 @@ public:
    bool shouldValueBeInACommonedNode(int64_t value);
    int64_t getLargestNegConstThatMustBeMaterialized() {return ((-1ll) << 31) - 1;}   // min 32bit signed integer minus 1
    int64_t getSmallestPosConstThatMustBeMaterialized() {return ((int64_t)0x000000007FFFFFFF) + 1;}   // max 32bit signed integer plus 1
-
-   TR::SparseBitVector & getBucketPlusIndexRegisters()  { return _bucketPlusIndexRegisters; }
-
+   
    // For hanging multiple loads from register symbols onto one common DEPEND
    TR::Instruction *getCurrentDEPEND() {return _currentDEPEND; }
    void setCurrentDEPEND(TR::Instruction *instr) { _currentDEPEND=instr; }
@@ -965,7 +963,6 @@ protected:
 
    protected:
 
-   TR::SparseBitVector _bucketPlusIndexRegisters;
    TR::Instruction *_currentDEPEND;
    };
 

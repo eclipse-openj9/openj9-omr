@@ -83,7 +83,6 @@ namespace TR { class UnresolvedDataSnippet; }
 * this happens during doInstructionSelection when we don't have stack frame, so we need to update the memory reference during binary generation */
 #define MemRefCreatedDuringInstructionSelection 0x1000000
 #define TR_S390MemRef_ForceFirstTimeFolding     0x2000000
-#define TR_BucketBaseRegMemRef                  0x8000000
 
 namespace OMR
 {
@@ -326,9 +325,6 @@ void setConstantDataSnippet() {_flags.set(MemRef_ConstantDataSnippet);}
 
 bool isMemRefMustNotSpill()   {return _flags.testAny(MemRefMustNotSpill);}
 void setMemRefMustNotSpill()  {_flags.set(MemRefMustNotSpill);}
-
-bool isBucketBaseRegMemRef()  {return _flags.testAny(TR_BucketBaseRegMemRef);}
-void setBucketBaseRegMemRef() {_flags.set(TR_BucketBaseRegMemRef);}
 
 bool ZeroBasePtr_EvaluateSubtree(TR::Node * subTree, TR::CodeGenerator * cg, MemoryReference * mr);
 

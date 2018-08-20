@@ -6992,21 +6992,6 @@ OMR::Z::CodeGenerator::genCopyFromLiteralPool(TR::Node *node, int32_t bytesToCop
       self()->stopUsingRegister(litPoolBaseReg);
    }
 
-int32_t
-OMR::Z::CodeGenerator::biasDecimalFloatFrac(TR::DataType dt, int32_t frac)
-   {
-   switch (dt)
-      {
-#ifdef J9_PROJECT_SPECIFIC
-      case TR::DecimalFloat:      return TR_DECIMAL_FLOAT_BIAS-frac;
-      case TR::DecimalDouble:     return TR_DECIMAL_DOUBLE_BIAS-frac;
-      case TR::DecimalLongDouble: return TR_DECIMAL_LONG_DOUBLE_BIAS-frac;
-#endif
-      default: TR_ASSERT(0, "unexpected biasDecimalFloatFrac dt %s",dt.toString());
-      }
-   return 0;
-   }
-
 TR::Instruction *
 OMR::Z::CodeGenerator::genLoadAddressToRegister(TR::Register *reg, TR::MemoryReference *origMR, TR::Node *node, TR::Instruction *preced)
    {

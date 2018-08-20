@@ -327,8 +327,6 @@ public:
    void genMemClear(TR::MemoryReference *targetMR, TR::Node *targetNode, int64_t clearSize);
 
    void genCopyFromLiteralPool(TR::Node *node, int32_t bytesToCopy, TR::MemoryReference *targetMR, size_t litPoolOffset, TR::InstOpCode::Mnemonic op = TR::InstOpCode::MVC);
-   int32_t biasDecimalFloatFrac(TR::DataType dt, int32_t frac);
-
 
    bool isMemcpyWithPadIfFoldable(TR::Node *node, TR_MemCpyPadTypes type);
    bool useMVCLForMemcpyWithPad(TR::Node *node, TR_MemCpyPadTypes type);

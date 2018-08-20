@@ -544,10 +544,8 @@ OMR::Z::CodeGenerator::CodeGenerator()
      _currentBCDCHKHandlerLabel(NULL),
      _internalControlFlowRegisters(getTypedAllocator<TR::Register*>(self()->comp()->allocator())),
      _nodesToBeEvaluatedInRegPairs(self()->comp()->allocator()),
-     _nodeAddressOfCachedStatic(NULL),
      _ccInstruction(NULL),
-     _previouslyAssignedTo(self()->comp()->allocator("LocalRA")),
-     _currentDEPEND(NULL)
+     _previouslyAssignedTo(self()->comp()->allocator("LocalRA"))
    {
    TR::Compilation *comp = self()->comp();
    _cgFlags = 0;

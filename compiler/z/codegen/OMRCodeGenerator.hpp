@@ -226,10 +226,6 @@ public:
    int64_t getLargestNegConstThatMustBeMaterialized() {return ((-1ll) << 31) - 1;}   // min 32bit signed integer minus 1
    int64_t getSmallestPosConstThatMustBeMaterialized() {return ((int64_t)0x000000007FFFFFFF) + 1;}   // max 32bit signed integer plus 1
    
-   // For hanging multiple loads from register symbols onto one common DEPEND
-   TR::Instruction *getCurrentDEPEND() {return _currentDEPEND; }
-   void setCurrentDEPEND(TR::Instruction *instr) { _currentDEPEND=instr; }
-
    void changeRegisterKind(TR::Register * temp, TR_RegisterKinds rk);
 
    void beginInstructionSelection();
@@ -960,14 +956,8 @@ protected:
       S390CG_enableBranchPreloadForCalls = 0x00100000,
       S390CG_globalPrivateStaticBaseRegisterOn = 0x00200000
       } TR_S390CGFlags;
-
-   protected:
-
-   TR::Instruction *_currentDEPEND;
    };
-
 }
-
 }
 
 class TR_S390ScratchRegisterManager : public TR_ScratchRegisterManager

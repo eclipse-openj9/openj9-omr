@@ -538,7 +538,6 @@ OMR::Z::CodeGenerator::CodeGenerator()
      _snippetDataList(getTypedAllocator<TR::S390ConstantDataSnippet*>(self()->comp()->allocator())),
      _outOfLineCodeSectionList(getTypedAllocator<TR_S390OutOfLineCodeSection*>(self()->comp()->allocator())),
      _returnTypeInfoInstruction(NULL),
-     _notPrintLabelHashTab(NULL),
      _interfaceSnippetToPICsListHashTab(NULL),
      _currentCheckNode(NULL),
      _currentBCDCHKHandlerLabel(NULL),
@@ -3327,8 +3326,6 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
 
 
    TR_HashTab * branchHashTable = new (self()->trStackMemory()) TR_HashTab(self()->comp()->trMemory(), stackAlloc, 60, true);
-   TR_HashTab * labelHashTable = new (self()->trStackMemory()) TR_HashTab(self()->comp()->trMemory(), stackAlloc, 60, true);
-   TR_HashTab * notPrintLabelHashTable = new (self()->trStackMemory()) TR_HashTab(self()->comp()->trMemory(), stackAlloc, 60, true);
 
    while (data.cursorInstruction)
       {
@@ -3361,12 +3358,6 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
             TR_HashId hashIndex = 0;
             branchHashTable->add((void *)targetLabel, hashIndex, (void *)targetLabel);
             }
-         }
-      else if (self()->isLabelInstruction(data.cursorInstruction))
-         {
-         TR::LabelSymbol * labelSymbol = ((TR::S390BranchInstruction *)data.cursorInstruction)->getLabelSymbol();
-         TR_HashId hashIndex = 0;
-         labelHashTable->add((void *)labelSymbol, hashIndex, (void *)labelSymbol);
          }
 
       self()->setBinaryBufferCursor(data.cursorInstruction->generateBinaryEncoding());
@@ -3419,18 +3410,6 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
          *(uint32_t *) (data.preProcInstruction->getBinaryEncoding()) = magicWord;
          }
       }
-
-
-   // Create list of unused labels that should not be printed
-   TR_HashTabIterator lit(labelHashTable);
-   for (TR::LabelSymbol *labelSymbol = (TR::LabelSymbol *)lit.getFirst();labelSymbol;labelSymbol = (TR::LabelSymbol *)lit.getNext())
-      {
-      TR_HashId hashIndex = 0;
-      if (!(branchHashTable->locate((void *)labelSymbol, hashIndex)))
-         notPrintLabelHashTable->add((void *)labelSymbol, hashIndex, (void *)labelSymbol);
-      }
-
-   self()->setLabelHashTable(notPrintLabelHashTable);
 
    // Create exception table entries for outlined instructions.
    //

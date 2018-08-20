@@ -253,9 +253,6 @@ public:
    bool supportsInliningOfIsInstance();
    bool supports32bitAiadd() {return TR::Compiler->target.is64Bit();}
 
-   void setLabelHashTable(TR_HashTab *notPrintLabelHashTab) {_notPrintLabelHashTab = notPrintLabelHashTab;}
-   TR_HashTab * getLabelHashTable() {return _notPrintLabelHashTab;}
-
    void addPICsListForInterfaceSnippet(TR::S390ConstantDataSnippet * ifcSnippet, TR::list<TR_OpaqueClassBlock*> * PICSlist);
    TR::list<TR_OpaqueClassBlock*> * getPICsListForInterfaceSnippet(TR::S390ConstantDataSnippet * ifcSnippet);
 
@@ -887,7 +884,6 @@ private:
    TR_ConstantSnippetHash _constantHash;
    TR_ConstHashCursor     _constantHashCur;
 
-   TR_HashTab * _notPrintLabelHashTab;
    TR_HashTab * _interfaceSnippetToPICsListHashTab;
 
    TR::RegisterIterator            *_aRegisterIterator;

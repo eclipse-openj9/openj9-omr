@@ -279,9 +279,6 @@ public:
 
    bool shouldYankCompressedRefs() { return true; }
 
-   TR::RegisterIterator *getARegisterIterator()                             {return  _aRegisterIterator;          }
-   TR::RegisterIterator *setARegisterIterator(TR::RegisterIterator *iter)    {return _aRegisterIterator = iter;  }
-
    TR::RegisterIterator *getHPRegisterIterator()                            {return  _hpRegisterIterator;         }
    TR::RegisterIterator *setHPRegisterIterator(TR::RegisterIterator *iter)   {return _hpRegisterIterator = iter; }
 
@@ -886,7 +883,6 @@ private:
 
    TR_HashTab * _interfaceSnippetToPICsListHashTab;
 
-   TR::RegisterIterator            *_aRegisterIterator;
    TR::RegisterIterator            *_hpRegisterIterator;
    TR::RegisterIterator            *_vrfRegisterIterator;
 

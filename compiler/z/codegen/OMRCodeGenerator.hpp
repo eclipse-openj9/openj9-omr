@@ -129,15 +129,8 @@ extern int64_t getIntegralValue(TR::Node* node);
 // Multi Code Cache Routines for checking whether an entry point is within reach of a BASRL.
 #define NEEDS_TRAMPOLINE(target, rip, cg) (cg->alwaysUseTrampolines() || !CHECK_32BIT_TRAMPOLINE_RANGE(target,rip))
 
-#define TR_MAX_MVO_PRECISION 31
-#define TR_MAX_MVO_SIZE 16
-#define TR_MAX_SRP_SIZE 16
-#define TR_MAX_SRP_PRECISION 31
-#define TR_MAX_SRP_SHIFT 31
 #define TR_MAX_MVC_SIZE 256
-#define TR_MAX_OC_NC_XC_SIZE 256
 #define TR_MAX_CLC_SIZE 256
-#define TR_MAX_SS1_SIZE 256
 #define TR_MIN_SS_DISP 0
 #define TR_MAX_SS_DISP 4095
 #define TR_MIN_RX_DISP 0
@@ -149,26 +142,7 @@ extern int64_t getIntegralValue(TR::Node* node);
 #define TR_MEMCPY_PAD_EQU_LEN_INDEX 6
 #define MVCL_THRESHOLD 16777216
 
-// functional thresholds
-#define TR_MAX_FROM_TO_LOOP_STRING_SIZE (TR_MAX_SS1_SIZE)
-#define TR_MAX_FROM_TO_TABLE_STRING_SIZE 1      // i.e. only TR one byte to one byte translations supported
-#define TR_MAX_SIMD_LOOP_OPERAND_STRING_SIZE 8
-#define TR_MAX_NUM_TALLY_TRIPLES_BY_LOOP 2
-#define TR_MAX_NUM_TALLY_TRIPLES_BY_SIMD_LOOP 1
-#define TR_MAX_NUM_TRANSLATE_QUADS_BY_LOOP 1    // note: for isInspectConvertingOp operations the length of the from/to strings is the # of 'all' replaces
-#define TR_MAX_NUM_TRANSLATE_QUADS_BY_SIMD_LOOP 1
-#define TR_MAX_SEARCH_STRING_SIZE (TR_MAX_SS1_SIZE)
-#define TR_MAX_REPLACE_CHAR_STRING_SIZE 1
-#define TR_MAX_BEFORE_AFTER_SIZE 1
-
-// performance thresholds -- until SRST and similar instructions are used inline
-#define TR_MAX_REPLACE_ALL_LOOP_PERF 150              // search > 1 byte (otherwise it is table lookup)
-#define TR_MAX_TALLY_ALL_WIDE_LOOP_PERF 150           // search > 1 byte
-#define TR_MIN_BM_SEARCH_PATTERN_SIZE 4
-#define TR_MIN_BM_SEARCH_TEXT_SIZE 16
-
 #define USE_CURRENT_DFP_ROUNDING_MODE (uint8_t)0x0
-
 
 enum TR_MemCpyPadTypes
    {
@@ -178,9 +152,6 @@ enum TR_MemCpyPadTypes
    ND_TwoByte,
    InvalidType
    };
-
-#define TR_INVALID_REGISTER -1
-
 
 struct TR_S390BinaryEncodingData : public TR_BinaryEncodingData
    {

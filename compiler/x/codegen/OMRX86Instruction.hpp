@@ -2342,7 +2342,6 @@ class AMD64Imm64Instruction : public TR::Instruction
 class AMD64Imm64SymInstruction : public TR::AMD64Imm64Instruction
    {
    TR::SymbolReference *_symbolReference;
-   uint8_t *_thunkAddress;
 
    public:
 
@@ -2351,22 +2350,14 @@ class AMD64Imm64SymInstruction : public TR::AMD64Imm64Instruction
                                uint64_t            imm,
                                TR::SymbolReference *sr,
                                TR::CodeGenerator   *cg)
-      : TR::AMD64Imm64Instruction(imm, node, op, cg), _symbolReference(sr), _thunkAddress(NULL) {}
-
-   AMD64Imm64SymInstruction(TR_X86OpCodes       op,
-                               TR::Node            *node,
-                               uint64_t            imm,
-                               TR::SymbolReference *sr,
-                               TR::CodeGenerator   *cg,
-                               uint8_t            *thunk)
-      : TR::AMD64Imm64Instruction(imm, node, op, cg), _symbolReference(sr), _thunkAddress(thunk) {}
+      : TR::AMD64Imm64Instruction(imm, node, op, cg), _symbolReference(sr) {}
 
    AMD64Imm64SymInstruction(TR::Instruction     *precedingInstruction,
                                TR_X86OpCodes       op,
                                uint64_t            imm,
                                TR::SymbolReference *sr,
                                TR::CodeGenerator   *cg)
-      : TR::AMD64Imm64Instruction(imm, op, precedingInstruction, cg), _symbolReference(sr), _thunkAddress(NULL) {}
+      : TR::AMD64Imm64Instruction(imm, op, precedingInstruction, cg), _symbolReference(sr) {}
 
    AMD64Imm64SymInstruction(TR_X86OpCodes                        op,
                                TR::Node                             *node,
@@ -2374,7 +2365,7 @@ class AMD64Imm64SymInstruction : public TR::AMD64Imm64Instruction
                                TR::SymbolReference                  *sr,
                                TR::RegisterDependencyConditions  *cond,
                                TR::CodeGenerator                    *cg)
-      : TR::AMD64Imm64Instruction(cond, imm, node, op, cg), _symbolReference(sr), _thunkAddress(NULL) {}
+      : TR::AMD64Imm64Instruction(cond, imm, node, op, cg), _symbolReference(sr) {}
 
    AMD64Imm64SymInstruction(TR::Instruction                      *precedingInstruction,
                               TR_X86OpCodes                        op,
@@ -2382,7 +2373,7 @@ class AMD64Imm64SymInstruction : public TR::AMD64Imm64Instruction
                               TR::SymbolReference                  *sr,
                               TR::RegisterDependencyConditions  *cond,
                               TR::CodeGenerator                    *cg)
-      : TR::AMD64Imm64Instruction(cond, imm, op, precedingInstruction, cg), _symbolReference(sr), _thunkAddress(NULL) {}
+      : TR::AMD64Imm64Instruction(cond, imm, op, precedingInstruction, cg), _symbolReference(sr) {}
 
    virtual char *description() { return "AMD64Imm64Sym"; }
 
@@ -3163,14 +3154,6 @@ generateImm64SymInstruction(TR_X86OpCodes       op,
                             uint64_t            imm,
                             TR::SymbolReference *sr,
                             TR::CodeGenerator   *cg);
-
-TR::AMD64Imm64SymInstruction *
-generateImm64SymInstruction(TR_X86OpCodes       op,
-                            TR::Node            *node,
-                            uint64_t            imm,
-                            TR::SymbolReference *sr,
-                            TR::CodeGenerator   *cg,
-                            uint8_t            *thunk);
 
 TR::AMD64Imm64SymInstruction *
 generateImm64SymInstruction(TR::Instruction     *precedingInstruction,

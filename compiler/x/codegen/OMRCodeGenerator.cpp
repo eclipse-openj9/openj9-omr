@@ -483,9 +483,6 @@ OMR::X86::CodeGenerator::initialize(TR::Compilation *comp)
 
 OMR::X86::CodeGenerator::CodeGenerator() :
    OMR::CodeGenerator(),
-   _wordConversionTemp(NULL),
-   _doubleWordConversionTemp(NULL),
-   _currentTimeMillisTemp(NULL),
    _nanoTimeTemp(NULL),
    _assignmentDirection(Backward),
    _lastCatchAppendInstruction(NULL),
@@ -1077,47 +1074,6 @@ TR::RealRegister *
 OMR::X86::CodeGenerator::getMethodMetaDataRegister()
    {
    return toRealRegister(self()->getVMThreadRegister());
-   }
-
-TR::SymbolReference *
-OMR::X86::CodeGenerator::getWordConversionTemp()
-   {
-   if (_wordConversionTemp == NULL)
-      {
-      _wordConversionTemp = self()->allocateLocalTemp();
-      }
-   return _wordConversionTemp;
-   }
-
-TR::SymbolReference *
-OMR::X86::CodeGenerator::getDoubleWordConversionTemp()
-   {
-   if (_doubleWordConversionTemp == NULL)
-      {
-      _doubleWordConversionTemp = self()->allocateLocalTemp(TR::Int64);
-      }
-   return _doubleWordConversionTemp;
-   }
-
-TR::SymbolReference *
-OMR::X86::CodeGenerator::findOrCreateCurrentTimeMillisTempSymRef()
-   {
-   if (_currentTimeMillisTemp == NULL)
-      {
-      int32_t symSize;
-
-#if defined(LINUX) || defined(OSX)
-      symSize = sizeof(struct timeval);
-#else
-      symSize = 8;
-#endif
-
-      TR::AutomaticSymbol *sym = TR::AutomaticSymbol::create(self()->trHeapMemory(),TR::Aggregate,symSize);
-      self()->comp()->getMethodSymbol()->addAutomatic(sym);
-      _currentTimeMillisTemp = new (self()->trHeapMemory()) TR::SymbolReference(self()->comp()->getSymRefTab(), sym);
-      }
-
-   return _currentTimeMillisTemp;
    }
 
 TR::SymbolReference *

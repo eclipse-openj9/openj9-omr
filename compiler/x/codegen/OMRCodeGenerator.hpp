@@ -356,10 +356,6 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    void updateSnippetMapWithRSD(TR::Instruction *cur, int32_t rsd);
    bool isTargetSnippetOrOutOfLine(TR::Instruction *instr, TR::Instruction **start, TR::Instruction **end);
 
-   TR::SymbolReference *getWordConversionTemp();
-   TR::SymbolReference *getDoubleWordConversionTemp();
-
-   TR::SymbolReference *findOrCreateCurrentTimeMillisTempSymRef();
    TR::SymbolReference *getNanoTimeTemp();
 
    int32_t branchDisplacementToHelperOrTrampoline(uint8_t *nextInstructionAddress, TR::SymbolReference *helper);
@@ -661,8 +657,8 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
       GenerateMasmListingSyntax                = 0x00000200, ///< generate Masm-style syntax in the debug listings
       MapAutosTo8ByteSlots                     = 0x00000400, ///< don't round up sizes of autos to an 8-byte slot size when the stack is mapped
       EnableTLHPrefetching                     = 0x00000800, ///< enable software prefetches on TLH allocates
-      UseGPRsForWin32CTMConversion             = 0x00001000, ///< use magic number approach for long division for CTM conversion to milliseconds
-      UseLongDivideHelperForWin32CTMConversion = 0x00002000, ///< use long division helper for CTM conversion to milliseconds
+      // Available                             = 0x00001000,
+      // Available                             = 0x00002000,
       TargetSupportsSoftwarePrefetches         = 0x00004000, ///< target processor and OS both support software prefetch instructions
       MethodEnterExitTracingEnabled            = 0x00008000, ///< trace method enter/exits
       // Available                             = 0x00010000,
@@ -731,18 +727,6 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
       }
 
    bool useSSEFor(TR::DataType type);
-
-   bool useGPRsForWin32CTMConversion()
-      {
-      return _flags.testAny(UseGPRsForWin32CTMConversion);
-      }
-   void setUseGPRsForWin32CTMConversion() {_flags.set(UseGPRsForWin32CTMConversion);}
-
-   bool useLongDivideHelperForWin32CTMConversion()
-      {
-      return _flags.testAny(UseLongDivideHelperForWin32CTMConversion);
-      }
-   void setUseLongDivideHelperForWin32CTMConversion() {_flags.set(UseLongDivideHelperForWin32CTMConversion);}
 
    bool targetSupportsSoftwarePrefetches()
       {

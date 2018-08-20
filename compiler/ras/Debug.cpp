@@ -4014,8 +4014,6 @@ TR_Debug::getRuntimeHelperName(int32_t index)
             case TR_IA32floatToLong:                                  return "__floatToLong";
             case TR_IA32floatToInt:                                   return "__floatToInt";
             case TR_IA32double2LongSSE:                               return "__SSEdouble2LongIA32";
-
-            case TR_IA32jitThrowCurrentException:                     return "_jitThrowCurrentException";
             case TR_IA32jitCollapseJNIReferenceFrame:                 return "_jitCollapseJNIReferenceFrame";
 
             case TR_IA32compressString:                               return "_compressString";
@@ -4029,9 +4027,6 @@ TR_Debug::getRuntimeHelperName(int32_t index)
             case TR_IA32samplingPatchCallSite:                        return "__samplingPatchCallSite";
             case TR_IA32countingPatchCallSite:                        return "__countingPatchCallSite";
             case TR_IA32induceRecompilation:                          return "__induceRecompilation";
-
-            case TR_IA32arrayCmp:                                     return "arraycmp";
-            case TR_IA32getTimeOfDay:                                 return "gettimeofday";
             }
          }
       else
@@ -4046,7 +4041,6 @@ TR_Debug::getRuntimeHelperName(int32_t index)
             case TR_AMD64icallVMprJavaSendVirtualL:                   return "_icallVMprJavaSendVirtualL";
             case TR_AMD64icallVMprJavaSendVirtualF:                   return "_icallVMprJavaSendVirtualF";
             case TR_AMD64icallVMprJavaSendVirtualD:                   return "_icallVMprJavaSendVirtualD";
-            case TR_AMD64jitThrowCurrentException:                    return "_jitThrowCurrentException";
             case TR_AMD64jitCollapseJNIReferenceFrame:                return "_jitCollapseJNIReferenceFrame";
 
             case TR_AMD64compressString:                               return "_compressString";
@@ -4060,7 +4054,6 @@ TR_Debug::getRuntimeHelperName(int32_t index)
             case TR_AMD64samplingPatchCallSite:                       return "__samplingPatchCallSite";
             case TR_AMD64countingPatchCallSite:                       return "__countingPatchCallSite";
             case TR_AMD64induceRecompilation:                         return "__induceRecompilation";
-            case TR_AMD64arrayCmp:                                    return "arraycmp";
             case TR_AMD64doAESENCDecrypt:                             return "doAESDecrypt";
             case TR_AMD64doAESENCEncrypt:                             return "doAESEncrypt";
             }

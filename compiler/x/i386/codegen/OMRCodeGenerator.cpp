@@ -90,21 +90,6 @@ OMR::X86::I386::CodeGenerator::CodeGenerator() :
          }
       self()->setSupportsDivCheck();
       self()->setJNILinkageCalleeCleanup();
-
-      // The default CTM behaviour is to do the conversion via X87 instructions.
-      //
-      static char *dontUseGPRsForWin32CTMConversion = feGetEnv("TR_DontUseGPRsForWin32CTMConversion");
-      if (!dontUseGPRsForWin32CTMConversion)
-         {
-         self()->setUseGPRsForWin32CTMConversion();
-         }
-
-      static char *useLongDivideHelperForWin32CTMConversion = feGetEnv("TR_UseLongDivideHelperForWin32CTMConversion");
-      if (useLongDivideHelperForWin32CTMConversion)
-         {
-         self()->setUseLongDivideHelperForWin32CTMConversion();
-         }
-
       self()->setRealVMThreadRegister(self()->machine()->getX86RealRegister(TR::RealRegister::ebp));
       }
    else if (TR::Compiler->target.isLinux())

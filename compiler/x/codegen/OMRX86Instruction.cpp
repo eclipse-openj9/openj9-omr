@@ -4861,17 +4861,6 @@ generateImm64SymInstruction(TR_X86OpCodes       op,
    }
 
 TR::AMD64Imm64SymInstruction *
-generateImm64SymInstruction(TR_X86OpCodes       op,
-                            TR::Node            *node,
-                            uint64_t            imm,
-                            TR::SymbolReference *sr,
-                            TR::CodeGenerator   *cg,
-                            uint8_t            *thunk)
-   {
-   return new (cg->trHeapMemory()) TR::AMD64Imm64SymInstruction(op, node, imm, sr, cg, thunk);
-   }
-
-TR::AMD64Imm64SymInstruction *
 generateImm64SymInstruction(TR::Instruction     *precedingInstruction,
                             TR_X86OpCodes       op,
                             uint64_t            imm,

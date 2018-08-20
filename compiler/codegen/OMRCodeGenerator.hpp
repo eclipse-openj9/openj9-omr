@@ -1558,9 +1558,6 @@ class OMR_EXTENSIBLE CodeGenerator
    bool getSupportsCompactedLocals() {return _flags1.testAny(SupportsCompactedLocals);}
    void setSupportsCompactedLocals() {_flags1.set(SupportsCompactedLocals);}
 
-   bool getSupportsFastCTM() {return _flags1.testAny(SupportsFastCTM);}
-   void setSupportsFastCTM() {_flags1.set(SupportsFastCTM);}
-
    bool getSupportsCurrentTimeMaxPrecision() {return _flags2.testAny(SupportsCurrentTimeMaxPrecision);}
    void setSupportsCurrentTimeMaxPrecision() {_flags2.set(SupportsCurrentTimeMaxPrecision);}
 
@@ -1686,7 +1683,7 @@ class OMR_EXTENSIBLE CodeGenerator
       //                                                 = 0x00400000,   // Available
       SupportsScaledIndexAddressing                      = 0x00800000,
       SupportsCompactedLocals                            = 0x01000000,
-      SupportsFastCTM                                    = 0x02000000,
+      //                                                 = 0x02000000,   // Available
       UsesRegisterPairsForLongs                          = 0x04000000,
       SupportsArraySet                                   = 0x08000000,
       AccessStaticsIndirectly                            = 0x10000000,

@@ -939,6 +939,14 @@ static TR::Register * maxMinHelper(TR::Node *node, TR::CodeGenerator *cg, bool i
          TR::LabelSymbol * done = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
          TR::Instruction* cursor = NULL;
 
+         TR::RegisterDependencyConditions * regDeps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 6, cg);
+         regDeps->addPostCondition(registerA, TR::RealRegister::EvenOddPair);
+         regDeps->addPostCondition(registerA->getHighOrder(), TR::RealRegister::LegalEvenOfPair);
+         regDeps->addPostCondition(registerA->getLowOrder(), TR::RealRegister::LegalOddOfPair);
+         regDeps->addPostCondition(registerB, TR::RealRegister::EvenOddPair);
+         regDeps->addPostCondition(registerB->getHighOrder(), TR::RealRegister::LegalEvenOfPair);
+         regDeps->addPostCondition(registerB->getLowOrder(), TR::RealRegister::LegalOddOfPair);
+
          generateRRInstruction(cg, TR::InstOpCode::CR, node, registerA->getHighOrder(), registerB->getHighOrder());
          generateRRFInstruction(cg, TR::InstOpCode::LOCR, node, registerA->getHighOrder(), registerB->getHighOrder(), mask, true);
          generateRRFInstruction(cg, TR::InstOpCode::LOCR, node, registerA->getLowOrder(), registerB->getLowOrder(), mask, true);
@@ -949,7 +957,7 @@ static TR::Register * maxMinHelper(TR::Node *node, TR::CodeGenerator *cg, bool i
          generateRRFInstruction(cg, TR::InstOpCode::LOCR, node, registerA->getHighOrder(), registerB->getHighOrder(), mask, true);
          generateRRFInstruction(cg, TR::InstOpCode::LOCR, node, registerA->getLowOrder(), registerB->getLowOrder(), mask, true);
 
-         cursor = generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, done);
+         cursor = generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, done, regDeps);
          cursor->setEndInternalControlFlow();
          }
       }

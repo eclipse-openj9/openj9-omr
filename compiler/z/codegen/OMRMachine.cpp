@@ -1263,7 +1263,7 @@ OMR::Z::Machine::assignBestRegisterSingle(TR::Register    *targetRegister,
       {
       if (self()->cg()->insideInternalControlFlow())
          {
-         TR_ASSERT(0, "ASSERTION assignBestRegisterSingle inside Internal Control Flow on currInst=%p.\n"
+         TR_ASSERT_FATAL(0, "ASSERTION assignBestRegisterSingle inside Internal Control Flow on currInst=%p.\n"
                       "Ensure all registers within ICF have a dependency anchored at the end-ICF label\n",currInst);
          }
       }

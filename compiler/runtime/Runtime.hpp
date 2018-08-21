@@ -354,7 +354,8 @@ typedef enum
    TR_NativeMethodRelative                = 57,
    TR_ArbitraryClassAddress               = 58,
    TR_DebugCounter                        = 59,
-   TR_NumExternalRelocationKinds          = 60,
+   TR_ClassUnloadAssumption               = 60, // this should not be used in AOT relocations
+   TR_NumExternalRelocationKinds          = 61,
    TR_ExternalRelocationTargetKindMask    = 0xff,
    } TR_ExternalRelocationTargetKind;
 

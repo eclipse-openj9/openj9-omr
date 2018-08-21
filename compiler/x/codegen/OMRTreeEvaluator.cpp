@@ -4038,12 +4038,6 @@ OMR::X86::TreeEvaluator::VMinlineCallEvaluator(TR::Node*, bool, TR::CodeGenerato
    }
 
 TR::Register *
-OMR::X86::TreeEvaluator::VMifInstanceOfEvaluator(TR::Node*, TR::CodeGenerator*)
-   {
-   return 0;
-   }
-
-TR::Register *
 OMR::X86::TreeEvaluator::ibyteswapEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR_ASSERT(node->getNumChildren() == 1, "Wrong number of children in byteswapEvaluator");

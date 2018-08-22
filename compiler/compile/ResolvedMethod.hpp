@@ -131,7 +131,11 @@ public:
    virtual float *floatConstant(int32_t cpIndex);
    virtual double *doubleConstant(int32_t cpIndex, TR_Memory *);
    virtual void *stringConstant(int32_t cpIndex);
+   virtual void *getConstantDynamicTypeFromCP(int32_t cpIndex);
    virtual bool isUnresolvedString(int32_t cpIndex, bool optimizeForAOT = false);
+   virtual bool isConstantDynamic(int32_t cpIndex);
+   virtual bool isUnresolvedConstantDynamic(int32_t cpIndex);
+   virtual void *dynamicConstant(int32_t cpIndex);
    virtual void *methodTypeConstant(int32_t cpIndex);
    virtual bool isUnresolvedMethodType(int32_t cpIndex);
    virtual void *methodHandleConstant(int32_t cpIndex);

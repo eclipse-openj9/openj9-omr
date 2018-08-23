@@ -485,4 +485,36 @@ TR::Instruction *generateLogicalShiftLeftImmInstruction(
                    uint32_t shiftAmount,
                    TR::Instruction *preced = NULL);
 
+/*
+ * @brief Generates CMP (immediate) instruction
+ * @param[in] cg : CodeGenerator
+ * @param[in] node : node
+ * @param[in] sreg : source register
+ * @param[in] imm : immediate value
+ * @param[in] preced : preceding instruction
+ * @return generated instruction
+ */
+TR::Instruction *generateCompareImmInstruction(
+                  TR::CodeGenerator *cg,
+                  TR::Node *node,
+                  TR::Register *sreg,
+                  int32_t imm,
+                  TR::Instruction *preced);
+
+/*
+ * @brief Generates TST (immediate) instruction
+ * @param[in] cg : CodeGenerator
+ * @param[in] node : node
+ * @param[in] sreg : source register
+ * @param[in] imm : immediate value
+ * @param[in] preced : preceding instruction
+ * @return generated instruction
+ */
+TR::Instruction *generateTestImmInstruction(
+                  TR::CodeGenerator *cg,
+                  TR::Node *node,
+                  TR::Register *sreg,
+                  int32_t imm,
+                  TR::Instruction *preced);
+
 #endif

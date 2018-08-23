@@ -928,6 +928,7 @@ class ARM64Trg1Src1Instruction : public ARM64Trg1Instruction
                              TR::Register *sreg, TR::CodeGenerator *cg)
       : ARM64Trg1Instruction(op, node, treg, cg), _source1Register(sreg)
       {
+      setDependencyConditions(NULL);
       }
 
    /*
@@ -944,6 +945,41 @@ class ARM64Trg1Src1Instruction : public ARM64Trg1Instruction
                              TR::Instruction *precedingInstruction, TR::CodeGenerator *cg)
       : ARM64Trg1Instruction(op, node, treg, precedingInstruction, cg), _source1Register(sreg)
       {
+      setDependencyConditions(NULL);
+      }
+
+   /*
+    * @brief Constructor
+    * @param[in] op : instruction opcode
+    * @param[in] node : node
+    * @param[in] treg : target register
+    * @param[in] sreg : source register
+    * @param[in] cond : register dependency conditions
+    * @param[in] cg : CodeGenerator
+    */
+   ARM64Trg1Src1Instruction(TR::InstOpCode::Mnemonic op, TR::Node *node, TR::Register *treg,
+                             TR::Register *sreg, TR::RegisterDependencyConditions *cond, TR::CodeGenerator *cg)
+      : ARM64Trg1Instruction(op, node, treg, cg), _source1Register(sreg)
+      {
+      setDependencyConditions(cond);
+      }
+
+   /*
+    * @brief Constructor
+    * @param[in] op : instruction opcode
+    * @param[in] node : node
+    * @param[in] treg : target register
+    * @param[in] sreg : source register
+    * @param[in] cond : register dependency conditions
+    * @param[in] precedingInstruction : preceding instruction
+    * @param[in] cg : CodeGenerator
+    */
+   ARM64Trg1Src1Instruction(TR::InstOpCode::Mnemonic op, TR::Node *node, TR::Register *treg,
+                             TR::Register *sreg, TR::RegisterDependencyConditions *cond,
+                             TR::Instruction *precedingInstruction, TR::CodeGenerator *cg)
+      : ARM64Trg1Instruction(op, node, treg, precedingInstruction, cg), _source1Register(sreg)
+      {
+      setDependencyConditions(cond);
       }
 
    /**
@@ -1023,6 +1059,41 @@ class ARM64Trg1Src1ImmInstruction : public ARM64Trg1Src1Instruction
                                 TR::Register *sreg, uint32_t imm,
                                 TR::Instruction *precedingInstruction, TR::CodeGenerator *cg)
       : ARM64Trg1Src1Instruction(op, node, treg, sreg, precedingInstruction, cg), _source1Immediate(imm)
+      {
+      }
+
+   /*
+    * @brief Constructor
+    * @param[in] op : instruction opcode
+    * @param[in] node : node
+    * @param[in] treg : target register
+    * @param[in] sreg : source register
+    * @param[in] imm : immediate value
+    * @param[in] cond : register dependency conditions
+    * @param[in] cg : CodeGenerator
+    */
+   ARM64Trg1Src1ImmInstruction(TR::InstOpCode::Mnemonic op, TR::Node *node, TR::Register *treg,
+                               TR::Register *sreg, uint32_t imm,
+                               TR::RegisterDependencyConditions *cond, TR::CodeGenerator *cg)
+      : ARM64Trg1Src1Instruction(op, node, treg, sreg, cond, cg), _source1Immediate(imm)
+      {
+      }
+
+   /*
+    * @brief Constructor
+    * @param[in] op : instruction opcode
+    * @param[in] node : node
+    * @param[in] treg : target register
+    * @param[in] sreg : source register
+    * @param[in] imm : immediate value
+    * @param[in] cond : register dependency conditions
+    * @param[in] precedingInstruction : preceding instruction
+    * @param[in] cg : CodeGenerator
+    */
+   ARM64Trg1Src1ImmInstruction(TR::InstOpCode::Mnemonic op, TR::Node *node, TR::Register *treg,
+                               TR::Register *sreg, uint32_t imm, TR::RegisterDependencyConditions *cond,
+                               TR::Instruction *precedingInstruction, TR::CodeGenerator *cg)
+      : ARM64Trg1Src1Instruction(op, node, treg, sreg, cond, precedingInstruction, cg), _source1Immediate(imm)
       {
       }
 

@@ -729,10 +729,16 @@ bool TR_OSRLiveRangeAnalysis::shouldPerformAnalysis()
    else if (comp()->getOSRMode() == TR::involuntaryOSR)
       {
       static const char* disableOSRPointDeadslotsBookKeeping = feGetEnv("TR_DisableOSRPointDeadslotsBookKeeping");
-      if (comp()->getOSRMode() == TR::involuntaryOSR && disableOSRPointDeadslotsBookKeeping) // save some compile time
+      if (comp()->getOption(TR_MimicInterpreterFrameShape))
          {
          if (comp()->getOption(TR_TraceOSR))
-            traceMsg(comp(), "Should not perform OSRLiveRangeAnlysis under involuntary OSR mode in certain cases\n");
+            traceMsg(comp(), "No need to perform OSRLiveRangeAnlysis under mimic interpreter frame shape\n");
+         return false;
+         }
+      else if (disableOSRPointDeadslotsBookKeeping) // save some compile time
+         {
+         if (comp()->getOption(TR_TraceOSR))
+            traceMsg(comp(), "Dead slots bookkeeping is disabled and therefore OSRLiveRangeAnlysis is not needed\n");
          return false;
          }
       }

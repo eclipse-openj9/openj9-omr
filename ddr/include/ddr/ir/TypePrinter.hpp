@@ -22,6 +22,7 @@
 #include "ddr/ir/TypeVisitor.hpp"
 
 #include "ddr/ir/Macro.hpp"
+#include "omrport.h"
 
 class EnumMember;
 class Field;
@@ -31,6 +32,7 @@ class Field;
 class TypePrinter : public TypeVisitor
 {
 private:
+	OMRPortLibrary * const _portLibrary;
 	const int32_t _flags;
 	const int32_t _indent;
 
@@ -41,6 +43,7 @@ private:
 
 	explicit TypePrinter(const TypePrinter *outer)
 		: TypeVisitor()
+		, _portLibrary(outer->_portLibrary)
 		, _flags(outer->_flags)
 		, _indent(outer->_indent + 1)
 	{
@@ -49,8 +52,9 @@ private:
 public:
 	enum { FIELDS = 1, LITERALS = 2, MACROS = 4 };
 
-	explicit TypePrinter(int32_t flags)
+	TypePrinter(OMRPortLibrary * portLibrary, int32_t flags)
 		: TypeVisitor()
+		, _portLibrary(portLibrary)
 		, _flags(flags)
 		, _indent(0)
 	{

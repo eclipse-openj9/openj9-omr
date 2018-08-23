@@ -1459,6 +1459,14 @@ class S390RRInstruction : public TR::S390RegInstruction
       }
 
    S390RRInstruction(TR::InstOpCode::Mnemonic         op,
+                        TR::Node                      *n,
+                        TR::CodeGenerator             *cg)
+      : S390RegInstruction(op, n, cg), _flagsRR(0), _secondConstant(-1)
+      {
+      }
+
+
+   S390RRInstruction(TR::InstOpCode::Mnemonic         op,
                         TR::Node               *n,
                         TR::Register           *treg,
                         TR::Register           *sreg,
@@ -1810,6 +1818,20 @@ class S390RRFInstruction : public TR::S390RRInstruction
                         TR::CodeGenerator      *cg)
       : S390RRInstruction(op, n, treg, sreg, cg), _encodeAsRRD(false),
         _isSourceReg2Present(false), _isMask3Present(isMask3),_isMask4Present(!isMask3)
+      {
+      if (isMask3)
+         _mask3 = mask;
+      else
+         _mask4 = mask;
+      }
+
+   S390RRFInstruction(TR::InstOpCode::Mnemonic        op,
+                        TR::Node               *n,
+                        uint8_t                mask,
+                        bool                   isMask3,
+                        TR::CodeGenerator      *cg)
+      : S390RRInstruction(op, n, cg), _encodeAsRRD(false),
+        _isMask3Present(isMask3), _isMask4Present(!isMask3), _isSourceReg2Present(false)
       {
       if (isMask3)
          _mask3 = mask;

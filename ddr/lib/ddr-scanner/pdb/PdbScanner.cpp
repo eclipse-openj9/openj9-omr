@@ -399,7 +399,10 @@ PdbScanner::createTypedef(IDiaSymbol *symbol, NamespaceUDT *outerNamespace)
 		/* Get the base type. */
 		rc = setType(symbol, &newTypedef->_aliasedType, &newTypedef->_modifiers, NULL);
 		if (DDR_RC_OK == rc) {
-			newTypedef->_sizeOf = newTypedef->_aliasedType->_sizeOf;
+			Type *aliasedType = newTypedef->_aliasedType;
+			if (NULL != aliasedType) {
+				newTypedef->_sizeOf = aliasedType->_sizeOf;
+			}
 			addType(newTypedef, outerNamespace);
 		} else {
 			delete newTypedef;

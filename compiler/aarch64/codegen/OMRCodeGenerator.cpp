@@ -19,10 +19,15 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
+#include <stdlib.h>
+
+#include "codegen/ARM64Instruction.hpp"
+#include "codegen/ARM64SystemLinkage.hpp"
 #include "codegen/CodeGenerator.hpp"
 #include "codegen/CodeGenerator_inlines.hpp"
 #include "codegen/GCStackMap.hpp"
 #include "codegen/RegisterConstants.hpp"
+#include "codegen/RegisterIterator.hpp"
 #include "codegen/TreeEvaluator.hpp"
 
 OMR::ARM64::CodeGenerator::CodeGenerator() :
@@ -30,41 +35,226 @@ OMR::ARM64::CodeGenerator::CodeGenerator() :
       _constantData(NULL),
       _outOfLineCodeSectionList(getTypedAllocator<TR_ARM64OutOfLineCodeSection*>(self()->comp()->allocator()))
    {
-   /*
-    * To be filled
-    */
+   // Initialize Linkage for Code Generator
+   self()->initializeLinkage();
+
+   _unlatchedRegisterList =
+      (TR::RealRegister**)self()->trMemory()->allocateHeapMemory(sizeof(TR::RealRegister*)*(TR::RealRegister::NumRegisters + 1));
+
+   _unlatchedRegisterList[0] = 0; // mark that list is empty
+
+   _linkageProperties = &self()->getLinkage()->getProperties();
+
+   self()->setMethodMetaDataRegister(self()->machine()->getARM64RealRegister(_linkageProperties->getMethodMetaDataRegister()));
+
+   // Tactical GRA settings
+   //
+   self()->setGlobalRegisterTable(TR::Machine::getGlobalRegisterTable());
+   _numGPR = _linkageProperties->getNumAllocatableIntegerRegisters();
+   _numFPR = _linkageProperties->getNumAllocatableFloatRegisters();
+   self()->setLastGlobalGPR(TR::Machine::getLastGlobalGPRRegisterNumber());
+   self()->setLastGlobalFPR(TR::Machine::getLastGlobalFPRRegisterNumber());
+
+   self()->getLinkage()->initARM64RealRegisterLinkage();
+
+   _numberBytesReadInaccessible = 0;
+   _numberBytesWriteInaccessible = 0;
+
+   if (TR::Compiler->vm.hasResumableTrapHandler(self()->comp()))
+      self()->setHasResumableTrapHandler();
+
+   if (!self()->comp()->getOption(TR_DisableRegisterPressureSimulation))
+      {
+      for (int32_t i = 0; i < TR_numSpillKinds; i++)
+         _globalRegisterBitVectors[i].init(self()->getNumberOfGlobalRegisters(), self()->trMemory());
+
+      for (TR_GlobalRegisterNumber grn=0; grn < self()->getNumberOfGlobalRegisters(); grn++)
+         {
+         TR::RealRegister::RegNum reg = (TR::RealRegister::RegNum)self()->getGlobalRegister(grn);
+         if (self()->getFirstGlobalGPR() <= grn && grn <= self()->getLastGlobalGPR())
+            _globalRegisterBitVectors[ TR_gprSpill ].set(grn);
+         else if (self()->getFirstGlobalFPR() <= grn && grn <= self()->getLastGlobalFPR())
+            _globalRegisterBitVectors[ TR_fprSpill ].set(grn);
+
+         if (!self()->getProperties().getPreserved(reg))
+            _globalRegisterBitVectors[ TR_volatileSpill ].set(grn);
+         if (self()->getProperties().getIntegerArgument(reg) || self()->getProperties().getFloatArgument(reg))
+            _globalRegisterBitVectors[ TR_linkageSpill  ].set(grn);
+         }
+      }
+
+   // Calculate inverse of getGlobalRegister function
+   //
+   TR_GlobalRegisterNumber grn;
+   int i;
+
+   TR_GlobalRegisterNumber globalRegNumbers[TR::RealRegister::NumRegisters];
+   for (i = 0; i < self()->getNumberOfGlobalGPRs(); i++)
+     {
+     grn = self()->getFirstGlobalGPR() + i;
+     globalRegNumbers[self()->getGlobalRegister(grn)] = grn;
+     }
+   for (i = 0; i < self()->getNumberOfGlobalFPRs(); i++)
+     {
+     grn = self()->getFirstGlobalFPR() + i;
+     globalRegNumbers[self()->getGlobalRegister(grn)] = grn;
+     }
+
+   // Initialize linkage reg arrays
+   TR::ARM64LinkageProperties linkageProperties = self()->getProperties();
+   for (i = 0; i < linkageProperties.getNumIntArgRegs(); i++)
+     _gprLinkageGlobalRegisterNumbers[i] = globalRegNumbers[linkageProperties.getIntegerArgumentRegister(i)];
+   for (i = 0; i < linkageProperties.getNumFloatArgRegs(); i++)
+     _fprLinkageGlobalRegisterNumbers[i] = globalRegNumbers[linkageProperties.getFloatArgumentRegister(i)];
+
+   if (self()->comp()->getOptions()->getRegisterAssignmentTraceOption(TR_TraceRARegisterStates))
+      {
+      self()->setGPRegisterIterator(new (self()->trHeapMemory()) TR::RegisterIterator(self()->machine(), TR_GPR));
+      self()->setFPRegisterIterator(new (self()->trHeapMemory()) TR::RegisterIterator(self()->machine(), TR_FPR));
+      }
    }
 
 void
 OMR::ARM64::CodeGenerator::beginInstructionSelection()
    {
-   TR_ASSERT(false, "Not implemented yet.");
+   TR::Compilation *comp = self()->comp();
+   TR::Node *startNode = comp->getStartTree()->getNode();
+   if (comp->getMethodSymbol()->getLinkageConvention() == TR_Private)
+      {
+      TR_ASSERT(false, "Not implemented yet.");
+
+      _returnTypeInfoInstruction = new (self()->trHeapMemory()) TR::ARM64ImmInstruction(TR::InstOpCode::dd, startNode, 0, self());
+      }
+   else
+      {
+      _returnTypeInfoInstruction = NULL;
+      }
+
+   new (self()->trHeapMemory()) TR::ARM64AdminInstruction(TR::InstOpCode::proc, startNode, NULL, _returnTypeInfoInstruction, self());
    }
 
 void
 OMR::ARM64::CodeGenerator::endInstructionSelection()
    {
-   TR_ASSERT(false, "Not implemented yet.");
+   if (_returnTypeInfoInstruction != NULL)
+      {
+      _returnTypeInfoInstruction->setSourceImmediate(static_cast<uint32_t>(self()->comp()->getReturnInfo()));
+      }
    }
 
 void
 OMR::ARM64::CodeGenerator::doRegisterAssignment(TR_RegisterKinds kindsToAssign)
    {
-   TR_ASSERT(false, "Not implemented yet.");
+   // Registers are assigned in backward direction
+
+   TR::Compilation *comp = self()->comp();
+
+   TR::Instruction *instructionCursor = self()->getAppendInstruction();
+
+   if (!comp->getOption(TR_DisableOOL))
+      {
+      TR::list<TR::Register*> *spilledRegisterList = new (self()->trHeapMemory()) TR::list<TR::Register*>(getTypedAllocator<TR::Register*>(comp->allocator()));
+      self()->setSpilledRegisterList(spilledRegisterList);
+      }
+
+   if (self()->getDebug())
+      self()->getDebug()->startTracingRegisterAssignment();
+
+   while (instructionCursor)
+      {
+      TR::Instruction *prevInstruction = instructionCursor->getPrev();
+
+      self()->tracePreRAInstruction(instructionCursor);
+
+      self()->setCurrentBlockIndex(instructionCursor->getBlockIndex());
+
+      instructionCursor->assignRegisters(TR_GPR);
+
+      // Maintain Internal Control Flow Depth
+      // Track internal control flow on labels
+      if (instructionCursor->isLabel())
+         {
+         TR::ARM64LabelInstruction *li = (TR::ARM64LabelInstruction *)instructionCursor;
+
+         if (li->getLabelSymbol() != NULL)
+            {
+            if (li->getLabelSymbol()->isStartInternalControlFlow())
+               {
+               self()->decInternalControlFlowNestingDepth();
+               }
+            if (li->getLabelSymbol()->isEndInternalControlFlow())
+               {
+               self()->incInternalControlFlowNestingDepth();
+               }
+            }
+         }
+
+      self()->freeUnlatchedRegisters();
+      self()->buildGCMapsForInstructionAndSnippet(instructionCursor);
+
+      self()->tracePostRAInstruction(instructionCursor);
+
+      instructionCursor = prevInstruction;
+      }
+
+   if (self()->getDebug())
+      {
+      self()->getDebug()->stopTracingRegisterAssignment();
+      }
    }
 
 void
 OMR::ARM64::CodeGenerator::doBinaryEncoding()
    {
-   TR_ASSERT(false, "Not implemented yet.");
+   TR::Compilation *comp = self()->comp();
+   int32_t estimate = 0;
+   TR::Instruction *cursorInstruction = self()->getFirstInstruction();
+
+   self()->getLinkage()->createPrologue(cursorInstruction);
+
+   bool skipOneReturn = false;
+   while (cursorInstruction)
+      {
+      if (cursorInstruction->getOpCodeValue() == TR::InstOpCode::ret)
+         {
+         if (skipOneReturn == false)
+            {
+            TR::Instruction *temp = cursorInstruction->getPrev();
+            self()->getLinkage()->createEpilogue(temp);
+            cursorInstruction = temp->getNext();
+            skipOneReturn = true;
+            }
+         else
+            {
+            skipOneReturn = false;
+            }
+         }
+      estimate = cursorInstruction->estimateBinaryLength(estimate);
+      cursorInstruction = cursorInstruction->getNext();
+      }
+
+   estimate = self()->setEstimatedLocationsForSnippetLabels(estimate);
+
+   self()->setEstimatedCodeLength(estimate);
+
+   cursorInstruction = self()->getFirstInstruction();
+   uint8_t *coldCode = NULL;
+   uint8_t *temp = self()->allocateCodeMemory(self()->getEstimatedCodeLength(), 0, &coldCode);
+
+   self()->setBinaryBufferStart(temp);
+   self()->setBinaryBufferCursor(temp);
+   self()->alignBinaryBufferCursor();
+
+   while (cursorInstruction)
+      {
+      self()->setBinaryBufferCursor(cursorInstruction->generateBinaryEncoding());
+      cursorInstruction = cursorInstruction->getNext();
+      }
    }
 
 TR::Linkage *OMR::ARM64::CodeGenerator::createLinkage(TR_LinkageConventions lc)
    {
-   TR::Linkage *linkage = NULL;
-   TR_ASSERT(false, "Not implemented yet.");
-   /*
-    * Commented out until TR::ARM64SystemLinkage is implemented
+   TR::Linkage *linkage;
    switch (lc)
       {
       case TR_System:
@@ -74,7 +264,6 @@ TR::Linkage *OMR::ARM64::CodeGenerator::createLinkage(TR_LinkageConventions lc)
          TR_ASSERT(false, "using system linkage for unrecognized convention %d\n", lc);
          linkage = new (self()->trHeapMemory()) TR::ARM64SystemLinkage(self());
       }
-   */
    self()->setLinkage(lc, linkage);
    return linkage;
    }

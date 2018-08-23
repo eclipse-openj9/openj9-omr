@@ -421,6 +421,8 @@
 		rev32,                                                  	/* 0xDAC00800	REV32     	 */
 
 	/* Last VFP instructions */
+		proc,  // Entry to the method
+		dd,    // Define word
 		label, // Destination of a jump
 		ARM64LastOp = label,
 		ARM64NumOpCodes = ARM64LastOp+1,

@@ -621,6 +621,13 @@ generateRRDInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::
    }
 
 TR::Instruction *
+generateRRFInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::Node * n, uint8_t mask, bool isMask3,
+                       TR::Instruction * preced)
+   {
+   return new (INSN_HEAP) TR::S390RRFInstruction(op, n, mask, isMask3, cg);
+   }
+
+TR::Instruction *
 generateRRFInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register * treg, TR::Register * sreg,
                        TR::Register * sreg2, TR::Instruction * preced)
    {

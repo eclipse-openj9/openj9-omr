@@ -259,6 +259,14 @@ TR::Instruction * generateRRDInstruction(
                    TR::Instruction        *preced = 0);
 
 TR::Instruction * generateRRFInstruction(
+                   TR::CodeGenerator * cg,
+                   TR::InstOpCode::Mnemonic op,
+                   TR::Node * n,
+                   uint8_t mask,
+                   bool isMask3,
+                   TR::Instruction * preced = 0);
+
+TR::Instruction * generateRRFInstruction(
                    TR::CodeGenerator *cg,
                    TR::InstOpCode::Mnemonic         op,
                    TR::Node               *n,

@@ -924,36 +924,18 @@ MM_MemorySubSpace::systemGarbageCollect(MM_EnvironmentBase* env, uint32_t gcCode
 
 	/* do not launch system gc in -Xgcpolicy:nogc */
 	if (_collector && _usesGlobalCollector && !_collector->isDisabled(env)) {
-		bool invokeGC = true;
-#if defined(OMR_GC_IDLE_HEAP_MANAGER)
-		if ((J9MMCONSTANT_EXPLICIT_GC_IDLE_GC == gcCode) && (_extensions->gcOnIdle || _extensions->compactOnIdle)) {
-			MM_MemorySpace* defaultMemorySpace = _extensions->heap->getDefaultMemorySpace();
-			uintptr_t freeMemorySize = defaultMemorySpace->getApproximateActiveFreeMemorySize(MEMORY_TYPE_OLD);
-			uintptr_t actvMemorySize = defaultMemorySpace->getActiveMemorySize(MEMORY_TYPE_OLD);
-			uintptr_t previousMemorySize = actvMemorySize;
+		/* TODO: This is bogus for multiple memory spaces - should ask the space, not the heap */
+		_extensions->heap->getResizeStats()->setFreeBytesAtSystemGCStart(getApproximateActiveFreeMemorySize());
 
-			if (0 < _extensions->lastGCFreeBytes) {
-				previousMemorySize = _extensions->lastGCFreeBytes;
-			}
+		env->acquireExclusiveVMAccessForGC(_collector);
+		reportSystemGCStart(env, gcCode);
 
-			if ((0 < freeMemorySize) && (_extensions->gcOnIdleRatio > (((previousMemorySize - freeMemorySize) * 100) / actvMemorySize))) {
-				invokeGC = false;
-			}
-		}
-#endif
-		if (invokeGC) {
-			/* TODO: This is bogus for multiple memory spaces - should ask the space, not the heap */
-			_extensions->heap->getResizeStats()->setFreeBytesAtSystemGCStart(getApproximateActiveFreeMemorySize());
+		/* system GCs are accounted into "user" time in GC/total time ratio calculation */
+		_collector->garbageCollect(env, this, NULL, gcCode, NULL, NULL, NULL);
 
-			env->acquireExclusiveVMAccessForGC(_collector);
-			reportSystemGCStart(env, gcCode);
+		reportSystemGCEnd(env);
+		env->releaseExclusiveVMAccessForGC();
 
-			/* system GCs are accounted into "user" time in GC/total time ratio calculation */
-			_collector->garbageCollect(env, this, NULL, gcCode, NULL, NULL, NULL);
-
-			reportSystemGCEnd(env);
-			env->releaseExclusiveVMAccessForGC();
-		}
 #if defined(OMR_GC_IDLE_HEAP_MANAGER)
 		if ((J9MMCONSTANT_EXPLICIT_GC_IDLE_GC == gcCode) && (_extensions->gcOnIdle)) {
 			OMRPORT_ACCESS_FROM_ENVIRONMENT(env);

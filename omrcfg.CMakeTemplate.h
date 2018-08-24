@@ -233,4 +233,11 @@
  */
 #cmakedefine OMR_THR_YIELD_ALG
 
+/**
+ * This flags enables calls to omrsig_primary_signal, omrsig_primary_sigaction and
+ * omrsig_handler (omrsig library). If disabled, then calls to signal and sigaction
+ * will be enabled, and calls to functions in omrsig library will be disabled.
+ */
+#cmakedefine OMRPORT_OMRSIG_SUPPORT
+
 #endif /* !defined(OMRCFG_H_) */

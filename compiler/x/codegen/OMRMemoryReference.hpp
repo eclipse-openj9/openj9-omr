@@ -202,7 +202,7 @@ class OMR_EXTENSIBLE MemoryReference : public OMR::MemoryReference
       _symbolReference.setOffset(disp);
       }
 
-   MemoryReference(TR::IA32DataSnippet *cds, TR::CodeGenerator   *cg);
+   MemoryReference(TR::X86DataSnippet *cds, TR::CodeGenerator   *cg);
 
    MemoryReference(TR::LabelSymbol *label, TR::CodeGenerator *cg);
 
@@ -235,11 +235,11 @@ class OMR_EXTENSIBLE MemoryReference : public OMR::MemoryReference
 
    TR::UnresolvedDataSnippet *setUnresolvedDataSnippet(TR::UnresolvedDataSnippet *s);
 
-   TR::IA32DataSnippet *getDataSnippet();
+   TR::X86DataSnippet *getDataSnippet();
 
-   TR::IA32DataSnippet *setConstantDataSnippet(TR::IA32DataSnippet *s)
+   TR::X86DataSnippet *setConstantDataSnippet(TR::X86DataSnippet *s)
       {
-      return ( (TR::IA32DataSnippet *) (_dataSnippet = s) );
+      return ( (TR::X86DataSnippet*) (_dataSnippet = s) );
       }
 
    TR::LabelSymbol *getLabel()                   { return _label; }
@@ -440,7 +440,7 @@ TR::MemoryReference  * generateX86MemoryReference(TR::MemoryReference  &, intptr
 TR::MemoryReference  * generateX86MemoryReference(TR::MemoryReference  &, intptrj_t, TR_ScratchRegisterManager *, TR::CodeGenerator *cg);
 TR::MemoryReference  * generateX86MemoryReference(TR::SymbolReference *, TR::CodeGenerator *cg);
 TR::MemoryReference  * generateX86MemoryReference(TR::SymbolReference *, intptrj_t, TR::CodeGenerator *cg);
-TR::MemoryReference  * generateX86MemoryReference(TR::IA32DataSnippet *, TR::CodeGenerator *cg);
+TR::MemoryReference  * generateX86MemoryReference(TR::X86DataSnippet  *, TR::CodeGenerator *cg);
 TR::MemoryReference  * generateX86MemoryReference(TR::LabelSymbol *, TR::CodeGenerator *cg);
 
 #endif

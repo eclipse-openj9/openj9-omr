@@ -212,8 +212,7 @@ TR::Register *OMR::X86::TreeEvaluator::fconstEvaluator(TR::Node *node, TR::CodeG
          }
       else
          {
-         TR::IA32ConstantDataSnippet *cds = cg->findOrCreate4ByteConstant(node, node->getFloatBits());
-         TR::MemoryReference  *tempMR = generateX86MemoryReference(cds, cg);
+         TR::MemoryReference  *tempMR = generateX86MemoryReference(cg->findOrCreate4ByteConstant(node, node->getFloatBits()), cg);
          TR::Instruction *instr = generateRegMemInstruction(MOVSSRegMem, node, targetRegister, tempMR, cg);
          setDiscardableIfPossible(TR_RematerializableFloat, targetRegister, node, instr, (intptrj_t)node->getFloatBits(), cg);
          }
@@ -232,8 +231,7 @@ TR::Register *OMR::X86::TreeEvaluator::fconstEvaluator(TR::Node *node, TR::CodeG
          }
       else
          {
-         TR::IA32ConstantDataSnippet *cds = cg->findOrCreate4ByteConstant(node, node->getFloatBits());
-         TR::MemoryReference  *tempMR = generateX86MemoryReference(cds, cg);
+         TR::MemoryReference  *tempMR = generateX86MemoryReference(cg->findOrCreate4ByteConstant(node, node->getFloatBits()), cg);
          generateFPRegMemInstruction(FLDRegMem, node, targetRegister, tempMR, cg);
          }
       }
@@ -255,8 +253,7 @@ TR::Register *OMR::X86::TreeEvaluator::dconstEvaluator(TR::Node *node, TR::CodeG
          }
       else
          {
-         TR::IA32ConstantDataSnippet *cds = cg->findOrCreate8ByteConstant(node, node->getLongInt());
-         TR::MemoryReference  *tempMR = generateX86MemoryReference(cds, cg);
+         TR::MemoryReference  *tempMR = generateX86MemoryReference(cg->findOrCreate8ByteConstant(node, node->getLongInt()), cg);
          generateRegMemInstruction(cg->getXMMDoubleLoadOpCode(), node, targetRegister, tempMR, cg);
          }
       }
@@ -274,8 +271,7 @@ TR::Register *OMR::X86::TreeEvaluator::dconstEvaluator(TR::Node *node, TR::CodeG
          }
       else
          {
-         TR::IA32ConstantDataSnippet *cds = cg->findOrCreate8ByteConstant(node, node->getLongInt());
-         TR::MemoryReference  *tempMR = generateX86MemoryReference(cds, cg);
+         TR::MemoryReference  *tempMR = generateX86MemoryReference(cg->findOrCreate8ByteConstant(node, node->getLongInt()), cg);
          generateFPRegMemInstruction(DLDRegMem, node, targetRegister, tempMR, cg);
          }
       }
@@ -526,8 +522,7 @@ TR::Register *OMR::X86::TreeEvaluator::fpReturnEvaluator(TR::Node *node, TR::Cod
    //
    if (comp->getJittedMethodSymbol()->usesSinglePrecisionMode() && !cg->useSSEForDoublePrecision())
       {
-      TR::IA32ConstantDataSnippet *cds = cg->findOrCreate2ByteConstant(node, DOUBLE_PRECISION_ROUND_TO_NEAREST);
-      generateMemInstruction(LDCWMem, node, generateX86MemoryReference(cds, cg), cg);
+      generateMemInstruction(LDCWMem, node, generateX86MemoryReference(cg->findOrCreate2ByteConstant(node, DOUBLE_PRECISION_ROUND_TO_NEAREST), cg), cg);
       }
 
    const TR::X86LinkageProperties &linkageProperties = cg->getProperties();
@@ -1022,18 +1017,14 @@ TR::Register *OMR::X86::TreeEvaluator::fpConvertToInt(TR::Node *node, TR::Symbol
       fpcw = comp->getJittedMethodSymbol()->usesSinglePrecisionMode() ?
                 SINGLE_PRECISION_ROUND_TO_ZERO : DOUBLE_PRECISION_ROUND_TO_ZERO;
 
-      TR::IA32ConstantDataSnippet *cds1 = cg->findOrCreate2ByteConstant(node, fpcw);
-
       fpcw = comp->getJittedMethodSymbol()->usesSinglePrecisionMode() ?
                 SINGLE_PRECISION_ROUND_TO_NEAREST : DOUBLE_PRECISION_ROUND_TO_NEAREST;
 
-      TR::IA32ConstantDataSnippet *cds2 = cg->findOrCreate2ByteConstant(node, fpcw);
-
       tempMR = (cg->machine())->getDummyLocalMR(TR::Int32);
 
-      generateMemInstruction(LDCWMem, node, generateX86MemoryReference(cds1, cg), cg);
+      generateMemInstruction(LDCWMem, node, generateX86MemoryReference(cg->findOrCreate2ByteConstant(node, fpcw), cg), cg);
       generateFPMemRegInstruction(FISTMemReg, node, tempMR, floatReg, cg);
-      generateMemInstruction(LDCWMem, node, generateX86MemoryReference(cds2, cg), cg);
+      generateMemInstruction(LDCWMem, node, generateX86MemoryReference(cg->findOrCreate2ByteConstant(node, fpcw), cg), cg);
       resultReg = cg->allocateRegister();
       loadInstr = generateRegMemInstruction(L4RegMem, node, resultReg, generateX86MemoryReference(*tempMR, 0, cg), cg);
       generateRegImmInstruction(CMP4RegImm4, node, resultReg, INT_MIN, cg);
@@ -1248,8 +1239,7 @@ TR::Register *OMR::X86::TreeEvaluator::fpConvertToLong(TR::Node *node, TR::Symbo
       int16_t fpcw = comp->getJittedMethodSymbol()->usesSinglePrecisionMode() ?
                         SINGLE_PRECISION_ROUND_TO_ZERO : DOUBLE_PRECISION_ROUND_TO_ZERO;
 
-      TR::IA32ConstantDataSnippet *cds1 = cg->findOrCreate2ByteConstant(node, fpcw);
-      generateMemInstruction(LDCWMem, node, generateX86MemoryReference(cds1, cg), cg);
+      generateMemInstruction(LDCWMem, node, generateX86MemoryReference(cg->findOrCreate2ByteConstant(node, fpcw), cg), cg);
 
       TR::MemoryReference  *convertedLongMR = (cg->machine())->getDummyLocalMR(TR::Int64);
       generateFPMemRegInstruction(FLSTPMem, node, convertedLongMR, tempFPR1, cg);
@@ -1258,8 +1248,7 @@ TR::Register *OMR::X86::TreeEvaluator::fpConvertToLong(TR::Node *node, TR::Symbo
       fpcw = comp->getJittedMethodSymbol()->usesSinglePrecisionMode() ?
                 SINGLE_PRECISION_ROUND_TO_NEAREST : DOUBLE_PRECISION_ROUND_TO_NEAREST;
 
-      TR::IA32ConstantDataSnippet *cds2 = cg->findOrCreate2ByteConstant(node, fpcw);
-      generateMemInstruction(LDCWMem, node, generateX86MemoryReference(cds2, cg), cg);
+      generateMemInstruction(LDCWMem, node, generateX86MemoryReference(cg->findOrCreate2ByteConstant(node, fpcw), cg), cg);
 
       // WARNING:
       //

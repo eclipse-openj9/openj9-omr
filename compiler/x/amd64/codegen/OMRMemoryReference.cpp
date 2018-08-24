@@ -94,7 +94,7 @@ OMR::X86::AMD64::MemoryReference::MemoryReference(TR::Register *br, TR::Register
    self()->finishInitialization(cg, NULL);
    }
 
-OMR::X86::AMD64::MemoryReference::MemoryReference(TR::IA32DataSnippet *cds, TR::CodeGenerator *cg):
+OMR::X86::AMD64::MemoryReference::MemoryReference(TR::X86DataSnippet *cds, TR::CodeGenerator *cg):
    OMR::X86::MemoryReference(cds, cg)
    {
    self()->finishInitialization(cg, NULL);

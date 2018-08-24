@@ -1177,8 +1177,7 @@ TR::Register *OMR::X86::TreeEvaluator::integerReturnEvaluator(TR::Node *node, TR
    if (cg->enableSinglePrecisionMethods() &&
        comp->getJittedMethodSymbol()->usesSinglePrecisionMode())
       {
-      TR::IA32ConstantDataSnippet *cds = cg->findOrCreate2ByteConstant(node, DOUBLE_PRECISION_ROUND_TO_NEAREST);
-      generateMemInstruction(LDCWMem, node, generateX86MemoryReference(cds, cg), cg);
+      generateMemInstruction(LDCWMem, node, generateX86MemoryReference(cg->findOrCreate2ByteConstant(node, DOUBLE_PRECISION_ROUND_TO_NEAREST), cg), cg);
       }
 
    TR::Node     *firstChild     = node->getFirstChild();
@@ -1245,8 +1244,7 @@ TR::Register *OMR::X86::TreeEvaluator::returnEvaluator(TR::Node *node, TR::CodeG
    if (cg->enableSinglePrecisionMethods() &&
        comp->getJittedMethodSymbol()->usesSinglePrecisionMode())
       {
-      TR::IA32ConstantDataSnippet *cds = cg->findOrCreate2ByteConstant(node, DOUBLE_PRECISION_ROUND_TO_NEAREST);
-      generateMemInstruction(LDCWMem, node, generateX86MemoryReference(cds, cg), cg);
+      generateMemInstruction(LDCWMem, node, generateX86MemoryReference(cg->findOrCreate2ByteConstant(node, DOUBLE_PRECISION_ROUND_TO_NEAREST), cg), cg);
       }
 
    if (cg->getProperties().getCallerCleanup())

@@ -86,7 +86,7 @@ OMR::X86::MemoryReference::getDisplacement()
    }
 
 
-OMR::X86::MemoryReference::MemoryReference(TR::IA32DataSnippet *cds, TR::CodeGenerator   *cg):
+OMR::X86::MemoryReference::MemoryReference(TR::X86DataSnippet *cds, TR::CodeGenerator   *cg):
    _baseRegister(NULL),
    _baseNode(NULL),
    _indexRegister(NULL),
@@ -289,10 +289,10 @@ OMR::X86::MemoryReference::setUnresolvedDataSnippet(TR::UnresolvedDataSnippet *s
    return ( (TR::UnresolvedDataSnippet *) (_dataSnippet = s) );
    }
 
-TR::IA32DataSnippet *
+TR::X86DataSnippet*
 OMR::X86::MemoryReference::getDataSnippet()
    {
-   return (self()->hasUnresolvedDataSnippet() || self()->hasUnresolvedVirtualCallSnippet()) ? NULL : (TR::IA32DataSnippet *)_dataSnippet;
+   return (self()->hasUnresolvedDataSnippet() || self()->hasUnresolvedVirtualCallSnippet()) ? NULL : (TR::X86DataSnippet*)_dataSnippet;
    }
 
 
@@ -1297,7 +1297,7 @@ OMR::X86::MemoryReference::addMetaDataForCodeAddress(
             }
          else
             {
-            TR::IA32DataSnippet *cds = self()->getDataSnippet();
+            TR::X86DataSnippet* cds = self()->getDataSnippet();
             TR::LabelSymbol *label = NULL;
 
             if (cds)
@@ -1548,7 +1548,7 @@ OMR::X86::MemoryReference::generateBinaryEncoding(
             }
          else
             {
-            TR::IA32DataSnippet *cds = self()->getDataSnippet();
+            TR::X86DataSnippet* cds = self()->getDataSnippet();
             TR_ASSERT(cds == NULL || self()->getLabel() == NULL,
                    "a memRef cannot have both a constant data snippet and a label");
             TR::LabelSymbol *label = NULL;
@@ -1843,7 +1843,7 @@ generateX86MemoryReference(TR::SymbolReference * sr, intptrj_t displacement, TR:
    }
 
 TR::MemoryReference  *
-generateX86MemoryReference(TR::IA32DataSnippet * cds, TR::CodeGenerator *cg)
+generateX86MemoryReference(TR::X86DataSnippet* cds, TR::CodeGenerator *cg)
    {
    return new (cg->trHeapMemory()) TR::MemoryReference(cds, cg);
    }

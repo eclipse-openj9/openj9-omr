@@ -61,8 +61,8 @@ namespace OMR { typedef OMR::X86::CodeGenerator CodeGeneratorConnector; }
 #include "codegen/GCStackAtlas.hpp"
 
 class TR_GCStackMap;
-namespace TR { class IA32ConstantDataSnippet; }
-namespace TR { class IA32DataSnippet; }
+namespace TR { class X86ConstantDataSnippet; }
+namespace TR { class X86DataSnippet; }
 class TR_OutlinedInstructions;
 namespace OMR { namespace X86 { class CodeGenerator; } }
 namespace TR { class CodeGenerator; }
@@ -518,14 +518,14 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
 
    void dumpDataSnippets(TR::FILE *pOutFile);
 
-   TR::IA32ConstantDataSnippet *findOrCreate2ByteConstant(TR::Node *, int16_t c);
-   TR::IA32ConstantDataSnippet *findOrCreate4ByteConstant(TR::Node *, int32_t c);
-   TR::IA32ConstantDataSnippet *findOrCreate8ByteConstant(TR::Node *, int64_t c);
-   TR::IA32ConstantDataSnippet *findOrCreate16ByteConstant(TR::Node *, void *c);
-   TR::IA32DataSnippet *create2ByteData(TR::Node *, int16_t c);
-   TR::IA32DataSnippet *create4ByteData(TR::Node *, int32_t c);
-   TR::IA32DataSnippet *create8ByteData(TR::Node *, int64_t c);
-   TR::IA32DataSnippet *create16ByteData(TR::Node *, void *c);
+   TR::X86ConstantDataSnippet *findOrCreate2ByteConstant(TR::Node *, int16_t c);
+   TR::X86ConstantDataSnippet *findOrCreate4ByteConstant(TR::Node *, int32_t c);
+   TR::X86ConstantDataSnippet *findOrCreate8ByteConstant(TR::Node *, int64_t c);
+   TR::X86ConstantDataSnippet *findOrCreate16ByteConstant(TR::Node *, void *c);
+   TR::X86DataSnippet *create2ByteData(TR::Node *, int16_t c);
+   TR::X86DataSnippet *create4ByteData(TR::Node *, int32_t c);
+   TR::X86DataSnippet *create8ByteData(TR::Node *, int64_t c);
+   TR::X86DataSnippet *create16ByteData(TR::Node *, void *c);
 
    static TR_X86ProcessorInfo _targetProcessorInfo;
 
@@ -597,7 +597,7 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
     *
     * \return : a data snippet with size s
     */
-   TR::IA32DataSnippet         *createDataSnippet(TR::Node *n, void *c, uint8_t s);
+   TR::X86DataSnippet*         createDataSnippet(TR::Node *n, void *c, uint8_t s);
    /*
     * \brief find or create a constant data snippet.
     *
@@ -607,7 +607,7 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
     *
     * \return : a constant data snippet with size s
     */
-   TR::IA32ConstantDataSnippet *findOrCreateConstantDataSnippet(TR::Node *n, void *c, uint8_t s);
+   TR::X86ConstantDataSnippet* findOrCreateConstantDataSnippet(TR::Node *n, void *c, uint8_t s);
 
    TR::RealRegister             *_frameRegister;
 
@@ -619,13 +619,13 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    TR::Instruction                 *_lastCatchAppendInstruction;
    TR_BetterSpillPlacement        *_betterSpillPlacements;
 
-   TR::vector<TR::IA32DataSnippet*>      _dataSnippetList;
+   TR::vector<TR::X86DataSnippet*>       _dataSnippetList;
    TR::list<TR::Register*>               _spilledIntRegisters;
    TR::list<TR::Register*>               _liveDiscardableRegisters;
    TR::list<TR::Register*>               _dependentDiscardableRegisters;
    TR::list<TR::ClobberingInstruction*>  _clobberingInstructions;
    std::list<TR::ClobberingInstruction*, TR::typed_allocator<TR::ClobberingInstruction*, TR::Allocator> >::iterator _clobIterator;
-   TR::list<TR_OutlinedInstructions*>   _outlinedInstructionsList;
+   TR::list<TR_OutlinedInstructions*>    _outlinedInstructionsList;
 
    RegisterAssignmentDirection     _assignmentDirection;
    TR::RegisterIterator            *_x87RegisterIterator;

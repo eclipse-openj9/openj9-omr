@@ -227,8 +227,7 @@ void TR_X86FPBinaryArithmeticAnalyser::genericFPAnalyser(TR::Node *root)
          {
          scalingRegister = _cg->allocateRegister(TR_X87);
 
-         TR::IA32ConstantDataSnippet *cds = _cg->findOrCreate8ByteConstant(root, DOUBLE_EXPONENT_SCALE);
-         constMR = generateX86MemoryReference(cds, _cg);
+         constMR = generateX86MemoryReference(_cg->findOrCreate8ByteConstant(root, DOUBLE_EXPONENT_SCALE), _cg);
 
          generateFPRegMemInstruction(DLDRegMem, root, scalingRegister, constMR, _cg);
          operandNeedsScaling = true;

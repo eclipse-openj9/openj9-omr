@@ -48,6 +48,8 @@ class TypeReplaceVisitor;
 
 class Symbol_IR {
 private:
+	OMRPortLibrary * const _portLibrary;
+
 	struct OverrideInfo {
 		set<string> opaqueTypeNames;
 		vector<FieldOverride> fieldOverrides;
@@ -55,7 +57,7 @@ private:
 		OverrideInfo();
 	};
 
-	DDR_RC readOverridesFile(OMRPortLibrary *portLibrary, const char *overridesFile, OverrideInfo *overrideInfo);
+	DDR_RC readOverridesFile(const char *overridesFile, OverrideInfo *overrideInfo);
 
 public:
 	vector<Type *> _types;
@@ -69,10 +71,27 @@ public:
 	set<Type *> _typeSet;
 	unordered_map<string, set<Type *> > _typeMap;
 
-	Symbol_IR() : _types(), _fullTypeNames(), _typeSet(), _typeMap() {}
+	explicit Symbol_IR(OMRPortLibrary *portLibrary)
+		: _portLibrary(portLibrary)
+		, _types()
+		, _fullTypeNames()
+		, _typeSet()
+		, _typeMap()
+	{
+	}
+
+	explicit Symbol_IR(Symbol_IR *other)
+		: _portLibrary(other->_portLibrary)
+		, _types()
+		, _fullTypeNames()
+		, _typeSet()
+		, _typeMap()
+	{
+	}
+
 	~Symbol_IR();
 
-	DDR_RC applyOverridesList(OMRPortLibrary *portLibrary, const char *overridesListFile);
+	DDR_RC applyOverridesList(const char *overridesListFile);
 	void removeDuplicates();
 	DDR_RC mergeIR(Symbol_IR *other);
 

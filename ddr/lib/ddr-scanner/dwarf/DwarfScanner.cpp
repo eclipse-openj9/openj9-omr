@@ -1261,7 +1261,7 @@ DwarfScanner::traverse_cu_in_debug_section(Symbol_IR *ir)
 
 	/* Go over each cu header. */
 	while (DDR_RC_OK == rc) {
-		Symbol_IR newIR;
+		Symbol_IR newIR(ir);
 		_typeOffsetMap.clear();
 		_ir = &newIR;
 
@@ -1355,7 +1355,7 @@ DwarfScanner::startScan(OMRPortLibrary *portLibrary, Symbol_IR *ir, vector<strin
 	/* Read list of debug files to scan from the input file. */
 	for (vector<string>::iterator it = debugFiles->begin(); it != debugFiles->end(); ++it) {
 		const string & debugFile = *it;
-		Symbol_IR newIR;
+		Symbol_IR newIR(ir);
 		rc = scanFile(portLibrary, &newIR, debugFile.c_str());
 		if (DDR_RC_OK != rc) {
 			break;

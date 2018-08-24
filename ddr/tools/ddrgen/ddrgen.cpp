@@ -77,8 +77,6 @@ private:
 
 #if defined(DEBUG_PRINT_TYPES)
 #include "ddr/ir/TypePrinter.hpp"
-
-static const TypePrinter printer(TypePrinter::FIELDS | TypePrinter::LITERALS | TypePrinter::MACROS);
 #endif /* DEBUG_PRINT_TYPES */
 
 int
@@ -126,7 +124,11 @@ main(int argc, char *argv[])
 #else /* defined(_MSC_VER) */
 	DwarfScanner scanner;
 #endif /* defined(_MSC_VER) */
-	Symbol_IR ir;
+	Symbol_IR ir(&portLibrary);
+#if defined(DEBUG_PRINT_TYPES)
+	const TypePrinter printer(&portLibrary, TypePrinter::FIELDS | TypePrinter::LITERALS | TypePrinter::MACROS);
+#endif /* DEBUG_PRINT_TYPES */
+
 	if ((DDR_RC_OK == rc) && !options.debugFiles.empty()) {
 		rc = scanner.startScan(&portLibrary, &ir, &options.debugFiles, options.blacklistFile);
 
@@ -163,7 +165,7 @@ main(int argc, char *argv[])
 
 	/* Apply Type Overrides; must be after scanning and loading macros. */
 	if ((DDR_RC_OK == rc) && (NULL != options.overrideListFile)) {
-		rc = ir.applyOverridesList(&portLibrary, options.overrideListFile);
+		rc = ir.applyOverridesList(options.overrideListFile);
 	}
 
 	if ((DDR_RC_OK == rc) && options.showBlacklisted) {

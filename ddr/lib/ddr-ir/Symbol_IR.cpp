@@ -73,10 +73,10 @@ Symbol_IR::~Symbol_IR()
 }
 
 DDR_RC
-Symbol_IR::applyOverridesList(OMRPortLibrary *portLibrary, const char *overridesListFile)
+Symbol_IR::applyOverridesList(const char *overridesListFile)
 {
 	DDR_RC rc = DDR_RC_OK;
-	OMRPORT_ACCESS_FROM_OMRPORT(portLibrary);
+	OMRPORT_ACCESS_FROM_OMRPORT(_portLibrary);
 	vector<string> filenames;
 	OverrideInfo overrideInfo;
 
@@ -117,7 +117,7 @@ closeFile:
 	}
 
 	for (vector<string>::const_iterator it = filenames.begin(); filenames.end() != it; ++it) {
-		rc = readOverridesFile(portLibrary, it->c_str(), &overrideInfo);
+		rc = readOverridesFile(it->c_str(), &overrideInfo);
 		if (DDR_RC_OK != rc) {
 			break;
 		}
@@ -179,10 +179,10 @@ startsWith(const string &str, const string &prefix)
 }
 
 DDR_RC
-Symbol_IR::readOverridesFile(OMRPortLibrary *portLibrary, const char *overridesFile, OverrideInfo *overrideInfo)
+Symbol_IR::readOverridesFile(const char *overridesFile, OverrideInfo *overrideInfo)
 {
 	DDR_RC rc = DDR_RC_OK;
-	OMRPORT_ACCESS_FROM_OMRPORT(portLibrary);
+	OMRPORT_ACCESS_FROM_OMRPORT(_portLibrary);
 
 	/* Read list of type overrides from specified file. */
 	intptr_t fd = omrfile_open(overridesFile, EsOpenRead, 0);
@@ -673,7 +673,7 @@ DDR_RC
 Symbol_IR::mergeIR(Symbol_IR *other)
 {
 #if defined(DEBUG_PRINT_TYPES)
-	TypePrinter printer(TypePrinter::LITERALS);
+	TypePrinter printer(_portLibrary, TypePrinter::LITERALS);
 
 	if (this != previousIR) {
 		printf("\n");

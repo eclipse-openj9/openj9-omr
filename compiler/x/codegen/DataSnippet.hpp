@@ -19,8 +19,8 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#ifndef IA32DATASNIPPET_INCL
-#define IA32DATASNIPPET_INCL
+#ifndef X86DATASNIPPET_INCL
+#define X86DATASNIPPET_INCL
 
 #include "codegen/Snippet.hpp"
 #include "infra/vector.hpp"    // for TR::vector
@@ -31,11 +31,11 @@ namespace TR { class Node; }
 
 namespace TR {
 
-class IA32DataSnippet : public TR::Snippet
+class X86DataSnippet : public TR::Snippet
    {
    public:
 
-   IA32DataSnippet(TR::CodeGenerator *cg, TR::Node *, void *c, uint8_t size);
+   X86DataSnippet(TR::CodeGenerator *cg, TR::Node *, void *c, uint8_t size);
 
    virtual Kind getKind() { return IsData; }
    uint8_t* getRawData()  { return _data.data(); }

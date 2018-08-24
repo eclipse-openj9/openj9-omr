@@ -50,7 +50,7 @@
 #include "infra/Assert.hpp"                      // for TR_ASSERT
 #include "infra/List.hpp"                        // for ListIterator, List
 #include "ras/Debug.hpp"                         // for TR_Debug, etc
-#include "x/codegen/DataSnippet.hpp"             // for TR::IA32DataSnippet
+#include "x/codegen/DataSnippet.hpp"             // for TR::X86DataSnippet
 #include "x/codegen/OutlinedInstructions.hpp"
 #include "x/codegen/X86Instruction.hpp"
 #include "x/codegen/X86Ops.hpp"                  // for TR_X86OpCode, etc
@@ -1540,7 +1540,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::MemoryReference  * mr, TR_RegisterSizes 
       {
       // This must be an absolute memory reference (a constant data snippet or a label)
       //
-      TR::IA32DataSnippet *cds = mr->getDataSnippet();
+      TR::X86DataSnippet *cds = mr->getDataSnippet();
       TR::LabelSymbol *label = NULL;
       if (cds)
          label = cds->getSnippetLabel();

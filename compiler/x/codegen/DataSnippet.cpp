@@ -34,7 +34,7 @@
 
 namespace TR { class Node; }
 
-TR::IA32DataSnippet::IA32DataSnippet(TR::CodeGenerator *cg, TR::Node * n, void *c, uint8_t size)
+TR::X86DataSnippet::X86DataSnippet(TR::CodeGenerator *cg, TR::Node * n, void *c, uint8_t size)
    : TR::Snippet(cg, n, TR::LabelSymbol::create(cg->trHeapMemory(),cg), false),
      _data(size, 0, getTypedAllocator<uint8_t>(TR::comp()->allocator()))
    {
@@ -45,7 +45,7 @@ TR::IA32DataSnippet::IA32DataSnippet(TR::CodeGenerator *cg, TR::Node * n, void *
 
 
 void
-TR::IA32DataSnippet::addMetaDataForCodeAddress(uint8_t *cursor)
+TR::X86DataSnippet::addMetaDataForCodeAddress(uint8_t *cursor)
    {
    // add dummy class unload/redefinition assumption.
    if (_isClassAddress)
@@ -70,7 +70,7 @@ TR::IA32DataSnippet::addMetaDataForCodeAddress(uint8_t *cursor)
    }
 
 
-uint8_t *TR::IA32DataSnippet::emitSnippetBody()
+uint8_t *TR::X86DataSnippet::emitSnippetBody()
    {
    uint8_t *cursor = cg()->getBinaryBufferCursor();
 
@@ -92,7 +92,7 @@ uint8_t *TR::IA32DataSnippet::emitSnippetBody()
    return cursor;
    }
 
-void TR::IA32DataSnippet::printValue(TR::FILE* pOutFile, TR_Debug* debug)
+void TR::X86DataSnippet::printValue(TR::FILE* pOutFile, TR_Debug* debug)
    {
    if (pOutFile == NULL)
       return;
@@ -122,7 +122,7 @@ void TR::IA32DataSnippet::printValue(TR::FILE* pOutFile, TR_Debug* debug)
       }
    }
 
-void TR::IA32DataSnippet::print(TR::FILE* pOutFile, TR_Debug* debug)
+void TR::X86DataSnippet::print(TR::FILE* pOutFile, TR_Debug* debug)
    {
    if (pOutFile == NULL)
       return;

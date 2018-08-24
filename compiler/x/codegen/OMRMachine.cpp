@@ -810,8 +810,7 @@ TR::RealRegister *OMR::X86::Machine::freeBestGPRegister(TR::Instruction         
          {
          if (info->getDataType() == TR_RematerializableFloat)
             {
-            TR::IA32ConstantDataSnippet *cds = self()->cg()->findOrCreate4ByteConstant(currentInstruction->getNode(), info->getConstant());
-            TR::MemoryReference  *tempMR = generateX86MemoryReference(cds, self()->cg());
+            TR::MemoryReference* tempMR = generateX86MemoryReference(self()->cg()->findOrCreate4ByteConstant(currentInstruction->getNode(), info->getConstant()), self()->cg());
             instr = generateRegMemInstruction(currentInstruction, MOVSSRegMem, best, tempMR, self()->cg());
 #ifdef DEBUG
             self()->cg()->incNumRematerializedXMMRs();

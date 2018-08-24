@@ -19,8 +19,8 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#ifndef IA32CONSTANTDATASNIPPET_INCL
-#define IA32CONSTANTDATASNIPPET_INCL
+#ifndef X86CONSTANTDATASNIPPET_INCL
+#define X86CONSTANTDATASNIPPET_INCL
 
 #include "x/codegen/DataSnippet.hpp"
 
@@ -32,11 +32,11 @@ namespace TR { class Node; }
 
 namespace TR {
 
-class IA32ConstantDataSnippet : public TR::IA32DataSnippet
+class X86ConstantDataSnippet : public TR::X86DataSnippet
    {
    public:
 
-   inline IA32ConstantDataSnippet(TR::CodeGenerator *cg, TR::Node *n, void *c, uint8_t size) : TR::IA32DataSnippet(cg, n, c, size) { }
+   inline X86ConstantDataSnippet(TR::CodeGenerator *cg, TR::Node *n, void *c, uint8_t size) : TR::X86DataSnippet(cg, n, c, size) { }
    virtual Kind getKind() { return IsConstantData; }
    };
 

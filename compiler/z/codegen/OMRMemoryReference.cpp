@@ -2488,12 +2488,10 @@ OMR::Z::MemoryReference::getSnippet()
    {
    TR::Snippet * snippet = NULL;
 
-   // unresolved data
    if (self()->getUnresolvedSnippet() != NULL)
       {
       self()->setMemRefAndGetUnresolvedData(snippet);
       }
-   // add writable data snippet address relocation
    else if (self()->getConstantDataSnippet() != NULL)
       {
       snippet = self()->getConstantDataSnippet();

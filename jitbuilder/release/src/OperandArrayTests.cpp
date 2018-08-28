@@ -505,12 +505,12 @@ OperandArrayTestMethod::testArray(TR::BytecodeBuilder *builder, bool useEqual)
 bool
 OperandArrayTestMethod::buildIL()
    {
-   TR::IlType *pElementType = _types->PointerTo(_types->PointerTo(Word));
+   TR::IlType *ppElementType = _types->PointerTo(_types->PointerTo(ARRAYVALUEILTYPE));
 
    Call("createArray", 0);
 
    TR::IlValue *arrayBaseAddress = ConstAddress(&_realArray);
-   TR::VirtualMachineRegister *arrayBase = new TR::VirtualMachineRegister(this, "ARRAY", pElementType, sizeof(ARRAYVALUETYPE), arrayBaseAddress);
+   TR::VirtualMachineRegister *arrayBase = new TR::VirtualMachineRegister(this, "ARRAY", ppElementType, sizeof(ARRAYVALUETYPE), arrayBaseAddress);
    TR::VirtualMachineOperandArray *array = new TR::VirtualMachineOperandArray(this, _realArrayLength, _valueType, arrayBase);
 
    setVMState(array);
@@ -533,12 +533,12 @@ OperandArrayTestUsingFalseMethod::OperandArrayTestUsingFalseMethod(TR::TypeDicti
 bool
 OperandArrayTestUsingFalseMethod::buildIL()
    {
-   TR::IlType *pElementType = _types->PointerTo(_types->PointerTo(Word));
+   TR::IlType *ppElementType = _types->PointerTo(_types->PointerTo(ARRAYVALUEILTYPE));
 
    Call("createArray", 0);
 
    TR::IlValue *arrayBaseAddress = ConstAddress(&_realArray);
-   TR::VirtualMachineRegister *arrayBase = new TR::VirtualMachineRegister(this, "ARRAY", pElementType, sizeof(ARRAYVALUETYPE), arrayBaseAddress);
+   TR::VirtualMachineRegister *arrayBase = new TR::VirtualMachineRegister(this, "ARRAY", ppElementType, sizeof(ARRAYVALUETYPE), arrayBaseAddress);
    TR::VirtualMachineOperandArray *array = new TR::VirtualMachineOperandArray(this, _realArrayLength, _valueType, arrayBase);
 
    setVMState(array);

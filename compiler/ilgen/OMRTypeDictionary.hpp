@@ -197,6 +197,7 @@ public:
 
    TR::IlReference *FieldReference(const char *typeName, const char *fieldName);
    TR_Memory *trMemory() { return memoryManager._trMemory; }
+   TR::IlType *getWord() { return Word; }
 
    //TR::IlReference *ArrayReference(TR::IlType *arrayType);
 

@@ -582,14 +582,11 @@ OperandStackTestMethod::buildIL()
    return true;
    }
 
-
-
-
 OperandStackTestUsingStructMethod::OperandStackTestUsingStructMethod(TR::TypeDictionary *d)
    : OperandStackTestMethod(d)
    {
    d->DefineStruct("Thread");
-   d->DefineField("Thread", "sp", d->PointerTo(d->PointerTo(STACKVALUEILTYPE)), offsetof(Thread, sp));
+   d->DefineField("Thread", "sp", d->PointerTo(STACKVALUEILTYPE), offsetof(Thread, sp));
    d->CloseStruct("Thread");
 
    DefineParameter("thread", d->PointerTo("Thread"));

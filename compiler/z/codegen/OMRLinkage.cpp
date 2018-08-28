@@ -3329,41 +3329,12 @@ OMR::Z::Linkage::numArgumentRegisters(TR_RegisterKinds kind)
    return 0;
    }
 
-uint8_t
-OMR::Z::Linkage::getNumSpecialArgumentRegisters()
-   {
-   return self()->isSpecialArgumentRegisters() ? _numSpecialArgumentRegisters : 0;
-   }
-
 void
 OMR::Z::Linkage::setIntegerArgumentRegister(uint32_t index, TR::RealRegister::RegNum r)
    {
    _intArgRegisters[index] = r;
    self()->setRegisterFlag(r, IntegerArgument);
    }
-
-TR::RealRegister::RegNum
-OMR::Z::Linkage::getSpecialArgumentRegister(uint32_t specialIndex)
-   {
-   if (self()->isSpecialArgumentRegisters() && ((specialIndex-TR_FirstSpecialLinkageIndex) < _numSpecialArgumentRegisters))
-      return _specialArgRegisters[specialIndex - TR_FirstSpecialLinkageIndex];
-   else
-      return TR::RealRegister::NoReg;
-   }
-
-void
-OMR::Z::Linkage::setSpecialArgumentRegister(uint32_t index, TR::RealRegister::RegNum r)
-   {
-   _specialArgRegisters[index] = r;
-   self()->setRegisterFlag(r, IntegerArgument);
-   }
-
-bool
-OMR::Z::Linkage::isSpecialArgumentRegister(int8_t linkageRegisterIndex)
-  {
-  bool result = self()->isSpecialArgumentRegisters() && (linkageRegisterIndex >= TR_FirstSpecialLinkageIndex);
-  return result;
-  }
 
 /** Get the indexth Long High argument register */
 TR::RealRegister::RegNum

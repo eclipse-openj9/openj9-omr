@@ -120,32 +120,6 @@ public:
    uint32_t calculateReturnValueAdjustFlag(TR::DataType dataType, int32_t aggregateLength);
    static uint32_t isFloatDescriptorFlagUnprototyped(uint32_t flag)  { return flag == 0; }
 
-   virtual bool isEnvironmentSpecialArgumentRegister(int8_t linkageRegisterIndex)
-     {
-     bool result = isSpecialArgumentRegisters() &&
-                   (linkageRegisterIndex >= TR_FirstSpecialLinkageIndex) &&
-                   (linkageRegisterIndex - TR_FirstSpecialLinkageIndex) == 0 ;
-     return result;
-     }
-
-   virtual bool isSpecialNonVolatileArgumentRegister(int8_t linkageRegisterIndex)
-      {
-      return isCAASpecialArgumentRegister(linkageRegisterIndex);
-      }
-
-   virtual bool isCAASpecialArgumentRegister(int8_t linkageRegisterIndex)
-     {
-     bool result = isSpecialArgumentRegisters() &&
-                   (linkageRegisterIndex >= TR_FirstSpecialLinkageIndex) &&
-                   (linkageRegisterIndex - TR_FirstSpecialLinkageIndex) == 1 ;
-     return result;
-     }
-
-   virtual bool isParentDSASpecialArgumentRegister(int8_t linkageRegisterIndex)
-     {
-     return false;
-     }
-
    uint32_t calculateCallDescriptorFlags(TR::Node *callNode);
 
 private:

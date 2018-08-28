@@ -361,7 +361,6 @@ TR::S390zOSSystemLinkage::S390zOSSystemLinkage(TR::CodeGenerator * codeGen)
       {
       setProperty(FloatParmDescriptors);
       }
-   setNumSpecialArgumentRegisters(0);  // could be changed by ilgen
 
    setRegisterFlag(TR::RealRegister::GPR4, Preserved);
 

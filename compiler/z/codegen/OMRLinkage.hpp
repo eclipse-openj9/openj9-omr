@@ -111,7 +111,7 @@ enum TR_S390LinkageConventions
 #define AggregatesPassedOnParmStack   0x400
 #define AggregatesPassedInParmRegs    0x800
 #define AggregatesReturnedInRegs      0x1000
-#define SpecialArgumentRegisters      0x2000
+// Available                          0x2000
 #define SmallIntParmsAlignedRight     0x4000  ///< < gprSize int parms aligned into the parmword
 #define ParmBlockRegister             0x8000  ///< Has a parameter block register: OS Linkage (non-Java)
 #define ForceSaveIncomingParameters   0x10000 ///< Force parameters to be saved: example: non-Java
@@ -235,9 +235,6 @@ private:
    TR::RealRegister::RegNum _floatArgRegisters[TR::RealRegister::NumRegisters];
    uint8_t _numVectorArgumentRegisters;
    TR::RealRegister::RegNum _vectorArgRegisters[TR::RealRegister::NumRegisters];
-   uint8_t _numSpecialArgumentRegisters;
-
-   TR::RealRegister::RegNum _specialArgRegisters[TR::RealRegister::NumRegisters];
    TR::RealRegister::RegNum _integerReturnRegister;
    TR::RealRegister::RegNum _floatReturnRegister;
    TR::RealRegister::RegNum _doubleReturnRegister;
@@ -419,7 +416,6 @@ enum TR_DispatchType
    virtual bool canDataTypeBePassedByReference(TR::DataType type);
    virtual bool isSymbolPassedByReference(TR::Symbol *sym);
 
-   int32_t  isSpecialArgumentRegisters() { return ((_properties & SpecialArgumentRegisters) != 0) && (_numSpecialArgumentRegisters > 0); }
    int32_t  isParmBlockRegister() { return _properties & ParmBlockRegister; }
    int32_t  isForceSaveIncomingParameters() { return _properties & ForceSaveIncomingParameters; }
    int32_t  isLongDoubleReturnedOnStorage() { return _properties & LongDoubleReturnedOnStorage; }
@@ -493,9 +489,6 @@ enum TR_DispatchType
 
    virtual int32_t numArgumentRegisters(TR_RegisterKinds kind);
 
-   virtual uint8_t getNumSpecialArgumentRegisters();
-   virtual void setNumSpecialArgumentRegisters(uint8_t n) { _numSpecialArgumentRegisters = n; }
-
    void markPreservedRegsInBlock(int32_t);
    void markPreservedRegsInDep(TR::RegisterDependencyConditions *);
 
@@ -512,27 +505,6 @@ enum TR_DispatchType
       else
          return TR::RealRegister::NoReg;
       }
-
-   virtual TR::RealRegister::RegNum getSpecialArgumentRegister(uint32_t specialIndex);
-
-   virtual void setSpecialArgumentRegister(uint32_t index, TR::RealRegister::RegNum r);
-
-   virtual bool isSpecialArgumentRegister(int8_t linkageRegisterIndex);
-
-   virtual bool isEnvironmentSpecialArgumentRegister(int8_t linkageRegisterIndex)
-     {
-     return false;
-     }
-
-   virtual bool isCAASpecialArgumentRegister(int8_t linkageRegisterIndex)
-     {
-     return false;
-     }
-
-   virtual bool isParentDSASpecialArgumentRegister(int8_t linkageRegisterIndex)
-     {
-     return false;
-     }
 
    virtual TR_GlobalRegisterNumber getFormalParameterGlobalRegister(TR::ParameterSymbol *sym);
 

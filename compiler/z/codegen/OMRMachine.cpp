@@ -6052,8 +6052,6 @@ OMR::Z::Machine::initializeGlobalRegisterTable()
       p = self()->addGlobalReg(linkage->getStaticBaseRegister(), p);
    if (!self()->cg()->isGlobalPrivateStaticBaseRegisterOn())
       p = self()->addGlobalReg(linkage->getPrivateStaticBaseRegister(), p);
-   for (int32_t i = linkage->getNumSpecialArgumentRegisters(); i >= 0; i--)
-      p = self()->addGlobalReg(linkage->getSpecialArgumentRegister(i), p);
    p = self()->addGlobalReg(linkage->getIntegerReturnRegister(), p);
    p = self()->addGlobalReg(linkage->getLongReturnRegister(), p);
    p = self()->addGlobalReg(linkage->getLongLowReturnRegister(), p);

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -44,7 +44,6 @@ namespace TR { class X86ForceRecompilationSnippet; }
 namespace TR { class X86GuardedDevirtualSnippet; }
 namespace TR { class X86PicDataSnippet; }
 namespace TR { class X86RecompilationSnippet; }
-namespace TR { class X86ScratchArgHelperCallSnippet; }
 namespace TR { class X86SpineCheckSnippet; }
 namespace TR { class X86UnresolvedVirtualCallSnippet; }
 namespace TR { class LabelSymbol; }
@@ -99,9 +98,6 @@ TR_Debug::getNamex(TR::Snippet *snippet)
          break;
       case TR::Snippet::IsJNIPause:
          return "JNI Pause Snippet";
-         break;
-      case TR::Snippet::IsScratchArgHelperCall:
-         return "Helper Call Snippet with scratch-reg argument";
          break;
       case TR::Snippet::IsForceRecompilation:
          return "Force Recompilation Snippet";
@@ -206,9 +202,6 @@ TR_Debug::printx(TR::FILE *pOutFile, TR::Snippet *snippet)
          break;
       case TR::Snippet::IsSpineCheck:
          print(pOutFile, (TR::X86SpineCheckSnippet *)snippet);
-         break;
-      case TR::Snippet::IsScratchArgHelperCall:
-         print(pOutFile, (TR::X86ScratchArgHelperCallSnippet *)snippet);
          break;
       case TR::Snippet::IsForceRecompilation:
          print(pOutFile, (TR::X86ForceRecompilationSnippet  *)snippet);

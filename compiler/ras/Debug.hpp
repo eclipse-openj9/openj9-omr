@@ -147,7 +147,6 @@ namespace TR { class X86FPConvertToIntSnippet; }
 namespace TR { class X86FPConvertToLongSnippet; }
 namespace TR { class X86GuardedDevirtualSnippet; }
 namespace TR { class X86HelperCallSnippet; }
-namespace TR { class X86ScratchArgHelperCallSnippet; }
 namespace TR { class UnresolvedDataSnippet; }
 namespace TR { class X86UnresolvedVirtualCallSnippet; }
 namespace TR { class AMD64Imm64Instruction;    }
@@ -859,8 +858,6 @@ public:
    void print(TR::FILE *, TR::X86GuardedDevirtualSnippet *);
    void print(TR::FILE *, TR::X86HelperCallSnippet *);
    void printBody(TR::FILE *, TR::X86HelperCallSnippet *, uint8_t *bufferPos);
-   void print(TR::FILE *, TR::X86ScratchArgHelperCallSnippet *);
-
 
    void print(TR::FILE *, TR::UnresolvedDataSnippet *);
 

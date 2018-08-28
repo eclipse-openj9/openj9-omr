@@ -35,7 +35,8 @@ OBJECTS := \
 	SystemLinkageTest \
 	WorklistTest \
 	IfThenElseTest \
-	CallReturnTest
+	CallReturnTest \
+	FieldNameTest
 
 OBJECTS := $(addsuffix $(OBJEXT),$(OBJECTS))
 

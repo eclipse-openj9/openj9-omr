@@ -252,7 +252,7 @@ OMR::StructType::findField(const char *fieldName)
    OMR::FieldInfo *info = _firstField;
    while (NULL != info)
       {
-      if (strncmp(info->_name, fieldName, strlen(fieldName)) == 0)
+      if (strcmp(info->_name, fieldName) == 0)
          return info;
       info = info->_next;
       }
@@ -355,7 +355,7 @@ OMR::UnionType::findField(const char *fieldName)
    OMR::FieldInfo *info = _firstField;
    while (NULL != info)
       {
-      if (strncmp(info->_name, fieldName, strlen(fieldName)) == 0)
+      if (strcmp(info->_name, fieldName) == 0)
          return info;
       info = info->_next;
       }

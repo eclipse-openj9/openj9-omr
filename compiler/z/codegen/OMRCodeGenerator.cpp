@@ -530,7 +530,6 @@ OMR::Z::CodeGenerator::CodeGenerator()
      _processorInfo(),
      _extentOfLitPool(-1),
      _recompPatchInsnList(getTypedAllocator<TR::Instruction*>(self()->comp()->allocator())),
-     _targetList(getTypedAllocator<TR::S390TargetAddressSnippet*>(self()->comp()->allocator())),
      _constantHash(self()->comp()->allocator()),
      _constantHashCur(_constantHash),
      _constantList(getTypedAllocator<TR::S390ConstantDataSnippet*>(self()->comp()->allocator())),
@@ -539,17 +538,13 @@ OMR::Z::CodeGenerator::CodeGenerator()
      _snippetDataList(getTypedAllocator<TR::S390ConstantDataSnippet*>(self()->comp()->allocator())),
      _outOfLineCodeSectionList(getTypedAllocator<TR_S390OutOfLineCodeSection*>(self()->comp()->allocator())),
      _returnTypeInfoInstruction(NULL),
-     _notPrintLabelHashTab(NULL),
      _interfaceSnippetToPICsListHashTab(NULL),
      _currentCheckNode(NULL),
      _currentBCDCHKHandlerLabel(NULL),
      _internalControlFlowRegisters(getTypedAllocator<TR::Register*>(self()->comp()->allocator())),
      _nodesToBeEvaluatedInRegPairs(self()->comp()->allocator()),
-     _nodeAddressOfCachedStatic(NULL),
      _ccInstruction(NULL),
-     _previouslyAssignedTo(self()->comp()->allocator("LocalRA")),
-     _bucketPlusIndexRegisters(self()->comp()->allocator()),
-     _currentDEPEND(NULL)
+     _previouslyAssignedTo(self()->comp()->allocator("LocalRA"))
    {
    TR::Compilation *comp = self()->comp();
    _cgFlags = 0;
@@ -2544,8 +2539,7 @@ OMR::Z::CodeGenerator::prepareRegistersForAssignment()
       // Compute extent of litpool on N3 (exclude snippets)
       // for 31-bit systems, we add 4 to offset estimate because of possible alignment padding
       // between target addresses (4-byte aligned) and any 8-byte constant data.
-      _extentOfLitPool = self()->setEstimatedOffsetForTargetAddressSnippets();
-      _extentOfLitPool = self()->setEstimatedOffsetForConstantDataSnippets(_extentOfLitPool);
+      _extentOfLitPool = self()->setEstimatedOffsetForConstantDataSnippets();
 
       TR::Linkage *s390PrivateLinkage = self()->getS390Linkage();
 
@@ -3125,9 +3119,7 @@ OMR::Z::CodeGenerator::anyNonConstantSnippets()
       {
       if ((*iterator)->getKind()!=TR::Snippet::IsConstantData   ||
            (*iterator)->getKind()!=TR::Snippet::IsWritableData   ||
-           (*iterator)->getKind()!=TR::Snippet::IsEyeCatcherData ||
-           (*iterator)->getKind()!=TR::Snippet::IsTargetAddress  ||
-           (*iterator)->getKind()!=TR::Snippet::IsLookupSwitch
+           (*iterator)->getKind()!=TR::Snippet::IsEyeCatcherData
           )
           {
           return true;
@@ -3145,10 +3137,6 @@ OMR::Z::CodeGenerator::anyLitPoolSnippets()
    {
    CS2::HashIndex hi;
    TR::S390ConstantDataSnippet *cursor1 = NULL;
-    if (!_targetList.empty())
-      {
-      return true;
-      }
 
     for (auto constantiterator = _constantList.begin(); constantiterator != _constantList.end(); ++constantiterator)
       {
@@ -3301,8 +3289,7 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
    static char * disableEXRLDispatch = feGetEnv("TR_DisableEXRLDispatch");
    if (!(bool)disableEXRLDispatch && self()->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10))
       {
-      _extentOfLitPool = self()->setEstimatedOffsetForTargetAddressSnippets();
-      _extentOfLitPool = self()->setEstimatedOffsetForConstantDataSnippets(_extentOfLitPool);
+      _extentOfLitPool = self()->setEstimatedOffsetForConstantDataSnippets();
       }
 
    self()->setEstimatedCodeLength(data.estimate);
@@ -3339,8 +3326,6 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
 
 
    TR_HashTab * branchHashTable = new (self()->trStackMemory()) TR_HashTab(self()->comp()->trMemory(), stackAlloc, 60, true);
-   TR_HashTab * labelHashTable = new (self()->trStackMemory()) TR_HashTab(self()->comp()->trMemory(), stackAlloc, 60, true);
-   TR_HashTab * notPrintLabelHashTable = new (self()->trStackMemory()) TR_HashTab(self()->comp()->trMemory(), stackAlloc, 60, true);
 
    while (data.cursorInstruction)
       {
@@ -3373,12 +3358,6 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
             TR_HashId hashIndex = 0;
             branchHashTable->add((void *)targetLabel, hashIndex, (void *)targetLabel);
             }
-         }
-      else if (self()->isLabelInstruction(data.cursorInstruction))
-         {
-         TR::LabelSymbol * labelSymbol = ((TR::S390BranchInstruction *)data.cursorInstruction)->getLabelSymbol();
-         TR_HashId hashIndex = 0;
-         labelHashTable->add((void *)labelSymbol, hashIndex, (void *)labelSymbol);
          }
 
       self()->setBinaryBufferCursor(data.cursorInstruction->generateBinaryEncoding());
@@ -3431,18 +3410,6 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
          *(uint32_t *) (data.preProcInstruction->getBinaryEncoding()) = magicWord;
          }
       }
-
-
-   // Create list of unused labels that should not be printed
-   TR_HashTabIterator lit(labelHashTable);
-   for (TR::LabelSymbol *labelSymbol = (TR::LabelSymbol *)lit.getFirst();labelSymbol;labelSymbol = (TR::LabelSymbol *)lit.getNext())
-      {
-      TR_HashId hashIndex = 0;
-      if (!(branchHashTable->locate((void *)labelSymbol, hashIndex)))
-         notPrintLabelHashTable->add((void *)labelSymbol, hashIndex, (void *)labelSymbol);
-      }
-
-   self()->setLabelHashTable(notPrintLabelHashTable);
 
    // Create exception table entries for outlined instructions.
    //
@@ -4527,35 +4494,6 @@ bool OMR::Z::CodeGenerator::useMVCLForMemcpyWithPad(TR::Node *node, TR_MemCpyPad
    return useMVCL;
    }
 
-bool OMR::Z::CodeGenerator::isMemcpyWithPadIfFoldable(TR::Node *node, TR_MemCpyPadTypes type)
-   {
-   TR::Node *equalNode =node->getChild(TR_MEMCPY_PAD_EQU_LEN_INDEX);
-
-   if (type == OneByte || type == TwoByte) // non-ND cases are always foldable
-      {
-      return true;
-      }
-   else if (self()->inlineNDmemcpyWithPad(node) &&
-            equalNode->getOpCode().isLoadConst() &&
-            equalNode->get64bitIntegralValue() == 1)
-      {
-      // In the equal case of NDmemcpyWithPad, the evaluation to MVCL can be avoided. Thus CC is not established.
-      // Therefore NDmemcpyWithPad is not foldable. Ref: inlineMemcpyWithPadEvaluator.
-      return false;
-      }
-   else if (self()->useMVCLForMemcpyWithPad(node, type)) // smaller (fits in MVCL) ND cases are also foldable
-      {
-      return true;
-      }
-   else
-      {
-      // what remains is large or unknown max length ND cases that require an explicit overlap check in the evaluator
-      // that make if folding not possible (leads to reg assigner bugs due to complex control flow and avoiding this
-      // ends up needing code on par with the non-folded case anyway)
-      return false;
-      }
-   }
-
 bool OMR::Z::CodeGenerator::isValidCompareConst(int64_t compareConst)
    {
    const int MIN_FOLDABLE_CC = 0;
@@ -4669,11 +4607,7 @@ OMR::Z::CodeGenerator::getFirstSnippet()
    {
    TR::Snippet * s = NULL;
 
-   if ((s = self()->getFirstTargetAddress()) != NULL)
-      {
-      return s;
-      }
-   else if ((s = self()->getFirstConstantData()) != NULL)
+   if ((s = self()->getFirstConstantData()) != NULL)
       {
       return s;
       }
@@ -4787,15 +4721,6 @@ OMR::Z::CodeGenerator::CreateConstant(TR::Node * node, void * c, uint16_t size, 
       }
    }
 
-TR::S390LabelTableSnippet *
-OMR::Z::CodeGenerator::createLabelTable(TR::Node * node, int32_t size)
-   {
-   TR::S390LabelTableSnippet * labelTableSnippet = new (self()->trHeapMemory()) TR::S390LabelTableSnippet(self(), node, size);
-   _snippetDataList.push_front(labelTableSnippet);
-   return labelTableSnippet;
-   }
-
-
 void
 OMR::Z::CodeGenerator::addDataConstantSnippet(TR::S390ConstantDataSnippet * snippet)
    {
@@ -4804,16 +4729,14 @@ OMR::Z::CodeGenerator::addDataConstantSnippet(TR::S390ConstantDataSnippet * snip
 
 /**
  * Estimate the offsets for constant snippets from code base
- * the size of the targetAddressSnippet should be passed as input
- * since the constant is emitted after all the target address snippets
  */
 int32_t
-OMR::Z::CodeGenerator::setEstimatedOffsetForConstantDataSnippets(int32_t targetAddressSnippetSize)
+OMR::Z::CodeGenerator::setEstimatedOffsetForConstantDataSnippets()
    {
    TR::S390ConstantDataSnippet * cursor;
    bool first;
    int32_t size;
-   int32_t offset = targetAddressSnippetSize;
+   int32_t offset = 0;
    int32_t exp;
 
    // We align this stucture on 8bytes to guarantee full predictability of
@@ -5321,146 +5244,6 @@ OMR::Z::CodeGenerator::getFirstConstantData()
       }
 
    return cursor;
-   }
-
-
-
-/**
- * This method sets estimated offset for each targetAddressSnippets
- * from the codebase (points to the 1st snippet)
- * this method is called in generateBinaryEncoding phase where the
- * displacement is required to decide if a index register should be
- * set up for RX instructions
- * @return the total size of the targetAddressSnippets
- *
- * Logic in this method should always be kept in sync with
- * logic in void OMR::Z::CodeGenerator::emitDataSnippets()
- * Constants are emited in order of decreasing size,
- * hense the first emited constant may not be iterator.getFirst(),
- * but the first constant with biggest size
- */
-int32_t
-OMR::Z::CodeGenerator::setEstimatedOffsetForTargetAddressSnippets()
-   {
-   int32_t estimatedOffset = 0;
-
-   for (auto iterator = _targetList.begin(); iterator != _targetList.end(); ++iterator)
-      {
-      (*iterator)->setCodeBaseOffset(estimatedOffset);
-      estimatedOffset += (*iterator)->getLength(0);
-      }
-
-   return estimatedOffset;
-   }
-
-
-////////////////////////////////////////////////////////////////////////////////
-// OMR::Z::CodeGenerator::TargetAddressSnippet Functions
-////////////////////////////////////////////////////////////////////////////////
-int32_t
-OMR::Z::CodeGenerator::setEstimatedLocationsForTargetAddressSnippetLabels(int32_t estimatedSnippetStart)
-   {
-   self()->setEstimatedSnippetStart(estimatedSnippetStart);
-   // Conservatively add maximum padding to get to 8 byte alignment.
-   estimatedSnippetStart += 6;
-   for (auto iterator = _targetList.begin(); iterator != _targetList.end(); ++iterator)
-      {
-      (*iterator)->setEstimatedCodeLocation(estimatedSnippetStart);
-      estimatedSnippetStart += (*iterator)->getLength(estimatedSnippetStart);
-      }
-   return estimatedSnippetStart;
-   }
-
-void
-OMR::Z::CodeGenerator::emitTargetAddressSnippets()
-   {
-   uint8_t * codeOffset;
-   int8_t size = 8;
-
-   // We align this stucture on 8bytes to guarantee full predictability of
-   // of the lit pool layout.
-   //
-   self()->setBinaryBufferCursor((uint8_t *) (((uintptrj_t) (self()->getBinaryBufferCursor() + size - 1) / size) * size));
-
-   for (auto iterator = _targetList.begin(); iterator != _targetList.end(); ++iterator)
-      {
-      codeOffset = (*iterator)->emitSnippetBody();
-      if (codeOffset != NULL)
-         {
-         self()->setBinaryBufferCursor(codeOffset);
-         }
-      }
-   }
-
-
-
-TR::S390LookupSwitchSnippet *
-OMR::Z::CodeGenerator::CreateLookupSwitchSnippet(TR::Node * node, TR::Snippet * s)
-   {
-   _targetList.push_front((TR::S390LookupSwitchSnippet *) s);
-   return (TR::S390LookupSwitchSnippet *) s;
-   }
-
-
-
-TR::S390TargetAddressSnippet *
-OMR::Z::CodeGenerator::CreateTargetAddressSnippet(TR::Node * node, TR::Snippet * s)
-   {
-   TR::S390TargetAddressSnippet * targetsnippet;
-   targetsnippet = new (self()->trHeapMemory()) TR::S390TargetAddressSnippet(self(), node, s);
-   _targetList.push_front(targetsnippet);
-   return targetsnippet;
-   }
-
-TR::S390TargetAddressSnippet *
-OMR::Z::CodeGenerator::CreateTargetAddressSnippet(TR::Node * node, TR::LabelSymbol * s)
-   {
-   TR::S390TargetAddressSnippet * targetsnippet;
-   targetsnippet = new (self()->trHeapMemory()) TR::S390TargetAddressSnippet(self(), node, s);
-   _targetList.push_front(targetsnippet);
-   return targetsnippet;
-   }
-
-TR::S390TargetAddressSnippet *
-OMR::Z::CodeGenerator::CreateTargetAddressSnippet(TR::Node * node, TR::Symbol * s)
-   {
-   TR_ASSERT(self()->supportsOnDemandLiteralPool() == false, "May not be here with Literal Pool On Demand enabled\n");
-   TR::S390TargetAddressSnippet * targetsnippet;
-   targetsnippet = new (self()->trHeapMemory()) TR::S390TargetAddressSnippet(self(), node, s);
-   _targetList.push_front(targetsnippet);
-   return targetsnippet;
-   }
-
-TR::S390TargetAddressSnippet *
-OMR::Z::CodeGenerator::findOrCreateTargetAddressSnippet(TR::Node * node, uintptrj_t addr)
-   {
-   TR_ASSERT(self()->supportsOnDemandLiteralPool() == false, "May not be here with Literal Pool On Demand enabled\n");
-   // A simple linear search should suffice for now since the number of FP constants
-   // produced is typically very small.  Eventually, this should be implemented as an
-   // ordered list or a hash table.
-   //
-   for (auto iterator = _targetList.begin(); iterator != _targetList.end(); ++iterator)
-      {
-      if ((*iterator)->getKind() == TR::Snippet::IsTargetAddress && (*iterator)->getTargetAddress() == addr)
-         {
-         return *iterator;
-         }
-      }
-
-   TR::S390TargetAddressSnippet * targetsnippet;
-
-   targetsnippet = new (self()->trHeapMemory()) TR::S390TargetAddressSnippet(self(), node, addr);
-   _targetList.push_front(targetsnippet);
-   return targetsnippet;
-   }
-
-TR::S390TargetAddressSnippet *
-OMR::Z::CodeGenerator::getFirstTargetAddress()
-   {
-   if(_targetList.empty())
-      return NULL;
-   else
-      return _targetList.front();
    }
 
 void
@@ -6476,26 +6259,6 @@ OMR::Z::CodeGenerator::dumpDataSnippets(TR::FILE *outFile)
       }
    }
 
-////////////////////////////////////////////////////////////////////////////////
-// OMR::Z::CodeGenerator::dumpTargetAddressSnippets
-////////////////////////////////////////////////////////////////////////////////
-void
-OMR::Z::CodeGenerator::dumpTargetAddressSnippets(TR::FILE *outFile)
-   {
-
-   if (outFile == NULL)
-      {
-      return;
-      }
-
-   int32_t size;
-
-   for (auto iterator = _targetList.begin(); iterator != _targetList.end(); ++iterator)
-      {
-      self()->getDebug()->print(outFile, *iterator);
-      }
-   }
-
 #if DEBUG
 ////////////////////////////////////////////////////////////////////////////////
 // OMR::Z::CodeGenerator::printRegisterMap
@@ -7198,21 +6961,6 @@ OMR::Z::CodeGenerator::genCopyFromLiteralPool(TR::Node *node, int32_t bytesToCop
 
    if (stopUsing)
       self()->stopUsingRegister(litPoolBaseReg);
-   }
-
-int32_t
-OMR::Z::CodeGenerator::biasDecimalFloatFrac(TR::DataType dt, int32_t frac)
-   {
-   switch (dt)
-      {
-#ifdef J9_PROJECT_SPECIFIC
-      case TR::DecimalFloat:      return TR_DECIMAL_FLOAT_BIAS-frac;
-      case TR::DecimalDouble:     return TR_DECIMAL_DOUBLE_BIAS-frac;
-      case TR::DecimalLongDouble: return TR_DECIMAL_LONG_DOUBLE_BIAS-frac;
-#endif
-      default: TR_ASSERT(0, "unexpected biasDecimalFloatFrac dt %s",dt.toString());
-      }
-   return 0;
    }
 
 TR::Instruction *

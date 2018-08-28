@@ -399,14 +399,6 @@ TR::Instruction * generateRXYInstruction(
                    uint32_t                 constForMR,
                    TR::Instruction         *preced = 0);
 
-TR::Instruction * generateRXYbInstruction(
-                   TR::CodeGenerator       *cg,
-                   TR::InstOpCode::Mnemonic     op,
-                   TR::Node                *n,
-                   uint8_t                  mask,
-                   uint32_t                 constForMR,
-                   TR::Instruction         *preced = 0);
-
 TR::Instruction * generateRXFInstruction(
                    TR::CodeGenerator *cg,
                    TR::InstOpCode::Mnemonic         op,

@@ -76,21 +76,7 @@ TR::S390ConstantDataSnippet::S390ConstantDataSnippet(TR::CodeGenerator * cg, TR:
    _length = size;
    _symbolReference = NULL;
    _reloType = 0;
-   _isString = false;
    }
-
-TR::S390ConstantDataSnippet::S390ConstantDataSnippet(TR::CodeGenerator * cg, TR::Node * n, char* c) :
-   TR::Snippet(cg, n, TR::LabelSymbol::create(cg->trHeapMemory(),cg), false)
-   {
-   _length = strlen(c);
-   _string = (char *) cg->trMemory()->allocateMemory(_length, heapAlloc);
-   memcpy(_string, c, strlen(c));
-   _unresolvedDataSnippet = NULL;
-   _symbolReference = NULL;
-   _reloType = 0;
-   _isString = true;
-   }
-
 
 void
 TR::S390ConstantDataSnippet::addMetaDataForCodeAddress(uint8_t *cursor)
@@ -332,7 +318,6 @@ TR::S390ConstantInstructionSnippet::S390ConstantInstructionSnippet(TR::CodeGener
    {
    _instruction = instr;
    setLength(instr->getOpCode().getInstructionLength());
-   setIsRefed(true);
    }
 
 uint8_t *
@@ -387,138 +372,6 @@ TR::S390EyeCatcherDataSnippet::emitSnippetBody()
 TR::S390WritableDataSnippet::S390WritableDataSnippet(TR::CodeGenerator * cg, TR::Node * n, void * c, uint16_t size)
    : TR::S390ConstantDataSnippet(cg, n, c, size)
    {
-   }
-
-//////////////////////////////////////////////////////////////////////////////////////
-// TR::S390TargetAddressSnippet member functions
-//////////////////////////////////////////////////////////////////////////////////////
-TR::S390TargetAddressSnippet::S390TargetAddressSnippet(TR::CodeGenerator * cg, TR::Node * n, TR::LabelSymbol * targetLabel)
-   : TR::Snippet(cg, n, TR::LabelSymbol::create(cg->trHeapMemory(),cg), false), _targetsnippet(NULL), _targetaddress(0), _targetsym(NULL),
-   _targetlabel(targetLabel)
-   {
-   }
-
-TR::S390TargetAddressSnippet::S390TargetAddressSnippet(TR::CodeGenerator * cg, TR::Node * n, TR::Snippet * s)
-   : TR::Snippet(cg, n, TR::LabelSymbol::create(cg->trHeapMemory(),cg), false), _targetsnippet(s), _targetaddress(0), _targetsym(NULL), _targetlabel(NULL)
-   {
-   }
-
-TR::S390TargetAddressSnippet::S390TargetAddressSnippet(TR::CodeGenerator * cg, TR::Node * n, uintptrj_t addr)
-   : TR::Snippet(cg, n, TR::LabelSymbol::create(cg->trHeapMemory(),cg), false), _targetsnippet(NULL), _targetaddress(addr), _targetsym(NULL),
-   _targetlabel(NULL)
-   {
-   }
-
-TR::S390TargetAddressSnippet::S390TargetAddressSnippet(TR::CodeGenerator * cg, TR::Node * n, TR::Symbol * sym)
-   : TR::Snippet(cg, n, TR::LabelSymbol::create(cg->trHeapMemory(),cg), false), _targetsnippet(NULL), _targetaddress(0), _targetsym(sym), _targetlabel(NULL)
-   {
-   }
-
-uint8_t *
-TR::S390TargetAddressSnippet::emitSnippetBody()
-   {
-   uint8_t * cursor = cg()->getBinaryBufferCursor();
-   AOTcgDiag1(cg()->comp(), "TR::S390TargetAddressSnippet::emitSnippetBody cursor=%x\n", cursor);
-   getSnippetLabel()->setCodeLocation(cursor);
-   TR::Compilation* comp = cg()->comp();
-
-   if (_targetsnippet != NULL)
-      {
-      *(intptrj_t *) cursor = 0;
-      AOTcgDiag1(comp, "add TR_AbsoluteMethodAddress cursor=%x\n", cursor);
-      cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelAbsoluteRelocation(cursor, _targetsnippet->getSnippetLabel()));
-      cg()->addProjectSpecializedRelocation(cursor, NULL, NULL, TR_AbsoluteMethodAddress,
-                                __FILE__, __LINE__, getNode());
-      }
-   else if (_targetlabel != NULL)
-      {
-      *(intptrj_t *) cursor = 0;
-      if (_targetlabel->getCodeLocation() != NULL)
-         {
-         *(intptrj_t *) cursor = (intptrj_t) (_targetlabel->getCodeLocation());
-         }
-      else
-         {
-         AOTcgDiag1(comp, "add TR_AbsoluteMethodAddress cursor=%x\n", cursor);
-         cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelAbsoluteRelocation(cursor, _targetlabel));
-         cg()->addProjectSpecializedRelocation(cursor, NULL, NULL, TR_AbsoluteMethodAddress,
-                                   __FILE__, __LINE__, getNode());
-         }
-      }
-   else
-      {
-      if (_targetsym != NULL)
-         {
-         TR_ResolvedMethod * resolvedMethod = _targetsym->getResolvedMethodSymbol()->getResolvedMethod();
-
-         if (resolvedMethod != NULL && resolvedMethod->isSameMethod(comp->getCurrentMethod()))
-            {
-            uint8_t * jitTojitStart = cg()->getCodeStart();
-
-            // Calculate jit-to-jit entry point
-            jitTojitStart += ((*(intptrj_t *) (jitTojitStart - 4)) >> 16) & 0x0000ffff;
-            *(intptrj_t *) cursor = (intptrj_t) jitTojitStart;
-            }
-         }
-      else
-         {
-         *(intptrj_t *) cursor = _targetaddress;
-         }
-      }
-   cursor += sizeof(uintptrj_t);
-
-   return cursor;
-   }
-
-uint32_t
-TR::S390TargetAddressSnippet::getLength(int32_t  estimatedSnippetStart)
-   {
-   return sizeof(uintptrj_t);
-   }
-
-//////////////////////////////////////////////////////////////////////////////////////
-
-TR::S390LookupSwitchSnippet::S390LookupSwitchSnippet(TR::CodeGenerator * cg, TR::Node * switchNode)
-   : TR::S390TargetAddressSnippet(cg, switchNode, TR::LabelSymbol::create(cg->trHeapMemory(),cg))
-   {
-   // *this   swipeable for debugger
-   }
-
-
-uint8_t *
-TR::S390LookupSwitchSnippet::emitSnippetBody()
-   {
-   int32_t numChildren = getNode()->getCaseIndexUpperBound() - 1;
-   uint8_t * cursor = cg()->getBinaryBufferCursor();
-   TR::Compilation* comp = cg()->comp();
-
-   AOTcgDiag1(comp, "TR::S390LookupSwitchSnippet::emitSnippetBody cursor=%x\n", cursor);
-   getSnippetLabel()->setCodeLocation(cursor);
-
-   for (int32_t i = 1; i <= numChildren; i++)
-      {
-      // Each case stmt is described by a node on the child
-      TR::Node * caseKeyNode = getNode()->getChild(i);
-      CASECONST_TYPE caseKeyValue = caseKeyNode->getCaseConstant();
-      intptrj_t caseKeyTarget = (intptrj_t) caseKeyNode->getBranchDestination()->getNode()->getLabel()->getCodeLocation();
-
-      *(int32_t *) cursor = caseKeyValue;
-      cursor += 4;
-      *(intptrj_t *) cursor = caseKeyTarget;
-      cursor += TR::Compiler->om.sizeofReferenceAddress();
-      }
-
-   *(int32_t *) cursor = 0;
-   cursor += 4;
-
-   return cursor;
-   }
-
-uint32_t
-TR::S390LookupSwitchSnippet::getLength(int32_t  estimatedSnippetStart)
-   {
-   TR::Compilation* comp = cg()->comp();
-   return (getNode()->getCaseIndexUpperBound() - 1) * (sizeof(int32_t) + TR::Compiler->om.sizeofReferenceAddress());
    }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1103,54 +956,6 @@ TR::S390JNICallDataSnippet::print(TR::FILE *pOutFile, TR_Debug *debug)
    bufferPos += sizeof(intptrj_t);
 }
 
-
-void
-TR_Debug::print(TR::FILE *pOutFile, TR::S390TargetAddressSnippet * snippet)
-   {
-   // *this   swipeable for debugger
-   if (pOutFile == NULL)
-      {
-      return;
-      }
-
-   uint8_t * bufferPos = snippet->getSnippetLabel()->getCodeLocation();
-   printSnippetLabel(pOutFile, snippet->getSnippetLabel(), bufferPos, "Target Address Snippet");
-   printPrefix(pOutFile, NULL, bufferPos, sizeof(uintptrj_t));
-
-   if (snippet->getTargetSnippet() != NULL)
-      {
-      print(pOutFile, snippet->getTargetSnippet()->getSnippetLabel());
-      }
-   else
-      {
-      trfprintf(pOutFile, "DC   \t%p", snippet->getTargetAddress());
-      }
-   }
-
-void
-TR_Debug::print(TR::FILE *pOutFile, TR::S390LookupSwitchSnippet * snippet)
-   {
-   int upperBound = snippet->getNode()->getCaseIndexUpperBound();
-   uint8_t * bufferPos = snippet->getSnippetLabel()->getCodeLocation();
-
-   printSnippetLabel(pOutFile, snippet->getSnippetLabel(), bufferPos, "Lookup Switch Table");
-
-   for (int i = 1; i < upperBound; i++)
-      {
-      // Each case stmt is described by a node on the child
-      TR::Node * caseKeyNode = snippet->getNode()->getChild(i);
-      int32_t caseKeyValue = caseKeyNode->getCaseConstant();
-      int32_t caseKeyTarget = (intptrj_t) caseKeyNode->getBranchDestination()->getNode()->getLabel()->getCodeLocation();
-
-      printPrefix(pOutFile, NULL, bufferPos, 4);
-      trfprintf(pOutFile, "DC   \t %p", caseKeyValue);
-      bufferPos += 4;
-      printPrefix(pOutFile, NULL, bufferPos, 4);
-      trfprintf(pOutFile, "DC   \t %p", caseKeyTarget);
-      bufferPos += 4;
-      }
-   }
-
 void
 TR_Debug::print(TR::FILE *pOutFile, TR::S390ConstantDataSnippet * snippet)
    {
@@ -1177,25 +982,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390ConstantDataSnippet * snippet)
       {
       printSnippetLabel(pOutFile, snippet->getSnippetLabel(), bufferPos, "Constant Instruction Snippet");
       print(pOutFile, ((TR::S390ConstantInstructionSnippet *)snippet)->getInstruction());
-      return;
-      }
-   else if (snippet->getKind() == TR::Snippet::IsLabelTable)
-      {
-      printSnippetLabel(pOutFile, snippet->getSnippetLabel(), bufferPos, "Label Table Snippet");
-      trfprintf(pOutFile, "\n");
-      TR::S390LabelTableSnippet *labelTable = (TR::S390LabelTableSnippet *) snippet;
-      for (int32_t i = 0; i < labelTable->getSize(); i++)
-         {
-         TR::LabelSymbol *label = labelTable->getLabel(i);
-         if (label)
-            {
-            trfprintf(pOutFile, "[");
-            print(pOutFile, label);
-            trfprintf(pOutFile, "] ");
-            }
-         else
-            trfprintf(pOutFile, "[NULL] ");
-         }
       return;
       }
    else if (snippet->getKind() == TR::Snippet::IsInterfaceCallData)
@@ -1440,39 +1226,4 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390InterfaceCallDataSnippet * snippet)
          bufferPos += sizeof(intptrj_t);
          }
       }
-   }
-
-
-TR::S390LabelTableSnippet::S390LabelTableSnippet(TR::CodeGenerator *cg, TR::Node *node, uint32_t size)
-   : TR::S390ConstantDataSnippet(cg, node, NULL, 0), _size(size)
-   {
-   TR_ASSERT(TR::Compiler->target.is32Bit(), "only 31bit mode supported for TR::S390LabelTableSnippet\n");
-   _labelTable = (TR::LabelSymbol **) cg->trMemory()->allocateMemory(sizeof(TR::LabelSymbol *) * size, heapAlloc);
-   setLength(0);
-   }
-
-uint8_t *
-TR::S390LabelTableSnippet::emitSnippetBody()
-   {
-   uint8_t * snip = cg()->getBinaryBufferCursor();
-   getSnippetLabel()->setCodeLocation(snip);
-   uint8_t * cursor = snip;
-   for (int32_t i = 0; i < _size; i++)
-      {
-      if (_labelTable[i])
-         {
-         cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelTable32BitRelocation(cursor, _labelTable[i]));
-         *(uint32_t *) cursor = cursor - snip;
-         }
-      else
-         *(uint32_t *) cursor = 0xdeadbeaf;
-      cursor += 4;
-      }
-   return cursor;
-   }
-
-uint32_t
-TR::S390LabelTableSnippet::getLength(int32_t estimatedSnippetStart)
-   {
-   return _size * 4;
    }

@@ -7101,11 +7101,10 @@ OMR::Z::TreeEvaluator::aiaddEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 
    aiaddMR->populateAddTree(node, cg);
    aiaddMR->eliminateNegativeDisplacement(node, cg);
-   bool skipFinalLA = false;
+
    // this is partial extract from enforceDisplacementLimit in order to remove the need for the final LA in some cases
    if (aiaddMR->getOffset() >= MAXLONGDISP && aiaddMR->getOffset() <= TR::getMaxSigned<TR::Int32>() && TR::Compiler->target.is32Bit())
       {
-      skipFinalLA = true;
       TR::MemoryReference *tempMR = generateS390MemoryReference(aiaddMR->getBaseRegister(), aiaddMR->getIndexRegister(), 0, cg);
       tempMR->setSymbolReference(aiaddMR->getSymbolReference());
       generateRXInstruction(cg, TR::InstOpCode::LA, node, targetRegister, tempMR);
@@ -7141,23 +7140,6 @@ OMR::Z::TreeEvaluator::aiaddEvaluator(TR::Node * node, TR::CodeGenerator * cg)
          {
          targetRegister->setContainsInternalPointer();
          targetRegister->setPinningArrayPointer(firstChild->getRegister()->getPinningArrayPointer());
-         }
-      }
-
-
-   if (!skipFinalLA)
-      {
-      TR::Instruction *laInst = generateRXInstruction(cg, TR::InstOpCode::LA, node, targetRegister, aiaddMR);
-      TR::Register *baseReg = aiaddMR->getBaseRegister();
-      if (aiaddMR->getOffset() == 0 &&
-          aiaddMR->getIndexRegister() == NULL &&
-          baseReg &&
-          cg->getBucketPlusIndexRegisters().ValueAt(baseReg->getIndex()))
-         {
-         aiaddMR->setBucketBaseRegMemRef();
-         if (cg->traceBCDCodeGen())
-            traceMsg(comp,"\tfound baseReg %s (idx=%d) for node %s (%p) in BucketPlusIndexRegisters setBucketBaseRegMemRef on LA inst %p memRef\n",
-               cg->getDebug()->getName(baseReg),baseReg->getIndex(),node->getOpCode().getName(),node,laInst);
          }
       }
 

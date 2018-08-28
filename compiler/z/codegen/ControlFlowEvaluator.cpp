@@ -88,13 +88,6 @@ generateS390PackedCompareAndBranchOps(TR::Node * node,
                                       TR::InstOpCode::S390BranchCondition rBranchOpCond,
                                       TR::InstOpCode::S390BranchCondition &retBranchOpCond,
                                       TR::LabelSymbol *branchTarget = NULL);
-extern TR::Instruction *
-generateS390AggregateCompareAndBranchOps(TR::Node * node,
-                                         TR::CodeGenerator * cg,
-                                         TR::InstOpCode::S390BranchCondition fBranchOpCond,
-                                         TR::InstOpCode::S390BranchCondition rBranchOpCond,
-                                         TR::InstOpCode::S390BranchCondition &retBranchOpCond,
-                                         TR::LabelSymbol *branchTarget = NULL);
 
 //#define TRACE_EVAL
 #if defined(TRACE_EVAL)

@@ -60,9 +60,7 @@ namespace TR { class ParameterSymbol; }
 namespace TR { class UnresolvedDataSnippet; }
 
 #define S390MemRef_UnresolvedDataSnippet         0x01
-#define MemRef_TargetAddressSnippet              0x02
 #define MemRef_ConstantDataSnippet               0x04
-#define MemRef_LookupSwitchSnippet               0x08
 #define DisplacementAdjusted                     0x10
 #define PseudoLive                               0x20
 #define CheckForLongDispSlot                     0x40
@@ -85,7 +83,6 @@ namespace TR { class UnresolvedDataSnippet; }
 * this happens during doInstructionSelection when we don't have stack frame, so we need to update the memory reference during binary generation */
 #define MemRefCreatedDuringInstructionSelection 0x1000000
 #define TR_S390MemRef_ForceFirstTimeFolding     0x2000000
-#define TR_BucketBaseRegMemRef                  0x8000000
 
 namespace OMR
 {
@@ -213,18 +210,9 @@ TR::Instruction *setTargetSnippetInstruction(TR::Instruction *i)
    return _targetSnippetInstruction = i;
    }
 
-TR::S390TargetAddressSnippet *getTargetAddressSnippet();
-
-TR::S390TargetAddressSnippet *setTargetAddressSnippet(TR::S390TargetAddressSnippet *s);
-
 TR::S390ConstantDataSnippet *getConstantDataSnippet();
 
 TR::S390ConstantDataSnippet *setConstantDataSnippet(TR::S390ConstantDataSnippet *s);
-
-TR::S390LookupSwitchSnippet *getLookupSwitchSnippet();
-
-TR::S390LookupSwitchSnippet *setLookupSwitchSnippet(TR::S390LookupSwitchSnippet *s);
-
 
 TR_StorageReference *getStorageReference()                           { return _storageReference; }
 TR_StorageReference *setStorageReference(TR_StorageReference *ref)   { return _storageReference=ref; }
@@ -332,20 +320,11 @@ void setDisp(int32_t f)    {_displacement=f;}
 bool isUnresolvedDataSnippet()  {return _flags.testAny(S390MemRef_UnresolvedDataSnippet);}
 void setUnresolvedDataSnippet() {_flags.set(S390MemRef_UnresolvedDataSnippet);}
 
-bool isTargetAddressSnippet()  {return _flags.testAny(MemRef_TargetAddressSnippet);}
-void setTargetAddressSnippet() {_flags.set(MemRef_TargetAddressSnippet);}
-
 bool isConstantDataSnippet()  {return _flags.testAny(MemRef_ConstantDataSnippet);}
 void setConstantDataSnippet() {_flags.set(MemRef_ConstantDataSnippet);}
 
-bool isLookupSwitchSnippet()  {return _flags.testAny(MemRef_LookupSwitchSnippet);}
-void setLookupSwitchSnippet() {_flags.set(MemRef_LookupSwitchSnippet);}
-
 bool isMemRefMustNotSpill()   {return _flags.testAny(MemRefMustNotSpill);}
 void setMemRefMustNotSpill()  {_flags.set(MemRefMustNotSpill);}
-
-bool isBucketBaseRegMemRef()  {return _flags.testAny(TR_BucketBaseRegMemRef);}
-void setBucketBaseRegMemRef() {_flags.set(TR_BucketBaseRegMemRef);}
 
 bool ZeroBasePtr_EvaluateSubtree(TR::Node * subTree, TR::CodeGenerator * cg, MemoryReference * mr);
 

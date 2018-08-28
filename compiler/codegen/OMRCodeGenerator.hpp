@@ -974,7 +974,6 @@ class OMR_EXTENSIBLE CodeGenerator
 #endif
 
    void dumpDataSnippets(TR::FILE *outFile) {}
-   void dumpTargetAddressSnippets(TR::FILE *outFile) {}
 
    // --------------------------------------------------------------------------
    // Register assignment tracing
@@ -1119,14 +1118,7 @@ class OMR_EXTENSIBLE CodeGenerator
    void emitDataSnippets() {}
    bool hasDataSnippets() {return false;} // no virt, cast
    int32_t setEstimatedLocationsForDataSnippetLabels(int32_t estimatedSnippetStart) {return 0;}
-
-   // called to emit any target address snippets.  The platform specific code generators
-   // should override these methods if they use target address snippets.
-   //
-   void emitTargetAddressSnippets() {}
-   bool hasTargetAddressSnippets() {return false;} // no virt, cast
-   int32_t setEstimatedLocationsForTargetAddressSnippetLabels(int32_t estimatedSnippetStart) {return 0;}
-
+   
    // --------------------------------------------------------------------------
    // Register pressure
    //

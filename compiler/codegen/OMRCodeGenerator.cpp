@@ -1541,16 +1541,18 @@ OMR::CodeGenerator::nodeMatches(TR::Node *addr1, TR::Node *addr2, bool addresses
       }
    else if (self()->uniqueAddressOccurrence(addr1, addr2, addressesUnderSameTreeTop))
       {
-      if (addr1->getOpCodeValue() == TR::aload && addr2->getOpCodeValue() == TR::aload &&
+      TR::ILOpCode op1 = addr1->getOpCode();
+      TR::ILOpCode op2 = addr2->getOpCode();
+      if (op1.getOpCodeValue() == op2.getOpCodeValue() &&
+            op1.isLoadVar() && op1.getDataType() == TR::Address &&
                addr1->getSymbolReference() == addr2->getSymbolReference())
          {
-         foundMatch = true;
-         }
-      else if (addr1->getOpCodeValue() == TR::aloadi && addr2->getOpCodeValue() == TR::aloadi &&
-               addr1->getSymbolReference() == addr2->getSymbolReference() &&
-               self()->nodeMatches(addr1->getFirstChild(), addr2->getFirstChild(),addressesUnderSameTreeTop))
-         {
-         foundMatch = true;
+         // aload, ardbar etc
+         if (op1.isLoadDirect())
+            foundMatch = true;
+         // aloadi, ardbari etc
+         else if (op1.isLoadIndirect() && self()->nodeMatches(addr1->getFirstChild(), addr2->getFirstChild(),addressesUnderSameTreeTop))
+            foundMatch = true;
          }
       }
 

@@ -2374,9 +2374,6 @@ OMR::Node::computeIsCollectedReference()
 
    while (curNode)
       {
-      if (!curNode->getType().isAddress())
-         return false;
-
       if (curNode->isInternalPointer())
          return true;
 
@@ -2388,42 +2385,38 @@ OMR::Node::computeIsCollectedReference()
       if (op.isConversion())
          return false;
 
+      if (op.getDataType() != TR::Address)
+         return false;
       // The following are all opcodes that are address type, non-TreeTop and non-conversion
+
+      if (op.isAdd())
+         {
+         curNode = curNode->getFirstChild();
+         continue;
+         }
+
+      // opcodes associated with a symref, we should
+      // be able to tell its collectedness from its symref.
+      if (op.isLoadVar() || op.isLoadAddr() || op.isLoadReg())
+         {
+         TR_ASSERT(curNode->hasSymbolReference() || curNode->hasRegLoadStoreSymbolReference(), "node " POINTER_PRINTF_FORMAT "(%s) should have symbol reference", curNode, op.getName());
+         TR::Symbol *symbol = curNode->getSymbolReference()->getSymbol();
+         // isCollectedReference() responds false to generic int shadows because their type
+         // is int. However, address type generic int shadows refer to collected slots.
+         if (opValue == TR::aloadi && symbol == TR::comp()->getSymRefTab()->findGenericIntShadowSymbol())
+            return true;
+         else
+            return symbol->isCollectedReference();
+         }
+
+      // Symbols for calls and news does not contain collectedness information.
+      // Current implementation treats all object references collectable, and also
+      // assumes that the return of an acall* is an object reference.
+      if (op.isNew() || op.isCall() || opValue == TR::variableNew || opValue == TR::variableNewArray)
+         return true;
+
       switch (opValue)
          {
-         case TR::aiadd:
-         case TR::aiuadd:
-         case TR::aladd:
-         case TR::aluadd:
-            curNode = curNode->getFirstChild();
-            break;
-         // Symbols for calls and news does not contain collectedness information.
-         // Current implementation treats all object references collectable, and also
-         // assumes that the return of an acall* is an object reference.
-         case TR::acall:
-         case TR::acalli:
-         case TR::New:
-         case TR::newarray:
-         case TR::anewarray:
-         case TR::variableNew:
-         case TR::variableNewArray:
-         case TR::multianewarray:
-              return true;
-         // aload, aloadi, aRegLoad and loadaddr are associated with a symref, we should
-         // be able to tell its collectedness from its symref.
-         case TR::aRegLoad:
-         case TR::aloadi:
-         case TR::aload:
-         case TR::loadaddr:
-            {
-            TR::Symbol *symbol = curNode->getSymbolReference()->getSymbol();
-            // isCollectedReference() responds false to generic int shadows because their type
-            // is int. However, address type generic int shadows refer to collected slots.
-            if (opValue == TR::aloadi && symbol == TR::comp()->getSymRefTab()->findGenericIntShadowSymbol())
-               return true;
-            else
-               return symbol->isCollectedReference();
-            }
          case TR::aconst:
             // aconst null can either be collected or uncollected. The collectedness of aconst
             // null can be determined by usedef analysis, which is too expensive for a very

@@ -34,7 +34,7 @@ namespace OMR { typedef TR::S390SystemLinkage SystemLinkageConnector; }
 #include <stddef.h>                            // for NULL, size_t
 #include <stdint.h>                            // for int32_t, uintptr_t, etc
 #include "codegen/InstOpCode.hpp"              // for InstOpCode, etc
-#include "codegen/Linkage.hpp"                 // for TR_S390AutoMarkers, etc
+#include "codegen/Linkage.hpp"
 #include "codegen/LinkageConventionsEnum.hpp"  // for TR_LinkageConventions, etc
 #include "codegen/RealRegister.hpp"            // for RealRegister, etc
 #include "codegen/Register.hpp"                // for Register
@@ -90,7 +90,6 @@ class S390SystemLinkage : public TR::Linkage
    int32_t _varArgOffsetInParmArea;
    int32_t _varArgRegSaveAreaOffset;
    int32_t _parmOffsetInLocalArea;
-   TR_Array<TR::SymbolReference*> *_autoMarkerSymbols; // symbols that mark points in stackframe
 
 protected:
    int32_t _StackFrameSize;
@@ -225,12 +224,6 @@ public:
    virtual TR::RealRegister::RegNum setDebugHooksRegister(TR::RealRegister::RegNum r) { return _debugHooksRegister = r; }
    virtual TR::RealRegister::RegNum getDebugHooksRegister()   { return _debugHooksRegister; }
    virtual TR::RealRegister *getDebugHooksRealRegister() {return getS390RealRegister(_debugHooksRegister);}
-
-   virtual TR::SymbolReference *createAutoMarkerSymbol(TR_S390AutoMarkers markerType);
-   virtual void setAutoMarkerSymbols(TR_Array<TR::SymbolReference*> *symbols) { _autoMarkerSymbols = symbols; }
-   virtual TR::SymbolReference *getAutoMarkerSymbol(TR_S390AutoMarkers markerType) { return _autoMarkerSymbols ? (*_autoMarkerSymbols)[markerType] : 0; }
-   virtual void setAutoMarkerSymbolOffset(TR_S390AutoMarkers markerType, int32_t offset) { getAutoMarkerSymbol(markerType)->getSymbol()->castToAutoSymbol()->setOffset(offset); }
-
 
    // == General utilities (linkage independent)
    virtual TR::Instruction *addImmediateToRealRegister(TR::RealRegister * targetReg, int32_t immediate, TR::RealRegister *tempReg, TR::Node *node, TR::Instruction *cursor, bool *checkTempNeeded=NULL);

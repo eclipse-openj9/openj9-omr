@@ -186,36 +186,6 @@ TR::S390SystemLinkage::initParamOffset(TR::ResolvedMethodSymbol * method, int32_
 }
 
 /**
- * Non-Java use
- */
-TR::SymbolReference *
-TR::S390SystemLinkage::createAutoMarkerSymbol(TR_S390AutoMarkers markerType)
-   {
-   char *name = NULL;
-   switch (markerType)
-      {
-      case TR_AutoMarker_EndOfParameterBlock:
-         name = "end of parameter block";
-         break;
-      default:
-         TR_ASSERT(false, "invalid auto marker symbol type");
-         break;
-      }
-
-   TR::AutomaticSymbol *sym = TR::AutomaticSymbol::createMarker(trHeapMemory(),name);
-   TR::SymbolReference *symRef = new (trHeapMemory()) TR::SymbolReference(comp()->getSymRefTab(), sym);
-
-   TR_Array<TR::SymbolReference*> *symbols = _autoMarkerSymbols;
-   if (symbols == NULL)
-      {
-      symbols = new (trHeapMemory()) TR_Array<TR::SymbolReference*>(trMemory(), TR_AutoMarker_NumAutoMarkers, true);
-      setAutoMarkerSymbols(symbols);
-      }
-   (*symbols)[markerType] = symRef;
-   return symRef;
-   }
-
-/**
  * General utility
  * Perform a save or a restore operation of preserved FPRs from automatic
  * The operation depends on supplied opcode
@@ -480,7 +450,6 @@ TR::S390zOSSystemLinkage::S390zOSSystemLinkage(TR::CodeGenerator * codeGen)
    setNumberOfDependencyGPRegisters(32);
    setFrameType(TR_XPLinkUnknownFrame);
    setLargestOutgoingArgumentAreaSize(0);
-   setAutoMarkerSymbols(0);
    setOffsetToLongDispSlot(0);
    }
 

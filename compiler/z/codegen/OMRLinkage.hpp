@@ -66,19 +66,6 @@ namespace TR { class SystemLinkage; }
 template <class T> class List;
 
 /**
- * When calling the @@pcmp routine the enum below is the mapping for the requested compare type
- */
-enum TR_S390CompareConventions
-   {
-   TR_PackedCompareEQ    = 1,
-   TR_PackedCompareNE    = 2,
-   TR_PackedCompareGT    = 3,
-   TR_PackedCompareGE    = 4,
-   TR_PackedCompareLT    = 5,
-   TR_PackedCompareLE    = 6
-   };
-
-/**
  * 390 Explicit linkage conventions
  */
 enum TR_S390LinkageConventions
@@ -209,16 +196,6 @@ toS390PrivateLinkage(TR::Linkage * l)
    }
 
 }
-
-/**
- * 390 Automatic Marker Symbol Types
- */
-enum TR_S390AutoMarkers
-   {
-   TR_AutoMarker_EndOfParameterBlock,
-   TR_AutoMarker_NumAutoMarkers
-   };
-
 
 ////////////////////////////////////////////////////////////////////////////////
 //  TR::S390Linkage Definition

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2017 IBM Corp. and others
+ * Copyright (c) 1991, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -722,29 +722,20 @@ MM_ConcurrentSweepScheme::setupForSweep(MM_EnvironmentBase *env)
 void
 MM_ConcurrentSweepScheme::verifyFreeList(MM_EnvironmentStandard *env, MM_HeapLinkedFreeHeader *freeListHead)
 {
-	MM_HeapLinkedFreeHeader *current;
-
-	current = freeListHead;
-	while(NULL != current) {
+	for (MM_HeapLinkedFreeHeader *current = freeListHead; NULL != current; current = current->getNext()) {
 		assume(current < current->afterEnd(), "Free list size overflows");
 		assume( (current->getNext() == NULL) || (current < current->getNext()), "Free list next pointer is lower in memory");
 		assume( (current->getNext() == NULL) || (current->getNext() > current->afterEnd()), "Size is too large (flows into next free entry)");
 
 #if 1
-		{
-			MM_HeapLinkedFreeHeader *tempNext;
-			UDATA tempSize;
-			tempNext = current->getNext();
-			tempSize = current->getSize();
-			
-			memset(current, 0xFA, tempSize);
-			
-			current->setNext(tempNext);
-			current->setSize(tempSize);
-		}
-#endif /* 0 */
-		
-		current = current->getNext();
+		MM_HeapLinkedFreeHeader *tempNext = current->getNext();
+		UDATA tempSize = current->getSize();
+
+		memset((void *)current, 0xFA, tempSize);
+
+		current->setNext(tempNext);
+		current->setSize(tempSize);
+#endif /* 1 */
 	}
 }
 

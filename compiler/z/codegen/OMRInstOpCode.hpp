@@ -654,7 +654,6 @@ class InstOpCode: public OMR::InstOpCode
    uint32_t isAdmin();
    uint32_t isHighWordInstruction();
    uint64_t isOperandHW(uint32_t i);
-   uint64_t isOperandLW(uint32_t i);
    uint64_t setsOperand(uint32_t opNum);
 
    uint64_t singleFPOp() {return metadata[_mnemonic].properties & S390OpProp_SingleFP;}

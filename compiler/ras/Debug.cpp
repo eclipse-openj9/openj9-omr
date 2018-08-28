@@ -1774,11 +1774,6 @@ TR_Debug::getAutoName(TR::SymbolReference * symRef)
       else
          sprintf(name, "<%s " POINTER_PRINTF_FORMAT ">", symName, symRef->getSymbol());
       }
-   else if (symRef->getSymbol()->isAutoMarkerSymbol())
-       {
-       TR::AutomaticSymbol *symbol = symRef->getSymbol()->castToAutoMarkerSymbol();
-       sprintf(name, "<auto marker symbol " POINTER_PRINTF_FORMAT ": %s>", symbol, symbol->getName());
-       }
    else if (symRef->isTempVariableSizeSymRef())
       {
       TR_ASSERT(symRef->getSymbol()->isVariableSizeSymbol(),"symRef #%d must contain a variable size symbol\n",symRef->getReferenceNumber());

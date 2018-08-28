@@ -76,12 +76,6 @@ enum TR_S390LinkageConventions
    TR_JavaPrivate          = 0x1,   ///< Java private linkage
    TR_JavaHelper           = 0x2,   ///< Java helper linkage
 
-   //
-   // zOS Platform Linkages
-   //
-   TR_SystemPLX_390        = 0x10,  ///< (non-Java) 390 linkage
-   TR_SystemPLX_ZOS        = 0x11,  ///< (non-Java) ZOS linkage
-
    TR_SystemXPLink         = 0x20,  ///< (Java) zOS XPLink convention
 
    // zOS Type 1 linkages (non-Java) - all have bit 0x40 set

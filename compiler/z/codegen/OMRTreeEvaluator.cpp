@@ -840,49 +840,6 @@ generateS390ImmOp(TR::CodeGenerator * cg,  TR::InstOpCode::Mnemonic memOp, TR::N
       case TR::InstOpCode::A:
          if (value == 0) return cursor;
 
-         // consider overflow situation for non-Java when ADVISE(IMM) is off
-         if (cg->mayImmedInstructionCauseOverFlow(node))
-            {
-            if (cg->canUseGoldenEagleImmediateInstruction(value))
-               {
-               // LL: If Golden Eagle - can use Add Logical Immediate with max 32-bit value.
-               ei_immOp = TR::InstOpCode::ALFI;
-               sourceRegister = targetRegister;
-               break;
-               }
-            else if (value >= MIN_IMMEDIATE_VAL && value <= MAX_IMMEDIATE_VAL)
-               {
-               if (sourceRegister == targetRegister)
-                  {
-                  // testing register pressure
-                  if (!comp->getJittedMethodSymbol()->isNoTemps())
-                     {
-                     TR::Register * tempReg = cg->allocateRegister();
-                     cursor = generateRIInstruction(cg, TR::InstOpCode::LHI, node, tempReg, value, preced);
-                     cursor = generateRRInstruction(cg, TR::InstOpCode::ALR, node, targetRegister, tempReg, cursor);
-                     if (cond) cond->addPostConditionIfNotAlreadyInserted(tempReg, TR::RealRegister::AssignAny);
-                     cg->stopUsingRegister(tempReg);
-                     }
-                  else
-                     {
-                     memOp = TR::InstOpCode::AL;
-                     break;
-                     }
-                  }
-               else
-                  {
-                  cursor = generateRIInstruction(cg, TR::InstOpCode::LHI, node, sourceRegister, value, preced);
-                  cursor = generateRRInstruction(cg, TR::InstOpCode::ALR, node, targetRegister, sourceRegister, cursor);
-                  }
-               return cursor;
-               }
-            else
-               {
-               memOp = TR::InstOpCode::AL;
-               break;
-               }
-            }
-
          if (value >= MIN_IMMEDIATE_VAL && value <= MAX_IMMEDIATE_VAL)
             {
             immOp = TR::InstOpCode::AHI;
@@ -900,48 +857,6 @@ generateS390ImmOp(TR::CodeGenerator * cg,  TR::InstOpCode::Mnemonic memOp, TR::N
          break;
       case TR::InstOpCode::AG:
          if (value == 0) return cursor;
-         // consider overflow situation for non-Java when ADVISE(IMM) is off
-         if (cg->mayImmedInstructionCauseOverFlow(node))
-            {
-            if (cg->canUseGoldenEagleImmediateInstruction(value) && value > 0)
-               {
-               // LL: If Golden Eagle - can use Add Logical Long Immediate with max 32-bit value, cannot use negative values because ALGFI does not sign extend its immediate value.
-               ei_immOp = TR::InstOpCode::ALGFI;
-               sourceRegister = targetRegister;
-               break;
-               }
-            if (value >= MIN_IMMEDIATE_VAL && value <= MAX_IMMEDIATE_VAL)
-               {
-               if (sourceRegister == targetRegister)
-                  {
-                  // testing register pressure
-                  if (!comp->getJittedMethodSymbol()->isNoTemps())
-                     {
-                     TR::Register * tempReg = cg->allocate64bitRegister();
-                     cursor = generateRIInstruction(cg, TR::InstOpCode::LGHI, node, tempReg, value, preced);
-                     cursor = generateRRInstruction(cg, TR::InstOpCode::ALGR, node, targetRegister, tempReg, cursor);
-                     if (cond) cond->addPostConditionIfNotAlreadyInserted(tempReg, TR::RealRegister::AssignAny);
-                     cg->stopUsingRegister(tempReg);
-                     }
-                  else
-                     {
-                     memOp = TR::InstOpCode::AGF;
-                     break;
-                     }
-                  }
-               else
-                  {
-                  cursor = generateRIInstruction(cg, TR::InstOpCode::LGHI, node, sourceRegister, value, preced);
-                  cursor = generateRRInstruction(cg, TR::InstOpCode::ALGR, node, targetRegister, sourceRegister, cursor);
-                  }
-               return cursor;
-               }
-            else
-               {
-               memOp = TR::InstOpCode::AGF;
-               break;
-               }
-            }
 
          if (value >= MIN_IMMEDIATE_VAL && value <= MAX_IMMEDIATE_VAL)
             {
@@ -4824,7 +4739,7 @@ genericLoad(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference * tempM
    {
    bool nodeSigned = node->getType().isInt64() || !node->isZeroExtendedAtSource();
 
-   if (node->getType().isAddress() || node->getType().isAggregate()) // o- and a-type and PLX-Fixed24/Fixed8 always unsigned
+   if (node->getType().isAddress() || node->getType().isAggregate())
       nodeSigned = false;
 
    if (numberOfBits > 32 || numberOfBits == 31 || node->isExtendedTo64BitAtSource())

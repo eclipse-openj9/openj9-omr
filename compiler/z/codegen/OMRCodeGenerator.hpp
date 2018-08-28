@@ -332,8 +332,6 @@ public:
    bool isValidCompareConst(int64_t compareConst);
    bool isIfFoldable(TR::Node *node, int64_t compareConst);
 
-   bool mayImmedInstructionCauseOverFlow(TR::Node * node);
-
    TR::Instruction *genLoadAddressToRegister(TR::Register *reg, TR::MemoryReference *origMR, TR::Node *node, TR::Instruction *preced=NULL);
 
 

@@ -903,12 +903,7 @@ bool OMR::Z::CodeGenerator::prepareForGRA()
          self()->setOverlapOffsetBetweenAliasedGRNs(self()->getFirstOverlappedGlobalVRF() - self()->getFirstOverlappedGlobalFPR());
          }
 
-      static char * disableGRAOnFirstBB = feGetEnv("TR390GRAONFIRSTBB");
-
-      // plx has stack-based linkage
-      if (!disableGRAOnFirstBB)
-         self()->setSupportsGlRegDepOnFirstBlock();
-
+      self()->setSupportsGlRegDepOnFirstBlock();
       self()->setConsiderAllAutosAsTacticalGlobalRegisterCandidates();
 
       static char * disableLongGRAOn31Bit = feGetEnv("TR390LONGGRA31BIT");
@@ -1226,16 +1221,6 @@ OMR::Z::CodeGenerator::enableLiteralPoolRegisterForGRA ()
          }
       }
 
-   }
-
-/**
- * Consider overflow when generating IMMed instruction for PLX
- */
-bool
-OMR::Z::CodeGenerator::mayImmedInstructionCauseOverFlow(TR::Node * node)
-   {
-
-   return false;
    }
 
 bool

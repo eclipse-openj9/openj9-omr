@@ -257,7 +257,6 @@ private:
    bool    _stackSizeCheckNeeded;
    bool    _raContextSaveNeeded;
    bool    _raContextRestoreNeeded;
-   int32_t _strictestAutoSymbolAlignment;
    int32_t _largestOutgoingArgumentAreaSize; ///< Arguments for registers could be saved in discontiguous area
                                              ///< this size does not include the discontiguous register parm area size
    int32_t _largestOutgoingArgumentAreaSize64;
@@ -383,13 +382,6 @@ enum TR_DispatchType
    TR::Instruction * storeArgumentOnStack(TR::Node * callNode, TR::InstOpCode::Mnemonic opCode, TR::Register * argReg, int32_t *stackOffsetPtr, TR::Register* stackRegister);
    TR::Instruction * storeLongDoubleArgumentOnStack(TR::Node * callNode, TR::DataType argType, TR::InstOpCode::Mnemonic opCode, TR::Register * argReg, int32_t *stackOffsetPtr, TR::Register* stackRegister);
    void loadIntArgumentsFromStack(TR::Node *callNode, TR::RegisterDependencyConditions *dependencies, TR::DataType argType, int32_t stackOffset, int32_t argsSize, int32_t numIntegerArgs, TR::Register* stackRegister);
-
-   void setStrictestAutoSymbolAlignment(int32_t alignment, bool force=false)
-      {
-      if ((alignment > _strictestAutoSymbolAlignment) || force)
-         _strictestAutoSymbolAlignment = alignment;
-      }
-   int32_t getStrictestAutoSymbolAlignment() { return  _strictestAutoSymbolAlignment; }
 
    int32_t  isNeedsWidening()  { return _properties & NeedsWidening; }
    int32_t  isAllParmsOnStack()  { return _properties & AllParmsOnStack; }

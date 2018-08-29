@@ -1356,8 +1356,6 @@ TR::S390zLinuxSystemLinkage::mapSingleAutomatic(TR::AutomaticSymbol * p, uint32_
       // we have some stacks that are getting very close
       TR_ASSERT( (-stackIndex + size) >= (-stackIndex), "Stack index growing too big");
       }
-
-   setStrictestAutoSymbolAlignment(align); // API affected if (align > current strictest)
    }
 #endif
 
@@ -1386,8 +1384,6 @@ TR::S390SystemLinkage::mapStack(TR::ResolvedMethodSymbol * method, uint32_t stac
 //     -  item layout is done in a reverse order : those things mapped first here are at higher addresses
 //        end offsets are really begin offsets and vice versa.
 // ====== COMPLEXITY ALERT
-
-   setStrictestAutoSymbolAlignment(TR::Compiler->target.is64Bit() ? 8 : 8, true); // initial setting
 
    setStackSizeCheckNeeded(true);
 
@@ -1451,8 +1447,6 @@ TR::S390SystemLinkage::mapStack(TR::ResolvedMethodSymbol * method, uint32_t stac
 
       if (FPRSaveMask != 0 && isOSLinkageType())
          {
-         // PPA1 offset in multiple of 16 bytes - so align
-         setStrictestAutoSymbolAlignment(16);
          #define DELTA_ALIGN(x, align) ((x & (align-1)) ? (align -((x)&(align-1))) : 0)
          stackIndex -= DELTA_ALIGN(stackIndex, 16);
          }
@@ -1516,8 +1510,6 @@ void TR::S390SystemLinkage::mapSingleAutomatic(TR::AutomaticSymbol * p, uint32_t
    int32_t roundup = align - 1;
    stackIndex = (stackIndex-size) & (~roundup);
    p->setOffset(stackIndex);
-
-   setStrictestAutoSymbolAlignment(align); // API affected if (align > current strictest)
    }
 
 bool TR::S390SystemLinkage::hasToBeOnStack(TR::ParameterSymbol * parm)

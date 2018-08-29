@@ -11039,17 +11039,12 @@ static TR::Node *constrainCmpeqne(OMR::ValuePropagation *vp, TR::Node *node, boo
    TR::VPConstraint *constraint = NULL;
    if (result >= 0)
       {
-      if ((lhsGlobal || vp->lastTimeThrough()) &&
-          performTransformation(vp->comp(), "%sChanging node [%p] %s into constant %d\n", OPT_DETAILS, node, node->getOpCode().getName(), result))
+      constraint = TR::VPIntConst::create(vp, result/*, isUnsigned*/);
+      if (lhsGlobal || vp->lastTimeThrough())
          {
-         vp->removeChildren(node);
-         TR::ILOpCodes op = /*isUnsigned ? TR::iuconst : */TR::iconst;
-         TR::Node::recreate(node, op);
-         node->setInt(result);
-         vp->invalidateValueNumberInfo();
+         vp->replaceByConstant(node, constraint, lhsGlobal);
          return node;
          }
-      constraint = TR::VPIntConst::create(vp, result/*, isUnsigned*/);
       }
    else
       {

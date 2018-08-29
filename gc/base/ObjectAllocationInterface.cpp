@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2015 IBM Corp. and others
+ * Copyright (c) 1991, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -58,20 +58,6 @@ MM_ObjectAllocationInterface::allocateTLH(MM_EnvironmentBase *env, MM_AllocateDe
  */
 void
 MM_ObjectAllocationInterface::flushCache(MM_EnvironmentBase *env)
-{
-	/* Do nothing */
-}
-
-/**
- * Reconnect any cached heap allocation system against the owning Environment.
- * When an Environment has its memory space switched or some configuration in the system changes such that
- * the caching system must re-evaluate how it performs its allocations, this method must be called.  This call
- * implies a flushCache() call as well.
- * 
- * @note The calling environment may not be the owning environment of the receiver.
- */ 
-void
-MM_ObjectAllocationInterface::reconnectCache(MM_EnvironmentBase *env)
 {
 	/* Do nothing */
 }

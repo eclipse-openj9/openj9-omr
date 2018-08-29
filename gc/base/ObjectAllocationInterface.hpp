@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2015 IBM Corp. and others
+ * Copyright (c) 1991, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -128,7 +128,6 @@ public:
 #endif /* OMR_GC_THREAD_LOCAL_HEAP */
 
 	virtual void flushCache(MM_EnvironmentBase *env);
-	virtual void reconnectCache(MM_EnvironmentBase *env);
 	virtual void restartCache(MM_EnvironmentBase *env);
 	
 	virtual void enableCachedAllocations(MM_EnvironmentBase* env) {};

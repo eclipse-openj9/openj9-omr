@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2017 IBM Corp. and others
+ * Copyright (c) 1991, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -299,25 +299,6 @@ MM_TLHAllocationInterface::flushCache(MM_EnvironmentBase *env)
 #if defined(OMR_GC_NON_ZERO_TLH)
 	_tlhAllocationSupportNonZero.flushCache(env);
 #endif /* defined(OMR_GC_NON_ZERO_TLH) */
-}
-
-void
-MM_TLHAllocationInterface::reconnectCache(MM_EnvironmentBase *env)
-{
-	uintptr_t vmState;
-	
-#if defined(OMR_GC_THREAD_LOCAL_HEAP)
-	if (!_owningEnv->isInlineTLHAllocateEnabled()) {
-		/* Only need to reset heapAlloc and realHeapAlloc if there is an existing TLH to reset */
-		_owningEnv->enableInlineTLHAllocate();
-	}	
-#endif /* OMR_GC_THREAD_LOCAL_HEAP */
-	
-	vmState = env->pushVMstate(J9VMSTATE_GC_TLH_RESET);
-
-	reconnect(env, true);
-
-	env->popVMstate(vmState);
 }
 
 void

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2015 IBM Corp. and others
+ * Copyright (c) 1991, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -117,14 +117,6 @@ MM_AllocationInterfaceGeneric::allocateArrayletLeaf(MM_EnvironmentBase *env, MM_
  */
 void
 MM_AllocationInterfaceGeneric::flushCache(MM_EnvironmentBase *env)
-{
-}
-
-/**
- * Reconnect the allocation cache.
- */
-void
-MM_AllocationInterfaceGeneric::reconnectCache(MM_EnvironmentBase *env)
 {
 }
 

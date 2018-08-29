@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2015 IBM Corp. and others
+ * Copyright (c) 1991, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -269,15 +269,6 @@ MM_SegregatedAllocationInterface::flushCache(MM_EnvironmentBase *env)
 	memset(_allocationCache, 0, sizeof(LanguageSegregatedAllocationCache));
 	env->getExtensions()->allocationStats.merge(&_stats);
 	_stats.clear();
-}
-
-/**
- * Reconnect the allocation cache.
- */
-void
-MM_SegregatedAllocationInterface::reconnectCache(MM_EnvironmentBase *env)
-{
-	
 }
 
 /**

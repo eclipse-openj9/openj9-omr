@@ -482,11 +482,6 @@ enum TR_DispatchType
          return TR::RealRegister::NoReg;
       }
 
-   virtual int64_t getLengthStartForSSInstruction()
-      {
-      return 1;
-      }
-
    /** Get the indexth Long High argument register */
    virtual TR::RealRegister::RegNum getLongHighArgumentRegister(uint32_t index);
 

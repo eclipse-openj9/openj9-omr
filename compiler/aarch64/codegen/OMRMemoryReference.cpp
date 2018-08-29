@@ -79,6 +79,26 @@ OMR::ARM64::MemoryReference::MemoryReference(
    }
 
 
+OMR::ARM64::MemoryReference::MemoryReference(
+      TR::Node *node,
+      TR::SymbolReference *symRef,
+      uint32_t len,
+      TR::CodeGenerator *cg) :
+   _baseRegister(NULL),
+   _baseNode(NULL),
+   _indexRegister(NULL),
+   _indexNode(NULL),
+   _unresolvedSnippet(NULL),
+   _flag(0),
+   _length(len),
+   _scale(0),
+   _offset(0),
+   _symbolReference(symRef)
+   {
+   TR_ASSERT(false, "Not implemented yet.");
+   }
+
+
 bool OMR::ARM64::MemoryReference::useIndexedForm()
    {
    TR_ASSERT(false, "Not implemented yet.");

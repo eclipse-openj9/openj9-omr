@@ -265,8 +265,6 @@ protected:
    TR::RealRegister::RegNum _lastSaved;
    TR::RealRegister::RegNum _stackPointerRegister;
 
-   bool alreadySaved(TR::RealRegister::RegNum regNum) { return false; }
-
    static bool needsAlignment(TR::DataType dt, TR::CodeGenerator * cg);
    static int32_t getFirstMaskedBit(int16_t mask, int32_t from , int32_t to);
    static int32_t getLastMaskedBit(int16_t mask, int32_t from , int32_t to);

@@ -712,37 +712,35 @@ OMR::Z::Linkage::saveArguments(void * cursor, bool genBinary, bool InPreProlog, 
                case TR::Address:
                case TR::Int64:
                case TR::Aggregate:     // Should only happen on zLinux
-                  if (!self()->alreadySaved(regNum))
+                  {
+                  if (genBinary)
                      {
-                     if (genBinary)
-                        {
-                        cursor =  (void *) TR::S390CallSnippet::storeArgumentItem(storeOpCode, (uint8_t *) cursor,
-                                             self()->getS390RealRegister(regNum), offset, self()->cg());
-                        }
-                     else
-                        {
-                        TR::MemoryReference* mr = generateS390MemoryReference(stackPtr, offset, self()->cg(), param_name);
-
-                        if (storeOpCode == TR::InstOpCode::STCM)
-                           cursor = generateRSInstruction(self()->cg(), TR::InstOpCode::STCM, firstNode, self()->getS390RealRegister(regNum),
-                                     opcodeMask, mr, (TR::Instruction *) cursor);
-
-                        else
-                           cursor = generateRXInstruction(self()->cg(), storeOpCode, firstNode, self()->getS390RealRegister(regNum),
-                                              mr, (TR::Instruction *) cursor);
-
-
-
-                        ((TR::Instruction*)cursor)->setBinLocalFreeRegs(binLocalRegs);
-                        if (!InPreProlog && !globalAllocatedRegisters.isSet(regNum))
-                           self()->removeOSCOnSavedArgument((TR::Instruction *)cursor, self()->getS390RealRegister(regNum), offset);
-                        }
+                     cursor =  (void *) TR::S390CallSnippet::storeArgumentItem(storeOpCode, (uint8_t *) cursor,
+                                          self()->getS390RealRegister(regNum), offset, self()->cg());
                      }
+                  else
+                     {
+                     TR::MemoryReference* mr = generateS390MemoryReference(stackPtr, offset, self()->cg(), param_name);
+
+                     if (storeOpCode == TR::InstOpCode::STCM)
+                        cursor = generateRSInstruction(self()->cg(), TR::InstOpCode::STCM, firstNode, self()->getS390RealRegister(regNum),
+                                    opcodeMask, mr, (TR::Instruction *) cursor);
+
+                     else
+                        cursor = generateRXInstruction(self()->cg(), storeOpCode, firstNode, self()->getS390RealRegister(regNum),
+                                             mr, (TR::Instruction *) cursor);
+
+
+
+                     ((TR::Instruction*)cursor)->setBinLocalFreeRegs(binLocalRegs);
+                     if (!InPreProlog && !globalAllocatedRegisters.isSet(regNum))
+                        self()->removeOSCOnSavedArgument((TR::Instruction *)cursor, self()->getS390RealRegister(regNum), offset);
+                     }
+                  }
 
                   if (secondStore &&
                       fullLong &&
-                      TR::Compiler->target.is32Bit() &&
-                      !self()->alreadySaved((TR::RealRegister::RegNum)(regNum + 1)))
+                      TR::Compiler->target.is32Bit())
                      {
                      if (genBinary)
                         {

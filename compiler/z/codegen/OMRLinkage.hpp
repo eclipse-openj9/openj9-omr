@@ -306,7 +306,6 @@ enum TR_DispatchType
    bool    setRaContextRestoreNeeded(bool v) { return _raContextSaveNeeded = v; }
    bool    getRaContextRestoreNeeded() { return _raContextSaveNeeded; }
 
-   virtual bool useCachedStaticAreaAddresses(TR::Compilation *c);
    virtual TR::SymbolReference* cachedStaticSymRef() { return NULL; }
    virtual TR::SymbolReference* cachedCRENTSymRef() { return NULL; }
 

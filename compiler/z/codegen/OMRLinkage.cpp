@@ -175,20 +175,6 @@ OMR::Z::Linkage::markPreservedRegsInBlock(int32_t blockNum)
       }
    }
 
-// heuristic to reduce the path length for static variable access in the absence of global optimization
-bool
-OMR::Z::Linkage::useCachedStaticAreaAddresses(TR::Compilation *c)
-   {
-   if (!self()->isXPLinkLinkageType() && !self()->isFastLinkLinkageType())
-      {
-      return true;
-      }
-   else
-      {
-      return false;
-      }
-   }
-
 TR::Instruction *
 OMR::Z::Linkage::loadUpArguments(TR::Instruction * cursor)
    {

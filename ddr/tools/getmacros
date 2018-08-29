@@ -67,7 +67,7 @@ begin_namespace() {
 	old_namespace=${namespace}
 	namespace="${1}"
 	if [ "${namespace}" != "${old_namespace}" ]; then
-		echo "@TYPE_${namespace}"
+		echo "TYPE_${namespace}"
 	fi
 }
 
@@ -90,9 +90,9 @@ write_flag_macro() {
 	begin_namespace "${const_space}"
 
 	echo "#ifdef ${1}"
-	echo "@MACRO_${1} 1"
+	echo "MACRO_${1} 1"
 	echo "#else"
-	echo "@MACRO_${1} 0"
+	echo "MACRO_${1} 0"
 	echo "#endif"
 }
 
@@ -101,9 +101,9 @@ write_flag_defined() {
 	begin_namespace "${flag_space}"
 
 	echo "#ifdef ${1}"
-	echo "@MACRO_${1}_DEFINED 1"
+	echo "MACRO_${1}_DEFINED 1"
 	echo "#else"
-	echo "@MACRO_${1}_DEFINED 0"
+	echo "MACRO_${1}_DEFINED 0"
 	echo "#endif"
 }
 
@@ -133,7 +133,7 @@ define_value_macro() {
 		begin_namespace "${const_space}"
 
 		echo "#ifdef ${name}"
-		echo "@MACRO_${name} ${name}"
+		echo "MACRO_${name} ${name}"
 		echo "#endif"
 	fi
 
@@ -148,7 +148,7 @@ process_one_policy_file() {
 	echo ""
 	echo "#ifndef DDRGEN_F${filenum}_GUARD_H"
 	echo "#define DDRGEN_F${filenum}_GUARD_H"
-	echo "@DDRFILE_BEGIN ${f}"
+	echo "DDRFILE_BEGIN ${f}"
 
 	set_default_namespaces
 	namespace=''
@@ -182,7 +182,7 @@ process_one_policy_file() {
 	done
 
 	# close repeated include guard and file delimiter
-	echo "@DDRFILE_END ${f}"
+	echo "DDRFILE_END ${f}"
 	echo "#endif"
 }
 

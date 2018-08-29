@@ -1760,20 +1760,6 @@ OMR::Z::Linkage::pushLongArg32(TR::Node * callNode, TR::Node * child, int32_t nu
    }
 
 /**
- * justClearSlot=true     means init variable slot to null only (used at start of argument processing)
- * justClearSlot=false    means destroy register and clear variable slot (used at end of argument processing)
- */
-void
-OMR::Z::Linkage::clearCachedStackRegisterForOutgoingArguments(bool justClearSlot)
-   {
-   if (_cachedStackRegisterForOutgoingArguments != NULL)
-      {
-      if (!justClearSlot && self()->isFastLinkLinkageType())  self()->cg()->stopUsingRegister(_cachedStackRegisterForOutgoingArguments);  // faslink casued allocation of register
-      _cachedStackRegisterForOutgoingArguments = NULL;
-      }
-   }
-
-/**
  * Normally arguments for outgoing call are set via stack register except
  * for C++ FASTLINK where they are placed in callee frame via the NAB
  */
@@ -1791,10 +1777,6 @@ OMR::Z::Linkage::getStackRegisterForOutgoingArguments(TR::Node *n, TR::RegisterD
    if (!self()->isFastLinkLinkageType())
       { // normal case
       sreg = stackRegister;
-      }
-   else
-      { // fastlink case
-      sreg = _cachedStackRegisterForOutgoingArguments;
       }
    return sreg;
    }
@@ -2144,8 +2126,6 @@ OMR::Z::Linkage::buildArgs(TR::Node * callNode, TR::RegisterDependencyConditions
 
    TR::SystemLinkage * systemLinkage = (TR::SystemLinkage *) self()->cg()->getLinkage(TR_System);
 
-   self()->clearCachedStackRegisterForOutgoingArguments(true); // outgoing arguments may be accessed via stack register realized lazily via getStackRegisterForOutgoingArgument()
-
    int8_t gprSize = self()->cg()->machine()->getGPRSize();
    TR::Register * tempRegister;
    int32_t argIndex = 0, i, from, to, step, numChildren;
@@ -2441,9 +2421,6 @@ OMR::Z::Linkage::buildArgs(TR::Node * callNode, TR::RegisterDependencyConditions
                }
             }
       }
-
-
-   self()->clearCachedStackRegisterForOutgoingArguments(false);
 
    //Setup return register dependency
    TR::Register * resultReg=NULL;

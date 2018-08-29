@@ -345,11 +345,6 @@ enum TR_DispatchType
    TR::InstOpCode::Mnemonic getStoreOpCodeForLinkage(TR::Node * child);
    TR::InstOpCode::Mnemonic getLoadOpCodeForLinkage(TR::Node * child);
    TR::Register *getStackRegisterForOutgoingArguments(TR::Node *n, TR::RegisterDependencyConditions *dependencies);
-   void clearCachedStackRegisterForOutgoingArguments(bool justClearSlot);
-
-   private:
-
-   TR::Register *_cachedStackRegisterForOutgoingArguments;
 
    public:
 

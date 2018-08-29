@@ -2120,30 +2120,6 @@ OMR::Z::Linkage::loadIntArgumentsFromStack(TR::Node *callNode, TR::RegisterDepen
    }
 
 /**
- * Compute a mask for the registers that are
- * preserved across calls
- * Once GC stuff is figured out, this value will prob
- * be hard coded in the properties, so we won't need to compute it
- * each time anymore.
- */
-int32_t
-OMR::Z::Linkage::computePreservedRegMask()
-   {
-
-   int32_t preservedRegMask = 0x0;
-
-   for (int32_t i = TR::RealRegister::FirstGPR; i <= TR::RealRegister::LastFPR; i++)
-      {
-      if (self()->getPreserved(REGNUM(i)))
-         {
-         preservedRegMask |= (0x1 << REGINDEX(i));
-         }
-      }
-
-   return preservedRegMask;
-   }
-
-/**
  * Do not kill special regs (java stack ptr, system stack ptr, and method metadata reg)
  */
 void
@@ -3223,35 +3199,6 @@ int32_t
 OMR::Z::Linkage::getLastMaskedBit(int16_t mask)
    {
    return TR::Linkage::getLastMaskedBit(mask , 0, 15);
-   }
-
-TR_GlobalRegisterNumber OMR::Z::Linkage::getFormalParameterGlobalRegister(TR::ParameterSymbol *sym)
-   {
-   TR_ASSERT(sym->getLinkageRegisterIndex() >= 0,  "ParameterSymbol is not mapped to register\n");
-
-   TR::RealRegister::RegNum r;
-   TR::DataType dt=sym->getDataType();
-
-   switch(dt)
-      {
-      case TR::Float:
-      case TR::Double:
-         r=self()->getFloatArgumentRegister(sym->getLinkageRegisterIndex());
-         break;
-      case TR::VectorInt64:
-      case TR::VectorInt32:
-      case TR::VectorInt16:
-      case TR::VectorInt8:
-      case TR::VectorDouble:
-         r=self()->getVectorArgumentRegister(sym->getLinkageRegisterIndex());
-         break;
-      default:
-         r=self()->getIntegerArgumentRegister(sym->getLinkageRegisterIndex());
-         break;
-      }
-   TR_GlobalRegisterNumber grn=self()->cg()->machine()->getGlobalReg(r);
-   TR_ASSERT(grn >= 0,  "There is no GlobalRegisterNumber for register %s\n",self()->cg()->getDebug()->getName(self()->cg()->machine()->getS390RealRegister(r)));
-   return grn;
    }
 
 bool

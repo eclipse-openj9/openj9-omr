@@ -306,9 +306,6 @@ enum TR_DispatchType
    bool    setRaContextRestoreNeeded(bool v) { return _raContextSaveNeeded = v; }
    bool    getRaContextRestoreNeeded() { return _raContextSaveNeeded; }
 
-   virtual TR::SymbolReference* cachedStaticSymRef() { return NULL; }
-   virtual TR::SymbolReference* cachedCRENTSymRef() { return NULL; }
-
 // Definitions from TR::Linkage
    virtual void createPrologue(TR::Instruction * cursor) = 0;
    virtual void createEpilogue(TR::Instruction * cursor) = 0;
@@ -321,11 +318,9 @@ enum TR_DispatchType
    virtual TR::Instruction * loadUpArguments(TR::Instruction * cursor);
    virtual void removeOSCOnSavedArgument(TR::Instruction* instr, TR::Register* sReg, int32_t stackOffset);
 
-   virtual void * saveArguments(void * cursor, bool genBinary, bool InPreProlog = false, int32_t frameOffset = 0, List<TR::ParameterSymbol> *parameterList=NULL
-   );
+   virtual void * saveArguments(void * cursor, bool genBinary, bool InPreProlog = false, int32_t frameOffset = 0, List<TR::ParameterSymbol> *parameterList=NULL);
 
    virtual void initS390RealRegisterLinkage() = 0;
-   virtual TR::RealRegister * getARWithZeroValue() {return NULL;}
 
    virtual void lockRegister(TR::RealRegister * lpReal);
    virtual void unlockRegister(TR::RealRegister * lpReal);
@@ -333,13 +328,13 @@ enum TR_DispatchType
    virtual TR::Register * buildDirectDispatch(TR::Node * callNode) = 0;
    virtual TR::Register * buildIndirectDispatch(TR::Node * callNode) = 0;
 
-   virtual void buildVirtualDispatch(TR::Node * callNode, TR::RegisterDependencyConditions * dependencies,
-      TR::Register * vftReg, uint32_t sizeOfArguments){TR_ASSERT(0, "ERROR: Empty declaration called");};
-
-   bool shouldExcludeAutoFromMapper(TR::AutomaticSymbol *) { return false; }
-   virtual bool isAutoMappedBeforeAdjustedArea(TR::AutomaticSymbol *) { return false; }
+   virtual void buildVirtualDispatch(TR::Node * callNode, TR::RegisterDependencyConditions * dependencies, TR::Register * vftReg, uint32_t sizeOfArguments)
+      {
+      TR_ASSERT(0, "ERROR: Empty declaration called");
+      }
 
    public:
+
    virtual bool findPossibleCallInstruction(TR::Instruction* &cursor, int32_t& numToCheck, TR::Instruction ** callInstruction, bool *regs = 0, int32_t regsSize = 0);
    virtual void setUsedRegisters(TR::Instruction *instruction, bool *regs, int32_t regsSize);
    virtual bool checkPreservedRegisterUsage(bool *regs, int32_t regsSize);
@@ -351,9 +346,13 @@ enum TR_DispatchType
    TR::InstOpCode::Mnemonic getLoadOpCodeForLinkage(TR::Node * child);
    TR::Register *getStackRegisterForOutgoingArguments(TR::Node *n, TR::RegisterDependencyConditions *dependencies);
    void clearCachedStackRegisterForOutgoingArguments(bool justClearSlot);
+
    private:
+
    TR::Register *_cachedStackRegisterForOutgoingArguments;
+
    public:
+
    TR::Register *  copyArgRegister(TR::Node * callNode, TR::Node * child, TR::Register * argRegister);
    TR::Register *  pushLongArg32(TR::Node * callNode, TR::Node * child, int32_t numIntegerArgs,
        int32_t numFloatArgs, int32_t * stackOffsetPtr,
@@ -369,7 +368,6 @@ enum TR_DispatchType
        TR::RegisterDependencyConditions * dependencies, TR::Register * argRegister=NULL);
    TR::Register *  pushVectorArg(TR::Node * callNode, TR::Node * child,  int32_t numVectorArgs, int32_t pindex,
        int32_t * stackOffsetPtr, TR::RegisterDependencyConditions * dependencies, TR::Register * argRegister=NULL);
-   int32_t computePreservedRegMask();
    virtual void doNotKillSpecialRegsForBuildArgs (TR::Linkage *linkage, bool isFastJNI, int64_t &killMask);
    virtual void addSpecialRegDepsForBuildArgs(TR::Node * callNode, TR::RegisterDependencyConditions * dependencies, int32_t& from, int32_t step){ return; }
    virtual int32_t storeExtraEnvRegForBuildArgs(TR::Node * callNode, TR::Linkage* linkage,
@@ -489,8 +487,6 @@ enum TR_DispatchType
          return TR::RealRegister::NoReg;
       }
 
-   virtual TR_GlobalRegisterNumber getFormalParameterGlobalRegister(TR::ParameterSymbol *sym);
-
    virtual int64_t getLengthStartForSSInstruction()
       {
       return 1;
@@ -561,7 +557,6 @@ enum TR_DispatchType
    virtual TR::RealRegister::RegNum setStackPointerRegister  (uint32_t num, TR::RealRegister::RegNum r) { return _stackPointerRegister = r; }
    virtual TR::RealRegister::RegNum getStackPointerRegister(uint32_t num)   { return _stackPointerRegister; }
    virtual TR::RealRegister *getStackPointerRealRegister(uint32_t num);
-   virtual uint32_t getNumStackPointerRegisters() {return 1;}
 
    virtual TR::RealRegister::RegNum getNormalStackPointerRegister();
    virtual TR::RealRegister *getNormalStackPointerRealRegister();
@@ -599,7 +594,12 @@ enum TR_DispatchType
    virtual TR::RealRegister *getJ9MethodArgumentRegisterRealRegister();
 
    virtual TR::RealRegister::RegNum getMethodMetaDataRegister() { return TR::RealRegister::NoReg; }
-   virtual TR::RealRegister *getMethodMetaDataRealRegister() {TR_ASSERT(0, "MethodMetaDataRealRegister shouldn't be called from TR::Linkage"); return NULL;}
+   virtual TR::RealRegister *getMethodMetaDataRealRegister()
+      {
+      TR_ASSERT(0, "MethodMetaDataRealRegister shouldn't be called from TR::Linkage");
+      return NULL;
+      }
+
    virtual TR::RealRegister::RegNum getEnvironmentPointerRegister() { return TR::RealRegister::NoReg; }
    virtual TR::RealRegister::RegNum getCAAPointerRegister() { return TR::RealRegister::NoReg; }
    virtual TR::RealRegister::RegNum getParentDSAPointerRegister() { return TR::RealRegister::NoReg; }
@@ -633,6 +633,7 @@ enum TR_DispatchType
    TR::RealRegister::RegNum getLastRestoredRegister(int32_t fromreg, int32_t toreg);
 
    protected:
+
    TR::Instruction * getLastPrologueInstruction(){ return _lastPrologueInstr; }
    TR::Instruction * getFirstPrologueInstruction(){ return _firstPrologueInstr; }
    void setLastPrologueInstruction(TR::Instruction * cursor){ _lastPrologueInstr = cursor; }
@@ -645,7 +646,6 @@ enum TR_DispatchType
 private:
 
    enum FrameType _frameType;
-
 
    TR::CodeGenerator * _codeGen;
    TR::Instruction * _lastPrologueInstr;

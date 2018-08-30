@@ -71,6 +71,23 @@ class OMR_EXTENSIBLE Instruction : public OMR::Instruction
     * @param[in] node : node
     */
    Instruction(TR::CodeGenerator *cg, TR::Instruction *precedingInstruction, TR::InstOpCode::Mnemonic op, TR::Node *node = NULL);
+   /**
+    * @brief Constructor
+    * @param[in] cg : CodeGenerator
+    * @param[in] op : opcode
+    * @param[in] cond : register dependency conditions
+    * @param[in] node : node
+    */
+   Instruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::RegisterDependencyConditions *cond, TR::Node *node = NULL);
+   /**
+    * @brief Constructor
+    * @param[in] cg : CodeGenerator
+    * @param[in] precedingInstruction : preceding instruction
+    * @param[in] op : opcode
+    * @param[in] cond : register dependency conditions
+    * @param[in] node : node
+    */
+   Instruction(TR::CodeGenerator *cg, TR::Instruction *precedingInstruction, TR::InstOpCode::Mnemonic op, TR::RegisterDependencyConditions *cond, TR::Node *node = NULL);
 
    /**
     * @brief Instruction description string

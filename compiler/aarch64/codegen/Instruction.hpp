@@ -55,6 +55,31 @@ class OMR_EXTENSIBLE Instruction : public OMR::InstructionConnector
       {
       }
 
+   /**
+    * @brief Constructor
+    * @param[in] op : opcode
+    * @param[in] node : node
+    * @param[in] cond : register dependency conditions
+    * @param[in] precedingInstruction : preceding instruction
+    * @param[in] cg : CodeGenerator
+    */
+   Instruction(TR::InstOpCode::Mnemonic op, TR::Node *node, TR::RegisterDependencyConditions *cond,
+               TR::Instruction *precedingInstruction, TR::CodeGenerator *cg) :
+      OMR::InstructionConnector(cg, precedingInstruction, op, cond, node)
+      {}
+
+   /**
+    * @brief Constructor
+    * @param[in] op : opcode
+    * @param[in] node : node
+    * @param[in] cond : register dependency conditions
+    * @param[in] cg : CodeGenerator
+    */
+   Instruction(TR::InstOpCode::Mnemonic op, TR::Node *node, TR::RegisterDependencyConditions *cond,
+               TR::CodeGenerator *cg) :
+      OMR::InstructionConnector(cg, op, cond, node)
+      {}
+
    };
 
 } // TR

@@ -44,6 +44,22 @@ OMR::ARM64::Instruction::Instruction(TR::CodeGenerator *cg, TR::Instruction *pre
    }
 
 
+OMR::ARM64::Instruction::Instruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::RegisterDependencyConditions *cond, TR::Node *node)
+   : OMR::Instruction(cg, op, node),
+     _conditions(cond)
+   {
+   self()->setBlockIndex(cg->getCurrentBlockIndex());
+   }
+
+
+OMR::ARM64::Instruction::Instruction(TR::CodeGenerator *cg, TR::Instruction *precedingInstruction, TR::InstOpCode::Mnemonic op, TR::RegisterDependencyConditions *cond, TR::Node *node)
+   : OMR::Instruction(cg, precedingInstruction, op, node),
+     _conditions(cond)
+   {
+   self()->setBlockIndex(cg->getCurrentBlockIndex());
+   }
+
+
 void
 OMR::ARM64::Instruction::remove()
    {

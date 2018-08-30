@@ -482,15 +482,6 @@ OMR::MethodBuilder::isSymbolAnArray(const char *name)
    return _symbolIsArray.find(name) != _symbolIsArray.end();
    }
 
-TR::BytecodeBuilder *
-OMR::MethodBuilder::OrphanBytecodeBuilder(int32_t bcIndex, char *name)
-   {
-   TR::BytecodeBuilder *orphan = new (comp()->trHeapMemory()) TR::BytecodeBuilder(_methodBuilder, bcIndex, name);
-   orphan->initialize(_details, _methodSymbol, _fe, _symRefTab);
-   orphan->setupForBuildIL();
-   return orphan;
-   }
-
 void
 OMR::MethodBuilder::AppendBuilder(TR::BytecodeBuilder *bb)
    {

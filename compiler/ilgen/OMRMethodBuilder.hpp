@@ -105,8 +105,6 @@ class MethodBuilder : public TR::IlBuilder
 
    TR::ResolvedMethod *lookupFunction(const char *name);
 
-   TR::BytecodeBuilder *OrphanBytecodeBuilder(int32_t bcIndex=0, char *name=NULL);
-
    void AppendBuilder(TR::BytecodeBuilder *bb);
    void AppendBuilder(TR::IlBuilder *b)    { this->OMR::IlBuilder::AppendBuilder(b); }
 

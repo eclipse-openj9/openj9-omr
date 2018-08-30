@@ -26,6 +26,7 @@
 #include "compile/SymbolReferenceTable.hpp"
 #include "compile/Compilation.hpp"
 #include "env/FrontEnd.hpp"
+#include "ilgen/IlReference.hpp"
 #include "ilgen/TypeDictionary.hpp"
 #include "env/Region.hpp"
 #include "env/SystemSegmentProvider.hpp"
@@ -277,7 +278,7 @@ OMR::StructType::getFieldOffset(const char *fieldName)
    return info->getOffset();
    }
 
-TR::IlReference *
+TR::SymbolReference *
 OMR::StructType::getFieldSymRef(const char *fieldName)
    {
    OMR::FieldInfo *info = findField(fieldName);
@@ -311,7 +312,7 @@ OMR::StructType::getFieldSymRef(const char *fieldName)
       info->cacheSymRef(symRef);
       }
 
-   return (TR::IlReference *)symRef;
+   return symRef;
    }
 
 void
@@ -371,7 +372,7 @@ OMR::UnionType::getFieldType(const char *fieldName)
    return info->_type;
    }
 
-TR::IlReference *
+TR::SymbolReference *
 OMR::UnionType::getFieldSymRef(const char *fieldName)
    {
    OMR::FieldInfo *info = findField(fieldName);
@@ -403,7 +404,7 @@ OMR::UnionType::getFieldSymRef(const char *fieldName)
       info->cacheSymRef(symRef);
       }
 
-   return static_cast<TR::IlReference *>(symRef);
+   return symRef;
    }
 
 void
@@ -604,14 +605,14 @@ OMR::TypeDictionary::FieldReference(const char *typeName, const char *fieldName)
    if (structIterator != _structsByName.end())
       {
       OMR::StructType *theStruct = structIterator->second;
-      return theStruct->getFieldSymRef(fieldName);
+      return new (PERSISTENT_NEW) TR::IlReference(theStruct->getFieldSymRef(fieldName));
       }
 
    UnionMap::iterator unionIterator = _unionsByName.find(typeName);
    if (unionIterator != _unionsByName.end())
       {
       OMR::UnionType *theUnion = unionIterator->second;
-      return theUnion->getFieldSymRef(fieldName);
+      return new (PERSISTENT_NEW) TR::IlReference(theUnion->getFieldSymRef(fieldName));
       }
 
    TR_ASSERT_FATAL(false, "No type with name '%s'", typeName);

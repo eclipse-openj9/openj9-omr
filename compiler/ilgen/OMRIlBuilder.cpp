@@ -43,6 +43,7 @@
 #include "ilgen/IlGeneratorMethodDetails_inlines.hpp"
 #include "ilgen/TypeDictionary.hpp"
 #include "ilgen/IlInjector.hpp"
+#include "ilgen/IlReference.hpp"
 #include "ilgen/MethodBuilder.hpp"
 #include "ilgen/BytecodeBuilder.hpp"
 #include "infra/Cfg.hpp"
@@ -733,7 +734,8 @@ OMR::IlBuilder::CreateLocalStruct(TR::IlType *structType)
 void
 OMR::IlBuilder::StoreIndirect(const char *type, const char *field, TR::IlValue *object, TR::IlValue *value)
    {
-   TR::SymbolReference *symRef = (TR::SymbolReference*)_types->FieldReference(type, field);
+   TR::IlReference *fieldRef = _types->FieldReference(type, field);
+   TR::SymbolReference *symRef = fieldRef->symRef();
    TR::DataType fieldType = symRef->getSymbol()->getDataType();
    TraceIL("IlBuilder[ %p ]::StoreIndirect %s.%s (%d) into (%d)\n", this, type, field, value->getID(), object->getID());
    TR::ILOpCodes storeOp = comp()->il.opCodeForIndirectStore(fieldType);
@@ -767,7 +769,8 @@ OMR::IlBuilder::VectorLoad(const char *name)
 TR::IlValue *
 OMR::IlBuilder::LoadIndirect(const char *type, const char *field, TR::IlValue *object)
    {
-   TR::SymbolReference *symRef = (TR::SymbolReference *)_types->FieldReference(type, field);
+   TR::IlReference *fieldRef = _types->FieldReference(type, field);
+   TR::SymbolReference *symRef = fieldRef->symRef();
    TR::DataType fieldType = symRef->getSymbol()->getDataType();
    TR::IlValue *returnValue = newValue(fieldType, TR::Node::createWithSymRef(comp()->il.opCodeForIndirectLoad(fieldType), 1, loadValue(object), 0, symRef));
    TraceIL("IlBuilder[ %p ]::%d is LoadIndirect %s.%s from (%d)\n", this, returnValue->getID(), type, field, object->getID());
@@ -2604,7 +2607,6 @@ OMR::IlBuilder::Switch(const char *selectionVar,
 
    Switch(selectionVar, defaultBuilder, numCases, cases);
    }
-
 
 void
 OMR::IlBuilder::ForLoop(bool countsUp,

@@ -568,11 +568,6 @@ class OMR_EXTENSIBLE CodeGenerator
    TR::Instruction *generateDebugCounterBump(TR::Instruction *cursor, TR::DebugCounterBase *counter, int32_t delta, TR_ScratchRegisterManager &srm){ return cursor; } // no virt, default, cast
    TR::Instruction *generateDebugCounterBump(TR::Instruction *cursor, TR::DebugCounterBase *counter, TR::Register *deltaReg, TR_ScratchRegisterManager &srm){ return cursor; } // no virt, default, cast
 
-   // NOT USED?
-   bool supportsDebugCounters(TR::DebugCounterInjectionPoint injectionPoint){ return injectionPoint == TR::TR_BeforeCodegen; } // no virt, default
-
-   void incrementEventCounter(TR::Node *node, TR::SymbolReference *symRef, TR::CodeGenerator *cg) { TR_ASSERT(0,"not implemented\n");} // no virt, default
-
    // --------------------------------------------------------------------------
    // Linkage
    //

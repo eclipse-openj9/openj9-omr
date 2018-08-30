@@ -551,8 +551,6 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    TR::Instruction *generateDebugCounterBump(TR::Instruction *cursor, TR::DebugCounterBase *counter, int32_t delta, TR_ScratchRegisterManager &srm);
    TR::Instruction *generateDebugCounterBump(TR::Instruction *cursor, TR::DebugCounterBase *counter, TR::Register *deltaReg, TR_ScratchRegisterManager &srm);
 
-   bool supportsDebugCounters(TR::DebugCounterInjectionPoint injectionPoint){ return true; }
-
    virtual uint8_t nodeResultGPRCount  (TR::Node *node, TR_RegisterPressureState *state);
 
    virtual TR_BitVector *getGlobalRegisters(TR_SpillKinds kind, TR_LinkageConventions lc){ return &_globalRegisterBitVectors[kind]; }

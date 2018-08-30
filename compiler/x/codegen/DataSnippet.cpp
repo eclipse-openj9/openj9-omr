@@ -34,13 +34,15 @@
 
 namespace TR { class Node; }
 
-TR::X86DataSnippet::X86DataSnippet(TR::CodeGenerator *cg, TR::Node * n, void *c, uint8_t size)
+TR::X86DataSnippet::X86DataSnippet(TR::CodeGenerator *cg, TR::Node * n, void *c, size_t size)
    : TR::Snippet(cg, n, TR::LabelSymbol::create(cg->trHeapMemory(),cg), false),
-     _data(size, 0, getTypedAllocator<uint8_t>(TR::comp()->allocator()))
+     _data(size, 0, getTypedAllocator<uint8_t>(TR::comp()->allocator())),
+     _isClassAddress(false)
    {
    if (c)
       memcpy(_data.data(), c, size);
-   _isClassAddress = false;
+   else
+      memset(_data.data(), 0, size);
    }
 
 

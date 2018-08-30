@@ -527,6 +527,46 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    TR::X86DataSnippet *create8ByteData(TR::Node *, int64_t c);
    TR::X86DataSnippet *create16ByteData(TR::Node *, void *c);
 
+   /*
+    * \brief create a data snippet.
+    *
+    * \param[in] node : the node which this data snippet belongs to
+    * \param[in] data : a pointer to initial data or NULL for skipping initialization
+    * \param[in] size : the size of this data snippet
+    *
+    * \return : a data snippet with specified size
+    */
+   TR::X86DataSnippet* createDataSnippet(TR::Node* node, void* data, size_t size);
+   /*
+    * \brief create a data snippet
+    *
+    * \param[in] node : the node which this data snippet belongs to
+    * \param[in] data : the data which this data snippet holds
+    *
+    * \return : a data snippet containing one type T element
+    */
+   template<typename T> inline TR::X86DataSnippet* createDataSnippet(TR::Node* node, T data) { return createDataSnippet(node, &data, sizeof(data)); }
+   /*
+    * \brief find or create a constant data snippet.
+    *
+    * \param[in] node : the node which this constant data snippet belongs to
+    * \param[in] data : a pointer to initial data or NULL for skipping initialization
+    * \param[in] size : the size of this constant data snippet
+    *
+    * \return : a constant data snippet with specified size
+    */
+   TR::X86ConstantDataSnippet* findOrCreateConstantDataSnippet(TR::Node* node, void* data, size_t size);
+   /*
+    * \brief find or create a constant data snippet.
+    *
+    * \param[in] node : the node which this constant data snippet belongs to
+    * \param[in] data : the data which this constant data snippet holds
+    *
+    * \return : a constant data snippet containing one type T element
+    */
+   template<typename T> inline TR::X86ConstantDataSnippet* findOrCreateConstantDataSnippet(TR::Node* node, T data) { return findOrCreateConstantDataSnippet(node, &data, sizeof(data)); }
+
+
    static TR_X86ProcessorInfo _targetProcessorInfo;
 
    // The core "clobberEvaluate" logic for single registers (not register
@@ -587,27 +627,6 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    private:
 
    bool nodeIsFoldableMemOperand(TR::Node *node, TR::Node *parent, TR_RegisterPressureState *state);
-
-   /*
-    * \brief create a data snippet.
-    *
-    * \param[in] n : the node which this data snippet belongs to
-    * \param[in] c : a pointer to initial data or NULL for skipping initialization
-    * \param[in] s : the size of this data snippet
-    *
-    * \return : a data snippet with size s
-    */
-   TR::X86DataSnippet*         createDataSnippet(TR::Node *n, void *c, uint8_t s);
-   /*
-    * \brief find or create a constant data snippet.
-    *
-    * \param[in] n : the node which this constant data snippet belongs to
-    * \param[in] c : a pointer to initial data or NULL for skipping initialization
-    * \param[in] s : the size of this constant data snippet
-    *
-    * \return : a constant data snippet with size s
-    */
-   TR::X86ConstantDataSnippet* findOrCreateConstantDataSnippet(TR::Node *n, void *c, uint8_t s);
 
    TR::RealRegister             *_frameRegister;
 

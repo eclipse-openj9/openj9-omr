@@ -85,7 +85,30 @@ struct OMR_SigData {
 	sigMutex.unlock();
 
 #if !defined(MSVC_RUNTIME_DLL)
+#if (_MSC_VER == 1200) /* Visual Studio (VS) 6 */
+#define MSVC_RUNTIME_DLL "MSVCR60.dll"
+#elif (_MSC_VER == 1300) /* VS 7 */
+#define MSVC_RUNTIME_DLL "MSVCR70.dll"
+#elif (_MSC_VER == 1310) /* VS 7.1 */
+#define MSVC_RUNTIME_DLL "MSVCR71.dll"
+#elif (_MSC_VER == 1400) /* VS 8 */
+#define MSVC_RUNTIME_DLL "MSVCR80.dll"
+#elif (_MSC_VER == 1500) /* VS 9 */
+#define MSVC_RUNTIME_DLL "MSVCR90.dll"
+#elif (_MSC_VER == 1600) /* VS 10 */
 #define MSVC_RUNTIME_DLL "MSVCR100.dll"
+#elif (_MSC_VER == 1700) /* VS 11 */
+#define MSVC_RUNTIME_DLL "MSVCR110.dll"
+#elif (_MSC_VER == 1800) /* VS 12 */
+#define MSVC_RUNTIME_DLL "MSVCR120.dll"
+#elif (_MSC_VER > 1800) /* VS 14+ */
+#define MSVC_RUNTIME_DLL "UCRTBASE.dll"
+#else /* VS unknown */
+/* This will assure that a user will update MSVC_RUNTIME_DLL
+ * if it is undefined.
+ */
+#error "Unrecognized MSVC_RUNTIME_DLL."
+#endif /* (_MSC_VER >= 1200) */
 #endif /* !defined(MSVC_RUINTIME_DLL) */
 #else /* defined(OMR_OS_WINDOWS) */
 

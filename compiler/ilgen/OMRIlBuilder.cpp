@@ -663,7 +663,7 @@ OMR::IlBuilder::VectorStore(const char *varName, TR::IlValue *value)
    TR::SymbolReference *symRef = lookupSymbol(varName);
 
    TraceIL("IlBuilder[ %p ]::VectorStore %s %d gets %d\n", this, varName, symRef->getCPIndex(), value->getID());
-   storeNode(symRef, loadValue(value));
+   storeNode(symRef, valueNode);
    }
 
 /**

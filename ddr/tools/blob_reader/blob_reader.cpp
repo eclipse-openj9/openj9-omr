@@ -148,6 +148,17 @@ struct Structure {
 	uint32_t size;
 	vector<Field *> fields;
 	vector<Constant *> constants;
+
+	Structure()
+		: name(NULL)
+		, nameLength(0)
+		, superName(NULL)
+		, superNameLength(0)
+		, size(0)
+		, fields()
+		, constants()
+	{
+	}
 };
 
 bool
@@ -293,8 +304,7 @@ main(int argc, char *argv[])
 
 			currentStruct += sizeof(BlobStruct);
 
-			Structure *builtStruct = (Structure *)malloc(sizeof(Structure));
-			memset(builtStruct, 0, sizeof(Structure));
+			Structure *builtStruct = new Structure;
 
 			builtStruct->name = BLOBSTRING_AT(blobStruct->nameOffset)->data;
 			builtStruct->nameLength = BLOBSTRING_AT(blobStruct->nameOffset)->length;
@@ -393,10 +403,10 @@ main(int argc, char *argv[])
 				printf(" Constant name: %.*s\n",
 					   constant->nameLength,
 					   constant->name);
-				printf("  value: %lld\n", (long long unsigned int)constant->value);
+				printf("  value: %llu\n", (long long unsigned int)constant->value);
 				free(constant);
 			}
-			free(builtStruct);
+			delete builtStruct;
 		}
 #undef BLOBSTRING_AT
 	}

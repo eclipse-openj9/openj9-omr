@@ -35,6 +35,11 @@ namespace TR { class SymbolReference; }
 namespace TR { class MethodBuilder; }
 namespace TR { class IlValue; }
 
+extern "C" {
+typedef void * (*ClientAllocator)(void * impl);
+typedef void * (*ImplGetter)(void *client);
+}
+
 namespace OMR
 {
 
@@ -85,11 +90,60 @@ public:
       return _id;
       }
 
+   /**
+    * @brief associates this object with a particular client object
+    */
+   void setClient(void *client)
+      {
+      _client = client;
+      }
+
+   /**
+    * @brief returns the client object associated with this object
+    */
+   void *client();
+
+   /**
+    * @brief Set the Client Allocator function
+    *
+    * @param allocator a function pointer to the client object allocator
+    */
+   static void setClientAllocator(ClientAllocator allocator)
+      {
+      _clientAllocator = allocator;
+      }
+
+   /**
+    * @brief Set the Get Impl function
+    *
+    * @param getter function pointer to the impl getter
+    */
+   static void setGetImpl(ImplGetter getter)
+      {
+      _getImpl = getter;
+      }
+
 protected:
    /**
     * @brief ensures this value is accessible via an auto symbol, but only generates store if hasn't already been stored
     */
    void storeToAuto();
+
+   /**
+    * @brief pointer to a client object that corresponds to this object
+    */
+   void                * _client;
+
+   /**
+    * @brief pointer to the function used to allocate an instance of a
+    * client object
+    */
+   static ClientAllocator _clientAllocator;
+
+   /**
+    * @brief pointer to impl getter function
+    */
+   static ImplGetter _getImpl;
 
    /**
     * @brief identifying number for values guaranteed to be unique per MethodBuilder

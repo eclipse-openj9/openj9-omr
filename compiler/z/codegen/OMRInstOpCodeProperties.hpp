@@ -6228,7 +6228,7 @@
    /* .name        = */ "STCKE",
    /* .description = */ "Store Clock Extended",
    /* .opcode[0]   = */ 0xB2,
-   /* .opcode[1]   = */ 0x05,
+   /* .opcode[1]   = */ 0x78,
    /* .format      = */ S_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_SetsCC |
@@ -10624,7 +10624,7 @@
    /* .name        = */ "AGSI",
    /* .description = */ "Add Direct to Memory (64)",
    /* .opcode[0]   = */ 0xEB,
-   /* .opcode[1]   = */ 0x7a,
+   /* .opcode[1]   = */ 0x7A,
    /* .format      = */ SIY_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z10,
    /* .properties  = */ S390OpProp_Is64Bit |
@@ -10672,7 +10672,7 @@
    /* .name        = */ "ASI",
    /* .description = */ "Add Direct to Memory",
    /* .opcode[0]   = */ 0xEB,
-   /* .opcode[1]   = */ 0x6a,
+   /* .opcode[1]   = */ 0x6A,
    /* .format      = */ SIY_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z10,
    /* .properties  = */ S390OpProp_Is32Bit |
@@ -11462,7 +11462,7 @@
    /* .name        = */ "PFDRL",
    /* .description = */ "Prefetch Data Relative Long",
    /* .opcode[0]   = */ 0xC6,
-   /* .opcode[1]   = */ 0x00,
+   /* .opcode[1]   = */ 0x02,
    /* .format      = */ RIL_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z10,
    /* .properties  = */ S390OpProp_None
@@ -15307,7 +15307,7 @@
    /* .mnemonic    = */ OMR::InstOpCode::MGRK,
    /* .name        = */ "MGRK",
    /* .description = */ "multiply (128 <- 64)",
-   /* .opcode[0]   = */ 0xE9,
+   /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0xEC,
    /* .format      = */ RRF_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z14,

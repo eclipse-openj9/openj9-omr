@@ -6411,8 +6411,7 @@
    /* .opcode[1]   = */ 0x3A,
    /* .format      = */ S_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
-   /* .properties  = */ S390OpProp_SetsCC |
-                        S390OpProp_IsStore |
+   /* .properties  = */ S390OpProp_IsStore |
                         S390OpProp_SetsOperand1
    },
 
@@ -10993,8 +10992,7 @@
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z10,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_IsCompare |
-                        S390OpProp_BranchOp |
-                        S390OpProp_SetsCC
+                        S390OpProp_BranchOp
    },
 
    {
@@ -11033,8 +11031,7 @@
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z10,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_IsCompare |
-                        S390OpProp_BranchOp |
-                        S390OpProp_SetsCC
+                        S390OpProp_BranchOp
    },
 
    {
@@ -11136,8 +11133,7 @@
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z10,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_IsCompare |
-                        S390OpProp_BranchOp |
-                        S390OpProp_SetsCC
+                        S390OpProp_BranchOp
    },
 
    {
@@ -11462,8 +11458,7 @@
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z10,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_IsCompare |
-                        S390OpProp_BranchOp |
-                        S390OpProp_SetsCC
+                        S390OpProp_BranchOp
    },
 
    {

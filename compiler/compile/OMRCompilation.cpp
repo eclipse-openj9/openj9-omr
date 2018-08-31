@@ -278,7 +278,7 @@ OMR::Compilation::Compilation(
    _debugCounterMap(std::less<const void *>(), getTypedAllocator<DebugCounterEntry>(self()->allocator())),
    _currentBlock(NULL),
    _verboseOptTransformationCount(0),
-   _aotMethodCodeStart(NULL),
+   _relocatableMethodCodeStart(NULL),
    _compThreadID(id),
    _failCHtableCommitFlag(false),
    _numReservedIPICTrampolines(0),

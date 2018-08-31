@@ -131,7 +131,7 @@ void TR::LoadLabelRelative64BitRelocation::apply(TR::CodeGenerator *codeGen)
 uint8_t TR::ExternalRelocation::collectModifier()
    {
    TR::Compilation *comp = TR::comp();
-   uint8_t * aotMethodCodeStart = (uint8_t *)comp->getAotMethodCodeStart();
+   uint8_t * relocatableMethodCodeStart = (uint8_t *)comp->getRelocatableMethodCodeStart();
    uint8_t * updateLocation;
 
    if (TR::Compiler->target.cpu.isPower() &&
@@ -146,7 +146,7 @@ uint8_t TR::ExternalRelocation::collectModifier()
       updateLocation = getUpdateLocation();
       }
 
-   int32_t distanceFromStartOfBuffer = updateLocation - aotMethodCodeStart;
+   int32_t distanceFromStartOfBuffer = updateLocation - relocatableMethodCodeStart;
    int32_t distanceFromStartOfMethod = updateLocation - comp->cg()->getCodeStart();
    AOTcgDiag2(comp, "TR::ExternalRelocation::collectModifier distance from start of buffer=%x, from start of method=%x\n", distanceFromStartOfBuffer, distanceFromStartOfMethod);
 
@@ -252,8 +252,8 @@ void TR::ExternalRelocation::apply(TR::CodeGenerator *codeGen)
    {
    TR::Compilation *comp = codeGen->comp();
    AOTcgDiag1(comp, "TR::ExternalRelocation::apply updateLocation=" POINTER_PRINTF_FORMAT " \n", getUpdateLocation());
-   uint8_t * aotMethodCodeStart = (uint8_t *)comp->getAotMethodCodeStart();
-   getRelocationRecord()->addRelocationEntry((uint32_t)(getUpdateLocation() - aotMethodCodeStart));
+   uint8_t * relocatableMethodCodeStart = (uint8_t *)comp->getRelocatableMethodCodeStart();
+   getRelocationRecord()->addRelocationEntry((uint32_t)(getUpdateLocation() - relocatableMethodCodeStart));
    }
 
 void TR::ExternalRelocation::trace(TR::Compilation* comp)
@@ -263,9 +263,9 @@ void TR::ExternalRelocation::trace(TR::Compilation* comp)
    TR_ExternalRelocationTargetKind kind = getRelocationRecord()->getTargetKind();
 
    updateLocation = getUpdateLocation();
-   uint8_t* aotMethodCodeStart = (uint8_t*)comp->getAotMethodCodeStart();
+   uint8_t* relocatableMethodCodeStart = (uint8_t*)comp->getRelocatableMethodCodeStart();
    uint8_t* codeStart = comp->cg()->getCodeStart();
-   uintptr_t methodOffset = updateLocation - aotMethodCodeStart;
+   uintptr_t methodOffset = updateLocation - relocatableMethodCodeStart;
    uintptr_t programOffset = updateLocation - codeStart;
 
    if (data)
@@ -306,7 +306,7 @@ TR::ExternalOrderedPair32BitRelocation::ExternalOrderedPair32BitRelocation(
 uint8_t TR::ExternalOrderedPair32BitRelocation::collectModifier()
    {
    TR::Compilation *comp = TR::comp();
-   uint8_t * aotMethodCodeStart = (uint8_t *)comp->getAotMethodCodeStart();
+   uint8_t * relocatableMethodCodeStart = (uint8_t *)comp->getRelocatableMethodCodeStart();
    uint8_t * updateLocation;
    uint8_t * updateLocation2;
    TR_ExternalRelocationTargetKind kind = getTargetKind();
@@ -325,8 +325,8 @@ uint8_t TR::ExternalOrderedPair32BitRelocation::collectModifier()
       updateLocation2 = getLocation2();
       }
 
-   int32_t iLoc = updateLocation - aotMethodCodeStart;
-   int32_t iLoc2 = updateLocation2 - aotMethodCodeStart;
+   int32_t iLoc = updateLocation - relocatableMethodCodeStart;
+   int32_t iLoc2 = updateLocation2 - relocatableMethodCodeStart;
    AOTcgDiag0(comp, "TR::ExternalOrderedPair32BitRelocation::collectModifier\n");
    if ( (iLoc < MIN_SHORT_OFFSET  || iLoc > MAX_SHORT_OFFSET ) || (iLoc2 < MIN_SHORT_OFFSET || iLoc2 > MAX_SHORT_OFFSET ) )
       return RELOCATION_TYPE_WIDE_OFFSET | RELOCATION_TYPE_ORDERED_PAIR;
@@ -341,7 +341,7 @@ void TR::ExternalOrderedPair32BitRelocation::apply(TR::CodeGenerator *codeGen)
    AOTcgDiag0(comp, "TR::ExternalOrderedPair32BitRelocation::apply\n");
 
    TR::IteratedExternalRelocation *rec = getRelocationRecord();
-   uint8_t *codeStart = (uint8_t *)comp->getAotMethodCodeStart();
+   uint8_t *codeStart = (uint8_t *)comp->getRelocatableMethodCodeStart();
    TR_ExternalRelocationTargetKind kind = getRelocationRecord()->getTargetKind();
    if (TR::Compiler->target.cpu.isPower() &&
       (kind == TR_ArrayCopyHelper || kind == TR_ArrayCopyToc || kind == TR_RamMethodSequence || kind == TR_GlobalValue || kind == TR_BodyInfoAddressLoad || kind == TR_DataAddress || kind == TR_DebugCounter))

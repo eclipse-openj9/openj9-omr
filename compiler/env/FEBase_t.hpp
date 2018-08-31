@@ -58,7 +58,7 @@ FEBase<Derived>::allocateCodeMemory(TR::Compilation *comp, uint32_t warmCodeSize
       {
       // Either we didn't get a code cache, or the one we get should be reserved
       TR_ASSERT(!codeCache || codeCache->isReserved(), "Substitute code cache isn't marked as reserved");
-      comp->setAotMethodCodeStart(warmCode);
+      comp->setRelocatableMethodCodeStart(warmCode);
       switchCodeCache(codeCache);
       }
 

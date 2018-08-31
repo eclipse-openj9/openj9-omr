@@ -5396,7 +5396,8 @@
    /* .opcode[1]   = */ 0x18,
    /* .format      = */ S_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
-   /* .properties  = */ S390OpProp_ImplicitlySetsGPR3 |
+   /* .properties  = */ S390OpProp_BranchOp |
+                        S390OpProp_ImplicitlySetsGPR3 |
                         S390OpProp_ImplicitlySetsGPR4
    },
 
@@ -5456,7 +5457,7 @@
    /* .opcode[1]   = */ 0x01,
    /* .format      = */ E_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
-   /* .properties  = */ S390OpProp_None
+   /* .properties  = */ S390OpProp_BranchOp
    },
 
    {
@@ -5467,7 +5468,7 @@
    /* .opcode[1]   = */ 0x28,
    /* .format      = */ RRE_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
-   /* .properties  = */ S390OpProp_None
+   /* .properties  = */ S390OpProp_BranchOp
    },
 
    {
@@ -15556,6 +15557,7 @@
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z14,
    /* .properties  = */ S390OpProp_IsLoad |
                         S390OpProp_Is64Bit |
+                        S390OpProp_BranchOp |
                         S390OpProp_LongDispSupported |
                         S390OpProp_SetsOperand1 |
                         S390OpProp_SetsCC
@@ -15583,6 +15585,7 @@
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z14,
    /* .properties  = */ S390OpProp_IsLoad |
                         S390OpProp_Is64Bit |
+                        S390OpProp_BranchOp |
                         S390OpProp_LongDispSupported |
                         S390OpProp_SetsOperand1 |
                         S390OpProp_SetsCC

@@ -87,6 +87,102 @@ bool OMR::ARM64::MemoryReference::useIndexedForm()
    }
 
 
+void OMR::ARM64::MemoryReference::assignRegisters(TR::Instruction *currentInstruction, TR::CodeGenerator *cg)
+   {
+   TR::Machine *machine = cg->machine();
+   TR::RealRegister *assignedBaseRegister;
+   TR::RealRegister *assignedIndexRegister;
+
+   if (_baseRegister != NULL)
+      {
+      assignedBaseRegister = _baseRegister->getAssignedRealRegister();
+      if (_indexRegister != NULL)
+         {
+         _indexRegister->block();
+         }
+
+      if (assignedBaseRegister == NULL)
+         {
+         if (_baseRegister->getTotalUseCount() == _baseRegister->getFutureUseCount())
+            {
+            if ((assignedBaseRegister = machine->findBestFreeRegister(TR_GPR, true)) == NULL)
+               {
+               assignedBaseRegister = machine->freeBestRegister(currentInstruction, _baseRegister);
+               }
+            }
+         else
+            {
+            assignedBaseRegister = machine->reverseSpillState(currentInstruction, _baseRegister);
+            }
+         _baseRegister->setAssignedRegister(assignedBaseRegister);
+         assignedBaseRegister->setAssignedRegister(_baseRegister);
+         assignedBaseRegister->setState(TR::RealRegister::Assigned);
+         }
+
+      if (_indexRegister != NULL)
+         {
+         _indexRegister->unblock();
+         }
+      }
+
+   if (_indexRegister != NULL)
+      {
+      if (_baseRegister != NULL)
+         {
+         _baseRegister->block();
+         }
+
+      assignedIndexRegister = _indexRegister->getAssignedRealRegister();
+      if (assignedIndexRegister == NULL)
+         {
+         if (_indexRegister->getTotalUseCount() == _indexRegister->getFutureUseCount())
+            {
+            if ((assignedIndexRegister = machine->findBestFreeRegister(TR_GPR, false)) == NULL)
+               {
+               assignedIndexRegister = machine->freeBestRegister(currentInstruction, _indexRegister);
+               }
+            }
+         else
+            {
+            assignedIndexRegister = machine->reverseSpillState(currentInstruction, _indexRegister);
+            }
+         _indexRegister->setAssignedRegister(assignedIndexRegister);
+         assignedIndexRegister->setAssignedRegister(_indexRegister);
+         assignedIndexRegister->setState(TR::RealRegister::Assigned);
+         }
+
+      if (_baseRegister != NULL)
+         {
+         _baseRegister->unblock();
+         }
+      }
+
+   if (_baseRegister != NULL)
+      {
+      if (_baseRegister->decFutureUseCount() == 0)
+         {
+         _baseRegister->setAssignedRegister(NULL);
+         assignedBaseRegister->setState(TR::RealRegister::Unlatched);
+         }
+      _baseRegister = assignedBaseRegister;
+      }
+
+   if (_indexRegister != NULL)
+      {
+      if (_indexRegister->decFutureUseCount() == 0)
+         {
+         _indexRegister->setAssignedRegister(NULL);
+         assignedIndexRegister->setState(TR::RealRegister::Unlatched);
+         }
+      _indexRegister = assignedIndexRegister;
+      }
+   if (self()->getUnresolvedSnippet() != NULL)
+      {
+      currentInstruction->ARM64NeedsGCMap(cg, 0xFFFFFFFF);
+      }
+   }
+
+
 /* register offset */
 static bool isRegisterOffsetInstruction(uint32_t enc)
    {

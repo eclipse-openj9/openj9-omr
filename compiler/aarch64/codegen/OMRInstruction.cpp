@@ -68,6 +68,13 @@ OMR::ARM64::Instruction::remove()
    }
 
 
+void OMR::ARM64::Instruction::ARM64NeedsGCMap(TR::CodeGenerator *cg, uint32_t mask)
+   {
+   if (cg->comp()->useRegisterMaps())
+      self()->setNeedsGCMap(mask);
+   }
+
+
 TR::Register *
 OMR::ARM64::Instruction::getMemoryDataRegister()
    {

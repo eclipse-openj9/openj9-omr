@@ -1,0 +1,182 @@
+{
+    "project": "JitBuilder",
+    "version": {
+        "major": 0,
+        "minor": 0,
+        "patch": 0
+    },
+    "namespace": ["OMR", "JitBuilder"],
+    "types": [],
+    "fields": [],
+    "services": [],
+    "classes": [
+        {
+            "name":"BytecodeBuilder",
+            "short-name": "BB",
+            "types": [
+                ],
+            "fields": [
+                ],
+            "constructors": [
+                ],
+            "callbacks": [
+                ],
+            "services": [
+                ]
+        },
+        {
+            "name": "IlBuilder",
+            "short-name": "IB",
+            "types": [
+                ],
+            "fields": [
+                ],
+            "constructors": [
+                ],
+            "callbacks": [
+                ],
+            "services": [
+                ]
+        },
+        {
+            "name": "MethodBuilder",
+            "short-name": "MB",
+            "types": [
+                ],
+            "fields": [
+                ],
+            "constructors": [
+                ],
+            "callbacks": [
+                ],
+            "services": [
+                ]
+        },
+        {
+            "name":"IlType",
+            "short-name": "IT",
+            "types": [
+                ],
+            "fields": [
+                ],
+            "constructors": [
+                ],
+            "callbacks": [
+                ],
+            "services": [
+                ]
+        },
+        {
+            "name":"IlValue",
+            "short-name": "IV",
+            "types": [
+                ],
+            "fields": [
+                ],
+            "constructors": [
+                ],
+            "callbacks": [
+                ],
+            "services": [
+                ]
+        },
+        {
+            "name":"ThunkBuilder",
+            "short-name": "TB",
+            "types": [
+                ],
+            "fields": [
+                ],
+            "constructors": [
+                ],
+            "callbacks": [
+                ],
+            "services": [
+                ]
+        },
+        {
+            "name": "TypeDictionary",
+            "short-name": "TD",
+            "types": [
+                ],
+            "fields": [
+                ],
+            "constructors": [
+                ],
+            "callbacks": [
+                ],
+            "services": [
+                ]
+        },
+        {
+            "name": "VirtualMachineOperandArray",
+            "short-name": "VMOA",
+            "types": [
+                ],
+            "fields": [
+                ],
+            "constructors": [
+                ],
+            "callbacks": [
+                ],
+            "services": [
+                ]
+        },
+        {
+            "name": "VirtualMachineOperandStack",
+            "short-name": "VMOS",
+            "types": [
+                ],
+            "fields": [
+                ],
+            "constructors": [
+                ],
+            "callbacks": [
+                ],
+            "services": [
+                ]
+        },
+        {
+            "name": "VirtualMachineRegister",
+            "short-name": "VMR",
+            "types": [
+                ],
+            "fields": [
+                ],
+            "constructors": [
+                ],
+            "callbacks": [
+                ],
+            "services": [
+                ]
+        },
+        {
+            "name":"VirtualMachineRegisterInStruct",
+            "short-name": "VMRIS",
+            "types": [
+                ],
+            "fields": [
+                ],
+            "constructors": [
+                ],
+            "callbacks": [
+                ],
+            "services": [
+                ]
+        },
+        {
+            "name":"VirtualMachineState",
+            "short-name": "VMS",
+            "types": [
+                ],
+            "fields": [
+                ],
+            "constructors": [
+                ],
+            "callbacks": [
+                ],
+            "services": [
+                ]
+        }
+        ]
+}

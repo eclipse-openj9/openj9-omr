@@ -120,6 +120,8 @@ public:
     */
    intptrj_t getVFTEntry(TR::Compilation *comp, TR_OpaqueClassBlock* clazz, int32_t offset);
 
+   bool classUnloadAssumptionNeedsRelocation(TR::Compilation *comp);
+
    };
 
 }

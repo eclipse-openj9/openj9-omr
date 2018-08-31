@@ -428,7 +428,8 @@ const char *TR::ExternalRelocation::_externalRelocationTargetKindNames[TR_NumExt
    "TR_NativeMethodAbsolute (56)",
    "TR_NativeMethodRelative (57)",
    "TR_ArbitraryClassAddress (58)",
-   "TR_DebugCounter (59)"
+   "TR_DebugCounter (59)",
+   "TR_ClassUnloadAssumption (60)"
    };
 
 uintptr_t TR::ExternalRelocation::_globalValueList[TR_NumGlobalValueItems] =

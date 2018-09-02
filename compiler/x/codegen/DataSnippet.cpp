@@ -58,7 +58,7 @@ TR::X86DataSnippet::addMetaDataForCodeAddress(uint8_t *cursor)
          {
          TR_ASSERT(!cg()->comp()->compileRelocatableCode(), "ClassUnloadAssumption relocation should not be used during AOT compilation");
          cg()->addExternalRelocation(new (TR::comp()->trHeapMemory())
-                                  TR::ExternalRelocation(cursor, nullptr, TR_ClassUnloadAssumption, cg()),
+                                  TR::ExternalRelocation(cursor, NULL, TR_ClassUnloadAssumption, cg()),
                                   __FILE__, __LINE__, self()->getNode());
          }
 

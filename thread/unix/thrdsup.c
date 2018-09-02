@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2016 IBM Corp. and others
+ * Copyright (c) 1991, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -27,6 +27,7 @@
 #include "thrtypes.h"
 #include "pool_api.h"
 #include "threaddef.h"
+#include "thread_internal.h"
 
 #if defined(LINUX) && !defined(OMRZTPF)
 #include <sys/prctl.h>
@@ -76,9 +77,6 @@ intptr_t sem_post_zos(j9sem_t s);
 #if defined (OMRZTPF)
 void  ztpf_init_proc(void);
 #endif /* defined (OMRZTPF) */
-
-void omrthread_init(struct J9ThreadLibrary *lib);
-void omrthread_shutdown(void);
 
 struct J9ThreadLibrary default_library;
 

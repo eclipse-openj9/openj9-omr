@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2016 IBM Corp. and others
+ * Copyright (c) 1991, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -39,9 +39,6 @@ const int priority_map[] = J9_PRIORITY_MAP;
 
 J9ThreadLibrary default_library;
 
-extern void omrthread_init(J9ThreadLibrary *lib);
-extern void omrthread_shutdown(void);
-
 /**
  * Perform OS-specific initializations for the threading library.
  *
@@ -59,7 +56,7 @@ init_thread_library(void)
 		if (lib->initStatus == 0) {
 			omrthread_init(lib);
 			if (lib->initStatus == 1) {
-				atexit(omrthread_shutdown);
+				atexit(omrthread_shutdown_library);
 			}
 		}
 		ReleaseMutex(mutex);

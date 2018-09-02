@@ -32,9 +32,7 @@
 #include "omrmutex.h"
 #include "thrdsup.h"
 #include "thrtypes.h"
-
-extern void omrthread_init(J9ThreadLibrary *lib);
-extern void omrthread_shutdown(void);
+#include "thread_internal.h"
 
 extern J9ThreadLibrary default_library;
 
@@ -61,7 +59,7 @@ DllMain(HANDLE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
 		omrthread_init(lib);
 		return lib->initStatus == 1;
 	case DLL_PROCESS_DETACH:
-		omrthread_shutdown();
+		omrthread_shutdown_library();
 		break;
 	default:
 		break;

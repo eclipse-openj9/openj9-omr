@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2016 IBM Corp. and others
+ * Copyright (c) 2014, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -100,7 +100,7 @@ typedef U_8 Card;
 #define J9VMSTATE_GC_COLLECTOR_GLOBALGC (J9VMSTATE_GC | 0x0014)
 #define J9VMSTATE_GC_COLLECTOR_SCAVENGER (J9VMSTATE_GC | 0x0015)
 #define J9VMSTATE_GC_ALLOCATE_OBJECT (J9VMSTATE_GC | 0x0019)
-#define J9VMSTATE_GC_TLH_RESET (J9VMSTATE_GC | 0x001D)
+#define J9VMSTATE_GC_THIS_STATE_CAN_BE_REUSED (J9VMSTATE_GC | 0x001D)
 #define J9VMSTATE_GC_CONCURRENT_MARK_COMPLETE_TRACING (J9VMSTATE_GC | 0x001E)
 #define J9VMSTATE_GC_CHECK_RESIZE (J9VMSTATE_GC | 0x0020)
 #define J9VMSTATE_GC_PERFORM_RESIZE (J9VMSTATE_GC | 0x0021)

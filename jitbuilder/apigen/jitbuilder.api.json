@@ -1966,13 +1966,44 @@
         {
             "name":"VirtualMachineRegisterInStruct",
             "short-name": "VMRIS",
+            "extends": "VirtualMachineRegister",
             "types": [
                 ],
             "fields": [
                 ],
             "constructors": [
+                { "name": ""
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "VirtualMachineRegisterInStruct"
+                , "parms": [
+                    {"name":"b","type":"IlBuilder"},
+                    {"name":"structName","type":"constString"},
+                    {"name":"localNameHoldingStructAddress","type":"constString"},
+                    {"name":"fieldName","type":"constString"},
+                    {"name":"localName","type":"constString"}
+                    ]
+                }
                 ],
             "callbacks": [
+                { "name": "Commit"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "none"
+                , "parms": [ {"name":"b","type":"IlBuilder"} ]
+                },
+                { "name": "Reload"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "none"
+                , "parms": [ {"name":"b","type":"IlBuilder"} ]
+                },
+                { "name": "MakeCopy"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "VirtualMachineState"
+                , "parms": []
+                }
                 ],
             "services": [
                 ]

@@ -3328,21 +3328,9 @@ OMR::Z::Instruction::is4ByteLoad()
    }
 
 bool
-OMR::Z::Instruction::isAsmGen()
-   {
-   return self()->getOpCodeValue() == TR::InstOpCode::ASM;
-   }
-
-bool
 OMR::Z::Instruction::isRet()
    {
    return self()->getOpCodeValue() == TR::InstOpCode::RET;
-   }
-
-bool
-OMR::Z::Instruction::isTailCall()
-   {
-   return self()->getOpCodeValue() == TR::InstOpCode::TAILCALL;
    }
 
 int8_t

@@ -236,7 +236,7 @@ TR::Instruction* realInstruction(TR::Instruction* inst, bool forward)
 
 TR::Instruction* realInstructionWithLabels(TR::Instruction* inst, bool forward)
    {
-   while (inst && (inst->getKind() == TR::Instruction::IsPseudo && !inst->isAsmGen() ||
+   while (inst && (inst->getKind() == TR::Instruction::IsPseudo ||
                    inst->getKind() == TR::Instruction::IsNotExtended))
       {
       inst = forward ? inst->getNext() : inst->getPrev();
@@ -247,7 +247,7 @@ TR::Instruction* realInstructionWithLabels(TR::Instruction* inst, bool forward)
 
 TR::Instruction* realInstructionWithLabelsAndRET(TR::Instruction* inst, bool forward)
    {
-   while (inst && (inst->getKind() == TR::Instruction::IsPseudo && !inst->isAsmGen() ||
+   while (inst && (inst->getKind() == TR::Instruction::IsPseudo ||
                    inst->getKind() == TR::Instruction::IsNotExtended) && !inst->isRet())
       {
       inst = forward ? inst->getNext() : inst->getPrev();
@@ -272,7 +272,6 @@ TR_S390PostRAPeephole::isBarrierToPeepHoleLookback(TR::Instruction *current)
 
    if (s390current->isLabel()) return true;
    if (s390current->isCall())  return true;
-   if (s390current->isAsmGen()) return true;
    if (s390current->isBranchOp()) return true;
    if (s390current->getOpCodeValue() == TR::InstOpCode::DCB) return true;
 

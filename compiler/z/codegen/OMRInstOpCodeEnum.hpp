@@ -26,18 +26,13 @@
 
    /* Pseudo Instructions */
 
-   ASM,                 // ASM WCode Support
    ASSOCREGS,           // Register Association
    BAD,                 // Bad Opcode
    BREAK,               // Breakpoint (debugger)
-   CGFRB,               // Compare and Branch (64-32)
-   CLGFRB,              // Compare Logical And Branch (64-32)
    DC,                  // DC
    DC2,                 // DC2
    DCB,                 // Debug Counter Bump
    DEPEND,              // Someplace to hang dependencies
-   DIRECTIVE,           // WCode DIR related
-   DS,                  // DS
    FENCE,               // Fence
    LABEL,               // Destination of a jump
    LHHR,                // Load (High <- High)
@@ -61,16 +56,11 @@
    RINEXT,              // Runtime Instrumentation Next
    RIOFF,               // Runtime Instrumentation Off
    RION,                // Runtime Instrumentation On
-   SCHEDFENCE,          // Scheduling Fence
    SLLHH,               // Shift Left Logical (High <- High)
    SLLLH,               // Shift Left Logical (Low <- High)
    SRLHH,               // Shift Right Logical (High <- High)
    SRLLH,               // Shift Right Logical (Low <- High)
-   TAILCALL,            // Tail Call
-   TCDT,                // Test Data Class (DFP64)
-   TRIC,                // Test Runtime Instrumentation Controls
    VGNOP,               // ValueGuardNOP
-   WRTBAR,              // Write Barrier
    XHHR,                // Exclusive OR High (High <- High)
    XHLR,                // Exclusive OR High (High <- Low)
    XLHR,                // Exclusive OR High (Low <- High)

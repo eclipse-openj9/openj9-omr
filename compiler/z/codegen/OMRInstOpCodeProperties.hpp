@@ -26,17 +26,6 @@
 
 
    {
-   /* .mnemonic    = */ OMR::InstOpCode::ASM,
-   /* .name        = */ "ASM",
-   /* .description = */ "ASM WCode Support",
-   /* .opcode[0]   = */ 0x00,
-   /* .opcode[1]   = */ 0x00,
-   /* .format      = */ PSEUDO,
-   /* .minimumALS  = */ TR_S390ProcessorInfo::TR_UnknownArchitecture,
-   /* .properties  = */ S390OpProp_None
-   },
-
-   {
    /* .mnemonic    = */ OMR::InstOpCode::ASSOCREGS,
    /* .name        = */ "ASSOCREGS",
    /* .description = */ "Register Association",
@@ -67,32 +56,6 @@
    /* .format      = */ E_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_UnknownArchitecture,
    /* .properties  = */ S390OpProp_None
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::CGFRB,
-   /* .name        = */ "CGFRB",
-   /* .description = */ "Compare and Branch (64-32)",
-   /* .opcode[0]   = */ 0xEC,
-   /* .opcode[1]   = */ 0xF4,
-   /* .format      = */ RRS_FORMAT,
-   /* .minimumALS  = */ TR_S390ProcessorInfo::TR_UnknownArchitecture,
-   /* .properties  = */ S390OpProp_Is32To64Bit |
-                        S390OpProp_IsCompare |
-                        S390OpProp_BranchOp
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::CLGFRB,
-   /* .name        = */ "CLGFRB",
-   /* .description = */ "Compare Logical And Branch (64-32)",
-   /* .opcode[0]   = */ 0xEC,
-   /* .opcode[1]   = */ 0xF5,
-   /* .format      = */ RRS_FORMAT,
-   /* .minimumALS  = */ TR_S390ProcessorInfo::TR_UnknownArchitecture,
-   /* .properties  = */ S390OpProp_Is32To64Bit |
-                        S390OpProp_IsCompare |
-                        S390OpProp_BranchOp
    },
 
    {
@@ -136,28 +99,6 @@
    /* .mnemonic    = */ OMR::InstOpCode::DEPEND,
    /* .name        = */ "DEPEND",
    /* .description = */ "Someplace to hang dependencies",
-   /* .opcode[0]   = */ 0x00,
-   /* .opcode[1]   = */ 0x00,
-   /* .format      = */ PSEUDO,
-   /* .minimumALS  = */ TR_S390ProcessorInfo::TR_UnknownArchitecture,
-   /* .properties  = */ S390OpProp_None
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::DIRECTIVE,
-   /* .name        = */ "DIRECTIVE",
-   /* .description = */ "WCode DIR related",
-   /* .opcode[0]   = */ 0x00,
-   /* .opcode[1]   = */ 0x00,
-   /* .format      = */ PSEUDO,
-   /* .minimumALS  = */ TR_S390ProcessorInfo::TR_UnknownArchitecture,
-   /* .properties  = */ S390OpProp_None
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::DS,
-   /* .name        = */ "DS",
-   /* .description = */ "DS",
    /* .opcode[0]   = */ 0x00,
    /* .opcode[1]   = */ 0x00,
    /* .format      = */ PSEUDO,
@@ -481,17 +422,6 @@
    },
 
    {
-   /* .mnemonic    = */ OMR::InstOpCode::SCHEDFENCE,
-   /* .name        = */ "SCHEDFENCE",
-   /* .description = */ "Scheduling Fence",
-   /* .opcode[0]   = */ 0x00,
-   /* .opcode[1]   = */ 0x00,
-   /* .format      = */ PSEUDO,
-   /* .minimumALS  = */ TR_S390ProcessorInfo::TR_UnknownArchitecture,
-   /* .properties  = */ S390OpProp_None
-   },
-
-   {
    /* .mnemonic    = */ OMR::InstOpCode::SLLHH,
    /* .name        = */ "SLLHH",
    /* .description = */ "Shift Left Logical (High <- High)",
@@ -550,57 +480,11 @@
    },
 
    {
-   /* .mnemonic    = */ OMR::InstOpCode::TAILCALL,
-   /* .name        = */ "TAILCALL",
-   /* .description = */ "Tail Call",
-   /* .opcode[0]   = */ 0x00,
-   /* .opcode[1]   = */ 0x00,
-   /* .format      = */ PSEUDO,
-   /* .minimumALS  = */ TR_S390ProcessorInfo::TR_UnknownArchitecture,
-   /* .properties  = */ S390OpProp_IsCall
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::TCDT,
-   /* .name        = */ "TCDT",
-   /* .description = */ "Test Data Class (DFP64)",
-   /* .opcode[0]   = */ 0xED,
-   /* .opcode[1]   = */ 0x54,
-   /* .format      = */ RXE_FORMAT,
-   /* .minimumALS  = */ TR_S390ProcessorInfo::TR_UnknownArchitecture,
-   /* .properties  = */ S390OpProp_DoubleFP |
-                        S390OpProp_Is64Bit |
-                        S390OpProp_SetsCC
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::TRIC,
-   /* .name        = */ "TRIC",
-   /* .description = */ "TEST RUNTIME INSTRUMENTATION CONTROLS",
-   /* .opcode[0]   = */ 0xAA,
-   /* .opcode[1]   = */ 0x02,
-   /* .format      = */ RIa_FORMAT,
-   /* .minimumALS  = */ TR_S390ProcessorInfo::TR_UnknownArchitecture,
-   /* .properties  = */ S390OpProp_SetsCC
-   },
-
-   {
    /* .mnemonic    = */ OMR::InstOpCode::VGNOP,
    /* .name        = */ "VGNOP",
    /* .description = */ "ValueGuardNOP",
    /* .opcode[0]   = */ 0xA7,
    /* .opcode[1]   = */ 0x04,
-   /* .format      = */ PSEUDO,
-   /* .minimumALS  = */ TR_S390ProcessorInfo::TR_UnknownArchitecture,
-   /* .properties  = */ S390OpProp_None
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::WRTBAR,
-   /* .name        = */ "WRTBAR",
-   /* .description = */ "Write Barrier",
-   /* .opcode[0]   = */ 0x00,
-   /* .opcode[1]   = */ 0x00,
    /* .format      = */ PSEUDO,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_UnknownArchitecture,
    /* .properties  = */ S390OpProp_None

@@ -59,17 +59,13 @@ OMR::Z::InstOpCode::hasBypass()
 uint32_t
 OMR::Z::InstOpCode::isAdmin()
    {
-   return (_mnemonic == DIRECTIVE ||
-           _mnemonic == RET ||
+   return (_mnemonic == RET ||
            _mnemonic == ASSOCREGS ||
            _mnemonic == DEPEND ||
            _mnemonic == FENCE ||
-           _mnemonic == SCHEDFENCE ||
            _mnemonic == PROC ||
            _mnemonic == DC ||
            _mnemonic == DC2 ||
-           _mnemonic == ASM ||
-           _mnemonic == DS ||
            _mnemonic == DCB);
    }
 

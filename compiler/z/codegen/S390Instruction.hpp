@@ -625,11 +625,6 @@ class S390PseudoInstruction : public TR::Instruction
    TR::LabelSymbol *_callDescLabel;
    bool _shouldBeginNewLine;
 
-   // Following is used when ASM encoding is determined at compile time
-   // (e.g. for C/C++ when doing inlined asm and producing object file)
-   uint8_t *_asmDataEncoding;       ///< binary encoding values
-   int32_t  _asmDataEncodingLength; ///< binary encoding length
-
    public:
 
    S390PseudoInstruction(TR::InstOpCode::Mnemonic op,
@@ -641,8 +636,6 @@ class S390PseudoInstruction : public TR::Instruction
         _callDescValue(0),
         _padbytes(0),
         _callDescLabel(NULL),
-        _asmDataEncoding(NULL),
-        _asmDataEncodingLength(0),
         _shouldBeginNewLine(false){}
 
    S390PseudoInstruction(TR::InstOpCode::Mnemonic op,
@@ -655,8 +648,6 @@ class S390PseudoInstruction : public TR::Instruction
         _callDescValue(0),
         _padbytes(0),
         _callDescLabel(NULL),
-        _asmDataEncoding(NULL),
-        _asmDataEncodingLength(0),
         _shouldBeginNewLine(false){}
 
    S390PseudoInstruction(TR::InstOpCode::Mnemonic  op,
@@ -669,8 +660,6 @@ class S390PseudoInstruction : public TR::Instruction
         _callDescValue(0),
         _padbytes(0),
         _callDescLabel(NULL),
-        _asmDataEncoding(NULL),
-        _asmDataEncodingLength(0),
         _shouldBeginNewLine(false){}
 
    S390PseudoInstruction(TR::InstOpCode::Mnemonic  op,
@@ -684,8 +673,6 @@ class S390PseudoInstruction : public TR::Instruction
         _callDescValue(0),
         _padbytes(0),
         _callDescLabel(NULL),
-        _asmDataEncoding(NULL),
-        _asmDataEncodingLength(0),
         _shouldBeginNewLine(false){}
 
    virtual char *description() { return "S390PseudoInstruction"; }
@@ -697,11 +684,6 @@ class S390PseudoInstruction : public TR::Instruction
 
    void setShouldBeginNewLine(bool sbnl) { _shouldBeginNewLine = sbnl; }
    bool shouldBeginNewLine() { return _shouldBeginNewLine; }
-
-   uint8_t *getASMDataEncoding() { return _asmDataEncoding; }
-   void setASMDataEncoding(uint8_t *encoding) { _asmDataEncoding = encoding; }
-   uint32_t  getASMDataEncodingLength() { return _asmDataEncodingLength; }
-   void setASMDataEncodingLength(int32_t encodingLength) { _asmDataEncodingLength = encodingLength; }
 
    virtual uint8_t *generateBinaryEncoding();
 

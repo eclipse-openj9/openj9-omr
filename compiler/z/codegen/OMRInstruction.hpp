@@ -202,9 +202,7 @@ class OMR_EXTENSIBLE Instruction : public OMR::Instruction
    virtual bool isDebugFence()        { return false; }
 
    virtual bool is4ByteLoad();
-   virtual bool isAsmGen();
    virtual bool isRet();
-   virtual bool isTailCall();
 
    virtual bool implicitlyUsesGPR0() { return _opcode.implicitlyUsesGPR0() > 0; }
    virtual bool implicitlyUsesGPR1() { return _opcode.implicitlyUsesGPR1() > 0; }

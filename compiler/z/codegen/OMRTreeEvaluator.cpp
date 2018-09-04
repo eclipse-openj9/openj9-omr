@@ -7101,19 +7101,7 @@ OMR::Z::TreeEvaluator::aiaddEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 
    aiaddMR->populateAddTree(node, cg);
    aiaddMR->eliminateNegativeDisplacement(node, cg);
-
-   // this is partial extract from enforceDisplacementLimit in order to remove the need for the final LA in some cases
-   if (aiaddMR->getOffset() >= MAXLONGDISP && aiaddMR->getOffset() <= TR::getMaxSigned<TR::Int32>() && TR::Compiler->target.is32Bit())
-      {
-      TR::MemoryReference *tempMR = generateS390MemoryReference(aiaddMR->getBaseRegister(), aiaddMR->getIndexRegister(), 0, cg);
-      tempMR->setSymbolReference(aiaddMR->getSymbolReference());
-      generateRXInstruction(cg, TR::InstOpCode::LA, node, targetRegister, tempMR);
-      generateS390ImmOp(cg, TR::InstOpCode::getAddOpCode(), node, targetRegister, targetRegister, (int32_t)aiaddMR->getOffset());
-      }
-   else
-      {
-      aiaddMR->enforceDisplacementLimit(node, cg, NULL);
-      }
+   aiaddMR->enforceDisplacementLimit(node, cg, NULL);
 
    if (node->getOpCodeValue() == TR::aiadd && node->isInternalPointer())
       {
@@ -7143,6 +7131,7 @@ OMR::Z::TreeEvaluator::aiaddEvaluator(TR::Node * node, TR::CodeGenerator * cg)
          }
       }
 
+   generateRXInstruction(cg, TR::InstOpCode::LA, node, targetRegister, aiaddMR);
    node->setRegister(targetRegister);
 
    return targetRegister;

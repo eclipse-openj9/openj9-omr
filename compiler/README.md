@@ -133,6 +133,7 @@ Variadic templates                              | Some
 static_assert                                   | Yes
 auto                                            | Yes
 decltype                                        | Yes
+nullptr                                         | No
 Delegating constructors                         | No
 Inheriting constructors                         | No
 Extended friend declarations                    | No

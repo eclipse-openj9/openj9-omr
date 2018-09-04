@@ -22,7 +22,9 @@
 #include "ddr/ir/TypedefUDT.hpp"
 
 TypedefUDT::TypedefUDT(unsigned int lineNumber)
-	: UDT(0, lineNumber), _aliasedType(NULL)
+	: UDT(0, lineNumber)
+	, _aliasedType(NULL)
+	, _modifiers()
 {
 	/* A typedef is opaque only if an overrides file says so. */
 	_opaque = false;

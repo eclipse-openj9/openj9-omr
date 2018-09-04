@@ -23,6 +23,7 @@
 
 EnumUDT::EnumUDT(unsigned int lineNumber)
 	: UDT(4, lineNumber)
+	, _enumMembers()
 {
 }
 

@@ -277,6 +277,7 @@ PdbScanner::updatePostponedFieldNames()
 			(*type)->_blacklisted = checkBlacklistedType((*type)->_name);
 		}
 	}
+	_postponedFields.clear();
 
 	return rc;
 }
@@ -1131,7 +1132,7 @@ PdbScanner::setSuperClassName(IDiaSymbol *symbol, ClassUDT *newUDT)
 
 	if (DDR_RC_OK == rc) {
 		/* Find the superclass UDT from the map by size and name.
-		 * If its not found, add it to a list to check later.
+		 * If it's not found, add it to a list to check later.
 		 */
 		if (!name.empty()) {
 			unordered_map<string, Type *>::const_iterator map_it = _typeMap.find(name);

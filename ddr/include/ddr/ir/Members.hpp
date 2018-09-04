@@ -30,6 +30,7 @@ class Members
 public:
 	std::string _name;
 
+	Members() : _name() {}
 	virtual ~Members();
 };
 

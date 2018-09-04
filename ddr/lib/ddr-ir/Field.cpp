@@ -23,7 +23,8 @@
 #include "ddr/ir/Type.hpp"
 
 Field::Field()
-	: _fieldType(NULL)
+	: Members()
+	, _fieldType(NULL)
 	, _offset(0)
 	, _modifiers()
 	, _bitField(0)

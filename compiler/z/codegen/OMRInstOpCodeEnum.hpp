@@ -52,10 +52,6 @@
    OLHR,                // OR High (Low <- High)
    PROC,                // Entry to the method
    RET,                 // Return
-   RIEMIT,              // Runtime Instrumentation Emit
-   RINEXT,              // Runtime Instrumentation Next
-   RIOFF,               // Runtime Instrumentation Off
-   RION,                // Runtime Instrumentation On
    SLLHH,               // Shift Left Logical (High <- High)
    SLLLH,               // Shift Left Logical (Low <- High)
    SRLHH,               // Shift Right Logical (High <- High)
@@ -958,6 +954,10 @@
    NIAI,                // Next Instruction Access Intent
    NTSTG,               // Nontransactional Store
    PPA,                 // Perform Processor Assist
+   RIEMIT,              // Runtime Instrumentation Emit
+   RINEXT,              // Runtime Instrumentation Next
+   RIOFF,               // Runtime Instrumentation Off
+   RION,                // Runtime Instrumentation On
    RISBGN,              // Rotate Then Insert Selected Bits
    TABORT,              // Transaction Abort
    TBEGIN,              // Transaction Begin

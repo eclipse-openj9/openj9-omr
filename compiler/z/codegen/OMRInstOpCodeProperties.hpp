@@ -378,50 +378,6 @@
    },
 
    {
-   /* .mnemonic    = */ OMR::InstOpCode::RIEMIT,
-   /* .name        = */ "RIEMIT",
-   /* .description = */ "RUNTIME INSTRUMENTATION EMIT",
-   /* .opcode[0]   = */ 0xAA,
-   /* .opcode[1]   = */ 0x04,
-   /* .format      = */ RIa_FORMAT,
-   /* .minimumALS  = */ TR_S390ProcessorInfo::TR_UnknownArchitecture,
-   /* .properties  = */ S390OpProp_UsesTarget
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::RINEXT,
-   /* .name        = */ "RINEXT",
-   /* .description = */ "RUNTIME INSTRUMENTATION NEXT",
-   /* .opcode[0]   = */ 0xAA,
-   /* .opcode[1]   = */ 0x00,
-   /* .format      = */ RIa_FORMAT,
-   /* .minimumALS  = */ TR_S390ProcessorInfo::TR_UnknownArchitecture,
-   /* .properties  = */ S390OpProp_None
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::RIOFF,
-   /* .name        = */ "RIOFF",
-   /* .description = */ "RUNTIME INSTRUMENTATION OFF",
-   /* .opcode[0]   = */ 0xAA,
-   /* .opcode[1]   = */ 0x03,
-   /* .format      = */ RIa_FORMAT,
-   /* .minimumALS  = */ TR_S390ProcessorInfo::TR_UnknownArchitecture,
-   /* .properties  = */ S390OpProp_SetsCC
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::RION,
-   /* .name        = */ "RION",
-   /* .description = */ "RUNTIME INSTRUMENTATION ON",
-   /* .opcode[0]   = */ 0xAA,
-   /* .opcode[1]   = */ 0x01,
-   /* .format      = */ RIa_FORMAT,
-   /* .minimumALS  = */ TR_S390ProcessorInfo::TR_UnknownArchitecture,
-   /* .properties  = */ S390OpProp_SetsCC
-   },
-
-   {
    /* .mnemonic    = */ OMR::InstOpCode::SLLHH,
    /* .name        = */ "SLLHH",
    /* .description = */ "Shift Left Logical (High <- High)",
@@ -13120,6 +13076,50 @@
    /* .format      = */ RRFc_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_zEC12,
    /* .properties  = */ S390OpProp_UsesTarget
+   },
+
+   {
+   /* .mnemonic    = */ OMR::InstOpCode::RIEMIT,
+   /* .name        = */ "RIEMIT",
+   /* .description = */ "RUNTIME INSTRUMENTATION EMIT",
+   /* .opcode[0]   = */ 0xAA,
+   /* .opcode[1]   = */ 0x04,
+   /* .format      = */ RIa_FORMAT,
+   /* .minimumALS  = */ TR_S390ProcessorInfo::TR_zEC12,
+   /* .properties  = */ S390OpProp_UsesTarget
+   },
+
+   {
+   /* .mnemonic    = */ OMR::InstOpCode::RINEXT,
+   /* .name        = */ "RINEXT",
+   /* .description = */ "RUNTIME INSTRUMENTATION NEXT",
+   /* .opcode[0]   = */ 0xAA,
+   /* .opcode[1]   = */ 0x00,
+   /* .format      = */ RIa_FORMAT,
+   /* .minimumALS  = */ TR_S390ProcessorInfo::TR_zEC12,
+   /* .properties  = */ S390OpProp_None
+   },
+
+   {
+   /* .mnemonic    = */ OMR::InstOpCode::RIOFF,
+   /* .name        = */ "RIOFF",
+   /* .description = */ "RUNTIME INSTRUMENTATION OFF",
+   /* .opcode[0]   = */ 0xAA,
+   /* .opcode[1]   = */ 0x03,
+   /* .format      = */ RIa_FORMAT,
+   /* .minimumALS  = */ TR_S390ProcessorInfo::TR_zEC12,
+   /* .properties  = */ S390OpProp_SetsCC
+   },
+
+   {
+   /* .mnemonic    = */ OMR::InstOpCode::RION,
+   /* .name        = */ "RION",
+   /* .description = */ "RUNTIME INSTRUMENTATION ON",
+   /* .opcode[0]   = */ 0xAA,
+   /* .opcode[1]   = */ 0x01,
+   /* .format      = */ RIa_FORMAT,
+   /* .minimumALS  = */ TR_S390ProcessorInfo::TR_zEC12,
+   /* .properties  = */ S390OpProp_SetsCC
    },
 
    {

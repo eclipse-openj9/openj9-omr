@@ -2729,7 +2729,7 @@ TR::S390RRSInstruction::generateBinaryEncoding()
 /**
  *    RIE Format
  *
- *    RIE1: CRJ, GGRJ, CGFRJ
+ *    RIE1: CRJ, GGRJ
  *     ________ ____ ____ _________________ ___________________
  *    |Op Code | R1 | R2 |       I4        | M3 |////| Op Code |
  *    |________|____|____|_________________|____|____|_________|
@@ -2874,11 +2874,6 @@ TR::S390RIEInstruction::generateBinaryEncoding()
          bool isRIL=false;
          switch (getOpCodeValue())
             {
-            case TR::InstOpCode::CGFRJ  :
-                 cmpOp = TR::InstOpCode::CGFR;
-                 *(uint16_t *) (cursor) = bos(0xB930);
-                 isRRE = true;
-                 break;
             case TR::InstOpCode::CGRJ   :
                  cmpOp = TR::InstOpCode::CGR;
                  *(uint16_t *) (cursor) = bos(0xB920);
@@ -2887,11 +2882,6 @@ TR::S390RIEInstruction::generateBinaryEncoding()
             case TR::InstOpCode::CLGRJ  :
                  cmpOp = TR::InstOpCode::CLGR;
                  *(uint16_t *) (cursor) = bos(0xB921);
-                 isRRE = true;
-                 break;
-            case TR::InstOpCode::CLGFRJ :
-                 cmpOp = TR::InstOpCode::CLGFR;
-                 *(uint16_t *) (cursor) = bos(0xB931);
                  isRRE = true;
                  break;
             case TR::InstOpCode::CLRJ   :
@@ -3073,20 +3063,12 @@ TR::S390RIEInstruction::splitIntoCompareAndLongBranch(void)
    bool isRIL = false;
    switch (getOpCodeValue())
       {
-      case TR::InstOpCode::CGFRJ  :
-       cmpOp = TR::InstOpCode::CGFR;
-       isRRE = true;
-       break;
       case TR::InstOpCode::CGRJ   :
        cmpOp = TR::InstOpCode::CGR;
        isRRE = true;
        break;
       case TR::InstOpCode::CLGRJ  :
        cmpOp = TR::InstOpCode::CLGR;
-       isRRE = true;
-       break;
-      case TR::InstOpCode::CLGFRJ :
-       cmpOp = TR::InstOpCode::CLGFR;
        isRRE = true;
        break;
       case TR::InstOpCode::CLRJ   :
@@ -3168,20 +3150,12 @@ TR::S390RIEInstruction::splitIntoCompareAndBranch(TR::Instruction *insertBranchA
    bool isRIL = false;
    switch (getOpCodeValue())
       {
-      case TR::InstOpCode::CGFRJ  :
-       cmpOp = TR::InstOpCode::CGFR;
-       isRRE = true;
-       break;
       case TR::InstOpCode::CGRJ   :
        cmpOp = TR::InstOpCode::CGR;
        isRRE = true;
        break;
       case TR::InstOpCode::CLGRJ  :
        cmpOp = TR::InstOpCode::CLGR;
-       isRRE = true;
-       break;
-      case TR::InstOpCode::CLGFRJ :
-       cmpOp = TR::InstOpCode::CLGFR;
        isRRE = true;
        break;
       case TR::InstOpCode::CLRJ   :

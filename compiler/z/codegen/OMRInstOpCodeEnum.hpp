@@ -31,18 +31,11 @@
    BAD,                 // Bad Opcode
    BREAK,               // Breakpoint (debugger)
    CGFRB,               // Compare and Branch (64-32)
-   CGFRJ,               // Compare and Branch Relative (64-32)
-   CGFRT,               // Compare and Trap (64-32)
-   CHHRL,               // Compare Halfword Relative Long (16)
    CLGFRB,              // Compare Logical And Branch (64-32)
-   CLGFRJ,              // Compare Logical And Branch Relative (64-32)
-   CLGFRT,              // Compare Logical And Trap (64-32)
-   CLHHRL,              // Compare Logical Relative Long Halfword (16)
    DC,                  // DC
    DC2,                 // DC2
    DCB,                 // Debug Counter Bump
    DEPEND,              // Someplace to hang dependencies
-   DIDTR,               // Divide to Integer (DFP64)
    DIRECTIVE,           // WCode DIR related
    DS,                  // DS
    FENCE,               // Fence
@@ -56,8 +49,6 @@
    LLHHHR,              // Load Logical Halfword (High <- High)
    LLHHLR,              // Load Logical Halfword (High <- low)
    LLHLHR,              // Load Logical Halfword (Low <- High)
-   LRIC,                // Load Runtime Instrumentation Controls
-   MRIC,                // Modify Runtime Instrumentation Controls
    NHHR,                // AND High (High <- High)
    NHLR,                // AND High (High <- Low)
    NLHR,                // AND High (Low <- High)
@@ -75,7 +66,6 @@
    SLLLH,               // Shift Left Logical (Low <- High)
    SRLHH,               // Shift Right Logical (High <- High)
    SRLLH,               // Shift Right Logical (Low <- High)
-   STRIC,               // Store Runtime Instrumentation Controls
    TAILCALL,            // Tail Call
    TCDT,                // Test Data Class (DFP64)
    TRIC,                // Test Runtime Instrumentation Controls
@@ -210,7 +200,6 @@
    DEB,                 // Divide (SB)
    DEBR,                // Divide (SB)
    DER,                 // Divide, Short HFP
-   DIAG,                // Diagnose Macro
    DIDBR,               // Divide to Integer (LB)
    DIEBR,               // Divide to Integer (SB)
    DLGR,                // Divide Logical

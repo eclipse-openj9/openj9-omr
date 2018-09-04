@@ -83,48 +83,6 @@
    },
 
    {
-   /* .mnemonic    = */ OMR::InstOpCode::CGFRJ,
-   /* .name        = */ "CGFRJ",
-   /* .description = */ "Compare and Branch Relative (64-32)",
-   /* .opcode[0]   = */ 0xEC,
-   /* .opcode[1]   = */ 0x74,
-   /* .format      = */ RIE_FORMAT,
-   /* .minimumALS  = */ TR_S390ProcessorInfo::TR_UnknownArchitecture,
-   /* .properties  = */ S390OpProp_Is32To64Bit |
-                        S390OpProp_IsCompare |
-                        S390OpProp_BranchOp
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::CGFRT,
-   /* .name        = */ "CGFRT",
-   /* .description = */ "Compare and Trap (64-32)",
-   /* .opcode[0]   = */ 0xB9,
-   /* .opcode[1]   = */ 0x70,
-   /* .format      = */ RRF2_FORMAT,
-   /* .minimumALS  = */ TR_S390ProcessorInfo::TR_UnknownArchitecture,
-   /* .properties  = */ S390OpProp_Is32To64Bit |
-                        S390OpProp_IsCompare |
-                        S390OpProp_Trap
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::CHHRL,
-   /* .name        = */ "CHHRL",
-   /* .description = */ "Compare Halfword Relative Long (16)",
-   /* .opcode[0]   = */ 0xC6,
-   /* .opcode[1]   = */ 0x01,
-   /* .format      = */ RIL_FORMAT,
-   /* .minimumALS  = */ TR_S390ProcessorInfo::TR_UnknownArchitecture,
-   /* .properties  = */ S390OpProp_Is32Bit |
-                        S390OpProp_IsCompare |
-                        S390OpProp_SetsCC |
-                        S390OpProp_SetsCompareFlag |
-                        S390OpProp_IsLoad |
-                        S390OpProp_IsExtendedImmediate
-   },
-
-   {
    /* .mnemonic    = */ OMR::InstOpCode::CLGFRB,
    /* .name        = */ "CLGFRB",
    /* .description = */ "Compare Logical And Branch (64-32)",
@@ -135,49 +93,6 @@
    /* .properties  = */ S390OpProp_Is32To64Bit |
                         S390OpProp_IsCompare |
                         S390OpProp_BranchOp
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::CLGFRJ,
-   /* .name        = */ "CLGFRJ",
-   /* .description = */ "Compare Logical And Branch Relative (64-32)",
-   /* .opcode[0]   = */ 0xEC,
-   /* .opcode[1]   = */ 0x75,
-   /* .format      = */ RIE_FORMAT,
-   /* .minimumALS  = */ TR_S390ProcessorInfo::TR_UnknownArchitecture,
-   /* .properties  = */ S390OpProp_Is32To64Bit |
-                        S390OpProp_IsCompare |
-                        S390OpProp_BranchOp
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::CLGFRT,
-   /* .name        = */ "CLGFRT",
-   /* .description = */ "Compare Logical And Trap (64-32)",
-   /* .opcode[0]   = */ 0xB9,
-   /* .opcode[1]   = */ 0x71,
-   /* .format      = */ RRF2_FORMAT,
-   /* .minimumALS  = */ TR_S390ProcessorInfo::TR_UnknownArchitecture,
-   /* .properties  = */ S390OpProp_Is32To64Bit |
-                        S390OpProp_IsCompare |
-                        S390OpProp_Trap
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::CLHHRL,
-   /* .name        = */ "CLHHRL",
-   /* .description = */ "Compare Logical Relative Long Halfword (16)",
-   /* .opcode[0]   = */ 0xC6,
-   /* .opcode[1]   = */ 0x03,
-   /* .format      = */ RIL_FORMAT,
-   /* .minimumALS  = */ TR_S390ProcessorInfo::TR_UnknownArchitecture,
-   /* .properties  = */ S390OpProp_Is32Bit |
-                        S390OpProp_IsCompare |
-                        S390OpProp_SetsCC |
-                        S390OpProp_SetsCompareFlag |
-                        S390OpProp_IsLoad |
-                        S390OpProp_IsExtendedImmediate |
-                        S390OpProp_UsesTarget
    },
 
    {
@@ -226,21 +141,6 @@
    /* .format      = */ PSEUDO,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_UnknownArchitecture,
    /* .properties  = */ S390OpProp_None
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::DIDTR,
-   /* .name        = */ "DIDTR",
-   /* .description = */ "Divide to Integer (DFP64)",
-   /* .opcode[0]   = */ 0xB4,
-   /* .opcode[1]   = */ 0xC6,
-   /* .format      = */ RRF3_FORMAT,
-   /* .minimumALS  = */ TR_S390ProcessorInfo::TR_UnknownArchitecture,
-   /* .properties  = */ S390OpProp_DoubleFP |
-                        S390OpProp_Is64Bit |
-                        S390OpProp_SetsCC |
-                        S390OpProp_SetsOverflowFlag |
-                        S390OpProp_SetsOperand3
    },
 
    {
@@ -414,29 +314,6 @@
                         S390OpProp_SrcHW |
                         S390OpProp_IsRegCopy |
                         S390OpProp_SetsOperand1
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::LRIC,
-   /* .name        = */ "LRIC",
-   /* .description = */ "Load Runtime Instrumentation Controls",
-   /* .opcode[0]   = */ 0xEB,
-   /* .opcode[1]   = */ 0x60,
-   /* .format      = */ RSY_FORMAT,
-   /* .minimumALS  = */ TR_S390ProcessorInfo::TR_UnknownArchitecture,
-   /* .properties  = */ S390OpProp_IsLoad |
-                        S390OpProp_SetsOperand1
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::MRIC,
-   /* .name        = */ "MRIC",
-   /* .description = */ "Modify Runtime Instrumentation Controls",
-   /* .opcode[0]   = */ 0xEB,
-   /* .opcode[1]   = */ 0x62,
-   /* .format      = */ RSY_FORMAT,
-   /* .minimumALS  = */ TR_S390ProcessorInfo::TR_UnknownArchitecture,
-   /* .properties  = */ S390OpProp_SetsCC
    },
 
    {
@@ -670,18 +547,6 @@
                         S390OpProp_SrcHW |
                         S390OpProp_UsesTarget |
                         S390OpProp_SetsOperand1
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::STRIC,
-   /* .name        = */ "STRIC",
-   /* .description = */ "Store Runtime Instrumentation Controls",
-   /* .opcode[0]   = */ 0xEB,
-   /* .opcode[1]   = */ 0x61,
-   /* .format      = */ RSY_FORMAT,
-   /* .minimumALS  = */ TR_S390ProcessorInfo::TR_UnknownArchitecture,
-   /* .properties  = */ S390OpProp_IsStore |
-                        S390OpProp_SetsCC
    },
 
    {
@@ -2617,19 +2482,6 @@
    /* .properties  = */ S390OpProp_SingleFP |
                         S390OpProp_UsesTarget |
                         S390OpProp_SetsOperand1
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::DIAG,
-   /* .name        = */ "DIAG",
-   /* .description = */ "Diagnose Macro",
-   /* .opcode[0]   = */ 0x00,
-   /* .opcode[1]   = */ 0x00,
-   /* .format      = */ RS_FORMAT,
-   /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
-   /* .properties  = */ S390OpProp_UsesTarget |
-                        S390OpProp_SetsOperand1 |
-                        S390OpProp_SetsOperand2
    },
 
    {

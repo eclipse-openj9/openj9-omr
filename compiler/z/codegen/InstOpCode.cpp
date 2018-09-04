@@ -143,7 +143,6 @@ OMR::Z::InstOpCode::copyBinaryToBufferWithoutClear(uint8_t *cursor, TR::InstOpCo
      {
      switch (getInstructionFormat(i_opCode))
         {
-        case RIE_FORMAT:
         case RIEa_FORMAT:
         case RIEb_FORMAT:
         case RIEc_FORMAT:
@@ -153,15 +152,12 @@ OMR::Z::InstOpCode::copyBinaryToBufferWithoutClear(uint8_t *cursor, TR::InstOpCo
         case RIEg_FORMAT:
         case RIS_FORMAT:
         case RRS_FORMAT:
-        case RSL_FORMAT:
         case RSLa_FORMAT:
         case RSLb_FORMAT:
-        case RSY_FORMAT:
         case RSYa_FORMAT:
         case RSYb_FORMAT:
         case RXE_FORMAT:
         case RXF_FORMAT:
-        case RXY_FORMAT:
         case RXYa_FORMAT:
         case RXYb_FORMAT:
         case SIY_FORMAT:
@@ -378,9 +374,6 @@ TR::InstOpCode::Mnemonic
 OMR::Z::InstOpCode::getCmpTrapOpCode() { return TR::Compiler->target.is64Bit() ? TR::InstOpCode::CGRT : TR::InstOpCode::CRT; }
 
 TR::InstOpCode::Mnemonic
-OMR::Z::InstOpCode::getCmpWidenTrapOpCode() { return TR::Compiler->target.is64Bit() ? TR::InstOpCode::CGFRT : TR::InstOpCode::CRT; }
-
-TR::InstOpCode::Mnemonic
 OMR::Z::InstOpCode::getCmpImmOpCode() { return TR::Compiler->target.is64Bit() ? TR::InstOpCode::CGFI : TR::InstOpCode::CFI; }
 
 TR::InstOpCode::Mnemonic
@@ -391,9 +384,6 @@ OMR::Z::InstOpCode::getCmpImmBranchRelOpCode() { return TR::Compiler->target.is6
 
 TR::InstOpCode::Mnemonic
 OMR::Z::InstOpCode::getCmpLogicalTrapOpCode() { return TR::Compiler->target.is64Bit() ? TR::InstOpCode::CLGRT : TR::InstOpCode::CLRT; }
-
-TR::InstOpCode::Mnemonic
-OMR::Z::InstOpCode::getCmpLogicalWidenTrapOpCode() { return TR::Compiler->target.is64Bit() ? TR::InstOpCode::CLGFRT : TR::InstOpCode::CLRT; }
 
 TR::InstOpCode::Mnemonic
 OMR::Z::InstOpCode::getCmpLogicalImmTrapOpCode() { return TR::Compiler->target.is64Bit() ? TR::InstOpCode::CLGIT : TR::InstOpCode::CLFIT; }

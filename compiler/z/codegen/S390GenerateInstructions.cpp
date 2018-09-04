@@ -2679,7 +2679,11 @@ generateRegLitRefInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op
    TR::S390RILInstruction *LGRLinst = 0;
    TR::Compilation *comp = cg->comp();
 
-   if (TR::InstOpCode(op).getInstructionFormat() == RIL_FORMAT)
+   auto instructionFormat = TR::InstOpCode(op).getInstructionFormat();
+
+   if (instructionFormat == RILa_FORMAT ||
+       instructionFormat == RILb_FORMAT ||
+       instructionFormat == RILc_FORMAT)
       {
       TR::S390ConstantDataSnippet * constDataSnip = cg->create64BitLiteralPoolSnippet(TR::Int64, imm);
 

@@ -22,7 +22,6 @@
 
 #include <windows.h>
 #include <setjmp.h>
-#include <signal.h>
 
 #include "omrsignal.h"
 #include "omrport.h"
@@ -30,6 +29,10 @@
 #include "omrutilbase.h"
 #include "omrthread.h"
 #include "ut_omrport.h"
+
+#if defined(OMRPORT_OMRSIG_SUPPORT)
+#include "omrsig.h"
+#endif /* defined(OMRPORT_OMRSIG_SUPPORT) */
 
 /* UNWIND_CODE and UNWIND_INFO are not in the Windows SDK headers, but they are documented on MSDN */
 typedef union UNWIND_CODE {
@@ -171,7 +174,7 @@ static void removeAsyncHandlers(OMRPortLibrary *portLibrary);
 
 #if defined(OMR_PORT_ASYNC_HANDLER)
 static int J9THREAD_PROC asynchSignalReporter(void *userData);
-static void runHandlers(uint32_t asyncSignalFlag);
+static void runHandlers(uint32_t asyncSignalFlag, int osSignal);
 #endif /* defined(OMR_PORT_ASYNC_HANDLER) */
 
 static int32_t registerMasterHandlers(OMRPortLibrary *portLibrary, uint32_t flags, uint32_t allowedSubsetOfFlags, void **oldOSHandler);
@@ -1443,7 +1446,7 @@ sig_full_shutdown(struct OMRPortLibrary *portLibrary)
 		/* Register the original signal handlers, which were overwritten. */
 		for (index = 1; index < ARRAY_SIZE_SIGNALS; index++) {
 			if (handlerInfo[index].restore) {
-				signal(index, handlerInfo[index].originalHandler);
+				OMRSIG_SIGNAL(index, handlerInfo[index].originalHandler);
 				/* record that we no longer have a handler installed with the OS for this signal */
 				Trc_PRT_signal_sig_full_shutdown_deregistered_handler_with_OS(portLibrary, index);
 				handlerInfo[index].restore = 0;
@@ -1594,7 +1597,7 @@ registerSignalHandlerWithOS(OMRPortLibrary *portLibrary, uint32_t portLibrarySig
         return OMRPORT_SIG_ERROR;
     }
 
-    localOldOSHandler = signal(osSignalNo, handler);
+    localOldOSHandler = OMRSIG_SIGNAL(osSignalNo, handler);
     if (SIG_ERR == localOldOSHandler) {
         Trc_PRT_signal_registerSignalHandlerWithOS_failed_to_registerHandler(portLibrarySignalNo, osSignalNo, handler);
         return OMRPORT_SIG_ERROR;
@@ -1644,7 +1647,7 @@ masterASynchSignalHandler(int osSignalNo)
 	/* Signal handler is reset after invocation. So, the signal handler needs to
 	 * be registered again after it is invoked.
 	 */
-	signal(osSignalNo, masterASynchSignalHandler);
+	OMRSIG_SIGNAL(osSignalNo, masterASynchSignalHandler);
 }
 
 /**
@@ -1698,7 +1701,7 @@ removeAsyncHandlers(OMRPortLibrary *portLibrary)
  * @return void
  */
 static void
-runHandlers(uint32_t asyncSignalFlag)
+runHandlers(uint32_t asyncSignalFlag, int osSignal)
 {
 	J9WinAMD64AsyncHandlerRecord *cursor = NULL;
 
@@ -1721,6 +1724,14 @@ runHandlers(uint32_t asyncSignalFlag)
 		omrthread_monitor_notify_all(asyncMonitor);
 	}
 	omrthread_monitor_exit(asyncMonitor);
+
+#if defined(OMRPORT_OMRSIG_SUPPORT)
+	if (OMR_ARE_NO_BITS_SET(signalOptions, OMRPORT_SIG_OPTIONS_OMRSIG_NO_CHAIN)) {
+		if (OMRPORT_SIG_ERROR != osSignal) {
+			omrsig_handler(osSignal, NULL, NULL);
+		}
+	}
+#endif /* defined(OMRPORT_OMRSIG_SUPPORT) */
 }
 
 /**
@@ -1748,7 +1759,7 @@ asynchSignalReporter(void *userData)
 
 			if (signalCount > 0) {
 				asyncSignalFlag = mapOSSignalToPortLib(osSignal);
-				runHandlers(asyncSignalFlag);
+				runHandlers(asyncSignalFlag, osSignal);
 				subtractAtomic(&signalCounts[osSignal], 1);
 				/* j9sem_wait will fall-through for each j9sem_post. We can handle
 				 * one signal at a time. Ultimately, all signals will be handled

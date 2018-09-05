@@ -95,7 +95,7 @@ validSignalNum(int signum, bool nullAction)
 {
 #if defined(OMR_OS_WINDOWS)
 	return (SIGABRT == signum) || (SIGFPE == signum) || (SIGILL == signum) || (SIGINT == signum)
-		|| (SIGSEGV == signum) || (SIGTERM == signum);
+		|| (SIGSEGV == signum) || (SIGTERM == signum) || (SIGBREAK == signum);
 #elif defined(J9ZOS390)
 	return (signum >= 0) && (signum < NSIG) && (((signum != SIGKILL) && (signum != SIGSTOP)
 		&& (signum != SIGTHCONT) && (signum != SIGTHSTOP)) || nullAction);

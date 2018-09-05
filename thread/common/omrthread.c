@@ -529,7 +529,6 @@ init_threadParam(char *name, uintptr_t *pDefault)
 
 	ASSERT(name);
 	ASSERT(pDefault);
-	ASSERT(0 != *pDefault);
 
 	p = omrthread_global(name);
 	if (NULL == p) {

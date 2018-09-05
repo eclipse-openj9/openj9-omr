@@ -34,6 +34,7 @@ add_executable(comptest
 	ILValidatorTest.cpp
 	ArithmeticTest.cpp
 	ShiftAndRotateTest.cpp
+	SimplifierFoldAbsNegTest.cpp
 	SimplifierFoldAndTest.cpp
 	IfxcmpgeReductionTest.cpp
 	VectorTest.cpp

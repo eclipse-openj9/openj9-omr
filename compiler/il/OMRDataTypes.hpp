@@ -366,6 +366,8 @@ public:
 
    static TR::ILOpCodes getDataTypeConversion(TR::DataType t1, TR::DataType t2);
 
+   static TR::ILOpCodes getDataTypeBitConversion(TR::DataType t1, TR::DataType t2);
+
    static const char    * getName(TR::DataType dt);
    static int32_t         getSize(TR::DataType dt);
    static void            setSize(TR::DataType dt, int32_t newValue);

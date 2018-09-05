@@ -236,7 +236,10 @@ class MemToMemMacroOp
       bool _useEXForRemainder;
       bool _inRemainder;
 
-   private:
+   /** \brief
+    *     Defines the minimum length of the operands that can be encoded by an SS instruction format.
+    */
+   static const int32_t MIN_LENGTH_FOR_SS_INSTRUCTION = 1;
    };
 
 class MemToMemConstLenMacroOp : public MemToMemMacroOp

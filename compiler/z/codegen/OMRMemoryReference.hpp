@@ -113,7 +113,6 @@ private:
 TR::Instruction           *_targetSnippetInstruction;
 TR::Snippet                   *_targetSnippet;
 flags32_t                 _flags;
-/** PLX literal Format I_SYMBOL_FLAGS */
 int32_t                   _displacement;
 int64_t                   _offset;
 TR_StorageReference       *_storageReference;

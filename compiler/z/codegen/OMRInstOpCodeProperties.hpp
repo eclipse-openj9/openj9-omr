@@ -308,7 +308,6 @@
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_UnknownArchitecture,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_TargetHW |
-                        S390OpProp_SrcLW |
                         S390OpProp_IsRegCopy |
                         S390OpProp_SetsOperand1
    },
@@ -338,7 +337,6 @@
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_UnknownArchitecture,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_TargetHW |
-                        S390OpProp_SrcLW |
                         S390OpProp_IsRegCopy |
                         S390OpProp_SetsOperand1
    },
@@ -352,7 +350,6 @@
    /* .format      = */ PSEUDO,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_UnknownArchitecture,
    /* .properties  = */ S390OpProp_Is32Bit |
-                        S390OpProp_TargetLW |
                         S390OpProp_SrcHW |
                         S390OpProp_IsRegCopy |
                         S390OpProp_SetsOperand1
@@ -367,7 +364,6 @@
    /* .format      = */ PSEUDO,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_UnknownArchitecture,
    /* .properties  = */ S390OpProp_Is32Bit |
-                        S390OpProp_TargetLW |
                         S390OpProp_SrcHW |
                         S390OpProp_IsRegCopy |
                         S390OpProp_SetsOperand1
@@ -398,7 +394,6 @@
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_UnknownArchitecture,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_TargetHW |
-                        S390OpProp_SrcLW |
                         S390OpProp_IsRegCopy |
                         S390OpProp_SetsOperand1
    },
@@ -412,7 +407,6 @@
    /* .format      = */ PSEUDO,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_UnknownArchitecture,
    /* .properties  = */ S390OpProp_Is32Bit |
-                        S390OpProp_TargetLW |
                         S390OpProp_SrcHW |
                         S390OpProp_IsRegCopy |
                         S390OpProp_SetsOperand1
@@ -467,7 +461,6 @@
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_UnknownArchitecture,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_TargetHW |
-                        S390OpProp_SrcLW |
                         S390OpProp_UsesTarget |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_SetsOperand1
@@ -482,7 +475,6 @@
    /* .format      = */ PSEUDO,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_UnknownArchitecture,
    /* .properties  = */ S390OpProp_Is32Bit |
-                        S390OpProp_TargetLW |
                         S390OpProp_SrcHW |
                         S390OpProp_UsesTarget |
                         S390OpProp_SetsZeroFlag |
@@ -515,7 +507,6 @@
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_UnknownArchitecture,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_TargetHW |
-                        S390OpProp_SrcLW |
                         S390OpProp_UsesTarget |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_SetsOperand1
@@ -530,7 +521,6 @@
    /* .format      = */ PSEUDO,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_UnknownArchitecture,
    /* .properties  = */ S390OpProp_Is32Bit |
-                        S390OpProp_TargetLW |
                         S390OpProp_SrcHW |
                         S390OpProp_UsesTarget |
                         S390OpProp_SetsZeroFlag |
@@ -638,7 +628,6 @@
    /* .format      = */ PSEUDO,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_UnknownArchitecture,
    /* .properties  = */ S390OpProp_Is32Bit |
-                        S390OpProp_TargetLW |
                         S390OpProp_SrcHW |
                         S390OpProp_UsesTarget |
                         S390OpProp_SetsOperand1
@@ -668,7 +657,6 @@
    /* .format      = */ PSEUDO,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_UnknownArchitecture,
    /* .properties  = */ S390OpProp_Is32Bit |
-                        S390OpProp_TargetLW |
                         S390OpProp_SrcHW |
                         S390OpProp_UsesTarget |
                         S390OpProp_SetsOperand1
@@ -769,7 +757,6 @@
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_UnknownArchitecture,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_TargetHW |
-                        S390OpProp_SrcLW |
                         S390OpProp_UsesTarget |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_SetsOperand1
@@ -784,7 +771,6 @@
    /* .format      = */ PSEUDO,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_UnknownArchitecture,
    /* .properties  = */ S390OpProp_Is32Bit |
-                        S390OpProp_TargetLW |
                         S390OpProp_SrcHW |
                         S390OpProp_UsesTarget |
                         S390OpProp_SetsZeroFlag |
@@ -2993,8 +2979,7 @@
    /* .opcode[1]   = */ 0x00,
    /* .format      = */ RX_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
-   /* .properties  = */ S390OpProp_TargetLW |
-                        S390OpProp_IsLoad |
+   /* .properties  = */ S390OpProp_IsLoad |
                         S390OpProp_LongDispSupported |
                         S390OpProp_SetsOperand1 |
                         S390OpProp_UsesTarget
@@ -3008,8 +2993,7 @@
    /* .opcode[1]   = */ 0x00,
    /* .format      = */ RS_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
-   /* .properties  = */ S390OpProp_TargetLW |
-                        S390OpProp_SetsCC |
+   /* .properties  = */ S390OpProp_SetsCC |
                         S390OpProp_IsLoad |
                         S390OpProp_LongDispSupported |
                         S390OpProp_SetsOperand1 |
@@ -3050,8 +3034,7 @@
    /* .opcode[1]   = */ 0x02,
    /* .format      = */ RI_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
-   /* .properties  = */ S390OpProp_TargetLW |
-                        S390OpProp_SetsOperand1 |
+   /* .properties  = */ S390OpProp_SetsOperand1 |
                         S390OpProp_UsesTarget
    },
 
@@ -3063,8 +3046,7 @@
    /* .opcode[1]   = */ 0x03,
    /* .format      = */ RI_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
-   /* .properties  = */ S390OpProp_TargetLW |
-                        S390OpProp_SetsOperand1 |
+   /* .properties  = */ S390OpProp_SetsOperand1 |
                         S390OpProp_UsesTarget
    },
 
@@ -5080,8 +5062,7 @@
    /* .opcode[1]   = */ 0x06,
    /* .format      = */ RI_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
-   /* .properties  = */ S390OpProp_TargetLW |
-                        S390OpProp_UsesTarget |
+   /* .properties  = */ S390OpProp_UsesTarget |
                         S390OpProp_SetsCC |
                         S390OpProp_SetsOperand1
    },
@@ -5094,8 +5075,7 @@
    /* .opcode[1]   = */ 0x07,
    /* .format      = */ RI_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
-   /* .properties  = */ S390OpProp_TargetLW |
-                        S390OpProp_UsesTarget |
+   /* .properties  = */ S390OpProp_UsesTarget |
                         S390OpProp_SetsCC |
                         S390OpProp_SetsOperand1
    },
@@ -5223,8 +5203,7 @@
    /* .opcode[1]   = */ 0x0A,
    /* .format      = */ RI_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
-   /* .properties  = */ S390OpProp_TargetLW |
-                        S390OpProp_UsesTarget |
+   /* .properties  = */ S390OpProp_UsesTarget |
                         S390OpProp_SetsCC |
                         S390OpProp_SetsOperand1
    },
@@ -5237,8 +5216,7 @@
    /* .opcode[1]   = */ 0x0B,
    /* .format      = */ RI_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
-   /* .properties  = */ S390OpProp_TargetLW |
-                        S390OpProp_UsesTarget |
+   /* .properties  = */ S390OpProp_UsesTarget |
                         S390OpProp_SetsCC |
                         S390OpProp_SetsOperand1
    },
@@ -6772,8 +6750,7 @@
    /* .opcode[1]   = */ 0x00,
    /* .format      = */ RI_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
-   /* .properties  = */ S390OpProp_SetsCC |
-                        S390OpProp_TargetLW
+   /* .properties  = */ S390OpProp_SetsCC
    },
 
    {
@@ -6784,8 +6761,7 @@
    /* .opcode[1]   = */ 0x01,
    /* .format      = */ RI_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
-   /* .properties  = */ S390OpProp_SetsCC |
-                        S390OpProp_TargetLW
+   /* .properties  = */ S390OpProp_SetsCC
    },
 
    {
@@ -7631,8 +7607,7 @@
    /* .opcode[1]   = */ 0x81,
    /* .format      = */ RSY_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
-   /* .properties  = */ S390OpProp_TargetLW |
-                        S390OpProp_SetsCC |
+   /* .properties  = */ S390OpProp_SetsCC |
                         S390OpProp_IsLoad |
                         S390OpProp_LongDispSupported |
                         S390OpProp_SetsOperand1 |
@@ -7647,8 +7622,7 @@
    /* .opcode[1]   = */ 0x73,
    /* .format      = */ RXY_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
-   /* .properties  = */ S390OpProp_TargetLW |
-                        S390OpProp_IsLoad |
+   /* .properties  = */ S390OpProp_IsLoad |
                         S390OpProp_LongDispSupported |
                         S390OpProp_SetsOperand1 |
                         S390OpProp_UsesTarget
@@ -9567,8 +9541,7 @@
    /* .opcode[1]   = */ 0x09,
    /* .format      = */ RIL_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z9,
-   /* .properties  = */ S390OpProp_TargetLW |
-                        S390OpProp_IsExtendedImmediate |
+   /* .properties  = */ S390OpProp_IsExtendedImmediate |
                         S390OpProp_SetsOperand1 |
                         S390OpProp_UsesTarget
    },
@@ -10161,8 +10134,7 @@
    /* .opcode[1]   = */ 0x0B,
    /* .format      = */ RIL_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z9,
-   /* .properties  = */ S390OpProp_TargetLW |
-                        S390OpProp_UsesTarget |
+   /* .properties  = */ S390OpProp_UsesTarget |
                         S390OpProp_SetsCC |
                         S390OpProp_IsExtendedImmediate |
                         S390OpProp_SetsOperand1
@@ -10191,8 +10163,7 @@
    /* .opcode[1]   = */ 0x0D,
    /* .format      = */ RIL_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z9,
-   /* .properties  = */ S390OpProp_TargetLW |
-                        S390OpProp_UsesTarget |
+   /* .properties  = */ S390OpProp_UsesTarget |
                         S390OpProp_SetsCC |
                         S390OpProp_IsExtendedImmediate |
                         S390OpProp_SetsOperand1
@@ -10642,8 +10613,7 @@
    /* .opcode[1]   = */ 0x07,
    /* .format      = */ RIL_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z9,
-   /* .properties  = */ S390OpProp_TargetLW |
-                        S390OpProp_UsesTarget |
+   /* .properties  = */ S390OpProp_UsesTarget |
                         S390OpProp_SetsCC |
                         S390OpProp_IsExtendedImmediate |
                         S390OpProp_SetsOperand1
@@ -11670,7 +11640,6 @@
                         S390OpProp_UsesTarget |
                         S390OpProp_TargetHW |
                         S390OpProp_SrcHW |
-                        S390OpProp_Src2LW |
                         S390OpProp_SetsOperand1
    },
 
@@ -11760,7 +11729,6 @@
                         S390OpProp_UsesTarget |
                         S390OpProp_TargetHW |
                         S390OpProp_SrcHW |
-                        S390OpProp_Src2LW |
                         S390OpProp_SetsOperand1
    },
 
@@ -11939,8 +11907,7 @@
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_IsCompare |
                         S390OpProp_SetsCompareFlag |
-                        S390OpProp_TargetHW |
-                        S390OpProp_SrcLW
+                        S390OpProp_TargetHW
    },
 
    {
@@ -12092,8 +12059,7 @@
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_IsCompare |
                         S390OpProp_SetsCompareFlag |
-                        S390OpProp_TargetHW |
-                        S390OpProp_SrcLW
+                        S390OpProp_TargetHW
    },
 
    {
@@ -12611,7 +12577,6 @@
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_LongDispSupported |
                         S390OpProp_UsesTarget |
-                        S390OpProp_TargetLW |
                         S390OpProp_SetsOperand1
    },
 
@@ -12714,7 +12679,6 @@
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_UsesTarget |
                         S390OpProp_TargetHW |
-                        S390OpProp_SrcLW |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_SetsOperand1
    },

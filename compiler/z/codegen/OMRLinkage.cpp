@@ -175,20 +175,6 @@ OMR::Z::Linkage::markPreservedRegsInBlock(int32_t blockNum)
       }
    }
 
-// heuristic to reduce the path length for static variable access in the absence of global optimization
-bool
-OMR::Z::Linkage::useCachedStaticAreaAddresses(TR::Compilation *c)
-   {
-   if (!self()->isXPLinkLinkageType() && !self()->isFastLinkLinkageType())
-      {
-      return true;
-      }
-   else
-      {
-      return false;
-      }
-   }
-
 TR::Instruction *
 OMR::Z::Linkage::loadUpArguments(TR::Instruction * cursor)
    {
@@ -712,37 +698,35 @@ OMR::Z::Linkage::saveArguments(void * cursor, bool genBinary, bool InPreProlog, 
                case TR::Address:
                case TR::Int64:
                case TR::Aggregate:     // Should only happen on zLinux
-                  if (!self()->alreadySaved(regNum))
+                  {
+                  if (genBinary)
                      {
-                     if (genBinary)
-                        {
-                        cursor =  (void *) TR::S390CallSnippet::storeArgumentItem(storeOpCode, (uint8_t *) cursor,
-                                             self()->getS390RealRegister(regNum), offset, self()->cg());
-                        }
-                     else
-                        {
-                        TR::MemoryReference* mr = generateS390MemoryReference(stackPtr, offset, self()->cg(), param_name);
-
-                        if (storeOpCode == TR::InstOpCode::STCM)
-                           cursor = generateRSInstruction(self()->cg(), TR::InstOpCode::STCM, firstNode, self()->getS390RealRegister(regNum),
-                                     opcodeMask, mr, (TR::Instruction *) cursor);
-
-                        else
-                           cursor = generateRXInstruction(self()->cg(), storeOpCode, firstNode, self()->getS390RealRegister(regNum),
-                                              mr, (TR::Instruction *) cursor);
-
-
-
-                        ((TR::Instruction*)cursor)->setBinLocalFreeRegs(binLocalRegs);
-                        if (!InPreProlog && !globalAllocatedRegisters.isSet(regNum))
-                           self()->removeOSCOnSavedArgument((TR::Instruction *)cursor, self()->getS390RealRegister(regNum), offset);
-                        }
+                     cursor =  (void *) TR::S390CallSnippet::storeArgumentItem(storeOpCode, (uint8_t *) cursor,
+                                          self()->getS390RealRegister(regNum), offset, self()->cg());
                      }
+                  else
+                     {
+                     TR::MemoryReference* mr = generateS390MemoryReference(stackPtr, offset, self()->cg(), param_name);
+
+                     if (storeOpCode == TR::InstOpCode::STCM)
+                        cursor = generateRSInstruction(self()->cg(), TR::InstOpCode::STCM, firstNode, self()->getS390RealRegister(regNum),
+                                    opcodeMask, mr, (TR::Instruction *) cursor);
+
+                     else
+                        cursor = generateRXInstruction(self()->cg(), storeOpCode, firstNode, self()->getS390RealRegister(regNum),
+                                             mr, (TR::Instruction *) cursor);
+
+
+
+                     ((TR::Instruction*)cursor)->setBinLocalFreeRegs(binLocalRegs);
+                     if (!InPreProlog && !globalAllocatedRegisters.isSet(regNum))
+                        self()->removeOSCOnSavedArgument((TR::Instruction *)cursor, self()->getS390RealRegister(regNum), offset);
+                     }
+                  }
 
                   if (secondStore &&
                       fullLong &&
-                      TR::Compiler->target.is32Bit() &&
-                      !self()->alreadySaved((TR::RealRegister::RegNum)(regNum + 1)))
+                      TR::Compiler->target.is32Bit())
                      {
                      if (genBinary)
                         {
@@ -1776,20 +1760,6 @@ OMR::Z::Linkage::pushLongArg32(TR::Node * callNode, TR::Node * child, int32_t nu
    }
 
 /**
- * justClearSlot=true     means init variable slot to null only (used at start of argument processing)
- * justClearSlot=false    means destroy register and clear variable slot (used at end of argument processing)
- */
-void
-OMR::Z::Linkage::clearCachedStackRegisterForOutgoingArguments(bool justClearSlot)
-   {
-   if (_cachedStackRegisterForOutgoingArguments != NULL)
-      {
-      if (!justClearSlot && self()->isFastLinkLinkageType())  self()->cg()->stopUsingRegister(_cachedStackRegisterForOutgoingArguments);  // faslink casued allocation of register
-      _cachedStackRegisterForOutgoingArguments = NULL;
-      }
-   }
-
-/**
  * Normally arguments for outgoing call are set via stack register except
  * for C++ FASTLINK where they are placed in callee frame via the NAB
  */
@@ -1807,10 +1777,6 @@ OMR::Z::Linkage::getStackRegisterForOutgoingArguments(TR::Node *n, TR::RegisterD
    if (!self()->isFastLinkLinkageType())
       { // normal case
       sreg = stackRegister;
-      }
-   else
-      { // fastlink case
-      sreg = _cachedStackRegisterForOutgoingArguments;
       }
    return sreg;
    }
@@ -2136,30 +2102,6 @@ OMR::Z::Linkage::loadIntArgumentsFromStack(TR::Node *callNode, TR::RegisterDepen
    }
 
 /**
- * Compute a mask for the registers that are
- * preserved across calls
- * Once GC stuff is figured out, this value will prob
- * be hard coded in the properties, so we won't need to compute it
- * each time anymore.
- */
-int32_t
-OMR::Z::Linkage::computePreservedRegMask()
-   {
-
-   int32_t preservedRegMask = 0x0;
-
-   for (int32_t i = TR::RealRegister::FirstGPR; i <= TR::RealRegister::LastFPR; i++)
-      {
-      if (self()->getPreserved(REGNUM(i)))
-         {
-         preservedRegMask |= (0x1 << REGINDEX(i));
-         }
-      }
-
-   return preservedRegMask;
-   }
-
-/**
  * Do not kill special regs (java stack ptr, system stack ptr, and method metadata reg)
  */
 void
@@ -2183,8 +2125,6 @@ OMR::Z::Linkage::buildArgs(TR::Node * callNode, TR::RegisterDependencyConditions
    {
 
    TR::SystemLinkage * systemLinkage = (TR::SystemLinkage *) self()->cg()->getLinkage(TR_System);
-
-   self()->clearCachedStackRegisterForOutgoingArguments(true); // outgoing arguments may be accessed via stack register realized lazily via getStackRegisterForOutgoingArgument()
 
    int8_t gprSize = self()->cg()->machine()->getGPRSize();
    TR::Register * tempRegister;
@@ -2481,9 +2421,6 @@ OMR::Z::Linkage::buildArgs(TR::Node * callNode, TR::RegisterDependencyConditions
                }
             }
       }
-
-
-   self()->clearCachedStackRegisterForOutgoingArguments(false);
 
    //Setup return register dependency
    TR::Register * resultReg=NULL;
@@ -3241,35 +3178,6 @@ OMR::Z::Linkage::getLastMaskedBit(int16_t mask)
    return TR::Linkage::getLastMaskedBit(mask , 0, 15);
    }
 
-TR_GlobalRegisterNumber OMR::Z::Linkage::getFormalParameterGlobalRegister(TR::ParameterSymbol *sym)
-   {
-   TR_ASSERT(sym->getLinkageRegisterIndex() >= 0,  "ParameterSymbol is not mapped to register\n");
-
-   TR::RealRegister::RegNum r;
-   TR::DataType dt=sym->getDataType();
-
-   switch(dt)
-      {
-      case TR::Float:
-      case TR::Double:
-         r=self()->getFloatArgumentRegister(sym->getLinkageRegisterIndex());
-         break;
-      case TR::VectorInt64:
-      case TR::VectorInt32:
-      case TR::VectorInt16:
-      case TR::VectorInt8:
-      case TR::VectorDouble:
-         r=self()->getVectorArgumentRegister(sym->getLinkageRegisterIndex());
-         break;
-      default:
-         r=self()->getIntegerArgumentRegister(sym->getLinkageRegisterIndex());
-         break;
-      }
-   TR_GlobalRegisterNumber grn=self()->cg()->machine()->getGlobalReg(r);
-   TR_ASSERT(grn >= 0,  "There is no GlobalRegisterNumber for register %s\n",self()->cg()->getDebug()->getName(self()->cg()->machine()->getS390RealRegister(r)));
-   return grn;
-   }
-
 bool
 OMR::Z::Linkage::getIsLeafRoutine()
    {
@@ -3329,41 +3237,12 @@ OMR::Z::Linkage::numArgumentRegisters(TR_RegisterKinds kind)
    return 0;
    }
 
-uint8_t
-OMR::Z::Linkage::getNumSpecialArgumentRegisters()
-   {
-   return self()->isSpecialArgumentRegisters() ? _numSpecialArgumentRegisters : 0;
-   }
-
 void
 OMR::Z::Linkage::setIntegerArgumentRegister(uint32_t index, TR::RealRegister::RegNum r)
    {
    _intArgRegisters[index] = r;
    self()->setRegisterFlag(r, IntegerArgument);
    }
-
-TR::RealRegister::RegNum
-OMR::Z::Linkage::getSpecialArgumentRegister(uint32_t specialIndex)
-   {
-   if (self()->isSpecialArgumentRegisters() && ((specialIndex-TR_FirstSpecialLinkageIndex) < _numSpecialArgumentRegisters))
-      return _specialArgRegisters[specialIndex - TR_FirstSpecialLinkageIndex];
-   else
-      return TR::RealRegister::NoReg;
-   }
-
-void
-OMR::Z::Linkage::setSpecialArgumentRegister(uint32_t index, TR::RealRegister::RegNum r)
-   {
-   _specialArgRegisters[index] = r;
-   self()->setRegisterFlag(r, IntegerArgument);
-   }
-
-bool
-OMR::Z::Linkage::isSpecialArgumentRegister(int8_t linkageRegisterIndex)
-  {
-  bool result = self()->isSpecialArgumentRegisters() && (linkageRegisterIndex >= TR_FirstSpecialLinkageIndex);
-  return result;
-  }
 
 /** Get the indexth Long High argument register */
 TR::RealRegister::RegNum

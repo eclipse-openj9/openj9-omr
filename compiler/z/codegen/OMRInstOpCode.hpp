@@ -463,11 +463,11 @@ namespace Z
 #define S390OpProp_SetsFPC                static_cast<uint64_t>(0x0000000040000000ull)
 // Available                              static_cast<uint64_t>(0x0000000080000000ull)
 #define S390OpProp_TargetHW               static_cast<uint64_t>(0x0000000100000000ull)
-#define S390OpProp_TargetLW               static_cast<uint64_t>(0x0000000200000000ull)
+// Available                              static_cast<uint64_t>(0x0000000200000000ull)
 #define S390OpProp_SrcHW                  static_cast<uint64_t>(0x0000000400000000ull)
-#define S390OpProp_SrcLW                  static_cast<uint64_t>(0x0000000800000000ull)
+// Available                              static_cast<uint64_t>(0x0000000800000000ull)
 #define S390OpProp_Src2HW                 static_cast<uint64_t>(0x0000001000000000ull)
-#define S390OpProp_Src2LW                 static_cast<uint64_t>(0x0000002000000000ull)
+// Available                              static_cast<uint64_t>(0x0000002000000000ull)
 #define S390OpProp_HasTwoMemoryReferences static_cast<uint64_t>(0x0000004000000000ull)
 #define S390OpProp_ImplicitlyUsesGPR0     static_cast<uint64_t>(0x0000008000000000ull)
 #define S390OpProp_ImplicitlyUsesGPR1     static_cast<uint64_t>(0x0000010000000000ull)
@@ -654,7 +654,6 @@ class InstOpCode: public OMR::InstOpCode
    uint32_t isAdmin();
    uint32_t isHighWordInstruction();
    uint64_t isOperandHW(uint32_t i);
-   uint64_t isOperandLW(uint32_t i);
    uint64_t setsOperand(uint32_t opNum);
 
    uint64_t singleFPOp() {return metadata[_mnemonic].properties & S390OpProp_SingleFP;}
@@ -714,7 +713,6 @@ class InstOpCode: public OMR::InstOpCode
    uint64_t setsFPC() {return metadata[_mnemonic].properties & S390OpProp_SetsFPC; }
 
    uint64_t isLabel() {return _mnemonic == LABEL;}
-   uint64_t isBeginBlock() {return _mnemonic == LABEL;}
 
    uint64_t usesM3() {return metadata[_mnemonic].properties & S390OpProp_UsesM3;}
    uint64_t usesM4() {return metadata[_mnemonic].properties & S390OpProp_UsesM4;}

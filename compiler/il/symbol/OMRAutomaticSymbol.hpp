@@ -101,19 +101,6 @@ private:
 
    rcount_t _referenceCount;
 
-/** TR_AutomaticMarkerSymbol
- * @{
- */
-public:
-
-   /**
-    * Factory to create an automatic marker symbol.
-    */
-   template <typename AllocatorType>
-   static TR::AutomaticSymbol * createMarker(AllocatorType m, const char * name);
-
-/** @} */
-
 /**
  * TR_LocalObjectSymbol
  *

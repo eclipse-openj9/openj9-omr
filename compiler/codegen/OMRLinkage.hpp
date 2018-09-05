@@ -81,8 +81,6 @@ class OMR_EXTENSIBLE Linkage
    virtual int32_t numArgumentRegisters(TR_RegisterKinds kind) = 0;
    virtual TR_RegisterKinds argumentRegisterKind(TR::Node *argumentNode);
 
-   virtual bool useCachedStaticAreaAddresses(TR::Compilation *c) { return false; }
-
    virtual void setParameterLinkageRegisterIndex(TR::ResolvedMethodSymbol *method)
       {
       TR_ASSERT(0, "setParameterLinkageRegisterIndex(2) has to be implemented for this linkage\n");

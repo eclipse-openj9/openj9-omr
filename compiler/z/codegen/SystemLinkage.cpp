@@ -186,36 +186,6 @@ TR::S390SystemLinkage::initParamOffset(TR::ResolvedMethodSymbol * method, int32_
 }
 
 /**
- * Non-Java use
- */
-TR::SymbolReference *
-TR::S390SystemLinkage::createAutoMarkerSymbol(TR_S390AutoMarkers markerType)
-   {
-   char *name = NULL;
-   switch (markerType)
-      {
-      case TR_AutoMarker_EndOfParameterBlock:
-         name = "end of parameter block";
-         break;
-      default:
-         TR_ASSERT(false, "invalid auto marker symbol type");
-         break;
-      }
-
-   TR::AutomaticSymbol *sym = TR::AutomaticSymbol::createMarker(trHeapMemory(),name);
-   TR::SymbolReference *symRef = new (trHeapMemory()) TR::SymbolReference(comp()->getSymRefTab(), sym);
-
-   TR_Array<TR::SymbolReference*> *symbols = _autoMarkerSymbols;
-   if (symbols == NULL)
-      {
-      symbols = new (trHeapMemory()) TR_Array<TR::SymbolReference*>(trMemory(), TR_AutoMarker_NumAutoMarkers, true);
-      setAutoMarkerSymbols(symbols);
-      }
-   (*symbols)[markerType] = symRef;
-   return symRef;
-   }
-
-/**
  * General utility
  * Perform a save or a restore operation of preserved FPRs from automatic
  * The operation depends on supplied opcode
@@ -391,7 +361,6 @@ TR::S390zOSSystemLinkage::S390zOSSystemLinkage(TR::CodeGenerator * codeGen)
       {
       setProperty(FloatParmDescriptors);
       }
-   setNumSpecialArgumentRegisters(0);  // could be changed by ilgen
 
    setRegisterFlag(TR::RealRegister::GPR4, Preserved);
 
@@ -480,7 +449,6 @@ TR::S390zOSSystemLinkage::S390zOSSystemLinkage(TR::CodeGenerator * codeGen)
    setNumberOfDependencyGPRegisters(32);
    setFrameType(TR_XPLinkUnknownFrame);
    setLargestOutgoingArgumentAreaSize(0);
-   setAutoMarkerSymbols(0);
    setOffsetToLongDispSlot(0);
    }
 
@@ -1388,8 +1356,6 @@ TR::S390zLinuxSystemLinkage::mapSingleAutomatic(TR::AutomaticSymbol * p, uint32_
       // we have some stacks that are getting very close
       TR_ASSERT( (-stackIndex + size) >= (-stackIndex), "Stack index growing too big");
       }
-
-   setStrictestAutoSymbolAlignment(align); // API affected if (align > current strictest)
    }
 #endif
 
@@ -1418,8 +1384,6 @@ TR::S390SystemLinkage::mapStack(TR::ResolvedMethodSymbol * method, uint32_t stac
 //     -  item layout is done in a reverse order : those things mapped first here are at higher addresses
 //        end offsets are really begin offsets and vice versa.
 // ====== COMPLEXITY ALERT
-
-   setStrictestAutoSymbolAlignment(TR::Compiler->target.is64Bit() ? 8 : 8, true); // initial setting
 
    setStackSizeCheckNeeded(true);
 
@@ -1483,8 +1447,6 @@ TR::S390SystemLinkage::mapStack(TR::ResolvedMethodSymbol * method, uint32_t stac
 
       if (FPRSaveMask != 0 && isOSLinkageType())
          {
-         // PPA1 offset in multiple of 16 bytes - so align
-         setStrictestAutoSymbolAlignment(16);
          #define DELTA_ALIGN(x, align) ((x & (align-1)) ? (align -((x)&(align-1))) : 0)
          stackIndex -= DELTA_ALIGN(stackIndex, 16);
          }
@@ -1548,8 +1510,6 @@ void TR::S390SystemLinkage::mapSingleAutomatic(TR::AutomaticSymbol * p, uint32_t
    int32_t roundup = align - 1;
    stackIndex = (stackIndex-size) & (~roundup);
    p->setOffset(stackIndex);
-
-   setStrictestAutoSymbolAlignment(align); // API affected if (align > current strictest)
    }
 
 bool TR::S390SystemLinkage::hasToBeOnStack(TR::ParameterSymbol * parm)

@@ -903,12 +903,7 @@ bool OMR::Z::CodeGenerator::prepareForGRA()
          self()->setOverlapOffsetBetweenAliasedGRNs(self()->getFirstOverlappedGlobalVRF() - self()->getFirstOverlappedGlobalFPR());
          }
 
-      static char * disableGRAOnFirstBB = feGetEnv("TR390GRAONFIRSTBB");
-
-      // plx has stack-based linkage
-      if (!disableGRAOnFirstBB)
-         self()->setSupportsGlRegDepOnFirstBlock();
-
+      self()->setSupportsGlRegDepOnFirstBlock();
       self()->setConsiderAllAutosAsTacticalGlobalRegisterCandidates();
 
       static char * disableLongGRAOn31Bit = feGetEnv("TR390LONGGRA31BIT");
@@ -1226,16 +1221,6 @@ OMR::Z::CodeGenerator::enableLiteralPoolRegisterForGRA ()
          }
       }
 
-   }
-
-/**
- * Consider overflow when generating IMMed instruction for PLX
- */
-bool
-OMR::Z::CodeGenerator::mayImmedInstructionCauseOverFlow(TR::Node * node)
-   {
-
-   return false;
    }
 
 bool
@@ -3659,19 +3644,7 @@ OMR::Z::CodeGenerator::getLinkageGlobalRegisterNumber(int8_t linkageRegisterInde
 #endif
                    );
 
-   if (self()->getS390Linkage()->isCAASpecialArgumentRegister(linkageRegisterIndex))
-      {
-      result = self()->machine()->getGlobalCAARegisterNumber();
-      }
-   else if (self()->getS390Linkage()->isEnvironmentSpecialArgumentRegister(linkageRegisterIndex))
-      {
-      result = self()->machine()->getGlobalEnvironmentRegisterNumber();
-      }
-   else if (self()->getS390Linkage()->isParentDSASpecialArgumentRegister(linkageRegisterIndex))
-      {
-      result = self()->machine()->getGlobalParentDSARegisterNumber();
-      }
-   else if (isFloat)
+   if (isFloat)
       {
       result = self()->machine()->getLastLinkageFPR() - linkageRegisterIndex;
       }
@@ -3679,15 +3652,10 @@ OMR::Z::CodeGenerator::getLinkageGlobalRegisterNumber(int8_t linkageRegisterInde
       {
       result = self()->machine()->getLastGlobalVRFRegisterNumber() - linkageRegisterIndex;
       }
-
    else
       {
-//      traceMsg(self()->comp(), "lastLinkageGPR = %d linkaeRegisterIndex = %d  getGlobalRegisterNumber(getS390Linkage()->getIntegerArgumentRegister(linkageRegisterIndex)-1) = %d\n",machine()->getLastLinkageGPR(),linkageRegisterIndex, self()->getGlobalRegisterNumber(getS390Linkage()->getIntegerArgumentRegister(linkageRegisterIndex)-1));
-//      traceMsg(self()->comp(), "getS390Linkage()->getIntegerArgumentRegister(linkageRegisterIndex) = %d\n",getS390Linkage()->getIntegerArgumentRegister(linkageRegisterIndex));
-
       result = self()->getGlobalRegisterNumber(self()->getS390Linkage()->getIntegerArgumentRegister(linkageRegisterIndex)-1);
       }
-
 
    return result;
    }

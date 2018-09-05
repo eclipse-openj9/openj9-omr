@@ -199,7 +199,6 @@ class OMR_EXTENSIBLE Instruction : public OMR::Instruction
    virtual bool isLabel()             { return _opcode.isLabel() > 0; }
    virtual bool isFloat()             { return _opcode.singleFPOp() > 0 || _opcode.doubleFPOp() > 0; }
    virtual bool isAdmin()             { return _opcode.isAdmin() > 0; }
-   virtual bool isBeginBlock()        { return _opcode.isBeginBlock() > 0; }
    virtual bool isDebugFence()        { return false; }
 
    virtual bool is4ByteLoad();

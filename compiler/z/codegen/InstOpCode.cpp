@@ -131,15 +131,6 @@ OMR::Z::InstOpCode::isOperandHW(uint32_t i)
    return metadata[_mnemonic].properties & mask;
    }
 
-uint64_t
-OMR::Z::InstOpCode::isOperandLW(uint32_t i)
-    {
-    uint64_t mask = ((i==1)? S390OpProp_TargetLW : 0) | ((i==2)? S390OpProp_SrcLW : 0) | ((i==3)? S390OpProp_Src2LW : 0);
-    return metadata[_mnemonic].properties & mask;
-    }
-
-
-
 /* Static Methods */
 
 void

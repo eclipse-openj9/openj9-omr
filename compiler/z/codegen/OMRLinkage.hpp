@@ -66,19 +66,6 @@ namespace TR { class SystemLinkage; }
 template <class T> class List;
 
 /**
- * When calling the @@pcmp routine the enum below is the mapping for the requested compare type
- */
-enum TR_S390CompareConventions
-   {
-   TR_PackedCompareEQ    = 1,
-   TR_PackedCompareNE    = 2,
-   TR_PackedCompareGT    = 3,
-   TR_PackedCompareGE    = 4,
-   TR_PackedCompareLT    = 5,
-   TR_PackedCompareLE    = 6
-   };
-
-/**
  * 390 Explicit linkage conventions
  */
 enum TR_S390LinkageConventions
@@ -88,12 +75,6 @@ enum TR_S390LinkageConventions
    // Java specific linkages
    TR_JavaPrivate          = 0x1,   ///< Java private linkage
    TR_JavaHelper           = 0x2,   ///< Java helper linkage
-
-   //
-   // zOS Platform Linkages
-   //
-   TR_SystemPLX_390        = 0x10,  ///< (non-Java) 390 linkage
-   TR_SystemPLX_ZOS        = 0x11,  ///< (non-Java) ZOS linkage
 
    TR_SystemXPLink         = 0x20,  ///< (Java) zOS XPLink convention
 
@@ -124,7 +105,7 @@ enum TR_S390LinkageConventions
 #define AggregatesPassedOnParmStack   0x400
 #define AggregatesPassedInParmRegs    0x800
 #define AggregatesReturnedInRegs      0x1000
-#define SpecialArgumentRegisters      0x2000
+// Available                          0x2000
 #define SmallIntParmsAlignedRight     0x4000  ///< < gprSize int parms aligned into the parmword
 #define ParmBlockRegister             0x8000  ///< Has a parameter block register: OS Linkage (non-Java)
 #define ForceSaveIncomingParameters   0x10000 ///< Force parameters to be saved: example: non-Java
@@ -210,16 +191,6 @@ toS390PrivateLinkage(TR::Linkage * l)
 
 }
 
-/**
- * 390 Automatic Marker Symbol Types
- */
-enum TR_S390AutoMarkers
-   {
-   TR_AutoMarker_EndOfParameterBlock,
-   TR_AutoMarker_NumAutoMarkers
-   };
-
-
 ////////////////////////////////////////////////////////////////////////////////
 //  TR::S390Linkage Definition
 ////////////////////////////////////////////////////////////////////////////////
@@ -258,9 +229,6 @@ private:
    TR::RealRegister::RegNum _floatArgRegisters[TR::RealRegister::NumRegisters];
    uint8_t _numVectorArgumentRegisters;
    TR::RealRegister::RegNum _vectorArgRegisters[TR::RealRegister::NumRegisters];
-   uint8_t _numSpecialArgumentRegisters;
-
-   TR::RealRegister::RegNum _specialArgRegisters[TR::RealRegister::NumRegisters];
    TR::RealRegister::RegNum _integerReturnRegister;
    TR::RealRegister::RegNum _floatReturnRegister;
    TR::RealRegister::RegNum _doubleReturnRegister;
@@ -289,7 +257,6 @@ private:
    bool    _stackSizeCheckNeeded;
    bool    _raContextSaveNeeded;
    bool    _raContextRestoreNeeded;
-   int32_t _strictestAutoSymbolAlignment;
    int32_t _largestOutgoingArgumentAreaSize; ///< Arguments for registers could be saved in discontiguous area
                                              ///< this size does not include the discontiguous register parm area size
    int32_t _largestOutgoingArgumentAreaSize64;
@@ -297,8 +264,6 @@ protected:
    TR::RealRegister::RegNum _firstSaved;
    TR::RealRegister::RegNum _lastSaved;
    TR::RealRegister::RegNum _stackPointerRegister;
-
-   bool alreadySaved(TR::RealRegister::RegNum regNum) { return false; }
 
    static bool needsAlignment(TR::DataType dt, TR::CodeGenerator * cg);
    static int32_t getFirstMaskedBit(int16_t mask, int32_t from , int32_t to);
@@ -341,10 +306,6 @@ enum TR_DispatchType
    bool    setRaContextRestoreNeeded(bool v) { return _raContextSaveNeeded = v; }
    bool    getRaContextRestoreNeeded() { return _raContextSaveNeeded; }
 
-   virtual bool useCachedStaticAreaAddresses(TR::Compilation *c);
-   virtual TR::SymbolReference* cachedStaticSymRef() { return NULL; }
-   virtual TR::SymbolReference* cachedCRENTSymRef() { return NULL; }
-
 // Definitions from TR::Linkage
    virtual void createPrologue(TR::Instruction * cursor) = 0;
    virtual void createEpilogue(TR::Instruction * cursor) = 0;
@@ -357,11 +318,9 @@ enum TR_DispatchType
    virtual TR::Instruction * loadUpArguments(TR::Instruction * cursor);
    virtual void removeOSCOnSavedArgument(TR::Instruction* instr, TR::Register* sReg, int32_t stackOffset);
 
-   virtual void * saveArguments(void * cursor, bool genBinary, bool InPreProlog = false, int32_t frameOffset = 0, List<TR::ParameterSymbol> *parameterList=NULL
-   );
+   virtual void * saveArguments(void * cursor, bool genBinary, bool InPreProlog = false, int32_t frameOffset = 0, List<TR::ParameterSymbol> *parameterList=NULL);
 
    virtual void initS390RealRegisterLinkage() = 0;
-   virtual TR::RealRegister * getARWithZeroValue() {return NULL;}
 
    virtual void lockRegister(TR::RealRegister * lpReal);
    virtual void unlockRegister(TR::RealRegister * lpReal);
@@ -369,13 +328,13 @@ enum TR_DispatchType
    virtual TR::Register * buildDirectDispatch(TR::Node * callNode) = 0;
    virtual TR::Register * buildIndirectDispatch(TR::Node * callNode) = 0;
 
-   virtual void buildVirtualDispatch(TR::Node * callNode, TR::RegisterDependencyConditions * dependencies,
-      TR::Register * vftReg, uint32_t sizeOfArguments){TR_ASSERT(0, "ERROR: Empty declaration called");};
-
-   bool shouldExcludeAutoFromMapper(TR::AutomaticSymbol *) { return false; }
-   virtual bool isAutoMappedBeforeAdjustedArea(TR::AutomaticSymbol *) { return false; }
+   virtual void buildVirtualDispatch(TR::Node * callNode, TR::RegisterDependencyConditions * dependencies, TR::Register * vftReg, uint32_t sizeOfArguments)
+      {
+      TR_ASSERT(0, "ERROR: Empty declaration called");
+      }
 
    public:
+
    virtual bool findPossibleCallInstruction(TR::Instruction* &cursor, int32_t& numToCheck, TR::Instruction ** callInstruction, bool *regs = 0, int32_t regsSize = 0);
    virtual void setUsedRegisters(TR::Instruction *instruction, bool *regs, int32_t regsSize);
    virtual bool checkPreservedRegisterUsage(bool *regs, int32_t regsSize);
@@ -386,10 +345,9 @@ enum TR_DispatchType
    TR::InstOpCode::Mnemonic getStoreOpCodeForLinkage(TR::Node * child);
    TR::InstOpCode::Mnemonic getLoadOpCodeForLinkage(TR::Node * child);
    TR::Register *getStackRegisterForOutgoingArguments(TR::Node *n, TR::RegisterDependencyConditions *dependencies);
-   void clearCachedStackRegisterForOutgoingArguments(bool justClearSlot);
-   private:
-   TR::Register *_cachedStackRegisterForOutgoingArguments;
+
    public:
+
    TR::Register *  copyArgRegister(TR::Node * callNode, TR::Node * child, TR::Register * argRegister);
    TR::Register *  pushLongArg32(TR::Node * callNode, TR::Node * child, int32_t numIntegerArgs,
        int32_t numFloatArgs, int32_t * stackOffsetPtr,
@@ -405,7 +363,6 @@ enum TR_DispatchType
        TR::RegisterDependencyConditions * dependencies, TR::Register * argRegister=NULL);
    TR::Register *  pushVectorArg(TR::Node * callNode, TR::Node * child,  int32_t numVectorArgs, int32_t pindex,
        int32_t * stackOffsetPtr, TR::RegisterDependencyConditions * dependencies, TR::Register * argRegister=NULL);
-   int32_t computePreservedRegMask();
    virtual void doNotKillSpecialRegsForBuildArgs (TR::Linkage *linkage, bool isFastJNI, int64_t &killMask);
    virtual void addSpecialRegDepsForBuildArgs(TR::Node * callNode, TR::RegisterDependencyConditions * dependencies, int32_t& from, int32_t step){ return; }
    virtual int32_t storeExtraEnvRegForBuildArgs(TR::Node * callNode, TR::Linkage* linkage,
@@ -415,13 +372,6 @@ enum TR_DispatchType
    TR::Instruction * storeArgumentOnStack(TR::Node * callNode, TR::InstOpCode::Mnemonic opCode, TR::Register * argReg, int32_t *stackOffsetPtr, TR::Register* stackRegister);
    TR::Instruction * storeLongDoubleArgumentOnStack(TR::Node * callNode, TR::DataType argType, TR::InstOpCode::Mnemonic opCode, TR::Register * argReg, int32_t *stackOffsetPtr, TR::Register* stackRegister);
    void loadIntArgumentsFromStack(TR::Node *callNode, TR::RegisterDependencyConditions *dependencies, TR::DataType argType, int32_t stackOffset, int32_t argsSize, int32_t numIntegerArgs, TR::Register* stackRegister);
-
-   void setStrictestAutoSymbolAlignment(int32_t alignment, bool force=false)
-      {
-      if ((alignment > _strictestAutoSymbolAlignment) || force)
-         _strictestAutoSymbolAlignment = alignment;
-      }
-   int32_t getStrictestAutoSymbolAlignment() { return  _strictestAutoSymbolAlignment; }
 
    int32_t  isNeedsWidening()  { return _properties & NeedsWidening; }
    int32_t  isAllParmsOnStack()  { return _properties & AllParmsOnStack; }
@@ -442,7 +392,6 @@ enum TR_DispatchType
    virtual bool canDataTypeBePassedByReference(TR::DataType type);
    virtual bool isSymbolPassedByReference(TR::Symbol *sym);
 
-   int32_t  isSpecialArgumentRegisters() { return ((_properties & SpecialArgumentRegisters) != 0) && (_numSpecialArgumentRegisters > 0); }
    int32_t  isParmBlockRegister() { return _properties & ParmBlockRegister; }
    int32_t  isForceSaveIncomingParameters() { return _properties & ForceSaveIncomingParameters; }
    int32_t  isLongDoubleReturnedOnStorage() { return _properties & LongDoubleReturnedOnStorage; }
@@ -516,9 +465,6 @@ enum TR_DispatchType
 
    virtual int32_t numArgumentRegisters(TR_RegisterKinds kind);
 
-   virtual uint8_t getNumSpecialArgumentRegisters();
-   virtual void setNumSpecialArgumentRegisters(uint8_t n) { _numSpecialArgumentRegisters = n; }
-
    void markPreservedRegsInBlock(int32_t);
    void markPreservedRegsInDep(TR::RegisterDependencyConditions *);
 
@@ -534,34 +480,6 @@ enum TR_DispatchType
          return _intArgRegisters[index];
       else
          return TR::RealRegister::NoReg;
-      }
-
-   virtual TR::RealRegister::RegNum getSpecialArgumentRegister(uint32_t specialIndex);
-
-   virtual void setSpecialArgumentRegister(uint32_t index, TR::RealRegister::RegNum r);
-
-   virtual bool isSpecialArgumentRegister(int8_t linkageRegisterIndex);
-
-   virtual bool isEnvironmentSpecialArgumentRegister(int8_t linkageRegisterIndex)
-     {
-     return false;
-     }
-
-   virtual bool isCAASpecialArgumentRegister(int8_t linkageRegisterIndex)
-     {
-     return false;
-     }
-
-   virtual bool isParentDSASpecialArgumentRegister(int8_t linkageRegisterIndex)
-     {
-     return false;
-     }
-
-   virtual TR_GlobalRegisterNumber getFormalParameterGlobalRegister(TR::ParameterSymbol *sym);
-
-   virtual int64_t getLengthStartForSSInstruction()
-      {
-      return 1;
       }
 
    /** Get the indexth Long High argument register */
@@ -629,7 +547,6 @@ enum TR_DispatchType
    virtual TR::RealRegister::RegNum setStackPointerRegister  (uint32_t num, TR::RealRegister::RegNum r) { return _stackPointerRegister = r; }
    virtual TR::RealRegister::RegNum getStackPointerRegister(uint32_t num)   { return _stackPointerRegister; }
    virtual TR::RealRegister *getStackPointerRealRegister(uint32_t num);
-   virtual uint32_t getNumStackPointerRegisters() {return 1;}
 
    virtual TR::RealRegister::RegNum getNormalStackPointerRegister();
    virtual TR::RealRegister *getNormalStackPointerRealRegister();
@@ -667,7 +584,12 @@ enum TR_DispatchType
    virtual TR::RealRegister *getJ9MethodArgumentRegisterRealRegister();
 
    virtual TR::RealRegister::RegNum getMethodMetaDataRegister() { return TR::RealRegister::NoReg; }
-   virtual TR::RealRegister *getMethodMetaDataRealRegister() {TR_ASSERT(0, "MethodMetaDataRealRegister shouldn't be called from TR::Linkage"); return NULL;}
+   virtual TR::RealRegister *getMethodMetaDataRealRegister()
+      {
+      TR_ASSERT(0, "MethodMetaDataRealRegister shouldn't be called from TR::Linkage");
+      return NULL;
+      }
+
    virtual TR::RealRegister::RegNum getEnvironmentPointerRegister() { return TR::RealRegister::NoReg; }
    virtual TR::RealRegister::RegNum getCAAPointerRegister() { return TR::RealRegister::NoReg; }
    virtual TR::RealRegister::RegNum getParentDSAPointerRegister() { return TR::RealRegister::NoReg; }
@@ -701,6 +623,7 @@ enum TR_DispatchType
    TR::RealRegister::RegNum getLastRestoredRegister(int32_t fromreg, int32_t toreg);
 
    protected:
+
    TR::Instruction * getLastPrologueInstruction(){ return _lastPrologueInstr; }
    TR::Instruction * getFirstPrologueInstruction(){ return _firstPrologueInstr; }
    void setLastPrologueInstruction(TR::Instruction * cursor){ _lastPrologueInstr = cursor; }
@@ -713,7 +636,6 @@ enum TR_DispatchType
 private:
 
    enum FrameType _frameType;
-
 
    TR::CodeGenerator * _codeGen;
    TR::Instruction * _lastPrologueInstr;

@@ -2921,9 +2921,7 @@ OMR::CodeGenerator::simulateTreeEvaluation(TR::Node *node, TR_RegisterPressureSt
             // Incoming special argument can be  passed to the call,
             // otherwise, TR_linkageSpill has to be set so that other candidates don't get
             // assigned GPR12 across this call
-            if (!rcSymbol->isParm() ||
-                !linkage->isSpecialNonVolatileArgumentRegister(rcSymbol->getParmSymbol()->getLinkageRegisterIndex()))
-               summary->spill(TR_linkageSpill, self());
+            summary->spill(TR_linkageSpill, self());
             summary->setLinkagePresent(node->getSymbol()->castToMethodSymbol()->getLinkageConvention(), self());
             }
 

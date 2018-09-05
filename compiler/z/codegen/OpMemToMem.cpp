@@ -450,7 +450,7 @@ MemToMemConstLenMacroOp::generateRemainder()
    uint64_t len = (uint64_t)_length;
    TR::Instruction * cursor = (_cursor == NULL ? _cg->getAppendInstruction() : _cursor);
 
-   if ((len >= (uint64_t)(_cg->getS390Linkage())->getLengthStartForSSInstruction()) && len > 0)
+   if (len >= MemToMemMacroOp::MIN_LENGTH_FOR_SS_INSTRUCTION)
       {
       cursor = generateInstruction(_offset, len, cursor);
       }
@@ -576,7 +576,7 @@ MemInitConstLenMacroOp::generateRemainder()
    uint64_t len = (uint64_t)_length;
    TR::Instruction * cursor = (_cursor == NULL ? _cg->getAppendInstruction() : _cursor);
 
-   if ((len >= (uint64_t)(_cg->getS390Linkage())->getLengthStartForSSInstruction()) && len > 0)
+   if (len >= MemToMemMacroOp::MIN_LENGTH_FOR_SS_INSTRUCTION)
       {
       cursor = generateInstruction(_offset, len, cursor);
       }

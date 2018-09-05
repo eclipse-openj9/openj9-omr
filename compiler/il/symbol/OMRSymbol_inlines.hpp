@@ -133,13 +133,6 @@ TR::StaticSymbol *OMR::Symbol::castToMethodTypeTableEntrySymbol()
    return (TR::StaticSymbol*)this;
    }
 
-
-TR::AutomaticSymbol * OMR::Symbol::castToAutoMarkerSymbol()
-   {
-   TR_ASSERT(self()->isAutoMarkerSymbol(), "OMR::Symbol::castToAutoMarkerSymbol, symbol is not a auto marker symbol");
-   return (TR::AutomaticSymbol *)this;
-   }
-
 TR::AutomaticSymbol * OMR::Symbol::castToVariableSizeSymbol()
    {
    TR_ASSERT(self()->isVariableSizeSymbol(), "OMR::Symbol::castToVariableSizeSymbol, symbol is not a VariableSizeSymbol symbol");
@@ -244,19 +237,6 @@ bool
 OMR::Symbol::isSpillTempLoaded()
    {
    return self()->isSpillTempAuto() && _flags.testAny(SpillTempLoaded);
-   }
-
-void
-OMR::Symbol::setAutoMarkerSymbol()
-   {
-   TR_ASSERT(self()->isAuto(), "assertion failure");
-   _flags.set(AutoMarkerSymbol);
-   }
-
-bool
-OMR::Symbol::isAutoMarkerSymbol()
-   {
-   return (self()->isAuto() && _flags.testAny(AutoMarkerSymbol));
    }
 
 void

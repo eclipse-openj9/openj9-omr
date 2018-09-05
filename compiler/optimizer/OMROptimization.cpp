@@ -568,9 +568,6 @@ OMR::Optimization::removeNode(TR::Node * node, TR::TreeTop *anchorTree)
 bool
 OMR::Optimization::nodeIsOrderDependent(TR::Node *node, uint32_t depth, bool hasCommonedAncestor)
 {
-   TR::Linkage *linkage  = self()->comp()->cg()->getLinkage();
-   bool cachedStaticReg = linkage->useCachedStaticAreaAddresses(self()->comp());
-
    // While it may be tempting to use futureUseCount here, futureUseCount isn't well maintained in simplifier
    // and so shouldn't be used for functional items such as to anchor or not anchor a node. FutureUseCount
    // should only be used as a heuristic for optimizations.

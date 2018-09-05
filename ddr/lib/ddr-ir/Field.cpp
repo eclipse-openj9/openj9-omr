@@ -32,6 +32,10 @@ Field::Field()
 {
 }
 
+Field::~Field()
+{
+}
+
 const string &
 Field::getTypeName() const
 {

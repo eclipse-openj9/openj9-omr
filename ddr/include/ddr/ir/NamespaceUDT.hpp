@@ -35,7 +35,7 @@ public:
 	vector<EnumMember *> _enumMembers; /* used for anonymous enums */
 
 	explicit NamespaceUDT(unsigned int lineNumber = 0);
-	~NamespaceUDT();
+	virtual ~NamespaceUDT();
 
 	virtual DDR_RC acceptVisitor(const TypeVisitor &visitor);
 	virtual bool insertUnique(Symbol_IR *ir);

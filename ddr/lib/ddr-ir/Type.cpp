@@ -40,7 +40,7 @@ Type::isAnonymousType() const
 }
 
 string
-Type::getFullName()
+Type::getFullName() const
 {
 	return _name;
 }
@@ -51,6 +51,15 @@ Type::getSymbolKindName() const
 	static const string typeKind("");
 
 	return typeKind;
+}
+
+string
+Type::getTypeNameKey() const
+{
+	string prefix = getSymbolKindName();
+	string fullname = getFullName();
+
+	return prefix.empty() ? fullname : (prefix + " " + fullname);
 }
 
 DDR_RC

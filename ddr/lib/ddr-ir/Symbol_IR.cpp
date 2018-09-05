@@ -589,21 +589,12 @@ Symbol_IR::replaceTypeUsingMap(Type **type, Type *outer)
 	return rc;
 }
 
-static string
-getTypeNameKey(Type *type)
-{
-	string prefix = type->getSymbolKindName();
-	string fullname = type->getFullName();
-
-	return prefix.empty() ? fullname : (prefix + " " + fullname);
-}
-
 Type *
 Symbol_IR::findTypeInMap(Type *typeToFind)
 {
 	Type *returnType = NULL;
 	if ((NULL != typeToFind) && !typeToFind->isAnonymousType()) {
-		const string nameKey = getTypeNameKey(typeToFind);
+		const string nameKey = typeToFind->getTypeNameKey();
 		unordered_map<string, set<Type *> >::const_iterator map_it = _typeMap.find(nameKey);
 
 		if (_typeMap.end() != map_it) {
@@ -635,7 +626,7 @@ Symbol_IR::addTypeToMap(Type *type)
 
 	while (NULL != type) {
 		if (!type->isAnonymousType()) {
-			_typeMap[getTypeNameKey(type)].insert(type);
+			_typeMap[type->getTypeNameKey()].insert(type);
 		}
 		_typeSet.insert(type);
 

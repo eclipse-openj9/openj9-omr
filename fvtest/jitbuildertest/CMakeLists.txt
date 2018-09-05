@@ -33,6 +33,7 @@ add_executable(jitbuildertest
 	SystemLinkageTest.cpp
 	WorklistTest.cpp
 	FieldNameTest.cpp
+	ConvertBitsTest.cpp
 )
 
 if(OMR_HOST_ARCH STREQUAL "x86")

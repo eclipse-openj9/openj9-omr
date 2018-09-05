@@ -36,7 +36,8 @@ OBJECTS := \
 	WorklistTest \
 	IfThenElseTest \
 	CallReturnTest \
-	FieldNameTest
+	FieldNameTest \
+	ConvertBitsTest
 
 OBJECTS := $(addsuffix $(OBJEXT),$(OBJECTS))
 

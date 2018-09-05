@@ -550,7 +550,8 @@ PdbScanner::createEnumUDT(IDiaSymbol *symbol, NamespaceUDT *outerNamespace)
 			} else {
 				fullName = outerNamespace->getFullName() + "::" + name;
 			}
-			if (_typeMap.end() == _typeMap.find(fullName)) {
+			unordered_map<string, Type *>::const_iterator it = _typeMap.find(fullName);
+			if (_typeMap.end() == it) {
 				/* If this is a new enum, get its members and add it to the IR. */
 				EnumUDT *enumUDT = new EnumUDT;
 				enumUDT->_name = name;
@@ -565,13 +566,16 @@ PdbScanner::createEnumUDT(IDiaSymbol *symbol, NamespaceUDT *outerNamespace)
 					delete enumUDT;
 				}
 			} else {
-				EnumUDT *enumUDT = (EnumUDT *)getType(fullName);
-				if ((NULL != outerNamespace) && (NULL == enumUDT->_outerNamespace)) {
-					enumUDT->_outerNamespace = outerNamespace;
-					outerNamespace->_subUDTs.push_back(enumUDT);
-				}
-				if (enumUDT->_enumMembers.empty()) {
-					rc = addEnumMembers(symbol, enumUDT);
+				Type *existingType = it->second;
+				if ("enum" == existingType->getSymbolKindName()) {
+					EnumUDT *enumUDT = (EnumUDT *)existingType;
+					if ((NULL != outerNamespace) && (NULL == enumUDT->_outerNamespace)) {
+						enumUDT->_outerNamespace = outerNamespace;
+						outerNamespace->_subUDTs.push_back(enumUDT);
+					}
+					if (enumUDT->_enumMembers.empty()) {
+						rc = addEnumMembers(symbol, enumUDT);
+					}
 				}
 			}
 		}

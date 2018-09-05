@@ -463,10 +463,10 @@ DwarfScanner::getTypeInfo(Dwarf_Die die, Dwarf_Die *dieOut, string *typeName, Mo
 							break;
 						}
 						/* New array length is upperBound + 1. */
-						modifiers->_arrayLengths.push_back(upperBound + 1);
+						modifiers->addArrayDimension(upperBound + 1);
 					} else {
 						/* Arrays declared as "[]" have no size attributes. */
-						modifiers->_arrayLengths.push_back(0);
+						modifiers->addArrayDimension(0);
 					}
 				} while (DDR_RC_OK == getNextSibling(&child));
 				dwarf_dealloc(_debug, child, DW_DLA_DIE);

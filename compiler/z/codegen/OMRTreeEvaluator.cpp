@@ -1009,7 +1009,7 @@ generateS390ImmOp(TR::CodeGenerator * cg,  TR::InstOpCode::Mnemonic memOp, TR::N
                return cursor;
                }
             }
-         if (value >= 0 && cg->canUseGoldenEagleImmediateInstruction(value))
+         if (cg->canUseGoldenEagleImmediateInstruction(value))
             {
             // LL: If Golden Eagle - can use Compare Logical Immediate with max 32-bit value.
             ei_immOp = TR::InstOpCode::CLGFI;

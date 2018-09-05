@@ -489,8 +489,38 @@ class OMR_EXTENSIBLE CodeGenerator
    bool isRegisterClobberable(TR::Register *reg, uint16_t count);
 
    // ilgen
-   bool ilOpCodeIsSupported(TR::ILOpCodes); // no virt, default, cast
 
+   /**
+    * @brief Returns if an IL OpCode is supported by current CodeGen
+    *
+    * @param op The IL OpCode being checked.
+    *
+    * @return True if the IL OpCode is supported otherwise false.
+    */
+   static bool isILOpCodeSupported(TR::ILOpCodes op);
+
+   /**
+    * @brief Returns the corresponding IL OpCode for an intrinsic method
+    *
+    * This query maps an intrinsic method to an IL OpCode, with the requirement that
+    * the method's child(ren) corresponds to the OpCode's child(ren) exactly.
+    * It is usually used by the IL Gen transforming the intrinsic method to IL OpCode
+    * so that it can leverage existing framework for better optimization.
+    *
+    * @param method The intrinsic method being checked.
+    *
+    * @return The corresponding IL OpCode for the intrinsic method.
+    */
+   static TR::ILOpCodes ilOpCodeForIntrinsicMethod(TR::RecognizedMethod method) { return TR::BadILOp; }
+
+   /**
+    * @brief Returns if an intrinsic method is supported by current CodeGen
+    *
+    * @param method The intrinsic method being checked.
+    *
+    * @return True if the intrinsic method is supported otherwise false.
+    */
+   static inline bool isIntrinsicMethodSupported(TR::RecognizedMethod method);
 
 
    TR::Recompilation *allocateRecompilationInfo() { return NULL; }
@@ -592,7 +622,7 @@ class OMR_EXTENSIBLE CodeGenerator
     * @param method : the recognized method to consider
     * @return true if inlining should be suppressed; false otherwise
     */
-   bool suppressInliningOfRecognizedMethod(TR::RecognizedMethod method) {return false;}
+   bool suppressInliningOfRecognizedMethod(TR::RecognizedMethod method);
 
    // --------------------------------------------------------------------------
    // Optimizer, not code generator

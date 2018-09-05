@@ -3212,9 +3212,9 @@ TR::Snippet *OMR::Power::CodeGenerator::findSnippetInstructionsFromLabel(TR::Lab
    return NULL;
    }
 
-bool OMR::Power::CodeGenerator::ilOpCodeIsSupported(TR::ILOpCodes o)
+bool OMR::Power::CodeGenerator::isILOpCodeSupported(TR::ILOpCodes o)
    {
-   if (!OMR::CodeGenerator::ilOpCodeIsSupported(o))
+   if (!OMR::CodeGenerator::isILOpCodeSupported(o))
       {
       return false;
       }

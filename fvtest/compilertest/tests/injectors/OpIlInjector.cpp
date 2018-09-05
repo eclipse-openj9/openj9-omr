@@ -296,7 +296,7 @@ OpIlInjector::setDataType()
 bool
 OpIlInjector::isOpCodeSupported()
    {
-   return comp()->cg()->ilOpCodeIsSupported(_opCode);
+   return comp()->cg()->isILOpCodeSupported(_opCode);
    }
 
 TR::Node *

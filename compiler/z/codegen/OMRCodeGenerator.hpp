@@ -794,7 +794,7 @@ public:
 
    void deleteInst(TR::Instruction* old);
 
-   bool ilOpCodeIsSupported(TR::ILOpCodes);
+   static bool isILOpCodeSupported(TR::ILOpCodes);
 
    void setUsesZeroBasePtr( bool v = true );
    bool getUsesZeroBasePtr();

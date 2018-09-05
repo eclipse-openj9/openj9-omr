@@ -2961,7 +2961,7 @@ OMR::CodeGenerator::canNullChkBeImplicit(TR::Node *node, bool doChecks)
    return false;
    }
 
-bool OMR::CodeGenerator::ilOpCodeIsSupported(TR::ILOpCodes o)
+bool OMR::CodeGenerator::isILOpCodeSupported(TR::ILOpCodes o)
    {
 	return (_nodeToInstrEvaluators[o] != TR::TreeEvaluator::unImpOpEvaluator) &&
 	      (_nodeToInstrEvaluators[o] != TR::TreeEvaluator::badILOpEvaluator);

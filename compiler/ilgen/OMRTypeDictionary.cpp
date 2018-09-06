@@ -79,18 +79,20 @@ public:
       {
       }
 
-   void cacheSymRef(TR::SymbolReference *symRef) { _symRef = symRef; }
-   TR::SymbolReference *getSymRef()              { return _symRef; }
-   void clearSymRef()                            { _symRef = NULL; }
+   void cacheSymRef(TR::SymbolReference *symRef)    { _symRef = symRef; }
+   TR::SymbolReference *getSymRef()                 { return _symRef; }
+   void clearSymRef()                               { _symRef = NULL; }
 
-   TR::IlType *getType()                         { return _type; }
+   TR::IlType *getType()                            { return _type; }
 
-   TR::DataType getPrimitiveType()               { return _type->getPrimitiveType(); }
+   TR::IlType *primitiveType(TR::TypeDictionary *d) { return _type->primitiveType(d); }
 
-   size_t getOffset()                            { return _offset; }
+   TR::DataType getPrimitiveType()                  { return _type->getPrimitiveType(); }
 
-   FieldInfo *getNext()                          { return _next; }
-   void setNext(FieldInfo *next)                 { _next = next; }
+   size_t getOffset()                               { return _offset; }
+
+   FieldInfo *getNext()                             { return _next; }
+   void setNext(FieldInfo *next)                    { _next = next; }
 
 //private:
    FieldInfo           * _next;
@@ -116,7 +118,8 @@ public:
    virtual ~StructType()
       { }
 
-   TR::DataType getPrimitiveType()                 { return TR::Address; }
+   TR::IlType *primitiveType(TR::TypeDictionary * d) { return d->Address; }
+   TR::DataType getPrimitiveType()                   { return TR::Address; }
    void Close(size_t finalSize)                      { TR_ASSERT(_size <= finalSize, "Final size %d of struct %s is less than its current size %d\n", finalSize, _name, _size); _size = finalSize; _closed = true; };
    void Close()                                      { _closed = true; };
 
@@ -157,7 +160,8 @@ public:
    virtual ~UnionType()
       { }
 
-   TR::DataType getPrimitiveType()                 { return TR::Address; }
+   TR::IlType *primitiveType(TR::TypeDictionary * d) { return d->Address; }
+   TR::DataType getPrimitiveType()                   { return TR::Address; }
    void Close();
 
    void AddField(const char *name, TR::IlType *fieldType);
@@ -170,14 +174,14 @@ public:
    void clearSymRefs();
 
 protected:
-   FieldInfo * findField(const char *fieldName);
+   FieldInfo *  findField(const char *fieldName);
 
-   FieldInfo * _firstField;
-   FieldInfo * _lastField;
-   size_t      _size;
-   bool        _closed;
+   FieldInfo *  _firstField;
+   FieldInfo *  _lastField;
+   size_t       _size;
+   bool         _closed;
    TR_BitVector _symRefBV;
-   TR_Memory* _trMemory;
+   TR_Memory*   _trMemory;
    };
 
 class PointerType : public TR::IlType
@@ -199,7 +203,8 @@ public:
 
    virtual const char *getName() { return _name; }
 
-   virtual TR::DataType getPrimitiveType() { return TR::Address; }
+   virtual TR::IlType *primitiveType(TR::TypeDictionary * d) { return d->Address; }
+   virtual TR::DataType getPrimitiveType()                   { return TR::Address; }
 
    virtual size_t getSize() { return TR::DataType::getSize(TR::Address); }
 

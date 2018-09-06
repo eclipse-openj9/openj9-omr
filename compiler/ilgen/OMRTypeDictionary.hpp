@@ -199,8 +199,6 @@ public:
    TR_Memory *trMemory() { return memoryManager._trMemory; }
    TR::IlType *getWord() { return Word; }
 
-   //TR::IlReference *ArrayReference(TR::IlType *arrayType);
-
    /**
     * @brief A template class for checking whether a particular type is supported by `toIlType<>()`
     * @tparam C/C++ type
@@ -392,6 +390,9 @@ protected:
 
    MemoryManager memoryManager;
 
+   OMR::StructType * getStruct(const char *structName);
+   OMR::UnionType  * getUnion(const char *unionName);
+
    typedef bool (*StrComparator)(const char *, const char *);
 
    typedef TR::typed_allocator<std::pair<const char * const, OMR::StructType *>, TR::Region &> StructMapAllocator;
@@ -436,9 +437,6 @@ protected:
    TR::IlType       * pVectorInt64;
    TR::IlType       * pVectorFloat;
    TR::IlType       * pVectorDouble;
-
-   OMR::StructType * getStruct(const char *structName);
-   OMR::UnionType  * getUnion(const char *unionName);
    };
 
 } // namespace OMR

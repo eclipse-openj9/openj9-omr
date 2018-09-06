@@ -31,6 +31,7 @@ class TR_Memory;
 
 
 namespace TR { class IlType; }
+namespace TR { class TypeDictionary; }
 
 extern "C" {
 typedef void * (*ClientAllocator)(void * impl);

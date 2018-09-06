@@ -87,6 +87,12 @@ OMR::IlType::getSignatureName()
    return (char *) signatureNameForType[dt];
    }
 
+TR::IlType *
+OMR::IlType::primitiveType(TR::TypeDictionary *d)
+   {
+   return static_cast<TR::IlType *>(this);
+   }
+
 size_t
 OMR::IlType::getSize()
    {

@@ -123,7 +123,7 @@ TR_VirtualGuard::TR_VirtualGuard(TR_VirtualGuardTestType test, TR_VirtualGuardKi
 TR_VirtualGuardSite *
 TR_VirtualGuard::addNOPSite()
    {
-   TR_ASSERT(isNopable() || mergedWithHCRGuard(), "assertion failure");
+   TR_ASSERT(isNopable() || mergedWithHCRGuard() || mergedWithOSRGuard(), "assertion failure");
 
    TR_VirtualGuardSite *site = new (_sites.getRegion()) TR_VirtualGuardSite;
 

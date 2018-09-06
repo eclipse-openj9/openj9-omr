@@ -21,6 +21,9 @@
 
 #include "codegen/ARM64SystemLinkage.hpp"
 
+#include "codegen/ARM64Instruction.hpp"
+#include "codegen/GenerateInstructions.hpp"
+#include "codegen/MemoryReference.hpp"
 #include "il/symbol/AutomaticSymbol.hpp"
 
 
@@ -42,13 +45,13 @@ TR::ARM64SystemLinkage::ARM64SystemLinkage(TR::CodeGenerator *cg)
    _properties._registerFlags[TR::RealRegister::x7]    = IntegerArgument;
 
    for (i = TR::RealRegister::x8; i <= TR::RealRegister::x15; i++)
-      _properties._registerFlags[i] = Preserved; // x8 - x15 Preserved
+      _properties._registerFlags[i] = 0; // x8 - x15
 
    _properties._registerFlags[TR::RealRegister::x16]   = ARM64_Reserved; // IP0
    _properties._registerFlags[TR::RealRegister::x17]   = ARM64_Reserved; // IP1
 
    for (i = TR::RealRegister::x18; i <= TR::RealRegister::x28; i++)
-      _properties._registerFlags[i] = 0; // x18 - x28
+      _properties._registerFlags[i] = Preserved; // x18 - x28 Preserved
 
    _properties._registerFlags[TR::RealRegister::x29]   = ARM64_Reserved; // FP
    _properties._registerFlags[TR::RealRegister::x30]   = ARM64_Reserved; // LR
@@ -164,19 +167,182 @@ TR::ARM64SystemLinkage::getRightToLeft()
    }
 
 
-void
-TR::ARM64SystemLinkage::mapStack(TR::ResolvedMethodSymbol *method)
+static void mapSingleParameter(TR::ParameterSymbol *parameter, uint32_t &stackIndex)
    {
-   TR_ASSERT(false, "Not implemented yet.");
+   auto size = parameter->getSize();
+   auto alignment = size <= 4 ? 4 : 8;
+   stackIndex = (stackIndex + alignment - 1) & (~(alignment - 1));
+   parameter->setParameterOffset(stackIndex);
+   stackIndex += size;
    }
 
 
 void
-TR::ARM64SystemLinkage::mapSingleAutomatic(
-      TR::AutomaticSymbol *p,
-      uint32_t &stackIndex)
+TR::ARM64SystemLinkage::mapStack(TR::ResolvedMethodSymbol *method)
    {
-   TR_ASSERT(false, "Not implemented yet.");
+   TR::Machine *machine = cg()->machine();
+   uint32_t stackIndex = 0;
+   ListIterator<TR::AutomaticSymbol> automaticIterator(&method->getAutomaticList());
+   TR::AutomaticSymbol *localCursor = automaticIterator.getFirst();
+
+   // map non-long/double automatics
+   while (localCursor != NULL)
+      {
+      if (localCursor->getGCMapIndex() < 0
+          && localCursor->getDataType() != TR::Int64
+          && localCursor->getDataType() != TR::Double)
+         {
+         localCursor->setOffset(stackIndex);
+         stackIndex += (localCursor->getSize() + 3) & (~3);
+         }
+      localCursor = automaticIterator.getNext();
+      }
+
+   stackIndex += (stackIndex & 0x4) ? 4 : 0; // align to 8 bytes
+   automaticIterator.reset();
+   localCursor = automaticIterator.getFirst();
+
+   // map long/double automatics
+   while (localCursor != NULL)
+      {
+      if (localCursor->getDataType() == TR::Int64
+          || localCursor->getDataType() == TR::Double)
+         {
+         localCursor->setOffset(stackIndex);
+         stackIndex += (localCursor->getSize() + 7) & (~7);
+         }
+      localCursor = automaticIterator.getNext();
+      }
+   method->setLocalMappingCursor(stackIndex);
+
+   // allocate space for preserved registers (x19-x28, v8-v15)
+   for (int r = TR::RealRegister::x19; r <= TR::RealRegister::x28; r++)
+      {
+      TR::RealRegister *rr = machine->getARM64RealRegister((TR::RealRegister::RegNum)r);
+      if (rr->getHasBeenAssignedInMethod())
+         {
+         stackIndex += 8;
+         }
+      }
+   for (int r = TR::RealRegister::v8; r <= TR::RealRegister::v15; r++)
+      {
+      TR::RealRegister *rr = machine->getARM64RealRegister((TR::RealRegister::RegNum)r);
+      if (rr->getHasBeenAssignedInMethod())
+         {
+         stackIndex += 8;
+         }
+      }
+   stackIndex += 8; // for link register
+
+   /*
+    * Because the rest of the code generator currently expects **all** arguments
+    * to be passed on the stack, arguments passed in registers must be spilled
+    * in the callee frame. To map the arguments correctly, we use two loops. The
+    * first maps the arguments that will come in registers onto the callee stack.
+    * At the end of this loop, the `stackIndex` is the the size of the frame.
+    * The second loop then maps the remaining arguments onto the caller frame.
+    */
+
+   int32_t nextIntArgReg = 0;
+   int32_t nextFltArgReg = 0;
+   ListIterator<TR::ParameterSymbol> parameterIterator(&method->getParameterList());
+   for (TR::ParameterSymbol *parameter = parameterIterator.getFirst();
+        parameter != NULL && (nextIntArgReg < getProperties().getNumIntArgRegs() || nextFltArgReg < getProperties().getNumFloatArgRegs());
+        parameter = parameterIterator.getNext())
+      {
+      switch (parameter->getDataType())
+         {
+         case TR::Int8:
+         case TR::Int16:
+         case TR::Int32:
+         case TR::Int64:
+         case TR::Address:
+            if (nextIntArgReg < getProperties().getNumIntArgRegs())
+               {
+               nextIntArgReg++;
+               mapSingleParameter(parameter, stackIndex);
+               }
+            else
+               {
+               nextIntArgReg = getProperties().getNumIntArgRegs() + 1;
+               }
+            break;
+         case TR::Float:
+         case TR::Double:
+            if (nextFltArgReg < getProperties().getNumFloatArgRegs())
+               {
+               nextFltArgReg++;
+               mapSingleParameter(parameter, stackIndex);
+               }
+            else
+               {
+               nextFltArgReg = getProperties().getNumFloatArgRegs() + 1;
+               }
+            break;
+         case TR::Aggregate:
+            TR_ASSERT(false, "Function parameters of aggregate types are not currently supported on AArch64.");
+            break;
+         default:
+            TR_ASSERT(false, "Unknown parameter type.");
+         }
+      }
+
+   // save the stack frame size, aligned to 8 bytes
+   stackIndex = (stackIndex + 7) & (~7);
+   cg()->setFrameSizeInBytes(stackIndex);
+
+   nextIntArgReg = 0;
+   nextFltArgReg = 0;
+   parameterIterator.reset();
+   for (TR::ParameterSymbol *parameter = parameterIterator.getFirst();
+        parameter != NULL && (nextIntArgReg < getProperties().getNumIntArgRegs() || nextFltArgReg < getProperties().getNumFloatArgRegs());
+        parameter = parameterIterator.getNext())
+      {
+      switch (parameter->getDataType())
+         {
+         case TR::Int8:
+         case TR::Int16:
+         case TR::Int32:
+         case TR::Int64:
+         case TR::Address:
+            if (nextIntArgReg < getProperties().getNumIntArgRegs())
+               {
+               nextIntArgReg++;
+               }
+            else
+               {
+               mapSingleParameter(parameter, stackIndex);
+               }
+            break;
+         case TR::Float:
+         case TR::Double:
+            if (nextFltArgReg < getProperties().getNumFloatArgRegs())
+               {
+               nextFltArgReg++;
+               }
+            else
+               {
+               mapSingleParameter(parameter, stackIndex);
+               }
+            break;
+         case TR::Aggregate:
+            TR_ASSERT(false, "Function parameters of aggregate types are not currently supported on AArch64.");
+            break;
+         default:
+            TR_ASSERT(false, "Unknown parameter type.");
+         }
+      }
+   }
+
+
+void
+TR::ARM64SystemLinkage::mapSingleAutomatic(TR::AutomaticSymbol *p, uint32_t &stackIndex)
+   {
+   int32_t roundedSize = (p->getSize() + 3) & (~3);
+   if (roundedSize == 0)
+      roundedSize = 4;
+
+   p->setOffset(stackIndex -= roundedSize);
    }
 
 
@@ -188,18 +354,151 @@ TR::ARM64SystemLinkage::createPrologue(TR::Instruction *cursor)
 
 
 void
-TR::ARM64SystemLinkage::createPrologue(
-      TR::Instruction *cursor,
-      List<TR::ParameterSymbol> &parmList)
+TR::ARM64SystemLinkage::createPrologue(TR::Instruction *cursor, List<TR::ParameterSymbol> &parmList)
    {
-   TR_ASSERT(false, "Not implemented yet.");
+   TR::CodeGenerator *codeGen = cg();
+   TR::Machine *machine = codeGen->machine();
+   TR::ResolvedMethodSymbol *bodySymbol = comp()->getJittedMethodSymbol();
+   const TR::ARM64LinkageProperties& properties = getProperties();
+   TR::RealRegister *sp = machine->getARM64RealRegister(properties.getStackPointerRegister());
+   TR::Node *firstNode = comp()->getStartTree()->getNode();
+
+   // allocate stack space
+   uint32_t frameSize = (uint32_t)codeGen->getFrameSizeInBytes();
+   if (constantIsUnsignedImmed12(frameSize))
+      {
+      cursor = generateTrg1Src1ImmInstruction(codeGen, TR::InstOpCode::subimmx, firstNode, sp, sp, frameSize, cursor);
+      }
+   else
+      {
+      TR_ASSERT(false, "Not implemented yet.");
+      }
+
+   // save link register (x30)
+   TR::MemoryReference *stackSlot = new (trHeapMemory()) TR::MemoryReference(sp, bodySymbol->getLocalMappingCursor(), codeGen);
+   cursor = generateMemSrc1Instruction(cg(), TR::InstOpCode::strimmx, firstNode, stackSlot, machine->getARM64RealRegister(TR::RealRegister::x30), cursor);
+
+   // spill argument registers
+   int32_t nextIntArgReg = 0;
+   int32_t nextFltArgReg = 0;
+   ListIterator<TR::ParameterSymbol> parameterIterator(&parmList);
+   for (TR::ParameterSymbol *parameter = parameterIterator.getFirst();
+        parameter != NULL && (nextIntArgReg < getProperties().getNumIntArgRegs() || nextFltArgReg < getProperties().getNumFloatArgRegs());
+        parameter = parameterIterator.getNext())
+      {
+      TR::MemoryReference *stackSlot = new (trHeapMemory()) TR::MemoryReference(sp, parameter->getParameterOffset(), codeGen);
+      switch (parameter->getDataType())
+         {
+         case TR::Int8:
+         case TR::Int16:
+         case TR::Int32:
+         case TR::Int64:
+         case TR::Address:
+            if (nextIntArgReg < getProperties().getNumIntArgRegs())
+               {
+               cursor = generateMemSrc1Instruction(cg(), TR::InstOpCode::strimmx, firstNode, stackSlot, machine->getARM64RealRegister((TR::RealRegister::RegNum)(TR::RealRegister::x0 + nextIntArgReg)), cursor);
+               nextIntArgReg++;
+               }
+            else
+               {
+               nextIntArgReg = getProperties().getNumIntArgRegs() + 1;
+               }
+            break;
+         case TR::Float:
+         case TR::Double:
+            if (nextFltArgReg < getProperties().getNumFloatArgRegs())
+               {
+               cursor = generateMemSrc1Instruction(cg(), TR::InstOpCode::vstrimmd, firstNode, stackSlot, machine->getARM64RealRegister((TR::RealRegister::RegNum)(TR::RealRegister::v0 + nextFltArgReg)), cursor);
+               nextFltArgReg++;
+               }
+            else
+               {
+               nextFltArgReg = getProperties().getNumFloatArgRegs() + 1;
+               }
+            break;
+         case TR::Aggregate:
+            TR_ASSERT(false, "Function parameters of aggregate types are not currently supported on AArch64.");
+            break;
+         default:
+            TR_ASSERT(false, "Unknown parameter type.");
+         }
+      }
+
+   // save callee-saved registers
+   uint32_t offset = bodySymbol->getLocalMappingCursor() + 8; // +8 for LR
+   for (int r = TR::RealRegister::x19; r <= TR::RealRegister::x28; r++)
+      {
+      TR::RealRegister *rr = machine->getARM64RealRegister((TR::RealRegister::RegNum)r);
+      if (rr->getHasBeenAssignedInMethod())
+         {
+         TR::MemoryReference *stackSlot = new (trHeapMemory()) TR::MemoryReference(sp, offset, codeGen);
+         cursor = generateMemSrc1Instruction(cg(), TR::InstOpCode::strimmx, firstNode, stackSlot, rr, cursor);
+         offset += 8;
+         }
+      }
+   for (int r = TR::RealRegister::v8; r <= TR::RealRegister::v15; r++)
+      {
+      TR::RealRegister *rr = machine->getARM64RealRegister((TR::RealRegister::RegNum)r);
+      if (rr->getHasBeenAssignedInMethod())
+         {
+         TR::MemoryReference *stackSlot = new (trHeapMemory()) TR::MemoryReference(sp, offset, codeGen);
+         cursor = generateMemSrc1Instruction(cg(), TR::InstOpCode::vstrimmd, firstNode, stackSlot, rr, cursor);
+         offset += 8;
+         }
+      }
    }
 
 
 void
 TR::ARM64SystemLinkage::createEpilogue(TR::Instruction *cursor)
    {
-   TR_ASSERT(false, "Not implemented yet.");
+   TR::CodeGenerator *codeGen = cg();
+   const TR::ARM64LinkageProperties& properties = getProperties();
+   TR::Machine *machine = codeGen->machine();
+   TR::Node *lastNode = cursor->getNode();
+   TR::ResolvedMethodSymbol *bodySymbol = comp()->getJittedMethodSymbol();
+   TR::RealRegister *sp = machine->getARM64RealRegister(properties.getStackPointerRegister());
+
+   // restore callee-saved registers
+   uint32_t offset = bodySymbol->getLocalMappingCursor() + 8; // +8 for LR
+   for (int r = TR::RealRegister::x19; r <= TR::RealRegister::x28; r++)
+      {
+      TR::RealRegister *rr = machine->getARM64RealRegister((TR::RealRegister::RegNum)r);
+      if (rr->getHasBeenAssignedInMethod())
+         {
+         TR::MemoryReference *stackSlot = new (trHeapMemory()) TR::MemoryReference(sp, offset, codeGen);
+         cursor = generateMemSrc1Instruction(cg(), TR::InstOpCode::ldrimmx, lastNode, stackSlot, rr, cursor);
+         offset += 8;
+         }
+      }
+   for (int r = TR::RealRegister::v8; r <= TR::RealRegister::v15; r++)
+      {
+      TR::RealRegister *rr = machine->getARM64RealRegister((TR::RealRegister::RegNum)r);
+      if (rr->getHasBeenAssignedInMethod())
+         {
+         TR::MemoryReference *stackSlot = new (trHeapMemory()) TR::MemoryReference(sp, offset, codeGen);
+         cursor = generateMemSrc1Instruction(cg(), TR::InstOpCode::vldrimmd, lastNode, stackSlot, rr, cursor);
+         offset += 8;
+         }
+      }
+
+   // restore link register (x30)
+   TR::MemoryReference *stackSlot = new (trHeapMemory()) TR::MemoryReference(sp, bodySymbol->getLocalMappingCursor(), codeGen);
+   cursor = generateMemSrc1Instruction(cg(), TR::InstOpCode::ldrimmx, lastNode, stackSlot, machine->getARM64RealRegister(TR::RealRegister::lr), cursor);
+
+   // remove space for preserved registers
+   uint32_t frameSize = codeGen->getFrameSizeInBytes();
+   if (constantIsUnsignedImmed12(frameSize))
+      {
+      cursor = generateTrg1Src1ImmInstruction(codeGen, TR::InstOpCode::addimmx, lastNode, sp, sp, frameSize, cursor);
+      }
+   else
+      {
+      TR_ASSERT(false, "Not implemented yet.");
+      }
+
+   // return
+   cursor = generateInstruction(codeGen, TR::InstOpCode::ret, lastNode, cursor);
    }
 
 

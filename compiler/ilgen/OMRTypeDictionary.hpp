@@ -35,6 +35,10 @@ namespace TR  { class IlReference; }
 namespace TR  { class SegmentProvider; }
 namespace TR  { class Region; }
 
+extern "C" {
+typedef void * (*ClientAllocator)(void * impl);
+typedef void * (*ImplGetter)(void *client);
+}
 
 namespace OMR
 {
@@ -374,6 +378,39 @@ public:
     */
    void NotifyCompilationDone();
 
+   /**
+    * @brief associates this object with a particular client object
+    */
+   void setClient(void *client)
+      {
+      _client = client;
+      }
+
+   /**
+    * @brief returns the client object associated with this object
+    */
+   void *client();
+
+   /**
+    * @brief Set the Client Allocator function
+    *
+    * @param allocator a function pointer to the client object allocator
+    */
+   static void setClientAllocator(ClientAllocator allocator)
+      {
+      _clientAllocator = allocator;
+      }
+
+   /**
+    * @brief Set the Get Impl function
+    *
+    * @param getter function pointer to the impl getter
+    */
+   static void setGetImpl(ImplGetter getter)
+      {
+      _getImpl = getter;
+      }
+
 protected:
    // We have MemoryManager as the first member of TypeDictionary, so that
    // it is the last one to get destroyed and all objects allocated using
@@ -393,6 +430,22 @@ protected:
    OMR::StructType * getStruct(const char *structName);
    OMR::UnionType  * getUnion(const char *unionName);
 
+   /**
+    * @brief pointer to a client object that corresponds to this object
+    */
+   void * _client;
+
+   /**
+    * @brief pointer to the function used to allocate an instance of a
+    * client object
+    */
+   static ClientAllocator _clientAllocator;
+
+   /**
+    * @brief pointer to impl getter function
+    */
+   static ImplGetter _getImpl;
+
    typedef bool (*StrComparator)(const char *, const char *);
 
    typedef TR::typed_allocator<std::pair<const char * const, OMR::StructType *>, TR::Region &> StructMapAllocator;
@@ -403,6 +456,7 @@ protected:
    typedef std::map<const char *, OMR::UnionType *, StrComparator, UnionMapAllocator> UnionMap;
    UnionMap           _unionsByName;
 
+public:
    // convenience for primitive types
    TR::IlType       * _primitiveType[TR::NumOMRTypes];
    TR::IlType       * NoType;

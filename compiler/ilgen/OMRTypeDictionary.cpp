@@ -448,6 +448,7 @@ OMR::TypeDictionary::MemoryManager::~MemoryManager()
    }
 
 OMR::TypeDictionary::TypeDictionary() :
+   _client(0),
    _structsByName(str_comparator, trMemory()->heapMemoryRegion()),
    _unionsByName(str_comparator, trMemory()->heapMemoryRegion())
    {
@@ -661,3 +662,14 @@ OMR::TypeDictionary::getUnion(const char *unionName)
    OMR::UnionType *theUnion = it->second;
    return theUnion;
    }
+
+void *
+OMR::TypeDictionary::client()
+   {
+   if (_client == NULL && _clientAllocator != NULL)
+      _client = _clientAllocator(static_cast<TR::TypeDictionary *>(this));
+   return _client;
+   }
+
+ClientAllocator OMR::TypeDictionary::_clientAllocator = NULL;
+ClientAllocator OMR::TypeDictionary::_getImpl = NULL;

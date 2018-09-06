@@ -183,8 +183,8 @@ OMR::CodeGenPhase::performProcessRelocationsPhase(TR::CodeGenerator * cg, TR::Co
      traceMsg(comp, "\n<relocatableDataCG>\n");
      if (comp->getOption(TR_TraceRelocatableDataDetailsCG)) // verbose output
         {
-        uint8_t * aotMethodCodeStart = (uint8_t *)comp->getAotMethodCodeStart();
-        traceMsg(comp, "Code start = %8x, Method start pc = %x, Method start pc offset = 0x%x\n", aotMethodCodeStart, cg->getCodeStart(), cg->getCodeStart() - aotMethodCodeStart);
+        uint8_t * relocatableMethodCodeStart = (uint8_t *)comp->getRelocatableMethodCodeStart();
+        traceMsg(comp, "Code start = %8x, Method start pc = %x, Method start pc offset = 0x%x\n", relocatableMethodCodeStart, cg->getCodeStart(), cg->getCodeStart() - relocatableMethodCodeStart);
         }
      cg->getAheadOfTimeCompile()->dumpRelocationData();
      traceMsg(comp, "</relocatableDataCG>\n");

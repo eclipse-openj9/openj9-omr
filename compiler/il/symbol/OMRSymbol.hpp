@@ -317,6 +317,9 @@ public:
    inline void setConstString();
    inline bool isConstString();
 
+   inline void setConstantDynamic();
+   inline bool isConstantDynamic();
+
    inline void setAddressIsCPIndexOfStatic(bool b);
    inline bool addressIsCPIndexOfStatic();
 
@@ -555,6 +558,7 @@ public:
       NamedShadow               = 0x00000200,
       ImmutableField            = 0x00000400,
       PendingPush               = 0x00000800,
+      ConstantDynamic           = 0x00001000,
       };
 
 protected:

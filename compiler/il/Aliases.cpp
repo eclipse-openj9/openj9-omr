@@ -243,7 +243,14 @@ OMR::SymbolReference::getUseDefAliasesBV(bool isDirectCall, bool includeGCSafePo
          case TR::Symbol::IsShadow:
          case TR::Symbol::IsStatic:
             {
-            if ((self()->isUnresolved() && !_symbol->isConstObjectRef()) || _symbol->isVolatile() || self()->isLiteralPoolAddress() ||
+            // For unresolved constant dynamic, we need to invoke a Java bootstrap method, 
+            // which can have arbitrary side effects, so the aliasing should be conservative here.
+            // isConstObjectRef now returns true for condy, so we add an explicit condition, 
+            // more like a short-circuit, to say if we are unresolved and not isConstObjectRef 
+            // (this is the same as before), or if we are unresolved and condy 
+            // (this is the extra condition added), we would return conservative aliases.
+            if ((self()->isUnresolved() && (_symbol->isConstantDynamic() || !_symbol->isConstObjectRef())) || 
+	        _symbol->isVolatile() || self()->isLiteralPoolAddress() ||
                 self()->isFromLiteralPool() || _symbol->isUnsafeShadowSymbol() ||
                 (_symbol->isArrayShadowSymbol() && comp->getMethodSymbol()->hasVeryRefinedAliasSets()))
                {
@@ -703,7 +710,14 @@ OMR::SymbolReference::getUseDefAliasesBV(bool isDirectCall, bool includeGCSafePo
          }
       case TR::Symbol::IsStatic:
          {
-         if ((self()->isUnresolved() && !_symbol->isConstObjectRef()) || self()->isLiteralPoolAddress() || self()->isFromLiteralPool() || _symbol->isVolatile())
+         // For unresolved constant dynamic, we need to invoke a Java bootstrap method,
+         // which can have arbitrary side effects, so the aliasing should be conservative here.
+         // isConstObjectRef now returns true for condy, so we add an explicit condition,
+         // more like a short-circuit, to say if we are unresolved and not isConstObjectRef
+         // (this is the same as before), or if we are unresolved and condy
+         // (this is the extra condition added), we would return conservative aliases.
+         if ((self()->isUnresolved() && (_symbol->isConstantDynamic() || !_symbol->isConstObjectRef())) || 
+	     self()->isLiteralPoolAddress() || self()->isFromLiteralPool() || _symbol->isVolatile())
             {
             return &comp->getSymRefTab()->aliasBuilder.defaultMethodDefAliases();
             }
@@ -766,7 +780,14 @@ OMR::SymbolReference::sharesSymbol(bool includingGCSafePoint)
       case TR::Symbol::IsShadow:
       case TR::Symbol::IsStatic:
          {
-         if ((self()->isUnresolved() && !_symbol->isConstObjectRef()) || _symbol->isVolatile() || self()->isLiteralPoolAddress() ||
+         // For unresolved constant dynamic, we need to invoke a Java bootstrap method,
+         // which can have arbitrary side effects, so the aliasing should be conservative here.
+         // isConstObjectRef now returns true for condy, so we add an explicit condition,
+         // more like a short-circuit, to say if we are unresolved and not isConstObjectRef
+         // (this is the same as before), or if we are unresolved and condy
+         // (this is the extra condition added), we would return conservative aliases.
+         if ((self()->isUnresolved() && (_symbol->isConstantDynamic() || !_symbol->isConstObjectRef())) || 
+	       _symbol->isVolatile() || self()->isLiteralPoolAddress() ||
                self()->isFromLiteralPool() || _symbol->isUnsafeShadowSymbol() ||
                _symbol->isArrayShadowSymbol() && c->getMethodSymbol()->hasVeryRefinedAliasSets())
             {

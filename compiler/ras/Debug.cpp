@@ -3964,6 +3964,7 @@ TR_Debug::getRuntimeHelperName(int32_t index)
             case TR_X86interpreterUnresolvedClassFromStaticFieldGlue: return "interpreterUnresolvedClassFromStaticFieldGlue";
             case TR_X86interpreterUnresolvedStringGlue:               return "interpreterUnresolvedStringGlue";
             case TR_X86interpreterUnresolvedStaticFieldGlue:          return "interpreterUnresolvedStaticFieldGlue";
+            case TR_X86interpreterUnresolvedConstantDynamicGlue:      return "interpreterUnresolvedConstantDynamicGlue";
             case TR_X86interpreterUnresolvedStaticFieldSetterGlue:    return "interpreterUnresolvedStaticFieldSetterGlue";
             case TR_X86interpreterUnresolvedFieldGlue:                return "interpreterUnresolvedFieldGlue";
             case TR_X86interpreterUnresolvedFieldSetterGlue:          return "interpreterUnresolvedFieldSetterGlue";

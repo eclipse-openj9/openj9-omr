@@ -325,6 +325,19 @@ OMR::Symbol::isConstString()
    }
 
 void
+OMR::Symbol::setConstantDynamic()
+   {
+   TR_ASSERT(self()->isStatic(), "assertion failure");
+   _flags2.set(ConstantDynamic);
+   }
+
+bool
+OMR::Symbol::isConstantDynamic()
+   {
+   return self()->isStatic() && _flags2.testAny(ConstantDynamic);
+   }
+
+void
 OMR::Symbol::setAddressIsCPIndexOfStatic(bool b)
    {
    TR_ASSERT(self()->isStatic(), "assertion failure");
@@ -636,7 +649,7 @@ OMR::Symbol::isConstMethodHandle()
 bool
 OMR::Symbol::isConstObjectRef()
    {
-   return self()->isStatic() && (_flags.testAny(ConstString) || _flags2.testAny(ConstMethodType|ConstMethodHandle));
+   return self()->isStatic() && (_flags.testAny(ConstString) || _flags2.testAny(ConstMethodType|ConstMethodHandle|ConstantDynamic));
    }
 
 bool

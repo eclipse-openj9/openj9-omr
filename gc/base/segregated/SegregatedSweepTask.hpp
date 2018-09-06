@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2016 IBM Corp. and others
+ * Copyright (c) 1991, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -41,7 +41,7 @@ private:
 /* Methods */
 public:
 	/* OMRTODO come up with a better number here.. */
-	virtual uintptr_t getVMStateID() { return J9VMSTATE_GC_SWEEP; };
+	virtual uintptr_t getVMStateID() { return OMRVMSTATE_GC_SWEEP; };
 	
 	virtual void run(MM_EnvironmentBase *env);
 	virtual void setup(MM_EnvironmentBase *env);

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2014 IBM Corp. and others
+ * Copyright (c) 1991, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -47,7 +47,7 @@ private:
 	MM_CompactScheme *_compactScheme;
 
 public:
-	virtual uintptr_t getVMStateID() { return J9VMSTATE_GC_COMPACT_FIX_HEAP_FOR_WALK; };
+	virtual uintptr_t getVMStateID() { return OMRVMSTATE_GC_COMPACT_FIX_HEAP_FOR_WALK; };
 	
 	virtual void run(MM_EnvironmentBase *env);
 

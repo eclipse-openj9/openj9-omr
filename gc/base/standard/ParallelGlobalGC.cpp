@@ -323,7 +323,7 @@ MM_ParallelGlobalGC::tearDown(MM_EnvironmentBase *env)
 uintptr_t
 MM_ParallelGlobalGC::getVMStateID()
 {
-	return J9VMSTATE_GC_COLLECTOR_GLOBALGC;
+	return OMRVMSTATE_GC_COLLECTOR_GLOBALGC;
 }
 
 /****************************************

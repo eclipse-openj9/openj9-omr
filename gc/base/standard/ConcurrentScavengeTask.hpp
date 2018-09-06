@@ -57,7 +57,7 @@ protected:
 public:
 	virtual UDATA getVMStateID()
 	{
-		return J9VMSTATE_GC_CONCURRENT_SCAVENGER;
+		return OMRVMSTATE_GC_CONCURRENT_SCAVENGER;
 	}
 
 	UDATA getBytesScanned()

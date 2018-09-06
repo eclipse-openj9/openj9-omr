@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2016 IBM Corp. and others
+ * Copyright (c) 1991, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -36,7 +36,7 @@ MM_Task::accept(MM_EnvironmentBase *env)
 	if (env->isMasterThread()) {
 		_oldVMstate = oldVMstate;
 	} else {
-		Assert_MM_true(J9VMSTATE_GC_DISPATCHER_IDLE == oldVMstate);
+		Assert_MM_true(OMRVMSTATE_GC_DISPATCHER_IDLE == oldVMstate);
 	}
 	
 	/* do task-specific setup */
@@ -69,7 +69,7 @@ MM_Task::complete(MM_EnvironmentBase *env)
 	Assert_MM_true(getVMStateID() == env->getOmrVMThread()->vmState);
 
 	/* restore the previous VMstate */
-	uintptr_t oldVMstate = J9VMSTATE_GC_DISPATCHER_IDLE;
+	uintptr_t oldVMstate = OMRVMSTATE_GC_DISPATCHER_IDLE;
 	if (env->isMasterThread()) {
 		oldVMstate = _oldVMstate;
 	}

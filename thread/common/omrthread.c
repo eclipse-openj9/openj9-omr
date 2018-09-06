@@ -2094,6 +2094,7 @@ threadFree(omrthread_t thread, int globalAlreadyLocked)
  *
  * @param[in] globalAlreadyLocked indicates whether the thread library global mutex is already locked
  *            Also implies that omrthread_tls_finalize was called before the global mutex was locked
+ * @return none
  */
 static void OMRNORETURN
 threadInternalExit(int globalAlreadyLocked)
@@ -2150,7 +2151,7 @@ threadInternalExit(int globalAlreadyLocked)
 	 * the debug version of GLOBAL_UNLOCK_SIMPLE() uses omrthread_self().
 	 *
 	 * This opens up a small window of time where the thread library
-	 * could be shut down before this thread has completed exitting.
+	 * could be shut down before this thread has completed exiting.
 	 * Fetch the TLS key under lock to minimize the chance of the
 	 * key being destroyed by omrthread_shutdown.
 	 *

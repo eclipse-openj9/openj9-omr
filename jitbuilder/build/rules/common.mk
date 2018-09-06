@@ -20,8 +20,11 @@
 # SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
 ###############################################################################
 
+CPP_LIBRARY=$(FIXED_DLL_DIR)/cpp/$(LIBPREFIX)$(PRODUCT_NAME).a
+#C_LIBRARY=$(FIXED_DLL_DIR)/c/$(LIBPREFIX)$(PRODUCT_NAME).a
+
 # Add our targets to the global targets
-all: jit jitbuilder
+all: jit $(CPP_LIBRARY) # $(C_LIBRARY)
 clean: jit_clean
 cleandeps: jit_cleandeps
 cleandll: jit_cleandll

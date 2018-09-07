@@ -586,8 +586,6 @@ PPCOpCodesTest::UnsupportedOpCodesTests()
    addUnsupportedOpCodeTest(_numberOfBinaryArgs, TR::sdiv, "sDiv", _argTypesBinaryShort, TR::Int16);
    addUnsupportedOpCodeTest(_numberOfBinaryArgs, TR::srem, "sRem", _argTypesBinaryShort, TR::Int16);
 
-   addUnsupportedOpCodeTest(_numberOfUnaryArgs, TR::bneg, "bNeg", _argTypesUnaryByte, TR::Int8);
-   addUnsupportedOpCodeTest(_numberOfUnaryArgs, TR::sneg, "sNeg", _argTypesUnaryShort, TR::Int16);
    addUnsupportedOpCodeTest(_numberOfBinaryArgs, TR::sshl, "sShl", _argTypesBinaryShort, TR::Int16);
 
    addUnsupportedOpCodeTest(_numberOfBinaryArgs, TR::bucmplt, "bucmplt", _argTypesBinaryByte, TR::Int32);
@@ -4449,6 +4447,8 @@ void
 PPCOpCodesTest::compileDisabledUnaryTestMethods()
    {
    int32_t rc = 0;
+   compileOpCodeMethod(_bNeg, _numberOfUnaryArgs, TR::bneg, "bNeg", _argTypesUnaryByte, TR::Int8, rc);
+   compileOpCodeMethod(_sNeg, _numberOfUnaryArgs, TR::sneg, "sNeg", _argTypesUnaryShort, TR::Int16, rc);
    //Jazz103 Work Item 109977
    compileOpCodeMethod(_dNeg, _numberOfUnaryArgs, TR::dneg, "dNeg", _argTypesUnaryDouble, TR::Double, rc);
    compileOpCodeMethod(_fNeg, _numberOfUnaryArgs, TR::fneg, "fNeg", _argTypesUnaryFloat, TR::Float, rc);
@@ -4470,6 +4470,8 @@ PPCOpCodesTest::invokeDisabledUnaryTests()
    int32_t rc = 0;
 
    int64_t longDataArray[] = {LONG_NEG, LONG_POS, LONG_MAXIMUM, LONG_MINIMUM, LONG_ZERO};
+   int16_t shortDataArray[] = {SHORT_NEG, SHORT_POS, SHORT_MAXIMUM, SHORT_MINIMUM, SHORT_ZERO};
+   int8_t byteDataArray[] = {BYTE_NEG, BYTE_POS, BYTE_MAXIMUM, BYTE_MINIMUM, BYTE_ZERO};
    float floatDataArray[] = {FLOAT_NEG, FLOAT_POS, FLOAT_ZERO, FLOAT_MAXIMUM, FLOAT_MINIMUM};
    double doubleDataArray[] = {DOUBLE_NEG, DOUBLE_POS, DOUBLE_ZERO, DOUBLE_MAXIMUM, DOUBLE_MINIMUM};
    uint32_t uintDataArray[] = {UINT_POS, UINT_MAXIMUM, UINT_MINIMUM};
@@ -4478,8 +4480,32 @@ PPCOpCodesTest::invokeDisabledUnaryTests()
    uint32_t testCaseNum = 0;
 
    signatureCharJ_J_testMethodType  *lUnaryCons = 0;
+   signatureCharS_S_testMethodType * sUnaryCons = 0;
+   signatureCharB_B_testMethodType * bUnaryCons = 0;
    signatureCharD_D_testMethodType  *dUnaryCons = 0;
    signatureCharF_F_testMethodType  *fUnaryCons = 0;
+
+   //bneg
+   testCaseNum = sizeof(byteDataArray) / sizeof(byteDataArray[0]);
+   for (uint32_t i = 0; i < testCaseNum; ++i)
+      {
+      OMR_CT_EXPECT_EQ(_bNeg, neg(byteDataArray[i]), _bNeg(byteDataArray[i]));
+      sprintf(resolvedMethodName, "bNegConst%d", i + 1);
+      compileOpCodeMethod(bUnaryCons, _numberOfUnaryArgs, TR::bneg,
+            resolvedMethodName, _argTypesUnaryByte, TR::Int8, rc, 2, 1, &byteDataArray[i]);
+      OMR_CT_EXPECT_EQ(bUnaryCons, neg(byteDataArray[i]), bUnaryCons(BYTE_PLACEHOLDER_1));
+      }
+
+   //sneg
+   testCaseNum = sizeof(shortDataArray) / sizeof(shortDataArray[0]);
+   for (uint32_t i = 0; i < testCaseNum; ++i)
+      {
+      OMR_CT_EXPECT_EQ(_sNeg, neg(shortDataArray[i]), _sNeg(shortDataArray[i]));
+      sprintf(resolvedMethodName, "sNegConst%d", i + 1);
+      compileOpCodeMethod(sUnaryCons, _numberOfUnaryArgs, TR::sneg,
+            resolvedMethodName, _argTypesUnaryShort, TR::Int16, rc, 2, 1, &shortDataArray[i]);
+      OMR_CT_EXPECT_EQ(sUnaryCons, neg(shortDataArray[i]), sUnaryCons(SHORT_PLACEHOLDER_1));
+      }
 
    //lneg
    testCaseNum = sizeof(longDataArray) / sizeof(longDataArray[0]);

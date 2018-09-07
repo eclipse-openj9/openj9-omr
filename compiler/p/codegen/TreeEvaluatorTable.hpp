@@ -115,8 +115,8 @@
    TR::TreeEvaluator::lnegEvaluator,                    // TR::lneg
    TR::TreeEvaluator::fnegEvaluator,                    // TR::fneg
    TR::TreeEvaluator::fnegEvaluator,                    // TR::dneg
-   TR::TreeEvaluator::unImpOpEvaluator,                 // TR::bneg
-   TR::TreeEvaluator::badILOpEvaluator,                    // TR::sneg
+   TR::TreeEvaluator::inegEvaluator,                    // TR::bneg
+   TR::TreeEvaluator::inegEvaluator,                    // TR::sneg
    TR::TreeEvaluator::iabsEvaluator,                    // TR::iabs
    TR::TreeEvaluator::labsEvaluator,                    // TR::labs
    TR::TreeEvaluator::fabsEvaluator,                    // TR::fabs

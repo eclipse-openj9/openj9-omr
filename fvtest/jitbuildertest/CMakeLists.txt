@@ -30,6 +30,7 @@ add_executable(jitbuildertest
 	FieldAddressTest.cpp
 	AnonymousTest.cpp
 	ControlFlowTest.cpp
+	NegateTest.cpp
 	SystemLinkageTest.cpp
 	WorklistTest.cpp
 	FieldNameTest.cpp

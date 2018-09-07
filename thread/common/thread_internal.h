@@ -54,14 +54,6 @@ extern "C" {
 void
 omrthread_init(omrthread_library_t lib);
 
-/**
-* @brief
-* @param void
-* @return void
-*/
-void
-omrthread_shutdown(void);
-
 
 /* ---------------- omrthreadjlm.c ---------------- */
 

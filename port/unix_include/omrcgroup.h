@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2017 IBM Corp. and others
+ * Copyright (c) 2017, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -23,13 +23,6 @@
 #define omrcgroup_h
 
 #if defined(LINUX)
-
-typedef struct OMRCgroupEntry {
-	int32_t hierarchyId; /**< cgroup hierarch ID*/
-	char *subsystem; /**< name of the subsystem*/
-	char *cgroup; /**< name of the cgroup*/
-	struct OMRCgroupEntry *next; /**< pointer to next OMRCgroupEntry*/
-} OMRCgroupEntry;
 
 /**
  * Stores memory usage statistics of the cgroup. These stats are collected from the files present

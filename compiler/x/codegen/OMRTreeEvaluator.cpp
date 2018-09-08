@@ -3557,7 +3557,7 @@ TR::Register *OMR::X86::TreeEvaluator::conversionAnalyser(TR::Node          *nod
                child->getOpCode().isLoadIndirect() &&
                child->getSymbolReference()->getSymbol()->getDataType() == TR::Address)
             {
-            targetRegister = TR::TreeEvaluator::iloadEvaluator(child, cg);
+            targetRegister = cg->evaluate(child);
             }
          else
             {

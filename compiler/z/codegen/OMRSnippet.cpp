@@ -261,6 +261,9 @@ TR_Debug::printz(TR::FILE *pOutFile, TR::Snippet * snippet)
       case TR::Snippet::IsStackCheckFailure:
          print(pOutFile, (TR::S390StackCheckFailureSnippet *) snippet);
          break;
+      case TR::Snippet::IsInterfaceCallData:
+         print(pOutFile, (TR::J9S390InterfaceCallDataSnippet *) snippet);
+         break;
 #endif
       case TR::Snippet::IsConstantData:
       case TR::Snippet::IsWritableData:
@@ -270,9 +273,7 @@ TR_Debug::printz(TR::FILE *pOutFile, TR::Snippet * snippet)
       case TR::Snippet::IsUnresolvedData:
          print(pOutFile, (TR::UnresolvedDataSnippet *) snippet);
          break;
-      case TR::Snippet::IsInterfaceCallData:
-         print(pOutFile, (TR::S390InterfaceCallDataSnippet *) snippet);
-         break;
+
       case TR::Snippet::IsConstantInstruction:
          print(pOutFile, (TR::S390ConstantInstructionSnippet *) snippet);
          break;

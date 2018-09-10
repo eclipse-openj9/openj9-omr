@@ -436,7 +436,7 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    int64_t getSmallestPosConstThatMustBeMaterialized() {return 32768;}  // maximum 16-bit signed int plus 1
    bool shouldValueBeInACommonedNode(int64_t); // no virt, cast
 
-   bool ilOpCodeIsSupported(TR::ILOpCodes);
+   static bool isILOpCodeSupported(TR::ILOpCodes);
    // Constant Data update
    bool checkAndFetchRequestor(TR::Instruction *instr, TR::Instruction **q);
 

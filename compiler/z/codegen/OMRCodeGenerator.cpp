@@ -6759,9 +6759,9 @@ OMR::Z::CodeGenerator::clearHighOrderBits( TR::Node * node, TR::Register * targe
    return true;
    }
 
-bool OMR::Z::CodeGenerator::ilOpCodeIsSupported(TR::ILOpCodes o)
+bool OMR::Z::CodeGenerator::isILOpCodeSupported(TR::ILOpCodes o)
    {
-   if (!OMR::CodeGenerator::ilOpCodeIsSupported(o))
+   if (!OMR::CodeGenerator::isILOpCodeSupported(o))
       {
       return false;
       }

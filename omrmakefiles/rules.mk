@@ -206,12 +206,15 @@ define CLEAN_COMMAND
 endef
 endif
 
+DDR_SED_COMMAND := \
+    sed -n -e '/^DDRFILE_BEGIN /,/^DDRFILE_END /s/^/@/p'
+
 define DDR_C_COMMAND
-$(CC) $(CFLAGS) $(MODULE_CPPFLAGS) $(GLOBAL_CPPFLAGS) -E $< | sed -n -e '/^@/p' > $@
+$(CC) $(CPPFLAGS) $(MODULE_CPPFLAGS) $(GLOBAL_CPPFLAGS) -E $< | $(DDR_SED_COMMAND) > $@
 endef
 
 define DDR_CPP_COMMAND
-$(CC) $(CPPFLAGS) $(MODULE_CPPFLAGS) $(GLOBAL_CPPFLAGS) -E $< | sed -n -e '/^@/p' > $@
+$(CC) $(CPPFLAGS) $(MODULE_CPPFLAGS) $(GLOBAL_CPPFLAGS) -E $< | $(DDR_SED_COMMAND) > $@
 endef
 
 ###

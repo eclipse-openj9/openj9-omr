@@ -236,10 +236,13 @@ if(OMR_GC_MODRON_STANDARD)
 				base/standard/ConcurrentCompleteTracingTask.cpp
 				base/standard/ConcurrentFinalCleanCardsTask.cpp
 				base/standard/ConcurrentGC.cpp
+				base/standard/ConcurrentGCIncrementalUpdate.cpp
+				base/standard/ConcurrentGCSATB.cpp
 				base/standard/ConcurrentOverflow.cpp
 				base/standard/ConcurrentPrepareCardTableTask.cpp
 				base/standard/ConcurrentSafepointCallback.cpp
 				base/standard/WorkPacketsConcurrent.cpp
+				base/standard/WorkPacketsSATB.cpp
 				
 				stats/ConcurrentGCStats.cpp
 		)

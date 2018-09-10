@@ -70,6 +70,7 @@ class MM_ReferenceChainWalkerMarkMap;
 class MM_RememberedSetCardBucket;
 #if defined(OMR_GC_STACCATO)
 class MM_RememberedSetWorkPackets;
+class MM_RememberedSetSATB;
 #endif /* OMR_GC_STACCATO */
 #if defined(OMR_GC_MODRON_SCAVENGER)
 class MM_Scavenger;
@@ -162,6 +163,7 @@ public:
 	bool _forceOptionConcurrentMark; /**< true if Concurrent Mark option is forced in command line */
 	bool _forceOptionConcurrentSweep; /**< true if Concurrent Sweep option is forced in command line */
 	bool _forceOptionLargeObjectArea; /**< true if Large Object Area option is forced in command line */
+	bool _forceOptionWriteBarrierSATB; /**< Set with -Xgc:snapshotAtTheBeginningBarrier */
 
 	MM_ConfigurationOptions()
 		: MM_BaseNonVirtual()
@@ -170,6 +172,7 @@ public:
 		, _forceOptionConcurrentMark(false)
 		, _forceOptionConcurrentSweep(false)
 		, _forceOptionLargeObjectArea(false)
+		, _forceOptionWriteBarrierSATB(false)
 	{
 		_typeId = __FUNCTION__;
 	}
@@ -250,7 +253,9 @@ public:
 	MM_SublistPool rememberedSet;
 #endif /* OMR_GC_MODRON_SCAVENGER */
 #if defined(OMR_GC_STACCATO)
+	// TODO: SATB remove staccatoRememberedSet after initial SATB changes are merged
 	MM_RememberedSetWorkPackets* staccatoRememberedSet; /**< The Staccato remembered set used for the write barrier */
+	MM_RememberedSetSATB* sATBBarrierRememberedSet; /**< The snapshot at the beginning barrier remembered set used for the write barrier */
 #endif /* OMR_GC_STACCATO */
 	ModronLnrlOptions lnrlOptions;
 
@@ -1231,6 +1236,7 @@ public:
 		, gcmetadataPageFlags(OMRPORT_VMEM_PAGE_FLAG_NOT_USED)
 #if defined(OMR_GC_STACCATO)
 		, staccatoRememberedSet(NULL)
+		, sATBBarrierRememberedSet(NULL)
 #endif /* OMR_GC_STACCATO */
 
 		, heapBaseForBarrierRange0(NULL)

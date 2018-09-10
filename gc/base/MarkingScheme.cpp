@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2017 IBM Corp. and others
+ * Copyright (c) 1991, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -31,12 +31,17 @@
 #include "ConcurrentGC.hpp"
 #include "ConcurrentGCStats.hpp"
 #endif /* defined(OMR_GC_MODRON_CONCURRENT_MARK) */
+#include "Configuration.hpp"
 #include "EnvironmentBase.hpp"
 #include "GCExtensionsBase.hpp"
 #include "Heap.hpp"
 #include "MarkMap.hpp"
 #include "MarkingScheme.hpp"
 #include "Task.hpp"
+#if defined(OMR_GC_REALTIME)
+#include "WorkPacketsSATB.hpp"
+#endif /* defined(OMR_GC_REALTIME) */
+#include "RememberedSetSATB.hpp"
 #if defined(OMR_GC_MODRON_CONCURRENT_MARK)
 #include "WorkPacketsConcurrent.hpp"
 #else
@@ -387,11 +392,18 @@ MM_WorkPackets *
 MM_MarkingScheme::createWorkPackets(MM_EnvironmentBase *env)
 {
 	MM_WorkPackets *workPackets = NULL;
-
 	if (_extensions->isConcurrentMarkEnabled()) {
+		if (_extensions->configuration->isSnapshotAtTheBeginningBarrierEnabled()) {
+#if defined(OMR_GC_REALTIME)
+			MM_WorkPacketsSATB *workPacketsSATB = MM_WorkPacketsSATB::newInstance(env);
+			_extensions->sATBBarrierRememberedSet = MM_RememberedSetSATB::newInstance(env, workPacketsSATB);
+			workPackets = workPacketsSATB;
+#endif /* defined(OMR_GC_REALTIME) */
+		} else {
 #if defined OMR_GC_MODRON_CONCURRENT_MARK
-		workPackets = MM_WorkPacketsConcurrent::newInstance(env);
+			workPackets = MM_WorkPacketsConcurrent::newInstance(env);
 #endif /* defined OMR_GC_MODRON_CONCURRENT_MARK */
+		}
 	} else {
 		workPackets = MM_WorkPacketsStandard::newInstance(env);
 	}

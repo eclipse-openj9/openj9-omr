@@ -89,12 +89,20 @@ private:
 		MM_GCExtensionsBase* extensions = env->getExtensions();
 		if (extensions->isScavengerEnabled()) {
 			if (extensions->isConcurrentMarkEnabled()) {
-				writeBarrierType = gc_modron_wrtbar_cardmark_and_oldcheck;
+				if (extensions->configurationOptions._forceOptionWriteBarrierSATB) {
+					writeBarrierType = gc_modron_wrtbar_satb_and_oldcheck;
+				} else {
+					writeBarrierType = gc_modron_wrtbar_cardmark_and_oldcheck;
+				}
 			} else {
 				writeBarrierType = gc_modron_wrtbar_oldcheck;
 			}
 		} else if (extensions->isConcurrentMarkEnabled()) {
-			writeBarrierType = gc_modron_wrtbar_cardmark;
+			if (extensions->configurationOptions._forceOptionWriteBarrierSATB) {
+				writeBarrierType = gc_modron_wrtbar_satb;
+			} else {
+				writeBarrierType = gc_modron_wrtbar_cardmark;
+			}
 		}
 		return writeBarrierType;
 	}

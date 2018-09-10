@@ -93,6 +93,22 @@ public:
 	bool initializeHeapRegionDescriptor(MM_EnvironmentBase *env, MM_HeapRegionDescriptor *region) { return _delegate.initializeHeapRegionDescriptorExtension(env, region); }
 	void teardownHeapRegionDescriptor(MM_EnvironmentBase *env, MM_HeapRegionDescriptor *region) { _delegate.teardownHeapRegionDescriptorExtension(env, region); }
 
+	MMINLINE MM_GCWriteBarrierType getBarrierType() { return _writeBarrierType; }
+
+	MMINLINE bool
+	isSnapshotAtTheBeginningBarrierEnabled()
+	{
+		return (getBarrierType() == gc_modron_wrtbar_satb_and_oldcheck) ||
+				(getBarrierType() == gc_modron_wrtbar_satb);
+	}
+
+	MMINLINE bool
+	isIncrementalUpdateBarrierEnabled()
+	{
+		return (getBarrierType() == gc_modron_wrtbar_cardmark_and_oldcheck) ||
+				(getBarrierType() == gc_modron_wrtbar_cardmark);
+	}
+
 	/**
 	 * Delegated method to determine when to start tracking heap fragmentation, which should be inhibited
 	 * until the heap has grown to a stable operational size.

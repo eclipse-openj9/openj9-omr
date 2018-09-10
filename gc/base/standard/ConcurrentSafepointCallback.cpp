@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2017 IBM Corp. and others
+ * Copyright (c) 2015, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -63,7 +63,7 @@ MM_ConcurrentSafepointCallback::requestCallback(MM_EnvironmentBase *env)
 	 * be a no-op.
 	 *
 	 * To optimize card table maintenance, language can implement this and
-	 * call MM_CollectorLanguageInterface::signalThreadsToDirtyCards() here.
+	 * call MM_CollectorLanguageInterface::signalThreadsToActivateWriteBarrier() here.
 	 */
 }
 

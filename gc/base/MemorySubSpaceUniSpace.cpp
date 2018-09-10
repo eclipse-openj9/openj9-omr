@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2015 IBM Corp. and others
+ * Copyright (c) 1991, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -23,6 +23,8 @@
 
 #include "MemorySubSpaceUniSpace.hpp"
 
+#include "omrmodroncore.h"
+
 #include "AllocateDescription.hpp"
 #include "GCExtensionsBase.hpp"
 #include "GlobalCollector.hpp"
@@ -30,11 +32,6 @@
 #include "MemorySpace.hpp"
 
 #include "ModronAssertions.h"
-
-//todo: dagar - should we be using J9VMSTATE here? find a better home for this
-#define J9VMSTATE_GC 0x20000
-#define J9VMSTATE_GC_CHECK_RESIZE (J9VMSTATE_GC | 0x0020)
-#define J9VMSTATE_GC_PERFORM_RESIZE (J9VMSTATE_GC | 0x0021)
 
 /**
  * Perform the contraction/expansion based on decisions made by checkResize.
@@ -46,7 +43,7 @@ intptr_t
 MM_MemorySubSpaceUniSpace::performResize(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription)
 {
 	MM_GCExtensionsBase *extensions = env->getExtensions();
-	uintptr_t oldVMState = env->pushVMstate(J9VMSTATE_GC_PERFORM_RESIZE);
+	uintptr_t oldVMState = env->pushVMstate(OMRVMSTATE_GC_PERFORM_RESIZE);
 
 	/* If -Xgc:fvtest=forceTenureResize is specified, then repeat a sequence of 5 expands followed by 5 contracts */	
 	if (extensions->fvtest_forceOldResize) {
@@ -97,7 +94,7 @@ MM_MemorySubSpaceUniSpace::performResize(MM_EnvironmentBase *env, MM_AllocateDes
 void
 MM_MemorySubSpaceUniSpace::checkResize(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription, bool _systemGC)
 {
-	uintptr_t oldVMState = env->pushVMstate(J9VMSTATE_GC_CHECK_RESIZE);
+	uintptr_t oldVMState = env->pushVMstate(OMRVMSTATE_GC_CHECK_RESIZE);
 	if (!timeForHeapContract(env, allocDescription, _systemGC)) {
 		timeForHeapExpand(env, allocDescription);
 	}

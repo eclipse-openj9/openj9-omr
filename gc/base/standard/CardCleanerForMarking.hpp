@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2016 IBM Corp. and others
+ * Copyright (c) 1991, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -72,7 +72,7 @@ protected:
 	/**
 	 * @see MM_CardCleaner::getVMStateID()
 	 */
-	virtual uintptr_t getVMStateID() { return J9VMSTATE_GC_CARD_CLEANER_FOR_MARKING; }
+	virtual uintptr_t getVMStateID() { return OMRVMSTATE_GC_CARD_CLEANER_FOR_MARKING; }
 	
 public:
 

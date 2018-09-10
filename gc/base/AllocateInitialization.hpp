@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2017 IBM Corp. and others
+ * Copyright (c) 1991, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -176,7 +176,7 @@ public:
 		MM_EnvironmentBase *env = MM_EnvironmentBase::getEnvironment(omrVMThread);
 		GC_ObjectModel *objectModel = &(env->getExtensions()->objectModel);
 
-		uintptr_t vmState = env->pushVMstate(J9VMSTATE_GC_ALLOCATE_OBJECT);
+		uintptr_t vmState = env->pushVMstate(OMRVMSTATE_GC_ALLOCATE_OBJECT);
 
 		Assert_MM_true(_allocateDescription.shouldCollectAndClimb() == isGCAllowed());
 

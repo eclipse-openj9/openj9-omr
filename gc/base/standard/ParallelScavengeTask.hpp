@@ -52,7 +52,7 @@ protected:
 	MM_CycleState *_cycleState;  /**< Collection cycle state active for the task */
 
 public:
-	virtual UDATA getVMStateID() { return J9VMSTATE_GC_SCAVENGE; };
+	virtual UDATA getVMStateID() { return OMRVMSTATE_GC_SCAVENGE; };
 
 	virtual void run(MM_EnvironmentBase *env);
 	virtual void setup(MM_EnvironmentBase *env);

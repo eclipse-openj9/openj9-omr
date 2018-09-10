@@ -260,7 +260,7 @@ class MM_ConcurrentSweepCompleteSweepTask : public MM_ParallelSweepTask
 private:
 protected:
 public:
-	virtual UDATA getVMStateID() { return J9VMSTATE_GC_CONCURRENT_SWEEP_COMPLETE_SWEEP; };
+	virtual UDATA getVMStateID() { return OMRVMSTATE_GC_CONCURRENT_SWEEP_COMPLETE_SWEEP; };
 	
 	virtual void run(MM_EnvironmentBase *env);
 
@@ -305,7 +305,7 @@ public:
 private:
 protected:
 public:
-	virtual UDATA getVMStateID() { return J9VMSTATE_GC_CONCURRENT_SWEEP_FIND_MINIMUM_SIZE_FREE; }
+	virtual UDATA getVMStateID() { return OMRVMSTATE_GC_CONCURRENT_SWEEP_FIND_MINIMUM_SIZE_FREE; }
 	
 	virtual void run(MM_EnvironmentBase *env);
 

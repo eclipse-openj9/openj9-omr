@@ -131,7 +131,7 @@ extern "C" {
 uintptr_t
 MM_Scavenger::getVMStateID()
 {
-	return J9VMSTATE_GC_COLLECTOR_SCAVENGER;
+	return OMRVMSTATE_GC_COLLECTOR_SCAVENGER;
 }
 
 void

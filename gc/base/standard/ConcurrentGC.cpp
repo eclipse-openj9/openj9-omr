@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2017 IBM Corp. and others
+ * Copyright (c) 1991, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -2092,7 +2092,7 @@ MM_ConcurrentGC::payAllocationTax(MM_EnvironmentBase *env, MM_MemorySubSpace *su
 void
 MM_ConcurrentGC::concurrentMark(MM_EnvironmentBase *env, MM_MemorySubSpace *subspace, MM_AllocateDescription *allocDescription)
 {
-	uintptr_t oldVMstate = env->pushVMstate(J9VMSTATE_GC_CONCURRENT_MARK_TRACE);
+	uintptr_t oldVMstate = env->pushVMstate(OMRVMSTATE_GC_CONCURRENT_MARK_TRACE);
 
 	/* Get required information from Alloc description */
 	uintptr_t allocationSize = allocDescription->getAllocationTaxSize();
@@ -2361,7 +2361,7 @@ MM_ConcurrentGC::timeToKickoffConcurrent(MM_EnvironmentBase *env, MM_AllocateDes
 void
 MM_ConcurrentGC::concurrentSweep(MM_EnvironmentBase *env, MM_MemorySubSpace *subspace, MM_AllocateDescription *allocDescription)
 {
-	uintptr_t oldVMstate = env->pushVMstate(J9VMSTATE_GC_CONCURRENT_SWEEP);
+	uintptr_t oldVMstate = env->pushVMstate(OMRVMSTATE_GC_CONCURRENT_SWEEP);
 	((MM_ConcurrentSweepScheme *)_sweepScheme)->payAllocationTax(env, subspace, allocDescription);
 	env->popVMstate(oldVMstate);
 }

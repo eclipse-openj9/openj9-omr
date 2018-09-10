@@ -32,7 +32,7 @@ public:
 	Modifiers _modifiers;
 
 	explicit TypedefUDT(unsigned int lineNumber = 0);
-	~TypedefUDT();
+	virtual ~TypedefUDT();
 
 	virtual DDR_RC acceptVisitor(const TypeVisitor &visitor);
 	virtual const string &getSymbolKindName() const;

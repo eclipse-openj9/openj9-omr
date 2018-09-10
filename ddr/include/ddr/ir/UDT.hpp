@@ -33,7 +33,7 @@ public:
 	explicit UDT(size_t size, unsigned int lineNumber = 0);
 	virtual ~UDT();
 
-	virtual string getFullName();
+	virtual string getFullName() const;
 	virtual bool insertUnique(Symbol_IR *ir);
 	virtual NamespaceUDT * getNamespace();
 

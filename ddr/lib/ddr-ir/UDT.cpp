@@ -35,7 +35,7 @@ UDT::~UDT()
 }
 
 string
-UDT::getFullName()
+UDT::getFullName() const
 {
 	return (NULL == _outerNamespace)
 			? _name

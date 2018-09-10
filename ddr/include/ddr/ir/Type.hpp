@@ -57,8 +57,9 @@ public:
 
 	bool isAnonymousType() const;
 
-	virtual string getFullName();
+	virtual string getFullName() const;
 	virtual const string &getSymbolKindName() const;
+	string getTypeNameKey() const;
 
 	/* Visitor pattern function to allow the scanner/generator/IR to dispatch functionality based on type. */
 	virtual DDR_RC acceptVisitor(const TypeVisitor &visitor);

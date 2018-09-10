@@ -37,6 +37,7 @@ public:
 	bool _isStatic;
 
 	Field();
+	virtual ~Field();
 
 	const std::string &getTypeName() const;
 };

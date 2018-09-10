@@ -277,6 +277,7 @@ PdbScanner::updatePostponedFieldNames()
 			(*type)->_blacklisted = checkBlacklistedType((*type)->_name);
 		}
 	}
+	_postponedFields.clear();
 
 	return rc;
 }
@@ -399,7 +400,10 @@ PdbScanner::createTypedef(IDiaSymbol *symbol, NamespaceUDT *outerNamespace)
 		/* Get the base type. */
 		rc = setType(symbol, &newTypedef->_aliasedType, &newTypedef->_modifiers, NULL);
 		if (DDR_RC_OK == rc) {
-			newTypedef->_sizeOf = newTypedef->_aliasedType->_sizeOf;
+			Type *aliasedType = newTypedef->_aliasedType;
+			if (NULL != aliasedType) {
+				newTypedef->_sizeOf = aliasedType->_sizeOf;
+			}
 			addType(newTypedef, outerNamespace);
 		} else {
 			delete newTypedef;
@@ -546,7 +550,8 @@ PdbScanner::createEnumUDT(IDiaSymbol *symbol, NamespaceUDT *outerNamespace)
 			} else {
 				fullName = outerNamespace->getFullName() + "::" + name;
 			}
-			if (_typeMap.end() == _typeMap.find(fullName)) {
+			unordered_map<string, Type *>::const_iterator it = _typeMap.find(fullName);
+			if (_typeMap.end() == it) {
 				/* If this is a new enum, get its members and add it to the IR. */
 				EnumUDT *enumUDT = new EnumUDT;
 				enumUDT->_name = name;
@@ -561,13 +566,16 @@ PdbScanner::createEnumUDT(IDiaSymbol *symbol, NamespaceUDT *outerNamespace)
 					delete enumUDT;
 				}
 			} else {
-				EnumUDT *enumUDT = (EnumUDT *)getType(fullName);
-				if ((NULL != outerNamespace) && (NULL == enumUDT->_outerNamespace)) {
-					enumUDT->_outerNamespace = outerNamespace;
-					outerNamespace->_subUDTs.push_back(enumUDT);
-				}
-				if (enumUDT->_enumMembers.empty()) {
-					rc = addEnumMembers(symbol, enumUDT);
+				Type *existingType = it->second;
+				if ("enum" == existingType->getSymbolKindName()) {
+					EnumUDT *enumUDT = (EnumUDT *)existingType;
+					if ((NULL != outerNamespace) && (NULL == enumUDT->_outerNamespace)) {
+						enumUDT->_outerNamespace = outerNamespace;
+						outerNamespace->_subUDTs.push_back(enumUDT);
+					}
+					if (enumUDT->_enumMembers.empty()) {
+						rc = addEnumMembers(symbol, enumUDT);
+					}
 				}
 			}
 		}
@@ -1128,7 +1136,7 @@ PdbScanner::setSuperClassName(IDiaSymbol *symbol, ClassUDT *newUDT)
 
 	if (DDR_RC_OK == rc) {
 		/* Find the superclass UDT from the map by size and name.
-		 * If its not found, add it to a list to check later.
+		 * If it's not found, add it to a list to check later.
 		 */
 		if (!name.empty()) {
 			unordered_map<string, Type *>::const_iterator map_it = _typeMap.find(name);

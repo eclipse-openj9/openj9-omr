@@ -4075,6 +4075,7 @@ TR_Debug::getRuntimeHelperName(int32_t index)
          case TR_PPCinterpreterUnresolvedClassGlue:                return "_interpreterUnresolvedClassGlue";
          case TR_PPCinterpreterUnresolvedClassGlue2:               return "_interpreterUnresolvedClassGlue2";
          case TR_PPCinterpreterUnresolvedStringGlue:               return "_interpreterUnresolvedStringGlue";
+         case TR_PPCinterpreterUnresolvedConstantDynamicGlue:      return "_interpreterUnresolvedConstantDynamicGlue";
          case TR_PPCinterpreterUnresolvedStaticDataGlue:           return "_interpreterUnresolvedStaticDataGlue";
          case TR_PPCinterpreterUnresolvedStaticDataStoreGlue:      return "_interpreterUnresolvedStaticDataStoreGlue";
          case TR_PPCinterpreterUnresolvedInstanceDataGlue:         return "_interpreterUnresolvedInstanceDataGlue";

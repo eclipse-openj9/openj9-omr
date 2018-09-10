@@ -55,6 +55,7 @@ public:
 		set_evacuate,
 		set_allocate,
 		disable_allocation,
+		restore_allocation,
 		restore_allocation_and_set_survivor,
 		backout,
 		restore_tilt_after_percolate

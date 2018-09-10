@@ -47,15 +47,22 @@
 void *
 MM_MemorySubSpaceGenerational::allocateObject(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription, MM_MemorySubSpace *baseSubSpace, MM_MemorySubSpace *previousSubSpace, bool shouldCollectOnFailure)
 {
+	Trc_MM_MSSGenerational_allocate_entry(env->getLanguageVMThread(), "Object", allocDescription->getBytesRequested(), this, getName(), baseSubSpace, previousSubSpace, (uintptr_t)shouldCollectOnFailure);
+
 	if (shouldCollectOnFailure) {
 		/* Should never receive this call */
+		Trc_MM_MSSGenerational_allocate_exit(env->getLanguageVMThread(), "Object", allocDescription->getBytesRequested(), 1, NULL);
 		return NULL;
 	} else {
 		if(previousSubSpace == _memorySubSpaceNew) {
 			/* The allocate request is coming from new space - forward on to the old area */
-			return _memorySubSpaceOld->allocateObject(env, allocDescription, baseSubSpace, this, shouldCollectOnFailure);
+			Trc_MM_MSSGenerational_allocate(env->getLanguageVMThread(), "Object", allocDescription->getBytesRequested(), _memorySubSpaceNew, _memorySubSpaceOld);
+			void *result = _memorySubSpaceOld->allocateObject(env, allocDescription, baseSubSpace, this, shouldCollectOnFailure);
+			Trc_MM_MSSGenerational_allocate_exit(env->getLanguageVMThread(), "Object", allocDescription->getBytesRequested(), 2, result);
+			return result;
 		}
-	
+
+		Trc_MM_MSSGenerational_allocate_exit(env->getLanguageVMThread(), "Object", allocDescription->getBytesRequested(), 3, NULL);
 		/* The allocate comes from the old area - failure */
 		return NULL;
 	}
@@ -64,13 +71,18 @@ MM_MemorySubSpaceGenerational::allocateObject(MM_EnvironmentBase *env, MM_Alloca
 void *
 MM_MemorySubSpaceGenerational::allocationRequestFailed(MM_EnvironmentBase *env, MM_AllocateDescription *allocateDescription, AllocationType allocationType, MM_ObjectAllocationInterface *objectAllocationInterface, MM_MemorySubSpace *baseSubSpace, MM_MemorySubSpace *previousSubSpace)
 {
+
+	Trc_MM_MSSGenerational_allocationRequestFailed_entry(env->getLanguageVMThread(), allocateDescription->getBytesRequested(), this, getName(), baseSubSpace, previousSubSpace, (uintptr_t)allocationType);
+
 	/* TODO: This code is nearly the same as Flat and Concurrent - all three should be merged into a common superclass */
 	void *addr = NULL;
 
 	if (previousSubSpace == _memorySubSpaceNew) {
 		/* Handle a failure coming from new space - attempt the old area before doing any collection work */
+		Trc_MM_MSSGenerational_allocationRequestFailed1(env->getLanguageVMThread(), allocateDescription->getBytesRequested(), _memorySubSpaceNew, _memorySubSpaceOld);
 		addr = _memorySubSpaceOld->allocationRequestFailed(env, allocateDescription, allocationType, objectAllocationInterface, baseSubSpace, this);
 		if(NULL != addr) {
+			Trc_MM_MSSGenerational_allocationRequestFailed_exit(env->getLanguageVMThread(), allocateDescription->getBytesRequested(), 1, addr);
 			return addr;
 		}
 	}
@@ -78,24 +90,30 @@ MM_MemorySubSpaceGenerational::allocationRequestFailed(MM_EnvironmentBase *env, 
 	allocateDescription->saveObjects(env);
 	if (!env->acquireExclusiveVMAccessForGC(_collector, true, true)) {
 		allocateDescription->restoreObjects(env);
+		Trc_MM_MSSGenerational_allocationRequestFailed(env->getLanguageVMThread(), allocateDescription->getBytesRequested(), 2);
 		addr = allocateGeneric(env, allocateDescription, allocationType, objectAllocationInterface, baseSubSpace);
 		if(NULL != addr) {
+			Trc_MM_MSSGenerational_allocationRequestFailed_exit(env->getLanguageVMThread(), allocateDescription->getBytesRequested(), 2, addr);
 			return addr;
 		}
 
 		if (!env->acquireExclusiveVMAccessForGC(_collector)) {
 			allocateDescription->restoreObjects(env);
+			Trc_MM_MSSGenerational_allocationRequestFailed(env->getLanguageVMThread(), allocateDescription->getBytesRequested(), 3);
 			addr = allocateGeneric(env, allocateDescription, allocationType, objectAllocationInterface, baseSubSpace);
 			if(NULL != addr) {
 				/* Satisfied the allocate after having grabbed exclusive access to perform a GC (without actually performing the GC).  Raise
 				 * an event for tracing / verbose to report the occurrence.
 				 */
 				reportAcquiredExclusiveToSatisfyAllocate(env, allocateDescription);
+				Trc_MM_MSSGenerational_allocationRequestFailed_exit(env->getLanguageVMThread(), allocateDescription->getBytesRequested(), 3, addr);
 				return addr;
 			}
 
 			reportAllocationFailureStart(env, allocateDescription);
 			performResize(env, allocateDescription);
+			Trc_MM_MSSGenerational_allocationRequestFailed(env->getLanguageVMThread(), allocateDescription->getBytesRequested(), 4);
+
 			addr = allocateGeneric(env, allocateDescription, allocationType, objectAllocationInterface, baseSubSpace);
 
 			if(NULL != addr) {
@@ -104,6 +122,7 @@ MM_MemorySubSpaceGenerational::allocationRequestFailed(MM_EnvironmentBase *env, 
 				 */
 				reportAcquiredExclusiveToSatisfyAllocate(env, allocateDescription);
 				reportAllocationFailureEnd(env);
+				Trc_MM_MSSGenerational_allocationRequestFailed_exit(env->getLanguageVMThread(), allocateDescription->getBytesRequested(), 4, addr);
 				return addr;
 			}
 			allocateDescription->saveObjects(env);
@@ -122,6 +141,7 @@ MM_MemorySubSpaceGenerational::allocationRequestFailed(MM_EnvironmentBase *env, 
 
 	if(NULL != addr) {
 		reportAllocationFailureEnd(env);
+		Trc_MM_MSSGenerational_allocationRequestFailed_exit(env->getLanguageVMThread(), allocateDescription->getBytesRequested(), 5, addr);
 		return addr;
 	}
 
@@ -131,6 +151,7 @@ MM_MemorySubSpaceGenerational::allocationRequestFailed(MM_EnvironmentBase *env, 
 	allocateDescription->restoreObjects(env);
 	
 	reportAllocationFailureEnd(env);
+	Trc_MM_MSSGenerational_allocationRequestFailed_exit(env->getLanguageVMThread(), allocateDescription->getBytesRequested(), 6, addr);
 	return addr;
 }
 

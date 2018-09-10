@@ -867,3 +867,34 @@ TraceEvent=Trc_MM_SchedulingDelegate_calculatePGCCompactionRate_liveToFreeRatio4
 TraceEvent=Trc_MM_SchedulingDelegate_estimateTotalFreeMemory Overhead=1 Level=1 Group=reclaim Template="estimatedFreeMemory=%zu, reservedFreeMemory=%zu, (defragmentedMemory=%zu, freeRegionMemory=%zu)"
 TraceEvent=Trc_MM_SchedulingDelegate_calculateKickoffHeadroom Overhead=1 Level=1 Group=reclaim Template="calculateKickoffHeadroom oldHeadroomInBytes=%zu, newHeadroomInBytes=%zu"
 TraceExit=Trc_MM_SchedulingDelegate_calculateAutomaticGMPIntermission_1_Exit Overhead=1 Level=1 Group=kickoff Template="MM_SchedulingDelegate_calculateAutomaticGMPIntermission remaining=%zu, kickoffHeadroomInBytes=%zu"
+
+TraceEntry=Trc_MM_MSSGeneric_allocate_entry Overhead=1 Level=3 Group=allocate Template="MSSGeneric::allocate type %s size %zu subspace this %llx/%s base %llx prev %llx _allocateAtSafePointOnly %zu shouldCollectOnFailure %zu _isAllocatable %zu"
+TraceEvent=Trc_MM_MSSGeneric_allocate Overhead=1 Level=3 Group=allocate Template="MSSGeneric::allocate type %s size %zu event %u subspace %llx failed, trying parent %llx"
+TraceEvent=Trc_MM_MSSGeneric_allocate3 Overhead=1 Level=3 Group=allocate Template="MSSGeneric::allocate type %s size %zu event 3 subspace %llx failed, trying parent %llx shouldCollectAndClimb %zu"
+TraceExit=Trc_MM_MSSGeneric_allocate_exit Overhead=1 Level=3 Group=allocate Template="MSSGeneric::allocate type %s size %zu subspace %llx  result %llx"
+
+TraceEntry=Trc_MM_MSSSS_allocate_entry Overhead=1 Level=1 Group=allocate Template="MSSSS::allocate type %s size %zu subspace this %llx/%s base %llx prev %llx shouldCollectOnFailure %zu"
+TraceEvent=Trc_MM_MSSSS_allocate Overhead=1 Level=1 Group=allocate Template="MSSSS::allocate type %s size %zu event %u"
+TraceEvent=Trc_MM_MSSSS_allocate4 Overhead=1 Level=1 Group=allocate Template="MSSSS::allocate type %s size %zu event 4 shouldClimb %zu"
+TraceExit=Trc_MM_MSSSS_allocate_exit Overhead=1 Level=1 Group=allocate Template="MSSSS::allocate type %s size %zu result %llx"
+
+TraceEntry=Trc_MM_MSSSS_allocationRequestFailed_entry Overhead=1 Level=1 Group=allocate Template="MSSSS::allocationRequestFailed size %zu subspace this %llx/%s base %llx prev %llx allocationType %zu"
+TraceEvent=Trc_MM_MSSSS_allocationRequestFailed Overhead=1 Level=1 Group=allocate Template="MSSSS::allocationRequestFailed size %zu event %u"
+TraceExit=Trc_MM_MSSSS_allocationRequestFailed_exit Overhead=1 Level=1 Group=allocate Template="MSSSS::allocationRequestFailed size %zu exit %zu result %llx"
+
+TraceEntry=Trc_MM_MSSFlat_allocate_entry Overhead=1 Level=1 Group=allocate Template="MSSFlat::allocate type %s size %zu subspace this %llx/%s base %llx prev %llx shouldCollectOnFailure %zu"
+TraceEvent=Trc_MM_MSSFlat_allocate Overhead=1 Level=1 Group=allocate Template="MSSFlat::allocate type %s size %zu event %u"
+TraceExit=Trc_MM_MSSFlat_allocate_exit Overhead=1 Level=1 Group=allocate Template="MSSFlat::allocate type %s size %zu result %llx"
+
+TraceEntry=Trc_MM_MSSFlat_allocationRequestFailed_entry Overhead=1 Level=1 Group=allocate Template="MSSFlat::allocationRequestFailed size %zu subspace this %llx/%s base %llx prev %llx allocationType %zu"
+TraceEvent=Trc_MM_MSSFlat_allocationRequestFailed Overhead=1 Level=1 Group=allocate Template="MSSFlat::allocationRequestFailed size %zu event %u"
+TraceExit=Trc_MM_MSSFlat_allocationRequestFailed_exit Overhead=1 Level=1 Group=allocate Template="MSSFlat::allocationRequestFailed size %zu exit %zu result %llx"
+
+TraceEntry=Trc_MM_MSSGenerational_allocate_entry Overhead=1 Level=1 Group=allocate Template="MSSGenerational::allocate type %s size %zu subspace this %llx/%s base %llx prev %llx shouldCollectOnFailure %zu"
+TraceEvent=Trc_MM_MSSGenerational_allocate Overhead=1 Level=1 Group=allocate Template="MSSGenerational::allocate type %s size %zu prev != new %llx, allocate from old %llx"
+TraceExit=Trc_MM_MSSGenerational_allocate_exit Overhead=1 Level=1 Group=allocate Template="MSSGenerational::allocate type %s size %zu exit %zu result %llx"
+
+TraceEntry=Trc_MM_MSSGenerational_allocationRequestFailed_entry Overhead=1 Level=1 Group=allocate Template="MSSGenerational::allocationRequestFailed size %zu subspace this %llx/%s base %llx prev %llx allocationType %zu"
+TraceEvent=Trc_MM_MSSGenerational_allocationRequestFailed1 Overhead=1 Level=1 Group=allocate Template="MSSGenerational::allocationRequestFailed size %zu prev != new %llx, allocate from old %llx"
+TraceEvent=Trc_MM_MSSGenerational_allocationRequestFailed Overhead=1 Level=1 Group=allocate Template="MSSGenerational::allocationRequestFailed size %zu event %u"
+TraceExit=Trc_MM_MSSGenerational_allocationRequestFailed_exit Overhead=1 Level=1 Group=allocate Template="MSSGenerational::allocationRequestFailed size %zu exit %zu result %llx"

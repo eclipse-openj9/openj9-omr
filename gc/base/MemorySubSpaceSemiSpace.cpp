@@ -53,19 +53,25 @@
 void *
 MM_MemorySubSpaceSemiSpace::allocateObject(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription, MM_MemorySubSpace *baseSubSpace, MM_MemorySubSpace *previousSubSpace, bool shouldCollectOnFailure)
 {
+	Trc_MM_MSSSS_allocate_entry(env->getLanguageVMThread(), "Object", allocDescription->getBytesRequested(), this, getName(), baseSubSpace, previousSubSpace, (uintptr_t)shouldCollectOnFailure);
+
 	void *addr = NULL;
 
 	if (shouldCollectOnFailure) {
+		Trc_MM_MSSSS_allocate(env->getLanguageVMThread(), "Object", allocDescription->getBytesRequested(), 1);
 		addr = _memorySubSpaceAllocate->allocateObject(env, allocDescription, baseSubSpace, this, shouldCollectOnFailure);
 	} else {
 		if(previousSubSpace == _parent) {
+			Trc_MM_MSSSS_allocate(env->getLanguageVMThread(), "Object", allocDescription->getBytesRequested(), 2);
 			/* if we are coming from parent (after a Global GC), pass it down to Allocate */
 			addr = _memorySubSpaceAllocate->allocateObject(env, allocDescription, baseSubSpace, this, shouldCollectOnFailure);
 		} else if (previousSubSpace == this) {
 			/* if retrying after a recent GC (from allocationRequestFailed), pass it down to Allocate */
+			Trc_MM_MSSSS_allocate(env->getLanguageVMThread(), "Object", allocDescription->getBytesRequested(), 3);
 			addr = _memorySubSpaceAllocate->allocateObject(env, allocDescription, baseSubSpace, this, shouldCollectOnFailure);
 		} else {
 			/* Allocate subspace failed after a recent GC, try parent */
+			Trc_MM_MSSSS_allocate4(env->getLanguageVMThread(), "Object", allocDescription->getBytesRequested(), (uintptr_t)allocDescription->shouldClimb());
 			Assert_MM_true(previousSubSpace == _memorySubSpaceAllocate);
 			if (allocDescription->shouldClimb()) {
 				addr = _parent->allocateObject(env, allocDescription, baseSubSpace, this, shouldCollectOnFailure);
@@ -73,12 +79,16 @@ MM_MemorySubSpaceSemiSpace::allocateObject(MM_EnvironmentBase *env, MM_AllocateD
 		}
 		}
 	
+	Trc_MM_MSSSS_allocate_exit(env->getLanguageVMThread(), "Object", allocDescription->getBytesRequested(), addr);
+
 	return addr;
 }
 
 void *
 MM_MemorySubSpaceSemiSpace::allocationRequestFailed(MM_EnvironmentBase *env, MM_AllocateDescription *allocateDescription, AllocationType allocationType, MM_ObjectAllocationInterface *objectAllocationInterface, MM_MemorySubSpace *baseSubSpace, MM_MemorySubSpace *previousSubSpace)
 {
+	Trc_MM_MSSSS_allocationRequestFailed_entry(env->getLanguageVMThread(), allocateDescription->getBytesRequested(), this, getName(), baseSubSpace, previousSubSpace, (uintptr_t)allocationType);
+
 	/* The baseSubSpace in this case isn't really valid - in the event of a scavenge, the baseSubSpace changes.  The current subSpace will become the
 	 * base for any restarts
 	 */
@@ -87,20 +97,24 @@ MM_MemorySubSpaceSemiSpace::allocationRequestFailed(MM_EnvironmentBase *env, MM_
 	allocateDescription->saveObjects(env);
 	if (!env->acquireExclusiveVMAccessForGC(_collector, true, true)) {
 		allocateDescription->restoreObjects(env);
+		Trc_MM_MSSSS_allocationRequestFailed(env->getLanguageVMThread(), allocateDescription->getBytesRequested(), 1);
 		addr = allocateGeneric(env, allocateDescription, allocationType, objectAllocationInterface, _memorySubSpaceAllocate);
 		if(NULL != addr) {
+			Trc_MM_MSSSS_allocationRequestFailed_exit(env->getLanguageVMThread(), allocateDescription->getBytesRequested(), 1, addr);
 			return addr;
 		}
 
 		allocateDescription->saveObjects(env);
 		if (!env->acquireExclusiveVMAccessForGC(_collector)) {
 			allocateDescription->restoreObjects(env);
+			Trc_MM_MSSSS_allocationRequestFailed(env->getLanguageVMThread(), allocateDescription->getBytesRequested(), 2);
 			addr = allocateGeneric(env, allocateDescription, allocationType, objectAllocationInterface, _memorySubSpaceAllocate);
 			if(NULL != addr) {
 				/* Satisfied the allocate after having grabbed exclusive access to perform a GC (without actually performing the GC).  Raise
 				 * an event for tracing / verbose to report the occurrence.
 				 */
 				reportAcquiredExclusiveToSatisfyAllocate(env, allocateDescription);
+				Trc_MM_MSSSS_allocationRequestFailed_exit(env->getLanguageVMThread(), allocateDescription->getBytesRequested(), 2, addr);
 				return addr;
 			}
 			allocateDescription->saveObjects(env);
@@ -124,6 +138,7 @@ MM_MemorySubSpaceSemiSpace::allocationRequestFailed(MM_EnvironmentBase *env, MM_
 
 	if(NULL != addr) {
 		reportAllocationFailureEnd(env);
+		Trc_MM_MSSSS_allocationRequestFailed_exit(env->getLanguageVMThread(), allocateDescription->getBytesRequested(), 3, addr);
 		return addr;
 	}
 
@@ -138,9 +153,11 @@ MM_MemorySubSpaceSemiSpace::allocationRequestFailed(MM_EnvironmentBase *env, MM_
 	 *  CMVC 144061 
 	 */
 	if (ALLOCATION_TYPE_TLH != allocationType) {
+		Trc_MM_MSSSS_allocationRequestFailed(env->getLanguageVMThread(), allocateDescription->getBytesRequested(), 3);
 		addr = _parent->allocationRequestFailed(env, allocateDescription, allocationType, objectAllocationInterface, this, this);
 	}
 
+	Trc_MM_MSSSS_allocationRequestFailed_exit(env->getLanguageVMThread(), allocateDescription->getBytesRequested(), 4, addr);
 	return addr;
 }
 
@@ -460,6 +477,9 @@ MM_MemorySubSpaceSemiSpace::flip(MM_EnvironmentBase *env, Flip_step step)
 	case disable_allocation:
 		_memorySubSpaceAllocate->isAllocatable(false);
 		break;
+	case restore_allocation:
+		_memorySubSpaceAllocate->isAllocatable(true);
+		break;
 	case restore_allocation_and_set_survivor:
 		_memorySubSpaceAllocate->isAllocatable(true);
 		_memorySubSpaceSurvivor = _memorySubSpaceEvacuate;
@@ -653,6 +673,10 @@ MM_MemorySubSpaceSemiSpace::masterTeardownForAbortedGC(MM_EnvironmentBase *env)
 		flip(env, backout);
 	} else {
 		_memorySubSpaceSurvivor->rebuildFreeList(env);
+		/* Restoring allocation after aborted scavenge will probably not help with re-attempts to allocate immediately after an aborted scavenge,
+		 * but still we have to restore it at some point for attempts after percolate GC. It's simplest to do it right away.
+		 */
+		flip(env, restore_allocation);
 	}
 
 }

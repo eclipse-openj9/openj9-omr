@@ -25,9 +25,9 @@
 #include <gtest/gtest.h>
 #include <vector>
 #include <stdexcept> 
-#include "Jit.hpp"
 #include "control/Options.hpp"
 #include "optimizer/Optimizer.hpp"
+#include "ilgen/MethodBuilder.hpp"
 
 #define ASSERT_NULL(pointer) ASSERT_EQ(NULL, (pointer))
 #define ASSERT_NOTNULL(pointer) ASSERT_TRUE(NULL != (pointer))
@@ -36,7 +36,10 @@
 
 #define TRIL(code) #code
 
-extern "C" bool initializeJitWithOptions(char *options);
+bool initializeJit();
+bool initializeJitWithOptions(char *options);
+int32_t compileMethodBuilder(TR::MethodBuilder * methodBuilder, void ** entryPoint);
+void shutdownJit();
 
 namespace TRTest
 {

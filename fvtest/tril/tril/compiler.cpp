@@ -20,10 +20,11 @@
  *******************************************************************************/
 
 #include "default_compiler.hpp"
-#include "Jit.hpp"
 #include <cstdio>
 #include <string>
 
+extern bool internal_initializeJit();
+extern void internal_shutdownJit();
 
 int main(int argc, char** argv)
    { 
@@ -47,12 +48,12 @@ int main(int argc, char** argv)
       printTrees(out, trees, 1); 
       if (!isDumper) 
          {
-         initializeJit();
+         internal_initializeJit();
          Tril::DefaultCompiler compiler{trees}; 
          if (compiler.compile() != 0) { 
             fprintf(out, "Error compiling trees!"); 
          }
-         shutdownJit();
+         internal_shutdownJit();
          }
       }
    else

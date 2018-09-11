@@ -10685,6 +10685,10 @@
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z10,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_IsCompare |
+
+                        // At binary encoding we may determine the branch distance is too large at which point we have
+                        // no choice but to generate a compare and branch instruction pair
+                        S390OpProp_SetsCC |
                         S390OpProp_BranchOp
    },
 
@@ -10724,6 +10728,10 @@
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z10,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_IsCompare |
+
+                        // At binary encoding we may determine the branch distance is too large at which point we have
+                        // no choice but to generate a compare and branch instruction pair
+                        S390OpProp_SetsCC |
                         S390OpProp_BranchOp
    },
 
@@ -10826,6 +10834,10 @@
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z10,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_IsCompare |
+
+                        // At binary encoding we may determine the branch distance is too large at which point we have
+                        // no choice but to generate a compare and branch instruction pair
+                        S390OpProp_SetsCC |
                         S390OpProp_BranchOp
    },
 
@@ -10942,6 +10954,10 @@
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z10,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_IsCompare |
+
+                        // At binary encoding we may determine the branch distance is too large at which point we have
+                        // no choice but to generate a compare and branch instruction pair
+                        S390OpProp_SetsCC |
                         S390OpProp_BranchOp
    },
 
@@ -10981,6 +10997,10 @@
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z10,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_IsCompare |
+
+                        // At binary encoding we may determine the branch distance is too large at which point we have
+                        // no choice but to generate a compare and branch instruction pair
+                        S390OpProp_SetsCC |
                         S390OpProp_BranchOp
    },
 
@@ -11069,6 +11089,10 @@
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z10,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_IsCompare |
+
+                        // At binary encoding we may determine the branch distance is too large at which point we have
+                        // no choice but to generate a compare and branch instruction pair
+                        S390OpProp_SetsCC |
                         S390OpProp_BranchOp
    },
 
@@ -11095,6 +11119,10 @@
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z10,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_IsCompare |
+
+                        // At binary encoding we may determine the branch distance is too large at which point we have
+                        // no choice but to generate a compare and branch instruction pair
+                        S390OpProp_SetsCC |
                         S390OpProp_BranchOp
    },
 
@@ -11151,6 +11179,10 @@
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z10,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_IsCompare |
+
+                        // At binary encoding we may determine the branch distance is too large at which point we have
+                        // no choice but to generate a compare and branch instruction pair
+                        S390OpProp_SetsCC |
                         S390OpProp_BranchOp
    },
 

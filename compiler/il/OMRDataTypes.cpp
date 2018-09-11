@@ -203,6 +203,23 @@ OMR::DataType::getDataTypeConversion(TR::DataType t1, TR::DataType t2)
    return OMR::conversionMap[t1][t2];
    }
 
+TR::ILOpCodes
+OMR::DataType::getDataTypeBitConversion(TR::DataType t1, TR::DataType t2)
+   {
+   TR_ASSERT(t1 < TR::NumOMRTypes, "conversion opcode from unexpected datatype %s requested", t1.toString());
+   TR_ASSERT(t2 < TR::NumOMRTypes, "conversion opcode to unexpected datatype %s requested", t2.toString());
+   if (t1 == TR::Int32 && t2 == TR::Float)
+      return TR::ibits2f;
+   else if (t1 == TR::Float && t2 == TR::Int32)
+      return TR::fbits2i;
+   else if (t1 == TR::Int64 && t2 == TR::Double)
+      return TR::lbits2d;
+   else if (t1 == TR::Double && t2 == TR::Int64)
+      return TR::dbits2l;
+   else
+      return TR::BadILOp;
+   }
+
 static int32_t OMRDataTypeSizes[] =
    {
    0,                 // TR::NoType

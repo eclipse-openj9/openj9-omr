@@ -20,21 +20,53 @@
  *******************************************************************************/
 
 #include "codegen/CodeGenerator.hpp"
+#include "codegen/GenerateInstructions.hpp"
+#include "codegen/Linkage.hpp"
+#include "codegen/RegisterDependency.hpp"
 #include "codegen/TreeEvaluator.hpp"
+#include "il/Node.hpp"
+#include "il/Node_inlines.hpp"
 
+TR::Register *
+genericReturnEvaluator(TR::Node *node, TR::RealRegister::RegNum rnum, TR_RegisterKinds rk, TR_ReturnInfo i,  TR::CodeGenerator *cg)
+   {
+   TR::Node *firstChild = node->getFirstChild();
+   TR::Register *returnRegister = cg->evaluate(firstChild);
+
+   TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(1, 1, cg->trMemory());
+   addDependency(deps, returnRegister, rnum, rk, cg);
+
+   generateAdminInstruction(cg, TR::InstOpCode::ret, node, deps);
+   cg->comp()->setReturnInfo(i);
+   cg->decReferenceCount(firstChild);
+
+   return NULL;
+   }
+
+// also handles iureturn
 TR::Register *
 OMR::ARM64::TreeEvaluator::ireturnEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// TODO:ARM64: Enable TR::TreeEvaluator::ireturnEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
-	}
+   {
+   return genericReturnEvaluator(node, cg->getProperties().getIntegerReturnRegister(), TR_GPR, TR_IntReturn, cg);
+   }
 
+// also handles lureturn, areturn
 TR::Register *
 OMR::ARM64::TreeEvaluator::lreturnEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// TODO:ARM64: Enable TR::TreeEvaluator::lreturnEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
-	}
+   {
+   return genericReturnEvaluator(node, cg->getProperties().getLongReturnRegister(), TR_GPR, TR_LongReturn, cg);
+   }
+
+// void return
+TR::Register *
+OMR::ARM64::TreeEvaluator::returnEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+	// TODO:ARM64: Enable TR::TreeEvaluator::ificmpeqEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
+
+   generateAdminInstruction(cg, TR::InstOpCode::ret, node);
+   cg->comp()->setReturnInfo(TR_VoidReturn);
+   return NULL;
+   }
 
 TR::Register *
 OMR::ARM64::TreeEvaluator::ificmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg)

@@ -92,7 +92,7 @@ class MethodBuilder : public TR::IlBuilder
    const char *getDefiningFile()                             { return _definingFile; }
    const char *getDefiningLine()                             { return _definingLine; }
 
-   const char *getMethodName()                               { return _methodName; }
+   const char *GetMethodName()                               { return _methodName; }
    void AllLocalsHaveBeenDefined()                           { _newSymbolsAreTemps = true; }
 
    TR::IlType *getReturnType()                               { return _returnType; }

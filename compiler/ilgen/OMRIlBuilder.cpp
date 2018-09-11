@@ -1959,7 +1959,7 @@ OMR::IlBuilder::Call(TR::MethodBuilder *calleeMB, int32_t numArgs, ...)
 TR::IlValue *
 OMR::IlBuilder::Call(TR::MethodBuilder *calleeMB, int32_t numArgs, TR::IlValue **argValues)
    {
-   TraceIL("IlBuilder[ %p ]::Call %s\n", this, calleeMB->getMethodName());
+   TraceIL("IlBuilder[ %p ]::Call %s\n", this, calleeMB->GetMethodName());
 
    // set up callee's inline site index
    calleeMB->setInlineSiteIndex(_methodBuilder->getNextInlineSiteIndex());

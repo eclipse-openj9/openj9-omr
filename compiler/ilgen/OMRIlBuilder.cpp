@@ -993,6 +993,20 @@ OMR::IlBuilder::UnsignedConvertTo(TR::IlType *t, TR::IlValue *v)
    }
 
 TR::IlValue *
+OMR::IlBuilder::Negate(TR::IlValue *v)
+   {
+   TR::DataType dataType = v->getDataType();
+
+   TR::ILOpCodes negateOp = ILOpCode::negateOpCode(dataType);
+   TR_ASSERT(negateOp != TR::BadILOp, "Builder [ %p ] cannot negate value %d of type %s", this, v->getID(), dataType.toString());
+
+   TR::Node *result = TR::Node::create(negateOp, 1, loadValue(v));
+   TR::IlValue *negatedValue = newValue(dataType, result);
+   TraceIL("IlBuilder[ %p ]::%d is Negated %d\n", this, negatedValue->getID(), v->getID());
+   return negatedValue;
+   }
+
+TR::IlValue *
 OMR::IlBuilder::convertTo(TR::DataType typeTo, TR::IlValue *v, bool needUnsigned)
    {
    TR::DataType typeFrom = v->getDataType();

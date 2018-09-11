@@ -33,6 +33,7 @@ OBJECTS := \
 	AnonymousTest \
 	ControlFlowTest \
 	SystemLinkageTest \
+	NegateTest \
 	WorklistTest \
 	IfThenElseTest \
 	CallReturnTest \

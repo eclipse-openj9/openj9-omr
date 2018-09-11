@@ -254,6 +254,7 @@ public:
    TR::IlValue *UnsignedGreaterOrEqualTo(TR::IlValue *left, TR::IlValue *right);
    TR::IlValue *ConvertTo(TR::IlType *t, TR::IlValue *v);
    TR::IlValue *UnsignedConvertTo(TR::IlType *t, TR::IlValue *v);
+   TR::IlValue *Negate(TR::IlValue *v);
 
    // memory
    TR::IlValue *CreateLocalArray(int32_t numElements, TR::IlType *elementType);

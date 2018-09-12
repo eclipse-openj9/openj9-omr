@@ -146,12 +146,6 @@ class MM_ConcurrentGC : public MM_ParallelGlobalGC
 	 */
 private:
 	typedef enum {
-		CONCURRENT_HELPER_WAIT = 1,
-		CONCURRENT_HELPER_MARK,
-		CONCURRENT_HELPER_SHUTDOWN
-	} ConHelperRequest;
-	
-	typedef enum {
 		MARK_BITS=1,
 		CARD_TABLE
 	} InitType;
@@ -167,15 +161,10 @@ private:
 	} InitWorkItem;
 
 	typedef enum {
-		PHASE1=1,
-		PHASE2	
-	} KickoffPhase;
-
-	typedef enum {
 		SOA = 1,
-		LOA	
+		LOA
 	} MeteringType;
-	
+
 	typedef enum {
 		VOTE_UNDEFINED = 0,
 		VOTE_SOA,
@@ -196,32 +185,27 @@ private:
 		_conHelperCleanSize= 0x10000,
 		_meteringHistorySize = 5
 	};
-
-	MM_ConcurrentCardTable *_cardTable;	/**< pointer to Cards Table */
-	void *_heapBase; 
-	void *_heapAlloc;
-	bool _rebuildInitWorkForAdd; /**< set if heap expansion triggered _initRanges table update */
+	void *_heapBase;
 	bool _rebuildInitWorkForRemove; /**< set if heap contraction triggered _initRanges table update */
-	bool _retuneAfterHeapResize;
-#if defined(OMR_GC_LARGE_OBJECT_AREA)	
+
+#if defined(OMR_GC_LARGE_OBJECT_AREA)
 	MeteringHistory *_meteringHistory;
 	uint32_t _currentMeteringHistory;
 	MeteringType _meteringType;
-#endif /* OMR_GC_LARGE_OBJECT_AREA */	
-		
+#endif /* OMR_GC_LARGE_OBJECT_AREA */
+
 	omrthread_t *_conHelpersTable;
 	uint32_t _conHelperThreads;
 	uint32_t _conHelpersStarted;
 	volatile uint32_t _conHelpersShutdownCount;
 	omrthread_monitor_t _conHelpersActivationMonitor;
-	ConHelperRequest _conHelpersRequest;
-	
+
 	bool _stwCollectionInProgress;  /**< if set, the final STW phase is in progress (mutators not running) */
 	bool _initializeMarkMap;
 	omrthread_monitor_t _initWorkMonitor;
 	omrthread_monitor_t _initWorkCompleteMonitor;
 	omrthread_monitor_t _concurrentTuningMonitor;
-	
+
 	/* Concurrent initialization */
 	InitWorkItem *_initRanges;
 	uint32_t _numInitRanges;
@@ -229,15 +213,13 @@ private:
 	volatile uint32_t _nextInitRange;
 	uintptr_t _initializers;
 	bool _initSetupDone;
-	
+
 	/* Mutator tracing statistics */
 	uintptr_t _allocToInitRate;
-	uintptr_t _allocToTraceRate;
 	uintptr_t _allocToTraceRateNormal;
 	bool  _secondCardCleanPass;
-	uintptr_t _allocToTraceRateCardCleanPass2Boost;
 	float _allocToTraceRateMaxFactor;
-	float _allocToTraceRateMinFactor;	
+	float _allocToTraceRateMinFactor;
 	float _bytesTracedInPass1Factor;
 	uintptr_t _bytesToCleanPass1;
 	uintptr_t _bytesToCleanPass2;
@@ -245,13 +227,10 @@ private:
 	uintptr_t _bytesToTracePass2;
 	uintptr_t _traceTargetPass1;
 	uintptr_t _traceTargetPass2;
-	uintptr_t _totalTracedAtPass2KO;
-	uintptr_t _totalCleanedAtPass2KO;
 	float _tenureLiveObjectFactor;
 	float _tenureNonLeafObjectFactor;
 	uintptr_t _kickoffThresholdBuffer;
-	bool _pass2Started;
-	
+
 	/* Periodic tuning statistics */
 	volatile uintptr_t _tuningUpdateInterval;
 	volatile uintptr_t _lastFreeSize;
@@ -259,13 +238,13 @@ private:
 	float _maxAverageAlloc2TraceRate;
 	uintptr_t _lastTotalTraced;
 
-	/* Background helper thread statistics */	
+	/* Background helper thread statistics */
 	uintptr_t _lastConHelperTraceSizeCount;
-	float _alloc2ConHelperTraceRate; 
-	
+	float _alloc2ConHelperTraceRate;
+
 	/* Concurrent card cleaning statistics */
 	float _cardCleaningFactorPass1;
-	float _cardCleaningFactorPass2;	
+	float _cardCleaningFactorPass2;
 	float _maxCardCleaningFactorPass1;
 	float _maxCardCleaningFactorPass2;
 	float _cardCleaningThresholdFactor;
@@ -273,12 +252,36 @@ private:
 	bool _forcedKickoff;	/**< Kickoff forced externally flag */
 
 	uintptr_t _languageKickoffReason;
-	MM_CycleState _concurrentCycleState;
 
 protected:
+
+	typedef enum {
+		CONCURRENT_HELPER_WAIT = 1,
+		CONCURRENT_HELPER_MARK,
+		CONCURRENT_HELPER_SHUTDOWN
+	} ConHelperRequest;
+
+	ConHelperRequest _conHelpersRequest;
+	MM_CycleState _concurrentCycleState;
+	MM_ConcurrentCardTable *_cardTable;	/**< pointer to Cards Table */
+
+	void *_heapAlloc;
+	bool _rebuildInitWorkForAdd; /**< set if heap expansion triggered _initRanges table update */
+	bool _retuneAfterHeapResize;
+
+	/* Mutator tracing statistics */
+	uintptr_t _allocToTraceRate;
+	uintptr_t _allocToTraceRateCardCleanPass2Boost;
+	bool _pass2Started;
+	uintptr_t _totalTracedAtPass2KO;
+	uintptr_t _totalCleanedAtPass2KO;
+	
 	MM_ConcurrentMarkingDelegate _concurrentDelegate;
+
 	MM_ConcurrentSafepointCallback *_callback;
 	MM_ConcurrentGCStats _stats;
+
+
 public:
 	
 	/*
@@ -295,8 +298,6 @@ private:
 	void resetInitRangesForSTW();
 	bool getInitRange(MM_EnvironmentBase *env, void **from, void **to, InitType *type, bool *concurrentCollectable);
 	bool allInitRangesProcessed() { return (_nextInitRange == _numInitRanges ? true : false); };
-	uintptr_t calculateInitSize(MM_EnvironmentBase *env, uintptr_t allocationSize);
-	uintptr_t calculateTraceSize(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription);
 	bool periodicalTuningNeeded(MM_EnvironmentBase *env, uintptr_t freeSize);
 	void periodicalTuning(MM_EnvironmentBase *env, uintptr_t freeSize);
 	void kickoffCardCleaning(MM_EnvironmentBase *env, ConcurrentCardCleaningReason reason);
@@ -307,27 +308,21 @@ private:
 
 	void conHelperEntryPoint(OMR_VMThread *omrThread, uintptr_t slaveID);
 	void shutdownAndExitConHelperThread(OMR_VMThread *omrThread);
-	
+
 	bool initializeConcurrentHelpers(MM_GCExtensionsBase *extensions);
 	void shutdownConHelperThreads(MM_GCExtensionsBase *extensions);
-	void resumeConHelperThreads(MM_EnvironmentBase *env);
-	
-	void signalThreadsToDirtyCards(MM_EnvironmentBase *env);
 	bool timeToKickoffConcurrent(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription);
-	uintptr_t doConcurrentInitialization(MM_EnvironmentBase *env, uintptr_t initToDo);
-	uintptr_t doConcurrentTrace(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription, uintptr_t sizeToTrace, MM_MemorySubSpace *subspace, bool tlhAllocation);
 
 	bool tracingRateDropped(MM_EnvironmentBase *env);
 #if defined(OMR_GC_MODRON_SCAVENGER)	
 	uintptr_t potentialFreeSpace(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription);
 #endif /*OMR_GC_MODRON_SCAVENGER */	
-	static void hookCardCleanPass2Start(J9HookInterface** hook, uintptr_t eventNum, void* eventData, void* userData);
 
 	bool cleanCards(MM_EnvironmentBase *env, bool isMutator, uintptr_t sizeToDo, uintptr_t  *sizeDone, bool threadAtSafePoint);
 
 	void reportConcurrentKickoff(MM_EnvironmentBase *env);
 	void reportConcurrentAborted(MM_EnvironmentBase *env, CollectionAbortReason reason);
-	void reportConcurrentHalted(MM_EnvironmentBase *env);
+	virtual void reportConcurrentHalted(MM_EnvironmentBase *env);
 	void reportConcurrentFinalCardCleaningStart(MM_EnvironmentBase *env);
 	void reportConcurrentFinalCardCleaningEnd(MM_EnvironmentBase *env, uint64_t duration);
 	void reportConcurrentCollectionStart(MM_EnvironmentBase *env);
@@ -344,13 +339,6 @@ private:
 
 	virtual bool internalGarbageCollect(MM_EnvironmentBase *env, MM_MemorySubSpace *subSpace, MM_AllocateDescription *allocDescription);
 
-	/**
-	 * Creates Concurrent Card Table
-	 * @param env current thread environment
-	 * @return true if table is created
-	 */
-	bool createCardTable(MM_EnvironmentBase *env);
-
 	void clearConcurrentWorkStackOverflow();
 
 #if defined(OMR_GC_CONCURRENT_SWEEP)
@@ -365,15 +353,6 @@ private:
 #endif /* OMR_GC_LARGE_OBJECT_AREA */
 
 	/**
-	 * Switch the _conHelperRequest to appropriate state and return the new value.
-	 * This will only switch the state if from == the current state.
-	 *
-	 * @param from - switch the state only if it currently equals this value
-	 * @param to - the value to switch the state to
-	 * @return the value of _conHelperRequest.
-	 */
-	ConHelperRequest switchConHelperRequest(ConHelperRequest from, ConHelperRequest to);
-	/**
 	 * Get the current value of _conHelperRequest
 	 *
 	 * @return the value of _conHelperRequest.
@@ -384,6 +363,22 @@ protected:
 	bool initialize(MM_EnvironmentBase *env);
 	void tearDown(MM_EnvironmentBase *env);
 
+	/**
+	 * Switch the _conHelperRequest to appropriate state and return the new value.
+	 * This will only switch the state if from == the current state.
+	 *
+	 * @param from - switch the state only if it currently equals this value
+	 * @param to - the value to switch the state to
+	 * @return the value of _conHelperRequest.
+	 */
+	ConHelperRequest switchConHelperRequest(ConHelperRequest from, ConHelperRequest to);
+
+	uintptr_t doConcurrentInitialization(MM_EnvironmentBase *env, uintptr_t initToDo);
+	uintptr_t doConcurrentTrace(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription, uintptr_t sizeToTrace, MM_MemorySubSpace *subspace, bool tlhAllocation);
+	void signalThreadsToActivateWriteBarrier(MM_EnvironmentBase *env);
+	void resumeConHelperThreads(MM_EnvironmentBase *env);
+	uintptr_t calculateInitSize(MM_EnvironmentBase *env, uintptr_t allocationSize);
+	uintptr_t calculateTraceSize(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription);
 	void concurrentMark(MM_EnvironmentBase *env, MM_MemorySubSpace *subspace,  MM_AllocateDescription *allocDescription);
 	virtual void internalPreCollect(MM_EnvironmentBase *env, MM_MemorySubSpace *subSpace, MM_AllocateDescription *allocDescription, uint32_t gcCode);
 	virtual void internalPostCollect(MM_EnvironmentBase *env, MM_MemorySubSpace *subSpace);
@@ -399,7 +394,7 @@ public:
 	virtual void collectorShutdown(MM_GCExtensionsBase *extensions);
 	virtual void abortCollection(MM_EnvironmentBase *env, CollectionAbortReason reason);
 	
-	static void signalThreadsToDirtyCardsAsyncEventHandler(OMR_VMThread *omrVMThread, void *userData);
+	static void signalThreadsToActivateWriteBarrierAsyncEventHandler(OMR_VMThread *omrVMThread, void *userData);
 	
 	virtual void prepareHeapForWalk(MM_EnvironmentBase *env);
 
@@ -427,7 +422,7 @@ public:
 #endif /* OMR_GC_CONCURRENT_SWEEP */
 	virtual void payAllocationTax(MM_EnvironmentBase *env, MM_MemorySubSpace *subspace, MM_MemorySubSpace *baseSubSpace, MM_AllocateDescription *allocDescription);
 	bool concurrentFinalCollection(MM_EnvironmentBase *env, MM_MemorySubSpace *subspace);
-	uintptr_t localMark(MM_EnvironmentBase *env, uintptr_t sizeToTrace);
+	virtual uintptr_t localMark(MM_EnvironmentBase *env, uintptr_t sizeToTrace);
 	
 	virtual bool heapAddRange(MM_EnvironmentBase *env, MM_MemorySubSpace *subspace, uintptr_t size, void *lowAddress, void *highAddress);
 	virtual bool heapRemoveRange(MM_EnvironmentBase *env, MM_MemorySubSpace *subspace, uintptr_t size, void *lowAddress, void *highAddress, void *lowValidAddress, void *highValidAddress);
@@ -448,8 +443,6 @@ public:
 	void scanRememberedSet(MM_EnvironmentBase *env);
 	void oldToOldReferenceCreated(MM_EnvironmentBase *env, omrobjectptr_t objectPtr);
 #endif /* OMR_GC_MODRON_SCAVENGER */
-	
-	void recordCardCleanPass2Start(MM_EnvironmentBase *env);
 	
 	/**
 	 * Check if exclusive access has been requested 
@@ -489,12 +482,8 @@ public:
 	
 	MM_ConcurrentGC(MM_EnvironmentBase *env)
 		: MM_ParallelGlobalGC(env)
-		,_cardTable(NULL)
 		,_heapBase(NULL)
-		,_heapAlloc(NULL)
-		,_rebuildInitWorkForAdd(false)
 		,_rebuildInitWorkForRemove(false)
-		,_retuneAfterHeapResize(false)
 #if defined(OMR_GC_LARGE_OBJECT_AREA)		
 		,_meteringHistory(NULL)
 		,_currentMeteringHistory(0)
@@ -505,7 +494,6 @@ public:
 		,_conHelpersStarted(0)
 		,_conHelpersShutdownCount(0)
 		,_conHelpersActivationMonitor(NULL)
-		,_conHelpersRequest(CONCURRENT_HELPER_WAIT)
 		,_stwCollectionInProgress(false)
 		,_initializeMarkMap(false)
 		,_initWorkMonitor(NULL)
@@ -532,7 +520,12 @@ public:
 		,_alloc2ConHelperTraceRate(0)
 		,_forcedKickoff(false)
 		,_languageKickoffReason(NO_LANGUAGE_KICKOFF_REASON)
+		,_conHelpersRequest(CONCURRENT_HELPER_WAIT)
 		,_concurrentCycleState()
+		,_cardTable(NULL)
+		,_heapAlloc(NULL)
+		,_rebuildInitWorkForAdd(false)
+		,_retuneAfterHeapResize(false)
 		,_callback(NULL)
 		,_stats()
 		{

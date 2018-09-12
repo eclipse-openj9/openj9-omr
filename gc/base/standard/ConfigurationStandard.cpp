@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2017 IBM Corp. and others
+ * Copyright (c) 1991, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -30,7 +30,8 @@
 #include "ConfigurationStandard.hpp"
 
 #if defined(OMR_GC_MODRON_CONCURRENT_MARK)
-#include "ConcurrentGC.hpp"
+#include "ConcurrentGCIncrementalUpdate.hpp"
+#include "ConcurrentGCSATB.hpp"
 #endif /* OMR_GC_MODRON_CONCURRENT_MARK */
 #if defined(OMR_GC_CONCURRENT_SWEEP)
 #include "ConcurrentSweepGC.hpp"
@@ -119,7 +120,11 @@ MM_ConfigurationStandard::createGlobalCollector(MM_EnvironmentBase* env)
 
 #if defined(OMR_GC_MODRON_CONCURRENT_MARK)
 	if (extensions->concurrentMark) {
-		return MM_ConcurrentGC::newInstance(env);
+		if (isSnapshotAtTheBeginningBarrierEnabled()) {
+			return MM_ConcurrentGCSATB::newInstance(env);
+		} else {
+			return MM_ConcurrentGCIncrementalUpdate::newInstance(env);
+		}
 	}
 #endif /* OMR_GC_MODRON_CONCURRENT_MARK */
 #if defined(OMR_GC_CONCURRENT_SWEEP)

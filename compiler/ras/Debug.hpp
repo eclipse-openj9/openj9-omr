@@ -335,6 +335,7 @@ namespace TR { class S390UnresolvedCallSnippet; }
 namespace TR { class S390VirtualSnippet; }
 namespace TR { class S390VirtualUnresolvedSnippet; }
 namespace TR { class S390InterfaceCallSnippet; }
+namespace TR { class J9S390InterfaceCallDataSnippet; }
 #endif
 
 namespace TR { class ARM64ImmInstruction; }
@@ -1070,6 +1071,7 @@ public:
    void print(TR::FILE *, TR::S390VirtualSnippet *);
    void print(TR::FILE *, TR::S390VirtualUnresolvedSnippet *);
    void print(TR::FILE *, TR::S390InterfaceCallSnippet *);
+   void print(TR::FILE *, TR::J9S390InterfaceCallDataSnippet *);
 #endif
    void print(TR::FILE *, TR::S390StackCheckFailureSnippet *);
    void print(TR::FILE *, TR::UnresolvedDataSnippet *);

@@ -232,6 +232,24 @@ TR::Instruction *generateAdminInstruction(
                    TR::Instruction *preced = NULL);
 
 /*
+ * @brief Generates admin instruction
+ * @param[in] cg : CodeGenerator
+ * @param[in] op : instruction opcode
+ * @param[in] node : node
+ * @param[in] cond : register dependency condition
+ * @param[in] fenceNode : fence node
+ * @param[in] preced : preceding instruction
+ * @return generated instruction
+ */
+TR::Instruction *generateAdminInstruction(
+                   TR::CodeGenerator *cg,
+                   TR::InstOpCode::Mnemonic op,
+                   TR::Node *node,
+                   TR::RegisterDependencyConditions *cond,
+                   TR::Node *fenceNode = NULL,
+                   TR::Instruction *preced = NULL);
+
+/*
  * @brief Generates imm-to-trg instruction
  * @param[in] cg : CodeGenerator
  * @param[in] op : instruction opcode

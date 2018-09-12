@@ -711,8 +711,38 @@ class ARM64AdminInstruction : public TR::Instruction
     * @param[in] cg : CodeGenerator
     */
    ARM64AdminInstruction(TR::InstOpCode::Mnemonic op, TR::Node *node, TR::Node *fenceNode,
-                          TR::Instruction *precedingInstruction, TR::CodeGenerator *cg)
+                         TR::Instruction *precedingInstruction, TR::CodeGenerator *cg)
       : TR::Instruction(op, node, precedingInstruction, cg), _fenceNode(fenceNode)
+      {
+      }
+
+   /*
+    * @brief Constructor
+    * @param[in] op : instruction opcode
+    * @param[in] cond : register dependency conditions
+    * @param[in] node : node
+    * @param[in] fenceNode : fence node
+    * @param[in] cg : CodeGenerator
+    */
+   ARM64AdminInstruction(TR::InstOpCode::Mnemonic op, TR::RegisterDependencyConditions *cond,
+                         TR::Node *node, TR::Node *fenceNode, TR::CodeGenerator *cg)
+      : TR::Instruction(op, node, cond, cg), _fenceNode(fenceNode)
+      {
+      }
+
+   /*
+    * @brief Constructor
+    * @param[in] op : instruction opcode
+    * @param[in] cond : register dependency conditions
+    * @param[in] node : node
+    * @param[in] fenceNode : fence node
+    * @param[in] precedingInstruction : preceding instruction
+    * @param[in] cg : CodeGenerator
+    */
+   ARM64AdminInstruction(TR::InstOpCode::Mnemonic op, TR::RegisterDependencyConditions *cond,
+                         TR::Node *node, TR::Node *fenceNode, TR::Instruction *precedingInstruction,
+                         TR::CodeGenerator *cg)
+      : TR::Instruction(op, node, cond, precedingInstruction, cg), _fenceNode(fenceNode)
       {
       }
 

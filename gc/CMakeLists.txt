@@ -241,6 +241,7 @@ if(OMR_GC_MODRON_STANDARD)
 				base/standard/ConcurrentOverflow.cpp
 				base/standard/ConcurrentPrepareCardTableTask.cpp
 				base/standard/ConcurrentSafepointCallback.cpp
+				base/standard/RememberedSetSATB.cpp
 				base/standard/WorkPacketsConcurrent.cpp
 				base/standard/WorkPacketsSATB.cpp
 				

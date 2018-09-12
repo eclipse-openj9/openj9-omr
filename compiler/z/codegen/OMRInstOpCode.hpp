@@ -340,11 +340,9 @@ namespace Z
 #define   I_FORMAT      3
 #define   IE_FORMAT     4
 #define   MII_FORMAT    5
-#define   RI_FORMAT     6  // TODO: This needs to be folded and reblaced by the 3 formats following it
 #define   RIa_FORMAT    7
 #define   RIb_FORMAT    8
 #define   RIc_FORMAT    9
-#define   RIE_FORMAT    10 // TODO: This needs to be folded and reblaced by the 7 formats following it
 #define   RIEa_FORMAT   11
 #define   RIEb_FORMAT   12
 #define   RIEc_FORMAT   13
@@ -352,7 +350,6 @@ namespace Z
 #define   RIEe_FORMAT   15
 #define   RIEf_FORMAT   16
 #define   RIEg_FORMAT   17
-#define   RIL_FORMAT    18 // TODO: This needs to be folded and reblaced by the 3 formats following it
 #define   RILa_FORMAT   19
 #define   RILb_FORMAT   20
 #define   RILc_FORMAT   21
@@ -360,31 +357,23 @@ namespace Z
 #define   RR_FORMAT     23
 #define   RRD_FORMAT    24
 #define   RRE_FORMAT    25
-#define   RRF_FORMAT    26 // TODO: This needs to be folded and reblaced by the 5 formats following it
-#define   RRF2_FORMAT   27 // TODO: This needs to be folded and reblaced by the 5 formats following it
-#define   RRF3_FORMAT   28 // TODO: This needs to be folded and reblaced by the 5 formats following it
 #define   RRFa_FORMAT   29
 #define   RRFb_FORMAT   30
 #define   RRFc_FORMAT   31
 #define   RRFd_FORMAT   32
 #define   RRFe_FORMAT   33
 #define   RRS_FORMAT    34
-#define   RS_FORMAT     35 // TODO: This needs to be folded and reblaced by the 2 formats following it
 #define   RSa_FORMAT    36
 #define   RSb_FORMAT    37
 #define   RSI_FORMAT    38
-#define   RSL_FORMAT    39 // TODO: This needs to be folded and reblaced by the 2 formats following it
 #define   RSLa_FORMAT   40 
 #define   RSLb_FORMAT   41
-#define   RSY_FORMAT    42 // TODO: This needs to be folded and reblaced by the 2 formats following it
 #define   RSYa_FORMAT   43
 #define   RSYb_FORMAT   44
-#define   RX_FORMAT     45 // TODO: This needs to be folded and reblaced by the 2 formats following it
 #define   RXa_FORMAT    46
 #define   RXb_FORMAT    47
 #define   RXE_FORMAT    48
 #define   RXF_FORMAT    49
-#define   RXY_FORMAT    50 // TODO: This needs to be folded and reblaced by the 2 formats following it
 #define   RXYa_FORMAT   51
 #define   RXYb_FORMAT   52
 #define   S_FORMAT      53
@@ -392,8 +381,6 @@ namespace Z
 #define   SIL_FORMAT    55
 #define   SIY_FORMAT    56
 #define   SMI_FORMAT    57
-#define   SS_FORMAT     58 // TODO: This needs to be folded and reblaced by the 6 formats following it
-#define   SS1_FORMAT    59 // TODO: This needs to be folded and reblaced by the 6 formats following it
 #define   SSa_FORMAT    60
 #define   SSb_FORMAT    61
 #define   SSc_FORMAT    62
@@ -782,12 +769,10 @@ class InstOpCode: public OMR::InstOpCode
    static Mnemonic getXORRegOpCode();
    static Mnemonic getXORThreeRegOpCode();
    static Mnemonic getCmpTrapOpCode();
-   static Mnemonic getCmpWidenTrapOpCode();
    static Mnemonic getCmpImmOpCode();
    static Mnemonic getCmpImmTrapOpCode();
    static Mnemonic getCmpImmBranchRelOpCode();
    static Mnemonic getCmpLogicalTrapOpCode();
-   static Mnemonic getCmpLogicalWidenTrapOpCode();
    static Mnemonic getCmpLogicalImmTrapOpCode();
    static Mnemonic getCmpOpCode();
    static Mnemonic getCmpRegOpCode();

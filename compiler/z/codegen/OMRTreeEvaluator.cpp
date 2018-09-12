@@ -4892,10 +4892,17 @@ genericLoadHelper(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference *
          }
       else //if (form == MemReg)
          {
-         if (TR::InstOpCode::getInstructionFormat(load) == RX_FORMAT)
+         auto instructionFormat = TR::InstOpCode::getInstructionFormat(load);
+
+         if (instructionFormat == RXa_FORMAT ||
+             instructionFormat == RXb_FORMAT)
+            {
             generateRXInstruction(cg, load, node, targetRegister, tempMR);
+            }
          else
+            {
             generateRXYInstruction(cg, load, node, targetRegister, tempMR);
+            }
          }
       }
    else if (numberOfBits == 31 && !useRegPairs)

@@ -202,9 +202,7 @@ class OMR_EXTENSIBLE Instruction : public OMR::Instruction
    virtual bool isDebugFence()        { return false; }
 
    virtual bool is4ByteLoad();
-   virtual bool isAsmGen();
    virtual bool isRet();
-   virtual bool isTailCall();
 
    virtual bool implicitlyUsesGPR0() { return _opcode.implicitlyUsesGPR0() > 0; }
    virtual bool implicitlyUsesGPR1() { return _opcode.implicitlyUsesGPR1() > 0; }
@@ -289,7 +287,7 @@ class OMR_EXTENSIBLE Instruction : public OMR::Instruction
       CCuseKnown                          = 0x0100, ///< Usage of CC set by current instruction is known.
       CCused                              = 0x0200, ///< CC set by current instruction is used by subsequent instructions.
       OutOfLineEX                         = 0x0400, ///< TR::InstOpCode::EX instruction references a ConstantInstructionSnippet object
-                                                    ///< or an SS_FORMAT instruction is the target of an TR::InstOpCode::EX instruction
+                                                    ///< or an SSx instruction is the target of an TR::InstOpCode::EX instruction
       ThrowsImplicitException             = 0x0800,
       ThrowsImplicitNullPointerException  = 0x1000,
       StartInternalControlFlow            = 0x2000,

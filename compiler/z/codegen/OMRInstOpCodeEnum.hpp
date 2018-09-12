@@ -26,25 +26,13 @@
 
    /* Pseudo Instructions */
 
-   ASM,                 // ASM WCode Support
    ASSOCREGS,           // Register Association
    BAD,                 // Bad Opcode
    BREAK,               // Breakpoint (debugger)
-   CGFRB,               // Compare and Branch (64-32)
-   CGFRJ,               // Compare and Branch Relative (64-32)
-   CGFRT,               // Compare and Trap (64-32)
-   CHHRL,               // Compare Halfword Relative Long (16)
-   CLGFRB,              // Compare Logical And Branch (64-32)
-   CLGFRJ,              // Compare Logical And Branch Relative (64-32)
-   CLGFRT,              // Compare Logical And Trap (64-32)
-   CLHHRL,              // Compare Logical Relative Long Halfword (16)
    DC,                  // DC
    DC2,                 // DC2
    DCB,                 // Debug Counter Bump
    DEPEND,              // Someplace to hang dependencies
-   DIDTR,               // Divide to Integer (DFP64)
-   DIRECTIVE,           // WCode DIR related
-   DS,                  // DS
    FENCE,               // Fence
    LABEL,               // Destination of a jump
    LHHR,                // Load (High <- High)
@@ -56,8 +44,6 @@
    LLHHHR,              // Load Logical Halfword (High <- High)
    LLHHLR,              // Load Logical Halfword (High <- low)
    LLHLHR,              // Load Logical Halfword (Low <- High)
-   LRIC,                // Load Runtime Instrumentation Controls
-   MRIC,                // Modify Runtime Instrumentation Controls
    NHHR,                // AND High (High <- High)
    NHLR,                // AND High (High <- Low)
    NLHR,                // AND High (Low <- High)
@@ -66,21 +52,11 @@
    OLHR,                // OR High (Low <- High)
    PROC,                // Entry to the method
    RET,                 // Return
-   RIEMIT,              // Runtime Instrumentation Emit
-   RINEXT,              // Runtime Instrumentation Next
-   RIOFF,               // Runtime Instrumentation Off
-   RION,                // Runtime Instrumentation On
-   SCHEDFENCE,          // Scheduling Fence
    SLLHH,               // Shift Left Logical (High <- High)
    SLLLH,               // Shift Left Logical (Low <- High)
    SRLHH,               // Shift Right Logical (High <- High)
    SRLLH,               // Shift Right Logical (Low <- High)
-   STRIC,               // Store Runtime Instrumentation Controls
-   TAILCALL,            // Tail Call
-   TCDT,                // Test Data Class (DFP64)
-   TRIC,                // Test Runtime Instrumentation Controls
    VGNOP,               // ValueGuardNOP
-   WRTBAR,              // Write Barrier
    XHHR,                // Exclusive OR High (High <- High)
    XHLR,                // Exclusive OR High (High <- Low)
    XLHR,                // Exclusive OR High (Low <- High)
@@ -210,7 +186,6 @@
    DEB,                 // Divide (SB)
    DEBR,                // Divide (SB)
    DER,                 // Divide, Short HFP
-   DIAG,                // Diagnose Macro
    DIDBR,               // Divide to Integer (LB)
    DIEBR,               // Divide to Integer (SB)
    DLGR,                // Divide Logical
@@ -979,6 +954,10 @@
    NIAI,                // Next Instruction Access Intent
    NTSTG,               // Nontransactional Store
    PPA,                 // Perform Processor Assist
+   RIEMIT,              // Runtime Instrumentation Emit
+   RINEXT,              // Runtime Instrumentation Next
+   RIOFF,               // Runtime Instrumentation Off
+   RION,                // Runtime Instrumentation On
    RISBGN,              // Rotate Then Insert Selected Bits
    TABORT,              // Transaction Abort
    TBEGIN,              // Transaction Begin

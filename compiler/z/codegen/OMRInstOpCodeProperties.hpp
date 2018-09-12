@@ -26,17 +26,6 @@
 
 
    {
-   /* .mnemonic    = */ OMR::InstOpCode::ASM,
-   /* .name        = */ "ASM",
-   /* .description = */ "ASM WCode Support",
-   /* .opcode[0]   = */ 0x00,
-   /* .opcode[1]   = */ 0x00,
-   /* .format      = */ PSEUDO,
-   /* .minimumALS  = */ TR_S390ProcessorInfo::TR_UnknownArchitecture,
-   /* .properties  = */ S390OpProp_None
-   },
-
-   {
    /* .mnemonic    = */ OMR::InstOpCode::ASSOCREGS,
    /* .name        = */ "ASSOCREGS",
    /* .description = */ "Register Association",
@@ -70,115 +59,6 @@
    },
 
    {
-   /* .mnemonic    = */ OMR::InstOpCode::CGFRB,
-   /* .name        = */ "CGFRB",
-   /* .description = */ "Compare and Branch (64-32)",
-   /* .opcode[0]   = */ 0xEC,
-   /* .opcode[1]   = */ 0xF4,
-   /* .format      = */ RRS_FORMAT,
-   /* .minimumALS  = */ TR_S390ProcessorInfo::TR_UnknownArchitecture,
-   /* .properties  = */ S390OpProp_Is32To64Bit |
-                        S390OpProp_IsCompare |
-                        S390OpProp_BranchOp
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::CGFRJ,
-   /* .name        = */ "CGFRJ",
-   /* .description = */ "Compare and Branch Relative (64-32)",
-   /* .opcode[0]   = */ 0xEC,
-   /* .opcode[1]   = */ 0x74,
-   /* .format      = */ RIE_FORMAT,
-   /* .minimumALS  = */ TR_S390ProcessorInfo::TR_UnknownArchitecture,
-   /* .properties  = */ S390OpProp_Is32To64Bit |
-                        S390OpProp_IsCompare |
-                        S390OpProp_BranchOp
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::CGFRT,
-   /* .name        = */ "CGFRT",
-   /* .description = */ "Compare and Trap (64-32)",
-   /* .opcode[0]   = */ 0xB9,
-   /* .opcode[1]   = */ 0x70,
-   /* .format      = */ RRF2_FORMAT,
-   /* .minimumALS  = */ TR_S390ProcessorInfo::TR_UnknownArchitecture,
-   /* .properties  = */ S390OpProp_Is32To64Bit |
-                        S390OpProp_IsCompare |
-                        S390OpProp_Trap
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::CHHRL,
-   /* .name        = */ "CHHRL",
-   /* .description = */ "Compare Halfword Relative Long (16)",
-   /* .opcode[0]   = */ 0xC6,
-   /* .opcode[1]   = */ 0x01,
-   /* .format      = */ RIL_FORMAT,
-   /* .minimumALS  = */ TR_S390ProcessorInfo::TR_UnknownArchitecture,
-   /* .properties  = */ S390OpProp_Is32Bit |
-                        S390OpProp_IsCompare |
-                        S390OpProp_SetsCompareFlag |
-                        S390OpProp_IsLoad |
-                        S390OpProp_IsExtendedImmediate
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::CLGFRB,
-   /* .name        = */ "CLGFRB",
-   /* .description = */ "Compare Logical And Branch (64-32)",
-   /* .opcode[0]   = */ 0xEC,
-   /* .opcode[1]   = */ 0xF5,
-   /* .format      = */ RRS_FORMAT,
-   /* .minimumALS  = */ TR_S390ProcessorInfo::TR_UnknownArchitecture,
-   /* .properties  = */ S390OpProp_Is32To64Bit |
-                        S390OpProp_IsCompare |
-                        S390OpProp_BranchOp
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::CLGFRJ,
-   /* .name        = */ "CLGFRJ",
-   /* .description = */ "Compare Logical And Branch Relative (64-32)",
-   /* .opcode[0]   = */ 0xEC,
-   /* .opcode[1]   = */ 0x75,
-   /* .format      = */ RIE_FORMAT,
-   /* .minimumALS  = */ TR_S390ProcessorInfo::TR_UnknownArchitecture,
-   /* .properties  = */ S390OpProp_Is32To64Bit |
-                        S390OpProp_IsCompare |
-                        S390OpProp_BranchOp
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::CLGFRT,
-   /* .name        = */ "CLGFRT",
-   /* .description = */ "Compare Logical And Trap (64-32)",
-   /* .opcode[0]   = */ 0xB9,
-   /* .opcode[1]   = */ 0x71,
-   /* .format      = */ RRF2_FORMAT,
-   /* .minimumALS  = */ TR_S390ProcessorInfo::TR_UnknownArchitecture,
-   /* .properties  = */ S390OpProp_Is32To64Bit |
-                        S390OpProp_IsCompare |
-                        S390OpProp_Trap
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::CLHHRL,
-   /* .name        = */ "CLHHRL",
-   /* .description = */ "Compare Logical Relative Long Halfword (16)",
-   /* .opcode[0]   = */ 0xC6,
-   /* .opcode[1]   = */ 0x03,
-   /* .format      = */ RIL_FORMAT,
-   /* .minimumALS  = */ TR_S390ProcessorInfo::TR_UnknownArchitecture,
-   /* .properties  = */ S390OpProp_Is32Bit |
-                        S390OpProp_IsCompare |
-                        S390OpProp_SetsCompareFlag |
-                        S390OpProp_IsLoad |
-                        S390OpProp_IsExtendedImmediate |
-                        S390OpProp_UsesTarget
-   },
-
-   {
    /* .mnemonic    = */ OMR::InstOpCode::DC,
    /* .name        = */ "DC",
    /* .description = */ "DC",
@@ -208,7 +88,8 @@
    /* .opcode[1]   = */ 0x00,
    /* .format      = */ PSEUDO,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_UnknownArchitecture,
-   /* .properties  = */ S390OpProp_SetsSignFlag |
+   /* .properties  = */ S390OpProp_SetsCC |
+                        S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOverflowFlag |
                         S390OpProp_IsLoad |
                         S390OpProp_IsStore
@@ -218,42 +99,6 @@
    /* .mnemonic    = */ OMR::InstOpCode::DEPEND,
    /* .name        = */ "DEPEND",
    /* .description = */ "Someplace to hang dependencies",
-   /* .opcode[0]   = */ 0x00,
-   /* .opcode[1]   = */ 0x00,
-   /* .format      = */ PSEUDO,
-   /* .minimumALS  = */ TR_S390ProcessorInfo::TR_UnknownArchitecture,
-   /* .properties  = */ S390OpProp_None
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::DIDTR,
-   /* .name        = */ "DIDTR",
-   /* .description = */ "Divide to Integer (DFP64)",
-   /* .opcode[0]   = */ 0xB4,
-   /* .opcode[1]   = */ 0xC6,
-   /* .format      = */ RRF3_FORMAT,
-   /* .minimumALS  = */ TR_S390ProcessorInfo::TR_UnknownArchitecture,
-   /* .properties  = */ S390OpProp_DoubleFP |
-                        S390OpProp_Is64Bit |
-                        S390OpProp_SetsOverflowFlag |
-                        S390OpProp_SetsOperand3
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::DIRECTIVE,
-   /* .name        = */ "DIRECTIVE",
-   /* .description = */ "WCode DIR related",
-   /* .opcode[0]   = */ 0x00,
-   /* .opcode[1]   = */ 0x00,
-   /* .format      = */ PSEUDO,
-   /* .minimumALS  = */ TR_S390ProcessorInfo::TR_UnknownArchitecture,
-   /* .properties  = */ S390OpProp_None
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::DS,
-   /* .name        = */ "DS",
-   /* .description = */ "DS",
    /* .opcode[0]   = */ 0x00,
    /* .opcode[1]   = */ 0x00,
    /* .format      = */ PSEUDO,
@@ -413,29 +258,6 @@
    },
 
    {
-   /* .mnemonic    = */ OMR::InstOpCode::LRIC,
-   /* .name        = */ "LRIC",
-   /* .description = */ "Load Runtime Instrumentation Controls",
-   /* .opcode[0]   = */ 0xEB,
-   /* .opcode[1]   = */ 0x60,
-   /* .format      = */ RSY_FORMAT,
-   /* .minimumALS  = */ TR_S390ProcessorInfo::TR_UnknownArchitecture,
-   /* .properties  = */ S390OpProp_IsLoad |
-                        S390OpProp_SetsOperand1
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::MRIC,
-   /* .name        = */ "MRIC",
-   /* .description = */ "Modify Runtime Instrumentation Controls",
-   /* .opcode[0]   = */ 0xEB,
-   /* .opcode[1]   = */ 0x62,
-   /* .format      = */ RSY_FORMAT,
-   /* .minimumALS  = */ TR_S390ProcessorInfo::TR_UnknownArchitecture,
-   /* .properties  = */ S390OpProp_SetsCC
-   },
-
-   {
    /* .mnemonic    = */ OMR::InstOpCode::NHHR,
    /* .name        = */ "NHHR",
    /* .description = */ "AND High (High <- High)",
@@ -447,6 +269,7 @@
                         S390OpProp_TargetHW |
                         S390OpProp_SrcHW |
                         S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_SetsOperand1
    },
@@ -462,6 +285,7 @@
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_TargetHW |
                         S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_SetsOperand1
    },
@@ -477,6 +301,7 @@
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_SrcHW |
                         S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_SetsOperand1
    },
@@ -493,6 +318,7 @@
                         S390OpProp_TargetHW |
                         S390OpProp_SrcHW |
                         S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_SetsOperand1
    },
@@ -508,6 +334,7 @@
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_TargetHW |
                         S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_SetsOperand1
    },
@@ -523,6 +350,7 @@
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_SrcHW |
                         S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_SetsOperand1
    },
@@ -542,61 +370,6 @@
    /* .mnemonic    = */ OMR::InstOpCode::RET,
    /* .name        = */ "RET",
    /* .description = */ "Return",
-   /* .opcode[0]   = */ 0x00,
-   /* .opcode[1]   = */ 0x00,
-   /* .format      = */ PSEUDO,
-   /* .minimumALS  = */ TR_S390ProcessorInfo::TR_UnknownArchitecture,
-   /* .properties  = */ S390OpProp_None
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::RIEMIT,
-   /* .name        = */ "RIEMIT",
-   /* .description = */ "Runtime Instrumentation Emit",
-   /* .opcode[0]   = */ 0xAA,
-   /* .opcode[1]   = */ 0x04,
-   /* .format      = */ RI_FORMAT,
-   /* .minimumALS  = */ TR_S390ProcessorInfo::TR_UnknownArchitecture,
-   /* .properties  = */ S390OpProp_UsesTarget
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::RINEXT,
-   /* .name        = */ "RINEXT",
-   /* .description = */ "Runtime Instrumentation Next",
-   /* .opcode[0]   = */ 0xAA,
-   /* .opcode[1]   = */ 0x00,
-   /* .format      = */ RI_FORMAT,
-   /* .minimumALS  = */ TR_S390ProcessorInfo::TR_UnknownArchitecture,
-   /* .properties  = */ S390OpProp_None
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::RIOFF,
-   /* .name        = */ "RIOFF",
-   /* .description = */ "Runtime Instrumentation Off",
-   /* .opcode[0]   = */ 0xAA,
-   /* .opcode[1]   = */ 0x03,
-   /* .format      = */ RI_FORMAT,
-   /* .minimumALS  = */ TR_S390ProcessorInfo::TR_UnknownArchitecture,
-   /* .properties  = */ S390OpProp_SetsCC
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::RION,
-   /* .name        = */ "RION",
-   /* .description = */ "Runtime Instrumentation On",
-   /* .opcode[0]   = */ 0xAA,
-   /* .opcode[1]   = */ 0x01,
-   /* .format      = */ RI_FORMAT,
-   /* .minimumALS  = */ TR_S390ProcessorInfo::TR_UnknownArchitecture,
-   /* .properties  = */ S390OpProp_SetsCC
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::SCHEDFENCE,
-   /* .name        = */ "SCHEDFENCE",
-   /* .description = */ "Scheduling Fence",
    /* .opcode[0]   = */ 0x00,
    /* .opcode[1]   = */ 0x00,
    /* .format      = */ PSEUDO,
@@ -663,69 +436,11 @@
    },
 
    {
-   /* .mnemonic    = */ OMR::InstOpCode::STRIC,
-   /* .name        = */ "STRIC",
-   /* .description = */ "Store Runtime Instrumentation Controls",
-   /* .opcode[0]   = */ 0xEB,
-   /* .opcode[1]   = */ 0x61,
-   /* .format      = */ RSY_FORMAT,
-   /* .minimumALS  = */ TR_S390ProcessorInfo::TR_UnknownArchitecture,
-   /* .properties  = */ S390OpProp_IsStore |
-                        S390OpProp_SetsCC
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::TAILCALL,
-   /* .name        = */ "TAILCALL",
-   /* .description = */ "Tail Call",
-   /* .opcode[0]   = */ 0x00,
-   /* .opcode[1]   = */ 0x00,
-   /* .format      = */ PSEUDO,
-   /* .minimumALS  = */ TR_S390ProcessorInfo::TR_UnknownArchitecture,
-   /* .properties  = */ S390OpProp_IsCall
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::TCDT,
-   /* .name        = */ "TCDT",
-   /* .description = */ "Test Data Class (DFP64)",
-   /* .opcode[0]   = */ 0xED,
-   /* .opcode[1]   = */ 0x54,
-   /* .format      = */ RXE_FORMAT,
-   /* .minimumALS  = */ TR_S390ProcessorInfo::TR_UnknownArchitecture,
-   /* .properties  = */ S390OpProp_DoubleFP |
-                        S390OpProp_Is64Bit |
-                        S390OpProp_SetsCC
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::TRIC,
-   /* .name        = */ "TRIC",
-   /* .description = */ "Test Runtime Instrumentation Controls",
-   /* .opcode[0]   = */ 0xAA,
-   /* .opcode[1]   = */ 0x02,
-   /* .format      = */ RI_FORMAT,
-   /* .minimumALS  = */ TR_S390ProcessorInfo::TR_UnknownArchitecture,
-   /* .properties  = */ S390OpProp_SetsCC
-   },
-
-   {
    /* .mnemonic    = */ OMR::InstOpCode::VGNOP,
    /* .name        = */ "VGNOP",
    /* .description = */ "ValueGuardNOP",
    /* .opcode[0]   = */ 0xA7,
    /* .opcode[1]   = */ 0x04,
-   /* .format      = */ PSEUDO,
-   /* .minimumALS  = */ TR_S390ProcessorInfo::TR_UnknownArchitecture,
-   /* .properties  = */ S390OpProp_None
-   },
-
-   {
-   /* .mnemonic    = */ OMR::InstOpCode::WRTBAR,
-   /* .name        = */ "WRTBAR",
-   /* .description = */ "Write Barrier",
-   /* .opcode[0]   = */ 0x00,
-   /* .opcode[1]   = */ 0x00,
    /* .format      = */ PSEUDO,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_UnknownArchitecture,
    /* .properties  = */ S390OpProp_None
@@ -743,6 +458,7 @@
                         S390OpProp_TargetHW |
                         S390OpProp_SrcHW |
                         S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_SetsOperand1
    },
@@ -758,6 +474,7 @@
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_TargetHW |
                         S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_SetsOperand1
    },
@@ -773,6 +490,7 @@
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_SrcHW |
                         S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_SetsOperand1
    },
@@ -791,12 +509,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::A,
    /* .name        = */ "A",
-   /* .description = */ "Add",
+   /* .description = */ "ADD (32)",
    /* .opcode[0]   = */ 0x5A,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ RX_FORMAT,
+   /* .format      = */ RXa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is32Bit |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOverflowFlag |
                         S390OpProp_UsesTarget |
@@ -808,13 +527,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::AD,
    /* .name        = */ "AD",
-   /* .description = */ "Add Normalized, Long",
+   /* .description = */ "ADD NORMALIZED (long HFP)",
    /* .opcode[0]   = */ 0x6A,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ RX_FORMAT,
+   /* .format      = */ RXa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_IsLoad |
                         S390OpProp_SetsOperand1
@@ -823,13 +543,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::ADB,
    /* .name        = */ "ADB",
-   /* .description = */ "Add (LB)",
+   /* .description = */ "ADD (long BFP)",
    /* .opcode[0]   = */ 0xED,
    /* .opcode[1]   = */ 0x1A,
    /* .format      = */ RXE_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_IsLoad |
                         S390OpProp_SetsOperand1
@@ -838,13 +559,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::ADBR,
    /* .name        = */ "ADBR",
-   /* .description = */ "Add (LB)",
+   /* .description = */ "ADD (long BFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x1A,
    /* .format      = */ RRE_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOperand1
    },
@@ -852,13 +574,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::ADR,
    /* .name        = */ "ADR",
-   /* .description = */ "Add Normalized, Long",
+   /* .description = */ "ADD NORMALIZED (long HFP)",
    /* .opcode[0]   = */ 0x2A,
    /* .opcode[1]   = */ 0x00,
    /* .format      = */ RR_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOperand1
    },
@@ -866,13 +589,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::AE,
    /* .name        = */ "AE",
-   /* .description = */ "Add Normalized, Short",
+   /* .description = */ "ADD NORMALIZED (short HFP)",
    /* .opcode[0]   = */ 0x7A,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ RX_FORMAT,
+   /* .format      = */ RXa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_SingleFP |
                         S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_IsLoad |
                         S390OpProp_SetsOperand1
@@ -881,13 +605,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::AEB,
    /* .name        = */ "AEB",
-   /* .description = */ "Add (SB)",
+   /* .description = */ "ADD (short BFP)",
    /* .opcode[0]   = */ 0xED,
    /* .opcode[1]   = */ 0x0A,
    /* .format      = */ RXE_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_SingleFP |
                         S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_IsLoad |
                         S390OpProp_SetsOperand1
@@ -896,13 +621,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::AEBR,
    /* .name        = */ "AEBR",
-   /* .description = */ "Add (SB)",
+   /* .description = */ "ADD (short BFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x0A,
    /* .format      = */ RRE_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_SingleFP |
                         S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOperand1
    },
@@ -910,13 +636,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::AER,
    /* .name        = */ "AER",
-   /* .description = */ "Add Normalized, Short",
+   /* .description = */ "ADD NORMALIZED (short HFP)",
    /* .opcode[0]   = */ 0x3A,
    /* .opcode[1]   = */ 0x00,
    /* .format      = */ RR_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_SingleFP |
                         S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOperand1
    },
@@ -924,12 +651,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::AGFR,
    /* .name        = */ "AGFR",
-   /* .description = */ "Add (64 < 32)",
+   /* .description = */ "ADD (64 <- 32)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0x18,
    /* .format      = */ RRE_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is32To64Bit |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOverflowFlag |
                         S390OpProp_UsesTarget |
@@ -939,12 +667,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::AGHI,
    /* .name        = */ "AGHI",
-   /* .description = */ "Add Halfword Immediate",
+   /* .description = */ "ADD HALFWORD IMMEDIATE (64 <- 16)",
    /* .opcode[0]   = */ 0xA7,
    /* .opcode[1]   = */ 0x0B,
-   /* .format      = */ RI_FORMAT,
+   /* .format      = */ RIa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is64Bit |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOverflowFlag |
                         S390OpProp_UsesTarget |
@@ -955,12 +684,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::AGR,
    /* .name        = */ "AGR",
-   /* .description = */ "Add (64)",
+   /* .description = */ "ADD (64)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0x08,
    /* .format      = */ RRE_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is64Bit |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOverflowFlag |
                         S390OpProp_UsesTarget |
@@ -970,12 +700,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::AH,
    /* .name        = */ "AH",
-   /* .description = */ "Add Halfword",
+   /* .description = */ "ADD HALFWORD (32 <- 16)",
    /* .opcode[0]   = */ 0x4A,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ RX_FORMAT,
+   /* .format      = */ RXa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is32Bit |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOverflowFlag |
                         S390OpProp_UsesTarget |
@@ -988,12 +719,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::AHI,
    /* .name        = */ "AHI",
-   /* .description = */ "Add Halfword Immediate",
+   /* .description = */ "ADD HALFWORD IMMEDIATE (32 <- 16)",
    /* .opcode[0]   = */ 0xA7,
    /* .opcode[1]   = */ 0x0A,
-   /* .format      = */ RI_FORMAT,
+   /* .format      = */ RIa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is32Bit |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOverflowFlag |
                         S390OpProp_UsesTarget |
@@ -1004,12 +736,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::AL,
    /* .name        = */ "AL",
-   /* .description = */ "Add Logical",
+   /* .description = */ "ADD LOGICAL (32)",
    /* .opcode[0]   = */ 0x5E,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ RX_FORMAT,
+   /* .format      = */ RXa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is32Bit |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_UsesTarget |
                         S390OpProp_IsLoad |
@@ -1020,12 +753,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::ALCGR,
    /* .name        = */ "ALCGR",
-   /* .description = */ "Add Logical with Carry (64)",
+   /* .description = */ "ADD LOGICAL WITH CARRY (64)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0x88,
    /* .format      = */ RRE_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is64Bit |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_UsesTarget |
                         S390OpProp_ReadsCC |
@@ -1035,12 +769,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::ALCR,
    /* .name        = */ "ALCR",
-   /* .description = */ "Add Logical with Carry (32)",
+   /* .description = */ "ADD LOGICAL WITH CARRY (32)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0x98,
    /* .format      = */ RRE_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is32Bit |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_UsesTarget |
                         S390OpProp_ReadsCC |
@@ -1050,12 +785,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::ALGFR,
    /* .name        = */ "ALGFR",
-   /* .description = */ "Add Logical (64 < 32)",
+   /* .description = */ "ADD LOGICAL (64 <- 32)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0x1A,
    /* .format      = */ RRE_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is32To64Bit |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_UsesTarget |
                         S390OpProp_SetsOperand1
@@ -1064,12 +800,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::ALGR,
    /* .name        = */ "ALGR",
-   /* .description = */ "Add Logical (64)",
+   /* .description = */ "ADD LOGICAL (64)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0x0A,
    /* .format      = */ RRE_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is64Bit |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_UsesTarget |
                         S390OpProp_SetsOperand1
@@ -1078,12 +815,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::ALR,
    /* .name        = */ "ALR",
-   /* .description = */ "Add Logical (32)",
+   /* .description = */ "ADD LOGICAL (32)",
    /* .opcode[0]   = */ 0x1E,
    /* .opcode[1]   = */ 0x00,
    /* .format      = */ RR_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is32Bit |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_UsesTarget |
                         S390OpProp_SetsOperand1
@@ -1092,12 +830,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::AP,
    /* .name        = */ "AP",
-   /* .description = */ "Add Decimal",
+   /* .description = */ "ADD DECIMAL",
    /* .opcode[0]   = */ 0xFA,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ SS_FORMAT,
+   /* .format      = */ SSb_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
-   /* .properties  = */ S390OpProp_SetsOverflowFlag |
+   /* .properties  = */ S390OpProp_SetsCC |
+                        S390OpProp_SetsOverflowFlag |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_UsesTarget |
                         S390OpProp_IsLoad |
@@ -1109,12 +848,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::AR,
    /* .name        = */ "AR",
-   /* .description = */ "Add (32)",
+   /* .description = */ "ADD (32)",
    /* .opcode[0]   = */ 0x1A,
    /* .opcode[1]   = */ 0x00,
    /* .format      = */ RR_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is32Bit |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOverflowFlag |
                         S390OpProp_UsesTarget |
@@ -1124,13 +864,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::AU,
    /* .name        = */ "AU",
-   /* .description = */ "Add Unnormalized, Short",
+   /* .description = */ "ADD UNNORMALIZED (short HFP)",
    /* .opcode[0]   = */ 0x7E,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ RX_FORMAT,
+   /* .format      = */ RXa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_SingleFP |
                         S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_IsLoad |
                         S390OpProp_SetsOperand1
@@ -1139,13 +880,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::AUR,
    /* .name        = */ "AUR",
-   /* .description = */ "Add Unnormalized, Short",
+   /* .description = */ "ADD UNNORMALIZED (short HFP)",
    /* .opcode[0]   = */ 0x3E,
    /* .opcode[1]   = */ 0x00,
    /* .format      = */ RR_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOperand1
    },
@@ -1153,13 +895,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::AW,
    /* .name        = */ "AW",
-   /* .description = */ "Add Unnormalized, Long",
+   /* .description = */ "ADD UNNORMALIZED (long HFP)",
    /* .opcode[0]   = */ 0x6E,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ RX_FORMAT,
+   /* .format      = */ RXa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_IsLoad |
                         S390OpProp_SetsOperand1
@@ -1168,13 +911,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::AWR,
    /* .name        = */ "AWR",
-   /* .description = */ "Add Unnormalized, Long",
+   /* .description = */ "ADD UNNORMALIZED (long HFP)",
    /* .opcode[0]   = */ 0x2E,
    /* .opcode[1]   = */ 0x00,
    /* .format      = */ RR_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOperand1
    },
@@ -1182,7 +926,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::AXBR,
    /* .name        = */ "AXBR",
-   /* .description = */ "Add (EB)",
+   /* .description = */ "ADD (extended BFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x4A,
    /* .format      = */ RRE_FORMAT,
@@ -1190,6 +934,7 @@
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_UsesRegPairForSource |
                         S390OpProp_UsesRegPairForTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOverflowFlag |
@@ -1200,7 +945,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::AXR,
    /* .name        = */ "AXR",
-   /* .description = */ "Add Normalized, Extended",
+   /* .description = */ "ADD NORMALIZED (extended HFP)",
    /* .opcode[0]   = */ 0x36,
    /* .opcode[1]   = */ 0x00,
    /* .format      = */ RR_FORMAT,
@@ -1208,6 +953,7 @@
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_UsesRegPairForSource |
                         S390OpProp_UsesRegPairForTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOperand1 |
                         S390OpProp_UsesTarget
@@ -1216,7 +962,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::BAKR,
    /* .name        = */ "BAKR",
-   /* .description = */ "Branch and Stack",
+   /* .description = */ "BRANCH AND STACK",
    /* .opcode[0]   = */ 0xB2,
    /* .opcode[1]   = */ 0x40,
    /* .format      = */ RRE_FORMAT,
@@ -1228,10 +974,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::BAL,
    /* .name        = */ "BAL",
-   /* .description = */ "Branch and Link",
+   /* .description = */ "BRANCH AND LINK",
    /* .opcode[0]   = */ 0x45,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ RX_FORMAT,
+   /* .format      = */ RXa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_BranchOp |
                         S390OpProp_IsCall |
@@ -1242,7 +988,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::BALR,
    /* .name        = */ "BALR",
-   /* .description = */ "Branch and Link",
+   /* .description = */ "BRANCH AND LINK",
    /* .opcode[0]   = */ 0x05,
    /* .opcode[1]   = */ 0x00,
    /* .format      = */ RR_FORMAT,
@@ -1255,10 +1001,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::BAS,
    /* .name        = */ "BAS",
-   /* .description = */ "Branch and Save",
+   /* .description = */ "BRANCH AND SAVE",
    /* .opcode[0]   = */ 0x4D,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ RX_FORMAT,
+   /* .format      = */ RXa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_BranchOp |
                         S390OpProp_IsCall |
@@ -1269,7 +1015,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::BASR,
    /* .name        = */ "BASR",
-   /* .description = */ "Branch and Save",
+   /* .description = */ "BRANCH AND SAVE",
    /* .opcode[0]   = */ 0x0D,
    /* .opcode[1]   = */ 0x00,
    /* .format      = */ RR_FORMAT,
@@ -1282,7 +1028,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::BASSM,
    /* .name        = */ "BASSM",
-   /* .description = */ "Branch and Save and Set Mode",
+   /* .description = */ "BRANCH AND SAVE AND SET MODE",
    /* .opcode[0]   = */ 0x0C,
    /* .opcode[1]   = */ 0x00,
    /* .format      = */ RR_FORMAT,
@@ -1295,10 +1041,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::BC,
    /* .name        = */ "BC",
-   /* .description = */ "Branch on Cond.",
+   /* .description = */ "BRANCH ON CONDITION",
    /* .opcode[0]   = */ 0x47,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ RX_FORMAT,
+   /* .format      = */ RXb_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_BranchOp |
                         S390OpProp_ReadsCC |
@@ -1308,7 +1054,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::BCR,
    /* .name        = */ "BCR",
-   /* .description = */ "Branch on Cond.",
+   /* .description = */ "BRANCH ON CONDITION",
    /* .opcode[0]   = */ 0x07,
    /* .opcode[1]   = */ 0x00,
    /* .format      = */ RR_FORMAT,
@@ -1320,10 +1066,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::BCT,
    /* .name        = */ "BCT",
-   /* .description = */ "Branch on Count (32)",
+   /* .description = */ "BRANCH ON COUNT (32)",
    /* .opcode[0]   = */ 0x46,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ RX_FORMAT,
+   /* .format      = */ RXa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_BranchOp |
                         S390OpProp_Is32Bit |
@@ -1335,7 +1081,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::BCTGR,
    /* .name        = */ "BCTGR",
-   /* .description = */ "Branch on Count (64)",
+   /* .description = */ "BRANCH ON COUNT (64)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0x46,
    /* .format      = */ RRE_FORMAT,
@@ -1349,7 +1095,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::BCTR,
    /* .name        = */ "BCTR",
-   /* .description = */ "Branch on Count (32)",
+   /* .description = */ "BRANCH ON COUNT (32)",
    /* .opcode[0]   = */ 0x06,
    /* .opcode[1]   = */ 0x00,
    /* .format      = */ RR_FORMAT,
@@ -1363,10 +1109,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::BRAS,
    /* .name        = */ "BRAS",
-   /* .description = */ "Branch and Save",
+   /* .description = */ "BRANCH RELATIVE AND SAVE",
    /* .opcode[0]   = */ 0xA7,
    /* .opcode[1]   = */ 0x05,
-   /* .format      = */ RI_FORMAT,
+   /* .format      = */ RIb_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_BranchOp |
                         S390OpProp_IsCall |
@@ -1376,10 +1122,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::BRASL,
    /* .name        = */ "BRASL",
-   /* .description = */ "Branch Rel.and Save Long",
+   /* .description = */ "BRANCH RELATIVE AND SAVE LONG",
    /* .opcode[0]   = */ 0xC0,
    /* .opcode[1]   = */ 0x05,
-   /* .format      = */ RIL_FORMAT,
+   /* .format      = */ RILb_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_BranchOp |
                         S390OpProp_IsCall |
@@ -1389,10 +1135,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::BRC,
    /* .name        = */ "BRC",
-   /* .description = */ "Branch Rel. on Cond.",
+   /* .description = */ "BRANCH RELATIVE ON CONDITION",
    /* .opcode[0]   = */ 0xA7,
    /* .opcode[1]   = */ 0x04,
-   /* .format      = */ RI_FORMAT,
+   /* .format      = */ RIc_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_BranchOp |
                         S390OpProp_ReadsCC
@@ -1401,10 +1147,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::BRCL,
    /* .name        = */ "BRCL",
-   /* .description = */ "Branch Rel. on Cond. Long",
+   /* .description = */ "BRANCH RELATIVE ON CONDITION LONG",
    /* .opcode[0]   = */ 0xC0,
    /* .opcode[1]   = */ 0x04,
-   /* .format      = */ RIL_FORMAT,
+   /* .format      = */ RILc_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_BranchOp |
                         S390OpProp_ReadsCC
@@ -1413,10 +1159,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::BRCT,
    /* .name        = */ "BRCT",
-   /* .description = */ "Branch Rel. on Count (32)",
+   /* .description = */ "BRANCH RELATIVE ON COUNT (32)",
    /* .opcode[0]   = */ 0xA7,
    /* .opcode[1]   = */ 0x06,
-   /* .format      = */ RI_FORMAT,
+   /* .format      = */ RIb_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_BranchOp |
                         S390OpProp_Is32Bit |
@@ -1427,10 +1173,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::BRCTG,
    /* .name        = */ "BRCTG",
-   /* .description = */ "Branch Relative on Count (64)",
+   /* .description = */ "BRANCH RELATIVE ON COUNT (64)",
    /* .opcode[0]   = */ 0xA7,
    /* .opcode[1]   = */ 0x07,
-   /* .format      = */ RI_FORMAT,
+   /* .format      = */ RIb_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_BranchOp |
                         S390OpProp_Is64Bit |
@@ -1441,7 +1187,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::BRXH,
    /* .name        = */ "BRXH",
-   /* .description = */ "Branch Rel. on Idx High",
+   /* .description = */ "BRANCH RELATIVE ON INDEX HIGH (32)",
    /* .opcode[0]   = */ 0x84,
    /* .opcode[1]   = */ 0x00,
    /* .format      = */ RSI_FORMAT,
@@ -1455,10 +1201,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::BRXHG,
    /* .name        = */ "BRXHG",
-   /* .description = */ "Branch Relative on Index High",
+   /* .description = */ "BRANCH RELATIVE ON INDEX HIGH (64)",
    /* .opcode[0]   = */ 0xEC,
    /* .opcode[1]   = */ 0x44,
-   /* .format      = */ RIE_FORMAT,
+   /* .format      = */ RIEe_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_BranchOp |
                         S390OpProp_UsesTarget |
@@ -1469,7 +1215,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::BRXLE,
    /* .name        = */ "BRXLE",
-   /* .description = */ "Branch Rel. on Idx Low or Equal (32)",
+   /* .description = */ "BRANCH RELATIVE ON INDEX LOW OR EQ. (32)",
    /* .opcode[0]   = */ 0x85,
    /* .opcode[1]   = */ 0x00,
    /* .format      = */ RSI_FORMAT,
@@ -1483,10 +1229,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::BRXLG,
    /* .name        = */ "BRXLG",
-   /* .description = */ "Branch Relative on Index Equal or Low",
+   /* .description = */ "BRANCH RELATIVE ON INDEX LOW OR EQ. (64)",
    /* .opcode[0]   = */ 0xEC,
    /* .opcode[1]   = */ 0x45,
-   /* .format      = */ RIE_FORMAT,
+   /* .format      = */ RIEe_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_BranchOp |
                         S390OpProp_Is64Bit |
@@ -1497,7 +1243,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::BSM,
    /* .name        = */ "BSM",
-   /* .description = */ "Branch and Set Mode",
+   /* .description = */ "BRANCH AND SET MODE",
    /* .opcode[0]   = */ 0x0B,
    /* .opcode[1]   = */ 0x00,
    /* .format      = */ RR_FORMAT,
@@ -1510,10 +1256,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::BXH,
    /* .name        = */ "BXH",
-   /* .description = */ "Branch on Idx High",
+   /* .description = */ "BRANCH ON INDEX HIGH (32)",
    /* .opcode[0]   = */ 0x86,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ RS_FORMAT,
+   /* .format      = */ RSa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_BranchOp |
                         S390OpProp_Is32Bit |
@@ -1525,10 +1271,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::BXLE,
    /* .name        = */ "BXLE",
-   /* .description = */ "Branch on Idx Low or Equal (32)",
+   /* .description = */ "BRANCH ON INDEX LOW OR EQUAL (32)",
    /* .opcode[0]   = */ 0x87,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ RS_FORMAT,
+   /* .format      = */ RSa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_BranchOp |
                         S390OpProp_Is32Bit |
@@ -1540,13 +1286,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::C,
    /* .name        = */ "C",
-   /* .description = */ "Compare (32)",
+   /* .description = */ "COMPARE (32)",
    /* .opcode[0]   = */ 0x59,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ RX_FORMAT,
+   /* .format      = */ RXa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_IsCompare |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsCompareFlag |
                         S390OpProp_IsLoad |
                         S390OpProp_LongDispSupported
@@ -1555,13 +1302,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CD,
    /* .name        = */ "CD",
-   /* .description = */ "Compare, Long",
+   /* .description = */ "COMPARE (long HFP)",
    /* .opcode[0]   = */ 0x69,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ RX_FORMAT,
+   /* .format      = */ RXa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_IsCompare |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsCompareFlag |
                         S390OpProp_IsLoad
    },
@@ -1569,13 +1317,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CDB,
    /* .name        = */ "CDB",
-   /* .description = */ "Compare (LB)",
+   /* .description = */ "COMPARE (long BFP)",
    /* .opcode[0]   = */ 0xED,
    /* .opcode[1]   = */ 0x19,
    /* .format      = */ RXE_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_IsCompare |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsCompareFlag |
                         S390OpProp_IsLoad
    },
@@ -1583,20 +1332,21 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CDBR,
    /* .name        = */ "CDBR",
-   /* .description = */ "Compare (LB)",
+   /* .description = */ "COMPARE (long BFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x19,
    /* .format      = */ RRE_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_IsCompare |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsCompareFlag
    },
 
    {
    /* .mnemonic    = */ OMR::InstOpCode::CDFBR,
    /* .name        = */ "CDFBR",
-   /* .description = */ "Convert from Fixed (LB < 32)",
+   /* .description = */ "CONVERT FROM FIXED (32 to long BFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x95,
    /* .format      = */ RRE_FORMAT,
@@ -1609,7 +1359,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CDFR,
    /* .name        = */ "CDFR",
-   /* .description = */ "Convert from int32 to long HFP",
+   /* .description = */ "CONVERT FROM FIXED (32 to long HFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0xB5,
    /* .format      = */ RRE_FORMAT,
@@ -1621,7 +1371,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CDGBR,
    /* .name        = */ "CDGBR",
-   /* .description = */ "Convert from Fixed (LB < 64)",
+   /* .description = */ "CONVERT FROM FIXED (64 to long BFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0xA5,
    /* .format      = */ RRE_FORMAT,
@@ -1634,7 +1384,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CDGR,
    /* .name        = */ "CDGR",
-   /* .description = */ "Convert from int64 to long HFP",
+   /* .description = */ "CONVERT FROM FIXED (64 to long HFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0xC5,
    /* .format      = */ RRE_FORMAT,
@@ -1646,26 +1396,28 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CDR,
    /* .name        = */ "CDR",
-   /* .description = */ "Compare, Long",
+   /* .description = */ "COMPARE (long HFP)",
    /* .opcode[0]   = */ 0x29,
    /* .opcode[1]   = */ 0x00,
    /* .format      = */ RR_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_IsCompare |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsCompareFlag
    },
 
    {
    /* .mnemonic    = */ OMR::InstOpCode::CDS,
    /* .name        = */ "CDS",
-   /* .description = */ "Compare Double and Swap",
+   /* .description = */ "COMPARE DOUBLE AND SWAP (32)",
    /* .opcode[0]   = */ 0xBB,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ RS_FORMAT,
+   /* .format      = */ RSa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_IsCompare |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsCompareFlag |
                         S390OpProp_IsLoad |
                         S390OpProp_IsStore |
@@ -1681,13 +1433,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CE,
    /* .name        = */ "CE",
-   /* .description = */ "Compare, Short",
+   /* .description = */ "COMPARE (short HFP)",
    /* .opcode[0]   = */ 0x79,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ RX_FORMAT,
+   /* .format      = */ RXa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_SingleFP |
                         S390OpProp_IsCompare |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsCompareFlag |
                         S390OpProp_IsLoad
    },
@@ -1695,13 +1448,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CEB,
    /* .name        = */ "CEB",
-   /* .description = */ "Compare (SB)",
+   /* .description = */ "COMPARE (short BFP)",
    /* .opcode[0]   = */ 0xED,
    /* .opcode[1]   = */ 0x09,
    /* .format      = */ RXE_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_SingleFP |
                         S390OpProp_IsCompare |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsCompareFlag |
                         S390OpProp_IsLoad
    },
@@ -1709,20 +1463,21 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CEBR,
    /* .name        = */ "CEBR",
-   /* .description = */ "Compare (SB)",
+   /* .description = */ "COMPARE (short BFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x09,
    /* .format      = */ RRE_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_SingleFP |
                         S390OpProp_IsCompare |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsCompareFlag
    },
 
    {
    /* .mnemonic    = */ OMR::InstOpCode::CEFBR,
    /* .name        = */ "CEFBR",
-   /* .description = */ "Convert from Fixed (SB < 32)",
+   /* .description = */ "CONVERT FROM FIXED (32 to short BFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x94,
    /* .format      = */ RRE_FORMAT,
@@ -1735,7 +1490,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CEFR,
    /* .name        = */ "CEFR",
-   /* .description = */ "Convert from int32 to short HFP",
+   /* .description = */ "CONVERT FROM FIXED (32 to short HFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0xB4,
    /* .format      = */ RRE_FORMAT,
@@ -1747,7 +1502,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CEGBR,
    /* .name        = */ "CEGBR",
-   /* .description = */ "Convert from Fixed (SB < 64)",
+   /* .description = */ "CONVERT FROM FIXED (64 to short BFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0xA4,
    /* .format      = */ RRE_FORMAT,
@@ -1759,7 +1514,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CEGR,
    /* .name        = */ "CEGR",
-   /* .description = */ "Convert from int64 to short HFP",
+   /* .description = */ "CONVERT FROM FIXED (64 to short HFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0xC4,
    /* .format      = */ RRE_FORMAT,
@@ -1771,25 +1526,27 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CER,
    /* .name        = */ "CER",
-   /* .description = */ "Compare, Short",
+   /* .description = */ "COMPARE (short HFP)",
    /* .opcode[0]   = */ 0x39,
    /* .opcode[1]   = */ 0x00,
    /* .format      = */ RR_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_SingleFP |
                         S390OpProp_IsCompare |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsCompareFlag
    },
 
    {
    /* .mnemonic    = */ OMR::InstOpCode::CFC,
    /* .name        = */ "CFC",
-   /* .description = */ "Compare and Form CodeWord",
+   /* .description = */ "COMPARE AND FORM CODEWORD",
    /* .opcode[0]   = */ 0xB2,
    /* .opcode[1]   = */ 0x1A,
    /* .format      = */ S_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_IsCompare |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsCompareFlag |
                         S390OpProp_IsLoad |
                         S390OpProp_ImplicitlyUsesGPR1 |
@@ -1799,12 +1556,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CFDBR,
    /* .name        = */ "CFDBR",
-   /* .description = */ "Convert to Fixed (LB < 32)",
+   /* .description = */ "CONVERT TO FIXED (long BFP to 32)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x99,
-   /* .format      = */ RRF2_FORMAT,
+   /* .format      = */ RRFe_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_DoubleFP |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOverflowFlag |
@@ -1815,12 +1573,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CFDR,
    /* .name        = */ "CFDR",
-   /* .description = */ "Convert long HFP to int32",
+   /* .description = */ "CONVERT TO FIXED (long HFP to 32)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0xB9,
-   /* .format      = */ RRF_FORMAT,
+   /* .format      = */ RRFe_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is32Bit |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOverflowFlag |
@@ -1830,12 +1589,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CFEBR,
    /* .name        = */ "CFEBR",
-   /* .description = */ "Convert to Fixed (SB < 32)",
+   /* .description = */ "CONVERT TO FIXED (short BFP to 32)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x98,
-   /* .format      = */ RRF2_FORMAT,
+   /* .format      = */ RRFe_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_SingleFP |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOverflowFlag |
@@ -1846,12 +1606,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CFER,
    /* .name        = */ "CFER",
-   /* .description = */ "Convert short HFP to int32",
+   /* .description = */ "CONVERT TO FIXED (short HFP to 32)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0xB8,
-   /* .format      = */ RRF_FORMAT,
+   /* .format      = */ RRFe_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is32Bit |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOverflowFlag |
@@ -1861,13 +1622,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CFXBR,
    /* .name        = */ "CFXBR",
-   /* .description = */ "Convert to Fixed (EB < 32), note here",
+   /* .description = */ "CONVERT TO FIXED (extended BFP to 32)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x9A,
-   /* .format      = */ RRF2_FORMAT,
+   /* .format      = */ RRFe_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_UsesRegPairForSource |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOverflowFlag |
@@ -1877,13 +1639,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CFXR,
    /* .name        = */ "CFXR",
-   /* .description = */ "Convert long HFP to int32",
+   /* .description = */ "CONVERT TO FIXED (extended HFP to 32)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0xBA,
-   /* .format      = */ RRF_FORMAT,
+   /* .format      = */ RRFe_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_UsesRegPairForSource |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOverflowFlag |
@@ -1893,12 +1656,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CGDBR,
    /* .name        = */ "CGDBR",
-   /* .description = */ "Convert to Fixed (64 < LB)",
+   /* .description = */ "CONVERT TO FIXED (long BFP to 64)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0xA9,
-   /* .format      = */ RRF2_FORMAT,
+   /* .format      = */ RRFe_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
-   /* .properties  = */ S390OpProp_SetsZeroFlag |
+   /* .properties  = */ S390OpProp_SetsCC |
+                        S390OpProp_SetsZeroFlag |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOverflowFlag |
                         S390OpProp_Is64Bit |
@@ -1908,12 +1672,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CGDR,
    /* .name        = */ "CGDR",
-   /* .description = */ "Convert long HFP to int64",
+   /* .description = */ "CONVERT TO FIXED (long HFP to 64)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0xC9,
-   /* .format      = */ RRF_FORMAT,
+   /* .format      = */ RRFe_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is64Bit |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOverflowFlag |
@@ -1923,12 +1688,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CGEBR,
    /* .name        = */ "CGEBR",
-   /* .description = */ "Convert to Fixed (64 < SB)",
+   /* .description = */ "CONVERT TO FIXED (short BFP to 64)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0xA8,
-   /* .format      = */ RRF2_FORMAT,
+   /* .format      = */ RRFe_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
-   /* .properties  = */ S390OpProp_SetsZeroFlag |
+   /* .properties  = */ S390OpProp_SetsCC |
+                        S390OpProp_SetsZeroFlag |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOverflowFlag |
                         S390OpProp_Is64Bit |
@@ -1938,12 +1704,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CGER,
    /* .name        = */ "CGER",
-   /* .description = */ "Convert short HFP to int64",
+   /* .description = */ "CONVERT TO FIXED (short HFP to 64)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0xC8,
-   /* .format      = */ RRF_FORMAT,
+   /* .format      = */ RRFe_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is64Bit |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOverflowFlag |
@@ -1953,13 +1720,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CGFR,
    /* .name        = */ "CGFR",
-   /* .description = */ "Compare (64 < 32)",
+   /* .description = */ "COMPARE (64 <- 32)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0x30,
    /* .format      = */ RRE_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is32To64Bit |
                         S390OpProp_IsCompare |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsCompareFlag |
                         S390OpProp_UsesTarget
    },
@@ -1967,26 +1735,28 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CGHI,
    /* .name        = */ "CGHI",
-   /* .description = */ "Compare Halfword Immediate (64)",
+   /* .description = */ "COMPARE HALFWORD IMMEDIATE (64 <- 16)",
    /* .opcode[0]   = */ 0xA7,
    /* .opcode[1]   = */ 0x0F,
-   /* .format      = */ RI_FORMAT,
+   /* .format      = */ RIa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_IsCompare |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsCompareFlag
    },
 
    {
    /* .mnemonic    = */ OMR::InstOpCode::CGR,
    /* .name        = */ "CGR",
-   /* .description = */ "Compare (64)",
+   /* .description = */ "COMPARE (64)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0x20,
    /* .format      = */ RRE_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_IsCompare |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsCompareFlag |
                         S390OpProp_UsesTarget
    },
@@ -1994,13 +1764,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CGXBR,
    /* .name        = */ "CGXBR",
-   /* .description = */ "Convert to Fixed (EB < 64), note here",
+   /* .description = */ "CONVERT TO FIXED (extended BFP to 64)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0xAA,
-   /* .format      = */ RRF2_FORMAT,
+   /* .format      = */ RRFe_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_UsesRegPairForSource |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOverflowFlag |
@@ -2010,13 +1781,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CGXR,
    /* .name        = */ "CGXR",
-   /* .description = */ "Convert long HFP to int64",
+   /* .description = */ "CONVERT TO FIXED (extended HFP to 64)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0xCA,
-   /* .format      = */ RRF_FORMAT,
+   /* .format      = */ RRFe_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_UsesRegPairForSource |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOverflowFlag |
@@ -2026,13 +1798,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CH,
    /* .name        = */ "CH",
-   /* .description = */ "Compare Halfword",
+   /* .description = */ "COMPARE HALFWORD (32 <- 16)",
    /* .opcode[0]   = */ 0x49,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ RX_FORMAT,
+   /* .format      = */ RXa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_IsCompare |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsCompareFlag |
                         S390OpProp_IsLoad |
                         S390OpProp_LongDispSupported
@@ -2041,20 +1814,21 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CHI,
    /* .name        = */ "CHI",
-   /* .description = */ "Compare Halfword Immediate (32)",
+   /* .description = */ "COMPARE HALFWORD IMMEDIATE (32 <- 16)",
    /* .opcode[0]   = */ 0xA7,
    /* .opcode[1]   = */ 0x0E,
-   /* .format      = */ RI_FORMAT,
+   /* .format      = */ RIa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_IsCompare |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsCompareFlag
    },
 
    {
    /* .mnemonic    = */ OMR::InstOpCode::CKSM,
    /* .name        = */ "CKSM",
-   /* .description = */ "Checksum",
+   /* .description = */ "CHECKSUM",
    /* .opcode[0]   = */ 0xB2,
    /* .opcode[1]   = */ 0x41,
    /* .format      = */ RRE_FORMAT,
@@ -2068,13 +1842,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CL,
    /* .name        = */ "CL",
-   /* .description = */ "Compare Logical (32)",
+   /* .description = */ "COMPARE LOGICAL (32)",
    /* .opcode[0]   = */ 0x55,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ RX_FORMAT,
+   /* .format      = */ RXa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_IsCompare |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsCompareFlag |
                         S390OpProp_IsLoad |
                         S390OpProp_LongDispSupported |
@@ -2084,12 +1859,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CLC,
    /* .name        = */ "CLC",
-   /* .description = */ "Compare Logical (character)",
+   /* .description = */ "COMPARE LOGICAL (character)",
    /* .opcode[0]   = */ 0xD5,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ SS1_FORMAT,
+   /* .format      = */ SSa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_IsCompare |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsCompareFlag |
                         S390OpProp_IsLoad |
                         S390OpProp_HasTwoMemoryReferences
@@ -2098,12 +1874,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CLCL,
    /* .name        = */ "CLCL",
-   /* .description = */ "Compare Logical Long",
+   /* .description = */ "COMPARE LOGICAL LONG",
    /* .opcode[0]   = */ 0x0F,
    /* .opcode[1]   = */ 0x00,
    /* .format      = */ RR_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_IsCompare |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsCompareFlag |
                         S390OpProp_IsLoad |
                         S390OpProp_UsesRegPairForTarget |
@@ -2116,12 +1893,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CLCLE,
    /* .name        = */ "CLCLE",
-   /* .description = */ "Compare Logical Long Extended",
+   /* .description = */ "COMPARE LOGICAL LONG EXTENDED",
    /* .opcode[0]   = */ 0xA9,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ RS_FORMAT,
+   /* .format      = */ RSa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_IsCompare |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsCompareFlag |
                         S390OpProp_IsLoad |
                         S390OpProp_UsesRegPairForTarget |
@@ -2134,13 +1912,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CLGFR,
    /* .name        = */ "CLGFR",
-   /* .description = */ "Compare Logical (64 < 32)",
+   /* .description = */ "COMPARE LOGICAL (64 <- 32)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0x31,
    /* .format      = */ RRE_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is32To64Bit |
                         S390OpProp_IsCompare |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsCompareFlag |
                         S390OpProp_UsesTarget
    },
@@ -2148,13 +1927,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CLGR,
    /* .name        = */ "CLGR",
-   /* .description = */ "Compare Logical (64)",
+   /* .description = */ "COMPARE LOGICAL (64)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0x21,
    /* .format      = */ RRE_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_IsCompare |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsCompareFlag |
                         S390OpProp_UsesTarget
    },
@@ -2162,12 +1942,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CLI,
    /* .name        = */ "CLI",
-   /* .description = */ "Compare Logical Immediate",
+   /* .description = */ "COMPARE LOGICAL (immediate)",
    /* .opcode[0]   = */ 0x95,
    /* .opcode[1]   = */ 0x00,
    /* .format      = */ SI_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_IsCompare |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsCompareFlag |
                         S390OpProp_IsLoad |
                         S390OpProp_LongDispSupported
@@ -2176,13 +1957,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CLM,
    /* .name        = */ "CLM",
-   /* .description = */ "Compare Logical Characters under Mask",
+   /* .description = */ "COMPARE LOGICAL CHAR. UNDER MASK (low)",
    /* .opcode[0]   = */ 0xBD,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ RS_FORMAT,
+   /* .format      = */ RSb_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_IsCompare |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsCompareFlag |
                         S390OpProp_IsLoad |
                         S390OpProp_LongDispSupported
@@ -2191,13 +1973,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CLR,
    /* .name        = */ "CLR",
-   /* .description = */ "Compare Logical (32)",
+   /* .description = */ "COMPARE LOGICAL (32)",
    /* .opcode[0]   = */ 0x15,
    /* .opcode[1]   = */ 0x00,
    /* .format      = */ RR_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_IsCompare |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsCompareFlag |
                         S390OpProp_UsesTarget
    },
@@ -2205,7 +1988,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CLST,
    /* .name        = */ "CLST",
-   /* .description = */ "Compare Logical String",
+   /* .description = */ "COMPARE LOGICAL STRING",
    /* .opcode[0]   = */ 0xB2,
    /* .opcode[1]   = */ 0x5D,
    /* .format      = */ RRE_FORMAT,
@@ -2221,12 +2004,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CP,
    /* .name        = */ "CP",
-   /* .description = */ "Compare Decimal",
+   /* .description = */ "COMPARE DECIMAL",
    /* .opcode[0]   = */ 0xF9,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ SS_FORMAT,
+   /* .format      = */ SSb_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_IsCompare |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsCompareFlag |
                         S390OpProp_IsLoad |
                         S390OpProp_HasTwoMemoryReferences
@@ -2235,7 +2019,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CPYA,
    /* .name        = */ "CPYA",
-   /* .description = */ "Copy Access Register",
+   /* .description = */ "COPY ACCESS",
    /* .opcode[0]   = */ 0xB2,
    /* .opcode[1]   = */ 0x4D,
    /* .format      = */ RRE_FORMAT,
@@ -2246,13 +2030,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CR,
    /* .name        = */ "CR",
-   /* .description = */ "Compare (32)",
+   /* .description = */ "COMPARE (32)",
    /* .opcode[0]   = */ 0x19,
    /* .opcode[1]   = */ 0x00,
    /* .format      = */ RR_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_IsCompare |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsCompareFlag |
                         S390OpProp_UsesTarget
    },
@@ -2260,13 +2045,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CS,
    /* .name        = */ "CS",
-   /* .description = */ "Compare and Swap (32)",
+   /* .description = */ "COMPARE AND SWAP (32)",
    /* .opcode[0]   = */ 0xBA,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ RS_FORMAT,
+   /* .format      = */ RSa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_IsCompare |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsCompareFlag |
                         S390OpProp_IsLoad |
                         S390OpProp_IsStore |
@@ -2280,7 +2066,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CSCH,
    /* .name        = */ "CSCH",
-   /* .description = */ "Clear Subchannel",
+   /* .description = */ "CLEAR SUBCHANNEL",
    /* .opcode[0]   = */ 0xB2,
    /* .opcode[1]   = */ 0x30,
    /* .format      = */ S_FORMAT,
@@ -2292,7 +2078,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CUSE,
    /* .name        = */ "CUSE",
-   /* .description = */ "Compare Until Substring Equal",
+   /* .description = */ "COMPARE UNTIL SUBSTRING EQUAL",
    /* .opcode[0]   = */ 0xB2,
    /* .opcode[1]   = */ 0x57,
    /* .format      = */ RRE_FORMAT,
@@ -2308,10 +2094,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CVB,
    /* .name        = */ "CVB",
-   /* .description = */ "Convert to Binary",
+   /* .description = */ "CONVERT TO BINARY (32)",
    /* .opcode[0]   = */ 0x4F,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ RX_FORMAT,
+   /* .format      = */ RXa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_IsLoad |
                         S390OpProp_LongDispSupported |
@@ -2321,10 +2107,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CVD,
    /* .name        = */ "CVD",
-   /* .description = */ "Convert to Decimal (32)",
+   /* .description = */ "CONVERT TO DECIMAL (32)",
    /* .opcode[0]   = */ 0x4E,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ RX_FORMAT,
+   /* .format      = */ RXa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_IsStore |
@@ -2334,7 +2120,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CXBR,
    /* .name        = */ "CXBR",
-   /* .description = */ "Compare (EB)",
+   /* .description = */ "COMPARE (extended BFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x49,
    /* .format      = */ RRE_FORMAT,
@@ -2343,13 +2129,14 @@
                         S390OpProp_UsesRegPairForSource |
                         S390OpProp_UsesRegPairForTarget |
                         S390OpProp_IsCompare |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsCompareFlag
    },
 
    {
    /* .mnemonic    = */ OMR::InstOpCode::CXFBR,
    /* .name        = */ "CXFBR",
-   /* .description = */ "Convert from Fixed (EB < 32)",
+   /* .description = */ "CONVERT FROM FIXED (32 to extended BFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x96,
    /* .format      = */ RRE_FORMAT,
@@ -2362,7 +2149,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CXFR,
    /* .name        = */ "CXFR",
-   /* .description = */ "Convert from int32 to extended HFP",
+   /* .description = */ "CONVERT FROM FIXED (32 to extended HFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0xB6,
    /* .format      = */ RRE_FORMAT,
@@ -2375,7 +2162,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CXGBR,
    /* .name        = */ "CXGBR",
-   /* .description = */ "Convert from Fixed (EB < 64)",
+   /* .description = */ "CONVERT FROM FIXED (64 to extended BFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0xA6,
    /* .format      = */ RRE_FORMAT,
@@ -2388,7 +2175,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CXGR,
    /* .name        = */ "CXGR",
-   /* .description = */ "Convert from int64 to extended HFP",
+   /* .description = */ "CONVERT FROM FIXED (64 to extended HFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0xC6,
    /* .format      = */ RRE_FORMAT,
@@ -2401,7 +2188,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CXR,
    /* .name        = */ "CXR",
-   /* .description = */ "Compare, Extended",
+   /* .description = */ "COMPARE (extended HFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x69,
    /* .format      = */ RRE_FORMAT,
@@ -2410,16 +2197,17 @@
                         S390OpProp_UsesRegPairForSource |
                         S390OpProp_UsesRegPairForTarget |
                         S390OpProp_IsCompare |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsCompareFlag
    },
 
    {
    /* .mnemonic    = */ OMR::InstOpCode::D,
    /* .name        = */ "D",
-   /* .description = */ "Divide (32 < 64)",
+   /* .description = */ "DIVIDE (32 <- 64)",
    /* .opcode[0]   = */ 0x5D,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ RX_FORMAT,
+   /* .format      = */ RXa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_UsesTarget |
@@ -2431,10 +2219,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::DD,
    /* .name        = */ "DD",
-   /* .description = */ "Divide, Long HFP",
+   /* .description = */ "DIVIDE (long HFP)",
    /* .opcode[0]   = */ 0x6D,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ RX_FORMAT,
+   /* .format      = */ RXa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_UsesTarget |
@@ -2445,7 +2233,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::DDB,
    /* .name        = */ "DDB",
-   /* .description = */ "Divide (LB)",
+   /* .description = */ "DIVIDE (long BFP)",
    /* .opcode[0]   = */ 0xED,
    /* .opcode[1]   = */ 0x1D,
    /* .format      = */ RXE_FORMAT,
@@ -2459,7 +2247,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::DDBR,
    /* .name        = */ "DDBR",
-   /* .description = */ "Divide (LB)",
+   /* .description = */ "DIVIDE (long BFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x1D,
    /* .format      = */ RRE_FORMAT,
@@ -2472,7 +2260,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::DDR,
    /* .name        = */ "DDR",
-   /* .description = */ "Divide, Long HFP",
+   /* .description = */ "DIVIDE (long HFP)",
    /* .opcode[0]   = */ 0x2D,
    /* .opcode[1]   = */ 0x00,
    /* .format      = */ RR_FORMAT,
@@ -2485,10 +2273,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::DE,
    /* .name        = */ "DE",
-   /* .description = */ "Divide, short HFP",
+   /* .description = */ "DIVIDE (short HFP)",
    /* .opcode[0]   = */ 0x7D,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ RX_FORMAT,
+   /* .format      = */ RXa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_SingleFP |
                         S390OpProp_UsesTarget |
@@ -2499,7 +2287,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::DEB,
    /* .name        = */ "DEB",
-   /* .description = */ "Divide (SB)",
+   /* .description = */ "DIVIDE (short BFP)",
    /* .opcode[0]   = */ 0xED,
    /* .opcode[1]   = */ 0x0D,
    /* .format      = */ RXE_FORMAT,
@@ -2513,7 +2301,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::DEBR,
    /* .name        = */ "DEBR",
-   /* .description = */ "Divide (SB)",
+   /* .description = */ "DIVIDE (short BFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x0D,
    /* .format      = */ RRE_FORMAT,
@@ -2526,7 +2314,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::DER,
    /* .name        = */ "DER",
-   /* .description = */ "Divide, Short HFP",
+   /* .description = */ "DIVIDE (short HFP)",
    /* .opcode[0]   = */ 0x3D,
    /* .opcode[1]   = */ 0x00,
    /* .format      = */ RR_FORMAT,
@@ -2537,25 +2325,12 @@
    },
 
    {
-   /* .mnemonic    = */ OMR::InstOpCode::DIAG,
-   /* .name        = */ "DIAG",
-   /* .description = */ "Diagnose Macro",
-   /* .opcode[0]   = */ 0x00,
-   /* .opcode[1]   = */ 0x00,
-   /* .format      = */ RS_FORMAT,
-   /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
-   /* .properties  = */ S390OpProp_UsesTarget |
-                        S390OpProp_SetsOperand1 |
-                        S390OpProp_SetsOperand2
-   },
-
-   {
    /* .mnemonic    = */ OMR::InstOpCode::DIDBR,
    /* .name        = */ "DIDBR",
-   /* .description = */ "Divide to Integer (LB)",
+   /* .description = */ "DIVIDE TO INTEGER (long BFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x5B,
-   /* .format      = */ RRF3_FORMAT,
+   /* .format      = */ RRFb_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_SetsCC |
@@ -2566,10 +2341,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::DIEBR,
    /* .name        = */ "DIEBR",
-   /* .description = */ "Divide to Integer (SB)",
+   /* .description = */ "DIVIDE TO INTEGER (short BFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x53,
-   /* .format      = */ RRF3_FORMAT,
+   /* .format      = */ RRFb_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_SingleFP |
                         S390OpProp_SetsCC |
@@ -2580,7 +2355,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::DLGR,
    /* .name        = */ "DLGR",
-   /* .description = */ "Divide Logical",
+   /* .description = */ "DIVIDE LOGICAL (64 <- 128)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0x87,
    /* .format      = */ RRE_FORMAT,
@@ -2594,7 +2369,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::DLR,
    /* .name        = */ "DLR",
-   /* .description = */ "Divide",
+   /* .description = */ "DIVIDE LOGICAL (32 <- 64)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0x97,
    /* .format      = */ RRE_FORMAT,
@@ -2608,10 +2383,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::DP,
    /* .name        = */ "DP",
-   /* .description = */ "Divide Decimal",
+   /* .description = */ "DIVIDE DECIMAL",
    /* .opcode[0]   = */ 0xFD,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ SS_FORMAT,
+   /* .format      = */ SSb_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_IsLoad |
                         S390OpProp_IsStore |
@@ -2623,7 +2398,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::DR,
    /* .name        = */ "DR",
-   /* .description = */ "Divide",
+   /* .description = */ "DIVIDE (32 <- 64)",
    /* .opcode[0]   = */ 0x1D,
    /* .opcode[1]   = */ 0x00,
    /* .format      = */ RR_FORMAT,
@@ -2637,7 +2412,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::DSGFR,
    /* .name        = */ "DSGFR",
-   /* .description = */ "Divide Single (64 < 32)",
+   /* .description = */ "DIVIDE SINGLE (64 <- 32)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0x1D,
    /* .format      = */ RRE_FORMAT,
@@ -2651,7 +2426,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::DSGR,
    /* .name        = */ "DSGR",
-   /* .description = */ "Divide Single (64)",
+   /* .description = */ "DIVIDE SINGLE (64)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0x0D,
    /* .format      = */ RRE_FORMAT,
@@ -2665,7 +2440,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::DXBR,
    /* .name        = */ "DXBR",
-   /* .description = */ "Divide (EB)",
+   /* .description = */ "DIVIDE (extended BFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x4D,
    /* .format      = */ RRE_FORMAT,
@@ -2680,7 +2455,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::DXR,
    /* .name        = */ "DXR",
-   /* .description = */ "Divide, extended HFP",
+   /* .description = */ "DIVIDE (extended HFP)",
    /* .opcode[0]   = */ 0xB2,
    /* .opcode[1]   = */ 0x2D,
    /* .format      = */ RRE_FORMAT,
@@ -2694,7 +2469,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::EAR,
    /* .name        = */ "EAR",
-   /* .description = */ "Extract Access Register",
+   /* .description = */ "EXTRACT ACCESS",
    /* .opcode[0]   = */ 0xB2,
    /* .opcode[1]   = */ 0x4F,
    /* .format      = */ RRE_FORMAT,
@@ -2705,10 +2480,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::ED,
    /* .name        = */ "ED",
-   /* .description = */ "Edit",
+   /* .description = */ "EDIT",
    /* .opcode[0]   = */ 0xDE,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ SS_FORMAT,
+   /* .format      = */ SSa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_IsLoad |
                         S390OpProp_IsStore |
@@ -2721,10 +2496,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::EDMK,
    /* .name        = */ "EDMK",
-   /* .description = */ "Edit and Mark",
+   /* .description = */ "EDIT AND MARK",
    /* .opcode[0]   = */ 0xDF,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ SS_FORMAT,
+   /* .format      = */ SSa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_ImplicitlySetsGPR1 |
                         S390OpProp_IsLoad |
@@ -2738,7 +2513,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::EFPC,
    /* .name        = */ "EFPC",
-   /* .description = */ "Extract FPC",
+   /* .description = */ "EXTRACT FPC",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x8C,
    /* .format      = */ RRE_FORMAT,
@@ -2751,7 +2526,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::EPAR,
    /* .name        = */ "EPAR",
-   /* .description = */ "Extract Primary ASN",
+   /* .description = */ "EXTRACT PRIMARY ASN",
    /* .opcode[0]   = */ 0xB2,
    /* .opcode[1]   = */ 0x26,
    /* .format      = */ RRE_FORMAT,
@@ -2762,7 +2537,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::EPSW,
    /* .name        = */ "EPSW",
-   /* .description = */ "Extract PSW",
+   /* .description = */ "EXTRACT PSW",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0x8D,
    /* .format      = */ RRE_FORMAT,
@@ -2774,7 +2549,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::EREG,
    /* .name        = */ "EREG",
-   /* .description = */ "Extract Stacked Registers",
+   /* .description = */ "EXTRACT STACKED REGISTERS (32)",
    /* .opcode[0]   = */ 0xB2,
    /* .opcode[1]   = */ 0x49,
    /* .format      = */ RRE_FORMAT,
@@ -2788,7 +2563,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::EREGG,
    /* .name        = */ "EREGG",
-   /* .description = */ "Extract Stacked Registers",
+   /* .description = */ "EXTRACT STACKED REGISTERS (64)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0x0E,
    /* .format      = */ RRE_FORMAT,
@@ -2802,7 +2577,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::ESAR,
    /* .name        = */ "ESAR",
-   /* .description = */ "Extract Secondary ASN",
+   /* .description = */ "EXTRACT SECONDARY ASN",
    /* .opcode[0]   = */ 0xB2,
    /* .opcode[1]   = */ 0x27,
    /* .format      = */ RRE_FORMAT,
@@ -2813,7 +2588,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::ESEA,
    /* .name        = */ "ESEA",
-   /* .description = */ "Extract and Set Extended Authority",
+   /* .description = */ "EXTRACT AND SET EXTENDED AUTHORITY",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0x9D,
    /* .format      = */ RRE_FORMAT,
@@ -2824,7 +2599,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::ESTA,
    /* .name        = */ "ESTA",
-   /* .description = */ "Extract Stacked State",
+   /* .description = */ "EXTRACT STACKED STATE",
    /* .opcode[0]   = */ 0xB2,
    /* .opcode[1]   = */ 0x4A,
    /* .format      = */ RRE_FORMAT,
@@ -2837,10 +2612,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::EX,
    /* .name        = */ "EX",
-   /* .description = */ "Execute",
+   /* .description = */ "EXECUTE",
    /* .opcode[0]   = */ 0x44,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ RX_FORMAT,
+   /* .format      = */ RXa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_IsStore |
                         S390OpProp_SetsCC
@@ -2849,10 +2624,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::FIDBR,
    /* .name        = */ "FIDBR",
-   /* .description = */ "Load FP Integer (LB)",
+   /* .description = */ "LOAD FP INTEGER (long BFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x5F,
-   /* .format      = */ RRF2_FORMAT,
+   /* .format      = */ RRFe_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_SetsOperand1
@@ -2861,7 +2636,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::FIDR,
    /* .name        = */ "FIDR",
-   /* .description = */ "Load long HFP Integer (round toward 0)",
+   /* .description = */ "LOAD FP INTEGER (long HFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x7F,
    /* .format      = */ RRE_FORMAT,
@@ -2873,10 +2648,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::FIEBR,
    /* .name        = */ "FIEBR",
-   /* .description = */ "Load FP Integer (SB)",
+   /* .description = */ "LOAD FP INTEGER (short BFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x57,
-   /* .format      = */ RRF2_FORMAT,
+   /* .format      = */ RRFe_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_SingleFP |
                         S390OpProp_SetsOperand1
@@ -2885,7 +2660,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::FIER,
    /* .name        = */ "FIER",
-   /* .description = */ "Load short HFP Integer (round toward 0)",
+   /* .description = */ "LOAD FP INTEGER (short HFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x77,
    /* .format      = */ RRE_FORMAT,
@@ -2897,10 +2672,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::FIXBR,
    /* .name        = */ "FIXBR",
-   /* .description = */ "Load FP Integer (EB)",
+   /* .description = */ "LOAD FP INTEGER (extended BFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x47,
-   /* .format      = */ RRF2_FORMAT,
+   /* .format      = */ RRFe_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_UsesRegPairForSource |
                         S390OpProp_UsesRegPairForTarget |
@@ -2910,7 +2685,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::FIXR,
    /* .name        = */ "FIXR",
-   /* .description = */ "Load extended HFP Integer (round toward 0)",
+   /* .description = */ "LOAD FP INTEGER (extended HFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x67,
    /* .format      = */ RRE_FORMAT,
@@ -2924,7 +2699,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::HDR,
    /* .name        = */ "HDR",
-   /* .description = */ "Halve, Long HFP",
+   /* .description = */ "HALVE (long HFP)",
    /* .opcode[0]   = */ 0x24,
    /* .opcode[1]   = */ 0x00,
    /* .format      = */ RR_FORMAT,
@@ -2937,7 +2712,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::HER,
    /* .name        = */ "HER",
-   /* .description = */ "Halve, short HFP",
+   /* .description = */ "HALVE (short HFP)",
    /* .opcode[0]   = */ 0x34,
    /* .opcode[1]   = */ 0x00,
    /* .format      = */ RR_FORMAT,
@@ -2950,7 +2725,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::HSCH,
    /* .name        = */ "HSCH",
-   /* .description = */ "Halt Subchannel",
+   /* .description = */ "HALT SUBCHANNEL",
    /* .opcode[0]   = */ 0xB2,
    /* .opcode[1]   = */ 0x31,
    /* .format      = */ S_FORMAT,
@@ -2962,7 +2737,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::IAC,
    /* .name        = */ "IAC",
-   /* .description = */ "Insert Address Space Control",
+   /* .description = */ "INSERT ADDRESS SPACE CONTROL",
    /* .opcode[0]   = */ 0xB2,
    /* .opcode[1]   = */ 0x24,
    /* .format      = */ RRE_FORMAT,
@@ -2974,10 +2749,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::IC,
    /* .name        = */ "IC",
-   /* .description = */ "Insert Character",
+   /* .description = */ "INSERT CHARACTER",
    /* .opcode[0]   = */ 0x43,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ RX_FORMAT,
+   /* .format      = */ RXa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_IsLoad |
                         S390OpProp_LongDispSupported |
@@ -2988,10 +2763,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::ICM,
    /* .name        = */ "ICM",
-   /* .description = */ "Insert Character under Mask",
+   /* .description = */ "INSERT CHARACTERS UNDER MASK (low)",
    /* .opcode[0]   = */ 0xBF,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ RS_FORMAT,
+   /* .format      = */ RSb_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_SetsCC |
                         S390OpProp_IsLoad |
@@ -3003,10 +2778,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::IIHH,
    /* .name        = */ "IIHH",
-   /* .description = */ "Insert Immediate",
+   /* .description = */ "INSERT IMMEDIATE (high high)",
    /* .opcode[0]   = */ 0xA5,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ RI_FORMAT,
+   /* .format      = */ RIa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_TargetHW |
                         S390OpProp_SetsOperand1 |
@@ -3016,10 +2791,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::IIHL,
    /* .name        = */ "IIHL",
-   /* .description = */ "Insert Immediate",
+   /* .description = */ "INSERT IMMEDIATE (high low)",
    /* .opcode[0]   = */ 0xA5,
    /* .opcode[1]   = */ 0x01,
-   /* .format      = */ RI_FORMAT,
+   /* .format      = */ RIa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_TargetHW |
                         S390OpProp_SetsOperand1 |
@@ -3029,10 +2804,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::IILH,
    /* .name        = */ "IILH",
-   /* .description = */ "Insert Immediate",
+   /* .description = */ "INSERT IMMEDIATE (low high)",
    /* .opcode[0]   = */ 0xA5,
    /* .opcode[1]   = */ 0x02,
-   /* .format      = */ RI_FORMAT,
+   /* .format      = */ RIa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_SetsOperand1 |
                         S390OpProp_UsesTarget
@@ -3041,10 +2816,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::IILL,
    /* .name        = */ "IILL",
-   /* .description = */ "Insert Immediate",
+   /* .description = */ "INSERT IMMEDIATE (low low)",
    /* .opcode[0]   = */ 0xA5,
    /* .opcode[1]   = */ 0x03,
-   /* .format      = */ RI_FORMAT,
+   /* .format      = */ RIa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_SetsOperand1 |
                         S390OpProp_UsesTarget
@@ -3053,7 +2828,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::IPK,
    /* .name        = */ "IPK",
-   /* .description = */ "Insert PSW Key",
+   /* .description = */ "INSERT PSW KEY",
    /* .opcode[0]   = */ 0xB2,
    /* .opcode[1]   = */ 0x0B,
    /* .format      = */ S_FORMAT,
@@ -3064,7 +2839,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::IPM,
    /* .name        = */ "IPM",
-   /* .description = */ "Insert Program mask",
+   /* .description = */ "INSERT PROGRAM MASK",
    /* .opcode[0]   = */ 0xB2,
    /* .opcode[1]   = */ 0x22,
    /* .format      = */ RRE_FORMAT,
@@ -3076,7 +2851,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::ISKE,
    /* .name        = */ "ISKE",
-   /* .description = */ "Insert Storage Key Extended",
+   /* .description = */ "INSERT STORAGE KEY EXTENDED",
    /* .opcode[0]   = */ 0xB2,
    /* .opcode[1]   = */ 0x29,
    /* .format      = */ RRE_FORMAT,
@@ -3088,7 +2863,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::IVSK,
    /* .name        = */ "IVSK",
-   /* .description = */ "Insert Virtual Storage Key",
+   /* .description = */ "INSERT VIRTUAL STORAGE KEY",
    /* .opcode[0]   = */ 0xB2,
    /* .opcode[1]   = */ 0x23,
    /* .format      = */ RRE_FORMAT,
@@ -3100,10 +2875,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::L,
    /* .name        = */ "L",
-   /* .description = */ "Load (32)",
+   /* .description = */ "LOAD (32)",
    /* .opcode[0]   = */ 0x58,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ RX_FORMAT,
+   /* .format      = */ RXa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_IsLoad |
                         S390OpProp_Is32Bit |
@@ -3114,10 +2889,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LA,
    /* .name        = */ "LA",
-   /* .description = */ "Load Address",
+   /* .description = */ "LOAD ADDRESS",
    /* .opcode[0]   = */ 0x41,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ RX_FORMAT,
+   /* .format      = */ RXa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_LongDispSupported |
                         S390OpProp_SetsOperand1
@@ -3126,10 +2901,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LAE,
    /* .name        = */ "LAE",
-   /* .description = */ "Load Address Extended",
+   /* .description = */ "LOAD ADDRESS EXTENDED",
    /* .opcode[0]   = */ 0x51,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ RX_FORMAT,
+   /* .format      = */ RXa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_LongDispSupported |
                         S390OpProp_SetsOperand1
@@ -3138,10 +2913,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LAM,
    /* .name        = */ "LAM",
-   /* .description = */ "Load Access Multiple",
+   /* .description = */ "LOAD ACCESS MULTIPLE",
    /* .opcode[0]   = */ 0x9A,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ RS_FORMAT,
+   /* .format      = */ RSa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_IsLoad |
                         S390OpProp_LongDispSupported |
@@ -3152,10 +2927,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LARL,
    /* .name        = */ "LARL",
-   /* .description = */ "Load Address Relative Long",
+   /* .description = */ "LOAD ADDRESS RELATIVE LONG",
    /* .opcode[0]   = */ 0xC0,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ RIL_FORMAT,
+   /* .format      = */ RILb_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_SetsOperand1
    },
@@ -3163,12 +2938,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LCDBR,
    /* .name        = */ "LCDBR",
-   /* .description = */ "Load Complement (LB)",
+   /* .description = */ "LOAD COMPLEMENT (long BFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x13,
    /* .format      = */ RRE_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_DoubleFP |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOperand1
    },
@@ -3176,12 +2952,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LCDR,
    /* .name        = */ "LCDR",
-   /* .description = */ "Load Complement, Long HFP",
+   /* .description = */ "LOAD COMPLEMENT (long HFP)",
    /* .opcode[0]   = */ 0x23,
    /* .opcode[1]   = */ 0x00,
    /* .format      = */ RR_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_DoubleFP |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOperand1
    },
@@ -3189,12 +2966,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LCEBR,
    /* .name        = */ "LCEBR",
-   /* .description = */ "Load Complement (SB)",
+   /* .description = */ "LOAD COMPLEMENT (short BFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x03,
    /* .format      = */ RRE_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_SingleFP |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOperand1
    },
@@ -3202,12 +2980,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LCER,
    /* .name        = */ "LCER",
-   /* .description = */ "Load Complement, short HFP",
+   /* .description = */ "LOAD COMPLEMENT (short HFP)",
    /* .opcode[0]   = */ 0x33,
    /* .opcode[1]   = */ 0x00,
    /* .format      = */ RR_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_SingleFP |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOperand1
    },
@@ -3215,12 +2994,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LCGFR,
    /* .name        = */ "LCGFR",
-   /* .description = */ "Load Complement (64 < 32)",
+   /* .description = */ "LOAD COMPLEMENT (64 <- 32)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0x13,
    /* .format      = */ RRE_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is32To64Bit |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOverflowFlag |
                         S390OpProp_SetsOperand1
@@ -3229,12 +3009,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LCGR,
    /* .name        = */ "LCGR",
-   /* .description = */ "Load Complement (64)",
+   /* .description = */ "LOAD COMPLEMENT (64)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0x03,
    /* .format      = */ RRE_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is64Bit |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOverflowFlag |
                         S390OpProp_SetsOperand1
@@ -3243,12 +3024,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LCR,
    /* .name        = */ "LCR",
-   /* .description = */ "Load Complement (32)",
+   /* .description = */ "LOAD COMPLEMENT (32)",
    /* .opcode[0]   = */ 0x13,
    /* .opcode[1]   = */ 0x00,
    /* .format      = */ RR_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is32Bit |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOverflowFlag |
                         S390OpProp_SetsOperand1
@@ -3257,10 +3039,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LCTL,
    /* .name        = */ "LCTL",
-   /* .description = */ "Load Control",
+   /* .description = */ "LOAD CONTROL (32)",
    /* .opcode[0]   = */ 0xB7,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ RS_FORMAT,
+   /* .format      = */ RSa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_IsLoad
@@ -3269,12 +3051,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LCXBR,
    /* .name        = */ "LCXBR",
-   /* .description = */ "Load Complement (EB)",
+   /* .description = */ "LOAD COMPLEMENT (extended BFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x43,
    /* .format      = */ RRE_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_DoubleFP |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_UsesRegPairForSource |
                         S390OpProp_UsesRegPairForTarget |
@@ -3284,7 +3067,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LCXR,
    /* .name        = */ "LCXR",
-   /* .description = */ "Load Complement, extended HFP",
+   /* .description = */ "LOAD COMPLEMENT (extended HFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x63,
    /* .format      = */ RRE_FORMAT,
@@ -3292,6 +3075,7 @@
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_UsesRegPairForSource |
                         S390OpProp_UsesRegPairForTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOperand1
    },
@@ -3299,10 +3083,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LD,
    /* .name        = */ "LD",
-   /* .description = */ "Load (L)",
+   /* .description = */ "LOAD (long)",
    /* .opcode[0]   = */ 0x68,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ RX_FORMAT,
+   /* .format      = */ RXa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_IsLoad |
                         S390OpProp_DoubleFP |
@@ -3313,7 +3097,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LDE,
    /* .name        = */ "LDE",
-   /* .description = */ "Load Lengthened short to long HFP",
+   /* .description = */ "LOAD LENGTHENED (short to long HFP)",
    /* .opcode[0]   = */ 0xED,
    /* .opcode[1]   = */ 0x24,
    /* .format      = */ RXE_FORMAT,
@@ -3327,7 +3111,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LDEB,
    /* .name        = */ "LDEB",
-   /* .description = */ "Load Lengthened (LB < SB)",
+   /* .description = */ "LOAD LENGTHENED (short to long BFP)",
    /* .opcode[0]   = */ 0xED,
    /* .opcode[1]   = */ 0x04,
    /* .format      = */ RXE_FORMAT,
@@ -3341,7 +3125,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LDEBR,
    /* .name        = */ "LDEBR",
-   /* .description = */ "Load Leeeengthened (LB < SB)",
+   /* .description = */ "LOAD LENGTHENED (short to long BFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x04,
    /* .format      = */ RRE_FORMAT,
@@ -3354,7 +3138,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LDER,
    /* .name        = */ "LDER",
-   /* .description = */ "Load Rounded, long to short HFP",
+   /* .description = */ "LOAD LENGTHENED (short to long HFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x24,
    /* .format      = */ RRE_FORMAT,
@@ -3366,7 +3150,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LDR,
    /* .name        = */ "LDR",
-   /* .description = */ "Load (L)",
+   /* .description = */ "LOAD (long)",
    /* .opcode[0]   = */ 0x28,
    /* .opcode[1]   = */ 0x00,
    /* .format      = */ RR_FORMAT,
@@ -3378,7 +3162,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LDXBR,
    /* .name        = */ "LDXBR",
-   /* .description = */ "Load Rounded (LB < EB)",
+   /* .description = */ "LOAD ROUNDED (extended to long BFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x45,
    /* .format      = */ RRE_FORMAT,
@@ -3392,7 +3176,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LDXR,
    /* .name        = */ "LDXR",
-   /* .description = */ "Load Rounded, extended to long HFP",
+   /* .description = */ "LOAD ROUNDED (extended to long HFP)",
    /* .opcode[0]   = */ 0x25,
    /* .opcode[1]   = */ 0x00,
    /* .format      = */ RR_FORMAT,
@@ -3405,10 +3189,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LE,
    /* .name        = */ "LE",
-   /* .description = */ "Load (S)",
+   /* .description = */ "LOAD (short)",
    /* .opcode[0]   = */ 0x78,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ RX_FORMAT,
+   /* .format      = */ RXa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_IsLoad |
                         S390OpProp_SingleFP |
@@ -3419,7 +3203,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LEDBR,
    /* .name        = */ "LEDBR",
-   /* .description = */ "Load Rounded (SB < LB)",
+   /* .description = */ "LOAD ROUNDED (long to short BFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x44,
    /* .format      = */ RRE_FORMAT,
@@ -3430,7 +3214,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LEDR,
    /* .name        = */ "LEDR",
-   /* .description = */ "Load Rounded, long to short HFP",
+   /* .description = */ "LOAD ROUNDED (long to short HFP)",
    /* .opcode[0]   = */ 0x35,
    /* .opcode[1]   = */ 0x00,
    /* .format      = */ RR_FORMAT,
@@ -3442,7 +3226,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LER,
    /* .name        = */ "LER",
-   /* .description = */ "Load (S)",
+   /* .description = */ "LOAD (short)",
    /* .opcode[0]   = */ 0x38,
    /* .opcode[1]   = */ 0x00,
    /* .format      = */ RR_FORMAT,
@@ -3454,7 +3238,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LEXBR,
    /* .name        = */ "LEXBR",
-   /* .description = */ "Load Rounded (SB < EB)",
+   /* .description = */ "LOAD ROUNDED (extended to short BFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x46,
    /* .format      = */ RRE_FORMAT,
@@ -3468,7 +3252,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LEXR,
    /* .name        = */ "LEXR",
-   /* .description = */ "Load Rounded, extended to short HFP",
+   /* .description = */ "LOAD ROUNDED (extended to short HFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x66,
    /* .format      = */ RRE_FORMAT,
@@ -3481,7 +3265,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LFPC,
    /* .name        = */ "LFPC",
-   /* .description = */ "Load FPC",
+   /* .description = */ "LOAD FPC",
    /* .opcode[0]   = */ 0xB2,
    /* .opcode[1]   = */ 0x9D,
    /* .format      = */ S_FORMAT,
@@ -3492,7 +3276,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LGFR,
    /* .name        = */ "LGFR",
-   /* .description = */ "(LongDisp) Load (64 < 32)",
+   /* .description = */ "LOAD (64 <- 32)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0x14,
    /* .format      = */ RRE_FORMAT,
@@ -3505,10 +3289,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LGHI,
    /* .name        = */ "LGHI",
-   /* .description = */ "Load Halfword Immediate",
+   /* .description = */ "LOAD HALFWORD IMMEDIATE (64 <- 16)",
    /* .opcode[0]   = */ 0xA7,
    /* .opcode[1]   = */ 0x09,
-   /* .format      = */ RI_FORMAT,
+   /* .format      = */ RIa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_SetsOperand1
@@ -3517,7 +3301,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LGR,
    /* .name        = */ "LGR",
-   /* .description = */ "Load (64)",
+   /* .description = */ "LOAD (64)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0x04,
    /* .format      = */ RRE_FORMAT,
@@ -3530,10 +3314,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LH,
    /* .name        = */ "LH",
-   /* .description = */ "Load Halfword",
+   /* .description = */ "LOAD HALFWORD (32 <- 16)",
    /* .opcode[0]   = */ 0x48,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ RX_FORMAT,
+   /* .format      = */ RXa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_IsLoad |
@@ -3544,10 +3328,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LHI,
    /* .name        = */ "LHI",
-   /* .description = */ "Load Halfword Immediate",
+   /* .description = */ "LOAD HALFWORD IMMEDIATE (32) <- 16",
    /* .opcode[0]   = */ 0xA7,
    /* .opcode[1]   = */ 0x08,
-   /* .format      = */ RI_FORMAT,
+   /* .format      = */ RIa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_SetsOperand1
@@ -3556,7 +3340,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LLGFR,
    /* .name        = */ "LLGFR",
-   /* .description = */ "Load Logical Halfword(64)",
+   /* .description = */ "LOAD LOGICAL (64 <- 32)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0x16,
    /* .format      = */ RRE_FORMAT,
@@ -3568,7 +3352,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LLGTR,
    /* .name        = */ "LLGTR",
-   /* .description = */ "Load Logical Thirty One Bits",
+   /* .description = */ "LOAD LOGICAL THIRTY ONE BITS (64 <- 31)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0x17,
    /* .format      = */ RRE_FORMAT,
@@ -3580,10 +3364,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LLIHH,
    /* .name        = */ "LLIHH",
-   /* .description = */ "Load Logical Halfword Immediate",
+   /* .description = */ "LOAD LOGICAL IMMEDIATE (high high)",
    /* .opcode[0]   = */ 0xA5,
    /* .opcode[1]   = */ 0x0C,
-   /* .format      = */ RI_FORMAT,
+   /* .format      = */ RIa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_SetsOperand1
@@ -3592,10 +3376,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LLIHL,
    /* .name        = */ "LLIHL",
-   /* .description = */ "Load Logical Halfword Immediate",
+   /* .description = */ "LOAD LOGICAL IMMEDIATE (high low)",
    /* .opcode[0]   = */ 0xA5,
    /* .opcode[1]   = */ 0x0D,
-   /* .format      = */ RI_FORMAT,
+   /* .format      = */ RIa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_SetsOperand1
@@ -3604,10 +3388,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LLILH,
    /* .name        = */ "LLILH",
-   /* .description = */ "Load Logical Halfword Immediate",
+   /* .description = */ "LOAD LOGICAL IMMEDIATE (low high)",
    /* .opcode[0]   = */ 0xA5,
    /* .opcode[1]   = */ 0x0E,
-   /* .format      = */ RI_FORMAT,
+   /* .format      = */ RIa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_SetsOperand1
@@ -3616,10 +3400,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LLILL,
    /* .name        = */ "LLILL",
-   /* .description = */ "Load Logical Halfword Immediate",
+   /* .description = */ "LOAD LOGICAL IMMEDIATE (low low)",
    /* .opcode[0]   = */ 0xA5,
    /* .opcode[1]   = */ 0x0F,
-   /* .format      = */ RI_FORMAT,
+   /* .format      = */ RIa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_SetsOperand1
@@ -3628,10 +3412,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LM,
    /* .name        = */ "LM",
-   /* .description = */ "Load Multiple",
+   /* .description = */ "LOAD MULTIPLE (32)",
    /* .opcode[0]   = */ 0x98,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ RS_FORMAT,
+   /* .format      = */ RSa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_IsLoad |
                         S390OpProp_Is32Bit |
@@ -3644,12 +3428,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LNDBR,
    /* .name        = */ "LNDBR",
-   /* .description = */ "Load Negative (LB)",
+   /* .description = */ "LOAD NEGATIVE (long BFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x11,
    /* .format      = */ RRE_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_DoubleFP |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOperand1
    },
@@ -3657,12 +3442,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LNDR,
    /* .name        = */ "LNDR",
-   /* .description = */ "Load Negative, Long HFP",
+   /* .description = */ "LOAD NEGATIVE (long HFP)",
    /* .opcode[0]   = */ 0x21,
    /* .opcode[1]   = */ 0x00,
    /* .format      = */ RR_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_DoubleFP |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOperand1
    },
@@ -3670,12 +3456,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LNEBR,
    /* .name        = */ "LNEBR",
-   /* .description = */ "Load Negative (SB)",
+   /* .description = */ "LOAD NEGATIVE (short BFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x01,
    /* .format      = */ RRE_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_SingleFP |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOperand1
    },
@@ -3683,12 +3470,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LNER,
    /* .name        = */ "LNER",
-   /* .description = */ "Load Negative, short HFP",
+   /* .description = */ "LOAD NEGATIVE (short HFP)",
    /* .opcode[0]   = */ 0x31,
    /* .opcode[1]   = */ 0x00,
    /* .format      = */ RR_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_SingleFP |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOperand1
    },
@@ -3696,7 +3484,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LNGFR,
    /* .name        = */ "LNGFR",
-   /* .description = */ "Load Negative",
+   /* .description = */ "LOAD NEGATIVE (64 <- 32)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0x11,
    /* .format      = */ RRE_FORMAT,
@@ -3711,12 +3499,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LNGR,
    /* .name        = */ "LNGR",
-   /* .description = */ "Load Negative (64)",
+   /* .description = */ "LOAD NEGATIVE (64)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0x01,
    /* .format      = */ RRE_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is64Bit |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_SetsOperand1
    },
@@ -3724,12 +3513,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LNR,
    /* .name        = */ "LNR",
-   /* .description = */ "Load Negative (32)",
+   /* .description = */ "LOAD NEGATIVE (32)",
    /* .opcode[0]   = */ 0x11,
    /* .opcode[1]   = */ 0x00,
    /* .format      = */ RR_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is32Bit |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_SetsOperand1
    },
@@ -3737,12 +3527,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LNXBR,
    /* .name        = */ "LNXBR",
-   /* .description = */ "Load Negative (EB)",
+   /* .description = */ "LOAD NEGATIVE (extended BFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x41,
    /* .format      = */ RRE_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_DoubleFP |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_UsesRegPairForSource |
                         S390OpProp_UsesRegPairForTarget |
@@ -3752,7 +3543,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LNXR,
    /* .name        = */ "LNXR",
-   /* .description = */ "Load Negative, extended HFP",
+   /* .description = */ "LOAD NEGATIVE (extended HFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x61,
    /* .format      = */ RRE_FORMAT,
@@ -3760,6 +3551,7 @@
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_UsesRegPairForSource |
                         S390OpProp_UsesRegPairForTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOperand1
    },
@@ -3767,12 +3559,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LPDBR,
    /* .name        = */ "LPDBR",
-   /* .description = */ "Load Positive (LB)",
+   /* .description = */ "LOAD POSITIVE (long BFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x10,
    /* .format      = */ RRE_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_DoubleFP |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOperand1
    },
@@ -3780,12 +3573,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LPDR,
    /* .name        = */ "LPDR",
-   /* .description = */ "Load Positive, Long HFP",
+   /* .description = */ "LOAD POSITIVE (long HFP)",
    /* .opcode[0]   = */ 0x20,
    /* .opcode[1]   = */ 0x00,
    /* .format      = */ RR_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_DoubleFP |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOperand1
    },
@@ -3793,12 +3587,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LPEBR,
    /* .name        = */ "LPEBR",
-   /* .description = */ "Load Positive (SB)",
+   /* .description = */ "LOAD POSITIVE (short BFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x00,
    /* .format      = */ RRE_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_SingleFP |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOperand1
    },
@@ -3806,12 +3601,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LPER,
    /* .name        = */ "LPER",
-   /* .description = */ "Load Positive, short HFP",
+   /* .description = */ "LOAD POSITIVE (short HFP)",
    /* .opcode[0]   = */ 0x30,
    /* .opcode[1]   = */ 0x00,
    /* .format      = */ RR_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_SingleFP |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOperand1
    },
@@ -3819,12 +3615,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LPGFR,
    /* .name        = */ "LPGFR",
-   /* .description = */ "Load Positive (64 < 32)",
+   /* .description = */ "LOAD POSITIVE (64 <- 32)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0x10,
    /* .format      = */ RRE_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is32To64Bit |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOverflowFlag |
                         S390OpProp_SetsOperand1
@@ -3833,12 +3630,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LPGR,
    /* .name        = */ "LPGR",
-   /* .description = */ "Load Positive (64)",
+   /* .description = */ "LOAD POSITIVE (64)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0x00,
    /* .format      = */ RRE_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is64Bit |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOverflowFlag |
                         S390OpProp_SetsOperand1
@@ -3847,12 +3645,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LPR,
    /* .name        = */ "LPR",
-   /* .description = */ "Load Positive (32)",
+   /* .description = */ "LOAD POSITIVE (32)",
    /* .opcode[0]   = */ 0x10,
    /* .opcode[1]   = */ 0x00,
    /* .format      = */ RR_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is32Bit |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOverflowFlag |
                         S390OpProp_SetsOperand1
@@ -3861,10 +3660,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LPSW,
    /* .name        = */ "LPSW",
-   /* .description = */ "Load PSW",
+   /* .description = */ "LOAD PSW",
    /* .opcode[0]   = */ 0x82,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ S_FORMAT,
+   /* .format      = */ SI_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_IsLoad |
                         S390OpProp_SetsCC
@@ -3873,7 +3672,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LPSWE,
    /* .name        = */ "LPSWE",
-   /* .description = */ "Load PSW Extended",
+   /* .description = */ "LOAD PSW EXTENDED",
    /* .opcode[0]   = */ 0xB2,
    /* .opcode[1]   = */ 0xB2,
    /* .format      = */ S_FORMAT,
@@ -3886,12 +3685,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LPXBR,
    /* .name        = */ "LPXBR",
-   /* .description = */ "Load Positive (EB)",
+   /* .description = */ "LOAD POSITIVE (extended BFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x40,
    /* .format      = */ RRE_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_DoubleFP |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_UsesRegPairForSource |
                         S390OpProp_UsesRegPairForTarget |
@@ -3901,7 +3701,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LPXR,
    /* .name        = */ "LPXR",
-   /* .description = */ "Load Positive, extended HFP",
+   /* .description = */ "LOAD POSITIVE (extended HFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x60,
    /* .format      = */ RRE_FORMAT,
@@ -3909,6 +3709,7 @@
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_UsesRegPairForSource |
                         S390OpProp_UsesRegPairForTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOperand1
    },
@@ -3916,7 +3717,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LR,
    /* .name        = */ "LR",
-   /* .description = */ "Load (32)",
+   /* .description = */ "LOAD (32)",
    /* .opcode[0]   = */ 0x18,
    /* .opcode[1]   = */ 0x00,
    /* .format      = */ RR_FORMAT,
@@ -3929,10 +3730,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LRA,
    /* .name        = */ "LRA",
-   /* .description = */ "Load Real Address",
+   /* .description = */ "LOAD REAL ADDRESS (32)",
    /* .opcode[0]   = */ 0xB1,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ RX_FORMAT,
+   /* .format      = */ RXa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_LongDispSupported |
                         S390OpProp_SetsCC |
@@ -3942,7 +3743,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LRVGR,
    /* .name        = */ "LRVGR",
-   /* .description = */ "Load Reversed (64)",
+   /* .description = */ "LOAD REVERSED (64)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0x0F,
    /* .format      = */ RRE_FORMAT,
@@ -3954,7 +3755,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LRVR,
    /* .name        = */ "LRVR",
-   /* .description = */ "Load Reversed (32)",
+   /* .description = */ "LOAD REVERSED (32)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0x1F,
    /* .format      = */ RRE_FORMAT,
@@ -3966,13 +3767,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LTDBR,
    /* .name        = */ "LTDBR",
-   /* .description = */ "Load and Test (LB)",
+   /* .description = */ "LOAD AND TEST (long BFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x12,
    /* .format      = */ RRE_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_Is64Bit |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOperand1
    },
@@ -3980,13 +3782,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LTDR,
    /* .name        = */ "LTDR",
-   /* .description = */ "Load and Test, Long HFP",
+   /* .description = */ "LOAD AND TEST (long HFP)",
    /* .opcode[0]   = */ 0x22,
    /* .opcode[1]   = */ 0x00,
    /* .format      = */ RR_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_IsCompare |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsCompareFlag |
                         S390OpProp_SetsOperand1
    },
@@ -3994,12 +3797,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LTEBR,
    /* .name        = */ "LTEBR",
-   /* .description = */ "Load and Test (SB)",
+   /* .description = */ "LOAD AND TEST (short BFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x02,
    /* .format      = */ RRE_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_SingleFP |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOperand1
    },
@@ -4007,13 +3811,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LTER,
    /* .name        = */ "LTER",
-   /* .description = */ "Load and Test, Short HFP",
+   /* .description = */ "LOAD AND TEST (short HFP)",
    /* .opcode[0]   = */ 0x32,
    /* .opcode[1]   = */ 0x00,
    /* .format      = */ RR_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_SingleFP |
                         S390OpProp_IsCompare |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsCompareFlag |
                         S390OpProp_SetsOperand1
    },
@@ -4021,12 +3826,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LTGFR,
    /* .name        = */ "LTGFR",
-   /* .description = */ "Load and Test (64 < 32)",
+   /* .description = */ "LOAD AND TEST (64 <- 32)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0x12,
    /* .format      = */ RRE_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is32To64Bit |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_IsRegCopy |
                         S390OpProp_SetsOperand1
@@ -4035,12 +3841,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LTGR,
    /* .name        = */ "LTGR",
-   /* .description = */ "Load and Test (64)",
+   /* .description = */ "LOAD AND TEST (64)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0x02,
    /* .format      = */ RRE_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is64Bit |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_IsRegCopy |
                         S390OpProp_SetsOperand1
@@ -4049,12 +3856,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LTR,
    /* .name        = */ "LTR",
-   /* .description = */ "Load and Test (32)",
+   /* .description = */ "LOAD AND TEST (32)",
    /* .opcode[0]   = */ 0x12,
    /* .opcode[1]   = */ 0x00,
    /* .format      = */ RR_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is32Bit |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_IsRegCopy |
                         S390OpProp_SetsOperand1
@@ -4063,7 +3871,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LTXBR,
    /* .name        = */ "LTXBR",
-   /* .description = */ "Load and Test (DFP64)",
+   /* .description = */ "LOAD AND TEST (extended BFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x42,
    /* .format      = */ RRE_FORMAT,
@@ -4071,6 +3879,7 @@
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_Is64Bit |
                         S390OpProp_IsRegCopy |
+                        S390OpProp_SetsCC |
                         S390OpProp_UsesRegPairForSource |
                         S390OpProp_UsesRegPairForTarget |
                         S390OpProp_SetsOperand1
@@ -4079,7 +3888,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LTXR,
    /* .name        = */ "LTXR",
-   /* .description = */ "Load and Test, extended HFP",
+   /* .description = */ "LOAD AND TEST (extended HFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x62,
    /* .format      = */ RRE_FORMAT,
@@ -4088,6 +3897,7 @@
                         S390OpProp_UsesRegPairForSource |
                         S390OpProp_UsesRegPairForTarget |
                         S390OpProp_IsCompare |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsCompareFlag |
                         S390OpProp_SetsOperand1
    },
@@ -4095,7 +3905,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LURA,
    /* .name        = */ "LURA",
-   /* .description = */ "Load Using Real Address",
+   /* .description = */ "LOAD USING REAL ADDRESS (32)",
    /* .opcode[0]   = */ 0xB2,
    /* .opcode[1]   = */ 0x4B,
    /* .format      = */ RRE_FORMAT,
@@ -4107,7 +3917,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LURAG,
    /* .name        = */ "LURAG",
-   /* .description = */ "Load Using Real Address",
+   /* .description = */ "LOAD USING REAL ADDRESS (64)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0x05,
    /* .format      = */ RRE_FORMAT,
@@ -4119,7 +3929,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LXD,
    /* .name        = */ "LXD",
-   /* .description = */ "Load Lengthened short to long HFP",
+   /* .description = */ "LOAD LENGTHENED (long to extended HFP)",
    /* .opcode[0]   = */ 0xED,
    /* .opcode[1]   = */ 0x25,
    /* .format      = */ RXE_FORMAT,
@@ -4133,7 +3943,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LXDB,
    /* .name        = */ "LXDB",
-   /* .description = */ "Load Lengthened (EB < LB)",
+   /* .description = */ "LOAD LENGTHENED (long to extended BFP)",
    /* .opcode[0]   = */ 0xED,
    /* .opcode[1]   = */ 0x05,
    /* .format      = */ RXE_FORMAT,
@@ -4148,7 +3958,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LXDBR,
    /* .name        = */ "LXDBR",
-   /* .description = */ "Load Leeeengthened (EB < DB)",
+   /* .description = */ "LOAD LENGTHENED (long to extended BFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x05,
    /* .format      = */ RRE_FORMAT,
@@ -4161,7 +3971,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LXDR,
    /* .name        = */ "LXDR",
-   /* .description = */ "Load Lengthened, long to extended HFP",
+   /* .description = */ "LOAD LENGTHENED (long to extended HFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x25,
    /* .format      = */ RRE_FORMAT,
@@ -4175,7 +3985,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LXE,
    /* .name        = */ "LXE",
-   /* .description = */ "Load Lengthened short to long HFP",
+   /* .description = */ "LOAD LENGTHENED (short to extended HFP)",
    /* .opcode[0]   = */ 0xED,
    /* .opcode[1]   = */ 0x26,
    /* .format      = */ RXE_FORMAT,
@@ -4189,7 +3999,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LXEB,
    /* .name        = */ "LXEB",
-   /* .description = */ "Load Lengthened (EB < SB)",
+   /* .description = */ "LOAD LENGTHENED (short to extended BFP)",
    /* .opcode[0]   = */ 0xED,
    /* .opcode[1]   = */ 0x06,
    /* .format      = */ RXE_FORMAT,
@@ -4203,7 +4013,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LXEBR,
    /* .name        = */ "LXEBR",
-   /* .description = */ "Load Leeeengthened (EB < SB)",
+   /* .description = */ "LOAD LENGTHENED (short to extended BFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x06,
    /* .format      = */ RRE_FORMAT,
@@ -4216,7 +4026,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LXER,
    /* .name        = */ "LXER",
-   /* .description = */ "Load Rounded, short to extended HFP",
+   /* .description = */ "LOAD LENGTHENED (short to extended HFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x26,
    /* .format      = */ RRE_FORMAT,
@@ -4229,7 +4039,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LXR,
    /* .name        = */ "LXR",
-   /* .description = */ "Load Leeeengthened (EB < SB)",
+   /* .description = */ "LOAD (extended)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x65,
    /* .format      = */ RRE_FORMAT,
@@ -4243,7 +4053,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LZDR,
    /* .name        = */ "LZDR",
-   /* .description = */ "Load Zero (L)",
+   /* .description = */ "LOAD ZERO (long)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x75,
    /* .format      = */ RRE_FORMAT,
@@ -4255,7 +4065,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LZER,
    /* .name        = */ "LZER",
-   /* .description = */ "Load Zero (S)",
+   /* .description = */ "LOAD ZERO (short)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x74,
    /* .format      = */ RRE_FORMAT,
@@ -4267,7 +4077,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LZXR,
    /* .name        = */ "LZXR",
-   /* .description = */ "Load Zero (EB)",
+   /* .description = */ "LOAD ZERO (extended)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x76,
    /* .format      = */ RRE_FORMAT,
@@ -4280,10 +4090,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::M,
    /* .name        = */ "M",
-   /* .description = */ "Multiply (64 < 32)",
+   /* .description = */ "MULTIPLY (64 <- 32)",
    /* .opcode[0]   = */ 0x5C,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ RX_FORMAT,
+   /* .format      = */ RXa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_UsesTarget |
@@ -4295,7 +4105,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MADB,
    /* .name        = */ "MADB",
-   /* .description = */ "Multiply and Add (LB)",
+   /* .description = */ "MULTIPLY AND ADD (long BFP)",
    /* .opcode[0]   = */ 0xED,
    /* .opcode[1]   = */ 0x1E,
    /* .format      = */ RXF_FORMAT,
@@ -4309,10 +4119,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MADBR,
    /* .name        = */ "MADBR",
-   /* .description = */ "Multiply and Add (LB)",
+   /* .description = */ "MULTIPLY AND ADD (long BFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x1E,
-   /* .format      = */ RRF_FORMAT,
+   /* .format      = */ RRD_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_UsesTarget |
@@ -4322,7 +4132,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MAEB,
    /* .name        = */ "MAEB",
-   /* .description = */ "Multiply and Add (SB)",
+   /* .description = */ "MULTIPLY AND ADD (short BFP)",
    /* .opcode[0]   = */ 0xED,
    /* .opcode[1]   = */ 0x0E,
    /* .format      = */ RXF_FORMAT,
@@ -4336,10 +4146,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MAEBR,
    /* .name        = */ "MAEBR",
-   /* .description = */ "Multiply and Add (SB)",
+   /* .description = */ "MULTIPLY AND ADD (short BFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x0E,
-   /* .format      = */ RRF_FORMAT,
+   /* .format      = */ RRD_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_SingleFP |
                         S390OpProp_UsesTarget |
@@ -4349,10 +4159,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MD,
    /* .name        = */ "MD",
-   /* .description = */ "Multiply, long HFP source and result",
+   /* .description = */ "MULTIPLY (long HFP)",
    /* .opcode[0]   = */ 0x6C,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ RX_FORMAT,
+   /* .format      = */ RXa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_UsesTarget |
@@ -4363,7 +4173,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MDB,
    /* .name        = */ "MDB",
-   /* .description = */ "Multiply (LB)",
+   /* .description = */ "MULTIPLY (long BFP)",
    /* .opcode[0]   = */ 0xED,
    /* .opcode[1]   = */ 0x1C,
    /* .format      = */ RXE_FORMAT,
@@ -4377,7 +4187,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MDBR,
    /* .name        = */ "MDBR",
-   /* .description = */ "Multiply (LB)",
+   /* .description = */ "MULTIPLY (long BFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x1C,
    /* .format      = */ RRE_FORMAT,
@@ -4390,10 +4200,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MDE,
    /* .name        = */ "MDE",
-   /* .description = */ "Multiply, short HFP source, long HFP result",
+   /* .description = */ "MULTIPLY (short to long HFP)",
    /* .opcode[0]   = */ 0x7C,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ RX_FORMAT,
+   /* .format      = */ RXa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_UsesTarget |
@@ -4404,7 +4214,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MDER,
    /* .name        = */ "MDER",
-   /* .description = */ "Multiply, short HFP source, long HFP result",
+   /* .description = */ "MULTIPLY (short to long HFP)",
    /* .opcode[0]   = */ 0x3C,
    /* .opcode[1]   = */ 0x00,
    /* .format      = */ RR_FORMAT,
@@ -4417,7 +4227,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MDR,
    /* .name        = */ "MDR",
-   /* .description = */ "Multiply, long HFP source and result",
+   /* .description = */ "MULTIPLY (long HFP)",
    /* .opcode[0]   = */ 0x2C,
    /* .opcode[1]   = */ 0x00,
    /* .format      = */ RR_FORMAT,
@@ -4430,7 +4240,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MEE,
    /* .name        = */ "MEE",
-   /* .description = */ "Multiply short HFP",
+   /* .description = */ "MULTIPLY (short HFP)",
    /* .opcode[0]   = */ 0xED,
    /* .opcode[1]   = */ 0x37,
    /* .format      = */ RXE_FORMAT,
@@ -4444,7 +4254,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MEEB,
    /* .name        = */ "MEEB",
-   /* .description = */ "Multiply (SB)",
+   /* .description = */ "MULTIPLY (short BFP)",
    /* .opcode[0]   = */ 0xED,
    /* .opcode[1]   = */ 0x17,
    /* .format      = */ RXE_FORMAT,
@@ -4458,7 +4268,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MEEBR,
    /* .name        = */ "MEEBR",
-   /* .description = */ "Multiply (SB)",
+   /* .description = */ "MULTIPLY (short BFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x17,
    /* .format      = */ RRE_FORMAT,
@@ -4471,7 +4281,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MEER,
    /* .name        = */ "MEER",
-   /* .description = */ "Multiply, short HFP source and result",
+   /* .description = */ "MULTIPLY (short HFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x37,
    /* .format      = */ RRE_FORMAT,
@@ -4484,10 +4294,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MGHI,
    /* .name        = */ "MGHI",
-   /* .description = */ "Multiply Halfword Immediate",
+   /* .description = */ "MULTIPLY HALFWORD IMMEDIATE (64 <- 16)",
    /* .opcode[0]   = */ 0xA7,
    /* .opcode[1]   = */ 0x0D,
-   /* .format      = */ RI_FORMAT,
+   /* .format      = */ RIa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_UsesTarget |
@@ -4497,10 +4307,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MH,
    /* .name        = */ "MH",
-   /* .description = */ "Multiply Halfword (32)",
+   /* .description = */ "MULTIPLY HALFWORD (32 <- 16)",
    /* .opcode[0]   = */ 0x4C,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ RX_FORMAT,
+   /* .format      = */ RXa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_UsesTarget |
@@ -4511,10 +4321,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MHI,
    /* .name        = */ "MHI",
-   /* .description = */ "Multiply Halfword Immediate (32)",
+   /* .description = */ "MULTIPLY HALFWORD IMMEDIATE (32 <- 16)",
    /* .opcode[0]   = */ 0xA7,
    /* .opcode[1]   = */ 0x0C,
-   /* .format      = */ RI_FORMAT,
+   /* .format      = */ RIa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_UsesTarget |
@@ -4524,7 +4334,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MLGR,
    /* .name        = */ "MLGR",
-   /* .description = */ "Multiply Logical ( 128<64 )",
+   /* .description = */ "MULTIPLY LOGICAL (128 <- 64)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0x86,
    /* .format      = */ RRE_FORMAT,
@@ -4538,7 +4348,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MLR,
    /* .name        = */ "MLR",
-   /* .description = */ "Multiply Logical ( 64<32 )",
+   /* .description = */ "MULTIPLY LOGICAL (64 <- 32)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0x96,
    /* .format      = */ RRE_FORMAT,
@@ -4552,10 +4362,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MP,
    /* .name        = */ "MP",
-   /* .description = */ "Multiple Decimal",
+   /* .description = */ "MULTIPLY DECIMAL",
    /* .opcode[0]   = */ 0xFC,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ SS_FORMAT,
+   /* .format      = */ SSb_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_IsLoad |
                         S390OpProp_IsStore |
@@ -4567,7 +4377,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MR,
    /* .name        = */ "MR",
-   /* .description = */ "Multiple (64 < 32)",
+   /* .description = */ "MULTIPLY (64 <- 32)",
    /* .opcode[0]   = */ 0x1C,
    /* .opcode[1]   = */ 0x00,
    /* .format      = */ RR_FORMAT,
@@ -4581,10 +4391,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MS,
    /* .name        = */ "MS",
-   /* .description = */ "Multiply Single",
+   /* .description = */ "MULTIPLY SINGLE (32)",
    /* .opcode[0]   = */ 0x71,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ RX_FORMAT,
+   /* .format      = */ RXa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_UsesTarget |
@@ -4596,7 +4406,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MSCH,
    /* .name        = */ "MSCH",
-   /* .description = */ "Modify Subchannel",
+   /* .description = */ "MODIFY SUBCHANNEL",
    /* .opcode[0]   = */ 0xB2,
    /* .opcode[1]   = */ 0x32,
    /* .format      = */ S_FORMAT,
@@ -4608,7 +4418,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MSDB,
    /* .name        = */ "MSDB",
-   /* .description = */ "Multiply and Subtract (LB)",
+   /* .description = */ "MULTIPLY AND SUBTRACT (long BFP)",
    /* .opcode[0]   = */ 0xED,
    /* .opcode[1]   = */ 0x1F,
    /* .format      = */ RXF_FORMAT,
@@ -4622,10 +4432,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MSDBR,
    /* .name        = */ "MSDBR",
-   /* .description = */ "Multiply and Subtract (LB)",
+   /* .description = */ "MULTIPLY AND SUBTRACT (long BFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x1F,
-   /* .format      = */ RRF_FORMAT,
+   /* .format      = */ RRD_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_UsesTarget |
@@ -4635,7 +4445,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MSEB,
    /* .name        = */ "MSEB",
-   /* .description = */ "Multiply and Subtract (SB)",
+   /* .description = */ "MULTIPLY AND SUBTRACT (short BFP)",
    /* .opcode[0]   = */ 0xED,
    /* .opcode[1]   = */ 0x0F,
    /* .format      = */ RXF_FORMAT,
@@ -4649,10 +4459,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MSEBR,
    /* .name        = */ "MSEBR",
-   /* .description = */ "Multiply and Subtract (SB)",
+   /* .description = */ "MULTIPLY AND SUBTRACT (short BFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x0F,
-   /* .format      = */ RRF_FORMAT,
+   /* .format      = */ RRD_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_SingleFP |
                         S390OpProp_UsesTarget |
@@ -4662,7 +4472,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MSGFR,
    /* .name        = */ "MSGFR",
-   /* .description = */ "Multiply Single (64 < 32)",
+   /* .description = */ "MULTIPLY SINGLE (64 <- 32)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0x1C,
    /* .format      = */ RRE_FORMAT,
@@ -4675,7 +4485,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MSGR,
    /* .name        = */ "MSGR",
-   /* .description = */ "Multiply Single (64)",
+   /* .description = */ "MULTIPLY SINGLE (64)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0x0C,
    /* .format      = */ RRE_FORMAT,
@@ -4688,7 +4498,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MSR,
    /* .name        = */ "MSR",
-   /* .description = */ "Multiply Single Register",
+   /* .description = */ "MULTIPLY SINGLE (32)",
    /* .opcode[0]   = */ 0xB2,
    /* .opcode[1]   = */ 0x52,
    /* .format      = */ RRE_FORMAT,
@@ -4701,7 +4511,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MSTA,
    /* .name        = */ "MSTA",
-   /* .description = */ "Modify Stacked State",
+   /* .description = */ "MODIFY STACKED STATE",
    /* .opcode[0]   = */ 0xB2,
    /* .opcode[1]   = */ 0x47,
    /* .format      = */ RRE_FORMAT,
@@ -4712,10 +4522,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MVC,
    /* .name        = */ "MVC",
-   /* .description = */ "Move (character)",
+   /* .description = */ "MOVE (character)",
    /* .opcode[0]   = */ 0xD2,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ SS1_FORMAT,
+   /* .format      = */ SSa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_IsLoad |
                         S390OpProp_IsStore |
@@ -4726,7 +4536,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MVCDK,
    /* .name        = */ "MVCDK",
-   /* .description = */ "Move With Destination Key",
+   /* .description = */ "MOVE WITH DESTINATION KEY",
    /* .opcode[0]   = */ 0xE5,
    /* .opcode[1]   = */ 0x0F,
    /* .format      = */ SSE_FORMAT,
@@ -4742,10 +4552,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MVCK,
    /* .name        = */ "MVCK",
-   /* .description = */ "Move With Key",
+   /* .description = */ "MOVE WITH KEY",
    /* .opcode[0]   = */ 0xD9,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ SS_FORMAT,
+   /* .format      = */ SSd_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_IsLoad |
                         S390OpProp_IsStore |
@@ -4757,7 +4567,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MVCL,
    /* .name        = */ "MVCL",
-   /* .description = */ "Move Long",
+   /* .description = */ "MOVE LONG",
    /* .opcode[0]   = */ 0x0E,
    /* .opcode[1]   = */ 0x00,
    /* .format      = */ RR_FORMAT,
@@ -4775,10 +4585,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MVCLE,
    /* .name        = */ "MVCLE",
-   /* .description = */ "Move Long Extended",
+   /* .description = */ "MOVE LONG EXTENDED",
    /* .opcode[0]   = */ 0xA8,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ RS_FORMAT,
+   /* .format      = */ RSa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_SetsCC |
                         S390OpProp_IsLoad |
@@ -4793,10 +4603,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MVCP,
    /* .name        = */ "MVCP",
-   /* .description = */ "Move to Primary",
+   /* .description = */ "MOVE TO PRIMARY",
    /* .opcode[0]   = */ 0xDA,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ SS_FORMAT,
+   /* .format      = */ SSd_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_IsLoad |
                         S390OpProp_IsStore |
@@ -4808,10 +4618,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MVCS,
    /* .name        = */ "MVCS",
-   /* .description = */ "Move to Secondary",
+   /* .description = */ "MOVE TO SECONDARY",
    /* .opcode[0]   = */ 0xDB,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ SS_FORMAT,
+   /* .format      = */ SSd_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_IsLoad |
                         S390OpProp_IsStore |
@@ -4823,7 +4633,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MVCSK,
    /* .name        = */ "MVCSK",
-   /* .description = */ "Move With Source Key",
+   /* .description = */ "MOVE WITH SOURCE KEY",
    /* .opcode[0]   = */ 0xE5,
    /* .opcode[1]   = */ 0x0E,
    /* .format      = */ SSE_FORMAT,
@@ -4839,7 +4649,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MVI,
    /* .name        = */ "MVI",
-   /* .description = */ "Move (Immediate)",
+   /* .description = */ "MOVE (immediate)",
    /* .opcode[0]   = */ 0x92,
    /* .opcode[1]   = */ 0x00,
    /* .format      = */ SI_FORMAT,
@@ -4852,10 +4662,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MVN,
    /* .name        = */ "MVN",
-   /* .description = */ "Move Numerics",
+   /* .description = */ "MOVE NUMERICS",
    /* .opcode[0]   = */ 0xD1,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ SS_FORMAT,
+   /* .format      = */ SSa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_IsLoad |
                         S390OpProp_IsStore |
@@ -4866,10 +4676,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MVO,
    /* .name        = */ "MVO",
-   /* .description = */ "Move With Offset",
+   /* .description = */ "MOVE WITH OFFSET",
    /* .opcode[0]   = */ 0xF1,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ SS_FORMAT,
+   /* .format      = */ SSb_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_IsLoad |
                         S390OpProp_IsStore |
@@ -4880,7 +4690,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MVST,
    /* .name        = */ "MVST",
-   /* .description = */ "Move String",
+   /* .description = */ "MOVE STRING",
    /* .opcode[0]   = */ 0xB2,
    /* .opcode[1]   = */ 0x55,
    /* .format      = */ RRE_FORMAT,
@@ -4897,10 +4707,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MVZ,
    /* .name        = */ "MVZ",
-   /* .description = */ "Move Zones",
+   /* .description = */ "MOVE ZONES",
    /* .opcode[0]   = */ 0xD3,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ SS_FORMAT,
+   /* .format      = */ SSa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_IsLoad |
                         S390OpProp_IsStore |
@@ -4911,7 +4721,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MXBR,
    /* .name        = */ "MXBR",
-   /* .description = */ "Multiply (EB)",
+   /* .description = */ "MULTIPLY (extended BFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x4C,
    /* .format      = */ RRE_FORMAT,
@@ -4926,10 +4736,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MXD,
    /* .name        = */ "MXD",
-   /* .description = */ "Multiply, long HFP source, extended HFP result",
+   /* .description = */ "MULTIPLY (long to extended HFP)",
    /* .opcode[0]   = */ 0x67,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ RX_FORMAT,
+   /* .format      = */ RXa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_UsesRegPairForTarget |
@@ -4940,7 +4750,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MXDR,
    /* .name        = */ "MXDR",
-   /* .description = */ "Multiply, long HFP source, extended HFP result",
+   /* .description = */ "MULTIPLY (long to extended HFP)",
    /* .opcode[0]   = */ 0x27,
    /* .opcode[1]   = */ 0x00,
    /* .format      = */ RR_FORMAT,
@@ -4953,7 +4763,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MXR,
    /* .name        = */ "MXR",
-   /* .description = */ "Multiply, extended HFP source and result",
+   /* .description = */ "MULTIPLY (extended HFP)",
    /* .opcode[0]   = */ 0x26,
    /* .opcode[1]   = */ 0x00,
    /* .format      = */ RR_FORMAT,
@@ -4967,13 +4777,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::N,
    /* .name        = */ "N",
-   /* .description = */ "And (32)",
+   /* .description = */ "AND (32)",
    /* .opcode[0]   = */ 0x54,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ RX_FORMAT,
+   /* .format      = */ RXa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_IsLoad |
                         S390OpProp_LongDispSupported |
@@ -4983,12 +4794,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::NC,
    /* .name        = */ "NC",
-   /* .description = */ "And (character)",
+   /* .description = */ "AND (character)",
    /* .opcode[0]   = */ 0xD4,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ SS1_FORMAT,
+   /* .format      = */ SSa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_IsLoad |
                         S390OpProp_IsStore |
@@ -4999,13 +4811,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::NGR,
    /* .name        = */ "NGR",
-   /* .description = */ "And (64)",
+   /* .description = */ "AND (64)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0x80,
    /* .format      = */ RRE_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_SetsOperand1
    },
@@ -5013,12 +4826,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::NI,
    /* .name        = */ "NI",
-   /* .description = */ "And (Immediate)",
+   /* .description = */ "AND (immediate)",
    /* .opcode[0]   = */ 0x94,
    /* .opcode[1]   = */ 0x00,
    /* .format      = */ SI_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_IsStore |
                         S390OpProp_IsLoad |
@@ -5029,10 +4843,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::NIHH,
    /* .name        = */ "NIHH",
-   /* .description = */ "And Immediate (high high)",
+   /* .description = */ "AND IMMEDIATE (high high)",
    /* .opcode[0]   = */ 0xA5,
    /* .opcode[1]   = */ 0x04,
-   /* .format      = */ RI_FORMAT,
+   /* .format      = */ RIa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_TargetHW |
                         S390OpProp_UsesTarget |
@@ -5043,10 +4857,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::NIHL,
    /* .name        = */ "NIHL",
-   /* .description = */ "And Immediate (high low)",
+   /* .description = */ "AND IMMEDIATE (high low)",
    /* .opcode[0]   = */ 0xA5,
    /* .opcode[1]   = */ 0x05,
-   /* .format      = */ RI_FORMAT,
+   /* .format      = */ RIa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_TargetHW |
                         S390OpProp_UsesTarget |
@@ -5057,10 +4871,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::NILH,
    /* .name        = */ "NILH",
-   /* .description = */ "And Immediate (low high)",
+   /* .description = */ "AND IMMEDIATE (low high)",
    /* .opcode[0]   = */ 0xA5,
    /* .opcode[1]   = */ 0x06,
-   /* .format      = */ RI_FORMAT,
+   /* .format      = */ RIa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_UsesTarget |
                         S390OpProp_SetsCC |
@@ -5070,10 +4884,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::NILL,
    /* .name        = */ "NILL",
-   /* .description = */ "And Immediate (low low)",
+   /* .description = */ "AND IMMEDIATE (low low)",
    /* .opcode[0]   = */ 0xA5,
    /* .opcode[1]   = */ 0x07,
-   /* .format      = */ RI_FORMAT,
+   /* .format      = */ RIa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_UsesTarget |
                         S390OpProp_SetsCC |
@@ -5094,13 +4908,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::NR,
    /* .name        = */ "NR",
-   /* .description = */ "And (32)",
+   /* .description = */ "AND (32)",
    /* .opcode[0]   = */ 0x14,
    /* .opcode[1]   = */ 0x00,
    /* .format      = */ RR_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_SetsOperand1
    },
@@ -5108,13 +4923,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::O,
    /* .name        = */ "O",
-   /* .description = */ "Or (32)",
+   /* .description = */ "OR (32)",
    /* .opcode[0]   = */ 0x56,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ RX_FORMAT,
+   /* .format      = */ RXa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_IsLoad |
                         S390OpProp_LongDispSupported |
@@ -5124,12 +4940,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::OC,
    /* .name        = */ "OC",
-   /* .description = */ "Or (character)",
+   /* .description = */ "OR (character)",
    /* .opcode[0]   = */ 0xD6,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ SS1_FORMAT,
+   /* .format      = */ SSa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_IsLoad |
                         S390OpProp_IsStore |
@@ -5140,13 +4957,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::OGR,
    /* .name        = */ "OGR",
-   /* .description = */ "Or (64)",
+   /* .description = */ "OR (64)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0x81,
    /* .format      = */ RRE_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_SetsOperand1
    },
@@ -5154,12 +4972,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::OI,
    /* .name        = */ "OI",
-   /* .description = */ "Or (Immediate)",
+   /* .description = */ "OR (immediate)",
    /* .opcode[0]   = */ 0x96,
    /* .opcode[1]   = */ 0x00,
    /* .format      = */ SI_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_IsStore |
                         S390OpProp_IsLoad |
@@ -5170,10 +4989,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::OIHH,
    /* .name        = */ "OIHH",
-   /* .description = */ "Or Immediate (high high)",
+   /* .description = */ "OR IMMEDIATE (high high)",
    /* .opcode[0]   = */ 0xA5,
    /* .opcode[1]   = */ 0x08,
-   /* .format      = */ RI_FORMAT,
+   /* .format      = */ RIa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_TargetHW |
                         S390OpProp_UsesTarget |
@@ -5184,10 +5003,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::OIHL,
    /* .name        = */ "OIHL",
-   /* .description = */ "Or Immediate (high low)",
+   /* .description = */ "OR IMMEDIATE (high low)",
    /* .opcode[0]   = */ 0xA5,
    /* .opcode[1]   = */ 0x09,
-   /* .format      = */ RI_FORMAT,
+   /* .format      = */ RIa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_TargetHW |
                         S390OpProp_UsesTarget |
@@ -5198,10 +5017,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::OILH,
    /* .name        = */ "OILH",
-   /* .description = */ "Or Immediate (low high)",
+   /* .description = */ "OR IMMEDIATE (low high)",
    /* .opcode[0]   = */ 0xA5,
    /* .opcode[1]   = */ 0x0A,
-   /* .format      = */ RI_FORMAT,
+   /* .format      = */ RIa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_UsesTarget |
                         S390OpProp_SetsCC |
@@ -5211,10 +5030,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::OILL,
    /* .name        = */ "OILL",
-   /* .description = */ "Or Immediate (low low)",
+   /* .description = */ "OR IMMEDIATE (low low)",
    /* .opcode[0]   = */ 0xA5,
    /* .opcode[1]   = */ 0x0B,
-   /* .format      = */ RI_FORMAT,
+   /* .format      = */ RIa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_UsesTarget |
                         S390OpProp_SetsCC |
@@ -5224,13 +5043,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::OR,
    /* .name        = */ "OR",
-   /* .description = */ "Or (32)",
+   /* .description = */ "OR (32)",
    /* .opcode[0]   = */ 0x16,
    /* .opcode[1]   = */ 0x00,
    /* .format      = */ RR_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_SetsOperand1
    },
@@ -5238,10 +5058,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::PACK,
    /* .name        = */ "PACK",
-   /* .description = */ "Pack",
+   /* .description = */ "PACK",
    /* .opcode[0]   = */ 0xF2,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ SS_FORMAT,
+   /* .format      = */ SSb_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_IsLoad |
                         S390OpProp_IsStore |
@@ -5252,7 +5072,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::PALB,
    /* .name        = */ "PALB",
-   /* .description = */ "Purge ALB",
+   /* .description = */ "PURGE ALB",
    /* .opcode[0]   = */ 0xB2,
    /* .opcode[1]   = */ 0x48,
    /* .format      = */ RRE_FORMAT,
@@ -5263,22 +5083,23 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::PC,
    /* .name        = */ "PC",
-   /* .description = */ "Program Call",
+   /* .description = */ "PROGRAM CALL",
    /* .opcode[0]   = */ 0xB2,
    /* .opcode[1]   = */ 0x18,
    /* .format      = */ S_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
-   /* .properties  = */ S390OpProp_ImplicitlySetsGPR3 |
+   /* .properties  = */ S390OpProp_BranchOp |
+                        S390OpProp_ImplicitlySetsGPR3 |
                         S390OpProp_ImplicitlySetsGPR4
    },
 
    {
    /* .mnemonic    = */ OMR::InstOpCode::PKA,
    /* .name        = */ "PKA",
-   /* .description = */ "Pack ASCII",
+   /* .description = */ "PACK ASCII",
    /* .opcode[0]   = */ 0xE9,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ SS_FORMAT,
+   /* .format      = */ SSf_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_IsLoad |
                         S390OpProp_IsStore |
@@ -5289,10 +5110,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::PKU,
    /* .name        = */ "PKU",
-   /* .description = */ "Pack Unicode",
+   /* .description = */ "PACK UNICODE",
    /* .opcode[0]   = */ 0xE1,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ SS_FORMAT,
+   /* .format      = */ SSf_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_IsLoad |
                         S390OpProp_IsStore |
@@ -5303,10 +5124,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::PLO,
    /* .name        = */ "PLO",
-   /* .description = */ "Perform Locked Operation",
+   /* .description = */ "PERFORM LOCKED OPERATION",
    /* .opcode[0]   = */ 0xEE,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ SS_FORMAT,
+   /* .format      = */ SSe_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_ImplicitlyUsesGPR1 |
                         S390OpProp_ImplicitlyUsesGPR0 |
@@ -5323,29 +5144,29 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::PR,
    /* .name        = */ "PR",
-   /* .description = */ "Program Return",
+   /* .description = */ "PROGRAM RETURN",
    /* .opcode[0]   = */ 0x01,
    /* .opcode[1]   = */ 0x01,
    /* .format      = */ E_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
-   /* .properties  = */ S390OpProp_None
+   /* .properties  = */ S390OpProp_BranchOp
    },
 
    {
    /* .mnemonic    = */ OMR::InstOpCode::PT,
    /* .name        = */ "PT",
-   /* .description = */ "Program Transfer",
+   /* .description = */ "PROGRAM TRANSFER",
    /* .opcode[0]   = */ 0xB2,
    /* .opcode[1]   = */ 0x28,
    /* .format      = */ RRE_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
-   /* .properties  = */ S390OpProp_None
+   /* .properties  = */ S390OpProp_BranchOp
    },
 
    {
    /* .mnemonic    = */ OMR::InstOpCode::RCHP,
    /* .name        = */ "RCHP",
-   /* .description = */ "Reset Channel Path",
+   /* .description = */ "RESET CHANNEL PATH",
    /* .opcode[0]   = */ 0xB2,
    /* .opcode[1]   = */ 0x3B,
    /* .format      = */ S_FORMAT,
@@ -5357,7 +5178,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::RSCH,
    /* .name        = */ "RSCH",
-   /* .description = */ "Resume Subchannel",
+   /* .description = */ "RESUME SUBCHANNEL",
    /* .opcode[0]   = */ 0xB2,
    /* .opcode[1]   = */ 0x38,
    /* .format      = */ S_FORMAT,
@@ -5369,13 +5190,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::S,
    /* .name        = */ "S",
-   /* .description = */ "Subtract (32)",
+   /* .description = */ "SUBTRACT (32)",
    /* .opcode[0]   = */ 0x5B,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ RX_FORMAT,
+   /* .format      = */ RXa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOverflowFlag |
                         S390OpProp_IsLoad |
@@ -5386,7 +5208,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SAC,
    /* .name        = */ "SAC",
-   /* .description = */ "Set Address Control",
+   /* .description = */ "SET ADDRESS SPACE CONTROL",
    /* .opcode[0]   = */ 0xB2,
    /* .opcode[1]   = */ 0x19,
    /* .format      = */ S_FORMAT,
@@ -5397,7 +5219,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SAL,
    /* .name        = */ "SAL",
-   /* .description = */ "Set Address Limit",
+   /* .description = */ "SET ADDRESS LIMIT",
    /* .opcode[0]   = */ 0xB2,
    /* .opcode[1]   = */ 0x37,
    /* .format      = */ S_FORMAT,
@@ -5408,7 +5230,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SAM24,
    /* .name        = */ "SAM24",
-   /* .description = */ "Set 24 bit addressing mode",
+   /* .description = */ "SET ADDRESSING MODE (24)",
    /* .opcode[0]   = */ 0x01,
    /* .opcode[1]   = */ 0x0C,
    /* .format      = */ E_FORMAT,
@@ -5419,7 +5241,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SAM31,
    /* .name        = */ "SAM31",
-   /* .description = */ "Set 31 bit addressing mode",
+   /* .description = */ "SET ADDRESSING MODE (31)",
    /* .opcode[0]   = */ 0x01,
    /* .opcode[1]   = */ 0x0D,
    /* .format      = */ E_FORMAT,
@@ -5430,7 +5252,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SAM64,
    /* .name        = */ "SAM64",
-   /* .description = */ "Set 64 bit addressing mode",
+   /* .description = */ "SET ADDRESSING MODE (64)",
    /* .opcode[0]   = */ 0x01,
    /* .opcode[1]   = */ 0x0E,
    /* .format      = */ E_FORMAT,
@@ -5441,7 +5263,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SAR,
    /* .name        = */ "SAR",
-   /* .description = */ "Set Access Register",
+   /* .description = */ "SET ACCESS",
    /* .opcode[0]   = */ 0xB2,
    /* .opcode[1]   = */ 0x4E,
    /* .format      = */ RRE_FORMAT,
@@ -5452,7 +5274,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SCHM,
    /* .name        = */ "SCHM",
-   /* .description = */ "Set Channel Monitor",
+   /* .description = */ "SET CHANNEL MONITOR",
    /* .opcode[0]   = */ 0xB2,
    /* .opcode[1]   = */ 0x3C,
    /* .format      = */ S_FORMAT,
@@ -5465,7 +5287,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SCK,
    /* .name        = */ "SCK",
-   /* .description = */ "Set Clock",
+   /* .description = */ "SET CLOCK",
    /* .opcode[0]   = */ 0xB2,
    /* .opcode[1]   = */ 0x04,
    /* .format      = */ S_FORMAT,
@@ -5477,7 +5299,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SCKC,
    /* .name        = */ "SCKC",
-   /* .description = */ "Set Clock Comparator",
+   /* .description = */ "SET CLOCK COMPARATOR",
    /* .opcode[0]   = */ 0xB2,
    /* .opcode[1]   = */ 0x06,
    /* .format      = */ S_FORMAT,
@@ -5488,13 +5310,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SD,
    /* .name        = */ "SD",
-   /* .description = */ "Subtract Normalized,long HFP",
+   /* .description = */ "SUBTRACT NORMALIZED (long HFP)",
    /* .opcode[0]   = */ 0x6B,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ RX_FORMAT,
+   /* .format      = */ RXa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_IsLoad |
                         S390OpProp_SetsOperand1
@@ -5503,13 +5326,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SDB,
    /* .name        = */ "SDB",
-   /* .description = */ "Subtract (LB)",
+   /* .description = */ "SUBTRACT (long BFP)",
    /* .opcode[0]   = */ 0xED,
    /* .opcode[1]   = */ 0x1B,
    /* .format      = */ RXE_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_IsLoad |
                         S390OpProp_SetsOperand1
@@ -5518,13 +5342,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SDBR,
    /* .name        = */ "SDBR",
-   /* .description = */ "Subtract (LB)",
+   /* .description = */ "SUBTRACT (long BFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x1B,
    /* .format      = */ RRE_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOperand1
    },
@@ -5532,13 +5357,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SDR,
    /* .name        = */ "SDR",
-   /* .description = */ "Subtract Normalized,long HFP",
+   /* .description = */ "SUBTRACT NORMALIZED (long HFP)",
    /* .opcode[0]   = */ 0x2B,
    /* .opcode[1]   = */ 0x00,
    /* .format      = */ RR_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOperand1
    },
@@ -5546,13 +5372,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SE,
    /* .name        = */ "SE",
-   /* .description = */ "Subtract Normalized,short HFP",
+   /* .description = */ "SUBTRACT NORMALIZED (short HFP)",
    /* .opcode[0]   = */ 0x7B,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ RX_FORMAT,
+   /* .format      = */ RXa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_SingleFP |
                         S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_IsLoad |
                         S390OpProp_SetsOperand1
@@ -5561,13 +5388,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SEB,
    /* .name        = */ "SEB",
-   /* .description = */ "Subtract (SB)",
+   /* .description = */ "SUBTRACT (short BFP)",
    /* .opcode[0]   = */ 0xED,
    /* .opcode[1]   = */ 0x0B,
    /* .format      = */ RXE_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_SingleFP |
                         S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_IsLoad |
                         S390OpProp_SetsOperand1
@@ -5576,13 +5404,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SEBR,
    /* .name        = */ "SEBR",
-   /* .description = */ "Subtract (SB)",
+   /* .description = */ "SUBTRACT (short BFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x0B,
    /* .format      = */ RRE_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_SingleFP |
                         S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOperand1
    },
@@ -5590,13 +5419,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SER,
    /* .name        = */ "SER",
-   /* .description = */ "Subtract Normalized,short HFP",
+   /* .description = */ "SUBTRACT NORMALIZED (short HFP)",
    /* .opcode[0]   = */ 0x3B,
    /* .opcode[1]   = */ 0x00,
    /* .format      = */ RR_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_SingleFP |
                         S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOperand1
    },
@@ -5604,7 +5434,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SFPC,
    /* .name        = */ "SFPC",
-   /* .description = */ "Set FPC",
+   /* .description = */ "SET FPC",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x84,
    /* .format      = */ RRE_FORMAT,
@@ -5616,13 +5446,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SGFR,
    /* .name        = */ "SGFR",
-   /* .description = */ "Subtract (64 < 32)",
+   /* .description = */ "SUBTRACT (64 <- 32)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0x19,
    /* .format      = */ RRE_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is32To64Bit |
                         S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOverflowFlag |
                         S390OpProp_SetsOperand1
@@ -5631,13 +5462,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SGR,
    /* .name        = */ "SGR",
-   /* .description = */ "Subtract (64)",
+   /* .description = */ "SUBTRACT (64)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0x09,
    /* .format      = */ RRE_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOverflowFlag |
                         S390OpProp_SetsOperand1
@@ -5646,13 +5478,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SH,
    /* .name        = */ "SH",
-   /* .description = */ "Subtract Halfword",
+   /* .description = */ "SUBTRACT HALFWORD (32 <- 16)",
    /* .opcode[0]   = */ 0x4B,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ RX_FORMAT,
+   /* .format      = */ RXa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOverflowFlag |
                         S390OpProp_IsLoad |
@@ -5663,25 +5496,27 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SIGP,
    /* .name        = */ "SIGP",
-   /* .description = */ "Signal Processor",
+   /* .description = */ "SIGNAL PROCESSOR",
    /* .opcode[0]   = */ 0xAE,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ RS_FORMAT,
+   /* .format      = */ RSa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_UsesRegPairForTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsOperand1
    },
 
    {
    /* .mnemonic    = */ OMR::InstOpCode::SL,
    /* .name        = */ "SL",
-   /* .description = */ "Subtract Logical (32)",
+   /* .description = */ "SUBTRACT LOGICAL (32)",
    /* .opcode[0]   = */ 0x5F,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ RX_FORMAT,
+   /* .format      = */ RXa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_IsLoad |
                         S390OpProp_LongDispSupported |
@@ -5691,13 +5526,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SLA,
    /* .name        = */ "SLA",
-   /* .description = */ "Shift Left Single (32)",
+   /* .description = */ "SHIFT LEFT SINGLE (32)",
    /* .opcode[0]   = */ 0x8B,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ RS_FORMAT,
+   /* .format      = */ RSa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOverflowFlag |
                         S390OpProp_SetsOperand1
@@ -5706,13 +5542,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SLBGR,
    /* .name        = */ "SLBGR",
-   /* .description = */ "Subtract Logical With Borrow (64)",
+   /* .description = */ "SUBTRACT LOGICAL WITH BORROW (64)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0x89,
    /* .format      = */ RRE_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_ReadsCC |
                         S390OpProp_SetsOperand1
@@ -5721,13 +5558,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SLBR,
    /* .name        = */ "SLBR",
-   /* .description = */ "Subtract Logical With Borrow (32)",
+   /* .description = */ "SUBTRACT LOGICAL WITH BORROW (32)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0x99,
    /* .format      = */ RRE_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_ReadsCC |
                         S390OpProp_SetsOperand1
@@ -5736,12 +5574,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SLDA,
    /* .name        = */ "SLDA",
-   /* .description = */ "Shift Left Double",
+   /* .description = */ "SHIFT LEFT DOUBLE (64)",
    /* .opcode[0]   = */ 0x8F,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ RS_FORMAT,
+   /* .format      = */ RSa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOverflowFlag |
                         S390OpProp_UsesRegPairForTarget |
@@ -5751,10 +5590,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SLDL,
    /* .name        = */ "SLDL",
-   /* .description = */ "Shift Left Double Logical",
+   /* .description = */ "SHIFT LEFT DOUBLE LOGICAL (64)",
    /* .opcode[0]   = */ 0x8D,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ RS_FORMAT,
+   /* .format      = */ RSa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_UsesTarget |
                         S390OpProp_UsesRegPairForTarget |
@@ -5764,13 +5603,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SLGFR,
    /* .name        = */ "SLGFR",
-   /* .description = */ "Subtract Logical (64 < 32)",
+   /* .description = */ "SUBTRACT LOGICAL (64 <- 32)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0x1B,
    /* .format      = */ RRE_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is32To64Bit |
                         S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_SetsOperand1
    },
@@ -5778,13 +5618,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SLGR,
    /* .name        = */ "SLGR",
-   /* .description = */ "Subtract Logical (64)",
+   /* .description = */ "SUBTRACT LOGICAL (64)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0x0B,
    /* .format      = */ RRE_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_SetsOperand1
    },
@@ -5792,10 +5633,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SLL,
    /* .name        = */ "SLL",
-   /* .description = */ "Shift Left Single Logical",
+   /* .description = */ "SHIFT LEFT SINGLE LOGICAL (32)",
    /* .opcode[0]   = */ 0x89,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ RS_FORMAT,
+   /* .format      = */ RSa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_UsesTarget |
@@ -5805,13 +5646,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SLR,
    /* .name        = */ "SLR",
-   /* .description = */ "Subtract Logical (32)",
+   /* .description = */ "SUBTRACT LOGICAL (32)",
    /* .opcode[0]   = */ 0x1F,
    /* .opcode[1]   = */ 0x00,
    /* .format      = */ RR_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_SetsOperand1
    },
@@ -5819,12 +5661,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SP,
    /* .name        = */ "SP",
-   /* .description = */ "Subtract Decimal",
+   /* .description = */ "SUBTRACT DECIMAL",
    /* .opcode[0]   = */ 0xFB,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ SS_FORMAT,
+   /* .format      = */ SSb_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
-   /* .properties  = */ S390OpProp_SetsOverflowFlag |
+   /* .properties  = */ S390OpProp_SetsCC |
+                        S390OpProp_SetsOverflowFlag |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_UsesTarget |
                         S390OpProp_IsLoad |
@@ -5836,7 +5679,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SPKA,
    /* .name        = */ "SPKA",
-   /* .description = */ "Set PSW Key From Address",
+   /* .description = */ "SET PSW KEY FROM ADDRESS",
    /* .opcode[0]   = */ 0xB2,
    /* .opcode[1]   = */ 0x0A,
    /* .format      = */ S_FORMAT,
@@ -5847,7 +5690,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SPM,
    /* .name        = */ "SPM",
-   /* .description = */ "Set Program Mask",
+   /* .description = */ "SET PROGRAM MASK",
    /* .opcode[0]   = */ 0x04,
    /* .opcode[1]   = */ 0x00,
    /* .format      = */ RR_FORMAT,
@@ -5858,7 +5701,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SPT,
    /* .name        = */ "SPT",
-   /* .description = */ "Set CPU Timer",
+   /* .description = */ "SET CPU TIMER",
    /* .opcode[0]   = */ 0xB2,
    /* .opcode[1]   = */ 0x08,
    /* .format      = */ S_FORMAT,
@@ -5869,7 +5712,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SPX,
    /* .name        = */ "SPX",
-   /* .description = */ "Set Prefix",
+   /* .description = */ "SET PREFIX",
    /* .opcode[0]   = */ 0xB2,
    /* .opcode[1]   = */ 0x10,
    /* .format      = */ S_FORMAT,
@@ -5880,7 +5723,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SQD,
    /* .name        = */ "SQD",
-   /* .description = */ "Square Root Long HFP",
+   /* .description = */ "SQUARE ROOT (long HFP)",
    /* .opcode[0]   = */ 0xED,
    /* .opcode[1]   = */ 0x35,
    /* .format      = */ RXE_FORMAT,
@@ -5892,7 +5735,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SQDB,
    /* .name        = */ "SQDB",
-   /* .description = */ "Square Root Long BFP",
+   /* .description = */ "SQUARE ROOT (long BFP)",
    /* .opcode[0]   = */ 0xED,
    /* .opcode[1]   = */ 0x15,
    /* .format      = */ RXE_FORMAT,
@@ -5904,7 +5747,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SQDBR,
    /* .name        = */ "SQDBR",
-   /* .description = */ "Square Root Long BFP",
+   /* .description = */ "SQUARE ROOT (long BFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x15,
    /* .format      = */ RRE_FORMAT,
@@ -5916,7 +5759,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SQDR,
    /* .name        = */ "SQDR",
-   /* .description = */ "Square Root Long HFP",
+   /* .description = */ "SQUARE ROOT (long HFP)",
    /* .opcode[0]   = */ 0xB2,
    /* .opcode[1]   = */ 0x44,
    /* .format      = */ RRE_FORMAT,
@@ -5928,7 +5771,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SQE,
    /* .name        = */ "SQE",
-   /* .description = */ "Square Root short HFP",
+   /* .description = */ "SQUARE ROOT (short HFP)",
    /* .opcode[0]   = */ 0xED,
    /* .opcode[1]   = */ 0x34,
    /* .format      = */ RXE_FORMAT,
@@ -5940,7 +5783,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SQEB,
    /* .name        = */ "SQEB",
-   /* .description = */ "Square Root Long BFP",
+   /* .description = */ "SQUARE ROOT (short BFP)",
    /* .opcode[0]   = */ 0xED,
    /* .opcode[1]   = */ 0x14,
    /* .format      = */ RXE_FORMAT,
@@ -5952,7 +5795,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SQEBR,
    /* .name        = */ "SQEBR",
-   /* .description = */ "Square Root Long BFP",
+   /* .description = */ "SQUARE ROOT (short BFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x14,
    /* .format      = */ RRE_FORMAT,
@@ -5964,7 +5807,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SQER,
    /* .name        = */ "SQER",
-   /* .description = */ "Square Root short HFP",
+   /* .description = */ "SQUARE ROOT (short HFP)",
    /* .opcode[0]   = */ 0xB2,
    /* .opcode[1]   = */ 0x45,
    /* .format      = */ RRE_FORMAT,
@@ -5976,7 +5819,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SQXBR,
    /* .name        = */ "SQXBR",
-   /* .description = */ "Square Root (EB)",
+   /* .description = */ "SQUARE ROOT (extended BFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x16,
    /* .format      = */ RRE_FORMAT,
@@ -5990,7 +5833,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SQXR,
    /* .name        = */ "SQXR",
-   /* .description = */ "Square Root extended HFP",
+   /* .description = */ "SQUARE ROOT (extended HFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x36,
    /* .format      = */ RRE_FORMAT,
@@ -6003,13 +5846,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SR,
    /* .name        = */ "SR",
-   /* .description = */ "Subtract (32)",
+   /* .description = */ "SUBTRACT (32)",
    /* .opcode[0]   = */ 0x1B,
    /* .opcode[1]   = */ 0x00,
    /* .format      = */ RR_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOverflowFlag |
                         S390OpProp_SetsOperand1
@@ -6018,13 +5862,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SRA,
    /* .name        = */ "SRA",
-   /* .description = */ "Shift Right Single (32)",
+   /* .description = */ "SHIFT RIGHT SINGLE (32)",
    /* .opcode[0]   = */ 0x8A,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ RS_FORMAT,
+   /* .format      = */ RSa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOperand1
    },
@@ -6032,12 +5877,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SRDA,
    /* .name        = */ "SRDA",
-   /* .description = */ "Shift Right Double",
+   /* .description = */ "SHIFT RIGHT DOUBLE (64)",
    /* .opcode[0]   = */ 0x8E,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ RS_FORMAT,
+   /* .format      = */ RSa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_UsesRegPairForTarget |
                         S390OpProp_SetsOperand1
@@ -6046,10 +5892,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SRDL,
    /* .name        = */ "SRDL",
-   /* .description = */ "Shift Right Double Logical",
+   /* .description = */ "SHIFT RIGHT DOUBLE LOGICAL (64)",
    /* .opcode[0]   = */ 0x8C,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ RS_FORMAT,
+   /* .format      = */ RSa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_UsesTarget |
                         S390OpProp_UsesRegPairForTarget |
@@ -6059,10 +5905,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SRL,
    /* .name        = */ "SRL",
-   /* .description = */ "Shift Right Single Logical",
+   /* .description = */ "SHIFT RIGHT SINGLE LOGICAL (32)",
    /* .opcode[0]   = */ 0x88,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ RS_FORMAT,
+   /* .format      = */ RSa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_UsesTarget |
@@ -6072,7 +5918,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SRNM,
    /* .name        = */ "SRNM",
-   /* .description = */ "Set BFP Rounding Mode",
+   /* .description = */ "SET BFP ROUNDING MODE (2 bit)",
    /* .opcode[0]   = */ 0xB2,
    /* .opcode[1]   = */ 0x99,
    /* .format      = */ S_FORMAT,
@@ -6083,10 +5929,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SRP,
    /* .name        = */ "SRP",
-   /* .description = */ "Shift and Round Decimal",
+   /* .description = */ "SHIFT AND ROUND DECIMAL",
    /* .opcode[0]   = */ 0xF0,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ SS_FORMAT,
+   /* .format      = */ SSc_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_SetsCC |
                         S390OpProp_IsLoad |
@@ -6098,7 +5944,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SRST,
    /* .name        = */ "SRST",
-   /* .description = */ "Search String",
+   /* .description = */ "SEARCH STRING",
    /* .opcode[0]   = */ 0xB2,
    /* .opcode[1]   = */ 0x5E,
    /* .format      = */ RRE_FORMAT,
@@ -6114,7 +5960,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SSAR,
    /* .name        = */ "SSAR",
-   /* .description = */ "Set Secondary ASN",
+   /* .description = */ "SET SECONDARY ASN",
    /* .opcode[0]   = */ 0xB2,
    /* .opcode[1]   = */ 0x25,
    /* .format      = */ RRE_FORMAT,
@@ -6125,7 +5971,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SSCH,
    /* .name        = */ "SSCH",
-   /* .description = */ "Start Subchannel",
+   /* .description = */ "START SUBCHANNEL",
    /* .opcode[0]   = */ 0xB2,
    /* .opcode[1]   = */ 0x33,
    /* .format      = */ S_FORMAT,
@@ -6137,10 +5983,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SSM,
    /* .name        = */ "SSM",
-   /* .description = */ "Set System Mask",
+   /* .description = */ "SET SYSTEM MASK",
    /* .opcode[0]   = */ 0x80,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ S_FORMAT,
+   /* .format      = */ SI_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_IsLoad
    },
@@ -6148,10 +5994,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::ST,
    /* .name        = */ "ST",
-   /* .description = */ "Store (32)",
+   /* .description = */ "STORE (32)",
    /* .opcode[0]   = */ 0x50,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ RX_FORMAT,
+   /* .format      = */ RXa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_IsStore |
                         S390OpProp_Is32Bit |
@@ -6162,10 +6008,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::STAM,
    /* .name        = */ "STAM",
-   /* .description = */ "Set Access Multiple",
+   /* .description = */ "STORE ACCESS MULTIPLE",
    /* .opcode[0]   = */ 0x9B,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ RS_FORMAT,
+   /* .format      = */ RSa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_IsStore |
                         S390OpProp_LongDispSupported |
@@ -6175,7 +6021,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::STAP,
    /* .name        = */ "STAP",
-   /* .description = */ "Store CPU Address",
+   /* .description = */ "STORE CPU ADDRESS",
    /* .opcode[0]   = */ 0xB2,
    /* .opcode[1]   = */ 0x12,
    /* .format      = */ S_FORMAT,
@@ -6187,10 +6033,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::STC,
    /* .name        = */ "STC",
-   /* .description = */ "Store Character",
+   /* .description = */ "STORE CHARACTER",
    /* .opcode[0]   = */ 0x42,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ RX_FORMAT,
+   /* .format      = */ RXa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_IsStore |
@@ -6201,7 +6047,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::STCK,
    /* .name        = */ "STCK",
-   /* .description = */ "Store Clock",
+   /* .description = */ "STORE CLOCK",
    /* .opcode[0]   = */ 0xB2,
    /* .opcode[1]   = */ 0x05,
    /* .format      = */ S_FORMAT,
@@ -6214,7 +6060,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::STCKC,
    /* .name        = */ "STCKC",
-   /* .description = */ "Store Clock Comparator",
+   /* .description = */ "STORE CLOCK COMPARATOR",
    /* .opcode[0]   = */ 0xB2,
    /* .opcode[1]   = */ 0x07,
    /* .format      = */ S_FORMAT,
@@ -6226,9 +6072,9 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::STCKE,
    /* .name        = */ "STCKE",
-   /* .description = */ "Store Clock Extended",
+   /* .description = */ "STORE CLOCK EXTENDED",
    /* .opcode[0]   = */ 0xB2,
-   /* .opcode[1]   = */ 0x05,
+   /* .opcode[1]   = */ 0x78,
    /* .format      = */ S_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_SetsCC |
@@ -6239,10 +6085,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::STCM,
    /* .name        = */ "STCM",
-   /* .description = */ "Store Character under Mask (low)",
+   /* .description = */ "STORE CHARACTERS UNDER MASK (low)",
    /* .opcode[0]   = */ 0xBE,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ RS_FORMAT,
+   /* .format      = */ RSb_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_IsStore |
@@ -6253,20 +6099,19 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::STCPS,
    /* .name        = */ "STCPS",
-   /* .description = */ "Store Channel Path Status",
+   /* .description = */ "STORE CHANNEL PATH STATUS",
    /* .opcode[0]   = */ 0xB2,
    /* .opcode[1]   = */ 0x3A,
    /* .format      = */ S_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
-   /* .properties  = */ S390OpProp_SetsCC |
-                        S390OpProp_IsStore |
+   /* .properties  = */ S390OpProp_IsStore |
                         S390OpProp_SetsOperand1
    },
 
    {
    /* .mnemonic    = */ OMR::InstOpCode::STCRW,
    /* .name        = */ "STCRW",
-   /* .description = */ "Store Channel Report Word",
+   /* .description = */ "STORE CHANNEL REPORT WORD",
    /* .opcode[0]   = */ 0xB2,
    /* .opcode[1]   = */ 0x39,
    /* .format      = */ S_FORMAT,
@@ -6279,10 +6124,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::STCTL,
    /* .name        = */ "STCTL",
-   /* .description = */ "Store Control",
+   /* .description = */ "STORE CONTROL (32)",
    /* .opcode[0]   = */ 0xB6,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ RS_FORMAT,
+   /* .format      = */ RSa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_IsStore |
                         S390OpProp_Is32Bit |
@@ -6292,10 +6137,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::STD,
    /* .name        = */ "STD",
-   /* .description = */ "Store (S)",
+   /* .description = */ "STORE (long)",
    /* .opcode[0]   = */ 0x60,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ RX_FORMAT,
+   /* .format      = */ RXa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_IsStore |
                         S390OpProp_SingleFP |
@@ -6305,10 +6150,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::STE,
    /* .name        = */ "STE",
-   /* .description = */ "Store (L)",
+   /* .description = */ "STORE (short)",
    /* .opcode[0]   = */ 0x70,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ RX_FORMAT,
+   /* .format      = */ RXa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_IsStore |
                         S390OpProp_DoubleFP |
@@ -6318,7 +6163,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::STFPC,
    /* .name        = */ "STFPC",
-   /* .description = */ "Store FPC",
+   /* .description = */ "STORE FPC",
    /* .opcode[0]   = */ 0xB2,
    /* .opcode[1]   = */ 0x9C,
    /* .format      = */ S_FORMAT,
@@ -6330,10 +6175,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::STH,
    /* .name        = */ "STH",
-   /* .description = */ "Store Halfword",
+   /* .description = */ "STORE HALFWORD (16)",
    /* .opcode[0]   = */ 0x40,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ RX_FORMAT,
+   /* .format      = */ RXa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_IsStore |
@@ -6344,7 +6189,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::STIDP,
    /* .name        = */ "STIDP",
-   /* .description = */ "Store CPU ID",
+   /* .description = */ "STORE CPU ID",
    /* .opcode[0]   = */ 0xB2,
    /* .opcode[1]   = */ 0x02,
    /* .format      = */ S_FORMAT,
@@ -6356,10 +6201,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::STM,
    /* .name        = */ "STM",
-   /* .description = */ "Store Multiple (32)",
+   /* .description = */ "STORE MULTIPLE (32)",
    /* .opcode[0]   = */ 0x90,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ RS_FORMAT,
+   /* .format      = */ RSa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_IsStore |
                         S390OpProp_Is32Bit |
@@ -6371,7 +6216,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::STNSM,
    /* .name        = */ "STNSM",
-   /* .description = */ "Store Then and System Mask",
+   /* .description = */ "STORE THEN AND SYSTEM MASK",
    /* .opcode[0]   = */ 0xAC,
    /* .opcode[1]   = */ 0x00,
    /* .format      = */ SI_FORMAT,
@@ -6383,7 +6228,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::STOSM,
    /* .name        = */ "STOSM",
-   /* .description = */ "Store Then or System Mask",
+   /* .description = */ "STORE THEN OR SYSTEM MASK",
    /* .opcode[0]   = */ 0xAD,
    /* .opcode[1]   = */ 0x00,
    /* .format      = */ SI_FORMAT,
@@ -6395,7 +6240,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::STPT,
    /* .name        = */ "STPT",
-   /* .description = */ "Store CPU Timer",
+   /* .description = */ "STORE CPU TIMER",
    /* .opcode[0]   = */ 0xB2,
    /* .opcode[1]   = */ 0x09,
    /* .format      = */ S_FORMAT,
@@ -6407,7 +6252,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::STPX,
    /* .name        = */ "STPX",
-   /* .description = */ "Store Prefix",
+   /* .description = */ "STORE PREFIX",
    /* .opcode[0]   = */ 0xB2,
    /* .opcode[1]   = */ 0x11,
    /* .format      = */ S_FORMAT,
@@ -6419,7 +6264,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::STRAG,
    /* .name        = */ "STRAG",
-   /* .description = */ "Store Real Address",
+   /* .description = */ "STORE REAL ADDRESS",
    /* .opcode[0]   = */ 0xE5,
    /* .opcode[1]   = */ 0x02,
    /* .format      = */ SSE_FORMAT,
@@ -6433,7 +6278,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::STSCH,
    /* .name        = */ "STSCH",
-   /* .description = */ "Store Subchannel",
+   /* .description = */ "STORE SUBCHANNEL",
    /* .opcode[0]   = */ 0xB2,
    /* .opcode[1]   = */ 0x34,
    /* .format      = */ S_FORMAT,
@@ -6447,7 +6292,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::STURA,
    /* .name        = */ "STURA",
-   /* .description = */ "Store Using Real Address",
+   /* .description = */ "STORE USING REAL ADDRESS (32)",
    /* .opcode[0]   = */ 0xB2,
    /* .opcode[1]   = */ 0x46,
    /* .format      = */ RRE_FORMAT,
@@ -6458,7 +6303,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::STURG,
    /* .name        = */ "STURG",
-   /* .description = */ "Store Using Real Address",
+   /* .description = */ "STORE USING REAL ADDRESS (64)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0x25,
    /* .format      = */ RRE_FORMAT,
@@ -6469,14 +6314,15 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SU,
    /* .name        = */ "SU",
-   /* .description = */ "Subtract Unnormalized,short HFP",
+   /* .description = */ "SUBTRACT UNNORMALIZED (short HFP)",
    /* .opcode[0]   = */ 0x7F,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ RX_FORMAT,
+   /* .format      = */ RXa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_SingleFP |
                         S390OpProp_UsesTarget |
                         S390OpProp_IsLoad |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOperand1
    },
@@ -6484,13 +6330,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SUR,
    /* .name        = */ "SUR",
-   /* .description = */ "Subtract Unnormalized,short HFP",
+   /* .description = */ "SUBTRACT UNNORMALIZED (short HFP)",
    /* .opcode[0]   = */ 0x3F,
    /* .opcode[1]   = */ 0x00,
    /* .format      = */ RR_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_SingleFP |
                         S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOperand1
    },
@@ -6498,7 +6345,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SVC,
    /* .name        = */ "SVC",
-   /* .description = */ "Supervisor Call",
+   /* .description = */ "SUPERVISOR CALL",
    /* .opcode[0]   = */ 0x0A,
    /* .opcode[1]   = */ 0x00,
    /* .format      = */ I_FORMAT,
@@ -6509,14 +6356,15 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SW,
    /* .name        = */ "SW",
-   /* .description = */ "Subtract Unnormalized,long HFP",
+   /* .description = */ "SUBTRACT UNNORMALIZED (long HFP)",
    /* .opcode[0]   = */ 0x6F,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ RX_FORMAT,
+   /* .format      = */ RXa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_UsesTarget |
                         S390OpProp_IsLoad |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOperand1
    },
@@ -6524,13 +6372,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SWR,
    /* .name        = */ "SWR",
-   /* .description = */ "Subtract Unnormalized,long HFP",
+   /* .description = */ "SUBTRACT UNNORMALIZED (long HFP)",
    /* .opcode[0]   = */ 0x2F,
    /* .opcode[1]   = */ 0x00,
    /* .format      = */ RR_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOperand1
    },
@@ -6538,7 +6387,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SXBR,
    /* .name        = */ "SXBR",
-   /* .description = */ "Subtract (EB)",
+   /* .description = */ "SUBTRACT (extended BFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x4B,
    /* .format      = */ RRE_FORMAT,
@@ -6546,6 +6395,7 @@
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_UsesRegPairForSource |
                         S390OpProp_UsesRegPairForTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOperand1 |
                         S390OpProp_UsesTarget
@@ -6554,7 +6404,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SXR,
    /* .name        = */ "SXR",
-   /* .description = */ "Subtract Normalized, extended HFP",
+   /* .description = */ "SUBTRACT NORMALIZED (extended HFP)",
    /* .opcode[0]   = */ 0x37,
    /* .opcode[1]   = */ 0x00,
    /* .format      = */ RR_FORMAT,
@@ -6562,6 +6412,7 @@
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_UsesRegPairForSource |
                         S390OpProp_UsesRegPairForTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOperand1
    },
@@ -6569,18 +6420,18 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::TAM,
    /* .name        = */ "TAM",
-   /* .description = */ "Test addressing mode",
+   /* .description = */ "TEST ADDRESSING MODE",
    /* .opcode[0]   = */ 0x01,
    /* .opcode[1]   = */ 0x0B,
    /* .format      = */ E_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
-   /* .properties  = */ S390OpProp_None
+   /* .properties  = */ S390OpProp_SetsCC
    },
 
    {
    /* .mnemonic    = */ OMR::InstOpCode::TAR,
    /* .name        = */ "TAR",
-   /* .description = */ "Test Access",
+   /* .description = */ "TEST ACCESS",
    /* .opcode[0]   = */ 0xB2,
    /* .opcode[1]   = */ 0x4C,
    /* .format      = */ RRE_FORMAT,
@@ -6591,10 +6442,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::TBDR,
    /* .name        = */ "TBDR",
-   /* .description = */ "Convert HFP to BFP,long HFP,long BFP",
+   /* .description = */ "CONVERT HFP TO BFP (long)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x51,
-   /* .format      = */ RRF_FORMAT,
+   /* .format      = */ RRFe_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_UsesTarget |
@@ -6605,10 +6456,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::TBEDR,
    /* .name        = */ "TBEDR",
-   /* .description = */ "Convert HFP to BFP,long HFP,short BFP",
+   /* .description = */ "CONVERT HFP TO BFP (long to short)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x50,
-   /* .format      = */ RRF_FORMAT,
+   /* .format      = */ RRFe_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_SingleFP |
                         S390OpProp_DoubleFP |
@@ -6620,7 +6471,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::TCDB,
    /* .name        = */ "TCDB",
-   /* .description = */ "Test Data Class (LB)",
+   /* .description = */ "TEST DATA CLASS (long BFP)",
    /* .opcode[0]   = */ 0xED,
    /* .opcode[1]   = */ 0x11,
    /* .format      = */ RXE_FORMAT,
@@ -6632,7 +6483,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::TCEB,
    /* .name        = */ "TCEB",
-   /* .description = */ "Test Data Class (SB)",
+   /* .description = */ "TEST DATA CLASS (short BFP)",
    /* .opcode[0]   = */ 0xED,
    /* .opcode[1]   = */ 0x10,
    /* .format      = */ RXE_FORMAT,
@@ -6644,7 +6495,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::TCXB,
    /* .name        = */ "TCXB",
-   /* .description = */ "Test Data Class (EB)",
+   /* .description = */ "TEST DATA CLASS (extended BFP)",
    /* .opcode[0]   = */ 0xED,
    /* .opcode[1]   = */ 0x12,
    /* .format      = */ RXE_FORMAT,
@@ -6657,10 +6508,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::THDER,
    /* .name        = */ "THDER",
-   /* .description = */ "Convert BFP to HFP,short BFP,long HFP",
+   /* .description = */ "CONVERT BFP TO HFP (short to long)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x58,
-   /* .format      = */ RR_FORMAT,
+   /* .format      = */ RRE_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_SingleFP |
                         S390OpProp_DoubleFP |
@@ -6672,10 +6523,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::THDR,
    /* .name        = */ "THDR",
-   /* .description = */ "Convert BFP to HFP,long BFP,long HFP",
+   /* .description = */ "CONVERT BFP TO HFP (long)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x59,
-   /* .format      = */ RR_FORMAT,
+   /* .format      = */ RRE_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_UsesTarget |
@@ -6686,7 +6537,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::TM,
    /* .name        = */ "TM",
-   /* .description = */ "Test under Mask",
+   /* .description = */ "TEST UNDER MASK",
    /* .opcode[0]   = */ 0x91,
    /* .opcode[1]   = */ 0x00,
    /* .format      = */ SI_FORMAT,
@@ -6699,10 +6550,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::TMH,
    /* .name        = */ "TMH",
-   /* .description = */ "Test under Mask",
+   /* .description = */ "TEST UNDER MASK HIGH",
    /* .opcode[0]   = */ 0xA7,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ RI_FORMAT,
+   /* .format      = */ RIa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_SetsCC
    },
@@ -6710,10 +6561,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::TMHH,
    /* .name        = */ "TMHH",
-   /* .description = */ "Test under Mask",
+   /* .description = */ "TEST UNDER MASK (high high)",
    /* .opcode[0]   = */ 0xA7,
    /* .opcode[1]   = */ 0x02,
-   /* .format      = */ RI_FORMAT,
+   /* .format      = */ RIa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_SetsCC |
                         S390OpProp_TargetHW
@@ -6722,10 +6573,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::TMHL,
    /* .name        = */ "TMHL",
-   /* .description = */ "Test under Mask",
+   /* .description = */ "TEST UNDER MASK (high low)",
    /* .opcode[0]   = */ 0xA7,
    /* .opcode[1]   = */ 0x03,
-   /* .format      = */ RI_FORMAT,
+   /* .format      = */ RIa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_SetsCC |
                         S390OpProp_TargetHW
@@ -6734,10 +6585,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::TML,
    /* .name        = */ "TML",
-   /* .description = */ "Test under Mask",
+   /* .description = */ "TEST UNDER MASK LOW",
    /* .opcode[0]   = */ 0xA7,
    /* .opcode[1]   = */ 0x01,
-   /* .format      = */ RI_FORMAT,
+   /* .format      = */ RIa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_SetsCC
    },
@@ -6745,10 +6596,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::TMLH,
    /* .name        = */ "TMLH",
-   /* .description = */ "Test under Mask",
+   /* .description = */ "TEST UNDER MASK (low high)",
    /* .opcode[0]   = */ 0xA7,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ RI_FORMAT,
+   /* .format      = */ RIa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_SetsCC
    },
@@ -6756,10 +6607,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::TMLL,
    /* .name        = */ "TMLL",
-   /* .description = */ "Test under Mask",
+   /* .description = */ "TEST UNDER MASK (low low)",
    /* .opcode[0]   = */ 0xA7,
    /* .opcode[1]   = */ 0x01,
-   /* .format      = */ RI_FORMAT,
+   /* .format      = */ RIa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_SetsCC
    },
@@ -6767,10 +6618,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::TP,
    /* .name        = */ "TP",
-   /* .description = */ "Test Decimal",
+   /* .description = */ "TEST DECIMAL",
    /* .opcode[0]   = */ 0xEB,
    /* .opcode[1]   = */ 0xC0,
-   /* .format      = */ RSL_FORMAT,
+   /* .format      = */ RSLa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_SetsCC |
                         S390OpProp_IsLoad |
@@ -6780,7 +6631,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::TPI,
    /* .name        = */ "TPI",
-   /* .description = */ "Test Pending Interruption",
+   /* .description = */ "TEST PENDING INTERRUPTION",
    /* .opcode[0]   = */ 0xB2,
    /* .opcode[1]   = */ 0x36,
    /* .format      = */ S_FORMAT,
@@ -6793,7 +6644,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::TPROT,
    /* .name        = */ "TPROT",
-   /* .description = */ "Test Protection",
+   /* .description = */ "TEST PROTECTION",
    /* .opcode[0]   = */ 0xE5,
    /* .opcode[1]   = */ 0x01,
    /* .format      = */ SSE_FORMAT,
@@ -6806,10 +6657,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::TR,
    /* .name        = */ "TR",
-   /* .description = */ "Translate",
+   /* .description = */ "TRANSLATE",
    /* .opcode[0]   = */ 0xDC,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ SS1_FORMAT,
+   /* .format      = */ SSa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_UsesTarget |
                         S390OpProp_IsLoad |
@@ -6821,7 +6672,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::TRE,
    /* .name        = */ "TRE",
-   /* .description = */ "Translate Extended",
+   /* .description = */ "TRANSLATE EXTENDED",
    /* .opcode[0]   = */ 0xB2,
    /* .opcode[1]   = */ 0xA5,
    /* .format      = */ RRE_FORMAT,
@@ -6837,10 +6688,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::TRT,
    /* .name        = */ "TRT",
-   /* .description = */ "Translate and Test",
+   /* .description = */ "TRANSLATE AND TEST",
    /* .opcode[0]   = */ 0xDD,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ SS1_FORMAT,
+   /* .format      = */ SSa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_ImplicitlySetsGPR2 |
                         S390OpProp_ImplicitlySetsGPR1 |
@@ -6852,10 +6703,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::TS,
    /* .name        = */ "TS",
-   /* .description = */ "Test and Set",
+   /* .description = */ "TEST AND SET",
    /* .opcode[0]   = */ 0x93,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ S_FORMAT,
+   /* .format      = */ SI_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_SetsCC |
                         S390OpProp_IsLoad |
@@ -6866,7 +6717,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::TSCH,
    /* .name        = */ "TSCH",
-   /* .description = */ "Test Subchannel",
+   /* .description = */ "TEST SUBCHANNEL",
    /* .opcode[0]   = */ 0xB2,
    /* .opcode[1]   = */ 0x35,
    /* .format      = */ S_FORMAT,
@@ -6880,10 +6731,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::UNPK,
    /* .name        = */ "UNPK",
-   /* .description = */ "Unpack",
+   /* .description = */ "UNPACK",
    /* .opcode[0]   = */ 0xF3,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ SS_FORMAT,
+   /* .format      = */ SSb_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_IsLoad |
                         S390OpProp_IsStore |
@@ -6894,10 +6745,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::UNPKA,
    /* .name        = */ "UNPKA",
-   /* .description = */ "Unpack ASCII",
+   /* .description = */ "UNPACK ASCII",
    /* .opcode[0]   = */ 0xEA,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ SS_FORMAT,
+   /* .format      = */ SSa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_IsLoad |
                         S390OpProp_IsStore |
@@ -6909,10 +6760,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::UNPKU,
    /* .name        = */ "UNPKU",
-   /* .description = */ "Unpack Unicode",
+   /* .description = */ "UNPACK UNICODE",
    /* .opcode[0]   = */ 0xE2,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ SS_FORMAT,
+   /* .format      = */ SSa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_IsLoad |
                         S390OpProp_IsStore |
@@ -6924,7 +6775,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::UPT,
    /* .name        = */ "UPT",
-   /* .description = */ "Update Tree",
+   /* .description = */ "UPDATE TREE",
    /* .opcode[0]   = */ 0x01,
    /* .opcode[1]   = */ 0x02,
    /* .format      = */ E_FORMAT,
@@ -6943,13 +6794,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::X,
    /* .name        = */ "X",
-   /* .description = */ "Exclusive Or (32)",
+   /* .description = */ "EXCLUSIVE OR (32)",
    /* .opcode[0]   = */ 0x57,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ RX_FORMAT,
+   /* .format      = */ RXa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_IsLoad |
                         S390OpProp_LongDispSupported |
@@ -6959,12 +6811,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::XC,
    /* .name        = */ "XC",
-   /* .description = */ "Exclusive Or (character)",
+   /* .description = */ "EXCLUSIVE OR (character)",
    /* .opcode[0]   = */ 0xD7,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ SS1_FORMAT,
+   /* .format      = */ SSa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_IsLoad |
                         S390OpProp_IsStore |
@@ -6975,13 +6828,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::XGR,
    /* .name        = */ "XGR",
-   /* .description = */ "Exclusive Or (64)",
+   /* .description = */ "EXCLUSIVE OR (64)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0x82,
    /* .format      = */ RRE_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_SetsOperand1
    },
@@ -6989,12 +6843,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::XI,
    /* .name        = */ "XI",
-   /* .description = */ "Exclusive Or (immediate)",
+   /* .description = */ "EXCLUSIVE OR (immediate)",
    /* .opcode[0]   = */ 0x97,
    /* .opcode[1]   = */ 0x00,
    /* .format      = */ SI_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_IsLoad |
                         S390OpProp_IsStore |
@@ -7005,13 +6860,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::XR,
    /* .name        = */ "XR",
-   /* .description = */ "Exclusive Or (32)",
+   /* .description = */ "EXCLUSIVE OR (32)",
    /* .opcode[0]   = */ 0x17,
    /* .opcode[1]   = */ 0x00,
    /* .format      = */ RR_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_SetsOperand1
    },
@@ -7019,12 +6875,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::ZAP,
    /* .name        = */ "ZAP",
-   /* .description = */ "Zero and Add",
+   /* .description = */ "ZERO AND ADD",
    /* .opcode[0]   = */ 0xF8,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ SS_FORMAT,
+   /* .format      = */ SSb_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z900,
-   /* .properties  = */ S390OpProp_SetsOverflowFlag |
+   /* .properties  = */ S390OpProp_SetsCC |
+                        S390OpProp_SetsOverflowFlag |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_IsLoad |
                         S390OpProp_IsStore |
@@ -7035,12 +6892,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::AG,
    /* .name        = */ "AG",
-   /* .description = */ "(LongDisp) Add (64)",
+   /* .description = */ "ADD (64)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x08,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_Is64Bit |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOverflowFlag |
                         S390OpProp_UsesTarget |
@@ -7052,12 +6910,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::AGF,
    /* .name        = */ "AGF",
-   /* .description = */ "(LongDisp) Add (64 < 32)",
+   /* .description = */ "ADD (64 <- 32)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x18,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_Is32To64Bit |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOverflowFlag |
                         S390OpProp_UsesTarget |
@@ -7069,12 +6928,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::AHY,
    /* .name        = */ "AHY",
-   /* .description = */ "(LongDisp) Add Halfword",
+   /* .description = */ "ADD HALFWORD (32 <- 16)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x7A,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_Is32Bit |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOverflowFlag |
                         S390OpProp_UsesTarget |
@@ -7087,12 +6947,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::ALC,
    /* .name        = */ "ALC",
-   /* .description = */ "(LongDisp) Add Logical with Carry (32)",
+   /* .description = */ "ADD LOGICAL WITH CARRY (32)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x98,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_Is32Bit |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_UsesTarget |
                         S390OpProp_IsLoad |
@@ -7104,12 +6965,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::ALCG,
    /* .name        = */ "ALCG",
-   /* .description = */ "(LongDisp) Add Logical with Carry (64)",
+   /* .description = */ "ADD LOGICAL WITH CARRY (64)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x88,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_Is64Bit |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_UsesTarget |
                         S390OpProp_IsLoad |
@@ -7121,12 +6983,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::ALG,
    /* .name        = */ "ALG",
-   /* .description = */ "(LongDisp) Add Logical (64)",
+   /* .description = */ "ADD LOGICAL (64)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x0A,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_Is64Bit |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_UsesTarget |
                         S390OpProp_IsLoad |
@@ -7137,12 +7000,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::ALGF,
    /* .name        = */ "ALGF",
-   /* .description = */ "(LongDisp) Add Logical (64 < 32)",
+   /* .description = */ "ADD LOGICAL (64 <- 32)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x1A,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_Is32To64Bit |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_UsesTarget |
                         S390OpProp_IsLoad |
@@ -7153,12 +7017,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::ALY,
    /* .name        = */ "ALY",
-   /* .description = */ "(LongDisp) Add Logical",
+   /* .description = */ "ADD LOGICAL (32)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x5E,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_Is32Bit |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_UsesTarget |
                         S390OpProp_IsLoad |
@@ -7169,12 +7034,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::AY,
    /* .name        = */ "AY",
-   /* .description = */ "(LongDisp) Add",
+   /* .description = */ "ADD (32)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x5A,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_Is32Bit |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOverflowFlag |
                         S390OpProp_UsesTarget |
@@ -7186,10 +7052,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::BCTG,
    /* .name        = */ "BCTG",
-   /* .description = */ "(LongDisp) Branch on Count (64)",
+   /* .description = */ "BRANCH ON COUNT (64)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x46,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_BranchOp |
                         S390OpProp_Is64Bit |
@@ -7202,10 +7068,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::BXHG,
    /* .name        = */ "BXHG",
-   /* .description = */ "(LongDisp) Branch on Index High",
+   /* .description = */ "BRANCH ON INDEX HIGH (64)",
    /* .opcode[0]   = */ 0xEB,
    /* .opcode[1]   = */ 0x44,
-   /* .format      = */ RSY_FORMAT,
+   /* .format      = */ RSYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_BranchOp |
                         S390OpProp_Is64Bit |
@@ -7218,10 +7084,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::BXLEG,
    /* .name        = */ "BXLEG",
-   /* .description = */ "(LongDisp) Branch on Index Low or Equ. (64)",
+   /* .description = */ "BRANCH ON INDEX LOW OR EQUAL (64)",
    /* .opcode[0]   = */ 0xEB,
    /* .opcode[1]   = */ 0x45,
-   /* .format      = */ RSY_FORMAT,
+   /* .format      = */ RSYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_BranchOp |
                         S390OpProp_Is64Bit |
@@ -7234,12 +7100,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CDSG,
    /* .name        = */ "CDSG",
-   /* .description = */ "Compare Double and Swap",
+   /* .description = */ "COMPARE DOUBLE AND SWAP (64)",
    /* .opcode[0]   = */ 0xEB,
    /* .opcode[1]   = */ 0x3E,
-   /* .format      = */ RSY_FORMAT,
+   /* .format      = */ RSYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_IsCompare |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsCompareFlag |
                         S390OpProp_IsLoad |
                         S390OpProp_IsStore |
@@ -7255,13 +7122,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CDSY,
    /* .name        = */ "CDSY",
-   /* .description = */ "Compare Double and Swap",
+   /* .description = */ "COMPARE DOUBLE AND SWAP (32)",
    /* .opcode[0]   = */ 0xEB,
    /* .opcode[1]   = */ 0x31,
-   /* .format      = */ RSY_FORMAT,
+   /* .format      = */ RSYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_IsCompare |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsCompareFlag |
                         S390OpProp_IsLoad |
                         S390OpProp_IsStore |
@@ -7277,13 +7145,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CG,
    /* .name        = */ "CG",
-   /* .description = */ "(LongDisp) Compare (64)",
+   /* .description = */ "COMPARE (64)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x20,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_IsCompare |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsCompareFlag |
                         S390OpProp_IsLoad |
                         S390OpProp_LongDispSupported
@@ -7292,13 +7161,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CGF,
    /* .name        = */ "CGF",
-   /* .description = */ "(LongDisp) Compare (64 < 32)",
+   /* .description = */ "COMPARE (64 <- 32)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x30,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_Is32To64Bit |
                         S390OpProp_IsCompare |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsCompareFlag |
                         S390OpProp_IsLoad |
                         S390OpProp_LongDispSupported
@@ -7307,13 +7177,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CHY,
    /* .name        = */ "CHY",
-   /* .description = */ "(LongDisp) Compare Halfword",
+   /* .description = */ "COMPARE HALFWORD (32 <- 16)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x79,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_IsCompare |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsCompareFlag |
                         S390OpProp_IsLoad |
                         S390OpProp_LongDispSupported
@@ -7322,12 +7193,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CLCLU,
    /* .name        = */ "CLCLU",
-   /* .description = */ "Compare Logical Long Unicode",
+   /* .description = */ "COMPARE LOGICAL LONG UNICODE",
    /* .opcode[0]   = */ 0xEB,
    /* .opcode[1]   = */ 0x8F,
-   /* .format      = */ RSY_FORMAT,
+   /* .format      = */ RSYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_IsCompare |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsCompareFlag |
                         S390OpProp_IsLoad |
                         S390OpProp_UsesRegPairForTarget |
@@ -7340,13 +7212,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CLG,
    /* .name        = */ "CLG",
-   /* .description = */ "(LongDisp) Compare Logical (64)",
+   /* .description = */ "COMPARE LOGICAL (64)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x21,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_IsCompare |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsCompareFlag |
                         S390OpProp_IsLoad |
                         S390OpProp_LongDispSupported
@@ -7355,13 +7228,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CLGF,
    /* .name        = */ "CLGF",
-   /* .description = */ "(LongDisp) Compare Logical (64 < 32)",
+   /* .description = */ "COMPARE LOGICAL (64 <- 32)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x31,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_Is32To64Bit |
                         S390OpProp_IsCompare |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsCompareFlag |
                         S390OpProp_IsLoad |
                         S390OpProp_LongDispSupported
@@ -7370,12 +7244,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CLIY,
    /* .name        = */ "CLIY",
-   /* .description = */ "Compare Logical Immediate",
+   /* .description = */ "COMPARE LOGICAL (immediate)",
    /* .opcode[0]   = */ 0xEB,
    /* .opcode[1]   = */ 0x55,
    /* .format      = */ SIY_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_IsCompare |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsCompareFlag |
                         S390OpProp_IsLoad |
                         S390OpProp_LongDispSupported
@@ -7384,13 +7259,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CLMH,
    /* .name        = */ "CLMH",
-   /* .description = */ "Compare Logical Characters under Mask High",
+   /* .description = */ "COMPARE LOGICAL CHAR. UNDER MASK (high)",
    /* .opcode[0]   = */ 0xEB,
    /* .opcode[1]   = */ 0x20,
-   /* .format      = */ RSY_FORMAT,
+   /* .format      = */ RSYb_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_IsCompare |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsCompareFlag |
                         S390OpProp_IsLoad |
                         S390OpProp_LongDispSupported |
@@ -7400,13 +7276,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CLMY,
    /* .name        = */ "CLMY",
-   /* .description = */ "Compare Logical Characters under Mask Y Form",
+   /* .description = */ "COMPARE LOGICAL CHAR. UNDER MASK (low)",
    /* .opcode[0]   = */ 0xEB,
    /* .opcode[1]   = */ 0x21,
-   /* .format      = */ RSY_FORMAT,
+   /* .format      = */ RSYb_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_IsCompare |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsCompareFlag |
                         S390OpProp_IsLoad |
                         S390OpProp_LongDispSupported
@@ -7415,13 +7292,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CLY,
    /* .name        = */ "CLY",
-   /* .description = */ "(LongDisp) Compare Logical (32)",
+   /* .description = */ "COMPARE LOGICAL (32)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x55,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_IsCompare |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsCompareFlag |
                         S390OpProp_IsLoad |
                         S390OpProp_LongDispSupported |
@@ -7431,13 +7309,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CSG,
    /* .name        = */ "CSG",
-   /* .description = */ "(LongDisp) Compare and Swap (64)",
+   /* .description = */ "COMPARE AND SWAP (64)",
    /* .opcode[0]   = */ 0xEB,
    /* .opcode[1]   = */ 0x30,
-   /* .format      = */ RSY_FORMAT,
+   /* .format      = */ RSYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_IsCompare |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsCompareFlag |
                         S390OpProp_IsLoad |
                         S390OpProp_IsStore |
@@ -7451,13 +7330,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CSY,
    /* .name        = */ "CSY",
-   /* .description = */ "(LongDisp) Compare and Swap (32)",
+   /* .description = */ "COMPARE AND SWAP (32)",
    /* .opcode[0]   = */ 0xEB,
    /* .opcode[1]   = */ 0x14,
-   /* .format      = */ RSY_FORMAT,
+   /* .format      = */ RSYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_IsCompare |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsCompareFlag |
                         S390OpProp_IsLoad |
                         S390OpProp_IsStore |
@@ -7471,10 +7351,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CVBG,
    /* .name        = */ "CVBG",
-   /* .description = */ "Convert to Binary",
+   /* .description = */ "CONVERT TO BINARY (64)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x0E,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_IsLoad |
                         S390OpProp_Is64Bit |
@@ -7484,10 +7364,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CVBY,
    /* .name        = */ "CVBY",
-   /* .description = */ "(LongDisp) Convert to Binary",
+   /* .description = */ "CONVERT TO BINARY (32)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x06,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_IsLoad |
                         S390OpProp_LongDispSupported |
@@ -7497,10 +7377,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CVDG,
    /* .name        = */ "CVDG",
-   /* .description = */ "Convert to Decimal (64)",
+   /* .description = */ "CONVERT TO DECIMAL (64)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x2E,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_IsStore |
@@ -7510,10 +7390,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CVDY,
    /* .name        = */ "CVDY",
-   /* .description = */ "(LongDisp) Convert to Decimal (32)",
+   /* .description = */ "CONVERT TO DECIMAL (32)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x26,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_IsStore |
@@ -7523,13 +7403,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CY,
    /* .name        = */ "CY",
-   /* .description = */ "(LongDisp) Compare (32)",
+   /* .description = */ "COMPARE (32)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x59,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_IsCompare |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsCompareFlag |
                         S390OpProp_IsLoad |
                         S390OpProp_LongDispSupported
@@ -7538,10 +7419,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::DL,
    /* .name        = */ "DL",
-   /* .description = */ "(LongDisp) Divide",
+   /* .description = */ "DIVIDE LOGICAL (32 <- 64)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x97,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_UsesTarget |
@@ -7554,10 +7435,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::DSG,
    /* .name        = */ "DSG",
-   /* .description = */ "(LongDisp) Divide Single (64)",
+   /* .description = */ "DIVIDE SINGLE (64)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x0D,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_UsesTarget |
@@ -7570,10 +7451,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::DSGF,
    /* .name        = */ "DSGF",
-   /* .description = */ "(LongDisp) Divide Single (64 < 32)",
+   /* .description = */ "DIVIDE SINGLE (64 <- 32)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x1D,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_Is32To64Bit |
                         S390OpProp_UsesTarget |
@@ -7586,10 +7467,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::ICMH,
    /* .name        = */ "ICMH",
-   /* .description = */ "(LongDisp) Insert Characters under Mask (high)",
+   /* .description = */ "INSERT CHARACTERS UNDER MASK (high)",
    /* .opcode[0]   = */ 0xEB,
    /* .opcode[1]   = */ 0x80,
-   /* .format      = */ RSY_FORMAT,
+   /* .format      = */ RSYb_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_TargetHW |
                         S390OpProp_SetsCC |
@@ -7602,10 +7483,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::ICMY,
    /* .name        = */ "ICMY",
-   /* .description = */ "(LongDisp) Insert Character under Mask",
+   /* .description = */ "INSERT CHARACTERS UNDER MASK (low)",
    /* .opcode[0]   = */ 0xEB,
    /* .opcode[1]   = */ 0x81,
-   /* .format      = */ RSY_FORMAT,
+   /* .format      = */ RSYb_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_SetsCC |
                         S390OpProp_IsLoad |
@@ -7617,10 +7498,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::ICY,
    /* .name        = */ "ICY",
-   /* .description = */ "(LongDisp) Insert Character",
+   /* .description = */ "INSERT CHARACTER",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x73,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_IsLoad |
                         S390OpProp_LongDispSupported |
@@ -7631,7 +7512,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::KIMD,
    /* .name        = */ "KIMD",
-   /* .description = */ "Compute Intermediate Message Digest",
+   /* .description = */ "COMPUTE INTERMEDIATE MESSAGE DIGEST",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0x3E,
    /* .format      = */ RRE_FORMAT,
@@ -7648,7 +7529,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::KLMD,
    /* .name        = */ "KLMD",
-   /* .description = */ "Compute Last Message Digest",
+   /* .description = */ "COMPUTE LAST MESSAGE DIGEST",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0x3F,
    /* .format      = */ RRE_FORMAT,
@@ -7665,7 +7546,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::KM,
    /* .name        = */ "KM",
-   /* .description = */ "Cipher Message",
+   /* .description = */ "CIPHER MESSAGE",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0x2E,
    /* .format      = */ RRE_FORMAT,
@@ -7682,7 +7563,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::KMAC,
    /* .name        = */ "KMAC",
-   /* .description = */ "Compute Message Authentication Code",
+   /* .description = */ "COMPUTE MESSAGE AUTHENTICATION CODE",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0x1E,
    /* .format      = */ RRE_FORMAT,
@@ -7699,7 +7580,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::KMC,
    /* .name        = */ "KMC",
-   /* .description = */ "Cipher Message with Chaining",
+   /* .description = */ "CIPHER MESSAGE WITH CHAINING",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0x2F,
    /* .format      = */ RRE_FORMAT,
@@ -7716,10 +7597,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LAMY,
    /* .name        = */ "LAMY",
-   /* .description = */ "(LongDisp) Load Access Multiple",
+   /* .description = */ "LOAD ACCESS MULTIPLE",
    /* .opcode[0]   = */ 0xEB,
    /* .opcode[1]   = */ 0x9A,
-   /* .format      = */ RSY_FORMAT,
+   /* .format      = */ RSYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_IsLoad |
                         S390OpProp_LongDispSupported |
@@ -7730,10 +7611,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LAY,
    /* .name        = */ "LAY",
-   /* .description = */ "(LongDisp) Load Address",
+   /* .description = */ "LOAD ADDRESS",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x71,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_LongDispSupported |
                         S390OpProp_SetsOperand1
@@ -7742,10 +7623,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LB,
    /* .name        = */ "LB",
-   /* .description = */ "(LongDisp) Load Byte (31) - note it is called LB in the PoP",
+   /* .description = */ "LOAD BYTE (32 <- 8)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x76,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_IsLoad |
                         S390OpProp_Is32Bit |
@@ -7756,10 +7637,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LCTLG,
    /* .name        = */ "LCTLG",
-   /* .description = */ "Load Control",
+   /* .description = */ "LOAD CONTROL (64)",
    /* .opcode[0]   = */ 0xEB,
    /* .opcode[1]   = */ 0x2F,
-   /* .format      = */ RSY_FORMAT,
+   /* .format      = */ RSYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_IsLoad
@@ -7768,10 +7649,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LDY,
    /* .name        = */ "LDY",
-   /* .description = */ "(LongDisp) Load (L)",
+   /* .description = */ "LOAD (long)",
    /* .opcode[0]   = */ 0xED,
    /* .opcode[1]   = */ 0x65,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_IsLoad |
                         S390OpProp_LongDispSupported |
@@ -7781,10 +7662,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LEY,
    /* .name        = */ "LEY",
-   /* .description = */ "(LongDisp) Load (S)",
+   /* .description = */ "LOAD (short)",
    /* .opcode[0]   = */ 0xED,
    /* .opcode[1]   = */ 0x64,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_IsLoad |
                         S390OpProp_LongDispSupported |
@@ -7794,10 +7675,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LG,
    /* .name        = */ "LG",
-   /* .description = */ "(LongDisp) Load (64)",
+   /* .description = */ "LOAD (64)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x04,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_IsLoad |
                         S390OpProp_Is64Bit |
@@ -7808,10 +7689,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LGB,
    /* .name        = */ "LGB",
-   /* .description = */ "(LongDisp) Load Byte (64)",
+   /* .description = */ "LOAD BYTE (64 <- 8)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x77,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_IsLoad |
                         S390OpProp_Is64Bit |
@@ -7822,10 +7703,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LGF,
    /* .name        = */ "LGF",
-   /* .description = */ "(LongDisp) Load (64 < 32)",
+   /* .description = */ "LOAD (64 <- 32)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x14,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_IsLoad |
                         S390OpProp_Is32To64Bit |
@@ -7836,10 +7717,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LGH,
    /* .name        = */ "LGH",
-   /* .description = */ "(LongDisp) Load Halfword",
+   /* .description = */ "LOAD HALFWORD (64 <- 16)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x15,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_IsLoad |
@@ -7850,10 +7731,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LHY,
    /* .name        = */ "LHY",
-   /* .description = */ "(LongDisp)Load Halfword",
+   /* .description = */ "LOAD HALFWORD (32 <- 16)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x78,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_IsLoad |
@@ -7864,10 +7745,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LLGC,
    /* .name        = */ "LLGC",
-   /* .description = */ "(LongDisp) Load Logical Character",
+   /* .description = */ "LOAD LOGICAL CHARACTER (64 <- 8)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x90,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_IsLoad |
@@ -7878,10 +7759,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LLGF,
    /* .name        = */ "LLGF",
-   /* .description = */ "(LongDisp) Load Logical Halfword",
+   /* .description = */ "LOAD LOGICAL (64 <- 32)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x16,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_IsLoad |
@@ -7892,10 +7773,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LLGH,
    /* .name        = */ "LLGH",
-   /* .description = */ "(LongDisp) Load Logical Halfword",
+   /* .description = */ "LOAD LOGICAL HALFWORD (64 <- 16)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x91,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_IsLoad |
@@ -7906,10 +7787,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LLGT,
    /* .name        = */ "LLGT",
-   /* .description = */ "(LongDisp) Load Logical Thirty One Bits",
+   /* .description = */ "LOAD LOGICAL THIRTY ONE BITS (64 <- 31)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x17,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_IsLoad |
@@ -7920,10 +7801,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LMG,
    /* .name        = */ "LMG",
-   /* .description = */ "(LongDisp) Load Multiple (64)",
+   /* .description = */ "LOAD MULTIPLE (64)",
    /* .opcode[0]   = */ 0xEB,
    /* .opcode[1]   = */ 0x04,
-   /* .format      = */ RSY_FORMAT,
+   /* .format      = */ RSYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_IsLoad |
                         S390OpProp_Is64Bit |
@@ -7936,10 +7817,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LMH,
    /* .name        = */ "LMH",
-   /* .description = */ "Load Multiple High",
+   /* .description = */ "LOAD MULTIPLE HIGH (32)",
    /* .opcode[0]   = */ 0xEB,
    /* .opcode[1]   = */ 0x96,
-   /* .format      = */ RSY_FORMAT,
+   /* .format      = */ RSYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_IsLoad |
                         S390OpProp_UsesRegRangeForTarget |
@@ -7951,10 +7832,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LMY,
    /* .name        = */ "LMY",
-   /* .description = */ "(LongDisp) Load Multiple",
+   /* .description = */ "LOAD MULTIPLE (32)",
    /* .opcode[0]   = */ 0xEB,
    /* .opcode[1]   = */ 0x98,
-   /* .format      = */ RSY_FORMAT,
+   /* .format      = */ RSYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_IsLoad |
                         S390OpProp_Is32Bit |
@@ -7967,10 +7848,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LPQ,
    /* .name        = */ "LPQ",
-   /* .description = */ "(LongDisp) Load Pair from Quadword",
+   /* .description = */ "LOAD PAIR FROM QUADWORD (64&64 <- 128)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x8F,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_IsLoad |
@@ -7982,10 +7863,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LRAG,
    /* .name        = */ "LRAG",
-   /* .description = */ "Load Real Address",
+   /* .description = */ "LOAD REAL ADDRESS (64)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x03,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_SetsCC |
                         S390OpProp_SetsOperand1
@@ -7994,10 +7875,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LRAY,
    /* .name        = */ "LRAY",
-   /* .description = */ "Load Real Address Y Form",
+   /* .description = */ "LOAD REAL ADDRESS (32)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x13,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_LongDispSupported |
                         S390OpProp_SetsCC |
@@ -8007,10 +7888,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LRV,
    /* .name        = */ "LRV",
-   /* .description = */ "(LongDisp) Load Reversed (32)",
+   /* .description = */ "LOAD REVERSED (32)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x1E,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_IsLoad |
                         S390OpProp_Is32Bit |
@@ -8021,10 +7902,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LRVG,
    /* .name        = */ "LRVG",
-   /* .description = */ "(LongDisp) Load Reversed (64)",
+   /* .description = */ "LOAD REVERSED (64)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x0F,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_IsLoad |
                         S390OpProp_Is64Bit |
@@ -8035,10 +7916,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LRVH,
    /* .name        = */ "LRVH",
-   /* .description = */ "(LongDisp) Load Reversed Halfword",
+   /* .description = */ "LOAD REVERSED (16)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x1F,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_IsLoad |
                         S390OpProp_Is32Bit |
@@ -8049,10 +7930,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LY,
    /* .name        = */ "LY",
-   /* .description = */ "(LongDisp) Load (32)",
+   /* .description = */ "LOAD (32)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x58,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_IsLoad |
                         S390OpProp_Is32Bit |
@@ -8063,7 +7944,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MAD,
    /* .name        = */ "MAD",
-   /* .description = */ "Multiply and Add, long HFP sources and result",
+   /* .description = */ "MULTIPLY AND ADD (long HFP)",
    /* .opcode[0]   = */ 0xED,
    /* .opcode[1]   = */ 0x3E,
    /* .format      = */ RXF_FORMAT,
@@ -8077,10 +7958,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MADR,
    /* .name        = */ "MADR",
-   /* .description = */ "Multiply and Add, long HFP sources and result",
+   /* .description = */ "MULTIPLY AND ADD (long HFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x3E,
-   /* .format      = */ RRF_FORMAT,
+   /* .format      = */ RRD_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_UsesTarget |
@@ -8090,7 +7971,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MAE,
    /* .name        = */ "MAE",
-   /* .description = */ "Multiply and Add, short HFP sources and result",
+   /* .description = */ "MULTIPLY AND ADD (short HFP)",
    /* .opcode[0]   = */ 0xED,
    /* .opcode[1]   = */ 0x2E,
    /* .format      = */ RXF_FORMAT,
@@ -8104,10 +7985,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MAER,
    /* .name        = */ "MAER",
-   /* .description = */ "Multiply and Add, short HFP sources and result",
+   /* .description = */ "MULTIPLY AND ADD (short HFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x2E,
-   /* .format      = */ RRF_FORMAT,
+   /* .format      = */ RRD_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_SingleFP |
                         S390OpProp_UsesTarget |
@@ -8117,10 +7998,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MLG,
    /* .name        = */ "MLG",
-   /* .description = */ "(LongDisp) Multiply Logical ( 128<64 )",
+   /* .description = */ "MULTIPLY LOGICAL (128 <- 64)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x86,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_UsesTarget |
@@ -8133,7 +8014,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MSD,
    /* .name        = */ "MSD",
-   /* .description = */ "Multiply and Subtract, long HFP sources and result",
+   /* .description = */ "MULTIPLY AND SUBTRACT (long HFP)",
    /* .opcode[0]   = */ 0xED,
    /* .opcode[1]   = */ 0x3F,
    /* .format      = */ RXF_FORMAT,
@@ -8147,10 +8028,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MSDR,
    /* .name        = */ "MSDR",
-   /* .description = */ "Multiply and Subtract, long HFP sources and result",
+   /* .description = */ "MULTIPLY AND SUBTRACT (long HFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x3F,
-   /* .format      = */ RRF_FORMAT,
+   /* .format      = */ RRD_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_UsesTarget |
@@ -8160,7 +8041,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MSE,
    /* .name        = */ "MSE",
-   /* .description = */ "Multiply and Subtract, short HFP sources and result",
+   /* .description = */ "MULTIPLY AND SUBTRACT (short HFP)",
    /* .opcode[0]   = */ 0xED,
    /* .opcode[1]   = */ 0x2F,
    /* .format      = */ RXF_FORMAT,
@@ -8174,10 +8055,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MSER,
    /* .name        = */ "MSER",
-   /* .description = */ "Multiply and Subtract, short HFP sources and result",
+   /* .description = */ "MULTIPLY AND SUBTRACT (short HFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x2F,
-   /* .format      = */ RRF_FORMAT,
+   /* .format      = */ RRD_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_SingleFP |
                         S390OpProp_UsesTarget |
@@ -8187,10 +8068,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MSG,
    /* .name        = */ "MSG",
-   /* .description = */ "(LongDisp) Multiply Single (64)",
+   /* .description = */ "MULTIPLY SINGLE (64)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x0C,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_UsesTarget |
@@ -8202,10 +8083,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MSGF,
    /* .name        = */ "MSGF",
-   /* .description = */ "(LongDisp) Multiply Single (64 < 32)",
+   /* .description = */ "MULTIPLY SINGLE (64 <- 32)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x1C,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_Is32To64Bit |
                         S390OpProp_UsesTarget |
@@ -8217,10 +8098,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MSY,
    /* .name        = */ "MSY",
-   /* .description = */ "(LongDisp) Multiply Single",
+   /* .description = */ "MULTIPLY SINGLE (32)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x51,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_UsesTarget |
@@ -8232,10 +8113,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MVCLU,
    /* .name        = */ "MVCLU",
-   /* .description = */ "Move Long Unicode",
+   /* .description = */ "MOVE LONG UNICODE",
    /* .opcode[0]   = */ 0xEB,
    /* .opcode[1]   = */ 0x8E,
-   /* .format      = */ RSY_FORMAT,
+   /* .format      = */ RSYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_SetsCC |
                         S390OpProp_IsLoad |
@@ -8250,7 +8131,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MVIY,
    /* .name        = */ "MVIY",
-   /* .description = */ "(LongDisp) Move (Immediate)",
+   /* .description = */ "MOVE (immediate)",
    /* .opcode[0]   = */ 0xEB,
    /* .opcode[1]   = */ 0x52,
    /* .format      = */ SIY_FORMAT,
@@ -8263,13 +8144,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::NG,
    /* .name        = */ "NG",
-   /* .description = */ "(LongDisp) And (64)",
+   /* .description = */ "AND (64)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x80,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_IsLoad |
                         S390OpProp_LongDispSupported |
@@ -8279,12 +8161,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::NIY,
    /* .name        = */ "NIY",
-   /* .description = */ "(LongDisp) And (Immediate)",
+   /* .description = */ "AND (immediate)",
    /* .opcode[0]   = */ 0xEB,
    /* .opcode[1]   = */ 0x54,
    /* .format      = */ SIY_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_IsStore |
                         S390OpProp_IsLoad |
@@ -8295,13 +8178,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::NY,
    /* .name        = */ "NY",
-   /* .description = */ "(LongDisp) And (32)",
+   /* .description = */ "AND (32)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x54,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_IsLoad |
                         S390OpProp_LongDispSupported |
@@ -8311,13 +8195,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::OG,
    /* .name        = */ "OG",
-   /* .description = */ "(LongDisp) Or (64)",
+   /* .description = */ "OR (64)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x81,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_IsLoad |
                         S390OpProp_LongDispSupported |
@@ -8327,12 +8212,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::OIY,
    /* .name        = */ "OIY",
-   /* .description = */ "(LongDisp) Or (Immediate)",
+   /* .description = */ "OR (immediate)",
    /* .opcode[0]   = */ 0xEB,
    /* .opcode[1]   = */ 0x56,
    /* .format      = */ SIY_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_IsStore |
                         S390OpProp_IsLoad |
@@ -8343,13 +8229,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::OY,
    /* .name        = */ "OY",
-   /* .description = */ "(LongDisp) Or (32)",
+   /* .description = */ "OR (32)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x56,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_IsLoad |
                         S390OpProp_LongDispSupported |
@@ -8359,10 +8246,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::RLL,
    /* .name        = */ "RLL",
-   /* .description = */ "Rotate Left Single Logical (32)",
+   /* .description = */ "ROTATE LEFT SINGLE LOGICAL (32)",
    /* .opcode[0]   = */ 0xEB,
    /* .opcode[1]   = */ 0x1D,
-   /* .format      = */ RSY_FORMAT,
+   /* .format      = */ RSYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_LongDispSupported |
@@ -8372,10 +8259,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::RLLG,
    /* .name        = */ "RLLG",
-   /* .description = */ "Rotate Left Single Logical (64)",
+   /* .description = */ "ROTATE LEFT SINGLE LOGICAL (64)",
    /* .opcode[0]   = */ 0xEB,
    /* .opcode[1]   = */ 0x1C,
-   /* .format      = */ RSY_FORMAT,
+   /* .format      = */ RSYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_LongDispSupported |
@@ -8385,13 +8272,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SG,
    /* .name        = */ "SG",
-   /* .description = */ "(LongDisp) Subtract (64)",
+   /* .description = */ "SUBTRACT (64)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x09,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOverflowFlag |
                         S390OpProp_IsLoad |
@@ -8402,13 +8290,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SGF,
    /* .name        = */ "SGF",
-   /* .description = */ "(LongDisp) Subtract (64 < 32)",
+   /* .description = */ "SUBTRACT (64 <- 32)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x19,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_Is32To64Bit |
                         S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOverflowFlag |
                         S390OpProp_IsLoad |
@@ -8419,13 +8308,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SHY,
    /* .name        = */ "SHY",
-   /* .description = */ "(LongDisp) Subtract Halfword",
+   /* .description = */ "SUBTRACT HALFWORD (32 <- 16)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x7B,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOverflowFlag |
                         S390OpProp_IsLoad |
@@ -8436,12 +8326,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SLAG,
    /* .name        = */ "SLAG",
-   /* .description = */ "(LongDisp) Shift Left Single (64)",
+   /* .description = */ "SHIFT LEFT SINGLE (64)",
    /* .opcode[0]   = */ 0xEB,
    /* .opcode[1]   = */ 0x0B,
-   /* .format      = */ RSY_FORMAT,
+   /* .format      = */ RSYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_Is64Bit |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOverflowFlag |
                         S390OpProp_LongDispSupported |
@@ -8451,13 +8342,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SLB,
    /* .name        = */ "SLB",
-   /* .description = */ "(LongDisp) Subtract Logical with Borrow (32)",
+   /* .description = */ "SUBTRACT LOGICAL WITH BORROW (32)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x99,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_IsLoad |
                         S390OpProp_LongDispSupported |
@@ -8468,13 +8360,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SLBG,
    /* .name        = */ "SLBG",
-   /* .description = */ "(LongDisp) Subtract Logical With Borrow (64)",
+   /* .description = */ "SUBTRACT LOGICAL WITH BORROW (64)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x89,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_IsLoad |
                         S390OpProp_LongDispSupported |
@@ -8485,13 +8378,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SLG,
    /* .name        = */ "SLG",
-   /* .description = */ "(LongDisp) Subtract Logical (64)",
+   /* .description = */ "SUBTRACT LOGICAL (64)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x0B,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_IsLoad |
                         S390OpProp_LongDispSupported |
@@ -8501,13 +8395,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SLGF,
    /* .name        = */ "SLGF",
-   /* .description = */ "(LongDisp) Subtract Logical (64 < 32)",
+   /* .description = */ "SUBTRACT LOGICAL (64 <- 32)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x1B,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_Is32To64Bit |
                         S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_IsLoad |
                         S390OpProp_LongDispSupported |
@@ -8517,10 +8412,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SLLG,
    /* .name        = */ "SLLG",
-   /* .description = */ "(LongDisp) Shift Left Logical (64)",
+   /* .description = */ "SHIFT LEFT SINGLE LOGICAL (64)",
    /* .opcode[0]   = */ 0xEB,
    /* .opcode[1]   = */ 0x0D,
-   /* .format      = */ RSY_FORMAT,
+   /* .format      = */ RSYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_LongDispSupported |
@@ -8530,13 +8425,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SLY,
    /* .name        = */ "SLY",
-   /* .description = */ "(LongDisp) Subtract Logical (32)",
+   /* .description = */ "SUBTRACT LOGICAL (32)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x5F,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_IsLoad |
                         S390OpProp_LongDispSupported |
@@ -8546,12 +8442,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SRAG,
    /* .name        = */ "SRAG",
-   /* .description = */ "(LongDisp) Shift Right Single (64)",
+   /* .description = */ "SHIFT RIGHT SINGLE (64)",
    /* .opcode[0]   = */ 0xEB,
    /* .opcode[1]   = */ 0x0A,
-   /* .format      = */ RSY_FORMAT,
+   /* .format      = */ RSYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_Is64Bit |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_LongDispSupported |
                         S390OpProp_SetsOperand1
@@ -8560,10 +8457,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SRLG,
    /* .name        = */ "SRLG",
-   /* .description = */ "(LongDisp) Shift Right Logical (64)",
+   /* .description = */ "SHIFT RIGHT SINGLE LOGICAL (64)",
    /* .opcode[0]   = */ 0xEB,
    /* .opcode[1]   = */ 0x0C,
-   /* .format      = */ RSY_FORMAT,
+   /* .format      = */ RSYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_LongDispSupported |
@@ -8573,10 +8470,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::STAMY,
    /* .name        = */ "STAMY",
-   /* .description = */ "(LongDisp) Set Access Multiple",
+   /* .description = */ "STORE ACCESS MULTIPLE",
    /* .opcode[0]   = */ 0xEB,
    /* .opcode[1]   = */ 0x9B,
-   /* .format      = */ RSY_FORMAT,
+   /* .format      = */ RSYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_IsStore |
                         S390OpProp_LongDispSupported |
@@ -8586,10 +8483,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::STCMH,
    /* .name        = */ "STCMH",
-   /* .description = */ "(LongDisp) Store Characters under Mask (high)",
+   /* .description = */ "STORE CHARACTERS UNDER MASK (high)",
    /* .opcode[0]   = */ 0xEB,
    /* .opcode[1]   = */ 0x2C,
-   /* .format      = */ RSY_FORMAT,
+   /* .format      = */ RSYb_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_IsStore |
                         S390OpProp_LongDispSupported |
@@ -8601,10 +8498,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::STCMY,
    /* .name        = */ "STCMY",
-   /* .description = */ "(LongDisp) Store Characters under Mask (low)",
+   /* .description = */ "STORE CHARACTERS UNDER MASK (low)",
    /* .opcode[0]   = */ 0xEB,
    /* .opcode[1]   = */ 0x2D,
-   /* .format      = */ RSY_FORMAT,
+   /* .format      = */ RSYb_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_IsStore |
@@ -8615,10 +8512,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::STCTG,
    /* .name        = */ "STCTG",
-   /* .description = */ "Store Control",
+   /* .description = */ "STORE CONTROL (64)",
    /* .opcode[0]   = */ 0xEB,
    /* .opcode[1]   = */ 0x25,
-   /* .format      = */ RSY_FORMAT,
+   /* .format      = */ RSYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_IsStore |
                         S390OpProp_Is64Bit |
@@ -8628,10 +8525,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::STCY,
    /* .name        = */ "STCY",
-   /* .description = */ "(LongDisp) Store Character",
+   /* .description = */ "STORE CHARACTER",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x72,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_IsStore |
@@ -8642,10 +8539,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::STDY,
    /* .name        = */ "STDY",
-   /* .description = */ "(LongDisp) Store (S)",
+   /* .description = */ "STORE (long)",
    /* .opcode[0]   = */ 0xED,
    /* .opcode[1]   = */ 0x67,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_IsStore |
                         S390OpProp_LongDispSupported
@@ -8654,10 +8551,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::STEY,
    /* .name        = */ "STEY",
-   /* .description = */ "(LongDisp) Store (L)",
+   /* .description = */ "STORE (short)",
    /* .opcode[0]   = */ 0xED,
    /* .opcode[1]   = */ 0x66,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_IsStore |
                         S390OpProp_LongDispSupported
@@ -8666,10 +8563,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::STG,
    /* .name        = */ "STG",
-   /* .description = */ "(LongDisp) Store (64)",
+   /* .description = */ "STORE (64)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x24,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_IsStore |
                         S390OpProp_Is64Bit |
@@ -8680,10 +8577,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::STHY,
    /* .name        = */ "STHY",
-   /* .description = */ "(LongDisp) Store Halfword",
+   /* .description = */ "STORE HALFWORD (16)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x70,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_IsStore |
@@ -8694,10 +8591,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::STMG,
    /* .name        = */ "STMG",
-   /* .description = */ "(LongDisp) Store Multiple (64)",
+   /* .description = */ "STORE MULTIPLE (64)",
    /* .opcode[0]   = */ 0xEB,
    /* .opcode[1]   = */ 0x24,
-   /* .format      = */ RSY_FORMAT,
+   /* .format      = */ RSYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_IsStore |
                         S390OpProp_Is64Bit |
@@ -8709,10 +8606,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::STMH,
    /* .name        = */ "STMH",
-   /* .description = */ "Store Multiple High",
+   /* .description = */ "STORE MULTIPLE HIGH (32)",
    /* .opcode[0]   = */ 0xEB,
    /* .opcode[1]   = */ 0x26,
-   /* .format      = */ RSY_FORMAT,
+   /* .format      = */ RSYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_IsStore |
                         S390OpProp_LongDispSupported |
@@ -8722,10 +8619,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::STMY,
    /* .name        = */ "STMY",
-   /* .description = */ "(LongDisp) Store Multiple",
+   /* .description = */ "STORE MULTIPLE (32)",
    /* .opcode[0]   = */ 0xEB,
    /* .opcode[1]   = */ 0x90,
-   /* .format      = */ RSY_FORMAT,
+   /* .format      = */ RSYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_IsStore |
                         S390OpProp_Is32Bit |
@@ -8737,10 +8634,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::STPQ,
    /* .name        = */ "STPQ",
-   /* .description = */ "(LongDisp) Store Pair to Quadword",
+   /* .description = */ "STORE PAIR TO QUADWORD",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x8E,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_IsStore |
@@ -8751,10 +8648,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::STRV,
    /* .name        = */ "STRV",
-   /* .description = */ "(LongDisp) Store (32)",
+   /* .description = */ "STORE REVERSED (32)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x3E,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_IsStore |
                         S390OpProp_Is32Bit |
@@ -8764,10 +8661,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::STRVG,
    /* .name        = */ "STRVG",
-   /* .description = */ "(LongDisp) Store Reversed (64)",
+   /* .description = */ "STORE REVERSED (64)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x2F,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_IsStore |
                         S390OpProp_Is64Bit |
@@ -8777,10 +8674,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::STRVH,
    /* .name        = */ "STRVH",
-   /* .description = */ "(LongDisp) Store Reversed Halfword",
+   /* .description = */ "STORE REVERSED (16)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x3F,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_IsStore |
@@ -8790,10 +8687,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::STY,
    /* .name        = */ "STY",
-   /* .description = */ "(LongDisp) Store (32)",
+   /* .description = */ "STORE (32)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x50,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_IsStore |
                         S390OpProp_Is32Bit |
@@ -8804,13 +8701,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SY,
    /* .name        = */ "SY",
-   /* .description = */ "(LongDisp) Subtract (32)",
+   /* .description = */ "SUBTRACT (32)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x5B,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOverflowFlag |
                         S390OpProp_IsLoad |
@@ -8821,7 +8719,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::TMY,
    /* .name        = */ "TMY",
-   /* .description = */ "Test under Mask",
+   /* .description = */ "TEST UNDER MASK",
    /* .opcode[0]   = */ 0xEB,
    /* .opcode[1]   = */ 0x51,
    /* .format      = */ SIY_FORMAT,
@@ -8834,13 +8732,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::XG,
    /* .name        = */ "XG",
-   /* .description = */ "(LongDisp) Exclusive Or (64)",
+   /* .description = */ "EXCLUSIVE OR (64)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x82,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_IsLoad |
                         S390OpProp_LongDispSupported |
@@ -8850,12 +8749,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::XIY,
    /* .name        = */ "XIY",
-   /* .description = */ "(LongDisp) Exclusive Or (immediate)",
+   /* .description = */ "EXCLUSIVE OR (immediate)",
    /* .opcode[0]   = */ 0xEB,
    /* .opcode[1]   = */ 0x57,
    /* .format      = */ SIY_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_IsLoad |
                         S390OpProp_IsStore |
@@ -8866,13 +8766,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::XY,
    /* .name        = */ "XY",
-   /* .description = */ "(LongDisp) Exclusive Or (32)",
+   /* .description = */ "EXCLUSIVE OR (32)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x57,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z990,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_IsLoad |
                         S390OpProp_LongDispSupported |
@@ -8882,13 +8783,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::ADTR,
    /* .name        = */ "ADTR",
-   /* .description = */ "Add (DFP64)",
+   /* .description = */ "ADD (long DFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0xD2,
-   /* .format      = */ RRF_FORMAT,
+   /* .format      = */ RRFa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z9,
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_Is64Bit |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOperand1
    },
@@ -8896,12 +8798,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::AFI,
    /* .name        = */ "AFI",
-   /* .description = */ "Add Immediate (32)",
+   /* .description = */ "ADD IMMEDIATE (32)",
    /* .opcode[0]   = */ 0xC2,
    /* .opcode[1]   = */ 0x09,
-   /* .format      = */ RIL_FORMAT,
+   /* .format      = */ RILa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z9,
    /* .properties  = */ S390OpProp_Is32Bit |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOverflowFlag |
                         S390OpProp_UsesTarget |
@@ -8912,12 +8815,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::AGFI,
    /* .name        = */ "AGFI",
-   /* .description = */ "Add Immediate (64<32)",
+   /* .description = */ "ADD IMMEDIATE (64 <- 32)",
    /* .opcode[0]   = */ 0xC2,
    /* .opcode[1]   = */ 0x08,
-   /* .format      = */ RIL_FORMAT,
+   /* .format      = */ RILa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z9,
    /* .properties  = */ S390OpProp_Is32To64Bit |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOverflowFlag |
                         S390OpProp_UsesTarget |
@@ -8928,12 +8832,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::ALFI,
    /* .name        = */ "ALFI",
-   /* .description = */ "Add Logical Immediate (32)",
+   /* .description = */ "ADD LOGICAL IMMEDIATE (32)",
    /* .opcode[0]   = */ 0xC2,
    /* .opcode[1]   = */ 0x0B,
-   /* .format      = */ RIL_FORMAT,
+   /* .format      = */ RILa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z9,
    /* .properties  = */ S390OpProp_Is32Bit |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_UsesTarget |
                         S390OpProp_IsExtendedImmediate |
@@ -8943,12 +8848,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::ALGFI,
    /* .name        = */ "ALGFI",
-   /* .description = */ "Add Logical Immediate (64<32)",
+   /* .description = */ "ADD LOGICAL IMMEDIATE (64 <- 32)",
    /* .opcode[0]   = */ 0xC2,
    /* .opcode[1]   = */ 0x0A,
-   /* .format      = */ RIL_FORMAT,
+   /* .format      = */ RILa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z9,
    /* .properties  = */ S390OpProp_Is32To64Bit |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_UsesTarget |
                         S390OpProp_IsExtendedImmediate |
@@ -8958,13 +8864,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::AXTR,
    /* .name        = */ "AXTR",
-   /* .description = */ "Add (DFP128)",
+   /* .description = */ "ADD (extended DFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0xDA,
    /* .format      = */ RRFa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z9,
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_Is64Bit |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_UsesRegPairForSource |
                         S390OpProp_UsesRegPairForTarget |
@@ -8974,7 +8881,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CDGTR,
    /* .name        = */ "CDGTR",
-   /* .description = */ "Convert from Fixed (DFP64)",
+   /* .description = */ "CONVERT FROM FIXED (64 to long DFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0xF1,
    /* .format      = */ RRE_FORMAT,
@@ -8987,7 +8894,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CDSTR,
    /* .name        = */ "CDSTR",
-   /* .description = */ "Convert from Signed Packed",
+   /* .description = */ "CONVERT FROM SIGNED PACKED (64 to long DFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0xF3,
    /* .format      = */ RRE_FORMAT,
@@ -9000,7 +8907,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CDTR,
    /* .name        = */ "CDTR",
-   /* .description = */ "Compare (DFP64)",
+   /* .description = */ "COMPARE (long DFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0xE4,
    /* .format      = */ RRE_FORMAT,
@@ -9008,6 +8915,7 @@
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_Is64Bit |
                         S390OpProp_IsCompare |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsCompareFlag |
                         S390OpProp_SetsOperand1
    },
@@ -9015,7 +8923,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CDUTR,
    /* .name        = */ "CDUTR",
-   /* .description = */ "Convert From Unsigned BCD (DFP64)",
+   /* .description = */ "CONVERT FROM UNSIGNED PACKED (64 to long DFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0xF2,
    /* .format      = */ RRE_FORMAT,
@@ -9028,7 +8936,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CEDTR,
    /* .name        = */ "CEDTR",
-   /* .description = */ "Compare biased exponent (DFP64)",
+   /* .description = */ "COMPARE BIASED EXPONENT (long DFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0xF4,
    /* .format      = */ RRE_FORMAT,
@@ -9036,13 +8944,14 @@
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_Is64Bit |
                         S390OpProp_IsCompare |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsCompareFlag
    },
 
    {
    /* .mnemonic    = */ OMR::InstOpCode::CEXTR,
    /* .name        = */ "CEXTR",
-   /* .description = */ "Compare biased exponent (DFP128)",
+   /* .description = */ "COMPARE BIASED EXPONENT (extended DFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0xFC,
    /* .format      = */ RRE_FORMAT,
@@ -9050,6 +8959,7 @@
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_Is64Bit |
                         S390OpProp_IsCompare |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsCompareFlag |
                         S390OpProp_UsesRegPairForTarget |
                         S390OpProp_UsesRegPairForSource
@@ -9058,13 +8968,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CFI,
    /* .name        = */ "CFI",
-   /* .description = */ "Compare Immediate (32)",
+   /* .description = */ "COMPARE IMMEDIATE (32)",
    /* .opcode[0]   = */ 0xC2,
    /* .opcode[1]   = */ 0x0D,
-   /* .format      = */ RIL_FORMAT,
+   /* .format      = */ RILa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z9,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_IsCompare |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsCompareFlag |
                         S390OpProp_IsExtendedImmediate
    },
@@ -9072,13 +8983,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CGDTR,
    /* .name        = */ "CGDTR",
-   /* .description = */ "Convert to Fixed (DFP64)",
+   /* .description = */ "CONVERT TO FIXED (long DFP to 64)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0xE1,
-   /* .format      = */ RRF2_FORMAT,
+   /* .format      = */ RRFe_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z9,
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_Is64Bit |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOverflowFlag |
@@ -9088,13 +9000,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CGFI,
    /* .name        = */ "CGFI",
-   /* .description = */ "Compare Immediate (64<32)",
+   /* .description = */ "COMPARE IMMEDIATE (64 <- 32)",
    /* .opcode[0]   = */ 0xC2,
    /* .opcode[1]   = */ 0x0C,
-   /* .format      = */ RIL_FORMAT,
+   /* .format      = */ RILa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z9,
    /* .properties  = */ S390OpProp_Is32To64Bit |
                         S390OpProp_IsCompare |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsCompareFlag |
                         S390OpProp_IsExtendedImmediate
    },
@@ -9102,13 +9015,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CGXTR,
    /* .name        = */ "CGXTR",
-   /* .description = */ "Convert to Fixed (DFP128)",
+   /* .description = */ "CONVERT TO FIXED (extended DFP to 64)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0xE9,
-   /* .format      = */ RRF2_FORMAT,
+   /* .format      = */ RRFe_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z9,
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_Is64Bit |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOverflowFlag |
@@ -9119,13 +9033,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CLFI,
    /* .name        = */ "CLFI",
-   /* .description = */ "Compare Logical Immediate (32)",
+   /* .description = */ "COMPARE LOGICAL IMMEDIATE (32)",
    /* .opcode[0]   = */ 0xC2,
    /* .opcode[1]   = */ 0x0F,
-   /* .format      = */ RIL_FORMAT,
+   /* .format      = */ RILa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z9,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_IsCompare |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsCompareFlag |
                         S390OpProp_IsExtendedImmediate |
                         S390OpProp_UsesTarget
@@ -9134,13 +9049,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CLGFI,
    /* .name        = */ "CLGFI",
-   /* .description = */ "Compare Logical Immediate (64<32)",
+   /* .description = */ "COMPARE LOGICAL IMMEDIATE (64 <- 32)",
    /* .opcode[0]   = */ 0xC2,
    /* .opcode[1]   = */ 0x0E,
-   /* .format      = */ RIL_FORMAT,
+   /* .format      = */ RILa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z9,
    /* .properties  = */ S390OpProp_Is32To64Bit |
                         S390OpProp_IsCompare |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsCompareFlag |
                         S390OpProp_IsExtendedImmediate |
                         S390OpProp_UsesTarget
@@ -9149,10 +9065,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CPSDR,
    /* .name        = */ "CPSDR",
-   /* .description = */ "Copy Sign",
+   /* .description = */ "COPY SIGN (long)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x72,
-   /* .format      = */ RRF_FORMAT,
+   /* .format      = */ RRFb_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z9,
    /* .properties  = */ S390OpProp_SingleFP |
                         S390OpProp_DoubleFP
@@ -9161,10 +9077,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CSDTR,
    /* .name        = */ "CSDTR",
-   /* .description = */ "Convert to signed packed",
+   /* .description = */ "CONVERT TO SIGNED PACKED (long DFP to 64)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0xE3,
-   /* .format      = */ RRF_FORMAT,
+   /* .format      = */ RRFd_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z9,
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_Is64Bit |
@@ -9174,10 +9090,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CSXTR,
    /* .name        = */ "CSXTR",
-   /* .description = */ "Convert to signed packed(DFP128)",
+   /* .description = */ "CONVERT TO SIGNED PACKED (extended DFP to 128)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0xEB,
-   /* .format      = */ RRF_FORMAT,
+   /* .format      = */ RRFd_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z9,
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_Is64Bit |
@@ -9189,10 +9105,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CU14,
    /* .name        = */ "CU14",
-   /* .description = */ "Convert UTF-8 to UTF-32",
+   /* .description = */ "CONVERT UTF-8 TO UTF-32",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0xB0,
-   /* .format      = */ RRE_FORMAT,
+   /* .format      = */ RRFc_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z9,
    /* .properties  = */ S390OpProp_IsLoad |
                         S390OpProp_IsStore |
@@ -9204,10 +9120,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CU24,
    /* .name        = */ "CU24",
-   /* .description = */ "Convert UTF-16 to UTF-32",
+   /* .description = */ "CONVERT UTF-16 TO UTF-32",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0xB1,
-   /* .format      = */ RRE_FORMAT,
+   /* .format      = */ RRFc_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z9,
    /* .properties  = */ S390OpProp_IsLoad |
                         S390OpProp_IsStore |
@@ -9219,7 +9135,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CU41,
    /* .name        = */ "CU41",
-   /* .description = */ "Convert UTF-32 to UTF-8",
+   /* .description = */ "CONVERT UTF-32 TO UTF-8",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0xB2,
    /* .format      = */ RRE_FORMAT,
@@ -9234,7 +9150,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CU42,
    /* .name        = */ "CU42",
-   /* .description = */ "Convert UTF-32 to UTF-16",
+   /* .description = */ "CONVERT UTF-32 TO UTF-16",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0xB3,
    /* .format      = */ RRE_FORMAT,
@@ -9249,7 +9165,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CUDTR,
    /* .name        = */ "CUDTR",
-   /* .description = */ "Convert to Unsigned BCD (DFP64)",
+   /* .description = */ "CONVERT TO UNSIGNED PACKED (long DFP to 64)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0xE2,
    /* .format      = */ RRE_FORMAT,
@@ -9262,10 +9178,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CUTFU,
    /* .name        = */ "CUTFU",
-   /* .description = */ "Convert UTF-8 to Unicode",
+   /* .description = */ "CONVERT UTF-8 TO UNICODE",
    /* .opcode[0]   = */ 0xB2,
    /* .opcode[1]   = */ 0xA7,
-   /* .format      = */ RRE_FORMAT,
+   /* .format      = */ RRFc_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z9,
    /* .properties  = */ S390OpProp_IsLoad |
                         S390OpProp_IsStore |
@@ -9279,10 +9195,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CUUTF,
    /* .name        = */ "CUUTF",
-   /* .description = */ "Convert Unicode to UTF-8",
+   /* .description = */ "CONVERT UNICODE TO UTF-8",
    /* .opcode[0]   = */ 0xB2,
    /* .opcode[1]   = */ 0xA6,
-   /* .format      = */ RRE_FORMAT,
+   /* .format      = */ RRFc_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z9,
    /* .properties  = */ S390OpProp_IsLoad |
                         S390OpProp_IsStore |
@@ -9296,7 +9212,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CUXTR,
    /* .name        = */ "CUXTR",
-   /* .description = */ "Convert to Unsigned BCD (DFP64)",
+   /* .description = */ "CONVERT TO UNSIGNED PACKED (extended DFP to 128)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0xEA,
    /* .format      = */ RRE_FORMAT,
@@ -9311,7 +9227,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CXGTR,
    /* .name        = */ "CXGTR",
-   /* .description = */ "Convert from Fixed (DFP128)",
+   /* .description = */ "CONVERT FROM FIXED (64 to extended DFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0xF9,
    /* .format      = */ RRE_FORMAT,
@@ -9326,7 +9242,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CXSTR,
    /* .name        = */ "CXSTR",
-   /* .description = */ "Convert from Signed Packed to DFP128",
+   /* .description = */ "CONVERT FROM SIGNED PACKED (128 to extended DFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0xFB,
    /* .format      = */ RRE_FORMAT,
@@ -9340,7 +9256,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CXTR,
    /* .name        = */ "CXTR",
-   /* .description = */ "Compare (DFP128)",
+   /* .description = */ "COMPARE (extended DFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0xEC,
    /* .format      = */ RRE_FORMAT,
@@ -9348,6 +9264,7 @@
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_Is64Bit |
                         S390OpProp_IsCompare |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsCompareFlag |
                         S390OpProp_UsesRegPairForSource |
                         S390OpProp_UsesRegPairForTarget
@@ -9356,7 +9273,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CXUTR,
    /* .name        = */ "CXUTR",
-   /* .description = */ "Convert From Unsigned BCD (DFP128)",
+   /* .description = */ "CONVERT FROM UNSIGNED PACKED (128 to ext. DFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0xFA,
    /* .format      = */ RRE_FORMAT,
@@ -9370,10 +9287,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::DDTR,
    /* .name        = */ "DDTR",
-   /* .description = */ "Divide (DFP64)",
+   /* .description = */ "DIVIDE (long DFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0xD1,
-   /* .format      = */ RRF_FORMAT,
+   /* .format      = */ RRFa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z9,
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_Is64Bit |
@@ -9384,7 +9301,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::DXTR,
    /* .name        = */ "DXTR",
-   /* .description = */ "Divide (DFP128)",
+   /* .description = */ "DIVIDE (extended DFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0xD9,
    /* .format      = */ RRFa_FORMAT,
@@ -9400,7 +9317,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::EEDTR,
    /* .name        = */ "EEDTR",
-   /* .description = */ "Extract Biased Exponent (DFP64)",
+   /* .description = */ "EXTRACT BIASED EXPONENT (long DFP to 64)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0xE5,
    /* .format      = */ RRE_FORMAT,
@@ -9413,7 +9330,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::EEXTR,
    /* .name        = */ "EEXTR",
-   /* .description = */ "Extract Biased Exponent (DFP128)",
+   /* .description = */ "EXTRACT BIASED EXPONENT (extended DFP to 64)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0xED,
    /* .format      = */ RRE_FORMAT,
@@ -9427,7 +9344,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::ESDTR,
    /* .name        = */ "ESDTR",
-   /* .description = */ "Extract Significance (DFP64)",
+   /* .description = */ "EXTRACT SIGNIFICANCE (long DFP to 64)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0xE7,
    /* .format      = */ RRE_FORMAT,
@@ -9440,7 +9357,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::ESXTR,
    /* .name        = */ "ESXTR",
-   /* .description = */ "Extract Significance (DFP128)",
+   /* .description = */ "EXTRACT SIGNIFICANCE (extended DFP to 64)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0xEF,
    /* .format      = */ RRE_FORMAT,
@@ -9454,10 +9371,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::FIDTR,
    /* .name        = */ "FIDTR",
-   /* .description = */ "Load FP Integer (DFP64)",
+   /* .description = */ "LOAD FP INTEGER (long DFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0xD7,
-   /* .format      = */ RRF2_FORMAT,
+   /* .format      = */ RRFe_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z9,
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_SetsOperand1
@@ -9466,10 +9383,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::FIXTR,
    /* .name        = */ "FIXTR",
-   /* .description = */ "Load FP Integer (DFP128)",
+   /* .description = */ "LOAD FP INTEGER (extended DFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0xDF,
-   /* .format      = */ RRF2_FORMAT,
+   /* .format      = */ RRFe_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z9,
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_UsesRegPairForSource |
@@ -9480,7 +9397,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::FLOGR,
    /* .name        = */ "FLOGR",
-   /* .description = */ "Find Leftmost One",
+   /* .description = */ "FIND LEFTMOST ONE",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0x83,
    /* .format      = */ RRE_FORMAT,
@@ -9494,10 +9411,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::IEDTR,
    /* .name        = */ "IEDTR",
-   /* .description = */ "Insert Biased Exponent (DFP64)",
+   /* .description = */ "INSERT BIASED EXPONENT (64 to long DFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0xF6,
-   /* .format      = */ RRF3_FORMAT,
+   /* .format      = */ RRFb_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z9,
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_Is64Bit |
@@ -9507,10 +9424,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::IEXTR,
    /* .name        = */ "IEXTR",
-   /* .description = */ "Insert Biased Exponent (DFP128)",
+   /* .description = */ "INSERT BIASED EXPONENT (64 to extended DFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0xFE,
-   /* .format      = */ RRF3_FORMAT,
+   /* .format      = */ RRFb_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z9,
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_Is64Bit |
@@ -9522,10 +9439,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::IIHF,
    /* .name        = */ "IIHF",
-   /* .description = */ "Insert Immediate (high)",
+   /* .description = */ "INSERT IMMEDIATE (high)",
    /* .opcode[0]   = */ 0xC0,
    /* .opcode[1]   = */ 0x08,
-   /* .format      = */ RIL_FORMAT,
+   /* .format      = */ RILa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z9,
    /* .properties  = */ S390OpProp_TargetHW |
                         S390OpProp_IsExtendedImmediate |
@@ -9536,10 +9453,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::IILF,
    /* .name        = */ "IILF",
-   /* .description = */ "Insert Immediate (low)",
+   /* .description = */ "INSERT IMMEDIATE (low)",
    /* .opcode[0]   = */ 0xC0,
    /* .opcode[1]   = */ 0x09,
-   /* .format      = */ RIL_FORMAT,
+   /* .format      = */ RILa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z9,
    /* .properties  = */ S390OpProp_IsExtendedImmediate |
                         S390OpProp_SetsOperand1 |
@@ -9549,7 +9466,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::KDTR,
    /* .name        = */ "KDTR",
-   /* .description = */ "Compare (DFP64)",
+   /* .description = */ "COMPARE AND SIGNAL (long DFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0xE0,
    /* .format      = */ RRE_FORMAT,
@@ -9557,13 +9474,14 @@
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_Is64Bit |
                         S390OpProp_IsCompare |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsCompareFlag
    },
 
    {
    /* .mnemonic    = */ OMR::InstOpCode::KXTR,
    /* .name        = */ "KXTR",
-   /* .description = */ "Compare (DFP128)",
+   /* .description = */ "COMPARE AND SIGNAL (extended DFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0xE8,
    /* .format      = */ RRE_FORMAT,
@@ -9571,6 +9489,7 @@
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_Is64Bit |
                         S390OpProp_IsCompare |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsCompareFlag |
                         S390OpProp_UsesRegPairForSource |
                         S390OpProp_UsesRegPairForTarget
@@ -9579,7 +9498,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LBR,
    /* .name        = */ "LBR",
-   /* .description = */ "Load Byte (32)",
+   /* .description = */ "LOAD BYTE (32 <- 8)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0x26,
    /* .format      = */ RRE_FORMAT,
@@ -9591,7 +9510,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LCDFR,
    /* .name        = */ "LCDFR",
-   /* .description = */ "Load Complement (DFP64)",
+   /* .description = */ "LOAD COMPLEMENT (long)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x73,
    /* .format      = */ RRE_FORMAT,
@@ -9604,10 +9523,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LDETR,
    /* .name        = */ "LDETR",
-   /* .description = */ "Load Lengthened (64DFP < 32DFP)",
+   /* .description = */ "LOAD LENGTHENED (short to long DFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0xD4,
-   /* .format      = */ RRF_FORMAT,
+   /* .format      = */ RRFd_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z9,
    /* .properties  = */ S390OpProp_SingleFP |
                         S390OpProp_DoubleFP |
@@ -9617,7 +9536,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LDGR,
    /* .name        = */ "LDGR",
-   /* .description = */ "Load FPR from GR (SB, DB)",
+   /* .description = */ "LOAD FPR FROM GR (64 to long)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0xC1,
    /* .format      = */ RRE_FORMAT,
@@ -9631,10 +9550,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LDXTR,
    /* .name        = */ "LDXTR",
-   /* .description = */ "Load Rounded (64DFP < 128DFP)",
+   /* .description = */ "LOAD ROUNDED (extended to long DFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0xDD,
-   /* .format      = */ RRF_FORMAT,
+   /* .format      = */ RRFe_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z9,
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_DoubleFP |
@@ -9646,10 +9565,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LEDTR,
    /* .name        = */ "LEDTR",
-   /* .description = */ "Load Rounded (32DFP < 64DFP)",
+   /* .description = */ "LOAD ROUNDED (long to short DFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0xD5,
-   /* .format      = */ RRF_FORMAT,
+   /* .format      = */ RRFe_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z9,
    /* .properties  = */ S390OpProp_SingleFP |
                         S390OpProp_DoubleFP |
@@ -9659,7 +9578,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LGBR,
    /* .name        = */ "LGBR",
-   /* .description = */ "Load Byte (64)",
+   /* .description = */ "LOAD BYTE (64 <- 8)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0x06,
    /* .format      = */ RRE_FORMAT,
@@ -9671,7 +9590,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LGDR,
    /* .name        = */ "LGDR",
-   /* .description = */ "Load GR from FPR (SB, DB)",
+   /* .description = */ "LOAD GR FROM FPR (long to 64)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0xCD,
    /* .format      = */ RRE_FORMAT,
@@ -9686,10 +9605,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LGFI,
    /* .name        = */ "LGFI",
-   /* .description = */ "Load Immediate (64<32)",
+   /* .description = */ "LOAD IMMEDIATE (64 <- 32)",
    /* .opcode[0]   = */ 0xC0,
    /* .opcode[1]   = */ 0x01,
-   /* .format      = */ RIL_FORMAT,
+   /* .format      = */ RILa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z9,
    /* .properties  = */ S390OpProp_Is32To64Bit |
                         S390OpProp_IsExtendedImmediate |
@@ -9699,7 +9618,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LGHR,
    /* .name        = */ "LGHR",
-   /* .description = */ "Load Halfword (64)",
+   /* .description = */ "LOAD HALFWORD (64 <- 16)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0x07,
    /* .format      = */ RRE_FORMAT,
@@ -9711,7 +9630,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LHR,
    /* .name        = */ "LHR",
-   /* .description = */ "Load Halfword (32)",
+   /* .description = */ "LOAD HALFWORD (32 <- 16)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0x27,
    /* .format      = */ RRE_FORMAT,
@@ -9723,10 +9642,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LLC,
    /* .name        = */ "LLC",
-   /* .description = */ "(LongDisp) Load Logical Character (32)",
+   /* .description = */ "LOAD LOGICAL CHARACTER (32 <- 8)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x94,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z9,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_IsLoad |
@@ -9737,7 +9656,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LLCR,
    /* .name        = */ "LLCR",
-   /* .description = */ "Load Logical Character (32)",
+   /* .description = */ "LOAD LOGICAL CHARACTER (32 <- 8)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0x94,
    /* .format      = */ RRE_FORMAT,
@@ -9749,7 +9668,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LLGCR,
    /* .name        = */ "LLGCR",
-   /* .description = */ "Load Logical Character (64)",
+   /* .description = */ "LOAD LOGICAL CHARACTER (64 <- 8)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0x84,
    /* .format      = */ RRE_FORMAT,
@@ -9761,7 +9680,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LLGHR,
    /* .name        = */ "LLGHR",
-   /* .description = */ "Load Logical Halfword(64)",
+   /* .description = */ "LOAD LOGICAL HALFWORD (64 <- 16)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0x85,
    /* .format      = */ RRE_FORMAT,
@@ -9773,10 +9692,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LLH,
    /* .name        = */ "LLH",
-   /* .description = */ "(LongDisp) Load Logical Halfword",
+   /* .description = */ "LOAD LOGICAL HALFWORD (32 <- 16)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x95,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z9,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_IsLoad |
@@ -9787,7 +9706,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LLHR,
    /* .name        = */ "LLHR",
-   /* .description = */ "Load Logical Halfword(32)",
+   /* .description = */ "LOAD LOGICAL HALFWORD (32 <- 16)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0x95,
    /* .format      = */ RRE_FORMAT,
@@ -9799,10 +9718,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LLIHF,
    /* .name        = */ "LLIHF",
-   /* .description = */ "Load Logical Immediate (high)",
+   /* .description = */ "LOAD LOGICAL IMMEDIATE (high)",
    /* .opcode[0]   = */ 0xC0,
    /* .opcode[1]   = */ 0x0E,
-   /* .format      = */ RIL_FORMAT,
+   /* .format      = */ RILa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z9,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_IsExtendedImmediate |
@@ -9812,10 +9731,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LLILF,
    /* .name        = */ "LLILF",
-   /* .description = */ "Load Logical Immediate (low)",
+   /* .description = */ "LOAD LOGICAL IMMEDIATE (low)",
    /* .opcode[0]   = */ 0xC0,
    /* .opcode[1]   = */ 0x0F,
-   /* .format      = */ RIL_FORMAT,
+   /* .format      = */ RILa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z9,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_IsExtendedImmediate |
@@ -9825,7 +9744,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LNDFR,
    /* .name        = */ "LNDFR",
-   /* .description = */ "Load Negative (DFP64)",
+   /* .description = */ "LOAD NEGATIVE (long)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x71,
    /* .format      = */ RRE_FORMAT,
@@ -9838,7 +9757,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LPDFR,
    /* .name        = */ "LPDFR",
-   /* .description = */ "Load Positive (DFP64)",
+   /* .description = */ "LOAD POSITIVE (long)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x70,
    /* .format      = */ RRE_FORMAT,
@@ -9851,13 +9770,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LT,
    /* .name        = */ "LT",
-   /* .description = */ "(LongDisp) Load and Test (32)",
+   /* .description = */ "LOAD AND TEST (32)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x12,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z9,
    /* .properties  = */ S390OpProp_IsLoad |
                         S390OpProp_Is32Bit |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_LongDispSupported |
                         S390OpProp_SetsOperand1
@@ -9866,13 +9786,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LTDTR,
    /* .name        = */ "LTDTR",
-   /* .description = */ "Load and Test (DFP64)",
+   /* .description = */ "LOAD AND TEST (long DFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0xD6,
    /* .format      = */ RRE_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z9,
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_Is64Bit |
+                        S390OpProp_SetsCC |
                         S390OpProp_IsRegCopy |
                         S390OpProp_SetsOperand1
    },
@@ -9880,13 +9801,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LTG,
    /* .name        = */ "LTG",
-   /* .description = */ "(LongDisp) Load and Test (64)",
+   /* .description = */ "LOAD AND TEST (64)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x02,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z9,
    /* .properties  = */ S390OpProp_IsLoad |
                         S390OpProp_Is64Bit |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_LongDispSupported |
                         S390OpProp_SetsOperand1
@@ -9895,7 +9817,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LTXTR,
    /* .name        = */ "LTXTR",
-   /* .description = */ "Load and Test (DFP128)",
+   /* .description = */ "LOAD AND TEST (extended DFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0xDE,
    /* .format      = */ RRE_FORMAT,
@@ -9903,6 +9825,7 @@
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_Is64Bit |
                         S390OpProp_IsRegCopy |
+                        S390OpProp_SetsCC |
                         S390OpProp_UsesRegPairForSource |
                         S390OpProp_UsesRegPairForTarget |
                         S390OpProp_SetsOperand1
@@ -9911,10 +9834,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LXDTR,
    /* .name        = */ "LXDTR",
-   /* .description = */ "Load Lengthened(64DFP < 128DFP)",
+   /* .description = */ "LOAD LENGTHENED (long to extended DFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0xDC,
-   /* .format      = */ RRF_FORMAT,
+   /* .format      = */ RRFd_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z9,
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_UsesRegPairForTarget |
@@ -9924,7 +9847,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MAY,
    /* .name        = */ "MAY",
-   /* .description = */ "Multiply and Add Unnormalized, long HFP sources and extended HFP result",
+   /* .description = */ "MULTIPLY & ADD UNNORMALIZED (long to ext. HFP)",
    /* .opcode[0]   = */ 0xED,
    /* .opcode[1]   = */ 0x3A,
    /* .format      = */ RXF_FORMAT,
@@ -9938,10 +9861,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MAYH,
    /* .name        = */ "MAYH",
-   /* .description = */ "Multiply and Add Unnormalized, long HFP sources and high-order part of extended HFP result",
+   /* .description = */ "MULTIPLY AND ADD UNNRM. (long to ext. high HFP)",
    /* .opcode[0]   = */ 0xED,
    /* .opcode[1]   = */ 0x3C,
-   /* .format      = */ RRF_FORMAT,
+   /* .format      = */ RXF_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z9,
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_UsesTarget |
@@ -9952,10 +9875,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MAYHR,
    /* .name        = */ "MAYHR",
-   /* .description = */ "Multiply and Add Unnormalized, long HFP sources and high-order part of extended HFP result",
+   /* .description = */ "MULTIPLY AND ADD UNNRM. (long to ext. high HFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x3C,
-   /* .format      = */ RRF_FORMAT,
+   /* .format      = */ RRD_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z9,
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_UsesTarget |
@@ -9965,10 +9888,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MAYL,
    /* .name        = */ "MAYL",
-   /* .description = */ "Multiply and Add Unnormalized, long HFP sources and low-order part of extended HFP result",
+   /* .description = */ "MULTIPLY AND ADD UNNRM. (long to ext. low HFP)",
    /* .opcode[0]   = */ 0xED,
    /* .opcode[1]   = */ 0x38,
-   /* .format      = */ RRF_FORMAT,
+   /* .format      = */ RXF_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z9,
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_UsesTarget |
@@ -9979,10 +9902,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MAYLR,
    /* .name        = */ "MAYLR",
-   /* .description = */ "Multiply and Add Unnormalized, long HFP sources and low-order part of extended HFP result",
+   /* .description = */ "MULTIPLY AND ADD UNNRM. (long to ext. low HFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x38,
-   /* .format      = */ RRF_FORMAT,
+   /* .format      = */ RRD_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z9,
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_UsesTarget |
@@ -9992,10 +9915,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MAYR,
    /* .name        = */ "MAYR",
-   /* .description = */ "Multiply and Add Unnormalized, long HFP sources and extended HFP result",
+   /* .description = */ "MULTIPLY & ADD UNNORMALIZED (long to ext. HFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x3A,
-   /* .format      = */ RRF_FORMAT,
+   /* .format      = */ RRD_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z9,
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_UsesRegPairForTarget |
@@ -10005,10 +9928,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MDTR,
    /* .name        = */ "MDTR",
-   /* .description = */ "Multiply (DFP64)",
+   /* .description = */ "MULTIPLY (long DFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0xD0,
-   /* .format      = */ RRF_FORMAT,
+   /* .format      = */ RRFa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z9,
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_Is64Bit |
@@ -10018,7 +9941,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MXTR,
    /* .name        = */ "MXTR",
-   /* .description = */ "Multiply (DFP128)",
+   /* .description = */ "MULTIPLY (extended DFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0xD8,
    /* .format      = */ RRFa_FORMAT,
@@ -10033,7 +9956,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MY,
    /* .name        = */ "MY",
-   /* .description = */ "Multiply Unnormalized, long HFP sources and extended HFP result",
+   /* .description = */ "MULTIPLY UNNORMALIZED (long to ext. HFP)",
    /* .opcode[0]   = */ 0xED,
    /* .opcode[1]   = */ 0x3B,
    /* .format      = */ RXF_FORMAT,
@@ -10047,7 +9970,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MYH,
    /* .name        = */ "MYH",
-   /* .description = */ "Multiply Unnormalized, long HFP sources and high-order part of extended HFP result",
+   /* .description = */ "MULTIPLY UNNORM. (long to ext. high HFP)",
    /* .opcode[0]   = */ 0xED,
    /* .opcode[1]   = */ 0x3D,
    /* .format      = */ RXF_FORMAT,
@@ -10061,10 +9984,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MYHR,
    /* .name        = */ "MYHR",
-   /* .description = */ "Multiply Unnormalized, long HFP sources and high-order part of extended HFP result",
+   /* .description = */ "MULTIPLY UNNORM. (long to ext. high HFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x3D,
-   /* .format      = */ RRF_FORMAT,
+   /* .format      = */ RRD_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z9,
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_UsesTarget |
@@ -10074,7 +9997,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MYL,
    /* .name        = */ "MYL",
-   /* .description = */ "Multiply Unnormalized, long HFP sources and low-order part of extended HFP result",
+   /* .description = */ "MULTIPLY UNNORM. (long to ext. low HFP)",
    /* .opcode[0]   = */ 0xED,
    /* .opcode[1]   = */ 0x39,
    /* .format      = */ RXF_FORMAT,
@@ -10088,10 +10011,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MYLR,
    /* .name        = */ "MYLR",
-   /* .description = */ "Multiply Unnormalized, long HFP sources and low-order part of extended HFP result",
+   /* .description = */ "MULTIPLY UNNORM. (long to ext. low HFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x39,
-   /* .format      = */ RRF_FORMAT,
+   /* .format      = */ RRD_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z9,
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_UsesTarget |
@@ -10101,10 +10024,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MYR,
    /* .name        = */ "MYR",
-   /* .description = */ "Multiply Unnormalized, long HFP sources and extended HFP result",
+   /* .description = */ "MULTIPLY UNNORMALIZED (long to ext. HFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x3B,
-   /* .format      = */ RRF_FORMAT,
+   /* .format      = */ RRD_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z9,
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_UsesRegPairForTarget |
@@ -10114,10 +10037,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::NIHF,
    /* .name        = */ "NIHF",
-   /* .description = */ "And Immediate (high)",
+   /* .description = */ "AND IMMEDIATE (high)",
    /* .opcode[0]   = */ 0xC0,
    /* .opcode[1]   = */ 0x0A,
-   /* .format      = */ RIL_FORMAT,
+   /* .format      = */ RILa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z9,
    /* .properties  = */ S390OpProp_TargetHW |
                         S390OpProp_UsesTarget |
@@ -10129,10 +10052,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::NILF,
    /* .name        = */ "NILF",
-   /* .description = */ "And Immediate (low)",
+   /* .description = */ "AND IMMEDIATE (low)",
    /* .opcode[0]   = */ 0xC0,
    /* .opcode[1]   = */ 0x0B,
-   /* .format      = */ RIL_FORMAT,
+   /* .format      = */ RILa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z9,
    /* .properties  = */ S390OpProp_UsesTarget |
                         S390OpProp_SetsCC |
@@ -10143,10 +10066,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::OIHF,
    /* .name        = */ "OIHF",
-   /* .description = */ "Or Immediate (high)",
+   /* .description = */ "OR IMMEDIATE (high)",
    /* .opcode[0]   = */ 0xC0,
    /* .opcode[1]   = */ 0x0C,
-   /* .format      = */ RIL_FORMAT,
+   /* .format      = */ RILa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z9,
    /* .properties  = */ S390OpProp_TargetHW |
                         S390OpProp_UsesTarget |
@@ -10158,10 +10081,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::OILF,
    /* .name        = */ "OILF",
-   /* .description = */ "Or Immediate (low)",
+   /* .description = */ "OR IMMEDIATE (low)",
    /* .opcode[0]   = */ 0xC0,
    /* .opcode[1]   = */ 0x0D,
-   /* .format      = */ RIL_FORMAT,
+   /* .format      = */ RILa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z9,
    /* .properties  = */ S390OpProp_UsesTarget |
                         S390OpProp_SetsCC |
@@ -10172,7 +10095,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::PFPO,
    /* .name        = */ "PFPO",
-   /* .description = */ "perform floating point operations.",
+   /* .description = */ "PERFORM FLOATING-POINT OPERATION",
    /* .opcode[0]   = */ 0x01,
    /* .opcode[1]   = */ 0x0A,
    /* .format      = */ E_FORMAT,
@@ -10184,10 +10107,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::QADTR,
    /* .name        = */ "QADTR",
-   /* .description = */ "Quantize (DFP64)",
+   /* .description = */ "QUANTIZE (long DFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0xF5,
-   /* .format      = */ RRF3_FORMAT,
+   /* .format      = */ RRFb_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z9,
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_Is64Bit |
@@ -10198,10 +10121,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::QAXTR,
    /* .name        = */ "QAXTR",
-   /* .description = */ "Quantize (DFP128)",
+   /* .description = */ "QUANTIZE (extended DFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0xFD,
-   /* .format      = */ RRF3_FORMAT,
+   /* .format      = */ RRFb_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z9,
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_Is64Bit |
@@ -10214,10 +10137,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::RRDTR,
    /* .name        = */ "RRDTR",
-   /* .description = */ "Reround (DFP64)",
+   /* .description = */ "REROUND (long DFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0xF7,
-   /* .format      = */ RRF3_FORMAT,
+   /* .format      = */ RRFb_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z9,
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_Is64Bit |
@@ -10227,10 +10150,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::RRXTR,
    /* .name        = */ "RRXTR",
-   /* .description = */ "Reround (DFP128)",
+   /* .description = */ "REROUND (extended DFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0xFF,
-   /* .format      = */ RRF3_FORMAT,
+   /* .format      = */ RRFb_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z9,
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_Is64Bit |
@@ -10242,13 +10165,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SDTR,
    /* .name        = */ "SDTR",
-   /* .description = */ "Subtract (DFP64)",
+   /* .description = */ "SUBTRACT (long DFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0xD3,
-   /* .format      = */ RRF_FORMAT,
+   /* .format      = */ RRFa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z9,
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_Is64Bit |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOperand1
    },
@@ -10256,7 +10180,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SFASR,
    /* .name        = */ "SFASR",
-   /* .description = */ "Set FPC And Signal",
+   /* .description = */ "SET FPC AND SIGNAL",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x85,
    /* .format      = */ RRE_FORMAT,
@@ -10268,7 +10192,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SLDT,
    /* .name        = */ "SLDT",
-   /* .description = */ "Shift Left Double (DFP64)",
+   /* .description = */ "SHIFT SIGNIFICAND LEFT (long DFP)",
    /* .opcode[0]   = */ 0xED,
    /* .opcode[1]   = */ 0x40,
    /* .format      = */ RXF_FORMAT,
@@ -10281,13 +10205,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SLFI,
    /* .name        = */ "SLFI",
-   /* .description = */ "Subtract Logical Immediate (32)",
+   /* .description = */ "SUBTRACT LOGICAL IMMEDIATE (32)",
    /* .opcode[0]   = */ 0xC2,
    /* .opcode[1]   = */ 0x05,
-   /* .format      = */ RIL_FORMAT,
+   /* .format      = */ RILa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z9,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_IsExtendedImmediate |
                         S390OpProp_SetsOperand1
@@ -10296,13 +10221,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SLGFI,
    /* .name        = */ "SLGFI",
-   /* .description = */ "Subtract Logical Immediate (64<32)",
+   /* .description = */ "SUBTRACT LOGICAL IMMEDIATE (64 <- 32)",
    /* .opcode[0]   = */ 0xC2,
    /* .opcode[1]   = */ 0x04,
-   /* .format      = */ RIL_FORMAT,
+   /* .format      = */ RILa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z9,
    /* .properties  = */ S390OpProp_Is32To64Bit |
                         S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_IsExtendedImmediate |
                         S390OpProp_SetsOperand1
@@ -10311,7 +10237,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SLXT,
    /* .name        = */ "SLXT",
-   /* .description = */ "Shift Left Double (DFP128)",
+   /* .description = */ "SHIFT SIGNIFICAND LEFT (extended DFP)",
    /* .opcode[0]   = */ 0xED,
    /* .opcode[1]   = */ 0x48,
    /* .format      = */ RXF_FORMAT,
@@ -10326,7 +10252,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SRDT,
    /* .name        = */ "SRDT",
-   /* .description = */ "Shift Right Double (DFP64)",
+   /* .description = */ "SHIFT SIGNIFICAND RIGHT (long DFP)",
    /* .opcode[0]   = */ 0xED,
    /* .opcode[1]   = */ 0x41,
    /* .format      = */ RXF_FORMAT,
@@ -10339,7 +10265,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SRNMT,
    /* .name        = */ "SRNMT",
-   /* .description = */ "Set RoundingMode (DFP64)",
+   /* .description = */ "SET DFP ROUNDING MODE",
    /* .opcode[0]   = */ 0xB2,
    /* .opcode[1]   = */ 0xB9,
    /* .format      = */ S_FORMAT,
@@ -10351,7 +10277,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SRSTU,
    /* .name        = */ "SRSTU",
-   /* .description = */ "Search String Unicode",
+   /* .description = */ "SEARCH STRING UNICODE",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0xBE,
    /* .format      = */ RRE_FORMAT,
@@ -10367,7 +10293,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SRXT,
    /* .name        = */ "SRXT",
-   /* .description = */ "Shift Right LongDouble (DFP128)",
+   /* .description = */ "SHIFT SIGNIFICAND RIGHT (extended DFP)",
    /* .opcode[0]   = */ 0xED,
    /* .opcode[1]   = */ 0x49,
    /* .format      = */ RXF_FORMAT,
@@ -10382,10 +10308,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SSKE,
    /* .name        = */ "SSKE",
-   /* .description = */ "Set Storage Key Extended",
+   /* .description = */ "SET STORAGE KEY EXTENDED",
    /* .opcode[0]   = */ 0xB2,
    /* .opcode[1]   = */ 0x2B,
-   /* .format      = */ RRF_FORMAT,
+   /* .format      = */ RRFc_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z9,
    /* .properties  = */ S390OpProp_SetsCC
    },
@@ -10393,7 +10319,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::STCKF,
    /* .name        = */ "STCKF",
-   /* .description = */ "Store Clock Fast",
+   /* .description = */ "STORE CLOCK FAST",
    /* .opcode[0]   = */ 0xB2,
    /* .opcode[1]   = */ 0x7C,
    /* .format      = */ S_FORMAT,
@@ -10406,13 +10332,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SXTR,
    /* .name        = */ "SXTR",
-   /* .description = */ "Subtract (DFP128)",
+   /* .description = */ "SUBTRACT (extended DFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0xDB,
    /* .format      = */ RRFa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z9,
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_Is64Bit |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_UsesRegPairForSource |
                         S390OpProp_UsesRegPairForTarget |
@@ -10422,7 +10349,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::TDCDT,
    /* .name        = */ "TDCDT",
-   /* .description = */ "Test Data Class (DFP64)",
+   /* .description = */ "TEST DATA CLASS (long DFP)",
    /* .opcode[0]   = */ 0xED,
    /* .opcode[1]   = */ 0x54,
    /* .format      = */ RXE_FORMAT,
@@ -10434,7 +10361,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::TDCET,
    /* .name        = */ "TDCET",
-   /* .description = */ "Test Data Class (DFP32)",
+   /* .description = */ "TEST DATA CLASS (short DFP)",
    /* .opcode[0]   = */ 0xED,
    /* .opcode[1]   = */ 0x50,
    /* .format      = */ RXE_FORMAT,
@@ -10446,7 +10373,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::TDCXT,
    /* .name        = */ "TDCXT",
-   /* .description = */ "Test Data Class (DFP64)",
+   /* .description = */ "TEST DATA CLASS (extended DFP)",
    /* .opcode[0]   = */ 0xED,
    /* .opcode[1]   = */ 0x58,
    /* .format      = */ RXE_FORMAT,
@@ -10459,7 +10386,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::TDGDT,
    /* .name        = */ "TDGDT",
-   /* .description = */ "Test Data Group (DFP64)",
+   /* .description = */ "TEST DATA GROUP (long DFP)",
    /* .opcode[0]   = */ 0xED,
    /* .opcode[1]   = */ 0x55,
    /* .format      = */ RXE_FORMAT,
@@ -10472,7 +10399,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::TDGET,
    /* .name        = */ "TDGET",
-   /* .description = */ "Test Data Group (DFP32)",
+   /* .description = */ "TEST DATA GROUP (short DFP)",
    /* .opcode[0]   = */ 0xED,
    /* .opcode[1]   = */ 0x51,
    /* .format      = */ RXE_FORMAT,
@@ -10485,7 +10412,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::TDGXT,
    /* .name        = */ "TDGXT",
-   /* .description = */ "Test Data Group (DFP128)",
+   /* .description = */ "TEST DATA GROUP (extended DFP)",
    /* .opcode[0]   = */ 0xED,
    /* .opcode[1]   = */ 0x59,
    /* .format      = */ RXE_FORMAT,
@@ -10499,10 +10426,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::TROO,
    /* .name        = */ "TROO",
-   /* .description = */ "Translate One to One",
+   /* .description = */ "TRANSLATE ONE TO ONE",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0x93,
-   /* .format      = */ RRE_FORMAT,
+   /* .format      = */ RRFc_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z9,
    /* .properties  = */ S390OpProp_UsesTarget |
                         S390OpProp_SetsCC |
@@ -10518,10 +10445,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::TROT,
    /* .name        = */ "TROT",
-   /* .description = */ "Translate One to Two",
+   /* .description = */ "TRANSLATE ONE TO TWO",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0x92,
-   /* .format      = */ RRE_FORMAT,
+   /* .format      = */ RRFc_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z9,
    /* .properties  = */ S390OpProp_UsesTarget |
                         S390OpProp_SetsCC |
@@ -10537,10 +10464,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::TRTO,
    /* .name        = */ "TRTO",
-   /* .description = */ "Translate Two to One",
+   /* .description = */ "TRANSLATE TWO TO ONE",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0x91,
-   /* .format      = */ RRE_FORMAT,
+   /* .format      = */ RRFc_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z9,
    /* .properties  = */ S390OpProp_UsesTarget |
                         S390OpProp_SetsCC |
@@ -10556,10 +10483,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::TRTR,
    /* .name        = */ "TRTR",
-   /* .description = */ "Translate and Test Reverse",
+   /* .description = */ "TRANSLATE AND TEST REVERSE",
    /* .opcode[0]   = */ 0xD0,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ SS_FORMAT,
+   /* .format      = */ SSa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z9,
    /* .properties  = */ S390OpProp_ImplicitlyUsesGPR1 |
                         S390OpProp_ImplicitlyUsesGPR2 |
@@ -10574,10 +10501,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::TRTT,
    /* .name        = */ "TRTT",
-   /* .description = */ "Translate Two to Two",
+   /* .description = */ "TRANSLATE TWO TO TWO",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0x90,
-   /* .format      = */ RRE_FORMAT,
+   /* .format      = */ RRFc_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z9,
    /* .properties  = */ S390OpProp_UsesTarget |
                         S390OpProp_SetsCC |
@@ -10593,10 +10520,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::XIHF,
    /* .name        = */ "XIHF",
-   /* .description = */ "Exclusive Or Immediate (high)",
+   /* .description = */ "EXCLUSIVE OR IMMEDIATE (high)",
    /* .opcode[0]   = */ 0xC0,
    /* .opcode[1]   = */ 0x06,
-   /* .format      = */ RIL_FORMAT,
+   /* .format      = */ RILa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z9,
    /* .properties  = */ S390OpProp_TargetHW |
                         S390OpProp_UsesTarget |
@@ -10608,10 +10535,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::XILF,
    /* .name        = */ "XILF",
-   /* .description = */ "Exclusive Or Immediate (low)",
+   /* .description = */ "EXCLUSIVE OR IMMEDIATE (low)",
    /* .opcode[0]   = */ 0xC0,
    /* .opcode[1]   = */ 0x07,
-   /* .format      = */ RIL_FORMAT,
+   /* .format      = */ RILa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z9,
    /* .properties  = */ S390OpProp_UsesTarget |
                         S390OpProp_SetsCC |
@@ -10622,12 +10549,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::AGSI,
    /* .name        = */ "AGSI",
-   /* .description = */ "Add Direct to Memory (64)",
+   /* .description = */ "ADD IMMEDIATE (64 <- 8)",
    /* .opcode[0]   = */ 0xEB,
-   /* .opcode[1]   = */ 0x7a,
+   /* .opcode[1]   = */ 0x7A,
    /* .format      = */ SIY_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z10,
    /* .properties  = */ S390OpProp_Is64Bit |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOverflowFlag |
                         S390OpProp_IsLoad |
@@ -10638,12 +10566,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::ALGSI,
    /* .name        = */ "ALGSI",
-   /* .description = */ "Add Logical Direct to Memory (64)",
+   /* .description = */ "ADD LOGICAL WITH SIGNED IMMEDIATE (64 <- 8)",
    /* .opcode[0]   = */ 0xEB,
    /* .opcode[1]   = */ 0x7E,
    /* .format      = */ SIY_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z10,
    /* .properties  = */ S390OpProp_Is64Bit |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOverflowFlag |
                         S390OpProp_IsLoad |
@@ -10654,12 +10583,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::ALSI,
    /* .name        = */ "ALSI",
-   /* .description = */ "Add Logical Direct to Memory",
+   /* .description = */ "ADD LOGICAL WITH SIGNED IMMEDIATE (32 <- 8)",
    /* .opcode[0]   = */ 0xEB,
    /* .opcode[1]   = */ 0x6E,
    /* .format      = */ SIY_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z10,
    /* .properties  = */ S390OpProp_Is32Bit |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOverflowFlag |
                         S390OpProp_IsLoad |
@@ -10670,12 +10600,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::ASI,
    /* .name        = */ "ASI",
-   /* .description = */ "Add Direct to Memory",
+   /* .description = */ "ADD IMMEDIATE (32 <- 8)",
    /* .opcode[0]   = */ 0xEB,
-   /* .opcode[1]   = */ 0x6a,
+   /* .opcode[1]   = */ 0x6A,
    /* .format      = */ SIY_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z10,
    /* .properties  = */ S390OpProp_Is32Bit |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOverflowFlag |
                         S390OpProp_IsLoad |
@@ -10686,13 +10617,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CGFRL,
    /* .name        = */ "CGFRL",
-   /* .description = */ "Compare Relative Long (32 < 64)",
+   /* .description = */ "COMPARE RELATIVE LONG (64 <- 32)",
    /* .opcode[0]   = */ 0xC6,
    /* .opcode[1]   = */ 0x0C,
-   /* .format      = */ RIL_FORMAT,
+   /* .format      = */ RILb_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z10,
    /* .properties  = */ S390OpProp_Is32To64Bit |
                         S390OpProp_IsCompare |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsCompareFlag |
                         S390OpProp_IsLoad |
                         S390OpProp_IsExtendedImmediate |
@@ -10702,13 +10634,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CGHRL,
    /* .name        = */ "CGHRL",
-   /* .description = */ "Compare Halfword Relative Long (64)",
+   /* .description = */ "COMPARE HALFWORD RELATIVE LONG (64 <- 16)",
    /* .opcode[0]   = */ 0xC6,
    /* .opcode[1]   = */ 0x04,
-   /* .format      = */ RIL_FORMAT,
+   /* .format      = */ RILb_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z10,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_IsCompare |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsCompareFlag |
                         S390OpProp_IsLoad |
                         S390OpProp_IsExtendedImmediate
@@ -10717,13 +10650,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CGHSI,
    /* .name        = */ "CGHSI",
-   /* .description = */ "Compare Direct to Memory Halfword Immediate (64)",
+   /* .description = */ "COMPARE HALFWORD IMMEDIATE (64 <- 16)",
    /* .opcode[0]   = */ 0xE5,
    /* .opcode[1]   = */ 0x58,
    /* .format      = */ SIL_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z10,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_IsCompare |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsCompareFlag |
                         S390OpProp_IsLoad
    },
@@ -10731,7 +10665,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CGIB,
    /* .name        = */ "CGIB",
-   /* .description = */ "Compare Immediate And Branch (64)",
+   /* .description = */ "COMPARE IMMEDIATE AND BRANCH (64 <- 8)",
    /* .opcode[0]   = */ 0xEC,
    /* .opcode[1]   = */ 0xFC,
    /* .format      = */ RIS_FORMAT,
@@ -10744,24 +10678,27 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CGIJ,
    /* .name        = */ "CGIJ",
-   /* .description = */ "Compare Immediate And Branch Relative (64)",
+   /* .description = */ "COMPARE IMMEDIATE AND BRANCH RELATIVE (64 <- 8)",
    /* .opcode[0]   = */ 0xEC,
    /* .opcode[1]   = */ 0x7C,
-   /* .format      = */ RIE_FORMAT,
+   /* .format      = */ RIEc_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z10,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_IsCompare |
-                        S390OpProp_BranchOp |
-                        S390OpProp_SetsCC
+
+                        // At binary encoding we may determine the branch distance is too large at which point we have
+                        // no choice but to generate a compare and branch instruction pair
+                        S390OpProp_SetsCC |
+                        S390OpProp_BranchOp
    },
 
    {
    /* .mnemonic    = */ OMR::InstOpCode::CGIT,
    /* .name        = */ "CGIT",
-   /* .description = */ "Compare Immidiate And Trap (64)",
+   /* .description = */ "COMPARE IMMEDIATE AND TRAP (64 <- 16)",
    /* .opcode[0]   = */ 0xEC,
    /* .opcode[1]   = */ 0x70,
-   /* .format      = */ RIE_FORMAT,
+   /* .format      = */ RIEa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z10,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_IsCompare |
@@ -10771,7 +10708,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CGRB,
    /* .name        = */ "CGRB",
-   /* .description = */ "Compare And Branch (64)",
+   /* .description = */ "COMPARE AND BRANCH (64)",
    /* .opcode[0]   = */ 0xEC,
    /* .opcode[1]   = */ 0xE4,
    /* .format      = */ RRS_FORMAT,
@@ -10784,27 +10721,31 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CGRJ,
    /* .name        = */ "CGRJ",
-   /* .description = */ "Compare And Branch Relative (64)",
+   /* .description = */ "COMPARE AND BRANCH RELATIVE (64)",
    /* .opcode[0]   = */ 0xEC,
    /* .opcode[1]   = */ 0x64,
-   /* .format      = */ RIE_FORMAT,
+   /* .format      = */ RIEb_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z10,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_IsCompare |
-                        S390OpProp_BranchOp |
-                        S390OpProp_SetsCC
+
+                        // At binary encoding we may determine the branch distance is too large at which point we have
+                        // no choice but to generate a compare and branch instruction pair
+                        S390OpProp_SetsCC |
+                        S390OpProp_BranchOp
    },
 
    {
    /* .mnemonic    = */ OMR::InstOpCode::CGRL,
    /* .name        = */ "CGRL",
-   /* .description = */ "Compare Relative Long (64)",
+   /* .description = */ "COMPARE RELATIVE LONG (64)",
    /* .opcode[0]   = */ 0xC6,
    /* .opcode[1]   = */ 0x08,
-   /* .format      = */ RIL_FORMAT,
+   /* .format      = */ RILb_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z10,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_IsCompare |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsCompareFlag |
                         S390OpProp_IsLoad |
                         S390OpProp_IsExtendedImmediate |
@@ -10814,10 +10755,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CGRT,
    /* .name        = */ "CGRT",
-   /* .description = */ "Compare And Trap (64)",
+   /* .description = */ "COMPARE AND TRAP (64)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0x60,
-   /* .format      = */ RRF2_FORMAT,
+   /* .format      = */ RRFc_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z10,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_IsCompare |
@@ -10827,13 +10768,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CHHSI,
    /* .name        = */ "CHHSI",
-   /* .description = */ "Compare Direct to Memory Halfword Immediate (16)",
+   /* .description = */ "COMPARE HALFWORD IMMEDIATE (16 <- 16)",
    /* .opcode[0]   = */ 0xE5,
    /* .opcode[1]   = */ 0x54,
    /* .format      = */ SIL_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z10,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_IsCompare |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsCompareFlag |
                         S390OpProp_IsLoad
    },
@@ -10841,13 +10783,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CHRL,
    /* .name        = */ "CHRL",
-   /* .description = */ "Compare Halfword Relative Long (32)",
+   /* .description = */ "COMPARE HALFWORD RELATIVE LONG (32 <- 16)",
    /* .opcode[0]   = */ 0xC6,
    /* .opcode[1]   = */ 0x05,
-   /* .format      = */ RIL_FORMAT,
+   /* .format      = */ RILb_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z10,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_IsCompare |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsCompareFlag |
                         S390OpProp_IsLoad |
                         S390OpProp_IsExtendedImmediate
@@ -10856,13 +10799,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CHSI,
    /* .name        = */ "CHSI",
-   /* .description = */ "Compare Direct to Memory Halfword Immediate (32)",
+   /* .description = */ "COMPARE HALFWORD IMMEDIATE (32 <- 16)",
    /* .opcode[0]   = */ 0xE5,
    /* .opcode[1]   = */ 0x5C,
    /* .format      = */ SIL_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z10,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_IsCompare |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsCompareFlag |
                         S390OpProp_IsLoad
    },
@@ -10870,7 +10814,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CIB,
    /* .name        = */ "CIB",
-   /* .description = */ "Compare Immediate And Branch (32)",
+   /* .description = */ "COMPARE IMMEDIATE AND BRANCH (32 <- 8)",
    /* .opcode[0]   = */ 0xEC,
    /* .opcode[1]   = */ 0xFE,
    /* .format      = */ RIS_FORMAT,
@@ -10883,24 +10827,27 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CIJ,
    /* .name        = */ "CIJ",
-   /* .description = */ "Compare Immediate And Branch Relative(32)",
+   /* .description = */ "COMPARE IMMEDIATE AND BRANCH RELATIVE (32 <- 8)",
    /* .opcode[0]   = */ 0xEC,
    /* .opcode[1]   = */ 0x7E,
-   /* .format      = */ RIE_FORMAT,
+   /* .format      = */ RIEc_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z10,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_IsCompare |
-                        S390OpProp_BranchOp |
-                        S390OpProp_SetsCC
+
+                        // At binary encoding we may determine the branch distance is too large at which point we have
+                        // no choice but to generate a compare and branch instruction pair
+                        S390OpProp_SetsCC |
+                        S390OpProp_BranchOp
    },
 
    {
    /* .mnemonic    = */ OMR::InstOpCode::CIT,
    /* .name        = */ "CIT",
-   /* .description = */ "Compare Immidiate And Trap (32)",
+   /* .description = */ "COMPARE IMMEDIATE AND TRAP (32 <- 16)",
    /* .opcode[0]   = */ 0xEC,
    /* .opcode[1]   = */ 0x72,
-   /* .format      = */ RIE_FORMAT,
+   /* .format      = */ RIEa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z10,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_IsCompare |
@@ -10910,13 +10857,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CLFHSI,
    /* .name        = */ "CLFHSI",
-   /* .description = */ "Compare Logical Immediate (32)",
+   /* .description = */ "COMPARE LOGICAL IMMEDIATE (32 <- 16)",
    /* .opcode[0]   = */ 0xE5,
    /* .opcode[1]   = */ 0x5D,
    /* .format      = */ SIL_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z10,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_IsCompare |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsCompareFlag |
                         S390OpProp_IsLoad
    },
@@ -10924,10 +10872,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CLFIT,
    /* .name        = */ "CLFIT",
-   /* .description = */ "Compare Logical Immidiate And Trap (32)",
+   /* .description = */ "COMPARE LOGICAL IMMEDIATE AND TRAP (32 <- 16)",
    /* .opcode[0]   = */ 0xEC,
    /* .opcode[1]   = */ 0x73,
-   /* .format      = */ RIE_FORMAT,
+   /* .format      = */ RIEa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z10,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_IsCompare |
@@ -10937,13 +10885,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CLGFRL,
    /* .name        = */ "CLGFRL",
-   /* .description = */ "Compare Logical Relative Long (32 < 64)",
+   /* .description = */ "COMPARE LOGICAL RELATIVE LONG (64 <- 32)",
    /* .opcode[0]   = */ 0xC6,
    /* .opcode[1]   = */ 0x0E,
-   /* .format      = */ RIL_FORMAT,
+   /* .format      = */ RILb_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z10,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_IsCompare |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsCompareFlag |
                         S390OpProp_IsLoad |
                         S390OpProp_IsExtendedImmediate |
@@ -10953,13 +10902,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CLGHRL,
    /* .name        = */ "CLGHRL",
-   /* .description = */ "Compare Logical Relative Long Halfword (64)",
+   /* .description = */ "COMPARE LOGICAL RELATIVE LONG (64 <- 16)",
    /* .opcode[0]   = */ 0xC6,
    /* .opcode[1]   = */ 0x06,
-   /* .format      = */ RIL_FORMAT,
+   /* .format      = */ RILb_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z10,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_IsCompare |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsCompareFlag |
                         S390OpProp_IsLoad |
                         S390OpProp_IsExtendedImmediate |
@@ -10969,13 +10919,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CLGHSI,
    /* .name        = */ "CLGHSI",
-   /* .description = */ "Compare Logical Immediate (64)",
+   /* .description = */ "COMPARE LOGICAL IMMEDIATE (64 <- 16)",
    /* .opcode[0]   = */ 0xE5,
    /* .opcode[1]   = */ 0x59,
    /* .format      = */ SIL_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z10,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_IsCompare |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsCompareFlag |
                         S390OpProp_IsLoad
    },
@@ -10983,7 +10934,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CLGIB,
    /* .name        = */ "CLGIB",
-   /* .description = */ "Compare Logical Immediate And Branch (64)",
+   /* .description = */ "COMPARE LOGICAL IMMEDIATE AND BRANCH (64 <- 8)",
    /* .opcode[0]   = */ 0xEC,
    /* .opcode[1]   = */ 0xFD,
    /* .format      = */ RIS_FORMAT,
@@ -10996,23 +10947,27 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CLGIJ,
    /* .name        = */ "CLGIJ",
-   /* .description = */ "Compare Logical Immediate And Branch Relative (64)",
+   /* .description = */ "COMPARE LOGICAL IMMEDIATE AND BRANCH RELATIVE (64 <- 8)",
    /* .opcode[0]   = */ 0xEC,
    /* .opcode[1]   = */ 0x7D,
-   /* .format      = */ RIE_FORMAT,
+   /* .format      = */ RIEc_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z10,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_IsCompare |
+
+                        // At binary encoding we may determine the branch distance is too large at which point we have
+                        // no choice but to generate a compare and branch instruction pair
+                        S390OpProp_SetsCC |
                         S390OpProp_BranchOp
    },
 
    {
    /* .mnemonic    = */ OMR::InstOpCode::CLGIT,
    /* .name        = */ "CLGIT",
-   /* .description = */ "Compare Logical Immidiate And Trap (64)",
+   /* .description = */ "COMPARE LOGICAL IMMEDIATE AND TRAP (64 <- 16)",
    /* .opcode[0]   = */ 0xEC,
    /* .opcode[1]   = */ 0x71,
-   /* .format      = */ RIE_FORMAT,
+   /* .format      = */ RIEa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z10,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_IsCompare |
@@ -11022,7 +10977,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CLGRB,
    /* .name        = */ "CLGRB",
-   /* .description = */ "Compare Logical And Branch (64)",
+   /* .description = */ "COMPARE LOGICAL AND BRANCH (64)",
    /* .opcode[0]   = */ 0xEC,
    /* .opcode[1]   = */ 0xE5,
    /* .format      = */ RRS_FORMAT,
@@ -11035,26 +10990,31 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CLGRJ,
    /* .name        = */ "CLGRJ",
-   /* .description = */ "Compare Logical And Branch Relative (64)",
+   /* .description = */ "COMPARE LOGICAL AND BRANCH RELATIVE (64)",
    /* .opcode[0]   = */ 0xEC,
    /* .opcode[1]   = */ 0x65,
-   /* .format      = */ RIE_FORMAT,
+   /* .format      = */ RIEb_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z10,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_IsCompare |
+
+                        // At binary encoding we may determine the branch distance is too large at which point we have
+                        // no choice but to generate a compare and branch instruction pair
+                        S390OpProp_SetsCC |
                         S390OpProp_BranchOp
    },
 
    {
    /* .mnemonic    = */ OMR::InstOpCode::CLGRL,
    /* .name        = */ "CLGRL",
-   /* .description = */ "Compare Logical Relative Long (64)",
+   /* .description = */ "COMPARE LOGICAL RELATIVE LONG (64)",
    /* .opcode[0]   = */ 0xC6,
    /* .opcode[1]   = */ 0x0A,
-   /* .format      = */ RIL_FORMAT,
+   /* .format      = */ RILb_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z10,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_IsCompare |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsCompareFlag |
                         S390OpProp_IsLoad |
                         S390OpProp_IsExtendedImmediate |
@@ -11064,10 +11024,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CLGRT,
    /* .name        = */ "CLGRT",
-   /* .description = */ "Compare Logical And Trap (64)",
+   /* .description = */ "COMPARE LOGICAL AND TRAP (64)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0x61,
-   /* .format      = */ RRF2_FORMAT,
+   /* .format      = */ RRFc_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z10,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_IsCompare |
@@ -11077,13 +11037,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CLHHSI,
    /* .name        = */ "CLHHSI",
-   /* .description = */ "Compare Logical Immediate (16)",
+   /* .description = */ "COMPARE LOGICAL IMMEDIATE (16 <- 16)",
    /* .opcode[0]   = */ 0xE5,
    /* .opcode[1]   = */ 0x55,
    /* .format      = */ SIL_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z10,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_IsCompare |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsCompareFlag |
                         S390OpProp_IsLoad
    },
@@ -11091,13 +11052,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CLHRL,
    /* .name        = */ "CLHRL",
-   /* .description = */ "Compare Logical Relative Long Halfword (32)",
+   /* .description = */ "COMPARE LOGICAL RELATIVE LONG (32 <- 16)",
    /* .opcode[0]   = */ 0xC6,
    /* .opcode[1]   = */ 0x07,
-   /* .format      = */ RIL_FORMAT,
+   /* .format      = */ RILb_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z10,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_IsCompare |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsCompareFlag |
                         S390OpProp_IsLoad |
                         S390OpProp_IsExtendedImmediate |
@@ -11107,7 +11069,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CLIB,
    /* .name        = */ "CLIB",
-   /* .description = */ "Compare Logical Immediate And Branch (32)",
+   /* .description = */ "COMPARE LOGICAL IMMEDIATE AND BRANCH (32 <- 8)",
    /* .opcode[0]   = */ 0xEC,
    /* .opcode[1]   = */ 0xFF,
    /* .format      = */ RIS_FORMAT,
@@ -11120,20 +11082,24 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CLIJ,
    /* .name        = */ "CLIJ",
-   /* .description = */ "Compare Logical Immidiate And Branch Relative (32)",
+   /* .description = */ "COMPARE LOGICAL IMMEDIATE AND BRANCH RELATIVE (32 <- 8)",
    /* .opcode[0]   = */ 0xEC,
    /* .opcode[1]   = */ 0x7F,
-   /* .format      = */ RIE_FORMAT,
+   /* .format      = */ RIEc_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z10,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_IsCompare |
+
+                        // At binary encoding we may determine the branch distance is too large at which point we have
+                        // no choice but to generate a compare and branch instruction pair
+                        S390OpProp_SetsCC |
                         S390OpProp_BranchOp
    },
 
    {
    /* .mnemonic    = */ OMR::InstOpCode::CLRB,
    /* .name        = */ "CLRB",
-   /* .description = */ "Compare Logical And Branch (32)",
+   /* .description = */ "COMPARE LOGICAL AND BRANCH (32)",
    /* .opcode[0]   = */ 0xEC,
    /* .opcode[1]   = */ 0xF7,
    /* .format      = */ RRS_FORMAT,
@@ -11146,26 +11112,31 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CLRJ,
    /* .name        = */ "CLRJ",
-   /* .description = */ "Compare Logical And Branch Relative (32)",
+   /* .description = */ "COMPARE LOGICAL AND BRANCH RELATIVE (32)",
    /* .opcode[0]   = */ 0xEC,
    /* .opcode[1]   = */ 0x77,
-   /* .format      = */ RIE_FORMAT,
+   /* .format      = */ RIEb_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z10,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_IsCompare |
+
+                        // At binary encoding we may determine the branch distance is too large at which point we have
+                        // no choice but to generate a compare and branch instruction pair
+                        S390OpProp_SetsCC |
                         S390OpProp_BranchOp
    },
 
    {
    /* .mnemonic    = */ OMR::InstOpCode::CLRL,
    /* .name        = */ "CLRL",
-   /* .description = */ "Compare Logical Relative Long",
+   /* .description = */ "COMPARE LOGICAL RELATIVE LONG (32)",
    /* .opcode[0]   = */ 0xC6,
    /* .opcode[1]   = */ 0x0F,
-   /* .format      = */ RIL_FORMAT,
+   /* .format      = */ RILb_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z10,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_IsCompare |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsCompareFlag |
                         S390OpProp_IsLoad |
                         S390OpProp_IsExtendedImmediate |
@@ -11175,10 +11146,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CLRT,
    /* .name        = */ "CLRT",
-   /* .description = */ "Compare Logical And Trap (32)",
+   /* .description = */ "COMPARE LOGICAL AND TRAP (32)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0x73,
-   /* .format      = */ RRF2_FORMAT,
+   /* .format      = */ RRFc_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z10,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_IsCompare |
@@ -11188,7 +11159,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CRB,
    /* .name        = */ "CRB",
-   /* .description = */ "Compare And Branch (32)",
+   /* .description = */ "COMPARE AND BRANCH (32)",
    /* .opcode[0]   = */ 0xEC,
    /* .opcode[1]   = */ 0xF6,
    /* .format      = */ RRS_FORMAT,
@@ -11201,27 +11172,31 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CRJ,
    /* .name        = */ "CRJ",
-   /* .description = */ "Compare And Branch Relative (32)",
+   /* .description = */ "COMPARE AND BRANCH RELATIVE (32)",
    /* .opcode[0]   = */ 0xEC,
    /* .opcode[1]   = */ 0x76,
-   /* .format      = */ RIE_FORMAT,
+   /* .format      = */ RIEb_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z10,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_IsCompare |
-                        S390OpProp_BranchOp |
-                        S390OpProp_SetsCC
+
+                        // At binary encoding we may determine the branch distance is too large at which point we have
+                        // no choice but to generate a compare and branch instruction pair
+                        S390OpProp_SetsCC |
+                        S390OpProp_BranchOp
    },
 
    {
    /* .mnemonic    = */ OMR::InstOpCode::CRL,
    /* .name        = */ "CRL",
-   /* .description = */ "Compare Relative Long",
+   /* .description = */ "COMPARE RELATIVE LONG (32)",
    /* .opcode[0]   = */ 0xC6,
    /* .opcode[1]   = */ 0x0D,
-   /* .format      = */ RIL_FORMAT,
+   /* .format      = */ RILb_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z10,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_IsCompare |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsCompareFlag |
                         S390OpProp_IsLoad |
                         S390OpProp_IsExtendedImmediate |
@@ -11231,10 +11206,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CRT,
    /* .name        = */ "CRT",
-   /* .description = */ "Compare And Trap (32)",
+   /* .description = */ "COMPARE AND TRAP (32)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0x72,
-   /* .format      = */ RRF2_FORMAT,
+   /* .format      = */ RRFc_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z10,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_IsCompare |
@@ -11244,10 +11219,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::ECAG,
    /* .name        = */ "ECAG",
-   /* .description = */ "Extract Cache Attribute",
+   /* .description = */ "EXTRACT CPU ATTRIBUTE",
    /* .opcode[0]   = */ 0xEB,
    /* .opcode[1]   = */ 0x4C,
-   /* .format      = */ RSY_FORMAT,
+   /* .format      = */ RSYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z10,
    /* .properties  = */ S390OpProp_None
    },
@@ -11255,10 +11230,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::EXRL,
    /* .name        = */ "EXRL",
-   /* .description = */ "Execute Relative Long",
+   /* .description = */ "EXECUTE RELATIVE LONG",
    /* .opcode[0]   = */ 0xC6,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ RIL_FORMAT,
+   /* .format      = */ RILb_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z10,
    /* .properties  = */ S390OpProp_IsStore |
                         S390OpProp_SetsCC
@@ -11267,10 +11242,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LAEY,
    /* .name        = */ "LAEY",
-   /* .description = */ "Load Address Extended Y Form",
+   /* .description = */ "LOAD ADDRESS EXTENDED",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x75,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z10,
    /* .properties  = */ S390OpProp_LongDispSupported |
                         S390OpProp_SetsOperand1
@@ -11279,10 +11254,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LGFRL,
    /* .name        = */ "LGFRL",
-   /* .description = */ "Load Relative Long (64 < 32)",
+   /* .description = */ "LOAD RELATIVE LONG (64 <- 32)",
    /* .opcode[0]   = */ 0xC4,
    /* .opcode[1]   = */ 0x0C,
-   /* .format      = */ RIL_FORMAT,
+   /* .format      = */ RILb_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z10,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_IsLoad |
@@ -11292,10 +11267,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LGRL,
    /* .name        = */ "LGRL",
-   /* .description = */ "Load Relative Long (64)",
+   /* .description = */ "LOAD RELATIVE LONG (64)",
    /* .opcode[0]   = */ 0xC4,
    /* .opcode[1]   = */ 0x08,
-   /* .format      = */ RIL_FORMAT,
+   /* .format      = */ RILb_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z10,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_IsLoad |
@@ -11305,10 +11280,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LLGFRL,
    /* .name        = */ "LLGFRL",
-   /* .description = */ "Load Logical Relative Long (64 < 32)",
+   /* .description = */ "LOAD LOGICAL RELATIVE LONG (64 <- 32)",
    /* .opcode[0]   = */ 0xC4,
    /* .opcode[1]   = */ 0x0E,
-   /* .format      = */ RIL_FORMAT,
+   /* .format      = */ RILb_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z10,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_IsLoad |
@@ -11318,10 +11293,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LRL,
    /* .name        = */ "LRL",
-   /* .description = */ "Load Relative Long (32)",
+   /* .description = */ "LOAD RELATIVE LONG (32)",
    /* .opcode[0]   = */ 0xC4,
    /* .opcode[1]   = */ 0x0D,
-   /* .format      = */ RIL_FORMAT,
+   /* .format      = */ RILb_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z10,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_IsLoad |
@@ -11331,13 +11306,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LTGF,
    /* .name        = */ "LTGF",
-   /* .description = */ "(LongDisp) Load and Test (64 < 32)",
+   /* .description = */ "LOAD AND TEST (64 <- 32)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x32,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z10,
    /* .properties  = */ S390OpProp_IsLoad |
                         S390OpProp_Is32To64Bit |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_LongDispSupported |
                         S390OpProp_SetsOperand1
@@ -11346,7 +11322,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MC,
    /* .name        = */ "MC",
-   /* .description = */ "Monitor Call",
+   /* .description = */ "MONITOR CALL",
    /* .opcode[0]   = */ 0xAF,
    /* .opcode[1]   = */ 0x00,
    /* .format      = */ SI_FORMAT,
@@ -11357,10 +11333,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MFY,
    /* .name        = */ "MFY",
-   /* .description = */ "Multiply (64 < 32)",
+   /* .description = */ "MULTIPLY (64 <- 32)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x5C,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z10,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_UsesTarget |
@@ -11373,10 +11349,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MHY,
    /* .name        = */ "MHY",
-   /* .description = */ "Multiply Halfword (32)",
+   /* .description = */ "MULTIPLY HALFWORD (32 <- 16)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x7C,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z10,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_UsesTarget |
@@ -11388,10 +11364,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MSFI,
    /* .name        = */ "MSFI",
-   /* .description = */ "Multiply Single Immediate",
+   /* .description = */ "MULTIPLY SINGLE IMMEDIATE (32)",
    /* .opcode[0]   = */ 0xC2,
    /* .opcode[1]   = */ 0x01,
-   /* .format      = */ RIL_FORMAT,
+   /* .format      = */ RILa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z10,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_UsesTarget |
@@ -11402,10 +11378,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MSGFI,
    /* .name        = */ "MSGFI",
-   /* .description = */ "Multiply Single Immediate",
+   /* .description = */ "MULTIPLY SINGLE IMMEDIATE (64 <- 32)",
    /* .opcode[0]   = */ 0xC2,
    /* .opcode[1]   = */ 0x00,
-   /* .format      = */ RIL_FORMAT,
+   /* .format      = */ RILa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z10,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_UsesTarget |
@@ -11416,7 +11392,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MVGHI,
    /* .name        = */ "MVGHI",
-   /* .description = */ "Move and store immediate (64)",
+   /* .description = */ "MOVE (64 <- 16)",
    /* .opcode[0]   = */ 0xE5,
    /* .opcode[1]   = */ 0x48,
    /* .format      = */ SIL_FORMAT,
@@ -11427,7 +11403,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MVHHI,
    /* .name        = */ "MVHHI",
-   /* .description = */ "Move and store immediate (16)",
+   /* .description = */ "MOVE (16 <- 16)",
    /* .opcode[0]   = */ 0xE5,
    /* .opcode[1]   = */ 0x44,
    /* .format      = */ SIL_FORMAT,
@@ -11438,7 +11414,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MVHI,
    /* .name        = */ "MVHI",
-   /* .description = */ "Move and store immediate (32)",
+   /* .description = */ "MOVE (32 <- 16)",
    /* .opcode[0]   = */ 0xE5,
    /* .opcode[1]   = */ 0x4C,
    /* .format      = */ SIL_FORMAT,
@@ -11449,10 +11425,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::PFD,
    /* .name        = */ "PFD",
-   /* .description = */ "Prefetch Data",
+   /* .description = */ "PREFETCH DATA",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x36,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYb_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z10,
    /* .properties  = */ S390OpProp_LongDispSupported
    },
@@ -11460,10 +11436,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::PFDRL,
    /* .name        = */ "PFDRL",
-   /* .description = */ "Prefetch Data Relative Long",
+   /* .description = */ "PREFETCH DATA RELATIVE LONG",
    /* .opcode[0]   = */ 0xC6,
-   /* .opcode[1]   = */ 0x00,
-   /* .format      = */ RIL_FORMAT,
+   /* .opcode[1]   = */ 0x02,
+   /* .format      = */ RILc_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z10,
    /* .properties  = */ S390OpProp_None
    },
@@ -11471,10 +11447,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::RISBG,
    /* .name        = */ "RISBG",
-   /* .description = */ "Rotate Then Insert Selected Bits",
+   /* .description = */ "ROTATE THEN INSERT SELECTED BITS (64)",
    /* .opcode[0]   = */ 0xEC,
    /* .opcode[1]   = */ 0x55,
-   /* .format      = */ RIE_FORMAT,
+   /* .format      = */ RIEf_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z10,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_LongDispSupported |
@@ -11486,12 +11462,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::RNSBG,
    /* .name        = */ "RNSBG",
-   /* .description = */ "Rotate Then AND Selected Bits",
+   /* .description = */ "ROTATE THEN AND SELECTED BITS (64)",
    /* .opcode[0]   = */ 0xEC,
    /* .opcode[1]   = */ 0x54,
-   /* .format      = */ RIE_FORMAT,
+   /* .format      = */ RIEf_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z10,
    /* .properties  = */ S390OpProp_Is64Bit |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_SetsOperand1 |
                         S390OpProp_UsesTarget
@@ -11500,12 +11477,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::ROSBG,
    /* .name        = */ "ROSBG",
-   /* .description = */ "Rotate Then OR Selected Bits",
+   /* .description = */ "ROTATE THEN OR SELECTED BITS (64)",
    /* .opcode[0]   = */ 0xEC,
    /* .opcode[1]   = */ 0x56,
-   /* .format      = */ RIE_FORMAT,
+   /* .format      = */ RIEf_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z10,
    /* .properties  = */ S390OpProp_Is64Bit |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_SetsOperand1 |
                         S390OpProp_UsesTarget
@@ -11514,12 +11492,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::RXSBG,
    /* .name        = */ "RXSBG",
-   /* .description = */ "Rotate Then XOR Selected Bits",
+   /* .description = */ "ROTATE THEN EXCLUSIVE OR SELECT. BITS (64)",
    /* .opcode[0]   = */ 0xEC,
    /* .opcode[1]   = */ 0x57,
-   /* .format      = */ RIE_FORMAT,
+   /* .format      = */ RIEf_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z10,
    /* .properties  = */ S390OpProp_Is64Bit |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_SetsOperand1 |
                         S390OpProp_UsesTarget
@@ -11528,10 +11507,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::STGRL,
    /* .name        = */ "STGRL",
-   /* .description = */ "Store Relative Long (64)",
+   /* .description = */ "STORE RELATIVE LONG (64)",
    /* .opcode[0]   = */ 0xC4,
    /* .opcode[1]   = */ 0x0B,
-   /* .format      = */ RIL_FORMAT,
+   /* .format      = */ RILb_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z10,
    /* .properties  = */ S390OpProp_IsStore |
                         S390OpProp_Is64Bit
@@ -11540,10 +11519,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::STRL,
    /* .name        = */ "STRL",
-   /* .description = */ "Store Relative Long (32)",
+   /* .description = */ "STORE RELATIVE LONG (32)",
    /* .opcode[0]   = */ 0xC4,
    /* .opcode[1]   = */ 0x0F,
-   /* .format      = */ RIL_FORMAT,
+   /* .format      = */ RILb_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z10,
    /* .properties  = */ S390OpProp_IsStore |
                         S390OpProp_Is32Bit
@@ -11552,10 +11531,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::TRTE,
    /* .name        = */ "TRTE",
-   /* .description = */ "Translate and Test Extended",
+   /* .description = */ "TRANSLATE AND TEST EXTENDED",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0xBF,
-   /* .format      = */ RRF_FORMAT,
+   /* .format      = */ RRFc_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z10,
    /* .properties  = */ S390OpProp_UsesTarget |
                         S390OpProp_SetsCC |
@@ -11568,10 +11547,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::TRTRE,
    /* .name        = */ "TRTRE",
-   /* .description = */ "Translate and Test Reversed Extended",
+   /* .description = */ "TRANSLATE AND TEST REVERSE EXTENDED",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0xBD,
-   /* .format      = */ RRF_FORMAT,
+   /* .format      = */ RRFc_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z10,
    /* .properties  = */ S390OpProp_UsesTarget |
                         S390OpProp_SetsCC |
@@ -11584,12 +11563,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::AGHIK,
    /* .name        = */ "AGHIK",
-   /* .description = */ "Add Immediate (64 < 16)",
+   /* .description = */ "ADD IMMEDIATE (64 <- 16)",
    /* .opcode[0]   = */ 0xEC,
    /* .opcode[1]   = */ 0xD9,
-   /* .format      = */ RIE_FORMAT,
+   /* .format      = */ RIEd_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_Is64Bit |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOverflowFlag |
                         S390OpProp_IsExtendedImmediate |
@@ -11599,12 +11579,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::AGRK,
    /* .name        = */ "AGRK",
-   /* .description = */ "Add (32)",
+   /* .description = */ "ADD (64)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0xE8,
    /* .format      = */ RRFa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_Is64Bit |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOverflowFlag |
                         S390OpProp_SetsOperand1
@@ -11613,12 +11594,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::AHHHR,
    /* .name        = */ "AHHHR",
-   /* .description = */ "Add High (32)",
+   /* .description = */ "ADD HIGH (32)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0xC8,
    /* .format      = */ RRFa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
-   /* .properties  = */ S390OpProp_SetsSignFlag |
+   /* .properties  = */ S390OpProp_SetsCC |
+                        S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOverflowFlag |
                         S390OpProp_UsesTarget |
                         S390OpProp_TargetHW |
@@ -11630,12 +11612,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::AHHLR,
    /* .name        = */ "AHHLR",
-   /* .description = */ "Add High (32)",
+   /* .description = */ "ADD HIGH (32)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0xD8,
    /* .format      = */ RRFa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
-   /* .properties  = */ S390OpProp_SetsSignFlag |
+   /* .properties  = */ S390OpProp_SetsCC |
+                        S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOverflowFlag |
                         S390OpProp_UsesTarget |
                         S390OpProp_TargetHW |
@@ -11646,12 +11629,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::AHIK,
    /* .name        = */ "AHIK",
-   /* .description = */ "Add Immediate (32 < 16)",
+   /* .description = */ "ADD IMMEDIATE (32 <- 16)",
    /* .opcode[0]   = */ 0xEC,
    /* .opcode[1]   = */ 0xD8,
-   /* .format      = */ RIE_FORMAT,
+   /* .format      = */ RIEd_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_Is32Bit |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOverflowFlag |
                         S390OpProp_IsExtendedImmediate |
@@ -11661,12 +11645,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::AIH,
    /* .name        = */ "AIH",
-   /* .description = */ "Add Immediate High (32)",
+   /* .description = */ "ADD IMMEDIATE HIGH (32)",
    /* .opcode[0]   = */ 0xCC,
    /* .opcode[1]   = */ 0x08,
-   /* .format      = */ RIL_FORMAT,
+   /* .format      = */ RILa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
-   /* .properties  = */ S390OpProp_SetsSignFlag |
+   /* .properties  = */ S390OpProp_SetsCC |
+                        S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOverflowFlag |
                         S390OpProp_UsesTarget |
                         S390OpProp_TargetHW |
@@ -11677,12 +11662,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::ALGHSIK,
    /* .name        = */ "ALGHSIK",
-   /* .description = */ "Add Logicial With Signed Immediate (64 < 16)",
+   /* .description = */ "ADD LOGICAL WITH SIGNED IMMEDIATE (64 <- 16)",
    /* .opcode[0]   = */ 0xEC,
    /* .opcode[1]   = */ 0xDB,
-   /* .format      = */ RIE_FORMAT,
+   /* .format      = */ RIEd_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_Is64Bit |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_IsExtendedImmediate |
                         S390OpProp_SetsOperand1
@@ -11691,12 +11677,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::ALGRK,
    /* .name        = */ "ALGRK",
-   /* .description = */ "Add Logical (64)",
+   /* .description = */ "ADD LOGICAL (64)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0xEA,
    /* .format      = */ RRFa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_Is64Bit |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_SetsOperand1
    },
@@ -11704,12 +11691,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::ALHHHR,
    /* .name        = */ "ALHHHR",
-   /* .description = */ "Add Logical High (32)",
+   /* .description = */ "ADD LOGICAL HIGH (32)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0xCA,
    /* .format      = */ RRFa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
-   /* .properties  = */ S390OpProp_SetsZeroFlag |
+   /* .properties  = */ S390OpProp_SetsCC |
+                        S390OpProp_SetsZeroFlag |
                         S390OpProp_UsesTarget |
                         S390OpProp_TargetHW |
                         S390OpProp_SrcHW |
@@ -11720,12 +11708,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::ALHHLR,
    /* .name        = */ "ALHHLR",
-   /* .description = */ "Add Logical High (32)",
+   /* .description = */ "ADD LOGICAL HIGH (32)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0xDA,
    /* .format      = */ RRFa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
-   /* .properties  = */ S390OpProp_SetsZeroFlag |
+   /* .properties  = */ S390OpProp_SetsCC |
+                        S390OpProp_SetsZeroFlag |
                         S390OpProp_UsesTarget |
                         S390OpProp_TargetHW |
                         S390OpProp_SrcHW |
@@ -11735,12 +11724,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::ALHSIK,
    /* .name        = */ "ALHSIK",
-   /* .description = */ "Add Logicial With Signed Immediate (32 < 16)",
+   /* .description = */ "ADD LOGICAL WITH SIGNED IMMEDIATE (32 <- 16)",
    /* .opcode[0]   = */ 0xEC,
    /* .opcode[1]   = */ 0xDA,
-   /* .format      = */ RIE_FORMAT,
+   /* .format      = */ RIEd_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_Is32Bit |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_IsExtendedImmediate |
                         S390OpProp_SetsOperand1
@@ -11749,12 +11739,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::ALRK,
    /* .name        = */ "ALRK",
-   /* .description = */ "Add Logical (32)",
+   /* .description = */ "ADD LOGICAL (32)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0xFA,
    /* .format      = */ RRFa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_Is32Bit |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_SetsOperand1
    },
@@ -11762,12 +11753,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::ALSIH,
    /* .name        = */ "ALSIH",
-   /* .description = */ "Add Logical with Signed Immediate High (32)",
+   /* .description = */ "ADD LOGICAL WITH SIGNED IMMEDIATE HIGH (32)",
    /* .opcode[0]   = */ 0xCC,
    /* .opcode[1]   = */ 0x0A,
-   /* .format      = */ RIL_FORMAT,
+   /* .format      = */ RILa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
-   /* .properties  = */ S390OpProp_SetsZeroFlag |
+   /* .properties  = */ S390OpProp_SetsCC |
+                        S390OpProp_SetsZeroFlag |
                         S390OpProp_UsesTarget |
                         S390OpProp_IsExtendedImmediate |
                         S390OpProp_TargetHW |
@@ -11777,10 +11769,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::ALSIHN,
    /* .name        = */ "ALSIHN",
-   /* .description = */ "Add Logical with Signed Immediate High (32)",
+   /* .description = */ "ADD LOGICAL WITH SIGNED IMMEDIATE HIGH (32)",
    /* .opcode[0]   = */ 0xCC,
    /* .opcode[1]   = */ 0x0B,
-   /* .format      = */ RIL_FORMAT,
+   /* .format      = */ RILa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_UsesTarget |
                         S390OpProp_IsExtendedImmediate |
@@ -11791,12 +11783,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::ARK,
    /* .name        = */ "ARK",
-   /* .description = */ "Add (32)",
+   /* .description = */ "ADD (32)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0xF8,
    /* .format      = */ RRFa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_Is32Bit |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOverflowFlag |
                         S390OpProp_SetsOperand1
@@ -11805,10 +11798,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::BRCTH,
    /* .name        = */ "BRCTH",
-   /* .description = */ "Branch Rel. on Count High (32)",
+   /* .description = */ "BRANCH RELATIVE ON COUNT HIGH (32)",
    /* .opcode[0]   = */ 0xCC,
    /* .opcode[1]   = */ 0x06,
-   /* .format      = */ RIL_FORMAT,
+   /* .format      = */ RILb_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_BranchOp |
                         S390OpProp_UsesTarget |
@@ -11820,10 +11813,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CDLFBR,
    /* .name        = */ "CDLFBR",
-   /* .description = */ "Convert from Logical (LB < 32)",
+   /* .description = */ "CONVERT FROM LOGICAL (32 to long BFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x91,
-   /* .format      = */ RRF2_FORMAT,
+   /* .format      = */ RRFe_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_Is32Bit |
@@ -11833,10 +11826,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CDLGBR,
    /* .name        = */ "CDLGBR",
-   /* .description = */ "Convert from Logical (LB < 64)",
+   /* .description = */ "CONVERT FROM LOGICAL (64 to long BFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0xA1,
-   /* .format      = */ RRF2_FORMAT,
+   /* .format      = */ RRFe_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_Is64Bit |
@@ -11846,10 +11839,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CELFBR,
    /* .name        = */ "CELFBR",
-   /* .description = */ "Convert from Logical (SB < 32)",
+   /* .description = */ "CONVERT FROM LOGICAL (32 to short BFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x90,
-   /* .format      = */ RRF2_FORMAT,
+   /* .format      = */ RRFe_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_SingleFP |
@@ -11859,10 +11852,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CELGBR,
    /* .name        = */ "CELGBR",
-   /* .description = */ "Convert from Logical (SB < 64)",
+   /* .description = */ "CONVERT FROM LOGICAL (64 to short BFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0xA0,
-   /* .format      = */ RRF2_FORMAT,
+   /* .format      = */ RRFe_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_SetsOperand1
@@ -11871,12 +11864,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CHF,
    /* .name        = */ "CHF",
-   /* .description = */ "(LongDisp) Compare High (32)",
+   /* .description = */ "COMPARE HIGH (32)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0xCD,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_IsCompare |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsCompareFlag |
                         S390OpProp_IsLoad |
                         S390OpProp_LongDispSupported |
@@ -11886,12 +11880,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CHHR,
    /* .name        = */ "CHHR",
-   /* .description = */ "Compare High (32)",
+   /* .description = */ "COMPARE HIGH (32)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0xCD,
    /* .format      = */ RRE_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_IsCompare |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsCompareFlag |
                         S390OpProp_TargetHW |
                         S390OpProp_SrcHW
@@ -11900,12 +11895,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CHLR,
    /* .name        = */ "CHLR",
-   /* .description = */ "Compare High (32)",
+   /* .description = */ "COMPARE HIGH (32)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0xDD,
    /* .format      = */ RRE_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_IsCompare |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsCompareFlag |
                         S390OpProp_TargetHW
    },
@@ -11913,12 +11909,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CIH,
    /* .name        = */ "CIH",
-   /* .description = */ "Compare Immediate High (32)",
+   /* .description = */ "COMPARE IMMEDIATE HIGH (32)",
    /* .opcode[0]   = */ 0xCC,
    /* .opcode[1]   = */ 0x0D,
-   /* .format      = */ RIL_FORMAT,
+   /* .format      = */ RILa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_IsCompare |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsCompareFlag |
                         S390OpProp_IsExtendedImmediate |
                         S390OpProp_TargetHW
@@ -11927,12 +11924,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CLFDBR,
    /* .name        = */ "CLFDBR",
-   /* .description = */ "Convert to Logical (LB < 32)",
+   /* .description = */ "CONVERT TO LOGICAL (long BFP to 32)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x9D,
-   /* .format      = */ RRF2_FORMAT,
+   /* .format      = */ RRFe_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_DoubleFP |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOverflowFlag |
@@ -11943,12 +11941,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CLFEBR,
    /* .name        = */ "CLFEBR",
-   /* .description = */ "Convert to Logical (SB < 32)",
+   /* .description = */ "CONVERT TO LOGICAL (short BFP to 32)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x9C,
-   /* .format      = */ RRF2_FORMAT,
+   /* .format      = */ RRFe_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_SingleFP |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOverflowFlag |
@@ -11959,13 +11958,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CLFXBR,
    /* .name        = */ "CLFXBR",
-   /* .description = */ "Convert to Logical (EB < 32), note here",
+   /* .description = */ "CONVERT TO LOGICAL (extended BFP to 32)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x9E,
-   /* .format      = */ RRF2_FORMAT,
+   /* .format      = */ RRFe_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_UsesRegPairForSource |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOverflowFlag |
@@ -11975,12 +11975,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CLGDBR,
    /* .name        = */ "CLGDBR",
-   /* .description = */ "Convert to Logical (LB < 64)",
+   /* .description = */ "CONVERT TO LOGICAL (long BFP to 64)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0xAD,
-   /* .format      = */ RRF2_FORMAT,
+   /* .format      = */ RRFe_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_DoubleFP |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOverflowFlag |
@@ -11991,12 +11992,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CLGEBR,
    /* .name        = */ "CLGEBR",
-   /* .description = */ "Convert to Logical (SB < 64)",
+   /* .description = */ "CONVERT TO LOGICAL (short BFP to 64)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0xAC,
-   /* .format      = */ RRF2_FORMAT,
+   /* .format      = */ RRFe_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_SingleFP |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOverflowFlag |
@@ -12007,13 +12009,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CLGXBR,
    /* .name        = */ "CLGXBR",
-   /* .description = */ "Convert to Logical (EB < 64), note here",
+   /* .description = */ "CONVERT TO LOGICAL (extended BFP to 64)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0xAE,
-   /* .format      = */ RRF2_FORMAT,
+   /* .format      = */ RRFe_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_UsesRegPairForSource |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOverflowFlag |
@@ -12023,12 +12026,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CLHF,
    /* .name        = */ "CLHF",
-   /* .description = */ "(LongDisp) Compare Logical High (32)",
+   /* .description = */ "COMPARE LOGICAL HIGH (32)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0xCF,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_IsCompare |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsCompareFlag |
                         S390OpProp_IsLoad |
                         S390OpProp_LongDispSupported |
@@ -12038,12 +12042,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CLHHR,
    /* .name        = */ "CLHHR",
-   /* .description = */ "Compare Logical High (32)",
+   /* .description = */ "COMPARE LOGICAL HIGH (32)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0xCF,
    /* .format      = */ RRE_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_IsCompare |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsCompareFlag |
                         S390OpProp_TargetHW |
                         S390OpProp_SrcHW
@@ -12052,12 +12057,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CLHLR,
    /* .name        = */ "CLHLR",
-   /* .description = */ "Compare Logical High (32)",
+   /* .description = */ "COMPARE LOGICAL HIGH (32)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0xDF,
    /* .format      = */ RRE_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_IsCompare |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsCompareFlag |
                         S390OpProp_TargetHW
    },
@@ -12065,12 +12071,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CLIH,
    /* .name        = */ "CLIH",
-   /* .description = */ "Compare Logical Immediate High (32)",
+   /* .description = */ "COMPARE LOGICAL IMMEDIATE HIGH (32)",
    /* .opcode[0]   = */ 0xCC,
    /* .opcode[1]   = */ 0x0F,
-   /* .format      = */ RIL_FORMAT,
+   /* .format      = */ RILa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_IsCompare |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsCompareFlag |
                         S390OpProp_IsExtendedImmediate |
                         S390OpProp_TargetHW
@@ -12079,10 +12086,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CXLFBR,
    /* .name        = */ "CXLFBR",
-   /* .description = */ "Convert from Logical (EB < 32)",
+   /* .description = */ "CONVERT FROM LOGICAL (32 to extended BFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0x92,
-   /* .format      = */ RRF2_FORMAT,
+   /* .format      = */ RRFe_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_UsesRegPairForTarget |
@@ -12092,10 +12099,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CXLGBR,
    /* .name        = */ "CXLGBR",
-   /* .description = */ "Convert from Logical (EB < 64)",
+   /* .description = */ "CONVERT FROM LOGICAL (64 to extended BFP)",
    /* .opcode[0]   = */ 0xB3,
    /* .opcode[1]   = */ 0xA2,
-   /* .format      = */ RRF2_FORMAT,
+   /* .format      = */ RRFe_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_UsesRegPairForTarget |
@@ -12105,10 +12112,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::KMCTR,
    /* .name        = */ "KMCTR",
-   /* .description = */ "Cipher Message with Counter",
+   /* .description = */ "CIPHER MESSAGE WITH COUNTER",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0x2D,
-   /* .format      = */ RRF_FORMAT,
+   /* .format      = */ RRFb_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_SetsCC |
                         S390OpProp_IsLoad |
@@ -12122,7 +12129,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::KMF,
    /* .name        = */ "KMF",
-   /* .description = */ "Cipher Message with CFB (Cipher Feedback)",
+   /* .description = */ "CIPHER MESSAGE WITH CIPHER FEEDBACK",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0x2A,
    /* .format      = */ RRE_FORMAT,
@@ -12139,7 +12146,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::KMO,
    /* .name        = */ "KMO",
-   /* .description = */ "Cipher Message with OFB (Output Feedback)",
+   /* .description = */ "CIPHER MESSAGE WITH OUTPUT FEEDBACK",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0x2B,
    /* .format      = */ RRE_FORMAT,
@@ -12156,15 +12163,16 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LAA,
    /* .name        = */ "LAA",
-   /* .description = */ "Load And Add (32)",
+   /* .description = */ "LOAD AND ADD (32)",
    /* .opcode[0]   = */ 0xEB,
    /* .opcode[1]   = */ 0xF8,
-   /* .format      = */ RSY_FORMAT,
+   /* .format      = */ RSYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_IsLoad |
                         S390OpProp_IsStore |
                         S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOverflowFlag |
                         S390OpProp_LongDispSupported |
@@ -12174,15 +12182,16 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LAAG,
    /* .name        = */ "LAAG",
-   /* .description = */ "Load And Add (64)",
+   /* .description = */ "LOAD AND ADD (64)",
    /* .opcode[0]   = */ 0xEB,
    /* .opcode[1]   = */ 0xE8,
-   /* .format      = */ RSY_FORMAT,
+   /* .format      = */ RSYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_IsLoad |
                         S390OpProp_IsStore |
                         S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOverflowFlag |
                         S390OpProp_LongDispSupported |
@@ -12192,14 +12201,15 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LAAL,
    /* .name        = */ "LAAL",
-   /* .description = */ "Load And Add Logical (32)",
+   /* .description = */ "LOAD AND ADD LOGICAL (32)",
    /* .opcode[0]   = */ 0xEB,
    /* .opcode[1]   = */ 0xFA,
-   /* .format      = */ RSY_FORMAT,
+   /* .format      = */ RSYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_IsLoad |
                         S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_LongDispSupported |
                         S390OpProp_SetsOperand1
@@ -12208,14 +12218,15 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LAALG,
    /* .name        = */ "LAALG",
-   /* .description = */ "Load And Add Logical (64)",
+   /* .description = */ "LOAD AND ADD LOGICAL (64)",
    /* .opcode[0]   = */ 0xEB,
    /* .opcode[1]   = */ 0xEA,
-   /* .format      = */ RSY_FORMAT,
+   /* .format      = */ RSYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_IsLoad |
                         S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_LongDispSupported |
                         S390OpProp_SetsOperand1
@@ -12224,15 +12235,16 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LAN,
    /* .name        = */ "LAN",
-   /* .description = */ "(LongDisp) Load And AND (32)",
+   /* .description = */ "LOAD AND AND (32)",
    /* .opcode[0]   = */ 0xEB,
    /* .opcode[1]   = */ 0xF4,
-   /* .format      = */ RSY_FORMAT,
+   /* .format      = */ RSYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_IsLoad |
                         S390OpProp_IsStore |
                         S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_LongDispSupported |
                         S390OpProp_SetsOperand1
@@ -12241,15 +12253,16 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LANG,
    /* .name        = */ "LANG",
-   /* .description = */ "(LongDisp) Load And AND (64)",
+   /* .description = */ "LOAD AND AND (64)",
    /* .opcode[0]   = */ 0xEB,
    /* .opcode[1]   = */ 0xE4,
-   /* .format      = */ RSY_FORMAT,
+   /* .format      = */ RSYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_IsLoad |
                         S390OpProp_IsStore |
                         S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_LongDispSupported |
                         S390OpProp_SetsOperand1
@@ -12258,15 +12271,16 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LAO,
    /* .name        = */ "LAO",
-   /* .description = */ "(LongDisp) Load And OR (32)",
+   /* .description = */ "LOAD AND OR (32)",
    /* .opcode[0]   = */ 0xEB,
    /* .opcode[1]   = */ 0xF6,
-   /* .format      = */ RSY_FORMAT,
+   /* .format      = */ RSYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_IsLoad |
                         S390OpProp_IsStore |
                         S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_LongDispSupported |
                         S390OpProp_SetsOperand1
@@ -12275,15 +12289,16 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LAOG,
    /* .name        = */ "LAOG",
-   /* .description = */ "(LongDisp) Load And OR (64)",
+   /* .description = */ "LOAD AND OR (64)",
    /* .opcode[0]   = */ 0xEB,
    /* .opcode[1]   = */ 0xE6,
-   /* .format      = */ RSY_FORMAT,
+   /* .format      = */ RSYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_IsLoad |
                         S390OpProp_IsStore |
                         S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_LongDispSupported |
                         S390OpProp_SetsOperand1
@@ -12292,15 +12307,16 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LAX,
    /* .name        = */ "LAX",
-   /* .description = */ "(LongDisp) Load And Exclusive OR (32)",
+   /* .description = */ "LOAD AND EXCLUSIVE OR (32)",
    /* .opcode[0]   = */ 0xEB,
    /* .opcode[1]   = */ 0xF7,
-   /* .format      = */ RSY_FORMAT,
+   /* .format      = */ RSYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_IsLoad |
                         S390OpProp_IsStore |
                         S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_LongDispSupported |
                         S390OpProp_SetsOperand1
@@ -12309,15 +12325,16 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LAXG,
    /* .name        = */ "LAXG",
-   /* .description = */ "(LongDisp) Load And Exclusive OR (64)",
+   /* .description = */ "LOAD AND EXCLUSIVE OR (64)",
    /* .opcode[0]   = */ 0xEB,
    /* .opcode[1]   = */ 0xE7,
-   /* .format      = */ RSY_FORMAT,
+   /* .format      = */ RSYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_IsLoad |
                         S390OpProp_IsStore |
                         S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_LongDispSupported |
                         S390OpProp_SetsOperand1
@@ -12326,10 +12343,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LBH,
    /* .name        = */ "LBH",
-   /* .description = */ "(LongDisp) Load Byte High (32 < 8)",
+   /* .description = */ "LOAD BYTE HIGH (32 <- 8)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0xC0,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_IsLoad |
                         S390OpProp_LongDispSupported |
@@ -12340,10 +12357,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LFH,
    /* .name        = */ "LFH",
-   /* .description = */ "(LongDisp) Load High (32)",
+   /* .description = */ "LOAD HIGH (32)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0xCA,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_IsLoad |
                         S390OpProp_LongDispSupported |
@@ -12354,10 +12371,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LHH,
    /* .name        = */ "LHH",
-   /* .description = */ "(LongDisp) Load Halfword High (32 < 16)",
+   /* .description = */ "LOAD HALFWORD HIGH (32 <- 16)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0xC4,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_IsLoad |
                         S390OpProp_LongDispSupported |
@@ -12368,10 +12385,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LLCH,
    /* .name        = */ "LLCH",
-   /* .description = */ "(Long Disp)Load Logical Character High (32 < 8)",
+   /* .description = */ "LOAD LOGICAL CHARACTER HIGH (32 <- 8)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0xC2,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_IsLoad |
                         S390OpProp_LongDispSupported |
@@ -12382,10 +12399,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LLHH,
    /* .name        = */ "LLHH",
-   /* .description = */ "(LongDisp) Load Logical Halfword High (32 < 8)",
+   /* .description = */ "LOAD LOGICAL HALFWORD HIGH (32 <- 16)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0xC6,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_IsLoad |
                         S390OpProp_LongDispSupported |
@@ -12396,10 +12413,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LOC,
    /* .name        = */ "LOC",
-   /* .description = */ "(LongDisp) Load On Condition (32)",
+   /* .description = */ "LOAD ON CONDITION (32)",
    /* .opcode[0]   = */ 0xEB,
    /* .opcode[1]   = */ 0xF2,
-   /* .format      = */ RSY_FORMAT,
+   /* .format      = */ RSYb_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_ReadsCC |
@@ -12412,10 +12429,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LOCG,
    /* .name        = */ "LOCG",
-   /* .description = */ "(LongDisp) Load On Condition (64)",
+   /* .description = */ "LOAD ON CONDITION (64)",
    /* .opcode[0]   = */ 0xEB,
    /* .opcode[1]   = */ 0xE2,
-   /* .format      = */ RSY_FORMAT,
+   /* .format      = */ RSYb_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_ReadsCC |
@@ -12428,10 +12445,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LOCGR,
    /* .name        = */ "LOCGR",
-   /* .description = */ "Load On Condition (64)",
+   /* .description = */ "LOAD ON CONDITION (64)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0xE2,
-   /* .format      = */ RRF_FORMAT,
+   /* .format      = */ RRFc_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_ReadsCC |
@@ -12442,10 +12459,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LOCR,
    /* .name        = */ "LOCR",
-   /* .description = */ "Load On Condition (32)",
+   /* .description = */ "LOAD ON CONDITION (32)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0xF2,
-   /* .format      = */ RRF2_FORMAT,
+   /* .format      = */ RRFc_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_ReadsCC |
@@ -12456,7 +12473,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LPD,
    /* .name        = */ "LPD",
-   /* .description = */ "Load Pair Disjoint (32)",
+   /* .description = */ "LOAD PAIR DISJOINT (32)",
    /* .opcode[0]   = */ 0xC8,
    /* .opcode[1]   = */ 0x04,
    /* .format      = */ SSF_FORMAT,
@@ -12472,7 +12489,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LPDG,
    /* .name        = */ "LPDG",
-   /* .description = */ "Load Pair Disjoint (64)",
+   /* .description = */ "LOAD PAIR DISJOINT (64)",
    /* .opcode[0]   = */ 0xC8,
    /* .opcode[1]   = */ 0x05,
    /* .format      = */ SSF_FORMAT,
@@ -12488,12 +12505,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::NGRK,
    /* .name        = */ "NGRK",
-   /* .description = */ "And (64)",
+   /* .description = */ "AND (64)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0xE4,
    /* .format      = */ RRFa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_Is64Bit |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_SetsOperand1
    },
@@ -12501,12 +12519,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::NRK,
    /* .name        = */ "NRK",
-   /* .description = */ "And (32)",
+   /* .description = */ "AND (32)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0xF4,
    /* .format      = */ RRFa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_Is32Bit |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_SetsOperand1
    },
@@ -12514,12 +12533,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::OGRK,
    /* .name        = */ "OGRK",
-   /* .description = */ "Or (64)",
+   /* .description = */ "OR (64)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0xE6,
    /* .format      = */ RRFa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_Is64Bit |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_SetsOperand1
    },
@@ -12527,12 +12547,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::ORK,
    /* .name        = */ "ORK",
-   /* .description = */ "Or (32)",
+   /* .description = */ "OR (32)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0xF6,
    /* .format      = */ RRFa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_Is32Bit |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_SetsOperand1
    },
@@ -12540,13 +12561,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::POPCNT,
    /* .name        = */ "POPCNT",
-   /* .description = */ "Population Count",
+   /* .description = */ "POPULATION COUNT",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0xE1,
    /* .format      = */ RRE_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_UsesTarget |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_SetsOperand1
    },
@@ -12554,10 +12576,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::RISBHG,
    /* .name        = */ "RISBHG",
-   /* .description = */ "Rotate Then Insert Selected Bits High",
+   /* .description = */ "ROTATE THEN INSERT SELECTED BITS HIGH (64)",
    /* .opcode[0]   = */ 0xEC,
    /* .opcode[1]   = */ 0x5D,
-   /* .format      = */ RIE_FORMAT,
+   /* .format      = */ RIEf_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_LongDispSupported |
@@ -12569,10 +12591,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::RISBLG,
    /* .name        = */ "RISBLG",
-   /* .description = */ "Rotate Then Insert Selected Bits Low",
+   /* .description = */ "ROTATE THEN INSERT SELECTED BITS LOW (64)",
    /* .opcode[0]   = */ 0xEC,
    /* .opcode[1]   = */ 0x51,
-   /* .format      = */ RIE_FORMAT,
+   /* .format      = */ RIEf_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_LongDispSupported |
@@ -12583,12 +12605,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SGRK,
    /* .name        = */ "SGRK",
-   /* .description = */ "Subtract (64)",
+   /* .description = */ "SUBTRACT (64)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0xE9,
    /* .format      = */ RRFa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_Is64Bit |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOverflowFlag |
                         S390OpProp_SetsOperand1
@@ -12597,7 +12620,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SHHHR,
    /* .name        = */ "SHHHR",
-   /* .description = */ "Subtract High (32)",
+   /* .description = */ "SUBTRACT HIGH (32)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0xC9,
    /* .format      = */ RRFa_FORMAT,
@@ -12605,6 +12628,7 @@
    /* .properties  = */ S390OpProp_UsesTarget |
                         S390OpProp_TargetHW |
                         S390OpProp_SrcHW |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOverflowFlag |
                         S390OpProp_SetsOperand1
@@ -12613,7 +12637,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SHHLR,
    /* .name        = */ "SHHLR",
-   /* .description = */ "Subtract High (32)",
+   /* .description = */ "SUBTRACT HIGH (32)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0xD9,
    /* .format      = */ RRFa_FORMAT,
@@ -12621,6 +12645,7 @@
    /* .properties  = */ S390OpProp_UsesTarget |
                         S390OpProp_TargetHW |
                         S390OpProp_SrcHW |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOverflowFlag |
                         S390OpProp_SetsOperand1
@@ -12629,12 +12654,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SLAK,
    /* .name        = */ "SLAK",
-   /* .description = */ "(LongDisp) Shift Left Single (32)",
+   /* .description = */ "SHIFT LEFT SINGLE (32)",
    /* .opcode[0]   = */ 0xEB,
    /* .opcode[1]   = */ 0xDD,
-   /* .format      = */ RSY_FORMAT,
+   /* .format      = */ RSYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_Is32Bit |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOverflowFlag |
                         S390OpProp_LongDispSupported |
@@ -12644,12 +12670,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SLGRK,
    /* .name        = */ "SLGRK",
-   /* .description = */ "Subtract (64)",
+   /* .description = */ "SUBTRACT LOGICAL (64)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0xEB,
    /* .format      = */ RRFa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_Is64Bit |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_SetsOperand1
    },
@@ -12657,7 +12684,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SLHHHR,
    /* .name        = */ "SLHHHR",
-   /* .description = */ "Subtract High (32)",
+   /* .description = */ "SUBTRACT LOGICAL HIGH (32)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0xCB,
    /* .format      = */ RRFa_FORMAT,
@@ -12665,6 +12692,7 @@
    /* .properties  = */ S390OpProp_UsesTarget |
                         S390OpProp_TargetHW |
                         S390OpProp_SrcHW |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_SetsOperand1
    },
@@ -12672,13 +12700,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SLHHLR,
    /* .name        = */ "SLHHLR",
-   /* .description = */ "Subtract High (32)",
+   /* .description = */ "SUBTRACT LOGICAL HIGH (32)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0xDB,
    /* .format      = */ RRFa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_UsesTarget |
                         S390OpProp_TargetHW |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_SetsOperand1
    },
@@ -12686,10 +12715,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SLLK,
    /* .name        = */ "SLLK",
-   /* .description = */ "(LongDisp) Shift Left Logical (32)",
+   /* .description = */ "SHIFT LEFT SINGLE LOGICAL (32)",
    /* .opcode[0]   = */ 0xEB,
    /* .opcode[1]   = */ 0xDF,
-   /* .format      = */ RSY_FORMAT,
+   /* .format      = */ RSYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_LongDispSupported |
@@ -12699,12 +12728,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SLRK,
    /* .name        = */ "SLRK",
-   /* .description = */ "Subtract (32)",
+   /* .description = */ "SUBTRACT LOGICAL (32)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0xFB,
    /* .format      = */ RRFa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_Is32Bit |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_SetsOperand1
    },
@@ -12712,12 +12742,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SRAK,
    /* .name        = */ "SRAK",
-   /* .description = */ "(LongDisp) Shift Right Single (32)",
+   /* .description = */ "SHIFT RIGHT SINGLE (32)",
    /* .opcode[0]   = */ 0xEB,
    /* .opcode[1]   = */ 0xDC,
-   /* .format      = */ RSY_FORMAT,
+   /* .format      = */ RSYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_Is32Bit |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_LongDispSupported |
                         S390OpProp_SetsOperand1
@@ -12726,12 +12757,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SRK,
    /* .name        = */ "SRK",
-   /* .description = */ "Subtract (32)",
+   /* .description = */ "SUBTRACT (32)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0xF9,
    /* .format      = */ RRFa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_Is32Bit |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOverflowFlag |
                         S390OpProp_SetsOperand1
@@ -12740,10 +12772,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SRLK,
    /* .name        = */ "SRLK",
-   /* .description = */ "(LongDisp) Shift Right Logical (32)",
+   /* .description = */ "SHIFT RIGHT SINGLE LOGICAL (32)",
    /* .opcode[0]   = */ 0xEB,
    /* .opcode[1]   = */ 0xDE,
-   /* .format      = */ RSY_FORMAT,
+   /* .format      = */ RSYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_LongDispSupported |
@@ -12753,10 +12785,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::STCH,
    /* .name        = */ "STCH",
-   /* .description = */ "(LongDisp) Store Character High (8)",
+   /* .description = */ "STORE CHARACTER HIGH (8)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0xC3,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_IsStore |
                         S390OpProp_LongDispSupported |
@@ -12766,10 +12798,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::STFH,
    /* .name        = */ "STFH",
-   /* .description = */ "(LongDisp) Store High (32)",
+   /* .description = */ "STORE HIGH (32)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0xCB,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_IsStore |
                         S390OpProp_LongDispSupported |
@@ -12779,10 +12811,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::STHH,
    /* .name        = */ "STHH",
-   /* .description = */ "(LongDisp) Store Halfword High (16)",
+   /* .description = */ "STORE HALFWORD HIGH (16)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0xC7,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_IsStore |
                         S390OpProp_LongDispSupported |
@@ -12792,10 +12824,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::STOC,
    /* .name        = */ "STOC",
-   /* .description = */ "(LongDisp) Store On Condition (32)",
+   /* .description = */ "STORE ON CONDITION (32)",
    /* .opcode[0]   = */ 0xEB,
    /* .opcode[1]   = */ 0xF3,
-   /* .format      = */ RSY_FORMAT,
+   /* .format      = */ RSYb_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_IsStore |
                         S390OpProp_Is32Bit |
@@ -12806,10 +12838,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::STOCG,
    /* .name        = */ "STOCG",
-   /* .description = */ "(LongDisp) Store On Condition (64)",
+   /* .description = */ "STORE ON CONDITION (64)",
    /* .opcode[0]   = */ 0xEB,
    /* .opcode[1]   = */ 0xE3,
-   /* .format      = */ RSY_FORMAT,
+   /* .format      = */ RSYb_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_IsStore |
                         S390OpProp_Is64Bit |
@@ -12820,12 +12852,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::XGRK,
    /* .name        = */ "XGRK",
-   /* .description = */ "Exclusive Or (64)",
+   /* .description = */ "EXCLUSIVE OR (64)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0xE7,
    /* .format      = */ RRFa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_Is64Bit |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_SetsOperand1
    },
@@ -12833,12 +12866,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::XRK,
    /* .name        = */ "XRK",
-   /* .description = */ "Exclusive Or (32)",
+   /* .description = */ "EXCLUSIVE OR (32)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0xF7,
    /* .format      = */ RRFa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z196,
    /* .properties  = */ S390OpProp_Is32Bit |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsZeroFlag |
                         S390OpProp_SetsOperand1
    },
@@ -12846,7 +12880,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::BPP,
    /* .name        = */ "BPP",
-   /* .description = */ "Branch Prediction Preload",
+   /* .description = */ "BRANCH PREDICTION PRELOAD",
    /* .opcode[0]   = */ 0xC7,
    /* .opcode[1]   = */ 0x00,
    /* .format      = */ SMI_FORMAT,
@@ -12857,7 +12891,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::BPRP,
    /* .name        = */ "BPRP",
-   /* .description = */ "Branch Prediction Relative Preload",
+   /* .description = */ "BRANCH PREDICTION RELATIVE PRELOAD",
    /* .opcode[0]   = */ 0xC5,
    /* .opcode[1]   = */ 0x00,
    /* .format      = */ MII_FORMAT,
@@ -12868,10 +12902,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CDZT,
    /* .name        = */ "CDZT",
-   /* .description = */ "Convert Zoned to DFP Long",
+   /* .description = */ "CONVERT FROM ZONED (to long DFP)",
    /* .opcode[0]   = */ 0xED,
    /* .opcode[1]   = */ 0xAA,
-   /* .format      = */ RSL_FORMAT,
+   /* .format      = */ RSLb_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_zEC12,
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_Is64Bit |
@@ -12882,10 +12916,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CLGT,
    /* .name        = */ "CLGT",
-   /* .description = */ "Compare Logical and Trap (64)",
+   /* .description = */ "COMPARE LOGICAL AND TRAP (64)",
    /* .opcode[0]   = */ 0xEB,
    /* .opcode[1]   = */ 0x2B,
-   /* .format      = */ RSY_FORMAT,
+   /* .format      = */ RSYb_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_zEC12,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_IsCompare |
@@ -12896,10 +12930,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CLT,
    /* .name        = */ "CLT",
-   /* .description = */ "Compare Logical and Trap (32)",
+   /* .description = */ "COMPARE LOGICAL AND TRAP (32)",
    /* .opcode[0]   = */ 0xEB,
    /* .opcode[1]   = */ 0x23,
-   /* .format      = */ RSY_FORMAT,
+   /* .format      = */ RSYb_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_zEC12,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_IsCompare |
@@ -12910,10 +12944,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CXZT,
    /* .name        = */ "CXZT",
-   /* .description = */ "Convert Zoned to DFP Extended",
+   /* .description = */ "CONVERT FROM ZONED (to extended DFP)",
    /* .opcode[0]   = */ 0xED,
    /* .opcode[1]   = */ 0xAB,
-   /* .format      = */ RSL_FORMAT,
+   /* .format      = */ RSLb_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_zEC12,
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_Is64Bit |
@@ -12925,30 +12959,32 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CZDT,
    /* .name        = */ "CZDT",
-   /* .description = */ "Convert DFP Long to Zoned",
+   /* .description = */ "CONVERT TO ZONED (from long DFP)",
    /* .opcode[0]   = */ 0xED,
    /* .opcode[1]   = */ 0xA8,
-   /* .format      = */ RSL_FORMAT,
+   /* .format      = */ RSLb_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_zEC12,
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_Is64Bit |
                         S390OpProp_IsStore |
                         S390OpProp_SetsOperand2 |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag
    },
 
    {
    /* .mnemonic    = */ OMR::InstOpCode::CZXT,
    /* .name        = */ "CZXT",
-   /* .description = */ "Convert DFP Extended to Zoned",
+   /* .description = */ "CONVERT TO ZONED (from extended DFP)",
    /* .opcode[0]   = */ 0xED,
    /* .opcode[1]   = */ 0xA9,
-   /* .format      = */ RSL_FORMAT,
+   /* .format      = */ RSLb_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_zEC12,
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_Is64Bit |
                         S390OpProp_IsStore |
                         S390OpProp_SetsOperand2 |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_UsesRegPairForTarget
    },
@@ -12956,7 +12992,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::ETND,
    /* .name        = */ "ETND",
-   /* .description = */ "Extract Transaction Nesting Depth",
+   /* .description = */ "EXTRACT TRANSACTION NESTING DEPTH",
    /* .opcode[0]   = */ 0xB2,
    /* .opcode[1]   = */ 0xEC,
    /* .format      = */ RRE_FORMAT,
@@ -12967,10 +13003,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LAT,
    /* .name        = */ "LAT",
-   /* .description = */ "Load and Trap",
+   /* .description = */ "LOAD AND TRAP (32L <- 32)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x9F,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_zEC12,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_IsLoad |
@@ -12982,10 +13018,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LFHAT,
    /* .name        = */ "LFHAT",
-   /* .description = */ "Load High and Trap",
+   /* .description = */ "LOAD HIGH AND TRAP (32H <- 32)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0xC8,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_zEC12,
    /* .properties  = */ S390OpProp_IsLoad |
                         S390OpProp_Trap |
@@ -12997,10 +13033,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LGAT,
    /* .name        = */ "LGAT",
-   /* .description = */ "Load and Trap (64)",
+   /* .description = */ "LOAD AND TRAP (64)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x85,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_zEC12,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_IsLoad |
@@ -13012,10 +13048,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LLGFAT,
    /* .name        = */ "LLGFAT",
-   /* .description = */ "Load Logical and Trap",
+   /* .description = */ "LOAD LOGICAL AND TRAP (64 <- 32)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x9D,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_zEC12,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_IsLoad |
@@ -13027,10 +13063,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LLGTAT,
    /* .name        = */ "LLGTAT",
-   /* .description = */ "Load Logical Thirty One Bits and Trap",
+   /* .description = */ "LOAD LOGICAL THIRTY ONE BITS AND TRAP (64 <- 31)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x9C,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_zEC12,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_IsLoad |
@@ -13042,7 +13078,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::NIAI,
    /* .name        = */ "NIAI",
-   /* .description = */ "Next Instruction Access Intent",
+   /* .description = */ "NEXT INSTRUCTION ACCESS INTENT",
    /* .opcode[0]   = */ 0xB2,
    /* .opcode[1]   = */ 0xFA,
    /* .format      = */ IE_FORMAT,
@@ -13053,10 +13089,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::NTSTG,
    /* .name        = */ "NTSTG",
-   /* .description = */ "Nontransactional Store",
+   /* .description = */ "NONTRANSACTIONAL STORE (64)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x25,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_zEC12,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_IsStore |
@@ -13066,21 +13102,65 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::PPA,
    /* .name        = */ "PPA",
-   /* .description = */ "Perform Processor Assist",
+   /* .description = */ "PERFORM PROCESSOR ASSIST",
    /* .opcode[0]   = */ 0xB2,
    /* .opcode[1]   = */ 0xE8,
-   /* .format      = */ RRF2_FORMAT,
+   /* .format      = */ RRFc_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_zEC12,
    /* .properties  = */ S390OpProp_UsesTarget
    },
 
    {
+   /* .mnemonic    = */ OMR::InstOpCode::RIEMIT,
+   /* .name        = */ "RIEMIT",
+   /* .description = */ "RUNTIME INSTRUMENTATION EMIT",
+   /* .opcode[0]   = */ 0xAA,
+   /* .opcode[1]   = */ 0x04,
+   /* .format      = */ RIa_FORMAT,
+   /* .minimumALS  = */ TR_S390ProcessorInfo::TR_zEC12,
+   /* .properties  = */ S390OpProp_UsesTarget
+   },
+
+   {
+   /* .mnemonic    = */ OMR::InstOpCode::RINEXT,
+   /* .name        = */ "RINEXT",
+   /* .description = */ "RUNTIME INSTRUMENTATION NEXT",
+   /* .opcode[0]   = */ 0xAA,
+   /* .opcode[1]   = */ 0x00,
+   /* .format      = */ RIa_FORMAT,
+   /* .minimumALS  = */ TR_S390ProcessorInfo::TR_zEC12,
+   /* .properties  = */ S390OpProp_None
+   },
+
+   {
+   /* .mnemonic    = */ OMR::InstOpCode::RIOFF,
+   /* .name        = */ "RIOFF",
+   /* .description = */ "RUNTIME INSTRUMENTATION OFF",
+   /* .opcode[0]   = */ 0xAA,
+   /* .opcode[1]   = */ 0x03,
+   /* .format      = */ RIa_FORMAT,
+   /* .minimumALS  = */ TR_S390ProcessorInfo::TR_zEC12,
+   /* .properties  = */ S390OpProp_SetsCC
+   },
+
+   {
+   /* .mnemonic    = */ OMR::InstOpCode::RION,
+   /* .name        = */ "RION",
+   /* .description = */ "RUNTIME INSTRUMENTATION ON",
+   /* .opcode[0]   = */ 0xAA,
+   /* .opcode[1]   = */ 0x01,
+   /* .format      = */ RIa_FORMAT,
+   /* .minimumALS  = */ TR_S390ProcessorInfo::TR_zEC12,
+   /* .properties  = */ S390OpProp_SetsCC
+   },
+
+   {
    /* .mnemonic    = */ OMR::InstOpCode::RISBGN,
    /* .name        = */ "RISBGN",
-   /* .description = */ "Rotate Then Insert Selected Bits",
+   /* .description = */ "ROTATE THEN INSERT SELECTED BITS (64)",
    /* .opcode[0]   = */ 0xEC,
    /* .opcode[1]   = */ 0x59,
-   /* .format      = */ RIE_FORMAT,
+   /* .format      = */ RIEf_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_zEC12,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_LongDispSupported |
@@ -13091,7 +13171,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::TABORT,
    /* .name        = */ "TABORT",
-   /* .description = */ "Transaction Abort",
+   /* .description = */ "TRANSACTION ABORT",
    /* .opcode[0]   = */ 0xB2,
    /* .opcode[1]   = */ 0xFC,
    /* .format      = */ S_FORMAT,
@@ -13103,7 +13183,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::TBEGIN,
    /* .name        = */ "TBEGIN",
-   /* .description = */ "Transaction Begin",
+   /* .description = */ "TRANSACTION BEGIN (nonconstrained)",
    /* .opcode[0]   = */ 0xE5,
    /* .opcode[1]   = */ 0x60,
    /* .format      = */ SIL_FORMAT,
@@ -13115,7 +13195,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::TBEGINC,
    /* .name        = */ "TBEGINC",
-   /* .description = */ "Constrained Transaction Begin",
+   /* .description = */ "TRANSACTION BEGIN (constrained)",
    /* .opcode[0]   = */ 0xE5,
    /* .opcode[1]   = */ 0x61,
    /* .format      = */ SIL_FORMAT,
@@ -13126,7 +13206,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::TEND,
    /* .name        = */ "TEND",
-   /* .description = */ "Transaction End",
+   /* .description = */ "TRANSACTION END",
    /* .opcode[0]   = */ 0xB2,
    /* .opcode[1]   = */ 0xF8,
    /* .format      = */ S_FORMAT,
@@ -13137,10 +13217,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CDPT,
    /* .name        = */ "CDPT",
-   /* .description = */ "Convert Packed to DFP Long",
+   /* .description = */ "CONVERT FROM PACKED (to long DFP)",
    /* .opcode[0]   = */ 0xED,
    /* .opcode[1]   = */ 0xAE,
-   /* .format      = */ RSL_FORMAT,
+   /* .format      = */ RSLb_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z13,
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_Is64Bit |
@@ -13151,30 +13231,32 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CPDT,
    /* .name        = */ "CPDT",
-   /* .description = */ "Convert DFP Long to Packed",
+   /* .description = */ "CONVERT TO PACKED (from long DFP)",
    /* .opcode[0]   = */ 0xED,
    /* .opcode[1]   = */ 0xAC,
-   /* .format      = */ RSL_FORMAT,
+   /* .format      = */ RSLb_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z13,
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_Is64Bit |
                         S390OpProp_IsStore |
                         S390OpProp_SetsOperand2 |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag
    },
 
    {
    /* .mnemonic    = */ OMR::InstOpCode::CPXT,
    /* .name        = */ "CPXT",
-   /* .description = */ "Convert DFP Extended to Packed",
+   /* .description = */ "CONVERT TO PACKED (from extended DFP)",
    /* .opcode[0]   = */ 0xED,
    /* .opcode[1]   = */ 0xAD,
-   /* .format      = */ RSL_FORMAT,
+   /* .format      = */ RSLb_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z13,
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_Is64Bit |
                         S390OpProp_IsStore |
                         S390OpProp_SetsOperand2 |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_UsesRegPairForTarget
    },
@@ -13182,10 +13264,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::CXPT,
    /* .name        = */ "CXPT",
-   /* .description = */ "Convert Packed to DFP Extended",
+   /* .description = */ "CONVERT FROM PACKED (to extended DFP)",
    /* .opcode[0]   = */ 0xED,
    /* .opcode[1]   = */ 0xAF,
-   /* .format      = */ RSL_FORMAT,
+   /* .format      = */ RSLb_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z13,
    /* .properties  = */ S390OpProp_DoubleFP |
                         S390OpProp_Is64Bit |
@@ -13197,7 +13279,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LCBB,
    /* .name        = */ "LCBB",
-   /* .description = */ "Load Count To Block Boundary",
+   /* .description = */ "LOAD COUNT TO BLOCK BOUNDARY",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0x27,
    /* .format      = */ RXE_FORMAT,
@@ -13210,10 +13292,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LLZRGF,
    /* .name        = */ "LLZRGF",
-   /* .description = */ "Load Logical and Zero Rightmost Byte",
+   /* .description = */ "LOAD LOGICAL AND ZERO RIGHTMOST BYTE (64 <- 32)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x3A,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z13,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_IsLoad |
@@ -13224,10 +13306,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LOCFH,
    /* .name        = */ "LOCFH",
-   /* .description = */ "(LongDisp) Load High On Condition",
+   /* .description = */ "LOAD HIGH ON CONDITION (32)",
    /* .opcode[0]   = */ 0xEB,
    /* .opcode[1]   = */ 0xE0,
-   /* .format      = */ RSY_FORMAT,
+   /* .format      = */ RSYb_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z13,
    /* .properties  = */ S390OpProp_TargetHW |
                         S390OpProp_ReadsCC |
@@ -13240,10 +13322,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LOCFHR,
    /* .name        = */ "LOCFHR",
-   /* .description = */ "Load High On Condition",
+   /* .description = */ "LOAD HIGH ON CONDITION (32)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0xE0,
-   /* .format      = */ RRF_FORMAT,
+   /* .format      = */ RRFc_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z13,
    /* .properties  = */ S390OpProp_TargetHW |
                         S390OpProp_ReadsCC |
@@ -13255,10 +13337,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LOCGHI,
    /* .name        = */ "LOCGHI",
-   /* .description = */ "Load Halfword Immediate On Condition (64)",
+   /* .description = */ "LOAD HALFWORD IMMEDIATE ON CONDITION (64 <- 16)",
    /* .opcode[0]   = */ 0xEC,
    /* .opcode[1]   = */ 0x46,
-   /* .format      = */ RIE_FORMAT,
+   /* .format      = */ RIEg_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z13,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_ReadsCC |
@@ -13270,10 +13352,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LOCHHI,
    /* .name        = */ "LOCHHI",
-   /* .description = */ "Load Halfword High Immediate On Condition",
+   /* .description = */ "LOAD HALFWORD HIGH IMMEDIATE ON CONDITION (32 <- 16)",
    /* .opcode[0]   = */ 0xEC,
    /* .opcode[1]   = */ 0x4E,
-   /* .format      = */ RIE_FORMAT,
+   /* .format      = */ RIEg_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z13,
    /* .properties  = */ S390OpProp_TargetHW |
                         S390OpProp_ReadsCC |
@@ -13285,10 +13367,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LOCHI,
    /* .name        = */ "LOCHI",
-   /* .description = */ "Load Halfword Immediate On Condition (32)",
+   /* .description = */ "LOAD HALFWORD IMMEDIATE ON CONDITION (32 <- 16)",
    /* .opcode[0]   = */ 0xEC,
    /* .opcode[1]   = */ 0x42,
-   /* .format      = */ RIE_FORMAT,
+   /* .format      = */ RIEg_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z13,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_ReadsCC |
@@ -13300,10 +13382,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LZRF,
    /* .name        = */ "LZRF",
-   /* .description = */ "Load and Zero Rightmost Byte",
+   /* .description = */ "LOAD AND ZERO RIGHTMOST BYTE (32)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x3B,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z13,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_IsLoad |
@@ -13314,10 +13396,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LZRG,
    /* .name        = */ "LZRG",
-   /* .description = */ "Load and Zero Rightmost Byte",
+   /* .description = */ "LOAD AND ZERO RIGHTMOST BYTE (64)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x2A,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z13,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_IsLoad |
@@ -13328,21 +13410,21 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::PRNO,
    /* .name        = */ "PRNO",
-   /* .description = */ "perform random number operation",
+   /* .description = */ "PERFORM RANDOM NUMBER OPERATION",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0x3C,
    /* .format      = */ RRE_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z13,
-   /* .properties  = */ S390OpProp_None
+   /* .properties  = */ S390OpProp_SetsCC
    },
 
    {
    /* .mnemonic    = */ OMR::InstOpCode::STOCFH,
    /* .name        = */ "STOCFH",
-   /* .description = */ "(LongDisp) Store High On Condition",
+   /* .description = */ "STORE HIGH ON CONDITION",
    /* .opcode[0]   = */ 0xEB,
    /* .opcode[1]   = */ 0xE1,
-   /* .format      = */ RSY_FORMAT,
+   /* .format      = */ RSYb_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z13,
    /* .properties  = */ S390OpProp_IsStore |
                         S390OpProp_TargetHW |
@@ -13353,7 +13435,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VA,
    /* .name        = */ "VA",
-   /* .description = */ "vector add",
+   /* .description = */ "VECTOR ADD",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0xF3,
    /* .format      = */ VRRc_FORMAT,
@@ -13366,7 +13448,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VAC,
    /* .name        = */ "VAC",
-   /* .description = */ "vector add with carry",
+   /* .description = */ "VECTOR ADD WITH CARRY",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0xBB,
    /* .format      = */ VRRd_FORMAT,
@@ -13379,7 +13461,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VACC,
    /* .name        = */ "VACC",
-   /* .description = */ "vector add compute carry",
+   /* .description = */ "VECTOR ADD COMPUTE CARRY",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0xF1,
    /* .format      = */ VRRc_FORMAT,
@@ -13392,7 +13474,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VACCC,
    /* .name        = */ "VACCC",
-   /* .description = */ "vector add with carry compute carry",
+   /* .description = */ "VECTOR ADD WITH CARRY COMPUTE CARRY",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0xB9,
    /* .format      = */ VRRd_FORMAT,
@@ -13405,7 +13487,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VAVG,
    /* .name        = */ "VAVG",
-   /* .description = */ "vector average",
+   /* .description = */ "VECTOR AVERAGE",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0xF2,
    /* .format      = */ VRRc_FORMAT,
@@ -13418,7 +13500,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VAVGL,
    /* .name        = */ "VAVGL",
-   /* .description = */ "vector average logical",
+   /* .description = */ "VECTOR AVERAGE LOGICAL",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0xF0,
    /* .format      = */ VRRc_FORMAT,
@@ -13431,7 +13513,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VCDG,
    /* .name        = */ "VCDG",
-   /* .description = */ "vector floating-point convert from fixed 64-bit",
+   /* .description = */ "VECTOR FP CONVERT FROM FIXED 64-BIT",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0xC3,
    /* .format      = */ VRRa_FORMAT,
@@ -13447,7 +13529,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VCDLG,
    /* .name        = */ "VCDLG",
-   /* .description = */ "vector floating-point convert from logical 64-bit",
+   /* .description = */ "VECTOR FP CONVERT FROM LOGICAL 64-BIT",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0xC1,
    /* .format      = */ VRRa_FORMAT,
@@ -13463,7 +13545,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VCEQ,
    /* .name        = */ "VCEQ",
-   /* .description = */ "vector comp are equal CC Set",
+   /* .description = */ "VECTOR COMPARE EQUAL",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0xF8,
    /* .format      = */ VRRb_FORMAT,
@@ -13478,7 +13560,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VCGD,
    /* .name        = */ "VCGD",
-   /* .description = */ "vector floating-point convert to fixed 64-bit",
+   /* .description = */ "VECTOR FP CONVERT TO FIXED 64-BIT",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0xC2,
    /* .format      = */ VRRa_FORMAT,
@@ -13494,7 +13576,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VCH,
    /* .name        = */ "VCH",
-   /* .description = */ "vector comp are high CC Set",
+   /* .description = */ "VECTOR COMPARE HIGH",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0xFB,
    /* .format      = */ VRRb_FORMAT,
@@ -13509,7 +13591,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VCHL,
    /* .name        = */ "VCHL",
-   /* .description = */ "vector comp are high logical CC Set",
+   /* .description = */ "VECTOR COMPARE HIGH LOGICAL",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0xF9,
    /* .format      = */ VRRb_FORMAT,
@@ -13524,7 +13606,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VCKSM,
    /* .name        = */ "VCKSM",
-   /* .description = */ "vector checksum",
+   /* .description = */ "VECTOR CHECKSUM",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0x66,
    /* .format      = */ VRRc_FORMAT,
@@ -13535,7 +13617,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VCLGD,
    /* .name        = */ "VCLGD",
-   /* .description = */ "vector floating-point convert to logical 64-bit",
+   /* .description = */ "VECTOR FP CONVERT TO LOGICAL 64-BIT",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0xC0,
    /* .format      = */ VRRa_FORMAT,
@@ -13551,7 +13633,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VCLZ,
    /* .name        = */ "VCLZ",
-   /* .description = */ "vector count leading zeros",
+   /* .description = */ "VECTOR COUNT LEADING ZEROS",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0x53,
    /* .format      = */ VRRa_FORMAT,
@@ -13564,7 +13646,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VCTZ,
    /* .name        = */ "VCTZ",
-   /* .description = */ "vector count trailing zeros",
+   /* .description = */ "VECTOR COUNT TRAILING ZEROS",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0x52,
    /* .format      = */ VRRa_FORMAT,
@@ -13577,7 +13659,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VEC,
    /* .name        = */ "VEC",
-   /* .description = */ "vector element comp are CC Set",
+   /* .description = */ "VECTOR ELEMENT COMPARE",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0xDB,
    /* .format      = */ VRRa_FORMAT,
@@ -13590,7 +13672,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VECL,
    /* .name        = */ "VECL",
-   /* .description = */ "vector element comp are logical CC Set",
+   /* .description = */ "VECTOR ELEMENT COMPARE LOGICAL",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0xD9,
    /* .format      = */ VRRa_FORMAT,
@@ -13603,7 +13685,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VERIM,
    /* .name        = */ "VERIM",
-   /* .description = */ "vector element rotate and insert under mask",
+   /* .description = */ "VECTOR ELEMENT ROTATE AND INSERT UNDER MASK",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0x72,
    /* .format      = */ VRId_FORMAT,
@@ -13617,7 +13699,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VERLL,
    /* .name        = */ "VERLL",
-   /* .description = */ "vector element rotate left logical",
+   /* .description = */ "VECTOR ELEMENT ROTATE LEFT LOGICAL",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0x33,
    /* .format      = */ VRSa_FORMAT,
@@ -13630,7 +13712,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VERLLV,
    /* .name        = */ "VERLLV",
-   /* .description = */ "vector element rotate left logical",
+   /* .description = */ "VECTOR ELEMENT ROTATE LEFT LOGICAL",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0x73,
    /* .format      = */ VRRc_FORMAT,
@@ -13643,7 +13725,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VESL,
    /* .name        = */ "VESL",
-   /* .description = */ "vector element shift left",
+   /* .description = */ "VECTOR ELEMENT SHIFT LEFT",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0x30,
    /* .format      = */ VRSa_FORMAT,
@@ -13656,7 +13738,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VESLV,
    /* .name        = */ "VESLV",
-   /* .description = */ "vector element shift left",
+   /* .description = */ "VECTOR ELEMENT SHIFT LEFT",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0x70,
    /* .format      = */ VRRc_FORMAT,
@@ -13669,7 +13751,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VESRA,
    /* .name        = */ "VESRA",
-   /* .description = */ "vector element shift right arithmetic",
+   /* .description = */ "VECTOR ELEMENT SHIFT RIGHT ARITHMETIC",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0x3A,
    /* .format      = */ VRSa_FORMAT,
@@ -13682,7 +13764,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VESRAV,
    /* .name        = */ "VESRAV",
-   /* .description = */ "vector element shift right arithmetic",
+   /* .description = */ "VECTOR ELEMENT SHIFT RIGHT ARITHMETIC",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0x7A,
    /* .format      = */ VRRc_FORMAT,
@@ -13695,7 +13777,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VESRL,
    /* .name        = */ "VESRL",
-   /* .description = */ "vector element shift right logical",
+   /* .description = */ "VECTOR ELEMENT SHIFT RIGHT LOGICAL",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0x38,
    /* .format      = */ VRSa_FORMAT,
@@ -13708,7 +13790,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VESRLV,
    /* .name        = */ "VESRLV",
-   /* .description = */ "vector element shift right logical",
+   /* .description = */ "VECTOR ELEMENT SHIFT RIGHT LOGICAL",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0x78,
    /* .format      = */ VRRc_FORMAT,
@@ -13721,7 +13803,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VFA,
    /* .name        = */ "VFA",
-   /* .description = */ "vector floating-point add",
+   /* .description = */ "VECTOR FP ADD",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0xE3,
    /* .format      = */ VRRc_FORMAT,
@@ -13736,7 +13818,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VFAE,
    /* .name        = */ "VFAE",
-   /* .description = */ "vector find any element equal CC Set* (*: If CS bit != 0)",
+   /* .description = */ "VECTOR FIND ANY ELEMENT EQUAL",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0x82,
    /* .format      = */ VRRb_FORMAT,
@@ -13752,7 +13834,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VFCE,
    /* .name        = */ "VFCE",
-   /* .description = */ "vector floating-point comp are equal CC Set*",
+   /* .description = */ "VECTOR FP COMPARE EQUAL",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0xE8,
    /* .format      = */ VRRc_FORMAT,
@@ -13769,7 +13851,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VFCH,
    /* .name        = */ "VFCH",
-   /* .description = */ "vector floating-point comp are high CC Set*",
+   /* .description = */ "VECTOR FP COMPARE HIGH",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0xEB,
    /* .format      = */ VRRc_FORMAT,
@@ -13786,7 +13868,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VFCHE,
    /* .name        = */ "VFCHE",
-   /* .description = */ "vector floating-point comp are high or equal CC Set*",
+   /* .description = */ "VECTOR FP COMPARE HIGH OR EQUAL",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0xEA,
    /* .format      = */ VRRc_FORMAT,
@@ -13803,7 +13885,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VFD,
    /* .name        = */ "VFD",
-   /* .description = */ "vector floating-point divide",
+   /* .description = */ "VECTOR FP DIVIDE",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0xE5,
    /* .format      = */ VRRc_FORMAT,
@@ -13818,7 +13900,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VFEE,
    /* .name        = */ "VFEE",
-   /* .description = */ "vector find element equal CC Set*",
+   /* .description = */ "VECTOR FIND ELEMENT EQUAL",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0x80,
    /* .format      = */ VRRb_FORMAT,
@@ -13834,7 +13916,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VFENE,
    /* .name        = */ "VFENE",
-   /* .description = */ "vector find element not equal CC Set*",
+   /* .description = */ "VECTOR FIND ELEMENT NOT EQUAL",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0x81,
    /* .format      = */ VRRb_FORMAT,
@@ -13850,7 +13932,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VFI,
    /* .name        = */ "VFI",
-   /* .description = */ "vector load floating-point integer",
+   /* .description = */ "VECTOR LOAD FP INTEGER",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0xC7,
    /* .format      = */ VRRa_FORMAT,
@@ -13866,7 +13948,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VFM,
    /* .name        = */ "VFM",
-   /* .description = */ "vector floating-point multiply",
+   /* .description = */ "VECTOR FP MULTIPLY",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0xE7,
    /* .format      = */ VRRc_FORMAT,
@@ -13881,7 +13963,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VFMA,
    /* .name        = */ "VFMA",
-   /* .description = */ "vector floating-point multiply and add",
+   /* .description = */ "VECTOR FP MULTIPLY AND ADD",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0x8F,
    /* .format      = */ VRRe_FORMAT,
@@ -13896,7 +13978,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VFMS,
    /* .name        = */ "VFMS",
-   /* .description = */ "vector floating-point multiply and subtract",
+   /* .description = */ "VECTOR FP MULTIPLY AND SUBTRACT",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0x8E,
    /* .format      = */ VRRe_FORMAT,
@@ -13911,7 +13993,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VFPSO,
    /* .name        = */ "VFPSO",
-   /* .description = */ "vector floating-point perform sign operation",
+   /* .description = */ "VECTOR FP PERFORM SIGN OPERATION",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0xCC,
    /* .format      = */ VRRa_FORMAT,
@@ -13927,7 +14009,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VFS,
    /* .name        = */ "VFS",
-   /* .description = */ "vector floating-point subtract",
+   /* .description = */ "VECTOR FP SUBTRACT",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0xE2,
    /* .format      = */ VRRc_FORMAT,
@@ -13942,7 +14024,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VFSQ,
    /* .name        = */ "VFSQ",
-   /* .description = */ "vector floating-point square root",
+   /* .description = */ "VECTOR FP SQUARE ROOT",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0xCE,
    /* .format      = */ VRRa_FORMAT,
@@ -13957,7 +14039,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VFTCI,
    /* .name        = */ "VFTCI",
-   /* .description = */ "vector floating-point test data class immediate CC Set",
+   /* .description = */ "VECTOR FP TEST DATA CLASS IMMEDIATE",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0x4A,
    /* .format      = */ VRIe_FORMAT,
@@ -13973,7 +14055,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VGBM,
    /* .name        = */ "VGBM",
-   /* .description = */ "vector generate byte mask",
+   /* .description = */ "VECTOR GENERATE BYTE MASK",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0x44,
    /* .format      = */ VRIa_FORMAT,
@@ -13984,7 +14066,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VGEF,
    /* .name        = */ "VGEF",
-   /* .description = */ "vector gather element (32)",
+   /* .description = */ "VECTOR GATHER ELEMENT (32)",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0x13,
    /* .format      = */ VRV_FORMAT,
@@ -13997,7 +14079,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VGEG,
    /* .name        = */ "VGEG",
-   /* .description = */ "vector gather element (64)",
+   /* .description = */ "VECTOR GATHER ELEMENT (64)",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0x12,
    /* .format      = */ VRV_FORMAT,
@@ -14010,7 +14092,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VGFM,
    /* .name        = */ "VGFM",
-   /* .description = */ "vector galois field multiply sum",
+   /* .description = */ "VECTOR GALOIS FIELD MULTIPLY SUM",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0xB4,
    /* .format      = */ VRRc_FORMAT,
@@ -14023,7 +14105,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VGFMA,
    /* .name        = */ "VGFMA",
-   /* .description = */ "vector galois field multiply sum and accumulate",
+   /* .description = */ "VECTOR GALOIS FIELD MULTIPLY SUM AND ACCUMULATE",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0xBC,
    /* .format      = */ VRRd_FORMAT,
@@ -14036,7 +14118,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VGM,
    /* .name        = */ "VGM",
-   /* .description = */ "vector generate mask",
+   /* .description = */ "VECTOR GENERATE MASK",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0x46,
    /* .format      = */ VRIb_FORMAT,
@@ -14049,7 +14131,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VISTR,
    /* .name        = */ "VISTR",
-   /* .description = */ "vector isolate string CC Set*",
+   /* .description = */ "VECTOR ISOLATE STRING",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0x5C,
    /* .format      = */ VRRa_FORMAT,
@@ -14065,7 +14147,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VL,
    /* .name        = */ "VL",
-   /* .description = */ "vector load",
+   /* .description = */ "VECTOR LOAD",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0x06,
    /* .format      = */ VRX_FORMAT,
@@ -14077,7 +14159,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VLBB,
    /* .name        = */ "VLBB",
-   /* .description = */ "vector load to block boundary",
+   /* .description = */ "VECTOR LOAD TO BLOCK BOUNDARY",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0x07,
    /* .format      = */ VRX_FORMAT,
@@ -14090,7 +14172,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VLC,
    /* .name        = */ "VLC",
-   /* .description = */ "vector load complement",
+   /* .description = */ "VECTOR LOAD COMPLEMENT",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0xDE,
    /* .format      = */ VRRa_FORMAT,
@@ -14118,7 +14200,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VLEB,
    /* .name        = */ "VLEB",
-   /* .description = */ "vector load element (8)",
+   /* .description = */ "VECTOR LOAD ELEMENT (8)",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0x00,
    /* .format      = */ VRX_FORMAT,
@@ -14148,7 +14230,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VLEF,
    /* .name        = */ "VLEF",
-   /* .description = */ "vector load element (32)",
+   /* .description = */ "VECTOR LOAD ELEMENT (32)",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0x03,
    /* .format      = */ VRX_FORMAT,
@@ -14162,7 +14244,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VLEG,
    /* .name        = */ "VLEG",
-   /* .description = */ "vector load element (64)",
+   /* .description = */ "VECTOR LOAD ELEMENT (64)",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0x02,
    /* .format      = */ VRX_FORMAT,
@@ -14176,7 +14258,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VLEH,
    /* .name        = */ "VLEH",
-   /* .description = */ "vector load element (16)",
+   /* .description = */ "VECTOR LOAD ELEMENT (16)",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0x01,
    /* .format      = */ VRX_FORMAT,
@@ -14190,7 +14272,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VLEIB,
    /* .name        = */ "VLEIB",
-   /* .description = */ "vector load element immediate (8)",
+   /* .description = */ "VECTOR LOAD ELEMENT IMMEDIATE (8)",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0x40,
    /* .format      = */ VRIa_FORMAT,
@@ -14203,7 +14285,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VLEIF,
    /* .name        = */ "VLEIF",
-   /* .description = */ "vector load element immediate (32)",
+   /* .description = */ "VECTOR LOAD ELEMENT IMMEDIATE (32)",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0x43,
    /* .format      = */ VRIa_FORMAT,
@@ -14216,7 +14298,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VLEIG,
    /* .name        = */ "VLEIG",
-   /* .description = */ "vector load element immediate (64)",
+   /* .description = */ "VECTOR LOAD ELEMENT IMMEDIATE (64)",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0x42,
    /* .format      = */ VRIa_FORMAT,
@@ -14229,7 +14311,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VLEIH,
    /* .name        = */ "VLEIH",
-   /* .description = */ "vector load element immediate (16)",
+   /* .description = */ "VECTOR LOAD ELEMENT IMMEDIATE (16)",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0x41,
    /* .format      = */ VRIa_FORMAT,
@@ -14242,7 +14324,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VLGV,
    /* .name        = */ "VLGV",
-   /* .description = */ "vector load gr from vr element",
+   /* .description = */ "VECTOR LOAD GR FROM VR ELEMENT",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0x21,
    /* .format      = */ VRSc_FORMAT,
@@ -14256,7 +14338,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VLL,
    /* .name        = */ "VLL",
-   /* .description = */ "vector load with length",
+   /* .description = */ "VECTOR LOAD WITH LENGTH",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0x37,
    /* .format      = */ VRSb_FORMAT,
@@ -14268,7 +14350,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VLLEZ,
    /* .name        = */ "VLLEZ",
-   /* .description = */ "vector load logical element and zero",
+   /* .description = */ "VECTOR LOAD LOGICAL ELEMENT AND ZERO",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0x04,
    /* .format      = */ VRX_FORMAT,
@@ -14282,7 +14364,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VLM,
    /* .name        = */ "VLM",
-   /* .description = */ "vector load multiple",
+   /* .description = */ "VECTOR LOAD MULTIPLE",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0x36,
    /* .format      = */ VRSa_FORMAT,
@@ -14296,7 +14378,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VLP,
    /* .name        = */ "VLP",
-   /* .description = */ "vector load positive",
+   /* .description = */ "VECTOR LOAD POSITIVE",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0xDF,
    /* .format      = */ VRRa_FORMAT,
@@ -14309,7 +14391,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VLR,
    /* .name        = */ "VLR",
-   /* .description = */ "vector load",
+   /* .description = */ "VECTOR LOAD",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0x56,
    /* .format      = */ VRRa_FORMAT,
@@ -14321,7 +14403,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VLREP,
    /* .name        = */ "VLREP",
-   /* .description = */ "vector load and replicate",
+   /* .description = */ "VECTOR LOAD AND REPLICATE",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0x05,
    /* .format      = */ VRX_FORMAT,
@@ -14335,7 +14417,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VLVG,
    /* .name        = */ "VLVG",
-   /* .description = */ "vector load vr element from gr",
+   /* .description = */ "VECTOR LOAD VR ELEMENT FROM GR",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0x22,
    /* .format      = */ VRSb_FORMAT,
@@ -14351,7 +14433,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VLVGP,
    /* .name        = */ "VLVGP",
-   /* .description = */ "vector load vr from grs disjoint",
+   /* .description = */ "VECTOR LOAD VR FROM GRS DISJOINT",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0x62,
    /* .format      = */ VRRf_FORMAT,
@@ -14363,7 +14445,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VMAE,
    /* .name        = */ "VMAE",
-   /* .description = */ "vector multiply and add even",
+   /* .description = */ "VECTOR MULTIPLY AND ADD EVEN",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0xAE,
    /* .format      = */ VRRd_FORMAT,
@@ -14376,7 +14458,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VMAH,
    /* .name        = */ "VMAH",
-   /* .description = */ "vector multiply and add high",
+   /* .description = */ "VECTOR MULTIPLY AND ADD HIGH",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0xAB,
    /* .format      = */ VRRd_FORMAT,
@@ -14389,7 +14471,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VMAL,
    /* .name        = */ "VMAL",
-   /* .description = */ "vector multiply and add low",
+   /* .description = */ "VECTOR MULTIPLY AND ADD LOW",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0xAA,
    /* .format      = */ VRRd_FORMAT,
@@ -14402,7 +14484,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VMALE,
    /* .name        = */ "VMALE",
-   /* .description = */ "vector multiply and add logical even",
+   /* .description = */ "VECTOR MULTIPLY AND ADD LOGICAL EVEN",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0xAC,
    /* .format      = */ VRRd_FORMAT,
@@ -14415,7 +14497,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VMALH,
    /* .name        = */ "VMALH",
-   /* .description = */ "vector multiply and add logical high",
+   /* .description = */ "VECTOR MULTIPLY AND ADD LOGICAL HIGH",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0xA9,
    /* .format      = */ VRRd_FORMAT,
@@ -14428,7 +14510,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VMALO,
    /* .name        = */ "VMALO",
-   /* .description = */ "vector multiply and add logical odd",
+   /* .description = */ "VECTOR MULTIPLY AND ADD LOGICAL ODD",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0xAD,
    /* .format      = */ VRRd_FORMAT,
@@ -14441,7 +14523,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VMAO,
    /* .name        = */ "VMAO",
-   /* .description = */ "vector multiply and add odd",
+   /* .description = */ "VECTOR MULTIPLY AND ADD ODD",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0xAF,
    /* .format      = */ VRRd_FORMAT,
@@ -14454,7 +14536,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VME,
    /* .name        = */ "VME",
-   /* .description = */ "vector multiply even",
+   /* .description = */ "VECTOR MULTIPLY EVEN",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0xA6,
    /* .format      = */ VRRc_FORMAT,
@@ -14467,7 +14549,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VMH,
    /* .name        = */ "VMH",
-   /* .description = */ "vector multiply high",
+   /* .description = */ "VECTOR MULTIPLY HIGH",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0xA3,
    /* .format      = */ VRRc_FORMAT,
@@ -14480,7 +14562,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VML,
    /* .name        = */ "VML",
-   /* .description = */ "vector multiply low",
+   /* .description = */ "VECTOR MULTIPLY LOW",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0xA2,
    /* .format      = */ VRRc_FORMAT,
@@ -14493,7 +14575,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VMLE,
    /* .name        = */ "VMLE",
-   /* .description = */ "vector multiply logical even",
+   /* .description = */ "VECTOR MULTIPLY LOGICAL EVEN",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0xA4,
    /* .format      = */ VRRc_FORMAT,
@@ -14506,7 +14588,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VMLH,
    /* .name        = */ "VMLH",
-   /* .description = */ "vector multiply logical high",
+   /* .description = */ "VECTOR MULTIPLY LOGICAL HIGH",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0xA1,
    /* .format      = */ VRRc_FORMAT,
@@ -14519,7 +14601,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VMLO,
    /* .name        = */ "VMLO",
-   /* .description = */ "vector multiply logical odd",
+   /* .description = */ "VECTOR MULTIPLY LOGICAL ODD",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0xA5,
    /* .format      = */ VRRc_FORMAT,
@@ -14532,7 +14614,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VMN,
    /* .name        = */ "VMN",
-   /* .description = */ "vector minimum",
+   /* .description = */ "VECTOR MINIMUM",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0xFE,
    /* .format      = */ VRRc_FORMAT,
@@ -14545,7 +14627,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VMNL,
    /* .name        = */ "VMNL",
-   /* .description = */ "vector minimum logical",
+   /* .description = */ "VECTOR MINIMUM LOGICAL",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0xFC,
    /* .format      = */ VRRc_FORMAT,
@@ -14558,7 +14640,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VMO,
    /* .name        = */ "VMO",
-   /* .description = */ "vector multiply odd",
+   /* .description = */ "VECTOR MULTIPLY ODD",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0xA7,
    /* .format      = */ VRRc_FORMAT,
@@ -14571,7 +14653,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VMRH,
    /* .name        = */ "VMRH",
-   /* .description = */ "vector merge high",
+   /* .description = */ "VECTOR MERGE HIGH",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0x61,
    /* .format      = */ VRRc_FORMAT,
@@ -14584,7 +14666,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VMRL,
    /* .name        = */ "VMRL",
-   /* .description = */ "vector merge low",
+   /* .description = */ "VECTOR MERGE LOW",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0x60,
    /* .format      = */ VRRc_FORMAT,
@@ -14597,7 +14679,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VMX,
    /* .name        = */ "VMX",
-   /* .description = */ "vector maximum",
+   /* .description = */ "VECTOR MAXIMUM",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0xFF,
    /* .format      = */ VRRc_FORMAT,
@@ -14610,7 +14692,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VMXL,
    /* .name        = */ "VMXL",
-   /* .description = */ "vector maximum logical",
+   /* .description = */ "VECTOR MAXIMUM LOGICAL",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0xFD,
    /* .format      = */ VRRc_FORMAT,
@@ -14623,7 +14705,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VN,
    /* .name        = */ "VN",
-   /* .description = */ "vector and",
+   /* .description = */ "VECTOR AND",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0x68,
    /* .format      = */ VRRc_FORMAT,
@@ -14634,7 +14716,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VNC,
    /* .name        = */ "VNC",
-   /* .description = */ "vector and with complement",
+   /* .description = */ "VECTOR AND WITH COMPLEMENT",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0x69,
    /* .format      = */ VRRc_FORMAT,
@@ -14645,7 +14727,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VNO,
    /* .name        = */ "VNO",
-   /* .description = */ "vector nor",
+   /* .description = */ "VECTOR NOR",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0x6B,
    /* .format      = */ VRRc_FORMAT,
@@ -14656,7 +14738,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VO,
    /* .name        = */ "VO",
-   /* .description = */ "vector or",
+   /* .description = */ "VECTOR OR",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0x6A,
    /* .format      = */ VRRc_FORMAT,
@@ -14667,7 +14749,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VPDI,
    /* .name        = */ "VPDI",
-   /* .description = */ "vector permute doubleword immediate",
+   /* .description = */ "VECTOR PERMUTE DOUBLEWORD IMMEDIATE",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0x84,
    /* .format      = */ VRRc_FORMAT,
@@ -14679,7 +14761,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VPERM,
    /* .name        = */ "VPERM",
-   /* .description = */ "vector permute",
+   /* .description = */ "VECTOR PERMUTE",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0x8C,
    /* .format      = */ VRRe_FORMAT,
@@ -14690,7 +14772,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VPK,
    /* .name        = */ "VPK",
-   /* .description = */ "vector pack",
+   /* .description = */ "VECTOR PACK",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0x94,
    /* .format      = */ VRRc_FORMAT,
@@ -14703,7 +14785,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VPKLS,
    /* .name        = */ "VPKLS",
-   /* .description = */ "vector pack logical saturate CC Set",
+   /* .description = */ "VECTOR PACK LOGICAL SATURATE",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0x95,
    /* .format      = */ VRRb_FORMAT,
@@ -14718,7 +14800,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VPKS,
    /* .name        = */ "VPKS",
-   /* .description = */ "vector pack saturate CC Set",
+   /* .description = */ "VECTOR PACK SATURATE",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0x97,
    /* .format      = */ VRRb_FORMAT,
@@ -14733,7 +14815,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VPOPCT,
    /* .name        = */ "VPOPCT",
-   /* .description = */ "vector population count",
+   /* .description = */ "VECTOR POPULATION COUNT",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0x50,
    /* .format      = */ VRRa_FORMAT,
@@ -14746,7 +14828,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VREP,
    /* .name        = */ "VREP",
-   /* .description = */ "vector replicate",
+   /* .description = */ "VECTOR REPLICATE",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0x4D,
    /* .format      = */ VRIc_FORMAT,
@@ -14759,7 +14841,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VREPI,
    /* .name        = */ "VREPI",
-   /* .description = */ "vector replicate immediate",
+   /* .description = */ "VECTOR REPLICATE IMMEDIATE",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0x45,
    /* .format      = */ VRIa_FORMAT,
@@ -14772,7 +14854,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VS,
    /* .name        = */ "VS",
-   /* .description = */ "vector subtract",
+   /* .description = */ "VECTOR SUBTRACT",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0xF7,
    /* .format      = */ VRRc_FORMAT,
@@ -14785,7 +14867,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VSBCBI,
    /* .name        = */ "VSBCBI",
-   /* .description = */ "vector subtract with borrow compute borrow indication I",
+   /* .description = */ "VECTOR SUBTRACT WITH BORROW COMPUTE BORROW INDICATION",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0xBD,
    /* .format      = */ VRRd_FORMAT,
@@ -14798,7 +14880,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VSBI,
    /* .name        = */ "VSBI",
-   /* .description = */ "vector subtract with borrow indication I",
+   /* .description = */ "VECTOR SUBTRACT WITH BORROW INDICATION",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0xBF,
    /* .format      = */ VRRd_FORMAT,
@@ -14811,7 +14893,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VSCBI,
    /* .name        = */ "VSCBI",
-   /* .description = */ "vector subtract compute borrow indication I",
+   /* .description = */ "VECTOR SUBTRACT COMPUTE BORROW INDICATION",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0xF5,
    /* .format      = */ VRRc_FORMAT,
@@ -14824,7 +14906,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VSCEF,
    /* .name        = */ "VSCEF",
-   /* .description = */ "vector scatter element (32)",
+   /* .description = */ "VECTOR SCATTER ELEMENT (32)",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0x1B,
    /* .format      = */ VRV_FORMAT,
@@ -14836,7 +14918,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VSCEG,
    /* .name        = */ "VSCEG",
-   /* .description = */ "vector scatter element (64)",
+   /* .description = */ "VECTOR SCATTER ELEMENT (64)",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0x1A,
    /* .format      = */ VRV_FORMAT,
@@ -14848,7 +14930,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VSEG,
    /* .name        = */ "VSEG",
-   /* .description = */ "vector sign extend to doubleword",
+   /* .description = */ "VECTOR SIGN EXTEND TO DOUBLEWORD",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0x5F,
    /* .format      = */ VRRa_FORMAT,
@@ -14861,7 +14943,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VSEL,
    /* .name        = */ "VSEL",
-   /* .description = */ "vector select",
+   /* .description = */ "VECTOR SELECT",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0x8D,
    /* .format      = */ VRRe_FORMAT,
@@ -14872,7 +14954,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VSL,
    /* .name        = */ "VSL",
-   /* .description = */ "vector shift left",
+   /* .description = */ "VECTOR SHIFT LEFT",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0x74,
    /* .format      = */ VRRc_FORMAT,
@@ -14883,7 +14965,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VSLB,
    /* .name        = */ "VSLB",
-   /* .description = */ "vector shift left by byte",
+   /* .description = */ "VECTOR SHIFT LEFT BY BYTE",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0x75,
    /* .format      = */ VRRc_FORMAT,
@@ -14894,7 +14976,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VSLDB,
    /* .name        = */ "VSLDB",
-   /* .description = */ "vector shift left double by byte",
+   /* .description = */ "VECTOR SHIFT LEFT DOUBLE BY BYTE",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0x77,
    /* .format      = */ VRId_FORMAT,
@@ -14905,7 +14987,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VSRA,
    /* .name        = */ "VSRA",
-   /* .description = */ "vector shift right arithmetic",
+   /* .description = */ "VECTOR SHIFT RIGHT ARITHMETIC",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0x7E,
    /* .format      = */ VRRc_FORMAT,
@@ -14916,7 +14998,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VSRAB,
    /* .name        = */ "VSRAB",
-   /* .description = */ "vector shift right arithmetic by byte",
+   /* .description = */ "VECTOR SHIFT RIGHT ARITHMETIC BY BYTE",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0x7F,
    /* .format      = */ VRRc_FORMAT,
@@ -14927,7 +15009,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VSRL,
    /* .name        = */ "VSRL",
-   /* .description = */ "vector shift right logical",
+   /* .description = */ "VECTOR SHIFT RIGHT LOGICAL",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0x7C,
    /* .format      = */ VRRc_FORMAT,
@@ -14938,7 +15020,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VSRLB,
    /* .name        = */ "VSRLB",
-   /* .description = */ "vector shift right logical by byte",
+   /* .description = */ "VECTOR SHIFT RIGHT LOGICAL BY BYTE",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0x7D,
    /* .format      = */ VRRc_FORMAT,
@@ -14949,7 +15031,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VST,
    /* .name        = */ "VST",
-   /* .description = */ "vector store",
+   /* .description = */ "VECTOR STORE",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0x0E,
    /* .format      = */ VRX_FORMAT,
@@ -14960,7 +15042,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VSTEB,
    /* .name        = */ "VSTEB",
-   /* .description = */ "vector store element (8)",
+   /* .description = */ "VECTOR STORE ELEMENT (8)",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0x08,
    /* .format      = */ VRX_FORMAT,
@@ -14972,7 +15054,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VSTEF,
    /* .name        = */ "VSTEF",
-   /* .description = */ "vector store element (32)",
+   /* .description = */ "VECTOR STORE ELEMENT (32)",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0x0B,
    /* .format      = */ VRX_FORMAT,
@@ -14984,7 +15066,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VSTEG,
    /* .name        = */ "VSTEG",
-   /* .description = */ "vector store element (64)",
+   /* .description = */ "VECTOR STORE ELEMENT (64)",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0x0A,
    /* .format      = */ VRX_FORMAT,
@@ -14996,7 +15078,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VSTEH,
    /* .name        = */ "VSTEH",
-   /* .description = */ "vector store element (16)",
+   /* .description = */ "VECTOR STORE ELEMENT (16)",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0x09,
    /* .format      = */ VRX_FORMAT,
@@ -15008,7 +15090,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VSTL,
    /* .name        = */ "VSTL",
-   /* .description = */ "vector store with length",
+   /* .description = */ "VECTOR STORE WITH LENGTH",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0x3F,
    /* .format      = */ VRSb_FORMAT,
@@ -15019,7 +15101,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VSTM,
    /* .name        = */ "VSTM",
-   /* .description = */ "vector store multiple",
+   /* .description = */ "VECTOR STORE MULTIPLE",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0x3E,
    /* .format      = */ VRSa_FORMAT,
@@ -15031,7 +15113,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VSTRC,
    /* .name        = */ "VSTRC",
-   /* .description = */ "vector string range compare CC Set*",
+   /* .description = */ "VECTOR STRING RANGE COMPARE",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0x8A,
    /* .format      = */ VRRd_FORMAT,
@@ -15047,7 +15129,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VSUM,
    /* .name        = */ "VSUM",
-   /* .description = */ "vector sum across word",
+   /* .description = */ "VECTOR SUM ACROSS WORD",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0x64,
    /* .format      = */ VRRc_FORMAT,
@@ -15060,7 +15142,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VSUMG,
    /* .name        = */ "VSUMG",
-   /* .description = */ "vector sum across doubleword",
+   /* .description = */ "VECTOR SUM ACROSS DOUBLEWORD",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0x65,
    /* .format      = */ VRRc_FORMAT,
@@ -15073,7 +15155,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VSUMQ,
    /* .name        = */ "VSUMQ",
-   /* .description = */ "vector sum across quadword",
+   /* .description = */ "VECTOR SUM ACROSS QUADWORD",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0x67,
    /* .format      = */ VRRc_FORMAT,
@@ -15086,7 +15168,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VTM,
    /* .name        = */ "VTM",
-   /* .description = */ "vector test under mask CC Set",
+   /* .description = */ "VECTOR TEST UNDER MASK",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0xD8,
    /* .format      = */ VRRa_FORMAT,
@@ -15097,7 +15179,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VUPH,
    /* .name        = */ "VUPH",
-   /* .description = */ "vector unpack high",
+   /* .description = */ "VECTOR UNPACK HIGH",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0xD7,
    /* .format      = */ VRRa_FORMAT,
@@ -15110,7 +15192,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VUPL,
    /* .name        = */ "VUPL",
-   /* .description = */ "vector unpack low",
+   /* .description = */ "VECTOR UNPACK LOW",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0xD6,
    /* .format      = */ VRRa_FORMAT,
@@ -15123,7 +15205,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VUPLH,
    /* .name        = */ "VUPLH",
-   /* .description = */ "vector unpack logical high",
+   /* .description = */ "VECTOR UNPACK LOGICAL HIGH",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0xD5,
    /* .format      = */ VRRa_FORMAT,
@@ -15136,7 +15218,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VUPLL,
    /* .name        = */ "VUPLL",
-   /* .description = */ "vector unpack logical low",
+   /* .description = */ "VECTOR UNPACK LOGICAL LOW",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0xD4,
    /* .format      = */ VRRa_FORMAT,
@@ -15149,7 +15231,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VX,
    /* .name        = */ "VX",
-   /* .description = */ "vector exclusive or",
+   /* .description = */ "VECTOR EXCLUSIVE OR",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0x6D,
    /* .format      = */ VRRc_FORMAT,
@@ -15160,7 +15242,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::WFC,
    /* .name        = */ "WFC",
-   /* .description = */ "vector floating-point comp are scalar CC Set",
+   /* .description = */ "VECTOR FP COMPARE SCALAR",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0xCB,
    /* .format      = */ VRRa_FORMAT,
@@ -15176,7 +15258,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::WFK,
    /* .name        = */ "WFK",
-   /* .description = */ "vector floating-point comp are and signal scalar CC Set",
+   /* .description = */ "VECTOR FP COMPARE AND SIGNAL SCALAR",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0xCA,
    /* .format      = */ VRRa_FORMAT,
@@ -15192,12 +15274,13 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::AGH,
    /* .name        = */ "AGH",
-   /* .description = */ "add halfword (64 <- 16)",
+   /* .description = */ "ADD HALFWORD (64 <- 16)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x38,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z14,
    /* .properties  = */ S390OpProp_Is64Bit |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsSignFlag |
                         S390OpProp_SetsOverflowFlag |
                         S390OpProp_UsesTarget |
@@ -15210,10 +15293,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::BIC,
    /* .name        = */ "BIC",
-   /* .description = */ "branch indirect on condition",
+   /* .description = */ "BRANCH INDIRECT ON CONDITION",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x47,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYb_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z14,
    /* .properties  = */ S390OpProp_IsLoad |
                         S390OpProp_LongDispSupported |
@@ -15224,10 +15307,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::KMA,
    /* .name        = */ "KMA",
-   /* .description = */ "Cipher Message with Authentication",
+   /* .description = */ "CIPHER MESSAGE WITH AUTHENTICATION",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0x29,
-   /* .format      = */ RRF_FORMAT,
+   /* .format      = */ RRFb_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z14,
    /* .properties  = */ S390OpProp_SetsCC
    },
@@ -15235,13 +15318,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LGG,
    /* .name        = */ "LGG",
-   /* .description = */ "load guarded",
+   /* .description = */ "LOAD GUARDED (64)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x4C,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z14,
    /* .properties  = */ S390OpProp_IsLoad |
                         S390OpProp_Is64Bit |
+                        S390OpProp_BranchOp |
                         S390OpProp_LongDispSupported |
                         S390OpProp_SetsOperand1 |
                         S390OpProp_SetsCC
@@ -15250,10 +15334,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LGSC,
    /* .name        = */ "LGSC",
-   /* .description = */ "load guarded storage controls",
+   /* .description = */ "LOAD GUARDED STORAGE CONTROLS",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x4D,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z14,
    /* .properties  = */ S390OpProp_IsLoad |
                         S390OpProp_LongDispSupported
@@ -15262,13 +15346,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::LLGFSG,
    /* .name        = */ "LLGFSG",
-   /* .description = */ "load logical and shift guarded (64 <- 32)",
+   /* .description = */ "LOAD LOGICAL AND SHIFT GUARDED (64 <- 32)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x48,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z14,
    /* .properties  = */ S390OpProp_IsLoad |
                         S390OpProp_Is64Bit |
+                        S390OpProp_BranchOp |
                         S390OpProp_LongDispSupported |
                         S390OpProp_SetsOperand1 |
                         S390OpProp_SetsCC
@@ -15277,10 +15362,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MG,
    /* .name        = */ "MG",
-   /* .description = */ "multiply (128 <- 64)",
+   /* .description = */ "MULTIPLY (128 <- 64)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x84,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z14,
    /* .properties  = */ S390OpProp_UsesTarget |
                         S390OpProp_IsLoad |
@@ -15292,10 +15377,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MGH,
    /* .name        = */ "MGH",
-   /* .description = */ "multiply halfword (64 <- 16)",
+   /* .description = */ "MULTIPLY HALFWORD (64 <- 16)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x3C,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z14,
    /* .properties  = */ S390OpProp_UsesTarget |
                         S390OpProp_IsLoad |
@@ -15306,10 +15391,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MGRK,
    /* .name        = */ "MGRK",
-   /* .description = */ "multiply (128 <- 64)",
-   /* .opcode[0]   = */ 0xE9,
+   /* .description = */ "MULTIPLY (128 <- 64)",
+   /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0xEC,
-   /* .format      = */ RRF_FORMAT,
+   /* .format      = */ RRFa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z14,
    /* .properties  = */ S390OpProp_UsesRegPairForTarget |
                         S390OpProp_SetsOperand3
@@ -15318,16 +15403,17 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MSC,
    /* .name        = */ "MSC",
-   /* .description = */ "multiply single (32)",
+   /* .description = */ "MULTIPLY SINGLE (32)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x53,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z14,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_UsesTarget |
                         S390OpProp_IsLoad |
                         S390OpProp_LongDispSupported |
                         S390OpProp_SetsOperand1 |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsOverflowFlag |
                         S390OpProp_SetsCC
    },
@@ -15335,16 +15421,17 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MSGC,
    /* .name        = */ "MSGC",
-   /* .description = */ "multiply single (64)",
+   /* .description = */ "MULTIPLY SINGLE (64)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x83,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z14,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_UsesTarget |
                         S390OpProp_IsLoad |
                         S390OpProp_LongDispSupported |
                         S390OpProp_SetsOperand1 |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsOverflowFlag |
                         S390OpProp_SetsCC
    },
@@ -15352,10 +15439,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MSGRKC,
    /* .name        = */ "MSGRKC",
-   /* .description = */ "multiply single (64)",
+   /* .description = */ "MULTIPLY SINGLE (64)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0xED,
-   /* .format      = */ RRF_FORMAT,
+   /* .format      = */ RRFa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z14,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_SetsOperand3 |
@@ -15366,13 +15453,14 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::MSRKC,
    /* .name        = */ "MSRKC",
-   /* .description = */ "multiply single (32)",
+   /* .description = */ "MULTIPLY SINGLE (32)",
    /* .opcode[0]   = */ 0xB9,
    /* .opcode[1]   = */ 0xFD,
-   /* .format      = */ RRF_FORMAT,
+   /* .format      = */ RRFa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z14,
    /* .properties  = */ S390OpProp_Is32Bit |
                         S390OpProp_SetsOperand3 |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsOverflowFlag |
                         S390OpProp_SetsCC
    },
@@ -15380,15 +15468,16 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::SGH,
    /* .name        = */ "SGH",
-   /* .description = */ "subtract halfword (64 <- 16)",
+   /* .description = */ "SUBTRACT HALFWORD (64 <- 16)",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x39,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z14,
    /* .properties  = */ S390OpProp_Is64Bit |
                         S390OpProp_SetsOperand1 |
                         S390OpProp_IsLoad |
                         S390OpProp_LongDispSupported |
+                        S390OpProp_SetsCC |
                         S390OpProp_SetsOverflowFlag |
                         S390OpProp_SetsCC
    },
@@ -15396,10 +15485,10 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::STGSC,
    /* .name        = */ "STGSC",
-   /* .description = */ "store guarded storage controls",
+   /* .description = */ "STORE GUARDED STORAGE CONTROLS",
    /* .opcode[0]   = */ 0xE3,
    /* .opcode[1]   = */ 0x49,
-   /* .format      = */ RXY_FORMAT,
+   /* .format      = */ RXYa_FORMAT,
    /* .minimumALS  = */ TR_S390ProcessorInfo::TR_z14,
    /* .properties  = */ S390OpProp_IsStore |
                         S390OpProp_LongDispSupported
@@ -15408,7 +15497,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VAP,
    /* .name        = */ "VAP",
-   /* .description = */ "vector Add Decimal",
+   /* .description = */ "VECTOR ADD DECIMAL",
    /* .opcode[0]   = */ 0xE6,
    /* .opcode[1]   = */ 0x71,
    /* .format      = */ VRIf_FORMAT,
@@ -15421,7 +15510,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VBPERM,
    /* .name        = */ "VBPERM",
-   /* .description = */ "vector bit permute",
+   /* .description = */ "VECTOR BIT PERMUTE",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0x85,
    /* .format      = */ VRRc_FORMAT,
@@ -15432,7 +15521,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VCP,
    /* .name        = */ "VCP",
-   /* .description = */ "vector Compare decimal",
+   /* .description = */ "VECTOR COMPARE DECIMAL",
    /* .opcode[0]   = */ 0xE6,
    /* .opcode[1]   = */ 0x77,
    /* .format      = */ VRRh_FORMAT,
@@ -15444,7 +15533,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VCVB,
    /* .name        = */ "VCVB",
-   /* .description = */ "vector convert to binary",
+   /* .description = */ "VECTOR CONVERT TO BINARY",
    /* .opcode[0]   = */ 0xE6,
    /* .opcode[1]   = */ 0x50,
    /* .format      = */ VRRi_FORMAT,
@@ -15457,7 +15546,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VCVBG,
    /* .name        = */ "VCVBG",
-   /* .description = */ "vector convert to binary",
+   /* .description = */ "VECTOR CONVERT TO BINARY",
    /* .opcode[0]   = */ 0xE6,
    /* .opcode[1]   = */ 0x52,
    /* .format      = */ VRRi_FORMAT,
@@ -15470,7 +15559,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VCVD,
    /* .name        = */ "VCVD",
-   /* .description = */ "vector convert to decimal",
+   /* .description = */ "VECTOR CONVERT TO DECIMAL",
    /* .opcode[0]   = */ 0xE6,
    /* .opcode[1]   = */ 0x58,
    /* .format      = */ VRIi_FORMAT,
@@ -15483,7 +15572,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VCVDG,
    /* .name        = */ "VCVDG",
-   /* .description = */ "vector convert to decmial",
+   /* .description = */ "VECTOR CONVERT TO DECIMAL",
    /* .opcode[0]   = */ 0xE6,
    /* .opcode[1]   = */ 0x5A,
    /* .format      = */ VRIi_FORMAT,
@@ -15496,7 +15585,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VDP,
    /* .name        = */ "VDP",
-   /* .description = */ "vector divide decimal",
+   /* .description = */ "VECTOR DIVIDE DECIMAL",
    /* .opcode[0]   = */ 0xE6,
    /* .opcode[1]   = */ 0x7A,
    /* .format      = */ VRIf_FORMAT,
@@ -15509,7 +15598,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VFLL,
    /* .name        = */ "VFLL",
-   /* .description = */ "vector FP load lengthened",
+   /* .description = */ "VECTOR FP LOAD LENGTHENED",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0xC4,
    /* .format      = */ VRRa_FORMAT,
@@ -15524,7 +15613,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VFLR,
    /* .name        = */ "VFLR",
-   /* .description = */ "vector FP load rounded",
+   /* .description = */ "VECTOR FP LOAD ROUNDED",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0xC5,
    /* .format      = */ VRRa_FORMAT,
@@ -15540,7 +15629,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VFMAX,
    /* .name        = */ "VFMAX",
-   /* .description = */ "vector FP maximum",
+   /* .description = */ "VECTOR FP MAXIMUM",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0xEF,
    /* .format      = */ VRRc_FORMAT,
@@ -15556,7 +15645,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VFMIN,
    /* .name        = */ "VFMIN",
-   /* .description = */ "vector FP minimum",
+   /* .description = */ "VECTOR FP MINIMUM",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0xEE,
    /* .format      = */ VRRc_FORMAT,
@@ -15572,7 +15661,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VFNMA,
    /* .name        = */ "VFNMA",
-   /* .description = */ "vector FP negative multiply and add",
+   /* .description = */ "VECTOR FP NEGATIVE MULTIPLY AND ADD",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0x9F,
    /* .format      = */ VRRe_FORMAT,
@@ -15587,7 +15676,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VFNMS,
    /* .name        = */ "VFNMS",
-   /* .description = */ "vector FP negative multiply and subtract",
+   /* .description = */ "VECTOR FP NEGATIVE MULTIPLY AND SUBTRACT",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0x9E,
    /* .format      = */ VRRe_FORMAT,
@@ -15602,7 +15691,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VLIP,
    /* .name        = */ "VLIP",
-   /* .description = */ "vector load immediate decimal",
+   /* .description = */ "VECTOR LOAD IMMEDIATE DECIMAL",
    /* .opcode[0]   = */ 0xE6,
    /* .opcode[1]   = */ 0x49,
    /* .format      = */ VRIh_FORMAT,
@@ -15613,7 +15702,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VLRL,
    /* .name        = */ "VLRL",
-   /* .description = */ "vector Load Rightmost with Length(Length is immediate value)",
+   /* .description = */ "VECTOR LOAD RIGHTMOST WITH LENGTH",
    /* .opcode[0]   = */ 0xE6,
    /* .opcode[1]   = */ 0x35,
    /* .format      = */ VSI_FORMAT,
@@ -15625,7 +15714,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VLRLR,
    /* .name        = */ "VLRLR",
-   /* .description = */ "vector Load Rightmost with Length(Length is in register)",
+   /* .description = */ "VECTOR LOAD RIGHTMOST WITH LENGTH",
    /* .opcode[0]   = */ 0xE6,
    /* .opcode[1]   = */ 0x37,
    /* .format      = */ VRSd_FORMAT,
@@ -15637,7 +15726,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VMP,
    /* .name        = */ "VMP",
-   /* .description = */ "vector multiply decimal",
+   /* .description = */ "VECTOR MULTIPLY DECIMAL",
    /* .opcode[0]   = */ 0xE6,
    /* .opcode[1]   = */ 0x78,
    /* .format      = */ VRIf_FORMAT,
@@ -15650,7 +15739,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VMSL,
    /* .name        = */ "VMSL",
-   /* .description = */ "vector multiply sum logical",
+   /* .description = */ "VECTOR MULTIPLY SUM LOGICAL",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0xB8,
    /* .format      = */ VRRd_FORMAT,
@@ -15663,7 +15752,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VMSP,
    /* .name        = */ "VMSP",
-   /* .description = */ "vector multiply and shift decimal",
+   /* .description = */ "VECTOR MULTIPLY AND SHIFT DECIMAL",
    /* .opcode[0]   = */ 0xE6,
    /* .opcode[1]   = */ 0x79,
    /* .format      = */ VRIf_FORMAT,
@@ -15676,7 +15765,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VNN,
    /* .name        = */ "VNN",
-   /* .description = */ "vector NAND",
+   /* .description = */ "VECTOR NAND",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0x6E,
    /* .format      = */ VRRc_FORMAT,
@@ -15687,7 +15776,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VNX,
    /* .name        = */ "VNX",
-   /* .description = */ "vector not exclusive OR",
+   /* .description = */ "VECTOR NOT EXCLUSIVE OR",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0x6C,
    /* .format      = */ VRRc_FORMAT,
@@ -15698,7 +15787,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VOC,
    /* .name        = */ "VOC",
-   /* .description = */ "vector OR with complement",
+   /* .description = */ "VECTOR OR WITH COMPLEMENT",
    /* .opcode[0]   = */ 0xE7,
    /* .opcode[1]   = */ 0x6F,
    /* .format      = */ VRRc_FORMAT,
@@ -15709,7 +15798,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VPKZ,
    /* .name        = */ "VPKZ",
-   /* .description = */ "vector pack zoned",
+   /* .description = */ "VECTOR PACK ZONED",
    /* .opcode[0]   = */ 0xE6,
    /* .opcode[1]   = */ 0x34,
    /* .format      = */ VSI_FORMAT,
@@ -15720,7 +15809,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VPSOP,
    /* .name        = */ "VPSOP",
-   /* .description = */ "vector perform sign operation decimal",
+   /* .description = */ "VECTOR PERFORM SIGN OPERATION DECIMAL",
    /* .opcode[0]   = */ 0xE6,
    /* .opcode[1]   = */ 0x5B,
    /* .format      = */ VRIg_FORMAT,
@@ -15733,7 +15822,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VRP,
    /* .name        = */ "VRP",
-   /* .description = */ "vector remainder decimal",
+   /* .description = */ "VECTOR REMAINDER DECIMAL",
    /* .opcode[0]   = */ 0xE6,
    /* .opcode[1]   = */ 0x7B,
    /* .format      = */ VRIf_FORMAT,
@@ -15746,7 +15835,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VSDP,
    /* .name        = */ "VSDP",
-   /* .description = */ "vector shift and divide decimal",
+   /* .description = */ "VECTOR SHIFT AND DIVIDE DECIMAL",
    /* .opcode[0]   = */ 0xE6,
    /* .opcode[1]   = */ 0x7E,
    /* .format      = */ VRIf_FORMAT,
@@ -15759,7 +15848,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VSP,
    /* .name        = */ "VSP",
-   /* .description = */ "vector subtract decimal",
+   /* .description = */ "VECTOR SUBTRACT DECIMAL",
    /* .opcode[0]   = */ 0xE6,
    /* .opcode[1]   = */ 0x73,
    /* .format      = */ VRIf_FORMAT,
@@ -15772,7 +15861,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VSRP,
    /* .name        = */ "VSRP",
-   /* .description = */ "vector shift and round decimal",
+   /* .description = */ "VECTOR SHIFT AND ROUND DECIMAL",
    /* .opcode[0]   = */ 0xE6,
    /* .opcode[1]   = */ 0x59,
    /* .format      = */ VRIg_FORMAT,
@@ -15785,7 +15874,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VSTRL,
    /* .name        = */ "VSTRL",
-   /* .description = */ "vector Store Rightmost with Length(Length is immediate value)",
+   /* .description = */ "VECTOR STORE RIGHTMOST WITH LENGTH",
    /* .opcode[0]   = */ 0xE6,
    /* .opcode[1]   = */ 0x3D,
    /* .format      = */ VSI_FORMAT,
@@ -15796,7 +15885,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VSTRLR,
    /* .name        = */ "VSTRLR",
-   /* .description = */ "vector Store Rightmost with Length(Length is in register)",
+   /* .description = */ "VECTOR STORE RIGHTMOST WITH LENGTH",
    /* .opcode[0]   = */ 0xE6,
    /* .opcode[1]   = */ 0x3F,
    /* .format      = */ VRSd_FORMAT,
@@ -15807,7 +15896,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VTP,
    /* .name        = */ "VTP",
-   /* .description = */ "vector test decimal",
+   /* .description = */ "VECTOR TEST DECIMAL",
    /* .opcode[0]   = */ 0xE6,
    /* .opcode[1]   = */ 0x5F,
    /* .format      = */ VRRg_FORMAT,
@@ -15818,7 +15907,7 @@
    {
    /* .mnemonic    = */ OMR::InstOpCode::VUPKZ,
    /* .name        = */ "VUPKZ",
-   /* .description = */ "vector unpack zoned",
+   /* .description = */ "VECTOR UNPACK ZONED",
    /* .opcode[0]   = */ 0xE6,
    /* .opcode[1]   = */ 0x3C,
    /* .format      = */ VSI_FORMAT,

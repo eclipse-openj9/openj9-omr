@@ -3045,11 +3045,15 @@ OMR::Z::MemoryReference::generateBinaryEncoding(uint8_t * cursor, TR::CodeGenera
       TR_ASSERT(scratchReg!=NULL,
         "OMR::Z::MemoryReference::generateBinaryEncoding -- A scratch reg should always be found.");
 
+      auto instructionFormat = instr->getOpCode().getInstructionFormat(instr->getOpCodeValue());
+
       // If the instr is already of RSY/RXY/SIY form && its disp is within the range, no fixup is needed.
       if ((instr->hasLongDisplacementSupport() ||
-           instr->getOpCode().getInstructionFormat(instr->getOpCodeValue()) == RSY_FORMAT ||
-           instr->getOpCode().getInstructionFormat(instr->getOpCodeValue()) == RXY_FORMAT ||
-           instr->getOpCode().getInstructionFormat(instr->getOpCodeValue()) == SIY_FORMAT) &&
+           instructionFormat == RSYa_FORMAT ||
+           instructionFormat == RSYb_FORMAT ||
+           instructionFormat == RXYa_FORMAT ||
+           instructionFormat == RXYb_FORMAT ||
+           instructionFormat == SIY_FORMAT) &&
           disp < MAXLONGDISP && disp > MINLONGDISP)
          {
          instr->attemptOpAdjustmentForLongDisplacement();

@@ -1878,11 +1878,15 @@ OMR::Z::Instruction::attemptOpAdjustmentForLongDisplacement()
    if (n_op != TR::InstOpCode::BAD)
       self()->setOpCodeValue(n_op);
 
-   if (self()->getOpCode().getInstructionFormat(self()->getOpCodeValue()) == RXY_FORMAT)
+   auto instructionFormat = self()->getOpCode().getInstructionFormat(self()->getOpCodeValue());
+
+   if (instructionFormat == RXYa_FORMAT ||
+       instructionFormat == RXYb_FORMAT)
       self()->setKind(IsRXY);
-   else if (self()->getOpCode().getInstructionFormat(self()->getOpCodeValue()) == RSY_FORMAT)
+   else if (instructionFormat == RSYa_FORMAT || 
+            instructionFormat == RSYb_FORMAT)
       self()->setKind(IsRSY);
-   else if (self()->getOpCode().getInstructionFormat(self()->getOpCodeValue()) == SIY_FORMAT)   // LL: Add SIY
+   else if (instructionFormat == SIY_FORMAT)
       self()->setKind(IsSIY);
    else if (self()->cg()->getDebug())
       TR_ASSERT(0, "only RX, RS and SI instructions can be safely mapped to long displacement: opCode: %s", self()->cg()->getDebug()->getOpCodeName(&self()->getOpCode()));
@@ -3324,21 +3328,9 @@ OMR::Z::Instruction::is4ByteLoad()
    }
 
 bool
-OMR::Z::Instruction::isAsmGen()
-   {
-   return self()->getOpCodeValue() == TR::InstOpCode::ASM;
-   }
-
-bool
 OMR::Z::Instruction::isRet()
    {
    return self()->getOpCodeValue() == TR::InstOpCode::RET;
-   }
-
-bool
-OMR::Z::Instruction::isTailCall()
-   {
-   return self()->getOpCodeValue() == TR::InstOpCode::TAILCALL;
    }
 
 int8_t

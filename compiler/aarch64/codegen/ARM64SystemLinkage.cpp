@@ -467,7 +467,7 @@ TR::ARM64SystemLinkage::createEpilogue(TR::Instruction *cursor)
       if (rr->getHasBeenAssignedInMethod())
          {
          TR::MemoryReference *stackSlot = new (trHeapMemory()) TR::MemoryReference(sp, offset, codeGen);
-         cursor = generateMemSrc1Instruction(cg(), TR::InstOpCode::ldrimmx, lastNode, stackSlot, rr, cursor);
+         cursor = generateTrg1MemInstruction(cg(), TR::InstOpCode::ldrimmx, lastNode, rr, stackSlot, cursor);
          offset += 8;
          }
       }
@@ -477,14 +477,14 @@ TR::ARM64SystemLinkage::createEpilogue(TR::Instruction *cursor)
       if (rr->getHasBeenAssignedInMethod())
          {
          TR::MemoryReference *stackSlot = new (trHeapMemory()) TR::MemoryReference(sp, offset, codeGen);
-         cursor = generateMemSrc1Instruction(cg(), TR::InstOpCode::vldrimmd, lastNode, stackSlot, rr, cursor);
+         cursor = generateTrg1MemInstruction(cg(), TR::InstOpCode::vldrimmd, lastNode, rr, stackSlot, cursor);
          offset += 8;
          }
       }
 
    // restore link register (x30)
    TR::MemoryReference *stackSlot = new (trHeapMemory()) TR::MemoryReference(sp, bodySymbol->getLocalMappingCursor(), codeGen);
-   cursor = generateMemSrc1Instruction(cg(), TR::InstOpCode::ldrimmx, lastNode, stackSlot, machine->getARM64RealRegister(TR::RealRegister::lr), cursor);
+   cursor = generateTrg1MemInstruction(cg(), TR::InstOpCode::ldrimmx, lastNode, machine->getARM64RealRegister(TR::RealRegister::lr), stackSlot, cursor);
 
    // remove space for preserved registers
    uint32_t frameSize = codeGen->getFrameSizeInBytes();

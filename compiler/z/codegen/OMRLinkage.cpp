@@ -1607,7 +1607,7 @@ OMR::Z::Linkage::copyArgRegister(TR::Node * callNode, TR::Node * child, TR::Regi
       }
    else if (!self()->cg()->canClobberNodesRegister(child, 0))
       {
-      if (!(TR::Compiler->target.is64Bit()) && child->getDataType() == TR::Int64)
+      if (TR::Compiler->target.is32Bit() && child->getDataType() == TR::Int64)
          {
          TR::Register * tempRegH = self()->cg()->allocateRegister();
          TR::Register * tempRegL = self()->cg()->allocateRegister();

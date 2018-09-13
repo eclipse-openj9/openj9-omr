@@ -22,9 +22,11 @@
 #include "aarch64/codegen/GenerateInstructions.hpp"
 
 #include <stdint.h>
+#include "codegen/ARM64Instruction.hpp"
 #include "codegen/CodeGenerator.hpp"
 #include "codegen/InstOpCode.hpp"
-#include "codegen/ARM64Instruction.hpp"
+#include "codegen/Linkage.hpp"
+#include "codegen/RegisterDependency.hpp"
 #include "il/DataTypes_inlines.hpp"
 #include "il/Node_inlines.hpp"
 
@@ -257,4 +259,39 @@ TR::Instruction *generateLogicalShiftLeftImmInstruction(TR::CodeGenerator *cg, T
    if (preced)
       return new (cg->trHeapMemory()) TR::ARM64Trg1Src1ImmInstruction(op, node, treg, sreg, imm, preced, cg);
    return new (cg->trHeapMemory()) TR::ARM64Trg1Src1ImmInstruction(op, node, treg, sreg, imm, cg);
+   }
+
+/* Use xzr as the target register */
+static TR::Instruction *generateSrc1ImmInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node *node,
+   TR::Register *sreg, int32_t imm, TR::Instruction *preced)
+   {
+   TR::Register *zeroReg = cg->allocateRegister();
+   TR::RegisterDependencyConditions *cond = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(1, 1, cg->trMemory());
+   addDependency(cond, zeroReg, TR::RealRegister::xzr, TR_GPR, cg);
+
+   if (preced)
+      return new (cg->trHeapMemory()) TR::ARM64Trg1Src1ImmInstruction(op, node, zeroReg, sreg, imm, cond, preced, cg);
+   return new (cg->trHeapMemory()) TR::ARM64Trg1Src1ImmInstruction(op, node, zeroReg, sreg, imm, cond, cg);
+   }
+
+TR::Instruction *generateCompareImmInstruction(TR::CodeGenerator *cg, TR::Node *node,
+   TR::Register *sreg, int32_t imm, TR::Instruction *preced)
+   {
+   /* Alias of SUBS instruction */
+
+   bool is64bit = node->getDataType().isInt64();
+   TR::InstOpCode::Mnemonic op = is64bit ? TR::InstOpCode::Mnemonic::subsimmx : TR::InstOpCode::Mnemonic::subsimmw;
+
+   return generateSrc1ImmInstruction(cg, op, node, sreg, imm, preced);
+   }
+
+TR::Instruction *generateTestImmInstruction(TR::CodeGenerator *cg, TR::Node *node,
+   TR::Register *sreg, int32_t imm, TR::Instruction *preced)
+   {
+   /* Alias of ANDS instruction */
+
+   bool is64bit = node->getDataType().isInt64();
+   TR::InstOpCode::Mnemonic op = is64bit ? TR::InstOpCode::Mnemonic::andsimmx : TR::InstOpCode::Mnemonic::andsimmw;
+
+   return generateSrc1ImmInstruction(cg, op, node, sreg, imm, preced);
    }

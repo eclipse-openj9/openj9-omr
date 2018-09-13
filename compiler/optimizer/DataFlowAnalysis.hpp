@@ -56,8 +56,6 @@ class TR_Latestness;
 class TR_LiveOnAllPaths;
 class TR_Liveness;
 class TR_RedundantExpressionAdjustment;
-class TR_RegisterAnticipatability;
-class TR_RegisterAvailability;
 namespace TR { class Block; }
 namespace TR { class CFG; }
 namespace TR { class CFGEdge; }
@@ -186,8 +184,6 @@ class TR_DataFlowAnalysis
    virtual TR_Liveness *asLiveness();
    virtual TR_LiveOnAllPaths *asLiveOnAllPaths();
    virtual TR_FlowSensitiveEscapeAnalysis *asFlowSensitiveEscapeAnalysis();
-   virtual TR_RegisterAnticipatability *asRegisterAnticipatability();
-   virtual TR_RegisterAvailability *asRegisterAvailability();
 
    void addToAnalysisQueue(TR_StructureSubGraphNode *, uint8_t);
    void removeHeadFromAnalysisQueue();
@@ -950,59 +946,6 @@ class TR_FlowSensitiveEscapeAnalysis : public TR_IntersectionBitVectorAnalysis
    List<TR_CFGEdgeAllocationPair> _flushEdges;
    List<TR::CFGNode> _splitBlocks;
    //TR_ScratchList<TR_DependentAllocations> _dependentAllocations;
-   };
-
-// First dataflow analysis for Shrink Wrapping
-//
-class TR_RegisterAnticipatability : public TR_BackwardIntersectionBitVectorAnalysis
-   {
-   public:
-   TR_RegisterAnticipatability(TR::Compilation *comp, TR::Optimizer *optimizer, TR_Structure *, TR_BitVector **, bool trace = false);
-
-   virtual Kind getKind();
-
-   virtual int32_t getNumberOfBits();
-   virtual void analyzeNode(TR::Node *, vcount_t, TR_BlockStructure *, TR_BitVector *);
-   virtual TR_RegisterAnticipatability *asRegisterAnticipatability();
-   // actually a misnomer for this analysis because there aren't any
-   // treetops to analyze by now
-   //
-   virtual void analyzeTreeTopsInBlockStructure(TR_BlockStructure *);
-   virtual bool postInitializationProcessing();
-
-   void initializeRegisterUsageInfo();
-
-   TR_BitVector **_outSetInfo;
-
-   private:
-   TR_BitVector **_registerUsageInfo;
-   };
-
-// Second dataflow analysis for Shrink Wrapping
-//
-class TR_RegisterAvailability : public TR_IntersectionBitVectorAnalysis
-   {
-   public:
-   TR_RegisterAvailability(TR::Compilation *comp, TR::Optimizer *optimizer, TR_Structure *, TR_BitVector **, bool trace = false);
-
-   virtual Kind getKind();
-
-   virtual int32_t getNumberOfBits();
-   virtual void analyzeNode(TR::Node *, vcount_t, TR_BlockStructure *, TR_BitVector *);
-   virtual TR_RegisterAvailability *asRegisterAvailability();
-   virtual void analyzeBlockZeroStructure(TR_BlockStructure *);
-   // again a misnomer for this analysis because there aren't any
-   // treetops to analyze by now
-   //
-   virtual void analyzeTreeTopsInBlockStructure(TR_BlockStructure *);
-   virtual bool postInitializationProcessing();
-
-   void initializeRegisterUsageInfo();
-
-   TR_BitVector **_inSetInfo;
-
-   private:
-   TR_BitVector **_registerUsageInfo;
    };
 
 #endif

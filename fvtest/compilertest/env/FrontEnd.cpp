@@ -125,13 +125,10 @@ FrontEnd::mapsAreIdentical(
        mapCursor != stackAtlas->getParameterMap() &&
        mapCursor->getMapSizeInBytes() == nextMapCursor->getMapSizeInBytes() &&
        mapCursor->getRegisterMap() == nextMapCursor->getRegisterMap() &&
-       !memcmp(mapCursor->getMapBits(), nextMapCursor->getMapBits(), mapCursor->getMapSizeInBytes()) &&
 #ifdef TR_HOST_S390
        (mapCursor->getHighWordRegisterMap() == nextMapCursor->getHighWordRegisterMap()) &&
 #endif
-       (comp->getOption(TR_DisableShrinkWrapping) ||
-        (mapCursor->getRegisterSaveDescription() == nextMapCursor->getRegisterSaveDescription()))
-        )
+       !memcmp(mapCursor->getMapBits(), nextMapCursor->getMapBits(), mapCursor->getMapSizeInBytes()))
       {
       return true;
       }

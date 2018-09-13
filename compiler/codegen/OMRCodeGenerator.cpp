@@ -251,13 +251,11 @@ OMR::CodeGenerator::CodeGenerator() :
      _staticRelocationList(_compilation->allocator()),
      _breakPointList(getTypedAllocator<uint8_t*>(TR::comp()->allocator())),
      _jniCallSites(getTypedAllocator<TR_Pair<TR_ResolvedMethod,TR::Instruction> *>(TR::comp()->allocator())),
-     _lowestSavedReg(0),
      _preJitMethodEntrySize(0),
      _jitMethodEntryPaddingSize(0),
      _lastInstructionBeforeCurrentEvaluationTreeTop(NULL),
      _unlatchedRegisterList(NULL),
      _indentation(2),
-     _preservedRegsInPrologue(NULL),
      _currentBlock(NULL),
      _realVMThreadRegister(NULL),
      _internalControlFlowNestingDepth(0),
@@ -2679,99 +2677,6 @@ OMR::CodeGenerator::sizeOfInstructionToBePatchedHCRGuard(TR::Instruction *vgdnop
       }
 
    return accumulatedSize;
-   }
-
-
-TR::Instruction *
-OMR::CodeGenerator::saveOrRestoreRegisters(TR_BitVector *regs, TR::Instruction *cursor, bool doSaves)
-   {
-   // use store/load multiple to save or restore registers
-   // in the prologue/epilogue on platforms that support store/load
-   // multiple instructions (e.g. ppc32 and z)
-   //
-
-   // the registers need to be in sequence
-   //
-   int32_t startIdx = -1;
-   int32_t endIdx = -1;
-   int32_t prevIdx = -1;
-   int32_t i = 0;
-   int32_t numRegs = regs->elementCount();
-   traceMsg(self()->comp(), "numRegs %d at cursor %p\n", numRegs, cursor);
-
-   int32_t savedRegs = 0;
-   TR_BitVectorIterator resIt(*regs);
-   while (resIt.hasMoreElements())
-      {
-      int32_t curIdx = resIt.getNextElement();
-      if (prevIdx != -1)
-         {
-         if (curIdx == prevIdx+1)
-            {
-            if (startIdx == -1) startIdx = prevIdx; // new pattern
-            endIdx = curIdx;
-            }
-         else
-            {
-            // pattern broken, so insert a load/store multiple
-            // for the regs upto this point
-            //
-            if (i > 1)
-               {
-               // insert store/load multiple
-               //
-               traceMsg(self()->comp(), "found pattern for start %d end %d at cursor %p\n", startIdx, endIdx, cursor);
-               cursor = self()->getLinkage()->composeSavesRestores(cursor, startIdx, endIdx, -1 /*_mapRegsToStack[startIdx]*/, numRegs, doSaves);
-               savedRegs += i;
-               }
-            else
-               {
-               // insert a single store/load for prevIdx
-               //
-               traceMsg(self()->comp(), "pattern broken idx %d at cursor %p doSaves %d\n", prevIdx, cursor, doSaves);
-               if (doSaves)
-                  cursor = self()->getLinkage()->savePreservedRegister(cursor, prevIdx, -1);
-               else
-                  cursor =self()->getLinkage()->restorePreservedRegister(cursor, prevIdx, -1);
-               savedRegs++;
-               }
-            startIdx = -1;
-            endIdx = -1;
-            i = 0;
-            }
-        }
-      else
-         startIdx = curIdx;
-      i++;
-      prevIdx = curIdx;
-      }
-
-   traceMsg(self()->comp(), "savedRegs %d at cursor %p startIdx %d endIdx %d\n", savedRegs, cursor, startIdx, endIdx);
-   // do the remaining
-   if ((numRegs > 1) &&
-         (startIdx != -1))
-      {
-      // compose save restores
-      cursor = self()->getLinkage()->composeSavesRestores(cursor, startIdx, endIdx, -1 /*_mapRegsToStack[startIdx]*/, numRegs, doSaves);
-      savedRegs += (endIdx - startIdx + 1);
-      }
-
-   if (savedRegs != numRegs)
-      {
-      resIt.setBitVector(*regs);
-      for (; savedRegs; --savedRegs) resIt.getNextElement();
-      while (resIt.hasMoreElements())
-         {
-         int32_t curIdx = resIt.getNextElement();
-         // insert a single store for curIdx
-         //
-         if (doSaves)
-            cursor = self()->getLinkage()->savePreservedRegister(cursor, curIdx, -1);
-         else
-            cursor = self()->getLinkage()->restorePreservedRegister(cursor, curIdx, -1);
-         }
-      }
-   return cursor;
    }
 
 #ifdef DEBUG

@@ -275,7 +275,6 @@ public:
       InterProceduralAnalyzer,
       InductionVariableAnalysis,
       CoarseningInterProceduralAnalyzer,
-      ShrinkWrapping,
 
       AheadOfTimeCompile,
 

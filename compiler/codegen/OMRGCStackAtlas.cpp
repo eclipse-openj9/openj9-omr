@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -81,8 +81,6 @@ OMR::GCStackAtlas::close(TR::CodeGenerator *cg)
           map->getRegisterMap() == nextMap->getRegisterMap() &&
           map->getHighWordRegisterMap() == nextMap->getHighWordRegisterMap() &&
           !memcmp(map->getMapBits(), nextMap->getMapBits(), mapBytes) &&
-          (comp->getOption(TR_DisableShrinkWrapping) ||
-           (map->getRegisterSaveDescription() == nextMap->getRegisterSaveDescription())) &&
           map->isByteCodeInfoIdenticalTo(nextMap))
          {
          // Maps are the same - can merge

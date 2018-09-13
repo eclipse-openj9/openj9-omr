@@ -68,14 +68,11 @@ TR::IA32SystemLinkage::IA32SystemLinkage(
    TR::X86SystemLinkage(cg)
    {
    _properties._properties = CallerCleanup;
+   _properties._properties |= UsesPushesForPreservedRegs;
 
    // if OmitFramePointer specified, don't use one
    if (!cg->comp()->getOption(TR_OmitFramePointer))
       _properties._properties |= AlwaysDedicateFramePointerRegister;
-
-   // for shrinkwrapping, we cannot use pushes for the preserved regs. pushes/pops need to be in sequence and this is not compatible with shrinkwrapping as registers need not be saved/restored in sequenc
-   if (cg->comp()->getOption(TR_DisableShrinkWrapping))
-      _properties._properties |= UsesPushesForPreservedRegs;
 
    _properties._registerFlags[TR::RealRegister::NoReg] = 0;
    _properties._registerFlags[TR::RealRegister::eax]   = IntegerReturn;

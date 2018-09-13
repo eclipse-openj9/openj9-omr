@@ -61,7 +61,6 @@
 #include "optimizer/RegDepCopyRemoval.hpp"
 #include "optimizer/Simplifier.hpp"
 #include "optimizer/SinkStores.hpp"
-#include "optimizer/ShrinkWrapping.hpp"
 #include "optimizer/TrivialDeadBlockRemover.hpp"
 #include "optimizer/GlobalValuePropagation.hpp"
 #include "optimizer/LocalValuePropagation.hpp"

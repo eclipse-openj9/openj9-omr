@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -301,9 +301,6 @@ class OMR_EXTENSIBLE Block : public TR::CFGNode
    TR::Instruction *getLastInstruction()                          { return _lastInstruction; }
    TR::Instruction *setLastInstruction(TR::Instruction *i)        { return (_lastInstruction = i); }
 
-   TR_BitVector *getRegisterSaveDescriptionBits()                 { return _registerSaveDescriptionBits;}
-   TR_BitVector *setRegisterSaveDescriptionBits(TR_BitVector *v)  { return (_registerSaveDescriptionBits = v);}
-
    class TR_CatchBlockExtension
       {
    public:
@@ -542,9 +539,6 @@ class OMR_EXTENSIBLE Block : public TR::CFGNode
 
    TR::Instruction *                     _firstInstruction;
    TR::Instruction *                     _lastInstruction;
-
-   // TODO: This member is only used in ShrinkWrapping and should be moved out.
-   TR_BitVector *                        _registerSaveDescriptionBits;
 
    TR_CatchBlockExtension *              _catchBlockExtension;
 

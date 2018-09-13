@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -61,8 +61,6 @@ static char *analysisNames[] =
      "RedundantExpressionAdjustment",
      "FlowSensitiveEscapeAnalysis",
      "LiveOnAllPaths",
-     "RegisterAnticipatability",
-     "RegisterAvailability",
      "DSALiveness",
      "GPRLiveness",
    };
@@ -105,31 +103,6 @@ TR_LiveOnAllPaths                   *TR_DataFlowAnalysis::asLiveOnAllPaths()
    {return NULL;}
 TR_FlowSensitiveEscapeAnalysis      *TR_DataFlowAnalysis::asFlowSensitiveEscapeAnalysis()
    {return NULL;}
-TR_RegisterAnticipatability         *TR_DataFlowAnalysis::asRegisterAnticipatability()
-   {return NULL;}
-TR_RegisterAvailability             *TR_DataFlowAnalysis::asRegisterAvailability()
-   {return NULL;}
-
-//TR_IntersectionBitVectorAnalysis *TR_IntersectionBitVectorAnalysis::asIntersectionBitVectorAnalysis()
-//   {
-//   return this;
-//   }
-
-//TR_UnionBitVectorAnalysis *TR_UnionBitVectorAnalysis::asUnionBitVectorAnalysis()
-//   {
-//   return this;
-//   }
-
-//TR_BackwardIntersectionBitVectorAnalysis *TR_BackwardIntersectionBitVectorAnalysis::asBackwardIntersectionBitVectorAnalysis()
-//   {
-//   return this;
-//   }
-
-//TR_BackwardUnionBitVectorAnalysis *TR_BackwardUnionBitVectorAnalysis::asBackwardUnionBitVectorAnalysis()
-//   {
-//   return this;
-//   }
-
 
 void TR_DataFlowAnalysis::addToAnalysisQueue(TR_StructureSubGraphNode *node, uint8_t changedSets)
    {

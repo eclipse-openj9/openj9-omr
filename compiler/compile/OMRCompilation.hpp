@@ -977,6 +977,12 @@ public:
     */
    DebugCounterMap &getDebugCounterMap() { return _debugCounterMap; }
 
+   /**
+    *  @brief needRelocationsForStatics
+    *  @return whether static data addresses need to be relocated
+    */
+   bool needRelocationsForStatics() { return true; }
+
 
 public:
 #ifdef J9_PROJECT_SPECIFIC

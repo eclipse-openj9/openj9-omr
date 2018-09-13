@@ -2520,7 +2520,8 @@ TR::AMD64RegImm64Instruction::addMetaDataForCodeAddress(uint8_t *cursor)
       {
       if (getNode()->getOpCode().hasSymbolReference() &&
           methodSymRef &&
-          methodSymRef->getReferenceNumber()==TR_referenceArrayCopy)
+          (methodSymRef->getReferenceNumber() == TR_referenceArrayCopy ||
+          methodSymRef->getReferenceNumber() == TR_prepareForOSR))
          {// the reference number is set in j9x86evaluator.cpp/VMarrayStoreCheckArrayCopyEvaluator
          cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor,
                                                          (uint8_t *)methodSymRef,
@@ -2702,15 +2703,17 @@ TR::AMD64RegImm64SymInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
 
          case TR_DataAddress:
             {
-            cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor,
-                                                                                      (uint8_t *) getSymbolReference(),
-                                                                                      (uint8_t *)getNode() ? (uint8_t *)(uintptr_t) getNode()->getInlinedSiteIndex() : (uint8_t *)-1,
-                                                                                      (TR_ExternalRelocationTargetKind) getReloKind(),
-                                                                                      cg()),
-                                                                                      __FILE__,
-                                                                                      __LINE__,
-                                                                                      getNode());
-
+            if (comp->needRelocationsForStatics())
+               {
+               cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor,
+                                                                                         (uint8_t *) getSymbolReference(),
+                                                                                         (uint8_t *)getNode() ? (uint8_t *)(uintptr_t) getNode()->getInlinedSiteIndex() : (uint8_t *)-1,
+                                                                                         (TR_ExternalRelocationTargetKind) getReloKind(),
+                                                                                         cg()),
+                                                                                         __FILE__,
+                                                                                         __LINE__,
+                                                                                         getNode());
+               }
             break;
             }
          case TR_NativeMethodAbsolute:

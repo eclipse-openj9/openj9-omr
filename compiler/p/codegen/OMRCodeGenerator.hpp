@@ -171,6 +171,8 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
 
    bool getSupportsIbyteswap();
 
+   bool supportsAtomicAdd() {return true;}
+
    void generateBinaryEncodingPrologue(TR_PPCBinaryEncodingData *data);
 
    void beginInstructionSelection();
@@ -183,6 +185,8 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    TR::Instruction *generateNop(TR::Node *n, TR::Instruction *preced = 0, TR_NOPKind nopKind=TR_NOPStandard);
    TR::Instruction *generateGroupEndingNop(TR::Node *node , TR::Instruction *preced = 0);
    TR::Instruction *generateProbeNop(TR::Node *node , TR::Instruction *preced = 0);
+
+   bool inlineDirectCall(TR::Node *node, TR::Register *&resultReg);
 
    bool isSnippetMatched(TR::Snippet *, int32_t, TR::SymbolReference *);
 

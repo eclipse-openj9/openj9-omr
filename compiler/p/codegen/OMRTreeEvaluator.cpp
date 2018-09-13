@@ -22,9 +22,10 @@
 #include <stdint.h>                                  // for int32_t, etc
 #include <stdio.h>                                   // for NULL, fprintf, etc
 #include <string.h>                                  // for strstr
-#include "codegen/AheadOfTimeCompile.hpp"           // for AheadOfTimeCompile
+#include "codegen/AheadOfTimeCompile.hpp"            // for AheadOfTimeCompile
 #include "codegen/BackingStore.hpp"                  // for TR_BackingStore
 #include "codegen/CodeGenerator.hpp"                 // for CodeGenerator
+#include "codegen/CodeGenerator_inlines.hpp"         // for CodeGenerator
 #include "codegen/FrontEnd.hpp"                      // for feGetEnv, etc
 #include "codegen/InstOpCode.hpp"                    // for InstOpCode, etc
 #include "codegen/Instruction.hpp"                   // for Instruction
@@ -75,6 +76,7 @@
 #include "infra/Bit.hpp"                             // for intParts
 #include "infra/List.hpp"                            // for List, etc
 #include "optimizer/Structure.hpp"
+#include "p/codegen/OMRCodeGenerator.hpp"
 #include "p/codegen/GenerateInstructions.hpp"
 #include "p/codegen/PPCAOTRelocation.hpp"
 #include "p/codegen/PPCHelperCallSnippet.hpp"
@@ -5187,6 +5189,232 @@ TR::Register *OMR::Power::TreeEvaluator::directCallEvaluator(TR::Node *node, TR:
       }
 
    return resultReg;
+   }
+
+static TR::Register *inlineSimpleAtomicUpdate(TR::Node *node, bool isAddOp, bool isLong, bool isGetThenUpdate, TR::CodeGenerator *cg)
+   {
+   TR::Node *valueAddrChild = node->getFirstChild();
+   TR::Node *deltaChild = NULL;
+   TR::Register *valueAddrReg = cg->evaluate(valueAddrChild);
+   TR::Register *deltaReg = NULL;
+   TR::Register *resultReg = cg->allocateRegister();
+   TR::Register *cndReg = cg->allocateRegister(TR_CCR);
+   TR::Register *tempReg = NULL;
+   bool isDeltaConstant = false;
+   bool isDeltaImmediate = false;
+   bool isDeltaImmediateShifted = false;
+
+   int32_t numDeps = 4;
+
+   int32_t delta = 0;
+
+   // Memory barrier --- NOTE: we should be able to do a test upfront to save this barrier,
+   //                          but Hursley advised to be conservative due to lack of specification.
+   generateInstruction(cg, TR::InstOpCode::lwsync, node);
+
+   TR::LabelSymbol *doneLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+   TR::LabelSymbol *loopLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+
+   loopLabel->setStartInternalControlFlow();
+   deltaChild = node->getSecondChild();
+
+   if (deltaChild->getOpCode().isLoadConst()
+          && !deltaChild->getRegister()
+          && deltaChild->getDataType() == TR::Int32)
+      {
+      delta = (int32_t)(deltaChild->getInt());
+      isDeltaConstant = true;
+
+      //determine if the constant can be represented as an immediate
+      if (delta <= UPPER_IMMED && delta >= LOWER_IMMED)
+         {
+         // avoid evaluating immediates for add operations
+         isDeltaImmediate = true;
+         }
+      else if (delta & 0xFFFF == 0 && (delta & 0xFFFF0000) >> 16 <= UPPER_IMMED && (delta & 0xFFFF0000) >> 16 >= LOWER_IMMED)
+         {
+         // avoid evaluating shifted immediates for add operations
+         isDeltaImmediate = true;
+         isDeltaImmediateShifted = true;
+         }
+      else
+         {
+         // evaluate non-immediate constants since there may be reuse
+         // and they have to go into a reg anyway
+         tempReg = cg->evaluate(deltaChild);
+         }
+      }
+   else
+      {
+      tempReg = cg->evaluate(deltaChild);
+      }
+
+   generateLabelInstruction(cg, TR::InstOpCode::label, node, loopLabel);
+
+   deltaReg = cg->allocateRegister();
+   if (isDeltaImmediate && !isAddOp)
+      {
+      // If argument is immediate, but the operation is not an add,
+      // the value must still be loaded into a register
+      // If argument is an immediate value and operation is an add,
+      // it will be used as an immediate operand in an add immediate instruction
+      loadConstant(cg, node, delta, deltaReg);
+      }
+   else if (!isDeltaImmediate)
+      {
+      // For non-constant arguments, use evaluated register
+      // For non-immediate constants, evaluate since they may be re-used
+      numDeps++;
+      generateTrg1Src1Instruction(cg, TR::InstOpCode::mr, node, deltaReg, tempReg);
+      }
+
+   uint8_t len = isLong ? 8 : 4;
+
+   generateTrg1MemInstruction(cg, isLong ? TR::InstOpCode::ldarx : TR::InstOpCode::lwarx, node, resultReg,
+         new (cg->trHeapMemory()) TR::MemoryReference(0, valueAddrReg, len, cg));
+
+   if (isAddOp)
+      {
+      if (isDeltaImmediateShifted)
+         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addis, node, deltaReg, resultReg, ((delta & 0xFFFF0000) >> 16));
+      else if (isDeltaImmediate)
+         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::addi, node, deltaReg, resultReg, delta);
+      else
+         generateTrg1Src2Instruction(cg, TR::InstOpCode::add, node, deltaReg, resultReg, deltaReg);
+      }
+
+   generateMemSrc1Instruction(cg, isLong ? TR::InstOpCode::stdcx_r : TR::InstOpCode::stwcx_r, node, new (cg->trHeapMemory()) TR::MemoryReference(0, valueAddrReg, len, cg),
+         deltaReg);
+
+   // We expect this store is usually successful, i.e., the following branch will not be taken
+   if (TR::Compiler->target.cpu.id() >= TR_PPCgp)
+      {
+      generateConditionalBranchInstruction(cg, TR::InstOpCode::bne, PPCOpProp_BranchUnlikely, node, loopLabel, cndReg);
+      }
+   else
+      {
+      generateConditionalBranchInstruction(cg, TR::InstOpCode::bne, node, loopLabel, cndReg);
+      }
+
+   // We deviate from the VM helper here: no-store-no-barrier instead of always-barrier
+   generateInstruction(cg, TR::InstOpCode::sync, node);
+
+   TR::RegisterDependencyConditions *conditions;
+
+   //Set the conditions and dependencies
+   conditions = new (cg->trHeapMemory()) TR::RegisterDependencyConditions((uint16_t) numDeps, (uint16_t) numDeps, cg->trMemory());
+
+   addDependency(conditions, valueAddrReg, TR::RealRegister::NoReg, TR_GPR, cg);
+   conditions->getPreConditions()->getRegisterDependency(0)->setExcludeGPR0();
+   conditions->getPostConditions()->getRegisterDependency(0)->setExcludeGPR0();
+   addDependency(conditions, resultReg, TR::RealRegister::NoReg, TR_GPR, cg);
+   conditions->getPreConditions()->getRegisterDependency(1)->setExcludeGPR0();
+   conditions->getPostConditions()->getRegisterDependency(1)->setExcludeGPR0();
+   addDependency(conditions, deltaReg, TR::RealRegister::NoReg, TR_GPR, cg);
+   addDependency(conditions, cndReg, TR::RealRegister::cr0, TR_CCR, cg);
+
+   if (tempReg)
+      {
+      addDependency(conditions, tempReg, TR::RealRegister::NoReg, TR_GPR, cg);
+      }
+
+   doneLabel->setEndInternalControlFlow();
+   generateDepLabelInstruction(cg, TR::InstOpCode::label, node, doneLabel, conditions);
+
+   cg->decReferenceCount(valueAddrChild);
+   cg->stopUsingRegister(valueAddrReg);
+   cg->stopUsingRegister(cndReg);
+
+   if (tempReg)
+      {
+      cg->stopUsingRegister(tempReg);
+      }
+
+   if (deltaChild)
+      {
+      cg->decReferenceCount(deltaChild);
+      }
+
+   if (isGetThenUpdate)
+      {
+      //for Get And Op, we will store the result in the result register
+      cg->stopUsingRegister(deltaReg);
+      node->setRegister(resultReg);
+      return resultReg;
+      }
+   else
+      {
+      //for Op And Get, we will store the return value in the delta register
+      //we no longer need the result register
+      cg->stopUsingRegister(resultReg);
+      node->setRegister(deltaReg);
+      return deltaReg;
+      }
+   }
+
+bool OMR::Power::CodeGenerator::inlineDirectCall(TR::Node *node, TR::Register *&resultReg)
+   {
+   TR::CodeGenerator *cg = self();
+   TR::Compilation *comp = cg->comp();
+   TR::SymbolReference* symRef = node->getSymbolReference();
+   bool doInline = false;
+
+   if (symRef && symRef->getSymbol()->castToMethodSymbol()->isInlinedByCG())
+      {
+      bool isAddOp = false;
+      bool isLong = false;
+      bool isGetThenUpdate = false;
+
+      if (comp->getSymRefTab()->isNonHelper(symRef, TR::SymbolReferenceTable::atomicAdd32BitSymbol))
+         {
+         isAddOp = true;
+         isLong = false;
+         isGetThenUpdate = false;
+         doInline = true;
+         }
+      else if (comp->getSymRefTab()->isNonHelper(symRef, TR::SymbolReferenceTable::atomicAdd64BitSymbol))
+         {
+         isAddOp = true;
+         isLong = true;
+         isGetThenUpdate = false;
+         doInline = true;
+         }
+      else if (comp->getSymRefTab()->isNonHelper(symRef, TR::SymbolReferenceTable::atomicFetchAndAdd32BitSymbol))
+         {
+         isAddOp = true;
+         isLong = false;
+         isGetThenUpdate = true;
+         doInline = true;
+         }
+      else if (comp->getSymRefTab()->isNonHelper(symRef, TR::SymbolReferenceTable::atomicFetchAndAdd64BitSymbol))
+         {
+         isAddOp = true;
+         isLong = true;
+         isGetThenUpdate = true;
+         doInline = true;
+         }
+      else if (comp->getSymRefTab()->isNonHelper(symRef, TR::SymbolReferenceTable::atomicSwap32BitSymbol))
+         {
+         isAddOp = false;
+         isLong = false;
+         isGetThenUpdate = true;
+         doInline = true;
+         }
+      else if (comp->getSymRefTab()->isNonHelper(symRef, TR::SymbolReferenceTable::atomicSwap64BitSymbol))
+         {
+         isAddOp = false;
+         isLong = true;
+         isGetThenUpdate = true;
+         doInline = true;
+         }
+
+      if (doInline)
+         {
+         resultReg = inlineSimpleAtomicUpdate(node, isAddOp, isLong, isGetThenUpdate, cg);
+         }
+      }
+
+   return doInline;
    }
 
 TR::Register *OMR::Power::TreeEvaluator::performCall(TR::Node *node, bool isIndirect, TR::CodeGenerator *cg)

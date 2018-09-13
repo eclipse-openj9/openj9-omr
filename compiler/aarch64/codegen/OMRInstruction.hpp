@@ -171,6 +171,13 @@ class OMR_EXTENSIBLE Instruction : public OMR::Instruction
    void setBlockIndex(int32_t i)   { _blockIndex = i; }
 
    /**
+    * @brief Sets GCMap mask
+    * @param[in] cg : CodeGenerator
+    * @param[in] mask : GCMap mask
+    */
+   void ARM64NeedsGCMap(TR::CodeGenerator *cg, uint32_t mask);
+
+   /**
     * @brief Gets the memory data register
     * @return memory data register
     */

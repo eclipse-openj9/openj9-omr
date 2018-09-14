@@ -946,7 +946,7 @@ static TR::Register * maxMinHelper(TR::Node *node, TR::CodeGenerator *cg, bool i
          cursor = generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BRNE, node, done);
          cursor->setStartInternalControlFlow();
 
-         generateRRInstruction(cg, TR::InstOpCode::CR, node, registerA->getLowOrder(), registerB->getLowOrder());
+         generateRRInstruction(cg, TR::InstOpCode::CLR, node, registerA->getLowOrder(), registerB->getLowOrder());
          generateRRFInstruction(cg, TR::InstOpCode::LOCR, node, registerA->getHighOrder(), registerB->getHighOrder(), mask, true);
          generateRRFInstruction(cg, TR::InstOpCode::LOCR, node, registerA->getLowOrder(), registerB->getLowOrder(), mask, true);
 

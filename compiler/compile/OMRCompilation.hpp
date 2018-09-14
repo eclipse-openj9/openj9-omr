@@ -933,10 +933,7 @@ public:
 
    // surely J9 specific
    void * getRelocatableMethodCodeStart() const { return _relocatableMethodCodeStart; }
-   void setRelocatableMethodCodeStart(void *p) { _relocatableMethodCodeStart = p; _aotMethodCodeStart = p; /* Old API field to be deleted later */ }
-   // old APIs to be deleted later
-   void * getAotMethodCodeStart() const { return _relocatableMethodCodeStart; }
-   void setAotMethodCodeStart(void *p) { _relocatableMethodCodeStart = p; _aotMethodCodeStart = p; }
+   void setRelocatableMethodCodeStart(void *p) { _relocatableMethodCodeStart = p; }
 
    bool getFailCHTableCommit() const { return _failCHtableCommitFlag; }
    void setFailCHTableCommit(bool v) { _failCHtableCommitFlag = v; }
@@ -1192,7 +1189,6 @@ protected:
 
 private:
    void *                            _relocatableMethodCodeStart;
-   void *                            _aotMethodCodeStart; // old API field to be deleted later
    const int32_t                     _compThreadID; // The ID of the supporting compilation thread; 0 for compilation an application thread
    volatile bool                     _failCHtableCommitFlag;
 

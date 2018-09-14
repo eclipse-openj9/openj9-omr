@@ -707,11 +707,6 @@ class OMR_EXTENSIBLE CodeGenerator
    bool supportsInternalPointers();
 
    // --------------------------------------------------------------------------
-   // Behaviour on a particular arch, not code generator
-   //
-   bool supportsLongRegAllocation() {return false;}  // no virt
-
-   // --------------------------------------------------------------------------
    // GC
    //
    TR::GCStackAtlas *getStackAtlas() {return _stackAtlas;}

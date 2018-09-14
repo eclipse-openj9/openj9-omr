@@ -110,7 +110,6 @@ const char * objectName[] =
    "LocalOpts",
    "LocalReordering",
    "LocalLiveRangeReduction",
-   "LongRegAllocation",
    "LoopAliasRefiner",
    "LoopTransformer",
    "MonitorElimination",

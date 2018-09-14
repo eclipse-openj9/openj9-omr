@@ -714,10 +714,6 @@ public:
 
    bool supportsFusedMultiplyAdd() {return true;}
    bool supportsSinglePrecisionSQRT() {return true;}
-   bool supportsLongRegAllocation()
-      {
-      return TR::Compiler->target.isZOS() && TR::Compiler->target.is32Bit();
-      }
 
    bool isAddressScaleIndexSupported(int32_t scale) { if (scale <= 2) return true; return false; }
    using OMR::CodeGenerator::getSupportsConstantOffsetInAddressing;

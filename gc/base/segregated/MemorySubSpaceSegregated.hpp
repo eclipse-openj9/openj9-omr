@@ -89,7 +89,6 @@ public:
 	virtual const char *getName() { return MEMORY_SUBSPACE_NAME_UNDEFINED; }
 	virtual const char *getDescription() { return MEMORY_SUBSPACE_DESCRIPTION_UNDEFINED; }
 
-	virtual void collect(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription);
 	virtual void *allocateObject(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription, MM_MemorySubSpace *baseSubSpace, MM_MemorySubSpace *previousSubSpace, bool shouldCollectOnFailure);
 
 #if defined(OMR_GC_ARRAYLETS)

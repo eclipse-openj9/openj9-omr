@@ -238,6 +238,9 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
     */
    void buildRegisterMapForInstruction(TR_GCStackMap *map);
 
+   TR_GlobalRegisterNumber _gprLinkageGlobalRegisterNumbers[TR::RealRegister::NumRegisters]; // could be smaller
+   TR_GlobalRegisterNumber _fprLinkageGlobalRegisterNumbers[TR::RealRegister::NumRegisters]; // could be smaller
+
    private:
 
    enum // flags
@@ -248,7 +251,11 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
 
    flags32_t _flags;
 
+   uint32_t _numGPR;
+   uint32_t _numFPR;
+
    TR::RealRegister *_methodMetaDataRegister;
+   TR::ARM64ImmInstruction *_returnTypeInfoInstruction;
    TR::ConstantDataSnippet *_constantData;
    const TR::ARM64LinkageProperties *_linkageProperties;
    TR::list<TR_ARM64OutOfLineCodeSection*> _outOfLineCodeSectionList;

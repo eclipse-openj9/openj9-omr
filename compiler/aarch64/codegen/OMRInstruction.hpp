@@ -125,6 +125,12 @@ class OMR_EXTENSIBLE Instruction : public OMR::Instruction
    void remove();
 
    /**
+    * @brief Answers if this instruction is a label or not
+    * @return true if this instruction is a label, false otherwise
+    */
+   virtual bool isLabel() { return _opcode.getMnemonic() == TR::InstOpCode::label; }
+
+   /**
     * @brief Gets the base register of memory access
     * @return base register
     */

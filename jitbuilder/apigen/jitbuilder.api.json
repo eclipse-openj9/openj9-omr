@@ -13,6 +13,7 @@
         {
             "name":"BytecodeBuilder",
             "short-name": "BB",
+            "extends": "IlBuilder",
             "types": [
                 ],
             "fields": [
@@ -22,6 +23,293 @@
             "callbacks": [
                 ],
             "services": [
+                { "name": "bcIndex"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "int32"
+                , "parms": []
+                },
+                { "name": "name"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "string"
+                , "parms": []
+                },
+                { "name": "vmState"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "VirtualMachineState"
+                , "parms": []
+                },
+                { "name": "AddFallThroughBuilder"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "none"
+                , "parms": [ {"name":"ftb","type":"BytecodeBuilder"} ]
+                },
+                { "name": "AddSuccessorBuilders"
+                , "overloadsuffix": "WithArgArray"
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"numBuilders","type":"uint32"},
+                    {"name":"builders","type":"BytecodeBuilder","attributes":["array","can_be_vararg"],"array-len":"numBuilders"}
+                    ]
+                },
+                { "name": "AddSuccessorBuilder"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "none"
+                , "parms": [ {"name":"b","type":"BytecodeBuilder","attributes":["in_out"]} ]
+                },
+                { "name": "Goto"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "none"
+                , "parms": [ {"name":"b","type":"BytecodeBuilder"} ]
+                },
+                { "name": "Goto"
+                , "overloadsuffix": "New"
+                , "flags": []
+                , "return": "none"
+                , "parms": [ {"name":"b","type":"BytecodeBuilder","attributes":["in_out"]} ]
+                },
+                { "name": "IfCmpEqual"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"target","type":"BytecodeBuilder"},
+                    {"name":"left","type":"IlValue"},
+                    {"name":"right","type":"IlValue"}
+                    ]
+                },
+                { "name": "IfCmpEqual"
+                , "overloadsuffix": "New"
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"target","type":"BytecodeBuilder","attributes":["in_out"]},
+                    {"name":"left","type":"IlValue"},
+                    {"name":"right","type":"IlValue"}
+                    ]
+                },
+                { "name": "IfCmpLessOrEqual"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"target","type":"BytecodeBuilder"},
+                    {"name":"left","type":"IlValue"},
+                    {"name":"right","type":"IlValue"}
+                    ]
+                },
+                { "name": "IfCmpLessOrEqual"
+                , "overloadsuffix": "New"
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"target","type":"BytecodeBuilder","attributes":["in_out"]},
+                    {"name":"left","type":"IlValue"},
+                    {"name":"right","type":"IlValue"}
+                    ]
+                },
+                { "name": "IfCmpLessThan"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"target","type":"BytecodeBuilder"},
+                    {"name":"left","type":"IlValue"},
+                    {"name":"right","type":"IlValue"}
+                    ]
+                },
+                { "name": "IfCmpLessThan"
+                , "overloadsuffix": "New"
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"target","type":"BytecodeBuilder","attributes":["in_out"]},
+                    {"name":"left","type":"IlValue"},
+                    {"name":"right","type":"IlValue"}
+                    ]
+                },
+                { "name": "IfCmpGreaterOrEqual"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"target","type":"BytecodeBuilder"},
+                    {"name":"left","type":"IlValue"},
+                    {"name":"right","type":"IlValue"}
+                    ]
+                },
+                { "name": "IfCmpGreaterOrEqual"
+                , "overloadsuffix": "New"
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"target","type":"BytecodeBuilder","attributes":["in_out"]},
+                    {"name":"left","type":"IlValue"},
+                    {"name":"right","type":"IlValue"}
+                    ]
+                },
+                { "name": "IfCmpGreaterThan"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"target","type":"BytecodeBuilder"},
+                    {"name":"left","type":"IlValue"},
+                    {"name":"right","type":"IlValue"}
+                    ]
+                },
+                { "name": "IfCmpGreaterThan"
+                , "overloadsuffix": "New"
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"target","type":"BytecodeBuilder","attributes":["in_out"]},
+                    {"name":"left","type":"IlValue"},
+                    {"name":"right","type":"IlValue"}
+                    ]
+                },
+                { "name": "IfCmpNotEqual"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"target","type":"BytecodeBuilder"},
+                    {"name":"left","type":"IlValue"},
+                    {"name":"right","type":"IlValue"}
+                    ]
+                },
+                { "name": "IfCmpNotEqual"
+                , "overloadsuffix": "New"
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"target","type":"BytecodeBuilder","attributes":["in_out"]},
+                    {"name":"left","type":"IlValue"},
+                    {"name":"right","type":"IlValue"}
+                    ]
+                },
+                { "name": "IfCmpUnsignedLessOrEqual"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"target","type":"BytecodeBuilder"},
+                    {"name":"left","type":"IlValue"},
+                    {"name":"right","type":"IlValue"}
+                    ]
+                },
+                { "name": "IfCmpUnsignedLessOrEqual"
+                , "overloadsuffix": "New"
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"target","type":"BytecodeBuilder","attributes":["in_out"]},
+                    {"name":"left","type":"IlValue"},
+                    {"name":"right","type":"IlValue"}
+                    ]
+                },
+                { "name": "IfCmpUnsignedLessThan"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"target","type":"BytecodeBuilder"},
+                    {"name":"left","type":"IlValue"},
+                    {"name":"right","type":"IlValue"}
+                    ]
+                },
+                { "name": "IfCmpUnsignedLessThan"
+                , "overloadsuffix": "New"
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"target","type":"BytecodeBuilder","attributes":["in_out"]},
+                    {"name":"left","type":"IlValue"},
+                    {"name":"right","type":"IlValue"}
+                    ]
+                },
+                { "name": "IfCmpUnsignedGreaterOrEqual"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"target","type":"BytecodeBuilder"},
+                    {"name":"left","type":"IlValue"},
+                    {"name":"right","type":"IlValue"}
+                    ]
+                },
+                { "name": "IfCmpUnsignedGreaterOrEqual"
+                , "overloadsuffix": "New"
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"target","type":"BytecodeBuilder","attributes":["in_out"]},
+                    {"name":"left","type":"IlValue"},
+                    {"name":"right","type":"IlValue"}
+                    ]
+                },
+                { "name": "IfCmpUnsignedGreaterThan"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"target","type":"BytecodeBuilder"},
+                    {"name":"left","type":"IlValue"},
+                    {"name":"right","type":"IlValue"}
+                    ]
+                },
+                { "name": "IfCmpUnsignedGreaterThan"
+                , "overloadsuffix": "New"
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"target","type":"BytecodeBuilder","attributes":["in_out"]},
+                    {"name":"left","type":"IlValue"},
+                    {"name":"right","type":"IlValue"}
+                    ]
+                },
+                { "name": "IfCmpEqualZero"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"target","type":"BytecodeBuilder"},
+                    {"name":"condition","type":"IlValue"}
+                    ]
+                },
+                { "name": "IfCmpEqualZero"
+                , "overloadsuffix": "New"
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"target","type":"BytecodeBuilder","attributes":["in_out"]},
+                    {"name":"condition","type":"IlValue"}
+                    ]
+                },
+                { "name": "IfCmpNotEqualZero"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"target","type":"BytecodeBuilder"},
+                    {"name":"condition","type":"IlValue"}
+                    ]
+                },
+                { "name": "IfCmpNotEqualZero"
+                , "overloadsuffix": "New"
+                , "flags": []
+                , "return": "none"
+                , "parms": [
+                    {"name":"target","type":"BytecodeBuilder","attributes":["in_out"]},
+                    {"name":"condition","type":"IlValue"}
+                    ]
+                }
                 ]
         },
         {

@@ -856,7 +856,7 @@ OMR::CodeGenerator::use64BitRegsOn32Bit()
       return false;
    else
       {
-      return self()->comp()->getOption(TR_Enable64BitRegsOn32Bit);
+      return !self()->comp()->getOption(TR_Disable64BitRegsOn32Bit);
       }
 #endif // TR_TARGET_S390
    return false;

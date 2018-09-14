@@ -701,7 +701,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"enableLateCleanFolding",            "O\tfold pdclean flags into pdstore nodes right before codegen",  SET_OPTION_BIT(TR_EnableLateCleanFolding), "F"},
    {"enableLinkagePreserveStrategy2",              "O\tenable linkage strategy 2", SET_OPTION_BIT(TR_LinkagePreserveStrategy2), "F"},
    {"enableLocalVPSkipLowFreqBlock",     "O\tSkip processing of low frequency blocks in localVP", SET_OPTION_BIT(TR_EnableLocalVPSkipLowFreqBlock), "F" },
-   {"enableLongRegAllocation",            "O\tenable allocation of 64-bit regs on 32-bit",      SET_OPTION_BIT(TR_Enable64BitRegsOn32Bit), "T"},
+   {"enableLongRegAllocation",            "O\tenable allocation of 64-bit regs on 32-bit",      SET_OPTION_BIT(TR_Enable64BitRegsOn32Bit), "F"},
    {"enableLongRegAllocationHeuristic",   "O\tenable heuristic for long register allocation",   SET_OPTION_BIT(TR_Enable64BitRegsOn32BitHeuristic), "F"},
    {"enableLoopEntryAlignment",            "O\tenable loop Entry alignment",                          SET_OPTION_BIT(TR_EnableLoopEntryAlignment), "F"},
    {"enableLoopVersionerCountAllocFences", "O\tallow loop versioner to count allocation fence nodes on PPC toward a profiled guard's block total", SET_OPTION_BIT(TR_EnableLoopVersionerCountAllocationFences), "F"},

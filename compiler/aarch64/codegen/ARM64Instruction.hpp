@@ -833,6 +833,36 @@ class ARM64Trg1Instruction : public TR::Instruction
       }
 
    /**
+    * @brief Answers whether this instruction references the given virtual register
+    * @param[in] reg : virtual register
+    * @return true when the instruction references the virtual register
+    */
+   bool refsRegister(TR::Register *reg);
+   /**
+    * @brief Answers whether this instruction uses the given virtual register
+    * @param[in] reg : virtual register
+    * @return true when the instruction uses the virtual register
+    */
+   bool usesRegister(TR::Register *reg);
+   /**
+    * @brief Answers whether this instruction defines the given virtual register
+    * @param[in] reg : virtual register
+    * @return true when the instruction defines the virtual register
+    */
+   bool defsRegister(TR::Register *reg);
+   /**
+    * @brief Answers whether this instruction defines the given real register
+    * @param[in] reg : real register
+    * @return true when the instruction defines the real register
+    */
+   bool defsRealRegister(TR::Register *reg);
+   /**
+    * @brief Assigns registers
+    * @param[in] kindToBeAssigned : register kind
+    */
+   void assignRegisters(TR_RegisterKinds kindToBeAssigned);
+
+   /**
     * @brief Generates binary encoding of the instruction
     * @return instruction cursor
     */
@@ -902,6 +932,36 @@ class ARM64Trg1ImmInstruction : public ARM64Trg1Instruction
       /* immediate width depends on InstOpCode */
       TR_ASSERT(false, "Not implemented yet.");
       }
+
+   /**
+    * @brief Answers whether this instruction references the given virtual register
+    * @param[in] reg : virtual register
+    * @return true when the instruction references the virtual register
+    */
+   bool refsRegister(TR::Register *reg);
+   /**
+    * @brief Answers whether this instruction uses the given virtual register
+    * @param[in] reg : virtual register
+    * @return true when the instruction uses the virtual register
+    */
+   bool usesRegister(TR::Register *reg);
+   /**
+    * @brief Answers whether this instruction defines the given virtual register
+    * @param[in] reg : virtual register
+    * @return true when the instruction defines the virtual register
+    */
+   bool defsRegister(TR::Register *reg);
+   /**
+    * @brief Answers whether this instruction defines the given real register
+    * @param[in] reg : real register
+    * @return true when the instruction defines the real register
+    */
+   bool defsRealRegister(TR::Register *reg);
+   /**
+    * @brief Assigns registers
+    * @param[in] kindToBeAssigned : register kind
+    */
+   void assignRegisters(TR_RegisterKinds kindToBeAssigned);
 
    /**
     * @brief Generates binary encoding of the instruction
@@ -1123,6 +1183,36 @@ class ARM64Trg1Src1ImmInstruction : public ARM64Trg1Src1Instruction
       {
       *instruction |= ((_source1Immediate & 0xfff) << 10); /* imm12 */
       }
+
+   /**
+    * @brief Answers whether this instruction references the given virtual register
+    * @param[in] reg : virtual register
+    * @return true when the instruction references the virtual register
+    */
+   bool refsRegister(TR::Register *reg);
+   /**
+    * @brief Answers whether this instruction uses the given virtual register
+    * @param[in] reg : virtual register
+    * @return true when the instruction uses the virtual register
+    */
+   bool usesRegister(TR::Register *reg);
+   /**
+    * @brief Answers whether this instruction defines the given virtual register
+    * @param[in] reg : virtual register
+    * @return true when the instruction defines the virtual register
+    */
+   bool defsRegister(TR::Register *reg);
+   /**
+    * @brief Answers whether this instruction defines the given real register
+    * @param[in] reg : real register
+    * @return true when the instruction defines the real register
+    */
+   bool defsRealRegister(TR::Register *reg);
+   /**
+    * @brief Assigns registers
+    * @param[in] kindToBeAssigned : register kind
+    */
+   void assignRegisters(TR_RegisterKinds kindToBeAssigned);
 
    /**
     * @brief Generates binary encoding of the instruction
@@ -1413,6 +1503,36 @@ class ARM64Trg1Src2ExtendedInstruction : public ARM64Trg1Src2Instruction
       }
 
    /**
+    * @brief Answers whether this instruction references the given virtual register
+    * @param[in] reg : virtual register
+    * @return true when the instruction references the virtual register
+    */
+   bool refsRegister(TR::Register *reg);
+   /**
+    * @brief Answers whether this instruction uses the given virtual register
+    * @param[in] reg : virtual register
+    * @return true when the instruction uses the virtual register
+    */
+   bool usesRegister(TR::Register *reg);
+   /**
+    * @brief Answers whether this instruction defines the given virtual register
+    * @param[in] reg : virtual register
+    * @return true when the instruction defines the virtual register
+    */
+   bool defsRegister(TR::Register *reg);
+   /**
+    * @brief Answers whether this instruction defines the given real register
+    * @param[in] reg : real register
+    * @return true when the instruction defines the real register
+    */
+   bool defsRealRegister(TR::Register *reg);
+   /**
+    * @brief Assigns registers
+    * @param[in] kindToBeAssigned : register kind
+    */
+   void assignRegisters(TR_RegisterKinds kindToBeAssigned);
+
+   /**
     * @brief Generates binary encoding of the instruction
     * @return instruction cursor
     */
@@ -1590,6 +1710,36 @@ class ARM64Trg1MemInstruction : public ARM64Trg1Instruction
    virtual int32_t getOffset() {return getMemoryReference()->getOffset();}
 
    /**
+    * @brief Answers whether this instruction references the given virtual register
+    * @param[in] reg : virtual register
+    * @return true when the instruction references the virtual register
+    */
+   bool refsRegister(TR::Register *reg);
+   /**
+    * @brief Answers whether this instruction uses the given virtual register
+    * @param[in] reg : virtual register
+    * @return true when the instruction uses the virtual register
+    */
+   bool usesRegister(TR::Register *reg);
+   /**
+    * @brief Answers whether this instruction defines the given virtual register
+    * @param[in] reg : virtual register
+    * @return true when the instruction defines the virtual register
+    */
+   bool defsRegister(TR::Register *reg);
+   /**
+    * @brief Answers whether this instruction defines the given real register
+    * @param[in] reg : real register
+    * @return true when the instruction defines the real register
+    */
+   bool defsRealRegister(TR::Register *reg);
+   /**
+    * @brief Assigns registers
+    * @param[in] kindToBeAssigned : register kind
+    */
+   void assignRegisters(TR_RegisterKinds kindToBeAssigned);
+
+   /**
     * @brief Generates binary encoding of the instruction
     * @return instruction cursor
     */
@@ -1751,6 +1901,36 @@ class ARM64MemSrc1Instruction : public ARM64MemInstruction
       TR::RealRegister *source1 = toRealRegister(_source1Register);
       TR_ASSERT(false, "Not implemented yet.");
       }
+
+   /**
+    * @brief Answers whether this instruction references the given virtual register
+    * @param[in] reg : virtual register
+    * @return true when the instruction references the virtual register
+    */
+   bool refsRegister(TR::Register *reg);
+   /**
+    * @brief Answers whether this instruction uses the given virtual register
+    * @param[in] reg : virtual register
+    * @return true when the instruction uses the virtual register
+    */
+   bool usesRegister(TR::Register *reg);
+   /**
+    * @brief Answers whether this instruction defines the given virtual register
+    * @param[in] reg : virtual register
+    * @return true when the instruction defines the virtual register
+    */
+   bool defsRegister(TR::Register *reg);
+   /**
+    * @brief Answers whether this instruction defines the given real register
+    * @param[in] reg : real register
+    * @return true when the instruction defines the real register
+    */
+   bool defsRealRegister(TR::Register *reg);
+   /**
+    * @brief Assigns registers
+    * @param[in] kindToBeAssigned : register kind
+    */
+   void assignRegisters(TR_RegisterKinds kindToBeAssigned);
 
    /**
     * @brief Generates binary encoding of the instruction

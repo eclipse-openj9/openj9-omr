@@ -8,7 +8,35 @@
     "namespace": ["OMR", "JitBuilder"],
     "types": [],
     "fields": [],
-    "services": [],
+    "services": [
+        { "name": "initializeJit"
+        , "overloadsuffix": ""
+        , "flags": ["sets-allocators"]
+        , "return": "boolean"
+        , "parms": []
+        },
+        { "name": "initializeJitWithOptions"
+        , "overloadsuffix": ""
+        , "flags": ["sets-allocators"]
+        , "return": "boolean"
+        , "parms": [ {"name":"options","type":"string"} ]
+        },
+        { "name": "compileMethodBuilder"
+        , "overloadsuffix": ""
+        , "flags": []
+        , "return": "int32"
+        , "parms": [
+            {"name":"methodBuilder","type":"MethodBuilder"},
+            {"name":"entryPoint","type":"ppointer"}
+            ]
+        },
+        { "name": "shutdownJit"
+        , "overloadsuffix": ""
+        , "flags": []
+        , "return": "none"
+        , "parms": []
+        }
+        ],
     "classes": [
         {
             "name":"BytecodeBuilder",

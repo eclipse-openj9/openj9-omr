@@ -1609,6 +1609,7 @@ OMR::Z::Linkage::copyArgRegister(TR::Node * callNode, TR::Node * child, TR::Regi
       {
       if (TR::Compiler->target.is32Bit() && child->getDataType() == TR::Int64)
          {
+         TR_ASSERT_FATAL(!self()->cg()->use64BitRegsOn32Bit(), "Long values should not be passed in register pairs, they can be stored in a single GPR");
          TR::Register * tempRegH = self()->cg()->allocateRegister();
          TR::Register * tempRegL = self()->cg()->allocateRegister();
 

@@ -48,6 +48,15 @@ typedef enum {
    EXT_SXTX,
 } ARM64ExtendCode;
 
+/*
+ * Shift codes used in "mov (wide immediate)" instructions
+ */
+enum {
+   MOV_LSL16 = 0x10000,
+   MOV_LSL32 = 0x20000,
+   MOV_LSL48 = 0x30000
+};
+
 } // TR
 
 #endif

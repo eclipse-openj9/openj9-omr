@@ -42,6 +42,25 @@ class TR_ARM64OutOfLineCodeSection;
 namespace TR { class ARM64LinkageProperties; }
 namespace TR { class ConstantDataSnippet; }
 
+/**
+ * @brief Generates instructions for loading 32-bit integer value to a register
+ * @param[in] cg : CodeGenerator
+ * @param[in] node : node
+ * @param[in] value : integer value
+ * @param[in] trgReg : target register
+ * @param[in] cursor : instruction cursor
+ */
+extern TR::Instruction *loadConstant32(TR::CodeGenerator *cg, TR::Node *node, int32_t value, TR::Register *trgReg, TR::Instruction *cursor = NULL);
+/**
+ * @brief Generates instructions for loading 64-bit integer value to a register
+ * @param[in] cg : CodeGenerator
+ * @param[in] node : node
+ * @param[in] value : integer value
+ * @param[in] trgReg : target register
+ * @param[in] cursor : instruction cursor
+ */
+extern TR::Instruction *loadConstant64(TR::CodeGenerator *cg, TR::Node *node, int64_t value, TR::Register *trgReg, TR::Instruction *cursor = NULL);
+
 namespace OMR
 {
 

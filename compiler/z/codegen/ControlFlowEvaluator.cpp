@@ -910,6 +910,9 @@ lcmpHelper(TR::Node * node, TR::CodeGenerator * cg)
  */
 static TR::Register * maxMinHelper(TR::Node *node, TR::CodeGenerator *cg, bool isMax)
    {
+   TR_ASSERT_FATAL(cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z196),
+      "cannot evaluate %s on z10 or below", node->getOpCode().getName());
+
    TR::Register *registerA = cg->gprClobberEvaluate(node->getFirstChild());
    TR::Register *registerB = cg->evaluate(node->getSecondChild());
    // Mask is 4 to pick b when a is Lower for max, 2 to pick b when a is higher for min

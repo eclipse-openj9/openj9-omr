@@ -705,6 +705,10 @@ OMR::Z::CodeGenerator::CodeGenerator()
       {
       self()->setSupportsAtomicLoadAndAdd();
       }
+   else
+      {
+      comp->setOption(TR_DisableMaxMinOptimization);
+      }
 
    if (_processorInfo.supportsArch(TR_S390ProcessorInfo::TR_zEC12))
       {

@@ -317,7 +317,6 @@ namespace TR { class S390CallSnippet; }
 namespace TR { class S390ConstantDataSnippet; }
 namespace TR { class S390WritableDataSnippet; }
 namespace TR { class S390HelperCallSnippet; }
-namespace TR { class S390InterfaceCallDataSnippet; }
 namespace TR { class S390JNICallDataSnippet; }
 
 namespace TR { class S390StackCheckFailureSnippet; }
@@ -1076,7 +1075,6 @@ public:
    void print(TR::FILE *, TR::S390StackCheckFailureSnippet *);
    void print(TR::FILE *, TR::UnresolvedDataSnippet *);
    void print(TR::FILE *, TR::S390HeapAllocSnippet *);
-   void print(TR::FILE *, TR::S390InterfaceCallDataSnippet *);
    void print(TR::FILE *, TR::S390JNICallDataSnippet *);
    void print(TR::FILE *, TR::S390RestoreGPR7Snippet *);
 

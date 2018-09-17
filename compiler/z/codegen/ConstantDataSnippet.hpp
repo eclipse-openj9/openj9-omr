@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -140,56 +140,6 @@ class S390WritableDataSnippet : public TR::S390ConstantDataSnippet
 
    virtual Kind getKind() { return IsWritableData; }
    };
-
-
-class S390InterfaceCallDataSnippet : public TR::S390ConstantDataSnippet
-   {
-   TR::Instruction * _firstCLFI;
-   uint8_t _numInterfaceCallCacheSlots;
-   uint8_t* _codeRA;
-   uint8_t *thunkAddress;
-   bool _useCLFIandBRCL;
-
-   public:
-
-  S390InterfaceCallDataSnippet(TR::CodeGenerator *,
-                               TR::Node *,
-                               uint8_t,
-                               bool useCLFIandBRCL = false);
-
-  S390InterfaceCallDataSnippet(TR::CodeGenerator *,
-                               TR::Node *,
-                               uint8_t,
-                               uint8_t *,
-                               bool useCLFIandBRCL = false);
-
-   virtual Kind getKind() { return IsInterfaceCallData; }
-   virtual uint8_t *emitSnippetBody();
-   virtual uint32_t getLength(int32_t estimatedSnippetStart);
-
-   int8_t getNumInterfaceCallCacheSlots() {return _numInterfaceCallCacheSlots;}
-
-   void setUseCLFIandBRCL(bool useCLFIandBRCL) {_useCLFIandBRCL = useCLFIandBRCL;}
-   bool isUseCLFIandBRCL() {return _useCLFIandBRCL;}
-
-   void setFirstCLFI(TR::Instruction* firstCLFI) { _firstCLFI = firstCLFI; }
-   TR::Instruction* getFirstCLFI() { return _firstCLFI;}
-
-   uint8_t* getCodeRA() { return _codeRA;}
-   uint8_t* setCodeRA(uint8_t *codeRA)
-      {
-      return _codeRA = codeRA;
-      }
-
-   virtual uint32_t getCallReturnAddressOffset();
-   virtual uint32_t getSingleDynamicSlotOffset();
-   virtual uint32_t getLastCachedSlotFieldOffset();
-   virtual uint32_t getFirstSlotFieldOffset();
-   virtual uint32_t getLastSlotFieldOffset();
-   virtual uint32_t getFirstSlotOffset();
-   virtual uint32_t getLastSlotOffset();
-  };
-
 
 class S390JNICallDataSnippet : public TR::S390ConstantDataSnippet
    {

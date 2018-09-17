@@ -965,7 +965,7 @@ enum TR_CompilationOptions
    TR_DontRIUpgradeAOTWarmMethods                     = 0x20000000 + 29,
    TR_UseRIOnlyForLargeQSZ                            = 0x20000000 + 29,
    TR_EnableAggressiveLiveness                        = 0x40000000 + 29,
-   // Available                                       = 0x80000000 + 29,
+   TR_DisableGuardedStaticFinalFieldFolding           = 0x80000000 + 29,
 
 
    // Option word 30

@@ -38,7 +38,7 @@ include_guard_regex=".*_[Hh]([Pp][Pp])?_? *($|//|/\*)"
 # Create a list of all c, h, cpp and hpp files that have simple (non function) macros within them.
 ##
 get_all_annotated_files() {
-	local annotated_files=$(find ${scan_dir} -type f | grep -E -e '\.[ch](pp)?$' | sort | xargs -d '\n' grep -lE '@ddr_(namespace|options):')
+	local annotated_files=$(find ${scan_dir} -type f | grep -E -e '\.[ch](pp)?$' | sort | xargs -L1 grep -lE '@ddr_(namespace|options):')
 	echo "${annotated_files[@]}"
 }
 
@@ -269,7 +269,7 @@ main() {
 	date "+[%F %T] Scraping anotations from preprocessed code ..."
 	find ${scan_dir} -type f -name '*.i' \
 		| sort \
-		| xargs -d '\n' grep -hE -e '^@(DDRFILE|MACRO|TYPE)_' \
+		| xargs -L1 grep -hE -e '^@(DDRFILE|MACRO|TYPE)_' \
 		| awk "${dedup_filter[*]}" \
 		> ${macroList_file}
 

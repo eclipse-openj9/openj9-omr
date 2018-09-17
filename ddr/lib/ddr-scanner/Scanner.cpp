@@ -79,7 +79,7 @@ Scanner::checkBlacklistedType(const string &name) const
 	 * with a letter or an underscore.
 	 */
 	if (!name.empty()) {
-		char start = name.front();
+		char start = name[0];
 
 		if (('_' == start)
 				|| (('A' <= start) && (start <= 'I'))

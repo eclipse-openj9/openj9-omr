@@ -97,6 +97,15 @@ DwarfScanner::getSourcelist(Dwarf_Die die)
 	_fileNamesTable = NULL;
 	_fileNameCount = 0;
 
+	/* Get the dwarf source file names. */
+	if (DW_DLV_ERROR == dwarf_srcfiles(die, &_fileNamesTable, &_fileNameCount, &error)) {
+		ERRMSG("Failed to get list of source files: %s\n", dwarf_errmsg(error));
+		goto Done;
+	} else if (_fileNameCount < 0) {
+		ERRMSG("List of source files has negative length: %lld\n", _fileNameCount);
+		goto Done;
+	}
+
 	if (!hasAttr) {
 		/* The DIE didn't have a compilationDirectory attribute so we can skip
 		 * over getting the absolute paths from the relative paths.  AIX does
@@ -104,15 +113,6 @@ DwarfScanner::getSourcelist(Dwarf_Die die)
 		 */
 		goto Done;
 	} else {
-		/* Get the dwarf source file names. */
-		if (DW_DLV_ERROR == dwarf_srcfiles(die, &_fileNamesTable, &_fileNameCount, &error)) {
-			ERRMSG("Failed to get list of source files: %s\n", dwarf_errmsg(error));
-			goto Done;
-		} else if (_fileNameCount < 0) {
-			ERRMSG("List of source files has negative length: %lld\n", _fileNameCount);
-			goto Done;
-		}
-
 		/* Get the CU directory. */
 		if (DW_DLV_ERROR == dwarf_attr(die, DW_AT_comp_dir, &attr, &error)) {
 			ERRMSG("Getting compilation directory attribute: %s\n", dwarf_errmsg(error));
@@ -673,7 +673,7 @@ DwarfScanner::addDieToIR(Dwarf_Die die, Dwarf_Half tag, NamespaceUDT *outerUDT, 
 
 	rc = getOrCreateNewType(die, tag, &newType, outerUDT, &isNewType);
 
-	if ((DDR_RC_OK == rc) && isNewType) {
+	if ((DDR_RC_OK == rc) && isNewType && NULL == outerUDT) {
 		rc = blackListedDie(die, &dieBlackListed);
 	}
 

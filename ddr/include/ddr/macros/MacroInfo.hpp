@@ -35,7 +35,7 @@ private:
 	/* This could be a real type name, or a fake type name representing a
 	 * custom rule associated with a macro, or a name based off of a file.
 	 */
-	const string _typeName;
+	string _typeName;
 
 	/* A list of all macros associated with typeName */
 	set<pair<string, string> > _macros;

@@ -175,12 +175,10 @@ class TR_MemoryBase
    {
 protected:
 
-   TR_MemoryBase(void * jitConfig) :
-      _jitConfig(jitConfig)
+   TR_MemoryBase()
       {}
 
-   TR_MemoryBase(const TR_MemoryBase &prototype) :
-      _jitConfig(prototype._jitConfig)
+   TR_MemoryBase(void * jitConfig)
       {}
 
 public:
@@ -460,16 +458,16 @@ public:
    static void *  jitPersistentAlloc(size_t size, ObjectType = UnknownType);
    static void    jitPersistentFree(void *mem);
 
-   protected:
-
-   void *    _jitConfig;
-
    };
 
 class TR_PersistentMemory : public TR_MemoryBase
    {
 public:
    static const uintptr_t MEMINFO_SIGNATURE = 0x1CEDD1CE;
+
+   TR_PersistentMemory (
+      TR::PersistentAllocator &persistentAllocator
+      );
 
    TR_PersistentMemory (
       void * jitConfig,
@@ -1029,7 +1027,7 @@ namespace TR
       {
       return GlobalAllocator(GlobalSingletonAllocator::instance());
       }
- 
+
    /*
     * some common CS2 datatypes
     */

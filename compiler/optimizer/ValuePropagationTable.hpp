@@ -177,13 +177,27 @@ const ValuePropagationPtr constraintHandlers[] =
    constrainIntLoad,         // TR::bload
    constrainShortLoad,       // TR::sload
    constrainLload,           // TR::lload
+   constrainIntLoad,         // TR::irdbar
+   constrainFload,           // TR::frdbar
+   constrainDload,           // TR::drdbar
+   constrainAload,           // TR::ardbar
+   constrainIntLoad,         // TR::brdbar
+   constrainShortLoad,       // TR::srdbar
+   constrainLload,           // TR::lrdbar
    constrainIiload,          // TR::iloadi
    constrainFload,           // TR::floadi
    constrainDload,           // TR::dloadi
    constrainIaload,          // TR::aloadi
    constrainIntLoad,         // TR::bloadi
-   constrainShortLoad,         // TR::sloadi
+   constrainShortLoad,       // TR::sloadi
    constrainLload,           // TR::lloadi
+   constrainIiload,          // TR::irdbari
+   constrainFload,           // TR::frdbari
+   constrainDload,           // TR::drdbari
+   constrainIaload,          // TR::ardbari
+   constrainIntLoad,         // TR::brdbari
+   constrainShortLoad,       // TR::srdbari
+   constrainLload,           // TR::lrdbari
    constrainIntStore,        // TR::istore
    constrainLongStore,       // TR::lstore
    constrainStore,           // TR::fstore

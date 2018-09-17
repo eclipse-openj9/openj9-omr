@@ -213,6 +213,7 @@ public:
    bool mustBeLowered()              const { return properties2().testAny(ILProp2::MustBeLowered); }
    bool canShareValueNumber()        const { return properties2().testAny(ILProp2::ValueNumberShare); }
    bool isWrtBar()                   const { return properties2().testAny(ILProp2::WriteBarrierStore); }
+   bool isReadBar()                  const { return properties2().testAny(ILProp2::ReadBarrierLoad); }
    bool canRaiseException()          const { return properties2().testAny(ILProp2::CanRaiseException); }
    bool isCheck()                    const { return properties2().testAny(ILProp2::Check); }
    bool isNullCheck()                const { return properties2().testAny(ILProp2::NullCheck); }

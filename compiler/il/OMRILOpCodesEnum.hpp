@@ -54,6 +54,18 @@
    bload,    // load byte
    sload,    // load short integer
    lload,    // load long integer
+
+   //Read barrier is used to represent loads with side effects like check for GC, debugging etc.
+   //It is the same as the corresponding load except that it needs to be anchored under a
+   //treetop. The children and symbol of a read barrier are the same as the corresponding load.
+   irdbar,   // read barrier for load integer
+   frdbar,   // read barrier for load float
+   drdbar,   // read barrier for load double
+   ardbar,   // read barrier for load address
+   brdbar,   // read barrier for load byte
+   srdbar,   // load short integer
+   lrdbar,   // load long integer
+
    iloadi,   // load indirect integer
    floadi,   // load indirect float
    dloadi,   // load indirect double
@@ -61,6 +73,13 @@
    bloadi,   // load indirect byte
    sloadi,   // load indirect short integer
    lloadi,   // load indirect long integer
+   irdbari,  // read barrier for load indirect integer
+   frdbari,  // read barrier for load indirect float
+   drdbari,  // read barrier for load indirect double
+   ardbari,  // read barrier for load indirect address
+   brdbari,  // read barrier for load indirect byte
+   srdbari,  // read barrier for load indirect short integer
+   lrdbari,  // read barrier for load indirect long integer
    istore,   // store integer
    lstore,   // store long integer
    fstore,   // store float

@@ -1051,7 +1051,9 @@ TR_S390RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstru
 
       dependentRegNum = _dependencies[i].getRealRegister();
 
-      if (dependentRegNum != TR::RealRegister::SpilledReg)
+      if (dependentRegNum != TR::RealRegister::SpilledReg &&
+          dependentRegNum != TR::RealRegister::KillVolHighRegs &&
+          dependentRegNum != TR::RealRegister::NoReg)
          {
          virtReg = _dependencies[i].getRegister();
          switch (virtReg->getKind())

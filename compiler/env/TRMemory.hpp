@@ -258,7 +258,6 @@ public:
       LocalOpts,
       LocalReordering,
       LocalLiveRangeReduction,
-      LongRegAllocation,
       LoopAliasRefiner,
       LoopTransformer,
       MonitorElimination,

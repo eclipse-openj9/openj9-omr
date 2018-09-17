@@ -2304,19 +2304,6 @@ OMR::Z::Instruction::assignOrderedRegisters(TR_RegisterKinds kindToBeAssigned)
 
          registerOperandNum = (_targetReg < _sourceReg) ? i+1 : _sourceRegSize+i+1;
 
-         /*
-           When we are mixing 32 and 64 bit registers, we have to ensure that 64 bit instructions use 64 bit registers.
-           If this assertion is triggered, it is probably because an evaluator called allocateRegister() when it should
-           have called allocate64bitRegister().
-          */
-         if ((_opcode.is64bit() || _opcode.is32to64bit()) && self()->cg()->use64BitRegsOn32Bit() && TR::Compiler->target.is32Bit() &&
-             !_targetReg[i]->getRealRegister()) // skip check if the target reg is already a real register.
-            {
-            TR_ASSERT(_targetReg[i]->getKind() != TR_GPR, "Using GPR for 64 bit instruction %s [%s] in 32 bit mode",
-                      self()->cg()->getDebug()->getOpCodeName(&_opcode),
-                      self()->cg()->getDebug()->getName(self()));
-            }
-
          if (self()->cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA))
             {
             if (_opcode.is64bit() || _opcode.is32to64bit() ||

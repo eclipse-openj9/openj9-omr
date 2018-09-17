@@ -1897,7 +1897,7 @@ f2lHelper64(TR::Node * node, TR::CodeGenerator * cg)
    TR::LabelSymbol * doneLabel = NULL;
 
    //Assume Float.NaN
-   cursor = generateRIInstruction(cg, TR::InstOpCode::LA, node, targetRegister, 0);
+   cursor = generateRRInstruction(cg, TR::InstOpCode::XGR, node, targetRegister, targetRegister);
    TR::RegisterDependencyConditions * dependencies = NULL;
 
    doneLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
@@ -2116,9 +2116,8 @@ d2lHelper64(TR::Node * node, TR::CodeGenerator * cg)
    // default result = 0
    TR::RegisterDependencyConditions * dependencies = NULL;
    if (checkNaN)
-      generateRIInstruction(cg, TR::InstOpCode::LA, node, targetRegister, 0);
-   if (checkNaN)
       {
+      generateRRInstruction(cg, TR::InstOpCode::XGR, node, targetRegister, targetRegister);
       label1 = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
       // if NaN
       generateRXInstruction(cg, TR::InstOpCode::TCDB, node, floatRegister, (uint32_t) 0x00f);

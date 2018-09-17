@@ -1189,7 +1189,6 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"traceLocalLiveVariablesForGC",     "L\ttrace local live variables for GC",            TR::Options::traceOptimization, localLiveVariablesForGC, 0, "P"},
    {"traceLocalReordering",             "L\ttrace local reordering",                       TR::Options::traceOptimization, localReordering, 0, "P"},
    {"traceLocalVP",                     "L\ttrace local value propagation",                TR::Options::traceOptimization, localValuePropagation, 0, "P"},
-   {"traceLongRegAllocationHeuristic",  "L\ttrace long register allocation",               TR::Options::traceOptimization, longRegAllocation, 0, "P"},
    {"traceLookahead",                   "O\ttrace class lookahead",                        SET_OPTION_BIT(TR_TraceLookahead), "P"},
    {"traceLoopAliasRefiner",            "L\ttrace loop alias refiner",                     TR::Options::traceOptimization, loopAliasRefiner, 0, "P"},
    {"traceLoopCanonicalization",        "L\ttrace loop canonicalization",                  TR::Options::traceOptimization, loopCanonicalization, 0, "P"},

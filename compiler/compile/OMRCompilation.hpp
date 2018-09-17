@@ -526,9 +526,6 @@ public:
    TR::list<TR::Snippet*> *getSnippetsToBePatchedOnClassRedefinition() { return &_snippetsToBePatchedOnClassRedefinition; }
    TR::list<TR_Pair<TR::Snippet,TR_ResolvedMethod> *> *getSnippetsToBePatchedOnRegisterNative() { return &_snippetsToBePatchedOnRegisterNative; }
 
-   bool useLongRegAllocation(){ return _useLongRegAllocation; }
-   void setUseLongRegAllocation(bool b){ _useLongRegAllocation = b; }
-
    void switchCodeCache(TR::CodeCache *newCodeCache);
    bool getCodeCacheSwitched() { return _codeCacheSwitched; }
 
@@ -1136,7 +1133,6 @@ private:
    bool                              _loopVersionedWrtAsyncChecks;
    bool                              _codeCacheSwitched;
    bool                              _commitedCallSiteInfo;
-   bool                              _useLongRegAllocation;
    bool                              _containsBigDecimalLoad;
    bool                              _isOptServer;
    bool                              _isServerInlining;

@@ -260,7 +260,6 @@ OMR::Compilation::Compilation(
    _loopVersionedWrtAsyncChecks(false),
    _codeCacheSwitched(false),
    _commitedCallSiteInfo(false),
-   _useLongRegAllocation(false),
    _containsBigDecimalLoad(false),
    _osrStateIsReliable(true),
    _canAffordOSRControlFlow(true),

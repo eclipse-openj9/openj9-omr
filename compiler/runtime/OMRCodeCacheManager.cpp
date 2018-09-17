@@ -100,7 +100,7 @@ OMR::CodeCacheManager::initialize(
 #endif // HOST_OS == OMR_LINUX
 
    TR::CodeCacheConfig &config = self()->codeCacheConfig();
-      
+
    if (allocateMonolithicCodeCache)
       {
       size_t size = config.codeCacheTotalKB() * 1024;
@@ -156,7 +156,7 @@ OMR::CodeCacheManager::initialize(
             config.codeCacheTotalKB() <= REACHEABLE_RANGE_KB)
 #endif
         );
-   
+
    _lowCodeCacheSpaceThresholdReached = false;
 
    _initialized = true;
@@ -220,7 +220,7 @@ OMR::CodeCacheManager::destroy()
       int numCharsWritten = snprintf(elfFilename, maxElfFilenameSize, "/tmp/perf-%d.jit", jvmPid);
       if (numCharsWritten > 0 && numCharsWritten < maxElfFilenameSize)
       {
-         TR_ASSERT(_elfExecutableGenerator->emitELF((const char*) &elfFilename, 
+         TR_ASSERT(_elfExecutableGenerator->emitELF((const char*) &elfFilename,
                                 _symbolContainer->_head,
                                 _symbolContainer->_numSymbols,
                                 _symbolContainer->_totalSymbolNameLength),
@@ -254,14 +254,13 @@ OMR::CodeCacheManager::freeMemory(void *memoryToFree)
 
 TR::CodeCache *
 OMR::CodeCacheManager::allocateCodeCacheObject(TR::CodeCacheMemorySegment *codeCacheSegment,
-                                             size_t codeCacheSizeAllocated,
-                                             CodeCacheHashEntrySlab *hashEntrySlab)
+                                               size_t codeCacheSize)
    {
    TR::CodeCache *codeCache = static_cast<TR::CodeCache *>(self()->getMemory(sizeof(TR::CodeCache)));
    if (codeCache)
       {
       new (codeCache) TR::CodeCache();
-      if (!codeCache->initialize(self(), codeCacheSegment, codeCacheSizeAllocated, hashEntrySlab))
+      if (!codeCache->initialize(self(), codeCacheSegment, codeCacheSize))
          {
          self()->freeMemory(codeCache);
          codeCache = NULL;
@@ -1245,7 +1244,7 @@ void
 OMR::CodeCacheManager::initializeRelocatableELFGenerator(void)
    {
    _objectFileName = TR::Options::getCmdLineOptions()->getObjectFileName();
-   
+
    TR::CodeCacheSymbolContainer * symbolContainer = static_cast<TR::CodeCacheSymbolContainer *>(self()->getMemory(sizeof(TR::CodeCacheSymbolContainer)));
    symbolContainer->_head = NULL;
    symbolContainer->_tail = NULL;
@@ -1253,7 +1252,7 @@ OMR::CodeCacheManager::initializeRelocatableELFGenerator(void)
    symbolContainer->_totalSymbolNameLength = 1; //precount for the UNDEF symbol
    _relocatableSymbolContainer = symbolContainer;
 
-   
+
    TR::CodeCacheRelocationInfoContainer * relInfo = static_cast<TR::CodeCacheRelocationInfoContainer *>(self()->getMemory(sizeof(TR::CodeCacheRelocationInfoContainer)));
    relInfo->_head = NULL;
    relInfo->_tail = NULL;

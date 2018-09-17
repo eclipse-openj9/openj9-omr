@@ -33,8 +33,20 @@ namespace OMR { typedef OMR::ARM64::TreeEvaluator TreeEvaluatorConnector; }
 #endif
 
 #include "compiler/codegen/OMRTreeEvaluator.hpp"
+#include "codegen/RealRegister.hpp"
+#include "compile/CompilationTypes.hpp"
 
 namespace TR { class CodeGenerator; }
+
+/**
+ * @brief Helper function for xReturnEvaluators
+ * @param[in] node : node
+ * @param[in] rnum : register number for return value
+ * @param[in] rk : register kind for return value
+ * @param[in] i : return type information
+ * @param[in] cg : CodeGenerator
+ */
+TR::Register *genericReturnEvaluator(TR::Node *node, TR::RealRegister::RegNum rnum, TR_RegisterKinds rk, TR_ReturnInfo i, TR::CodeGenerator *cg);
 
 namespace OMR
 {
@@ -90,7 +102,7 @@ public:
 	static TR::Register *freturnEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *dreturnEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *areturnEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *ReturnEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+	static TR::Register *returnEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *asynccheckEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *athrowEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *icallEvaluator(TR::Node *node, TR::CodeGenerator *cg);

@@ -62,12 +62,12 @@
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::sstoreiEvaluator ,	// TR::sstorei		// store indirect short integer          (child1 a; child2 s)
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::istoreiEvaluator ,	// TR::istorei		// store indirect integer                (child1 a; child2 i)
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::GotoEvaluator ,	// TR::Goto		// goto label address
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::ireturnEvaluator ,	// TR::ireturn		// return an integer
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::lreturnEvaluator ,	// TR::lreturn		// return a long integer
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::freturnEvaluator ,	// TR::freturn		// return a float
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::dreturnEvaluator ,	// TR::dreturn		// return a double
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::areturnEvaluator ,	// TR::areturn		// return an address
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::ReturnEvaluator ,	// TR::Return		// void return
+    TR::TreeEvaluator::ireturnEvaluator, // TR::ireturn		// return an integer
+    TR::TreeEvaluator::lreturnEvaluator, // TR::lreturn		// return a long integer
+    TR::TreeEvaluator::freturnEvaluator, // TR::freturn		// return a float
+    TR::TreeEvaluator::dreturnEvaluator, // TR::dreturn		// return a double
+    TR::TreeEvaluator::lreturnEvaluator, // TR::areturn		// return an address
+    TR::TreeEvaluator::returnEvaluator, // TR::Return		// void return
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::asynccheckEvaluator ,	// TR::asynccheck	// GC point
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::athrowEvaluator ,	// TR::athrow		// throw an exception
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::icallEvaluator ,	// TR::icall		// direct call returning integer
@@ -521,8 +521,8 @@
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::iustoreiEvaluator ,	// TR::iustorei		// store indirect unsigned integer       (child1 a; child2 i)
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::lustoreiEvaluator ,	// TR::lustorei		// store indirect unsigned long integer  (child1 a; child2 l)
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::bustoreiEvaluator ,	// TR::bustorei		// store indirect unsigned byte          (child1 a; child2 b)
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::iureturnEvaluator ,	// TR::iureturn		// return an unsigned integer
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::lureturnEvaluator ,	// TR::lureturn		// return a long unsigned integer
+    TR::TreeEvaluator::ireturnEvaluator, // TR::iureturn		// return an unsigned integer
+    TR::TreeEvaluator::lreturnEvaluator, // TR::lureturn		// return a long unsigned integer
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::iucallEvaluator ,	// TR::iucall		// direct call returning unsigned integer
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::lucallEvaluator ,	// TR::lucall		// direct call returning unsigned long integer
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::iuaddEvaluator ,	// TR::iuadd		// add 2 unsigned integers

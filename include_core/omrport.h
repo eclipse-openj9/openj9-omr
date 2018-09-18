@@ -409,6 +409,22 @@ typedef struct OMRCgroupEntry {
 
 #endif /* defined(LINUX) */
 
+typedef struct OMRCgroupMetricElement {
+	char *key;
+	char *units;
+	char value[128];
+} OMRCgroupMetricElement;
+
+typedef struct OMRCgroupMetricIteratorState {
+	uint32_t count;
+	uint32_t numElements;
+	uint64_t subsystemid;
+	int32_t multiLineCounter;
+	char *fileContent;
+} OMRCgroupMetricIteratorState;
+
+
+
 /**
  * @name Virtual Memory Options
  * Flags used to create bitmap indicating vmem options
@@ -1520,12 +1536,16 @@ typedef struct OMRPortLibrary {
 	int32_t (*sysinfo_cgroup_get_memlimit)(struct OMRPortLibrary *portLibrary, uint64_t *limit);
 	/** see @ref omrsysinfo.c::omrsysinfo_cgroup_is_memlimit_set "omrsysinfo_cgroup_is_memlimit_set"*/
 	BOOLEAN (*sysinfo_cgroup_is_memlimit_set)(struct OMRPortLibrary *portLibrary);
-	/** see @ref omrsysinfo.c::omrsysinfo_cgroup_get_handle_subsystem_file "omrsysinfo_cgroup_get_handle_subsystem_file"*/
-	intptr_t (*sysinfo_cgroup_get_handle_subsystem_file)(struct OMRPortLibrary *portLibrary,  uint64_t subsystemFlag, const char *fileName);
 	/** see @ref omrsysinfo.c::omrsysinfo_get_cgroup_subsystem_list "omrsysinfo_get_cgroup_subsystem_list"*/
 	struct OMRCgroupEntry *(*sysinfo_get_cgroup_subsystem_list)(struct OMRPortLibrary *portLibrary);
 	/** see @ref omrsysinfo.c::omrsysinfo_is_running_in_container "omrsysinfo_is_running_in_container"*/
-	int32_t (*sysinfo_is_running_in_container)(struct OMRPortLibrary *portLibrary, BOOLEAN *inContainer);
+	BOOLEAN (*sysinfo_is_running_in_container)(struct OMRPortLibrary *portLibrary, int32_t *errorCode);
+	/** see @ref omrsysinfo.c::omrsysinfo_cgroup_subsystem_iterator_init "omrsysinfo_cgroup_subsystem_iterator_init"*/
+	int32_t (*sysinfo_cgroup_subsystem_iterator_init)(struct OMRPortLibrary *portLibrary, uint64_t subsystem, struct OMRCgroupMetricIteratorState *state);
+	/** see @ref omrsysinfo.c::omrsysinfo_cgroup_subsystem_iterator_hasNext "omrsysinfo_cgroup_subsystem_iterator_hasNext"*/
+	BOOLEAN (*sysinfo_cgroup_subsystem_iterator_hasNext)(struct OMRPortLibrary *portLibrary, const struct OMRCgroupMetricIteratorState *state);
+	/** see @ref omrsysinfo.c::omrsysinfo_cgroup_subsystem_iterator_next "omrsysinfo_cgroup_subsystem_iterator_next"*/
+	int32_t (*sysinfo_cgroup_subsystem_iterator_next)(struct OMRPortLibrary *portLibrary, struct OMRCgroupMetricIteratorState *state, struct OMRCgroupMetricElement *metricElement, BOOLEAN *printUnits, uint64_t sizeRef);
 	/** see @ref omrport.c::omrport_init_library "omrport_init_library"*/
 	int32_t (*port_init_library)(struct OMRPortLibrary *portLibrary, uintptr_t size) ;
 	/** see @ref omrport.c::omrport_startup_library "omrport_startup_library"*/
@@ -1981,9 +2001,11 @@ extern J9_CFUNC int32_t omrport_getVersion(struct OMRPortLibrary *portLibrary);
 #define omrsysinfo_cgroup_are_subsystems_enabled(param1) privateOmrPortLibrary->sysinfo_cgroup_are_subsystems_enabled(privateOmrPortLibrary, param1)
 #define omrsysinfo_cgroup_get_memlimit(param1) privateOmrPortLibrary->sysinfo_cgroup_get_memlimit(privateOmrPortLibrary, param1)
 #define omrsysinfo_cgroup_is_memlimit_set() privateOmrPortLibrary->sysinfo_cgroup_is_memlimit_set(privateOmrPortLibrary)
-#define omrsysinfo_cgroup_get_handle_subsystem_file(param1,param2) privateOmrPortLibrary->sysinfo_cgroup_get_handle_subsystem_file(privateOmrPortLibrary, param1, param2)
 #define omrsysinfo_get_cgroup_subsystem_list() privateOmrPortLibrary->sysinfo_get_cgroup_subsystem_list(privateOmrPortLibrary)
 #define omrsysinfo_is_running_in_container(param1) privateOmrPortLibrary->sysinfo_is_running_in_container(privateOmrPortLibrary, param1)
+#define omrsysinfo_cgroup_subsystem_iterator_init(param1, param2) privateOmrPortLibrary->sysinfo_cgroup_subsystem_iterator_init(privateOmrPortLibrary, param1, param2)
+#define omrsysinfo_cgroup_subsystem_iterator_hasNext(param1) privateOmrPortLibrary->sysinfo_cgroup_subsystem_iterator_hasNext(privateOmrPortLibrary, param1)
+#define omrsysinfo_cgroup_subsystem_iterator_next(param1, param2, param3, param4) privateOmrPortLibrary->sysinfo_cgroup_subsystem_iterator_next(privateOmrPortLibrary, param1, param2, param3, param4)
 #define omrintrospect_startup() privateOmrPortLibrary->introspect_startup(privateOmrPortLibrary)
 #define omrintrospect_shutdown() privateOmrPortLibrary->introspect_shutdown(privateOmrPortLibrary)
 #define omrintrospect_set_suspend_signal_offset(param1) privateOmrPortLibrary->introspect_set_suspend_signal_offset(privateOmrPortLibrary, param1)

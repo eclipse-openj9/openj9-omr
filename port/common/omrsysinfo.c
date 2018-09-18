@@ -938,24 +938,6 @@ omrsysinfo_cgroup_is_memlimit_set(struct OMRPortLibrary *portLibrary)
 }
 
 /**
- * Gets the file descriptor by opening the file passed as a param fileName with PortLibrary file_open API.
- * Caller should be using "omrfile_close" (Port Library API) to close the file descriptor after calling this API.
- *
- * @param[in] portLibrary pointer to OMRPortLibrary
- *
- * @param[in] subsystemFlag for checking the index of the subsystem
- *
- * @param[in] fileName pointer to cgroup subsystem filename
- *
- * @return file descriptor of file on success and OMRPORT_ERROR_SYSINFO_CGROUP_UNSUPPORTED_PLATFORM on failure
- */
-intptr_t
-omrsysinfo_cgroup_get_handle_subsystem_file(struct OMRPortLibrary *portLibrary,  uint64_t subsystemFlag, const char *fileName)
-{
-	return OMRPORT_ERROR_SYSINFO_CGROUP_UNSUPPORTED_PLATFORM;
-}
-
-/**
  * Gets the list of subsystems available
  *
  * @param[in] portLibrary pointer to OMRPortLibrary
@@ -969,16 +951,67 @@ omrsysinfo_get_cgroup_subsystem_list(struct OMRPortLibrary *portLibrary)
 }
 
 /**
- * States if JVM is running in a container
+ * States if Runtime is running in a container
  *
  * @param[in] portLibrary pointer to OMRPortLibrary
  *
- * @param[in] inContainer BOOLEAN pointer to state running in container or not
+ * @param[in] errorCode int32_t pointer to state error code from internal calls
  *
- * @return 0 on success and OMRPORT_ERROR_SYSINFO_CGROUP_UNSUPPORTED_PLATFORM on failure
+ * @return TRUE if Runtime is running in a container and FALSE if not
+ */
+BOOLEAN
+omrsysinfo_is_running_in_container(struct OMRPortLibrary *portLibrary, int32_t *errorCode)
+{
+	return FALSE;
+}
+
+/**
+ * Initiates the iterator to get cgroup metric values based on the cgroup subsystem
+ *
+ * @param[in] portLibrary pointer to OMRPortLibrary
+ *
+ * @param[in] subsystem flag of type OMR_CGROUP_SUBSYSTEMS_* representing the cgroup subsystem
+ *
+ * @param[in] state Pointer to the `OMRCgroupMetricIteratorState` struct
+ *
+ * @return 0 on success and error code on failure
  */
 int32_t
-omrsysinfo_is_running_in_container(struct OMRPortLibrary *portLibrary, BOOLEAN *inContainer)
+omrsysinfo_cgroup_subsystem_iterator_init(struct OMRPortLibrary *portLibrary, uint64_t subsystem, struct OMRCgroupMetricIteratorState *state)
 {
 	return OMRPORT_ERROR_SYSINFO_CGROUP_UNSUPPORTED_PLATFORM;
+}
+
+/**
+ * Checks if there are any cgroup metrics in the subsystem to iterated over
+ *
+ * @param[in] portLibrary pointer to OMRPortLibrary
+ *
+ * @param[in] state Pointer to the `OMRCgroupMetricIteratorState` struct
+ *
+ * @return TRUE if any cgroup metric available else FALSE
+ */
+BOOLEAN
+omrsysinfo_cgroup_subsystem_iterator_hasNext(struct OMRPortLibrary *portLibrary, const struct OMRCgroupMetricIteratorState *state)
+{
+	return FALSE;
+}
+
+/**
+ * Reads the next cgroup metric and sets the value to return 
+ *
+ * @param[in] portLibrary pointer to OMRPortLibrary
+ *
+ * @param[in] state Pointer to the `OMRCgroupMetricIteratorState` struct
+ *
+ * @param[in] metricElement Pointer to the `OMRCgroupMetricElement` struct
+ *
+ * @param[in/out] printUnits Pointer to a BOOLEAN which states if the metric has units
+ *
+ * @return 0 on success and error code on failure
+ */
+int32_t
+omrsysinfo_cgroup_subsystem_iterator_next(struct OMRPortLibrary *portLibrary, struct OMRCgroupMetricIteratorState *state, struct OMRCgroupMetricElement *metricElement, BOOLEAN *printUnits, uint64_t sizeRef)
+{
+	return OMRPORT_ERROR_SYSINFO_CGROUP_UNSUPPORTED_PLATFORM;	
 }

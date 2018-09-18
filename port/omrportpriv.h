@@ -533,12 +533,16 @@ extern J9_CFUNC int32_t
 omrsysinfo_cgroup_get_memlimit(struct OMRPortLibrary *portLibrary, uint64_t *limit);
 extern J9_CFUNC BOOLEAN
 omrsysinfo_cgroup_is_memlimit_set(struct OMRPortLibrary *portLibrary);
-extern J9_CFUNC intptr_t
-omrsysinfo_cgroup_get_handle_subsystem_file(struct OMRPortLibrary *portLibrary,  uint64_t subsystemFlag, const char *fileName);
 extern J9_CFUNC struct OMRCgroupEntry *
 omrsysinfo_get_cgroup_subsystem_list(struct OMRPortLibrary *portLibrary);
+extern J9_CFUNC BOOLEAN
+omrsysinfo_is_running_in_container(struct OMRPortLibrary *portLibrary, int32_t *errorCode);
 extern J9_CFUNC int32_t
-omrsysinfo_is_running_in_container(struct OMRPortLibrary *portLibrary, BOOLEAN *inContainer);
+omrsysinfo_cgroup_subsystem_iterator_init(struct OMRPortLibrary *portLibrary, uint64_t subsystem, struct OMRCgroupMetricIteratorState *state);
+extern J9_CFUNC BOOLEAN
+omrsysinfo_cgroup_subsystem_iterator_hasNext(struct OMRPortLibrary *portLibrary, const struct OMRCgroupMetricIteratorState *state);
+extern J9_CFUNC int32_t
+omrsysinfo_cgroup_subsystem_iterator_next(struct OMRPortLibrary *portLibrary, struct OMRCgroupMetricIteratorState *state, struct OMRCgroupMetricElement *metricElement, BOOLEAN *printUnits, uint64_t sizeRef);
 
 /* J9SourceJ9Signal*/
 extern J9_CFUNC int32_t

@@ -3936,8 +3936,7 @@ TR_Debug::getRuntimeHelperName(int32_t index)
          case TR_volatileWriteLong:         return "jitVolatileWriteLong";
          case TR_volatileReadDouble:        return "jitVolatileReadDouble";
          case TR_volatileWriteDouble:       return "jitVolatileWriteDouble";
-
-         case TR_referenceArrayCopy:        return "referenceArrayCopy";
+         case TR_referenceArrayCopy:        return "jitReferenceArrayCopy";
          }
       }
 #ifdef TR_TARGET_X86

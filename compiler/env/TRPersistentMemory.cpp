@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -64,10 +64,21 @@ void   TR_MemoryBase::jitPersistentFree(void * mem)                  { ::trPersi
 TR::PersistentInfo * TR_PersistentMemory::getNonThreadSafePersistentInfo() { return ::trPersistentMemory->getPersistentInfo(); }
 
 TR_PersistentMemory::TR_PersistentMemory(
+   TR::PersistentAllocator &persistentAllocator
+   ) :
+   TR_MemoryBase(),
+   _signature(MEMINFO_SIGNATURE),
+   _persistentInfo(this),
+   _persistentAllocator(TR::ref(persistentAllocator)),
+   _totalPersistentAllocations()
+   {
+   }
+
+TR_PersistentMemory::TR_PersistentMemory(
    void *   jitConfig,
    TR::PersistentAllocator &persistentAllocator
    ) :
-   TR_MemoryBase(jitConfig),
+   TR_MemoryBase(),
    _signature(MEMINFO_SIGNATURE),
    _persistentInfo(this),
    _persistentAllocator(TR::ref(persistentAllocator)),

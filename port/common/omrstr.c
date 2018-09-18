@@ -943,16 +943,18 @@ writeStringToBuffer(char *buf, uintptr_t bufLen, uint64_t width, uint64_t precis
 	if (leftPadding > bufLen) {
 		leftPadding = bufLen;
 	}
-	if (buf && (0 != leftPadding)) {
-		memset(buf, ' ', leftPadding);
-		buf += leftPadding;
+	if (0 != leftPadding) {
+		if (NULL != buf) {
+			memset(buf, ' ', leftPadding);
+			buf += leftPadding;
+		}
+		bufLen -= leftPadding;
 	}
-	bufLen -= leftPadding;
 
 	if (precision > bufLen) {
 		precision = bufLen;
 	}
-	if (buf) {
+	if (NULL != buf) {
 		memcpy(buf, value, (size_t)precision);
 		buf += (size_t)precision;
 	}
@@ -961,9 +963,8 @@ writeStringToBuffer(char *buf, uintptr_t bufLen, uint64_t width, uint64_t precis
 	if (rightPadding > bufLen) {
 		rightPadding = bufLen;
 	}
-	if (buf && (0 != rightPadding)) {
+	if ((NULL != buf) && (0 != rightPadding)) {
 		memset(buf, ' ', rightPadding);
-		/*buf += rightPadding;*/
 	}
 
 	return leftPadding + (size_t)precision + rightPadding;
@@ -1171,14 +1172,16 @@ writeUnicodeStringToBuffer(char *buf, uintptr_t bufLen, uint64_t width, uint64_t
 	if (leftPadding > bufLen) {
 		leftPadding = bufLen;
 	}
-	if (buf) {
-		memset(buf, ' ', leftPadding);
-		buf += leftPadding;
+	if (0 != leftPadding) {
+		if (NULL != buf) {
+			memset(buf, ' ', leftPadding);
+			buf += leftPadding;
+		}
+		bufLen -= leftPadding;
 	}
-	bufLen -= leftPadding;
 
 	/* The space required for the UTF8 chars is guaranteed to be there */
-	if (buf) {
+	if (NULL != buf) {
 		currentU16 = value;
 		while (numberOfUnicodeChar-- > 0) {
 			buf += encodeUTF8Char((uintptr_t)*currentU16++, (uint8_t *)buf);
@@ -1189,7 +1192,7 @@ writeUnicodeStringToBuffer(char *buf, uintptr_t bufLen, uint64_t width, uint64_t
 	if (rightPadding > bufLen) {
 		rightPadding = bufLen;
 	}
-	if (buf) {
+	if ((NULL != buf) && (0 != rightPadding)) {
 		memset(buf, ' ', rightPadding);
 	}
 
@@ -3206,5 +3209,4 @@ convertWideToPlatform(struct OMRPortLibrary *portLibrary, charconvState_t encodi
 	}
 
 	return resultSize;
-
 }

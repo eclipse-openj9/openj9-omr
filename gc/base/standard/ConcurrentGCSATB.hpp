@@ -56,7 +56,7 @@ protected:
 	uintptr_t virtual localMark(MM_EnvironmentBase *env, uintptr_t sizeToTrace);
 
 public:
-	virtual uintptr_t getVMStateID() { return J9VMSTATE_GC_COLLECTOR_CONCURRENTGC; };
+	virtual uintptr_t getVMStateID() { return OMRVMSTATE_GC_COLLECTOR_CONCURRENTGC; };
 	static MM_ConcurrentGCSATB *newInstance(MM_EnvironmentBase *env);
 	virtual void kill(MM_EnvironmentBase *env);
 

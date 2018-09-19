@@ -63,7 +63,7 @@ protected:
 	bool initialize(MM_EnvironmentBase *env);
 	void tearDown(MM_EnvironmentBase *env);
 public:
-	virtual uintptr_t getVMStateID() { return J9VMSTATE_GC_COLLECTOR_CONCURRENTGC; };
+	virtual uintptr_t getVMStateID() { return OMRVMSTATE_GC_COLLECTOR_CONCURRENTGC; };
 	virtual bool heapAddRange(MM_EnvironmentBase *env, MM_MemorySubSpace *subspace, uintptr_t size, void *lowAddress, void *highAddress);
 
 	static MM_ConcurrentGCIncrementalUpdate *newInstance(MM_EnvironmentBase *env);

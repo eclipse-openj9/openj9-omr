@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -41,7 +41,6 @@ class TR_PseudoRandomNumbersListElement;
 namespace OMR { class Options; }
 namespace TR { class PersistentInfo; }
 namespace TR { class DebugCounterGroup; }
-namespace TR { class CodeCacheManager; }
 namespace TR { class Monitor; }
 
 
@@ -77,7 +76,6 @@ class PersistentInfo
          _curIndex(0),
          _dynamicCounters(NULL),
          _staticCounters(NULL),
-         _codeCacheManager(NULL),
          _persistentTOC(NULL)
       {}
 
@@ -108,10 +106,6 @@ class PersistentInfo
          return i;
       }
 
-
-   TR::CodeCacheManager *getCodeCacheManager() const { return _codeCacheManager; }
-   void setCodeCacheManager(TR::CodeCacheManager * manager) { _codeCacheManager = manager; }
-
    TableOfConstants *getPersistentTOC() {return _persistentTOC;}
    void setPersistentTOC(TableOfConstants *toc) {_persistentTOC = toc;}
 
@@ -132,7 +126,6 @@ class PersistentInfo
    TR::DebugCounterGroup *_staticCounters;
    TR::DebugCounterGroup *_dynamicCounters;
    int64_t _lastDebugCounterResetSeconds;
-   TR::CodeCacheManager *_codeCacheManager;
    TableOfConstants *_persistentTOC;
    };
 

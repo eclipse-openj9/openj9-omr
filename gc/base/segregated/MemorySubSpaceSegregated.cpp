@@ -212,13 +212,6 @@ MM_MemorySubSpaceSegregated::largestDesirableArraySpine()
 #endif /* defined(OMR_GC_ARRAYLETS) */
 
 void
-MM_MemorySubSpaceSegregated::collect(MM_EnvironmentBase *env, MM_AllocateDescription *allocDescription)
-{
-	Assert_MM_unreachable();
-}
-
-
-void
 MM_MemorySubSpaceSegregated::abandonHeapChunk(void *addrBase, void *addrTop)
 {
 }

@@ -121,7 +121,73 @@ class OMR_EXTENSIBLE TransformUtil
     *    invalid tree after transformation.
     */
    static void transformCallNodeToPassThrough(TR::Optimization* opt, TR::Node* node, TR::TreeTop * anchorTree, TR::Node* child);
-   
+
+   /**
+    *    \brief
+    *       Create a conditional alternate implementation path for existing operations. Two blocks will be inserted, one
+    *       block with comparison tree (compareBlock) and one block to take when comparison succeeds (ifBlock). The
+    *       resulting CFG will look like
+    *
+    *          elseBlock               ifBlock
+    *              |                   /     \
+    *             ...      ===>       /       \
+    *              |               elseBlock  thenBlock
+    *          mergeBlock             |        /
+    *                                ...      /
+    *                                  \     /
+    *                                   \   /
+    *                                 mergeBlock
+    *
+    *       In the form of trees, this API converts
+    *
+    *       start block_A
+    *          <tree sequence 1>
+    *       end block_A
+    *
+    *          ...
+    *       start block_B
+    *          <tree sequence 2>
+    *       end block_B
+    *
+    *       to:
+    *
+    *       start block_A
+    *          if <cond> goto block_D   // ---> ifTree
+    *       end block_A
+    *
+    *       start block_C
+    *          <tree sequence 1>
+    *       end block_C
+    *
+    *          ...
+    *
+    *       start block_B
+    *          <tree sequence 2>
+    *       end block_B
+    *
+    *       start block_D
+    *          thenTree
+    *          goto block_B
+    *       end block_D
+    *
+    *   \param this                  the block to be used as the else block
+    *   \param ifTree                the if tree to use in constructing the conditional blocks and cfg
+    *   \param thenTree              the tree to use as the branch target of ifTree
+    *   \param elseBlock             the block to enter when ifTree fails
+    *   \param mergeBlock            the block that the alternate path is going to merge to
+    *   \param cfg                   the cfg to update with the new information
+    *   \parm markCold               whether to mark the if block cold
+    *   \note
+    *      After transformation, the original elseBlock will contain only one tree, that is the ifTree. Its original trees
+    *      will be in a newly created block which is its fall through block after the transformation.
+    */
+   static void createConditionalAlternatePath(TR::Compilation* comp,
+                                              TR::TreeTop *ifTree,
+                                              TR::TreeTop *thenTree,
+                                              TR::Block* elseBlock,
+                                              TR::Block* mergeBlock,
+                                              TR::CFG *cfg,
+                                              bool markCold = true);
    private:
 
    static uint32_t _widthToShift[];

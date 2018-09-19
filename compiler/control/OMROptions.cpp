@@ -334,6 +334,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"disableGuardedCallArgumentRemat",    "O\tdon't rematerialize a guarded virtual call's arguments on the cold path; instead, leave the expressions on the mainline path", SET_OPTION_BIT(TR_DisableGuardedCallArgumentRemat), "F"},
    {"disableGuardedCountingRecompilation","O\tdisable GCR.  If you don't know what that is, I don't have room to explain it here.", SET_OPTION_BIT(TR_DisableGuardedCountingRecompilations), "F"},
    {"disableGuardedCountingRecompilations","O\tdeprecated.  Same as disableGuardedCountingRecompilation", SET_OPTION_BIT(TR_DisableGuardedCountingRecompilations), "F"},
+   {"disableGuardedStaticFinalFieldFolding", "O\tdisable static final field folding guarded by OSR guards", SET_OPTION_BIT(TR_DisableGuardedStaticFinalFieldFolding), "F", NOT_IN_SUBSET },
    {"disableHalfSlotSpills",              "O\tdisable sharing of a single 8-byte spill temp for two 4-byte values",  SET_OPTION_BIT(TR_DisableHalfSlotSpills), "P"},
    {"disableHardwareProfilerDataCollection",    "O\tdisable the collection of hardware profiler information while maintaining the framework", SET_OPTION_BIT(TR_DisableHWProfilerDataCollection), "F", NOT_IN_SUBSET},
    {"disableHardwareProfilerDuringStartup", "O\tdisable hardware profiler during startup", SET_OPTION_BIT(TR_DisableHardwareProfilerDuringStartup), "F", NOT_IN_SUBSET},

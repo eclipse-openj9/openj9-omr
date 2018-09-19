@@ -206,24 +206,6 @@ public:
 		return true;
 	}
 
-
-	/**
-	 * TODO SATB: remove later, renamed to signalThreadsToDeactivateWriteBarrier
-	 * Once concurrent tracing has started, mutator threads must dirty cards at the appropriate
-	 * write barrier(s) whenever a reference-value field is updated, until a GC cycle is started.
-	 */
-	MMINLINE bool signalThreadsToDirtyCards(MM_EnvironmentBase *env)
-	{
-		return true;
-	}
-
-	/**
-	 * This can be used to optimize the concurrent write barrier(s) by conditioning threads to stop
-	 * dirtying cards once a GC has started.
-	 */
-	MMINLINE void signalThreadsToStopDirtyingCards(MM_EnvironmentBase *env) { }
-
-
 	/**
 	 * This can be used to optimize the concurrent write barrier(s) by conditioning threads to stop
 	 * triggering barriers once a GC has started.

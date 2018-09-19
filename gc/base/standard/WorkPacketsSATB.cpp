@@ -1,4 +1,3 @@
-
 /*******************************************************************************
  * Copyright (c) 2018, 2018 IBM Corp. and others
  *
@@ -28,8 +27,8 @@
 #include "WorkPacketsSATB.hpp"
 
 #include "Debug.hpp"
-#include "GCExtensions.hpp"
-#include "IncrementalOverflow.hpp"
+#include "GCExtensionsBase.hpp"
+#include "OverflowStandard.hpp"
 
 /**
  * Instantiate a MM_WorkPacketsSATB
@@ -64,17 +63,10 @@ MM_WorkPacketsSATB::initialize(MM_EnvironmentBase *env)
 		return false;
 	}
 
-	if (0 == MM_GCExtensions::getExtensions(_extensions)->overflowCacheCount) {
-		/* If the user has not specified a value for overflowCacheCount
-		 * set it to be 5% of the packet slot count.
-		 */
-		MM_GCExtensions::getExtensions(_extensions)->overflowCacheCount = (UDATA)(_slotsInPacket * 0.05);
-	}
-
 	if (!_inUseBarrierPacketList.initialize(env)) {
 		return false;
 	}
-		
+
 	return true;
 }
 
@@ -95,7 +87,7 @@ MM_WorkPacketsSATB::tearDown(MM_EnvironmentBase *env)
 MM_WorkPacketOverflow *
 MM_WorkPacketsSATB::createOverflowHandler(MM_EnvironmentBase *env, MM_WorkPackets *wp)
 {
-	return MM_IncrementalOverflow::newInstance(env, wp);
+	return MM_OverflowStandard::newInstance(env, wp);
 }
 
 /**
@@ -204,7 +196,7 @@ MM_WorkPacketsSATB::moveInUseToNonEmpty(MM_EnvironmentBase *env)
 float
 MM_WorkPacketsSATB::getHeapCapacityFactor(MM_EnvironmentBase *env)
 {
-	/* Increase the factor for staccato since more packets are required */
+	/* Increase the factor for SATB barrier since more packets are required */
 	return (float)0.008;
 }
 
@@ -218,7 +210,7 @@ MM_WorkPacketsSATB::getInputPacketFromOverflow(MM_EnvironmentBase *env)
 {
 	MM_Packet *overflowPacket;
 
-	/* Staccato spec cannot loop here as all packets may currently be on
+	/* SATB spec cannot loop here as all packets may currently be on
 	 * the InUseBarrierList.  If all packets are on the InUseBarrierList then this
 	 * would turn into an infinite busy loop.
 	 * while(!_overflowHandler->isEmpty()) {

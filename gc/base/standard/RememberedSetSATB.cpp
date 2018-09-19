@@ -56,7 +56,7 @@ MM_RememberedSetSATB::newInstance(MM_EnvironmentBase *env, MM_WorkPacketsSATB *w
 }
 
 /**
- * Kill the RememberedSetWorkPackets instance
+ * Kill the MM_RememberedSetSATB instance
  */
 void
 MM_RememberedSetSATB::kill(MM_EnvironmentBase *env)

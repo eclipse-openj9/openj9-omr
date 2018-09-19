@@ -707,6 +707,8 @@ OMR::Z::CodeGenerator::CodeGenerator()
       }
    else
       {
+      // Max min optimization uses the maxMinHelper evaluator which
+      // requires conditional loads that are not supported below z196
       comp->setOption(TR_DisableMaxMinOptimization);
       }
 

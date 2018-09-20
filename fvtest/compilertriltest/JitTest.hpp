@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2017 IBM Corp. and others
+ * Copyright (c) 2017, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -242,6 +242,60 @@ std::vector<T> const_values()
                     };
    
    return std::vector<T>(inputArray, inputArray + sizeof(inputArray) / sizeof(T));
+   }
+
+/**
+ * @brief Convenience function returning possible test inputs of the specified type
+ */
+template <>
+inline std::vector<int64_t> const_values<int64_t>()
+   {
+   int64_t inputArray[] = { zero_value<int64_t>(),
+                      one_value<int64_t>(),
+                      negative_one_value<int64_t>(),
+                      positive_value<int64_t>(),
+                      negative_value<int64_t>(),
+                      std::numeric_limits<int64_t>::min(),
+                      std::numeric_limits<int64_t>::max(),
+                      static_cast<int64_t>(std::numeric_limits<int64_t>::min() + 1),
+                      static_cast<int64_t>(std::numeric_limits<int64_t>::max() - 1),
+                      0x000000000000005FL,
+                      0x0000000000000088L,
+                      0x0000000080000000L,
+                      0x7FFFFFFF7FFFFFFFL,
+                      0x00000000FFFF0FF0L,
+                      static_cast<int64_t>(0x800000007FFFFFFFL),
+                      static_cast<int64_t>(0xFFFFFFF00FFFFFFFL),
+                      static_cast<int64_t>(0x08000FFFFFFFFFFFL),
+                    };
+
+   return std::vector<int64_t>(inputArray, inputArray + sizeof(inputArray) / sizeof(int64_t));
+   }
+
+/**
+ * @brief Convenience function returning possible test inputs of the specified type
+ */
+template <>
+inline std::vector<int32_t> const_values<int32_t>()
+   {
+   int32_t inputArray[] = { zero_value<int32_t>(),
+                      one_value<int32_t>(),
+                      negative_one_value<int32_t>(),
+                      positive_value<int32_t>(),
+                      negative_value<int32_t>(),
+                      std::numeric_limits<int32_t>::min(),
+                      std::numeric_limits<int32_t>::max(),
+                      static_cast<int32_t>(std::numeric_limits<int32_t>::min() + 1),
+                      static_cast<int32_t>(std::numeric_limits<int32_t>::max() - 1),
+                      0x0000005F,
+                      0x00000088,
+                      static_cast<int32_t>(0x80FF0FF0),
+                      static_cast<int32_t>(0x80000000),
+                      static_cast<int32_t>(0xFF000FFF),
+                      static_cast<int32_t>(0xFFFFFF0F)
+                    };
+
+   return std::vector<int32_t>(inputArray, inputArray + sizeof(inputArray) / sizeof(int32_t));
    }
 
 /**

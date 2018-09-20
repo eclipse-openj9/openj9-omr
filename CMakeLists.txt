@@ -52,21 +52,15 @@ endif()
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 ###
-### Set up install path stuff
+### Set up install paths
 ###
-# Note the paths are a bit odd compared to standard gnu install paths
-# This is because we arent expecting to actually be installing globally
-# since we don't have a good story for installing OMR system-wide
-set(CMAKE_INSTALL_BINDIR ".")
-set(CMAKE_INSTALL_LIBDIR ".")
-set(OMR_INSTALL_PREFIX "${CMAKE_CURRENT_BINARY_DIR}" CACHE PATH "Root path where to install OMR")
-set(CMAKE_INSTALL_PREFIX "${OMR_INSTALL_PREFIX}")
 include(GNUInstallDirs)
-set(CMAKE_INSTALL_RPATH "\$ORIGIN")
-add_custom_target(omr_install_tooling
-	COMMAND ${CMAKE_COMMAND} --build tools --target preinstall
-	COMMAND ${CMAKE_COMMAND} -DCMAKE_INSTALL_COMPONENT=tooling -P "${CMAKE_BINARY_DIR}/cmake_install.cmake"
-)
+
+set(OMR_INSTALL_BIN_DIR ${CMAKE_INSTALL_BINDIR} CACHE PATH "Installation directory for executables")
+set(OMR_INSTALL_LIB_DIR ${CMAKE_INSTALL_LIBDIR} CACHE PATH "Installation directory for libraries")
+set(OMR_INSTALL_ARCHIVE_DIR ${CMAKE_INSTALL_LIBDIR} CACHE PATH "Installation directory for libraries")
+set(OMR_INSTALL_INC_DIR ${CMAKE_INSTALL_INCLUDEDIR} CACHE PATH "Installation directory for headers")
+set(OMR_INSTALL_DATA_DIR ${CMAKE_INSTALL_DATADIR}/${PROJECT_NAME} CACHE PATH "Installation directory for data files")
 
 ###
 ### Versions and stuff
@@ -161,3 +155,26 @@ endif(OMR_JITBUILDER)
 if(OMR_FVTEST)
 	add_subdirectory(fvtest)
 endif()
+
+
+# Export CMake Module
+
+# This file must be copied into the build directory so that
+# the cmake user package registry functions properly
+configure_file(OmrConfig.cmake
+  "${CMAKE_CURRENT_BINARY_DIR}/OmrConfig.cmake"
+  COPYONLY
+)
+
+export(EXPORT OmrTargets FILE OmrTargets.cmake)
+
+install(EXPORT OmrTargets
+  FILE OmrTargets.cmake
+  DESTINATION ${OMR_INSTALL_LIB_DIR}/cmake/Omr
+)
+
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/OmrConfig.cmake"
+	DESTINATION ${OMR_INSTALL_LIB_DIR}/cmake/Omr
+)
+
+export(PACKAGE Omr)

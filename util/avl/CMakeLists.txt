@@ -20,13 +20,24 @@
 # SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
 ###############################################################################
 
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
-
 add_tracegen(avl.tdf)
+
+set(j9avl_public_headers
+	"${omr_SOURCE_DIR}/include_core/avl_api.h"
+)
 
 add_library(j9avl STATIC
 	avlsup.c
 	ut_avl.c
+)
+
+target_include_directories(j9avl
+	PUBLIC
+		$<BUILD_INTERFACE:${OMR_SOURCE_DIR}/include_core>
+		$<INSTALL_INTERFACE:${OMR_INSTALL_INC_DIR}>
+	PRIVATE
+		.
+		${CMAKE_CURRENT_BINARY_DIR}
 )
 
 if(OMR_WARNINGS_AS_ERRORS)
@@ -37,9 +48,14 @@ if(OMR_ENHANCED_WARNINGS)
 	target_compile_options(j9avl PRIVATE ${OMR_ENHANCED_WARNING_FLAG})
 endif()
 
-target_include_directories(j9avl
-	PUBLIC
-		.
-)
-
 set_property(TARGET j9avl PROPERTY FOLDER util)
+
+set_target_properties(j9avl PROPERTIES PUBLIC_HEADER ${j9avl_public_headers})
+
+install(
+	TARGETS j9avl
+	EXPORT OmrTargets
+	PUBLIC_HEADER DESTINATION ${OMR_INSTALL_INC_DIR}/
+	ARCHIVE DESTINATION ${OMR_INSTALL_ARCHIVE_DIR}/
+	LIBRARY DESTINATION ${OMR_INSTALL_LIB_DIR}/
+)

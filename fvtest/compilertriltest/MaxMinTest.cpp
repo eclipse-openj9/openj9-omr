@@ -23,25 +23,44 @@
 #include "default_compiler.hpp"
 
 int32_t imax(int32_t l, int32_t r) {
-  return l > r ? l : r;
+  return std::max(l,r);
 }
 
 int32_t imin(int32_t l, int32_t r) {
-  return l < r ? l : r;
+  return std::min(l,r);
 }
 
 int64_t lmax(int64_t l, int64_t r) {
-  return l > r ? l : r;
+  return std::max(l,r);
 }
 
 int64_t lmin(int64_t l, int64_t r) {
-  return l < r ? l : r;
+  return std::min(l,r);
 }
+
+std::vector<int32_t> intMaxMinTestValues()
+   {
+   std::vector<int32_t> intValues = TRTest::const_values<int32_t>();
+   intValues.push_back(0x0000005F);
+   intValues.push_back(0x00000088);
+   intValues.push_back(0x80FF0FF0);
+   intValues.push_back(0x80000000);
+   intValues.push_back(0xFF000FFF);
+   intValues.push_back(0xFFFFFF0F);
+   return intValues;
+   }
 
 std::vector<int64_t> longMaxMinTestValues()
    {
-   std::vector<int64_t> longValues =TRTest::const_values<int64_t>();
-   longValues.push_back(0x80000000L);
+   std::vector<int64_t> longValues = TRTest::const_values<int64_t>();
+   longValues.push_back(0x000000000000005FL);
+   longValues.push_back(0x0000000000000088L);
+   longValues.push_back(0x0000000080000000L);
+   longValues.push_back(0x800000007FFFFFFFL);
+   longValues.push_back(0x7FFFFFFF7FFFFFFFL);
+   longValues.push_back(0x00000000FFFF0FF0L);
+   longValues.push_back(0xFFFFFFF00FFFFFFFL);
+   longValues.push_back(0x08000FFFFFFFFFFFL);
    return longValues;
    }
 
@@ -50,8 +69,18 @@ class Int32MaxMin : public TRTest::BinaryOpTest<int32_t> {};
 TEST_P(Int32MaxMin, UsingConst) {
     auto param = TRTest::to_struct(GetParam());
 
-    char inputTrees[120] = {0};
-    std::snprintf(inputTrees, 120, "(method return=Int32 (block (ireturn (%s (iconst %d) (iconst %d)) )))", param.opcode.c_str(), param.lhs, param.rhs);
+    char inputTrees[150] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+        "(method return=Int32"
+        "  (block"
+        "    (ireturn"
+        "      (%s"
+        "        (iconst %lld)"
+        "        (iconst %lld))"
+        ")))",
+        param.opcode.c_str(),
+        param.lhs,
+        param.rhs);
     auto trees = parseString(inputTrees);
 
     ASSERT_NOTNULL(trees);
@@ -61,16 +90,22 @@ TEST_P(Int32MaxMin, UsingConst) {
     ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
 
     auto entry_point = compiler.getEntryPoint<int32_t (*)(void)>();
-    volatile auto exp = param.oracle(param.lhs, param.rhs);
-    volatile auto act = entry_point();
-    ASSERT_EQ(exp, act);
+    ASSERT_EQ(param.oracle(param.lhs, param.rhs), entry_point());
 }
 
 TEST_P(Int32MaxMin, UsingLoadParam) {
     auto param = TRTest::to_struct(GetParam());
 
-    char inputTrees[120] = {0};
-    std::snprintf(inputTrees, 120, "(method return=Int32 args=[Int32, Int32] (block (ireturn (%s (iload parm=0) (iload parm=1)) )))", param.opcode.c_str());
+    char inputTrees[150] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+        "(method return=Int32 args=[Int32, Int32]"
+        "  (block"
+        "    (ireturn"
+        "      (%s"
+        "        (iload parm=0)"
+        "        (iload parm=1))"
+        ")))",
+        param.opcode.c_str());
     auto trees = parseString(inputTrees);
 
     ASSERT_NOTNULL(trees);
@@ -85,7 +120,7 @@ TEST_P(Int32MaxMin, UsingLoadParam) {
 
 
 INSTANTIATE_TEST_CASE_P(MaxMin, Int32MaxMin, ::testing::Combine(
-    ::testing::ValuesIn(TRTest::combine(TRTest::const_values<int32_t>(), TRTest::const_values<int32_t>())),
+    ::testing::ValuesIn(TRTest::combine(intMaxMinTestValues(), intMaxMinTestValues())),
     ::testing::Values(
         std::make_tuple("imax", imax),
         std::make_tuple("imin", imin))));
@@ -95,8 +130,18 @@ class Int64MaxMin : public TRTest::BinaryOpTest<int64_t> {};
 TEST_P(Int64MaxMin, UsingConst) {
     auto param = TRTest::to_struct(GetParam());
 
-    char inputTrees[120] = {0};
-    std::snprintf(inputTrees, 120, "(method return=Int64 (block (lreturn (%s (lconst %ld) (lconst %ld)) )))", param.opcode.c_str(), param.lhs, param.rhs);
+    char inputTrees[150] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+        "(method return=Int64"
+        "  (block"
+        "    (lreturn"
+        "      (%s"
+        "        (lconst %lld)"
+        "        (lconst %lld))"
+        ")))",
+        param.opcode.c_str(),
+        param.lhs,
+        param.rhs);
     auto trees = parseString(inputTrees);
 
     ASSERT_NOTNULL(trees);
@@ -106,16 +151,22 @@ TEST_P(Int64MaxMin, UsingConst) {
     ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
 
     auto entry_point = compiler.getEntryPoint<int64_t (*)(void)>();
-    volatile auto exp = param.oracle(param.lhs, param.rhs);
-    volatile auto act = entry_point();
-    ASSERT_EQ(exp, act);
+    ASSERT_EQ(param.oracle(param.lhs, param.rhs), entry_point());
 }
 
 TEST_P(Int64MaxMin, UsingLoadParam) {
     auto param = TRTest::to_struct(GetParam());
 
-    char inputTrees[120] = {0};
-    std::snprintf(inputTrees, 120, "(method return=Int64 args=[Int64, Int64] (block (lreturn (%s (lload parm=0) (lload parm=1)) )))", param.opcode.c_str());
+    char inputTrees[150] = {0};
+    std::snprintf(inputTrees, sizeof(inputTrees),
+        "(method return=Int64 args=[Int64, Int64]"
+        "  (block"
+        "    (lreturn"
+        "      (%s"
+        "        (lload parm=0)"
+        "        (lload parm=1))"
+        ")))",
+        param.opcode.c_str());
     auto trees = parseString(inputTrees);
 
     ASSERT_NOTNULL(trees);

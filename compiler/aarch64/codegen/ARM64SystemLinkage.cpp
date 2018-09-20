@@ -365,7 +365,7 @@ TR::ARM64SystemLinkage::createPrologue(TR::Instruction *cursor, List<TR::Paramet
 
    // allocate stack space
    uint32_t frameSize = (uint32_t)codeGen->getFrameSizeInBytes();
-   if (constantIsUnsignedImmed12(frameSize))
+   if (constantIsUnsignedImm12(frameSize))
       {
       cursor = generateTrg1Src1ImmInstruction(codeGen, TR::InstOpCode::subimmx, firstNode, sp, sp, frameSize, cursor);
       }
@@ -488,7 +488,7 @@ TR::ARM64SystemLinkage::createEpilogue(TR::Instruction *cursor)
 
    // remove space for preserved registers
    uint32_t frameSize = codeGen->getFrameSizeInBytes();
-   if (constantIsUnsignedImmed12(frameSize))
+   if (constantIsUnsignedImm12(frameSize))
       {
       cursor = generateTrg1Src1ImmInstruction(codeGen, TR::InstOpCode::addimmx, lastNode, sp, sp, frameSize, cursor);
       }

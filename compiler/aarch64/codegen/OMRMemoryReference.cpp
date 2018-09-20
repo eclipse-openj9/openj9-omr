@@ -252,36 +252,34 @@ uint8_t *OMR::ARM64::MemoryReference::generateBinaryEncoding(TR::Instruction *cu
 
          if (isImm9OffsetInstruction(enc))
             {
-            if (constantIsImmed9(displacement))
+            if (constantIsImm9(displacement))
                {
                *wcursor |= (displacement & 0x1ff) << 12; /* imm9 */
                cursor += ARM64_INSTRUCTION_LENGTH;
                }
             else
                {
-               /* Need additional instructions for large offset */
-               TR_ASSERT(false, "Not implemented yet.");
+               TR_ASSERT(false, "Offset is too large for specified instruction.");
                }
             }
          else if (isImm12OffsetInstruction(enc))
             {
-            int32_t size = (enc >> 30) & 3; /* b=0, h=1, w=2, x=3 */
-            int32_t shifted = displacement >> size;
+            uint32_t size = (enc >> 30) & 3; /* b=0, h=1, w=2, x=3 */
+            uint32_t shifted = displacement >> size;
 
             if (size > 0)
                {
-               TR_ASSERT((displacement & ((1 << size) - 1)) == 0, "Non-aligned offset in halfword memory access.");
+               TR_ASSERT((displacement & ((1 << size) - 1)) == 0, "Non-aligned offset in 2/4/8-byte memory access.");
                }
 
-            if (constantIsUnsignedImmed12(shifted))
+            if (constantIsUnsignedImm12(shifted))
                {
                *wcursor |= (shifted & 0xfff) << 10; /* imm12 */
                cursor += ARM64_INSTRUCTION_LENGTH;
                }
             else
                {
-               /* Need additional instructions for large offset */
-               TR_ASSERT(false, "Not implemented yet.");
+               TR_ASSERT(false, "Offset is too large for specified instruction.");
                }
             }
          else
@@ -296,7 +294,7 @@ uint8_t *OMR::ARM64::MemoryReference::generateBinaryEncoding(TR::Instruction *cu
    }
 
 
-uint32_t OMR::ARM64::MemoryReference::estimateBinaryLength()
+uint32_t OMR::ARM64::MemoryReference::estimateBinaryLength(TR::InstOpCode op)
    {
    if (self()->getUnresolvedSnippet() != NULL)
       {
@@ -310,7 +308,45 @@ uint32_t OMR::ARM64::MemoryReference::estimateBinaryLength()
          }
       else
          {
-         TR_ASSERT(false, "Not implemented yet.");
+         /* no index register */
+         int32_t displacement = self()->getOffset();
+         uint32_t enc = (uint32_t)op.getOpCodeBinaryEncoding();
+
+         if (isImm9OffsetInstruction(enc))
+            {
+            if (constantIsImm9(displacement))
+               {
+               return ARM64_INSTRUCTION_LENGTH;
+               }
+            else
+               {
+               TR_ASSERT(false, "Offset is too large for specified instruction.");
+               }
+            }
+         else if (isImm12OffsetInstruction(enc))
+            {
+            uint32_t size = (enc >> 30) & 3; /* b=0, h=1, w=2, x=3 */
+            uint32_t shifted = displacement >> size;
+
+            if (size > 0)
+               {
+               TR_ASSERT((displacement & ((1 << size) - 1)) == 0, "Non-aligned offset in 2/4/8-byte memory access.");
+               }
+
+            if (constantIsUnsignedImm12(shifted))
+               {
+               return ARM64_INSTRUCTION_LENGTH;
+               }
+            else
+               {
+               TR_ASSERT(false, "Offset is too large for specified instruction.");
+               }
+            }
+         else
+            {
+            /* Register pair, literal, exclusive instructions to be supported */
+            TR_ASSERT(false, "Not implemented yet.");
+            }
          }
       }
 

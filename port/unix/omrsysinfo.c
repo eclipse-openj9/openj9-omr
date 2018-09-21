@@ -1488,11 +1488,27 @@ retrieveLinuxCgroupMemoryStats(struct OMRPortLibrary *portLibrary, struct OMRCgr
 	}
 	rc = readCgroupSubsystemFile(portLibrary, OMR_CGROUP_SUBSYSTEM_MEMORY, CGROUP_MEMORY_SWAP_LIMIT_IN_BYTES_FILE, numItemsToRead, "%lu", &cgroupMemInfo->memoryAndSwapLimit);
 	if (0 != rc) {
-		goto _exit;
+		if (OMRPORT_ERROR_FILE_NOENT == rc) {
+			/* It is possible file memory.memsw.limit_in_bytes is not present if
+			 * swap space is not configured. In such cases, set memoryAndSwapLimit to same as memoryLimit.
+			 */
+			cgroupMemInfo->memoryAndSwapLimit = cgroupMemInfo->memoryLimit;
+			rc = 0;
+		} else {
+			goto _exit;
+		}
 	}
 	rc = readCgroupSubsystemFile(portLibrary, OMR_CGROUP_SUBSYSTEM_MEMORY, CGROUP_MEMORY_SWAP_USAGE_IN_BYTES_FILE, numItemsToRead, "%lu", &cgroupMemInfo->memoryAndSwapUsage);
 	if (0 != rc) {
-		goto _exit;
+		if (OMRPORT_ERROR_FILE_NOENT == rc) {
+			/* It is possible file memory.memsw.usage_in_bytes is not present if
+			 * swap space is not configured. In such cases, set memoryAndSwapUsage to memoryUsage.
+			 */
+			cgroupMemInfo->memoryAndSwapUsage = cgroupMemInfo->memoryUsage;
+			rc = 0;
+		} else {
+			goto _exit;
+		}
 	}
 
 	/* Read value of page cache memory from memory.stat file */
@@ -3935,7 +3951,11 @@ getHandleOfCgroupSubsystemFile(struct OMRPortLibrary *portLibrary, uint64_t subs
 		if (NULL == *subsystemFile) {
 			int32_t osErrCode = errno;
 			Trc_PRT_readCgroupSubsystemFile_fopen_failed(fullPath, osErrCode);
-			rc = portLibrary->error_set_last_error(portLibrary, osErrCode, OMRPORT_ERROR_SYSINFO_CGROUP_SUBSYSTEM_FILE_FOPEN_FAILED);
+			if (ENOENT == osErrCode) {
+				rc = portLibrary->error_set_last_error(portLibrary, osErrCode, OMRPORT_ERROR_FILE_NOENT);
+			} else {
+				rc = portLibrary->error_set_last_error(portLibrary, osErrCode, OMRPORT_ERROR_SYSINFO_CGROUP_SUBSYSTEM_FILE_FOPEN_FAILED);
+			}
 			goto _end;
 		}
 	}

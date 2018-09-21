@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2017 IBM Corp. and others
+ * Copyright (c) 1991, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -82,7 +82,7 @@ findError(int32_t errorCode)
  *
  * @deprecated Use @ref omrfile_stat
  *
- * @return EslsFile if a file, EslsDir if a directory, negative portable error code on failure.
+ * @return EsIsFile if a file, EsIsDir if a directory, negative portable error code on failure.
  *
  * @note If a multi-threaded application passes in a relative path the caller must synchronize on the current working directory, otherwise the behaviour is undefined
  */

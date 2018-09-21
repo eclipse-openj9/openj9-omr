@@ -2214,9 +2214,7 @@ MM_ConcurrentGC::signalThreadsToActivateWriteBarrier(MM_EnvironmentBase *env)
 			reportGCCycleStart(env);
 			env->_cycleState = previousCycleState;
 
-		// TODO: SATB rename method to signalThreadsToActivateWriteBarrier
-		// _concurrentDelegate.signalThreadsToActivateWriteBarrier(env);
-			_concurrentDelegate.signalThreadsToDirtyCards(env);
+			_concurrentDelegate.signalThreadsToActivateWriteBarrier(env);
 			_stats.switchExecutionMode(CONCURRENT_INIT_COMPLETE, CONCURRENT_ROOT_TRACING);
 			/* Cancel any outstanding call backs on other threads as this thread has done the necessary work */
 			_callback->cancelCallback(env);
@@ -3146,9 +3144,7 @@ MM_ConcurrentGC::internalPostCollect(MM_EnvironmentBase *env, MM_MemorySubSpace 
 	if (_extensions->optimizeConcurrentWB) {
 		/* Reset vmThread flag so mutators don't dirty cards until next concurrent KO */
 		if (_stats.getExecutionModeAtGC() > CONCURRENT_INIT_RUNNING) {
-			// TODO: SATB change rename method to signalThreadsToDeactivateWriteBarrier
-			// _concurrentDelegate.signalThreadsToDeactivateWriteBarrier(env);
-			_concurrentDelegate.signalThreadsToStopDirtyingCards(env);
+			_concurrentDelegate.signalThreadsToDeactivateWriteBarrier(env);
 		}
 
 		/* Cancel any outstanding call backs */

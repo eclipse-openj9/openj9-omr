@@ -66,9 +66,9 @@ OMR::IlType::primitiveTypeAlignment[TR::NumOMRTypes] =
    4,  // Float
    8,  // Double
 #if TR_TARGET_64BIT // HOST?
-   4,  // Address/Word
-#else
    8,  // Address/Word
+#else
+   4,  // Address/Word
 #endif
    16, // VectorInt8
    16, // VectorInt16

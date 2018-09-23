@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2015 IBM Corp. and others
+ * Copyright (c) 1991, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -147,19 +147,8 @@ MM_WorkStack::popNoWaitFailed(MM_EnvironmentBase *env)
 #endif /* OMR_GC_VLHGC */
 
 	if (tryRetrieveInputPacket) {
-		_inputPacket = _workPackets->getInputPacketNoWait(env);
-		if(NULL != _inputPacket) {
+		if (retrieveInputPacket(env)) {
 			/* Any entry on the _inputPacket list must have at least 1 entry */
-			void* result = _inputPacket->pop(env);
-			return result;
-		}
-
-		if((NULL != _outputPacket) && !_outputPacket->isEmpty()) {
-			Assert_MM_true(NULL == _inputPacket);
-			/* swap the input packet with the output packet */
-			_inputPacket = _outputPacket;
-			_outputPacket = NULL;
-			env->_workPacketStats.workPacketsExchanged += 1;
 			void* result = _inputPacket->pop(env);
 			return result;
 		}
@@ -216,20 +205,7 @@ MM_WorkStack::popFailed(MM_EnvironmentBase *env)
 
 	if (tryRetrieveInputPacket) {
 		/* Fetch a new input packet if there is one available */
-		_inputPacket = _workPackets->getInputPacketNoWait(env);
-		if(NULL != _inputPacket) {
-			/* Any entry on the _inputPacket list must have at least 1 entry */
-			void* result = _inputPacket->pop(env);
-			return result;
-		}
-
-		/* If the output packet contains at least a free entry - invert the input/output */
-		if((NULL != _outputPacket) && !_outputPacket->isEmpty()) {
-			Assert_MM_true(NULL == _inputPacket);
-			/* swap the input packet with the output packet */
-			_inputPacket = _outputPacket;
-			_outputPacket = NULL;
-			env->_workPacketStats.workPacketsExchanged += 1;
+		if (retrieveInputPacket(env)) {
 			void* result = _inputPacket->pop(env);
 			return result;
 		}
@@ -295,5 +271,43 @@ MM_WorkStack::flushOutputPacket(MM_EnvironmentBase *env)
 		_workPackets->putOutputPacket(env, _outputPacket);
 		_outputPacket = NULL;
 	}
+}
+
+void *
+MM_WorkStack::popNoWaitFromCurrentInputPacket(MM_EnvironmentBase *env)
+{
+	void *result = NULL;
+
+	if(NULL != _inputPacket) {
+		result = _inputPacket->pop(env);
+		if (NULL == result) {
+			/* The current input packet has been used up - return it to the output list for reuse */
+			_workPackets->putPacket(env, _inputPacket);
+			_inputPacket = NULL;
+		}
+	}
+	return result;
+}
+
+bool
+MM_WorkStack::inputPacketAvailableFromWorkPackets(MM_EnvironmentBase *env)
+{
+	return _workPackets->inputPacketAvailable(env);
+}
+
+bool
+MM_WorkStack::retrieveInputPacket(MM_EnvironmentBase *env)
+{
+	_inputPacket = _workPackets->getInputPacketNoWait(env);
+	if (NULL == _inputPacket) {
+		/* If the output packet contains at least a free entry - invert the input/output */
+		if((NULL != _outputPacket) && !_outputPacket->isEmpty()) {
+			/* swap the input packet with the output packet */
+			_inputPacket = _outputPacket;
+			_outputPacket = NULL;
+			env->_workPacketStats.workPacketsExchanged += 1;
+		}
+	}
+	return (NULL != _inputPacket);
 }
 

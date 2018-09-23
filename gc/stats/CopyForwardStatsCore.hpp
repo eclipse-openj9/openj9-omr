@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2016 IBM Corp. and others
+ * Copyright (c) 1991, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -75,6 +75,7 @@ public:
 
 	bool _aborted;  /**< Flag indicating if the copy forward mechanism was aborted */
 
+	uintptr_t  _nonEvacuateRegionCount; /**< Counts the number of regions which are not scheduled to be evacuated in collection set(mark/compact regions) - unused in per-thread stats)*/
 	uintptr_t _edenEvacuateRegionCount;	/**< Counts the number of Eden regions selected to be evacuated in this copy-forward (only counted globally - unused in per-thread stats) */
 	uintptr_t _nonEdenEvacuateRegionCount;	/**< Counts the number of non-Eden selected to be evacuated in this copy-forward (only counted globally - unused in per-thread stats) */
 	uintptr_t _edenSurvivorRegionCount;	/**< Counts the number of Eden regions allocated for survivor space in this copy-forward (only counted globally - unused in per-thread stats) */
@@ -227,6 +228,7 @@ public:
 		_scanCacheOverflow = false;
 		_aborted = false;
 
+		_nonEvacuateRegionCount = 0;
 		_edenEvacuateRegionCount = 0;
 		_nonEdenEvacuateRegionCount = 0;
 		_edenSurvivorRegionCount = 0;
@@ -356,6 +358,7 @@ public:
 		,_bytesCardClean(0)
 		,_scanCacheOverflow(false)
 		,_aborted(false)
+		,_nonEvacuateRegionCount(0)
 		,_edenEvacuateRegionCount(0)
 		,_nonEdenEvacuateRegionCount(0)
 		,_edenSurvivorRegionCount(0)

@@ -705,6 +705,12 @@ OMR::Z::CodeGenerator::CodeGenerator()
       {
       self()->setSupportsAtomicLoadAndAdd();
       }
+   else
+      {
+      // Max min optimization uses the maxMinHelper evaluator which
+      // requires conditional loads that are not supported below z196
+      comp->setOption(TR_DisableMaxMinOptimization);
+      }
 
    if (_processorInfo.supportsArch(TR_S390ProcessorInfo::TR_zEC12))
       {

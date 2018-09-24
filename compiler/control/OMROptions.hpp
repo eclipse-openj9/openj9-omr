@@ -264,7 +264,7 @@ enum TR_CompilationOptions
    TR_enableProfiledDevirtualization      = 0x00001000 + 5,
    TR_EnableValueTracing                  = 0x00002000 + 5, // run-time value tracing
    TR_IgnoreAssert                        = 0x00004000 + 5, // ignore failing assertions
-   // AVAILABLE                           = 0x00008000 + 5,
+   TR_EnableSymbolValidationManager       = 0x00008000 + 5,
    TR_EnableNewAllocationProfiling        = 0x00010000 + 5, // enable tracing of fields load and store
    TR_IgnoreIEEERestrictions              = 0x00020000 + 5, // enable more aggressive, nonIEEE compliant xforms
    TR_ProcessHugeMethods                  = 0x00040000 + 5, // allow processing of huge methods

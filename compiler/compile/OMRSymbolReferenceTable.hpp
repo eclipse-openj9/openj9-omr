@@ -186,11 +186,65 @@ class SymbolReferenceTable
        */
       synchronizedFieldLoadSymbol,
 
-      // common atomic primitives
+      /** \brief
+       *
+       *  This symbol represents an intrinsic call of the following format:
+       *
+       *  \code
+       *    icall <atomicAdd32BitSymbol>
+       *      <address>
+       *      <value>
+       *  \endcode
+       *
+       *  Which performs the following operation atomically:
+       *
+       *  \code
+       *    [address] = [address] + <value>
+       *    return <value>
+       *  \endcode
+       */
       atomicAdd32BitSymbol,
       atomicAdd64BitSymbol,
+
+      /** \brief
+       *
+       *  This symbol represents an intrinsic call of the following format:
+       *
+       *  \code
+       *    icall <atomicFetchAndAdd32BitSymbol>
+       *      <address>
+       *      <value>
+       *  \endcode
+       *
+       *  Which performs the following operation atomically:
+       *
+       *  \code
+       *    temp = [address]
+       *    [address] = [address] + <value>
+       *    return temp
+       *  \endcode
+       */
       atomicFetchAndAdd32BitSymbol,
       atomicFetchAndAdd64BitSymbol,
+
+      /** \brief
+       *
+       *  This symbol represents an intrinsic call of the following format:
+       *
+       *  \code
+       *    icall <atomicSwap32BitSymbol>
+       *      <address>
+       *      <value>
+       *  \endcode
+       *
+       *  Which performs the following operation atomically:
+       *
+       *  \code
+       *    temp = [address]
+       *    [address] = <value>
+       *    return temp
+       *  \endcode
+       */
       atomicSwap32BitSymbol,
       atomicSwap64BitSymbol,
       atomicCompareAndSwap32BitSymbol,

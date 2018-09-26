@@ -1,0 +1,10 @@
+{
+    "version": {
+        "major": 0
+    },
+    "namespace": "OMR::JitBuilder",
+    "types": [],
+    "fields": [],
+    "services": [],
+    "classes": []
+}

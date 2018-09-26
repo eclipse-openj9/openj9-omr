@@ -3068,6 +3068,18 @@ OMR::Z::CodeGenerator::supportsMergingGuards()
           !self()->comp()->compileRelocatableCode();
    }
 
+bool
+OMR::Z::CodeGenerator::supportsAtomicAdd()
+   {
+   return self()->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z196) && (TR::Compiler->target.is64Bit() || self()->use64BitRegsOn32Bit());
+   }
+
+bool
+OMR::Z::CodeGenerator::supportsAtomicSwap()
+   {
+   return true;
+   }
+
 // Helpers for profiled interface slots
 void
 OMR::Z::CodeGenerator::addPICsListForInterfaceSnippet(TR::S390ConstantDataSnippet * ifcSnippet, TR::list<TR_OpaqueClassBlock*> * PICSlist)

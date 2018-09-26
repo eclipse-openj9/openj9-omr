@@ -386,7 +386,40 @@ class OMR_EXTENSIBLE CodeGenerator
 
    TR_HasRandomGenerator randomizer;
 
-   bool supportsAtomicAdd() {return false;}
+   /** \brief
+    *     Determines whether intrinsics on the following atomic symbols is supported:
+    *
+    *     - atomicAdd32BitSymbol
+    *     - atomicAdd64BitSymbol
+    *     - atomicFetchAndAdd32BitSymbol
+    *     - atomicFetchAndAdd64BitSymbol
+    *
+    *  \return
+    *     \c true if intrinsics are supported; \c false otherwise.
+    */
+   bool supportsAtomicAdd()
+      {
+      return false;
+      }
+
+   /** \brief
+    *     Determines whether intrinsics on the following atomic symbols is supported:
+    *
+    *     - atomicSwap32BitSymbol
+    *     - atomicSwap64BitSymbol
+    *     - atomicCompareAndSwap32BitSymbol
+    *     - atomicCompareAndSwap64BitSymbol
+    *     - atomicCompareAndSwapReturnValue32BitSymbol
+    *     - atomicCompareAndSwapReturnValue64BitSymbol
+    *
+    *  \return
+    *     \c true if intrinsics are supported; \c false otherwise.
+    */
+   bool supportsAtomicSwap()
+      {
+      return false;
+      }
+
    bool hasTMEvaluator()    {return false;}
 
    // --------------------------------------------------------------------------

@@ -305,7 +305,16 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
 
    bool supportsMergingGuards();
 
-   bool supportsAtomicAdd()                {return true;}
+   bool supportsAtomicAdd()
+      {
+      return true;
+      }
+
+   bool supportsAtomicSwap()
+      {
+      return true;
+      }
+
    bool hasTMEvaluator()                       {return true;}
 
    int64_t getLargestNegConstThatMustBeMaterialized() { TR_ASSERT(0, "Not Implemented on x86"); return 0; }

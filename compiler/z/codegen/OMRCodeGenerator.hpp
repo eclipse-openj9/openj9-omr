@@ -275,6 +275,9 @@ public:
 
    bool supportsMergingGuards();
 
+   bool supportsAtomicAdd();
+   bool supportsAtomicSwap();
+
    bool supportsDirectJNICallsForAOT() { return true;}
 
    bool shouldYankCompressedRefs() { return true; }

@@ -275,8 +275,7 @@ public:
 
    bool supportsMergingGuards();
 
-   bool supportsAtomicAdd();
-   bool supportsAtomicSwap();
+   bool supportsNonHelper(TR::SymbolReferenceTable::CommonNonhelperSymbol symbol);
 
    bool supportsDirectJNICallsForAOT() { return true;}
 

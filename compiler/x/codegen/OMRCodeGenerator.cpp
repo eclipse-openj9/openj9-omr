@@ -1067,6 +1067,25 @@ OMR::X86::CodeGenerator::supportsMergingGuards()
           self()->allowGuardMerging();
    }
 
+bool
+OMR::X86::CodeGenerator::supportsNonHelper(TR::SymbolReferenceTable::CommonNonhelperSymbol symbol)
+   {
+   bool result = false;
+
+   switch (symbol)
+      {
+      case TR::SymbolReferenceTable::atomicAddSymbol:
+      case TR::SymbolReferenceTable::atomicFetchAndAddSymbol:
+      case TR::SymbolReferenceTable::atomicSwapSymbol:
+         {
+         result = true;
+         break;
+         }
+      }
+
+   return result;
+   }
+
 TR::RealRegister *
 OMR::X86::CodeGenerator::getMethodMetaDataRegister()
    {

@@ -2068,7 +2068,6 @@ OMR::IlBuilder::genCall(TR::SymbolReference *methodSymRef, int32_t numArgs, TR::
 TR::IlValue *
 OMR::IlBuilder::AtomicAdd(TR::IlValue * baseAddress, TR::IlValue * value)
    {
-   TR_ASSERT(comp()->cg()->supportsAtomicAdd(), "This platform doesn't support atomic add intrinsics");
    TR_ASSERT(baseAddress->getDataType() == TR::Address, "baseAddress must be TR::Address");
 
    //Determine the implementation type and returnType by detecting "value"'s type

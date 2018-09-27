@@ -3069,15 +3069,27 @@ OMR::Z::CodeGenerator::supportsMergingGuards()
    }
 
 bool
-OMR::Z::CodeGenerator::supportsAtomicAdd()
+OMR::Z::CodeGenerator::supportsNonHelper(TR::SymbolReferenceTable::CommonNonhelperSymbol symbol)
    {
-   return self()->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z196) && (TR::Compiler->target.is64Bit() || self()->use64BitRegsOn32Bit());
-   }
+   bool result = false;
 
-bool
-OMR::Z::CodeGenerator::supportsAtomicSwap()
-   {
-   return true;
+   switch (symbol)
+      {
+      case TR::SymbolReferenceTable::atomicAddSymbol:
+      case TR::SymbolReferenceTable::atomicFetchAndAddSymbol:
+         {
+         result = self()->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z196) && (TR::Compiler->target.is64Bit() || self()->use64BitRegsOn32Bit());
+         break;
+         }
+
+      case TR::SymbolReferenceTable::atomicSwapSymbol:
+         {
+         result = true;
+         break;
+         }
+      }
+
+   return result;
    }
 
 // Helpers for profiled interface slots

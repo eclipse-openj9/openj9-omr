@@ -305,15 +305,7 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
 
    bool supportsMergingGuards();
 
-   bool supportsAtomicAdd()
-      {
-      return true;
-      }
-
-   bool supportsAtomicSwap()
-      {
-      return true;
-      }
+   bool supportsNonHelper(TR::SymbolReferenceTable::CommonNonhelperSymbol symbol);
 
    bool hasTMEvaluator()                       {return true;}
 

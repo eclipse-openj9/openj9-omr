@@ -11253,28 +11253,12 @@ OMR::Z::TreeEvaluator::directCallEvaluator(TR::Node * node, TR::CodeGenerator * 
             {
             resultReg = intrinsicAtomicAdd(node, cg);
             }
-         else if (comp->getSymRefTab()->isNonHelper(symRef, TR::SymbolReferenceTable::atomicFetchAndAdd32BitSymbol))
+         else if (comp->getSymRefTab()->isNonHelper(symRef, TR::SymbolReferenceTable::atomicFetchAndAddSymbol))
             {
-            TR_ASSERT_FATAL(node->getChild(1)->getDataType().isInt32(), "Value child of atomicFetchAndAdd32BitSymbol call should have 32-bit data type");
-
             resultReg = intrinsicAtomicFetchAndAdd(node, cg);
             }
-         else if (comp->getSymRefTab()->isNonHelper(symRef, TR::SymbolReferenceTable::atomicFetchAndAdd64BitSymbol))
+         else if (comp->getSymRefTab()->isNonHelper(symRef, TR::SymbolReferenceTable::atomicSwapSymbol))
             {
-            TR_ASSERT_FATAL(node->getChild(1)->getDataType().isInt64(), "Value child of atomicFetchAndAdd64BitSymbol call should have 64-bit data type");
-
-            resultReg = intrinsicAtomicFetchAndAdd(node, cg);
-            }
-         else if (comp->getSymRefTab()->isNonHelper(symRef, TR::SymbolReferenceTable::atomicSwap32BitSymbol))
-            {
-            TR_ASSERT_FATAL(node->getChild(1)->getDataType().isInt32(), "Value child of atomicAtomicSwap32BitSymbol call should have 32-bit data type");
-
-            resultReg = intrinsicAtomicSwap(node, cg);
-            }
-         else if (comp->getSymRefTab()->isNonHelper(symRef, TR::SymbolReferenceTable::atomicSwap64BitSymbol))
-            {
-            TR_ASSERT_FATAL(node->getChild(1)->getDataType().isInt64(), "Value child of atomicAtomicSwap64BitSymbol call should have 64-bit data type");
-
             resultReg = intrinsicAtomicSwap(node, cg);
             }
          }

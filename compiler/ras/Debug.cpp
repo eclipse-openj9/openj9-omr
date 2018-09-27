@@ -1641,18 +1641,20 @@ TR_Debug::getName(TR::SymbolReference * symRef)
             return "<synchronizedFieldLoad>";
          case TR::SymbolReferenceTable::atomicAddSymbol:
              return "<atomicAdd>";
+         case TR::SymbolReferenceTable::atomicFetchAndAddSymbol:
+             return "<atomicFetchAndAdd>";
          case TR::SymbolReferenceTable::atomicFetchAndAdd32BitSymbol:
              return "<atomicFetchAndAdd32Bit>";
          case TR::SymbolReferenceTable::atomicFetchAndAdd64BitSymbol:
              return "<atomicFetchAndAdd64Bit>";
+         case TR::SymbolReferenceTable::atomicSwapSymbol:
+             return "<atomicSwap>";
          case TR::SymbolReferenceTable::atomicSwap32BitSymbol:
              return "<atomicSwap32Bit>";
          case TR::SymbolReferenceTable::atomicSwap64BitSymbol:
              return "<atomicSwap64Bit>";
-         case TR::SymbolReferenceTable::atomicCompareAndSwap32BitSymbol:
-             return "<atomicCompareAndSwap32Bit>";
-         case TR::SymbolReferenceTable::atomicCompareAndSwap64BitSymbol:
-             return "<atomicCompareAndSwap64Bit>";
+         case TR::SymbolReferenceTable::atomicCompareAndSwapSymbol:
+             return "<atomicCompareAndSwap>";
          }
       }
 

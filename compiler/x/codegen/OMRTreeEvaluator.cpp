@@ -3072,6 +3072,12 @@ TR::Register *OMR::X86::TreeEvaluator::directCallEvaluator(TR::Node *node, TR::C
 
          return inlineAtomicMemoryUpdate(node, op, cg);
          }
+      else if (comp->getSymRefTab()->isNonHelper(SymRef, TR::SymbolReferenceTable::atomicFetchAndAddSymbol))
+         {
+         auto op = node->getChild(1)->getDataType().isInt32() ? LXADD4MemReg : LXADD8MemReg;
+
+         return inlineAtomicMemoryUpdate(node, op, cg);
+         }
       else if (comp->getSymRefTab()->isNonHelper(SymRef, TR::SymbolReferenceTable::atomicFetchAndAdd32BitSymbol))
          {
          return inlineAtomicMemoryUpdate(node, LXADD4MemReg, cg);
@@ -3079,6 +3085,12 @@ TR::Register *OMR::X86::TreeEvaluator::directCallEvaluator(TR::Node *node, TR::C
       else if (comp->getSymRefTab()->isNonHelper(SymRef, TR::SymbolReferenceTable::atomicFetchAndAdd64BitSymbol))
          {
          return inlineAtomicMemoryUpdate(node, LXADD8MemReg, cg);
+         }
+      else if (comp->getSymRefTab()->isNonHelper(SymRef, TR::SymbolReferenceTable::atomicSwapSymbol))
+         {
+         auto op = node->getChild(1)->getDataType().isInt32() ? XCHG4MemReg : XCHG8MemReg;
+
+         return inlineAtomicMemoryUpdate(node, op, cg);
          }
       else if (comp->getSymRefTab()->isNonHelper(SymRef, TR::SymbolReferenceTable::atomicSwap32BitSymbol))
          {

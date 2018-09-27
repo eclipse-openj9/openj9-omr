@@ -688,8 +688,8 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    private:
 
    /** \brief
-    *     Inlines an intrinsic for calls to atomicAddSymbol which are represented by a call node of the form for 32-bit
-    *     (64-bit similar):
+    *     Inlines an intrinsic for calls to atomicAddSymbol which are represented by a call node of the form for
+    *     32-bit (64-bit similar):
     * 
     *     \code
     *       icall <atomicAddSymbol>
@@ -709,15 +709,11 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static TR::Register* intrinsicAtomicAdd(TR::Node* node, TR::CodeGenerator* cg);
    
    /** \brief
-    *     Inlines an intrinsic for calls to the following two symbols:
-    *
-    *        - atomicFetchAndAdd32BitSymbol
-    *        - atomicFetchAndAdd64BitSymbol
-    *
-    *     which are represented by a call node of the form for 32-bit (64-bit similar):
+    *     Inlines an intrinsic for calls to atomicFetchAndAddSymbol which are represented by a call node of the form for
+    *     32-bit (64-bit similar):
     * 
     *     \code
-    *       icall <atomicFetchAndAdd32BitSymbol>
+    *       icall <atomicFetchAndAddSymbol>
     *         <address>
     *         <value>
     *     \endcode
@@ -734,15 +730,11 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static TR::Register* intrinsicAtomicFetchAndAdd(TR::Node* node, TR::CodeGenerator* cg);
    
    /** \brief
-    *     Inlines an intrinsic for calls to the following two symbols:
-    *
-    *        - atomicSwap32BitSymbol
-    *        - atomicSwap64BitSymbol
-    *
-    *     which are represented by a call node of the form for 32-bit (64-bit similar):
+    *     Inlines an intrinsic for calls to atomicSwapSymbol which are represented by a call node of the form for
+    *     32-bit (64-bit similar):
     * 
     *     \code
-    *       icall <atomicSwap32BitSymbol>
+    *       icall <atomicSwapSymbol>
     *         <address>
     *         <value>
     *     \endcode

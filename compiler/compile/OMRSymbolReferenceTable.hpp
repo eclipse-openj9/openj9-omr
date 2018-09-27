@@ -212,7 +212,7 @@ class SymbolReferenceTable
        *  This symbol represents an intrinsic call of the following format:
        *
        *  \code
-       *    icall <atomicFetchAndAdd32BitSymbol>
+       *    icall <atomicFetchAndAddSymbol>
        *      <address>
        *      <value>
        *  \endcode
@@ -224,7 +224,10 @@ class SymbolReferenceTable
        *    [address] = [address] + <value>
        *    return temp
        *  \endcode
+       *
+       *  The data type of \c <value> indicates the width of the operation.
        */
+      atomicFetchAndAddSymbol,
       atomicFetchAndAdd32BitSymbol,
       atomicFetchAndAdd64BitSymbol,
 
@@ -233,7 +236,7 @@ class SymbolReferenceTable
        *  This symbol represents an intrinsic call of the following format:
        *
        *  \code
-       *    icall <atomicSwap32BitSymbol>
+       *    icall <atomicSwapSymbol>
        *      <address>
        *      <value>
        *  \endcode
@@ -245,11 +248,13 @@ class SymbolReferenceTable
        *    [address] = <value>
        *    return temp
        *  \endcode
+       *
+       *  The data type of \c <value> indicates the width of the operation.
        */
+      atomicSwapSymbol,
       atomicSwap32BitSymbol,
       atomicSwap64BitSymbol,
-      atomicCompareAndSwap32BitSymbol,
-      atomicCompareAndSwap64BitSymbol,
+      atomicCompareAndSwapSymbol,
 
       // python symbols start here
       pythonFrameCodeObjectSymbol,   // code object from the frame object

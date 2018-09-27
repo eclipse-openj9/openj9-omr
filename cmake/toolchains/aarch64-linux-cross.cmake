@@ -19,16 +19,14 @@
 # SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
 #############################################################################
 
-list(APPEND OMR_PLATFORM_DEFINITIONS
-	-DAARCH64
-	-DJ9AARCH64
-	-DAARCH64GNU
-	-DFIXUP_UNALIGNED
-	-march=armv8-a+simd
-	-Wno-unused-but-set-variable
-)
+SET(CMAKE_SYSTEM_PROCESSOR aarch64)
+SET(CMAKE_SYSTEM_NAME Linux)
 
-set(TR_HOST_ARCH aarch64)
-set(TR_HOST_BITS 64)
+SET(CMAKE_C_COMPILER aarch64-linux-gnu-gcc)
+SET(CMAKE_CXX_COMPILER aarch64-linux-gnu-g++)
 
-list(APPEND TR_COMPILE_DEFINITIONS TR_HOST_ARM64 TR_TARGET_ARM64 TR_HOST_64BIT TR_TARGET_64BIT)
+SET(CMAKE_FIND_ROOT_PATH /root/gcc-linaro-4.9.4-2017.01-x86_64_aarch64-linux-gnu)
+
+SET(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
+SET(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
+SET(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)

@@ -688,15 +688,11 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    private:
 
    /** \brief
-    *     Inlines an intrinsic for calls to the following two symbols:
-    *
-    *        - atomicAdd32BitSymbol
-    *        - atomicAdd64BitSymbol
-    *
-    *     which are represented by a call node of the form for 32-bit (64-bit similar):
+    *     Inlines an intrinsic for calls to atomicAddSymbol which are represented by a call node of the form for 32-bit
+    *     (64-bit similar):
     * 
     *     \code
-    *       icall <atomicAdd32BitSymbol>
+    *       icall <atomicAddSymbol>
     *         <address>
     *         <value>
     *     \endcode

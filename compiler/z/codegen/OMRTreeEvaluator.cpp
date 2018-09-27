@@ -11249,16 +11249,8 @@ OMR::Z::TreeEvaluator::directCallEvaluator(TR::Node * node, TR::CodeGenerator * 
          {
          TR::Compilation* comp = cg->comp();
 
-         if (comp->getSymRefTab()->isNonHelper(symRef, TR::SymbolReferenceTable::atomicAdd32BitSymbol))
+         if (comp->getSymRefTab()->isNonHelper(symRef, TR::SymbolReferenceTable::atomicAddSymbol))
             {
-            TR_ASSERT_FATAL(node->getChild(1)->getDataType().isInt32(), "Value child of atomicAdd32BitSymbol call should have 32-bit data type");
-
-            resultReg = intrinsicAtomicAdd(node, cg);
-            }
-         else if (comp->getSymRefTab()->isNonHelper(symRef, TR::SymbolReferenceTable::atomicAdd64BitSymbol))
-            {
-            TR_ASSERT_FATAL(node->getChild(1)->getDataType().isInt64(), "Value child of atomicAdd64BitSymbol call should have 64-bit data type");
-
             resultReg = intrinsicAtomicAdd(node, cg);
             }
          else if (comp->getSymRefTab()->isNonHelper(symRef, TR::SymbolReferenceTable::atomicFetchAndAdd32BitSymbol))

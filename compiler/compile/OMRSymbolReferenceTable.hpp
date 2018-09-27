@@ -191,7 +191,7 @@ class SymbolReferenceTable
        *  This symbol represents an intrinsic call of the following format:
        *
        *  \code
-       *    icall <atomicAdd32BitSymbol>
+       *    icall <atomicAddSymbol>
        *      <address>
        *      <value>
        *  \endcode
@@ -202,9 +202,10 @@ class SymbolReferenceTable
        *    [address] = [address] + <value>
        *    return <value>
        *  \endcode
+       *
+       *  The data type of \c <value> indicates the width of the operation.
        */
-      atomicAdd32BitSymbol,
-      atomicAdd64BitSymbol,
+      atomicAddSymbol,
 
       /** \brief
        *

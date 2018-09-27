@@ -1639,10 +1639,8 @@ TR_Debug::getName(TR::SymbolReference * symRef)
             return "<usesAllMethod>";
          case TR::SymbolReferenceTable::synchronizedFieldLoadSymbol:
             return "<synchronizedFieldLoad>";
-         case TR::SymbolReferenceTable::atomicAdd32BitSymbol:
-             return "<atomicAdd32Bit>";
-         case TR::SymbolReferenceTable::atomicAdd64BitSymbol:
-             return "<atomicAdd64Bit>";
+         case TR::SymbolReferenceTable::atomicAddSymbol:
+             return "<atomicAdd>";
          case TR::SymbolReferenceTable::atomicFetchAndAdd32BitSymbol:
              return "<atomicFetchAndAdd32Bit>";
          case TR::SymbolReferenceTable::atomicFetchAndAdd64BitSymbol:

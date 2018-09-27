@@ -389,10 +389,8 @@ class OMR_EXTENSIBLE CodeGenerator
    /** \brief
     *     Determines whether intrinsics on the following atomic symbols is supported:
     *
-    *     - atomicAdd32BitSymbol
-    *     - atomicAdd64BitSymbol
-    *     - atomicFetchAndAdd32BitSymbol
-    *     - atomicFetchAndAdd64BitSymbol
+    *     - atomicAddSymbol
+    *     - atomicFetchAndAddSymbol
     *
     *  \return
     *     \c true if intrinsics are supported; \c false otherwise.
@@ -405,12 +403,9 @@ class OMR_EXTENSIBLE CodeGenerator
    /** \brief
     *     Determines whether intrinsics on the following atomic symbols is supported:
     *
-    *     - atomicSwap32BitSymbol
-    *     - atomicSwap64BitSymbol
-    *     - atomicCompareAndSwap32BitSymbol
-    *     - atomicCompareAndSwap64BitSymbol
-    *     - atomicCompareAndSwapReturnValue32BitSymbol
-    *     - atomicCompareAndSwapReturnValue64BitSymbol
+    *     - atomicSwapSymbol
+    *     - atomicCompareAndSwapSymbol
+    *     - atomicCompareAndSwapReturnValueSymbol
     *
     *  \return
     *     \c true if intrinsics are supported; \c false otherwise.

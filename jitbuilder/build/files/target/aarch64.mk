@@ -24,6 +24,7 @@
 JIT_PRODUCT_BACKEND_SOURCES+= \
     $(JIT_OMR_DIRTY_DIR)/aarch64/codegen/ARM64BinaryEncoding.cpp \
     $(JIT_OMR_DIRTY_DIR)/aarch64/codegen/ARM64Debug.cpp \
+    $(JIT_OMR_DIRTY_DIR)/aarch64/codegen/ARM64Instruction.cpp \
     $(JIT_OMR_DIRTY_DIR)/aarch64/codegen/ARM64OutOfLineCodeSection.cpp \
     $(JIT_OMR_DIRTY_DIR)/aarch64/codegen/ARM64SystemLinkage.cpp \
     $(JIT_OMR_DIRTY_DIR)/aarch64/codegen/BinaryEvaluator.cpp \

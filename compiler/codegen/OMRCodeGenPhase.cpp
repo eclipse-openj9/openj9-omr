@@ -439,7 +439,7 @@ OMR::CodeGenPhase::performSetupForInstructionSelectionPhase(TR::CodeGenerator * 
    {
    TR::Compilation *comp = cg->comp();
 
-   if (TR::Compiler->om.shouldGenerateReadBarriersForFieldLoads())
+   if (TR::Compiler->target.cpu.isZ() && TR::Compiler->om.shouldGenerateReadBarriersForFieldLoads())
       {
       // TODO (GuardedStorage): We need to come up with a better solution than anchoring aloadi's
       // to enforce certain evaluation order

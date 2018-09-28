@@ -135,3 +135,12 @@ OMR::ARM64::RegisterDependencyConditions::clone(
 
    return NULL;
    }
+
+void TR_ARM64RegisterDependencyGroup::assignRegisters(
+                        TR::Instruction *currentInstruction,
+                        TR_RegisterKinds kindToBeAssigned,
+                        uint32_t numberOfRegisters,
+                        TR::CodeGenerator *cg)
+   {
+   TR_ASSERT(false, "Not implemented yet.");
+   }

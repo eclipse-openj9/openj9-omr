@@ -383,13 +383,13 @@ TR_GlobalRegisterNumber OMR::ARM64::CodeGenerator::getLinkageGlobalRegisterNumbe
    return 0;
    }
 
-int64_t getLargestNegConstThatMustBeMaterialized() 
+int64_t OMR::ARM64::CodeGenerator::getLargestNegConstThatMustBeMaterialized()
    { 
    TR_ASSERT(0, "Not Implemented on AArch64"); 
    return 0; 
    }
 
-int64_t getSmallestPosConstThatMustBeMaterialized() 
+int64_t OMR::ARM64::CodeGenerator::getSmallestPosConstThatMustBeMaterialized()
    { 
    TR_ASSERT(0, "Not Implemented on AArch64"); 
    return 0; 

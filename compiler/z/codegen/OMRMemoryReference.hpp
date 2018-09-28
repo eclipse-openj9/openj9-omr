@@ -374,7 +374,6 @@ bool doEvaluate(TR::Node * subTree, TR::CodeGenerator * cg);
 TR::Snippet * getSnippet();
 int32_t generateBinaryEncoding(uint8_t *modRM, TR::CodeGenerator *cg, TR::Instruction *instr);
 int32_t estimateBinaryLength(int32_t currentEstimate, TR::CodeGenerator *cg, TR::Instruction *instr);
-uint8_t *generateBinaryEncoding2(uint8_t *modRM, TR::CodeGenerator *cg);
 int32_t generateBinaryEncodingTouchUpForLongDisp(uint8_t *modRM, TR::CodeGenerator *cg, TR::Instruction *instr);
 
 void blockRegisters()

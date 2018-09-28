@@ -11251,15 +11251,15 @@ OMR::Z::TreeEvaluator::directCallEvaluator(TR::Node * node, TR::CodeGenerator * 
 
          if (comp->getSymRefTab()->isNonHelper(symRef, TR::SymbolReferenceTable::atomicAddSymbol))
             {
-            resultReg = intrinsicAtomicAdd(node, cg);
+            resultReg = TR::TreeEvaluator::intrinsicAtomicAdd(node, cg);
             }
          else if (comp->getSymRefTab()->isNonHelper(symRef, TR::SymbolReferenceTable::atomicFetchAndAddSymbol))
             {
-            resultReg = intrinsicAtomicFetchAndAdd(node, cg);
+            resultReg = TR::TreeEvaluator::intrinsicAtomicFetchAndAdd(node, cg);
             }
          else if (comp->getSymRefTab()->isNonHelper(symRef, TR::SymbolReferenceTable::atomicSwapSymbol))
             {
-            resultReg = intrinsicAtomicSwap(node, cg);
+            resultReg = TR::TreeEvaluator::intrinsicAtomicSwap(node, cg);
             }
          }
 

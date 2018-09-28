@@ -697,6 +697,13 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
     *         <value>
     *     \endcode
     *
+    *     Which performs the following operation atomically:
+    *
+    *     \code
+    *       [address] = [address] + <value>
+    *       return <value>
+    *     \endcode
+    *
     *  \param node
     *     The respective (i|l)call node.
     *
@@ -718,6 +725,14 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
     *         <value>
     *     \endcode
     *
+    *     Which performs the following operation atomically:
+    *
+    *     \code
+    *       temp = [address]
+    *       [address] = [address] + <value>
+    *       return temp
+    *     \endcode
+    *
     *  \param node
     *     The respective (i|l)call node.
     *
@@ -737,6 +752,14 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
     *       icall <atomicSwapSymbol>
     *         <address>
     *         <value>
+    *     \endcode
+    *
+    *     Which performs the following operation atomically:
+    *
+    *     \code
+    *       temp = [address]
+    *       [address] = <value>
+    *       return temp
     *     \endcode
     *
     *  \param node

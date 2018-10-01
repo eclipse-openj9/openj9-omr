@@ -432,6 +432,9 @@ static const char *opCodeToNameMap[] =
    "rev16w",
    "rev16x",
    "rev32",
+   "proc",
+   "fence",
+   "dd",
    "label"
    };
 

@@ -22,7 +22,12 @@
 #include "codegen/ARM64ShiftCode.hpp"
 #include "codegen/CodeGenerator.hpp"
 #include "codegen/GenerateInstructions.hpp"
-#include "codegen/OMRTreeEvaluator.hpp"
+#include "codegen/RegisterDependency.hpp"
+#include "codegen/TreeEvaluator.hpp"
+#include "il/Node.hpp"
+#include "il/Node_inlines.hpp"
+#include "il/symbol/LabelSymbol.hpp"
+#include "il/symbol/ParameterSymbol.hpp"
 
 TR::Instruction *loadConstant32(TR::CodeGenerator *cg, TR::Node *node, int32_t value, TR::Register *trgReg, TR::Instruction *cursor)
    {
@@ -401,14 +406,85 @@ OMR::ARM64::TreeEvaluator::GlRegDepsEvaluator(TR::Node *node, TR::CodeGenerator 
 
 TR::Register *
 OMR::ARM64::TreeEvaluator::BBStartEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// TODO:ARM64: Enable TR::TreeEvaluator::BBStartEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
-	}
+   {
+   TR::Compilation *comp = cg->comp();
+   TR::Block *block = node->getBlock();
+   cg->setCurrentBlock(block);
+
+   TR::RegisterDependencyConditions *deps = NULL;
+
+   if (!block->isExtensionOfPreviousBlock() && node->getNumChildren()>0)
+      {
+      int32_t i;
+      TR::Node *child = node->getFirstChild();
+      cg->evaluate(child);
+      deps = generateRegisterDependencyConditions(cg, child, 0);
+      if (cg->getCurrentEvaluationTreeTop() == comp->getStartTree())
+         {
+         for (i=0; i<child->getNumChildren(); i++)
+            {
+            TR::ParameterSymbol *sym = child->getChild(i)->getSymbol()->getParmSymbol();
+            if (sym != NULL)
+               {
+               sym->setAllocatedIndex(cg->getGlobalRegister(child->getChild(i)->getGlobalRegisterNumber()));
+               }
+            }
+         }
+      child->decReferenceCount();
+      }
+
+   if (node->getLabel() != NULL)
+      {
+      if (deps == NULL)
+         {
+         node->getLabel()->setInstruction(generateLabelInstruction(cg, TR::InstOpCode::label, node, node->getLabel()));
+         }
+      else
+         {
+         node->getLabel()->setInstruction(generateDepLabelInstruction(cg, TR::InstOpCode::label, node, node->getLabel(), deps));
+         }
+      }
+
+   TR::Node *fenceNode = TR::Node::createRelative32BitFenceNode(node, &block->getInstructionBoundaries()._startPC);
+   TR::Instruction *fence = generateAdminInstruction(cg, TR::InstOpCode::fence, node, fenceNode);
+
+   return NULL;
+   }
 
 TR::Register *
 OMR::ARM64::TreeEvaluator::BBEndEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// TODO:ARM64: Enable TR::TreeEvaluator::BBEndEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
-	}
+   {
+   TR::Block *block = node->getBlock();
+   TR::Compilation *comp = cg->comp();
+   TR::Node *fenceNode = TR::Node::createRelative32BitFenceNode(node, &node->getBlock()->getInstructionBoundaries()._endPC);
+
+   if (NULL == block->getNextBlock())
+      {
+      TR::Instruction *lastInstruction = cg->getAppendInstruction();
+#if 0
+      // TODO: Enable this part when TR::InstOpCode::bl becomes available
+      if (lastInstruction->getOpCodeValue() == TR::InstOpCode::bl
+              && lastInstruction->getNode()->getSymbolReference()->getReferenceNumber() == TR_aThrow)
+         {
+         lastInstruction = generateInstruction(cg, TR::InstOpCode::bad, node, lastInstruction);
+         }
+#endif
+      }
+
+   TR::TreeTop *nextTT = cg->getCurrentEvaluationTreeTop()->getNextTreeTop();
+
+   TR::RegisterDependencyConditions *deps = NULL;
+   if (node->getNumChildren() > 0 &&
+       (!nextTT || !nextTT->getNode()->getBlock()->isExtensionOfPreviousBlock()))
+      {
+      TR::Node *child = node->getFirstChild();
+      cg->evaluate(child);
+      deps = generateRegisterDependencyConditions(cg, child, 0);
+      child->decReferenceCount();
+      }
+
+   // put the dependencies (if any) on the fence
+   generateAdminInstruction(cg, TR::InstOpCode::fence, node, deps, fenceNode);
+
+   return NULL;
+   }

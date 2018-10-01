@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -69,6 +69,8 @@ OMR::CPU::initializeByHostQuery()
    _majorArch = TR::arch_arm;
 #elif defined(TR_HOST_S390)
    _majorArch = TR::arch_z;
+#elif defined(TR_HOST_ARM64)
+   _majorArch = TR::arch_arm64;
 #else
    TR_ASSERT(0, "unknown host architecture");
    _majorArch = TR::arch_unknown;

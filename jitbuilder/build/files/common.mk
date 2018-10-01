@@ -223,6 +223,10 @@ JIT_PRODUCT_BACKEND_SOURCES+=\
     $(JIT_OMR_DIRTY_DIR)/ilgen/OMRIlBuilder.cpp \
     $(JIT_OMR_DIRTY_DIR)/ilgen/OMRIlType.cpp \
     $(JIT_OMR_DIRTY_DIR)/ilgen/OMRIlValue.cpp \
+    $(JIT_OMR_DIRTY_DIR)/ilgen/OMRJitBuilderRecorder.cpp \
+    $(JIT_OMR_DIRTY_DIR)/ilgen/OMRJitBuilderRecorderBinaryBuffer.cpp \
+    $(JIT_OMR_DIRTY_DIR)/ilgen/OMRJitBuilderRecorderBinaryFile.cpp \
+    $(JIT_OMR_DIRTY_DIR)/ilgen/OMRJitBuilderRecorderTextFile.cpp \
     $(JIT_OMR_DIRTY_DIR)/ilgen/OMRMethodBuilder.cpp \
     $(JIT_OMR_DIRTY_DIR)/ilgen/OMRThunkBuilder.cpp \
     $(JIT_OMR_DIRTY_DIR)/ilgen/OMRTypeDictionary.cpp \

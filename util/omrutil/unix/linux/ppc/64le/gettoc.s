@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 1991, 2013 IBM Corp. and others
+# Copyright (c) 1991, 2018 IBM Corp. and others
 # 
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -27,8 +27,8 @@
 .align 4
 
 getTOC:
-        addis 2,12,.TOC.-getTOC@ha
-        addis 2,2,.TOC.-getTOC@l
+        addis 2,12,(.TOC.-getTOC)@ha
+        addi 2,2,(.TOC.-getTOC)@l
 .localentry getTOC,.-getTOC
         or 3,2,2
         blr

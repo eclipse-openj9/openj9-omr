@@ -929,8 +929,22 @@ class ARM64Trg1ImmInstruction : public ARM64Trg1Instruction
     */
    void insertImmediateField(uint32_t *instruction)
       {
-      /* immediate width depends on InstOpCode */
-      TR_ASSERT(false, "Not implemented yet.");
+      TR::InstOpCode::Mnemonic op = getOpCodeValue();
+
+      if (op == TR::InstOpCode::movzx || op == TR::InstOpCode::movzw ||
+          op == TR::InstOpCode::movnx || op == TR::InstOpCode::movnw ||
+          op == TR::InstOpCode::movkx || op == TR::InstOpCode::movkw)
+         {
+         *instruction |= ((_sourceImmediate & 0x3ffff) << 5);
+         }
+      else if (op == TR::InstOpCode::adr || op == TR::InstOpCode::adrp)
+         {
+         *instruction |= ((_sourceImmediate & 0x7ffff) << 5) | ((_sourceImmediate & 0x3) << 29);
+         }
+      else
+         {
+         TR_ASSERT(false, "Unsupported opcode in ARM64Trg1ImmInstruction.");
+         }
       }
 
    /**

@@ -19,8 +19,147 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
+#include "codegen/ARM64ShiftCode.hpp"
 #include "codegen/CodeGenerator.hpp"
+#include "codegen/GenerateInstructions.hpp"
 #include "codegen/OMRTreeEvaluator.hpp"
+
+TR::Instruction *loadConstant32(TR::CodeGenerator *cg, TR::Node *node, int32_t value, TR::Register *trgReg, TR::Instruction *cursor)
+   {
+   TR::Instruction *insertingInstructions = cursor;
+   if (cursor == NULL)
+      cursor = cg->getAppendInstruction();
+
+   TR::InstOpCode::Mnemonic op = TR::InstOpCode::bad;
+   uint32_t imm;
+
+   if (value >= 0 && value <= 65535)
+      {
+      op = TR::InstOpCode::movzw;
+      imm = value & 0xFFFF;
+      }
+   else if (value >= -65535 && value < 0)
+      {
+      op = TR::InstOpCode::movnw;
+      imm = ~value & 0xFFFF;
+      }
+   else if ((value & 0xFFFF) == 0)
+      {
+      op = TR::InstOpCode::movzw;
+      imm = (value >> 16) | TR::MOV_LSL16;
+      }
+   else if ((value & 0xFFFF) == 0xFFFF)
+      {
+      op = TR::InstOpCode::movnw;
+      imm = ((~value >> 16) & 0xFFFF) | TR::MOV_LSL16;
+      }
+
+   if (op != TR::InstOpCode::bad)
+      {
+      cursor = generateTrg1ImmInstruction(cg, op, node, trgReg, imm, cursor);
+      }
+   else
+      {
+      // need two instructions
+      cursor = generateTrg1ImmInstruction(cg, TR::InstOpCode::movzw, node, trgReg,
+                                          (value & 0xFFFF), cursor);
+      cursor = generateTrg1ImmInstruction(cg, TR::InstOpCode::movkw, node, trgReg,
+                                          ((value >> 16) | TR::MOV_LSL16), cursor);
+      }
+
+   if (!insertingInstructions)
+      cg->setAppendInstruction(cursor);
+
+   return cursor;
+   }
+
+TR::Instruction *loadConstant64(TR::CodeGenerator *cg, TR::Node *node, int64_t value, TR::Register *trgReg, TR::Instruction *cursor)
+   {
+   TR::Instruction *insertingInstructions = cursor;
+   if (cursor == NULL)
+      cursor = cg->getAppendInstruction();
+
+   if (value == 0LL)
+      {
+      // 0
+      cursor = generateTrg1ImmInstruction(cg, TR::InstOpCode::movzx, node, trgReg, 0, cursor);
+      }
+   else if (~value == 0LL)
+      {
+      // -1
+      cursor = generateTrg1ImmInstruction(cg, TR::InstOpCode::movnx, node, trgReg, 0, cursor);
+      }
+   else
+      {
+      uint16_t h[4];
+      int32_t count0000 = 0, countFFFF = 0;
+      int32_t use_movz;
+      int32_t i;
+
+      for (i = 0; i < 4; i++)
+         {
+         h[i] = (value >> (i * 16)) & 0xFFFF;
+         if (h[i] == 0)
+            {
+            count0000++;
+            }
+         else if (h[i] == 0xFFFF)
+            {
+            countFFFF++;
+            }
+         }
+      use_movz = (count0000 >= countFFFF);
+
+      TR::Instruction *start = cursor;
+
+      for (i = 0; i < 4; i++)
+         {
+         uint32_t shift = TR::MOV_LSL16 * i;
+         TR::InstOpCode::Mnemonic op = TR::InstOpCode::bad;
+         uint32_t imm;
+
+         if (use_movz && (h[i] != 0))
+            {
+            imm = h[i] | shift;
+            if (cursor != start)
+               {
+               op = TR::InstOpCode::movkx;
+               }
+            else
+               {
+               op = TR::InstOpCode::movzx;
+               }
+            }
+         else if (!use_movz && (h[i] != 0xFFFF))
+            {
+            if (cursor != start)
+               {
+               op = TR::InstOpCode::movkx;
+               imm = h[i] | shift;
+               }
+            else
+               {
+               op = TR::InstOpCode::movnx;
+               imm = (~h[i] & 0xFFFF) | shift;
+               }
+            }
+
+         if (op != TR::InstOpCode::bad)
+            {
+            cursor = generateTrg1ImmInstruction(cg, op, node, trgReg, imm, cursor);
+            }
+         else
+            {
+            // generate no instruction here
+            }
+         }
+      }
+
+   if (!insertingInstructions)
+      cg->setAppendInstruction(cursor);
+
+   return cursor;
+   }
 
 TR::Register *
 OMR::ARM64::TreeEvaluator::unImpOpEvaluator(TR::Node *node, TR::CodeGenerator *cg)

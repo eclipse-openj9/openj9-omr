@@ -186,21 +186,21 @@ void OMR::ARM64::MemoryReference::assignRegisters(TR::Instruction *currentInstru
 /* register offset */
 static bool isRegisterOffsetInstruction(uint32_t enc)
    {
-   return (enc & 0x3b200c00 == 0x38200800);
+   return ((enc & 0x3b200c00) == 0x38200800);
    }
 
 
 /* post-index/pre-index/unscaled immediate offset */
 static bool isImm9OffsetInstruction(uint32_t enc)
    {
-   return (enc & 0x3b200000 == 0x38000000);
+   return ((enc & 0x3b200000) == 0x38000000);
    }
 
 
 /* unsigned immediate offset */
 static bool isImm12OffsetInstruction(uint32_t enc)
    {
-   return (enc & 0x3b200000 == 0x39000000);
+   return ((enc & 0x3b200000) == 0x39000000);
    }
 
 

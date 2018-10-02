@@ -40,14 +40,21 @@
 #define STRINGFY(str) DO_STRINGFY(str)
 #define DO_STRINGFY(str) #str
 
-const char *gcTests[] = {"fvtest/gctest/configuration/sample_GC_config.xml",
-                                "fvtest/gctest/configuration/test_system_gc.xml",
-                                "fvtest/gctest/configuration/gencon_GC_config.xml",
-                                "fvtest/gctest/configuration/gencon_GC_backout_config.xml",
-                                "fvtest/gctest/configuration/scavenger_GC_config.xml",
-                                "fvtest/gctest/configuration/scavenger_GC_backout_config.xml",
-                               	"fvtest/gctest/configuration/global_GC_config.xml",
-								"fvtest/gctest/configuration/optavgpause_GC_config.xml"};
+const char *gcTests[] = {"fvtest/gctest/configuration/sample_GC_config.xml"
+                        , "fvtest/gctest/configuration/test_system_gc.xml"
+                        , "fvtest/gctest/configuration/global_GC_config.xml"
+#if defined(OMR_GC_MODRON_CONCURRENT_MARK)
+                        , "fvtest/gctest/configuration/optavgpause_GC_config.xml"
+#endif
+#if defined(OMR_GC_MODRON_SCAVENGER)
+                        , "fvtest/gctest/configuration/scavenger_GC_config.xml"
+                        , "fvtest/gctest/configuration/scavenger_GC_backout_config.xml"
+#endif
+#if defined(OMR_GC_MODRON_SCAVENGER) && defined(OMR_GC_MODRON_CONCURRENT_MARK)
+                        , "fvtest/gctest/configuration/gencon_GC_config.xml"
+                        , "fvtest/gctest/configuration/gencon_GC_backout_config.xml"
+#endif
+                        };
 
 const char *perfTests[] = {"perftest/gctest/configuration/21645_core.20150126.202455.11862202.0001.xml",
 								"perftest/gctest/configuration/24404_core.20140723.091737.5812.0002.xml"};

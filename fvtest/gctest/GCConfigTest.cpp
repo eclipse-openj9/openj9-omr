@@ -178,12 +178,14 @@ GCConfigTest::TearDown()
 		cli->kill(env);
 	}
 
-	/* Shut down the dispatcher threads */
-	omr_error_t rc = OMR_GC_ShutdownDispatcherThreads(exampleVM->_omrVMThread);
-	ASSERT_EQ(OMR_ERROR_NONE, rc) << "TearDown(): OMR_GC_ShutdownDispatcherThreads failed, rc=" << rc;
+	if (NULL != exampleVM->_omrVMThread) {
+		/* Shut down the dispatcher threads */
+		omr_error_t rc = OMR_GC_ShutdownDispatcherThreads(exampleVM->_omrVMThread);
+		ASSERT_EQ(OMR_ERROR_NONE, rc) << "TearDown(): OMR_GC_ShutdownDispatcherThreads failed, rc=" << rc;
+	}
 
 	/* Detach from VM */
-	rc = OMR_Thread_Free(exampleVM->_omrVMThread);
+	omr_error_t rc = OMR_Thread_Free(exampleVM->_omrVMThread);
 	ASSERT_EQ(OMR_ERROR_NONE, rc) << "TearDown(): OMR_Thread_Free failed, rc=" << rc;
 
 	/* Shut down collector */

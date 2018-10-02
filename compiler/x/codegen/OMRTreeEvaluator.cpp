@@ -187,7 +187,8 @@ TR::Instruction *OMR::X86::TreeEvaluator::insertLoadConstant(TR::Node           
    TR::Compilation *comp = cg->comp();
    static const TR_X86OpCodes ops[TR_NumRematerializableTypes+1][3] =
       //    load 0      load -1     load c
-      { { XOR4RegReg, OR4RegImms, MOV4RegImm4 },   // Byte constant
+      { { BADIA32Op,  BADIA32Op,  BADIA32Op   },   // LEA; should not seen here
+        { XOR4RegReg, OR4RegImms, MOV4RegImm4 },   // Byte constant
         { XOR4RegReg, OR4RegImms, MOV4RegImm4 },   // Short constant
         { XOR4RegReg, OR4RegImms, MOV4RegImm4 },   // Char constant
         { XOR4RegReg, OR4RegImms, MOV4RegImm4 },   // Int constant
@@ -416,12 +417,14 @@ OMR::X86::TreeEvaluator::insertLoadMemory(
    {
    TR::Compilation *comp = cg->comp();
    static const TR_X86OpCodes ops[TR_NumRematerializableTypes] =
-      { L1RegMem,     // Byte
-        L2RegMem,     // Short
-        L2RegMem,     // Char
-        L4RegMem,     // Int
-        L4RegMem,     // Address (64-bit addresses handled specailly below)
-        L8RegMem,     // Long
+      {
+      LEARegMem(),  // Load Effective Address
+      L1RegMem,     // Byte
+      L2RegMem,     // Short
+      L2RegMem,     // Char
+      L4RegMem,     // Int
+      L4RegMem,     // Address (64-bit addresses handled specailly below)
+      L8RegMem,     // Long
       };
 
    TR_X86OpCodes opCode = ops[type];

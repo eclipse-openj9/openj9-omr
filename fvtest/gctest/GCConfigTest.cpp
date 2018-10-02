@@ -174,23 +174,20 @@ GCConfigTest::TearDown()
 	omrmem_free_memory((void *)verboseFile);
 	verboseFile = NULL;
 
-	cli->kill(env);
+	if (NULL != cli) {
+		cli->kill(env);
+	}
 
 	/* Shut down the dispatcher threads */
 	omr_error_t rc = OMR_GC_ShutdownDispatcherThreads(exampleVM->_omrVMThread);
 	ASSERT_EQ(OMR_ERROR_NONE, rc) << "TearDown(): OMR_GC_ShutdownDispatcherThreads failed, rc=" << rc;
 
-	/* Shut down collector */
-	rc = OMR_GC_ShutdownCollector(exampleVM->_omrVMThread);
-	ASSERT_EQ(OMR_ERROR_NONE, rc) << "TearDown(): OMR_GC_ShutdownCollector failed, rc=" << rc;
-
 	/* Detach from VM */
 	rc = OMR_Thread_Free(exampleVM->_omrVMThread);
 	ASSERT_EQ(OMR_ERROR_NONE, rc) << "TearDown(): OMR_Thread_Free failed, rc=" << rc;
 
-	/* Shut down heap */
-	rc = OMR_GC_ShutdownHeap(exampleVM->_omrVM);
-	ASSERT_EQ(OMR_ERROR_NONE, rc) << "TearDown(): OMR_GC_ShutdownHeap failed, rc=" << rc;
+	/* Shut down collector */
+	ASSERT_EQ(OMR_GC_ShutdownHeapAndCollector(exampleVM->_omrVM), OMR_ERROR_NONE);
 
 	exampleVM->_omrVMThread = NULL;
 

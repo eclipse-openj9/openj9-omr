@@ -998,6 +998,16 @@
                     {"name":"arguments","type":"IlValue","attributes":["array","can_be_vararg"],"array-len":"numArgs"}
                     ]
                 },
+                { "name": "Call"
+                , "overloadsuffix": "MethodBuilder"
+                , "flags": []
+                , "return": "IlValue"
+                , "parms": [
+                    {"name":"name","type":"MethodBuilder"},
+                    {"name":"numArgs","type":"int32"},
+                    {"name":"arguments","type":"IlValue","attributes":["array","can_be_vararg"],"array-len":"numArgs"}
+                    ]
+                },
                 { "name": "ComputedCall"
                 , "overloadsuffix":"WithArgArray"
                 , "flags": []
@@ -1498,6 +1508,21 @@
                 , "return": "MethodBuilder"
                 , "parms": [
                     {"name":"dict","type":"TypeDictionary"},
+                    {"name":"vmState","type":"VirtualMachineState"}
+                    ]
+                },
+                { "name": ""
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "MethodBuilder"
+                , "parms": [{"name":"callerMB","type":"MethodBuilder"}]
+                },
+                { "name": ""
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "MethodBuilder"
+                , "parms": [
+                    {"name":"callerMB","type":"MethodBuilder"},
                     {"name":"vmState","type":"VirtualMachineState"}
                     ]
                 }

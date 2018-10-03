@@ -331,7 +331,7 @@ main(int argc, char *argv[])
    printf("Step 4: run mandelbrot compiled code\n");
    MandelbrotFunctionType *mandelbrot = (MandelbrotFunctionType *)entry;
    const int height = N;
-   const int max_x = (N + 7) / 8;
+   const int max_x = N;
    const int size = height * max_x * sizeof(uint8_t);
    uint8_t *buffer = (uint8_t *) malloc(size);
    double *cr0 = (double *) malloc(8 * max_x * sizeof(double));

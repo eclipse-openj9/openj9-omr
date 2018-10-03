@@ -186,15 +186,75 @@ class SymbolReferenceTable
        */
       synchronizedFieldLoadSymbol,
 
-      // common atomic primitives
-      atomicAdd32BitSymbol,
-      atomicAdd64BitSymbol,
+      /** \brief
+       *
+       *  This symbol represents an intrinsic call of the following format:
+       *
+       *  \code
+       *    icall <atomicAddSymbol>
+       *      <address>
+       *      <value>
+       *  \endcode
+       *
+       *  Which performs the following operation atomically:
+       *
+       *  \code
+       *    [address] = [address] + <value>
+       *    return <value>
+       *  \endcode
+       *
+       *  The data type of \c <value> indicates the width of the operation.
+       */
+      atomicAddSymbol,
+
+      /** \brief
+       *
+       *  This symbol represents an intrinsic call of the following format:
+       *
+       *  \code
+       *    icall <atomicFetchAndAddSymbol>
+       *      <address>
+       *      <value>
+       *  \endcode
+       *
+       *  Which performs the following operation atomically:
+       *
+       *  \code
+       *    temp = [address]
+       *    [address] = [address] + <value>
+       *    return temp
+       *  \endcode
+       *
+       *  The data type of \c <value> indicates the width of the operation.
+       */
+      atomicFetchAndAddSymbol,
       atomicFetchAndAdd32BitSymbol,
       atomicFetchAndAdd64BitSymbol,
+
+      /** \brief
+       *
+       *  This symbol represents an intrinsic call of the following format:
+       *
+       *  \code
+       *    icall <atomicSwapSymbol>
+       *      <address>
+       *      <value>
+       *  \endcode
+       *
+       *  Which performs the following operation atomically:
+       *
+       *  \code
+       *    temp = [address]
+       *    [address] = <value>
+       *    return temp
+       *  \endcode
+       *
+       *  The data type of \c <value> indicates the width of the operation.
+       */
+      atomicSwapSymbol,
       atomicSwap32BitSymbol,
       atomicSwap64BitSymbol,
-      atomicCompareAndSwap32BitSymbol,
-      atomicCompareAndSwap64BitSymbol,
+      atomicCompareAndSwapSymbol,
 
       // python symbols start here
       pythonFrameCodeObjectSymbol,   // code object from the frame object

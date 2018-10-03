@@ -2068,7 +2068,6 @@ OMR::IlBuilder::genCall(TR::SymbolReference *methodSymRef, int32_t numArgs, TR::
 TR::IlValue *
 OMR::IlBuilder::AtomicAdd(TR::IlValue * baseAddress, TR::IlValue * value)
    {
-   TR_ASSERT(comp()->cg()->supportsAtomicAdd(), "this platform doesn't support AtomicAdd() yet");
    TR_ASSERT(baseAddress->getDataType() == TR::Address, "baseAddress must be TR::Address");
 
    //Determine the implementation type and returnType by detecting "value"'s type
@@ -2076,8 +2075,7 @@ OMR::IlBuilder::AtomicAdd(TR::IlValue * baseAddress, TR::IlValue * value)
    TR_ASSERT(returnType == TR::Int32 || (returnType == TR::Int64 && TR::Compiler->target.is64Bit()), "AtomicAdd currently only supports Int32/64 values");
    TraceIL("IlBuilder[ %p ]::AtomicAdd(%d, %d)\n", this, baseAddress->getID(), value->getID());
 
-   OMR::SymbolReferenceTable::CommonNonhelperSymbol atomicBitSymbol = returnType == TR::Int32 ? TR::SymbolReferenceTable::atomicAdd32BitSymbol : TR::SymbolReferenceTable::atomicAdd64BitSymbol;//lock add
-   TR::SymbolReference *methodSymRef = symRefTab()->findOrCreateCodeGenInlinedHelper(atomicBitSymbol); 
+   TR::SymbolReference *methodSymRef = symRefTab()->findOrCreateCodeGenInlinedHelper(TR::SymbolReferenceTable::atomicAddSymbol);
    TR::Node *callNode;
    callNode = TR::Node::createWithSymRef(TR::ILOpCode::getDirectCall(returnType), 2, methodSymRef);
    callNode->setAndIncChild(0, loadValue(baseAddress));

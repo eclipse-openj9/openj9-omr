@@ -11243,7 +11243,31 @@ OMR::Z::TreeEvaluator::directCallEvaluator(TR::Node * node, TR::CodeGenerator * 
 
    if (!cg->inlineDirectCall(node, resultReg))
       {
-      resultReg = TR::TreeEvaluator::performCall(node, false, cg);
+      TR::SymbolReference* symRef = node->getSymbolReference();
+
+      if (symRef != NULL && symRef->getSymbol()->castToMethodSymbol()->isInlinedByCG())
+         {
+         TR::Compilation* comp = cg->comp();
+
+         if (comp->getSymRefTab()->isNonHelper(symRef, TR::SymbolReferenceTable::atomicAddSymbol))
+            {
+            resultReg = TR::TreeEvaluator::intrinsicAtomicAdd(node, cg);
+            }
+         else if (comp->getSymRefTab()->isNonHelper(symRef, TR::SymbolReferenceTable::atomicFetchAndAddSymbol))
+            {
+            resultReg = TR::TreeEvaluator::intrinsicAtomicFetchAndAdd(node, cg);
+            }
+         else if (comp->getSymRefTab()->isNonHelper(symRef, TR::SymbolReferenceTable::atomicSwapSymbol))
+            {
+            resultReg = TR::TreeEvaluator::intrinsicAtomicSwap(node, cg);
+            }
+         }
+
+      if (resultReg == NULL)
+         {
+         resultReg = TR::TreeEvaluator::performCall(node, false, cg);
+         }
+
        // on 64bit, lcall returns 64bit registers
       if (cg->supportsHighWordFacility() && !cg->comp()->getOption(TR_DisableHighWordRA) && TR::Compiler->target.is64Bit())
          {
@@ -19171,6 +19195,121 @@ OMR::Z::TreeEvaluator::genLoadForObjectHeadersMasked(TR::CodeGenerator *cg, TR::
    return iCursor;
    }
 
+TR::Register*
+OMR::Z::TreeEvaluator::intrinsicAtomicAdd(TR::Node* node, TR::CodeGenerator* cg)
+   {
+   TR_ASSERT_FATAL(cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z196) && 
+      (TR::Compiler->target.is64Bit() || cg->use64BitRegsOn32Bit()), "Atomic add intrinsics only supported z196 on 64-bit targets");
+
+   TR::Node* addressNode = node->getChild(0);
+   TR::Node* valueNode = node->getChild(1);
+
+   TR::Register* addressReg = cg->evaluate(addressNode);
+   TR::Register* valueReg = cg->evaluate(valueNode);
+
+   // Used to hold the return value of LAA instruction but will be discarded
+   TR::Register* tempReg = cg->allocateRegister();
+
+   TR::MemoryReference* addressMemRef = generateS390MemoryReference(addressReg, 0, cg);
+   
+   auto mnemonic = 
+      valueNode->getDataType().isInt32() ?
+         TR::InstOpCode::LAA :
+         TR::InstOpCode::LAAG;
+
+   generateRSInstruction(cg, mnemonic, node, tempReg, valueReg, addressMemRef);
+
+   node->setRegister(valueReg);
+   cg->stopUsingRegister(tempReg);
+   cg->decReferenceCount(addressNode);
+   cg->decReferenceCount(valueNode);
+
+   return valueReg;
+   }
+
+TR::Register*
+OMR::Z::TreeEvaluator::intrinsicAtomicFetchAndAdd(TR::Node* node, TR::CodeGenerator* cg)
+   {
+   TR_ASSERT_FATAL(cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z196) && 
+      (TR::Compiler->target.is64Bit() || cg->use64BitRegsOn32Bit()), "Atomic add intrinsics only supported z196 on 64-bit targets");
+
+   TR::Node* addressNode = node->getChild(0);
+   TR::Node* valueNode = node->getChild(1);
+
+   TR::Register* addressReg = cg->evaluate(addressNode);
+   TR::Register* valueReg = cg->gprClobberEvaluate(valueNode);
+
+   TR::MemoryReference* addressMemRef = generateS390MemoryReference(addressReg, 0, cg);
+
+   auto mnemonic = 
+      valueNode->getDataType().isInt32() ?
+         TR::InstOpCode::LAA :
+         TR::InstOpCode::LAAG;
+
+   generateRSInstruction(cg, mnemonic, node, valueReg, valueReg, addressMemRef);
+
+   node->setRegister(valueReg);
+   cg->decReferenceCount(addressNode);
+   cg->decReferenceCount(valueNode);
+
+   return valueReg;
+   }
+
+TR::Register*
+OMR::Z::TreeEvaluator::intrinsicAtomicSwap(TR::Node* node, TR::CodeGenerator* cg)
+   {
+   TR::Node* addressNode = node->getChild(0);
+   TR::Node* valueNode = node->getChild(1);
+
+   TR::Register* addressReg = cg->evaluate(addressNode);
+   TR::Register* valueReg = cg->evaluate(valueNode);
+   TR::Register* returnReg = cg->allocateRegister();
+
+   TR::RegisterDependencyConditions* dependencies = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 3, cg);
+
+   dependencies->addPostCondition(addressReg, TR::RealRegister::AssignAny);
+   dependencies->addPostCondition(valueReg, TR::RealRegister::AssignAny);
+   dependencies->addPostCondition(returnReg, TR::RealRegister::AssignAny);
+
+   TR::LabelSymbol* loopLabel = generateLabelSymbol(cg);
+   TR::LabelSymbol* doneLabel = generateLabelSymbol(cg);
+
+   loopLabel->setStartInternalControlFlow();
+   doneLabel->setEndInternalControlFlow();
+
+   TR::MemoryReference* addressMemRef = generateS390MemoryReference(addressReg, 0, cg);
+   
+   auto mnemonic = 
+      valueNode->getDataType().isInt32() ?
+         TR::InstOpCode::L :
+         TR::InstOpCode::LG;
+
+   // Load the original value
+   generateRXInstruction(cg, mnemonic, node, returnReg, addressMemRef);
+
+   generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, loopLabel);
+
+   addressMemRef = generateS390MemoryReference(*addressMemRef, 0, cg);
+
+   mnemonic = 
+      valueNode->getDataType().isInt32() ?
+         TR::InstOpCode::CS :
+         TR::InstOpCode::CSG;
+
+   // Compare and swap against the original value
+   generateRSInstruction(cg, mnemonic, node, returnReg, valueReg, addressMemRef);
+
+   // Branch if the compare and swap failed and try again
+   generateS390BranchInstruction(cg, TR::InstOpCode::BRC,TR::InstOpCode::COND_CC1, node, loopLabel);
+
+   generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, doneLabel, dependencies);
+
+   node->setRegister(returnReg);
+   cg->decReferenceCount(addressNode);
+   cg->decReferenceCount(valueNode);
+
+   return returnReg;
+   }
 
 ///// SIMD Evaluators End /////////////
 

@@ -3068,6 +3068,30 @@ OMR::Z::CodeGenerator::supportsMergingGuards()
           !self()->comp()->compileRelocatableCode();
    }
 
+bool
+OMR::Z::CodeGenerator::supportsNonHelper(TR::SymbolReferenceTable::CommonNonhelperSymbol symbol)
+   {
+   bool result = false;
+
+   switch (symbol)
+      {
+      case TR::SymbolReferenceTable::atomicAddSymbol:
+      case TR::SymbolReferenceTable::atomicFetchAndAddSymbol:
+         {
+         result = self()->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z196) && (TR::Compiler->target.is64Bit() || self()->use64BitRegsOn32Bit());
+         break;
+         }
+
+      case TR::SymbolReferenceTable::atomicSwapSymbol:
+         {
+         result = true;
+         break;
+         }
+      }
+
+   return result;
+   }
+
 // Helpers for profiled interface slots
 void
 OMR::Z::CodeGenerator::addPICsListForInterfaceSnippet(TR::S390ConstantDataSnippet * ifcSnippet, TR::list<TR_OpaqueClassBlock*> * PICSlist)

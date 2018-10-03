@@ -275,6 +275,8 @@ public:
 
    bool supportsMergingGuards();
 
+   bool supportsNonHelper(TR::SymbolReferenceTable::CommonNonhelperSymbol symbol);
+
    bool supportsDirectJNICallsForAOT() { return true;}
 
    bool shouldYankCompressedRefs() { return true; }

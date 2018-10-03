@@ -1639,22 +1639,22 @@ TR_Debug::getName(TR::SymbolReference * symRef)
             return "<usesAllMethod>";
          case TR::SymbolReferenceTable::synchronizedFieldLoadSymbol:
             return "<synchronizedFieldLoad>";
-         case TR::SymbolReferenceTable::atomicAdd32BitSymbol:
-             return "<atomicAdd32Bit>";
-         case TR::SymbolReferenceTable::atomicAdd64BitSymbol:
-             return "<atomicAdd64Bit>";
+         case TR::SymbolReferenceTable::atomicAddSymbol:
+             return "<atomicAdd>";
+         case TR::SymbolReferenceTable::atomicFetchAndAddSymbol:
+             return "<atomicFetchAndAdd>";
          case TR::SymbolReferenceTable::atomicFetchAndAdd32BitSymbol:
              return "<atomicFetchAndAdd32Bit>";
          case TR::SymbolReferenceTable::atomicFetchAndAdd64BitSymbol:
              return "<atomicFetchAndAdd64Bit>";
+         case TR::SymbolReferenceTable::atomicSwapSymbol:
+             return "<atomicSwap>";
          case TR::SymbolReferenceTable::atomicSwap32BitSymbol:
              return "<atomicSwap32Bit>";
          case TR::SymbolReferenceTable::atomicSwap64BitSymbol:
              return "<atomicSwap64Bit>";
-         case TR::SymbolReferenceTable::atomicCompareAndSwap32BitSymbol:
-             return "<atomicCompareAndSwap32Bit>";
-         case TR::SymbolReferenceTable::atomicCompareAndSwap64BitSymbol:
-             return "<atomicCompareAndSwap64Bit>";
+         case TR::SymbolReferenceTable::atomicCompareAndSwapSymbol:
+             return "<atomicCompareAndSwap>";
          }
       }
 

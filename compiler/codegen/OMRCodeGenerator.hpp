@@ -43,6 +43,7 @@ namespace OMR { typedef OMR::CodeGenerator CodeGeneratorConnector; }
 #include "codegen/StorageInfo.hpp"
 #include "codegen/TreeEvaluator.hpp"
 #include "compile/Compilation.hpp"              // for Compilation
+#include "compile/SymbolReferenceTable.hpp"
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"
 #include "cs2/hashtab.h"                        // for HashTable, etc
@@ -386,7 +387,20 @@ class OMR_EXTENSIBLE CodeGenerator
 
    TR_HasRandomGenerator randomizer;
 
-   bool supportsAtomicAdd() {return false;}
+   /** \brief
+    *     Determines whether the code generator supports inlining intrinsics for \p symbol.
+    *
+    *  \param symbol
+    *     The symbol which to check.
+    *
+    *  \return
+    *     \c true if intrinsics on \p symbol are supported; \c false otherwise.
+    */
+   bool supportsNonHelper(TR::SymbolReferenceTable::CommonNonhelperSymbol symbol)
+      {
+      return false;
+      }
+
    bool hasTMEvaluator()    {return false;}
 
    // --------------------------------------------------------------------------

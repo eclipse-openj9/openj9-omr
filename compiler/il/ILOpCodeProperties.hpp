@@ -10986,7 +10986,7 @@
    {
    /* .opcode               = */ TR::dsqrt,
    /* .name                 = */ "dsqrt",
-   /* .properties1          = */ ILProp1::HasSymbolRef,
+   /* .properties1          = */ 0,
    /* .properties2          = */ ILProp2::ValueNumberShare | ILProp2::SupportedForPRE,
    /* .properties3          = */ 0,
    /* .properties4          = */ 0,

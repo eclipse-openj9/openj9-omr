@@ -706,8 +706,8 @@
    TR::TreeEvaluator::unImpOpEvaluator,                    // TR::dint
    TR::TreeEvaluator::unImpOpEvaluator,                    // TR::fnint
    TR::TreeEvaluator::unImpOpEvaluator,                    // TR::dnint
-   TR::TreeEvaluator::unImpOpEvaluator,                    // TR::fsqrt
-   TR::TreeEvaluator::unImpOpEvaluator,                    // TR::dsqrt
+   TR::TreeEvaluator::fpSqrtEvaluator,                     // TR::fsqrt
+   TR::TreeEvaluator::fpSqrtEvaluator,                     // TR::dsqrt
    TR::TreeEvaluator::unImpOpEvaluator,                    // TR::getstack
    TR::TreeEvaluator::unImpOpEvaluator,                    // TR::dealloca
    TR::TreeEvaluator::unImpOpEvaluator,                    // TR::ishfl

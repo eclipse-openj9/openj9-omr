@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -32,6 +32,7 @@ namespace OMR { typedef OMR::ArithEnv ArithEnvConnector; }
 #endif
 
 #include <stdint.h>        // for int32_t, int64_t, uint32_t
+#include <cmath>
 #include "infra/Annotations.hpp"
 #include "env/jittypes.h"
 
@@ -48,6 +49,8 @@ class OMR_EXTENSIBLE ArithEnv
 public:
 
    TR::ArithEnv * self();
+
+   template <typename T> inline T fpSquareRoot(T a) { return std::sqrt(a); }
 
    float floatAddFloat(float a, float b);
    float floatSubtractFloat(float a, float b);

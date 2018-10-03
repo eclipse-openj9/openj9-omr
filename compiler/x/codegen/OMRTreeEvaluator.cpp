@@ -3066,39 +3066,40 @@ TR::Register *OMR::X86::TreeEvaluator::directCallEvaluator(TR::Node *node, TR::C
 
    if (SymRef && SymRef->getSymbol()->castToMethodSymbol()->isInlinedByCG())
       {
+      TR_X86OpCodes op = BADIA32Op;
+
       if (comp->getSymRefTab()->isNonHelper(SymRef, TR::SymbolReferenceTable::atomicAddSymbol))
          {
-         auto op = node->getChild(1)->getDataType().isInt32() ? LADD4MemReg : LADD8MemReg;
-
-         return inlineAtomicMemoryUpdate(node, op, cg);
+         op = node->getChild(1)->getDataType().isInt32() ? LADD4MemReg : LADD8MemReg;
          }
       else if (comp->getSymRefTab()->isNonHelper(SymRef, TR::SymbolReferenceTable::atomicFetchAndAddSymbol))
          {
-         auto op = node->getChild(1)->getDataType().isInt32() ? LXADD4MemReg : LXADD8MemReg;
-
-         return inlineAtomicMemoryUpdate(node, op, cg);
+         op = node->getChild(1)->getDataType().isInt32() ? LXADD4MemReg : LXADD8MemReg;
          }
       else if (comp->getSymRefTab()->isNonHelper(SymRef, TR::SymbolReferenceTable::atomicFetchAndAdd32BitSymbol))
          {
-         return inlineAtomicMemoryUpdate(node, LXADD4MemReg, cg);
+         op = LXADD4MemReg;
          }
       else if (comp->getSymRefTab()->isNonHelper(SymRef, TR::SymbolReferenceTable::atomicFetchAndAdd64BitSymbol))
          {
-         return inlineAtomicMemoryUpdate(node, LXADD8MemReg, cg);
+         op = LXADD8MemReg;
          }
       else if (comp->getSymRefTab()->isNonHelper(SymRef, TR::SymbolReferenceTable::atomicSwapSymbol))
          {
-         auto op = node->getChild(1)->getDataType().isInt32() ? XCHG4MemReg : XCHG8MemReg;
-
-         return inlineAtomicMemoryUpdate(node, op, cg);
+         op = node->getChild(1)->getDataType().isInt32() ? XCHG4MemReg : XCHG8MemReg;
          }
       else if (comp->getSymRefTab()->isNonHelper(SymRef, TR::SymbolReferenceTable::atomicSwap32BitSymbol))
          {
-         return inlineAtomicMemoryUpdate(node, XCHG4MemReg, cg);
+         op = XCHG4MemReg;
          }
       else if (comp->getSymRefTab()->isNonHelper(SymRef, TR::SymbolReferenceTable::atomicSwap64BitSymbol))
          {
-         return inlineAtomicMemoryUpdate(node, XCHG8MemReg, cg);
+         op = XCHG8MemReg;
+         }
+
+      if (op != BADIA32Op)
+         {
+         return inlineAtomicMemoryUpdate(node, op, cg);
          }
       }
 

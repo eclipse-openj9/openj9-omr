@@ -552,6 +552,7 @@
    vxor,             // vector xor
    vnor,             // vector nor
    vperm,            // vector permute
+   vbpermq,          // Vector Bit Permute Qword
    vsel,             // vector conditional select
    vsumsws,          // vector sum across signed word saturate
    vsum2sws,         // vector sum across partial signed word saturate

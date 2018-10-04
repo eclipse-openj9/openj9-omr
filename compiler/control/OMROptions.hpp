@@ -234,7 +234,7 @@ enum TR_CompilationOptions
    TR_TraceMarkingOfHotFields             = 0x00001000 + 4,
    TR_EnableAnnotations                   = 0x00002000 + 4, // change to disable when on by default
    TR_UnresolvedAreNotColdAtCold          = 0x00004000 + 4, // cold block marker marks unresolved blocks as cold at hotness cold or less
-   // AVAILABLE                           = 0x00008000 + 4,
+   TR_UseSymbolValidationManager          = 0x00008000 + 4,
    TR_EnablePIDExtension                  = 0x00010000 + 4,
    TR_GenerateCompleteInlineRanges        = 0x00020000 + 4,
    TR_DisableInliningOfNatives            = 0x00040000 + 4,
@@ -264,7 +264,7 @@ enum TR_CompilationOptions
    TR_enableProfiledDevirtualization      = 0x00001000 + 5,
    TR_EnableValueTracing                  = 0x00002000 + 5, // run-time value tracing
    TR_IgnoreAssert                        = 0x00004000 + 5, // ignore failing assertions
-   // AVAILABLE                           = 0x00008000 + 5,
+   TR_EnableSymbolValidationManager       = 0x00008000 + 5,
    TR_EnableNewAllocationProfiling        = 0x00010000 + 5, // enable tracing of fields load and store
    TR_IgnoreIEEERestrictions              = 0x00020000 + 5, // enable more aggressive, nonIEEE compliant xforms
    TR_ProcessHugeMethods                  = 0x00040000 + 5, // allow processing of huge methods

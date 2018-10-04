@@ -535,6 +535,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"disableSupportForCpuSpentInCompilation", "M\tdo not provide CPU spent in compilation",    SET_OPTION_BIT(TR_DisableSupportForCpuSpentInCompilation), "F" },
    {"disableSwitchAnalyzer",              "O\tdisable switch analyzer",                        TR::Options::disableOptimization, switchAnalyzer, 0, "P"},
    {"disableSwitchAwayFromProfilingForHotAndVeryhot", "O\tdisable switch away from profiling for hot and veryhot", SET_OPTION_BIT(TR_DisableSwitchAwayFromProfilingForHotAndVeryhot), "F"},
+   {"disableSymbolValidationManager",      "M\tEnable Symbol Validation Manager for Relocatable Compile Validations", RESET_OPTION_BIT(TR_EnableSymbolValidationManager), "F"},
    {"disableSynchronizedFieldLoad",       "O\tDisable the use of hardware optimized synchronized field load intrinsics",         SET_OPTION_BIT(TR_DisableSynchronizedFieldLoad), "F"},
    {"disableSyncMethodInlining",          "O\tdisable inlining of synchronized methods",       SET_OPTION_BIT(TR_DisableSyncMethodInlining), "F"},
    {"disableTailRecursion",               "O\tdisable tail recursion",                         SET_OPTION_BIT(TR_DisableTailRecursion), "F"},
@@ -754,6 +755,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"enableSharedCacheTiming",            "M\tenable timing stats for accessing the shared cache", SET_OPTION_BIT(TR_EnableSharedCacheTiming), "F"},
    {"enableSIMDLibrary",                  "M\tEnable recognized methods for SIMD library", SET_OPTION_BIT(TR_EnableSIMDLibrary), "F"},
    {"enableSnapshotBlockOpts",            "O\tenable block ordering/redirecting optimizations in the presences of snapshot nodes", SET_OPTION_BIT(TR_EnableSnapshotBlockOpts), "F"},
+   {"enableSymbolValidationManager",      "M\tEnable Symbol Validation Manager for Relocatable Compile Validations", SET_OPTION_BIT(TR_EnableSymbolValidationManager), "F"},
    {"enableTailCallOpt",                  "R\tenable tall call optimization in peephole", SET_OPTION_BIT(TR_EnableTailCallOpt), "F"},
    {"enableThisLiveRangeExtension",       "R\tenable this live range extesion to the end of the method", SET_OPTION_BIT(TR_EnableThisLiveRangeExtension), "F"},
    {"enableTraps",                        "C\tenable trap instructions",                     RESET_OPTION_BIT(TR_DisableTraps), "F"},
@@ -1319,6 +1321,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"useSamplingJProfilingForInterpSampledMethods","M\tHeuristic. Use samplingJProfiling for methods sampled by interpreter", SET_OPTION_BIT(TR_UseSamplingJProfilingForInterpSampledMethods), "F", NOT_IN_SUBSET },
    {"useSamplingJProfilingForLPQ",              "M\tHeuristic. Use samplingJProfiling for methods from low priority queue", SET_OPTION_BIT(TR_UseSamplingJProfilingForLPQ), "F", NOT_IN_SUBSET },
    {"useStrictStartupHints",        "M\tStartup hints from application obeyed strictly", SET_OPTION_BIT(TR_UseStrictStartupHints), "F", NOT_IN_SUBSET},
+   {"useSymbolValidationManager",        "M\tUse Symbol Validation Manager for Relocatable Compile Validations", SET_OPTION_BIT(TR_UseSymbolValidationManager), "F", NOT_IN_SUBSET},
    {"useVmTotalCpuTimeAsAbstractTime", "M\tUse VmTotalCpuTime as abstractTime", SET_OPTION_BIT(TR_UseVmTotalCpuTimeAsAbstractTime), "F", NOT_IN_SUBSET },
    {"varyInlinerAggressivenessWithTime", "M\tVary inliner aggressiveness with abstract time", SET_OPTION_BIT(TR_VaryInlinerAggressivenessWithTime), "F", NOT_IN_SUBSET },
    {"verifyReferenceCounts", "I\tverify the sanity of object reference counts before manipulation", SET_OPTION_BIT(TR_VerifyReferenceCounts), "F"},
@@ -2215,6 +2218,19 @@ OMR::Options::jitLatePostProcess(TR::OptionSet *optionSet, void * jitConfig)
             {
             if (_coldUpgradeSampleThreshold == TR_DEFAULT_COLD_UPGRADE_SAMPLE_THRESHOLD)
                _coldUpgradeSampleThreshold = 2;
+            }
+
+         // disable DelayRelocationForAOTCompilations feature because with higher
+         // method counts, the JIT collects enough IProfiler info prior to
+         // compilation that it doesn't need to wait any longer before running the
+
+         if (self()->getOption(TR_UseHigherMethodCounts))
+            {
+            self()->setOption(TR_DisableDelayRelocationForAOTCompilations, true);// If scount has not been changed on the command line, adjust it here
+            if (self()->getInitialSCount() == TR_INITIAL_SCOUNT)
+               {
+               _initialSCount = _initialCount;
+               }
             }
          }
       else // No AOT

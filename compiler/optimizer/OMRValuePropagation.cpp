@@ -7923,7 +7923,7 @@ void OMR::ValuePropagation::doDelayedTransformations()
       bool recognizedStatic = false;
 
       if ((origFirst->getOpCodeValue() == TR::aload) &&
-          origFirst->getSymbol()->isStatic())
+          origFirst->getSymbol()->isStaticField())
          {
          int32_t staticNameLen = -1;
          char *staticName = NULL;

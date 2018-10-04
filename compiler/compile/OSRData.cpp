@@ -1490,7 +1490,9 @@ bool TR_OSRCompilationData::TR_ScratchBufferInfo::operator==(const TR_ScratchBuf
       scratchBufferOffset == info.scratchBufferOffset && symSize == info.symSize;
    }
 
-#if defined(TR_HOST_POWER) && defined(TR_TARGET_POWER) && defined(__IBMCPP__)
+#if (defined(TR_HOST_POWER) && defined(TR_TARGET_POWER)                       \
+           || defined(TR_HOST_S390) && defined(TR_TARGET_S390))               \
+        && defined(__IBMCPP__)
 __attribute__((__noinline__))
 //This tiny function when inlined by xlC 12 at -O3 breaks java -version
 #endif

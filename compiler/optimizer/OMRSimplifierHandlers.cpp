@@ -11694,7 +11694,7 @@ template <class T>
 inline TR::Node* sqrtSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
    simplifyChildren(node, block, s);
-   auto child = node->getChild(0);
+   TR::Node* child = node->getChild(0);
    if (child->getOpCode().isLoadConst() &&
        performTransformation(s->comp(), "%sSimplify sqrt of const child at [" POINTER_PRINTF_FORMAT "]\n", s->optDetailString(), node))
       {

@@ -170,7 +170,7 @@ TR_FrontEnd::getFormattedName(
 
 
 TR_OpaqueMethodBlock*
-TR_FrontEnd::getMethodFromName(char * className, char *methodName, char *signature, TR_OpaqueMethodBlock *callingMethod)
+TR_FrontEnd::getMethodFromName(char * className, char *methodName, char *signature)
    {
    notImplemented("getMethodFromName");
    return 0;

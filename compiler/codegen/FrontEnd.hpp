@@ -146,7 +146,7 @@ public:
    virtual TR_ResolvedMethod * createResolvedMethod(TR_Memory *, TR_OpaqueMethodBlock *, TR_ResolvedMethod * = 0, TR_OpaqueClassBlock * = 0);
    virtual OMR::MethodMetaDataPOD *createMethodMetaData(TR::Compilation *comp) { return NULL; }
 
-   virtual TR_OpaqueMethodBlock * getMethodFromName(char * className, char *methodName, char *signature, TR_OpaqueMethodBlock *callingMethod=0);
+   virtual TR_OpaqueMethodBlock * getMethodFromName(char * className, char *methodName, char *signature);
    virtual uint32_t offsetOfIsOverriddenBit();
 
    // Needs VMThread

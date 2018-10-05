@@ -73,7 +73,9 @@ begin_namespace() {
 
 set_default_namespaces() {
 	# Remove directory and extension; make first letter uppercase; append 'Constants'.
-	basename=$(echo ${f} | sed -e 's|^.*/||' -e 's|\..*$||' -e 's|\(.\)|\U\1|')
+	basename=${f##*/}
+	basename=${basename%%.*}
+	basename=${basename^}
 	const_space="${basename}Constants"
 	flag_space="${basename}Flags"
 }
@@ -158,7 +160,7 @@ process_one_policy_file() {
 	# to simplify patterns for this script; it also filters out the
 	# bulk of irrelevant content.
 	sed -n \
-		-e 's|\t| |g' \
+		-e 's|[[:space:]]| |g' \
 		-e 's| *$||' \
 		-e '/@ddr_namespace:/p' \
 		-e '/^ *# *define /p' \
@@ -200,6 +202,7 @@ parse_namespace_policy_files() {
 	local filenum=0
 
 	for f in "${annotated_files[@]}"; do
+
 		# Find ddr_options or use the default.
 		get_ddr_options
 
@@ -279,7 +282,7 @@ main() {
 }
 
 # Command line arg 1.
-scan_dir=${1}
+scan_dir=${1%/}
 macroList_file="${scan_dir}/macroList"
 
 if [[ $(uname) == *"Win"* ]]; then

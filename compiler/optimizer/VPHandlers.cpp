@@ -2617,7 +2617,7 @@ TR::Node *constrainIaload(OMR::ValuePropagation *vp, TR::Node *node)
                      int32_t fieldNameLen = -1;
                      char *fieldName = NULL;
                      if (underlyingArray && underlyingArray->getOpCode().hasSymbolReference() &&
-                         (underlyingArray->getSymbolReference()->getSymbol()->isStatic() ||
+                         (underlyingArray->getSymbolReference()->getSymbol()->isStaticField() ||
                            underlyingArray->getSymbolReference()->getSymbol()->isShadow()))
                         {
                         if (underlyingArray->getSymbolReference()->getSymbol()->isShadow())

@@ -39,24 +39,14 @@ function get_cc_toolchain
   export CHOST=$(eval $(find `pwd`/toolchain/bin -name "*-gcc") -dumpmachine)
 }
 
-if test "x$TRAVIS_OS_NAME" = "xosx"; then
-  export GTEST_FILTER=-*dump_test_create_dump_*:*NumaSetAffinity:*NumaSetAffinitySuspended:*DeathTest*
-else
-  # Disable the core dump tests as container based builds don't allow setting
-  # core_pattern and don't have apport installed.  This can be removed when
-  # apport is available in apt whitelist
-  export GTEST_FILTER=-*dump_test_create_dump_*:*NumaSetAffinity:*NumaSetAffinitySuspended
-fi
+# Disable the core dump tests as container based builds don't allow setting
+# core_pattern and don't have apport installed.  This can be removed when
+# apport is available in apt whitelist
+export GTEST_FILTER=-*dump_test_create_dump_*:*NumaSetAffinity:*NumaSetAffinitySuspended
 
 if test "x$BUILD_WITH_CMAKE" = "xyes"; then
   if test "x$CMAKE_GENERATOR" = "x"; then
     export CMAKE_GENERATOR="Ninja"
-  fi
-  
-  if test "x$TRAVIS_OS_NAME" = "xosx"; then
-    if test "x$CMAKE_GENERATOR" = "xNinja"; then
-      brew install ninja
-    fi
   fi
 
   mkdir build

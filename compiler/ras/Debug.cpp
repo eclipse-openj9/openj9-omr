@@ -751,14 +751,14 @@ TR_Debug::printPrefix(TR::FILE *pOutFile, TR::Instruction *instr, uint8_t *curso
       char *p0 = prefix;
       char *p1 = prefix + strlen(prefix);
 
-      // Print machine code in bytes on X86, in words on PPC,ARM
+      // Print machine code in bytes on X86, in words on PPC,ARM,ARM64
       // Stop if we try to run over the buffer.
       if (TR::Compiler->target.cpu.isX86())
          {
          for (int i = 0; i < size && p1 - p0 + 3 < prefixWidth; i++, p1 += 3)
             sprintf(p1, " %02x", *cursor++);
          }
-      else if (TR::Compiler->target.cpu.isPower() || TR::Compiler->target.cpu.isARM())
+      else if (TR::Compiler->target.cpu.isPower() || TR::Compiler->target.cpu.isARM() || TR::Compiler->target.cpu.isARM64())
          {
          for (int i = 0; i < size && p1 - p0 + 9 < prefixWidth; i += 4, p1 += 9, cursor += 4)
             sprintf(p1, " %08x", *((uint32_t *)cursor));
@@ -2870,6 +2870,14 @@ TR_Debug::print(TR::FILE *pOutFile, TR::GCRegisterMap * map)
       }
 #endif
 
+#if defined(TR_TARGET_ARM64)
+   if (TR::Compiler->target.cpu.isARM64())
+      {
+      printARM64GCRegisterMap(pOutFile, map);
+      return;
+      }
+#endif
+
    }
 
 void
@@ -2998,6 +3006,10 @@ TR_Debug::getName(TR::Register *reg, TR_RegisterSizes size)
 #if defined(TR_TARGET_S390)
       if (TR::Compiler->target.cpu.isZ())
          return getName(toRealRegister(reg), size);
+#endif
+#if defined(TR_TARGET_ARM64)
+      if (TR::Compiler->target.cpu.isARM64())
+         return getName((TR::RealRegister *)reg, size);
 #endif
       TR_ASSERT(0, "TR_Debug::getName() ==> unknown target platform for given real register\n");
       }
@@ -3171,6 +3183,13 @@ TR_Debug::print(TR::FILE *pOutFile, TR::Register * reg, TR_RegisterSizes size)
       if (TR::Compiler->target.cpu.isZ())
          {
          print(pOutFile, toRealRegister(reg), size);
+         return;
+         }
+#endif
+#if defined(TR_TARGET_ARM64)
+      if (TR::Compiler->target.cpu.isARM64())
+         {
+         print(pOutFile, (TR::RealRegister *)reg, size);
          return;
          }
 #endif

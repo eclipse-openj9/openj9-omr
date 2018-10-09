@@ -1655,6 +1655,10 @@ TR_Debug::getName(TR::SymbolReference * symRef)
              return "<atomicSwap64Bit>";
          case TR::SymbolReferenceTable::atomicCompareAndSwapSymbol:
              return "<atomicCompareAndSwap>";
+         case TR::SymbolReferenceTable::potentialOSRPointHelperSymbol:
+             return "<potentialOSRPointHelper>";
+         case TR::SymbolReferenceTable::osrFearPointHelperSymbol:
+             return "<osrFearPointHelper>";
          }
       }
 
@@ -2080,6 +2084,8 @@ static const char *commonNonhelperSymbolNames[] =
    "<osrScratchBuffer>",
    "<osrFrameIndex>",
    "<osrReturnAddress>",
+   "<potentialOSRPointHelper>",
+   "<osrFearPointHelper>",
    "<lowTenureAddress>",
    "<highTenureAddress>",
    "<fragmentParent>",

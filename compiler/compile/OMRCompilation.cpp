@@ -648,9 +648,15 @@ bool OMR::Compilation::isPotentialOSRPoint(TR::Node *node, TR::Node **osrPointNo
       else if (node->getOpCode().isCall())
          {
          TR::SymbolReference *callSymRef = node->getSymbolReference();
-         if (callSymRef->getReferenceNumber() >=
+         if (node->isPotentialOSRPointHelperCall())
+            {
+            potentialOSRPoint = true;
+            }
+         else if (callSymRef->getReferenceNumber() >=
              self()->getSymRefTab()->getNonhelperIndex(self()->getSymRefTab()->getLastCommonNonhelperSymbol()))
+            {
             potentialOSRPoint = (disableGuardedCallOSR == NULL);
+            }
          }
       else if (node->getOpCodeValue() == TR::monent)
          potentialOSRPoint = (disableMonentOSR == NULL);
@@ -774,6 +780,11 @@ OMR::Compilation::getOSRInductionOffset(TR::Node *node)
    if (!self()->isPotentialOSRPoint(node, &osrNode))
       {
       TR_ASSERT(0, "getOSRInductionOffset should only be called on OSR points");
+      }
+
+   if (osrNode->isPotentialOSRPointHelperCall())
+      {
+      return osrNode->getOSRInductionOffset();
       }
 
    if (osrNode->getOpCode().isCall())

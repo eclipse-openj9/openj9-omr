@@ -291,16 +291,25 @@ OMR_GC_InitializeCollector(OMR_VMThread* omrVMThread)
 }
 
 omr_error_t
-OMR_GC_ShutdownCollector(OMR_VMThread* omrVMThread)
+OMR_GC_ShutdownCollector(OMR_VM* vm)
 {
-	MM_GCExtensionsBase *extensions = MM_GCExtensionsBase::getExtensions(omrVMThread->_vm);
-	MM_Collector *globalCollector = extensions->getGlobalCollector();
-	
-	if (NULL != globalCollector) {
-		globalCollector->collectorShutdown(extensions);
+	MM_GCExtensionsBase *extensions = MM_GCExtensionsBase::getExtensions(vm);
+
+	if (NULL != extensions) {
+		MM_Collector *globalCollector = extensions->getGlobalCollector();
+
+		if (NULL != globalCollector) {
+			globalCollector->collectorShutdown(extensions);
+		}
 	}
 
 	return OMR_ERROR_NONE;
+}
+
+omr_error_t
+OMR_GC_ShutdownCollector(OMR_VMThread* vmThread)
+{
+	return OMR_GC_ShutdownCollector(vmThread->_vm);
 }
 
 omr_error_t
@@ -332,6 +341,13 @@ OMR_GC_ShutdownHeap(OMR_VM *omrVM)
 		omrthread_detach(self);
 	}
 
+	return OMR_ERROR_NONE;
+}
+
+omr_error_t
+OMR_GC_ShutdownHeapAndCollector(OMR_VM* omrVM) {
+	OMR_GC_ShutdownCollector(omrVM);
+	OMR_GC_ShutdownHeap(omrVM);
 	return OMR_ERROR_NONE;
 }
 

@@ -750,8 +750,6 @@ def write_common_decl(writer, api_desc):
         writer.write(decl)
     writer.write("\n")
 
-    writer.write("using namespace {};\n\n".format("::".join(namespaces)))
-
     writer.write("#endif // {}_INCL\n".format(api_desc.project()))
 
 def generate_impl_service_import(service_desc):

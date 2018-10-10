@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -38,13 +38,13 @@
    TR::TreeEvaluator::bloadEvaluator,                   // TR::bload
    TR::TreeEvaluator::sloadEvaluator,                   // TR::sload
    TR::TreeEvaluator::lloadEvaluator,                   // TR::lload
-   TR::TreeEvaluator::unImpOpEvaluator,                 // TR::irdbar
-   TR::TreeEvaluator::unImpOpEvaluator,                 // TR::frdbar
-   TR::TreeEvaluator::unImpOpEvaluator,                 // TR::drdbar
-   TR::TreeEvaluator::unImpOpEvaluator,                 // TR::ardbar
-   TR::TreeEvaluator::unImpOpEvaluator,                 // TR::brdbar
-   TR::TreeEvaluator::unImpOpEvaluator,                 // TR::srdbar
-   TR::TreeEvaluator::unImpOpEvaluator,                 // TR::lrdbar
+   TR::TreeEvaluator::irdbarEvaluator,                  // TR::irdbar
+   TR::TreeEvaluator::frdbarEvaluator,                  // TR::frdbar
+   TR::TreeEvaluator::drdbarEvaluator,                  // TR::drdbar
+   TR::TreeEvaluator::ardbarEvaluator,                  // TR::ardbar
+   TR::TreeEvaluator::brdbarEvaluator,                  // TR::brdbar
+   TR::TreeEvaluator::srdbarEvaluator,                  // TR::srdbar
+   TR::TreeEvaluator::lrdbarEvaluator,                  // TR::lrdbar
    TR::TreeEvaluator::iloadEvaluator,                   // TR::iloadi
    TR::TreeEvaluator::floadEvaluator,                   // TR::floadi
    TR::TreeEvaluator::dloadEvaluator,                   // TR::dloadi
@@ -52,13 +52,13 @@
    TR::TreeEvaluator::bloadEvaluator,                   // TR::bloadi
    TR::TreeEvaluator::sloadEvaluator,                   // TR::sloadi
    TR::TreeEvaluator::lloadEvaluator,                   // TR::lloadi
-   TR::TreeEvaluator::unImpOpEvaluator,                 // TR::irdbari
-   TR::TreeEvaluator::unImpOpEvaluator,                 // TR::frdbari
-   TR::TreeEvaluator::unImpOpEvaluator,                 // TR::drdbari
-   TR::TreeEvaluator::unImpOpEvaluator,                 // TR::ardbari
-   TR::TreeEvaluator::unImpOpEvaluator,                 // TR::brdbari
-   TR::TreeEvaluator::unImpOpEvaluator,                 // TR::srdbari
-   TR::TreeEvaluator::unImpOpEvaluator,                 // TR::lrdbari
+   TR::TreeEvaluator::irdbarEvaluator,                  // TR::irdbari
+   TR::TreeEvaluator::frdbarEvaluator,                  // TR::frdbari
+   TR::TreeEvaluator::drdbarEvaluator,                  // TR::drdbari
+   TR::TreeEvaluator::ardbarEvaluator,                  // TR::ardbari
+   TR::TreeEvaluator::brdbarEvaluator,                  // TR::brdbari
+   TR::TreeEvaluator::srdbarEvaluator,                  // TR::srdbari
+   TR::TreeEvaluator::lrdbarEvaluator,                  // TR::lrdbari
    TR::TreeEvaluator::istoreEvaluator,                  // TR::istore
    TR::TreeEvaluator::lstoreEvaluator,                  // TR::lstore
    TR::TreeEvaluator::fstoreEvaluator,                  // TR::fstore

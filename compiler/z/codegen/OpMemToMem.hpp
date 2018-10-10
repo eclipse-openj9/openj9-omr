@@ -22,21 +22,22 @@
 #ifndef OPMEMTOMEM_INCL
 #define OPMEMTOMEM_INCL
 
-#include <stddef.h>                       // for NULL
-#include <stdint.h>                       // for int32_t, int64_t, int8_t, etc
-#include "codegen/CodeGenerator.hpp"      // for CodeGenerator
-#include "codegen/InstOpCode.hpp"         // for InstOpCode, etc
-#include "codegen/Instruction.hpp"        // for Instruction
-#include "codegen/Machine.hpp"            // for MAXDISP
+#include <stddef.h>                               // for NULL
+#include <stdint.h>                               // for int32_t, int64_t, int8_t, etc
+#include "codegen/CodeGenerator.hpp"              // for CodeGenerator
+#include "codegen/InstOpCode.hpp"                 // for InstOpCode, etc
+#include "codegen/Instruction.hpp"                // for Instruction
+#include "codegen/Machine.hpp"                    // for MAXDISP
 #include "codegen/MemoryReference.hpp"
-#include "codegen/RegisterPair.hpp"       // for RegisterPair
-#include "compile/Compilation.hpp"        // for Compilation, comp
+#include "codegen/RegisterPair.hpp"               // for RegisterPair
+#include "compile/Compilation.hpp"                // for Compilation, comp
 #include "env/CompilerEnv.hpp"
-#include "env/TRMemory.hpp"               // for TR_Memory, etc
-#include "env/jittypes.h"                 // for intptrj_t
-#include "il/DataTypes.hpp"               // for DataTypes, etc
-#include "il/symbol/LabelSymbol.hpp"      // for LabelSymbol
-#include "infra/Assert.hpp"               // for TR_ASSERT
+#include "env/TRMemory.hpp"                       // for TR_Memory, etc
+#include "env/jittypes.h"                         // for intptrj_t
+#include "il/DataTypes.hpp"                       // for DataTypes, etc
+#include "il/symbol/LabelSymbol.hpp"              // for LabelSymbol
+#include "infra/Assert.hpp"                       // for TR_ASSERT
+#include "z/codegen/S390GenerateInstructions.hpp" // for generate label instructions
 
 namespace TR { class Node; }
 namespace TR { class Register; }
@@ -89,9 +90,14 @@ class MemToMemMacroOp
                  }
                if(_startControlFlow != _cursor)
                  {
-                 _startControlFlow->setDependencyConditions(dependencies);
-                 _cursor->setEndInternalControlFlow();
-                 _startControlFlow->setStartInternalControlFlow();
+                 TR::LabelSymbol * cFlowRegionStart = TR::LabelSymbol::create(_cg->trHeapMemory(),_cg);
+                 TR::LabelSymbol * cFlowRegionEnd = TR::LabelSymbol::create(_cg->trHeapMemory(),_cg);
+
+                 generateS390LabelInstruction(_cg, TR::InstOpCode::LABEL, _rootNode, cFlowRegionStart, dependencies, _startControlFlow->getPrev());
+                 cFlowRegionStart->setStartInternalControlFlow();
+
+                 generateS390LabelInstruction(_cg, TR::InstOpCode::LABEL, _rootNode, cFlowRegionEnd, _cursor->getPrev());
+                 cFlowRegionEnd->setEndInternalControlFlow();
                  }
                }
             }

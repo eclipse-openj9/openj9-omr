@@ -1550,9 +1550,14 @@ MemCmpVarLenMacroOp::generate(TR::Register* dstReg, TR::Register* srcReg, TR::Re
      }
    if(_startControlFlow != _cursor)
      {
-     _startControlFlow->setDependencyConditions(dependencies);
-     _cursor->setEndInternalControlFlow();
-     _startControlFlow->setStartInternalControlFlow();
+      TR::LabelSymbol * cFlowRegionStart = TR::LabelSymbol::create(_cg->trHeapMemory(),_cg);
+      TR::LabelSymbol * cFlowRegionEnd = TR::LabelSymbol::create(_cg->trHeapMemory(),_cg);
+
+      generateS390LabelInstruction(_cg, TR::InstOpCode::LABEL, _rootNode, cFlowRegionStart, dependencies, _startControlFlow->getPrev());
+      cFlowRegionStart->setStartInternalControlFlow();
+
+      generateS390LabelInstruction(_cg, TR::InstOpCode::LABEL, _rootNode, cFlowRegionEnd, _cursor->getPrev());
+      cFlowRegionEnd->setEndInternalControlFlow();
      }
    return _cursor;
    }
@@ -1587,9 +1592,14 @@ MemCmpConstLenMacroOp::generate(TR::Register* dstReg, TR::Register* srcReg, TR::
      }
    if(_startControlFlow != _cursor)
      {
-     _startControlFlow->setDependencyConditions(dependencies);
-     _cursor->setEndInternalControlFlow();
-     _startControlFlow->setStartInternalControlFlow();
+      TR::LabelSymbol * cFlowRegionStart = TR::LabelSymbol::create(_cg->trHeapMemory(),_cg);
+      TR::LabelSymbol * cFlowRegionEnd = TR::LabelSymbol::create(_cg->trHeapMemory(),_cg);
+
+      generateS390LabelInstruction(_cg, TR::InstOpCode::LABEL, _rootNode, cFlowRegionStart, dependencies, _startControlFlow->getPrev());
+      cFlowRegionStart->setStartInternalControlFlow();
+
+      generateS390LabelInstruction(_cg, TR::InstOpCode::LABEL, _rootNode, cFlowRegionEnd, _cursor->getPrev());
+      cFlowRegionEnd->setEndInternalControlFlow();
      }
 
    return _cursor;
@@ -1676,9 +1686,14 @@ MemCmpVarLenSignMacroOp::generate(TR::Register* dstReg, TR::Register* srcReg, TR
      }
    if(_startControlFlow != _cursor)
      {
-     _startControlFlow->setDependencyConditions(dependencies);
-     _cursor->setEndInternalControlFlow();
-     _startControlFlow->setStartInternalControlFlow();
+      TR::LabelSymbol * cFlowRegionStart = TR::LabelSymbol::create(_cg->trHeapMemory(),_cg);
+      TR::LabelSymbol * cFlowRegionEnd = TR::LabelSymbol::create(_cg->trHeapMemory(),_cg);
+
+      generateS390LabelInstruction(_cg, TR::InstOpCode::LABEL, _rootNode, cFlowRegionStart, dependencies, _startControlFlow->getPrev());
+      cFlowRegionStart->setStartInternalControlFlow();
+
+      generateS390LabelInstruction(_cg, TR::InstOpCode::LABEL, _rootNode, cFlowRegionEnd, _cursor->getPrev());
+      cFlowRegionEnd->setEndInternalControlFlow();
      }
 
    return _cursor;
@@ -1720,9 +1735,14 @@ MemCmpConstLenSignMacroOp::generate(TR::Register* dstReg, TR::Register* srcReg, 
      }
    if(_startControlFlow != _cursor)
      {
-     _startControlFlow->setDependencyConditions(dependencies);
-     _cursor->setEndInternalControlFlow();
-     _startControlFlow->setStartInternalControlFlow();
+      TR::LabelSymbol * cFlowRegionStart = TR::LabelSymbol::create(_cg->trHeapMemory(),_cg);
+      TR::LabelSymbol * cFlowRegionEnd = TR::LabelSymbol::create(_cg->trHeapMemory(),_cg);
+
+      generateS390LabelInstruction(_cg, TR::InstOpCode::LABEL, _rootNode, cFlowRegionStart, dependencies, _startControlFlow->getPrev());
+      cFlowRegionStart->setStartInternalControlFlow();
+
+      generateS390LabelInstruction(_cg, TR::InstOpCode::LABEL, _rootNode, cFlowRegionEnd, _cursor->getPrev());
+      cFlowRegionEnd->setEndInternalControlFlow();
      }
 
    return _cursor;
@@ -1786,11 +1806,14 @@ TR::Instruction *
 MemToMemTypedVarLenMacroOp::generateLoop()
    {
    TR::Instruction * cursor;
-   TR::Instruction * startControlFlow;
 
    // Skip the loop if length is zero.
+   TR::LabelSymbol * cFlowRegionStart = TR::LabelSymbol::create(_cg->trHeapMemory(),_cg);
    TR::LabelSymbol * doneLoop = TR::LabelSymbol::create(_cg->trHeapMemory(),_cg);
-   startControlFlow = generateS390CompareAndBranchInstruction(_cg, TR::InstOpCode::getCmpOpCode(), _dstNode, _lenReg, (int32_t)0, TR::InstOpCode::COND_BNH, doneLoop, false, false);
+
+   generateS390LabelInstruction(_cg, TR::InstOpCode::LABEL, _dstNode, cFlowRegionStart);
+   cFlowRegionStart->setStartInternalControlFlow();
+   generateS390CompareAndBranchInstruction(_cg, TR::InstOpCode::getCmpOpCode(), _dstNode, _lenReg, (int32_t)0, TR::InstOpCode::COND_BNH, doneLoop, false, false);
 
    if (_isForward)
       {
@@ -1849,8 +1872,7 @@ MemToMemTypedVarLenMacroOp::generateLoop()
    cursor = generateS390LabelInstruction(_cg, TR::InstOpCode::LABEL, _dstNode, doneLoop);
 
    createLoopDependencies(cursor);
-   cursor->setEndInternalControlFlow();
-   startControlFlow->setStartInternalControlFlow();
+   doneLoop->setEndInternalControlFlow();
 
    return cursor;
    }
@@ -2393,7 +2415,6 @@ MemCpyAtomicMacroOp::generateLoop()
    if (_trace)
       traceMsg(comp, "MemCpyAtomicMacroOp: generateLoop\n");
    TR::Instruction * cursor;
-   TR::Instruction * startControlFlow;
 
    static char * traceACM = feGetEnv("TR_ArrayCopyMethods");
    if (traceACM)
@@ -2404,6 +2425,7 @@ MemCpyAtomicMacroOp::generateLoop()
    static char * singular = feGetEnv("TR_ArrayCopySingular");
 
    // Skip the loop if length is zero.
+   TR::LabelSymbol * cFlowRegionStart = TR::LabelSymbol::create(_cg->trHeapMemory(),_cg);
    TR::LabelSymbol * doneArrayCopyLabel = TR::LabelSymbol::create(_cg->trHeapMemory(),_cg);
    TR::LabelSymbol * remainderLabel = TR::LabelSymbol::create(_cg->trHeapMemory(),_cg);
    TR::LabelSymbol * preDoneCopyLabel1 = TR::LabelSymbol::create(_cg->trHeapMemory(),_cg);
@@ -2419,8 +2441,9 @@ MemCpyAtomicMacroOp::generateLoop()
    TR::LabelSymbol * oolStartLabel5 = TR::LabelSymbol::create(_cg->trHeapMemory(),_cg);
    TR::LabelSymbol * oolStartLabel6 = TR::LabelSymbol::create(_cg->trHeapMemory(),_cg);
 
-   // If length <= 0, skip to doneArrayCopyLabel
-   startControlFlow = cursor = generateS390CompareAndBranchInstruction(_cg, TR::InstOpCode::getCmpOpCode(), _dstNode, _lenReg, (int32_t) 0, TR::InstOpCode::COND_BNH, doneArrayCopyLabel, false, false);
+   generateS390LabelInstruction(_cg, TR::InstOpCode::LABEL, _dstNode, cFlowRegionStart);
+   cFlowRegionStart->setStartInternalControlFlow();
+   generateS390CompareAndBranchInstruction(_cg, TR::InstOpCode::getCmpOpCode(), _dstNode, _lenReg, (int32_t) 0, TR::InstOpCode::COND_BNH, doneArrayCopyLabel, false, false);
 
    // backwards array copy
    // update end reg and start reg to be added with length
@@ -2681,8 +2704,7 @@ MemCpyAtomicMacroOp::generateLoop()
    cursor = generateS390LabelInstruction(_cg, TR::InstOpCode::LABEL, _dstNode, doneArrayCopyLabel);
 
    createLoopDependencies(cursor);
-   cursor->setEndInternalControlFlow();
-   startControlFlow->setStartInternalControlFlow();
+   doneArrayCopyLabel->setEndInternalControlFlow();
 
    return cursor;
    }

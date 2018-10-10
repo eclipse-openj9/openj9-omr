@@ -434,6 +434,7 @@ static const char *opCodeToNameMap[] =
    "rev32",
    "proc",
    "fence",
+   "return",
    "dd",
    "label"
    };
@@ -486,6 +487,9 @@ TR_Debug::print(TR::FILE *pOutFile, TR::Instruction *instr)
          break;
       case OMR::Instruction::IsCompareBranch:
          print(pOutFile, (TR::ARM64CompareBranchInstruction *)instr);
+         break;
+      case OMR::Instruction::IsRegBranch:
+         print(pOutFile, (TR::ARM64RegBranchInstruction *)instr);
          break;
       case OMR::Instruction::IsAdmin:
          print(pOutFile, (TR::ARM64AdminInstruction *)instr);
@@ -634,6 +638,15 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64CompareBranchInstruction *instr)
    {
    printPrefix(pOutFile, instr);
    TR_ASSERT(false, "Not implemented yet.");
+   }
+
+void
+TR_Debug::print(TR::FILE *pOutFile, TR::ARM64RegBranchInstruction *instr)
+   {
+   printPrefix(pOutFile, instr);
+   trfprintf(pOutFile, "%s \t", getOpCodeName(&instr->getOpCode()));
+   print(pOutFile, instr->getTargetRegister(), TR_DoubleWordReg);
+   trfflush(_comp->getOutFile());
    }
 
 void
@@ -895,8 +908,8 @@ getRegisterName(TR::RealRegister::RegNum num, bool is64bit)
       case TR::RealRegister::x27: return (is64bit ? "x27" : "w27");
       case TR::RealRegister::x28: return (is64bit ? "x28" : "w28");
       case TR::RealRegister::x29: return (is64bit ? "x29" : "w29");
-      case TR::RealRegister::x30: return (is64bit ? "x30" : "w30");
-      case TR::RealRegister::sp: return (is64bit ? "sp" : "sp");
+      case TR::RealRegister::x30: return "lr";
+      case TR::RealRegister::sp: return "sp";
 
       case TR::RealRegister::v0: return (is64bit ? "d0" : "s0");
       case TR::RealRegister::v1: return (is64bit ? "d1" : "s1");

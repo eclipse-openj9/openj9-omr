@@ -344,6 +344,7 @@ namespace TR { class ARM64DepLabelInstruction; }
 namespace TR { class ARM64ConditionalBranchInstruction; }
 namespace TR { class ARM64DepConditionalBranchInstruction; }
 namespace TR { class ARM64CompareBranchInstruction; }
+namespace TR { class ARM64RegBranchInstruction; }
 namespace TR { class ARM64AdminInstruction; }
 namespace TR { class ARM64Trg1Instruction; }
 namespace TR { class ARM64Trg1ImmInstruction; }
@@ -1098,6 +1099,7 @@ public:
    void print(TR::FILE *, TR::ARM64ConditionalBranchInstruction *);
    void print(TR::FILE *, TR::ARM64DepConditionalBranchInstruction *);
    void print(TR::FILE *, TR::ARM64CompareBranchInstruction *);
+   void print(TR::FILE *, TR::ARM64RegBranchInstruction *);
    void print(TR::FILE *, TR::ARM64AdminInstruction *);
    void print(TR::FILE *, TR::ARM64Trg1Instruction *);
    void print(TR::FILE *, TR::ARM64Trg1ImmInstruction *);

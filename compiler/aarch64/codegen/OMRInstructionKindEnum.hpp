@@ -32,6 +32,7 @@
       IsConditionalBranch,
          IsDepConditionalBranch,
       IsCompareBranch,
+   IsRegBranch,
    IsAdmin,
    IsTrg1,
       IsTrg1Imm,

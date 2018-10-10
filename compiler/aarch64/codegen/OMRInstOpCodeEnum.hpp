@@ -423,6 +423,7 @@
 	/* Last VFP instructions */
 		proc,  // Entry to the method
 		fence, // Fence
+		retn,  // Return
 		dd,    // Define word
 		label, // Destination of a jump
 		ARM64LastOp = label,

@@ -76,7 +76,7 @@ MM_MemoryManager::createVirtualMemoryForHeap(MM_EnvironmentBase* env, MM_MemoryH
 	uintptr_t allocateSize = size;
 
 	uintptr_t concurrentScavengerPageSize = 0;
-	if (extensions->isConcurrentScavengerEnabled()) {
+	if (extensions->isConcurrentScavengerHWSupported()) {
 		OMRPORT_ACCESS_FROM_ENVIRONMENT(env);
 		/*
 		 * Allocate extra memory to guarantee proper alignment regardless start address location
@@ -166,7 +166,7 @@ MM_MemoryManager::createVirtualMemoryForHeap(MM_EnvironmentBase* env, MM_MemoryH
 
 		void* requestedTopAddress = (void*)((uintptr_t)startAllocationAddress + allocateSize + tailPadding);
 
-		if (extensions->isConcurrentScavengerEnabled()) {
+		if (extensions->isConcurrentScavengerHWSupported()) {
 			void * ceilingToRequest = ceiling;
 			/* Requested top address might be higher then ceiling because of added chunk */
 			if ((requestedTopAddress > ceiling) && ((void *)((uintptr_t)requestedTopAddress - concurrentScavengerPageSize) <= ceiling)) {
@@ -303,7 +303,7 @@ MM_MemoryManager::createVirtualMemoryForHeap(MM_EnvironmentBase* env, MM_MemoryH
 		 * - current Nursery location has crossed Concurrent Scavenger Page boundary so it needs to be pushed higher to
 		 *   have Nursery low address to be aligned to Concurrent Scavenger Page
 		 */
-		if (extensions->isConcurrentScavengerEnabled()) {
+		if (extensions->isConcurrentScavengerHWSupported()) {
 			OMRPORT_ACCESS_FROM_ENVIRONMENT(env);
 			/* projected Nursery base and top */
 			/* assumed Nursery location in high addresses of the heap */

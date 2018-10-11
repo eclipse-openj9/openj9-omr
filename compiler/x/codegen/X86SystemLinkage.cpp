@@ -283,9 +283,8 @@ TR::X86SystemLinkage::copyParametersToHomeLocation(TR::Instruction *cursor)
 TR::Instruction *
 TR::X86SystemLinkage::savePreservedRegisters(TR::Instruction *cursor)
    {
-   // For IA32 usePushForPreservedRegs will be true; otherwise false;
+   // For IA32 usePushForPreservedRegs will be true;
    // For X64, usePushForPreservedRegs always false;
-   // TR_ASSERT(!getProperties().getUsesPushesForPreservedRegs(), "assertion failure");
    TR::ResolvedMethodSymbol *bodySymbol = comp()->getJittedMethodSymbol();
    const int32_t localSize = getProperties().getOffsetToFirstLocal() - bodySymbol->getLocalMappingCursor();
    const int32_t pointerSize = getProperties().getPointerSize();

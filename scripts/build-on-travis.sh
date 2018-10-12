@@ -44,54 +44,38 @@ function get_cc_toolchain
 # apport is available in apt whitelist
 export GTEST_FILTER=-*dump_test_create_dump_*:*NumaSetAffinity:*NumaSetAffinitySuspended
 
-if test "x$BUILD_WITH_CMAKE" = "xyes"; then
-  if test "x$CMAKE_GENERATOR" = "x"; then
-    export CMAKE_GENERATOR="Ninja"
-  fi
-
-  mkdir build
-  cd build
-  time cmake -Wdev -G "$CMAKE_GENERATOR" $CMAKE_DEFINES -C../cmake/caches/Travis.cmake ..
-  if test "x$RUN_BUILD" != "xno"; then
-    time cmake --build . -- -j $BUILD_JOBS
-    if test "x$RUN_TESTS" != "xno"; then
-      time ctest -V
-    fi
-  fi
+# Cross Compile Toolchain and Configuration Options for AArch64
+if test $SPEC = "linux_aarch64"; then
+  get_cc_toolchain ${AARCH64_TOOLCHAIN_URL}
+elif test $SPEC = "linux_arm"; then
+  get_cc_toolchain ${ARM_TOOLCHAIN_URL}
 else
-  # Cross Compile Toolchain and Configuration Options for AArch64
-  if test $SPEC = "linux_aarch64"; then
-    get_cc_toolchain ${AARCH64_TOOLCHAIN_URL}
-  elif test $SPEC = "linux_arm"; then
-    get_cc_toolchain ${ARM_TOOLCHAIN_URL}
-  else
-    # Linux 64 compressed references build and the 	Lint builds do not run in CMake
-    # Remove the Linux 64 compressed references build once the Autotool build infrastructure is retired
-    export EXTRA_CONFIGURE_ARGS="--enable-DDR"
+  # Linux 64 compressed references build and the 	Lint builds do not run in CMake
+  # Remove the Linux 64 compressed references build once the Autotool build infrastructure is retired
+  export EXTRA_CONFIGURE_ARGS="--enable-DDR"
+fi
+
+time make -f run_configure.mk OMRGLUE=./example/glue SPEC=${SPEC} PLATFORM=${PLATFORM} HAS_AUTOCONF=1 distclean all
+if test "x$RUN_BUILD" != "xno"; then
+  # Normal build system
+  time make --jobs $BUILD_JOBS
+  if test "x$RUN_TESTS" != "xno"; then
+    time make test
   fi
+fi
+if test "x$RUN_LINT" = "xyes"; then
+  llvm-config --version
+  clang++ --version
 
-  time make -f run_configure.mk OMRGLUE=./example/glue SPEC=${SPEC} PLATFORM=${PLATFORM} HAS_AUTOCONF=1 distclean all
-  if test "x$RUN_BUILD" != "xno"; then
-    # Normal build system
-    time make --jobs $BUILD_JOBS
-    if test "x$RUN_TESTS" != "xno"; then
-      time make test
-    fi
-  fi
-  if test "x$RUN_LINT" = "xyes"; then
-    llvm-config --version
-    clang++ --version
+  # Run linter for x86 target
+  time make --jobs $BUILD_JOBS lint
 
-    # Run linter for x86 target
-    time make --jobs $BUILD_JOBS lint
+  # Run linter for p and z targets
+  export TARGET_ARCH=p
+  export TARGET_BITS=64
+  time make --jobs $BUILD_JOBS lint
 
-    # Run linter for p and z targets
-    export TARGET_ARCH=p
-    export TARGET_BITS=64
-    time make --jobs $BUILD_JOBS lint
-
-    export TARGET_ARCH=z
-    export TARGET_BITS=64
-    time make --jobs $BUILD_JOBS lint
-  fi
+  export TARGET_ARCH=z
+  export TARGET_BITS=64
+  time make --jobs $BUILD_JOBS lint
 fi

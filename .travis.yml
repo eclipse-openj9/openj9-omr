@@ -67,23 +67,6 @@ matrix:
             - llvm-3.8-dev
       env: RUN_LINT=yes RUN_BUILD=no SPEC=linux_x86-64 PLATFORM=amd64-linux64-gcc LLVM_CONFIG=llvm-config-3.8 CLANG=clang++-3.8 CXX_PATH=clang++-3.8 CXX=clang++-3.8
       dist: trusty
-    ## CMake builds
-    #  Ninja builds
-    #  32 bit Linux x86
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - libnuma-dev
-            - bison
-            - libdwarf-dev
-            - libelf-dev 
-            - ninja-build
-            - gcc-multilib
-            - g++-multilib
-      env: BUILD_WITH_CMAKE=yes CMAKE_GENERATOR=Ninja CMAKE_DEFINES="-DOMR_ENV_DATA32=ON -DOMR_DDR=OFF -DOMR_JITBUILDER=OFF"
 before_script:
   - ulimit -c unlimited
   - ccache -s -z

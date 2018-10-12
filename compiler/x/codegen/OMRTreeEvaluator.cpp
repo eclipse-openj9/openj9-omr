@@ -2280,39 +2280,29 @@ static void arraycopyForShortConstArrayWithoutDirection(TR::Node* node, TR::Regi
 
 TR::Register *OMR::X86::TreeEvaluator::arraycopyEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   if (node->isReferenceArrayCopy() && !node->isNoArrayStoreCheckArrayCopy())
-      {
-      return TR::TreeEvaluator::VMarrayStoreCheckArrayCopyEvaluator(node, cg);
-      }
-   // There are two cases.
-   // In the first case we know that a simple memmove or memcpy operation can
-   // be done. For this case there are 3 children:
-   //    1) The byte source pointer
-   //    2) The byte destination pointer
-   //    3) The byte count
+   // There are two variants of TR::arraycopy: one has 5 children, the other has 3 children. Details can be found from
+   // compiler/il/ILOpCodeProperties.hpp
    //
-   // In the second case we must generate run-time tests to see if a simple
-   // byte copy can be done or if an element-by-element copy is needed.
-   // For this case there are 5 children:
-   //    1) The original source object reference
-   //    2) The original destination object reference
-   //    3) The byte source pointer
-   //    4) The byte destination pointer
-   //    5) The byte count
+   // In most, if not all, cases, the 5-child variant requires language specific semantics, which OMR is not aware of. The fact 
+   // that a 5-child arraycopy is generated indicates at least one of the first two children must be needed when performing the
+   // copy; otherwise a 3-child arraycopy should be generated instead. Interpreting the meanings of the first two children 
+   // definitely requires language specific semantics. For example, the first two children may be for dealing with an arraycopy 
+   // where the Garbage Collector may need to be notified about the copy or something to that affect.
    //
+   // Therefore, this OMR evaluator only handles the 3-child variant, is an operation equivalent to C++'s std::memmove().
+   // Should a downstream project need the 5-child variant evaluator, it needs to override this evaluator in its own TreeEvaluator,
+   // and delegates the 3-child variant back to this evaluator by calling OMR::TreeEvaluatorConnector::arraycopyEvaluator.
+
+   TR_ASSERT_FATAL(node->getNumChildren() == 3, "This evaluator is for the 3-child variant of arraycopy.");
 
    // ALL nodes need be evaluated to comply argument evaluation order;
    // since size node is the last node, its evaluation can be delayed for further optimization
-   TR::Node* sizeNode = node->getLastChild();
-   for (int32_t i = 0; i < node->getNumChildren()-1; i++)
-      {
-      cg->evaluate(node->getChild(i));
-      }
+   TR::Node* srcNode  = node->getChild(0); // the address of memory to copy from
+   TR::Node* dstNode  = node->getChild(1); // the address of memory to copy to
+   TR::Node* sizeNode = node->getChild(2); // the size of memory to copy, in bytes
 
-   TR::Register* srcReg = cg->allocateRegister();
-   TR::Register* dstReg = cg->allocateRegister();
-   generateRegRegInstruction(MOVRegReg(), node, srcReg, node->getChild(node->getNumChildren() - 3)->getRegister(), cg);
-   generateRegRegInstruction(MOVRegReg(), node, dstReg, node->getChild(node->getNumChildren() - 2)->getRegister(), cg);
+   TR::Register* srcReg = cg->gprClobberEvaluate(srcNode, MOVRegReg());
+   TR::Register* dstReg = cg->gprClobberEvaluate(dstNode, MOVRegReg());
 
    TR::DataType dt = node->getArrayCopyElementType();
    uint32_t elementSize = 1;
@@ -2358,8 +2348,9 @@ TR::Register *OMR::X86::TreeEvaluator::arraycopyEvaluator(TR::Node *node, TR::Co
       }
    else
       {
-      TR::Register* sizeReg = TR::TreeEvaluator::intOrLongClobberEvaluate(sizeNode, TR::TreeEvaluator::getNodeIs64Bit(sizeNode, cg), cg);
-      if (TR::Compiler->target.is64Bit() && !TR::TreeEvaluator::getNodeIs64Bit(sizeNode, cg))
+      bool isSize64Bit = TR::TreeEvaluator::getNodeIs64Bit(sizeNode, cg);
+      TR::Register* sizeReg = cg->gprClobberEvaluate(sizeNode, MOVRegReg(isSize64Bit));
+      if (TR::Compiler->target.is64Bit() && !isSize64Bit)
          {
          generateRegRegInstruction(MOVZXReg8Reg4, node, sizeReg, sizeReg, cg);
          }
@@ -2381,16 +2372,8 @@ TR::Register *OMR::X86::TreeEvaluator::arraycopyEvaluator(TR::Node *node, TR::Co
 
    cg->stopUsingRegister(dstReg);
    cg->stopUsingRegister(srcReg);
-#ifdef J9_PROJECT_SPECIFIC
-   if (node->isReferenceArrayCopy())
-      {
-      TR::TreeEvaluator::generateWrtbarForArrayCopy(node, cg);
-      }
-#endif
-   for (int32_t i = 0; i < node->getNumChildren()-1; i++)
-      {
-      cg->decReferenceCount(node->getChild(i));
-      }
+   cg->decReferenceCount(dstNode);
+   cg->decReferenceCount(srcNode);
    return NULL;
    }
 
@@ -4108,12 +4091,6 @@ OMR::X86::TreeEvaluator::tabortEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    //TODO: Find a way to detect the real abort reason here
    generateImmInstruction(XABORT, node, 0x04, cg);
    return NULL;
-   }
-
-TR::Register *
-OMR::X86::TreeEvaluator::VMarrayStoreCheckArrayCopyEvaluator(TR::Node*, TR::CodeGenerator*)
-   {
-   return 0;
    }
 
 bool

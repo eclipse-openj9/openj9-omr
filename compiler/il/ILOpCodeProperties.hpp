@@ -10070,6 +10070,10 @@
     *  - dest address
     *  - number of bytes to copy
     *
+    * Normally the 5-child variant indicates the operation is a reference
+    * array copy and hence it should be only generated when the CodeGen
+    * sets SupportsReferenceArrayCopy flag.
+    *
     * In the future we may extract the 3-child version into a distinct
     * opcode named memcpy.
     *

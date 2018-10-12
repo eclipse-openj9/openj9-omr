@@ -2277,6 +2277,29 @@ generateS390ImmSymInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic o
    return new (INSN_HEAP) TR::S390ImmSymInstruction(op, n, imm, sr, cond, cg);
    }
 
+TR::Instruction *
+generateShiftRightImmediate(TR::CodeGenerator *cg, TR::Node *node, TR::Register *trgReg, TR::Register *srcReg, int32_t imm, TR::Instruction *preced)
+   {
+   TR::Instruction *instr = NULL;
+   if (TR::Compiler->target.is64Bit())
+      {
+      instr = generateRSInstruction(cg, TR::InstOpCode::SRAG, node, trgReg, srcReg, imm, preced);
+      }
+   else
+      {
+      if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z196))
+         {
+         instr = generateRSInstruction(cg, TR::InstOpCode::SRAK, node, trgReg, srcReg, imm, preced);
+         }
+      else
+         {
+         instr = generateRRInstruction(cg, TR::InstOpCode::LR, node, trgReg, srcReg, preced);
+         instr = generateRSInstruction(cg, TR::InstOpCode::SRA, node, trgReg, imm, instr);
+         }
+      }
+   return instr;
+   }
+
 #ifdef J9_PROJECT_SPECIFIC
 TR::Instruction *
 generateVirtualGuardNOPInstruction(TR::CodeGenerator * cg, TR::Node * n, TR_VirtualGuardSite * site,

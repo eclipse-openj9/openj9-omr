@@ -1334,6 +1334,14 @@ TR::Instruction *generateS390DebugCounterBumpInstruction(
                    int32_t d = 1,
                    TR::Instruction *preced = 0);
 
+TR::Instruction *generateShiftRightImmediate(
+                  TR::CodeGenerator *cg,
+                  TR::Node *node,
+                  TR::Register *trgReg,
+                  TR::Register *srcReg,
+                  int32_t imm,
+                  TR::Instruction *preced = 0);
+
 #ifdef J9_PROJECT_SPECIFIC
 TR::Instruction *generateVirtualGuardNOPInstruction(
                    TR::CodeGenerator      *cg,

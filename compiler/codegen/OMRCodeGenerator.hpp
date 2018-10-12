@@ -735,29 +735,6 @@ class OMR_EXTENSIBLE CodeGenerator
    uint32_t getRegisterMapInfoBitsMask() {return 0;} // no virt, cast
 
    // --------------------------------------------------------------------------
-   // Shrink wrapping
-   //
-   TR_BitVector *getPreservedRegsInPrologue() {return _preservedRegsInPrologue;}
-   TR_BitVector *setPreservedRegsInPrologue(TR_BitVector *v) {return (_preservedRegsInPrologue = v);}
-
-   int32_t getLowestSavedRegister() {return _lowestSavedReg;}
-   void setLowestSavedRegister(int32_t v) {_lowestSavedReg = v;}
-
-   bool processInstruction(TR::Instruction *instr, TR_BitVector **registerUsageInfo, int32_t &blockNum, int32_t &isFence, bool traceIt) {return false;} // no virt, cast
-   uint32_t isPreservedRegister(int32_t regIndex) { return 0; } // no virt, cast
-   bool isReturnInstruction(TR::Instruction *instr) { return false; } // no virt, cast
-   bool isBranchInstruction(TR::Instruction *instr) { return false; } // no virt, cast
-   int32_t isFenceInstruction(TR::Instruction *instr) { return false; } // no virt
-   bool isAlignmentInstruction(TR::Instruction *instr) { return false; } // no virt
-   bool isLabelInstruction(TR::Instruction *instr) { return false; } // no virt
-   TR::Instruction *splitEdge(TR::Instruction *cursor, bool isFallThrough, bool needsJump, TR::Instruction *newSplitLabel, TR::list<TR::Instruction*> *jmpInstrs, bool firstJump = false) { return NULL; } // no virt
-   TR::Instruction *splitBlockEntry(TR::Instruction *instr) { return NULL; } // no virt
-   int32_t computeRegisterSaveDescription(TR_BitVector *regs, bool populateInfo = false) { return 0; } // no virt
-   void processIncomingParameterUsage(TR_BitVector **registerUsageInfo, int32_t blockNum) { return; } // no virt
-   void updateSnippetMapWithRSD(TR::Instruction *cur, int32_t rsd) { return; } // no virt
-   bool isTargetSnippetOrOutOfLine(TR::Instruction *instr, TR::Instruction **start, TR::Instruction **end) { return false; }
-
-   // --------------------------------------------------------------------------
    // Method frame building
    //
    uint32_t getLargestOutgoingArgSize()           {return _largestOutgoingArgSize;}
@@ -1393,9 +1370,7 @@ class OMR_EXTENSIBLE CodeGenerator
 
    // IA32 only?
    int32_t arrayInitMinimumNumberOfBytes() {return 8;} // no virt
-
-   TR::Instruction *saveOrRestoreRegisters(TR_BitVector *regs, TR::Instruction *cursor, bool doSaves);
-
+   
    void addCountersToEdges(TR::Block *block);
 
    bool getSupportsBitOpCodes() {return false;} // no virt, default
@@ -1649,15 +1624,6 @@ class OMR_EXTENSIBLE CodeGenerator
    bool getDisableNullCheckOfArrayLength() { return _flags3.testAny(CompactNullCheckOfArrayLengthDisabled); }
    void setDisableNullCheckOfArrayLength() { _flags3.set(CompactNullCheckOfArrayLengthDisabled); }
 
-   bool getSupportsShrinkWrapping() { return _flags3.testAny(SupportsShrinkWrapping); }
-   void setSupportsShrinkWrapping() { _flags3.set(SupportsShrinkWrapping); }
-
-   bool getShrinkWrappingDone() { return _flags3.testAny(ShrinkWrappingDone); }
-   void setShrinkWrappingDone() { _flags3.set(ShrinkWrappingDone); }
-
-   bool getUsesLoadStoreMultiple() { return _flags3.testAny(UsesLoadStoreMultiple); }
-   void setUsesLoadStoreMultiple() { _flags3.set(UsesLoadStoreMultiple); }
-
    bool getSupportsStackAllocationOfArraylets() {return _flags3.testAny(SupportsStackAllocationOfArraylets);}
    void setSupportsStackAllocationOfArraylets() {_flags3.set(SupportsStackAllocationOfArraylets);}
 
@@ -1776,13 +1742,13 @@ class OMR_EXTENSIBLE CodeGenerator
       RequiresCarry                                       = 0x00020000,
       MethodContainsBinaryCodedDecimal                    = 0x00040000,  // wcode
       ComputesCarry                                       = 0x00080000,
-      SupportsShrinkWrapping                              = 0x00100000,
-      ShrinkWrappingDone                                  = 0x00200000,
+      // AVAILABLE                                        = 0x00100000,
+      // AVAILABLE                                        = 0x00200000,
       SupportsStackAllocationOfArraylets                  = 0x00400000,
       //                                                  = 0x00800000,  AVAILABLE FOR USE!
       SupportsDoubleWordCAS                               = 0x01000000,
       SupportsDoubleWordSet                               = 0x02000000,
-      UsesLoadStoreMultiple                               = 0x04000000,
+      // AVAILABLE                                        = 0x04000000,
       ExpandExponentiation                                = 0x08000000,
       MultiplyIsDestructive                               = 0x10000000,
       //                                                  = 0x20000000,  AVAILABLE FOR USE!
@@ -1869,7 +1835,6 @@ class OMR_EXTENSIBLE CodeGenerator
    TR_InterferenceGraph *_localsIG;
    TR_BitVector *_currentGRABlockLiveOutSet;
    TR::Block *_currentBlock;
-   TR_BitVector *_preservedRegsInPrologue;
 
    TR::list<TR::SymbolReference*> _availableSpillTemps;
    TR::list<TR_LiveReference*> _liveReferenceList;
@@ -1905,8 +1870,6 @@ class OMR_EXTENSIBLE CodeGenerator
    TR_Array<void *> _monitorMapping;
 
    TR::list<TR::Node*> _compressedRefs;
-
-   int32_t _lowestSavedReg;
 
    uint32_t _largestOutgoingArgSize;
 

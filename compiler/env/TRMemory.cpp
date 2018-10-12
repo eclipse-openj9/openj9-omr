@@ -129,7 +129,6 @@ const char * objectName[] =
    "InterProceduralAnalyzer",
    "InductionVariableAnalysis",
    "CoarseningInterProceduralAnalyzer",
-   "ShrinkWrapping",
 
    "AheadOfTimeCompile",
    "HWProfile",

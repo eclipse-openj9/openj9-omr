@@ -514,7 +514,6 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
 #endif
    {"disableShareableMethodHandleThunks",  "R\tdisable creation of shareable invokeExact thunks for MethodHandles", SET_OPTION_BIT(TR_DisableShareableMethodHandleThunks), "F", NOT_IN_SUBSET},
    {"disableSharedCacheHints",             "R\tdisable storing and loading hints from shared cache", SET_OPTION_BIT(TR_DisableSharedCacheHints), "F"},
-   {"disableShrinkWrapping",               "M\tdisable shrink wrapping of callee saved registers", SET_OPTION_BIT(TR_DisableShrinkWrapping), "F"},
    {"disableSIMD",                         "O\tdisable SIMD exploitation and infrastructure on platforms supporting vector register and instructions", SET_OPTION_BIT(TR_DisableSIMD), "F"},
    {"disableSIMDArrayCompare",            "O\tDisable vectorized array comparison using SIMD instruction", SET_OPTION_BIT(TR_DisableSIMDArrayCompare), "F"},
    {"disableSIMDArrayCopy",                "O\tDisable vectorized array copying using SIMD instruction", SET_OPTION_BIT(TR_DisableSIMDArrayCopy), "F"},
@@ -1255,7 +1254,6 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"traceScalarizeSSOps",              "L\ttrace scalarization of array/SS ops", SET_OPTION_BIT(TR_TraceScalarizeSSOps), "P"},
    {"traceSEL",                         "L\ttrace sign extension load", SET_OPTION_BIT(TR_TraceSEL), "P"},
    {"traceSequenceSimplification",      "L\ttrace arithmetic sequence simplification",     TR::Options::traceOptimization, expressionsSimplification, 0, "P"},
-   {"traceShrinkWrapping",              "L\ttrace shrink wrapping of callee saved registers ", SET_OPTION_BIT(TR_TraceShrinkWrapping), "P"},
    {"traceSpillCosts",                 "L\ttrace spill costs (basic) only show its activation",
         TR::Options::setBitsFromStringSet, offsetof(OMR::Options, _traceSpillCosts), TR_TraceSpillCostsBasic, "F"},
    {"traceSpillCosts=",                "L{regex}\tlist of additional spill costs options: basic, results, build, details",
@@ -2045,7 +2043,7 @@ OMR::Options::jitLatePostProcess(TR::OptionSet *optionSet, void * jitConfig)
       {
       if (!self()->getOption(TR_DisableOSR))
          self()->setOption(TR_EnableOSR); // Make OSR the default for FSD
-      self()->setOption(TR_DisableShrinkWrapping);
+
       self()->setOption(TR_DisableMethodHandleThunks); // Can't yet transition a MH thunk frame into equivalent interpreter frames
       }
 
@@ -2463,9 +2461,6 @@ OMR::Options::jitPreProcess()
    // --------------------------------------------------------------------------
    // All projects
    //
-
-   //Disabling Shrink Wrapping on all platforms (functional issues)
-   self()->setOption(TR_DisableShrinkWrapping);
 
    self()->setOption(TR_RestrictStaticFieldFolding);
 

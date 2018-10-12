@@ -603,7 +603,6 @@ enum TR_DispatchType
    virtual int32_t setNumberOfDependencyGPRegisters(int32_t n)    { return _numberOfDependencyGPRegisters = n; }
    virtual int32_t getNumberOfDependencyGPRegisters()    { return _numberOfDependencyGPRegisters; }
 
-   virtual int32_t getRegisterSaveSize() { return 0; }
    virtual int32_t setupLiteralPoolRegister(TR::Snippet *firstSnippet) { return -1; }
 
 // Just for convenience

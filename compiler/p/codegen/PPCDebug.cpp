@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -229,7 +229,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::PPCDepInstruction * instr)
    {
    printPrefix(pOutFile, instr);
    trfprintf(pOutFile, "%s", getOpCodeName(&instr->getOpCode()));
-   if (_comp->getOption(TR_DisableShrinkWrapping) && instr->getDependencyConditions())
+   if (instr->getDependencyConditions())
       print(pOutFile, instr->getDependencyConditions());
    trfflush(pOutFile);
 
@@ -293,7 +293,7 @@ void
 TR_Debug::print(TR::FILE *pOutFile, TR::PPCDepLabelInstruction * instr)
    {
    print(pOutFile, (TR::PPCLabelInstruction *) instr);
-   if (_comp->getOption(TR_DisableShrinkWrapping) && instr->getDependencyConditions())
+   if (instr->getDependencyConditions())
       print(pOutFile, instr->getDependencyConditions());
    trfflush(_comp->getOutFile());
    }
@@ -315,7 +315,7 @@ void
 TR_Debug::print(TR::FILE *pOutFile, TR::PPCDepConditionalBranchInstruction * instr)
    {
    print(pOutFile, (TR::PPCConditionalBranchInstruction *)instr);
-   if (_comp->getOption(TR_DisableShrinkWrapping) && instr->getDependencyConditions())
+   if (instr->getDependencyConditions())
       print(pOutFile, instr->getDependencyConditions());
    trfflush(_comp->getOutFile());
    }
@@ -377,7 +377,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::PPCDepImmInstruction * instr)
    {
    printPrefix(pOutFile, instr);
    trfprintf(pOutFile, "%s \t" POINTER_PRINTF_FORMAT, getOpCodeName(&instr->getOpCode()), instr->getSourceImmediate());
-   if (_comp->getOption(TR_DisableShrinkWrapping) && instr->getDependencyConditions())
+   if (instr->getDependencyConditions())
       print(pOutFile, instr->getDependencyConditions());
    trfflush(_comp->getOutFile());
    }
@@ -446,7 +446,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::PPCDepImmSymInstruction * instr)
    else
       trfprintf(pOutFile, "%s \t" POINTER_PRINTF_FORMAT, getOpCodeName(&instr->getOpCode()), (intptrj_t)cursor + distance);
 
-   if (_comp->getOption(TR_DisableShrinkWrapping) && instr->getDependencyConditions())
+   if (instr->getDependencyConditions())
       print(pOutFile, instr->getDependencyConditions());
    trfflush(_comp->getOutFile());
    }
@@ -519,7 +519,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::PPCTrg1Src1ImmInstruction * instr)
    else
       trfprintf(pOutFile, ", " "%d", (intptrj_t)(int32_t)instr->getSourceImmediate());
 
-   if (_comp->getOption(TR_DisableShrinkWrapping) && instr->getDependencyConditions())
+   if (instr->getDependencyConditions())
       print(pOutFile, instr->getDependencyConditions());
 
    trfflush(_comp->getOutFile());
@@ -709,7 +709,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::PPCVirtualGuardNOPInstruction * instr)
    printPrefix(pOutFile, instr);
    trfprintf(pOutFile, "%s Site:" POINTER_PRINTF_FORMAT ", ", getOpCodeName(&instr->getOpCode()), instr->getSite());
    print(pOutFile, instr->getLabelSymbol());
-   if (_comp->getOption(TR_DisableShrinkWrapping) && instr->getDependencyConditions())
+   if (instr->getDependencyConditions())
       print(pOutFile, instr->getDependencyConditions());
    trfflush(_comp->getOutFile());
    }

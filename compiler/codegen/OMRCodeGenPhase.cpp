@@ -663,14 +663,6 @@ OMR::CodeGenPhase::performRemoveUnusedLocalsPhase(TR::CodeGenerator * cg, TR::Co
    }
 
 void
-OMR::CodeGenPhase::performShrinkWrappingPhase(TR::CodeGenerator * cg, TR::CodeGenPhase * phase)
-   {
-   TR::Compilation *comp = cg->comp();
-   if (comp->getOptimizer())
-      comp->getOptimizer()->performVeryLateOpts();
-   }
-
-void
 OMR::CodeGenPhase::performInsertDebugCountersPhase(TR::CodeGenerator * cg, TR::CodeGenPhase * phase)
    {
    cg->insertDebugCounters();
@@ -717,8 +709,6 @@ OMR::CodeGenPhase::getName(PhaseValue phase)
 	 return "FindAndFixCommonedReferencesPhase";
       case RemoveUnusedLocalsPhase:
 	 return "RemoveUnusedLocalsPhase";
-      case ShrinkWrappingPhase:
-	 return "ShrinkWrappingPhase";
       case InliningReportPhase:
 	 return "InliningReportPhase";
       case InsertDebugCountersPhase:

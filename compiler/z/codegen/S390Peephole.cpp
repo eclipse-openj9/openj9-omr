@@ -3208,7 +3208,7 @@ bool TR_S390PostRAPeephole::forwardBranchTarget()
    if (!targetLabelInsn)
       return false;
    auto tmp = targetLabelInsn;
-   while (tmp->isLabel() || _cg->isFenceInstruction(tmp))  // skip labels and fences
+   while (tmp->isLabel() || tmp->getOpCodeValue() == TR::InstOpCode::FENCE)  // skip labels and fences
       tmp = tmp->getNext();
    if (tmp->getOpCodeValue() == TR::InstOpCode::BRC)
       {

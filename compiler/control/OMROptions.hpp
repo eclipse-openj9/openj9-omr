@@ -459,10 +459,10 @@ enum TR_CompilationOptions
    // Available                               = 0x10000000 + 11,
    TR_DisableNewInliningInfrastructure        = 0x20000000 + 11,
    // Available                               = 0x40000000 + 11,
-   // Avaiable                                = 0x80000000 + 11,
+   // Available                               = 0x80000000 + 11,
 
    // Option word 12
-   TR_TraceShrinkWrapping                     = 0x00000020 + 12,
+   // Available                               = 0x00000020 + 12,
    TR_DisableZ13LoadAndMask                   = 0x00000040 + 12,
    TR_DisablePartialInlining                  = 0x00000080 + 12,
    TR_AssumeStartupPhaseUntilToldNotTo        = 0x00000100 + 12,
@@ -587,7 +587,7 @@ enum TR_CompilationOptions
    TR_DisableEmptyPreHeaderCheck                      = 0x00001000 + 16,
    TR_SinkOnlyCCStores                                = 0x00002000 + 16,
    TR_EnableDeterministicOrientedCompilation          = 0x00004000 + 16,
-   TR_DisableShrinkWrapping                           = 0x00008000 + 16,
+   // Available                                       = 0x00008000 + 16,
    TR_EnableAOTStats                                  = 0x00010000 + 16,
    // Available                                       = 0x00020000 + 16,
    TR_DisableSynchronizedFieldLoad                    = 0x00040000 + 16,

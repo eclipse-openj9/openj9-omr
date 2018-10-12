@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2017 IBM Corp. and others
+ * Copyright (c) 1991, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -71,6 +71,23 @@ typedef WRAPPER_TYPE (*WRAPPER_FUNC)(WRAPPER_ARG);
 #include <semaphore.h>
 typedef sem_t OSSEMAPHORE;
 #elif defined(OSX) /* defined(LINUX) || defined(AIXPPC) */
+/* Macros __has_extension and __has_feature macros are undefined
+ * when using GCC 4.2.1 on OSX 10.10 Yosemite. Compiler errors
+ * occur without these macros. error: missing binary operator
+ * before token "(". If __has_extension and __has_feature are
+ * undefined, then the stubs included below will be used. These
+ * stubs help resolve the compiler errors seen with GCC 4.2.1 on
+ * OSX 10.10 Yosemite.
+ */
+#if defined(__GNUC__)
+#ifndef __has_extension
+#define __has_extension(x) 0
+#endif /* __has_extension */
+
+#ifndef __has_feature
+#define __has_feature(x) 0
+#endif /* __has_feature */
+#endif /* defined(__GNUC__) */
 #include <dispatch/dispatch.h>
 typedef dispatch_semaphore_t OSSEMAPHORE;
 #elif defined(J9ZOS390) /* defined(OSX) */

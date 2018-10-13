@@ -2363,25 +2363,6 @@ TR::Register *OMR::X86::TreeEvaluator::arraycopyEvaluator(TR::Node *node, TR::Co
    return NULL;
    }
 
-TR::Register *OMR::X86::TreeEvaluator::reverseLoadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   TR_ASSERT(0, "reverseLoad not implemented yet for this platform");
-   return NULL;
-   }
-
-TR::Register *OMR::X86::TreeEvaluator::reverseStoreEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   TR_ASSERT(0, "reverseStore not implemented yet for this platform");
-   return NULL;
-   }
-
-
-TR::Register *OMR::X86::TreeEvaluator::arraytranslateAndTestEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   TR_ASSERT(0, "arraytranslateAndTest not implemented yet for this platform");
-   return NULL;
-   }
-
 TR::Register *OMR::X86::TreeEvaluator::arraytranslateEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    //

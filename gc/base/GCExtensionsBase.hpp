@@ -418,6 +418,7 @@ public:
 	bool scavengerRsoScanUnsafe;
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
 	bool softwareEvacuateReadBarrier; /**< enable software read barrier instead of hardware guarded loads when running with CS */
+	bool softwareRangeCheckReadBarrier; /**< enable software read barrier instead of hardware guarded loads when running with CS */
 	bool concurrentScavenger; /**< CS enabled/disabled flag */
 	bool concurrentScavengerForced; /**< set to true if CS is requested (by cmdline option), but there are more checks to do before deciding whether the request is to be obeyed */
 	bool concurrentScavengerHWSupport; /**< set to true if CS runs with HW support */
@@ -830,6 +831,16 @@ public:
    {
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
       return softwareEvacuateReadBarrier;
+#else
+      return false;
+#endif /* defined(OMR_GC_CONCURRENT_SCAVENGER) */
+   }	
+	
+   MMINLINE bool
+   isSoftwareRangeCheckReadBarrierEnabled()
+   {
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+      return softwareRangeCheckReadBarrier;
 #else
       return false;
 #endif /* defined(OMR_GC_CONCURRENT_SCAVENGER) */
@@ -1367,6 +1378,7 @@ public:
 		, scavengerEnabled(false)
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
 		, softwareEvacuateReadBarrier(false)
+		, softwareRangeCheckReadBarrier(false)
 		, concurrentScavenger(false)
 		, concurrentScavengerForced(false)
 		, concurrentScavengerHWSupport(false)

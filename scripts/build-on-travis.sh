@@ -39,20 +39,11 @@ function get_cc_toolchain
   export CHOST=$(eval $(find `pwd`/toolchain/bin -name "*-gcc") -dumpmachine)
 }
 
-# Disable the core dump tests as container based builds don't allow setting
-# core_pattern and don't have apport installed.  This can be removed when
-# apport is available in apt whitelist
-export GTEST_FILTER=-*dump_test_create_dump_*:*NumaSetAffinity:*NumaSetAffinitySuspended
-
 # Cross Compile Toolchain and Configuration Options for AArch64
 if test $SPEC = "linux_aarch64"; then
   get_cc_toolchain ${AARCH64_TOOLCHAIN_URL}
 elif test $SPEC = "linux_arm"; then
   get_cc_toolchain ${ARM_TOOLCHAIN_URL}
-else
-  # Linux 64 compressed references build and the 	Lint builds do not run in CMake
-  # Remove the Linux 64 compressed references build once the Autotool build infrastructure is retired
-  export EXTRA_CONFIGURE_ARGS="--enable-DDR"
 fi
 
 time make -f run_configure.mk OMRGLUE=./example/glue SPEC=${SPEC} PLATFORM=${PLATFORM} HAS_AUTOCONF=1 distclean all

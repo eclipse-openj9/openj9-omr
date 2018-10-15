@@ -319,9 +319,8 @@ omrsig_protect(struct OMRPortLibrary *portLibrary, omrsig_protected_fn fn, void 
 {
 	struct J9SignalHandlerRecord thisRecord = {0};
 	omrthread_t thisThread = NULL;
-	uint32_t rc = 0;
-	uint32_t flagsSignalsOnly = 0;
-	uint32_t flagsWithoutMasterHandlers = 0;
+	uint32_t flagsSignalsOnly = flags & OMRPORT_SIG_FLAG_SIGALLSYNC;
+	uint32_t flagsWithoutMasterHandlers = flagsSignalsOnly & ~signalsWithMasterHandlers;
 
 	Trc_PRT_signal_omrsig_protect_entered(fn, fn_arg, handler, handler_arg, flags);
 
@@ -333,10 +332,8 @@ omrsig_protect(struct OMRPortLibrary *portLibrary, omrsig_protected_fn fn, void 
 		return 0;
 	}
 
-	flagsSignalsOnly = flags & OMRPORT_SIG_FLAG_SIGALLSYNC;
-	flagsWithoutMasterHandlers = flagsSignalsOnly & (~signalsWithMasterHandlers);
-
 	if (0 != flagsWithoutMasterHandlers) {
+		uint32_t rc = 0;
 		/* Acquire the registerHandlerMonitor and install the handler via registerMasterHandlers. */
 		omrthread_monitor_enter(registerHandlerMonitor);
 		rc = registerMasterHandlers(portLibrary, flags, OMRPORT_SIG_FLAG_SIGALLSYNC, NULL);
@@ -356,9 +353,6 @@ omrsig_protect(struct OMRPortLibrary *portLibrary, omrsig_protected_fn fn, void 
 	thisRecord.flags = flags;
 
 	if (OMR_ARE_ANY_BITS_SET(flags, OMRPORT_SIG_FLAG_MAY_RETURN)) {
-
-		J9CurrentSignal *currentSignal;
-
 		/* Record the current signal. We need to store this value back into tls if we jump back into this function
 		 * because any signals that may have occurred within the scope of this layer of protection would have been handled
 		 * by that point.
@@ -366,11 +360,10 @@ omrsig_protect(struct OMRPortLibrary *portLibrary, omrsig_protected_fn fn, void 
 		 * The only scenario where this is of real concern, is if more than one signal was handled per call to omrsig_protect. In
 		 * this case, the current signal in tls will be pointing at a stale stack frame and signal: CMVC 126838
 		 */
-		currentSignal = omrthread_tls_get(thisThread, tlsKeyCurrentSignal);
+		J9CurrentSignal *currentSignal = omrthread_tls_get(thisThread, tlsKeyCurrentSignal);
 
 		/* setjmp/longjmp does not clear the mask setup by the OS when it delivers the signal. User sigsetjmp/siglongjmp(buf, 1) instead */
 		if (0 != sigsetjmp(thisRecord.returnBuf, 1)) {
-
 			/* the handler had long jumped back here -- reset the signal handler stack and currentSignal and return */
 			omrthread_tls_set(thisThread, tlsKey, thisRecord.previous);
 			omrthread_tls_set(thisThread, tlsKeyCurrentSignal, currentSignal);
@@ -406,7 +399,7 @@ omrsig_set_async_signal_handler(struct OMRPortLibrary *portLibrary, omrsig_handl
 	omrthread_monitor_enter(registerHandlerMonitor);
 
 	if (OMR_ARE_ANY_BITS_SET(signalOptionsGlobal, OMRPORT_SIG_OPTIONS_REDUCED_SIGNALS_ASYNCHRONOUS)) {
-		/* -Xrs was set, we can't protect against any signals, do not install any handlers except SIGXFSZ*/
+		/* -Xrs was set, we can't protect against any signals, do not install any handlers except SIGXFSZ */
 		if (OMR_ARE_ANY_BITS_SET(flags, OMRPORT_SIG_FLAG_SIGXFSZ) && OMR_ARE_ANY_BITS_SET(signalOptionsGlobal, OMRPORT_SIG_OPTIONS_SIGXFSZ)) {
 			rc = registerMasterHandlers(portLibrary, OMRPORT_SIG_FLAG_SIGXFSZ, OMRPORT_SIG_FLAG_SIGALLASYNC, NULL);
 		} else {
@@ -513,6 +506,7 @@ omrsig_set_single_async_signal_handler(struct OMRPortLibrary *portLibrary, omrsi
 	} else {
 		rc = registerMasterHandlers(portLibrary, portlibSignalFlag, OMRPORT_SIG_FLAG_SIGALLASYNC, oldOSHandler);
 	}
+
 	omrthread_monitor_exit(registerHandlerMonitor);
 
 	if (0 != rc) {
@@ -977,11 +971,9 @@ masterSynchSignalHandler(int signal, siginfo_t *sigInfo, void *contextInfo)
 		thisRecord = omrthread_tls_get(thisThread, tlsKey);
 
 		while (NULL != thisRecord) {
-
 			if (OMR_ARE_ANY_BITS_SET(thisRecord->flags, portLibType)) {
 				struct OMRUnixSignalInfo j9Info;
 				struct J9PlatformSignalInfo platformSignalInfo;
-
 
 				/* the equivalent of these memsets were here before, but were they needed? */
 				memset(&j9Info, 0, sizeof(j9Info));
@@ -1076,14 +1068,13 @@ masterSynchSignalHandler(int signal, siginfo_t *sigInfo, void *contextInfo)
 
 		CEE3CIB(NULL, &conditionInfoBlock, &cibfc);
 
-		if (0 ==  _FBCHECK(cibfc , CEE000))
+		if (0 ==  _FBCHECK(cibfc, CEE000))
 #endif
 		{
 			/* we successfully acquired the condition information block */
 
 			/* check the abend and program check flags, if they are set, this is a "real" hardware signal */
 			if ((1 == conditionInfoBlock-> cib_abf) || (1 == conditionInfoBlock->cib_pcf)) {
-
 				if ((0 != sigInfo->si_code) && (_SEGV_SOFTLIMIT != sigInfo->si_code) &&
 					((SIGSEGV == signal) ||
 					 (SIGILL == signal) ||
@@ -1331,29 +1322,26 @@ mapOSSignalToPortLib(uint32_t signalNo, siginfo_t *sigInfo)
 {
 	uint32_t index = 0;
 
-	for (index = 0; index < sizeof(signalMap) / sizeof(signalMap[0]); index++) {
+	if ((SIGFPE == signalNo) && (NULL != sigInfo)) {
+		/* If we are not looking up the mapping in response to a signal
+		 * we will not have a siginfo_t structure.
+		 */
+
+		/* Linux 2.4 kernel bug: 64-bit platforms or in 0x30000 into si_code */
+		switch (sigInfo->si_code & 0xff) {
+		case FPE_FLTDIV:
+			return OMRPORT_SIG_FLAG_SIGFPE_DIV_BY_ZERO;
+		case FPE_INTDIV:
+			return OMRPORT_SIG_FLAG_SIGFPE_INT_DIV_BY_ZERO;
+		case FPE_INTOVF:
+			return OMRPORT_SIG_FLAG_SIGFPE_INT_OVERFLOW;
+		default:
+			return OMRPORT_SIG_FLAG_SIGFPE;
+		}
+	}
+
+	for (index = 0; index < sizeof(signalMap) / sizeof(signalMap[0]); ++index) {
 		if (signalMap[index].unixSignalNo == signalNo) {
-
-			if (SIGFPE == signalNo) {
-
-				if (0 != sigInfo) {
-					/* If we are not looking up the mapping in response to a signal
-					 * we will not have a siginfo_t structure */
-
-					/* Linux 2.4 kernel bug: 64-bit platforms or in 0x30000 into si_code */
-					switch (sigInfo->si_code & 0xff) {
-					case FPE_FLTDIV:
-						return OMRPORT_SIG_FLAG_SIGFPE_DIV_BY_ZERO;
-					case FPE_INTDIV:
-						return OMRPORT_SIG_FLAG_SIGFPE_INT_DIV_BY_ZERO;
-					case FPE_INTOVF:
-						return OMRPORT_SIG_FLAG_SIGFPE_INT_OVERFLOW;
-					default:
-						return OMRPORT_SIG_FLAG_SIGFPE;
-					}
-				}
-			}
-
 			return signalMap[index].portLibSignalNo;
 		}
 	}
@@ -1436,7 +1424,7 @@ addAsyncSignalsToSet(sigset_t *ss)
 static int32_t
 registerMasterHandlers(OMRPortLibrary *portLibrary, uint32_t flags, uint32_t allowedSubsetOfFlags, void **oldOSHandler)
 {
-	uint32_t flagsSignalsOnly = 0;
+	uint32_t flagsSignalsOnly = flags & allowedSubsetOfFlags;
 	unix_sigaction handler = NULL;
 
 	if (OMRPORT_SIG_FLAG_SIGALLSYNC == allowedSubsetOfFlags) {
@@ -1446,8 +1434,6 @@ registerMasterHandlers(OMRPortLibrary *portLibrary, uint32_t flags, uint32_t all
 	} else {
 		return OMRPORT_SIG_ERROR;
 	}
-
-	flagsSignalsOnly = flags & allowedSubsetOfFlags;
 
 	if (0 != flagsSignalsOnly) {
 		/* registering some handlers */
@@ -1531,14 +1517,13 @@ initializeSignalTools(OMRPortLibrary *portLibrary)
 #endif /* defined(OSX) */
 
 	/* The asynchronous signal reporter will wait on this semaphore  */
-	if (SIGSEM_ERROR == SIGSEM_INIT(wakeUpASyncReporter, SIGSEM_NAME(0)))	 {
+	if (SIGSEM_ERROR == SIGSEM_INIT(wakeUpASyncReporter, SIGSEM_NAME(0))) {
 		return -1;
 	}
 	SIGSEM_UNLINK(SIGSEM_NAME(0));
 #undef SIGSEM_NAME
 
 #else /* !defined(J9ZOS390) */
-
 	if (pthread_mutex_init(&wakeUpASyncReporterMutex, NULL)) {
 		return -1;
 	}
@@ -1704,7 +1689,6 @@ sig_full_shutdown(struct OMRPortLibrary *portLibrary)
 
 	omrthread_monitor_enter(globalMonitor);
 	if (--attachedPortLibraries == 0) {
-
 		/* register the old actions we overwrote with our own */
 		for (index = 1; index < ARRAY_SIZE_SIGNALS; index++) {
 			if (oldActions[index].restore) {
@@ -1738,8 +1722,8 @@ sig_full_shutdown(struct OMRPortLibrary *portLibrary)
 		while (shutDownASynchReporter) {
 			omrthread_monitor_wait(asyncReporterShutdownMonitor);
 		}
-		omrthread_monitor_exit(asyncReporterShutdownMonitor);
 
+		omrthread_monitor_exit(asyncReporterShutdownMonitor);
 #endif	/* defined(OMR_PORT_ASYNC_HANDLER) */
 
 		/* destroy all of the remaining monitors */

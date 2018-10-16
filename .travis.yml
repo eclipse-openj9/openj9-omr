@@ -31,24 +31,12 @@ addons:
   apt:
     sources:
       - ubuntu-toolchain-r-test
-    packages:
-      - libnuma-dev
-      - bison
-      - libdwarf-dev
-      - libelf-dev
 env:
   global:
-    - GTEST_COLOR=1
     - BUILD_JOBS=2
 matrix:
   include:
     ## Auto tool builds
-    # 64 bit Linux AArch64
-    - os: linux
-      env: SPEC=linux_aarch64 PLATFORM=aarch64-linux-gcc RUN_TEST=no
-    # 32-bit linux arm
-    - os: linux
-      env: SPEC=linux_arm PLATFORM=arm-linux-gcc RUN_TEST=no
     # Linter
     - os: linux
       addons:

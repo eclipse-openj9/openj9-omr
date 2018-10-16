@@ -818,9 +818,7 @@ public:
 	isConcurrentScavengerHWSupported()
 	{
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
-		/* return concurrentScavenger temporary for consistency until VM part is not modified */
-		return concurrentScavenger;
-		/* return concurrentScavengerHWSupport; */
+		return concurrentScavengerHWSupport;
 #else
 		return false;
 #endif /* defined(OMR_GC_CONCURRENT_SCAVENGER) */

@@ -664,7 +664,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"enableEBBCCInfo",                    "C\tenable tracking CCInfo in Extended Basic Block scope",  SET_OPTION_BIT(TR_EnableEBBCCInfo), "F"},
    {"enableElementPrivatization",         "O\tenable privatization of stack declared elements accessed by const indices\n", SET_OPTION_BIT(TR_EnableElementPrivatization), "F"},
    {"enableExecutableELFGeneration",      "I\tenable the generation of executable ELF files", SET_OPTION_BIT(TR_EmitExecutableELFFile), "F", NOT_IN_SUBSET},
-   {"enableExpensiveOptsAtWarm",          "O\tenable store sinking, shrink wrapping and OSR at warm and below", SET_OPTION_BIT(TR_EnableExpensiveOptsAtWarm), "F" },
+   {"enableExpensiveOptsAtWarm",          "O\tenable store sinking and OSR at warm and below", SET_OPTION_BIT(TR_EnableExpensiveOptsAtWarm), "F" },
    {"enableFastHotRecompilation",         "R\ttry to recompile at hot sooner", SET_OPTION_BIT(TR_EnableFastHotRecompilation), "F"},
    {"enableFastScorchingRecompilation",   "R\ttry to recompile at scorching sooner", SET_OPTION_BIT(TR_EnableFastScorchingRecompilation), "F"},
    {"enableFpreductionAnnotation",        "O\tenable fpreduction annotation", SET_OPTION_BIT(TR_EnableFpreductionAnnotation), "F"},

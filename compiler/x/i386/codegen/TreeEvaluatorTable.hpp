@@ -639,7 +639,7 @@
    TR::TreeEvaluator::arraycopyEvaluator,                              // TR::arraycopy
    TR::TreeEvaluator::arraysetEvaluator,                               // TR::arrayset
    TR::TreeEvaluator::arraytranslateEvaluator,                         // TR::arraytranslate
-   TR::TreeEvaluator::arraytranslateAndTestEvaluator,                  // TR::arraytranslateAndTest
+   TR::TreeEvaluator::unImpOpEvaluator,                                // TR::arraytranslateAndTest
    TR::TreeEvaluator::badILOpEvaluator,                                // TR::long2String
    TR::TreeEvaluator::badILOpEvaluator,                                // TR::bitOpMem
    TR::TreeEvaluator::badILOpEvaluator,                                // TR::bitOpMemND

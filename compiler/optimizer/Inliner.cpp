@@ -3805,8 +3805,6 @@ bool TR_IndirectCallSite::findCallTargetUsingArgumentPreexistence(TR_InlinerBase
       }
 
    TR_ResolvedMethod * targetMethod = getResolvedMethod(klass);
-   TR_ASSERT(targetMethod, "Couldn't resolve the method for klass %p", klass);
-
    if (!targetMethod)
       {
       heuristicTrace(inliner->tracer(), "ARGS PROPAGATION: couldn't get targetMethod\n");

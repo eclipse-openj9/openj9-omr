@@ -381,6 +381,9 @@ TR_OutlinedInstructionsGenerator::TR_OutlinedInstructionsGenerator(TR::LabelSymb
 
 TR_OutlinedInstructionsGenerator::~TR_OutlinedInstructionsGenerator()
    {
-   generateLabelInstruction(LABEL, _oi->_callNode, generateLabelSymbol(_oi->_cg), _oi->_cg);
-   _oi->swapInstructionListsWithCompilation();
+   if (!std::uncaught_exception())
+      {
+      generateLabelInstruction(LABEL, _oi->_callNode, generateLabelSymbol(_oi->_cg), _oi->_cg);
+      _oi->swapInstructionListsWithCompilation();
+      }
    }

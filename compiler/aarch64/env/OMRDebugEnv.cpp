@@ -19,39 +19,12 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#ifndef OMR_ARM64_DEBUG_ENV_INCL
-#define OMR_ARM64_DEBUG_ENV_INCL
+#include "env/DebugEnv.hpp"
 
-/*
- * The following #define and typedef must appear before any #includes in this file
- */
-#ifndef OMR_DEBUG_ENV_CONNECTOR
-#define OMR_DEBUG_ENV_CONNECTOR
-namespace OMR { namespace ARM64 { class DebugEnv; } }
-namespace OMR { typedef OMR::ARM64::DebugEnv DebugEnvConnector; }
-#else
-#error OMR::ARM64::DebugEnv expected to be a primary connector, but an OMR connector is already defined
-#endif
-
-#include "compiler/env/OMRDebugEnv.hpp"
-#include "infra/Annotations.hpp"  // for OMR_EXTENSIBLE
-
-namespace OMR
-{
-
-namespace ARM64
-{
-
-class OMR_EXTENSIBLE DebugEnv : public OMR::DebugEnv
+OMR::ARM64::DebugEnv::DebugEnv() :
+      OMR::DebugEnv()
    {
-public:
-
-   DebugEnv();
-
-   };
-
-}
-
-}
-
-#endif //OMR_ARM64_DEBUG_ENV_INCL
+   _hexAddressWidthInChars = 16;
+   _hexAddressFieldWidthInChars = 18;
+   _codeByteColumnWidth = 10;
+   }

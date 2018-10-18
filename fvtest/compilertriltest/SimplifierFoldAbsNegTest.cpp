@@ -42,7 +42,7 @@ template <> char* nameForType< double>() { return "Double"; }
 
 std::vector<int32_t> iTestData = { 0, 1, 2, -1, -2, 99999, -99999, std::numeric_limits<int32_t>::max(), std::numeric_limits<int32_t>::min() };
 std::vector<int64_t> lTestData = { 0, 1, 2, -1, -2, 99999, -99999, std::numeric_limits<int64_t>::min(), std::numeric_limits<int64_t>::min() };
-std::vector<  float> fTestData = { 0, 1, 2, -1, -2, 3.14, -3.14, std::numeric_limits<float>::min(), std::numeric_limits<float>::min() };
+std::vector<  float> fTestData = { 0, 1, 2, -1, -2, 3.14F, -3.14F, std::numeric_limits<float>::min(), std::numeric_limits<float>::min() };
 std::vector< double> dTestData = { 0, 1, 2, -1, -2, 3.14, -3.14, std::numeric_limits<double>::min(), std::numeric_limits<double>::min() };
 
 template <typename T> std::vector<T> dataForType();

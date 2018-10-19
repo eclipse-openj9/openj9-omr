@@ -450,7 +450,7 @@ MM_ParallelDispatcher::adjustThreadCount(uintptr_t maxThreadCount)
 }
 
 void
-MM_ParallelDispatcher::prepareThreadsForTask(MM_EnvironmentBase *env, MM_Task *task)
+MM_ParallelDispatcher::prepareThreadsForTask(MM_EnvironmentBase *env, MM_Task *task, uintptr_t threadCount)
 {
 	omrthread_monitor_enter(_slaveThreadMutex);
 	
@@ -466,14 +466,20 @@ MM_ParallelDispatcher::prepareThreadsForTask(MM_EnvironmentBase *env, MM_Task *t
 		recomputeActiveThreadCount(env);
 	}
 
-	task->setThreadCount(_activeThreadCount);
+	/* Caller might have tried to override thread count for this task with an explicit value.
+	 * Obey it, only if <= than what we calculated it should be (there might not be more active threads
+	 * available and ready to run).
+	 */
+	uintptr_t activeThreadCount = OMR_MIN(_activeThreadCount, threadCount);
+
+	task->setThreadCount(activeThreadCount);
 	task->setSynchronizeMutex(_synchronizeMutex);
 	
-	for(uintptr_t index=0; index < _activeThreadCount; index++) {
+	for(uintptr_t index=0; index < activeThreadCount; index++) {
 		_statusTable[index] = slave_status_reserved;
 		_taskTable[index] = task;
 	}
-	wakeUpThreads(_activeThreadCount);
+	wakeUpThreads(activeThreadCount);
 	omrthread_monitor_exit(_slaveThreadMutex);
 }
 

@@ -59,10 +59,9 @@ template <typename ListKind> class List;
 #define NUM_S390_VRF 16 ///< 32 after full RA complete
 #define NUM_S390_FPR_PAIRS 8
 
-/** Max. displacement */
+#define MINDISP      0
 #define MAXDISP      4096
 
-// Min/Max. long displacement
 #define MAXLONGDISP      +524287 // 0x7FFFF
 #define MINLONGDISP      -524288 // 0x80000
 

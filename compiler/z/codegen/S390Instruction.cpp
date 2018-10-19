@@ -2604,16 +2604,14 @@ TR::S390RSInstruction::generateBinaryEncoding()
    uint8_t * cursor = instructionStart;
    memset( (void*)cursor,0,getEstimatedBinaryLength());
    int32_t padding = 0, longDispTouchUpPadding = 0;
-   getOpCode().copyBinaryToBuffer(instructionStart);
    TR::Compilation *comp = cg()->comp();
 
-   if (getMemoryReference())
+   if (getMemoryReference() != NULL)
       {
       padding = getMemoryReference()->generateBinaryEncoding(cursor, cg(), this);
       // Opcode could have been changed by memref for long disp RS => RSY
       // It is also possible that we inserted ext code for large DISP field.
       cursor += padding;
-      getOpCode().copyBinaryToBufferWithoutClear(cursor);
       }
    else
       {
@@ -2624,6 +2622,25 @@ TR::S390RSInstruction::generateBinaryEncoding()
       {
       (*(int8_t *) (cursor + 1))  |= getMaskImmediate();
       }
+
+   TR::InstOpCode& opCode = getOpCode();
+
+   if (getMemoryReference() != NULL)
+      {
+      int32_t displacement = getMemoryReference()->getOffset();
+
+      if ((displacement > MINLONGDISP && displacement < 0) || (displacement >= MAXDISP && displacement < MAXLONGDISP))
+         {
+         auto longDisplacementMnemonic = opCodeCanBeAdjustedTo(getOpCodeValue());
+
+         if (longDisplacementMnemonic != TR::InstOpCode::BAD)
+            {
+            opCode = TR::InstOpCode(longDisplacementMnemonic);
+            }
+         }
+      }
+
+   opCode.copyBinaryToBufferWithoutClear(cursor);
 
    // AKA Even Reg
    toRealRegister(getFirstRegister())->setRegister1Field((uint32_t *) cursor);
@@ -2640,7 +2657,7 @@ TR::S390RSInstruction::generateBinaryEncoding()
       }
 
    if (!comp->getOption(TR_DisableLongDispNodes)) instructionStart = cursor;
-   cursor += getOpCode().getInstructionLength();
+   cursor += opCode.getInstructionLength();
 
    // Finish patching up if long disp was needed
    if (getMemoryReference() != NULL)
@@ -3401,13 +3418,30 @@ TR::S390RXInstruction::generateBinaryEncoding()
       (*(uint32_t *) cursor) |= boi(0x000FFFFF & getConstForMRField());
       }
 
-   // Overlay the actual instruction and reg
-   getOpCode().copyBinaryToBufferWithoutClear(cursor);
+   TR::InstOpCode& opCode = getOpCode();
+
+   if (getMemoryReference() != NULL)
+      {
+      int32_t displacement = getMemoryReference()->getOffset();
+
+      if ((displacement > MINLONGDISP && displacement < MINDISP) || (displacement >= MAXDISP && displacement < MAXLONGDISP))
+         {
+         auto longDisplacementMnemonic = opCodeCanBeAdjustedTo(getOpCodeValue());
+
+         if (longDisplacementMnemonic != TR::InstOpCode::BAD)
+            {
+            opCode = TR::InstOpCode(longDisplacementMnemonic);
+            }
+         }
+      }
+
+   opCode.copyBinaryToBufferWithoutClear(cursor);
+
    TR::Register * trgReg = getRegForBinaryEncoding(getRegisterOperand(1));
    toRealRegister(trgReg)->setRegisterField((uint32_t *) cursor);
 
    if (!comp->getOption(TR_DisableLongDispNodes)) instructionStart = cursor;
-   cursor += (getOpCode().getInstructionLength());
+   cursor += opCode.getInstructionLength();
 
    // Finish patching up if long disp was needed
    if (getMemoryReference() != NULL)
@@ -5244,14 +5278,27 @@ TR::S390SIInstruction::generateBinaryEncoding()
    padding = getMemoryReference()->generateBinaryEncoding(cursor, cg(), this);
    cursor += padding;
 
-   // Overlay the actual instruction and reg
-   getOpCode().copyBinaryToBufferWithoutClear(cursor);
+   TR::InstOpCode& opCode = getOpCode();
+
+   int32_t displacement = getMemoryReference()->getOffset();
+
+   if ((displacement > MINLONGDISP && displacement < 0) || (displacement >= MAXDISP && displacement < MAXLONGDISP))
+      {
+      auto longDisplacementMnemonic = opCodeCanBeAdjustedTo(getOpCodeValue());
+
+      if (longDisplacementMnemonic != TR::InstOpCode::BAD)
+         {
+         opCode = TR::InstOpCode(longDisplacementMnemonic);
+         }
+      }
+
+   opCode.copyBinaryToBufferWithoutClear(cursor);
 
    (*(uint32_t *) cursor) &= boi(0xFF00FFFF);
    (*(uint8_t *) (cursor + 1)) |= getSourceImmediate();
 
    if (!comp->getOption(TR_DisableLongDispNodes)) instructionStart = cursor;
-   cursor += getOpCode().getInstructionLength();
+   cursor += opCode.getInstructionLength();
 
    // Finish patching up if long disp was needed
    if (getMemoryReference() != NULL)

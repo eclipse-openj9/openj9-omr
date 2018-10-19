@@ -229,7 +229,6 @@ uint8_t *OMR::ARM64::MemoryReference::generateBinaryEncoding(TR::Instruction *cu
    uint32_t *wcursor = (uint32_t *)cursor;
    TR::RealRegister *base = self()->getBaseRegister() ? toRealRegister(self()->getBaseRegister()) : NULL;
    TR::RealRegister *index = self()->getIndexRegister() ? toRealRegister(self()->getIndexRegister()) : NULL;
-   TR::RealRegister *target = toRealRegister(currentInstruction->getMemoryDataRegister());
 
    if (self()->getUnresolvedSnippet())
       {
@@ -250,7 +249,6 @@ uint8_t *OMR::ARM64::MemoryReference::generateBinaryEncoding(TR::Instruction *cu
             {
             base->setRegisterFieldRN(wcursor);
             index->setRegisterFieldRM(wcursor);
-            target->setRegisterFieldRT(wcursor);
 
             if (self()->getScale() != 0)
                {
@@ -268,7 +266,6 @@ uint8_t *OMR::ARM64::MemoryReference::generateBinaryEncoding(TR::Instruction *cu
          {
          /* no index register */
          base->setRegisterFieldRN(wcursor);
-         target->setRegisterFieldRT(wcursor);
 
          if (isImm9OffsetInstruction(enc))
             {

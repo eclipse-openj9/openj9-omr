@@ -19,15 +19,56 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
+#include "codegen/ARM64Instruction.hpp"
 #include "codegen/CodeGenerator.hpp"
+#include "codegen/GenerateInstructions.hpp"
+#include "codegen/Linkage.hpp"
+#include "codegen/RegisterDependency.hpp"
 #include "codegen/TreeEvaluator.hpp"
+#include "il/Node.hpp"
+#include "il/Node_inlines.hpp"
+#include "infra/Bit.hpp"
+
+static TR::Register *addOrSubInteger(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   TR::Node *firstChild = node->getFirstChild();
+   TR::Register *src1Reg = cg->evaluate(firstChild);
+   TR::Node *secondChild = node->getSecondChild();
+   TR::Register *trgReg = cg->allocateRegister();
+   bool isAdd = node->getOpCode().isAdd();
+
+   if (secondChild->getOpCode().isLoadConst() && secondChild->getRegister() == NULL)
+      {
+      int32_t value = secondChild->getInt();
+      if (constantIsUnsignedImm12(value))
+         {
+         generateTrg1Src1ImmInstruction(cg, isAdd ? TR::InstOpCode::addimmw : TR::InstOpCode::subimmw, node, trgReg, src1Reg, value);
+         }
+      else
+         {
+         TR::Register *tmpReg = cg->allocateRegister();
+         loadConstant32(cg, node, value, tmpReg);
+         generateTrg1Src2Instruction(cg, isAdd ? TR::InstOpCode::addw : TR::InstOpCode::subw, node, trgReg, src1Reg, tmpReg);
+         cg->stopUsingRegister(tmpReg);
+         }
+      }
+   else
+      {
+      TR::Register *src2Reg = cg->evaluate(secondChild);
+      generateTrg1Src2Instruction(cg, TR::InstOpCode::addw, node, trgReg, src1Reg, src2Reg);
+      }
+
+   node->setRegister(trgReg);
+   firstChild->decReferenceCount();
+   secondChild->decReferenceCount();
+   return trgReg;
+   }
 
 TR::Register *
 OMR::ARM64::TreeEvaluator::iaddEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// TODO:ARM64: Enable TR::TreeEvaluator::iaddEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
-	}
+   {
+   return addOrSubInteger(node, cg);
+   }
 
 TR::Register *
 OMR::ARM64::TreeEvaluator::laddEvaluator(TR::Node *node, TR::CodeGenerator *cg)
@@ -38,10 +79,9 @@ OMR::ARM64::TreeEvaluator::laddEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 
 TR::Register *
 OMR::ARM64::TreeEvaluator::isubEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// TODO:ARM64: Enable TR::TreeEvaluator::isubEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
-	}
+   {
+   return addOrSubInteger(node, cg);
+   }
 
 TR::Register *
 OMR::ARM64::TreeEvaluator::lsubEvaluator(TR::Node *node, TR::CodeGenerator *cg)
@@ -50,12 +90,64 @@ OMR::ARM64::TreeEvaluator::lsubEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
 	}
 
+// Multiply a register by a 32-bit constant
+static void mulConstant32(TR::Node *node, TR::Register *treg, TR::Register *sreg, int32_t value, TR::CodeGenerator *cg)
+   {
+   if (value == 0)
+      {
+      loadConstant32(cg, node, 0, treg);
+      }
+   else if (value == 1)
+      {
+      generateMovInstruction(cg, node, treg, sreg);
+      }
+   else if (value == -1)
+      {
+      generateNegInstruction(cg, node, treg, sreg);
+      }
+   else
+      {
+      TR::Register *tmpReg = cg->allocateRegister();
+      loadConstant32(cg, node, value, tmpReg);
+      generateMulInstruction(cg, node, treg, sreg, tmpReg);
+      cg->stopUsingRegister(tmpReg);
+      }
+   }
+
 TR::Register *
 OMR::ARM64::TreeEvaluator::imulEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// TODO:ARM64: Enable TR::TreeEvaluator::imulEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
-	}
+   {
+   TR::Node *firstChild = node->getFirstChild();
+   TR::Register *src1Reg = cg->evaluate(firstChild);
+   TR::Node *secondChild = node->getSecondChild();
+   TR::Register *trgReg;
+
+   if (secondChild->getOpCode().isLoadConst() && secondChild->getRegister() == NULL)
+      {
+      int32_t value = secondChild->getInt();
+      if (value > 0 && cg->convertMultiplyToShift(node))
+         {
+         // The multiply has been converted to a shift.
+         trgReg = cg->evaluate(node);
+         return trgReg;
+         }
+      else
+         {
+         trgReg = cg->allocateRegister();
+         mulConstant32(node, trgReg, src1Reg, value, cg);
+         }
+      }
+   else
+      {
+      TR::Register *src2Reg = cg->evaluate(secondChild);
+      trgReg = cg->allocateRegister();
+      generateMulInstruction(cg, node, trgReg, src1Reg, src2Reg);
+      }
+   firstChild->decReferenceCount();
+   secondChild->decReferenceCount();
+   node->setRegister(trgReg);
+   return trgReg;
+   }
 
 TR::Register *
 OMR::ARM64::TreeEvaluator::imulhEvaluator(TR::Node *node, TR::CodeGenerator *cg)

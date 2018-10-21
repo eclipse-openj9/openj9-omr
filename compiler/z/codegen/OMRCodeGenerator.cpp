@@ -1488,7 +1488,7 @@ OMR::Z::CodeGenerator::insertInstructionPrefetches()
             if (!op.isAdmin())
                {
                real = first;
-               if (op.isLabel() || op.isCall() || first->isEndInternalControlFlow())
+               if (op.isLabel() || op.isCall())
                   {
                   break;
                   }

@@ -4508,8 +4508,6 @@ class S390SSEInstruction : public TR::S390MemMemInstruction
 ////////////////////////////////////////////////////////////////////////////////
 class S390RXInstruction : public TR::S390RegInstruction
    {
-   uint32_t _constForMRField;
-
    public:
 
    S390RXInstruction(TR::InstOpCode::Mnemonic          op, TR::Node * n,
@@ -4562,29 +4560,8 @@ class S390RXInstruction : public TR::S390RegInstruction
          (mf->getUnresolvedSnippet())->setDataReferenceInstruction(this);
       }
 
-   S390RXInstruction(TR::InstOpCode::Mnemonic          op, TR::Node * n,
-                        TR::Register            *treg,
-                        uint32_t                constMR,
-                        TR::CodeGenerator       *cg)
-      : S390RegInstruction(op, n, treg, cg),
-        _constForMRField(constMR)
-      {
-      }
-
-   S390RXInstruction(TR::InstOpCode::Mnemonic          op, TR::Node * n,
-                        TR::Register            *treg,
-                        uint32_t                constMR,
-                        TR::Instruction         *precedingInstruction,
-                        TR::CodeGenerator       *cg)
-      : S390RegInstruction(op, n, treg, precedingInstruction, cg),
-        _constForMRField(constMR)
-      {
-      }
-
    virtual char *description() { return "S390RXInstruction"; }
    virtual Kind getKind() { return IsRX; }
-
-   uint32_t getConstForMRField() {return _constForMRField;}
 
    virtual TR::MemoryReference *getMemoryReference() { return (_sourceMemSize!=0) ? (sourceMemBase())[0] : NULL;}
 
@@ -4676,23 +4653,6 @@ class S390RXYInstruction : public TR::S390RXInstruction
                          TR::Instruction         *precedingInstruction,
                          TR::CodeGenerator       *cg)
       : S390RXInstruction(op, n, regp, mf, precedingInstruction, cg)
-      {
-      }
-
-   S390RXYInstruction(TR::InstOpCode::Mnemonic          op, TR::Node * n,
-                         TR::Register            *treg,
-                         uint32_t                constMR,
-                         TR::CodeGenerator       *cg)
-      : S390RXInstruction(op, n, treg, constMR, cg)
-      {
-      }
-
-   S390RXYInstruction(TR::InstOpCode::Mnemonic          op, TR::Node * n,
-                         TR::Register            *treg,
-                         uint32_t                constMR,
-                         TR::Instruction         *precedingInstruction,
-                         TR::CodeGenerator       *cg)
-      : S390RXInstruction(op, n, treg, constMR, precedingInstruction, cg)
       {
       }
 
@@ -5741,9 +5701,6 @@ class S390VRRiInstruction: public S390VRRInstruction
  */
 class S390VStorageInstruction: public S390VInstruction
    {
-   private:
-   uint16_t _displacement2;     // D2 field, 12bit long
-
    protected:
 
    uint8_t  _maskField;         // VStorage instructions have at most 1 mask at bit 32-35
@@ -5757,7 +5714,7 @@ class S390VStorageInstruction: public S390VInstruction
                          TR::Register             * sourceReg,   /* VRF or GPR */
                          TR::MemoryReference      * mr,
                          uint8_t                  mask)          /* 4 bits  */
-   : S390VInstruction(cg, op, n, targetReg), _displacement2(0), _maskField(mask)
+   : S390VInstruction(cg, op, n, targetReg), _maskField(mask)
       {
       if (sourceReg)
          {
@@ -5781,7 +5738,7 @@ class S390VStorageInstruction: public S390VInstruction
                          TR::MemoryReference        * mr,
                          uint8_t                    mask,                    /* 4 bits  */
                          TR::Instruction     * precedingInstruction)
-   : S390VInstruction(cg, op, n, targetReg, precedingInstruction), _displacement2(0), _maskField(mask)
+   : S390VInstruction(cg, op, n, targetReg, precedingInstruction), _maskField(mask)
       {
       if (sourceReg)
          useSourceRegister(sourceReg);
@@ -5804,7 +5761,6 @@ class S390VStorageInstruction: public S390VInstruction
                          TR::InstOpCode::Mnemonic op,
                          TR::Node                 * n)
    : S390VInstruction(cg, op, n),
-     _displacement2(0),
      _maskField(0)
       {
       }
@@ -5813,7 +5769,6 @@ class S390VStorageInstruction: public S390VInstruction
    virtual int32_t estimateBinaryLength(int32_t currentEstimate);
 
    public:
-   virtual uint16_t getConstForMRField() {return _displacement2; }
    virtual TR::MemoryReference* getMemoryReference()  { return (_sourceMemSize!=0) ? (sourceMemBase())[0] : NULL; }
    virtual char *description() { return "S390VStorageInstruction"; }
    virtual Kind getKind() = 0;

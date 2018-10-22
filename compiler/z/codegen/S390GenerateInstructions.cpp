@@ -809,26 +809,6 @@ generateRXInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::N
    }
 
 TR::Instruction *
-generateRXInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register * treg, uint32_t  constForMR,
-                      TR::Instruction * preced)
-   {
-   TR::Instruction * instr;
-   if (preced)
-      instr = new (INSN_HEAP) TR::S390RXInstruction(op, n, treg, constForMR, preced, cg);
-   else
-      instr = new (INSN_HEAP) TR::S390RXInstruction(op, n, treg, constForMR, cg);
-
-#ifdef J9_PROJECT_SPECIFIC
-   if (op == TR::InstOpCode::CVB || op == TR::InstOpCode::EX)
-      {
-      generateS390DAAExceptionRestoreSnippet(cg, n, instr, op, true);
-      }
-#endif
-
-   return instr;
-   }
-
-TR::Instruction *
 generateRXEInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node *n, TR::Register *treg, TR::MemoryReference *mf,
                        uint8_t mask3, TR::Instruction *preced)
    {
@@ -924,25 +904,6 @@ generateRXYbInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR:
       instr = new (INSN_HEAP) TR::S390RXYbInstruction(op, n, mask, mf, preced, cg);
    else
       instr = new (INSN_HEAP) TR::S390RXYbInstruction(op, n, mask, mf, cg);
-
-   return instr;
-   }
-
-TR::Instruction *
-generateRXYInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register * treg, uint32_t  constForMR, TR::Instruction * preced)
-   {
-   TR::Instruction * instr;
-   if (preced)
-      instr = new (INSN_HEAP) TR::S390RXYInstruction(op, n, treg, constForMR, preced, cg);
-   else
-      instr = new (INSN_HEAP) TR::S390RXYInstruction(op, n, treg, constForMR, cg);
-
-#ifdef J9_PROJECT_SPECIFIC
-   if (op == TR::InstOpCode::CVBY || op == TR::InstOpCode::CVBG)
-      {
-      generateS390DAAExceptionRestoreSnippet(cg, n, instr, op, false);
-      }
-#endif
 
    return instr;
    }

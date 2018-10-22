@@ -3405,18 +3405,8 @@ TR::S390RXInstruction::generateBinaryEncoding()
    memset( (void*)cursor,0,getEstimatedBinaryLength());
    int32_t padding = 0, longDispTouchUpPadding = 0;
 
-   // For large disp scenarios the memref could insert new inst
-   // or change the inst form RX => RXY (size changes in this case)
-   if (getMemoryReference() != NULL)
-      {
-      padding = getMemoryReference()->generateBinaryEncoding(cursor, cg(), this);
-      cursor += padding;
-      }
-   else
-      {
-      TR_ASSERT( (getConstForMRField() & 0xFFF00000) == 0, "TR::S390RXInstruction::_constForMRField greater than 0x000FFFFF for instruction 0x%x", this);
-      (*(uint32_t *) cursor) |= boi(0x000FFFFF & getConstForMRField());
-      }
+   padding = getMemoryReference()->generateBinaryEncoding(cursor, cg(), this);
+   cursor += padding;
 
    TR::InstOpCode& opCode = getOpCode();
 
@@ -3482,18 +3472,8 @@ TR::S390RXEInstruction::generateBinaryEncoding()
    memset( (void*)cursor,0,getEstimatedBinaryLength());
    int32_t padding = 0;
 
-   // For large disp scenarios the memref could insert new inst
-   if (getMemoryReference() != NULL)
-      {
-      padding = getMemoryReference()->generateBinaryEncoding(cursor, cg(), this);
-      cursor += padding;
-      }
-   else
-      {
-      TR_ASSERT( (getConstForMRField() & 0xFFF00000) == 0, "TR::S390RXEInstruction::_constForMRField greater than 0x000FFFFF");
-      (*(uint32_t *) cursor) &= boi(0xFF000000);
-      (*(uint32_t *) cursor) |= boi(0x000FFFFF & getConstForMRField());
-      }
+   padding = getMemoryReference()->generateBinaryEncoding(cursor, cg(), this);
+   cursor += padding;
 
    // Overlay the actual instruction, reg, and mask
    getOpCode().copyBinaryToBufferWithoutClear(cursor);
@@ -3532,18 +3512,8 @@ TR::S390RXYInstruction::generateBinaryEncoding()
    int32_t padding = 0, longDispTouchUpPadding = 0;
    TR::Compilation *comp = cg()->comp();
 
-   // For large disp scenarios the memref could insert new inst
-   if (getMemoryReference() != NULL)
-      {
-      padding = getMemoryReference()->generateBinaryEncoding(cursor, cg(), this);
-      cursor += padding;
-      }
-   else
-      {
-      TR_ASSERT( (getConstForMRField() & 0xFFF00000) == 0, "TR::S390RXYInstruction::_constForMRField greater than 0x000FFFFF");
-      (*(uint32_t *) cursor) &= boi(0xFF000000);
-      (*(uint32_t *) cursor) |= boi(0x000FFFFF & getConstForMRField());
-      }
+   padding = getMemoryReference()->generateBinaryEncoding(cursor, cg(), this);
+   cursor += padding;
 
    // Overlay the actual instruction and reg
    getOpCode().copyBinaryToBufferWithoutClear(cursor);

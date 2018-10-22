@@ -350,14 +350,6 @@ TR::Instruction * generateRXInstruction(
                    TR::MemoryReference *mf,
                    TR::Instruction         *preced = 0);
 
-TR::Instruction * generateRXInstruction(
-                   TR::CodeGenerator *cg,
-                   TR::InstOpCode::Mnemonic          op,
-                   TR::Node                *n,
-                   TR::Register            *treg,
-                   uint32_t                 constForMR,
-                   TR::Instruction         *preced = 0);
-
 TR::Instruction * generateRXEInstruction(
                    TR::CodeGenerator       *cg,
                    TR::InstOpCode::Mnemonic         op,
@@ -389,14 +381,6 @@ TR::Instruction * generateRXYInstruction(
                    TR::Node                 *n,
                    TR::RegisterPair         *regp,
                    TR::MemoryReference *mf,
-                   TR::Instruction         *preced = 0);
-
-TR::Instruction * generateRXYInstruction(
-                   TR::CodeGenerator *cg,
-                   TR::InstOpCode::Mnemonic          op,
-                   TR::Node                *n,
-                   TR::Register            *treg,
-                   uint32_t                 constForMR,
                    TR::Instruction         *preced = 0);
 
 TR::Instruction * generateRXFInstruction(

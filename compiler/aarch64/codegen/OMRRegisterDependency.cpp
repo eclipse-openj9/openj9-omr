@@ -131,6 +131,18 @@ bool OMR::ARM64::RegisterDependencyConditions::usesRegister(TR::Register *r)
    return false;
    }
 
+void OMR::ARM64::RegisterDependencyConditions::incRegisterTotalUseCounts(TR::CodeGenerator *cg)
+   {
+   for (int i = 0; i < _addCursorForPre; i++)
+      {
+      _preConditions->getRegisterDependency(i)->getRegister()->incTotalUseCount();
+      }
+   for (int j = 0; j < _addCursorForPost; j++)
+      {
+      _postConditions->getRegisterDependency(j)->getRegister()->incTotalUseCount();
+      }
+   }
+
 TR::RegisterDependencyConditions *
 OMR::ARM64::RegisterDependencyConditions::clone(
    TR::CodeGenerator *cg,

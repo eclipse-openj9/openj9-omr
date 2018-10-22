@@ -139,7 +139,6 @@ class OMR_EXTENSIBLE Instruction : public OMR::Instruction
 
    bool hasLongDisplacementSupport();
    static TR::InstOpCode::Mnemonic opCodeCanBeAdjustedTo(TR::InstOpCode::Mnemonic);
-   void attemptOpAdjustmentForLongDisplacement();
    TR::Register* getRegForBinaryEncoding(TR::Register* reg);
    void useRegister(TR::Register *reg, bool isDummy = false);
    bool matchesAnyRegister(TR::Register* reg, TR::Register* instReg);

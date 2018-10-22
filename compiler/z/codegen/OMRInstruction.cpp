@@ -1864,33 +1864,6 @@ TR::InstOpCode::Mnemonic OMR::Z::Instruction::opCodeCanBeAdjustedTo(TR::InstOpCo
       }
    }
 
-// the following converts RX and RXE instructions into their
-// corresponding long displacement instructions
-void
-OMR::Z::Instruction::attemptOpAdjustmentForLongDisplacement()
-   {
-   TR::InstOpCode::Mnemonic n_op = self()->opCodeCanBeAdjustedTo(self()->getOpCodeValue());
-   if (n_op != TR::InstOpCode::BAD)
-      self()->setOpCodeValue(n_op);
-
-   auto instructionFormat = self()->getOpCode().getInstructionFormat(self()->getOpCodeValue());
-
-   if (instructionFormat == RXYa_FORMAT ||
-       instructionFormat == RXYb_FORMAT)
-      self()->setKind(IsRXY);
-   else if (instructionFormat == RSYa_FORMAT ||
-            instructionFormat == RSYb_FORMAT)
-      self()->setKind(IsRSY);
-   else if (instructionFormat == SIY_FORMAT)
-      self()->setKind(IsSIY);
-   else if (self()->cg()->getDebug())
-      TR_ASSERT(0, "only RX, RS and SI instructions can be safely mapped to long displacement: opCode: %s", self()->cg()->getDebug()->getOpCodeName(&self()->getOpCode()));
-   else
-      TR_ASSERT(0, "only RX, RS and SI instructions can be safely mapped to long displacement");
-
-   }
-
-
 uint32_t
 OMR::Z::Instruction::useSourceMemoryReference(TR::MemoryReference * memRef)
    {

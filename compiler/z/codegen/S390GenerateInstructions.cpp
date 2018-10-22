@@ -2369,40 +2369,6 @@ generateS390ImmSymInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic o
    return new (INSN_HEAP) TR::S390ImmSymInstruction(op, n, imm, sr, cond, cg);
    }
 
-TR::Instruction *
-generateLogicalImmediate(TR::CodeGenerator * cg, TR::Node * node, TR::InstOpCode::Mnemonic defaultOp, TR::InstOpCode::Mnemonic lhOp, TR::InstOpCode::Mnemonic llOp,
-                         TR::Register * reg, int32_t imm)
-   {
-   if ((imm & 0x0000FFFF) == 0x0000FFFF)
-      {
-      return new (INSN_HEAP) TR::S390RIInstruction(lhOp, node, reg, ((imm & 0xFFFF0000) >> 16), cg);
-      }
-
-   if ((imm & 0xFFFF0000) == 0xFFFF0000)
-      {
-      return new (INSN_HEAP) TR::S390RIInstruction(llOp, node, reg, imm, cg);
-      }
-
-   TR::MemoryReference * dataref = generateS390MemoryReference(imm, TR::Int32, cg, 0);
-
-   TR::Instruction *instr;
-   instr = (new (INSN_HEAP) TR::S390RXInstruction(defaultOp, node, reg, dataref, cg));
-
-   return instr;
-   }
-
-TR::Instruction *
-generateAndImmediate(TR::CodeGenerator * cg, TR::Node * node, TR::Register * reg, int32_t imm)
-   {
-   return generateLogicalImmediate(cg, node, TR::InstOpCode::N, TR::InstOpCode::NILH, TR::InstOpCode::NILL, reg, imm);
-   }
-
-TR::Instruction *
-generateOrImmediate(TR::CodeGenerator * cg, TR::Node * node, TR::Register * reg, int32_t imm)
-   {
-   return generateLogicalImmediate(cg, node, TR::InstOpCode::O, TR::InstOpCode::OILH, TR::InstOpCode::OILL, reg, imm);
-   }
-
 #ifdef J9_PROJECT_SPECIFIC
 TR::Instruction *
 generateVirtualGuardNOPInstruction(TR::CodeGenerator * cg, TR::Node * n, TR_VirtualGuardSite * site,

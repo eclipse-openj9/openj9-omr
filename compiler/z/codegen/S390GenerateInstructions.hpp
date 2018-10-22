@@ -1341,25 +1341,6 @@ TR::Instruction *generateS390DebugCounterBumpInstruction(
                    TR::Snippet* cas,
                    int32_t d = 1,
                    TR::Instruction *preced = 0);
-TR::Instruction *generateAndImmediate(
-                   TR::CodeGenerator *cg,
-                   TR::Node *node,
-                   TR::Register *reg,
-                   int32_t imm);
-
-TR::Instruction *generateLogicalImmediate(
-                   TR::CodeGenerator *cg,
-                   TR::Node *node,
-                   TR::InstOpCode::Mnemonic defaultOp,
-                   TR::InstOpCode::Mnemonic lhOp,
-                   TR::InstOpCode::Mnemonic llOp,
-                   TR::Register *reg, int32_t imm);
-
-TR::Instruction *generateOrImmediate(
-                   TR::CodeGenerator *cg,
-                   TR::Node *node,
-                   TR::Register *reg,
-                   int32_t imm);
 
 #ifdef J9_PROJECT_SPECIFIC
 TR::Instruction *generateVirtualGuardNOPInstruction(

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -283,9 +283,8 @@ TR::X86SystemLinkage::copyParametersToHomeLocation(TR::Instruction *cursor)
 TR::Instruction *
 TR::X86SystemLinkage::savePreservedRegisters(TR::Instruction *cursor)
    {
-   // For IA32, if disableShrinkWrapping, usePushForPreservedRegs will be true; otherwise false;
-   //          For X64,  shrinkWraping is always on, and usePushForPreservedRegs always false;
-    // TR_ASSERT(!getProperties().getUsesPushesForPreservedRegs(), "assertion failure");
+   // For IA32 usePushForPreservedRegs will be true;
+   // For X64, usePushForPreservedRegs always false;
    TR::ResolvedMethodSymbol *bodySymbol = comp()->getJittedMethodSymbol();
    const int32_t localSize = getProperties().getOffsetToFirstLocal() - bodySymbol->getLocalMappingCursor();
    const int32_t pointerSize = getProperties().getPointerSize();
@@ -308,7 +307,6 @@ TR::X86SystemLinkage::savePreservedRegisters(TR::Instruction *cursor)
       }
    else
       {
-      TR_BitVector *p = cg()->getPreservedRegsInPrologue();
       for (int32_t pindex = getProperties().getMaxRegistersPreservedInPrologue()-1;
            pindex >= 0;
            pindex--)
@@ -317,16 +315,13 @@ TR::X86SystemLinkage::savePreservedRegisters(TR::Instruction *cursor)
          TR::RealRegister *reg = machine()->getX86RealRegister(getProperties().getPreservedRegister((uint32_t)pindex));
          if(reg->getHasBeenAssignedInMethod() && reg->getState() != TR::RealRegister::Locked)
             {
-            if (!p || p->get(idx))
-               {
-               cursor = generateMemRegInstruction(
-                  cursor,
-                  TR::Linkage::movOpcodes(MemReg, fullRegisterMovType(reg)),
-                  generateX86MemoryReference(machine()->getX86RealRegister(TR::RealRegister::vfp), offsetCursor, cg()),
-                  reg,
-                  cg()
-                  );
-               }
+            cursor = generateMemRegInstruction(
+               cursor,
+               TR::Linkage::movOpcodes(MemReg, fullRegisterMovType(reg)),
+               generateX86MemoryReference(machine()->getX86RealRegister(TR::RealRegister::vfp), offsetCursor, cg()),
+               reg,
+               cg()
+               );
             offsetCursor -= pointerSize;
             }
          }
@@ -649,7 +644,6 @@ TR::X86SystemLinkage::restorePreservedRegisters(TR::Instruction *cursor)
    else
       {
       int32_t offsetCursor = -localSize +  _properties.getOffsetToFirstLocal() - pointerSize;
-      TR_BitVector *p = cg()->getPreservedRegsInPrologue();
       for (int32_t pindex = _properties.getMaxRegistersPreservedInPrologue()-1;
            pindex >= 0;
            pindex--)
@@ -659,21 +653,18 @@ TR::X86SystemLinkage::restorePreservedRegisters(TR::Instruction *cursor)
 
          if (comp()->getOption(TR_TraceCG))
             {
-            traceMsg(comp(), "reg %d, getHasBeenAssignedInMethod %d, p %x, p->get(idx) %d.\n", idx, reg->getHasBeenAssignedInMethod(), p, p ? p->get(idx) : -1);
+            traceMsg(comp(), "reg %d, getHasBeenAssignedInMethod %d\n", idx, reg->getHasBeenAssignedInMethod());
             }
 
          if (reg->getHasBeenAssignedInMethod())
             {
-            if (!p || p->get(idx))
-               {
-               cursor = generateRegMemInstruction(
-                  cursor,
-                  TR::Linkage::movOpcodes(RegMem, fullRegisterMovType(reg)),
-                  reg,
-                  generateX86MemoryReference(machine()->getX86RealRegister(TR::RealRegister::vfp), offsetCursor, cg()),
-                  cg()
-                  );
-               }
+            cursor = generateRegMemInstruction(
+               cursor,
+               TR::Linkage::movOpcodes(RegMem, fullRegisterMovType(reg)),
+               reg,
+               generateX86MemoryReference(machine()->getX86RealRegister(TR::RealRegister::vfp), offsetCursor, cg()),
+               cg()
+               );
             offsetCursor -= pointerSize;
             }
          }

@@ -40,14 +40,21 @@
 #define STRINGFY(str) DO_STRINGFY(str)
 #define DO_STRINGFY(str) #str
 
-const char *gcTests[] = {"fvtest/gctest/configuration/sample_GC_config.xml",
-                                "fvtest/gctest/configuration/test_system_gc.xml",
-                                "fvtest/gctest/configuration/gencon_GC_config.xml",
-                                "fvtest/gctest/configuration/gencon_GC_backout_config.xml",
-                                "fvtest/gctest/configuration/scavenger_GC_config.xml",
-                                "fvtest/gctest/configuration/scavenger_GC_backout_config.xml",
-                               	"fvtest/gctest/configuration/global_GC_config.xml",
-								"fvtest/gctest/configuration/optavgpause_GC_config.xml"};
+const char *gcTests[] = {"fvtest/gctest/configuration/sample_GC_config.xml"
+                        , "fvtest/gctest/configuration/test_system_gc.xml"
+                        , "fvtest/gctest/configuration/global_GC_config.xml"
+#if defined(OMR_GC_MODRON_CONCURRENT_MARK)
+                        , "fvtest/gctest/configuration/optavgpause_GC_config.xml"
+#endif
+#if defined(OMR_GC_MODRON_SCAVENGER)
+                        , "fvtest/gctest/configuration/scavenger_GC_config.xml"
+                        , "fvtest/gctest/configuration/scavenger_GC_backout_config.xml"
+#endif
+#if defined(OMR_GC_MODRON_SCAVENGER) && defined(OMR_GC_MODRON_CONCURRENT_MARK)
+                        , "fvtest/gctest/configuration/gencon_GC_config.xml"
+                        , "fvtest/gctest/configuration/gencon_GC_backout_config.xml"
+#endif
+                        };
 
 const char *perfTests[] = {"perftest/gctest/configuration/21645_core.20150126.202455.11862202.0001.xml",
 								"perftest/gctest/configuration/24404_core.20140723.091737.5812.0002.xml"};
@@ -174,23 +181,22 @@ GCConfigTest::TearDown()
 	omrmem_free_memory((void *)verboseFile);
 	verboseFile = NULL;
 
-	cli->kill(env);
+	if (NULL != cli) {
+		cli->kill(env);
+	}
 
-	/* Shut down the dispatcher threads */
-	omr_error_t rc = OMR_GC_ShutdownDispatcherThreads(exampleVM->_omrVMThread);
-	ASSERT_EQ(OMR_ERROR_NONE, rc) << "TearDown(): OMR_GC_ShutdownDispatcherThreads failed, rc=" << rc;
-
-	/* Shut down collector */
-	rc = OMR_GC_ShutdownCollector(exampleVM->_omrVMThread);
-	ASSERT_EQ(OMR_ERROR_NONE, rc) << "TearDown(): OMR_GC_ShutdownCollector failed, rc=" << rc;
+	if (NULL != exampleVM->_omrVMThread) {
+		/* Shut down the dispatcher threads */
+		omr_error_t rc = OMR_GC_ShutdownDispatcherThreads(exampleVM->_omrVMThread);
+		ASSERT_EQ(OMR_ERROR_NONE, rc) << "TearDown(): OMR_GC_ShutdownDispatcherThreads failed, rc=" << rc;
+	}
 
 	/* Detach from VM */
-	rc = OMR_Thread_Free(exampleVM->_omrVMThread);
+	omr_error_t rc = OMR_Thread_Free(exampleVM->_omrVMThread);
 	ASSERT_EQ(OMR_ERROR_NONE, rc) << "TearDown(): OMR_Thread_Free failed, rc=" << rc;
 
-	/* Shut down heap */
-	rc = OMR_GC_ShutdownHeap(exampleVM->_omrVM);
-	ASSERT_EQ(OMR_ERROR_NONE, rc) << "TearDown(): OMR_GC_ShutdownHeap failed, rc=" << rc;
+	/* Shut down collector */
+	ASSERT_EQ(OMR_GC_ShutdownHeapAndCollector(exampleVM->_omrVM), OMR_ERROR_NONE);
 
 	exampleVM->_omrVMThread = NULL;
 

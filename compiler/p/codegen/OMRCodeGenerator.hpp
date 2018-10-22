@@ -245,19 +245,6 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    bool canTransformUnsafeCopyToArrayCopy() { return true; }
    bool canTransformUnsafeSetMemory();
 
-   bool processInstruction(TR::Instruction *instr, TR_BitVector ** registerUsageInfo, int32_t &blockNum, int32_t &isFence, bool traceIt);
-   uint32_t isPreservedRegister(int32_t regIndex);
-   bool isReturnInstruction(TR::Instruction *instr);
-   bool isBranchInstruction(TR::Instruction *instr);
-   bool isLabelInstruction(TR::Instruction *instr);
-   int32_t isFenceInstruction(TR::Instruction *instr);
-   bool isAlignmentInstruction(TR::Instruction *instr);
-   TR::Instruction *splitEdge(TR::Instruction *cursor, bool isFallThrough, bool needsJump, TR::Instruction *newSplitLabel, TR::list<TR::Instruction*> *jmpInstrs, bool firstJump = false);
-   TR::Instruction *splitBlockEntry(TR::Instruction *instr);
-   int32_t computeRegisterSaveDescription(TR_BitVector *regs, bool populateInfo = false);
-   void processIncomingParameterUsage(TR_BitVector **registerUsageInfo, int32_t blockNum);
-   void updateSnippetMapWithRSD(TR::Instruction *cur, int32_t rsd);
-   bool isTargetSnippetOrOutOfLine(TR::Instruction *instr, TR::Instruction **start, TR::Instruction **end);
    virtual bool supportsAESInstructions();
 
    virtual bool getSupportsTLE()

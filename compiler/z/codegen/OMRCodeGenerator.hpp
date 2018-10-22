@@ -275,6 +275,8 @@ public:
 
    bool supportsMergingGuards();
 
+   bool supportsNonHelper(TR::SymbolReferenceTable::CommonNonhelperSymbol symbol);
+
    bool supportsDirectJNICallsForAOT() { return true;}
 
    bool shouldYankCompressedRefs() { return true; }
@@ -550,20 +552,6 @@ public:
 
    uint8_t getRCondMoveBranchOpCond() { return 0xF - fCondMoveBranchOpCond; }
 
-   /** Support for shrinkwrapping */
-   bool processInstruction(TR::Instruction *instr, TR_BitVector **registerUsageInfo, int32_t &blockNum, int32_t &isFence, bool traceIt); // virt
-   uint32_t isPreservedRegister(int32_t regIndex);
-   bool isReturnInstruction(TR::Instruction *instr);
-   bool isBranchInstruction(TR::Instruction *instr);
-   bool isLabelInstruction(TR::Instruction *instr);
-   int32_t isFenceInstruction(TR::Instruction *instr);
-   bool isAlignmentInstruction(TR::Instruction *instr);
-   TR::Instruction *splitEdge(TR::Instruction *cursor, bool isFallThrough, bool needsJump, TR::Instruction *newSplitLabel, TR::list<TR::Instruction*> *jmpInstrs, bool firstJump = false);
-   TR::Instruction *splitBlockEntry(TR::Instruction *instr);
-   int32_t computeRegisterSaveDescription(TR_BitVector *regs, bool populateInfo = false);
-   void processIncomingParameterUsage(TR_BitVector **registerUsageInfo, int32_t blockNum);
-   void updateSnippetMapWithRSD(TR::Instruction *cur, int32_t rsd);
-   bool isTargetSnippetOrOutOfLine(TR::Instruction *instr, TR::Instruction **start, TR::Instruction **end);
    bool canUseImmedInstruction(int64_t v);
    void ensure64BitRegister(TR::Register *reg);
 

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -127,13 +127,10 @@ FrontEnd::mapsAreIdentical(
        mapCursor != stackAtlas->getParameterMap() &&
        mapCursor->getMapSizeInBytes() == nextMapCursor->getMapSizeInBytes() &&
        mapCursor->getRegisterMap() == nextMapCursor->getRegisterMap() &&
-       !memcmp(mapCursor->getMapBits(), nextMapCursor->getMapBits(), mapCursor->getMapSizeInBytes()) &&
 #ifdef TR_HOST_S390
        (mapCursor->getHighWordRegisterMap() == nextMapCursor->getHighWordRegisterMap()) &&
 #endif
-       (comp->getOption(TR_DisableShrinkWrapping) ||
-        (mapCursor->getRegisterSaveDescription() == nextMapCursor->getRegisterSaveDescription()))
-        )
+       !memcmp(mapCursor->getMapBits(), nextMapCursor->getMapBits(), mapCursor->getMapSizeInBytes()))
       {
       return true;
       }

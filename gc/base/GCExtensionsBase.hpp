@@ -417,9 +417,10 @@ public:
 	bool scavengerEnabled;
 	bool scavengerRsoScanUnsafe;
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
-	bool softwareEvacuateReadBarrier; /**< enable software read barrier instead of hardware guarded loads when running with CS */
+	bool softwareRangeCheckReadBarrier; /**< enable software read barrier instead of hardware guarded loads when running with CS */
 	bool concurrentScavenger; /**< CS enabled/disabled flag */
 	bool concurrentScavengerForced; /**< set to true if CS is requested (by cmdline option), but there are more checks to do before deciding whether the request is to be obeyed */
+	bool concurrentScavengerHWSupport; /**< set to true if CS runs with HW support */
 	uintptr_t concurrentScavengerBackgroundThreads; /**< number of background GC threads during concurrent phase of Scavenge */
 	bool concurrentScavengerBackgroundThreadsForced; /**< true if concurrentScavengerBackgroundThreads set via command line option */
 	uintptr_t concurrentScavengerSlack; /**< amount of bytes added on top of avearge allocated bytes during concurrent cycle, in calcualtion for survivor size */
@@ -812,11 +813,21 @@ public:
 #endif /* defined(OMR_GC_CONCURRENT_SCAVENGER) */
 	}
 	
+	MMINLINE bool
+	isConcurrentScavengerHWSupported()
+	{
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+		return concurrentScavengerHWSupport;
+#else
+		return false;
+#endif /* defined(OMR_GC_CONCURRENT_SCAVENGER) */
+	}
+	
    MMINLINE bool
-   isSoftwareEvacuateReadBarrierEnabled()
+   isSoftwareRangeCheckReadBarrierEnabled()
    {
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
-      return softwareEvacuateReadBarrier;
+      return softwareRangeCheckReadBarrier;
 #else
       return false;
 #endif /* defined(OMR_GC_CONCURRENT_SCAVENGER) */
@@ -1353,9 +1364,10 @@ public:
 		, scvTenureStrategyHistory(true)
 		, scavengerEnabled(false)
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
-		, softwareEvacuateReadBarrier(false)
+		, softwareRangeCheckReadBarrier(false)
 		, concurrentScavenger(false)
 		, concurrentScavengerForced(false)
+		, concurrentScavengerHWSupport(false)
 		, concurrentScavengerBackgroundThreads(1)
 		, concurrentScavengerBackgroundThreadsForced(false)
 		, concurrentScavengerSlack(0)

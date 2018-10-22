@@ -25,6 +25,7 @@ include $(top_srcdir)/tools/toolconfigure.mk
 
 MODULE_NAME := tracemerge
 ARTIFACT_TYPE := cxx_executable
+USE_NATIVE_ENCODING := 1
 OBJECTS := ArgParser FileReader DATMerge FileUtils StringUtils Port main
 OBJECTS := $(addsuffix $(OBJEXT),$(OBJECTS))
 

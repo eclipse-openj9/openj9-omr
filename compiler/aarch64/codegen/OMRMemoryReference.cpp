@@ -79,6 +79,26 @@ OMR::ARM64::MemoryReference::MemoryReference(
    }
 
 
+OMR::ARM64::MemoryReference::MemoryReference(
+      TR::Node *node,
+      TR::SymbolReference *symRef,
+      uint32_t len,
+      TR::CodeGenerator *cg) :
+   _baseRegister(NULL),
+   _baseNode(NULL),
+   _indexRegister(NULL),
+   _indexNode(NULL),
+   _unresolvedSnippet(NULL),
+   _flag(0),
+   _length(len),
+   _scale(0),
+   _offset(0),
+   _symbolReference(symRef)
+   {
+   TR_ASSERT(false, "Not implemented yet.");
+   }
+
+
 bool OMR::ARM64::MemoryReference::useIndexedForm()
    {
    TR_ASSERT(false, "Not implemented yet.");
@@ -186,21 +206,21 @@ void OMR::ARM64::MemoryReference::assignRegisters(TR::Instruction *currentInstru
 /* register offset */
 static bool isRegisterOffsetInstruction(uint32_t enc)
    {
-   return (enc & 0x3b200c00 == 0x38200800);
+   return ((enc & 0x3b200c00) == 0x38200800);
    }
 
 
 /* post-index/pre-index/unscaled immediate offset */
 static bool isImm9OffsetInstruction(uint32_t enc)
    {
-   return (enc & 0x3b200000 == 0x38000000);
+   return ((enc & 0x3b200000) == 0x38000000);
    }
 
 
 /* unsigned immediate offset */
 static bool isImm12OffsetInstruction(uint32_t enc)
    {
-   return (enc & 0x3b200000 == 0x39000000);
+   return ((enc & 0x3b200000) == 0x39000000);
    }
 
 

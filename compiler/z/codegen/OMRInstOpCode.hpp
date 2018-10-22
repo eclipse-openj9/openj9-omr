@@ -776,6 +776,7 @@ class InstOpCode: public OMR::InstOpCode
    static Mnemonic getCmpLogicalImmTrapOpCode();
    static Mnemonic getCmpOpCode();
    static Mnemonic getCmpRegOpCode();
+   static Mnemonic getCmpRegAndBranchRelOpCode();
    static Mnemonic getCmpLogicalOpCode();
    static Mnemonic getCmpLogicalRegOpCode();
    static Mnemonic getCmpAndSwapOpCode();
@@ -783,6 +784,7 @@ class InstOpCode: public OMR::InstOpCode
    static Mnemonic getShiftLeftLogicalSingleOpCode();
    static Mnemonic getShiftRightLogicalSingleOpCode();
    static Mnemonic getAddHalfWordImmOpCode();
+   static Mnemonic getAddHalfWordImmDistinctOperandOpCode();
    static Mnemonic getAddLogicalOpCode();
    static Mnemonic getAddLogicalRegOpCode();
    static Mnemonic getBranchOnIndexHighOpCode();

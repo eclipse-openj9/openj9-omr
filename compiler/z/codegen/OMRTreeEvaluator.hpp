@@ -687,6 +687,92 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
 
    private:
 
+   /** \brief
+    *     Inlines an intrinsic for calls to atomicAddSymbol which are represented by a call node of the form for
+    *     32-bit (64-bit similar):
+    * 
+    *     \code
+    *       icall <atomicAddSymbol>
+    *         <address>
+    *         <value>
+    *     \endcode
+    *
+    *     Which performs the following operation atomically:
+    *
+    *     \code
+    *       [address] = [address] + <value>
+    *       return <value>
+    *     \endcode
+    *
+    *  \param node
+    *     The respective (i|l)call node.
+    *
+    *  \param cg
+    *     The code generator used to generate the instructions.
+    *
+    *  \return
+    *     A register holding the <value> node.
+    */
+   static TR::Register* intrinsicAtomicAdd(TR::Node* node, TR::CodeGenerator* cg);
+   
+   /** \brief
+    *     Inlines an intrinsic for calls to atomicFetchAndAddSymbol which are represented by a call node of the form for
+    *     32-bit (64-bit similar):
+    * 
+    *     \code
+    *       icall <atomicFetchAndAddSymbol>
+    *         <address>
+    *         <value>
+    *     \endcode
+    *
+    *     Which performs the following operation atomically:
+    *
+    *     \code
+    *       temp = [address]
+    *       [address] = [address] + <value>
+    *       return temp
+    *     \endcode
+    *
+    *  \param node
+    *     The respective (i|l)call node.
+    *
+    *  \param cg
+    *     The code generator used to generate the instructions.
+    *
+    *  \return
+    *     A register holding the original value in memory (before the addition) at the <address> location.
+    */
+   static TR::Register* intrinsicAtomicFetchAndAdd(TR::Node* node, TR::CodeGenerator* cg);
+   
+   /** \brief
+    *     Inlines an intrinsic for calls to atomicSwapSymbol which are represented by a call node of the form for
+    *     32-bit (64-bit similar):
+    * 
+    *     \code
+    *       icall <atomicSwapSymbol>
+    *         <address>
+    *         <value>
+    *     \endcode
+    *
+    *     Which performs the following operation atomically:
+    *
+    *     \code
+    *       temp = [address]
+    *       [address] = <value>
+    *       return temp
+    *     \endcode
+    *
+    *  \param node
+    *     The respective (i|l)call node.
+    *
+    *  \param cg
+    *     The code generator used to generate the instructions.
+    *
+    *  \return
+    *     A register holding the original value in memory (before the swap) at the <address> location.
+    */
+   static TR::Register* intrinsicAtomicSwap(TR::Node* node, TR::CodeGenerator* cg);
+   
    static void         commonButestEvaluator(TR::Node *node, TR::CodeGenerator *cg);
    static TR::Register* ifFoldingHelper(TR::Node *node, TR::CodeGenerator *cg, bool &handledBIF);
    static bool         isCandidateForBIFEvaluation(TR::Node * node);

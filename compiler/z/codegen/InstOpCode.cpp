@@ -412,6 +412,9 @@ TR::InstOpCode::Mnemonic
 OMR::Z::InstOpCode::getAddHalfWordImmOpCode() { return TR::Compiler->target.is64Bit() ? TR::InstOpCode::AGHI : TR::InstOpCode::AHI; }
 
 TR::InstOpCode::Mnemonic
+OMR::Z::InstOpCode::getAddHalfWordImmDistinctOperandOpCode() { return TR::Compiler->target.is64Bit() ? TR::InstOpCode::AGHIK : TR::InstOpCode::AHIK; }
+
+TR::InstOpCode::Mnemonic
 OMR::Z::InstOpCode::getAddLogicalOpCode() { return TR::Compiler->target.is64Bit() ? TR::InstOpCode::ALG : TR::InstOpCode::AL; }
 
 TR::InstOpCode::Mnemonic
@@ -428,7 +431,6 @@ OMR::Z::InstOpCode::getBranchRelIndexHighOpCode() { return TR::Compiler->target.
 
 TR::InstOpCode::Mnemonic
 OMR::Z::InstOpCode::getBranchRelIndexEqOrLowOpCode() { return TR::Compiler->target.is64Bit() ? TR::InstOpCode::BRXLG : TR::InstOpCode::BRXLE; }
-
 
 TR::InstOpCode::Mnemonic
 OMR::Z::InstOpCode::getLoadWidenOpCode() { return TR::Compiler->target.is64Bit() ? TR::InstOpCode::LGF : TR::InstOpCode::L; }
@@ -456,6 +458,9 @@ OMR::Z::InstOpCode::getCmpWidenOpCode() { return TR::Compiler->target.is64Bit() 
 
 TR::InstOpCode::Mnemonic
 OMR::Z::InstOpCode::getCmpRegWidenOpCode() { return TR::Compiler->target.is64Bit() ? TR::InstOpCode::CGFR : TR::InstOpCode::CR; }
+
+TR::InstOpCode::Mnemonic
+OMR::Z::InstOpCode::getCmpRegAndBranchRelOpCode() { return TR::Compiler->target.is64Bit() ? TR::InstOpCode::CGRJ : TR::InstOpCode::CRJ; }
 
 TR::InstOpCode::Mnemonic
 OMR::Z::InstOpCode::getCmpLogicalWidenOpCode() { return TR::Compiler->target.is64Bit() ? TR::InstOpCode::CLGF : TR::InstOpCode::CL; }

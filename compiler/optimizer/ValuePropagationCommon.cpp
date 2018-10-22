@@ -2015,6 +2015,7 @@ TR::Node *generateArrayAddressTree(
       }
 
    array = TR::Node::create(is64BitTarget ? TR::aladd : TR::aiadd, 2, objNode, array);
+   array->setIsInternalPointer(true);
 
    return array;
    }

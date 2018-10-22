@@ -497,6 +497,8 @@ omrsysinfo_get_OS_type(struct OMRPortLibrary *portLibrary)
 #if defined(J9OS_I5)
 	/* JCL on IBM i expects to see "OS/400" */
 	return "OS/400";
+#elif defined(OSX)
+	return "Mac OS X";
 #else
 	if (NULL == PPG_si_osType) {
 		int rc;

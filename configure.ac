@@ -134,6 +134,15 @@ AC_ARG_ENABLE([tracegen],
 	[enable_tracegen=yes]
 )
 
+AC_ARG_ENABLE([native-encoding],
+	AS_HELP_STRING([[--enable-native-encoding]],
+		[Allow use of native character encoding where possible (currently only defined for z/OS). (Default: no)]),
+)
+AS_IF([test "x$enable_native_encoding" = "xyes"],
+	[AC_SUBST([OMR_ALLOW_NATIVE_ENCODING], [1])],
+	[AC_SUBST([OMR_ALLOW_NATIVE_ENCODING], [0])]
+)
+
 ###
 ### Build environment configuration
 ###

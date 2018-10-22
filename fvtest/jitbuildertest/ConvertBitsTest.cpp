@@ -61,10 +61,10 @@ TEST_F(BitConversionTest, Float2Int)
    BitConvertFloat2IntFunction* float2int;
    ASSERT_COMPILE(TR::TypeDictionary, BitConvertFloat2Int, float2int);
 
-   ASSERT_EQ(0, float2int(0.0f));
-   ASSERT_EQ(0xbf800000U, float2int(-1.0f));
-   ASSERT_EQ(0x40480000U, float2int(3.125f));
-   ASSERT_NE(127, float2int(127.0f));
+   ASSERT_EQ(UINT32_C(0), float2int(0.0f));
+   ASSERT_EQ(UINT32_C(0xbf800000), float2int(-1.0f));
+   ASSERT_EQ(UINT32_C(0x40480000), float2int(3.125f));
+   ASSERT_NE(UINT32_C(127), float2int(127.0f));
    }
 
 typedef double (BitConvertLong2DoubleFunction)(uint64_t);
@@ -105,8 +105,8 @@ TEST_F(BitConversionTest, Double2Long)
    BitConvertDouble2LongFunction* double2long;
    ASSERT_COMPILE(TR::TypeDictionary, BitConvertDouble2Long, double2long);
 
-   ASSERT_EQ(0, double2long(0.0));
-   ASSERT_EQ(0xbff0000000000000ULL, double2long(-1.0));
-   ASSERT_EQ(0x4009000000000000ULL, double2long(3.125f));
-   ASSERT_NE(2047, double2long(2047.0f));
+   ASSERT_EQ(UINT64_C(0), double2long(0.0));
+   ASSERT_EQ(UINT64_C(0xbff0000000000000), double2long(-1.0));
+   ASSERT_EQ(UINT64_C(0x4009000000000000), double2long(3.125f));
+   ASSERT_NE(UINT64_C(2047), double2long(2047.0f));
    }

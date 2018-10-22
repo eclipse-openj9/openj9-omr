@@ -1902,17 +1902,6 @@ OMR::Z::Instruction::useSourceMemoryReference(TR::MemoryReference * memRef)
 
    memRef->bookKeepingRegisterUses(self(), self()->cg());
 
-   if(!self()->cg()->afterRA())
-     {
-    int32_t disp = memRef->getOffset();
-    if (self()->hasLongDisplacementSupport() &&
-        !memRef->hasTemporaryNegativeOffset() &&
-        (disp < 0 || disp >= MAXDISP) && (disp >= MINLONGDISP || disp <= MAXLONGDISP))
-      {
-      self()->attemptOpAdjustmentForLongDisplacement();
-      }
-
-     }
    return _sourceMemSize-1; // index into source memref array
    }
 
@@ -1926,10 +1915,6 @@ OMR::Z::Instruction::useTargetMemoryReference(TR::MemoryReference * memRef, TR::
    self()->recordOperand(memRef, _targetMemSize);
 
    memRef->bookKeepingRegisterUses(self(), self()->cg());
-
-   if(!self()->cg()->afterRA())
-     {
-     }
 
    return _targetMemSize-1;      // index into the target memref array
    }

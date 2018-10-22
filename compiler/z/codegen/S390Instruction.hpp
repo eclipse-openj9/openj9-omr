@@ -2931,6 +2931,48 @@ class S390RSYInstruction : public TR::S390RSInstruction
       {
       }
 
+   S390RSYInstruction(TR::InstOpCode::Mnemonic    op,
+                        TR::Node          *n,
+                        TR::RegisterPair  *treg,
+                        TR::RegisterPair  *sreg,
+                        TR::MemoryReference *mf,
+                        TR::CodeGenerator *cg)
+      : S390RSInstruction(op, n, treg, sreg, mf, cg)
+      {
+      }
+
+   S390RSYInstruction(TR::InstOpCode::Mnemonic    op,
+                        TR::Node          *n,
+                        TR::RegisterPair  *treg,
+                        TR::RegisterPair  *sreg,
+                        TR::MemoryReference *mf,
+                        TR::Instruction   *preced,
+                        TR::CodeGenerator *cg)
+      : S390RSInstruction(op, n, treg, sreg, mf, preced, cg)
+      {
+      }
+
+   S390RSYInstruction(TR::InstOpCode::Mnemonic    op,
+                        TR::Node          *n,
+                        TR::Register      *treg,
+                        TR::Register      *sreg,
+                        TR::MemoryReference *mf,
+                        TR::CodeGenerator *cg)
+      : S390RSInstruction(op, n, treg, sreg, mf, cg)
+      {
+      }
+
+   S390RSYInstruction(TR::InstOpCode::Mnemonic    op,
+                        TR::Node          *n,
+                        TR::Register      *treg,
+                        TR::Register      *sreg,
+                        TR::MemoryReference *mf,
+                        TR::Instruction   *preced,
+                        TR::CodeGenerator *cg)
+      : S390RSInstruction(op, n, treg, sreg, mf, preced, cg)
+      {
+      }
+
    virtual char *description() { return "S390RSYInstruction"; }
    virtual Kind getKind() { return IsRSY; }
 

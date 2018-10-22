@@ -924,6 +924,24 @@ TR::Instruction * generateRSYInstruction(
                    TR::MemoryReference *mf,
                    TR::Instruction         *preced = 0);
 
+TR::Instruction * generateRSYInstruction(
+                   TR::CodeGenerator* cg, 
+                   TR::InstOpCode::Mnemonic op, 
+                   TR::Node* n, 
+                   TR::RegisterPair* treg, 
+                   TR::RegisterPair* sreg, 
+                   TR::MemoryReference* mf, 
+                   TR::Instruction* preced);
+
+TR::Instruction * generateRSYInstruction(
+                   TR::CodeGenerator* cg, 
+                   TR::InstOpCode::Mnemonic op, 
+                   TR::Node* n, 
+                   TR::Register* freg, 
+                   TR::Register* lreg, 
+                   TR::MemoryReference* mf, 
+                   TR::Instruction* preced);
+
 TR::Instruction * generateRRSInstruction(
                    TR::CodeGenerator       * cg,
                    TR::InstOpCode::Mnemonic         op,

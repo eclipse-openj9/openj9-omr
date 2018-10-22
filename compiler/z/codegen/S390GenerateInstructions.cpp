@@ -737,6 +737,7 @@ generateRXInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::N
 
    TR_ASSERT(treg->getRealRegister()!=NULL || // Not in RA
            op != TR::InstOpCode::L || !n->isExtendedTo64BitAtSource(), "Generating an TR::InstOpCode::L, when LLGF|LGF should be used");
+
    if (cg->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) && treg->assignToHPR())
       {
       switch(op)
@@ -776,21 +777,35 @@ generateRXInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::N
          }
       }
 
-   TR::Instruction *instr;
-   if (preced)
-      instr = new (INSN_HEAP) TR::S390RXInstruction(op, n, treg, mf, preced, cg);
-   else
-      instr = new (INSN_HEAP) TR::S390RXInstruction(op, n, treg, mf, cg);
+   TR::Instruction* result = NULL;
+
+   int32_t displacement = mf->getOffset();
+
+   if (!mf->hasTemporaryNegativeOffset() && ((displacement > MINLONGDISP && displacement < MINDISP) || (displacement >= MAXDISP && displacement < MAXLONGDISP)))
+      {
+      auto longDisplacementMnemonic = TR::Instruction::opCodeCanBeAdjustedTo(op);
+
+      if (longDisplacementMnemonic != TR::InstOpCode::BAD)
+         {
+         result = generateRXYInstruction(cg, longDisplacementMnemonic, n, treg, mf, preced);
+         }
+      }
+
+   if (result == NULL)
+      {
+      result = preced != NULL ?
+         new (INSN_HEAP) TR::S390RXInstruction(op, n, treg, mf, preced, cg) :
+         new (INSN_HEAP) TR::S390RXInstruction(op, n, treg, mf, cg);
+      }
 
 #ifdef J9_PROJECT_SPECIFIC
    if (op == TR::InstOpCode::CVB || op == TR::InstOpCode::EX)
       {
-      generateS390DAAExceptionRestoreSnippet(cg, n, instr, op, true);
+      generateS390DAAExceptionRestoreSnippet(cg, n, result, op, true);
       }
 #endif
 
-
-   return instr;
+   return result;
    }
 
 TR::Instruction *
@@ -1094,48 +1109,93 @@ TR::Instruction *
 generateRSInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register * treg, TR::MemoryReference * mf,
                       TR::Instruction * preced)
    {
-   // non-Trex cannot upgrade to Y form so take this opportunity to fold in a large offset
-   if (mf) preced = mf->separateIndexRegister(n, cg, false, preced);
+   // RS and RSY instructions do not have an index register
+   preced = mf->separateIndexRegister(n, cg, false, preced);
 
-   TR::Instruction *instr;
-   if (preced)
-      instr = new (INSN_HEAP) TR::S390RSInstruction(op, n, treg, mf, preced, cg);
-   else
-      instr = new (INSN_HEAP) TR::S390RSInstruction(op, n, treg, mf, cg);
+   TR::Instruction* result = NULL;
 
-   return instr;
+   int32_t displacement = mf->getOffset();
+
+   if (!mf->hasTemporaryNegativeOffset() && ((displacement > MINLONGDISP && displacement < MINDISP) || (displacement >= MAXDISP && displacement < MAXLONGDISP)))
+      {
+      auto longDisplacementMnemonic = TR::Instruction::opCodeCanBeAdjustedTo(op);
+
+      if (longDisplacementMnemonic != TR::InstOpCode::BAD)
+         {
+         result = generateRSYInstruction(cg, longDisplacementMnemonic, n, treg, static_cast<uint32_t>(0), mf, preced);
+         }
+      }
+
+   if (result == NULL)
+      {
+      result = preced != NULL ?
+         new (INSN_HEAP) TR::S390RSInstruction(op, n, treg, mf, preced, cg) :
+         new (INSN_HEAP) TR::S390RSInstruction(op, n, treg, mf, cg);
+      }
+
+   return result;
    }
 
 TR::Instruction *
 generateRSInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register * treg, uint32_t mask,
                       TR::MemoryReference * mf, TR::Instruction * preced)
    {
-   // non-Trex cannot upgrade to Y form so take this opportunity to fold in a large offset
-   if (mf) preced = mf->separateIndexRegister(n, cg, false, preced);
+   // RS and RSY instructions do not have an index register
+   preced = mf->separateIndexRegister(n, cg, false, preced);
 
-   TR::Instruction *instr;
-   if (preced)
-      instr = new (INSN_HEAP) TR::S390RSInstruction(op, n, treg, mask, mf, preced, cg);
-   else
-      instr = new (INSN_HEAP) TR::S390RSInstruction(op, n, treg, mask, mf, cg);
+   TR::Instruction* result = NULL;
 
-   return instr;
+   int32_t displacement = mf->getOffset();
+
+   if (!mf->hasTemporaryNegativeOffset() && ((displacement > MINLONGDISP && displacement < MINDISP) || (displacement >= MAXDISP && displacement < MAXLONGDISP)))
+      {
+      auto longDisplacementMnemonic = TR::Instruction::opCodeCanBeAdjustedTo(op);
+
+      if (longDisplacementMnemonic != TR::InstOpCode::BAD)
+         {
+         result = generateRSYInstruction(cg, longDisplacementMnemonic, n, treg, mask, mf, preced);
+         }
+      }
+
+   if (result == NULL)
+      {
+      result = preced != NULL ?
+         new (INSN_HEAP) TR::S390RSInstruction(op, n, treg, mask, mf, preced, cg) :
+         new (INSN_HEAP) TR::S390RSInstruction(op, n, treg, mask, mf, cg);
+      }
+
+   return result;
    }
 
 TR::Instruction *
 generateRSInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::Node * n, TR::RegisterPair * treg, TR::RegisterPair * sreg,
                       TR::MemoryReference * mf, TR::Instruction * preced)
    {
-   // non-Trex cannot upgrade to Y form so take this opportunity to fold in a large offset
-   if (mf) preced = mf->separateIndexRegister(n, cg, false, preced);
+   // RS and RSY instructions do not have an index register
+   preced = mf->separateIndexRegister(n, cg, false, preced);
 
-   TR::Instruction *instr;
-   if (preced)
-      instr = new (INSN_HEAP) TR::S390RSInstruction(op, n, treg, sreg, mf, preced, cg);
-   else
-      instr = new (INSN_HEAP) TR::S390RSInstruction(op, n, treg, sreg, mf, cg);
+   TR::Instruction* result = NULL;
 
-   return instr;
+   int32_t displacement = mf->getOffset();
+
+   if (!mf->hasTemporaryNegativeOffset() && ((displacement > MINLONGDISP && displacement < MINDISP) || (displacement >= MAXDISP && displacement < MAXLONGDISP)))
+      {
+      auto longDisplacementMnemonic = TR::Instruction::opCodeCanBeAdjustedTo(op);
+
+      if (longDisplacementMnemonic != TR::InstOpCode::BAD)
+         {
+         result = generateRSYInstruction(cg, longDisplacementMnemonic, n, treg, sreg, mf, preced);
+         }
+      }
+
+   if (result == NULL)
+      {
+      result = preced != NULL ?
+         new (INSN_HEAP) TR::S390RSInstruction(op, n, treg, sreg, mf, preced, cg) :
+         new (INSN_HEAP) TR::S390RSInstruction(op, n, treg, sreg, mf, cg);
+      }
+
+   return result;
    }
 
 
@@ -1143,32 +1203,62 @@ TR::Instruction *
 generateRSInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register * freg, TR::Register * lreg,
                       TR::MemoryReference * mf, TR::Instruction * preced)
    {
-   // non-Trex cannot upgrade to Y form so take this opportunity to fold in a large offset
-   if (mf) preced = mf->separateIndexRegister(n, cg, false, preced);
+   // RS and RSY instructions do not have an index register
+   preced = mf->separateIndexRegister(n, cg, false, preced);
 
-   TR::Instruction *instr;
-   if (preced)
-      instr = new (INSN_HEAP) TR::S390RSInstruction(op, n, freg, lreg, mf, preced, cg);
-   else
-      instr = new (INSN_HEAP) TR::S390RSInstruction(op, n, freg, lreg, mf, cg);
+   TR::Instruction* result = NULL;
 
-   return instr;
+   int32_t displacement = mf->getOffset();
+
+   if (!mf->hasTemporaryNegativeOffset() && ((displacement > MINLONGDISP && displacement < MINDISP) || (displacement >= MAXDISP && displacement < MAXLONGDISP)))
+      {
+      auto longDisplacementMnemonic = TR::Instruction::opCodeCanBeAdjustedTo(op);
+
+      if (longDisplacementMnemonic != TR::InstOpCode::BAD)
+         {
+         result = generateRSYInstruction(cg, longDisplacementMnemonic, n, freg, lreg, mf, preced);
+         }
+      }
+
+   if (result == NULL)
+      {
+      result = preced != NULL ?
+         new (INSN_HEAP) TR::S390RSInstruction(op, n, freg, lreg, mf, preced, cg) :
+         new (INSN_HEAP) TR::S390RSInstruction(op, n, freg, lreg, mf, cg);
+      }
+
+   return result;
    }
 
 TR::Instruction *
 generateRSInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::Node * n, TR::RegisterPair * regp, TR::MemoryReference * mf,
                       TR::Instruction * preced)
    {
-   // non-Trex cannot upgrade to Y form so take this opportunity to fold in a large offset
-   if (mf) preced = mf->separateIndexRegister(n, cg, false, preced);
+      // RS and RSY instructions do not have an index register
+   preced = mf->separateIndexRegister(n, cg, false, preced);
 
-   TR::Instruction *instr;
-   if (preced)
-      instr = new (INSN_HEAP) TR::S390RSInstruction(op, n, regp, mf, preced, cg);
-   else
-      instr = new (INSN_HEAP) TR::S390RSInstruction(op, n, regp, mf, cg);
+   TR::Instruction* result = NULL;
 
-   return instr;
+   int32_t displacement = mf->getOffset();
+
+   if (!mf->hasTemporaryNegativeOffset() && ((displacement > MINLONGDISP && displacement < MINDISP) || (displacement >= MAXDISP && displacement < MAXLONGDISP)))
+      {
+      auto longDisplacementMnemonic = TR::Instruction::opCodeCanBeAdjustedTo(op);
+
+      if (longDisplacementMnemonic != TR::InstOpCode::BAD)
+         {
+         result = generateRSYInstruction(cg, longDisplacementMnemonic, n, regp, 0, mf, preced);
+         }
+      }
+
+   if (result == NULL)
+      {
+      result = preced != NULL ?
+         new (INSN_HEAP) TR::S390RSInstruction(op, n, regp, mf, preced, cg) :
+         new (INSN_HEAP) TR::S390RSInstruction(op, n, regp, mf, cg);
+      }
+
+   return result;
    }
 
 TR::Instruction *
@@ -1204,7 +1294,8 @@ TR::Instruction *
 generateRSYInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register * treg, uint32_t mask,
                        TR::MemoryReference * mf, TR::Instruction * preced)
    {
-   if (mf) preced = mf->separateIndexRegister(n, cg, false, preced); // enforce4KDisplacementLimit=false
+   // RSY instructions do not have an index register
+   preced = mf->separateIndexRegister(n, cg, false, preced);
 
    TR::Instruction *instr;
    if (preced)
@@ -1215,6 +1306,31 @@ generateRSYInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::
    return instr;
    }
 
+TR::Instruction*
+generateRSYInstruction(TR::CodeGenerator* cg, TR::InstOpCode::Mnemonic op, TR::Node* n, TR::RegisterPair* treg, TR::RegisterPair* sreg, TR::MemoryReference* mf, TR::Instruction* preced)
+   {
+   // RSY instructions do not have an index register
+   preced = mf->separateIndexRegister(n, cg, false, preced);
+
+   TR::Instruction* result = preced != NULL ?
+      new (INSN_HEAP) TR::S390RSYInstruction(op, n, treg, sreg, mf, preced, cg) :
+      new (INSN_HEAP) TR::S390RSYInstruction(op, n, treg, sreg, mf, cg);
+
+   return result;
+   }
+
+TR::Instruction*
+generateRSYInstruction(TR::CodeGenerator* cg, TR::InstOpCode::Mnemonic op, TR::Node* n, TR::Register* freg, TR::Register* lreg, TR::MemoryReference* mf, TR::Instruction* preced)
+   {
+   // RSY instructions do not have an index register
+   preced = mf->separateIndexRegister(n, cg, false, preced);
+
+   TR::Instruction* result = preced != NULL ?
+      new (INSN_HEAP) TR::S390RSYInstruction(op, n, freg, lreg, mf, preced, cg) :
+      new (INSN_HEAP) TR::S390RSYInstruction(op, n, freg, lreg, mf, cg);
+
+   return result;
+   }
 
 TR::Instruction *
 generateRRSInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register * treg, TR::Register * sreg, TR::MemoryReference * branch, TR::InstOpCode::S390BranchCondition cond, TR::Instruction * preced)
@@ -1712,16 +1828,31 @@ TR::Instruction *
 generateSIInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::Node * n, TR::MemoryReference * mf, uint32_t imm,
                       TR::Instruction * preced)
    {
-   // non-Trex cannot upgrade to Y form so take this opportunity to fold in a large offset
-   if (mf) preced = mf->separateIndexRegister(n, cg, false, preced);
+   // SI and SIY instructions do not have an index register
+   preced = mf->separateIndexRegister(n, cg, false, preced);
 
-   TR::Instruction *instr;
-   if (preced)
-      instr = new (INSN_HEAP) TR::S390SIInstruction(op, n, mf, imm, preced, cg);
-   else
-      instr = new (INSN_HEAP) TR::S390SIInstruction(op, n, mf, imm, cg);
+   TR::Instruction* result = NULL;
 
-   return instr;
+   int32_t displacement = mf->getOffset();
+
+   if (!mf->hasTemporaryNegativeOffset() && ((displacement > MINLONGDISP && displacement < MINDISP) || (displacement >= MAXDISP && displacement < MAXLONGDISP)))
+      {
+      auto longDisplacementMnemonic = TR::Instruction::opCodeCanBeAdjustedTo(op);
+
+      if (longDisplacementMnemonic != TR::InstOpCode::BAD)
+         {
+         result = generateSIYInstruction(cg, longDisplacementMnemonic, n, mf, imm, preced);
+         }
+      }
+
+   if (result == NULL)
+      {
+      result = preced != NULL ?
+         new (INSN_HEAP) TR::S390SIInstruction(op, n, mf, imm, preced, cg) :
+         new (INSN_HEAP) TR::S390SIInstruction(op, n, mf, imm, cg);
+      }
+
+   return result;
    }
 
 TR::Instruction *
@@ -2526,7 +2657,7 @@ generateRegLitRefInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op
       {
       dataref = generateS390MemoryReference(imm, TR::Int32, cg, base);
       targetsnippet = dataref->getConstantDataSnippet();
-      cursor = new (INSN_HEAP) TR::S390RXInstruction(op, node, treg, dataref, cg);
+      cursor = generateRXInstruction(cg, op, node, treg, dataref);
       }
    // HCR in generateRegLitRefInstruction 32-bit: register const data snippet for common case
    if (comp->getOption(TR_EnableHCR) && isPICCandidate )
@@ -2620,7 +2751,7 @@ generateRegLitRefInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op
       dataref->getSymbolReference()->getSymbol(), reloType);
    dataref->getConstantDataSnippet()->setSymbolReference(dataref->getSymbolReference());
    dataref->getConstantDataSnippet()->setReloType(reloType);
-   cursor = new (INSN_HEAP) TR::S390RXInstruction(op, node, treg, dataref, cg);
+   cursor = generateRXInstruction(cg, op, node, treg, dataref);
    if (alloc)
       {
       cg->stopUsingRegister(base);
@@ -2655,7 +2786,7 @@ generateRegLitRefInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op
       base = NULL;
       }
    TR::MemoryReference * dataref = generateS390MemoryReference(snippet, cg, base, node);
-   cursor = new (INSN_HEAP) TR::S390RXInstruction(op, node, treg, dataref, cg);
+   cursor = generateRXInstruction(cg, op, node, treg, dataref);
    if (alloc)
       {
       cg->stopUsingRegister(base);
@@ -2768,7 +2899,7 @@ generateRegLitRefInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op
       }
 
    if (!LGRLinst)
-      cursor = new (INSN_HEAP) TR::S390RXInstruction(op, node, treg, dataref, cg);
+      cursor = generateRXInstruction(cg, op, node, treg, dataref);
    if (alloc)
       {
       cg->stopUsingRegister(base);
@@ -2806,7 +2937,7 @@ generateRegLitRefInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op
    {
 
    TR::MemoryReference * dataref = generateS390MemoryReference(imm, TR::Float, cg, node);
-   return new (INSN_HEAP) TR::S390RXInstruction(op, node, treg, dataref, cg);
+   return generateRXInstruction(cg, op, node, treg, dataref);
    }
 
 /**
@@ -2818,7 +2949,7 @@ generateRegLitRefInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op
    {
 
    TR::MemoryReference * dataref = generateS390MemoryReference(imm, TR::Double, cg, node);
-   return new (INSN_HEAP) TR::S390RXInstruction(op, node, treg, dataref, cg);
+   return generateRXInstruction(cg, op, node, treg, dataref);
    }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -625,18 +625,7 @@ OMR::Z::CodeGenerator::CodeGenerator()
 
    self()->setMultiplyIsDestructive();
 
-   static char * noGraFIX= feGetEnv("TR_NOGRAFIX");
-   if (!noGraFIX)
-      {
-      if ( !comp->getOption(TR_DisableLongDispStackSlot) )
-         {
-         self()->setExtCodeBaseRegisterIsFree(true);
-         }
-      else
-         {
-         self()->setExtCodeBaseRegisterIsFree(false);
-         }
-      }
+   self()->setExtCodeBaseRegisterIsFree(true);
 
    self()->setIsOutOfLineHotPath(false);
 
@@ -853,19 +842,7 @@ bool OMR::Z::CodeGenerator::prepareForGRA()
 
    if (!_globalRegisterTable)
       {
-      // TBR
-      static char * noGraFIX= feGetEnv("TR_NOGRAFIX");
-      if (noGraFIX)
-         {
-         if ( !self()->comp()->getOption(TR_DisableLongDispStackSlot) )
-            {
-            self()->setExtCodeBaseRegisterIsFree(true);
-            }
-         else
-            {
-            self()->setExtCodeBaseRegisterIsFree(false);
-            }
-         }
+      self()->setExtCodeBaseRegisterIsFree(true);
 
       self()->machine()->initializeGlobalRegisterTable();
       self()->setGlobalRegisterTable(self()->machine()->getGlobalRegisterTable());
@@ -1849,7 +1826,7 @@ OMR::Z::CodeGenerator::isExtCodeBaseFreeForAssignment()
    //   when LongDispStackSlot is enabled
    // (see TR::MemoryReference::generateBinaryEncoding(..)
    //
-   if ( !self()->comp()->getOption(TR_DisableLongDispStackSlot) && self()->getExtCodeBaseRegisterIsFree())
+   if (self()->getExtCodeBaseRegisterIsFree())
       {
       extCodeBaseIsFree = true;
       }
@@ -3751,8 +3728,7 @@ OMR::Z::CodeGenerator::getMaximumNumberOfAssignableGPRs()
 
 
    maxGPRs = 11 + (self()->isLiteralPoolOnDemandOn() ? 1 : 0)               // => Litpool ptr is available
-                + ((self()->getExtCodeBaseRegisterIsFree()                   &&
-                    !self()->comp()->getOption(TR_DisableLongDispStackSlot)     )? 1 : 0);  // => ExtCodeBase is free
+                + ((self()->getExtCodeBaseRegisterIsFree())? 1 : 0);  // => ExtCodeBase is free
 
    //traceMsg(comp(), " getMaximumNumberOfAssignableGPRs: %d\n",  maxGPRs);
    return maxGPRs;

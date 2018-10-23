@@ -2498,13 +2498,11 @@ OMR::Z::MemoryReference::estimateBinaryLength(int32_t  currentEstimate, TR::Code
          length += 28;
          if (instr->getOpCode().hasTwoMemoryReferences())
             length += 18;
+
          // STG/LG (6+6)
-         if ( !comp->getOption(TR_DisableLongDispStackSlot) )
-            {
+         length += 12;
+         if (instr->getOpCode().hasTwoMemoryReferences())
             length += 12;
-            if (instr->getOpCode().hasTwoMemoryReferences())
-               length += 12;
-            }
          }
       else
          {
@@ -2512,13 +2510,11 @@ OMR::Z::MemoryReference::estimateBinaryLength(int32_t  currentEstimate, TR::Code
          length += 24;
          if (instr->getOpCode().hasTwoMemoryReferences())
             length += 16;
+
          // ST/L (4+4)
-         if ( !comp->getOption(TR_DisableLongDispStackSlot) )
-            {
+         length += 8;
+         if (instr->getOpCode().hasTwoMemoryReferences())
             length += 8;
-            if (instr->getOpCode().hasTwoMemoryReferences())
-               length += 8;
-            }
          }
       }
    instr->setEstimatedBinaryLength(length);
@@ -2980,13 +2976,7 @@ OMR::Z::MemoryReference::generateBinaryEncoding(uint8_t * cursor, TR::CodeGenera
       else
          {
          //  Find a reg not used by current inst.
-         //
-         if (comp->getOption(TR_DisableLongDispStackSlot))
-            {
-            scratchReg = cg->getExtCodeBaseRealRegister();
-            spillNeeded = false;
-            }
-         else if (TR::MemoryReference::canUseTargetRegAsScratchReg(instr))
+         if (TR::MemoryReference::canUseTargetRegAsScratchReg(instr))
             {
             scratchReg = (TR::RealRegister * )((TR::S390RegInstruction *)instr)->getRegisterOperand(1);
             spillNeeded = false;
@@ -3017,7 +3007,7 @@ OMR::Z::MemoryReference::generateBinaryEncoding(uint8_t * cursor, TR::CodeGenera
          if (useNodesForLongFixup)
             {
             largeDisp = true;
-            if ( !comp->getOption(TR_DisableLongDispStackSlot) && spillNeeded )
+            if (spillNeeded)
                {
                currInstr = generateRXInstruction(cg, TR::InstOpCode::getStoreOpCode(), node, scratchReg,
                   generateS390MemoryReference(LongDispSlotBaseReg, offsetToLongDispSlot, cg), prevInstr);
@@ -3043,7 +3033,7 @@ OMR::Z::MemoryReference::generateBinaryEncoding(uint8_t * cursor, TR::CodeGenera
             largeDisp = true;
             if (TR::Compiler->target.is64Bit())
                {
-               if ( !comp->getOption(TR_DisableLongDispStackSlot) && spillNeeded )
+               if (spillNeeded )
                   {
                   *(int32_t *) cursor  = boi(0xE3005000 | (offsetToLongDispSlot&0xFFF)); // STG Rscrtch,offToLongDispSlot(,GPR5)
                   scratchReg->setRegisterField((uint32_t *)cursor);
@@ -3059,7 +3049,7 @@ OMR::Z::MemoryReference::generateBinaryEncoding(uint8_t * cursor, TR::CodeGenera
                }
             else
                {
-               if ( !comp->getOption(TR_DisableLongDispStackSlot) && spillNeeded )
+               if (spillNeeded )
                   {
                   *(int32_t *) cursor  = boi(0x50005000 | (offsetToLongDispSlot&0xFFF)); // ST Rscrtch,offToLongDispSlot(,GPR5)
                   scratchReg->setRegisterField((uint32_t *)cursor);
@@ -3087,7 +3077,7 @@ OMR::Z::MemoryReference::generateBinaryEncoding(uint8_t * cursor, TR::CodeGenera
 
             if (TR::Compiler->target.is64Bit())
                {
-               if ( !comp->getOption(TR_DisableLongDispStackSlot) && spillNeeded )
+               if (spillNeeded )
                   {
                   *(int32_t *) cursor  = (0xE3005000 | (offsetToLongDispSlot&0xFFF)); // STG Rscrtch,offToLongDispSlot(,GPR5)
                   scratchReg->setRegisterField((uint32_t *)cursor);
@@ -3122,7 +3112,7 @@ OMR::Z::MemoryReference::generateBinaryEncoding(uint8_t * cursor, TR::CodeGenera
                }
             else
                {
-               if ( !comp->getOption(TR_DisableLongDispStackSlot) && spillNeeded )
+               if (spillNeeded )
                   {
                   *(int32_t *) cursor  = boi(0x50005000 | (offsetToLongDispSlot&0xFFF)); // ST Rscrtch,offToLongDispSlot(,GPR5)
                   scratchReg->setRegisterField((uint32_t *)cursor);
@@ -3310,36 +3300,24 @@ OMR::Z::MemoryReference::generateBinaryEncoding(uint8_t * cursor, TR::CodeGenera
       index->setIndexRegisterField(reinterpret_cast<uint32_t*>(cursor));
       }
 
-   // A bunch of checks to make sure we catch anything going wrong
-   if (!comp->getOption(TR_DisableLongDispStackSlot))
+   // Slot must be less than MAXDISP away from SP
+   TR_ASSERT(offsetToLongDispSlot < MAXDISP, "Offset to long displacement slot (%d) is out of range", offsetToLongDispSlot);
+
+   // We don't allow stack slot to be used for branch instructions, as gcmaps would be wrong on the gcpoint
+   if (largeDisp)
       {
-      // Slot must be less than MAXDISP away from SP
-      TR_ASSERT(offsetToLongDispSlot<MAXDISP,
-        "OMR::Z::MemoryReference::generateBinaryEncoding -- offsetToLongDispSlot %d >= MAXDISP\n",offsetToLongDispSlot);
-
-      // We don't allow stack slot to be used for branch insts, as gcmaps would be wrong on the gcpoint.
-      if ( largeDisp )
-         {
-         TR_ASSERT(instr->getOpCode().isBranchOp() == false,
-           "OMR::Z::MemoryReference::generateBinaryEncoding -- We don't handle long disp for branch insts %p using ExtCodeBase stack slot.\n",instr);
-         }
-
-      //  No one else from inst selection phase using this slot
-      if (!largeDisp                    &&
-          self()->getCheckForLongDispSlot()     &&
-          displacement == offsetToLongDispSlot  &&
-          ((base  == LongDispSlotBaseReg && index == NULL) ||
-           (index == LongDispSlotBaseReg && base == NULL))
-         )
-         {
-         TR_ASSERT(0, "OMR::Z::MemoryReference::generateBinaryEncoding -- BAD use of ExtCodeBase SLOT %d on the stack %x node is %x.\n",
-           offsetToLongDispSlot, instr, instr->getNode());
-         }
+      TR_ASSERT(instr->getOpCode().isBranchOp() == false, "We don't handle long disp for branch instruction [%p] using ExtCodeBase stack slot", instr);
       }
-   else if (largeDisp) // && no long disp slot
+
+   //  No one else from inst selection phase using this slot
+   if (!largeDisp                    &&
+         self()->getCheckForLongDispSlot()     &&
+         displacement == offsetToLongDispSlot  &&
+         ((base  == LongDispSlotBaseReg && index == NULL) ||
+         (index == LongDispSlotBaseReg && base == NULL))
+      )
       {
-      TR_ASSERT(cg->isExtCodeBaseFreeForAssignment() == false,
-         "OMR::Z::MemoryReference::generateBinaryEncoding -- Ext Code Base was wrongly released\n");
+      TR_ASSERT(false, "Bad use of ExtCodeBase slot (%d) on the stack for instruction [%p] corresponding to node [%p]", offsetToLongDispSlot, instr, instr->getNode());
       }
 
    return nbytes;
@@ -3364,12 +3342,7 @@ OMR::Z::MemoryReference::generateBinaryEncodingTouchUpForLongDisp(uint8_t *curso
    bool spillNeeded = true; // LocalLocal alloc would set this to false
    bool useNodesForLongFixup = !comp->getOption(TR_DisableLongDispNodes);
 
-   if (comp->getOption(TR_DisableLongDispStackSlot))
-      {
-      scratchReg = cg->getExtCodeBaseRealRegister();
-      spillNeeded = false;
-      }
-   else if (TR::MemoryReference::canUseTargetRegAsScratchReg(instr))
+   if (TR::MemoryReference::canUseTargetRegAsScratchReg(instr))
       {
       scratchReg = (TR::RealRegister * )((TR::S390RegInstruction *)instr)->getRegisterOperand(1);
       spillNeeded = false;
@@ -3400,7 +3373,7 @@ OMR::Z::MemoryReference::generateBinaryEncodingTouchUpForLongDisp(uint8_t *curso
         "OMR::Z::MemoryReference::generateBinaryEncodingTouchUpForLongDisp -- A scratch reg should always be found.");
 
    // Restore the scratch register
-   if (!comp->getOption(TR_DisableLongDispStackSlot) && largeDisp  && spillNeeded)
+   if (largeDisp  && spillNeeded)
       {
       if (useNodesForLongFixup
          )

@@ -1294,7 +1294,6 @@ TR::S390DebugCounterBumpInstruction::generateBinaryEncoding()
       }
    else
       {
-      TR_ASSERT(!comp->getOption(TR_DisableLongDispStackSlot), "TR_S390DebugCounterBumpInstruction::generateBinaryEncoding -- Spill slot should be enabled.");
 	   scratchReg = assignBestSpillRegister();
       }
 
@@ -2105,11 +2104,6 @@ TR::S390RILInstruction::generateBinaryEncoding()
 
          TR::RealRegister * scratchReg = NULL;
          TR::RealRegister * sourceReg  = NULL;
-
-         if (comp->getOption(TR_DisableLongDispStackSlot))
-            {
-            scratchReg = cg()->getExtCodeBaseRealRegister();
-            }
 
          if (getOpCode().getOpCodeValue() == TR::InstOpCode::LGRL  ||
              getOpCode().getOpCodeValue() == TR::InstOpCode::LGFRL  ||

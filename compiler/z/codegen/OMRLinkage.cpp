@@ -122,7 +122,6 @@ OMR::Z::Linkage::Linkage(TR::CodeGenerator * codeGen,TR_S390LinkageConventions e
       _litPoolRegister(TR::RealRegister::NoReg),
       _staticBaseRegister(TR::RealRegister::NoReg),
       _privateStaticBaseRegister(TR::RealRegister::NoReg),
-      _extCodeBaseRegister(TR::RealRegister::NoReg),
       _returnAddrRegister(TR::RealRegister::NoReg),
       _raContextRestoreNeeded(true),
       _firstSaved(TR::RealRegister::NoReg),
@@ -3391,12 +3390,6 @@ TR::RealRegister *
 OMR::Z::Linkage::getPrivateStaticBaseRealRegister()
    {
    return self()->getS390RealRegister(_privateStaticBaseRegister);
-   }
-
-TR::RealRegister *
-OMR::Z::Linkage::getExtCodeBaseRealRegister()
-   {
-   return self()->getS390RealRegister(_extCodeBaseRegister);
    }
 
 TR::RealRegister *

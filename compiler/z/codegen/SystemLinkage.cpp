@@ -412,7 +412,6 @@ TR::S390zOSSystemLinkage::S390zOSSystemLinkage(TR::CodeGenerator * codeGen)
    setAlternateStackPointerRegister  (TR::RealRegister::GPR9 );
    setEntryPointRegister    (TR::RealRegister::GPR6);
    setLitPoolRegister       (TR::RealRegister::GPR8 );
-   setExtCodeBaseRegister   (TR::RealRegister::GPR7  );
    setReturnAddressRegister (TR::RealRegister::GPR7 );
 
    setEnvironmentPointerRegister (TR::RealRegister::GPR5  );
@@ -835,7 +834,6 @@ TR::S390zLinuxSystemLinkage::S390zLinuxSystemLinkage(TR::CodeGenerator * codeGen
    setAlternateStackPointerRegister  (TR::RealRegister::GPR11 );
    setEntryPointRegister    (TR::RealRegister::GPR14 );
    setLitPoolRegister       (TR::RealRegister::GPR13 );
-   setExtCodeBaseRegister   (TR::RealRegister::GPR7  );
    setReturnAddressRegister (TR::RealRegister::GPR14 );
 
    setGOTPointerRegister   (TR::RealRegister::GPR12  );

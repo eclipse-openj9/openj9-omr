@@ -244,7 +244,6 @@ private:
    TR::RealRegister::RegNum _litPoolRegister;
    TR::RealRegister::RegNum _staticBaseRegister;
    TR::RealRegister::RegNum _privateStaticBaseRegister;   ///< locked register for private WSA, if its allocated
-   TR::RealRegister::RegNum _extCodeBaseRegister;
    TR::RealRegister::RegNum _returnAddrRegister;
    TR::RealRegister::RegNum _vtableIndexArgumentRegister; ///< for icallVMprJavaSendPatchupVirtual
    TR::RealRegister::RegNum _j9methodArgumentRegister;    ///< for icallVMprJavaSendStatic
@@ -567,9 +566,8 @@ enum TR_DispatchType
    virtual TR::RealRegister::RegNum getPrivateStaticBaseRegister()        { return _privateStaticBaseRegister; }
    virtual TR::RealRegister *getPrivateStaticBaseRealRegister();
 
-   virtual TR::RealRegister::RegNum setExtCodeBaseRegister (TR::RealRegister::RegNum r)   { return _extCodeBaseRegister = r; }
-   virtual TR::RealRegister::RegNum getExtCodeBaseRegister()    { return _extCodeBaseRegister; }
-   virtual TR::RealRegister *getExtCodeBaseRealRegister();
+   // TODO (#2848): Once the downstream dependency is removed we can fold this setter
+   virtual TR::RealRegister::RegNum setExtCodeBaseRegister (TR::RealRegister::RegNum r)   { return TR::RealRegister::GPR7; }
 
    virtual TR::RealRegister::RegNum setReturnAddressRegister (TR::RealRegister::RegNum r) { return _returnAddrRegister = r; }
    virtual TR::RealRegister::RegNum getReturnAddressRegister()  { return _returnAddrRegister; }

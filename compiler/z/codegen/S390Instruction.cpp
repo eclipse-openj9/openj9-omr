@@ -1057,57 +1057,7 @@ TR::S390BranchOnIndexInstruction::generateBinaryEncoding()
       }
    else
       {
-      TR_ASSERT(cg()->isExtCodeBaseFreeForAssignment() == false,
-         "TR::S390BranchOnIndexInstruction::generateBinaryEncoding -- Ext Code Base was wrongly released\n");
-
-      TR::InstOpCode::Mnemonic opCode = getOpCodeValue();
-      TR_ASSERT((opCode == TR::InstOpCode::BRXLE) || (opCode == TR::InstOpCode::BRXH) || (opCode == TR::InstOpCode::BRXLG) || (opCode == TR::InstOpCode::BRXHG),
-         "Only TR::InstOpCode::BRXLE/TR::InstOpCode::BRXH/TR::InstOpCode::BRXLG/TR::InstOpCode::BRXHG are handled here\n");
-      int32_t regMask = binOpCode & 0x00FF;
-
-      (*(int32_t *) cursor) = boi(0xA7750004);                  // BRAS r7,4
-      cursor += 4;
-      (*(intptrj_t *) cursor) = boa((intptrj_t) (label->getCodeLocation()));
-      //branch target address to be patched
-      relocationPoint = cursor;
-      cursor += sizeof(intptrj_t);//This should be correct when targeting a 64 bit platform from a 32 bit build
-
-      if (TR::Compiler->target.is64Bit())
-         {
-         (*(uint32_t *) cursor) = boi(0xE3707000);  // LG r7,0(,7)
-         cursor += 4;
-         (*(uint16_t *) cursor) = bos(0x0004);
-         cursor += 2;
-
-         //  BXHG Rx,Ry,0(r7) or  BXLG Rx,Ry,0(r7)
-         (*(uint32_t *) cursor) = boi(0xEB007000 | (regMask << 16));     // BXHG Rx,Ry,0(r7)
-         cursor += 4;
-
-         if (opCode == TR::InstOpCode::BRXHG)
-            {
-            (*(uint16_t *) cursor) = bos(0x0044);
-            }
-         else
-            {
-            (*(uint16_t *) cursor) = bos(0x0045);
-            }
-
-         cursor += 2;
-         }
-      else
-         {
-         (*(uint32_t *) cursor) = boi(0x58707000);  // L r7,0(,7)
-         cursor += 4;
-         if (opCode == TR::InstOpCode::BRXH)
-            {
-            (*(uint32_t *) cursor) = boi(0x86007000 | (regMask << 16));
-            }     // BXH Rx,Ry,0(r7)
-         else // TR::InstOpCode::BRXLE
-         {
-            (*(uint32_t *) cursor) = boi(0x87007000 | (regMask << 16));
-            }     // BXLE Rx,Ry,0(r7)
-         cursor += 4;
-         }
+      TR_ASSERT_FATAL(false, "Cannot encode branch on index instruction because distance (%d) is out of range", distance);
       }
 
    if (doRelocation)

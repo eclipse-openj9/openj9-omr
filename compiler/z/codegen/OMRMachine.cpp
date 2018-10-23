@@ -6068,16 +6068,12 @@ OMR::Z::Machine::initializeGlobalRegisterTable()
 
          if (linkage->getPreserved(regNum))
             {
-               // Dangling else above
-               if (regNum == linkage->getExtCodeBaseRegister())
-                  {
-                  if (self()->cg()->isExtCodeBaseFreeForAssignment())
-                     p = self()->addGlobalReg(regNum, p);
-                  }
-               else if (regNum != linkage->getStaticBaseRegister() &&
-                     regNum != linkage->getPrivateStaticBaseRegister() &&
-                     regNum != linkage->getStackPointerRegister())
-                  p = self()->addGlobalReg(regNum, p);
+            if (regNum != linkage->getStaticBaseRegister() &&
+                regNum != linkage->getPrivateStaticBaseRegister() &&
+                regNum != linkage->getStackPointerRegister())
+               {
+               p = self()->addGlobalReg(regNum, p);
+               }
             }
          }
       }
@@ -6091,17 +6087,13 @@ OMR::Z::Machine::initializeGlobalRegisterTable()
 
          if (linkage->getPreserved(regNum))
             {
-               // Dangling else above
-               if (regNum == linkage->getExtCodeBaseRegister())
-                  {
-                  if (self()->cg()->isExtCodeBaseFreeForAssignment())
-                     p = self()->addGlobalReg(regNum, p);
-                  }
-               else if (regNum != linkage->getLitPoolRegister() &&
-                     regNum != linkage->getStaticBaseRegister() &&
-                     regNum != linkage->getPrivateStaticBaseRegister() &&
-                     regNum != linkage->getStackPointerRegister())
-                  p = self()->addGlobalReg(regNum, p);
+            if (regNum != linkage->getLitPoolRegister() &&
+                regNum != linkage->getStaticBaseRegister() &&
+                regNum != linkage->getPrivateStaticBaseRegister() &&
+                regNum != linkage->getStackPointerRegister())
+               {
+               p = self()->addGlobalReg(regNum, p);
+               }
             }
          }
       }
@@ -6163,11 +6155,8 @@ OMR::Z::Machine::initializeGlobalRegisterTable()
          // might use GPR6 on 64-bit for lit pool reg
          p = self()->addGlobalReg(TR::RealRegister::HPR6, p);
          }
-      if (linkage->getExtCodeBaseRegister() == TR::RealRegister::GPR7 && self()->cg()->isExtCodeBaseFreeForAssignment())
-         {
-         // register 7 is hard coded for now
-         p = self()->addGlobalReg(TR::RealRegister::HPR7, p);
-         }
+
+      p = self()->addGlobalReg(TR::RealRegister::HPR7, p);
       p = self()->addGlobalReg(TR::RealRegister::HPR8, p);
       p = self()->addGlobalReg(TR::RealRegister::HPR9, p);
       p = self()->addGlobalReg(TR::RealRegister::HPR10, p);

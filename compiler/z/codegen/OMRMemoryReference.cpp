@@ -3155,7 +3155,7 @@ OMR::Z::MemoryReference::generateBinaryEncoding(uint8_t * cursor, TR::CodeGenera
    // We don't allow stack slot to be used for branch instructions, as gcmaps would be wrong on the gcpoint
    if (largeDisp)
       {
-      TR_ASSERT(instr->getOpCode().isBranchOp() == false, "We don't handle long disp for branch instruction [%p] using ExtCodeBase stack slot", instr);
+      TR_ASSERT(!instr->getOpCode().isBranchOp(), "We don't handle long disp for branch instruction [%p] using long displacement stack slot", instr);
       }
 
    //  No one else from inst selection phase using this slot
@@ -3166,7 +3166,7 @@ OMR::Z::MemoryReference::generateBinaryEncoding(uint8_t * cursor, TR::CodeGenera
          (index == LongDispSlotBaseReg && base == NULL))
       )
       {
-      TR_ASSERT(false, "Bad use of ExtCodeBase slot (%d) on the stack for instruction [%p] corresponding to node [%p]", offsetToLongDispSlot, instr, instr->getNode());
+      TR_ASSERT(false, "Bad use of long displacement slot (%d) on the stack for instruction [%p] corresponding to node [%p]", offsetToLongDispSlot, instr, instr->getNode());
       }
 
    return nbytes;

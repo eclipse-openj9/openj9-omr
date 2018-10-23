@@ -254,7 +254,7 @@ MM_VerboseHandlerOutput::handleInitialized(J9HookInterface** hook, uintptr_t eve
 	if (_extensions->isConcurrentScavengerEnabled()) {
 		writer->formatAndOutput(env, 1, "<attribute name=\"concurrentScavenger\" value=\"%s\" />",
 #if defined(S390)
-				extensions->concurrentScavengerHWSupport ?
+				_extensions->concurrentScavengerHWSupport ?
 				"enabled, with H/W assistance" :
 				"enabled, without H/W assistance");
 #else /* defined(S390) */

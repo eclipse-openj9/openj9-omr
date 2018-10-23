@@ -1712,9 +1712,7 @@ void OMR::Power::CodeGenerator::doBinaryEncoding()
    self()->setBinaryBufferCursor(temp);
    self()->alignBinaryBufferCursor();
 
-   TR::Instruction *nop;
    bool skipLabel = false;
-   static int count=0;
 
    bool  isPrivateLinkage = (self()->comp()->getJittedMethodSymbol()->getLinkageConvention() == TR_Private);
 
@@ -1726,9 +1724,8 @@ void OMR::Power::CodeGenerator::doBinaryEncoding()
          {
          if ((data.cursorInstruction)->isNopCandidate())
             {
-            uintptrj_t uselessFetched;
-
-            uselessFetched = ((uintptrj_t)self()->getBinaryBufferCursor()/4)%8;
+            TR::Instruction *nop;
+            uintptrj_t uselessFetched = ((uintptrj_t)self()->getBinaryBufferCursor()/4)%8;
 
             if (uselessFetched >= 8 - data.cursorInstruction->MAX_LOOP_ALIGN_NOPS())
                {

@@ -148,16 +148,6 @@ class OMR_EXTENSIBLE Machine : public OMR::Machine
       return _registerFile[regNum];
       }
 
-   /**
-    * @brief Converts RegNum to RealRegister
-    * @param[in] regNum : register number
-    * @return RealRegister for specified register number
-    */
-   TR::RealRegister *getRealRegister(TR::RealRegister::RegNum regNum)
-      {
-      return _registerFile[regNum];
-      }
-
    TR::RealRegister **cloneRegisterFile(TR::RealRegister **registerFile, TR_AllocationKind allocKind = heapAlloc);
 
    TR::RealRegister **captureRegisterFile();

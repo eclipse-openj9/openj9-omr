@@ -238,16 +238,6 @@ class OMR_EXTENSIBLE Machine : public OMR::Machine
       }
 
    /**
-    * @brief Converts RegNum to RealRegister
-    * @param[in] regNum : register number
-    * @return RealRegister for specified register number
-    */
-   TR::RealRegister *getRealRegister(TR::RealRegister::RegNum regNum)
-      {
-      return _registerFile[regNum];
-      }
-
-   /**
     * @brief This method is the wrapper for \code getRealRegister.
     * @param[in] regNum : register number
     * @return RealRegister for specified register number

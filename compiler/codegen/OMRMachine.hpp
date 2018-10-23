@@ -69,6 +69,16 @@ class OMR_EXTENSIBLE Machine
    inline TR::Machine * self();
 
    /**
+    * @brief Converts RegNum to RealRegister
+    * @param[in] regNum : register number
+    * @return RealRegister for specified register number
+    */
+   TR::RealRegister *getRealRegister(TR::RealRegister::RegNum regNum)
+      {
+      return _registerFile[regNum];
+      }
+
+   /**
     * \return : the cached TR::CodeGenerator object
     */
    TR::CodeGenerator *cg() {return _cg;}

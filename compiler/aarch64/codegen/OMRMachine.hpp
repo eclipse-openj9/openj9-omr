@@ -77,16 +77,6 @@ public:
       }
 
    /**
-    * @brief Converts RegNum to RealRegister
-    * @param[in] regNum : register number
-    * @return RealRegister for specified register number
-    */
-   TR::RealRegister *getRealRegister(TR::RealRegister::RegNum regNum)
-      {
-      return _registerFile[regNum];
-      }
-
-   /**
     * @brief Finds the best free register
     * @param[in] rk : register kind
     * @param[in] considerUnlatched : consider unlatched state or not

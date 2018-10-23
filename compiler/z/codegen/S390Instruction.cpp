@@ -2650,18 +2650,13 @@ TR::S390RSInstruction::generateBinaryEncoding()
       toRealRegister(getLastRegister())->setRegister2Field((uint32_t *) cursor);
       }
 
-   if (!comp->getOption(TR_DisableLongDispNodes)) instructionStart = cursor;
+   instructionStart = cursor;
    cursor += opCode.getInstructionLength();
 
    // Finish patching up if long disp was needed
    if (getMemoryReference() != NULL)
       {
       longDispTouchUpPadding = getMemoryReference()->generateBinaryEncodingTouchUpForLongDisp(cursor, cg(), this);
-      if (comp->getOption(TR_DisableLongDispNodes))
-         {
-         cursor += longDispTouchUpPadding ;
-         padding = 0 ; longDispTouchUpPadding = 0;
-         }
       }
 
    setBinaryLength(cursor - instructionStart);
@@ -3424,18 +3419,13 @@ TR::S390RXInstruction::generateBinaryEncoding()
    TR::Register * trgReg = getRegForBinaryEncoding(getRegisterOperand(1));
    toRealRegister(trgReg)->setRegisterField((uint32_t *) cursor);
 
-   if (!comp->getOption(TR_DisableLongDispNodes)) instructionStart = cursor;
+   instructionStart = cursor;
    cursor += opCode.getInstructionLength();
 
    // Finish patching up if long disp was needed
    if (getMemoryReference() != NULL)
       {
       longDispTouchUpPadding = getMemoryReference()->generateBinaryEncodingTouchUpForLongDisp(cursor, cg(), this);
-      if (comp->getOption(TR_DisableLongDispNodes))
-         {
-         cursor += longDispTouchUpPadding ;
-         longDispTouchUpPadding = 0 ;
-         }
       }
 
    setBinaryLength(cursor - instructionStart);
@@ -3514,18 +3504,13 @@ TR::S390RXYInstruction::generateBinaryEncoding()
    TR::Register * trgReg = getRegForBinaryEncoding(getRegisterOperand(1));
    toRealRegister(trgReg)->setRegisterField((uint32_t *) cursor);
 
-   if (!comp->getOption(TR_DisableLongDispNodes)) instructionStart = cursor;
+   instructionStart = cursor;
    cursor += (getOpCode().getInstructionLength());
 
    // Finish patching up if long disp was needed
    if (getMemoryReference() != NULL)
       {
       longDispTouchUpPadding = getMemoryReference()->generateBinaryEncodingTouchUpForLongDisp(cursor, cg(), this);
-      if (comp->getOption(TR_DisableLongDispNodes))
-         {
-         cursor += longDispTouchUpPadding ;
-         longDispTouchUpPadding = 0 ;
-         }
       }
 
    setBinaryLength(cursor - instructionStart);
@@ -3608,18 +3593,13 @@ TR::S390RXFInstruction::generateBinaryEncoding()
       toRealRegister(getRegisterOperand(1))->setRegisterField((uint32_t *) cursor + 1, 7);
       }
 
-   if (!comp->getOption(TR_DisableLongDispNodes)) instructionStart = cursor;
+   instructionStart = cursor;
    cursor += getOpCode().getInstructionLength();
 
    // Finish patching up if long disp was needed
    if (getMemoryReference() != NULL)
       {
       longDispTouchUpPadding = getMemoryReference()->generateBinaryEncodingTouchUpForLongDisp(cursor, cg(), this);
-      if (comp->getOption(TR_DisableLongDispNodes))
-         {
-         cursor += longDispTouchUpPadding ;
-         longDispTouchUpPadding = 0 ;
-         }
       }
 
    setBinaryLength(cursor - instructionStart);
@@ -4517,21 +4497,13 @@ TR::S390VStorageInstruction::generateBinaryEncoding()
    // Mask
    setMaskField(reinterpret_cast<uint32_t*>(cursor), _maskField, 3);
 
-   if (!comp->getOption(TR_DisableLongDispNodes))
-      {
-      instructionStart = cursor;
-      }
+   instructionStart = cursor;
    cursor += (getOpCode().getInstructionLength());
 
    // Finish patching up if long disp was needed
    if (getMemoryReference() != NULL)
       {
       longDispTouchUpPadding = getMemoryReference()->generateBinaryEncodingTouchUpForLongDisp(cursor, cg(), this);
-      if (comp->getOption(TR_DisableLongDispNodes))
-         {
-         cursor += longDispTouchUpPadding ;
-         longDispTouchUpPadding = 0 ;
-         }
       }
 
    setBinaryLength(cursor - instructionStart);
@@ -4592,21 +4564,11 @@ TR::S390VRSdInstruction::generateBinaryEncoding()
     toRealRegister(r3Reg)->setRegister2Field(reinterpret_cast<uint32_t*>(cursor));
     toRealRegister(v1Reg)->setRegister4Field(reinterpret_cast<uint32_t*>(cursor));
 
-    if (!comp->getOption(TR_DisableLongDispNodes))
-       {
-       instructionStart = cursor;
-       }
+    instructionStart = cursor;
     cursor += (getOpCode().getInstructionLength());
 
     // Finish patching up if long disp was needed
-
     longDispTouchUpPadding = memRef->generateBinaryEncodingTouchUpForLongDisp(cursor, cg(), this);
-    if (comp->getOption(TR_DisableLongDispNodes))
-       {
-       cursor += longDispTouchUpPadding ;
-       longDispTouchUpPadding = 0 ;
-       }
-
 
     setBinaryLength(cursor - instructionStart);
     setBinaryEncoding(instructionStart);
@@ -4624,54 +4586,46 @@ TR::S390VRSdInstruction::generateBinaryEncoding()
 uint8_t *
 TR::S390VRVInstruction::generateBinaryEncoding()
    {
-    TR_ASSERT(getRegisterOperand(1) != NULL, "1st Operand should not be NULL!");
-    TR_ASSERT(getRegisterOperand(2) != NULL, "2nd Operand should not be NULL!");
+   TR_ASSERT(getRegisterOperand(1) != NULL, "1st Operand should not be NULL!");
+   TR_ASSERT(getRegisterOperand(2) != NULL, "2nd Operand should not be NULL!");
 
-    uint8_t * instructionStart = cg()->getBinaryBufferCursor();
-    uint8_t * cursor = instructionStart;
-    memset(static_cast<void*>(cursor), 0, getEstimatedBinaryLength());
-    int32_t padding = 0, longDispTouchUpPadding = 0;
-    TR::Compilation *comp = cg()->comp();
+   uint8_t * instructionStart = cg()->getBinaryBufferCursor();
+   uint8_t * cursor = instructionStart;
+   memset(static_cast<void*>(cursor), 0, getEstimatedBinaryLength());
+   int32_t padding = 0, longDispTouchUpPadding = 0;
+   TR::Compilation *comp = cg()->comp();
 
-    // For large disp scenarios the memref could insert new inst
-    if (getMemoryReference() != NULL)
-       {
-       padding = getMemoryReference()->generateBinaryEncoding(cursor, cg(), this);
-       cursor += padding;
-       }
+   // For large disp scenarios the memref could insert new inst
+   if (getMemoryReference() != NULL)
+      {
+      padding = getMemoryReference()->generateBinaryEncoding(cursor, cg(), this);
+      cursor += padding;
+      }
 
-    // Overlay the instruction
-    getOpCode().copyBinaryToBufferWithoutClear(cursor);
+   // Overlay the instruction
+   getOpCode().copyBinaryToBufferWithoutClear(cursor);
 
-    // Overlay operands
-    // VRV target and source registers are the same. so don't handle operand(2)
-    toRealRegister(getRegisterOperand(1))->setRegister1Field(reinterpret_cast<uint32_t*>(cursor));
+   // Overlay operands
+   // VRV target and source registers are the same. so don't handle operand(2)
+   toRealRegister(getRegisterOperand(1))->setRegister1Field(reinterpret_cast<uint32_t*>(cursor));
 
-    // Mask
-    setMaskField(reinterpret_cast<uint32_t*>(cursor), _maskField, 3);
+   // Mask
+   setMaskField(reinterpret_cast<uint32_t*>(cursor), _maskField, 3);
 
-    if (!comp->getOption(TR_DisableLongDispNodes))
-       {
-       instructionStart = cursor;
-       }
-    cursor += (getOpCode().getInstructionLength());
+   instructionStart = cursor;
+   cursor += (getOpCode().getInstructionLength());
 
-    // Finish patching up if long disp was needed
-    if (getMemoryReference() != NULL)
-       {
-       longDispTouchUpPadding = getMemoryReference()->generateBinaryEncodingTouchUpForLongDisp(cursor, cg(), this);
-       if (comp->getOption(TR_DisableLongDispNodes))
-          {
-          cursor += longDispTouchUpPadding ;
-          longDispTouchUpPadding = 0 ;
-          }
-       }
+   // Finish patching up if long disp was needed
+   if (getMemoryReference() != NULL)
+      {
+      longDispTouchUpPadding = getMemoryReference()->generateBinaryEncodingTouchUpForLongDisp(cursor, cg(), this);
+      }
 
-    setBinaryLength(cursor - instructionStart);
-    setBinaryEncoding(instructionStart);
-    cg()->addAccumulatedInstructionLengthError(getEstimatedBinaryLength() - getBinaryLength() - padding - longDispTouchUpPadding);
+   setBinaryLength(cursor - instructionStart);
+   setBinaryEncoding(instructionStart);
+   cg()->addAccumulatedInstructionLengthError(getEstimatedBinaryLength() - getBinaryLength() - padding - longDispTouchUpPadding);
 
-    return cursor;
+   return cursor;
    }
 
 
@@ -4708,19 +4662,11 @@ TR::S390VSIInstruction::generateBinaryEncoding()
    // Operand 4: get V1 and put it at the 4th operand field
    toRealRegister(v1Reg)->setRegister4Field(reinterpret_cast<uint32_t*>(cursor));
 
-   if (!comp->getOption(TR_DisableLongDispNodes))
-      {
-      instructionStart = cursor;
-      }
+   instructionStart = cursor;
    cursor += (getOpCode().getInstructionLength());
 
    // Finish patching up if long disp was needed
    longDispTouchUpPadding = memRef->generateBinaryEncodingTouchUpForLongDisp(cursor, cg(), this);
-   if (comp->getOption(TR_DisableLongDispNodes))
-      {
-      cursor += longDispTouchUpPadding ;
-      longDispTouchUpPadding = 0 ;
-      }
 
    setBinaryLength(cursor - instructionStart);
    setBinaryEncoding(instructionStart);
@@ -4768,7 +4714,7 @@ TR::S390MemMemInstruction::generateBinaryEncoding()
    // Overlay the actual instruction op and length
    getOpCode().copyBinaryToBufferWithoutClear(cursor);
 
-   if (!comp->getOption(TR_DisableLongDispNodes)) instructionStart = cursor;
+   instructionStart = cursor;
    cursor += getOpCode().getInstructionLength();
 
    // Finish patching up if long disp was needed
@@ -4776,11 +4722,6 @@ TR::S390MemMemInstruction::generateBinaryEncoding()
       longDispTouchUpPadding = getMemoryReference()->generateBinaryEncodingTouchUpForLongDisp(cursor, cg(), this);
    if (getMemoryReference2())
       longDispTouchUpPadding += getMemoryReference2()->generateBinaryEncodingTouchUpForLongDisp(cursor, cg(), this);
-   if (comp->getOption(TR_DisableLongDispNodes))
-      {
-      cursor += longDispTouchUpPadding ;
-      longDispTouchUpPadding = 0 ;
-      }
 
    setBinaryLength(cursor - instructionStart);
    setBinaryEncoding(instructionStart);
@@ -4839,17 +4780,12 @@ TR::S390SS1Instruction::generateBinaryEncoding()
    (*(uint32_t *) cursor) &= boi(0xFF00FFFF);
    (*(uint8_t *) (cursor + 1)) |= getLen();
 
-   if (!comp->getOption(TR_DisableLongDispNodes)) instructionStart = cursor;
+   instructionStart = cursor;
    cursor += getOpCode().getInstructionLength();
 
    // Finish patching up if long disp was needed
    longDispTouchUpPadding  = getMemoryReference()->generateBinaryEncodingTouchUpForLongDisp(cursor, cg(), this);
    longDispTouchUpPadding += getMemoryReference2()->generateBinaryEncodingTouchUpForLongDisp(cursor, cg(), this);
-   if (comp->getOption(TR_DisableLongDispNodes))
-      {
-      cursor += longDispTouchUpPadding ;
-      longDispTouchUpPadding = 0 ;
-      }
 
    setBinaryLength(cursor - instructionStart);
    setBinaryEncoding(instructionStart);
@@ -4906,18 +4842,13 @@ TR::S390SS2Instruction::generateBinaryEncoding()
    (*(uint8_t *) (cursor + 1)) |= lenField;
 
 
-   if (!comp->getOption(TR_DisableLongDispNodes)) instructionStart = cursor;
+   instructionStart = cursor;
    cursor += getOpCode().getInstructionLength();
 
    // Finish patching up if long disp was needed
    longDispTouchUpPadding = getMemoryReference()->generateBinaryEncodingTouchUpForLongDisp(cursor, cg(), this);
    if (getMemoryReference2())
       longDispTouchUpPadding += getMemoryReference2()->generateBinaryEncodingTouchUpForLongDisp(cursor, cg(), this);
-   if (comp->getOption(TR_DisableLongDispNodes))
-      {
-      cursor += longDispTouchUpPadding ;
-      longDispTouchUpPadding = 0 ;
-      }
 
    setBinaryLength(cursor - instructionStart);
    setBinaryEncoding(instructionStart);
@@ -4962,7 +4893,7 @@ TR::S390SS4Instruction::generateBinaryEncoding()
       toRealRegister(getRegForBinaryEncoding(getSourceKeyReg()))->setRegisterField((uint32_t *)cursor, 4);
 
 
-   if (!comp->getOption(TR_DisableLongDispNodes)) instructionStart = cursor;
+   instructionStart = cursor;
    cursor += getOpCode().getInstructionLength();
 
    // Finish patching up if long disp was needed
@@ -4970,11 +4901,6 @@ TR::S390SS4Instruction::generateBinaryEncoding()
       longDispTouchUpPadding = getMemoryReference()->generateBinaryEncodingTouchUpForLongDisp(cursor, cg(), this);
    if (getMemoryReference2())
       longDispTouchUpPadding += getMemoryReference2()->generateBinaryEncodingTouchUpForLongDisp(cursor, cg(), this);
-   if (comp->getOption(TR_DisableLongDispNodes))
-      {
-      cursor += longDispTouchUpPadding ;
-      longDispTouchUpPadding = 0 ;
-      }
 
    setBinaryLength(cursor - instructionStart);
    setBinaryEncoding(instructionStart);
@@ -5064,7 +4990,7 @@ TR::S390SSFInstruction::generateBinaryEncoding()
    padding = getMemoryReference2()->generateBinaryEncoding(cursor, cg(), this);
    cursor += padding;
 
-   if (!comp->getOption(TR_DisableLongDispNodes)) instructionStart = cursor;
+   instructionStart = cursor;
    cursor += getOpCode().getInstructionLength();
 
    // Finish patching up if long disp was needed
@@ -5072,11 +4998,6 @@ TR::S390SSFInstruction::generateBinaryEncoding()
       longDispTouchUpPadding = getMemoryReference()->generateBinaryEncodingTouchUpForLongDisp(cursor, cg(), this);
    if (getMemoryReference2())
       longDispTouchUpPadding += getMemoryReference2()->generateBinaryEncodingTouchUpForLongDisp(cursor, cg(), this);
-   if (comp->getOption(TR_DisableLongDispNodes))
-      {
-      cursor += longDispTouchUpPadding ;
-      longDispTouchUpPadding = 0 ;
-      }
 
    setBinaryLength(cursor - instructionStart);
    setBinaryEncoding(instructionStart);
@@ -5121,18 +5042,13 @@ TR::S390RSLInstruction::generateBinaryEncoding()
    (*(uint32_t *) cursor) &= boi(0xFF0FFFFF);
    (*(uint8_t *) (cursor + 1)) |= (getLen() << 4);
 
-   if (!comp->getOption(TR_DisableLongDispNodes)) instructionStart = cursor;
+   instructionStart = cursor;
    cursor += getOpCode().getInstructionLength();
 
    // Finish patching up if long disp was needed
    if (getMemoryReference() != NULL)
       {
       longDispTouchUpPadding = getMemoryReference()->generateBinaryEncodingTouchUpForLongDisp(cursor, cg(), this);
-      if (comp->getOption(TR_DisableLongDispNodes))
-         {
-         cursor += longDispTouchUpPadding ;
-         longDispTouchUpPadding = 0 ;
-         }
       }
 
    setBinaryLength(cursor - instructionStart);
@@ -5173,7 +5089,7 @@ TR::S390RSLbInstruction::generateBinaryEncoding()
    // Overlay the actual instruction
    getOpCode().copyBinaryToBufferWithoutClear(cursor);
 
-   if (!comp->getOption(TR_DisableLongDispNodes)) instructionStart = cursor;
+   instructionStart = cursor;
 
    // generate binary for the length field
    TR_ASSERT(getLen() <= UCHAR_MAX,"length %d is too large to encode in RSLb instruction\n",getLen());
@@ -5200,11 +5116,6 @@ TR::S390RSLbInstruction::generateBinaryEncoding()
    if (getMemoryReference() != NULL)
       {
       longDispTouchUpPadding = getMemoryReference()->generateBinaryEncodingTouchUpForLongDisp(cursor, cg(), this);
-      if (comp->getOption(TR_DisableLongDispNodes))
-         {
-         cursor += longDispTouchUpPadding ;
-         longDispTouchUpPadding = 0 ;
-         }
       }
 
    setBinaryLength(cursor - instructionStart);
@@ -5261,18 +5172,13 @@ TR::S390SIInstruction::generateBinaryEncoding()
    (*(uint32_t *) cursor) &= boi(0xFF00FFFF);
    (*(uint8_t *) (cursor + 1)) |= getSourceImmediate();
 
-   if (!comp->getOption(TR_DisableLongDispNodes)) instructionStart = cursor;
+   instructionStart = cursor;
    cursor += opCode.getInstructionLength();
 
    // Finish patching up if long disp was needed
    if (getMemoryReference() != NULL)
       {
       longDispTouchUpPadding = getMemoryReference()->generateBinaryEncodingTouchUpForLongDisp(cursor, cg(), this);
-      if (comp->getOption(TR_DisableLongDispNodes))
-         {
-         cursor += longDispTouchUpPadding ;
-         longDispTouchUpPadding = 0 ;
-         }
       }
 
    setBinaryLength(cursor - instructionStart);
@@ -5314,18 +5220,13 @@ TR::S390SIYInstruction::generateBinaryEncoding()
    (*(uint32_t *) cursor) &= boi(0xFF00FFFF);
    (*(uint8_t *) (cursor + 1)) |= getSourceImmediate();
 
-   if (!comp->getOption(TR_DisableLongDispNodes)) instructionStart = cursor;
+   instructionStart = cursor;
    cursor += (getOpCode().getInstructionLength());
 
    // Finish patching up if long disp was needed
    if (getMemoryReference() != NULL)
       {
       longDispTouchUpPadding = getMemoryReference()->generateBinaryEncodingTouchUpForLongDisp(cursor, cg(), this);
-      if (comp->getOption(TR_DisableLongDispNodes))
-         {
-         cursor += longDispTouchUpPadding ;
-         longDispTouchUpPadding = 0 ;
-         }
       }
 
    setBinaryLength(cursor - instructionStart);
@@ -5376,18 +5277,13 @@ TR::S390SILInstruction::generateBinaryEncoding()
 
    (*(int16_t *) (cursor + 4)) |= bos((int16_t) getSourceImmediate());
 
-   if (!comp->getOption(TR_DisableLongDispNodes)) instructionStart = cursor;
+   instructionStart = cursor;
    cursor += getOpCode().getInstructionLength();
 
    // Finish patching up if long disp was needed
    if (getMemoryReference() != NULL)
       {
       longDispTouchUpPadding = getMemoryReference()->generateBinaryEncodingTouchUpForLongDisp(cursor, cg(), this);
-      if (comp->getOption(TR_DisableLongDispNodes))
-         {
-         cursor += longDispTouchUpPadding ;
-         longDispTouchUpPadding = 0 ;
-         }
       }
 
    setBinaryLength(cursor - instructionStart);
@@ -5428,18 +5324,13 @@ TR::S390SInstruction::generateBinaryEncoding()
    // Overlay the actual instruction and reg
    getOpCode().copyBinaryToBufferWithoutClear(cursor);
 
-   if (!comp->getOption(TR_DisableLongDispNodes)) instructionStart = cursor;
+   instructionStart = cursor;
    cursor += getOpCode().getInstructionLength();
 
    // Finish patching up if long disp was needed
    if (getMemoryReference() != NULL)
       {
       longDispTouchUpPadding = getMemoryReference()->generateBinaryEncodingTouchUpForLongDisp(cursor, cg(), this);
-      if (comp->getOption(TR_DisableLongDispNodes))
-         {
-         cursor += longDispTouchUpPadding ;
-         longDispTouchUpPadding = 0 ;
-         }
       }
 
    setBinaryLength(cursor - instructionStart);

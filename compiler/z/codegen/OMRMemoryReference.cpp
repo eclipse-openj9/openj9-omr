@@ -2935,7 +2935,6 @@ OMR::Z::MemoryReference::generateBinaryEncoding(uint8_t * cursor, TR::CodeGenera
    TR::Node * node = instr->getNode();
 
    bool is2ndSSMemRef=self()->is2ndMemRef();
-   bool useNodesForLongFixup = !comp->getOption(TR_DisableLongDispNodes);
 
    int32_t displacement = self()->calcDisplacement(cursor, instr, cg);
 
@@ -3004,146 +3003,24 @@ OMR::Z::MemoryReference::generateBinaryEncoding(uint8_t * cursor, TR::CodeGenera
          TR_ASSERT(scratchReg!=NULL,
            "OMR::Z::MemoryReference::generateBinaryEncoding -- A scratch reg should always be found.");
 
-         if (useNodesForLongFixup)
+         largeDisp = true;
+         if (spillNeeded)
             {
-            largeDisp = true;
-            if (spillNeeded)
-               {
-               currInstr = generateRXInstruction(cg, TR::InstOpCode::getStoreOpCode(), node, scratchReg,
-                  generateS390MemoryReference(LongDispSlotBaseReg, offsetToLongDispSlot, cg), prevInstr);
-               currInstr->setEstimatedBinaryLength(currInstr->getOpCode().getInstructionLength());
-               cg->setBinaryBufferCursor(cursor = currInstr->generateBinaryEncoding());
-               prevInstr = currInstr;
-               }
-            currInstr = generateImmToRegister(cg, node, scratchReg, (intptr_t)(displacement), prevInstr);
+            currInstr = generateRXInstruction(cg, TR::InstOpCode::getStoreOpCode(), node, scratchReg,
+               generateS390MemoryReference(LongDispSlotBaseReg, offsetToLongDispSlot, cg), prevInstr);
             currInstr->setEstimatedBinaryLength(currInstr->getOpCode().getInstructionLength());
-            while(prevInstr != currInstr)
-               {
-               prevInstr = prevInstr->getNext();
-               cg->setBinaryBufferCursor(cursor = prevInstr->generateBinaryEncoding());
-               }
+            cg->setBinaryBufferCursor(cursor = currInstr->generateBinaryEncoding());
             prevInstr = currInstr;
-            displacement = 0;
             }
-         else if (displacement>=(int32_t)0xFFFF8000 && displacement<=(int32_t)0x00007FFF)
+         currInstr = generateImmToRegister(cg, node, scratchReg, (intptr_t)(displacement), prevInstr);
+         currInstr->setEstimatedBinaryLength(currInstr->getOpCode().getInstructionLength());
+         while(prevInstr != currInstr)
             {
-            TR_ASSERT(scratchReg!=NULL,
-               "OMR::Z::MemoryReference::generateBinaryEncoding -- A scratch reg should always be found [%p].",instr);
-
-            largeDisp = true;
-            if (TR::Compiler->target.is64Bit())
-               {
-               if (spillNeeded )
-                  {
-                  *(int32_t *) cursor  = boi(0xE3005000 | (offsetToLongDispSlot&0xFFF)); // STG Rscrtch,offToLongDispSlot(,GPR5)
-                  scratchReg->setRegisterField((uint32_t *)cursor);
-                  cursor += 4;
-                  nbytes += 4;
-                  *(int16_t *) cursor = bos(0x0024);
-                  cursor += 2;
-                  nbytes += 2;
-                  }
-
-               *(int32_t *) cursor  = boi(0xa7090000 | (displacement&0xFFFF));                   // LGHI Rscrtch, disp&0xFFFF
-               scratchReg->setRegisterField((uint32_t *)cursor);
-               }
-            else
-               {
-               if (spillNeeded )
-                  {
-                  *(int32_t *) cursor  = boi(0x50005000 | (offsetToLongDispSlot&0xFFF)); // ST Rscrtch,offToLongDispSlot(,GPR5)
-                  scratchReg->setRegisterField((uint32_t *)cursor);
-                  cursor += 4;
-                  nbytes += 4;
-                  }
-
-               *(int32_t *) cursor  = boi(0xa7080000 | (displacement&0xFFFF));                   // LHI Rscrtch, disp&0xFFFF
-               scratchReg->setRegisterField((uint32_t *)cursor);
-               }
-            cursor += 4;
-            nbytes += 4;
-
-            displacement = 0;
+            prevInstr = prevInstr->getNext();
+            cg->setBinaryBufferCursor(cursor = prevInstr->generateBinaryEncoding());
             }
-         else if (displacement>=(int32_t)0xF8000000 && displacement<=(int32_t)0x07FFFFFF)
-            {
-            largeDisp = true;
-
-            int32_t high = displacement>>12;
-            int32_t low  = displacement&0xFFF;
-
-            TR_ASSERT(high<=MAX_IMMEDIATE_VAL && high>=MIN_IMMEDIATE_VAL,
-               "OMR::Z::MemoryReference::generateBinaryEncoding -- Immediate value out of range.");
-
-            if (TR::Compiler->target.is64Bit())
-               {
-               if (spillNeeded )
-                  {
-                  *(int32_t *) cursor  = (0xE3005000 | (offsetToLongDispSlot&0xFFF)); // STG Rscrtch,offToLongDispSlot(,GPR5)
-                  scratchReg->setRegisterField((uint32_t *)cursor);
-                  cursor += 4;
-                  nbytes += 4;
-                  *(int16_t *) cursor = bos(0x0024);
-                  cursor += 2;
-                  nbytes += 2;
-                  }
-
-               *(int32_t *) cursor  = boi(0xa7090000 | (high&0xFFFF));                  //  LGHI Rscrtch, (disp>>12)&0xFFFF
-               scratchReg->setRegisterField((uint32_t *)cursor);
-               cursor += 4;
-               nbytes += 4;
-               *(int32_t *) cursor  = boi(0xeb00000c);                                    //  SLLG Rscrtch,Rscrtch,12
-               scratchReg->setRegisterField((uint32_t *)cursor);
-               scratchReg->setRegister2Field((uint32_t *)cursor);
-               cursor += 4;
-               nbytes += 4;
-               *(int16_t *) cursor = bos(0x000d);
-               cursor += 2;
-               nbytes += 2;
-               if (low)
-                  {
-                  *(int32_t *) cursor = boi(0x41000000 | low);                          //  LA Rscrtch, disp&0xFFF(,Rscrtch)
-                  scratchReg->setRegisterField((uint32_t *)cursor);
-                  scratchReg->setBaseRegisterField((uint32_t *)cursor);
-
-                  cursor += 4;
-                  nbytes += 4;
-                  }
-               }
-            else
-               {
-               if (spillNeeded )
-                  {
-                  *(int32_t *) cursor  = boi(0x50005000 | (offsetToLongDispSlot&0xFFF)); // ST Rscrtch,offToLongDispSlot(,GPR5)
-                  scratchReg->setRegisterField((uint32_t *)cursor);
-                  cursor += 4;
-                  nbytes += 4;
-                  }
-
-               *(int32_t *) cursor  = boi(0xa7080000 | (high&0xFFFF));                  //  LHI Rscrtch, (disp>>12)&0xFFFF
-               scratchReg->setRegisterField((uint32_t *)cursor);
-               cursor += 4;
-               nbytes += 4;
-               *(int32_t *) cursor  = boi(0x8900000c);                                    //  SLL Rscrtch, 12
-               scratchReg->setRegisterField((uint32_t *)cursor);
-               cursor += 4;
-               nbytes += 4;
-               if (low)
-                  {
-                  *(int32_t *) cursor = boi(0x41000000 | low);                          //  LA Rscrtch, disp&0xFFF(,Rscrtch)
-                  scratchReg->setRegisterField((uint32_t *)cursor);
-                  scratchReg->setBaseRegisterField((uint32_t *)cursor);
-
-                  cursor += 4;
-                  nbytes += 4;
-                  }
-               }
-            displacement = 0;
-            }
-         else
-            {
-            TR_ASSERT_FATAL(false, "Displacement (0x%x) is not handled", displacement);
-            }
+         prevInstr = currInstr;
+         displacement = 0;
 
          // Now we need to figure out how to use the manufactured displacement
          if (instructionFormat == TR::Instruction::IsRS ||
@@ -3163,25 +3040,11 @@ OMR::Z::MemoryReference::generateBinaryEncoding(uint8_t * cursor, TR::CodeGenera
             // becomes:
             //   LA  Rscrtch, 0(base,Rscrtch)
             //   ICM GPRt, 0(Rscrtch)
-            if (useNodesForLongFixup
-               )
-               {
-               currInstr = generateRXInstruction(cg, TR::InstOpCode::LA, node, scratchReg,
-                  generateS390MemoryReference(base, scratchReg, 0, cg), prevInstr);
-               currInstr->setEstimatedBinaryLength(currInstr->getOpCode().getInstructionLength());
-               cg->setBinaryBufferCursor(cursor = currInstr->generateBinaryEncoding());
-               prevInstr = currInstr;
-               }
-            else
-               {
-               *(int32_t *) cursor  = boi(0x41000000);                   // LA
-               scratchReg->setRegisterField((uint32_t *)cursor);
-               scratchReg->setBaseRegisterField((uint32_t *)cursor);
-               base->setIndexRegisterField((uint32_t *)cursor);
-
-               cursor += 4;
-               nbytes += 4;
-               }
+            currInstr = generateRXInstruction(cg, TR::InstOpCode::LA, node, scratchReg,
+               generateS390MemoryReference(base, scratchReg, 0, cg), prevInstr);
+            currInstr->setEstimatedBinaryLength(currInstr->getOpCode().getInstructionLength());
+            cg->setBinaryBufferCursor(cursor = currInstr->generateBinaryEncoding());
+            prevInstr = currInstr;
 
             base = scratchReg;
             self()->setBaseRegister(base, cg);
@@ -3193,25 +3056,11 @@ OMR::Z::MemoryReference::generateBinaryEncoding(uint8_t * cursor, TR::CodeGenera
             // becomes:
             //   LA Rscrtch, 0(index,Rscrtch)
             //   A  GPRt, 0(Rscrtch,base)
-            if (useNodesForLongFixup
-               )
-               {
-               currInstr = generateRXInstruction(cg, TR::InstOpCode::LA, node, scratchReg,
-                  generateS390MemoryReference(index, scratchReg, 0, cg), prevInstr);
-               currInstr->setEstimatedBinaryLength(currInstr->getOpCode().getInstructionLength());
-               cg->setBinaryBufferCursor(cursor = currInstr->generateBinaryEncoding());
-               prevInstr = currInstr;
-               }
-            else
-               {
-               *(int32_t *) cursor = boi(0x41000000);                    // LA
-               scratchReg->setRegisterField((uint32_t *)cursor);
-               scratchReg->setBaseRegisterField((uint32_t *)cursor);
-               index->setIndexRegisterField((uint32_t *)cursor);
-
-               cursor += 4;
-               nbytes += 4;
-               }
+            currInstr = generateRXInstruction(cg, TR::InstOpCode::LA, node, scratchReg,
+               generateS390MemoryReference(index, scratchReg, 0, cg), prevInstr);
+            currInstr->setEstimatedBinaryLength(currInstr->getOpCode().getInstructionLength());
+            cg->setBinaryBufferCursor(cursor = currInstr->generateBinaryEncoding());
+            prevInstr = currInstr;
 
             index = scratchReg;
             self()->setIndexRegister(index);
@@ -3252,8 +3101,8 @@ OMR::Z::MemoryReference::generateBinaryEncoding(uint8_t * cursor, TR::CodeGenera
 
          if (nbytes == 0)
                nbytes = cursor - instructionStart;
-         if (useNodesForLongFixup)
-            currInstr->setNext(instr);
+
+         currInstr->setNext(instr);
 
          // Mark the instruction as requiring a large disp
          if (is2ndSSMemRef)
@@ -3340,7 +3189,6 @@ OMR::Z::MemoryReference::generateBinaryEncodingTouchUpForLongDisp(uint8_t *curso
    TR::RealRegister * LongDispSlotBaseReg = useNormalSP ? (cg->getLinkage())->getNormalStackPointerRealRegister():spReg;
 
    bool spillNeeded = true; // LocalLocal alloc would set this to false
-   bool useNodesForLongFixup = !comp->getOption(TR_DisableLongDispNodes);
 
    if (TR::MemoryReference::canUseTargetRegAsScratchReg(instr))
       {
@@ -3375,42 +3223,13 @@ OMR::Z::MemoryReference::generateBinaryEncodingTouchUpForLongDisp(uint8_t *curso
    // Restore the scratch register
    if (largeDisp  && spillNeeded)
       {
-      if (useNodesForLongFixup
-         )
-         {
-         //traceMsg(comp,"restoring scratchReg %p disp = %d \n", instr,disp);
-         TR::Instruction * nextInstr = instr->getNext();
-         TR::Instruction * currInstr = generateRXInstruction(cg, TR::InstOpCode::getLoadOpCode(), instr->getNode(), scratchReg,
-            generateS390MemoryReference(LongDispSlotBaseReg, offsetToLongDispSlot, cg), instr);
-         currInstr->setEstimatedBinaryLength(currInstr->getOpCode().getInstructionLength());
-         if (!useNodesForLongFixup)
-            {
-            cg->setBinaryBufferCursor(cursor = currInstr->generateBinaryEncoding());
-            nbytes += cursor - instructionStart;
-            }
-         else
-            {
-            nbytes += currInstr->getOpCode().getInstructionLength();
-            }
-         currInstr->setNext(nextInstr);
-         }
-      else if (TR::Compiler->target.is64Bit())
-         {
-         *(int32_t *) cursor = boi(0xE3005000 | (offsetToLongDispSlot&0xFFF)); // LG Rscrtch,offToLongDispSlot(,GPR5)
-         scratchReg->setRegisterField((uint32_t *)cursor);
-         cursor += 4;
-         nbytes += 4;
-         *(int16_t *) cursor = bos(0x0004);
-         cursor += 2;
-         nbytes += 2;
-         }
-      else
-         {
-         *(int32_t *) cursor = boi(0x58005000 | (offsetToLongDispSlot&0xFFF)); // L  Rscrtch,offToLongDispSlot(,GPR5)
-         scratchReg->setRegisterField((uint32_t *)cursor);
-         cursor += 4;
-         nbytes += 4;
-         }
+      TR::Instruction * nextInstr = instr->getNext();
+      TR::Instruction * currInstr = generateRXInstruction(cg, TR::InstOpCode::getLoadOpCode(), instr->getNode(), scratchReg,
+         generateS390MemoryReference(LongDispSlotBaseReg, offsetToLongDispSlot, cg), instr);
+      currInstr->setEstimatedBinaryLength(currInstr->getOpCode().getInstructionLength());
+      
+      nbytes += currInstr->getOpCode().getInstructionLength();
+      currInstr->setNext(nextInstr);
       }
 
    return nbytes;

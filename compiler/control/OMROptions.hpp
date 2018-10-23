@@ -486,7 +486,7 @@ enum TR_CompilationOptions
    // Available                               = 0x04000000 + 12,
    // Available                               = 0x08000000 + 12,
    // Available                               = 0x10000000 + 12,
-   TR_DisableLongDispNodes                    = 0x20000000 + 12, // 390
+   // Available                               = 0x20000000 + 12,
    // Available                               = 0x40000000 + 12,
    TR_DisableAOTInstanceFieldResolution       = 0x80000000 + 12,
 

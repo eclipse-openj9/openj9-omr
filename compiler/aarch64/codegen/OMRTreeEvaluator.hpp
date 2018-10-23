@@ -33,6 +33,7 @@ namespace OMR { typedef OMR::ARM64::TreeEvaluator TreeEvaluatorConnector; }
 #endif
 
 #include "compiler/codegen/OMRTreeEvaluator.hpp"
+#include "codegen/InstOpCode.hpp"
 #include "codegen/RealRegister.hpp"
 #include "compile/CompilationTypes.hpp"
 
@@ -47,6 +48,24 @@ namespace TR { class CodeGenerator; }
  * @param[in] cg : CodeGenerator
  */
 TR::Register *genericReturnEvaluator(TR::Node *node, TR::RealRegister::RegNum rnum, TR_RegisterKinds rk, TR_ReturnInfo i, TR::CodeGenerator *cg);
+
+/**
+ * @brief Helper function for xloadEvaluators
+ * @param[in] node : node
+ * @param[in] op : instruction for load
+ * @param[in] memSize : data size on memory
+ * @param[in] cg : CodeGenerator
+ */
+TR::Register *commonLoadEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic op, int32_t memSize, TR::CodeGenerator *cg);
+
+/**
+ * @brief Helper function for xstoreEvaluators
+ * @param[in] node : node
+ * @param[in] op : instruction for store
+ * @param[in] memSize : data size on memory
+ * @param[in] cg : CodeGenerator
+ */
+TR::Register *commonStoreEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic op, int32_t memSize, TR::CodeGenerator *cg);
 
 namespace OMR
 {

@@ -54,8 +54,11 @@ private:
 	
 protected:
 	bool initialize(MM_EnvironmentBase *env);
+	
+	/* todo: remove this API once downstream OMR projects transition to the API with threadCount argument */
+	virtual void prepareThreadsForTask(MM_EnvironmentBase *env, MM_Task *task) {}
 
-	virtual void prepareThreadsForTask(MM_EnvironmentBase *env, MM_Task *task);
+	virtual void prepareThreadsForTask(MM_EnvironmentBase *env, MM_Task *task, uintptr_t threadCount);
 	virtual void acceptTask(MM_EnvironmentBase *env);
 	virtual void completeTask(MM_EnvironmentBase *env);
 	virtual void cleanupAfterTask(MM_EnvironmentBase *env);

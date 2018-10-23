@@ -93,7 +93,10 @@ protected:
 
 	bool initialize(MM_EnvironmentBase *env);
 	
-	virtual void prepareThreadsForTask(MM_EnvironmentBase *env, MM_Task *task);
+	/* todo: remove this API once downstream OMR projects transition to the API with threadCount argument */
+	virtual void prepareThreadsForTask(MM_EnvironmentBase *env, MM_Task *task) {}
+	
+	virtual void prepareThreadsForTask(MM_EnvironmentBase *env, MM_Task *task, uintptr_t threadCount);
 	virtual void cleanupAfterTask(MM_EnvironmentBase *env);
 	virtual uintptr_t getThreadPriority(); 
 

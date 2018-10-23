@@ -57,7 +57,7 @@ MM_Dispatcher::initialize(MM_EnvironmentBase *env)
 }
 
 void
-MM_Dispatcher::prepareThreadsForTask(MM_EnvironmentBase *env, MM_Task *task)
+MM_Dispatcher::prepareThreadsForTask(MM_EnvironmentBase *env, MM_Task *task, uintptr_t threadCount)
 {
 	task->setThreadCount(1);
 	_task = task;
@@ -89,22 +89,15 @@ MM_Dispatcher::cleanupAfterTask(MM_EnvironmentBase *env)
 void
 MM_Dispatcher::run(MM_EnvironmentBase *env, MM_Task *task, uintptr_t newThreadCount)
 {
-	uintptr_t defaultThreadCount = threadCount();
-	if (UDATA_MAX != newThreadCount) {
-		/* Let tasks run with different (typically reduced) thread count. */
-		setThreadCount(newThreadCount);
-	}
-
 	task->masterSetup(env);
+	prepareThreadsForTask(env, task, newThreadCount);
+	/* todo: remove this API once downstream OMR projects transition to the API with threadCount argument */
 	prepareThreadsForTask(env, task);
 	acceptTask(env);
 	task->run(env);
 	completeTask(env);
 	cleanupAfterTask(env);
 	task->masterCleanup(env);
-
-	/* restore the default thread count */
-	setThreadCount(defaultThreadCount);
 }
 
 bool 

@@ -1713,7 +1713,6 @@ void OMR::Power::CodeGenerator::doBinaryEncoding()
    self()->alignBinaryBufferCursor();
 
    TR::Instruction *nop;
-   TR::Register *gr1 = self()->machine()->getPPCRealRegister(TR::RealRegister::gr1);
    bool skipLabel = false;
    static int count=0;
 

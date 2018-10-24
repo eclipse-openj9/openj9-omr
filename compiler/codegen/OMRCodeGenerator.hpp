@@ -1342,9 +1342,7 @@ class OMR_EXTENSIBLE CodeGenerator
    // --------------------------------------------------------------------------
 
    TR::Node *createOrFindClonedNode(TR::Node *node, int32_t numChildren);
-
-   void zeroOutAutoOnEdge(TR::SymbolReference * liveAutoSym, TR::Block *block, TR::Block *succBlock, TR::list<TR::Block*> *newBlocks, TR_ScratchList<TR::Node> *fsdStores);
-
+   
    bool constantAddressesCanChangeSize(TR::Node *node);
    bool profiledPointersRequireRelocation();
    bool needGuardSitesEvenWhenGuardRemoved();

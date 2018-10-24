@@ -856,7 +856,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::MemoryReference *mr)
    if (mr->getIndexRegister() != NULL)
       print(pOutFile, mr->getIndexRegister());
    else
-      trfprintf(pOutFile, "%d", mr->getOffset());
+      trfprintf(pOutFile, "%d", mr->getOffset(true));
 
    trfprintf(pOutFile, "]");
    }

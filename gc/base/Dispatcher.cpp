@@ -91,8 +91,6 @@ MM_Dispatcher::run(MM_EnvironmentBase *env, MM_Task *task, uintptr_t newThreadCo
 {
 	task->masterSetup(env);
 	prepareThreadsForTask(env, task, newThreadCount);
-	/* todo: remove this API once downstream OMR projects transition to the API with threadCount argument */
-	prepareThreadsForTask(env, task);
 	acceptTask(env);
 	task->run(env);
 	completeTask(env);

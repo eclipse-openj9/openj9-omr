@@ -679,6 +679,8 @@ OMR::Z::CodeGenerator::CodeGenerator()
    self()->setSupportsBCDToDFPReduction();
    self()->setSupportsIntDFPConversions();
 
+   self()->setSupportsPostProcessArrayCopy();
+
    if (_processorInfo.supportsArch(TR_S390ProcessorInfo::TR_z10))
       {
       self()->setSupportsTranslateAndTestCharString();

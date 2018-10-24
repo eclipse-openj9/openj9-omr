@@ -160,6 +160,7 @@ Testing/
 *.suo
 *.vcxproj
 *.vcxproj.filters
+CMakeSettings.json
 Debug/
 gc/example/Debug/
 omr_test/Debug/

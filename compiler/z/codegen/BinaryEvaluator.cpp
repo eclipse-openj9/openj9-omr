@@ -88,7 +88,7 @@ extern void PRINT_ME(char * string, TR::Node * node, TR::CodeGenerator * cg);
 TR::RegisterPair * lnegFor32Bit(TR::Node * node, TR::CodeGenerator * cg, TR::RegisterPair * targetRegisterPair, TR::RegisterDependencyConditions * dep = 0)
    {
    TR::LabelSymbol * cFlowRegionStart = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-   TR::LabelSymbol * doneLNeg = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+   TR::LabelSymbol * cFlowRegionEnd = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
    TR::RegisterDependencyConditions * localDeps = NULL;
 
 
@@ -114,14 +114,14 @@ TR::RegisterPair * lnegFor32Bit(TR::Node * node, TR::CodeGenerator * cg, TR::Reg
    // Check to see if we need to propagate an overflow bit from LS int to MS int.
    generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionStart);
    cFlowRegionStart->setStartInternalControlFlow();
-   generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BE, node, doneLNeg);
+   generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BE, node, cFlowRegionEnd);
 
    // Increment MS int due to overflow in LS int
    generateRIInstruction(cg, TR::InstOpCode::AHI, node, targetRegisterPair->getHighOrder(), -1);
 
    // Not equal, straight through
-   generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, doneLNeg, localDeps);
-   doneLNeg->setEndInternalControlFlow();
+   generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionEnd, localDeps);
+   cFlowRegionEnd->setEndInternalControlFlow();
    return targetRegisterPair;
    }
 
@@ -131,7 +131,7 @@ TR::RegisterPair * lnegFor32Bit(TR::Node * node, TR::CodeGenerator * cg, TR::Reg
 TR::RegisterPair * lnegFor128Bit(TR::Node * node, TR::CodeGenerator * cg, TR::RegisterPair * targetRegisterPair, TR::RegisterDependencyConditions * dep = 0)
    {
    TR::LabelSymbol * cFlowRegionStart = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-   TR::LabelSymbol * doneLNeg = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+   TR::LabelSymbol * cFlowRegionEnd = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
 
    TR::RegisterDependencyConditions * localDeps = NULL;
 
@@ -158,15 +158,15 @@ TR::RegisterPair * lnegFor128Bit(TR::Node * node, TR::CodeGenerator * cg, TR::Re
    // Check to see if we need to propagate an overflow bit from low word long to high word long.
    generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionStart);
    cFlowRegionStart->setStartInternalControlFlow();
-   generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BE, node, doneLNeg);
+   generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BE, node, cFlowRegionEnd);
 
 
    // Subtract 1 from high word that was added in first LCGR if low word is not 0, i.e.
    generateRIInstruction(cg, TR::InstOpCode::AGHI, node, targetRegisterPair->getHighOrder(), -1);
 
    // Not equal, straight through
-   generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, doneLNeg, localDeps);
-   doneLNeg->setEndInternalControlFlow();
+   generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionEnd, localDeps);
+   cFlowRegionEnd->setEndInternalControlFlow();
    return targetRegisterPair;
    }
 
@@ -213,8 +213,8 @@ laddConst(TR::Node * node, TR::CodeGenerator * cg, TR::RegisterPair * targetRegi
       // Add low value
       if ( l_value != 0 )
          {
-         TR::LabelSymbol * doneLAdd = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
          TR::LabelSymbol * cFlowRegionStart = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+         TR::LabelSymbol * cFlowRegionEnd = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
 
          TR::RegisterDependencyConditions * dependencies = NULL;
          // tempReg is used to hold the immediate on GoldenEagle or better.
@@ -230,15 +230,15 @@ laddConst(TR::Node * node, TR::CodeGenerator * cg, TR::RegisterPair * targetRegi
          // Check for overflow in LS(h_value) int. If overflow, increment MS(l_value) int.
          generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionStart);
          cFlowRegionStart->setStartInternalControlFlow();
-         generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_MASK12, node, doneLAdd);
+         generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_MASK12, node, cFlowRegionEnd);
 
          // Increment MS int due to overflow in LS int
          generateRIInstruction(cg, TR::InstOpCode::AHI, node, highOrder, 1);
 
          cg->stopUsingRegister(tempReg);
 
-         generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, doneLAdd, dependencies);
-         doneLAdd->setEndInternalControlFlow();
+         generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionEnd, dependencies);
+         cFlowRegionEnd->setEndInternalControlFlow();
          }
       }
    return targetRegisterPair;
@@ -767,7 +767,7 @@ lDivRemGenericEvaluator(TR::Node * node, TR::CodeGenerator * cg, bool isDivision
             dep->addPostCondition(dividendPair->getLowOrder(), TR::RealRegister::LegalOddOfPair);
 
             TR::LabelSymbol * cFlowRegionStart = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-            TR::LabelSymbol * endDiv = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+            TR::LabelSymbol * cFlowRegionEnd = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
 
             //special case, need to check if dividend is 0x8000000000000000 - but need to check it in 2 steps
             TR::LabelSymbol * doDiv = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
@@ -777,13 +777,13 @@ lDivRemGenericEvaluator(TR::Node * node, TR::CodeGenerator * cg, bool isDivision
             cFlowRegionStart->setStartInternalControlFlow();
 
             generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BNE, node, doDiv);
-            generateS390CompareAndBranchInstruction(cg, TR::InstOpCode::C, node, dividendPair->getLowOrder(), (signed char)0, TR::InstOpCode::COND_BE, endDiv);
+            generateS390CompareAndBranchInstruction(cg, TR::InstOpCode::C, node, dividendPair->getLowOrder(), (signed char)0, TR::InstOpCode::COND_BE, cFlowRegionEnd);
             generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, doDiv);
 
             dividendPair = lnegFor32Bit(node, cg, dividendPair, dep);
 
-            generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, endDiv, dep);
-            endDiv->setEndInternalControlFlow();
+            generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionEnd, dep);
+            cFlowRegionEnd->setEndInternalControlFlow();
             }
          node->setRegister(dividendPair);
          cg->decReferenceCount(firstChild);
@@ -1162,7 +1162,7 @@ lDivRemGenericEvaluator64(TR::Node * node, TR::CodeGenerator * cg, bool isDivisi
          else
             {
             TR::LabelSymbol * cFlowRegionStart = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-            TR::LabelSymbol * endDiv = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+            TR::LabelSymbol * cFlowRegionEnd = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
             TR::LabelSymbol * doDiv = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
 
             //special case, need to check if dividend is 0x8000000000000000 - but need to check it in 2 steps
@@ -1170,7 +1170,7 @@ lDivRemGenericEvaluator64(TR::Node * node, TR::CodeGenerator * cg, bool isDivisi
 
             generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionStart);
             cFlowRegionStart->setStartInternalControlFlow();
-            generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BE, node, endDiv);
+            generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BE, node, cFlowRegionEnd);
 
             generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, doDiv);
 
@@ -1179,8 +1179,8 @@ lDivRemGenericEvaluator64(TR::Node * node, TR::CodeGenerator * cg, bool isDivisi
 
             TR::RegisterDependencyConditions *deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 1, cg);
             deps->addPostCondition(firstRegister, TR::RealRegister::AssignAny);
-            generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, endDiv, deps);
-            endDiv->setEndInternalControlFlow();
+            generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionEnd, deps);
+            cFlowRegionEnd->setEndInternalControlFlow();
             }
          node->setRegister(firstRegister);
          cg->decReferenceCount(firstChild);
@@ -4207,7 +4207,7 @@ OMR::Z::TreeEvaluator::iremEvaluator(TR::Node * node, TR::CodeGenerator * cg)
             tmpReg = secondChild->getRegister();
             }
 
-         TR::LabelSymbol *doneLabel = NULL;
+         TR::LabelSymbol *cFlowRegionEnd = NULL;
          TR::Register *absDividendReg = NULL;
          bool absDividendRegIsTemp = false;
          TR::RegisterDependencyConditions *deps = NULL;
@@ -4230,10 +4230,10 @@ OMR::Z::TreeEvaluator::iremEvaluator(TR::Node * node, TR::CodeGenerator * cg)
          if (absDividendRegIsTemp && absDividendReg)
             cg->stopUsingRegister(absDividendReg);
 
-         if (doneLabel)
+         if (cFlowRegionEnd)
             {
-            generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, doneLabel, deps);
-            doneLabel->setEndInternalControlFlow();
+            generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionEnd, deps);
+            cFlowRegionEnd->setEndInternalControlFlow();
             }
          }
       node->setRegister(targetRegister);

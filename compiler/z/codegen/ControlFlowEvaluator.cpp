@@ -689,7 +689,7 @@ OMR::Z::TreeEvaluator::fcmplEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    // Create ICF start label
    TR::LabelSymbol * cFlowRegionStart = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
    // Create a label
-   TR::LabelSymbol * doneCmp = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+   TR::LabelSymbol * cFlowRegionEnd = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
    // Create a register
    TR::Register * targetRegister = cg->allocateRegister();
 
@@ -707,19 +707,19 @@ OMR::Z::TreeEvaluator::fcmplEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 
    generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionStart);
    cFlowRegionStart->setStartInternalControlFlow();
-   generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BE, node, doneCmp);
+   generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BE, node, cFlowRegionEnd);
 
    // Found A != B, assume A > B, set targetRegister value to 1
    generateLoad32BitConstant(cg, node, 1, targetRegister, false);
 
    //done if A>B
-   generateS390BranchInstruction(cg, branchOp, brCond, node, doneCmp);
+   generateS390BranchInstruction(cg, branchOp, brCond, node, cFlowRegionEnd);
    //found either A<B or either of A and B is NaN
    //For TR::fcmpg instruction, done if either of A and B is NaN
 
    if (node->getOpCodeValue() == TR::fcmpg || node->getOpCodeValue() == TR::dcmpg)
       {
-      generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_MASK1, node, doneCmp);
+      generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_MASK1, node, cFlowRegionEnd);
       }
 
    //Got here? means either A<B or (TR::fcmpl instruction and (A==NaN || B==NaN))
@@ -727,8 +727,8 @@ OMR::Z::TreeEvaluator::fcmplEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    generateLoad32BitConstant(cg, node, -1, targetRegister, true);
 
    // DONE
-   generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, doneCmp, deps);
-   doneCmp->setEndInternalControlFlow();
+   generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionEnd, deps);
+   cFlowRegionEnd->setEndInternalControlFlow();
 
    node->setRegister(targetRegister);
    return targetRegister;
@@ -3810,11 +3810,11 @@ OMR::Z::TreeEvaluator::ternaryEvaluator(TR::Node *node, TR::CodeGenerator *cg)
       else
          {
          TR::LabelSymbol * cFlowRegionStart = TR::LabelSymbol::create(cg->trHeapMemory(), cg);
-         TR::LabelSymbol * branchDestination = TR::LabelSymbol::create(cg->trHeapMemory(), cg);
+         TR::LabelSymbol * cFlowRegionEnd = TR::LabelSymbol::create(cg->trHeapMemory(), cg);
 
          generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionStart);
          cFlowRegionStart->setStartInternalControlFlow();
-         generateS390CompareAndBranchInstruction(cg, compareOp, node, firstReg, secondReg, bc, branchDestination, false);
+         generateS390CompareAndBranchInstruction(cg, compareOp, node, firstReg, secondReg, bc, cFlowRegionEnd, false);
 
          TR::RegisterDependencyConditions* conditions = NULL;
 
@@ -3876,8 +3876,8 @@ OMR::Z::TreeEvaluator::ternaryEvaluator(TR::Node *node, TR::CodeGenerator *cg)
             generateRRInstruction(cg, trueVal->getOpCode().is8Byte() ? TR::InstOpCode::LGR : TR::InstOpCode::LR, node, trueReg, falseReg);
             }
 
-         generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, branchDestination, conditions);
-         branchDestination->setEndInternalControlFlow();
+         generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionEnd, conditions);
+         cFlowRegionEnd->setEndInternalControlFlow();
 
          if (comp->getOption(TR_TraceCG))
             {
@@ -3925,11 +3925,11 @@ OMR::Z::TreeEvaluator::ternaryEvaluator(TR::Node *node, TR::CodeGenerator *cg)
       else
          {
          TR::LabelSymbol * cFlowRegionStart = TR::LabelSymbol::create(cg->trHeapMemory(), cg);
-         TR::LabelSymbol * branchDestination = TR::LabelSymbol::create(cg->trHeapMemory(), cg);
+         TR::LabelSymbol * cFlowRegionEnd = TR::LabelSymbol::create(cg->trHeapMemory(), cg);
 
          generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionStart);
          cFlowRegionStart->setStartInternalControlFlow();
-         TR::Instruction *branchInst = generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BNE, node, branchDestination);
+         TR::Instruction *branchInst = generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BNE, node, cFlowRegionEnd);
 
          TR::RegisterDependencyConditions* conditions = NULL;
 
@@ -3981,8 +3981,8 @@ OMR::Z::TreeEvaluator::ternaryEvaluator(TR::Node *node, TR::CodeGenerator *cg)
             generateRRInstruction(cg, trueVal->getOpCode().is8Byte() ? TR::InstOpCode::LGR : TR::InstOpCode::LR, node, trueReg, falseReg);
             }
 
-         generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, branchDestination, conditions);
-         branchDestination->setEndInternalControlFlow();
+         generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionEnd, conditions);
+         cFlowRegionEnd->setEndInternalControlFlow();
          }
       }
 

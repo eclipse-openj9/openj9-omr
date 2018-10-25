@@ -464,13 +464,13 @@ convertToFixed(TR::Node * node, TR::CodeGenerator * cg)
       // Java expect that for signed conversion to fixed, if src float is NaN, target to have 0.0.
       //2) NaN test and branch to done
       TR::LabelSymbol * cFlowRegionStart = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-      TR::LabelSymbol * doneLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+      TR::LabelSymbol * cFlowRegionEnd = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
 
       generateRRInstruction(cg, compareOp, node, srcRegister, srcRegister);
 
       generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionStart);
       cFlowRegionStart->setStartInternalControlFlow();
-      generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BO, node, doneLabel);   //NaN results in CC3
+      generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BO, node, cFlowRegionEnd);   //NaN results in CC3
 
       //3) Convert to Fixed
       generateRRFInstruction(cg, convertOp, node, targetRegister, srcRegister, (int8_t) 0x5, true);
@@ -484,8 +484,8 @@ convertToFixed(TR::Node * node, TR::CodeGenerator * cg)
       deps->addPostCondition(srcRegister, TR::RealRegister::AssignAny);
 
 
-      generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, doneLabel, deps);
-      doneLabel->setEndInternalControlFlow();
+      generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionEnd, deps);
+      cFlowRegionEnd->setEndInternalControlFlow();
       }
 
    node->setRegister(targetRegister);
@@ -667,7 +667,7 @@ commonLong2FloatEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    generateRRInstruction(cg, convertOp, node, targetReg, gprTemp64);
 
    // For unsigned, we need to fix case where long_max < unsignedSrc <= ulong_max
-   TR::LabelSymbol *doneLabel = deps ? TR::LabelSymbol::create(cg->trHeapMemory(),cg) : NULL; // attach all deps to this label at end
+   TR::LabelSymbol *cFlowRegionEnd = deps ? TR::LabelSymbol::create(cg->trHeapMemory(),cg) : NULL; // attach all deps to this label at end
    if (isUnsigned)
       {
       TR::Register *litBase = NULL;
@@ -728,7 +728,7 @@ commonLong2FloatEvaluator(TR::Node * node, TR::CodeGenerator * cg)
       TR::LabelSymbol * cFlowRegionStart = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
       cFlowRegionStart->setStartInternalControlFlow();
       generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionStart, deps);
-      TR::Instruction *cursor =generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BNL, node, doneLabel);
+      TR::Instruction *cursor =generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BNL, node, cFlowRegionEnd);
       if (is128)
          {
          generateRXInstruction(cg, TR::InstOpCode::LD, node, tempFloatReg->getHighOrder(), two_pow_64_hi);
@@ -748,7 +748,7 @@ commonLong2FloatEvaluator(TR::Node * node, TR::CodeGenerator * cg)
          generateRRInstruction(cg, TR::InstOpCode::LEDBR, node, targetReg, targetReg);
          }
 
-      doneLabel->setEndInternalControlFlow();
+      cFlowRegionEnd->setEndInternalControlFlow();
       cg->stopUsingRegister(tempFloatReg);
       if (stopUsingMemRefRegs)
          {
@@ -773,8 +773,8 @@ commonLong2FloatEvaluator(TR::Node * node, TR::CodeGenerator * cg)
          }
       }
 
-   if (doneLabel)
-      generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, doneLabel, deps);
+   if (cFlowRegionEnd)
+      generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionEnd, deps);
    cg->stopUsingRegister(gprTemp64);
    cg->decReferenceCount(srcNode);
 
@@ -1909,7 +1909,7 @@ f2lHelper64(TR::Node * node, TR::CodeGenerator * cg)
    TR::Register * targetRegister = cg->allocate64bitRegister();
 
    TR::LabelSymbol * cFlowRegionStart = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-   TR::LabelSymbol * doneLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+   TR::LabelSymbol * cFlowRegionEnd = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
 
    //Assume Float.NaN
    generateRRInstruction(cg, TR::InstOpCode::XGR, node, targetRegister, targetRegister);
@@ -1920,15 +1920,15 @@ f2lHelper64(TR::Node * node, TR::CodeGenerator * cg)
    // this path requires internal control flow
    generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionStart);
    cFlowRegionStart->setStartInternalControlFlow();
-   generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BO, node, doneLabel);
+   generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BO, node, cFlowRegionEnd);
    dependencies = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 2, cg);
    dependencies->addPostCondition(targetRegister, TR::RealRegister::AssignAny);
    dependencies->addPostCondition(floatRegister, TR::RealRegister::AssignAny);
 
    // not NaN, do the conversion
    generateRRFInstruction(cg, TR::InstOpCode::CGEBR, node, targetRegister, floatRegister, (int8_t) 0x5, true);
-   generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, doneLabel, dependencies);
-   doneLabel->setEndInternalControlFlow();
+   generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionEnd, dependencies);
+   cFlowRegionEnd->setEndInternalControlFlow();
 
    node->setRegister(targetRegister);
    cg->decReferenceCount(firstChild);

@@ -443,30 +443,34 @@ TR::RealRegister *OMR::ARM64::Machine::assignOneRegister(TR::Instruction *curren
                                                          TR::Register *virtualRegister)
    {
    TR_RegisterKinds rk = virtualRegister->getKind();
-   TR::RealRegister *assignedRegister;
+   TR::RealRegister *assignedRegister = virtualRegister->getAssignedRealRegister();
 
-   self()->cg()->clearRegisterAssignmentFlags();
-   self()->cg()->setRegisterAssignmentFlag(TR_NormalAssignment);
+   if (assignedRegister == NULL)
+      {
+      self()->cg()->clearRegisterAssignmentFlags();
+      self()->cg()->setRegisterAssignmentFlag(TR_NormalAssignment);
 
-   if (virtualRegister->getTotalUseCount() != virtualRegister->getFutureUseCount())
-      {
-      self()->cg()->setRegisterAssignmentFlag(TR_RegisterReloaded);
-      assignedRegister = self()->reverseSpillState(currentInstruction, virtualRegister, NULL);
-      }
-   else
-      {
-      assignedRegister = self()->findBestFreeRegister(rk, true);
-      if (assignedRegister == NULL)
+      if (virtualRegister->getTotalUseCount() != virtualRegister->getFutureUseCount())
          {
-         self()->cg()->setRegisterAssignmentFlag(TR_RegisterSpilled);
-         assignedRegister = self()->freeBestRegister(currentInstruction, virtualRegister, NULL);
+         self()->cg()->setRegisterAssignmentFlag(TR_RegisterReloaded);
+         assignedRegister = self()->reverseSpillState(currentInstruction, virtualRegister, NULL);
          }
+      else
+         {
+         assignedRegister = self()->findBestFreeRegister(rk, true);
+         if (assignedRegister == NULL)
+            {
+            self()->cg()->setRegisterAssignmentFlag(TR_RegisterSpilled);
+            assignedRegister = self()->freeBestRegister(currentInstruction, virtualRegister, NULL);
+            }
+         }
+
+      virtualRegister->setAssignedRegister(assignedRegister);
+      assignedRegister->setAssignedRegister(virtualRegister);
+      assignedRegister->setState(TR::RealRegister::Assigned);
+      self()->cg()->traceRegAssigned(virtualRegister, assignedRegister);
       }
 
-   virtualRegister->setAssignedRegister(assignedRegister);
-   assignedRegister->setAssignedRegister(virtualRegister);
-   assignedRegister->setState(TR::RealRegister::Assigned);
-   self()->cg()->traceRegAssigned(virtualRegister, assignedRegister);
    return assignedRegister;
    }
 

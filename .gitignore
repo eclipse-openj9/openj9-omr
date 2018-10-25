@@ -160,6 +160,7 @@ Testing/
 *.suo
 *.vcxproj
 *.vcxproj.filters
+CMakeSettings.json
 Debug/
 gc/example/Debug/
 omr_test/Debug/
@@ -170,6 +171,9 @@ port/omrsyslogmessages.h
 port/omrsyslogmessages.rc
 port/MSG00001.bin
 x64/
+
+# CLion
+.idea/
 
 # Test Output
 core

@@ -58,7 +58,10 @@ macro(omr_platform_global_setup)
 
 	set(OMR_PLATFORM_GLOBALLY_INITIALIZED 1)
 
-	add_compile_options(${OMR_PLATFORM_COMPILE_OPTIONS})
+
+	omr_append_flags(CMAKE_C_FLAGS ${OMR_PLATFORM_COMPILE_OPTIONS})
+	omr_append_flags(CMAKE_CXX_FLAGS ${OMR_PLATFORM_COMPILE_OPTIONS})
+	omr_append_flags(CMAKE_ASM_FLAGS ${OMR_PLATFORM_COMPILE_OPTIONS})
 
 	omr_append_flags(CMAKE_C_FLAGS
 		${OMR_PLATFORM_C_COMPILE_OPTIONS}

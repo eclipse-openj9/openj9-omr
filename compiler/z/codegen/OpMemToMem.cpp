@@ -42,6 +42,7 @@
 #include "il/Node.hpp"                             // for Node
 #include "il/Symbol.hpp"                           // for Symbol, etc
 #include "il/SymbolReference.hpp"                  // for SymbolReference
+#include "il/symbol/LabelSymbol.hpp"              // for LabelSymbol
 #include "il/symbol/ResolvedMethodSymbol.hpp"
 #include "infra/List.hpp"                          // for List
 #include "runtime/Runtime.hpp"
@@ -101,7 +102,7 @@ MemToMemVarLenMacroOp::generateLoop()
       if (_lengthMinusOne)
          generateRRInstruction(_cg, TR::InstOpCode::LTR, _rootNode, _regLen, _regLen); //Because transformLengthMinusOneForMemoryOps uses TR::iadd
 
-      _doneLabel  = TR::LabelSymbol::create(_cg->trHeapMemory(),_cg);
+      _doneLabel  = generateLabelSymbol(_cg);
       _startControlFlow = generateS390BranchInstruction(_cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BL, _rootNode, _doneLabel);
       }
    if (getKind() == MemToMemMacroOp::IsMemInit)
@@ -109,8 +110,8 @@ MemToMemVarLenMacroOp::generateLoop()
 
    if (!needsLoop()) return NULL;
 
-   TR::LabelSymbol * topOfLoop = TR::LabelSymbol::create(_cg->trHeapMemory(),_cg);
-   TR::LabelSymbol * bottomOfLoop = TR::LabelSymbol::create(_cg->trHeapMemory(),_cg);
+   TR::LabelSymbol * topOfLoop = generateLabelSymbol(_cg);
+   TR::LabelSymbol * bottomOfLoop = generateLabelSymbol(_cg);
 
    //
    // But first, load up the branch address into raReg for two reasons:
@@ -410,8 +411,8 @@ MemToMemConstLenMacroOp::generateLoop()
    //
    // At this point, we need to generate a loop since the length is large
    //
-   TR::LabelSymbol * topOfLoop = TR::LabelSymbol::create(_cg->trHeapMemory(),_cg);
-   TR::LabelSymbol * bottomOfLoop = TR::LabelSymbol::create(_cg->trHeapMemory(),_cg);
+   TR::LabelSymbol * topOfLoop = generateLabelSymbol(_cg);
+   TR::LabelSymbol * bottomOfLoop = generateLabelSymbol(_cg);
 
    if (_itersReg == NULL)
       _itersReg = (_tmpReg == NULL ? _cg->allocateRegister() : _tmpReg);
@@ -535,8 +536,8 @@ MemInitConstLenMacroOp::generateLoop()
    //
    // At this point, we need to generate a loop since the length is large
    //
-   TR::LabelSymbol * topOfLoop = TR::LabelSymbol::create(_cg->trHeapMemory(),_cg);
-   TR::LabelSymbol * bottomOfLoop = TR::LabelSymbol::create(_cg->trHeapMemory(),_cg);
+   TR::LabelSymbol * topOfLoop = generateLabelSymbol(_cg);
+   TR::LabelSymbol * bottomOfLoop = generateLabelSymbol(_cg);
 
    if (_itersReg == NULL)
       _itersReg = (_tmpReg == NULL ? _cg->allocateRegister() : _tmpReg);
@@ -1033,7 +1034,7 @@ MemToMemVarLenMacroOp::generateRemainder()
       }
    else
       {
-      TR::LabelSymbol *remainderDoneLabel = TR::LabelSymbol::create(_cg->trHeapMemory(),_cg);
+      TR::LabelSymbol *remainderDoneLabel = generateLabelSymbol(_cg);
       if (TR::Compiler->target.is64Bit())
          generateShiftAndKeepSelected64Bit(_rootNode, _cg, _regLen, _regLen, 52, 59, 4, true, false);
       else
@@ -1076,7 +1077,7 @@ MemInitVarLenMacroOp::generateRemainder()
          generateInstruction(0, 1);
 
       if (!_doneLabel)
-         _doneLabel  = TR::LabelSymbol::create(_cg->trHeapMemory(),_cg);
+         _doneLabel  = generateLabelSymbol(_cg);
 
       if(TR::Compiler->target.is64Bit())
          generateS390CompareAndBranchInstruction(_cg, TR::InstOpCode::CG, _rootNode, _regLen, (int32_t)0, TR::InstOpCode::COND_BNH, _doneLabel, false, false);
@@ -1109,7 +1110,7 @@ MemInitVarLenMacroOp::generateRemainder()
       generateRIInstruction(_cg, TR::Compiler->target.is64Bit() ? TR::InstOpCode::AGHI : TR::InstOpCode::AHI, _rootNode, _regLen, -1);
 
       if (!_doneLabel)
-         _doneLabel  = TR::LabelSymbol::create(_cg->trHeapMemory(),_cg);
+         _doneLabel  = generateLabelSymbol(_cg);
 
       generateS390BranchInstruction(_cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BNH, _rootNode, _doneLabel);
 
@@ -1405,9 +1406,9 @@ MemInitVarLenMacroOp::generateInstruction(int32_t offset, int64_t length)
       else
          cursor = generateRXInstruction(_cg, TR::InstOpCode::STC, _rootNode, _initReg, new (_cg->trHeapMemory()) TR::MemoryReference(_dstReg, offset, _cg));
 
-	   _firstByteInitialized=true;
-	  length--;
-	  }
+     _firstByteInitialized=true;
+    length--;
+    }
 
    if (length > 0)
       {
@@ -1550,8 +1551,8 @@ MemCmpVarLenMacroOp::generate(TR::Register* dstReg, TR::Register* srcReg, TR::Re
      }
    if(_startControlFlow != _cursor)
      {
-      TR::LabelSymbol * cFlowRegionStart = TR::LabelSymbol::create(_cg->trHeapMemory(),_cg);
-      TR::LabelSymbol * cFlowRegionEnd = TR::LabelSymbol::create(_cg->trHeapMemory(),_cg);
+      TR::LabelSymbol * cFlowRegionStart = generateLabelSymbol(_cg);
+      TR::LabelSymbol * cFlowRegionEnd = generateLabelSymbol(_cg);
 
       generateS390LabelInstruction(_cg, TR::InstOpCode::LABEL, _rootNode, cFlowRegionStart, dependencies, _startControlFlow->getPrev());
       cFlowRegionStart->setStartInternalControlFlow();
@@ -1592,8 +1593,8 @@ MemCmpConstLenMacroOp::generate(TR::Register* dstReg, TR::Register* srcReg, TR::
      }
    if(_startControlFlow != _cursor)
      {
-      TR::LabelSymbol * cFlowRegionStart = TR::LabelSymbol::create(_cg->trHeapMemory(),_cg);
-      TR::LabelSymbol * cFlowRegionEnd = TR::LabelSymbol::create(_cg->trHeapMemory(),_cg);
+      TR::LabelSymbol * cFlowRegionStart = generateLabelSymbol(_cg);
+      TR::LabelSymbol * cFlowRegionEnd = generateLabelSymbol(_cg);
 
       generateS390LabelInstruction(_cg, TR::InstOpCode::LABEL, _rootNode, cFlowRegionStart, dependencies, _startControlFlow->getPrev());
       cFlowRegionStart->setStartInternalControlFlow();
@@ -1686,8 +1687,8 @@ MemCmpVarLenSignMacroOp::generate(TR::Register* dstReg, TR::Register* srcReg, TR
      }
    if(_startControlFlow != _cursor)
      {
-      TR::LabelSymbol * cFlowRegionStart = TR::LabelSymbol::create(_cg->trHeapMemory(),_cg);
-      TR::LabelSymbol * cFlowRegionEnd = TR::LabelSymbol::create(_cg->trHeapMemory(),_cg);
+      TR::LabelSymbol * cFlowRegionStart = generateLabelSymbol(_cg);
+      TR::LabelSymbol * cFlowRegionEnd = generateLabelSymbol(_cg);
 
       generateS390LabelInstruction(_cg, TR::InstOpCode::LABEL, _rootNode, cFlowRegionStart, dependencies, _startControlFlow->getPrev());
       cFlowRegionStart->setStartInternalControlFlow();
@@ -1735,8 +1736,8 @@ MemCmpConstLenSignMacroOp::generate(TR::Register* dstReg, TR::Register* srcReg, 
      }
    if(_startControlFlow != _cursor)
      {
-      TR::LabelSymbol * cFlowRegionStart = TR::LabelSymbol::create(_cg->trHeapMemory(),_cg);
-      TR::LabelSymbol * cFlowRegionEnd = TR::LabelSymbol::create(_cg->trHeapMemory(),_cg);
+      TR::LabelSymbol * cFlowRegionStart = generateLabelSymbol(_cg);
+      TR::LabelSymbol * cFlowRegionEnd = generateLabelSymbol(_cg);
 
       generateS390LabelInstruction(_cg, TR::InstOpCode::LABEL, _rootNode, cFlowRegionStart, dependencies, _startControlFlow->getPrev());
       cFlowRegionStart->setStartInternalControlFlow();
@@ -1808,8 +1809,8 @@ MemToMemTypedVarLenMacroOp::generateLoop()
    TR::Instruction * cursor;
 
    // Skip the loop if length is zero.
-   TR::LabelSymbol * cFlowRegionStart = TR::LabelSymbol::create(_cg->trHeapMemory(),_cg);
-   TR::LabelSymbol * doneLoop = TR::LabelSymbol::create(_cg->trHeapMemory(),_cg);
+   TR::LabelSymbol * cFlowRegionStart = generateLabelSymbol(_cg);
+   TR::LabelSymbol * doneLoop = generateLabelSymbol(_cg);
 
    generateS390LabelInstruction(_cg, TR::InstOpCode::LABEL, _dstNode, cFlowRegionStart);
    cFlowRegionStart->setStartInternalControlFlow();
@@ -1825,7 +1826,7 @@ MemToMemTypedVarLenMacroOp::generateLoop()
       generateRIInstruction(_cg, TR::InstOpCode::getAddHalfWordImmOpCode(), _dstNode, _startReg, -1 * strideSize());
       generateRRInstruction(_cg, TR::InstOpCode::getAddRegWidenOpCode(), _dstNode, _startReg, _lenReg);
 
-      TR::LabelSymbol * topOfLoop = TR::LabelSymbol::create(_cg->trHeapMemory(),_cg);
+      TR::LabelSymbol * topOfLoop = generateLabelSymbol(_cg);
       generateS390LabelInstruction(_cg, TR::InstOpCode::LABEL, _dstNode, topOfLoop);
 
       generateInstruction();
@@ -1856,7 +1857,7 @@ MemToMemTypedVarLenMacroOp::generateLoop()
          generateRRInstruction(_cg, TR::InstOpCode::getAddRegWidenOpCode(), _srcNode, _srcReg, _strideReg);
          }
 
-      TR::LabelSymbol * topOfLoop = TR::LabelSymbol::create(_cg->trHeapMemory(),_cg);
+      TR::LabelSymbol * topOfLoop = generateLabelSymbol(_cg);
       generateS390LabelInstruction(_cg, TR::InstOpCode::LABEL, _dstNode, topOfLoop);
 
       generateInstruction();
@@ -2219,8 +2220,8 @@ TR::Instruction * MemCpyAtomicMacroOp::generateSTXLoop(int32_t strideSize, TR::I
       cursor = generateRIInstruction(_cg, TR::InstOpCode::getLoadHalfWordImmOpCode(), _dstNode, _strideReg, _unrollFactor * strideSize);
       }
 
-   TR::LabelSymbol * topOfLoop = TR::LabelSymbol::create(_cg->trHeapMemory(),_cg);
-   TR::LabelSymbol * endOfLoop = TR::LabelSymbol::create(_cg->trHeapMemory(),_cg);
+   TR::LabelSymbol * topOfLoop = generateLabelSymbol(_cg);
+   TR::LabelSymbol * endOfLoop = generateLabelSymbol(_cg);
    cursor = generateS390LabelInstruction(_cg, TR::InstOpCode::LABEL, _dstNode, topOfLoop);
 
    cursor = generateS390CompareAndBranchInstruction(_cg, TR::InstOpCode::getCmpOpCode(), _lenNode, _lenReg, strideSize * _unrollFactor, TR::InstOpCode::COND_BL, endOfLoop);
@@ -2319,7 +2320,7 @@ MemCpyAtomicMacroOp::generateOneSTXthenSTYLoopLabel(TR::LabelSymbol * oolStartLa
 
    cursor = generateS390LabelInstruction(_cg, TR::InstOpCode::LABEL, _rootNode, oolStartLabel);
 
-   TR::LabelSymbol * skipRoutineLabel = TR::LabelSymbol::create(_cg->trHeapMemory(),_cg);
+   TR::LabelSymbol * skipRoutineLabel = generateLabelSymbol(_cg);
    cursor = generateS390CompareAndBranchInstruction(_cg, TR::InstOpCode::getCmpOpCode(), _lenNode, _lenReg, strideSize1, TR::InstOpCode::COND_BL, skipRoutineLabel);
 
    // Initialize _startReg to _endReg here
@@ -2425,21 +2426,21 @@ MemCpyAtomicMacroOp::generateLoop()
    static char * singular = feGetEnv("TR_ArrayCopySingular");
 
    // Skip the loop if length is zero.
-   TR::LabelSymbol * cFlowRegionStart = TR::LabelSymbol::create(_cg->trHeapMemory(),_cg);
-   TR::LabelSymbol * doneArrayCopyLabel = TR::LabelSymbol::create(_cg->trHeapMemory(),_cg);
-   TR::LabelSymbol * remainderLabel = TR::LabelSymbol::create(_cg->trHeapMemory(),_cg);
-   TR::LabelSymbol * preDoneCopyLabel1 = TR::LabelSymbol::create(_cg->trHeapMemory(),_cg);
-   TR::LabelSymbol * preDoneCopyLabel2 = TR::LabelSymbol::create(_cg->trHeapMemory(),_cg);
-   TR::LabelSymbol * preDoneCopyLabel3 = TR::LabelSymbol::create(_cg->trHeapMemory(),_cg);
-   TR::LabelSymbol * preDoneCopyLabel4 = TR::LabelSymbol::create(_cg->trHeapMemory(),_cg);
-   TR::LabelSymbol * preDoneCopyLabel5 = TR::LabelSymbol::create(_cg->trHeapMemory(),_cg);
-   TR::LabelSymbol * preDoneCopyLabel6 = TR::LabelSymbol::create(_cg->trHeapMemory(),_cg);
-   TR::LabelSymbol * oolStartLabel1 = TR::LabelSymbol::create(_cg->trHeapMemory(),_cg);
-   TR::LabelSymbol * oolStartLabel2 = TR::LabelSymbol::create(_cg->trHeapMemory(),_cg);
-   TR::LabelSymbol * oolStartLabel3 = TR::LabelSymbol::create(_cg->trHeapMemory(),_cg);
-   TR::LabelSymbol * oolStartLabel4 = TR::LabelSymbol::create(_cg->trHeapMemory(),_cg);
-   TR::LabelSymbol * oolStartLabel5 = TR::LabelSymbol::create(_cg->trHeapMemory(),_cg);
-   TR::LabelSymbol * oolStartLabel6 = TR::LabelSymbol::create(_cg->trHeapMemory(),_cg);
+   TR::LabelSymbol * cFlowRegionStart = generateLabelSymbol(_cg);
+   TR::LabelSymbol * doneArrayCopyLabel = generateLabelSymbol(_cg);
+   TR::LabelSymbol * remainderLabel = generateLabelSymbol(_cg);
+   TR::LabelSymbol * preDoneCopyLabel1 = generateLabelSymbol(_cg);
+   TR::LabelSymbol * preDoneCopyLabel2 = generateLabelSymbol(_cg);
+   TR::LabelSymbol * preDoneCopyLabel3 = generateLabelSymbol(_cg);
+   TR::LabelSymbol * preDoneCopyLabel4 = generateLabelSymbol(_cg);
+   TR::LabelSymbol * preDoneCopyLabel5 = generateLabelSymbol(_cg);
+   TR::LabelSymbol * preDoneCopyLabel6 = generateLabelSymbol(_cg);
+   TR::LabelSymbol * oolStartLabel1 = generateLabelSymbol(_cg);
+   TR::LabelSymbol * oolStartLabel2 = generateLabelSymbol(_cg);
+   TR::LabelSymbol * oolStartLabel3 = generateLabelSymbol(_cg);
+   TR::LabelSymbol * oolStartLabel4 = generateLabelSymbol(_cg);
+   TR::LabelSymbol * oolStartLabel5 = generateLabelSymbol(_cg);
+   TR::LabelSymbol * oolStartLabel6 = generateLabelSymbol(_cg);
 
    generateS390LabelInstruction(_cg, TR::InstOpCode::LABEL, _dstNode, cFlowRegionStart);
    cFlowRegionStart->setStartInternalControlFlow();
@@ -2499,9 +2500,9 @@ MemCpyAtomicMacroOp::generateLoop()
       // else
       // into STC loop
 
-      TR::LabelSymbol * fourByteLoop = TR::LabelSymbol::create(_cg->trHeapMemory(),_cg);
-      TR::LabelSymbol * twoByteLoop = TR::LabelSymbol::create(_cg->trHeapMemory(),_cg);
-      TR::LabelSymbol * oneByteLoop = TR::LabelSymbol::create(_cg->trHeapMemory(),_cg);
+      TR::LabelSymbol * fourByteLoop = generateLabelSymbol(_cg);
+      TR::LabelSymbol * twoByteLoop = generateLabelSymbol(_cg);
+      TR::LabelSymbol * oneByteLoop = generateLabelSymbol(_cg);
       if (_trace)
          traceMsg(comp, "MemCpyAtomicMacroOp: unknown type routine\n");
 

@@ -87,8 +87,8 @@ extern void PRINT_ME(char * string, TR::Node * node, TR::CodeGenerator * cg);
  */
 TR::RegisterPair * lnegFor32Bit(TR::Node * node, TR::CodeGenerator * cg, TR::RegisterPair * targetRegisterPair, TR::RegisterDependencyConditions * dep = 0)
    {
-   TR::LabelSymbol * cFlowRegionStart = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-   TR::LabelSymbol * cFlowRegionEnd = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+   TR::LabelSymbol * cFlowRegionStart = generateLabelSymbol(cg);
+   TR::LabelSymbol * cFlowRegionEnd = generateLabelSymbol(cg);
    TR::RegisterDependencyConditions * localDeps = NULL;
 
 
@@ -130,8 +130,8 @@ TR::RegisterPair * lnegFor32Bit(TR::Node * node, TR::CodeGenerator * cg, TR::Reg
  */
 TR::RegisterPair * lnegFor128Bit(TR::Node * node, TR::CodeGenerator * cg, TR::RegisterPair * targetRegisterPair, TR::RegisterDependencyConditions * dep = 0)
    {
-   TR::LabelSymbol * cFlowRegionStart = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-   TR::LabelSymbol * cFlowRegionEnd = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+   TR::LabelSymbol * cFlowRegionStart = generateLabelSymbol(cg);
+   TR::LabelSymbol * cFlowRegionEnd = generateLabelSymbol(cg);
 
    TR::RegisterDependencyConditions * localDeps = NULL;
 
@@ -213,8 +213,8 @@ laddConst(TR::Node * node, TR::CodeGenerator * cg, TR::RegisterPair * targetRegi
       // Add low value
       if ( l_value != 0 )
          {
-         TR::LabelSymbol * cFlowRegionStart = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-         TR::LabelSymbol * cFlowRegionEnd = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+         TR::LabelSymbol * cFlowRegionStart = generateLabelSymbol(cg);
+         TR::LabelSymbol * cFlowRegionEnd = generateLabelSymbol(cg);
 
          TR::RegisterDependencyConditions * dependencies = NULL;
          // tempReg is used to hold the immediate on GoldenEagle or better.
@@ -272,7 +272,7 @@ laddHelper(TR::Node * node, TR::CodeGenerator * cg)
 
    if (secondChild->getOpCodeValue() == TR::lconst && secondChild->getRegister() == NULL)
       {
-      TR::LabelSymbol * doneLAdd = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+      TR::LabelSymbol * doneLAdd = generateLabelSymbol(cg);
       TR::Node * firstChild = node->getFirstChild();
 
       targetRegisterPair = (TR::RegisterPair *) cg->gprClobberEvaluate(firstChild);
@@ -766,11 +766,11 @@ lDivRemGenericEvaluator(TR::Node * node, TR::CodeGenerator * cg, bool isDivision
             dep->addPostCondition(dividendPair->getHighOrder(), TR::RealRegister::LegalEvenOfPair);
             dep->addPostCondition(dividendPair->getLowOrder(), TR::RealRegister::LegalOddOfPair);
 
-            TR::LabelSymbol * cFlowRegionStart = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-            TR::LabelSymbol * cFlowRegionEnd = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+            TR::LabelSymbol * cFlowRegionStart = generateLabelSymbol(cg);
+            TR::LabelSymbol * cFlowRegionEnd = generateLabelSymbol(cg);
 
             //special case, need to check if dividend is 0x8000000000000000 - but need to check it in 2 steps
-            TR::LabelSymbol * doDiv = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+            TR::LabelSymbol * doDiv = generateLabelSymbol(cg);
             generateS390ImmOp(cg, TR::InstOpCode::C, node, dividendPair->getHighOrder(), dividendPair->getHighOrder(), (int32_t) 0x80000000);
 
             generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionStart);
@@ -809,7 +809,7 @@ lDivRemGenericEvaluator(TR::Node * node, TR::CodeGenerator * cg, bool isDivision
             performTransformation(comp, "O^O Denominator is powerOfTwo (%d) for ldir/lrem.\n",denominator))
          {
          int64_t absValueOfDenominator = denominator>0 ? denominator : -denominator;
-         TR::LabelSymbol * done = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+         TR::LabelSymbol * done = generateLabelSymbol(cg);
 
          //setup dependencies for shift instructions for division or remainder
          TR::RegisterDependencyConditions * dep = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 5, cg);
@@ -821,8 +821,8 @@ lDivRemGenericEvaluator(TR::Node * node, TR::CodeGenerator * cg, bool isDivision
             {
             if (!firstChild->isNonNegative())
                {
-               TR::LabelSymbol * cFlowRegionStart = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-               TR::LabelSymbol * skipSet = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+               TR::LabelSymbol * cFlowRegionStart = generateLabelSymbol(cg);
+               TR::LabelSymbol * skipSet = generateLabelSymbol(cg);
 
                generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionStart);
                cFlowRegionStart->setStartInternalControlFlow();
@@ -894,9 +894,9 @@ lDivRemGenericEvaluator(TR::Node * node, TR::CodeGenerator * cg, bool isDivision
    if (performTransformation(comp, "O^O Using 64bit ldiv on 32bit driver.\n"))
       {
       TR::Instruction * cursor = NULL;
-      TR::LabelSymbol * cFlowRegionStart = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-      TR::LabelSymbol * gotoDiv = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-      TR::LabelSymbol * dontDiv = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+      TR::LabelSymbol * cFlowRegionStart = generateLabelSymbol(cg);
+      TR::LabelSymbol * gotoDiv = generateLabelSymbol(cg);
+      TR::LabelSymbol * dontDiv = generateLabelSymbol(cg);
       TR::RegisterPair * divisorPair = (TR::RegisterPair *) cg->gprClobberEvaluate(secondChild);
       TR::Register     * litPoolBase = NULL;
       bool highWordRADisabled = !cg->supportsHighWordFacility() || comp->getOption(TR_DisableHighWordRA);
@@ -1008,7 +1008,7 @@ lDivRemGenericEvaluator(TR::Node * node, TR::CodeGenerator * cg, bool isDivision
 
       // The label is necessary so that RA does not insert 32-bit register moves
       // inbetween the 64-bit operations
-      TR::LabelSymbol * depLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+      TR::LabelSymbol * depLabel = generateLabelSymbol(cg);
       cursor = generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, depLabel, dependencies);
 
       node->setRegister(dividendPair);
@@ -1105,7 +1105,7 @@ lDivRemGenericEvaluator(TR::Node * node, TR::CodeGenerator * cg, bool isDivision
 inline TR::Register *
 lDivRemGenericEvaluator64(TR::Node * node, TR::CodeGenerator * cg, bool isDivision)
    {
-   TR::LabelSymbol * doDiv = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+   TR::LabelSymbol * doDiv = generateLabelSymbol(cg);
    TR::LabelSymbol * skipDiv = NULL;
 
    TR::Node * firstChild = node->getFirstChild();
@@ -1161,9 +1161,9 @@ lDivRemGenericEvaluator64(TR::Node * node, TR::CodeGenerator * cg, bool isDivisi
             }
          else
             {
-            TR::LabelSymbol * cFlowRegionStart = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-            TR::LabelSymbol * cFlowRegionEnd = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-            TR::LabelSymbol * doDiv = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+            TR::LabelSymbol * cFlowRegionStart = generateLabelSymbol(cg);
+            TR::LabelSymbol * cFlowRegionEnd = generateLabelSymbol(cg);
+            TR::LabelSymbol * doDiv = generateLabelSymbol(cg);
 
             //special case, need to check if dividend is 0x8000000000000000 - but need to check it in 2 steps
             generateS390ImmOp(cg, TR::InstOpCode::CG, node, firstRegister, firstRegister, (int64_t) CONSTANT64(0x8000000000000000));
@@ -1213,8 +1213,8 @@ lDivRemGenericEvaluator64(TR::Node * node, TR::CodeGenerator * cg, bool isDivisi
             firstRegister = cg->gprClobberEvaluate(firstChild);
             if (!firstChild->isNonNegative())
                {
-               TR::LabelSymbol * cFlowRegionStart = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-               TR::LabelSymbol * skipSet = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+               TR::LabelSymbol * cFlowRegionStart = generateLabelSymbol(cg);
+               TR::LabelSymbol * skipSet = generateLabelSymbol(cg);
 
                generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionStart);
                cFlowRegionStart->setStartInternalControlFlow();
@@ -1242,7 +1242,7 @@ lDivRemGenericEvaluator64(TR::Node * node, TR::CodeGenerator * cg, bool isDivisi
             {
             firstRegister = cg->gprClobberEvaluate(firstChild);
 
-            TR::LabelSymbol * done = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+            TR::LabelSymbol * done = generateLabelSymbol(cg);
             TR::RegisterDependencyConditions *deps = NULL;
             if (!firstChild->isNonNegative())
                {
@@ -1328,7 +1328,7 @@ lDivRemGenericEvaluator64(TR::Node * node, TR::CodeGenerator * cg, bool isDivisi
       generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BNE, node, doDiv);
       genLoadLongConstant(cg, node, 0, remRegister);
 
-      skipDiv = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+      skipDiv = generateLabelSymbol(cg);
       generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BRC, node, skipDiv);
 
       // Label to do the division
@@ -1343,7 +1343,7 @@ lDivRemGenericEvaluator64(TR::Node * node, TR::CodeGenerator * cg, bool isDivisi
          TR_ASSERT(secondChild->getOpCode().isLoadConst() && secondChild->getType().isInt64(),"secondChild %s (%p) of rem should be int64 constant\n",
             secondChild->getOpCode().getName(),secondChild);
          if (skipDiv == NULL)
-            skipDiv = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+            skipDiv = generateLabelSymbol(cg);
          skipDiv->setEndInternalControlFlow();
          dependencies->addPostCondition(sourceRegister, TR::RealRegister::AssignAny);
 
@@ -1369,7 +1369,7 @@ lDivRemGenericEvaluator64(TR::Node * node, TR::CodeGenerator * cg, bool isDivisi
             {
             generateRRInstruction(cg, TR::InstOpCode::CLGR, node, absDividendReg, sourceRegister);
             }
-         TR::LabelSymbol * cFlowRegionStart = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+         TR::LabelSymbol * cFlowRegionStart = generateLabelSymbol(cg);
          generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionStart);
          cFlowRegionStart->setStartInternalControlFlow();
          generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_MASK4, node, skipDiv); // branch to done on <
@@ -1418,7 +1418,7 @@ lDivRemGenericEvaluator64(TR::Node * node, TR::CodeGenerator * cg, bool isDivisi
 TR::Register *
 iDivRemGenericEvaluator(TR::Node * node, TR::CodeGenerator * cg, bool isDivision, TR::MemoryReference * divchkDivisorMR)
    {
-   TR::LabelSymbol * doDiv = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+   TR::LabelSymbol * doDiv = generateLabelSymbol(cg);
    TR::LabelSymbol * skipDiv = NULL;
 
    TR::Node * firstChild = node->getFirstChild();
@@ -1520,7 +1520,7 @@ iDivRemGenericEvaluator(TR::Node * node, TR::CodeGenerator * cg, bool isDivision
    //  JAVA requires we return 0x80000000 rem 0x00000000
    if (needCheck)
       {
-      TR::LabelSymbol * cFlowRegionStart = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+      TR::LabelSymbol * cFlowRegionStart = generateLabelSymbol(cg);
 
       generateS390ImmOp(cg, TR::InstOpCode::C, node, remRegister, remRegister, (int32_t) 0x80000000);
       generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionStart);
@@ -1540,7 +1540,7 @@ iDivRemGenericEvaluator(TR::Node * node, TR::CodeGenerator * cg, bool isDivision
       // TODO: Can we allow setting the condition code here by moving the load before the compare?
       generateLoad32BitConstant(cg, node, 0, remRegister, false);
 
-      skipDiv = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+      skipDiv = generateLabelSymbol(cg);
       generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BRC, node, skipDiv);
 
       // Label to do the division
@@ -1946,7 +1946,7 @@ lsubHelper(TR::Node * node, TR::CodeGenerator * cg)
       {
       TR::Node * firstChild = node->getFirstChild();
       targetRegisterPair = (TR::RegisterPair *) cg->gprClobberEvaluate(firstChild);
-      TR::LabelSymbol * doneLSub = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+      TR::LabelSymbol * doneLSub = generateLabelSymbol(cg);
       int32_t h_value = secondChild->getLongIntHigh();
       int32_t l_value = secondChild->getLongIntLow();
 
@@ -2935,9 +2935,9 @@ lmulHelper(TR::Node * node, TR::CodeGenerator * cg)
 
       TR::RegisterPair * tempRegisterPair = cg->allocateConsecutiveRegisterPair(lowRegister, highRegister);
 
-      TR::LabelSymbol * cFlowRegionStart = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-      TR::LabelSymbol * lmul1 = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-      TR::LabelSymbol * lmul2 = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+      TR::LabelSymbol * cFlowRegionStart = generateLabelSymbol(cg);
+      TR::LabelSymbol * lmul1 = generateLabelSymbol(cg);
+      TR::LabelSymbol * lmul2 = generateLabelSymbol(cg);
 
 
       TR::RegisterPair * src2RegPair = (TR::RegisterPair *) cg->gprClobberEvaluate(secondChild);
@@ -3645,9 +3645,9 @@ OMR::Z::TreeEvaluator::lmulhEvaluator(TR::Node * node, TR::CodeGenerator * cg)
       int64_t value = secondChild->getLongInt();
       int64_t absValue = value > 0 ? value : -value;
 
-      TR::LabelSymbol * cFlowRegionStart = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-      TR::LabelSymbol * posMulh = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-      TR::LabelSymbol * doneMulh = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+      TR::LabelSymbol * cFlowRegionStart = generateLabelSymbol(cg);
+      TR::LabelSymbol * posMulh = generateLabelSymbol(cg);
+      TR::LabelSymbol * doneMulh = generateLabelSymbol(cg);
 
       // positive first child, branch to posMulh label
       generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionStart);
@@ -3977,9 +3977,9 @@ OMR::Z::TreeEvaluator::idivEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 
       if (value == -1 && !node->getOpCode().isUnsigned())
          {
-         TR::LabelSymbol * cFlowRegionStart = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-         TR::LabelSymbol * doDiv = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-         TR::LabelSymbol * skipDiv = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+         TR::LabelSymbol * cFlowRegionStart = generateLabelSymbol(cg);
+         TR::LabelSymbol * doDiv = generateLabelSymbol(cg);
+         TR::LabelSymbol * skipDiv = generateLabelSymbol(cg);
 
          // If the divisor is -1 we need to check the dividend for 0x80000000
          generateS390ImmOp(cg, TR::InstOpCode::C, node, targetRegister, targetRegister, (int32_t )0x80000000);
@@ -4006,8 +4006,8 @@ OMR::Z::TreeEvaluator::idivEvaluator(TR::Node * node, TR::CodeGenerator * cg)
       else if ((shftAmnt = TR::TreeEvaluator::checkNonNegativePowerOfTwo(value)) > 0)
          {
          // Strength reduction
-         TR::LabelSymbol * cFlowRegionStart = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-         TR::LabelSymbol * doShift = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+         TR::LabelSymbol * cFlowRegionStart = generateLabelSymbol(cg);
+         TR::LabelSymbol * doShift = generateLabelSymbol(cg);
 
          if (!firstChild->isNonNegative() && !node->getOpCode().isUnsigned())
             {
@@ -4164,7 +4164,7 @@ OMR::Z::TreeEvaluator::iremEvaluator(TR::Node * node, TR::CodeGenerator * cg)
       else if ((!isUnsigned || isNonNegativePowerOf2(value)) &&
          ((shftAmnt = TR::TreeEvaluator::checkPositiveOrNegativePowerOfTwo(value)) > 0))
          {
-         TR::LabelSymbol * done = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+         TR::LabelSymbol * done = generateLabelSymbol(cg);
          TR::RegisterDependencyConditions *deps = NULL;
 
          if (!isUnsigned && !firstChild->isNonNegative())

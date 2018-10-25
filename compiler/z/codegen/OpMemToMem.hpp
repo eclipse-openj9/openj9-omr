@@ -90,8 +90,8 @@ class MemToMemMacroOp
                  }
                if(_startControlFlow != _cursor)
                  {
-                 TR::LabelSymbol * cFlowRegionStart = TR::LabelSymbol::create(_cg->trHeapMemory(),_cg);
-                 TR::LabelSymbol * cFlowRegionEnd = TR::LabelSymbol::create(_cg->trHeapMemory(),_cg);
+                 TR::LabelSymbol * cFlowRegionStart = generateLabelSymbol(_cg);
+                 TR::LabelSymbol * cFlowRegionEnd = generateLabelSymbol(_cg);
 
                  generateS390LabelInstruction(_cg, TR::InstOpCode::LABEL, _rootNode, cFlowRegionStart, dependencies, _startControlFlow->getPrev());
                  cFlowRegionStart->setStartInternalControlFlow();
@@ -357,9 +357,9 @@ class MemCmpConstLenMacroOp : public MemToMemConstLenMacroOp
       MemCmpConstLenMacroOp(TR::Node* rootNode, TR::Node* dstNode, TR::Node* srcNode, TR::CodeGenerator * cg, int64_t length)
          : MemToMemConstLenMacroOp(rootNode, dstNode, srcNode, cg, length)
       {
-      _falseLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-      _trueLabel  = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-      _doneLabel  = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+      _falseLabel = generateLabelSymbol(cg);
+      _trueLabel  = generateLabelSymbol(cg);
+      _doneLabel  = generateLabelSymbol(cg);
       }
       TR::Register * resultReg() { return _resultReg; }
       virtual TR::Instruction *generate(TR::Register* dstReg, TR::Register* srcReg, TR::Register* tmpReg, int32_t offset, TR::Instruction *cursor);
@@ -384,7 +384,7 @@ class MemCmpConstLenSignMacroOp : public MemCmpConstLenMacroOp
       MemCmpConstLenSignMacroOp(TR::Node* rootNode, TR::Node* dstNode, TR::Node* srcNode, TR::CodeGenerator * cg, int64_t length)
          : MemCmpConstLenMacroOp(rootNode, dstNode, srcNode, cg, length)
       {
-      _gtLabel     = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+      _gtLabel     = generateLabelSymbol(cg);
       }
       virtual TR::Instruction *generate(TR::Register* dstReg, TR::Register* srcReg, TR::Register* tmpReg, int32_t offset, TR::Instruction *cursor);
       virtual TR::Instruction *generate(TR::Register* dstReg, TR::Register* srcReg)
@@ -473,10 +473,10 @@ class MemCmpVarLenMacroOp : public MemToMemVarLenMacroOp
          : MemToMemVarLenMacroOp(rootNode, dstNode, srcNode, cg, regLen, lenNode, lengthMinusOne, TR::InstOpCode::CLC)
          {
          _litPoolReg = NULL;
-         _falseLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-         _trueLabel  = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+         _falseLabel = generateLabelSymbol(cg);
+         _trueLabel  = generateLabelSymbol(cg);
          if (!doneLabel)
-            _doneLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+            _doneLabel = generateLabelSymbol(cg);
          else
             _doneLabel = doneLabel;
          }
@@ -506,7 +506,7 @@ class MemCmpVarLenSignMacroOp : public MemCmpVarLenMacroOp
       MemCmpVarLenSignMacroOp(TR::Node* rootNode, TR::Node* dstNode, TR::Node* srcNode, TR::CodeGenerator * cg, TR::Register* regLen, TR::Node * lenNode)
          : MemCmpVarLenMacroOp(rootNode, dstNode, srcNode, cg, regLen, lenNode)
          {
-         _gtLabel     = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+         _gtLabel     = generateLabelSymbol(cg);
          }
       virtual TR::Instruction * generate(TR::Register* dstReg, TR::Register* srcReg, TR::Register* tmpReg, int32_t offset, TR::Instruction *cursor);
       virtual TR::Instruction *generate(TR::Register* dstReg, TR::Register* srcReg)

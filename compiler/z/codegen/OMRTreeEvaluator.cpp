@@ -3567,8 +3567,8 @@ generateS390CompareBool(TR::Node * node, TR::CodeGenerator * cg, TR::InstOpCode:
 
 
    // Create a label
-   TR::LabelSymbol * cFlowRegionStart = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-   TR::LabelSymbol * cFlowRegionEnd = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+   TR::LabelSymbol * cFlowRegionStart = generateLabelSymbol(cg);
+   TR::LabelSymbol * cFlowRegionEnd = generateLabelSymbol(cg);
    // Create a register
    TR::Register * targetRegister = cg->allocateRegister();
 
@@ -6963,10 +6963,10 @@ OMR::Z::TreeEvaluator::genNullTestForCompressedPointers(TR::Node *node,
             //node->setRegister(targetRegister);
             }
 
-         skipAdd = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+         skipAdd = generateLabelSymbol(cg);
          skipAdd->setEndInternalControlFlow();
 
-         TR::LabelSymbol * cFlowRegionStart = TR::LabelSymbol::create(cg->trHeapMemory(), cg);
+         TR::LabelSymbol * cFlowRegionStart = generateLabelSymbol( cg);
 
          if (addOrSubNode->getFirstChild()->getOpCode().isShift() && addOrSubNode->getFirstChild()->getRegister())
             {
@@ -7544,8 +7544,8 @@ OMR::Z::TreeEvaluator::performCall(TR::Node * node, bool isIndirect, TR::CodeGen
 TR::Register *
 OMR::Z::TreeEvaluator::z990PopCountHelper(TR::Node *node, TR::CodeGenerator *cg, TR::Register *inReg, TR::Register *outReg)
    {
-   TR::LabelSymbol *cFlowRegionStart = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-   TR::LabelSymbol *cFlowRegionEnd = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+   TR::LabelSymbol *cFlowRegionStart = generateLabelSymbol(cg);
+   TR::LabelSymbol *cFlowRegionEnd = generateLabelSymbol(cg);
 
    TR::InstOpCode::Mnemonic subOp = TR::Compiler->target.is64Bit() ? TR::InstOpCode::SGR : TR::InstOpCode::SR;
    TR::InstOpCode::Mnemonic addOp = TR::Compiler->target.is64Bit() ? TR::InstOpCode::AGR : TR::InstOpCode::AR;
@@ -7705,8 +7705,8 @@ inlineTrailingZerosQuadWordAtATime(
    TR::Register * rInput          = cg->allocateRegister();      // to use as temp
    TR::Register * rBranchCounter  = cg->allocateRegister();      // used for BRCT
 
-   TR::LabelSymbol * LabelProcessNext8Bytes = TR::LabelSymbol::create(cg->trHeapMemory(), cg);
-   TR::LabelSymbol * cFlowRegionEnd         = TR::LabelSymbol::create(cg->trHeapMemory(), cg);
+   TR::LabelSymbol * LabelProcessNext8Bytes = generateLabelSymbol( cg);
+   TR::LabelSymbol * cFlowRegionEnd         = generateLabelSymbol( cg);
 
    TR::Compilation * comp   = cg->comp();
    TR_Debug     * debug  = cg->getDebug();
@@ -9843,9 +9843,9 @@ forwardArraycopyEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    regDeps->addPostCondition(rResult       ,TR::RealRegister::AssignAny);
    regDeps->addPostCondition(vBuf          ,TR::RealRegister::AssignAny);
 
-   TR::LabelSymbol * cFlowRegionStart  = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-   TR::LabelSymbol * processNext16Bytes = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-   TR::LabelSymbol * cFlowRegionEnd     = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+   TR::LabelSymbol * cFlowRegionStart  = generateLabelSymbol(cg);
+   TR::LabelSymbol * processNext16Bytes = generateLabelSymbol(cg);
+   TR::LabelSymbol * cFlowRegionEnd     = generateLabelSymbol(cg);
 
 
    generateRRInstruction(cg, TR::InstOpCode::getXORRegOpCode(), node, rIdx, rIdx);
@@ -9978,7 +9978,7 @@ void setStartInternalControlFlow(TR::CodeGenerator * cg, TR::Node * node, TR::In
    TR_ASSERT(cursor && cursor->getPrev(), "cannot set ICF without previous instruction");
    if (!isStartInternalControlFlowSet)
       {
-      TR::LabelSymbol * cFlowRegionStart = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+      TR::LabelSymbol * cFlowRegionStart = generateLabelSymbol(cg);
 
       generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionStart, cursor->getPrev());
       cFlowRegionStart->setStartInternalControlFlow();
@@ -10192,9 +10192,9 @@ OMR::Z::TreeEvaluator::arraycmpHelper(TR::Node *node,
             }
          }
 
-      TR::LabelSymbol *condLabel = isCondLabelNeeded ? TR::LabelSymbol::create(cg->trHeapMemory(),cg) : NULL;
+      TR::LabelSymbol *condLabel = isCondLabelNeeded ? generateLabelSymbol(cg) : NULL;
 
-      TR::LabelSymbol *endLabel = isEndLabelNeeded ? TR::LabelSymbol::create(cg->trHeapMemory(),cg) : NULL;
+      TR::LabelSymbol *endLabel = isEndLabelNeeded ? generateLabelSymbol(cg) : NULL;
 
       if (!isFoldedIf && needResultReg)
          generateRIInstruction(cg, TR::InstOpCode::LA, node, retValReg, 0);
@@ -10312,7 +10312,7 @@ OMR::Z::TreeEvaluator::arraycmpHelper(TR::Node *node,
          }
       else
          {
-         cFlowRegionEnd = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+         cFlowRegionEnd = generateLabelSymbol(cg);
          cursor = generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionEnd, cursor);
          }
 
@@ -10352,7 +10352,7 @@ OMR::Z::TreeEvaluator::arraycmpHelper(TR::Node *node,
       bool lenMinusOne = false;
       bool needs64BitOpCode = false;
 
-      TR::LabelSymbol *cFlowRegionEnd = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+      TR::LabelSymbol *cFlowRegionEnd = generateLabelSymbol(cg);
 
       TR::Register *loopCountReg = NULL;
 
@@ -10473,7 +10473,7 @@ OMR::Z::TreeEvaluator::arraycmpHelper(TR::Node *node,
                generateRIInstruction(cg, TR::InstOpCode::LA, node, retValReg, 0);
                }
 
-            //cFlowRegionEnd = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+            //cFlowRegionEnd = generateLabelSymbol(cg);
 
             generateRRInstruction(cg, TR::Compiler->target.is64Bit() ? TR::InstOpCode::LTGR : TR::InstOpCode::LTR, node, lengthReg, lengthReg);
 
@@ -10500,7 +10500,7 @@ OMR::Z::TreeEvaluator::arraycmpHelper(TR::Node *node,
                }
             generateRRInstruction(cg, TR::Compiler->target.is64Bit() ? TR::InstOpCode::LGR : TR::InstOpCode::LR, node, lengthCopyReg, lengthReg);
 
-            TR::LabelSymbol *continueLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+            TR::LabelSymbol *continueLabel = generateLabelSymbol(cg);
             generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, continueLabel);
             cursor = generateRSWithImplicitPairStoresInstruction(cg, isWideChar ? TR::InstOpCode::CLCLU : TR::InstOpCode::CLCLE, node, source1Pair, source2Pair, generateS390MemoryReference(NULL, 64, cg));
 
@@ -10554,9 +10554,9 @@ OMR::Z::TreeEvaluator::arraycmpHelper(TR::Node *node,
             branchDeps->addPostConditionIfNotAlreadyInserted(lengthReg, TR::RealRegister::AssignAny);
             branchDeps->addPostConditionIfNotAlreadyInserted(loopCountReg, TR::RealRegister::AssignAny);
 
-            TR::LabelSymbol *topOfLoop    = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-            TR::LabelSymbol *bottomOfLoop = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-            TR::LabelSymbol *outOfCompare = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+            TR::LabelSymbol *topOfLoop    = generateLabelSymbol(cg);
+            TR::LabelSymbol *bottomOfLoop = generateLabelSymbol(cg);
+            TR::LabelSymbol *outOfCompare = generateLabelSymbol(cg);
 
            if (needs64BitOpCode)
               generateRSInstruction(cg, TR::InstOpCode::SRAG, node, loopCountReg, lengthReg, 8);
@@ -12075,8 +12075,8 @@ OMR::Z::TreeEvaluator::arraytranslateAndTestEvaluator(TR::Node * node, TR::CodeG
       generateRXInstruction(cg, TR::InstOpCode::LA, node, endReg, endMR);
       generateRXInstruction(cg, TR::InstOpCode::LA, node, startReg, startMR);
 
-      TR::LabelSymbol * cFlowRegionEnd = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-      TR::LabelSymbol * topOfLoop = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+      TR::LabelSymbol * cFlowRegionEnd = generateLabelSymbol(cg);
+      TR::LabelSymbol * topOfLoop = generateLabelSymbol(cg);
 
       generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, topOfLoop, dependencies);
       topOfLoop->setStartInternalControlFlow();
@@ -12160,11 +12160,11 @@ OMR::Z::TreeEvaluator::arraytranslateAndTestEvaluator(TR::Node * node, TR::CodeG
       TR::RegisterDependencyConditions * dependencies;
       TR::Register * ptrReg = cg->allocateRegister();
       TR::Register * tmpReg = cg->allocateRegister();
-      TR::LabelSymbol * label256Top = TR::LabelSymbol::create(cg->trHeapMemory());
-      TR::LabelSymbol * labelFind = TR::LabelSymbol::create(cg->trHeapMemory());
-      TR::LabelSymbol * labelEnd = TR::LabelSymbol::create(cg->trHeapMemory());
-      TR::LabelSymbol * boundCheckFailureLabel = TR::LabelSymbol::create(cg->trHeapMemory());
-      TR::LabelSymbol * cFlowRegionEnd = TR::LabelSymbol::create(cg->trHeapMemory());
+      TR::LabelSymbol * label256Top = generateLabelSymbol(cg);
+      TR::LabelSymbol * labelFind = generateLabelSymbol(cg);
+      TR::LabelSymbol * labelEnd = generateLabelSymbol(cg);
+      TR::LabelSymbol * boundCheckFailureLabel = generateLabelSymbol(cg);
+      TR::LabelSymbol * cFlowRegionEnd = generateLabelSymbol(cg);
       dependencies = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, numRegister, cg);
 
       // For chars, scale the index and array/search length by 2 (size of char) to convert into bytes.
@@ -12191,8 +12191,8 @@ OMR::Z::TreeEvaluator::arraytranslateAndTestEvaluator(TR::Node * node, TR::CodeG
       // and translate/search length.
       if (isAdditionalLen)
          {
-         TR::LabelSymbol * cFlowRegionStart = TR::LabelSymbol::create(cg->trHeapMemory());
-         TR::LabelSymbol * labelSkip = TR::LabelSymbol::create(cg->trHeapMemory());
+         TR::LabelSymbol * cFlowRegionStart = generateLabelSymbol(cg);
+         TR::LabelSymbol * labelSkip = generateLabelSymbol(cg);
 
          generateRRInstruction(cg, TR::InstOpCode::getLoadRegOpCode(), node, minReg, alenReg);
          generateRRInstruction(cg, TR::InstOpCode::getCmpRegOpCode(), node, minReg, lenReg);
@@ -12230,7 +12230,7 @@ OMR::Z::TreeEvaluator::arraytranslateAndTestEvaluator(TR::Node * node, TR::CodeG
          // to allocate a register at this point for the literal pool base address.
          intptrj_t helper = (intptrj_t) cg->symRefTab()->findOrCreateRuntimeHelper(TR_S390arrayTranslateAndTestHelper, false, false, false)->getMethodAddress();
 
-         TR::LabelSymbol * labelEntryElementChar = TR::LabelSymbol::create(cg->trHeapMemory());
+         TR::LabelSymbol * labelEntryElementChar = generateLabelSymbol(cg);
          TR::Instruction * cursor = generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, labelEntryElementChar);
 
          genLoadAddressConstant(cg, node, helper, raReg, cursor, dependencies);
@@ -12241,7 +12241,7 @@ OMR::Z::TreeEvaluator::arraytranslateAndTestEvaluator(TR::Node * node, TR::CodeG
          generateRIInstruction(cg, TR::InstOpCode::AHI, node, indexReg, TRTSIZE);
 
          // Label for the helper code to handle TRT < 256 bytes.
-         TR::LabelSymbol * cFlowRegionEnd = TR::LabelSymbol::create(cg->trHeapMemory());
+         TR::LabelSymbol * cFlowRegionEnd = generateLabelSymbol(cg);
          TR::MemoryReference * inputTRTMR = generateS390MemoryReference(ptrReg, 0, cg);
          TR::MemoryReference * tableMR = generateS390MemoryReference(tableReg, 0, cg);
 
@@ -12306,7 +12306,7 @@ OMR::Z::TreeEvaluator::arraytranslateAndTestEvaluator(TR::Node * node, TR::CodeG
          //
          // Bounds Checking
 
-         TR::LabelSymbol * cFlowRegionStart = TR::LabelSymbol::create(cg->trHeapMemory());
+         TR::LabelSymbol * cFlowRegionStart = generateLabelSymbol(cg);
 
          generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionStart);
          cFlowRegionStart->setStartInternalControlFlow();
@@ -12343,7 +12343,7 @@ OMR::Z::TreeEvaluator::arraytranslateAndTestEvaluator(TR::Node * node, TR::CodeG
 
          if (elementChar)
             {
-            TR::LabelSymbol * label2ByteOk = TR::LabelSymbol::create(cg->trHeapMemory());
+            TR::LabelSymbol * label2ByteOk = generateLabelSymbol(cg);
             TR::MemoryReference * ptr0MR = generateS390MemoryReference(ptrReg, 0, 0, cg);
 
             generateRIInstruction(cg, TR::InstOpCode::NILL, node, ptrReg, 0xFFFE);
@@ -12453,7 +12453,7 @@ OMR::Z::TreeEvaluator::arraytranslateAndTestEvaluator(TR::Node * node, TR::CodeG
          if (emulateSRSTUusingSRST)
             {
             TR::MemoryReference * ptr0MR = generateS390MemoryReference(tmpReg, 0, 0, cg);
-            TR::LabelSymbol * label2ByteOk = TR::LabelSymbol::create(cg->trHeapMemory());
+            TR::LabelSymbol * label2ByteOk = generateLabelSymbol(cg);
 
             // Align the pointer to nearest halfword.
             generateRIInstruction(cg, TR::InstOpCode::NILL, node, tmpReg, 0xFFFE);
@@ -12626,8 +12626,8 @@ OMR::Z::TreeEvaluator::arraytranslateEvaluator(TR::Node * node, TR::CodeGenerato
       tableReg = tableStorageReg;
       }
 
-   TR::LabelSymbol * topOfLoop = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-   TR::LabelSymbol * cFlowRegionEnd = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+   TR::LabelSymbol * topOfLoop = generateLabelSymbol(cg);
+   TR::LabelSymbol * cFlowRegionEnd = generateLabelSymbol(cg);
 
    generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, topOfLoop);
    topOfLoop->setStartInternalControlFlow();
@@ -13057,8 +13057,8 @@ OMR::Z::TreeEvaluator::arraysetEvaluator(TR::Node * node, TR::CodeGenerator * cg
       TR::RegisterDependencyConditions * regDeps = cg->createDepsForRRMemoryInstructions(node, sourcePairReg, targetPairReg);
 
       //MVCLU
-      TR::LabelSymbol *continueLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-      TR::LabelSymbol *cFlowRegionEnd = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+      TR::LabelSymbol *continueLabel = generateLabelSymbol(cg);
+      TR::LabelSymbol *cFlowRegionEnd = generateLabelSymbol(cg);
 
       generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, continueLabel);
       continueLabel->setStartInternalControlFlow();
@@ -13089,8 +13089,8 @@ OMR::Z::TreeEvaluator::arraysetEvaluator(TR::Node * node, TR::CodeGenerator * cg
       uint16_t value = (uint16_t) constExpr->getShortInt();
       TR::Register* itersReg = cg->allocateRegister();
       TR::Register* indexReg = cg->allocateRegister();
-      TR::LabelSymbol * topOfLoop = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-      TR::LabelSymbol * cFlowRegionEnd = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+      TR::LabelSymbol * topOfLoop = generateLabelSymbol(cg);
+      TR::LabelSymbol * cFlowRegionEnd = generateLabelSymbol(cg);
       TR::LabelSymbol * endOfLoop = NULL;
       TR::RegisterDependencyConditions * dependencies = NULL;
 
@@ -13102,7 +13102,7 @@ OMR::Z::TreeEvaluator::arraysetEvaluator(TR::Node * node, TR::CodeGenerator * cg
            SRAG  GPR_Iteration, GPR_elemsReg, 6 ; unroll=8, 8 bytes per each STG
            BRC  eq, Label L0097; start of internal control flow
          */
-         endOfLoop = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+         endOfLoop = generateLabelSymbol(cg);
 
          if (elemsExpr->getDataType() == TR::Int64)
             {
@@ -13146,8 +13146,8 @@ OMR::Z::TreeEvaluator::arraysetEvaluator(TR::Node * node, TR::CodeGenerator * cg
 
       if (varLength)
          {
-         TR::LabelSymbol * topOfLoop1 = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-         TR::LabelSymbol * endOfLoop1 = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+         TR::LabelSymbol * topOfLoop1 = generateLabelSymbol(cg);
+         TR::LabelSymbol * endOfLoop1 = generateLabelSymbol(cg);
          TR::Register* residueReg = cg->allocateRegister();
          dependencies = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 6, cg);
          dependencies->addPostCondition(itersReg, TR::RealRegister::AssignAny);
@@ -13885,9 +13885,9 @@ OMR::Z::TreeEvaluator::long2StringEvaluator(TR::Node * node, TR::CodeGenerator *
    dependencies->addPostCondition(countReg, TR::RealRegister::AssignAny);
    dependencies->addPostCondition(raReg, cg->getReturnAddressRegister());
 
-   TR::LabelSymbol * cFlowRegionStart = TR::LabelSymbol::create(cg->trHeapMemory());
-   TR::LabelSymbol * cFlowRegionEnd = TR::LabelSymbol::create(cg->trHeapMemory());
-   TR::LabelSymbol * labelDigit1 = TR::LabelSymbol::create(cg->trHeapMemory());
+   TR::LabelSymbol * cFlowRegionStart = generateLabelSymbol(cg);
+   TR::LabelSymbol * cFlowRegionEnd = generateLabelSymbol(cg);
+   TR::LabelSymbol * labelDigit1 = generateLabelSymbol(cg);
 
    generateRIInstruction(cg, TR::InstOpCode::CHI, node, countReg, (int32_t) 1);
 
@@ -14973,8 +14973,8 @@ TR::Register *arraycmpWithPadHelper::generateCLCLE()
    //CLCLE/CLCLU
    TR::MemoryReference *paddingRef = generateS390MemoryReference(paddingReg, 0, cg);
 
-   TR::LabelSymbol *continueLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-   TR::LabelSymbol *cFlowRegionEnd = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+   TR::LabelSymbol *continueLabel = generateLabelSymbol(cg);
+   TR::LabelSymbol *cFlowRegionEnd = generateLabelSymbol(cg);
 
    generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, continueLabel, regDeps);
    continueLabel->setStartInternalControlFlow();
@@ -15110,7 +15110,7 @@ void arraycmpWithPadHelper::generateConstCLCSetup()
          }
       }
 
-   unequalLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+   unequalLabel = generateLabelSymbol(cg);
    if(!isFoldedIf)
       brCond = TR::InstOpCode::COND_MASK6;
    }
@@ -15152,7 +15152,7 @@ void arraycmpWithPadHelper::generateVarCLCSetup()
       else
          generateLoad32BitConstant(cg, node, 2, paddingUnequalRetValReg, true);
 
-      TR::LabelSymbol *doneAssignLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+      TR::LabelSymbol *doneAssignLabel = generateLabelSymbol(cg);
       generateS390CompareAndBranchInstruction(cg, TR::Compiler->target.is64Bit() ? TR::InstOpCode::CGR : TR::InstOpCode::CR, node, source2LenReg, source1LenReg, TR::InstOpCode::COND_BHR, doneAssignLabel);
 
       generateRRInstruction(cg, TR::Compiler->target.is64Bit() ? TR::InstOpCode::LGR : TR::InstOpCode::LR, node, countReg, source2LenReg);
@@ -15213,7 +15213,7 @@ void arraycmpWithPadHelper::generateVarCLCSetup()
       regDeps->addPostCondition(paddingLenReg, TR::RealRegister::AssignAny);
       regDeps->addPostCondition(paddingUnequalRetValReg, TR::RealRegister::AssignAny);
       }
-   unequalLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+   unequalLabel = generateLabelSymbol(cg);
    }
 
 void arraycmpWithPadHelper::generateConstCLCMainLoop()
@@ -15251,7 +15251,7 @@ void arraycmpWithPadHelper::generateConstCLCMainLoop()
 
       if (!(isPerfectMultiple && (i == loopCount - 1) && isEqual))
          {
-         TR::LabelSymbol * cFlowRegionStart = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+         TR::LabelSymbol * cFlowRegionStart = generateLabelSymbol(cg);
 
          generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionStart);
          cFlowRegionStart->setStartInternalControlFlow();
@@ -15264,8 +15264,8 @@ void arraycmpWithPadHelper::generateConstCLCMainLoop()
 
 void arraycmpWithPadHelper::generateVarCLCMainLoop()
    {
-   TR::LabelSymbol *loopStartLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-   TR::LabelSymbol *loopTopLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+   TR::LabelSymbol *loopStartLabel = generateLabelSymbol(cg);
+   TR::LabelSymbol *loopTopLabel = generateLabelSymbol(cg);
 
    generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_MASK15, node, loopStartLabel);
    generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, loopTopLabel);
@@ -15415,7 +15415,7 @@ void arraycmpWithPadHelper::setupConstCLCPadding()
 
    if ((source1Len != 0) && (source2Len != 0))
       {
-      TR::LabelSymbol * cFlowRegionStart = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+      TR::LabelSymbol * cFlowRegionStart = generateLabelSymbol(cg);
 
       generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionStart);
       cFlowRegionStart->setStartInternalControlFlow();
@@ -15528,7 +15528,7 @@ void arraycmpWithPadHelper::generateConstCLCSpacePaddingLoop()
       else
          generateSS1Instruction(cg, TR::InstOpCode::CLC, node, MAX_PADDING_SIZE - 1, paddingRef, posRef);
 
-      TR::LabelSymbol * cFlowRegionStart = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+      TR::LabelSymbol * cFlowRegionStart = generateLabelSymbol(cg);
 
       generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionStart);
       cFlowRegionStart->setStartInternalControlFlow();
@@ -15594,8 +15594,8 @@ void arraycmpWithPadHelper::generateConstCLCSpacePaddingLoop()
 void arraycmpWithPadHelper::generateConstCLCPaddingLoop()
    {
    // use EX->CLI to compare one character at a time
-   TR::LabelSymbol *paddingUnequalLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-   doneLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+   TR::LabelSymbol *paddingUnequalLabel = generateLabelSymbol(cg);
+   doneLabel = generateLabelSymbol(cg);
    if(isUTF16)
       paddingLen /= 2;
 
@@ -15638,9 +15638,9 @@ void arraycmpWithPadHelper::generateConstCLCPaddingLoop()
 
 void arraycmpWithPadHelper::generateVarCLCPaddingLoop()
    {
-   TR::LabelSymbol *loopTopLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-   TR::LabelSymbol *loopStartLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-   TR::LabelSymbol *paddingUnequalLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+   TR::LabelSymbol *loopTopLabel = generateLabelSymbol(cg);
+   TR::LabelSymbol *loopStartLabel = generateLabelSymbol(cg);
+   TR::LabelSymbol *paddingUnequalLabel = generateLabelSymbol(cg);
 
    generateRXInstruction(cg, TR::InstOpCode::LA, node, paddingLenReg, generateS390MemoryReference(paddingLenReg, 1, cg));
 
@@ -15859,7 +15859,7 @@ TR::Register* arraycmpWithPadHelper::generate()
    //Notice that when (maxLen == 0) && !isConst both their real lengths and maximum lengths are unknown.
    if ((maxLen < CLC_THRESHOLD) && (maxLen != 0 || isConst) && !forceCLCL)
       {
-      cmpDoneLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+      cmpDoneLabel = generateLabelSymbol(cg);
 
       //choose the branch conditions
       if (isFoldedIf)
@@ -16585,17 +16585,17 @@ OMR::Z::TreeEvaluator::arraytranslateDecodeSIMDEvaluator(TR::Node * node, TR::Co
 
 
    // Create the necessary labels
-   TR::LabelSymbol * processMultiple16Bytes    = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-   TR::LabelSymbol * processMultiple16BytesEnd = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+   TR::LabelSymbol * processMultiple16Bytes    = generateLabelSymbol(cg);
+   TR::LabelSymbol * processMultiple16BytesEnd = generateLabelSymbol(cg);
 
-   TR::LabelSymbol * processUnder16Bytes    = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-   TR::LabelSymbol * processUnder16BytesEnd = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+   TR::LabelSymbol * processUnder16Bytes    = generateLabelSymbol(cg);
+   TR::LabelSymbol * processUnder16BytesEnd = generateLabelSymbol(cg);
 
-   TR::LabelSymbol * processSaturated         = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-   TR::LabelSymbol * processSaturatedEnd      = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-   TR::LabelSymbol * processUnSaturatedInput1 = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-   TR::LabelSymbol * processUnSaturatedInput2 = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-   TR::LabelSymbol * cFlowRegionEnd           = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+   TR::LabelSymbol * processSaturated         = generateLabelSymbol(cg);
+   TR::LabelSymbol * processSaturatedEnd      = generateLabelSymbol(cg);
+   TR::LabelSymbol * processUnSaturatedInput1 = generateLabelSymbol(cg);
+   TR::LabelSymbol * processUnSaturatedInput2 = generateLabelSymbol(cg);
+   TR::LabelSymbol * cFlowRegionEnd           = generateLabelSymbol(cg);
 
    // Create the necessary vector registers
    TR::Register* vOutput1   = cg->allocateRegister(TR_VRF); // 1st 16 bytes of output (8 chars)
@@ -16874,19 +16874,19 @@ OMR::Z::TreeEvaluator::arraytranslateEncodeSIMDEvaluator(TR::Node * node, TR::Co
       }
 
    // Create the necessary labels
-   TR::LabelSymbol * processMultiple16Chars    = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-   TR::LabelSymbol * processMultiple16CharsEnd = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+   TR::LabelSymbol * processMultiple16Chars    = generateLabelSymbol(cg);
+   TR::LabelSymbol * processMultiple16CharsEnd = generateLabelSymbol(cg);
 
-   TR::LabelSymbol * processUnder16Chars    = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-   TR::LabelSymbol * processUnder16CharsEnd = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+   TR::LabelSymbol * processUnder16Chars    = generateLabelSymbol(cg);
+   TR::LabelSymbol * processUnder16CharsEnd = generateLabelSymbol(cg);
 
-   TR::LabelSymbol * processUnder8Chars    = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-   TR::LabelSymbol * processUnder8CharsEnd = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+   TR::LabelSymbol * processUnder8Chars    = generateLabelSymbol(cg);
+   TR::LabelSymbol * processUnder8CharsEnd = generateLabelSymbol(cg);
 
-   TR::LabelSymbol * processSaturatedInput1 = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-   TR::LabelSymbol * processSaturatedInput2 = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-   TR::LabelSymbol * processUnSaturated     = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-   TR::LabelSymbol * cFlowRegionEnd         = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+   TR::LabelSymbol * processSaturatedInput1 = generateLabelSymbol(cg);
+   TR::LabelSymbol * processSaturatedInput2 = generateLabelSymbol(cg);
+   TR::LabelSymbol * processUnSaturated     = generateLabelSymbol(cg);
+   TR::LabelSymbol * cFlowRegionEnd         = generateLabelSymbol(cg);
 
    // Create the necessary vector registers
    TR::Register* vInput1    = cg->allocateRegister(TR_VRF); // 1st 16 bytes of input (8 chars)
@@ -17610,14 +17610,14 @@ inlineUTF16BEEncodeSIMD(TR::Node *node, TR::CodeGenerator *cg)
    generateVRIaInstruction(cg, TR::InstOpCode::VLEIH, node, vRangeControl, surrogateControl2, 1);
 
    // Create the necessary labels
-   TR::LabelSymbol * process8Chars         = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-   TR::LabelSymbol * process8CharsEnd      = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+   TR::LabelSymbol * process8Chars         = generateLabelSymbol(cg);
+   TR::LabelSymbol * process8CharsEnd      = generateLabelSymbol(cg);
 
-   TR::LabelSymbol * processUnder8Chars    = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-   TR::LabelSymbol * processUnder8CharsEnd = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+   TR::LabelSymbol * processUnder8Chars    = generateLabelSymbol(cg);
+   TR::LabelSymbol * processUnder8CharsEnd = generateLabelSymbol(cg);
 
-   TR::LabelSymbol * processSurrogate      = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-   TR::LabelSymbol * processSurrogateEnd   = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+   TR::LabelSymbol * processSurrogate      = generateLabelSymbol(cg);
+   TR::LabelSymbol * processSurrogateEnd   = generateLabelSymbol(cg);
 
    // Branch to the end if there are no more multiples of 8 chars left to process
    generateS390CompareAndBranchInstruction(cg, TR::InstOpCode::getCmpLogicalOpCode(), node, inputLen16, 0, TR::InstOpCode::COND_MASK8, process8CharsEnd, false, false);
@@ -17780,11 +17780,11 @@ inlineUTF16BEEncode(TR::Node *node, TR::CodeGenerator *cg)
    generateRREInstruction(cg, TR::InstOpCode::getXORRegOpCode(), node, translated, translated);
 
    // Create the necessary labels
-   TR::LabelSymbol * processChar4     = TR::LabelSymbol::create(cg->trHeapMemory(), cg);
-   TR::LabelSymbol * processChar4End  = TR::LabelSymbol::create(cg->trHeapMemory(), cg);
-   TR::LabelSymbol * processChar1     = TR::LabelSymbol::create(cg->trHeapMemory(), cg);
-   TR::LabelSymbol * processChar1End  = TR::LabelSymbol::create(cg->trHeapMemory(), cg);
-   TR::LabelSymbol * processChar1Copy = TR::LabelSymbol::create(cg->trHeapMemory(), cg);
+   TR::LabelSymbol * processChar4     = generateLabelSymbol( cg);
+   TR::LabelSymbol * processChar4End  = generateLabelSymbol( cg);
+   TR::LabelSymbol * processChar1     = generateLabelSymbol( cg);
+   TR::LabelSymbol * processChar1End  = generateLabelSymbol( cg);
+   TR::LabelSymbol * processChar1Copy = generateLabelSymbol( cg);
 
    const uint16_t surrogateRange1 = 0xD800;
    const uint16_t surrogateRange2 = 0xDFFF;
@@ -17954,9 +17954,9 @@ OMR::Z::TreeEvaluator::arraycmpSIMDHelper(TR::Node *node,
    if(needResultReg && isArrayCmp && node->isArrayCmpLen())
       generateRRInstruction(cg, TR::InstOpCode::getLoadRegOpCode(), node, resultReg, lastByteIndexReg);
 
-   TR::LabelSymbol * cFlowRegionStart = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-   TR::LabelSymbol * cFlowRegionEnd = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-   TR::LabelSymbol * mismatch = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+   TR::LabelSymbol * cFlowRegionStart = generateLabelSymbol(cg);
+   TR::LabelSymbol * cFlowRegionEnd = generateLabelSymbol(cg);
+   TR::LabelSymbol * mismatch = generateLabelSymbol(cg);
 
    generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionStart);
    cFlowRegionStart->setStartInternalControlFlow();

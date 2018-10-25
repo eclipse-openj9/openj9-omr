@@ -231,9 +231,9 @@ generateS390lcmpEvaluator(TR::Node * node, TR::CodeGenerator * cg, TR::InstOpCod
    TR::InstOpCode::S390BranchCondition condCmpLowTrue, bool           isBoolean)
    {
    TR::LabelSymbol * falseTarget;
-   TR::LabelSymbol * isFalse = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+   TR::LabelSymbol * isFalse = generateLabelSymbol(cg);
    TR::LabelSymbol * trueTarget;
-   TR::LabelSymbol * isTrue = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+   TR::LabelSymbol * isTrue = generateLabelSymbol(cg);
    bool internalControlFlowStarted=false;
 
    TR::Register * targetRegister = NULL;
@@ -458,7 +458,7 @@ generateS390lcmpEvaluator(TR::Node * node, TR::CodeGenerator * cg, TR::InstOpCod
    if (secondChild->getOpCode().isLoadConst())
      {
      // if second child is complicated then control flow region start will be generated later
-     TR::LabelSymbol * cflowRegionStart = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+     TR::LabelSymbol * cflowRegionStart = generateLabelSymbol(cg);
      cflowRegionStart->setStartInternalControlFlow();
      internalControlFlowStarted = true;
 
@@ -617,8 +617,8 @@ generateS390lcmpEvaluator64(TR::Node * node, TR::CodeGenerator * cg, TR::InstOpC
    {
    TR_ASSERT( TR::Compiler->target.is64Bit() || cg->use64BitRegsOn32Bit(),"lcmpEvaluator64() is for 64bit code-gen only!");
    TR::RegisterDependencyConditions * deps = NULL;
-   TR::LabelSymbol * cFlowRegionStart = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-   TR::LabelSymbol * isTrue = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+   TR::LabelSymbol * cFlowRegionStart = generateLabelSymbol(cg);
+   TR::LabelSymbol * isTrue = generateLabelSymbol(cg);
    bool isUnsigned = node->getOpCode().isUnsignedCompare();
 
    TR::Register * targetRegister = NULL;
@@ -687,9 +687,9 @@ OMR::Z::TreeEvaluator::fcmplEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    TR::InstOpCode::S390BranchCondition brCond ;
 
    // Create ICF start label
-   TR::LabelSymbol * cFlowRegionStart = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+   TR::LabelSymbol * cFlowRegionStart = generateLabelSymbol(cg);
    // Create a label
-   TR::LabelSymbol * cFlowRegionEnd = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+   TR::LabelSymbol * cFlowRegionEnd = generateLabelSymbol(cg);
    // Create a register
    TR::Register * targetRegister = cg->allocateRegister();
 
@@ -753,9 +753,9 @@ lcmpHelper(TR::Node * node, TR::CodeGenerator * cg)
    // There is probably a better way to implement this.  Should re-visit if we get the chance.
    // As things stand now, we will to LCR R1,R1 when R1=0 which is useless...  But still probably
    // cheaper than an extra branch.
-   TR::LabelSymbol * cFlowRegionStart = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-   TR::LabelSymbol * labelGT = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-   TR::LabelSymbol * labelLT = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+   TR::LabelSymbol * cFlowRegionStart = generateLabelSymbol(cg);
+   TR::LabelSymbol * labelGT = generateLabelSymbol(cg);
+   TR::LabelSymbol * labelLT = generateLabelSymbol(cg);
 
    TR::Register * targetRegister = cg->allocateRegister();
 
@@ -939,7 +939,7 @@ static TR::Register * maxMinHelper(TR::Node *node, TR::CodeGenerator *cg, bool i
          }
       else
          {
-         TR::LabelSymbol * done = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+         TR::LabelSymbol * done = generateLabelSymbol(cg);
          TR::Instruction* cursor = NULL;
          registerA = cg->evaluate(node->getFirstChild());
 
@@ -1002,9 +1002,9 @@ lcmpHelper64(TR::Node * node, TR::CodeGenerator * cg)
    // TODO:There is probably a better way to implement this.  Should re-visit if we get the chance.
    // As things stand now, we will to LCR R1,R1 when R1=0 which is useless...  But still probably
    // cheaper than an extra branch.
-   TR::LabelSymbol * cFlowRegionStart = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-   TR::LabelSymbol * labelGT = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-   TR::LabelSymbol * labelLT = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+   TR::LabelSymbol * cFlowRegionStart = generateLabelSymbol(cg);
+   TR::LabelSymbol * labelGT = generateLabelSymbol(cg);
+   TR::LabelSymbol * labelLT = generateLabelSymbol(cg);
 
    TR::Register * targetRegister = cg->allocate64bitRegister();
 
@@ -2623,7 +2623,7 @@ OMR::Z::TreeEvaluator::lookupEvaluator(TR::Node * node, TR::CodeGenerator * cg)
       // for 31bit mode with 64 bit values
       TR::LabelSymbol *skipLoCompareLabel = NULL;
       if (type.isInt64() && TR::Compiler->target.is32Bit())
-         skipLoCompareLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+         skipLoCompareLabel = generateLabelSymbol(cg);
 
       // Compare a key value
       TR::InstOpCode::S390BranchCondition brCond = TR::InstOpCode::COND_NOP;
@@ -2955,7 +2955,7 @@ TR::Register *OMR::Z::TreeEvaluator::evaluateNULLCHKWithPossibleResolve(TR::Node
       else
          {
          // NULLCHK snippet label.
-         TR::LabelSymbol * snippetLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+         TR::LabelSymbol * snippetLabel = generateLabelSymbol(cg);
          TR::SymbolReference *symRef = node->getSymbolReference();
          cg->addSnippet(new (cg->trHeapMemory()) TR::S390HelperCallSnippet(cg, node, snippetLabel, symRef));
 
@@ -3172,8 +3172,8 @@ OMR::Z::TreeEvaluator::ZEROCHKEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    PRINT_ME("ZEROCHK", node, cg);
 
    // Labels for OOL path with helper and the merge point back from OOL path
-   TR::LabelSymbol *slowPathOOLLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);;
-   TR::LabelSymbol *doneLabel  = TR::LabelSymbol::create(cg->trHeapMemory(),cg);;
+   TR::LabelSymbol *slowPathOOLLabel = generateLabelSymbol(cg);;
+   TR::LabelSymbol *doneLabel  = generateLabelSymbol(cg);;
 
    // Need to check the first child of ZEROCHK to determine whether we need to
    // make the helper call.
@@ -3809,8 +3809,8 @@ OMR::Z::TreeEvaluator::ternaryEvaluator(TR::Node *node, TR::CodeGenerator *cg)
          }
       else
          {
-         TR::LabelSymbol * cFlowRegionStart = TR::LabelSymbol::create(cg->trHeapMemory(), cg);
-         TR::LabelSymbol * cFlowRegionEnd = TR::LabelSymbol::create(cg->trHeapMemory(), cg);
+         TR::LabelSymbol * cFlowRegionStart = generateLabelSymbol( cg);
+         TR::LabelSymbol * cFlowRegionEnd = generateLabelSymbol( cg);
 
          generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionStart);
          cFlowRegionStart->setStartInternalControlFlow();
@@ -3924,8 +3924,8 @@ OMR::Z::TreeEvaluator::ternaryEvaluator(TR::Node *node, TR::CodeGenerator *cg)
          }
       else
          {
-         TR::LabelSymbol * cFlowRegionStart = TR::LabelSymbol::create(cg->trHeapMemory(), cg);
-         TR::LabelSymbol * cFlowRegionEnd = TR::LabelSymbol::create(cg->trHeapMemory(), cg);
+         TR::LabelSymbol * cFlowRegionStart = generateLabelSymbol( cg);
+         TR::LabelSymbol * cFlowRegionEnd = generateLabelSymbol( cg);
 
          generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionStart);
          cFlowRegionStart->setStartInternalControlFlow();

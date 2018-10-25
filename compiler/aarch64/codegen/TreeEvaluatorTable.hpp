@@ -408,8 +408,8 @@
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::MethodExitHookEvaluator ,	// TR::MethodExitHook	// called immediately before returning; frame not yet collapsed; monitor released (if necessary)
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::PassThroughEvaluator ,	// TR::PassThrough	// Dummy node that represents its single child.
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::compressedRefsEvaluator ,	// TR::compressedRefs	// no-op anchor providing optimizable subexpressions used for compression/decompression.  First child is address load/store; second child is heap base displacement
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::BBStartEvaluator ,	// TR::BBStart		// Start of Basic Block
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::BBEndEvaluator ,	// TR::BBEnd		// End of Basic Block
+    TR::TreeEvaluator::BBStartEvaluator, // TR::BBStart		// Start of Basic Block
+    TR::TreeEvaluator::BBEndEvaluator, // TR::BBEnd		// End of Basic Block
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::viremEvaluator ,	// TR::virem		// vector integer remainder
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::viminEvaluator ,	// TR::vimin		// vector integer minimum
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::vimaxEvaluator ,	// TR::vimax		// vector integer maximum

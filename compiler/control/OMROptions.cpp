@@ -788,6 +788,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"forceAOT", "M\tForce compilations to be done in AOT mode",
     SET_OPTION_BIT(TR_ForceAOT), "P", NOT_IN_SUBSET},
    {"forceBCDInit", "O\tForce Binary Coded Decimal (BCD) loads to be initialized by forcing the field to a temporary", SET_OPTION_BIT(TR_ForceBCDInit), "F"},
+   {"forceFieldWatch", "M\tForce JIT to pretend that field watch is activated", SET_OPTION_BIT(TR_EnableFieldWatch), "P", NOT_IN_SUBSET},
    {"forceFullSpeedDebug", "M\tForce JIT to pretend that debug mode is activated",
     SET_OPTION_BIT(TR_FullSpeedDebug), "P", NOT_IN_SUBSET},
    {"forceIEEEDivideByZeroException", "O\tForce IEEE divide by zero exception bit on when performing DFP division", SET_OPTION_BIT(TR_ForceIEEEDivideByZeroException), "F"},

@@ -26,6 +26,7 @@
 #include "codegen/CodeGenerator.hpp"
 #include "codegen/CodeGenerator_inlines.hpp"
 #include "codegen/GCStackMap.hpp"
+#include "codegen/GenerateInstructions.hpp"
 #include "codegen/RegisterConstants.hpp"
 #include "codegen/RegisterIterator.hpp"
 #include "codegen/TreeEvaluator.hpp"
@@ -319,9 +320,16 @@ TR::Instruction *OMR::ARM64::CodeGenerator::generateSwitchToInterpreterPreProlog
 // different from evaluate in that it returns a clobberable register
 TR::Register *OMR::ARM64::CodeGenerator::gprClobberEvaluate(TR::Node *node)
    {
-   TR_ASSERT(false, "Not implemented yet.");
-
-   return NULL;
+   if (node->getReferenceCount() > 1)
+      {
+      TR::Register *targetReg = self()->allocateRegister();
+      generateMovInstruction(self(), node, targetReg, self()->evaluate(node));
+      return targetReg;
+      }
+   else
+      {
+      return self()->evaluate(node);
+      }
    }
 
 

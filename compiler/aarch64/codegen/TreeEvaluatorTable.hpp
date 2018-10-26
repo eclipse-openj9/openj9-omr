@@ -25,12 +25,12 @@
 
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::badILOpEvaluator ,	// TR::badILOp    // illegal op hopefully help with uninitialized nodes
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::aconstEvaluator ,	// TR::aconst		// load address constant (zero value means NULL)
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::iconstEvaluator ,	// TR::iconst		// load integer constant (32-bit signed 2's complement)
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::lconstEvaluator ,	// TR::lconst		// load long integer constant (64-bit signed 2's complement)
+    TR::TreeEvaluator::iconstEvaluator, // TR::iconst		// load integer constant (32-bit signed 2's complement)
+    TR::TreeEvaluator::lconstEvaluator, // TR::lconst		// load long integer constant (64-bit signed 2's complement)
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::fconstEvaluator ,	// TR::fconst		// load float constant (32-bit ieee fp)
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::dconstEvaluator ,	// TR::dconst		// load double constant (64-bit ieee fp)
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::bconstEvaluator ,	// TR::bconst		// load byte integer constant (8-bit signed 2's complement)
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::sconstEvaluator ,	// TR::sconst		// load short integer constant (16-bit signed 2's complement)
+    TR::TreeEvaluator::bconstEvaluator, // TR::bconst		// load byte integer constant (8-bit signed 2's complement)
+    TR::TreeEvaluator::sconstEvaluator, // TR::sconst		// load short integer constant (16-bit signed 2's complement)
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::iloadEvaluator ,	// TR::iload		// load integer
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::floadEvaluator ,	// TR::fload		// load float
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::dloadEvaluator ,	// TR::dload		// load double
@@ -125,7 +125,7 @@
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::bremEvaluator ,	// TR::brem		// remainder of 2 bytes                   (child1 % child2)
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::sremEvaluator ,	// TR::srem		// remainder of 2 short integers          (child1 % child2)
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::iuremEvaluator ,	// TR::iurem		// remainder of 2 unsigned integers       (child1 % child2)
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::inegEvaluator ,	// TR::ineg		// negate an integer
+    TR::TreeEvaluator::inegEvaluator, // TR::ineg		// negate an integer
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::lnegEvaluator ,	// TR::lneg		// negate a long integer
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::fnegEvaluator ,	// TR::fneg		// negate a float
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::dnegEvaluator ,	// TR::dneg		// negate a double
@@ -565,7 +565,7 @@
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::luternaryEvaluator ,	// TR::luternary  
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::buternaryEvaluator ,	// TR::buternary  
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::suternaryEvaluator ,	// TR::suternary  
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::cconstEvaluator ,	// TR::cconst		// load unicode constant (16-bit unsigned)
+    TR::TreeEvaluator::cconstEvaluator, // TR::cconst		// load unicode constant (16-bit unsigned)
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::cloadEvaluator ,	// TR::cload		// load short unsigned integer
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::cloadiEvaluator ,	// TR::cloadi		// load indirect unsigned short integer
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::cstoreEvaluator ,	// TR::cstore		// store unsigned short integer

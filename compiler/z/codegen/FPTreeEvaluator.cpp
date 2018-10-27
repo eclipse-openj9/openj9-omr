@@ -463,8 +463,8 @@ convertToFixed(TR::Node * node, TR::CodeGenerator * cg)
 
       // Java expect that for signed conversion to fixed, if src float is NaN, target to have 0.0.
       //2) NaN test and branch to done
-      TR::LabelSymbol * cFlowRegionStart = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-      TR::LabelSymbol * cFlowRegionEnd = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+      TR::LabelSymbol * cFlowRegionStart = generateLabelSymbol(cg);
+      TR::LabelSymbol * cFlowRegionEnd = generateLabelSymbol(cg);
 
       generateRRInstruction(cg, compareOp, node, srcRegister, srcRegister);
 
@@ -566,8 +566,8 @@ convertFromFixed(TR::Node * node, TR::CodeGenerator * cg)
    generateRRInstruction(cg, convertOpCode, node, targetRegister, srcRegister);
    if (isUint32Src)
       {
-      TR::LabelSymbol * cFlowRegionStart = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-      TR::LabelSymbol * skipAddLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+      TR::LabelSymbol * cFlowRegionStart = generateLabelSymbol(cg);
+      TR::LabelSymbol * skipAddLabel = generateLabelSymbol(cg);
       TR::RegisterDependencyConditions * deps = NULL;
       generateRRInstruction(cg, TR::InstOpCode::LTR, node, srcRegister, srcRegister);
       // If positive or zero, done BNL
@@ -667,7 +667,7 @@ commonLong2FloatEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    generateRRInstruction(cg, convertOp, node, targetReg, gprTemp64);
 
    // For unsigned, we need to fix case where long_max < unsignedSrc <= ulong_max
-   TR::LabelSymbol *cFlowRegionEnd = deps ? TR::LabelSymbol::create(cg->trHeapMemory(),cg) : NULL; // attach all deps to this label at end
+   TR::LabelSymbol *cFlowRegionEnd = deps ? generateLabelSymbol(cg) : NULL; // attach all deps to this label at end
    if (isUnsigned)
       {
       TR::Register *litBase = NULL;
@@ -725,7 +725,7 @@ commonLong2FloatEvaluator(TR::Node * node, TR::CodeGenerator * cg)
       generateRRInstruction(cg, TR::InstOpCode::LTGR, node, gprTemp64, gprTemp64);
       // the fixed to float convertOp only handles signed source operands so if the converted value is negative and the
       // source was an unsigned number then add 2^64 to correct the value
-      TR::LabelSymbol * cFlowRegionStart = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+      TR::LabelSymbol * cFlowRegionStart = generateLabelSymbol(cg);
       cFlowRegionStart->setStartInternalControlFlow();
       generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionStart, deps);
       TR::Instruction *cursor =generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BNL, node, cFlowRegionEnd);
@@ -1060,9 +1060,9 @@ OMR::Z::TreeEvaluator::floatRemHelper(TR::Node * node, TR::CodeGenerator * cg)
    TR::Register * secondRegister = cg->fprClobberEvaluate(node->getSecondChild());
    TR::Register * tempRegister = cg->allocateRegister(TR_FPR);
    TR::Register * targetRegister = cg->allocateRegister(TR_FPR);
-   TR::LabelSymbol * cFlowRegionStart = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-   TR::LabelSymbol * labelNotExact = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-   TR::LabelSymbol * labelOK = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+   TR::LabelSymbol * cFlowRegionStart = generateLabelSymbol(cg);
+   TR::LabelSymbol * labelNotExact = generateLabelSymbol(cg);
+   TR::LabelSymbol * labelOK = generateLabelSymbol(cg);
    TR::ILOpCodes opCode = node->getOpCodeValue();
    //
    // Algorithm: c = a rem b;
@@ -1384,11 +1384,11 @@ OMR::Z::TreeEvaluator::dbits2lEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    TR::Register * targetReg = NULL;
    TR::Register * sourceReg = NULL;
    TR::Instruction * cursor = NULL;
-   TR::LabelSymbol * cFlowRegionStart = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-   TR::LabelSymbol * infinityNumber = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-   TR::LabelSymbol * negativeInfinityNumber = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-   TR::LabelSymbol * positiveInfinityNumber = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-   TR::LabelSymbol * cleansedNumber = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+   TR::LabelSymbol * cFlowRegionStart = generateLabelSymbol(cg);
+   TR::LabelSymbol * infinityNumber = generateLabelSymbol(cg);
+   TR::LabelSymbol * negativeInfinityNumber = generateLabelSymbol(cg);
+   TR::LabelSymbol * positiveInfinityNumber = generateLabelSymbol(cg);
+   TR::LabelSymbol * cleansedNumber = generateLabelSymbol(cg);
    TR::Register * litBase = NULL;
    if (node->getNumChildren() == 2)
       {
@@ -1611,8 +1611,8 @@ l2dHelper64(TR::Node * node, TR::CodeGenerator * cg)
    //if(firstChild->getDataType() == TR_UInt64)
    if (node->getOpCodeValue() == TR::lu2d)
       {
-      TR::LabelSymbol * cFlowRegionStart = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-      TR::LabelSymbol * skipAddLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+      TR::LabelSymbol * cFlowRegionStart = generateLabelSymbol(cg);
+      TR::LabelSymbol * skipAddLabel = generateLabelSymbol(cg);
       TR::RegisterDependencyConditions * deps = generateRegisterDependencyConditions(0, 1, cg);
 
       generateRRInstruction(cg, TR::InstOpCode::LTGR, node, longRegister, longRegister);
@@ -1663,8 +1663,8 @@ l2fHelper64(TR::Node * node, TR::CodeGenerator * cg)
    //if(firstChild->getDataType() == TR_UInt64)
    if (!IntToFloatLogicalConverted && node->getOpCodeValue() == TR::lu2f)
       {
-      TR::LabelSymbol * cFlowRegionStart = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-      TR::LabelSymbol * skipAddLabel = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+      TR::LabelSymbol * cFlowRegionStart = generateLabelSymbol(cg);
+      TR::LabelSymbol * skipAddLabel = generateLabelSymbol(cg);
       TR::RegisterDependencyConditions * deps = generateRegisterDependencyConditions(0, 1, cg);
 
       generateRRInstruction(cg, TR::InstOpCode::LTGR, node, longRegister, longRegister);
@@ -1745,14 +1745,14 @@ f2lHelper(TR::Node * node, TR::CodeGenerator * cg)
    TR::Instruction * cursor;
    TR::Node * firstChild = node->getFirstChild();
 
-   TR::LabelSymbol * cFlowRegionStart = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-   TR::LabelSymbol * label2 = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-   TR::LabelSymbol * label3 = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-   TR::LabelSymbol * label4 = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-   TR::LabelSymbol * label5 = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-   TR::LabelSymbol * label6 = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-   TR::LabelSymbol * label7 = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-   TR::LabelSymbol * label8 = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+   TR::LabelSymbol * cFlowRegionStart = generateLabelSymbol(cg);
+   TR::LabelSymbol * label2 = generateLabelSymbol(cg);
+   TR::LabelSymbol * label3 = generateLabelSymbol(cg);
+   TR::LabelSymbol * label4 = generateLabelSymbol(cg);
+   TR::LabelSymbol * label5 = generateLabelSymbol(cg);
+   TR::LabelSymbol * label6 = generateLabelSymbol(cg);
+   TR::LabelSymbol * label7 = generateLabelSymbol(cg);
+   TR::LabelSymbol * label8 = generateLabelSymbol(cg);
 
    TR::Register * floatRegister = cg->evaluate(firstChild);
    TR::Register * tempFloatRegister = cg->allocateRegister(TR_FPR);
@@ -1908,8 +1908,8 @@ f2lHelper64(TR::Node * node, TR::CodeGenerator * cg)
    TR::Register * floatRegister = cg->evaluate(firstChild);
    TR::Register * targetRegister = cg->allocate64bitRegister();
 
-   TR::LabelSymbol * cFlowRegionStart = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-   TR::LabelSymbol * cFlowRegionEnd = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+   TR::LabelSymbol * cFlowRegionStart = generateLabelSymbol(cg);
+   TR::LabelSymbol * cFlowRegionEnd = generateLabelSymbol(cg);
 
    //Assume Float.NaN
    generateRRInstruction(cg, TR::InstOpCode::XGR, node, targetRegister, targetRegister);
@@ -1975,14 +1975,14 @@ d2lHelper(TR::Node * node, TR::CodeGenerator * cg)
    {
    TR::Node * firstChild = node->getFirstChild();
 
-   TR::LabelSymbol * cFlowRegionStart = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-   TR::LabelSymbol * label2 = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-   TR::LabelSymbol * label3 = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-   TR::LabelSymbol * label4 = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-   TR::LabelSymbol * label5 = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-   TR::LabelSymbol * label6 = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-   TR::LabelSymbol * label7 = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-   TR::LabelSymbol * label8 = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+   TR::LabelSymbol * cFlowRegionStart = generateLabelSymbol(cg);
+   TR::LabelSymbol * label2 = generateLabelSymbol(cg);
+   TR::LabelSymbol * label3 = generateLabelSymbol(cg);
+   TR::LabelSymbol * label4 = generateLabelSymbol(cg);
+   TR::LabelSymbol * label5 = generateLabelSymbol(cg);
+   TR::LabelSymbol * label6 = generateLabelSymbol(cg);
+   TR::LabelSymbol * label7 = generateLabelSymbol(cg);
+   TR::LabelSymbol * label8 = generateLabelSymbol(cg);
 
    TR::Register * floatRegister = cg->evaluate(firstChild);
    TR::Register * tempFloatRegister = cg->allocateRegister(TR_FPR);
@@ -2133,8 +2133,8 @@ d2lHelper64(TR::Node * node, TR::CodeGenerator * cg)
    if (checkNaN)
       {
       generateRRInstruction(cg, TR::InstOpCode::XGR, node, targetRegister, targetRegister);
-      label1 = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
-      cFlowRegionStart = TR::LabelSymbol::create(cg->trHeapMemory(),cg);
+      label1 = generateLabelSymbol(cg);
+      cFlowRegionStart = generateLabelSymbol(cg);
       // if NaN
       generateRXInstruction(cg, TR::InstOpCode::TCDB, node, floatRegister, (uint32_t) 0x00f);
 

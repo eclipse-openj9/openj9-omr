@@ -369,13 +369,34 @@ OMR::X86::CodeGenerator::initialize(TR::Compilation *comp)
    self()->addSupportedLiveRegisterKind(TR_VRF);
    self()->setLiveRegisters(new (self()->trHeapMemory()) TR_LiveRegisters(comp), TR_VRF);
 
-   self()->setSupportsArrayCmp();
-   self()->setSupportsPrimitiveArrayCopy();
-   self()->setSupportsReferenceArrayCopy();
-
-   if (!comp->getOption(TR_DisableArraySetOpts))
+   if (!TR::Compiler->om.canGenerateArraylets())
       {
-      self()->setSupportsArraySet();
+      self()->setSupportsArrayCmp();
+      self()->setSupportsPrimitiveArrayCopy();
+      if (!comp->getOption(TR_DisableArraySetOpts))
+         {
+         self()->setSupportsArraySet();
+         }
+      static bool disableX86TRTO = (bool)feGetEnv("TR_disableX86TRTO");
+      if (!disableX86TRTO)
+         {
+         if (self()->getX86ProcessorInfo().supportsSSE4_1())
+            {
+            self()->setSupportsArrayTranslateTRTO();
+            }
+         }
+      static bool disableX86TROT = (bool)feGetEnv("TR_disableX86TROT");
+      if (!disableX86TROT)
+         {
+         if (self()->getX86ProcessorInfo().supportsSSE4_1())
+            {
+            self()->setSupportsArrayTranslateTROT();
+            }
+         if (self()->getX86ProcessorInfo().supportsSSE2())
+            {
+            self()->setSupportsArrayTranslateTROTNoBreak();
+            }
+         }
       }
 
    self()->setSupportsScaledIndexAddressing();
@@ -420,20 +441,6 @@ OMR::X86::CodeGenerator::initialize(TR::Compilation *comp)
    self()->setLowestCommonCodePatchingAlignmentBoundary(8);
 
    self()->setPicSlotCount(0);
-
-   static bool disableX86TRTO = feGetEnv("TR_disableX86TRTO") != NULL;
-   static bool disableX86TROT = feGetEnv("TR_disableX86TROT") != NULL;
-   if ( comp->cg()->getX86ProcessorInfo().supportsSSE4_1())
-      {
-      if (!disableX86TRTO)
-         self()->setSupportsArrayTranslateTRTO();
-      if (!disableX86TROT)
-         self()->setSupportsArrayTranslateTROT();
-      }
-   if (!disableX86TROT && comp->cg()->getX86ProcessorInfo().supportsSSE2())
-      {
-      self()->setSupportsArrayTranslateTROTNoBreak();
-      }
 
    if (!comp->getOption(TR_DisableRegisterPressureSimulation))
       {

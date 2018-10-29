@@ -2971,6 +2971,8 @@ OMR::Z::MemoryReference::generateBinaryEncoding(uint8_t * cursor, TR::CodeGenera
          // TODO (#2848): We should set this to the actual `longDisplacementMnemonic` format once we unify instruction
          // formats and S390*Instruction formats
          instructionFormat = TR::Instruction::IsRXY;
+
+         TR::DebugCounter::incStaticDebugCounter(comp, TR::DebugCounter::debugCounterName(comp, "z/memref/long-displacement-upgrade/(%s)", comp->signature()));
          }
       else
          {
@@ -3109,6 +3111,9 @@ OMR::Z::MemoryReference::generateBinaryEncoding(uint8_t * cursor, TR::CodeGenera
             instr->setExtDisp2();
          else
             instr->setExtDisp();
+
+         TR::DebugCounter::incStaticDebugCounter(comp, TR::DebugCounter::debugCounterName(comp, "z/memref/huge-displacement-upgrade/(%s)", comp->signature()));
+
          if (comp->getOption(TR_TraceCG))
             traceMsg(comp, "[%p] Long Disp Inst using %s as scratch reg\n", instr, cg->getDebug()->getName(scratchReg));
          }

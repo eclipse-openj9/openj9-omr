@@ -2941,7 +2941,7 @@ OMR::Z::MemoryReference::generateBinaryEncoding(uint8_t * cursor, TR::CodeGenera
    //add project specific relocations for specific instructions
    self()->addInstrSpecificRelocation(cg, instr, displacement, cursor);
 
-   // We may ned up "upgrading" the instruction in case of long displacement, so this variable may change
+   // We may end up "upgrading" the instruction in case of long displacement, so this variable may change
    auto instructionFormat = instr->getKind();
 
    // In most cases we will know at instruction selection that the displacement is large. But it is still possible for

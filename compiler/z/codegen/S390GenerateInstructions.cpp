@@ -793,6 +793,11 @@ generateRXInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::N
 
    if (result == NULL)
       {
+      auto instructionFormat = TR::InstOpCode(op).getInstructionFormat();
+
+      TR_ASSERT_FATAL(instructionFormat == RXa_FORMAT ||
+                      instructionFormat == RXb_FORMAT, "Mnemonic (%s) is incorrectly used as an RX instruction", TR::InstOpCode::metadata[op].name);
+
       result = preced != NULL ?
          new (INSN_HEAP) TR::S390RXInstruction(op, n, treg, mf, preced, cg) :
          new (INSN_HEAP) TR::S390RXInstruction(op, n, treg, mf, cg);
@@ -1089,6 +1094,11 @@ generateRSInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::N
 
    if (result == NULL)
       {
+      auto instructionFormat = TR::InstOpCode(op).getInstructionFormat();
+
+      TR_ASSERT_FATAL(instructionFormat == RSa_FORMAT ||
+                      instructionFormat == RSb_FORMAT, "Mnemonic (%s) is incorrectly used as an RS instruction", TR::InstOpCode::metadata[op].name);
+
       result = preced != NULL ?
          new (INSN_HEAP) TR::S390RSInstruction(op, n, treg, mf, preced, cg) :
          new (INSN_HEAP) TR::S390RSInstruction(op, n, treg, mf, cg);
@@ -1120,6 +1130,11 @@ generateRSInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::N
 
    if (result == NULL)
       {
+      auto instructionFormat = TR::InstOpCode(op).getInstructionFormat();
+
+      TR_ASSERT_FATAL(instructionFormat == RSa_FORMAT ||
+                      instructionFormat == RSb_FORMAT, "Mnemonic (%s) is incorrectly used as an RS instruction", TR::InstOpCode::metadata[op].name);
+
       result = preced != NULL ?
          new (INSN_HEAP) TR::S390RSInstruction(op, n, treg, mask, mf, preced, cg) :
          new (INSN_HEAP) TR::S390RSInstruction(op, n, treg, mask, mf, cg);
@@ -1151,6 +1166,11 @@ generateRSInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::N
 
    if (result == NULL)
       {
+      auto instructionFormat = TR::InstOpCode(op).getInstructionFormat();
+
+      TR_ASSERT_FATAL(instructionFormat == RSa_FORMAT ||
+                      instructionFormat == RSb_FORMAT, "Mnemonic (%s) is incorrectly used as an RS instruction", TR::InstOpCode::metadata[op].name);
+
       result = preced != NULL ?
          new (INSN_HEAP) TR::S390RSInstruction(op, n, treg, sreg, mf, preced, cg) :
          new (INSN_HEAP) TR::S390RSInstruction(op, n, treg, sreg, mf, cg);
@@ -1183,6 +1203,11 @@ generateRSInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::N
 
    if (result == NULL)
       {
+      auto instructionFormat = TR::InstOpCode(op).getInstructionFormat();
+
+      TR_ASSERT_FATAL(instructionFormat == RSa_FORMAT ||
+                      instructionFormat == RSb_FORMAT, "Mnemonic (%s) is incorrectly used as an RS instruction", TR::InstOpCode::metadata[op].name);
+
       result = preced != NULL ?
          new (INSN_HEAP) TR::S390RSInstruction(op, n, freg, lreg, mf, preced, cg) :
          new (INSN_HEAP) TR::S390RSInstruction(op, n, freg, lreg, mf, cg);
@@ -1214,6 +1239,11 @@ generateRSInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::N
 
    if (result == NULL)
       {
+      auto instructionFormat = TR::InstOpCode(op).getInstructionFormat();
+
+      TR_ASSERT_FATAL(instructionFormat == RSa_FORMAT ||
+                      instructionFormat == RSb_FORMAT, "Mnemonic (%s) is incorrectly used as an RS instruction", TR::InstOpCode::metadata[op].name);
+
       result = preced != NULL ?
          new (INSN_HEAP) TR::S390RSInstruction(op, n, regp, mf, preced, cg) :
          new (INSN_HEAP) TR::S390RSInstruction(op, n, regp, mf, cg);
@@ -1808,6 +1838,10 @@ generateSIInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::N
 
    if (result == NULL)
       {
+      auto instructionFormat = TR::InstOpCode(op).getInstructionFormat();
+
+      TR_ASSERT_FATAL(instructionFormat == SI_FORMAT, "Mnemonic (%s) is incorrectly used as an SI instruction", TR::InstOpCode::metadata[op].name);
+
       result = preced != NULL ?
          new (INSN_HEAP) TR::S390SIInstruction(op, n, mf, imm, preced, cg) :
          new (INSN_HEAP) TR::S390SIInstruction(op, n, mf, imm, cg);

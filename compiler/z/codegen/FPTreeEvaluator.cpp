@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -459,7 +459,7 @@ convertToFixed(TR::Node * node, TR::CodeGenerator * cg)
    else  // Signed Target Path
       {
       //1) Reset targetRegister
-      generateRIInstruction(cg, TR::InstOpCode::LA, node, targetRegister, 0);
+      generateRRInstruction(cg, TR::InstOpCode::XGR, node, targetRegister, targetRegister);
 
       // Java expect that for signed conversion to fixed, if src float is NaN, target to have 0.0.
       //2) NaN test and branch to done
@@ -1783,8 +1783,8 @@ f2lHelper(TR::Node * node, TR::CodeGenerator * cg)
    dependencies->addPostCondition(tempFloatRegister, TR::RealRegister::AssignAny);
 
    //Assume result (long)0x0
-   generateRIInstruction(cg, TR::InstOpCode::LA, node, evenRegister, 0);
-   generateRIInstruction(cg, TR::InstOpCode::LA, node, oddRegister, 0);
+   generateRRInstruction(cg, TR::InstOpCode::XR, node, evenRegister, evenRegister);
+   generateRRInstruction(cg, TR::InstOpCode::XR, node, oddRegister, oddRegister);
    // Round FP towards zero
    generateRRFInstruction(cg, TR::InstOpCode::FIEBR, node, tempFloatRegister, floatRegister, (int8_t) 0x5, true);
    generateRXInstruction(cg, TR::InstOpCode::TCEB, node, tempFloatRegister, (uint32_t) 0xccf);
@@ -1814,7 +1814,7 @@ f2lHelper(TR::Node * node, TR::CodeGenerator * cg)
    generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BNL, node, label6);
    //clear exponent bits, odd register will have only fraction
    generateS390ImmOp(cg, TR::InstOpCode::N, node, oddRegister, oddRegister, (int32_t) 0x007fffff, dependencies);
-   generateRIInstruction(cg, TR::InstOpCode::LA, node, tempRegister2, 1);
+   generateRIInstruction(cg, TR::InstOpCode::LHI, node, tempRegister2, 1);
    generateRSInstruction(cg, TR::InstOpCode::SLL, node, tempRegister2, 23);
    //tempRegister = 0x00800000
    generateRRInstruction(cg, TR::InstOpCode::OR, node, oddRegister, tempRegister2);
@@ -1869,7 +1869,7 @@ f2lHelper(TR::Node * node, TR::CodeGenerator * cg)
    //LABEL6
    generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, label6);
 
-   generateRIInstruction(cg, TR::InstOpCode::LA, node, oddRegister, 1);
+   generateRIInstruction(cg, TR::InstOpCode::LHI, node, oddRegister, 1);
    generateRSInstruction(cg, TR::InstOpCode::SLDL, node, targetRegisterPair, 63);
    TR::MemoryReference * evenMRcopy3 = generateS390MemoryReference(*evenMR, 0, cg); // prevent duplicate use of memory reference
    generateSIInstruction(cg, TR::InstOpCode::TM, node, evenMRcopy3, (uint32_t) 0x00000080);
@@ -2013,8 +2013,8 @@ d2lHelper(TR::Node * node, TR::CodeGenerator * cg)
    dependencies->addPostCondition(tempFloatRegister, TR::RealRegister::AssignAny);
 
    //Assume result (long)0x0
-   generateRIInstruction(cg, TR::InstOpCode::LA, node, evenRegister, 0);
-   generateRIInstruction(cg, TR::InstOpCode::LA, node, oddRegister, 0);
+   generateRRInstruction(cg, TR::InstOpCode::XR, node, evenRegister, evenRegister);
+   generateRRInstruction(cg, TR::InstOpCode::XR, node, oddRegister, oddRegister);
    // Round double towards zero
    generateRRFInstruction(cg, TR::InstOpCode::FIDBR, node, tempFloatRegister, floatRegister, (int8_t) 0x5, true);
    generateRXInstruction(cg, TR::InstOpCode::TCDB, node, tempFloatRegister, (uint32_t) 0xccf);
@@ -2045,7 +2045,7 @@ d2lHelper(TR::Node * node, TR::CodeGenerator * cg)
    //clear exponent bits, evenRegister will have only fraction
 
    generateS390ImmOp(cg, TR::InstOpCode::N, node, evenRegister, evenRegister, (int32_t) 0x000fffff, dependencies);
-   generateRIInstruction(cg, TR::InstOpCode::LA, node, tempRegister2, 1);
+   generateRIInstruction(cg, TR::InstOpCode::LHI, node, tempRegister2, 1);
    generateRSInstruction(cg, TR::InstOpCode::SLL, node, tempRegister2, 20);
    generateRRInstruction(cg, TR::InstOpCode::OR, node, evenRegister, tempRegister2);
    // 20th bit of evenRegister is made 1
@@ -2087,7 +2087,7 @@ d2lHelper(TR::Node * node, TR::CodeGenerator * cg)
    generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BRC, node, label7);
    //LABEL6
    generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, label6);
-   generateRIInstruction(cg, TR::InstOpCode::LA, node, oddRegister, 1);
+   generateRIInstruction(cg, TR::InstOpCode::LHI, node, oddRegister, 1);
    generateRSInstruction(cg, TR::InstOpCode::SLDL, node, targetRegisterPair, 63);
    TR::MemoryReference * tempMR1copy2 = generateS390MemoryReference(*tempMR1, 0, cg);
    generateSIInstruction(cg, TR::InstOpCode::TM, node, tempMR1copy2, (uint32_t) 0x00000080);

@@ -55,7 +55,8 @@ TR::ARM64SystemLinkage::ARM64SystemLinkage(TR::CodeGenerator *cg)
 
    _properties._registerFlags[TR::RealRegister::x29]   = ARM64_Reserved; // FP
    _properties._registerFlags[TR::RealRegister::x30]   = ARM64_Reserved; // LR
-   _properties._registerFlags[TR::RealRegister::xzr]   = ARM64_Reserved; // zero or SP
+   _properties._registerFlags[TR::RealRegister::sp]    = ARM64_Reserved;
+   _properties._registerFlags[TR::RealRegister::xzr]   = ARM64_Reserved;
 
    _properties._registerFlags[TR::RealRegister::v0]    = FloatArgument|FloatReturn;
    _properties._registerFlags[TR::RealRegister::v1]    = FloatArgument;
@@ -142,7 +143,11 @@ TR::ARM64SystemLinkage::initARM64RealRegisterLinkage()
    reg->setState(TR::RealRegister::Locked);
    reg->setAssignedRegister(reg);
 
-   reg = machine->getARM64RealRegister(TR::RealRegister::RegNum::xzr); // zero or SP
+   reg = machine->getARM64RealRegister(TR::RealRegister::RegNum::sp); // SP
+   reg->setState(TR::RealRegister::Locked);
+   reg->setAssignedRegister(reg);
+
+   reg = machine->getARM64RealRegister(TR::RealRegister::RegNum::xzr); // zero
    reg->setState(TR::RealRegister::Locked);
    reg->setAssignedRegister(reg);
 

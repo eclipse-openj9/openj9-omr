@@ -350,6 +350,14 @@ TR::Instruction * generateRXInstruction(
                    TR::MemoryReference *mf,
                    TR::Instruction         *preced = 0);
 
+TR::Instruction * generateRXInstruction(
+                   TR::CodeGenerator* cg, 
+                   TR::InstOpCode::Mnemonic op, 
+                   TR::Node* n, 
+                   uint8_t mask, 
+                   TR::MemoryReference* mf, 
+                   TR::Instruction* preced);
+
 TR::Instruction * generateRXEInstruction(
                    TR::CodeGenerator       *cg,
                    TR::InstOpCode::Mnemonic         op,

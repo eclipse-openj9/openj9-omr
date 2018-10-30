@@ -733,7 +733,7 @@ TR::Instruction *
 generateRXInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register * treg, TR::MemoryReference * mf,
                       TR::Instruction * preced)
    {
-   TR::Compilation *comp = cg->comp();
+   TR::Compilation* comp = cg->comp();
 
    TR_ASSERT(treg->getRealRegister()!=NULL || // Not in RA
            op != TR::InstOpCode::L || !n->isExtendedTo64BitAtSource(), "Generating an TR::InstOpCode::L, when LLGF|LGF should be used");
@@ -743,41 +743,54 @@ generateRXInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::N
       switch(op)
          {
          case TR::InstOpCode::C:
-            return generateRXYInstruction(cg, TR::InstOpCode::CHF, n, treg, mf, preced);
+            op = TR::InstOpCode::CHF;
             break;
          case TR::InstOpCode::CL:
-            return generateRXYInstruction(cg, TR::InstOpCode::CLHF, n, treg, mf, preced);
-            break;
-         case TR::InstOpCode::ST:
-            return generateRXYInstruction(cg, TR::InstOpCode::STFH, n, treg, mf, preced);
-            break;
-         case TR::InstOpCode::STC:
-            return generateRXYInstruction(cg, TR::InstOpCode::STCH, n, treg, mf, preced);
-            break;
-         case TR::InstOpCode::STH:
-            return generateRXYInstruction(cg, TR::InstOpCode::STHH, n, treg, mf, preced);
+            op = TR::InstOpCode::CLHF;
             break;
          case TR::InstOpCode::L:
-            return generateRXYInstruction(cg, TR::InstOpCode::LFH, n, treg, mf, preced);
+            op = TR::InstOpCode::LFH;
             break;
          case TR::InstOpCode::LB:
-            return generateRXYInstruction(cg, TR::InstOpCode::LBH, n, treg, mf, preced);
+            op = TR::InstOpCode::LBH;
             break;
          case TR::InstOpCode::LH:
-            return generateRXYInstruction(cg, TR::InstOpCode::LHH, n, treg, mf, preced);
+            op = TR::InstOpCode::LHH;
+            break;
+         case TR::InstOpCode::LHY:
+            op = TR::InstOpCode::LHH;
             break;
          case TR::InstOpCode::LLC:
-            return generateRXYInstruction(cg, TR::InstOpCode::LLCH, n, treg, mf, preced);
+            op = TR::InstOpCode::LLCH;
             break;
          case TR::InstOpCode::LLH:
-            return generateRXYInstruction(cg, TR::InstOpCode::LLHH, n, treg, mf, preced);
+            op = TR::InstOpCode::LLHH;
+            break;
+         case TR::InstOpCode::LY:
+            op = TR::InstOpCode::LFH;
+            break;
+         case TR::InstOpCode::ST:
+            op = TR::InstOpCode::STFH;
+            break;
+         case TR::InstOpCode::STC:
+            op = TR::InstOpCode::STCH;
+            break;
+         case TR::InstOpCode::STCY:
+            op = TR::InstOpCode::STCH;
+            break;
+         case TR::InstOpCode::STH:
+            op = TR::InstOpCode::STHH;
+            break;
+         case TR::InstOpCode::STHY:
+            op = TR::InstOpCode::STHH;
+            break;
+         case TR::InstOpCode::STY:
+            op = TR::InstOpCode::STFH;
             break;
          default:
             break;
          }
       }
-
-   TR::Instruction* result = NULL;
 
    int32_t displacement = mf->getOffset();
 
@@ -787,28 +800,73 @@ generateRXInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::N
 
       if (longDisplacementMnemonic != TR::InstOpCode::BAD)
          {
-         result = generateRXYInstruction(cg, longDisplacementMnemonic, n, treg, mf, preced);
+         op = longDisplacementMnemonic;
          }
       }
 
-   if (result == NULL)
+   TR::Instruction* result = NULL;
+
+   auto instructionFormat = TR::InstOpCode(op).getInstructionFormat();
+
+   if (instructionFormat == RXa_FORMAT)
       {
-      auto instructionFormat = TR::InstOpCode(op).getInstructionFormat();
-
-      TR_ASSERT_FATAL(instructionFormat == RXa_FORMAT ||
-                      instructionFormat == RXb_FORMAT, "Mnemonic (%s) is incorrectly used as an RX instruction", TR::InstOpCode::metadata[op].name);
-
       result = preced != NULL ?
          new (INSN_HEAP) TR::S390RXInstruction(op, n, treg, mf, preced, cg) :
          new (INSN_HEAP) TR::S390RXInstruction(op, n, treg, mf, cg);
       }
+   else
+      {
+      TR_ASSERT_FATAL(instructionFormat == RXYa_FORMAT, "Mnemonic (%s) is incorrectly used as an RXY instruction", TR::InstOpCode::metadata[op].name);
+
+      result = preced != NULL ?
+         new (INSN_HEAP) TR::S390RXYInstruction(op, n, treg, mf, preced, cg) :
+         new (INSN_HEAP) TR::S390RXYInstruction(op, n, treg, mf, cg);
+      }
 
 #ifdef J9_PROJECT_SPECIFIC
-   if (op == TR::InstOpCode::CVB || op == TR::InstOpCode::EX)
+   if (op == TR::InstOpCode::CVB || op == TR::InstOpCode::CVBY || op == TR::InstOpCode::CVBG || op == TR::InstOpCode::EX)
       {
-      generateS390DAAExceptionRestoreSnippet(cg, n, result, op, true);
+      // NOP padding needed only for RX instructions which are CVB and EX
+      const bool isNOPNeeded = op == TR::InstOpCode::CVB || op == TR::InstOpCode::EX;
+
+      generateS390DAAExceptionRestoreSnippet(cg, n, result, op, isNOPNeeded);
       }
 #endif
+
+   return result;
+   }
+
+TR::Instruction*
+generateRXInstruction(TR::CodeGenerator* cg, TR::InstOpCode::Mnemonic op, TR::Node* n, uint8_t mask, TR::MemoryReference* mf, TR::Instruction* preced)
+   {
+   int32_t displacement = mf->getOffset();
+
+   if (!mf->hasTemporaryNegativeOffset() && ((displacement > MINLONGDISP && displacement < MINDISP) || (displacement >= MAXDISP && displacement < MAXLONGDISP)))
+      {
+      auto longDisplacementMnemonic = TR::Instruction::opCodeCanBeAdjustedTo(op);
+
+      if (longDisplacementMnemonic != TR::InstOpCode::BAD)
+         {
+         op = longDisplacementMnemonic;
+         }
+      }
+
+   TR::Instruction* result = NULL;
+
+   auto instructionFormat = TR::InstOpCode(op).getInstructionFormat();
+
+   if (instructionFormat == RXb_FORMAT)
+      {
+      TR_ASSERT_FATAL(false, "RX-b format instructions for mnemonic (%s) are currently not implemented", TR::InstOpCode::metadata[op].name);
+      }
+   else
+      {
+      TR_ASSERT_FATAL(instructionFormat == RXYb_FORMAT, "Mnemonic (%s) is incorrectly used as an RXY instruction", TR::InstOpCode::metadata[op].name);
+
+      result = preced != NULL ?
+         new (INSN_HEAP) TR::S390RXYbInstruction(op, n, mask, mf, preced, cg) :
+         new (INSN_HEAP) TR::S390RXYbInstruction(op, n, mask, mf, cg);
+      }
 
    return result;
    }
@@ -830,87 +888,20 @@ TR::Instruction *
 generateRXYInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::Node * n, TR::RegisterPair * regp, TR::MemoryReference * mf,
                        TR::Instruction * preced)
    {
-   TR::Instruction *instr;
-   if (preced)
-      instr = new (INSN_HEAP) TR::S390RXYInstruction(op, n, regp, mf, preced, cg);
-   else
-      instr = new (INSN_HEAP) TR::S390RXYInstruction(op, n, regp, mf, cg);
-
-#ifdef J9_PROJECT_SPECIFIC
-   if (op == TR::InstOpCode::CVBY || op == TR::InstOpCode::CVBG)
-      {
-      generateS390DAAExceptionRestoreSnippet(cg, n, instr, op, false);
-      }
-#endif
-
-   return instr;
+   return generateRXInstruction(cg, op, n, regp, mf, preced);
    }
 
 TR::Instruction *
 generateRXYInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register * treg, TR::MemoryReference * mf,
                        TR::Instruction * preced)
    {
-   TR::Compilation *comp = cg->comp();
-
-   if (cg->supportsHighWordFacility() && comp->getOption(TR_DisableHighWordRA) && treg->assignToHPR())
-      {
-      TR::Instruction * instr = 0;
-
-      switch(op)
-         {
-         case TR::InstOpCode::STY:
-            instr = generateRXYInstruction(cg, TR::InstOpCode::STFH, n, treg, mf, preced);
-            break;
-         case TR::InstOpCode::STCY:
-            instr = generateRXYInstruction(cg, TR::InstOpCode::STCH, n, treg, mf, preced);
-            break;
-         case TR::InstOpCode::STHY:
-            instr = generateRXYInstruction(cg, TR::InstOpCode::STHH, n, treg, mf, preced);
-            break;
-         case TR::InstOpCode::LY:
-            instr = generateRXYInstruction(cg, TR::InstOpCode::LFH, n, treg, mf, preced);
-            break;
-         case TR::InstOpCode::LHY:
-            instr = generateRXYInstruction(cg, TR::InstOpCode::LHH, n, treg, mf, preced);
-            break;
-         default:
-            break;
-         }
-
-      if( instr )
-         {
-         return instr;
-         }
-      }
-
-   TR::Instruction *instr;
-   if (preced)
-      instr = new (INSN_HEAP) TR::S390RXYInstruction(op, n, treg, mf, preced, cg);
-   else
-      instr = new (INSN_HEAP) TR::S390RXYInstruction(op, n, treg, mf, cg);
-
-#ifdef J9_PROJECT_SPECIFIC
-   if (op == TR::InstOpCode::CVBY || op == TR::InstOpCode::CVBG)
-      {
-      generateS390DAAExceptionRestoreSnippet(cg, n, instr, op, false);
-      }
-#endif
-
-   return instr;
+   return generateRXInstruction(cg, op, n, treg, mf, preced);
    }
 
 TR::Instruction *
 generateRXYbInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::Node * n, uint8_t mask, TR::MemoryReference * mf,  TR::Instruction * preced)
    {
-   TR::Compilation *comp = cg->comp();
-
-   TR::Instruction *instr;
-   if (preced)
-      instr = new (INSN_HEAP) TR::S390RXYbInstruction(op, n, mask, mf, preced, cg);
-   else
-      instr = new (INSN_HEAP) TR::S390RXYbInstruction(op, n, mask, mf, cg);
-
-   return instr;
+   return generateRXInstruction(cg, op, n, mask, mf, preced);
    }
 
 TR::Instruction *

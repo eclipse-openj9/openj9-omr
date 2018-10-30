@@ -90,6 +90,8 @@ static const char *opCodeToNameMap[] =
    "br",
    "blr",
    "ret",
+   "b",
+   "bl",
    "stxrb",
    "stlxrb",
    "ldxrb",

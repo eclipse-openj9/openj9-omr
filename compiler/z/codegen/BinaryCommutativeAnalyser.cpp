@@ -532,7 +532,18 @@ TR_S390BinaryCommutativeAnalyser::genericAnalyser(TR::Node * root, TR::InstOpCod
          tempMR->addToOffset(4);
          tempMR->setDispAdjusted();
          }
-      generateRXInstruction(cg(), memToRegOpCode, root, nodeReg, tempMR);
+
+      auto instructionFormat = TR::InstOpCode(memToRegOpCode).getInstructionFormat();
+
+      if (instructionFormat == RXE_FORMAT)
+         {
+         generateRXEInstruction(cg(), memToRegOpCode, root, nodeReg, tempMR, 0);
+         }
+      else
+         {
+         generateRXInstruction(cg(), memToRegOpCode, root, nodeReg, tempMR);
+         }
+
       tempMR->stopUsingMemRefRegister(cg());
       }
    else // OpReg2Mem1
@@ -572,8 +583,18 @@ TR_S390BinaryCommutativeAnalyser::genericAnalyser(TR::Node * root, TR::InstOpCod
          tempMR->addToOffset(4);
          tempMR->setDispAdjusted();
          }
+      
+      auto instructionFormat = TR::InstOpCode(memToRegOpCode).getInstructionFormat();
 
-      generateRXInstruction(cg(), memToRegOpCode, root, nodeReg, tempMR);
+      if (instructionFormat == RXE_FORMAT)
+         {
+         generateRXEInstruction(cg(), memToRegOpCode, root, nodeReg, tempMR, 0);
+         }
+      else
+         {
+         generateRXInstruction(cg(), memToRegOpCode, root, nodeReg, tempMR);
+         }
+
       if (!tempMR->getPseudoLive())
          {
          tempMR->stopUsingMemRefRegister(cg());

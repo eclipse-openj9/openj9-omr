@@ -3463,8 +3463,6 @@ int32_t childTypes[] =
 
    TR::PackedDecimal | (TR::Int32<<16),                      // TR::pdshrSetSign
    TR::PackedDecimal | (TR::Int32<<16),                      // TR::pdshlSetSign
-   TR::PackedDecimal | (TR::Int32<<16),                      // TR::pdshrPreserveSign
-   TR::PackedDecimal | (TR::Int32<<16),                      // TR::pdshlPreserveSign
    TR::PackedDecimal | (TR::Int32<<16),                      // TR::pdshlOverflow
    TR::PackedDecimal,                                        // TR::pdchk
 
@@ -3489,20 +3487,12 @@ int32_t childTypes[] =
    TR::PackedDecimal,                                        // TR::pdcmpge
    TR::PackedDecimal,                                        // TR::pdcmpgt
    TR::PackedDecimal,                                        // TR::pdcmple
-
-   TR::PackedDecimal,                                        // TR::pdcheck
-   TR::PackedDecimal,                                        // TR::pdfix
-
    TR::PackedDecimal,                                        // TR::pdclean
-   TR::PackedDecimal,                                        // TR::pdexp
-   TR::PackedDecimal,                                        // TR::pduexp
 
    TR::PackedDecimal,                                        // TR::pdclear
    TR::PackedDecimal,                                        // TR::pdclearSetSign
 
    TR::PackedDecimal | (TR::Int32<<16),                      // TR::pdSetSign
-
-   TR::PackedDecimal,                                        // TR::pddivrem
 
    TR::PackedDecimal,                                        // TR::pdModifyPrecision
 

@@ -6308,11 +6308,7 @@ bool OMR::Z::CodeGenerator::nodeMayCauseException(TR::Node *node)
 #endif
       {
       TR::ILOpCode& opcode = node->getOpCode();
-      return opcode.isDiv() || opcode.isExponentiation() || opcode.isRem()
-#ifdef J9_PROJECT_SPECIFIC
-         || opcode.getOpCodeValue() == TR::pddivrem
-#endif
-         ;
+      return opcode.isDiv() || opcode.isExponentiation() || opcode.isRem();
       }
    }
 
@@ -6891,9 +6887,6 @@ bool OMR::Z::CodeGenerator::reliesOnAParticularSignEncoding(TR::Node *node)
       return false;
 
    if (op.isAnyBCDArithmetic())
-      return false;
-
-   if (op.getOpCodeValue() == TR::pddivrem)
       return false;
 
    if (op.isSimpleBCDClean())

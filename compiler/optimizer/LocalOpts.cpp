@@ -8383,9 +8383,6 @@ TR_TrivialDeadTreeRemoval::preProcessTreetop(TR::TreeTop *treeTop, List<TR::Tree
       if (firstChild->getReferenceCount() == 1)
          {
          if (!firstChild->getOpCode().hasSymbolReference() &&
-#ifdef J9_PROJECT_SPECIFIC
-             !firstChild->getOpCode().isPackedExponentiation() && // pdexp has a possible message side effect in truncating or no significant digits left cases
-#endif
              performTransformation(comp, "%sUnlink trivial %s (%p) of %s (%p) with refCount==1\n",
                 optDetails, treeTop->getNode()->getOpCode().getName(),treeTop->getNode(),firstChild->getOpCode().getName(),firstChild))
             {

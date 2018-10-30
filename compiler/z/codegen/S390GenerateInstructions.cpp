@@ -1780,8 +1780,6 @@ generateSIInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::N
    // SI and SIY instructions do not have an index register
    preced = mf->separateIndexRegister(n, cg, false, preced);
 
-   TR::Instruction* result = NULL;
-
    int32_t displacement = mf->getOffset();
 
    if (!mf->hasTemporaryNegativeOffset() && ((displacement > MINLONGDISP && displacement < MINDISP) || (displacement >= MAXDISP && displacement < MAXLONGDISP)))
@@ -1790,19 +1788,27 @@ generateSIInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::N
 
       if (longDisplacementMnemonic != TR::InstOpCode::BAD)
          {
-         result = generateSIYInstruction(cg, longDisplacementMnemonic, n, mf, imm, preced);
+         op = longDisplacementMnemonic;
          }
       }
 
-   if (result == NULL)
+   TR::Instruction* result = NULL;
+   
+   auto instructionFormat = TR::InstOpCode(op).getInstructionFormat();
+
+   if (instructionFormat == SI_FORMAT)
       {
-      auto instructionFormat = TR::InstOpCode(op).getInstructionFormat();
-
-      TR_ASSERT_FATAL(instructionFormat == SI_FORMAT, "Mnemonic (%s) is incorrectly used as an SI instruction", TR::InstOpCode::metadata[op].name);
-
       result = preced != NULL ?
          new (INSN_HEAP) TR::S390SIInstruction(op, n, mf, imm, preced, cg) :
          new (INSN_HEAP) TR::S390SIInstruction(op, n, mf, imm, cg);
+      }
+   else
+      {
+      TR_ASSERT_FATAL(instructionFormat == SIY_FORMAT, "Mnemonic (%s) is incorrectly used as an SIY instruction", TR::InstOpCode::metadata[op].name);
+
+      result = preced != NULL ?
+         new (INSN_HEAP) TR::S390SIYInstruction(op, n, mf, imm, preced, cg) :
+         new (INSN_HEAP) TR::S390SIYInstruction(op, n, mf, imm, cg);
       }
 
    return result;
@@ -1812,15 +1818,7 @@ TR::Instruction *
 generateSIYInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::Node * n, TR::MemoryReference * mf, uint32_t imm,
                        TR::Instruction * preced)
    {
-   if (mf) preced = mf->separateIndexRegister(n, cg, false, preced); // enforce4KDisplacementLimit=false
-
-   TR::Instruction *instr;
-   if (preced)
-      instr = new (INSN_HEAP) TR::S390SIYInstruction(op, n, mf, imm, preced, cg);
-   else
-      instr = new (INSN_HEAP) TR::S390SIYInstruction(op, n, mf, imm, cg);
-
-   return instr;
+   return generateSIInstruction(cg, op, n, mf, imm, preced);
    }
 
 TR::Instruction *

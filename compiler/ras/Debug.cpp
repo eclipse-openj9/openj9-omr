@@ -3912,6 +3912,14 @@ TR_Debug::getRuntimeHelperName(int32_t index)
          case TR_stackOverflow:             return "jitStackOverflow";
          case TR_reportMethodEnter:         return "jitReportMethodEnter";
          case TR_reportStaticMethodEnter:   return "jitReportStaticMethodEnter";
+         case TR_jitReportInstanceFieldRead: return "jitReportInstanceFieldRead";
+         case TR_jitReportStaticFieldRead:  return "jitReportStaticFieldRead";
+         case TR_jitReportInstanceFieldWrite:  return "jitReportInstanceFieldWrite";
+         case TR_jitReportStaticFieldWrite:  return "jitReportStaticFieldWrite";
+         case TR_jitResolveFieldDirect:      return "jitResolveFieldDirect";
+         case TR_jitResolveFieldSetterDirect: return "jitResolveFieldSetterDirect";
+         case TR_jitResolveStaticFieldDirect: return "jitResolveStaticFieldDirect";
+         case TR_jitResolveStaticFieldSetterDirect:  return "jitResolveStaticFieldSetterDirect";
          case TR_reportMethodExit:          return "jitReportMethodExit";
          case TR_acquireVMAccess:           return "jitAcquireVMAccess";
          case TR_jitCheckIfFinalizeObject:  return "jitCheckIfFinalizeObject";

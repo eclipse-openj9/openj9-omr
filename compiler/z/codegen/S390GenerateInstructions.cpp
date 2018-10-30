@@ -1069,8 +1069,6 @@ generateRSInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::N
    // RS and RSY instructions do not have an index register
    preced = mf->separateIndexRegister(n, cg, false, preced);
 
-   TR::Instruction* result = NULL;
-
    int32_t displacement = mf->getOffset();
 
    if (!mf->hasTemporaryNegativeOffset() && ((displacement > MINLONGDISP && displacement < MINDISP) || (displacement >= MAXDISP && displacement < MAXLONGDISP)))
@@ -1079,20 +1077,27 @@ generateRSInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::N
 
       if (longDisplacementMnemonic != TR::InstOpCode::BAD)
          {
-         result = generateRSYInstruction(cg, longDisplacementMnemonic, n, treg, static_cast<uint32_t>(0), mf, preced);
+         op = longDisplacementMnemonic;
          }
       }
 
-   if (result == NULL)
+   TR::Instruction* result = NULL;
+
+   auto instructionFormat = TR::InstOpCode(op).getInstructionFormat();
+
+   if (instructionFormat == RSa_FORMAT)
       {
-      auto instructionFormat = TR::InstOpCode(op).getInstructionFormat();
-
-      TR_ASSERT_FATAL(instructionFormat == RSa_FORMAT ||
-                      instructionFormat == RSb_FORMAT, "Mnemonic (%s) is incorrectly used as an RS instruction", TR::InstOpCode::metadata[op].name);
-
       result = preced != NULL ?
          new (INSN_HEAP) TR::S390RSInstruction(op, n, treg, mf, preced, cg) :
          new (INSN_HEAP) TR::S390RSInstruction(op, n, treg, mf, cg);
+      }
+   else
+      {
+      TR_ASSERT_FATAL(instructionFormat == RSYa_FORMAT, "Mnemonic (%s) is incorrectly used as an RSY instruction", TR::InstOpCode::metadata[op].name);
+
+      result = preced != NULL ?
+         new (INSN_HEAP) TR::S390RSYInstruction(op, n, treg, static_cast<uint32_t>(0), mf, preced, cg) :
+         new (INSN_HEAP) TR::S390RSYInstruction(op, n, treg, static_cast<uint32_t>(0), mf, cg);
       }
 
    return result;
@@ -1105,8 +1110,6 @@ generateRSInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::N
    // RS and RSY instructions do not have an index register
    preced = mf->separateIndexRegister(n, cg, false, preced);
 
-   TR::Instruction* result = NULL;
-
    int32_t displacement = mf->getOffset();
 
    if (!mf->hasTemporaryNegativeOffset() && ((displacement > MINLONGDISP && displacement < MINDISP) || (displacement >= MAXDISP && displacement < MAXLONGDISP)))
@@ -1115,20 +1118,27 @@ generateRSInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::N
 
       if (longDisplacementMnemonic != TR::InstOpCode::BAD)
          {
-         result = generateRSYInstruction(cg, longDisplacementMnemonic, n, treg, mask, mf, preced);
+         op = longDisplacementMnemonic;
          }
       }
 
-   if (result == NULL)
+   TR::Instruction* result = NULL;
+
+   auto instructionFormat = TR::InstOpCode(op).getInstructionFormat();
+
+   if (instructionFormat == RSb_FORMAT)
       {
-      auto instructionFormat = TR::InstOpCode(op).getInstructionFormat();
-
-      TR_ASSERT_FATAL(instructionFormat == RSa_FORMAT ||
-                      instructionFormat == RSb_FORMAT, "Mnemonic (%s) is incorrectly used as an RS instruction", TR::InstOpCode::metadata[op].name);
-
       result = preced != NULL ?
          new (INSN_HEAP) TR::S390RSInstruction(op, n, treg, mask, mf, preced, cg) :
          new (INSN_HEAP) TR::S390RSInstruction(op, n, treg, mask, mf, cg);
+      }
+   else
+      {
+      TR_ASSERT_FATAL(instructionFormat == RSYb_FORMAT, "Mnemonic (%s) is incorrectly used as an RSY instruction", TR::InstOpCode::metadata[op].name);
+
+      result = preced != NULL ?
+         new (INSN_HEAP) TR::S390RSYInstruction(op, n, treg, mask, mf, preced, cg) :
+         new (INSN_HEAP) TR::S390RSYInstruction(op, n, treg, mask, mf, cg);
       }
 
    return result;
@@ -1141,8 +1151,6 @@ generateRSInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::N
    // RS and RSY instructions do not have an index register
    preced = mf->separateIndexRegister(n, cg, false, preced);
 
-   TR::Instruction* result = NULL;
-
    int32_t displacement = mf->getOffset();
 
    if (!mf->hasTemporaryNegativeOffset() && ((displacement > MINLONGDISP && displacement < MINDISP) || (displacement >= MAXDISP && displacement < MAXLONGDISP)))
@@ -1151,20 +1159,27 @@ generateRSInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::N
 
       if (longDisplacementMnemonic != TR::InstOpCode::BAD)
          {
-         result = generateRSYInstruction(cg, longDisplacementMnemonic, n, treg, sreg, mf, preced);
+         op = longDisplacementMnemonic;
          }
       }
 
-   if (result == NULL)
+   TR::Instruction* result = NULL;
+
+   auto instructionFormat = TR::InstOpCode(op).getInstructionFormat();
+
+   if (instructionFormat == RSa_FORMAT)
       {
-      auto instructionFormat = TR::InstOpCode(op).getInstructionFormat();
-
-      TR_ASSERT_FATAL(instructionFormat == RSa_FORMAT ||
-                      instructionFormat == RSb_FORMAT, "Mnemonic (%s) is incorrectly used as an RS instruction", TR::InstOpCode::metadata[op].name);
-
       result = preced != NULL ?
          new (INSN_HEAP) TR::S390RSInstruction(op, n, treg, sreg, mf, preced, cg) :
          new (INSN_HEAP) TR::S390RSInstruction(op, n, treg, sreg, mf, cg);
+      }
+   else
+      {
+      TR_ASSERT_FATAL(instructionFormat == RSYa_FORMAT, "Mnemonic (%s) is incorrectly used as an RSY instruction", TR::InstOpCode::metadata[op].name);
+
+      result = preced != NULL ?
+         new (INSN_HEAP) TR::S390RSYInstruction(op, n, treg, sreg, mf, preced, cg) :
+         new (INSN_HEAP) TR::S390RSYInstruction(op, n, treg, sreg, mf, cg);
       }
 
    return result;
@@ -1178,8 +1193,6 @@ generateRSInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::N
    // RS and RSY instructions do not have an index register
    preced = mf->separateIndexRegister(n, cg, false, preced);
 
-   TR::Instruction* result = NULL;
-
    int32_t displacement = mf->getOffset();
 
    if (!mf->hasTemporaryNegativeOffset() && ((displacement > MINLONGDISP && displacement < MINDISP) || (displacement >= MAXDISP && displacement < MAXLONGDISP)))
@@ -1188,20 +1201,27 @@ generateRSInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::N
 
       if (longDisplacementMnemonic != TR::InstOpCode::BAD)
          {
-         result = generateRSYInstruction(cg, longDisplacementMnemonic, n, freg, lreg, mf, preced);
+         op = longDisplacementMnemonic;
          }
       }
 
-   if (result == NULL)
+   TR::Instruction* result = NULL;
+
+   auto instructionFormat = TR::InstOpCode(op).getInstructionFormat();
+
+   if (instructionFormat == RSa_FORMAT)
       {
-      auto instructionFormat = TR::InstOpCode(op).getInstructionFormat();
-
-      TR_ASSERT_FATAL(instructionFormat == RSa_FORMAT ||
-                      instructionFormat == RSb_FORMAT, "Mnemonic (%s) is incorrectly used as an RS instruction", TR::InstOpCode::metadata[op].name);
-
       result = preced != NULL ?
          new (INSN_HEAP) TR::S390RSInstruction(op, n, freg, lreg, mf, preced, cg) :
          new (INSN_HEAP) TR::S390RSInstruction(op, n, freg, lreg, mf, cg);
+      }
+   else
+      {
+      TR_ASSERT_FATAL(instructionFormat == RSYa_FORMAT, "Mnemonic (%s) is incorrectly used as an RSY instruction", TR::InstOpCode::metadata[op].name);
+
+      result = preced != NULL ?
+         new (INSN_HEAP) TR::S390RSYInstruction(op, n, freg, lreg, mf, preced, cg) :
+         new (INSN_HEAP) TR::S390RSYInstruction(op, n, freg, lreg, mf, cg);
       }
 
    return result;
@@ -1211,36 +1231,7 @@ TR::Instruction *
 generateRSInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::Node * n, TR::RegisterPair * regp, TR::MemoryReference * mf,
                       TR::Instruction * preced)
    {
-      // RS and RSY instructions do not have an index register
-   preced = mf->separateIndexRegister(n, cg, false, preced);
-
-   TR::Instruction* result = NULL;
-
-   int32_t displacement = mf->getOffset();
-
-   if (!mf->hasTemporaryNegativeOffset() && ((displacement > MINLONGDISP && displacement < MINDISP) || (displacement >= MAXDISP && displacement < MAXLONGDISP)))
-      {
-      auto longDisplacementMnemonic = TR::Instruction::opCodeCanBeAdjustedTo(op);
-
-      if (longDisplacementMnemonic != TR::InstOpCode::BAD)
-         {
-         result = generateRSYInstruction(cg, longDisplacementMnemonic, n, regp, 0, mf, preced);
-         }
-      }
-
-   if (result == NULL)
-      {
-      auto instructionFormat = TR::InstOpCode(op).getInstructionFormat();
-
-      TR_ASSERT_FATAL(instructionFormat == RSa_FORMAT ||
-                      instructionFormat == RSb_FORMAT, "Mnemonic (%s) is incorrectly used as an RS instruction", TR::InstOpCode::metadata[op].name);
-
-      result = preced != NULL ?
-         new (INSN_HEAP) TR::S390RSInstruction(op, n, regp, mf, preced, cg) :
-         new (INSN_HEAP) TR::S390RSInstruction(op, n, regp, mf, cg);
-      }
-
-   return result;
+   return generateRSInstruction(cg, op, n, static_cast<TR::Register*>(regp), mf, preced);
    }
 
 TR::Instruction *
@@ -1271,47 +1262,23 @@ generateRSWithImplicitPairStoresInstruction(TR::CodeGenerator * cg, TR::InstOpCo
    return instr;
    }
 
-
 TR::Instruction *
 generateRSYInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register * treg, uint32_t mask,
                        TR::MemoryReference * mf, TR::Instruction * preced)
    {
-   // RSY instructions do not have an index register
-   preced = mf->separateIndexRegister(n, cg, false, preced);
-
-   TR::Instruction *instr;
-   if (preced)
-      instr = new (INSN_HEAP) TR::S390RSYInstruction(op, n, treg, mask, mf, preced, cg);
-   else
-      instr = new (INSN_HEAP) TR::S390RSYInstruction(op, n, treg, mask, mf, cg);
-
-   return instr;
+   return generateRSInstruction(cg, op, n, treg, mask, mf, preced);
    }
 
 TR::Instruction*
 generateRSYInstruction(TR::CodeGenerator* cg, TR::InstOpCode::Mnemonic op, TR::Node* n, TR::RegisterPair* treg, TR::RegisterPair* sreg, TR::MemoryReference* mf, TR::Instruction* preced)
    {
-   // RSY instructions do not have an index register
-   preced = mf->separateIndexRegister(n, cg, false, preced);
-
-   TR::Instruction* result = preced != NULL ?
-      new (INSN_HEAP) TR::S390RSYInstruction(op, n, treg, sreg, mf, preced, cg) :
-      new (INSN_HEAP) TR::S390RSYInstruction(op, n, treg, sreg, mf, cg);
-
-   return result;
+   return generateRSInstruction(cg, op, n, treg, sreg, mf, preced);
    }
 
 TR::Instruction*
 generateRSYInstruction(TR::CodeGenerator* cg, TR::InstOpCode::Mnemonic op, TR::Node* n, TR::Register* freg, TR::Register* lreg, TR::MemoryReference* mf, TR::Instruction* preced)
    {
-   // RSY instructions do not have an index register
-   preced = mf->separateIndexRegister(n, cg, false, preced);
-
-   TR::Instruction* result = preced != NULL ?
-      new (INSN_HEAP) TR::S390RSYInstruction(op, n, freg, lreg, mf, preced, cg) :
-      new (INSN_HEAP) TR::S390RSYInstruction(op, n, freg, lreg, mf, cg);
-
-   return result;
+   return generateRSInstruction(cg, op, n, freg, lreg, mf, preced);
    }
 
 TR::Instruction *

@@ -5270,7 +5270,7 @@ static TR::Register *inlineSimpleAtomicUpdate(TR::Node *node, bool isAddOp, bool
       loadConstant(cg, node, delta, deltaReg);
       }
 
-   uint8_t len = isLong ? 8 : 4;
+   const uint8_t len = isLong ? 8 : 4;
 
    generateTrg1MemInstruction(cg, isLong ? TR::InstOpCode::ldarx : TR::InstOpCode::lwarx, node, oldValueReg,
          new (cg->trHeapMemory()) TR::MemoryReference(0, valueAddrReg, len, cg));

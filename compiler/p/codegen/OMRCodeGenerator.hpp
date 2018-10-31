@@ -386,8 +386,7 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    bool supportsFusedMultiplyAdd() {return true;}
    bool supportsNegativeFusedMultiplyAdd() {return true;}
 
-   bool supportsNonHelper(TR::SymbolReferenceTable::CommonNonhelperSymbol symbol
-);
+   bool supportsNonHelper(TR::SymbolReferenceTable::CommonNonhelperSymbol symbol);
 
    bool getSupportsTenuredObjectAlignment() { return true; }
    bool isObjectOfSizeWorthAligning(uint32_t size)

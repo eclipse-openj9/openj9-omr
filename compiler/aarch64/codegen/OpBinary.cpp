@@ -45,6 +45,8 @@ const OMR::ARM64::InstOpCode::OpCodeBinaryEntry OMR::ARM64::InstOpCode::binaryEn
 		0xD63F0000,	/* BLR       	blr	 */
 		0xD65F0000,	/* RET       	ret	 */
 	/* Unconditional branch (immediate) */
+		0x14000000,	/* B         	b	 */
+		0x94000000,	/* BL        	bl	 */
 /* Loads and stores */
 	/* Load/store exclusive */
 		0x08000000,	/* STXRB     	stxrb	 */
@@ -309,7 +311,7 @@ const OMR::ARM64::InstOpCode::OpCodeBinaryEntry OMR::ARM64::InstOpCode::binaryEn
 		0xD3400000,	/* UBFM      	ubfmx	 */
 	/* Extract */
 		0x13800000,	/* EXTR      	extrw	 */
-		0x93C00000,	/* EXTR      	extrx	 */
+		0x93C08000,	/* EXTR      	extrx	 */
 /* Data Processing - register */
 	/* Logical (shifted register) */
 		0x0A000000,	/* AND       	andw	 */

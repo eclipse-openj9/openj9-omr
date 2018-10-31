@@ -11465,43 +11465,45 @@ OMR::Z::TreeEvaluator::loadaddrEvaluator(TR::Node * node, TR::CodeGenerator * cg
    if (symRef->isUnresolved())
       {
 #ifdef J9_PROJECT_SPECIFIC
+      TR::UnresolvedDataSnippet * uds = new (cg->trHeapMemory()) TR::UnresolvedDataSnippet(cg, node, symRef, false, false);
+      cg->addSnippet(uds);
+
+      // Generate branch to the unresolved data snippet
+      TR::Instruction * cursor = generateRegUnresolvedSym(cg, TR::InstOpCode::getLoadOpCode(), node, targetRegister, symRef, uds);
+      uds->setBranchInstruction(cursor);
+
+      // Create a patchable data in litpool
+      TR::S390WritableDataSnippet * litpool = cg->CreateWritableConstant(node);
+      litpool->setUnresolvedDataSnippet(uds);
+
+      TR::S390RILInstruction * lrlInstr = NULL;
       if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10))
          {
-         TR::UnresolvedDataSnippet * uds;
-         TR::Instruction * cursor;
-
-         // create UnresolvedDataSnippet
-         uds = new (cg->trHeapMemory()) TR::UnresolvedDataSnippet(cg, node, symRef, false, false);
-         cg->addSnippet(uds);
-
-         // generate branch to the unresolved data snippet
-         cursor = generateRegUnresolvedSym(cg, TR::InstOpCode::getLoadOpCode(), node, targetRegister, symRef, uds);
-
-         uds->setBranchInstruction(cursor);
-
-         // create a patchable data in litpool
-         TR::S390WritableDataSnippet * litpool = cg->CreateWritableConstant(node);
-         litpool->setUnresolvedDataSnippet(uds);
-
-         TR::S390RILInstruction * LRLinst;
-         LRLinst = (TR::S390RILInstruction *) generateRILInstruction(cg, TR::InstOpCode::getLoadRelativeLongOpCode(), node, targetRegister, reinterpret_cast<void*>(0xBABE), 0);
-         uds->setDataReferenceInstruction(LRLinst);
-         LRLinst->setSymbolReference(uds->getDataSymbolReference());
-         LRLinst->setTargetSnippet(litpool);
-         LRLinst->setTargetSymbol(uds->getDataSymbol());
-
-         TR_Debug * debugObj = cg->getDebug();
-
-         if (debugObj)
-            {
-            debugObj->addInstructionComment(LRLinst, "LoadLitPoolEntry");
-            }
+         lrlInstr = static_cast<TR::S390RILInstruction *>(generateRILInstruction(cg, TR::InstOpCode::getLoadRelativeLongOpCode(), node, targetRegister, reinterpret_cast<void*>(0xBABE), 0));
+         uds->setDataReferenceInstruction(lrlInstr);
+         lrlInstr->setSymbolReference(uds->getDataSymbolReference());
+         lrlInstr->setTargetSnippet(litpool);
+         lrlInstr->setTargetSymbol(uds->getDataSymbol());
          }
       else
          {
-         TR::MemoryReference * mref = generateS390MemoryReference(node, symRef, cg);
-         generateRXInstruction(cg, TR::InstOpCode::getLoadOpCode(), node, targetRegister, mref);
-         mref->setBaseNode(node);
+         lrlInstr = static_cast<TR::S390RILInstruction *>(generateRILInstruction(cg, TR::InstOpCode::LARL, node, targetRegister, reinterpret_cast<void*>(0xBABE), 0));
+         lrlInstr->setSymbolReference(uds->getDataSymbolReference());
+         lrlInstr->setTargetSnippet(litpool);
+         lrlInstr->setTargetSymbol(uds->getDataSymbol());
+
+         cursor = generateRXYInstruction(cg, TR::InstOpCode::LG, node, targetRegister,
+                                generateS390MemoryReference(targetRegister, 0, cg));
+
+         uds->setDataReferenceInstruction(cursor);
+         }
+
+      TR_ASSERT_FATAL(lrlInstr->getKind() == OMR::Instruction::Kind::IsRIL, "Unexpected load instruction format");
+
+      TR_Debug * debugObj = cg->getDebug();
+      if (debugObj)
+         {
+         debugObj->addInstructionComment(lrlInstr, "LoadLitPoolEntry");
          }
 #endif
       }

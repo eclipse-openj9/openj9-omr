@@ -2571,7 +2571,7 @@ TR::S390RSInstruction::generateBinaryEncoding()
 
    if (getMemoryReference() != NULL)
       {
-      int32_t displacement = getMemoryReference()->getOffset();
+      int32_t displacement = getMemoryReference()->getDisp();
 
       if ((displacement > MINLONGDISP && displacement < 0) || (displacement >= MAXDISP && displacement < MAXLONGDISP))
          {
@@ -3349,18 +3349,15 @@ TR::S390RXInstruction::generateBinaryEncoding()
 
    TR::InstOpCode& opCode = getOpCode();
 
-   if (getMemoryReference() != NULL)
+   int32_t displacement = getMemoryReference()->getDisp();
+
+   if ((displacement > MINLONGDISP && displacement < MINDISP) || (displacement >= MAXDISP && displacement < MAXLONGDISP))
       {
-      int32_t displacement = getMemoryReference()->getOffset();
+      auto longDisplacementMnemonic = TR::Instruction::opCodeCanBeAdjustedTo(getOpCodeValue());
 
-      if ((displacement > MINLONGDISP && displacement < MINDISP) || (displacement >= MAXDISP && displacement < MAXLONGDISP))
+      if (longDisplacementMnemonic != TR::InstOpCode::BAD)
          {
-         auto longDisplacementMnemonic = TR::Instruction::opCodeCanBeAdjustedTo(getOpCodeValue());
-
-         if (longDisplacementMnemonic != TR::InstOpCode::BAD)
-            {
-            opCode = TR::InstOpCode(longDisplacementMnemonic);
-            }
+         opCode = TR::InstOpCode(longDisplacementMnemonic);
          }
       }
 
@@ -5105,7 +5102,7 @@ TR::S390SIInstruction::generateBinaryEncoding()
 
    TR::InstOpCode& opCode = getOpCode();
 
-   int32_t displacement = getMemoryReference()->getOffset();
+   int32_t displacement = getMemoryReference()->getDisp();
 
    if ((displacement > MINLONGDISP && displacement < 0) || (displacement >= MAXDISP && displacement < MAXLONGDISP))
       {

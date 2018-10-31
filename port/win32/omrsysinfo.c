@@ -1672,20 +1672,32 @@ omrsysinfo_cgroup_is_memlimit_set(struct OMRPortLibrary *portLibrary)
 	return FALSE;
 }
 
-intptr_t
-omrsysinfo_cgroup_get_handle_subsystem_file(struct OMRPortLibrary *portLibrary,  uint64_t subsystemFlag, const char *fileName)
-{
-	return OMRPORT_ERROR_SYSINFO_CGROUP_UNSUPPORTED_PLATFORM;
-}
-
 struct OMRCgroupEntry *
 omrsysinfo_get_cgroup_subsystem_list(struct OMRPortLibrary *portLibrary)
 {
 	return NULL;
 }
 
+BOOLEAN
+omrsysinfo_is_running_in_container(struct OMRPortLibrary *portLibrary, int32_t *errorCode)
+{
+	return FALSE;
+}
+
 int32_t
-omrsysinfo_is_running_in_container(struct OMRPortLibrary *portLibrary, BOOLEAN *inContainer)
+omrsysinfo_cgroup_subsystem_iterator_init(struct OMRPortLibrary *portLibrary, uint64_t subsystem, struct OMRCgroupMetricIteratorState *state)
 {
 	return OMRPORT_ERROR_SYSINFO_CGROUP_UNSUPPORTED_PLATFORM;
+}
+
+BOOLEAN
+omrsysinfo_cgroup_subsystem_iterator_hasNext(struct OMRPortLibrary *portLibrary, const struct OMRCgroupMetricIteratorState *state)
+{
+	return FALSE;
+}
+
+int32_t
+omrsysinfo_cgroup_subsystem_iterator_next(struct OMRPortLibrary *portLibrary, struct OMRCgroupMetricIteratorState *state, struct OMRCgroupMetricElement *metricElement, BOOLEAN *printUnits, uint64_t sizeRef)
+{
+	return OMRPORT_ERROR_SYSINFO_CGROUP_UNSUPPORTED_PLATFORM;	
 }

@@ -801,6 +801,8 @@ generateRXInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::N
       if (longDisplacementMnemonic != TR::InstOpCode::BAD)
          {
          op = longDisplacementMnemonic;
+
+         TR::DebugCounter::incStaticDebugCounter(cg->comp(), TR::DebugCounter::debugCounterName(cg->comp(), "z/memref/long-displacement-upgrade/(%s)", cg->comp()->signature()));
          }
       }
 
@@ -848,6 +850,8 @@ generateRXInstruction(TR::CodeGenerator* cg, TR::InstOpCode::Mnemonic op, TR::No
       if (longDisplacementMnemonic != TR::InstOpCode::BAD)
          {
          op = longDisplacementMnemonic;
+
+         TR::DebugCounter::incStaticDebugCounter(cg->comp(), TR::DebugCounter::debugCounterName(cg->comp(), "z/memref/long-displacement-upgrade/(%s)", cg->comp()->signature()));
          }
       }
 
@@ -1078,6 +1082,8 @@ generateRSInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::N
       if (longDisplacementMnemonic != TR::InstOpCode::BAD)
          {
          op = longDisplacementMnemonic;
+
+         TR::DebugCounter::incStaticDebugCounter(cg->comp(), TR::DebugCounter::debugCounterName(cg->comp(), "z/memref/long-displacement-upgrade/(%s)", cg->comp()->signature()));
          }
       }
 
@@ -1119,6 +1125,8 @@ generateRSInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::N
       if (longDisplacementMnemonic != TR::InstOpCode::BAD)
          {
          op = longDisplacementMnemonic;
+
+         TR::DebugCounter::incStaticDebugCounter(cg->comp(), TR::DebugCounter::debugCounterName(cg->comp(), "z/memref/long-displacement-upgrade/(%s)", cg->comp()->signature()));
          }
       }
 
@@ -1160,6 +1168,8 @@ generateRSInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::N
       if (longDisplacementMnemonic != TR::InstOpCode::BAD)
          {
          op = longDisplacementMnemonic;
+
+         TR::DebugCounter::incStaticDebugCounter(cg->comp(), TR::DebugCounter::debugCounterName(cg->comp(), "z/memref/long-displacement-upgrade/(%s)", cg->comp()->signature()));
          }
       }
 
@@ -1202,6 +1212,8 @@ generateRSInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::N
       if (longDisplacementMnemonic != TR::InstOpCode::BAD)
          {
          op = longDisplacementMnemonic;
+
+         TR::DebugCounter::incStaticDebugCounter(cg->comp(), TR::DebugCounter::debugCounterName(cg->comp(), "z/memref/long-displacement-upgrade/(%s)", cg->comp()->signature()));
          }
       }
 
@@ -1789,6 +1801,8 @@ generateSIInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::N
       if (longDisplacementMnemonic != TR::InstOpCode::BAD)
          {
          op = longDisplacementMnemonic;
+
+         TR::DebugCounter::incStaticDebugCounter(cg->comp(), TR::DebugCounter::debugCounterName(cg->comp(), "z/memref/long-displacement-upgrade/(%s)", cg->comp()->signature()));
          }
       }
 

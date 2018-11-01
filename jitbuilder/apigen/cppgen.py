@@ -750,8 +750,6 @@ def write_common_decl(writer, api_desc):
         writer.write(decl)
     writer.write("\n")
 
-    writer.write("using namespace {};\n\n".format("::".join(namespaces)))
-
     writer.write("#endif // {}_INCL\n".format(api_desc.project()))
 
 def generate_impl_service_import(service_desc):
@@ -938,10 +936,11 @@ def gen_api_impl_includes(classes_desc, api_headers_dir):
     return files
 
 if __name__ == "__main__":
+    default_dest = os.path.join(os.getcwd(), "client")
     parser = argparse.ArgumentParser()
-    parser.add_argument("--sourcedir", type=str, default="./client",
+    parser.add_argument("--sourcedir", type=str, default=default_dest,
                         help="destination directory for the generated source files")
-    parser.add_argument("--headerdir", type=str, default="./client",
+    parser.add_argument("--headerdir", type=str, default=default_dest,
                         help="destination directory for the generated header files")
     parser.add_argument("description", help="path to the API description file")
     args = parser.parse_args()
@@ -960,7 +959,7 @@ if __name__ == "__main__":
     with open(os.path.join(args.sourcedir, "JitBuilder.cpp"), "w") as writer:
         write_common_impl(writer, api_description)
 
-    extras_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "extras/cpp")
+    extras_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "extras", "cpp")
     names = os.listdir(extras_dir)
     for name in names:
         if name.endswith(".hpp"):

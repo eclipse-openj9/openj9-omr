@@ -4509,7 +4509,7 @@ omrsysinfo_cgroup_subsystem_iterator_next(struct OMRPortLibrary *portLibrary, st
 	}
 	if (state->multiLineCounter < subsystemMetricMapElement->metricElementsCount) {
 		for (i = 0; i < state->multiLineCounter; i++) {
-			(OMRCgroupMetricInfoElement *)currentElement++;
+			currentElement++;
 		}
 		char *tempBuff = portLibrary->mem_allocate_memory(portLibrary, 1024, OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
 		strcpy(tempBuff, state->fileContent);

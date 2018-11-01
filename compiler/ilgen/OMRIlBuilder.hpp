@@ -118,7 +118,7 @@ public:
           * @param f whether the case falls-through or not
           */
          JBCase(int32_t v, TR::IlBuilder *b, int32_t f)
-             : _value(v), _builder(b), _fallsThrough(f) {}
+             : _value(v), _builder(b), _fallsThrough(f), _client(NULL) {}
 
       private:
          int32_t _value;          // value matched by the case
@@ -155,7 +155,7 @@ public:
           * @param conditionValue the IlValue representing value for the condition
           */
          JBCondition(TR::IlBuilder *conditionBuilder, TR::IlValue *conditionValue)
-            : _builder(conditionBuilder), _condition(conditionValue) {}
+            : _builder(conditionBuilder), _condition(conditionValue), _client(NULL) {}
 
       private:
          TR::IlBuilder *_builder; // builder used to generate the condition value

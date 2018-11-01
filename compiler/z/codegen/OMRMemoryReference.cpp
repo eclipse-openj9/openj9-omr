@@ -2972,7 +2972,10 @@ OMR::Z::MemoryReference::generateBinaryEncoding(uint8_t * cursor, TR::CodeGenera
          // formats and S390*Instruction formats
          instructionFormat = TR::Instruction::IsRXY;
 
-         TR::DebugCounter::incStaticDebugCounter(comp, TR::DebugCounter::debugCounterName(comp, "z/memref/long-displacement-upgrade/(%s)", comp->signature()));
+         if (longDisplacementMnemonic != TR::InstOpCode::BAD)
+            {
+            TR::DebugCounter::incStaticDebugCounter(comp, TR::DebugCounter::debugCounterName(comp, "z/memref/long-displacement-upgrade/(%s)", comp->signature()));
+            }
          }
       else
          {

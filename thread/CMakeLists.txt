@@ -305,17 +305,17 @@ target_compile_definitions(j9thr_obj
 		$<TARGET_PROPERTY:omr_base,INTERFACE_COMPILE_DEFINITIONS>
 )
 
-add_library(j9thrstatic STATIC
-	$<TARGET_OBJECTS:j9thr_obj>
-)
-
 if(OMR_WARNINGS_AS_ERRORS)
-	target_compile_options(j9thrstatic PRIVATE ${OMR_WARNING_AS_ERROR_FLAG})
+	target_compile_options(j9thr_obj PRIVATE ${OMR_WARNING_AS_ERROR_FLAG})
 endif()
 
 if(OMR_ENHANCED_WARNINGS)
-	target_compile_options(j9thrstatic PRIVATE ${OMR_ENHANCED_WARNING_FLAG})
+	target_compile_options(j9thr_obj PRIVATE ${OMR_ENHANCED_WARNING_FLAG})
 endif()
+
+add_library(j9thrstatic STATIC
+	$<TARGET_OBJECTS:j9thr_obj>
+)
 
 target_include_directories(j9thrstatic
 	INTERFACE

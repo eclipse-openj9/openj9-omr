@@ -5203,10 +5203,9 @@ static TR::Register *inlineSimpleAtomicUpdate(TR::Node *node, bool isAddOp, bool
    TR::Register *cndReg = cg->allocateRegister(TR_CCR);
    TR::Register *resultReg = NULL;
 
-   bool isDeltaConstant = false;
    bool isDeltaImmediate = false;
    bool isDeltaImmediateShifted = false;
-   bool reuseDeltaReg = false;
+   bool localDeltaReg = false;
 
    int32_t numDeps = 3;
 
@@ -5228,18 +5227,24 @@ static TR::Register *inlineSimpleAtomicUpdate(TR::Node *node, bool isAddOp, bool
           && !deltaChild->getRegister()
           && (deltaChild->getDataType() == TR::Int32
                  || (deltaChild->getDataType() == TR::Int64
-                        && deltaChild->getInt() == deltaChild->getLongInt())))
+                        && deltaChild->getLongInt() <= UPPER_IMMED
+                        && deltaChild->getLongInt() >= LOWER_IMMED)))
       {
+      const int64_t deltaLong = (deltaChild->getDataType() == TR::Int64)
+                                   ? deltaChild->getLongInt()
+                                   : (int64_t) deltaChild->getInt();
+
       delta = (int32_t) deltaChild->getInt();
-      isDeltaConstant = true;
 
       //determine if the constant can be represented as an immediate
-      if (delta <= UPPER_IMMED && delta >= LOWER_IMMED)
+      if (deltaLong <= UPPER_IMMED && deltaLong >= LOWER_IMMED)
          {
          // avoid evaluating immediates for add operations
          isDeltaImmediate = true;
          }
-      else if (delta & 0xFFFF == 0)
+      else if (deltaLong & 0xFFFF == 0
+                  && ((deltaLong >> 32) == -1
+                         || (deltaLong >> 32) == 0))
          {
          // avoid evaluating shifted immediates for add operations
          isDeltaImmediate = true;
@@ -5268,6 +5273,7 @@ static TR::Register *inlineSimpleAtomicUpdate(TR::Node *node, bool isAddOp, bool
       numDeps++;
       deltaReg = cg->allocateRegister();
       loadConstant(cg, node, delta, deltaReg);
+      localDeltaReg = true;
       }
 
    const uint8_t len = isLong ? 8 : 4;
@@ -5340,13 +5346,7 @@ static TR::Register *inlineSimpleAtomicUpdate(TR::Node *node, bool isAddOp, bool
    generateDepLabelInstruction(cg, TR::InstOpCode::label, node, doneLabel, conditions);
 
    cg->decReferenceCount(valueAddrChild);
-   cg->stopUsingRegister(valueAddrReg);
    cg->stopUsingRegister(cndReg);
-
-   if (deltaReg)
-      {
-      cg->stopUsingRegister(deltaReg);
-      }
 
    if (deltaChild)
       {
@@ -5357,18 +5357,23 @@ static TR::Register *inlineSimpleAtomicUpdate(TR::Node *node, bool isAddOp, bool
       {
       // For Get And Op, the result is in the register with the old value
       // The new value is no longer needed
-      cg->stopUsingRegister(newValueReg);
       resultReg = oldValueReg;
+      node->setRegister(oldValueReg);
+      cg->stopUsingRegister(newValueReg);
       }
    else
       {
       // For Op And Get, we will store the return value in the register that
       // contains the sum.  The register with the old value is no longer needed
-      cg->stopUsingRegister(oldValueReg);
       resultReg = newValueReg;
+      node->setRegister(newValueReg);
+      cg->stopUsingRegister(oldValueReg);
       }
 
-   node->setRegister(resultReg);
+   if (localDeltaReg)
+      {
+      cg->stopUsingRegister(deltaReg);
+      }
 
    TR_ASSERT(numDeps == 0, "Missed a register dependency in inlineSimpleAtomicOperations - numDeps == %d\n", numDeps);
 

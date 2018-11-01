@@ -165,6 +165,83 @@ void TR::ARM64Trg1Src2Instruction::assignRegisters(TR_RegisterKinds kindToBeAssi
    setSource2Register(assignedSource2Register);
    }
 
+// TR::ARM64Trg1Src3Instruction:: member functions
+
+bool TR::ARM64Trg1Src3Instruction::refsRegister(TR::Register *reg)
+   {
+   return (reg == getTargetRegister() ||
+           reg == getSource1Register() ||
+           reg == getSource2Register() ||
+           reg == getSource3Register());
+   }
+
+bool TR::ARM64Trg1Src3Instruction::usesRegister(TR::Register *reg)
+   {
+   return (reg == getSource1Register() || reg == getSource2Register() || reg == getSource3Register());
+   }
+
+bool TR::ARM64Trg1Src3Instruction::defsRegister(TR::Register *reg)
+   {
+   return (reg == getTargetRegister());
+   }
+
+bool TR::ARM64Trg1Src3Instruction::defsRealRegister(TR::Register *reg)
+   {
+   return (reg == getTargetRegister()->getAssignedRegister());
+   }
+
+void TR::ARM64Trg1Src3Instruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
+   {
+   TR::Machine *machine = cg()->machine();
+   TR::Register *target1Virtual = getTargetRegister();
+   TR::Register *source1Virtual = getSource1Register();
+   TR::Register *source2Virtual = getSource2Register();
+   TR::Register *source3Virtual = getSource3Register();
+
+   if (getDependencyConditions())
+      getDependencyConditions()->assignPostConditionRegisters(this, kindToBeAssigned, cg());
+
+   source2Virtual->block();
+   source1Virtual->block();
+   target1Virtual->block();
+   TR::RealRegister *assignedSource3Register = machine->assignOneRegister(this, source3Virtual);
+   target1Virtual->unblock();
+   source1Virtual->unblock();
+   source2Virtual->unblock();
+
+   source3Virtual->block();
+   source1Virtual->block();
+   target1Virtual->block();
+   TR::RealRegister *assignedSource2Register = machine->assignOneRegister(this, source2Virtual);
+   target1Virtual->unblock();
+   source1Virtual->unblock();
+   source3Virtual->unblock();
+
+   source3Virtual->block();
+   source2Virtual->block();
+   target1Virtual->block();
+   TR::RealRegister *assignedSource1Register = machine->assignOneRegister(this, source1Virtual);
+   target1Virtual->unblock();
+   source2Virtual->unblock();
+   source3Virtual->unblock();
+
+   source3Virtual->block();
+   source2Virtual->block();
+   source1Virtual->block();
+   TR::RealRegister *assignedTarget1Register = machine->assignOneRegister(this, target1Virtual);
+   source1Virtual->unblock();
+   source2Virtual->unblock();
+   source3Virtual->unblock();
+
+   if (getDependencyConditions())
+      getDependencyConditions()->assignPreConditionRegisters(this->getPrev(), kindToBeAssigned, cg());
+
+   setTargetRegister(assignedTarget1Register);
+   setSource1Register(assignedSource1Register);
+   setSource2Register(assignedSource2Register);
+   setSource3Register(assignedSource3Register);
+   }
+
 // TR::ARM64MemSrc1Instruction:: member functions
 
 bool TR::ARM64MemSrc1Instruction::refsRegister(TR::Register *reg)

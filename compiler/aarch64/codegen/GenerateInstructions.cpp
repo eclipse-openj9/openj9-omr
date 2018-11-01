@@ -278,9 +278,14 @@ static TR::Instruction *generateSrc1ImmInstruction(TR::CodeGenerator *cg, TR::In
    TR::RegisterDependencyConditions *cond = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(1, 1, cg->trMemory());
    addDependency(cond, zeroReg, TR::RealRegister::xzr, TR_GPR, cg);
 
-   if (preced)
-      return new (cg->trHeapMemory()) TR::ARM64Trg1Src1ImmInstruction(op, node, zeroReg, sreg, imm, cond, preced, cg);
-   return new (cg->trHeapMemory()) TR::ARM64Trg1Src1ImmInstruction(op, node, zeroReg, sreg, imm, cond, cg);
+   TR::Instruction *instr =
+      (preced) ?
+      new (cg->trHeapMemory()) TR::ARM64Trg1Src1ImmInstruction(op, node, zeroReg, sreg, imm, cond, preced, cg) :
+      new (cg->trHeapMemory()) TR::ARM64Trg1Src1ImmInstruction(op, node, zeroReg, sreg, imm, cond, cg);
+
+   cg->stopUsingRegister(zeroReg);
+
+   return instr;
    }
 
 TR::Instruction *generateCompareImmInstruction(TR::CodeGenerator *cg, TR::Node *node,
@@ -311,9 +316,14 @@ static TR::Instruction *generateSrc2Instruction(TR::CodeGenerator *cg, TR::InstO
    TR::RegisterDependencyConditions *cond = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(1, 1, cg->trMemory());
    addDependency(cond, zeroReg, TR::RealRegister::xzr, TR_GPR, cg);
 
-   if (preced)
-      return new (cg->trHeapMemory()) TR::ARM64Trg1Src2Instruction(op, node, zeroReg, s1reg, s2reg, cond, preced, cg);
-   return new (cg->trHeapMemory()) TR::ARM64Trg1Src2Instruction(op, node, zeroReg, s1reg, s2reg, cond, cg);
+   TR::Instruction *instr =
+      (preced) ?
+      new (cg->trHeapMemory()) TR::ARM64Trg1Src2Instruction(op, node, zeroReg, s1reg, s2reg, cond, preced, cg) :
+      new (cg->trHeapMemory()) TR::ARM64Trg1Src2Instruction(op, node, zeroReg, s1reg, s2reg, cond, cg);
+
+   cg->stopUsingRegister(zeroReg);
+
+   return instr;
    }
 
 TR::Instruction *generateCompareInstruction(TR::CodeGenerator *cg, TR::Node *node,
@@ -344,15 +354,21 @@ static TR::Instruction *generateTrg1ZeroSrc1Instruction(TR::CodeGenerator *cg, T
    TR::RegisterDependencyConditions *cond = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(1, 1, cg->trMemory());
    addDependency(cond, zeroReg, TR::RealRegister::xzr, TR_GPR, cg);
 
-   if (preced)
-      return new (cg->trHeapMemory()) TR::ARM64Trg1Src2Instruction(op, node, treg, zeroReg, sreg, cond, preced, cg);
-   return new (cg->trHeapMemory()) TR::ARM64Trg1Src2Instruction(op, node, treg, zeroReg, sreg, cond, cg);
+   TR::Instruction *instr =
+      (preced) ?
+      new (cg->trHeapMemory()) TR::ARM64Trg1Src2Instruction(op, node, treg, zeroReg, sreg, cond, preced, cg) :
+      new (cg->trHeapMemory()) TR::ARM64Trg1Src2Instruction(op, node, treg, zeroReg, sreg, cond, cg);
+
+   cg->stopUsingRegister(zeroReg);
+
+   return instr;
    }
 
 TR::Instruction *generateMovInstruction(TR::CodeGenerator *cg, TR::Node *node,
    TR::Register *treg, TR::Register *sreg, TR::Instruction *preced)
    {
    /* Alias of ORR instruction */
+   TR_ASSERT(node->getDataType().isIntegral(), "Only GPRs are allowed.");
 
    bool is64bit = node->getDataType().isInt64();
    TR::InstOpCode::Mnemonic op = is64bit ? TR::InstOpCode::orrx : TR::InstOpCode::orrw;
@@ -384,9 +400,14 @@ TR::Instruction *generateMulInstruction(TR::CodeGenerator *cg, TR::Node *node,
    TR::RegisterDependencyConditions *cond = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(1, 1, cg->trMemory());
    addDependency(cond, zeroReg, TR::RealRegister::xzr, TR_GPR, cg);
 
-   if (preced)
-      return new (cg->trHeapMemory()) TR::ARM64Trg1Src3Instruction(op, node, treg, s1reg, s2reg, zeroReg, cond, preced, cg);
-   return new (cg->trHeapMemory()) TR::ARM64Trg1Src3Instruction(op, node, treg, s1reg, s2reg, zeroReg, cond, cg);
+   TR::Instruction *instr =
+      (preced) ?
+      new (cg->trHeapMemory()) TR::ARM64Trg1Src3Instruction(op, node, treg, s1reg, s2reg, zeroReg, cond, preced, cg) :
+      new (cg->trHeapMemory()) TR::ARM64Trg1Src3Instruction(op, node, treg, s1reg, s2reg, zeroReg, cond, cg);
+
+   cg->stopUsingRegister(zeroReg);
+
+   return instr;
    }
 
 TR::Instruction *generateCSetInstruction(TR::CodeGenerator *cg, TR::Node *node,

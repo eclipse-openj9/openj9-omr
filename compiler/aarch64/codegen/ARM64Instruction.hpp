@@ -858,6 +858,38 @@ class ARM64Trg1Instruction : public TR::Instruction
       useRegister(treg);
       }
 
+   /*
+    * @brief Constructor
+    * @param[in] op : instruction opcode
+    * @param[in] node : node
+    * @param[in] treg : target register
+    * @param[in] cond : register dependency conditions
+    * @param[in] cg : CodeGenerator
+    */
+   ARM64Trg1Instruction(TR::InstOpCode::Mnemonic op, TR::Node *node, TR::Register *treg,
+                        TR::RegisterDependencyConditions *cond, TR::CodeGenerator *cg)
+      : TR::Instruction(op, node, cond, cg), _target1Register(treg)
+      {
+      useRegister(treg);
+      }
+
+   /*
+    * @brief Constructor
+    * @param[in] op : instruction opcode
+    * @param[in] node : node
+    * @param[in] treg : target register
+    * @param[in] cond : register dependency conditions
+    * @param[in] precedingInstruction : preceding instruction
+    * @param[in] cg : CodeGenerator
+    */
+   ARM64Trg1Instruction(TR::InstOpCode::Mnemonic op, TR::Node *node, TR::Register *treg,
+                        TR::RegisterDependencyConditions *cond, TR::Instruction *precedingInstruction,
+                        TR::CodeGenerator *cg)
+      : TR::Instruction(op, node, cond, precedingInstruction, cg), _target1Register(treg)
+      {
+      useRegister(treg);
+      }
+
    /**
     * @brief Gets instruction kind
     * @return instruction kind
@@ -1108,7 +1140,6 @@ class ARM64Trg1Src1Instruction : public ARM64Trg1Instruction
       : ARM64Trg1Instruction(op, node, treg, cg), _source1Register(sreg)
       {
       useRegister(sreg);
-      setDependencyConditions(NULL);
       }
 
    /*
@@ -1126,7 +1157,6 @@ class ARM64Trg1Src1Instruction : public ARM64Trg1Instruction
       : ARM64Trg1Instruction(op, node, treg, precedingInstruction, cg), _source1Register(sreg)
       {
       useRegister(sreg);
-      setDependencyConditions(NULL);
       }
 
    /*
@@ -1140,10 +1170,9 @@ class ARM64Trg1Src1Instruction : public ARM64Trg1Instruction
     */
    ARM64Trg1Src1Instruction(TR::InstOpCode::Mnemonic op, TR::Node *node, TR::Register *treg,
                              TR::Register *sreg, TR::RegisterDependencyConditions *cond, TR::CodeGenerator *cg)
-      : ARM64Trg1Instruction(op, node, treg, cg), _source1Register(sreg)
+      : ARM64Trg1Instruction(op, node, treg, cond, cg), _source1Register(sreg)
       {
       useRegister(sreg);
-      setDependencyConditions(cond);
       }
 
    /*
@@ -1159,10 +1188,9 @@ class ARM64Trg1Src1Instruction : public ARM64Trg1Instruction
    ARM64Trg1Src1Instruction(TR::InstOpCode::Mnemonic op, TR::Node *node, TR::Register *treg,
                              TR::Register *sreg, TR::RegisterDependencyConditions *cond,
                              TR::Instruction *precedingInstruction, TR::CodeGenerator *cg)
-      : ARM64Trg1Instruction(op, node, treg, precedingInstruction, cg), _source1Register(sreg)
+      : ARM64Trg1Instruction(op, node, treg, cond, precedingInstruction, cg), _source1Register(sreg)
       {
       useRegister(sreg);
-      setDependencyConditions(cond);
       }
 
    /**
@@ -1847,6 +1875,36 @@ class ARM64Trg1Src3Instruction : public ARM64Trg1Src2Instruction
       TR::RealRegister *source3 = toRealRegister(_source3Register);
       source3->setRegisterFieldRA(instruction);
       }
+
+   /**
+    * @brief Answers whether this instruction references the given virtual register
+    * @param[in] reg : virtual register
+    * @return true when the instruction references the virtual register
+    */
+   virtual bool refsRegister(TR::Register *reg);
+   /**
+    * @brief Answers whether this instruction uses the given virtual register
+    * @param[in] reg : virtual register
+    * @return true when the instruction uses the virtual register
+    */
+   virtual bool usesRegister(TR::Register *reg);
+   /**
+    * @brief Answers whether this instruction defines the given virtual register
+    * @param[in] reg : virtual register
+    * @return true when the instruction defines the virtual register
+    */
+   virtual bool defsRegister(TR::Register *reg);
+   /**
+    * @brief Answers whether this instruction defines the given real register
+    * @param[in] reg : real register
+    * @return true when the instruction defines the real register
+    */
+   virtual bool defsRealRegister(TR::Register *reg);
+   /**
+    * @brief Assigns registers
+    * @param[in] kindToBeAssigned : register kind
+    */
+   virtual void assignRegisters(TR_RegisterKinds kindToBeAssigned);
 
    /**
     * @brief Generates binary encoding of the instruction

@@ -2948,7 +2948,7 @@ OMR::Z::MemoryReference::generateBinaryEncoding(uint8_t * cursor, TR::CodeGenera
    // us to reach binary encoding without knowing a displacement will be large. A typical example of this is when 
    // referencing stack symbols whose displacement will be unknown until the stack is mapped; an operation that happens
    // after instruction selection and before binary encoding.
-   if (displacement < 0 || displacement >= MAXDISP)
+   if (displacement < MINDISP || displacement >= MAXDISP)
       {
       auto longDisplacementMnemonic = TR::Instruction::opCodeCanBeAdjustedTo(instr->getOpCodeValue());
 

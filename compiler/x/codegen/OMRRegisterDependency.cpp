@@ -1175,7 +1175,7 @@ void TR_X86RegisterDependencyGroup::assignFPRegisters(TR::Instruction   *prevIns
       TR::X86LabelInstruction  *labelInstruction = NULL;
 
       if (prevInstruction->getNext())
-         labelInstruction = prevInstruction->getNext()->getIA32LabelInstruction();
+         labelInstruction = prevInstruction->getNext()->getX86LabelInstruction();
 
       if (labelInstruction &&
           labelInstruction->getNeedToClearFPStack())

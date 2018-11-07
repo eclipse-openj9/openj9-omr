@@ -1511,6 +1511,7 @@ _cleanup:
 #define CGROUP_MEMORY_STAT_CACHE "cache"
 #define CGROUP_MEMORY_STAT_CACHE_SZ (sizeof(CGROUP_MEMORY_STAT_CACHE)-1)
 
+#if !defined(OMRZTPF)
 /**
  * Function collects memory usage statistics from the memory subsystem of the process's cgroup.
  *
@@ -1606,6 +1607,8 @@ _exit:
 
 	return rc;
 }
+
+#endif /* !defined(OMRZTPF) */
 
 /**
  * Function collects memory usage statistics on Linux platforms and returns the same.

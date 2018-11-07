@@ -6833,24 +6833,12 @@ TR::Node *daddSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *baddSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
-
-   TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
-
-   if (firstChild->getOpCode().isLoadConst() && secondChild->getOpCode().isLoadConst())
-      {
-      foldByteConstant(node, firstChild->getByte() + secondChild->getByte(), s, false /* !anchorChildren*/);
-      return node;
-      }
-
-   orderChildren(node, firstChild, secondChild, s);
-   BINARY_IDENTITY_OP(Byte, 0)
-   return node;
+   return addSimplifier <int8_t> (node, block, s);
    }
 
 TR::Node *saddSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   return  addSimplifier <int16_t> (node, block, s);
+   return addSimplifier <int16_t> (node, block, s);
    }
 
 //---------------------------------------------------------------------
@@ -7925,23 +7913,12 @@ TR::Node *dsubSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
 TR::Node *bsubSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   simplifyChildren(node, block, s);
-
-   TR::Node * firstChild = node->getFirstChild(), * secondChild = node->getSecondChild();
-
-   if (firstChild->getOpCode().isLoadConst() && secondChild->getOpCode().isLoadConst())
-      {
-      foldByteConstant(node, firstChild->getByte() - secondChild->getByte(), s, false /* !anchorChildren*/);
-      return node;
-      }
-
-   BINARY_IDENTITY_OP(Byte, 0)
-   return node;
+   return subSimplifier <int8_t> (node, block, s);
    }
 
 TR::Node *ssubSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    {
-   return  subSimplifier <int16_t> (node, block, s);
+   return subSimplifier <int16_t> (node, block, s);
    }
 
 //---------------------------------------------------------------------

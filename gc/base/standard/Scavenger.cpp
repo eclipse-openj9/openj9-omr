@@ -4627,7 +4627,7 @@ MM_Scavenger::scavengeRoots(MM_EnvironmentBase *env)
 {
 	Assert_MM_true(concurrent_state_roots == _concurrentState);
 
-	MM_ConcurrentScavengeTask scavengeTask(env, _dispatcher, this, MM_ConcurrentScavengeTask::SCAVENGE_ROOTS, U_64_MAX, NULL, env->_cycleState);
+	MM_ConcurrentScavengeTask scavengeTask(env, _dispatcher, this, MM_ConcurrentScavengeTask::SCAVENGE_ROOTS, UDATA_MAX, NULL, env->_cycleState);
 	_dispatcher->run(env, &scavengeTask);
 
 	return false;
@@ -4642,7 +4642,7 @@ MM_Scavenger::scavengeScan(MM_EnvironmentBase *envBase)
 
 	restoreMasterThreadTenureTLHRemainders(env);
 
-	MM_ConcurrentScavengeTask scavengeTask(env, _dispatcher, this, MM_ConcurrentScavengeTask::SCAVENGE_SCAN, U_64_MAX, NULL, env->_cycleState);
+	MM_ConcurrentScavengeTask scavengeTask(env, _dispatcher, this, MM_ConcurrentScavengeTask::SCAVENGE_SCAN, UDATA_MAX, NULL, env->_cycleState);
 	_dispatcher->run(env, &scavengeTask);
 
 	return false;
@@ -4657,7 +4657,7 @@ MM_Scavenger::scavengeComplete(MM_EnvironmentBase *envBase)
 
 	restoreMasterThreadTenureTLHRemainders(env);
 
-	MM_ConcurrentScavengeTask scavengeTask(env, _dispatcher, this, MM_ConcurrentScavengeTask::SCAVENGE_COMPLETE, U_64_MAX, NULL, env->_cycleState);
+	MM_ConcurrentScavengeTask scavengeTask(env, _dispatcher, this, MM_ConcurrentScavengeTask::SCAVENGE_COMPLETE, UDATA_MAX, NULL, env->_cycleState);
 	_dispatcher->run(env, &scavengeTask);
 
 	Assert_MM_true(_scavengeCacheFreeList.areAllCachesReturned());

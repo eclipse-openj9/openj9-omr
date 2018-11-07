@@ -23,6 +23,7 @@
 
 /* Statics to create: */
 static void deleteDie(Dwarf_Die die);
+static void cleanUnknownDiesInCU(Dwarf_CU_Context *cu);
 static int parseDwarfInfo(char *line, Dwarf_Die *lastCreatedDie, Dwarf_Die *currentDie,
 	size_t *lastIndent, unordered_map<Dwarf_Die *, Dwarf_Off> *refToPopulate, Dwarf_Error *error);
 static int parseCompileUnit(char *line, size_t *lastIndent, Dwarf_Error *error);
@@ -79,7 +80,7 @@ dwarf_init(int fd,
 	FILE *fp = NULL;
 	if (DW_DLV_OK == ret) {
 		stringstream ss;
-		ss << "dwarfdump " << filepath << ".dSYM" << " 2>&1";
+		ss << "dwarfdump " << filepath << " 2>&1";
 		fp = popen(ss.str().c_str(), "r");
 		if (NULL == fp) {
 			ret = DW_DLV_ERROR;
@@ -104,6 +105,7 @@ dwarf_init(int fd,
 			}
 		}
 		free(buffer);
+		cleanUnknownDiesInCU(Dwarf_CU_Context::_currentCU);
 	}
 	if (DW_DLV_OK == ret) {
 		for (unordered_map<Dwarf_Die *, Dwarf_Off>::iterator it = refToPopulate.begin(); it != refToPopulate.end(); ++it) {
@@ -143,6 +145,50 @@ deleteDie(Dwarf_Die die)
 	delete die;
 }
 
+static void
+cleanUnknownDies(Dwarf_Die die)
+{
+	Dwarf_Die previousSibling = NULL;
+	while (NULL != die) {
+		if (DW_TAG_unknown == die->_tag) {
+			Dwarf_Die toDelete = die;
+			Dwarf_Die nextDie = NULL;
+			if (NULL != die->_child) {
+				Dwarf_Die child = die->_child;
+				for (; NULL != child->_sibling; child = child->_sibling) {
+					child->_parent = toDelete->_parent;
+				}
+				child->_parent = toDelete->_parent;
+				child->_sibling = toDelete->_sibling;
+				nextDie = toDelete->_child;
+			} else {
+				nextDie = toDelete->_sibling;
+			}
+			if (NULL == previousSibling) {
+				toDelete->_parent->_child = nextDie;
+			} else {
+				previousSibling->_sibling = nextDie;
+			}
+			die = nextDie;
+			toDelete->_child = NULL;
+			toDelete->_sibling = NULL;
+			deleteDie(toDelete);
+		} else {
+			cleanUnknownDies(die->_child);
+			previousSibling = die;
+			die = die->_sibling;
+		}
+	}
+}
+
+static void
+cleanUnknownDiesInCU(Dwarf_CU_Context *cu)
+{
+	if (NULL != cu) {
+		cleanUnknownDies(cu->_die);
+	}
+}
+
 static int
 parseDwarfInfo(char *line, Dwarf_Die *lastCreatedDie, Dwarf_Die *currentDie,
 	size_t *lastIndent, unordered_map<Dwarf_Die *, Dwarf_Off> *refToPopulate,
@@ -169,10 +215,12 @@ parseDwarfInfo(char *line, Dwarf_Die *lastCreatedDie, Dwarf_Die *currentDie,
 		}
 		/* The string "TAG_[tag]" or "Compile Unit:" or "NULL" should be next. */
 		if (0 == strncmp(endOfAddress + spaces, "Compile Unit: ", 14)) {
+			cleanUnknownDiesInCU(Dwarf_CU_Context::_currentCU);
 			ret = parseCompileUnit(endOfAddress + spaces + 14, lastIndent, error);
+			lastCreatedDie = NULL;
 		} else if (0 == strncmp(endOfAddress + spaces, "TAG_", 4)) {
 			ret = parseDwarfDie(endOfAddress + spaces + 4, lastCreatedDie, currentDie, lastIndent, spaces, error);
-			if (DW_DLV_OK == ret) {
+			if (DW_DLV_OK == ret && DW_TAG_unknown != (*lastCreatedDie)->_tag) {
 				Dwarf_Die_s::refMap[address] = *lastCreatedDie;
 			}
 		} else if (0 == strncmp(endOfAddress + spaces, "NULL", 4)) {
@@ -296,42 +344,36 @@ parseDwarfDie(char *line, Dwarf_Die *lastCreatedDie,
 	size_t span = strcspn(line, " ");
 	parseTagString(line, span, &tag);
 
-	if (DW_TAG_unknown == tag) {
-		*currentDie = NULL;
+	Dwarf_Die newDie = new Dwarf_Die_s;
+	if (NULL == newDie) {
+		ret = DW_DLV_ERROR;
+		setError(error, DW_DLE_MAF);
 	} else {
-		Dwarf_Die newDie = new Dwarf_Die_s;
-		if (NULL == newDie) {
-			ret = DW_DLV_ERROR;
-			setError(error, DW_DLE_MAF);
-		} else {
-			newDie->_tag = tag;
-			newDie->_attribute = NULL;
-			newDie->_context = Dwarf_CU_Context::_currentCU;
-			newDie->_child = NULL;
-			newDie->_sibling = NULL;
-			if (0 == *lastIndent) {
-				/* No last indent indicates that this Die is at the start of a CU. */
-				newDie->_parent = NULL;
-				Dwarf_CU_Context::_currentCU->_die = newDie;
-			} else if (spaces > *lastIndent) {
-				/* If the Die is indended farther than the last Die, it is
-				 * a first child.
-				 */
-				newDie->_parent = *lastCreatedDie;
-				(*lastCreatedDie)->_child = newDie;
-			} else if (spaces <= *lastIndent) {
-				/* If the Die is indented equally to the last Die, it is a
-				 * sibling Die. If the indentation has decreased, the last
-				 * Die would have been updated to one level up the tree when
-				 * a "NULL" line indicated there were no more siblings.
-				 */
-				 newDie->_parent = (*lastCreatedDie)->_parent;
-				 (*lastCreatedDie)->_sibling = newDie;
-			}
-			*lastCreatedDie = newDie;
-			*currentDie = newDie;
-			*lastIndent = spaces;
+		newDie->_tag = tag;
+		newDie->_attribute = NULL;
+		newDie->_context = Dwarf_CU_Context::_currentCU;
+		newDie->_child = NULL;
+		newDie->_sibling = NULL;
+		if (0 == *lastIndent) {
+			/* No last indent indicates that this Die is at the start of a CU. */
+			newDie->_parent = NULL;
+			Dwarf_CU_Context::_currentCU->_die = newDie;
+		} else if (spaces > *lastIndent) {
+			/* If the Die is indented farther than the last Die, it is a first child. */
+			newDie->_parent = *lastCreatedDie;
+			(*lastCreatedDie)->_child = newDie;
+		} else if (spaces <= *lastIndent) {
+			/* If the Die is indented equally to the last Die, it is a
+			* sibling Die. If the indentation has decreased, the last
+			* Die would have been updated to one level up the tree when
+			* a "NULL" line indicated there were no more siblings.
+			*/
+			newDie->_parent = (*lastCreatedDie)->_parent;
+			(*lastCreatedDie)->_sibling = newDie;
 		}
+		*lastCreatedDie = newDie;
+		*currentDie = newDie;
+		*lastIndent = spaces;
 	}
 	return ret;
 }
@@ -404,7 +446,7 @@ parseAttribute(char *line, Dwarf_Die *lastCreatedDie,
 					ret = DW_DLV_ERROR;
 					setError(error, DW_DLE_MAF);
 					newAttr->_udata = 0;
-				} else {
+				} else if (DW_TAG_unknown != (*lastCreatedDie)->_tag) {
 					Dwarf_CU_Context::_fileList.push_back(string(newAttr->_stringdata));
 					newAttr->_udata = Dwarf_CU_Context::_fileList.size();
 				}
@@ -418,13 +460,22 @@ parseAttribute(char *line, Dwarf_Die *lastCreatedDie,
 				}
 			} else if (DW_FORM_ref1 == form) {
 				newAttr->_refdata = strtoul(line + span + 3, NULL, 16);
-				refToPopulate->emplace(&newAttr->_ref, newAttr->_refdata);
+				if (DW_TAG_unknown != (*lastCreatedDie)->_tag) {
+					refToPopulate->emplace(&newAttr->_ref, newAttr->_refdata);
+				}
 			} else if (DW_FORM_udata == form) {
 				newAttr->_udata = strtoul(line + span + 1, NULL, 0);
 			} else if (DW_FORM_sdata == form) {
 				newAttr->_udata = strtol(line + span + 1, NULL, 0);
 			} else if (DW_FORM_flag == form) {
-				newAttr->_flag = 0 != strtol(line + span + 1, NULL, 0);
+				size_t whitespace = strspn(line + span + 1, " \t") + span + 1;
+				if (0 == strncmp(line + whitespace, "true", 4)) {
+					newAttr->_flag = 1;
+				} else if (0 == strncmp(line + whitespace, "false", 5)) {
+					newAttr->_flag = 0;
+				} else {
+					newAttr->_flag = 0 != strtol(line + whitespace, NULL, 0);
+				}
 			} else {
 				ret = DW_DLV_ERROR;
 				setError(error, DW_DLE_VMM);
@@ -453,6 +504,7 @@ static const tuple<const char *, Dwarf_Half, Dwarf_Half> attrStrings[] = {
 	make_tuple("bit_size", DW_AT_bit_size, DW_FORM_udata),
 	make_tuple("comp_dir", DW_AT_comp_dir, DW_FORM_string),
 	make_tuple("const_value", DW_AT_const_value, DW_FORM_sdata),
+	make_tuple("data_bit_offset", DW_AT_data_bit_offset, DW_FORM_udata),
 	make_tuple("data_member_location", DW_AT_data_member_location, DW_FORM_udata),
 	make_tuple("decl_file", DW_AT_decl_file, DW_FORM_udata),
 	make_tuple("decl_line", DW_AT_decl_line, DW_FORM_udata),

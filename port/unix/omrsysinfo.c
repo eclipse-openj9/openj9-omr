@@ -4469,7 +4469,6 @@ omrsysinfo_cgroup_subsystem_iterator_next(struct OMRPortLibrary *portLibrary, st
 #if defined(LINUX) && !defined(OMRZTPF)
 	BOOLEAN isSingleLineKeyValue = FALSE;
 	struct OMRCgroupMetricInfoElement *currentElement = NULL;
-	int32_t i = 0;
 	const struct OMRCgroupSubsystemMetricMap *subsystemMetricMap = NULL;
 	const struct OMRCgroupSubsystemMetricMap *subsystemMetricMapElement = NULL;
 	if (state->count >= state->numElements) {
@@ -4508,9 +4507,7 @@ omrsysinfo_cgroup_subsystem_iterator_next(struct OMRPortLibrary *portLibrary, st
 		
 	}
 	if (state->multiLineCounter < subsystemMetricMapElement->metricElementsCount) {
-		for (i = 0; i < state->multiLineCounter; i++) {
-			currentElement++;
-		}
+		currentElement += state->multiLineCounter;
 		char *tempBuff = portLibrary->mem_allocate_memory(portLibrary, 1024, OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
 		strcpy(tempBuff, state->fileContent);
 		char *part = "";

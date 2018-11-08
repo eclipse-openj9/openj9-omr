@@ -1927,3 +1927,29 @@ TR_BitVector *OMR::SymbolReferenceTable::getSharedAliases(TR::SymbolReference *s
 
    return NULL;
    }
+
+TR::SymbolReference *
+OMR::SymbolReferenceTable::findOrCreatePotentialOSRPointHelperSymbolRef()
+   {
+   if (!element(potentialOSRPointHelperSymbol))
+      {
+      TR::MethodSymbol * sym = TR::MethodSymbol::create(trHeapMemory(), TR_None);
+      sym->setHelper();
+      TR::SymbolReference* symRef = new (trHeapMemory()) TR::SymbolReference(self(), potentialOSRPointHelperSymbol, sym);
+      element(potentialOSRPointHelperSymbol) = symRef;
+      }
+   return element(potentialOSRPointHelperSymbol);
+   }
+
+TR::SymbolReference *
+OMR::SymbolReferenceTable::findOrCreateOSRFearPointHelperSymbolRef()
+   {
+   if (!element(osrFearPointHelperSymbol))
+      {
+      TR::MethodSymbol * sym = TR::MethodSymbol::create(trHeapMemory(), TR_None);
+      sym->setHelper();
+      TR::SymbolReference* symRef = new (trHeapMemory()) TR::SymbolReference(self(), osrFearPointHelperSymbol, sym);
+      element(osrFearPointHelperSymbol) = symRef;
+      }
+   return element(osrFearPointHelperSymbol);
+   }

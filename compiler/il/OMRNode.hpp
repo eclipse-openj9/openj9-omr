@@ -267,6 +267,37 @@ public:
    static TR::Node *createArraycopy(TR::Node *first, TR::Node *second, TR::Node *third);
    static TR::Node *createArraycopy(TR::Node *first, TR::Node *second, TR::Node *third, TR::Node *fourth, TR::Node *fifth);
 
+   /**
+    * \brief
+    *    Create a call to potentialOSRPointHelperSymbol, only to be used during ILGen
+    *
+    * \parm originatingByteCodeNode
+    *    The node whose bytecode info is used to create the call.
+    *
+    * \parm osrInductionOffset
+    *    The offset to be added to the originatingByteCodeNode's bytecode index to get the
+    *    target bytecode index. This is to be stored in _unionBase._osrInductionOffset
+    *
+    * \note
+    *    One can not create a potentialOSRPointHelper call and stick it to anywhere in the trees
+    *    without the right exception setup and without the right bookkeeping being in place for
+    *    the call. Preventative checks are required to avoid potential misuses. Due the fact that
+    *    during ILGen the OSR infrastructure may be incomplete, the checks can be done in ILGen are
+    *    different than checks needed after ILGen.
+    *
+    *    This API does checks required to create the helper in ILGen, thus it is only to be used in
+    *    ILGen.
+    */
+   static TR::Node *createPotentialOSRPointHelperCallInILGen(TR::Node* originatingByteCodeNode, int32_t offset);
+   /**
+    * \brief
+    *    Create a call to osrFearPointHelperSymbol
+    *
+    * \parm originatingByteCodeNode  The node whose bytecode info is used to create the call
+    *
+    */
+   static TR::Node *createOSRFearPointHelperCall(TR::Node* originatingByteCodeNode);
+
    static TR::Node *createLoad(TR::SymbolReference * symRef);
    static TR::Node *createLoad(TR::Node *originatingByteCodeNode, TR::SymbolReference *);
 
@@ -498,6 +529,22 @@ public:
    bool                   isPureCall();
 
    bool                   isClassUnloadingConst();
+
+   /**
+    * \brief
+    *    Return true if the node is a load of static final field
+    */
+   bool                   isLoadOfStaticFinalField();
+   /**
+    * \brief
+    *    Return true if the node is a call with osrFearPointHelperSymbol
+    */
+   bool                   isOSRFearPointHelperCall();
+   /**
+    * \brief
+    *    Return true if the node is a call with potentialOSRPointHelperSymbol
+    */
+   bool                   isPotentialOSRPointHelperCall();
 
    // A common query used by the optimizer
    inline bool            isSingleRef();
@@ -779,6 +826,9 @@ public:
     */
 
    // These three methods should be used only if you're sure you can't use one of the other ones.
+   inline int32_t          getOSRInductionOffset();
+   inline int32_t          setOSRInductionOffset(int32_t offset);
+
    inline int64_t          getConstValue();
    inline uint64_t         getUnsignedConstValue();
    inline void             setConstValue(int64_t val);
@@ -1664,6 +1714,16 @@ protected:
       int64_t   _constValue;
       float     _fpConstValue;
       double    _dpConstValue;
+
+      // Used only on potentialOSRPointHelper call, which has no children.
+      //
+      // In post-execution OSR, transition occurs after the OSR point has
+      // been evaluated. The intepreter will resume the execution at a bytecode
+      // index after the bytecode index of the OSR point. The target bytecode
+      // index can be calculated by offsetting the OSR point's bytecode index
+      // by the size of the bytecode. This size is stored in _osrInductionOffset.
+      //
+      int32_t _osrInductionOffset;
 
       //intToFloat returns a bag of bits in a uint32_t
       int32_t   _fpConstValueBits;

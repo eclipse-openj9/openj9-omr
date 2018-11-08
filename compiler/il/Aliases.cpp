@@ -105,6 +105,33 @@ OMR::SymbolReference::getUseonlyAliasesBV(TR::SymbolReferenceTable * symRefTab)
       case TR::Symbol::IsMethod:
          {
          TR::MethodSymbol * methodSymbol = _symbol->castToMethodSymbol();
+
+         // Aliasing for potentialOSRPointHelper
+         // A potentialOSRPointHelper call is an exception point that may go to OSR catch block ( see
+         // Node API exceptionsRaised), the control flow constraint imposed by the exception edge will
+         // apply to all the global optimizations that may move things around. Local optimizations also
+         // ask exceptionsRaised to determine if a code motion across certain point is safe. So aliasing
+         // is not necessary. However, we'd like to add aliasing here to cause the compiler to be more
+         // conservative about reordering this helper with other operations. The aliasing can always be
+         // relaxed when necessary.
+         //
+         if (symRefTab->isNonHelper(self(), TR::SymbolReferenceTable::potentialOSRPointHelperSymbol))
+            {
+            return &symRefTab->aliasBuilder.defaultMethodUseAliases();
+            }
+
+         // Aliasing for osrFearPointHelper
+         // Preventing the reordering of fear point helper w.r.t. OSR points and yield/invalidation points is
+         // the minimum requirement of aliasing for OSR fear point helper. These reorderings would in almost
+         // all cases be naturally disallowed simply due to the fact that the fear point is represented as a
+         // call, which even without aliasing could e.g. perform I/O. Thus the following is a highly conservative
+         // aliasing and can be relaxed later when necessary
+         //
+         if (symRefTab->isNonHelper(self(), TR::SymbolReferenceTable::osrFearPointHelperSymbol))
+            {
+            return &symRefTab->aliasBuilder.defaultMethodUseAliases();
+            }
+
          if (!methodSymbol->isHelper())
             {
             return &symRefTab->aliasBuilder.defaultMethodUseAliases();
@@ -285,8 +312,12 @@ OMR::SymbolReference::getUseDefAliasesBV(bool isDirectCall, bool includeGCSafePo
          if (!methodSymbol->isHelper())
             return symRefTab->aliasBuilder.methodAliases(self());
 
-         if (symRefTab->isNonHelper(self(), TR::SymbolReferenceTable::arraySetSymbol))
+         if (symRefTab->isNonHelper(self(), TR::SymbolReferenceTable::arraySetSymbol) ||
+             symRefTab->isNonHelper(self(), TR::SymbolReferenceTable::osrFearPointHelperSymbol) ||
+             symRefTab->isNonHelper(self(), TR::SymbolReferenceTable::potentialOSRPointHelperSymbol))
+            {
             return &symRefTab->aliasBuilder.defaultMethodDefAliases();
+            }
 
          if (symRefTab->isNonHelper(self(), TR::SymbolReferenceTable::arrayCmpSymbol))
             return 0;

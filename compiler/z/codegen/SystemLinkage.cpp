@@ -1452,16 +1452,16 @@ TR::S390SystemLinkage::mapStack(TR::ResolvedMethodSymbol * method, uint32_t stac
       }
 
    // Map slot for long displacement
-   if(TR::Compiler->target.isLinux())
+   if (TR::Compiler->target.isLinux())
       {
-      //zLinux has a special reserved slot in the linkage convention
+      // Linux on Z has a special reserved slot in the linkage convention
       setOffsetToLongDispSlot(TR::Compiler->target.is64Bit() ? 8 : 4);
       }
    else
       {
-      //setOffsetToLongDispSlot(stackIndex -= cg()->sizeOfJavaPointer());
       setOffsetToLongDispSlot(stackIndex -= 16);
       }
+
    if (comp()->getOption(TR_TraceCG))
       traceMsg(comp(), "\n\nOffsetToLongDispSlot = %d\n", getOffsetToLongDispSlot());
 

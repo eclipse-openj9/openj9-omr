@@ -544,6 +544,19 @@ public:
    bool hasNativeCall()                         { return _flags.testAny(HasNativeCall); }
    void setHasNativeCall()                      { _flags.set(HasNativeCall); }
 
+   /*
+   * \brief
+   *    This query tells whether the trees might contain rdbar/wrtbar opcodes
+   *    that are not fully supported by optimizer yet
+   *
+   * \note
+   *    This query is for temporarily disable opts not supporting
+   *    the newly added rdbar/wrtbar opcodes. Subprojects can overrite
+   *    the answer. This query should be deleted eventually if
+   *    all the optimizations support the opcodes.
+   */
+   bool incompleteOptimizerSupportForReadWriteBarriers();
+
    // P codegen
    TR::list<TR_PrefetchInfo*> &getExtraPrefetchInfo() { return _extraPrefetchInfo; }
    TR_PrefetchInfo *findExtraPrefetchInfo(TR::Node * node, bool use = true);

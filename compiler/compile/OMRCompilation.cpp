@@ -2734,3 +2734,8 @@ void OMR::Compilation::invalidateAliasRegion()
       new (&self()->_aliasRegion) TR::Region(_heapMemoryRegion);
       }
    }
+
+bool OMR::Compilation::incompleteOptimizerSupportForReadWriteBarriers()
+   {
+   return false;
+   }

@@ -361,11 +361,11 @@ generateS390CompareAndBranchInstruction(TR::CodeGenerator * cg,
       TR_Debug * debugObj = cg->getDebug();
       if (!needsCC && comp->getOption(TR_EnableEBBCCInfo) &&
           cg->isActiveCompareCC(compareOpCode, first, second) &&
-          performTransformation(comp, "O^O generateS390CompareAndBranchInstruction case 1 remove RR Compare[%s\t %s, %s]: reuse CC from ccInst [%p].", debugObj->getOpCodeName(&opcTmp), debugObj->getName(first),debugObj->getName(second),ccInst) )
+          performTransformation(comp, "O^O generateS390CompareAndBranchInstruction case 1 remove RR Compare[%s\t %s, %s]: reuse CC from ccInst [%p].", opcTmp.getMnemonicName(), debugObj->getName(first),debugObj->getName(second),ccInst) )
             returnInstruction = generateS390BranchInstruction(cg, TR::InstOpCode::BRC, bc, node, branchDestination);
       else if ( !needsCC && comp->getOption(TR_EnableEBBCCInfo) &&
                 cg->isActiveCompareCC(compareOpCode, second, first) &&
-                performTransformation(comp, "O^O generateS390CompareAndBranchInstruction case 2 remove RR Compare[%s\t %s, %s]: reuse CC from ccInst [%p].", debugObj->getOpCodeName(&opcTmp), debugObj->getName(first),debugObj->getName(second),ccInst) )
+                performTransformation(comp, "O^O generateS390CompareAndBranchInstruction case 2 remove RR Compare[%s\t %s, %s]: reuse CC from ccInst [%p].", opcTmp.getMnemonicName(), debugObj->getName(first),debugObj->getName(second),ccInst) )
             returnInstruction = generateS390BranchInstruction(cg, TR::InstOpCode::BRC, getReverseBranchCondition(bc), node, branchDestination);
       else
          {

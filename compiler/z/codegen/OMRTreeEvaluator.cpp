@@ -18401,7 +18401,7 @@ generateFusedMultiplyAddIfPossible(TR::CodeGenerator *cg, TR::Node *addNode, TR:
             generateRRDInstruction(cg, op, addNode, addReg, mulLeftReg, mulRightReg);
          break;
       default:
-         TR_ASSERT(false, "unhandled opcode %s in generateFusedMultiplyAddIfPossible\n", cg->getDebug()->getOpCodeName((TR::InstOpCode *)op));
+         TR_ASSERT(false, "unhandled opcode %s in generateFusedMultiplyAddIfPossible\n", ((TR::InstOpCode *)op)->getMnemonicName());
          break;
       }
 

@@ -1047,6 +1047,7 @@ MM_ConcurrentGC::conHelperEntryPoint(OMR_VMThread *omrThread, uintptr_t slaveID)
 	MM_SpinLimiter spinLimiter(env);
 
 	/* Thread not a mutator so identify its type */
+	env->initializeGCThread();
 	env->setThreadType(CON_MARK_HELPER_THREAD);
 
 	while (CONCURRENT_HELPER_SHUTDOWN != request) {

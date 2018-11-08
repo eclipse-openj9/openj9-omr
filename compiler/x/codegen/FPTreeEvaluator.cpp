@@ -688,6 +688,50 @@ TR::Register *OMR::X86::TreeEvaluator::fpUnaryMaskEvaluator(TR::Node *node, TR::
    return result;
    }
 
+TR::Register *OMR::X86::TreeEvaluator::fpSqrtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   auto value = cg->evaluate(node->getFirstChild());
+   auto result = cg->allocateRegister(value->getKind());
+
+   if (value->isSinglePrecision())
+      {
+      result->setIsSinglePrecision();
+      }
+
+   if (value->getKind() != TR_FPR) // Legacy supported for X87, to be deleted
+      {
+      auto tmp = cg->allocateRegister(TR_FPR);
+      if (value->isSinglePrecision())
+         {
+         result->setIsSinglePrecision();
+         auto tempMR = cg->machine()->getDummyLocalMR(TR::Float);
+         generateFPMemRegInstruction(FSTPMemReg, node, tempMR, value, cg);
+         generateRegMemInstruction(MOVSSRegMem, node, tmp, generateX86MemoryReference(*tempMR, 0, cg), cg);
+         generateRegRegInstruction(SQRTSSRegReg, node, tmp, tmp, cg);
+         generateMemRegInstruction(MOVSSMemReg, node, generateX86MemoryReference(*tempMR, 0, cg), tmp, cg);
+         generateFPRegMemInstruction(FLDRegMem, node, result, generateX86MemoryReference(*tempMR, 0, cg), cg);
+         }
+      else
+         {
+         auto tempMR = cg->machine()->getDummyLocalMR(TR::Double);
+         generateFPMemRegInstruction(DSTPMemReg, node, tempMR, value, cg);
+         generateRegMemInstruction(MOVSDRegMem, node, tmp, generateX86MemoryReference(*tempMR, 0, cg), cg);
+         generateRegRegInstruction(SQRTSDRegReg, node, tmp, tmp, cg);
+         generateMemRegInstruction(MOVSDMemReg, node, generateX86MemoryReference(*tempMR, 0, cg), tmp, cg);
+         generateFPRegMemInstruction(DLDRegMem, node, result, generateX86MemoryReference(*tempMR, 0, cg), cg);
+         }
+      cg->stopUsingRegister(tmp);
+      }
+   else
+      {
+      generateRegRegInstruction(value->isSinglePrecision() ? SQRTSSRegReg : SQRTSDRegReg, node, result, value, cg);
+      }
+
+   node->setRegister(result);
+   cg->decReferenceCount(node->getFirstChild());
+   return result;
+   }
+
 TR::Register *OMR::X86::TreeEvaluator::faddEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return TR::TreeEvaluator::fpBinaryArithmeticEvaluator(node, true, cg);

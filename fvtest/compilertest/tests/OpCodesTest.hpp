@@ -568,6 +568,10 @@ class OpCodesTest : public TestDriver
    static signatureCharD_D_testMethodType *_dAbs;
    static signatureCharF_F_testMethodType *_fAbs;
 
+   //Sqrt
+   static signatureCharD_D_testMethodType *_dSqrt;
+   static signatureCharF_F_testMethodType *_fSqrt;
+
    //load
    static signatureCharI_I_testMethodType *_iLoad;
    static signatureCharJ_J_testMethodType *_lLoad;

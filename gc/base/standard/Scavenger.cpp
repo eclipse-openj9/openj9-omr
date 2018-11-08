@@ -1463,7 +1463,13 @@ MM_Scavenger::copy(MM_EnvironmentStandard *env, MM_ForwardedHeader* forwardedHea
 	/* Concurrent Scavenger can update forwarding pointer only after the object has been copied
 	 * (since mutator may access the object as soon as forwarding pointer is installed) */
 	}
-	if (originalDestinationObjectPtr == (allowDuplicate ? (destinationObjectPtr = forwardedHeader->setForwardedObject(destinationObjectPtr)) : destinationObjectPtr)) {
+	if (allowDuplicate) {
+		/* On weak memory model, ensure that this candidate copy is visible
+		 * before (potentially) winning forwarding */
+		MM_AtomicOperations::storeSync();
+		destinationObjectPtr = forwardedHeader->setForwardedObject(destinationObjectPtr);
+	}
+	if (originalDestinationObjectPtr == destinationObjectPtr) {
 		/* Succeeded in forwarding the object */
 #endif /* OMR_GC_CONCURRENT_SCAVENGER */
 

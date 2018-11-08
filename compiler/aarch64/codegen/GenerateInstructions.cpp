@@ -114,6 +114,14 @@ TR::Instruction *generateCompareBranchInstruction(TR::CodeGenerator *cg, TR::Ins
    return new (cg->trHeapMemory()) TR::ARM64CompareBranchInstruction(op, node, sreg, sym, cg);
    }
 
+TR::Instruction *generateRegBranchInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node *node,
+   TR::Register *treg, TR::Instruction *preced)
+   {
+   if (preced)
+      return new (cg->trHeapMemory()) TR::ARM64RegBranchInstruction(op, node, treg, preced, cg);
+   return new (cg->trHeapMemory()) TR::ARM64RegBranchInstruction(op, node, treg, cg);
+   }
+
 TR::Instruction *generateAdminInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node *node,
    TR::Node *fenceNode, TR::Instruction *preced)
    {
@@ -280,7 +288,7 @@ TR::Instruction *generateCompareImmInstruction(TR::CodeGenerator *cg, TR::Node *
    /* Alias of SUBS instruction */
 
    bool is64bit = node->getDataType().isInt64();
-   TR::InstOpCode::Mnemonic op = is64bit ? TR::InstOpCode::Mnemonic::subsimmx : TR::InstOpCode::Mnemonic::subsimmw;
+   TR::InstOpCode::Mnemonic op = is64bit ? TR::InstOpCode::subsimmx : TR::InstOpCode::subsimmw;
 
    return generateSrc1ImmInstruction(cg, op, node, sreg, imm, preced);
    }
@@ -291,7 +299,95 @@ TR::Instruction *generateTestImmInstruction(TR::CodeGenerator *cg, TR::Node *nod
    /* Alias of ANDS instruction */
 
    bool is64bit = node->getDataType().isInt64();
-   TR::InstOpCode::Mnemonic op = is64bit ? TR::InstOpCode::Mnemonic::andsimmx : TR::InstOpCode::Mnemonic::andsimmw;
+   TR::InstOpCode::Mnemonic op = is64bit ? TR::InstOpCode::andsimmx : TR::InstOpCode::andsimmw;
 
    return generateSrc1ImmInstruction(cg, op, node, sreg, imm, preced);
+   }
+
+/* Use xzr as the target register */
+static TR::Instruction *generateSrc2Instruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node *node,
+   TR::Register *s1reg, TR::Register *s2reg, TR::Instruction *preced)
+   {
+   TR::Register *zeroReg = cg->allocateRegister();
+   TR::RegisterDependencyConditions *cond = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(1, 1, cg->trMemory());
+   addDependency(cond, zeroReg, TR::RealRegister::xzr, TR_GPR, cg);
+
+   if (preced)
+      return new (cg->trHeapMemory()) TR::ARM64Trg1Src2Instruction(op, node, zeroReg, s1reg, s2reg, cond, preced, cg);
+   return new (cg->trHeapMemory()) TR::ARM64Trg1Src2Instruction(op, node, zeroReg, s1reg, s2reg, cond, cg);
+   }
+
+TR::Instruction *generateCompareInstruction(TR::CodeGenerator *cg, TR::Node *node,
+   TR::Register *s1reg, TR::Register *s2reg, TR::Instruction *preced)
+   {
+   /* Alias of SUBS instruction */
+
+   bool is64bit = node->getDataType().isInt64();
+   TR::InstOpCode::Mnemonic op = is64bit ? TR::InstOpCode::subsx : TR::InstOpCode::subsw;
+
+   return generateSrc2Instruction(cg, op, node, s1reg, s2reg, preced);
+   }
+
+TR::Instruction *generateTestInstruction(TR::CodeGenerator *cg, TR::Node *node,
+   TR::Register *s1reg, TR::Register *s2reg, TR::Instruction *preced)
+   {
+   /* Alias of ANDS instruction */
+
+   bool is64bit = node->getDataType().isInt64();
+   TR::InstOpCode::Mnemonic op = is64bit ? TR::InstOpCode::andsx : TR::InstOpCode::andsw;
+
+   return generateSrc2Instruction(cg, op, node, s1reg, s2reg, preced);
+   }
+
+/* Use xzr as the first source register */
+static TR::Instruction *generateTrg1ZeroSrc1Instruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node *node,
+   TR::Register *treg, TR::Register *sreg, TR::Instruction *preced)
+   {
+   TR::Register *zeroReg = cg->allocateRegister();
+   TR::RegisterDependencyConditions *cond = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(1, 1, cg->trMemory());
+   addDependency(cond, zeroReg, TR::RealRegister::xzr, TR_GPR, cg);
+
+   if (preced)
+      return new (cg->trHeapMemory()) TR::ARM64Trg1Src2Instruction(op, node, treg, zeroReg, sreg, cond, preced, cg);
+   return new (cg->trHeapMemory()) TR::ARM64Trg1Src2Instruction(op, node, treg, zeroReg, sreg, cond, cg);
+   }
+
+TR::Instruction *generateMovInstruction(TR::CodeGenerator *cg, TR::Node *node,
+   TR::Register *treg, TR::Register *sreg, TR::Instruction *preced)
+   {
+   /* Alias of ORR instruction */
+
+   bool is64bit = node->getDataType().isInt64();
+   TR::InstOpCode::Mnemonic op = is64bit ? TR::InstOpCode::orrx : TR::InstOpCode::orrw;
+
+   return generateTrg1ZeroSrc1Instruction(cg, op, node, treg, sreg, preced);
+   }
+
+TR::Instruction *generateNegInstruction(TR::CodeGenerator *cg, TR::Node *node,
+   TR::Register *treg, TR::Register *sreg, TR::Instruction *preced)
+   {
+   /* Alias of SUB instruction */
+
+   bool is64bit = node->getDataType().isInt64();
+   TR::InstOpCode::Mnemonic op = is64bit ? TR::InstOpCode::subx : TR::InstOpCode::subw;
+
+   return generateTrg1ZeroSrc1Instruction(cg, op, node, treg, sreg, preced);
+   }
+
+TR::Instruction *generateMulInstruction(TR::CodeGenerator *cg, TR::Node *node,
+   TR::Register *treg, TR::Register *s1reg, TR::Register *s2reg, TR::Instruction *preced)
+   {
+   /* Alias of MADD instruction */
+
+   bool is64bit = node->getDataType().isInt64();
+   TR::InstOpCode::Mnemonic op = is64bit ? TR::InstOpCode::maddx : TR::InstOpCode::maddw;
+
+   /* Use xzr as the third source register */
+   TR::Register *zeroReg = cg->allocateRegister();
+   TR::RegisterDependencyConditions *cond = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(1, 1, cg->trMemory());
+   addDependency(cond, zeroReg, TR::RealRegister::xzr, TR_GPR, cg);
+
+   if (preced)
+      return new (cg->trHeapMemory()) TR::ARM64Trg1Src3Instruction(op, node, treg, s1reg, s2reg, zeroReg, cond, preced, cg);
+   return new (cg->trHeapMemory()) TR::ARM64Trg1Src3Instruction(op, node, treg, s1reg, s2reg, zeroReg, cond, cg);
    }

@@ -98,7 +98,6 @@
    OPTIMIZATION(allocationSinking)
    OPTIMIZATION(stripMining)
    OPTIMIZATION(prefetchInsertion)
-   OPTIMIZATION(shrinkWrapping)
    OPTIMIZATION(samplingJProfiling)
    OPTIMIZATION(trivialDeadTreeRemoval)
    OPTIMIZATION(osrDefAnalysis)

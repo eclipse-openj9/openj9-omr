@@ -44,6 +44,10 @@ omr_error_t OMR_GC_InitializeCollector(OMR_VMThread* omrVMThread);
 
 omr_error_t OMR_GC_ShutdownCollector(OMR_VMThread* omrVMThread);
 
+omr_error_t OMR_GC_ShutdownCollector(OMR_VM* vm);
+
 omr_error_t OMR_GC_ShutdownHeap(OMR_VM* omrVM);
+
+omr_error_t OMR_GC_ShutdownHeapAndCollector(OMR_VM* vm);
 
 #endif /* MM_OMRGCSTARTUPAPI_HPP_ */

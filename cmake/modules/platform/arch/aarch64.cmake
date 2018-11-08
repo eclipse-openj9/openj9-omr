@@ -20,9 +20,15 @@
 #############################################################################
 
 list(APPEND OMR_PLATFORM_DEFINITIONS
+	-DAARCH64
 	-DJ9AARCH64
 	-DAARCH64GNU
 	-DFIXUP_UNALIGNED
 	-march=armv8-a+simd
 	-Wno-unused-but-set-variable
 )
+
+set(TR_HOST_ARCH aarch64)
+set(TR_HOST_BITS 64)
+
+list(APPEND TR_COMPILE_DEFINITIONS TR_HOST_ARM64 TR_TARGET_ARM64 TR_HOST_64BIT TR_TARGET_64BIT)

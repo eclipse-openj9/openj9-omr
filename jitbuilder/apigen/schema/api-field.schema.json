@@ -1,0 +1,15 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id":  "https://raw.githubusercontent.com/eclipse/omr/master/jitbuilder/apigen/schema/api-field.schema.json",
+    "title": "API Field Description Format",
+    "description": "Format for specifying API fields",
+    "$comment": "Copyright (c) 2018, 2018 IBM Corp. and others (see LICENSE.md)",
+    "$comment": "SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception",
+    "type": "object",
+    "properties": {
+        "name": { "description": "the name of the field", "type": "string"},
+        "type": { "description": "the type of the field", "$ref": "api-type.schema.json" },
+        "assign_at_init": { "description": "whether the field is assigned during initialization or not", "type": "boolean" }
+    },
+    "required": [ "name", "type", "assign_at_init" ]
+}

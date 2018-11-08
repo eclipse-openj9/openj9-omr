@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -63,17 +63,29 @@
    dftSimplifier,           // TR::fstore
    dftSimplifier,           // TR::dstore
    astoreSimplifier,        // TR::astore
-   dftSimplifier,           // TR::wrtbar
    dftSimplifier,           // TR::bstore
    dftSimplifier,           // TR::sstore
+   directStoreSimplifier,   // TR::iwrtbar
+   lstoreSimplifier,        // TR::lwrtbar
+   dftSimplifier,           // TR::fwrtbar
+   dftSimplifier,           // TR::dwrtbar
+   dftSimplifier,           // TR::awrtbar
+   dftSimplifier,           // TR::bwrtbar
+   dftSimplifier,           // TR::swrtbar
    indirectStoreSimplifier, // TR::lstorei
    indirectStoreSimplifier, // TR::fstorei
    indirectStoreSimplifier, // TR::dstorei
    indirectStoreSimplifier, // TR::astorei
-   indirectStoreSimplifier, // TR::wrtbari
    indirectStoreSimplifier, // TR::bstorei
    indirectStoreSimplifier, // TR::sstorei
    indirectStoreSimplifier, // TR::istorei
+   indirectStoreSimplifier, // TR::lwrtbari
+   indirectStoreSimplifier, // TR::fwrtbari
+   indirectStoreSimplifier, // TR::dwrtbari
+   indirectStoreSimplifier, // TR::awrtbari
+   indirectStoreSimplifier, // TR::bwrtbari
+   indirectStoreSimplifier, // TR::swrtbari
+   indirectStoreSimplifier, // TR::iwrtbari
    gotoSimplifier,          // TR::Goto
    dftSimplifier,           // TR::ireturn
    dftSimplifier,           // TR::lreturn
@@ -740,8 +752,8 @@
    dftSimplifier,           // TR::fnint
    dftSimplifier,           // TR::dnint
 
-   dftSimplifier,           // TR::fsqrt
-   dftSimplifier,           // TR::dsqrt
+   fsqrtSimplifier,         // TR::fsqrt
+   dsqrtSimplifier,         // TR::dsqrt
 
    dftSimplifier,           // TR::getstack
    dftSimplifier,           // TR::dealloca

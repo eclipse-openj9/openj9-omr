@@ -20,9 +20,28 @@
  *******************************************************************************/
 
 #include "omrTest.h"
+#include "JitTest.hpp"
 
 extern "C" {
 int omr_main_entry(int argc, char **argv, char **envp);
+}
+
+extern bool internal_initializeJit();
+extern int32_t internal_compileMethodBuilder(TR::MethodBuilder * methodBuilder, void ** entryPoint);
+extern void internal_shutdownJit();
+
+bool initializeJit() {
+   auto ret = internal_initializeJit();
+   return ret;
+}
+
+int32_t compileMethodBuilder(TR::MethodBuilder * methodBuilder, void ** entryPoint) {
+   auto ret = internal_compileMethodBuilder(methodBuilder, entryPoint);
+   return ret;
+}
+
+void shutdownJit() {
+   internal_shutdownJit();
 }
 
 int omr_main_entry(int argc, char **argv, char **envp) {

@@ -1,0 +1,46 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id":  "https://raw.githubusercontent.com/eclipse/omr/master/jitbuilder/apigen/schema/api-service.schema.json",
+    "title": "API Service Description Format",
+    "description": "Format for specifying API services",
+    "$comment": "Copyright (c) 2018, 2018 IBM Corp. and others (see LICENSE.md)",
+    "$comment": "SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception",
+    "type": "object",
+    "properties": {
+        "name": { "description": "the name of the service", "type": "string" },
+        "overloadsuffix": { "description": "suffix to add to based name when overloading is not supported", "type": "string" },
+        "return": { "description": "return type of the service", "$ref": "api-type.schema.json" },
+        "parms": {
+            "description": "description of parameters of the service",
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "name": { "type": "string" },
+                    "type": { "$ref": "api-type.schema.json" },
+                    "attributes": {
+                        "description": "flags signaling certain properties of a service parameter",
+                        "$coment": "in_out: this is an in-out parameter (pass-by-reference in some languages)",
+                        "$coment": "array: the parameter is an array of the specified type",
+                        "$coment": "can_be_vararg: the array parameter may be implemented as a vararg",
+                        "type":"array",
+                        "items": { "enum": [ "in_out", "array", "can_be_vararg" ] }
+                    },
+                    "array-len": { "type": "string" }
+                },
+                "required": [ "name", "type" ]
+            }
+        },
+        "flags": {
+            "description": "flags for the API service",
+            "$comment": "protected: the service is only visible to the API class and its children",
+            "$comment": "static: the service does not take a pointer to an instance of the containing class",
+            "$comment": "virtual: the service may be overridden by a client (may require a callback)",
+            "$comment": "sets-allocators: sets the allocator(s) for the class",
+            "$comment": "impl-default: for virtual service that have a client-side (not implementation-side) default implementation",
+            "type": "array",
+            "items": { "enum": [ "protected", "static", "virtual", "sets-allocators", "impl-default" ] }
+        }
+    },
+    "required": [ "name", "overloadsuffix", "return", "parms", "flags" ]
+}

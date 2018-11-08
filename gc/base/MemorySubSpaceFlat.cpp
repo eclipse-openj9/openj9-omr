@@ -51,28 +51,39 @@
 void*
 MM_MemorySubSpaceFlat::allocateObject(MM_EnvironmentBase* env, MM_AllocateDescription* allocDescription, MM_MemorySubSpace* baseSubSpace, MM_MemorySubSpace* previousSubSpace, bool shouldCollectOnFailure)
 {
+	Trc_MM_MSSFlat_allocate_entry(env->getLanguageVMThread(), "Object", allocDescription->getBytesRequested(), this, getName(), baseSubSpace, previousSubSpace, (uintptr_t)shouldCollectOnFailure);
+
 	void* result = NULL;
 
 	if (shouldCollectOnFailure) {
+		Trc_MM_MSSFlat_allocate(env->getLanguageVMThread(), "Object", allocDescription->getBytesRequested(), 1);
 		result = _memorySubSpace->allocateObject(env, allocDescription, baseSubSpace, this, shouldCollectOnFailure);
 	} else {
 		/* If request came from parent, forward the failure handling to the child first */
 		if (previousSubSpace == _parent) {
+			Trc_MM_MSSFlat_allocate(env->getLanguageVMThread(), "Object", allocDescription->getBytesRequested(), 2);
 			result = _memorySubSpace->allocateObject(env, allocDescription, baseSubSpace, this, shouldCollectOnFailure);
 		}
 	}
+
+	Trc_MM_MSSFlat_allocate_exit(env->getLanguageVMThread(), "Object", allocDescription->getBytesRequested(), result);
+
 	return result;
 }
 
 void*
 MM_MemorySubSpaceFlat::allocationRequestFailed(MM_EnvironmentBase* env, MM_AllocateDescription* allocateDescription, AllocationType allocationType, MM_ObjectAllocationInterface* objectAllocationInterface, MM_MemorySubSpace* baseSubSpace, MM_MemorySubSpace* previousSubSpace)
 {
+	Trc_MM_MSSFlat_allocationRequestFailed_entry(env->getLanguageVMThread(), allocateDescription->getBytesRequested(), this, getName(), baseSubSpace, previousSubSpace, (uintptr_t)allocationType);
+
 	void* addr = NULL;
 
 	/* If the request came from the parent, forward the failure handling to the child first */
 	if (previousSubSpace == _parent) {
+		Trc_MM_MSSFlat_allocationRequestFailed(env->getLanguageVMThread(), allocateDescription->getBytesRequested(), 1);
 		addr = _memorySubSpace->allocationRequestFailed(env, allocateDescription, allocationType, objectAllocationInterface, baseSubSpace, this);
 		if (NULL != addr) {
+			Trc_MM_MSSFlat_allocationRequestFailed_exit(env->getLanguageVMThread(), allocateDescription->getBytesRequested(), 1, addr);
 			return addr;
 		}
 	}
@@ -86,8 +97,10 @@ MM_MemorySubSpaceFlat::allocationRequestFailed(MM_EnvironmentBase* env, MM_Alloc
 			/* Beaten to exclusive access for our collector by another thread - a GC must have occurred.  This thread
 			 * does NOT have exclusive access at this point.  Try and satisfy the allocate based on a GC having occurred.
 			 */
+			Trc_MM_MSSFlat_allocationRequestFailed(env->getLanguageVMThread(), allocateDescription->getBytesRequested(), 2);
 			addr = allocateGeneric(env, allocateDescription, allocationType, objectAllocationInterface, _memorySubSpace);
 			if (NULL != addr) {
+				Trc_MM_MSSFlat_allocationRequestFailed_exit(env->getLanguageVMThread(), allocateDescription->getBytesRequested(), 2, addr);
 				return addr;
 			}
 
@@ -97,18 +110,21 @@ MM_MemorySubSpaceFlat::allocationRequestFailed(MM_EnvironmentBase* env, MM_Alloc
 			if (!env->acquireExclusiveVMAccessForGC(_collector)) {
 				/* we have exclusive access but another thread beat us to the GC so see if they collected enough to satisfy our request */
 				allocateDescription->restoreObjects(env);
+				Trc_MM_MSSFlat_allocationRequestFailed(env->getLanguageVMThread(), allocateDescription->getBytesRequested(), 3);
 				addr = allocateGeneric(env, allocateDescription, allocationType, objectAllocationInterface, _memorySubSpace);
 				if (NULL != addr) {
 					/* Satisfied the allocate after having grabbed exclusive access to perform a GC (without actually performing the GC).  Raise
 					 * an event for tracing / verbose to report the occurrence.
 					 */
 					reportAcquiredExclusiveToSatisfyAllocate(env, allocateDescription);
+					Trc_MM_MSSFlat_allocationRequestFailed_exit(env->getLanguageVMThread(), allocateDescription->getBytesRequested(), 3, addr);
 					return addr;
 				}
 
 				/* we still failed the allocate so try a resize to get more space */
 				reportAllocationFailureStart(env, allocateDescription);
 				performResize(env, allocateDescription);
+				Trc_MM_MSSFlat_allocationRequestFailed(env->getLanguageVMThread(), allocateDescription->getBytesRequested(), 4);
 				addr = allocateGeneric(env, allocateDescription, allocationType, objectAllocationInterface, baseSubSpace);
 
 				if (addr) {
@@ -117,6 +133,7 @@ MM_MemorySubSpaceFlat::allocationRequestFailed(MM_EnvironmentBase* env, MM_Alloc
 					 */
 					reportAcquiredExclusiveToSatisfyAllocate(env, allocateDescription);
 					reportAllocationFailureEnd(env);
+					Trc_MM_MSSFlat_allocationRequestFailed_exit(env->getLanguageVMThread(), allocateDescription->getBytesRequested(), 4, addr);
 					return addr;
 				}
 				allocateDescription->saveObjects(env);
@@ -139,6 +156,7 @@ MM_MemorySubSpaceFlat::allocationRequestFailed(MM_EnvironmentBase* env, MM_Alloc
 
 		if (addr) {
 			reportAllocationFailureEnd(env);
+			Trc_MM_MSSFlat_allocationRequestFailed_exit(env->getLanguageVMThread(), allocateDescription->getBytesRequested(), 5, addr);
 			return addr;
 		}
 
@@ -152,6 +170,7 @@ MM_MemorySubSpaceFlat::allocationRequestFailed(MM_EnvironmentBase* env, MM_Alloc
 			reportAllocationFailureEnd(env);
 
 			if (addr) {
+				Trc_MM_MSSFlat_allocationRequestFailed_exit(env->getLanguageVMThread(), allocateDescription->getBytesRequested(), 6, addr);
 				return addr;
 			}
 		}
@@ -161,10 +180,12 @@ MM_MemorySubSpaceFlat::allocationRequestFailed(MM_EnvironmentBase* env, MM_Alloc
 	/* If the caller was the child, forward the failure notification to the parent for handling */
 	if ((NULL != _parent) && (previousSubSpace != _parent)) {
 		/* see if the parent can find us some space */
+		Trc_MM_MSSFlat_allocationRequestFailed(env->getLanguageVMThread(), allocateDescription->getBytesRequested(), 5);
 		return _parent->allocationRequestFailed(env, allocateDescription, allocationType, objectAllocationInterface, baseSubSpace, this);
 	}
 
 	/* Nothing else to try - fail */
+	Trc_MM_MSSFlat_allocationRequestFailed_exit(env->getLanguageVMThread(), allocateDescription->getBytesRequested(), 8, addr);
 	return NULL;
 }
 

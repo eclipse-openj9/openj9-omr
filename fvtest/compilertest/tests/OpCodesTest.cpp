@@ -226,6 +226,10 @@ signatureCharJ_J_testMethodType  * OpCodesTest::_lAbs = 0;
 signatureCharD_D_testMethodType  * OpCodesTest::_dAbs = 0;
 signatureCharF_F_testMethodType  * OpCodesTest::_fAbs = 0;
 
+//Sqrt
+signatureCharD_D_testMethodType  * OpCodesTest::_dSqrt = 0;
+signatureCharF_F_testMethodType  * OpCodesTest::_fSqrt = 0;
+
 //Load
 signatureCharI_I_testMethodType  *OpCodesTest::_iLoad = 0;
 signatureCharJ_J_testMethodType  *OpCodesTest::_lLoad = 0;

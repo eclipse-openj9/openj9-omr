@@ -439,7 +439,7 @@ OMR::CodeGenPhase::performSetupForInstructionSelectionPhase(TR::CodeGenerator * 
    {
    TR::Compilation *comp = cg->comp();
 
-   if (TR::Compiler->om.shouldGenerateReadBarriersForFieldLoads())
+   if (TR::Compiler->target.cpu.isZ() && TR::Compiler->om.shouldGenerateReadBarriersForFieldLoads())
       {
       // TODO (GuardedStorage): We need to come up with a better solution than anchoring aloadi's
       // to enforce certain evaluation order
@@ -663,14 +663,6 @@ OMR::CodeGenPhase::performRemoveUnusedLocalsPhase(TR::CodeGenerator * cg, TR::Co
    }
 
 void
-OMR::CodeGenPhase::performShrinkWrappingPhase(TR::CodeGenerator * cg, TR::CodeGenPhase * phase)
-   {
-   TR::Compilation *comp = cg->comp();
-   if (comp->getOptimizer())
-      comp->getOptimizer()->performVeryLateOpts();
-   }
-
-void
 OMR::CodeGenPhase::performInsertDebugCountersPhase(TR::CodeGenerator * cg, TR::CodeGenPhase * phase)
    {
    cg->insertDebugCounters();
@@ -717,8 +709,6 @@ OMR::CodeGenPhase::getName(PhaseValue phase)
 	 return "FindAndFixCommonedReferencesPhase";
       case RemoveUnusedLocalsPhase:
 	 return "RemoveUnusedLocalsPhase";
-      case ShrinkWrappingPhase:
-	 return "ShrinkWrappingPhase";
       case InliningReportPhase:
 	 return "InliningReportPhase";
       case InsertDebugCountersPhase:

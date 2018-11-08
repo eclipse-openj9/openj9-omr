@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -39,7 +39,6 @@
    TR::CodeGenPhase::performProcessRelocationsPhase,                                         //ProcessRelocationsPhase
    TR::CodeGenPhase::performFindAndFixCommonedReferencesPhase,                               //FindAndFixCommonedReferencesPhase
    TR::CodeGenPhase::performRemoveUnusedLocalsPhase,                                         //RemoveUnusedLocalsPhase
-   TR::CodeGenPhase::performShrinkWrappingPhase,                                             //ShrinkWrappingPhase
    TR::CodeGenPhase::performInliningReportPhase,                                             //InliningReportPhase
    TR::CodeGenPhase::performInsertDebugCountersPhase,
    TR::CodeGenPhase::performCleanUpFlagsPhase,

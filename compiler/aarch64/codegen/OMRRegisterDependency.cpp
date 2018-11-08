@@ -20,7 +20,12 @@
  *******************************************************************************/
 
 #include <stddef.h>
+#include "codegen/ARM64Instruction.hpp"
+#include "codegen/BackingStore.hpp"
 #include "codegen/CodeGenerator.hpp"
+#include "codegen/GenerateInstructions.hpp"
+#include "codegen/Instruction.hpp"
+#include "codegen/MemoryReference.hpp"
 #include "codegen/RealRegister.hpp"
 #include "codegen/RegisterDependency.hpp"
 #include "il/Node.hpp"
@@ -126,6 +131,18 @@ bool OMR::ARM64::RegisterDependencyConditions::usesRegister(TR::Register *r)
    return false;
    }
 
+void OMR::ARM64::RegisterDependencyConditions::incRegisterTotalUseCounts(TR::CodeGenerator *cg)
+   {
+   for (int i = 0; i < _addCursorForPre; i++)
+      {
+      _preConditions->getRegisterDependency(i)->getRegister()->incTotalUseCount();
+      }
+   for (int j = 0; j < _addCursorForPost; j++)
+      {
+      _postConditions->getRegisterDependency(j)->getRegister()->incTotalUseCount();
+      }
+   }
+
 TR::RegisterDependencyConditions *
 OMR::ARM64::RegisterDependencyConditions::clone(
    TR::CodeGenerator *cg,
@@ -134,4 +151,206 @@ OMR::ARM64::RegisterDependencyConditions::clone(
    TR_ASSERT(false, "Not implemented yet.");
 
    return NULL;
+   }
+
+void TR_ARM64RegisterDependencyGroup::assignRegisters(
+                        TR::Instruction *currentInstruction,
+                        TR_RegisterKinds kindToBeAssigned,
+                        uint32_t numberOfRegisters,
+                        TR::CodeGenerator *cg)
+   {
+   TR::Compilation *comp = cg->comp();
+   TR::Machine *machine = cg->machine();
+   TR::Register  *virtReg;
+   TR::RealRegister::RegNum dependentRegNum;
+   TR::RealRegister *dependentRealReg, *assignedRegister;
+   uint32_t i, j;
+   bool changed;
+
+   if (!comp->getOption(TR_DisableOOL))
+      {
+      for (i = 0; i< numberOfRegisters; i++)
+         {
+         virtReg = _dependencies[i].getRegister();
+         dependentRegNum = _dependencies[i].getRealRegister();
+         if (dependentRegNum == TR::RealRegister::SpilledReg)
+            {
+            TR_ASSERT(virtReg->getBackingStorage(),"should have a backing store if dependentRegNum == spillRegIndex()\n");
+            if (virtReg->getAssignedRealRegister())
+               {
+               // this happens when the register was first spilled in main line path then was reverse spilled
+               // and assigned to a real register in OOL path. We protected the backing store when doing
+               // the reverse spill so we could re-spill to the same slot now
+               traceMsg (comp,"\nOOL: Found register spilled in main line and re-assigned inside OOL");
+               TR::Node *currentNode = currentInstruction->getNode();
+               TR::RealRegister *assignedReg = toRealRegister(virtReg->getAssignedRegister());
+               TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(currentNode, (TR::SymbolReference*)virtReg->getBackingStorage()->getSymbolReference(), sizeof(uintptr_t), cg);
+               TR_RegisterKinds rk = virtReg->getKind();
+               TR::InstOpCode::Mnemonic opCode;
+               switch (rk)
+                  {
+                  case TR_GPR:
+                     opCode = TR::InstOpCode::ldrimmx;
+                     break;
+                  case TR_FPR:
+                     opCode = TR::InstOpCode::vldrimmd;
+                     break;
+                  default:
+                     TR_ASSERT(0, "\nRegister kind not supported in OOL spill\n");
+                     break;
+                  }
+
+               TR::Instruction *inst = generateTrg1MemInstruction(cg, opCode, currentNode, assignedReg, tempMR, currentInstruction);
+
+               assignedReg->setAssignedRegister(NULL);
+               virtReg->setAssignedRegister(NULL);
+               assignedReg->setState(TR::RealRegister::Free);
+
+               if (comp->getDebug())
+                  cg->traceRegisterAssignment("Generate reload of virt %s due to spillRegIndex dep at inst %p\n", cg->comp()->getDebug()->getName(virtReg), currentInstruction);
+               cg->traceRAInstruction(inst);
+               }
+
+            if (!(std::find(cg->getSpilledRegisterList()->begin(), cg->getSpilledRegisterList()->end(), virtReg) != cg->getSpilledRegisterList()->end()))
+               cg->getSpilledRegisterList()->push_front(virtReg);
+            }
+         // we also need to free up all locked backing storage if we are exiting the OOL during backwards RA assignment
+         else if (currentInstruction->isLabel() && virtReg->getAssignedRealRegister())
+            {
+            TR::ARM64LabelInstruction *labelInstr = (TR::ARM64LabelInstruction *)currentInstruction;
+            TR_BackingStore *location = virtReg->getBackingStorage();
+            TR_RegisterKinds rk = virtReg->getKind();
+            int32_t dataSize;
+            if (labelInstr->getLabelSymbol()->isStartOfColdInstructionStream() && location)
+               {
+               traceMsg (comp,"\nOOL: Releasing backing storage (%p)\n", location);
+               if (rk == TR_GPR)
+                  dataSize = TR::Compiler->om.sizeofReferenceAddress();
+               else
+                  dataSize = 8;
+               location->setMaxSpillDepth(0);
+               cg->freeSpill(location, dataSize, 0);
+               virtReg->setBackingStorage(NULL);
+               }
+            }
+         }
+      }
+
+   for (i = 0; i < numberOfRegisters; i++)
+      {
+      virtReg = _dependencies[i].getRegister();
+
+      if (virtReg->getAssignedRealRegister() != NULL)
+         {
+         if (_dependencies[i].getRealRegister() == TR::RealRegister::NoReg)
+            {
+            virtReg->block();
+            }
+         else
+            {
+            dependentRegNum = toRealRegister(virtReg->getAssignedRealRegister())->getRegisterNumber();
+            for (j = 0; j < numberOfRegisters; j++)
+               {
+               if (dependentRegNum == _dependencies[j].getRealRegister())
+                  {
+                  virtReg->block();
+                  break;
+                  }
+               }
+            }
+         }
+      }
+
+   do
+      {
+      changed = false;
+      for (i = 0; i < numberOfRegisters; i++)
+         {
+         virtReg = _dependencies[i].getRegister();
+         dependentRegNum = _dependencies[i].getRealRegister();
+         dependentRealReg = machine->getARM64RealRegister(dependentRegNum);
+
+         if (dependentRegNum != TR::RealRegister::NoReg &&
+             dependentRegNum != TR::RealRegister::SpilledReg &&
+             dependentRealReg->getState() == TR::RealRegister::Free)
+            {
+            machine->coerceRegisterAssignment(currentInstruction, virtReg, dependentRegNum);
+            virtReg->block();
+            changed = true;
+            }
+         }
+      } while (changed == true);
+
+   do
+      {
+      changed = false;
+      for (i = 0; i < numberOfRegisters; i++)
+         {
+         virtReg = _dependencies[i].getRegister();
+         assignedRegister = NULL;
+         if (virtReg->getAssignedRealRegister() != NULL)
+            {
+            assignedRegister = toRealRegister(virtReg->getAssignedRealRegister());
+            }
+         dependentRegNum = _dependencies[i].getRealRegister();
+         dependentRealReg = machine->getARM64RealRegister(dependentRegNum);
+         if (dependentRegNum != TR::RealRegister::NoReg &&
+             dependentRegNum != TR::RealRegister::SpilledReg &&
+             dependentRealReg != assignedRegister)
+            {
+            machine->coerceRegisterAssignment(currentInstruction, virtReg, dependentRegNum);
+            virtReg->block();
+            changed = true;
+            }
+         }
+      } while (changed == true);
+
+   for (i = 0; i < numberOfRegisters; i++)
+      {
+      if (_dependencies[i].getRealRegister() == TR::RealRegister::NoReg)
+         {
+         TR::RealRegister *realOne;
+
+         virtReg = _dependencies[i].getRegister();
+         realOne = virtReg->getAssignedRealRegister();
+         if (realOne == NULL)
+            {
+            if (virtReg->getTotalUseCount() == virtReg->getFutureUseCount())
+               {
+               if ((assignedRegister = machine->findBestFreeRegister(virtReg->getKind(), true)) == NULL)
+                  {
+                  assignedRegister = machine->freeBestRegister(currentInstruction, virtReg, NULL);
+                  }
+               }
+            else
+               {
+               assignedRegister = machine->reverseSpillState(currentInstruction, virtReg, NULL);
+               }
+            virtReg->setAssignedRegister(assignedRegister);
+            assignedRegister->setAssignedRegister(virtReg);
+            assignedRegister->setState(TR::RealRegister::Assigned);
+            virtReg->block();
+            }
+         }
+      }
+
+   unblockRegisters(numberOfRegisters);
+   for (i = 0; i < numberOfRegisters; i++)
+      {
+      TR::Register *dependentRegister = getRegisterDependency(i)->getRegister();
+      if (dependentRegister->getAssignedRegister())
+         {
+         TR::RealRegister *assignedRegister = dependentRegister->getAssignedRegister()->getRealRegister();
+
+         if (getRegisterDependency(i)->getRealRegister() == TR::RealRegister::NoReg)
+            getRegisterDependency(i)->setRealRegister(toRealRegister(assignedRegister)->getRegisterNumber());
+
+         if (dependentRegister->decFutureUseCount() == 0)
+            {
+            dependentRegister->setAssignedRegister(NULL);
+            assignedRegister->setAssignedRegister(NULL);
+            assignedRegister->setState(TR::RealRegister::Unlatched); // Was setting to Free
+            }
+         }
+      }
    }

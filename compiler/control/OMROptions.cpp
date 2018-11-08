@@ -58,9 +58,9 @@
 
 using namespace OMR;
 
-#define SET_OPTION_BIT(x)   TR::Options::setBit,   offsetof(OMR::Options,_options[(x)&TR_OWM]), ((x)&~TR_OWM)
-#define RESET_OPTION_BIT(x) TR::Options::resetBit, offsetof(OMR::Options,_options[(x)&TR_OWM]), ((x)&~TR_OWM)
-#define SET_TRACECG_BIT(x)  TR::Options::setBit,   offsetof(OMR::Options, _cgTrace), (x)
+#define SET_OPTION_BIT(x)   TR::Options::setBit,   offsetof(OMR::Options,_options[(x)&TR_OWM]), (static_cast<uintptrj_t>((x)&~TR_OWM))
+#define RESET_OPTION_BIT(x) TR::Options::resetBit, offsetof(OMR::Options,_options[(x)&TR_OWM]), (static_cast<uintptrj_t>((x)&~TR_OWM))
+#define SET_TRACECG_BIT(x)  TR::Options::setBit,   offsetof(OMR::Options, _cgTrace), (static_cast<uintptrj_t>(x))
 
 #define NoOptString                     "noOpt"
 #define DisableAllocationInliningString "disableAllocationInlining"
@@ -514,7 +514,6 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
 #endif
    {"disableShareableMethodHandleThunks",  "R\tdisable creation of shareable invokeExact thunks for MethodHandles", SET_OPTION_BIT(TR_DisableShareableMethodHandleThunks), "F", NOT_IN_SUBSET},
    {"disableSharedCacheHints",             "R\tdisable storing and loading hints from shared cache", SET_OPTION_BIT(TR_DisableSharedCacheHints), "F"},
-   {"disableShrinkWrapping",               "M\tdisable shrink wrapping of callee saved registers", SET_OPTION_BIT(TR_DisableShrinkWrapping), "F"},
    {"disableSIMD",                         "O\tdisable SIMD exploitation and infrastructure on platforms supporting vector register and instructions", SET_OPTION_BIT(TR_DisableSIMD), "F"},
    {"disableSIMDArrayCompare",            "O\tDisable vectorized array comparison using SIMD instruction", SET_OPTION_BIT(TR_DisableSIMDArrayCompare), "F"},
    {"disableSIMDArrayCopy",                "O\tDisable vectorized array copying using SIMD instruction", SET_OPTION_BIT(TR_DisableSIMDArrayCopy), "F"},
@@ -535,6 +534,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"disableSupportForCpuSpentInCompilation", "M\tdo not provide CPU spent in compilation",    SET_OPTION_BIT(TR_DisableSupportForCpuSpentInCompilation), "F" },
    {"disableSwitchAnalyzer",              "O\tdisable switch analyzer",                        TR::Options::disableOptimization, switchAnalyzer, 0, "P"},
    {"disableSwitchAwayFromProfilingForHotAndVeryhot", "O\tdisable switch away from profiling for hot and veryhot", SET_OPTION_BIT(TR_DisableSwitchAwayFromProfilingForHotAndVeryhot), "F"},
+   {"disableSymbolValidationManager",      "M\tEnable Symbol Validation Manager for Relocatable Compile Validations", RESET_OPTION_BIT(TR_EnableSymbolValidationManager), "F"},
    {"disableSynchronizedFieldLoad",       "O\tDisable the use of hardware optimized synchronized field load intrinsics",         SET_OPTION_BIT(TR_DisableSynchronizedFieldLoad), "F"},
    {"disableSyncMethodInlining",          "O\tdisable inlining of synchronized methods",       SET_OPTION_BIT(TR_DisableSyncMethodInlining), "F"},
    {"disableTailRecursion",               "O\tdisable tail recursion",                         SET_OPTION_BIT(TR_DisableTailRecursion), "F"},
@@ -664,7 +664,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"enableEBBCCInfo",                    "C\tenable tracking CCInfo in Extended Basic Block scope",  SET_OPTION_BIT(TR_EnableEBBCCInfo), "F"},
    {"enableElementPrivatization",         "O\tenable privatization of stack declared elements accessed by const indices\n", SET_OPTION_BIT(TR_EnableElementPrivatization), "F"},
    {"enableExecutableELFGeneration",      "I\tenable the generation of executable ELF files", SET_OPTION_BIT(TR_EmitExecutableELFFile), "F", NOT_IN_SUBSET},
-   {"enableExpensiveOptsAtWarm",          "O\tenable store sinking, shrink wrapping and OSR at warm and below", SET_OPTION_BIT(TR_EnableExpensiveOptsAtWarm), "F" },
+   {"enableExpensiveOptsAtWarm",          "O\tenable store sinking and OSR at warm and below", SET_OPTION_BIT(TR_EnableExpensiveOptsAtWarm), "F" },
    {"enableFastHotRecompilation",         "R\ttry to recompile at hot sooner", SET_OPTION_BIT(TR_EnableFastHotRecompilation), "F"},
    {"enableFastScorchingRecompilation",   "R\ttry to recompile at scorching sooner", SET_OPTION_BIT(TR_EnableFastScorchingRecompilation), "F"},
    {"enableFpreductionAnnotation",        "O\tenable fpreduction annotation", SET_OPTION_BIT(TR_EnableFpreductionAnnotation), "F"},
@@ -754,6 +754,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"enableSharedCacheTiming",            "M\tenable timing stats for accessing the shared cache", SET_OPTION_BIT(TR_EnableSharedCacheTiming), "F"},
    {"enableSIMDLibrary",                  "M\tEnable recognized methods for SIMD library", SET_OPTION_BIT(TR_EnableSIMDLibrary), "F"},
    {"enableSnapshotBlockOpts",            "O\tenable block ordering/redirecting optimizations in the presences of snapshot nodes", SET_OPTION_BIT(TR_EnableSnapshotBlockOpts), "F"},
+   {"enableSymbolValidationManager",      "M\tEnable Symbol Validation Manager for Relocatable Compile Validations", SET_OPTION_BIT(TR_EnableSymbolValidationManager), "F"},
    {"enableTailCallOpt",                  "R\tenable tall call optimization in peephole", SET_OPTION_BIT(TR_EnableTailCallOpt), "F"},
    {"enableThisLiveRangeExtension",       "R\tenable this live range extesion to the end of the method", SET_OPTION_BIT(TR_EnableThisLiveRangeExtension), "F"},
    {"enableTraps",                        "C\tenable trap instructions",                     RESET_OPTION_BIT(TR_DisableTraps), "F"},
@@ -787,6 +788,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"forceAOT", "M\tForce compilations to be done in AOT mode",
     SET_OPTION_BIT(TR_ForceAOT), "P", NOT_IN_SUBSET},
    {"forceBCDInit", "O\tForce Binary Coded Decimal (BCD) loads to be initialized by forcing the field to a temporary", SET_OPTION_BIT(TR_ForceBCDInit), "F"},
+   {"forceFieldWatch", "M\tForce JIT to pretend that field watch is activated", SET_OPTION_BIT(TR_EnableFieldWatch), "P", NOT_IN_SUBSET},
    {"forceFullSpeedDebug", "M\tForce JIT to pretend that debug mode is activated",
     SET_OPTION_BIT(TR_FullSpeedDebug), "P", NOT_IN_SUBSET},
    {"forceIEEEDivideByZeroException", "O\tForce IEEE divide by zero exception bit on when performing DFP division", SET_OPTION_BIT(TR_ForceIEEEDivideByZeroException), "F"},
@@ -1253,7 +1255,6 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"traceScalarizeSSOps",              "L\ttrace scalarization of array/SS ops", SET_OPTION_BIT(TR_TraceScalarizeSSOps), "P"},
    {"traceSEL",                         "L\ttrace sign extension load", SET_OPTION_BIT(TR_TraceSEL), "P"},
    {"traceSequenceSimplification",      "L\ttrace arithmetic sequence simplification",     TR::Options::traceOptimization, expressionsSimplification, 0, "P"},
-   {"traceShrinkWrapping",              "L\ttrace shrink wrapping of callee saved registers ", SET_OPTION_BIT(TR_TraceShrinkWrapping), "P"},
    {"traceSpillCosts",                 "L\ttrace spill costs (basic) only show its activation",
         TR::Options::setBitsFromStringSet, offsetof(OMR::Options, _traceSpillCosts), TR_TraceSpillCostsBasic, "F"},
    {"traceSpillCosts=",                "L{regex}\tlist of additional spill costs options: basic, results, build, details",
@@ -1319,6 +1320,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"useSamplingJProfilingForInterpSampledMethods","M\tHeuristic. Use samplingJProfiling for methods sampled by interpreter", SET_OPTION_BIT(TR_UseSamplingJProfilingForInterpSampledMethods), "F", NOT_IN_SUBSET },
    {"useSamplingJProfilingForLPQ",              "M\tHeuristic. Use samplingJProfiling for methods from low priority queue", SET_OPTION_BIT(TR_UseSamplingJProfilingForLPQ), "F", NOT_IN_SUBSET },
    {"useStrictStartupHints",        "M\tStartup hints from application obeyed strictly", SET_OPTION_BIT(TR_UseStrictStartupHints), "F", NOT_IN_SUBSET},
+   {"useSymbolValidationManager",        "M\tUse Symbol Validation Manager for Relocatable Compile Validations", SET_OPTION_BIT(TR_UseSymbolValidationManager), "F", NOT_IN_SUBSET},
    {"useVmTotalCpuTimeAsAbstractTime", "M\tUse VmTotalCpuTime as abstractTime", SET_OPTION_BIT(TR_UseVmTotalCpuTimeAsAbstractTime), "F", NOT_IN_SUBSET },
    {"varyInlinerAggressivenessWithTime", "M\tVary inliner aggressiveness with abstract time", SET_OPTION_BIT(TR_VaryInlinerAggressivenessWithTime), "F", NOT_IN_SUBSET },
    {"verifyReferenceCounts", "I\tverify the sanity of object reference counts before manipulation", SET_OPTION_BIT(TR_VerifyReferenceCounts), "F"},
@@ -2042,7 +2044,7 @@ OMR::Options::jitLatePostProcess(TR::OptionSet *optionSet, void * jitConfig)
       {
       if (!self()->getOption(TR_DisableOSR))
          self()->setOption(TR_EnableOSR); // Make OSR the default for FSD
-      self()->setOption(TR_DisableShrinkWrapping);
+
       self()->setOption(TR_DisableMethodHandleThunks); // Can't yet transition a MH thunk frame into equivalent interpreter frames
       }
 
@@ -2215,6 +2217,19 @@ OMR::Options::jitLatePostProcess(TR::OptionSet *optionSet, void * jitConfig)
             {
             if (_coldUpgradeSampleThreshold == TR_DEFAULT_COLD_UPGRADE_SAMPLE_THRESHOLD)
                _coldUpgradeSampleThreshold = 2;
+            }
+
+         // disable DelayRelocationForAOTCompilations feature because with higher
+         // method counts, the JIT collects enough IProfiler info prior to
+         // compilation that it doesn't need to wait any longer before running the
+
+         if (self()->getOption(TR_UseHigherMethodCounts))
+            {
+            self()->setOption(TR_DisableDelayRelocationForAOTCompilations, true);// If scount has not been changed on the command line, adjust it here
+            if (self()->getInitialSCount() == TR_INITIAL_SCOUNT)
+               {
+               _initialSCount = _initialCount;
+               }
             }
          }
       else // No AOT
@@ -2447,9 +2462,6 @@ OMR::Options::jitPreProcess()
    // --------------------------------------------------------------------------
    // All projects
    //
-
-   //Disabling Shrink Wrapping on all platforms (functional issues)
-   self()->setOption(TR_DisableShrinkWrapping);
 
    self()->setOption(TR_RestrictStaticFieldFolding);
 

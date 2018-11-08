@@ -216,6 +216,22 @@ TR::Instruction *generateCompareBranchInstruction(
                    TR::Instruction *preced = NULL);
 
 /*
+ * @brief Generates branch-to-register instruction
+ * @param[in] cg : CodeGenerator
+ * @param[in] op : instruction opcode
+ * @param[in] node : node
+ * @param[in] treg : target register
+ * @param[in] preced : preceding instruction
+ * @return generated instruction
+ */
+TR::Instruction *generateRegBranchInstruction(
+                   TR::CodeGenerator *cg,
+                   TR::InstOpCode::Mnemonic op,
+                   TR::Node *node,
+                   TR::Register *treg,
+                   TR::Instruction *preced = NULL);
+
+/*
  * @brief Generates admin instruction
  * @param[in] cg : CodeGenerator
  * @param[in] op : instruction opcode
@@ -465,7 +481,7 @@ TR::Instruction *generateLogicalShiftRightImmInstruction(
                    TR::Register *treg,
                    TR::Register *sreg,
                    uint32_t shiftAmount,
-                   TR::Instruction *preced);
+                   TR::Instruction *preced = NULL);
 
 /*
  * @brief Generates LSL instruction
@@ -499,7 +515,23 @@ TR::Instruction *generateCompareImmInstruction(
                   TR::Node *node,
                   TR::Register *sreg,
                   int32_t imm,
-                  TR::Instruction *preced);
+                  TR::Instruction *preced = NULL);
+
+/*
+ * @brief Generates CMP (register) instruction
+ * @param[in] cg : CodeGenerator
+ * @param[in] node : node
+ * @param[in] s1reg : source register 1
+ * @param[in] s2reg : source register 2
+ * @param[in] preced : preceding instruction
+ * @return generated instruction
+ */
+TR::Instruction *generateCompareInstruction(
+                  TR::CodeGenerator *cg,
+                  TR::Node *node,
+                  TR::Register *s1reg,
+                  TR::Register *s2reg,
+                  TR::Instruction *preced = NULL);
 
 /*
  * @brief Generates TST (immediate) instruction
@@ -515,6 +547,72 @@ TR::Instruction *generateTestImmInstruction(
                   TR::Node *node,
                   TR::Register *sreg,
                   int32_t imm,
-                  TR::Instruction *preced);
+                  TR::Instruction *preced = NULL);
+
+/*
+ * @brief Generates TST (register) instruction
+ * @param[in] cg : CodeGenerator
+ * @param[in] node : node
+ * @param[in] s1reg : source register 1
+ * @param[in] s2reg : source register 2
+ * @param[in] preced : preceding instruction
+ * @return generated instruction
+ */
+TR::Instruction *generateTestInstruction(
+                  TR::CodeGenerator *cg,
+                  TR::Node *node,
+                  TR::Register *s1reg,
+                  TR::Register *s2reg,
+                  TR::Instruction *preced = NULL);
+
+/*
+ * @brief Generates MOV (register) instruction
+ * @param[in] cg : CodeGenerator
+ * @param[in] node : node
+ * @param[in] treg : target register
+ * @param[in] sreg : source register
+ * @param[in] preced : preceding instruction
+ * @return generated instruction
+ */
+TR::Instruction *generateMovInstruction(
+                  TR::CodeGenerator *cg,
+                  TR::Node *node,
+                  TR::Register *treg,
+                  TR::Register *sreg,
+                  TR::Instruction *preced = NULL);
+
+/*
+ * @brief Generates NEG (register) instruction
+ * @param[in] cg : CodeGenerator
+ * @param[in] node : node
+ * @param[in] treg : target register
+ * @param[in] sreg : source register
+ * @param[in] preced : preceding instruction
+ * @return generated instruction
+ */
+TR::Instruction *generateNegInstruction(
+                  TR::CodeGenerator *cg,
+                  TR::Node *node,
+                  TR::Register *treg,
+                  TR::Register *sreg,
+                  TR::Instruction *preced = NULL);
+
+/*
+ * @brief Generates MUL (register) instruction
+ * @param[in] cg : CodeGenerator
+ * @param[in] node : node
+ * @param[in] treg : target register
+ * @param[in] s1reg : source register 1
+ * @param[in] s2reg : source register 2
+ * @param[in] preced : preceding instruction
+ * @return generated instruction
+ */
+TR::Instruction *generateMulInstruction(
+                  TR::CodeGenerator *cg,
+                  TR::Node *node,
+                  TR::Register *treg,
+                  TR::Register *s1reg,
+                  TR::Register *s2reg,
+                  TR::Instruction *preced = NULL);
 
 #endif

@@ -751,14 +751,14 @@ TR_Debug::printPrefix(TR::FILE *pOutFile, TR::Instruction *instr, uint8_t *curso
       char *p0 = prefix;
       char *p1 = prefix + strlen(prefix);
 
-      // Print machine code in bytes on X86, in words on PPC,ARM
+      // Print machine code in bytes on X86, in words on PPC,ARM,ARM64
       // Stop if we try to run over the buffer.
       if (TR::Compiler->target.cpu.isX86())
          {
          for (int i = 0; i < size && p1 - p0 + 3 < prefixWidth; i++, p1 += 3)
             sprintf(p1, " %02x", *cursor++);
          }
-      else if (TR::Compiler->target.cpu.isPower() || TR::Compiler->target.cpu.isARM())
+      else if (TR::Compiler->target.cpu.isPower() || TR::Compiler->target.cpu.isARM() || TR::Compiler->target.cpu.isARM64())
          {
          for (int i = 0; i < size && p1 - p0 + 9 < prefixWidth; i += 4, p1 += 9, cursor += 4)
             sprintf(p1, " %08x", *((uint32_t *)cursor));
@@ -1639,22 +1639,22 @@ TR_Debug::getName(TR::SymbolReference * symRef)
             return "<usesAllMethod>";
          case TR::SymbolReferenceTable::synchronizedFieldLoadSymbol:
             return "<synchronizedFieldLoad>";
-         case TR::SymbolReferenceTable::atomicAdd32BitSymbol:
-             return "<atomicAdd32Bit>";
-         case TR::SymbolReferenceTable::atomicAdd64BitSymbol:
-             return "<atomicAdd64Bit>";
+         case TR::SymbolReferenceTable::atomicAddSymbol:
+             return "<atomicAdd>";
+         case TR::SymbolReferenceTable::atomicFetchAndAddSymbol:
+             return "<atomicFetchAndAdd>";
          case TR::SymbolReferenceTable::atomicFetchAndAdd32BitSymbol:
              return "<atomicFetchAndAdd32Bit>";
          case TR::SymbolReferenceTable::atomicFetchAndAdd64BitSymbol:
              return "<atomicFetchAndAdd64Bit>";
+         case TR::SymbolReferenceTable::atomicSwapSymbol:
+             return "<atomicSwap>";
          case TR::SymbolReferenceTable::atomicSwap32BitSymbol:
              return "<atomicSwap32Bit>";
          case TR::SymbolReferenceTable::atomicSwap64BitSymbol:
              return "<atomicSwap64Bit>";
-         case TR::SymbolReferenceTable::atomicCompareAndSwap32BitSymbol:
-             return "<atomicCompareAndSwap32Bit>";
-         case TR::SymbolReferenceTable::atomicCompareAndSwap64BitSymbol:
-             return "<atomicCompareAndSwap64Bit>";
+         case TR::SymbolReferenceTable::atomicCompareAndSwapSymbol:
+             return "<atomicCompareAndSwap>";
          }
       }
 
@@ -2776,7 +2776,7 @@ TR_Debug::printCommonDataMiningAnnotations(TR::FILE *pOutFile, TR::Instruction *
   }
 
 
-#if !defined(TR_TARGET_POWER) && !defined(TR_TARGET_ARM)
+#if !defined(TR_TARGET_POWER) && !defined(TR_TARGET_ARM) && !defined(TR_TARGET_ARM64)
 void
 TR_Debug::print(TR::FILE *pOutFile, TR::Instruction * inst)
    {
@@ -2808,6 +2808,14 @@ TR_Debug::print(TR::FILE *pOutFile, TR::Instruction * inst, const char *title)
 
 #if defined(TR_TARGET_ARM)
    if (TR::Compiler->target.cpu.isARM())
+      {
+      print(pOutFile, inst);
+      return;
+      }
+#endif
+
+#if defined(TR_TARGET_ARM64)
+   if (TR::Compiler->target.cpu.isARM64())
       {
       print(pOutFile, inst);
       return;
@@ -2858,6 +2866,14 @@ TR_Debug::print(TR::FILE *pOutFile, TR::GCRegisterMap * map)
    if (TR::Compiler->target.cpu.isZ())
       {
       printS390GCRegisterMap(pOutFile, map);
+      return;
+      }
+#endif
+
+#if defined(TR_TARGET_ARM64)
+   if (TR::Compiler->target.cpu.isARM64())
+      {
+      printARM64GCRegisterMap(pOutFile, map);
       return;
       }
 #endif
@@ -2990,6 +3006,10 @@ TR_Debug::getName(TR::Register *reg, TR_RegisterSizes size)
 #if defined(TR_TARGET_S390)
       if (TR::Compiler->target.cpu.isZ())
          return getName(toRealRegister(reg), size);
+#endif
+#if defined(TR_TARGET_ARM64)
+      if (TR::Compiler->target.cpu.isARM64())
+         return getName((TR::RealRegister *)reg, size);
 #endif
       TR_ASSERT(0, "TR_Debug::getName() ==> unknown target platform for given real register\n");
       }
@@ -3163,6 +3183,13 @@ TR_Debug::print(TR::FILE *pOutFile, TR::Register * reg, TR_RegisterSizes size)
       if (TR::Compiler->target.cpu.isZ())
          {
          print(pOutFile, toRealRegister(reg), size);
+         return;
+         }
+#endif
+#if defined(TR_TARGET_ARM64)
+      if (TR::Compiler->target.cpu.isARM64())
+         {
+         print(pOutFile, (TR::RealRegister *)reg, size);
          return;
          }
 #endif
@@ -3875,6 +3902,7 @@ TR_Debug::getRuntimeHelperName(int32_t index)
          case TR_divCheck:                  return "jitThrowArithmeticException";
          case TR_arrayStoreException:       return "jitThrowArrayStoreException";
          case TR_typeCheckArrayStore:       return "jitTypeCheckArrayStore";
+         case TR_readBarrier:               return "jitReadBarrier";
          case TR_writeBarrierStore:         return "jitWriteBarrierStore";
          case TR_writeBarrierStoreGenerational: return "jitWriteBarrierStoreGenerational";
          case TR_writeBarrierStoreGenerationalAndConcurrentMark: return "jitWriteBarrierStoreGenerationalAndConcurrentMark";
@@ -3884,6 +3912,14 @@ TR_Debug::getRuntimeHelperName(int32_t index)
          case TR_stackOverflow:             return "jitStackOverflow";
          case TR_reportMethodEnter:         return "jitReportMethodEnter";
          case TR_reportStaticMethodEnter:   return "jitReportStaticMethodEnter";
+         case TR_jitReportInstanceFieldRead: return "jitReportInstanceFieldRead";
+         case TR_jitReportStaticFieldRead:  return "jitReportStaticFieldRead";
+         case TR_jitReportInstanceFieldWrite:  return "jitReportInstanceFieldWrite";
+         case TR_jitReportStaticFieldWrite:  return "jitReportStaticFieldWrite";
+         case TR_jitResolveFieldDirect:      return "jitResolveFieldDirect";
+         case TR_jitResolveFieldSetterDirect: return "jitResolveFieldSetterDirect";
+         case TR_jitResolveStaticFieldDirect: return "jitResolveStaticFieldDirect";
+         case TR_jitResolveStaticFieldSetterDirect:  return "jitResolveStaticFieldSetterDirect";
          case TR_reportMethodExit:          return "jitReportMethodExit";
          case TR_acquireVMAccess:           return "jitAcquireVMAccess";
          case TR_jitCheckIfFinalizeObject:  return "jitCheckIfFinalizeObject";

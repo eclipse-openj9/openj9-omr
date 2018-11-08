@@ -1,0 +1,44 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id":  "https://raw.githubusercontent.com/eclipse/omr/master/jitbuilder/apigen/schema/api.schema.json",
+    "title": "API Description Format",
+    "description": "Format for describing framework and library APIs in a way that allows simple generation of language bindings",
+    "$comment": "Copyright (c) 2018, 2018 IBM Corp. and others (see LICENSE.md)",
+    "$comment": "SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception",
+    "type": "object",
+    "properties": {
+        "project": { "description": "The name of the project or API", "type": "string" },
+        "version": {
+            "description": "Version of the API",
+            "type": "object",
+            "properties": {
+                "major": { "type": "integer", "minimum": 0 },
+                "minor": { "type": "integer", "minimum": 0 },
+                "patch": { "type": "integer", "minimum": 0 }
+            },
+            "required": [ "major", "minor", "patch" ]
+        },
+        "namespace": { "description": "Namespace containing the API", "type": "array", "items": { "type": "string" } },
+        "types": {
+            "description": "Definition of datatypes used by the API",
+            "type": "array",
+            "items": { "$ref": "api-type.schema.json" }
+        },
+        "fields": {
+            "description": "Definition of data fields offered by the API",
+            "type": "array",
+            "items": { "$ref": "api-field.schema.json" }
+        },
+        "services": {
+            "description": "Definition of services (functions, methods, etc.) offered by the API",
+            "type": "array",
+            "items": { "$ref": "api-service.schema.json" }
+        },
+        "classes": {
+            "description": "Definition of the classes offered by the API",
+            "type": "array",
+            "items": { "$ref": "api-class.schema.json" }
+        }
+    },
+    "required": [ "project", "version", "namespace", "types", "fields", "services", "classes" ]
+}

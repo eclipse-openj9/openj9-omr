@@ -43,6 +43,7 @@
 #include "ilgen/IlGeneratorMethodDetails_inlines.hpp"
 #include "ilgen/TypeDictionary.hpp"
 #include "ilgen/IlInjector.hpp"
+#include "ilgen/IlReference.hpp"
 #include "ilgen/MethodBuilder.hpp"
 #include "ilgen/BytecodeBuilder.hpp"
 #include "infra/Cfg.hpp"
@@ -87,6 +88,8 @@
 
 OMR::IlBuilder::IlBuilder(TR::IlBuilder *source)
    : TR::IlInjector(source),
+   _client(0),
+   _clientCallbackBuildIL(0),
    _methodBuilder(source->_methodBuilder),
    _sequence(0),
    _sequenceAppender(0),
@@ -482,6 +485,15 @@ OMR::IlBuilder::OrphanBuilder()
    return orphan;
    }
 
+TR::BytecodeBuilder *
+OMR::IlBuilder::OrphanBytecodeBuilder(int32_t bcIndex, char *name)
+   {
+   TR::BytecodeBuilder *orphan = new (comp()->trHeapMemory()) TR::BytecodeBuilder(_methodBuilder, bcIndex, name);
+   orphan->initialize(_details, _methodSymbol, _fe, _symRefTab);
+   orphan->setupForBuildIL();
+   return orphan;
+   }
+
 TR::Block *
 OMR::IlBuilder::emptyBlock()
    {
@@ -624,6 +636,7 @@ OMR::IlBuilder::Store(const char *varName, TR::IlValue *value)
 void
 OMR::IlBuilder::StoreOver(TR::IlValue *dest, TR::IlValue *value)
    {
+   TraceIL("IlBuilder[ %p ]::StoreOver %d gets %d\n", this, dest->getID(), value->getID());
    dest->storeOver(value, _currentBlock);
    }
 
@@ -650,7 +663,7 @@ OMR::IlBuilder::VectorStore(const char *varName, TR::IlValue *value)
    TR::SymbolReference *symRef = lookupSymbol(varName);
 
    TraceIL("IlBuilder[ %p ]::VectorStore %s %d gets %d\n", this, varName, symRef->getCPIndex(), value->getID());
-   storeNode(symRef, loadValue(value));
+   storeNode(symRef, valueNode);
    }
 
 /**
@@ -733,7 +746,8 @@ OMR::IlBuilder::CreateLocalStruct(TR::IlType *structType)
 void
 OMR::IlBuilder::StoreIndirect(const char *type, const char *field, TR::IlValue *object, TR::IlValue *value)
    {
-   TR::SymbolReference *symRef = (TR::SymbolReference*)_types->FieldReference(type, field);
+   TR::IlReference *fieldRef = _types->FieldReference(type, field);
+   TR::SymbolReference *symRef = fieldRef->symRef();
    TR::DataType fieldType = symRef->getSymbol()->getDataType();
    TraceIL("IlBuilder[ %p ]::StoreIndirect %s.%s (%d) into (%d)\n", this, type, field, value->getID(), object->getID());
    TR::ILOpCodes storeOp = comp()->il.opCodeForIndirectStore(fieldType);
@@ -767,7 +781,8 @@ OMR::IlBuilder::VectorLoad(const char *name)
 TR::IlValue *
 OMR::IlBuilder::LoadIndirect(const char *type, const char *field, TR::IlValue *object)
    {
-   TR::SymbolReference *symRef = (TR::SymbolReference *)_types->FieldReference(type, field);
+   TR::IlReference *fieldRef = _types->FieldReference(type, field);
+   TR::SymbolReference *symRef = fieldRef->symRef();
    TR::DataType fieldType = symRef->getSymbol()->getDataType();
    TR::IlValue *returnValue = newValue(fieldType, TR::Node::createWithSymRef(comp()->il.opCodeForIndirectLoad(fieldType), 1, loadValue(object), 0, symRef));
    TraceIL("IlBuilder[ %p ]::%d is LoadIndirect %s.%s from (%d)\n", this, returnValue->getID(), type, field, object->getID());
@@ -1576,7 +1591,7 @@ OMR::IlBuilder::UnsignedShiftR(TR::IlValue *v, TR::IlValue *amount)
  * @param numTerms the number of conditional terms
  * @param terms array of JBCondition instances that evaluate a condition
  *
- * Example:
+ * Example (should be moved to client API):
  * TR::IlBuilder *cond1Builder = OrphanBuilder();
  * TR::IlValue *cond1 = cond1Builder->GreaterOrEqual(
  *                      cond1Builder->   Load("x"),
@@ -1667,7 +1682,7 @@ OMR::IlBuilder::IfAnd(TR::IlBuilder **allTrueBuilder, TR::IlBuilder **anyFalseBu
  * @param numTerms the number of conditional terms
  * @param terms array of JBCondition instances that evaluate a condition
  *
- * Example:
+ * Example (should be moved to client API):
  * TR::IlBuilder *cond1Builder = OrphanBuilder();
  * TR::IlValue *cond1 = cond1Builder->LessThan(
  *                      cond1Builder->   Load("x"),
@@ -1944,7 +1959,7 @@ OMR::IlBuilder::Call(TR::MethodBuilder *calleeMB, int32_t numArgs, ...)
 TR::IlValue *
 OMR::IlBuilder::Call(TR::MethodBuilder *calleeMB, int32_t numArgs, TR::IlValue **argValues)
    {
-   TraceIL("IlBuilder[ %p ]::Call %s\n", this, calleeMB->getMethodName());
+   TraceIL("IlBuilder[ %p ]::Call %s\n", this, calleeMB->GetMethodName());
 
    // set up callee's inline site index
    calleeMB->setInlineSiteIndex(_methodBuilder->getNextInlineSiteIndex());
@@ -2068,7 +2083,6 @@ OMR::IlBuilder::genCall(TR::SymbolReference *methodSymRef, int32_t numArgs, TR::
 TR::IlValue *
 OMR::IlBuilder::AtomicAdd(TR::IlValue * baseAddress, TR::IlValue * value)
    {
-   TR_ASSERT(comp()->cg()->supportsAtomicAdd(), "this platform doesn't support AtomicAdd() yet");
    TR_ASSERT(baseAddress->getDataType() == TR::Address, "baseAddress must be TR::Address");
 
    //Determine the implementation type and returnType by detecting "value"'s type
@@ -2076,8 +2090,7 @@ OMR::IlBuilder::AtomicAdd(TR::IlValue * baseAddress, TR::IlValue * value)
    TR_ASSERT(returnType == TR::Int32 || (returnType == TR::Int64 && TR::Compiler->target.is64Bit()), "AtomicAdd currently only supports Int32/64 values");
    TraceIL("IlBuilder[ %p ]::AtomicAdd(%d, %d)\n", this, baseAddress->getID(), value->getID());
 
-   OMR::SymbolReferenceTable::CommonNonhelperSymbol atomicBitSymbol = returnType == TR::Int32 ? TR::SymbolReferenceTable::atomicAdd32BitSymbol : TR::SymbolReferenceTable::atomicAdd64BitSymbol;//lock add
-   TR::SymbolReference *methodSymRef = symRefTab()->findOrCreateCodeGenInlinedHelper(atomicBitSymbol); 
+   TR::SymbolReference *methodSymRef = symRefTab()->findOrCreateCodeGenInlinedHelper(TR::SymbolReferenceTable::atomicAddSymbol);
    TR::Node *callNode;
    callNode = TR::Node::createWithSymRef(TR::ILOpCode::getDirectCall(returnType), 2, methodSymRef);
    callNode->setAndIncChild(0, loadValue(baseAddress));
@@ -2607,7 +2620,6 @@ OMR::IlBuilder::Switch(const char *selectionVar,
    Switch(selectionVar, defaultBuilder, numCases, cases);
    }
 
-
 void
 OMR::IlBuilder::ForLoop(bool countsUp,
                    const char *indVar,
@@ -2743,3 +2755,34 @@ OMR::IlBuilder::WhileDoLoop(const char *whileCondition, TR::IlBuilder **body, TR
 
    AppendBuilder(done);
    }
+
+void *
+OMR::IlBuilder::client()
+   {
+   if (_client == NULL && _clientAllocator != NULL)
+      _client = _clientAllocator(static_cast<TR::IlBuilder *>(this));
+   return _client;
+   }
+
+void *
+OMR::IlBuilder::JBCase::client()
+   {
+   if (_client == NULL && _clientAllocator != NULL)
+      _client = _clientAllocator(static_cast<TR::IlBuilder::JBCase *>(this));
+   return _client;
+   }
+
+void *
+OMR::IlBuilder::JBCondition::client()
+   {
+   if (_client == NULL && _clientAllocator != NULL)
+      _client = _clientAllocator(static_cast<TR::IlBuilder::JBCondition *>(this));
+   return _client;
+   }
+
+ClientAllocator OMR::IlBuilder::_clientAllocator = NULL;
+ClientAllocator OMR::IlBuilder::_getImpl = NULL;
+ClientAllocator OMR::IlBuilder::JBCase::_clientAllocator = NULL;
+ClientAllocator OMR::IlBuilder::JBCase::_getImpl = NULL;
+ClientAllocator OMR::IlBuilder::JBCondition::_clientAllocator = NULL;
+ClientAllocator OMR::IlBuilder::JBCondition::_getImpl = NULL;

@@ -679,6 +679,8 @@ OMR::Z::CodeGenerator::CodeGenerator()
    self()->setSupportsBCDToDFPReduction();
    self()->setSupportsIntDFPConversions();
 
+   self()->setSupportsPostProcessArrayCopy();
+
    if (_processorInfo.supportsArch(TR_S390ProcessorInfo::TR_z10))
       {
       self()->setSupportsTranslateAndTestCharString();
@@ -705,6 +707,12 @@ OMR::Z::CodeGenerator::CodeGenerator()
       {
       self()->setSupportsAtomicLoadAndAdd();
       }
+   else
+      {
+      // Max min optimization uses the maxMinHelper evaluator which
+      // requires conditional loads that are not supported below z196
+      comp->setOption(TR_DisableMaxMinOptimization);
+      }
 
    if (_processorInfo.supportsArch(TR_S390ProcessorInfo::TR_zEC12))
       {
@@ -718,14 +726,6 @@ OMR::Z::CodeGenerator::CodeGenerator()
 
    if (_processorInfo.supportsArch(TR_S390ProcessorInfo::TR_z13) && !comp->getOption(TR_DisableArch11PackedToDFP))
       self()->setSupportsFastPackedDFPConversions();
-
-   if (!comp->getOption(TR_DisableShrinkWrapping))
-      {
-      self()->setSupportsShrinkWrapping();
-      // we can use store/load multiple to coalesce reg saves/restores
-      // inserted by shrink wrapping
-      self()->setUsesLoadStoreMultiple();
-      }
 
    // Be pessimistic until we can prove we don't exit after doing code-generation
    self()->setExitPointsInMethod(true);
@@ -1490,7 +1490,7 @@ OMR::Z::CodeGenerator::insertInstructionPrefetches()
             if (!op.isAdmin())
                {
                real = first;
-               if (op.isLabel() || op.isCall() || first->isEndInternalControlFlow())
+               if (op.isLabel() || op.isCall())
                   {
                   break;
                   }
@@ -2398,10 +2398,6 @@ OMR::Z::CodeGenerator::upgradeToHPRInstruction(TR::Instruction * inst)
          s390NewInst->setThrowsImplicitException();
       if (s390Inst->isOutOfLineEX())
          s390NewInst->setOutOfLineEX();
-      if (s390Inst->isStartInternalControlFlow())
-         s390NewInst->setStartInternalControlFlow();
-      if (s390Inst->isEndInternalControlFlow())
-         s390NewInst->setEndInternalControlFlow();
       if (s390Inst->getIndex())
          s390NewInst->setIndex(s390Inst->getIndex());
       if (s390Inst->getGCMap())
@@ -2439,14 +2435,6 @@ static TR::Instruction *skipInternalControlFlow(TR::Instruction *insertInstr)
       if (ls->isEndInternalControlFlow())
         nestingDepth++;
       }
-    if (insertInstr->isStartInternalControlFlow())
-      {
-      nestingDepth--;
-      if(nestingDepth==0)
-        break;
-      }
-    else if (insertInstr->isEndInternalControlFlow())
-      nestingDepth++;
     } // for
   return insertInstr;
   }
@@ -2678,7 +2666,7 @@ OMR::Z::CodeGenerator::doRegisterAssignment(TR_RegisterKinds kindsToAssign)
       while (currInst)
          {
          TR::LabelSymbol *labelSym = currInst->isLabel() ? toS390LabelInstruction(currInst)->getLabelSymbol() : NULL;
-         if (currInst->isEndInternalControlFlow() || (labelSym && labelSym->isEndInternalControlFlow()))
+         if (labelSym && labelSym->isEndInternalControlFlow())
             {
             if (currInst->getDependencyConditions())
                {
@@ -2777,19 +2765,6 @@ OMR::Z::CodeGenerator::doRegisterAssignment(TR_RegisterKinds kindsToAssign)
 
       // Maintain Internal Control Flow Depth
 
-      // Track internal control flow on instructions
-      if (instructionCursor->isStartInternalControlFlow())
-         {
-         _internalControlFlowNestingDepth--;
-         if(_internalControlFlowNestingDepth==0)
-            self()->endInternalControlFlow(instructionCursor);        // Walking backwards so start is end
-         }
-      if (instructionCursor->isEndInternalControlFlow())
-         {
-         _internalControlFlowNestingDepth++;
-         self()->startInternalControlFlow(instructionCursor);
-         }
-
       // Track internal control flow on labels
       if (instructionCursor->getOpCode().getOpCodeValue() == TR::InstOpCode::LABEL)
          {
@@ -2799,16 +2774,12 @@ OMR::Z::CodeGenerator::doRegisterAssignment(TR_RegisterKinds kindsToAssign)
             {
             if (li->getLabelSymbol()->isStartInternalControlFlow())
                {
-               TR_ASSERT(!li->isStartInternalControlFlow(),
-                       "An instruction should not be both the start of internal control flow and have a lebel that is pegged as the start of internal control flow, because we should only count it once");
                _internalControlFlowNestingDepth--;
                if (_internalControlFlowNestingDepth == 0)
                   self()->endInternalControlFlow(instructionCursor);        // Walking backwards so start is end
                }
             if (li->getLabelSymbol()->isEndInternalControlFlow())
                {
-               TR_ASSERT(!li->isEndInternalControlFlow(),
-                       "An instruction should not be both the end of internal control flow and have a lebel that is pegged as the end of internal control flow, because we should only count it once");
                _internalControlFlowNestingDepth++;
                self()->startInternalControlFlow(instructionCursor);
                }
@@ -3060,6 +3031,30 @@ OMR::Z::CodeGenerator::supportsMergingGuards()
    return self()->getSupportsVirtualGuardNOPing() &&
           self()->comp()->performVirtualGuardNOPing() &&
           !self()->comp()->compileRelocatableCode();
+   }
+
+bool
+OMR::Z::CodeGenerator::supportsNonHelper(TR::SymbolReferenceTable::CommonNonhelperSymbol symbol)
+   {
+   bool result = false;
+
+   switch (symbol)
+      {
+      case TR::SymbolReferenceTable::atomicAddSymbol:
+      case TR::SymbolReferenceTable::atomicFetchAndAddSymbol:
+         {
+         result = self()->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z196) && (TR::Compiler->target.is64Bit() || self()->use64BitRegsOn32Bit());
+         break;
+         }
+
+      case TR::SymbolReferenceTable::atomicSwapSymbol:
+         {
+         result = true;
+         break;
+         }
+      }
+
+   return result;
    }
 
 // Helpers for profiled interface slots
@@ -3320,7 +3315,7 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
          self()->addBreakPointAddress(instructionStart);
          }
 
-      if (self()->isBranchInstruction(data.cursorInstruction))
+      if (data.cursorInstruction->isBranchOp())
          {
          TR::LabelSymbol * branchLabelSymbol = ((TR::S390BranchInstruction *)data.cursorInstruction)->getLabelSymbol();
          if (data.cursorInstruction->getKind() == TR::Instruction::IsRIE &&
@@ -5224,858 +5219,6 @@ OMR::Z::CodeGenerator::freeAndResetTransientLongs()
    _transientLongRegisters.setSize(0);
    }
 
-// routines for shrinkwrapping
-//
-bool
-OMR::Z::CodeGenerator::processInstruction(TR::Instruction *instr,
-                                          TR_BitVector **registerUsageInfo,
-                                          int32_t &blockNum,
-                                          int32_t &isFence,
-                                          bool traceIt)
-   {
-   TR::Instruction *s390Instr = instr;
-
-   if (s390Instr->getOpCode().isCall())
-      {
-      TR::Node *callNode = s390Instr->getNode();
-      if (callNode->getSymbolReference())
-         {
-#if 0
-         TR::SymbolReference *symRef = callNode->getSymbolReference();
-         if (symRef->getSymbol() && symRef->getSymbol()->isMethod())
-            {
-            if (!symRef->getSymbol()->castToMethodSymbol()->preservesAllRegisters())
-               {
-               if (traceIt)
-                  traceMsg(comp(), "call instr [%p] does not preserve regs\n", s390Instr);
-               registerUsageInfo[blockNum]->setAll(TR::RealRegister::NumRegisters);
-               }
-            else
-               {
-               if (traceIt)
-                 traceMsg(comp(), "call instr [%p] preserves regs\n", s390Instr);
-               }
-            }
-#else
-         bool callPreservesRegisters = true;
-         TR::SymbolReference *symRef = callNode->getSymbolReference();
-         TR::MethodSymbol *m = NULL;
-         if (symRef->getSymbol()->isMethod())
-            {
-            m = symRef->getSymbol()->castToMethodSymbol();
-            if ((m->isHelper() && !m->preservesAllRegisters()) ||
-                m->isVMInternalNative() ||
-                m->isJITInternalNative() ||
-                m->isJNI() ||
-                m->isSystemLinkageDispatch() || (m->getLinkageConvention() == TR_System))
-               callPreservesRegisters = false;
-            }
-
-         if (!callPreservesRegisters)
-            {
-            if (traceIt)
-               traceMsg(self()->comp(), "call instr [%p] does not preserve regs\n", s390Instr);
-            registerUsageInfo[blockNum]->setAll(TR::RealRegister::NumRegisters);
-            }
-         else
-            {
-            if (traceIt)
-               traceMsg(self()->comp(), "call instr [%p] preserves regs\n", s390Instr);
-            }
-#endif
-         }
-      }
-
-   switch (s390Instr->getKind())
-      {
-      case TR::Instruction::IsPseudo:
-         {
-         // process BBStart and BBEnd nodes
-         // and populate the RUSE info at each block
-         //
-         if (s390Instr->getOpCodeValue() == TR::InstOpCode::FENCE)
-            {
-            TR::Node *fenceNode = s390Instr->getNode();
-            if (fenceNode->getOpCodeValue() == TR::BBStart)
-               {
-               blockNum = fenceNode->getBlock()->getNumber();
-               isFence = 1;
-               if (traceIt)
-                  traceMsg(self()->comp(), "Now generating register use information for block_%d\n", blockNum);
-               }
-            else if (fenceNode->getOpCodeValue() == TR::BBEnd)
-               isFence = 2;
-            }
-         return false;
-         }
-
-      case TR::Instruction::IsBranchOnIndex:
-         {
-         // get the target and src registers
-         //
-         int32_t tgtRegNum = ((TR::RealRegister*)s390Instr->getRegisterOperand(1))->getRegisterNumber();
-         if (traceIt)
-            traceMsg(self()->comp(), "branchOnIndex instr [%p] USES register [%d]\n", s390Instr, tgtRegNum);
-         registerUsageInfo[blockNum]->set(tgtRegNum);
-
-         TR::Register * sourceRegister = s390Instr->getRegisterOperand(2);
-         TR::RegisterPair * regPair = sourceRegister->getRegisterPair();
-         if (regPair)
-            {
-            int32_t srcHighNum = toRealRegister(sourceRegister->getHighOrder())->getRegisterNumber();
-            int32_t srcLowNum  = toRealRegister(sourceRegister->getLowOrder())->getRegisterNumber();
-            if (traceIt)
-               traceMsg(self()->comp(), "branchOnIndex instr [%p] USES register pair [%d, %d]\n", s390Instr, srcHighNum, srcLowNum);
-            }
-         else
-            {
-            int32_t srcNum = toRealRegister(sourceRegister)->getRegisterNumber();
-            if (traceIt)
-               traceMsg(self()->comp(), "branchOnIndex instr [%p] USES register [%d]\n", s390Instr, srcNum);
-            }
-         return true;
-         }
-      case TR::Instruction::IsReg:
-         {
-         TR::Register * targetRegister = s390Instr->getRegisterOperand(1);
-         TR::RegisterPair * regPair = targetRegister->getRegisterPair();
-         if (regPair)
-            {
-            int32_t tgtHighNum = toRealRegister(targetRegister->getHighOrder())->getRegisterNumber();
-            int32_t tgtLowNum  = toRealRegister(targetRegister->getLowOrder())->getRegisterNumber();
-            if (traceIt)
-               traceMsg(self()->comp(), "reg instr [%p] USES register pair [%d, %d]\n", s390Instr, tgtLowNum, tgtHighNum);
-            registerUsageInfo[blockNum]->set(tgtHighNum);
-            registerUsageInfo[blockNum]->set(tgtLowNum);
-            }
-         else
-            {
-            int32_t tgtRegNum = toRealRegister(targetRegister)->getRegisterNumber();
-            if (traceIt)
-               traceMsg(self()->comp(), "reg instr [%p] USES register [%d]\n", s390Instr, tgtRegNum);
-            registerUsageInfo[blockNum]->set(tgtRegNum);
-            }
-         return true;
-         }
-      case TR::Instruction::IsRR:
-         {
-         if (((TR::S390RRInstruction *)s390Instr)->getFirstConstant() >= 0)
-            ; //nothing to do
-         else
-            {
-            TR::Register * targetRegister = s390Instr->getRegisterOperand(1);
-            TR::RegisterPair * regPair = targetRegister->getRegisterPair();
-            if (regPair)
-               {
-               int32_t tgtHighNum = toRealRegister(targetRegister->getHighOrder())->getRegisterNumber();
-               int32_t tgtLowNum  = toRealRegister(targetRegister->getLowOrder())->getRegisterNumber();
-               if (traceIt)
-                  traceMsg(self()->comp(), "RR instr [%p] USES register pair [%d %d]\n", s390Instr, tgtLowNum, tgtHighNum);
-               registerUsageInfo[blockNum]->set(tgtHighNum);
-               registerUsageInfo[blockNum]->set(tgtLowNum);
-               }
-            else
-               {
-               int32_t tgtRegNum = toRealRegister(targetRegister)->getRegisterNumber();
-               if (traceIt)
-                  traceMsg(self()->comp(), "RR instr [%p] USES register [%d]\n", s390Instr, tgtRegNum);
-               registerUsageInfo[blockNum]->set(tgtRegNum);
-               }
-            }
-
-         if (((TR::S390RRInstruction *)s390Instr)->getSecondConstant() >= 0)
-            ; //nothing to do
-         else
-            {
-            TR::Register * sourceRegister = ((TR::S390RRInstruction *)instr)->getRegisterOperand(2);
-            TR::RegisterPair *regPair = sourceRegister->getRegisterPair();
-            int32_t srcRegNum = 0;
-            if (regPair)
-               {
-               srcRegNum = toRealRegister(sourceRegister->getHighOrder())->getRegisterNumber();
-               if (traceIt)
-                  traceMsg(self()->comp(), "RR instr [%p] USES register pair [%d]\n", s390Instr, srcRegNum);
-               }
-            else
-               {
-               srcRegNum = toRealRegister(sourceRegister)->getRegisterNumber();
-               if (traceIt)
-                  traceMsg(self()->comp(), "RR instr [%p] USES register [%d]\n", s390Instr, srcRegNum);
-               }
-            }
-         return true;
-         }
-      case TR::Instruction::IsRRE:
-         {
-         TR::Register * targetRegister = s390Instr->getRegisterOperand(1);
-         TR::RegisterPair * regPair = targetRegister->getRegisterPair();
-         if (regPair)
-            {
-            int32_t tgtHighNum = toRealRegister(targetRegister->getHighOrder())->getRegisterNumber();
-            int32_t tgtLowNum  = toRealRegister(targetRegister->getLowOrder())->getRegisterNumber();
-            if (traceIt)
-               traceMsg(self()->comp(), "RRE instr [%p] USES register pair [%d %d]\n", s390Instr, tgtLowNum, tgtHighNum);
-            registerUsageInfo[blockNum]->set(tgtHighNum);
-            registerUsageInfo[blockNum]->set(tgtLowNum);
-            }
-         else
-            {
-            int32_t tgtRegNum = toRealRegister(targetRegister)->getRegisterNumber();
-            if (traceIt)
-               traceMsg(self()->comp(), "RRE instr [%p] USES register [%d]\n", s390Instr, tgtRegNum);
-            registerUsageInfo[blockNum]->set(tgtRegNum);
-            }
-
-         int32_t srcRegNum = toRealRegister(s390Instr->getRegisterOperand(2))->getRegisterNumber();
-         if (traceIt)
-            traceMsg(self()->comp(), "RRE instr [%p] USES register [%d]\n", s390Instr, srcRegNum);
-         return true;
-         }
-      case TR::Instruction::IsRRD: // RRD is encoded use RRF
-      case TR::Instruction::IsRRF:
-      case TR::Instruction::IsRRF2:
-      case TR::Instruction::IsRRF3:
-      case TR::Instruction::IsRRF4:
-      case TR::Instruction::IsRRF5:
-         {
-         TR::S390RRFInstruction *s = (TR::S390RRFInstruction *)s390Instr;
-         int32_t tgtRegNum = toRealRegister(s->getRegisterOperand(1))->getRegisterNumber();
-         if (traceIt)
-            traceMsg(self()->comp(), "RRF instr [%p] USES register [%d]\n", s, tgtRegNum);
-         registerUsageInfo[blockNum]->set(tgtRegNum);
-
-         if (s->isSourceRegister2Present()) //RRF or RRF2
-            {
-            int32_t srcRegNum = toRealRegister(s->getRegisterOperand(3))->getRegisterNumber();
-            if (traceIt)
-               traceMsg(self()->comp(), "RRF instr [%p] USES register [%d]\n", s, srcRegNum);
-            }
-
-         int32_t srcRegNum = toRealRegister(s->getRegisterOperand(2))->getRegisterNumber();
-         if (traceIt)
-            traceMsg(self()->comp(), "RRF instr [%p] USES register [%d]\n", s, srcRegNum);
-         return true;
-         }
-      case TR::Instruction::IsRRR:
-         {
-         TR::S390RRRInstruction *s = (TR::S390RRRInstruction *)s390Instr;
-         int32_t tgtRegNum = toRealRegister(s->getRegisterOperand(1))->getRegisterNumber();
-         registerUsageInfo[blockNum]->set(tgtRegNum);
-
-         int32_t srcReg2Num = toRealRegister(s->getRegisterOperand(3))->getRegisterNumber();
-
-         int32_t srcRegNum = toRealRegister(s->getRegisterOperand(2))->getRegisterNumber();
-         if (traceIt)
-            traceMsg(self()->comp(), "RRR instr [%p] USES register [%d %d %d]\n", s, srcRegNum, srcReg2Num, tgtRegNum);
-
-         return true;
-         }
-      case TR::Instruction::IsRI:
-      case TR::Instruction::IsRIL:
-         {
-         if (s390Instr->getRegisterOperand(1))
-            {
-            int32_t tgtRegNum = toRealRegister(s390Instr->getRegisterOperand(1))->getRegisterNumber();
-            registerUsageInfo[blockNum]->set(tgtRegNum);
-            if (traceIt)
-               traceMsg(self()->comp(), "RIL instr [%p] USES register [%d]\n", s390Instr, tgtRegNum);
-            }
-         return true;
-         }
-      case TR::Instruction::IsRS:
-      case TR::Instruction::IsRSY:
-         {
-         TR::S390RSInstruction *s = (TR::S390RSInstruction *)s390Instr;
-         if (s->getSourceImmediate())
-            {
-            if (s->getRegisterOperand(1)->getRegisterPair())
-               {
-               int32_t tgtHighNum = toRealRegister(s->getRegisterOperand(1)->getHighOrder())->getRegisterNumber();
-               int32_t tgtLowNum  = toRealRegister(s->getRegisterOperand(1)->getLowOrder())->getRegisterNumber();
-               registerUsageInfo[blockNum]->set(tgtHighNum);
-               registerUsageInfo[blockNum]->set(tgtLowNum);
-               if (traceIt)
-                  traceMsg(self()->comp(), "RS instr [%p] USES register pair [%d %d]\n", s, tgtLowNum, tgtHighNum);
-               }
-            else
-               {
-               int32_t tgtRegNum = toRealRegister(s->getRegisterOperand(1))->getRegisterNumber();
-               registerUsageInfo[blockNum]->set(tgtRegNum);
-               if (traceIt)
-                  traceMsg(self()->comp(), "RS instr [%p] USES register [%d]\n", s, tgtRegNum);
-               }
-
-            if (!s->isTargetPair() && s->getLastRegister() != NULL)
-               {
-               int32_t lastRegNum = toRealRegister(s->getLastRegister())->getRegisterNumber();
-               registerUsageInfo[blockNum]->set(lastRegNum);
-               if (traceIt)
-                  traceMsg(self()->comp(), "RS instr [%p] USES register [%d]\n", s, lastRegNum);
-               }
-            }
-         else if (s->getMaskImmediate())
-            {
-            int32_t firstRegNum = toRealRegister(s->getFirstRegister())->getRegisterNumber();
-            registerUsageInfo[blockNum]->set(firstRegNum);
-            if (traceIt)
-               traceMsg(self()->comp(), "RS instr [%p] USES first register [%d]\n", s, firstRegNum);
-            TR::MemoryReference * mr = s->getMemoryReference();
-            if (mr->getBaseRegister())
-               {
-               if (traceIt)
-                  traceMsg(self()->comp(), "RS instr [%p] USES mr baseRegister [%d]\n", s, ((TR::RealRegister*)mr->getBaseRegister())->getRegisterNumber());
-               }
-            if (mr->getIndexRegister())
-               {
-               if (traceIt)
-                  traceMsg(self()->comp(), "RS instr [%p] USES mr indexRegister [%d]\n", s, ((TR::RealRegister*)mr->getIndexRegister())->getRegisterNumber());
-               }
-            }
-         else if (s->getOpCode().usesRegPairForTarget() && s->getOpCode().usesRegPairForSource())
-            {
-            int32_t tgtHighNum = toRealRegister(s->getRegisterOperand(1)->getHighOrder())->getRegisterNumber();
-            int32_t tgtLowNum  = toRealRegister(s->getRegisterOperand(1)->getLowOrder())->getRegisterNumber();
-            registerUsageInfo[blockNum]->set(tgtHighNum);
-            registerUsageInfo[blockNum]->set(tgtLowNum);
-            if (traceIt)
-               traceMsg(self()->comp(), "RS instr [%p] USES register pair [%d %d]\n", s, tgtLowNum, tgtHighNum);
-            int32_t secondRegNum = toRealRegister(s->getSecondRegister()->getHighOrder())->getRegisterNumber();
-            registerUsageInfo[blockNum]->set(secondRegNum);
-            if (traceIt)
-               traceMsg(self()->comp(), "RS instr [%p] USES register pair [%d]\n", s, secondRegNum);
-            TR::MemoryReference * mr = s->getMemoryReference();
-            if (mr->getBaseRegister())
-               {
-               if (traceIt)
-                  traceMsg(self()->comp(), "RS instr [%p] USES mr baseRegister [%d]\n", s, ((TR::RealRegister*)mr->getBaseRegister())->getRegisterNumber());
-               }
-            if (mr->getIndexRegister())
-               {
-               if (traceIt)
-                  traceMsg(self()->comp(), "RS instr [%p] USES mr indexRegister [%d]\n", s, ((TR::RealRegister*)mr->getIndexRegister())->getRegisterNumber());
-               }
-            }
-         else if (s->getLastRegister() == NULL || s->getOpCode().usesRegPairForTarget())
-            {
-            int32_t firstRegNum = toRealRegister(s->getFirstRegister())->getRegisterNumber();
-            registerUsageInfo[blockNum]->set(firstRegNum);
-            if (traceIt)
-               traceMsg(self()->comp(), "RS instr [%p] USES first register [%d]\n", s, firstRegNum);
-            TR::MemoryReference * mr = s->getMemoryReference();
-            if (mr->getBaseRegister())
-               {
-               if (traceIt)
-                  traceMsg(self()->comp(), "RS instr [%p] USES mr baseRegister [%d]\n", s, ((TR::RealRegister*)mr->getBaseRegister())->getRegisterNumber());
-               }
-            if (mr->getIndexRegister())
-               {
-               if (traceIt)
-                  traceMsg(self()->comp(), "RS instr [%p] USES mr indexRegister [%d]\n", s, ((TR::RealRegister*)mr->getIndexRegister())->getRegisterNumber());
-               }
-            }
-         else
-            {
-            int32_t firstRegNum = toRealRegister(s->getFirstRegister())->getRegisterNumber();
-            registerUsageInfo[blockNum]->set(firstRegNum);
-            if (traceIt)
-               traceMsg(self()->comp(), "RS instr [%p] USES first register [%d]\n", s, firstRegNum);
-            int32_t lastRegNum = toRealRegister(s->getLastRegister())->getRegisterNumber();
-            registerUsageInfo[blockNum]->set(lastRegNum);
-            if (traceIt)
-               traceMsg(self()->comp(), "RS instr [%p] USES last register [%d]\n", s, lastRegNum);
-
-            TR::MemoryReference * mr = s->getMemoryReference();
-            if (mr->getBaseRegister())
-               {
-               if (traceIt)
-                  traceMsg(self()->comp(), "RS instr [%p] USES mr baseRegister [%d]\n", s, ((TR::RealRegister*)mr->getBaseRegister())->getRegisterNumber());
-               }
-            if (mr->getIndexRegister())
-               {
-               if (traceIt)
-                  traceMsg(self()->comp(), "RS instr [%p] USES mr indexRegister [%d]\n", s, ((TR::RealRegister*)mr->getIndexRegister())->getRegisterNumber());
-               }
-            }
-         return true;
-         }
-      case TR::Instruction::IsRSL:
-      case TR::Instruction::IsSI:
-      case TR::Instruction::IsSIY:
-      case TR::Instruction::IsSIL:
-      case TR::Instruction::IsS:
-         {
-         TR::MemoryReference * mr = s390Instr->getMemoryReference();
-         if (mr->getBaseRegister())
-            {
-            if (traceIt)
-               traceMsg(self()->comp(), "RSL instr [%p] USES mr baseRegister [%d]\n", s390Instr, ((TR::RealRegister*)mr->getBaseRegister())->getRegisterNumber());
-            }
-         if (mr->getIndexRegister())
-            {
-            if (traceIt)
-               traceMsg(self()->comp(), "RSL instr [%p] USES mr indexRegister [%d]\n", s390Instr, ((TR::RealRegister*)mr->getIndexRegister())->getRegisterNumber());
-            }
-         return true;
-         }
-      case TR::Instruction::IsRX:
-      case TR::Instruction::IsRXY:
-         {
-         if (s390Instr->getRegisterOperand(1)->getRegisterPair())
-            {
-            int32_t tgtHighNum = toRealRegister(s390Instr->getRegisterOperand(1)->getHighOrder())->getRegisterNumber();
-            int32_t tgtLowNum  = toRealRegister(s390Instr->getRegisterOperand(1)->getLowOrder())->getRegisterNumber();
-            registerUsageInfo[blockNum]->set(tgtHighNum);
-            registerUsageInfo[blockNum]->set(tgtLowNum);
-            if (traceIt)
-               traceMsg(self()->comp(), "RS instr [%p] USES register pair [%d %d]\n", s390Instr, tgtLowNum, tgtHighNum);
-            }
-         else
-            {
-            int32_t tgtRegNum = toRealRegister(s390Instr->getRegisterOperand(1))->getRegisterNumber();
-            registerUsageInfo[blockNum]->set(tgtRegNum);
-            if (traceIt)
-               traceMsg(self()->comp(), "RS instr [%p] USES register [%d]\n", s390Instr, tgtRegNum);
-            }
-
-         TR::MemoryReference * mr = s390Instr->getMemoryReference();
-         if (mr)
-            {
-            if (mr->getBaseRegister())
-               {
-               if (traceIt)
-                  traceMsg(self()->comp(), "RSL instr [%p] USES mr baseRegister [%d]\n", s390Instr, ((TR::RealRegister*)mr->getBaseRegister())->getRegisterNumber());
-               }
-            if (mr->getIndexRegister())
-               {
-               if (traceIt)
-                  traceMsg(self()->comp(), "RSL instr [%p] USES mr indexRegister [%d]\n", s390Instr, ((TR::RealRegister*)mr->getIndexRegister())->getRegisterNumber());
-               }
-            }
-
-         return true;
-         }
-      case TR::Instruction::IsRXYb:
-         {
-         return true;
-         }
-      case TR::Instruction::IsRXF:
-         {
-         int32_t tgtRegNum = toRealRegister(s390Instr->getRegisterOperand(1))->getRegisterNumber();
-         registerUsageInfo[blockNum]->set(tgtRegNum);
-
-         int32_t srcRegNum = toRealRegister(s390Instr->getRegisterOperand(2))->getRegisterNumber();
-         if (traceIt)
-            traceMsg(self()->comp(), "RRR instr [%p] USES register [%d %d]\n", s390Instr, srcRegNum, tgtRegNum);
-
-         TR::MemoryReference * mr = s390Instr->getMemoryReference();
-         if (mr->getBaseRegister())
-            {
-            if (traceIt)
-               traceMsg(self()->comp(), "RXF instr [%p] USES mr baseRegister [%d]\n", s390Instr, ((TR::RealRegister*)mr->getBaseRegister())->getRegisterNumber());
-            }
-         if (mr->getIndexRegister())
-            {
-            if (traceIt)
-               traceMsg(self()->comp(), "RXF instr [%p] USES mr indexRegister [%d]\n", s390Instr, ((TR::RealRegister*)mr->getIndexRegister())->getRegisterNumber());
-            }
-         return true;
-         }
-      case TR::Instruction::IsMem:
-         {
-         TR::MemoryReference * mr = s390Instr->getMemoryReference();
-         if (mr->getBaseRegister())
-            {
-            if (traceIt)
-               traceMsg(self()->comp(), "Mem instr [%p] USES mr baseRegister [%d]\n", s390Instr, ((TR::RealRegister*)mr->getBaseRegister())->getRegisterNumber());
-            }
-         if (mr->getIndexRegister())
-            {
-            if (traceIt)
-               traceMsg(self()->comp(), "Mem instr [%p] USES mr indexRegister [%d]\n", s390Instr, ((TR::RealRegister*)mr->getIndexRegister())->getRegisterNumber());
-            }
-         return true;
-         }
-      case TR::Instruction::IsSS1:
-         {
-         TR::MemoryReference * mr = s390Instr->getMemoryReference();
-         if (mr->getBaseRegister())
-            {
-            if (traceIt)
-               traceMsg(self()->comp(), "SS1 instr [%p] USES mr1 baseRegister [%d]\n", s390Instr, ((TR::RealRegister*)mr->getBaseRegister())->getRegisterNumber());
-            }
-         if (mr->getIndexRegister())
-            {
-            if (traceIt)
-               traceMsg(self()->comp(), "SS1 instr [%p] USES mr1 indexRegister [%d]\n", s390Instr, ((TR::RealRegister*)mr->getIndexRegister())->getRegisterNumber());
-            }
-
-         mr = s390Instr->getMemoryReference2();
-         if (mr->getBaseRegister())
-            {
-            if (traceIt)
-               traceMsg(self()->comp(), "SS1 instr [%p] USES mr2 baseRegister [%d]\n", s390Instr, ((TR::RealRegister*)mr->getBaseRegister())->getRegisterNumber());
-            }
-         if (mr->getIndexRegister())
-            {
-            if (traceIt)
-               traceMsg(self()->comp(), "SS1 instr [%p] USES mr2 indexRegister [%d]\n", s390Instr, ((TR::RealRegister*)mr->getIndexRegister())->getRegisterNumber());
-            }
-         return true;
-         }
-      case TR::Instruction::IsSS2:
-      case TR::Instruction::IsSSE:
-         {
-         TR::MemoryReference * mr = s390Instr->getMemoryReference();
-         if (mr->getBaseRegister())
-            {
-            if (traceIt)
-               traceMsg(self()->comp(), "SS2 instr [%p] USES mr baseRegister [%d]\n", s390Instr, ((TR::RealRegister*)mr->getBaseRegister())->getRegisterNumber());
-            }
-         if (mr->getIndexRegister())
-            {
-            if (traceIt)
-               traceMsg(self()->comp(), "SS2 instr [%p] USES mr indexRegister [%d]\n", s390Instr, ((TR::RealRegister*)mr->getIndexRegister())->getRegisterNumber());
-            }
-
-         mr = s390Instr->getMemoryReference2();
-         if (mr)
-            {
-            if (mr->getBaseRegister())
-               {
-               if (traceIt)
-                  traceMsg(self()->comp(), "SS2 instr [%p] USES mr2 baseRegister [%d]\n", s390Instr, ((TR::RealRegister*)mr->getBaseRegister())->getRegisterNumber());
-               }
-            if (mr->getIndexRegister())
-               {
-               if (traceIt)
-                  traceMsg(self()->comp(), "SS2 instr [%p] USES mr2 indexRegister [%d]\n", s390Instr, ((TR::RealRegister*)mr->getIndexRegister())->getRegisterNumber());
-               }
-            }
-         return true;
-         }
-      case TR::Instruction::IsSS4:
-         {
-         TR::S390SS4Instruction *s = (TR::S390SS4Instruction *)s390Instr;
-         int32_t lenRegNum = toRealRegister(s->getLengthReg())->getRegisterNumber();
-         int32_t srcKeyRegNum = toRealRegister(s->getSourceKeyReg())->getRegisterNumber();
-         registerUsageInfo[blockNum]->set(lenRegNum);
-         if (traceIt)
-            traceMsg(self()->comp(), "SS4 instr [%p] USES register [%d %d]\n", s, lenRegNum, srcKeyRegNum);
-
-         TR::MemoryReference * mr = s->getMemoryReference();
-         if (traceIt)
-            traceMsg(self()->comp(), "SS2 instr [%p] USES mr baseRegister [%d]\n", s, ((TR::RealRegister*)mr->getBaseRegister())->getRegisterNumber());
-
-         mr = s->getMemoryReference2();
-         if (mr->getBaseRegister())
-            {
-            if (traceIt)
-               traceMsg(self()->comp(), "SS4 instr [%p] USES mr baseRegister [%d]\n", s, ((TR::RealRegister*)mr->getBaseRegister())->getRegisterNumber());
-            }
-         if (mr->getIndexRegister())
-            {
-            if (traceIt)
-               traceMsg(self()->comp(), "SS4 instr [%p] USES mr indexRegister [%d]\n", s, ((TR::RealRegister*)mr->getIndexRegister())->getRegisterNumber());
-            }
-         return true;
-         }
-      case TR::Instruction::IsSSF:
-         {
-         TR::S390SSFInstruction *s = (TR::S390SSFInstruction *)s390Instr;
-         int32_t firstRegNum = toRealRegister(s->getFirstRegister())->getRegisterNumber();
-         registerUsageInfo[blockNum]->set(firstRegNum);
-         if (traceIt)
-            traceMsg(self()->comp(), "SSF instr [%p] USES register [%d]\n", s, firstRegNum);
-
-         TR::MemoryReference * mr = s->getMemoryReference();
-         if (mr->getBaseRegister())
-            {
-            if (traceIt)
-               traceMsg(self()->comp(), "SSF instr [%p] USES mr1 baseRegister [%d]\n", s, ((TR::RealRegister*)mr->getBaseRegister())->getRegisterNumber());
-            }
-         if (mr->getIndexRegister())
-            {
-            if (traceIt)
-               traceMsg(self()->comp(), "SSF instr [%p] USES mr1 indexRegister [%d]\n", s, ((TR::RealRegister*)mr->getIndexRegister())->getRegisterNumber());
-            }
-
-         mr = s->getMemoryReference2();
-         if (mr->getBaseRegister())
-            {
-            if (traceIt)
-               traceMsg(self()->comp(), "SSF instr [%p] USES mr2 baseRegister [%d]\n", s, ((TR::RealRegister*)mr->getBaseRegister())->getRegisterNumber());
-            }
-         if (mr->getIndexRegister())
-            {
-            if (traceIt)
-               traceMsg(self()->comp(), "SSF instr [%p] USES mr2 indexRegister [%d]\n", s, ((TR::RealRegister*)mr->getIndexRegister())->getRegisterNumber());
-            }
-         return true;
-         }
-      case TR::Instruction::IsRRS:
-      case TR::Instruction::IsRIE:
-         {
-         int32_t tgtRegNum, srcRegNum;
-         if (s390Instr->getRegisterOperand(1))
-            {
-            tgtRegNum = toRealRegister(s390Instr->getRegisterOperand(1))->getRegisterNumber();
-            registerUsageInfo[blockNum]->set(tgtRegNum);
-            }
-
-         if (s390Instr->getRegisterOperand(2))
-            {
-            srcRegNum = toRealRegister(s390Instr->getRegisterOperand(2))->getRegisterNumber();
-            }
-
-         if (traceIt)
-            traceMsg(self()->comp(), "RRS/RIE instr [%p] USES registers [%d %d]\n", s390Instr, srcRegNum, tgtRegNum);
-         return true;
-         }
-      case TR::Instruction::IsRIS:
-         {
-         int32_t tgtRegNum = toRealRegister(s390Instr->getRegisterOperand(1))->getRegisterNumber();
-         if (traceIt)
-            traceMsg(self()->comp(), "RIS instr [%p] USES register [%d]\n", s390Instr, tgtRegNum);
-         registerUsageInfo[blockNum]->set(tgtRegNum);
-
-         TR::MemoryReference * mr = s390Instr->getMemoryReference();
-         if (mr->getBaseRegister())
-            {
-            if (traceIt)
-               traceMsg(self()->comp(), "RIS instr [%p] USES mr baseRegister [%d]\n", s390Instr, ((TR::RealRegister*)mr->getBaseRegister())->getRegisterNumber());
-            }
-         if (mr->getIndexRegister())
-            {
-            if (traceIt)
-               traceMsg(self()->comp(), "RIS instr [%p] USES mr indexRegister [%d]\n", s390Instr, ((TR::RealRegister*)mr->getIndexRegister())->getRegisterNumber());
-            }
-         return true;
-         }
-      default:
-         {
-         ///TR_ASSERTC( 0,_jit, "unexpected instruction kind");
-         return false;
-         }
-      }
-
-
-   return false;
-   }
-
-uint32_t
-OMR::Z::CodeGenerator::isPreservedRegister(int32_t regIndex)
-   {
-   // is register preserved in prologue
-   //
-   for (int32_t pindex = TR::RealRegister::GPR6;
-         pindex <= TR::RealRegister::GPR12;
-         pindex++)
-      {
-      TR::RealRegister::RegNum idx = REGNUM(pindex);
-      if (idx == REGNUM(regIndex))
-         return pindex;
-      }
-   return -1;
-   }
-
-bool
-OMR::Z::CodeGenerator::isReturnInstruction(TR::Instruction *instr)
-   {
-   return instr->getOpCodeValue() == TR::InstOpCode::RET;
-   }
-
-bool
-OMR::Z::CodeGenerator::isBranchInstruction(TR::Instruction *instr)
-   {
-   return instr->isBranchOp();
-   }
-
-bool
-OMR::Z::CodeGenerator::isLabelInstruction(TR::Instruction *instr)
-   {
-   return instr->isLabel();
-   }
-
-int32_t
-OMR::Z::CodeGenerator::isFenceInstruction(TR::Instruction *instr)
-   {
-   TR::Instruction *s390Instr = instr;
-
-   if (s390Instr->getOpCodeValue() == TR::InstOpCode::FENCE)
-      {
-      TR::Node *fenceNode = s390Instr->getNode();
-      if (fenceNode->getOpCodeValue() == TR::BBStart)
-         return 1;
-      else if (fenceNode->getOpCodeValue() == TR::BBEnd)
-         return 2;
-      }
-
-   return 0;
-   }
-
-bool
-OMR::Z::CodeGenerator::isAlignmentInstruction(TR::Instruction *instr)
-   {
-   return false;
-   }
-
-TR::Instruction *
-OMR::Z::CodeGenerator::splitEdge(TR::Instruction *instr,
-                                 bool isFallThrough,
-                                 bool needsJump,
-                                 TR::Instruction *newSplitLabel,
-                                 TR::list<TR::Instruction*> *jmpInstrs,
-                                 bool firstJump)
-   {
-   // instr is the jump instruction containing the target
-   // this is the edge that needs to be split
-   // if !isFallThrough, then the instr points at the BBEnd
-   // of the block containing the jump
-   //
-   TR::LabelSymbol *newLabel = NULL;
-   if (!newSplitLabel)
-      newLabel = generateLabelSymbol(self());
-   else
-      {
-      newLabel = ((TR::S390LabelInstruction *)newSplitLabel)->getLabelSymbol();
-      }
-   TR::LabelSymbol *targetLabel = NULL;
-   TR::Instruction *location = NULL;
-   if (isFallThrough)
-      {
-      location = instr;
-      }
-   else
-      {
-      // compare and branch
-      if (instr->getKind() == TR::Instruction::IsRIE)
-         {
-         TR::S390RIEInstruction *labelInstr = (TR::S390RIEInstruction *)instr;
-         targetLabel = labelInstr->getBranchDestinationLabel();
-         labelInstr->setBranchDestinationLabel(newLabel);
-         location = targetLabel->getInstruction()->getPrev();
-         }
-      else
-         {
-         TR::S390LabeledInstruction *labelInstr = (TR::S390LabeledInstruction *)instr;
-         targetLabel = labelInstr->getLabelSymbol();
-         labelInstr->setLabelSymbol(newLabel);
-         location = targetLabel->getInstruction()->getPrev();
-         }
-      // now fixup any remaining jmp instrs that jmp to the target
-      // so that they now jmp to the new label
-      //
-      for (auto jmpItr = jmpInstrs->begin(); jmpItr != jmpInstrs->end(); ++jmpItr)
-         {
-         TR::S390LabeledInstruction *l = (TR::S390LabeledInstruction *)(*jmpItr);
-         if (l->getLabelSymbol() == targetLabel)
-            {
-            traceMsg(self()->comp(), "split edge fixing jmp instr %p\n", *jmpItr);
-            l->setLabelSymbol(newLabel);
-            }
-         }
-      }
-
-   TR::Instruction *cursor = newSplitLabel;
-   if (!cursor)
-      cursor = generateS390LabelInstruction(self(), TR::InstOpCode::LABEL, location->getNode(), newLabel, location);
-
-   if (!isFallThrough && needsJump)
-      {
-      TR::Instruction *jmpLocation = cursor->getPrev();
-      TR::Instruction *i = generateS390BranchInstruction(self(), TR::InstOpCode::BRC, TR::InstOpCode::COND_BRC, jmpLocation->getNode(), targetLabel, jmpLocation);
-      traceMsg(self()->comp(), "split edge jmp instr at [%p]\n", i);
-      }
-   return cursor;
-   }
-
-TR::Instruction *
-OMR::Z::CodeGenerator::splitBlockEntry(TR::Instruction *instr)
-   {
-   TR::LabelSymbol *newLabel = generateLabelSymbol(self());
-   TR::Instruction *location = instr->getPrev();
-   return generateS390LabelInstruction(self(), TR::InstOpCode::LABEL, location->getNode(), newLabel, location);
-   }
-
-int32_t
-OMR::Z::CodeGenerator::computeRegisterSaveDescription(TR_BitVector *regs, bool populateInfo)
-   {
-   uint32_t rsd = 0;
-   // if the reg is present in this bitvector,
-   // then it must have been assigned.
-   //
-   TR_BitVectorIterator regIt(*regs);
-   while (regIt.hasMoreElements())
-      {
-      int32_t regIndex = self()->isPreservedRegister(regIt.getNextElement());
-      if (regIndex != -1)
-         {
-         rsd |= 1 << (REGNUM(regIndex) - 1);
-         }
-      }
-   // place the register save size in the top half
-   rsd |= self()->getLinkage()->getRegisterSaveSize() << 16;
-   return rsd;
-   }
-
-void
-OMR::Z::CodeGenerator::processIncomingParameterUsage(TR_BitVector **registerUsageInfo, int32_t blockNum)
-   {
-   TR::ResolvedMethodSymbol             *bodySymbol = self()->comp()->getJittedMethodSymbol();
-   ListIterator<TR::ParameterSymbol>  paramIterator(&(bodySymbol->getParameterList()));
-   TR::ParameterSymbol               *paramCursor;
-
-   for (paramCursor = paramIterator.getFirst();
-       paramCursor != NULL;
-       paramCursor = paramIterator.getNext())
-      {
-      int32_t ai = paramCursor->getAllocatedIndex();
-      int32_t ai_l = paramCursor->getAllocatedLow();
-
-      traceMsg(self()->comp(), "found %d %d used as parms\n", ai, ai_l);
-      if (ai > 0)
-         registerUsageInfo[blockNum]->set(ai);
-      if (ai_l > 0)
-         registerUsageInfo[blockNum]->set(ai_l);
-      }
-
-   int32_t litPoolNumber = self()->getLinkage(bodySymbol->getLinkageConvention())->setupLiteralPoolRegister(self()->getFirstSnippet());
-   if (litPoolNumber > 0)
-      registerUsageInfo[blockNum]->set(litPoolNumber);
-   }
-
-void
-OMR::Z::CodeGenerator::updateSnippetMapWithRSD(TR::Instruction *instr, int32_t rsd)
-   {
-   // at this point, instr is a jmp instruction
-   // determine if it branches to a snippet and if so
-   // mark the maps in the snippet with the right rsd
-   //
-   TR::S390LabelInstruction *labelInstr = (TR::S390LabelInstruction *)instr;
-   TR::LabelSymbol *targetLabel = labelInstr->getLabelSymbol();
-
-   TR_S390OutOfLineCodeSection *oiCursor = self()->findOutLinedInstructionsFromLabel(targetLabel);
-   if (oiCursor)
-      {
-      TR::Instruction *cur = oiCursor->getFirstInstruction();
-      TR::Instruction *end = oiCursor->getAppendInstruction();
-      traceMsg(self()->comp(), "found oi start %p end %p\n", cur, end);
-      while (cur != end)
-         {
-         if (cur->needsGCMap())
-            {
-            TR_GCStackMap *map = cur->getGCMap();
-            if (map)
-               {
-               traceMsg(self()->comp(), "      instr %p rsd %x map %p\n", cur, rsd, map);
-               map->setRegisterSaveDescription(rsd);
-               }
-            }
-         cur = cur->getNext();
-         }
-      }
-   }
-
 TR_S390OutOfLineCodeSection *
 OMR::Z::CodeGenerator::findOutLinedInstructionsFromLabel(TR::LabelSymbol *label)
    {
@@ -6088,22 +5231,6 @@ OMR::Z::CodeGenerator::findOutLinedInstructionsFromLabel(TR::LabelSymbol *label)
       }
 
    return NULL;
-   }
-
-bool
-OMR::Z::CodeGenerator::isTargetSnippetOrOutOfLine(TR::Instruction *instr, TR::Instruction **start, TR::Instruction **end)
-   {
-   TR::S390LabelInstruction *labelInstr = (TR::S390LabelInstruction *)instr;
-   TR::LabelSymbol *targetLabel = labelInstr->getLabelSymbol();
-   TR_S390OutOfLineCodeSection *oiCursor = self()->findOutLinedInstructionsFromLabel(targetLabel);
-   if (oiCursor)
-      {
-      *start = oiCursor->getFirstInstruction();
-      *end = oiCursor->getAppendInstruction();
-      return true;
-      }
-   else
-      return false;
    }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -7181,11 +6308,7 @@ bool OMR::Z::CodeGenerator::nodeMayCauseException(TR::Node *node)
 #endif
       {
       TR::ILOpCode& opcode = node->getOpCode();
-      return opcode.isDiv() || opcode.isExponentiation() || opcode.isRem()
-#ifdef J9_PROJECT_SPECIFIC
-         || opcode.getOpCodeValue() == TR::pddivrem
-#endif
-         ;
+      return opcode.isDiv() || opcode.isExponentiation() || opcode.isRem();
       }
    }
 
@@ -7764,9 +6887,6 @@ bool OMR::Z::CodeGenerator::reliesOnAParticularSignEncoding(TR::Node *node)
       return false;
 
    if (op.isAnyBCDArithmetic())
-      return false;
-
-   if (op.getOpCodeValue() == TR::pddivrem)
       return false;
 
    if (op.isSimpleBCDClean())

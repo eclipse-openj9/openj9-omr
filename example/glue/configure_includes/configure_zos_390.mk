@@ -32,7 +32,8 @@ include $(CONFIG_INCL_DIR)/configure_common.mk
 # OMR_THR_SPIN_WAKE_CONTROL flag is disabled on zOS due to poor performance.
 
 CONFIGURE_ARGS += \
-  --enable-OMR_THR_THREE_TIER_LOCKING
+  --enable-OMR_THR_THREE_TIER_LOCKING \
+  --enable-native-encoding
 
 ifeq (zos_390-64_cmprssptrs, $(SPEC))
   CONFIGURE_ARGS += \

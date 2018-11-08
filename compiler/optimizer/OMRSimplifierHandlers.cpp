@@ -334,7 +334,7 @@ static void setExprInvariant(TR_RegionStructure *region, TR::Node *node)
    }
 
 template <typename T>
-static void foldConstant(TR::Node *node, T value, TR::Simplifier *s, bool anchorChildrenP)
+inline void foldConstant(TR::Node *node, T value, TR::Simplifier *s, bool anchorChildrenP)
    {
    if (!performTransformationSimplifier(node, s)) return;
    if (anchorChildrenP) s->anchorChildren(node, s->_curTree);
@@ -5686,7 +5686,7 @@ TR::Node *indirectStoreSimplifier(TR::Node * node, TR::Block * block, TR::Simpli
          }
       }
 
-   if ((node->getOpCodeValue() == TR::wrtbari) && 0 &&
+   if ((node->getOpCodeValue() == TR::awrtbari) && 0 &&
        !node->getSymbolReference()->getSymbol()->isArrayShadowSymbol())
       {
       TR::Node *valueChild = node->getSecondChild();
@@ -11685,6 +11685,32 @@ TR::Node *sxorSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
    BINARY_IDENTITY_OP(ShortInt, 0)
 
    return node;
+   }
+
+//---------------------------------------------------------------------
+// Floating point square root
+//
+template <class T>
+inline TR::Node* sqrtSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
+   {
+   simplifyChildren(node, block, s);
+   TR::Node* child = node->getChild(0);
+   if (child->getOpCode().isLoadConst() &&
+       performTransformation(s->comp(), "%sSimplify sqrt of const child at [" POINTER_PRINTF_FORMAT "]\n", s->optDetailString(), node))
+      {
+      foldConstant<T>(node, TR::Compiler->arith.fpSquareRoot(child->getConst<T>()), s, false /* !anchorChilren */);
+      }
+   return node;
+   }
+
+TR::Node *fsqrtSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
+   {
+   return sqrtSimplifier<float>(node, block, s);
+   }
+
+TR::Node *dsqrtSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
+   {
+   return sqrtSimplifier<double>(node, block, s);
    }
 
 //---------------------------------------------------------------------

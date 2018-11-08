@@ -552,6 +552,7 @@ const char * ppcOpCodeToNameMap[][2] =
    {"vxor", "vxor"},
    {"vnor", "vnor"},
    {"vperm", "vperm"},
+   {"vbpermq", "vbpermq"},
    {"vsel", "vsel"},
    {"vsumsws", "vsumsws"},
    {"vsum2sws", "vsum2sws"},

@@ -2321,14 +2321,14 @@ int32_t childTypes[] =
    TR::Float,                      // TR::fstore
    TR::Double,                     // TR::dstore
    TR::Address,                    // TR::astore
-   TR::Address,                    // TR::wrtbar
+   TR::Address,                    // TR::awrtbar
    TR::Int8,                      // TR::bstore
    TR::Int16,                     // TR::sstore
    TR::Int64 | (TR::Address<<8),   // TR::lstorei
    TR::Float | (TR::Address<<8),    // TR::fstorei
    TR::Double | (TR::Address<<8),   // TR::dstorei
    TR::Address,                    // TR::astorei
-   TR::Address,                    // TR::wrtbari
+   TR::Address,                    // TR::awrtbari
    TR::Int8 | (TR::Address<<8),    // TR::bstorei
    TR::Int16 | (TR::Address<<8),   // TR::sstorei
    TR::Int32 | (TR::Address<<8),   // TR::istorei
@@ -3463,8 +3463,6 @@ int32_t childTypes[] =
 
    TR::PackedDecimal | (TR::Int32<<16),                      // TR::pdshrSetSign
    TR::PackedDecimal | (TR::Int32<<16),                      // TR::pdshlSetSign
-   TR::PackedDecimal | (TR::Int32<<16),                      // TR::pdshrPreserveSign
-   TR::PackedDecimal | (TR::Int32<<16),                      // TR::pdshlPreserveSign
    TR::PackedDecimal | (TR::Int32<<16),                      // TR::pdshlOverflow
    TR::PackedDecimal,                                        // TR::pdchk
 
@@ -3489,20 +3487,12 @@ int32_t childTypes[] =
    TR::PackedDecimal,                                        // TR::pdcmpge
    TR::PackedDecimal,                                        // TR::pdcmpgt
    TR::PackedDecimal,                                        // TR::pdcmple
-
-   TR::PackedDecimal,                                        // TR::pdcheck
-   TR::PackedDecimal,                                        // TR::pdfix
-
    TR::PackedDecimal,                                        // TR::pdclean
-   TR::PackedDecimal,                                        // TR::pdexp
-   TR::PackedDecimal,                                        // TR::pduexp
 
    TR::PackedDecimal,                                        // TR::pdclear
    TR::PackedDecimal,                                        // TR::pdclearSetSign
 
    TR::PackedDecimal | (TR::Int32<<16),                      // TR::pdSetSign
-
-   TR::PackedDecimal,                                        // TR::pddivrem
 
    TR::PackedDecimal,                                        // TR::pdModifyPrecision
 

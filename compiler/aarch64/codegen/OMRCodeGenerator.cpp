@@ -26,6 +26,7 @@
 #include "codegen/CodeGenerator.hpp"
 #include "codegen/CodeGenerator_inlines.hpp"
 #include "codegen/GCStackMap.hpp"
+#include "codegen/GenerateInstructions.hpp"
 #include "codegen/RegisterConstants.hpp"
 #include "codegen/RegisterIterator.hpp"
 #include "codegen/TreeEvaluator.hpp"
@@ -215,7 +216,7 @@ OMR::ARM64::CodeGenerator::doBinaryEncoding()
    bool skipOneReturn = false;
    while (cursorInstruction)
       {
-      if (cursorInstruction->getOpCodeValue() == TR::InstOpCode::ret)
+      if (cursorInstruction->getOpCodeValue() == TR::InstOpCode::retn)
          {
          if (skipOneReturn == false)
             {
@@ -319,9 +320,16 @@ TR::Instruction *OMR::ARM64::CodeGenerator::generateSwitchToInterpreterPreProlog
 // different from evaluate in that it returns a clobberable register
 TR::Register *OMR::ARM64::CodeGenerator::gprClobberEvaluate(TR::Node *node)
    {
-   TR_ASSERT(false, "Not implemented yet.");
-
-   return NULL;
+   if (node->getReferenceCount() > 1)
+      {
+      TR::Register *targetReg = self()->allocateRegister();
+      generateMovInstruction(self(), node, targetReg, self()->evaluate(node));
+      return targetReg;
+      }
+   else
+      {
+      return self()->evaluate(node);
+      }
    }
 
 
@@ -383,13 +391,13 @@ TR_GlobalRegisterNumber OMR::ARM64::CodeGenerator::getLinkageGlobalRegisterNumbe
    return 0;
    }
 
-int64_t getLargestNegConstThatMustBeMaterialized() 
+int64_t OMR::ARM64::CodeGenerator::getLargestNegConstThatMustBeMaterialized()
    { 
    TR_ASSERT(0, "Not Implemented on AArch64"); 
    return 0; 
    }
 
-int64_t getSmallestPosConstThatMustBeMaterialized() 
+int64_t OMR::ARM64::CodeGenerator::getSmallestPosConstThatMustBeMaterialized()
    { 
    TR_ASSERT(0, "Not Implemented on AArch64"); 
    return 0; 

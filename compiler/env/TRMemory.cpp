@@ -129,7 +129,6 @@ const char * objectName[] =
    "InterProceduralAnalyzer",
    "InductionVariableAnalysis",
    "CoarseningInterProceduralAnalyzer",
-   "ShrinkWrapping",
 
    "AheadOfTimeCompile",
    "HWProfile",
@@ -301,7 +300,9 @@ const char * objectName[] =
    "Debug",
 
    "ClientSessionData",
-   "ROMClass"
+   "ROMClass",
+
+   "SymbolValidationManager"
    };
 
 

@@ -66,9 +66,9 @@ OMR::IlType::primitiveTypeAlignment[TR::NumOMRTypes] =
    4,  // Float
    8,  // Double
 #if TR_TARGET_64BIT // HOST?
-   4,  // Address/Word
-#else
    8,  // Address/Word
+#else
+   4,  // Address/Word
 #endif
    16, // VectorInt8
    16, // VectorInt16
@@ -87,9 +87,26 @@ OMR::IlType::getSignatureName()
    return (char *) signatureNameForType[dt];
    }
 
+TR::IlType *
+OMR::IlType::primitiveType(TR::TypeDictionary *d)
+   {
+   return static_cast<TR::IlType *>(this);
+   }
+
 size_t
 OMR::IlType::getSize()
    {
    TR_ASSERT(0, "The input type does not have a defined size\n");
    return 0;
    }
+
+void *
+OMR::IlType::client()
+   {
+   if (_client == NULL && _clientAllocator != NULL)
+      _client = _clientAllocator(static_cast<TR::IlType *>(this));
+   return _client;
+   }
+
+ClientAllocator OMR::IlType::_clientAllocator = NULL;
+ClientAllocator OMR::IlType::_getImpl = NULL;

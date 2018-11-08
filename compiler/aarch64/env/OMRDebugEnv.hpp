@@ -44,6 +44,10 @@ namespace ARM64
 
 class OMR_EXTENSIBLE DebugEnv : public OMR::DebugEnv
    {
+public:
+
+   DebugEnv();
+
    };
 
 }

@@ -2406,30 +2406,6 @@ OMR::Z::MemoryReference::assignRegisters(TR::Instruction * currentInstruction, T
       }
    }
 
-/**
- * Generate binary encoding for the second memory reference operand in an instruction
- *
- * SS Format (e.g. XC)  - generate B2(D2) field
- *  ________ _______ ____________________________
- * |Op Code |   L   | B1 |   D1  | B2 |   D2     |
- * |________|_______|____|_______|____|__________|
- * 0         8     16   20       32  36          47
- */
-uint8_t *
-OMR::Z::MemoryReference::generateBinaryEncoding2(uint8_t * cursor, TR::CodeGenerator * cg)
-   {
-   TR::RealRegister * base = (self()->getBaseRegister() ? toRealRegister(self()->getBaseRegister()) : 0);
-   int32_t disp = _offset;
-
-   (*(uint16_t *) cursor) &= bos(0xF000);
-   (*(uint16_t *) cursor) |= bos(disp);
-   if (base)
-      {
-      base->setBaseRegisterField((uint32_t *) (cursor - 2));
-      }
-   return cursor;
-   }
-
 bool
 OMR::Z::MemoryReference::needsAdjustDisp(TR::Instruction * instr, OMR::Z::MemoryReference * mRef, TR::CodeGenerator * cg)
    {

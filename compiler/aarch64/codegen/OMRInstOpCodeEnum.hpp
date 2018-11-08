@@ -46,6 +46,8 @@
 		blr,                                                    	/* 0xD63F0000	BLR       	 */
 		ret,                                                    	/* 0xD65F0000	RET       	 */
 	/* Unconditional branch (immediate) */
+		b,                                                      	/* 0x14000000	B         	 */
+		bl,                                                     	/* 0x94000000	BL        	 */
 /* Loads and stores */
 	/* Load/store exclusive */
 		stxrb,                                                  	/* 0x08000000	STXRB     	 */
@@ -310,7 +312,7 @@
 		ubfmx,                                                  	/* 0xD3400000	UBFM      	 */
 	/* Extract */
 		extrw,                                                  	/* 0x13800000	EXTR      	 */
-		extrx,                                                  	/* 0x93C00000	EXTR      	 */
+		extrx,                                                  	/* 0x93C08000	EXTR      	 */
 /* Data Processing - register */
 	/* Logical (shifted register) */
 		andw,                                                   	/* 0x0A000000	AND       	 */
@@ -422,6 +424,8 @@
 
 	/* Last VFP instructions */
 		proc,  // Entry to the method
+		fence, // Fence
+		retn,  // Return
 		dd,    // Define word
 		label, // Destination of a jump
 		ARM64LastOp = label,

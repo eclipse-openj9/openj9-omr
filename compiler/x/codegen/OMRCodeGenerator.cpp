@@ -369,13 +369,34 @@ OMR::X86::CodeGenerator::initialize(TR::Compilation *comp)
    self()->addSupportedLiveRegisterKind(TR_VRF);
    self()->setLiveRegisters(new (self()->trHeapMemory()) TR_LiveRegisters(comp), TR_VRF);
 
-   self()->setSupportsArrayCmp();
-   self()->setSupportsPrimitiveArrayCopy();
-   self()->setSupportsReferenceArrayCopy();
-
-   if (!comp->getOption(TR_DisableArraySetOpts))
+   if (!TR::Compiler->om.canGenerateArraylets())
       {
-      self()->setSupportsArraySet();
+      self()->setSupportsArrayCmp();
+      self()->setSupportsPrimitiveArrayCopy();
+      if (!comp->getOption(TR_DisableArraySetOpts))
+         {
+         self()->setSupportsArraySet();
+         }
+      static bool disableX86TRTO = (bool)feGetEnv("TR_disableX86TRTO");
+      if (!disableX86TRTO)
+         {
+         if (self()->getX86ProcessorInfo().supportsSSE4_1())
+            {
+            self()->setSupportsArrayTranslateTRTO();
+            }
+         }
+      static bool disableX86TROT = (bool)feGetEnv("TR_disableX86TROT");
+      if (!disableX86TROT)
+         {
+         if (self()->getX86ProcessorInfo().supportsSSE4_1())
+            {
+            self()->setSupportsArrayTranslateTROT();
+            }
+         if (self()->getX86ProcessorInfo().supportsSSE2())
+            {
+            self()->setSupportsArrayTranslateTROTNoBreak();
+            }
+         }
       }
 
    self()->setSupportsScaledIndexAddressing();
@@ -396,9 +417,6 @@ OMR::X86::CodeGenerator::initialize(TR::Compilation *comp)
       if (TR::Compiler->target.is64Bit())
          self()->setSupportsLoweringConstLDiv();
       }
-
-   if (!comp->getOption(TR_DisableShrinkWrapping))
-      self()->setSupportsShrinkWrapping();
 
    self()->setSpillsFPRegistersAcrossCalls(); // TODO:AMD64: Are the preserved XMMRs relevant here?
 
@@ -423,20 +441,6 @@ OMR::X86::CodeGenerator::initialize(TR::Compilation *comp)
    self()->setLowestCommonCodePatchingAlignmentBoundary(8);
 
    self()->setPicSlotCount(0);
-
-   static bool disableX86TRTO = feGetEnv("TR_disableX86TRTO") != NULL;
-   static bool disableX86TROT = feGetEnv("TR_disableX86TROT") != NULL;
-   if ( comp->cg()->getX86ProcessorInfo().supportsSSE4_1())
-      {
-      if (!disableX86TRTO)
-         self()->setSupportsArrayTranslateTRTO();
-      if (!disableX86TROT)
-         self()->setSupportsArrayTranslateTROT();
-      }
-   if (!disableX86TROT && comp->cg()->getX86ProcessorInfo().supportsSSE2())
-      {
-      self()->setSupportsArrayTranslateTROTNoBreak();
-      }
 
    if (!comp->getOption(TR_DisableRegisterPressureSimulation))
       {
@@ -1067,6 +1071,25 @@ OMR::X86::CodeGenerator::supportsMergingGuards()
           self()->allowGuardMerging();
    }
 
+bool
+OMR::X86::CodeGenerator::supportsNonHelper(TR::SymbolReferenceTable::CommonNonhelperSymbol symbol)
+   {
+   bool result = false;
+
+   switch (symbol)
+      {
+      case TR::SymbolReferenceTable::atomicAddSymbol:
+      case TR::SymbolReferenceTable::atomicFetchAndAddSymbol:
+      case TR::SymbolReferenceTable::atomicSwapSymbol:
+         {
+         result = true;
+         break;
+         }
+      }
+
+   return result;
+   }
+
 TR::RealRegister *
 OMR::X86::CodeGenerator::getMethodMetaDataRegister()
    {
@@ -1595,32 +1618,6 @@ bool OMR::X86::CodeGenerator::isBranchInstruction(TR::Instruction *instr)
    return (instr->getOpCode().isBranchOp() || instr->getOpCode().getOpCodeValue() == CALLImm4 ? true : false);
    }
 
-bool OMR::X86::CodeGenerator::isLabelInstruction(TR::Instruction *instr)
-   {
-   TR::Instruction *x86Instr = instr;
-   return (x86Instr->getKind() == TR::Instruction::IsLabel);
-   }
-
-int32_t OMR::X86::CodeGenerator::isFenceInstruction(TR::Instruction *instr)
-   {
-   TR::Instruction *x86Instr = instr;
-
-   if (x86Instr->getKind() == TR::Instruction::IsFence)
-      {
-      TR::Node *fenceNode = x86Instr->getNode();
-      if (fenceNode->getOpCodeValue() == TR::BBStart)
-         return 1;
-      else if (fenceNode->getOpCodeValue() == TR::BBEnd)
-         return 2;
-      }
-   return 0;
-   }
-
-bool OMR::X86::CodeGenerator::isAlignmentInstruction(TR::Instruction *instr)
-   {
-   return (instr->getKind() == TR::Instruction::IsAlignment);
-   }
-
 struct DescendingSortX86DataSnippetByDataSize
    {
    inline bool operator()(TR::X86DataSnippet* const& a, TR::X86DataSnippet* const& b)
@@ -2107,22 +2104,6 @@ TR_OutlinedInstructions * OMR::X86::CodeGenerator::findOutlinedInstructionsFromL
    return NULL;
    }
 
-TR_OutlinedInstructions * OMR::X86::CodeGenerator::findOutlinedInstructionsFromLabelForShrinkWrapping(TR::LabelSymbol *label)
-   {
-   auto oiIterator = self()->getOutlinedInstructionsList().begin();
-   while (oiIterator != self()->getOutlinedInstructionsList().end())
-      {
-      if ((*oiIterator)->getEntryLabel() == label)
-         return *oiIterator;
-      ++oiIterator;
-      }
-
-   return NULL;
-   }
-
-
-
-
 TR_OutlinedInstructions * OMR::X86::CodeGenerator::findOutlinedInstructionsFromMergeLabel(TR::LabelSymbol *label)
    {
    auto oiIterator = self()->getOutlinedInstructionsList().begin();
@@ -2263,434 +2244,6 @@ void OMR::X86::CodeGenerator::buildRegisterMapForInstruction(TR_GCStackMap * map
 
    map->setInternalPointerMap(internalPtrMap);
    }
-
-bool OMR::X86::CodeGenerator::processInstruction(TR::Instruction *instr, TR_BitVector **registerUsageInfo,
-                                             int32_t &blockNum,
-                                             int32_t &isFence,
-                                             bool traceIt)
-   {
-   TR::Instruction *x86Instr = instr;
-
-   if (x86Instr->getOpCode().isCallOp())
-      {
-      TR::Node *callNode = x86Instr->getNode();
-      if (callNode->getOpCode().hasSymbolReference())//getSymbolReference())
-         {
-         bool callPreservesRegisters = true;
-         TR::SymbolReference *symRef = callNode->getSymbolReference();
-         TR::MethodSymbol *m = NULL;
-
-         if (traceIt)
-            traceMsg(self()->comp(), "looking at call instr %p\n", x86Instr);
-
-         if (x86Instr->getKind() == TR::Instruction::IsImmSym)
-            {
-            ///traceMsg(comp(), "looking at call instr %p isImmSym\n", x86Instr);
-            symRef = ((TR::X86ImmSymInstruction*)x86Instr)->getSymbolReference();
-            TR::Symbol *sym = symRef->getSymbol();
-            if (!sym->isLabel())
-               m = sym->castToMethodSymbol();
-
-            if (traceIt)
-               traceMsg(self()->comp(), "call instr (ImmSym) %p has method symbol %p\n", x86Instr, m);
-            }
-         else
-            {
-            ///traceMsg(comp(), "looking at call instr %p isNotImmSym\n", x86Instr);
-            m = symRef->getSymbol()->castToMethodSymbol();
-            if (traceIt)
-               traceMsg(self()->comp(), "call instr %p has method symbol %p\n", x86Instr, m);
-            }
-
-         if (m &&
-              ((m->isHelper() && !m->preservesAllRegisters()) ||
-                m->isVMInternalNative() ||
-                m->isJITInternalNative() ||
-                m->isJNI() ||
-                m->isSystemLinkageDispatch() || (m->getLinkageConvention() == TR_System)))
-            {
-            callPreservesRegisters = false;
-            }
-
-         if (!callPreservesRegisters)
-            {
-            if (traceIt)
-               ////traceMsg(comp(), "call instr [%p] does not preserve regs really [%d]\n", x86Instr, m->preservesAllRegisters());
-               traceMsg(self()->comp(), "call instr [%p] does not preserve regs\n", x86Instr);
-            registerUsageInfo[blockNum]->setAll(TR::RealRegister::NumRegisters);
-            }
-         else
-            {
-            if (traceIt)
-               ////traceMsg(comp(), "call instr [%p] preserves regs really [%d]\n", x86Instr, m->preservesAllRegisters());
-               traceMsg(self()->comp(), "call instr [%p] preserves regs\n", x86Instr);
-            }
-         }
-      }
-
-   switch (x86Instr->getKind())
-      {
-      case TR::Instruction::IsFence:
-         {
-         // process BBEnd nodes (and BBStart)
-         // and populate the RUSE info at each block
-         //
-         TR::Node *fenceNode = x86Instr->getNode();
-         if (fenceNode->getOpCodeValue() == TR::BBStart)
-            {
-            blockNum = fenceNode->getBlock()->getNumber();
-            isFence = 1;
-            if (traceIt)
-               traceMsg(self()->comp(), "Now generating register use information for block_%d\n", blockNum);
-            }
-         else if (fenceNode->getOpCodeValue() == TR::BBEnd)
-            isFence = 2;
-
-         return false;
-         }
-      case TR::Instruction::IsReg:
-      case TR::Instruction::IsRegImm:
-      case TR::Instruction::IsRegImmSym:
-      case TR::Instruction::IsRegImm64:
-      case TR::Instruction::IsRegImm64Sym:
-      case TR::Instruction::IsFPReg:
-         {
-         // just get the targetRegister
-         //
-         int32_t tgtRegNum = ((TR::RealRegister*)x86Instr->getTargetRegister())->getRegisterNumber();
-         if (traceIt)
-            traceMsg(self()->comp(), "instr [%p] USES register [%d]\n", x86Instr, tgtRegNum);
-         registerUsageInfo[blockNum]->set(tgtRegNum);
-         return true;
-         }
-      case TR::Instruction::IsRegReg:
-      case TR::Instruction::IsRegRegImm:
-      case TR::Instruction::IsFPRegReg:
-      case TR::Instruction::IsFPST0ST1RegReg:
-      case TR::Instruction::IsFPST0STiRegReg:
-      case TR::Instruction::IsFPSTiST0RegReg:
-      case TR::Instruction::IsFPArithmeticRegReg:
-      case TR::Instruction::IsFPCompareRegReg:
-      case TR::Instruction::IsFPRemainderRegReg:
-         {
-         // get targetRegister and sourceRegister
-         //
-         int32_t tgtRegNum = ((TR::RealRegister*)x86Instr->getTargetRegister())->getRegisterNumber();
-         int32_t srcRegNum = ((TR::RealRegister*)x86Instr->getSourceRegister())->getRegisterNumber();
-         if (traceIt)
-            traceMsg(self()->comp(), "instr [%p] USES register [%d] ; register [%d]\n", x86Instr, tgtRegNum, srcRegNum);
-         registerUsageInfo[blockNum]->set(tgtRegNum);
-         ///registerUsageInfo[blockNum]->set(srcRegNum);
-         return true;
-         }
-      case TR::Instruction::IsRegMem:
-      case TR::Instruction::IsRegMemImm:
-      case TR::Instruction::IsFPRegMem:
-         {
-         // get targetRegister and memoryReference get baseRegister, indexRegister
-         //
-         int32_t tgtRegNum = ((TR::RealRegister*)x86Instr->getTargetRegister())->getRegisterNumber();
-         if (traceIt)
-            traceMsg(self()->comp(), "instr [%p] USES register [%d]\n", x86Instr, tgtRegNum);
-         registerUsageInfo[blockNum]->set(tgtRegNum);
-         TR::MemoryReference *mr = x86Instr->getMemoryReference();
-         if (mr->getBaseRegister())
-            {
-            if (traceIt)
-               traceMsg(self()->comp(), "instr [%p] USES mr baseRegister [%d]\n", x86Instr, ((TR::RealRegister*)mr->getBaseRegister())->getRegisterNumber());
-            }
-         if (mr->getIndexRegister())
-            {
-            if (traceIt)
-               traceMsg(self()->comp(), "instr [%p] USES mr indexRegister [%d]\n", x86Instr, ((TR::RealRegister*)mr->getIndexRegister())->getRegisterNumber());
-            }
-         if (TR::Compiler->target.is64Bit() && mr->getAddressRegister())
-            {
-            int32_t addressRegNum = ((TR::RealRegister*)mr->getAddressRegister())->getRegisterNumber();
-            if (addressRegNum < TR::RealRegister::NumRegisters)
-               {
-               if (traceIt)
-                  traceMsg(self()->comp(), "instr [%p] USES mr addressRegister [%d]\n", x86Instr, addressRegNum);
-               registerUsageInfo[blockNum]->set(addressRegNum);
-               }
-            }
-         else if (traceIt)
-               traceMsg(self()->comp(), "instr [%p] USES mr no addressRegister\n", x86Instr);
-         return true;
-         }
-      case TR::Instruction::IsMem:
-      case TR::Instruction::IsCallMem:
-      case TR::Instruction::IsMemImm:
-      case TR::Instruction::IsMemImmSym:
-      case TR::Instruction::IsMemImmSnippet:
-         {
-         // get memoryReference: baseRegister, indexRegister
-         //
-         TR::MemoryReference *mr = x86Instr->getMemoryReference();
-         if (mr->getBaseRegister())
-            {
-            if (traceIt)
-               traceMsg(self()->comp(), "instr [%p] USES mr baseRegister [%d]\n", x86Instr, ((TR::RealRegister*)mr->getBaseRegister())->getRegisterNumber());
-            }
-         if (mr->getIndexRegister())
-            {
-            if (traceIt)
-               traceMsg(self()->comp(), "instr [%p] USES mr indexRegister [%d]\n", x86Instr, ((TR::RealRegister*)mr->getIndexRegister())->getRegisterNumber());
-            }
-         if (TR::Compiler->target.is64Bit() && mr->getAddressRegister())
-            {
-            if (traceIt)
-               traceMsg(self()->comp(), "instr [%p] USES mr addressRegister [%d]\n", x86Instr, ((TR::RealRegister*)mr->getAddressRegister())->getRegisterNumber());
-            registerUsageInfo[blockNum]->set(((TR::RealRegister*)mr->getAddressRegister())->getRegisterNumber());
-            }
-         else if (traceIt)
-               traceMsg(self()->comp(), "instr [%p] USES mr no addressRegister\n", x86Instr);
-         return true;
-         }
-      case TR::Instruction::IsMemReg:
-      case TR::Instruction::IsFPMemReg:
-      case TR::Instruction::IsMemRegImm:
-         {
-         // get sourceRegister and memoryReference get baseRegister, indexRegister
-         //
-         int32_t srcRegNum = ((TR::RealRegister*)x86Instr->getSourceRegister())->getRegisterNumber();
-         if (traceIt)
-            traceMsg(self()->comp(), "instr [%p] USES register [%d]\n", x86Instr, srcRegNum);
-         TR::MemoryReference *mr = x86Instr->getMemoryReference();
-         if (mr->getBaseRegister())
-            {
-            if (traceIt)
-               traceMsg(self()->comp(), "instr [%p] USES mr baseRegister [%d]\n", x86Instr, ((TR::RealRegister*)mr->getBaseRegister())->getRegisterNumber());
-            }
-         if (mr->getIndexRegister())
-            {
-            if (traceIt)
-               traceMsg(self()->comp(), "instr [%p] USES mr indexRegister [%d]\n", x86Instr, ((TR::RealRegister*)mr->getIndexRegister())->getRegisterNumber());
-            }
-         if (TR::Compiler->target.is64Bit() && mr->getAddressRegister())
-            {
-            if (traceIt)
-               traceMsg(self()->comp(), "instr [%p] USES mr addressRegister [%d]\n", x86Instr, ((TR::RealRegister*)mr->getAddressRegister())->getRegisterNumber());
-            registerUsageInfo[blockNum]->set(((TR::RealRegister*)mr->getAddressRegister())->getRegisterNumber());
-            }
-         else if (traceIt)
-               traceMsg(self()->comp(), "instr [%p] USES mr no addressRegister\n", x86Instr);
-         return true;
-         }
-      default:
-         {
-         if (traceIt)
-            traceMsg(self()->comp(), "nothing to process at instr [%p]\n", instr);
-
-         // at least make sure we capture the target register if any
-         //
-         if ((TR::RealRegister*)x86Instr->getTargetRegister())
-            {
-            int32_t tgtRegNum = ((TR::RealRegister*)x86Instr->getTargetRegister())->getRegisterNumber();
-            if (traceIt)
-               traceMsg(self()->comp(), "instr [%p] USES register [%d]\n", x86Instr, tgtRegNum);
-            registerUsageInfo[blockNum]->set(tgtRegNum);
-            }
-         return false;
-         }
-      }
-   }
-
-uint32_t OMR::X86::CodeGenerator::isPreservedRegister(int32_t regIndex)
-   {
-   // is register preserved in prologue?
-   //
-   int32_t numPreserved = self()->getProperties().getMaxRegistersPreservedInPrologue();
-   for (int32_t pindex = numPreserved-1; pindex >= 0; pindex--)
-      {
-      if (self()->getProperties().getPreservedRegister((uint32_t)pindex) == (TR::RealRegister::RegNum)regIndex)
-         return pindex;
-      }
-   return -1;
-   }
-
-// split a block entry, kind of like adding a new block and
-// re-directing its predecessors to the new label
-//
-TR::Instruction *OMR::X86::CodeGenerator::splitBlockEntry(TR::Instruction *instr)
-   {
-   TR::LabelSymbol *newLabel = generateLabelSymbol(self());
-   return generateLabelInstruction(instr->getPrev(), LABEL, newLabel, self());
-   }
-
-TR::Instruction *OMR::X86::CodeGenerator::splitEdge(TR::Instruction *instr,
-                                                bool isFallThrough,
-                                                bool needsJump,
-                                                TR::Instruction *newSplitLabel,
-                                                TR::list<TR::Instruction*> *jmpInstrs,
-                                                bool firstJump)
-   {
-   // instr is the jump instruction containing the target
-   // this is the edge that needs to be split
-   // if !isFallThrough, then the instr points at the BBEnd
-   // of the block containing the jump
-   //
-   TR::LabelSymbol *newLabel = NULL;
-   if (!newSplitLabel)
-      newLabel = generateLabelSymbol(self());
-   else
-      {
-      newLabel = ((TR::X86LabelInstruction *)newSplitLabel)->getLabelSymbol();
-      }
-   TR::LabelSymbol *targetLabel = NULL;
-   TR::Instruction *location = NULL;
-   if (isFallThrough)
-      {
-      location = instr;
-      }
-   else
-      {
-      TR::X86LabelInstruction *labelInstr = (TR::X86LabelInstruction *)instr;
-      targetLabel = labelInstr->getLabelSymbol();
-      labelInstr->setLabelSymbol(newLabel);
-      location = targetLabel->getInstruction()->getPrev();
-      traceMsg(self()->comp(), "splitEdge fixing branch %p, appending to %p\n", instr, location);
-      // now fixup any remaining jmp instrs that jmp to the target
-      // so that they now jmp to the new label
-      //
-      for (auto jmpItr = jmpInstrs->begin(); jmpItr != jmpInstrs->end(); ++jmpItr)
-         {
-         TR::X86LabelInstruction *l = (TR::X86LabelInstruction *)(*jmpItr);
-         if (l->getLabelSymbol() == targetLabel)
-            {
-            traceMsg(self()->comp(), "splitEdge fixing jmp instr %p\n", (*jmpItr));
-            l->setLabelSymbol(newLabel);
-            }
-         }
-      }
-
-   TR::Instruction *cursor = newSplitLabel;
-   if (!cursor)
-      cursor = generateLabelInstruction(location,
-                                        LABEL,
-                                        newLabel,
-                                        self());
-
-   if (!isFallThrough && needsJump)
-      {
-      TR::Instruction *jmpLocation = cursor->getPrev();
-      TR::LabelSymbol *l = targetLabel;
-      TR::Instruction *i = generateLabelInstruction(jmpLocation, JMP4, l, self());
-      traceMsg(self()->comp(), "splitEdge jmp instr at [%p]\n", i);
-      }
-   return cursor;
-   }
-
-bool OMR::X86::CodeGenerator::isTargetSnippetOrOutOfLine(TR::Instruction *instr,
-                                                     TR::Instruction **start,
-                                                     TR::Instruction **end)
-   {
-   TR::X86LabelInstruction *labelInstr = (TR::X86LabelInstruction *)instr;
-   TR::LabelSymbol *targetLabel = labelInstr->getLabelSymbol();
-   TR_OutlinedInstructions *oiCursor = self()->findOutlinedInstructionsFromLabelForShrinkWrapping(targetLabel);
-   if (oiCursor)
-      {
-      *start = oiCursor->getFirstInstruction();
-      *end = oiCursor->getAppendInstruction();
-      return true;
-      }
-   else
-      return false;
-   }
-
-void OMR::X86::CodeGenerator::updateSnippetMapWithRSD(TR::Instruction *instr, int32_t rsd)
-   {
-
-   // --------------------------------------------------------------------------
-   // NOTE: Consider calling TR_ShrinkWrap::updateMapWithRSD in lieu of this
-   // codegen-specific function.  They do pretty much the same thing.
-   // --------------------------------------------------------------------------
-
-   // at this point, instr is a jmp instruction
-   // determine if it branches to a snippet and if so
-   // mark the maps in the snippet with the right rsd
-   //
-   TR::X86LabelInstruction *labelInstr = (TR::X86LabelInstruction *)instr;
-   TR::LabelSymbol *targetLabel = labelInstr->getLabelSymbol();
-   TR_OutlinedInstructions *oiCursor = self()->findOutlinedInstructionsFromLabel(targetLabel);
-
-   if (oiCursor)
-      {
-      TR::Instruction *cur = oiCursor->getFirstInstruction();
-      TR::Instruction *end = oiCursor->getAppendInstruction();
-      while (cur != end)
-         {
-         if (cur->needsGCMap())
-            {
-            TR_GCStackMap *map = cur->getGCMap();
-            if (map)
-               {
-               map->setRegisterSaveDescription(rsd);
-               }
-            }
-
-         if (cur->getSnippetForGC())
-            {
-            TR::Snippet * snippet = cur->getSnippetForGC();
-            if (snippet && snippet->gcMap().isGCSafePoint() && snippet->gcMap().getStackMap())
-               {
-               TR_GCStackMap *map = snippet->gcMap().getStackMap();
-               map->setRegisterSaveDescription(rsd);
-               }
-            }
-
-         cur = cur->getNext();
-         }
-      }
-   }
-
-int32_t OMR::X86::CodeGenerator::computeRegisterSaveDescription(TR_BitVector *regs, bool populateInfo)
-   {
-   uint32_t rsd = 0;
-   TR_BitVectorIterator regIt(*regs);
-   while (regIt.hasMoreElements())
-      {
-      int32_t regIndex = self()->isPreservedRegister(regIt.getNextElement());
-      if (regIndex != -1)
-         {
-         TR::RealRegister::RegNum idx = self()->getProperties().getPreservedRegister((uint32_t)regIndex);
-         ///traceMsg(comp(), "regIndex %d idx %d\n", regIndex, idx);
-         TR::RealRegister *reg = self()->machine()->getX86RealRegister((TR::RealRegister::RegNum)idx);
-         rsd |= reg->getRealRegisterMask();
-         }
-      }
-
-   // place the rsd info on the cg. this is used when emitting the
-   // metadata for the method
-   //
-   if (populateInfo)
-      self()->setLowestSavedRegister(rsd & 0xFFFF);
-
-   return rsd;
-   }
-
-void OMR::X86::CodeGenerator::processIncomingParameterUsage(TR_BitVector **registerUsageInfo, int32_t blockNum)
-   {
-   TR::ResolvedMethodSymbol             *bodySymbol = self()->comp()->getJittedMethodSymbol();
-   ListIterator<TR::ParameterSymbol>  paramIterator(&(bodySymbol->getParameterList()));
-   TR::ParameterSymbol               *paramCursor;
-
-   for (paramCursor = paramIterator.getFirst();
-       paramCursor != NULL;
-       paramCursor = paramIterator.getNext())
-      {
-      TR::RealRegister::RegNum ai
-         = (TR::RealRegister::RegNum)paramCursor->getAllocatedIndex();
-
-      if (self()->comp()->getOption(TR_TraceShrinkWrapping))
-         traceMsg(self()->comp(), "found %d used as parm\n", ai);
-
-      if (ai != (TR::RealRegister::RegNum)-1)
-         registerUsageInfo[blockNum]->set(ai);
-      }
-   }
-
-
 
 bool OMR::X86::CodeGenerator::allowGlobalRegisterAcrossBranch(TR_RegisterCandidate * rc, TR::Node * node)
    {

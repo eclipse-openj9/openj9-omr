@@ -234,7 +234,7 @@ enum TR_CompilationOptions
    TR_TraceMarkingOfHotFields             = 0x00001000 + 4,
    TR_EnableAnnotations                   = 0x00002000 + 4, // change to disable when on by default
    TR_UnresolvedAreNotColdAtCold          = 0x00004000 + 4, // cold block marker marks unresolved blocks as cold at hotness cold or less
-   // AVAILABLE                           = 0x00008000 + 4,
+   TR_UseSymbolValidationManager          = 0x00008000 + 4,
    TR_EnablePIDExtension                  = 0x00010000 + 4,
    TR_GenerateCompleteInlineRanges        = 0x00020000 + 4,
    TR_DisableInliningOfNatives            = 0x00040000 + 4,
@@ -264,7 +264,7 @@ enum TR_CompilationOptions
    TR_enableProfiledDevirtualization      = 0x00001000 + 5,
    TR_EnableValueTracing                  = 0x00002000 + 5, // run-time value tracing
    TR_IgnoreAssert                        = 0x00004000 + 5, // ignore failing assertions
-   // AVAILABLE                           = 0x00008000 + 5,
+   TR_EnableSymbolValidationManager       = 0x00008000 + 5,
    TR_EnableNewAllocationProfiling        = 0x00010000 + 5, // enable tracing of fields load and store
    TR_IgnoreIEEERestrictions              = 0x00020000 + 5, // enable more aggressive, nonIEEE compliant xforms
    TR_ProcessHugeMethods                  = 0x00040000 + 5, // allow processing of huge methods
@@ -316,7 +316,7 @@ enum TR_CompilationOptions
    TR_DisableCodeCacheSnippets            = 0x00000020 + 7,
    TR_EnableReassociation                 = 0x00000040 + 7,
    TR_DisableSSOpts                       = 0x00000080 + 7,
-   //Available                            = 0x00000100 + 7,
+   TR_EnableFieldWatch                    = 0x00000100 + 7,
    TR_DisableDelayRelocationForAOTCompilations   = 0x00000200 + 7,
    TR_DisableRecompDueToInlinedMethodRedefinition = 0x00000400 + 7,
    TR_DisableLoopReplicatorColdSideEntryCheck = 0x00000800 + 7,
@@ -459,10 +459,10 @@ enum TR_CompilationOptions
    // Available                               = 0x10000000 + 11,
    TR_DisableNewInliningInfrastructure        = 0x20000000 + 11,
    // Available                               = 0x40000000 + 11,
-   // Avaiable                                = 0x80000000 + 11,
+   // Available                               = 0x80000000 + 11,
 
    // Option word 12
-   TR_TraceShrinkWrapping                     = 0x00000020 + 12,
+   // Available                               = 0x00000020 + 12,
    TR_DisableZ13LoadAndMask                   = 0x00000040 + 12,
    TR_DisablePartialInlining                  = 0x00000080 + 12,
    TR_AssumeStartupPhaseUntilToldNotTo        = 0x00000100 + 12,
@@ -587,7 +587,7 @@ enum TR_CompilationOptions
    TR_DisableEmptyPreHeaderCheck                      = 0x00001000 + 16,
    TR_SinkOnlyCCStores                                = 0x00002000 + 16,
    TR_EnableDeterministicOrientedCompilation          = 0x00004000 + 16,
-   TR_DisableShrinkWrapping                           = 0x00008000 + 16,
+   // Available                                       = 0x00008000 + 16,
    TR_EnableAOTStats                                  = 0x00010000 + 16,
    // Available                                       = 0x00020000 + 16,
    TR_DisableSynchronizedFieldLoad                    = 0x00040000 + 16,

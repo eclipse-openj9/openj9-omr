@@ -1270,11 +1270,6 @@ void OMR::Compilation::performOptimizations()
 
    if (_optimizer)
       _optimizer->optimize();
-
-   if (self()->getOption(TR_DisableShrinkWrapping) &&
-       !TR::Compiler->target.cpu.isZ() && // 390 now uses UseDefs in CodeGenPrep
-       !self()->getOptions()->getVerboseOption(TR_VerboseCompYieldStats))
-      _optimizer = NULL;
    }
 
 bool OMR::Compilation::incInlineDepth(TR::ResolvedMethodSymbol * method, TR_ByteCodeInfo & bcInfo, int32_t cpIndex, TR::SymbolReference *callSymRef, bool directCall, TR_PrexArgInfo *argInfo)

@@ -437,13 +437,13 @@ omrmem_allocate_memory32(struct OMRPortLibrary *portLibrary, uintptr_t byteAmoun
 {
 
 	void *pointer = NULL;
-#if defined(OMR_ENV_DATA64) && !defined(OSX)
+#if defined(OMR_ENV_DATA64)
 	uintptr_t allocationByteAmount = byteAmount;
-#endif /* defined(OMR_ENV_DATA64) && !defined(OSX) */
+#endif /* defined(OMR_ENV_DATA64) */
 
 	Trc_PRT_mem_omrmem_allocate_memory32_Entry(byteAmount);
 
-#if defined(OMR_ENV_DATA64) && !defined(OSX)
+#if defined(OMR_ENV_DATA64)
 	allocationByteAmount = ROUNDED_BYTE_AMOUNT(byteAmount);
 	pointer = allocate_memory32(portLibrary, allocationByteAmount, callSite);
 	if (NULL == pointer) {
@@ -451,7 +451,7 @@ omrmem_allocate_memory32(struct OMRPortLibrary *portLibrary, uintptr_t byteAmoun
 	} else {
 		pointer = wrapBlockAndSetTags(portLibrary, pointer, byteAmount, callSite, category);
 	}
-#endif /* defined(OMR_ENV_DATA64) && !defined(OSX) */
+#endif /* defined(OMR_ENV_DATA64) */
 
 	Trc_PRT_mem_omrmem_allocate_memory32_Exit(pointer);
 

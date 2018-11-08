@@ -79,10 +79,7 @@ compiler_library(optimizer
 	${CMAKE_CURRENT_LIST_DIR}/ReachingDefinitions.cpp
 	${CMAKE_CURRENT_LIST_DIR}/OMRRecognizedCallTransformer.cpp
 	${CMAKE_CURRENT_LIST_DIR}/RedundantAsyncCheckRemoval.cpp
-	${CMAKE_CURRENT_LIST_DIR}/RegisterAnticipatability.cpp
-	${CMAKE_CURRENT_LIST_DIR}/RegisterAvailability.cpp
 	${CMAKE_CURRENT_LIST_DIR}/RegisterCandidate.cpp
-	${CMAKE_CURRENT_LIST_DIR}/ShrinkWrapping.cpp
 	${CMAKE_CURRENT_LIST_DIR}/OMRSimplifier.cpp
 	${CMAKE_CURRENT_LIST_DIR}/OMRSimplifierHelpers.cpp
 	${CMAKE_CURRENT_LIST_DIR}/OMRSimplifierHandlers.cpp

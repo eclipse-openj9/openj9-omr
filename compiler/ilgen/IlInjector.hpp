@@ -51,7 +51,7 @@ namespace TR { class TreeTop; }
 namespace TR { class IlType; }
 namespace TR { class TypeDictionary; }
 
-// This macro reduces dependencies for this header file to be used with libjit.a
+// This macro reduces dependencies for this header file
 #ifndef TR_ALLOC
 #define TR_ALLOC(x)
 #endif
@@ -153,6 +153,7 @@ protected:
    TR::Block                   ** _blocks;
    bool                           _blocksAllocatedUpFront;
 
+public:
    TR::IlType                   * NoType;
    TR::IlType                   * Int8;
    TR::IlType                   * Int16;

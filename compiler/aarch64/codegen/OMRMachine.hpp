@@ -47,6 +47,8 @@ namespace TR { class Register; }
 #define NUM_ARM64_FPR 32
 #define MAX_ARM64_GLOBAL_FPRS 32
 
+#define NUM_ARM64_MAXR 32
+
 namespace OMR
 {
 

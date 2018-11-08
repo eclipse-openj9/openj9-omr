@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2015 IBM Corp. and others
+ * Copyright (c) 1991, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -208,6 +208,20 @@ public:
 			return popNoWaitFailed(env);
 		}
 	}
+
+	/**
+	 * Pop a reference from input packet (inlined part)
+	 * Pop a reference from the stacks input packet. If no references remain
+	 * in current packet then return NULL (and put input packet back to output list for reuse
+	 */
+	void *popNoWaitFromCurrentInputPacket(MM_EnvironmentBase *env);
+
+	/**
+	 *
+	 */
+	bool retrieveInputPacket(MM_EnvironmentBase *env);
+
+	bool inputPacketAvailableFromWorkPackets(MM_EnvironmentBase *env);
 
 	/**
 	 * Create a WorkStack object.

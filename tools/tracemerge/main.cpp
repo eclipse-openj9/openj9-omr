@@ -23,9 +23,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#if defined(J9ZOS390)
+#if defined(J9ZOS390) && !defined(OMR_EBCDIC)
 #include "atoe.h"
-#endif /* defined(J9ZOS390) */
+#endif /* defined(J9ZOS390)  && !defined(OMR_EBCDIC) */
 
 #include "DATMerge.hpp"
 #include "FileUtils.hpp"
@@ -39,7 +39,7 @@ main(int argc, char **argv, char **envp)
 #endif /* defined(OMR_OS_WINDOWS) */
 {
 	RCType rc = RC_OK;
-#if defined(J9ZOS390)
+#if defined(J9ZOS390) && !defined(OMR_EBCDIC)
 	int i = 0;
 	if (-1 != iconv_init()) {
 		/* translate argv strings to ascii */
@@ -55,7 +55,7 @@ main(int argc, char **argv, char **envp)
 		FileUtils::printError("failed to initialize iconv\n");
 		rc = RC_FAILED;
 	}
-#endif /* defined(J9ZOS390) */
+#endif /* defined(J9ZOS390) && !defined(OMR_EBCDIC) */
 	if (RC_OK == rc) {
 		rc = startTraceMerge(argc, argv);
 	}

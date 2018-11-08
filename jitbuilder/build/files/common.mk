@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2016, 2017 IBM Corp. and others
+# Copyright (c) 2016, 2018 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -156,11 +156,8 @@ JIT_PRODUCT_BACKEND_SOURCES+=\
     $(JIT_OMR_DIRTY_DIR)/optimizer/ReachingDefinitions.cpp \
     $(JIT_OMR_DIRTY_DIR)/optimizer/OMRRecognizedCallTransformer.cpp \
     $(JIT_OMR_DIRTY_DIR)/optimizer/RedundantAsyncCheckRemoval.cpp \
-    $(JIT_OMR_DIRTY_DIR)/optimizer/RegisterAnticipatability.cpp \
-    $(JIT_OMR_DIRTY_DIR)/optimizer/RegisterAvailability.cpp \
     $(JIT_OMR_DIRTY_DIR)/optimizer/RegisterCandidate.cpp \
     $(JIT_OMR_DIRTY_DIR)/optimizer/ReorderIndexExpr.cpp \
-    $(JIT_OMR_DIRTY_DIR)/optimizer/ShrinkWrapping.cpp \
     $(JIT_OMR_DIRTY_DIR)/optimizer/SinkStores.cpp \
     $(JIT_OMR_DIRTY_DIR)/optimizer/StripMiner.cpp \
     $(JIT_OMR_DIRTY_DIR)/optimizer/VPConstraint.cpp \
@@ -229,16 +226,19 @@ JIT_PRODUCT_BACKEND_SOURCES+=\
     $(JIT_OMR_DIRTY_DIR)/ilgen/OMRMethodBuilder.cpp \
     $(JIT_OMR_DIRTY_DIR)/ilgen/OMRThunkBuilder.cpp \
     $(JIT_OMR_DIRTY_DIR)/ilgen/OMRTypeDictionary.cpp \
-    $(JIT_OMR_DIRTY_DIR)/ilgen/OMRVirtualMachineState.cpp \
-    $(JIT_OMR_DIRTY_DIR)/ilgen/OMRVirtualMachineRegister.cpp \
     $(JIT_OMR_DIRTY_DIR)/ilgen/OMRVirtualMachineOperandArray.cpp \
     $(JIT_OMR_DIRTY_DIR)/ilgen/OMRVirtualMachineOperandStack.cpp \
+    $(JIT_OMR_DIRTY_DIR)/ilgen/OMRVirtualMachineRegister.cpp \
+    $(JIT_OMR_DIRTY_DIR)/ilgen/OMRVirtualMachineRegisterInStruct.cpp \
+    $(JIT_OMR_DIRTY_DIR)/ilgen/OMRVirtualMachineState.cpp \
     $(JIT_OMR_DIRTY_DIR)/runtime/Alignment.cpp \
     $(JIT_OMR_DIRTY_DIR)/runtime/CodeCacheTypes.cpp \
     $(JIT_OMR_DIRTY_DIR)/runtime/OMRCodeCache.cpp \
     $(JIT_OMR_DIRTY_DIR)/runtime/OMRCodeCacheManager.cpp \
     $(JIT_OMR_DIRTY_DIR)/runtime/OMRCodeCacheMemorySegment.cpp \
     $(JIT_OMR_DIRTY_DIR)/runtime/OMRCodeCacheConfig.cpp \
+    $(JIT_OMR_DIRTY_DIR)/env/OMRCompilerEnv.cpp \
+    $(JIT_OMR_DIRTY_DIR)/env/PersistentAllocator.cpp \
     $(JIT_PRODUCT_DIR)/compile/Method.cpp \
     $(JIT_PRODUCT_DIR)/control/Jit.cpp \
     $(JIT_PRODUCT_DIR)/env/FrontEnd.cpp \
@@ -246,8 +246,41 @@ JIT_PRODUCT_BACKEND_SOURCES+=\
     $(JIT_PRODUCT_DIR)/optimizer/JBOptimizer.cpp \
     $(JIT_PRODUCT_DIR)/runtime/JBCodeCacheManager.cpp \
     $(JIT_PRODUCT_DIR)/runtime/JBJitConfig.cpp \
-    $(JIT_OMR_DIRTY_DIR)/env/OMRCompilerEnv.cpp \
-    $(JIT_OMR_DIRTY_DIR)/env/PersistentAllocator.cpp \
+
+CPP_GENERATED_SOURCE_DIR=$(JIT_PRODUCT_DIR)/client/cpp
+CPP_GENERATED_API_SOURCES+=\
+    $(CPP_GENERATED_SOURCE_DIR)/BytecodeBuilder.cpp \
+    $(CPP_GENERATED_SOURCE_DIR)/IlBuilder.cpp \
+    $(CPP_GENERATED_SOURCE_DIR)/IlType.cpp \
+    $(CPP_GENERATED_SOURCE_DIR)/IlValue.cpp \
+    $(CPP_GENERATED_SOURCE_DIR)/MethodBuilder.cpp \
+    $(CPP_GENERATED_SOURCE_DIR)/ThunkBuilder.cpp \
+    $(CPP_GENERATED_SOURCE_DIR)/TypeDictionary.cpp \
+    $(CPP_GENERATED_SOURCE_DIR)/VirtualMachineOperandArray.cpp \
+    $(CPP_GENERATED_SOURCE_DIR)/VirtualMachineOperandStack.cpp \
+    $(CPP_GENERATED_SOURCE_DIR)/VirtualMachineRegister.cpp \
+    $(CPP_GENERATED_SOURCE_DIR)/VirtualMachineRegisterInStruct.cpp \
+    $(CPP_GENERATED_SOURCE_DIR)/VirtualMachineState.cpp \
+    $(CPP_GENERATED_SOURCE_DIR)/JitBuilder.cpp
+
+CPP_GENERATED_HEADER_DIR=$(JIT_PRODUCT_DIR)/release/cpp/include
+CPP_GENERATED_API_HEADERS+=\
+    $(CPP_GENERATED_HEADER_DIR)/BytecodeBuilder.hpp \
+    $(CPP_GENERATED_HEADER_DIR)/IlBuilder.hpp \
+    $(CPP_GENERATED_HEADER_DIR)/IlType.hpp \
+    $(CPP_GENERATED_HEADER_DIR)/IlValue.hpp \
+    $(CPP_GENERATED_HEADER_DIR)/MethodBuilder.hpp \
+    $(CPP_GENERATED_HEADER_DIR)/ThunkBuilder.hpp \
+    $(CPP_GENERATED_HEADER_DIR)/TypeDictionary.hpp \
+    $(CPP_GENERATED_HEADER_DIR)/VirtualMachineOperandArray.hpp \
+    $(CPP_GENERATED_HEADER_DIR)/VirtualMachineOperandStack.hpp \
+    $(CPP_GENERATED_HEADER_DIR)/VirtualMachineRegister.hpp \
+    $(CPP_GENERATED_HEADER_DIR)/VirtualMachineRegisterInStruct.hpp \
+    $(CPP_GENERATED_HEADER_DIR)/VirtualMachineState.hpp \
+    $(CPP_GENERATED_HEADER_DIR)/JitBuilder.hpp
+
+CPP_API_GENERATOR=$(JIT_PRODUCT_DIR)/apigen/cppgen.py
+JITBUILDER_API_DESCRIPTION=$(JIT_PRODUCT_DIR)/apigen/jitbuilder.api.json
 
 include $(JIT_MAKE_DIR)/files/host/$(HOST_ARCH).mk
 include $(JIT_MAKE_DIR)/files/target/$(TARGET_ARCH).mk

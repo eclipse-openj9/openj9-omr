@@ -20,12 +20,29 @@
  *******************************************************************************/
 
 #include "default_compiler.hpp"
-#include "Jit.hpp"
 
 #include <assert.h>
 #include <stdio.h>
 
 typedef int32_t (IncOrDecFunction)(int32_t*);
+
+extern bool internal_initializeJit();
+extern int32_t internal_compileMethodBuilder(TR::MethodBuilder * methodBuilder, void ** entryPoint);
+extern void internal_shutdownJit();
+
+bool initializeJit() {
+   auto ret = internal_initializeJit();
+   return ret;
+}
+
+int32_t compileMethodBuilder(TR::MethodBuilder * methodBuilder, void ** entryPoint) {
+   auto ret = internal_compileMethodBuilder(methodBuilder, entryPoint);
+   return ret;
+}
+
+void shutdownJit() {
+   internal_shutdownJit();
+}
 
 int main(int argc, char const * const * const argv) {
     assert(argc == 2);

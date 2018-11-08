@@ -65,10 +65,8 @@ extern PortTestEnvironment *portTestEnv;
 #define COMPLETE_SUBALLOC_BLOCK 4
 #define COMPLETE_ALL_SIZES (COMPLETE_LARGE_REGION | COMPLETE_NEAR_REGION | COMPLETE_SUBALLOC_BLOCK)
 
-#if !(defined(OSX) && defined(OMR_ENV_DATA64))
 static void freeMemPointers(struct OMRPortLibrary *portLibrary, void **memPtrs, uintptr_t length);
 static void shuffleArray(struct OMRPortLibrary *portLibrary, uintptr_t *sizes, uintptr_t length);
-#endif /* !(defined(OSX) && defined(OMR_ENV_DATA64)) */
 
 /**
  * @internal
@@ -523,9 +521,6 @@ TEST(PortMemTest, mem_test6)
 	reportTestExit(OMRPORTLIB, testName);
 }
 
-/* 64bit OSX does not allow memory below 4GB to be mapped. */
-#if !(defined(OSX) && defined(OMR_ENV_DATA64))
-
 /* helper that shuffle contents of an array using a random number generator */
 static void
 shuffleArray(struct OMRPortLibrary *portLibrary, uintptr_t *array, uintptr_t length)
@@ -635,7 +630,6 @@ TEST(PortMemTest, mem_test7_allocate32)
 
 	reportTestExit(OMRPORTLIB, testName);
 }
-#endif /* !(defined(OSX) && defined(OMR_ENV_DATA64)) */
 
 
 /* Dummy categories for omrmem_test8_categories */
@@ -1064,8 +1058,6 @@ TEST(PortMemTest, mem_test8_categories)
 		}
 	}
 
-/* 64bit OSX does not allow memory below 4GB to be mapped. */
-#if !(defined(OSX) && defined(OMR_ENV_DATA64))
 	/* Try allocating with allocate32 */
 	{
 		uintptr_t initialBlocks = 0;
@@ -1226,8 +1218,7 @@ TEST(PortMemTest, mem_test8_categories)
 			goto end;
 		}
 	}
-#endif
-#endif /* !(defined(OSX) && defined(OMR_ENV_DATA64)) */
+#endif /* defined(OMR_ENV_DATA64) */
 
 	/* Try allocating and reallocating */
 	{
@@ -1473,7 +1464,6 @@ TEST(PortMemTest, mem_test9_category_walk)
 	reportTestExit(OMRPORTLIB, testName);
 }
 
-#if !(defined(OSX) && defined(OMR_ENV_DATA64))
 /* attempt to free all mem pointers stored in memPtrs array with length */
 static void
 freeMemPointers(struct OMRPortLibrary *portLibrary, void **memPtrs, uintptr_t length)
@@ -1487,4 +1477,3 @@ freeMemPointers(struct OMRPortLibrary *portLibrary, void **memPtrs, uintptr_t le
 		omrmem_free_memory32(mem32Ptr);
 	}
 }
-#endif /* !(defined(OSX) && defined(OMR_ENV_DATA64)) */

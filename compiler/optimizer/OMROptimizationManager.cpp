@@ -194,9 +194,6 @@ OMR::OptimizationManager::OptimizationManager(TR::Optimizer *o, OptimizationFact
       case OMR::prefetchInsertion:
          _flags.set(requiresStructure | checkStructure | dumpStructure);
          break;
-      case OMR::shrinkWrapping:
-         _flags.set(requiresStructure | checkStructure | dumpStructure);
-         break;
       case OMR::osrDefAnalysis:
          if (self()->comp()->getOption(TR_DisableOSRSharedSlots))
             _flags.set(doesNotRequireAliasSets | doesNotRequireTreeDumps | supportsIlGenOptLevel);

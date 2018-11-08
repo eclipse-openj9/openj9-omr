@@ -305,7 +305,8 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
 
    bool supportsMergingGuards();
 
-   bool supportsAtomicAdd()                {return true;}
+   bool supportsNonHelper(TR::SymbolReferenceTable::CommonNonhelperSymbol symbol);
+
    bool hasTMEvaluator()                       {return true;}
 
    int64_t getLargestNegConstThatMustBeMaterialized() { TR_ASSERT(0, "Not Implemented on x86"); return 0; }
@@ -342,19 +343,8 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
 
    void buildRegisterMapForInstruction(TR_GCStackMap *map);
 
-   bool processInstruction(TR::Instruction *instr, TR_BitVector ** registerUsageInfo, int32_t &blockNum, int32_t &isFence, bool traceIt);
-   uint32_t isPreservedRegister(int32_t regIndex);
    bool isReturnInstruction(TR::Instruction *instr);
    bool isBranchInstruction(TR::Instruction *instr);
-   bool isLabelInstruction(TR::Instruction *instr);
-   int32_t isFenceInstruction(TR::Instruction *instr);
-   bool isAlignmentInstruction(TR::Instruction *instr);
-   TR::Instruction *splitEdge(TR::Instruction *cursor, bool isFallThrough, bool needsJump, TR::Instruction *newSplitLabel, TR::list<TR::Instruction*> *jmpInstrs, bool firstJump = false);
-   TR::Instruction *splitBlockEntry(TR::Instruction *instr);
-   int32_t computeRegisterSaveDescription(TR_BitVector *regs, bool populateInfo = false);
-   void processIncomingParameterUsage(TR_BitVector **registerUsageInfo, int32_t blockNum);
-   void updateSnippetMapWithRSD(TR::Instruction *cur, int32_t rsd);
-   bool isTargetSnippetOrOutOfLine(TR::Instruction *instr, TR::Instruction **start, TR::Instruction **end);
 
    TR::SymbolReference *getNanoTimeTemp();
 
@@ -426,7 +416,7 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    void setLowestCommonCodePatchingAlignmentBoundary(int32_t b) {_lowestCommonCodePatchingAlignmentBoundary = b;}
 
    // NOT NEEDED, overridden in amd64/i386
-   bool internalPointerSupportImplemented() {return false;} // no virt
+   bool internalPointerSupportImplemented() {return false;}
 
    bool supportsSinglePrecisionSQRT() {return true;}
 
@@ -576,7 +566,6 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
 
    TR_OutlinedInstructions *findOutlinedInstructionsFromLabel(TR::LabelSymbol *label);
    TR_OutlinedInstructions *findOutlinedInstructionsFromMergeLabel(TR::LabelSymbol *label);
-   TR_OutlinedInstructions *findOutlinedInstructionsFromLabelForShrinkWrapping(TR::LabelSymbol *label);
 
    const TR_VFPState         &vfpState()           { return _vfpState; }
    TR::X86VFPSaveInstruction  *vfpResetInstruction(){ return _vfpResetInstruction; }

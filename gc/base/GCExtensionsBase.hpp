@@ -387,6 +387,7 @@ public:
 	uintptr_t fvtest_forceReferenceChainWalkerMarkMapCommitFailure; /**< Force failure at Reference Chain Walker Mark Map commit operation */
 	uintptr_t fvtest_forceReferenceChainWalkerMarkMapCommitFailureCounter; /**< Force failure at Reference Chain Walker Mark Map commit operation counter */
 
+	uintptr_t fvtest_forceCopyForwardHybridRatio; /**< Force to run CopyForward Hybrid mode value = 1-100 the percentage of non evacuated eden regions */
 	uintptr_t softMx; /**< set through -Xsoftmx, depending on GC policy this number might differ from available heap memory, use MM_Heap::getActualSoftMxSize for calculations */
 
 #if defined(OMR_GC_BATCH_CLEAR_TLH)
@@ -416,9 +417,10 @@ public:
 	bool scavengerEnabled;
 	bool scavengerRsoScanUnsafe;
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
-	bool softwareEvacuateReadBarrier; /**< enable software read barrier instead of hardware guarded loads when running with CS */
+	bool softwareRangeCheckReadBarrier; /**< enable software read barrier instead of hardware guarded loads when running with CS */
 	bool concurrentScavenger; /**< CS enabled/disabled flag */
 	bool concurrentScavengerForced; /**< set to true if CS is requested (by cmdline option), but there are more checks to do before deciding whether the request is to be obeyed */
+	bool concurrentScavengerHWSupport; /**< set to true if CS runs with HW support */
 	uintptr_t concurrentScavengerBackgroundThreads; /**< number of background GC threads during concurrent phase of Scavenge */
 	bool concurrentScavengerBackgroundThreadsForced; /**< true if concurrentScavengerBackgroundThreads set via command line option */
 	uintptr_t concurrentScavengerSlack; /**< amount of bytes added on top of avearge allocated bytes during concurrent cycle, in calcualtion for survivor size */
@@ -697,6 +699,7 @@ public:
 	MM_UserSpecifiedParameterUDATA tarokMinimumGMPWorkTargetBytes; /**< Minimum used for GMP work targets.  This avoids the low-scan-rate -> low GMP work target -> low scan-rate feedback loop. */
 	double tarokConcurrentMarkingCostWeight; /**< How much we weigh concurrentMarking into our GMP scan time cost calculations */
 	bool tarokAutomaticDefragmentEmptinessThreshold; /**< Whether we should use the automatically derived value for tarokDefragmentEmptinessThreshold or not */
+	bool tarokEnableCopyForwardHybrid; /**< Enable CopyForward Hybrid mode */
 #endif /* defined (OMR_GC_VLHGC) */
 
 /* OMR_GC_VLHGC (in for all -- see 82589) */
@@ -810,11 +813,21 @@ public:
 #endif /* defined(OMR_GC_CONCURRENT_SCAVENGER) */
 	}
 	
+	MMINLINE bool
+	isConcurrentScavengerHWSupported()
+	{
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+		return concurrentScavengerHWSupport;
+#else
+		return false;
+#endif /* defined(OMR_GC_CONCURRENT_SCAVENGER) */
+	}
+	
    MMINLINE bool
-   isSoftwareEvacuateReadBarrierEnabled()
+   isSoftwareRangeCheckReadBarrierEnabled()
    {
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
-      return softwareEvacuateReadBarrier;
+      return softwareRangeCheckReadBarrier;
 #else
       return false;
 #endif /* defined(OMR_GC_CONCURRENT_SCAVENGER) */
@@ -1332,6 +1345,7 @@ public:
 		, fvtest_forceMarkMapDecommitFailureCounter(0)
 		, fvtest_forceReferenceChainWalkerMarkMapCommitFailure(0)
 		, fvtest_forceReferenceChainWalkerMarkMapCommitFailureCounter(0)
+		, fvtest_forceCopyForwardHybridRatio(0)
 		, softMx(0) /* softMx only set if specified */
 		, batchClearTLH(0)
 		, gcThreadCountForced(false)
@@ -1350,9 +1364,10 @@ public:
 		, scvTenureStrategyHistory(true)
 		, scavengerEnabled(false)
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
-		, softwareEvacuateReadBarrier(false)
+		, softwareRangeCheckReadBarrier(false)
 		, concurrentScavenger(false)
 		, concurrentScavengerForced(false)
+		, concurrentScavengerHWSupport(false)
 		, concurrentScavengerBackgroundThreads(1)
 		, concurrentScavengerBackgroundThreadsForced(false)
 		, concurrentScavengerSlack(0)
@@ -1582,6 +1597,7 @@ public:
 		, tarokMinimumGMPWorkTargetBytes()
 		, tarokConcurrentMarkingCostWeight(0.05)
 		, tarokAutomaticDefragmentEmptinessThreshold(false)
+		, tarokEnableCopyForwardHybrid(false)
 #endif /* defined (OMR_GC_VLHGC) */
 		, tarokEnableExpensiveAssertions(false)
 		, sweepPoolManagerAddressOrderedList(NULL)

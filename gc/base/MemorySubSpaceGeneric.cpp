@@ -275,6 +275,8 @@ MM_MemorySubSpaceGeneric::getAllocationFailureStats()
 void*
 MM_MemorySubSpaceGeneric::allocateObject(MM_EnvironmentBase* env, MM_AllocateDescription* allocDescription, MM_MemorySubSpace* baseSubSpace, MM_MemorySubSpace* previousSubSpace, bool shouldCollectOnFailure)
 {
+	Trc_MM_MSSGeneric_allocate_entry(env->getLanguageVMThread(), "Object", allocDescription->getBytesRequested(), this, getName(), baseSubSpace, previousSubSpace, (uintptr_t)_allocateAtSafePointOnly, (uintptr_t)shouldCollectOnFailure, (uintptr_t)_isAllocatable);
+
 	void *result = NULL;
 
 	/* Typically, JIT stack frame is not built (shouldCollectOnFailure is false) and concurrent mark is not running or not complete (_allocateAtSafePointOnly is false),
@@ -295,12 +297,16 @@ MM_MemorySubSpaceGeneric::allocateObject(MM_EnvironmentBase* env, MM_AllocateDes
 		} else {
 			/* Allocate failed - try the parent */
 			if (shouldCollectOnFailure) {
+				Trc_MM_MSSGeneric_allocate(env->getLanguageVMThread(), "Object", allocDescription->getBytesRequested(), 1, this, _parent);
 				result = _parent->allocationRequestFailed(env, allocDescription, ALLOCATION_TYPE_OBJECT, NULL, this, this);
 			} else {
+				Trc_MM_MSSGeneric_allocate(env->getLanguageVMThread(), "Object", allocDescription->getBytesRequested(), 2, this, _parent);
 				result = _parent->allocateObject(env, allocDescription, baseSubSpace, this, shouldCollectOnFailure);
 			}
 		}
 	}
+
+	Trc_MM_MSSGeneric_allocate_exit(env->getLanguageVMThread(), "Object", allocDescription->getBytesRequested(), this, result);
 
 	return result;
 }
@@ -351,6 +357,8 @@ MM_MemorySubSpaceGeneric::allocationRequestFailed(MM_EnvironmentBase* env, MM_Al
 void*
 MM_MemorySubSpaceGeneric::allocateTLH(MM_EnvironmentBase* env, MM_AllocateDescription* allocDescription, MM_ObjectAllocationInterface* objectAllocationInterface, MM_MemorySubSpace* baseSubSpace, MM_MemorySubSpace* previousSubSpace, bool shouldCollectOnFailure)
 {
+	Trc_MM_MSSGeneric_allocate_entry(env->getLanguageVMThread(), "TLH", allocDescription->getBytesRequested(), this, getName(), baseSubSpace, previousSubSpace, (uintptr_t)_allocateAtSafePointOnly, (uintptr_t)shouldCollectOnFailure, (uintptr_t)_isAllocatable);
+
 	void *result = NULL;
 
 	/* Typically, JIT stack frame is not built (shouldCollectOnFailure is false) and concurrent mark is not running or not complete (_allocateAtSafePointOnly is false),
@@ -366,14 +374,18 @@ MM_MemorySubSpaceGeneric::allocateTLH(MM_EnvironmentBase* env, MM_AllocateDescri
 
 		if (NULL == result) {
 			if (shouldCollectOnFailure) {
+				Trc_MM_MSSGeneric_allocate3(env->getLanguageVMThread(), "TLH", allocDescription->getBytesRequested(), this, _parent, (uintptr_t)allocDescription->shouldCollectAndClimb());
 				if (allocDescription->shouldCollectAndClimb()) {
 					result = _parent->allocationRequestFailed(env, allocDescription, ALLOCATION_TYPE_TLH, objectAllocationInterface, this, this);
 				}
 			} else {
+				Trc_MM_MSSGeneric_allocate(env->getLanguageVMThread(), "TLH", allocDescription->getBytesRequested(), 2, this, _parent);
 				result = _parent->allocateTLH(env, allocDescription, objectAllocationInterface, baseSubSpace, this, false);
 			}
 		}
 	}
+
+	Trc_MM_MSSGeneric_allocate_exit(env->getLanguageVMThread(), "TLH", allocDescription->getBytesRequested(), this, result);
 
 	return result;
 }

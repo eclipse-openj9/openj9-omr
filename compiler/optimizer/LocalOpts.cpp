@@ -8058,7 +8058,9 @@ TR_ColdBlockMarker::hasNotYetRun(TR::Node *node)
       TR::SymbolReference *symRef = node->getSymbolReference();
       bool isUnresolved;
 
-      if (comp()->compileRelocatableCode() && !comp()->getOption(TR_DisablePeekAOTResolutions))
+      if (comp()->compileRelocatableCode() &&
+          !comp()->getOption(TR_UseSymbolValidationManager) &&
+          !comp()->getOption(TR_DisablePeekAOTResolutions))
          isUnresolved = symRef->isUnresolvedMethodInCP(comp());
       else
          isUnresolved = symRef->isUnresolved();
@@ -8090,7 +8092,9 @@ TR_ColdBlockMarker::hasNotYetRun(TR::Node *node)
          }
       else
          {
-         if (comp()->compileRelocatableCode() && !comp()->getOption(TR_DisablePeekAOTResolutions))
+         if (comp()->compileRelocatableCode() &&
+             !comp()->getOption(TR_UseSymbolValidationManager) &&
+             !comp()->getOption(TR_DisablePeekAOTResolutions))
             {
             bool isUnresolved = node->getSymbolReference()->isUnresolvedFieldInCP(comp());
             //currentely node->hasUnresolvedSymbolReference() returns true more often for AOT than non-AOT beacause of
@@ -8104,7 +8108,15 @@ TR_ColdBlockMarker::hasNotYetRun(TR::Node *node)
             return isUnresolved;
             }
          else
+            {
+            if (comp()->compileRelocatableCode()
+                && comp()->getOption(TR_UseSymbolValidationManager)
+                && node->getSymbol()->isConstString())
+               {
+               return false;
+               }
             return true;
+            }
          }
       }
    return false;
@@ -8371,9 +8383,6 @@ TR_TrivialDeadTreeRemoval::preProcessTreetop(TR::TreeTop *treeTop, List<TR::Tree
       if (firstChild->getReferenceCount() == 1)
          {
          if (!firstChild->getOpCode().hasSymbolReference() &&
-#ifdef J9_PROJECT_SPECIFIC
-             !firstChild->getOpCode().isPackedExponentiation() && // pdexp has a possible message side effect in truncating or no significant digits left cases
-#endif
              performTransformation(comp, "%sUnlink trivial %s (%p) of %s (%p) with refCount==1\n",
                 optDetails, treeTop->getNode()->getOpCode().getName(),treeTop->getNode(),firstChild->getOpCode().getName(),firstChild))
             {

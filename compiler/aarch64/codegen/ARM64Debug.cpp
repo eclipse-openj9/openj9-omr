@@ -912,6 +912,7 @@ getRegisterName(TR::RealRegister::RegNum num, bool is64bit)
       case TR::RealRegister::x29: return (is64bit ? "x29" : "w29");
       case TR::RealRegister::x30: return "lr";
       case TR::RealRegister::sp: return "sp";
+      case TR::RealRegister::xzr: return (is64bit ? "xzr" : "wzr");
 
       case TR::RealRegister::v0: return (is64bit ? "d0" : "s0");
       case TR::RealRegister::v1: return (is64bit ? "d1" : "s1");

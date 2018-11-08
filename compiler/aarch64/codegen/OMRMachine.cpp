@@ -874,7 +874,14 @@ void OMR::ARM64::Machine::initializeRegisterFile()
                                                  TR::RealRegister::lr,
                                                  self()->cg());
 
-   /* XZR or SP depending on instruction */
+   /* SP */
+   _registerFile[TR::RealRegister::sp] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR,
+                                                 0,
+                                                 TR::RealRegister::Free,
+                                                 TR::RealRegister::sp,
+                                                 self()->cg());
+
+   /* XZR */
    _registerFile[TR::RealRegister::xzr] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR,
                                                  0,
                                                  TR::RealRegister::Free,

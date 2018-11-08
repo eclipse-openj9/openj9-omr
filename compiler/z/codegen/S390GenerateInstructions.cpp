@@ -285,6 +285,26 @@ TR::InstOpCode::Mnemonic getReplacementCompareAndBranchOpCode(TR::CodeGenerator 
       }
    }
 
+TR::InstOpCode::Mnemonic
+getReplacementLongDisplacementOpCode(TR::CodeGenerator* cg, TR::InstOpCode::Mnemonic op, TR::MemoryReference* memRef)
+   {
+   int32_t displacement = memRef->getOffset();
+
+   if (!memRef->hasTemporaryNegativeOffset() && ((displacement > MINLONGDISP && displacement < MINDISP) || (displacement >= MAXDISP && displacement < MAXLONGDISP)))
+      {
+      auto longDisplacementMnemonic = TR::Instruction::opCodeCanBeAdjustedTo(op);
+
+      if (longDisplacementMnemonic != TR::InstOpCode::BAD)
+         {
+         op = longDisplacementMnemonic;
+
+         TR::DebugCounter::incStaticDebugCounter(cg->comp(), TR::DebugCounter::debugCounterName(cg->comp(), "z/memref/long-displacement-upgrade/(%s)", cg->comp()->signature()));
+         }
+      }
+
+   return op;
+   }
+
 /**
  * Generate a compare and a branch instruction.  if z10 is available, this will
  * attempt to generate a COMPARE AND BRANCH instruction, otherwise the a
@@ -792,19 +812,8 @@ generateRXInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::N
          }
       }
 
-   int32_t displacement = mf->getOffset();
-
-   if (!mf->hasTemporaryNegativeOffset() && ((displacement > MINLONGDISP && displacement < MINDISP) || (displacement >= MAXDISP && displacement < MAXLONGDISP)))
-      {
-      auto longDisplacementMnemonic = TR::Instruction::opCodeCanBeAdjustedTo(op);
-
-      if (longDisplacementMnemonic != TR::InstOpCode::BAD)
-         {
-         op = longDisplacementMnemonic;
-
-         TR::DebugCounter::incStaticDebugCounter(cg->comp(), TR::DebugCounter::debugCounterName(cg->comp(), "z/memref/long-displacement-upgrade/(%s)", cg->comp()->signature()));
-         }
-      }
+   // Handle long displacement if necessary
+   op = getReplacementLongDisplacementOpCode(cg, op, mf);
 
    TR::Instruction* result = NULL;
 
@@ -841,19 +850,8 @@ generateRXInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::N
 TR::Instruction*
 generateRXInstruction(TR::CodeGenerator* cg, TR::InstOpCode::Mnemonic op, TR::Node* n, uint8_t mask, TR::MemoryReference* mf, TR::Instruction* preced)
    {
-   int32_t displacement = mf->getOffset();
-
-   if (!mf->hasTemporaryNegativeOffset() && ((displacement > MINLONGDISP && displacement < MINDISP) || (displacement >= MAXDISP && displacement < MAXLONGDISP)))
-      {
-      auto longDisplacementMnemonic = TR::Instruction::opCodeCanBeAdjustedTo(op);
-
-      if (longDisplacementMnemonic != TR::InstOpCode::BAD)
-         {
-         op = longDisplacementMnemonic;
-
-         TR::DebugCounter::incStaticDebugCounter(cg->comp(), TR::DebugCounter::debugCounterName(cg->comp(), "z/memref/long-displacement-upgrade/(%s)", cg->comp()->signature()));
-         }
-      }
+   // Handle long displacement if necessary
+   op = getReplacementLongDisplacementOpCode(cg, op, mf);
 
    TR::Instruction* result = NULL;
 
@@ -1073,19 +1071,8 @@ generateRSInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::N
    // RS and RSY instructions do not have an index register
    preced = mf->separateIndexRegister(n, cg, false, preced);
 
-   int32_t displacement = mf->getOffset();
-
-   if (!mf->hasTemporaryNegativeOffset() && ((displacement > MINLONGDISP && displacement < MINDISP) || (displacement >= MAXDISP && displacement < MAXLONGDISP)))
-      {
-      auto longDisplacementMnemonic = TR::Instruction::opCodeCanBeAdjustedTo(op);
-
-      if (longDisplacementMnemonic != TR::InstOpCode::BAD)
-         {
-         op = longDisplacementMnemonic;
-
-         TR::DebugCounter::incStaticDebugCounter(cg->comp(), TR::DebugCounter::debugCounterName(cg->comp(), "z/memref/long-displacement-upgrade/(%s)", cg->comp()->signature()));
-         }
-      }
+   // Handle long displacement if necessary
+   op = getReplacementLongDisplacementOpCode(cg, op, mf);
 
    TR::Instruction* result = NULL;
 
@@ -1115,20 +1102,9 @@ generateRSInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::N
    {
    // RS and RSY instructions do not have an index register
    preced = mf->separateIndexRegister(n, cg, false, preced);
-
-   int32_t displacement = mf->getOffset();
-
-   if (!mf->hasTemporaryNegativeOffset() && ((displacement > MINLONGDISP && displacement < MINDISP) || (displacement >= MAXDISP && displacement < MAXLONGDISP)))
-      {
-      auto longDisplacementMnemonic = TR::Instruction::opCodeCanBeAdjustedTo(op);
-
-      if (longDisplacementMnemonic != TR::InstOpCode::BAD)
-         {
-         op = longDisplacementMnemonic;
-
-         TR::DebugCounter::incStaticDebugCounter(cg->comp(), TR::DebugCounter::debugCounterName(cg->comp(), "z/memref/long-displacement-upgrade/(%s)", cg->comp()->signature()));
-         }
-      }
+   
+   // Handle long displacement if necessary
+   op = getReplacementLongDisplacementOpCode(cg, op, mf);
 
    TR::Instruction* result = NULL;
 
@@ -1158,20 +1134,9 @@ generateRSInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::N
    {
    // RS and RSY instructions do not have an index register
    preced = mf->separateIndexRegister(n, cg, false, preced);
-
-   int32_t displacement = mf->getOffset();
-
-   if (!mf->hasTemporaryNegativeOffset() && ((displacement > MINLONGDISP && displacement < MINDISP) || (displacement >= MAXDISP && displacement < MAXLONGDISP)))
-      {
-      auto longDisplacementMnemonic = TR::Instruction::opCodeCanBeAdjustedTo(op);
-
-      if (longDisplacementMnemonic != TR::InstOpCode::BAD)
-         {
-         op = longDisplacementMnemonic;
-
-         TR::DebugCounter::incStaticDebugCounter(cg->comp(), TR::DebugCounter::debugCounterName(cg->comp(), "z/memref/long-displacement-upgrade/(%s)", cg->comp()->signature()));
-         }
-      }
+   
+   // Handle long displacement if necessary
+   op = getReplacementLongDisplacementOpCode(cg, op, mf);
 
    TR::Instruction* result = NULL;
 
@@ -1202,20 +1167,9 @@ generateRSInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::N
    {
    // RS and RSY instructions do not have an index register
    preced = mf->separateIndexRegister(n, cg, false, preced);
-
-   int32_t displacement = mf->getOffset();
-
-   if (!mf->hasTemporaryNegativeOffset() && ((displacement > MINLONGDISP && displacement < MINDISP) || (displacement >= MAXDISP && displacement < MAXLONGDISP)))
-      {
-      auto longDisplacementMnemonic = TR::Instruction::opCodeCanBeAdjustedTo(op);
-
-      if (longDisplacementMnemonic != TR::InstOpCode::BAD)
-         {
-         op = longDisplacementMnemonic;
-
-         TR::DebugCounter::incStaticDebugCounter(cg->comp(), TR::DebugCounter::debugCounterName(cg->comp(), "z/memref/long-displacement-upgrade/(%s)", cg->comp()->signature()));
-         }
-      }
+   
+   // Handle long displacement if necessary
+   op = getReplacementLongDisplacementOpCode(cg, op, mf);
 
    TR::Instruction* result = NULL;
 
@@ -1791,20 +1745,9 @@ generateSIInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::N
    {
    // SI and SIY instructions do not have an index register
    preced = mf->separateIndexRegister(n, cg, false, preced);
-
-   int32_t displacement = mf->getOffset();
-
-   if (!mf->hasTemporaryNegativeOffset() && ((displacement > MINLONGDISP && displacement < MINDISP) || (displacement >= MAXDISP && displacement < MAXLONGDISP)))
-      {
-      auto longDisplacementMnemonic = TR::Instruction::opCodeCanBeAdjustedTo(op);
-
-      if (longDisplacementMnemonic != TR::InstOpCode::BAD)
-         {
-         op = longDisplacementMnemonic;
-
-         TR::DebugCounter::incStaticDebugCounter(cg->comp(), TR::DebugCounter::debugCounterName(cg->comp(), "z/memref/long-displacement-upgrade/(%s)", cg->comp()->signature()));
-         }
-      }
+   
+   // Handle long displacement if necessary
+   op = getReplacementLongDisplacementOpCode(cg, op, mf);
 
    TR::Instruction* result = NULL;
    

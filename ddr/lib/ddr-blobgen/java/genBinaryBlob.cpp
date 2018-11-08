@@ -270,8 +270,8 @@ JavaBlobGenerator::genBinaryBlob(OMRPortLibrary *portLibrary, Symbol_IR *ir, con
 	OMRPORT_ACCESS_FROM_OMRPORT(portLibrary);
 
 	/* iterate ir:
-	 *  - count structs - update blob header
-	 *  - build string hash table
+	 * - count structs - update blob header
+	 * - build string hash table
 	 */
 	DDR_RC rc = countStructsAndStrings(ir);
 
@@ -342,8 +342,8 @@ JavaBlobGenerator::genBinaryBlob(OMRPortLibrary *portLibrary, Symbol_IR *ir, con
 }
 
 /* iterate ir:
- *  - count structs - update blob header
- *  - build string hash table
+ * - count structs - update blob header
+ * - build string hash table
  */
 DDR_RC
 JavaBlobGenerator::countStructsAndStrings(Symbol_IR *ir)
@@ -829,12 +829,24 @@ BlobFieldVisitor::visitTypedef(TypedefUDT *type) const
 		*_typePrefix += "void";
 	} else {
 		string prefix = opaqueType->getSymbolKindName();
+		string fullName = opaqueType->getFullName();
 
 		/* prefix "union" should not be included */
 		if (prefix.empty() || ("union" == prefix)) {
-			*_typePrefix += opaqueType->getFullName();
+			bool isSigned = false;
+			size_t bitWidth = 0;
+
+			if (Type::isStandardType(fullName.c_str(), (size_t)fullName.length(), &isSigned, &bitWidth)) {
+				stringstream newType;
+
+				newType << (isSigned ? "I" : "U") << bitWidth;
+
+				*_typePrefix += newType.str();
+			} else {
+				*_typePrefix += fullName;
+			}
 		} else {
-			*_typePrefix += prefix + " " + opaqueType->getFullName();
+			*_typePrefix += prefix + " " + fullName;
 		}
 	}
 

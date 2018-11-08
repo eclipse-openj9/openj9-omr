@@ -34,7 +34,7 @@
  */
 
 #cmakedefine OMR_GC
-#cmakedefine OMR_JIT
+#cmakedefine OMR_COMPILER
 #cmakedefine OMR_JITBUILDER
 #cmakedefine OMR_TEST_COMPILER
 #cmakedefine OMR_PORT

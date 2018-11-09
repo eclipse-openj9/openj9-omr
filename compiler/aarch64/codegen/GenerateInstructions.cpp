@@ -22,6 +22,7 @@
 #include "aarch64/codegen/GenerateInstructions.hpp"
 
 #include <stdint.h>
+#include "codegen/ARM64ConditionCode.hpp"
 #include "codegen/ARM64Instruction.hpp"
 #include "codegen/CodeGenerator.hpp"
 #include "codegen/InstOpCode.hpp"
@@ -386,4 +387,15 @@ TR::Instruction *generateMulInstruction(TR::CodeGenerator *cg, TR::Node *node,
    if (preced)
       return new (cg->trHeapMemory()) TR::ARM64Trg1Src3Instruction(op, node, treg, s1reg, s2reg, zeroReg, cond, preced, cg);
    return new (cg->trHeapMemory()) TR::ARM64Trg1Src3Instruction(op, node, treg, s1reg, s2reg, zeroReg, cond, cg);
+   }
+
+TR::Instruction *generateCSetInstruction(TR::CodeGenerator *cg, TR::Node *node,
+   TR::Register *treg, TR::ARM64ConditionCode cc, TR::Instruction *preced)
+   {
+   /* Alias of CSINC instruction with inverted condition code */
+   TR::InstOpCode::Mnemonic op = TR::InstOpCode::csincx;
+
+   if (preced)
+      return new (cg->trHeapMemory()) TR::ARM64Trg1CondInstruction(op, node, treg, cc_invert(cc), preced, cg);
+   return new (cg->trHeapMemory()) TR::ARM64Trg1CondInstruction(op, node, treg, cc_invert(cc), cg);
    }

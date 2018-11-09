@@ -148,6 +148,20 @@ uint8_t *TR::ARM64Trg1Instruction::generateBinaryEncoding()
    return cursor;
    }
 
+uint8_t *TR::ARM64Trg1CondInstruction::generateBinaryEncoding()
+   {
+   uint8_t *instructionStart = cg()->getBinaryBufferCursor();
+   uint8_t *cursor = instructionStart;
+   cursor = getOpCode().copyBinaryToBuffer(instructionStart);
+   insertTargetRegister(toARM64Cursor(cursor));
+   insertZeroRegister(toARM64Cursor(cursor));
+   insertConditionCodeField(toARM64Cursor(cursor));
+   cursor += ARM64_INSTRUCTION_LENGTH;
+   setBinaryLength(ARM64_INSTRUCTION_LENGTH);
+   setBinaryEncoding(instructionStart);
+   return cursor;
+   }
+
 uint8_t *TR::ARM64Trg1ImmInstruction::generateBinaryEncoding()
    {
    uint8_t *instructionStart = cg()->getBinaryBufferCursor();

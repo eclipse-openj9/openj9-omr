@@ -42,6 +42,7 @@ namespace OMR { typedef OMR::Z::TreeEvaluator TreeEvaluatorConnector; }
 class TR_OpaquePseudoRegister;
 class TR_PseudoRegister;
 class TR_StorageReference;
+class TR_S390ScratchRegisterManager;
 namespace TR { class CodeGenerator; }
 namespace TR { class Instruction; }
 namespace TR { class LabelSymbol; }
@@ -520,6 +521,70 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
     *     The number of bytes to copy.
     */
    static void primitiveArraycopyEvaluator(TR::Node* node, TR::CodeGenerator* cg, TR::Node* byteSrcNode, TR::Node* byteDstNode, TR::Node* byteLenNode);
+
+/** \brief
+    *  Generates Load/Store sequence for array copy as per type of array copy element
+    *  
+    * \param node
+    *     The arraycopy node.
+    *
+    *  \param cg
+    *     The code generator used to generate the instructions.
+    *
+    *  \param srcMemRef
+    *     Memory Reference of src from where we need to load
+    *
+    *  \param dstMemRef
+    *     Memory Reference of destination where we need to store
+    *
+    *  \param srm
+    *     Scratch Register Manager providing pool of scratch registers to use
+    * 
+    *  \param elementType
+    *     Array Copy element type
+    * 
+    *  \param needsGuardedLoad
+    *     Boolean stating if we need to use Guarded Load instruction
+    * 
+    */
+   static void generateLoadAndStoreForArrayCopy(TR::Node *node, TR::CodeGenerator *cg, TR::MemoryReference *srcMemRef, TR::MemoryReference *dstMemRef, TR_S390ScratchRegisterManager *srm, TR::DataType elenmentType, bool needsGuardedLoad);
+
+/** \brief
+    *  Generates Element wise Memory To Memory copy sequence in forward/backward direction
+    *  
+    * \param node
+    *     The arraycopy node.
+    *
+    *  \param cg
+    *     The code generator used to generate the instructions.
+    * 
+    *  \param byteSrcReg
+    *     Register holding starting address of source
+    *
+    *  \param byteDstReg
+    *     Register holding starting address of destination
+    *
+    *  \param byteLenReg
+    *     Register holding number of bytes to copy
+    * 
+    *  \param srm
+    *     Scratch Register Manager providing pool of scratch registers to use
+    * 
+    *  \param isForward
+    *     Boolean specifying if we need to copy elements in forward direction
+    * 
+    *  \param needsGuardedLoad
+    *     Boolean stating if we need to use Guarded Load instruction
+    *
+    *  \param genStartICFLabel
+    *     Boolean stating if we need to set the start ICF flag
+    * 
+    *  \return
+    *     Register depdendecy conditions containg registers allocated within Internal Control Flow
+    * 
+    */
+   static TR::RegisterDependencyConditions* generateMemToMemElementCopy(TR::Node *node, TR::CodeGenerator *cg, TR::Register *byteSrcReg, TR::Register *byteDstReg, TR::Register *byteLenReg, TR_S390ScratchRegisterManager *srm, bool isForward, bool needsGuardedLoad, bool genStartICFLabel=false);
+
 
    /** \brief
     *     Evaluates a reference arraycopy node by generating an MVC memory-memory copy for a forward arraycopy and a

@@ -30,6 +30,8 @@
 #include "codegen/RegisterConstants.hpp"
 #include "codegen/RegisterIterator.hpp"
 #include "codegen/TreeEvaluator.hpp"
+#include "il/Node.hpp"
+#include "il/Node_inlines.hpp"
 
 OMR::ARM64::CodeGenerator::CodeGenerator() :
       OMR::CodeGenerator(),
@@ -46,6 +48,7 @@ OMR::ARM64::CodeGenerator::CodeGenerator() :
 
    _linkageProperties = &self()->getLinkage()->getProperties();
 
+   self()->setStackPointerRegister(self()->machine()->getARM64RealRegister(_linkageProperties->getStackPointerRegister()));
    self()->setMethodMetaDataRegister(self()->machine()->getARM64RealRegister(_linkageProperties->getMethodMetaDataRegister()));
 
    // Tactical GRA settings

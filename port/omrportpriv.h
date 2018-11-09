@@ -542,7 +542,11 @@ omrsysinfo_cgroup_subsystem_iterator_init(struct OMRPortLibrary *portLibrary, ui
 extern J9_CFUNC BOOLEAN
 omrsysinfo_cgroup_subsystem_iterator_hasNext(struct OMRPortLibrary *portLibrary, const struct OMRCgroupMetricIteratorState *state);
 extern J9_CFUNC int32_t
-omrsysinfo_cgroup_subsystem_iterator_next(struct OMRPortLibrary *portLibrary, struct OMRCgroupMetricIteratorState *state, struct OMRCgroupMetricElement *metricElement, BOOLEAN *printUnits, uint64_t sizeRef);
+omrsysinfo_cgroup_subsystem_iterator_metricKey(struct OMRPortLibrary *portLibrary, const struct OMRCgroupMetricIteratorState *state, const char **metricKey);
+extern J9_CFUNC int32_t
+omrsysinfo_cgroup_subsystem_iterator_next(struct OMRPortLibrary *portLibrary, struct OMRCgroupMetricIteratorState *state, struct OMRCgroupMetricElement *metricElement);
+extern J9_CFUNC void
+omrsysinfo_cgroup_subsystem_iterator_destroy(struct OMRPortLibrary *portLibrary, struct OMRCgroupMetricIteratorState *state);
 
 /* J9SourceJ9Signal*/
 extern J9_CFUNC int32_t

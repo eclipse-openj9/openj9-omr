@@ -448,6 +448,11 @@ OMR::ARM64::TreeEvaluator::BBStartEvaluator(TR::Node *node, TR::CodeGenerator *c
    TR::Node *fenceNode = TR::Node::createRelative32BitFenceNode(node, &block->getInstructionBoundaries()._startPC);
    TR::Instruction *fence = generateAdminInstruction(cg, TR::InstOpCode::fence, node, fenceNode);
 
+   if (block->isCatchBlock())
+      {
+      cg->generateCatchBlockBBStartPrologue(node, fence);
+      }
+
    return NULL;
    }
 

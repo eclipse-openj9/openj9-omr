@@ -2773,7 +2773,11 @@ generateRegLitRefInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op
       }
 
    if (!LGRLinst)
-      cursor = generateRXInstruction(cg, op, node, treg, dataref);
+      {
+      cursor = instructionFormat == RXE_FORMAT ? 
+         generateRXEInstruction(cg, op, node, treg, dataref, 0) :
+         generateRXInstruction(cg, op, node, treg, dataref);
+      }
    if (alloc)
       {
       cg->stopUsingRegister(base);

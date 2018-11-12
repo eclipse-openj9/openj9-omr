@@ -1518,7 +1518,6 @@ thread_wrapper(WRAPPER_ARG arg)
 {
 	omrthread_t thread = (omrthread_t)arg;
 	omrthread_library_t lib = NULL;
-	uintptr_t flags;
 	int globalAlreadyLocked = GLOBAL_NOT_LOCKED;
 
 	ASSERT(thread);
@@ -1555,7 +1554,6 @@ thread_wrapper(WRAPPER_ARG arg)
 		OMROSCOND_WAIT_LOOP();
 	}
 	thread->flags |= J9THREAD_FLAG_STARTED;
-	flags = thread->flags;
 
 	/* Set the numa affinity if it is pending on this thread */
 #if defined(OMR_PORT_NUMA_SUPPORT)

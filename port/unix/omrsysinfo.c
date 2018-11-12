@@ -4510,11 +4510,11 @@ omrsysinfo_cgroup_subsystem_iterator_next(struct OMRPortLibrary *portLibrary, st
 		
 	}
 	if (state->multiLineCounter < subsystemMetricMapElement->metricElementsCount) {
-		currentElement += state->multiLineCounter;
 		char *tempBuff = portLibrary->mem_allocate_memory(portLibrary, 1024, OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
-		strcpy(tempBuff, state->fileContent);
 		char *part = "";
 		char *saveptr = NULL;
+		currentElement += state->multiLineCounter;
+		strcpy(tempBuff, state->fileContent);
 		part = strtok_r(tempBuff, "\n", &saveptr);
 	  	do {
 			if(0 == strncmp(part, currentElement->metricKeyInFile, strlen(currentElement->metricKeyInFile))) {
@@ -4533,13 +4533,13 @@ omrsysinfo_cgroup_subsystem_iterator_next(struct OMRPortLibrary *portLibrary, st
 
 _end:
 	if (0 == rc) {
-		metricElement->key = currentElement->metricTag;
-		metricElement->units = currentElement->metricUnit;
 		/**
 		 * 'value' may have new line at the end (fgets add '\n' at the end)
 		 * which is not required so we could remove it 
 		 */
 		size_t len = strlen(metricElement->value);
+		metricElement->key = currentElement->metricTag;
+		metricElement->units = currentElement->metricUnit;
 		if ((len > 0) && (metricElement->value[len-1] == '\n')) {
 			metricElement->value[--len] = '\0';
 		}

@@ -1374,7 +1374,6 @@ void
 omrthread_detach(omrthread_t thread)
 {
 	uintptr_t destroy = 0;
-	uintptr_t attached = 0;
 
 	if (thread == NULL) {
 		thread = MACRO_SELF();
@@ -1391,7 +1390,7 @@ omrthread_detach(omrthread_t thread)
 				 * detached.  Mark it dead so that it can be destroyed.
 				 */
 				thread->flags |= J9THREAD_FLAG_DEAD;
-				attached = destroy = 1;
+				destroy = 1;
 			} else {
 				/* A j9-created thread should never be dead here */
 				destroy = thread->flags & J9THREAD_FLAG_DEAD;

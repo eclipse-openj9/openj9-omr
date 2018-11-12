@@ -7,23 +7,134 @@ appropriate bindings for a given language.
 ## High-level Design
 
 The basic principle followed is to have implemented functionality on one side
-and the language-specific interface on the other side.
+and the language-specific interface or *client API* on the other side.
 
 On the implementation side, an object contains all the functionality. On the
-interface side, a corresponding object forward API calls to the implementation
-class.
+client API side, a one-to-one corresponding object forwards API calls to the
+implementation class.
 
-JitBuilder is written in C++. So, on the implementation side, objects will be
-modelled as class instances.
+A C client API is used as base for bindings to other languages. Since the JitBuilder
+implementation relies heavily on virtual functions and overriding, a special
+mechanism is needed to allow overriding to be done in C. Because a user can 
+override the implementation of certain JitBuilder services (e.g. `IlBuilder::buildIL()`
+and `VirtualMachineState::Commit()`), the implementation side cannot rely on calling
+those services on its side to get the correct behaviour. Instead it must call
+the service on the *client side* and ensure user overrides are invoked if present.
 
-On the interface side, the model used for objects depends on the language used.
+The C overriding mechanism makes use of function pointers to set callbacks. When
+a client-side object is constructor or initialized, it sets a callback for each
+virtual function on the implementation side that can be overriden by a user.
 
-## Implementation Design
+For the mechanism to work, every function that can have a user overridden must be
+paired with a second, non-virtual function that handles dispatch. While the virtual
+function just contains the function's implementation, the non-virtual *dispatch function*
+invokes the callback corresponding to the function that is set by the client-side
+object. By convention, the name of the virtual function is capitalized
+(e.g. `virtual Foo()`) since it provides the functionality of the client API.
+The name of the dispatch function is not capitalized (e.g. `foo()`) as it's only
+intended for internal use in the implementation.
 
-The C++ implementation is designed to allow interopperation with other
-languages. To ensure interopperability, all implementation classes follow
-certain patterns. For simplicity, client interface languages are assumed to
-support binding to C.
+On the implementation side, instead of calling a virtual function `Foo()`, the
+corresponding dispatch function `foo()` is called to ensure that, if set, the
+client-side override of `Foo()` is executed. As a result, the callback should,
+by default, just invoke the default implementation provided on the implementation
+side, assuming one exists.
+
+```
+     Client API       :       Implementation
+                      :
+                      :     +---------------+
+                      :     | Base          |
+  +---------------+   :     +---------------+
+  + FooCallback() <---------+ foo()         |
+  +-----------+---+   :     |               |
+              `-------------> virtual Foo() |
+                      :     +---------------+
+                      :
+```
+
+To override the default implementation, a different callback with the custom
+implementation should be set.
+
+In client APIs built on top of the C API, the callback may instead forward its
+invocation to a function (or method) implemented in the target language, forwarding
+the responsibility of calling the default implementation. For example, in the C++
+client API, a call to the callback would invoke a client-side virtual function
+`Foo()`  that would take care calling back into the implementation side when no
+user overrides are exist.
+
+```
+                     Client API         :       Implementation
+                                        :
++---------------+                       :       +---------------+
+| Base          |                       :       | Base          |
++---------------+   +---------------+   :       +---------------+
+| virtual Foo() <---+ FooCallback() <-----------+ foo()         |
++------------+--+   +---------------+   :       |               |
+             |                          :  ,----> virtual Foo() |
+             `-----------------------------'    +---------------+
+                                        :
+
+```
+
+If an implementation-side derived class overrides `Foo()`, then a matching
+client-side derived class also defines an override that will just invoke
+the implementation-side override. The client-side class also sets a different
+callback that will invoke the a client-side override of `Foo()`.
+
+```
+                     Client API         :       Implementation
+                                        :
++---------------+                       :       +---------------+
+| Base          |                       :       | Base          |
++---------------+   +---------------+   :       +---------------+
+| virtual Foo() |   | +---------------+ :  ,----+ foo()         |
++---.-----------+   +-| FooCallback() <----'    |               |
+   /_\                +--+------------+ :       | virtual Foo() |
+    |                    |              :       +--------.------+
+    |                    |              :               /_\
+    |                    |              :                |
++---+-----------+        |              :       +--------+------+
+| Derived       |        |              :       | Derived       |
++---------------+        |              :       +---------------+
+| virtual Foo() <--------'              :  ,----> virtual Foo() |
++------------+--+                       :  |    +---------------+
+             `-----------------------------'
+                                        :
+```
+
+If a user overrides `Foo()`, then virtual dispatch will ensure that the
+user's override is invoked when `foo()` is called on the implementation side.
+
+```
+                     Client API         :       Implementation
+                                        :
++---------------+                       :       +---------------+
+| Base          |                       :       | Base          |
++---------------+   +---------------+   :       +---------------+
+| virtual Foo() |   | +---------------+ :  ,----+ foo()         |
++---.-----------+   +-| FooCallback() <----'    |               |
+   /_\                +--+------------+ :       | virtual Foo() |
+    |                    |              :       +--------.------+
+    |                    |              :               /_\
+    |                    |              :                |
++---+-----------+        |              :       +--------+------+
+| Derived       |        |              :       | Derived       |
++---------------+        |              :       +---------------+
+| virtual Foo() |<-------'              :       | virtual Foo() |
++---.-----------+ \                     :       +---------------+
+   /_\             |                    :
+    |              | [virtual dispatch] :
++---+-----------+  |                    :
+| UserDerived   |  |                    :
++---------------+  |                    :
+| virtual Foo() <--'                    :
++---------------+                       :
+                                        :
+```
+
+
+## Implementation
 
 ### The basics
 
@@ -59,10 +170,10 @@ class Base {
 
 Let's break it down.
 
-The `_impl` field is an opaque pointer to the client-side object corresponding
+The `_client` field is an opaque pointer to the client-side object corresponding
 to the current object. It is the only means by which an implementation can
 communicated with a client object. The member function `client()` is a (special)
-getter for the `_impl`. It *must* be virtual to allow subclasses to override it,
+getter for the `_client`. It *must* be virtual to allow subclasses to override it,
 as will be shown later. As it's name implies `setClient()` is just an old
 fashion setter for the field.
 

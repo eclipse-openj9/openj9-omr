@@ -1995,11 +1995,13 @@ threadAllocate(omrthread_library_t lib, int globalIsLocked)
 static intptr_t
 threadDestroy(omrthread_t thread, int globalAlreadyLocked)
 {
+#if defined(OMR_OS_WINDOWS) || defined(THREAD_ASSERTS)
 	omrthread_library_t lib;
 
 	ASSERT(thread);
 	lib = thread->library;
 	ASSERT(lib);
+#endif /* defined(OMR_OS_WINDOWS) || defined(THREAD_ASSERTS) */
 
 	THREAD_LOCK(thread, CALLER_DESTROY);
 	if ((thread->flags & J9THREAD_FLAG_DEAD) == 0) {

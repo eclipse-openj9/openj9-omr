@@ -438,10 +438,11 @@ intptr_t
 omrthread_numa_get_node_affinity(omrthread_t thread, uintptr_t *numaNodes, uintptr_t *nodeCount)
 {
 	intptr_t result = 0;
-	uintptr_t incomingListSize = *nodeCount;
 	uintptr_t nodesSoFar = 0;
 
 #if defined(OMR_PORT_NUMA_SUPPORT)
+	uintptr_t incomingListSize = *nodeCount;
+
 	if (isNumaAvailable && (NULL != thread)) {
 		uintptr_t threadIsStarted = 0;
 

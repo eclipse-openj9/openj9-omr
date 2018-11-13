@@ -566,9 +566,6 @@ enum TR_DispatchType
    virtual TR::RealRegister::RegNum getPrivateStaticBaseRegister()        { return _privateStaticBaseRegister; }
    virtual TR::RealRegister *getPrivateStaticBaseRealRegister();
 
-   // TODO (#2848): Once the downstream dependency is removed we can fold this setter
-   virtual TR::RealRegister::RegNum setExtCodeBaseRegister (TR::RealRegister::RegNum r)   { return TR::RealRegister::GPR7; }
-
    virtual TR::RealRegister::RegNum setReturnAddressRegister (TR::RealRegister::RegNum r) { return _returnAddrRegister = r; }
    virtual TR::RealRegister::RegNum getReturnAddressRegister()  { return _returnAddrRegister; }
    virtual TR::RealRegister *getReturnAddressRealRegister();

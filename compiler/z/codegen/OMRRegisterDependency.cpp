@@ -424,7 +424,7 @@ void OMR::Z::RegisterDependencyConditions::resolveSplitDependencies(
          case TR_GPR:
             opCode = TR::InstOpCode::getLoadRegOpCode();
             if (cg->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) &&
-                  (child->getDataType() == TR::Int32 ||
+                  (!reg->is64BitReg() ||
                   child->getOpCodeValue() == TR::icall ||
                   child->getOpCodeValue() == TR::icalli ||
                   TR::RealRegister::isHPR(regNum)))

@@ -3656,3 +3656,23 @@ bool OMR::Power::CodeGenerator::getSupportsIbyteswap()
    {
    return true;
    }
+
+bool
+OMR::Power::CodeGenerator::supportsNonHelper(TR::SymbolReferenceTable::CommonNonhelperSymbol symbol)
+   {
+   bool result = false;
+
+   switch (symbol)
+      {
+      case TR::SymbolReferenceTable::atomicAddSymbol:
+      case TR::SymbolReferenceTable::atomicFetchAndAddSymbol:
+      case TR::SymbolReferenceTable::atomicSwapSymbol:
+         {
+         result = true;
+         break;
+         }
+      }
+
+   return result;
+   }
+

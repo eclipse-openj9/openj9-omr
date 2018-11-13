@@ -245,6 +245,34 @@ function(omr_inject_object_modification_targets result compiler_name)
 	set(${result} ${arg} PARENT_SCOPE)
 endfunction(omr_inject_object_modification_targets)
 
+# make_gnu_asm_defines(output_var <define> ...)
+# Make output_var a string which will define each <define>
+# as an assembler define (rather than a c pre-processor define)
+function(make_gnu_asm_defines output)
+
+	foreach(arg IN LISTS ARGN)
+		set(clean_arg)
+		string(REGEX REPLACE "^-D" "" clean_arg "${arg}")
+		# if clean_arg already is of form FOO=BAR, append it as is
+		# otherwise we change it to FOO=1
+		if(clean_arg MATCHES "=")
+			set(arg_str "${arg_str},--defsym,${clean_arg}")
+		else()
+			set(arg_str "${arg_str},--defsym,${clean_arg}=1")
+		endif()
+	endforeach()
+
+	if(OMR_ENV_DATA64)
+		set(arg_str ",--64${arg_str}")
+	endif()
+
+	# if we actually generated any string
+	# ie we were passed in any <define> values
+	if(arg_str)
+		set(${output} "-Wa${arg_str}" PARENT_SCOPE)
+	endif()
+endfunction(make_gnu_asm_defines)
+
 # Setup the current scope for compiling the Testarossa compiler technology. Used in
 # conjunction with make_compiler_target -- Only can infect add_directory scope.
 macro(set_tr_compile_options)
@@ -254,7 +282,25 @@ macro(set_tr_compile_options)
 	set(CMAKE_C_FLAGS ${CMAKE_C_FLAGS} PARENT_SCOPE)
 	# message("[set_tr_compile_options] Set CMAKE_CXX_FLAGS to ${CMAKE_CXX_FLAGS}")
 	# message("[set_tr_compile_options] Set CMAKE_C_FLAGS to ${CMAKE_C_FLAGS}")
-	set(CMAKE_ASM_FLAGS ${TR_ASM_FLAGS} PARENT_SCOPE)
+
+	set(TR_ASM_FLAGS "")
+	foreach(def IN LISTS TR_COMPILE_DEFINITIONS)
+		#  Prepend leading '-D' only if required
+		if(def MATCHES "^-D")
+			set(TR_ASM_FLAGS "${TR_ASM_FLAGS} ${def}")
+		else()
+			set(TR_ASM_FLAGS "${TR_ASM_FLAGS} -D${def}")
+		endif()
+	endforeach()
+
+	# We need special handling on x86 because we could be gnu or NASM assembler
+	if(OMR_ARCH_X86)
+		make_gnu_asm_defines(gnu_defines ${TR_COMPILE_DEFINITIONS})
+		set(CMAKE_ASM_FLAGS "${CMAKE_ASM_FLAGS} ${gnu_defines}" PARENT_SCOPE)
+		set(CMAKE_ASM_NASM_FLAGS "${CMAKE_ASM_NASM_FLAGS} ${TR_ASM_FLAGS}" PARENT_SCOPE)
+	else()
+		set(CMAKE_ASM_FLAGS "${CMAKE_ASM_FLAGS} ${TR_ASM_FLAGS}" PARENT_SCOPE)
+	endif()
 endmacro(set_tr_compile_options)
 
 # Create an OMR Compiler component

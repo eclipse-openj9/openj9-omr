@@ -459,11 +459,6 @@ class RegisterDependencyConditions: public OMR::RegisterDependencyConditions
          _cg->comp()->failCompilation<TR::CompilationException>("addPostCondition list overflow, abort compilation\n");
          }
       _postConditions->setDependencyInfo(_addCursorForPost++, vr, rr, flag);
-      if((flag & DefinesDependentRegister) != 0)
-        {
-        bool redefined=(vr->getStartOfRange() != NULL);
-        vr->setRedefined(redefined);
-        }
       }
 
    void assignPreConditionRegisters(TR::Instruction *currentInstruction, TR_RegisterKinds kindToBeAssigned, TR::CodeGenerator *cg)

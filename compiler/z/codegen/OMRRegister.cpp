@@ -102,7 +102,6 @@ OMR::Z::Register::isHighWordUpgradable()
 ncount_t
 OMR::Z::Register::decFutureUseCount(ncount_t fuc)
    {
-   self()->resetNotUsedInThisBB();
    return OMR::Register::decFutureUseCount(fuc);
    }
 

@@ -837,7 +837,7 @@ enum TR_CompilationOptions
    // Available                                       = 0x00000800 + 25,
    // Available                                       = 0x00001000 + 25,
    TR_TracePREForOptimalSubNodeReplacement            = 0x00002000 + 25,
-   TR_EnableTrueRegisterModel                         = 0x00008000 + 25,
+   // Available                                       = 0x00008000 + 25,
    TR_PerfTool                                        = 0x00010000 + 25,
    // Available                                       = 0x00020000 + 25,
    TR_DisableBranchOnCount                            = 0x00040000 + 25,

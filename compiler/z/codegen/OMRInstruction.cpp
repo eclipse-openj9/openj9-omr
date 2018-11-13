@@ -1708,18 +1708,6 @@ OMR::Z::Instruction::useTargetRegister(TR::Register* reg)
       self()->clearCCInfo();
       }
 
-   // Set Redefined flag for Trivial Remat
-   bool redefined=(reg->getStartOfRange() != NULL);
-   TR::RegisterPair *rp=reg->getRegisterPair();
-   if(rp)
-     {
-     TR::Register *lowReg=rp->getLowOrder();
-     TR::Register *highReg=rp->getHighOrder();
-     redefined |= (lowReg->getStartOfRange() != NULL) || (highReg->getStartOfRange() != NULL);
-     lowReg->setRedefined(redefined);
-     highReg->setRedefined(redefined);
-     }
-   reg->setRedefined(redefined);
    self()->useRegister(reg);
 
    // mark used bit for HW/LW virtual regs

@@ -628,6 +628,11 @@ public:
 		return oldValue + addend;
 	}
 
+	union DoubleConversionData {
+		double asDouble;
+		uint64_t asBits;
+	};
+
 	/**
 	 * Add double float to the value at a specific memory location as an atomic operation.
 	 * Adds the value <b>addend</b> to the value stored at memory location pointed
@@ -641,18 +646,24 @@ public:
 	VMINLINE static double
 	addDouble(volatile double *address, double addend)
 	{
-		/* double is stored as 64bit */
-		/* Stop compiler optimizing away load of oldValue */
-		volatile uint64_t *localAddr = (volatile uint64_t *)address;
+		/* while casting address to a DoubleConversionData* will silence GCC's strict aliasing warnings, the
+		 * code below is still dereferencing a type-punned pointer, and is thus undefined behaviour.
+		 */
 
-		double oldValue = *address;
-		double newValue =  oldValue + addend;
+		/* Stop compiler optimizing away load of oldValue. data is a type-punned pointer. */
+		volatile DoubleConversionData* data = (volatile DoubleConversionData*)address;
 
-		while (lockCompareExchangeU64(localAddr, *(uint64_t *)&oldValue, *(uint64_t *)&newValue) != *(uint64_t *)&oldValue) {
-			oldValue = *address;
-			newValue =  oldValue + addend;
+		DoubleConversionData oldData;
+		DoubleConversionData newData;
+
+		oldData.asDouble = data->asDouble;
+		newData.asDouble = oldData.asDouble + addend;
+
+		while (lockCompareExchangeU64(&data->asBits, oldData.asBits, newData.asBits) != oldData.asBits) {
+			oldData.asDouble = data->asDouble;
+			newData.asDouble = oldData.asDouble + addend;
 		}
-		return newValue;
+		return newData.asDouble;
 	}
 
 	/**

@@ -579,65 +579,6 @@ OMR::Z::Instruction::usesRegister(TR::Register * reg)
    return false;
    }
 
-
-bool OMR::Z::Instruction::startOfLiveRange(TR::Register * reg)
-  {
-   int32_t i;
-   TR::Register **_targetReg = self()->targetRegBase();
-   bool result;
-
-   // If reg is part of internal control flow region then it must stay alive
-   if(self()->cg()->isInternalControlFlowReg(reg))
-     return false;
-
-   // Special case SRDA, SRDL, SLDA, SLDL when immediate is >= 32
-   if((self()->getOpCodeValue() == TR::InstOpCode::SRDA || self()->getOpCodeValue() == TR::InstOpCode::SRDL) && toS390RSInstruction(self())->getSourceImmediate() >= 32)
-     {
-     // Clobbering the low order half by shifing completely over it so not really using it
-     TR::RegisterPair *rp=_targetReg[0]->getRegisterPair();
-     if(reg == rp->getLowOrder())
-       return true;
-     }
-   if((self()->getOpCodeValue() == TR::InstOpCode::SLDA || self()->getOpCodeValue() == TR::InstOpCode::SLDL) && toS390RSInstruction(self())->getSourceImmediate() >= 32)
-     {
-     // Clobbering the high order half by shifing completely over it so not really using it
-     TR::RegisterPair *rp=_targetReg[0]->getRegisterPair();
-     if(reg == rp->getHighOrder())
-       return true;
-     }
-   if(self()->getOpCodeValue() == TR::InstOpCode::RISBG || self()->getOpCodeValue() == TR::InstOpCode::RISBGN || self()->getOpCodeValue() == TR::InstOpCode::RISBHG || self()->getOpCodeValue() == TR::InstOpCode::RISBLG)
-     {
-      uint8_t endBit = ((TR::S390RIEInstruction* )self())->getSourceImmediate8Two();
-      if(_targetReg[0] == reg && (endBit & 128) != 0)
-        return true;
-      }
-
-   if (_targetReg && !(self()->getOpCode().usesTarget()))
-      {
-      for (i = 0; i < _targetRegSize; ++i)
-        {
-        if (_targetReg[i]->usesRegister(reg) && !self()->usesOnlyRegister(reg))
-          {
-          // Special case LTR GPR_X,GPR_X
-          if(self()->getOpCodeValue() == TR::InstOpCode::LTR && self()->getRegisterOperand(1) == self()->getRegisterOperand(2))
-            return false;
-          if(_targetReg[i]->getKind() == TR_GPR64 && self()->getOpCode().is32bit() && TR::Compiler->target.is32Bit())
-            return false;
-          return true;
-          }
-        }
-      }
-
-   // We might have an out of line EX instruction.  If so, we
-   // need to check whether either the EX instruction OR the instruction
-   // it refers to uses the specified register.
-   TR::Instruction *outOfLineEXInstr = self()->getOutOfLineEXInstr();
-   if (outOfLineEXInstr && outOfLineEXInstr->startOfLiveRange(reg))
-      return true;
-
-   return false;
-  }
-
 bool OMR::Z::Instruction::getRegisters(TR::list<TR::Register *> &regs)
   {
    TR::Compilation *comp = self()->cg()->comp();

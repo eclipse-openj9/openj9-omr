@@ -518,11 +518,6 @@ public:
                                    TR::RealRegister::RegNum realNum);
    bool isGlobalRegisterAvailable(TR_GlobalRegisterNumber i, TR::DataType dt);
 
-   // Used to model register liveness without Future Use Count.
-   virtual bool isInternalControlFlowReg(TR::Register *reg);
-   virtual void startInternalControlFlow(TR::Instruction *instr);
-   virtual void endInternalControlFlow(TR::Instruction *instr) { _internalControlFlowRegisters.clear(); }
-
    bool doRematerialization() {return true;}
 
    void dumpDataSnippets(TR::FILE *outFile);
@@ -885,8 +880,6 @@ private:
    uint8_t fCondMoveBranchOpCond;
 
    TR::SymbolReference* _reusableTempSlot;
-
-   TR::list<TR::Register *> _internalControlFlowRegisters;
 
    CS2::HashTable<ncount_t, bool, TR::Allocator> _nodesToBeEvaluatedInRegPairs;
 

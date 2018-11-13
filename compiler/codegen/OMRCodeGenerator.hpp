@@ -563,13 +563,6 @@ class OMR_EXTENSIBLE CodeGenerator
 
    bool AddArtificiallyInflatedNodeToStack(TR::Node* n);
 
-   // Used to model register liveness without Future Use Count.
-   bool isInternalControlFlowReg(TR::Register *reg) {return false;}
-   void startInternalControlFlow(TR::Instruction *instr) {}
-   void endInternalControlFlow(TR::Instruction *instr) {}
-
-
-
    // --------------------------------------------------------------------------
    // P only
    //
@@ -1143,9 +1136,14 @@ class OMR_EXTENSIBLE CodeGenerator
    //
    // Used to track the internal control flow depth level while compiling.
    // Updated the CodeGenerator.hpp in x86, s390, and PPC so they reference this common code.
+
+   private:
+
    int32_t _internalControlFlowNestingDepth;
    int32_t _internalControlFlowSafeNestingDepth;
-   TR::Instruction *_instructionAtEndInternalControlFlow;
+
+   public:
+
    int32_t internalControlFlowNestingDepth() {return _internalControlFlowNestingDepth;}
    int32_t internalControlFlowSafeNestingDepth() { return _internalControlFlowSafeNestingDepth; }
    void incInternalControlFlowNestingDepth() {_internalControlFlowNestingDepth++;}
@@ -1153,7 +1151,6 @@ class OMR_EXTENSIBLE CodeGenerator
    bool insideInternalControlFlow() {return (_internalControlFlowNestingDepth > _internalControlFlowSafeNestingDepth);}
    void setInternalControlFlowNestingDepth(int32_t depth) { _internalControlFlowNestingDepth = depth; }
    void setInternalControlFlowSafeNestingDepth(int32_t safeDepth) { _internalControlFlowSafeNestingDepth = safeDepth; }
-   TR::Instruction* getInstructionAtEndInternalControlFlow() { return _instructionAtEndInternalControlFlow; }
 
    // --------------------------------------------------------------------------
    // Non-linear register assigner

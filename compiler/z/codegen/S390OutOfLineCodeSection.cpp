@@ -171,7 +171,7 @@ void TR_S390OutOfLineCodeSection::assignRegisters(TR_RegisterKinds kindsToBeAssi
       return;
 
    // nested internal control flow assert:
-   _cg->setInternalControlFlowSafeNestingDepth(_cg->_internalControlFlowNestingDepth);
+   _cg->setInternalControlFlowSafeNestingDepth(_cg->internalControlFlowNestingDepth());
 
    // Create a dependency list on the first instruction in this stream that captures all current real register associations.
    // This is necessary to get the register assigner back into its original state before the helper stream was processed.

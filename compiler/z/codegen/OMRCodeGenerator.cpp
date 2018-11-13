@@ -541,7 +541,6 @@ OMR::Z::CodeGenerator::CodeGenerator()
      _interfaceSnippetToPICsListHashTab(NULL),
      _currentCheckNode(NULL),
      _currentBCDCHKHandlerLabel(NULL),
-     _internalControlFlowRegisters(getTypedAllocator<TR::Register*>(self()->comp()->allocator())),
      _nodesToBeEvaluatedInRegPairs(self()->comp()->allocator()),
      _ccInstruction(NULL),
      _previouslyAssignedTo(self()->comp()->allocator("LocalRA"))
@@ -2707,14 +2706,11 @@ OMR::Z::CodeGenerator::doRegisterAssignment(TR_RegisterKinds kindsToAssign)
             {
             if (li->getLabelSymbol()->isStartInternalControlFlow())
                {
-               _internalControlFlowNestingDepth--;
-               if (_internalControlFlowNestingDepth == 0)
-                  self()->endInternalControlFlow(instructionCursor);        // Walking backwards so start is end
+               self()->decInternalControlFlowNestingDepth();
                }
             if (li->getLabelSymbol()->isEndInternalControlFlow())
                {
-               _internalControlFlowNestingDepth++;
-               self()->startInternalControlFlow(instructionCursor);
+               self()->incInternalControlFlowNestingDepth();
                }
             }
          }
@@ -3862,48 +3858,6 @@ OMR::Z::CodeGenerator::isGlobalRegisterAvailable(TR_GlobalRegisterNumber i, TR::
    else
      return false;
    }
-
-
-bool OMR::Z::CodeGenerator::isInternalControlFlowReg(TR::Register *reg)
-  {
-  for(auto cursor = _internalControlFlowRegisters.begin(); cursor != _internalControlFlowRegisters.end(); ++cursor)
-     {
-     if (reg == *cursor)
-        return true;
-     }
-  return false;
-  }
-
-void OMR::Z::CodeGenerator::startInternalControlFlow(TR::Instruction *instr)
-  {
-  // Visit all the post conditions of instr. All virtual registers in this post condition should remain
-  // conservatively alive though out the entire internal control flow.
-  TR::RegisterDependencyConditions *conds = instr->getDependencyConditions();
-
-  if (conds) // we may have an empty internal control flow
-     {
-     TR_S390RegisterDependencyGroup *postConds = conds->getPostConditions();
-     OMR::Z::Machine *mach=self()->machine();
-     int32_t n = conds->getNumPostConditions();
-     int32_t i;
-     for (i = 0; i < n; i++)
-        {
-        TR::Register *r=NULL;
-        if(!self()->afterRA())
-          r = postConds->getRegisterDependency(i)->getRegister();
-        else
-          {
-          TR::RealRegister::RegNum rr = postConds->getRegisterDependency(i)->getRealRegister();
-          if(rr>TR::RealRegister::NoReg && rr<=TR::RealRegister::LastHPR)
-            r = mach->getRealRegister(rr);
-          }
-        if(r) _internalControlFlowRegisters.push_back(r);
-        }
-     }
-  // At the outermost internal control flow bottom remember the instruction for any spill insertion
-  if (_internalControlFlowNestingDepth == 1)
-     _instructionAtEndInternalControlFlow = instr;
-  }
 
 /**
  * Allocates a register with the same collectible and internal pointer

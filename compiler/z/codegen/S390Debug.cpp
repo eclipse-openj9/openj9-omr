@@ -1752,18 +1752,12 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390RXInstruction * instr)
      }
 
    trfprintf(pOutFile, ",");
-   if (instr->getMemoryReference() == NULL)
+
+   print(pOutFile, instr->getMemoryReference(), instr);
+   TR::Symbol *symbol = instr->getMemoryReference()->getSymbolReference() ? instr->getMemoryReference()->getSymbolReference()->getSymbol() : 0;
+   if ((instr->getOpCode().isLoad() != 0) && symbol && symbol->isSpillTempAuto())
       {
-      trfprintf(pOutFile, "%x", instr->getConstForMRField());
-      }
-   else
-      {
-      print(pOutFile, instr->getMemoryReference(), instr);
-      TR::Symbol *symbol = instr->getMemoryReference()->getSymbolReference() ? instr->getMemoryReference()->getSymbolReference()->getSymbol() : 0;
-      if ((instr->getOpCode().isLoad() != 0) && symbol && symbol->isSpillTempAuto())
-         {
-          trfprintf(pOutFile, "\t\t#/* spilled for %s */", getName(instr->getNode()->getOpCode()));
-         }
+         trfprintf(pOutFile, "\t\t#/* spilled for %s */", getName(instr->getNode()->getOpCode()));
       }
 
    if (instr->isExtDisp())

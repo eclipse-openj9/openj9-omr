@@ -1864,33 +1864,6 @@ TR::InstOpCode::Mnemonic OMR::Z::Instruction::opCodeCanBeAdjustedTo(TR::InstOpCo
       }
    }
 
-// the following converts RX and RXE instructions into their
-// corresponding long displacement instructions
-void
-OMR::Z::Instruction::attemptOpAdjustmentForLongDisplacement()
-   {
-   TR::InstOpCode::Mnemonic n_op = self()->opCodeCanBeAdjustedTo(self()->getOpCodeValue());
-   if (n_op != TR::InstOpCode::BAD)
-      self()->setOpCodeValue(n_op);
-
-   auto instructionFormat = self()->getOpCode().getInstructionFormat(self()->getOpCodeValue());
-
-   if (instructionFormat == RXYa_FORMAT ||
-       instructionFormat == RXYb_FORMAT)
-      self()->setKind(IsRXY);
-   else if (instructionFormat == RSYa_FORMAT ||
-            instructionFormat == RSYb_FORMAT)
-      self()->setKind(IsRSY);
-   else if (instructionFormat == SIY_FORMAT)
-      self()->setKind(IsSIY);
-   else if (self()->cg()->getDebug())
-      TR_ASSERT(0, "only RX, RS and SI instructions can be safely mapped to long displacement: opCode: %s", self()->cg()->getDebug()->getOpCodeName(&self()->getOpCode()));
-   else
-      TR_ASSERT(0, "only RX, RS and SI instructions can be safely mapped to long displacement");
-
-   }
-
-
 uint32_t
 OMR::Z::Instruction::useSourceMemoryReference(TR::MemoryReference * memRef)
    {
@@ -1902,17 +1875,6 @@ OMR::Z::Instruction::useSourceMemoryReference(TR::MemoryReference * memRef)
 
    memRef->bookKeepingRegisterUses(self(), self()->cg());
 
-   if(!self()->cg()->afterRA())
-     {
-    int32_t disp = memRef->getOffset();
-    if (self()->hasLongDisplacementSupport() &&
-        !memRef->hasTemporaryNegativeOffset() &&
-        (disp < 0 || disp >= MAXDISP) && (disp >= MINLONGDISP || disp <= MAXLONGDISP))
-      {
-      self()->attemptOpAdjustmentForLongDisplacement();
-      }
-
-     }
    return _sourceMemSize-1; // index into source memref array
    }
 
@@ -1926,10 +1888,6 @@ OMR::Z::Instruction::useTargetMemoryReference(TR::MemoryReference * memRef, TR::
    self()->recordOperand(memRef, _targetMemSize);
 
    memRef->bookKeepingRegisterUses(self(), self()->cg());
-
-   if(!self()->cg()->afterRA())
-     {
-     }
 
    return _targetMemSize-1;      // index into the target memref array
    }

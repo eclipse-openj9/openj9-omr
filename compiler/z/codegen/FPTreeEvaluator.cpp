@@ -1082,9 +1082,9 @@ OMR::Z::TreeEvaluator::floatRemHelper(TR::Node * node, TR::CodeGenerator * cg)
       generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionStart);
       cFlowRegionStart->setStartInternalControlFlow();
       generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_MASK3, node, labelNotExact);    // remainder not exact
-      generateRXInstruction(cg, TR::InstOpCode::TCEB, node, targetRegister, 0x800);  // c is +0 ?
+      generateRXEInstruction(cg, TR::InstOpCode::TCEB, node, targetRegister, generateS390MemoryReference(0x800, cg), 0);  // c is +0 ?
       generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BE, node, labelOK);        // it is not +0
-      generateRXInstruction(cg, TR::InstOpCode::TCEB, node, firstRegister, 0x555);   // a is < +0 ?
+      generateRXEInstruction(cg, TR::InstOpCode::TCEB, node, firstRegister, generateS390MemoryReference(0x555, cg), 0);   // a is < +0 ?
       generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BE, node, labelOK);        // it is not < +0
       generateRRInstruction(cg, TR::InstOpCode::LCEBR, node, targetRegister, targetRegister); // negate answer to be -0
       generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BRC, node, labelOK);        // it is not < +0
@@ -1098,9 +1098,9 @@ OMR::Z::TreeEvaluator::floatRemHelper(TR::Node * node, TR::CodeGenerator * cg)
       generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionStart);
       cFlowRegionStart->setStartInternalControlFlow();
       generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_MASK3, node, labelNotExact);    // remainder not exact
-      generateRXInstruction(cg, TR::InstOpCode::TCDB, node, targetRegister, 0x800);  // c is +0 ?
+      generateRXEInstruction(cg, TR::InstOpCode::TCDB, node, targetRegister, generateS390MemoryReference(0x800, cg), 0);  // c is +0 ?
       generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BE, node, labelOK);        // it is not +0
-      generateRXInstruction(cg, TR::InstOpCode::TCDB, node, firstRegister, 0x555);   // a is < +0 ?
+      generateRXEInstruction(cg, TR::InstOpCode::TCDB, node, firstRegister, generateS390MemoryReference(0x555, cg), 0);   // a is < +0 ?
       generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BE, node, labelOK);        // it is not < +0
       generateRRInstruction(cg, TR::InstOpCode::LCDBR, node, targetRegister, targetRegister); // negate answer to be -0
       generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BRC, node, labelOK);        // it is not < +0
@@ -1278,7 +1278,7 @@ OMR::Z::TreeEvaluator::fbits2iEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 
        generateRRInstruction(cg, TR::InstOpCode::LDGR, node, targetFPR, targetReg);
 
-       generateRXInstruction(cg, TR::InstOpCode::TCEB, node, targetFPR, (uint32_t) 0x00f);
+       generateRXEInstruction(cg, TR::InstOpCode::TCEB, node, targetFPR, generateS390MemoryReference(0x00F, cg), 0);
 
        generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BZ, node, cleansedNumber);
 
@@ -1412,7 +1412,7 @@ OMR::Z::TreeEvaluator::dbits2lEvaluator(TR::Node * node, TR::CodeGenerator * cg)
          targetReg = cg->allocateRegister();
          //Not clobber evaluating because non FPSE path doesnt
          sourceReg = cg->evaluate(firstChild);
-         generateRXInstruction(cg, TR::InstOpCode::TCDB, node, sourceReg, (uint32_t) 0x03f);
+         generateRXEInstruction(cg, TR::InstOpCode::TCDB, node, sourceReg, generateS390MemoryReference(0x03F, cg), 0);
          generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionStart);
          cFlowRegionStart->setStartInternalControlFlow();
          generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BZ, node, cleansedNumber);
@@ -1421,7 +1421,7 @@ OMR::Z::TreeEvaluator::dbits2lEvaluator(TR::Node * node, TR::CodeGenerator * cg)
             {
             deps->addPostCondition(litBase, TR::RealRegister::AssignAny);
             }
-         generateRXInstruction(cg, TR::InstOpCode::TCDB, node, sourceReg, (uint32_t) 0x00f);
+         generateRXEInstruction(cg, TR::InstOpCode::TCDB, node, sourceReg, generateS390MemoryReference(0x00F, cg), 0);
          generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BZ, node, infinityNumber);
          if (node->normalizeNanValues())
             {
@@ -1429,7 +1429,7 @@ OMR::Z::TreeEvaluator::dbits2lEvaluator(TR::Node * node, TR::CodeGenerator * cg)
             }
          generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BRC, node, cleansedNumber);
          generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, infinityNumber);
-         generateRXInstruction(cg, TR::InstOpCode::TCDB, node, sourceReg, (uint32_t) 0x010);
+         generateRXEInstruction(cg, TR::InstOpCode::TCDB, node, sourceReg, generateS390MemoryReference(0x010, cg), 0);
          generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BZ, node, positiveInfinityNumber);
          generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, negativeInfinityNumber);
          generateRXInstruction(cg, TR::InstOpCode::LD, node, sourceReg, negativeInfinity);
@@ -1456,7 +1456,7 @@ OMR::Z::TreeEvaluator::dbits2lEvaluator(TR::Node * node, TR::CodeGenerator * cg)
          TR::Register * oddReg = cg->allocate64bitRegister();
          targetReg = cg->allocateConsecutiveRegisterPair(oddReg, evenReg);
          TR::RegisterDependencyConditions * lgdrDeps = NULL;
-         generateRXInstruction(cg, TR::InstOpCode::TCDB, node, sourceReg, (uint32_t) 0x03f);
+         generateRXEInstruction(cg, TR::InstOpCode::TCDB, node, sourceReg, generateS390MemoryReference(0x03F, cg), 0);
          generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionStart);
          cFlowRegionStart->setStartInternalControlFlow();
          generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BZ, node, cleansedNumber);
@@ -1464,7 +1464,7 @@ OMR::Z::TreeEvaluator::dbits2lEvaluator(TR::Node * node, TR::CodeGenerator * cg)
             {
             deps->addPostCondition(litBase, TR::RealRegister::AssignAny);
             }
-         generateRXInstruction(cg, TR::InstOpCode::TCDB, node, sourceReg, (uint32_t) 0x00f);
+         generateRXEInstruction(cg, TR::InstOpCode::TCDB, node, sourceReg, generateS390MemoryReference(0x00F, cg), 0);
          generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BZ, node, infinityNumber);
          if (node->normalizeNanValues())
             {
@@ -1472,7 +1472,7 @@ OMR::Z::TreeEvaluator::dbits2lEvaluator(TR::Node * node, TR::CodeGenerator * cg)
             }
          generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BRC, node, cleansedNumber);
          generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, infinityNumber);
-         generateRXInstruction(cg, TR::InstOpCode::TCDB, node, sourceReg, (uint32_t) 0x010);
+         generateRXEInstruction(cg, TR::InstOpCode::TCDB, node, sourceReg, generateS390MemoryReference(0x010, cg), 0);
          generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BZ, node, positiveInfinityNumber);
          generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, negativeInfinityNumber);
          generateRXInstruction(cg, TR::InstOpCode::LD, node, sourceReg, negativeInfinity);
@@ -1503,7 +1503,7 @@ OMR::Z::TreeEvaluator::dbits2lEvaluator(TR::Node * node, TR::CodeGenerator * cg)
       TR::Register * sourceReg;
       TR::RegisterDependencyConditions * deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 2, cg);
       sourceReg = cg->evaluate(firstChild);
-      generateRXInstruction(cg, TR::InstOpCode::TCDB, node, sourceReg, (uint32_t) 0x03f);
+      generateRXEInstruction(cg, TR::InstOpCode::TCDB, node, sourceReg, generateS390MemoryReference(0x03F, cg), 0);
       generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionStart);
       cFlowRegionStart->setStartInternalControlFlow();
       generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BZ, node, cleansedNumber);
@@ -1511,7 +1511,7 @@ OMR::Z::TreeEvaluator::dbits2lEvaluator(TR::Node * node, TR::CodeGenerator * cg)
          {
          deps->addPostCondition(litBase, TR::RealRegister::AssignAny);
          }
-      generateRXInstruction(cg, TR::InstOpCode::TCDB, node, sourceReg, (uint32_t) 0x00f);
+      generateRXEInstruction(cg, TR::InstOpCode::TCDB, node, sourceReg, generateS390MemoryReference(0x00F, cg), 0);
       generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BZ, node, infinityNumber);
       if (node->normalizeNanValues())
          {
@@ -1519,7 +1519,7 @@ OMR::Z::TreeEvaluator::dbits2lEvaluator(TR::Node * node, TR::CodeGenerator * cg)
          }
       generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BRC, node, cleansedNumber);
       generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, infinityNumber);
-      generateRXInstruction(cg, TR::InstOpCode::TCDB, node, sourceReg, (uint32_t) 0x010);
+      generateRXEInstruction(cg, TR::InstOpCode::TCDB, node, sourceReg, generateS390MemoryReference(0x010, cg), 0);
       generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BZ, node, positiveInfinityNumber);
       generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, negativeInfinityNumber);
       generateRXInstruction(cg, TR::InstOpCode::LD, node, sourceReg, negativeInfinity);
@@ -1787,7 +1787,7 @@ f2lHelper(TR::Node * node, TR::CodeGenerator * cg)
    generateRRInstruction(cg, TR::InstOpCode::XR, node, oddRegister, oddRegister);
    // Round FP towards zero
    generateRRFInstruction(cg, TR::InstOpCode::FIEBR, node, tempFloatRegister, floatRegister, (int8_t) 0x5, true);
-   generateRXInstruction(cg, TR::InstOpCode::TCEB, node, tempFloatRegister, (uint32_t) 0xccf);
+   generateRXEInstruction(cg, TR::InstOpCode::TCEB, node, tempFloatRegister, generateS390MemoryReference(0xCCF, cg), 0);
    //if result 0, done
    generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionStart);
    cFlowRegionStart->setStartInternalControlFlow();
@@ -1795,7 +1795,7 @@ f2lHelper(TR::Node * node, TR::CodeGenerator * cg)
    TR::MemoryReference * evenMRcopy = generateS390MemoryReference(*evenMR, 0, cg); // prevent duplicate use of memory reference
    generateRXInstruction(cg, TR::InstOpCode::STE, node, tempFloatRegister, evenMRcopy);
    //Test if NaN
-   generateRXInstruction(cg, TR::InstOpCode::TCEB, node, tempFloatRegister, (uint32_t) 0x30);
+   generateRXEInstruction(cg, TR::InstOpCode::TCEB, node, tempFloatRegister, generateS390MemoryReference(0x030, cg), 0);
    //If NaN , go to label6
    generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BL, node, label6);
    //Load as positive FP
@@ -2017,14 +2017,14 @@ d2lHelper(TR::Node * node, TR::CodeGenerator * cg)
    generateRRInstruction(cg, TR::InstOpCode::XR, node, oddRegister, oddRegister);
    // Round double towards zero
    generateRRFInstruction(cg, TR::InstOpCode::FIDBR, node, tempFloatRegister, floatRegister, (int8_t) 0x5, true);
-   generateRXInstruction(cg, TR::InstOpCode::TCDB, node, tempFloatRegister, (uint32_t) 0xccf);
+   generateRXEInstruction(cg, TR::InstOpCode::TCDB, node, tempFloatRegister, generateS390MemoryReference(0xCCF, cg), 0);
    // if 0 then done
    generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionStart);
    cFlowRegionStart->setStartInternalControlFlow();
    generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BL, node, label7);
 
    generateRXInstruction(cg, TR::InstOpCode::STE, node, tempFloatRegister, tempMR1);
-   generateRXInstruction(cg, TR::InstOpCode::TCDB, node, tempFloatRegister, (uint32_t) 0x30);
+   generateRXEInstruction(cg, TR::InstOpCode::TCDB, node, tempFloatRegister, generateS390MemoryReference(0x030, cg), 0);
    //If NaN, go to label6
    generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BL, node, label6);
    // Load as positive
@@ -2136,7 +2136,7 @@ d2lHelper64(TR::Node * node, TR::CodeGenerator * cg)
       label1 = generateLabelSymbol(cg);
       cFlowRegionStart = generateLabelSymbol(cg);
       // if NaN
-      generateRXInstruction(cg, TR::InstOpCode::TCDB, node, floatRegister, (uint32_t) 0x00f);
+      generateRXEInstruction(cg, TR::InstOpCode::TCDB, node, floatRegister, generateS390MemoryReference(0x00F, cg), 0);
 
       generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionStart);
       cFlowRegionStart->setStartInternalControlFlow();

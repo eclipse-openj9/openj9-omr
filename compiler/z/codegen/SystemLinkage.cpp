@@ -412,7 +412,6 @@ TR::S390zOSSystemLinkage::S390zOSSystemLinkage(TR::CodeGenerator * codeGen)
    setAlternateStackPointerRegister  (TR::RealRegister::GPR9 );
    setEntryPointRegister    (TR::RealRegister::GPR6);
    setLitPoolRegister       (TR::RealRegister::GPR8 );
-   setExtCodeBaseRegister   (TR::RealRegister::GPR7  );
    setReturnAddressRegister (TR::RealRegister::GPR7 );
 
    setEnvironmentPointerRegister (TR::RealRegister::GPR5  );
@@ -835,7 +834,6 @@ TR::S390zLinuxSystemLinkage::S390zLinuxSystemLinkage(TR::CodeGenerator * codeGen
    setAlternateStackPointerRegister  (TR::RealRegister::GPR11 );
    setEntryPointRegister    (TR::RealRegister::GPR14 );
    setLitPoolRegister       (TR::RealRegister::GPR13 );
-   setExtCodeBaseRegister   (TR::RealRegister::GPR7  );
    setReturnAddressRegister (TR::RealRegister::GPR14 );
 
    setGOTPointerRegister   (TR::RealRegister::GPR12  );
@@ -1453,26 +1451,19 @@ TR::S390SystemLinkage::mapStack(TR::ResolvedMethodSymbol * method, uint32_t stac
       setFPRSaveAreaEndOffset(stackIndex);
       }
 
-   //  Map slot for Long Disp
-   if ( !comp()->getOption(TR_DisableLongDispStackSlot) )
+   // Map slot for long displacement
+   if (TR::Compiler->target.isLinux())
       {
-      if(TR::Compiler->target.isLinux())
-         {
-         //zLinux has a special reserved slot in the linkage convention
-         setOffsetToLongDispSlot(TR::Compiler->target.is64Bit() ? 8 : 4);
-         }
-      else
-         {
-         //setOffsetToLongDispSlot(stackIndex -= cg()->sizeOfJavaPointer());
-         setOffsetToLongDispSlot(stackIndex -= 16);
-         }
-      if (comp()->getOption(TR_TraceCG))
-         traceMsg(comp(), "\n\nOffsetToLongDispSlot = %d\n", getOffsetToLongDispSlot());
+      // Linux on Z has a special reserved slot in the linkage convention
+      setOffsetToLongDispSlot(TR::Compiler->target.is64Bit() ? 8 : 4);
       }
    else
       {
-      setOffsetToLongDispSlot(0);
+      setOffsetToLongDispSlot(stackIndex -= 16);
       }
+
+   if (comp()->getOption(TR_TraceCG))
+      traceMsg(comp(), "\n\nOffsetToLongDispSlot = %d\n", getOffsetToLongDispSlot());
 
    if (isParmBlockRegister()) // OS Type 1 linkage
        {

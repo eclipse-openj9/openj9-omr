@@ -283,22 +283,20 @@ static TR::Instruction *generateSrc1ImmInstruction(TR::CodeGenerator *cg, TR::In
    }
 
 TR::Instruction *generateCompareImmInstruction(TR::CodeGenerator *cg, TR::Node *node,
-   TR::Register *sreg, int32_t imm, TR::Instruction *preced)
+   TR::Register *sreg, int32_t imm, bool is64bit, TR::Instruction *preced)
    {
    /* Alias of SUBS instruction */
 
-   bool is64bit = node->getDataType().isInt64();
    TR::InstOpCode::Mnemonic op = is64bit ? TR::InstOpCode::subsimmx : TR::InstOpCode::subsimmw;
 
    return generateSrc1ImmInstruction(cg, op, node, sreg, imm, preced);
    }
 
 TR::Instruction *generateTestImmInstruction(TR::CodeGenerator *cg, TR::Node *node,
-   TR::Register *sreg, int32_t imm, TR::Instruction *preced)
+   TR::Register *sreg, int32_t imm, bool is64bit, TR::Instruction *preced)
    {
    /* Alias of ANDS instruction */
 
-   bool is64bit = node->getDataType().isInt64();
    TR::InstOpCode::Mnemonic op = is64bit ? TR::InstOpCode::andsimmx : TR::InstOpCode::andsimmw;
 
    return generateSrc1ImmInstruction(cg, op, node, sreg, imm, preced);
@@ -318,22 +316,20 @@ static TR::Instruction *generateSrc2Instruction(TR::CodeGenerator *cg, TR::InstO
    }
 
 TR::Instruction *generateCompareInstruction(TR::CodeGenerator *cg, TR::Node *node,
-   TR::Register *s1reg, TR::Register *s2reg, TR::Instruction *preced)
+   TR::Register *s1reg, TR::Register *s2reg, bool is64bit, TR::Instruction *preced)
    {
    /* Alias of SUBS instruction */
 
-   bool is64bit = node->getDataType().isInt64();
    TR::InstOpCode::Mnemonic op = is64bit ? TR::InstOpCode::subsx : TR::InstOpCode::subsw;
 
    return generateSrc2Instruction(cg, op, node, s1reg, s2reg, preced);
    }
 
 TR::Instruction *generateTestInstruction(TR::CodeGenerator *cg, TR::Node *node,
-   TR::Register *s1reg, TR::Register *s2reg, TR::Instruction *preced)
+   TR::Register *s1reg, TR::Register *s2reg, bool is64bit, TR::Instruction *preced)
    {
    /* Alias of ANDS instruction */
 
-   bool is64bit = node->getDataType().isInt64();
    TR::InstOpCode::Mnemonic op = is64bit ? TR::InstOpCode::andsx : TR::InstOpCode::andsw;
 
    return generateSrc2Instruction(cg, op, node, s1reg, s2reg, preced);

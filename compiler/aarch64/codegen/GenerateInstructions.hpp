@@ -507,6 +507,7 @@ TR::Instruction *generateLogicalShiftLeftImmInstruction(
  * @param[in] node : node
  * @param[in] sreg : source register
  * @param[in] imm : immediate value
+ * @param[in] is64bit : true when it is 64-bit operation
  * @param[in] preced : preceding instruction
  * @return generated instruction
  */
@@ -515,6 +516,7 @@ TR::Instruction *generateCompareImmInstruction(
                   TR::Node *node,
                   TR::Register *sreg,
                   int32_t imm,
+                  bool is64bit = false,
                   TR::Instruction *preced = NULL);
 
 /*
@@ -523,6 +525,7 @@ TR::Instruction *generateCompareImmInstruction(
  * @param[in] node : node
  * @param[in] s1reg : source register 1
  * @param[in] s2reg : source register 2
+ * @param[in] is64bit : true when it is 64-bit operation
  * @param[in] preced : preceding instruction
  * @return generated instruction
  */
@@ -531,6 +534,7 @@ TR::Instruction *generateCompareInstruction(
                   TR::Node *node,
                   TR::Register *s1reg,
                   TR::Register *s2reg,
+                  bool is64bit = false,
                   TR::Instruction *preced = NULL);
 
 /*
@@ -539,6 +543,7 @@ TR::Instruction *generateCompareInstruction(
  * @param[in] node : node
  * @param[in] sreg : source register
  * @param[in] imm : immediate value
+ * @param[in] is64bit : true when it is 64-bit operation
  * @param[in] preced : preceding instruction
  * @return generated instruction
  */
@@ -547,6 +552,7 @@ TR::Instruction *generateTestImmInstruction(
                   TR::Node *node,
                   TR::Register *sreg,
                   int32_t imm,
+                  bool is64bit = false,
                   TR::Instruction *preced = NULL);
 
 /*
@@ -555,6 +561,7 @@ TR::Instruction *generateTestImmInstruction(
  * @param[in] node : node
  * @param[in] s1reg : source register 1
  * @param[in] s2reg : source register 2
+ * @param[in] is64bit : true when it is 64-bit operation
  * @param[in] preced : preceding instruction
  * @return generated instruction
  */
@@ -563,6 +570,7 @@ TR::Instruction *generateTestInstruction(
                   TR::Node *node,
                   TR::Register *s1reg,
                   TR::Register *s2reg,
+                  bool is64bit = false,
                   TR::Instruction *preced = NULL);
 
 /*

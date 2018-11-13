@@ -1980,9 +1980,9 @@ OMR::Z::MemoryReference::handleLargeOffset(TR::Node * node, TR::MemoryReference 
       op=TR::InstOpCode::LAY;
 
       if (preced)
-         preced = generateRXYInstruction(cg, op, node, tempTargetRegister, interimMemoryReference, preced);
+         preced = generateRXInstruction(cg, op, node, tempTargetRegister, interimMemoryReference, preced);
       else
-         generateRXYInstruction(cg, op, node, tempTargetRegister, interimMemoryReference);
+         generateRXInstruction(cg, op, node, tempTargetRegister, interimMemoryReference);
       }
    else
       {

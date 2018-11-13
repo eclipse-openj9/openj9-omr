@@ -4205,7 +4205,7 @@ OMR::Z::Machine::spillRegister(TR::Instruction * currentInstruction, TR::Registe
      {
      // load compressed refs low word into highword
      TR::MemoryReference * mr = generateS390MemoryReference(*tempMR, 4, self()->cg());
-     cursor = generateRXYInstruction(self()->cg(), TR::InstOpCode::LFH, currentNode, best, mr, currentInstruction);
+     cursor = generateRXInstruction(self()->cg(), TR::InstOpCode::LFH, currentNode, best, mr, currentInstruction);
      virtReg->setSpilledToHPR(false);
      }
    else

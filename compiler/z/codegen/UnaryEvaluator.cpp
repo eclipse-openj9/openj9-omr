@@ -303,7 +303,7 @@ OMR::Z::TreeEvaluator::x2oEvaluator(TR::Node * node, TR::CodeGenerator * cg)
       case 5:
       case 6:
       case 7:
-         generateRSYInstruction(cg, srcIsRegPair ? TR::InstOpCode::STCM : TR::InstOpCode::STCMH, node, srcIsRegPair ? srcRegHi : srcReg64, (uint32_t)((1 << (dstAggrSize-4)) - 1), destMR);
+         generateRSInstruction(cg, srcIsRegPair ? TR::InstOpCode::STCM : TR::InstOpCode::STCMH, node, srcIsRegPair ? srcRegHi : srcReg64, (uint32_t)((1 << (dstAggrSize-4)) - 1), destMR);
          generateRXInstruction(cg, TR::InstOpCode::ST, node, srcIsRegPair ? srcRegLow : srcReg64, generateS390MemoryReference(*destMR, dstAggrSize-4, cg));
          break;
       case 8:

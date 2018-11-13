@@ -1502,7 +1502,7 @@ OMR::Z::CodeGenerator::insertInstructionPrefetches()
 
          TR::MemoryReference * tempMR = generateS390MemoryReference(spReg, frameSize, self());
          tempMR->setCreatedDuringInstructionSelection();
-         cursor = generateRXYInstruction(self(), TR::InstOpCode::getExtendedLoadOpCode(), node,
+         cursor = generateRXInstruction(self(), TR::InstOpCode::getExtendedLoadOpCode(), node,
                tempReg,
                tempMR, cursor);
 
@@ -1952,7 +1952,7 @@ OMR::Z::CodeGenerator::upgradeToHPRInstruction(TR::Instruction * inst)
             mr->resetMemRefUsedBefore();
             // mr re-use?
             newOpCode = TR::InstOpCode::CHF;
-            newInst = generateRXYInstruction(self(), newOpCode, node, targetReg, mr, inst->getPrev());
+            newInst = generateRXInstruction(self(), newOpCode, node, targetReg, mr, inst->getPrev());
             targetReg->decTotalUseCount();
             // mem ref need to dec ref count too
             if (mr->getBaseRegister())
@@ -1970,7 +1970,7 @@ OMR::Z::CodeGenerator::upgradeToHPRInstruction(TR::Instruction * inst)
             mr->resetMemRefUsedBefore();
             // mr re-use?
             newOpCode = TR::InstOpCode::CLHF;
-            newInst = generateRXYInstruction(self(), newOpCode, node, targetReg, mr, inst->getPrev());
+            newInst = generateRXInstruction(self(), newOpCode, node, targetReg, mr, inst->getPrev());
             targetReg->decTotalUseCount();
             // mem ref need to dec ref count too
             if (mr->getBaseRegister())
@@ -1999,7 +1999,7 @@ OMR::Z::CodeGenerator::upgradeToHPRInstruction(TR::Instruction * inst)
             mr = ((TR::S390RXInstruction *)inst)->getMemoryReference();
             mr->resetMemRefUsedBefore();
             // mr re-use?
-            newInst = generateRXYInstruction(self(), newOpCode, node, targetReg, mr, inst->getPrev());
+            newInst = generateRXInstruction(self(), newOpCode, node, targetReg, mr, inst->getPrev());
             targetReg->decTotalUseCount();
             // mem ref need to dec ref count too
             if (mr->getBaseRegister())
@@ -2017,7 +2017,7 @@ OMR::Z::CodeGenerator::upgradeToHPRInstruction(TR::Instruction * inst)
             mr = ((TR::S390RXInstruction *)inst)->getMemoryReference();
             mr->resetMemRefUsedBefore();
             // mr re-use?
-            newInst = generateRXYInstruction(self(), newOpCode, node, targetReg, mr, inst->getPrev());
+            newInst = generateRXInstruction(self(), newOpCode, node, targetReg, mr, inst->getPrev());
             targetReg->decTotalUseCount();
             // mem ref need to dec ref count too
             if (mr->getBaseRegister())
@@ -2035,7 +2035,7 @@ OMR::Z::CodeGenerator::upgradeToHPRInstruction(TR::Instruction * inst)
             mr = ((TR::S390RXInstruction *)inst)->getMemoryReference();
             mr->resetMemRefUsedBefore();
             // mr re-use?
-            newInst = generateRXYInstruction(self(), newOpCode, node, targetReg, mr, inst->getPrev());
+            newInst = generateRXInstruction(self(), newOpCode, node, targetReg, mr, inst->getPrev());
             targetReg->decTotalUseCount();
             // mem ref need to dec ref count too
             if (mr->getBaseRegister())
@@ -2052,7 +2052,7 @@ OMR::Z::CodeGenerator::upgradeToHPRInstruction(TR::Instruction * inst)
             mr = ((TR::S390RXInstruction *)inst)->getMemoryReference();
             mr->resetMemRefUsedBefore();
             // mr re-use?
-            newInst = generateRXYInstruction(self(), newOpCode, node, targetReg, mr, inst->getPrev());
+            newInst = generateRXInstruction(self(), newOpCode, node, targetReg, mr, inst->getPrev());
             targetReg->decTotalUseCount();
             // mem ref need to dec ref count too
             if (mr->getBaseRegister())
@@ -2069,7 +2069,7 @@ OMR::Z::CodeGenerator::upgradeToHPRInstruction(TR::Instruction * inst)
             mr = ((TR::S390RXInstruction *)inst)->getMemoryReference();
             mr->resetMemRefUsedBefore();
             // mr re-use?
-            newInst = generateRXYInstruction(self(), newOpCode, node, targetReg, mr, inst->getPrev());
+            newInst = generateRXInstruction(self(), newOpCode, node, targetReg, mr, inst->getPrev());
             targetReg->decTotalUseCount();
             // mem ref need to dec ref count too
             if (mr->getBaseRegister())
@@ -2086,7 +2086,7 @@ OMR::Z::CodeGenerator::upgradeToHPRInstruction(TR::Instruction * inst)
             mr = ((TR::S390RXInstruction *)inst)->getMemoryReference();
             mr->resetMemRefUsedBefore();
             // mr re-use?
-            newInst = generateRXYInstruction(self(), newOpCode, node, targetReg, mr, inst->getPrev());
+            newInst = generateRXInstruction(self(), newOpCode, node, targetReg, mr, inst->getPrev());
             targetReg->decTotalUseCount();
             // mem ref need to dec ref count too
             if (mr->getBaseRegister())
@@ -2192,7 +2192,7 @@ OMR::Z::CodeGenerator::upgradeToHPRInstruction(TR::Instruction * inst)
             mr = ((TR::S390RXInstruction *)inst)->getMemoryReference();
             mr->resetMemRefUsedBefore();
             // mr re-use?
-            newInst = generateRXYInstruction(self(), newOpCode, node, targetReg, mr, inst->getPrev());
+            newInst = generateRXInstruction(self(), newOpCode, node, targetReg, mr, inst->getPrev());
             targetReg->decTotalUseCount();
             // mem ref need to dec ref count too
             if (mr->getBaseRegister())
@@ -2210,7 +2210,7 @@ OMR::Z::CodeGenerator::upgradeToHPRInstruction(TR::Instruction * inst)
             mr = ((TR::S390RXInstruction *)inst)->getMemoryReference();
             mr->resetMemRefUsedBefore();
             // mr re-use?
-            newInst = generateRXYInstruction(self(), newOpCode, node, targetReg, mr, inst->getPrev());
+            newInst = generateRXInstruction(self(), newOpCode, node, targetReg, mr, inst->getPrev());
             targetReg->decTotalUseCount();
             // mem ref need to dec ref count too
             if (mr->getBaseRegister())
@@ -2228,7 +2228,7 @@ OMR::Z::CodeGenerator::upgradeToHPRInstruction(TR::Instruction * inst)
             mr = ((TR::S390RXInstruction *)inst)->getMemoryReference();
             mr->resetMemRefUsedBefore();
             // mr re-use?
-            newInst = generateRXYInstruction(self(), newOpCode, node, targetReg, mr, inst->getPrev());
+            newInst = generateRXInstruction(self(), newOpCode, node, targetReg, mr, inst->getPrev());
             targetReg->decTotalUseCount();
             // mem ref need to dec ref count too
             if (mr->getBaseRegister())
@@ -5999,7 +5999,7 @@ OMR::Z::CodeGenerator::genLoadAddressToRegister(TR::Register *reg, TR::MemoryRef
       }
    else if (offset > MINLONGDISP && offset < MAXLONGDISP)
       {
-      preced = generateRXYInstruction(cg, TR::InstOpCode::LAY, node, reg, origMR, preced);
+      preced = generateRXInstruction(cg, TR::InstOpCode::LAY, node, reg, origMR, preced);
       }
    else
       {

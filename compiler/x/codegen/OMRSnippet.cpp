@@ -49,11 +49,6 @@ namespace TR { class X86UnresolvedVirtualCallSnippet; }
 namespace TR { class LabelSymbol; }
 namespace TR { class Node; }
 
-#ifdef J9_PROJECT_SPECIFIC
-#include "x/codegen/JNIPauseSnippet.hpp"
-#include "x/codegen/PassJNINullSnippet.hpp"
-#include "x/codegen/WriteBarrierSnippet.hpp"
-#endif
 
 OMR::X86::Snippet::Snippet(
       TR::CodeGenerator *cg,
@@ -92,13 +87,6 @@ TR_Debug::getNamex(TR::Snippet *snippet)
       case TR::Snippet::IsUnresolvedVirtualCall:
          return "Unresolved Virtual Call Snippet";
          break;
-      case TR::Snippet::IsWriteBarrier:
-      case TR::Snippet::IsWriteBarrierAMD64:
-         return "Write Barrier Snippet";
-         break;
-      case TR::Snippet::IsJNIPause:
-         return "JNI Pause Snippet";
-         break;
       case TR::Snippet::IsForceRecompilation:
          return "Force Recompilation Snippet";
          break;
@@ -126,7 +114,6 @@ TR_Debug::getNamex(TR::Snippet *snippet)
       case TR::Snippet::IsDivideCheck:
          return "Divide Check Snippet";
          break;
-
 #ifdef J9_PROJECT_SPECIFIC
       case TR::Snippet::IsGuardedDevirtual:
          return "Guarded Devirtual Snippet";
@@ -143,9 +130,6 @@ TR_Debug::getNamex(TR::Snippet *snippet)
          break;
       case TR::Snippet::IsFPConvertToLong:
          return "FP Convert To Long Snippet";
-         break;
-      case TR::Snippet::IsPassJNINull:
-         return "Pass JNI Null Snippet";
          break;
       case TR::Snippet::IsUnresolvedDataIA32:
       case TR::Snippet::IsUnresolvedDataAMD64:
@@ -177,20 +161,6 @@ TR_Debug::printx(TR::FILE *pOutFile, TR::Snippet *snippet)
       case TR::Snippet::IsUnresolvedVirtualCall:
          print(pOutFile, (TR::X86UnresolvedVirtualCallSnippet *)snippet);
          break;
-      case TR::Snippet::IsWriteBarrier:
-         print(pOutFile, (TR::IA32WriteBarrierSnippet *)snippet);
-         break;
-#ifdef TR_TARGET_64BIT
-      case TR::Snippet::IsWriteBarrierAMD64:
-         print(pOutFile, (TR::AMD64WriteBarrierSnippet *)snippet);
-         break;
-#endif
-      case TR::Snippet::IsJNIPause:
-         print(pOutFile, (TR::X86JNIPauseSnippet  *)snippet);
-         break;
-      case TR::Snippet::IsPassJNINull:
-         print(pOutFile, (TR::X86PassJNINullSnippet  *)snippet);
-         break;
       case TR::Snippet::IsCheckFailure:
          print(pOutFile, (TR::X86CheckFailureSnippet *)snippet);
          break;
@@ -213,7 +183,6 @@ TR_Debug::printx(TR::FILE *pOutFile, TR::Snippet *snippet)
       case TR::Snippet::IsDivideCheck:
          print(pOutFile, (TR::X86DivideCheckSnippet  *)snippet);
          break;
-
 #ifdef J9_PROJECT_SPECIFIC
       case TR::Snippet::IsGuardedDevirtual:
          print(pOutFile, (TR::X86GuardedDevirtualSnippet  *)snippet);
@@ -253,19 +222,6 @@ TR_Debug::printRestartJump(TR::FILE *pOutFile, TR::X86RestartSnippet * snippet, 
    printLabelInstruction(pOutFile, "jmp", snippet->getRestartLabel());
    return size;
    }
-
-#ifdef J9_PROJECT_SPECIFIC
-int32_t
-TR_Debug::printRestartJump(TR::FILE *pOutFile, TR::AMD64WriteBarrierSnippet * snippet, uint8_t *bufferPos)
-   {
-   int32_t size = snippet->estimateRestartJumpLength(JMP4, bufferPos - (uint8_t*)snippet->cg()->getBinaryBufferStart());
-   printPrefix(pOutFile, NULL, bufferPos, size);
-   printLabelInstruction(pOutFile, "jmp", snippet->getRestartLabel());
-   return size;
-   }
-
-#endif
-
 
 int32_t
 TR_Debug::printRestartJump(TR::FILE *pOutFile, TR::X86RestartSnippet * snippet, uint8_t *bufferPos, int32_t branchOp, const char *branchOpName)

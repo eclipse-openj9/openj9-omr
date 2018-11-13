@@ -161,6 +161,9 @@ namespace TR { class X86VFPReleaseInstruction;     }
 namespace TR { class X86VFPCallCleanupInstruction; }
 
 #ifdef J9_PROJECT_SPECIFIC
+#ifndef BUILD_DEPRECATED_TR_DEBUG_PRINT
+#define BUILD_DEPRECATED_TR_DEBUG_PRINT
+#endif
 namespace TR { class X86CallSnippet; }
 namespace TR { class IA32WriteBarrierSnippet; }
 namespace TR { class AMD64WriteBarrierSnippet; }
@@ -676,19 +679,12 @@ public:
    void printSnippetLabel(TR::FILE *, TR::LabelSymbol *label, uint8_t *cursor, const char *comment1, const char *comment2 = 0);
    uint8_t * printPrefix(TR::FILE *, TR::Instruction *, uint8_t *cursor, uint8_t size);
 
-
-
    void printLabelInstruction(TR::FILE *, const char *, TR::LabelSymbol *label);
    int32_t printRestartJump(TR::FILE *, TR::X86RestartSnippet *, uint8_t *);
    int32_t printRestartJump(TR::FILE *, TR::X86RestartSnippet *, uint8_t *, int32_t, const char *);
 
-#ifdef J9_PROJECT_SPECIFIC
-   int32_t printRestartJump(TR::FILE *, TR::AMD64WriteBarrierSnippet *, uint8_t *);
-#endif
-
    char * printSymbolName(TR::FILE *, TR::Symbol *, TR::SymbolReference *, TR::MemoryReference *mr=NULL)  ;
    bool isBranchToTrampoline(TR::SymbolReference *, uint8_t *, int32_t &);
-
 
    virtual void printDebugCounters(TR::DebugCounterGroup *counterGroup, const char *name);
 
@@ -839,10 +835,6 @@ public:
    void print(TR::FILE *, TR::X86PicDataSnippet *);
    void print(TR::FILE *, TR::X86UnresolvedVirtualCallSnippet *);
    void print(TR::FILE *, TR::IA32WriteBarrierSnippet *);
-#ifdef TR_TARGET_64BIT
-   uint8_t *printArgs(TR::FILE *, TR::AMD64WriteBarrierSnippet *, bool, uint8_t *);
-   void print(TR::FILE *, TR::AMD64WriteBarrierSnippet *);
-#endif
    void print(TR::FILE *, TR::X86JNIPauseSnippet *);
    void print(TR::FILE *, TR::X86PassJNINullSnippet *);
    void print(TR::FILE *, TR::X86CheckFailureSnippet *);

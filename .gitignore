@@ -192,3 +192,4 @@ VerboseGC_*.xml*
 # common development artifacts
 *.swp
 tags
+*~

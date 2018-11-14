@@ -550,14 +550,45 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static void generateLoadAndStoreForArrayCopy(TR::Node *node, TR::CodeGenerator *cg, TR::MemoryReference *srcMemRef, TR::MemoryReference *dstMemRef, TR_S390ScratchRegisterManager *srm, TR::DataType elenmentType, bool needsGuardedLoad);
 
 /** \brief
+    *  Generate sequence for forward array copy using MVC memory-memory copy instruction
+    *
+    *  \param node
+    *     The arraycopy node.
+    *
+    *  \param cg
+    *     The code generator used to generate the instructions.
+    *
+    *  \param byteSrcReg
+    *     Register holding starting address of source
+    *
+    *  \param byteDstReg
+    *     Register holding starting address of destination
+    *
+    *  \param byteLenReg
+    *     Register holding number of bytes to copy
+    * 
+    *  \param byteLenNode
+    *     Node for number of bytes to copy
+    * 
+    *  \param srm
+    *     Scratch Register Manager providing pool of scratch registers to use
+    * 
+    *  \param mergeLabel
+    *     Label Symbol where we merge from Out Of line code section
+    */
+   static void forwardArrayCopySequenceGenerator(TR::Node *node, TR::CodeGenerator *cg, TR::Register *byteSrcReg, TR::Register *byteDstReg, TR::Register *byteLenReg, TR::Node *byteLenNode, TR_S390ScratchRegisterManager *srm, TR::LabelSymbol *mergeLabel);
+
+   static void genLoopForwardArrayCopy(TR::Node *node, TR::CodeGenerator *cg, TR::Register *byteSrcReg, TR::Register *byteDstReg, TR::Register *loopIterReg, bool isConstantLength = false);
+
+/** \brief
     *  Generates Element wise Memory To Memory copy sequence in forward/backward direction
-    *  
+    *
     * \param node
     *     The arraycopy node.
     *
     *  \param cg
     *     The code generator used to generate the instructions.
-    * 
+    *
     *  \param byteSrcReg
     *     Register holding starting address of source
     *
@@ -569,7 +600,7 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
     * 
     *  \param srm
     *     Scratch Register Manager providing pool of scratch registers to use
-    * 
+    *
     *  \param isForward
     *     Boolean specifying if we need to copy elements in forward direction
     * 
@@ -585,6 +616,37 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
     */
    static TR::RegisterDependencyConditions* generateMemToMemElementCopy(TR::Node *node, TR::CodeGenerator *cg, TR::Register *byteSrcReg, TR::Register *byteDstReg, TR::Register *byteLenReg, TR_S390ScratchRegisterManager *srm, bool isForward, bool needsGuardedLoad, bool genStartICFLabel=false);
 
+/** \brief
+    *  Generates sequence for backward array copy
+    *  
+    * \param node
+    *     The arraycopy node.
+    *
+    *  \param cg
+    *     The code generator used to generate the instructions.
+    * 
+    *  \param byteSrcReg
+    *     Register holding starting address of source
+    *
+    *  \param byteDstReg
+    *     Register holding starting address of destination
+    *
+    *  \param byteLenReg
+    *     Register holding number of bytes to copy
+    *
+    *  \param byteLenNode
+    *     Node for number of bytes to copy
+    * 
+    *  \param srm
+    *     Scratch Register Manager providing pool of scratch registers to use
+    * 
+    *  \param mergeLabel
+    *     Label Symbol where we merge from Out Of line code section
+    * 
+    *  \return
+    *     Register depdendecy conditions containg registers allocated within Internal Control Flow
+    */
+   static TR::RegisterDependencyConditions* backwardArrayCopySequenceGenerator(TR::Node *node, TR::CodeGenerator *cg, TR::Register *byteSrcReg, TR::Register *byteDstReg, TR::Register *byteLenReg, TR::Node *byteLenNode, TR_S390ScratchRegisterManager *srm, TR::LabelSymbol *mergeLabel);
 
    /** \brief
     *     Evaluates a reference arraycopy node by generating an MVC memory-memory copy for a forward arraycopy and a

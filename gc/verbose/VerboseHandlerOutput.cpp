@@ -61,7 +61,7 @@ MM_VerboseHandlerOutput::MM_VerboseHandlerOutput(MM_GCExtensionsBase *extensions
 	,_mmPrivateHooks(NULL)
 	,_mmOmrHooks(NULL)
 	,_manager(NULL)
-{};
+{}
 
 bool
 MM_VerboseHandlerOutput::initialize(MM_EnvironmentBase *env, MM_VerboseManager *manager)

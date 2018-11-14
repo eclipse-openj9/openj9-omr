@@ -3133,7 +3133,7 @@ MM_Scavenger::aliasToCopyCache(MM_EnvironmentStandard *env, GC_SlotObject *scann
 	 *
 	 * @NOTE this is likely too aggressive and should be relaxed.
 	 */
-	if (0 == _waitingCount) {
+	if (_waitingCount <= _waitingCountAliasThreshold) {
 		/* Only alias if the scanCache != copyCache. IF the caches are the same there is no benefit
 		 * to aliasing. The checks afterwards will ensure that a very similar copy order will happen
 		 * if the copyCache changes from the currently aliased scan cache

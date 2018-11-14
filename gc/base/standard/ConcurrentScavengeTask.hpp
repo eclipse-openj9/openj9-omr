@@ -63,15 +63,7 @@ public:
 	{
 		return _bytesScanned;
 	}
-	virtual void setup(MM_EnvironmentBase *env)
-	{
-		MM_ParallelScavengeTask::setup(env);
-	}
 	virtual void run(MM_EnvironmentBase *env);
-	virtual void cleanup(MM_EnvironmentBase *env)
-	{
-		MM_ParallelScavengeTask::cleanup(env);
-	}
 
 	MM_ConcurrentScavengeTask(MM_EnvironmentBase *env,
 			MM_Dispatcher *dispatcher,

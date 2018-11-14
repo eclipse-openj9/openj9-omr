@@ -295,10 +295,10 @@ TR::S390LabelInstruction::generateBinaryEncoding()
             TR::Instruction *thisInst = this;
             TR::Instruction *prevInst = getPrev();
             traceMsg(comp,"\tTR::S390LabeledInstruction %p (%s) at cursor %p (skipThisOne=%s, offset = %p, codeStart %p)\n",
-               this,comp->getDebug()->getOpCodeName(&thisInst->getOpCode()),instructionStart,isSkipForLabelTargetNOPs()?"true":"false",
+               this,thisInst->getOpCode().getMnemonicName(),instructionStart,isSkipForLabelTargetNOPs()?"true":"false",
                offsetForLabelTargetNOPs,cg()->getCodeStart());
             traceMsg(comp,"\tprev %p (%s)\n",
-               prevInst,comp->getDebug()->getOpCodeName(&prevInst->getOpCode()));
+               prevInst,prevInst->getOpCode().getMnemonicName());
             }
          }
       }
@@ -499,12 +499,12 @@ TR::S390LabelInstruction::considerForLabelTargetNOPs(bool inEncodingPhase)
    bool doConsider = true;
    if (traceLabelTargetNOPs)
       traceMsg(comp,"considerForLabelTargetNOPs check during %s phase : %p (%s), prev  %p (%s)\n",
-         inEncodingPhase?"encoding":"estimating",this,comp->getDebug()->getOpCodeName(&thisInst->getOpCode()),prevInst,comp->getDebug()->getOpCodeName(&prevInst->getOpCode()));
+         inEncodingPhase?"encoding":"estimating",this,thisInst->getOpCode().getMnemonicName(),prevInst,prevInst->getOpCode().getMnemonicName());
 
    if (isSkipForLabelTargetNOPs())
       {
       if (traceLabelTargetNOPs)
-         traceMsg(comp,"\t%p (%s) marked with isSkipForLabelTargetNOPs = true : set doConsider=false\n",this,comp->getDebug()->getOpCodeName(&thisInst->getOpCode()));
+         traceMsg(comp,"\t%p (%s) marked with isSkipForLabelTargetNOPs = true : set doConsider=false\n",this,thisInst->getOpCode().getMnemonicName());
       doConsider = false;
       }
    else if (prevInst && prevInst->getOpCode().getOpCodeValue() == TR::InstOpCode::BASR)
@@ -518,13 +518,13 @@ TR::S390LabelInstruction::considerForLabelTargetNOPs(bool inEncodingPhase)
       // this is the case where some instructions (e.g. SCHEDON/SCHEDOFF) have been inserted between the estimate and encoding phases
       // and therefore this routine would return false during estimation and true during encoding and the estimate bump for NOPs would have been missed
       if (traceLabelTargetNOPs)
-         traceMsg(comp,"\t%p (%s) marked with wasEstimateDoneForLabelTargetNOPs = false : set doConsider=false\n",this,comp->getDebug()->getOpCodeName(&thisInst->getOpCode()));
+         traceMsg(comp,"\t%p (%s) marked with wasEstimateDoneForLabelTargetNOPs = false : set doConsider=false\n",this,thisInst->getOpCode().getMnemonicName());
       doConsider = false;
       }
    else
       {
       if (traceLabelTargetNOPs)
-         traceMsg(comp,"\t%p (%s) may need to be aligned : set doConsider=true\n",this,comp->getDebug()->getOpCodeName(&thisInst->getOpCode()));
+         traceMsg(comp,"\t%p (%s) may need to be aligned : set doConsider=true\n",this,thisInst->getOpCode().getMnemonicName());
       doConsider = true;
       }
 
@@ -3139,7 +3139,7 @@ TR::S390RIEInstruction::splitIntoCompareAndBranch(TR::Instruction *insertBranchA
        isRIL = true;
        break;
       default:
-        TR_ASSERT(false,"Don't know how to split this compare and branch opcode %s\n",cg()->comp()->getDebug()->getOpCodeName(&getOpCode()));
+        TR_ASSERT(false,"Don't know how to split this compare and branch opcode %s\n",getOpCode().getMnemonicName());
         break;
       }
 
@@ -3610,7 +3610,7 @@ TR::S390VRIInstruction::getExtendedMnemonicName()
       return getOpCodeBuffer();
 
    char tmpOpCodeBuffer[16];
-   strcpy(tmpOpCodeBuffer, getOpCodeName(&getOpCode()));
+   strcpy(tmpOpCodeBuffer, getOpCode().getMnemonicName());
 
    if (!getOpCode().hasExtendedMnemonic())
       return setOpCodeBuffer(tmpOpCodeBuffer);
@@ -3944,7 +3944,7 @@ TR::S390VRRInstruction::getExtendedMnemonicName()
       return getOpCodeBuffer();
 
    char tmpOpCodeBuffer[16];
-   strcpy(tmpOpCodeBuffer, getOpCodeName(&getOpCode()));
+   strcpy(tmpOpCodeBuffer, getOpCode().getMnemonicName());
 
    if (!getOpCode().hasExtendedMnemonic())
       return setOpCodeBuffer(tmpOpCodeBuffer);
@@ -4383,7 +4383,7 @@ TR::S390VStorageInstruction::getExtendedMnemonicName()
       return getOpCodeBuffer();
 
    char tmpOpCodeBuffer[16];
-   strcpy(tmpOpCodeBuffer, getOpCodeName(&getOpCode()));
+   strcpy(tmpOpCodeBuffer, getOpCode().getMnemonicName());
 
    if (getOpCode().hasExtendedMnemonic())
       {
@@ -4408,18 +4408,6 @@ TR::S390VStorageInstruction::generateBinaryEncoding()
    memset(static_cast<void*>(cursor), 0, getEstimatedBinaryLength());
    int32_t padding = 0, longDispTouchUpPadding = 0;
    TR::Compilation *comp = cg()->comp();
-
-#if 0
-   // Ensure instructions like VLL and VSTL don't use index and base since it only supports Disp and base.
-   if (getMemoryReference() != NULL)
-      {
-      if(getOpCode().getOpCodeValue() == TR::InstOpCode::VLL || getOpCode().getOpCodeValue() == TR::InstOpCode::VSTL)
-         {
-         TR_ASSERT(getMemoryReference()->getIndexRegister() == NULL, "%s Instruction only supports D(B) not D(X,B). Remove %s",
-               comp->getDebug()->getOpCodeName(&getOpCode()),comp->getDebug()->getName(getMemoryReference()->getIndexRegister()));
-         }
-      }
-#endif
 
    // For large disp scenarios the memref could insert new inst
    if (getMemoryReference() != NULL)
@@ -5909,7 +5897,7 @@ TR::MemoryReference *getFirstReadWriteMemoryReference(TR::Instruction *i)
       mr = NULL;
       break;
     default:
-      TR_ASSERT( 0, "This type of instruction needs to be told how to get memory reference if any. opcode=%s kind=%d\n",i->cg()->getDebug()->getOpCodeName(&i->getOpCode()),
+      TR_ASSERT( 0, "This type of instruction needs to be told how to get memory reference if any. opcode=%s kind=%d\n",i->getOpCode().getMnemonicName(),
                  i->getKind());
       break;
     }

@@ -2945,7 +2945,7 @@ OMR::Z::MemoryReference::generateBinaryEncoding(uint8_t * cursor, TR::CodeGenera
    auto instructionFormat = instr->getKind();
 
    // In most cases we will know at instruction selection that the displacement is large. But it is still possible for
-   // us to reach binary encoding without knowing a displacement will be large. A typical example of this is when 
+   // us to reach binary encoding without knowing a displacement will be large. A typical example of this is when
    // referencing stack symbols whose displacement will be unknown until the stack is mapped; an operation that happens
    // after instruction selection and before binary encoding.
    if (displacement < MINDISP || displacement >= MAXDISP)
@@ -2959,7 +2959,7 @@ OMR::Z::MemoryReference::generateBinaryEncoding(uint8_t * cursor, TR::CodeGenera
             || instructionFormat == TR::Instruction::IsRSY
             || instructionFormat == TR::Instruction::IsSIY))
          {
-         // The corresponding RX/RS/SI `generateBinaryEncoding()` function will "upgrade" the instruction to the 
+         // The corresponding RX/RS/SI `generateBinaryEncoding()` function will "upgrade" the instruction to the
          // corresponding long displacement version. Note that the logic here must stay synchronized with the following
          // evaluators which we add here as eyecatchers for future modifications:
          //
@@ -3039,7 +3039,7 @@ OMR::Z::MemoryReference::generateBinaryEncoding(uint8_t * cursor, TR::CodeGenera
              instructionFormat == TR::Instruction::IsSS4 ||
              instructionFormat == TR::Instruction::IsS)
             {
-            TR_ASSERT_FATAL(base != NULL, "Expected non-NULL base register for long displacement on %s [%p] instruction", cg->getDebug()->getOpCodeName(&instr->getOpCode()), instr);
+            TR_ASSERT_FATAL(base != NULL, "Expected non-NULL base register for long displacement on %s [%p] instruction", instr->getOpCode().getMnemonicName(), instr);
 
             //   ICM GPRt, DISP(,base)
             // becomes:
@@ -3078,7 +3078,7 @@ OMR::Z::MemoryReference::generateBinaryEncoding(uint8_t * cursor, TR::CodeGenera
                      instructionFormat == TR::Instruction::IsRXYb ||
                      instructionFormat == TR::Instruction::IsRXE ||
                      instructionFormat == TR::Instruction::IsRXF,
-                  "Unexpected instruction type for long displacement on %s [%p] instruction", cg->getDebug()->getOpCodeName(&instr->getOpCode()), instr);
+                  "Unexpected instruction type for long displacement on %s [%p] instruction", instr->getOpCode().getMnemonicName(), instr);
 
             //    A GPRt, DISP(,base)
             // becomes:
@@ -3094,7 +3094,7 @@ OMR::Z::MemoryReference::generateBinaryEncoding(uint8_t * cursor, TR::CodeGenera
                      instructionFormat == TR::Instruction::IsRXYb ||
                      instructionFormat == TR::Instruction::IsRXE ||
                      instructionFormat == TR::Instruction::IsRXF,
-                  "Unexpected instruction type for long displacement on %s [%p] instruction", cg->getDebug()->getOpCodeName(&instr->getOpCode()), instr);
+                  "Unexpected instruction type for long displacement on %s [%p] instruction", instr->getOpCode().getMnemonicName(), instr);
 
             //    A GPRt, DISP(,index)
             // becomes:
@@ -3121,7 +3121,7 @@ OMR::Z::MemoryReference::generateBinaryEncoding(uint8_t * cursor, TR::CodeGenera
             traceMsg(comp, "[%p] Long Disp Inst using %s as scratch reg\n", instr, cg->getDebug()->getName(scratchReg));
          }
       }
-      
+
    if (instructionFormat == TR::Instruction::IsRXY ||
        instructionFormat == TR::Instruction::IsRXYb ||
        instructionFormat == TR::Instruction::IsRSY ||
@@ -3235,7 +3235,7 @@ OMR::Z::MemoryReference::generateBinaryEncodingTouchUpForLongDisp(uint8_t *curso
       TR::Instruction * currInstr = generateRXInstruction(cg, TR::InstOpCode::getLoadOpCode(), instr->getNode(), scratchReg,
          generateS390MemoryReference(LongDispSlotBaseReg, offsetToLongDispSlot, cg), instr);
       currInstr->setEstimatedBinaryLength(currInstr->getOpCode().getInstructionLength());
-      
+
       nbytes += currInstr->getOpCode().getInstructionLength();
       currInstr->setNext(nextInstr);
       }

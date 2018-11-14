@@ -3177,7 +3177,7 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
                   if (s390Inst->getKind() == TR::Instruction::IsLabel)
                      {
                      if (self()->comp()->getOption(TR_TraceLabelTargetNOPs))
-                        traceMsg(self()->comp(),"\t\tepilogue inst %p (%s) setSkipForLabelTargetNOPs\n",s390Inst,self()->comp()->getDebug()->getOpCodeName(&s390Inst->getOpCode()));
+                        traceMsg(self()->comp(),"\t\tepilogue inst %p (%s) setSkipForLabelTargetNOPs\n",s390Inst,s390Inst->getOpCode().getMnemonicName());
                      TR::S390LabelInstruction *labelInst = (TR::S390LabelInstruction*)s390Inst;
                      labelInst->setSkipForLabelTargetNOPs();
                      }
@@ -3285,7 +3285,7 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
       TR_ASSERT(data.cursorInstruction->getEstimatedBinaryLength() >= self()->getBinaryBufferCursor() - instructionStart,
               "\nInstruction length estimate must be conservatively large \n(instr=" POINTER_PRINTF_FORMAT ", opcode=%s, estimate=%d, actual=%d",
               data.cursorInstruction,
-              self()->getDebug()? self()->getDebug()->getOpCodeName(&data.cursorInstruction->getOpCode()) : "(unknown)",
+              data.cursorInstruction->getOpCode().getMnemonicName(),
               data.cursorInstruction->getEstimatedBinaryLength(),
               self()->getBinaryBufferCursor() - instructionStart);
 
@@ -5666,7 +5666,7 @@ bool OMR::Z::CodeGenerator::isActiveCompareCC(TR::InstOpCode::Mnemonic opcd, TR:
 
       if (opcd == ccInst->getOpCodeValue() && tReg == ccTgtReg &&  sReg == ccSrcReg &&
           performTransformation(self()->comp(), "O^O isActiveCompareCC: RR Compare Op [%s\t %s, %s] can reuse CC from ccInstr [%p]\n",
-             self()->getDebug()->getOpCodeName(&ccInst->getOpCode()), self()->getDebug()->getName(tReg),self()->getDebug()->getName(sReg), ccInst))
+             ccInst->getOpCode().getMnemonicName(), self()->getDebug()->getName(tReg),self()->getDebug()->getName(sReg), ccInst))
          {
          return true;
          }

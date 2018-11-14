@@ -1103,7 +1103,7 @@ class S390RegInstruction : public TR::Instruction
          TR_ASSERT( (!_targetPairFlag && !getOpCode().shouldUseRegPairForTarget())
                   || (_targetPairFlag && getOpCode().canUseRegPairForTarget()) ,
                 "OpCode [%s] %s use Register Pair for Target.\n",
-                cg->getDebug()? cg->getDebug()->getOpCodeName(&this->getOpCode()) : "(unknown)",
+                getOpCode().getMnemonicName(),
                 (_targetPairFlag)?"cannot":"should");
       }
 
@@ -1161,7 +1161,7 @@ class S390RegInstruction : public TR::Instruction
       TR_ASSERT((!_targetPairFlag && !getOpCode().shouldUseRegPairForTarget())
                 || (_targetPairFlag && getOpCode().canUseRegPairForTarget()) ,
                 "OpCode [%s] %s use Register Pair for Target.\n",
-                cg->getDebug()? cg->getDebug()->getOpCodeName(&this->getOpCode()) : "(unknown)",
+                getOpCode().getMnemonicName(),
                 (_targetPairFlag)?"cannot":"should");
       }
 
@@ -1187,7 +1187,7 @@ class S390RegInstruction : public TR::Instruction
       TR_ASSERT((!_targetPairFlag && !getOpCode().shouldUseRegPairForTarget())
                 || (_targetPairFlag && getOpCode().canUseRegPairForTarget()) ,
                 "OpCode [%s] %s use Register Pair for Target.\n",
-                cg->getDebug()? cg->getDebug()->getOpCodeName(&this->getOpCode()) : "(unknown)",
+                getOpCode().getMnemonicName(),
                 (_targetPairFlag)?"cannot":"should");
       }
 
@@ -1211,7 +1211,7 @@ class S390RegInstruction : public TR::Instruction
       TR_ASSERT((!_targetPairFlag && !getOpCode().shouldUseRegPairForTarget())
                 || (_targetPairFlag && getOpCode().canUseRegPairForTarget()) ,
                 "OpCode [%s] %s use Register Pair for Target.\n",
-                cg->getDebug()? cg->getDebug()->getOpCodeName(&this->getOpCode()) : "(unknown)",
+                getOpCode().getMnemonicName(),
                 (_targetPairFlag)?"cannot":"should");
       }
 
@@ -1237,7 +1237,7 @@ class S390RegInstruction : public TR::Instruction
       TR_ASSERT((!_targetPairFlag && !getOpCode().shouldUseRegPairForTarget())
                 || (_targetPairFlag && getOpCode().canUseRegPairForTarget()) ,
                 "OpCode [%s] %s use Register Pair for Target.\n",
-                cg->getDebug()? cg->getDebug()->getOpCodeName(&this->getOpCode()) : "(unknown)",
+                getOpCode().getMnemonicName(),
                 (_targetPairFlag)?"cannot":"should");
       }
 
@@ -1264,7 +1264,7 @@ class S390RegInstruction : public TR::Instruction
       TR_ASSERT( (!_targetPairFlag && !getOpCode().shouldUseRegPairForTarget())
                || (_targetPairFlag && getOpCode().canUseRegPairForTarget()) ,
                "OpCode [%s] %s use Register Pair for Target.\n",
-               cg->getDebug()? cg->getDebug()->getOpCodeName(&this->getOpCode()) : "(unknown)",
+               getOpCode().getMnemonicName(),
                (_targetPairFlag)?"cannot":"should");
       }
 
@@ -1291,7 +1291,7 @@ class S390RegInstruction : public TR::Instruction
       TR_ASSERT((!_targetPairFlag && !getOpCode().shouldUseRegPairForTarget())
                 || (_targetPairFlag && getOpCode().canUseRegPairForTarget()) ,
                 "OpCode [%s] %s use Register Pair for Target.\n",
-                cg->getDebug()? cg->getDebug()->getOpCodeName(&this->getOpCode()) : "(unknown)",
+                getOpCode().getMnemonicName(),
                 (_targetPairFlag)?"cannot":"should");
       }
 
@@ -1319,7 +1319,7 @@ class S390RegInstruction : public TR::Instruction
       TR_ASSERT((!_targetPairFlag && !getOpCode().shouldUseRegPairForTarget())
                 || (_targetPairFlag && getOpCode().canUseRegPairForTarget()) ,
                 "OpCode [%s] %s use Register Pair for Target.\n",
-                cg->getDebug()? cg->getDebug()->getOpCodeName(&this->getOpCode()) : "(unknown)",
+                getOpCode().getMnemonicName(),
                 (_targetPairFlag)?"cannot":"should");
       }
 
@@ -2127,7 +2127,7 @@ class S390RILInstruction : public TR::Instruction
       : TR::Instruction(op, n, cg), _targetPtr(NULL), _targetSnippet(NULL), _targetSymbol(NULL), _flagsRIL(0), _mask(0xffffffff),  _targetLabel(NULL), _symbolReference(NULL), _sourceImmediate(imm)
       {
       TR_ASSERT_FATAL(getOpCode().isExtendedImmediate(), "Incorrect S390RILInstruction constructor used.\n"
-                                                       "%s expects an address as the immediate but this constructor is for integer immediates.", cg->getDebug()->getOpCodeName(&this->getOpCode()));
+                                                       "%s expects an address as the immediate but this constructor is for integer immediates.", getOpCode().getMnemonicName());
       checkRegForGPR0Disable(op,treg);
       if (!getOpCode().setsOperand1())
          useSourceRegister(treg);
@@ -2141,7 +2141,7 @@ class S390RILInstruction : public TR::Instruction
       : TR::Instruction(op, n, cg), _targetPtr(NULL), _targetSnippet(NULL), _targetSymbol(NULL), _flagsRIL(0), _mask(0xffffffff),  _targetLabel(NULL), _symbolReference(NULL), _sourceImmediate(imm)
       {
       TR_ASSERT_FATAL(getOpCode().isExtendedImmediate(), "Incorrect S390RILInstruction constructor used.\n"
-                                                       "%s expects an address as the immediate but this constructor is for integer immediates.", cg->getDebug()->getOpCodeName(&this->getOpCode()));
+                                                       "%s expects an address as the immediate but this constructor is for integer immediates.", getOpCode().getMnemonicName());
       checkRegForGPR0Disable(op,treg);
       if (!getOpCode().setsOperand1())
          useSourceRegister(treg);
@@ -2155,7 +2155,7 @@ class S390RILInstruction : public TR::Instruction
       : TR::Instruction(op, n, cg), _targetPtr(targetPtr), _targetSnippet(NULL), _targetSymbol(NULL), _flagsRIL(0), _mask(0xffffffff),  _targetLabel(NULL), _symbolReference(NULL), _sourceImmediate(0)
       {
       TR_ASSERT_FATAL(!getOpCode().isExtendedImmediate(), "Incorrect S390RILInstruction constructor used.\n"
-                                                        "%s expects an integer as the immediate but this constructor is for address immediates.", cg->getDebug()->getOpCodeName(&this->getOpCode()));
+                                                        "%s expects an integer as the immediate but this constructor is for address immediates.", getOpCode().getMnemonicName());
       checkRegForGPR0Disable(op,treg);
       if (!getOpCode().setsOperand1())
          useSourceRegister(treg);
@@ -2198,7 +2198,7 @@ class S390RILInstruction : public TR::Instruction
       : TR::Instruction(op, n, precedingInstruction, cg), _targetPtr(NULL), _targetSnippet(NULL), _targetSymbol(NULL), _flagsRIL(0), _mask(0xffffffff), _targetLabel(NULL), _symbolReference(NULL), _sourceImmediate(imm)
       {
       TR_ASSERT_FATAL(getOpCode().isExtendedImmediate(), "Incorrect S390RILInstruction constructor used.\n"
-                                                       "%s expects an adddress as the immediate but this constructor is for integer immediates.", cg->getDebug()->getOpCodeName(&this->getOpCode()));
+                                                       "%s expects an adddress as the immediate but this constructor is for integer immediates.", getOpCode().getMnemonicName());
       checkRegForGPR0Disable(op,treg);
       if (!getOpCode().setsOperand1())
          useSourceRegister(treg);
@@ -2213,7 +2213,7 @@ class S390RILInstruction : public TR::Instruction
       : TR::Instruction(op, n, precedingInstruction, cg), _targetPtr(NULL), _targetSnippet(NULL), _targetSymbol(NULL), _flagsRIL(0), _mask(0xffffffff), _targetLabel(NULL), _symbolReference(NULL), _sourceImmediate(imm)
       {
       TR_ASSERT_FATAL(getOpCode().isExtendedImmediate(), "Incorrect S390RILInstruction constructor used.\n"
-                                                       "%s expects an address as the immediate but this constructor is for integer immediates.", cg->getDebug()->getOpCodeName(&this->getOpCode()));
+                                                       "%s expects an address as the immediate but this constructor is for integer immediates.", getOpCode().getMnemonicName());
       checkRegForGPR0Disable(op,treg);
       if (!getOpCode().setsOperand1())
          useSourceRegister(treg);
@@ -2228,7 +2228,7 @@ class S390RILInstruction : public TR::Instruction
       : TR::Instruction(op, n, precedingInstruction, cg), _targetPtr(targetPtr), _targetSnippet(NULL), _targetSymbol(NULL), _flagsRIL(0), _mask(0xffffffff), _targetLabel(NULL), _symbolReference(NULL), _sourceImmediate(0)
       {
       TR_ASSERT_FATAL(!getOpCode().isExtendedImmediate(), "Incorrect S390RILInstruction constructor used.\n"
-                                                        "%s expects an address as the immediate but this constructor is for integer immediates.", cg->getDebug()->getOpCodeName(&this->getOpCode()));
+                                                        "%s expects an address as the immediate but this constructor is for integer immediates.", getOpCode().getMnemonicName());
       checkRegForGPR0Disable(op,treg);
       if (!getOpCode().setsOperand1())
          useSourceRegister(treg);
@@ -2537,10 +2537,10 @@ class S390RSInstruction : public TR::S390RegInstruction
 
    int16_t                 _sourceImmediate;
    int8_t                  _maskImmediate;
-   /// Set to true if a mask value was specified during the construction of this object, indicating an RS instruction of RS-b format 
+   /// Set to true if a mask value was specified during the construction of this object, indicating an RS instruction of RS-b format
    /// where the third operand is a mask
    bool                    _hasMaskImmediate;
-   /// Set to true if a mask value was specified during the construction of this object, indicating an RS instruction of RS-b format 
+   /// Set to true if a mask value was specified during the construction of this object, indicating an RS instruction of RS-b format
    /// where the third operand is a mask
    bool                    _hasSourceImmediate;
    int8_t                  _idx;
@@ -2562,7 +2562,7 @@ class S390RSInstruction : public TR::S390RegInstruction
       // 1 Register is specified - If it is not a register pair, make sure instruction doesn't take a range (i.e. STM).
       TR_ASSERT(treg->getRegisterPair() || !getOpCode().usesRegRangeForTarget(),
                "OpCode [%s] requires a register range.\n",
-                cg->getDebug()? cg->getDebug()->getOpCodeName(&this->getOpCode()) : "(unknown)");
+                getOpCode().getMnemonicName());
       };
 
    S390RSInstruction(TR::InstOpCode::Mnemonic    op,
@@ -2577,7 +2577,7 @@ class S390RSInstruction : public TR::S390RegInstruction
       // 1 Register is specified - If it is not a register pair, make sure instruction doesn't take a range (i.e. STM).
       TR_ASSERT(treg->getRegisterPair() || !getOpCode().usesRegRangeForTarget(),
                "OpCode [%s] requires a register range.\n",
-                cg->getDebug()? cg->getDebug()->getOpCodeName(&this->getOpCode()) : "(unknown)");
+                getOpCode().getMnemonicName());
       };
 
    S390RSInstruction(TR::InstOpCode::Mnemonic    op,
@@ -2592,7 +2592,7 @@ class S390RSInstruction : public TR::S390RegInstruction
       // 1 Register is specified - If it is not a register pair, make sure instruction doesn't take a range (i.e. STM).
       TR_ASSERT(treg->getRegisterPair() || !getOpCode().usesRegRangeForTarget(),
                "OpCode [%s] requires a register range.\n",
-                cg->getDebug()? cg->getDebug()->getOpCodeName(&this->getOpCode()) : "(unknown)");
+                getOpCode().getMnemonicName());
       };
 
    S390RSInstruction(TR::InstOpCode::Mnemonic    op,
@@ -2608,7 +2608,7 @@ class S390RSInstruction : public TR::S390RegInstruction
       // 1 Register is specified - If it is not a register pair, make sure instruction doesn't take a range (i.e. STM).
       TR_ASSERT(treg->getRegisterPair() || !getOpCode().usesRegRangeForTarget(),
                "OpCode [%s] requires a register range.\n",
-                cg->getDebug()? cg->getDebug()->getOpCodeName(&this->getOpCode()) : "(unknown)");
+                getOpCode().getMnemonicName());
       };
 
    // RS instruction with  R1,D2(B2) format
@@ -2627,7 +2627,7 @@ class S390RSInstruction : public TR::S390RegInstruction
       // 1 Register is specified - If it is not a register pair, make sure instruction doesn't take a range (i.e. STM).
       TR_ASSERT(treg->getRegisterPair() || !getOpCode().usesRegRangeForTarget(),
                "OpCode [%s] requires a register range.\n",
-                cg->getDebug()? cg->getDebug()->getOpCodeName(&this->getOpCode()) : "(unknown)");
+                getOpCode().getMnemonicName());
       }
 
    S390RSInstruction(TR::InstOpCode::Mnemonic           op,
@@ -2647,7 +2647,7 @@ class S390RSInstruction : public TR::S390RegInstruction
       // 1 Register is specified - If it is not a register pair, make sure instruction doesn't take a range (i.e. STM).
       TR_ASSERT(treg->getRegisterPair() || !getOpCode().usesRegRangeForTarget(),
                 "OpCode [%s] requires a register range.\n",
-                cg->getDebug()? cg->getDebug()->getOpCodeName(&this->getOpCode()) : "(unknown)");
+                getOpCode().getMnemonicName());
       }
 
    /** Used for ICM instruction */
@@ -2669,7 +2669,7 @@ class S390RSInstruction : public TR::S390RegInstruction
       // 1 Register is specified - If it is not a register pair, make sure instruction doesn't take a range (i.e. STM).
       TR_ASSERT(treg->getRegisterPair() || !getOpCode().usesRegRangeForTarget(),
                "OpCode [%s] requires a register range.\n",
-                cg->getDebug()? cg->getDebug()->getOpCodeName(&this->getOpCode()) : "(unknown)");
+                getOpCode().getMnemonicName());
       }
 
    /** Used for ICM instruction */
@@ -2838,10 +2838,10 @@ class S390RSInstruction : public TR::S390RegInstruction
    uint32_t setSourceImmediate(uint32_t si) {return _sourceImmediate = si;}
    uint32_t getMaskImmediate()              {return _maskImmediate;}
    uint32_t setMaskImmediate(uint32_t mi)   {return _maskImmediate = mi;}
-   /// Determines whether a mask value was specified during the construction of this object, indicating an RS instruction of RS-b format 
+   /// Determines whether a mask value was specified during the construction of this object, indicating an RS instruction of RS-b format
    /// where the third operand is a mask
    bool     hasMaskImmediate()              {return _hasMaskImmediate;}
-   /// Determines whether a mask value was specified during the construction of this object, indicating an RS instruction of RS-b format 
+   /// Determines whether a mask value was specified during the construction of this object, indicating an RS instruction of RS-b format
    /// where the third operand is a mask
    bool     hasSourceImmediate()            {return _hasSourceImmediate;}
 

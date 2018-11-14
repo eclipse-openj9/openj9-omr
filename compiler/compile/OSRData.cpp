@@ -104,7 +104,7 @@ TR_OSRCompilationData::addInstruction(TR::Instruction* instr)
    if (comp->getOSRMode() == TR::voluntaryOSR
        && !(node
          && node->getOpCode().hasSymbolReference()
-         && node->getSymbolReference()->getReferenceNumber() == TR_induceOSRAtCurrentPC))
+         && node->getSymbolReference()->isOSRInductionHelper()))
       return;
 
    int32_t instructionPC = instr->getBinaryEncoding() - instr->cg()->getCodeStart();

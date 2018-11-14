@@ -1057,8 +1057,6 @@ OMR::SymbolReferenceTable::findOrCreateReportMethodEnterSymbolRef(TR::ResolvedMe
    return findOrCreateRuntimeHelper(TR_reportMethodEnter, true, false, true);
    }
 
-
-
 bool OMR::SymbolReferenceTable::shouldMarkBlockAsCold(TR_ResolvedMethod * owningMethod, bool isUnresolvedInCP)
    {
    return false;

@@ -75,7 +75,7 @@ TR::S390CallSnippet::S390flushArgumentsToStack(uint8_t * buffer, TR::Node * call
    int32_t argStart = callNode->getFirstArgumentIndex();
    bool rightToLeft = linkage->getRightToLeft() &&
 	  //we want the arguments for induceOSR to be passed from left to right as in any other non-helper call
-      callNode->getSymbolReference() != cg->symRefTab()->element(TR_induceOSRAtCurrentPC);
+      !callNode->getSymbolReference()->isOSRInductionHelper();
    if (rightToLeft)
       {
       offset = linkage->getOffsetToFirstParm();
@@ -376,7 +376,7 @@ TR_RuntimeHelper TR::S390CallSnippet::getInterpretedDispatchHelper(
    TR::MethodSymbol * methodSymbol = methodSymRef->getSymbol()->castToMethodSymbol();
    bool isJitInduceOSRCall = false;
    if (methodSymbol->isHelper() &&
-       methodSymRef == cg()->symRefTab()->element(TR_induceOSRAtCurrentPC))
+       methodSymRef->isOSRInductionHelper())
       {
       isJitInduceOSRCall = true;
       }
@@ -392,7 +392,7 @@ TR_RuntimeHelper TR::S390CallSnippet::getInterpretedDispatchHelper(
          return TR_S390interpreterUnresolvedDirectVirtualGlue;
       }
    else if (isJitInduceOSRCall)
-      return TR_induceOSRAtCurrentPC;
+      return (TR_RuntimeHelper) methodSymRef->getReferenceNumber();
    else
       return getHelper(methodSymbol, type, cg());
    }

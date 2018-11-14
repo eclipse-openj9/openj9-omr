@@ -3859,6 +3859,7 @@ TR_Debug::getRuntimeHelperName(int32_t index)
          case TR_instanceOf:                return "jitInstanceOf";
          case TR_checkAssignable:           return "jitCheckAssignable";
          case TR_induceOSRAtCurrentPC:      return "jitInduceOSRAtCurrentPC";
+         case TR_induceOSRAtCurrentPCAndRecompile:    return "jitInduceOSRAtCurrentPCAndRecompile";
          case TR_monitorEntry:              return "jitMonitorEntry";
          case TR_methodMonitorEntry:        return "jitMethodMonitorEntry";
          case TR_monitorExit:               return "jitMonitorExit";

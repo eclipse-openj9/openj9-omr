@@ -2188,7 +2188,7 @@ OMR::Z::Linkage::buildArgs(TR::Node * callNode, TR::RegisterDependencyConditions
    // setup helper routine arguments in reverse order
    bool rightToLeft = self()->isParmsInReverseOrder() &&
       //we want the arguments for induceOSR to be passed from left to right as in any other non-helper call
-      callNode->getSymbolReference() != self()->cg()->symRefTab()->element(TR_induceOSRAtCurrentPC);
+      !callNode->getSymbolReference()->isOSRInductionHelper();
    if (rightToLeft)
       {
       from = numChildren;

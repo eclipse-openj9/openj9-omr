@@ -1739,7 +1739,7 @@ OMR::Block::verifyOSRInduceBlock(TR::Compilation *comp)
       {
       TR::Node *node = cursor->getNode();
       if (node->getOpCodeValue() == TR::treetop && node->getFirstChild()->getOpCode().hasSymbolReference()
-          && node->getFirstChild()->getSymbolReference() == comp->getSymRefTab()->element(TR_induceOSRAtCurrentPC))
+          && node->getFirstChild()->getSymbolReference()->isOSRInductionHelper())
          {
          foundOSRInduceCall = true;
          break;

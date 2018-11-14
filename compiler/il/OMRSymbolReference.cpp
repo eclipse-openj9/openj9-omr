@@ -368,3 +368,9 @@ OMR::SymbolReference::hasBeenAccessedAtRuntime()
    {
    return (TR_YesNoMaybe)(_flags.getValue(AccessedAtRuntimeMask) / AccessedAtRuntimeBase);
    }
+
+bool
+OMR::SymbolReference::isOSRInductionHelper()
+   {
+   return _referenceNumber == TR_induceOSRAtCurrentPCAndRecompile || _referenceNumber == TR_induceOSRAtCurrentPC;
+   }

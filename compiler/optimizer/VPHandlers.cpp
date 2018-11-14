@@ -5218,7 +5218,7 @@ TR::Node *constrainCall(OMR::ValuePropagation *vp, TR::Node *node)
    {
    constrainChildren(vp, node);
 
-   if (vp->comp()->getSymRefTab()->element(TR_induceOSRAtCurrentPC) == node->getSymbolReference())
+   if (node->getSymbolReference()->isOSRInductionHelper())
       {
       vp->createExceptionEdgeConstraints(TR::Block::CanCatchOSR, NULL, node);
       }

@@ -3925,7 +3925,7 @@ bool TR_ExceptionCheckMotion::includeRelevantNodes(TR::Node *node, vcount_t visi
 
    int32_t rhsChild = -1;
    if (node->getOpCode().isStore())
-      rhsChild = (node->getNumChildren() - ((node->getOpCode().isWrtBar()) ? 2 : 1));
+      rhsChild = node->getOpCode().isStoreDirect() ? 0 : 1;
 
    bool childRelevant = false, containsIndirectAccess = false, containsArrayAccess = false, containsDivide = false, containsUnresolvedAccess = false;
    int32_t i;

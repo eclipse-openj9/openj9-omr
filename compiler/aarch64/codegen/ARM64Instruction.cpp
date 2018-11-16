@@ -23,6 +23,17 @@
 #include "codegen/CodeGenerator.hpp"
 #include "codegen/RegisterDependency.hpp"
 
+// TR::ARM64ConditionalBranchInstruction:: member functions
+
+void TR::ARM64ConditionalBranchInstruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
+   {
+   if (getDependencyConditions())
+      {
+      getDependencyConditions()->assignPostConditionRegisters(this, kindToBeAssigned, cg());
+      getDependencyConditions()->assignPreConditionRegisters(this->getPrev(), kindToBeAssigned, cg());
+      }
+   }
+
 // TR::ARM64Trg1Instruction:: member functions
 
 bool TR::ARM64Trg1Instruction::refsRegister(TR::Register *reg)

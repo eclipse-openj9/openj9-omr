@@ -599,7 +599,8 @@ void
 TR_Debug::print(TR::FILE *pOutFile, TR::ARM64ConditionalBranchInstruction *instr)
    {
    printPrefix(pOutFile, instr);
-   trfprintf(pOutFile, "%s.%s \t", getOpCodeName(&instr->getOpCode()), ARM64ConditionNames[instr->getConditionCode()]);
+   TR_ASSERT(instr->getOpCodeValue() == TR::InstOpCode::b_cond, "Unsupported instruction for conditional branch");
+   trfprintf(pOutFile, "b.%s \t", ARM64ConditionNames[instr->getConditionCode()]);
    print(pOutFile, instr->getLabelSymbol());
    if (instr->getDependencyConditions())
       print(pOutFile, instr->getDependencyConditions());

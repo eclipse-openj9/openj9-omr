@@ -175,6 +175,13 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    TR::RealRegister *setMethodMetaDataRegister(TR::RealRegister *r) { return (_methodMetaDataRegister = r); }
 
    /**
+    * @brief Applies 24-bit Label relative relocation
+    * @param[in] cursor : instruction cursor
+    * @param[in] label : label
+    */
+   void apply24BitLabelRelativeRelocation(int32_t *cursor, TR::LabelSymbol *label);
+
+   /**
     * @brief Status of IsOutOfLineHotPath flag
     * @return IsOutOfLineHotPath flag
     */

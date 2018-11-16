@@ -440,8 +440,14 @@ class ARM64ConditionalBranchInstruction : public ARM64LabelInstruction
     */
    void insertConditionCodeField(uint32_t *instruction)
       {
-      *instruction |= _cc;
+      *instruction |= (_cc & 0xf);
       }
+
+   /**
+    * @brief Assigns registers
+    * @param[in] kindToBeAssigned : register kind
+    */
+   virtual void assignRegisters(TR_RegisterKinds kindToBeAssigned);
 
    /**
     * @brief Generates binary encoding of the instruction

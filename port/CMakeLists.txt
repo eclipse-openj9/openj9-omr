@@ -373,6 +373,8 @@ omr_add_exports(omrport_obj
 
 )
 
+target_enable_ddr(omrport_obj "${OMR_DDR_SET}")
+
 add_library(omrport STATIC
 	$<TARGET_OBJECTS:omrport_obj>
 )

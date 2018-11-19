@@ -242,18 +242,18 @@
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::iucmpgeEvaluator ,	// TR::iucmpge		// unsigned integer compare if greater than or equal
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::iucmpgtEvaluator ,	// TR::iucmpgt		// unsigned integer compare if greater than
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::iucmpleEvaluator ,	// TR::iucmple		// unsigned integer compare if less than or equal
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::lcmpeqEvaluator ,	// TR::lcmpeq		// long compare if equal
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::lcmpneEvaluator ,	// TR::lcmpne		// long compare if not equal
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::lcmpltEvaluator ,	// TR::lcmplt		// long compare if less than
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::lcmpgeEvaluator ,	// TR::lcmpge		// long compare if greater than or equal
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::lcmpgtEvaluator ,	// TR::lcmpgt		// long compare if greater than
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::lcmpleEvaluator ,	// TR::lcmple		// long compare if less than or equal
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::lucmpeqEvaluator ,	// TR::lucmpeq		// unsigned long compare if equal
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::lucmpneEvaluator ,	// TR::lucmpne		// unsigned long compare if not equal
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::lucmpltEvaluator ,	// TR::lucmplt		// unsigned long compare if less than
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::lucmpgeEvaluator ,	// TR::lucmpge		// unsigned long compare if greater than or equal
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::lucmpgtEvaluator ,	// TR::lucmpgt		// unsigned long compare if greater than
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::lucmpleEvaluator ,	// TR::lucmple		// unsigned long compare if less than or equal
+    TR::TreeEvaluator::lcmpeqEvaluator, // TR::lcmpeq		// long compare if equal
+    TR::TreeEvaluator::lcmpneEvaluator, // TR::lcmpne		// long compare if not equal
+    TR::TreeEvaluator::lcmpltEvaluator, // TR::lcmplt		// long compare if less than
+    TR::TreeEvaluator::lcmpgeEvaluator, // TR::lcmpge		// long compare if greater than or equal
+    TR::TreeEvaluator::lcmpgtEvaluator, // TR::lcmpgt		// long compare if greater than
+    TR::TreeEvaluator::lcmpleEvaluator, // TR::lcmple		// long compare if less than or equal
+    TR::TreeEvaluator::lucmpeqEvaluator, // TR::lucmpeq		// unsigned long compare if equal
+    TR::TreeEvaluator::lucmpneEvaluator, // TR::lucmpne		// unsigned long compare if not equal
+    TR::TreeEvaluator::lucmpltEvaluator, // TR::lucmplt		// unsigned long compare if less than
+    TR::TreeEvaluator::lucmpgeEvaluator, // TR::lucmpge		// unsigned long compare if greater than or equal
+    TR::TreeEvaluator::lucmpgtEvaluator, // TR::lucmpgt		// unsigned long compare if greater than
+    TR::TreeEvaluator::lucmpleEvaluator, // TR::lucmple		// unsigned long compare if less than or equal
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::fcmpeqEvaluator ,	// TR::fcmpeq		// float compare if equal
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::fcmpneEvaluator ,	// TR::fcmpne		// float compare if not equal
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::fcmpltEvaluator ,	// TR::fcmplt		// float compare if less than

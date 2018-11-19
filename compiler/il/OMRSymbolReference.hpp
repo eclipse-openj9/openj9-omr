@@ -287,6 +287,13 @@ public:
     * Flag functions end
     */
 
+
+   /*
+    * ReferenceNumber functions
+    */
+
+   bool isOSRInductionHelper();
+
 protected:
 
    /**

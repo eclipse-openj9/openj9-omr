@@ -2124,33 +2124,30 @@ TR::Node *constrainIaload(OMR::ValuePropagation *vp, TR::Node *node)
       if (base && node->getOpCode().hasSymbolReference() &&
           (node->getSymbolReference() == vp->comp()->getSymRefTab()->findVftSymbolRef()))
          {
-         TR::VPClassPresence *nonnull = TR::VPNonNullObject::create(vp);
-         if (!base->isFixedClass())
-            {
-            vp->addBlockOrGlobalConstraint(node, TR::VPClass::create(vp, NULL, nonnull, NULL, NULL, TR::VPObjectLocation::create(vp, TR::VPObjectLocation::J9ClassObject)), isGlobal);
-            }
-         else if (base->isClassObject() == TR_yes)
+         TR_OpaqueClassBlock *clazz = NULL;
+         if (base->isClassObject() == TR_yes)
             {
             // base can only be an instance of java/lang/Class, since
             // we can't load <vft> relative to a J9Class.
-            vp->addBlockOrGlobalConstraint(node,
-               TR::VPClass::create(vp,
-                  TR::VPFixedClass::create(vp, vp->comp()->fej9()->getClassClassPointer(base->getClass())),
-                  nonnull,
-                  NULL, NULL,
-                  TR::VPObjectLocation::create(vp, TR::VPObjectLocation::J9ClassObject)),
-               isGlobal);
+            clazz = vp->comp()->getClassClassPointer();
             }
-         else
+         else if (base->isFixedClass())
             {
-            vp->addBlockOrGlobalConstraint(node,
-               TR::VPClass::create(vp,
-                  TR::VPFixedClass::create(vp, base->getClass()),
-                  nonnull,
-                  NULL, NULL,
-                  TR::VPObjectLocation::create(vp, TR::VPObjectLocation::J9ClassObject)),
-               isGlobal);
+            clazz = base->getClass();
             }
+
+         TR::VPClassType *type = NULL;
+         if (clazz != NULL)
+            type = TR::VPFixedClass::create(vp, clazz);
+
+         TR::VPClassPresence *nonnull = TR::VPNonNullObject::create(vp);
+         TR::VPObjectLocation *loc =
+            TR::VPObjectLocation::create(vp, TR::VPObjectLocation::J9ClassObject);
+         vp->addBlockOrGlobalConstraint(
+            node,
+            TR::VPClass::create(vp, type, nonnull, NULL, NULL, loc),
+            isGlobal);
+
          node->setIsNonNull(true);
          }
       else if (base

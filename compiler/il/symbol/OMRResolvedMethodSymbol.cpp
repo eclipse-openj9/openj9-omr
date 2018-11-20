@@ -518,7 +518,10 @@ OMR::ResolvedMethodSymbol::genInduceOSRCallNode(TR::TreeTop* insertionPoint,
    //there is no guarantee that the future block containing the induceOSR call still will have an exception
    //edge to the OSR catch block.
    TR::SymbolReferenceTable* symRefTab = self()->comp()->getSymRefTab();
-   TR::SymbolReference *induceOSRSymRef = symRefTab->findOrCreateRuntimeHelper(TR_induceOSRAtCurrentPC, true, true, true);
+   TR::SymbolReference *induceOSRSymRef = symRefTab->findOrCreateRuntimeHelper(TR_induceOSRAtCurrentPC,
+                                                                               true /* canGCandReturn */,
+                                                                               true /* canGCandExcept */,
+                                                                               true /* preservesAllRegisters */);
    // treat jitInduceOSR like an interpreted call so that each platform's codegen generate a snippet for it
    induceOSRSymRef->getSymbol()->getMethodSymbol()->setInterpreted();
    TR::Node *refNode = insertionPoint->getNode();
@@ -579,9 +582,53 @@ OMR::ResolvedMethodSymbol::genInduceOSRCallNode(TR::TreeTop* insertionPoint,
    return insertionPoint->getPrevTreeTop();
    }
 
+/*
+ *  \brief Generate the helper call to request for OSR transition and recompilation of the current compiled method.
+ *
+ *  \return true if the OSR transition is supported at the requested \parm induceBCI and the OSR induction helper call
+ *          is generated successfully
+ */
+bool
+OMR::ResolvedMethodSymbol::induceOSRAfterAndRecompile(TR::TreeTop *insertionPoint, TR_ByteCodeInfo induceBCI, TR::TreeTop* branch,
+    bool extendRemainder, int32_t offset, TR::TreeTop ** lastTreeTop)
+   {
+   TR_ASSERT(self()->comp()->allowRecompilation(), "request OSR and recompilation at node %p when recomp is disabled\n", insertionPoint);
+   TR::TreeTop *induceOSRCallTree = self()->induceOSRAfterImpl(insertionPoint, induceBCI, branch, extendRemainder, offset, lastTreeTop);
+   if (!induceOSRCallTree)
+      return false;
+   TR::Node *induceOSRCallNode = induceOSRCallTree->getNode()->getFirstChild();
+   TR::SymbolReference *symRef = induceOSRCallNode->getSymbolReference();
+   TR_ASSERT_FATAL(induceOSRCallNode->getOpCode().isCall() &&
+                   symRef->getReferenceNumber() == TR_induceOSRAtCurrentPC,
+                   "induceOSRCallNode %p (n%dn) under induceOSRCallTree %p should be a call node with TR_induceOSRAtCurrentPC helper call", induceOSRCallNode, induceOSRCallNode->getGlobalIndex(), induceOSRCallTree->getNode());
+   induceOSRCallNode->setSymbolReference(self()->comp()->getSymRefTab()->findOrCreateRuntimeHelper(TR_induceOSRAtCurrentPCAndRecompile,
+                                                                                                   true /* canGCandReturn */,
+                                                                                                   true /* canGCandExcept */,
+                                                                                                   true /* preservesAllRegisters */));
+   return true;
+   }
 
+/*
+ *  \brief Generate the helper call to request for OSR transition only.
+ *
+ *  \return true if the OSR transition is supported at the requested \parm induceBCI and the OSR induction helper call
+ *          is generated successfully
+ */
 bool
 OMR::ResolvedMethodSymbol::induceOSRAfter(TR::TreeTop *insertionPoint, TR_ByteCodeInfo induceBCI, TR::TreeTop* branch,
+    bool extendRemainder, int32_t offset, TR::TreeTop ** lastTreeTop)
+   {
+   return self()->induceOSRAfterImpl(insertionPoint, induceBCI, branch, extendRemainder, offset, lastTreeTop) != NULL;
+   }
+
+/*
+ *  \brief Internal implementation for generating the helper call to request for OSR transition.
+ *
+ *  \return The treetop of the inserted induceOSR helper call if OSR transition is supported at the requested \parm induceBCI.
+ *          NULL if OSR transition is not supported at the requested \parm induceBCI.
+ */
+TR::TreeTop *
+OMR::ResolvedMethodSymbol::induceOSRAfterImpl(TR::TreeTop *insertionPoint, TR_ByteCodeInfo induceBCI, TR::TreeTop* branch,
     bool extendRemainder, int32_t offset, TR::TreeTop ** lastTreeTop)
    {
    TR::Block *block = insertionPoint->getEnclosingBlock();
@@ -634,10 +681,9 @@ OMR::ResolvedMethodSymbol::induceOSRAfter(TR::TreeTop *insertionPoint, TR_ByteCo
       cfg->copyExceptionSuccessors(block, osrBlock);
 
       // induce OSR in the new block
-      self()->genInduceOSRCallAndCleanUpFollowingTreesImmediately(osrBlock->getExit(), induceBCI, false, self()->comp());
-      return true;
+      return self()->genInduceOSRCallAndCleanUpFollowingTreesImmediately(osrBlock->getExit(), induceBCI, false, self()->comp());
       }
-   return false;
+   return NULL;
    }
 
 TR::TreeTop *

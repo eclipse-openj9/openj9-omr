@@ -56,6 +56,16 @@ add_library(omrgc_tracegen OBJECT
 	${CMAKE_CURRENT_BINARY_DIR}/ut_j9vgc.c
 )
 
+target_include_directories(omrgc_tracegen
+	PUBLIC
+		$<TARGET_PROPERTY:omr_base,INTERFACE_INCLUDE_DIRECTORIES>
+)
+
+target_compile_definitions(omrgc_tracegen
+	PUBLIC
+		$<TARGET_PROPERTY:omr_base,INTERFACE_COMPILE_DEFINITIONS>
+)
+
 add_library(omrgc STATIC
 	base/AddressOrderedListPopulator.cpp
 	base/AllocationContext.cpp
@@ -346,6 +356,8 @@ target_include_directories(omrgc
 )
 
 target_link_libraries(omrgc
+	PUBLIC
+		omr_base
 	PRIVATE
 		${OMR_GC_GLUE_TARGET}
 		omrutil

@@ -35,6 +35,15 @@ add_library(omrport_obj OBJECT
 	ut_omrport.c
 )
 
+target_include_directories(omrport_obj
+	PUBLIC
+		$<TARGET_PROPERTY:omr_base,INTERFACE_INCLUDE_DIRECTORIES>
+)
+
+target_compile_definitions(omrport_obj
+	PUBLIC
+		$<TARGET_PROPERTY:omr_base,INTERFACE_COMPILE_DEFINITIONS>
+)
 
 if(OMR_HOST_OS STREQUAL "aix")
 	list(APPEND OBJECTS omrgetsp.s)
@@ -351,11 +360,13 @@ if(OMR_ENHANCED_WARNINGS)
 endif()
 
 target_link_libraries(omrport
+	PUBLIC
+		omr_base
 	PRIVATE
-	j9avl
-	j9hashtable
-	j9pool
-	${OMR_THREAD_LIB}
+		j9avl
+		j9hashtable
+		j9pool
+		${OMR_THREAD_LIB}
 )
 
 target_include_directories(omrport_obj PRIVATE

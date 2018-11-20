@@ -370,6 +370,11 @@ function(create_omr_compiler_library)
 		${COMPILER_OBJECTS}
 	)
 
+	target_link_libraries(${COMPILER_NAME}
+		PUBLIC
+			omr_base
+	)
+
 	# Grab the list of core compiler objects from the global property.
 	# Note: the property is initialized by compiler/CMakeLists.txt
 	get_property(core_compiler_objects GLOBAL PROPERTY OMR_CORE_COMPILER_OBJECTS)

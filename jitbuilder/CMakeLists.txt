@@ -123,7 +123,8 @@ target_include_directories(jitbuilder
 )
 
 target_link_libraries(jitbuilder
-	${OMR_PORT_LIB}
+	PUBLIC
+		${OMR_PORT_LIB}
 )
 
 ## JitBuilder examples only work on 64 bit currently.

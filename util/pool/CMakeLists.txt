@@ -30,6 +30,11 @@ add_library(j9pool STATIC
 	ut_pool.c
 )
 
+target_link_libraries(j9pool
+	PUBLIC
+		omr_base
+)
+
 if(OMR_WARNINGS_AS_ERRORS)
 	target_compile_options(j9pool PRIVATE ${OMR_WARNING_AS_ERROR_FLAG})
 endif()

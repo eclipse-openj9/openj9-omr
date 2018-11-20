@@ -45,6 +45,7 @@ add_executable(comptest
 	LinkageTest.cpp
 	BitPermuteTest.cpp
 	MaxMinTest.cpp
+	CompareTest.cpp
 )
 
 target_link_libraries(comptest

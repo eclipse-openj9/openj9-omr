@@ -877,7 +877,7 @@ MM_VerboseHandlerOutput::handleConcurrentEnd(J9HookInterface** hook, UDATA event
 	writer->formatAndOutput(env, 0, "<concurrent-end %s>", tagTemplate);
 	handleConcurrentEndInternal(hook, eventNum, eventData);
 	handleConcurrentGCOpEnd(hook, eventNum, eventData);
-	writer->formatAndOutput(env, 0, "</concurrent-end>");
+	writer->formatAndOutput(env, 0, "</concurrent-end>\n");
 	writer->flush(env);
 	exitAtomicReportingBlock();
 }

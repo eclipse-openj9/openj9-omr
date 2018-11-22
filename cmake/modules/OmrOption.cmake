@@ -74,7 +74,7 @@ delay validation until after all options have been set.
 
 Create a new option. The new option is a ``BOOL`` cache variable.
 The option will be registered in ``<group>``. When ``<group>`` is
-validated, this options requirements will be tested.
+validated, this option's requirements will be tested.
 
 ``DEFAULT`` is an expression, which is evaluated as an if-expression and
 coerced to an on/off value. The default value is only evaluated on the
@@ -102,13 +102,13 @@ registered to an option later.
   omr_option_requires(<option> [<requirement>...])
 
 Add requirements to ``<option>``. If the option is ``ON``, each variable
-named in the requirements must also be true.
+named in the requirements must also be ``ON``.
 
 ::
   omr_option_conflicts(<option> [<conflict>...])
 
 Add conflicts to ``<option>``. If the option is ``ON``, each variable named
-in the conflicts must _not_ be true.
+in the conflicts must ``OFF``.
 
 ::
   omr_option_requires_expr(<option> <expr>)
@@ -138,8 +138,8 @@ requirements).
   omr_group_options(<group> <option>...)
 
 Register a set of options into an options group. Options must have already
-been declared. It's possible (but not recommended) to register an option in
-to multiple groups.
+been declared. It's possible (but not recommended) to register an option
+into multiple groups.
 
 ::
   omr_validate_option(<option>)

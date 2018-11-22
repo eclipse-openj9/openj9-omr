@@ -184,7 +184,7 @@ Comparison to :module:`DependentOptions`
 There is a similar module built in to cmake called DependentOption.
 This module was not used because:
 
-1. A dependent option is only show to the user if it's dependencies are
+1. A dependent option is only shown to the user if it's dependencies are
    satisfied. OmrOption makes the choice to always present ALL flags in
    the cache.
 2. A dependent option will revert to it's default value if it's
@@ -234,7 +234,7 @@ function(omr_group_options group)
 	set_property(GLOBAL APPEND PROPERTY ${group} ${ARGN})
 endfunction(omr_group_options)
 
-# omr_get_options_group(<output> <group>)
+# _omr_get_options_group(<output> <group>)
 # Store the list of options in <group> into the variable <output>.
 function(_omr_get_option_group output group)
 	_omr_assert_is_option_group(${group})
@@ -316,7 +316,7 @@ function(omr_add_option option group)
 	endif()
 endfunction(omr_add_option)
 
-# omr_check_option_requirements(<option>)
+# _omr_check_option_requirements(<option>)
 # Assert that every required option is enabled.
 function(_omr_check_option_requirements option)
 	get_property(requirements GLOBAL PROPERTY ${option}_REQUIRES)
@@ -328,7 +328,7 @@ function(_omr_check_option_requirements option)
 	endforeach(requirement)
 endfunction(_omr_check_option_requirements)
 
-# omr_check_option_conflicts(<option>)
+# _omr_check_option_conflicts(<option>)
 # Assert that every conflicting option is disabled.
 function(_omr_check_option_conflicts option)
 	get_property(conflicts GLOBAL PROPERTY ${option}_CONFLICTS)
@@ -340,7 +340,7 @@ function(_omr_check_option_conflicts option)
 	endforeach(conflict)
 endfunction(_omr_check_option_conflicts)
 
-# omr_check_option_requirement_expr(<option>)
+# _omr_check_option_requirement_expr(<option>)
 # if the option has a REQUIRE_EXPR defined, assert that the expression is true.
 function(_omr_check_option_requirement_expr option)
 	get_property(expr_set GLOBAL PROPERTY ${option}_REQUIRES_EXPR SET)

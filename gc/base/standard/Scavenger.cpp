@@ -4947,7 +4947,8 @@ MM_Scavenger::masterThreadConcurrentCollect(MM_EnvironmentBase *env)
 		_dispatcher->run(env, &scavengeTask, _extensions->concurrentScavengerBackgroundThreads);
 
 		/* Now that we are done with concurrent scanning in this cycle (where we could possibly
-		 * be interested in its value), reset this flag */
+		 * be interested in its value), record the flag for reporting purposes and reset it. */
+		getConcurrentPhaseStats()->_terminationWasRequested = _shouldYield;
 		_shouldYield = false;
 
 		/* we can't assert the work queue is empty. some mutator threads could have just flushed their copy caches, after the task terminated */

@@ -666,6 +666,12 @@ OMR::Z::CodeGenerator::CodeGenerator()
    self()->setSupportsBCDToDFPReduction();
    self()->setSupportsIntDFPConversions();
 
+   // On 31-Bit zOS/zLinux We rely on optimizer to generate array copy trees specialized for direction
+   if (TR::Compiler->target.is32Bit())
+      {
+      self()->setSupportsPostProcessArrayCopy();
+      }
+
    if (_processorInfo.supportsArch(TR_S390ProcessorInfo::TR_z10))
       {
       self()->setSupportsTranslateAndTestCharString();

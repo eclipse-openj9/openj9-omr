@@ -347,6 +347,7 @@ namespace TR { class ARM64CompareBranchInstruction; }
 namespace TR { class ARM64RegBranchInstruction; }
 namespace TR { class ARM64AdminInstruction; }
 namespace TR { class ARM64Trg1Instruction; }
+namespace TR { class ARM64Trg1CondInstruction; }
 namespace TR { class ARM64Trg1ImmInstruction; }
 namespace TR { class ARM64Trg1Src1Instruction; }
 namespace TR { class ARM64Trg1Src1ImmInstruction; }
@@ -1101,6 +1102,7 @@ public:
    void print(TR::FILE *, TR::ARM64RegBranchInstruction *);
    void print(TR::FILE *, TR::ARM64AdminInstruction *);
    void print(TR::FILE *, TR::ARM64Trg1Instruction *);
+   void print(TR::FILE *, TR::ARM64Trg1CondInstruction *);
    void print(TR::FILE *, TR::ARM64Trg1ImmInstruction *);
    void print(TR::FILE *, TR::ARM64Trg1Src1Instruction *);
    void print(TR::FILE *, TR::ARM64Trg1Src1ImmInstruction *);

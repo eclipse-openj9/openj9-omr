@@ -623,4 +623,20 @@ TR::Instruction *generateMulInstruction(
                   TR::Register *s2reg,
                   TR::Instruction *preced = NULL);
 
+/*
+ * @brief Generates CSET instruction
+ * @param[in] cg : CodeGenerator
+ * @param[in] node : node
+ * @param[in] treg : target register
+ * @param[in] cc : branch condition code
+ * @param[in] preced : preceding instruction
+ * @return generated instruction
+ */
+TR::Instruction *generateCSetInstruction(
+                  TR::CodeGenerator *cg,
+                  TR::Node *node,
+                  TR::Register *treg,
+                  TR::ARM64ConditionCode cc,
+                  TR::Instruction *preced = NULL);
+
 #endif

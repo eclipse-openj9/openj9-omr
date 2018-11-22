@@ -27,6 +27,7 @@
 
 #include "codegen/ARM64ConditionCode.hpp"
 #include "codegen/ARM64ShiftCode.hpp"
+#include "codegen/CodeGenerator.hpp"
 #include "codegen/Instruction.hpp"
 #include "codegen/MemoryReference.hpp"
 #include "il/symbol/LabelSymbol.hpp"
@@ -914,6 +915,87 @@ class ARM64Trg1Instruction : public TR::Instruction
     * @param[in] kindToBeAssigned : register kind
     */
    virtual void assignRegisters(TR_RegisterKinds kindToBeAssigned);
+
+   /**
+    * @brief Generates binary encoding of the instruction
+    * @return instruction cursor
+    */
+   virtual uint8_t *generateBinaryEncoding();
+   };
+
+class ARM64Trg1CondInstruction : public ARM64Trg1Instruction
+   {
+   TR::ARM64ConditionCode _cc;
+
+   public:
+
+   /*
+    * @brief Constructor
+    * @param[in] op : instruction opcode
+    * @param[in] node : node
+    * @param[in] treg : target register
+    * @param[in] cc : branch condition code
+    * @param[in] cg : CodeGenerator
+    */
+   ARM64Trg1CondInstruction(TR::InstOpCode::Mnemonic op, TR::Node *node, TR::Register *treg,
+                            TR::ARM64ConditionCode cc, TR::CodeGenerator *cg)
+      : ARM64Trg1Instruction(op, node, treg, cg), _cc(cc)
+      {
+      }
+
+   /*
+    * @brief Constructor
+    * @param[in] op : instruction opcode
+    * @param[in] node : node
+    * @param[in] treg : target register
+    * @param[in] cc : branch condition code
+    * @param[in] precedingInstruction : preceding instruction
+    * @param[in] cg : CodeGenerator
+    */
+   ARM64Trg1CondInstruction(TR::InstOpCode::Mnemonic op, TR::Node *node, TR::Register *treg,
+                            TR::ARM64ConditionCode cc, TR::Instruction *precedingInstruction,
+                            TR::CodeGenerator *cg)
+      : ARM64Trg1Instruction(op, node, treg, precedingInstruction, cg), _cc(cc)
+      {
+      }
+
+   /**
+    * @brief Gets instruction kind
+    * @return instruction kind
+    */
+   virtual Kind getKind() { return IsTrg1Cond; }
+
+   /**
+    * @brief Gets condition code
+    * @return condition code
+    */
+   TR::ARM64ConditionCode getConditionCode() {return _cc;}
+   /**
+    * @brief Sets condition code
+    * @param[in] cc : condition code
+    * @return condition code
+    */
+   TR::ARM64ConditionCode setConditionCode(TR::ARM64ConditionCode cc) {return (_cc = cc);}
+
+   /**
+    * @brief Sets condition code field in binary encoding
+    * @param[in] instruction : instruction cursor
+    */
+   void insertConditionCodeField(uint32_t *instruction)
+      {
+      *instruction |= ((_cc & 0xf) << 12);
+      }
+
+   /**
+    * @brief Sets zero register in binary encoding
+    * @param[in] instruction : instruction cursor
+    */
+   void insertZeroRegister(uint32_t *instruction)
+      {
+      TR::RealRegister *zeroReg = cg()->machine()->getARM64RealRegister(TR::RealRegister::xzr);
+      zeroReg->setRegisterFieldRM(instruction);
+      zeroReg->setRegisterFieldRN(instruction);
+      }
 
    /**
     * @brief Generates binary encoding of the instruction

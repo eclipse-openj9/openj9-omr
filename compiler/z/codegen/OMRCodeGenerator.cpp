@@ -562,9 +562,6 @@ OMR::Z::CodeGenerator::CodeGenerator()
    TR::Compilation *comp = self()->comp();
    _cgFlags = 0;
 
-   // Initialize Linkage for Code Generator
-   self()->initializeLinkage();
-
    // Check for -Xjit disable options and target this specific compilation for the proper target
    if (comp->getOption(TR_DisableZ10))
       {
@@ -649,6 +646,9 @@ OMR::Z::CodeGenerator::CodeGenerator()
             }
          }
       }
+
+   // Initialize Linkage for Code Generator
+   self()->initializeLinkage();
 
    _unlatchedRegisterList = (TR::RealRegister**)self()->trMemory()->allocateHeapMemory(sizeof(TR::RealRegister*)*(TR::RealRegister::NumRegisters));
    _unlatchedRegisterList[0] = 0; // mark that list is empty
@@ -758,6 +758,11 @@ OMR::Z::CodeGenerator::CodeGenerator()
 
    if (_processorInfo.supportsArch(TR_S390ProcessorInfo::TR_z13) && !comp->getOption(TR_DisableArch11PackedToDFP))
       self()->setSupportsFastPackedDFPConversions();
+
+   if (!_processorInfo.supportsArch(TR_S390ProcessorInfo::TR_z14))
+      {
+      comp->setOption(TR_DisableVectorBCD);
+      }
 
    // Be pessimistic until we can prove we don't exit after doing code-generation
    self()->setExitPointsInMethod(true);
@@ -6344,24 +6349,7 @@ OMR::Z::CodeGenerator::findOrCreateLiteral(void *value, size_t len)
 bool
 OMR::Z::CodeGenerator::directCallRequiresTrampoline(intptrj_t targetAddress, intptrj_t sourceAddress)
    {
-#if defined(TR_TARGET_S390) && defined(TR_TARGET_64BIT) && !defined(J9ZOS390)
    return
       !TR::Compiler->target.cpu.isTargetWithinBranchRelativeRILRange(targetAddress, sourceAddress) ||
       self()->comp()->getOption(TR_StressTrampolines);
-#else
-   // On zOS, executable code can only be allocated below the bar so trampolines
-   // are not required for RIL form instructions.
-   //
-   // However, if RMODE64 is enabled then executable code may be allocated above
-   // the bar requiring a range check.
-   //
-   if (self()->comp()->getOption(TR_EnableRMODE64))
-      {
-      return
-         !TR::Compiler->target.cpu.isTargetWithinBranchRelativeRILRange(targetAddress, sourceAddress) ||
-         self()->comp()->getOption(TR_StressTrampolines);
-      }
-   else
-      return false;
-#endif
    }

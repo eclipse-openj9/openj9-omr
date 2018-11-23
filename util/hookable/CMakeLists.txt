@@ -34,6 +34,16 @@ target_include_directories(j9hook_obj
 		.
 )
 
+target_include_directories(j9hook_obj
+	PUBLIC
+		$<TARGET_PROPERTY:omr_base,INTERFACE_INCLUDE_DIRECTORIES>
+)
+
+target_compile_definitions(j9hook_obj
+	PUBLIC
+		$<TARGET_PROPERTY:omr_base,INTERFACE_COMPILE_DEFINITIONS>
+)
+
 add_library(j9hookstatic STATIC
 	$<TARGET_OBJECTS:j9hook_obj>
 )
@@ -52,9 +62,11 @@ target_include_directories(j9hookstatic
 	PUBLIC
 	$<TARGET_PROPERTY:j9hook_obj,INTERFACE_INCLUDE_DIRECTORIES>
 )
-target_link_libraries(j9hookstatic PUBLIC
-	${OMR_PORT_LIB}
-	j9pool
+target_link_libraries(j9hookstatic
+	PUBLIC
+		omr_base
+		${OMR_PORT_LIB}
+		j9pool
 )
 add_tracegen(j9hook.tdf)
 

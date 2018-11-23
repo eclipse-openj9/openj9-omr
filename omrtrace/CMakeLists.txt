@@ -42,8 +42,9 @@ endif()
 
 target_link_libraries(omrtrace
 	PUBLIC
-	${OMR_THREAD_LIB}
-	omrutil
+		omr_base
+		${OMR_THREAD_LIB}
+		omrutil
 )
 #TODO: check if following makefile fragment still required:
 #ifeq (gcc,$(OMR_TOOLCHAIN))

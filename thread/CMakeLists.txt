@@ -287,10 +287,22 @@ omr_find_files(resolvedPaths
 )
 
 include_directories(common)
+
 #TODO also should be able to build dynamic lib
+
 add_library(j9thr_obj OBJECT
 	${resolvedPaths}
 	ut_j9thr.c
+)
+
+target_include_directories(j9thr_obj
+	PUBLIC
+		$<TARGET_PROPERTY:omr_base,INTERFACE_INCLUDE_DIRECTORIES>
+)
+
+target_compile_definitions(j9thr_obj
+	PUBLIC
+		$<TARGET_PROPERTY:omr_base,INTERFACE_COMPILE_DEFINITIONS>
 )
 
 add_library(j9thrstatic STATIC
@@ -311,8 +323,10 @@ target_include_directories(j9thrstatic
 )
 
 target_link_libraries(j9thrstatic
-	j9pool
-	omrutil
+	PUBLIC
+		omr_base
+		j9pool
+		omrutil
+		${OMR_PLATFORM_THREAD_LIBRARY}
 )
 
-target_link_libraries(j9thrstatic ${OMR_PLATFORM_THREAD_LIBRARY})

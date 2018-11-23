@@ -94,6 +94,7 @@ endif()
 
 target_link_libraries(omrsig
 	PRIVATE
+		omr_base
 		omrutil
 )
 

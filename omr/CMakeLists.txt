@@ -64,6 +64,8 @@ target_include_directories(omrcore
 )
 
 target_link_libraries(omrcore
+	PUBLIC
+		omr_base
 	PRIVATE
 		${OMR_CORE_GLUE_TARGET}
 		${OMR_RAS_GLUE_TARGET}

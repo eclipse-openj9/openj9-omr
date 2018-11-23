@@ -48,6 +48,16 @@ add_library(omrutil_obj OBJECT
 	ut_j9utilcore.c
 )
 
+target_include_directories(omrutil_obj
+	PUBLIC
+		$<TARGET_PROPERTY:omr_base,INTERFACE_INCLUDE_DIRECTORIES>
+)
+
+target_compile_definitions(omrutil_obj
+	PUBLIC
+		$<TARGET_PROPERTY:omr_base,INTERFACE_COMPILE_DEFINITIONS>
+)
+
 list(APPEND VPATH .)
 
 if(OMR_ARCH_S390)
@@ -169,8 +179,10 @@ if(OMR_ENHANCED_WARNINGS)
 	target_compile_options(omrutil_obj PRIVATE ${OMR_ENHANCED_WARNING_FLAG})
 endif()
 
-target_link_libraries(omrutil PUBLIC
-	j9hashtable
+target_link_libraries(omrutil
+	PUBLIC
+		omr_base
+		j9hashtable
 )
 
 set_target_properties(omrutil_obj omrutil PROPERTIES FOLDER util)

@@ -36,6 +36,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <setjmp.h>
+#include <errno.h>
 #include "omrsignal_context.h"
 
 #if !defined(J9ZOS390)
@@ -236,6 +237,8 @@ static void masterASynchSignalHandler(int signal, siginfo_t *sigInfo, void *cont
 static void masterSynchSignalHandler(int signal, siginfo_t *sigInfo, void *contextInfo);
 static void masterASynchSignalHandler(int signal, siginfo_t *sigInfo, void *contextInfo);
 #endif
+
+static int32_t unblockSignals(void);
 
 int32_t
 omrsig_can_protect(struct OMRPortLibrary *portLibrary,  uint32_t flags)
@@ -1540,6 +1543,16 @@ initializeSignalTools(OMRPortLibrary *portLibrary)
 #endif /* defined(J9ZOS390) */
 #endif /* defined(OSX) */
 
+	/* If a process has blocked signals, then the signals stay blocked in the
+	 * sub-processes across fork(s) and exec(s). Blocked signals prevent signal
+	 * handlers to be invoked. Signals listed in signalMap should be unblocked
+	 * during initialization in case a parent process has blocked any of those
+	 * signals.
+	 */
+	if (0 != unblockSignals()) {
+		return -1;
+	}
+
 #if defined(OMR_PORT_ASYNC_HANDLER)
 	if (J9THREAD_SUCCESS != createThreadWithCategory(
 			&asynchSignalReporterThread,
@@ -1795,3 +1808,45 @@ omrsig_chain_at_shutdown_and_exit(struct OMRPortLibrary *portLibrary)
 }
 #endif /* defined(OMRPORT_OMRSIG_SUPPORT) */
 
+/**
+ * This function will unblock signals listed in signalMap by changing the
+ * signal mask of the calling thread. This function should only be called
+ * during initialization from the main thread and before creation of other
+ * threads.
+ *
+ * @param[in] void
+ *
+ * @return 0 on success and non-zero on failure
+ */
+static int32_t
+unblockSignals(void) {
+	int32_t rc = 0;
+	int i = 0;
+	sigset_t signalSet;
+
+	rc = sigemptyset(&signalSet);
+	if (0 != rc) {
+		Trc_PRT_signal_unblockSignals_sigemptyset_failed(rc, errno);
+		goto exit;
+	}
+
+	/* Iterate through all signals listed in signalMap. */
+	for (i = 0; i < sizeof(signalMap)/sizeof(signalMap[0]); i++) {
+		/* Add the current signal to the signal set. */
+		int currentSignal = signalMap[i].unixSignalNo;
+		rc = sigaddset(&signalSet, currentSignal);
+		if (0 != rc) {
+			Trc_PRT_signal_unblockSignals_sigaddset_failed(currentSignal, rc, errno);
+			goto exit;
+		}
+	}
+
+	/* Unblock the signals listed in signalMap. */
+	rc = pthread_sigmask(SIG_UNBLOCK, &signalSet, NULL);
+	if (0 != rc) {
+		Trc_PRT_signal_unblockSignals_pthread_sigmask_failed(rc, errno);
+	}
+
+exit:
+	return rc;
+}

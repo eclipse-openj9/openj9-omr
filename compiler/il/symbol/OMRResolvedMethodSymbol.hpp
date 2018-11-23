@@ -170,6 +170,7 @@ public:
    bool canInjectInduceOSR(TR::Node* node);
 
    bool induceOSRAfter(TR::TreeTop *insertionPoint, TR_ByteCodeInfo induceBCI, TR::TreeTop* branch, bool extendRemainder, int32_t offset, TR::TreeTop ** lastTreeTop = NULL);
+   bool induceOSRAfterAndRecompile(TR::TreeTop *insertionPoint, TR_ByteCodeInfo induceBCI, TR::TreeTop* branch, bool extendRemainder, int32_t offset, TR::TreeTop ** lastTreeTop);
    TR::TreeTop *induceImmediateOSRWithoutChecksBefore(TR::TreeTop *insertionPoint);
 
    int32_t incTempIndex(TR_FrontEnd * fe);
@@ -380,6 +381,8 @@ private:
    TR::SymbolReference           * _pythonConstsSymRef;
    uint32_t                         _pythonNumLocalVars;
    TR::SymbolReference          ** _pythonLocalVarSymRefs;
+
+   TR::TreeTop *induceOSRAfterImpl(TR::TreeTop *insertionPoint, TR_ByteCodeInfo induceBCI, TR::TreeTop* branch, bool extendRemainder, int32_t offset, TR::TreeTop ** lastTreeTop = NULL);
 
 /*-- TR_JittedMethodSymbol --------------------------------*/
 public:

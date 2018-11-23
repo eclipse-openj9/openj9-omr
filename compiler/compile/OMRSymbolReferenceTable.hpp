@@ -313,6 +313,13 @@ class SymbolReferenceTable
    //
    bool isNonHelper(TR::SymbolReference *, CommonNonhelperSymbol);
    bool isNonHelper(int32_t, CommonNonhelperSymbol);
+   bool isNonHelper(TR::SymbolReference *);
+   bool isNonHelper(int32_t);
+
+   // Look up non-helper symbol reference
+   CommonNonhelperSymbol getNonHelperSymbol(TR::SymbolReference *);
+   CommonNonhelperSymbol getNonHelperSymbol(int32_t);
+
 
    // Total number of symbols (known and dynamic) in the SRT
    //

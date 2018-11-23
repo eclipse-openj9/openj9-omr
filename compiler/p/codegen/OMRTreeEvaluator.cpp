@@ -5183,6 +5183,16 @@ TR::Register *OMR::Power::TreeEvaluator::directCallEvaluator(TR::Node *node, TR:
    if (!cg->inlineDirectCall(node, resultReg))
       {
       TR::SymbolReference *symRef = node->getSymbolReference();
+      TR::SymbolReferenceTable *symRefTab = cg->comp()->getSymRefTab();
+
+      // Non-helpers supported by code gen. are expected to be inlined
+      if (symRefTab->isNonHelper(symRef))
+         {
+         TR_ASSERT(!cg->supportsNonHelper(symRefTab->getNonHelperSymbol(symRef)),
+                   "Non-helper %d was not inlined, but was expected to be.\n",
+                   symRefTab->getNonHelperSymbol(symRef));
+         }
+
       TR::MethodSymbol *callee = symRef->getSymbol()->castToMethodSymbol();
       TR::Linkage *linkage = cg->getLinkage(callee->getLinkageConvention());
       resultReg = linkage->buildDirectDispatch(node);
@@ -5193,6 +5203,8 @@ TR::Register *OMR::Power::TreeEvaluator::directCallEvaluator(TR::Node *node, TR:
 
 static TR::Register *inlineSimpleAtomicUpdate(TR::Node *node, bool isAddOp, bool isLong, bool isGetThenUpdate, TR::CodeGenerator *cg)
    {
+   TR_ASSERT(TR::Compiler->target.is64Bit(), "Atomic non-helpers are only supported in 64-bit mode\n");
+
    TR::Node *valueAddrChild = node->getFirstChild();
    TR::Node *deltaChild = NULL;
 

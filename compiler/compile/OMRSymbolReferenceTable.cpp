@@ -1843,6 +1843,27 @@ bool OMR::SymbolReferenceTable::isNonHelper(int32_t ref, CommonNonhelperSymbol s
       }
    }
 
+bool OMR::SymbolReferenceTable::isNonHelper(TR::SymbolReference *symRef)
+   {
+   return isNonHelper(symRef->getReferenceNumber());
+   }
+
+bool OMR::SymbolReferenceTable::isNonHelper(int32_t ref)
+   {
+   return (ref >= _numHelperSymbols && ref < _numHelperSymbols + getLastCommonNonhelperSymbol());
+   }
+
+OMR::SymbolReferenceTable::CommonNonhelperSymbol OMR::SymbolReferenceTable::getNonHelperSymbol(TR::SymbolReference *symRef)
+   {
+   return getNonHelperSymbol(symRef->getReferenceNumber());
+   }
+
+OMR::SymbolReferenceTable::CommonNonhelperSymbol OMR::SymbolReferenceTable::getNonHelperSymbol(int32_t ref)
+   {
+   return isNonHelper(ref) ? (CommonNonhelperSymbol) (ref - _numHelperSymbols)
+                           : getLastCommonNonhelperSymbol();
+   }
+
 int32_t OMR::SymbolReferenceTable::getNonhelperIndex(CommonNonhelperSymbol s)
    {
    TR_ASSERT(s <= getLastCommonNonhelperSymbol(), "assertion failure");

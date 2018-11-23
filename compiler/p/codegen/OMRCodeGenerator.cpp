@@ -3668,7 +3668,8 @@ OMR::Power::CodeGenerator::supportsNonHelper(TR::SymbolReferenceTable::CommonNon
       case TR::SymbolReferenceTable::atomicFetchAndAddSymbol:
       case TR::SymbolReferenceTable::atomicSwapSymbol:
          {
-         result = true;
+         // Atomic non-helpers for Power only supported on 64-bit, for now
+         result = TR::Compiler->target.is64Bit();
          break;
          }
       }

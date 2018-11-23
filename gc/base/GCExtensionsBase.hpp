@@ -1234,6 +1234,15 @@ public:
 		, _masterThreadTenureTLHRemainderTop(NULL)
 #endif /* OMR_GC_MODRON_SCAVENGER */
 		, environments(NULL)
+		, excessiveGCStats()
+#if defined(OMR_GC_MODRON_STANDARD) || defined(OMR_GC_REALTIME)
+		, globalGCStats()
+#endif /* OMR_GC_MODRON_STANDARD || OMR_GC_REALTIME */
+#if defined(OMR_GC_MODRON_SCAVENGER)
+		, incrementScavengerStats()
+		, scavengerStats()
+		, copyScanRatio()
+#endif /* OMR_GC_MODRON_SCAVENGER */		
 #if defined(OMR_GC_CONCURRENT_SWEEP)
 		, concurrentSweep(false)
 #endif /* OMR_GC_CONCURRENT_SWEEP */

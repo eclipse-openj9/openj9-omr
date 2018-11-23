@@ -280,6 +280,14 @@ MM_Scavenger::initialize(MM_EnvironmentBase *env)
 
 	_cacheLineAlignment = CACHE_LINE_SIZE;
 
+#if defined(OMR_GC_CONCURRENT_SCAVENGER)
+	if (_extensions->concurrentScavenger) {
+		if (!_masterGCThread.initialize(this, true, true)) {
+			return false;
+		}
+	}
+#endif /* OMR_GC_CONCURRENT_SCAVENGER */
+
 	return true;
 }
 
@@ -313,9 +321,6 @@ MM_Scavenger::collectorStartup(MM_GCExtensionsBase* extensions)
 {
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
 	if (_extensions->concurrentScavenger) {
-		if (!_masterGCThread.initialize(this, true, true)) {
-			return false;
-		}
 		if (!_masterGCThread.startup()) {
 			return false;
 		}

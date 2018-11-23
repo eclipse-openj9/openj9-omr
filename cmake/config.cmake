@@ -31,26 +31,32 @@ set(OMR_EXAMPLE ON CACHE BOOL "Enable the Example application")
 ###
 ### Major Feature Flags
 ###
-
-set(OMR_COMPILER OFF CACHE BOOL "Enable the compiler")
-set(OMR_DDR OFF CACHE BOOL "Enable DDR")
-set(OMR_FVTEST ON CACHE BOOL "Enable the FV Testing.")
-set(OMR_GC ON CACHE BOOL "Enable the GC")
-set(OMR_JIT OFF CACHE BOOL "Enable building the JIT compiler")
-set(OMR_JITBUILDER OFF CACHE BOOL "Enable building JitBuilder")
-set(OMR_OMRSIG ON CACHE BOOL "Enable the OMR signal compatibility library")
-set(OMR_PORT ON CACHE BOOL "Enable portability library")
-set(OMR_TEST_COMPILER OFF CACHE BOOL "Enable building the test compiler")
-set(OMR_THREAD ON CACHE BOOL "Enable thread library")
 set(OMR_TOOLS ON CACHE BOOL "Enable the native build tools")
+set(OMR_DDR ON CACHE BOOL "Enable DDR")
 set(OMR_RAS_TDF_TRACE ON CACHE BOOL "Enable trace engine")
+set(OMR_FVTEST ON CACHE BOOL "Enable the FV Testing.")
 
-## OMR_JIT is required for OMR_JITBUILDER and OMR_TEST_COMPILER
-if(OMR_JITBUILDER OR OMR_TEST_COMPILER)
-	set(OMR_JIT ON CACHE BOOL "" FORCE)
+set(OMR_PORT ON CACHE BOOL "Enable portability library")
+set(OMR_OMRSIG ON CACHE BOOL "Enable the OMR signal compatibility library")
+set(OMR_THREAD ON CACHE BOOL "Enable thread library")
+
+set(OMR_COMPILER OFF CACHE BOOL "Enable the Compiler")
+set(OMR_JITBUILDER OFF CACHE BOOL "Enable building JitBuilder")
+set(OMR_TEST_COMPILER OFF CACHE BOOL "Enable building the test compiler")
+
+set(OMR_GC ON CACHE BOOL "Enable the GC")
+
+## OMR_COMPILER is required for OMR_JITBUILDER and OMR_TEST_COMPILER
+if(NOT OMR_COMPILER)
+	if(OMR_JITBUILDER)
+		message(FATAL_ERROR "OMR_JITBUILDER is enabled but OMR_COMPILER is not enabled")
+	endif()
+	if(OMR_TEST_COMPILER)
+		message(FATAL_ERROR "OMR_TEST_COMPILER is enabled but OMR_COMPILER is not enabled")
+	endif()
 endif()
 
-## Enable OMR_JITBUILDER_TEST if OMR_JITBUILDER AND OMR_ENV_DATA64 are enabled.
+## Enable OMR_JITBUILDER_TEST if OMR_JITBUILDER is enabled.
 ## Do NOT force it since it is explicitly disabled on Windows for now.
 if(OMR_JITBUILDER)
 	set(OMR_JITBUILDER_TEST ON CACHE BOOL "")

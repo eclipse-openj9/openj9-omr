@@ -159,7 +159,7 @@ if(OMR_DDR)
 	add_subdirectory(ddr)
 endif(OMR_DDR)
 
-if(OMR_JIT)
+if(OMR_COMPILER)
 	add_subdirectory(compiler)
 endif()
 

@@ -92,6 +92,16 @@ class OMR_EXTENSIBLE Machine : public OMR::Machine
    TR::Register *getVirtualAssociatedWithReal(TR::RealRegister::RegNum regNum);
 
    /**
+    * @brief This method is the wrapper for \code getRealRegister.
+    * @param[in] regNum : register number
+    * @return RealRegister for specified register number
+    */
+   TR::RealRegister *getPPCRealRegister(TR::RealRegister::RegNum regNum)
+      {
+      return _registerFile[regNum];
+      }
+
+   /**
     * @brief Converts RegNum to RealRegister
     * @param[in] regNum : register number
     * @return RealRegister for specified register number

@@ -889,22 +889,6 @@ void TR::X86RegRegInstruction::assignRegisters(TR_RegisterKinds kindsToBeAssigne
 
       bool regRegCopy = isRegRegMove();
       TR_X86OpCodes opCode = getOpCodeValue();
-      static char* useOutOfDateRegRegMoveList = feGetEnv("TR_UseOutOfDateRegRegMoveList");
-      if (useOutOfDateRegRegMoveList)
-         {
-         if (opCode == MOVAPSRegReg ||
-             opCode == MOV8RegReg   ||
-             opCode == MOV4RegReg   ||
-             opCode == MOV2RegReg   ||
-             opCode == MOV1RegReg)
-            {
-            regRegCopy = true;
-            }
-         else
-            {
-            regRegCopy = false;
-            }
-         }
 
       if (getDependencyConditions())
          {

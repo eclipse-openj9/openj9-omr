@@ -471,6 +471,12 @@ TR::RealRegister *OMR::ARM64::Machine::assignOneRegister(TR::Instruction *curren
       self()->cg()->traceRegAssigned(virtualRegister, assignedRegister);
       }
 
+   if (virtualRegister->decFutureUseCount() == 0)
+      {
+      virtualRegister->setAssignedRegister(NULL);
+      assignedRegister->setState(TR::RealRegister::Unlatched);
+      }
+
    return assignedRegister;
    }
 

@@ -7281,20 +7281,6 @@ void TR_InvariantArgumentPreexistence::processIndirectCall(TR::Node *node, TR::T
          if ((receiverInfo.classIsRefined() && receiverInfo.classIsFixed()) || receiverInfo.classIsCurrentlyFinal())
             fixedOrFinalInfoExists = true;
 
-         if (!isInterface && fixedOrFinalInfoExists)
-            {
-            TR_OpaqueClassBlock *clazz = resolvedMethod->containingClass();
-            if (clazz)
-               {
-               TR_OpaqueClassBlock *thisClazz = receiverInfo.getClass();
-               if (thisClazz)
-                  {
-                  TR_YesNoMaybe isInstance = fe()->isInstanceOf(thisClazz, clazz, true);
-                  if (isInstance == TR_yes)
-                     devirtualize = true;
-                  }
-               }
-            }
          }
       }
 
@@ -7317,12 +7303,22 @@ void TR_InvariantArgumentPreexistence::processIndirectCall(TR::Node *node, TR::T
          }
 
       receiverInfo.setClassIsFixed();
+      fixedOrFinalInfoExists = true;
+      }
 
-      // If the receiver is a known object, we can always devirtualize as long
-      // as the method is resolved.
-      //
-      if (methodSymbol->isVirtual())
-         devirtualize = true;
+   if (methodSymbol->isVirtual() && fixedOrFinalInfoExists)
+      {
+      TR_OpaqueClassBlock *clazz = resolvedMethod->containingClass();
+      if (clazz)
+         {
+         TR_OpaqueClassBlock *thisClazz = receiverInfo.getClass();
+         if (thisClazz)
+            {
+            TR_YesNoMaybe isInstance = fe()->isInstanceOf(thisClazz, clazz, true);
+            if (isInstance == TR_yes)
+               devirtualize = true;
+            }
+         }
       }
 
    //

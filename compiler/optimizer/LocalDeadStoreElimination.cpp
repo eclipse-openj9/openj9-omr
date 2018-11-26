@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -868,7 +868,7 @@ void TR::LocalDeadStoreElimination::eliminateDeadObjectInitializations()
          if (sym)
             {
             if (sym->isLocalObject() &&
-                sym->getLocalObjectSymbol()->getKind() == TR::New)
+                sym->getLocalObjectSymbol()->getOpCodeKind() == TR::New)
                sym->setLocalIndex(numSymbols++);
             else
                sym->setLocalIndex(0);
@@ -906,7 +906,7 @@ void TR::LocalDeadStoreElimination::eliminateDeadObjectInitializations()
          {
          if (storeNode->getFirstChild()->getOpCode().hasSymbolReference() &&
              storeNode->getFirstChild()->getSymbolReference()->getSymbol()->isLocalObject() &&
-             (storeNode->getFirstChild()->getSymbolReference()->getSymbol()->getLocalObjectSymbol()->getKind() == TR::New) &&
+             (storeNode->getFirstChild()->getSymbolReference()->getSymbol()->getLocalObjectSymbol()->getOpCodeKind() == TR::New) &&
              !usedLocalObjectSymbols.get(storeNode->getFirstChild()->getSymbolReference()->getSymbol()->getLocalIndex()))
             removableLocalObjectStore = true;
          else if (currentNews.find(storeNode->getFirstChild()) ||
@@ -1013,7 +1013,7 @@ void TR::LocalDeadStoreElimination::findLocallyAllocatedObjectUses(LDSBitVector 
    {
    if (node->getOpCode().hasSymbolReference() &&
        (node->getSymbolReference()->getSymbol()->isLocalObject() &&
-        node->getSymbolReference()->getSymbol()->getLocalObjectSymbol()->getKind() == TR::New) &&
+        node->getSymbolReference()->getSymbol()->getLocalObjectSymbol()->getOpCodeKind() == TR::New) &&
        !(parent->getOpCode().isStoreIndirect() && childNum == 0 &&
          ( (uint32_t) parent->getSymbolReference()->getOffset() < fe()->getObjectHeaderSizeInBytes())))
        usedLocalObjectSymbols.set(node->getSymbolReference()->getSymbol()->getLocalIndex());

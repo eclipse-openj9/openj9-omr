@@ -3441,6 +3441,12 @@ OMR::Z::Linkage::trStackMemory()
    }
 
 TR::RealRegister *
+OMR::Z::Linkage::getS390RealRegister(TR::RealRegister::RegNum rNum)
+   {
+   return self()->cg()->machine()->getRealRegister(rNum);
+   }
+
+TR::RealRegister *
 OMR::Z::Linkage::getRealRegister(TR::RealRegister::RegNum rNum)
    {
    return self()->cg()->machine()->getRealRegister(rNum);

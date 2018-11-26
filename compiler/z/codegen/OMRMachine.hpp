@@ -228,11 +228,31 @@ class OMR_EXTENSIBLE Machine : public OMR::Machine
    Machine(TR::CodeGenerator *cg);
 
    /**
+    * @brief This method is the wrapper for \code getRealRegister.
+    * @param[in] regNum : register number
+    * @return RealRegister for specified register number
+    */
+   TR::RealRegister *getS390RealRegister(TR::RealRegister::RegNum regNum)
+      {
+      return _registerFile[regNum];
+      }
+
+   /**
     * @brief Converts RegNum to RealRegister
     * @param[in] regNum : register number
     * @return RealRegister for specified register number
     */
    TR::RealRegister *getRealRegister(TR::RealRegister::RegNum regNum)
+      {
+      return _registerFile[regNum];
+      }
+
+   /**
+    * @brief This method is the wrapper for \code getRealRegister.
+    * @param[in] regNum : register number
+    * @return RealRegister for specified register number
+    */
+   TR::RealRegister *getS390RealRegister(int32_t regNum)
       {
       return _registerFile[regNum];
       }

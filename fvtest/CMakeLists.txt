@@ -39,6 +39,10 @@ if(OMR_GC)
 	add_subdirectory(gctest)
 endif()
 
+if(OMR_GC_API_TEST)
+	add_subdirectory(gc_api_test)
+endif()
+
 if(OMR_JITBUILDER_TEST)
 	add_subdirectory(jitbuildertest)
 endif()

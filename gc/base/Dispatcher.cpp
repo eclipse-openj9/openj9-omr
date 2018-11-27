@@ -89,7 +89,7 @@ MM_Dispatcher::cleanupAfterTask(MM_EnvironmentBase *env)
 void
 MM_Dispatcher::run(MM_EnvironmentBase *env, MM_Task *task, uintptr_t newThreadCount)
 {
-	uintptr_t activeThreads = recomputeActiveThreadCount(env, task, newThreadCount);
+	uintptr_t activeThreads = recomputeActiveThreadCountForTask(env, task, newThreadCount);
 	task->masterSetup(env);
 	prepareThreadsForTask(env, task, activeThreads);
 	acceptTask(env);
@@ -111,7 +111,7 @@ MM_Dispatcher::shutDownThreads()
 }
 
 uintptr_t
-MM_Dispatcher::recomputeActiveThreadCount(MM_EnvironmentBase *env, MM_Task *task, uintptr_t newThreadCount)
+MM_Dispatcher::recomputeActiveThreadCountForTask(MM_EnvironmentBase *env, MM_Task *task, uintptr_t newThreadCount)
 {
 	return 1;
 }

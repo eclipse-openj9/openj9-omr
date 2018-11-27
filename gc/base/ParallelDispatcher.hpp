@@ -108,7 +108,7 @@ protected:
 	virtual void completeTask(MM_EnvironmentBase *env);
 	virtual void wakeUpThreads(uintptr_t count);
 	
-	virtual uintptr_t recomputeActiveThreadCount(MM_EnvironmentBase *env, MM_Task *task, uintptr_t newThreadCount);
+	virtual uintptr_t recomputeActiveThreadCountForTask(MM_EnvironmentBase *env, MM_Task *task, uintptr_t newThreadCount); 
 
 	virtual void setThreadInitializationComplete(MM_EnvironmentBase *env);
 	

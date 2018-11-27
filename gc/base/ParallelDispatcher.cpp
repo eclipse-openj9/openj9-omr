@@ -407,7 +407,7 @@ MM_ParallelDispatcher::setThreadCount(uintptr_t threadCount)
  * Decide how many threads should be active for a given task.
  */
 uintptr_t
-MM_ParallelDispatcher::recomputeActiveThreadCount(MM_EnvironmentBase *env, MM_Task *task, uintptr_t threadCount)
+MM_ParallelDispatcher::recomputeActiveThreadCountForTask(MM_EnvironmentBase *env, MM_Task *task, uintptr_t threadCount)
 {
 	/* Metronome recomputes the number of GC threads at the beginning of
 	 * a GC cycle. It may not be safe to do so at the beginning of a task

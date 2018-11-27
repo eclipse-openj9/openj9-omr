@@ -368,3 +368,7 @@ target_link_libraries(omrgc
 )
 
 set_target_properties(omrgc omrgc_hookgen omrgc_tracegen PROPERTIES FOLDER gc)
+
+if(OMR_GC_API)
+	add_subdirectory(api)
+endif(OMR_GC_API)

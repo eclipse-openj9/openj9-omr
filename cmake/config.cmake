@@ -99,6 +99,8 @@ set(OMR_CORE_GLUE_TARGET "NOTFOUND" CACHE STRING "The core glue target, must be 
 # TODO: This is a pretty crazy list, can we move it to their subprojects?
 
 set(OMR_GC_ALLOCATION_TAX ON CACHE BOOL "TODO: Document")
+set(OMR_GC_API OFF CACHE BOOL "Enable a high-level GC API")
+set(OMR_GC_API_TEST OFF CACHE BOOL "Enable testing for the OMR GC API")
 set(OMR_GC_ARRAYLETS ON CACHE BOOL "TODO: Document")
 set(OMR_GC_BATCH_CLEAR_TLH ON CACHE BOOL "TODO: Document")
 set(OMR_GC_COMBINATION_SPEC ON CACHE BOOL "TODO: Document")

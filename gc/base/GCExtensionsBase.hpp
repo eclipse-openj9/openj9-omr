@@ -1541,9 +1541,9 @@ public:
 #endif
 		, heapInitializationFailureReason(HEAP_INITIALIZATION_FAILURE_REASON_NO_ERROR)
 		, scavengerAlignHotFields(true) /* VM Design 1774: hot field alignment is on by default */
-#if defined(OMR_GC_COMPRESSED_POINTERS)
 		, suballocatorInitialSize(SUBALLOCATOR_INITIAL_SIZE) /* default for J9Heap suballocator initial size is 200 MB */
 		, suballocatorCommitSize(SUBALLOCATOR_COMMIT_SIZE) /* default for J9Heap suballocator commit size is 50 MB */
+#if defined(OMR_GC_COMPRESSED_POINTERS)
 		, shouldAllowShiftingCompression(true) /* VM Design 1810: shifting compression enabled, by default, for compressed refs */
 		, shouldForceSpecifiedShiftingCompression(0)
 		, forcedShiftingCompressionAmount(0)

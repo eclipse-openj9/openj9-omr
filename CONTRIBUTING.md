@@ -129,7 +129,8 @@ Following these guidelines will help us to merge your pull requests smoothly:
    copyright/license requirements outlined below.
 
 4. For each file that you modify, ensure that the current copyright year in the
-   header at the top of the file is up-to-date with the current year.
+   header at the top of the file is up-to-date with the current year.  Note that
+   renaming, moving, or copying a file does not require a copyright change.
 
 5. Follow the coding style and format of the code you are modifying (see the
    [coding standards](doc/CodingStandard.md)). The code base is yet to be unified

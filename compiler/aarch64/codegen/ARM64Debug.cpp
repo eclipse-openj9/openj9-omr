@@ -831,8 +831,8 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64MemSrc1Instruction *instr)
    printPrefix(pOutFile, instr);
    trfprintf(pOutFile, "%s \t", getOpCodeName(&instr->getOpCode()));
 
-   print(pOutFile, instr->getMemoryReference()); trfprintf(pOutFile, ", ");
-   print(pOutFile, instr->getSource1Register(), TR_WordReg);
+   print(pOutFile, instr->getSource1Register(), TR_WordReg); trfprintf(pOutFile, ", ");
+   print(pOutFile, instr->getMemoryReference());
 
    printMemoryReferenceComment(pOutFile, instr->getMemoryReference());
    trfflush(_comp->getOutFile());

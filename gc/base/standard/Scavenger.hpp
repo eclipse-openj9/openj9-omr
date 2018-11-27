@@ -105,6 +105,7 @@ private:
 	uintptr_t _cachesPerThread; /**< maximum number of copy and scan caches required per thread at any one time */
 	omrthread_monitor_t _scanCacheMonitor; /**< monitor to synchronize threads on scan lists */
 	omrthread_monitor_t _freeCacheMonitor; /**< monitor to synchronize threads on free list */
+	uintptr_t _waitingCountAliasThreshold; /**< Only alias a copy cache IF the number of threads waiting hasn't reached the threshold*/
 	volatile uintptr_t _waitingCount; /**< count of threads waiting  on scan cache queues (blocked via _scanCacheMonitor); threads never wait on _freeCacheMonitor */
 	uintptr_t _cacheLineAlignment; /**< The number of bytes per cache line which is used to determine which boundaries in memory represent the beginning of a cache line */
 	volatile bool _rescanThreadsForRememberedObjects; /**< Indicates that thread-referenced objects were tenured and threads must be rescanned */
@@ -545,6 +546,9 @@ public:
 	 */
 	void resetTenureLargeAllocateStats(MM_EnvironmentBase *env);
 
+	/* API used by ParallelScavengeTask to set _waitingCountAliasThreshold. */
+	void setAliasThreshold(uintptr_t waitingCountAliasThreshold) { _waitingCountAliasThreshold = waitingCountAliasThreshold; }
+
 protected:
 	virtual void setupForGC(MM_EnvironmentBase *env);
 	virtual void masterSetupForGC(MM_EnvironmentStandard *env);
@@ -794,6 +798,7 @@ public:
 		, _cachesPerThread(0)
 		, _scanCacheMonitor(NULL)
 		, _freeCacheMonitor(NULL)
+		, _waitingCountAliasThreshold(0)
 		, _waitingCount(0)
 		, _cacheLineAlignment(0)
 #if !defined(OMR_GC_CONCURRENT_SCAVENGER)

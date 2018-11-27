@@ -308,17 +308,59 @@ class SymbolReferenceTable
       return lastCommonNonhelperSymbol;
       }
 
-   // Check whether the given symbol reference (or reference number) is the
-   // known "non-helper" symbol reference.
-   //
-   bool isNonHelper(TR::SymbolReference *, CommonNonhelperSymbol);
-   bool isNonHelper(int32_t, CommonNonhelperSymbol);
-   bool isNonHelper(TR::SymbolReference *);
-   bool isNonHelper(int32_t);
+   /**
+    * Check whether the given symbol reference is the specified
+    * "non-helper" symbol reference
+    * @param[in] symRef the symbol reference to check
+    * @param[in] nonHelper the non-helper symbol to check
+    * @returns `true` if symRef is the specified non-helper symbol;
+    * `false` otherwise
+    */
+   bool isNonHelper(TR::SymbolReference *symRef, CommonNonhelperSymbol nonHelper);
 
-   // Look up non-helper symbol reference
-   CommonNonhelperSymbol getNonHelperSymbol(TR::SymbolReference *);
-   CommonNonhelperSymbol getNonHelperSymbol(int32_t);
+   /**
+    * Check whether the given reference number is the specified
+    * "non-helper" symbol.
+    * @param[in] ref the reference number to check
+    * @param[in] nonHelper the non-helper symbol to check
+    * @returns `true` if ref is the specified non-helper symbol;
+    * `false` otherwise
+    */
+   bool isNonHelper(int32_t ref, CommonNonhelperSymbol nonHelper);
+
+   /**
+    * Check whether the given symbol reference is a "non-helper" symbol.
+    * @param[in] symRef the symbol reference to check
+    * @returns `true` if symRef is a non-helper reference;
+    * `false` otherwise
+    */
+   bool isNonHelper(TR::SymbolReference *symRef);
+
+   /**
+    * Check whether the given reference number is a "non-helper" symbol.
+    * @param[in] ref the reference number to check
+    * @returns `true` if ref is a non-helper reference;
+    * `false` otherwise
+    */
+   bool isNonHelper(int32_t ref);
+
+   /**
+    * Retrieve the @ref CommonNonhelperSymbol for this symbol reference.
+    * @param[in] symRef the symbol reference to check
+    * @returns the @ref CommonNonhelperSymbol that this symbol reference
+    * refers to or the value of getLastCommonNonhelperSymbol() if
+    * the symbol reference does not refer to a non-helper
+    */
+   CommonNonhelperSymbol getNonHelperSymbol(TR::SymbolReference *symRef);
+
+   /**
+    * Retrieve the `CommonNonhelperSymbol` for this reference number.
+    * @param[in] ref the reference number to check
+    * @returns the @ref CommonNonhelperSymbol that this symbol reference
+    * refers to or the value of getLastCommonNonhelperSymbol() if
+    * the symbol reference does not refer to a non-helper
+    */
+   CommonNonhelperSymbol getNonHelperSymbol(int32_t ref);
 
 
    // Total number of symbols (known and dynamic) in the SRT

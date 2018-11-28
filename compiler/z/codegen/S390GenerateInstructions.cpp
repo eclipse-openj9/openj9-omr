@@ -290,7 +290,7 @@ getReplacementLongDisplacementOpCode(TR::CodeGenerator* cg, TR::InstOpCode::Mnem
    {
    if (!memRef->hasTemporaryNegativeOffset() && memRef->isLongDisplacementRequired())
       {
-      auto longDisplacementMnemonic = TR::Instruction::opCodeCanBeAdjustedTo(op);
+      auto longDisplacementMnemonic = TR::InstOpCode::getEquivalentLongDisplacementMnemonic(op);
 
       if (longDisplacementMnemonic != TR::InstOpCode::BAD)
          {

@@ -138,7 +138,6 @@ class OMR_EXTENSIBLE Instruction : public OMR::Instruction
    void setDebugHookOp() {_flags.set(DebugHookOp);}
 
    bool hasLongDisplacementSupport();
-   static TR::InstOpCode::Mnemonic opCodeCanBeAdjustedTo(TR::InstOpCode::Mnemonic);
    TR::Register* getRegForBinaryEncoding(TR::Register* reg);
    void useRegister(TR::Register *reg, bool isDummy = false);
    bool matchesAnyRegister(TR::Register* reg, TR::Register* instReg);

@@ -244,6 +244,100 @@ OMR::Z::InstOpCode::getInstructionLength(TR::InstOpCode::Mnemonic i_opCode)
   }
 
 TR::InstOpCode::Mnemonic
+OMR::Z::InstOpCode::getEquivalentLongDisplacementMnemonic(TR::InstOpCode::Mnemonic op)
+   {
+   switch (op)
+      {
+      case TR::InstOpCode::A:
+         return TR::InstOpCode::AY;
+      case TR::InstOpCode::AL:
+         return TR::InstOpCode::ALY;
+      case TR::InstOpCode::AH:
+         return TR::InstOpCode::AHY;
+      case TR::InstOpCode::C:
+         return TR::InstOpCode::CY;
+      case TR::InstOpCode::CH:
+         return TR::InstOpCode::CHY;
+      case TR::InstOpCode::CL:
+         return TR::InstOpCode::CLY;
+      case TR::InstOpCode::IC:
+         return TR::InstOpCode::ICY;
+      case TR::InstOpCode::L:
+         return TR::InstOpCode::LY;
+      case TR::InstOpCode::LA:
+         return TR::InstOpCode::LAY;
+      case TR::InstOpCode::LAE:
+         return TR::InstOpCode::LAEY;
+      case TR::InstOpCode::LRA:
+         return TR::InstOpCode::LRAY;
+      case TR::InstOpCode::LH:
+         return TR::InstOpCode::LHY;
+      case TR::InstOpCode::MS:
+         return TR::InstOpCode::MSY;
+      case TR::InstOpCode::M:
+         return TR::InstOpCode::MFY;
+      case TR::InstOpCode::MH:
+         return TR::InstOpCode::MHY;
+      case TR::InstOpCode::N:
+         return TR::InstOpCode::NY;
+      case TR::InstOpCode::NI:
+         return TR::InstOpCode::NIY;
+      case TR::InstOpCode::O:
+         return TR::InstOpCode::OY;
+      case TR::InstOpCode::OI:
+         return TR::InstOpCode::OIY;
+      case TR::InstOpCode::S:
+         return TR::InstOpCode::SY;
+      case TR::InstOpCode::SH:
+         return TR::InstOpCode::SHY;
+      case TR::InstOpCode::SL:
+         return TR::InstOpCode::SLY;
+      case TR::InstOpCode::ST:
+         return TR::InstOpCode::STY;
+      case TR::InstOpCode::STC:
+         return TR::InstOpCode::STCY;
+      case TR::InstOpCode::STH:
+         return TR::InstOpCode::STHY;
+      case TR::InstOpCode::X:
+         return TR::InstOpCode::XY;
+      case TR::InstOpCode::XI:
+         return TR::InstOpCode::XIY;
+      case TR::InstOpCode::LE:
+         return TR::InstOpCode::LEY;
+      case TR::InstOpCode::LD:
+         return TR::InstOpCode::LDY;
+      case TR::InstOpCode::STE:
+         return TR::InstOpCode::STEY;
+      case TR::InstOpCode::STD:
+         return TR::InstOpCode::STDY;
+      case TR::InstOpCode::LM:
+         return TR::InstOpCode::LMY;
+      case TR::InstOpCode::STM:
+         return TR::InstOpCode::STMY;
+      case TR::InstOpCode::STCM:
+         return TR::InstOpCode::STCMY;
+      case TR::InstOpCode::ICM:
+         return TR::InstOpCode::ICMY;
+      case TR::InstOpCode::TM:
+         return TR::InstOpCode::TMY;
+      case TR::InstOpCode::MVI:
+         return TR::InstOpCode::MVIY;
+      case TR::InstOpCode::CLI:
+         return TR::InstOpCode::CLIY;
+      case TR::InstOpCode::CVB:
+         return TR::InstOpCode::CVBY;
+      case TR::InstOpCode::CVD:
+         return TR::InstOpCode::CVDY;
+      case TR::InstOpCode::CS:
+         return TR::InstOpCode::CSY;
+      case TR::InstOpCode::CDS:
+         return TR::InstOpCode::CDSY;
+      default:
+         return TR::InstOpCode::BAD;
+      }
+   }
+
+TR::InstOpCode::Mnemonic
 OMR::Z::InstOpCode::getLoadOnConditionRegOpCode() { return TR::Compiler->target.is64Bit() ? TR::InstOpCode::LOCGR : TR::InstOpCode::LOCR; }
 
 TR::InstOpCode::Mnemonic

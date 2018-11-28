@@ -2960,7 +2960,7 @@ OMR::Z::MemoryReference::generateBinaryEncoding(uint8_t * cursor, TR::CodeGenera
    // after instruction selection and before binary encoding.
    if (displacement < MINDISP || displacement >= MAXDISP)
       {
-      auto longDisplacementMnemonic = TR::Instruction::opCodeCanBeAdjustedTo(instr->getOpCodeValue());
+      auto longDisplacementMnemonic = TR::InstOpCode::getEquivalentLongDisplacementMnemonic(instr->getOpCodeValue());
 
       if ((displacement < MAXLONGDISP && displacement > MINLONGDISP)
          && (longDisplacementMnemonic != TR::InstOpCode::BAD

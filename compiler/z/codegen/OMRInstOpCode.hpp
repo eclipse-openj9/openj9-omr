@@ -724,6 +724,16 @@ class InstOpCode: public OMR::InstOpCode
    uint8_t getInstructionFormat() { return getInstructionFormat(_mnemonic);}
    const uint8_t * getOpCodeBinaryRepresentation() { return getOpCodeBinaryRepresentation(_mnemonic);}
 
+   /** \brief
+     *    Gets the 20-bit displacement mnemonic which is equivalent to a 12-bit displacement mnemonic.
+     *
+     *  \param op
+     *     The 12-bit displacement mnemonic for which to find an equivalent 20-bit displacement mnemonic.
+     *
+     *  \return
+     *     The 20-bit displacement mnemonic if it exists, otherwise `BAD` mnemonic.
+     */
+   static Mnemonic getEquivalentLongDisplacementMnemonic(Mnemonic op);
 
    /* Static methods for getting the correct opCode depending on platform (32bit, 64bit, etc.) */
    static Mnemonic getLoadOnConditionRegOpCode();

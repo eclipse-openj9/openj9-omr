@@ -1953,13 +1953,13 @@ TR_Debug::print(TR::FILE *pOutFile, TR::MemoryReference * mr, TR::Instruction * 
 #endif
       }
 
-   // After Binary Encoding, the _displacement field of the MemRef has the
-   // correct final displacement. This includes all fixups applied for long
-   // displacements. Therefore, we get the displacement value directly from
-   // the memory reference instead of trying to compute it
-
+   // After Binary Encoding, the offset field of the MemRef has the correct final displacement. This includes all the
+   // fixups applied for long displacements. Therefore, we get the displacement value directly from the memory 
+   // reference instead of trying to compute it here.
    if (_comp->cg()->getCodeGeneratorPhase() > TR::CodeGenPhase::BinaryEncodingPhase)
-      displacement = mr->getDisp();
+      {
+      displacement = mr->getOffset();
+      }
 
    if (!_comp->cg()->getMappingAutomatics() && !fullyMapped)
       {

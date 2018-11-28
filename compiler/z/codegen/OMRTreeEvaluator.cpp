@@ -6608,7 +6608,7 @@ lstoreHelper(TR::Node * node, TR::CodeGenerator * cg, bool isReversed)
 
 
    TR::MemoryReference * lowMR = generateS390MemoryReference(node, cg);
-   TR::MemoryReference * highMR= generateS390MemoryReference(*lowMR, lowMR->getDisp()+4, cg);
+   TR::MemoryReference * highMR= generateS390MemoryReference(*lowMR, lowMR->getOffset() + 4, cg);
 
    if (valueChild->getOpCodeValue() == TR::lconst && valueChild->getRegister() == NULL)
       {

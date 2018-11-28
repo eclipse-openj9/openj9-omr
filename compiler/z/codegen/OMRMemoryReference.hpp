@@ -113,8 +113,12 @@ private:
 TR::Instruction           *_targetSnippetInstruction;
 TR::Snippet                   *_targetSnippet;
 flags32_t                 _flags;
-int32_t                   _displacement;
-int64_t                   _offset;
+
+/** \brief
+  *     The offset of the memory reference relative to the entity being referenced.
+  */
+intptrj_t _offset;
+
 TR_StorageReference       *_storageReference;
 
 /**
@@ -191,8 +195,20 @@ TR::Register *setIndexRegister(TR::Register *ir) {return _indexRegister = ir;}
 TR::Node *getIndexNode()            {return _indexNode;}
 TR::Node *setIndexNode(TR::Node *in) {return _indexNode = in;}
 
+/** \brief
+  *    Gets the offset of the memory reference relative to the entity being referenced.
+  *
+  * \note
+  *    The offset may not represent the final displacement which will be used to encode the memory reference until the
+  *    binary encoding of this memory reference is generated.
+  */
 intptrj_t getOffset() {return _offset;}
+
+/** \brief
+  *    Sets the offset of the memory reference relative to the entity being referenced.
+  */
 void setOffset(intptrj_t amount) {_offset = amount;}
+
 void addToOffset(intptrj_t amount) {_offset += amount;}
 
 /**
@@ -312,9 +328,6 @@ bool refsRegister(TR::Register *reg)
       }
    return false;
    }
-
-int32_t getDisp()          {return _displacement;}
-void setDisp(int32_t f)    {_displacement=f;}
 
 bool isUnresolvedDataSnippet()  {return _flags.testAny(S390MemRef_UnresolvedDataSnippet);}
 void setUnresolvedDataSnippet() {_flags.set(S390MemRef_UnresolvedDataSnippet);}

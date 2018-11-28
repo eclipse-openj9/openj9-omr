@@ -3132,11 +3132,11 @@ MM_Scavenger::copyCacheDistanceMetric(MM_CopyScanCacheStandard* copyCache)
 MMINLINE MM_CopyScanCacheStandard *
 MM_Scavenger::aliasToCopyCache(MM_EnvironmentStandard *env, GC_SlotObject *scannedSlot, MM_CopyScanCacheStandard* scanCache, MM_CopyScanCacheStandard* copyCache)
 {
-	/* Only alias a copy cache IF there are 0 threads waiting.  If the current thread is the only producer and
-	 * it aliases a copy cache then it will be the only thread able to consume.  This will alleviate the stalling issues
-	 * described in VMDESIGN 1359.
+	/* Only alias a copy cache IF there are <= _waitingCountAliasThreshold threads waiting (defaulted to 20% of active GC threads, option XXgc:aliasInhibitingThresholdPercentage).
+	 * If the current thread is the only producer and it aliases a copy cache then it will be the only thread able to consume.
+	 * This will alleviate the stalling issues.
 	 *
-	 * @NOTE this is likely too aggressive and should be relaxed.
+	 * @NOTE See Github Issue 3089 (Investigate Scavenger's Aliasing Inhibiting Condition)
 	 */
 	if (_waitingCount <= _waitingCountAliasThreshold) {
 		/* Only alias if the scanCache != copyCache. IF the caches are the same there is no benefit

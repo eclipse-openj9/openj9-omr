@@ -1077,6 +1077,22 @@ OMR::Z::MemoryReference::isAligned()
    return self()->rightAlignMemRef() || self()->leftAlignMemRef();
    }
 
+const bool
+OMR::Z::MemoryReference::isLongDisplacementRequired()
+   {
+   auto displacement = self()->getOffset();
+
+   return ((displacement > MINLONGDISP && displacement < MINDISP) || (displacement >= MAXDISP && displacement < MAXLONGDISP));
+   }
+
+const bool
+OMR::Z::MemoryReference::isHugeDisplacementRequired()
+   {
+   auto displacement = self()->getOffset();
+
+   return (displacement <= MINLONGDISP || displacement >= MAXLONGDISP);
+   }
+
 void
 OMR::Z::MemoryReference::setOriginalSymbolReference(TR::SymbolReference * ref, TR::CodeGenerator * cg)
    { _originalSymbolReference = ref;
@@ -3115,6 +3131,9 @@ OMR::Z::MemoryReference::generateBinaryEncoding(uint8_t * cursor, TR::CodeGenera
             traceMsg(comp, "[%p] Long Disp Inst using %s as scratch reg\n", instr, cg->getDebug()->getName(scratchReg));
          }
       }
+      
+   // Update the offset now that the correct encded displacement is known
+   self()->setOffset(displacement);
 
    if (instructionFormat == TR::Instruction::IsRXY ||
        instructionFormat == TR::Instruction::IsRXYb ||
@@ -3138,9 +3157,6 @@ OMR::Z::MemoryReference::generateBinaryEncoding(uint8_t * cursor, TR::CodeGenera
       *reinterpret_cast<uint32_t*>(cursor) &= boi(0xFFFFF000);
       *reinterpret_cast<uint32_t*>(cursor) |= boi(displacement);
       }
-
-   // Update the offset now that the correct encded displacement is known
-   self()->setOffset(displacement);
 
    if (base != NULL)
       {

@@ -288,9 +288,7 @@ TR::InstOpCode::Mnemonic getReplacementCompareAndBranchOpCode(TR::CodeGenerator 
 TR::InstOpCode::Mnemonic
 getReplacementLongDisplacementOpCode(TR::CodeGenerator* cg, TR::InstOpCode::Mnemonic op, TR::MemoryReference* memRef)
    {
-   int32_t displacement = memRef->getOffset();
-
-   if (!memRef->hasTemporaryNegativeOffset() && ((displacement > MINLONGDISP && displacement < MINDISP) || (displacement >= MAXDISP && displacement < MAXLONGDISP)))
+   if (!memRef->hasTemporaryNegativeOffset() && memRef->isLongDisplacementRequired())
       {
       auto longDisplacementMnemonic = TR::Instruction::opCodeCanBeAdjustedTo(op);
 

@@ -281,6 +281,32 @@ void setLeftAlignMemRef(int32_t leftMostByte);
 
 bool isAligned();
 
+/** \brief
+ *     Determines whether this memory reference may require long displacement (as defined by PoPs).
+ *
+ * \return
+ *    `true` if this memory reference requires long displacement; `false` if long displacement may not be required.
+ *
+ * \note
+ *    A return value of `false` does not imply long displacement is not required. This is because the displacement of
+ *    this memory reference is not fully known until binary encoding. Only after the binary encoding of this memory
+ *    reference will a return value of `false` indicate that long displacement is not required. The offset may increase
+ *    by some amount during code generation, however it will never decrease. This is why a return value of `true` 
+ *    always implies long displacement will be required.
+ */
+const bool isLongDisplacementRequired();
+
+/** \brief
+ *     Determines whether this memory reference may require huge displacement.
+ *
+ * \return
+ *    `true` if this memory reference requires huge displacement; `false` if huge displacement may not be required.
+ *
+ * \note
+ *    \see isLongDisplacementRequired notes section.
+ */
+const bool isHugeDisplacementRequired();
+
 bool forceEvaluation()        { return _flags.testAny(TR_S390MemRef_ForceEvaluation); }
 void setForceEvaluation()
    {

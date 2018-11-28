@@ -1809,7 +1809,7 @@ MM_Scavenger::getNextScanCache(MM_EnvironmentStandard *env)
 	bool doneFlag = false;
 	volatile uintptr_t doneIndex = _doneIndex;
 
-	if (checkAndSetShouldYieldFlag()) {
+	if (checkAndSetShouldYieldFlag(env)) {
 		flushBuffersForGetNextScanCache(env);
 		omrthread_monitor_enter(_scanCacheMonitor);
 		if (0 != _waitingCount) {
@@ -1817,7 +1817,7 @@ MM_Scavenger::getNextScanCache(MM_EnvironmentStandard *env)
 		}
 		omrthread_monitor_exit(_scanCacheMonitor);
 		return NULL;
-    }
+	}
 
 	/* Preference is to use survivor copy cache */
 	cache = env->_survivorCopyScanCache;
@@ -3225,13 +3225,18 @@ MM_Scavenger::restoreMasterThreadTenureTLHRemainders(MM_EnvironmentStandard *env
 }
 
 MMINLINE bool
-MM_Scavenger::checkAndSetShouldYieldFlag() {
+MM_Scavenger::checkAndSetShouldYieldFlag(MM_EnvironmentStandard *env) {
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
-	/* Don't rely on fact that scavenger_shouldYield() would return the same value during one concurrent phase.
-	 * If one GC thread saw that we need to yield, we must yield, there is no way back. Hence, we store the result in _shouldYield,
+	/* Don't rely on various conditions being same during one concurrent phase.
+	 * If one GC thread decided that we need to yield, we must yield, there is no way back. Hence, we store the result in _shouldYield,
 	 * and rely on it for the rest of concurrent phase.
+	 * Master info if we should yield comes from exclusive VM access request being broadcasted to this thread (isExclusiveAccessRequestWaiting())
+	 * But since that request in the thread is not cleared even when implicit master GC thread enters STW phase, and since this yield check is invoked
+	 * in common code that can run both during STW and concurrent phase, we have to additionally check we are indeed in concurrent phase before deciding to yield.
+	 * Most of the time we could rely on being in 'concurrent_state_scan' but it's more reliable to actually check if exclusive access
+	 * is indeed being requested (hence scavenger_shouldYield() call too).
 	 */
-	if (!_shouldYield && _cli->scavenger_shouldYield()) {
+	if (!_shouldYield && env->isExclusiveAccessRequestWaiting() && _cli->scavenger_shouldYield()) {
 		_shouldYield = true;
 	}
 	return _shouldYield;
@@ -4943,8 +4948,6 @@ uintptr_t
 MM_Scavenger::masterThreadConcurrentCollect(MM_EnvironmentBase *env)
 {
 	if (concurrent_state_scan == _concurrentState) {
-		Assert_MM_true(concurrent_state_scan == _concurrentState || concurrent_state_idle == _concurrentState);
-
 		clearIncrementGCStats(env, false);
 
 		MM_ConcurrentScavengeTask scavengeTask(env, _dispatcher, this, MM_ConcurrentScavengeTask::SCAVENGE_SCAN, UDATA_MAX, env->_cycleState);
@@ -4952,14 +4955,27 @@ MM_Scavenger::masterThreadConcurrentCollect(MM_EnvironmentBase *env)
 		_dispatcher->run(env, &scavengeTask, _extensions->concurrentScavengerBackgroundThreads);
 
 		/* Now that we are done with concurrent scanning in this cycle (where we could possibly
-		 * be interested in its value), record the flag for reporting purposes and reset it. */
-		getConcurrentPhaseStats()->_terminationWasRequested = _shouldYield;
-		_shouldYield = false;
+		 * be interested in its value), record shouldYield Flag for reporting purposes and reset it. */
+		if (_shouldYield) {
+			if (NULL == _extensions->gcExclusiveAccessThreadId) {
+				/* We terminated concurrent cycle due to a external request. We will not move to 'complete' phase,
+				 * but stay in concurrent scan phase and try to resume work after the external party is done 
+				 * (when we are able to regain VM access)
+				 */
+				getConcurrentPhaseStats()->_terminationRequestType = MM_ConcurrentPhaseStatsBase::terminationRequest_External;
+			} else {
+				/* Ran out of free space in allocate/survivor, or system/global GC */
+				getConcurrentPhaseStats()->_terminationRequestType = MM_ConcurrentPhaseStatsBase::terminationRequest_ByGC;
+				_concurrentState = concurrent_state_complete;
+			}
+			_shouldYield = false;
+		} else {
+			/* Exhausted scan work */
+			_concurrentState = concurrent_state_complete;
 
-		/* we can't assert the work queue is empty. some mutator threads could have just flushed their copy caches, after the task terminated */
-		_concurrentState = concurrent_state_complete;
-		/* make allocate space non-allocatable to trigger the final GC phase */
-		_activeSubSpace->flip(env, MM_MemorySubSpaceSemiSpace::disable_allocation);
+			/* make allocate space non-allocatable to trigger the next GC phase */
+			_activeSubSpace->flip(env, MM_MemorySubSpaceSemiSpace::disable_allocation);
+		}
 
 		mergeIncrementGCStats(env, false);
 

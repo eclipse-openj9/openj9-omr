@@ -161,7 +161,7 @@ private:
 	/**
 	 * Check if concurrent phase of the cycle should yield to an external activity. If so, set the flag so that other GC threads react appropriately
 	 */ 
-	bool checkAndSetShouldYieldFlag();
+	MMINLINE bool checkAndSetShouldYieldFlag(MM_EnvironmentStandard *env);
 	
 	/**
 	 * Check if top level scan loop should be aborted before the work is done

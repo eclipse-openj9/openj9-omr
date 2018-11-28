@@ -26,11 +26,8 @@
 
    IsNotExtended,
    IsImm,
-   IsDep,
    IsLabel,
-      IsDepLabel,
       IsConditionalBranch,
-         IsDepConditionalBranch,
       IsCompareBranch,
    IsRegBranch,
    IsAdmin,

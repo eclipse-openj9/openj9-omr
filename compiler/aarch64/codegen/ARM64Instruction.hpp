@@ -209,44 +209,6 @@ public:
    virtual uint8_t *generateBinaryEncoding();
    };
 
-class ARM64DepInstruction : public TR::Instruction
-   {
-   public:
-
-   /*
-    * @brief Constructor
-    * @param[in] op : instruction opcode
-    * @param[in] node : node
-    * @param[in] cond : register dependency condition
-    * @param[in] cg : CodeGenerator
-    */
-   ARM64DepInstruction(TR::InstOpCode::Mnemonic op, TR::Node *node,
-                       TR::RegisterDependencyConditions *cond, TR::CodeGenerator *cg)
-      : TR::Instruction(op, node, cond, cg)
-      {
-      }
-   /*
-    * @brief Constructor
-    * @param[in] op : instruction opcode
-    * @param[in] node : node
-    * @param[in] cond : register dependency condition
-    * @param[in] precedingInstruction : preceding instruction
-    * @param[in] cg : CodeGenerator
-    */
-   ARM64DepInstruction(TR::InstOpCode::Mnemonic op, TR::Node *node,
-                       TR::RegisterDependencyConditions *cond,
-                       TR::Instruction *precedingInstruction, TR::CodeGenerator *cg)
-      : TR::Instruction(op, node, cond, precedingInstruction, cg)
-      {
-      }
-
-   /**
-    * @brief Gets instruction kind
-    * @return instruction kind
-    */
-   virtual Kind getKind() { return IsDep; }
-   };
-
 class ARM64LabelInstruction : public TR::Instruction
    {
    TR::LabelSymbol *_symbol;
@@ -275,8 +237,40 @@ class ARM64LabelInstruction : public TR::Instruction
     * @param[in] cg : CodeGenerator
     */
    ARM64LabelInstruction(TR::InstOpCode::Mnemonic op, TR::Node *node, TR::LabelSymbol *sym,
-                          TR::Instruction *precedingInstruction, TR::CodeGenerator *cg)
+                         TR::Instruction *precedingInstruction, TR::CodeGenerator *cg)
       : TR::Instruction(op, node, precedingInstruction, cg), _symbol(sym)
+      {
+      if (sym!=NULL && op==TR::InstOpCode::label)
+         sym->setInstruction(this);
+      }
+   /*
+    * @brief Constructor
+    * @param[in] op : instruction opcode
+    * @param[in] node : node
+    * @param[in] sym : label symbol
+    * @param[in] cond : register dependency condition
+    * @param[in] cg : CodeGenerator
+    */
+   ARM64LabelInstruction(TR::InstOpCode::Mnemonic op, TR::Node *node, TR::LabelSymbol *sym,
+                         TR::RegisterDependencyConditions *cond, TR::CodeGenerator *cg)
+      : TR::Instruction(op, node, cond, cg), _symbol(sym)
+      {
+      if (sym!=NULL && op==TR::InstOpCode::label)
+         sym->setInstruction(this);
+      }
+   /*
+    * @brief Constructor
+    * @param[in] op : instruction opcode
+    * @param[in] node : node
+    * @param[in] sym : label symbol
+    * @param[in] cond : register dependency condition
+    * @param[in] precedingInstruction : preceding instruction
+    * @param[in] cg : CodeGenerator
+    */
+   ARM64LabelInstruction(TR::InstOpCode::Mnemonic op, TR::Node *node, TR::LabelSymbol *sym,
+                         TR::RegisterDependencyConditions *cond,
+                         TR::Instruction *precedingInstruction, TR::CodeGenerator *cg)
+      : TR::Instruction(op, node, cond, precedingInstruction, cg), _symbol(sym)
       {
       if (sym!=NULL && op==TR::InstOpCode::label)
          sym->setInstruction(this);
@@ -317,71 +311,6 @@ class ARM64LabelInstruction : public TR::Instruction
    virtual int32_t estimateBinaryLength(int32_t currentEstimate);
    };
 
-class ARM64DepLabelInstruction : public ARM64LabelInstruction
-   {
-   TR::RegisterDependencyConditions *_conditions;
-
-   public:
-
-   /*
-    * @brief Constructor
-    * @param[in] op : instruction opcode
-    * @param[in] node : node
-    * @param[in] sym : label symbol
-    * @param[in] cond : register dependency condition
-    * @param[in] cg : CodeGenerator
-    */
-   ARM64DepLabelInstruction(TR::InstOpCode::Mnemonic op,
-                             TR::Node *node,
-                             TR::LabelSymbol *sym,
-                             TR::RegisterDependencyConditions *cond, TR::CodeGenerator *cg)
-      : ARM64LabelInstruction(op, node, sym, cg), _conditions(cond)
-      {
-      }
-   /*
-    * @brief Constructor
-    * @param[in] op : instruction opcode
-    * @param[in] node : node
-    * @param[in] sym : label symbol
-    * @param[in] cond : register dependency condition
-    * @param[in] precedingInstruction : preceding instruction
-    * @param[in] cg : CodeGenerator
-    */
-   ARM64DepLabelInstruction(TR::InstOpCode::Mnemonic op,
-                             TR::Node *node,
-                             TR::LabelSymbol *sym,
-                             TR::RegisterDependencyConditions  *cond,
-                             TR::Instruction *precedingInstruction, TR::CodeGenerator *cg)
-      : ARM64LabelInstruction(op, node, sym, precedingInstruction, cg),
-        _conditions(cond)
-      {
-      }
-
-   /**
-    * @brief Gets instruction kind
-    * @return instruction kind
-    */
-   virtual Kind getKind() { return IsDepLabel; }
-
-   /**
-    * @brief Gets register dependency condition
-    * @return register dependency condition
-    */
-   virtual TR::RegisterDependencyConditions *getDependencyConditions()
-      {
-      return _conditions;
-      }
-   /**
-    * @brief Sets register dependency condition
-    * @param[in] cond : register dependency condition
-    * @return register dependency condition
-    */
-   TR::RegisterDependencyConditions *setDependencyConditions(TR::RegisterDependencyConditions *cond)
-      {
-      return (_conditions = cond);
-      }
-   };
-
 class ARM64ConditionalBranchInstruction : public ARM64LabelInstruction
    {
    int32_t _estimatedBinaryLocation;
@@ -418,6 +347,48 @@ class ARM64ConditionalBranchInstruction : public ARM64LabelInstruction
                                      TR::ARM64ConditionCode cc,
                                      TR::Instruction *precedingInstruction, TR::CodeGenerator *cg)
       : ARM64LabelInstruction(op, node, sym, precedingInstruction, cg), _cc(cc),
+        _estimatedBinaryLocation(0)
+      {
+      }
+
+   /*
+    * @brief Constructor
+    * @param[in] op : instruction opcode
+    * @param[in] node : node
+    * @param[in] sym : label symbol
+    * @param[in] cc : branch condition code
+    * @param[in] cond : register dependency condition
+    * @param[in] cg : CodeGenerator
+    */
+   ARM64ConditionalBranchInstruction(
+                             TR::InstOpCode::Mnemonic op,
+                             TR::Node *node,
+                             TR::LabelSymbol *sym,
+                             TR::ARM64ConditionCode cc,
+                             TR::RegisterDependencyConditions *cond, TR::CodeGenerator *cg)
+      : ARM64LabelInstruction(op, node, sym, cond, cg), _cc(cc),
+        _estimatedBinaryLocation(0)
+      {
+      }
+
+   /*
+    * @brief Constructor
+    * @param[in] op : instruction opcode
+    * @param[in] node : node
+    * @param[in] sym : label symbol
+    * @param[in] cc : branch condition code
+    * @param[in] cond : register dependency condition
+    * @param[in] precedingInstruction : preceding instruction
+    * @param[in] cg : CodeGenerator
+    */
+   ARM64ConditionalBranchInstruction(
+                             TR::InstOpCode::Mnemonic op,
+                             TR::Node *node,
+                             TR::LabelSymbol *sym,
+                             TR::ARM64ConditionCode cc,
+                             TR::RegisterDependencyConditions *cond,
+                             TR::Instruction *precedingInstruction, TR::CodeGenerator *cg)
+      : ARM64LabelInstruction(op, node, sym, cond, precedingInstruction, cg), _cc(cc),
         _estimatedBinaryLocation(0)
       {
       }
@@ -484,89 +455,6 @@ class ARM64ConditionalBranchInstruction : public ARM64LabelInstruction
     * @return estimated binary length
     */
    virtual int32_t estimateBinaryLength(int32_t currentEstimate);
-   };
-
-class ARM64DepConditionalBranchInstruction : public ARM64ConditionalBranchInstruction
-   {
-   TR::RegisterDependencyConditions *_conditions;
-
-   public:
-
-   /*
-    * @brief Constructor
-    * @param[in] op : instruction opcode
-    * @param[in] node : node
-    * @param[in] sym : label symbol
-    * @param[in] cc : branch condition code
-    * @param[in] cond : register dependency condition
-    * @param[in] cg : CodeGenerator
-    */
-   ARM64DepConditionalBranchInstruction(
-                             TR::InstOpCode::Mnemonic op,
-                             TR::Node *node,
-                             TR::LabelSymbol *sym,
-                             TR::ARM64ConditionCode cc,
-                             TR::RegisterDependencyConditions *cond, TR::CodeGenerator *cg)
-      : ARM64ConditionalBranchInstruction(op, node, sym, cc, cg), _conditions(cond)
-      {
-      }
-
-   /*
-    * @brief Constructor
-    * @param[in] op : instruction opcode
-    * @param[in] node : node
-    * @param[in] sym : label symbol
-    * @param[in] cc : branch condition code
-    * @param[in] cond : register dependency condition
-    * @param[in] precedingInstruction : preceding instruction
-    * @param[in] cg : CodeGenerator
-    */
-   ARM64DepConditionalBranchInstruction(
-                             TR::InstOpCode::Mnemonic op,
-                             TR::Node *node,
-                             TR::LabelSymbol *sym,
-                             TR::ARM64ConditionCode cc,
-                             TR::RegisterDependencyConditions *cond,
-                             TR::Instruction *precedingInstruction, TR::CodeGenerator *cg)
-      : ARM64ConditionalBranchInstruction(op, node, sym, cc, precedingInstruction, cg), _conditions(cond)
-      {
-      }
-
-   /**
-    * @brief Gets instruction kind
-    * @return instruction kind
-    */
-   virtual Kind getKind() { return IsDepConditionalBranch; }
-
-   /**
-    * @brief Gets register dependency condition
-    * @return register dependency condition
-    */
-   virtual TR::RegisterDependencyConditions *getDependencyConditions()
-      {
-      return _conditions;
-      }
-   /**
-    * @brief Sets register dependency condition
-    * @param[in] cond : register dependency condition
-    * @return register dependency condition
-    */
-   TR::RegisterDependencyConditions *setDependencyConditions(TR::RegisterDependencyConditions *cond)
-      {
-      return (_conditions = cond);
-      }
-
-   virtual TR::Register *getTargetRegister(uint32_t i)
-      {
-      TR_ASSERT(false, "Not implemented yet.");
-      return NULL;
-      }
-
-   virtual TR::Register *getSourceRegister(uint32_t i)
-      {
-      TR_ASSERT(false, "Not implemented yet.");
-      return NULL;
-      }
    };
 
 class ARM64CompareBranchInstruction : public ARM64LabelInstruction

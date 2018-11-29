@@ -2941,7 +2941,18 @@ TR::Node *constrainWrtBar(OMR::ValuePropagation *vp, TR::Node *node)
 
    if (TR::Compiler->om.shouldGenerateReadBarriersForFieldLoads())
       {
-      // TODO (GuardedStorage): Why do we need this restriction?
+      // The optimization below targets the following type of code:
+      // 
+      //     X x = new X();
+      //     x.a = new A();
+      //
+      // Most of the time both newly allocated objects would be in the nursery and there is no need for a generational
+      // barrier. However, in a rare case that a GC occurs in between the two allocations above the premise can be
+      // violated (by tenuring the first, but not the second object). The GC will compensate for the lack of the
+      // barrier by auto-remembering all objects that are tenured and directly stack referenced.
+      //
+      // This optimization is currently disabled when read barriers are required as it is currently unknown whether
+      // this optimization is safe under such a GC mode.
       doOpt = false;
       }
 

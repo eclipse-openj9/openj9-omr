@@ -510,14 +510,7 @@ OMR::ARM64::TreeEvaluator::BBStartEvaluator(TR::Node *node, TR::CodeGenerator *c
 
    if (node->getLabel() != NULL)
       {
-      if (deps == NULL)
-         {
-         node->getLabel()->setInstruction(generateLabelInstruction(cg, TR::InstOpCode::label, node, node->getLabel()));
-         }
-      else
-         {
-         node->getLabel()->setInstruction(generateDepLabelInstruction(cg, TR::InstOpCode::label, node, node->getLabel(), deps));
-         }
+      node->getLabel()->setInstruction(generateLabelInstruction(cg, TR::InstOpCode::label, node, node->getLabel(), deps));
       }
 
    TR::Node *fenceNode = TR::Node::createRelative32BitFenceNode(node, &block->getInstructionBoundaries()._startPC);
@@ -541,14 +534,11 @@ OMR::ARM64::TreeEvaluator::BBEndEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    if (NULL == block->getNextBlock())
       {
       TR::Instruction *lastInstruction = cg->getAppendInstruction();
-#if 0
-      // TODO: Enable this part when TR::InstOpCode::bl becomes available
       if (lastInstruction->getOpCodeValue() == TR::InstOpCode::bl
               && lastInstruction->getNode()->getSymbolReference()->getReferenceNumber() == TR_aThrow)
          {
          lastInstruction = generateInstruction(cg, TR::InstOpCode::bad, node, lastInstruction);
          }
-#endif
       }
 
    TR::TreeTop *nextTT = cg->getCurrentEvaluationTreeTop()->getNextTreeTop();

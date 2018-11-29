@@ -110,22 +110,6 @@ TR::Instruction *generateImmInstruction(
                    TR::Instruction *preced = NULL);
 
 /*
- * @brief Generates dep instruction
- * @param[in] cg : CodeGenerator
- * @param[in] op : instruction opcode
- * @param[in] node : node
- * @param[in] cond : register dependency condition
- * @param[in] preced : preceding instruction
- * @return generated instruction
- */
-TR::Instruction *generateDepInstruction(
-                   TR::CodeGenerator *cg,
-                   TR::InstOpCode::Mnemonic op,
-                   TR::Node *node,
-                   TR::RegisterDependencyConditions *cond,
-                   TR::Instruction *preced = NULL);
-
-/*
  * @brief Generates label instruction
  * @param[in] cg : CodeGenerator
  * @param[in] op : instruction opcode
@@ -151,7 +135,7 @@ TR::Instruction *generateLabelInstruction(
  * @param[in] preced : preceding instruction
  * @return generated instruction
  */
-TR::Instruction *generateDepLabelInstruction(
+TR::Instruction *generateLabelInstruction(
                    TR::CodeGenerator *cg,
                    TR::InstOpCode::Mnemonic op,
                    TR::Node *node,
@@ -188,7 +172,7 @@ TR::Instruction *generateConditionalBranchInstruction(
  * @param[in] preced : preceding instruction
  * @return generated instruction
  */
-TR::Instruction *generateDepConditionalBranchInstruction(
+TR::Instruction *generateConditionalBranchInstruction(
                    TR::CodeGenerator *cg,
                    TR::InstOpCode::Mnemonic op,
                    TR::Node *node,

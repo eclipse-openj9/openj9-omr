@@ -473,20 +473,11 @@ TR_Debug::print(TR::FILE *pOutFile, TR::Instruction *instr)
       case OMR::Instruction::IsImm:
          print(pOutFile, (TR::ARM64ImmInstruction *)instr);
          break;
-      case OMR::Instruction::IsDep:
-         print(pOutFile, (TR::ARM64DepInstruction *)instr);
-         break;
       case OMR::Instruction::IsLabel:
          print(pOutFile, (TR::ARM64LabelInstruction *)instr);
          break;
-      case OMR::Instruction::IsDepLabel:
-         print(pOutFile, (TR::ARM64DepLabelInstruction *)instr);
-         break;
       case OMR::Instruction::IsConditionalBranch:
          print(pOutFile, (TR::ARM64ConditionalBranchInstruction *)instr);
-         break;
-      case OMR::Instruction::IsDepConditionalBranch:
-         print(pOutFile, (TR::ARM64DepConditionalBranchInstruction *)instr);
          break;
       case OMR::Instruction::IsCompareBranch:
          print(pOutFile, (TR::ARM64CompareBranchInstruction *)instr);
@@ -574,16 +565,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64ImmInstruction *instr)
    }
 
 void
-TR_Debug::print(TR::FILE *pOutFile, TR::ARM64DepInstruction *instr)
-   {
-   printPrefix(pOutFile, instr);
-   trfprintf(pOutFile, "%s", getOpCodeName(&instr->getOpCode()));
-   if (instr->getDependencyConditions())
-      print(pOutFile, instr->getDependencyConditions());
-   trfflush(pOutFile);
-   }
-
-void
 TR_Debug::print(TR::FILE *pOutFile, TR::ARM64LabelInstruction *instr)
    {
    printPrefix(pOutFile, instr);
@@ -609,13 +590,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64LabelInstruction *instr)
          }
       }
    printInstructionComment(pOutFile, 1, instr);
-   trfflush(_comp->getOutFile());
-   }
-
-void
-TR_Debug::print(TR::FILE *pOutFile, TR::ARM64DepLabelInstruction *instr)
-   {
-   print(pOutFile, (TR::ARM64LabelInstruction *)instr);
    if (instr->getDependencyConditions())
       print(pOutFile, instr->getDependencyConditions());
    trfflush(_comp->getOutFile());
@@ -627,13 +601,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64ConditionalBranchInstruction *instr
    printPrefix(pOutFile, instr);
    trfprintf(pOutFile, "%s.%s \t", getOpCodeName(&instr->getOpCode()), ARM64ConditionNames[instr->getConditionCode()]);
    print(pOutFile, instr->getLabelSymbol());
-   trfflush(_comp->getOutFile());
-   }
-
-void
-TR_Debug::print(TR::FILE *pOutFile, TR::ARM64DepConditionalBranchInstruction *instr)
-   {
-   print(pOutFile, (TR::ARM64ConditionalBranchInstruction *)instr);
    if (instr->getDependencyConditions())
       print(pOutFile, instr->getDependencyConditions());
    trfflush(_comp->getOutFile());

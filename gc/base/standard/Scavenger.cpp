@@ -3568,8 +3568,8 @@ MM_Scavenger::completeBackOut(MM_EnvironmentStandard *env)
 	OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
 #endif /* OMR_SCAVENGER_TRACE_BACKOUT */
 
-	/* Ensure we've pushed all references from buffers out to the lists */
-	_cli->scavenger_flushReferenceObjects(env);
+	/* Ensure we've pushed all references from buffers out to the lists and flushed RS fragments*/
+	flushBuffersForGetNextScanCache(env);
 
 	/* Must synchronize to be sure all private caches have been flushed */
 	if (env->_currentTask->synchronizeGCThreadsAndReleaseMaster(env, UNIQUE_ID)) {

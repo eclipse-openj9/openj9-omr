@@ -32,6 +32,7 @@ namespace OMR { typedef OMR::ObjectModel ObjectModelConnector; }
 #endif
 
 #include <stdint.h>        // for int32_t, int64_t, uint32_t
+#include "omrgcconsts.h"
 #include "env/jittypes.h"  // for uintptrj_t, intptrj_t
 #include "il/DataTypes.hpp"
 
@@ -109,6 +110,16 @@ class ObjectModel
    uintptrj_t offsetOfDiscontiguousArraySizeField() { return 0; }
    uintptrj_t objectHeaderSizeInBytes() { return 0; }
    uintptrj_t offsetOfIndexableSizeField() { return 0; }
+
+   /**
+   * @brief: Returns the read barrier type of VM's GC
+   */
+   MM_GCReadBarrierType  readBarrierType()  { return gc_modron_readbar_none; }
+
+   /**
+   * @brief: Returns the write type kind of VM's GC
+   */
+   MM_GCWriteBarrierType writeBarrierType() { return gc_modron_wrtbar_none;  }
 
    /**
    * @brief: Returns true if concurrent scavenging enabled in the VM's GC

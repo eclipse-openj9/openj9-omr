@@ -51,7 +51,7 @@ class GenUtilsTests(unittest.TestCase):
 # the tests. Parts of the API description that are relevant to
 # to the tests are cached in member variables. Instances of the
 # class(es) under test corresponding to the API description
-# are also constructed and stored in member variables. 
+# are also constructed and stored in member variables.
 
 class APITypeTests(unittest.TestCase):
     """Tests for methods in genutils.APIType."""
@@ -401,11 +401,6 @@ class APIDescriptionTest(unittest.TestCase):
 
     def test_get_class_names(self):
         self.assertListEqual(["class_1", "class_2"], self.api.get_class_names())
-
-    def test_get_class_by_name_1(self):
-        c = self.api.get_class_by_name("class_1")
-        self.assertIsInstance(c, genutils.APIClass)
-        self.assertEqual("class_1", c.name())
 
     def test_get_class_by_name_1(self):
         c = self.api.get_class_by_name("class_1")

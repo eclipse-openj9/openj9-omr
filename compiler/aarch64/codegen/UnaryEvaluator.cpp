@@ -81,17 +81,35 @@ TR::Register *OMR::ARM64::TreeEvaluator::lnegEvaluator(TR::Node *node, TR::CodeG
 	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
 	}
 
+static TR::Register *commonIntegerAbsEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   TR::Node *firstChild = node->getFirstChild();
+   TR::Register *reg = cg->gprClobberEvaluate(firstChild);
+   TR::Register *tempReg = cg->allocateRegister();
+
+   bool is64bit = node->getDataType().isInt64();
+   TR::InstOpCode::Mnemonic eorOp = is64bit ? TR::InstOpCode::eorx : TR::InstOpCode::eorw;
+   TR::InstOpCode::Mnemonic subOp = is64bit ? TR::InstOpCode::subx : TR::InstOpCode::subw;
+
+   generateArithmeticShiftRightImmInstruction(cg, node, tempReg, reg, is64bit ? 63 : 31);
+   generateTrg1Src2Instruction(cg, eorOp, node, reg, reg, tempReg);
+   generateTrg1Src2Instruction(cg, subOp, node, reg, reg, tempReg);
+
+   cg->stopUsingRegister(tempReg);
+   node->setRegister(reg);
+   cg->decReferenceCount(firstChild);
+   return reg;
+   }
+
 TR::Register *OMR::ARM64::TreeEvaluator::iabsEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// TODO:ARM64: Enable TR::TreeEvaluator::iabsEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
-	}
+   {
+   return commonIntegerAbsEvaluator(node, cg);
+   }
 
 TR::Register *OMR::ARM64::TreeEvaluator::labsEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// TODO:ARM64: Enable TR::TreeEvaluator::labsEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
-	}
+   {
+   return commonIntegerAbsEvaluator(node, cg);
+   }
 
 TR::Register *OMR::ARM64::TreeEvaluator::i2sEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 	{

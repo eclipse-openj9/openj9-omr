@@ -371,6 +371,18 @@ OMR::Compilation::Compilation(
          );
    _isServerInlining = !options.getOption(TR_NoOptServer);
 
+   // TR_DisableInternalPointers must be set before allocateCodeGenerator(self()) is called because
+   // CodeGenerator's _disableInternalPointers member is set in its constructor and this is one of
+   // options that is checked for
+   if (_isOptServer)
+      {
+      if(self()->getMethodHotness() <= warm)
+         {
+         if (!TR::Compiler->target.cpu.isPower()) // Temporarily exclude PPC due to perf regression
+            self()->setOption(TR_DisableInternalPointers);
+         }
+      }
+
    //_methodSymbol must be done after symRefTab, but before codegen
    // _methodSymbol must be initialized here because creating a jitted method symbol
    //   actually inspects TR::comp()->_methodSymbol (to compare against the new object)
@@ -929,15 +941,7 @@ int32_t OMR::Compilation::compile()
    bool printCodegenTime = self()->getOption(TR_CummTiming);
 
    if (self()->isOptServer())
-      {
-      // Temporarily exclude PPC due to perf regression
-      if( (self()->getMethodHotness() <= warm))
-         {
-         if (!TR::Compiler->target.cpu.isPower())
-            TR::Options::getCmdLineOptions()->setOption(TR_DisableInternalPointers);
-         }
-      self()->getOptions()->setOption(TR_DisablePartialInlining);
-      }
+      self()->setOption(TR_DisablePartialInlining);
 
 #ifdef J9_PROJECT_SPECIFIC
    if (self()->getOptions()->getDelayCompile())

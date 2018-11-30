@@ -712,9 +712,6 @@ OMR::Z::CodeGenerator::CodeGenerator()
          self()->setSupportsTM();
       }
 
-   if(self()->getSupportsTM())
-      self()->setSupportsTMHashMapAndLinkedQueue();
-
    if (_processorInfo.supportsArch(TR_S390ProcessorInfo::TR_z13) && !comp->getOption(TR_DisableArch11PackedToDFP))
       self()->setSupportsFastPackedDFPConversions();
 

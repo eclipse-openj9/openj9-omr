@@ -287,9 +287,6 @@ OMR::Power::CodeGenerator::CodeGenerator() :
    if (TR::Compiler->target.cpu.getPPCSupportsLM())
       self()->setSupportsLM();
 
-   if(self()->getSupportsTM())
-      self()->setSupportsTMHashMapAndLinkedQueue();
-
    if (TR::Compiler->target.cpu.getPPCSupportsVMX() && TR::Compiler->target.cpu.getPPCSupportsVSX())
       self()->setSupportsAutoSIMD();
 

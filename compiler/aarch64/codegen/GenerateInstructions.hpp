@@ -579,6 +579,7 @@ TR::Instruction *generateMovInstruction(
  * @param[in] node : node
  * @param[in] treg : target register
  * @param[in] sreg : source register
+ * @param[in] is64bit : true when it is 64-bit operation
  * @param[in] preced : preceding instruction
  * @return generated instruction
  */
@@ -587,6 +588,7 @@ TR::Instruction *generateNegInstruction(
                   TR::Node *node,
                   TR::Register *treg,
                   TR::Register *sreg,
+                  bool is64bit = false,
                   TR::Instruction *preced = NULL);
 
 /*

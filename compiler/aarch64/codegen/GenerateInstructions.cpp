@@ -353,11 +353,10 @@ TR::Instruction *generateMovInstruction(TR::CodeGenerator *cg, TR::Node *node,
    }
 
 TR::Instruction *generateNegInstruction(TR::CodeGenerator *cg, TR::Node *node,
-   TR::Register *treg, TR::Register *sreg, TR::Instruction *preced)
+   TR::Register *treg, TR::Register *sreg, bool is64bit, TR::Instruction *preced)
    {
    /* Alias of SUB instruction */
 
-   bool is64bit = node->getDataType().isInt64();
    TR::InstOpCode::Mnemonic op = is64bit ? TR::InstOpCode::subx : TR::InstOpCode::subw;
 
    return generateTrg1ZeroSrc1Instruction(cg, op, node, treg, sreg, preced);

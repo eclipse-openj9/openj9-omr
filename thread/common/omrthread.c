@@ -1183,11 +1183,12 @@ omrthread_attach(omrthread_t *handle)
 intptr_t
 omrthread_attach_ex(omrthread_t *handle, omrthread_attr_t *attr)
 {
-	intptr_t retVal = J9THREAD_SUCCESS;
+	intptr_t retVal = J9THREAD_ERR;
 	omrthread_t thread;
 	omrthread_library_t lib;
 
 	if (init_thread_library()) {
+		retVal = J9THREAD_ERR;
 		goto cleanup0;
 	}
 

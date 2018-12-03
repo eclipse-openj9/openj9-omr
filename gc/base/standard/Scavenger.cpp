@@ -3231,8 +3231,8 @@ MM_Scavenger::checkAndSetShouldYieldFlag() {
 	 * If one GC thread saw that we need to yield, we must yield, there is no way back. Hence, we store the result in _shouldYield,
 	 * and rely on it for the rest of concurrent phase.
 	 */
-	if (!_shouldYield) {
-		 _shouldYield = _cli->scavenger_shouldYield();
+	if (!_shouldYield && _cli->scavenger_shouldYield()) {
+		_shouldYield = true;
 	}
 	return _shouldYield;
 #else

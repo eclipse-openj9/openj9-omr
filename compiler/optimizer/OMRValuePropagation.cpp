@@ -7294,15 +7294,15 @@ void OMR::ValuePropagation::doDelayedTransformations()
    _objectCloneTypes.deleteAll();
 
    ListIterator<TR::TreeTop> arrayCloneIt(&_arrayCloneCalls);
-   ListIterator<TR_OpaqueClassBlock> arrayCloneTypeIt(&_arrayCloneTypes);
+   ListIterator<ArrayCloneInfo> arrayCloneTypeIt(&_arrayCloneTypes);
       {
       TR::TreeTop *callTree = arrayCloneIt.getFirst();
-      TR_OpaqueClassBlock *clazz = arrayCloneTypeIt.getFirst();
-      while (callTree && clazz)
+      ArrayCloneInfo *cloneInfo = arrayCloneTypeIt.getFirst();
+      while (callTree && cloneInfo)
          {
-         transformArrayCloneCall(callTree, clazz);
+         transformArrayCloneCall(callTree, cloneInfo);
          callTree = arrayCloneIt.getNext();
-         clazz = arrayCloneTypeIt.getNext();
+         cloneInfo = arrayCloneTypeIt.getNext();
          }
       }
    _arrayCloneCalls.deleteAll();

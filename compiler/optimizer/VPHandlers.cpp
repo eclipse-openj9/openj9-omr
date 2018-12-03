@@ -5762,6 +5762,8 @@ TR::Node *constrainAcall(OMR::ValuePropagation *vp, TR::Node *node)
       if (!node->getOpCode().isIndirect())
          {
          static char *enableDynamicObjectClone = feGetEnv("TR_enableDynamicObjectClone");
+         // Dynamic cloning kicks in when we attempt to make direct call to Object.clone  
+         // or J9VMInternals.primitiveClone where the cloned object is an array.
          if (method->getRecognizedMethod() == TR::java_lang_Object_clone
              || method->getRecognizedMethod() == TR::java_lang_J9VMInternals_primitiveClone)
             {
@@ -5802,22 +5804,43 @@ TR::Node *constrainAcall(OMR::ValuePropagation *vp, TR::Node *node)
                               && !vp->_arrayCloneCalls.find(vp->_curTree))
                         {
                         vp->_arrayCloneCalls.add(vp->_curTree);
-                        vp->_arrayCloneTypes.add(constraint->getClass());
+                        vp->_arrayCloneTypes.add(new (vp->trStackMemory()) OMR::ValuePropagation::ArrayCloneInfo(constraint->getClass(), true));
                         }
                      }
                   }
+               // Dynamic object clone is enabled only with FLAGS_IN_CLASS_SLOT and LOCK_NURSERY enabled
+               // as currenty codegen anewarray evaluator only supports this case for object header initialization.
+               // Even though all existing supported build config has these 2 falgs set, this ifdef serves as a safety precaution.
+#if defined(J9VM_INTERP_FLAGS_IN_CLASS_SLOT) && defined(J9VM_THR_LOCK_NURSERY)
                else if ( constraint->getClassType()
                          && constraint->getClassType()->asResolvedClass() )
                   {
                   newTypeConstraint = TR::VPResolvedClass::create(vp, constraint->getClass());
+                  if (vp->trace())
+                     traceMsg(vp->comp(), "Object Clone: Resolved Class of node %p \n", node);
                   if (enableDynamicObjectClone
                       && constraint->getClassType()->isArray() == TR_no
                       && !vp->_objectCloneCalls.find(vp->_curTree))
                      {
+                     if (vp->trace())
+                        traceMsg(vp->comp(), "Object Clone: Resolved Class of node %p object clone\n", node);
                      vp->_objectCloneCalls.add(vp->_curTree);
                      vp->_objectCloneTypes.add(new (vp->trStackMemory()) OMR::ValuePropagation::ObjCloneInfo(constraint->getClass(), false));
                      }
+                  // Currently enabled for X86 as the required codegen support is implemented on X86 only.
+                  // Remove the condition as other platforms receive support.
+                  else if (vp->comp()->cg()->getSupportsDynamicANewArray()
+                      && constraint->getClassType()->isArray() == TR_yes
+                      && !vp->_arrayCloneCalls.find(vp->_curTree)
+                      && !vp->comp()->generateArraylets())
+                     {
+                     if (vp->trace())
+                        traceMsg(vp->comp(), "Object Clone: Resolved Class of node %p array clone\n", node);
+                     vp->_arrayCloneCalls.add(vp->_curTree);
+                     vp->_arrayCloneTypes.add(new (vp->trStackMemory()) OMR::ValuePropagation::ArrayCloneInfo(constraint->getClass(), false));;
+                     }
                   }
+#endif	       
                }
 
             if (!constraint || (!constraint->isFixedClass()

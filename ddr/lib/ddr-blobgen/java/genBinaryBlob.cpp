@@ -741,9 +741,10 @@ JavaBlobGenerator::addBlobConst(const string &name, long long value, uint32_t *c
 DDR_RC
 JavaBlobGenerator::addBlobStruct(const string &name, const string &superName, uint32_t constCount, uint32_t fieldCount, uint32_t size)
 {
-	if(!_printEmptyTypes && (0 == constCount) && (0 == fieldCount)) {
+	if (!_printEmptyTypes && (0 == constCount) && (0 == fieldCount)) {
 		return DDR_RC_OK;
 	}
+
 	uint32_t nameOffset = UINT32_MAX;
 	uint32_t superOffset = UINT32_MAX;
 	DDR_RC rc = stringTableOffset(&_buildInfo.header, _buildInfo.stringHash, name.c_str(), &nameOffset);
@@ -920,7 +921,7 @@ JavaBlobGenerator::addFieldAndConstCount(bool addFieldsOnly, size_t fieldCount, 
 	DDR_RC rc = DDR_RC_OK;
 	size_t structDataSize = sizeof(BlobField) * fieldCount + sizeof(BlobConstant) * constCount;
 
-	if (!addFieldsOnly && (structDataSize != 0 || _printEmptyTypes)) {
+	if (!addFieldsOnly && (_printEmptyTypes || (0 != structDataSize))) {
 		structDataSize += sizeof(BlobStruct);
 	}
 
@@ -931,7 +932,7 @@ JavaBlobGenerator::addFieldAndConstCount(bool addFieldsOnly, size_t fieldCount, 
 
 		if (addFieldsOnly) {
 			/* just count fields and constants */
-		} else if (_printEmptyTypes || structDataSize != 0) {
+		} else if (_printEmptyTypes || (0 != structDataSize)) {
 			_buildInfo.header.structureCount += 1;
 		}
 	} else {
@@ -957,7 +958,7 @@ BlobEnumerateVisitor::visitNamespace(NamespaceUDT *type) const
 	if (_addFieldsOnly || !type->isAnonymousType()) {
 		size_t constCount = 0;
 
-		if(!_addFieldsOnly) {
+		if (!_addFieldsOnly) {
 			for (vector<Macro>::iterator it = type->_macros.begin(); it != type->_macros.end(); ++it) {
 				/* Add only integer constants to the blob. */
 				if (DDR_RC_OK == it->getNumeric(NULL)) {

@@ -1831,7 +1831,7 @@ unblockSignals(void) {
 	}
 
 	/* Iterate through all signals listed in signalMap. */
-	for (i = 0; i < sizeof(signalMap)/sizeof(signalMap[0]); i++) {
+	for (i = 0; i < sizeof(signalMap) / sizeof(signalMap[0]); i++) {
 		/* Add the current signal to the signal set. */
 		int currentSignal = signalMap[i].unixSignalNo;
 		rc = sigaddset(&signalSet, currentSignal);

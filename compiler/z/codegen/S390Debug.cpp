@@ -2198,7 +2198,7 @@ TR_Debug::printS390GCRegisterMap(TR::FILE *pOutFile, TR::GCRegisterMap * map)
       {
       if (map->getMap() & (1 << (i - 1)))
          {
-         trfprintf(pOutFile, "%s ", getName(machine->getS390RealRegister((TR::RealRegister::RegNum) i)));
+         trfprintf(pOutFile, "%s ", getName(machine->getRealRegister((TR::RealRegister::RegNum) i)));
          }
       }
    trfprintf(pOutFile, "}\n");
@@ -2211,12 +2211,12 @@ TR_Debug::printS390GCRegisterMap(TR::FILE *pOutFile, TR::GCRegisterMap * map)
          // 2 bits per register, '10' means HPR has collectible, '11' means both HPR and GPR have collectibles
          if (map->getHPRMap() & (1 << (i - TR::RealRegister::FirstHPR)*2 + 1))
             {
-            trfprintf(pOutFile, "%s ", getName(machine->getS390RealRegister((TR::RealRegister::RegNum) i)));
+            trfprintf(pOutFile, "%s ", getName(machine->getRealRegister((TR::RealRegister::RegNum) i)));
             }
          // Compressed collectible in lower GPR.
          if (map->getHPRMap() & (1 << (i - TR::RealRegister::FirstHPR)*2))
             {
-            trfprintf(pOutFile, "%s ", getName(machine->getS390RealRegister((TR::RealRegister::RegNum) (i - TR::RealRegister::FirstHPR + TR::RealRegister::FirstGPR))));
+            trfprintf(pOutFile, "%s ", getName(machine->getRealRegister((TR::RealRegister::RegNum) (i - TR::RealRegister::FirstHPR + TR::RealRegister::FirstGPR))));
             }
          }
       trfprintf(pOutFile, "}\n");
@@ -2459,7 +2459,7 @@ TR_Debug::printS390ArgumentsFlush(TR::FILE *pOutFile, TR::Node * node, uint8_t *
                   trfprintf(pOutFile, "ST   \t");
                   }
 
-               print(pOutFile, machine->getS390RealRegister(privateLinkage->getIntegerArgumentRegister(intArgNum)));
+               print(pOutFile, machine->getRealRegister(privateLinkage->getIntegerArgumentRegister(intArgNum)));
                trfprintf(pOutFile, ",%d(,", offset);
                print(pOutFile, stackPtr);
                trfprintf(pOutFile, ")");
@@ -2491,7 +2491,7 @@ TR_Debug::printS390ArgumentsFlush(TR::FILE *pOutFile, TR::Node * node, uint8_t *
                   {
                   printPrefix(pOutFile, NULL, bufferPos, 6);
                   trfprintf(pOutFile, "STG  \t");
-                  print(pOutFile, machine->getS390RealRegister(privateLinkage->getIntegerArgumentRegister(intArgNum)));
+                  print(pOutFile, machine->getRealRegister(privateLinkage->getIntegerArgumentRegister(intArgNum)));
                   trfprintf(pOutFile, ",%d(,", offset);
                   print(pOutFile, stackPtr);
                   trfprintf(pOutFile, ")");
@@ -2501,7 +2501,7 @@ TR_Debug::printS390ArgumentsFlush(TR::FILE *pOutFile, TR::Node * node, uint8_t *
                   {
                   printPrefix(pOutFile, NULL, bufferPos, 4);
                   trfprintf(pOutFile, "ST   \t");
-                  print(pOutFile, machine->getS390RealRegister(privateLinkage->getIntegerArgumentRegister(intArgNum)));
+                  print(pOutFile, machine->getRealRegister(privateLinkage->getIntegerArgumentRegister(intArgNum)));
                   trfprintf(pOutFile, ", %d(,", offset);
                   print(pOutFile, stackPtr);
                   trfprintf(pOutFile, ")");
@@ -2512,7 +2512,7 @@ TR_Debug::printS390ArgumentsFlush(TR::FILE *pOutFile, TR::Node * node, uint8_t *
                      printPrefix(pOutFile, NULL, bufferPos, 4);
                      trfprintf(pOutFile, "ST   \t");
 
-                     print(pOutFile, machine->getS390RealRegister(privateLinkage->getIntegerArgumentRegister(intArgNum + 1)));
+                     print(pOutFile, machine->getRealRegister(privateLinkage->getIntegerArgumentRegister(intArgNum + 1)));
                      trfprintf(pOutFile, ",%d(,", offset + 4);
                      print(pOutFile, stackPtr);
                      trfprintf(pOutFile, ")");
@@ -2536,7 +2536,7 @@ TR_Debug::printS390ArgumentsFlush(TR::FILE *pOutFile, TR::Node * node, uint8_t *
                {
                printPrefix(pOutFile, NULL, bufferPos, 4);
                trfprintf(pOutFile, "STD   \t");
-               print(pOutFile, machine->getS390RealRegister(privateLinkage->getFloatArgumentRegister(floatArgNum)));
+               print(pOutFile, machine->getRealRegister(privateLinkage->getFloatArgumentRegister(floatArgNum)));
                trfprintf(pOutFile, ",%d(,", offset);
                print(pOutFile, stackPtr);
                trfprintf(pOutFile, ")");
@@ -2558,7 +2558,7 @@ TR_Debug::printS390ArgumentsFlush(TR::FILE *pOutFile, TR::Node * node, uint8_t *
                {
                printPrefix(pOutFile, NULL, bufferPos, 4);
                trfprintf(pOutFile, "STE  \t");
-               print(pOutFile, machine->getS390RealRegister(privateLinkage->getFloatArgumentRegister(floatArgNum)));
+               print(pOutFile, machine->getRealRegister(privateLinkage->getFloatArgumentRegister(floatArgNum)));
                trfprintf(pOutFile, ",%d(,", offset);
                print(pOutFile, stackPtr);
                trfprintf(pOutFile, ")");

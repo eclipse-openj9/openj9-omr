@@ -101,8 +101,6 @@ template <typename ListKind> class List;
 #define ALLOWLOCKED      true
 #define DISALLOWBLOCKED  false
 
-#define  REAL_REGISTER(ri)  machine->getS390RealRegister(ri)
-
 #define GLOBAL_REG_FOR_LITPOOL     3    // GPR6
 
 #define TR_LONG_TO_PACKED_SIZE            16    ///< The result byte size in memory for a long to packed conversion (i.e. with CVDG)
@@ -229,12 +227,42 @@ class OMR_EXTENSIBLE Machine : public OMR::Machine
 
    Machine(TR::CodeGenerator *cg);
 
+   /**
+    * @brief This method is the wrapper for \code getRealRegister.
+    * @param[in] regNum : register number
+    * @return RealRegister for specified register number
+    */
    TR::RealRegister *getS390RealRegister(TR::RealRegister::RegNum regNum)
       {
       return _registerFile[regNum];
       }
 
+   /**
+    * @brief Converts RegNum to RealRegister
+    * @param[in] regNum : register number
+    * @return RealRegister for specified register number
+    */
+   TR::RealRegister *getRealRegister(TR::RealRegister::RegNum regNum)
+      {
+      return _registerFile[regNum];
+      }
+
+   /**
+    * @brief This method is the wrapper for \code getRealRegister.
+    * @param[in] regNum : register number
+    * @return RealRegister for specified register number
+    */
    TR::RealRegister *getS390RealRegister(int32_t regNum)
+      {
+      return _registerFile[regNum];
+      }
+
+   /**
+    * @brief Converts RegNum to RealRegister
+    * @param[in] regNum : register number
+    * @return RealRegister for specified register number
+    */
+   TR::RealRegister *getRealRegister(int32_t regNum)
       {
       return _registerFile[regNum];
       }

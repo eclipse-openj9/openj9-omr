@@ -53,7 +53,7 @@ TR::Instruction *loadConstant32(TR::CodeGenerator *cg, TR::Node *node, int32_t v
    else if ((value & 0xFFFF) == 0)
       {
       op = TR::InstOpCode::movzw;
-      imm = (value >> 16) | TR::MOV_LSL16;
+      imm = ((value >> 16) & 0xFFFF) | TR::MOV_LSL16;
       }
    else if ((value & 0xFFFF) == 0xFFFF)
       {
@@ -71,7 +71,7 @@ TR::Instruction *loadConstant32(TR::CodeGenerator *cg, TR::Node *node, int32_t v
       cursor = generateTrg1ImmInstruction(cg, TR::InstOpCode::movzw, node, trgReg,
                                           (value & 0xFFFF), cursor);
       cursor = generateTrg1ImmInstruction(cg, TR::InstOpCode::movkw, node, trgReg,
-                                          ((value >> 16) | TR::MOV_LSL16), cursor);
+                                          (((value >> 16) & 0xFFFF) | TR::MOV_LSL16), cursor);
       }
 
    if (!insertingInstructions)

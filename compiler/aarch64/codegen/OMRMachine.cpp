@@ -120,7 +120,7 @@ TR::RealRegister *OMR::ARM64::Machine::freeBestRegister(TR::Instruction *current
 
       for (int i = first; i <= last; i++)
          {
-         TR::RealRegister *realReg = self()->getARM64RealRegister((TR::RealRegister::RegNum)i);
+         TR::RealRegister *realReg = self()->getRealRegister((TR::RealRegister::RegNum)i);
          if (realReg->getState() == TR::RealRegister::Assigned)
             {
             candidates[numCandidates++] = realReg->getAssignedRegister();
@@ -492,7 +492,7 @@ static void registerCopy(TR::Instruction *precedingInstruction,
    switch (rk)
       {
       case TR_GPR:
-         zeroReg = cg->machine()->getARM64RealRegister(TR::RealRegister::xzr);
+         zeroReg = cg->machine()->getRealRegister(TR::RealRegister::xzr);
          generateTrg1Src2Instruction(cg, TR::InstOpCode::orrx, node, targetReg, zeroReg, sourceReg, precedingInstruction); /* mov (register) */
          break;
       case TR_FPR:

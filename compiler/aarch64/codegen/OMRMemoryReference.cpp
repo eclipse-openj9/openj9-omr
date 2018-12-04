@@ -480,6 +480,19 @@ void OMR::ARM64::MemoryReference::consolidateRegisters(TR::Register *srcReg, TR:
    }
 
 
+void OMR::ARM64::MemoryReference::incRegisterTotalUseCounts(TR::CodeGenerator * cg)
+   {
+   if (_baseRegister != NULL)
+      {
+      _baseRegister->incTotalUseCount();
+      }
+   if (_indexRegister != NULL)
+      {
+      _indexRegister->incTotalUseCount();
+      }
+   }
+
+
 void OMR::ARM64::MemoryReference::assignRegisters(TR::Instruction *currentInstruction, TR::CodeGenerator *cg)
    {
    TR::Machine *machine = cg->machine();

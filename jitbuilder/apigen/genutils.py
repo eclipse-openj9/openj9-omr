@@ -166,12 +166,13 @@ class APIService:
             """Returns whether the parameter may be implemented as a vararg."""
             return "attributes" in self.description and "can_be_vararg" in self.description["attributes"]
 
-    def __init__(self, description, api):
+    def __init__(self, description, owner, api):
         self.description = description
+        self.owner = owner
         self.api = api
 
     def __eq__(self, other):
-        return self.description == other.description and self.api == other.api
+        return self.description == other.description and self.owner == other.owner and self.api == other.api
 
     def __ne__(self, other):
         return not (self == other)
@@ -233,6 +234,10 @@ class APIService:
         vararg_attrs = [p.can_be_vararg() for p in self.parameters()]
         return reduce(lambda l,r: l or r, vararg_attrs, False)
 
+    def owning_class(self):
+        """Returns the description of the API class this constructor belongs to."""
+        return self.owner
+
 class APICallback(APIService):
     """
     A wrapper for a callback API description.
@@ -241,8 +246,8 @@ class APICallback(APIService):
     so all the functionality can be simply shared.
     """
 
-    def __init__(self, description, api):
-        APIService.__init__(self, description, api)
+    def __init__(self, description, owner, api):
+        APIService.__init__(self, description, owner, api)
 
 class APIConstructor(APIService):
     """
@@ -260,18 +265,8 @@ class APIConstructor(APIService):
         """
         Constructs an instance of APIConstructor, wrapping a given
         raw description object.
-
-        The `owner` is the instance of APIClass that represents
-        the class owning the constructor.
         """
-        APIService.__init__(self, description, api)
-        self.owner = owner
-
-    def __eq__(self, other):
-        return self.description == other.description and self.api == other.api and self.owner == other.owner
-
-    def __ne__(self, other):
-        return not (self == other)
+        APIService.__init__(self, description, owner, api)
 
     def name(self):
         """The name of a constructor is just the name of the owning class."""
@@ -283,10 +278,6 @@ class APIConstructor(APIService):
         raises a NotImplementedError exception.
         """
         raise NotImplementedError()
-
-    def owning_class(self):
-        """Returns the description of the API class this constructor belongs to."""
-        return self.owner
 
 class APIClass:
     """A wrapper for a class API description."""
@@ -304,6 +295,10 @@ class APIClass:
     def name(self):
         """Returns the (base) name of the API class."""
         return self.description["name"]
+
+    def short_name(self):
+        """Returns the short-name of the API class. """
+        return self.description["short-name"]
 
     def has_parent(self):
         """Returns true if this class extends another class."""
@@ -323,7 +318,7 @@ class APIClass:
 
     def services(self):
         """Returns a list of descriptions of all contained services."""
-        return [APIService(s, self.api) for s in self.description["services"]]
+        return [APIService(s, self, self.api) for s in self.description["services"]]
 
     def constructors(self):
         """Returns a list of the class constructor descriptions."""
@@ -331,7 +326,7 @@ class APIClass:
 
     def callbacks(self):
         """Returns a list of descriptions of all class callbacks."""
-        return [APICallback(s, self.api) for s in self.description["callbacks"]]
+        return [APICallback(s, self, self.api) for s in self.description["callbacks"]]
 
     def fields(self):
         """Returns a list of descriptions of all class fields."""
@@ -425,7 +420,7 @@ class APIDescription:
 
     def services(self):
         """Returns a list of all the top-level services defined in the API."""
-        return [APIService(s, self) for s in self.description["services"]]
+        return [APIService(s, None, self) for s in self.description["services"]]
 
     def get_class_names(self):
         """Retruns a list of the names of all the top-level classes defined in the API."""

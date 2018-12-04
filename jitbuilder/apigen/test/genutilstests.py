@@ -129,11 +129,11 @@ class APIServiceTests(unittest.TestCase):
             self.raw_class_1 = self.raw_api["classes"][0]
             self.class_1 = genutils.APIClass(self.raw_class_1, self.api)
             self.raw_service_1 = self.raw_class_1["services"][0]
-            self.service_1 = genutils.APIService(self.raw_service_1, self.api)
+            self.service_1 = genutils.APIService(self.raw_service_1, self.class_1, self.api)
             self.raw_service_2 = self.raw_class_1["services"][1]
-            self.service_2 = genutils.APIService(self.raw_service_2, self.api)
+            self.service_2 = genutils.APIService(self.raw_service_2, self.class_1, self.api)
             self.raw_service_3 = self.raw_api["services"][0]
-            self.service_3 = genutils.APIService(self.raw_service_3, self.api)
+            self.service_3 = genutils.APIService(self.raw_service_3, None, self.api)
 
     def test_name_1(self):
         self.assertEqual("class_1_service_1", self.service_1.name())
@@ -190,6 +190,15 @@ class APIServiceTests(unittest.TestCase):
     def test_is_vararg_2(self):
         self.assertTrue(self.service_3.is_vararg())
 
+    def test_owning_class_1(self):
+        self.assertEqual(self.class_1, self.service_1.owning_class())
+
+    def test_owning_class_2(self):
+        self.assertEqual(self.class_1, self.service_2.owning_class())
+
+    def test_owning_class_3(self):
+        self.assertEqual(None, self.service_3.owning_class())
+
 class APIParameterTests(unittest.TestCase):
     """Tests for methods in genutils.APIParameter."""
 
@@ -198,7 +207,7 @@ class APIParameterTests(unittest.TestCase):
             self.raw_api = json.load(f)
             self.api = genutils.APIDescription(self.raw_api)
             self.raw_service_1 = self.raw_api["services"][0]
-            self.service_1 = genutils.APIService(self.raw_service_1, self.api)
+            self.service_1 = genutils.APIService(self.raw_service_1, None, self.api)
             self.raw_parm_1 = self.raw_service_1["parms"][0]
             self.parm_1 = genutils.APIService.APIParameter(self.raw_parm_1, self.service_1)
             self.raw_parm_2 = self.raw_service_1["parms"][1]
@@ -305,6 +314,12 @@ class APIClassTests(unittest.TestCase):
     def test_name_2(self):
         self.assertEqual("class_2", self.class_2.name())
 
+    def test_short_name_1(self):
+        self.assertEqual("c1", self.class_1.short_name())
+
+    def test_short_name_2(self):
+        self.assertEqual("c2", self.class_2.short_name())
+
     def test_has_parent_1(self):
         self.assertFalse(self.class_1.has_parent())
 
@@ -329,7 +344,7 @@ class APIClassTests(unittest.TestCase):
         self.assertListEqual([], self.class_2.inner_classes())
 
     def test_services_1(self):
-        expect = [genutils.APIService(s, self.api) for s in self.raw_class_1["services"]]
+        expect = [genutils.APIService(s, self.class_1, self.api) for s in self.raw_class_1["services"]]
         self.assertListEqual(expect, self.class_1.services())
 
     def test_services_2(self):
@@ -344,7 +359,7 @@ class APIClassTests(unittest.TestCase):
         self.assertListEqual(expect, self.class_2.constructors())
 
     def test_callbacks_1(self):
-        expect = [genutils.APICallback(c, self.api) for c in self.raw_class_1["callbacks"]]
+        expect = [genutils.APICallback(c, self.class_1, self.api) for c in self.raw_class_1["callbacks"]]
         self.assertListEqual(expect, self.class_1.callbacks())
 
     def test_callbacks_2(self):

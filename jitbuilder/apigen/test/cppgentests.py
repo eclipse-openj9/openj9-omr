@@ -91,6 +91,18 @@ class CppGeneratorTest(unittest.TestCase):
         type_desc = genutils.APIType("foo", self.api)
         self.assertRaises(KeyError, self.generator.get_impl_type, type_desc)
 
+    def test_generate_static_cast_1(self):
+        self.assertRegexpMatches(self.generator.generate_static_cast("void *", "foo"),
+                                "static_cast<\s*void \*\s*>\(\s*foo\s*\)")
+
+    def test_generate_static_cast_2(self):
+        self.assertRegexpMatches(self.generator.generate_static_cast("bar", "quux"),
+                                "static_cast<\s*bar\s*>\(\s*quux\s*\)")
+
+    def test_generate_static_cast_3(self):
+        self.assertRegexpMatches(self.generator.generate_static_cast(" ", " "),
+                                "static_cast<\s*>\(\s*\)")
+
     def test_to_impl_cast_1(self):
         class_desc = self.api.get_class_by_name("class_1_inner_class_1")
         self.assertRegexpMatches(self.generator.to_impl_cast(class_desc, "foo"),

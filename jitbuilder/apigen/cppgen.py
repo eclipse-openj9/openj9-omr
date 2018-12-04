@@ -155,14 +155,18 @@ class CppGenerator:
         """
         return "{} *".format(self.get_impl_class_name(c.as_class())) if c.is_class() else self.builtin_type_map[c.name()]
 
+    def generate_static_cast(self, t, v):
+        """Generate a static cast of the value `v` to type `t`."""
+        return "static_cast<{}>({})".format(t,v)
+
     def to_impl_cast(self, c, v):
         """
         Constructs a cast of the value `v` to the type of the
         implementation class `c`.
         """
         b = c.base()
-        v = v if b.name() == c.name() else "static_cast<{b}>({v})".format(b=self.get_impl_type(b.as_type()), v=v)
-        return "static_cast<{t}>({v})".format(t=self.get_impl_type(c.as_type()),v=v)
+        v = v if b.name() == c.name() else self.generate_static_cast(self.get_impl_type(b.as_type()), v)
+        return self.generate_static_cast(self.get_impl_type(c.as_type()),v)
 
     def to_opaque_cast(self, v, from_c):
         """
@@ -170,15 +174,15 @@ class CppGenerator:
         implementation class `from_c` to an opaque pointer type.
         """
         b = from_c.base()
-        v = v if b.name() == from_c.name() else "static_cast<{b}>({v})".format(b=self.get_impl_type(b.as_type()), v=v)
-        return "static_cast<void *>({v})".format(v=v)
+        v = v if b.name() == from_c.name() else self.generate_static_cast(self.get_impl_type(b.as_type()), v)
+        return self.generate_static_cast("void *", v)
 
     def to_client_cast(self, c, v):
         """
         Constructs a cast of the value `v` to the type of the
         client API class `c`.
         """
-        return "static_cast<{t}>({v})".format(t=self.get_client_type(c.as_type()),v=v)
+        return self.generate_static_cast(self.get_client_type(c.as_type()), v)
 
     def grab_impl(self, v, t):
         """

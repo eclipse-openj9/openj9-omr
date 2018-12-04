@@ -379,6 +379,12 @@ class OMR_EXTENSIBLE MemoryReference : public OMR::MemoryReference
    void consolidateRegisters(TR::Register *srcReg, TR::Node *srcTree, bool srcModifiable, TR::CodeGenerator *cg);
 
    /**
+    * @brief Increment totalUseCounts of registers in MemoryReference
+    * @param[in] cg : CodeGenerator
+    */
+   void incRegisterTotalUseCounts(TR::CodeGenerator *cg);
+
+   /**
     * @brief Assigns registers
     * @param[in] currentInstruction : current instruction
     * @param[in] cg : CodeGenerator

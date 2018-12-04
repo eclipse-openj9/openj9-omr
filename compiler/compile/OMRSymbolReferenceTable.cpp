@@ -349,6 +349,18 @@ OMR::SymbolReferenceTable::findOrCreateOSRReturnAddressSymbolRef()
    return element(osrReturnAddressSymbol);
    }
 
+TR::SymbolReference *
+OMR::SymbolReferenceTable::findOrCreateInduceOSRSymbolRef(TR_RuntimeHelper induceOSRHelper)
+   {
+   TR_ASSERT(induceOSRHelper == TR_induceOSRAtCurrentPC || induceOSRHelper == TR_induceOSRAtCurrentPCAndRecompile, "unexpected helper index when creating induce OSR helper symbol reference");
+   TR::SymbolReference *induceOSRSymRef = findOrCreateRuntimeHelper(induceOSRHelper,
+                                                                    true /* canGCandReturn */,
+                                                                    true /* canGCandExcept */,
+                                                                    true /* preservesAllRegisters */);
+   // treat jitInduceOSR like an interpreted call so that each platform's codegen generate a snippet for it
+   induceOSRSymRef->getSymbol()->getMethodSymbol()->setInterpreted();
+   return induceOSRSymRef;
+   }
 
 TR::SymbolReference *
 OMR::SymbolReferenceTable::findOrCreateArrayletShadowSymbolRef(TR::DataType type)

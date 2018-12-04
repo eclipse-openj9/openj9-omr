@@ -360,6 +360,7 @@ class SymbolReferenceTable
    TR::SymbolReference * findOrCreateCodeGenInlinedHelper(CommonNonhelperSymbol index);
    TR::SymbolReference * findOrCreatePotentialOSRPointHelperSymbolRef();
    TR::SymbolReference * findOrCreateOSRFearPointHelperSymbolRef();
+   TR::SymbolReference * findOrCreateInduceOSRSymbolRef(TR_RuntimeHelper induceOSRHelper);
 
    TR::ParameterSymbol * createParameterSymbol(TR::ResolvedMethodSymbol * owningMethodSymbol, int32_t slot, TR::DataType);
    TR::SymbolReference * findOrCreateAutoSymbol(TR::ResolvedMethodSymbol * owningMethodSymbol, int32_t slot, TR::DataType, bool isReference = true,

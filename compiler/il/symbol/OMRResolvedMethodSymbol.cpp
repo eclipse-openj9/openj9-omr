@@ -518,12 +518,7 @@ OMR::ResolvedMethodSymbol::genInduceOSRCallNode(TR::TreeTop* insertionPoint,
    //there is no guarantee that the future block containing the induceOSR call still will have an exception
    //edge to the OSR catch block.
    TR::SymbolReferenceTable* symRefTab = self()->comp()->getSymRefTab();
-   TR::SymbolReference *induceOSRSymRef = symRefTab->findOrCreateRuntimeHelper(TR_induceOSRAtCurrentPC,
-                                                                               true /* canGCandReturn */,
-                                                                               true /* canGCandExcept */,
-                                                                               true /* preservesAllRegisters */);
-   // treat jitInduceOSR like an interpreted call so that each platform's codegen generate a snippet for it
-   induceOSRSymRef->getSymbol()->getMethodSymbol()->setInterpreted();
+   TR::SymbolReference *induceOSRSymRef = symRefTab->findOrCreateInduceOSRSymbolRef(TR_induceOSRAtCurrentPC);
    TR::Node *refNode = insertionPoint->getNode();
 
    if (self()->comp()->getOption(TR_TraceOSR))
@@ -601,10 +596,7 @@ OMR::ResolvedMethodSymbol::induceOSRAfterAndRecompile(TR::TreeTop *insertionPoin
    TR_ASSERT_FATAL(induceOSRCallNode->getOpCode().isCall() &&
                    symRef->getReferenceNumber() == TR_induceOSRAtCurrentPC,
                    "induceOSRCallNode %p (n%dn) under induceOSRCallTree %p should be a call node with TR_induceOSRAtCurrentPC helper call", induceOSRCallNode, induceOSRCallNode->getGlobalIndex(), induceOSRCallTree->getNode());
-   induceOSRCallNode->setSymbolReference(self()->comp()->getSymRefTab()->findOrCreateRuntimeHelper(TR_induceOSRAtCurrentPCAndRecompile,
-                                                                                                   true /* canGCandReturn */,
-                                                                                                   true /* canGCandExcept */,
-                                                                                                   true /* preservesAllRegisters */));
+   induceOSRCallNode->setSymbolReference(self()->comp()->getSymRefTab()->findOrCreateInduceOSRSymbolRef(TR_induceOSRAtCurrentPCAndRecompile));
    return true;
    }
 

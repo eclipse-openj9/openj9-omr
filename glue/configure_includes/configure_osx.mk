@@ -32,7 +32,6 @@ CONFIGURE_ARGS += \
   --enable-OMR_PORT_CAN_RESERVE_SPECIFIC_ADDRESS \
   --enable-OMR_THR_FORK_SUPPORT \
   --enable-OMR_THR_THREE_TIER_LOCKING \
-  --enable-OMR_THR_YIELD_ALG \
   --enable-OMR_GC_ARRAYLETS
 
 CONFIGURE_ARGS += libprefix=lib exeext= solibext=.dylib arlibext=.a objext=.o

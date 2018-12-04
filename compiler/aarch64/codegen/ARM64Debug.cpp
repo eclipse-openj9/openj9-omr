@@ -641,6 +641,9 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64AdminInstruction *instr)
          }
       }
 
+   if (instr->getDependencyConditions())
+      print(pOutFile, instr->getDependencyConditions());
+
    trfflush(pOutFile);
    }
 
@@ -718,6 +721,10 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64Trg1Src2Instruction *instr)
    print(pOutFile, instr->getTargetRegister(), TR_WordReg); trfprintf(pOutFile, ", ");
    print(pOutFile, instr->getSource1Register(), TR_WordReg); trfprintf(pOutFile, ", ");
    print(pOutFile, instr->getSource2Register(), TR_WordReg);
+
+   if (instr->getDependencyConditions())
+      print(pOutFile, instr->getDependencyConditions());
+
    trfflush(_comp->getOutFile());
    }
 
@@ -756,6 +763,10 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64Trg1Src3Instruction *instr)
    print(pOutFile, instr->getSource1Register(), TR_WordReg); trfprintf(pOutFile, ", ");
    print(pOutFile, instr->getSource2Register(), TR_WordReg); trfprintf(pOutFile, ", ");
    print(pOutFile, instr->getSource3Register(), TR_WordReg);
+
+   if (instr->getDependencyConditions())
+      print(pOutFile, instr->getDependencyConditions());
+
    trfflush(_comp->getOutFile());
    }
 

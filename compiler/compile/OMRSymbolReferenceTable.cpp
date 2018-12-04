@@ -357,7 +357,7 @@ OMR::SymbolReferenceTable::findOrCreateInduceOSRSymbolRef(TR_RuntimeHelper induc
                                                                     true /* canGCandReturn */,
                                                                     true /* canGCandExcept */,
                                                                     true /* preservesAllRegisters */);
-   // treat jitInduceOSR like an interpreted call so that each platform's codegen generate a snippet for it
+   // treat jitInduceOSR like an interpreted call so that each platform's codegen generates a snippet for it
    induceOSRSymRef->getSymbol()->getMethodSymbol()->setInterpreted();
    return induceOSRSymRef;
    }

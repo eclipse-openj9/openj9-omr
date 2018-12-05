@@ -327,13 +327,11 @@ public:
 	ConcurrentMetering concurrentMetering;
 #endif /* OMR_GC_LARGE_OBJECT_AREA */
 
-	uintptr_t** markingStackList;
 	bool disableExplicitGC;
 	uintptr_t heapAlignment;
 	uintptr_t absoluteMinimumOldSubSpaceSize;
 	uintptr_t absoluteMinimumNewSubSpaceSize;
 	uintptr_t parSweepChunkSize;
-	uintptr_t markingStackSize;
 	uintptr_t heapExpansionMinimumSize;
 	uintptr_t heapExpansionMaximumSize;
 	uintptr_t heapFreeMinimumRatioDivisor;
@@ -574,7 +572,11 @@ public:
 	MM_HeapMap* previousMarkMap; /**< the previous valid mark map. This can be used to walk marked objects in regions which have _markMapUpToDate set to true */
 
 	MM_GlobalAllocationManager* globalAllocationManager; /**< Used for attaching threads to AllocationContexts */
+	
+#if defined(OMR_GC_REALTIME) || defined(OMR_GC_SEGREGATED_HEAP)
 	uintptr_t managedAllocationContextCount; /**< The number of allocation contexts which will be instantiated and managed by the GlobalAllocationManagerRealtime (currently 2*cpu_count) */
+#endif /* OMR_GC_REALTIME || OMR_GC_SEGREGATED_HEAP */
+
 #if defined(OMR_GC_SEGREGATED_HEAP)
 	MM_SizeClasses* defaultSizeClasses;
 #endif
@@ -1244,6 +1246,9 @@ public:
 		, scavengerStats()
 		, copyScanRatio()
 #endif /* OMR_GC_MODRON_SCAVENGER */		
+#if defined(OMR_GC_VLHGC)
+		, globalVLHGCStats()
+#endif /* OMR_GC_VLHGC */
 #if defined(OMR_GC_CONCURRENT_SWEEP)
 		, concurrentSweep(false)
 #endif /* OMR_GC_CONCURRENT_SWEEP */
@@ -1257,7 +1262,6 @@ public:
 #if defined(OMR_GC_STACCATO)
 		, sATBBarrierRememberedSet(NULL)
 #endif /* OMR_GC_STACCATO */
-
 		, heapBaseForBarrierRange0(NULL)
 		, heapSizeForBarrierRange0(0)
 		, doOutOfLineAllocationTrace(true) /* Tracing after ever x bytes allocated per thread. Enabled by default. */
@@ -1294,6 +1298,7 @@ public:
 		, vmThreadAllocatedMost(NULL)
 		, gcModeString(NULL)
 		, splitFreeListSplitAmount(0)
+		, splitFreeListNumberChunksPrepared(0)
 		, enableHybridMemoryPool(false)
 		, largeObjectArea(false)
 #if defined(OMR_GC_LARGE_OBJECT_AREA)
@@ -1305,12 +1310,13 @@ public:
 		, debugLOAFreelist(false)
 		, debugLOAAllocate(false)
 		, loaFreeHistorySize(15)
+		, concurrentMetering(METER_BY_SOA)
 #endif /* OMR_GC_LARGE_OBJECT_AREA */
+		, disableExplicitGC(false)
 		, heapAlignment(HEAP_ALIGNMENT)
 		, absoluteMinimumOldSubSpaceSize(MINIMUM_OLD_SPACE_SIZE)
 		, absoluteMinimumNewSubSpaceSize(MINIMUM_NEW_SPACE_SIZE)
 		, parSweepChunkSize(0)
-		, markingStackSize(4096)
 		, heapExpansionMinimumSize(1024 * 1024)
 		, heapExpansionMaximumSize(0)
 		, heapFreeMinimumRatioDivisor(100)
@@ -1357,7 +1363,10 @@ public:
 		, fvtest_forceReferenceChainWalkerMarkMapCommitFailureCounter(0)
 		, fvtest_forceCopyForwardHybridRatio(0)
 		, softMx(0) /* softMx only set if specified */
+#if defined(OMR_GC_BATCH_CLEAR_TLH)
 		, batchClearTLH(0)
+#endif /* OMR_GC_BATCH_CLEAR_TLH */
+		, gcThreadCount(0)
 		, gcThreadCountForced(false)
 #if defined(OMR_GC_MODRON_SCAVENGER) || defined(OMR_GC_VLHGC)
 		, scavengerScanOrdering(OMR_GC_SCAVENGER_SCANORDERING_HIERARCHICAL)
@@ -1373,6 +1382,7 @@ public:
 		, scvTenureStrategyLookback(true)
 		, scvTenureStrategyHistory(true)
 		, scavengerEnabled(false)
+		, scavengerRsoScanUnsafe(false)
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
 		, softwareRangeCheckReadBarrier(false)
 		, concurrentScavenger(false)
@@ -1432,8 +1442,8 @@ public:
 		, compactOnSystemGC(0)
 		, nocompactOnSystemGC(0)
 		, compactToSatisfyAllocate(false)
-		, payAllocationTax(false)
 #endif /* OMR_GC_MODRON_COMPACTION */
+		, payAllocationTax(false)
 #if defined(OMR_GC_MODRON_CONCURRENT_MARK)
 		, concurrentMark(false)
 		, concurrentKickoffEnabled(true)
@@ -1444,7 +1454,7 @@ public:
 		, concurrentLevel(8)
 #if defined(LINUX) && defined(S390)
 		, concurrentBackground(0) /* TODO: remove this workaround once pthread library on z/linux fixed. see CMVC 94776 */
-#else
+#else /* LINUX && S390 */
 		, concurrentBackground(1)
 #endif /* LINUX && S390 */
 		, concurrentSlack(0)
@@ -1477,6 +1487,7 @@ public:
 		, maxSizeDefaultMemorySpace(0)
 		, allocationIncrementSetByUser(0)
 		, overflowSafeAllocSize(0)
+		, usablePhysicalMemory(0)
 #if defined(OMR_GC_REALTIME)
 		, RTC_Frequency(2048) // must be power of 2 - translates to ~488us delay
 		, itPeriodMicro(1000)
@@ -1503,12 +1514,12 @@ public:
 		, instrumentableAllocateHookEnabled(false) /* by default the hook J9HOOK_VM_OBJECT_ALLOCATE_INSTRUMENTABLE is disabled */
 		, previousMarkMap(NULL)
 		, globalAllocationManager(NULL)
-#if defined (OMR_GC_REALTIME)
+#if defined(OMR_GC_REALTIME) || defined(OMR_GC_SEGREGATED_HEAP)
 		, managedAllocationContextCount(0)
-#endif /* OMR_GC_REALTIME */
+#endif /* OMR_GC_REALTIME || OMR_GC_SEGREGATED_HEAP */
 #if defined(OMR_GC_SEGREGATED_HEAP)
 		, defaultSizeClasses(NULL)
-#endif
+#endif /* OMR_GC_SEGREGATED_HEAP */
 		, distanceToYieldTimeCheck(0)
 		, traceCostToCheckYield(500) /* weighted sum of marked objects and scanned pointers before we check yield in main tracing loop */
 		, sweepCostToCheckYield(500) /* weighted count of free chunks/marked objects before we check yield in sweep small loop */
@@ -1526,6 +1537,7 @@ public:
 		, allocationCacheInitialSize(256)
 		, allocationCacheIncrementSize(256)
 		, nonDeterministicSweep(false)
+		, configuration(NULL)
 		, verboseGCManager(NULL)
 		, verbosegcCycleTime(1000)  /* by default metronome outputs verbosegc every 1sec */
 		, verboseExtensions(false)
@@ -1536,9 +1548,9 @@ public:
 		, disableInlineCacheForAllocationThreshold(false)
 #if defined (OMR_GC_COMPRESSED_POINTERS)
 		, heapCeiling(LOW_MEMORY_HEAP_CEILING) /* By default, compressed pointers builds run in the low 64GiB */
-#else
+#else /* OMR_GC_COMPRESSED_POINTERS */
 		, heapCeiling(0) /* default for normal platforms is 0 (i.e. no ceiling) */
-#endif
+#endif /* OMR_GC_COMPRESSED_POINTERS */
 		, heapInitializationFailureReason(HEAP_INITIALIZATION_FAILURE_REASON_NO_ERROR)
 		, scavengerAlignHotFields(true) /* VM Design 1774: hot field alignment is on by default */
 		, suballocatorInitialSize(SUBALLOCATOR_INITIAL_SIZE) /* default for J9Heap suballocator initial size is 200 MB */
@@ -1629,7 +1641,11 @@ public:
 		, lastGCFreeBytes(0)
 		, gcOnIdle(false)
 		, compactOnIdle(false)
-#endif
+#endif /* defined(OMR_GC_IDLE_HEAP_MANAGER) */
+#if defined(OMR_VALGRIND_MEMCHECK)
+		, valgrindMempoolAddr(0)
+		, memcheckHashTable(NULL)
+#endif /* defined(OMR_VALGRIND_MEMCHECK) */
 	{
 		_typeId = __FUNCTION__;
 	}

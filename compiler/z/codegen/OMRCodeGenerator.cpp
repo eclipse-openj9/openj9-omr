@@ -620,9 +620,6 @@ OMR::Z::CodeGenerator::CodeGenerator()
 
    self()->setGlobalPrivateStaticBaseRegisterOn(false);
 
-   if (!TR::Compiler->target.isLinux())
-      self()->setExpandExponentiation();
-
    self()->setMultiplyIsDestructive();
 
    self()->setIsOutOfLineHotPath(false);
@@ -663,8 +660,6 @@ OMR::Z::CodeGenerator::CodeGenerator()
    self()->setSupportsReverseLoadAndStore();
    self()->setSupportsSearchCharString(); // CISC Transformation into SRSTU loop - only on z9.
    self()->setSupportsTranslateAndTestCharString(); // CISC Transformation into TRTE loop - only on z6.
-   self()->setSupportsBCDToDFPReduction();
-   self()->setSupportsIntDFPConversions();
 
    // On 31-Bit zOS/zLinux We rely on optimizer to generate array copy trees specialized for direction
    if (TR::Compiler->target.is32Bit())
@@ -675,9 +670,6 @@ OMR::Z::CodeGenerator::CodeGenerator()
    if (_processorInfo.supportsArch(TR_S390ProcessorInfo::TR_z10))
       {
       self()->setSupportsTranslateAndTestCharString();
-
-      self()->setSupportsBCDToDFPReduction();
-      self()->setSupportsIntDFPConversions();
 
       if (!comp->getOption(TR_DisableTraps) && TR::Compiler->vm.hasResumableTrapHandler(comp))
          {

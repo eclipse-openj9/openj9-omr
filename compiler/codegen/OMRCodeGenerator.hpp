@@ -1129,7 +1129,7 @@ class OMR_EXTENSIBLE CodeGenerator
    void emitDataSnippets() {}
    bool hasDataSnippets() {return false;}
    int32_t setEstimatedLocationsForDataSnippetLabels(int32_t estimatedSnippetStart) {return 0;}
-   
+
    // --------------------------------------------------------------------------
    // Register pressure
    //
@@ -1342,7 +1342,7 @@ class OMR_EXTENSIBLE CodeGenerator
    // --------------------------------------------------------------------------
 
    TR::Node *createOrFindClonedNode(TR::Node *node, int32_t numChildren);
-   
+
    bool constantAddressesCanChangeSize(TR::Node *node);
    bool profiledPointersRequireRelocation();
    bool needGuardSitesEvenWhenGuardRemoved();
@@ -1368,7 +1368,7 @@ class OMR_EXTENSIBLE CodeGenerator
 
    // IA32 only?
    int32_t arrayInitMinimumNumberOfBytes() {return 8;}
-   
+
    void addCountersToEdges(TR::Block *block);
 
    bool getSupportsBitOpCodes() {return false;}
@@ -1441,9 +1441,6 @@ class OMR_EXTENSIBLE CodeGenerator
    bool supportsZonedDFPConversions() {return _enabledFlags.testAny(SupportsZonedDFPConversions);}
    void setSupportsZonedDFPConversions() {_enabledFlags.set(SupportsZonedDFPConversions);}
 
-   bool supportsIntDFPConversions() {return _enabledFlags.testAny(SupportsIntDFPConversions);}
-   void setSupportsIntDFPConversions() {_enabledFlags.set(SupportsIntDFPConversions);}
-
    bool supportsFastPackedDFPConversions() {return _enabledFlags.testAny(SupportsFastPackedDFPConversions);}
    void setSupportsFastPackedDFPConversions() {_enabledFlags.set(SupportsFastPackedDFPConversions);}
 
@@ -1482,9 +1479,6 @@ class OMR_EXTENSIBLE CodeGenerator
 
    bool getSupportsDoubleWordSet() { return _flags3.testAny(SupportsDoubleWordSet);}
    void setSupportsDoubleWordSet() { _flags3.set(SupportsDoubleWordSet);}
-
-   bool getSupportsTMDoubleWordCASORSet() { return _flags3.testAny(SupportsTMDoubleWordCASORSet);}
-   void setSupportsTMDoubleWordCASORSet() { _flags3.set(SupportsTMDoubleWordCASORSet);}
 
    bool getSupportsAtomicLoadAndAdd() { return _flags4.testAny(SupportsAtomicLoadAndAdd);}
    void setSupportsAtomicLoadAndAdd() { _flags4.set(SupportsAtomicLoadAndAdd);}
@@ -1596,9 +1590,6 @@ class OMR_EXTENSIBLE CodeGenerator
    bool getOptimizationPhaseIsComplete() {return _flags4.testAny(OptimizationPhaseIsComplete);}
    void setOptimizationPhaseIsComplete() {_flags4.set(OptimizationPhaseIsComplete);}
 
-   bool getSupportsBCDToDFPReduction() {return _flags4.testAny(SupportsBCDToDFPReduction);}
-   void setSupportsBCDToDFPReduction() {_flags4.set(SupportsBCDToDFPReduction);}
-
    bool getSupportsTestUnderMask() {return _flags4.testAny(SupportsTestUnderMask);}
    void setSupportsTestUnderMask() {_flags4.set(SupportsTestUnderMask);}
 
@@ -1622,9 +1613,6 @@ class OMR_EXTENSIBLE CodeGenerator
    bool getSupportsStackAllocationOfArraylets() {return _flags3.testAny(SupportsStackAllocationOfArraylets);}
    void setSupportsStackAllocationOfArraylets() {_flags3.set(SupportsStackAllocationOfArraylets);}
 
-   bool expandExponentiation() { return _flags3.testAny(ExpandExponentiation); }
-   void setExpandExponentiation() { _flags3.set(ExpandExponentiation); }
-
    bool multiplyIsDestructive() { return _flags3.testAny(MultiplyIsDestructive); }
    void setMultiplyIsDestructive() { _flags3.set(MultiplyIsDestructive); }
 
@@ -1632,10 +1620,6 @@ class OMR_EXTENSIBLE CodeGenerator
    void toggleIsInOOLSection();
 
    bool isInMemoryInstructionCandidate(TR::Node * node);
-
-   bool trackingInMemoryKilledLoads() {return _flags4.testAny(TrackingInMemoryKilledLoads);}
-   void setTrackingInMemoryKilledLoads() {_flags4.set(TrackingInMemoryKilledLoads);}
-   void resetTrackingInMemoryKilledLoads() {_flags4.reset(TrackingInMemoryKilledLoads);}
 
    void setLmmdFailed() { _lmmdFailed = true;}
 
@@ -1711,7 +1695,7 @@ class OMR_EXTENSIBLE CodeGenerator
       SchedulingInstrCleanupNeeded                        = 0x08000000,
       // Available                                        = 0x10000000,
       EnforceStoreOrder                                   = 0x20000000,
-      SupportsNewReferenceArrayCopy                       = 0x80000000,   // AVAILABLE FOR USE!!!!!!
+      // Available                                        = 0x80000000,
       DummyLastEnum2
       };
 
@@ -1744,11 +1728,11 @@ class OMR_EXTENSIBLE CodeGenerator
       SupportsDoubleWordCAS                               = 0x01000000,
       SupportsDoubleWordSet                               = 0x02000000,
       // AVAILABLE                                        = 0x04000000,
-      ExpandExponentiation                                = 0x08000000,
+      // AVAILABLE                                        = 0x08000000,
       MultiplyIsDestructive                               = 0x10000000,
       //                                                  = 0x20000000,  AVAILABLE FOR USE!
       HasCCCompare                                        = 0x40000000,
-      SupportsTMDoubleWordCASORSet                        = 0x80000000,
+      // AVAILABLE                                        = 0x80000000,
       DummyLastEnum
       };
 
@@ -1760,7 +1744,7 @@ class OMR_EXTENSIBLE CodeGenerator
       OptimizationPhaseIsComplete                         = 0x00000008,
       // Available                                        = 0x00000010,
       IsInOOLSection                                      = 0x00000020,
-      SupportsBCDToDFPReduction                           = 0x00000040,
+      // Available                                        = 0x00000040,
       GRACompleted                                        = 0x00000080,
       SupportsTestUnderMask                               = 0x00000100,
       SupportsRuntimeInstrumentation                      = 0x00000200,
@@ -1781,7 +1765,7 @@ class OMR_EXTENSIBLE CodeGenerator
       //                                                  = 0x01000000,  NOW AVAILABLE
       //                                                  = 0x02000000,  NOW AVAILABLE
       //                                                  = 0x04000000,  NOW AVAILABLE
-      TrackingInMemoryKilledLoads                         = 0x08000000,
+      // AVAILABLE                                        = 0x08000000,
       // AVAILABLE                                        = 0x10000000,
 	  SupportsLM                                          = 0x20000000,
 
@@ -1801,7 +1785,7 @@ class OMR_EXTENSIBLE CodeGenerator
       TrackRegisterUsage               = 0x0100,  // TAROK only (until it matures)
       //                               = 0x0200,  // AVAILABLE FOR USE!
       //                               = 0x0400,  // AVAILABLE FOR USE!
-      SupportsIntDFPConversions        = 0x0800,
+      // Available                     = 0x0800,
       // Available                             ,
       SupportsFastPackedDFPConversions = 0x2000,
       // Available

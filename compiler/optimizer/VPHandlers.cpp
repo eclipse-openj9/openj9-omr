@@ -1564,7 +1564,7 @@ TR::Node *constrainAload(OMR::ValuePropagation *vp, TR::Node *node)
       return node;
 
    // before undertaking aload specific handling see if the default load transformation helps
-   if (TR::TransformUtil::transformDirectLoad(vp->comp(), node))
+   if (vp->transformDirectLoad(node))
       {
       constrainNewlyFoldedConst(vp, node, false /* !isGlobal, conservative */);
       return node;

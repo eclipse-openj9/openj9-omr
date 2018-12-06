@@ -435,6 +435,8 @@ static const char *opCodeToNameMap[] =
    "rev16w",
    "rev16x",
    "rev32",
+   "fmovs",
+   "fmovd",
    "fmov_wtos",
    "fmov_xtod",
    "proc",

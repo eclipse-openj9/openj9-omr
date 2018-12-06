@@ -375,7 +375,8 @@ fail:
 	return false;
 
 pass:
-	*isSigned = (0 != num[TK_signed]) ? true : false;
+	/* types are signed unless explicitly 'unsigned' */
+	*isSigned = (0 == num[TK_unsigned]) ? true : false;
 	*bitWidth = bits;
 	return true;
 }

@@ -1350,13 +1350,12 @@ bool TR_LoopVersioner::detectInvariantChecks(List<TR::Node> *nullCheckedReferenc
 
       if (!isNullCheckReferenceInvariant &&
           node->getData()->getOpCode().hasSymbolReference() &&
-          (node->getData()->getSymbolReference()->getSymbol()->isAuto() &&
-          isDependentOnInvariant(node->getData()) ||
-          node->getData()->getOpCode().isLoadIndirect() &&
-          !_seenDefinedSymbolReferences->get(node->getData()->getSymbolReference()->getReferenceNumber()) &&
-          node->getData()->getFirstChild()->getOpCode().hasSymbolReference() &&
-          node->getData()->getFirstChild()->getSymbolReference()->getSymbol()->isAuto() &&
-          isDependentOnInvariant(node->getData()->getFirstChild())))
+          ((node->getData()->getSymbolReference()->getSymbol()->isAuto() && isDependentOnInvariant(node->getData())) ||
+           (node->getData()->getOpCode().isLoadIndirect() &&
+            !_seenDefinedSymbolReferences->get(node->getData()->getSymbolReference()->getReferenceNumber()) &&
+            node->getData()->getFirstChild()->getOpCode().hasSymbolReference() &&
+            node->getData()->getFirstChild()->getSymbolReference()->getSymbol()->isAuto() &&
+            isDependentOnInvariant(node->getData()->getFirstChild()))))
          isNullCheckReferenceInvariant = true;
 
       if (!isNullCheckReferenceInvariant ||
@@ -3259,7 +3258,7 @@ bool TR_LoopVersioner::detectChecksToBeEliminated(TR_RegionStructure *whileLoop,
                   TR::Node *ttNode = tt->getNode();
                   TR::ILOpCode &op = ttNode->getOpCode();
                   if ( op.isCheck() || op.isCheckCast() ||
-                       op.isBranch() && ttNode->getNumChildren() >= 2 && (!tt->getNode()->getFirstChild()->getOpCode().isLoadConst() || !tt->getNode()->getSecondChild()->getOpCode().isLoadConst()))
+                       (op.isBranch() && ttNode->getNumChildren() >= 2 && (!tt->getNode()->getFirstChild()->getOpCode().isLoadConst() || !tt->getNode()->getSecondChild()->getOpCode().isLoadConst())))
                      {
                      if (!performTransformation(comp(), "%s ...disregarding %s n%dn\n", OPT_DETAILS_LOOP_VERSIONER, ttNode->getOpCode().getName(), ttNode->getGlobalIndex()))
                         isUnimportant = false;

@@ -191,8 +191,8 @@ static void checkForNonNegativeAndOverflowProperties(OMR::ValuePropagation *vp, 
          if (high <= 0)
              node->setIsNonPositive(true);
 
-         if ((node->getOpCode().isLoad() && ((low > TR::getMinSigned<TR::Int16>()) || (high < TR::getMaxSigned<TR::Int16>())) ||
-             (node->getOpCode().isArithmetic() && (range->canOverflow() != TR_yes))))
+         if ((node->getOpCode().isLoad() && ((low > TR::getMinSigned<TR::Int16>()) || (high < TR::getMaxSigned<TR::Int16>()))) ||
+             (node->getOpCode().isArithmetic() && (range->canOverflow() != TR_yes)))
               {
               node->setCannotOverflow(true);
               }
@@ -649,8 +649,8 @@ static bool findConstant(OMR::ValuePropagation *vp, TR::Node *node)
                       (value < vp->cg()->getSmallestPosConstThatMustBeMaterialized() &&
                        value > vp->cg()->getLargestNegConstThatMustBeMaterialized()) ||
                       (vp->getCurrentParent()->getOpCode().isMul() &&
-                       vp->getCurrentParent()->getSecondChild() == node) &&
-                       isNonNegativePowerOf2(value))
+                       vp->getCurrentParent()->getSecondChild() == node &&
+                       isNonNegativePowerOf2(value)))
                        {
                        vp->replaceByConstant(node,constraint,isGlobal);
                        replacedConst = true;
@@ -740,7 +740,7 @@ bool constraintFitsInIntegerRange(OMR::ValuePropagation *vp, TR::VPConstraint *c
 
 bool canMoveLongOpChildDirectly(TR::Node *node, int32_t numChild, TR::Node *arithNode)
    {
-   return node->getChild(numChild)->getDataType() == arithNode->getDataType() || node->getOpCodeValue() == TR::lshr && numChild > 0;
+   return node->getChild(numChild)->getDataType() == arithNode->getDataType() || (node->getOpCodeValue() == TR::lshr && numChild > 0);
    }
 
 bool reduceLongOpToIntegerOp(OMR::ValuePropagation *vp, TR::Node *node, TR::VPConstraint *nodeConstraint)
@@ -2934,7 +2934,7 @@ TR::Node *constrainWrtBar(OMR::ValuePropagation *vp, TR::Node *node)
    // The case of ArrayStoreCHK will be taken care in constrainArrayStoreChk().
    //
    if (!vp->getCurrentParent() ||
-        vp->getCurrentParent() && vp->getCurrentParent()->getOpCodeValue() != TR::ArrayStoreCHK)
+        (vp->getCurrentParent() && vp->getCurrentParent()->getOpCodeValue() != TR::ArrayStoreCHK))
       canRemoveWrtBar(vp, node);
 
    static bool doOpt = feGetEnv("TR_DisableWrtBarOpt") ? false : true;
@@ -3891,7 +3891,7 @@ TR::Node *constrainCheckcast(OMR::ValuePropagation *vp, TR::Node *node)
    bool exceptionTaken = false;
    if ((result == 0) ||
        ((node->getOpCodeValue() == TR::checkcastAndNULLCHK) &&
-        (objectConstraint && objectConstraint->isNullObject() ||
+        ((objectConstraint && objectConstraint->isNullObject()) ||
          (isInstance == TR_no ))))
       {
       // Everything past this point in the block is dead, since the

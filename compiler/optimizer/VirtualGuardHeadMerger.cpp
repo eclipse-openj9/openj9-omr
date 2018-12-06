@@ -340,9 +340,9 @@ int32_t TR_VirtualGuardHeadMerger::perform() {
             {
             // TODO handle moving code earlier in the block down below the guard
             // tail split
-            if ((block->getNextBlock()->getSuccessors().size() == 1) ||
-                ((block->getNextBlock()->getSuccessors().size() == 2) &&
-                 block->getNextBlock()->getLastRealTreeTop()->getNode()->getOpCode().isBranch()) &&
+            if ((block->getNextBlock()->getSuccessors().size() == 1 ||
+                 (block->getNextBlock()->getSuccessors().size() == 2 &&
+                  block->getNextBlock()->getLastRealTreeTop()->getNode()->getOpCode().isBranch())) &&
                 performTransformation(comp(), "%sCloning block_%d and placing clone after block_%d to reduce HCR guard nops\n", OPT_DETAILS, block->getNextBlock()->getNumber(), cold1->getNumber()))
                tailSplitBlock(block, cold1);
             }

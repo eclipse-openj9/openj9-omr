@@ -271,7 +271,7 @@ int32_t TR_ExtendBasicBlocks::orderBlocksWithoutFrequencyInfo()
                    //(blockHotness != unknownHotness) && (bestHotness != unknownHotness))
                   {
                   //if (((bestHotness == deadCold) && (blockHotness != deadCold)) || (blockHotness > (bestHotness + 1)))
-                  if (((bestFreq == (MAX_COLD_BLOCK_COUNT+1)) && (blockFreq != (MAX_COLD_BLOCK_COUNT+1)) || (blockFreq > bestFreq + 100)))
+                  if ((((bestFreq == (MAX_COLD_BLOCK_COUNT+1)) && (blockFreq != (MAX_COLD_BLOCK_COUNT+1))) || (blockFreq > bestFreq + 100)))
                      {
                      //bestExtension = NULL;
                      continue;
@@ -3000,8 +3000,8 @@ int32_t TR_SimplifyAnds::process(TR::TreeTop *startTree, TR::TreeTop *endTree)
                      TR::Node *treeBeforeLastRealNode = treeBefore->getNode();
                      TR::Node *firstNode = firstTree->getNode();
                      if (firstNode->getOpCode().isStoreDirect() &&
-                         (firstNode->getFirstChild()->getOpCode().isAdd() ||
-                          firstNode->getFirstChild()->getOpCode().isSub() &&
+                         ((firstNode->getFirstChild()->getOpCode().isAdd() ||
+                          firstNode->getFirstChild()->getOpCode().isSub()) &&
                           firstNode->getFirstChild()->getReferenceCount() == 1) &&
                          ((firstNode->getType().isInt32() ||
                           firstNode->getType().isInt64())
@@ -4291,8 +4291,8 @@ void TR_Rematerialization::rematerializeSSAddress(TR::Node *parent, int32_t addr
          addressNode->getSymbolReference()->getSymbol()->isAutoOrParm())
         ||
         (addressNode->getOpCode().isArrayRef() &&
-         addressNode->getSecondChild()->getOpCode().isLoadConst()) &&
-         cg()->getSupportsConstantOffsetInAddressing(addressNode->getSecondChild()->get64bitIntegralValue())))
+         addressNode->getSecondChild()->getOpCode().isLoadConst() &&
+         cg()->getSupportsConstantOffsetInAddressing(addressNode->getSecondChild()->get64bitIntegralValue()))))
 
       {
       if (performTransformation(comp(), "%sRematerializing SS address %s (%p)\n", optDetailString(),addressNode->getOpCode().getName(),addressNode))
@@ -4340,8 +4340,8 @@ void TR_Rematerialization::rematerializeAddresses(TR::Node *indirectNode, TR::Tr
                  node->getNumChildren() == 2 &&
                  (!node->getSecondChild()->getOpCode().isLoadConst() ||
                   (cg()->isMaterialized(node->getSecondChild()) ||
-                        cg()->getSupportsConstantOffsetInAddressing() &&
-                        cg()->getSupportsConstantOffsetInAddressing(node->getSecondChild()->get64bitIntegralValue())))) ||
+                        (cg()->getSupportsConstantOffsetInAddressing() &&
+                        cg()->getSupportsConstantOffsetInAddressing(node->getSecondChild()->get64bitIntegralValue()))))) ||
                 (node->getReferenceCount() == 1 &&
                  node->isInternalPointer() &&
                  node->getNumChildren() == 2 &&

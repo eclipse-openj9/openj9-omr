@@ -3418,7 +3418,7 @@ static bool isLegalToMerge(TR::Node * node, TR::Block * block, TR::Block * nextB
       return false;
 
    blockIsEmpty = (block->getEntry() != NULL && block->getEntry()->getNextTreeTop() == block->getExit());
-   if (inEdge.empty() || !blockIsEmpty && (inEdge.front() != outEdge || (inEdge.size() > 1)))
+   if (inEdge.empty() || (!blockIsEmpty && (inEdge.front() != outEdge || (inEdge.size() > 1))))
       return false;
 
    //Can't merge block with nextBlock if block is entry point and inEdge has more than one edge

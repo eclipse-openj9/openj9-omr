@@ -187,7 +187,18 @@ TR::Register *commonLoadEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic op, i
    TR::Register *tempReg;
    bool needSync = (node->getSymbolReference()->getSymbol()->isSyncVolatile() && TR::Compiler->target.isSMP());
 
-   tempReg = cg->allocateRegister();
+   if (op == TR::InstOpCode::vldrimms)
+      {
+      tempReg = cg->allocateSinglePrecisionRegister();
+      }
+   else if (op == TR::InstOpCode::vldrimmd)
+      {
+      tempReg = cg->allocateRegister(TR_FPR);
+      }
+   else
+      {
+      tempReg = cg->allocateRegister();
+      }
    node->setRegister(tempReg);
    TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(node, memSize, cg);
    generateTrg1MemInstruction(cg, op, node, tempReg, tempMR);

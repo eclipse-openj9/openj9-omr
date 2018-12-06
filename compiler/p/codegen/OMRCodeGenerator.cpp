@@ -290,15 +290,6 @@ OMR::Power::CodeGenerator::CodeGenerator() :
    if (TR::Compiler->target.cpu.getPPCSupportsVMX() && TR::Compiler->target.cpu.getPPCSupportsVSX())
       self()->setSupportsAutoSIMD();
 
-   static bool disableTMDCAS = (feGetEnv("TR_DisablePPCTMDCAS") != NULL);
-   if (self()->getSupportsTM() && !disableTMDCAS &&
-       TR::Compiler->target.is64Bit() &&
-       !TR::Options::useCompressedPointers())
-      {
-      self()->setSupportsTMDoubleWordCASORSet();
-      }
-
-
    if (!self()->comp()->getOption(TR_DisableRegisterPressureSimulation))
       {
       for (int32_t i = 0; i < TR_numSpillKinds; i++)

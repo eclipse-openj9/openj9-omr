@@ -4233,7 +4233,8 @@ TR::Register* OMR::X86::TreeEvaluator::FloatingPointAndVectorBinaryArithmeticEva
 
    if (useRegMemForm)
       {
-      if (operandNode1->getReferenceCount() != 1 ||
+      if (operandNode1->getRegister()                               ||
+          operandNode1->getReferenceCount() != 1                    ||
           operandNode1->getOpCodeValue() != MemoryLoadOpCodes[type] ||
           BinaryArithmeticOpCodesForMem[type][arithmetic] == BADIA32Op)
          {

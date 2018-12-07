@@ -7165,6 +7165,19 @@ void OMR::ValuePropagation::constrainRecognizedMethod(TR::Node *node)
    }
 
 
+/** \brief
+ *     Extension point for language specific optimizations on direct load
+ *
+ * \parm node
+ *     The direct load node to be constrained
+ *
+ * \return
+ *     True if node is transformed, false otherwise
+ */
+bool OMR::ValuePropagation::transformDirectLoad(TR::Node *node)
+   {
+   return TR::TransformUtil::transformDirectLoad(comp(), node);
+   }
 
 bool OMR::ValuePropagation::checkAllUnsafeReferences(TR::Node *node, vcount_t visitCount)
    {

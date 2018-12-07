@@ -589,6 +589,7 @@ class ValuePropagation : public TR::Optimization
    void transformReferenceArrayCopy(TR_TreeTopWrtBarFlag *);
    void transformReferenceArrayCopyWithoutCreatingStoreTrees(TR_TreeTopWrtBarFlag *arrayTree, TR::SymbolReference *srcObjRef, TR::SymbolReference *dstObjRef, TR::SymbolReference *srcRef, TR::SymbolReference *dstRef, TR::SymbolReference *lenRef);
    virtual void constrainRecognizedMethod(TR::Node *node);
+   virtual bool transformDirectLoad(TR::Node *node);
 
    struct ObjCloneInfo {
       TR_ALLOC(TR_Memory::ValuePropagation)

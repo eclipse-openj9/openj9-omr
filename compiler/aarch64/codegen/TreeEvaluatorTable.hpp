@@ -174,21 +174,21 @@
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::lxorEvaluator ,	// TR::lxor		// boolean xor of 2 long integers
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::bxorEvaluator ,	// TR::bxor		// boolean xor of 2 bytes
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::sxorEvaluator ,	// TR::sxor		// boolean xor of 2 short integers
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::i2lEvaluator ,	// TR::i2l		// convert integer to long integer with sign extension
+    TR::TreeEvaluator::i2lEvaluator, // TR::i2l		// convert integer to long integer with sign extension
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::i2fEvaluator ,	// TR::i2f		// convert integer to float
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::i2dEvaluator ,	// TR::i2d		// convert integer to double
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::i2bEvaluator ,	// TR::i2b		// convert integer to byte
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::i2sEvaluator ,	// TR::i2s		// convert integer to short integer
+    TR::TreeEvaluator::l2iEvaluator, // TR::i2b		// convert integer to byte
+    TR::TreeEvaluator::l2iEvaluator, // TR::i2s		// convert integer to short integer
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::i2aEvaluator ,	// TR::i2a		// convert integer to address
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::iu2lEvaluator ,	// TR::iu2l		// convert unsigned integer to long integer with zero extension
+    TR::TreeEvaluator::iu2lEvaluator, // TR::iu2l		// convert unsigned integer to long integer with zero extension
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::iu2fEvaluator ,	// TR::iu2f		// convert unsigned integer to float
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::iu2dEvaluator ,	// TR::iu2d		// convert unsigned integer to double
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::iu2aEvaluator ,	// TR::iu2a		// convert unsigned integer to address
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::l2iEvaluator ,	// TR::l2i		// convert long integer to integer
+    TR::TreeEvaluator::l2iEvaluator, // TR::l2i		// convert long integer to integer
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::l2fEvaluator ,	// TR::l2f		// convert long integer to float
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::l2dEvaluator ,	// TR::l2d		// convert long integer to double
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::l2bEvaluator ,	// TR::l2b		// convert long integer to byte
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::l2sEvaluator ,	// TR::l2s		// convert long integer to short integer
+    TR::TreeEvaluator::l2iEvaluator, // TR::l2b		// convert long integer to byte
+    TR::TreeEvaluator::l2iEvaluator, // TR::l2s		// convert long integer to short integer
     TR::TreeEvaluator::passThroughEvaluator, // TR::l2a		// convert long integer to address
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::lu2fEvaluator ,	// TR::lu2f		// convert unsigned long integer to float
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::lu2dEvaluator ,	// TR::lu2d		// convert unsigned long integer to double
@@ -203,26 +203,26 @@
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::d2fEvaluator ,	// TR::d2f		// convert double to float
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::d2bEvaluator ,	// TR::d2b		// convert double to byte
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::d2sEvaluator ,	// TR::d2s		// convert double to short integer
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::b2iEvaluator ,	// TR::b2i		// convert byte to integer with sign extension
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::b2lEvaluator ,	// TR::b2l		// convert byte to long integer with sign extension
+    TR::TreeEvaluator::b2iEvaluator, // TR::b2i		// convert byte to integer with sign extension
+    TR::TreeEvaluator::b2lEvaluator, // TR::b2l		// convert byte to long integer with sign extension
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::b2fEvaluator ,	// TR::b2f		// convert byte to float
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::b2dEvaluator ,	// TR::b2d		// convert byte to double
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::b2sEvaluator ,	// TR::b2s		// convert byte to short integer with sign extension
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::b2aEvaluator ,	// TR::b2a		// convert byte to address
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::bu2iEvaluator ,	// TR::bu2i		// convert byte to integer with zero extension
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::bu2lEvaluator ,	// TR::bu2l		// convert byte to long integer with zero extension
+    TR::TreeEvaluator::bu2iEvaluator, // TR::bu2i		// convert byte to integer with zero extension
+    TR::TreeEvaluator::bu2lEvaluator, // TR::bu2l		// convert byte to long integer with zero extension
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::bu2fEvaluator ,	// TR::bu2f		// convert unsigned byte to float
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::bu2dEvaluator ,	// TR::bu2d		// convert unsigned byte to double
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::bu2sEvaluator ,	// TR::bu2s		// convert byte to short integer with zero extension
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::bu2aEvaluator ,	// TR::bu2a		// convert unsigned byte to unsigned address
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::s2iEvaluator ,	// TR::s2i		// convert short integer to integer with sign extension
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::s2lEvaluator ,	// TR::s2l		// convert short integer to long integer with sign extension
+    TR::TreeEvaluator::s2iEvaluator, // TR::s2i		// convert short integer to integer with sign extension
+    TR::TreeEvaluator::s2lEvaluator, // TR::s2l		// convert short integer to long integer with sign extension
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::s2fEvaluator ,	// TR::s2f		// convert short integer to float
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::s2dEvaluator ,	// TR::s2d		// convert short integer to double
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::s2bEvaluator ,	// TR::s2b		// convert short integer to byte
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::s2aEvaluator ,	// TR::s2a		// convert short integer to address
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::su2iEvaluator ,	// TR::su2i		// zero extend short to int
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::su2lEvaluator ,	// TR::su2l		// zero extend char to long
+    TR::TreeEvaluator::su2iEvaluator, // TR::su2i		// zero extend short to int
+    TR::TreeEvaluator::su2lEvaluator, // TR::su2l		// zero extend char to long
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::su2fEvaluator ,	// TR::su2f		// convert char to float
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::su2dEvaluator ,	// TR::su2d		// convert char to double
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::su2aEvaluator ,	// TR::su2a		// convert char to address

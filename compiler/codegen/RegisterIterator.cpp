@@ -19,13 +19,12 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#include <stddef.h>                       // for NULL
-#include "codegen/Machine.hpp"            // for Machine
-#include "codegen/RealRegister.hpp"       // for RealRegister, etc
-#include "codegen/Register.hpp"           // for Register
-#include "codegen/RegisterIterator.hpp"   // for RegisterIterator
-#include "infra/Assert.hpp"               // for TR_ASSERT
-
+#include <stddef.h>
+#include "codegen/Machine.hpp"
+#include "codegen/RealRegister.hpp"
+#include "codegen/Register.hpp"
+#include "codegen/RegisterIterator.hpp"
+#include "infra/Assert.hpp"
 
 TR::Register *
 TR::RegisterIterator::getFirst()

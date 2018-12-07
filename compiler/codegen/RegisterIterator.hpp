@@ -22,7 +22,7 @@
 #ifndef TR_REGISTER_ITERATOR_INCL
 #define TR_REGISTER_ITERATOR_INCL
 
-#include "env/TRMemory.hpp"  // for TR_Memory, etc
+#include "env/TRMemory.hpp"
 
 namespace TR { class Machine; }
 namespace TR { class Register; }

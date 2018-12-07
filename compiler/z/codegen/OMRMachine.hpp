@@ -34,10 +34,10 @@ namespace OMR { typedef OMR::Z::Machine MachineConnector; }
 
 #include "compiler/codegen/OMRMachine.hpp"
 
-#include <string.h>                  // for memset
-#include "codegen/RealRegister.hpp"  // for RealRegister, etc
-#include "il/DataTypes.hpp"          // for CONSTANT64, etc
-#include "infra/Flags.hpp"           // for flags32_t
+#include <string.h>
+#include "codegen/RealRegister.hpp"
+#include "il/DataTypes.hpp"
+#include "infra/Flags.hpp"
 #include "infra/TRlist.hpp"
 
 class TR_Debug;

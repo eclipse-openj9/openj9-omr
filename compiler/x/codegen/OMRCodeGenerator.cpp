@@ -22,80 +22,80 @@
 #include "codegen/CodeGenerator.hpp"
 #include "codegen/CodeGenerator_inlines.hpp"
 
-#include <limits.h>                                    // for INT_MAX
-#include <stdint.h>                                    // for int32_t, etc
-#include <string.h>                                    // for NULL, strstr, etc
+#include <limits.h>
+#include <stdint.h>
+#include <string.h>
 #include "codegen/BackingStore.hpp"
 #include "codegen/ConstantDataSnippet.hpp"
-#include "codegen/FrontEnd.hpp"                        // for feGetEnv, etc
-#include "codegen/GCStackAtlas.hpp"                    // for GCStackAtlas
-#include "codegen/GCStackMap.hpp"                      // for TR_GCStackMap, etc
-#include "codegen/Instruction.hpp"                     // for Instruction, etc
-#include "codegen/Linkage.hpp"                         // for Linkage, etc
+#include "codegen/FrontEnd.hpp"
+#include "codegen/GCStackAtlas.hpp"
+#include "codegen/GCStackMap.hpp"
+#include "codegen/Instruction.hpp"
+#include "codegen/Linkage.hpp"
 #include "codegen/LinkageConventionsEnum.hpp"
 #include "codegen/LiveRegister.hpp"
-#include "codegen/Machine.hpp"                         // for Machine, etc
+#include "codegen/Machine.hpp"
 #include "codegen/MemoryReference.hpp"
-#include "codegen/RealRegister.hpp"                    // for RealRegister, etc
+#include "codegen/RealRegister.hpp"
 #include "codegen/RecognizedMethods.hpp"
-#include "codegen/Register.hpp"                        // for Register
+#include "codegen/Register.hpp"
 #include "codegen/RegisterConstants.hpp"
 #include "codegen/RegisterIterator.hpp"
 #include "codegen/RegisterPressureSimulatorInner.hpp"
 #include "codegen/RegisterRematerializationInfo.hpp"
-#include "codegen/Snippet.hpp"                         // for Snippet, etc
-#include "codegen/TreeEvaluator.hpp"                   // for TreeEvaluator, etc
+#include "codegen/Snippet.hpp"
+#include "codegen/TreeEvaluator.hpp"
 #include "codegen/X86Evaluator.hpp"
 #ifdef TR_TARGET_64BIT
 #include "x/amd64/codegen/AMD64SystemLinkage.hpp"
 #else
 #include "x/i386/codegen/IA32SystemLinkage.hpp"
 #endif
-#include "compile/Compilation.hpp"                     // for Compilation, etc
+#include "compile/Compilation.hpp"
 #include "compile/ResolvedMethod.hpp"
 #include "compile/SymbolReferenceTable.hpp"
 #include "compile/VirtualGuard.hpp"
 #include "control/Options.hpp"
-#include "control/Options_inlines.hpp"                 // for TR::Options, etc
+#include "control/Options_inlines.hpp"
 #include "control/Recompilation.hpp"
 #ifdef J9_PROJECT_SPECIFIC
 #include "control/RecompilationInfo.hpp"
 #endif
 #include "env/CompilerEnv.hpp"
-#include "env/IO.hpp"                                  // for IO
+#include "env/IO.hpp"
 #include "env/TRMemory.hpp"
 #include "env/jittypes.h"
-#include "il/Block.hpp"                                // for Block
-#include "il/DataTypes.hpp"                            // for TR::DataType, etc
+#include "il/Block.hpp"
+#include "il/DataTypes.hpp"
 #include "il/ILOpCodes.hpp"
-#include "il/ILOps.hpp"                                // for ILOpCode, etc
-#include "il/Node.hpp"                                 // for Node
+#include "il/ILOps.hpp"
+#include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
-#include "il/Symbol.hpp"                               // for Symbol
+#include "il/Symbol.hpp"
 #include "il/SymbolReference.hpp"
-#include "il/TreeTop.hpp"                              // for TreeTop
+#include "il/TreeTop.hpp"
 #include "il/TreeTop_inlines.hpp"
-#include "il/symbol/LabelSymbol.hpp"                   // for LabelSymbol, etc
-#include "il/symbol/MethodSymbol.hpp"                  // for MethodSymbol
+#include "il/symbol/LabelSymbol.hpp"
+#include "il/symbol/MethodSymbol.hpp"
 #include "il/symbol/ParameterSymbol.hpp"
 #include "il/symbol/ResolvedMethodSymbol.hpp"
-#include "il/symbol/StaticSymbol.hpp"                  // for StaticSymbol
-#include "infra/Assert.hpp"                            // for TR_ASSERT
+#include "il/symbol/StaticSymbol.hpp"
+#include "infra/Assert.hpp"
 #include "infra/Bit.hpp"
-#include "infra/BitVector.hpp"                         // for TR_BitVector, etc
-#include "infra/Flags.hpp"                             // for flags8_t, etc
-#include "infra/IGNode.hpp"                            // for TR_IGNode
+#include "infra/BitVector.hpp"
+#include "infra/Flags.hpp"
+#include "infra/IGNode.hpp"
 #include "infra/InterferenceGraph.hpp"
-#include "infra/List.hpp"                              // for ListIterator, etc
-#include "infra/Stack.hpp"                             // for TR_Stack
+#include "infra/List.hpp"
+#include "infra/Stack.hpp"
 #include "optimizer/RegisterCandidate.hpp"
-#include "ras/Debug.hpp"                               // for TR_DebugBase
+#include "ras/Debug.hpp"
 #include "ras/DebugCounter.hpp"
 #include "x/codegen/DataSnippet.hpp"
 #include "x/codegen/OutlinedInstructions.hpp"
 #include "x/codegen/FPTreeEvaluator.hpp"
 #include "x/codegen/X86Instruction.hpp"
-#include "x/codegen/X86Ops.hpp"                        // for TR_X86OpCode, etc
+#include "x/codegen/X86Ops.hpp"
 #include "x/codegen/X86Ops_inlines.hpp"
 
 namespace OMR { class RegisterUsage; }

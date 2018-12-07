@@ -38,3 +38,4 @@ function(omr_add_core_test testname)
 endfunction(omr_add_core_test)
 
 omr_add_core_test(TestBytes)
+omr_add_core_test(TestIntrusiveList)

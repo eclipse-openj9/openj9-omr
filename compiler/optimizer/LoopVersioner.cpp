@@ -5159,25 +5159,19 @@ void TR_LoopVersioner::buildAwrtbariComparisonsTree(List<TR::TreeTop> *awrtbariT
          TR::Node *duplicateBase = awrtbariNode->getLastChild()->duplicateTreeForCodeMotion();
          TR::Node *ifNode, *ifNode1, *ifNode2;
 
-         bool isX86 = false;
-
-#ifdef TR_TARGET_X86
-         isX86 = true;
-#endif
-
          // If we can guarantee a fixed tenure size we can hardcode size constants
          bool isVariableHeapBase = comp()->getOptions()->isVariableHeapBaseForBarrierRange0();
          bool isVariableHeapSize = comp()->getOptions()->isVariableHeapSizeForBarrierRange0();
 
          TR_J9VMBase *fej9 = (TR_J9VMBase *)(comp()->fe());
 
-         if (!isX86 && (isVariableHeapBase || isVariableHeapSize))
+         if (isVariableHeapBase || isVariableHeapSize)
             {
             ifNode1 =  TR::Node::create(TR::acmpge, 2, duplicateBase, TR::Node::createWithSymRef(TR::aload, 0, comp()->getSymRefTab()->findOrCreateThreadLowTenureAddressSymbolRef()));
             }
          else
             {
-            ifNode1 =  TR::Node::create(TR::acmpge, 2, duplicateBase, TR::Node::create(duplicateBase, TR::aconst, 0, fej9->getLowTenureAddress()));
+            ifNode1 =  TR::Node::create(TR::acmpge, 2, duplicateBase, TR::Node::aconst(duplicateBase, fej9->getLowTenureAddress()));
             }
 
          //comparisonTrees->add(ifNode);
@@ -5186,13 +5180,13 @@ void TR_LoopVersioner::buildAwrtbariComparisonsTree(List<TR::TreeTop> *awrtbariT
 
          duplicateBase = awrtbariNode->getLastChild()->duplicateTreeForCodeMotion();
 
-         if (!isX86 && (isVariableHeapBase || isVariableHeapSize))
+         if (isVariableHeapBase || isVariableHeapSize)
             {
             ifNode2 =  TR::Node::create(TR::acmplt, 2, duplicateBase, TR::Node::createWithSymRef(TR::aload, 0, comp()->getSymRefTab()->findOrCreateThreadHighTenureAddressSymbolRef()));
             }
          else
             {
-            ifNode2 =  TR::Node::create(TR::acmplt, 2, duplicateBase, TR::Node::create(duplicateBase, TR::aconst, 0, fej9->getHighTenureAddress()));
+            ifNode2 =  TR::Node::create(TR::acmplt, 2, duplicateBase, TR::Node::aconst(duplicateBase, fej9->getHighTenureAddress()));
             }
 
          ifNode =  TR::Node::createif(TR::ificmpne, TR::Node::create(TR::iand, 2, ifNode1, ifNode2), TR::Node::create(duplicateBase, TR::iconst, 0, 0), exitGotoBlock->getEntry());
@@ -5200,7 +5194,6 @@ void TR_LoopVersioner::buildAwrtbariComparisonsTree(List<TR::TreeTop> *awrtbariT
          comparisonTrees->add(ifNode);
 
          dumpOptDetails(comp(), "2 The node %p has been created for testing if awrtbari is required\n", ifNode2);
-
 
          //printf("Found opportunity for skipping wrtbar %p in %s at freq %d\n", awrtbariNode, comp()->signature(), awrtbariTree->getEnclosingBlock()->getFrequency()); fflush(stdout);
 

@@ -424,7 +424,9 @@
 /* VFP instructions */
 		fmovs,                                                  	/* 0x1E204000	FMOV      	 */
 		fmovd,                                                  	/* 0x1E604000	FMOV      	 */
+		fmov_stow,                                              	/* 0x1E260000	FMOV      	 */
 		fmov_wtos,                                              	/* 0x1E270000	FMOV      	 */
+		fmov_dtox,                                              	/* 0x9E660000	FMOV      	 */
 		fmov_xtod,                                              	/* 0x9E670000	FMOV      	 */
 /* Internal OpCodes */
 		proc,  // Entry to the method

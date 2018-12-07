@@ -84,11 +84,6 @@ target_include_directories(omr_base
 		$<INSTALL_INTERFACE:${OMR_INSTALL_INC_DIR}>
 )
 
-target_compile_definitions(omr_base
-	INTERFACE
-		-DUT_DIRECT_TRACE_REGISTRATION # TODO:  Deal with that stupid jni issue in tracegen
-)
-
 install(
 	TARGETS omr_base
 	EXPORT OmrTargets

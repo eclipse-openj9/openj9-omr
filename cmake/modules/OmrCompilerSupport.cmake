@@ -74,7 +74,6 @@ function(make_compiler_target TARGET_NAME SCOPE)
 	# TODO: Extract into platform specific section.
 	target_compile_definitions(${TARGET_NAME} ${SCOPE}
 		BITVECTOR_BIT_NUMBERING_MSB
-		UT_DIRECT_TRACE_REGISTRATION
 		${TR_COMPILE_DEFINITIONS}
 		${COMPILER_DEFINES}
 	)

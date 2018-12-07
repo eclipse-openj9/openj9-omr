@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1661,7 +1661,7 @@ TR::X86RegImmSymInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
    switch (getReloKind())
       {
       case TR_ConstantPool:
-         TR_ASSERT(symbol->isConst(), "assertion failure");
+         TR_ASSERT(symbol->isConst() || symbol->isConstantPoolAddress(), "unknown symbol type for TR_ConstantPool relocation %p\n", this);
          cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor,
                                                                                    (uint8_t *)getSymbolReference()->getOwningMethod(comp)->constantPool(),
                                                                                    getNode() ? (uint8_t *)(uintptr_t)getNode()->getInlinedSiteIndex() : (uint8_t *)-1,

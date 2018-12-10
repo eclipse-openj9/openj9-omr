@@ -95,7 +95,7 @@ ReflowComments:  false
 SortIncludes:    true
 SortUsingDeclarations: true
 SpaceAfterCStyleCast: false
-SpaceAfterTemplateKeyword: false
+SpaceAfterTemplateKeyword: true
 SpaceBeforeAssignmentOperators: true
 SpaceBeforeCtorInitializerColon: true
 SpaceBeforeInheritanceColon: true

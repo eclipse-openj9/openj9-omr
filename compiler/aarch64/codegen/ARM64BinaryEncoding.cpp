@@ -61,8 +61,31 @@ uint8_t *TR::ARM64LabelInstruction::generateBinaryEncoding()
    uint8_t *instructionStart = cg()->getBinaryBufferCursor();
    uint8_t *cursor = instructionStart;
    TR::LabelSymbol *label = getLabelSymbol();
-   label->setCodeLocation(instructionStart);
-   setBinaryLength(0);
+
+   if (getOpCodeValue() == OMR::InstOpCode::label)
+      {
+      label->setCodeLocation(instructionStart);
+      }
+   else
+      {
+      TR_ASSERT(getOpCodeValue() == OMR::InstOpCode::b, "Unsupported opcode in LabelInstruction.");
+
+      uintptr_t destination = (uintptr_t)label->getCodeLocation();
+      cursor = getOpCode().copyBinaryToBuffer(instructionStart);
+      if (destination != 0)
+         {
+         intptr_t distance = destination - (uintptr_t)cursor;
+         TR_ASSERT(-0x8000000 <= distance && distance < 0x8000000, "Branch destination is too far away.");
+         insertImmediateField(toARM64Cursor(cursor), distance);
+         }
+      else
+         {
+         cg()->addRelocation(new (cg()->trHeapMemory()) TR::LabelRelative32BitRelocation(cursor, label));
+         }
+      cursor += ARM64_INSTRUCTION_LENGTH;
+      }
+
+   setBinaryLength(cursor - instructionStart);
    cg()->addAccumulatedInstructionLengthError(getEstimatedBinaryLength() - getBinaryLength());
    setBinaryEncoding(instructionStart);
    return cursor;
@@ -70,8 +93,16 @@ uint8_t *TR::ARM64LabelInstruction::generateBinaryEncoding()
 
 int32_t TR::ARM64LabelInstruction::estimateBinaryLength(int32_t currentEstimate)
    {
-   setEstimatedBinaryLength(0);
-   getLabelSymbol()->setEstimatedCodeLocation(currentEstimate);
+   if (getOpCodeValue() == OMR::InstOpCode::label)
+      {
+      setEstimatedBinaryLength(0);
+      getLabelSymbol()->setEstimatedCodeLocation(currentEstimate);
+      }
+   else
+      {
+      setEstimatedBinaryLength(ARM64_INSTRUCTION_LENGTH);
+      }
+
    return currentEstimate + getEstimatedBinaryLength();
    }
 

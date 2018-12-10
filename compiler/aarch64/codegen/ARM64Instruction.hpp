@@ -298,6 +298,17 @@ class ARM64LabelInstruction : public TR::Instruction
       }
 
    /**
+    * @brief Sets immediate field in binary encoding
+    * @param[in] instruction : instruction cursor
+    * @param[in] distance : branch distance
+    */
+   void insertImmediateField(uint32_t *instruction, int32_t distance)
+      {
+      TR_ASSERT((distance & 0x3) == 0, "branch distance is not aligned");
+      *instruction |= ((distance >> 2) & 0x3ffffff); // imm26
+      }
+
+   /**
     * @brief Generates binary encoding of the instruction
     * @return instruction cursor
     */
@@ -431,7 +442,7 @@ class ARM64ConditionalBranchInstruction : public ARM64LabelInstruction
    void insertImmediateField(uint32_t *instruction, int32_t distance)
       {
       TR_ASSERT((distance & 0x3) == 0, "branch distance is not aligned");
-      *instruction |= ((distance >> 2) & 0x7ffff) << 5;
+      *instruction |= ((distance >> 2) & 0x7ffff) << 5; // imm19
       }
 
    /**

@@ -88,13 +88,13 @@
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::swrtbariEvaluator , // TR::swrtbari
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::iwrtbariEvaluator , // TR::iwrtbari
 
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::GotoEvaluator ,	// TR::Goto		// goto label address
+    TR::TreeEvaluator::gotoEvaluator, // TR::goto		// goto label address
     TR::TreeEvaluator::ireturnEvaluator, // TR::ireturn		// return an integer
     TR::TreeEvaluator::lreturnEvaluator, // TR::lreturn		// return a long integer
     TR::TreeEvaluator::freturnEvaluator, // TR::freturn		// return a float
     TR::TreeEvaluator::dreturnEvaluator, // TR::dreturn		// return a double
     TR::TreeEvaluator::lreturnEvaluator, // TR::areturn		// return an address
-    TR::TreeEvaluator::returnEvaluator, // TR::Return		// void return
+    TR::TreeEvaluator::returnEvaluator, // TR::return		// void return
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::asynccheckEvaluator ,	// TR::asynccheck	// GC point
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::athrowEvaluator ,	// TR::athrow		// throw an exception
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::icallEvaluator ,	// TR::icall		// direct call returning integer

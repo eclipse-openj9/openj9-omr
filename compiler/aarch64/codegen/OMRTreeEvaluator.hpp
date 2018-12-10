@@ -115,7 +115,7 @@ public:
 	static TR::Register *bstoreiEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *sstoreiEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *istoreiEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *GotoEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+	static TR::Register *gotoEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *ireturnEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *lreturnEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *freturnEvaluator(TR::Node *node, TR::CodeGenerator *cg);

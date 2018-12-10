@@ -871,18 +871,18 @@ MM_VerboseHandlerOutput::handleConcurrentEndInternal(J9HookInterface** hook, UDA
 	MM_EnvironmentBase *env = MM_EnvironmentBase::getEnvironment(event->currentThread);
 
 	const char *reasonForTermination = NULL;
-	if (stats->_terminationWasRequested) {
-		if (NULL != _extensions->gcExclusiveAccessThreadId) {
-			/* Most interesting reason would be exhausted allocate/survior, since it could mean that
-			 * tiliting is too agressive (and survival rate is jittery), and suggest tilt tuning/limiting.
+	if (stats->isTerminationRequested()) {
+		if (stats->isTerminationRequestExternal()) {
+			/* For example, Java JVMTI and similar. Unfortunately, we could not tell what. */
+			reasonForTermination = "termination requested externally";
+		} else {
+			/* Most interesting reason would be exhausted allocate/survivor, since it could mean that
+			 * tilting is too aggressive (and survival rate is jittery), and suggest tilt tuning/limiting.
 			 * There could be various other reasons, like STW global GC (system, end of concurrent mark etc.),
 			 * or even notorious 'exclusive VM access to satisfy allocate'.
 			 * Either way, the more detailed reason could be deduced from verbose GC.
 			 */
 			reasonForTermination = "termination requested by GC";
-		} else {
-			/* JVMTI and similar. Unfortunately, we could not tell what, nor verbose GC will report it. */
-			reasonForTermination = "termination requested externally";
 		}
 		writer->formatAndOutput(env, 0, "<warning details=\"%s\" />", reasonForTermination, _extensions->gcExclusiveAccessThreadId);
 	}

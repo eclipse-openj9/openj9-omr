@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -169,6 +169,7 @@ virtualGuardHelper(TR::Node * node, TR::CodeGenerator * cg)
          case TR_DirectMethodGuard:
          case TR_NonoverriddenGuard:
          case TR_InterfaceGuard:
+         case TR_AbstractGuard:
          case TR_MethodEnterExitGuard:
          case TR_HCRGuard:
          //case TR_AbstractGuard:
@@ -188,7 +189,7 @@ virtualGuardHelper(TR::Node * node, TR::CodeGenerator * cg)
       TR_VirtualGuard * virtualGuard = comp->findVirtualGuardInfo(node);
       site = virtualGuard->addNOPSite();
       }
-   else
+   else 
       {
       site = comp->addSideEffectNOPSite();
       }

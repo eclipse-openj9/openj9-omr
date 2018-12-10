@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -381,7 +381,7 @@ TR_RuntimeHelper TR::S390CallSnippet::getInterpretedDispatchHelper(
       isJitInduceOSRCall = true;
       }
 
-   if (methodSymRef->isUnresolved() || comp->compileRelocatableCode())
+   if (methodSymRef->isUnresolved() || (comp->compileRelocatableCode() && !comp->getOption(TR_UseSymbolValidationManager)))
       {
       TR_ASSERT(!isJitInduceOSRCall || !comp->compileRelocatableCode(), "calling jitInduceOSR is not supported yet under AOT\n");
       if (methodSymbol->isSpecial())
@@ -440,7 +440,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390CallSnippet * snippet)
 
    bufferPos = printS390ArgumentsFlush(pOutFile, callNode, bufferPos, snippet->getSizeOfArguments());
 
-   if (methodSymRef->isUnresolved() || _comp->compileRelocatableCode())
+   if (methodSymRef->isUnresolved() || (_comp->compileRelocatableCode() && !_comp->getOption(TR_UseSymbolValidationManager)))
       {
       if (methodSymbol->isSpecial())
          {

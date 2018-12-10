@@ -84,7 +84,7 @@ template <typename T>
 struct RemoveReference : TypeAlias<T> {};
 
 template <typename T>
-struct RemoveReference<T&> : RemoveReference<T> {};
+struct RemoveReference<T&> : TypeAlias<T> {};
 
 // TODO: Handle RValue references in typetraits
 // template <typename T>

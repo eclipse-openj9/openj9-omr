@@ -123,12 +123,21 @@ target_include_directories(jitbuilder
 )
 
 target_link_libraries(jitbuilder
-	${OMR_PORT_LIB}
+	PUBLIC
+		${OMR_PORT_LIB}
 )
 
 ## JitBuilder examples only work on 64 bit currently.
 if(OMR_JITBUILDER AND OMR_ENV_DATA64)
 	add_subdirectory(release)
+endif()
+
+if(OMR_JITBUILDER_TEST)
+	add_test(
+		NAME TestJitBuilderAPIGenerator
+		COMMAND ${PYTHON_EXECUTABLE} test.py
+		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/apigen
+	)
 endif()
 
 # install(TARGETS jitbuilder

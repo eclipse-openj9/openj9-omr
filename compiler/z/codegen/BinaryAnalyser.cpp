@@ -227,7 +227,17 @@ TR_S390BinaryAnalyser::genericAnalyser(TR::Node * root,
                tempMR->enforce4KDisplacementLimit(secondChild, cg(), NULL);
                }
 
-            generateRXInstruction(cg(), memToRegOpCode, root, thirdReg, tempMR);
+            auto instructionFormat = TR::InstOpCode(memToRegOpCode).getInstructionFormat();
+
+            if (instructionFormat == RXE_FORMAT)
+               {
+               generateRXEInstruction(cg(), memToRegOpCode, root, thirdReg, tempMR, 0);
+               }
+            else
+               {
+               generateRXInstruction(cg(), memToRegOpCode, root, thirdReg, tempMR);
+               }
+
             tempMR->stopUsingMemRefRegister(cg());
             if (is16BitMemory2Operand)
                {
@@ -254,7 +264,17 @@ TR_S390BinaryAnalyser::genericAnalyser(TR::Node * root,
          tempMR->enforce4KDisplacementLimit(secondChild, cg(), NULL);
          }
 
-      generateRXInstruction(cg(), memToRegOpCode, root, firstRegister, tempMR);
+      auto instructionFormat = TR::InstOpCode(memToRegOpCode).getInstructionFormat();
+
+      if (instructionFormat == RXE_FORMAT)
+         {
+         generateRXEInstruction(cg(), memToRegOpCode, root, firstRegister, tempMR, 0);
+         }
+      else
+         {
+         generateRXInstruction(cg(), memToRegOpCode, root, firstRegister, tempMR);
+         }
+
       tempMR->stopUsingMemRefRegister(cg());
       if (is16BitMemory2Operand)
          cg()->decReferenceCount(secondChild->getFirstChild());

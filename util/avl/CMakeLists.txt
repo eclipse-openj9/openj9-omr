@@ -31,6 +31,11 @@ add_library(j9avl STATIC
 	ut_avl.c
 )
 
+target_link_libraries(j9avl
+	PUBLIC
+		omr_base
+)
+
 target_include_directories(j9avl
 	PUBLIC
 		$<BUILD_INTERFACE:${OMR_SOURCE_DIR}/include_core>

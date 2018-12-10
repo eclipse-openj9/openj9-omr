@@ -99,7 +99,7 @@ MM_EnvironmentStandard::flushGCCaches()
 	if (getExtensions()->concurrentScavenger) {
 		if (MUTATOR_THREAD == getThreadType()) {
 			if (NULL != getExtensions()->scavenger) {
-				getExtensions()->scavenger->threadFinalReleaseCopyCaches(this, this);
+				getExtensions()->scavenger->threadFinalReleaseCaches(this);
 			}
 		}
 	}

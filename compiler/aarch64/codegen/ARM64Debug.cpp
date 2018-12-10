@@ -24,6 +24,7 @@
 
 #include "ras/Debug.hpp"
 
+#include "codegen/ARM64ConditionCode.hpp"
 #include "codegen/ARM64Instruction.hpp"
 #include "codegen/CodeGenerator.hpp"
 #include "codegen/InstOpCode.hpp"
@@ -472,20 +473,11 @@ TR_Debug::print(TR::FILE *pOutFile, TR::Instruction *instr)
       case OMR::Instruction::IsImm:
          print(pOutFile, (TR::ARM64ImmInstruction *)instr);
          break;
-      case OMR::Instruction::IsDep:
-         print(pOutFile, (TR::ARM64DepInstruction *)instr);
-         break;
       case OMR::Instruction::IsLabel:
          print(pOutFile, (TR::ARM64LabelInstruction *)instr);
          break;
-      case OMR::Instruction::IsDepLabel:
-         print(pOutFile, (TR::ARM64DepLabelInstruction *)instr);
-         break;
       case OMR::Instruction::IsConditionalBranch:
          print(pOutFile, (TR::ARM64ConditionalBranchInstruction *)instr);
-         break;
-      case OMR::Instruction::IsDepConditionalBranch:
-         print(pOutFile, (TR::ARM64DepConditionalBranchInstruction *)instr);
          break;
       case OMR::Instruction::IsCompareBranch:
          print(pOutFile, (TR::ARM64CompareBranchInstruction *)instr);
@@ -498,6 +490,9 @@ TR_Debug::print(TR::FILE *pOutFile, TR::Instruction *instr)
          break;
       case OMR::Instruction::IsTrg1:
          print(pOutFile, (TR::ARM64Trg1Instruction *)instr);
+         break;
+      case OMR::Instruction::IsTrg1Cond:
+         print(pOutFile, (TR::ARM64Trg1CondInstruction *)instr);
          break;
       case OMR::Instruction::IsTrg1Imm:
          print(pOutFile, (TR::ARM64Trg1ImmInstruction *)instr);
@@ -570,16 +565,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64ImmInstruction *instr)
    }
 
 void
-TR_Debug::print(TR::FILE *pOutFile, TR::ARM64DepInstruction *instr)
-   {
-   printPrefix(pOutFile, instr);
-   trfprintf(pOutFile, "%s", getOpCodeName(&instr->getOpCode()));
-   if (instr->getDependencyConditions())
-      print(pOutFile, instr->getDependencyConditions());
-   trfflush(pOutFile);
-   }
-
-void
 TR_Debug::print(TR::FILE *pOutFile, TR::ARM64LabelInstruction *instr)
    {
    printPrefix(pOutFile, instr);
@@ -605,13 +590,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64LabelInstruction *instr)
          }
       }
    printInstructionComment(pOutFile, 1, instr);
-   trfflush(_comp->getOutFile());
-   }
-
-void
-TR_Debug::print(TR::FILE *pOutFile, TR::ARM64DepLabelInstruction *instr)
-   {
-   print(pOutFile, (TR::ARM64LabelInstruction *)instr);
    if (instr->getDependencyConditions())
       print(pOutFile, instr->getDependencyConditions());
    trfflush(_comp->getOutFile());
@@ -623,13 +601,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64ConditionalBranchInstruction *instr
    printPrefix(pOutFile, instr);
    trfprintf(pOutFile, "%s.%s \t", getOpCodeName(&instr->getOpCode()), ARM64ConditionNames[instr->getConditionCode()]);
    print(pOutFile, instr->getLabelSymbol());
-   trfflush(_comp->getOutFile());
-   }
-
-void
-TR_Debug::print(TR::FILE *pOutFile, TR::ARM64DepConditionalBranchInstruction *instr)
-   {
-   print(pOutFile, (TR::ARM64ConditionalBranchInstruction *)instr);
    if (instr->getDependencyConditions())
       print(pOutFile, instr->getDependencyConditions());
    trfflush(_comp->getOutFile());
@@ -670,6 +641,9 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64AdminInstruction *instr)
          }
       }
 
+   if (instr->getDependencyConditions())
+      print(pOutFile, instr->getDependencyConditions());
+
    trfflush(pOutFile);
    }
 
@@ -679,6 +653,26 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64Trg1Instruction *instr)
    printPrefix(pOutFile, instr);
    trfprintf(pOutFile, "%s \t", getOpCodeName(&instr->getOpCode()));
    print(pOutFile, instr->getTargetRegister(), TR_WordReg);
+   trfflush(_comp->getOutFile());
+   }
+
+void
+TR_Debug::print(TR::FILE *pOutFile, TR::ARM64Trg1CondInstruction *instr)
+   {
+   printPrefix(pOutFile, instr);
+   if (instr->getOpCodeValue() == TR::InstOpCode::csincx)
+      {
+      // cset alias
+      trfprintf(pOutFile, "cset \t");
+      print(pOutFile, instr->getTargetRegister(), TR_WordReg);
+      trfprintf(pOutFile, ", %s", ARM64ConditionNames[cc_invert(instr->getConditionCode())]);
+      }
+   else
+      {
+      trfprintf(pOutFile, "%s \t", getOpCodeName(&instr->getOpCode()));
+      print(pOutFile, instr->getTargetRegister(), TR_WordReg);
+      trfprintf(pOutFile, ", xzr, xzr, %s", ARM64ConditionNames[instr->getConditionCode()]);
+      }
    trfflush(_comp->getOutFile());
    }
 
@@ -727,6 +721,10 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64Trg1Src2Instruction *instr)
    print(pOutFile, instr->getTargetRegister(), TR_WordReg); trfprintf(pOutFile, ", ");
    print(pOutFile, instr->getSource1Register(), TR_WordReg); trfprintf(pOutFile, ", ");
    print(pOutFile, instr->getSource2Register(), TR_WordReg);
+
+   if (instr->getDependencyConditions())
+      print(pOutFile, instr->getDependencyConditions());
+
    trfflush(_comp->getOutFile());
    }
 
@@ -765,6 +763,10 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64Trg1Src3Instruction *instr)
    print(pOutFile, instr->getSource1Register(), TR_WordReg); trfprintf(pOutFile, ", ");
    print(pOutFile, instr->getSource2Register(), TR_WordReg); trfprintf(pOutFile, ", ");
    print(pOutFile, instr->getSource3Register(), TR_WordReg);
+
+   if (instr->getDependencyConditions())
+      print(pOutFile, instr->getDependencyConditions());
+
    trfflush(_comp->getOutFile());
    }
 
@@ -807,8 +809,8 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64MemSrc1Instruction *instr)
    printPrefix(pOutFile, instr);
    trfprintf(pOutFile, "%s \t", getOpCodeName(&instr->getOpCode()));
 
-   print(pOutFile, instr->getMemoryReference()); trfprintf(pOutFile, ", ");
-   print(pOutFile, instr->getSource1Register(), TR_WordReg);
+   print(pOutFile, instr->getSource1Register(), TR_WordReg); trfprintf(pOutFile, ", ");
+   print(pOutFile, instr->getMemoryReference());
 
    printMemoryReferenceComment(pOutFile, instr->getMemoryReference());
    trfflush(_comp->getOutFile());
@@ -858,7 +860,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::MemoryReference *mr)
    if (mr->getIndexRegister() != NULL)
       print(pOutFile, mr->getIndexRegister());
    else
-      trfprintf(pOutFile, "%d", mr->getOffset());
+      trfprintf(pOutFile, "%d", mr->getOffset(true));
 
    trfprintf(pOutFile, "]");
    }
@@ -912,6 +914,7 @@ getRegisterName(TR::RealRegister::RegNum num, bool is64bit)
       case TR::RealRegister::x29: return (is64bit ? "x29" : "w29");
       case TR::RealRegister::x30: return "lr";
       case TR::RealRegister::sp: return "sp";
+      case TR::RealRegister::xzr: return (is64bit ? "xzr" : "wzr");
 
       case TR::RealRegister::v0: return (is64bit ? "d0" : "s0");
       case TR::RealRegister::v1: return (is64bit ? "d1" : "s1");

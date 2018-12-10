@@ -151,6 +151,18 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    const TR::ARM64LinkageProperties &getProperties() { return *_linkageProperties; }
 
    /**
+    * @brief Returns the stack pointer register
+    * @return stack pointer register
+    */
+   TR::RealRegister *getStackPointerRegister() { return _stackPtrRegister; }
+   /**
+    * @brief Sets the stack pointer register
+    * @param[in] r : stack pointer register
+    * @return stack pointer register
+    */
+   TR::RealRegister *setStackPointerRegister(TR::RealRegister *r) { return (_stackPtrRegister = r); }
+
+   /**
     * @brief Returns the method meta-data register
     * @return meta-data register
     */
@@ -273,6 +285,7 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    uint32_t _numGPR;
    uint32_t _numFPR;
 
+   TR::RealRegister *_stackPtrRegister;
    TR::RealRegister *_methodMetaDataRegister;
    TR::ARM64ImmInstruction *_returnTypeInfoInstruction;
    TR::ConstantDataSnippet *_constantData;

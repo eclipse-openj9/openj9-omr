@@ -59,7 +59,6 @@
 
 #ifdef J9_PROJECT_SPECIFIC
 #include "x/codegen/CallSnippet.hpp"             // for TR::X86CallSnippet
-#include "x/codegen/WriteBarrierSnippet.hpp"
 #endif
 
 namespace TR { class Register; }
@@ -262,7 +261,7 @@ TR_Debug::printDependencyConditions(
          }
       else
          {
-         len = sprintf(cursor, "%s", getName(_cg->machine()->getX86RealRegister(r)));
+         len = sprintf(cursor, "%s", getName(_cg->machine()->getRealRegister(r)));
         }
 
       *(cursor+len)=')';
@@ -336,7 +335,7 @@ TR_Debug::dumpDependencyGroup(TR::FILE *                         pOutFile,
         else if (r == TR::RealRegister::SpilledReg)
            trfprintf(pOutFile, "SpilledReg]");
         else
-           trfprintf(pOutFile, "%s]", getName(_cg->machine()->getX86RealRegister(r)));
+           trfprintf(pOutFile, "%s]", getName(_cg->machine()->getRealRegister(r)));
         }
 
       foundDep = true;
@@ -1783,7 +1782,7 @@ TR_Debug::printX86GCRegisterMap(TR::FILE *pOutFile, TR::GCRegisterMap * map)
    for (int i = TR::RealRegister::FirstGPR; i <= TR::RealRegister::LastAssignableGPR; ++i)
       {
       if (map->getMap() & (1 << (i-1))) // TODO:AMD64: Use the proper mask value
-         trfprintf(pOutFile,"%s ", getName(machine->getX86RealRegister((TR::RealRegister::RegNum)i)));
+         trfprintf(pOutFile,"%s ", getName(machine->getRealRegister((TR::RealRegister::RegNum)i)));
       }
 
    trfprintf(pOutFile,"}\n");
@@ -2306,7 +2305,7 @@ TR_Debug::printArgumentFlush(TR::FILE *              pOutFile,
                opCodeName = "mov";
                modrmOffset = 1;
                TR::RealRegister::RegNum reg = linkageProperties.getIntegerArgumentRegister(numGPArgs);
-               regName = getName(_cg->machine()->getX86RealRegister(reg));
+               regName = getName(_cg->machine()->getRealRegister(reg));
                }
             numGPArgs++;
             break;
@@ -2317,7 +2316,7 @@ TR_Debug::printArgumentFlush(TR::FILE *              pOutFile,
                opCodeName = "mov";
                modrmOffset = 2;
                TR::RealRegister::RegNum reg = linkageProperties.getIntegerArgumentRegister(numGPArgs);
-               regName = getName(_cg->machine()->getX86RealRegister(reg), TR_DoubleWordReg);
+               regName = getName(_cg->machine()->getRealRegister(reg), TR_DoubleWordReg);
                }
             numGPArgs++;
             break;
@@ -2327,7 +2326,7 @@ TR_Debug::printArgumentFlush(TR::FILE *              pOutFile,
                opCodeName = "movss";
                modrmOffset = 3;
                TR::RealRegister::RegNum reg = linkageProperties.getFloatArgumentRegister(numFPArgs);
-               regName = getName(_cg->machine()->getX86RealRegister(reg), TR_QuadWordReg);
+               regName = getName(_cg->machine()->getRealRegister(reg), TR_QuadWordReg);
                }
             numFPArgs++;
             break;
@@ -2337,7 +2336,7 @@ TR_Debug::printArgumentFlush(TR::FILE *              pOutFile,
                opCodeName = "movsd";
                modrmOffset = 3;
                TR::RealRegister::RegNum reg = linkageProperties.getFloatArgumentRegister(numFPArgs);
-               regName = getName(_cg->machine()->getX86RealRegister(reg), TR_QuadWordReg);
+               regName = getName(_cg->machine()->getRealRegister(reg), TR_QuadWordReg);
                }
             numFPArgs++;
             break;
@@ -2381,244 +2380,6 @@ TR_Debug::printArgumentFlush(TR::FILE *              pOutFile,
       }
    return bufferPos;
    }
-
-#ifdef J9_PROJECT_SPECIFIC
-uint8_t*
-TR_Debug::printArgs(TR::FILE *pOutFile,
-                    TR::AMD64WriteBarrierSnippet * snippet,
-                    bool restoreRegs,
-                    uint8_t *bufferPos)
-   {
-   TR::CodeGenerator *cg = snippet->cg();
-   TR::Linkage *linkage = cg->getLinkage();
-   TR::RegisterDependencyConditions *deps = snippet->getDependencies();
-
-   TR::RealRegister *r1Real = toRealRegister(snippet->getDestOwningObjectRegister());
-   TR::RealRegister::RegNum r1 = r1Real->getRegisterNumber();
-   TR::RealRegister *r2Real = NULL;
-   TR::RealRegister::RegNum r2 = TR::RealRegister::NoReg;
-
-   if (deps->getNumPostConditions() > 1)
-      {
-      r2Real = toRealRegister(snippet->getSourceRegister());
-      r2 = r2Real->getRegisterNumber();
-      }
-
-   // Fast path the single argument case.  Presently, only a batch arraycopy write barrier applies.
-   //
-   if (deps->getNumPostConditions() == 1)
-      {
-      if (r1 != TR::RealRegister::eax)
-         {
-         // Register is not in RAX so exchange it.  This applies to both building and restoring args.
-         //
-         printPrefix(pOutFile, NULL, bufferPos, 2);
-         trfprintf(pOutFile, "xchg\t\trax, %s", getName(r1, TR_DoubleWordReg));
-         bufferPos+=2;
-         }
-      return bufferPos;
-      }
-
-   int8_t action = 0;
-
-   action = (restoreRegs ? 32 : 0) |
-            (r1 == TR::RealRegister::eax ? 16 : 0) |
-            (r1 == TR::RealRegister::esi ? 8 : 0) |
-            (r2 == TR::RealRegister::esi ? 4 : 0) |
-            (r2 == TR::RealRegister::eax ? 2 : 0) |
-            (r1 == r2 ? 1 : 0);
-
-   switch (action)
-      {
-      case 0:
-      case 32:
-         printPrefix(pOutFile, NULL, bufferPos, 2);
-         trfprintf(pOutFile, "xchg\t\trax, %s",  getName(r1, TR_DoubleWordReg));
-         bufferPos+=2;
-
-         printPrefix(pOutFile, NULL, bufferPos, 3);
-         trfprintf(pOutFile, "xchg\t\trsi, %s", getName(r2, TR_DoubleWordReg));
-         bufferPos+=3;
-         break;
-
-      case 1:
-         printPrefix(pOutFile, NULL, bufferPos, 2);
-         trfprintf(pOutFile, "push\t\trsi");
-         bufferPos+=2;
-
-         printPrefix(pOutFile, NULL, bufferPos, 2);
-         trfprintf(pOutFile, "xchg\t\trax, %s", getName(r1, TR_DoubleWordReg));
-         bufferPos+=2;
-
-         printPrefix(pOutFile, NULL, bufferPos, 3);
-         trfprintf(pOutFile, "mov\t\trsi, rax");
-         bufferPos+=3;
-         break;
-
-      case 2:
-
-         printPrefix(pOutFile, NULL, bufferPos, 2);
-         trfprintf(pOutFile, "xchg\t\trax, rsi");
-         bufferPos+=2;
-
-         printPrefix(pOutFile, NULL, bufferPos, 2);
-         trfprintf(pOutFile, "xchg\t\trax, %s", getName(r1, TR_DoubleWordReg));
-         bufferPos+=2;
-         break;
-
-      case 4:
-      case 36:
-         printPrefix(pOutFile, NULL, bufferPos, 2);
-         trfprintf(pOutFile, "xchg\t\trax, %s", getName(r1, TR_DoubleWordReg));
-         bufferPos+=2;
-         break;
-
-      case 8:
-         printPrefix(pOutFile, NULL, bufferPos, 2);
-         trfprintf(pOutFile, "xchg\t\trsi, rax");
-         bufferPos+=2;
-
-         printPrefix(pOutFile, NULL, bufferPos, 3);
-         trfprintf(pOutFile, "xchg\t\trsi, %s", getName(r2, TR_DoubleWordReg));
-         bufferPos+=3;
-         break;
-
-      case 10:
-      case 42:
-         printPrefix(pOutFile, NULL, bufferPos, 2);
-         trfprintf(pOutFile, "xchg\t\trsi, rax");
-         bufferPos+=2;
-         break;
-
-      case 13:
-         printPrefix(pOutFile, NULL, bufferPos, 1);
-         trfprintf(pOutFile, "push\t\trax");
-         bufferPos+=1;
-
-         printPrefix(pOutFile, NULL, bufferPos, 2);
-         trfprintf(pOutFile, "mov\t\trax, rsi");
-         bufferPos+=2;
-         break;
-
-      case 16:
-      case 48:
-         printPrefix(pOutFile, NULL, bufferPos, 3);
-         trfprintf(pOutFile, "xchg\t\trsi, %s", getName(r2, TR_DoubleWordReg));
-         bufferPos+=3;
-         break;
-
-      case 19:
-         printPrefix(pOutFile, NULL, bufferPos, 1);
-         trfprintf(pOutFile, "push\t\trsi");
-         bufferPos+=1;
-
-         printPrefix(pOutFile, NULL, bufferPos, 2);
-         trfprintf(pOutFile, "mov\t\trsi, rax");
-         bufferPos+=2;
-         break;
-
-      case 33:
-         printPrefix(pOutFile, NULL, bufferPos, 2);
-         trfprintf(pOutFile, "xchg\t\trax, %s", getName(r1, TR_DoubleWordReg));
-         bufferPos+=2;
-
-         printPrefix(pOutFile, NULL, bufferPos, 1);
-         trfprintf(pOutFile, "pop rsi");
-         bufferPos+=1;
-         break;
-
-      case 34:
-         printPrefix(pOutFile, NULL, bufferPos, 2);
-         trfprintf(pOutFile, "xchg\t\trax, %s", getName(r1, TR_DoubleWordReg));
-         bufferPos+=2;
-
-         printPrefix(pOutFile, NULL, bufferPos, 2);
-         trfprintf(pOutFile, "xchg\t\trsi, rax");
-         bufferPos+=2;
-         break;
-
-      case 40:
-         printPrefix(pOutFile, NULL, bufferPos, 3);
-         trfprintf(pOutFile, "xchg\t\trsi, %s", getName(r2, TR_DoubleWordReg));
-         bufferPos+=3;
-
-         printPrefix(pOutFile, NULL, bufferPos, 2);
-         bufferPos+=2;
-         trfprintf(pOutFile, "xchg\t\trsi, rax");
-         break;
-
-      case 45:
-         printPrefix(pOutFile, NULL, bufferPos, 1);
-         trfprintf(pOutFile, "pop\t\trax");
-         bufferPos+=1;
-         break;
-
-      case 51:
-         printPrefix(pOutFile, NULL, bufferPos, 1);
-         trfprintf(pOutFile, "pop\t\trsi");
-         bufferPos+=1;
-         break;
-      }
-
-   return bufferPos;
-
-   }
-
-static uint8_t *
-estimateJumpSize(TR::AMD64WriteBarrierSnippet * snippet,
-                 uint8_t * bufferPos)
-   {
-   TR::LabelSymbol *restartLabel = snippet->getRestartLabel();
-   uint8_t        *destination = restartLabel->getCodeLocation();
-   intptrj_t  distance    = destination - (bufferPos + 2);
-
-   if (snippet->getForceLongRestartJump())
-      {
-         return bufferPos += 5;
-      }
-   else
-      {
-         if (distance >= -128 && distance <= 127)
-            {
-            return bufferPos += 2;
-            }
-         else
-            {
-            return bufferPos += 5;
-            }
-
-      }
-   }
-
-void
-TR_Debug::print(TR::FILE *pOutFile, TR::AMD64WriteBarrierSnippet * snippet)
-   {
-   if (pOutFile == NULL)
-      return;
-
-   uint8_t *bufferPos = snippet->getSnippetLabel()->getCodeLocation();
-   printSnippetLabel(pOutFile, snippet->getSnippetLabel(), bufferPos, getName(snippet));
-
-   bufferPos = printArgs(pOutFile, snippet, false, bufferPos);
-   printPrefix(pOutFile, NULL, bufferPos, 5);
-   trfprintf(pOutFile, "call\t\tjitWriteBarrierStoreGenerational");
-   bufferPos += 5;
-   bufferPos = printArgs(pOutFile, snippet, true, bufferPos);
-
-   printRestartJump(pOutFile, snippet, bufferPos);
-   bufferPos = estimateJumpSize(snippet, bufferPos);
-
-   bufferPos = printArgs(pOutFile, snippet, false, bufferPos);
-   printPrefix(pOutFile, NULL, bufferPos, 5);
-   trfprintf(pOutFile, "call\t\tjitWriteBarrierStoreGenerationalAndConcurrentMark");
-   bufferPos += 5;
-   bufferPos = printArgs(pOutFile, snippet, true, bufferPos);
-
-   printRestartJump(pOutFile, snippet, bufferPos);
-   bufferPos = estimateJumpSize(snippet, bufferPos);
-
-   }
-#endif
 
 #endif
 

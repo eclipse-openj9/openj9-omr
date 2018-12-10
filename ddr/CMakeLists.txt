@@ -25,6 +25,11 @@ endif(NOT OMR_DDR)
 
 add_library(omr_ddr_base INTERFACE)
 
+target_link_libraries(omr_ddr_base
+	INTERFACE
+		omr_base
+)
+
 target_include_directories(omr_ddr_base
 	INTERFACE
 		include/

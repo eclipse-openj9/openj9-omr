@@ -382,7 +382,7 @@ TR_S390BinaryCommutativeAnalyser::genericAnalyser(TR::Node * root, TR::InstOpCod
             if ( opcTmp.setsCompareFlag() && comp->getOption(TR_EnableEBBCCInfo) &&
                  cg()->isActiveCompareCC(regToRegOpCode, firstRegister, secondRegister) &&
                  performTransformation(comp, "O^O BinaryCommunicativeAnalyser case 3 RR Compare [%s\t %s, %s]: reuse CC from ccInst [%p].",
-                                       debugObj->getOpCodeName(&ccInst->getOpCode()),
+                                       ccInst->getOpCode().getMnemonicName(),
                                        debugObj->getName(firstRegister),
                                        debugObj->getName(secondRegister),
                                        ccInst))
@@ -392,7 +392,7 @@ TR_S390BinaryCommutativeAnalyser::genericAnalyser(TR::Node * root, TR::InstOpCod
             else if (opcTmp.setsCompareFlag() && comp->getOption(TR_EnableEBBCCInfo) &&
                      cg()->isActiveCompareCC(regToRegOpCode, secondRegister, firstRegister) &&
                      performTransformation(comp, "O^O BinaryCommunicativeAnalyser case 4 RR Compare [%s\t %s, %s]: reuse CC from ccInst [%p].",
-                                           debugObj->getOpCodeName(&ccInst->getOpCode()),
+                                           ccInst->getOpCode().getMnemonicName(),
                                            debugObj->getName(firstRegister),
                                            debugObj->getName(secondRegister),
                                            ccInst))
@@ -427,13 +427,13 @@ TR_S390BinaryCommutativeAnalyser::genericAnalyser(TR::Node * root, TR::InstOpCod
          TR::InstOpCode opcTmp = TR::InstOpCode(regToRegOpCode);
          if ( opcTmp.setsCompareFlag() && comp->getOption(TR_EnableEBBCCInfo) &&
               cg()->isActiveCompareCC(regToRegOpCode, firstRegister, secondRegister) &&
-              performTransformation(comp, "O^O BinaryCommunicativeAnalyser case 5 RR Compare [%s\t %s, %s]: reuse CC from ccInst [%p].", debugObj->getOpCodeName(&ccInst->getOpCode()), debugObj->getName(firstRegister),debugObj->getName(secondRegister),ccInst) )
+              performTransformation(comp, "O^O BinaryCommunicativeAnalyser case 5 RR Compare [%s\t %s, %s]: reuse CC from ccInst [%p].", ccInst->getOpCode().getMnemonicName(), debugObj->getName(firstRegister),debugObj->getName(secondRegister),ccInst) )
             {
             nodeReg = firstRegister; // CCInfo already exists; don't generate compare op any more;
             }
          else if (opcTmp.setsCompareFlag() && comp->getOption(TR_EnableEBBCCInfo) &&
                   cg()->isActiveCompareCC(regToRegOpCode, secondRegister, firstRegister) &&
-                  performTransformation(comp, "O^O BinaryCommunicativeAnalyser case 6 RR Compare [%s\t %s, %s]: reuse CC from ccInst [%p].", debugObj->getOpCodeName(&ccInst->getOpCode()), debugObj->getName(firstRegister),debugObj->getName(secondRegister),ccInst) )
+                  performTransformation(comp, "O^O BinaryCommunicativeAnalyser case 6 RR Compare [%s\t %s, %s]: reuse CC from ccInst [%p].", ccInst->getOpCode().getMnemonicName(), debugObj->getName(firstRegister),debugObj->getName(secondRegister),ccInst) )
             {
             nodeReg = secondRegister;
             notReversedOperands(); // CCInfo already exists; don't generate compare op any more;
@@ -532,7 +532,18 @@ TR_S390BinaryCommutativeAnalyser::genericAnalyser(TR::Node * root, TR::InstOpCod
          tempMR->addToOffset(4);
          tempMR->setDispAdjusted();
          }
-      generateRXInstruction(cg(), memToRegOpCode, root, nodeReg, tempMR);
+
+      auto instructionFormat = TR::InstOpCode(memToRegOpCode).getInstructionFormat();
+
+      if (instructionFormat == RXE_FORMAT)
+         {
+         generateRXEInstruction(cg(), memToRegOpCode, root, nodeReg, tempMR, 0);
+         }
+      else
+         {
+         generateRXInstruction(cg(), memToRegOpCode, root, nodeReg, tempMR);
+         }
+
       tempMR->stopUsingMemRefRegister(cg());
       }
    else // OpReg2Mem1
@@ -572,8 +583,18 @@ TR_S390BinaryCommutativeAnalyser::genericAnalyser(TR::Node * root, TR::InstOpCod
          tempMR->addToOffset(4);
          tempMR->setDispAdjusted();
          }
+      
+      auto instructionFormat = TR::InstOpCode(memToRegOpCode).getInstructionFormat();
 
-      generateRXInstruction(cg(), memToRegOpCode, root, nodeReg, tempMR);
+      if (instructionFormat == RXE_FORMAT)
+         {
+         generateRXEInstruction(cg(), memToRegOpCode, root, nodeReg, tempMR, 0);
+         }
+      else
+         {
+         generateRXInstruction(cg(), memToRegOpCode, root, nodeReg, tempMR);
+         }
+
       if (!tempMR->getPseudoLive())
          {
          tempMR->stopUsingMemRefRegister(cg());

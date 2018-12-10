@@ -1486,9 +1486,6 @@ class OMR_EXTENSIBLE CodeGenerator
    bool getSupportsTMDoubleWordCASORSet() { return _flags3.testAny(SupportsTMDoubleWordCASORSet);}
    void setSupportsTMDoubleWordCASORSet() { _flags3.set(SupportsTMDoubleWordCASORSet);}
 
-   bool getSupportsTMHashMapAndLinkedQueue() { return _flags4.testAny(SupportsTMHashMapAndLinkedQueue);}
-   void setSupportsTMHashMapAndLinkedQueue() { _flags4.set(SupportsTMHashMapAndLinkedQueue);}
-
    bool getSupportsAtomicLoadAndAdd() { return _flags4.testAny(SupportsAtomicLoadAndAdd);}
    void setSupportsAtomicLoadAndAdd() { _flags4.set(SupportsAtomicLoadAndAdd);}
 
@@ -1785,7 +1782,7 @@ class OMR_EXTENSIBLE CodeGenerator
       //                                                  = 0x02000000,  NOW AVAILABLE
       //                                                  = 0x04000000,  NOW AVAILABLE
       TrackingInMemoryKilledLoads                         = 0x08000000,
-      SupportsTMHashMapAndLinkedQueue                     = 0x10000000,
+      // AVAILABLE                                        = 0x10000000,
 	  SupportsLM                                          = 0x20000000,
 
       DummyLastEnum4

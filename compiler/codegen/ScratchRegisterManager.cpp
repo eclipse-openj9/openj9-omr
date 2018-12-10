@@ -78,7 +78,6 @@ bool TR_ScratchRegisterManager::reclaimScratchRegister(TR::Register *reg)
 
 TR::Register *TR_ScratchRegisterManager::findOrCreateScratchRegister(TR_RegisterKinds rk)
    {
-   TR_ASSERT(rk != TR_VRF,"VRF: RA (findOrCreateScratchRegister) unimplemented");
    // Check for free registers in the list.  If there are none then create
    // one if there is enough room.
    //

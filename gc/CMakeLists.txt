@@ -56,6 +56,16 @@ add_library(omrgc_tracegen OBJECT
 	${CMAKE_CURRENT_BINARY_DIR}/ut_j9vgc.c
 )
 
+target_include_directories(omrgc_tracegen
+	PUBLIC
+		$<TARGET_PROPERTY:omr_base,INTERFACE_INCLUDE_DIRECTORIES>
+)
+
+target_compile_definitions(omrgc_tracegen
+	PUBLIC
+		$<TARGET_PROPERTY:omr_base,INTERFACE_COMPILE_DEFINITIONS>
+)
+
 add_library(omrgc STATIC
 	base/AddressOrderedListPopulator.cpp
 	base/AllocationContext.cpp
@@ -322,12 +332,6 @@ if(OMR_ENHANCED_WARNINGS)
 	target_compile_options(omrgc PRIVATE ${OMR_ENHANCED_WARNING_FLAG})
 endif()
 
-if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang|AppleClang")
-	target_compile_options(omrgc PRIVATE -fno-strict-aliasing)
-elseif(CMAKE_CXX_COMPILER_ID MATCHES "XL|VisualAge")
-	target_compile_options(omrgc PRIVATE -qalias=noansi)
-endif()
-
 target_include_directories(omrgc
 	PUBLIC
 		.
@@ -346,6 +350,8 @@ target_include_directories(omrgc
 )
 
 target_link_libraries(omrgc
+	PUBLIC
+		omr_base
 	PRIVATE
 		${OMR_GC_GLUE_TARGET}
 		omrutil
@@ -356,3 +362,7 @@ target_link_libraries(omrgc
 )
 
 set_target_properties(omrgc omrgc_hookgen omrgc_tracegen PROPERTIES FOLDER gc)
+
+if(OMR_GC_API)
+	add_subdirectory(api)
+endif(OMR_GC_API)

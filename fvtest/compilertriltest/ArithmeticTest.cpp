@@ -42,7 +42,17 @@ int32_t irem(int32_t l, int32_t r) {
     return l%r;
 }
 
+int64_t ladd(int64_t l, int64_t r) {
+    return l+r;
+}
+
+int64_t lsub(int64_t l, int64_t r) {
+    return l-r;
+}
+
 class Int32Arithmetic : public TRTest::BinaryOpTest<int32_t> {};
+
+class Int64Arithmetic : public TRTest::BinaryOpTest<int64_t> {};
 
 TEST_P(Int32Arithmetic, UsingConst) {
     auto param = TRTest::to_struct(GetParam());
@@ -80,6 +90,41 @@ TEST_P(Int32Arithmetic, UsingLoadParam) {
     ASSERT_EQ(param.oracle(param.lhs, param.rhs), entry_point(param.lhs, param.rhs));
 }
 
+TEST_P(Int64Arithmetic, UsingConst) {
+    auto param = TRTest::to_struct(GetParam());
+
+    char inputTrees[120] = {0};
+    std::snprintf(inputTrees, 120, "(method return=Int64 (block (lreturn (%s (lconst %lld) (lconst %lld)) )))", param.opcode.c_str(), param.lhs, param.rhs);
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler{trees};
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<int64_t (*)(void)>();
+    volatile auto exp = param.oracle(param.lhs, param.rhs);
+    volatile auto act = entry_point();
+    ASSERT_EQ(exp, act);
+}
+
+TEST_P(Int64Arithmetic, UsingLoadParam) {
+    auto param = TRTest::to_struct(GetParam());
+
+    char inputTrees[120] = {0};
+    std::snprintf(inputTrees, 120, "(method return=Int64 args=[Int64, Int64] (block (lreturn (%s (lload parm=0) (lload parm=1)) )))", param.opcode.c_str());
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler{trees};
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<int64_t (*)(int64_t, int64_t)>();
+    ASSERT_EQ(param.oracle(param.lhs, param.rhs), entry_point(param.lhs, param.rhs));
+}
 
 INSTANTIATE_TEST_CASE_P(ArithmeticTest, Int32Arithmetic, ::testing::Combine(
     ::testing::ValuesIn(TRTest::const_value_pairs<int32_t, int32_t>()),
@@ -87,6 +132,12 @@ INSTANTIATE_TEST_CASE_P(ArithmeticTest, Int32Arithmetic, ::testing::Combine(
         std::make_tuple("iadd", iadd),
         std::make_tuple("isub", isub),
         std::make_tuple("imul", imul) )));
+
+INSTANTIATE_TEST_CASE_P(ArithmeticTest, Int64Arithmetic, ::testing::Combine(
+    ::testing::ValuesIn(TRTest::const_value_pairs<int64_t, int64_t>()),
+    ::testing::Values(
+        std::make_tuple("ladd", ladd),
+        std::make_tuple("lsub", lsub) )));
 
 /**
  * @brief Filter function for *div opcodes

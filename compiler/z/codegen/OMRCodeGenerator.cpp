@@ -625,19 +625,6 @@ OMR::Z::CodeGenerator::CodeGenerator()
 
    self()->setMultiplyIsDestructive();
 
-   static char * noGraFIX= feGetEnv("TR_NOGRAFIX");
-   if (!noGraFIX)
-      {
-      if ( !comp->getOption(TR_DisableLongDispStackSlot) )
-         {
-         self()->setExtCodeBaseRegisterIsFree(true);
-         }
-      else
-         {
-         self()->setExtCodeBaseRegisterIsFree(false);
-         }
-      }
-
    self()->setIsOutOfLineHotPath(false);
 
    self()->setUsesRegisterPairsForLongs();
@@ -679,7 +666,11 @@ OMR::Z::CodeGenerator::CodeGenerator()
    self()->setSupportsBCDToDFPReduction();
    self()->setSupportsIntDFPConversions();
 
-   self()->setSupportsPostProcessArrayCopy();
+   // On 31-Bit zOS/zLinux We rely on optimizer to generate array copy trees specialized for direction
+   if (TR::Compiler->target.is32Bit())
+      {
+      self()->setSupportsPostProcessArrayCopy();
+      }
 
    if (_processorInfo.supportsArch(TR_S390ProcessorInfo::TR_z10))
       {
@@ -720,9 +711,6 @@ OMR::Z::CodeGenerator::CodeGenerator()
       if (TR::Compiler->target.cpu.getS390SupportsTM() && !comp->getOption(TR_DisableTM))
          self()->setSupportsTM();
       }
-
-   if(self()->getSupportsTM())
-      self()->setSupportsTMHashMapAndLinkedQueue();
 
    if (_processorInfo.supportsArch(TR_S390ProcessorInfo::TR_z13) && !comp->getOption(TR_DisableArch11PackedToDFP))
       self()->setSupportsFastPackedDFPConversions();
@@ -853,20 +841,6 @@ bool OMR::Z::CodeGenerator::prepareForGRA()
 
    if (!_globalRegisterTable)
       {
-      // TBR
-      static char * noGraFIX= feGetEnv("TR_NOGRAFIX");
-      if (noGraFIX)
-         {
-         if ( !self()->comp()->getOption(TR_DisableLongDispStackSlot) )
-            {
-            self()->setExtCodeBaseRegisterIsFree(true);
-            }
-         else
-            {
-            self()->setExtCodeBaseRegisterIsFree(false);
-            }
-         }
-
       self()->machine()->initializeGlobalRegisterTable();
       self()->setGlobalRegisterTable(self()->machine()->getGlobalRegisterTable());
       self()->setFirstGlobalHPR(self()->machine()->getFirstGlobalHPRRegisterNumber());
@@ -1069,8 +1043,6 @@ TR::RealRegister * OMR::Z::CodeGenerator::getEntryPointRealRegister()
    {return self()->getS390Linkage()->getEntryPointRealRegister();}
 TR::RealRegister * OMR::Z::CodeGenerator::getReturnAddressRealRegister()
    {return self()->getS390Linkage()->getReturnAddressRealRegister();}
-TR::RealRegister * OMR::Z::CodeGenerator::getExtCodeBaseRealRegister()
-   {return self()->getS390Linkage()->getExtCodeBaseRealRegister();}
 TR::RealRegister * OMR::Z::CodeGenerator::getLitPoolRealRegister()
    {return self()->getS390Linkage()->getLitPoolRealRegister();}
 
@@ -1533,7 +1505,7 @@ OMR::Z::CodeGenerator::insertInstructionPrefetches()
          _hottestReturn._returnLabel = generateLabelSymbol(self());
 
          TR::Register * tempReg = self()->allocateRegister();
-         TR::RealRegister * spReg =  self()->getS390Linkage()->getS390RealRegister(self()->getS390Linkage()->getStackPointerRegister());
+         TR::RealRegister * spReg =  self()->getS390Linkage()->getRealRegister(self()->getS390Linkage()->getStackPointerRegister());
          int32_t frameSize = self()->getFrameSizeInBytes();
 
          TR::MemoryReference * tempMR = generateS390MemoryReference(spReg, frameSize, self());
@@ -1835,27 +1807,6 @@ OMR::Z::CodeGenerator::insertInstructionPrefetchesForCalls(TR_BranchPreloadCallD
 ////////////////////////////////////////////////////////////////////////////////
 // OMR::Z::CodeGenerator::doRegisterAssignment
 ////////////////////////////////////////////////////////////////////////////////
-
-/**
- * Do logic for determining if we want to make ext code base reg available
- */
-bool
-OMR::Z::CodeGenerator::isExtCodeBaseFreeForAssignment()
-   {
-   bool extCodeBaseIsFree = false;
-
-   // Codegen's extCodeBase flag has ultimate veto
-   // For N3+ we use a stack slot to spill the ExtCodeBase, compute the disp, use it, and unspill
-   //   when LongDispStackSlot is enabled
-   // (see TR::MemoryReference::generateBinaryEncoding(..)
-   //
-   if ( !self()->comp()->getOption(TR_DisableLongDispStackSlot) && self()->getExtCodeBaseRegisterIsFree())
-      {
-      extCodeBaseIsFree = true;
-      }
-
-   return extCodeBaseIsFree;
-   }
 
 /**
  * Do logic for determining if we want to make lit pool reg available
@@ -2548,16 +2499,6 @@ OMR::Z::CodeGenerator::prepareRegistersForAssignment()
          if (s390PrivateLinkage->getPrivateStaticBaseRealRegister())
             s390PrivateLinkage->lockRegister(s390PrivateLinkage->getPrivateStaticBaseRealRegister());
          }
-
-      // Check to see if we need to lock the ext code base reg
-      if ( self()->isExtCodeBaseFreeForAssignment() )
-         {
-         s390PrivateLinkage->unlockRegister(s390PrivateLinkage->getExtCodeBaseRealRegister());
-         }
-      else
-         {
-         s390PrivateLinkage->lockRegister(s390PrivateLinkage->getExtCodeBaseRealRegister());
-         }
       }
 
    TR::Machine* machine = self()->machine();
@@ -2580,28 +2521,28 @@ OMR::Z::CodeGenerator::prepareRegistersForAssignment()
    // count up how many registers are locked for each type
    for (int32_t i = TR::RealRegister::FirstGPR; i <= TR::RealRegister::LastGPR; ++i)
       {
-      TR::RealRegister* realReg = machine->getS390RealRegister((TR::RealRegister::RegNum)i);
+      TR::RealRegister* realReg = machine->getRealRegister((TR::RealRegister::RegNum)i);
       if (realReg->getState() == TR::RealRegister::Locked)
          ++lockedGPRs;
       }
 
    for (int32_t i = TR::RealRegister::FirstHPR; i <= TR::RealRegister::LastHPR; ++i)
       {
-      TR::RealRegister* realReg = machine->getS390RealRegister((TR::RealRegister::RegNum)i);
+      TR::RealRegister* realReg = machine->getRealRegister((TR::RealRegister::RegNum)i);
       if (realReg->getState() == TR::RealRegister::Locked)
          ++lockedHPRs;
       }
 
    for (int32_t i = TR::RealRegister::FirstFPR; i <= TR::RealRegister::LastFPR; ++i)
       {
-      TR::RealRegister* realReg = machine->getS390RealRegister((TR::RealRegister::RegNum)i);
+      TR::RealRegister* realReg = machine->getRealRegister((TR::RealRegister::RegNum)i);
       if (realReg->getState() == TR::RealRegister::Locked)
          ++lockedFPRs;
       }
 
    for (int32_t i = TR::RealRegister::FirstVRF; i <= TR::RealRegister::LastVRF; ++i)
       {
-      TR::RealRegister* realReg = machine->getS390RealRegister((TR::RealRegister::RegNum)i);
+      TR::RealRegister* realReg = machine->getRealRegister((TR::RealRegister::RegNum)i);
       if (realReg->getState() == TR::RealRegister::Locked)
          ++lockedVRFs;
       }
@@ -2843,8 +2784,8 @@ OMR::Z::CodeGenerator::doRegisterAssignment(TR_RegisterKinds kindsToAssign)
       {
       for (uint32_t i = TR::RealRegister::FirstGPR; i <= TR::RealRegister::LastGPR; ++i)
          {
-         TR_ASSERT(self()->machine()->getS390RealRegister(i)->getState() != TR::RealRegister::Assigned,
-                    "ASSERTION: GPR registers are still assigned at end of first RA pass! %s regNum=%s\n", self()->comp()->signature(), self()->getDebug()->getName(self()->machine()->getS390RealRegister(i)));
+         TR_ASSERT(self()->machine()->getRealRegister(i)->getState() != TR::RealRegister::Assigned,
+                    "ASSERTION: GPR registers are still assigned at end of first RA pass! %s regNum=%s\n", self()->comp()->signature(), self()->getDebug()->getName(self()->machine()->getRealRegister(i)));
          }
 
       if (self()->getDebug())
@@ -3193,7 +3134,7 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
                   {
                   for (uint8_t i=highReg->getRegisterNumber()+1; i++; i<= numRegs)
                      {
-                     self()->getS390Linkage()->getS390RealRegister(REGNUM(i))->setModified(true);
+                     self()->getS390Linkage()->getRealRegister(REGNUM(i))->setModified(true);
                      }
                   }
                }
@@ -3237,7 +3178,7 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
                   if (s390Inst->getKind() == TR::Instruction::IsLabel)
                      {
                      if (self()->comp()->getOption(TR_TraceLabelTargetNOPs))
-                        traceMsg(self()->comp(),"\t\tepilogue inst %p (%s) setSkipForLabelTargetNOPs\n",s390Inst,self()->comp()->getDebug()->getOpCodeName(&s390Inst->getOpCode()));
+                        traceMsg(self()->comp(),"\t\tepilogue inst %p (%s) setSkipForLabelTargetNOPs\n",s390Inst,s390Inst->getOpCode().getMnemonicName());
                      TR::S390LabelInstruction *labelInst = (TR::S390LabelInstruction*)s390Inst;
                      labelInst->setSkipForLabelTargetNOPs();
                      }
@@ -3345,7 +3286,7 @@ OMR::Z::CodeGenerator::doBinaryEncoding()
       TR_ASSERT(data.cursorInstruction->getEstimatedBinaryLength() >= self()->getBinaryBufferCursor() - instructionStart,
               "\nInstruction length estimate must be conservatively large \n(instr=" POINTER_PRINTF_FORMAT ", opcode=%s, estimate=%d, actual=%d",
               data.cursorInstruction,
-              self()->getDebug()? self()->getDebug()->getOpCodeName(&data.cursorInstruction->getOpCode()) : "(unknown)",
+              data.cursorInstruction->getOpCode().getMnemonicName(),
               data.cursorInstruction->getEstimatedBinaryLength(),
               self()->getBinaryBufferCursor() - instructionStart);
 
@@ -3743,16 +3684,13 @@ OMR::Z::CodeGenerator::getMaximumNumberOfAssignableGPRs()
    //   ( JSP
    //     Native SP
    //     VMThread
-   //     Lit pool
-   //     extCode Base )
-   //   = 11 assignable regs
+   //     Lit pool)
+   //   = 12 assignable regs
    //
    int32_t maxGPRs = 0;
 
 
-   maxGPRs = 11 + (self()->isLiteralPoolOnDemandOn() ? 1 : 0)               // => Litpool ptr is available
-                + ((self()->getExtCodeBaseRegisterIsFree()                   &&
-                    !self()->comp()->getOption(TR_DisableLongDispStackSlot)     )? 1 : 0);  // => ExtCodeBase is free
+   maxGPRs = 12 + (self()->isLiteralPoolOnDemandOn() ? 1 : 0);
 
    //traceMsg(comp(), " getMaximumNumberOfAssignableGPRs: %d\n",  maxGPRs);
    return maxGPRs;
@@ -3920,7 +3858,7 @@ OMR::Z::CodeGenerator::setRealRegisterAssociation(TR::Register * reg, TR::RealRe
       return;
       }
 
-   TR::RealRegister * realReg = self()->machine()->getS390RealRegister(realNum);
+   TR::RealRegister * realReg = self()->machine()->getRealRegister(realNum);
    self()->getLiveRegisters(reg->getKind())->setAssociation(reg, realReg);
    }
 
@@ -3965,7 +3903,7 @@ void OMR::Z::CodeGenerator::startInternalControlFlow(TR::Instruction *instr)
           {
           TR::RealRegister::RegNum rr = postConds->getRegisterDependency(i)->getRealRegister();
           if(rr>TR::RealRegister::NoReg && rr<=TR::RealRegister::LastHPR)
-            r = mach->getS390RealRegister(rr);
+            r = mach->getRealRegister(rr);
           }
         if(r) _internalControlFlowRegisters.push_back(r);
         }
@@ -5249,7 +5187,7 @@ OMR::Z::CodeGenerator::buildRegisterMapForInstruction(TR_GCStackMap * map)
       {
       for (int32_t i = TR::RealRegister::FirstHPR; i <= TR::RealRegister::LastHPR; i++)
          {
-         TR::RealRegister * realReg = self()->machine()->getS390RealRegister((TR::RealRegister::RegNum) i);
+         TR::RealRegister * realReg = self()->machine()->getRealRegister((TR::RealRegister::RegNum) i);
          if (realReg->getHasBeenAssignedInMethod())
             {
             TR::Register * virtReg = realReg->getAssignedRegister();
@@ -5264,7 +5202,7 @@ OMR::Z::CodeGenerator::buildRegisterMapForInstruction(TR_GCStackMap * map)
       }
    for (int32_t i = TR::RealRegister::FirstGPR; i <= TR::RealRegister::LastAssignableGPR; i++)
       {
-      TR::RealRegister * realReg = self()->machine()->getS390RealRegister((TR::RealRegister::RegNum) i);
+      TR::RealRegister * realReg = self()->machine()->getRealRegister((TR::RealRegister::RegNum) i);
       if (realReg->getHasBeenAssignedInMethod())
          {
          TR::Register * virtReg = realReg->getAssignedRegister();
@@ -5729,7 +5667,7 @@ bool OMR::Z::CodeGenerator::isActiveCompareCC(TR::InstOpCode::Mnemonic opcd, TR:
 
       if (opcd == ccInst->getOpCodeValue() && tReg == ccTgtReg &&  sReg == ccSrcReg &&
           performTransformation(self()->comp(), "O^O isActiveCompareCC: RR Compare Op [%s\t %s, %s] can reuse CC from ccInstr [%p]\n",
-             self()->getDebug()->getOpCodeName(&ccInst->getOpCode()), self()->getDebug()->getName(tReg),self()->getDebug()->getName(sReg), ccInst))
+             ccInst->getOpCode().getMnemonicName(), self()->getDebug()->getName(tReg),self()->getDebug()->getName(sReg), ccInst))
          {
          return true;
          }
@@ -6467,7 +6405,7 @@ void handleLoadWithRegRanges(TR::Instruction *inst, TR::CodeGenerator *cg)
                  i != highRegNum ;
                  i  = ((i == (isVector ? numVRFs - 1 : 15)) ? 0 : i+1))
       {
-      TR::RealRegister *reg = cg->machine()->getS390RealRegister(i + TR::RealRegister::GPR0);
+      TR::RealRegister *reg = cg->machine()->getRealRegister(i + TR::RealRegister::GPR0);
 
       // Registers that are assigned need to be checked whether they have a matching STM--otherwise we spill.
       // Since we are called post RA for the LM, we check if assigned registers are last used on the LM so we can

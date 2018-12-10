@@ -1103,7 +1103,7 @@ class S390RegInstruction : public TR::Instruction
          TR_ASSERT( (!_targetPairFlag && !getOpCode().shouldUseRegPairForTarget())
                   || (_targetPairFlag && getOpCode().canUseRegPairForTarget()) ,
                 "OpCode [%s] %s use Register Pair for Target.\n",
-                cg->getDebug()? cg->getDebug()->getOpCodeName(&this->getOpCode()) : "(unknown)",
+                getOpCode().getMnemonicName(),
                 (_targetPairFlag)?"cannot":"should");
       }
 
@@ -1161,7 +1161,7 @@ class S390RegInstruction : public TR::Instruction
       TR_ASSERT((!_targetPairFlag && !getOpCode().shouldUseRegPairForTarget())
                 || (_targetPairFlag && getOpCode().canUseRegPairForTarget()) ,
                 "OpCode [%s] %s use Register Pair for Target.\n",
-                cg->getDebug()? cg->getDebug()->getOpCodeName(&this->getOpCode()) : "(unknown)",
+                getOpCode().getMnemonicName(),
                 (_targetPairFlag)?"cannot":"should");
       }
 
@@ -1187,7 +1187,7 @@ class S390RegInstruction : public TR::Instruction
       TR_ASSERT((!_targetPairFlag && !getOpCode().shouldUseRegPairForTarget())
                 || (_targetPairFlag && getOpCode().canUseRegPairForTarget()) ,
                 "OpCode [%s] %s use Register Pair for Target.\n",
-                cg->getDebug()? cg->getDebug()->getOpCodeName(&this->getOpCode()) : "(unknown)",
+                getOpCode().getMnemonicName(),
                 (_targetPairFlag)?"cannot":"should");
       }
 
@@ -1211,7 +1211,7 @@ class S390RegInstruction : public TR::Instruction
       TR_ASSERT((!_targetPairFlag && !getOpCode().shouldUseRegPairForTarget())
                 || (_targetPairFlag && getOpCode().canUseRegPairForTarget()) ,
                 "OpCode [%s] %s use Register Pair for Target.\n",
-                cg->getDebug()? cg->getDebug()->getOpCodeName(&this->getOpCode()) : "(unknown)",
+                getOpCode().getMnemonicName(),
                 (_targetPairFlag)?"cannot":"should");
       }
 
@@ -1237,7 +1237,7 @@ class S390RegInstruction : public TR::Instruction
       TR_ASSERT((!_targetPairFlag && !getOpCode().shouldUseRegPairForTarget())
                 || (_targetPairFlag && getOpCode().canUseRegPairForTarget()) ,
                 "OpCode [%s] %s use Register Pair for Target.\n",
-                cg->getDebug()? cg->getDebug()->getOpCodeName(&this->getOpCode()) : "(unknown)",
+                getOpCode().getMnemonicName(),
                 (_targetPairFlag)?"cannot":"should");
       }
 
@@ -1264,7 +1264,7 @@ class S390RegInstruction : public TR::Instruction
       TR_ASSERT( (!_targetPairFlag && !getOpCode().shouldUseRegPairForTarget())
                || (_targetPairFlag && getOpCode().canUseRegPairForTarget()) ,
                "OpCode [%s] %s use Register Pair for Target.\n",
-               cg->getDebug()? cg->getDebug()->getOpCodeName(&this->getOpCode()) : "(unknown)",
+               getOpCode().getMnemonicName(),
                (_targetPairFlag)?"cannot":"should");
       }
 
@@ -1291,7 +1291,7 @@ class S390RegInstruction : public TR::Instruction
       TR_ASSERT((!_targetPairFlag && !getOpCode().shouldUseRegPairForTarget())
                 || (_targetPairFlag && getOpCode().canUseRegPairForTarget()) ,
                 "OpCode [%s] %s use Register Pair for Target.\n",
-                cg->getDebug()? cg->getDebug()->getOpCodeName(&this->getOpCode()) : "(unknown)",
+                getOpCode().getMnemonicName(),
                 (_targetPairFlag)?"cannot":"should");
       }
 
@@ -1319,7 +1319,7 @@ class S390RegInstruction : public TR::Instruction
       TR_ASSERT((!_targetPairFlag && !getOpCode().shouldUseRegPairForTarget())
                 || (_targetPairFlag && getOpCode().canUseRegPairForTarget()) ,
                 "OpCode [%s] %s use Register Pair for Target.\n",
-                cg->getDebug()? cg->getDebug()->getOpCodeName(&this->getOpCode()) : "(unknown)",
+                getOpCode().getMnemonicName(),
                 (_targetPairFlag)?"cannot":"should");
       }
 
@@ -2127,7 +2127,7 @@ class S390RILInstruction : public TR::Instruction
       : TR::Instruction(op, n, cg), _targetPtr(NULL), _targetSnippet(NULL), _targetSymbol(NULL), _flagsRIL(0), _mask(0xffffffff),  _targetLabel(NULL), _symbolReference(NULL), _sourceImmediate(imm)
       {
       TR_ASSERT_FATAL(getOpCode().isExtendedImmediate(), "Incorrect S390RILInstruction constructor used.\n"
-                                                       "%s expects an address as the immediate but this constructor is for integer immediates.", cg->getDebug()->getOpCodeName(&this->getOpCode()));
+                                                       "%s expects an address as the immediate but this constructor is for integer immediates.", getOpCode().getMnemonicName());
       checkRegForGPR0Disable(op,treg);
       if (!getOpCode().setsOperand1())
          useSourceRegister(treg);
@@ -2141,7 +2141,7 @@ class S390RILInstruction : public TR::Instruction
       : TR::Instruction(op, n, cg), _targetPtr(NULL), _targetSnippet(NULL), _targetSymbol(NULL), _flagsRIL(0), _mask(0xffffffff),  _targetLabel(NULL), _symbolReference(NULL), _sourceImmediate(imm)
       {
       TR_ASSERT_FATAL(getOpCode().isExtendedImmediate(), "Incorrect S390RILInstruction constructor used.\n"
-                                                       "%s expects an address as the immediate but this constructor is for integer immediates.", cg->getDebug()->getOpCodeName(&this->getOpCode()));
+                                                       "%s expects an address as the immediate but this constructor is for integer immediates.", getOpCode().getMnemonicName());
       checkRegForGPR0Disable(op,treg);
       if (!getOpCode().setsOperand1())
          useSourceRegister(treg);
@@ -2155,7 +2155,7 @@ class S390RILInstruction : public TR::Instruction
       : TR::Instruction(op, n, cg), _targetPtr(targetPtr), _targetSnippet(NULL), _targetSymbol(NULL), _flagsRIL(0), _mask(0xffffffff),  _targetLabel(NULL), _symbolReference(NULL), _sourceImmediate(0)
       {
       TR_ASSERT_FATAL(!getOpCode().isExtendedImmediate(), "Incorrect S390RILInstruction constructor used.\n"
-                                                        "%s expects an integer as the immediate but this constructor is for address immediates.", cg->getDebug()->getOpCodeName(&this->getOpCode()));
+                                                        "%s expects an integer as the immediate but this constructor is for address immediates.", getOpCode().getMnemonicName());
       checkRegForGPR0Disable(op,treg);
       if (!getOpCode().setsOperand1())
          useSourceRegister(treg);
@@ -2198,7 +2198,7 @@ class S390RILInstruction : public TR::Instruction
       : TR::Instruction(op, n, precedingInstruction, cg), _targetPtr(NULL), _targetSnippet(NULL), _targetSymbol(NULL), _flagsRIL(0), _mask(0xffffffff), _targetLabel(NULL), _symbolReference(NULL), _sourceImmediate(imm)
       {
       TR_ASSERT_FATAL(getOpCode().isExtendedImmediate(), "Incorrect S390RILInstruction constructor used.\n"
-                                                       "%s expects an adddress as the immediate but this constructor is for integer immediates.", cg->getDebug()->getOpCodeName(&this->getOpCode()));
+                                                       "%s expects an adddress as the immediate but this constructor is for integer immediates.", getOpCode().getMnemonicName());
       checkRegForGPR0Disable(op,treg);
       if (!getOpCode().setsOperand1())
          useSourceRegister(treg);
@@ -2213,7 +2213,7 @@ class S390RILInstruction : public TR::Instruction
       : TR::Instruction(op, n, precedingInstruction, cg), _targetPtr(NULL), _targetSnippet(NULL), _targetSymbol(NULL), _flagsRIL(0), _mask(0xffffffff), _targetLabel(NULL), _symbolReference(NULL), _sourceImmediate(imm)
       {
       TR_ASSERT_FATAL(getOpCode().isExtendedImmediate(), "Incorrect S390RILInstruction constructor used.\n"
-                                                       "%s expects an address as the immediate but this constructor is for integer immediates.", cg->getDebug()->getOpCodeName(&this->getOpCode()));
+                                                       "%s expects an address as the immediate but this constructor is for integer immediates.", getOpCode().getMnemonicName());
       checkRegForGPR0Disable(op,treg);
       if (!getOpCode().setsOperand1())
          useSourceRegister(treg);
@@ -2228,7 +2228,7 @@ class S390RILInstruction : public TR::Instruction
       : TR::Instruction(op, n, precedingInstruction, cg), _targetPtr(targetPtr), _targetSnippet(NULL), _targetSymbol(NULL), _flagsRIL(0), _mask(0xffffffff), _targetLabel(NULL), _symbolReference(NULL), _sourceImmediate(0)
       {
       TR_ASSERT_FATAL(!getOpCode().isExtendedImmediate(), "Incorrect S390RILInstruction constructor used.\n"
-                                                        "%s expects an address as the immediate but this constructor is for integer immediates.", cg->getDebug()->getOpCodeName(&this->getOpCode()));
+                                                        "%s expects an address as the immediate but this constructor is for integer immediates.", getOpCode().getMnemonicName());
       checkRegForGPR0Disable(op,treg);
       if (!getOpCode().setsOperand1())
          useSourceRegister(treg);
@@ -2537,15 +2537,13 @@ class S390RSInstruction : public TR::S390RegInstruction
 
    int16_t                 _sourceImmediate;
    int8_t                  _maskImmediate;
-   /// Set to true if a mask value was specified during the construction of this object, indicating an RS instruction of RS-b format 
+   /// Set to true if a mask value was specified during the construction of this object, indicating an RS instruction of RS-b format
    /// where the third operand is a mask
    bool                    _hasMaskImmediate;
-   /// Set to true if a mask value was specified during the construction of this object, indicating an RS instruction of RS-b format 
+   /// Set to true if a mask value was specified during the construction of this object, indicating an RS instruction of RS-b format
    /// where the third operand is a mask
    bool                    _hasSourceImmediate;
    int8_t                  _idx;
-   Kind                    _kind;
-
 
    public:
 
@@ -2559,12 +2557,12 @@ class S390RSInstruction : public TR::S390RegInstruction
                         TR::Register      *treg,
                         uint32_t          imm,
                         TR::CodeGenerator *cg)
-           : S390RegInstruction(op, n, treg, cg), _sourceImmediate(imm), _maskImmediate(0), _idx(-1), _hasMaskImmediate(false), _hasSourceImmediate(true), _kind(IsRS)
+           : S390RegInstruction(op, n, treg, cg), _sourceImmediate(imm), _maskImmediate(0), _idx(-1), _hasMaskImmediate(false), _hasSourceImmediate(true)
       {
       // 1 Register is specified - If it is not a register pair, make sure instruction doesn't take a range (i.e. STM).
       TR_ASSERT(treg->getRegisterPair() || !getOpCode().usesRegRangeForTarget(),
                "OpCode [%s] requires a register range.\n",
-                cg->getDebug()? cg->getDebug()->getOpCodeName(&this->getOpCode()) : "(unknown)");
+                getOpCode().getMnemonicName());
       };
 
    S390RSInstruction(TR::InstOpCode::Mnemonic    op,
@@ -2573,13 +2571,13 @@ class S390RSInstruction : public TR::S390RegInstruction
                         uint32_t          imm,
                         TR::Instruction   *precedingInstruction,
                         TR::CodeGenerator *cg)
-           : S390RegInstruction(op, n, treg, precedingInstruction, cg), _kind(IsRS),
+           : S390RegInstruction(op, n, treg, precedingInstruction, cg),
              _sourceImmediate(imm), _maskImmediate(0), _idx(-1), _hasMaskImmediate(false), _hasSourceImmediate(true)
       {
       // 1 Register is specified - If it is not a register pair, make sure instruction doesn't take a range (i.e. STM).
       TR_ASSERT(treg->getRegisterPair() || !getOpCode().usesRegRangeForTarget(),
                "OpCode [%s] requires a register range.\n",
-                cg->getDebug()? cg->getDebug()->getOpCodeName(&this->getOpCode()) : "(unknown)");
+                getOpCode().getMnemonicName());
       };
 
    S390RSInstruction(TR::InstOpCode::Mnemonic    op,
@@ -2588,13 +2586,13 @@ class S390RSInstruction : public TR::S390RegInstruction
                         uint32_t          imm,
                         TR::RegisterDependencyConditions *_conditions,
                         TR::CodeGenerator *cg)
-           : S390RegInstruction(op, n, treg, _conditions, cg), _sourceImmediate(imm), _maskImmediate(0), _idx(-1), _hasMaskImmediate(false), _hasSourceImmediate(true), _kind(IsRS)
+           : S390RegInstruction(op, n, treg, _conditions, cg), _sourceImmediate(imm), _maskImmediate(0), _idx(-1), _hasMaskImmediate(false), _hasSourceImmediate(true)
 
       {
       // 1 Register is specified - If it is not a register pair, make sure instruction doesn't take a range (i.e. STM).
       TR_ASSERT(treg->getRegisterPair() || !getOpCode().usesRegRangeForTarget(),
                "OpCode [%s] requires a register range.\n",
-                cg->getDebug()? cg->getDebug()->getOpCodeName(&this->getOpCode()) : "(unknown)");
+                getOpCode().getMnemonicName());
       };
 
    S390RSInstruction(TR::InstOpCode::Mnemonic    op,
@@ -2604,13 +2602,13 @@ class S390RSInstruction : public TR::S390RegInstruction
                         TR::RegisterDependencyConditions *_conditions,
                         TR::Instruction   *precedingInstruction,
                         TR::CodeGenerator *cg)
-           : S390RegInstruction(op, n, treg, _conditions, precedingInstruction, cg), _kind(IsRS),
+           : S390RegInstruction(op, n, treg, _conditions, precedingInstruction, cg),
              _sourceImmediate(imm), _maskImmediate(0), _idx(-1), _hasMaskImmediate(false), _hasSourceImmediate(true)
       {
       // 1 Register is specified - If it is not a register pair, make sure instruction doesn't take a range (i.e. STM).
       TR_ASSERT(treg->getRegisterPair() || !getOpCode().usesRegRangeForTarget(),
                "OpCode [%s] requires a register range.\n",
-                cg->getDebug()? cg->getDebug()->getOpCodeName(&this->getOpCode()) : "(unknown)");
+                getOpCode().getMnemonicName());
       };
 
    // RS instruction with  R1,D2(B2) format
@@ -2619,7 +2617,7 @@ class S390RSInstruction : public TR::S390RegInstruction
                         TR::Register             *treg,
                         TR::MemoryReference  *mf,
                         TR::CodeGenerator        *cg)
-           : S390RegInstruction(op, n, treg, cg), _sourceImmediate(0), _maskImmediate(0), _idx(-1), _hasMaskImmediate(false), _hasSourceImmediate(false), _kind(IsRS)
+           : S390RegInstruction(op, n, treg, cg), _sourceImmediate(0), _maskImmediate(0), _idx(-1), _hasMaskImmediate(false), _hasSourceImmediate(false)
       {
       useSourceMemoryReference(mf);
       setupThrowsImplicitNullPointerException(n,mf);
@@ -2629,7 +2627,7 @@ class S390RSInstruction : public TR::S390RegInstruction
       // 1 Register is specified - If it is not a register pair, make sure instruction doesn't take a range (i.e. STM).
       TR_ASSERT(treg->getRegisterPair() || !getOpCode().usesRegRangeForTarget(),
                "OpCode [%s] requires a register range.\n",
-                cg->getDebug()? cg->getDebug()->getOpCodeName(&this->getOpCode()) : "(unknown)");
+                getOpCode().getMnemonicName());
       }
 
    S390RSInstruction(TR::InstOpCode::Mnemonic           op,
@@ -2639,7 +2637,7 @@ class S390RSInstruction : public TR::S390RegInstruction
                         TR::Instruction          *precedingInstruction,
                         TR::CodeGenerator        *cg)
            : S390RegInstruction(op, n, treg, precedingInstruction, cg),
-             _sourceImmediate(0), _maskImmediate(0), _idx(-1), _hasMaskImmediate(false), _hasSourceImmediate(false), _kind(IsRS)
+             _sourceImmediate(0), _maskImmediate(0), _idx(-1), _hasMaskImmediate(false), _hasSourceImmediate(false)
       {
       useSourceMemoryReference(mf);
       setupThrowsImplicitNullPointerException(n,mf);
@@ -2649,7 +2647,7 @@ class S390RSInstruction : public TR::S390RegInstruction
       // 1 Register is specified - If it is not a register pair, make sure instruction doesn't take a range (i.e. STM).
       TR_ASSERT(treg->getRegisterPair() || !getOpCode().usesRegRangeForTarget(),
                 "OpCode [%s] requires a register range.\n",
-                cg->getDebug()? cg->getDebug()->getOpCodeName(&this->getOpCode()) : "(unknown)");
+                getOpCode().getMnemonicName());
       }
 
    /** Used for ICM instruction */
@@ -2661,7 +2659,7 @@ class S390RSInstruction : public TR::S390RegInstruction
                         TR::Instruction          *precedingInstruction,
                         TR::CodeGenerator        *cg)
            : S390RegInstruction(op, n, treg, precedingInstruction, cg),
-             _sourceImmediate(0), _maskImmediate(mask), _idx(-1), _hasMaskImmediate(true), _hasSourceImmediate(false), _kind(IsRS)
+             _sourceImmediate(0), _maskImmediate(mask), _idx(-1), _hasMaskImmediate(true), _hasSourceImmediate(false)
       {
       useSourceMemoryReference(mf);
       setupThrowsImplicitNullPointerException(n,mf);
@@ -2671,7 +2669,7 @@ class S390RSInstruction : public TR::S390RegInstruction
       // 1 Register is specified - If it is not a register pair, make sure instruction doesn't take a range (i.e. STM).
       TR_ASSERT(treg->getRegisterPair() || !getOpCode().usesRegRangeForTarget(),
                "OpCode [%s] requires a register range.\n",
-                cg->getDebug()? cg->getDebug()->getOpCodeName(&this->getOpCode()) : "(unknown)");
+                getOpCode().getMnemonicName());
       }
 
    /** Used for ICM instruction */
@@ -2682,7 +2680,7 @@ class S390RSInstruction : public TR::S390RegInstruction
                         TR::MemoryReference      *mf,
                         TR::CodeGenerator        *cg)
            : S390RegInstruction(op, n, treg, cg),
-             _sourceImmediate(0), _maskImmediate(mask), _idx(-1), _hasMaskImmediate(true), _hasSourceImmediate(false), _kind(IsRS)
+             _sourceImmediate(0), _maskImmediate(mask), _idx(-1), _hasMaskImmediate(true), _hasSourceImmediate(false)
       {
       useSourceMemoryReference(mf);
       setupThrowsImplicitNullPointerException(n,mf);
@@ -2701,7 +2699,7 @@ class S390RSInstruction : public TR::S390RegInstruction
                         TR::Register             *lreg,
                         TR::MemoryReference      *mf,
                         TR::CodeGenerator        *cg)
-           : S390RegInstruction(op, n, freg, cg), _sourceImmediate(0), _maskImmediate(0), _idx(-1), _hasMaskImmediate(false), _hasSourceImmediate(false), _kind(IsRS)
+           : S390RegInstruction(op, n, freg, cg), _sourceImmediate(0), _maskImmediate(0), _idx(-1), _hasMaskImmediate(false), _hasSourceImmediate(false)
       {
       if (getOpCode().setsOperand2())
          useTargetRegister(lreg);
@@ -2721,7 +2719,7 @@ class S390RSInstruction : public TR::S390RegInstruction
                         TR::MemoryReference      *mf,
                         TR::Instruction          *precedingInstruction,
                         TR::CodeGenerator        *cg)
-           : S390RegInstruction(op, n, freg, precedingInstruction, cg), _sourceImmediate(0), _maskImmediate(0), _idx(-1), _hasMaskImmediate(false), _hasSourceImmediate(false), _kind(IsRS)
+           : S390RegInstruction(op, n, freg, precedingInstruction, cg), _sourceImmediate(0), _maskImmediate(0), _idx(-1), _hasMaskImmediate(false), _hasSourceImmediate(false)
       {
 
       if (getOpCode().setsOperand2())
@@ -2742,7 +2740,7 @@ class S390RSInstruction : public TR::S390RegInstruction
                         TR::RegisterPair         *regp,
                         TR::MemoryReference      *mf,
                         TR::CodeGenerator        *cg)
-           : S390RegInstruction(op, n, regp, cg), _sourceImmediate(0), _maskImmediate(0), _idx(-1), _hasMaskImmediate(false), _hasSourceImmediate(false), _kind(IsRS)
+           : S390RegInstruction(op, n, regp, cg), _sourceImmediate(0), _maskImmediate(0), _idx(-1), _hasMaskImmediate(false), _hasSourceImmediate(false)
      {
      useSourceMemoryReference(mf);
      setupThrowsImplicitNullPointerException(n,mf);
@@ -2756,7 +2754,7 @@ class S390RSInstruction : public TR::S390RegInstruction
                         TR::MemoryReference      *mf,
                         TR::Instruction          *precedingInstruction,
                         TR::CodeGenerator        *cg)
-           : S390RegInstruction(op, n, regp, precedingInstruction, cg), _sourceImmediate(0), _maskImmediate(0), _idx(-1), _hasMaskImmediate(false), _hasSourceImmediate(false), _kind(IsRS)
+           : S390RegInstruction(op, n, regp, precedingInstruction, cg), _sourceImmediate(0), _maskImmediate(0), _idx(-1), _hasMaskImmediate(false), _hasSourceImmediate(false)
       {
       useSourceMemoryReference(mf);
       setupThrowsImplicitNullPointerException(n,mf);
@@ -2771,7 +2769,7 @@ class S390RSInstruction : public TR::S390RegInstruction
                         TR::RegisterPair         *regp2,
                         TR::MemoryReference      *mf,
                         TR::CodeGenerator        *cg)
-           : S390RegInstruction(op, n, regp, cg), _sourceImmediate(0), _maskImmediate(0), _idx(-1), _hasMaskImmediate(false), _hasSourceImmediate(false), _kind(IsRS)
+           : S390RegInstruction(op, n, regp, cg), _sourceImmediate(0), _maskImmediate(0), _idx(-1), _hasMaskImmediate(false), _hasSourceImmediate(false)
 
      {
      if (getOpCode().setsOperand2())
@@ -2791,7 +2789,7 @@ class S390RSInstruction : public TR::S390RegInstruction
                         TR::MemoryReference      *mf,
                         TR::Instruction          *precedingInstruction,
                         TR::CodeGenerator        *cg)
-           : S390RegInstruction(op, n, regp, precedingInstruction, cg), _sourceImmediate(0), _maskImmediate(0), _idx(-1), _hasMaskImmediate(false), _hasSourceImmediate(false), _kind(IsRS)
+           : S390RegInstruction(op, n, regp, precedingInstruction, cg), _sourceImmediate(0), _maskImmediate(0), _idx(-1), _hasMaskImmediate(false), _hasSourceImmediate(false)
       {
       if (getOpCode().setsOperand2())
          useTargetRegister(regp2);
@@ -2810,7 +2808,7 @@ class S390RSInstruction : public TR::S390RegInstruction
                         TR::Register      *sreg,
                         uint32_t          imm,
                         TR::CodeGenerator *cg)
-           : S390RegInstruction(op, n, treg, cg), _sourceImmediate(imm), _maskImmediate(0), _idx(-1), _hasMaskImmediate(false), _hasSourceImmediate(true), _kind(IsRS)
+           : S390RegInstruction(op, n, treg, cg), _sourceImmediate(imm), _maskImmediate(0), _idx(-1), _hasMaskImmediate(false), _hasSourceImmediate(true)
         {
         if (getOpCode().setsOperand2())
            useTargetRegister(sreg);
@@ -2826,7 +2824,7 @@ class S390RSInstruction : public TR::S390RegInstruction
                         TR::Instruction   *precedingInstruction,
                         TR::CodeGenerator *cg)
            : S390RegInstruction(op, n, treg, precedingInstruction, cg),
-             _sourceImmediate(imm), _maskImmediate(0), _idx(-1), _hasMaskImmediate(false), _hasSourceImmediate(true), _kind(IsRS)
+             _sourceImmediate(imm), _maskImmediate(0), _idx(-1), _hasMaskImmediate(false), _hasSourceImmediate(true)
         {
         if (getOpCode().setsOperand2())
            useTargetRegister(sreg);
@@ -2835,16 +2833,15 @@ class S390RSInstruction : public TR::S390RegInstruction
         };
 
    virtual char *description() { return "S390RSInstruction"; }
-   virtual Kind getKind()                   {return _kind;}
-   virtual void setKind(Kind kind)          { _kind = kind; }
+   virtual Kind getKind()                   {return IsRS;}
    uint32_t getSourceImmediate()            {return _sourceImmediate;}
    uint32_t setSourceImmediate(uint32_t si) {return _sourceImmediate = si;}
    uint32_t getMaskImmediate()              {return _maskImmediate;}
    uint32_t setMaskImmediate(uint32_t mi)   {return _maskImmediate = mi;}
-   /// Determines whether a mask value was specified during the construction of this object, indicating an RS instruction of RS-b format 
+   /// Determines whether a mask value was specified during the construction of this object, indicating an RS instruction of RS-b format
    /// where the third operand is a mask
    bool     hasMaskImmediate()              {return _hasMaskImmediate;}
-   /// Determines whether a mask value was specified during the construction of this object, indicating an RS instruction of RS-b format 
+   /// Determines whether a mask value was specified during the construction of this object, indicating an RS instruction of RS-b format
    /// where the third operand is a mask
    bool     hasSourceImmediate()            {return _hasSourceImmediate;}
 
@@ -2931,6 +2928,48 @@ class S390RSYInstruction : public TR::S390RSInstruction
       {
       }
 
+   S390RSYInstruction(TR::InstOpCode::Mnemonic    op,
+                        TR::Node          *n,
+                        TR::RegisterPair  *treg,
+                        TR::RegisterPair  *sreg,
+                        TR::MemoryReference *mf,
+                        TR::CodeGenerator *cg)
+      : S390RSInstruction(op, n, treg, sreg, mf, cg)
+      {
+      }
+
+   S390RSYInstruction(TR::InstOpCode::Mnemonic    op,
+                        TR::Node          *n,
+                        TR::RegisterPair  *treg,
+                        TR::RegisterPair  *sreg,
+                        TR::MemoryReference *mf,
+                        TR::Instruction   *preced,
+                        TR::CodeGenerator *cg)
+      : S390RSInstruction(op, n, treg, sreg, mf, preced, cg)
+      {
+      }
+
+   S390RSYInstruction(TR::InstOpCode::Mnemonic    op,
+                        TR::Node          *n,
+                        TR::Register      *treg,
+                        TR::Register      *sreg,
+                        TR::MemoryReference *mf,
+                        TR::CodeGenerator *cg)
+      : S390RSInstruction(op, n, treg, sreg, mf, cg)
+      {
+      }
+
+   S390RSYInstruction(TR::InstOpCode::Mnemonic    op,
+                        TR::Node          *n,
+                        TR::Register      *treg,
+                        TR::Register      *sreg,
+                        TR::MemoryReference *mf,
+                        TR::Instruction   *preced,
+                        TR::CodeGenerator *cg)
+      : S390RSInstruction(op, n, treg, sreg, mf, preced, cg)
+      {
+      }
+
    virtual char *description() { return "S390RSYInstruction"; }
    virtual Kind getKind() { return IsRSY; }
 
@@ -2948,8 +2987,6 @@ class S390RRSInstruction : public TR::S390RRInstruction
    TR::MemoryReference * _branchDestination;
    TR::InstOpCode::S390BranchCondition _branchCondition;
 
-   Kind _kind;
-
    public:
 
    /** Construct a new RRS instruction with no preceding instruction */
@@ -2961,7 +2998,6 @@ class S390RRSInstruction : public TR::S390RRInstruction
                          TR::InstOpCode::S390BranchCondition branchCondition,
                          TR::CodeGenerator * cg)
            : S390RRInstruction(op, n, targetRegister, sourceRegister, cg),
-             _kind(IsRRS),
              _branchDestination(branchDestination),
              _branchCondition(branchCondition)
    {
@@ -2978,7 +3014,6 @@ class S390RRSInstruction : public TR::S390RRInstruction
                          TR::Instruction * precedingInstruction,
                          TR::CodeGenerator * cg)
            : S390RRInstruction(op, n, targetRegister, sourceRegister, precedingInstruction, cg),
-             _kind(IsRRS),
              _branchDestination(branchDestination),
              _branchCondition(branchCondition)
    {
@@ -3142,8 +3177,6 @@ class S390RIEInstruction : public TR::S390RegInstruction
     */
    TR::LabelSymbol * _branchDestination;
 
-   Kind _kind;
-
    public:
    typedef enum RIEForms { RIE_RR, RIE_RI8, RIE_RI16A, RIE_RI16G, RIE_RRI16, RIE_IMM } RIEForm;
 
@@ -3165,7 +3198,6 @@ class S390RIEInstruction : public TR::S390RegInstruction
                          TR::InstOpCode::S390BranchCondition branchCondition,
                          TR::CodeGenerator * cg)
            : S390RegInstruction(op, n, targetRegister, cg),
-             _kind(IsRIE),
              _instructionFormat(RIE_RR),
              _branchDestination(branchDestination),
              _branchCondition(branchCondition)
@@ -3185,7 +3217,6 @@ class S390RIEInstruction : public TR::S390RegInstruction
                          TR::Instruction * precedingInstruction,
                          TR::CodeGenerator * cg)
            : S390RegInstruction(op, n, targetRegister, precedingInstruction, cg),
-             _kind(IsRIE),
              _instructionFormat(RIE_RR),
              _branchDestination(branchDestination),
              _branchCondition(branchCondition)
@@ -3204,7 +3235,6 @@ class S390RIEInstruction : public TR::S390RegInstruction
                          TR::InstOpCode::S390BranchCondition branchCondition,
                          TR::CodeGenerator * cg)
            : S390RegInstruction(op, n, targetRegister, cg),
-             _kind(IsRIE),
              _instructionFormat(RIE_RI8),
              _branchDestination(branchDestination),
              _branchCondition(branchCondition),
@@ -3225,7 +3255,6 @@ class S390RIEInstruction : public TR::S390RegInstruction
                          TR::Instruction * precedingInstruction,
                          TR::CodeGenerator * cg)
            : S390RegInstruction(op, n, targetRegister, precedingInstruction, cg),
-              _kind(IsRIE),
               _instructionFormat(RIE_RI8),
              _branchDestination(branchDestination),
              _branchCondition(branchCondition),
@@ -3245,7 +3274,6 @@ class S390RIEInstruction : public TR::S390RegInstruction
                          int8_t sourceImmediate,
                          TR::CodeGenerator * cg)
            : S390RegInstruction(op, n, targetRegister, cg),
-             _kind(IsRIE),
              _instructionFormat(RIE_IMM),
              _extendedHighWordOpCode(TR::InstOpCode::BAD),
              _branchDestination(0),
@@ -3282,7 +3310,6 @@ class S390RIEInstruction : public TR::S390RegInstruction
                          TR::Instruction * precedingInstruction,
                          TR::CodeGenerator * cg)
            : S390RegInstruction(op, n, targetRegister, precedingInstruction, cg),
-             _kind(IsRIE),
              _instructionFormat(RIE_IMM),
              _extendedHighWordOpCode(TR::InstOpCode::BAD),
              _branchDestination(0),
@@ -3310,7 +3337,6 @@ class S390RIEInstruction : public TR::S390RegInstruction
                          TR::InstOpCode::S390BranchCondition branchCondition,
                          TR::CodeGenerator * cg)
            : S390RegInstruction(op, n, targetRegister, cg),
-              _kind(IsRIE),
               _instructionFormat(RIE_RI16A),
              _branchDestination(0),
              _branchCondition(branchCondition),
@@ -3330,7 +3356,6 @@ class S390RIEInstruction : public TR::S390RegInstruction
                          TR::Instruction * precedingInstruction,
                          TR::CodeGenerator * cg)
            : S390RegInstruction(op, n, targetRegister, precedingInstruction, cg),
-              _kind(IsRIE),
               _instructionFormat(RIE_RI16A),
              _branchDestination(0),
              _branchCondition(branchCondition),
@@ -3353,7 +3378,6 @@ class S390RIEInstruction : public TR::S390RegInstruction
                          TR::Instruction * precedingInstruction,
                          TR::CodeGenerator * cg)
       : S390RegInstruction(op, n, targetRegister, precedingInstruction, cg),
-        _kind(IsRIE),
         _instructionFormat(RIE_RRI16),
         _extendedHighWordOpCode(TR::InstOpCode::BAD),
         _branchDestination(0),
@@ -3374,7 +3398,6 @@ class S390RIEInstruction : public TR::S390RegInstruction
                          int16_t sourceImmediate,
                          TR::CodeGenerator * cg)
       : S390RegInstruction(op, n, targetRegister, cg),
-        _kind(IsRIE),
         _instructionFormat(RIE_RRI16),
         _extendedHighWordOpCode(TR::InstOpCode::BAD),
         _branchDestination(0),
@@ -3593,7 +3616,6 @@ class S390RISInstruction : public TR::S390RIInstruction
    {
    TR::MemoryReference * _branchDestination;
    TR::InstOpCode::S390BranchCondition _branchCondition;
-   Kind _kind;
 
    public:
 
@@ -3606,7 +3628,6 @@ class S390RISInstruction : public TR::S390RIInstruction
                          TR::InstOpCode::S390BranchCondition branchCondition,
                          TR::CodeGenerator *cg)
            : S390RIInstruction(op, n, targetRegister, sourceImmediate, cg),
-             _kind(IsRIS),
              _branchDestination(branchDestination),
              _branchCondition(branchCondition)
       {
@@ -3623,7 +3644,6 @@ class S390RISInstruction : public TR::S390RIInstruction
                          TR::Instruction * precedingInstruction,
                          TR::CodeGenerator *cg)
            : S390RIInstruction(op, n, targetRegister, sourceImmediate, precedingInstruction, cg),
-             _kind(IsRIS),
              _branchDestination(branchDestination),
              _branchCondition(branchCondition)
       {
@@ -3798,7 +3818,6 @@ class S390MemInstruction : public TR::Instruction
 class S390SIInstruction : public TR::S390MemInstruction
    {
    uint8_t _sourceImmediate;
-   Kind     _kind;
 
    public:
 
@@ -3806,7 +3825,7 @@ class S390SIInstruction : public TR::S390MemInstruction
    S390SIInstruction(TR::InstOpCode::Mnemonic op, TR::Node * n, TR::MemoryReference *mf,
                         uint8_t     imm,
                         TR::CodeGenerator *cg)
-           : S390MemInstruction(op, n, mf, cg, false), _sourceImmediate(imm), _kind(IsSI)
+           : S390MemInstruction(op, n, mf, cg, false), _sourceImmediate(imm)
       {
       useSourceMemoryReference(mf); // need to call this *after* S390SIInstruction constructor
       }
@@ -3815,14 +3834,13 @@ class S390SIInstruction : public TR::S390MemInstruction
                         uint8_t       imm,
                         TR::Instruction *precedingInstruction,
                         TR::CodeGenerator *cg)
-           : S390MemInstruction(op, n, mf, precedingInstruction, cg, false), _sourceImmediate(imm), _kind(IsSI)
+           : S390MemInstruction(op, n, mf, precedingInstruction, cg, false), _sourceImmediate(imm)
       {
       useSourceMemoryReference(mf);
       };
 
    virtual char *description() { return "S390SIInstruction"; }
-   virtual Kind getKind()                   { return _kind; }
-   virtual void setKind(Kind kind)          { _kind = kind; }
+   virtual Kind getKind()                   { return IsSI; }
 
    uint8_t getSourceImmediate() { return _sourceImmediate; }
    uint8_t setSourceImmediate(uint8_t si) { return _sourceImmediate = si; }
@@ -4490,16 +4508,13 @@ class S390SSEInstruction : public TR::S390MemMemInstruction
 ////////////////////////////////////////////////////////////////////////////////
 class S390RXInstruction : public TR::S390RegInstruction
    {
-   uint32_t _constForMRField;
-   Kind _kind;
-
    public:
 
    S390RXInstruction(TR::InstOpCode::Mnemonic          op, TR::Node * n,
                         TR::Register            *treg,
                         TR::MemoryReference *mf,
                         TR::CodeGenerator       *cg)
-      : S390RegInstruction(op, n, treg, cg), _kind(IsRX)
+      : S390RegInstruction(op, n, treg, cg)
       {
       useSourceMemoryReference(mf);
       setupThrowsImplicitNullPointerException(n,mf);
@@ -4512,7 +4527,7 @@ class S390RXInstruction : public TR::S390RegInstruction
                         TR::MemoryReference *mf,
                         TR::Instruction         *precedingInstruction,
                         TR::CodeGenerator       *cg)
-      : S390RegInstruction(op, n, treg, precedingInstruction, cg), _kind(IsRX)
+      : S390RegInstruction(op, n, treg, precedingInstruction, cg)
       {
       useSourceMemoryReference(mf);
       setupThrowsImplicitNullPointerException(n,mf);
@@ -4524,7 +4539,7 @@ class S390RXInstruction : public TR::S390RegInstruction
                         TR::RegisterPair        *regp,
                         TR::MemoryReference *mf,
                         TR::CodeGenerator       *cg)
-      : S390RegInstruction(op, n, regp, cg), _kind(IsRX)
+      : S390RegInstruction(op, n, regp, cg)
       {
       useSourceMemoryReference(mf);
       setupThrowsImplicitNullPointerException(n,mf);
@@ -4537,38 +4552,16 @@ class S390RXInstruction : public TR::S390RegInstruction
                         TR::MemoryReference *mf,
                         TR::Instruction         *precedingInstruction,
                         TR::CodeGenerator       *cg)
-      : S390RegInstruction(op, n, regp, precedingInstruction, cg), _kind(IsRX)
+      : S390RegInstruction(op, n, regp, precedingInstruction, cg)
       {
       useSourceMemoryReference(mf);
       setupThrowsImplicitNullPointerException(n,mf);
       if (mf->getUnresolvedSnippet() != NULL)
          (mf->getUnresolvedSnippet())->setDataReferenceInstruction(this);
-      }
-
-   S390RXInstruction(TR::InstOpCode::Mnemonic          op, TR::Node * n,
-                        TR::Register            *treg,
-                        uint32_t                constMR,
-                        TR::CodeGenerator       *cg)
-      : S390RegInstruction(op, n, treg, cg), _kind(IsRX),
-        _constForMRField(constMR)
-      {
-      }
-
-   S390RXInstruction(TR::InstOpCode::Mnemonic          op, TR::Node * n,
-                        TR::Register            *treg,
-                        uint32_t                constMR,
-                        TR::Instruction         *precedingInstruction,
-                        TR::CodeGenerator       *cg)
-      : S390RegInstruction(op, n, treg, precedingInstruction, cg), _kind(IsRX),
-        _constForMRField(constMR)
-      {
       }
 
    virtual char *description() { return "S390RXInstruction"; }
-   virtual Kind getKind() { return _kind; }
-   virtual void setKind(Kind kind) { _kind = kind; }
-
-   uint32_t getConstForMRField() {return _constForMRField;}
+   virtual Kind getKind() { return IsRX; }
 
    virtual TR::MemoryReference *getMemoryReference() { return (_sourceMemSize!=0) ? (sourceMemBase())[0] : NULL;}
 
@@ -4660,23 +4653,6 @@ class S390RXYInstruction : public TR::S390RXInstruction
                          TR::Instruction         *precedingInstruction,
                          TR::CodeGenerator       *cg)
       : S390RXInstruction(op, n, regp, mf, precedingInstruction, cg)
-      {
-      }
-
-   S390RXYInstruction(TR::InstOpCode::Mnemonic          op, TR::Node * n,
-                         TR::Register            *treg,
-                         uint32_t                constMR,
-                         TR::CodeGenerator       *cg)
-      : S390RXInstruction(op, n, treg, constMR, cg)
-      {
-      }
-
-   S390RXYInstruction(TR::InstOpCode::Mnemonic          op, TR::Node * n,
-                         TR::Register            *treg,
-                         uint32_t                constMR,
-                         TR::Instruction         *precedingInstruction,
-                         TR::CodeGenerator       *cg)
-      : S390RXInstruction(op, n, treg, constMR, precedingInstruction, cg)
       {
       }
 
@@ -5725,9 +5701,6 @@ class S390VRRiInstruction: public S390VRRInstruction
  */
 class S390VStorageInstruction: public S390VInstruction
    {
-   private:
-   uint16_t _displacement2;     // D2 field, 12bit long
-
    protected:
 
    uint8_t  _maskField;         // VStorage instructions have at most 1 mask at bit 32-35
@@ -5741,7 +5714,7 @@ class S390VStorageInstruction: public S390VInstruction
                          TR::Register             * sourceReg,   /* VRF or GPR */
                          TR::MemoryReference      * mr,
                          uint8_t                  mask)          /* 4 bits  */
-   : S390VInstruction(cg, op, n, targetReg), _displacement2(0), _maskField(mask)
+   : S390VInstruction(cg, op, n, targetReg), _maskField(mask)
       {
       if (sourceReg)
          {
@@ -5765,7 +5738,7 @@ class S390VStorageInstruction: public S390VInstruction
                          TR::MemoryReference        * mr,
                          uint8_t                    mask,                    /* 4 bits  */
                          TR::Instruction     * precedingInstruction)
-   : S390VInstruction(cg, op, n, targetReg, precedingInstruction), _displacement2(0), _maskField(mask)
+   : S390VInstruction(cg, op, n, targetReg, precedingInstruction), _maskField(mask)
       {
       if (sourceReg)
          useSourceRegister(sourceReg);
@@ -5788,7 +5761,6 @@ class S390VStorageInstruction: public S390VInstruction
                          TR::InstOpCode::Mnemonic op,
                          TR::Node                 * n)
    : S390VInstruction(cg, op, n),
-     _displacement2(0),
      _maskField(0)
       {
       }
@@ -5797,7 +5769,6 @@ class S390VStorageInstruction: public S390VInstruction
    virtual int32_t estimateBinaryLength(int32_t currentEstimate);
 
    public:
-   virtual uint16_t getConstForMRField() {return _displacement2; }
    virtual TR::MemoryReference* getMemoryReference()  { return (_sourceMemSize!=0) ? (sourceMemBase())[0] : NULL; }
    virtual char *description() { return "S390VStorageInstruction"; }
    virtual Kind getKind() = 0;

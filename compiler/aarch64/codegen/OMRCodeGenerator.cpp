@@ -30,6 +30,8 @@
 #include "codegen/RegisterConstants.hpp"
 #include "codegen/RegisterIterator.hpp"
 #include "codegen/TreeEvaluator.hpp"
+#include "il/Node.hpp"
+#include "il/Node_inlines.hpp"
 
 OMR::ARM64::CodeGenerator::CodeGenerator() :
       OMR::CodeGenerator(),
@@ -46,7 +48,8 @@ OMR::ARM64::CodeGenerator::CodeGenerator() :
 
    _linkageProperties = &self()->getLinkage()->getProperties();
 
-   self()->setMethodMetaDataRegister(self()->machine()->getARM64RealRegister(_linkageProperties->getMethodMetaDataRegister()));
+   self()->setStackPointerRegister(self()->machine()->getRealRegister(_linkageProperties->getStackPointerRegister()));
+   self()->setMethodMetaDataRegister(self()->machine()->getRealRegister(_linkageProperties->getMethodMetaDataRegister()));
 
    // Tactical GRA settings
    //
@@ -381,7 +384,7 @@ int32_t OMR::ARM64::CodeGenerator::getMaximumNumbersOfAssignableFPRs()
 
 bool OMR::ARM64::CodeGenerator::isGlobalRegisterAvailable(TR_GlobalRegisterNumber i, TR::DataType dt)
    {
-   return self()->machine()->getARM64RealRegister((TR::RealRegister::RegNum)self()->getGlobalRegister(i))->getState() == TR::RealRegister::Free;
+   return self()->machine()->getRealRegister((TR::RealRegister::RegNum)self()->getGlobalRegister(i))->getState() == TR::RealRegister::Free;
    }
 
 TR_GlobalRegisterNumber OMR::ARM64::CodeGenerator::getLinkageGlobalRegisterNumber(int8_t linkageRegisterIndex, TR::DataType type)

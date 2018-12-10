@@ -496,7 +496,6 @@ typedef enum {
 #define PREFERRED_HEAP_BASE 0x0
 #endif
 
-#if defined(OMR_GC_COMPRESSED_POINTERS)
 #define SUBALLOCATOR_INITIAL_SIZE (200*1024*1024)
 #define SUBALLOCATOR_COMMIT_SIZE (50*1024*1024)
 #if defined(AIXPPC)
@@ -505,7 +504,6 @@ typedef enum {
 #else /* defined(AIXPPC) */
 #define SUBALLOCATOR_ALIGNMENT (8*1024*1024)
 #endif /* defined(AIXPPC) */
-#endif /* defined(OMR_GC_COMPRESSED_POINTERS) */
 
 #if defined(OMR_GC_REALTIME)
 #define METRONOME_DEFAULT_HRT_PERIOD_MICRO 1000 /* This gives vanilla linux a chance to use the HRT */

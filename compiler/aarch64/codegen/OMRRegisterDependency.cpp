@@ -268,7 +268,7 @@ void TR_ARM64RegisterDependencyGroup::assignRegisters(
          {
          virtReg = _dependencies[i].getRegister();
          dependentRegNum = _dependencies[i].getRealRegister();
-         dependentRealReg = machine->getARM64RealRegister(dependentRegNum);
+         dependentRealReg = machine->getRealRegister(dependentRegNum);
 
          if (dependentRegNum != TR::RealRegister::NoReg &&
              dependentRegNum != TR::RealRegister::SpilledReg &&
@@ -293,7 +293,7 @@ void TR_ARM64RegisterDependencyGroup::assignRegisters(
             assignedRegister = toRealRegister(virtReg->getAssignedRealRegister());
             }
          dependentRegNum = _dependencies[i].getRealRegister();
-         dependentRealReg = machine->getARM64RealRegister(dependentRegNum);
+         dependentRealReg = machine->getRealRegister(dependentRegNum);
          if (dependentRegNum != TR::RealRegister::NoReg &&
              dependentRegNum != TR::RealRegister::SpilledReg &&
              dependentRealReg != assignedRegister)

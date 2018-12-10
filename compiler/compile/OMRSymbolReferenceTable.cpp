@@ -349,6 +349,18 @@ OMR::SymbolReferenceTable::findOrCreateOSRReturnAddressSymbolRef()
    return element(osrReturnAddressSymbol);
    }
 
+TR::SymbolReference *
+OMR::SymbolReferenceTable::findOrCreateInduceOSRSymbolRef(TR_RuntimeHelper induceOSRHelper)
+   {
+   TR_ASSERT(induceOSRHelper == TR_induceOSRAtCurrentPC || induceOSRHelper == TR_induceOSRAtCurrentPCAndRecompile, "unexpected helper index when creating induce OSR helper symbol reference");
+   TR::SymbolReference *induceOSRSymRef = findOrCreateRuntimeHelper(induceOSRHelper,
+                                                                    true /* canGCandReturn */,
+                                                                    true /* canGCandExcept */,
+                                                                    true /* preservesAllRegisters */);
+   // treat jitInduceOSR like an interpreted call so that each platform's codegen generates a snippet for it
+   induceOSRSymRef->getSymbol()->getMethodSymbol()->setInterpreted();
+   return induceOSRSymRef;
+   }
 
 TR::SymbolReference *
 OMR::SymbolReferenceTable::findOrCreateArrayletShadowSymbolRef(TR::DataType type)
@@ -1056,8 +1068,6 @@ OMR::SymbolReferenceTable::findOrCreateReportMethodEnterSymbolRef(TR::ResolvedMe
    {
    return findOrCreateRuntimeHelper(TR_reportMethodEnter, true, false, true);
    }
-
-
 
 bool OMR::SymbolReferenceTable::shouldMarkBlockAsCold(TR_ResolvedMethod * owningMethod, bool isUnresolvedInCP)
    {
@@ -1926,4 +1936,30 @@ TR_BitVector *OMR::SymbolReferenceTable::getSharedAliases(TR::SymbolReference *s
       }
 
    return NULL;
+   }
+
+TR::SymbolReference *
+OMR::SymbolReferenceTable::findOrCreatePotentialOSRPointHelperSymbolRef()
+   {
+   if (!element(potentialOSRPointHelperSymbol))
+      {
+      TR::MethodSymbol * sym = TR::MethodSymbol::create(trHeapMemory(), TR_None);
+      sym->setHelper();
+      TR::SymbolReference* symRef = new (trHeapMemory()) TR::SymbolReference(self(), potentialOSRPointHelperSymbol, sym);
+      element(potentialOSRPointHelperSymbol) = symRef;
+      }
+   return element(potentialOSRPointHelperSymbol);
+   }
+
+TR::SymbolReference *
+OMR::SymbolReferenceTable::findOrCreateOSRFearPointHelperSymbolRef()
+   {
+   if (!element(osrFearPointHelperSymbol))
+      {
+      TR::MethodSymbol * sym = TR::MethodSymbol::create(trHeapMemory(), TR_None);
+      sym->setHelper();
+      TR::SymbolReference* symRef = new (trHeapMemory()) TR::SymbolReference(self(), osrFearPointHelperSymbol, sym);
+      element(osrFearPointHelperSymbol) = symRef;
+      }
+   return element(osrFearPointHelperSymbol);
    }

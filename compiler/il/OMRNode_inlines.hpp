@@ -382,6 +382,20 @@ OMR::Node::setUseDefIndex(uint16_t udi)
  * UnionBase functions
  */
 
+int32_t
+OMR::Node::getOSRInductionOffset()
+   {
+   TR_ASSERT(self()->isPotentialOSRPointHelperCall(), "TR::Node::getOSRInductionOffset: used for a non potentialOSRPointHelper call node n%dn %p", self()->getGlobalIndex(), self());
+   return (int32_t)_unionBase._osrInductionOffset;
+   }
+
+int32_t
+OMR::Node::setOSRInductionOffset(int32_t offset)
+   {
+   TR_ASSERT(self()->isPotentialOSRPointHelperCall(), "TR::Node::setOSRInductionOffset: used for a non potentialOSRPointHelper call node n%dn %p", self()->getGlobalIndex(), self());
+   return (int32_t)(_unionBase._osrInductionOffset = (int64_t)offset);
+   }
+
 int64_t
 OMR::Node::getConstValue()
    {

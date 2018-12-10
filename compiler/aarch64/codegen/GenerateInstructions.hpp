@@ -110,22 +110,6 @@ TR::Instruction *generateImmInstruction(
                    TR::Instruction *preced = NULL);
 
 /*
- * @brief Generates dep instruction
- * @param[in] cg : CodeGenerator
- * @param[in] op : instruction opcode
- * @param[in] node : node
- * @param[in] cond : register dependency condition
- * @param[in] preced : preceding instruction
- * @return generated instruction
- */
-TR::Instruction *generateDepInstruction(
-                   TR::CodeGenerator *cg,
-                   TR::InstOpCode::Mnemonic op,
-                   TR::Node *node,
-                   TR::RegisterDependencyConditions *cond,
-                   TR::Instruction *preced = NULL);
-
-/*
  * @brief Generates label instruction
  * @param[in] cg : CodeGenerator
  * @param[in] op : instruction opcode
@@ -151,7 +135,7 @@ TR::Instruction *generateLabelInstruction(
  * @param[in] preced : preceding instruction
  * @return generated instruction
  */
-TR::Instruction *generateDepLabelInstruction(
+TR::Instruction *generateLabelInstruction(
                    TR::CodeGenerator *cg,
                    TR::InstOpCode::Mnemonic op,
                    TR::Node *node,
@@ -188,7 +172,7 @@ TR::Instruction *generateConditionalBranchInstruction(
  * @param[in] preced : preceding instruction
  * @return generated instruction
  */
-TR::Instruction *generateDepConditionalBranchInstruction(
+TR::Instruction *generateConditionalBranchInstruction(
                    TR::CodeGenerator *cg,
                    TR::InstOpCode::Mnemonic op,
                    TR::Node *node,
@@ -507,6 +491,7 @@ TR::Instruction *generateLogicalShiftLeftImmInstruction(
  * @param[in] node : node
  * @param[in] sreg : source register
  * @param[in] imm : immediate value
+ * @param[in] is64bit : true when it is 64-bit operation
  * @param[in] preced : preceding instruction
  * @return generated instruction
  */
@@ -515,6 +500,7 @@ TR::Instruction *generateCompareImmInstruction(
                   TR::Node *node,
                   TR::Register *sreg,
                   int32_t imm,
+                  bool is64bit = false,
                   TR::Instruction *preced = NULL);
 
 /*
@@ -523,6 +509,7 @@ TR::Instruction *generateCompareImmInstruction(
  * @param[in] node : node
  * @param[in] s1reg : source register 1
  * @param[in] s2reg : source register 2
+ * @param[in] is64bit : true when it is 64-bit operation
  * @param[in] preced : preceding instruction
  * @return generated instruction
  */
@@ -531,6 +518,7 @@ TR::Instruction *generateCompareInstruction(
                   TR::Node *node,
                   TR::Register *s1reg,
                   TR::Register *s2reg,
+                  bool is64bit = false,
                   TR::Instruction *preced = NULL);
 
 /*
@@ -539,6 +527,7 @@ TR::Instruction *generateCompareInstruction(
  * @param[in] node : node
  * @param[in] sreg : source register
  * @param[in] imm : immediate value
+ * @param[in] is64bit : true when it is 64-bit operation
  * @param[in] preced : preceding instruction
  * @return generated instruction
  */
@@ -547,6 +536,7 @@ TR::Instruction *generateTestImmInstruction(
                   TR::Node *node,
                   TR::Register *sreg,
                   int32_t imm,
+                  bool is64bit = false,
                   TR::Instruction *preced = NULL);
 
 /*
@@ -555,6 +545,7 @@ TR::Instruction *generateTestImmInstruction(
  * @param[in] node : node
  * @param[in] s1reg : source register 1
  * @param[in] s2reg : source register 2
+ * @param[in] is64bit : true when it is 64-bit operation
  * @param[in] preced : preceding instruction
  * @return generated instruction
  */
@@ -563,6 +554,7 @@ TR::Instruction *generateTestInstruction(
                   TR::Node *node,
                   TR::Register *s1reg,
                   TR::Register *s2reg,
+                  bool is64bit = false,
                   TR::Instruction *preced = NULL);
 
 /*
@@ -587,6 +579,7 @@ TR::Instruction *generateMovInstruction(
  * @param[in] node : node
  * @param[in] treg : target register
  * @param[in] sreg : source register
+ * @param[in] is64bit : true when it is 64-bit operation
  * @param[in] preced : preceding instruction
  * @return generated instruction
  */
@@ -595,6 +588,7 @@ TR::Instruction *generateNegInstruction(
                   TR::Node *node,
                   TR::Register *treg,
                   TR::Register *sreg,
+                  bool is64bit = false,
                   TR::Instruction *preced = NULL);
 
 /*
@@ -613,6 +607,22 @@ TR::Instruction *generateMulInstruction(
                   TR::Register *treg,
                   TR::Register *s1reg,
                   TR::Register *s2reg,
+                  TR::Instruction *preced = NULL);
+
+/*
+ * @brief Generates CSET instruction
+ * @param[in] cg : CodeGenerator
+ * @param[in] node : node
+ * @param[in] treg : target register
+ * @param[in] cc : branch condition code
+ * @param[in] preced : preceding instruction
+ * @return generated instruction
+ */
+TR::Instruction *generateCSetInstruction(
+                  TR::CodeGenerator *cg,
+                  TR::Node *node,
+                  TR::Register *treg,
+                  TR::ARM64ConditionCode cc,
                   TR::Instruction *preced = NULL);
 
 #endif

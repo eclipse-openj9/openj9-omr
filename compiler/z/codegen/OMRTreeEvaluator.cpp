@@ -13291,6 +13291,300 @@ OMR::Z::TreeEvaluator::arraysetEvaluator(TR::Node * node, TR::CodeGenerator * cg
    return NULL;
    }
 
+void
+OMR::Z::TreeEvaluator::generateLoadAndStoreForArrayCopy(TR::Node *node, TR::CodeGenerator *cg, TR::MemoryReference *srcMemRef, TR::MemoryReference *dstMemRef, TR_S390ScratchRegisterManager *srm, TR::DataType elenmentType, bool needsGuardedLoad)
+   {
+   TR::Register *workReg = srm->findOrCreateScratchRegister();
+   switch (elenmentType)
+      {
+      case TR::Int8:
+         generateRXInstruction(cg, TR::InstOpCode::IC, node, workReg, srcMemRef);
+         generateRXInstruction(cg, TR::InstOpCode::STC, node, workReg, dstMemRef);
+         break;
+      case TR::Int16:
+         generateRXInstruction(cg, TR::InstOpCode::LH, node, workReg, srcMemRef);
+         generateRXInstruction(cg, TR::InstOpCode::STH, node, workReg, dstMemRef);
+         break;
+      case TR::Int32:
+      case TR::Float:
+         generateRXInstruction(cg, TR::InstOpCode::L, node, workReg, srcMemRef);
+         generateRXInstruction(cg, TR::InstOpCode::ST, node, workReg, dstMemRef);
+         break;
+      case TR::Int64:
+      case TR::Double:
+         if (TR::Compiler->target.is64Bit() || cg->use64BitRegsOn32Bit())
+            {
+            generateRXInstruction(cg, TR::InstOpCode::LG, node, workReg, srcMemRef);
+            generateRXInstruction(cg, TR::InstOpCode::STG, node, workReg, dstMemRef);
+            }
+         else
+            {
+            TR_ASSERT_FATAL(0, "For long and double values we should be using 64-bit register");
+            }
+         break;
+      case TR::Address:
+         if (TR::Compiler->target.is64Bit() && !cg->comp()->useCompressedPointers())
+            {
+            if (needsGuardedLoad)
+               {
+               generateRXYInstruction(cg, TR::InstOpCode::LGG, node, workReg, srcMemRef);
+               }
+            else
+               {
+               generateRXInstruction(cg, TR::InstOpCode::LG, node, workReg, srcMemRef);
+               }
+            generateRXInstruction(cg, TR::InstOpCode::STG, node, workReg, dstMemRef);
+            }
+         else
+            {
+            if (needsGuardedLoad)
+               {
+               int32_t shiftAmount = TR::Compiler->om.compressedReferenceShift();
+               generateRXYInstruction(cg, TR::InstOpCode::LLGFSG, node, workReg, srcMemRef);
+               if (shiftAmount != 0)
+                  {
+                  generateRSInstruction(cg, TR::InstOpCode::SRLG, node, workReg, workReg, shiftAmount);
+                  }
+               }
+            else
+               {
+               generateRXInstruction(cg, TR::InstOpCode::L, node, workReg, srcMemRef);
+               }
+            generateRXInstruction(cg, TR::InstOpCode::ST, node, workReg, dstMemRef);
+            }
+         break;
+      default:
+         TR_ASSERT_FATAL(false, "elementType of invalid type\n");
+         break;
+      }
+   srm->reclaimScratchRegister(workReg);
+   }
+
+
+TR::RegisterDependencyConditions*
+OMR::Z::TreeEvaluator::generateMemToMemElementCopy(TR::Node *node, TR::CodeGenerator *cg, TR::Register *byteSrcReg, TR::Register *byteDstReg, TR::Register *byteLenReg, TR_S390ScratchRegisterManager *srm, bool isForward, bool needsGuardedLoad, bool genStartICFLabel)
+   {
+   // This function uses a BRXHG/BRXLG instruction for updating index and compare and branch which requires register pair.
+   // Scratch Register Manager does not provide any means for use to allocate EvenOdd register pair. So this function
+   // Allocates those registers separately and adds it to register dependency condition and return that which caller needs to combine with it's dependency conditions
+   TR::Register *incRegister = cg->allocateRegister();
+   TR::Register *endReg = cg->allocateRegister();
+   TR::RegisterPair *brxReg = cg->allocateConsecutiveRegisterPair(endReg, incRegister);
+   TR::RegisterDependencyConditions *deps = generateRegisterDependencyConditions(0, 3, cg);
+   deps->addPostCondition(incRegister, TR::RealRegister::LegalEvenOfPair);
+   deps->addPostCondition(endReg, TR::RealRegister::LegalOddOfPair);
+   deps->addPostCondition(brxReg, TR::RealRegister::EvenOddPair);
+   TR::DataType elementType = node->getArrayCopyElementType();
+   int32_t elementSize = (elementType == TR::Address && TR::Compiler->target.is64Bit() && cg->comp()->useCompressedPointers()) ? 4 : TR::DataType::getSize(elementType); 
+   TR::Instruction *cursor = NULL;
+   TR_Debug *debug = cg->getDebug();
+#define iComment(str) if (debug) debug->addInstructionComment(cursor, (str));
+
+   if (isForward)
+      {
+      cursor = generateRIInstruction(cg, TR::InstOpCode::getLoadHalfWordImmOpCode(), node, incRegister, elementSize); 
+      iComment("Load increment Value");
+      cursor = generateRRInstruction(cg, TR::InstOpCode::getLoadRegOpCode(), node, endReg, byteDstReg);
+      cursor = generateRIInstruction(cg, TR::InstOpCode::getAddHalfWordImmOpCode(), node, endReg, -1 * elementSize);
+      cursor = generateRRInstruction(cg, TR::InstOpCode::getAddRegWidenOpCode(), node, endReg, byteLenReg); 
+      iComment("Pointer to last element in destination");
+      TR::MemoryReference *srcMemRef = generateS390MemoryReference(byteSrcReg, 0, cg);
+      TR::MemoryReference *dstMemRef = generateS390MemoryReference(byteDstReg, 0, cg);
+      TR::LabelSymbol *topOfLoop = generateLabelSymbol(cg);
+      cursor = generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, topOfLoop); 
+      iComment("topOfLoop");
+      // needsGuardedLoad means we are generating MemToMemCopy sequence in OOL where ICF starts here
+      if (needsGuardedLoad)
+         topOfLoop->setStartInternalControlFlow();
+      TR::TreeEvaluator::generateLoadAndStoreForArrayCopy(node, cg, srcMemRef, dstMemRef, srm, elementType, needsGuardedLoad);
+      cursor = generateRXInstruction(cg, TR::InstOpCode::LA, node, byteSrcReg, generateS390MemoryReference(byteSrcReg, elementSize, cg));
+      cursor = generateS390BranchInstruction(cg, TR::InstOpCode::getBranchRelIndexEqOrLowOpCode(), node, brxReg, byteDstReg, topOfLoop); 
+      iComment("byteDst+=elementSize ; if (byteDst <= lastElement) GoTo topOfLoop");
+      }
+   else
+      {
+      cursor = generateRIInstruction(cg, TR::InstOpCode::getLoadHalfWordImmOpCode(), node, incRegister, -1 * elementSize); 
+      iComment("Load increment Value");
+      cursor = generateRRInstruction(cg, TR::InstOpCode::getLoadRegOpCode(), node, endReg, byteDstReg);
+      cursor = generateRRInstruction(cg, TR::InstOpCode::getAddRegOpCode(), node, endReg, incRegister); 
+      iComment("exitCond = Pointer to one element before last element to copy in destination");
+      cursor = generateRRInstruction(cg, TR::InstOpCode::getAddRegWidenOpCode(), node, byteLenReg, incRegister);
+      cursor = generateRRInstruction(cg, TR::InstOpCode::getAddRegOpCode(), node, byteSrcReg, byteLenReg);
+      cursor = generateRRInstruction(cg, TR::InstOpCode::getAddRegOpCode(), node, byteDstReg, byteLenReg);
+      TR::MemoryReference *srcMemRef = generateS390MemoryReference(byteSrcReg, 0, cg);
+      TR::MemoryReference *dstMemRef = generateS390MemoryReference(byteDstReg, 0, cg);
+      TR::LabelSymbol *topOfLoop = generateLabelSymbol(cg);
+      cursor = generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, topOfLoop);
+      // needsGuardedLoad means we are generating MemToMemCopy sequence in OOL where ICF starts here
+      // For backward array copy, we need to set start of ICF in case node is known to be of backward direction and number of bytes are constant
+      if (needsGuardedLoad || genStartICFLabel)
+         topOfLoop->setStartInternalControlFlow();
+      TR::TreeEvaluator::generateLoadAndStoreForArrayCopy(node, cg, srcMemRef, dstMemRef, srm, elementType, needsGuardedLoad);
+      cursor = generateRXYInstruction(cg, TR::InstOpCode::LAY, node, byteSrcReg, 
+         generateS390MemoryReference(byteSrcReg, -1 * elementSize, cg));
+      cursor = generateS390BranchInstruction(cg, TR::InstOpCode::getBranchRelIndexHighOpCode(), node, brxReg, byteDstReg, topOfLoop); 
+      iComment("byteDst-=elementSize; if (byteDst > exitCond) GoTo topOfLoop");
+      }
+   return deps;
+#undef iComment
+   }
+
+void 
+OMR::Z::TreeEvaluator::genLoopForwardArrayCopy(TR::Node *node, TR::CodeGenerator *cg, TR::Register *byteSrcReg, TR::Register *byteDstReg, TR::Register *loopIterReg, bool isConstantLength)
+   {
+   TR::LabelSymbol *processingLoop = generateLabelSymbol(cg);
+   generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, processingLoop);
+   generateSS1Instruction(cg, TR::InstOpCode::MVC, node, 255,
+      generateS390MemoryReference(byteDstReg, 0, cg),
+      generateS390MemoryReference(byteSrcReg, 0, cg)); 
+   generateRXInstruction(cg, TR::InstOpCode::LA, node, byteSrcReg, generateS390MemoryReference(byteSrcReg, 256, cg));
+   generateRXInstruction(cg, TR::InstOpCode::LA, node, byteDstReg, generateS390MemoryReference(byteDstReg, 256, cg));
+   generateS390BranchInstruction(cg, TR::InstOpCode::BRCT, node, loopIterReg, processingLoop);
+   // If it is known at compile time that this is forward array copy and also length is known at compile time then internal control flow starts here.
+   if (node->isForwardArrayCopy() && isConstantLength)
+      processingLoop->setStartInternalControlFlow();
+   }
+
+
+void
+OMR::Z::TreeEvaluator::forwardArrayCopySequenceGenerator(TR::Node *node, TR::CodeGenerator *cg, TR::Register *byteSrcReg, TR::Register *byteDstReg, TR::Register *byteLenReg, TR::Node *byteLenNode, TR_S390ScratchRegisterManager *srm, TR::LabelSymbol *mergeLabel)
+   {
+#ifdef J9_PROJECT_SPECIFIC
+   bool mustGenerateOOLGuardedLoadPath = TR::Compiler->om.shouldGenerateReadBarriersForFieldLoads() &&
+                                         node->getArrayCopyElementType() == TR::Address;
+   if (mustGenerateOOLGuardedLoadPath)
+      {
+      // It might be possible that we have constant byte lenght load and it is forward array copy. 
+      // In this case if we need to do guarded Load then need to evaluate byteLenNode.
+      if (byteLenReg == NULL)
+         byteLenReg = cg->gprClobberEvaluate(byteLenNode);
+      TR::TreeEvaluator::genGuardedLoadOOL(node, cg, byteSrcReg, byteDstReg, byteLenReg, mergeLabel, srm, true);
+      }
+#endif
+   if (byteLenNode->getOpCode().isLoadConst())
+      {
+      // TODO: IMPLEMENT MVCL VERSION OF FORWARD ARRAY COPY
+      // If the length is at the THRESHOLD=77825 i.e., 4096*19+1, MVCL becomes a better choice compared to MVC in loop.
+      // In general, MVCL shows performance gain over LOOP with MVCs when the length is
+      // within [4K*i+1, 4K*i+4089], i=19,20,...,4095.
+      // Notice that within the small range [4K*i-7, 4K*i], MVCL is significantly degraded. (3 times slower than normal detected)
+      // In order to use MVCL, we have also to make sure that the use is safe. i.e., src and dst are NOT aliased.
+      int64_t byteLen = byteLenNode->getConst<int64_t>();
+      if (byteLen > 256)
+         {
+         TR::Register *loopIterReg = srm->findOrCreateScratchRegister();
+         int64_t loopIter = byteLenNode->getConst<int64_t>() >> 8;
+         genLoadLongConstant(cg, node, loopIter, loopIterReg);
+         TR::TreeEvaluator::genLoopForwardArrayCopy(node, cg, byteSrcReg, byteDstReg, loopIterReg, true);
+         srm->reclaimScratchRegister(loopIterReg);
+         }
+      // In following cases following MVC instruction should be generated. 
+      // 1. byteLength <= 256
+      // 2. byteLength > 256 && byteLength is not multiple of 256
+      uint8_t residueLength = static_cast<uint8_t>(byteLen & 0xFF);
+      if (byteLen <= 256 || residueLength != 0)
+         generateSS1Instruction(cg, TR::InstOpCode::MVC, node, static_cast<uint8_t>(residueLength-1), 
+            generateS390MemoryReference(byteDstReg, 0, cg),
+            generateS390MemoryReference(byteSrcReg, 0, cg)); 
+      }
+   else
+      {
+      TR::Register *loopIterReg = srm->findOrCreateScratchRegister();
+      generateRIInstruction(cg, TR::InstOpCode::getAddHalfWordImmOpCode(), node, byteLenReg, -1);
+      generateShiftRightImmediate(cg, node, loopIterReg, byteLenReg, 8);
+      TR::LabelSymbol *exrlInstructionLabel = generateLabelSymbol(cg);
+      generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BZ, node, exrlInstructionLabel);
+      TR::TreeEvaluator::genLoopForwardArrayCopy(node, cg, byteSrcReg, byteDstReg, loopIterReg, false);
+      generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BRC, node, exrlInstructionLabel);
+      TR::LabelSymbol *exrlTargetLabel = generateLabelSymbol(cg);
+      generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, exrlTargetLabel);
+      TR::Instruction *residueMVC = generateSS1Instruction(cg, TR::InstOpCode::MVC, node, 0, 
+                                       generateS390MemoryReference(byteDstReg, 0, cg),
+                                       generateS390MemoryReference(byteSrcReg, 0, cg)); 
+      generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, exrlInstructionLabel);
+      if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10) && !cg->comp()->getOption(TR_DisableInlineEXTarget))
+         {
+         generateRILInstruction(cg, TR::InstOpCode::EXRL, node, byteLenReg, exrlTargetLabel);
+         }
+      else
+         {
+         TR::Register *regForResidueMVCTarget = srm->findOrCreateScratchRegister();
+         generateEXDispatch(node, cg, byteLenReg, regForResidueMVCTarget, residueMVC);
+         srm->reclaimScratchRegister(regForResidueMVCTarget);
+         }
+      srm->reclaimScratchRegister(loopIterReg);
+      }
+   }
+
+TR::RegisterDependencyConditions *
+OMR::Z::TreeEvaluator::backwardArrayCopySequenceGenerator(TR::Node *node, TR::CodeGenerator *cg, TR::Register *byteSrcReg, TR::Register *byteDstReg, TR::Register *byteLenReg, TR::Node *byteLenNode, TR_S390ScratchRegisterManager *srm, TR::LabelSymbol *mergeLabel)
+   {
+#ifdef J9_PROJECT_SPECIFIC
+   bool mustGenerateOOLGuardedLoadPath = TR::Compiler->om.shouldGenerateReadBarriersForFieldLoads() &&
+                                         node->getArrayCopyElementType() == TR::Address;
+   if (mustGenerateOOLGuardedLoadPath)
+      {
+      TR::TreeEvaluator::genGuardedLoadOOL(node, cg, byteSrcReg, byteDstReg, byteLenReg, mergeLabel, srm, false);
+      }
+#endif
+   TR_Debug *debug = cg->getDebug();
+#define iComment(str) if (debug) debug->addInstructionComment(cursor, (str));
+   TR::Instruction *cursor = NULL;
+   TR::RegisterDependencyConditions *deps = NULL;
+   bool genStartICFLabel = node->isBackwardArrayCopy() && byteLenNode->getOpCode().isLoadConst();
+   if (!cg->getSupportsVectorRegisters())
+      {
+      deps = TR::TreeEvaluator::generateMemToMemElementCopy(node, cg, byteSrcReg, byteDstReg, byteLenReg, srm, false, false, genStartICFLabel);
+      }
+   else
+      {
+      TR::Register *loopIterReg = srm->findOrCreateScratchRegister();
+      cursor = generateShiftRightImmediate(cg, node, loopIterReg, byteLenReg, 4); 
+      iComment("Calculate loop iterations");
+         
+      TR::LabelSymbol *handleResidueLabel = generateLabelSymbol(cg);
+      if (genStartICFLabel)
+         {
+         TR::LabelSymbol *cFlowRegionStart = generateLabelSymbol(cg);
+         generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionStart);
+         cFlowRegionStart->setStartInternalControlFlow();
+         }
+      cursor = generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BZ, node, handleResidueLabel); 
+      iComment("if length <= 16, jump to handling residue");
+      
+      TR::LabelSymbol *loopLabel = generateLabelSymbol(cg);
+      cursor = generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, loopLabel); 
+      iComment("Vector Load and Strore Loop");
+      cursor = generateRIInstruction(cg, TR::InstOpCode::getAddHalfWordImmOpCode(), node, byteLenReg, -16);
+      
+      TR::Register *vectorBuffer = srm->findOrCreateScratchRegister(TR_VRF);
+      generateVRXInstruction(cg, TR::InstOpCode::VL , node, vectorBuffer, generateS390MemoryReference(byteSrcReg, byteLenReg, 0, cg));
+      generateVRXInstruction(cg, TR::InstOpCode::VST, node, vectorBuffer, generateS390MemoryReference(byteDstReg, byteLenReg, 0, cg), 0);
+      generateS390BranchInstruction(cg, TR::InstOpCode::BRCT, node, loopIterReg, loopLabel);
+      
+      cursor = generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, handleResidueLabel); 
+      iComment("Handle residue");
+      
+      cursor = generateRIInstruction(cg, TR::InstOpCode::getAddHalfWordImmOpCode(), node, byteLenReg, -1); 
+      iComment("Adjust remaining bytes for vectore load/store length instruction");
+      TR::LabelSymbol *skipResidueLabel = generateLabelSymbol(cg);
+    /** TODO: Exploit constant length in vectorized implementation
+      *  For non vectorized version, we are going to copy bytes as per data type so there is no advantage of exploiting constant length unless we unroll the loop
+      *  Current vectorized implementation for backward array copy uses byteLen as index to copy bytes from source to destination in backward direction.
+      *  So even if length is known at compile time we can use it to avoid generating residue control logic.
+      */
+      generateS390CompareAndBranchInstruction(cg, TR::InstOpCode::getCmpOpCode(), node, byteLenReg, 0, TR::InstOpCode::COND_BL, skipResidueLabel, false);
+      generateVRSbInstruction(cg, TR::InstOpCode::VLL , node, vectorBuffer, byteLenReg, generateS390MemoryReference(byteSrcReg, 0, cg));
+      generateVRSbInstruction(cg, TR::InstOpCode::VSTL, node, vectorBuffer, byteLenReg, generateS390MemoryReference(byteDstReg, 0, cg), 0);
+      generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, skipResidueLabel);
+      srm->reclaimScratchRegister(loopIterReg);
+      srm->reclaimScratchRegister(vectorBuffer);
+      }
+   return deps;
+   #undef iComment
+   }
+
+
 TR::Register*
 OMR::Z::TreeEvaluator::arraycopyEvaluator(TR::Node* node, TR::CodeGenerator* cg)
    {
@@ -13323,9 +13617,9 @@ OMR::Z::TreeEvaluator::primitiveArraycopyEvaluator(TR::Node* node, TR::CodeGener
    TR::Register* byteSrcReg = NULL;
    TR::Register* byteDstReg = NULL;
    TR::Register* byteLenReg = NULL;
-
+   bool isConstantByteLen = byteLenNode->getOpCode().isLoadConst();
    // Check for array copy of zero bytes or negative number of bytes
-   if (byteLenNode->getOpCode().isLoadConst() && byteLenNode->getConst<int64_t>() <= 0)
+   if (isConstantByteLen && byteLenNode->getConst<int64_t>() <= 0)
       {
       cg->evaluate(byteSrcNode);
       cg->evaluate(byteDstNode);
@@ -13339,113 +13633,101 @@ OMR::Z::TreeEvaluator::primitiveArraycopyEvaluator(TR::Node* node, TR::CodeGener
 
    byteSrcReg = cg->gprClobberEvaluate(byteSrcNode);
    byteDstReg = cg->gprClobberEvaluate(byteDstNode);
-
-   bool alreadyEvaluatedByteLenNode = false;
-
-#ifdef J9_PROJECT_SPECIFIC
-   TR::LabelSymbol* mergeLabel;
-   bool mustGenerateOOLGuardedLoadPath = TR::Compiler->om.shouldGenerateReadBarriersForFieldLoads() &&
-                                         node->getArrayCopyElementType() == TR::Address;
-
-   if (mustGenerateOOLGuardedLoadPath)
+   TR::LabelSymbol *mergeLabel = generateLabelSymbol(cg);
+   TR::LabelSymbol *cFlowRegionStart = generateLabelSymbol(cg);
+   TR_S390ScratchRegisterManager *srm = cg->generateScratchRegisterManager(3);
+   TR::RegisterDependencyConditions *deps = NULL;
+   TR_Debug *debug = cg->getDebug();
+   TR::Instruction *cursor = NULL;
+#define iComment(str) if (debug) debug->addInstructionComment(cursor, (str));
+   // If it is variable length load then Internal Control Flow starts where on runtime we check if length of bytes to copy is greater than zero.
+   if (!isConstantByteLen)
       {
-      // The OOL path needs the byte length for the guarded load, compress, and store loop.
-      // However, the main line fast path also needs the byte length. As such, the byteLenNode
-      // must be evaluated outside of the OOL ICF region.
       byteLenReg = cg->gprClobberEvaluate(byteLenNode);
-      alreadyEvaluatedByteLenNode = true;
-
-      mergeLabel = generateLabelSymbol(cg);
-      TR::LabelSymbol* slowPathLabel = generateLabelSymbol(cg);
-
-      TR_ASSERT_FATAL(J9_PRIVATE_FLAGS_CONCURRENT_SCAVENGER_ACTIVE == 0x20000,
-                 "GSCS: The OOL sequence branch is dependant on the flag being 0x20000");
-      TR_ASSERT_FATAL(TR::Compiler->target.is64Bit(),
-                 "GSCS: Guarded Load OOL Path only defined in 64 bit mode");
-      TR::Register *vmReg = cg->getMethodMetaDataRealRegister();
-      TR::MemoryReference *privFlagMR = generateS390MemoryReference(vmReg,
-            TR::Compiler->vm.thisThreadGetConcurrentScavengeActiveByteAddressOffset(cg->comp()), cg);
-      generateSIInstruction(cg, TR::InstOpCode::TM, node, privFlagMR, 0x00000002);
-      generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_CC3, node, slowPathLabel);
-
-      // Generate OOL Slow Path
-      TR_S390OutOfLineCodeSection* outOfLineCodeSection = new (cg->trHeapMemory()) TR_S390OutOfLineCodeSection(slowPathLabel, mergeLabel, cg);
-      cg->getS390OutOfLineCodeSectionList().push_front(outOfLineCodeSection);
-      outOfLineCodeSection->swapInstructionListsWithCompilation();
-
-      generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, slowPathLabel);
-
-      TR::Register* strideRegister = cg->allocateRegister();
-
-      MemCpyVarLenTypedMacroOp vtOpSlow(node, byteDstNode, byteSrcNode, cg, node->getArrayCopyElementType(), byteLenReg, byteLenNode, true, node->isForwardArrayCopy());
-      vtOpSlow.generate(byteDstReg, byteSrcReg, strideRegister);
-      vtOpSlow.cleanUpReg();
-
-      cg->stopUsingRegister(strideRegister);
-
-      generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BRC, node, mergeLabel);
-
-      // Switch back from OOL Slow Path
-      outOfLineCodeSection->swapInstructionListsWithCompilation();
+      generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionStart);
+      cFlowRegionStart->setStartInternalControlFlow();
+      cursor = generateS390CompareAndBranchInstruction(cg, TR::InstOpCode::getCmpOpCode(), node, byteLenReg, 0, TR::InstOpCode::COND_BNH, mergeLabel, false);
+      iComment("byteLen <= 0 goto mergeLabel");
       }
-#endif
 
    if (node->isForwardArrayCopy())
       {
-      if (byteLenNode->getOpCode().isLoadConst())
-         {
-         MemCpyConstLenMacroOp op(node, byteDstNode, byteSrcNode, cg, byteLenNode->getConst<int64_t>());
-
-         op.generate(byteDstReg, byteSrcReg);
-         }
-      else
-         {
-         bool alreadyEvaluatedLengthMinusOne = false;
-
-         // Don't evaluate length minus one if byteLenNode was already evaluated
-         if (!alreadyEvaluatedByteLenNode)
-            {
-            byteLenReg = cg->evaluateLengthMinusOneForMemoryOps(byteLenNode, true, alreadyEvaluatedLengthMinusOne);
-            }
-
-         MemCpyVarLenMacroOp op(node, byteDstNode, byteSrcNode, cg, byteLenReg, byteLenNode, alreadyEvaluatedLengthMinusOne);
-
-         op.setUseEXForRemainder(true);
-         op.generate(byteDstReg, byteSrcReg);
-         }
+      TR::TreeEvaluator::forwardArrayCopySequenceGenerator(node, cg, byteSrcReg, byteDstReg, byteLenReg, byteLenNode, srm, mergeLabel);
+      }
+   else if (node->isBackwardArrayCopy())
+      {
+      if (byteLenReg == NULL)
+         byteLenReg = cg->gprClobberEvaluate(byteLenNode);
+      deps = TR::TreeEvaluator::backwardArrayCopySequenceGenerator(node, cg, byteSrcReg, byteDstReg, byteLenReg, byteLenNode, srm, mergeLabel);
       }
    else
       {
-      // Don't clobber evaluate byteLenNode again if it was already evaluated
-      if (!alreadyEvaluatedByteLenNode)
+      // We need to decide direction of array copy at runtime.
+      if (isConstantByteLen)
+         {
+         generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionStart);
+         cFlowRegionStart->setStartInternalControlFlow();
+         }
+      TR::LabelSymbol *forwardArrayCopyLabel = generateLabelSymbol(cg);
+      cursor = generateS390CompareAndBranchInstruction(cg, TR::InstOpCode::getCmpRegOpCode(), node, byteSrcReg, byteDstReg, TR::InstOpCode::COND_BNL, forwardArrayCopyLabel, false);
+      iComment("if byteSrcPointer >= byteDstPointer then GoTo forwardArrayCopy");
+      
+
+      TR::Register *checkBoundReg = srm->findOrCreateScratchRegister();
+      if (byteLenReg == NULL)
          {
          byteLenReg = cg->gprClobberEvaluate(byteLenNode);
          }
-
-      TR::Register* strideRegister = cg->allocateRegister();
-
-      MemCpyVarLenTypedMacroOp vtOp(node, byteDstNode, byteSrcNode, cg, node->getArrayCopyElementType(), byteLenReg, byteLenNode, false, node->isForwardArrayCopy());
-
-      vtOp.generate(byteDstReg, byteSrcReg, strideRegister);
-      vtOp.cleanUpReg();
-
-      cg->stopUsingRegister(strideRegister);
+      cursor = generateRXInstruction(cg, TR::InstOpCode::LA, node, checkBoundReg, generateS390MemoryReference(byteSrcReg, byteLenReg, 0, cg));
+      iComment("nextPointerToLastElement=byteSrcPointer+lengthInBytes");
+      
+      TR::LabelSymbol *backwardArrayCopyLabel = generateLabelSymbol(cg);
+      cursor = generateS390CompareAndBranchInstruction(cg, TR::InstOpCode::getCmpRegOpCode(), node, checkBoundReg, byteDstReg, TR::InstOpCode::COND_BH, backwardArrayCopyLabel, false);
+      iComment("lastElementToCopy > byteDstPointer then GoTo backwardArrayCopy");
+      srm->reclaimScratchRegister(checkBoundReg);
+      
+      cursor = generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, forwardArrayCopyLabel);
+      iComment("Forward Array Copy Sequence");
+      TR::TreeEvaluator::forwardArrayCopySequenceGenerator(node, cg, byteSrcReg, byteDstReg, byteLenReg, byteLenNode, srm, mergeLabel);
+      cursor = generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BRC, node, mergeLabel); 
+      iComment("Jump to MergeLabel");
+      
+      cursor = generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, backwardArrayCopyLabel); 
+      iComment("Backward Array Copy Sequence");
+      deps = TR::TreeEvaluator::backwardArrayCopySequenceGenerator(node, cg, byteSrcReg, byteDstReg, byteLenReg, byteLenNode, srm, mergeLabel);
       }
-
-#ifdef J9_PROJECT_SPECIFIC
-   if (mustGenerateOOLGuardedLoadPath)
+   cursor = generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, mergeLabel);
+   if (!(isConstantByteLen && node->isForwardArrayCopy() && byteLenNode->getConst<int64_t>() <= 256))
       {
-      generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, mergeLabel);
+      deps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(deps, 0, 3+srm->numAvailableRegisters(), cg);
+      deps->addPostCondition(byteSrcReg, TR::RealRegister::AssignAny);
+      deps->addPostCondition(byteDstReg, TR::RealRegister::AssignAny);
+      if (byteLenReg != NULL)
+         {
+         deps->addPostCondition(byteLenReg, TR::RealRegister::AssignAny);
+         }
+      srm->addScratchRegistersToDependencyList(deps);
+      cursor->setDependencyConditions(deps);
+      mergeLabel->setEndInternalControlFlow();
       }
-#endif
 
    cg->decReferenceCount(byteDstNode);
    cg->decReferenceCount(byteSrcNode);
    cg->decReferenceCount(byteLenNode);
 
-   cg->stopUsingRegister(byteSrcReg);
-   cg->stopUsingRegister(byteDstReg);
-   cg->stopUsingRegister(byteLenReg);
+   // All registers used in this evaluator are added to the Register Dependency Condition deps.
+   if (deps != NULL)
+      {
+      deps->stopUsingDepRegs(cg);
+      }
+   else
+      {
+      cg->stopUsingRegister(byteSrcReg);
+      cg->stopUsingRegister(byteDstReg);
+      cg->stopUsingRegister(byteLenReg);
+      srm->stopUsingRegisters();
+      }
+#undef iComment
    }
 
 void
@@ -14606,7 +14888,7 @@ TR_S390ComputeCC::saveHostCC(TR::Node *node, TR::Register *ccReg, TR::CodeGenera
 TR::Register *OMR::Z::TreeEvaluator::loadAutoOffsetEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Register *reg = cg->allocateRegister();
-   TR::MemoryReference *mr = generateS390MemoryReference(cg->machine()->getS390RealRegister(TR::RealRegister::GPR0), 0, cg);
+   TR::MemoryReference *mr = generateS390MemoryReference(cg->machine()->getRealRegister(TR::RealRegister::GPR0), 0, cg);
    mr->setSymbolReference(node->getSymbolReference());
    generateRXInstruction(cg, TR::InstOpCode::LA, node, reg, mr);
    cg->stopUsingRegister(reg);
@@ -18262,7 +18544,7 @@ generateFusedMultiplyAddIfPossible(TR::CodeGenerator *cg, TR::Node *addNode, TR:
             generateRRDInstruction(cg, op, addNode, addReg, mulLeftReg, mulRightReg);
          break;
       default:
-         TR_ASSERT(false, "unhandled opcode %s in generateFusedMultiplyAddIfPossible\n", cg->getDebug()->getOpCodeName((TR::InstOpCode *)op));
+         TR_ASSERT(false, "unhandled opcode %s in generateFusedMultiplyAddIfPossible\n", ((TR::InstOpCode *)op)->getMnemonicName());
          break;
       }
 

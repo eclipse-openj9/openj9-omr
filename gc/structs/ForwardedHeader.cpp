@@ -281,7 +281,8 @@ MM_ForwardedHeader::copyOrWaitOutline(omrobjectptr_t destinationObjectPtr)
 
 			if (0 == remainingSizeToCopy) {
 				if (participatingInCopy) {
-					fomrobject_t newValue = ((outstandingCopies - 1) << OUTSTANDING_COPIES_SHIFT) | _beingCopiedTag;
+					MM_AtomicOperations::storeSync();
+					fomrobject_t newValue = (fomrobject_t)(((outstandingCopies - 1) << OUTSTANDING_COPIES_SHIFT) | _beingCopiedTag);
 					if (oldValue != lockCompareExchangeObjectHeader(&objectHeader->slot, oldValue, newValue)) {
 						continue;
 					}

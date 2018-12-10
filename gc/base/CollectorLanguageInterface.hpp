@@ -239,6 +239,8 @@ public:
 	 * Fixup should update slots to point to the forwarded version of the object and/or remove self forwarded bit in the object itself.
 	 */
 	virtual void scavenger_fixupIndirectObjectSlots(MM_EnvironmentStandard *env, omrobjectptr_t objectPtr) = 0;
+	
+	virtual bool scavenger_shouldYield() { return false; }
 #endif /* OMR_GC_CONCURRENT_SCAVENGER */
 #endif /* OMR_GC_MODRON_SCAVENGER */
 

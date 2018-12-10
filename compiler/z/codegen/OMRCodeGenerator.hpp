@@ -376,7 +376,6 @@ public:
    TR::RealRegister::RegNum getEntryPointRegister();
    TR::RealRegister::RegNum getReturnAddressRegister();
 
-   TR::RealRegister *getExtCodeBaseRealRegister();
    TR::RealRegister *getMethodMetaDataRealRegister();
    TR::RealRegister *getLitPoolRealRegister();
 
@@ -455,9 +454,6 @@ public:
    void setEnableBranchPreloadForCalls()          {_cgFlags.set(S390CG_enableBranchPreloadForCalls);}
    void setDisableBranchPreloadForCalls()          {_cgFlags.reset(S390CG_enableBranchPreloadForCalls);}
 
-   bool getExtCodeBaseRegisterIsFree()         {return _cgFlags.testAny(S390CG_extCodeBaseRegisterIsFree);}
-   void setExtCodeBaseRegisterIsFree(bool val) {return _cgFlags.set(S390CG_extCodeBaseRegisterIsFree, val);}
-
    bool isOutOfLineHotPath() {return _cgFlags.testAny(S390CG_isOutOfLineHotPath);}
    void setIsOutOfLineHotPath(bool val) {_cgFlags.set(S390CG_isOutOfLineHotPath, val);}
 
@@ -472,8 +468,6 @@ public:
    void setEnableTLHPrefetching() { _cgFlags.set(S390CG_enableTLHPrefetching);}
 
    // Query to codegen to know if regs are available or not
-   //
-   bool isExtCodeBaseFreeForAssignment();
    bool isLitPoolFreeForAssignment();
 
    // zGryphon HPR
@@ -903,7 +897,7 @@ protected:
    typedef enum
       {
       // Available                       = 0x00000001,
-      S390CG_extCodeBaseRegisterIsFree   = 0x00000002,
+      // Available                       = 0x00000002,
       // Available                       = 0x00000004,
       S390CG_addStorageReferenceHints    = 0x00000008,
       S390CG_isOutOfLineHotPath          = 0x00000010,

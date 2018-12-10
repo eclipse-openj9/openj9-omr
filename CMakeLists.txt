@@ -38,6 +38,7 @@ set_property(GLOBAL PROPERTY USE_FOLDERS TRUE)
 include(OmrAssert)
 include(OmrFindFiles)
 include(OmrHookgen)
+include(OmrOption)
 include(OmrPlatform)
 include(OmrTracegen)
 include(OmrSanitizerSupport)
@@ -70,16 +71,32 @@ include(cmake/config.cmake)
 
 enable_testing()
 
-include_directories(
-	${PROJECT_BINARY_DIR}
-	./include/
-	./include_core/
-	./third_party/
+###
+### omr_base: basic includes and definitions needed everywhere
+###
+
+add_library(omr_base INTERFACE)
+
+target_include_directories(omr_base
+	INTERFACE
+		$<BUILD_INTERFACE:${omr_SOURCE_DIR}/include_core>
+		$<BUILD_INTERFACE:${omr_BINARY_DIR}>
+		$<INSTALL_INTERFACE:${OMR_INSTALL_INC_DIR}>
 )
 
-add_definitions(
-	-DUT_DIRECT_TRACE_REGISTRATION # TODO:  Deal with that stupid jni issue in tracegen
+target_compile_definitions(omr_base
+	INTERFACE
+		-DUT_DIRECT_TRACE_REGISTRATION # TODO:  Deal with that stupid jni issue in tracegen
 )
+
+install(
+	TARGETS omr_base
+	EXPORT OmrTargets
+)
+
+###
+### Source tree checks
+###
 
 # Check for existing omrcfg in the source tree since this can cause alot of headaches
 # Also check if we are building in tree while we are at it
@@ -142,7 +159,7 @@ if(OMR_DDR)
 	add_subdirectory(ddr)
 endif(OMR_DDR)
 
-if(OMR_JIT)
+if(OMR_COMPILER)
 	add_subdirectory(compiler)
 endif()
 

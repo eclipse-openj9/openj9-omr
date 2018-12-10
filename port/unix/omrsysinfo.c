@@ -1511,6 +1511,7 @@ _cleanup:
 #define CGROUP_MEMORY_STAT_CACHE "cache"
 #define CGROUP_MEMORY_STAT_CACHE_SZ (sizeof(CGROUP_MEMORY_STAT_CACHE)-1)
 
+#if !defined(OMRZTPF)
 /**
  * Function collects memory usage statistics from the memory subsystem of the process's cgroup.
  *
@@ -1606,6 +1607,8 @@ _exit:
 
 	return rc;
 }
+
+#endif /* !defined(OMRZTPF) */
 
 /**
  * Function collects memory usage statistics on Linux platforms and returns the same.
@@ -4469,7 +4472,6 @@ omrsysinfo_cgroup_subsystem_iterator_next(struct OMRPortLibrary *portLibrary, st
 #if defined(LINUX) && !defined(OMRZTPF)
 	BOOLEAN isSingleLineKeyValue = FALSE;
 	struct OMRCgroupMetricInfoElement *currentElement = NULL;
-	int32_t i = 0;
 	const struct OMRCgroupSubsystemMetricMap *subsystemMetricMap = NULL;
 	const struct OMRCgroupSubsystemMetricMap *subsystemMetricMapElement = NULL;
 	if (state->count >= state->numElements) {
@@ -4508,13 +4510,11 @@ omrsysinfo_cgroup_subsystem_iterator_next(struct OMRPortLibrary *portLibrary, st
 		
 	}
 	if (state->multiLineCounter < subsystemMetricMapElement->metricElementsCount) {
-		for (i = 0; i < state->multiLineCounter; i++) {
-			currentElement++;
-		}
 		char *tempBuff = portLibrary->mem_allocate_memory(portLibrary, 1024, OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
-		strcpy(tempBuff, state->fileContent);
 		char *part = "";
 		char *saveptr = NULL;
+		currentElement += state->multiLineCounter;
+		strcpy(tempBuff, state->fileContent);
 		part = strtok_r(tempBuff, "\n", &saveptr);
 	  	do {
 			if(0 == strncmp(part, currentElement->metricKeyInFile, strlen(currentElement->metricKeyInFile))) {
@@ -4533,13 +4533,13 @@ omrsysinfo_cgroup_subsystem_iterator_next(struct OMRPortLibrary *portLibrary, st
 
 _end:
 	if (0 == rc) {
-		metricElement->key = currentElement->metricTag;
-		metricElement->units = currentElement->metricUnit;
 		/**
 		 * 'value' may have new line at the end (fgets add '\n' at the end)
 		 * which is not required so we could remove it 
 		 */
 		size_t len = strlen(metricElement->value);
+		metricElement->key = currentElement->metricTag;
+		metricElement->units = currentElement->metricUnit;
 		if ((len > 0) && (metricElement->value[len-1] == '\n')) {
 			metricElement->value[--len] = '\0';
 		}

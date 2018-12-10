@@ -44,6 +44,10 @@ endif
 ###
 
 GLOBAL_CPPFLAGS += -DLINUX -D_REENTRANT -D_FILE_OFFSET_BITS=64
+ifeq (gcc,$(OMR_TOOLCHAIN))
+	GLOBAL_CFLAGS+=-fno-strict-aliasing
+	GLOBAL_CXXFLAGS+=-fno-strict-aliasing
+endif
 
 ifeq (s390,$(OMR_HOST_ARCH))
     GLOBAL_CXXFLAGS+=$(J9M31)

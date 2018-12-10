@@ -51,7 +51,7 @@ TR::S390HelperCallSnippet::emitSnippetBody()
 
    TR::Node * callNode = getNode();
    TR::SymbolReference * helperSymRef = getHelperSymRef();
-   bool jitInduceOSR = helperSymRef == cg()->symRefTab()->element(TR_induceOSRAtCurrentPC);
+   bool jitInduceOSR = helperSymRef->isOSRInductionHelper();
    if (jitInduceOSR)
       {
       // Flush in-register arguments back to the stack for interpreter
@@ -147,7 +147,7 @@ TR::S390HelperCallSnippet::getLength(int32_t)
    // LARL + BRASL/BRCL
    length = 12;
 
-   if (helperSymRef == cg()->symRefTab()->element(TR_induceOSRAtCurrentPC))
+   if (helperSymRef->isOSRInductionHelper())
       {
       length += TR::S390CallSnippet::instructionCountForArguments(getNode(), cg());
       }

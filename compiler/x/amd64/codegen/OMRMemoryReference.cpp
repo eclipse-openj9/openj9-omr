@@ -142,26 +142,20 @@ void OMR::X86::AMD64::MemoryReference::finishInitialization(
    // Figure out whether we need to allocate a register for the address
    //
    bool mightNeedAddressRegister;
-   if (!self()->getBaseRegister() &&
-       !self()->getIndexRegister() &&
-       (cg->needRelocationsForStatics() ||
-        cg->needClassAndMethodPointerRelocations() ||
-        cg->needRelocationsForBodyInfoData() ||
-        cg->needRelocationsForPersistentInfoData()))
-      {
-      mightNeedAddressRegister = true;
-      }
-   else if (sr.getSymbol() != NULL && sr.isUnresolved())
-      {
-      // Once resolved, the address could be anything, so be conservative.
-      //
-      mightNeedAddressRegister = true;
-      }
-   else if (self()->getDataSnippet())
+   if (self()->getDataSnippet())
       {
       // Assume snippets are in RIP range
       //
       mightNeedAddressRegister = false;
+      }
+   else if (!self()->getBaseRegister()  &&
+            !self()->getIndexRegister() &&
+            (cg->needRelocationsForStatics()            ||
+             cg->needClassAndMethodPointerRelocations() ||
+             cg->needRelocationsForBodyInfoData()       ||
+             cg->needRelocationsForPersistentInfoData()))
+      {
+      mightNeedAddressRegister = true;
       }
    else if (self()->getBaseRegister() == cg->getFrameRegister())
       {
@@ -171,27 +165,24 @@ void OMR::X86::AMD64::MemoryReference::finishInitialization(
       //
       mightNeedAddressRegister = false;
       }
+   else if (sr.getSymbol() != NULL && sr.isUnresolved())
+      {
+      // Once resolved, the address could be anything, so be conservative.
+      //
+      mightNeedAddressRegister = true;
+      }
    else if (comp->getOption(TR_EnableHCR) && sr.getSymbol() && sr.getSymbol()->isClassObject())
       {
       // Can't do any displacement-based tests because the displacement can change
       //
       mightNeedAddressRegister = true;
       }
-   else if (self()->getBaseRegister() == NULL)
-      {
-      // It's either [offset] or [scale*index+offset].
-      //
-      mightNeedAddressRegister = !IS_32BIT_SIGNED(self()->getDisplacement());
-      }
-   else if (self()->getIndexRegister() == NULL)
-      {
-      // It's [base+offset].
-      //
-      mightNeedAddressRegister = !IS_32BIT_SIGNED(self()->getDisplacement());
-      }
    else
       {
-      // It's [base+index+offset]
+      // [offset]
+      // [scale*index + offset]
+      // [base + offset]
+      // [base+index+offset]
       // TODO: if the offset is just barely over 32 bits, maybe we could
       // get away with this, where a+b = offset64:
       //

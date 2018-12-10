@@ -120,7 +120,7 @@ TR::RealRegister *OMR::ARM64::Machine::freeBestRegister(TR::Instruction *current
 
       for (int i = first; i <= last; i++)
          {
-         TR::RealRegister *realReg = self()->getARM64RealRegister((TR::RealRegister::RegNum)i);
+         TR::RealRegister *realReg = self()->getRealRegister((TR::RealRegister::RegNum)i);
          if (realReg->getState() == TR::RealRegister::Assigned)
             {
             candidates[numCandidates++] = realReg->getAssignedRegister();
@@ -471,6 +471,12 @@ TR::RealRegister *OMR::ARM64::Machine::assignOneRegister(TR::Instruction *curren
       self()->cg()->traceRegAssigned(virtualRegister, assignedRegister);
       }
 
+   if (virtualRegister->decFutureUseCount() == 0)
+      {
+      virtualRegister->setAssignedRegister(NULL);
+      assignedRegister->setState(TR::RealRegister::Unlatched);
+      }
+
    return assignedRegister;
    }
 
@@ -486,7 +492,7 @@ static void registerCopy(TR::Instruction *precedingInstruction,
    switch (rk)
       {
       case TR_GPR:
-         zeroReg = cg->machine()->getARM64RealRegister(TR::RealRegister::xzr);
+         zeroReg = cg->machine()->getRealRegister(TR::RealRegister::xzr);
          generateTrg1Src2Instruction(cg, TR::InstOpCode::orrx, node, targetReg, zeroReg, sourceReg, precedingInstruction); /* mov (register) */
          break;
       case TR_FPR:
@@ -874,7 +880,14 @@ void OMR::ARM64::Machine::initializeRegisterFile()
                                                  TR::RealRegister::lr,
                                                  self()->cg());
 
-   /* XZR or SP depending on instruction */
+   /* SP */
+   _registerFile[TR::RealRegister::sp] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR,
+                                                 0,
+                                                 TR::RealRegister::Free,
+                                                 TR::RealRegister::sp,
+                                                 self()->cg());
+
+   /* XZR */
    _registerFile[TR::RealRegister::xzr] = new (self()->cg()->trHeapMemory()) TR::RealRegister(TR_GPR,
                                                  0,
                                                  TR::RealRegister::Free,

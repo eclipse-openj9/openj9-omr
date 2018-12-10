@@ -360,7 +360,7 @@ TR_Debug::printz(TR::FILE *pOutFile, TR::Instruction * instr)
          else
             {
             printPrefix(pOutFile, instr);
-            trfprintf(pOutFile, "%s", getOpCodeName(&instr->getOpCode()));
+            trfprintf(pOutFile, "%s", instr->getOpCode().getMnemonicName());
             trfflush(pOutFile);
             }
          }
@@ -470,7 +470,7 @@ TR_Debug::printAssocRegDirective(TR::FILE *pOutFile, TR::Instruction * instr)
    TR_S390RegisterDependencyGroup * depGroup = instr->getDependencyConditions()->getPostConditions();
 
    printPrefix(pOutFile, instr);
-   trfprintf(pOutFile, "%s", getOpCodeName(&instr->getOpCode()));
+   trfprintf(pOutFile, "%s", instr->getOpCode().getMnemonicName());
    trfflush(pOutFile);
 
    int first = TR::RealRegister::FirstGPR;
@@ -516,7 +516,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390RRSInstruction * instr)
    printPrefix(pOutFile, instr);
 
    // print the opcode.
-   trfprintf(pOutFile, "%-*s", OPCODE_SPACING, getOpCodeName(&instr->getOpCode()));
+   trfprintf(pOutFile, "%-*s", OPCODE_SPACING, instr->getOpCode().getMnemonicName());
 
    // grab the registers.
    TR::Register * targetRegister = instr->getRegisterOperand(1);
@@ -549,7 +549,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390IEInstruction * instr)
       return;
       }
    printPrefix(pOutFile, instr);
-   trfprintf(pOutFile, "%-*s%d,%d", OPCODE_SPACING, getOpCodeName(&instr->getOpCode()), instr->getImmediateField1(), instr->getImmediateField2());
+   trfprintf(pOutFile, "%-*s%d,%d", OPCODE_SPACING, instr->getOpCode().getMnemonicName(), instr->getImmediateField1(), instr->getImmediateField2());
 
    printInstructionComment(pOutFile, 1, instr, true);
    trfflush(pOutFile);
@@ -582,11 +582,11 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390RIEInstruction * instr)
    if (RIE5 && instr->getExtendedHighWordOpCode().getOpCodeValue() != TR::InstOpCode::BAD)
       {
       // print extended-mnemonics for highword rotate instructions on zG
-      trfprintf(pOutFile, "%-*s", OPCODE_SPACING, getOpCodeName(&instr->getExtendedHighWordOpCode()));
+      trfprintf(pOutFile, "%-*s", OPCODE_SPACING, instr->getExtendedHighWordOpCode().getMnemonicName());
       }
    else
       {
-      trfprintf(pOutFile, "%-*s", OPCODE_SPACING, getOpCodeName(&instr->getOpCode()));
+      trfprintf(pOutFile, "%-*s", OPCODE_SPACING, instr->getOpCode().getMnemonicName());
       }
 
    // grab the registers.
@@ -693,7 +693,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390RISInstruction * instr)
 
    // print opcode
    printPrefix(pOutFile, instr);
-   trfprintf(pOutFile, "%-*s", OPCODE_SPACING, getOpCodeName(&instr->getOpCode()));
+   trfprintf(pOutFile, "%-*s", OPCODE_SPACING, instr->getOpCode().getMnemonicName());
 
    // we can print the first register since we should always have it
    print(pOutFile, instr->getRegisterOperand(1));
@@ -743,7 +743,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390LabelInstruction * instr)
       }
    else
       {
-      trfprintf(pOutFile, "%-*s", OPCODE_SPACING, getOpCodeName(&instr->getOpCode()));
+      trfprintf(pOutFile, "%-*s", OPCODE_SPACING, instr->getOpCode().getMnemonicName());
       if (instr->getCallSnippet())
          {
          print(pOutFile, instr->getCallSnippet()->getSnippetLabel());
@@ -806,7 +806,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390BranchInstruction * instr)
    TR::LabelSymbol * label = instr->getLabelSymbol();
    TR_ASSERT(instr->getOpCodeValue() != TR::InstOpCode::LABEL,  "assertion failure");
 
-   trfprintf(pOutFile, "%-*s", OPCODE_SPACING, getOpCodeName(&instr->getOpCode()));
+   trfprintf(pOutFile, "%-*s", OPCODE_SPACING, instr->getOpCode().getMnemonicName());
    trfprintf(pOutFile, "%s(0x%1x), ", brCondName, mask );
 
     if (instr->getCallSnippet())
@@ -839,7 +839,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390BranchOnCountInstruction * instr)
 
    TR::LabelSymbol * label = instr->getLabelSymbol();
    TR_ASSERT(instr->getOpCodeValue() != TR::InstOpCode::LABEL, "assertion failure");
-   trfprintf(pOutFile, "%-*s", OPCODE_SPACING, getOpCodeName(&instr->getOpCode()));
+   trfprintf(pOutFile, "%-*s", OPCODE_SPACING, instr->getOpCode().getMnemonicName());
    print(pOutFile, instr->getRegisterOperand(1));
    trfprintf(pOutFile, ",");
    print(pOutFile, instr->getLabelSymbol());
@@ -860,7 +860,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390BranchOnIndexInstruction * instr)
 
    TR::LabelSymbol * label = instr->getLabelSymbol();
    TR_ASSERT(instr->getOpCodeValue() != TR::InstOpCode::LABEL, "assertion failure");
-   trfprintf(pOutFile, "%-*s", OPCODE_SPACING, getOpCodeName(&instr->getOpCode()));
+   trfprintf(pOutFile, "%-*s", OPCODE_SPACING, instr->getOpCode().getMnemonicName());
    print(pOutFile, instr->getRegisterOperand(1));
    trfprintf(pOutFile, ",");
    TR::Register * sourceRegister = instr->getRegisterOperand(2);
@@ -909,7 +909,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390PseudoInstruction * instr)
       }
 
    printPrefix(pOutFile, instr);
-   trfprintf(pOutFile, "%-*s", OPCODE_SPACING, getOpCodeName(&instr->getOpCode()));
+   trfprintf(pOutFile, "%-*s", OPCODE_SPACING, instr->getOpCode().getMnemonicName());
 
    if (instr->getOpCodeValue() == TR::InstOpCode::DCB)
       {
@@ -986,7 +986,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390ImmInstruction * instr)
       return;
       }
    printPrefix(pOutFile, instr);
-   trfprintf(pOutFile, "%-*s0x%08x", OPCODE_SPACING, getOpCodeName(&instr->getOpCode()), instr->getSourceImmediate());
+   trfprintf(pOutFile, "%-*s0x%08x", OPCODE_SPACING, instr->getOpCode().getMnemonicName(), instr->getSourceImmediate());
 
    printInstructionComment(pOutFile, 1, instr, true);
    trfflush(pOutFile);
@@ -1014,7 +1014,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390ImmSnippetInstruction * instr)
       return;
       }
    printPrefix(pOutFile, instr);
-   trfprintf(pOutFile, "%-*s0x%08x", OPCODE_SPACING, getOpCodeName(&instr->getOpCode()), instr->getSourceImmediate());
+   trfprintf(pOutFile, "%-*s0x%08x", OPCODE_SPACING, instr->getOpCode().getMnemonicName(), instr->getSourceImmediate());
    trfflush(pOutFile);
    }
 
@@ -1022,7 +1022,7 @@ void
 TR_Debug::print(TR::FILE *pOutFile, TR::S390ImmSymInstruction * instr)
    {
    printPrefix(pOutFile, instr);
-   trfprintf(pOutFile, "%-*s0x%08x", OPCODE_SPACING, getOpCodeName(&instr->getOpCode()), instr->getSourceImmediate());
+   trfprintf(pOutFile, "%-*s0x%08x", OPCODE_SPACING, instr->getOpCode().getMnemonicName(), instr->getSourceImmediate());
    trfflush(pOutFile);
    }
 
@@ -1031,7 +1031,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390RegInstruction * instr)
    {
    printPrefix(pOutFile, instr);
 
-   trfprintf(pOutFile, "%-*s", OPCODE_SPACING, getOpCodeName(&instr->getOpCode()));
+   trfprintf(pOutFile, "%-*s", OPCODE_SPACING, instr->getOpCode().getMnemonicName());
 
    if (instr->getOpCodeValue() == TR::InstOpCode::BCR)
       {
@@ -1063,7 +1063,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390RRInstruction * instr)
    {
    int32_t i=1;
    printPrefix(pOutFile, instr);
-   trfprintf(pOutFile, "%-*s", OPCODE_SPACING, getOpCodeName(&instr->getOpCode()));
+   trfprintf(pOutFile, "%-*s", OPCODE_SPACING, instr->getOpCode().getMnemonicName());
 
    if (instr->getFirstConstant() >=0)
       trfprintf(pOutFile, "%d", instr->getFirstConstant());
@@ -1120,7 +1120,7 @@ void
 TR_Debug::print(TR::FILE *pOutFile, TR::S390TranslateInstruction * instr)
    {
    printPrefix(pOutFile, instr);
-   trfprintf(pOutFile, "%-*s", OPCODE_SPACING, getOpCodeName(&instr->getOpCode()));
+   trfprintf(pOutFile, "%-*s", OPCODE_SPACING, instr->getOpCode().getMnemonicName());
 
    TR::Register * targetRegister = instr->getRegisterOperand(1);
    TR::RegisterPair * regPair = targetRegister->getRegisterPair();
@@ -1156,7 +1156,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390RRFInstruction * instr)
    printPrefix(pOutFile, instr);
 
       {
-      trfprintf(pOutFile, "%-*s", OPCODE_SPACING, getOpCodeName(&instr->getOpCode()));
+      trfprintf(pOutFile, "%-*s", OPCODE_SPACING, instr->getOpCode().getMnemonicName());
       }
 
    print(pOutFile, instr->getRegisterOperand(1));
@@ -1188,7 +1188,7 @@ void
 TR_Debug::print(TR::FILE *pOutFile, TR::S390RRRInstruction * instr)
    {
    printPrefix(pOutFile, instr);
-   trfprintf(pOutFile, "%-*s", OPCODE_SPACING, getOpCodeName(&instr->getOpCode()));
+   trfprintf(pOutFile, "%-*s", OPCODE_SPACING, instr->getOpCode().getMnemonicName());
 
    print(pOutFile, instr->getRegisterOperand(1));
    trfprintf(pOutFile, ",");
@@ -1207,7 +1207,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390RIInstruction * instr)
    uint8_t *cursor = (uint8_t *)instr->getBinaryEncoding();
 
    printPrefix(pOutFile, instr);
-   trfprintf(pOutFile, "%-*s", OPCODE_SPACING, getOpCodeName(&instr->getOpCode()));
+   trfprintf(pOutFile, "%-*s", OPCODE_SPACING, instr->getOpCode().getMnemonicName());
    if (instr->getRegisterOperand(1))
       print(pOutFile, instr->getRegisterOperand(1));
 
@@ -1225,7 +1225,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390RILInstruction * instr)
 
    printPrefix(pOutFile, instr);
 
-   trfprintf(pOutFile, "%-*s", OPCODE_SPACING, getOpCodeName(&instr->getOpCode()));
+   trfprintf(pOutFile, "%-*s", OPCODE_SPACING, instr->getOpCode().getMnemonicName());
 
    if (instr->getRegisterOperand(1))
       {
@@ -1304,7 +1304,7 @@ void
 TR_Debug::print(TR::FILE *pOutFile, TR::S390RSLInstruction * instr)
    {
    printPrefix(pOutFile, instr);
-   trfprintf(pOutFile, "%-*s", OPCODE_SPACING, getOpCodeName(&instr->getOpCode()));
+   trfprintf(pOutFile, "%-*s", OPCODE_SPACING, instr->getOpCode().getMnemonicName());
    print(pOutFile, instr->getMemoryReference(), instr);
    // print long displacement field
    if (instr->isExtDisp())
@@ -1332,7 +1332,7 @@ void
 TR_Debug::print(TR::FILE *pOutFile, TR::S390RSLbInstruction * instr)
    {
    printPrefix(pOutFile, instr);
-   trfprintf(pOutFile, "%-*s", OPCODE_SPACING, getOpCodeName(&instr->getOpCode()));
+   trfprintf(pOutFile, "%-*s", OPCODE_SPACING, instr->getOpCode().getMnemonicName());
 
    TR::Register *targetRegister = instr->getRegisterOperand(1);
    TR::RegisterPair *regPair = targetRegister->getRegisterPair();
@@ -1371,7 +1371,7 @@ void
 TR_Debug::print(TR::FILE *pOutFile, TR::S390RSInstruction * instr)
    {
    printPrefix(pOutFile, instr);
-   trfprintf(pOutFile, "%-*s", OPCODE_SPACING, getOpCodeName(&instr->getOpCode()));
+   trfprintf(pOutFile, "%-*s", OPCODE_SPACING, instr->getOpCode().getMnemonicName());
 
    if (instr->hasSourceImmediate())
       {
@@ -1436,7 +1436,7 @@ void
 TR_Debug::print(TR::FILE *pOutFile, TR::S390MemInstruction * instr)
    {
    printPrefix(pOutFile, instr);
-   trfprintf(pOutFile, "%-*s", OPCODE_SPACING, getOpCodeName(&instr->getOpCode()));
+   trfprintf(pOutFile, "%-*s", OPCODE_SPACING, instr->getOpCode().getMnemonicName());
 
    if (instr->getOpCodeValue() == TR::InstOpCode::STCMH ||
        instr->getOpCodeValue() == TR::InstOpCode::LCTL  ||
@@ -1491,7 +1491,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390SSEInstruction * instr)
 
    // print opcode
    printPrefix(pOutFile, instr);
-   trfprintf(pOutFile, "%-*s", OPCODE_SPACING, getOpCodeName(&instr->getOpCode()));
+   trfprintf(pOutFile, "%-*s", OPCODE_SPACING, instr->getOpCode().getMnemonicName());
 
    // print first storage information D1(L,B1)
    print(pOutFile, instr->getMemoryReference(), instr);
@@ -1512,7 +1512,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390SS1Instruction * instr)
 
    // print opcode
    printPrefix(pOutFile, instr);
-   trfprintf(pOutFile, "%-*s", OPCODE_SPACING, getOpCodeName(&instr->getOpCode()));
+   trfprintf(pOutFile, "%-*s", OPCODE_SPACING, instr->getOpCode().getMnemonicName());
 
    // print first storage information D1(L,B1)
    print(pOutFile, instr->getMemoryReference(), instr);
@@ -1533,7 +1533,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390SS2Instruction * instr)
 
    // print opcode
    printPrefix(pOutFile, instr);
-   trfprintf(pOutFile, "%-*s", OPCODE_SPACING, getOpCodeName(&instr->getOpCode()));
+   trfprintf(pOutFile, "%-*s", OPCODE_SPACING, instr->getOpCode().getMnemonicName());
 
    // print first storage information D1(L1,B1)
    print(pOutFile, instr->getMemoryReference(), instr);
@@ -1566,7 +1566,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390SS4Instruction * instr)
 
    // print opcode
    printPrefix(pOutFile, instr);
-   trfprintf(pOutFile, "%-*s", OPCODE_SPACING, getOpCodeName(&instr->getOpCode()));
+   trfprintf(pOutFile, "%-*s", OPCODE_SPACING, instr->getOpCode().getMnemonicName());
 
    if (instr->getOpCodeValue() == TR::InstOpCode::PLO)
       {
@@ -1631,7 +1631,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390SSFInstruction * instr)
 
    // print opcode
    printPrefix(pOutFile, instr);
-   trfprintf(pOutFile, "%-*s", OPCODE_SPACING, getOpCodeName(&instr->getOpCode()));
+   trfprintf(pOutFile, "%-*s", OPCODE_SPACING, instr->getOpCode().getMnemonicName());
 
    // target register R3
    print(pOutFile, instr->getFirstRegister());
@@ -1656,7 +1656,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390SIInstruction * instr)
 
    // print opcode
    printPrefix(pOutFile, instr);
-   trfprintf(pOutFile, "%-*s", OPCODE_SPACING, getOpCodeName(&instr->getOpCode()));
+   trfprintf(pOutFile, "%-*s", OPCODE_SPACING, instr->getOpCode().getMnemonicName());
 
    // print first storage information D1(B1)
    print(pOutFile, instr->getMemoryReference(), instr);
@@ -1694,7 +1694,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390SILInstruction * instr)
 
    // print opcode
    printPrefix(pOutFile, instr);
-   trfprintf(pOutFile, "%-*s", OPCODE_SPACING, getOpCodeName(&instr->getOpCode()));
+   trfprintf(pOutFile, "%-*s", OPCODE_SPACING, instr->getOpCode().getMnemonicName());
 
    // print first storage information D1(B1)
    if (instr->getMemoryReference())
@@ -1713,7 +1713,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390SInstruction * instr)
 
    // print opcode
    printPrefix(pOutFile, instr);
-   trfprintf(pOutFile, "%-*s", OPCODE_SPACING, getOpCodeName(&instr->getOpCode()));
+   trfprintf(pOutFile, "%-*s", OPCODE_SPACING, instr->getOpCode().getMnemonicName());
 
    // print first storage information D1(B1)
    print(pOutFile, instr->getMemoryReference(), instr);
@@ -1725,7 +1725,7 @@ void
 TR_Debug::print(TR::FILE *pOutFile, TR::S390OpCodeOnlyInstruction * instr)
    {
    printPrefix(pOutFile, instr);
-   trfprintf(pOutFile, "%-*s", OPCODE_SPACING, getOpCodeName(&instr->getOpCode()));
+   trfprintf(pOutFile, "%-*s", OPCODE_SPACING, instr->getOpCode().getMnemonicName());
    trfflush(pOutFile);
    }
 
@@ -1733,7 +1733,7 @@ void
 TR_Debug::print(TR::FILE *pOutFile, TR::S390IInstruction * instr)
    {
    printPrefix(pOutFile, instr);
-   trfprintf(pOutFile, "%-*s%d", OPCODE_SPACING, getOpCodeName(&instr->getOpCode()), instr->getImmediateField());
+   trfprintf(pOutFile, "%-*s%d", OPCODE_SPACING, instr->getOpCode().getMnemonicName(), instr->getImmediateField());
    trfflush(pOutFile);
    }
 
@@ -1741,7 +1741,7 @@ void
 TR_Debug::print(TR::FILE *pOutFile, TR::S390RXInstruction * instr)
    {
    printPrefix(pOutFile, instr);
-   trfprintf(pOutFile, "%-*s", OPCODE_SPACING, getOpCodeName(&instr->getOpCode()));
+   trfprintf(pOutFile, "%-*s", OPCODE_SPACING, instr->getOpCode().getMnemonicName());
    if(instr->getRegisterOperand(1)->getRegisterPair())
      {
      print(pOutFile, instr->getRegisterOperand(1)->getHighOrder());
@@ -1752,18 +1752,12 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390RXInstruction * instr)
      }
 
    trfprintf(pOutFile, ",");
-   if (instr->getMemoryReference() == NULL)
+
+   print(pOutFile, instr->getMemoryReference(), instr);
+   TR::Symbol *symbol = instr->getMemoryReference()->getSymbolReference() ? instr->getMemoryReference()->getSymbolReference()->getSymbol() : 0;
+   if ((instr->getOpCode().isLoad() != 0) && symbol && symbol->isSpillTempAuto())
       {
-      trfprintf(pOutFile, "%x", instr->getConstForMRField());
-      }
-   else
-      {
-      print(pOutFile, instr->getMemoryReference(), instr);
-      TR::Symbol *symbol = instr->getMemoryReference()->getSymbolReference() ? instr->getMemoryReference()->getSymbolReference()->getSymbol() : 0;
-      if ((instr->getOpCode().isLoad() != 0) && symbol && symbol->isSpillTempAuto())
-         {
-          trfprintf(pOutFile, "\t\t#/* spilled for %s */", getName(instr->getNode()->getOpCode()));
-         }
+         trfprintf(pOutFile, "\t\t#/* spilled for %s */", getName(instr->getNode()->getOpCode()));
       }
 
    if (instr->isExtDisp())
@@ -1784,7 +1778,7 @@ void
 TR_Debug::print(TR::FILE *pOutFile, TR::S390RXEInstruction * instr)
    {
    printPrefix(pOutFile, instr);
-   trfprintf(pOutFile, "%-*s", OPCODE_SPACING, getOpCodeName(&instr->getOpCode()));
+   trfprintf(pOutFile, "%-*s", OPCODE_SPACING, instr->getOpCode().getMnemonicName());
    print(pOutFile, instr->getRegisterOperand(1));
    trfprintf(pOutFile, ",");
    print(pOutFile, instr->getMemoryReference(), instr);
@@ -1796,7 +1790,7 @@ void
 TR_Debug::print(TR::FILE *pOutFile, TR::S390RXFInstruction * instr)
    {
    printPrefix(pOutFile, instr);
-   trfprintf(pOutFile, "%-*s", OPCODE_SPACING, getOpCodeName(&instr->getOpCode()));
+   trfprintf(pOutFile, "%-*s", OPCODE_SPACING, instr->getOpCode().getMnemonicName());
    print(pOutFile, instr->getRegisterOperand(1));
    trfprintf(pOutFile, ",");
    print(pOutFile, instr->getRegisterOperand(2));
@@ -1810,7 +1804,7 @@ void
 TR_Debug::print(TR::FILE *pOutFile, TR::S390MIIInstruction * instr)
    {
    printPrefix(pOutFile, instr);
-   trfprintf(pOutFile, "%-*s", OPCODE_SPACING, getOpCodeName(&instr->getOpCode()));
+   trfprintf(pOutFile, "%-*s", OPCODE_SPACING, instr->getOpCode().getMnemonicName());
    trfprintf(pOutFile, "(mask=0x%1x), ", instr->getMask() );
 
    print(pOutFile, instr->getLabelSymbol());
@@ -1839,7 +1833,7 @@ void
 TR_Debug::print(TR::FILE *pOutFile, TR::S390SMIInstruction * instr)
    {
    printPrefix(pOutFile, instr);
-   trfprintf(pOutFile, "%-*s", OPCODE_SPACING, getOpCodeName(&instr->getOpCode()));
+   trfprintf(pOutFile, "%-*s", OPCODE_SPACING, instr->getOpCode().getMnemonicName());
    trfprintf(pOutFile, "(mask=0x%1x), ", instr->getMask() );
 
    trfprintf(pOutFile, ",");
@@ -2204,7 +2198,7 @@ TR_Debug::printS390GCRegisterMap(TR::FILE *pOutFile, TR::GCRegisterMap * map)
       {
       if (map->getMap() & (1 << (i - 1)))
          {
-         trfprintf(pOutFile, "%s ", getName(machine->getS390RealRegister((TR::RealRegister::RegNum) i)));
+         trfprintf(pOutFile, "%s ", getName(machine->getRealRegister((TR::RealRegister::RegNum) i)));
          }
       }
    trfprintf(pOutFile, "}\n");
@@ -2217,12 +2211,12 @@ TR_Debug::printS390GCRegisterMap(TR::FILE *pOutFile, TR::GCRegisterMap * map)
          // 2 bits per register, '10' means HPR has collectible, '11' means both HPR and GPR have collectibles
          if (map->getHPRMap() & (1 << (i - TR::RealRegister::FirstHPR)*2 + 1))
             {
-            trfprintf(pOutFile, "%s ", getName(machine->getS390RealRegister((TR::RealRegister::RegNum) i)));
+            trfprintf(pOutFile, "%s ", getName(machine->getRealRegister((TR::RealRegister::RegNum) i)));
             }
          // Compressed collectible in lower GPR.
          if (map->getHPRMap() & (1 << (i - TR::RealRegister::FirstHPR)*2))
             {
-            trfprintf(pOutFile, "%s ", getName(machine->getS390RealRegister((TR::RealRegister::RegNum) (i - TR::RealRegister::FirstHPR + TR::RealRegister::FirstGPR))));
+            trfprintf(pOutFile, "%s ", getName(machine->getRealRegister((TR::RealRegister::RegNum) (i - TR::RealRegister::FirstHPR + TR::RealRegister::FirstGPR))));
             }
          }
       trfprintf(pOutFile, "}\n");
@@ -2465,7 +2459,7 @@ TR_Debug::printS390ArgumentsFlush(TR::FILE *pOutFile, TR::Node * node, uint8_t *
                   trfprintf(pOutFile, "ST   \t");
                   }
 
-               print(pOutFile, machine->getS390RealRegister(privateLinkage->getIntegerArgumentRegister(intArgNum)));
+               print(pOutFile, machine->getRealRegister(privateLinkage->getIntegerArgumentRegister(intArgNum)));
                trfprintf(pOutFile, ",%d(,", offset);
                print(pOutFile, stackPtr);
                trfprintf(pOutFile, ")");
@@ -2497,7 +2491,7 @@ TR_Debug::printS390ArgumentsFlush(TR::FILE *pOutFile, TR::Node * node, uint8_t *
                   {
                   printPrefix(pOutFile, NULL, bufferPos, 6);
                   trfprintf(pOutFile, "STG  \t");
-                  print(pOutFile, machine->getS390RealRegister(privateLinkage->getIntegerArgumentRegister(intArgNum)));
+                  print(pOutFile, machine->getRealRegister(privateLinkage->getIntegerArgumentRegister(intArgNum)));
                   trfprintf(pOutFile, ",%d(,", offset);
                   print(pOutFile, stackPtr);
                   trfprintf(pOutFile, ")");
@@ -2507,7 +2501,7 @@ TR_Debug::printS390ArgumentsFlush(TR::FILE *pOutFile, TR::Node * node, uint8_t *
                   {
                   printPrefix(pOutFile, NULL, bufferPos, 4);
                   trfprintf(pOutFile, "ST   \t");
-                  print(pOutFile, machine->getS390RealRegister(privateLinkage->getIntegerArgumentRegister(intArgNum)));
+                  print(pOutFile, machine->getRealRegister(privateLinkage->getIntegerArgumentRegister(intArgNum)));
                   trfprintf(pOutFile, ", %d(,", offset);
                   print(pOutFile, stackPtr);
                   trfprintf(pOutFile, ")");
@@ -2518,7 +2512,7 @@ TR_Debug::printS390ArgumentsFlush(TR::FILE *pOutFile, TR::Node * node, uint8_t *
                      printPrefix(pOutFile, NULL, bufferPos, 4);
                      trfprintf(pOutFile, "ST   \t");
 
-                     print(pOutFile, machine->getS390RealRegister(privateLinkage->getIntegerArgumentRegister(intArgNum + 1)));
+                     print(pOutFile, machine->getRealRegister(privateLinkage->getIntegerArgumentRegister(intArgNum + 1)));
                      trfprintf(pOutFile, ",%d(,", offset + 4);
                      print(pOutFile, stackPtr);
                      trfprintf(pOutFile, ")");
@@ -2542,7 +2536,7 @@ TR_Debug::printS390ArgumentsFlush(TR::FILE *pOutFile, TR::Node * node, uint8_t *
                {
                printPrefix(pOutFile, NULL, bufferPos, 4);
                trfprintf(pOutFile, "STD   \t");
-               print(pOutFile, machine->getS390RealRegister(privateLinkage->getFloatArgumentRegister(floatArgNum)));
+               print(pOutFile, machine->getRealRegister(privateLinkage->getFloatArgumentRegister(floatArgNum)));
                trfprintf(pOutFile, ",%d(,", offset);
                print(pOutFile, stackPtr);
                trfprintf(pOutFile, ")");
@@ -2564,7 +2558,7 @@ TR_Debug::printS390ArgumentsFlush(TR::FILE *pOutFile, TR::Node * node, uint8_t *
                {
                printPrefix(pOutFile, NULL, bufferPos, 4);
                trfprintf(pOutFile, "STE  \t");
-               print(pOutFile, machine->getS390RealRegister(privateLinkage->getFloatArgumentRegister(floatArgNum)));
+               print(pOutFile, machine->getRealRegister(privateLinkage->getFloatArgumentRegister(floatArgNum)));
                trfprintf(pOutFile, ",%d(,", offset);
                print(pOutFile, stackPtr);
                trfprintf(pOutFile, ")");
@@ -2613,12 +2607,6 @@ TR_Debug::printFullRegInfo(TR::FILE *pOutFile, TR::RealRegister * reg)
       }
 
    trfflush(pOutFile);
-   }
-
-const char *
-TR_Debug::getOpCodeName(TR::InstOpCode * opCode)
-   {
-   return TR::InstOpCode::metadata[opCode->getOpCodeValue()].name;
    }
 
 void

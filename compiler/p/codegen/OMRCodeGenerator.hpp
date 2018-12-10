@@ -184,6 +184,8 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    TR::Instruction *generateGroupEndingNop(TR::Node *node , TR::Instruction *preced = 0);
    TR::Instruction *generateProbeNop(TR::Node *node , TR::Instruction *preced = 0);
 
+   bool inlineDirectCall(TR::Node *node, TR::Register *&resultReg);
+
    bool isSnippetMatched(TR::Snippet *, int32_t, TR::SymbolReference *);
 
    bool mulDecompositionCostIsJustified(int numOfOperations, char bitPosition[], char operationType[], int64_t value);
@@ -383,6 +385,8 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    bool supportsSinglePrecisionSQRT();
    bool supportsFusedMultiplyAdd() {return true;}
    bool supportsNegativeFusedMultiplyAdd() {return true;}
+
+   bool supportsNonHelper(TR::SymbolReferenceTable::CommonNonhelperSymbol symbol);
 
    bool getSupportsTenuredObjectAlignment() { return true; }
    bool isObjectOfSizeWorthAligning(uint32_t size)

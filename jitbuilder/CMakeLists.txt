@@ -135,7 +135,7 @@ endif()
 if(OMR_JITBUILDER_TEST)
 	add_test(
 		NAME TestJitBuilderAPIGenerator
-		COMMAND ${PYTHON_EXECUTABLE} test.py
+		COMMAND ${PYTHON_EXECUTABLE} run_tests.py
 		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/apigen
 	)
 endif()

@@ -1913,6 +1913,8 @@ TR_Debug::getStaticName(TR::SymbolReference * symRef)
          }
       return "unknown class object";
       }
+   else if (sym->isConstantPoolAddress())
+      return "<constant pool address>";
    else if (symRef->getCPIndex() >= 0)
       {
       if (sym->isAddressOfClassObject())

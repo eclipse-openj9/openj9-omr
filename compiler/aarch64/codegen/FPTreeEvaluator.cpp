@@ -309,54 +309,71 @@ OMR::ARM64::TreeEvaluator::dnegEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    return doublePrecisionUnaryEvaluator(node, TR::InstOpCode::fnegd, cg);
    }
 
+static TR::Register *
+intFpTypeConversionHelper(TR::Node *node, TR::InstOpCode::Mnemonic op, TR::CodeGenerator *cg)
+   {
+   TR::Node *child = node->getFirstChild();
+   TR::Register *srcReg = cg->evaluate(child);
+   TR::Register *trgReg;
+
+   TR::DataType dt = node->getDataType();
+   if (dt.isFloatingPoint())
+      {
+      trgReg = dt.isDouble() ? cg->allocateRegister(TR_FPR) : cg->allocateSinglePrecisionRegister();
+      }
+   else
+      {
+      trgReg = cg->allocateRegister();
+      }
+
+   generateTrg1Src1Instruction(cg, op, node, trgReg, srcReg);
+
+   child->decReferenceCount();
+   node->setRegister(trgReg);
+   return trgReg;
+   }
+
 TR::Register *
 OMR::ARM64::TreeEvaluator::i2fEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// TODO:ARM64: Enable TR::TreeEvaluator::i2fEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
-	}
+   {
+   return intFpTypeConversionHelper(node, TR::InstOpCode::scvtf_wtos, cg);
+   }
 
 TR::Register *
 OMR::ARM64::TreeEvaluator::i2dEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// TODO:ARM64: Enable TR::TreeEvaluator::i2dEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
-	}
+   {
+   return intFpTypeConversionHelper(node, TR::InstOpCode::scvtf_wtod, cg);
+   }
 
 TR::Register *
 OMR::ARM64::TreeEvaluator::l2fEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// TODO:ARM64: Enable TR::TreeEvaluator::l2fEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
-	}
+   {
+   return intFpTypeConversionHelper(node, TR::InstOpCode::scvtf_xtos, cg);
+   }
 
 TR::Register *
 OMR::ARM64::TreeEvaluator::l2dEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// TODO:ARM64: Enable TR::TreeEvaluator::l2dEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
-	}
+   {
+   return intFpTypeConversionHelper(node, TR::InstOpCode::scvtf_xtod, cg);
+   }
 
 TR::Register *
 OMR::ARM64::TreeEvaluator::f2dEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// TODO:ARM64: Enable TR::TreeEvaluator::f2dEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
-	}
+   {
+   return intFpTypeConversionHelper(node, TR::InstOpCode::fcvt_stod, cg);
+   }
 
 TR::Register *
 OMR::ARM64::TreeEvaluator::f2iEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// TODO:ARM64: Enable TR::TreeEvaluator::f2iEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
-	}
+   {
+   return intFpTypeConversionHelper(node, TR::InstOpCode::fcvtzs_stow, cg);
+   }
 
 TR::Register *
 OMR::ARM64::TreeEvaluator::d2iEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// TODO:ARM64: Enable TR::TreeEvaluator::d2iEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
-	}
+   {
+   return intFpTypeConversionHelper(node, TR::InstOpCode::fcvtzs_dtow, cg);
+   }
 
 TR::Register *
 OMR::ARM64::TreeEvaluator::d2cEvaluator(TR::Node *node, TR::CodeGenerator *cg)
@@ -381,24 +398,21 @@ OMR::ARM64::TreeEvaluator::d2bEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 
 TR::Register *
 OMR::ARM64::TreeEvaluator::f2lEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// TODO:ARM64: Enable TR::TreeEvaluator::f2lEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
-	}
+   {
+   return intFpTypeConversionHelper(node, TR::InstOpCode::fcvtzs_stox, cg);
+   }
 
 TR::Register *
 OMR::ARM64::TreeEvaluator::d2lEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// TODO:ARM64: Enable TR::TreeEvaluator::d2lEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
-	}
+   {
+   return intFpTypeConversionHelper(node, TR::InstOpCode::fcvtzs_dtox, cg);
+   }
 
 TR::Register *
 OMR::ARM64::TreeEvaluator::d2fEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// TODO:ARM64: Enable TR::TreeEvaluator::d2fEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
-	}
+   {
+   return intFpTypeConversionHelper(node, TR::InstOpCode::fcvt_dtos, cg);
+   }
 
 TR::Register *
 OMR::ARM64::TreeEvaluator::ifdcmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg)

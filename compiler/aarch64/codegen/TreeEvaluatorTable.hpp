@@ -148,16 +148,16 @@
     TR::TreeEvaluator::labsEvaluator, // TR::labs		// absolute value of long
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::fabsEvaluator ,	// TR::fabs		// absolute value of float
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::dabsEvaluator ,	// TR::dabs		// absolute value of double
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::ishlEvaluator ,	// TR::ishl		// shift integer left                (child1 << child2)
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::lshlEvaluator ,	// TR::lshl		// shift long integer left           (child1 << child2)
+    TR::TreeEvaluator::ishlEvaluator, // TR::ishl		// shift integer left                (child1 << child2)
+    TR::TreeEvaluator::ishlEvaluator, // TR::lshl		// shift long integer left           (child1 << child2)
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::bshlEvaluator ,	// TR::bshl		// shift byte left                   (child1 << child2)
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::sshlEvaluator ,	// TR::sshl		// shift short integer left          (child1 << child2)
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::ishrEvaluator ,	// TR::ishr		// shift integer right arithmetically               (child1 >> child2)
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::lshrEvaluator ,	// TR::lshr		// shift long integer right arithmetically          (child1 >> child2)
+    TR::TreeEvaluator::ishrEvaluator, // TR::ishr		// shift integer right arithmetically               (child1 >> child2)
+    TR::TreeEvaluator::ishrEvaluator, // TR::lshr		// shift long integer right arithmetically          (child1 >> child2)
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::bshrEvaluator ,	// TR::bshr		// shift byte right arithmetically                  (child1 >> child2)
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::sshrEvaluator ,	// TR::sshr		// shift short integer arithmetically               (child1 >> child2)
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::iushrEvaluator ,	// TR::iushr		// shift integer right logically                   (child1 >> child2)
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::lushrEvaluator ,	// TR::lushr		// shift long integer right logically              (child1 >> child2)
+    TR::TreeEvaluator::iushrEvaluator, // TR::iushr		// shift integer right logically                   (child1 >> child2)
+    TR::TreeEvaluator::iushrEvaluator, // TR::lushr		// shift long integer right logically              (child1 >> child2)
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::bushrEvaluator ,	// TR::bushr		// shift byte right logically                      (child1 >> child2)
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::sushrEvaluator ,	// TR::sushr		// shift short integer right logically             (child1 >> child2)
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::irolEvaluator ,	// TR::irol		// rotate integer left

@@ -40,6 +40,9 @@
 #include <mach-o/dyld.h>
 #include <sys/param.h>
 #include <sys/mount.h>
+#include <sys/types.h>
+#include <sys/sysctl.h>
+
 #endif /* defined(LINUX) && !defined(OMRZTPF) */
 
 #include <inttypes.h>
@@ -581,46 +584,66 @@ omrsysinfo_get_OS_type(struct OMRPortLibrary *portLibrary)
 #endif
 }
 
+#if defined (OSX)
+#define KERN_OSPRODUCTVERSION "kern.osproductversion"
+#endif
+
+#if defined(J9OS_I5)
+ /* 'V', 'R', 'M', '0', & null */
+#define RELEASE_OVERHEAD 5
+#define FORMAT_STRING "V%sR%sM0"
+#else
+/* "." and terminating null character */
+#define RELEASE_OVERHEAD 2
+#define FORMAT_STRING "%s.%s"
+#endif /* defined(J9OS_I5) */
 
 const char *
 omrsysinfo_get_OS_version(struct OMRPortLibrary *portLibrary)
 {
 	if (NULL == PPG_si_osVersion) {
 		int rc;
+#if !defined (OSX)
 		struct utsname sysinfo;
+#endif
 
 #ifdef J9ZOS390
 		rc = __osname(&sysinfo);
+#elif defined (OSX)
+		/* uname() on MacOS returns the version of the Darwin kernel.
+		 * For compatibility with the reference implementation,
+		 * we need the operating system product name.
+		 * This is provided by sysctlbyname(), which is deprecated on Linux.
+		 */
+		size_t resultSize = 0;
+		rc = sysctlbyname(KERN_OSPRODUCTVERSION, NULL, &resultSize, NULL, 0);
 #else
 		rc = uname(&sysinfo);
-#endif
+#endif /* defined(OSX) */
 
 		if (rc >= 0) {
 			int len;
-			char *buffer;
+			char *buffer = NULL;
 #if defined(RS6000) || defined(J9ZOS390)
-#if defined(J9OS_I5)
-			len = strlen(sysinfo.version) + strlen(sysinfo.release) + 5; /* 'V', 'R', 'M', '0', & null */
-#else
-			len = strlen(sysinfo.version) + strlen(sysinfo.release) + 2; /* "." and terminating null character */
-#endif /* J9OS_I5 */
+			len = strlen(sysinfo.version) + strlen(sysinfo.release) + RELEASE_OVERHEAD;
 			buffer = portLibrary->mem_allocate_memory(portLibrary, len, OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
-			if (NULL == buffer) {
-				return NULL;
+			if (NULL != buffer) {
+				portLibrary->str_printf(portLibrary, buffer, len, FORMAT_STRING, sysinfo.version, sysinfo.release);
 			}
-#if defined(J9OS_I5)
-			portLibrary->str_printf(portLibrary, buffer, len, "V%sR%sM0", sysinfo.version, sysinfo.release);
-#else
-			portLibrary->str_printf(portLibrary, buffer, len, "%s.%s", sysinfo.version, sysinfo.release);
-#endif /* J9OS_I5 */
+#elif defined (OSX)
+			len = resultSize + 1;
+			buffer = portLibrary->mem_allocate_memory(portLibrary, len, OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
+			if (NULL != buffer) {
+				rc = sysctlbyname(KERN_OSPRODUCTVERSION, buffer, &resultSize, NULL, 0);
+				buffer[len - 1] = '\0';
+			}
 #else
 			len = strlen(sysinfo.release) + 1;
 			buffer = portLibrary->mem_allocate_memory(portLibrary, len, OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
-			if (NULL == buffer) {
-				return NULL;
+			if (NULL != buffer) {
+				strncpy(buffer, sysinfo.release, len);
+				buffer[len - 1] = '\0';
 			}
-			strncpy(buffer, sysinfo.release, len);
-			buffer[len - 1] = '\0';
 #endif /* RS6000 */
 			PPG_si_osVersion = buffer;
 		}

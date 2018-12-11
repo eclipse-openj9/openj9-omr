@@ -95,3 +95,83 @@ INSTANTIATE_TEST_CASE_P(CompareTest, Int32Compare, ::testing::Combine(
         std::make_tuple("icmpge", icmpge),
         std::make_tuple("icmplt", icmplt),
         std::make_tuple("icmple", icmple) )));
+
+int32_t lcmpeq(int64_t l, int64_t r) {
+    return (l == r) ? 1 : 0;
+}
+
+int32_t lcmpne(int64_t l, int64_t r) {
+    return (l != r) ? 1 : 0;
+}
+
+int32_t lcmpgt(int64_t l, int64_t r) {
+    return (l > r) ? 1 : 0;
+}
+
+int32_t lcmpge(int64_t l, int64_t r) {
+    return (l >= r) ? 1 : 0;
+}
+
+int32_t lcmplt(int64_t l, int64_t r) {
+    return (l < r) ? 1 : 0;
+}
+
+int32_t lcmple(int64_t l, int64_t r) {
+    return (l <= r) ? 1 : 0;
+}
+
+int32_t lcmp(int64_t l, int64_t r) {
+    return (l < r) ? -1 : ((l > r) ? 1 : 0);
+}
+
+class Int64Compare : public TRTest::OpCodeTest<int32_t,int64_t,int64_t> {};
+
+TEST_P(Int64Compare, UsingConst) {
+    auto param = TRTest::to_struct(GetParam());
+
+    char inputTrees[160] = {0};
+    std::snprintf(inputTrees, 160, "(method return=Int32 (block (ireturn (%s (lconst %lld) (lconst %lld)))))", param.opcode.c_str(), param.lhs, param.rhs);
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler{trees};
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<int32_t (*)(void)>();
+    volatile auto exp = param.oracle(param.lhs, param.rhs);
+    volatile auto act = entry_point();
+    ASSERT_EQ(exp, act);
+}
+
+TEST_P(Int64Compare, UsingLoadParam) {
+    auto param = TRTest::to_struct(GetParam());
+
+    char inputTrees[160] = {0};
+    std::snprintf(inputTrees, 160, "(method return=Int32 args=[Int64, Int64] (block (ireturn (%s (lload parm=0) (lload parm=1)))))", param.opcode.c_str());
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler{trees};
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<int32_t (*)(int64_t, int64_t)>();
+    volatile auto exp = param.oracle(param.lhs, param.rhs);
+    volatile auto act = entry_point(param.lhs, param.rhs);
+    ASSERT_EQ(exp, act);
+}
+
+INSTANTIATE_TEST_CASE_P(CompareTest, Int64Compare, ::testing::Combine(
+    ::testing::ValuesIn(TRTest::const_value_pairs<int64_t, int64_t>()),
+    ::testing::Values(
+        std::make_tuple("lcmpeq", lcmpeq),
+        std::make_tuple("lcmpne", lcmpne),
+        std::make_tuple("lcmpgt", lcmpgt),
+        std::make_tuple("lcmpge", lcmpge),
+        std::make_tuple("lcmplt", lcmplt),
+        std::make_tuple("lcmple", lcmple),
+        std::make_tuple("lcmp", lcmp)
+ )));

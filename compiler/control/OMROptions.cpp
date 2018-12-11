@@ -230,6 +230,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"disableAllocationSinking",           "O\tdon't delay object allocations until immediately before the corresponding constructor calls", TR::Options::disableOptimization, allocationSinking, 0, "P"},
    {"disableAndSimplification",           "O\tdisable and simplification",                     TR::Options::disableOptimization, andSimplification, 0, "P"},
    {DisableAnnotations,                   "O\tdisable annotation support",                     RESET_OPTION_BIT(TR_EnableAnnotations), "F"},
+   {"disableAOTAtCheapWarm",              "O\tdisable AOT with cheap warm opt level", SET_OPTION_BIT(TR_DisableAotAtCheapWarm), "F", NOT_IN_SUBSET},
    {"disableAOTCheckCastInlining",        "O\tdisable AOT check cast inlining",                SET_OPTION_BIT(TR_DisableAOTCheckCastInlining), "F"},
    {"disableAOTColdCheapTacticalGRA",   "O\tdisable AOT cold cheap tactical GRA",                      SET_OPTION_BIT(TR_DisableAOTColdCheapTacticalGRA), "F"},
    {"disableAOTInstanceFieldResolution",   "O\tdisable AOT instance field resolution",                      SET_OPTION_BIT(TR_DisableAOTInstanceFieldResolution), "F"},
@@ -2216,6 +2217,18 @@ OMR::Options::jitLatePostProcess(TR::OptionSet *optionSet, void * jitConfig)
             {
             if (_coldUpgradeSampleThreshold == TR_DEFAULT_COLD_UPGRADE_SAMPLE_THRESHOLD)
                _coldUpgradeSampleThreshold = 2;
+            }
+         else
+            {
+            // For AOT with GCR enabled we can be more conservative with 
+            // upgrades through sampling because we can rely on GCR
+            // In this case we'll use the same threshold value as the one
+            // employed in `setGlobalAggressiveAOT` (note that larger values
+            // means more conservative upgrades and that the default value is
+            // currently TR_DEFAULT_COLD_UPGRADE_SAMPLE_THRESHOLD==3)
+            if (!self()->getOption(TR_DisableGuardedCountingRecompilations) &&
+              _coldUpgradeSampleThreshold == TR_DEFAULT_COLD_UPGRADE_SAMPLE_THRESHOLD)
+               _coldUpgradeSampleThreshold = 10;
             }
 
          // disable DelayRelocationForAOTCompilations feature because with higher
@@ -5080,15 +5093,8 @@ void OMR::Options::setAggressiveQuickStart()
    // ...
    }
 
-
-void OMR::Options::setLocalAggressiveAOT()
+void OMR::Options::setInlinerOptionsForAggressiveAOT()
    {
-   // disable GCR (AOT supposedly is good enough)
-   self()->setOption(TR_DisableGuardedCountingRecompilations);
-
-   // More conservative recompilation through sampling
-   self()->setOption(TR_ConservativeCompilation, true);
-
    _bigCalleeThreshold = 150; // use a lower value to inline less and save compilation time
 
 #ifdef J9ZOS390
@@ -5097,6 +5103,16 @@ void OMR::Options::setLocalAggressiveAOT()
    _inlinerVeryLargeCompiledMethodThreshold = 100; // down from 150/210
    _inlinerVeryLargeCompiledMethodFaninThreshold = 0; // down from 1
 #endif
+   }
+
+void OMR::Options::setLocalAggressiveAOT()
+   {
+   // disable GCR (AOT supposedly is good enough)
+   self()->setOption(TR_DisableGuardedCountingRecompilations);
+
+   // More conservative recompilation through sampling
+   self()->setOption(TR_ConservativeCompilation, true);
+   self()->setInlinerOptionsForAggressiveAOT();
    }
 
 void OMR::Options::setGlobalAggressiveAOT()

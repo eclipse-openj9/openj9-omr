@@ -200,7 +200,7 @@ enum TR_CompilationOptions
    TR_Timing                              = 0x00000200 + 3,
    TR_SupportSwitchToInterpreter          = 0x00000400 + 3,
    TR_DisableFPCodeGen                    = 0x00000800 + 3,
-   // Available                           = 0x00001000 + 3,
+   TR_DisableAotAtCheapWarm               = 0x00001000 + 3,
    TR_Profile                             = 0x00002000 + 3,
    TR_DisableAsyncCompilation             = 0x00004000 + 3,
    TR_DisableCompilationThread            = 0x00008000 + 3,
@@ -1691,6 +1691,7 @@ public:
    void setAggressiveQuickStart();
    void setGlobalAggressiveAOT();
    void setLocalAggressiveAOT();
+   void setInlinerOptionsForAggressiveAOT();
    void setConservativeDefaultBehavior();
 
    static bool getCountsAreProvidedByUser() { return _countsAreProvidedByUser; } // set very late in setCounts()

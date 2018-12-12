@@ -146,6 +146,32 @@ struct IsPointer : IsPointerBase<typename RemoveCv<T>::Type> {};
 template <typename T>
 struct IsVoid : IsSame<typename RemoveCv<T>::Type, void> {};
 
+/// IsNonCvIntegral<T>::VALUE is true if T is a non-cv-qualified primitive integral type
+///
+/// Note: Unlike `std::is_integral`, any compiler-defined extended integer types are not
+/// supported by IsNonCvIntegral.
+template <typename T>
+struct IsNonCvIntegral : FalseConstant {};
+
+template <> struct IsNonCvIntegral<bool> : TrueConstant {};
+template <> struct IsNonCvIntegral<char> : TrueConstant {};
+template <> struct IsNonCvIntegral<signed char> : TrueConstant {};
+template <> struct IsNonCvIntegral<unsigned char> : TrueConstant {};
+template <> struct IsNonCvIntegral<short> : TrueConstant {};
+template <> struct IsNonCvIntegral<int> : TrueConstant {};
+template <> struct IsNonCvIntegral<long> : TrueConstant {};
+template <> struct IsNonCvIntegral<long long> : TrueConstant {};
+template <> struct IsNonCvIntegral<unsigned short> : TrueConstant {};
+template <> struct IsNonCvIntegral<unsigned int> : TrueConstant {};
+template <> struct IsNonCvIntegral<unsigned long> : TrueConstant {};
+template <> struct IsNonCvIntegral<unsigned long long> : TrueConstant {};
+
+/// IsIntegral<T>::VALUE is true if T is a (possibly cv-qualified) primitive integral type.
+///
+/// (see note for IsNonCvIntegral)
+template <typename T>
+struct IsIntegral : IsNonCvIntegral<typename RemoveCv<T>::Type> {};
+
 ///
 /// Miscellaneous transformations
 ///

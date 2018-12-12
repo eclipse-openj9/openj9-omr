@@ -23,6 +23,9 @@
 #include <OMR/TypeTraits.hpp>
 #include <gtest/gtest.h>
 
+#include <cstdlib>
+#include <stdint.h>
+
 namespace OMR
 {
 
@@ -144,6 +147,29 @@ TEST(TestTypeTraits, IsVoid)
 	EXPECT_FALSE((IsVoid<const volatile int>::VALUE));
 
 	EXPECT_FALSE((IsVoid<void*>::VALUE));
+}
+
+TEST(TestTypeTraits, IsIntegral)
+{
+	EXPECT_TRUE((IsIntegral<bool>::VALUE));
+	EXPECT_TRUE((IsIntegral<char>::VALUE));
+	EXPECT_TRUE((IsIntegral<unsigned char>::VALUE));
+	EXPECT_TRUE((IsIntegral<signed char>::VALUE));
+	EXPECT_TRUE((IsIntegral<unsigned short>::VALUE));
+	EXPECT_TRUE((IsIntegral<long>::VALUE));
+	EXPECT_TRUE((IsIntegral<unsigned long long>::VALUE));
+	EXPECT_TRUE((IsIntegral<const int8_t>::VALUE));
+	EXPECT_TRUE((IsIntegral<volatile uint16_t>::VALUE));
+	EXPECT_TRUE((IsIntegral<const volatile size_t>::VALUE));
+	EXPECT_TRUE((IsIntegral<intmax_t>::VALUE));
+	EXPECT_TRUE((IsIntegral<intptr_t>::VALUE));
+	EXPECT_TRUE((IsIntegral<uintmax_t>::VALUE));
+	EXPECT_TRUE((IsIntegral<uintptr_t>::VALUE));
+	EXPECT_FALSE((IsIntegral<float>::VALUE));
+	EXPECT_FALSE((IsIntegral<double>::VALUE));
+	EXPECT_FALSE((IsIntegral<void>::VALUE));
+	EXPECT_FALSE((IsIntegral<int*>::VALUE));
+	EXPECT_FALSE((IsIntegral<int&>::VALUE));
 }
 
 template <typename T>

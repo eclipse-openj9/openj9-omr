@@ -172,6 +172,18 @@ template <> struct IsNonCvIntegral<unsigned long long> : TrueConstant {};
 template <typename T>
 struct IsIntegral : IsNonCvIntegral<typename RemoveCv<T>::Type> {};
 
+/// IsNonCvFloatingPoint<T>::VALUE is true if T is a non-cv-qualified floating point type
+template <typename T>
+struct IsNonCvFloatingPoint : FalseConstant {};
+
+template <> struct IsNonCvFloatingPoint<float> : TrueConstant {};
+template <> struct IsNonCvFloatingPoint<double> : TrueConstant {};
+template <> struct IsNonCvFloatingPoint<long double> : TrueConstant {};
+
+/// IsFloatingPoint<T>::VALUE is tue if T is a (possibly cv-qualified) floating point type
+template <typename T>
+struct IsFloatingPoint : IsNonCvFloatingPoint<typename RemoveCv<T>::Type> {};
+
 ///
 /// Miscellaneous transformations
 ///

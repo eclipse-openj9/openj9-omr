@@ -172,6 +172,22 @@ TEST(TestTypeTraits, IsIntegral)
 	EXPECT_FALSE((IsIntegral<int&>::VALUE));
 }
 
+TEST(TestTypeTraits, IsFloatingPoint)
+{
+	EXPECT_TRUE((IsFloatingPoint<float>::VALUE));
+	EXPECT_TRUE((IsFloatingPoint<double>::VALUE));
+	EXPECT_TRUE((IsFloatingPoint<long double>::VALUE));
+	EXPECT_TRUE((IsFloatingPoint<const float>::VALUE));
+	EXPECT_TRUE((IsFloatingPoint<volatile float>::VALUE));
+	EXPECT_TRUE((IsFloatingPoint<const volatile float>::VALUE));
+	EXPECT_FALSE((IsFloatingPoint<int>::VALUE));
+	EXPECT_FALSE((IsFloatingPoint<long long>::VALUE));
+	EXPECT_FALSE((IsFloatingPoint<void>::VALUE));
+	EXPECT_FALSE((IsFloatingPoint<bool>::VALUE));
+	EXPECT_FALSE((IsFloatingPoint<float*>::VALUE));
+	EXPECT_FALSE((IsFloatingPoint<double&>::VALUE));
+}
+
 template <typename T>
 typename EnableIf<IsSame<T, int>::VALUE, bool>::Type sillyIsInt(T x)
 {

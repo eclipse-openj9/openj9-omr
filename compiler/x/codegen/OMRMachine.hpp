@@ -30,16 +30,16 @@ namespace OMR { typedef OMR::X86::Machine MachineConnector; }
 
 #include "compiler/codegen/OMRMachine.hpp"
 
-#include <stdint.h>                               // for uint8_t, int32_t, etc
-#include <string.h>                               // for NULL, memset
+#include <stdint.h>
+#include <string.h>
 #include "codegen/RealRegister.hpp"
-#include "codegen/Register.hpp"                   // for Register
+#include "codegen/Register.hpp"
 #include "codegen/RegisterConstants.hpp"
-#include "env/FilePointerDecl.hpp"                // for FILE
-#include "env/TRMemory.hpp"                       // for TR_Memory, etc
-#include "il/DataTypes.hpp"                       // for DataTypes, etc
-#include "infra/Assert.hpp"                       // for TR_ASSERT
-#include "x/codegen/X86Ops.hpp"                   // for TR_X86OpCodes
+#include "env/FilePointerDecl.hpp"
+#include "env/TRMemory.hpp"
+#include "il/DataTypes.hpp"
+#include "infra/Assert.hpp"
+#include "x/codegen/X86Ops.hpp"
 #include "x/codegen/X86Register.hpp"
 #include "infra/TRlist.hpp"
 class TR_BackingStore;
@@ -144,16 +144,6 @@ class OMR_EXTENSIBLE Machine : public OMR::Machine
     * @return RealRegister for specified register number
     */
    TR::RealRegister *getX86RealRegister(TR::RealRegister::RegNum regNum)
-      {
-      return _registerFile[regNum];
-      }
-
-   /**
-    * @brief Converts RegNum to RealRegister
-    * @param[in] regNum : register number
-    * @return RealRegister for specified register number
-    */
-   TR::RealRegister *getRealRegister(TR::RealRegister::RegNum regNum)
       {
       return _registerFile[regNum];
       }

@@ -35,9 +35,9 @@ namespace OMR { typedef OMR::Power::Machine MachineConnector; }
 
 #include "compiler/codegen/OMRMachine.hpp"
 #include "infra/TRlist.hpp"
-#include "codegen/RealRegister.hpp"         // for RealRegister, etc
-#include "env/TRMemory.hpp"                 // for TR_AllocationKind, etc
-#include "infra/Assert.hpp"                 // for TR_ASSERT
+#include "codegen/RealRegister.hpp"
+#include "env/TRMemory.hpp"
+#include "infra/Assert.hpp"
 
 namespace TR { class CodeGenerator; }
 namespace TR { class Instruction; }
@@ -97,16 +97,6 @@ class OMR_EXTENSIBLE Machine : public OMR::Machine
     * @return RealRegister for specified register number
     */
    TR::RealRegister *getPPCRealRegister(TR::RealRegister::RegNum regNum)
-      {
-      return _registerFile[regNum];
-      }
-
-   /**
-    * @brief Converts RegNum to RealRegister
-    * @param[in] regNum : register number
-    * @return RealRegister for specified register number
-    */
-   TR::RealRegister *getRealRegister(TR::RealRegister::RegNum regNum)
       {
       return _registerFile[regNum];
       }

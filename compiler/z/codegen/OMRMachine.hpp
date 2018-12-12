@@ -34,10 +34,10 @@ namespace OMR { typedef OMR::Z::Machine MachineConnector; }
 
 #include "compiler/codegen/OMRMachine.hpp"
 
-#include <string.h>                  // for memset
-#include "codegen/RealRegister.hpp"  // for RealRegister, etc
-#include "il/DataTypes.hpp"          // for CONSTANT64, etc
-#include "infra/Flags.hpp"           // for flags32_t
+#include <string.h>
+#include "codegen/RealRegister.hpp"
+#include "il/DataTypes.hpp"
+#include "infra/Flags.hpp"
 #include "infra/TRlist.hpp"
 
 class TR_Debug;
@@ -233,16 +233,6 @@ class OMR_EXTENSIBLE Machine : public OMR::Machine
     * @return RealRegister for specified register number
     */
    TR::RealRegister *getS390RealRegister(TR::RealRegister::RegNum regNum)
-      {
-      return _registerFile[regNum];
-      }
-
-   /**
-    * @brief Converts RegNum to RealRegister
-    * @param[in] regNum : register number
-    * @return RealRegister for specified register number
-    */
-   TR::RealRegister *getRealRegister(TR::RealRegister::RegNum regNum)
       {
       return _registerFile[regNum];
       }

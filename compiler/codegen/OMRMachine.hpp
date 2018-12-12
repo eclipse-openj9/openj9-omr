@@ -31,12 +31,12 @@ namespace OMR { class Machine; }
 namespace OMR { typedef OMR::Machine MachineConnector; }
 #endif
 
-#include <stddef.h>                            // for NULL
-#include <stdint.h>                            // for uint8_t, uint32_t
+#include <stddef.h>
+#include <stdint.h>
 #include "codegen/RegisterConstants.hpp"
 #include "codegen/RealRegister.hpp"
-#include "env/TRMemory.hpp"                    // for TR_Memory, etc
-#include "infra/Annotations.hpp"               // for OMR_EXTENSIBLE
+#include "env/TRMemory.hpp"
+#include "infra/Annotations.hpp"
 
 namespace TR { class CodeGenerator; }
 namespace TR { class Machine; }
@@ -67,6 +67,16 @@ class OMR_EXTENSIBLE Machine
       }
 
    inline TR::Machine * self();
+
+   /**
+    * @brief Converts RegNum to RealRegister
+    * @param[in] regNum : register number
+    * @return RealRegister for specified register number
+    */
+   TR::RealRegister *getRealRegister(TR::RealRegister::RegNum regNum)
+      {
+      return _registerFile[regNum];
+      }
 
    /**
     * \return : the cached TR::CodeGenerator object

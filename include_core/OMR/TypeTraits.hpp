@@ -98,6 +98,17 @@ struct RemoveCvRef : RemoveCv<typename RemoveReference<T>::Type> {};
 // template <typename T>
 // struct RemoveCvRef<T&&> : RemoveCvRef<T> {};
 
+/// Remove one layer of non-cv-qualified pointers
+template <typename T>
+struct RemoveNonCvPointer : TypeAlias<T> {};
+
+template <typename T>
+struct RemoveNonCvPointer<T*> : TypeAlias<T> {};
+
+/// Remove one layer of possibly cv-qualified pointers
+template <typename T>
+struct RemovePointer : RemoveNonCvPointer<typename RemoveCv<T>::Type> {};
+
 ///
 /// Type reflection: statically query types
 ///

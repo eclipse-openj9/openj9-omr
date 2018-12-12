@@ -98,6 +98,17 @@ TEST(TestTypeTraits, RemoveCvRef)
 	// TODO: EXPECT_TRUE((IsSame<int, RemoveCvRef<int&&>::Type>::VALUE));
 }
 
+TEST(TestTypeTraits, RemovePointer)
+{
+	EXPECT_TRUE((IsSame<int, RemovePointer<int>::Type>::VALUE));
+	EXPECT_TRUE((IsSame<int, RemovePointer<int*>::Type>::VALUE));
+	EXPECT_TRUE((IsSame<int, RemovePointer<int* const>::Type>::VALUE));
+	EXPECT_TRUE((IsSame<int, RemovePointer<int* volatile>::Type>::VALUE));
+	EXPECT_TRUE((IsSame<int, RemovePointer<int* const volatile>::Type>::VALUE));
+	EXPECT_TRUE((IsSame<const volatile int, RemovePointer<const volatile int * const volatile>::Type>::VALUE));
+	EXPECT_TRUE((IsSame<int*&, RemovePointer<int*&>::Type>::VALUE));
+}
+
 TEST(TestTypeTraits, IsReference)
 {
 	EXPECT_FALSE((IsReference<int>::VALUE));

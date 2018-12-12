@@ -26,6 +26,10 @@ compiler_library(ilgen
 	${CMAKE_CURRENT_LIST_DIR}/OMRIlBuilder.cpp
 	${CMAKE_CURRENT_LIST_DIR}/OMRIlType.cpp
 	${CMAKE_CURRENT_LIST_DIR}/OMRIlValue.cpp
+	${CMAKE_CURRENT_LIST_DIR}/OMRJitBuilderRecorder.cpp
+	${CMAKE_CURRENT_LIST_DIR}/OMRJitBuilderRecorderBinaryBuffer.cpp
+	${CMAKE_CURRENT_LIST_DIR}/OMRJitBuilderRecorderBinaryFile.cpp
+	${CMAKE_CURRENT_LIST_DIR}/OMRJitBuilderRecorderTextFile.cpp
 	${CMAKE_CURRENT_LIST_DIR}/OMRMethodBuilder.cpp
 	${CMAKE_CURRENT_LIST_DIR}/OMRThunkBuilder.cpp
 	${CMAKE_CURRENT_LIST_DIR}/OMRTypeDictionary.cpp

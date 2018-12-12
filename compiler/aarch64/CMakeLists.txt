@@ -37,7 +37,6 @@ compiler_library(aarch64
 	${CMAKE_CURRENT_LIST_DIR}/codegen/OMRMemoryReference.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codegen/OMRRealRegister.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codegen/OMRRegisterDependency.cpp
-	${CMAKE_CURRENT_LIST_DIR}/codegen/OMRRegisterIterator.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codegen/OMRSnippet.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codegen/OMRTreeEvaluator.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codegen/OpBinary.cpp

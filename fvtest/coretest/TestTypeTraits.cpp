@@ -188,6 +188,20 @@ TEST(TestTypeTraits, IsFloatingPoint)
 	EXPECT_FALSE((IsFloatingPoint<double&>::VALUE));
 }
 
+TEST(TestTypeTraits, IsArithmetic)
+{
+	EXPECT_TRUE((IsArithmetic<int>::VALUE));
+	EXPECT_TRUE((IsArithmetic<unsigned long>::VALUE));
+	EXPECT_TRUE((IsArithmetic<long double>::VALUE));
+	EXPECT_TRUE((IsArithmetic<uintptr_t>::VALUE));
+	EXPECT_TRUE((IsArithmetic<const double>::VALUE));
+	EXPECT_TRUE((IsArithmetic<volatile float>::VALUE));
+	EXPECT_TRUE((IsArithmetic<const volatile bool>::VALUE));
+	EXPECT_FALSE((IsArithmetic<float *>::VALUE));
+	EXPECT_FALSE((IsArithmetic<int&>::VALUE));
+	EXPECT_FALSE((IsArithmetic<void>::VALUE));
+}
+
 template <typename T>
 typename EnableIf<IsSame<T, int>::VALUE, bool>::Type sillyIsInt(T x)
 {

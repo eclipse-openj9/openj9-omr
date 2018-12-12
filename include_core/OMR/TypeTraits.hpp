@@ -184,6 +184,10 @@ template <> struct IsNonCvFloatingPoint<long double> : TrueConstant {};
 template <typename T>
 struct IsFloatingPoint : IsNonCvFloatingPoint<typename RemoveCv<T>::Type> {};
 
+/// IsArithmetic<T>::VALUE is true if T is a (possibly cv-qualified) primtive integral or floating point type
+template <typename T>
+struct IsArithmetic : BoolConstant<IsIntegral<T>::VALUE || IsFloatingPoint<T>::VALUE> {};
+
 ///
 /// Miscellaneous transformations
 ///

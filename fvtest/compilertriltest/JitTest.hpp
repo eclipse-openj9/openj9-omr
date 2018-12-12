@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2020 IBM Corp. and others
+ * Copyright (c) 2017, 2021 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -718,6 +718,22 @@ AssertionResult CmpHelperEQ<volatile double, volatile double>(const char* lhs_ex
    #define SKIP_ON_WINDOWS(reason) \
       SKIP_IF(false, reason)
 #endif /* defined(OMR_OS_WINDOWS) */
+
+/*
+ * @brief A macro to allow a test to be conditionally skipped under macOS/OS X
+ *
+ * The basic syntax for using this macro is:
+ *
+ *    SKIP_ON_OSX(<reason>) << <message>;
+ *
+ */
+#if defined (OSX)
+   #define SKIP_ON_OSX(reason) \
+      SKIP_IF(true, reason)
+#else
+   #define SKIP_ON_OSX(reason) \
+      SKIP_IF(false, reason)
+#endif /* defined(OSX) */
 
 /*
  * @brief A macro to allow a test to be conditionally skipped on POWER

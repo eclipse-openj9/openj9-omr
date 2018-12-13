@@ -189,10 +189,10 @@
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::l2dEvaluator ,	// TR::l2d		// convert long integer to double
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::l2bEvaluator ,	// TR::l2b		// convert long integer to byte
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::l2sEvaluator ,	// TR::l2s		// convert long integer to short integer
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::l2aEvaluator ,	// TR::l2a		// convert long integer to address
+    TR::TreeEvaluator::passThroughEvaluator, // TR::l2a		// convert long integer to address
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::lu2fEvaluator ,	// TR::lu2f		// convert unsigned long integer to float
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::lu2dEvaluator ,	// TR::lu2d		// convert unsigned long integer to double
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::lu2aEvaluator ,	// TR::lu2a		// convert unsigned long integer to address
+    TR::TreeEvaluator::passThroughEvaluator, // TR::lu2a		// convert unsigned long integer to address
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::f2iEvaluator ,	// TR::f2i		// convert float to integer
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::f2lEvaluator ,	// TR::f2l		// convert float to long integer
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::f2dEvaluator ,	// TR::f2d		// convert float to double
@@ -227,7 +227,7 @@
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::su2dEvaluator ,	// TR::su2d		// convert char to double
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::su2aEvaluator ,	// TR::su2a		// convert char to address
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::a2iEvaluator ,	// TR::a2i		// convert address to integer
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::a2lEvaluator ,	// TR::a2l		// convert address to long integer
+    TR::TreeEvaluator::passThroughEvaluator, // TR::a2l		// convert address to long integer
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::a2bEvaluator ,	// TR::a2b		// convert address to byte
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::a2sEvaluator ,	// TR::a2s		// convert address to short
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::icmpeqEvaluator ,	// TR::icmpeq		// integer compare if equal
@@ -419,7 +419,7 @@
     TR::TreeEvaluator::treetopEvaluator, // TR::treetop		// tree top to anchor subtrees with side-effects
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::MethodEnterHookEvaluator ,	// TR::MethodEnterHook	// called after a frame is built; temps initialized; and monitor acquired (if necessary)
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::MethodExitHookEvaluator ,	// TR::MethodExitHook	// called immediately before returning; frame not yet collapsed; monitor released (if necessary)
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::PassThroughEvaluator ,	// TR::PassThrough	// Dummy node that represents its single child.
+    TR::TreeEvaluator::passThroughEvaluator, // TR::passThrough	// Dummy node that represents its single child.
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::compressedRefsEvaluator ,	// TR::compressedRefs	// no-op anchor providing optimizable subexpressions used for compression/decompression.  First child is address load/store; second child is heap base displacement
     TR::TreeEvaluator::BBStartEvaluator, // TR::BBStart		// Start of Basic Block
     TR::TreeEvaluator::BBEndEvaluator, // TR::BBEnd		// End of Basic Block

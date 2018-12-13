@@ -433,6 +433,7 @@ int32_t TR_LoopVersioner::performWithoutDominators()
          naturalLoop->computeInvariantExpressions();
          }
 
+      _skipWrtbarVersion = false;
       _seenDefinedSymbolReferences->empty();
       _writtenAndNotJustForHeapification->empty();
       _additionInfo->empty();
@@ -532,7 +533,13 @@ int32_t TR_LoopVersioner::performWithoutDominators()
       //   divCheckTrees.deleteAll();
 
       bool awrtBarisWillBeEliminated = false;
-      if (!shouldOnlySpecializeLoops() && !refineAliases())
+      // Use separate env variables to completely disable wrtbar versioning,
+      // or reenable wrtbar version (i.e. revert to old, more aggressive behavior)
+      static char *disableWrtbarVersion = feGetEnv("TR_disableWrtbarVersion");
+      static char *enableWrtbarVersion = feGetEnv("TR_enableWrtbarVersion");
+      if ((!enableWrtbarVersion && _skipWrtbarVersion) || disableWrtbarVersion)
+         awrtbariTrees.deleteAll();
+      else if (!shouldOnlySpecializeLoops() && !refineAliases())
          awrtBarisWillBeEliminated = detectInvariantAwrtbaris(&awrtbariTrees);
       //else
       //   awrtBariTrees.deleteAll();
@@ -3284,6 +3291,11 @@ bool TR_LoopVersioner::detectChecksToBeEliminated(TR_RegionStructure *whileLoop,
          _containsCall = false;
          _nullCheckReference = NULL;
          _inNullCheckReference = false;
+
+         // If the node is a GC point (either cause GC and return, or cause GC and throw),
+         // be conservative and do not version wrtbars.
+         if (currentNode->canCauseGC())
+            _skipWrtbarVersion = true;
 
          if (currentOpCode.isNullCheck())
             _nullCheckReference = currentNode->getNullCheckReference();

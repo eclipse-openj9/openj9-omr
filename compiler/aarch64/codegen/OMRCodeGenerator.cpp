@@ -394,6 +394,14 @@ TR_GlobalRegisterNumber OMR::ARM64::CodeGenerator::getLinkageGlobalRegisterNumbe
    return 0;
    }
 
+void OMR::ARM64::CodeGenerator::apply24BitLabelRelativeRelocation(int32_t *cursor, TR::LabelSymbol *label)
+   {
+   TR_ASSERT(label->getCodeLocation(), "Attempt to relocate to a NULL label address!");
+
+   intptrj_t distance = (uintptrj_t)label->getCodeLocation() - (uintptrj_t)cursor;
+   *cursor |= ((distance >> 2) & 0x7ffff) << 5;
+   }
+
 int64_t OMR::ARM64::CodeGenerator::getLargestNegConstThatMustBeMaterialized()
    { 
    TR_ASSERT(0, "Not Implemented on AArch64"); 

@@ -313,12 +313,12 @@
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::fcmpgEvaluator ,	// TR::fcmpg		// float compare g (1 if child1 > child2 or unordered; 0 if child1 == child2; -1 if child1 < child2)
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::dcmplEvaluator ,	// TR::dcmpl		// double compare l (1 if child1 > child2; 0 if child1 == child2; -1 if child1 < child2 or unordered)
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::dcmpgEvaluator ,	// TR::dcmpg		// double compare g (1 if child1 > child2 or unordered; 0 if child1 == child2; -1 if child1 < child2)
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::ificmpeqEvaluator ,	// TR::ificmpeq		// integer compare and branch if equal
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::ificmpneEvaluator ,	// TR::ificmpne		// integer compare and branch if not equal
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::ificmpltEvaluator ,	// TR::ificmplt		// integer compare and branch if less than
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::ificmpgeEvaluator ,	// TR::ificmpge		// integer compare and branch if greater than or equal
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::ificmpgtEvaluator ,	// TR::ificmpgt		// integer compare and branch if greater than
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::ificmpleEvaluator ,	// TR::ificmple		// integer compare and branch if less than or equal
+    TR::TreeEvaluator::ificmpeqEvaluator, // TR::ificmpeq		// integer compare and branch if equal
+    TR::TreeEvaluator::ificmpneEvaluator, // TR::ificmpne		// integer compare and branch if not equal
+    TR::TreeEvaluator::ificmpltEvaluator, // TR::ificmplt		// integer compare and branch if less than
+    TR::TreeEvaluator::ificmpgeEvaluator, // TR::ificmpge		// integer compare and branch if greater than or equal
+    TR::TreeEvaluator::ificmpgtEvaluator, // TR::ificmpgt		// integer compare and branch if greater than
+    TR::TreeEvaluator::ificmpleEvaluator, // TR::ificmple		// integer compare and branch if less than or equal
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::ifiucmpeqEvaluator ,	// TR::ifiucmpeq		// unsigned integer compare and branch if equal
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::ifiucmpneEvaluator ,	// TR::ifiucmpne		// unsigned integer compare and branch if not equal
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::ifiucmpltEvaluator ,	// TR::ifiucmplt		// unsigned integer compare and branch if less than

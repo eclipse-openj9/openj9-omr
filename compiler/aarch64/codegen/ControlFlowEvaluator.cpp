@@ -367,10 +367,26 @@ OMR::ARM64::TreeEvaluator::lucmpleEvaluator(TR::Node *node, TR::CodeGenerator *c
 
 TR::Register *
 OMR::ARM64::TreeEvaluator::lcmpEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// TODO:ARM64: Enable TR::TreeEvaluator::lcmpEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
-	}
+   {
+   TR::Node *firstChild = node->getFirstChild();
+   TR::Node *secondChild = node->getSecondChild();
+   TR::Register *src1Reg = cg->evaluate(firstChild);
+   TR::Register *src2Reg = cg->evaluate(secondChild);
+   TR::Register *trgReg = cg->allocateRegister();
+   TR::Register *tmpReg = cg->allocateRegister();
+
+   generateCompareInstruction(cg, node, src1Reg, src2Reg, true);
+   generateCSetInstruction(cg, node, trgReg, TR::CC_GE);
+   generateCSetInstruction(cg, node, tmpReg, TR::CC_LE);
+   generateTrg1Src2Instruction(cg, TR::InstOpCode::subw, node, trgReg, trgReg, tmpReg);
+
+   cg->stopUsingRegister(tmpReg);
+
+   node->setRegister(trgReg);
+   firstChild->decReferenceCount();
+   secondChild->decReferenceCount();
+   return trgReg;
+   }
 
 TR::Register *
 OMR::ARM64::TreeEvaluator::acmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg)

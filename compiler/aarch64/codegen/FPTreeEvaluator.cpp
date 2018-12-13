@@ -57,17 +57,41 @@ OMR::ARM64::TreeEvaluator::dbits2lEvaluator(TR::Node *node, TR::CodeGenerator *c
 
 TR::Register *
 OMR::ARM64::TreeEvaluator::fconstEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// TODO:ARM64: Enable TR::TreeEvaluator::fconstEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
-	}
+   {
+   TR::Register *trgReg = cg->allocateSinglePrecisionRegister();
+   TR::Register *tmpReg = cg->allocateRegister();
+
+   union {
+      float f;
+      int32_t i;
+   } fvalue;
+
+   fvalue.f = node->getFloat();
+   loadConstant32(cg, node, fvalue.i, tmpReg);
+   generateTrg1Src1Instruction(cg, TR::InstOpCode::fmov_wtos, node, trgReg, tmpReg);
+   cg->stopUsingRegister(tmpReg);
+
+   return trgReg;
+   }
 
 TR::Register *
 OMR::ARM64::TreeEvaluator::dconstEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// TODO:ARM64: Enable TR::TreeEvaluator::dconstEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
-	}
+   {
+   TR::Register *trgReg = cg->allocateRegister(TR_FPR);
+   TR::Register *tmpReg = cg->allocateRegister();
+
+   union {
+      double d;
+      int64_t l;
+   } dvalue;
+
+   dvalue.d = node->getDouble();
+   loadConstant64(cg, node, dvalue.l, tmpReg);
+   generateTrg1Src1Instruction(cg, TR::InstOpCode::fmov_xtod, node, trgReg, tmpReg);
+   cg->stopUsingRegister(tmpReg);
+
+   return trgReg;
+   }
 
 TR::Register *
 OMR::ARM64::TreeEvaluator::floadEvaluator(TR::Node *node, TR::CodeGenerator *cg)

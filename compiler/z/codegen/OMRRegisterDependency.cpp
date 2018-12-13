@@ -959,6 +959,11 @@ TR_S390RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstru
                      break;
                   case TR_GPR:
                      opCode = TR::InstOpCode::getLoadOpCode();
+                     
+                     if (virtReg->is64BitReg())
+                        {
+                        opCode = TR::InstOpCode::LG;
+                        }
                      break;
                   case TR_FPR:
                      opCode = TR::InstOpCode::LD;
@@ -970,12 +975,10 @@ TR_S390RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstru
                      TR_ASSERT( 0, "\nRegister kind not supported in OOL spill\n");
                      break;
                   }
-
+               
                if (cg->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) &&
                    rk != TR_FPR && rk != TR_VRF)
                   {
-                  opCode = virtReg->is64BitReg()? TR::InstOpCode::LG : TR::InstOpCode::L;
-
                   if (assignedReg->isHighWordRegister())
                      {
                      // virtReg was spilled to an HPR and now we need it spilled to stack

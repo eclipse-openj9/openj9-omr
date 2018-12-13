@@ -446,7 +446,7 @@ public:
 	static TR::Register *treetopEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *MethodEnterHookEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *MethodExitHookEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *PassThroughEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+	static TR::Register *passThroughEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *compressedRefsEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *BBStartEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *BBEndEvaluator(TR::Node *node, TR::CodeGenerator *cg);

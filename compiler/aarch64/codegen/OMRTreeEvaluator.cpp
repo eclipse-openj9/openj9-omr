@@ -569,3 +569,14 @@ OMR::ARM64::TreeEvaluator::BBEndEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 
    return NULL;
    }
+
+// handles l2a, lu2a, a2l
+TR::Register *
+OMR::ARM64::TreeEvaluator::passThroughEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   TR::Node *child = node->getFirstChild();
+   TR::Register *trgReg = cg->evaluate(child);
+   child->decReferenceCount();
+   node->setRegister(trgReg);
+   return trgReg;
+   }

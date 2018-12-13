@@ -350,6 +350,7 @@ public:
 	uintptr_t markingArraySplitMinimumAmount; /**< minimum number of elements to split array scanning work in marking scheme */
 
 	bool rootScannerStatsEnabled; /**< Enable/disable recording of performance statistics for the root scanner.  Defaults to false. */
+	bool rootScannerStatsUsed; /**< Flag that indicates if rootScannerStats are used for in the last increment (by any thread, for any of its roots) */
 
 	/* bools and counters for -Xgc:fvtest options */
 	bool fvtest_forceOldResize;
@@ -1331,6 +1332,7 @@ public:
 		, markingArraySplitMaximumAmount(DEFAULT_ARRAY_SPLIT_MAXIMUM_SIZE)
 		, markingArraySplitMinimumAmount(DEFAULT_ARRAY_SPLIT_MINIMUM_SIZE)
 		, rootScannerStatsEnabled(false)
+		, rootScannerStatsUsed(false)
 		, fvtest_forceOldResize(0)
 		, fvtest_oldResizeCounter(0)
 #if defined(OMR_GC_MODRON_SCAVENGER) || defined(OMR_GC_VLHGC)

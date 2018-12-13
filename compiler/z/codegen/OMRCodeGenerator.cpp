@@ -3962,56 +3962,44 @@ OMR::Z::CodeGenerator::gprClobberEvaluate(TR::Node * node, bool force_copy, bool
    if (!self()->canClobberNodesRegister(node, 1, &data, ignoreRefCount) || force_copy)
       {
       char * CLOBBER_EVAL = "LR=Clobber_eval";
-      if ((node->getType().isInt64() || TR::Compiler->target.is64Bit() )
-         && TR::Compiler->target.is32Bit())
+      if (TR::Compiler->target.is32Bit() && !self()->use64BitRegsOn32Bit() && node->getType().isInt64())
          {
-         if (self()->use64BitRegsOn32Bit())
+         TR::RegisterPair * trgRegPair = (TR::RegisterPair *) srcRegister;
+         TR::Register * lowRegister = srcRegister->getLowOrder();
+         TR::Register * highRegister = srcRegister->getHighOrder();
+         bool allocatePair=false;
+         if (!data.canClobberLowWord())
             {
-            TR::Register * targetRegister = self()->allocate64bitRegister();
-
-            cursor = generateRRInstruction(self(), TR::InstOpCode::LGR, node, targetRegister, srcRegister);
-
-            return targetRegister;
+            lowRegister = self()->allocateRegister();
+            self()->stopUsingRegister(lowRegister); // Allocate pair will make these live again
+            allocatePair = true;
             }
-         else
+         if (!data.canClobberHighWord())
             {
-            TR::RegisterPair * trgRegPair = (TR::RegisterPair *) srcRegister;
-            TR::Register * lowRegister = srcRegister->getLowOrder();
-            TR::Register * highRegister = srcRegister->getHighOrder();
-            bool allocatePair=false;
-            if (!data.canClobberLowWord())
-               {
-               lowRegister = self()->allocateRegister();
-               self()->stopUsingRegister(lowRegister); // Allocate pair will make these live again
-               allocatePair = true;
-               }
-            if (!data.canClobberHighWord())
-               {
-               highRegister = self()->allocateRegister();
-               self()->stopUsingRegister(highRegister); // Allocate pair will make these live again
-               allocatePair = true;
-               }
-
-            TR::RegisterPair * tempRegPair = allocatePair ? self()->allocateConsecutiveRegisterPair(lowRegister, highRegister) : trgRegPair;
-            if (!data.canClobberLowWord())
-               {
-               cursor = generateRRInstruction(self(), TR::InstOpCode::LR, node, tempRegPair->getLowOrder(), trgRegPair->getLowOrder());
-               if (debugObj)
-                  {
-                  debugObj->addInstructionComment(toS390RRInstruction(cursor), CLOBBER_EVAL);
-                  }
-               }
-
-            if (!data.canClobberHighWord())
-               {
-               cursor = generateRRInstruction(self(), TR::InstOpCode::LR, node, tempRegPair->getHighOrder(), trgRegPair->getHighOrder());
-               if (debugObj)
-                  {
-                  debugObj->addInstructionComment(toS390RRInstruction(cursor), CLOBBER_EVAL);
-                  }
-               }
-            return tempRegPair;
+            highRegister = self()->allocateRegister();
+            self()->stopUsingRegister(highRegister); // Allocate pair will make these live again
+            allocatePair = true;
             }
+
+         TR::RegisterPair * tempRegPair = allocatePair ? self()->allocateConsecutiveRegisterPair(lowRegister, highRegister) : trgRegPair;
+         if (!data.canClobberLowWord())
+            {
+            cursor = generateRRInstruction(self(), TR::InstOpCode::LR, node, tempRegPair->getLowOrder(), trgRegPair->getLowOrder());
+            if (debugObj)
+               {
+               debugObj->addInstructionComment(toS390RRInstruction(cursor), CLOBBER_EVAL);
+               }
+            }
+
+         if (!data.canClobberHighWord())
+            {
+            cursor = generateRRInstruction(self(), TR::InstOpCode::LR, node, tempRegPair->getHighOrder(), trgRegPair->getHighOrder());
+            if (debugObj)
+               {
+               debugObj->addInstructionComment(toS390RRInstruction(cursor), CLOBBER_EVAL);
+               }
+            }
+         return tempRegPair;
          }
       else if (node->getOpCode().isFloat())
          {
@@ -4057,22 +4045,13 @@ OMR::Z::CodeGenerator::gprClobberEvaluate(TR::Node * node, bool force_copy, bool
       else
          {
          TR::Register * targetRegister = self()->allocateClobberableRegister(srcRegister);
-         TR::InstOpCode::Mnemonic loadRegOpCode = TR::InstOpCode::getLoadRegOpCode();
-         if (node->getType().isAddress())
+         TR::InstOpCode::Mnemonic loadRegOpCode = TR::InstOpCode::getLoadRegOpCodeFromNode(self(), node);
+
+         if (srcRegister->is64BitReg())
             {
-            if (TR::Compiler->target.is64Bit())
-               loadRegOpCode = TR::InstOpCode::LGR;
-            else
-               loadRegOpCode = TR::InstOpCode::LR;
+            loadRegOpCode = TR::InstOpCode::LGR;
             }
-         if (self()->supportsHighWordFacility() && !self()->comp()->getOption(TR_DisableHighWordRA) && TR::Compiler->target.is64Bit())
-            {
-            loadRegOpCode = TR::InstOpCode::getLoadRegOpCodeFromNode(self(), node);
-            if (srcRegister->is64BitReg())
-               {
-               loadRegOpCode = TR::InstOpCode::LGR;
-               }
-            }
+
          cursor = generateRRInstruction(self(), loadRegOpCode, node, targetRegister, srcRegister);
 
          if (debugObj)
@@ -4083,7 +4062,7 @@ OMR::Z::CodeGenerator::gprClobberEvaluate(TR::Node * node, bool force_copy, bool
          return targetRegister;
          }
       }
-   return self()->evaluate(node);
+   return srcRegister;
    }
 
 

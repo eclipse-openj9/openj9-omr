@@ -13907,10 +13907,7 @@ OMR::Z::TreeEvaluator::lRegLoadEvaluator(TR::Node * node, TR::CodeGenerator * cg
       }
 
    // GRA needs to tell LRA about the register type
-   if (cg->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA))
-      {
-      globalReg->setIs64BitReg(true);
-      }
+   globalReg->setIs64BitReg(true);
 
    return globalReg;
    }

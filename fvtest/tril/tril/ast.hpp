@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2017 IBM Corp. and others
+ * Copyright (c) 2017, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -23,7 +23,8 @@
 #define AST_HPP
 
 #include "ast.h"
-#include "enable_if.hpp"
+
+#include "OMR/TypeTraits.hpp"
 
 #include <type_traits>
 #include <assert.h>
@@ -105,17 +106,17 @@ struct ASTValue {
      */
 
     template <typename T>
-    typename Tril::enable_if<std::is_integral<T>::value , T>::type get() const {
+    typename OMR::EnableIf<std::is_integral<T>::value , T>::Type get() const {
         assert(Integer == _type);
         return static_cast<T>(_value.integer);
     }
     template <typename T>
-    typename Tril::enable_if<std::is_floating_point<T>::value, T>::type get() const {
+    typename OMR::EnableIf<std::is_floating_point<T>::value, T>::Type get() const {
         assert(FloatingPoint == _type);
         return static_cast<T>(_value.floatingPoint);
     }
     template <typename T>
-    typename Tril::enable_if<std::is_same<String_t, T>::value, T>::type get() const {
+    typename OMR::EnableIf<std::is_same<String_t, T>::value, T>::Type get() const {
         assert(String == _type);
         return static_cast<T>(_value.str);
     }
@@ -153,15 +154,15 @@ struct ASTValue {
      */
 
     template <typename T>
-    typename Tril::enable_if<std::is_integral<T>::value , bool>::type isCompatibleWith() const {
+    typename OMR::EnableIf<std::is_integral<T>::value , bool>::type isCompatibleWith() const {
         return Integer == _type;
     }
     template <typename T>
-    typename Tril::enable_if<std::is_floating_point<T>::value, bool>::type isCompatibleWith() const {
+    typename OMR::EnableIf<std::is_floating_point<T>::value, bool>::type isCompatibleWith() const {
         return FloatingPoint == _type;
     }
     template <typename T>
-    typename Tril::enable_if<std::is_same<String_t, T>::value, bool>::type isCompatibleWith() const {
+    typename OMR::EnableIf<std::is_same<String_t, T>::value, bool>::type isCompatibleWith() const {
         return String == _type;
     }
 

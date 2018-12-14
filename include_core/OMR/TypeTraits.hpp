@@ -135,6 +135,19 @@ struct IsPointer : IsPointerBase<typename RemoveCv<T>::Type> {};
 template <typename T>
 struct IsVoid : IsSame<typename RemoveCv<T>::Type, void> {};
 
+///
+/// Miscellaneous transformations
+///
+
+/// EnableIf<B, T>::Type will exist if-and-only-if B is true (a basic SFINAE construct)
+template <bool B, typename T = void>
+struct EnableIf {};
+
+template <typename T>
+struct EnableIf<true, T>
+{
+	typedef T Type;
+};
 }  // namespace OMR
 
 #endif // OMR_TYPETRAITS_HPP_

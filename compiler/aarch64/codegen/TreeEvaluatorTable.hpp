@@ -622,10 +622,10 @@
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::iumulhEvaluator ,	// TR::iumulh		// multiply 2 unsigned integers; and return the high word of the product
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::lmulhEvaluator ,	// TR::lmulh		// multiply 2 long integers; and return the high word of the product
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::lumulhEvaluator ,	// TR::lumulh		// multiply 2 unsigned long integers; and return the high word of the product
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::ibits2fEvaluator ,	// TR::ibits2f		// type-coerce int to float
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::fbits2iEvaluator ,	// TR::fbits2i		// type-coerce float to int
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::lbits2dEvaluator ,	// TR::lbits2d		// type-coerce long to double
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::dbits2lEvaluator ,	// TR::dbits2l		// type-coerce double to long
+    TR::TreeEvaluator::ibits2fEvaluator, // TR::ibits2f		// type-coerce int to float
+    TR::TreeEvaluator::fbits2iEvaluator, // TR::fbits2i		// type-coerce float to int
+    TR::TreeEvaluator::lbits2dEvaluator, // TR::lbits2d		// type-coerce long to double
+    TR::TreeEvaluator::dbits2lEvaluator, // TR::dbits2l		// type-coerce double to long
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::lookupEvaluator ,	// TR::lookup		// lookupswitch (child1 is selector expression; child2 the default destination; subsequent children are case nodes
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::trtLookupEvaluator ,	// TR::trtLookup		// special lookupswitch (child1 must be trt; child2 the default destination; subsequent children are case nodes) The internal control flow is similar to lookup; but each CASE represents a special semantics associated with a flag on it
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::CaseEvaluator ,	// TR::Case		// case nodes that are children of TR_switch.  Uses the branchdestination and the int const field

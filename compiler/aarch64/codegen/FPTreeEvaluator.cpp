@@ -27,33 +27,59 @@
 #include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
 
+static void fpBitsMovHelper(TR::Node *node, TR::InstOpCode::Mnemonic op, TR::Register *trgReg, TR::CodeGenerator *cg)
+   {
+   TR::Node *child = node->getFirstChild();
+   TR::Register *srcReg = cg->evaluate(child);
+
+   generateTrg1Src1Instruction(cg, op, node, trgReg, srcReg);
+
+   cg->decReferenceCount(child);
+   }
+
 TR::Register *
 OMR::ARM64::TreeEvaluator::ibits2fEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// TODO:ARM64: Enable TR::TreeEvaluator::ibits2fEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
-	}
+   {
+   TR::Register *trgReg = cg->allocateSinglePrecisionRegister();
+
+   fpBitsMovHelper(node, TR::InstOpCode::fmov_wtos, trgReg, cg);
+
+   node->setRegister(trgReg);
+   return trgReg;
+   }
 
 TR::Register *
 OMR::ARM64::TreeEvaluator::fbits2iEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// TODO:ARM64: Enable TR::TreeEvaluator::fbits2iEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
-	}
+   {
+   TR::Register *trgReg = cg->allocateRegister();
+
+   fpBitsMovHelper(node, TR::InstOpCode::fmov_stow, trgReg, cg);
+
+   node->setRegister(trgReg);
+   return trgReg;
+   }
 
 TR::Register *
 OMR::ARM64::TreeEvaluator::lbits2dEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// TODO:ARM64: Enable TR::TreeEvaluator::lbits2dEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
-	}
+   {
+   TR::Register *trgReg = cg->allocateRegister(TR_FPR);
+
+   fpBitsMovHelper(node, TR::InstOpCode::fmov_xtod, trgReg, cg);
+
+   node->setRegister(trgReg);
+   return trgReg;
+   }
 
 TR::Register *
 OMR::ARM64::TreeEvaluator::dbits2lEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// TODO:ARM64: Enable TR::TreeEvaluator::dbits2lEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
-	}
+   {
+   TR::Register *trgReg = cg->allocateRegister();
+
+   fpBitsMovHelper(node, TR::InstOpCode::fmov_dtox, trgReg, cg);
+
+   node->setRegister(trgReg);
+   return trgReg;
+   }
 
 TR::Register *
 OMR::ARM64::TreeEvaluator::fconstEvaluator(TR::Node *node, TR::CodeGenerator *cg)

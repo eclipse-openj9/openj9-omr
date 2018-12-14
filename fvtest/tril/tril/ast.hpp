@@ -26,7 +26,6 @@
 
 #include "OMR/TypeTraits.hpp"
 
-#include <type_traits>
 #include <assert.h>
 #include <cstring>
 
@@ -41,8 +40,8 @@
  *
  * Type name     | Used for              | Compatible with (C++ types)
  * --------------|-----------------------|--------------------------------------
- * Integer       | integral values       | any type satisfying `std::is_integral`
- * FloatingPoint | floating point values | any type satisfying `std::is_floating_point`
+ * Integer       | integral values       | any type satisfying `OMR::IsIntegral`/`std::is_integral`
+ * FloatingPoint | floating point values | any type satisfying `OMR::IsFloatingPoint`/`std::is_floating_point`
  * String        | character strings     | `const char*`
  *
  * Names for these types are defined in the ASTType enum.
@@ -106,17 +105,17 @@ struct ASTValue {
      */
 
     template <typename T>
-    typename OMR::EnableIf<std::is_integral<T>::value , T>::Type get() const {
+    typename OMR::EnableIf<OMR::IsIntegral<T>::VALUE , T>::Type get() const {
         assert(Integer == _type);
         return static_cast<T>(_value.integer);
     }
     template <typename T>
-    typename OMR::EnableIf<std::is_floating_point<T>::value, T>::Type get() const {
+    typename OMR::EnableIf<OMR::IsFloatingPoint<T>::VALUE, T>::Type get() const {
         assert(FloatingPoint == _type);
         return static_cast<T>(_value.floatingPoint);
     }
     template <typename T>
-    typename OMR::EnableIf<std::is_same<String_t, T>::value, T>::Type get() const {
+    typename OMR::EnableIf<OMR::IsSame<String_t, T>::VALUE, T>::Type get() const {
         assert(String == _type);
         return static_cast<T>(_value.str);
     }
@@ -154,15 +153,15 @@ struct ASTValue {
      */
 
     template <typename T>
-    typename OMR::EnableIf<std::is_integral<T>::value , bool>::type isCompatibleWith() const {
+    typename OMR::EnableIf<OMR::IsIntegral<T>::VALUE , bool>::Type isCompatibleWith() const {
         return Integer == _type;
     }
     template <typename T>
-    typename OMR::EnableIf<std::is_floating_point<T>::value, bool>::type isCompatibleWith() const {
+    typename OMR::EnableIf<OMR::IsFloatingPoint<T>::VALUE, bool>::Type isCompatibleWith() const {
         return FloatingPoint == _type;
     }
     template <typename T>
-    typename OMR::EnableIf<std::is_same<String_t, T>::value, bool>::type isCompatibleWith() const {
+    typename OMR::EnableIf<OMR::IsSame<String_t, T>::VALUE, bool>::Type isCompatibleWith() const {
         return String == _type;
     }
 

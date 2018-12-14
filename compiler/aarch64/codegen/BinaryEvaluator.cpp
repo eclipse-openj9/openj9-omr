@@ -20,6 +20,7 @@
  *******************************************************************************/
 
 #include "codegen/ARM64Instruction.hpp"
+#include "codegen/ARM64ShiftCode.hpp"
 #include "codegen/CodeGenerator.hpp"
 #include "codegen/GenerateInstructions.hpp"
 #include "codegen/Linkage.hpp"
@@ -191,47 +192,81 @@ OMR::ARM64::TreeEvaluator::lremEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
 	}
 
+static TR::Register *shiftHelper(TR::Node *node, TR::ARM64ShiftCode shiftType, TR::CodeGenerator *cg)
+   {
+   TR::Node *firstChild = node->getFirstChild();
+   TR::Node *secondChild = node->getSecondChild();
+   TR::ILOpCodes secondOp = secondChild->getOpCodeValue();
+   TR::Register *srcReg = cg->evaluate(firstChild);
+   TR::Register *trgReg = cg->allocateRegister();
+   bool is64bit = node->getDataType().isInt64();
+   TR::InstOpCode::Mnemonic op;
+
+   if (secondOp == TR::iconst || secondOp == TR::iuconst)
+      {
+      int32_t value = secondChild->getInt();
+      uint32_t shift = is64bit ? (value & 0x3F) : (value & 0x1F);
+      switch (shiftType)
+         {
+         case TR::SH_LSL:
+            generateLogicalShiftLeftImmInstruction(cg, node, trgReg, srcReg, shift);
+            break;
+         case TR::SH_LSR:
+            generateLogicalShiftRightImmInstruction(cg, node, trgReg, srcReg, shift);
+            break;
+         case TR::SH_ASR:
+            generateArithmeticShiftRightImmInstruction(cg, node, trgReg, srcReg, shift);
+            break;
+         default:
+            TR_ASSERT(false, "Unsupported shift type.");
+         }
+      }
+   else
+      {
+      TR::Register *shiftAmountReg = cg->evaluate(secondChild);
+      switch (shiftType)
+         {
+         case TR::SH_LSL:
+            op = is64bit ? TR::InstOpCode::lslvx : TR::InstOpCode::lslvw;
+            break;
+         case TR::SH_LSR:
+            op = is64bit ? TR::InstOpCode::lsrvx : TR::InstOpCode::lsrvw;
+            break;
+         case TR::SH_ASR:
+            op = is64bit ? TR::InstOpCode::asrvx : TR::InstOpCode::asrvw;
+            break;
+         default:
+            TR_ASSERT(false, "Unsupported shift type.");
+         }
+      generateTrg1Src2Instruction(cg, op, node, trgReg, srcReg, shiftAmountReg);
+      }
+
+   node->setRegister(trgReg);
+   firstChild->decReferenceCount();
+   secondChild->decReferenceCount();
+   return trgReg;
+   }
+
+// also handles lshl
 TR::Register *
 OMR::ARM64::TreeEvaluator::ishlEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// TODO:ARM64: Enable TR::TreeEvaluator::ishlEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
-	}
+   {
+   return shiftHelper(node, TR::SH_LSL, cg);
+   }
 
-TR::Register *
-OMR::ARM64::TreeEvaluator::lshlEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// TODO:ARM64: Enable TR::TreeEvaluator::lshlEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
-	}
-
+// also handles lshr
 TR::Register *
 OMR::ARM64::TreeEvaluator::ishrEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// TODO:ARM64: Enable TR::TreeEvaluator::ishrEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
-	}
+   {
+   return shiftHelper(node, TR::SH_ASR, cg);
+   }
 
-TR::Register *
-OMR::ARM64::TreeEvaluator::lshrEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// TODO:ARM64: Enable TR::TreeEvaluator::lshrEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
-	}
-
+// also handles lushr
 TR::Register *
 OMR::ARM64::TreeEvaluator::iushrEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// TODO:ARM64: Enable TR::TreeEvaluator::iushrEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
-	}
-
-TR::Register *
-OMR::ARM64::TreeEvaluator::lushrEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// TODO:ARM64: Enable TR::TreeEvaluator::lushrEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
-	}
+   {
+   return shiftHelper(node, TR::SH_LSR, cg);
+   }
 
 TR::Register *
 OMR::ARM64::TreeEvaluator::irolEvaluator(TR::Node *node, TR::CodeGenerator *cg)

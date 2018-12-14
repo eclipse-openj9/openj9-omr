@@ -225,10 +225,41 @@ OMR::ARM64::TreeEvaluator::iloadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 // also handles aloadi
 TR::Register *
 OMR::ARM64::TreeEvaluator::aloadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// TODO:ARM64: Enable TR::TreeEvaluator::aloadEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
-	}
+   {
+   TR::Compilation *comp = cg->comp();
+   TR::Register *tempReg;
+
+   if (!node->getSymbolReference()->getSymbol()->isInternalPointer())
+      {
+      if (node->getSymbolReference()->getSymbol()->isNotCollected())
+         tempReg = cg->allocateRegister();
+      else
+         tempReg = cg->allocateCollectedReferenceRegister();
+      }
+   else
+      {
+      tempReg = cg->allocateRegister();
+      tempReg->setPinningArrayPointer(node->getSymbolReference()->getSymbol()->castToInternalPointerAutoSymbol()->getPinningArrayPointer());
+      tempReg->setContainsInternalPointer();
+      }
+
+   node->setRegister(tempReg);
+
+   TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(node, 8, cg);
+   generateTrg1MemInstruction(cg, TR::InstOpCode::ldrimmx, node, tempReg, tempMR);
+
+   /*
+    * Enable this part when dmb instruction becomes available
+   bool needSync = (node->getSymbolReference()->getSymbol()->isSyncVolatile() && TR::Compiler->target.isSMP());
+   if (needSync)
+      {
+      generateInstruction(cg, TR::InstOpCode::dmb, node);
+      }
+    */
+   tempMR->decNodeReferenceCounts(cg);
+
+   return tempReg;
+   }
 
 // also handles lloadi
 TR::Register *
@@ -302,7 +333,7 @@ TR::Register *commonStoreEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic op, 
    return NULL;
    }
 
-// also handles lstorei
+// also handles lstorei, astore, astorei
 TR::Register *
 OMR::ARM64::TreeEvaluator::lstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {

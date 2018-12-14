@@ -268,19 +268,47 @@ OMR::ARM64::TreeEvaluator::iushrEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    return shiftHelper(node, TR::SH_LSR, cg);
    }
 
+// also handles lrol
 TR::Register *
 OMR::ARM64::TreeEvaluator::irolEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// TODO:ARM64: Enable TR::TreeEvaluator::irolEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
-	}
+   {
+   TR::Node *firstChild = node->getFirstChild();
+   TR::Node *secondChild = node->getSecondChild();
+   TR::Register *trgReg = cg->gprClobberEvaluate(firstChild);
+   bool is64bit = node->getDataType().isInt64();
+   TR::InstOpCode::Mnemonic op;
 
-TR::Register *
-OMR::ARM64::TreeEvaluator::lrolEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// TODO:ARM64: Enable TR::TreeEvaluator::lrolEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
-	}
+   if (secondChild->getOpCode().isLoadConst())
+      {
+      int32_t value = secondChild->getInt();
+      uint32_t shift = is64bit ? (value & 0x3F) : (value & 0x1F);
+
+      if (shift != 0)
+         {
+         shift = is64bit ? (64 - shift) : (32 - shift); // change ROL to ROR
+         op = is64bit ? TR::InstOpCode::extrx : TR::InstOpCode::extrw; // ROR is an alias of EXTR
+         generateTrg1Src2ShiftedInstruction(cg, op, node, trgReg, trgReg, trgReg, TR::SH_LSL, shift);
+         }
+      }
+   else
+      {
+      TR::Register *shiftAmountReg = cg->evaluate(secondChild);
+      generateNegInstruction(cg, node, shiftAmountReg, shiftAmountReg); // change ROL to ROR
+      if (is64bit)
+         {
+         // 32->64 bit sign extension: SXTW is alias of SBFM
+         uint32_t imm = 0x101F; // N=1, immr=0, imms=31
+         generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::sbfmx, node, shiftAmountReg, shiftAmountReg, imm);
+         }
+      op = is64bit ? TR::InstOpCode::rorvx : TR::InstOpCode::rorvw;
+      generateTrg1Src2Instruction(cg, op, node, trgReg, trgReg, shiftAmountReg);
+      }
+
+   node->setRegister(trgReg);
+   firstChild->decReferenceCount();
+   secondChild->decReferenceCount();
+   return trgReg;
+   }
 
 TR::Register *
 OMR::ARM64::TreeEvaluator::landEvaluator(TR::Node *node, TR::CodeGenerator *cg)

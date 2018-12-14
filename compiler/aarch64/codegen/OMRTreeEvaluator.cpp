@@ -215,12 +215,14 @@ TR::Register *commonLoadEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic op, i
    return tempReg;
    }
 
+// also handles iloadi
 TR::Register *
 OMR::ARM64::TreeEvaluator::iloadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return commonLoadEvaluator(node, TR::InstOpCode::ldrimmw, 4, cg);
    }
 
+// also handles aloadi
 TR::Register *
 OMR::ARM64::TreeEvaluator::aloadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 	{
@@ -228,24 +230,28 @@ OMR::ARM64::TreeEvaluator::aloadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
 	}
 
+// also handles lloadi
 TR::Register *
 OMR::ARM64::TreeEvaluator::lloadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return commonLoadEvaluator(node, TR::InstOpCode::ldrimmx, 8, cg);
    }
 
+// also handles bloadi
 TR::Register *
 OMR::ARM64::TreeEvaluator::bloadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return commonLoadEvaluator(node, TR::InstOpCode::ldrsbimmx, 1, cg);
    }
 
+// also handles sloadi
 TR::Register *
 OMR::ARM64::TreeEvaluator::sloadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return commonLoadEvaluator(node, TR::InstOpCode::ldrshimmx, 2, cg);
    }
 
+// also handles cloadi
 TR::Register *
 OMR::ARM64::TreeEvaluator::cloadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
@@ -296,24 +302,28 @@ TR::Register *commonStoreEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic op, 
    return NULL;
    }
 
+// also handles lstorei
 TR::Register *
 OMR::ARM64::TreeEvaluator::lstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return commonStoreEvaluator(node, TR::InstOpCode::strimmx, 8, cg);
    }
 
+// also handles bstorei
 TR::Register *
 OMR::ARM64::TreeEvaluator::bstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return commonStoreEvaluator(node, TR::InstOpCode::strbimm, 1, cg);
    }
 
+// also handles sstorei, cstore, cstorei
 TR::Register *
 OMR::ARM64::TreeEvaluator::sstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return commonStoreEvaluator(node, TR::InstOpCode::strhimm, 2, cg);
    }
 
+// also handles istorei
 TR::Register *
 OMR::ARM64::TreeEvaluator::istoreEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {

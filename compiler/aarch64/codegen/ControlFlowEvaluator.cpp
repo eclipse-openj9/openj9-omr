@@ -367,12 +367,14 @@ static TR::Register *lcmpHelper(TR::Node *node, TR::ARM64ConditionCode cc, TR::C
    return trgReg;
    }
 
+// also handles lucmpeq
 TR::Register *
 OMR::ARM64::TreeEvaluator::lcmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return lcmpHelper(node, TR::CC_EQ, cg);
    }
 
+// also handles lucmpne
 TR::Register *
 OMR::ARM64::TreeEvaluator::lcmpneEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {

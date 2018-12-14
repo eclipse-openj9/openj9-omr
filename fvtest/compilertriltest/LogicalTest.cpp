@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2017 IBM Corp. and others
+ * Copyright (c) 2017, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -36,6 +36,14 @@ int32_t iabs(int32_t l) {
 
 int32_t ior(int32_t l, int32_t r) {
     return l | r;
+}
+
+int32_t iand(int32_t l, int32_t r) {
+    return l & r;
+}
+
+int32_t ixor(int32_t l, int32_t r) {
+    return l ^ r;
 }
 
 class Int32LogicalUnary : public TRTest::UnaryOpTest<int32_t> {}; 
@@ -91,6 +99,7 @@ TEST_P(Int32LogicalBinary, UsingConst) {
 INSTANTIATE_TEST_CASE_P(LogicalTest, Int32LogicalBinary, ::testing::Combine(
     ::testing::ValuesIn(TRTest::const_value_pairs<int32_t,int32_t>()),
     ::testing::Values(
-        std::make_tuple("ior", ior)
+        std::make_tuple("ior", ior),
+        std::make_tuple("iand", iand),
+        std::make_tuple("ixor", ixor)
         )));
-

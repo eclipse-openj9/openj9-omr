@@ -496,7 +496,7 @@ static void registerCopy(TR::Instruction *precedingInstruction,
          generateTrg1Src2Instruction(cg, TR::InstOpCode::orrx, node, targetReg, zeroReg, sourceReg, precedingInstruction); /* mov (register) */
          break;
       case TR_FPR:
-         TR_ASSERT(false, "Not implemented yet.");
+         generateTrg1Src1Instruction(cg, TR::InstOpCode::fmovd, node, targetReg, sourceReg, precedingInstruction);
          break;
       default:
          TR_ASSERT(false, "Unsupported RegisterKind.");

@@ -422,9 +422,10 @@
 		rev16x,                                                 	/* 0x5AC00400	REV16     	 */
 		rev32,                                                  	/* 0xDAC00800	REV32     	 */
 /* VFP instructions */
+		fmovs,                                                  	/* 0x1E204000	FMOV      	 */
+		fmovd,                                                  	/* 0x1E604000	FMOV      	 */
 		fmov_wtos,                                              	/* 0x1E270000	FMOV      	 */
 		fmov_xtod,                                              	/* 0x9E670000	FMOV      	 */
-
 /* Internal OpCodes */
 		proc,  // Entry to the method
 		fence, // Fence

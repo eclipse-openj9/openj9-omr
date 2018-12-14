@@ -421,6 +421,8 @@ const OMR::ARM64::InstOpCode::OpCodeBinaryEntry OMR::ARM64::InstOpCode::binaryEn
 		0x5AC00400,	/* REV16     	rev16x	 */
 		0xDAC00800,	/* REV32     	rev32	 */
 /* VFP instructions */
+		0x1E204000,	/* FMOV      	fmovs	 */
+		0x1E604000,	/* FMOV      	fmovd	 */
 		0x1E270000,	/* FMOV      	fmov_wtos	 */
 		0x9E670000,	/* FMOV      	fmov_xtod	 */
 };

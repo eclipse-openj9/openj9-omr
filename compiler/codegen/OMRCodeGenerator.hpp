@@ -805,6 +805,21 @@ class OMR_EXTENSIBLE CodeGenerator
    void commitToCodeCache() { _committedToCodeCache = true; }
    bool committedToCodeCache() { return _committedToCodeCache; }
 
+   /**
+    * \brief Answers whether the CodeCache in the current compilation has been switched
+    *        from the originally assigned CodeCache.
+    *
+    * \return true if the CodeCache has been switched; false otherwise.
+    */
+   bool hasCodeCacheSwitched() const { return _codeCacheSwitched; }
+
+   /**
+    * \brief Updates the state of whether the CodeCache has been switched.
+    *
+    * \param[in] s : bool indicating whether the CodeCache has been switched
+    */
+   void setCodeCacheSwitched(bool s) { _codeCacheSwitched = s; }
+
    // --------------------------------------------------------------------------
    // Load extensions (Z)
 
@@ -1938,6 +1953,8 @@ class OMR_EXTENSIBLE CodeGenerator
 
    TR::CodeCache * _codeCache;
    bool _committedToCodeCache;
+
+   bool _codeCacheSwitched; ///< Has the CodeCache switched from the initially assigned CodeCache?
 
    TR_Stack<TR::Node *> _stackOfArtificiallyInflatedNodes;
 

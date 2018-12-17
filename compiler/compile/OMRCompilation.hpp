@@ -540,7 +540,15 @@ public:
    TR::list<TR_Pair<TR::Snippet,TR_ResolvedMethod> *> *getSnippetsToBePatchedOnRegisterNative() { return &_snippetsToBePatchedOnRegisterNative; }
 
    void switchCodeCache(TR::CodeCache *newCodeCache);
-   bool getCodeCacheSwitched() { return _codeCacheSwitched; }
+
+   /**
+    * These functions are deprecated and live in Compilation only to redirect
+    * downstream projects to the new CodeGenerator API.  They will be removed
+    * once all downstream projects have been updated to the new API once it is
+    * merged (currently only OpenJ9).
+    */
+   bool getCodeCacheSwitched();
+   void setCodeCacheSwitched(bool s);
 
    void setCurrentCodeCache(TR::CodeCache *codeCache);
    TR::CodeCache *getCurrentCodeCache();

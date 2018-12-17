@@ -133,14 +133,14 @@ struct IsReference<T&> : TrueConstant {};
 
 /// Helper for IsPointer.
 template <typename T>
-struct IsPointerBase : FalseConstant {};
+struct IsNonCvPointer : FalseConstant {};
 
 template <typename T>
-struct IsPointerBase<T*> : TrueConstant {};
+struct IsNonCvPointer<T*> : TrueConstant {};
 
 /// IsPointer<T>::VALUE is true if T is a (possibly cv qualified) primitive pointer type.
 template <typename T>
-struct IsPointer : IsPointerBase<typename RemoveCv<T>::Type> {};
+struct IsPointer : IsNonCvPointer<typename RemoveCv<T>::Type> {};
 
 /// IsVoid<T>::VALUE is true if T is (possibly cv qualified) void.
 template <typename T>

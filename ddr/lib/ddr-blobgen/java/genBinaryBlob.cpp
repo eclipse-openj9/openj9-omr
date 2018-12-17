@@ -797,7 +797,20 @@ public:
 DDR_RC
 BlobFieldVisitor::visitType(Type *type) const
 {
-	*_typePrefix += type->_name;
+	const string & typeName = type->_name;
+	bool isSigned = false;
+	size_t bitWidth = 0;
+
+	if (Type::isStandardType(typeName.c_str(), (size_t)typeName.length(), &isSigned, &bitWidth)) {
+		stringstream newType;
+
+		newType << (isSigned ? "I" : "U") << bitWidth;
+
+		*_typePrefix += newType.str();
+	} else {
+		*_typePrefix += typeName;
+	}
+
 	return DDR_RC_OK;
 }
 

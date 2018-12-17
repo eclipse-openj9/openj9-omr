@@ -133,7 +133,8 @@ main(int argc, char *argv[])
 		rc = scanner.startScan(&portLibrary, &ir, &options.debugFiles, options.blacklistFile);
 
 #if defined(DEBUG_PRINT_TYPES)
-		printf("== scan results ==\n");
+		OMRPORT_ACCESS_FROM_OMRPORT(&portLibrary);
+		omrtty_printf("== scan results ==\n");
 		for (vector<Type *>::const_iterator type = ir._types.begin(); type != ir._types.end(); ++type) {
 			(*type)->acceptVisitor(printer);
 		}
@@ -145,7 +146,8 @@ main(int argc, char *argv[])
 		ir.removeDuplicates();
 
 #if defined(DEBUG_PRINT_TYPES)
-		printf("== after removing duplicates ==\n");
+		OMRPORT_ACCESS_FROM_OMRPORT(&portLibrary);
+		omrtty_printf("== after removing duplicates ==\n");
 		for (vector<Type *>::const_iterator type = ir._types.begin(); type != ir._types.end(); ++type) {
 			(*type)->acceptVisitor(printer);
 		}

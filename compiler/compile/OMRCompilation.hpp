@@ -518,8 +518,15 @@ public:
    // Should be in Code Generator
    //
    // J9
-   int32_t getNumReservedIPICTrampolines() const { return _numReservedIPICTrampolines; }
-   void setNumReservedIPICTrampolines(int32_t n) { _numReservedIPICTrampolines = n; }
+
+   /**
+    * These functions are deprecated and live in Compilation only to redirect
+    * downstream projects to the new CodeGenerator API.  They will be removed
+    * once all downstream projects have been updated to the new API once it is
+    * merged (currently only OpenJ9).
+    */
+   int32_t getNumReservedIPICTrampolines();
+   void setNumReservedIPICTrampolines(int32_t n);
 
    TR::list<TR::Instruction*> *getStaticPICSites() {return &_staticPICSites;}
    TR::list<TR::Instruction*> *getStaticHCRPICSites() {return &_staticHCRPICSites;}
@@ -1206,10 +1213,6 @@ private:
    void *                            _relocatableMethodCodeStart;
    const int32_t                     _compThreadID; // The ID of the supporting compilation thread; 0 for compilation an application thread
    volatile bool                     _failCHtableCommitFlag;
-
-   int32_t                           _numReservedIPICTrampolines;
-                                                              // The list is moved to the jittedBodyInfo at end of compilatuion
-
 
    PhaseTimingSummary                _phaseTimer;
    TR::PhaseMemSummary               _phaseMemProfiler;

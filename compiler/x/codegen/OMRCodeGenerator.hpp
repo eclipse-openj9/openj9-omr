@@ -346,7 +346,7 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
 
    int32_t branchDisplacementToHelperOrTrampoline(uint8_t *nextInstructionAddress, TR::SymbolReference *helper);
 
-   /*
+   /**
     * \brief Reserve space in the code cache for a specified number of trampolines.
     *
     * \param[in] numTrampolines : number of trampolines to reserve
@@ -354,6 +354,21 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
     * \return : none
     */
    void reserveNTrampolines(int32_t numTrampolines) { return; }
+
+   /**
+    * \brief Provides the number of trampolines in the current CodeCache that have
+    *        been reserved for unpopulated interface PIC (IPIC) slots.
+    *
+    * \return The number of reserved IPIC trampolines.
+    */
+   int32_t getNumReservedIPICTrampolines() const { return _numReservedIPICTrampolines; }
+
+   /**
+    * \brief Updates the number of reserved IPIC trampolines in the current CodeCache.
+    *
+    * \param[in] n : number of reserved IPIC trampolines
+    */
+   void setNumReservedIPICTrampolines(int32_t n) { _numReservedIPICTrampolines = n; }
 
    // Note: This leaves the code aligned in the specified manner.
    TR::Instruction *generateSwitchToInterpreterPrePrologue(TR::Instruction *prev, uint8_t alignment, uint8_t alignmentMargin);
@@ -643,6 +658,8 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
    TR::LabelSymbol                  *_switchToInterpreterLabel;
 
    TR_X86OpCodes                   _xmmDoubleLoadOpCode;
+
+   int32_t _numReservedIPICTrampolines; ///< number of reserved IPIC trampolines
 
    enum TR_X86CodeGeneratorFlags
       {

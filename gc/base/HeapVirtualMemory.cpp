@@ -140,7 +140,7 @@ MM_HeapVirtualMemory::tearDown(MM_EnvironmentBase* env)
 		manager->destroyRegionTable(env);
 	}
 
-	memoryManager->destroyVirtualMemory(env, &_vmemHandle);
+	memoryManager->destroyVirtualMemoryForHeap(env, &_vmemHandle);
 
 	MM_Heap::tearDown(env);
 }

@@ -3113,3 +3113,10 @@ OMR::X86::CodeGenerator::arrayTranslateAndTestMinimumNumberOfIterations()
    // times can appear to iterate slightly less than that.
    return self()->comp()->getOptLevel() >= scorching ? 4 : 8;
    }
+
+void
+OMR::X86::CodeGenerator::switchCodeCacheTo(TR::CodeCache *newCodeCache)
+   {
+   self()->setNumReservedIPICTrampolines(0);
+   OMR::CodeGenerator::switchCodeCacheTo(newCodeCache);
+   }

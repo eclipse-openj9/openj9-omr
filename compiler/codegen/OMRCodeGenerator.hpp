@@ -820,6 +820,13 @@ class OMR_EXTENSIBLE CodeGenerator
     */
    void setCodeCacheSwitched(bool s) { _codeCacheSwitched = s; }
 
+   /**
+    * \brief Changes the current CodeCache to the provided CodeCache.
+    *
+    * \param[in] newCodeCache : the CodeCache to switch to
+    */
+   void switchCodeCacheTo(TR::CodeCache *newCodeCache);
+
    // --------------------------------------------------------------------------
    // Load extensions (Z)
 

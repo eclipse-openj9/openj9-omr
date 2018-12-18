@@ -370,6 +370,13 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
     */
    void setNumReservedIPICTrampolines(int32_t n) { _numReservedIPICTrampolines = n; }
 
+   /**
+    * \brief Changes the current CodeCache to the provided CodeCache.
+    *
+    * \param[in] newCodeCache : the CodeCache to switch to
+    */
+   void switchCodeCacheTo(TR::CodeCache *newCodeCache);
+
    // Note: This leaves the code aligned in the specified manner.
    TR::Instruction *generateSwitchToInterpreterPrePrologue(TR::Instruction *prev, uint8_t alignment, uint8_t alignmentMargin);
 

@@ -958,11 +958,13 @@ TR_S390RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstru
                      opCode = TR::InstOpCode::LG;
                      break;
                   case TR_GPR:
-                     opCode = TR::InstOpCode::getLoadOpCode();
-                     
                      if (virtReg->is64BitReg())
                         {
                         opCode = TR::InstOpCode::LG;
+                        }
+                     else
+                        {
+                        opCode = TR::InstOpCode::L;
                         }
                      break;
                   case TR_FPR:

@@ -3881,18 +3881,6 @@ TR_Debug::getRuntimeHelperName(int32_t index)
          case TR_flushGPU:                  return "flushGPU";
          case TR_callGPU:                   return "callGPU";
 
-         case TR_MTUnresolvedInt32Load:     return "MTUnresolvedInt32Load";
-         case TR_MTUnresolvedInt64Load:     return "MTUnresolvedInt64Load";
-         case TR_MTUnresolvedFloatLoad:     return "MTUnresolvedFloatLoad";
-         case TR_MTUnresolvedDoubleLoad:    return "MTUnresolvedDoubleLoad";
-         case TR_MTUnresolvedAddressLoad:   return "MTUnresolvedAddressLoad";
-
-         case TR_MTUnresolvedInt32Store:    return "MTUnresolvedInt32Store";
-         case TR_MTUnresolvedInt64Store:    return "MTUnresolvedInt64Store";
-         case TR_MTUnresolvedFloatStore:    return "MTUnresolvedFloatStore";
-         case TR_MTUnresolvedDoubleStore:   return "MTUnresolvedDoubleStore";
-         case TR_MTUnresolvedAddressStore:  return "MTUnresolvedAddressStore";
-
          case TR_newObject:                 return "jitNewObject";
          case TR_newObjectNoZeroInit:       return "jitNewObjectNoZeroInit";
          case TR_newArray:                  return "jitNewArray";

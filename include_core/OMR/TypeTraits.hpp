@@ -98,6 +98,17 @@ struct RemoveCvRef : RemoveCv<typename RemoveReference<T>::Type> {};
 // template <typename T>
 // struct RemoveCvRef<T&&> : RemoveCvRef<T> {};
 
+/// Remove one layer of non-cv-qualified pointers
+template <typename T>
+struct RemoveNonCvPointer : TypeAlias<T> {};
+
+template <typename T>
+struct RemoveNonCvPointer<T*> : TypeAlias<T> {};
+
+/// Remove one layer of possibly cv-qualified pointers
+template <typename T>
+struct RemovePointer : RemoveNonCvPointer<typename RemoveCv<T>::Type> {};
+
 ///
 /// Type reflection: statically query types
 ///
@@ -122,18 +133,60 @@ struct IsReference<T&> : TrueConstant {};
 
 /// Helper for IsPointer.
 template <typename T>
-struct IsPointerBase : FalseConstant {};
+struct IsNonCvPointer : FalseConstant {};
 
 template <typename T>
-struct IsPointerBase<T*> : TrueConstant {};
+struct IsNonCvPointer<T*> : TrueConstant {};
 
 /// IsPointer<T>::VALUE is true if T is a (possibly cv qualified) primitive pointer type.
 template <typename T>
-struct IsPointer : IsPointerBase<typename RemoveCv<T>::Type> {};
+struct IsPointer : IsNonCvPointer<typename RemoveCv<T>::Type> {};
 
 /// IsVoid<T>::VALUE is true if T is (possibly cv qualified) void.
 template <typename T>
 struct IsVoid : IsSame<typename RemoveCv<T>::Type, void> {};
+
+/// IsNonCvIntegral<T>::VALUE is true if T is a non-cv-qualified primitive integral type
+///
+/// Note: Unlike `std::is_integral`, any compiler-defined extended integer types are not
+/// supported by IsNonCvIntegral.
+template <typename T>
+struct IsNonCvIntegral : FalseConstant {};
+
+template <> struct IsNonCvIntegral<bool> : TrueConstant {};
+template <> struct IsNonCvIntegral<char> : TrueConstant {};
+template <> struct IsNonCvIntegral<signed char> : TrueConstant {};
+template <> struct IsNonCvIntegral<unsigned char> : TrueConstant {};
+template <> struct IsNonCvIntegral<short> : TrueConstant {};
+template <> struct IsNonCvIntegral<int> : TrueConstant {};
+template <> struct IsNonCvIntegral<long> : TrueConstant {};
+template <> struct IsNonCvIntegral<long long> : TrueConstant {};
+template <> struct IsNonCvIntegral<unsigned short> : TrueConstant {};
+template <> struct IsNonCvIntegral<unsigned int> : TrueConstant {};
+template <> struct IsNonCvIntegral<unsigned long> : TrueConstant {};
+template <> struct IsNonCvIntegral<unsigned long long> : TrueConstant {};
+
+/// IsIntegral<T>::VALUE is true if T is a (possibly cv-qualified) primitive integral type.
+///
+/// (see note for IsNonCvIntegral)
+template <typename T>
+struct IsIntegral : IsNonCvIntegral<typename RemoveCv<T>::Type> {};
+
+/// IsNonCvFloatingPoint<T>::VALUE is true if T is a non-cv-qualified floating point type
+template <typename T>
+struct IsNonCvFloatingPoint : FalseConstant {};
+
+template <> struct IsNonCvFloatingPoint<float> : TrueConstant {};
+template <> struct IsNonCvFloatingPoint<double> : TrueConstant {};
+template <> struct IsNonCvFloatingPoint<long double> : TrueConstant {};
+
+/// IsFloatingPoint<T>::VALUE is tue if T is a (possibly cv-qualified) floating point type
+template <typename T>
+struct IsFloatingPoint : IsNonCvFloatingPoint<typename RemoveCv<T>::Type> {};
+
+/// IsArithmetic<T>::VALUE is true if T is a (possibly cv-qualified) primtive integral or floating point type
+template <typename T>
+struct IsArithmetic : BoolConstant<IsIntegral<T>::VALUE || IsFloatingPoint<T>::VALUE> {};
 
 ///
 /// Miscellaneous transformations

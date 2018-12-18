@@ -1,19 +1,19 @@
 ###############################################################################
 # Copyright (c) 2000, 2017 IBM Corp. and others
-#  
+#
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
 # distribution and is available at https://www.eclipse.org/legal/epl-2.0/
 # or the Apache License, Version 2.0 which accompanies this distribution and
 # is available at https://www.apache.org/licenses/LICENSE-2.0.
-#       
+#
 # This Source Code may also be made available under the following
 # Secondary Licenses when the conditions for such availability set
 # forth in the Eclipse Public License, v. 2.0 are satisfied: GNU
 # General Public License, version 2 with the GNU Classpath
 # Exception [1] and GNU General Public License, version 2 with the
 # OpenJDK Assembly Exception [2].
-#     
+#
 # [1] https://www.gnu.org/software/classpath/license.html
 # [2] http://openjdk.java.net/legal/assembly-exception.html
 #
@@ -25,7 +25,7 @@
 CC?=gcc
 CXX?=g++
 # one glorious day we can remove -Wno-write-strings
-CXXFLAGS=-g -std=c++0x -O0 -c -fno-rtti -fPIC -I./include -Wno-write-strings
+CXXFLAGS=-g -std=c++0x -O0 -c -fno-rtti -fPIC -I./include -I../../../include_core -Wno-write-strings
 
 .SUFFIXES: .cpp .o
 
@@ -144,14 +144,14 @@ Call.o: $(SAMPLE_SRC)/Call.cpp $(SAMPLE_SRC)/Call.hpp
 	$(CXX) -o $@ $(CXXFLAGS) $<
 
 
-conditionals : $(LIBJITBUILDER) Conditionals.o	
+conditionals : $(LIBJITBUILDER) Conditionals.o
 	$(CXX) -g -fno-rtti -o $@ Conditionals.o -L$(LIBJITBUILDERDIR) -ljitbuilder -ldl
 
 Conditionals.o: $(SAMPLE_SRC)/Conditionals.cpp $(SAMPLE_SRC)/Conditionals.hpp
 	$(CXX) -o $@ $(CXXFLAGS) $<
 
 
-conststring : $(LIBJITBUILDER) ConstString.o	
+conststring : $(LIBJITBUILDER) ConstString.o
 	$(CXX) -g -fno-rtti -o $@ ConstString.o -L$(LIBJITBUILDERDIR) -ljitbuilder -ldl
 
 ConstString.o: $(SAMPLE_SRC)/ConstString.cpp $(SAMPLE_SRC)/ConstString.hpp

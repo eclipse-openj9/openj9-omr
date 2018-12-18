@@ -23,6 +23,9 @@
 #include <OMR/TypeTraits.hpp>
 #include <gtest/gtest.h>
 
+#include <cstdlib>
+#include <stdint.h>
+
 namespace OMR
 {
 
@@ -98,6 +101,17 @@ TEST(TestTypeTraits, RemoveCvRef)
 	// TODO: EXPECT_TRUE((IsSame<int, RemoveCvRef<int&&>::Type>::VALUE));
 }
 
+TEST(TestTypeTraits, RemovePointer)
+{
+	EXPECT_TRUE((IsSame<int, RemovePointer<int>::Type>::VALUE));
+	EXPECT_TRUE((IsSame<int, RemovePointer<int*>::Type>::VALUE));
+	EXPECT_TRUE((IsSame<int, RemovePointer<int* const>::Type>::VALUE));
+	EXPECT_TRUE((IsSame<int, RemovePointer<int* volatile>::Type>::VALUE));
+	EXPECT_TRUE((IsSame<int, RemovePointer<int* const volatile>::Type>::VALUE));
+	EXPECT_TRUE((IsSame<const volatile int, RemovePointer<const volatile int * const volatile>::Type>::VALUE));
+	EXPECT_TRUE((IsSame<int*&, RemovePointer<int*&>::Type>::VALUE));
+}
+
 TEST(TestTypeTraits, IsReference)
 {
 	EXPECT_FALSE((IsReference<int>::VALUE));
@@ -133,6 +147,59 @@ TEST(TestTypeTraits, IsVoid)
 	EXPECT_FALSE((IsVoid<const volatile int>::VALUE));
 
 	EXPECT_FALSE((IsVoid<void*>::VALUE));
+}
+
+TEST(TestTypeTraits, IsIntegral)
+{
+	EXPECT_TRUE((IsIntegral<bool>::VALUE));
+	EXPECT_TRUE((IsIntegral<char>::VALUE));
+	EXPECT_TRUE((IsIntegral<unsigned char>::VALUE));
+	EXPECT_TRUE((IsIntegral<signed char>::VALUE));
+	EXPECT_TRUE((IsIntegral<unsigned short>::VALUE));
+	EXPECT_TRUE((IsIntegral<long>::VALUE));
+	EXPECT_TRUE((IsIntegral<unsigned long long>::VALUE));
+	EXPECT_TRUE((IsIntegral<const int8_t>::VALUE));
+	EXPECT_TRUE((IsIntegral<volatile uint16_t>::VALUE));
+	EXPECT_TRUE((IsIntegral<const volatile size_t>::VALUE));
+	EXPECT_TRUE((IsIntegral<intmax_t>::VALUE));
+	EXPECT_TRUE((IsIntegral<intptr_t>::VALUE));
+	EXPECT_TRUE((IsIntegral<uintmax_t>::VALUE));
+	EXPECT_TRUE((IsIntegral<uintptr_t>::VALUE));
+	EXPECT_FALSE((IsIntegral<float>::VALUE));
+	EXPECT_FALSE((IsIntegral<double>::VALUE));
+	EXPECT_FALSE((IsIntegral<void>::VALUE));
+	EXPECT_FALSE((IsIntegral<int*>::VALUE));
+	EXPECT_FALSE((IsIntegral<int&>::VALUE));
+}
+
+TEST(TestTypeTraits, IsFloatingPoint)
+{
+	EXPECT_TRUE((IsFloatingPoint<float>::VALUE));
+	EXPECT_TRUE((IsFloatingPoint<double>::VALUE));
+	EXPECT_TRUE((IsFloatingPoint<long double>::VALUE));
+	EXPECT_TRUE((IsFloatingPoint<const float>::VALUE));
+	EXPECT_TRUE((IsFloatingPoint<volatile float>::VALUE));
+	EXPECT_TRUE((IsFloatingPoint<const volatile float>::VALUE));
+	EXPECT_FALSE((IsFloatingPoint<int>::VALUE));
+	EXPECT_FALSE((IsFloatingPoint<long long>::VALUE));
+	EXPECT_FALSE((IsFloatingPoint<void>::VALUE));
+	EXPECT_FALSE((IsFloatingPoint<bool>::VALUE));
+	EXPECT_FALSE((IsFloatingPoint<float*>::VALUE));
+	EXPECT_FALSE((IsFloatingPoint<double&>::VALUE));
+}
+
+TEST(TestTypeTraits, IsArithmetic)
+{
+	EXPECT_TRUE((IsArithmetic<int>::VALUE));
+	EXPECT_TRUE((IsArithmetic<unsigned long>::VALUE));
+	EXPECT_TRUE((IsArithmetic<long double>::VALUE));
+	EXPECT_TRUE((IsArithmetic<uintptr_t>::VALUE));
+	EXPECT_TRUE((IsArithmetic<const double>::VALUE));
+	EXPECT_TRUE((IsArithmetic<volatile float>::VALUE));
+	EXPECT_TRUE((IsArithmetic<const volatile bool>::VALUE));
+	EXPECT_FALSE((IsArithmetic<float *>::VALUE));
+	EXPECT_FALSE((IsArithmetic<int&>::VALUE));
+	EXPECT_FALSE((IsArithmetic<void>::VALUE));
 }
 
 template <typename T>

@@ -11250,12 +11250,12 @@ TR::Node *constrainLoadaddr(OMR::ValuePropagation *vp, TR::Node *node)
       TR::VPClassType *typeConstraint = 0;
       TR::AutomaticSymbol *localObj = symbol->castToLocalObjectSymbol();
       symRef                       = localObj->getClassSymbolReference();
-      if (localObj->getKind() == TR::New)
+      if (localObj->getOpCodeKind() == TR::New)
          {
          if (symRef)
             typeConstraint = TR::VPClassType::create(vp, symRef, true);
          }
-      else if (localObj->getKind() == TR::anewarray)
+      else if (localObj->getOpCodeKind() == TR::anewarray)
          {
          typeConstraint = TR::VPClassType::create(vp, symRef, true);
          typeConstraint = typeConstraint->getClassType()->getArrayClass(vp);

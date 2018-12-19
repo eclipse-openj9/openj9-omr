@@ -775,23 +775,11 @@ TR::RealRegister *OMR::X86::Machine::freeBestGPRegister(TR::Instruction         
                    self()->getDebug()->getName(bestDiscardableRegister));
 
             tempMR->setBaseRegister(info->getBaseRegister()->getAssignedRegister());
-#ifdef DEBUG
-            self()->cg()->incNumRematerializedIndirects();
-#endif
             }
-#ifdef DEBUG
-         else if (tempMR->getSymbolReference().getSymbol()->isStatic())
-            self()->cg()->incNumRematerializedStatics();
-         else
-            self()->cg()->incNumRematerializedLocals();
-#endif
 
          if (info->getDataType() == TR_RematerializableFloat)
             {
             instr = generateRegMemInstruction(currentInstruction, MOVSSRegMem, best, tempMR, self()->cg());
-#ifdef DEBUG
-            self()->cg()->incNumRematerializedXMMRs();
-#endif
             }
          else
             {
@@ -802,9 +790,6 @@ TR::RealRegister *OMR::X86::Machine::freeBestGPRegister(TR::Instruction         
          {
          TR::MemoryReference  *tempMR = generateX86MemoryReference(info->getSymbolReference(), self()->cg());
          instr = generateRegMemInstruction(currentInstruction, LEARegMem(), best, tempMR, self()->cg());
-#ifdef DEBUG
-         self()->cg()->incNumRematerializedAddresses();
-#endif
          }
       else
          {
@@ -812,17 +797,11 @@ TR::RealRegister *OMR::X86::Machine::freeBestGPRegister(TR::Instruction         
             {
             TR::MemoryReference* tempMR = generateX86MemoryReference(self()->cg()->findOrCreate4ByteConstant(currentInstruction->getNode(), info->getConstant()), self()->cg());
             instr = generateRegMemInstruction(currentInstruction, MOVSSRegMem, best, tempMR, self()->cg());
-#ifdef DEBUG
-            self()->cg()->incNumRematerializedXMMRs();
-#endif
             }
          else
             {
             instr = TR::TreeEvaluator::insertLoadConstant(0, best, info->getConstant(), info->getDataType(), self()->cg(), currentInstruction);
             }
-#ifdef DEBUG
-         self()->cg()->incNumRematerializedConstants();
-#endif
          }
 
       self()->cg()->traceRAInstruction(instr);
@@ -959,9 +938,6 @@ TR::RealRegister *OMR::X86::Machine::freeBestGPRegister(TR::Instruction         
 
       self()->cg()->traceRegFreed(bestRegister, best);
       self()->cg()->traceRAInstruction(instr);
-#ifdef DEBUG
-      self()->cg()->incNumSpilledRegisters();
-#endif
       }
 
    if (enableRematerialisation)
@@ -2846,9 +2822,6 @@ TR::Instruction *OMR::X86::Machine::fpSpillFPR(TR::Instruction *prevInstruction,
                                               isFloat ? FSTPMemReg : DSTPMemReg,
                                               tempMR,
                                               self()->fpMapToStackRelativeRegister(vreg), self()->cg());
-#ifdef DEBUG
-      self()->cg()->incNumSpilledRegisters();
-#endif
       }
 
    self()->fpStackPop();

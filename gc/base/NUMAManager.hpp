@@ -164,5 +164,5 @@ public:
 	{}
 };
 
-#endif /* OMR_GC_VLHGC */
+#endif /* NUMAMANAGER_HPP_ */
 

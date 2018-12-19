@@ -957,7 +957,7 @@ omrsysinfo_get_cgroup_subsystem_list(struct OMRPortLibrary *portLibrary)
  *
  * @param[in] errorCode int32_t pointer to state error code from internal calls
  *
- * @return TRUE if Runtime is running in a container and FALSE if not
+ * @return TRUE if Runtime is running in a container and FALSE if not or if an error occurs
  */
 BOOLEAN
 omrsysinfo_is_running_in_container(struct OMRPortLibrary *portLibrary, int32_t *errorCode)

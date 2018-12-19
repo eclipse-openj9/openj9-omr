@@ -641,6 +641,19 @@ OMR::Symbol::setConstMethodHandle()
    }
 
 bool
+OMR::Symbol::isConstantPoolAddress()
+   {
+   return self()->isStatic() && _flags.testAny(ConstantPoolAddress);
+   }
+
+void
+OMR::Symbol::setConstantPoolAddress()
+   {
+   TR_ASSERT(self()->isStatic(), "ConstantPoolAddress symbol has to be static");
+   _flags.set(ConstantPoolAddress);
+   }
+
+bool
 OMR::Symbol::isConstMethodHandle()
    {
    return self()->isStatic() && _flags2.testAny(ConstMethodHandle);

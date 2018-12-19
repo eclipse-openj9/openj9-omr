@@ -670,3 +670,241 @@ INSTANTIATE_TEST_CASE_P(TypeConversionTest, Int64ToInt32, ::testing::Combine(
     ::testing::ValuesIn(TRTest::const_values<int64_t>()),
     ::testing::Values(
         std::make_tuple("l2i", l2i) )));
+
+#ifndef TR_TARGET_POWER
+float i2f(int32_t x) {
+    return static_cast<float>(x);
+}
+
+float l2f(int64_t x) {
+    return static_cast<float>(x);
+}
+
+double i2d(int32_t x) {
+    return static_cast<double>(x);
+}
+
+double l2d(int64_t x) {
+    return static_cast<double>(x);
+}
+
+class Int32ToFloat : public TRTest::UnaryOpTest<float,int32_t> {};
+
+TEST_P(Int32ToFloat, UsingConst) {
+    auto param = TRTest::to_struct(GetParam());
+
+    char inputTrees[160] = {0};
+    std::snprintf(inputTrees, 160,
+        "(method return=Float"
+        "  (block"
+        "    (freturn"
+        "      (i2f"
+        "        (iconst %d) ) ) ) )",
+        param.value);
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler{trees};
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<float (*)()>();
+    volatile auto exp = param.oracle(param.value);
+    volatile auto act = entry_point();
+    ASSERT_EQ(exp, act);
+}
+
+TEST_P(Int32ToFloat, UsingLoadParam) {
+    auto param = TRTest::to_struct(GetParam());
+
+    char *inputTrees =
+        "(method return=Float args=[Int32]"
+        "  (block"
+        "    (freturn"
+        "      (i2f"
+        "        (iload parm=0) ) ) ) )";
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler{trees};
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<float (*)(int32_t)>();
+    volatile auto exp = param.oracle(param.value);
+    volatile auto act = entry_point(param.value);
+    ASSERT_EQ(exp, act);
+}
+
+INSTANTIATE_TEST_CASE_P(TypeConversionTest, Int32ToFloat, ::testing::Combine(
+    ::testing::ValuesIn(TRTest::const_values<int32_t>()),
+    ::testing::Values(
+        std::make_tuple("i2f", i2f) )));
+
+class Int64ToFloat : public TRTest::UnaryOpTest<float,int64_t> {};
+
+TEST_P(Int64ToFloat, UsingConst) {
+    auto param = TRTest::to_struct(GetParam());
+
+    char inputTrees[160] = {0};
+    std::snprintf(inputTrees, 160,
+        "(method return=Float"
+        "  (block"
+        "    (freturn"
+        "      (l2f"
+        "        (lconst %lld) ) ) ) )",
+        param.value);
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler{trees};
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<float (*)()>();
+    volatile auto exp = param.oracle(param.value);
+    volatile auto act = entry_point();
+    ASSERT_EQ(exp, act);
+}
+
+TEST_P(Int64ToFloat, UsingLoadParam) {
+    auto param = TRTest::to_struct(GetParam());
+
+    char *inputTrees =
+        "(method return=Float args=[Int64]"
+        "  (block"
+        "    (freturn"
+        "      (l2f"
+        "        (lload parm=0) ) ) ) )";
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler{trees};
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<float (*)(int64_t)>();
+    volatile auto exp = param.oracle(param.value);
+    volatile auto act = entry_point(param.value);
+    ASSERT_EQ(exp, act);
+}
+
+INSTANTIATE_TEST_CASE_P(TypeConversionTest, Int64ToFloat, ::testing::Combine(
+    ::testing::ValuesIn(TRTest::const_values<int64_t>()),
+    ::testing::Values(
+        std::make_tuple("l2f", l2f) )));
+
+class Int32ToDouble : public TRTest::UnaryOpTest<double,int32_t> {};
+
+TEST_P(Int32ToDouble, UsingConst) {
+    auto param = TRTest::to_struct(GetParam());
+
+    char inputTrees[160] = {0};
+    std::snprintf(inputTrees, 160,
+        "(method return=Double"
+        "  (block"
+        "    (dreturn"
+        "      (i2d"
+        "        (iconst %d) ) ) ) )",
+        param.value);
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler{trees};
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<double (*)()>();
+    volatile auto exp = param.oracle(param.value);
+    volatile auto act = entry_point();
+    ASSERT_EQ(exp, act);
+}
+
+TEST_P(Int32ToDouble, UsingLoadParam) {
+    auto param = TRTest::to_struct(GetParam());
+
+    char *inputTrees =
+        "(method return=Double args=[Int32]"
+        "  (block"
+        "    (dreturn"
+        "      (i2d"
+        "        (iload parm=0) ) ) ) )";
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler{trees};
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<double (*)(int32_t)>();
+    volatile auto exp = param.oracle(param.value);
+    volatile auto act = entry_point(param.value);
+    ASSERT_EQ(exp, act);
+}
+
+INSTANTIATE_TEST_CASE_P(TypeConversionTest, Int32ToDouble, ::testing::Combine(
+    ::testing::ValuesIn(TRTest::const_values<int32_t>()),
+    ::testing::Values(
+        std::make_tuple("i2d", i2d) )));
+
+class Int64ToDouble : public TRTest::UnaryOpTest<double,int64_t> {};
+
+TEST_P(Int64ToDouble, UsingConst) {
+    auto param = TRTest::to_struct(GetParam());
+
+    char inputTrees[160] = {0};
+    std::snprintf(inputTrees, 160,
+        "(method return=Double"
+        "  (block"
+        "    (dreturn"
+        "      (l2d"
+        "        (lconst %lld) ) ) ) )",
+        param.value);
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler{trees};
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<double (*)()>();
+    volatile auto exp = param.oracle(param.value);
+    volatile auto act = entry_point();
+    ASSERT_EQ(exp, act);
+}
+
+TEST_P(Int64ToDouble, UsingLoadParam) {
+    auto param = TRTest::to_struct(GetParam());
+
+    char *inputTrees =
+        "(method return=Double args=[Int64]"
+        "  (block"
+        "    (dreturn"
+        "      (l2d"
+        "        (lload parm=0) ) ) ) )";
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler{trees};
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<double (*)(int64_t)>();
+    volatile auto exp = param.oracle(param.value);
+    volatile auto act = entry_point(param.value);
+    ASSERT_EQ(exp, act);
+}
+
+INSTANTIATE_TEST_CASE_P(TypeConversionTest, Int64ToDouble, ::testing::Combine(
+    ::testing::ValuesIn(TRTest::const_values<int64_t>()),
+    ::testing::Values(
+        std::make_tuple("l2d", l2d) )));
+#endif

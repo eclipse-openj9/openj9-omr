@@ -110,6 +110,28 @@ TR::Instruction *generateImmInstruction(
                    TR::Instruction *preced = NULL);
 
 /*
+ * @brief Generates imm sym instruction
+ * @param[in] cg : CodeGenerator
+ * @param[in] op : instruction opcode
+ * @param[in] node : node
+ * @param[in] imm : immediate value
+ * @param[in] cond : register dependency condition
+ * @param[in] sr : symbol reference
+ * @param[in] s : call snippet
+ * @param[in] preced : preceding instruction
+ * @return generated instruction
+ */
+TR::Instruction *generateImmSymInstruction(
+                   TR::CodeGenerator *cg,
+                   TR::InstOpCode::Mnemonic op,
+                   TR::Node *node,
+                   uintptr_t imm,
+                   TR::RegisterDependencyConditions *cond,
+                   TR::SymbolReference *sr,
+                   TR::Snippet *s,
+                   TR::Instruction *preced = NULL);
+
+/*
  * @brief Generates label instruction
  * @param[in] cg : CodeGenerator
  * @param[in] op : instruction opcode

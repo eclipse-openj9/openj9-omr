@@ -67,6 +67,15 @@ TR::Instruction *generateImmInstruction(TR::CodeGenerator *cg, TR::InstOpCode::M
    return new (cg->trHeapMemory()) TR::ARM64ImmInstruction(op, node, imm, relocationKind, sr, cg);
    }
 
+TR::Instruction *generateImmSymInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node *node,
+   uintptr_t imm, TR::RegisterDependencyConditions *cond, TR::SymbolReference *sr, TR::Snippet *s,
+   TR::Instruction *preced)
+   {
+   if (preced)
+      return new (cg->trHeapMemory()) TR::ARM64ImmSymInstruction(op, node, imm, cond, sr, s, preced, cg);
+   return new (cg->trHeapMemory()) TR::ARM64ImmSymInstruction(op, node, imm, cond, sr, s, cg);
+   }
+
 TR::Instruction *generateLabelInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node *node,
    TR::LabelSymbol *sym, TR::Instruction *preced)
    {

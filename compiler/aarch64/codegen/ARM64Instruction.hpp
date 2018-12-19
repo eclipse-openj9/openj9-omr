@@ -57,6 +57,16 @@ inline bool constantIsUnsignedImm12(uint32_t intValue)
    return (intValue < 4096);
    }
 
+/*
+ * @brief Answers if the signed integer value can be placed in 28-bit field
+ * @param[in] intValue : signed integer value
+ * @return true if the value can be placed in 28-bit field, false otherwise
+ */
+inline bool constantIsSignedImm28(intptr_t intValue)
+   {
+   return (-0x8000000 <= intValue && intValue < 0x8000000);
+   }
+
 namespace TR
 {
 
@@ -200,6 +210,96 @@ public:
    TR::SymbolReference *setSymbolReference(TR::SymbolReference *sr)
       {
       return (_symbolReference = sr);
+      }
+
+   /**
+    * @brief Generates binary encoding of the instruction
+    * @return instruction cursor
+    */
+   virtual uint8_t *generateBinaryEncoding();
+   };
+
+class ARM64ImmSymInstruction : public TR::Instruction
+   {
+   uintptr_t _addrImmediate;
+   TR::SymbolReference *_symbolReference;
+   TR::Snippet *_snippet;
+
+   public:
+
+   ARM64ImmSymInstruction(TR::InstOpCode::Mnemonic op,
+                          TR::Node *node,
+                          uintptr_t imm,
+                          TR::RegisterDependencyConditions *cond,
+                          TR::SymbolReference *sr,
+                          TR::Snippet *s,
+                          TR::CodeGenerator *cg)
+      : TR::Instruction(op, node, cond, cg),
+        _addrImmediate(imm), _symbolReference(sr), _snippet(s)
+      {
+      }
+
+   ARM64ImmSymInstruction(TR::InstOpCode::Mnemonic op,
+                          TR::Node *node,
+                          uintptr_t imm,
+                          TR::RegisterDependencyConditions *cond,
+                          TR::SymbolReference *sr,
+                          TR::Snippet *s,
+                          TR::Instruction *precedingInstruction,
+                          TR::CodeGenerator *cg)
+      : TR::Instruction(op, node, cond, precedingInstruction, cg),
+        _addrImmediate(imm), _symbolReference(sr), _snippet(s)
+      {
+      }
+
+   /**
+    * @brief Gets instruction kind
+    * @return instruction kind
+    */
+   virtual Kind getKind() { return IsImmSym; }
+
+   /**
+    * @brief Gets address immediate
+    * @return address immediate
+    */
+   uintptrj_t getAddrImmediate() { return _addrImmediate; }
+
+   /**
+    * @brief Gets symbol reference
+    * @return symbol reference
+    */
+   TR::SymbolReference *getSymbolReference() { return _symbolReference; }
+   /**
+    * @brief Sets symbol reference
+    * @param[in] sr : symbol reference
+    * @return symbol reference
+    */
+   TR::SymbolReference *setSymbolReference(TR::SymbolReference *sr)
+      {
+      return (_symbolReference = sr);
+      }
+
+   /**
+    * @brief Gets call snippet
+    * @return call snippet
+    */
+   TR::Snippet *getCallSnippet() { return _snippet;}
+   /**
+    * @brief Sets call snippet
+    * @param[in] s : call snippet
+    * @return call snippet
+    */
+   TR::Snippet *setCallSnippet(TR::Snippet *s) { return (_snippet = s); }
+
+   /**
+    * @brief Sets immediate field in binary encoding
+    * @param[in] instruction : instruction cursor
+    * @param[in] distance : branch distance
+    */
+   void insertImmediateField(uint32_t *instruction, int32_t distance)
+      {
+      TR_ASSERT((distance & 0x3) == 0, "branch distance is not aligned");
+      *instruction |= ((distance >> 2) & 0x3ffffff); // imm26
       }
 
    /**

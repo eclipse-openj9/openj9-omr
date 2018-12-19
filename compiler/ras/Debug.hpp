@@ -341,6 +341,7 @@ namespace TR { class J9S390InterfaceCallDataSnippet; }
 #endif
 
 namespace TR { class ARM64ImmInstruction; }
+namespace TR { class ARM64ImmSymInstruction; }
 namespace TR { class ARM64LabelInstruction; }
 namespace TR { class ARM64ConditionalBranchInstruction; }
 namespace TR { class ARM64CompareBranchInstruction; }
@@ -1082,6 +1083,7 @@ public:
    void printPrefix(TR::FILE *, TR::Instruction *);
 
    void print(TR::FILE *, TR::ARM64ImmInstruction *);
+   void print(TR::FILE *, TR::ARM64ImmSymInstruction *);
    void print(TR::FILE *, TR::ARM64LabelInstruction *);
    void print(TR::FILE *, TR::ARM64ConditionalBranchInstruction *);
    void print(TR::FILE *, TR::ARM64CompareBranchInstruction *);

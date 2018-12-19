@@ -26,6 +26,7 @@
 
    IsNotExtended,
    IsImm,
+   IsImmSym,
    IsLabel,
       IsConditionalBranch,
       IsCompareBranch,

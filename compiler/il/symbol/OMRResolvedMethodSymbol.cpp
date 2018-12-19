@@ -1636,8 +1636,12 @@ OMR::ResolvedMethodSymbol::cannotAttemptOSRDuring(int32_t callSite, TR::Compilat
             break;
             }
 
-         // Check the caller existed during ILGen
-         if (callSiteInfo._byteCodeInfo.doNotProfile())
+         // In voluntaryOSR mode, check the caller existed during ILGen because
+         // there is no OSR support for call nodes created outside of ILGen.
+         //
+         // In involuntaryOSR node, yield points are always OSR points and there should be OSR
+         // support for very yield point under this mode.
+         if (callSiteInfo._byteCodeInfo.doNotProfile() && comp->getOSRMode() == TR::voluntaryOSR)
             {
             if (comp->getOption(TR_TraceOSR))
                traceMsg(comp, "Cannot attempt OSR during caller bytecode index %d:%d as it did not exist at ilgen\n", callSite, byteCodeIndex);

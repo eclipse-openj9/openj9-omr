@@ -180,7 +180,7 @@ bool isConditionCodeSetForCompareToZero(TR::Node *node, bool justTestZeroFlag)
         prevInstr;
         prevInstr = prevInstr->getPrev())
       {
-      prevRegInstr = prevInstr->getIA32RegInstruction();
+      prevRegInstr = prevInstr->getX86RegInstruction();
 
       // The register must be equal and the node size must be equal in order to
       // insure the instruction is setting the condition code based on the

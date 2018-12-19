@@ -386,7 +386,7 @@ class X86LabelInstruction : public TR::Instruction
 
    virtual void addMetaDataForCodeAddress(uint8_t *cursor);
 
-   virtual TR::X86LabelInstruction  *getIA32LabelInstruction();
+   virtual TR::X86LabelInstruction  *getX86LabelInstruction();
 
    void assignOutlinedInstructions(TR_RegisterKinds kindsToBeAssigned, TR::X86LabelInstruction *labelInstruction);
    void addPostDepsToOutlinedInstructionsBranch();
@@ -662,7 +662,7 @@ class X86ImmInstruction : public TR::Instruction
    // The following safe virtual downcast method is used under debug only
    // for assertion checking.
    //
-   virtual X86ImmInstruction  *getIA32ImmInstruction();
+   virtual X86ImmInstruction  *getX86ImmInstruction();
 #endif
 
    virtual void adjustVFPState(TR_VFPState *state, TR::CodeGenerator *cg){ adjustVFPStateForCall(state, _adjustsFramePointerBy, cg); }
@@ -866,7 +866,7 @@ class X86RegInstruction : public TR::Instruction
 
    virtual Kind getKind() { return IsReg; }
 
-   virtual TR::X86RegInstruction  *getIA32RegInstruction();
+   virtual TR::X86RegInstruction  *getX86RegInstruction();
 
    virtual TR::X86RegRegInstruction  *getIA32RegRegInstruction() {return NULL;}
 
@@ -2953,7 +2953,7 @@ class X86VFPCallCleanupInstruction : public TR::Instruction
 
 inline TR::X86ImmInstruction  * toIA32ImmInstruction(TR::Instruction *i)
    {
-   TR_ASSERT(i->getIA32ImmInstruction() != NULL,
+   TR_ASSERT(i->getX86ImmInstruction() != NULL,
           "trying to downcast to an IA32ImmInstruction");
    return (TR::X86ImmInstruction  *)i;
    }

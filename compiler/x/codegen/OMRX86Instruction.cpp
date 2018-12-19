@@ -209,7 +209,7 @@ TR::X86LabelInstruction::X86LabelInstruction(TR::Instruction                    
       sym->setDirectlyTargeted();
    }
 
-TR::X86LabelInstruction  *TR::X86LabelInstruction::getIA32LabelInstruction()
+TR::X86LabelInstruction  *TR::X86LabelInstruction::getX86LabelInstruction()
    {
    return this;
    }
@@ -483,7 +483,7 @@ TR::X86ImmInstruction::X86ImmInstruction(TR::Instruction                     *pr
 // The following safe virtual downcast method is only used in an assertion
 // check within "toIA32ImmInstruction"
 //
-TR::X86ImmInstruction  *TR::X86ImmInstruction::getIA32ImmInstruction()
+TR::X86ImmInstruction  *TR::X86ImmInstruction::getX86ImmInstruction()
    {
    return this;
    }
@@ -648,7 +648,7 @@ TR::X86RegInstruction::X86RegInstruction(TR::Instruction                      *p
    getOpCode().trackUpperBitsOnReg(reg, cg);
    }
 
-TR::X86RegInstruction  *TR::X86RegInstruction::getIA32RegInstruction()
+TR::X86RegInstruction  *TR::X86RegInstruction::getX86RegInstruction()
    {
    return this;
    }

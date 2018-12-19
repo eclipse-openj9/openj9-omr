@@ -2625,7 +2625,7 @@ TR::Register *OMR::X86::TreeEvaluator::integerDivOrRemEvaluator(TR::Node *node, 
                                                       divisionLabel,
                                                       node->getOpCode(),
                                                       node->getType(),
-                                                      divideInstr->getIA32RegInstruction()->getIA32RegRegInstruction(),
+                                                      divideInstr->getX86RegInstruction()->getIA32RegRegInstruction(),
                                                       cg));
          }
 

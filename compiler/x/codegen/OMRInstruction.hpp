@@ -143,15 +143,15 @@ class OMR_EXTENSIBLE Instruction : public OMR::Instruction
 
    void aboutToAssignRegDeps(TR_UpperHalfRefConditions usesUpperHalf=TR_ifUses64bitSourceOrTarget, TR_UpperHalfRefConditions defsUpperHalf=TR_never);
 
-   virtual TR::X86RegInstruction *getIA32RegInstruction() { return NULL; }
+   virtual TR::X86RegInstruction *getX86RegInstruction() { return NULL; }
 
-   virtual TR::X86LabelInstruction *getIA32LabelInstruction() { return NULL; }
+   virtual TR::X86LabelInstruction *getX86LabelInstruction() { return NULL; }
 
 #if defined(DEBUG) || defined(PROD_WITH_ASSUMES)
    // The following safe virtual downcast method is used under debug only
    // for assertion checking.
    //
-   virtual TR::X86ImmInstruction *getIA32ImmInstruction() { return NULL; }
+   virtual TR::X86ImmInstruction *getX86ImmInstruction() { return NULL; }
 
    virtual uint32_t getNumOperandReferencedGPRegisters() { return 0; }
    virtual uint32_t getNumOperandReferencedFPRegisters() { return 0; }

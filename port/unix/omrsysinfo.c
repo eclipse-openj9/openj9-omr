@@ -4203,7 +4203,8 @@ _end:
  * Checks if the process is running inside container
  *
  * @param[in] portLibrary pointer to OMRPortLibrary
- * @param[out] inContainer pointer to BOOLEAN which on successful return indicates if the process is running in container or not
+ * @param[out] inContainer pointer to BOOLEAN which on successful return indicates if
+ * 		the process is running in container or not.  On error it indicates FALSE.
  *
  * @return 0 on success, otherwise negative error code
  */
@@ -4472,7 +4473,7 @@ omrsysinfo_get_cgroup_subsystem_list(struct OMRPortLibrary *portLibrary)
 
 /*
  * Gets if the Runtime is running in a Container by assigning the BOOLEAN value to inContainer param
- * Returns TRUE if running inside a container and FALSE if not
+ * Returns TRUE if running inside a container and FALSE if not or if an error occurs
  */
 BOOLEAN
 omrsysinfo_is_running_in_container(struct OMRPortLibrary *portLibrary, int32_t *errorCode)

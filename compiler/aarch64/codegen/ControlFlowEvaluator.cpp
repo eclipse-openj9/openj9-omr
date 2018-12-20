@@ -68,6 +68,24 @@ OMR::ARM64::TreeEvaluator::returnEvaluator(TR::Node *node, TR::CodeGenerator *cg
    return NULL;
    }
 
+TR::Register *OMR::ARM64::TreeEvaluator::gotoEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   TR::LabelSymbol *gotoLabel = node->getBranchDestination()->getNode()->getLabel();
+   if (node->getNumChildren() > 0)
+      {
+      TR::Node *child = node->getFirstChild();
+      cg->evaluate(child);
+      generateLabelInstruction(cg, TR::InstOpCode::b, node, gotoLabel,
+            generateRegisterDependencyConditions(cg, child, 0));
+      cg->decReferenceCount(child);
+      }
+   else
+      {
+      generateLabelInstruction(cg, TR::InstOpCode::b, node, gotoLabel);
+      }
+   return NULL;
+   }
+
 static TR::Instruction *ificmpHelper(TR::Node *node, TR::ARM64ConditionCode cc, TR::CodeGenerator *cg)
    {
    TR::Node *firstChild = node->getFirstChild();

@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright (c) 2017, 2017 IBM Corp. and others
+* Copyright (c) 2017, 2018 IBM Corp. and others
 *
 * This program and the accompanying materials are made available under
 * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -43,8 +43,23 @@ class RecognizedCallTransformer : public TR::Optimization
 
    protected:
 
-   virtual bool isInlineable(TR::TreeTop* treetop) { return false; }
-   virtual void transform(TR::TreeTop* treetop)    {}
+   /** \brief
+    *     Check if a treetop is inlineable. The treetop must have one sole child TR::call
+    *
+    *  \param treetop
+    *     The treetop which anchors the call node.
+    *
+    */
+   virtual bool isInlineable(TR::TreeTop* treetop);
+
+   /** \brief
+    *     Perform transformation on the treetop. The treetop must have one sole child TR::call
+    *
+    *  \param treetop
+    *     The treetop which anchors the call node.
+    *
+    */
+   virtual void transform(TR::TreeTop* treetop);
    };
 
 }

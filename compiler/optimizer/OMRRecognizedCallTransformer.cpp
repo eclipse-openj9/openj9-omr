@@ -27,6 +27,8 @@
 #include "il/TreeTop_inlines.hpp"
 #include "infra/Checklist.hpp"       // for NodeChecklist, etc
 #include "codegen/CodeGenerator.hpp" // for CodeGenerator
+#include "codegen/CodeGenerator_inlines.hpp"
+#include "optimizer/TransformUtil.hpp"
 
 TR::Optimization* OMR::RecognizedCallTransformer::create(TR::OptimizationManager *manager)
    {
@@ -53,6 +55,20 @@ int32_t OMR::RecognizedCallTransformer::perform()
          }
       }
    return 0;
+   }
+
+bool OMR::RecognizedCallTransformer::isInlineable(TR::TreeTop* treetop)
+   {
+   return cg()->isIntrinsicMethodSupported(treetop->getNode()->getFirstChild()->getSymbol()->castToMethodSymbol()->getMandatoryRecognizedMethod());
+   }
+
+void OMR::RecognizedCallTransformer::transform(TR::TreeTop* treetop)
+   {
+   auto node = treetop->getNode()->getFirstChild();
+   auto rm = node->getSymbol()->castToMethodSymbol()->getMandatoryRecognizedMethod();
+   TR_ASSERT(cg()->isIntrinsicMethodSupported(rm), "Only supported intrinsic method should reach here.");
+   TR::Node::recreate(node, cg()->ilOpCodeForIntrinsicMethod(rm));
+   TR::TransformUtil::removeTree(comp(), treetop);
    }
 
 const char* OMR::RecognizedCallTransformer::optDetailString() const throw()

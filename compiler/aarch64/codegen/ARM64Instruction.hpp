@@ -555,12 +555,6 @@ class ARM64ConditionalBranchInstruction : public ARM64LabelInstruction
       }
 
    /**
-    * @brief Assigns registers
-    * @param[in] kindToBeAssigned : register kind
-    */
-   virtual void assignRegisters(TR_RegisterKinds kindToBeAssigned);
-
-   /**
     * @brief Generates binary encoding of the instruction
     * @return instruction cursor
     */

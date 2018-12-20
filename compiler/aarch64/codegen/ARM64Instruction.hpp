@@ -52,7 +52,7 @@ inline bool constantIsImm9(int32_t intValue)
  * @param[in] intValue : unsigned integer value
  * @return true if the value can be placed in 12-bit field, false otherwise
  */
-inline bool constantIsUnsignedImm12(uint32_t intValue)
+inline bool constantIsUnsignedImm12(uint64_t intValue)
    {
    return (intValue < 4096);
    }

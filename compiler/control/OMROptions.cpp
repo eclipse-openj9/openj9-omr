@@ -491,7 +491,6 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"disableRecompDueToInlinedMethodRedefinition", "O\tdisable recompilation for method body with patched HCR guard",  SET_OPTION_BIT(TR_DisableRecompDueToInlinedMethodRedefinition), "F"},
    {"disableReducedPriorityForCustomMethodHandleThunks",  "R\tcompile custom MethodHandle invoke exact thunks at the same priority as normal java methods", SET_OPTION_BIT(TR_DisableReducedPriorityForCustomMethodHandleThunks), "F", NOT_IN_SUBSET},
    {"disableRedundantAsyncCheckRemoval",  "O\tdisable redundant async check removal",          TR::Options::disableOptimization, redundantAsyncCheckRemoval, 0, "P"},
-   {"disableRedundantBCDSignElimination",  "I\tdisable redundant BCD sign elimination", SET_OPTION_BIT(TR_DisableRedundantBCDSignElimination),"F"},
    {"disableRedundantGotoElimination",    "O\tdisable redundant goto elimination",             TR::Options::disableOptimization, redundantGotoElimination, 0, "P"},
    {"disableRedundantMonitorElimination", "O\tdisable redundant monitor elimination",          TR::Options::disableOptimization, redundantMonitorElimination, 0, "P"},
    {"disableRefArraycopyRT",              "O\tdisable reference arraycopy for real-time gc",   SET_OPTION_BIT(TR_DisableRefArraycopyRT), "F"},
@@ -2220,7 +2219,7 @@ OMR::Options::jitLatePostProcess(TR::OptionSet *optionSet, void * jitConfig)
             }
          else
             {
-            // For AOT with GCR enabled we can be more conservative with 
+            // For AOT with GCR enabled we can be more conservative with
             // upgrades through sampling because we can rely on GCR
             // In this case we'll use the same threshold value as the one
             // employed in `setGlobalAggressiveAOT` (note that larger values

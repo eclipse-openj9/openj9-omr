@@ -56,6 +56,37 @@ uint8_t *TR::ARM64ImmInstruction::generateBinaryEncoding()
    return cursor;
    }
 
+uint8_t *TR::ARM64ImmSymInstruction::generateBinaryEncoding()
+   {
+   uint8_t *instructionStart = cg()->getBinaryBufferCursor();
+   uint8_t *cursor = instructionStart;
+   cursor = getOpCode().copyBinaryToBuffer(instructionStart);
+
+   if (getOpCodeValue() == TR::InstOpCode::bl)
+      {
+      uintptrj_t destination = getAddrImmediate();
+      intptrj_t distance = destination - (uintptrj_t)cursor;
+
+      if (constantIsSignedImm28(distance))
+         {
+         insertImmediateField(toARM64Cursor(cursor), distance);
+         }
+      else
+         {
+         TR_ASSERT(false, "Branch destination is too far away. Not implemented yet.");
+         }
+      }
+   else
+      {
+      TR_ASSERT(false, "Unsupported opcode in ImmSymInstruction.");
+      }
+
+   cursor += ARM64_INSTRUCTION_LENGTH;
+   setBinaryLength(ARM64_INSTRUCTION_LENGTH);
+   setBinaryEncoding(instructionStart);
+   return cursor;
+   }
+
 uint8_t *TR::ARM64LabelInstruction::generateBinaryEncoding()
    {
    uint8_t *instructionStart = cg()->getBinaryBufferCursor();

@@ -479,6 +479,9 @@ TR_Debug::print(TR::FILE *pOutFile, TR::Instruction *instr)
       case OMR::Instruction::IsImm:
          print(pOutFile, (TR::ARM64ImmInstruction *)instr);
          break;
+      case OMR::Instruction::IsImmSym:
+         print(pOutFile, (TR::ARM64ImmSymInstruction *)instr);
+         break;
       case OMR::Instruction::IsLabel:
          print(pOutFile, (TR::ARM64LabelInstruction *)instr);
          break;
@@ -567,6 +570,23 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64ImmInstruction *instr)
    {
    printPrefix(pOutFile, instr);
    trfprintf(pOutFile, "%s \t0x%08x", getOpCodeName(&instr->getOpCode()), instr->getSourceImmediate());
+   trfflush(_comp->getOutFile());
+   }
+
+void
+TR_Debug::print(TR::FILE *pOutFile, TR::ARM64ImmSymInstruction *instr)
+   {
+   printPrefix(pOutFile, instr);
+
+   TR::Symbol *target = instr->getSymbolReference()->getSymbol();
+   const char *name = target ? getName(instr->getSymbolReference()) : 0;
+   if (name)
+      trfprintf(pOutFile, "%s \t" POINTER_PRINTF_FORMAT "\t\t; Direct Call \"%s\"", getOpCodeName(&instr->getOpCode()), instr->getAddrImmediate(), name);
+   else
+      trfprintf(pOutFile, "%s \t" POINTER_PRINTF_FORMAT, getOpCodeName(&instr->getOpCode()), instr->getAddrImmediate());
+
+   if (instr->getDependencyConditions())
+      print(pOutFile, instr->getDependencyConditions());
    trfflush(_comp->getOutFile());
    }
 

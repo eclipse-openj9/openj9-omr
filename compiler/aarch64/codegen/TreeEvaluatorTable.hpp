@@ -230,18 +230,18 @@
     TR::TreeEvaluator::passThroughEvaluator, // TR::a2l		// convert address to long integer
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::a2bEvaluator ,	// TR::a2b		// convert address to byte
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::a2sEvaluator ,	// TR::a2s		// convert address to short
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::icmpeqEvaluator ,	// TR::icmpeq		// integer compare if equal
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::icmpneEvaluator ,	// TR::icmpne		// integer compare if not equal
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::icmpltEvaluator ,	// TR::icmplt		// integer compare if less than
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::icmpgeEvaluator ,	// TR::icmpge		// integer compare if greater than or equal
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::icmpgtEvaluator ,	// TR::icmpgt		// integer compare if greater than
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::icmpleEvaluator ,	// TR::icmple		// integer compare if less than or equal
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::iucmpeqEvaluator ,	// TR::iucmpeq		// unsigned integer compare if equal
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::iucmpneEvaluator ,	// TR::iucmpne		// unsigned integer compare if not equal
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::iucmpltEvaluator ,	// TR::iucmplt		// unsigned integer compare if less than
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::iucmpgeEvaluator ,	// TR::iucmpge		// unsigned integer compare if greater than or equal
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::iucmpgtEvaluator ,	// TR::iucmpgt		// unsigned integer compare if greater than
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::iucmpleEvaluator ,	// TR::iucmple		// unsigned integer compare if less than or equal
+    TR::TreeEvaluator::icmpeqEvaluator, // TR::icmpeq		// integer compare if equal
+    TR::TreeEvaluator::icmpneEvaluator, // TR::icmpne		// integer compare if not equal
+    TR::TreeEvaluator::icmpltEvaluator, // TR::icmplt		// integer compare if less than
+    TR::TreeEvaluator::icmpgeEvaluator, // TR::icmpge		// integer compare if greater than or equal
+    TR::TreeEvaluator::icmpgtEvaluator, // TR::icmpgt		// integer compare if greater than
+    TR::TreeEvaluator::icmpleEvaluator, // TR::icmple		// integer compare if less than or equal
+    TR::TreeEvaluator::icmpeqEvaluator, // TR::iucmpeq		// unsigned integer compare if equal
+    TR::TreeEvaluator::icmpneEvaluator, // TR::iucmpne		// unsigned integer compare if not equal
+    TR::TreeEvaluator::iucmpltEvaluator, // TR::iucmplt		// unsigned integer compare if less than
+    TR::TreeEvaluator::iucmpgeEvaluator, // TR::iucmpge		// unsigned integer compare if greater than or equal
+    TR::TreeEvaluator::iucmpgtEvaluator, // TR::iucmpgt		// unsigned integer compare if greater than
+    TR::TreeEvaluator::iucmpleEvaluator, // TR::iucmple		// unsigned integer compare if less than or equal
     TR::TreeEvaluator::lcmpeqEvaluator, // TR::lcmpeq		// long compare if equal
     TR::TreeEvaluator::lcmpneEvaluator, // TR::lcmpne		// long compare if not equal
     TR::TreeEvaluator::lcmpltEvaluator, // TR::lcmplt		// long compare if less than

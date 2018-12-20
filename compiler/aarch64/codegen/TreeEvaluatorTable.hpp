@@ -397,15 +397,15 @@
     TR::TreeEvaluator::iRegLoadEvaluator, // TR::iRegLoad		// Load integer global register
     TR::TreeEvaluator::aRegLoadEvaluator, // TR::aRegLoad		// Load address global register
     TR::TreeEvaluator::iRegLoadEvaluator, // TR::lRegLoad		// Load long integer global register
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::fRegLoadEvaluator ,	// TR::fRegLoad		// Load float global register
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::dRegLoadEvaluator ,	// TR::dRegLoad		// Load double global register
+    TR::TreeEvaluator::fRegLoadEvaluator, // TR::fRegLoad		// Load float global register
+    TR::TreeEvaluator::fRegLoadEvaluator, // TR::dRegLoad		// Load double global register
     TR::TreeEvaluator::iRegLoadEvaluator, // TR::sRegLoad		// Load short global register
     TR::TreeEvaluator::iRegLoadEvaluator, // TR::bRegLoad		// Load byte global register
     TR::TreeEvaluator::iRegStoreEvaluator, // TR::iRegStore		// Store integer global register
     TR::TreeEvaluator::iRegStoreEvaluator, // TR::aRegStore		// Store address global register
     TR::TreeEvaluator::iRegStoreEvaluator, // TR::lRegStore		// Store long integer global register
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::fRegStoreEvaluator ,	// TR::fRegStore		// Store float global register
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::dRegStoreEvaluator ,	// TR::dRegStore		// Store double global register
+    TR::TreeEvaluator::iRegStoreEvaluator, // TR::fRegStore		// Store float global register
+    TR::TreeEvaluator::iRegStoreEvaluator, // TR::dRegStore		// Store double global register
     TR::TreeEvaluator::iRegStoreEvaluator, // TR::sRegStore		// Store short global register
     TR::TreeEvaluator::iRegStoreEvaluator, // TR::bRegStore		// Store byte global register
     TR::TreeEvaluator::GlRegDepsEvaluator, // TR::GlRegDeps		// Global Register Dependency List

@@ -131,7 +131,7 @@ TEST(TestBytes, AlignToEight)
 	EXPECT_EQ(8, align(7, 8));
 	EXPECT_EQ(8, align(8, 8));
 	EXPECT_EQ(16, align(9, 8));
-	EXPECT_EQ(gibibytes(1), align(gibibytes(1), 4));
+	EXPECT_EQ(gibibytes(1), align(gibibytes(1), 8));
 }
 
 TEST(TestBytes, SaneAlignmentMaximums)

@@ -215,14 +215,14 @@ TYPED_TEST(LinkageTest, SystemLinkageParameterPassingFiveArg) {
  */
 template <typename T>
 T stackUser(T a, T b, T c, T d, T e) {
-	volatile T x, y, z, w;
-	for (int i = 0; i < a; i+= b) {
-	    w = (c + b) * (i + e);
-		x = a * (i + d + 1);
-		y = b - d + c;
-		z = c * 2 * (i + 1);
-	}
-	return x + y + z + w;
+    volatile T x, y, z, w;
+    for (int32_t i = 0; i < a; i+= b) {
+        w = (c + b) * (i + e);
+        x = a * (i + d + 1);
+        y = b - d + c;
+        z = c * 2 * (i + 1);
+    }
+    return x + y + z + w;
 }
 
 /**
@@ -283,5 +283,76 @@ TYPED_TEST(LinkageTest, SystemLinkageParameterPassingFiveArgToStackUser) {
     EXPECT_EQ(static_cast<TypeParam>(2053),     entry_point(1,1,1,1,static_cast<TypeParam>(1024)))     << "Input Trees: " << inputTrees;
     EXPECT_EQ(static_cast<TypeParam>(3),        entry_point(1,1,1,1,static_cast<TypeParam>(-1)))       << "Input Trees: " << inputTrees;
     EXPECT_EQ(static_cast<TypeParam>(0x1e1e23), entry_point(1,1,1,1,static_cast<TypeParam>(0xf0f0f)))  << "Input Trees: " << inputTrees;
+#endif
+}
+
+class LinkageWithMixedTypesTest : public TRTest::JitTest {};
+
+int32_t fourthArgFromMixedTypes(double a, int32_t b, double c, int32_t d) { return d; }
+
+typedef int32_t (*FourMixedArgumentFunction)(double,int32_t,double,int32_t);
+
+TEST_F(LinkageWithMixedTypesTest, SystemLinkageParameterPassingFourArgWithMixedTypes) {
+    char inputTrees[400] = {0};
+    const auto format_string = "(method return=Int32 args=[Double,Int32,Double,Int32]"
+                               "  (block (ireturn (icall address=0x%jX args=[Double,Int32,Double,Int32] linkage=system"
+                                 " (dload parm=0)"
+                                 " (iload parm=1)"
+                                 " (dload parm=2)"
+                                 " (iload parm=3)"
+                                 ") )  ))";
+    std::snprintf(inputTrees, 400, format_string,
+        reinterpret_cast<uintmax_t>(static_cast<FourMixedArgumentFunction>(fourthArgFromMixedTypes)));
+
+    auto trees = parseString(inputTrees);
+    ASSERT_NOTNULL(trees) << "Trees failed to parse\n" << inputTrees;
+
+    // Execution of this test is disabled on non-X86 platforms, as we
+    // do not have trampoline support, and so this call may be out of
+    // range for some architectures.
+#ifdef TR_TARGET_X86
+    Tril::DefaultCompiler compiler{trees};
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<FourMixedArgumentFunction>();
+
+    EXPECT_EQ(1024,    entry_point(0.0,0,0.0,1024))     << "Input Trees: " << inputTrees;
+    EXPECT_EQ(-1,      entry_point(0.0,0,0.0,-1))       << "Input Trees: " << inputTrees;
+    EXPECT_EQ(0xf0f0f, entry_point(0.0,0,0.0,0xf0f0f))  << "Input Trees: " << inputTrees;
+#endif
+}
+
+double fifthArgFromMixedTypes(double a, int32_t b, double c, int32_t d, double e) { return e; }
+
+typedef double (*FiveMixedArgumentFunction)(double,int32_t,double,int32_t,double);
+
+TEST_F(LinkageWithMixedTypesTest, SystemLinkageParameterPassingFiveArgWithMixedTypes) {
+    char inputTrees[400] = {0};
+    const auto format_string = "(method return=Double args=[Double,Int32,Double,Int32,Double]"
+                               "  (block (dreturn (dcall address=0x%jX args=[Double,Int32,Double,Int32,Double] linkage=system"
+                                 " (dload parm=0)"
+                                 " (iload parm=1)"
+                                 " (dload parm=2)"
+                                 " (iload parm=3)"
+                                 " (dload parm=4)"
+                                 ") )  ))";
+    std::snprintf(inputTrees, 400, format_string,
+        reinterpret_cast<uintmax_t>(static_cast<FiveMixedArgumentFunction>(fifthArgFromMixedTypes)));
+
+    auto trees = parseString(inputTrees);
+    ASSERT_NOTNULL(trees) << "Trees failed to parse\n" << inputTrees;
+
+    // Execution of this test is disabled on non-X86 platforms, as we
+    // do not have trampoline support, and so this call may be out of
+    // range for some architectures.
+#ifdef TR_TARGET_X86
+    Tril::DefaultCompiler compiler{trees};
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<FiveMixedArgumentFunction>();
+
+    EXPECT_DOUBLE_EQ(1024.3, entry_point(0.0,0,0.0,0,1024.3)) << "Input Trees: " << inputTrees;
+    EXPECT_DOUBLE_EQ(-1.7,   entry_point(0.0,0,0.0,0,-1.7))   << "Input Trees: " << inputTrees;
+    EXPECT_DOUBLE_EQ(0.001,  entry_point(0.0,0,0.0,0,0.001))  << "Input Trees: " << inputTrees;
 #endif
 }

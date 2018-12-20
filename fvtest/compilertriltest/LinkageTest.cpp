@@ -105,7 +105,6 @@ TYPED_TEST(LinkageTest, SystemLinkageParameterPassingSingleArg) {
 template <typename T>
 T fourthArg(T a, T b, T c, T d) { return d; }
 
-
 TYPED_TEST(LinkageTest, SystemLinkageParameterPassingFourArg) {
     char inputTrees[400] = {0};
     const auto format_string = "(method return=%s args=[%s,%s,%s,%s] (block (%sreturn (%scall address=0x%jX args=[%s,%s,%s,%s] linkage=system"
@@ -149,5 +148,140 @@ TYPED_TEST(LinkageTest, SystemLinkageParameterPassingFourArg) {
     EXPECT_EQ(static_cast<TypeParam>(1024),    entry_point(0,0,0,static_cast<TypeParam>(1024)))     << "Input Trees: " << inputTrees;
     EXPECT_EQ(static_cast<TypeParam>(-1),      entry_point(0,0,0,static_cast<TypeParam>(-1)))       << "Input Trees: " << inputTrees;
     EXPECT_EQ(static_cast<TypeParam>(0xf0f0f), entry_point(0,0,0,static_cast<TypeParam>(0xf0f0f)))  << "Input Trees: " << inputTrees;
+#endif
+}
+
+template <typename T>
+T fifthArg(T a, T b, T c, T d, T e) { return e; }
+
+/**
+ * In accordance with the Microsoft x64 calling convention, only four parameters can be passed in registers (both integer
+ * and floating point). Additional arguments are pushed onto the stack (right to left). It is an interesting case when a JITed
+ * method calls a method with more than four parameters.
+ */
+TYPED_TEST(LinkageTest, SystemLinkageParameterPassingFiveArg) {
+    char inputTrees[400] = {0};
+    const auto format_string = "(method return=%s args=[%s,%s,%s,%s,%s] (block (%sreturn (%scall address=0x%jX args=[%s,%s,%s,%s,%s] linkage=system"
+                                 " (%sload parm=0)"
+                                 " (%sload parm=1)"
+                                 " (%sload parm=2)"
+                                 " (%sload parm=3)"
+                                 " (%sload parm=4)"
+                                 ") )  ))";
+    std::snprintf(inputTrees, 400, format_string, TypeToString<TypeParam>::type,   // Return
+                                                  TypeToString<TypeParam>::type,   // Args
+                                                  TypeToString<TypeParam>::type,   // Args
+                                                  TypeToString<TypeParam>::type,   // Args
+                                                  TypeToString<TypeParam>::type,   // Args
+                                                  TypeToString<TypeParam>::type,   // Args
+                                                  TypeToString<TypeParam>::prefix, // return
+                                                  TypeToString<TypeParam>::prefix, // call
+                                                  reinterpret_cast<uintmax_t>(static_cast<TypeParam (*)(TypeParam,TypeParam,TypeParam,TypeParam,TypeParam)>(fifthArg<TypeParam>)),// address
+                                                  TypeToString<TypeParam>::type,   // args
+                                                  TypeToString<TypeParam>::type,   // args
+                                                  TypeToString<TypeParam>::type,   // args
+                                                  TypeToString<TypeParam>::type,   // args
+                                                  TypeToString<TypeParam>::type,   // args
+                                                  TypeToString<TypeParam>::prefix, // load
+                                                  TypeToString<TypeParam>::prefix, // load
+                                                  TypeToString<TypeParam>::prefix, // load
+                                                  TypeToString<TypeParam>::prefix, // load
+                                                  TypeToString<TypeParam>::prefix  // load
+                                                  );
+
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees) << "Trees failed to parse\n" << inputTrees;
+
+    // Execution of this test is disabled on non-X86 platforms, as we
+    // do not have trampoline support, and so this call may be out of
+    // range for some architectures.
+#ifdef TR_TARGET_X86
+    Tril::DefaultCompiler compiler{trees};
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+
+    auto entry_point = compiler.getEntryPoint<TypeParam (*)(TypeParam,TypeParam,TypeParam,TypeParam,TypeParam)>();
+
+    EXPECT_EQ(static_cast<TypeParam>(1024),    entry_point(0,0,0,0,static_cast<TypeParam>(1024)))     << "Input Trees: " << inputTrees;
+    EXPECT_EQ(static_cast<TypeParam>(-1),      entry_point(0,0,0,0,static_cast<TypeParam>(-1)))       << "Input Trees: " << inputTrees;
+    EXPECT_EQ(static_cast<TypeParam>(0xf0f0f), entry_point(0,0,0,0,static_cast<TypeParam>(0xf0f0f)))  << "Input Trees: " << inputTrees;
+#endif
+}
+
+/*
+ * It doesn't matter what this function exactly do. It is requred just to demonstrate what can be expected if a callee
+ * actively uses the stack (has a lot of local variables).
+ */
+template <typename T>
+T stackUser(T a, T b, T c, T d, T e) {
+	volatile T x, y, z, w;
+	for (int i = 0; i < a; i+= b) {
+	    w = (c + b) * (i + e);
+		x = a * (i + d + 1);
+		y = b - d + c;
+		z = c * 2 * (i + 1);
+	}
+	return x + y + z + w;
+}
+
+/**
+ * In the Microsoft x64 calling convention, it is the caller's responsibility to allocate 32 bytes of "shadow space" on
+ * the stack right before calling the function (regardless of the actual number of parameters used), and to pop the stack
+ * after the call. In the case, when the callee actively uses the stack, the callee can relate on this "shadow space"
+ * and save arguments or other nonvolatile registers there. The test demonstrates what can be happen when the callee is
+ * an actively stack user.
+ */
+TYPED_TEST(LinkageTest, SystemLinkageParameterPassingFiveArgToStackUser) {
+    char inputTrees[400] = {0};
+    const auto format_string = "(method return=%s args=[%s,%s,%s,%s,%s] (block (%sreturn (%scall address=0x%jX args=[%s,%s,%s,%s,%s] linkage=system"
+                                 " (%sload parm=0)"
+                                 " (%sload parm=1)"
+                                 " (%sload parm=2)"
+                                 " (%sload parm=3)"
+                                 " (%sload parm=4)"
+                                 ") )  ))";
+    std::snprintf(inputTrees, 400, format_string, TypeToString<TypeParam>::type,   // Return
+                                                  TypeToString<TypeParam>::type,   // Args
+                                                  TypeToString<TypeParam>::type,   // Args
+                                                  TypeToString<TypeParam>::type,   // Args
+                                                  TypeToString<TypeParam>::type,   // Args
+                                                  TypeToString<TypeParam>::type,   // Args
+                                                  TypeToString<TypeParam>::prefix, // return
+                                                  TypeToString<TypeParam>::prefix, // call
+                                                  reinterpret_cast<uintmax_t>(static_cast<TypeParam (*)(TypeParam,TypeParam,TypeParam,TypeParam,TypeParam)>(stackUser<TypeParam>)),// address
+                                                  TypeToString<TypeParam>::type,   // args
+                                                  TypeToString<TypeParam>::type,   // args
+                                                  TypeToString<TypeParam>::type,   // args
+                                                  TypeToString<TypeParam>::type,   // args
+                                                  TypeToString<TypeParam>::type,   // args
+                                                  TypeToString<TypeParam>::prefix, // load
+                                                  TypeToString<TypeParam>::prefix, // load
+                                                  TypeToString<TypeParam>::prefix, // load
+                                                  TypeToString<TypeParam>::prefix, // load
+                                                  TypeToString<TypeParam>::prefix  // load
+                                                  );
+
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees) << "Trees failed to parse\n" << inputTrees;
+
+    // Execution of this test is disabled on non-X86 platforms, as we
+    // do not have trampoline support, and so this call may be out of
+    // range for some architectures.
+#ifdef TR_TARGET_X86
+    Tril::DefaultCompiler compiler{trees};
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+
+    auto entry_point = compiler.getEntryPoint<TypeParam (*)(TypeParam,TypeParam,TypeParam,TypeParam,TypeParam)>();
+
+    EXPECT_EQ(static_cast<TypeParam>(2053),     stackUser<TypeParam>(1,1,1,1,static_cast<TypeParam>(1024)))     << "Input Trees: " << inputTrees;
+    EXPECT_EQ(static_cast<TypeParam>(3),        stackUser<TypeParam>(1,1,1,1,static_cast<TypeParam>(-1)))       << "Input Trees: " << inputTrees;
+    EXPECT_EQ(static_cast<TypeParam>(0x1e1e23), stackUser<TypeParam>(1,1,1,1,static_cast<TypeParam>(0xf0f0f)))  << "Input Trees: " << inputTrees;
+
+    EXPECT_EQ(static_cast<TypeParam>(2053),     entry_point(1,1,1,1,static_cast<TypeParam>(1024)))     << "Input Trees: " << inputTrees;
+    EXPECT_EQ(static_cast<TypeParam>(3),        entry_point(1,1,1,1,static_cast<TypeParam>(-1)))       << "Input Trees: " << inputTrees;
+    EXPECT_EQ(static_cast<TypeParam>(0x1e1e23), entry_point(1,1,1,1,static_cast<TypeParam>(0xf0f0f)))  << "Input Trees: " << inputTrees;
 #endif
 }

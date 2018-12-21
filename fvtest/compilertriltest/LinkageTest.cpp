@@ -152,6 +152,88 @@ TYPED_TEST(LinkageTest, SystemLinkageParameterPassingFourArg) {
 }
 
 template <typename T>
+T (*get_fourth_arg_from_callee())(T,T,T,T) {
+    char inputTrees[400] = {0};
+    const auto format_string =
+        "(method return=%s args=[%s,%s,%s,%s] (block (%sreturn (%sload parm=3))))";
+    std::snprintf(inputTrees, 400, format_string,
+        TypeToString<T>::type,   // Return
+        TypeToString<T>::type,   // Args
+        TypeToString<T>::type,   // Args
+        TypeToString<T>::type,   // Args
+        TypeToString<T>::type,   // Args
+        TypeToString<T>::prefix, // return
+        TypeToString<T>::prefix  // load
+        );
+
+    auto trees = parseString(inputTrees);
+
+    if (trees == NULL) {
+        return NULL;
+    }
+
+    Tril::DefaultCompiler compiler{trees};
+    if (compiler.compile() != 0) {
+        return NULL;
+    }
+
+    return compiler.getEntryPoint<T (*)(T,T,T,T)>();
+}
+
+TYPED_TEST(LinkageTest, SystemLinkageJitedToJitedParameterPassingFourArg) {
+    char inputTrees[400] = {0};
+
+    auto callee_entry_point = get_fourth_arg_from_callee<TypeParam>();
+    ASSERT_NOTNULL(callee_entry_point) << "Compilation of the callee failed unexpectedly\n";
+
+    EXPECT_EQ(static_cast<TypeParam>(1024),    callee_entry_point(0,0,0,static_cast<TypeParam>(1024)));
+    EXPECT_EQ(static_cast<TypeParam>(-1),      callee_entry_point(0,0,0,static_cast<TypeParam>(-1)));
+    EXPECT_EQ(static_cast<TypeParam>(0xf0f0f), callee_entry_point(0,0,0,static_cast<TypeParam>(0xf0f0f)));
+
+    const auto format_string = "(method return=%s args=[%s,%s,%s,%s] (block (%sreturn (%scall address=0x%jX args=[%s,%s,%s,%s] linkage=system"
+                                 " (%sload parm=0)"
+                                 " (%sload parm=1)"
+                                 " (%sload parm=2)"
+                                 " (%sload parm=3)"
+                                 ") )  ))";
+    std::snprintf(inputTrees, 400, format_string, TypeToString<TypeParam>::type,   // Return
+                                                  TypeToString<TypeParam>::type,   // Args
+                                                  TypeToString<TypeParam>::type,   // Args
+                                                  TypeToString<TypeParam>::type,   // Args
+                                                  TypeToString<TypeParam>::type,   // Args
+                                                  TypeToString<TypeParam>::prefix, // return
+                                                  TypeToString<TypeParam>::prefix, // call
+                                                  callee_entry_point,              // address
+                                                  TypeToString<TypeParam>::type,   // args
+                                                  TypeToString<TypeParam>::type,   // args
+                                                  TypeToString<TypeParam>::type,   // args
+                                                  TypeToString<TypeParam>::type,   // args
+                                                  TypeToString<TypeParam>::prefix, // load
+                                                  TypeToString<TypeParam>::prefix, // load
+                                                  TypeToString<TypeParam>::prefix, // load
+                                                  TypeToString<TypeParam>::prefix  // load
+                                                  );
+
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees) << "Trees failed to parse\n" << inputTrees;
+
+    // Execution of this test is disabled on non-X86 platforms, as we
+    // do not have trampoline support, and so this call may be out of
+    // range for some architectures.
+#ifdef TR_TARGET_X86
+    Tril::DefaultCompiler compiler{trees};
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<TypeParam (*)(TypeParam,TypeParam,TypeParam,TypeParam)>();
+
+    EXPECT_EQ(static_cast<TypeParam>(1024),    entry_point(0,0,0,static_cast<TypeParam>(1024)))     << "Input Trees: " << inputTrees;
+    EXPECT_EQ(static_cast<TypeParam>(-1),      entry_point(0,0,0,static_cast<TypeParam>(-1)))       << "Input Trees: " << inputTrees;
+    EXPECT_EQ(static_cast<TypeParam>(0xf0f0f), entry_point(0,0,0,static_cast<TypeParam>(0xf0f0f)))  << "Input Trees: " << inputTrees;
+#endif
+}
+
+template <typename T>
 T fifthArg(T a, T b, T c, T d, T e) { return e; }
 
 /**

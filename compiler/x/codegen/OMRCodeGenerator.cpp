@@ -496,6 +496,7 @@ OMR::X86::CodeGenerator::CodeGenerator() :
    _dependentDiscardableRegisters(getTypedAllocator<TR::Register*>(TR::comp()->allocator())),
    _clobberingInstructions(getTypedAllocator<TR::ClobberingInstruction*>(TR::comp()->allocator())),
    _outlinedInstructionsList(getTypedAllocator<TR_OutlinedInstructions*>(TR::comp()->allocator())),
+   _numReservedIPICTrampolines(0),
    _flags(0)
    {
    _clobIterator = _clobberingInstructions.begin();
@@ -1872,11 +1873,11 @@ void OMR::X86::CodeGenerator::doBinaryEncoding()
    uint8_t * temp = self()->allocateCodeMemory(self()->getEstimatedCodeLength(), 0, &coldCode);
    TR_ASSERT(temp, "Failed to allocate primary code area.");
 
-   if (TR::Compiler->target.is64Bit() && self()->comp()->getCodeCacheSwitched() && self()->getPicSlotCount() != 0)
+   if (TR::Compiler->target.is64Bit() && self()->hasCodeCacheSwitched() && self()->getPicSlotCount() != 0)
       {
-      int32_t numTrampolinesToReserve = self()->getPicSlotCount() - self()->comp()->getNumReservedIPICTrampolines();
+      int32_t numTrampolinesToReserve = self()->getPicSlotCount() - self()->getNumReservedIPICTrampolines();
       TR_ASSERT(numTrampolinesToReserve >= 0, "Discrepancy with number of IPIC trampolines to reserve getPicSlotCount()=%d getNumReservedIPICTrampolines()=%d",
-         self()->getPicSlotCount(), self()->comp()->getNumReservedIPICTrampolines());
+         self()->getPicSlotCount(), self()->getNumReservedIPICTrampolines());
       self()->reserveNTrampolines(numTrampolinesToReserve);
       }
 
@@ -3111,4 +3112,11 @@ OMR::X86::CodeGenerator::arrayTranslateAndTestMinimumNumberOfIterations()
    // aggressive at scorching, since loops that iterate exactly 8
    // times can appear to iterate slightly less than that.
    return self()->comp()->getOptLevel() >= scorching ? 4 : 8;
+   }
+
+void
+OMR::X86::CodeGenerator::switchCodeCacheTo(TR::CodeCache *newCodeCache)
+   {
+   self()->setNumReservedIPICTrampolines(0);
+   OMR::CodeGenerator::switchCodeCacheTo(newCodeCache);
    }

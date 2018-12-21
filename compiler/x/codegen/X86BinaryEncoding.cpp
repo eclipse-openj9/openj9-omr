@@ -1215,7 +1215,7 @@ uint8_t* TR::X86ImmSymInstruction::generateOperand(uint8_t* cursor)
 
          intptrj_t targetAddress = (int32_t)getSourceImmediate();
 
-         if (TR::Compiler->target.is64Bit() && comp->getCodeCacheSwitched() && getOpCodeValue() == CALLImm4)
+         if (TR::Compiler->target.is64Bit() && cg()->hasCodeCacheSwitched() && getOpCodeValue() == CALLImm4)
             {
             TR::SymbolReference *calleeSymRef = NULL;
 

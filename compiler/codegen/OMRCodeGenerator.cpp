@@ -105,8 +105,9 @@
 #include "ras/Debug.hpp"                            // for TR_DebugBase
 #include "ras/DebugCounter.hpp"
 #include "ras/Delimiter.hpp"                        // for Delimiter
-#include "runtime/Runtime.hpp"                      // for HI_VALUE, etc
+#include "runtime/CodeCache.hpp"
 #include "runtime/CodeCacheExceptions.hpp"
+#include "runtime/Runtime.hpp"                      // for HI_VALUE, etc
 #include "stdarg.h"                                 // for va_end, etc
 
 namespace TR { class Optimizer; }
@@ -221,6 +222,7 @@ OMR::CodeGenerator::CodeGenerator() :
      _blocksWithCalls(NULL),
      _codeCache(0),
      _committedToCodeCache(false),
+     _codeCacheSwitched(false),
      _dummyTempStorageRefNode(NULL),
      _blockRegisterPressureCache(NULL),
      _simulatedNodeStates(NULL),
@@ -3231,4 +3233,38 @@ void
 OMR::CodeGenerator::insertPrefetchIfNecessary(TR::Node *node, TR::Register *targetRegister)
    {
    return;
+   }
+
+
+void
+OMR::CodeGenerator::switchCodeCacheTo(TR::CodeCache *newCodeCache)
+   {
+   TR::CodeCache *oldCodeCache = self()->getCodeCache();
+
+   TR_ASSERT(oldCodeCache != newCodeCache, "Attempting to switch to the currently held code cache");
+
+   self()->setCodeCache(newCodeCache);
+   self()->setCodeCacheSwitched(true);
+
+   if (self()->committedToCodeCache() || !newCodeCache)
+      {
+      TR::Compilation *comp = self()->comp();
+
+      if (newCodeCache)
+         {
+         comp->failCompilation<TR::RecoverableCodeCacheError>("Already committed to current code cache");
+         }
+
+      comp->failCompilation<TR::CodeCacheError>("Already committed to current code cache");
+      }
+
+   // If the old CodeCache had pre-loaded code, the current compilation may have
+   // initialized it and will therefore depend on it.  The new CodeCache must be
+   // initialized as well.
+   //
+   if (oldCodeCache->isCCPreLoadedCodeInitialized())
+      {
+      newCodeCache->getCCPreLoadedCodeAddress(TR_numCCPreLoadedCode, self());
+      }
+
    }

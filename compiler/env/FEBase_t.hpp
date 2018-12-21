@@ -24,6 +24,7 @@
 #else
 #include <sys/mman.h>
 #endif /* OMR_OS_WINDOWS */
+#include "codegen/CodeGenerator.hpp"
 #include "compile/Compilation.hpp"
 #include "env/FEBase.hpp"
 #include "env/jittypes.h"
@@ -59,7 +60,7 @@ FEBase<Derived>::allocateCodeMemory(TR::Compilation *comp, uint32_t warmCodeSize
       // Either we didn't get a code cache, or the one we get should be reserved
       TR_ASSERT(!codeCache || codeCache->isReserved(), "Substitute code cache isn't marked as reserved");
       comp->setRelocatableMethodCodeStart(warmCode);
-      switchCodeCache(codeCache);
+      comp->cg()->switchCodeCacheTo(codeCache);
       }
 
    if (warmCode == NULL)
@@ -131,18 +132,7 @@ void
 FEBase<Derived>::switchCodeCache(TR::CodeCache *newCache)
    {
    TR::Compilation *comp = TR::comp();
-   TR::CodeCache *oldCache = comp->getCurrentCodeCache();
-
-   comp->switchCodeCache(newCache);
-
-   // If the old CC had pre-loaded code, the current compilation may have initialized it and will therefore depend on it
-   // so we should initialize it in the new CC as well
-   // XXX: We could avoid this if we knew for sure that this compile wasn't the one who initialized it
-   if (newCache && oldCache->isCCPreLoadedCodeInitialized())
-      {
-      TR::CodeCache *newCC = newCache;
-      newCC->getCCPreLoadedCodeAddress(TR_numCCPreLoadedCode, comp->cg());
-      }
+   comp->cg()->switchCodeCacheTo(newCache);
    }
 
 template <class Derived>

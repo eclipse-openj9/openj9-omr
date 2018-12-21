@@ -280,7 +280,6 @@ OMR::Compilation::Compilation(
    _relocatableMethodCodeStart(NULL),
    _compThreadID(id),
    _failCHtableCommitFlag(false),
-   _numReservedIPICTrampolines(0),
    _phaseTimer("Compilation", self()->allocator("phaseTimer"), self()->getOption(TR_Timing)),
    _phaseMemProfiler("Compilation", self()->allocator("phaseMemProfiler"), self()->getOption(TR_LexicalMemProfiler)),
    _compilationNodes(NULL),
@@ -2027,8 +2026,12 @@ void OMR::Compilation::switchCodeCache(TR::CodeCache *newCodeCache)
    {
    TR_ASSERT( self()->getCurrentCodeCache() != newCodeCache, "Attempting to switch to the currently held code cache");
    self()->setCurrentCodeCache(newCodeCache);  // Even if we signal, we need to update the reserved code cache for recompilations.
-   _codeCacheSwitched = true;
-   _numReservedIPICTrampolines = 0;
+   self()->cg()->setCodeCacheSwitched(true);
+
+#ifdef TR_TARGET_X86
+   self()->cg()->setNumReservedIPICTrampolines(0);
+#endif
+
    if ( self()->cg()->committedToCodeCache() || !newCodeCache )
       {
       if (newCodeCache)
@@ -2738,4 +2741,30 @@ void OMR::Compilation::invalidateAliasRegion()
 bool OMR::Compilation::incompleteOptimizerSupportForReadWriteBarriers()
    {
    return false;
+   }
+
+int32_t OMR::Compilation::getNumReservedIPICTrampolines()
+   {
+#ifdef TR_TARGET_X86
+   return self()->cg()->getNumReservedIPICTrampolines();
+#else
+   return 0;
+#endif
+   }
+
+void OMR::Compilation::setNumReservedIPICTrampolines(int32_t n)
+   {
+#ifdef TR_TARGET_X86
+   return self()->cg()->setNumReservedIPICTrampolines(n);
+#endif
+   }
+
+bool OMR::Compilation::getCodeCacheSwitched()
+   {
+   return self()->cg()->hasCodeCacheSwitched();
+   }
+
+void OMR::Compilation::setCodeCacheSwitched(bool s)
+   {
+   self()->cg()->setCodeCacheSwitched(s);
    }

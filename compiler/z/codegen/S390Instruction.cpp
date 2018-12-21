@@ -2402,7 +2402,7 @@ TR::S390RILInstruction::generateBinaryEncoding()
       if (comp->getOption(TR_EnableRMODE64))
 #endif
          {
-         if (comp->getCodeCacheSwitched())
+         if (cg()->hasCodeCacheSwitched())
             {
             TR::SymbolReference *calleeSymRef = NULL;
 

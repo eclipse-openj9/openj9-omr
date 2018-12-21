@@ -44,3 +44,5 @@
       IsTrg1Mem,
    IsMem,
       IsMemSrc1,
+   IsSrc1,
+      IsSrc2,

@@ -454,6 +454,40 @@ TR::Instruction *generateMemSrc1Instruction(
                    TR::Instruction *preced = NULL);
 
 /*
+ * @brief Generates src1 instruction
+ * @param[in] cg : CodeGenerator
+ * @param[in] op : instruction opcode
+ * @param[in] node : node
+ * @param[in] s1reg : source register
+ * @param[in] preced : preceding instruction
+ * @return generated instruction
+ */
+TR::Instruction *generateSrc1Instruction(
+                   TR::CodeGenerator *cg,
+                   TR::InstOpCode::Mnemonic op,
+                   TR::Node *node,
+                   TR::Register *s1reg,
+                   TR::Instruction *preced = NULL);
+
+/*
+ * @brief Generates src2 instruction
+ * @param[in] cg : CodeGenerator
+ * @param[in] op : instruction opcode
+ * @param[in] node : node
+ * @param[in] s1reg : source register 1
+ * @param[in] s2reg : source register 2
+ * @param[in] preced : preceding instruction
+ * @return generated instruction
+ */
+TR::Instruction *generateSrc2Instruction(
+                   TR::CodeGenerator *cg,
+                   TR::InstOpCode::Mnemonic op,
+                   TR::Node *node,
+                   TR::Register *s1reg,
+                   TR::Register *s2reg,
+                   TR::Instruction *preced = NULL);
+
+/*
  * @brief Generates ASR instruction
  * @param[in] cg : CodeGenerator
  * @param[in] node : node

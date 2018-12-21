@@ -941,6 +941,41 @@ static void mrPeepholes(TR::CodeGenerator *cg, TR::Instruction *mrInstruction)
                   }
                break;
                }
+            case OMR::Instruction::IsTrg1Src3:
+               {
+               TR::PPCTrg1Src3Instruction *inst = (TR::PPCTrg1Src3Instruction *)current;
+               if (inst->getSource1Register() == mrTargetReg)
+                  {
+                  if (performTransformation(comp, "O^O PPC PEEPHOLE: Rewrite Trg1Src3 1st source register %p.\n", current))
+                     {
+                     inst->setSource1Register(mrSourceReg);
+                     extendWindow = true;
+                     }
+                  else
+                     return;
+                  }
+               if (inst->getSource2Register() == mrTargetReg)
+                  {
+                  if (performTransformation(comp, "O^O PPC PEEPHOLE: Rewrite Trg1Src3 2nd source register %p.\n", current))
+                     {
+                     inst->setSource2Register(mrSourceReg);
+                     extendWindow = true;
+                     }
+                  else
+                     return;
+                  }
+               if (inst->getSource3Register() == mrTargetReg)
+                  {
+                  if (performTransformation(comp, "O^O PPC PEEPHOLE: Rewrite Trg1Src3 3nd source register %p.\n", current))
+                     {
+                     inst->setSource3Register(mrSourceReg);
+                     extendWindow = true;
+                     }
+                  else
+                     return;
+                  }
+               break;
+               }
             case OMR::Instruction::IsTrg1Src2Imm:
                {
                TR::PPCTrg1Src2ImmInstruction *inst = (TR::PPCTrg1Src2ImmInstruction *)current;

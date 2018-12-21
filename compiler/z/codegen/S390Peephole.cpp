@@ -549,7 +549,7 @@ TR_S390PostRAPeephole::replaceGuardedLoadWithSoftwareReadBarrier()
    // Use raReg to call handleReadBarrier helper, preserve raReg before the call in the load reg
    _cursor = generateRRInstruction(_cg, TR::InstOpCode::LGR, load->getNode(), loadTargetReg, raReg, _cursor);
    TR::MemoryReference *gsHelperAddrMemRef = generateS390MemoryReference(vmReg, TR::Compiler->vm.thisThreadGetGSHandlerAddressOffset(comp()), _cg);
-   _cursor = generateRXYInstruction(_cg, TR::InstOpCode::LG, load->getNode(), raReg, gsHelperAddrMemRef, _cursor);
+   _cursor = generateRXInstruction(_cg, TR::InstOpCode::LG, load->getNode(), raReg, gsHelperAddrMemRef, _cursor);
    _cursor = new (_cg->trHeapMemory()) TR::S390RRInstruction(TR::InstOpCode::BASR, load->getNode(), raReg, raReg, _cursor, _cg);
    _cursor = generateRRInstruction(_cg, TR::InstOpCode::LGR, load->getNode(), raReg, loadTargetReg, _cursor);
 
@@ -1507,7 +1507,7 @@ TR_S390PostRAPeephole::LoadAndMaskReduction(TR::InstOpCode::Mnemonic LZOpCode)
          loadInst->getMemoryReference()->resetMemRefUsedBefore();
 
          // Replace the load instruction with load-and-mask instruction
-         _cg->replaceInst(loadInst, _cursor = generateRXYInstruction(_cg, LZOpCode, comp()->getStartTree()->getNode(), loadTargetReg, loadInst->getMemoryReference(), _cursor->getPrev()));
+         _cg->replaceInst(loadInst, _cursor = generateRXInstruction(_cg, LZOpCode, comp()->getStartTree()->getNode(), loadTargetReg, loadInst->getMemoryReference(), _cursor->getPrev()));
 
          return true;
          }

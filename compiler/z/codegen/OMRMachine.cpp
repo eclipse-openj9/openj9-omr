@@ -1430,17 +1430,10 @@ OMR::Z::Machine::assignBestRegisterSingle(TR::Register    *targetRegister,
    // Have we already assigned a real register
    if (assignedRegister == NULL)
       {
-      // True register model will mark register with a pending restoreSpillState and only when we see a def of this
-      // register will we store to spill.
-      if ((comp->getOption(TR_EnableTrueRegisterModel)) &&
-          targetRegister->isLive() &&
-          (targetRegister->isValueLiveOnExit() || !targetRegister->isNotUsedInThisBB()))
-        targetRegister->setPendingSpillOnDef();
-
       // These values are only equal upon the first assignment.  Hence, if they arn't
       // the same, and there is no assigned reg, we must have spilled the reg, so invert
       // the spill state to get the reg back
-      if(!comp->getOption(TR_EnableTrueRegisterModel) && targetRegister->getTotalUseCount() != targetRegister->getFutureUseCount())
+      if(targetRegister->getTotalUseCount() != targetRegister->getFutureUseCount())
          {
          assignedRegister = self()->reverseSpillState(currInst, targetRegister);
          reverseSpilled = true;
@@ -1485,17 +1478,6 @@ OMR::Z::Machine::assignBestRegisterSingle(TR::Register    *targetRegister,
       self()->cg()->clearRegisterAssignmentFlags();
       }
 
-   // Handle a definition that requires the register's spill location to be updated
-   if(defsRegister &&
-      targetRegister->isPendingSpillOnDef())
-     {
-     // traceMsg(cg()->comp(),"Handling ValueIsLiveOnExit() virtReg=%s assignedRegister=%s\n",cg()->getDebug()->getName(targetRegister),cg()->getDebug()->getName(assignedRegister));
-     if(self()->cg()->insideInternalControlFlow())
-       self()->reverseSpillState(self()->cg()->getInstructionAtEndInternalControlFlow(), targetRegister, toRealRegister(assignedRegister));
-     else
-       self()->reverseSpillState(currInst, targetRegister, toRealRegister(assignedRegister));
-     }
-
    // Bookkeeping to update the future use count
       if (doBookKeeping && (assignedRegister->getState() != TR::RealRegister::Locked))
       {
@@ -1528,20 +1510,8 @@ OMR::Z::Machine::assignBestRegisterSingle(TR::Register    *targetRegister,
             }
          }
 
-      if ((targetRegister->getFutureUseCount() == 0) ||
-          killOOLReg ||
-          ((comp->getOption(TR_EnableTrueRegisterModel)) && currInst->startOfLiveRange(targetRegister)))
+      if ((targetRegister->getFutureUseCount() == 0) || killOOLReg)
          {
-#if DEBUG
-         if(comp->getOption(TR_EnableTrueRegisterModel) && currInst->startOfLiveRange(targetRegister) &&
-            targetRegister->getFutureUseCount() > 0 && !currInst->getOpCode().isRegCopy() )
-           {
-           traceMsg(comp,
-                    "Start of live range for a non global virtual yet its future count is not zero. Reg=%s Instr=[%p]\n",
-                    self()->cg()->getDebug()->getName(targetRegister),
-                    currInst);
-           }
-#endif
          self()->cg()->traceRegFreed(targetRegister, assignedRegister);
          targetRegister->resetIsLive();
          if (enableHighWordRA && targetRegister->is64BitReg())
@@ -1660,8 +1630,7 @@ OMR::Z::Machine::assignBestRegisterPair(TR::Register    *regPair,
 
    // In case we need to unspill both sibling regs, we do so concurrently to avoid runspill of siblings
    // triping over each other.
-   if (!comp->getOption(TR_EnableTrueRegisterModel) &&
-       freeRegisterLow  == NULL && (lastReg->getTotalUseCount() != lastReg->getFutureUseCount()) &&
+   if (freeRegisterLow  == NULL && (lastReg->getTotalUseCount() != lastReg->getFutureUseCount()) &&
        freeRegisterHigh == NULL && (firstReg->getTotalUseCount() != firstReg->getFutureUseCount()))
       {
       TR::RealRegister * tfreeRegisterHigh = NULL;
@@ -1676,25 +1645,10 @@ OMR::Z::Machine::assignBestRegisterPair(TR::Register    *regPair,
       freeRegisterHigh = self()->reverseSpillState(currInst, firstReg, toRealRegister(tfreeRegisterHigh));
       }
 
-   // True register model will mark register with a pending restoreSpillState and only when we see a def of this
-   // register will we store to spill.
-   if (freeRegisterLow == NULL &&
-       (comp->getOption(TR_EnableTrueRegisterModel)) &&
-       lastReg->isLive() &&
-       (lastReg->isValueLiveOnExit() || !lastReg->isNotUsedInThisBB()))
-     lastReg->setPendingSpillOnDef();
-   if (freeRegisterHigh == NULL &&
-       (comp->getOption(TR_EnableTrueRegisterModel)) &&
-       firstReg->isLive() &&
-       (firstReg->isValueLiveOnExit() || !firstReg->isNotUsedInThisBB()))
-     firstReg->setPendingSpillOnDef();
-
    // TotalUse & FutureUse are only equal upon the first assignment.  Hence, if they arn't
    // the same, and there is no assigned reg, we must have spilled the reg, so invert
    // the spill state to get the reg back
-   if (freeRegisterLow == NULL &&
-       !comp->getOption(TR_EnableTrueRegisterModel) &&
-       (lastReg->getTotalUseCount() != lastReg->getFutureUseCount()))
+   if (freeRegisterLow == NULL && (lastReg->getTotalUseCount() != lastReg->getFutureUseCount()))
       {
       if (freeRegisterHigh)
          {
@@ -1712,9 +1666,7 @@ OMR::Z::Machine::assignBestRegisterPair(TR::Register    *regPair,
    // TotalUse & FutureUse are only equal upon the first assignment.  Hence, if they arn't
    // the same, and there is no assigned reg, we must have spilled the reg, so invert
    // the spill state to get the reg back
-   if (freeRegisterHigh == NULL &&
-       !comp->getOption(TR_EnableTrueRegisterModel) &&
-       (firstReg->getTotalUseCount() != firstReg->getFutureUseCount()))
+   if (freeRegisterHigh == NULL && (firstReg->getTotalUseCount() != firstReg->getFutureUseCount()))
       {
       if (freeRegisterLow)
          {
@@ -1922,31 +1874,12 @@ OMR::Z::Machine::assignBestRegisterPair(TR::Register    *regPair,
    // Check to see if either register can be freed if ref count is 0
    //
 
-   // Handle a definition that requires the register's spill location to be updated
-   if(currInst->defsAnyRegister(firstReg) &&
-      firstReg->isPendingSpillOnDef())
-     {
-     if(self()->cg()->insideInternalControlFlow())
-       self()->reverseSpillState(self()->cg()->getInstructionAtEndInternalControlFlow(), firstReg, toRealRegister(freeRegisterHigh));
-     else
-       self()->reverseSpillState(currInst, firstReg, toRealRegister(freeRegisterHigh));
-     }
-   if(currInst->defsAnyRegister(lastReg) &&
-      lastReg->isPendingSpillOnDef())
-     {
-     if(self()->cg()->insideInternalControlFlow())
-       self()->reverseSpillState(self()->cg()->getInstructionAtEndInternalControlFlow(), lastReg, toRealRegister(freeRegisterLow));
-     else
-       self()->reverseSpillState(currInst, lastReg, toRealRegister(freeRegisterLow));
-     }
-
    // OOL: if a register is first defined (became live) in the hot path, no matter how many futureUseCount left (in the code path)
    // the register is considered as dead now in the hot path, so GC map contains the correct list of live registers
    if (doBookKeeping)
       {
       firstReg->setIsLive();
       if (((firstReg->decFutureUseCount() == 0) ||
-           ((comp->getOption(TR_EnableTrueRegisterModel)) && currInst->startOfLiveRange(firstReg)) ||
            (self()->cg()->isOutOfLineHotPath() && firstReg->getStartOfRange() == currInst)) &&
            (freeRegisterHigh->getState() != TR::RealRegister::Locked))
          {
@@ -1963,7 +1896,6 @@ OMR::Z::Machine::assignBestRegisterPair(TR::Register    *regPair,
          }
       lastReg->setIsLive();
       if (((lastReg->decFutureUseCount() == 0) ||
-           ((comp->getOption(TR_EnableTrueRegisterModel)) && currInst->startOfLiveRange(lastReg)) ||
            (self()->cg()->isOutOfLineHotPath() && lastReg->getStartOfRange() == currInst)) &&
           (freeRegisterLow->getState() != TR::RealRegister::Locked))
          {
@@ -2187,12 +2119,6 @@ OMR::Z::Machine::freeBestFPRegisterPair(TR::RealRegister ** firstReg, TR::RealRe
 
    if (bestVirtCandidateLow != NULL)
       {
-      // True register model will mark register with a pending restoreSpillState and only when we see a def of this
-      // register will we store to spill.
-      if ((comp->getOption(TR_EnableTrueRegisterModel)) &&
-          (bestVirtCandidateLow->isValueLiveOnExit() || !bestVirtCandidateLow->isNotUsedInThisBB()))
-        bestVirtCandidateLow->setPendingSpillOnDef();
-
       locationLow = bestVirtCandidateLow->getBackingStorage();
       if(locationLow == NULL)
         locationLow = self()->cg()->allocateSpill(8, false, NULL, true);
@@ -2248,12 +2174,6 @@ OMR::Z::Machine::freeBestFPRegisterPair(TR::RealRegister ** firstReg, TR::RealRe
 
    if (bestVirtCandidateHigh != NULL)
       {
-      // True register model will mark register with a pending restoreSpillState and only when we see a def of this
-      // register will we store to spill.
-      if ((comp->getOption(TR_EnableTrueRegisterModel)) &&
-          (bestVirtCandidateHigh->isValueLiveOnExit() || !bestVirtCandidateHigh->isNotUsedInThisBB()))
-        bestVirtCandidateHigh->setPendingSpillOnDef();
-
       locationHigh = bestVirtCandidateHigh->getBackingStorage();
       if(locationHigh == NULL)
         locationHigh = self()->cg()->allocateSpill(8, false, NULL, true);
@@ -2405,12 +2325,6 @@ OMR::Z::Machine::freeBestRegisterPair(TR::RealRegister ** firstReg, TR::RealRegi
       }
    if (bestVirtCandidateLow != NULL)
       {
-        // True register model will mark register with a pending restoreSpillState and only when we see a def of this
-        // register will we store to spill.
-        if ((comp->getOption(TR_EnableTrueRegisterModel)) &&
-            (bestVirtCandidateLow->isValueLiveOnExit() || !bestVirtCandidateLow->isNotUsedInThisBB()))
-          bestVirtCandidateLow->setPendingSpillOnDef();
-
          TR::InstOpCode::Mnemonic opCodeLow;
          if (comp->getOption(TR_ForceLargeRAMoves) ||
              bestVirtCandidateLow->is64BitReg() ||
@@ -2555,12 +2469,6 @@ OMR::Z::Machine::freeBestRegisterPair(TR::RealRegister ** firstReg, TR::RealRegi
 
    if (bestVirtCandidateHigh != NULL)
       {
-        // True register model will mark register with a pending restoreSpillState and only when we see a def of this
-        // register will we store to spill.
-        if ((comp->getOption(TR_EnableTrueRegisterModel)) &&
-            (bestVirtCandidateHigh->isValueLiveOnExit() || !bestVirtCandidateHigh->isNotUsedInThisBB()))
-          bestVirtCandidateHigh->setPendingSpillOnDef();
-
          TR::InstOpCode::Mnemonic opCodeHigh;
          if (comp->getOption(TR_ForceLargeRAMoves) ||
              bestVirtCandidateHigh->is64BitReg() ||
@@ -3931,11 +3839,6 @@ OMR::Z::Machine::spillRegister(TR::Instruction * currentInstruction, TR::Registe
    TR::RealRegister * best = NULL;
    TR_Debug * debugObj = self()->cg()->getDebug();
 
-   if(comp->getOption(TR_EnableTrueRegisterModel))
-     {
-     virtReg->setValueLiveOnExit();
-     }
-
    // Highword RA flags
    // check: what if virtReg is actually a real Reg??
    bool enableHighWordRA = self()->cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) &&
@@ -4100,7 +4003,7 @@ OMR::Z::Machine::spillRegister(TR::Instruction * currentInstruction, TR::Registe
            self()->cg()->traceRegisterAssignment("\nOOL: Reuse backing store (%p) for %s inside OOL\n",
                                          location,debugObj->getName(virtReg));
          }
-       else if((!comp->getOption(TR_EnableTrueRegisterModel)) || location==NULL)
+       else
          {
          location = self()->cg()->allocateSpill(8, virtReg->containsCollectedReference(), NULL, true);
          if (debugObj)
@@ -4120,21 +4023,18 @@ OMR::Z::Machine::spillRegister(TR::Instruction * currentInstruction, TR::Registe
          }
        else if (!containsInternalPointer)
          {
-         if((!comp->getOption(TR_EnableTrueRegisterModel)) || location==NULL)
-           {
-           if ((enableHighWordRA && virtReg->is64BitReg()) || comp->getOption(TR_ForceLargeRAMoves))
-             {
-             location = self()->cg()->allocateSpill(8,virtReg->containsCollectedReference(), NULL, true);
-             }
-           else
-             {
-             location = self()->cg()->allocateSpill(TR::Compiler->om.sizeofReferenceAddress(), virtReg->containsCollectedReference(), NULL, true);
-             }
-           if (debugObj)
+         if ((enableHighWordRA && virtReg->is64BitReg()) || comp->getOption(TR_ForceLargeRAMoves))
+            {
+            location = self()->cg()->allocateSpill(8,virtReg->containsCollectedReference(), NULL, true);
+            }
+         else
+            {
+            location = self()->cg()->allocateSpill(TR::Compiler->om.sizeofReferenceAddress(), virtReg->containsCollectedReference(), NULL, true);
+            }
+         if (debugObj)
              self()->cg()->traceRegisterAssignment("\nSpilling %s to (%p)\n",debugObj->getName(virtReg),location);
-           }
          }
-       else if((!comp->getOption(TR_EnableTrueRegisterModel)) || location==NULL)
+       else
          {
          location = self()->cg()->allocateInternalPointerSpill(virtReg->getPinningArrayPointer());
          if (debugObj)
@@ -4178,7 +4078,7 @@ OMR::Z::Machine::spillRegister(TR::Instruction * currentInstruction, TR::Registe
            self()->cg()->traceRegisterAssignment("\nOOL: Reuse backing store (%p) for %s inside OOL\n",
                                          location,debugObj->getName(virtReg));
          }
-       else if((!comp->getOption(TR_EnableTrueRegisterModel)) || location==NULL)
+       else
          {
          location = self()->cg()->allocateSpill(8, false, NULL, true); // TODO: Use 4 for single-precision values
          if (debugObj)
@@ -4188,12 +4088,10 @@ OMR::Z::Machine::spillRegister(TR::Instruction * currentInstruction, TR::Registe
        break;
      case TR_VRF:
        // Spill of size 16 has never been done before. The call hierarchy seems to support it but this should be watched closely.
-       if((!comp->getOption(TR_EnableTrueRegisterModel)) || location==NULL)
-         {
-         location = self()->cg()->allocateSpill(16, false, NULL, true);
-         if (debugObj)
-           self()->cg()->traceRegisterAssignment("\nSpilling VRF %s to (%p)\n", debugObj->getName(virtReg), location);
-         }
+       location = self()->cg()->allocateSpill(16, false, NULL, true);
+       if (debugObj)
+          self()->cg()->traceRegisterAssignment("\nSpilling VRF %s to (%p)\n", debugObj->getName(virtReg), location);
+
        opCode = TR::InstOpCode::VL;
        break;
      }
@@ -4205,7 +4103,7 @@ OMR::Z::Machine::spillRegister(TR::Instruction * currentInstruction, TR::Registe
      {
      // load compressed refs low word into highword
      TR::MemoryReference * mr = generateS390MemoryReference(*tempMR, 4, self()->cg());
-     cursor = generateRXYInstruction(self()->cg(), TR::InstOpCode::LFH, currentNode, best, mr, currentInstruction);
+     cursor = generateRXInstruction(self()->cg(), TR::InstOpCode::LFH, currentNode, best, mr, currentInstruction);
      virtReg->setSpilledToHPR(false);
      }
    else
@@ -4298,9 +4196,6 @@ OMR::Z::Machine::reverseSpillState(TR::Instruction      *currentInstruction,
    //this is a dummy register used for OOL dependencies
 
    self()->cg()->traceRegisterAssignment("REVERSE SPILL STATE FOR %R", spilledRegister);
-
-   spilledRegister->resetValueLiveOnExit();
-   spilledRegister->resetPendingSpillOnDef();
 
    bool enableHighWordRA = self()->cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) &&
                            rk != TR_FPR && rk != TR_VRF;

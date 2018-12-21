@@ -3126,7 +3126,7 @@ generateS390CompareAndBranchOpsHelper(TR::Node * node, TR::CodeGenerator * cg, T
             {
             if (isUnsignedCmp)
                {
-               generateRXYInstruction(cg, TR::InstOpCode::LLGF, nonConstNode, testRegister, tempMR);  // 64 bits zero extended
+               generateRXInstruction(cg, TR::InstOpCode::LLGF, nonConstNode, testRegister, tempMR);  // 64 bits zero extended
                generateRRInstruction(cg, TR::InstOpCode::LTGR, node, testRegister, testRegister);     // 64 bit reg test
                if (nonConstNode->isSignExtendedTo64BitAtSource())
                   {
@@ -3137,11 +3137,11 @@ generateS390CompareAndBranchOpsHelper(TR::Node * node, TR::CodeGenerator * cg, T
                {
                if (nonConstNode->isSignExtendedTo64BitAtSource())
                   {
-                  generateRXYInstruction(cg, TR::InstOpCode::LTGF, nonConstNode, testRegister, tempMR); // 64 bits sign extended and test
+                  generateRXInstruction(cg, TR::InstOpCode::LTGF, nonConstNode, testRegister, tempMR); // 64 bits sign extended and test
                   }
                else
                   {
-                  generateRXYInstruction(cg, TR::InstOpCode::LLGF, nonConstNode, testRegister, tempMR); // 64 bits zero extended
+                  generateRXInstruction(cg, TR::InstOpCode::LLGF, nonConstNode, testRegister, tempMR); // 64 bits zero extended
                   generateRRInstruction(cg, TR::InstOpCode::LTR, node, testRegister, testRegister);     // 32 bits compare
                   }
                }
@@ -3150,7 +3150,7 @@ generateS390CompareAndBranchOpsHelper(TR::Node * node, TR::CodeGenerator * cg, T
          else if (!mustExtend)
             {
             // Use LT if constant is 31bit, and only use LTG if constant is 64 bit
-            generateRXYInstruction(cg, (useLTG) ? TR::InstOpCode::LTG : TR::InstOpCode::LT, nonConstNode, testRegister, tempMR);
+            generateRXInstruction(cg, (useLTG) ? TR::InstOpCode::LTG : TR::InstOpCode::LT, nonConstNode, testRegister, tempMR);
             }
          else
             {
@@ -4903,7 +4903,7 @@ genericLoadHelper(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference *
             }
          else
             {
-            generateRXYInstruction(cg, load, node, targetRegister, tempMR);
+            generateRXInstruction(cg, load, node, targetRegister, tempMR);
             }
          }
       }
@@ -4913,7 +4913,7 @@ genericLoadHelper(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference *
       if (form == RegReg)
          generateRREInstruction(cg, TR::InstOpCode::LLGTR, node, targetRegister, srcRegister);
       else //form == MemReg
-         generateRXYInstruction(cg, TR::InstOpCode::LLGT, node, targetRegister, tempMR);
+         generateRXInstruction(cg, TR::InstOpCode::LLGT, node, targetRegister, tempMR);
       }
    else if (form == MemReg)
       {
@@ -5538,12 +5538,12 @@ iloadHelper(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference * tempM
          {
          if (node->isZeroExtendedTo64BitAtSource())
             {
-            generateRXYInstruction(cg, TR::InstOpCode::LLGF, node, tempReg, tempMR);
+            generateRXInstruction(cg, TR::InstOpCode::LLGF, node, tempReg, tempMR);
             generateRRInstruction(cg, TR::InstOpCode::LTGR, node, tempReg, tempReg);
             }
          else
             {
-            generateRXYInstruction(cg, TR::InstOpCode::LTGF, node, tempReg, tempMR);
+            generateRXInstruction(cg, TR::InstOpCode::LTGF, node, tempReg, tempMR);
             }
 
          }
@@ -5988,7 +5988,7 @@ aloadHelper(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference * tempM
                   if (loadMnemonic == TR::InstOpCode::LLGFSG ||
                       loadMnemonic == TR::InstOpCode::LGG)
                      {
-                     generateRXYInstruction(cg, loadMnemonic, node, tempReg, tempMR);
+                     generateRXInstruction(cg, loadMnemonic, node, tempReg, tempMR);
                      }
                   else
                      {
@@ -6069,7 +6069,7 @@ bool directToMemoryAddHelper(TR::CodeGenerator * cg, TR::Node * node, TR::Node *
          }
       if (valueChild->getFirstChild()->getReferenceCount()==1)
          {
-         generateSIYInstruction(cg, op, node, tempMR, value);
+         generateSIInstruction(cg, op, node, tempMR, value);
 
          cg->recursivelyDecReferenceCount(valueChild);
          }
@@ -6079,7 +6079,7 @@ bool directToMemoryAddHelper(TR::CodeGenerator * cg, TR::Node * node, TR::Node *
          //
          cg->evaluate(valueChild->getFirstChild());
 
-         generateSIYInstruction(cg, op, node, tempMR, value);
+         generateSIInstruction(cg, op, node, tempMR, value);
 
          cg->decReferenceCount(valueChild);
          cg->decReferenceCount(valueChild->getFirstChild());
@@ -6608,7 +6608,7 @@ lstoreHelper(TR::Node * node, TR::CodeGenerator * cg, bool isReversed)
 
 
    TR::MemoryReference * lowMR = generateS390MemoryReference(node, cg);
-   TR::MemoryReference * highMR= generateS390MemoryReference(*lowMR, lowMR->getDisp()+4, cg);
+   TR::MemoryReference * highMR= generateS390MemoryReference(*lowMR, lowMR->getOffset() + 4, cg);
 
    if (valueChild->getOpCodeValue() == TR::lconst && valueChild->getRegister() == NULL)
       {
@@ -6741,19 +6741,19 @@ lstoreHelper64(TR::Node * node, TR::CodeGenerator * cg, bool isReversed)
             else if(node->getSymbolReference()->getSymbol()->getSize() == 5)
                {
                TR::MemoryReference *lowMR = generateS390MemoryReference(*longMR, 1, cg);
-               generateRSYInstruction(cg, TR::InstOpCode::STCMH, node, valueReg, (uint32_t) 0x1, longMR);
+               generateRSInstruction(cg, TR::InstOpCode::STCMH, node, valueReg, (uint32_t) 0x1, longMR);
                generateRSInstruction(cg, TR::InstOpCode::STCM, node, valueReg, (uint32_t) 0xF, lowMR);
                }
             else if(node->getSymbolReference()->getSymbol()->getSize() == 6)
                {
                TR::MemoryReference *lowMR = generateS390MemoryReference(*longMR, 2, cg);
-               generateRSYInstruction(cg, TR::InstOpCode::STCMH, node, valueReg, (uint32_t) 0x3, longMR);
+               generateRSInstruction(cg, TR::InstOpCode::STCMH, node, valueReg, (uint32_t) 0x3, longMR);
                generateRSInstruction(cg, TR::InstOpCode::STCM, node, valueReg, (uint32_t) 0xF, lowMR);
                }
             else if(node->getSymbolReference()->getSymbol()->getSize() == 7)
                {
                TR::MemoryReference *lowMR = generateS390MemoryReference(*longMR, 3, cg);
-               generateRSYInstruction(cg, TR::InstOpCode::STCMH, node, valueReg, (uint32_t) 0x7, longMR);
+               generateRSInstruction(cg, TR::InstOpCode::STCMH, node, valueReg, (uint32_t) 0x7, longMR);
                generateRSInstruction(cg, TR::InstOpCode::STCM, node, valueReg, (uint32_t) 0xF, lowMR);
                }
             else
@@ -11492,7 +11492,7 @@ OMR::Z::TreeEvaluator::loadaddrEvaluator(TR::Node * node, TR::CodeGenerator * cg
          lrlInstr->setTargetSnippet(litpool);
          lrlInstr->setTargetSymbol(uds->getDataSymbol());
 
-         cursor = generateRXYInstruction(cg, TR::InstOpCode::LG, node, targetRegister,
+         cursor = generateRXInstruction(cg, TR::InstOpCode::LG, node, targetRegister,
                                 generateS390MemoryReference(targetRegister, 0, cg));
 
          uds->setDataReferenceInstruction(cursor);
@@ -12350,7 +12350,7 @@ OMR::Z::TreeEvaluator::arraytranslateAndTestEvaluator(TR::Node * node, TR::CodeG
 
             generateRIInstruction(cg, TR::InstOpCode::NILL, node, ptrReg, 0xFFFE);
             generateRIInstruction(cg, TR::InstOpCode::NILL, node, indexReg, 0xFFFE);
-            generateRXYInstruction(cg, TR::InstOpCode::LLGH, node, tmpReg, ptr0MR);
+            generateRXInstruction(cg, TR::InstOpCode::LLGH, node, tmpReg, ptr0MR);
 
             generateRIInstruction(cg, TR::InstOpCode::CHI, node, tmpReg, 256);
             generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BL, node, label2ByteOk);
@@ -12460,7 +12460,7 @@ OMR::Z::TreeEvaluator::arraytranslateAndTestEvaluator(TR::Node * node, TR::CodeG
             // Align the pointer to nearest halfword.
             generateRIInstruction(cg, TR::InstOpCode::NILL, node, tmpReg, 0xFFFE);
             // Load the halfword
-            generateRXYInstruction(cg, TR::InstOpCode::LLGH, node, ptrReg, ptr0MR);
+            generateRXInstruction(cg, TR::InstOpCode::LLGH, node, ptrReg, ptr0MR);
 
             // If halfword value is < 256, we are okay.
             generateRIInstruction(cg, TR::InstOpCode::CHI, node, ptrReg, 256);
@@ -13327,7 +13327,7 @@ OMR::Z::TreeEvaluator::generateLoadAndStoreForArrayCopy(TR::Node *node, TR::Code
             {
             if (needsGuardedLoad)
                {
-               generateRXYInstruction(cg, TR::InstOpCode::LGG, node, workReg, srcMemRef);
+               generateRXInstruction(cg, TR::InstOpCode::LGG, node, workReg, srcMemRef);
                }
             else
                {
@@ -13340,7 +13340,7 @@ OMR::Z::TreeEvaluator::generateLoadAndStoreForArrayCopy(TR::Node *node, TR::Code
             if (needsGuardedLoad)
                {
                int32_t shiftAmount = TR::Compiler->om.compressedReferenceShift();
-               generateRXYInstruction(cg, TR::InstOpCode::LLGFSG, node, workReg, srcMemRef);
+               generateRXInstruction(cg, TR::InstOpCode::LLGFSG, node, workReg, srcMemRef);
                if (shiftAmount != 0)
                   {
                   generateRSInstruction(cg, TR::InstOpCode::SRLG, node, workReg, workReg, shiftAmount);
@@ -13420,7 +13420,7 @@ OMR::Z::TreeEvaluator::generateMemToMemElementCopy(TR::Node *node, TR::CodeGener
       if (needsGuardedLoad || genStartICFLabel)
          topOfLoop->setStartInternalControlFlow();
       TR::TreeEvaluator::generateLoadAndStoreForArrayCopy(node, cg, srcMemRef, dstMemRef, srm, elementType, needsGuardedLoad);
-      cursor = generateRXYInstruction(cg, TR::InstOpCode::LAY, node, byteSrcReg, 
+      cursor = generateRXInstruction(cg, TR::InstOpCode::LAY, node, byteSrcReg, 
          generateS390MemoryReference(byteSrcReg, -1 * elementSize, cg));
       cursor = generateS390BranchInstruction(cg, TR::InstOpCode::getBranchRelIndexHighOpCode(), node, brxReg, byteDstReg, topOfLoop); 
       iComment("byteDst-=elementSize; if (byteDst > exitCond) GoTo topOfLoop");
@@ -13984,7 +13984,7 @@ OMR::Z::TreeEvaluator::iRegStoreEvaluator(TR::Node * node, TR::CodeGenerator * c
       if (globalReg == NULL)
          {
          globalReg = cg->allocateRegister();
-         generateRXYInstruction(cg, TR::InstOpCode::LFH, child, globalReg, generateS390MemoryReference(child,cg));
+         generateRXInstruction(cg, TR::InstOpCode::LFH, child, globalReg, generateS390MemoryReference(child,cg));
          child->setRegister(globalReg);
          }
       globalReg->setAssignToHPR(true);
@@ -14185,7 +14185,7 @@ OMR::Z::TreeEvaluator::long2StringEvaluator(TR::Node * node, TR::CodeGenerator *
    TR::MemoryReference * workTopMR = generateS390MemoryReference(workReg, 0, cg);
    if (isLong)
       {
-      generateRXYInstruction(cg, TR::InstOpCode::CVDG, node, inputReg, workTopMR);
+      generateRXInstruction(cg, TR::InstOpCode::CVDG, node, inputReg, workTopMR);
       }
    else
       {
@@ -14301,7 +14301,7 @@ OMR::Z::TreeEvaluator::bitpermuteEvaluator(TR::Node *node, TR::CodeGenerator *cg
          {
          // Load the shift amount into tmpReg
          TR::MemoryReference *sourceMR = generateS390MemoryReference(addrReg, x, cg, NULL);
-         generateRXYInstruction(cg, TR::InstOpCode::LGB, node, tmpReg, sourceMR);
+         generateRXInstruction(cg, TR::InstOpCode::LGB, node, tmpReg, sourceMR);
 
          // Create memory reference using tmpReg (which holds the shift amount), then shift valueReg by the shift amount
          TR::MemoryReference *shiftAmountMR = generateS390MemoryReference(tmpReg, 0, cg);
@@ -14412,7 +14412,7 @@ OMR::Z::TreeEvaluator::bitpermuteEvaluator(TR::Node *node, TR::CodeGenerator *cg
 
       // Load the bit index into tmpReg
       TR::MemoryReference *sourceMR = generateS390MemoryReference(addrReg, indexReg, 0, cg);
-      generateRXYInstruction(cg, TR::InstOpCode::LGB, node, tmpReg, sourceMR);
+      generateRXInstruction(cg, TR::InstOpCode::LGB, node, tmpReg, sourceMR);
 
       // Shift value reg by location in shiftAmountMR and store in tmpReg
       TR::MemoryReference *shiftAmountMR = generateS390MemoryReference(tmpReg, 0, cg);
@@ -14839,7 +14839,7 @@ TR::Register *OMR::Z::TreeEvaluator::PrefetchEvaluator(TR::Node *node, TR::CodeG
          cg->decReferenceCount(firstChild);
          cg->decReferenceCount(secondChild);
          }
-      generateRXYbInstruction(cg, TR::InstOpCode::PFD, node, memAccessMode, memRef);
+      generateRXInstruction(cg, TR::InstOpCode::PFD, node, memAccessMode, memRef);
       }
    else
       {
@@ -17573,9 +17573,9 @@ inlineStringHashCode(TR::Node* node, TR::CodeGenerator* cg, bool isCompressed)
 
    // registerHash = char at registerIndex
    if(isCompressed)
-      generateRXYInstruction(cg, TR::InstOpCode::LLGC, node, registerHash, generateS390MemoryReference(registerValue, registerIndex, TR::Compiler->om.contiguousArrayHeaderSizeInBytes(), cg));
+      generateRXInstruction(cg, TR::InstOpCode::LLGC, node, registerHash, generateS390MemoryReference(registerValue, registerIndex, TR::Compiler->om.contiguousArrayHeaderSizeInBytes(), cg));
    else
-      generateRXYInstruction(cg, TR::InstOpCode::LLH, node, registerHash, generateS390MemoryReference(registerValue, registerIndex, TR::Compiler->om.contiguousArrayHeaderSizeInBytes(), cg));
+      generateRXInstruction(cg, TR::InstOpCode::LLH, node, registerHash, generateS390MemoryReference(registerValue, registerIndex, TR::Compiler->om.contiguousArrayHeaderSizeInBytes(), cg));
 
    if(isCompressed) //registerIndex += 1
       generateRXInstruction(cg, TR::InstOpCode::getLoadAddressOpCode(), node, registerIndex, generateS390MemoryReference(registerIndex, 1, cg));
@@ -18084,7 +18084,7 @@ inlineUTF16BEEncode(TR::Node *node, TR::CodeGenerator *cg)
    generateS390CompareAndBranchInstruction(cg, TR::InstOpCode::getCmpLogicalOpCode(), node, inputLen8, 0, TR::InstOpCode::COND_MASK8, processChar4End, false, false, NULL, dependencies);
 
    // Load 4 input characters from memory and make a copy
-   generateRXYInstruction(cg, TR::InstOpCode::LG,  node, temp1, generateS390MemoryReference(input, translated, 0, cg));
+   generateRXInstruction(cg, TR::InstOpCode::LG,  node, temp1, generateS390MemoryReference(input, translated, 0, cg));
    generateRREInstruction(cg, TR::InstOpCode::LGR, node, temp2, temp1);
 
    // AND temp2 by the surrogate mask
@@ -18116,7 +18116,7 @@ inlineUTF16BEEncode(TR::Node *node, TR::CodeGenerator *cg)
    generateS390CompareAndBranchInstruction(cg, TR::InstOpCode::getCmpRegOpCode(), node, translated, inputLen, TR::InstOpCode::COND_BNL, processChar1End, false, false);
 
    // Load an input character from memory
-   generateRXYInstruction(cg, TR::InstOpCode::LLH, node, temp1, generateS390MemoryReference(input, translated, 0, cg));
+   generateRXInstruction(cg, TR::InstOpCode::LLH, node, temp1, generateS390MemoryReference(input, translated, 0, cg));
 
    // Compare the input character against the lower bound surrogate character range
    generateRILInstruction(cg, TR::InstOpCode::getCmpImmOpCode(), node, temp1, surrogateRange1);

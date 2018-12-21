@@ -472,7 +472,7 @@ OMR::Z::MemoryReference::MemoryReference(TR::Node * rootLoadOrStore, TR::CodeGen
      _symbolReference(rootLoadOrStore->getOpCode().hasSymbolReference()?rootLoadOrStore->getSymbolReference():NULL),
      _originalSymbolReference(rootLoadOrStore->getOpCode().hasSymbolReference()?rootLoadOrStore->getSymbolReference():NULL),
      _listingSymbolReference(NULL),
-   _offset(0),_displacement(0), _flags(0), _storageReference(storageReference), _fixedSizeForAlignment(0), _leftMostByte(0), _name(NULL),
+   _offset(0), _flags(0), _storageReference(storageReference), _fixedSizeForAlignment(0), _leftMostByte(0), _name(NULL),
    _incrementedNodesList(cg->comp()->trMemory())
    {
 
@@ -705,7 +705,7 @@ OMR::Z::MemoryReference::MemoryReference(TR::Node * rootLoadOrStore, TR::CodeGen
 
 OMR::Z::MemoryReference::MemoryReference(TR::Node *addressChild, bool canUseIndexReg, TR::CodeGenerator *cg)
    : _baseRegister(NULL), _baseNode(NULL), _indexRegister(NULL), _indexNode(NULL), _targetSnippet(NULL), _targetSnippetInstruction(NULL),
-     _offset(0), _displacement(0), _flags(0), _storageReference(NULL), _fixedSizeForAlignment(0), _leftMostByte(0), _name(NULL), _incrementedNodesList(cg->comp()->trMemory())
+     _offset(0), _flags(0), _storageReference(NULL), _fixedSizeForAlignment(0), _leftMostByte(0), _name(NULL), _incrementedNodesList(cg->comp()->trMemory())
    {
    bool done = false;
    if (addressChild->getRegister() == NULL)
@@ -758,7 +758,7 @@ OMR::Z::MemoryReference::createLiteralPoolSnippet(TR::Node * node, TR::CodeGener
 
 OMR::Z::MemoryReference::MemoryReference(TR::Node * node, TR::SymbolReference * symRef, TR::CodeGenerator * cg, TR_StorageReference *storageReference)
    : _baseRegister(NULL), _baseNode(NULL), _indexRegister(NULL), _indexNode(NULL), _targetSnippet(NULL), _targetSnippetInstruction(NULL),
-     _displacement(0), _flags(0), _storageReference(storageReference), _fixedSizeForAlignment(0), _leftMostByte(0), _name(NULL),
+     _flags(0), _storageReference(storageReference), _fixedSizeForAlignment(0), _leftMostByte(0), _name(NULL),
      _incrementedNodesList(cg->comp()->trMemory())
    {
 
@@ -829,7 +829,7 @@ OMR::Z::MemoryReference::initSnippetPointers(TR::Snippet * s, TR::CodeGenerator 
 
 OMR::Z::MemoryReference::MemoryReference(TR::Snippet * s, TR::Register * indx, int32_t disp, TR::CodeGenerator * cg)
    : _baseNode(NULL), _baseRegister(NULL), _indexRegister(indx), _indexNode(NULL), _targetSnippetInstruction(NULL),
-    _displacement(0), _offset(disp), _flags(0), _storageReference(NULL), _fixedSizeForAlignment(0), _leftMostByte(0), _name(NULL),
+    _offset(disp), _flags(0), _storageReference(NULL), _fixedSizeForAlignment(0), _leftMostByte(0), _name(NULL),
     _incrementedNodesList(cg->comp()->trMemory())
    {
    _symbolReference = new (cg->trHeapMemory()) TR::SymbolReference(cg->comp()->getSymRefTab());
@@ -847,7 +847,7 @@ OMR::Z::MemoryReference::MemoryReference(TR::Snippet * s, TR::Register * indx, i
 
 OMR::Z::MemoryReference::MemoryReference(TR::Snippet * s, TR::CodeGenerator * cg, TR::Register * base, TR::Node * node)
    : _baseNode(NULL), _baseRegister(NULL), _indexRegister(NULL), _indexNode(NULL), _targetSnippetInstruction(NULL),
-   _displacement(0), _offset(0), _flags(0), _storageReference(NULL), _fixedSizeForAlignment(0), _leftMostByte(0), _name(NULL),
+   _offset(0), _flags(0), _storageReference(NULL), _fixedSizeForAlignment(0), _leftMostByte(0), _name(NULL),
    _incrementedNodesList(cg->comp()->trMemory())
    {
    TR::Compilation *comp = cg->comp();
@@ -897,7 +897,6 @@ OMR::Z::MemoryReference::MemoryReference(int32_t           disp,
   _indexNode(NULL),
   _targetSnippet(NULL),
   _targetSnippetInstruction(NULL),
-  _displacement(0),
   _flags(0),
   _storageReference(NULL),
   _fixedSizeForAlignment(0),
@@ -923,7 +922,6 @@ OMR::Z::MemoryReference::MemoryReference(TR::CodeGenerator *cg) :
   _targetSnippet(NULL),
   _targetSnippetInstruction(NULL),
 // this flag is used for 64bit code-gen only under current J9 fat object model
-  _displacement(0),
   _flags(0),
   _storageReference(NULL),
   _fixedSizeForAlignment(0),
@@ -948,7 +946,6 @@ OMR::Z::MemoryReference::MemoryReference(TR::Register      *br,
   _indexNode(NULL),
   _targetSnippet(NULL),
   _targetSnippetInstruction(NULL),
-  _displacement(0),
   _offset(disp),
   _flags(0),
   _storageReference(NULL),
@@ -975,7 +972,6 @@ OMR::Z::MemoryReference::MemoryReference(TR::Register      *br,
   _indexNode(NULL),
   _targetSnippet(NULL),
   _targetSnippetInstruction(NULL),
-  _displacement(0),
   _offset(disp),
   _flags(0),
   _storageReference(NULL),
@@ -1000,7 +996,6 @@ OMR::Z::MemoryReference::MemoryReference(TR::Register      *br,
   _indexNode(NULL),
   _targetSnippet(NULL),
   _targetSnippetInstruction(NULL),
-  _displacement(0),
   _offset(disp),
   _flags(0),
   _storageReference(NULL),
@@ -1080,6 +1075,22 @@ bool
 OMR::Z::MemoryReference::isAligned()
    {
    return self()->rightAlignMemRef() || self()->leftAlignMemRef();
+   }
+
+const bool
+OMR::Z::MemoryReference::isLongDisplacementRequired()
+   {
+   auto displacement = self()->getOffset();
+
+   return ((displacement > MINLONGDISP && displacement < MINDISP) || (displacement >= MAXDISP && displacement < MAXLONGDISP));
+   }
+
+const bool
+OMR::Z::MemoryReference::isHugeDisplacementRequired()
+   {
+   auto displacement = self()->getOffset();
+
+   return (displacement <= MINLONGDISP || displacement >= MAXLONGDISP);
    }
 
 void
@@ -1696,7 +1707,6 @@ OMR::Z::MemoryReference::populateThroughEvaluation(TR::Node * rootLoadOrStore, T
    _indexNode = NULL;
    _targetSnippet = NULL;
    _targetSnippetInstruction = NULL;
-   _displacement = 0;
    _offset = 0;
    _flags = 0;
    _fixedSizeForAlignment = 0;
@@ -1980,9 +1990,9 @@ OMR::Z::MemoryReference::handleLargeOffset(TR::Node * node, TR::MemoryReference 
       op=TR::InstOpCode::LAY;
 
       if (preced)
-         preced = generateRXYInstruction(cg, op, node, tempTargetRegister, interimMemoryReference, preced);
+         preced = generateRXInstruction(cg, op, node, tempTargetRegister, interimMemoryReference, preced);
       else
-         generateRXYInstruction(cg, op, node, tempTargetRegister, interimMemoryReference);
+         generateRXInstruction(cg, op, node, tempTargetRegister, interimMemoryReference);
       }
    else
       {
@@ -2950,7 +2960,7 @@ OMR::Z::MemoryReference::generateBinaryEncoding(uint8_t * cursor, TR::CodeGenera
    // after instruction selection and before binary encoding.
    if (displacement < MINDISP || displacement >= MAXDISP)
       {
-      auto longDisplacementMnemonic = TR::Instruction::opCodeCanBeAdjustedTo(instr->getOpCodeValue());
+      auto longDisplacementMnemonic = TR::InstOpCode::getEquivalentLongDisplacementMnemonic(instr->getOpCodeValue());
 
       if ((displacement < MAXLONGDISP && displacement > MINLONGDISP)
          && (longDisplacementMnemonic != TR::InstOpCode::BAD
@@ -3121,6 +3131,9 @@ OMR::Z::MemoryReference::generateBinaryEncoding(uint8_t * cursor, TR::CodeGenera
             traceMsg(comp, "[%p] Long Disp Inst using %s as scratch reg\n", instr, cg->getDebug()->getName(scratchReg));
          }
       }
+      
+   // Update the offset now that the correct encded displacement is known
+   self()->setOffset(displacement);
 
    if (instructionFormat == TR::Instruction::IsRXY ||
        instructionFormat == TR::Instruction::IsRXYb ||
@@ -3144,8 +3157,6 @@ OMR::Z::MemoryReference::generateBinaryEncoding(uint8_t * cursor, TR::CodeGenera
       *reinterpret_cast<uint32_t*>(cursor) &= boi(0xFFFFF000);
       *reinterpret_cast<uint32_t*>(cursor) |= boi(displacement);
       }
-
-   _displacement = displacement;
 
    if (base != NULL)
       {

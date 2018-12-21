@@ -1470,15 +1470,6 @@ TR_S390RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstru
 
             // Assign the real reg to the virt reg
             machine->coerceRegisterAssignment(currentInstruction, virtReg, dependentRegNum, DEPSREG);
-            if(comp->getOption(TR_EnableTrueRegisterModel) && _dependencies[i].getDefsRegister() &&
-                virtReg->isPendingSpillOnDef())
-              {
-              TR::RealRegister * realReg = machine->getRealRegister(dependentRegNum);
-              if(cg->insideInternalControlFlow())
-                machine->reverseSpillState(cg->getInstructionAtEndInternalControlFlow(), virtReg, toRealRegister(realReg));
-              else
-                machine->reverseSpillState(currentInstruction, virtReg, toRealRegister(realReg));
-              }
             virtReg->block();
             changed = true;
             }
@@ -1544,28 +1535,10 @@ TR_S390RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstru
                         TR::Register *depReg = _dependencies[lcount].getRegister();
                         machine->coerceRegisterAssignment(currentInstruction, depReg, aRealNum, DEPSREG);
                         _dependencies[lcount].getRegister()->block();
-                        if(comp->getOption(TR_EnableTrueRegisterModel) && _dependencies[lcount].getDefsRegister() &&
-                            depReg->isPendingSpillOnDef())
-                          {
-                          TR::RealRegister * realReg = machine->getRealRegister(aRealNum);
-                          if(cg->insideInternalControlFlow())
-                            machine->reverseSpillState(cg->getInstructionAtEndInternalControlFlow(), depReg, toRealRegister(realReg));
-                          else
-                            machine->reverseSpillState(currentInstruction, depReg, toRealRegister(realReg));
-                          }
                         break;
                      }
                    }
                  }
-              }
-            if(comp->getOption(TR_EnableTrueRegisterModel) && _dependencies[i].getDefsRegister() &&
-                virtReg->isPendingSpillOnDef())
-              {
-              TR::RealRegister * realReg = machine->getRealRegister(dependentRegNum);
-              if(cg->insideInternalControlFlow())
-                machine->reverseSpillState(cg->getInstructionAtEndInternalControlFlow(), virtReg, toRealRegister(realReg));
-              else
-                machine->reverseSpillState(currentInstruction, virtReg, toRealRegister(realReg));
               }
             }
          }
@@ -1599,14 +1572,6 @@ TR_S390RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstru
             // Disable this dependency
             _dependencies[i].setRealRegister(toRealRegister(targetReg)->getRegisterNumber());
             virtReg->block();
-            if(comp->getOption(TR_EnableTrueRegisterModel) && _dependencies[i].getDefsRegister() &&
-                virtReg->isPendingSpillOnDef())
-              {
-              if(cg->insideInternalControlFlow())
-                machine->reverseSpillState(cg->getInstructionAtEndInternalControlFlow(), virtReg, toRealRegister(targetReg));
-              else
-                machine->reverseSpillState(currentInstruction, virtReg, toRealRegister(targetReg));
-              }
            }
          }
       }
@@ -1628,14 +1593,6 @@ TR_S390RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstru
             _dependencies[i].setRealRegister(toRealRegister(targetReg)->getRegisterNumber());
 
             virtReg->block();
-            if(comp->getOption(TR_EnableTrueRegisterModel) && _dependencies[i].getDefsRegister() &&
-                virtReg->isPendingSpillOnDef())
-              {
-              if(cg->insideInternalControlFlow())
-                machine->reverseSpillState(cg->getInstructionAtEndInternalControlFlow(), virtReg, toRealRegister(targetReg));
-              else
-                machine->reverseSpillState(currentInstruction, virtReg, toRealRegister(targetReg));
-              }
             }
           }
       }
@@ -1662,7 +1619,7 @@ TR_S390RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstru
       // We pay special attention to pairs, as it is not the parent placeholder
       // that must have its count decremented, but rather the children.
       if (dependentRegister->getRegisterPair() == NULL &&
-          (dependentRegister->getAssignedRegister() || (comp->getOption(TR_EnableTrueRegisterModel) && dependentRegister->isLive())) &&
+          dependentRegister->getAssignedRegister() != NULL &&
           getRegisterDependency(i)->getRealRegister() != TR::RealRegister::SpilledReg
          )
          {
@@ -1675,10 +1632,7 @@ TR_S390RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstru
             TR_ASSERT(dependentRegister->getFutureUseCount() >=0,
                     "\nReg dep assignment: futureUseCount should not be negative\n");
             }
-         if ((dependentRegister->getFutureUseCount() == 0) ||
-             (comp->getOption(TR_EnableTrueRegisterModel) && !currentInstruction->isLabel() &&
-              getRegisterDependency(i)->getDefsRegister() && !getRegisterDependency(i)->getRefsRegister() &&
-              !currentInstruction->defsRegister(dependentRegister)))
+         if (dependentRegister->getFutureUseCount() == 0)
             {
             // check if need to free HW
             if (assignedRealRegister != NULL && cg->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA))
@@ -1959,11 +1913,6 @@ bool OMR::Z::RegisterDependencyConditions::addPostConditionIfNotAlreadyInserted(
    else if (pos >= 0 && _postConditions->getRegisterDependency(pos)->getFlags() != flag)
       {
       _postConditions->getRegisterDependency(pos)->setFlags(flag);
-      if((flag & DefinesDependentRegister) != 0)
-        {
-        bool redefined=(vr->getStartOfRange() != NULL);
-        vr->setRedefined(redefined);
-        }
       return false;
       }
    return false;

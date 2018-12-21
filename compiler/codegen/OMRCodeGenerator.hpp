@@ -974,14 +974,6 @@ class OMR_EXTENSIBLE CodeGenerator
 
 #ifdef DEBUG
    static void shutdown(TR_FrontEnd *fe, TR::FILE *logFile);
-   static void dumpSpillStats(TR_FrontEnd *fe);
-   static void incNumSpilledRegisters()        {_totalNumSpilledRegisters++;}
-   static void incNumRematerializedConstants() {_totalNumRematerializedConstants++;}
-   static void incNumRematerializedLocals()    {_totalNumRematerializedLocals++;}
-   static void incNumRematerializedStatics()   {_totalNumRematerializedStatics++;}
-   static void incNumRematerializedIndirects() {_totalNumRematerializedIndirects++;}
-   static void incNumRematerializedAddresses() {_totalNumRematerializedAddresses++;}
-   static void incNumRematerializedXMMRs()     {_totalNumRematerializedXMMRs++;}
 #endif
 
    void dumpDataSnippets(TR::FILE *outFile) {}
@@ -1900,16 +1892,6 @@ class OMR_EXTENSIBLE CodeGenerator
    static TR_TreeEvaluatorFunctionPointer _nodeToInstrEvaluators[];
 
    protected:
-
-#ifdef DEBUG
-   static int _totalNumSpilledRegisters;         // For collecting statistics on spilling
-   static int _totalNumRematerializedConstants;
-   static int _totalNumRematerializedLocals;
-   static int _totalNumRematerializedStatics;
-   static int _totalNumRematerializedIndirects;
-   static int _totalNumRematerializedAddresses;
-   static int _totalNumRematerializedXMMRs;
-#endif
 
    bool _disableInternalPointers;
 

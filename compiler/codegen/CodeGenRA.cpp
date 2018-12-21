@@ -81,16 +81,6 @@
 
 namespace TR { class RealRegister; }
 
-#ifdef DEBUG
-int OMR::CodeGenerator::_totalNumSpilledRegisters = 0;
-int OMR::CodeGenerator::_totalNumRematerializedConstants = 0;
-int OMR::CodeGenerator::_totalNumRematerializedLocals = 0;
-int OMR::CodeGenerator::_totalNumRematerializedStatics = 0;
-int OMR::CodeGenerator::_totalNumRematerializedIndirects = 0;
-int OMR::CodeGenerator::_totalNumRematerializedAddresses = 0;
-int OMR::CodeGenerator::_totalNumRematerializedXMMRs = 0;
-#endif
-
 #if defined(DEBUG) || defined(PROD_WITH_ASSUMES)
 void
 OMR::CodeGenerator::checkForLiveRegisters(TR_LiveRegisters *liveRegisters)

@@ -2574,23 +2574,6 @@ OMR::CodeGenerator::sizeOfInstructionToBePatchedHCRGuard(TR::Instruction *vgdnop
    }
 
 #ifdef DEBUG
-
-void
-OMR::CodeGenerator::dumpSpillStats(TR_FrontEnd *fe)
-   {
-   if (debug("spillStats"))
-      {
-      TR_VerboseLog::writeLine(TR_Vlog_INFO,"Register Spilling/Rematerialization:");
-      TR_VerboseLog::writeLine(TR_Vlog_INFO,"%8d registers spilled", _totalNumSpilledRegisters);
-      TR_VerboseLog::writeLine(TR_Vlog_INFO,"%8d constants rematerialized", _totalNumRematerializedConstants);
-      TR_VerboseLog::writeLine(TR_Vlog_INFO,"%8d locals rematerialized", _totalNumRematerializedLocals);
-      TR_VerboseLog::writeLine(TR_Vlog_INFO,"%8d statics rematerialized", _totalNumRematerializedStatics);
-      TR_VerboseLog::writeLine(TR_Vlog_INFO,"%8d indirect accesses rematerialized", _totalNumRematerializedIndirects);
-      TR_VerboseLog::writeLine(TR_Vlog_INFO,"%8d addresses rematerialized", _totalNumRematerializedAddresses);
-      TR_VerboseLog::writeLine(TR_Vlog_INFO,"%8d XMMRs rematerialized", _totalNumRematerializedXMMRs);
-      }
-   }
-
 void
 OMR::CodeGenerator::shutdown(TR_FrontEnd *fe, TR::FILE *logFile)
    {

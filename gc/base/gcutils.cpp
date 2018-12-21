@@ -153,6 +153,8 @@ getPercolateReasonAsString(PercolateReason mode)
 		return "Active JNI critical regions";
 	case ABORTED_SCAVENGE:
 		return "previous scavenge aborted";
+	case CONCURRENT_MARK_EXHAUSTED:
+		return "concurrent mark exhausted";
 	case NONE_SET:
 	default:
 		return "unknown";

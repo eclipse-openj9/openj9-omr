@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2018 IBM Corp. and others
+ * Copyright (c) 1991, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -4074,7 +4074,22 @@ MM_Scavenger::internalGarbageCollect(MM_EnvironmentBase *envBase, MM_MemorySubSp
 {
 	MM_EnvironmentStandard *env = (MM_EnvironmentStandard *)envBase;
 	MM_ScavengerStats *scavengerGCStats= &_extensions->scavengerStats;
-	MM_MemorySubSpace *tenureMemorySubSpace = ((MM_MemorySubSpaceSemiSpace *)subSpace)->getTenureMemorySubSpace();
+	MM_MemorySubSpaceSemiSpace *subSpaceSemiSpace = (MM_MemorySubSpaceSemiSpace *)subSpace;
+	MM_MemorySubSpace *tenureMemorySubSpace = subSpaceSemiSpace->getTenureMemorySubSpace();
+
+	if (subSpaceSemiSpace->getMemorySubSpaceAllocate()->shouldAllocateAtSafePointOnly()) {
+		/* There is no point in doing Scavenge, since we are about to complete Global, which will likely free up
+		 * space in Nursery to satisfy AF that triggered this Scavenge.
+		 * AllocateAtSafePointOnly flag is set exactly and only when Concurrent Mark execution mode is set to CONCURRENT_EXHAUSTED.
+		 * Ideally, we should assert that the mode is CONCURRENT_EXHAUSTED, but Global GCs are not visible from here.
+		 */
+		Trc_MM_Scavenger_percolate_concurrentMarkExhausted(env->getLanguageVMThread());
+
+		bool result = percolateGarbageCollect(env, subSpace, NULL, CONCURRENT_MARK_EXHAUSTED, J9MMCONSTANT_IMPLICIT_GC_PERCOLATE);
+
+		Assert_MM_true(result);
+		return true;
+	}
 
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
 	if (_extensions->concurrentScavenger && isBackOutFlagRaised()) {

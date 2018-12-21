@@ -731,7 +731,7 @@ enum TR_CompilationOptions
    // Available                                       = 0x00010000 + 21,
    TR_OldDataCacheImplementation                      = 0x00020000 + 21,
    TR_EnableDataCacheStatistics                       = 0x00040000 + 21,
-   TR_DisableRedundantBCDSignElimination              = 0x00080000 + 21,
+   // Available                                       = 0x00080000 + 21,
    // Available                                       = 0x00100000 + 21,
    TR_AllowVPRangeNarrowingBasedOnDeclaredType        = 0x00200000 + 21,
    TR_EnableScratchMemoryDebugging                    = 0x00400000 + 21,

@@ -1360,8 +1360,6 @@ class OMR_EXTENSIBLE CodeGenerator
    bool supportVMInternalNatives();
    bool supportsNativeLongOperations();
 
-   TR::DataType IntJ() { return TR::Compiler->target.is64Bit() ? TR::Int64 : TR::Int32; }
-
    // will a BCD left shift always leave the sign code unchanged and thus allow it to be propagated through and upwards
    bool propagateSignThroughBCDLeftShift(TR::DataType type) { return false; }
 
@@ -1703,7 +1701,7 @@ class OMR_EXTENSIBLE CodeGenerator
       DisableFpGRA                                        = 0x01000000,
       // AVAILABLE                                        = 0x02000000,
       MethodModifiedByRA                                  = 0x04000000,
-      SchedulingInstrCleanupNeeded                        = 0x08000000,
+      // AVAILABLE                                        = 0x08000000,
       // AVAILABLE                                        = 0x10000000,
       EnforceStoreOrder                                   = 0x20000000,
       // AVAILABLE                                        = 0x80000000,
@@ -1763,7 +1761,7 @@ class OMR_EXTENSIBLE CodeGenerator
       SupportsAtomicLoadAndAdd                            = 0x00000800,
       // AVAILABLE                                        = 0x00001000,
       // AVAILABLE                                        = 0x00002000,
-      HasSignCleans                                       = 0x00004000,
+      // AVAILABLE                                        = 0x00004000,
       SupportsArrayTranslateTRTO255                       = 0x00008000, //if (ca[i] < 256) ba[i] = (byte) ca[i]
       SupportsArrayTranslateTROTNoBreak                   = 0x00010000, //ca[i] = (char) ba[i]
       SupportsArrayTranslateTRTO                          = 0x00020000, //if (ca[i] < x) ba[i] = (byte) ca[i]; x is either 256 or 128

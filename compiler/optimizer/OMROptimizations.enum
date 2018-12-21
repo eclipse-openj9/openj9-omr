@@ -102,7 +102,6 @@
    OPTIMIZATION(trivialDeadTreeRemoval)
    OPTIMIZATION(osrDefAnalysis)
    OPTIMIZATION(blockShuffling)
-   OPTIMIZATION(redundantBCDSignElimination)
    OPTIMIZATION(osrLiveRangeAnalysis)
    OPTIMIZATION(osrExceptionEdgeRemoval)
    OPTIMIZATION(SPMDKernelParallelization)

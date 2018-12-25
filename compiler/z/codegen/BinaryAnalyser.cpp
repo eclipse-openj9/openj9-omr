@@ -162,25 +162,25 @@ TR_S390BinaryAnalyser::genericAnalyser(TR::Node * root,
 
    if (getCopyReg1())
       {
-      TR::Register * thirdReg;
-      bool done = false;
+      TR::Register* thirdReg = NULL;
 
-      if (firstRegister->getKind() == TR_GPR64)
+      switch (firstRegister->getKind())
          {
-         thirdReg = cg()->allocate64bitRegister();
+         case TR_RegisterKinds::TR_GPR:
+         case TR_RegisterKinds::TR_FPR:
+            {
+            thirdReg = cg()->allocateRegister(firstRegister->getKind());
+            break;
+            }
+
+         default:
+            {
+            TR_ASSERT_FATAL(false, "Generic binary analyser for register kind (%d) is unimplemented", firstRegister->getKind());
+            break;
+            }
          }
-      else if (firstRegister->getKind() == TR_VRF)
-         {
-         TR_ASSERT(false,"VRF: genericAnalyser unimplemented");
-         }
-      else if (firstRegister->getKind() != TR_FPR && firstRegister->getKind() != TR_VRF)
-         {
-         thirdReg = cg()->allocateRegister();
-         }
-      else
-         {
-         thirdReg = cg()->allocateRegister(TR_FPR);
-         }
+
+      bool done = false;
 
       if (cg()->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z196))
          {

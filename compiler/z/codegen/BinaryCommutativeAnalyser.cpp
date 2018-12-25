@@ -122,14 +122,11 @@ TR_S390BinaryCommutativeAnalyser::remapInputs(TR::Node * firstChild, TR::Registe
 TR::Register *
 TR_S390BinaryCommutativeAnalyser::allocateAddSubRegister(TR::Node * node, TR::Register * src1Reg)
    {
-   TR::Register * trgReg;
+   TR::Register* trgReg = NULL;
 
    if (src1Reg->containsInternalPointer() || !src1Reg->containsCollectedReference())
       {
-      if ((node->getType().isInt64() || src1Reg->getKind() == TR_GPR64) && cg()->use64BitRegsOn32Bit())
-         trgReg = cg()->allocate64bitRegister();
-      else
-         trgReg = cg()->allocateRegister();
+      trgReg = cg()->allocateRegister();
 
       if (src1Reg->containsInternalPointer())
          {
@@ -448,17 +445,25 @@ TR_S390BinaryCommutativeAnalyser::genericAnalyser(TR::Node * root, TR::InstOpCod
       }
    else if (getCopyReg1())
       {
-      if (secondRegister->getKind() == TR_GPR64)
+      switch (firstRegister->getKind())
          {
-         nodeReg = cg()->allocate64bitRegister();
-         }
-      else if (secondRegister->getKind() != TR_FPR && secondRegister->getKind() != TR_VRF)
-         {
-         nodeReg = allocateAddSubRegister(root, firstRegister);
-         }
-      else
-         {
-         nodeReg = cg()->allocateRegister(TR_FPR);
+         case TR_RegisterKinds::TR_GPR:
+            {
+            nodeReg = allocateAddSubRegister(root, firstRegister);
+            break;
+            }
+
+         case TR_RegisterKinds::TR_FPR:
+            {
+            nodeReg = cg()->allocateRegister(TR_FPR);
+            break;
+            }
+
+         default:
+            {
+            TR_ASSERT_FATAL(false, "Generic binary commutative analyser for register kind (%d) is unimplemented", firstRegister->getKind());
+            break;
+            }
          }
 
       cursor = generateRRInstruction(cg(), copyOpCode, root, nodeReg, firstRegister);
@@ -475,17 +480,20 @@ TR_S390BinaryCommutativeAnalyser::genericAnalyser(TR::Node * root, TR::InstOpCod
       }
    else if (getCopyReg2())
       {
-      if (secondRegister->getKind() == TR_GPR64)
+      switch (secondRegister->getKind())
          {
-         nodeReg = cg()->allocate64bitRegister();
-         }
-      else if (secondRegister->getKind() != TR_FPR && secondRegister->getKind() != TR_VRF)
-         {
-         nodeReg = cg()->allocateRegister();
-         }
-      else
-         {
-         nodeReg = cg()->allocateRegister(TR_FPR);
+         case TR_RegisterKinds::TR_GPR:
+         case TR_RegisterKinds::TR_FPR:
+            {
+            nodeReg = cg()->allocateRegister(secondRegister->getKind());
+            break;
+            }
+
+         default:
+            {
+            TR_ASSERT_FATAL(false, "Generic binary commutative analyser for register kind (%d) is unimplemented", secondRegister->getKind());
+            break;
+            }
          }
 
       cursor = generateRRInstruction(cg(), copyOpCode, root, nodeReg, secondRegister);
@@ -505,17 +513,25 @@ TR_S390BinaryCommutativeAnalyser::genericAnalyser(TR::Node * root, TR::InstOpCod
       nodeReg = firstRegister;
       if (getOpReg3Mem2())
          {
-         if (firstRegister->getKind() == TR_GPR64)
+         switch (firstRegister->getKind())
             {
-            nodeReg = cg()->allocate64bitRegister();
-            }
-         else if (firstRegister->getKind() != TR_FPR && firstRegister->getKind() != TR_VRF)
-            {
-            nodeReg = allocateAddSubRegister(root, firstRegister);
-            }
-         else
-            {
-            nodeReg = cg()->allocateRegister(TR_FPR);
+            case TR_RegisterKinds::TR_GPR:
+               {
+               nodeReg = allocateAddSubRegister(root, firstRegister);
+               break;
+               }
+
+            case TR_RegisterKinds::TR_FPR:
+               {
+               nodeReg = cg()->allocateRegister(TR_FPR);
+               break;
+               }
+
+            default:
+               {
+               TR_ASSERT_FATAL(false, "Generic binary commutative analyser for register kind (%d) is unimplemented", firstRegister->getKind());
+               break;
+               }
             }
 
          cursor = generateRRInstruction(cg(), copyOpCode, root, nodeReg, firstRegister);
@@ -553,17 +569,25 @@ TR_S390BinaryCommutativeAnalyser::genericAnalyser(TR::Node * root, TR::InstOpCod
       nodeReg = secondRegister;
       if (getOpReg3Mem1())
          {
-         if (secondRegister->getKind() == TR_GPR64)
+         switch (secondRegister->getKind())
             {
-            nodeReg = cg()->allocate64bitRegister();
-            }
-         else if (secondRegister->getKind() != TR_FPR && secondRegister->getKind() != TR_VRF)
-            {
-            nodeReg = allocateAddSubRegister(root, secondRegister);
-            }
-         else
-            {
-            nodeReg = cg()->allocateRegister(TR_FPR);
+            case TR_RegisterKinds::TR_GPR:
+               {
+               nodeReg = allocateAddSubRegister(root, secondRegister);
+               break;
+               }
+
+            case TR_RegisterKinds::TR_FPR:
+               {
+               nodeReg = cg()->allocateRegister(TR_FPR);
+               break;
+               }
+
+            default:
+               {
+               TR_ASSERT_FATAL(false, "Generic binary commutative analyser for register kind (%d) is unimplemented", secondRegister->getKind());
+               break;
+               }
             }
 
          cursor = generateRRInstruction(cg(), copyOpCode, root, nodeReg, secondRegister);
@@ -1391,26 +1415,6 @@ TR_S390BinaryCommutativeAnalyser::integerAddAnalyser(TR::Node * root, TR::InstOp
 
       if (!done)
          {
-         if (firstRegister->getKind() == TR_GPR64 ||
-             ((firstChild->getType().isInt64() || TR::Compiler->target.is64Bit()) && cg()->use64BitRegsOn32Bit()))
-            {
-            cursor = generateRRInstruction(cg(), TR::InstOpCode::LGR, root, tempReg, firstRegister);
-            }
-         else
-            {
-            if (cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA))
-               {
-               cursor = generateRRInstruction(cg(), TR::InstOpCode::getLoadRegOpCodeFromNode(cg(), root), root, tempReg, firstRegister);
-               }
-            else
-               {
-               cursor = generateRRInstruction(cg(), TR::InstOpCode::getLoadRegOpCode(), root, tempReg, firstRegister);
-               }
-            }
-         if (debugObj)
-            {
-            debugObj->addInstructionComment(toS390RRInstruction(cursor), CLOBBER_EVAL);
-            }
          generateRRInstruction(cg(), regToRegOpCode, root, tempReg, secondRegister);
          }
       }
@@ -1420,17 +1424,25 @@ TR_S390BinaryCommutativeAnalyser::integerAddAnalyser(TR::Node * root, TR::InstOp
 
       if (getOpReg3Mem2())
          {
-         if (firstRegister->getKind() == TR_GPR64)
+         switch (firstRegister->getKind())
             {
-            tempReg = cg()->allocate64bitRegister();
-            }
-         else if (firstRegister->getKind() != TR_FPR && firstRegister->getKind() != TR_VRF)
-            {
-            tempReg = allocateAddSubRegister(root, firstRegister);
-            }
-         else
-            {
-            tempReg = cg()->allocateRegister(TR_FPR);
+            case TR_RegisterKinds::TR_GPR:
+               {
+               tempReg = allocateAddSubRegister(root, firstRegister);
+               break;
+               }
+
+            case TR_RegisterKinds::TR_FPR:
+               {
+               tempReg = cg()->allocateRegister(TR_FPR);
+               break;
+               }
+
+            default:
+               {
+               TR_ASSERT_FATAL(false, "Generic binary commutative analyser for register kind (%d) is unimplemented", firstRegister->getKind());
+               break;
+               }
             }
 
          cursor = generateRRInstruction(cg(), copyOpCode, root, tempReg, firstRegister);
@@ -1452,17 +1464,25 @@ TR_S390BinaryCommutativeAnalyser::integerAddAnalyser(TR::Node * root, TR::InstOp
 
       if (getOpReg3Mem1())
          {
-         if (secondRegister->getKind() == TR_GPR64)
+         switch (secondRegister->getKind())
             {
-            tempReg = cg()->allocate64bitRegister();
-            }
-         else if (secondRegister->getKind() != TR_FPR && secondRegister->getKind() != TR_VRF)
-            {
-            tempReg = allocateAddSubRegister(root, secondRegister);
-            }
-         else
-            {
-            tempReg = cg()->allocateRegister(TR_FPR);
+            case TR_RegisterKinds::TR_GPR:
+               {
+               tempReg = allocateAddSubRegister(root, secondRegister);
+               break;
+               }
+
+            case TR_RegisterKinds::TR_FPR:
+               {
+               tempReg = cg()->allocateRegister(TR_FPR);
+               break;
+               }
+
+            default:
+               {
+               TR_ASSERT_FATAL(false, "Generic binary commutative analyser for register kind (%d) is unimplemented", secondRegister->getKind());
+               break;
+               }
             }
 
          cursor = generateRRInstruction(cg(), copyOpCode, root, tempReg, secondRegister);

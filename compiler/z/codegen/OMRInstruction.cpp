@@ -773,23 +773,6 @@ bool OMR::Z::Instruction::getUsedRegisters(TR::list<TR::Register *> &usedRegs)
     for (i = 0; i < _targetRegSize; ++i)
       {
       TR::Register *r=_targetReg[i];
-      if(r->getKind() == TR_GPR64)
-        {
-        TR::RegisterPair *rp=r->getRegisterPair();
-        if(rp)
-          {
-          if((self()->getOpCodeValue() == TR::InstOpCode::SRDA || self()->getOpCodeValue() == TR::InstOpCode::SRDL) && toS390RSInstruction(self())->getSourceImmediate() >= 32)
-            ; // Clobbering the low order half by shifing completely over it so not really using it
-          else
-            usedRegs.push_back(rp->getLowOrder());
-          if((self()->getOpCodeValue() == TR::InstOpCode::SLDA || self()->getOpCodeValue() == TR::InstOpCode::SLDL) && toS390RSInstruction(self())->getSourceImmediate() >= 32)
-            ; // Clobbering the high order half by shifing completely over it so not really using it
-          else
-            usedRegs.push_back(rp->getHighOrder());
-          }
-        else
-          usedRegs.push_back(r);
-        }
       }
     }
 

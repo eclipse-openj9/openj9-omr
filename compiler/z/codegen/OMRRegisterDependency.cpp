@@ -418,9 +418,6 @@ void OMR::Z::RegisterDependencyConditions::resolveSplitDependencies(
          }
       switch (kind)
          {
-         case TR_GPR64:
-            opCode = TR::InstOpCode::LGR;
-            break;
          case TR_GPR:
             opCode = TR::InstOpCode::getLoadRegOpCode();
             if (cg->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) &&
@@ -430,6 +427,11 @@ void OMR::Z::RegisterDependencyConditions::resolveSplitDependencies(
                   TR::RealRegister::isHPR(regNum)))
                {
                opCode = TR::InstOpCode::LR;
+               }
+
+            if (reg->is64BitReg())
+               {
+               opCode = TR::InstOpCode::LGR;
                }
             break;
          case TR_FPR:
@@ -954,9 +956,6 @@ TR_S390RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstru
                TR_RegisterKinds rk = virtReg->getKind();
                switch (rk)
                   {
-                  case TR_GPR64:
-                     opCode = TR::InstOpCode::LG;
-                     break;
                   case TR_GPR:
                      if (virtReg->is64BitReg())
                         {

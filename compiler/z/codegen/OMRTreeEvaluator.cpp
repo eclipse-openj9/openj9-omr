@@ -1291,7 +1291,7 @@ generateS390ImmOp(TR::CodeGenerator * cg,
    TR_ASSERT( preced == NULL, "Support has not yet been adding for preced instruction");
    TR::Instruction * cursor = NULL;
    TR::InstOpCode::Mnemonic immOp=TR::InstOpCode::BAD;
-   bool is64BitRegister = targetRegister->getKind()==TR_GPR64 || cg->use64BitRegsOn32Bit();
+   bool is64BitRegister = cg->use64BitRegsOn32Bit();
 
    // LL: Store Golden Eagle extended immediate instruction - 6 bytes long
    TR::InstOpCode::Mnemonic ei_immOp=TR::InstOpCode::BAD;
@@ -3278,7 +3278,7 @@ generateS390CompareAndBranchOpsHelper(TR::Node * node, TR::CodeGenerator * cg, T
                uint64_t uconstValue = static_cast<uint64_t>(constNode->getLongInt());
                constValue64 = static_cast<int64_t>(uconstValue);
                useConstValue64 = true;
-               if(testRegister->getKind() == TR_GPR64 || cg->use64BitRegsOn32Bit())
+               if (cg->use64BitRegsOn32Bit())
                   compareOpCode = isUnsignedCmp ? TR::InstOpCode::CLG : TR::InstOpCode::CG;
                else
                   compareOpCode = isUnsignedCmp ? TR::InstOpCode::getCmpLogicalOpCode() : TR::InstOpCode::getCmpOpCode();
@@ -3314,7 +3314,7 @@ generateS390CompareAndBranchOpsHelper(TR::Node * node, TR::CodeGenerator * cg, T
          else
             {
             if ((constType == TR::Int64 || constType == TR::Address) &&
-                  !(testRegister->getKind() == TR_GPR64 || cg->use64BitRegsOn32Bit()) &&
+                  !(cg->use64BitRegsOn32Bit()) &&
                   constNode->getRegister())
                generateRRInstruction(cg, isUnsignedCmp ? TR::InstOpCode::CLGR : TR::InstOpCode::CGR, node, testRegister, constNode->getRegister());
             else if (useConstValue64)
@@ -4997,7 +4997,7 @@ genericLoadHelper(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference *
             if (numberOfBits > 32) // Load the bottom half
                {
                CASE(11);
-               targetRegister->setKind(TR_GPR64); // Just to triple check that GRA knows this is a 64 bit register, not two separate halves
+               targetRegister->setIs64BitReg(); // Just to triple check that GRA knows this is a 64 bit register, not two separate halves
                TR::MemoryReference *lowMR = generateS390MemoryReference(*tempMR, numberOfBits/8-4, cg);
                generateRXInstruction(cg, TR::InstOpCode::L, node, targetRegister, lowMR);
                lowMR->stopUsingMemRefRegister(cg);
@@ -5196,7 +5196,7 @@ OMR::Z::TreeEvaluator::extendCastEvaluator(TR::Node * node, TR::CodeGenerator * 
             firstChild->getOpCode().isLoadReg())
       // Might need to fixup register kind in pass-through case
       {
-      cg->changeRegisterKind(targetRegister, TR_GPR64);
+      targetRegister->setIs64BitReg();
       }
    else if (numberOfExtendBits==64 && TR::Compiler->target.is32Bit() && !cg->use64BitRegsOn32Bit() && targetRegister->getRegisterPair() == NULL)
       TR_ASSERT(0, "Incorrect flags set on node %p; register pairs need always be extended\n", node);
@@ -6734,7 +6734,7 @@ lstoreHelper64(TR::Node * node, TR::CodeGenerator * cg, bool isReversed)
             {
             // We might have needed to split the 64-bit value into a register pair
             TR::RegisterPair *regPair = valueReg->getRegisterPair();
-            if (regPair && valueReg->getKind()!=TR_GPR64)
+            if (regPair && !cg->use64BitRegsOn32Bit())
                {
                generateRSInstruction(cg, TR::InstOpCode::STM, node, valueReg, longMR);
                }
@@ -7811,9 +7811,6 @@ inlineHighestOneBit(
       cursor = generateRSInstruction(cg, TR::InstOpCode::SLLG, node, srcReg->getHighOrder(), srcReg->getHighOrder(), 32);
 
       cursor = generateRRInstruction(cg, TR::InstOpCode::LR, node, srcReg->getHighOrder(), srcReg->getLowOrder());
-
-      // @TODO To be removed when enableHighWordRA is enabled.
-      // srcReg->getHighOrder()->setKind(TR_GPR64);
       }
 
    TR::Register * evenReg = NULL;
@@ -11638,9 +11635,6 @@ OMR::Z::TreeEvaluator::passThroughEvaluator(TR::Node * node, TR::CodeGenerator *
          }
       switch (kind)
          {
-         case TR_GPR64:
-            opCode = TR::InstOpCode::LGR;
-            break;
          case TR_GPR:
             opCode = TR::InstOpCode::getLoadRegOpCode();
             if (cg->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) &&
@@ -11650,6 +11644,11 @@ OMR::Z::TreeEvaluator::passThroughEvaluator(TR::Node * node, TR::CodeGenerator *
                  TR::RealRegister::isHPR(regNum)))
                {
                opCode = TR::InstOpCode::LR;
+               }
+
+            if (reg->is64BitReg())
+               {
+               opCode = TR::InstOpCode::LGR;
                }
             break;
          case TR_FPR:

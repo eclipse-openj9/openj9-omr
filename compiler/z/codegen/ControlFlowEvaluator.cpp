@@ -3728,6 +3728,7 @@ OMR::Z::TreeEvaluator::ternaryEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    // Sanity check
    TR_ASSERT(cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10), "ternary IL only supported on z10 and up");
+   TR_ASSERT_FATAL(cg->use64BitRegsOn32Bit(), "Ternary evaluator does not support register pairs");
 
    TR::Compilation *comp = cg->comp();
 
@@ -3791,21 +3792,7 @@ OMR::Z::TreeEvaluator::ternaryEvaluator(TR::Node *node, TR::CodeGenerator *cg)
             traceMsg(comp, "Emitting a Load on condition with condtion based on compare type\n");
             }
 
-         if (trueReg->getRegisterPair() || falseReg->getRegisterPair())
-            {
-            TR_ASSERT(trueReg->getRegisterPair() && falseReg->getRegisterPair(), "Both (or none) false and true regs should be register pairs");
-
-            const bool is64BitRegister = trueReg->getKind() == TR_GPR64 || cg->use64BitRegsOn32Bit();
-
-            auto mnemonic = is64BitRegister ? TR::InstOpCode::LOCGR: TR::InstOpCode::LOCR;
-
-            generateRRFInstruction(cg, mnemonic, node, trueReg->getHighOrder(), falseReg->getHighOrder(), getMaskForBranchCondition(TR::InstOpCode::COND_BER), true);
-            generateRRFInstruction(cg, mnemonic, node, trueReg->getLowOrder(), falseReg->getLowOrder(), getMaskForBranchCondition(TR::InstOpCode::COND_BER), true);
-            }
-         else
-            {
-            generateRRFInstruction(cg, trueVal->getOpCode().is8Byte() ? TR::InstOpCode::LOCGR: TR::InstOpCode::LOCR, node, trueReg, falseReg, getMaskForBranchCondition(TR::TreeEvaluator::mapBranchConditionToLOCRCondition(bc)), true);
-            }
+         generateRRFInstruction(cg, trueVal->getOpCode().is8Byte() ? TR::InstOpCode::LOCGR: TR::InstOpCode::LOCR, node, trueReg, falseReg, getMaskForBranchCondition(TR::TreeEvaluator::mapBranchConditionToLOCRCondition(bc)), true);
          }
       else
          {
@@ -3816,65 +3803,26 @@ OMR::Z::TreeEvaluator::ternaryEvaluator(TR::Node *node, TR::CodeGenerator *cg)
          cFlowRegionStart->setStartInternalControlFlow();
          generateS390CompareAndBranchInstruction(cg, compareOp, node, firstReg, secondReg, bc, cFlowRegionEnd, false);
 
-         TR::RegisterDependencyConditions* conditions = NULL;
+         TR::RegisterDependencyConditions* conditions = conditions = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 4, cg);
 
-         if (trueReg->getRegisterPair() || falseReg->getRegisterPair())
+         conditions->addPostCondition(firstReg, TR::RealRegister::AssignAny);
+
+         if (secondReg != firstReg)
             {
-            TR_ASSERT(trueReg->getRegisterPair() && falseReg->getRegisterPair(), "Both (or none) false and true regs should be register pairs");
-
-            conditions = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 8, cg);
-
-            conditions->addPostCondition(firstReg, TR::RealRegister::AssignAny);
-
-            if (secondReg != firstReg)
-               {
-               conditions->addPostCondition(secondReg, TR::RealRegister::AssignAny);
-               }
-
-            if (falseReg != firstReg && falseReg != secondReg)
-               {
-               conditions->addPostCondition(falseReg, TR::RealRegister::EvenOddPair);
-               conditions->addPostCondition(falseReg->getHighOrder(), TR::RealRegister::LegalEvenOfPair);
-               conditions->addPostCondition(falseReg->getLowOrder(), TR::RealRegister::LegalOddOfPair);
-               }
-
-            if (trueReg != falseReg && trueReg != firstReg && trueReg != secondReg)
-               {
-               conditions->addPostCondition(trueReg, TR::RealRegister::EvenOddPair);
-               conditions->addPostCondition(trueReg->getHighOrder(), TR::RealRegister::LegalEvenOfPair);
-               conditions->addPostCondition(trueReg->getLowOrder(), TR::RealRegister::LegalOddOfPair);
-               }
-
-            const bool is64BitRegister = trueReg->getKind() == TR_GPR64 || cg->use64BitRegsOn32Bit();
-
-            auto mnemonic = is64BitRegister ? TR::InstOpCode::LGR: TR::InstOpCode::LR;
-
-            generateRRInstruction(cg, mnemonic, node, trueReg->getHighOrder(), falseReg->getHighOrder());
-            generateRRInstruction(cg, mnemonic, node, trueReg->getLowOrder(), falseReg->getLowOrder());
+            conditions->addPostCondition(secondReg, TR::RealRegister::AssignAny);
             }
-         else
+
+         if (falseReg != firstReg && falseReg != secondReg)
             {
-            conditions = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 4, cg);
-
-            conditions->addPostCondition(firstReg, TR::RealRegister::AssignAny);
-
-            if (secondReg != firstReg)
-               {
-               conditions->addPostCondition(secondReg, TR::RealRegister::AssignAny);
-               }
-
-            if (falseReg != firstReg && falseReg != secondReg)
-               {
-               conditions->addPostCondition(falseReg, TR::RealRegister::AssignAny);
-               }
-
-            if (trueReg != falseReg && trueReg != firstReg && trueReg != secondReg)
-               {
-               conditions->addPostCondition(trueReg, TR::RealRegister::AssignAny);
-               }
-
-            generateRRInstruction(cg, trueVal->getOpCode().is8Byte() ? TR::InstOpCode::LGR : TR::InstOpCode::LR, node, trueReg, falseReg);
+            conditions->addPostCondition(falseReg, TR::RealRegister::AssignAny);
             }
+
+         if (trueReg != falseReg && trueReg != firstReg && trueReg != secondReg)
+            {
+            conditions->addPostCondition(trueReg, TR::RealRegister::AssignAny);
+            }
+
+         generateRRInstruction(cg, trueVal->getOpCode().is8Byte() ? TR::InstOpCode::LGR : TR::InstOpCode::LR, node, trueReg, falseReg);
 
          generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionEnd, conditions);
          cFlowRegionEnd->setEndInternalControlFlow();
@@ -3905,22 +3853,9 @@ OMR::Z::TreeEvaluator::ternaryEvaluator(TR::Node *node, TR::CodeGenerator *cg)
             traceMsg(comp, "Emmitting a LOCR with resulReg = %p falseReg->getRegister = %p\n",trueReg,falseReg->getRegister());
             }
 
-         if (trueReg->getRegisterPair() || falseReg->getRegisterPair())
-            {
-            // Sanity check
-            TR_ASSERT(trueReg->getRegisterPair() && falseReg->getRegisterPair(), "Both false and true registers should be register pairs");
+         auto mnemonic = trueVal->getOpCode().is8Byte() ? TR::InstOpCode::LOCGR: TR::InstOpCode::LOCR;
 
-            auto mnemonic = trueReg->getKind() == TR_GPR64 || cg->use64BitRegsOn32Bit() ? TR::InstOpCode::LOCGR: TR::InstOpCode::LOCR;
-
-            generateRRFInstruction(cg, mnemonic, node, trueReg->getHighOrder(), falseReg->getHighOrder(), getMaskForBranchCondition(TR::InstOpCode::COND_BER), true);
-            generateRRFInstruction(cg, mnemonic, node, trueReg->getLowOrder(), falseReg->getLowOrder(), getMaskForBranchCondition(TR::InstOpCode::COND_BER), true);
-            }
-         else
-            {
-            auto mnemonic = trueVal->getOpCode().is8Byte() ? TR::InstOpCode::LOCGR: TR::InstOpCode::LOCR;
-
-            generateRRFInstruction(cg, mnemonic, node, trueReg, falseReg->getRegister(), getMaskForBranchCondition(TR::InstOpCode::COND_BER), true);
-            }
+         generateRRFInstruction(cg, mnemonic, node, trueReg, falseReg->getRegister(), getMaskForBranchCondition(TR::InstOpCode::COND_BER), true);
          }
       else
          {
@@ -3931,55 +3866,21 @@ OMR::Z::TreeEvaluator::ternaryEvaluator(TR::Node *node, TR::CodeGenerator *cg)
          cFlowRegionStart->setStartInternalControlFlow();
          TR::Instruction *branchInst = generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BNE, node, cFlowRegionEnd);
 
-         TR::RegisterDependencyConditions* conditions = NULL;
+         TR::RegisterDependencyConditions* conditions = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 3, cg);
 
-         if (trueReg->getRegisterPair() || falseReg->getRegisterPair())
+         conditions->addPostCondition(trueReg, TR::RealRegister::AssignAny);
+
+         if (falseReg != trueReg)
             {
-            TR_ASSERT(trueReg->getRegisterPair() && falseReg->getRegisterPair(), "Both (or none) false and true regs should be register pairs");
-
-            conditions =  new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 7, cg);
-
-            conditions->addPostCondition(trueReg, TR::RealRegister::EvenOddPair);
-            conditions->addPostCondition(trueReg->getHighOrder(), TR::RealRegister::LegalEvenOfPair);
-            conditions->addPostCondition(trueReg->getLowOrder(), TR::RealRegister::LegalOddOfPair);
-
-            if (falseReg != trueReg)
-               {
-               conditions->addPostCondition(falseReg, TR::RealRegister::EvenOddPair);
-               conditions->addPostCondition(falseReg->getHighOrder(), TR::RealRegister::LegalEvenOfPair);
-               conditions->addPostCondition(falseReg->getLowOrder(), TR::RealRegister::LegalOddOfPair);
-               }
-
-            if (condReg != trueReg && condReg != falseReg)
-               {
-               conditions->addPostCondition(condReg, TR::RealRegister::AssignAny);
-               }
-
-            const bool is64BitRegister = trueReg->getKind() == TR_GPR64 || cg->use64BitRegsOn32Bit();
-
-            auto mnemonic = is64BitRegister ? TR::InstOpCode::LGR: TR::InstOpCode::LR;
-
-            generateRRInstruction(cg, mnemonic, node, trueReg->getHighOrder(), falseReg->getHighOrder());
-            generateRRInstruction(cg, mnemonic, node, trueReg->getLowOrder(), falseReg->getLowOrder());
+            conditions->addPostCondition(falseReg, TR::RealRegister::AssignAny);
             }
-         else
+
+         if (condReg != trueReg && condReg != falseReg)
             {
-            conditions =  new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 3, cg);
-
-            conditions->addPostCondition(trueReg, TR::RealRegister::AssignAny);
-
-            if (falseReg != trueReg)
-               {
-               conditions->addPostCondition(falseReg, TR::RealRegister::AssignAny);
-               }
-
-            if (condReg != trueReg && condReg != falseReg)
-               {
-               conditions->addPostCondition(condReg, TR::RealRegister::AssignAny);
-               }
-
-            generateRRInstruction(cg, trueVal->getOpCode().is8Byte() ? TR::InstOpCode::LGR : TR::InstOpCode::LR, node, trueReg, falseReg);
+            conditions->addPostCondition(condReg, TR::RealRegister::AssignAny);
             }
+
+         generateRRInstruction(cg, trueVal->getOpCode().is8Byte() ? TR::InstOpCode::LGR : TR::InstOpCode::LR, node, trueReg, falseReg);
 
          generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionEnd, conditions);
          cFlowRegionEnd->setEndInternalControlFlow();

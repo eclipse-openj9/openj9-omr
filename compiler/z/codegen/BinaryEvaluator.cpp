@@ -2223,7 +2223,6 @@ genericRotateAndInsertHelper(TR::Node * node, TR::CodeGenerator * cg)
       TR::Node * firstChild = node->getFirstChild();
       TR::Node * secondChild = node->getSecondChild();
       TR::Node * skipedConversion = NULL;
-      bool LongToInt = false;
       TR::Compilation *comp = cg->comp();
 
       if (firstChild->getOpCode().isConversion())
@@ -2235,11 +2234,6 @@ genericRotateAndInsertHelper(TR::Node * node, TR::CodeGenerator * cg)
          if (!firstChild->getFirstChild()->getType().isIntegral()) // only skip integer to integer conversions
             {
             return NULL;
-            }
-         if (TR::Compiler->target.is32Bit() && firstChild->getOpCodeValue() == TR::l2i)
-            {
-            LongToInt = true;
-            traceMsg(comp, "Long2Int conversion in between, need to evaluate if RISBG can be used \n");
             }
          skipedConversion = firstChild;
          firstChild = firstChild->getFirstChild();
@@ -2313,39 +2307,14 @@ genericRotateAndInsertHelper(TR::Node * node, TR::CodeGenerator * cg)
 
          TR::Register *sourceReg = cg->evaluate(firstChild->getFirstChild());
 
-         // Check for the case where the shift source is in a 64-bit register.
-         if (sourceReg && sourceReg->getKind() == TR_GPR64)
-            LongToInt = false;
-
          if (firstChild->getOpCode().isRightShift())
             {
             shiftMsBit += shiftAmnt;
             // Turn right shift into left shift
             shiftAmnt = 64 - shiftAmnt;
-
-            if (LongToInt)
-               {
-               int32_t shiftRightAmt = (64-shiftAmnt); //get original shiftRight amount
-               if (msBit - shiftRightAmt >= 32)
-                  useOrder = 1;
-               else if (shiftRightAmt >= 32)
-                  {
-                  shiftAmnt = 64 - (shiftRightAmt - 32); //decrease the shift amount
-                  useOrder = 2;
-                  }
-               else if (lsBit <= shiftRightAmt + 31)
-                  {
-                  shiftAmnt = 32 - shiftRightAmt; //do a left shift instead
-                  useOrder = 2;
-                  }
-               else
-                  return NULL;
-               }
             }
          else
             {
-            if (LongToInt)
-               useOrder = 1;
             shiftLsBit -= shiftAmnt;
             }
 
@@ -2374,22 +2343,6 @@ genericRotateAndInsertHelper(TR::Node * node, TR::CodeGenerator * cg)
          if (popCnt == (64 - lZeros - tZeros))
             {
             TR::Register * targetReg = NULL;
-            if (LongToInt)
-               {
-               TR::RegisterPair *sourceRegPair = (TR::RegisterPair *) sourceReg;
-               if (useOrder == 1)
-                  {
-                  traceMsg(comp,"\t               => Using LowOrder Register\n");
-                  sourceReg = sourceRegPair->getLowOrder(); //use loworderReg
-                  }
-               else if (useOrder == 2)
-                  {
-                  traceMsg(comp,"\t               => Using HighOrder Register\n");
-                  sourceReg = sourceRegPair->getHighOrder(); //use highorderReg
-                  }
-               else //cannot use RISBG
-                  return NULL;
-               }
 
             if (!cg->canClobberNodesRegister(firstChild->getFirstChild()))
                targetReg = cg->allocateClobberableRegister(sourceReg);

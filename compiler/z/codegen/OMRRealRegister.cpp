@@ -149,7 +149,7 @@ OMR::Z::RealRegister::getSiblingWordRegister()
 bool
 OMR::Z::RealRegister::setHasBeenAssignedInMethod(bool b)
    {
-   if (self()->getAssignedRegister() && (self()->getAssignedRegister()->isUpperBitsAreDirty() || self()->getAssignedRegister()->getKind() == TR_GPR64) )
+   if (self()->getAssignedRegister() && self()->getAssignedRegister()->isUpperBitsAreDirty())
       (b)? self()->setAssignedHigh(true) : self()->setAssignedHigh(false);
 
    return OMR::RealRegister::setHasBeenAssignedInMethod(b); //call base class

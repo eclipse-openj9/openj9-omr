@@ -1173,14 +1173,7 @@ TR::Register *OMR::CodeGenerator::allocateSinglePrecisionRegister(TR_RegisterKin
 
 TR::Register *OMR::CodeGenerator::allocate64bitRegister()
    {
-   TR::Register * temp = NULL;
-
-   if (TR::Compiler->target.is64Bit())
-      temp = self()->allocateRegister();
-   else
-      temp = self()->allocateRegister(TR_GPR64);
-
-   return temp;
+   return self()->allocateRegister();
    }
 
 void OMR::CodeGenerator::apply8BitLabelRelativeRelocation(int32_t * cursor, TR::LabelSymbol * label)
@@ -3069,11 +3062,7 @@ void OMR::CodeGenerator::addAllocatedRegister(TR::Register * temp)
 
 TR::RegisterPair * OMR::CodeGenerator::allocate64bitRegisterPair(TR::Register * lo, TR::Register * ho)
    {
-   TR::RegisterPair *temp = new (self()->trHeapMemory()) TR::RegisterPair(TR_GPR64);
-   temp->setLowOrder(lo, self());
-   temp->setHighOrder(ho, self());
-   self()->addAllocatedRegisterPair(temp);
-   return temp;
+   return self()->allocateRegisterPair(lo, ho);
    }
 
 TR::RegisterPair * OMR::CodeGenerator::allocateRegisterPair(TR::Register * lo, TR::Register * ho)

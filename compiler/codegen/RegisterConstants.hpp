@@ -39,7 +39,6 @@ enum TR_RegisterKinds
    TR_VRF           = 4,
    TR_VSX_SCALAR    = 5,
    TR_VSX_VECTOR    = 6,
-   TR_GPR64         = 7,
    TR_SSR           = 8,   // used for TR_PseudoRegisters for SS (storage to storage) instructions to return results
    TR_HPR           = 9,   // High word register for zGryphon
    TR_GPRL          = 10,  // Low word register for zGryphon
@@ -56,7 +55,6 @@ enum TR_RegisterKinds
    TR_VRF_Mask    = TO_KIND_MASK(TR_VRF),
    TR_VSX_SCALAR_Mask    = TO_KIND_MASK(TR_VSX_SCALAR),
    TR_VSX_VECTOR_Mask    = TO_KIND_MASK(TR_VSX_VECTOR),
-   TR_GPR64_Mask  = TO_KIND_MASK(TR_GPR64),
    TR_SSR_Mask    = TO_KIND_MASK(TR_SSR),
    TR_HPR_Mask    = TO_KIND_MASK(TR_HPR),
    TR_GPRL_Mask   = TO_KIND_MASK(TR_GPRL)

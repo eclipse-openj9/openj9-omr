@@ -269,17 +269,17 @@ class OMR_EXTENSIBLE Machine : public OMR::Machine
    uint8_t genBitVectOfLiveGPRPairs();
 
    TR::RealRegister* findBestSwapRegister(TR::Register* reg1, TR::Register* reg2);
-   TR::Instruction* registerCopy(TR::Instruction *precedingInstruction,
-                                    TR_RegisterKinds rk,
-                                    TR::RealRegister *targetReg,
-                                    TR::RealRegister *sourceReg,
-                                    TR::CodeGenerator *cg);
-   TR::Instruction* registerExchange(TR::Instruction      *precedingInstruction,
-                                        TR_RegisterKinds     rk,
-                                        TR::RealRegister *targetReg,
-                                        TR::RealRegister *sourceReg,
-                                        TR::RealRegister *middleReg,
-                                        TR::CodeGenerator    *cg);
+   TR::Instruction* registerCopy(TR::CodeGenerator* cg,
+      TR_RegisterKinds rk,
+      TR::RealRegister* targetReg,
+      TR::RealRegister* sourceReg,
+      TR::Instruction* precedingInstruction);
+   TR::Instruction* registerExchange(TR::CodeGenerator* cg,
+      TR_RegisterKinds rk,
+      TR::RealRegister* targetReg,
+      TR::RealRegister* sourceReg,
+      TR::RealRegister* middleReg,
+      TR::Instruction* precedingInstruction);
 
    bool  isLegalEvenOddPair(TR::RealRegister* evenReg, TR::RealRegister* oddReg, uint64_t availRegMask=0x0000ffff);
    bool  isLegalEvenRegister(TR::RealRegister* reg, bool allowBlocked, uint64_t availRegMask=0x0000ffff, bool allowLocked=false);

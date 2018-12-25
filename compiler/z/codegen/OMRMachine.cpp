@@ -113,8 +113,8 @@ getRegisterName(TR::Register * reg, TR::CodeGenerator * cg)
 TR::Instruction *
 OMR::Z::Machine::registerCopy(TR::Instruction *precedingInstruction,
              TR_RegisterKinds rk,
-             TR::Register *targetReg,
-             TR::Register *sourceReg,
+             TR::RealRegister *targetReg,
+             TR::RealRegister *sourceReg,
              TR::CodeGenerator    *cg,
              flags32_t            instFlags)
    {

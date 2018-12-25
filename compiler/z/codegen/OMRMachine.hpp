@@ -271,7 +271,7 @@ class OMR_EXTENSIBLE Machine : public OMR::Machine
    TR::RealRegister* findBestSwapRegister(TR::Register* reg1, TR::Register* reg2);
    TR::Instruction* registerCopy(TR::Instruction *precedingInstruction,
                                     TR_RegisterKinds rk,
-                                    TR::Register *targetReg, TR::Register *sourceReg,
+                                    TR::RealRegister *targetReg, TR::RealRegister *sourceReg,
                                     TR::CodeGenerator *cg, flags32_t instFlags);
    TR::Instruction* registerExchange(TR::Instruction      *precedingInstruction,
                                         TR_RegisterKinds     rk,

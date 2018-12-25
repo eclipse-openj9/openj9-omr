@@ -680,8 +680,6 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static void referenceArraycopyEvaluator(TR::Node* node, TR::CodeGenerator* cg, TR::Node* byteSrcNode, TR::Node* byteDstNode, TR::Node* byteLenNode, TR::Node* byteSrcObjNode, TR::Node* byteDstObjNode);
 
    static TR::Register *arraysetEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *o2xEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *x2oEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 
    static TR::Register * evaluateLengthMinusOneForMemoryCmp(TR::Node *node, TR::CodeGenerator *cg, bool clobberEvaluate, bool &lenMinusOne);
 

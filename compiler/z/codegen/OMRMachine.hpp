@@ -271,15 +271,15 @@ class OMR_EXTENSIBLE Machine : public OMR::Machine
    TR::RealRegister* findBestSwapRegister(TR::Register* reg1, TR::Register* reg2);
    TR::Instruction* registerCopy(TR::Instruction *precedingInstruction,
                                     TR_RegisterKinds rk,
-                                    TR::RealRegister *targetReg, TR::RealRegister *sourceReg,
-                                    TR::CodeGenerator *cg, flags32_t instFlags);
+                                    TR::RealRegister *targetReg,
+                                    TR::RealRegister *sourceReg,
+                                    TR::CodeGenerator *cg);
    TR::Instruction* registerExchange(TR::Instruction      *precedingInstruction,
                                         TR_RegisterKinds     rk,
                                         TR::RealRegister *targetReg,
                                         TR::RealRegister *sourceReg,
                                         TR::RealRegister *middleReg,
-                                        TR::CodeGenerator    *cg,
-                                        flags32_t            instFlags);
+                                        TR::CodeGenerator    *cg);
 
    bool  isLegalEvenOddPair(TR::RealRegister* evenReg, TR::RealRegister* oddReg, uint64_t availRegMask=0x0000ffff);
    bool  isLegalEvenRegister(TR::RealRegister* reg, bool allowBlocked, uint64_t availRegMask=0x0000ffff, bool allowLocked=false);
@@ -345,7 +345,7 @@ class OMR_EXTENSIBLE Machine : public OMR::Machine
                          TR::RealRegister *targetReal,
                          bool is64BitReg);
 
-   TR::Instruction * freeHighWordRegister(TR::Instruction *currentInstruction, TR::RealRegister *targetRegisterHW, flags32_t instFlags);
+   TR::Instruction * freeHighWordRegister(TR::Instruction *currentInstruction, TR::RealRegister *targetRegisterHW);
    void spillRegister(TR::Instruction *currentInstruction, TR::Register *virtReg, uint32_t availHighWordRegMap = -1);
 
    TR::RealRegister *reverseSpillState(TR::Instruction      *currentInstruction,
@@ -356,8 +356,7 @@ class OMR_EXTENSIBLE Machine : public OMR::Machine
 
    TR::Instruction *coerceRegisterAssignment(TR::Instruction *currentInstruction,
                                             TR::Register    *virtualRegister,
-                                            TR::RealRegister::RegNum registerNumber,
-                                            flags32_t       instFlags);
+                                            TR::RealRegister::RegNum registerNumber);
 
    TR_Debug         *getDebug();
 

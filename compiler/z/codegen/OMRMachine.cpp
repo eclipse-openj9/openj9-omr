@@ -115,8 +115,7 @@ OMR::Z::Machine::registerCopy(TR::Instruction *precedingInstruction,
              TR_RegisterKinds rk,
              TR::RealRegister *targetReg,
              TR::RealRegister *sourceReg,
-             TR::CodeGenerator    *cg,
-             flags32_t            instFlags)
+             TR::CodeGenerator    *cg)
    {
    TR::Compilation *comp = cg->comp();
    TR::Node * currentNode = precedingInstruction->getNode();
@@ -212,11 +211,6 @@ OMR::Z::Machine::registerCopy(TR::Instruction *precedingInstruction,
          debugObj->addInstructionComment(toS390RRInstruction(currentInstruction), REG_MOVE);
       }
 
-   if (debugObj && instFlags.testAny(PAIRREG) && rk != TR_VRF)
-      {
-      debugObj->addInstructionComment(toS390RRInstruction(currentInstruction), REG_PAIR);
-      }
-
    return currentInstruction;
    }
 
@@ -230,8 +224,7 @@ OMR::Z::Machine::registerExchange(TR::Instruction      *precedingInstruction,
                  TR::RealRegister *targetReg,
                  TR::RealRegister *sourceReg,
                  TR::RealRegister *middleReg,
-                 TR::CodeGenerator    *cg,
-                 flags32_t            instFlags)
+                 TR::CodeGenerator    *cg)
    {
    // middleReg is not used if rk==TR_GPR.
    TR::Compilation *comp = cg->comp();
@@ -251,11 +244,11 @@ OMR::Z::Machine::registerExchange(TR::Instruction      *precedingInstruction,
          {
          middleReg->setHasBeenAssignedInMethod(true);
 
-         currentInstruction = machine->registerCopy(precedingInstruction, rk, sourceReg, middleReg, cg, instFlags);
+         currentInstruction = machine->registerCopy(precedingInstruction, rk, sourceReg, middleReg, cg);
          cg->traceRAInstruction(currentInstruction);
-         currentInstruction = machine->registerCopy(precedingInstruction, rk, targetReg, sourceReg, cg, instFlags);
+         currentInstruction = machine->registerCopy(precedingInstruction, rk, targetReg, sourceReg, cg);
          cg->traceRAInstruction(currentInstruction);
-         currentInstruction = machine->registerCopy(precedingInstruction, rk, middleReg, targetReg, cg, instFlags);
+         currentInstruction = machine->registerCopy(precedingInstruction, rk, middleReg, targetReg, cg);
          cg->traceRAInstruction(currentInstruction);
          }
       else
@@ -287,11 +280,11 @@ OMR::Z::Machine::registerExchange(TR::Instruction      *precedingInstruction,
          {
          middleReg->setHasBeenAssignedInMethod(true);
 
-         currentInstruction = machine->registerCopy(precedingInstruction, rk, sourceReg, middleReg, cg, instFlags);
+         currentInstruction = machine->registerCopy(precedingInstruction, rk, sourceReg, middleReg, cg);
          cg->traceRAInstruction(currentInstruction);
-         currentInstruction = machine->registerCopy(precedingInstruction, rk, targetReg, sourceReg, cg, instFlags);
+         currentInstruction = machine->registerCopy(precedingInstruction, rk, targetReg, sourceReg, cg);
          cg->traceRAInstruction(currentInstruction);
-         currentInstruction = machine->registerCopy(precedingInstruction, rk, middleReg, targetReg, cg, instFlags);
+         currentInstruction = machine->registerCopy(precedingInstruction, rk, middleReg, targetReg, cg);
          cg->traceRAInstruction(currentInstruction);
          }
       else
@@ -453,10 +446,6 @@ OMR::Z::Machine::registerExchange(TR::Instruction      *precedingInstruction,
                {
                debugObj->addInstructionComment(toS390RRInstruction(currentInstruction), REG_EXCHANGE);
                }
-            if (debugObj && instFlags.testAny(PAIRREG))
-               {
-               debugObj->addInstructionComment(toS390RRInstruction(currentInstruction), REG_PAIR);
-               }
 
             currentInstruction =
                generateRRInstruction(cg, opLoadReg, currentNode, targetReg, sourceReg, precedingInstruction);
@@ -465,10 +454,6 @@ OMR::Z::Machine::registerExchange(TR::Instruction      *precedingInstruction,
                {
                debugObj->addInstructionComment(toS390RRInstruction(currentInstruction), REG_EXCHANGE);
                }
-            if (debugObj && instFlags.testAny(PAIRREG))
-               {
-               debugObj->addInstructionComment(toS390RRInstruction(currentInstruction), REG_PAIR);
-               }
 
             currentInstruction =
                generateRRInstruction(cg, opLoadReg, currentNode, middleReg, targetReg, precedingInstruction);
@@ -476,10 +461,6 @@ OMR::Z::Machine::registerExchange(TR::Instruction      *precedingInstruction,
             if (debugObj)
                {
                debugObj->addInstructionComment(toS390RRInstruction(currentInstruction), REG_EXCHANGE);
-               }
-            if (debugObj && instFlags.testAny(PAIRREG))
-               {
-               debugObj->addInstructionComment(toS390RRInstruction(currentInstruction), REG_PAIR);
                }
             }
          }
@@ -3735,7 +3716,7 @@ void OMR::Z::Machine::freeRealRegister(TR::Instruction *currentInstruction, TR::
   }
 
 TR::Instruction*
-OMR::Z::Machine::freeHighWordRegister(TR::Instruction *currentInstruction, TR::RealRegister * targetRegisterHW, flags32_t instFlags)
+OMR::Z::Machine::freeHighWordRegister(TR::Instruction *currentInstruction, TR::RealRegister * targetRegisterHW)
    {
    TR::Register * virtRegHW = targetRegisterHW->getAssignedRegister();
    TR::RealRegister * spareReg = NULL;
@@ -3757,7 +3738,7 @@ OMR::Z::Machine::freeHighWordRegister(TR::Instruction *currentInstruction, TR::R
 
       if (spareReg)
          {
-         cursor = self()->registerCopy(currentInstruction, TR_HPR, targetRegisterHW, spareReg, self()->cg(), instFlags);
+         cursor = self()->registerCopy(currentInstruction, TR_HPR, targetRegisterHW, spareReg, self()->cg());
          targetRegisterHW->setState(TR::RealRegister::Unlatched);
          targetRegisterHW->setAssignedRegister(NULL);
          spareReg->setState(TR::RealRegister::Assigned);
@@ -3784,7 +3765,7 @@ OMR::Z::Machine::freeHighWordRegister(TR::Instruction *currentInstruction, TR::R
          }
       TR_ASSERT(spareReg != NULL, "freeHighWordRegister: blocked, must find a spareReg");
 
-      cursor = self()->registerCopy(currentInstruction, TR_HPR, targetRegisterHW, spareReg, self()->cg(), instFlags);
+      cursor = self()->registerCopy(currentInstruction, TR_HPR, targetRegisterHW, spareReg, self()->cg());
       //TR_ASSERTC( spareReg->isHighWordRegister(),self()->cg()->comp(), "\nfreeHighWordRegister: spareReg is not an HPR?\n");
       spareReg->setAssignedRegister(virtRegHW);
       spareReg->setState(TR::RealRegister::Assigned);
@@ -3794,7 +3775,7 @@ OMR::Z::Machine::freeHighWordRegister(TR::Instruction *currentInstruction, TR::R
       {
       if (spareReg)
          {
-         cursor = self()->registerCopy(currentInstruction, TR_HPR, targetRegisterHW, spareReg, self()->cg(), instFlags);
+         cursor = self()->registerCopy(currentInstruction, TR_HPR, targetRegisterHW, spareReg, self()->cg());
          //TR_ASSERTC( spareReg->isHighWordRegister(),self()->cg()->comp(), "\nfreeHighWordRegister: spareReg is not an HPR?\n");
          spareReg->setAssignedRegister(virtRegHW);
          spareReg->setState(TR::RealRegister::Assigned);
@@ -4522,8 +4503,7 @@ OMR::Z::Machine::isAssignable(TR::Register * virtReg, TR::RealRegister * realReg
 TR::Instruction *
 OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                            *currentInstruction,
                                          TR::Register                               *virtualRegister,
-                                         TR::RealRegister::RegNum  registerNumber,
-                                         flags32_t                                  instFlags)
+                                         TR::RealRegister::RegNum  registerNumber)
    {
    TR::RealRegister * targetRegister = _registerFile[registerNumber];
    TR::RealRegister * realReg = virtualRegister->getAssignedRealRegister();
@@ -4697,7 +4677,7 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
             virtualRegister->block();
             targetRegister->setState(TR::RealRegister::Blocked);
             // free up this highword register by either spilling it or moving it
-            cursor = self()->freeHighWordRegister(currentInstruction, targetRegisterHW, instFlags);
+            cursor = self()->freeHighWordRegister(currentInstruction, targetRegisterHW);
             virtualRegister->unblock();
             targetRegister->setState(TR::RealRegister::Free);
             }
@@ -4728,7 +4708,7 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
 
          // todo: HW copy, LW copy or 64bit?
          // if targetReg is HW, copy need to be HW
-         cursor = self()->registerCopy(currentInstruction, currentAssignedRegisterRK, currentAssignedRegister, targetRegister, self()->cg(), instFlags);
+         cursor = self()->registerCopy(currentInstruction, currentAssignedRegisterRK, currentAssignedRegister, targetRegister, self()->cg());
          if (enableHighWordRA && virtualRegister->is64BitReg())
             {
             currentAssignedRegisterHW->setState(TR::RealRegister::Free);
@@ -4810,7 +4790,7 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
                currentTargetVirtual->block();
                spareReg->block(); //to do: is this necessary? only need to block HPR?
                // free up this highword register by either spilling it or moving it
-               cursor = self()->freeHighWordRegister(currentInstruction, targetRegisterHW, instFlags);
+               cursor = self()->freeHighWordRegister(currentInstruction, targetRegisterHW);
                spareReg->unblock();
                currentTargetVirtual->unblock();
                virtualRegister->unblock();
@@ -4888,8 +4868,8 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
                TR_ASSERT(spareReg!=NULL, "coerce reg - blocked, sparereg cannot be NULL.");
                self()->cg()->traceRegAssigned(currentTargetVirtual, spareReg);
 
-               cursor = self()->registerCopy(currentInstruction, currentTargetVirtualRK, targetRegister, spareReg, self()->cg(), instFlags);
-               cursor = self()->registerCopy(currentInstruction, currentAssignedRegisterRK, currentAssignedRegister, targetRegister, self()->cg(), instFlags);
+               cursor = self()->registerCopy(currentInstruction, currentTargetVirtualRK, targetRegister, spareReg, self()->cg());
+               cursor = self()->registerCopy(currentInstruction, currentAssignedRegisterRK, currentAssignedRegister, targetRegister, self()->cg());
 
                spareReg->setState(TR::RealRegister::Assigned);
                currentTargetVirtual->setAssignedRegister(spareReg);
@@ -4919,7 +4899,7 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
             self()->cg()->traceRegAssigned(currentTargetVirtual, currentAssignedRegister);
             if (enableHighWordRA)
                {
-               cursor = self()->registerExchange(currentInstruction, currentAssignedRegisterRK, targetRegister, currentAssignedRegister, spareReg, self()->cg(), instFlags);
+               cursor = self()->registerExchange(currentInstruction, currentAssignedRegisterRK, targetRegister, currentAssignedRegister, spareReg, self()->cg());
                if (currentTargetVirtual->is64BitReg())
                   {
                   //currentAssignedRegister->getHighWordRegister()->setState(TR::RealRegister::Blocked);  //not necessary
@@ -4929,7 +4909,7 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
             else
                {
                // Vector coercion most likely to take this path.
-            cursor = self()->registerExchange(currentInstruction, rk, targetRegister, currentAssignedRegister, spareReg, self()->cg(), instFlags);
+            cursor = self()->registerExchange(currentInstruction, rk, targetRegister, currentAssignedRegister, spareReg, self()->cg());
                }
             currentAssignedRegister->setState(TR::RealRegister::Blocked);
             currentAssignedRegister->setAssignedRegister(currentTargetVirtual);
@@ -4942,7 +4922,7 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
          self()->cg()->traceRegAssigned(currentTargetVirtual, spareReg);
 
          // virtual register is not assigned yet, copy register
-         cursor = self()->registerCopy(currentInstruction, currentTargetVirtualRK, targetRegister, spareReg, self()->cg(), instFlags);
+         cursor = self()->registerCopy(currentInstruction, currentTargetVirtualRK, targetRegister, spareReg, self()->cg());
 
          spareReg->setState(TR::RealRegister::Assigned);
          spareReg->setAssignedRegister(currentTargetVirtual);
@@ -5015,7 +4995,7 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
 
          // free this spill slot up first
          // block virtual reg?
-         cursor = self()->freeHighWordRegister(currentInstruction, targetRegister, instFlags);
+         cursor = self()->freeHighWordRegister(currentInstruction, targetRegister);
 
          if (virtualRegister->is64BitReg() && !virtualRegister->isPlaceholderReg())
             {
@@ -5132,7 +5112,7 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
                {
                // the 32-bit virtual register is currently assigned to a real register
                // do register copy
-               cursor = self()->registerCopy(currentInstruction, currentAssignedRegisterRK, currentAssignedRegister, targetRegister, self()->cg(), instFlags);
+               cursor = self()->registerCopy(currentInstruction, currentAssignedRegisterRK, currentAssignedRegister, targetRegister, self()->cg());
                currentAssignedRegister->setState(TR::RealRegister::Free);
                currentAssignedRegister->setAssignedRegister(NULL);
                }
@@ -5226,7 +5206,7 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
                      currentTargetVirtual->block();
                      spareReg->block(); //to do: is this necessary? only need to block HPR?
                      // free up this highword register by either spilling it or moving it
-                     cursor = self()->freeHighWordRegister(currentInstruction, targetRegisterHW, instFlags);
+                     cursor = self()->freeHighWordRegister(currentInstruction, targetRegisterHW);
                      spareReg->unblock();
                      currentTargetVirtual->unblock();
                      virtualRegister->unblock();
@@ -5240,7 +5220,7 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
                {
                self()->cg()->traceRegAssigned(currentTargetVirtual, spareReg);
 
-               cursor = self()->registerCopy(currentInstruction, currentTargetVirtualRK, targetRegister, spareReg, self()->cg(), instFlags);
+               cursor = self()->registerCopy(currentInstruction, currentTargetVirtualRK, targetRegister, spareReg, self()->cg());
                if (enableHighWordRA && currentTargetVirtual->is64BitReg())
                   {
                   spareReg->getHighWordRegister()->setState(TR::RealRegister::Assigned);
@@ -5255,7 +5235,7 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
                currentTargetVirtual->setAssignedRegister(spareReg);
                }
 
-            cursor = self()->registerCopy(currentInstruction, currentAssignedRegisterRK, currentAssignedRegister, targetRegister, self()->cg(), instFlags);
+            cursor = self()->registerCopy(currentInstruction, currentAssignedRegisterRK, currentAssignedRegister, targetRegister, self()->cg());
             currentAssignedRegister->setState(TR::RealRegister::Unlatched);
             currentAssignedRegister->setAssignedRegister(NULL);
             if (enableHighWordRA && virtualRegister->is64BitReg())
@@ -5287,13 +5267,13 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
                self()->cg()->traceRegAssigned(currentTargetVirtual, currentAssignedRegister);
                self()->cg()->setRegisterAssignmentFlag(TR_RegisterSpilled);
 
-               cursor = self()->registerCopy(currentInstruction, rk, currentAssignedRegister, targetRegister, self()->cg(), instFlags);
+               cursor = self()->registerCopy(currentInstruction, rk, currentAssignedRegister, targetRegister, self()->cg());
                currentAssignedRegister->setState(TR::RealRegister::Unlatched);
                currentAssignedRegister->setAssignedRegister(NULL);
                }
             else
                {
-               cursor = self()->registerExchange(currentInstruction, rk, targetRegister, currentAssignedRegister, spareReg, self()->cg(), instFlags);
+               cursor = self()->registerExchange(currentInstruction, rk, targetRegister, currentAssignedRegister, spareReg, self()->cg());
                currentAssignedRegister->setState(TR::RealRegister::Assigned);
                currentAssignedRegister->setAssignedRegister(currentTargetVirtual);
                currentTargetVirtual->setAssignedRegister(currentAssignedRegister);
@@ -5407,7 +5387,7 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
                      currentTargetVirtual->block();
                      spareReg->block(); //to do: is this necessary? only need to block HPR?
                      // free up this highword register by either spilling it or moving it
-                     cursor = self()->freeHighWordRegister(currentInstruction, targetRegisterHW, instFlags);
+                     cursor = self()->freeHighWordRegister(currentInstruction, targetRegisterHW);
                      spareReg->unblock();
                      currentTargetVirtual->unblock();
                      virtualRegister->unblock();
@@ -5422,7 +5402,7 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
                self()->cg()->resetRegisterAssignmentFlag(TR_RegisterSpilled);
                self()->cg()->traceRegAssigned(currentTargetVirtual, spareReg);
 
-               cursor = self()->registerCopy(currentInstruction, currentTargetVirtualRK, targetRegister, spareReg, self()->cg(), instFlags);
+               cursor = self()->registerCopy(currentInstruction, currentTargetVirtualRK, targetRegister, spareReg, self()->cg());
                spareReg->setState(TR::RealRegister::Assigned);
                spareReg->setAssignedRegister(currentTargetVirtual);
 
@@ -5500,7 +5480,7 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
 
          // todo: HW copy, LW copy or 64bit?
          // if targetReg is HW, copy need to be HW
-         cursor = self()->registerCopy(currentInstruction, currentAssignedRegisterRK, currentAssignedRegister, targetRegister, self()->cg(), instFlags);
+         cursor = self()->registerCopy(currentInstruction, currentAssignedRegisterRK, currentAssignedRegister, targetRegister, self()->cg());
          if (enableHighWordRA && virtualRegister->is64BitReg())
             {
             currentAssignedRegisterHW->setState(TR::RealRegister::Free);

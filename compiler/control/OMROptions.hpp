@@ -684,7 +684,7 @@ enum TR_CompilationOptions
    // Available                                       = 0x04000000 + 19,
    // Available                                       = 0x08000000 + 19,
    TR_UpgradeBootstrapAtWarm                          = 0x10000000 + 19,
-   TR_ForceLargeRAMoves                               = 0x20000000 + 19,  // force 64 register moves in RA
+   // Available                                       = 0x20000000 + 19,
    // Available                                       = 0x40000000 + 19,
    // Available                                       = 0x80000000 + 19,
 

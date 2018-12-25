@@ -788,7 +788,6 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"forceFullSpeedDebug", "M\tForce JIT to pretend that debug mode is activated",
     SET_OPTION_BIT(TR_FullSpeedDebug), "P", NOT_IN_SUBSET},
    {"forceIEEEDivideByZeroException", "O\tForce IEEE divide by zero exception bit on when performing DFP division", SET_OPTION_BIT(TR_ForceIEEEDivideByZeroException), "F"},
-   {"forceLargeRAMoves", "O\tAlways use 64 bit register moves in RA", SET_OPTION_BIT(TR_ForceLargeRAMoves), "F"},
    {"forceLoadAOT", "M\tForce loading of relocatable code outside of class load phase from the shared cache",
     SET_OPTION_BIT(TR_ForceLoadAOT), "P", NOT_IN_SUBSET},
    {"forceNonSMP",                           "D\tforce UniP code generation.", SET_OPTION_BIT(TR_ForceNonSMP), "F"},

@@ -151,7 +151,7 @@ OMR::Z::Machine::registerCopy(TR::Instruction *precedingInstruction,
          break;
       case TR_GPR:
          currentInstruction =
-            generateRRInstruction(cg, (comp->getOption(TR_ForceLargeRAMoves)) ? TR::InstOpCode::LGR : TR::InstOpCode::getLoadRegOpCode(), currentNode, targetReg, sourceReg, precedingInstruction);
+            generateRRInstruction(cg, TR::InstOpCode::getLoadRegOpCode(), currentNode, targetReg, sourceReg, precedingInstruction);
          if (enableHighWordRA && targetRealReg && sourceRealReg)
             TR_ASSERT( !targetRealReg->isHighWordRegister() && !sourceRealReg->isHighWordRegister(), "\nREG COPY: LR with HPR?\n");
          cg->traceRAInstruction(currentInstruction);
@@ -319,9 +319,6 @@ OMR::Z::Machine::registerExchange(TR::Instruction      *precedingInstruction,
       TR::InstOpCode::Mnemonic opLoadReg = TR::InstOpCode::getLoadRegOpCode();
       TR::InstOpCode::Mnemonic opLoad    = TR::InstOpCode::getLoadOpCode();
       TR::InstOpCode::Mnemonic opStore   = TR::InstOpCode::getStoreOpCode();
-
-      if (comp->getOption(TR_ForceLargeRAMoves))
-         rk = TR_GPR64;
 
       bool srcRegIsHPR = sourceReg->isHighWordRegister();
       bool tgtRegIsHPR = targetReg->isHighWordRegister();
@@ -2326,8 +2323,7 @@ OMR::Z::Machine::freeBestRegisterPair(TR::RealRegister ** firstReg, TR::RealRegi
    if (bestVirtCandidateLow != NULL)
       {
          TR::InstOpCode::Mnemonic opCodeLow;
-         if (comp->getOption(TR_ForceLargeRAMoves) ||
-             bestVirtCandidateLow->is64BitReg() ||
+         if (bestVirtCandidateLow->is64BitReg() ||
              bestVirtCandidateLow->getKind() == TR_GPR64)
             {
             opCodeLow = TR::InstOpCode::LG;
@@ -2470,8 +2466,7 @@ OMR::Z::Machine::freeBestRegisterPair(TR::RealRegister ** firstReg, TR::RealRegi
    if (bestVirtCandidateHigh != NULL)
       {
          TR::InstOpCode::Mnemonic opCodeHigh;
-         if (comp->getOption(TR_ForceLargeRAMoves) ||
-             bestVirtCandidateHigh->is64BitReg() ||
+         if (bestVirtCandidateHigh->is64BitReg() ||
              bestVirtCandidateHigh->getKind() == TR_GPR64)
             {
             opCodeHigh = TR::InstOpCode::LG;
@@ -4023,7 +4018,7 @@ OMR::Z::Machine::spillRegister(TR::Instruction * currentInstruction, TR::Registe
          }
        else if (!containsInternalPointer)
          {
-         if ((enableHighWordRA && virtReg->is64BitReg()) || comp->getOption(TR_ForceLargeRAMoves))
+         if (enableHighWordRA && virtReg->is64BitReg())
             {
             location = self()->cg()->allocateSpill(8,virtReg->containsCollectedReference(), NULL, true);
             }
@@ -4041,14 +4036,7 @@ OMR::Z::Machine::spillRegister(TR::Instruction * currentInstruction, TR::Registe
            self()->cg()->traceRegisterAssignment("\nSpilling internal pointer %s to (%p)\n", debugObj->getName(virtReg),location);
          }
 
-       if (comp->getOption(TR_ForceLargeRAMoves))
-         {
-         opCode = TR::InstOpCode::LG;
-         }
-       else
-         {
-         opCode = TR::InstOpCode::getLoadOpCode();
-         }
+       opCode = TR::InstOpCode::getLoadOpCode();
 
        if (enableHighWordRA)
          {
@@ -4341,11 +4329,7 @@ OMR::Z::Machine::reverseSpillState(TR::Instruction      *currentInstruction,
       case TR_GPR:
          dataSize = TR::Compiler->om.sizeofReferenceAddress();
          opCode = TR::InstOpCode::getStoreOpCode();
-         if (comp->getOption(TR_ForceLargeRAMoves))
-            {
-            dataSize = 8;
-            opCode = TR::InstOpCode::STG;
-            }
+
          if (enableHighWordRA)
             {
             if (spilledRegister->assignToHPR() || targetRegister->isHighWordRegister())

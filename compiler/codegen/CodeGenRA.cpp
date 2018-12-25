@@ -427,7 +427,7 @@ OMR::CodeGenerator::allocateInternalPointerSpill(TR::AutomaticSymbol *pinningArr
       TR::AutomaticSymbol *spillSymbol =
          TR::AutomaticSymbol::createInternalPointer(self()->trHeapMemory(),
                                                    TR::Address,
-                                                   self()->comp()->getOption(TR_ForceLargeRAMoves) ? 8 : TR::Compiler->om.sizeofReferenceAddress(),
+                                                   TR::Compiler->om.sizeofReferenceAddress(),
                                                    self()->fe());
       spillSymbol->setSpillTempAuto();
       spillSymbol->setPinningArrayPointer(pinningArrayPointer);
@@ -519,16 +519,14 @@ OMR::CodeGenerator::allocateSpill(int32_t dataSize, bool containsCollectedRefere
       {
       // Must allocate a new one
       //
-      int spillSize;
-      const int MIN_SPILL_SIZE = (self()->comp()->getOption(TR_ForceLargeRAMoves)) ? 8 : TR::Compiler->om.sizeofReferenceAddress();
-      int32_t slot;
-      spillSize = std::max(dataSize, MIN_SPILL_SIZE);
+      int spillSize = std::max(dataSize, static_cast<int32_t>(TR::Compiler->om.sizeofReferenceAddress()));
+
       TR_ASSERT(4 <= spillSize && spillSize <= 16, "Spill temps should be between 4 and 16 bytes");
       spillSymbol = TR::AutomaticSymbol::create(self()->trHeapMemory(),TR::NoType,spillSize);
       spillSymbol->setSpillTempAuto();
       self()->comp()->getMethodSymbol()->addAutomatic(spillSymbol);
       spill = new (self()->trHeapMemory()) TR_BackingStore(self()->comp()->getSymRefTab(), spillSymbol, 0);
-      slot = spill->getSymbolReference()->getCPIndex();
+      int32_t slot = spill->getSymbolReference()->getCPIndex();
       slot = (slot < 0) ? (-slot - 1) : slot;
       self()->comp()->getJittedMethodSymbol()->getAutoSymRefs(slot).add(spill->getSymbolReference());
       _allSpillList.push_front(spill);

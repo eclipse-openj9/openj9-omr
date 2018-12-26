@@ -97,6 +97,7 @@ OMR::ARM64::TreeEvaluator::fconstEvaluator(TR::Node *node, TR::CodeGenerator *cg
    generateTrg1Src1Instruction(cg, TR::InstOpCode::fmov_wtos, node, trgReg, tmpReg);
    cg->stopUsingRegister(tmpReg);
 
+   node->setRegister(trgReg);
    return trgReg;
    }
 
@@ -116,6 +117,7 @@ OMR::ARM64::TreeEvaluator::dconstEvaluator(TR::Node *node, TR::CodeGenerator *cg
    generateTrg1Src1Instruction(cg, TR::InstOpCode::fmov_xtod, node, trgReg, tmpReg);
    cg->stopUsingRegister(tmpReg);
 
+   node->setRegister(trgReg);
    return trgReg;
    }
 

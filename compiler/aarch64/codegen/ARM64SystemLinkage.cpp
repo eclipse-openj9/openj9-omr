@@ -24,6 +24,8 @@
 #include "codegen/ARM64Instruction.hpp"
 #include "codegen/GenerateInstructions.hpp"
 #include "codegen/MemoryReference.hpp"
+#include "env/StackMemoryRegion.hpp"
+#include "il/Node_inlines.hpp"
 #include "il/symbol/AutomaticSymbol.hpp"
 
 
@@ -172,13 +174,22 @@ TR::ARM64SystemLinkage::getRightToLeft()
    }
 
 
-static void mapSingleParameter(TR::ParameterSymbol *parameter, uint32_t &stackIndex)
+static void mapSingleParameter(TR::ParameterSymbol *parameter, uint32_t &stackIndex, bool inCalleeFrame)
    {
-   auto size = parameter->getSize();
-   auto alignment = size <= 4 ? 4 : 8;
-   stackIndex = (stackIndex + alignment - 1) & (~(alignment - 1));
-   parameter->setParameterOffset(stackIndex);
-   stackIndex += size;
+   if (inCalleeFrame)
+      {
+      auto size = parameter->getSize();
+      auto alignment = size <= 4 ? 4 : 8;
+      stackIndex = (stackIndex + alignment - 1) & (~(alignment - 1));
+      parameter->setParameterOffset(stackIndex);
+      stackIndex += size;
+      }
+   else
+      { // in caller's frame -- always 8-byte aligned
+      TR_ASSERT((stackIndex & 7) == 0, "Unaligned stack index.");
+      parameter->setParameterOffset(stackIndex);
+      stackIndex += 8;
+      }
    }
 
 
@@ -189,6 +200,8 @@ TR::ARM64SystemLinkage::mapStack(TR::ResolvedMethodSymbol *method)
    uint32_t stackIndex = 0;
    ListIterator<TR::AutomaticSymbol> automaticIterator(&method->getAutomaticList());
    TR::AutomaticSymbol *localCursor = automaticIterator.getFirst();
+
+   stackIndex = 8; // [sp+0] is for link register
 
    // map non-long/double automatics
    while (localCursor != NULL)
@@ -237,7 +250,6 @@ TR::ARM64SystemLinkage::mapStack(TR::ResolvedMethodSymbol *method)
          stackIndex += 8;
          }
       }
-   stackIndex += 8; // for link register
 
    /*
     * Because the rest of the code generator currently expects **all** arguments
@@ -265,7 +277,7 @@ TR::ARM64SystemLinkage::mapStack(TR::ResolvedMethodSymbol *method)
             if (nextIntArgReg < getProperties().getNumIntArgRegs())
                {
                nextIntArgReg++;
-               mapSingleParameter(parameter, stackIndex);
+               mapSingleParameter(parameter, stackIndex, true);
                }
             else
                {
@@ -277,7 +289,7 @@ TR::ARM64SystemLinkage::mapStack(TR::ResolvedMethodSymbol *method)
             if (nextFltArgReg < getProperties().getNumFloatArgRegs())
                {
                nextFltArgReg++;
-               mapSingleParameter(parameter, stackIndex);
+               mapSingleParameter(parameter, stackIndex, true);
                }
             else
                {
@@ -316,7 +328,7 @@ TR::ARM64SystemLinkage::mapStack(TR::ResolvedMethodSymbol *method)
                }
             else
                {
-               mapSingleParameter(parameter, stackIndex);
+               mapSingleParameter(parameter, stackIndex, false);
                }
             break;
          case TR::Float:
@@ -327,7 +339,7 @@ TR::ARM64SystemLinkage::mapStack(TR::ResolvedMethodSymbol *method)
                }
             else
                {
-               mapSingleParameter(parameter, stackIndex);
+               mapSingleParameter(parameter, stackIndex, false);
                }
             break;
          case TR::Aggregate:
@@ -380,8 +392,11 @@ TR::ARM64SystemLinkage::createPrologue(TR::Instruction *cursor, List<TR::Paramet
       }
 
    // save link register (x30)
-   TR::MemoryReference *stackSlot = new (trHeapMemory()) TR::MemoryReference(sp, bodySymbol->getLocalMappingCursor(), codeGen);
-   cursor = generateMemSrc1Instruction(cg(), TR::InstOpCode::strimmx, firstNode, stackSlot, machine->getRealRegister(TR::RealRegister::x30), cursor);
+   if (machine->getLinkRegisterKilled())
+      {
+      TR::MemoryReference *stackSlot = new (trHeapMemory()) TR::MemoryReference(sp, 0, codeGen);
+      cursor = generateMemSrc1Instruction(cg(), TR::InstOpCode::strimmx, firstNode, stackSlot, machine->getRealRegister(TR::RealRegister::x30), cursor);
+      }
 
    // spill argument registers
    int32_t nextIntArgReg = 0;
@@ -434,7 +449,7 @@ TR::ARM64SystemLinkage::createPrologue(TR::Instruction *cursor, List<TR::Paramet
       }
 
    // save callee-saved registers
-   uint32_t offset = bodySymbol->getLocalMappingCursor() + 8; // +8 for LR
+   uint32_t offset = bodySymbol->getLocalMappingCursor();
    for (int r = TR::RealRegister::x19; r <= TR::RealRegister::x28; r++)
       {
       TR::RealRegister *rr = machine->getRealRegister((TR::RealRegister::RegNum)r);
@@ -469,7 +484,7 @@ TR::ARM64SystemLinkage::createEpilogue(TR::Instruction *cursor)
    TR::RealRegister *sp = machine->getRealRegister(properties.getStackPointerRegister());
 
    // restore callee-saved registers
-   uint32_t offset = bodySymbol->getLocalMappingCursor() + 8; // +8 for LR
+   uint32_t offset = bodySymbol->getLocalMappingCursor();
    for (int r = TR::RealRegister::x19; r <= TR::RealRegister::x28; r++)
       {
       TR::RealRegister *rr = machine->getRealRegister((TR::RealRegister::RegNum)r);
@@ -493,8 +508,11 @@ TR::ARM64SystemLinkage::createEpilogue(TR::Instruction *cursor)
 
    // restore link register (x30)
    TR::RealRegister *lr = machine->getRealRegister(TR::RealRegister::lr);
-   TR::MemoryReference *stackSlot = new (trHeapMemory()) TR::MemoryReference(sp, bodySymbol->getLocalMappingCursor(), codeGen);
-   cursor = generateTrg1MemInstruction(cg(), TR::InstOpCode::ldrimmx, lastNode, lr, stackSlot, cursor);
+   if (machine->getLinkRegisterKilled())
+      {
+      TR::MemoryReference *stackSlot = new (trHeapMemory()) TR::MemoryReference(sp, 0, codeGen);
+      cursor = generateTrg1MemInstruction(cg(), TR::InstOpCode::ldrimmx, lastNode, lr, stackSlot, cursor);
+      }
 
    // remove space for preserved registers
    uint32_t frameSize = codeGen->getFrameSizeInBytes();
@@ -516,17 +534,307 @@ int32_t TR::ARM64SystemLinkage::buildArgs(TR::Node *callNode,
                                        TR::RegisterDependencyConditions *dependencies)
 
    {
-   TR_ASSERT(false, "Not implemented yet.");
+   const TR::ARM64LinkageProperties &properties = getProperties();
+   TR::ARM64MemoryArgument *pushToMemory = NULL;
+   TR::Register *argMemReg;
+   TR::Register *tempReg;
+   int32_t argIndex = 0;
+   int32_t numMemArgs = 0;
+   int32_t argSize = 0;
+   int32_t numIntegerArgs = 0;
+   int32_t numFloatArgs = 0;
+   int32_t totalSize;
+   int32_t i;
 
-   return 0;
+   TR::Node *child;
+   TR::DataType childType;
+   TR::DataType resType = callNode->getType();
+
+   uint32_t firstArgumentChild = callNode->getFirstArgumentIndex();
+
+   /* Step 1 - figure out how many arguments are going to be spilled to memory i.e. not in registers */
+   for (i = firstArgumentChild; i < callNode->getNumChildren(); i++)
+      {
+      child = callNode->getChild(i);
+      childType = child->getDataType();
+
+      switch (childType)
+         {
+         case TR::Int8:
+         case TR::Int16:
+         case TR::Int32:
+         case TR::Int64:
+         case TR::Address:
+            if (numIntegerArgs >= properties.getNumIntArgRegs())
+               numMemArgs++;
+            numIntegerArgs++;
+            break;
+
+         case TR::Float:
+         case TR::Double:
+            if (numFloatArgs >= properties.getNumFloatArgRegs())
+                  numMemArgs++;
+            numFloatArgs++;
+            break;
+
+         default:
+            TR_ASSERT(false, "Argument type %s is not supported\n", childType.toString());
+         }
+      }
+
+   // From here, down, any new stack allocations will expire / die when the function returns
+   TR::StackMemoryRegion stackMemoryRegion(*trMemory());
+   /* End result of Step 1 - determined number of memory arguments! */
+   if (numMemArgs > 0)
+      {
+      pushToMemory = new (trStackMemory()) TR::ARM64MemoryArgument[numMemArgs];
+
+      argMemReg = cg()->allocateRegister();
+      }
+
+   totalSize = numMemArgs * 8;
+   // align to 16-byte boundary
+   totalSize = (totalSize + 15) & (~15);
+
+   numIntegerArgs = 0;
+   numFloatArgs = 0;
+
+   for (i = firstArgumentChild; i < callNode->getNumChildren(); i++)
+      {
+      TR::MemoryReference *mref = NULL;
+      TR::Register *argRegister;
+      TR::InstOpCode::Mnemonic op;
+
+      child = callNode->getChild(i);
+      childType = child->getDataType();
+
+      switch (childType)
+         {
+         case TR::Int8:
+         case TR::Int16:
+         case TR::Int32:
+         case TR::Int64:
+         case TR::Address:
+            if (childType == TR::Address)
+               argRegister = pushAddressArg(child);
+            else if (childType == TR::Int64)
+               argRegister = pushLongArg(child);
+            else
+               argRegister = pushIntegerWordArg(child);
+
+            if (numIntegerArgs < properties.getNumIntArgRegs())
+               {
+               if (!cg()->canClobberNodesRegister(child, 0))
+                  {
+                  if (argRegister->containsCollectedReference())
+                     tempReg = cg()->allocateCollectedReferenceRegister();
+                  else
+                     tempReg = cg()->allocateRegister();
+                  generateMovInstruction(cg(), callNode, tempReg, argRegister);
+                  argRegister = tempReg;
+                  }
+               if (numIntegerArgs == 0 &&
+                  (resType.isAddress() || resType.isInt32() || resType.isInt64()))
+                  {
+                  TR::Register *resultReg;
+                  if (resType.isAddress())
+                     resultReg = cg()->allocateCollectedReferenceRegister();
+                  else
+                     resultReg = cg()->allocateRegister();
+
+                  dependencies->addPreCondition(argRegister, TR::RealRegister::x0);
+                  dependencies->addPostCondition(resultReg, TR::RealRegister::x0);
+                  }
+               else
+                  {
+                  addDependency(dependencies, argRegister, properties.getIntegerArgumentRegister(numIntegerArgs), TR_GPR, cg());
+                  }
+               }
+            else
+               {
+               // numIntegerArgs >= properties.getNumIntArgRegs()
+               if (childType == TR::Address || childType == TR::Int64)
+                  {
+                  op = TR::InstOpCode::strpostx;
+                  }
+               else
+                  {
+                  op = TR::InstOpCode::strpostw;
+                  }
+               mref = getOutgoingArgumentMemRef(argMemReg, argRegister, op, pushToMemory[argIndex++]);
+               argSize += 8; // always 8-byte aligned
+               }
+            numIntegerArgs++;
+            break;
+
+         case TR::Float:
+         case TR::Double:
+            if (childType == TR::Float)
+               argRegister = pushFloatArg(child);
+            else
+               argRegister = pushDoubleArg(child);
+
+            if (numFloatArgs < properties.getNumFloatArgRegs())
+               {
+               if (!cg()->canClobberNodesRegister(child, 0))
+                  {
+                  tempReg = cg()->allocateRegister(TR_FPR);
+                  op = (childType == TR::Float) ? TR::InstOpCode::fmovs : TR::InstOpCode::fmovd;
+                  generateTrg1Src1Instruction(cg(), op, callNode, tempReg, argRegister);
+                  argRegister = tempReg;
+                  }
+               if ((numFloatArgs == 0 && resType.isFloatingPoint()))
+                  {
+                  TR::Register *resultReg;
+                  if (resType.getDataType() == TR::Float)
+                     resultReg = cg()->allocateSinglePrecisionRegister();
+                  else
+                     resultReg = cg()->allocateRegister(TR_FPR);
+
+                  dependencies->addPreCondition(argRegister, TR::RealRegister::v0);
+                  dependencies->addPostCondition(resultReg, TR::RealRegister::v0);
+                  }
+               else
+                  {
+                  addDependency(dependencies, argRegister, properties.getFloatArgumentRegister(numFloatArgs), TR_FPR, cg());
+                  }
+               }
+            else
+               {
+               // numFloatArgs >= properties.getNumFloatArgRegs()
+               if (childType == TR::Double)
+                  {
+                  op = TR::InstOpCode::vstrpostd;
+                  }
+               else
+                  {
+                  op = TR::InstOpCode::vstrposts;
+                  }
+               mref = getOutgoingArgumentMemRef(argMemReg, argRegister, op, pushToMemory[argIndex++]);
+               argSize += 8; // always 8-byte aligned
+               }
+            numFloatArgs++;
+            break;
+         } // end of switch
+      } // end of for
+
+   // NULL deps for non-preserved and non-system regs
+   while (numIntegerArgs < properties.getNumIntArgRegs())
+      {
+      if (numIntegerArgs == 0 && resType.isAddress())
+         {
+         dependencies->addPreCondition(cg()->allocateRegister(), properties.getIntegerArgumentRegister(0));
+         dependencies->addPostCondition(cg()->allocateCollectedReferenceRegister(), properties.getIntegerArgumentRegister(0));
+         }
+      else
+         {
+         addDependency(dependencies, NULL, properties.getIntegerArgumentRegister(numIntegerArgs), TR_GPR, cg());
+         }
+      numIntegerArgs++;
+      }
+
+   int32_t floatRegsUsed = (numFloatArgs > properties.getNumFloatArgRegs()) ? properties.getNumFloatArgRegs() : numFloatArgs;
+   for (i = (TR::RealRegister::RegNum)((uint32_t)TR::RealRegister::v0 + floatRegsUsed); i <= TR::RealRegister::LastFPR; i++)
+      {
+      if (!properties.getPreserved((TR::RealRegister::RegNum)i))
+         {
+         // NULL dependency for non-preserved regs
+         addDependency(dependencies, NULL, (TR::RealRegister::RegNum)i, TR_FPR, cg());
+         }
+      }
+
+   if (numMemArgs > 0)
+      {
+      TR::RealRegister *sp = cg()->machine()->getRealRegister(properties.getStackPointerRegister());
+      generateTrg1Src1ImmInstruction(cg(), TR::InstOpCode::subimmx, callNode, argMemReg, sp, totalSize);
+
+      for (argIndex = 0; argIndex < numMemArgs; argIndex++)
+         {
+         TR::Register *aReg = pushToMemory[argIndex].argRegister;
+         generateMemSrc1Instruction(cg(), pushToMemory[argIndex].opCode, callNode, pushToMemory[argIndex].argMemory, aReg);
+         cg()->stopUsingRegister(aReg);
+         }
+
+      cg()->stopUsingRegister(argMemReg);
+      }
+
+   return totalSize;
    }
 
 
 TR::Register *TR::ARM64SystemLinkage::buildDirectDispatch(TR::Node *callNode)
    {
-   TR_ASSERT(false, "Not implemented yet.");
+   TR::SymbolReference *callSymRef = callNode->getSymbolReference();
 
-   return NULL;
+   const TR::ARM64LinkageProperties &pp = getProperties();
+   TR::RealRegister *sp = cg()->machine()->getRealRegister(pp.getStackPointerRegister());
+
+   TR::RegisterDependencyConditions *dependencies =
+      new (trHeapMemory()) TR::RegisterDependencyConditions(
+         pp.getNumberOfDependencyGPRegisters(),
+         pp.getNumberOfDependencyGPRegisters(), trMemory());
+
+   int32_t totalSize = buildArgs(callNode, dependencies);
+   if (totalSize > 0)
+      {
+      if (constantIsUnsignedImm12(totalSize))
+         {
+         generateTrg1Src1ImmInstruction(cg(), TR::InstOpCode::subimmx, callNode, sp, sp, totalSize);
+         }
+      else
+         {
+         TR_ASSERT_FATAL(false, "Too many arguments.");
+         }
+      }
+
+   TR::MethodSymbol *callSymbol = callSymRef->getSymbol()->castToMethodSymbol();
+   generateImmSymInstruction(cg(), TR::InstOpCode::bl, callNode,
+      (uintptr_t)callSymbol->getMethodAddress(),
+      dependencies, callSymRef ? callSymRef : callNode->getSymbolReference(), NULL);
+
+   cg()->machine()->setLinkRegisterKilled(true);
+
+   if (totalSize > 0)
+      {
+      if (constantIsUnsignedImm12(totalSize))
+         {
+         generateTrg1Src1ImmInstruction(cg(), TR::InstOpCode::addimmx, callNode, sp, sp, totalSize);
+         }
+      else
+         {
+         TR_ASSERT_FATAL(false, "Too many arguments.");
+         }
+      }
+
+   TR::Register *retReg;
+   switch(callNode->getOpCodeValue())
+      {
+      case TR::icall:
+      case TR::iucall:
+         retReg = dependencies->searchPostConditionRegister(
+                     pp.getIntegerReturnRegister());
+         break;
+      case TR::lcall:
+      case TR::lucall:
+      case TR::acall:
+         retReg = dependencies->searchPostConditionRegister(
+                     pp.getLongReturnRegister());
+         break;
+      case TR::fcall:
+      case TR::dcall:
+         retReg = dependencies->searchPostConditionRegister(
+                     pp.getFloatReturnRegister());
+         break;
+      case TR::call:
+         retReg = NULL;
+         break;
+      default:
+         retReg = NULL;
+         TR_ASSERT(false, "Unsupported direct call Opcode.");
+      }
+
+   callNode->setRegister(retReg);
+   return retReg;
    }
 
 

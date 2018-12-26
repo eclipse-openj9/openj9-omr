@@ -167,3 +167,160 @@ INSTANTIATE_TEST_CASE_P(DivArithmeticTest, Int32Arithmetic, ::testing::Combine(
     ::testing::Values(
         std::make_tuple("idiv", idiv),
         std::make_tuple("irem", irem) )));
+
+template <typename T>
+bool smallFp_filter(std::tuple<T, T> a)
+   {
+   // workaround: avoid failure caused by snprintf("%f")
+   auto a0 = std::get<0>(a);
+   auto a1 = std::get<1>(a);
+   return ((abs(a0) < 0.01 && a0 != 0.0) || (abs(a1) < 0.01 && a1 != 0.0));
+   }
+
+float fadd(float l, float r) {
+    return l+r;
+}
+
+float fsub(float l, float r) {
+    return l-r;
+}
+
+float fmul(float l, float r) {
+    return l*r;
+}
+
+float fdiv(float l, float r) {
+    return l/r;
+}
+
+class FloatArithmetic : public TRTest::BinaryOpTest<float> {};
+
+TEST_P(FloatArithmetic, UsingConst) {
+    auto param = TRTest::to_struct(GetParam());
+
+    char inputTrees[160] = {0};
+    std::snprintf(inputTrees, 160, "(method return=Float (block (freturn (%s (fconst %f) (fconst %f)) )))", param.opcode.c_str(), param.lhs, param.rhs);
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler{trees};
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<float (*)(void)>();
+    volatile auto exp = param.oracle(param.lhs, param.rhs);
+    volatile auto act = entry_point();
+    if (std::isnan(exp)) {
+        ASSERT_EQ(std::isnan(exp), std::isnan(act));
+    } else {
+        ASSERT_EQ(exp, act);
+    }
+}
+
+TEST_P(FloatArithmetic, UsingLoadParam) {
+    auto param = TRTest::to_struct(GetParam());
+
+    char inputTrees[160] = {0};
+    std::snprintf(inputTrees, 160, "(method return=Float args=[Float, Float] (block (freturn (%s (fload parm=0) (fload parm=1)) )))", param.opcode.c_str());
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler{trees};
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<float (*)(float, float)>();
+    volatile auto exp = param.oracle(param.lhs, param.rhs);
+    volatile auto act = entry_point(param.lhs, param.rhs);
+    if (std::isnan(exp)) {
+        ASSERT_EQ(std::isnan(exp), std::isnan(act));
+    } else {
+        ASSERT_EQ(exp, act);
+    }
+}
+
+INSTANTIATE_TEST_CASE_P(ArithmeticTest, FloatArithmetic, ::testing::Combine(
+    ::testing::ValuesIn(
+        TRTest::filter(TRTest::const_value_pairs<float, float>(), smallFp_filter<float>)),
+    ::testing::Values(
+        std::make_tuple("fadd", fadd),
+        std::make_tuple("fsub", fsub),
+        std::make_tuple("fmul", fmul),
+        std::make_tuple("fdiv", fdiv)
+    )));
+
+double dadd(double l, double r) {
+    return l+r;
+}
+
+double dsub(double l, double r) {
+    return l-r;
+}
+
+double dmul(double l, double r) {
+    return l*r;
+}
+
+double ddiv(double l, double r) {
+    return l/r;
+}
+
+class DoubleArithmetic : public TRTest::BinaryOpTest<double> {};
+
+TEST_P(DoubleArithmetic, UsingConst) {
+    auto param = TRTest::to_struct(GetParam());
+
+    char inputTrees[1024] = {0};
+    std::snprintf(inputTrees, 1024, "(method return=Double (block (dreturn (%s (dconst %f) (dconst %f)) )))", param.opcode.c_str(), param.lhs, param.rhs);
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler{trees};
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<double (*)(void)>();
+    volatile auto exp = param.oracle(param.lhs, param.rhs);
+    volatile auto act = entry_point();
+    if (std::isnan(exp)) {
+        ASSERT_EQ(std::isnan(exp), std::isnan(act));
+    } else {
+        ASSERT_EQ(exp, act);
+    }
+}
+
+TEST_P(DoubleArithmetic, UsingLoadParam) {
+    auto param = TRTest::to_struct(GetParam());
+
+    char inputTrees[160] = {0};
+    std::snprintf(inputTrees, 160, "(method return=Double args=[Double, Double] (block (dreturn (%s (dload parm=0) (dload parm=1)) )))", param.opcode.c_str());
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler{trees};
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<double (*)(double, double)>();
+    volatile auto exp = param.oracle(param.lhs, param.rhs);
+    volatile auto act = entry_point(param.lhs, param.rhs);
+    if (std::isnan(exp)) {
+        ASSERT_EQ(std::isnan(exp), std::isnan(act));
+    } else {
+        ASSERT_EQ(exp, act);
+    }
+}
+
+INSTANTIATE_TEST_CASE_P(ArithmeticTest, DoubleArithmetic, ::testing::Combine(
+    ::testing::ValuesIn(
+        TRTest::filter(TRTest::const_value_pairs<double, double>(), smallFp_filter<double>)),
+    ::testing::Values(
+        std::make_tuple("dadd", dadd),
+        std::make_tuple("dsub", dsub),
+        std::make_tuple("dmul", dmul),
+        std::make_tuple("ddiv", ddiv)
+    )));

@@ -56,7 +56,7 @@ static TR::Register *addOrSubInteger(TR::Node *node, TR::CodeGenerator *cg)
    else
       {
       TR::Register *src2Reg = cg->evaluate(secondChild);
-      generateTrg1Src2Instruction(cg, TR::InstOpCode::addw, node, trgReg, src1Reg, src2Reg);
+      generateTrg1Src2Instruction(cg, isAdd ? TR::InstOpCode::addw : TR::InstOpCode::subw, node, trgReg, src1Reg, src2Reg);
       }
 
    node->setRegister(trgReg);

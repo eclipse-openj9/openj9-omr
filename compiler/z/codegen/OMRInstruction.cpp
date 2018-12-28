@@ -2342,7 +2342,7 @@ OMR::Z::Instruction::assignRegistersAndDependencies(TR_RegisterKinds kindToBeAss
             TR::Register * assignedReg = targetRegister->getAssignedRegister();
             if(assignedReg && assignedReg->getKind() != TR_FPR)
               {
-              machine->coerceRegisterAssignment(self(),dummy,REGNUM(i),DEPSREG);
+              machine->coerceRegisterAssignment(self(),dummy,REGNUM(i));
               assignedReg->setAssignedRegister(NULL);
               targetRegister->setAssignedRegister(NULL);
               targetRegister->setState(TR::RealRegister::Unlatched);

@@ -53,18 +53,6 @@ namespace TR { class RegisterDependencyConditions; }
 namespace TR { class Symbol; }
 namespace TR { class SymbolReference; }
 
-// Instrumentation flags
-//
-#define EXCHREG    0x0001
-#define MOVEREG    0x0002
-#define CLOBREG    0x0004
-#define PARMREG    0x0008
-#define USERREG    0x0010
-#define PAIRREG    0x0100
-#define GLBLREG    0x0200
-#define DEPSREG    0x0400
-
-
 ////////////////////////////////////////////////////////////////////////////////
 // TR::S390Instruction Class Definition
 ////////////////////////////////////////////////////////////////////////////////
@@ -1427,7 +1415,6 @@ class S390RegInstruction : public TR::Instruction
 ////////////////////////////////////////////////////////////////////////////////
 class S390RRInstruction : public TR::S390RegInstruction
    {
-   flags32_t    _flagsRR;
    int8_t _secondConstant;
 
    public:
@@ -1436,14 +1423,14 @@ class S390RRInstruction : public TR::S390RegInstruction
                         TR::Node               *n,
                         TR::Register           *treg,
                         TR::CodeGenerator      *cg)
-      : S390RegInstruction(op, n, treg, cg), _flagsRR(0), _secondConstant(-1)
+      : S390RegInstruction(op, n, treg, cg), _secondConstant(-1)
       {
       }
 
    S390RRInstruction(TR::InstOpCode::Mnemonic         op,
                         TR::Node                      *n,
                         TR::CodeGenerator             *cg)
-      : S390RegInstruction(op, n, cg), _flagsRR(0), _secondConstant(-1)
+      : S390RegInstruction(op, n, cg), _secondConstant(-1)
       {
       }
 
@@ -1453,7 +1440,7 @@ class S390RRInstruction : public TR::S390RegInstruction
                         TR::Register           *treg,
                         TR::Register           *sreg,
                         TR::CodeGenerator      *cg)
-      : S390RegInstruction(op, n, treg, cg), _flagsRR(0), _secondConstant(-1)
+      : S390RegInstruction(op, n, treg, cg), _secondConstant(-1)
       {
       checkRegForGPR0Disable(op, sreg);
       if (!getOpCode().setsOperand2())
@@ -1468,7 +1455,7 @@ class S390RRInstruction : public TR::S390RegInstruction
                         TR::Register           *sreg,
                         TR::RegisterDependencyConditions * cond,
                         TR::CodeGenerator      *cg)
-      : S390RegInstruction(op, n, treg, cond, cg), _flagsRR(0), _secondConstant(-1)
+      : S390RegInstruction(op, n, treg, cond, cg), _secondConstant(-1)
       {
       checkRegForGPR0Disable(op, sreg);
       if (!getOpCode().setsOperand2())
@@ -1483,7 +1470,7 @@ class S390RRInstruction : public TR::S390RegInstruction
                         TR::Register           *sreg,
                         TR::Instruction        *precedingInstruction,
                         TR::CodeGenerator      *cg)
-      : S390RegInstruction(op, n, treg, precedingInstruction, cg), _flagsRR(0), _secondConstant(-1)
+      : S390RegInstruction(op, n, treg, precedingInstruction, cg), _secondConstant(-1)
       {
       checkRegForGPR0Disable(op, sreg);
       if (!getOpCode().setsOperand2())
@@ -1498,7 +1485,7 @@ class S390RRInstruction : public TR::S390RegInstruction
                         int8_t                secondConstant,
                         TR::Instruction        *precedingInstruction,
                         TR::CodeGenerator      *cg)
-      : S390RegInstruction(op, n, treg, precedingInstruction, cg), _flagsRR(0), _secondConstant(secondConstant)
+      : S390RegInstruction(op, n, treg, precedingInstruction, cg), _secondConstant(secondConstant)
       {
       }
 
@@ -1507,7 +1494,7 @@ class S390RRInstruction : public TR::S390RegInstruction
                         TR::Register           *treg,
                         int8_t                secondConstant,
                         TR::CodeGenerator      *cg)
-      : S390RegInstruction(op, n, treg, cg), _flagsRR(0), _secondConstant(secondConstant)
+      : S390RegInstruction(op, n, treg, cg), _secondConstant(secondConstant)
       {
       }
 
@@ -1517,7 +1504,7 @@ class S390RRInstruction : public TR::S390RegInstruction
                         int8_t                secondConstant,
                         TR::Instruction        *precedingInstruction,
                         TR::CodeGenerator      *cg)
-      : S390RegInstruction(op, n, firstConstant, precedingInstruction, cg), _flagsRR(0), _secondConstant(secondConstant)
+      : S390RegInstruction(op, n, firstConstant, precedingInstruction, cg), _secondConstant(secondConstant)
       {
       }
 
@@ -1526,7 +1513,7 @@ class S390RRInstruction : public TR::S390RegInstruction
                         int8_t                firstConstant,
                         int8_t                secondConstant,
                         TR::CodeGenerator      *cg)
-      : S390RegInstruction(op, n, firstConstant, cg), _flagsRR(0), _secondConstant(secondConstant)
+      : S390RegInstruction(op, n, firstConstant, cg), _secondConstant(secondConstant)
       {
       }
 
@@ -1537,7 +1524,7 @@ class S390RRInstruction : public TR::S390RegInstruction
                         TR::Register           *sreg,
                         TR::Instruction        *precedingInstruction,
                         TR::CodeGenerator      *cg)
-      : S390RegInstruction(op, n, firstConstant, precedingInstruction, cg), _flagsRR(0), _secondConstant(-1)
+      : S390RegInstruction(op, n, firstConstant, precedingInstruction, cg), _secondConstant(-1)
       {
       checkRegForGPR0Disable(op,sreg);
       if (!getOpCode().setsOperand2())
@@ -1551,7 +1538,7 @@ class S390RRInstruction : public TR::S390RegInstruction
                         int8_t                firstConstant,
                         TR::Register           *sreg,
                         TR::CodeGenerator      *cg)
-      : S390RegInstruction(op, n, firstConstant, cg),  _flagsRR(0), _secondConstant(-1)
+      : S390RegInstruction(op, n, firstConstant, cg), _secondConstant(-1)
       {
       checkRegForGPR0Disable(op,sreg);
       if (!getOpCode().setsOperand2())
@@ -1568,7 +1555,7 @@ class S390RRInstruction : public TR::S390RegInstruction
                         TR::RegisterDependencyConditions * cond,
                         TR::Instruction        *precedingInstruction,
                         TR::CodeGenerator      *cg)
-      : S390RegInstruction(op, n, treg, cond, precedingInstruction, cg), _flagsRR(0), _secondConstant(-1)
+      : S390RegInstruction(op, n, treg, cond, precedingInstruction, cg), _secondConstant(-1)
       {
       checkRegForGPR0Disable(op, sreg);
       if (!getOpCode().setsOperand2())
@@ -1582,7 +1569,7 @@ class S390RRInstruction : public TR::S390RegInstruction
                         TR::Register           *treg,
                         TR::Instruction        *precedingInstruction,
                         TR::CodeGenerator      *cg)
-      : S390RegInstruction(op, n, treg, precedingInstruction, cg), _flagsRR(0), _secondConstant(-1)
+      : S390RegInstruction(op, n, treg, precedingInstruction, cg), _secondConstant(-1)
       {
       }
 
@@ -1597,33 +1584,6 @@ class S390RRInstruction : public TR::S390RegInstruction
    virtual uint8_t *generateBinaryEncoding();
 
    virtual bool refsRegister(TR::Register *reg);
-
-   // Flags getter & setters
-   //
-   // Note: these functions are not used anymore, will do addInstructionComment with the annotation instead.
-   // Will leave _flagsRR for now until next change, but these flags won't be used in tr.dev.
-
-/*   void setClobberEval() { _flagsRR.set(CLOBREG, true); }
-   bool getClobberEval() { return _flagsRR.testAny(CLOBREG); }
-
-   void setRegExch()     { _flagsRR.set(EXCHREG, true); }
-   bool getRegExch()     { return _flagsRR.testAny(EXCHREG); }
-
-   void setRegMove()     { _flagsRR.set(MOVEREG, true); }
-   bool getRegMove()     { return _flagsRR.testAny(MOVEREG); }
-
-   void setRegPair()     { _flagsRR.set(PAIRREG, true); }
-   bool getRegPair()     { return _flagsRR.testAny(PAIRREG); }
-
-   void setRegDep()      { _flagsRR.set(DEPSREG, true); }
-   bool getRegDep()      { return _flagsRR.testAny(DEPSREG); }
-
-   void setRegPrm()      { _flagsRR.set(PARMREG, true); }
-   bool getRegPrm()      { return _flagsRR.testAny(PARMREG); }
-
-   void setRegUsr()      { _flagsRR.set(USERREG, true); }
-   bool getRegUsr()      { return _flagsRR.testAny(USERREG); }
-*/
    };
 
 ////////////////////////////////////////////////////////////////////////////////

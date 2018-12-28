@@ -1704,7 +1704,7 @@ OMR::Z::Machine::assignBestRegisterPair(TR::Register    *regPair,
             lastReg->unblock();
             TR::RealRegister * newOddReg = self()->findBestLegalOddRegister(availRegMask);
             TR_ASSERT(newOddReg, "OMR::Z::Machine::assignBestRegisterPair: newOddReg is NULL!\n");
-            self()->coerceRegisterAssignment(currInst, lastReg, newOddReg->getRegisterNumber(), PAIRREG);
+            self()->coerceRegisterAssignment(currInst, lastReg, newOddReg->getRegisterNumber());
             freeRegisterLow = newOddReg;
             }
          if (lastReg)
@@ -1713,7 +1713,7 @@ OMR::Z::Machine::assignBestRegisterPair(TR::Register    *regPair,
             }
 
          self()->coerceRegisterAssignment(currInst, firstReg,
-            (TR::RealRegister::RegNum) (toRealRegister(freeRegisterLow)->getRegisterNumber() - 1), PAIRREG);
+            (TR::RealRegister::RegNum) (toRealRegister(freeRegisterLow)->getRegisterNumber() - 1));
          freeRegisterHigh = self()->getRealRegister((TR::RealRegister::RegNum) (toRealRegister(freeRegisterLow)->getRegisterNumber() - 1));
          }
       else if (!self()->isLegalOddRegister(freeRegisterLow, DISALLOWBLOCKED, availRegMask))
@@ -1727,7 +1727,7 @@ OMR::Z::Machine::assignBestRegisterPair(TR::Register    *regPair,
             }
 
          self()->coerceRegisterAssignment(currInst, lastReg,
-            (TR::RealRegister::RegNum) (toRealRegister(freeRegisterHigh)->getRegisterNumber() + 1), PAIRREG);
+            (TR::RealRegister::RegNum) (toRealRegister(freeRegisterHigh)->getRegisterNumber() + 1));
          freeRegisterLow = self()->getRealRegister((TR::RealRegister::RegNum) (toRealRegister(freeRegisterHigh)->getRegisterNumber() + 1));
          }
       else if (!self()->isLegalEvenOddPair(freeRegisterHigh, freeRegisterLow, availRegMask))
@@ -1746,7 +1746,7 @@ OMR::Z::Machine::assignBestRegisterPair(TR::Register    *regPair,
                }
 
             self()->coerceRegisterAssignment(currInst, lastReg,
-                                     (TR::RealRegister::RegNum) (toRealRegister(freeRegisterHigh)->getRegisterNumber() + 1), PAIRREG);
+                                     (TR::RealRegister::RegNum) (toRealRegister(freeRegisterHigh)->getRegisterNumber() + 1));
             freeRegisterLow = self()->getRealRegister((TR::RealRegister::RegNum) (toRealRegister(freeRegisterHigh)->getRegisterNumber() + 1));
             }
          else if (self()->isLegalOddRegister(freeRegisterLow, DISALLOWBLOCKED, availRegMask))
@@ -1757,7 +1757,7 @@ OMR::Z::Machine::assignBestRegisterPair(TR::Register    *regPair,
                }
 
             self()->coerceRegisterAssignment(currInst, firstReg,
-                                     (TR::RealRegister::RegNum) (toRealRegister(freeRegisterLow)->getRegisterNumber() - 1), PAIRREG);
+                                     (TR::RealRegister::RegNum) (toRealRegister(freeRegisterLow)->getRegisterNumber() - 1));
             freeRegisterHigh = self()->getRealRegister((TR::RealRegister::RegNum) (toRealRegister(freeRegisterLow)->getRegisterNumber() - 1));
             }
          else
@@ -1772,8 +1772,8 @@ OMR::Z::Machine::assignBestRegisterPair(TR::Register    *regPair,
                self()->freeBestRegisterPair(&tfreeRegisterHigh, &tfreeRegisterLow, regPairKind, currInst, availRegMask);
                }
 
-            self()->coerceRegisterAssignment(currInst, firstReg, (toRealRegister(tfreeRegisterHigh)->getRegisterNumber()), PAIRREG);
-            self()->coerceRegisterAssignment(currInst, lastReg, (toRealRegister(tfreeRegisterLow)->getRegisterNumber()), PAIRREG);
+            self()->coerceRegisterAssignment(currInst, firstReg, (toRealRegister(tfreeRegisterHigh)->getRegisterNumber()));
+            self()->coerceRegisterAssignment(currInst, lastReg, (toRealRegister(tfreeRegisterLow)->getRegisterNumber()));
 
             freeRegisterLow = tfreeRegisterLow;
             freeRegisterHigh = tfreeRegisterHigh;
@@ -1788,7 +1788,7 @@ OMR::Z::Machine::assignBestRegisterPair(TR::Register    *regPair,
          if (!self()->isLegalSecondOfFPRegister(freeRegisterLow, DISALLOWBLOCKED, availRegMask))
             {
             TR::RealRegister * newLowFPReg = self()->findBestLegalSiblingFPRegister(false,availRegMask);
-            self()->coerceRegisterAssignment(currInst, lastReg, newLowFPReg->getRegisterNumber(), PAIRREG);
+            self()->coerceRegisterAssignment(currInst, lastReg, newLowFPReg->getRegisterNumber());
             freeRegisterLow = newLowFPReg;
             }
          if (lastReg)
@@ -1796,7 +1796,7 @@ OMR::Z::Machine::assignBestRegisterPair(TR::Register    *regPair,
             lastReg->block(); // Make sure we don't move this anymore when coercing firstReg
             }
          self()->coerceRegisterAssignment(currInst, firstReg,
-            (TR::RealRegister::RegNum) (toRealRegister(freeRegisterLow->getSiblingRegister())->getRegisterNumber()), PAIRREG);
+            (TR::RealRegister::RegNum) (toRealRegister(freeRegisterLow->getSiblingRegister())->getRegisterNumber()));
          freeRegisterHigh = toRealRegister(freeRegisterLow->getSiblingRegister());
          }
       else if (!self()->isLegalSecondOfFPRegister(freeRegisterLow, DISALLOWBLOCKED, availRegMask))
@@ -1806,7 +1806,7 @@ OMR::Z::Machine::assignBestRegisterPair(TR::Register    *regPair,
          if (!self()->isLegalFirstOfFPRegister(freeRegisterHigh, DISALLOWBLOCKED, availRegMask))
             {
             TR::RealRegister * newHighFPReg = self()->findBestLegalSiblingFPRegister(true,availRegMask);
-            self()->coerceRegisterAssignment(currInst, firstReg, newHighFPReg->getRegisterNumber(), PAIRREG);
+            self()->coerceRegisterAssignment(currInst, firstReg, newHighFPReg->getRegisterNumber());
             freeRegisterHigh = newHighFPReg;
             }
          if (firstReg)
@@ -1815,7 +1815,7 @@ OMR::Z::Machine::assignBestRegisterPair(TR::Register    *regPair,
             }
 
          self()->coerceRegisterAssignment(currInst, lastReg,
-            (TR::RealRegister::RegNum) (toRealRegister(freeRegisterHigh->getSiblingRegister())->getRegisterNumber()), PAIRREG);
+            (TR::RealRegister::RegNum) (toRealRegister(freeRegisterHigh->getSiblingRegister())->getRegisterNumber()));
          freeRegisterLow = toRealRegister(freeRegisterHigh->getSiblingRegister());
          }
       else if (!self()->isLegalFPPair(freeRegisterHigh, freeRegisterLow, availRegMask))
@@ -1834,8 +1834,8 @@ OMR::Z::Machine::assignBestRegisterPair(TR::Register    *regPair,
             self()->freeBestRegisterPair(&tfreeRegisterHigh, &tfreeRegisterLow, regPair->getKind(), currInst, availRegMask);
             }
 
-         self()->coerceRegisterAssignment(currInst, firstReg, (toRealRegister(tfreeRegisterHigh)->getRegisterNumber()), PAIRREG);
-         self()->coerceRegisterAssignment(currInst, lastReg, (toRealRegister(tfreeRegisterLow)->getRegisterNumber()), PAIRREG);
+         self()->coerceRegisterAssignment(currInst, firstReg, (toRealRegister(tfreeRegisterHigh)->getRegisterNumber()));
+         self()->coerceRegisterAssignment(currInst, lastReg, (toRealRegister(tfreeRegisterLow)->getRegisterNumber()));
 
          freeRegisterLow = tfreeRegisterLow;
          freeRegisterHigh = tfreeRegisterHigh;

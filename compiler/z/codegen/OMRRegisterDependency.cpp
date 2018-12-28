@@ -1468,7 +1468,7 @@ TR_S390RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstru
             #endif
 
             // Assign the real reg to the virt reg
-            machine->coerceRegisterAssignment(currentInstruction, virtReg, dependentRegNum, DEPSREG);
+            machine->coerceRegisterAssignment(currentInstruction, virtReg, dependentRegNum);
             virtReg->block();
             changed = true;
             }
@@ -1508,7 +1508,7 @@ TR_S390RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstru
                fprintf(stdout, "COERCE2 %i (%s, %d)\n", i, cg->getDebug()->getName(virtReg), dependentRegNum-1);
               #endif
 
-               machine->coerceRegisterAssignment(currentInstruction, virtReg, dependentRegNum, DEPSREG);
+               machine->coerceRegisterAssignment(currentInstruction, virtReg, dependentRegNum);
                virtReg->block();
                changed = true;
 
@@ -1532,7 +1532,7 @@ TR_S390RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstru
 
                         // Coerce the assignment
                         TR::Register *depReg = _dependencies[lcount].getRegister();
-                        machine->coerceRegisterAssignment(currentInstruction, depReg, aRealNum, DEPSREG);
+                        machine->coerceRegisterAssignment(currentInstruction, depReg, aRealNum);
                         _dependencies[lcount].getRegister()->block();
                         break;
                      }

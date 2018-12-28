@@ -688,7 +688,7 @@ OMR::Z::Machine::findBestSwapRegister(TR::Register* reg1, TR::Register* reg2)
    {
    TR_RegisterKinds rk = reg1->getKind();
    int32_t first, last;
-   if (rk == TR_GPR || rk == TR_GPR64)
+   if (rk == TR_GPR)
       {
       first = TR::RealRegister::FirstGPR;
       last  = TR::RealRegister::LastAssignableGPR;
@@ -1273,7 +1273,7 @@ OMR::Z::Machine::assignBestRegisterSingle(TR::Register    *targetRegister,
             if (toRealRegister(assignedRegister)->getHighWordRegister()->getState() == TR::RealRegister::Assigned)
                {
                assignedRegister->block();
-               TR::Instruction * cursor = self()->freeHighWordRegister(currInst, toRealRegister(assignedRegister)->getHighWordRegister(), 0);
+               TR::Instruction * cursor = self()->freeHighWordRegister(currInst, toRealRegister(assignedRegister)->getHighWordRegister());
                assignedRegister->unblock();
                self()->cg()->traceRAInstruction(cursor);
                }
@@ -1593,11 +1593,6 @@ OMR::Z::Machine::assignBestRegisterPair(TR::Register    *regPair,
       {
       availRegMask &= ~TR::RealRegister::GPR0Mask;
       availRegMask &= ~TR::RealRegister::GPR1Mask;
-      }
-
-   if (enableHighWordRA && (lastReg->is64BitReg() || firstReg->is64BitReg()))
-      {
-      regPairKind = TR_GPR64;
       }
 
    // We need a new placeholder for the pair that will stay with the instruction, leaving the
@@ -1936,9 +1931,10 @@ OMR::Z::Machine::findBestFreeRegisterPair(TR::RealRegister ** firstRegister, TR:
          //self()->cg()->traceRegWeight(_registerFile[i], _registerFile[i]->getWeight());
          //self()->cg()->traceRegWeight(_registerFile[i + 1], _registerFile[i + 1]->getWeight());
 
-         if (enableHighWordRA && rk == TR_GPR64)
+         if (enableHighWordRA)
             {
-            // for 64 bit reg pair, need to check high word pairs also
+            // TODO: This is a little too conservative. This API needs to be taught whether the register pair requires
+            // 64-bit registers or not and if and only if we require 64-bit registers do we need to check the highword.
             highWordPairIsFree = false;
             if ((_registerFile[i + 0]->getHighWordRegister()->getState() == TR::RealRegister::Free ||
                  _registerFile[i + 0]->getHighWordRegister()->getState() == TR::RealRegister::Unlatched) &&
@@ -2002,7 +1998,7 @@ OMR::Z::Machine::findBestFreeRegisterPair(TR::RealRegister ** firstRegister, TR:
       freeRegisterLow->setState(TR::RealRegister::Free);
       }
 
-   if (enableHighWordRA && rk == TR_GPR64)
+   if (enableHighWordRA)
       {
       // If unlatched, set it free
       if (freeRegisterHigh != NULL && freeRegisterHigh->getHighWordRegister()->getState() == TR::RealRegister::Unlatched)
@@ -2293,297 +2289,201 @@ OMR::Z::Machine::freeBestRegisterPair(TR::RealRegister ** firstReg, TR::RealRegi
    TR::Register * bestVirtCandidateHigh = bestCandidateHigh->getAssignedRegister();
    TR::Register * bestVirtCandidateLow = bestCandidateLow->getAssignedRegister();
 
-   if (enableHighWordRA && rk== TR_GPR64)
-      {
-      // this is to prevent us from spilling into the high word of candidates
-      self()->cg()->setAvailableHPRSpillMask(availRegMask);
-
-      self()->cg()->maskAvailableHPRSpillMask(bestCandidateHigh->getHighWordRegister()->getRealRegisterMask());
-      self()->cg()->maskAvailableHPRSpillMask(bestCandidateLow->getHighWordRegister()->getRealRegisterMask());
-      }
    if (bestVirtCandidateLow != NULL)
       {
-         TR::InstOpCode::Mnemonic opCodeLow;
-         if (bestVirtCandidateLow->is64BitReg() ||
-             bestVirtCandidateLow->getKind() == TR_GPR64)
-            {
-            opCodeLow = TR::InstOpCode::LG;
-            }
-         else
-            {
-            opCodeLow = TR::InstOpCode::getLoadOpCode();
-            }
+      // Check to see if the value has already been spilled
+      locationLow = bestVirtCandidateLow->getBackingStorage();
 
-         //if we selected the VM Thread Register to be freed, check to see if the value has already been spilled
-         locationLow = bestVirtCandidateLow->getBackingStorage();
-         if (locationLow == NULL && !bestVirtCandidateLow->containsInternalPointer())
-            {
-            if (bestVirtCandidateLow->getKind() == TR_GPR64)
-               {
-               locationLow = self()->cg()->allocateSpill(8, bestVirtCandidateLow->containsCollectedReference(), NULL, true);
-               opCodeLow = TR::InstOpCode::LG;
-               }
-            else
-               {
-               if (enableHighWordRA)
-                  {
-                  if (bestVirtCandidateLow->is64BitReg())
-                     {
-                     locationLow = self()->cg()->allocateSpill(8,bestVirtCandidateLow->containsCollectedReference(), NULL, true);
-                     opCodeLow = TR::InstOpCode::LG;
-                     }
-                  else
-                     {
-                     locationLow = self()->cg()->allocateSpill(4,bestVirtCandidateLow->containsCollectedReference(), NULL, true);
-                     opCodeLow = TR::InstOpCode::L;
-                     }
-                  }
-               else
-                  {
-                  locationLow = self()->cg()->allocateSpill(TR::Compiler->om.sizeofReferenceAddress(), bestVirtCandidateLow->containsCollectedReference(), NULL, true);
-                  }
-               }
-            }
-         else if(locationLow == NULL)
+      if (locationLow == NULL)
+         {
+         if (bestVirtCandidateLow->containsInternalPointer())
             {
             locationLow = self()->cg()->allocateInternalPointerSpill(bestVirtCandidateLow->getPinningArrayPointer());
             }
-
-         if (enableHighWordRA)
+         else
             {
-            if (rk == TR_GPR64 && bestCandidateLow->getHighWordRegister()->getAssignedRegister() != NULL)
-               {
-               // if the candidate is assigned on both GPR and HPR, need to spill HPR
-               if (bestCandidateLow->getHighWordRegister()->getAssignedRegister() != bestVirtCandidateLow)
-                  {
-                  self()->cg()->traceRegisterAssignment("spilling HPR %R for reg pair low",
-                                                bestCandidateLow->getHighWordRegister()->getAssignedRegister());
-                  currInst = self()->freeHighWordRegister(currInst, bestCandidateLow->getHighWordRegister(),0);
-                  }
-               }
-
-            //TODO: change the logic here so that we don't generate 2 separate Loads to spill a 64-bit reg
-            /*
-            if (bestVirtCandidateLow->is64BitReg())
-               opCodeLow = TR::InstOpCode::LG;
-            else
-               opCodeLow = TR::InstOpCode::L;
-            */
+            locationLow = bestVirtCandidateLow->is64BitReg() ?
+               self()->cg()->allocateSpill(8, bestVirtCandidateLow->containsCollectedReference(), NULL, true) :
+               self()->cg()->allocateSpill(4, bestVirtCandidateLow->containsCollectedReference(), NULL, true);
             }
 
-         TR::MemoryReference * tempMRLow = generateS390MemoryReference(currentNode, locationLow->getSymbolReference(), self()->cg());
-         locationLow->getSymbolReference()->getSymbol()->setSpillTempLoaded();
          bestVirtCandidateLow->setBackingStorage(locationLow);
-         cursor = generateRXInstruction(self()->cg(), opCodeLow, currentNode, bestCandidateLow, tempMRLow, currInst);
+         }
 
-         if (enableHighWordRA && bestVirtCandidateLow->is64BitReg())
+      TR::MemoryReference * tempMRLow = generateS390MemoryReference(currentNode, locationLow->getSymbolReference(), self()->cg());
+      locationLow->getSymbolReference()->getSymbol()->setSpillTempLoaded();
+         
+      if (bestVirtCandidateLow->is64BitReg())
+         {
+         cursor = generateRXInstruction(self()->cg(), TR::InstOpCode::LG, currentNode, bestCandidateLow, tempMRLow, currInst);
+
+         bestCandidateLow->getHighWordRegister()->setState(TR::RealRegister::Free);
+         bestCandidateLow->getHighWordRegister()->setAssignedRegister(NULL);
+         }
+      else
+         {
+         cursor = generateRXInstruction(self()->cg(), TR::InstOpCode::L, currentNode, bestCandidateLow, tempMRLow, currInst);
+         }
+
+      self()->cg()->traceRAInstruction(cursor);
+      if (debugObj)
+         {
+         debugObj->addInstructionComment(cursor, "Load Spill : reg pair even");
+         }
+
+      if ( !cursor->assignFreeRegBitVector() )
+         {
+         cursor->assignBestSpillRegister();
+         }
+
+      bestVirtCandidateLow->setAssignedRegister(NULL);
+
+      if (!comp->getOption(TR_DisableOOL))
+         {
+         if (!self()->cg()->isOutOfLineColdPath())
             {
-            bestCandidateLow->getHighWordRegister()->setState(TR::RealRegister::Free);
-            bestCandidateLow->getHighWordRegister()->setAssignedRegister(NULL);
-            }
+            // the spilledRegisterList contains all registers that are spilled before entering
+            // the OOL cold path, post dependencies will be generated using this list
+            self()->cg()->getSpilledRegisterList()->push_front(bestVirtCandidateLow);
 
-         self()->cg()->traceRAInstruction(cursor);
-         if (debugObj)
-            {
-            debugObj->addInstructionComment(cursor, "Load Spill : reg pair even");
-            }
-
-         if ( !cursor->assignFreeRegBitVector() )
-            {
-            cursor->assignBestSpillRegister();
-            }
-
-         bestVirtCandidateLow->setAssignedRegister(NULL);
-
-         if (!comp->getOption(TR_DisableOOL))
-            {
-            if (!self()->cg()->isOutOfLineColdPath())
-               {
-               // the spilledRegisterList contains all registers that are spilled before entering
-               // the OOL cold path, post dependencies will be generated using this list
-               self()->cg()->getSpilledRegisterList()->push_front(bestVirtCandidateLow);
-
-               // OOL cold path: depth = 3, hot path: depth =2,  main line: depth = 1
-               // if the spill is outside of the OOL cold/hot path, we need to protect the spill slot
-               // if we reverse spill this register inside the OOL cold/hot path
-               if (!self()->cg()->isOutOfLineHotPath())
-                  {// main line
-                  locationLow->setMaxSpillDepth(1);
-                  }
-               else
-                  {
-                  // hot path
-                  // do not overwrite main line spill depth
-                  if (locationLow->getMaxSpillDepth() != 1)
-                     locationLow->setMaxSpillDepth(2);
-                  }
-               if (debugObj)
-                  self()->cg()->traceRegisterAssignment("OOL: adding reg pair low %s to the spilledRegisterList, maxSpillDepth = %d\n",
-                                                debugObj->getName(bestVirtCandidateLow), locationLow->getMaxSpillDepth());
+            // OOL cold path: depth = 3, hot path: depth =2,  main line: depth = 1
+            // if the spill is outside of the OOL cold/hot path, we need to protect the spill slot
+            // if we reverse spill this register inside the OOL cold/hot path
+            if (!self()->cg()->isOutOfLineHotPath())
+               {// main line
+               locationLow->setMaxSpillDepth(1);
                }
             else
                {
-               // do not overwrite mainline and hot path spill depth
-               // if this spill is inside OOL cold path, we do not need to protecting the spill slot
-               // because the post condition at OOL entry does not expect this register to be spilled
-               if (locationLow->getMaxSpillDepth() != 1 &&
-                   locationLow->getMaxSpillDepth() != 2 )
-                  locationLow->setMaxSpillDepth(3);
+               // hot path
+               // do not overwrite main line spill depth
+               if (locationLow->getMaxSpillDepth() != 1)
+                  locationLow->setMaxSpillDepth(2);
                }
+            if (debugObj)
+               self()->cg()->traceRegisterAssignment("OOL: adding reg pair low %s to the spilledRegisterList, maxSpillDepth = %d\n",
+                                             debugObj->getName(bestVirtCandidateLow), locationLow->getMaxSpillDepth());
             }
-      } // if bestVirtCandidateLow != NULL
+         else
+            {
+            // do not overwrite mainline and hot path spill depth
+            // if this spill is inside OOL cold path, we do not need to protecting the spill slot
+            // because the post condition at OOL entry does not expect this register to be spilled
+            if (locationLow->getMaxSpillDepth() != 1 &&
+                  locationLow->getMaxSpillDepth() != 2 )
+               locationLow->setMaxSpillDepth(3);
+            }
+         }
+      }
    else
       {
-      if (enableHighWordRA && rk == TR_GPR64 &&
-          bestCandidateLow->getHighWordRegister()->getAssignedRegister() != NULL)
+      // TODO: This is a little too conservative. This API needs to be taught whether the register pair requires 64-bit
+      // registers or not and if and only if we require 64-bit registers do we need to evict the highword register.
+      if (enableHighWordRA && bestCandidateLow->getHighWordRegister()->getAssignedRegister() != NULL)
          {
          // if the candidate is assigned on both GPR and HPR, need to spill HPR
          self()->cg()->traceRegisterAssignment("spilling HPR %R for reg pair low",
                                        bestCandidateLow->getHighWordRegister()->getAssignedRegister());
-         currInst = self()->freeHighWordRegister(currInst, bestCandidateLow->getHighWordRegister(),0);
+         currInst = self()->freeHighWordRegister(currInst, bestCandidateLow->getHighWordRegister());
          }
       }
 
    if (bestVirtCandidateHigh != NULL)
       {
-         TR::InstOpCode::Mnemonic opCodeHigh;
-         if (bestVirtCandidateHigh->is64BitReg() ||
-             bestVirtCandidateHigh->getKind() == TR_GPR64)
-            {
-            opCodeHigh = TR::InstOpCode::LG;
-            }
-         else
-            {
-            opCodeHigh = TR::InstOpCode::getLoadOpCode();
-            }
+      // Check to see if the value has already been spilled
+      locationHigh = bestVirtCandidateHigh->getBackingStorage();
 
-         //if we selected the VM Thread Register to be freed, check to see if the value has already been spilled
-         locationHigh = bestVirtCandidateHigh->getBackingStorage();
-         if (locationHigh == NULL && !bestVirtCandidateHigh->containsInternalPointer())
-            {
-            if (bestVirtCandidateHigh->getKind() == TR_GPR64)
-               {
-               locationHigh = self()->cg()->allocateSpill(8, bestVirtCandidateHigh->containsCollectedReference(), NULL, true);
-               opCodeHigh = TR::InstOpCode::LG;
-               }
-            else
-               {
-               if (enableHighWordRA)
-                  {
-                  if (bestVirtCandidateHigh->is64BitReg())
-                     {
-                     locationHigh = self()->cg()->allocateSpill(8,bestVirtCandidateHigh->containsCollectedReference(), NULL, true);
-                     opCodeHigh = TR::InstOpCode::LG;
-                     }
-                  else
-                     {
-                     locationHigh = self()->cg()->allocateSpill(4,bestVirtCandidateHigh->containsCollectedReference(), NULL, true);
-                     opCodeHigh = TR::InstOpCode::L;
-                     }
-                  }
-               else
-                  {
-                  locationHigh = self()->cg()->allocateSpill(TR::Compiler->om.sizeofReferenceAddress(), bestVirtCandidateHigh->containsCollectedReference(), NULL, true);
-                  }
-               }
-            }
-         else if(locationHigh == NULL)
+      if (locationHigh == NULL)
+         {
+         if (bestVirtCandidateHigh->containsInternalPointer())
             {
             locationHigh = self()->cg()->allocateInternalPointerSpill(bestVirtCandidateHigh->getPinningArrayPointer());
             }
-
-         if (enableHighWordRA)
+         else
             {
-            if (rk == TR_GPR64 && bestCandidateHigh->getHighWordRegister()->getAssignedRegister() != NULL)
-               {
-               // if the candidate is assigned on both GPR and HPR, need to spill HPR
-               if (bestCandidateHigh->getHighWordRegister()->getAssignedRegister() != bestVirtCandidateHigh)
-                  {
-                  self()->cg()->traceRegisterAssignment("spilling HPR %R for reg pair high",
-                                                bestCandidateHigh->getHighWordRegister()->getAssignedRegister());
-                  // todo: inst flags?
-                  currInst = self()->freeHighWordRegister(currInst, bestCandidateHigh->getHighWordRegister(),0);
-                  }
-               }
-            //TODO: change the logic here so that we don't generate 2 separate Loads to spill a 64-bit reg
-            /*
-            if (bestVirtCandidateHigh->is64BitReg())
-               opCodeHigh = TR::InstOpCode::LG;
-            else
-               opCodeHigh = TR::InstOpCode::L;
-            */
+            locationHigh = bestVirtCandidateHigh->is64BitReg() ?
+               self()->cg()->allocateSpill(8, bestVirtCandidateHigh->containsCollectedReference(), NULL, true) :
+               self()->cg()->allocateSpill(4, bestVirtCandidateHigh->containsCollectedReference(), NULL, true);
             }
 
-         TR::MemoryReference * tempMRHigh = generateS390MemoryReference(currentNode, locationHigh->getSymbolReference(), self()->cg());
-         locationHigh->getSymbolReference()->getSymbol()->setSpillTempLoaded();
          bestVirtCandidateHigh->setBackingStorage(locationHigh);
-         cursor = generateRXInstruction(self()->cg(), opCodeHigh, currentNode, bestCandidateHigh, tempMRHigh, currInst);
+         }
 
-         if (enableHighWordRA && bestVirtCandidateHigh->is64BitReg())
+      TR::MemoryReference * tempMRHigh = generateS390MemoryReference(currentNode, locationHigh->getSymbolReference(), self()->cg());
+      locationHigh->getSymbolReference()->getSymbol()->setSpillTempLoaded();
+         
+      if (bestVirtCandidateHigh->is64BitReg())
+         {
+         cursor = generateRXInstruction(self()->cg(), TR::InstOpCode::LG, currentNode, bestCandidateHigh, tempMRHigh, currInst);
+
+         bestCandidateHigh->getHighWordRegister()->setState(TR::RealRegister::Free);
+         bestCandidateHigh->getHighWordRegister()->setAssignedRegister(NULL);
+         }
+      else
+         {
+         cursor = generateRXInstruction(self()->cg(), TR::InstOpCode::L, currentNode, bestCandidateHigh, tempMRHigh, currInst);
+         }
+
+      self()->cg()->traceRAInstruction(cursor);
+      if (debugObj)
+         {
+         debugObj->addInstructionComment(cursor, "Load Spill : reg pair odd");
+         }
+
+      if ( !cursor->assignFreeRegBitVector() )
+         {
+         cursor->assignBestSpillRegister();
+         }
+
+      bestVirtCandidateHigh->setAssignedRegister(NULL);
+
+      if (!comp->getOption(TR_DisableOOL))
+         {
+         if (!self()->cg()->isOutOfLineColdPath())
             {
-            bestCandidateHigh->getHighWordRegister()->setState(TR::RealRegister::Free);
-            bestCandidateHigh->getHighWordRegister()->setAssignedRegister(NULL);
-            }
+            // the spilledRegisterList contains all registers that are spilled before entering
+            // the OOL cold path, post dependencies will be generated using this list
+            self()->cg()->getSpilledRegisterList()->push_front(bestVirtCandidateHigh);
 
-         self()->cg()->traceRAInstruction(cursor);
-         if (debugObj)
-            {
-            debugObj->addInstructionComment(cursor, "Load Spill : reg pair odd");
-            }
-
-         if ( !cursor->assignFreeRegBitVector() )
-            {
-            cursor->assignBestSpillRegister();
-            }
-
-         bestVirtCandidateHigh->setAssignedRegister(NULL);
-
-         if (!comp->getOption(TR_DisableOOL))
-            {
-            if (!self()->cg()->isOutOfLineColdPath())
-               {
-               // the spilledRegisterList contains all registers that are spilled before entering
-               // the OOL cold path, post dependencies will be generated using this list
-               self()->cg()->getSpilledRegisterList()->push_front(bestVirtCandidateHigh);
-
-               // OOL cold path: depth = 3, hot path: depth =2,  main line: depth = 1
-               // if the spill is outside of the OOL cold/hot path, we need to protect the spill slot
-               // if we reverse spill this register inside the OOL cold/hot path
-               if (!self()->cg()->isOutOfLineHotPath())
-                  {// main line
-                  locationHigh->setMaxSpillDepth(1);
-                  }
-               else
-                  {
-                  // hot path
-                  // do not overwrite main line spill depth
-                  if (locationHigh->getMaxSpillDepth() != 1)
-                     locationHigh->setMaxSpillDepth(2);
-                  }
-               if (debugObj)
-                  self()->cg()->traceRegisterAssignment("OOL: adding reg pair high %s to the spilledRegisterList, maxSpillDepth = %d\n",
-                                                debugObj->getName(bestVirtCandidateHigh), locationHigh->getMaxSpillDepth());
+            // OOL cold path: depth = 3, hot path: depth =2,  main line: depth = 1
+            // if the spill is outside of the OOL cold/hot path, we need to protect the spill slot
+            // if we reverse spill this register inside the OOL cold/hot path
+            if (!self()->cg()->isOutOfLineHotPath())
+               {// main line
+               locationHigh->setMaxSpillDepth(1);
                }
             else
                {
-               // do not overwrite mainline and hot path spill depth
-               // if this spill is inside OOL cold path, we do not need to protecting the spill slot
-               // because the post condition at OOL entry does not expect this register to be spilled
-               if (locationHigh->getMaxSpillDepth() != 1 &&
-                   locationHigh->getMaxSpillDepth() != 2 )
-                  locationHigh->setMaxSpillDepth(3);
+               // hot path
+               // do not overwrite main line spill depth
+               if (locationHigh->getMaxSpillDepth() != 1)
+                  locationHigh->setMaxSpillDepth(2);
                }
+            if (debugObj)
+               self()->cg()->traceRegisterAssignment("OOL: adding reg pair high %s to the spilledRegisterList, maxSpillDepth = %d\n",
+                                             debugObj->getName(bestVirtCandidateHigh), locationHigh->getMaxSpillDepth());
+            }
+         else
+            {
+            // do not overwrite mainline and hot path spill depth
+            // if this spill is inside OOL cold path, we do not need to protecting the spill slot
+            // because the post condition at OOL entry does not expect this register to be spilled
+            if (locationHigh->getMaxSpillDepth() != 1 &&
+                  locationHigh->getMaxSpillDepth() != 2 )
+               locationHigh->setMaxSpillDepth(3);
+            }
          }
-      } // if (bestVirtCandidateHigh != NULL)
+      }
    else
       {
-      if (enableHighWordRA && rk == TR_GPR64 &&
-          bestCandidateHigh->getHighWordRegister()->getAssignedRegister() != NULL)
+      // TODO: This is a little too conservative. This API needs to be taught whether the register pair requires 64-bit
+      // registers or not and if and only if we require 64-bit registers do we need to evict the highword register.
+      if (enableHighWordRA && bestCandidateHigh->getHighWordRegister()->getAssignedRegister() != NULL)
          {
          // if the candidate is assigned on both GPR and HPR, need to spill HPR
          self()->cg()->traceRegisterAssignment("spilling HPR %R for reg pair high",
                                        bestCandidateHigh->getHighWordRegister()->getAssignedRegister());
-         currInst = self()->freeHighWordRegister(currInst, bestCandidateHigh->getHighWordRegister(),0);
+         currInst = self()->freeHighWordRegister(currInst, bestCandidateHigh->getHighWordRegister());
          }
       }
 
@@ -2594,7 +2494,7 @@ OMR::Z::Machine::freeBestRegisterPair(TR::RealRegister ** firstReg, TR::RealRegi
    bestCandidateHigh->setAssignedRegister(NULL);
    bestCandidateLow->setAssignedRegister(NULL);
 
-   if (enableHighWordRA && rk == TR_GPR64)
+   if (enableHighWordRA)
       {
       bestCandidateHigh->getHighWordRegister()->setState(TR::RealRegister::Free);
       bestCandidateLow->getHighWordRegister()->setState(TR::RealRegister::Free);
@@ -2606,8 +2506,6 @@ OMR::Z::Machine::freeBestRegisterPair(TR::RealRegister ** firstReg, TR::RealRegi
    *firstReg = bestCandidateHigh;
    *lastReg = bestCandidateLow;
    }
-
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // SINGLE REGISTER assignment methods
@@ -2634,8 +2532,7 @@ OMR::Z::Machine::findBestFreeRegister(TR::Instruction   *currentInstruction,
 
    bool useGPR0 = (virtualReg == NULL) ? false : (virtualReg->isUsedInMemRef() == false);
    bool liveRegOn = (self()->cg()->getLiveRegisters(rk) != NULL);
-   bool enableHighWordRA = self()->cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) &&
-                          (rk == TR_GPR || rk == TR_GPR64);
+   bool enableHighWordRA = self()->cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) && rk == TR_GPR;
 
    if (comp->getOption(TR_Randomize))
       {
@@ -2710,7 +2607,7 @@ OMR::Z::Machine::findBestFreeRegister(TR::Instruction   *currentInstruction,
        }
      }
 
-   if (rk == TR_GPR || rk == TR_GPR64)
+   if (rk == TR_GPR)
       {
       maskI = first = TR::RealRegister::FirstGPR;
       last = TR::RealRegister::LastAssignableGPR;
@@ -3354,7 +3251,7 @@ OMR::Z::Machine::spillAllVolatileHighRegisters(TR::Instruction *currentInstructi
       if (volatileReg                                      &&
           realReg->getState() == TR::RealRegister::Assigned &&
           (virtReg = realReg->getAssignedRegister())       &&
-          virtReg->getKind() == TR_GPR64
+          virtReg->is64BitReg()
          )
          {
          self()->spillRegister(currentInstruction, virtReg);
@@ -3383,7 +3280,6 @@ OMR::Z::Machine::freeBestRegister(TR::Instruction * currentInstruction, TR::Regi
 
    switch (rk)
       {
-      case TR_GPR64:
       case TR_GPR:
          maskI = first = TR::RealRegister::FirstGPR;
          last = TR::RealRegister::LastAssignableGPR;
@@ -3969,24 +3865,6 @@ OMR::Z::Machine::spillRegister(TR::Instruction * currentInstruction, TR::Registe
    location = virtReg->getBackingStorage();
    switch (rk)
      {
-     case TR_GPR64:
-       if (!comp->getOption(TR_DisableOOL) &&
-           (self()->cg()->isOutOfLineColdPath() || self()->cg()->isOutOfLineHotPath()) &&
-           virtReg->getBackingStorage())
-         {
-         // reuse the spill slot
-         if (debugObj)
-           self()->cg()->traceRegisterAssignment("\nOOL: Reuse backing store (%p) for %s inside OOL\n",
-                                         location,debugObj->getName(virtReg));
-         }
-       else
-         {
-         location = self()->cg()->allocateSpill(8, virtReg->containsCollectedReference(), NULL, true);
-         if (debugObj)
-           self()->cg()->traceRegisterAssignment("\nSpilling %s to (%p)\n", debugObj->getName(virtReg),location);
-         }
-       opCode = TR::InstOpCode::LG;
-       break;
      case TR_GPR:
        if (!comp->getOption(TR_DisableOOL) &&
            (self()->cg()->isOutOfLineColdPath() || self()->cg()->isOutOfLineHotPath()) &&
@@ -3999,14 +3877,10 @@ OMR::Z::Machine::spillRegister(TR::Instruction * currentInstruction, TR::Registe
          }
        else if (!containsInternalPointer)
          {
-         if (enableHighWordRA && virtReg->is64BitReg())
-            {
-            location = self()->cg()->allocateSpill(8,virtReg->containsCollectedReference(), NULL, true);
-            }
-         else
-            {
-            location = self()->cg()->allocateSpill(TR::Compiler->om.sizeofReferenceAddress(), virtReg->containsCollectedReference(), NULL, true);
-            }
+         location = virtReg->is64BitReg() ?
+            self()->cg()->allocateSpill(8, virtReg->containsCollectedReference(), NULL, true) :
+            self()->cg()->allocateSpill(4, virtReg->containsCollectedReference(), NULL, true);
+
          if (debugObj)
              self()->cg()->traceRegisterAssignment("\nSpilling %s to (%p)\n",debugObj->getName(virtReg),location);
          }
@@ -4017,7 +3891,9 @@ OMR::Z::Machine::spillRegister(TR::Instruction * currentInstruction, TR::Registe
            self()->cg()->traceRegisterAssignment("\nSpilling internal pointer %s to (%p)\n", debugObj->getName(virtReg),location);
          }
 
-       opCode = TR::InstOpCode::getLoadOpCode();
+       opCode = virtReg->is64BitReg() ?
+          TR::InstOpCode::LG :
+          TR::InstOpCode::L;
 
        if (enableHighWordRA)
          {
@@ -4029,8 +3905,6 @@ OMR::Z::Machine::spillRegister(TR::Instruction * currentInstruction, TR::Registe
            {
            opCode = TR::InstOpCode::L;
            }
-         else
-           opCode = TR::InstOpCode::LG;
          //TR_ASSERTC( TR::Compiler->target.is64Bit(),comp, "\nallocateSpill has incorrect spill slot size");
          //this assume kicks in for SLLG, MGHI etc on 31bit
          if (debugObj)
@@ -4151,6 +4025,8 @@ OMR::Z::Machine::reverseSpillState(TR::Instruction      *currentInstruction,
                                   TR::Register         *spilledRegister,
                                   TR::RealRegister *targetRegister)
    {
+   TR_ASSERT_FATAL(spilledRegister->getAssignedRegister() == NULL, "Attempting to fill an already assigned virtual register (%s)", getRegisterName(spilledRegister, self()->cg()));
+
    TR_BackingStore * location = spilledRegister->getBackingStorage();
    TR::Node * currentNode = currentInstruction->getNode();
    TR_RegisterKinds rk = spilledRegister->getKind();
@@ -4233,14 +4109,9 @@ OMR::Z::Machine::reverseSpillState(TR::Instruction      *currentInstruction,
       {
       if (rk == TR_GPR)
          {
-         if (enableHighWordRA && spilledRegister->is64BitReg())
-            location = self()->cg()->allocateSpill(8, spilledRegister->containsCollectedReference(), NULL, true);
-         else
-            location = self()->cg()->allocateSpill(TR::Compiler->om.sizeofReferenceAddress(), spilledRegister->containsCollectedReference(), NULL, true);
-         }
-      else if (rk == TR_GPR64)
-         {
-         location = self()->cg()->allocateSpill(8, spilledRegister->containsCollectedReference(), NULL, true);
+         location = spilledRegister->is64BitReg() ? 
+            self()->cg()->allocateSpill(8, spilledRegister->containsCollectedReference(), NULL, true) :
+            self()->cg()->allocateSpill(4, spilledRegister->containsCollectedReference(), NULL, true);
          }
       else if (rk == TR_VRF)
          {
@@ -4257,7 +4128,7 @@ OMR::Z::Machine::reverseSpillState(TR::Instruction      *currentInstruction,
    targetRegister->setAssignedRegister(spilledRegister);
    spilledRegister->setAssignedRegister(targetRegister);
 
-   if (enableHighWordRA && spilledRegister->is64BitReg())
+   if (spilledRegister->is64BitReg())
       {
       targetRegister->getHighWordRegister()->setState(TR::RealRegister::Assigned);
       targetRegister->getHighWordRegister()->setAssignedRegister(spilledRegister);
@@ -4311,40 +4182,33 @@ OMR::Z::Machine::reverseSpillState(TR::Instruction      *currentInstruction,
          dataSize = TR::Compiler->om.sizeofReferenceAddress();
          opCode = TR::InstOpCode::getStoreOpCode();
 
-         if (enableHighWordRA)
+         if (spilledRegister->assignToHPR() || targetRegister->isHighWordRegister())
             {
-            if (spilledRegister->assignToHPR() || targetRegister->isHighWordRegister())
-               {
-               //dataSize = 4;
-               opCode = TR::InstOpCode::STFH;
+            //dataSize = 4;
+            opCode = TR::InstOpCode::STFH;
 
-               if (spilledRegister->containsCollectedReference())
-                  {
-                  // decompressing: store into the lower bytes in memory
-                  // need to zero out the higher bytes later too
-                  needMVHI = true;
-                  }
-               else
-                  {
-                  TR_ASSERT(!spilledRegister->is64BitReg(), "ReverseSpill: HPR cannot be 64 bit!\n");
-                  }
-               }
-            if (spilledRegister->assignToGPR() || targetRegister->isLowWordRegister())
+            if (spilledRegister->containsCollectedReference())
                {
-               // dont want to involve halfslot spills yet
-               //dataSize = 4;
-               opCode = TR::InstOpCode::ST;
+               // decompressing: store into the lower bytes in memory
+               // need to zero out the higher bytes later too
+               needMVHI = true;
                }
-            if (spilledRegister->is64BitReg())
+            else
                {
-               dataSize = 8;
-               opCode = TR::InstOpCode::STG;
+               TR_ASSERT_FATAL(!spilledRegister->is64BitReg(), "Spilled register (%s) is 64-bit but it was assigned to an HPR", getRegisterName(spilledRegister, self()->cg()));
                }
             }
-         break;
-      case TR_GPR64:
-         dataSize = 8;
-         opCode = TR::InstOpCode::STG;
+         if (spilledRegister->assignToGPR() || targetRegister->isLowWordRegister())
+            {
+            // dont want to involve halfslot spills yet
+            //dataSize = 4;
+            opCode = TR::InstOpCode::ST;
+            }
+         if (spilledRegister->is64BitReg())
+            {
+            dataSize = 8;
+            opCode = TR::InstOpCode::STG;
+            }
          break;
       case TR_FPR:
          dataSize = 8;
@@ -4530,27 +4394,10 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
       }
     self()->cg()->traceRegisterAssignment("COERCE %R into %R", virtualRegister, targetRegister);
 
-   // If either the virtual we are coercing or the assigned reg we are
-   //
-   //
-   if (targetRegister->getAssignedRegister() && targetRegister->getAssignedRegister()->getKind() == TR_GPR64)
-      {
-      rk = TR_GPR64;
-      currentTargetVirtualRK = TR_GPR64;
-      currentAssignedRegisterRK = TR_GPR64;
-      }
-
    if (enableHighWordRA && currentAssignedRegister)
       {
       if (currentAssignedRegister->isHighWordRegister())
          currentAssignedRegisterRK = TR_HPR;
-      else
-         {
-         if (!virtualRegister->is64BitReg())
-            currentAssignedRegisterRK = TR_GPRL;
-         else
-            currentAssignedRegisterRK = TR_GPR64;
-         }
       }
 
    // in addition to the 4 GPR's involved, we have 4 more registers for high words:
@@ -4730,13 +4577,6 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
                targetRegister->getLowWordRegister()->getAssignedRegister() != currentTargetVirtual)
             {
             currentTargetVirtualRK = TR_HPR;
-            }
-         else
-            {
-         if (!currentTargetVirtual->is64BitReg())
-            currentTargetVirtualRK = TR_GPRL;
-         else
-            currentTargetVirtualRK = TR_GPR64;
             }
          }
 
@@ -4976,13 +4816,6 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
                targetRegister->getLowWordRegister()->getAssignedRegister() != currentTargetVirtual)
             {
             currentTargetVirtualRK = TR_HPR;
-            }
-         else
-            {
-         if (!currentTargetVirtual->is64BitReg())
-            currentTargetVirtualRK = TR_GPRL;
-         else
-            currentTargetVirtualRK = TR_GPR64;
             }
          }
 

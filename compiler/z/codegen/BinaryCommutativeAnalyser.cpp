@@ -1415,6 +1415,11 @@ TR_S390BinaryCommutativeAnalyser::integerAddAnalyser(TR::Node * root, TR::InstOp
 
       if (!done)
          {
+         auto mnemonic = firstRegister->is64BitReg() ?
+            TR::InstOpCode::LGR :
+            TR::InstOpCode::LR;
+
+         generateRRInstruction(cg(), mnemonic, root, tempReg, firstRegister);
          generateRRInstruction(cg(), regToRegOpCode, root, tempReg, secondRegister);
          }
       }

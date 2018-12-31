@@ -70,8 +70,12 @@ void
 OMR::Z::Register::setPlaceholderReg()
    {
 #if defined(TR_TARGET_64BIT)
-   self()->setIs64BitReg(true);
+   if (self()->getKind() == TR_GPR)
+      {
+      self()->setIs64BitReg(true);
+      }
 #endif
+
    OMR::Register::setPlaceholderReg();
    }
 
@@ -126,3 +130,10 @@ OMR::Z::Register::setContainsCollectedReference()
 #else
    bool OMR::Z::Register::is64BitReg()  {return _flags.testAny(Is64Bit);}
 #endif
+
+void OMR::Z::Register::setIs64BitReg(bool b)
+   {
+   TR_ASSERT_FATAL(self()->getKind() == TR_GPR, "Setting is64BitReg flag on a non-GPR register [%p]", self());
+
+   _flags.set(Is64Bit, b);
+   }

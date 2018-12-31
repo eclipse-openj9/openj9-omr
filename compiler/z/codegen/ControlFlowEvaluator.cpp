@@ -1177,12 +1177,6 @@ OMR::Z::TreeEvaluator::returnEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    if (node->getOpCodeValue() != TR::Return)
       returnValRegister = cg->evaluate(node->getFirstChild());
 
-   // GRA needs to tell LRA about the register type
-   if (cg->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) && returnValRegister!=NULL && TR::Compiler->target.is64Bit())
-      {
-      returnValRegister->setIs64BitReg(true);
-      }
-
    // add register dependency for the return value register and the return register
 
    TR::RegisterDependencyConditions * dependencies = NULL ;

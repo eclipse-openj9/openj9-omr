@@ -1357,10 +1357,8 @@ class S390RegInstruction : public TR::Instruction
       TR::RealRegister * realReg = NULL;
       TR::RealRegister * targetReg1 = NULL;
       TR::RealRegister * targetReg2 = NULL;
-      bool enableHighWordRA = cg()->supportsHighWordFacility() && !cg()->comp()->getOption(TR_DisableHighWordRA) &&
-                              reg->getKind() != TR_FPR && reg->getKind() != TR_VRF;
 
-      if (enableHighWordRA && reg->getRealRegister())
+      if (reg->getKind() != TR_FPR && reg->getKind() != TR_VRF && reg->getRealRegister())
          {
          realReg = toRealRegister(reg);
          if (realReg->isHighWordRegister())
@@ -1372,7 +1370,7 @@ class S390RegInstruction : public TR::Instruction
       if (isTargetPair())
          {
          // if we are matching real regs
-         if (enableHighWordRA && getFirstRegister()->getRealRegister())
+         if (reg->getKind() != TR_FPR && reg->getKind() != TR_VRF && getFirstRegister()->getRealRegister())
             {
             // reg pairs do not use HPRs
             targetReg1 = (TR::RealRegister *)getFirstRegister();
@@ -1386,7 +1384,7 @@ class S390RegInstruction : public TR::Instruction
       else if (getRegisterOperand(1))
          {
          // if we are matching real regs
-         if (enableHighWordRA && getRegisterOperand(1)->getRealRegister())
+         if (reg->getKind() != TR_FPR && reg->getKind() != TR_VRF && getRegisterOperand(1)->getRealRegister())
             {
             targetReg1 = ((TR::RealRegister *)getRegisterOperand(1))->getLowWordRegister();
             return realReg == targetReg1;
@@ -2453,10 +2451,7 @@ class S390RILInstruction : public TR::Instruction
       TR::RealRegister * realReg = NULL;
       TR::RealRegister * targetReg = NULL;
 
-      bool enableHighWordRA = cg()->supportsHighWordFacility() && !cg()->comp()->getOption(TR_DisableHighWordRA) &&
-                              reg->getKind() != TR_FPR && reg->getKind() != TR_VRF;
-
-      if (enableHighWordRA && reg->getRealRegister())
+      if (reg->getKind() != TR_FPR && reg->getKind() != TR_VRF && reg->getRealRegister())
          {
          realReg = (TR::RealRegister *)reg;
          if (realReg->isHighWordRegister())
@@ -2467,7 +2462,7 @@ class S390RILInstruction : public TR::Instruction
          }
 
       // if we are matching real regs
-      if (enableHighWordRA && getRegisterOperand(1) && getRegisterOperand(1)->getRealRegister())
+      if (reg->getKind() != TR_FPR && reg->getKind() != TR_VRF && getRegisterOperand(1) && getRegisterOperand(1)->getRealRegister())
          {
          targetReg = ((TR::RealRegister *)getRegisterOperand(1))->getLowWordRegister();
          return realReg == targetReg;
@@ -3243,19 +3238,6 @@ class S390RIEInstruction : public TR::S390RegInstruction
              _sourceImmediate8Two(sourceImmediateTwo)
       {
       useSourceRegister(sourceRegister);
-      // note that _targetRegister is registered for use via the
-      // S390RegInstruction constructor call
-      if (op == TR::InstOpCode::RISBG || op == TR::InstOpCode::RISBGN)
-         {
-         TR_ASSERT((sourceImmediateOne & 0xC0) == 0, "Bits 0-1 in the I3 field for %s must be 0", getOpCodeValue() == TR::InstOpCode::RISBG ? "RISBG" : "RISBGN");
-         TR_ASSERT((sourceImmediateTwo & 0x40) == 0, "Bit 1 in the I4 field for %s must be 0", getOpCodeValue() == TR::InstOpCode::RISBG ? "RISBG" : "RISBGN");
-
-         if (cg->supportsHighWordFacility() && !cg->comp()->getOption(TR_DisableHighWordRA) &&
-             sourceImmediateTwo & 0x80)
-            {
-            (S390RegInstruction::getRegisterOperand(1))->setIs64BitReg(true);
-            }
-         }
       }
 
 
@@ -3281,12 +3263,6 @@ class S390RIEInstruction : public TR::S390RegInstruction
       // note that _targetRegister is registered for use via the
       // S390RegInstruction constructor call
       useSourceRegister(sourceRegister);
-      if ((op == TR::InstOpCode::RISBG || op == TR::InstOpCode::RISBGN) &&
-          cg->supportsHighWordFacility() && !cg->comp()->getOption(TR_DisableHighWordRA) &&
-          sourceImmediateTwo & 0x80) // if the zero bit is set, target reg will be 64bit
-         {
-         (S390RegInstruction::getRegisterOperand(1))->setIs64BitReg(true);
-         }
       }
 
    /** Construct a Reg-Imm16 form RIE with no preceding instruction */

@@ -1478,48 +1478,30 @@ OMR::Z::Instruction::useSourceRegister(TR::Register * reg)
 
    self()->useRegister(reg);
 
+   if (reg->getKind() == TR_GPR && _opcode.is64bit())
+      {
+      reg->setIs64BitReg(true);
+
+      if (reg->getRegisterPair())
+         {
+         reg->getLowOrder()->setIs64BitReg(true);
+         reg->getHighOrder()->setIs64BitReg(true);
+         }
+      }
+
    // mark used bit for HW/LW virtual regs
    if (self()->cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA))
       {
-      if (_opcode.is64bit())
-         {
-         if (self()->getOpCodeValue() == TR::InstOpCode::RISBG || self()->getOpCodeValue() == TR::InstOpCode::RISBGN)
-            {
-            uint8_t startBit = ((TR::S390RIEInstruction* )self())->getSourceImmediate8One();
-            uint8_t endBit = ((TR::S390RIEInstruction* )self())->getSourceImmediate8Two();
-            uint8_t rotateAmnt = ((TR::S390RIEInstruction* )self())->getSourceImmediate8();
-            if ((startBit + rotateAmnt) < 32 &&
-                (endBit - rotateAmnt) > 63)
-               {
-               // if the sourceReg bit range was more than the low word
-               reg->setIs64BitReg(true);
-               }
-            }
-         else
-            {
-            reg->setIs64BitReg(true);
-            if (reg->getRegisterPair())
-               {
-               reg->getLowOrder()->setIs64BitReg(true);
-               reg->getHighOrder()->setIs64BitReg(true);
-               }
-            }
-         }
       if (!self()->isHPRUpgradable(_targetRegSize+_sourceRegSize-1))
          {
          reg->setIsNotHighWordUpgradable(true);
-         if (self()->cg()->getDebug())
-            {
-            //traceMsg(comp,"%s not upgradable in instruction [%p]\n", cg()->getDebug()->getName(reg),self());
-            }
          }
 
       if (reg->getRegisterPair())
          {
+         reg->setIsNotHighWordUpgradable(true);
          reg->getLowOrder()->setIsNotHighWordUpgradable(true);
          reg->getHighOrder()->setIsNotHighWordUpgradable(true);
-         //traceMsg(comp,"\n%s:%s not upgradable for instruction [%p]\n",
-         //        cg()->getDebug()->getName(reg->getLowOrder()), cg()->getDebug()->getName(reg->getHighOrder()), self());
          }
       }
 
@@ -1634,40 +1616,36 @@ OMR::Z::Instruction::useTargetRegister(TR::Register* reg)
 
    self()->useRegister(reg);
 
+   if (reg->getKind() == TR_GPR && (_opcode.is64bit() || _opcode.is32to64bit() ||
+         (TR::Compiler->target.is64Bit() &&
+            (self()->getOpCodeValue() == TR::InstOpCode::LA || 
+             self()->getOpCodeValue() == TR::InstOpCode::LAY || 
+             self()->getOpCodeValue() == TR::InstOpCode::LARL ||
+             self()->getOpCodeValue() == TR::InstOpCode::BASR || 
+             self()->getOpCodeValue() == TR::InstOpCode::BRASL))))
+         {
+         reg->setIs64BitReg(true);
+
+         if (reg->getRegisterPair())
+            {
+            reg->getLowOrder()->setIs64BitReg(true);
+            reg->getHighOrder()->setIs64BitReg(true);
+            }
+         }
+
    // mark used bit for HW/LW virtual regs
    if (self()->cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA))
       {
-      if (_opcode.is64bit() || _opcode.is32to64bit() ||
-          (TR::Compiler->target.is64Bit() &&
-           (self()->getOpCodeValue() == TR::InstOpCode::LA || self()->getOpCodeValue() == TR::InstOpCode::LAY || self()->getOpCodeValue() == TR::InstOpCode::LARL ||
-            self()->getOpCodeValue() == TR::InstOpCode::BASR || self()->getOpCodeValue() == TR::InstOpCode::BRASL)))
-         {
-         // RISBG case is handled in S390RIEInstruction constructor
-         if (self()->getOpCodeValue() != TR::InstOpCode::RISBG && self()->getOpCodeValue() != TR::InstOpCode::RISBGN)
-            {
-            reg->setIs64BitReg(true);
-            if (reg->getRegisterPair())
-               {
-               reg->getLowOrder()->setIs64BitReg(true);
-               reg->getHighOrder()->setIs64BitReg(true);
-               }
-            }
-         }
       if (!self()->isHPRUpgradable(_targetRegSize+_sourceRegSize-1))
          {
          reg->setIsNotHighWordUpgradable(true);
-         if (self()->cg()->getDebug())
-            {
-            //traceMsg(comp,"%s not upgradable in instruction [%p]\n", cg()->getDebug()->getName(*reg),self());
-            }
          }
 
       if (reg->getRegisterPair())
          {
+         reg->setIsNotHighWordUpgradable(true);
          reg->getLowOrder()->setIsNotHighWordUpgradable(true);
          reg->getHighOrder()->setIsNotHighWordUpgradable(true);
-         //traceMsg(comp,"\n%s:%s not upgradable for instruction [%p]\n",
-         //        cg()->getDebug()->getName(reg->getLowOrder()), cg()->getDebug()->getName(reg->getHighOrder()), self());
          }
       }
 
@@ -1738,7 +1716,6 @@ TR::Register *
 OMR::Z::Instruction::assignRegisterNoDependencies(TR::Register * reg)
    {
    TR::Compilation *comp = self()->cg()->comp();
-   bool enableHighWordRA = self()->cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA);
 
    // preventing assigning Real regs to Real regs
    if (reg->getRealRegister() != NULL)
@@ -1761,7 +1738,7 @@ OMR::Z::Instruction::assignRegisterNoDependencies(TR::Register * reg)
          virtReg->setAssignedRegister(NULL);
          realReg->setAssignedRegister(NULL);
          realReg->setState(TR::RealRegister::Free);
-         if (enableHighWordRA && virtReg->getKind() != TR_FPR && virtReg->is64BitReg() && virtReg->getKind() != TR_VRF)
+         if (virtReg->getKind() != TR_FPR && virtReg->is64BitReg() && virtReg->getKind() != TR_VRF)
             {
             toRealRegister(realReg)->getHighWordRegister()->setAssignedRegister(NULL);
             toRealRegister(realReg)->getHighWordRegister()->setState(TR::RealRegister::Free);
@@ -1788,7 +1765,7 @@ OMR::Z::Instruction::assignRegisterNoDependencies(TR::Register * reg)
          virtRegHigh->setAssignedRegister(NULL);
          realRegHigh->setAssignedRegister(NULL);
          realRegHigh->setState(TR::RealRegister::Free);
-         if (enableHighWordRA && virtRegHigh->getKind() != TR_FPR && virtRegHigh->is64BitReg() && virtRegHigh->getKind() != TR_VRF)
+         if (virtRegHigh->getKind() != TR_FPR && virtRegHigh->is64BitReg() && virtRegHigh->getKind() != TR_VRF)
             {
             toRealRegister(realRegHigh)->getHighWordRegister()->setAssignedRegister(NULL);
             toRealRegister(realRegHigh)->getHighWordRegister()->setState(TR::RealRegister::Free);
@@ -1803,7 +1780,7 @@ OMR::Z::Instruction::assignRegisterNoDependencies(TR::Register * reg)
          virtRegLow->setAssignedRegister(NULL);
          realRegLow->setAssignedRegister(NULL);
          realRegLow->setState(TR::RealRegister::Free);
-         if (enableHighWordRA && virtRegLow->getKind() != TR_FPR && virtRegLow->is64BitReg() && virtRegLow->getKind() != TR_VRF)
+         if (virtRegLow->getKind() != TR_FPR && virtRegLow->is64BitReg() && virtRegLow->getKind() != TR_VRF)
             {
             toRealRegister(realRegLow)->getHighWordRegister()->setAssignedRegister(NULL);
             toRealRegister(realRegLow)->getHighWordRegister()->setState(TR::RealRegister::Free);
@@ -1980,7 +1957,7 @@ OMR::Z::Instruction::assignOrderedRegisters(TR_RegisterKinds kindToBeAssigned)
      }
 
    // Keep track of the first and second non-pair source registers for later
-   // when determining if "setIs64BitReg" and "setAssignToHPR" should be called.
+   // when determining if "setAssignToHPR" should be called.
    TR::Register *  firstNonPairSourceRegister = 0;
    TR::Register * secondNonPairSourceRegister = 0;
 
@@ -2078,24 +2055,6 @@ OMR::Z::Instruction::assignOrderedRegisters(TR_RegisterKinds kindToBeAssigned)
 
          if (self()->cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA))
             {
-            if (_opcode.is64bit() || _opcode.is32to64bit() ||
-                (TR::Compiler->target.is64Bit() &&
-                 (self()->getOpCodeValue() == TR::InstOpCode::LA || self()->getOpCodeValue() == TR::InstOpCode::LAY || self()->getOpCodeValue() == TR::InstOpCode::LARL ||
-                  self()->getOpCodeValue() == TR::InstOpCode::BASR || self()->getOpCodeValue() == TR::InstOpCode::BRASL)))
-               {
-               if (self()->getOpCodeValue() == TR::InstOpCode::RISBG || self()->getOpCodeValue() == TR::InstOpCode::RISBGN)
-                  {
-                  uint8_t endBit = ((TR::S390RIEInstruction *)self())->getSourceImmediate8Two();
-                  if (endBit & 0x80) // if the zero bit is set, target reg will be 64bit
-                     {
-                     _targetReg[i]->setIs64BitReg(true);
-                     }
-                  }
-               else
-                  {
-                  _targetReg[i]->setIs64BitReg(true);
-                  }
-               }
             if ((self()->getOpCodeValue() == TR::InstOpCode::RISBLG || self()->getOpCodeValue() == TR::InstOpCode::RISBHG) &&
                 ((TR::S390RIEInstruction *)self())->getExtendedHighWordOpCode().getOpCodeValue() != TR::InstOpCode::BAD)
                {
@@ -2192,26 +2151,6 @@ OMR::Z::Instruction::assignOrderedRegisters(TR_RegisterKinds kindToBeAssigned)
          {
          if (firstNonPairSourceRegister)
             {
-            if (_opcode.is64bit())
-               {
-               if (self()->getOpCodeValue() == TR::InstOpCode::RISBG || self()->getOpCodeValue() == TR::InstOpCode::RISBGN)
-                  {
-                  uint8_t startBit = ((TR::S390RIEInstruction* )self())->getSourceImmediate8One();
-                  uint8_t endBit = ((TR::S390RIEInstruction* )self())->getSourceImmediate8Two();
-                  uint8_t rotateAmnt = ((TR::S390RIEInstruction* )self())->getSourceImmediate8();
-                  if ((startBit + rotateAmnt) < 32 &&
-                      (endBit - rotateAmnt) > 63)
-                     {
-                     // if the sourceReg bit range was more than the low word
-                     firstNonPairSourceRegister->setIs64BitReg(true);
-                     }
-                  }
-               else
-                  {
-                  firstNonPairSourceRegister->setIs64BitReg(true);
-                  }
-               }
-
             if ((self()->getOpCodeValue() == TR::InstOpCode::RISBLG || self()->getOpCodeValue() == TR::InstOpCode::RISBHG) &&
                 ((TR::S390RIEInstruction *)self())->getExtendedHighWordOpCode().getOpCodeValue() != TR::InstOpCode::BAD)
                {
@@ -2447,12 +2386,13 @@ void
 OMR::Z::Instruction::blockHPR(TR::Register * reg)
    {
    TR::Compilation *comp = self()->cg()->comp();
-   if (reg->getKind() != TR_FPR && reg->getKind() != TR_VRF &&
-       self()->cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA))
+
+   if (reg->getKind() != TR_FPR && reg->getKind() != TR_VRF)
       {
       if (reg->is64BitReg() && reg->getAssignedRegister() != NULL)
          {
          TR::RealRegister *assignedReg = reg->getAssignedRegister()->getRealRegister();
+
          if (assignedReg != NULL)
             {
             if (toRealRegister(assignedReg)->getHighWordRegister()->getState() == TR::RealRegister::Assigned)
@@ -2468,12 +2408,13 @@ void
 OMR::Z::Instruction::unblockHPR(TR::Register * reg)
    {
    TR::Compilation *comp = self()->cg()->comp();
-   if (reg->getKind() != TR_FPR && reg->getKind() != TR_VRF &&
-       self()->cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA))
+
+   if (reg->getKind() != TR_FPR && reg->getKind() != TR_VRF)
       {
       if (reg->is64BitReg() && reg->getAssignedRegister() != NULL)
          {
          TR::RealRegister *assignedReg = reg->getAssignedRegister()->getRealRegister();
+
          if (assignedReg != NULL)
             {
             if (toRealRegister(assignedReg)->getHighWordRegister()->getState() == TR::RealRegister::Blocked)

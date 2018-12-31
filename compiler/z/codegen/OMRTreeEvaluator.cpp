@@ -834,7 +834,6 @@ generateS390ImmOp(TR::CodeGenerator * cg,  TR::InstOpCode::Mnemonic memOp, TR::N
    // LL: Store Golden Eagle extended immediate instruction - 6 bytes long
    TR::InstOpCode::Mnemonic ei_immOp = TR::InstOpCode::BAD;
 
-   bool enableHighWordRA = cg->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA);
    switch (memOp)
       {
       case TR::InstOpCode::A:
@@ -849,7 +848,7 @@ generateS390ImmOp(TR::CodeGenerator * cg,  TR::InstOpCode::Mnemonic memOp, TR::N
             // LL: If Golden Eagle - can use Add Immediate with max 32-bit value.
             ei_immOp = TR::InstOpCode::AFI;
             }
-         if (enableHighWordRA && targetRegister && targetRegister->assignToHPR())
+         if (targetRegister != NULL && targetRegister->assignToHPR())
             {
             immOp = TR::InstOpCode::BAD;
             ei_immOp = TR::InstOpCode::AIH;
@@ -916,7 +915,7 @@ generateS390ImmOp(TR::CodeGenerator * cg,  TR::InstOpCode::Mnemonic memOp, TR::N
             // LL: If Golden Eagle - can use Compare Immediate with max 32-bit value.
             ei_immOp = TR::InstOpCode::CFI;
             }
-         if (enableHighWordRA && targetRegister && targetRegister->assignToHPR())
+         if (targetRegister != NULL && targetRegister->assignToHPR())
             {
             immOp = TR::InstOpCode::BAD;
             ei_immOp = TR::InstOpCode::CIH;
@@ -942,7 +941,7 @@ generateS390ImmOp(TR::CodeGenerator * cg,  TR::InstOpCode::Mnemonic memOp, TR::N
                return cursor;
                }
             }
-         if (enableHighWordRA && targetRegister && targetRegister->assignToHPR())
+         if (targetRegister != NULL && targetRegister->assignToHPR())
             {
             immOp = TR::InstOpCode::BAD;
             ei_immOp = TR::InstOpCode::CIH;
@@ -959,7 +958,7 @@ generateS390ImmOp(TR::CodeGenerator * cg,  TR::InstOpCode::Mnemonic memOp, TR::N
             else if (value >= MIN_IMMEDIATE_VAL && value <= MAX_IMMEDIATE_VAL)
                {
                TR::Register * constReg = NULL;
-               if (targetRegister && targetRegister != sourceRegister)
+               if (targetRegister != NULL && targetRegister != sourceRegister)
                   {
                   constReg = targetRegister;
                   }
@@ -7722,7 +7721,7 @@ inlineTrailingZerosQuadWordAtATime(
    regDeps->addPostCondition(rBranchCounter,  TR::RealRegister::AssignAny);
    regDeps->addPostCondition(rInputByteArray, TR::RealRegister::AssignAny);
 
-   if (cg->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) && is64)
+   if (is64)
       {
       rInput->setIs64BitReg(true);
       rOffset->setIs64BitReg(true);
@@ -11286,13 +11285,10 @@ OMR::Z::TreeEvaluator::directCallEvaluator(TR::Node * node, TR::CodeGenerator * 
          resultReg = TR::TreeEvaluator::performCall(node, false, cg);
          }
 
-       // on 64bit, lcall returns 64bit registers
-      if (cg->supportsHighWordFacility() && !cg->comp()->getOption(TR_DisableHighWordRA) && TR::Compiler->target.is64Bit())
+      // TODO: This should likely get done at the point where we allocate the return register
+      if (node->getOpCodeValue() == TR::lcall)
          {
-         if (node->getOpCodeValue() == TR::lcall)
-            {
-            resultReg->setIs64BitReg(true);
-            }
+         resultReg->setIs64BitReg(true);
          }
       }
 
@@ -11323,13 +11319,10 @@ OMR::Z::TreeEvaluator::indirectCallEvaluator(TR::Node * node, TR::CodeGenerator 
 
    TR::Register * returnRegister = TR::TreeEvaluator::performCall(node, true, cg);
 
-   // on 64bit, lcall returns 64bit registers
-   if (cg->supportsHighWordFacility() && !cg->comp()->getOption(TR_DisableHighWordRA) && TR::Compiler->target.is64Bit())
+   // TODO: This should likely get done at the point where we allocate the return register
+   if (node->getOpCodeValue() == TR::lcalli)
       {
-      if (node->getOpCodeValue() == TR::lcalli)
-         {
-         returnRegister->setIs64BitReg(true);
-         }
+      returnRegister->setIs64BitReg(true);
       }
 
    return returnRegister;
@@ -11626,29 +11619,20 @@ OMR::Z::TreeEvaluator::passThroughEvaluator(TR::Node * node, TR::CodeGenerator *
          copyReg->setContainsInternalPointer();
          copyReg->setPinningArrayPointer(reg->getPinningArrayPointer());
          }
-      if (cg->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA))
+      if (cg->machine()->getHPRFromGlobalRegisterNumber(node->getGlobalRegisterNumber()) != NULL)
          {
-         if (cg->machine()->getHPRFromGlobalRegisterNumber(node->getGlobalRegisterNumber()) != NULL)
-            {
-            copyReg->setAssignToHPR(true);
-            }
+         copyReg->setAssignToHPR(true);
          }
       switch (kind)
          {
          case TR_GPR:
-            opCode = TR::InstOpCode::getLoadRegOpCode();
-            if (cg->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) &&
-                (child->getDataType() == TR::Int32 ||
-                 child->getOpCodeValue() == TR::icall ||
-                 child->getOpCodeValue() == TR::icalli ||
-                 TR::RealRegister::isHPR(regNum)))
-               {
-               opCode = TR::InstOpCode::LR;
-               }
-
             if (reg->is64BitReg())
                {
                opCode = TR::InstOpCode::LGR;
+               }
+            else
+               {
+               opCode = TR::InstOpCode::LR;
                }
             break;
          case TR_FPR:
@@ -12569,15 +12553,13 @@ OMR::Z::TreeEvaluator::arraytranslateEvaluator(TR::Node * node, TR::CodeGenerato
 
    TR::RegisterPair * outputPair = cg->allocateConsecutiveRegisterPair(inputLenReg, outputReg);
 
-   if (cg->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) && TR::Compiler->target.is64Bit())
-      {
-      outputReg->setIs64BitReg(true);
-      inputLenReg->setIs64BitReg(true);
-      termCharReg->setIs64BitReg(false);
-      tableReg->setIs64BitReg(true);
-      inputReg->setIs64BitReg(true);
-      resultReg->setIs64BitReg(true);
-      }
+   outputReg->setIs64BitReg(true);
+   inputLenReg->setIs64BitReg(true);
+   termCharReg->setIs64BitReg(false);
+   tableReg->setIs64BitReg(true);
+   inputReg->setIs64BitReg(true);
+   resultReg->setIs64BitReg(true);
+
    // If it's constant, the result and outLenReg are already initialized properly.
    if (!isLengthConstant)
       {
@@ -13817,7 +13799,7 @@ OMR::Z::TreeEvaluator::aRegLoadEvaluator(TR::Node * node, TR::CodeGenerator * cg
    TR::Machine *machine = cg->machine();
 
    // GRA needs to tell LRA about the register type
-   if (cg->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) && TR::Compiler->target.is64Bit())
+   if (TR::Compiler->target.is64Bit())
       {
       globalReg->setIs64BitReg(true);
       }
@@ -13860,8 +13842,7 @@ OMR::Z::TreeEvaluator::iRegLoadEvaluator(TR::Node * node, TR::CodeGenerator * cg
       node->setRegister(globalReg);
 
       globalReg->setAssignToHPR(false);
-      if (cg->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) &&
-          cg->machine()->getHPRFromGlobalRegisterNumber(globalRegNum) != NULL)
+      if (cg->machine()->getHPRFromGlobalRegisterNumber(globalRegNum) != NULL)
          {
          globalReg->setAssignToHPR(true);
          }
@@ -13959,9 +13940,7 @@ OMR::Z::TreeEvaluator::iRegStoreEvaluator(TR::Node * node, TR::CodeGenerator * c
          }
       }
 
-   bool useHPR = cg->supportsHighWordFacility() &&
-      !comp->getOption(TR_DisableHighWordRA) && !cg->comp()->compileRelocatableCode() &&
-      cg->machine()->getHPRFromGlobalRegisterNumber(globalRegNum) != NULL;
+   bool useHPR = !cg->comp()->compileRelocatableCode() && cg->machine()->getHPRFromGlobalRegisterNumber(globalRegNum) != NULL;
 
    if (useHPR && child->getOpCode().isLoadConst())
       {
@@ -14001,20 +13980,17 @@ OMR::Z::TreeEvaluator::iRegStoreEvaluator(TR::Node * node, TR::CodeGenerator * c
             {
             globalReg = child->setRegister(cg->allocateRegister());
             }
-         if (cg->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA))
-            globalReg->setIs64BitReg(true);
+         globalReg->setIs64BitReg(true);
          genLoadLongConstant(cg, child, getIntegralValue(child), globalReg);
          }
       }
    // Without extensive evaluation of children & context, assume that we might have swapped signs
    globalReg->resetAlreadySignExtended();
 
-   bool child_sign_extended = false;
-
    // LGB generated for  TR::bloadi or LLGH generated for TR::cloadi sign extend implicitly
-   child_sign_extended= (((child->getOpCodeValue() == TR::b2i) && (child->getFirstChild()->getOpCodeValue() == TR::bloadi)) ||
+   bool child_sign_extended = ((child->getOpCodeValue() == TR::b2i) && (child->getFirstChild()->getOpCodeValue() == TR::bloadi)) ||
                               ((child->getOpCodeValue() == TR::su2i) && (child->getFirstChild()->getOpCodeValue() == TR::cloadi)) ||
-                              ((child->getOpCodeValue() == TR::l2i) && (child->getFirstChild()->getOpCodeValue() == TR::i2l)));
+                              ((child->getOpCodeValue() == TR::l2i) && (child->getFirstChild()->getOpCodeValue() == TR::i2l));
 
    if (cg->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA))
       {
@@ -14068,10 +14044,7 @@ OMR::Z::TreeEvaluator::lRegStoreEvaluator(TR::Node * node, TR::CodeGenerator * c
      }
 
    // GRA needs to tell LRA about the register type
-   if (cg->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA))
-      {
-      globalReg->setIs64BitReg(true);
-      }
+   globalReg->setIs64BitReg(true);
 
    cg->decReferenceCount(child);
 
@@ -16852,17 +16825,11 @@ OMR::Z::TreeEvaluator::arraytranslateDecodeSIMDEvaluator(TR::Node * node, TR::Co
       generateRIInstruction(cg, TR::InstOpCode::NILL, node, inputLen16, static_cast <int16_t> (0xFFF0));
       }
 
-   if (cg->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) && TR::Compiler->target.is64Bit())
-      {
-      output->setIs64BitReg(true);
-
-      input     ->setIs64BitReg(true);
-      inputLen  ->setIs64BitReg(true);
-      inputLen16->setIs64BitReg(true);
-
-      translated->setIs64BitReg(true);
-      }
-
+   output->setIs64BitReg(true);
+   input->setIs64BitReg(true);
+   inputLen->setIs64BitReg(true);
+   inputLen16->setIs64BitReg(true);
+   translated->setIs64BitReg(true);
 
    // Create the necessary labels
    TR::LabelSymbol * processMultiple16Bytes    = generateLabelSymbol(cg);
@@ -17142,16 +17109,11 @@ OMR::Z::TreeEvaluator::arraytranslateEncodeSIMDEvaluator(TR::Node * node, TR::Co
       generateRIInstruction(cg, TR::InstOpCode::NILL, node, inputLen16, static_cast <int16_t> (0xFFF0));
       }
 
-   if (cg->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) && TR::Compiler->target.is64Bit())
-      {
-      output->setIs64BitReg(true);
-
-      input     ->setIs64BitReg(true);
-      inputLen  ->setIs64BitReg(true);
-      inputLen16->setIs64BitReg(true);
-
-      translated->setIs64BitReg(true);
-      }
+   output->setIs64BitReg(true);
+   input->setIs64BitReg(true);
+   inputLen->setIs64BitReg(true);
+   inputLen16->setIs64BitReg(true);
+   translated->setIs64BitReg(true);
 
    // Create the necessary labels
    TR::LabelSymbol * processMultiple16Chars    = generateLabelSymbol(cg);
@@ -17855,16 +17817,11 @@ inlineUTF16BEEncodeSIMD(TR::Node *node, TR::CodeGenerator *cg)
       generateRIInstruction(cg, TR::InstOpCode::NILL, node, inputLen16, static_cast <int16_t> (0xFFF0));
       }
 
-   if (cg->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) && TR::Compiler->target.is64Bit())
-      {
-      output->setIs64BitReg(true);
-
-      input     ->setIs64BitReg(true);
-      inputLen  ->setIs64BitReg(true);
-      inputLen16->setIs64BitReg(true);
-
-      translated->setIs64BitReg(true);
-      }
+   output->setIs64BitReg(true);
+   input->setIs64BitReg(true);
+   inputLen->setIs64BitReg(true);
+   inputLen16->setIs64BitReg(true);
+   translated->setIs64BitReg(true);
 
    // Create the necessary vector registers
    TR::Register* vInput     = cg->allocateRegister(TR_VRF);
@@ -18039,16 +17996,11 @@ inlineUTF16BEEncode(TR::Node *node, TR::CodeGenerator *cg)
    // Number of bytes currently translated (also used as a stride register)
    TR::Register* translated = cg->allocateRegister();
 
-   if (cg->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) && TR::Compiler->target.is64Bit())
-      {
-      output->setIs64BitReg(true);
-
-      input    ->setIs64BitReg(true);
-      inputLen ->setIs64BitReg(true);
-      inputLen8->setIs64BitReg(true);
-
-      translated->setIs64BitReg(true);
-      }
+   output->setIs64BitReg(true);
+   input->setIs64BitReg(true);
+   inputLen ->setIs64BitReg(true);
+   inputLen8->setIs64BitReg(true);
+   translated->setIs64BitReg(true);
 
    // Convert input length in number of characters to number of bytes
    generateRSInstruction(cg, TR::InstOpCode::getShiftLeftLogicalSingleOpCode(), node, inputLen, inputLen, 1);
@@ -18220,13 +18172,12 @@ OMR::Z::TreeEvaluator::arraycmpSIMDHelper(TR::Node *node,
    TR::Register * vectorOutputReg = cg->allocateRegister(TR_VRF);
    TR::Register * resultReg = needResultReg ? cg->allocateRegister() : NULL;
 
-   if (cg->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) && TR::Compiler->target.is64Bit())
+   firstAddrReg->setIs64BitReg(true);
+   secondAddrReg->setIs64BitReg(true);
+   lastByteIndexReg->setIs64BitReg(true);
+   if (needResultReg)
       {
-      firstAddrReg->setIs64BitReg(true);
-      secondAddrReg->setIs64BitReg(true);
-      lastByteIndexReg->setIs64BitReg(true);
-      if (needResultReg)
-         resultReg->setIs64BitReg(true);
+      resultReg->setIs64BitReg(true);
       }
 
    // VLL uses lastByteIndexReg as the highest 0-based index to load, which is length - 1

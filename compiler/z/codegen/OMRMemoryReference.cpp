@@ -2404,8 +2404,7 @@ OMR::Z::MemoryReference::assignRegisters(TR::Instruction * currentInstruction, T
          assignedBaseRegister->setAssignedRegister(NULL);
          assignedBaseRegister->setState(TR::RealRegister::Free);
          cg->traceRegFreed(_baseRegister, assignedBaseRegister);
-         if (cg->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) &&
-             _baseRegister->is64BitReg())
+         if (_baseRegister->is64BitReg())
             {
             toRealRegister(assignedBaseRegister)->getHighWordRegister()->setAssignedRegister(NULL);
             toRealRegister(assignedBaseRegister)->getHighWordRegister()->setState(TR::RealRegister::Free);

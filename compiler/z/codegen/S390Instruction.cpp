@@ -899,7 +899,7 @@ TR::S390BranchOnCountInstruction::generateBinaryEncoding()
       distance /= 2;
       doRelocation = true;
       }
-   if (cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) && (binOpCode & 0xFF0F) == 0xCC06) //BRCTH
+   if ((binOpCode & 0xFF0F) == 0xCC06) //BRCTH
       {
       getOpCode().copyBinaryToBuffer(instructionStart);
       *(int32_t *) (cursor + 2) |= boi(distance);
@@ -3232,10 +3232,7 @@ bool
 TR::S390MemInstruction::refsRegister(TR::Register * reg)
    {
    // 64bit mem refs clobber high word regs
-   TR::Compilation *comp = cg()->comp();
-   bool enableHighWordRA = cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) &&
-                           reg->getKind() != TR_FPR && reg->getKind() != TR_VRF;
-   if (enableHighWordRA && reg->getRealRegister() && TR::Compiler->target.is64Bit())
+   if (reg->getKind() != TR_FPR && reg->getKind() != TR_VRF && reg->getRealRegister())
       {
       TR::RealRegister * realReg = (TR::RealRegister *)reg;
       TR::Register * regMem = reg;
@@ -3288,10 +3285,7 @@ bool
 TR::S390RXInstruction::refsRegister(TR::Register * reg)
    {
    // 64bit mem refs clobber high word regs
-   TR::Compilation *comp = cg()->comp();
-   bool enableHighWordRA = cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) &&
-                           reg->getKind() != TR_FPR && reg->getKind() != TR_VRF;
-   if (enableHighWordRA && getMemoryReference()&& reg->getRealRegister() && TR::Compiler->target.is64Bit())
+   if (reg->getKind() != TR_FPR && reg->getKind() != TR_VRF && getMemoryReference()&& reg->getRealRegister())
       {
       TR::RealRegister * realReg = (TR::RealRegister *)reg;
       TR::Register * regMem = reg;
@@ -3475,10 +3469,7 @@ bool
 TR::S390RXFInstruction::refsRegister(TR::Register * reg)
    {
    // 64bit mem refs clobber high word regs
-   TR::Compilation *comp = cg()->comp();
-   bool enableHighWordRA = cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) &&
-                           reg->getKind() != TR_FPR && reg->getKind() != TR_VRF;
-   if (enableHighWordRA && reg->getRealRegister() && TR::Compiler->target.is64Bit())
+   if (reg->getKind() != TR_FPR && reg->getKind() != TR_VRF && reg->getRealRegister())
       {
       TR::RealRegister * realReg = (TR::RealRegister *)reg;
       TR::Register * regMem = reg;
@@ -4847,9 +4838,7 @@ bool
 TR::S390SSFInstruction::refsRegister(TR::Register * reg)
    {
    // 64bit mem refs clobber high word regs
-   bool enableHighWordRA = cg()->supportsHighWordFacility() && !cg()->comp()->getOption(TR_DisableHighWordRA) &&
-                           reg->getKind() != TR_FPR && reg->getKind() != TR_VRF;
-   if (enableHighWordRA && getMemoryReference()&& reg->getRealRegister() && TR::Compiler->target.is64Bit())
+   if (reg->getKind() != TR_FPR && reg->getKind() != TR_VRF && getMemoryReference()&& reg->getRealRegister())
       {
       TR::RealRegister * realReg = (TR::RealRegister *)reg;
       TR::Register * regMem = reg;

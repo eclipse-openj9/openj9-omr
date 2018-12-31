@@ -2538,39 +2538,36 @@ OMR::Z::Linkage::buildArgs(TR::Node * callNode, TR::RegisterDependencyConditions
          }
       }
 
-   if (self()->cg()->supportsHighWordFacility() && !self()->comp()->getOption(TR_DisableHighWordRA))
+   dummyReg = NULL;
+   self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR0), self()->cg(), true, true );
+   self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR1), self()->cg(), true, true );
+   self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR2), self()->cg(), true, true );
+   self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR3), self()->cg(), true, true );
+   self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR14), self()->cg(), true, true );
+
+   // consider all HPR volatile on 31-bit
+   if (TR::Compiler->target.is32Bit())
       {
-      dummyReg = NULL;
-      self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR0), self()->cg(), true, true );
-      self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR1), self()->cg(), true, true );
-      self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR2), self()->cg(), true, true );
-      self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR3), self()->cg(), true, true );
-      self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR14), self()->cg(), true, true );
+      self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR6), self()->cg(), true, true );
+      self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR7), self()->cg(), true, true );
+      self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR8), self()->cg(), true, true );
+      self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR9), self()->cg(), true, true );
+      self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR10), self()->cg(), true, true );
+      self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR11), self()->cg(), true, true );
+      self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR12), self()->cg(), true, true );
+      }
 
-      // consider all HPR volatile on 31-bit
-      if (TR::Compiler->target.is32Bit())
+   if (TR::Compiler->target.isZOS())
+      {
+      self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR15), self()->cg(), true, true );
+      if (self()->cg()->supportsJITFreeSystemStackPointer())
          {
-         self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR6), self()->cg(), true, true );
-         self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR7), self()->cg(), true, true );
-         self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR8), self()->cg(), true, true );
-         self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR9), self()->cg(), true, true );
-         self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR10), self()->cg(), true, true );
-         self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR11), self()->cg(), true, true );
-         self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR12), self()->cg(), true, true );
+         self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR4),self()->cg(), true, true );
          }
-
-      if (TR::Compiler->target.isZOS())
-         {
-         self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR15), self()->cg(), true, true );
-         if (self()->cg()->supportsJITFreeSystemStackPointer())
-            {
-            self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR4),self()->cg(), true, true );
-            }
-         }
-      else
-         {
-         self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR4), self()->cg(), true, true );
-         }
+      }
+   else
+      {
+      self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR4), self()->cg(), true, true );
       }
 
    // spill all overlapped vector registers if vector linkage is enabled
@@ -2761,8 +2758,8 @@ OMR::Z::Linkage::setupRegisterDepForLinkage(TR::Node * callNode, TR_DispatchType
    {
    int32_t numDeps = systemLinkage->getNumberOfDependencyGPRegisters();
 
-   if (self()->cg()->supportsHighWordFacility() && !self()->comp()->getOption(TR_DisableHighWordRA))
-      numDeps += 16; //HPRs need to be spilled
+   numDeps += 16; //HPRs need to be spilled
+
    if (self()->cg()->getSupportsVectorRegisters())
       numDeps += 32; //VRFs need to be spilled
 
@@ -2946,13 +2943,10 @@ OMR::Z::Linkage::lockRegister(TR::RealRegister * lpReal)
    lpReal->setAssignedRegister(lpReal);
    lpReal->setHasBeenAssignedInMethod(true);
 
-   if (self()->cg()->supportsHighWordFacility() && !self()->comp()->getOption(TR_DisableHighWordRA) && TR::Compiler->target.is64Bit())
-      {
-      TR::RealRegister * lpRealHigh = toRealRegister(lpReal)->getHighWordRegister();
-      lpRealHigh->setState(TR::RealRegister::Locked);
-      lpRealHigh->setAssignedRegister(lpRealHigh);
-      lpRealHigh->setHasBeenAssignedInMethod(true);
-      }
+   TR::RealRegister * lpRealHigh = toRealRegister(lpReal)->getHighWordRegister();
+   lpRealHigh->setState(TR::RealRegister::Locked);
+   lpRealHigh->setAssignedRegister(lpRealHigh);
+   lpRealHigh->setHasBeenAssignedInMethod(true);
    }
 
 void
@@ -2963,13 +2957,10 @@ OMR::Z::Linkage::unlockRegister(TR::RealRegister * lpReal)
    lpReal->setAssignedRegister(NULL);
    lpReal->setHasBeenAssignedInMethod(false);
 
-   if (self()->cg()->supportsHighWordFacility() && !self()->comp()->getOption(TR_DisableHighWordRA))
-      {
-      TR::RealRegister * lpRealHigh = toRealRegister(lpReal)->getHighWordRegister();
-      lpRealHigh->resetState(TR::RealRegister::Free);
-      lpRealHigh->setAssignedRegister(NULL);
-      lpRealHigh->setHasBeenAssignedInMethod(false);
-      }
+   TR::RealRegister * lpRealHigh = toRealRegister(lpReal)->getHighWordRegister();
+   lpRealHigh->resetState(TR::RealRegister::Free);
+   lpRealHigh->setAssignedRegister(NULL);
+   lpRealHigh->setHasBeenAssignedInMethod(false);
    }
 
 bool OMR::Z::Linkage::needsAlignment(TR::DataType dt, TR::CodeGenerator * cg)
@@ -3004,9 +2995,7 @@ OMR::Z::Linkage::getFirstSavedRegister(int32_t fromreg, int32_t toreg)
    TR::RealRegister::RegNum firstUsedReg = TR::RealRegister::NoReg;
 
    // if the first saved reg is an HPR, we will return the corresponding GPR
-   bool checkHPR = (self()->cg()->supportsHighWordFacility() &&
-                    !self()->comp()->getOption(TR_DisableHighWordRA) &&
-                    (self()->getRealRegister(REGNUM(fromreg)))->isLowWordRegister() &&
+   bool checkHPR = ((self()->getRealRegister(REGNUM(fromreg)))->isLowWordRegister() &&
                     (self()->getRealRegister(REGNUM(toreg)))->isLowWordRegister());
    for (int32_t i = fromreg; i <= toreg; ++i)
       {
@@ -3030,9 +3019,7 @@ OMR::Z::Linkage::getLastSavedRegister(int32_t fromreg, int32_t toreg)
    TR::RealRegister::RegNum lastUsedReg = TR::RealRegister::NoReg;
 
    // if the last saved reg is an HPR, we will return the corresponding GPR
-   bool checkHPR = (self()->cg()->supportsHighWordFacility() &&
-                    !self()->comp()->getOption(TR_DisableHighWordRA) &&
-                    (self()->getRealRegister(REGNUM(fromreg)))->isLowWordRegister() &&
+   bool checkHPR = ((self()->getRealRegister(REGNUM(fromreg)))->isLowWordRegister() &&
                     (self()->getRealRegister(REGNUM(toreg)))->isLowWordRegister());
 
    for (int32_t i = fromreg; i <= toreg; ++i)

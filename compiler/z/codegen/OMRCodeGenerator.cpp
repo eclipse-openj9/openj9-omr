@@ -2578,30 +2578,9 @@ OMR::Z::CodeGenerator::doRegisterAssignment(TR_RegisterKinds kindsToAssign)
       {
       if (self()->getDebug())
          {
-         TR_RegisterKinds rks = (TR_RegisterKinds)(TR_GPR_Mask | TR_FPR_Mask | TR_VRF_Mask);
-         if (self()->supportsHighWordFacility() && !self()->comp()->getOption(TR_DisableHighWordRA))
-            rks = (TR_RegisterKinds) ((int)rks | TR_HPR_Mask);
+         TR_RegisterKinds rks = (TR_RegisterKinds)(TR_GPR_Mask | TR_HPR_Mask | TR_FPR_Mask | TR_VRF_Mask);
 
          self()->getDebug()->startTracingRegisterAssignment("backward", rks);
-         }
-      }
-
-   // pre-pass to set all internal control flow reg deps to 64bit regs
-   TR::Instruction * currInst = instructionCursor;
-   if (self()->supportsHighWordFacility() && !self()->comp()->getOption(TR_DisableHighWordRA) && TR::Compiler->target.is64Bit())
-      {
-      while (currInst)
-         {
-         TR::LabelSymbol *labelSym = currInst->isLabel() ? toS390LabelInstruction(currInst)->getLabelSymbol() : NULL;
-         if (labelSym && labelSym->isEndInternalControlFlow())
-            {
-            if (currInst->getDependencyConditions())
-               {
-               // traceMsg(comp(), "\nsetting all conds on [%p] to be 64-bit regs", currInst);
-               currInst->getDependencyConditions()->set64BitRegisters();
-               }
-            }
-         currInst = currInst->getPrev();
          }
       }
 

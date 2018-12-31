@@ -108,12 +108,6 @@ lconstHelper64(TR::Node * node, TR::CodeGenerator * cg)
    int64_t longValue = node->getLongInt();
    genLoadLongConstant(cg, node, longValue, longRegister);
 
-   // on 64bit, lconst returns 64bit registers
-   if (cg->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) && TR::Compiler->target.is64Bit())
-      {
-      longRegister->setIs64BitReg(true);
-      }
-
    return longRegister;
    }
 

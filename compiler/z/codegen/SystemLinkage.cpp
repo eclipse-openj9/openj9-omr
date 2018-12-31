@@ -97,28 +97,10 @@ TR::S390SystemLinkage::initS390RealRegisterLinkage()
    spReal->setAssignedRegister(spReal);
    spReal->setHasBeenAssignedInMethod(true);
 
-   if (cg()->supportsHighWordFacility() && !comp()->getOption(TR_DisableHighWordRA) && TR::Compiler->target.is64Bit())
-      {
-      TR::RealRegister * tempHigh = toRealRegister(spReal)->getHighWordRegister();
-      tempHigh->setState(TR::RealRegister::Locked);
-      tempHigh->setAssignedRegister(tempHigh);
-      tempHigh->setHasBeenAssignedInMethod(true);
-      }
-
-#if 0
-   TR::RealRegister * gpr0Real  = machine()->getRealRegister(TR::RealRegister::GPR0);
-   gpr0Real->setState(TR::RealRegister::Locked);
-   gpr0Real->setAssignedRegister(gpr0Real);
-   gpr0Real->setHasBeenAssignedInMethod(true);
-#endif
-
-#if 0
-// May lock this if GOT needed
-   TR::RealRegister * gpr12Real  = cg()->machine()->getRealRegister(TR::RealRegister::GPR12);
-   gpr12Real->setState(TR::RealRegister::Locked);
-   gpr12Real->setAssignedRegister(gpr12Real);
-   gpr12Real->setHasBeenAssignedInMethod(true);
-#endif
+   TR::RealRegister * tempHigh = toRealRegister(spReal)->getHighWordRegister();
+   tempHigh->setState(TR::RealRegister::Locked);
+   tempHigh->setAssignedRegister(tempHigh);
+   tempHigh->setHasBeenAssignedInMethod(true);
 
    // set register weight
    for (icount = TR::RealRegister::FirstGPR; icount >= TR::RealRegister::LastAssignableGPR; icount++)

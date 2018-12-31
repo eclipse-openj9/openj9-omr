@@ -892,7 +892,6 @@ lDivRemGenericEvaluator(TR::Node * node, TR::CodeGenerator * cg, bool isDivision
       TR::LabelSymbol * dontDiv = generateLabelSymbol(cg);
       TR::RegisterPair * divisorPair = (TR::RegisterPair *) cg->gprClobberEvaluate(secondChild);
       TR::Register     * litPoolBase = NULL;
-      bool highWordRADisabled = !cg->supportsHighWordFacility() || comp->getOption(TR_DisableHighWordRA);
 
       // 1st-6th Post Conditions as listed below
       // Setup arguments
@@ -1778,15 +1777,8 @@ genericIntShift(TR::Node * node, TR::CodeGenerator * cg, TR::InstOpCode::Mnemoni
       trgReg = cg->allocateRegister();
       if (!canUseAltShiftOp || shiftAmount == 0)
          {
-         TR::InstOpCode::Mnemonic loadRegOpCode = TR::InstOpCode::getLoadRegOpCode();
-         if (cg->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) && TR::Compiler->target.is64Bit())
-            {
-            loadRegOpCode = TR::InstOpCode::getLoadRegOpCodeFromNode(cg, node);
-            if (srcReg->is64BitReg())
-               {
-               loadRegOpCode = TR::InstOpCode::LGR;
-               }
-            }
+         TR::InstOpCode::Mnemonic loadRegOpCode = TR::InstOpCode::getLoadRegOpCodeFromNode(cg, node);
+
          generateRRInstruction(cg, loadRegOpCode, node, trgReg, srcReg);
          }
       }
@@ -2254,7 +2246,7 @@ genericRotateAndInsertHelper(TR::Node * node, TR::CodeGenerator * cg)
          {
          // if GRA had decided to assign HPR to these nodes, we cannot use RISBG because they are 64-bit
          // instructions
-         if (cg->supportsHighWordFacility() &&
+         if (cg->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) &&
              firstChild->getFirstChild()->getRegister() &&
              firstChild->getFirstChild()->getRegister()->assignToHPR())
             {
@@ -2720,7 +2712,6 @@ lmulHelper(TR::Node * node, TR::CodeGenerator * cg)
    // Determine if second child is constant.  There are special tricks for these.
    bool secondChildIsConstant = secondChild->getOpCodeValue() == TR::lconst && secondChild->getRegister() == NULL;
    bool firstHighZero = false, secondHighZero = false;
-   bool highWordRADisabled = !cg->supportsHighWordFacility() || comp->getOption(TR_DisableHighWordRA);
    if (!secondChildIsConstant && firstChild->isHighWordZero() && !secondChild->isHighWordZero())
       {
       // swap children pointers since optimizer puts highWordZero children as firstChild if the
@@ -3042,7 +3033,6 @@ dualMulHelper32on64(TR::Node * node, TR::Node * lmulNode, TR::Node * lumulhNode,
    // seems to need only three conditions, not six
    //TR::RegisterDependencyConditions * dependencies = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 6, cg);
    TR::RegisterDependencyConditions * dependencies = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 3, cg);
-   bool highWordRADisabled = !cg->supportsHighWordFacility() || comp->getOption(TR_DisableHighWordRA);
    // doesn't seem to need these conditions
    //dependencies->addPostCondition(lumulhTargetRegister, TR::RealRegister::EvenOddPair);
    //dependencies->addPostCondition(lumulhTargetRegister->getHighOrder(), TR::RealRegister::LegalEvenOfPair);
@@ -3551,7 +3541,6 @@ OMR::Z::TreeEvaluator::lmulhEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    TR::Register * sourceRegister;
    TR::Register * resultRegister;
    TR::Compilation *comp = cg->comp();
-   bool highWordRADisabled = !cg->supportsHighWordFacility() || comp->getOption(TR_DisableHighWordRA);
 
    if (TR::Compiler->target.is32Bit() && !cg->use64BitRegsOn32Bit())
       {

@@ -151,13 +151,10 @@ TR::Instruction *
 generateS390BranchInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register * targetReg,
                               TR::LabelSymbol * sym, TR::Instruction * preced)
    {
-   if (cg->supportsHighWordFacility() && !cg->comp()->getOption(TR_DisableHighWordRA))
+   if (op == TR::InstOpCode::BRCT && targetReg->assignToHPR())
       {
-      if (op == TR::InstOpCode::BRCT && targetReg->assignToHPR())
-         {
-         // upgrade to Highword branch on count
-         op = TR::InstOpCode::BRCTH;
-         }
+      // upgrade to Highword branch on count
+      op = TR::InstOpCode::BRCTH;
       }
    if (preced)
       {
@@ -170,13 +167,10 @@ TR::Instruction *
 generateS390BranchInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register * targetReg,
                               TR::RegisterDependencyConditions *cond, TR::LabelSymbol * sym, TR::Instruction * preced)
    {
-   if (cg->supportsHighWordFacility() && !cg->comp()->getOption(TR_DisableHighWordRA))
+   if (op == TR::InstOpCode::BRCT && targetReg->assignToHPR())
       {
-      if (op == TR::InstOpCode::BRCT && targetReg->assignToHPR())
-         {
-         // upgrade to Highword branch on count
-         op = TR::InstOpCode::BRCTH;
-         }
+      // upgrade to Highword branch on count
+      op = TR::InstOpCode::BRCTH;
       }
    if (preced)
       {
@@ -479,95 +473,92 @@ TR::Instruction *
 generateRRInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register * treg, TR::Register * sreg,
                       TR::Instruction * preced)
    {
-   if (cg->supportsHighWordFacility() && !cg->comp()->getOption(TR_DisableHighWordRA))
+   switch(op)
       {
-      switch(op)
-         {
-         case TR::InstOpCode::AR:
-            if (treg->assignToHPR())
-               {
-               if (sreg->assignToHPR())
-                  {
-                  return generateRRRInstruction(cg, TR::InstOpCode::AHHHR, n, treg, treg, sreg, preced);
-                  }
-               //cracked insn
-               //return generateRRRInstruction(cg, TR::InstOpCode::AHHLR, n, treg, treg, sreg, preced);
-               }
-            break;
-         case TR::InstOpCode::ALR:
-            if (treg->assignToHPR())
-               {
-               if (sreg->assignToHPR())
-                  {
-                  return generateRRRInstruction(cg, TR::InstOpCode::ALHHHR, n, treg, treg, sreg, preced);
-                  }
-               //return generateRRRInstruction(cg, TR::InstOpCode::ALHHLR, n, treg, treg, sreg, preced);
-               }
-            break;
-         case TR::InstOpCode::CR:
-            if (treg->assignToHPR())
-               {
-               op = TR::InstOpCode::CHLR;
-               if (sreg->assignToHPR())
-                  {
-                  op = TR::InstOpCode::CHHR;
-                  }
-               }
-            break;
-         case TR::InstOpCode::CLR:
-            if (treg->assignToHPR())
-               {
-               op = TR::InstOpCode::CLHLR;
-               if (sreg->assignToHPR())
-                  {
-                  op = TR::InstOpCode::CLHHR;
-                  }
-               }
-            break;
-         case TR::InstOpCode::LR:
-            if (treg->assignToHPR())
-               {
-               if (sreg->assignToHPR())
-                  {
-                  return generateExtendedHighWordInstruction(n, cg, TR::InstOpCode::LHHR, treg, sreg, 0, preced);
-                  }
-               return generateExtendedHighWordInstruction(n, cg, TR::InstOpCode::LHLR, treg, sreg, 0, preced);
-               }
+      case TR::InstOpCode::AR:
+         if (treg->assignToHPR())
+            {
             if (sreg->assignToHPR())
                {
-               return generateExtendedHighWordInstruction(n, cg, TR::InstOpCode::LLHFR, treg, sreg, 0, preced);
+               return generateRRRInstruction(cg, TR::InstOpCode::AHHHR, n, treg, treg, sreg, preced);
                }
-            break;
-         case TR::InstOpCode::SR:
-            if (treg->assignToHPR())
+            //cracked insn
+            //return generateRRRInstruction(cg, TR::InstOpCode::AHHLR, n, treg, treg, sreg, preced);
+            }
+         break;
+      case TR::InstOpCode::ALR:
+         if (treg->assignToHPR())
+            {
+            if (sreg->assignToHPR())
                {
-               if (sreg->assignToHPR())
-                  {
-                  return generateRRRInstruction(cg, TR::InstOpCode::SHHHR, n, treg, treg, sreg, preced);
-                  }
-               //return generateRRRInstruction(cg, TR::InstOpCode::SHHLR, n, treg, treg, sreg, preced);
+               return generateRRRInstruction(cg, TR::InstOpCode::ALHHHR, n, treg, treg, sreg, preced);
                }
-            break;
-         case TR::InstOpCode::SLR:
-            if (treg->assignToHPR())
+            //return generateRRRInstruction(cg, TR::InstOpCode::ALHHLR, n, treg, treg, sreg, preced);
+            }
+         break;
+      case TR::InstOpCode::CR:
+         if (treg->assignToHPR())
+            {
+            op = TR::InstOpCode::CHLR;
+            if (sreg->assignToHPR())
                {
-               if (sreg->assignToHPR())
-                  {
-                  return generateRRRInstruction(cg, TR::InstOpCode::SLHHHR, n, treg, treg, sreg, preced);
-                  }
-               //return generateRRRInstruction(cg, TR::InstOpCode::SLHHLR, n, treg, treg, sreg, preced);
+               op = TR::InstOpCode::CHHR;
                }
-            break;
-         case TR::InstOpCode::LHHR:
-            return generateExtendedHighWordInstruction(n, cg, TR::InstOpCode::LHHR, treg, sreg, 0, preced);
-            break;
-         case TR::InstOpCode::LLHFR:
-            return generateExtendedHighWordInstruction(n, cg, TR::InstOpCode::LLHFR, treg, sreg, 0, preced);
-            break;
-         case TR::InstOpCode::LHLR:
+            }
+         break;
+      case TR::InstOpCode::CLR:
+         if (treg->assignToHPR())
+            {
+            op = TR::InstOpCode::CLHLR;
+            if (sreg->assignToHPR())
+               {
+               op = TR::InstOpCode::CLHHR;
+               }
+            }
+         break;
+      case TR::InstOpCode::LR:
+         if (treg->assignToHPR())
+            {
+            if (sreg->assignToHPR())
+               {
+               return generateExtendedHighWordInstruction(n, cg, TR::InstOpCode::LHHR, treg, sreg, 0, preced);
+               }
             return generateExtendedHighWordInstruction(n, cg, TR::InstOpCode::LHLR, treg, sreg, 0, preced);
-            break;
-         }
+            }
+         if (sreg->assignToHPR())
+            {
+            return generateExtendedHighWordInstruction(n, cg, TR::InstOpCode::LLHFR, treg, sreg, 0, preced);
+            }
+         break;
+      case TR::InstOpCode::SR:
+         if (treg->assignToHPR())
+            {
+            if (sreg->assignToHPR())
+               {
+               return generateRRRInstruction(cg, TR::InstOpCode::SHHHR, n, treg, treg, sreg, preced);
+               }
+            //return generateRRRInstruction(cg, TR::InstOpCode::SHHLR, n, treg, treg, sreg, preced);
+            }
+         break;
+      case TR::InstOpCode::SLR:
+         if (treg->assignToHPR())
+            {
+            if (sreg->assignToHPR())
+               {
+               return generateRRRInstruction(cg, TR::InstOpCode::SLHHHR, n, treg, treg, sreg, preced);
+               }
+            //return generateRRRInstruction(cg, TR::InstOpCode::SLHHLR, n, treg, treg, sreg, preced);
+            }
+         break;
+      case TR::InstOpCode::LHHR:
+         return generateExtendedHighWordInstruction(n, cg, TR::InstOpCode::LHHR, treg, sreg, 0, preced);
+         break;
+      case TR::InstOpCode::LLHFR:
+         return generateExtendedHighWordInstruction(n, cg, TR::InstOpCode::LLHFR, treg, sreg, 0, preced);
+         break;
+      case TR::InstOpCode::LHLR:
+         return generateExtendedHighWordInstruction(n, cg, TR::InstOpCode::LHLR, treg, sreg, 0, preced);
+         break;
       }
 
    TR::Instruction *instr;
@@ -756,7 +747,7 @@ generateRXInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::N
    TR_ASSERT(treg->getRealRegister()!=NULL || // Not in RA
            op != TR::InstOpCode::L || !n->isExtendedTo64BitAtSource(), "Generating an TR::InstOpCode::L, when LLGF|LGF should be used");
 
-   if (cg->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) && treg->assignToHPR())
+   if (treg->assignToHPR())
       {
       switch(op)
          {
@@ -921,7 +912,7 @@ TR::Instruction *
 generateRIInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register * treg, int32_t imm, TR::Instruction * preced)
    {
    TR::Compilation *comp = cg->comp();
-   if (cg->supportsHighWordFacility() && comp->getOption(TR_DisableHighWordRA) && treg->assignToHPR())
+   if (treg->assignToHPR())
       {
       switch(op)
          {
@@ -3130,111 +3121,108 @@ generateExtendedHighWordInstruction(TR::Node * node, TR::CodeGenerator *cg, TR::
    bool isTargetHWUsed, isSrcHWUsed, isTargetLWUsed, isSrcLWUsed; // make sure to not clobber the flags
    TR::Compilation *comp = cg->comp();
 
-   if (cg->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA))
+   switch(op)
       {
-      switch(op)
-         {
-         case TR::InstOpCode::LHHR:         // Load (High <- High)
-            cursor = generateRIEInstruction(cg, TR::InstOpCode::RISBHG, node, targetReg, srcReg, 0, 31+0x80, 0, preced);
-            COMMENT = "LHHR : Load (High <- High)";
-            break;
-         case TR::InstOpCode::LHLR:         // Load (High <- Low)
-            cursor = generateRIEInstruction(cg, TR::InstOpCode::RISBHG, node, targetReg, srcReg, 0, 31+0x80, 32, preced);
-            COMMENT = "LHLR : Load (High <- Low)";
-            break;
-         case TR::InstOpCode::LLHFR:        // Load (Low <- High)
-            cursor = generateRIEInstruction(cg, TR::InstOpCode::RISBLG, node, targetReg, srcReg, 0, 31+0x80, 32, preced);
-            COMMENT = "LLHFR : Load (Low <- High)";
-            break;
-         case TR::InstOpCode::LLHHHR:       // Load Logical Halfword (High <- High)
-            cursor = generateRIEInstruction(cg, TR::InstOpCode::RISBHG, node, targetReg, srcReg, 16, 31+0x80, 0, preced);
-            COMMENT = "LLHHHR : Load Logical Halfword (High <- High)";
-            break;
-         case TR::InstOpCode::LLHHLR:       // Load Logical Halfword (High <- Low)
-            cursor = generateRIEInstruction(cg, TR::InstOpCode::RISBHG, node, targetReg, srcReg, 16, 31+0x80, 32, preced);
-            COMMENT = "LLHHLR : Load Logical Halfword (High <- Low)";
-            break;
-         case TR::InstOpCode::LLHLHR:       // Load Logical Halfword (Low <- High)
-            cursor = generateRIEInstruction(cg, TR::InstOpCode::RISBLG, node, targetReg, srcReg, 16, 31+0x80, 32, preced);
-            COMMENT = "LLHLHR : Load Logical Halfword (Low <- High)";
-            break;
-         case TR::InstOpCode::LLCHHR:       // Load Logical Character (High <- High)
-            cursor = generateRIEInstruction(cg, TR::InstOpCode::RISBHG, node, targetReg, srcReg, 24, 31+0x80, 0, preced);
-            COMMENT = "LLCHHR : Load Logical Character (High <- High)";
-            break;
-         case TR::InstOpCode::LLCHLR:       // Load Logical Character (High <- Low)
-            cursor = generateRIEInstruction(cg, TR::InstOpCode::RISBHG, node, targetReg, srcReg, 24, 31+0x80, 32, preced);
-            COMMENT = "LLCHLR : Load Logical Character (High <- Low)";
-            break;
-         case TR::InstOpCode::LLCLHR:       // Load Logical Character (Low <- High)
-            cursor = generateRIEInstruction(cg, TR::InstOpCode::RISBLG, node, targetReg, srcReg, 24, 31+0x80, 32, preced);
-            COMMENT =  "LLCLHR : Load Logical Character (Low <- High)";
-            break;
-         case TR::InstOpCode::SLLHH:        // Shift Left Logical (High <- High)
-            cursor = generateRIEInstruction(cg, TR::InstOpCode::RISBHG, node, targetReg, srcReg, 0, 31-imm8+0x80, imm8, preced);
-            COMMENT = "SLLHH : Shift Left Logical (High <- High)";
-            break;
-         case TR::InstOpCode::SLLLH:        // Shift Left Logical (Low <- High)
-            cursor = generateRIEInstruction(cg, TR::InstOpCode::RISBLG, node, targetReg, srcReg, 0, 31-imm8+0x80, 32+imm8, preced);
-            COMMENT = "SLLLH : Shift Left Logical (Low <- High)";
-            break;
-         case TR::InstOpCode::SRLHH:        // Shift Right Logical (High <- High)
-            cursor = generateRIEInstruction(cg, TR::InstOpCode::RISBHG, node, targetReg, srcReg, imm8, 31+0x80, -imm8, preced);
-            COMMENT = "SRLHH : Shift Right Logical (High <- High)";
-            break;
-         case TR::InstOpCode::SRLLH:        // Shift Right Logical (Low <- High)
-            cursor = generateRIEInstruction(cg, TR::InstOpCode::RISBLG, node, targetReg, srcReg, imm8, 31+0x80, 32-imm8, preced);
-            COMMENT = "SRLHH : Shift Right Logical (Low <- High)";
-            break;
-         case TR::InstOpCode::NHHR:         // AND High (High <- High)
-            cursor = generateRIEInstruction(cg, TR::InstOpCode::RNSBG, node, targetReg, srcReg, 0, 31, 0, preced);
-            COMMENT = "NHHR : AND High (High <- High)";
-            break;
-         case TR::InstOpCode::NHLR:         // AND High (High <- Low)
-            cursor = generateRIEInstruction(cg, TR::InstOpCode::RNSBG, node, targetReg, srcReg, 0, 31, 32, preced);
-            COMMENT = "NHLR : AND High (High <- Low)";
-            break;
-         case TR::InstOpCode::NLHR:         // AND High (Low <- High)
-            cursor = generateRIEInstruction(cg, TR::InstOpCode::RNSBG, node, targetReg, srcReg, 32, 63, 32, preced);
-            COMMENT = "NLHR : AND High (Low <- High)";
-            break;
-         case TR::InstOpCode::XHHR:         // XOR High (High <- High)
-            cursor = generateRIEInstruction(cg, TR::InstOpCode::RXSBG, node, targetReg, srcReg, 0, 31, 0, preced);
-            COMMENT = "XHHR : XOR High (High <- High)";
-            break;
-         case TR::InstOpCode::XHLR:         // XOR High (High <- Low)
-            cursor = generateRIEInstruction(cg, TR::InstOpCode::RXSBG, node, targetReg, srcReg, 0, 31, 32, preced);
-            COMMENT = "XHLR : XOR High (High <- Low)";
-            break;
-         case TR::InstOpCode::XLHR:         // XOR High (Low <- High)
-            cursor = generateRIEInstruction(cg, TR::InstOpCode::RXSBG, node, targetReg, srcReg, 32, 63, 32, preced);
-            COMMENT = "XLHR : XOR High (Low <- High)";
-            break;
-         case TR::InstOpCode::OHHR:         // OR High (High <- High)
-            cursor = generateRIEInstruction(cg, TR::InstOpCode::ROSBG, node, targetReg, srcReg, 0, 31, 0, preced);
-            COMMENT = "OHHR : OR High (High <- High)";
-            break;
-         case TR::InstOpCode::OHLR:         // OR High (High <- Low)
-            cursor = generateRIEInstruction(cg, TR::InstOpCode::ROSBG, node, targetReg, srcReg, 0, 31, 32, preced);
-            COMMENT = "OHLR : OR High (High <- Low)";
-            break;
-         case TR::InstOpCode::OLHR:         // OR High (Low <- High)
-            cursor = generateRIEInstruction(cg, TR::InstOpCode::ROSBG, node, targetReg, srcReg, 32, 63, 32, preced);
-            COMMENT = "OLHR : OR High (Low <- High)";
-           break;
-         default:
-            TR_ASSERT(0, "OpCode not supported when calling generateExtendedHighWordInstruction()");
-            break;
-         }
-
-      ((TR::S390RIEInstruction *)cursor)->setExtendedHighWordOpCode(op);
-
-      if (debugObj)
-         {
-         debugObj->addInstructionComment(cursor, COMMENT);
-         }
-
+      case TR::InstOpCode::LHHR:         // Load (High <- High)
+         cursor = generateRIEInstruction(cg, TR::InstOpCode::RISBHG, node, targetReg, srcReg, 0, 31+0x80, 0, preced);
+         COMMENT = "LHHR : Load (High <- High)";
+         break;
+      case TR::InstOpCode::LHLR:         // Load (High <- Low)
+         cursor = generateRIEInstruction(cg, TR::InstOpCode::RISBHG, node, targetReg, srcReg, 0, 31+0x80, 32, preced);
+         COMMENT = "LHLR : Load (High <- Low)";
+         break;
+      case TR::InstOpCode::LLHFR:        // Load (Low <- High)
+         cursor = generateRIEInstruction(cg, TR::InstOpCode::RISBLG, node, targetReg, srcReg, 0, 31+0x80, 32, preced);
+         COMMENT = "LLHFR : Load (Low <- High)";
+         break;
+      case TR::InstOpCode::LLHHHR:       // Load Logical Halfword (High <- High)
+         cursor = generateRIEInstruction(cg, TR::InstOpCode::RISBHG, node, targetReg, srcReg, 16, 31+0x80, 0, preced);
+         COMMENT = "LLHHHR : Load Logical Halfword (High <- High)";
+         break;
+      case TR::InstOpCode::LLHHLR:       // Load Logical Halfword (High <- Low)
+         cursor = generateRIEInstruction(cg, TR::InstOpCode::RISBHG, node, targetReg, srcReg, 16, 31+0x80, 32, preced);
+         COMMENT = "LLHHLR : Load Logical Halfword (High <- Low)";
+         break;
+      case TR::InstOpCode::LLHLHR:       // Load Logical Halfword (Low <- High)
+         cursor = generateRIEInstruction(cg, TR::InstOpCode::RISBLG, node, targetReg, srcReg, 16, 31+0x80, 32, preced);
+         COMMENT = "LLHLHR : Load Logical Halfword (Low <- High)";
+         break;
+      case TR::InstOpCode::LLCHHR:       // Load Logical Character (High <- High)
+         cursor = generateRIEInstruction(cg, TR::InstOpCode::RISBHG, node, targetReg, srcReg, 24, 31+0x80, 0, preced);
+         COMMENT = "LLCHHR : Load Logical Character (High <- High)";
+         break;
+      case TR::InstOpCode::LLCHLR:       // Load Logical Character (High <- Low)
+         cursor = generateRIEInstruction(cg, TR::InstOpCode::RISBHG, node, targetReg, srcReg, 24, 31+0x80, 32, preced);
+         COMMENT = "LLCHLR : Load Logical Character (High <- Low)";
+         break;
+      case TR::InstOpCode::LLCLHR:       // Load Logical Character (Low <- High)
+         cursor = generateRIEInstruction(cg, TR::InstOpCode::RISBLG, node, targetReg, srcReg, 24, 31+0x80, 32, preced);
+         COMMENT =  "LLCLHR : Load Logical Character (Low <- High)";
+         break;
+      case TR::InstOpCode::SLLHH:        // Shift Left Logical (High <- High)
+         cursor = generateRIEInstruction(cg, TR::InstOpCode::RISBHG, node, targetReg, srcReg, 0, 31-imm8+0x80, imm8, preced);
+         COMMENT = "SLLHH : Shift Left Logical (High <- High)";
+         break;
+      case TR::InstOpCode::SLLLH:        // Shift Left Logical (Low <- High)
+         cursor = generateRIEInstruction(cg, TR::InstOpCode::RISBLG, node, targetReg, srcReg, 0, 31-imm8+0x80, 32+imm8, preced);
+         COMMENT = "SLLLH : Shift Left Logical (Low <- High)";
+         break;
+      case TR::InstOpCode::SRLHH:        // Shift Right Logical (High <- High)
+         cursor = generateRIEInstruction(cg, TR::InstOpCode::RISBHG, node, targetReg, srcReg, imm8, 31+0x80, -imm8, preced);
+         COMMENT = "SRLHH : Shift Right Logical (High <- High)";
+         break;
+      case TR::InstOpCode::SRLLH:        // Shift Right Logical (Low <- High)
+         cursor = generateRIEInstruction(cg, TR::InstOpCode::RISBLG, node, targetReg, srcReg, imm8, 31+0x80, 32-imm8, preced);
+         COMMENT = "SRLHH : Shift Right Logical (Low <- High)";
+         break;
+      case TR::InstOpCode::NHHR:         // AND High (High <- High)
+         cursor = generateRIEInstruction(cg, TR::InstOpCode::RNSBG, node, targetReg, srcReg, 0, 31, 0, preced);
+         COMMENT = "NHHR : AND High (High <- High)";
+         break;
+      case TR::InstOpCode::NHLR:         // AND High (High <- Low)
+         cursor = generateRIEInstruction(cg, TR::InstOpCode::RNSBG, node, targetReg, srcReg, 0, 31, 32, preced);
+         COMMENT = "NHLR : AND High (High <- Low)";
+         break;
+      case TR::InstOpCode::NLHR:         // AND High (Low <- High)
+         cursor = generateRIEInstruction(cg, TR::InstOpCode::RNSBG, node, targetReg, srcReg, 32, 63, 32, preced);
+         COMMENT = "NLHR : AND High (Low <- High)";
+         break;
+      case TR::InstOpCode::XHHR:         // XOR High (High <- High)
+         cursor = generateRIEInstruction(cg, TR::InstOpCode::RXSBG, node, targetReg, srcReg, 0, 31, 0, preced);
+         COMMENT = "XHHR : XOR High (High <- High)";
+         break;
+      case TR::InstOpCode::XHLR:         // XOR High (High <- Low)
+         cursor = generateRIEInstruction(cg, TR::InstOpCode::RXSBG, node, targetReg, srcReg, 0, 31, 32, preced);
+         COMMENT = "XHLR : XOR High (High <- Low)";
+         break;
+      case TR::InstOpCode::XLHR:         // XOR High (Low <- High)
+         cursor = generateRIEInstruction(cg, TR::InstOpCode::RXSBG, node, targetReg, srcReg, 32, 63, 32, preced);
+         COMMENT = "XLHR : XOR High (Low <- High)";
+         break;
+      case TR::InstOpCode::OHHR:         // OR High (High <- High)
+         cursor = generateRIEInstruction(cg, TR::InstOpCode::ROSBG, node, targetReg, srcReg, 0, 31, 0, preced);
+         COMMENT = "OHHR : OR High (High <- High)";
+         break;
+      case TR::InstOpCode::OHLR:         // OR High (High <- Low)
+         cursor = generateRIEInstruction(cg, TR::InstOpCode::ROSBG, node, targetReg, srcReg, 0, 31, 32, preced);
+         COMMENT = "OHLR : OR High (High <- Low)";
+         break;
+      case TR::InstOpCode::OLHR:         // OR High (Low <- High)
+         cursor = generateRIEInstruction(cg, TR::InstOpCode::ROSBG, node, targetReg, srcReg, 32, 63, 32, preced);
+         COMMENT = "OLHR : OR High (Low <- High)";
+         break;
+      default:
+         TR_ASSERT(0, "OpCode not supported when calling generateExtendedHighWordInstruction()");
+         break;
       }
+
+   ((TR::S390RIEInstruction *)cursor)->setExtendedHighWordOpCode(op);
+
+   if (debugObj)
+      {
+      debugObj->addInstructionComment(cursor, COMMENT);
+      }
+
    return cursor;
    }
 

@@ -86,7 +86,7 @@ class OMR_EXTENSIBLE Register: public OMR::Register
    void setIsUsedInMemRef(bool b = true)    {_flags.set(IsUsedInMemRef, b);}
 
    bool is64BitReg();
-   void setIs64BitReg(bool b = true)               {_flags.set(Is64Bit, b);}
+   void setIs64BitReg(bool b = true);
 
    bool assignToHPR();
    void setAssignToHPR(bool b = true)              {_flags.set(AssignToHPR, b);}

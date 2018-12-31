@@ -2593,6 +2593,7 @@ OMR::Z::Linkage::buildArgs(TR::Node * callNode, TR::RegisterDependencyConditions
       TR::Register *reg = self()->cg()->allocateRegister();
 
       dependencies->addPostCondition(reg, TR::RealRegister::KillVolHighRegs);
+      self()->cg()->stopUsingRegister(reg);
       }
 
    // Adjust largest outgoing argument area

@@ -22,6 +22,8 @@
 #include "OpCodeTest.hpp"
 #include "default_compiler.hpp"
 
+#include <math.h>
+
 int32_t icmpeq(int32_t l, int32_t r) {
     return (l == r) ? 1 : 0;
 }
@@ -379,3 +381,192 @@ INSTANTIATE_TEST_CASE_P(CompareTest, UInt64Compare, ::testing::Combine(
         std::make_tuple("lucmpge", lucmpge),
         std::make_tuple("lucmplt", lucmplt),
         std::make_tuple("lucmple", lucmple) )));
+
+template <typename T>
+bool smallFp_filter(std::tuple<T, T> a)
+   {
+   // workaround: avoid failure caused by snprintf("%f")
+   auto a0 = std::get<0>(a);
+   auto a1 = std::get<1>(a);
+   return ((abs(a0) < 0.01 && a0 != 0.0) || (abs(a1) < 0.01 && a1 != 0.0));
+   }
+
+int32_t fcmpeq(float l, float r) {
+    return (l == r) ? 1 : 0;
+}
+
+int32_t fcmpne(float l, float r) {
+    return (l != r) ? 1 : 0;
+}
+
+int32_t fcmpgt(float l, float r) {
+    return (l > r) ? 1 : 0;
+}
+
+int32_t fcmpge(float l, float r) {
+    return (l >= r) ? 1 : 0;
+}
+
+int32_t fcmplt(float l, float r) {
+    return (l < r) ? 1 : 0;
+}
+
+int32_t fcmple(float l, float r) {
+    return (l <= r) ? 1 : 0;
+}
+
+class FloatCompare : public TRTest::OpCodeTest<int32_t, float, float> {};
+
+TEST_P(FloatCompare, UsingConst) {
+    auto param = TRTest::to_struct(GetParam());
+
+    char inputTrees[1024] = {0};
+    std::snprintf(inputTrees, 1024,
+       "(method return=Int32 "
+         "(block "
+           "(ireturn "
+             "(%s "
+               "(fconst %f) "
+               "(fconst %f)))))",
+       param.opcode.c_str(), param.lhs, param.rhs);
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler{trees};
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<int32_t (*)(void)>();
+    volatile auto exp = param.oracle(param.lhs, param.rhs);
+    volatile auto act = entry_point();
+    ASSERT_EQ(exp, act);
+}
+
+TEST_P(FloatCompare, UsingLoadParam) {
+    auto param = TRTest::to_struct(GetParam());
+
+    char inputTrees[160] = {0};
+    std::snprintf(inputTrees, 160,
+       "(method return=Int32 args=[Float, Float] "
+         "(block "
+           "(ireturn "
+             "(%s "
+               "(fload parm=0) "
+               "(fload parm=1)))))",
+       param.opcode.c_str());
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler{trees};
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<int32_t (*)(float, float)>();
+    volatile auto exp = param.oracle(param.lhs, param.rhs);
+    volatile auto act = entry_point(param.lhs, param.rhs);
+    ASSERT_EQ(exp, act);
+}
+
+INSTANTIATE_TEST_CASE_P(CompareTest, FloatCompare, ::testing::Combine(
+    ::testing::ValuesIn(
+        TRTest::filter(TRTest::const_value_pairs<float, float>(), smallFp_filter<float>)),
+    ::testing::Values(
+        std::make_tuple("fcmpeq", fcmpeq),
+        std::make_tuple("fcmpne", fcmpne),
+        std::make_tuple("fcmpgt", fcmpgt),
+        std::make_tuple("fcmpge", fcmpge),
+        std::make_tuple("fcmplt", fcmplt),
+        std::make_tuple("fcmple", fcmple)
+    )));
+
+int32_t dcmpeq(double l, double r) {
+    return (l == r) ? 1 : 0;
+}
+
+int32_t dcmpne(double l, double r) {
+    return (l != r) ? 1 : 0;
+}
+
+int32_t dcmpgt(double l, double r) {
+    return (l > r) ? 1 : 0;
+}
+
+int32_t dcmpge(double l, double r) {
+    return (l >= r) ? 1 : 0;
+}
+
+int32_t dcmplt(double l, double r) {
+    return (l < r) ? 1 : 0;
+}
+
+int32_t dcmple(double l, double r) {
+    return (l <= r) ? 1 : 0;
+}
+
+class DoubleCompare : public TRTest::OpCodeTest<int32_t, double, double> {};
+
+TEST_P(DoubleCompare, UsingConst) {
+    auto param = TRTest::to_struct(GetParam());
+
+    char inputTrees[1024] = {0};
+    std::snprintf(inputTrees, 1024,
+       "(method return=Int32 "
+         "(block "
+           "(ireturn "
+             "(%s "
+               "(dconst %f) "
+               "(dconst %f)))))",
+       param.opcode.c_str(), param.lhs, param.rhs);
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler{trees};
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<int32_t (*)(void)>();
+    volatile auto exp = param.oracle(param.lhs, param.rhs);
+    volatile auto act = entry_point();
+    ASSERT_EQ(exp, act);
+}
+
+TEST_P(DoubleCompare, UsingLoadParam) {
+    auto param = TRTest::to_struct(GetParam());
+
+    char inputTrees[160] = {0};
+    std::snprintf(inputTrees, 160,
+       "(method return=Int32 args=[Double, Double] "
+         "(block "
+           "(ireturn "
+             "(%s "
+               "(dload parm=0) "
+               "(dload parm=1)))))",
+       param.opcode.c_str());
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler{trees};
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<int32_t (*)(double, double)>();
+    volatile auto exp = param.oracle(param.lhs, param.rhs);
+    volatile auto act = entry_point(param.lhs, param.rhs);
+    ASSERT_EQ(exp, act);
+}
+
+INSTANTIATE_TEST_CASE_P(CompareTest, DoubleCompare, ::testing::Combine(
+    ::testing::ValuesIn(
+        TRTest::filter(TRTest::const_value_pairs<double, double>(), smallFp_filter<double>)),
+    ::testing::Values(
+        std::make_tuple("dcmpeq", dcmpeq),
+        std::make_tuple("dcmpne", dcmpne),
+        std::make_tuple("dcmpgt", dcmpgt),
+        std::make_tuple("dcmpge", dcmpge),
+        std::make_tuple("dcmplt", dcmplt),
+        std::make_tuple("dcmple", dcmple)
+    )));

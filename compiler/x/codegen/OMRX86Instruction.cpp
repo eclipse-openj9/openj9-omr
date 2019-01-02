@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1137,7 +1137,8 @@ void
 TR::X86RegImmSymInstruction::autoSetReloKind()
    {
    TR::Symbol *symbol = getSymbolReference()->getSymbol();
-   if (symbol->isConst())
+   if (symbol->isConst() ||
+       symbol->isConstantPoolAddress())
       {
       setReloKind(TR_ConstantPool);
       }
@@ -3949,7 +3950,7 @@ TR::AMD64RegImm64SymInstruction::autoSetReloKind()
    TR::Symbol *symbol = getSymbolReference()->getSymbol();
    if (symbol->isDebugCounter())
       setReloKind(TR_DebugCounter);
-   else if (symbol->isConst())
+   else if (symbol->isConst() || symbol->isConstantPoolAddress())
       setReloKind(TR_ConstantPool);
    else if (symbol->isStatic() && !getSymbolReference()->isUnresolved() && !symbol->isClassObject() && !symbol->isNotDataAddress())
       setReloKind(TR_DataAddress);

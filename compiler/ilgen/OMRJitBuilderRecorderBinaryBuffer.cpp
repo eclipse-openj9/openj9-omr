@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2018 IBM Corp. and others
+ * Copyright (c) 2018, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -21,6 +21,7 @@
 
 #include <stdint.h>
 #include <cstring>
+#include <limits>
 
 #include "ilgen/JitBuilderRecorderBinaryBuffer.hpp"
 #include "infra/Assert.hpp"
@@ -40,8 +41,9 @@ void
 OMR::JitBuilderRecorderBinaryBuffer::String(const char * const string)
    {
    // length(int16) characters
-   int32_t len = strlen(string);
-   TR_ASSERT(len < INT16_MAX, "JBIL: binary String format limited to %d characters", INT16_MAX);
+   const size_t len = strlen(string);
+   const int max = std::numeric_limits<int16_t>::max();
+   TR_ASSERT(len < max, "JBIL: binary String format limited to %d characters", max);
 
    Number((int16_t)len);
    for (int16_t i=0;i < len;i++)

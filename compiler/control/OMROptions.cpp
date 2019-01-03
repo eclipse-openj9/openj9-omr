@@ -697,7 +697,6 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"enableLabelTargetNOPs",             "O\tenable inserting NOPs before label targets", SET_OPTION_BIT(TR_EnableLabelTargetNOPs),  "F"},
    {"enableLargeCodePages",              "C\tenable large code pages",  SET_OPTION_BIT(TR_EnableLargeCodePages), "F"},
    {"enableLastRetrialLogging",          "O\tenable fullTrace logging for last compilation attempt. Needs to have a log defined on the command line", SET_OPTION_BIT(TR_EnableLastCompilationRetrialLogging), "F"},
-   {"enableLateCleanFolding",            "O\tfold pdclean flags into pdstore nodes right before codegen",  SET_OPTION_BIT(TR_EnableLateCleanFolding), "F"},
    {"enableLinkagePreserveStrategy2",              "O\tenable linkage strategy 2", SET_OPTION_BIT(TR_LinkagePreserveStrategy2), "F"},
    {"enableLocalVPSkipLowFreqBlock",     "O\tSkip processing of low frequency blocks in localVP", SET_OPTION_BIT(TR_EnableLocalVPSkipLowFreqBlock), "F" },
    {"enableLongRegAllocation",            "O\tenable allocation of 64-bit regs on 32-bit",      SET_OPTION_BIT(TR_Enable64BitRegsOn32Bit), "F"},

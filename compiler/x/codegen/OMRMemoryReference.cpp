@@ -523,8 +523,13 @@ OMR::X86::MemoryReference::populateMemoryReference(
        subTree->getSymbolReference()->getSymbol()->isMethodMetaData())
       evalSubTree = false;
 
-   if (evalSubTree &&
-       subTree->getReferenceCount() > 1 || subTree->getRegister() != NULL || (self()->inUpcastingMode() && !subTree->cannotOverflow()))
+   // This condition was previously formatted in a misleading way given the
+   //  conditional being evaluated. I believe the condition is correct (rather,
+   //  I have no strong evidence that it is incorrect other than the formatting)
+   //  so I added parentheses to eliminate a compiler warning and reformatted
+   if ((evalSubTree && subTree->getReferenceCount() > 1)
+       || (subTree->getRegister() != NULL)
+       || (self()->inUpcastingMode() && !subTree->cannotOverflow()))
       {
       if (_baseRegister != NULL)
          {

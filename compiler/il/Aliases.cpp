@@ -820,7 +820,7 @@ OMR::SymbolReference::sharesSymbol(bool includingGCSafePoint)
          if ((self()->isUnresolved() && (_symbol->isConstantDynamic() || !_symbol->isConstObjectRef())) || 
 	       _symbol->isVolatile() || self()->isLiteralPoolAddress() ||
                self()->isFromLiteralPool() || _symbol->isUnsafeShadowSymbol() ||
-               _symbol->isArrayShadowSymbol() && c->getMethodSymbol()->hasVeryRefinedAliasSets())
+               (_symbol->isArrayShadowSymbol() && c->getMethodSymbol()->hasVeryRefinedAliasSets()))
             {
             // getUseDefAliases might not return NULL
             }

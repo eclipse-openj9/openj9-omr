@@ -135,8 +135,8 @@ const bool TR_LoadExtensions::canSkipConversion(TR::Node* conversion, TR::Node* 
          (TR::Compiler->target.is64Bit() || comp()->cg()->use64BitRegsOn32Bit() || conversion->getSize() != 8) &&
 
          // Ensure the conversion matches our preferred extension on the load
-         (loadPrefersSignExtension && loadPrefersSignExtension == conversionOpCode.isSignExtension() ||
-          loadPrefersZeroExtension && loadPrefersZeroExtension == conversion->isZeroExtension()))
+         ((loadPrefersSignExtension && loadPrefersSignExtension == conversionOpCode.isSignExtension()) ||
+          (loadPrefersZeroExtension && loadPrefersZeroExtension == conversion->isZeroExtension())))
          {
          if (trace())
             {

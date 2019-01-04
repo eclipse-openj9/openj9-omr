@@ -1433,7 +1433,7 @@ TR_GlobalRegisterAllocator::transformNode(
          // internal pointer must always be present on the stack.
          //
          //
-         if (!fpStore && !symRef->storeCanBeRemoved()
+         if ((!fpStore && !symRef->storeCanBeRemoved())
              || (comp()->getOption(TR_MimicInterpreterFrameShape) && comp()->getOption(TR_FSDGRA)))
             {
             gr->setValue(0);
@@ -3961,9 +3961,9 @@ TR_GlobalRegisterAllocator::markAutosUsedIn(
          }
 
       if (!canSkip &&
-          ((node->getOpCodeValue() == TR::iadd) || (node->getOpCodeValue() == TR::isub) ||
-           (node->getOpCodeValue() == TR::iand) || (node->getOpCodeValue() == TR::iloadi) || (node->getOpCodeValue() == TR::ixor)) ||
-          ((node->getOpCodeValue() == TR::iload) /* && !node->getSymbolReference()->getSymbol()->isAutoOrParm() */))
+          (((node->getOpCodeValue() == TR::iadd) || (node->getOpCodeValue() == TR::isub) ||
+            (node->getOpCodeValue() == TR::iand) || (node->getOpCodeValue() == TR::iloadi) || (node->getOpCodeValue() == TR::ixor)) ||
+           ((node->getOpCodeValue() == TR::iload) /* && !node->getSymbolReference()->getSymbol()->isAutoOrParm() */)))
          {
          TR::Node *storeNode = NULL;
          TR::Node *loadNode = NULL;
@@ -4290,9 +4290,7 @@ TR_GlobalRegisterAllocator::markAutosUsedIn(
       TR::CFG *cfg = comp()->getFlowGraph();
 
       TR::SymbolReference *symRef = node->getSymbolReference();
-      if ((symRef->getSymbol()->isAutoOrParm() ||
-           (0) && symRef->getSymbol()->getDataType() != TR::NoType)
-          && isSymRefAvailable(symRef, blocksInLoop))
+      if (symRef->getSymbol()->isAutoOrParm() && isSymRefAvailable(symRef, blocksInLoop))
          {
          TR_RegisterCandidate *rc = registerCandidates[symRef->getReferenceNumber()];
          if (!rc)

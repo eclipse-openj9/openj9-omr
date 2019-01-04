@@ -43,9 +43,9 @@ create_jitbuilder_test(pow2            cpp/samples/Pow2.cpp)
 create_jitbuilder_test(simple          cpp/samples/Simple.cpp)
 create_jitbuilder_test(worklist        cpp/samples/Worklist.cpp)
 
-# Additional Tests: These may not run properly on all platforms
-# Opt in by setting OMR_JITBUILDER_ADDITIONAL
-if(OMR_JITBUILDER_ADDITIONAL)
+# Extended JitBuilder Tests: These may not run properly on all platforms
+# Opt in by setting OMR_JITBUILDER_TEST_EXTENDED
+if(OMR_JITBUILDER_TEST_EXTENDED)
 	create_jitbuilder_test(call              cpp/samples/Call.cpp)
 	create_jitbuilder_test(conststring       cpp/samples/ConstString.cpp)
 	create_jitbuilder_test(dotproduct        cpp/samples/DotProduct.cpp)

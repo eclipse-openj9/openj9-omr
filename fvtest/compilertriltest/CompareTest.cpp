@@ -329,8 +329,8 @@ TEST_P(UInt64Compare, UsingConst) {
          "(block "
            "(ireturn "
              "(%s "
-               "(lconst %d) "
-               "(lconst %d)))))",
+               "(lconst %lld) "
+               "(lconst %lld)))))",
        param.opcode.c_str(), param.lhs, param.rhs);
     auto trees = parseString(inputTrees);
 
@@ -381,6 +381,381 @@ INSTANTIATE_TEST_CASE_P(CompareTest, UInt64Compare, ::testing::Combine(
         std::make_tuple("lucmpge", lucmpge),
         std::make_tuple("lucmplt", lucmplt),
         std::make_tuple("lucmple", lucmple) )));
+
+static const int32_t IFCMP_TRUE_NUM = 123;
+static const int32_t IFCMP_FALSE_NUM = -456;
+
+int32_t ificmpeq(int32_t l, int32_t r) {
+    return (l == r) ? IFCMP_TRUE_NUM : IFCMP_FALSE_NUM;
+}
+
+int32_t ificmpne(int32_t l, int32_t r) {
+    return (l != r) ? IFCMP_TRUE_NUM : IFCMP_FALSE_NUM;
+}
+
+int32_t ificmplt(int32_t l, int32_t r) {
+    return (l < r) ? IFCMP_TRUE_NUM : IFCMP_FALSE_NUM;
+}
+
+int32_t ificmple(int32_t l, int32_t r) {
+    return (l <= r) ? IFCMP_TRUE_NUM : IFCMP_FALSE_NUM;
+}
+
+int32_t ificmpge(int32_t l, int32_t r) {
+    return (l >= r) ? IFCMP_TRUE_NUM : IFCMP_FALSE_NUM;
+}
+
+int32_t ificmpgt(int32_t l, int32_t r) {
+    return (l > r) ? IFCMP_TRUE_NUM : IFCMP_FALSE_NUM;
+}
+
+class Int32IfCompare : public TRTest::BinaryOpTest<int32_t> {};
+
+TEST_P(Int32IfCompare, UsingConst) {
+    auto param = TRTest::to_struct(GetParam());
+
+    char inputTrees[256] = {0};
+    std::snprintf(inputTrees, 256,
+        "(method return=Int32 "
+          "(block "
+            "(%s target=b1 (iconst %d) (iconst %d))) "
+          "(block "
+            "(ireturn (iconst %d))) "
+          "(block name=b1 "
+            "(ireturn (iconst %d)))"
+        ")",
+        param.opcode.c_str(), param.lhs, param.rhs, IFCMP_FALSE_NUM, IFCMP_TRUE_NUM);
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler{trees};
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<int32_t (*)(void)>();
+    volatile auto exp = param.oracle(param.lhs, param.rhs);
+    volatile auto act = entry_point();
+    ASSERT_EQ(exp, act);
+}
+
+TEST_P(Int32IfCompare, UsingLoadParam) {
+    auto param = TRTest::to_struct(GetParam());
+
+    char inputTrees[256] = {0};
+    std::snprintf(inputTrees, 256,
+        "(method return=Int32 args=[Int32, Int32] "
+          "(block "
+            "(%s target=b1 (iload parm=0) (iload parm=1))) "
+          "(block "
+            "(ireturn (iconst %d))) "
+          "(block name=b1 "
+            "(ireturn (iconst %d)))"
+        ")",
+        param.opcode.c_str(), IFCMP_FALSE_NUM, IFCMP_TRUE_NUM);
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler{trees};
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<int32_t (*)(int32_t, int32_t)>();
+    volatile auto exp = param.oracle(param.lhs, param.rhs);
+    volatile auto act = entry_point(param.lhs, param.rhs);
+    ASSERT_EQ(exp, act);
+}
+
+INSTANTIATE_TEST_CASE_P(CompareTest, Int32IfCompare, ::testing::Combine(
+    ::testing::ValuesIn(TRTest::const_value_pairs<int32_t, int32_t>()),
+    ::testing::Values(
+        std::make_tuple("ificmpeq", ificmpeq),
+        std::make_tuple("ificmpne", ificmpne),
+        std::make_tuple("ificmplt", ificmplt),
+        std::make_tuple("ificmple", ificmple),
+        std::make_tuple("ificmpge", ificmpge),
+        std::make_tuple("ificmpgt", ificmpgt)
+    )));
+
+int32_t ifiucmpeq(uint32_t l, uint32_t r) {
+    return (l == r) ? IFCMP_TRUE_NUM : IFCMP_FALSE_NUM;
+}
+
+int32_t ifiucmpne(uint32_t l, uint32_t r) {
+    return (l != r) ? IFCMP_TRUE_NUM : IFCMP_FALSE_NUM;
+}
+
+int32_t ifiucmplt(uint32_t l, uint32_t r) {
+    return (l < r) ? IFCMP_TRUE_NUM : IFCMP_FALSE_NUM;
+}
+
+int32_t ifiucmple(uint32_t l, uint32_t r) {
+    return (l <= r) ? IFCMP_TRUE_NUM : IFCMP_FALSE_NUM;
+}
+
+int32_t ifiucmpge(uint32_t l, uint32_t r) {
+    return (l >= r) ? IFCMP_TRUE_NUM : IFCMP_FALSE_NUM;
+}
+
+int32_t ifiucmpgt(uint32_t l, uint32_t r) {
+    return (l > r) ? IFCMP_TRUE_NUM : IFCMP_FALSE_NUM;
+}
+
+class UInt32IfCompare : public TRTest::OpCodeTest<int32_t, uint32_t, uint32_t> {};
+
+TEST_P(UInt32IfCompare, UsingConst) {
+    auto param = TRTest::to_struct(GetParam());
+
+    char inputTrees[256] = {0};
+    std::snprintf(inputTrees, 256,
+        "(method return=Int32 "
+          "(block "
+            "(%s target=b1 (iconst %d) (iconst %d))) "
+          "(block "
+            "(ireturn (iconst %d))) "
+          "(block name=b1 "
+            "(ireturn (iconst %d)))"
+        ")",
+        param.opcode.c_str(), param.lhs, param.rhs, IFCMP_FALSE_NUM, IFCMP_TRUE_NUM);
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler{trees};
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<int32_t (*)(void)>();
+    volatile auto exp = param.oracle(param.lhs, param.rhs);
+    volatile auto act = entry_point();
+    ASSERT_EQ(exp, act);
+}
+
+TEST_P(UInt32IfCompare, UsingLoadParam) {
+    auto param = TRTest::to_struct(GetParam());
+
+    char inputTrees[256] = {0};
+    std::snprintf(inputTrees, 256,
+        "(method return=Int32 args=[Int32, Int32] "
+          "(block "
+            "(%s target=b1 (iload parm=0) (iload parm=1))) "
+          "(block "
+            "(ireturn (iconst %d))) "
+          "(block name=b1 "
+            "(ireturn (iconst %d)))"
+        ")",
+        param.opcode.c_str(), IFCMP_FALSE_NUM, IFCMP_TRUE_NUM);
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler{trees};
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<int32_t (*)(uint32_t, uint32_t)>();
+    volatile auto exp = param.oracle(param.lhs, param.rhs);
+    volatile auto act = entry_point(param.lhs, param.rhs);
+    ASSERT_EQ(exp, act);
+}
+
+INSTANTIATE_TEST_CASE_P(CompareTest, UInt32IfCompare, ::testing::Combine(
+    ::testing::ValuesIn(TRTest::const_value_pairs<uint32_t, uint32_t>()),
+    ::testing::Values(
+        std::make_tuple("ifiucmpeq", ifiucmpeq),
+        std::make_tuple("ifiucmpne", ifiucmpne),
+        std::make_tuple("ifiucmplt", ifiucmplt),
+        std::make_tuple("ifiucmple", ifiucmple),
+        std::make_tuple("ifiucmpge", ifiucmpge),
+        std::make_tuple("ifiucmpgt", ifiucmpgt)
+    )));
+
+int32_t iflcmpeq(int64_t l, int64_t r) {
+    return (l == r) ? IFCMP_TRUE_NUM : IFCMP_FALSE_NUM;
+}
+
+int32_t iflcmpne(int64_t l, int64_t r) {
+    return (l != r) ? IFCMP_TRUE_NUM : IFCMP_FALSE_NUM;
+}
+
+int32_t iflcmplt(int64_t l, int64_t r) {
+    return (l < r) ? IFCMP_TRUE_NUM : IFCMP_FALSE_NUM;
+}
+
+int32_t iflcmple(int64_t l, int64_t r) {
+    return (l <= r) ? IFCMP_TRUE_NUM : IFCMP_FALSE_NUM;
+}
+
+int32_t iflcmpge(int64_t l, int64_t r) {
+    return (l >= r) ? IFCMP_TRUE_NUM : IFCMP_FALSE_NUM;
+}
+
+int32_t iflcmpgt(int64_t l, int64_t r) {
+    return (l > r) ? IFCMP_TRUE_NUM : IFCMP_FALSE_NUM;
+}
+
+class Int64IfCompare : public TRTest::OpCodeTest<int32_t, int64_t, int64_t> {};
+
+TEST_P(Int64IfCompare, UsingConst) {
+    auto param = TRTest::to_struct(GetParam());
+
+    char inputTrees[256] = {0};
+    std::snprintf(inputTrees, 256,
+        "(method return=Int32 "
+          "(block "
+            "(%s target=b1 (lconst %lld) (lconst %lld))) "
+          "(block "
+            "(ireturn (iconst %d))) "
+          "(block name=b1 "
+            "(ireturn (iconst %d)))"
+        ")",
+        param.opcode.c_str(), param.lhs, param.rhs, IFCMP_FALSE_NUM, IFCMP_TRUE_NUM);
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler{trees};
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<int32_t (*)(void)>();
+    volatile auto exp = param.oracle(param.lhs, param.rhs);
+    volatile auto act = entry_point();
+    ASSERT_EQ(exp, act);
+}
+
+TEST_P(Int64IfCompare, UsingLoadParam) {
+    auto param = TRTest::to_struct(GetParam());
+
+    char inputTrees[256] = {0};
+    std::snprintf(inputTrees, 256,
+        "(method return=Int32 args=[Int64, Int64] "
+          "(block "
+            "(%s target=b1 (lload parm=0) (lload parm=1))) "
+          "(block "
+            "(ireturn (iconst %d))) "
+          "(block name=b1 "
+            "(ireturn (iconst %d)))"
+        ")",
+        param.opcode.c_str(), IFCMP_FALSE_NUM, IFCMP_TRUE_NUM);
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler{trees};
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<int32_t (*)(int64_t, int64_t)>();
+    volatile auto exp = param.oracle(param.lhs, param.rhs);
+    volatile auto act = entry_point(param.lhs, param.rhs);
+    ASSERT_EQ(exp, act);
+}
+
+INSTANTIATE_TEST_CASE_P(CompareTest, Int64IfCompare, ::testing::Combine(
+    ::testing::ValuesIn(TRTest::const_value_pairs<int64_t, int64_t>()),
+    ::testing::Values(
+        std::make_tuple("iflcmpeq", iflcmpeq),
+        std::make_tuple("iflcmpne", iflcmpne),
+        std::make_tuple("iflcmplt", iflcmplt),
+        std::make_tuple("iflcmple", iflcmple),
+        std::make_tuple("iflcmpge", iflcmpge),
+        std::make_tuple("iflcmpgt", iflcmpgt)
+    )));
+
+int32_t iflucmpeq(uint64_t l, uint64_t r) {
+    return (l == r) ? IFCMP_TRUE_NUM : IFCMP_FALSE_NUM;
+}
+
+int32_t iflucmpne(uint64_t l, uint64_t r) {
+    return (l != r) ? IFCMP_TRUE_NUM : IFCMP_FALSE_NUM;
+}
+
+int32_t iflucmplt(uint64_t l, uint64_t r) {
+    return (l < r) ? IFCMP_TRUE_NUM : IFCMP_FALSE_NUM;
+}
+
+int32_t iflucmple(uint64_t l, uint64_t r) {
+    return (l <= r) ? IFCMP_TRUE_NUM : IFCMP_FALSE_NUM;
+}
+
+int32_t iflucmpge(uint64_t l, uint64_t r) {
+    return (l >= r) ? IFCMP_TRUE_NUM : IFCMP_FALSE_NUM;
+}
+
+int32_t iflucmpgt(uint64_t l, uint64_t r) {
+    return (l > r) ? IFCMP_TRUE_NUM : IFCMP_FALSE_NUM;
+}
+
+class UInt64IfCompare : public TRTest::OpCodeTest<int32_t, uint64_t, uint64_t> {};
+
+TEST_P(UInt64IfCompare, UsingConst) {
+    auto param = TRTest::to_struct(GetParam());
+
+    char inputTrees[256] = {0};
+    std::snprintf(inputTrees, 256,
+        "(method return=Int32 "
+          "(block "
+            "(%s target=b1 (lconst %lld) (lconst %lld))) "
+          "(block "
+            "(ireturn (iconst %d))) "
+          "(block name=b1 "
+            "(ireturn (iconst %d)))"
+        ")",
+        param.opcode.c_str(), param.lhs, param.rhs, IFCMP_FALSE_NUM, IFCMP_TRUE_NUM);
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler{trees};
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<int32_t (*)(void)>();
+    volatile auto exp = param.oracle(param.lhs, param.rhs);
+    volatile auto act = entry_point();
+    ASSERT_EQ(exp, act);
+}
+
+TEST_P(UInt64IfCompare, UsingLoadParam) {
+    auto param = TRTest::to_struct(GetParam());
+
+    char inputTrees[256] = {0};
+    std::snprintf(inputTrees, 256,
+        "(method return=Int32 args=[Int64, Int64] "
+          "(block "
+            "(%s target=b1 (lload parm=0) (lload parm=1))) "
+          "(block "
+            "(ireturn (iconst %d))) "
+          "(block name=b1 "
+            "(ireturn (iconst %d)))"
+        ")",
+        param.opcode.c_str(), IFCMP_FALSE_NUM, IFCMP_TRUE_NUM);
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler{trees};
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<int32_t (*)(uint64_t, uint64_t)>();
+    volatile auto exp = param.oracle(param.lhs, param.rhs);
+    volatile auto act = entry_point(param.lhs, param.rhs);
+    ASSERT_EQ(exp, act);
+}
+
+INSTANTIATE_TEST_CASE_P(CompareTest, UInt64IfCompare, ::testing::Combine(
+    ::testing::ValuesIn(TRTest::const_value_pairs<uint64_t, uint64_t>()),
+    ::testing::Values(
+        std::make_tuple("iflucmpeq", iflucmpeq),
+        std::make_tuple("iflucmpne", iflucmpne),
+        std::make_tuple("iflucmplt", iflucmplt),
+        std::make_tuple("iflucmple", iflucmple),
+        std::make_tuple("iflucmpge", iflucmpge),
+        std::make_tuple("iflucmpgt", iflucmpgt)
+    )));
 
 template <typename T>
 bool smallFp_filter(std::tuple<T, T> a)
@@ -570,9 +945,6 @@ INSTANTIATE_TEST_CASE_P(CompareTest, DoubleCompare, ::testing::Combine(
         std::make_tuple("dcmplt", dcmplt),
         std::make_tuple("dcmple", dcmple)
     )));
-
-static const int32_t IFCMP_TRUE_NUM = 123;
-static const int32_t IFCMP_FALSE_NUM = -456;
 
 int32_t iffcmpeq(float l, float r) {
     return (l == r) ? IFCMP_TRUE_NUM : IFCMP_FALSE_NUM;

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2018 IBM Corp. and others
+ * Copyright (c) 1991, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -341,6 +341,10 @@ public:
 	uintptr_t heapContractionGCTimeThreshold; /**< min percentage of time spent in gc before contraction */
 	uintptr_t heapExpansionStabilizationCount; /**< GC count required before the heap is allowed to expand due to excessvie time after last heap expansion */
 	uintptr_t heapContractionStabilizationCount; /**< GC count required before the heap is allowed to contract due to excessvie time after last heap expansion */
+	
+	float heapSizeStatupHintConservativeFactor; /**< Use only a fraction of hints stored in SC */
+	float heapSizeStatupHintWeightNewValue;		/**< Learn slowly by historic averaging of stored hints */
+	
 
 	uintptr_t workpacketCount; /**< this value is ONLY set if -Xgcworkpackets is specified - otherwise the workpacket count is determined heuristically */
 	uintptr_t packetListSplit; /**< the number of ways to split packet lists, set by -XXgc:packetListLockSplit=, or determined heuristically based on the number of GC threads */
@@ -1326,6 +1330,8 @@ public:
 		, heapContractionGCTimeThreshold(5)
 		, heapExpansionStabilizationCount(0)
 		, heapContractionStabilizationCount(3)
+		, heapSizeStatupHintConservativeFactor((float)0.7)
+		, heapSizeStatupHintWeightNewValue((float)0.0)
 		, workpacketCount(0) /* only set if -Xgcworkpackets specified */
 		, packetListSplit(0)
 		, cacheListSplit(0)

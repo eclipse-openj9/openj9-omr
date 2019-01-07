@@ -2040,6 +2040,7 @@ omrsysinfo_shutdown(struct OMRPortLibrary *portLibrary)
 int32_t
 omrsysinfo_startup(struct OMRPortLibrary *portLibrary)
 {
+	PPG_isRunningInContainer = FALSE;
 	/* Obtain and cache executable name; if this fails, executable name remains NULL, but
 	 * shouldn't cause failure to startup port library.  Failure will be noticed only
 	 * when the omrsysinfo_get_executable_name() actually gets invoked.
@@ -2059,6 +2060,7 @@ omrsysinfo_startup(struct OMRPortLibrary *portLibrary)
 		}
 	}
 	attachedPortLibraries += 1;
+	isRunningInContainer(portLibrary, &PPG_isRunningInContainer);
 #endif /* defined(LINUX) */
 	return 0;
 }
@@ -4456,13 +4458,9 @@ omrsysinfo_get_cgroup_subsystem_list(struct OMRPortLibrary *portLibrary)
  * Returns TRUE if running inside a container and FALSE if not or if an error occurs
  */
 BOOLEAN
-omrsysinfo_is_running_in_container(struct OMRPortLibrary *portLibrary, int32_t *errorCode)
+omrsysinfo_is_running_in_container(struct OMRPortLibrary *portLibrary)
 {
-	BOOLEAN inContainer = FALSE;
-#if defined(LINUX) && !defined(OMRZTPF)
-	*errorCode = isRunningInContainer(portLibrary, &inContainer);
-#endif /* defined(LINUX) && !defined(OMRZTPF) */
-	return inContainer;
+	return PPG_isRunningInContainer; 
 }
 
 int32_t

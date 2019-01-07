@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// Copyright (c) 1998, 2018 IBM Corp. and others
+// Copyright (c) 1998, 2019 IBM Corp. and others
 //
 // This program and the accompanying materials are made available under
 // the terms of the Eclipse Public License 2.0 which accompanies this
@@ -910,3 +910,5 @@ TraceEvent=Trc_MM_LOAResize_resetLOASize Overhead=1 Level=1 Group=loaresize Temp
 TraceEvent=Trc_MM_LOAResize_expandWithRange1 Overhead=1 Level=1 Group=loaresize Template="LOA Initial Allocation: heapSize %zu, Initial LOA ratio is %.3f --> LOA base is %p initial LOA size %zu"
 TraceEvent=Trc_MM_LOAResize_expandWithRange2 Overhead=1 Level=1 Group=loaresize Template="LOA resized on heap expansion: heapSize %zu,  LOA ratio is %.3f --> LOA base is now %p LOA size %zu"
 TraceEvent=Trc_MM_LOAResize_contractWithRange Overhead=1 Level=1 Group=loaresize Template="LOA resized on heap contraction: heapSize %zu,  LOA ratio is %.3f --> LOA base is now %p LOA size %zu"
+
+TraceEvent=Trc_MM_Scavenger_percolate_concurrentMarkExhausted Overhead=1 Level=1 Group=percolate Template="Percolating due to exhausted Concurrent Mark"

@@ -2151,6 +2151,61 @@ TR::Node *constrainIaload(OMR::ValuePropagation *vp, TR::Node *node)
          node->setIsNonNull(true);
          }
       else if (base
+               && base->getKnownObject()
+               && !symRef->isUnresolved() && symRef->getSymbol()->isRecognizedKnownObjectShadow()
+               && !vp->comp()->compileRelocatableCode())
+         // Base is known object, and field is recognized known object shadow,
+         // hence can be treated as known object.
+         {
+         TR::VMAccessCriticalSection constrainIaloadCriticalSection(vp->comp(),
+               TR::VMAccessCriticalSection::tryToAcquireVMAccess);
+         if (constrainIaloadCriticalSection.hasVMAccess())
+            {
+            TR::KnownObjectTable *knot = vp->comp()->getOrCreateKnownObjectTable();
+            uintptrj_t baseObject = knot->getPointer(base->getKnownObject()->getIndex());
+            if (baseObject)
+               {
+               // Check if baseObject is actually the recognized field Class
+               TR_OpaqueClassBlock *baseObjectClazz = TR::Compiler->cls.objectClass(vp->comp(), baseObject);
+               int32_t recognizedClassNameLength;
+               const char *recognizedClassName = symRef->getSymbol()->owningClassNameCharsForRecognizedField(recognizedClassNameLength);
+               if (recognizedClassName)
+                  {
+                  TR_OpaqueClassBlock *recognizedClazz = vp->fe()->getClassFromSignature(recognizedClassName,
+                        recognizedClassNameLength, symRef->getOwningMethod(vp->comp()));
+                  if (recognizedClazz && (TR_yes == vp->fe()->isInstanceOf(baseObjectClazz, recognizedClazz, false)))
+                     {
+                     uintptrj_t fieldObject = vp->comp()->fej9()->getReferenceFieldAtAddress(baseObject + node->getSymbolReference()->getOffset());
+                     if (0 != fieldObject)
+                        {
+                        TR_OpaqueClassBlock *fieldObjectClazz = TR::Compiler->cls.objectClass(vp->comp(), fieldObject);
+                        if(!TR::Compiler->cls.isClassArray(vp->comp(), fieldObjectClazz))
+                           {
+                           traceMsg(vp->comp(), "Recognized known object field node %p \n", node);
+                           TR::KnownObjectTable::Index fieldObjectKnotIndex = knot->getIndex(fieldObject);
+                           // Global constraints should work here, as field loads get fresh value numbers
+                           constraint = TR::VPClass::create(vp,
+                                 TR::VPKnownObject::create(vp, fieldObjectKnotIndex),
+                                 TR::VPNonNullObject::create(vp), NULL, NULL,
+                                 TR::VPObjectLocation::create(vp, TR::VPObjectLocation::HeapObject));
+                           vp->addGlobalConstraint(node, constraint);
+                           }
+                        else
+                           {
+                           int32_t arrLength = TR::Compiler->om.getArrayLengthInElements(vp->comp(), fieldObject);
+                           traceMsg(vp->comp(), "Recognized known array field node %p length %d\n", node, arrLength);
+                           // Global constraints should work here, as field loads get fresh value numbers
+                           vp->addGlobalConstraint(node, TR::VPFixedClass::create(vp, fieldObjectClazz));
+                           vp->addGlobalConstraint(node, TR::VPNonNullObject::create(vp));
+                           vp->addGlobalConstraint(node, TR::VPArrayInfo::create(vp, arrLength, arrLength, TR::Compiler->om.getArrayElementWidthInBytes(vp->comp(), fieldObject)));
+                           }
+                        }
+                     }
+                  }
+               }
+            }
+         }
+      else if (base
                && base->isJavaLangClassObject() == TR_yes
                && base->isNonNullObject()
                && base->getKnownObject())

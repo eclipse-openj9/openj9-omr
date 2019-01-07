@@ -446,6 +446,12 @@ OMR::Symbol::isRecognizedShadow()
    return self()->isShadow() && _flags.testAny(RecognizedShadow);
    }
 
+bool
+OMR::Symbol::isRecognizedKnownObjectShadow()
+   {
+   return self()->isRecognizedShadow() && _flags.testAny(RecognizedKnownObjectShadow);
+   }
+
 void
 OMR::Symbol::setArrayletShadowSymbol()
    {

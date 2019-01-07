@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2018 IBM Corp. and others
+ * Copyright (c) 2016, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -229,6 +229,9 @@ struct TypeWord
 	TypeKind typeKind;
 };
 
+#define TYPE_ENTRY(name, type, typeKind) \
+	{ (name), sizeof(name) - 1, 8 * sizeof(type), (typeKind) }
+
 #define TYPE_QUAL(type, typeKind) \
 	{ #type, sizeof(#type) - 1, 0, (typeKind) }
 
@@ -262,10 +265,33 @@ static const TypeWord typeWords[] = {
 	TYPE_WORD(intptr_t,  TK_std_signed),
 	TYPE_WORD(uintptr_t, TK_std_unsigned),
 
+	/* other known signed types */
+	TYPE_ENTRY("__int8_t",  int8_t,   TK_std_signed),
+	TYPE_ENTRY("__int16_t", int16_t,  TK_std_signed),
+	TYPE_ENTRY("__int32_t", int32_t,  TK_std_signed),
+	TYPE_ENTRY("__int64_t", int64_t,  TK_std_signed),
+	TYPE_ENTRY("I_8",       int8_t,   TK_std_signed),
+	TYPE_ENTRY("I_16",      int16_t,  TK_std_signed),
+	TYPE_ENTRY("I_32",      int32_t,  TK_std_signed),
+	TYPE_ENTRY("I_64",      int64_t,  TK_std_signed),
+/*  TYPE_ENTRY("I_128",     int128_t, TK_std_signed), */
+
+	/* other known unsigned types */
+	TYPE_ENTRY("__uint8_t",  uint8_t,   TK_std_unsigned),
+	TYPE_ENTRY("__uint16_t", uint16_t,  TK_std_unsigned),
+	TYPE_ENTRY("__uint32_t", uint32_t,  TK_std_unsigned),
+	TYPE_ENTRY("__uint64_t", uint64_t,  TK_std_unsigned),
+	TYPE_ENTRY("U_8",        uint8_t,   TK_std_unsigned),
+	TYPE_ENTRY("U_16",       uint16_t,  TK_std_unsigned),
+	TYPE_ENTRY("U_32",       uint32_t,  TK_std_unsigned),
+	TYPE_ENTRY("U_64",       uint64_t,  TK_std_unsigned),
+/*  TYPE_ENTRY("U_128",      uint128_t, TK_std_unsigned), */
+
 	/* terminator */
 	{ NULL, 0, false }
 };
 
+#undef TYPE_ENTRY
 #undef TYPE_QUAL
 #undef TYPE_WORD
 
@@ -283,8 +309,9 @@ Type::isStandardType(const char *type, size_t typeLen, bool *isSigned, size_t *b
 	 * occurrences of each word to verify the combination is reasonable.
 	 */
 	for (const char * cursor = type; cursor < typeEnd;) {
-		while ((cursor < typeEnd) && isspace(*cursor)) {
+		if (isspace(*cursor)) {
 			cursor += 1;
+			continue;
 		}
 
 		const char * const word = cursor;
@@ -334,6 +361,8 @@ Type::isStandardType(const char *type, size_t typeLen, bool *isSigned, size_t *b
 				bits = typeWord->bitWidth;
 				num[TK_unsigned] += 1;
 			}
+
+			break;
 		}
 	}
 
@@ -354,6 +383,10 @@ Type::isStandardType(const char *type, size_t typeLen, bool *isSigned, size_t *b
 			goto pass;
 		}
 	} else if ((1 == num[TK_char]) && (0 == num[TK_short]) && (0 == num[TK_int]) && (0 == num[TK_long])) {
+		/* char is unsigned unless explicitly 'signed' */
+		if (0 == num[TK_signed]) {
+			num[TK_unsigned] = 1;
+		}
 		bits = 8 * sizeof(char);
 		goto pass;
 	} else if ((0 == num[TK_char]) && (1 == num[TK_short]) && (1 >= num[TK_int]) && (0 == num[TK_long])) {

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2018 IBM Corp. and others
+ * Copyright (c) 2015, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -390,6 +390,7 @@ static const pair<const char *, Dwarf_Half> tagStrings[] = {
 	make_pair("member", DW_TAG_member),
 	make_pair("namespace", DW_TAG_namespace),
 	make_pair("pointer_type", DW_TAG_pointer_type),
+	make_pair("ptr_to_member_type", DW_TAG_ptr_to_member_type),
 	make_pair("restrict_type", DW_TAG_restrict_type),
 	make_pair("shared_type", DW_TAG_shared_type),
 	make_pair("structure_type", DW_TAG_structure_type),

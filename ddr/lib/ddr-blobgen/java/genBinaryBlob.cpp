@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2018 IBM Corp. and others
+ * Copyright (c) 2016, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -797,7 +797,20 @@ public:
 DDR_RC
 BlobFieldVisitor::visitType(Type *type) const
 {
-	*_typePrefix += type->_name;
+	const string & typeName = type->_name;
+	bool isSigned = false;
+	size_t bitWidth = 0;
+
+	if (Type::isStandardType(typeName.c_str(), (size_t)typeName.length(), &isSigned, &bitWidth)) {
+		stringstream newType;
+
+		newType << (isSigned ? "I" : "U") << bitWidth;
+
+		*_typePrefix += newType.str();
+	} else {
+		*_typePrefix += typeName;
+	}
+
 	return DDR_RC_OK;
 }
 

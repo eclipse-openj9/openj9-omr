@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -238,11 +238,6 @@ namespace TR
       {
       ExternalRelocationAtFront,
       ExternalRelocationAtBack,
-      };
-   enum AOTRelocationPositionRequest
-      {
-      AOTRelocationAtFront = ExternalRelocationAtFront,
-      AOTRelocationAtBack = ExternalRelocationAtBack,
       };
    }
 
@@ -1067,13 +1062,10 @@ class OMR_EXTENSIBLE CodeGenerator
    // Relocations
    //
    TR::list<TR::Relocation*>& getRelocationList() {return _relocationList;}
-   TR::list<TR::Relocation*>& getAOTRelocationList() {return _externalRelocationList;}
    TR::list<TR::Relocation*>& getExternalRelocationList() {return _externalRelocationList;}
    TR::list<TR::StaticRelocation>& getStaticRelocations() { return _staticRelocationList; }
 
    void addRelocation(TR::Relocation *r);
-   void addAOTRelocation(TR::Relocation *r, const char *generatingFileName, uintptr_t generatingLineNumber, TR::Node *node, TR::AOTRelocationPositionRequest where = TR::AOTRelocationAtBack);
-   void addAOTRelocation(TR::Relocation *r, TR::RelocationDebugInfo *info, TR::AOTRelocationPositionRequest where = TR::AOTRelocationAtBack);
    void addExternalRelocation(TR::Relocation *r, const char *generatingFileName, uintptr_t generatingLineNumber, TR::Node *node, TR::ExternalRelocationPositionRequest where = TR::ExternalRelocationAtBack);
    void addExternalRelocation(TR::Relocation *r, TR::RelocationDebugInfo *info, TR::ExternalRelocationPositionRequest where = TR::ExternalRelocationAtBack);
    void addStaticRelocation(const TR::StaticRelocation &relocation);

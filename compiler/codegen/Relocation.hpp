@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -111,7 +111,6 @@ class Relocation
    /**dumps a trace of the internals - override as required */
    virtual void trace(TR::Compilation* comp);
 
-   virtual void addAOTRelocation(TR::CodeGenerator *codeGen) {addExternalRelocation(codeGen);}
    virtual void addExternalRelocation(TR::CodeGenerator *codeGen) {}
 
    virtual void apply(TR::CodeGenerator *codeGen);
@@ -416,7 +415,6 @@ class ExternalRelocation : public TR::Relocation
 
    void trace(TR::Compilation* comp);
 
-   void addAOTRelocation(TR::CodeGenerator *codeGen) {addExternalRelocation(codeGen);}
    void addExternalRelocation(TR::CodeGenerator *codeGen);
    virtual uint8_t collectModifier();
    virtual uint32_t getNarrowSize() {return 2;}

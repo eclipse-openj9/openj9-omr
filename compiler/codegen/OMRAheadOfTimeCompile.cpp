@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -113,57 +113,6 @@ void OMR::AheadOfTimeCompile::traceRelocationOffsets(uint8_t *&cursor, int32_t o
          }
       cursor += offsetSize;
       }
-   }
-
-uintptr_t
-findCorrectInlinedSiteIndex(void *constantPool, TR::Compilation *comp, uintptr_t currentInlinedSiteIndex)
-   {
-   uintptr_t cp2 = 0;
-
-   uintptr_t inlinedSiteIndex = currentInlinedSiteIndex;
-   if (inlinedSiteIndex==(uintptr_t)-1)
-      {
-      cp2 = (uintptr_t) comp->getCurrentMethod()->constantPool();
-      }
-   else
-      {
-      TR_InlinedCallSite &ics2 = comp->getInlinedCallSite(inlinedSiteIndex);
-      TR_AOTMethodInfo *aotMethodInfo2 = (TR_AOTMethodInfo *)ics2._methodInfo;
-      cp2 = (uintptr_t)aotMethodInfo2->resolvedMethod->constantPool();
-      }
-
-   bool matchFound = false;
-
-   if ( (uintptr_t) constantPool == cp2)
-      {
-      matchFound = true;
-      }
-   else
-      {
-      if ((uintptr_t)constantPool == (uintptr_t)comp->getCurrentMethod()->constantPool())
-         {
-         matchFound = true;
-         inlinedSiteIndex = (uintptr_t)-1;
-         }
-      else
-         {
-         for (uintptr_t i = 0; i < comp->getNumInlinedCallSites(); i++)
-            {
-            TR_InlinedCallSite &ics = comp->getInlinedCallSite(i);
-
-            TR_AOTMethodInfo *aotMethodInfo = (TR_AOTMethodInfo *)ics._methodInfo;
-
-            if ((uintptr_t)constantPool == (uintptr_t)aotMethodInfo->resolvedMethod->constantPool())
-               {
-               matchFound = true;
-               inlinedSiteIndex = i;
-               break;
-               }
-            }
-         }
-      }
-   TR_ASSERT(matchFound, "couldn't find this CP in inlined site list");
-   return inlinedSiteIndex;
    }
 
 void createGuardSiteForRemovedGuard(TR::Compilation *comp, TR::Node *ifNode)

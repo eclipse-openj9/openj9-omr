@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2018 IBM Corp. and others
+ * Copyright (c) 2018, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -585,6 +585,7 @@ TR::Instruction *generateTestInstruction(
  * @param[in] node : node
  * @param[in] treg : target register
  * @param[in] sreg : source register
+ * @param[in] is64bit : true when it is 64-bit operation
  * @param[in] preced : preceding instruction
  * @return generated instruction
  */
@@ -593,6 +594,7 @@ TR::Instruction *generateMovInstruction(
                   TR::Node *node,
                   TR::Register *treg,
                   TR::Register *sreg,
+                  bool is64bit = true,
                   TR::Instruction *preced = NULL);
 
 /*

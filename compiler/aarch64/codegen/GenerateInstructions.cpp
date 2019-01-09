@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2018 IBM Corp. and others
+ * Copyright (c) 2018, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -366,12 +366,10 @@ static TR::Instruction *generateTrg1ZeroSrc1Instruction(TR::CodeGenerator *cg, T
    }
 
 TR::Instruction *generateMovInstruction(TR::CodeGenerator *cg, TR::Node *node,
-   TR::Register *treg, TR::Register *sreg, TR::Instruction *preced)
+   TR::Register *treg, TR::Register *sreg, bool is64bit, TR::Instruction *preced)
    {
    /* Alias of ORR instruction */
-   TR_ASSERT(node->getDataType().isIntegral(), "Only GPRs are allowed.");
 
-   bool is64bit = node->getDataType().isInt64();
    TR::InstOpCode::Mnemonic op = is64bit ? TR::InstOpCode::orrx : TR::InstOpCode::orrw;
 
    return generateTrg1ZeroSrc1Instruction(cg, op, node, treg, sreg, preced);

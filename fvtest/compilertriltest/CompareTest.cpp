@@ -22,7 +22,7 @@
 #include "OpCodeTest.hpp"
 #include "default_compiler.hpp"
 
-#include <math.h>
+#include <cmath>
 
 int32_t icmpeq(int32_t l, int32_t r) {
     return (l == r) ? 1 : 0;
@@ -388,7 +388,7 @@ bool smallFp_filter(std::tuple<T, T> a)
    // workaround: avoid failure caused by snprintf("%f")
    auto a0 = std::get<0>(a);
    auto a1 = std::get<1>(a);
-   return ((abs(a0) < 0.01 && a0 != 0.0) || (abs(a1) < 0.01 && a1 != 0.0));
+   return ((std::abs(a0) < 0.01 && a0 != 0.0) || (std::abs(a1) < 0.01 && a1 != 0.0));
    }
 
 int32_t fcmpeq(float l, float r) {

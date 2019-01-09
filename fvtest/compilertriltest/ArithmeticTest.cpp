@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2017 IBM Corp. and others
+ * Copyright (c) 2017, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -21,6 +21,8 @@
 
 #include "OpCodeTest.hpp"
 #include "default_compiler.hpp"
+
+#include <cmath>
 
 int32_t iadd(int32_t l, int32_t r) {
     return l+r;
@@ -174,7 +176,7 @@ bool smallFp_filter(std::tuple<T, T> a)
    // workaround: avoid failure caused by snprintf("%f")
    auto a0 = std::get<0>(a);
    auto a1 = std::get<1>(a);
-   return ((abs(a0) < 0.01 && a0 != 0.0) || (abs(a1) < 0.01 && a1 != 0.0));
+   return ((std::abs(a0) < 0.01 && a0 != 0.0) || (std::abs(a1) < 0.01 && a1 != 0.0));
    }
 
 float fadd(float l, float r) {

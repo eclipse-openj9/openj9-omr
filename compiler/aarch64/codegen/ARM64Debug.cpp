@@ -565,6 +565,12 @@ TR_Debug::print(TR::FILE *pOutFile, TR::Instruction *instr)
       case OMR::Instruction::IsMemSrc1:
          print(pOutFile, (TR::ARM64MemSrc1Instruction *)instr);
          break;
+      case OMR::Instruction::IsSrc1:
+         print(pOutFile, (TR::ARM64Src1Instruction *)instr);
+         break;
+      case OMR::Instruction::IsSrc2:
+         print(pOutFile, (TR::ARM64Src2Instruction *)instr);
+         break;
       default:
          TR_ASSERT(false, "unexpected instruction kind");
             // fall through
@@ -872,6 +878,26 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64MemSrc1Instruction *instr)
    print(pOutFile, instr->getMemoryReference());
 
    printMemoryReferenceComment(pOutFile, instr->getMemoryReference());
+   trfflush(_comp->getOutFile());
+   }
+
+void
+TR_Debug::print(TR::FILE *pOutFile, TR::ARM64Src1Instruction *instr)
+   {
+   printPrefix(pOutFile, instr);
+   trfprintf(pOutFile, "%s \t", getOpCodeName(&instr->getOpCode()));
+   print(pOutFile, instr->getSource1Register(), TR_WordReg);
+   trfflush(_comp->getOutFile());
+   }
+
+void
+TR_Debug::print(TR::FILE *pOutFile, TR::ARM64Src2Instruction *instr)
+   {
+   printPrefix(pOutFile, instr);
+   trfprintf(pOutFile, "%s \t", getOpCodeName(&instr->getOpCode()));
+   print(pOutFile, instr->getSource1Register(), TR_WordReg); trfprintf(pOutFile, ", ");
+   print(pOutFile, instr->getSource2Register(), TR_WordReg);
+
    trfflush(_comp->getOutFile());
    }
 

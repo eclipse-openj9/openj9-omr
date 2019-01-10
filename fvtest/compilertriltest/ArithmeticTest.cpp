@@ -36,6 +36,11 @@ int32_t imul(int32_t l, int32_t r) {
     return l*r;
 }
 
+int32_t imulh(int32_t l, int32_t r) {
+    int64_t x = static_cast<int64_t>(l) * static_cast<int64_t>(r);
+    return static_cast<int32_t>(x >> 32); // upper 32 bits
+}
+
 int32_t idiv(int32_t l, int32_t r) {
     return l/r;
 }
@@ -133,7 +138,8 @@ INSTANTIATE_TEST_CASE_P(ArithmeticTest, Int32Arithmetic, ::testing::Combine(
     ::testing::Values(
         std::make_tuple("iadd", iadd),
         std::make_tuple("isub", isub),
-        std::make_tuple("imul", imul) )));
+        std::make_tuple("imul", imul),
+        std::make_tuple("imulh", imulh) )));
 
 INSTANTIATE_TEST_CASE_P(ArithmeticTest, Int64Arithmetic, ::testing::Combine(
     ::testing::ValuesIn(TRTest::const_value_pairs<int64_t, int64_t>()),

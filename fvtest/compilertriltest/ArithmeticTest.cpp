@@ -326,3 +326,130 @@ INSTANTIATE_TEST_CASE_P(ArithmeticTest, DoubleArithmetic, ::testing::Combine(
         std::make_tuple("dmul", dmul),
         std::make_tuple("ddiv", ddiv)
     )));
+
+template <typename T>
+bool smallFp_unary_filter(T a)
+   {
+   // workaround: avoid failure caused by snprintf("%f")
+   return (std::abs(a) < 0.01 && a != 0.0);
+   }
+
+float fneg(float x) {
+    return -x;
+}
+
+class FloatUnaryArithmetic : public TRTest::UnaryOpTest<float> {};
+
+TEST_P(FloatUnaryArithmetic, UsingConst) {
+    auto param = TRTest::to_struct(GetParam());
+
+    char inputTrees[160] = {0};
+    std::snprintf(inputTrees, 160, "(method return=Float (block (freturn (%s (fconst %f)))))", param.opcode.c_str(), param.value);
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler{trees};
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<float (*)(void)>();
+    volatile auto exp = param.oracle(param.value);
+    volatile auto act = entry_point();
+    if (std::isnan(exp)) {
+        ASSERT_EQ(std::isnan(exp), std::isnan(act));
+    } else {
+        ASSERT_EQ(exp, act);
+    }
+}
+
+TEST_P(FloatUnaryArithmetic, UsingLoadParam) {
+    auto param = TRTest::to_struct(GetParam());
+
+    char inputTrees[160] = {0};
+    std::snprintf(inputTrees, 160, "(method return=Float args=[Float] (block (freturn (%s (fload parm=0)))))", param.opcode.c_str());
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler{trees};
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<float (*)(float)>();
+    volatile auto exp = param.oracle(param.value);
+    volatile auto act = entry_point(param.value);
+    if (std::isnan(exp)) {
+        ASSERT_EQ(std::isnan(exp), std::isnan(act));
+    } else {
+        ASSERT_EQ(exp, act);
+    }
+}
+
+INSTANTIATE_TEST_CASE_P(ArithmeticTest, FloatUnaryArithmetic, ::testing::Combine(
+    ::testing::ValuesIn(
+        TRTest::filter(TRTest::const_values<float>(), smallFp_unary_filter<float>)),
+    ::testing::Values(
+        std::make_tuple("fabs", static_cast<float (*)(float)>(std::abs)),
+        std::make_tuple("fneg", fneg)
+    )));
+
+double dneg(double x) {
+    return -x;
+}
+
+class DoubleUnaryArithmetic : public TRTest::UnaryOpTest<double> {};
+
+TEST_P(DoubleUnaryArithmetic, UsingConst) {
+    auto param = TRTest::to_struct(GetParam());
+
+    char inputTrees[512] = {0};
+    std::snprintf(inputTrees, 512, "(method return=Double (block (dreturn (%s (dconst %f)))))", param.opcode.c_str(), param.value);
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler{trees};
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<double (*)(void)>();
+    volatile auto exp = param.oracle(param.value);
+    volatile auto act = entry_point();
+    if (std::isnan(exp)) {
+        ASSERT_EQ(std::isnan(exp), std::isnan(act));
+    } else {
+        ASSERT_EQ(exp, act);
+    }
+}
+
+TEST_P(DoubleUnaryArithmetic, UsingLoadParam) {
+    auto param = TRTest::to_struct(GetParam());
+
+    char inputTrees[160] = {0};
+    std::snprintf(inputTrees, 160, "(method return=Double args=[Double] (block (dreturn (%s (dload parm=0)))))", param.opcode.c_str());
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler{trees};
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<double (*)(double)>();
+    volatile auto exp = param.oracle(param.value);
+    volatile auto act = entry_point(param.value);
+    if (std::isnan(exp)) {
+        ASSERT_EQ(std::isnan(exp), std::isnan(act));
+    } else {
+        ASSERT_EQ(exp, act);
+    }
+}
+
+INSTANTIATE_TEST_CASE_P(ArithmeticTest, DoubleUnaryArithmetic, ::testing::Combine(
+    ::testing::ValuesIn(
+        TRTest::filter(TRTest::const_values<double>(), smallFp_unary_filter<double>)),
+    ::testing::Values(
+        std::make_tuple("dabs", static_cast<double (*)(double)>(std::abs)),
+        std::make_tuple("dneg", dneg)
+    )));

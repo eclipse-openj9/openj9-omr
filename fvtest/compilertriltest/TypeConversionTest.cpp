@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2018 IBM Corp. and others
+ * Copyright (c) 2018, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -21,6 +21,8 @@
 
 #include "OpCodeTest.hpp"
 #include "default_compiler.hpp"
+
+#include <cmath>
 
 int32_t b2i(int8_t x) {
     return static_cast<int32_t>(x);
@@ -913,7 +915,7 @@ template <typename F, typename I>
 bool fp_filter(F a)
    {
    // workaround: avoid failure caused by snprintf("%f") or potential undefined behaviour
-   return (abs(a) < 0.01 && a != 0.0) ||
+   return (std::abs(a) < 0.01 && a != 0.0) ||
       (a > static_cast<F>(std::numeric_limits<I>::max())) ||
       (a < static_cast<F>(std::numeric_limits<I>::min())) ;
    }
@@ -1162,7 +1164,7 @@ template <typename T>
 bool smallFp_filter(T a)
    {
    // workaround: avoid failure caused by snprintf("%f")
-   return (abs(a) < 0.01 && a != 0.0);
+   return (std::abs(a) < 0.01 && a != 0.0);
    }
 
 double f2d(float x) {

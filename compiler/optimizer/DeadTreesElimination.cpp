@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -141,7 +141,7 @@ static bool fixUpTree(TR::Node *node, TR::TreeTop *treeTop, TR::NodeChecklist &v
    return containsFloatingPoint;
    }
 
-static inline bool isReadBarreirUnderTreetop(TR::Node *node)
+static inline bool isReadBarrierUnderTreetop(TR::Node *node)
    {
    return node->getOpCodeValue() == TR::treetop && node->getFirstChild()->getOpCode().isReadBar();
    }
@@ -607,7 +607,7 @@ void TR::DeadTreesElimination::prePerformOnBlocks()
          continue;
 
       if (comp()->useCompressedPointers() && !removed &&
-         isReadBarreirUnderTreetop(node) &&
+         isReadBarrierUnderTreetop(node) &&
          node->getFirstChild()->getType() == TR::Address && node->getFirstChild()->getOpCode().isLoadIndirect())
          {
          ncount_t nodeIndex = node->getFirstChild()->getGlobalIndex();
@@ -722,7 +722,7 @@ static bool treeCanPossiblyBeRemoved(TR::Node *node)
       }
 
    // rdbar under a treetop can also be removed if there are no other uses
-   return (!isReadBarreirUnderTreetop(node) || node->getFirstChild()->getReferenceCount() == 1);
+   return (!isReadBarrierUnderTreetop(node) || node->getFirstChild()->getReferenceCount() == 1);
    }
 
 int32_t TR::DeadTreesElimination::process(TR::TreeTop *startTree, TR::TreeTop *endTree)

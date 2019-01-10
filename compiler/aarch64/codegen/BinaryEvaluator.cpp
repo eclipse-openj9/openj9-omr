@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2018 IBM Corp. and others
+ * Copyright (c) 2018, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -152,10 +152,47 @@ OMR::ARM64::TreeEvaluator::imulEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 
 TR::Register *
 OMR::ARM64::TreeEvaluator::imulhEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// TODO:ARM64: Enable TR::TreeEvaluator::imulhEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
-	}
+   {
+   TR::Node *firstChild = node->getFirstChild();
+   TR::Register *src1Reg = cg->evaluate(firstChild);
+   TR::Node *secondChild = node->getSecondChild();
+   TR::Register *src2Reg;
+   TR::Register *trgReg = cg->allocateRegister();
+   TR::Register *tmpReg = NULL;
+
+   TR::Register *zeroReg = cg->allocateRegister();
+   TR::RegisterDependencyConditions *cond = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(1, 1, cg->trMemory());
+   addDependency(cond, zeroReg, TR::RealRegister::xzr, TR_GPR, cg);
+
+   // imulh is generated for constant idiv and the second child is the magic number
+   // assume magic number is usually a large odd number with little optimization opportunity
+   if (secondChild->getOpCode().isLoadConst() && secondChild->getRegister() == NULL)
+      {
+      int32_t value = secondChild->getInt();
+      src2Reg = tmpReg = cg->allocateRegister();
+      loadConstant32(cg, node, value, src2Reg);
+      }
+   else
+      {
+      src2Reg = cg->evaluate(secondChild);
+      }
+
+   generateTrg1Src3Instruction(cg, TR::InstOpCode::smaddl, node, trgReg, src1Reg, src2Reg, zeroReg, cond);
+   cg->stopUsingRegister(zeroReg);
+   /* logical shift right by 32 bits */
+   uint32_t imm = 0x183F; // N=1, immr=32, imms=63
+   generateTrg1Src1ImmInstruction(cg, TR::InstOpCode::ubfmx, node, trgReg, trgReg, imm);
+
+   if (tmpReg)
+      {
+      cg->stopUsingRegister(tmpReg);
+      }
+
+   firstChild->decReferenceCount();
+   secondChild->decReferenceCount();
+   node->setRegister(trgReg);
+   return trgReg;
+   }
 
 TR::Register *
 OMR::ARM64::TreeEvaluator::lmulEvaluator(TR::Node *node, TR::CodeGenerator *cg)
@@ -163,6 +200,42 @@ OMR::ARM64::TreeEvaluator::lmulEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 	// TODO:ARM64: Enable TR::TreeEvaluator::lmulEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
 	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
 	}
+
+TR::Register *
+OMR::ARM64::TreeEvaluator::lmulhEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   TR::Node *firstChild = node->getFirstChild();
+   TR::Register *src1Reg = cg->evaluate(firstChild);
+   TR::Node *secondChild = node->getSecondChild();
+   TR::Register *src2Reg;
+   TR::Register *trgReg = cg->allocateRegister();
+   TR::Register *tmpReg = NULL;
+
+   // lmulh is generated for constant ldiv and the second child is the magic number
+   // assume magic number is usually a large odd number with little optimization opportunity
+   if (secondChild->getOpCode().isLoadConst() && secondChild->getRegister() == NULL)
+      {
+      int64_t value = secondChild->getLongInt();
+      src2Reg = tmpReg = cg->allocateRegister();
+      loadConstant64(cg, node, value, src2Reg);
+      }
+   else
+      {
+      src2Reg = cg->evaluate(secondChild);
+      }
+
+   generateTrg1Src2Instruction(cg, TR::InstOpCode::smulh, node, trgReg, src1Reg, src2Reg);
+
+   if (tmpReg)
+      {
+      cg->stopUsingRegister(tmpReg);
+      }
+
+   firstChild->decReferenceCount();
+   secondChild->decReferenceCount();
+   node->setRegister(trgReg);
+   return trgReg;
+   }
 
 TR::Register *
 OMR::ARM64::TreeEvaluator::idivEvaluator(TR::Node *node, TR::CodeGenerator *cg)

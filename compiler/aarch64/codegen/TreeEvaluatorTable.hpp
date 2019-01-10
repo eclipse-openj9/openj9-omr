@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2018 IBM Corp. and others
+ * Copyright (c) 2018, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -618,9 +618,9 @@
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::aluaddEvaluator ,	// TR::aluadd		// add unsigned long integer to address with address result (child1 a; child2 i) (64-bit only)
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::lusubhEvaluator ,	// TR::lusubh		// subtract 2 unsigned long integers (the high parts of prior lusub) as high part of 128bit subtraction.
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::csubEvaluator ,	// TR::csub		// subtract 2 unsigned short integers (child1 - child2)
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::imulhEvaluator ,	// TR::imulh		// multiply 2 integers; and return the high word of the product
+    TR::TreeEvaluator::imulhEvaluator, // TR::imulh		// multiply 2 integers; and return the high word of the product
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::iumulhEvaluator ,	// TR::iumulh		// multiply 2 unsigned integers; and return the high word of the product
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::lmulhEvaluator ,	// TR::lmulh		// multiply 2 long integers; and return the high word of the product
+    TR::TreeEvaluator::lmulhEvaluator, // TR::lmulh		// multiply 2 long integers; and return the high word of the product
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::lumulhEvaluator ,	// TR::lumulh		// multiply 2 unsigned long integers; and return the high word of the product
     TR::TreeEvaluator::ibits2fEvaluator, // TR::ibits2f		// type-coerce int to float
     TR::TreeEvaluator::fbits2iEvaluator, // TR::fbits2i		// type-coerce float to int

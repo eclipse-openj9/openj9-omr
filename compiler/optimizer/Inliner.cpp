@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -165,6 +165,11 @@ static bool succAndPredAreNotOSRBlocks(TR::CFGEdge * edge)
       !toBlock(edge->getFrom())->isOSRCodeBlock() &&
       !toBlock(edge->getTo())->isOSRCatchBlock() &&
       !toBlock(edge->getFrom())->isOSRCatchBlock();
+   }
+
+static bool succIsOSRCatchBlock(TR::CFGEdge * edge)
+   {
+   return toBlock(edge->getTo())->isOSRCatchBlock();
    }
 
 int32_t
@@ -5003,6 +5008,7 @@ bool TR_InlinerBase::inlineCallTarget2(TR_CallStack * callStack, TR_CallTarget *
    //
    TR::Block * firstCalleeBlock = calleeSymbol->getFirstTreeTop()->getNode()->getBlock();
    TR::Block * lastCalleeBlock = 0;
+   bool treesAfterCallMergedIntoLastCalleeBlock = false;
    if (tif->firstBBEnd())
       {
       // hook up the previous BBStart in the caller with the first BBEnd in the callee
@@ -5019,6 +5025,7 @@ bool TR_InlinerBase::inlineCallTarget2(TR_CallStack * callStack, TR_CallTarget *
       lastCalleeBlock = tif->lastMainLineTreeTop()->getNode()->getBlock();
       nextBBEndInCaller->getNode()->setBlock(lastCalleeBlock);
       lastCalleeBlock->setExit(nextBBEndInCaller);
+      treesAfterCallMergedIntoLastCalleeBlock = true;
       }
 
    // merge cfgs
@@ -5108,22 +5115,50 @@ bool TR_InlinerBase::inlineCallTarget2(TR_CallStack * callStack, TR_CallTarget *
             _disableTailRecursion = true;
          }
       }
-   else if (comp()->getOption(TR_EnableOSR) && tif->crossedBasicBlock() && !comp()->osrInfrastructureRemoved()
-       && (tif->resultNode() == NULL || tif->resultNode()->getReferenceCount() == 0))
+   else if (treesAfterCallMergedIntoLastCalleeBlock && comp()->getOption(TR_EnableOSR) && !comp()->osrInfrastructureRemoved())
       {
-      /**
-       * In OSR, we need to split block even for cases without virtual guard. This is
-       * because in OSR a block with OSR point must have an exception edge to the osrCatchBlock
-       * of correct callerIndex. Split the block here so that the OSR points from callee
-       * and from caller are separated.
-       *
-       * This will not uncommon the return value if the block is split, instead it expects a temporary
-       * to have been generated so that nothing is commoned. This is valid under the current
-       * inliner behaviour, as the existance of a catch block will result in the required temporary being created.
-       */
-      TR::Block * blockOfCaller = previousBBStartInCaller->getNode()->getBlock();
-      TR::Block * blockOfCallerInCalleeCFG = nextBBEndInCaller->getNode()->getBlock()->split(callNodeTreeTop, callerCFG);
-      callerCFG->copyExceptionSuccessors(blockOfCaller, blockOfCallerInCalleeCFG);
+      // No guard is generated, caller's trees immediately after the call node is merged into inlined callee's last block.
+      // The OSR exception edge from block containing the call hasn't been copied onto the callee's last block.
+      // Check if the block has to be splitted for distinct exception edges.
+      //
+      TR::Block * mergedBlock = lastCalleeBlock;
+      TR_OSRMethodData *osrMethodData = comp()->getOSRCompilationData()->findOSRMethodData(comp()->getCurrentInlinedSiteIndex(), calleeSymbol);
+
+      if (osrMethodData && osrMethodData->getOSRCatchBlock())
+         {
+         /**
+          * In OSR, we need to split block even for cases without virtual guard. This is
+          * because in OSR a block with OSR point must have an exception edge to the osrCatchBlock
+          * of correct callerIndex. Split the block here so that the OSR points from callee
+          * and from caller are separated.
+          *
+          * This will not uncommon the return value if the block is split, instead it expects a temporary
+          * to have been generated so that nothing is commoned. This is valid under the current
+          * inliner behaviour, as the existance of a catch block will result in the required temporary being created.
+          */
+
+
+         debugTrace(tracer(), "Splitting block_%d to have distint exception edges for callee %d", mergedBlock->getNumber(), comp()->getCurrentInlinedSiteIndex());
+         // mergedBlock may have exception successors from the callee and non-OSR exception successors from the caller, after split,
+         // `blockOfTreesAfterTheCall` only contains trees from the caller, should not have exception successors from the callee.
+         TR::Block* blockOfTreesAfterTheCall = mergedBlock->split(callNodeTreeTop, callerCFG, false/*fixupCommoning*/, false/*copyExceptionSuccessors*/);
+         callerCFG->copyExceptionSuccessors(blockContainingTheCall, blockOfTreesAfterTheCall);
+         debugTrace(tracer(), "block_%d is generated as a result of split", blockOfTreesAfterTheCall->getNumber());
+         }
+      else
+         {
+         for (auto e1 = mergedBlock->getExceptionSuccessors().begin(); e1 != mergedBlock->getExceptionSuccessors().end(); ++e1)
+            {
+            TR_ASSERT_FATAL(!succIsOSRCatchBlock(*e1), "Mismatch between OSR meta data and CFG\n");
+            }
+
+         debugTrace(tracer(), "Copy OSR exception edge from caller block_%d to block_%d", blockContainingTheCall->getNumber(), mergedBlock->getNumber());
+
+         // The inlined callee has no OSR point, but the trees after the call from caller may have OSR points. Have to
+         // copy the exception edge from caller block containing the call to the merged block, otherwise OSR points
+         // from the caller will become invalid.
+         callerCFG->copyExceptionSuccessors(blockContainingTheCall, mergedBlock, succIsOSRCatchBlock);
+         }
       }
 
    // move the NULLCHK to before the inlined code

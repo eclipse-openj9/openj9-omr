@@ -565,9 +565,9 @@ public:
    *    that are not fully supported by optimizer yet
    *
    * \note
-   *    This query is for temporarily disable opts not supporting
-   *    the newly added rdbar/wrtbar opcodes. Subprojects can overrite
-   *    the answer. This query should be deleted eventually if
+   *    This query is for temporarily fixing up unanchored rdbars or disable
+   *    opts not supporting the newly added rdbar/wrtbar opcodes. Subprojects
+   *    can override the answer. This query should be deleted eventually if
    *    all the optimizations support the opcodes.
    */
    bool incompleteOptimizerSupportForReadWriteBarriers();
@@ -703,6 +703,18 @@ public:
    void verifyTrees(TR::ResolvedMethodSymbol *s = 0);
    void verifyBlocks(TR::ResolvedMethodSymbol *s = 0);
    void verifyCFG(TR::ResolvedMethodSymbol *s = 0);
+
+   /*
+   * \brief
+   *    Check to make sure the rdbars are anchored and anchor a rdbar if it's found unanchored
+   *
+   * \note
+   *    Ideally all optimizations should anchor a rdbar when it's created.
+   *    This API is for fixing the unanchored rdbars in case some optimizations forget to
+   *    anchor the node by mistake. Optimizations should still try to generate correct rdbar
+   *    trees instead of relying on this API.
+   */
+   void verifyAndFixRdbarAnchors();
 
    void setIlVerifier(TR::IlVerifier *ilVerifier) { _ilVerifier = ilVerifier; }
 

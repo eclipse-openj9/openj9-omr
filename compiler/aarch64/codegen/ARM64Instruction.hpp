@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2018 IBM Corp. and others
+ * Copyright (c) 2018, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -696,6 +696,38 @@ class ARM64RegBranchInstruction : public TR::Instruction
    ARM64RegBranchInstruction(TR::InstOpCode::Mnemonic op, TR::Node *node, TR::Register *treg,
                              TR::Instruction *precedingInstruction, TR::CodeGenerator *cg)
       : TR::Instruction(op, node, precedingInstruction, cg), _register(treg)
+      {
+      useRegister(treg);
+      }
+
+   /*
+    * @brief Constructor
+    * @param[in] op : instruction opcode
+    * @param[in] node : node
+    * @param[in] treg : branch target
+    * @param[in] cond : register dependency condition
+    * @param[in] cg : CodeGenerator
+    */
+   ARM64RegBranchInstruction(TR::InstOpCode::Mnemonic op, TR::Node *node, TR::Register *treg,
+                             TR::RegisterDependencyConditions *cond, TR::CodeGenerator *cg)
+      : TR::Instruction(op, node, cond, cg), _register(treg)
+      {
+      useRegister(treg);
+      }
+
+   /*
+    * @brief Constructor
+    * @param[in] op : instruction opcode
+    * @param[in] node : node
+    * @param[in] treg : branch target
+    * @param[in] cond : register dependency condition
+    * @param[in] precedingInstruction : preceding instruction
+    * @param[in] cg : CodeGenerator
+    */
+   ARM64RegBranchInstruction(TR::InstOpCode::Mnemonic op, TR::Node *node, TR::Register *treg,
+                             TR::RegisterDependencyConditions *cond,
+                             TR::Instruction *precedingInstruction, TR::CodeGenerator *cg)
+      : TR::Instruction(op, node, cond, precedingInstruction, cg), _register(treg)
       {
       useRegister(treg);
       }

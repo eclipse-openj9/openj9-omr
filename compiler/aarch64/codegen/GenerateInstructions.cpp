@@ -124,6 +124,14 @@ TR::Instruction *generateRegBranchInstruction(TR::CodeGenerator *cg, TR::InstOpC
    return new (cg->trHeapMemory()) TR::ARM64RegBranchInstruction(op, node, treg, cg);
    }
 
+TR::Instruction *generateRegBranchInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node *node,
+   TR::Register *treg, TR::RegisterDependencyConditions *cond, TR::Instruction *preced)
+   {
+   if (preced)
+      return new (cg->trHeapMemory()) TR::ARM64RegBranchInstruction(op, node, treg, cond, preced, cg);
+   return new (cg->trHeapMemory()) TR::ARM64RegBranchInstruction(op, node, treg, cond, cg);
+   }
+
 TR::Instruction *generateAdminInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node *node,
    TR::Node *fenceNode, TR::Instruction *preced)
    {

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1069,6 +1069,7 @@ void OMR::ValuePropagation::transformArrayCopyCall(TR::Node *node)
    bool needArrayCheck = true;
    bool needArrayStoreCheck = true;
    bool needWriteBarrier = true;
+   bool needReadBarrier = TR::Compiler->om.shouldGenerateReadBarriersForFieldLoads();
 
    bool primitiveTransform = cg()->getSupportsPrimitiveArrayCopy();
    bool referenceTransform = cg()->getSupportsReferenceArrayCopy();
@@ -1833,7 +1834,7 @@ void OMR::ValuePropagation::transformArrayCopyCall(TR::Node *node)
       // -------------------------------------------------------------------
       // Check and transform the existing array copy node to a primitive
       // arraycopy if neither an arraystore check nor a write barrier are
-      // required.
+      // required. Also does not transform if a read barrier is required.
       // -------------------------------------------------------------------
 
       bool changeExistingNodeToPrimitiveCopy = false;
@@ -1854,7 +1855,7 @@ void OMR::ValuePropagation::transformArrayCopyCall(TR::Node *node)
             }
          else
             {
-            if (needWriteBarrier)
+            if (needWriteBarrier || needReadBarrier)
                {
                node->setNoArrayStoreCheckArrayCopy(true);
                }

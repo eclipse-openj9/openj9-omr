@@ -89,6 +89,7 @@
 #include "infra/Stack.hpp"                                // for TR_Stack
 #include "infra/CfgEdge.hpp"                              // for CFGEdge
 #include "infra/CfgNode.hpp"                              // for CFGNode
+#include "infra/ILWalk.hpp"                              //  for PreorderNodeIterator
 #include "optimizer/CallInfo.hpp"                         // for TR_CallTarget, etc
 #include "optimizer/InlinerFailureReason.hpp"
 #include "optimizer/Optimization.hpp"                     // for Optimization
@@ -2421,9 +2422,8 @@ void
 TR_ParameterToArgumentMapper::lookForModifiedParameters()
    {
    TR_InlinerDelimiter delimiter(tracer(),"pam.lookForModifiedParameters");
-   TR::TreeTop* tt = _calleeSymbol->getFirstTreeTop();
-   for (; tt; tt = tt->getNextTreeTop())
-      lookForModifiedParameters(tt->getNode());
+   for (TR::PreorderNodeIterator it(_calleeSymbol->getFirstTreeTop(), comp()); it.currentTree() != NULL; ++it)
+      lookForModifiedParameters(it.currentNode());
    }
 
 TR_ParameterMapping *
@@ -2438,12 +2438,6 @@ TR_ParameterToArgumentMapper::findMapping(TR::Symbol * symbol)
 void
 TR_ParameterToArgumentMapper::lookForModifiedParameters(TR::Node * node)
    {
-   for (int32_t i = 0; i < node->getNumChildren(); ++i)
-      {
-      TR::Node *child = node->getChild(i);
-      lookForModifiedParameters(child);
-      }
-
    TR_ParameterMapping * parmMap;
    if (node->getOpCode().hasSymbolReference() && node->getSymbol()->isParm() && (parmMap = findMapping(node->getSymbol())))
       {

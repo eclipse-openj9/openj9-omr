@@ -3531,7 +3531,7 @@ void OMR::ValuePropagation::transformObjectCloneCall(TR::TreeTop *callTree, OMR:
    return;
    }
 
-void OMR::ValuePropagation::transformArrayCloneCall(TR::TreeTop *callTree, TR_OpaqueClassBlock *j9arrayClass)
+void OMR::ValuePropagation::transformArrayCloneCall(TR::TreeTop *callTree, OMR::ValuePropagation::ArrayCloneInfo *cloneInfo)
    {
    static char *disableArrayCloneOpt = feGetEnv("TR_disableFastArrayClone");
    if (disableArrayCloneOpt || TR::Compiler->om.canGenerateArraylets())
@@ -3548,6 +3548,9 @@ void OMR::ValuePropagation::transformArrayCloneCall(TR::TreeTop *callTree, TR_Op
 
    if (!performTransformation(comp(), "%sInlining array clone call [%p] as new array and arraycopy\n", OPT_DETAILS, callNode))
       return;
+
+   TR_OpaqueClassBlock *j9arrayClass = cloneInfo->_clazz;
+   bool isFixedClass = cloneInfo->_isFixed;
 
    TR_OpaqueClassBlock *j9class = comp()->fe()->getComponentClassFromArrayClass(j9arrayClass);
 
@@ -3588,9 +3591,20 @@ void OMR::ValuePropagation::transformArrayCloneCall(TR::TreeTop *callTree, TR_Op
       }
    else
       {
-      TR::Node *loadaddr = TR::Node::createWithSymRef(callNode, TR::loadaddr, 0, comp()->getSymRefTab()->findOrCreateClassSymbol(callNode->getSymbolReference()->getOwningMethodSymbol(comp()), 0, j9class));
+      TR::Node *classNode;
+      if (isFixedClass)
+         {
+         classNode = TR::Node::createWithSymRef(callNode, TR::loadaddr, 0, comp()->getSymRefTab()->findOrCreateClassSymbol(callNode->getSymbolReference()->getOwningMethodSymbol(comp()), 0, j9class));
+         }
+      else
+         {
+         // Load the component class of the cloned array as 2nd child of anewarray as expected by the opcode.
+         TR::Node * arrayClassNode = TR::Node::createWithSymRef(callNode, TR::aloadi, 1, objNode, comp()->getSymRefTab()->findOrCreateVftSymbolRef());
+         classNode = TR::Node::createWithSymRef(callNode, TR::aloadi, 1, arrayClassNode, comp()->getSymRefTab()->findOrCreateArrayComponentTypeSymbolRef());
+         }
       TR::SymbolReference *symRef = comp()->getSymRefTab()->findOrCreateANewArraySymbolRef(objNode->getSymbolReference()->getOwningMethodSymbol(comp()));
-      TR::Node::recreateWithoutProperties(callNode, TR::anewarray, 2, lenNode, loadaddr, symRef);
+      TR::Node::recreateWithoutProperties(callNode, TR::anewarray, 2, lenNode, classNode, symRef);
+      callNode->setCanSkipZeroInitialization(true);
       }
    TR::Node *newArray = callNode;
    newArray->setIsNonNull(true);

@@ -600,10 +600,19 @@ class ValuePropagation : public TR::Optimization
          : _clazz(clazz), _isFixed(isFixed)  { }
    };
 
+   struct ArrayCloneInfo {
+      TR_ALLOC(TR_Memory::ValuePropagation)
+
+      TR_OpaqueClassBlock *_clazz;
+      bool _isFixed;
+      ArrayCloneInfo(TR_OpaqueClassBlock *clazz, bool isFixed)
+         : _clazz(clazz), _isFixed(isFixed)  { }
+   };
+
 #ifdef J9_PROJECT_SPECIFIC
    void transformConverterCall(TR::TreeTop *);
    void transformObjectCloneCall(TR::TreeTop *, ObjCloneInfo *cloneInfo);
-   void transformArrayCloneCall(TR::TreeTop *, TR_OpaqueClassBlock *j9class);
+   void transformArrayCloneCall(TR::TreeTop *, ArrayCloneInfo *cloneInfo);
 #endif
 
 
@@ -905,7 +914,7 @@ class ValuePropagation : public TR::Optimization
    List<TR::TreeTop> _objectCloneCalls;
    List<TR::TreeTop> _arrayCloneCalls;
    List<ObjCloneInfo> _objectCloneTypes;
-   List<TR_OpaqueClassBlock> _arrayCloneTypes;
+   List<ArrayCloneInfo> _arrayCloneTypes;
 
    int32_t    *_parmInfo;
    bool       *_parmTypeValid;

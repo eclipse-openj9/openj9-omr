@@ -1414,6 +1414,9 @@ class OMR_EXTENSIBLE CodeGenerator
    bool getSupportsPrimitiveArrayCopy() {return _flags2.testAny(SupportsPrimitiveArrayCopy);}
    void setSupportsPrimitiveArrayCopy() {_flags2.set(SupportsPrimitiveArrayCopy);}
 
+   bool getSupportsDynamicANewArray() {return _flags2.testAny(SupportsDynamicANewArray);}
+   void setSupportsDynamicANewArray() {_flags2.set(SupportsDynamicANewArray);}
+
    bool getSupportsReferenceArrayCopy() {return _flags1.testAny(SupportsReferenceArrayCopy);}
    void setSupportsReferenceArrayCopy() {_flags1.set(SupportsReferenceArrayCopy);}
 
@@ -1686,7 +1689,7 @@ class OMR_EXTENSIBLE CodeGenerator
       HasDoubleWordAlignedStack                           = 0x00000200,
       SupportsReadOnlyLocks                               = 0x00000400,
       SupportsArrayTranslateAndTest                       = 0x00000800,
-      // AVAILABLE                                        = 0x00001000,
+      SupportsDynamicANewArray                            = 0x00001000,
       // AVAILABLE                                        = 0x00002000,
       // AVAILABLE                                        = 0x00004000,
       SupportsPostProcessArrayCopy                        = 0x00008000,

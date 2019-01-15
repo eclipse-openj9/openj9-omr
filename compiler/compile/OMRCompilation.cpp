@@ -80,6 +80,7 @@
 #include "infra/BitVector.hpp"                 // for TR_BitVector, etc
 #include "infra/Cfg.hpp"                       // for CFG
 #include "infra/Flags.hpp"                     // for flags32_t
+#include "infra/ILWalk.hpp"                    // for PreorderNodeIterator
 #include "infra/Link.hpp"                      // for TR_Pair
 #include "infra/List.hpp"                      // for List, ListIterator, etc
 #include "infra/Random.hpp"                    // for TR_RandomGenerator
@@ -1084,6 +1085,11 @@ int32_t OMR::Compilation::compile()
          }
 #endif
 
+#if !defined(DEBUG) && !defined(PROD_WITH_ASSUMES)
+      if (self()->incompleteOptimizerSupportForReadWriteBarriers())
+#endif
+         self()->verifyAndFixRdbarAnchors();
+
 #if !defined(DISABLE_CFG_CHECK)
       if (self()->getOption(TR_UseILValidator))
          {
@@ -2076,6 +2082,32 @@ void OMR::Compilation::verifyCFG(TR::ResolvedMethodSymbol *methodSymbol)
       if (!methodSymbol)
     methodSymbol = _methodSymbol;
       self()->getDebug()->verifyCFG(methodSymbol);
+      }
+   }
+
+void OMR::Compilation::verifyAndFixRdbarAnchors()
+   {
+   TR::NodeChecklist anchoredRdbarNodes(self());
+   for (TR::PreorderNodeIterator iter(self()->getStartTree(), self()); iter.currentTree() != NULL; ++iter)
+      {
+      TR::Node *node = iter.currentNode();
+      if (node->getOpCodeValue() == TR::treetop ||
+          node->getOpCode().isResolveOrNullCheck() ||
+          node->getOpCode().isAnchor())
+         {
+         if (node->getFirstChild()->getOpCode().isReadBar())
+            anchoredRdbarNodes.add(node->getFirstChild());
+         }
+      else if (node->getOpCode().isReadBar())
+         {
+         if (!anchoredRdbarNodes.contains(node))
+            {
+            TR_ASSERT(0, "node (n%dn) %p is rdbar but not anchored\n", node->getGlobalIndex(), node);
+            TR::Node *newttNode = TR::Node::create(TR::treetop, 1, node);
+            iter.currentTree()->insertBefore(TR::TreeTop::create(self(), newttNode));
+            traceMsg(self(), "node (n%dn) %p is an unanchored readbar, anchor it now under treetop node (n%dn) %p\n", node->getGlobalIndex(), node, newttNode->getGlobalIndex(), newttNode);
+            }
+         }
       }
    }
 

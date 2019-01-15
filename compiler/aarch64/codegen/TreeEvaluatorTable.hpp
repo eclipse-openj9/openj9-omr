@@ -24,7 +24,7 @@
  */
 
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::badILOpEvaluator ,	// TR::badILOp    // illegal op hopefully help with uninitialized nodes
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::aconstEvaluator ,	// TR::aconst		// load address constant (zero value means NULL)
+    TR::TreeEvaluator::aconstEvaluator, // TR::aconst		// load address constant (zero value means NULL)
     TR::TreeEvaluator::iconstEvaluator, // TR::iconst		// load integer constant (32-bit signed 2's complement)
     TR::TreeEvaluator::lconstEvaluator, // TR::lconst		// load long integer constant (64-bit signed 2's complement)
     TR::TreeEvaluator::fconstEvaluator, // TR::fconst		// load float constant (32-bit ieee fp)
@@ -34,7 +34,7 @@
     TR::TreeEvaluator::iloadEvaluator, // TR::iload		// load integer
     TR::TreeEvaluator::floadEvaluator, // TR::fload		// load float
     TR::TreeEvaluator::dloadEvaluator, // TR::dload		// load double
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::aloadEvaluator ,	// TR::aload		// load address
+    TR::TreeEvaluator::aloadEvaluator, // TR::aload		// load address
     TR::TreeEvaluator::bloadEvaluator, // TR::bload		// load byte
     TR::TreeEvaluator::sloadEvaluator, // TR::sload		// load short integer
     TR::TreeEvaluator::lloadEvaluator, // TR::lload		// load long integer
@@ -48,7 +48,7 @@
     TR::TreeEvaluator::iloadEvaluator, // TR::iloadi		// load indirect integer
     TR::TreeEvaluator::floadEvaluator, // TR::floadi		// load indirect float
     TR::TreeEvaluator::dloadEvaluator, // TR::dloadi		// load indirect double
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::aloadiEvaluator ,	// TR::aloadi		// load indirect address
+    TR::TreeEvaluator::aloadEvaluator, // TR::aloadi		// load indirect address
     TR::TreeEvaluator::bloadEvaluator, // TR::bloadi		// load indirect byte
     TR::TreeEvaluator::sloadEvaluator, // TR::sloadi		// load indirect short integer
     TR::TreeEvaluator::lloadEvaluator, // TR::lloadi		// load indirect long integer
@@ -63,7 +63,7 @@
     TR::TreeEvaluator::lstoreEvaluator, // TR::lstore		// store long integer
     TR::TreeEvaluator::fstoreEvaluator, // TR::fstore		// store float
     TR::TreeEvaluator::dstoreEvaluator, // TR::dstore		// store double
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::astoreEvaluator ,	// TR::astore		// store address
+    TR::TreeEvaluator::lstoreEvaluator, // TR::astore		// store address
     TR::TreeEvaluator::bstoreEvaluator, // TR::bstore		// store byte
     TR::TreeEvaluator::sstoreEvaluator, // TR::sstore		// store short integer
     TR::TreeEvaluator::unImpOpEvaluator,         // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::iwrtbarEvaluator , //TR::iwrtbar
@@ -76,7 +76,7 @@
     TR::TreeEvaluator::lstoreEvaluator, // TR::lstorei		// store indirect long integer           (child1 a; child2 l)
     TR::TreeEvaluator::fstoreEvaluator, // TR::fstorei		// store indirect float                  (child1 a; child2 f)
     TR::TreeEvaluator::dstoreEvaluator, // TR::dstorei		// store indirect double                 (child1 a; child2 d)
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::astoreiEvaluator ,	// TR::astorei		// store indirect address                (child1 a dest; child2 a value)
+    TR::TreeEvaluator::lstoreEvaluator, // TR::astorei		// store indirect address                (child1 a dest; child2 a value)
     TR::TreeEvaluator::bstoreEvaluator, // TR::bstorei		// store indirect byte                   (child1 a; child2 b)
     TR::TreeEvaluator::sstoreEvaluator, // TR::sstorei		// store indirect short integer          (child1 a; child2 s)
     TR::TreeEvaluator::istoreEvaluator, // TR::istorei		// store indirect integer                (child1 a; child2 i)

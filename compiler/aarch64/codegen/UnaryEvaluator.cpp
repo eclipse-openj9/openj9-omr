@@ -54,10 +54,12 @@ TR::Register *OMR::ARM64::TreeEvaluator::cconstEvaluator(TR::Node *node, TR::Cod
    }
 
 TR::Register *OMR::ARM64::TreeEvaluator::aconstEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// TODO:ARM64: Enable TR::TreeEvaluator::aconstEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
-	}
+   {
+   TR::Register *tempReg = cg->allocateRegister();
+   intptrj_t address = node->getLongInt();
+   loadConstant64(cg, node, address, tempReg);
+   return node->setRegister(tempReg);
+   }
 
 TR::Register *OMR::ARM64::TreeEvaluator::lconstEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {

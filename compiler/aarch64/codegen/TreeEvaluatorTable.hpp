@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2018 IBM Corp. and others
+ * Copyright (c) 2018, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -123,16 +123,16 @@
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::bmulEvaluator ,	// TR::bmul		// multiply 2 bytes
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::smulEvaluator ,	// TR::smul		// multiply 2 short integers
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::iumulEvaluator ,	// TR::iumul		// multiply 2 unsigned integers
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::idivEvaluator ,	// TR::idiv		// divide 2 integers                (child1 / child2)
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::ldivEvaluator ,	// TR::ldiv		// divide 2 long integers           (child1 / child2)
+    TR::TreeEvaluator::idivEvaluator, // TR::idiv		// divide 2 integers                (child1 / child2)
+    TR::TreeEvaluator::ldivEvaluator, // TR::ldiv		// divide 2 long integers           (child1 / child2)
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::fdivEvaluator ,	// TR::fdiv		// divide 2 floats                  (child1 / child2)
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::ddivEvaluator ,	// TR::ddiv		// divide 2 doubles                 (child1 / child2)
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::bdivEvaluator ,	// TR::bdiv		// divide 2 bytes                   (child1 / child2)
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::sdivEvaluator ,	// TR::sdiv		// divide 2 short integers          (child1 / child2)
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::iudivEvaluator ,	// TR::iudiv		// divide 2 unsigned integers       (child1 / child2)
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::ludivEvaluator ,	// TR::ludiv		// divide 2 unsigned long integers  (child1 / child2)
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::iremEvaluator ,	// TR::irem		// remainder of 2 integers                (child1 % child2)
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::lremEvaluator ,	// TR::lrem		// remainder of 2 long integers           (child1 % child2)
+    TR::TreeEvaluator::iremEvaluator, // TR::irem		// remainder of 2 integers                (child1 % child2)
+    TR::TreeEvaluator::lremEvaluator, // TR::lrem		// remainder of 2 long integers           (child1 % child2)
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::fremEvaluator ,	// TR::frem		// remainder of 2 floats                  (child1 % child2)
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::dremEvaluator ,	// TR::drem		// remainder of 2 doubles                 (child1 % child2)
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::bremEvaluator ,	// TR::brem		// remainder of 2 bytes                   (child1 % child2)

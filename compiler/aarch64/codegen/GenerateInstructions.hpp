@@ -238,6 +238,24 @@ TR::Instruction *generateRegBranchInstruction(
                    TR::Instruction *preced = NULL);
 
 /*
+ * @brief Generates branch-to-register instruction with register dependency
+ * @param[in] cg : CodeGenerator
+ * @param[in] op : instruction opcode
+ * @param[in] node : node
+ * @param[in] treg : target register
+ * @param[in] cond : register dependency condition
+ * @param[in] preced : preceding instruction
+ * @return generated instruction
+ */
+TR::Instruction *generateRegBranchInstruction(
+                   TR::CodeGenerator *cg,
+                   TR::InstOpCode::Mnemonic op,
+                   TR::Node *node,
+                   TR::Register *treg,
+                   TR::RegisterDependencyConditions *cond,
+                   TR::Instruction *preced = NULL);
+
+/*
  * @brief Generates admin instruction
  * @param[in] cg : CodeGenerator
  * @param[in] op : instruction opcode
@@ -254,7 +272,7 @@ TR::Instruction *generateAdminInstruction(
                    TR::Instruction *preced = NULL);
 
 /*
- * @brief Generates admin instruction
+ * @brief Generates admin instruction with register dependency
  * @param[in] cg : CodeGenerator
  * @param[in] op : instruction opcode
  * @param[in] node : node

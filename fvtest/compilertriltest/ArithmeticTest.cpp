@@ -57,6 +57,18 @@ int64_t lsub(int64_t l, int64_t r) {
     return l-r;
 }
 
+int64_t lmul(int64_t l, int64_t r) {
+    return l*r;
+}
+
+int64_t _ldiv(int64_t l, int64_t r) {
+    return l/r;
+}
+
+int64_t lrem(int64_t l, int64_t r) {
+    return l%r;
+}
+
 class Int32Arithmetic : public TRTest::BinaryOpTest<int32_t> {};
 
 class Int64Arithmetic : public TRTest::BinaryOpTest<int64_t> {};
@@ -145,7 +157,8 @@ INSTANTIATE_TEST_CASE_P(ArithmeticTest, Int64Arithmetic, ::testing::Combine(
     ::testing::ValuesIn(TRTest::const_value_pairs<int64_t, int64_t>()),
     ::testing::Values(
         std::make_tuple("ladd", ladd),
-        std::make_tuple("lsub", lsub) )));
+        std::make_tuple("lsub", lsub),
+        std::make_tuple("lmul", lmul) )));
 
 /**
  * @brief Filter function for *div opcodes
@@ -175,6 +188,13 @@ INSTANTIATE_TEST_CASE_P(DivArithmeticTest, Int32Arithmetic, ::testing::Combine(
     ::testing::Values(
         std::make_tuple("idiv", idiv),
         std::make_tuple("irem", irem) )));
+
+INSTANTIATE_TEST_CASE_P(DivArithmeticTest, Int64Arithmetic, ::testing::Combine(
+    ::testing::ValuesIn(
+        TRTest::filter(TRTest::const_value_pairs<int64_t, int64_t>(), div_filter<int64_t> )),
+    ::testing::Values(
+        std::make_tuple("ldiv", _ldiv),
+        std::make_tuple("lrem", lrem) )));
 
 template <typename T>
 bool smallFp_filter(std::tuple<T, T> a)

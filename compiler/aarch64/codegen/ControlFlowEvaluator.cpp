@@ -86,7 +86,7 @@ TR::Register *OMR::ARM64::TreeEvaluator::gotoEvaluator(TR::Node *node, TR::CodeG
    return NULL;
    }
 
-static TR::Instruction *ificmpHelper(TR::Node *node, TR::ARM64ConditionCode cc, TR::CodeGenerator *cg)
+static TR::Instruction *ificmpHelper(TR::Node *node, TR::ARM64ConditionCode cc, bool is64bit, TR::CodeGenerator *cg)
    {
    TR::Node *firstChild = node->getFirstChild();
    TR::Node *secondChild = node->getSecondChild();
@@ -96,10 +96,10 @@ static TR::Instruction *ificmpHelper(TR::Node *node, TR::ARM64ConditionCode cc, 
 
    if (secondChild->getOpCode().isLoadConst() && secondChild->getRegister() == NULL)
       {
-      int32_t value = secondChild->getInt();
+      int64_t value = is64bit ? secondChild->getLongInt() : secondChild->getInt();
       if (constantIsUnsignedImm12(value))
          {
-         generateCompareImmInstruction(cg, node, src1Reg, value, false);
+         generateCompareImmInstruction(cg, node, src1Reg, value, is64bit);
          useRegCompare = false;
          }
       }
@@ -107,7 +107,7 @@ static TR::Instruction *ificmpHelper(TR::Node *node, TR::ARM64ConditionCode cc, 
    if (useRegCompare)
       {
       TR::Register *src2Reg = cg->evaluate(secondChild);
-      generateCompareInstruction(cg, node, src1Reg, src2Reg, false);
+      generateCompareInstruction(cg, node, src1Reg, src2Reg, is64bit);
       }
 
    TR::LabelSymbol *dstLabel = node->getBranchDestination()->getNode()->getLabel();
@@ -136,145 +136,153 @@ static TR::Instruction *ificmpHelper(TR::Node *node, TR::ARM64ConditionCode cc, 
    return result;
    }
 
+// also handles ifiucmpeq
 TR::Register *
 OMR::ARM64::TreeEvaluator::ificmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   ificmpHelper(node, TR::CC_EQ, cg);
+   ificmpHelper(node, TR::CC_EQ, false, cg);
    return NULL;
    }
 
+// also handles ifiucmpne
 TR::Register *
 OMR::ARM64::TreeEvaluator::ificmpneEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   ificmpHelper(node, TR::CC_NE, cg);
+   ificmpHelper(node, TR::CC_NE, false, cg);
    return NULL;
    }
 
 TR::Register *
 OMR::ARM64::TreeEvaluator::ificmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   ificmpHelper(node, TR::CC_LT, cg);
+   ificmpHelper(node, TR::CC_LT, false, cg);
    return NULL;
    }
 
 TR::Register *
 OMR::ARM64::TreeEvaluator::ificmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   ificmpHelper(node, TR::CC_GE, cg);
+   ificmpHelper(node, TR::CC_GE, false, cg);
    return NULL;
    }
 
 TR::Register *
 OMR::ARM64::TreeEvaluator::ificmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   ificmpHelper(node, TR::CC_GT, cg);
+   ificmpHelper(node, TR::CC_GT, false, cg);
    return NULL;
    }
 
 TR::Register *
 OMR::ARM64::TreeEvaluator::ificmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   ificmpHelper(node, TR::CC_LE, cg);
+   ificmpHelper(node, TR::CC_LE, false, cg);
    return NULL;
    }
 
 TR::Register *
 OMR::ARM64::TreeEvaluator::ifiucmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// TODO:ARM64: Enable TR::TreeEvaluator::ifiucmpltEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
-	}
+   {
+   ificmpHelper(node, TR::CC_CC, false, cg);
+   return NULL;
+   }
 
 TR::Register *
 OMR::ARM64::TreeEvaluator::ifiucmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// TODO:ARM64: Enable TR::TreeEvaluator::ifiucmpgeEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
-	}
+   {
+   ificmpHelper(node, TR::CC_CS, false, cg);
+   return NULL;
+   }
 
 TR::Register *
 OMR::ARM64::TreeEvaluator::ifiucmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// TODO:ARM64: Enable TR::TreeEvaluator::ifiucmpgtEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
-	}
+   {
+   ificmpHelper(node, TR::CC_HI, false, cg);
+   return NULL;
+   }
 
 TR::Register *
 OMR::ARM64::TreeEvaluator::ifiucmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// TODO:ARM64: Enable TR::TreeEvaluator::ifiucmpleEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
-	}
+   {
+   ificmpHelper(node, TR::CC_LS, false, cg);
+   return NULL;
+   }
 
+// also handles iflucmpeq, ifacmpeq
 TR::Register *
 OMR::ARM64::TreeEvaluator::iflcmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// TODO:ARM64: Enable TR::TreeEvaluator::iflcmpeqEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
-	}
+   {
+   ificmpHelper(node, TR::CC_EQ, true, cg);
+   return NULL;
+   }
+
+// also handles iflucmpne, ifacmpne
+TR::Register *
+OMR::ARM64::TreeEvaluator::iflcmpneEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   ificmpHelper(node, TR::CC_NE, true, cg);
+   return NULL;
+   }
 
 TR::Register *
 OMR::ARM64::TreeEvaluator::iflcmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// TODO:ARM64: Enable TR::TreeEvaluator::iflcmpltEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
-	}
+   {
+   ificmpHelper(node, TR::CC_LT, true, cg);
+   return NULL;
+   }
 
 TR::Register *
 OMR::ARM64::TreeEvaluator::iflcmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// TODO:ARM64: Enable TR::TreeEvaluator::iflcmpgeEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
-	}
+   {
+   ificmpHelper(node, TR::CC_GE, true, cg);
+   return NULL;
+   }
 
+// also handles ifacmplt
 TR::Register *
 OMR::ARM64::TreeEvaluator::iflucmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// TODO:ARM64: Enable TR::TreeEvaluator::iflucmpltEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
-	}
+   {
+   ificmpHelper(node, TR::CC_CC, true, cg);
+   return NULL;
+   }
 
+// also handles ifacmpge
 TR::Register *
 OMR::ARM64::TreeEvaluator::iflucmpgeEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// TODO:ARM64: Enable TR::TreeEvaluator::iflucmpgeEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
-	}
+   {
+   ificmpHelper(node, TR::CC_CS, true, cg);
+   return NULL;
+   }
 
 TR::Register *
 OMR::ARM64::TreeEvaluator::iflcmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// TODO:ARM64: Enable TR::TreeEvaluator::iflcmpgtEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
-	}
+   {
+   ificmpHelper(node, TR::CC_GT, true, cg);
+   return NULL;
+   }
 
 TR::Register *
 OMR::ARM64::TreeEvaluator::iflcmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// TODO:ARM64: Enable TR::TreeEvaluator::iflcmpleEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
-	}
+   {
+   ificmpHelper(node, TR::CC_LE, true, cg);
+   return NULL;
+   }
 
+// also handles ifacmpgt
 TR::Register *
 OMR::ARM64::TreeEvaluator::iflucmpgtEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// TODO:ARM64: Enable TR::TreeEvaluator::iflucmpgtEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
-	}
+   {
+   ificmpHelper(node, TR::CC_HI, true, cg);
+   return NULL;
+   }
 
+// also handles ifacmple
 TR::Register *
 OMR::ARM64::TreeEvaluator::iflucmpleEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// TODO:ARM64: Enable TR::TreeEvaluator::iflucmpleEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
-	}
-
-TR::Register *
-OMR::ARM64::TreeEvaluator::ifacmpeqEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// TODO:ARM64: Enable TR::TreeEvaluator::ifacmpeqEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
-	}
+   {
+   ificmpHelper(node, TR::CC_LS, true, cg);
+   return NULL;
+   }
 
 static TR::Register *icmpHelper(TR::Node *node, TR::ARM64ConditionCode cc, bool is64bit, TR::CodeGenerator *cg)
    {

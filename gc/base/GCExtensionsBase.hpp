@@ -348,9 +348,7 @@ public:
 	uintptr_t heapContractionGCTimeThreshold; /**< min percentage of time spent in gc before contraction */
 	uintptr_t heapExpansionStabilizationCount; /**< GC count required before the heap is allowed to expand due to excessvie time after last heap expansion */
 	uintptr_t heapContractionStabilizationCount; /**< GC count required before the heap is allowed to contract due to excessvie time after last heap expansion */
-	
-	float heapSizeStatupHintConservativeFactor; /**< todo: remove once downstream projects start using the new name */
-	float heapSizeStatupHintWeightNewValue;		/**< todo: remove once downstream projects start using the new name */
+
 	float heapSizeStartupHintConservativeFactor; /**< Use only a fraction of hints stored in SC */
 	float heapSizeStartupHintWeightNewValue;		/**< Learn slowly by historic averaging of stored hints */	
 
@@ -1350,8 +1348,6 @@ public:
 		, heapContractionGCTimeThreshold(5)
 		, heapExpansionStabilizationCount(0)
 		, heapContractionStabilizationCount(3)
-		, heapSizeStatupHintConservativeFactor((float)0.7)
-		, heapSizeStatupHintWeightNewValue((float)0.0)
 		, heapSizeStartupHintConservativeFactor((float)0.7)
 		, heapSizeStartupHintWeightNewValue((float)0.0)		
 		, workpacketCount(0) /* only set if -Xgcworkpackets specified */

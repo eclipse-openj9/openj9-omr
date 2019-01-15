@@ -521,6 +521,7 @@ class TR_InductionVariableAnalysis : public TR::Optimization
 
    static void appendPredecessors(WorkQueue &workList, TR::Block *block);
 
+   void removeStaleIVs(TR_RegionStructure *region);
    void gatherCandidates(TR_Structure *s, TR_BitVector *b, TR_BitVector*);
 
    void perform(TR_RegionStructure *str);

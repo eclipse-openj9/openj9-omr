@@ -998,6 +998,24 @@ omrsysinfo_cgroup_subsystem_iterator_hasNext(struct OMRPortLibrary *portLibrary,
 }
 
 /**
+ * Sends the metric key at a given state of cgroup metric iterator
+ * should be used after the omrsysinfo_cgroup_subsystem_iterator_hasNext check
+ *
+ * @param[in] portLibrary pointer to OMRPortLibrary
+ *
+ * @param[in] state Pointer to the `OMRCgroupMetricIteratorState` struct
+ *
+ * @param[in/out] gets the metric key from the state of iterator
+ *
+ * @return 0 if any cgroup metric available else error code
+ */
+int32_t
+omrsysinfo_cgroup_subsystem_iterator_metricKey(struct OMRPortLibrary *portLibrary, const struct OMRCgroupMetricIteratorState *state, const char **metricKey)
+{
+	return OMRPORT_ERROR_SYSINFO_CGROUP_SUBSYSTEM_METRIC_NOT_AVAILABLE;
+}
+
+/**
  * Reads the next cgroup metric and sets the value to return 
  *
  * @param[in] portLibrary pointer to OMRPortLibrary
@@ -1011,7 +1029,20 @@ omrsysinfo_cgroup_subsystem_iterator_hasNext(struct OMRPortLibrary *portLibrary,
  * @return 0 on success and error code on failure
  */
 int32_t
-omrsysinfo_cgroup_subsystem_iterator_next(struct OMRPortLibrary *portLibrary, struct OMRCgroupMetricIteratorState *state, struct OMRCgroupMetricElement *metricElement, BOOLEAN *printUnits, uint64_t sizeRef)
+omrsysinfo_cgroup_subsystem_iterator_next(struct OMRPortLibrary *portLibrary, struct OMRCgroupMetricIteratorState *state, struct OMRCgroupMetricElement *metricElement)
 {
 	return OMRPORT_ERROR_SYSINFO_CGROUP_UNSUPPORTED_PLATFORM;	
+}
+
+/**
+ * Free the memory allocated to the elements in the iterator
+ *
+ * @param[in] portLibrary pointer to OMRPortLibrary
+ *
+ * @param[in] state Pointer to the `OMRCgroupMetricIteratorState` struct
+ */
+void
+omrsysinfo_cgroup_subsystem_iterator_destroy(struct OMRPortLibrary *portLibrary, struct OMRCgroupMetricIteratorState *state)
+{
+	return;
 }

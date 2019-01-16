@@ -410,8 +410,7 @@ typedef struct OMRCgroupEntry {
 #endif /* defined(LINUX) */
 
 typedef struct OMRCgroupMetricElement {
-	char *key;
-	char *units;
+	const char *units;
 	char value[128];
 } OMRCgroupMetricElement;
 
@@ -419,7 +418,7 @@ typedef struct OMRCgroupMetricIteratorState {
 	uint32_t count;
 	uint32_t numElements;
 	uint64_t subsystemid;
-	int32_t multiLineCounter;
+	int32_t fileMetricCounter;
 	char *fileContent;
 } OMRCgroupMetricIteratorState;
 
@@ -1548,8 +1547,12 @@ typedef struct OMRPortLibrary {
 	int32_t (*sysinfo_cgroup_subsystem_iterator_init)(struct OMRPortLibrary *portLibrary, uint64_t subsystem, struct OMRCgroupMetricIteratorState *state);
 	/** see @ref omrsysinfo.c::omrsysinfo_cgroup_subsystem_iterator_hasNext "omrsysinfo_cgroup_subsystem_iterator_hasNext"*/
 	BOOLEAN (*sysinfo_cgroup_subsystem_iterator_hasNext)(struct OMRPortLibrary *portLibrary, const struct OMRCgroupMetricIteratorState *state);
+	/** see @ref omrsysinfo.c::omrsysinfo_cgroup_subsystem_iterator_metricKey "omrsysinfo_cgroup_subsystem_iterator_metricKey"*/
+	int32_t (*sysinfo_cgroup_subsystem_iterator_metricKey)(struct OMRPortLibrary *portLibrary, const struct OMRCgroupMetricIteratorState *state, const char **metricKey);
 	/** see @ref omrsysinfo.c::omrsysinfo_cgroup_subsystem_iterator_next "omrsysinfo_cgroup_subsystem_iterator_next"*/
-	int32_t (*sysinfo_cgroup_subsystem_iterator_next)(struct OMRPortLibrary *portLibrary, struct OMRCgroupMetricIteratorState *state, struct OMRCgroupMetricElement *metricElement, BOOLEAN *printUnits, uint64_t sizeRef);
+	int32_t (*sysinfo_cgroup_subsystem_iterator_next)(struct OMRPortLibrary *portLibrary, struct OMRCgroupMetricIteratorState *state, struct OMRCgroupMetricElement *metricElement);
+	/** see @ref omrsysinfo.c::omrsysinfo_cgroup_subsystem_iterator_destroy "omrsysinfo_cgroup_subsystem_iterator_destroy"*/
+	void (*sysinfo_cgroup_subsystem_iterator_destroy)(struct OMRPortLibrary *portLibrary, struct OMRCgroupMetricIteratorState *state);
 	/** see @ref omrport.c::omrport_init_library "omrport_init_library"*/
 	int32_t (*port_init_library)(struct OMRPortLibrary *portLibrary, uintptr_t size) ;
 	/** see @ref omrport.c::omrport_startup_library "omrport_startup_library"*/
@@ -2009,7 +2012,9 @@ extern J9_CFUNC int32_t omrport_getVersion(struct OMRPortLibrary *portLibrary);
 #define omrsysinfo_is_running_in_container(param1) privateOmrPortLibrary->sysinfo_is_running_in_container(privateOmrPortLibrary, param1)
 #define omrsysinfo_cgroup_subsystem_iterator_init(param1, param2) privateOmrPortLibrary->sysinfo_cgroup_subsystem_iterator_init(privateOmrPortLibrary, param1, param2)
 #define omrsysinfo_cgroup_subsystem_iterator_hasNext(param1) privateOmrPortLibrary->sysinfo_cgroup_subsystem_iterator_hasNext(privateOmrPortLibrary, param1)
-#define omrsysinfo_cgroup_subsystem_iterator_next(param1, param2, param3, param4) privateOmrPortLibrary->sysinfo_cgroup_subsystem_iterator_next(privateOmrPortLibrary, param1, param2, param3, param4)
+#define omrsysinfo_cgroup_subsystem_iterator_metricKey(param1, param2) privateOmrPortLibrary->sysinfo_cgroup_subsystem_iterator_metricKey(privateOmrPortLibrary, param1, param2)
+#define omrsysinfo_cgroup_subsystem_iterator_next(param1, param2) privateOmrPortLibrary->sysinfo_cgroup_subsystem_iterator_next(privateOmrPortLibrary, param1, param2)
+#define omrsysinfo_cgroup_subsystem_iterator_destroy(param1) privateOmrPortLibrary->sysinfo_cgroup_subsystem_iterator_destroy(privateOmrPortLibrary, param1)
 #define omrintrospect_startup() privateOmrPortLibrary->introspect_startup(privateOmrPortLibrary)
 #define omrintrospect_shutdown() privateOmrPortLibrary->introspect_shutdown(privateOmrPortLibrary)
 #define omrintrospect_set_suspend_signal_offset(param1) privateOmrPortLibrary->introspect_set_suspend_signal_offset(privateOmrPortLibrary, param1)

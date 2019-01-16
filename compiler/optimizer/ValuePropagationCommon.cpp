@@ -3604,7 +3604,6 @@ void OMR::ValuePropagation::transformArrayCloneCall(TR::TreeTop *callTree, OMR::
          }
       TR::SymbolReference *symRef = comp()->getSymRefTab()->findOrCreateANewArraySymbolRef(objNode->getSymbolReference()->getOwningMethodSymbol(comp()));
       TR::Node::recreateWithoutProperties(callNode, TR::anewarray, 2, lenNode, classNode, symRef);
-      callNode->setCanSkipZeroInitialization(true);
       }
    TR::Node *newArray = callNode;
    newArray->setIsNonNull(true);

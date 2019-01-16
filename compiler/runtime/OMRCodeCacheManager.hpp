@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -233,6 +233,21 @@ public:
    void repositoryCodeCacheCreated();
    void registerCompiledMethod(const char *sig, uint8_t *startPC, uint32_t codeSize);
    void registerStaticRelocation(const TR::StaticRelocation &relocation);
+
+   /**
+    * @brief Hint to free a given code cache segment.
+    *
+    * This function is intended to allow code cache segments allocated by
+    * `allocateCodeCacheSegment()` to be freed. Because it may not always
+    * be safe to actually free code cache memory, callers should treat
+    * this function as a hint. It is up to downstream projects to decide
+    * how to handle these requests. By default, if no overrides are
+    * provided, no memory is ever freed.
+    *
+    * @param memSegment is a pointer to the TR::CodeCacheMemorySegment instance
+    *        that handles the segment memory to be freed.
+    */
+   void freeCodeCacheSegment(TR::CodeCacheMemorySegment * memSegment) {}
 
 protected:
 

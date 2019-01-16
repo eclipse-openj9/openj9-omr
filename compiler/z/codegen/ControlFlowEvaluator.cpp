@@ -169,10 +169,9 @@ virtualGuardHelper(TR::Node * node, TR::CodeGenerator * cg)
          case TR_DirectMethodGuard:
          case TR_NonoverriddenGuard:
          case TR_InterfaceGuard:
-         case TR_AbstractGuard:
          case TR_MethodEnterExitGuard:
          case TR_HCRGuard:
-         //case TR_AbstractGuard:
+         case TR_AbstractGuard:
             aotSite->setGuard(virtualGuard);
             break;
 
@@ -180,7 +179,7 @@ virtualGuardHelper(TR::Node * node, TR::CodeGenerator * cg)
             break;
 
          default:
-            TR_ASSERT(0, "got AOT guard in node but virtual guard not one of known guards supported for AOT. Guard: %d", virtualGuard->getKind());
+            TR_ASSERT_FATAL(0, "got AOT guard in node but virtual guard not one of known guards supported for AOT. Guard: %d", virtualGuard->getKind());
             break;
          }
       }

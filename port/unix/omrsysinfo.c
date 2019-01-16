@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2018 IBM Corp. and others
+ * Copyright (c) 2015, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -4587,24 +4587,24 @@ omrsysinfo_cgroup_subsystem_iterator_next(struct OMRPortLibrary *portLibrary, st
 		metricKeyLen = strlen(currentElement->metricKeyInFile);
 		while (current < end) {
 			if (0 == strncmp(current, currentElement->metricKeyInFile, metricKeyLen)) {
-        			char *newLine = current;
-        			current += metricKeyLen;
-        			/* advance past any whitespace */
-        			while ((current != end) &&  (' ' == *current)) {
-            				current += 1;
-        			}
-        			/* find the newline */
-        			newLine = current;       
-       		 		while ('\n' != *newLine) {
-            				newLine += 1;
-        			}
-        			strncpy(metricElement->value, current, newLine - current);
+				char *newLine = current;
+				current += metricKeyLen;
+				/* advance past any whitespace */
+				while ((current != end) &&  (' ' == *current)) {
+					current += 1;
+				}
+				/* find the newline */
+				newLine = current;
+				while ('\n' != *newLine) {
+					newLine += 1;
+				}
+				strncpy(metricElement->value, current, newLine - current);
 				metricElement->value[newLine - current] = '\0';
 				isMetricFound = TRUE;
 				rc = 0;
 				break;
-    			}
-    			current += 1;
+			}
+			current += 1;
 		}
 		/* if we complete parse the fileContent and couldn't find the metric return error code */
 		if (!isMetricFound) {

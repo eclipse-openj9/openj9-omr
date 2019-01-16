@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -280,7 +280,10 @@ OMR::Power::CodeGenerator::CodeGenerator() :
    if (TR::Compiler->vm.hasResumableTrapHandler(self()->comp()))
       self()->setHasResumableTrapHandler();
 
-   if (TR::Compiler->target.cpu.getPPCSupportsTM() && !self()->comp()->getOption(TR_DisableTM))
+   /*
+    * TODO: TM is currently not compatible with read barriers. If read barriers are required, TM is disabled until the issue is fixed.
+    */
+   if (TR::Compiler->target.cpu.getPPCSupportsTM() && !self()->comp()->getOption(TR_DisableTM) && !TR::Compiler->om.shouldGenerateReadBarriersForFieldLoads())
       self()->setSupportsTM();
 
    // enable LM if hardware supports instructions and running the reduced-pause GC policy

@@ -237,7 +237,12 @@ OMR::CodeCacheManager::destroy()
       self()->freeMemory(codeCache);
       codeCache = nextCache;
       }
-   self()->freeCodeCacheSegment(_codeCacheRepositorySegment);
+
+   if (self()->usingRepository())
+      {
+      self()->freeCodeCacheSegment(_codeCacheRepositorySegment);
+      }
+
    _initialized = false;
    }
 

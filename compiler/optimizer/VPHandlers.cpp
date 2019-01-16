@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -9396,7 +9396,7 @@ static TR::Node *constrainIfcmpeqne(OMR::ValuePropagation *vp, TR::Node *node, b
 
 #ifdef J9_PROJECT_SPECIFIC
 
-   if ((!vp->comp()->compileRelocatableCode() || vp->comp()->getOption(TR_UseSymbolValidationManager)) &&
+   if (!vp->comp()->compileRelocatableCode() &&
        vp->lastTimeThrough() &&
        vp->comp()->performVirtualGuardNOPing() &&
        !vp->_curBlock->isCold() &&

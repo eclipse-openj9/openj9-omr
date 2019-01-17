@@ -166,15 +166,6 @@ OMR::Z::Machine::registerCopy(TR::CodeGenerator* cg,
          cursor = generateExtendedHighWordInstruction(node, cg, mnemonic, targetReg, sourceReg, 0, precedingInstruction);
          break;
          }
-      case TR_GPRL:
-         //TR_ASSERTC( "Highword RA is disabled,comp, enableHighWordRA, but REG COPY is working on GPR Low word??");
-         //TR_ASSERTC(comp, sourceReg->isLowWordRegister() && targetReg->isLowWordRegister(),
-         //"REG COPY HPR: both target and source Regs have to be Low word GPR!");
-         if (sourceReg->isLowWordRegister())
-            cursor = generateRRInstruction(cg, TR::InstOpCode::LR, node, targetReg, sourceReg, precedingInstruction);
-         else
-            cursor = generateExtendedHighWordInstruction(node, cg, TR::InstOpCode::LLHFR, targetReg, sourceReg, 0, precedingInstruction);
-         break;
       case TR_FPR:
          cursor = generateRRInstruction(cg, TR::InstOpCode::LDR, node, targetReg, sourceReg, precedingInstruction);
          break;

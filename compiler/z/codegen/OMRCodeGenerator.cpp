@@ -1193,17 +1193,6 @@ OMR::Z::CodeGenerator::canUseImmedInstruction( int64_t value )
       return false;
    }
 
-
-// Use with care, lightly tested
-// Z
-void OMR::Z::CodeGenerator::changeRegisterKind(TR::Register * temp, TR_RegisterKinds rk)
-   {
-   if (rk == temp->getKind()) return;
-   if (_liveRegisters[temp->getKind()] && _liveRegisters[rk])
-      TR_LiveRegisters::moveRegToList(_liveRegisters[temp->getKind()], _liveRegisters[rk], temp);
-   temp->setKind(rk);
-   }
-
 bool
 OMR::Z::CodeGenerator::isAddMemoryUpdate(TR::Node * node, TR::Node * valueChild)
    {

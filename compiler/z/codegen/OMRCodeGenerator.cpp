@@ -1204,11 +1204,6 @@ void OMR::Z::CodeGenerator::changeRegisterKind(TR::Register * temp, TR_RegisterK
    temp->setKind(rk);
    }
 
-void
-OMR::Z::CodeGenerator::ensure64BitRegister(TR::Register *reg)
-   {
-   }
-
 bool
 OMR::Z::CodeGenerator::isAddMemoryUpdate(TR::Node * node, TR::Node * valueChild)
    {

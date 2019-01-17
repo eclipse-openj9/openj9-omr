@@ -425,7 +425,6 @@ laddHelper64(TR::Node * node, TR::CodeGenerator * cg)
    if (bumpedRefCount)
       firstChild->decReferenceCount();
 
-   cg->ensure64BitRegister(targetRegister);
    return targetRegister;
    }
 
@@ -1787,10 +1786,6 @@ genericIntShift(TR::Node * node, TR::CodeGenerator * cg, TR::InstOpCode::Mnemoni
       trgReg = srcReg;
       }
 
-   if (canUseAltShiftOp &&
-       (TR::InstOpCode(altShiftOp).is64bit() || TR::InstOpCode(altShiftOp).is32to64bit()))
-      cg->ensure64BitRegister(trgReg);
-
    if (secondChild->getOpCode().isLoadConst())
       {
       if (shiftAmount != 0)
@@ -2341,8 +2336,6 @@ genericRotateAndInsertHelper(TR::Node * node, TR::CodeGenerator * cg)
             else
                targetReg = sourceReg;
 
-            cg->ensure64BitRegister(targetReg);
-
             if (msBit > lsBit)
                {
                if ((TR::Compiler->target.is64Bit() || cg->use64BitRegsOn32Bit()) && node->getType().isInt64())
@@ -2688,7 +2681,6 @@ lsubHelper64(TR::Node * node, TR::CodeGenerator * cg)
    if (bumpedRefCount)
       firstChild->getFirstChild()->decReferenceCount();
 
-   cg->ensure64BitRegister(targetRegister);
    return targetRegister;
    }
 
@@ -3408,7 +3400,7 @@ lmulHelper64(TR::Node * node, TR::CodeGenerator * cg)
 
    cg->decReferenceCount(firstChild);
    cg->decReferenceCount(secondChild);
-   cg->ensure64BitRegister(targetRegister);
+
    return targetRegister;
    }
 

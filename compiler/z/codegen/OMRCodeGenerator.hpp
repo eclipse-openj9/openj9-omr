@@ -542,7 +542,6 @@ public:
    uint8_t getRCondMoveBranchOpCond() { return 0xF - fCondMoveBranchOpCond; }
 
    bool canUseImmedInstruction(int64_t v);
-   void ensure64BitRegister(TR::Register *reg);
 
    virtual bool isAddMemoryUpdate(TR::Node * node, TR::Node * valueChild);
 

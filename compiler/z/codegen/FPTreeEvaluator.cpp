@@ -199,8 +199,6 @@ genLogicalConversionForInt(TR::Node * node, TR::CodeGenerator * cg, TR::Register
          generateRSInstruction(cg, TR::InstOpCode::SLLG, node, targetRegister, targetRegister, shift_amount);
          generateRSInstruction(cg, TR::InstOpCode::SRLG, node, targetRegister, targetRegister, shift_amount);
          }
-
-      cg->ensure64BitRegister(targetRegister);
       }
    else
       {
@@ -223,7 +221,6 @@ genArithmeticConversionForInt(TR::Node * node, TR::CodeGenerator * cg, TR::Regis
       {
       generateRSInstruction(cg, TR::InstOpCode::SLLG, node, targetRegister, targetRegister, shift_amount);
       generateRSInstruction(cg, TR::InstOpCode::SRAG, node, targetRegister, targetRegister, shift_amount);
-      cg->ensure64BitRegister(targetRegister);
       }
    else
       {

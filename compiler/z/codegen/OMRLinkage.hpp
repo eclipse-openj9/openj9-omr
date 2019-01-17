@@ -334,8 +334,6 @@ enum TR_DispatchType
 
    public:
 
-   virtual bool findPossibleCallInstruction(TR::Instruction* &cursor, int32_t& numToCheck, TR::Instruction ** callInstruction, bool *regs = 0, int32_t regsSize = 0);
-   virtual void setUsedRegisters(TR::Instruction *instruction, bool *regs, int32_t regsSize);
    virtual bool checkPreservedRegisterUsage(bool *regs, int32_t regsSize);
    virtual void replaceCallWithJumpInstruction(TR::Instruction *callInstruction);
 

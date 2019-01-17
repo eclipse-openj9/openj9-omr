@@ -144,11 +144,6 @@ class OMR_EXTENSIBLE Instruction : public OMR::Instruction
    bool matchesAnyRegister(TR::Register* reg, TR::Register* instReg1, TR::Register* instReg2);
    bool isDefRegister(TR::Register * reg);
 
-   virtual bool getRegisters(TR::list<TR::Register *> &regs);
-   virtual bool getUsedRegisters(TR::list<TR::Register *> &usedRegs);
-   virtual bool getDefinedRegisters(TR::list<TR::Register *> &defedRegs);
-   virtual bool getKilledRegisters(TR::list<TR::Register *> &killedRegs);
-
    int32_t renameRegister(TR::Register *from, TR::Register *to);
 
    virtual Kind getKind() { return IsNotExtended; }

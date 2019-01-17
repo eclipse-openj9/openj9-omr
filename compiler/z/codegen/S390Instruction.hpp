@@ -5730,14 +5730,6 @@ class S390VRSInstruction : public S390VInstruction
 
    TR::Register* getSecondRegister() {return getRegisterOperand(2); }
 
-//   virtual Kind getKind();
-//   virtual bool refsRegister(TR::Register * reg);
-//   virtual int32_t estimateBinaryLength(int32_t currentEstimate);
-//   virtual uint8_t * generateBinaryEncoding();
-//   virtual bool getUsedRegisters(CS2::ListOf<TR::Register*, TR::Allocator>& usedRegs);
-//   virtual bool getDefinedRegisters(CS2::ListOf<TR::Register *, TR::Allocator> & defedRegs);
-//   virtual bool getKilledRegisters(CS2::ListOf<TR::Register *, TR::Allocator> & killedRegs);
-
    /* We want these to be called only by helper constructors */
    protected:
    S390VRSInstruction(

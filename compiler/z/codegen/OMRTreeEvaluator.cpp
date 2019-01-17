@@ -441,7 +441,7 @@ generateLoad32BitConstant(TR::CodeGenerator * cg, TR::Node * constExpr)
          {
          if (TR::Compiler->target.is64Bit() || cg->use64BitRegsOn32Bit())
             {
-            tempReg = cg->allocate64bitRegister();
+            tempReg = cg->allocateRegister();
             genLoadLongConstant(cg, constExpr, constExpr->getLongInt(), tempReg);
             }
          else
@@ -765,7 +765,7 @@ TR::Instruction *multiply64Reduction(TR::CodeGenerator * cg, TR::Node * node,
          return NULL;
          }
 
-      TR::Register * tempRegister = cg->allocate64bitRegister();
+      TR::Register * tempRegister = cg->allocateRegister();
       cursor = generateRRInstruction(cg, TR::InstOpCode::LGR, node, tempRegister, sourceRegister, preced);
       if (shiftValue != 0)
          {
@@ -800,7 +800,7 @@ TR::Instruction *multiply64Reduction(TR::CodeGenerator * cg, TR::Node * node,
          return NULL;
          }
 
-      TR::Register * tempRegister = cg->allocate64bitRegister();
+      TR::Register * tempRegister = cg->allocateRegister();
       cursor = generateRRInstruction(cg, TR::InstOpCode::LGR, node, tempRegister, sourceRegister, preced);
       if (shiftValue != 0)
          {
@@ -3104,12 +3104,12 @@ generateS390CompareAndBranchOpsHelper(TR::Node * node, TR::CodeGenerator * cg, T
             }
          else if (useLTG)
             {
-            testRegister = cg->allocate64bitRegister();
+            testRegister = cg->allocateRegister();
             }
          else if (nonConstNode->isExtendedTo64BitAtSource())
             {
             if (TR::Compiler->target.is64Bit() || cg->use64BitRegsOn32Bit())
-               testRegister = cg->allocate64bitRegister();
+               testRegister = cg->allocateRegister();
             else
                testRegister = cg->allocateConsecutiveRegisterPair();
             }
@@ -4834,7 +4834,7 @@ genericLoadHelper(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference *
          ((!useRegPairs && srcRegister->getKind() == TR_GPR && cg->use64BitRegsOn32Bit()) || (useRegPairs && targetRegister->getRegisterPair() == NULL)))))
       {
       if (numberOfExtendBits == 64 && !useRegPairs)
-         targetRegister = cg->allocate64bitRegister();
+         targetRegister = cg->allocateRegister();
       else if (numberOfExtendBits == 64) //useRegPairs
          {
          if (!canClobberSrcReg)
@@ -4859,7 +4859,7 @@ genericLoadHelper(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference *
       if (useRegPairs)
          targetRegister = cg->allocateConsecutiveRegisterPair();
       else if (numberOfExtendBits == 64)
-         targetRegister = cg->allocate64bitRegister();
+         targetRegister = cg->allocateRegister();
       else
          targetRegister = cg->allocateRegister();
       }
@@ -5486,7 +5486,7 @@ iloadHelper(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference * tempM
    if (node->isExtendedTo64BitAtSource())
       {
       if (TR::Compiler->target.is64Bit() || cg->use64BitRegsOn32Bit())
-         tempReg = cg->allocate64bitRegister();
+         tempReg = cg->allocateRegister();
       else
          tempReg = cg->allocateConsecutiveRegisterPair();
       }
@@ -5646,7 +5646,7 @@ lloadHelper64(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference * hig
    TR_ASSERT(TR::Compiler->target.is64Bit() || cg->use64BitRegsOn32Bit(), "should call 32-bit version: lloadHelper()");
 
 
-   TR::Register * longRegister = cg->allocate64bitRegister();
+   TR::Register * longRegister = cg->allocateRegister();
 
 
    if (relativeLongLoadHelper(cg, node, longRegister))
@@ -5726,7 +5726,7 @@ aloadHelper(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference * tempM
 
       if (node->getSymbol()->getSize() == 8)
          {
-         tempReg = cg->allocate64bitRegister();
+         tempReg = cg->allocateRegister();
          }
       else
          {
@@ -5745,7 +5745,7 @@ aloadHelper(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference * tempM
       {
       if (node->getSymbol()->getSize() == 8)
          {
-         tempReg = cg->allocate64bitRegister();
+         tempReg = cg->allocateRegister();
          }
       else
          {
@@ -5761,7 +5761,7 @@ aloadHelper(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference * tempM
       {
       if (node->getSymbol()->getSize() == 8)
          {
-         tempReg = cg->allocate64bitRegister();
+         tempReg = cg->allocateRegister();
          }
       else
          {
@@ -5809,7 +5809,7 @@ aloadHelper(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference * tempM
    else
       {
       if (node->getSymbol()->getSize() == 8 || node->isExtendedTo64BitAtSource())
-         tempReg = cg->allocate64bitRegister();
+         tempReg = cg->allocateRegister();
       else
          tempReg = cg->allocateRegister();
 
@@ -6207,7 +6207,7 @@ storeToStaticBaseNodeHelper(TR::Node * node, TR::Node * valueChild, TR::CodeGene
       {
       if (node->getSymbol()->getSize() == 8)
          {
-         tempReg = cg->allocate64bitRegister();
+         tempReg = cg->allocateRegister();
          generateRRInstruction(cg, TR::InstOpCode::LGR, node, tempReg, srcRegister);
          }
       else
@@ -7629,14 +7629,14 @@ inlineNumberOfTrailingZeros(
    TR_ASSERT(node->getNumChildren()==1, "Wrong number of children in inlineNumberOfTrailingZeros");
    TR::Node *argNode = node->getFirstChild();
    TR::Register *argReg = cg->evaluate(argNode);
-   TR::Register *tempReg = cg->allocate64bitRegister();
+   TR::Register *tempReg = cg->allocateRegister();
    TR::Register *returnReg = NULL;
    bool isLong = (subfconst == 64);
 
    if (TR::Compiler->target.is32Bit() && !cg->use64BitRegsOn32Bit() && argReg->getRegisterPair())
       {
       // reconstruct a GPR 64 from reg pair
-      TR::Register *tempReg = cg->allocate64bitRegister();
+      TR::Register *tempReg = cg->allocateRegister();
       generateRSInstruction(cg, TR::InstOpCode::SLLG, node, tempReg, argReg->getHighOrder(), 32);
       generateRRInstruction(cg, TR::InstOpCode::LR, node, tempReg, argReg->getLowOrder());
 
@@ -7650,7 +7650,7 @@ inlineNumberOfTrailingZeros(
    generateRRInstruction(cg, TR::InstOpCode::NGR, node, tempReg, argReg);
 
    // Use FLOGR to count leading zeros, and xor from 63 to get trailing zeroes (FLOGR counts on the full 64 bit register)
-   TR::Register *highReg = cg->allocate64bitRegister();
+   TR::Register *highReg = cg->allocateRegister();
    TR::Register *flogrRegPair = cg->allocateConsecutiveRegisterPair(tempReg, highReg);
 
    // Java needs to return 64/32 if no one bit found
@@ -7818,8 +7818,8 @@ inlineHighestOneBit(
    if (TR::Compiler->target.is64Bit() || cg->use64BitRegsOn32Bit())
       {
       // Prepare the result register pair
-      evenReg = cg->allocate64bitRegister();
-      oddReg = cg->allocate64bitRegister();
+      evenReg = cg->allocateRegister();
+      oddReg = cg->allocateRegister();
       pairReg = cg->allocateConsecutiveRegisterPair(oddReg, evenReg);
       }
    else
@@ -7845,7 +7845,7 @@ inlineHighestOneBit(
       cursor = generateRRInstruction(cg, TR::InstOpCode::FLOGR, node, pairReg, srcReg);
 
    // perform XOR for find highest one bit
-   TR::Register * retReg = cg->allocate64bitRegister();
+   TR::Register * retReg = cg->allocateRegister();
    cursor = generateRRInstruction(cg, TR::InstOpCode::LGR, node, retReg, oddReg);
 
    if (TR::Compiler->target.is32Bit() && !cg->use64BitRegsOn32Bit() && isLong)
@@ -7960,7 +7960,7 @@ inlineNumberOfLeadingZeros(
 
    if (!isLong)
       {
-      TR::Register *tempReg = cg->allocate64bitRegister();
+      TR::Register *tempReg = cg->allocateRegister();
 
       // 32 bit number: shift left by 32 bits and count from there
       generateRSInstruction(cg, TR::InstOpCode::SLLG, node, tempReg, argReg, 32);
@@ -7975,7 +7975,7 @@ inlineNumberOfLeadingZeros(
    else if (TR::Compiler->target.is32Bit() && !cg->use64BitRegsOn32Bit() && argReg->getRegisterPair())
       {
       // reconstruct a GPR 64 from reg pair
-      TR::Register *tempReg = cg->allocate64bitRegister();
+      TR::Register *tempReg = cg->allocateRegister();
       generateRSInstruction(cg, TR::InstOpCode::SLLG, node, tempReg, argReg->getHighOrder(), 32);
       generateRRInstruction(cg, TR::InstOpCode::LR, node, tempReg, argReg->getLowOrder());
 
@@ -8057,12 +8057,12 @@ inline128Multiply(TR::Node * node, TR::CodeGenerator * cg,
    TR::Register *lowZ0 = lowlowC;
    TR::Register *highZ0 = lowhighC;
    TR::Register *lowZ1 = lowA;
-   TR::Register *highZ1 = cg->allocate64bitRegister();
+   TR::Register *highZ1 = cg->allocateRegister();
    TR::Register *lowZ2 = highlowC;
    TR::Register *highZ2 = highhighC;
    TR::Register *lowZ1part = highA;
-   TR::Register *highZ1part = cg->allocate64bitRegister();
-   TR::Register *Sum_high = cg->allocate64bitRegister();
+   TR::Register *highZ1part = cg->allocateRegister();
+   TR::Register *Sum_high = cg->allocateRegister();
 
    TR::RegisterPair * Z0 = cg->allocateConsecutiveRegisterPair(lowZ0, highZ0);
    TR::RegisterPair * Z1 = cg->allocateConsecutiveRegisterPair(lowZ1, highZ1);
@@ -8408,36 +8408,36 @@ inline256Multiply(TR::Node * node, TR::CodeGenerator * cg)
    // There are alot more registers here then really needed, but since this was intentionally written
    // not to have internal control flow, RA can do its job properly, so mostly try not to reuse registers
 
-   TR::Register *A0 = cg->allocate64bitRegister();
-   TR::Register *A1 = cg->allocate64bitRegister();
-   TR::Register *A2 = cg->allocate64bitRegister();
-   TR::Register *A3 = cg->allocate64bitRegister();
-   TR::Register *AA0 = cg->allocate64bitRegister();
-   TR::Register *AA1 = cg->allocate64bitRegister();
-   TR::Register *AA2 = cg->allocate64bitRegister();
-   TR::Register *AA3 = cg->allocate64bitRegister();
-   TR::Register *B0 = cg->allocate64bitRegister();
-   TR::Register *B1 = cg->allocate64bitRegister();
-   TR::Register *B2 = cg->allocate64bitRegister();
-   TR::Register *B3 = cg->allocate64bitRegister();
-   TR::Register *Z00 = cg->allocate64bitRegister();
-   TR::Register *Z01 = cg->allocate64bitRegister();
-   TR::Register *Z02 = cg->allocate64bitRegister();
-   TR::Register *Z03 = cg->allocate64bitRegister();
-   TR::Register *rZ10 = cg->allocate64bitRegister();  // unique name to avoid const conflict in J9 VM
-   TR::Register *Z11 = cg->allocate64bitRegister();
-   TR::Register *Z12 = cg->allocate64bitRegister();
-   TR::Register *Z13 = cg->allocate64bitRegister();
-   TR::Register *Z1p0 = cg->allocate64bitRegister();
-   TR::Register *Z1p1 = cg->allocate64bitRegister();
-   TR::Register *Z1p2 = cg->allocate64bitRegister();
-   TR::Register *Z1p3 = cg->allocate64bitRegister();
-   TR::Register *Z20 = cg->allocate64bitRegister();
-   TR::Register *Z21 = cg->allocate64bitRegister();
-   TR::Register *Z22 = cg->allocate64bitRegister();
-   TR::Register *Z23 = cg->allocate64bitRegister();
+   TR::Register *A0 = cg->allocateRegister();
+   TR::Register *A1 = cg->allocateRegister();
+   TR::Register *A2 = cg->allocateRegister();
+   TR::Register *A3 = cg->allocateRegister();
+   TR::Register *AA0 = cg->allocateRegister();
+   TR::Register *AA1 = cg->allocateRegister();
+   TR::Register *AA2 = cg->allocateRegister();
+   TR::Register *AA3 = cg->allocateRegister();
+   TR::Register *B0 = cg->allocateRegister();
+   TR::Register *B1 = cg->allocateRegister();
+   TR::Register *B2 = cg->allocateRegister();
+   TR::Register *B3 = cg->allocateRegister();
+   TR::Register *Z00 = cg->allocateRegister();
+   TR::Register *Z01 = cg->allocateRegister();
+   TR::Register *Z02 = cg->allocateRegister();
+   TR::Register *Z03 = cg->allocateRegister();
+   TR::Register *rZ10 = cg->allocateRegister();  // unique name to avoid const conflict in J9 VM
+   TR::Register *Z11 = cg->allocateRegister();
+   TR::Register *Z12 = cg->allocateRegister();
+   TR::Register *Z13 = cg->allocateRegister();
+   TR::Register *Z1p0 = cg->allocateRegister();
+   TR::Register *Z1p1 = cg->allocateRegister();
+   TR::Register *Z1p2 = cg->allocateRegister();
+   TR::Register *Z1p3 = cg->allocateRegister();
+   TR::Register *Z20 = cg->allocateRegister();
+   TR::Register *Z21 = cg->allocateRegister();
+   TR::Register *Z22 = cg->allocateRegister();
+   TR::Register *Z23 = cg->allocateRegister();
 
-   TR::Register *carry = cg->allocate64bitRegister();
+   TR::Register *carry = cg->allocateRegister();
 
    TR::MemoryReference * Aref56  = generateS390MemoryReference(Aarr, TR::Compiler->om.contiguousArrayHeaderSizeInBytes()+56, cg);
    TR::MemoryReference * Aref48  = generateS390MemoryReference(Aarr, TR::Compiler->om.contiguousArrayHeaderSizeInBytes()+48, cg);
@@ -9468,14 +9468,14 @@ inline128Multiply(TR::Node * node, TR::CodeGenerator * cg)
    // There are alot more registers here then really needed, but since this was intentionally written
    // not to have internal control flow, RA can do its job properly, so mostly try not to reuse registers
 
-   TR::Register *A0 = cg->allocate64bitRegister();
-   TR::Register *A1 = cg->allocate64bitRegister();
-   TR::Register *B0 = cg->allocate64bitRegister();
-   TR::Register *B1 = cg->allocate64bitRegister();
-   TR::Register *Z00 = cg->allocate64bitRegister();
-   TR::Register *Z01 = cg->allocate64bitRegister();
-   TR::Register *Z02 = cg->allocate64bitRegister();
-   TR::Register *Z03 = cg->allocate64bitRegister();
+   TR::Register *A0 = cg->allocateRegister();
+   TR::Register *A1 = cg->allocateRegister();
+   TR::Register *B0 = cg->allocateRegister();
+   TR::Register *B1 = cg->allocateRegister();
+   TR::Register *Z00 = cg->allocateRegister();
+   TR::Register *Z01 = cg->allocateRegister();
+   TR::Register *Z02 = cg->allocateRegister();
+   TR::Register *Z03 = cg->allocateRegister();
 
    TR::MemoryReference * Aref24  = generateS390MemoryReference(Aarr, TR::Compiler->om.contiguousArrayHeaderSizeInBytes()+24, cg);
    TR::MemoryReference * Aref16  = generateS390MemoryReference(Aarr, TR::Compiler->om.contiguousArrayHeaderSizeInBytes()+16, cg);
@@ -9755,7 +9755,7 @@ TR::Register *inlineLongReverseBytes(TR::Node *node, TR::CodeGenerator *cg)
    TR::Register *trgReg = NULL;
    if (TR::Compiler->target.is64Bit() || cg->use64BitRegsOn32Bit())
       {
-      trgReg = cg->allocate64bitRegister();
+      trgReg = cg->allocateRegister();
       generateRREInstruction(cg, TR::InstOpCode::LRVGR, node, trgReg, srcReg);
       }
    else
@@ -11445,7 +11445,7 @@ OMR::Z::TreeEvaluator::loadaddrEvaluator(TR::Node * node, TR::CodeGenerator * cg
    else
       {
       if (node->getSize() > 4)
-         targetRegister = cg->allocate64bitRegister();
+         targetRegister = cg->allocateRegister();
       else
          targetRegister = cg->allocateRegister();
       }
@@ -12894,7 +12894,7 @@ OMR::Z::TreeEvaluator::arraysetEvaluator(TR::Node * node, TR::CodeGenerator * cg
 
          else if (stgCopy)
             {
-            constExprRegister = (TR::Compiler->target.is64Bit() || cg->use64BitRegsOn32Bit()) ? cg->allocate64bitRegister() : cg->allocateRegister();
+            constExprRegister = (TR::Compiler->target.is64Bit() || cg->use64BitRegsOn32Bit()) ? cg->allocateRegister() : cg->allocateRegister();
             if (constType == TR::Int16)
                {
                // pack in 4 half words in constExprRegister
@@ -13825,13 +13825,13 @@ OMR::Z::TreeEvaluator::iRegLoadEvaluator(TR::Node * node, TR::CodeGenerator * cg
       if (node->getDataType() == TR::Aggregate &&
            node->getSymbol()->getSize()==8)
          {
-         globalReg = cg->allocate64bitRegister();
+         globalReg = cg->allocateRegister();
          }
       else if (cg->getExtendedToInt64GlobalRegisters().ValueAt(node->getGlobalRegisterNumber()))
          {
          // getExtendedToInt64GlobalRegisters is set by TR_LoadExtensions and it means a larger larger virtual register must be used here
          // so any instructions generated by local RA are the correct size to preserve the upper bits (e.g. use LGR vs LR)
-         globalReg = cg->allocate64bitRegister();
+         globalReg = cg->allocateRegister();
          globalReg->setIs64BitReg();
          }
       else
@@ -13870,7 +13870,7 @@ OMR::Z::TreeEvaluator::lRegLoadEvaluator(TR::Node * node, TR::CodeGenerator * cg
       {
       if (cg->use64BitRegsOn32Bit())
          {
-         globalReg = cg->allocate64bitRegister();
+         globalReg = cg->allocateRegister();
          }
       else if (TR::Compiler->target.is32Bit())
          {
@@ -16192,7 +16192,7 @@ TR::Register* arraycmpWithPadHelper::generate()
       {
       if(TR::Compiler->target.is64Bit())
          {
-         source1Reg = cg->allocate64bitRegister();
+         source1Reg = cg->allocateRegister();
          genLoadLongConstant(cg, node, addr1Const, source1Reg);
          }
       else
@@ -16206,7 +16206,7 @@ TR::Register* arraycmpWithPadHelper::generate()
       {
       if(TR::Compiler->target.is64Bit())
          {
-         source2Reg = cg->allocate64bitRegister();
+         source2Reg = cg->allocateRegister();
          genLoadLongConstant(cg, node, addr2Const, source2Reg);
          }
       else
@@ -17990,8 +17990,8 @@ inlineUTF16BEEncode(TR::Node *node, TR::CodeGenerator *cg)
    TR::Register* inputLen  = cg->gprClobberEvaluate(node->getChild(2));
    TR::Register* inputLen8 = cg->allocateRegister();
 
-   TR::Register* temp1 = cg->allocate64bitRegister();
-   TR::Register* temp2 = cg->allocate64bitRegister();
+   TR::Register* temp1 = cg->allocateRegister();
+   TR::Register* temp2 = cg->allocateRegister();
 
    // Number of bytes currently translated (also used as a stride register)
    TR::Register* translated = cg->allocateRegister();
@@ -18665,8 +18665,8 @@ OMR::Z::TreeEvaluator::vDivOrRemHelper(TR::Node *node, TR::CodeGenerator *cg, bo
       }
    else
       {
-      TR::Register *dividendGPRHigh = cg->allocate64bitRegister();
-      TR::Register *dividendGPRLow = cg->allocate64bitRegister();
+      TR::Register *dividendGPRHigh = cg->allocateRegister();
+      TR::Register *dividendGPRLow = cg->allocateRegister();
       TR::Register *dividendGPR = cg->allocateConsecutiveRegisterPair(dividendGPRLow, dividendGPRHigh);
       TR::Register *divisorGPR = cg->allocateRegister();
       TR::Register *dividendVRF = cg->evaluate(dividend);
@@ -18981,7 +18981,7 @@ OMR::Z::TreeEvaluator::vrandEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    // last element index. mask4=0,1,2,3 -> last element index=15,7,3,1
    TR::MemoryReference *extractIndexMR = generateS390MemoryReference((1 << (4 - mask4)) - 1, cg);
 
-   TR::Register *resultReg = (TR::Compiler->target.is32Bit() && mask4 == 3) ? cg->allocate64bitRegister() : cg->allocateRegister();
+   TR::Register *resultReg = (TR::Compiler->target.is32Bit() && mask4 == 3) ? cg->allocateRegister() : cg->allocateRegister();
    generateVRScInstruction(cg, TR::InstOpCode::VLGV, node, resultReg, workReg, extractIndexMR, mask4);
 
    cg->stopUsingRegister(workReg);
@@ -19158,7 +19158,7 @@ OMR::Z::TreeEvaluator::getvelemEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 
    if (TR::Compiler->target.is32Bit() && cg->use64BitRegsOn32Bit() && node->getSize() == 8)
       {
-      returnReg = cg->allocate64bitRegister();
+      returnReg = cg->allocateRegister();
       }
    else if (usePairReg)
       {
@@ -19372,7 +19372,7 @@ OMR::Z::TreeEvaluator::vsetelemEvaluator(TR::Node *node, TR::CodeGenerator *cg)
       if (valueNode->getDataType() == TR::Double || valueNode->getDataType() == TR::Float)
          {
          TR::Register *fpReg = valueReg;
-         valueReg = cg->allocate64bitRegister();
+         valueReg = cg->allocateRegister();
          generateRRInstruction(cg, TR::InstOpCode::LGDR, node, valueReg, fpReg);
          if (valueNode->getDataType() == TR::Float)
             {

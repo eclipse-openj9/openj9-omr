@@ -1108,7 +1108,7 @@ lDivRemGenericEvaluator64(TR::Node * node, TR::CodeGenerator * cg, bool isDivisi
    if (firstChild == secondChild)
       {
       TR::Register * sourceRegister = cg->evaluate(firstChild);
-      TR::Register * returnRegister = cg->allocate64bitRegister();
+      TR::Register * returnRegister = cg->allocateRegister();
       int32_t retValue = 0;  // default REM
 
       if (isDivision)
@@ -1238,8 +1238,8 @@ lDivRemGenericEvaluator64(TR::Node * node, TR::CodeGenerator * cg, bool isDivisi
             TR::RegisterDependencyConditions *deps = NULL;
             if (!firstChild->isNonNegative())
                {
-               TR::Register * tempRegister1 = cg->allocate64bitRegister();
-               TR::Register * tempRegister2 = cg->allocate64bitRegister();
+               TR::Register * tempRegister1 = cg->allocateRegister();
+               TR::Register * tempRegister2 = cg->allocateRegister();
                generateRSInstruction(cg, TR::InstOpCode::SRAG, node, tempRegister2, firstRegister, 63);
                generateRRInstruction(cg, TR::InstOpCode::LGR, node, tempRegister1, firstRegister);
                generateRILInstruction(cg, TR::InstOpCode::NIHF, node, tempRegister2, static_cast<int32_t>((absValueOfDenominator-1)>>32) );
@@ -1287,11 +1287,11 @@ lDivRemGenericEvaluator64(TR::Node * node, TR::CodeGenerator * cg, bool isDivisi
       {
       numPostConditions++; // for sourceRegister (the divisor)
       remRegister = cg->gprClobberEvaluate(firstChild);
-      quoRegister = cg->allocate64bitRegister();
+      quoRegister = cg->allocateRegister();
       }
    else
       {
-      remRegister = cg->allocate64bitRegister();
+      remRegister = cg->allocateRegister();
       quoRegister = cg->gprClobberEvaluate(firstChild);
       }
 
@@ -1346,7 +1346,7 @@ lDivRemGenericEvaluator64(TR::Node * node, TR::CodeGenerator * cg, bool isDivisi
          else
             {
             absDividendRegIsTemp = true;
-            absDividendReg = cg->allocate64bitRegister();
+            absDividendReg = cg->allocateRegister();
             // LGPR is needed so negative numbers do not always take the slow path after the logical compare (but functionally it is not needed)
             generateRRInstruction(cg, TR::InstOpCode::LPGR, node, absDividendReg, remRegister);
             }
@@ -1629,7 +1629,7 @@ genericLongShiftSingle(TR::Node * node, TR::CodeGenerator * cg, TR::InstOpCode::
    TR::Node * secondChild = node->getSecondChild();
    TR::Node * firstChild = node->getFirstChild();
    TR::Register * srcReg = NULL;
-   TR::Register * trgReg = cg->allocate64bitRegister();
+   TR::Register * trgReg = cg->allocateRegister();
    TR::Register * src2Reg = NULL;
    TR::MemoryReference * tempMR = NULL;
 
@@ -2121,7 +2121,7 @@ genericRotateLeft(TR::Node * node, TR::CodeGenerator * cg)
             TR::Node* otherData = andChild->getFirstChild();
             TR::Register* toReg = cg->evaluate(otherData);
             TR::Register* fromReg = cg->evaluate(data);
-            TR::Register* targetReg = cg->allocate64bitRegister();
+            TR::Register* targetReg = cg->allocateRegister();
 
             generateRRInstruction(cg, TR::InstOpCode::LGR, node, targetReg, toReg);
             generateRIEInstruction(cg, TR::InstOpCode::RISBG, node, targetReg, fromReg, bitPos, bitPos, shiftBy);
@@ -2141,7 +2141,7 @@ genericRotateLeft(TR::Node * node, TR::CodeGenerator * cg)
                {
                TR::Register* toReg = cg->evaluate(andChild->getFirstChild());
                TR::Register* fromReg = cg->evaluate(shiftChild->getFirstChild());
-               TR::Register* targetReg = cg->allocate64bitRegister();
+               TR::Register* targetReg = cg->allocateRegister();
                generateRRInstruction(cg, TR::InstOpCode::LGR, node, targetReg, toReg);
                generateRIEInstruction(cg, TR::InstOpCode::RISBG, node, targetReg, fromReg, 0, bitPos, shiftBy);
                cg->decReferenceCount(andChild->getFirstChild());
@@ -2187,7 +2187,7 @@ genericRotateLeft(TR::Node * node, TR::CodeGenerator * cg)
                lastBit = 63 - shiftBy;
             TR::Register* toReg = cg->evaluate(otherChild);
             TR::Register* fromReg = cg->evaluate(shiftChild->getFirstChild());
-            TR::Register* targetReg = cg->allocate64bitRegister();
+            TR::Register* targetReg = cg->allocateRegister();
             TR::InstOpCode::Mnemonic opcode = TR::InstOpCode::ROSBG;
             if (node->getOpCodeValue() == TR::lxor)
                opcode = TR::InstOpCode::RXSBG;
@@ -2977,7 +2977,7 @@ OMR::Z::TreeEvaluator::dualMulHelper64(TR::Node * node, TR::Node * lmulNode, TR:
    TR::Register * secondRegister = cg->evaluate(secondChild);
    TR::Instruction * cursor = NULL;
    TR::Register * lmulTargetRegister = cg->gprClobberEvaluate(firstChild);
-   TR::Register * lumulhTargetRegister = cg->allocate64bitRegister();
+   TR::Register * lumulhTargetRegister = cg->allocateRegister();
    TR::RegisterPair * trgtRegPair = cg->allocateConsecutiveRegisterPair(lmulTargetRegister, lumulhTargetRegister);
 
    TR::RegisterDependencyConditions * dependencies = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 3, cg);
@@ -3383,7 +3383,7 @@ lmulHelper64(TR::Node * node, TR::CodeGenerator * cg)
 
       sourceRegister = cg->evaluate(firstChild);
       bool canClobber = cg->canClobberNodesRegister(firstChild);
-      targetRegister = !canClobber ? cg->allocate64bitRegister() : sourceRegister;
+      targetRegister = !canClobber ? cg->allocateRegister() : sourceRegister;
 
       if (create_LA)
          {
@@ -3537,7 +3537,7 @@ OMR::Z::TreeEvaluator::lmulhEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    TR::Node * firstChild = node->getFirstChild();
    TR::Node * secondChild = node->getSecondChild();
    TR::Register * firstRegister = cg->gprClobberEvaluate(firstChild);
-   TR::Register * targetRegister = cg->allocate64bitRegister();
+   TR::Register * targetRegister = cg->allocateRegister();
    TR::Register * sourceRegister;
    TR::Register * resultRegister;
    TR::Compilation *comp = cg->comp();
@@ -4297,7 +4297,7 @@ OMR::Z::TreeEvaluator::lnegEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    if (TR::Compiler->target.is64Bit() || cg->use64BitRegsOn32Bit())
       {
       TR::Register * sourceRegister;
-      targetRegister = cg->allocate64bitRegister();
+      targetRegister = cg->allocateRegister();
 
          if (firstChild->getOpCodeValue() == TR::labs && firstChild->getReferenceCount() == 1 && firstChild->getRegister() == NULL)
          {
@@ -4598,7 +4598,7 @@ OMR::Z::TreeEvaluator::integerRolEvaluator(TR::Node *node, TR::CodeGenerator *cg
       else
          {
          sourceRegister = cg->evaluate(firstChild);
-         targetRegister = nodeIs64Bit ? cg->allocate64bitRegister() : cg->allocateRegister();
+         targetRegister = nodeIs64Bit ? cg->allocateRegister() : cg->allocateRegister();
          generateRSInstruction(cg, nodeIs64Bit ? TR::InstOpCode::RLLG : TR::InstOpCode::RLL, node, targetRegister, sourceRegister, rotateAmount);
          }
       }
@@ -4606,7 +4606,7 @@ OMR::Z::TreeEvaluator::integerRolEvaluator(TR::Node *node, TR::CodeGenerator *cg
       {
       sourceRegister = cg->evaluate(firstChild);
       targetRegister = cg->allocateConsecutiveRegisterPair();
-      TR::Register * scratchReg = cg->allocate64bitRegister();
+      TR::Register * scratchReg = cg->allocateRegister();
 
       // Shift high order by 32 bit and loaded into temp scratch register
       generateRSInstruction(cg, TR::InstOpCode::SLLG, node, scratchReg, sourceRegister->getHighOrder(), 32);
@@ -4632,7 +4632,7 @@ OMR::Z::TreeEvaluator::integerRolEvaluator(TR::Node *node, TR::CodeGenerator *cg
    else
       {
       sourceRegister = cg->evaluate(firstChild);
-      targetRegister = nodeIs64Bit ? cg->allocate64bitRegister() : cg->allocateRegister();
+      targetRegister = nodeIs64Bit ? cg->allocateRegister() : cg->allocateRegister();
 
       TR::MemoryReference* memRef = generateS390MemoryReference(cg);
       memRef->populateMemoryReference(secondChild, cg);

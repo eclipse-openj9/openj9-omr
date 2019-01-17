@@ -655,7 +655,7 @@ commonLong2FloatEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    TR::RegisterDependencyConditions *deps = depsNeeded > 0 ? new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, depsNeeded, cg) : NULL;
    TR::Node *srcNode = node->getFirstChild();
    TR::Register *srcReg = cg->evaluate(srcNode);
-   TR::Register *gprTemp64 = cg->allocate64bitRegister();
+   TR::Register *gprTemp64 = cg->allocateRegister();
 
    // the 64 bit register gprTemp64 is going to be clobbered and R0 is safe to clobber (so are R1,R15)
    if (restrictToGPR0)
@@ -1283,7 +1283,7 @@ OMR::Z::TreeEvaluator::ibits2fEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    if (TR::Compiler->target.cpu.getS390SupportsFPE() && !disabled)
       {
       TR::Register *tempreg;
-      tempreg = cg->allocate64bitRegister();
+      tempreg = cg->allocateRegister();
       generateRSInstruction(cg, TR::InstOpCode::SLLG, node, tempreg, sourceReg, 32);
       generateRRInstruction(cg, TR::InstOpCode::LDGR, node, targetReg, tempreg);
       cg->stopUsingRegister(tempreg);
@@ -1723,7 +1723,7 @@ f2lHelper64(TR::Node * node, TR::CodeGenerator * cg)
    TR_ASSERT( TR::Compiler->target.is64Bit() || cg->use64BitRegsOn32Bit(), "f2lHelper64() is for 64bit code-gen only!");
    TR::Node * firstChild = node->getFirstChild();
    TR::Register * floatRegister = cg->evaluate(firstChild);
-   TR::Register * targetRegister = cg->allocate64bitRegister();
+   TR::Register * targetRegister = cg->allocateRegister();
 
    TR::LabelSymbol * cFlowRegionStart = generateLabelSymbol(cg);
    TR::LabelSymbol * cFlowRegionEnd = generateLabelSymbol(cg);
@@ -1941,7 +1941,7 @@ d2lHelper64(TR::Node * node, TR::CodeGenerator * cg)
 
    TR::Node * firstChild = node->getFirstChild();
    TR::Register * floatRegister = cg->evaluate(firstChild);
-   TR::Register * targetRegister = cg->allocate64bitRegister();
+   TR::Register * targetRegister = cg->allocateRegister();
 
    TR::LabelSymbol * cFlowRegionStart = NULL;
    TR::LabelSymbol * label1 = NULL;

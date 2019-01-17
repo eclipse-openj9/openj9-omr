@@ -1052,9 +1052,7 @@ class OMR_EXTENSIBLE CodeGenerator
    TR::Register * allocateRegister(TR_RegisterKinds rk = TR_GPR);
    TR::Register * allocateCollectedReferenceRegister();
    TR::Register * allocateSinglePrecisionRegister(TR_RegisterKinds rk = TR_FPR);
-   TR::Register * allocate64bitRegister();
 
-   TR::RegisterPair * allocate64bitRegisterPair(TR::Register * lo = 0, TR::Register * ho = 0);
    TR::RegisterPair * allocateRegisterPair(TR::Register * lo = 0, TR::Register * ho = 0);
    TR::RegisterPair * allocateSinglePrecisionRegisterPair(TR::Register * lo = 0, TR::Register * ho = 0);
    TR::RegisterPair * allocateFloatingPointRegisterPair(TR::Register * lo = 0, TR::Register * ho = 0);

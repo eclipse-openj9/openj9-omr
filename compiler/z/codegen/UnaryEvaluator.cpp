@@ -103,7 +103,7 @@ lconstHelper64(TR::Node * node, TR::CodeGenerator * cg)
    TR::Compilation *comp = cg->comp();
    TR_ASSERT(TR::Compiler->target.is64Bit() || cg->use64BitRegsOn32Bit(),
       "lconstHelper64() is for 64bit only!");
-   TR::Register * longRegister = cg->allocate64bitRegister();
+   TR::Register * longRegister = cg->allocateRegister();
    node->setRegister(longRegister);
    int64_t longValue = node->getLongInt();
    genLoadLongConstant(cg, node, longValue, longRegister);
@@ -213,7 +213,7 @@ OMR::Z::TreeEvaluator::labsEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    if (TR::Compiler->target.is64Bit() || cg->use64BitRegsOn32Bit())
       {
       TR::Register * sourceRegister = cg->evaluate(firstChild);
-      targetRegister = cg->allocate64bitRegister();
+      targetRegister = cg->allocateRegister();
       generateRRInstruction(cg, TR::InstOpCode::LPGR, node, targetRegister, sourceRegister);
       }
    else

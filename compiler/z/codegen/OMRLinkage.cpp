@@ -2466,16 +2466,8 @@ OMR::Z::Linkage::buildArgs(TR::Node * callNode, TR::RegisterDependencyConditions
                {
                //In this case, private and system linkage use same regs for return value
                TR::Register * resultRegLow = self()->cg()->allocateRegister();
-               TR::Register * resultRegHigh =  NULL;
+               TR::Register * resultRegHigh = self()->cg()->allocateRegister();
 
-               if (self()->cg()->use64BitRegsOn32Bit())
-                  {
-                  resultRegHigh = self()->cg()->allocate64bitRegister();
-                  }
-               else
-                  {
-                  resultRegHigh = self()->cg()->allocateRegister();
-                  }
                self()->cg()->setRealRegisterAssociation(resultRegLow, self()->getLongLowReturnRegister());
                dependencies->addPostCondition(resultRegLow, self()->getLongLowReturnRegister(),DefinesDependentRegister);
                killMask &= (~(0x1L << REGINDEX(self()->getLongLowReturnRegister())));

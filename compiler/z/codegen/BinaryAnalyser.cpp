@@ -371,7 +371,7 @@ TR_S390BinaryAnalyser::longSubtractAnalyser(TR::Node * root)
       {
       if (getCopyReg1())
          {
-         TR::Register * thirdReg = cg()->allocate64bitRegister();
+         TR::Register * thirdReg = cg()->allocateRegister();
 
          root->setRegister(thirdReg);
          generateRRInstruction(cg(), TR::InstOpCode::LGR, root, thirdReg, firstRegister);

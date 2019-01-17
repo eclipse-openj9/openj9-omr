@@ -1171,11 +1171,6 @@ TR::Register *OMR::CodeGenerator::allocateSinglePrecisionRegister(TR_RegisterKin
    return temp;
    }
 
-TR::Register *OMR::CodeGenerator::allocate64bitRegister()
-   {
-   return self()->allocateRegister();
-   }
-
 void OMR::CodeGenerator::apply8BitLabelRelativeRelocation(int32_t * cursor, TR::LabelSymbol * label)
    { *(int8_t *)cursor += (int8_t)(intptrj_t)label->getCodeLocation(); }
 void OMR::CodeGenerator::apply12BitLabelRelativeRelocation(int32_t * cursor, TR::LabelSymbol * label, bool isCheckDisp)
@@ -3057,12 +3052,6 @@ void OMR::CodeGenerator::addAllocatedRegister(TR::Register * temp)
    uint32_t idx = _registerArray.add(temp);
    temp->setIndex(idx);
    self()->startUsingRegister(temp);
-   }
-
-
-TR::RegisterPair * OMR::CodeGenerator::allocate64bitRegisterPair(TR::Register * lo, TR::Register * ho)
-   {
-   return self()->allocateRegisterPair(lo, ho);
    }
 
 TR::RegisterPair * OMR::CodeGenerator::allocateRegisterPair(TR::Register * lo, TR::Register * ho)

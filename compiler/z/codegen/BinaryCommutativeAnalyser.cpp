@@ -365,7 +365,7 @@ TR_S390BinaryCommutativeAnalyser::genericAnalyser(TR::Node * root, TR::InstOpCod
             if(z14OpCode != TR::InstOpCode::BAD)
                {
                bool isCanClobberFirstReg = cg()->canClobberNodesRegister(firstChild);
-               nodeReg = isCanClobberFirstReg ? firstRegister : cg()->allocate64bitRegister();
+               nodeReg = isCanClobberFirstReg ? firstRegister : cg()->allocateRegister();
                generateRRFInstruction(cg(), z14OpCode, root, nodeReg, firstRegister, secondRegister, 0, 0);
                }
             }

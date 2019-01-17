@@ -627,7 +627,7 @@ generateS390lcmpEvaluator64(TR::Node * node, TR::CodeGenerator * cg, TR::InstOpC
    TR_ASSERT(isBoolean, "Coparison node %p is not boolean\n",node);
 
    if (cg->use64BitRegsOn32Bit())
-      targetRegister = cg->allocate64bitRegister();
+      targetRegister = cg->allocateRegister();
    else
       targetRegister = cg->allocateRegister();
 
@@ -1006,7 +1006,7 @@ lcmpHelper64(TR::Node * node, TR::CodeGenerator * cg)
    TR::LabelSymbol * labelGT = generateLabelSymbol(cg);
    TR::LabelSymbol * labelLT = generateLabelSymbol(cg);
 
-   TR::Register * targetRegister = cg->allocate64bitRegister();
+   TR::Register * targetRegister = cg->allocateRegister();
 
    TR::Node * firstChild = node->getFirstChild();
    TR::Node * secondChild = node->getSecondChild();
@@ -1225,7 +1225,7 @@ OMR::Z::TreeEvaluator::returnEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 
          if (cg->use64BitRegsOn32Bit())
             {
-            TR::Register * highRegister = cg->allocate64bitRegister();
+            TR::Register * highRegister = cg->allocateRegister();
 
             generateRSInstruction(cg, TR::InstOpCode::SRLG, node, highRegister, returnValRegister, 32);
 

@@ -930,7 +930,12 @@ TR::S390zOSSystemLinkage::callNativeFunction(TR::Node * callNode, TR::RegisterDe
       case TR::lcall:
       case TR::lucall:
          {
-         if (codeGen->use64BitRegsOn32Bit())
+         if (TR::Compiler->target.is64Bit())
+            {
+            retReg = deps->searchPostConditionRegister(getIntegerReturnRegister());
+            returnRegister = deps->searchPostConditionRegister(getIntegerReturnRegister());
+            }
+         else
             {
             TR::Instruction *cursor = NULL;
             lowReg = deps->searchPostConditionRegister(getLongLowReturnRegister());
@@ -942,19 +947,6 @@ TR::S390zOSSystemLinkage::callNativeFunction(TR::Node * callNode, TR::RegisterDe
 
             codeGen->stopUsingRegister(lowReg);
             retReg = highReg;
-            returnRegister = retReg;
-            }
-         else if (TR::Compiler->target.is64Bit())
-            {
-            retReg = deps->searchPostConditionRegister(getIntegerReturnRegister());
-            returnRegister = deps->searchPostConditionRegister(getIntegerReturnRegister());
-            }
-         else
-            {
-            lowReg = deps->searchPostConditionRegister(getLongLowReturnRegister());
-            highReg = deps->searchPostConditionRegister(getLongHighReturnRegister());
-
-            retReg = codeGen->allocateConsecutiveRegisterPair(lowReg, highReg);
             returnRegister = retReg;
             }
          }
@@ -1077,28 +1069,7 @@ TR::S390zLinuxSystemLinkage::callNativeFunction(TR::Node * callNode,
       case TR::lucall:
       case TR::lucalli:
          {
-         if (cg()->use64BitRegsOn32Bit())
-            {
-            TR::Instruction *cursor = NULL;
-            lowReg = deps->searchPostConditionRegister(getLongLowReturnRegister());
-            highReg = deps->searchPostConditionRegister(getLongHighReturnRegister());
-
-            generateRSInstruction(cg(), TR::InstOpCode::SLLG, callNode, highReg, highReg, 32);
-            cursor =
-               generateRRInstruction(cg(), TR::InstOpCode::LR, callNode, highReg, lowReg);
-
-/*
-            TR::RegisterDependencyConditions * deps =
-               new (cg()->trHeapMemory()) TR::RegisterDependencyConditions(0, 2, cg());
-            deps->addPostCondition(lowReg, getLongLowReturnRegister());
-            deps->addPostCondition(highReg, getLongHighReturnRegister());
-            cursor->setDependencyConditions(deps);
-*/
-
-            cg()->stopUsingRegister(lowReg);
-            returnRegister = highReg;
-            }
-         else if (TR::Compiler->target.is64Bit())
+         if (TR::Compiler->target.is64Bit())
             {
             returnRegister = deps->searchPostConditionRegister(getIntegerReturnRegister());
             }
@@ -1106,7 +1077,12 @@ TR::S390zLinuxSystemLinkage::callNativeFunction(TR::Node * callNode,
             {
             lowReg = deps->searchPostConditionRegister(getLongLowReturnRegister());
             highReg = deps->searchPostConditionRegister(getLongHighReturnRegister());
-            returnRegister = cg()->allocateConsecutiveRegisterPair(lowReg, highReg);
+
+            generateRSInstruction(cg(), TR::InstOpCode::SLLG, callNode, highReg, highReg, 32);
+            generateRRInstruction(cg(), TR::InstOpCode::LR, callNode, highReg, lowReg);
+            
+            cg()->stopUsingRegister(lowReg);
+            returnRegister = highReg;
             }
          }
          break;

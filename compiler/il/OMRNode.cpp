@@ -2829,20 +2829,11 @@ OMR::Node::isRematerializable(TR::Node *parent, bool onlyConsiderOpCode)
    return false;
    }
 
-
-
 bool
 OMR::Node::canEvaluate()
    {
-   TR::Compilation * comp = TR::comp();
-
-   if (self()->getSize() == 8 && comp->cg()->use64BitRegsOn32Bit())
-      return true;
-
    return true;
    }
-
-
 
 bool
 OMR::Node::isDoNotPropagateNode()

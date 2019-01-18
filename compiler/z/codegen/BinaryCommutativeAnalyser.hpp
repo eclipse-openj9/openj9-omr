@@ -69,19 +69,10 @@ class TR_S390BinaryCommutativeAnalyser : public TR_Analyser
                         TR::InstOpCode::S390BranchCondition fBranchOpCond = TR::InstOpCode::COND_NOP,
                         TR::InstOpCode::S390BranchCondition rBranchOpCond = TR::InstOpCode::COND_NOP);
 
-   void genericLongAnalyser(TR::Node       *root,
-                            TR::InstOpCode::Mnemonic lowRegToRegOpCode,
-                            TR::InstOpCode::Mnemonic highRegToRegOpCode,
-                            TR::InstOpCode::Mnemonic lowMemToRegOpCode,
-                            TR::InstOpCode::Mnemonic highMemToRegOpCode,
-                            TR::InstOpCode::Mnemonic copyOpCode);
-
    void integerAddAnalyser(TR::Node       *root,
                            TR::InstOpCode::Mnemonic regToRegOpCode,
                            TR::InstOpCode::Mnemonic memToRegOpCode,
                            TR::InstOpCode::Mnemonic copyOpCode);
-
-   void longAddAnalyser(TR::Node *root, TR::InstOpCode::Mnemonic copyOpCode);
 
    void floatBinaryCommutativeAnalyser(TR::Node       *root,
                         TR::InstOpCode::Mnemonic regToRegOpCode,

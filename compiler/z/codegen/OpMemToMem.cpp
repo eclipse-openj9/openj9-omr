@@ -1929,15 +1929,7 @@ MemInitVarLenTypedMacroOp::generateInstruction()
          cursor = generateRXInstruction(_cg, TR::InstOpCode::ST, _dstNode, _initReg, newMR);
          break;
       case TR::Int64:
-         if (TR::Compiler->target.is64Bit() || _cg->use64BitRegsOn32Bit())
-            {
-            cursor = generateRXInstruction(_cg, TR::InstOpCode::STG, _dstNode, _initReg, newMR);
-            }
-         else
-            {
-            cursor = generateRSInstruction(_cg, TR::InstOpCode::STM, _dstNode, (TR::RegisterPair *) _initReg, newMR);
-            }
-
+         cursor = generateRXInstruction(_cg, TR::InstOpCode::STG, _dstNode, _initReg, newMR);
          break;
       case TR::Float:
          cursor = generateRXInstruction(_cg, TR::InstOpCode::STE, _dstNode, _initReg, newMR);
@@ -1946,10 +1938,7 @@ MemInitVarLenTypedMacroOp::generateInstruction()
          cursor = generateRXInstruction(_cg, TR::InstOpCode::STD, _dstNode, _initReg, newMR);
          break;
       default:
-         if (TR::Compiler->target.is64Bit() || _cg->use64BitRegsOn32Bit())
-            cursor = generateRXInstruction(_cg, TR::InstOpCode::STG, _dstNode, _initReg, newMR);
-         else
-            cursor = generateRXInstruction(_cg, TR::InstOpCode::ST, _dstNode, _initReg, newMR);
+         cursor = generateRXInstruction(_cg, TR::InstOpCode::STG, _dstNode, _initReg, newMR);
          break;
       }
    newMR->stopUsingMemRefRegister(_cg);
@@ -1959,40 +1948,9 @@ MemInitVarLenTypedMacroOp::generateInstruction()
 void
 MemInitVarLenTypedMacroOp::createLoopDependencies(TR::Instruction * cursor)
    {
-   TR::RegisterDependencyConditions * loopDep;
    int32_t core = numCoreDependencies();
-   switch (_destType)
-      {
-      case TR::Int8:
-      case TR::Int16:
-      case TR::Int32:
-      case TR::Float:
-      case TR::Double:
-         loopDep = new (_cg->trHeapMemory()) TR::RegisterDependencyConditions(core, core + 1, _cg);
-         loopDep->addPostCondition(_initReg, TR::RealRegister::AssignAny);
-         break;
-
-      case TR::Int64:
-         if (TR::Compiler->target.is64Bit() || _cg->use64BitRegsOn32Bit())
-            {
-            loopDep = new (_cg->trHeapMemory()) TR::RegisterDependencyConditions(core, core + 1, _cg);
-            loopDep->addPostCondition(_initReg, TR::RealRegister::AssignAny);
-            }
-         else
-            {
-            TR::RegisterPair * valueReg = (TR::RegisterPair *) _initReg;
-            loopDep = new (_cg->trHeapMemory()) TR::RegisterDependencyConditions(core, core + 3, _cg);
-            loopDep->addPostCondition(valueReg, TR::RealRegister::EvenOddPair);
-            loopDep->addPostCondition(valueReg->getHighOrder(), TR::RealRegister::LegalEvenOfPair);
-            loopDep->addPostCondition(valueReg->getLowOrder(), TR::RealRegister::LegalOddOfPair);
-            }
-         break;
-
-      default:
-         loopDep = new (_cg->trHeapMemory()) TR::RegisterDependencyConditions(core, core + 1, _cg);
-         loopDep->addPostCondition(_initReg, TR::RealRegister::AssignAny);
-         break;
-      }
+   TR::RegisterDependencyConditions * loopDep = new (_cg->trHeapMemory()) TR::RegisterDependencyConditions(core, core + 1, _cg);
+   loopDep->addPostCondition(_initReg, TR::RealRegister::AssignAny);
 
    addCoreDependencies(loopDep);
    if (_applyDepLocally)
@@ -2030,16 +1988,8 @@ MemCpyVarLenTypedMacroOp::generateInstruction()
          break;
       case TR::Int64:
       case TR::Double:
-         if (TR::Compiler->target.is64Bit() || _cg->use64BitRegsOn32Bit())
-            {
-            cursor = generateRXInstruction(_cg, TR::InstOpCode::LG, _srcNode, _workReg, srcMR);
-            cursor = generateRXInstruction(_cg, TR::InstOpCode::STG, _dstNode, _workReg, dstMR);
-            }
-         else // needs Reg. Pair on 32bit
-            {
-            cursor = generateRSInstruction(_cg, TR::InstOpCode::LM, _srcNode, _workReg, srcMR);
-            cursor = generateRSInstruction(_cg, TR::InstOpCode::STM, _dstNode, _workReg, dstMR);
-            }
+         cursor = generateRXInstruction(_cg, TR::InstOpCode::LG, _srcNode, _workReg, srcMR);
+         cursor = generateRXInstruction(_cg, TR::InstOpCode::STG, _dstNode, _workReg, dstMR);
          break;
       case TR::Address:
          if (TR::Compiler->target.is64Bit() && !comp->useCompressedPointers())
@@ -2084,74 +2034,15 @@ MemCpyVarLenTypedMacroOp::generateInstruction()
 void
 MemCpyVarLenTypedMacroOp::allocWorkReg()
    {
-   switch (_destType)
-      {
-      case TR::Int8:
-      case TR::Int16:
-      case TR::Int32:
-      case TR::Float:
-         _workReg = _cg->allocateRegister();
-         break;
-
-      case TR::Int64:
-      case TR::Double:
-         if (TR::Compiler->target.is64Bit() || _cg->use64BitRegsOn32Bit())
-            {
-            _workReg = _cg->allocateRegister();
-            }
-         else //needs Reg. Pair on 32bit platform
-         {
-            TR::Register * lowRegister = _cg->allocateRegister();
-            TR::Register * highRegister = _cg->allocateRegister();
-
-            _workReg = _cg->allocateConsecutiveRegisterPair(lowRegister, highRegister);
-            }
-         break;
-
-      default:
-         _workReg = _cg->allocateRegister();
-         break;
-      }
+   _workReg = _cg->allocateRegister();
    }
 
 void
 MemCpyVarLenTypedMacroOp::createLoopDependencies(TR::Instruction * cursor)
    {
-   TR::RegisterDependencyConditions * loopDep;
-
    int32_t core = numCoreDependencies();
-   switch (_destType)
-      {
-      case TR::Int8:
-      case TR::Int16:
-      case TR::Int32:
-      case TR::Float:
-         loopDep = new (_cg->trHeapMemory()) TR::RegisterDependencyConditions(core, core + 1, _cg);
-         loopDep->addPostCondition(_workReg, TR::RealRegister::AssignAny);
-         break;
-
-      case TR::Int64:
-      case TR::Double:
-         if (TR::Compiler->target.is64Bit() || _cg->use64BitRegsOn32Bit())
-            {
-            loopDep = new (_cg->trHeapMemory()) TR::RegisterDependencyConditions(core, core + 1, _cg);
-            loopDep->addPostCondition(_workReg, TR::RealRegister::AssignAny);
-            }
-         else // needs Reg. Pair on 32bit
-         {
-            TR::RegisterPair * valuePair = (TR::RegisterPair *) _workReg;
-            loopDep = new (_cg->trHeapMemory()) TR::RegisterDependencyConditions(core, core + 3, _cg);
-            loopDep->addPostCondition(valuePair, TR::RealRegister::EvenOddPair);
-            loopDep->addPostCondition(valuePair->getHighOrder(), TR::RealRegister::LegalEvenOfPair);
-            loopDep->addPostCondition(valuePair->getLowOrder(), TR::RealRegister::LegalOddOfPair);
-            }
-         break;
-
-      default:
-         loopDep = new (_cg->trHeapMemory()) TR::RegisterDependencyConditions(core, core + 1, _cg);
-         loopDep->addPostCondition(_workReg, TR::RealRegister::AssignAny);
-         break;
-      }
+   TR::RegisterDependencyConditions * loopDep = new (_cg->trHeapMemory()) TR::RegisterDependencyConditions(core, core + 1, _cg);
+   loopDep->addPostCondition(_workReg, TR::RealRegister::AssignAny);
 
    addCoreDependencies(loopDep);
    if (_applyDepLocally)
@@ -2690,7 +2581,7 @@ MemCpyAtomicMacroOp::generateLoop()
          cursor = generateSTXLoop(strideSize(), unalignedLoadOp, unalignedStoreOp, false);
          break;
       default:
-         if ((TR::Compiler->target.is64Bit() || _cg->use64BitRegsOn32Bit()) && !comp->useCompressedPointers())
+         if (!comp->useCompressedPointers())
             {
             cursor = generateSTXLoop(8, TR::InstOpCode::LG, TR::InstOpCode::STG, false);
             }

@@ -130,11 +130,9 @@ TR::Instruction * genLoadAddressConstantInSnippet(TR::CodeGenerator *cg, TR::Nod
 
 TR::MemoryReference * sstoreHelper(TR::Node * node, TR::CodeGenerator * cg, bool isReversed=false);
 TR::MemoryReference * istoreHelper(TR::Node * node, TR::CodeGenerator * cg, bool isReversed=false);
-TR::MemoryReference * lstoreHelper(TR::Node * node, TR::CodeGenerator * cg, bool isReversed=false);
 TR::MemoryReference * lstoreHelper64(TR::Node * node, TR::CodeGenerator * cg, bool isReversed=false);
 
 TR::Register * iloadHelper(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference * tempMR, bool isReversed=false);
-TR::Register * lloadHelper(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference * tempMR, bool isReversed=false);
 TR::Register * lloadHelper64(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference * tempMR, bool isReversed=false);
 TR::Register * sloadHelper(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference * tempMR, bool isReversed=false);
 

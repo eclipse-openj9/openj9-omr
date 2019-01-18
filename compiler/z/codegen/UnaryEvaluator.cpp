@@ -72,37 +72,12 @@ extern void PRINT_ME(char * string, TR::Node * node, TR::CodeGenerator * cg);
 #endif
 
 /**
- * 32bit version lconstHelper: load long integer constant (64-bit signed 2's complement)
- */
-TR::Register *
-lconstHelper(TR::Node * node, TR::CodeGenerator * cg)
-   {
-   TR_ASSERT(TR::Compiler->target.is32Bit(), "lconstHelper() is for 32bit only!");
-   TR::Register * lowRegister = cg->allocateRegister();
-   TR::Register * highRegister = cg->allocateRegister();
-
-   TR::RegisterPair * longRegister = cg->allocateConsecutiveRegisterPair(lowRegister, highRegister);
-
-   node->setRegister(longRegister);
-
-   int32_t highValue = node->getLongIntHigh();
-   int32_t lowValue = node->getLongIntLow();
-
-   generateLoad32BitConstant(cg, node, lowValue, lowRegister, true);
-   generateLoad32BitConstant(cg, node, highValue, highRegister, true);
-
-   return longRegister;
-   }
-
-/**
  * 64bit version lconstHelper: load long integer constant (64-bit signed 2's complement)
  */
 TR::Register *
 lconstHelper64(TR::Node * node, TR::CodeGenerator * cg)
    {
    TR::Compilation *comp = cg->comp();
-   TR_ASSERT(TR::Compiler->target.is64Bit() || cg->use64BitRegsOn32Bit(),
-      "lconstHelper64() is for 64bit only!");
    TR::Register * longRegister = cg->allocateRegister();
    node->setRegister(longRegister);
    int64_t longValue = node->getLongInt();
@@ -147,15 +122,7 @@ TR::Register *
 OMR::Z::TreeEvaluator::lconstEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    PRINT_ME("lconst", node, cg);
-   TR::Register * longRegister;
-   if (TR::Compiler->target.is64Bit() || cg->use64BitRegsOn32Bit())
-      {
-      return lconstHelper64(node, cg);
-      }
-   else
-      {
-      return lconstHelper(node, cg);
-      }
+   return lconstHelper64(node, cg);
    }
 
 /**
@@ -209,26 +176,9 @@ OMR::Z::TreeEvaluator::labsEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    PRINT_ME("labs", node, cg);
    TR::Node * firstChild = node->getFirstChild();
-   TR::Register * targetRegister;
-   if (TR::Compiler->target.is64Bit() || cg->use64BitRegsOn32Bit())
-      {
-      TR::Register * sourceRegister = cg->evaluate(firstChild);
-      targetRegister = cg->allocateRegister();
-      generateRRInstruction(cg, TR::InstOpCode::LPGR, node, targetRegister, sourceRegister);
-      }
-   else
-      {
-      targetRegister = cg->gprClobberEvaluate(firstChild);
-      TR_ASSERT(targetRegister->getRegisterPair() != NULL, "in 32-bit mode, a 64-bit value is not in a register pair");
-      TR::Register *tempReg = cg->allocateRegister();
-      generateRRInstruction(cg, TR::InstOpCode::LR, node, tempReg, targetRegister->getHighOrder());
-      generateRSInstruction(cg, TR::InstOpCode::SRA, node, tempReg, 31);
-      generateRRInstruction(cg, TR::InstOpCode::XR, node, targetRegister->getHighOrder(), tempReg);
-      generateRRInstruction(cg, TR::InstOpCode::XR, node, targetRegister->getLowOrder(), tempReg);
-      generateRRInstruction(cg, TR::InstOpCode::SLR, node, targetRegister->getLowOrder(), tempReg);
-      generateRRInstruction(cg, TR::InstOpCode::SLBR, node, targetRegister->getHighOrder(), tempReg);
-      cg->stopUsingRegister(tempReg);
-      }
+   TR::Register * targetRegister = cg->allocateRegister();;
+   TR::Register * sourceRegister = cg->evaluate(firstChild);
+   generateRRInstruction(cg, TR::InstOpCode::LPGR, node, targetRegister, sourceRegister);
    node->setRegister(targetRegister);
    cg->decReferenceCount(firstChild);
    return targetRegister;

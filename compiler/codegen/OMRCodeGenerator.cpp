@@ -852,14 +852,10 @@ bool
 OMR::CodeGenerator::use64BitRegsOn32Bit()
    {
 #ifdef TR_TARGET_S390
-   if (TR::Compiler->target.is64Bit())
-      return false;
-   else
-      {
-      return !self()->comp()->getOption(TR_Disable64BitRegsOn32Bit);
-      }
-#endif // TR_TARGET_S390
+   return TR::Compiler->target.is32Bit();
+#else
    return false;
+#endif // TR_TARGET_S390
    }
 
 TR_PersistentMemory *

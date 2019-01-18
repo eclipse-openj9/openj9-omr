@@ -799,7 +799,7 @@ OMR::Z::CodeGenerator::CodeGenerator()
 bool
 OMR::Z::CodeGenerator::getSupportsBitPermute()
    {
-   return TR::Compiler->target.is64Bit() || self()->use64BitRegsOn32Bit();
+   return true;
    }
 
 TR_GlobalRegisterNumber
@@ -2930,7 +2930,7 @@ OMR::Z::CodeGenerator::supportsNonHelper(TR::SymbolReferenceTable::CommonNonhelp
       case TR::SymbolReferenceTable::atomicAddSymbol:
       case TR::SymbolReferenceTable::atomicFetchAndAddSymbol:
          {
-         result = self()->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z196) && (TR::Compiler->target.is64Bit() || self()->use64BitRegsOn32Bit());
+         result = self()->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z196);
          break;
          }
 
@@ -3650,9 +3650,6 @@ OMR::Z::CodeGenerator::getMaximumNumberOfGPRsAllowedAcrossEdge(TR::Node * node)
    bool isFloat = false;
    bool isBCD = false;
 
-   bool longNeeds1Reg = TR::Compiler->target.is64Bit() || self()->use64BitRegsOn32Bit();
-
-
    if (node->getOpCode().isIf() && node->getNumChildren() > 0 && !node->getOpCode().isCompBranchOnly())
       {
       TR::DataType dt = node->getFirstChild()->getDataType();
@@ -3690,36 +3687,18 @@ OMR::Z::CodeGenerator::getMaximumNumberOfGPRsAllowedAcrossEdge(TR::Node * node)
          {
          int64_t value = getIntegralValue(node->getSecondChild());
 
-         if (longNeeds1Reg)
+         if (value >= MIN_IMMEDIATE_VAL && value <= MAX_IMMEDIATE_VAL)
             {
-            if (value >= MIN_IMMEDIATE_VAL && value <= MAX_IMMEDIATE_VAL)
-               {
-               return maxGPRs - 1;   // CGHI R,IMM
-               }
-            else
-               {
-               return maxGPRs - 2;   // CGR R1,R2
-               }
+            return maxGPRs - 1;   // CGHI R,IMM
             }
-         else // 32bit
+         else
             {
-            int32_t valueHigh = node->getSecondChild()->getLongIntHigh();
-            int32_t valueLow = node->getSecondChild()->getLongIntLow();
-
-            if ((valueHigh >= MIN_IMMEDIATE_VAL && valueHigh <= MAX_IMMEDIATE_VAL) &&
-               (valueLow >= MIN_IMMEDIATE_VAL && valueLow <= MAX_IMMEDIATE_VAL))
-               {
-               return maxGPRs - 2;   // CHI Rh,IMM_H & CLFI Rl,IMM_L
-               }
-            else
-               {
-               return maxGPRs - 3;   // Need one extra reg to manufacture IMM
-               }
+            return maxGPRs - 2;   // CGR R1,R2
             }
          }
       else
          {
-         return longNeeds1Reg ? maxGPRs - 2 : maxGPRs - 5;
+         return maxGPRs - 2;
          }
       }
    else if (node->getOpCode().isIf() && isFloat)
@@ -3865,46 +3844,7 @@ OMR::Z::CodeGenerator::gprClobberEvaluate(TR::Node * node, bool force_copy, bool
    if (!self()->canClobberNodesRegister(node, 1, &data, ignoreRefCount) || force_copy)
       {
       char * CLOBBER_EVAL = "LR=Clobber_eval";
-      if (TR::Compiler->target.is32Bit() && !self()->use64BitRegsOn32Bit() && node->getType().isInt64())
-         {
-         TR::RegisterPair * trgRegPair = (TR::RegisterPair *) srcRegister;
-         TR::Register * lowRegister = srcRegister->getLowOrder();
-         TR::Register * highRegister = srcRegister->getHighOrder();
-         bool allocatePair=false;
-         if (!data.canClobberLowWord())
-            {
-            lowRegister = self()->allocateRegister();
-            self()->stopUsingRegister(lowRegister); // Allocate pair will make these live again
-            allocatePair = true;
-            }
-         if (!data.canClobberHighWord())
-            {
-            highRegister = self()->allocateRegister();
-            self()->stopUsingRegister(highRegister); // Allocate pair will make these live again
-            allocatePair = true;
-            }
-
-         TR::RegisterPair * tempRegPair = allocatePair ? self()->allocateConsecutiveRegisterPair(lowRegister, highRegister) : trgRegPair;
-         if (!data.canClobberLowWord())
-            {
-            cursor = generateRRInstruction(self(), TR::InstOpCode::LR, node, tempRegPair->getLowOrder(), trgRegPair->getLowOrder());
-            if (debugObj)
-               {
-               debugObj->addInstructionComment(toS390RRInstruction(cursor), CLOBBER_EVAL);
-               }
-            }
-
-         if (!data.canClobberHighWord())
-            {
-            cursor = generateRRInstruction(self(), TR::InstOpCode::LR, node, tempRegPair->getHighOrder(), trgRegPair->getHighOrder());
-            if (debugObj)
-               {
-               debugObj->addInstructionComment(toS390RRInstruction(cursor), CLOBBER_EVAL);
-               }
-            }
-         return tempRegPair;
-         }
-      else if (node->getOpCode().isFloat())
+      if (node->getOpCode().isFloat())
          {
          TR::Register * targetRegister = self()->allocateSinglePrecisionRegister();
          cursor = generateRRInstruction(self(), TR::InstOpCode::LER, node, targetRegister, srcRegister);
@@ -5303,10 +5243,7 @@ OMR::Z::CodeGenerator::isAddressOfPrivateStaticSymRefWithLockedReg(TR::SymbolRef
 bool
 OMR::Z::CodeGenerator::canUseRelativeLongInstructions(int64_t value)
    {
-
    if ((value < 0) || (value % 2 != 0)) return false;
-
-   if (TR::Compiler->target.is32Bit() && !self()->use64BitRegsOn32Bit()) return true;
 
    if (TR::Compiler->target.isLinux())
       {

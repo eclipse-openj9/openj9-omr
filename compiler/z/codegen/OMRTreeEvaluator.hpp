@@ -145,7 +145,6 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static TR::Register *mulhEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 
    static TR::Register *dualMulHelper64(TR::Node * node, TR::Node * lmulNode, TR::Node * lumulhNode, TR::CodeGenerator * cg);
-   static TR::Register *dualMulHelper32(TR::Node * node, TR::Node * lmulNode, TR::Node * lumulhNode, TR::CodeGenerator * cg);
    static TR::Register *dualMulEvaluator(TR::Node * node, TR::CodeGenerator *cg);
 
    static TR::Register *lmulEvaluator(TR::Node *node, TR::CodeGenerator *cg);

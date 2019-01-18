@@ -856,8 +856,7 @@ OMR::Z::Linkage::saveArguments(void * cursor, bool genBinary, bool InPreProlog, 
             // Or we have long reg on 31bir, so we need to build the 64bit register from the two
             // arguments (reg + reg) or (reg + mem)
             // also need to take care of longdouble/complex types which takes 2 or more slots
-            if (regNum != ai || ((dtype == TR::Int64) &&
-                self()->cg()->use64BitRegsOn32Bit()))
+            if (regNum != ai || (dtype == TR::Int64 && TR::Compiler->target.is32Bit()))
                {
                //  Global register is available as scratch reg, so make the move
                //
@@ -895,7 +894,7 @@ OMR::Z::Linkage::saveArguments(void * cursor, bool genBinary, bool InPreProlog, 
 #endif
                   else
                      {
-                     if ((dtype == TR::Int64) && self()->cg()->use64BitRegsOn32Bit())
+                     if (dtype == TR::Int64 && TR::Compiler->target.is32Bit())
                         {
                         cursor = generateRSInstruction(self()->cg(), TR::InstOpCode::SLLG, firstNode, self()->getRealRegister(REGNUM(ai)),
                                     self()->getRealRegister(regNum), 32, (TR::Instruction *) cursor);
@@ -952,8 +951,7 @@ OMR::Z::Linkage::saveArguments(void * cursor, bool genBinary, bool InPreProlog, 
                   // We have to handle the high and low word.  We use two entries
                   // in the busyMoves to represent high and low word.
                   //
-                  if ((dtype == TR::Int64) &&
-                     self()->cg()->use64BitRegsOn32Bit())
+                  if (dtype == TR::Int64 && TR::Compiler->target.is32Bit())
                      {
                      if (fullLong)
                         {
@@ -1114,28 +1112,6 @@ OMR::Z::Linkage::saveArguments(void * cursor, bool genBinary, bool InPreProlog, 
                   busyMoves[3][busyIndex] = loadOpCode;
                   busyMoves[4][busyIndex] = opcodeMask;
                   busyIndex++;
-                  }
-
-               if (ai_l>=0 && TR::Compiler->target.is32Bit() && !self()->cg()->use64BitRegsOn32Bit())
-                  {
-                  if (freeScratchable.isSet(ai_l))
-                     {
-                     cursor = generateRXInstruction(self()->cg(), TR::InstOpCode::getLoadOpCode(), firstNode,
-                                  self()->getRealRegister(REGNUM(ai_l)),
-                                  generateS390MemoryReference(stackPtr, offset + 4, self()->cg()), (TR::Instruction *) cursor);
-                     ((TR::Instruction*)cursor)->setBinLocalFreeRegs(binLocalRegs);
-
-                     freeScratchable.reset(ai_l);
-                     }
-                  else
-                     {
-                     busyMoves[0][busyIndex] = offset + 4;
-                     busyMoves[1][busyIndex] = ai_l;
-                     busyMoves[2][busyIndex] = 1;
-                     busyMoves[3][busyIndex] = TR::InstOpCode::getLoadOpCode();
-                     busyMoves[4][busyIndex] = 0;
-                     busyIndex++;
-                     }
                   }
                break;
             case TR::Float:
@@ -1582,7 +1558,7 @@ OMR::Z::Linkage::copyArgRegister(TR::Node * callNode, TR::Node * child, TR::Regi
 
    TR_Debug * debugObj = self()->cg()->getDebug();
    char * REG_PARAM = "LR=Reg_param";
-   if (TR::Compiler->target.is32Bit() && self()->cg()->use64BitRegsOn32Bit() && child->getDataType() == TR::Int64 && !argRegister->getRegisterPair())
+   if (TR::Compiler->target.is32Bit() && child->getDataType() == TR::Int64 && !argRegister->getRegisterPair())
       {
       TR::Register * tempRegH = self()->cg()->allocateRegister();
       TR::Register * tempRegL = self()->cg()->allocateRegister();
@@ -1606,55 +1582,29 @@ OMR::Z::Linkage::copyArgRegister(TR::Node * callNode, TR::Node * child, TR::Regi
       }
    else if (!self()->cg()->canClobberNodesRegister(child, 0))
       {
-      if (TR::Compiler->target.is32Bit() && child->getDataType() == TR::Int64)
+      if (argRegister->containsCollectedReference())
          {
-         TR_ASSERT_FATAL(!self()->cg()->use64BitRegsOn32Bit(), "Long values should not be passed in register pairs, they can be stored in a single GPR");
-         TR::Register * tempRegH = self()->cg()->allocateRegister();
-         TR::Register * tempRegL = self()->cg()->allocateRegister();
-
-         cursor = generateRRInstruction(self()->cg(), copyOpCode,
-             callNode, tempRegH, argRegister->getRegisterPair()->getHighOrder());
-         if (debugObj)
-            {
-            debugObj->addInstructionComment(toS390RRInstruction(cursor), REG_PARAM);
-            }
-
-         cursor = generateRRInstruction(self()->cg(), copyOpCode,
-           callNode, tempRegL, argRegister->getRegisterPair()->getLowOrder());
-         if (debugObj)
-            {
-            debugObj->addInstructionComment(toS390RRInstruction(cursor), REG_PARAM);
-            }
-
-         tempRegister = self()->cg()->allocateConsecutiveRegisterPair(tempRegL, tempRegH);
-         self()->cg()->stopUsingRegister(tempRegister);
+         tempRegister = self()->cg()->allocateCollectedReferenceRegister();
+         }
+      else if (argRegister->getKind() == TR_FPR)
+         {
+         TR_ASSERT(argRegister->getRegisterPair() == NULL, "No longer should have regpair arg here");
+         if ( argRegister->getRegisterPair() == NULL )
+            tempRegister = self()->cg()->allocateRegister(TR_FPR);
          }
       else
          {
-         if (argRegister->containsCollectedReference())
-            {
-            tempRegister = self()->cg()->allocateCollectedReferenceRegister();
-            }
-         else if (argRegister->getKind() == TR_FPR)
-            {
-            TR_ASSERT(argRegister->getRegisterPair() == NULL, "No longer should have regpair arg here");
-            if ( argRegister->getRegisterPair() == NULL )
-               tempRegister = self()->cg()->allocateRegister(TR_FPR);
-            }
-         else
-            {
-            tempRegister = self()->cg()->allocateRegister();
-            }
+         tempRegister = self()->cg()->allocateRegister();
+         }
 
-            cursor = generateRRInstruction(self()->cg(), copyOpCode, callNode, tempRegister, argRegister);
+         cursor = generateRRInstruction(self()->cg(), copyOpCode, callNode, tempRegister, argRegister);
 
-         if ((argRegister->getKind() == TR_FPR) && ( argRegister->getRegisterPair() != NULL ))
-               self()->cg()->stopUsingRegister(tempRegister);
+      if ((argRegister->getKind() == TR_FPR) && ( argRegister->getRegisterPair() != NULL ))
+            self()->cg()->stopUsingRegister(tempRegister);
 
-         if (debugObj)
-            {
-            debugObj->addInstructionComment(toS390RRInstruction(cursor), REG_PARAM);
-            }
+      if (debugObj)
+         {
+         debugObj->addInstructionComment(toS390RRInstruction(cursor), REG_PARAM);
          }
       self()->cg()->stopUsingRegister(argRegister);
       argRegister = tempRegister;
@@ -2577,7 +2527,7 @@ OMR::Z::Linkage::buildArgs(TR::Node * callNode, TR::RegisterDependencyConditions
 
    // spill all high regs
    //
-   if (self()->cg()->use64BitRegsOn32Bit())
+   if (TR::Compiler->target.is32Bit())
       {
       TR::Register *reg = self()->cg()->allocateRegister();
 

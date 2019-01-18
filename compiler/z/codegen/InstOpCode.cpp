@@ -591,17 +591,10 @@ OMR::Z::InstOpCode::getLoadRegOpCodeFromNode(TR::CodeGenerator *cg, TR::Node *no
    {
    if (node->getType().isAddress())
       {
-      if (TR::Compiler->target.is64Bit())
-         return TR::InstOpCode::LGR;
-      else
-         return TR::InstOpCode::LR;
+      return TR::Compiler->target.is64Bit() ? TR::InstOpCode::LGR : TR::InstOpCode::LR;
       }
 
-   if ((TR::Compiler->target.is64Bit() || cg->use64BitRegsOn32Bit()) && node->getType().isInt64())
-      {
-      return TR::InstOpCode::LGR;
-      }
-   return TR::InstOpCode::LR;
+   return node->getType().isInt64() ? TR::InstOpCode::LGR : TR::InstOpCode::LR;
    }
 
 

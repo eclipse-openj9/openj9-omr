@@ -577,20 +577,6 @@ OMR::Z::MemoryReference::MemoryReference(TR::Node * rootLoadOrStore, TR::CodeGen
          {
          self()->createUnresolvedDataSnippet(rootLoadOrStore, cg, symRef, tempReg, isStore);
          }
-
-      // indexRegister may setup in populateMemoryReference to hold the address for the load/store
-      // since indexRegister is invalid in a RS instruction (LM/STM for long), we need to insert an intermediate
-      // LA instruction to get the address using index and base register before doing LM/STM
-      // we'll never generate LM to load/store long int on 64bit platform
-      // storageReference cases may contain symbol sizes from 1->64 and in any case this condition is now enforced when
-      // the subsequent generate*Instruction routine is called with this memRef
-      if ((rootLoadOrStore->getType().isInt64() || (symbol && symbol->getSize() == 8)) &&
-         !(TR::Compiler->target.is64Bit() || cg->use64BitRegsOn32Bit()) &&
-          !canUseRX &&
-          (storageReference == NULL))
-         {
-         self()->separateIndexRegister(rootLoadOrStore, cg, false, NULL); // enforce4KDisplacementLimit=false
-         }
       }
    else
       {

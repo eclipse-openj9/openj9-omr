@@ -407,9 +407,6 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"disableLocalVP",                     "O\tdisable local value propagation",                TR::Options::disableOptimization, localValuePropagation, 0, "P"},
    {"disableLocalVPSkipLowFreqBlock",     "O\tDo not skip processing of low frequency blocks in localVP", RESET_OPTION_BIT(TR_EnableLocalVPSkipLowFreqBlock), "F" },
    {"disableLockReservation",             "O\tdisable lock reservation",                       SET_OPTION_BIT(TR_DisableLockResevation), "F"},
-   // For PLX debug use
-   {"disableLongRegAllocation",           "O\tdisable allocation of 64-bit regs on 32-bit",    SET_OPTION_BIT(TR_Disable64BitRegsOn32Bit), "F"},
-   {"disableLongRegAllocationHeuristic",  "O\tdisable heuristic for long register allocation", SET_OPTION_BIT(TR_Disable64BitRegsOn32BitHeuristic), "F"},
    {"disableLookahead",                   "O\tdisable class lookahead",                        SET_OPTION_BIT(TR_DisableLookahead), "P"},
    {"disableLoopAliasRefiner",            "O\tdisable loop alias refinement",                         TR::Options::disableOptimization, loopAliasRefiner, 0, "P"},
    {"disableLoopCanonicalization",        "O\tdisable loop canonicalization",                  TR::Options::disableOptimization, loopCanonicalization, 0, "P"},

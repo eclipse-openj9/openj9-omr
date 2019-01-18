@@ -427,8 +427,8 @@ enum TR_CompilationOptions
    TR_EnableLargePages                    = 0x02000000 + 10,
    TR_DisableNewX86VolatileSupport        = 0x04000000 + 10,
    // Available                           = 0x08000000 + 10,
-   TR_Disable64BitRegsOn32Bit             = 0x10000000 + 10,
-   TR_Disable64BitRegsOn32BitHeuristic    = 0x20000000 + 10,
+   // Available                           = 0x10000000 + 10,
+   // Available                           = 0x20000000 + 10,
    TR_TraceRegisterState                  = 0x40000000 + 10,
    TR_DisableDirectToJNIInline            = 0x80000000 + 10,
 

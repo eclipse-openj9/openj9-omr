@@ -1166,8 +1166,7 @@ TR_S390RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstru
          }
 
       // Check for directive to spill high registers. Used on callouts
-      if ( _dependencies[i].getRealRegister() == TR::RealRegister::KillVolHighRegs &&
-           cg->use64BitRegsOn32Bit() )
+      if ( _dependencies[i].getRealRegister() == TR::RealRegister::KillVolHighRegs && TR::Compiler->target.is32Bit())
          {
          machine->spillAllVolatileHighRegisters(currentInstruction);
          _dependencies[i].setRealRegister(TR::RealRegister::NoReg);  // ignore from now on

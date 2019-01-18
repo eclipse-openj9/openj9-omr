@@ -145,9 +145,6 @@ class OMR_EXTENSIBLE Register
    bool isSinglePrecision()                 {return _flags.testAny(IsSinglePrecision);}
    void setIsSinglePrecision(bool b = true) {_flags.set(IsSinglePrecision, b);}
 
-   bool isUpperHalfDead()                   {return _flags.testAny(UpperHalfIsDead);}
-   void setIsUpperHalfDead(bool b = true)   {_flags.set(UpperHalfIsDead, b);}
-
    /*
     * Methods for getting real reg, reg pairs etc in subclasses.
     * return NULL in base class and return THIS ptr in subclasses
@@ -187,7 +184,6 @@ class OMR_EXTENSIBLE Register
       IsLive                        = 0x0010, // Register is currently live
       ContainsInternalPointer       = 0x0080,
       IsSinglePrecision             = 0x0400,
-      UpperHalfIsDead               = 0x0400, // GPRS ONLY -- no need to save/restore the high-order bits when spilled; aliased with IsSinglePrecision
       };
 
 

@@ -929,10 +929,6 @@ class X86RegInstruction : public TR::Instruction
    virtual uint32_t getNumOperandReferencedGPRegisters() { return 1; };
 #endif
 
-   protected:
-
-   void aboutToAssignTargetRegister(){ aboutToAssignRegister(getTargetRegister(), TR_ifUses64bitTarget, TR_ifModifies32or64bitTarget); }
-
    };
 
 
@@ -1066,11 +1062,6 @@ class X86RegRegInstruction : public TR::X86RegInstruction
 #ifdef DEBUG
    virtual uint32_t getNumOperandReferencedGPRegisters() { return 2; }
 #endif
-
-   protected:
-
-   void aboutToAssignSourceRegister() { aboutToAssignRegister(getSourceRegister(), TR_if64bitSource, TR_ifModifies32or64bitSource); }
-
    };
 
 
@@ -1362,11 +1353,6 @@ class X86RegRegRegInstruction : public TR::X86RegRegInstruction
 #ifdef DEBUG
    virtual uint32_t getNumOperandReferencedGPRegisters() { return 3; }
 #endif
-
-   protected:
-
-   void aboutToAssignSource2ndRegister() { aboutToAssignRegister(getSource2ndRegister(), TR_if64bitSource, TR_never); }
-
    };
 
 
@@ -1828,11 +1814,6 @@ class X86MemRegInstruction : public TR::X86MemInstruction
          ;
       }
 #endif
-
-   protected:
-
-   void aboutToAssignSourceRegister(){ aboutToAssignRegister(getSourceRegister(), TR_if64bitSource, TR_ifModifies32or64bitSource); }
-
    };
 
 
@@ -2107,11 +2088,6 @@ class X86RegRegMemInstruction : public TR::X86RegMemInstruction
 #ifdef DEBUG
    virtual uint32_t getNumOperandReferencedGPRegisters() { return 2 + getMemoryReference()->getNumMRReferencedGPRegisters(); }
 #endif
-
-   protected:
-
-   void aboutToAssignSource2ndRegister() { aboutToAssignRegister(getSource2ndRegister(), TR_if64bitSource, TR_never); }
-
    };
 
 

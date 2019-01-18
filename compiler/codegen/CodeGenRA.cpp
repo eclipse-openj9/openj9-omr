@@ -698,17 +698,9 @@ TR::Register * OMR::CodeGenerator::allocateRegister(TR_RegisterKinds rk)
    self()->addAllocatedRegister(temp);
    if (self()->getDebug())
       self()->getDebug()->newRegister(temp);
-   if (  rk == TR_GPR
-      && (  !self()->getDebug()
-         || !self()->getTraceRAOption(TR_TraceRASpillTemps)
-         || performTransformation(self()->comp(), "O^O SPILL TEMPS: Set UpperHalfIsDead on %s\n", self()->getDebug()->getName(temp)))) // allocateRegister is called for the vmthread during initialization when getDebug has not been initialized yet
-      {
-      temp->setIsUpperHalfDead();
-      }
 
    return temp;
    }
-
 
 void
 OMR::CodeGenerator::findAndFixCommonedReferences()

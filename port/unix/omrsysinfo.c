@@ -588,6 +588,10 @@ omrsysinfo_get_OS_type(struct OMRPortLibrary *portLibrary)
 
 #if defined (OSX)
 #define KERN_OSPRODUCTVERSION "kern.osproductversion"
+#define PLIST_FILE "/System/Library/CoreServices/SystemVersion.plist"
+#define PRODUCT_VERSION_ELEMENT "<key>ProductVersion</key>"
+#define STRING_OPEN_TAG "<string>"
+#define STRING_CLOSE_TAG "</string>"
 #endif
 
 #if defined(J9OS_I5)
@@ -604,21 +608,78 @@ const char *
 omrsysinfo_get_OS_version(struct OMRPortLibrary *portLibrary)
 {
 	if (NULL == PPG_si_osVersion) {
-		int rc;
-#if !defined (OSX)
+		int rc = -1;
+#if defined (OSX)
+		char *versionString = NULL;
+		char *allocatedFileBuffer = NULL;
+#else
 		struct utsname sysinfo;
 #endif
 
 #ifdef J9ZOS390
 		rc = __osname(&sysinfo);
 #elif defined (OSX)
-		/* uname() on MacOS returns the version of the Darwin kernel.
+		/* uname() on MacOS returns the version of the Darwin kernel, not the operating system product name.
 		 * For compatibility with the reference implementation,
 		 * we need the operating system product name.
-		 * This is provided by sysctlbyname(), which is deprecated on Linux.
+		 * On newer versions of MacOS, the OS name is provided by sysctlbyname().
+		 * On older versions of MacOS, the OS name is provided by a property list file.
+		 * The relevant portion is:
+		 * 		<key>ProductVersion</key>
+		 * 		<string>10.13.6</string>
+		 *
 		 */
 		size_t resultSize = 0;
 		rc = sysctlbyname(KERN_OSPRODUCTVERSION, NULL, &resultSize, NULL, 0);
+		if (rc < 0) { /* older version of MacOS.  Fall back to parsing the plist. */
+			intptr_t plistFile = portLibrary->file_open(portLibrary, PLIST_FILE, EsOpenRead, 0444);
+			if (plistFile >= 0) {
+				char myBuffer[512];  /* the file size is typically ~480 bytes */
+				char *buffer = myBuffer;
+				size_t len = (size_t) portLibrary->file_flength(portLibrary, plistFile);
+				rc = 0;
+				if (len >= sizeof(myBuffer)) { /* leave space for a terminating null */
+					allocatedFileBuffer = portLibrary->mem_allocate_memory(portLibrary, len + 1, OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
+					buffer = allocatedFileBuffer;
+				}
+				if (NULL != buffer) {
+					char *readPtr = buffer;
+					size_t bytesRemaining = len;
+					while (bytesRemaining > 0) {
+						intptr_t result = portLibrary->file_read(portLibrary, plistFile, readPtr, bytesRemaining);
+						if (result > 0) {
+							bytesRemaining -= result;
+							readPtr += result;
+						} else {
+							rc = -1; /* error or unexpected EOF */
+							break;
+						}
+					}
+					if (0 == rc) {
+						buffer[len] = '\0';
+						readPtr = strstr(buffer, PRODUCT_VERSION_ELEMENT);
+						if (NULL != readPtr) {
+							readPtr = strstr(readPtr + sizeof(PRODUCT_VERSION_ELEMENT) - 1, STRING_OPEN_TAG);
+						}
+						if (NULL != readPtr) {
+							versionString = readPtr + sizeof(STRING_OPEN_TAG) - 1;
+							readPtr = strstr(versionString, STRING_CLOSE_TAG);
+						}
+						if (NULL != readPtr) {
+							*readPtr = '\0';
+							resultSize = readPtr - versionString;
+						} else {
+							rc = -1; /* parse error */
+						}
+					}
+				}
+				portLibrary->file_close(portLibrary, plistFile);
+				if (rc < 0) {
+					/* free the buffer if it was allocated */
+					portLibrary->mem_free_memory(portLibrary, allocatedFileBuffer);
+				}
+			}
+		}
 #else
 		rc = uname(&sysinfo);
 #endif /* defined(OSX) */
@@ -636,9 +697,15 @@ omrsysinfo_get_OS_version(struct OMRPortLibrary *portLibrary)
 			len = resultSize + 1;
 			buffer = portLibrary->mem_allocate_memory(portLibrary, len, OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);
 			if (NULL != buffer) {
-				rc = sysctlbyname(KERN_OSPRODUCTVERSION, buffer, &resultSize, NULL, 0);
-				buffer[len - 1] = '\0';
+				if (NULL != versionString) {
+					strncpy(buffer, versionString, len);
+				} else {
+					rc = sysctlbyname(KERN_OSPRODUCTVERSION, buffer, &resultSize, NULL, 0);
+				}
+				buffer[resultSize] = '\0';
 			}
+			/* allocatedFileBuffer is null if it was not allocated */
+			portLibrary->mem_free_memory(portLibrary, allocatedFileBuffer);
 #else
 			len = strlen(sysinfo.release) + 1;
 			buffer = portLibrary->mem_allocate_memory(portLibrary, len, OMR_GET_CALLSITE(), OMRMEM_CATEGORY_PORT_LIBRARY);

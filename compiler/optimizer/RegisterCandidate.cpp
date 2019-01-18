@@ -2852,7 +2852,7 @@ TR_RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, in
       TR::CodeGenerator * cg = comp()->cg();
       cg->removeUnavailableRegisters(rc, blocks, availableRegisters);
 
-      if (comp()->cg()->supportsHighWordFacility() && !comp()->getOption(TR_DisableHighWordRA) && !comp()->getOption(TR_DisableRegisterPressureSimulation))
+      if (comp()->cg()->supportsHighWordFacility() && !comp()->getOption(TR_DisableRegisterPressureSimulation))
          {
          if (!rc->getType().isInt8() && !rc->getType().isInt16() && !rc->getType().isInt32())
             {

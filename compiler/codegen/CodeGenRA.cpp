@@ -1151,7 +1151,6 @@ OMR::CodeGenerator::pickRegister(TR_RegisterCandidate     *rc,
                                TR_GlobalRegisterNumber & highRegisterNumber,
                                TR_LinkHead<TR_RegisterCandidate> *candidatesAlreadyAssigned)
    {
-   bool enableHighWordGRA =  self()->supportsHighWordFacility() && !self()->comp()->getOption(TR_DisableHighWordRA);
    static volatile bool isInitialized=false;
    static volatile uint8_t gprsWithheldFromPickRegister=0, fprsWithheldFromPickRegister=0, vrfWithheldFromPickRegister=0, gprsWithheldFromPickRegisterWhenWarm=0;
    int32_t currentCandidateWeight =-1;
@@ -1390,7 +1389,7 @@ OMR::CodeGenerator::pickRegister(TR_RegisterCandidate     *rc,
                   // Perform the simulation for current block and accumulate into highWaterMark
                   //
                   TR_RegisterPressureSummary summary(state._gprPressure, state._fprPressure, state._vrfPressure);
-                  if (enableHighWordGRA)
+                  if (self()->supportsHighWordFacility())
                      {
                      TR::DataType dtype = rc->getSymbolReference()->getSymbol()->getDataType();
                      if (dtype == TR::Int8 ||
@@ -1700,7 +1699,7 @@ OMR::CodeGenerator::pickRegister(TR_RegisterCandidate     *rc,
             }
          }
 
-      if (enableHighWordGRA)
+      if (self()->supportsHighWordFacility())
          {
          TR_BitVector HPRMasks = *self()->getGlobalRegisters(TR_hprSpill, self()->comp()->getMethodSymbol()->getLinkageConvention());
          // We cannot assign an HPR if the corresponding GPR is alive.
@@ -2575,7 +2574,6 @@ nodeGotFoldedIntoMemref(
 void
 OMR::CodeGenerator::simulateTreeEvaluation(TR::Node *node, TR_RegisterPressureState *state, TR_RegisterPressureSummary *summary)
    {
-   bool enableHighWordGRA = self()->supportsHighWordFacility() && !self()->comp()->getOption(TR_DisableHighWordRA);
    // Analogous to cg->evaluate(node).
    //
    // This can be called on nodes that have already been evaluated, and it does
@@ -2638,7 +2636,7 @@ OMR::CodeGenerator::simulateTreeEvaluation(TR::Node *node, TR_RegisterPressureSt
       return;
       }
 
-   if (enableHighWordGRA)
+   if (self()->supportsHighWordFacility())
       {
       // 390 Highword, maybe move this below to else .hasRegister?
       if (self()->isCandidateLoad(node, state))
@@ -2763,7 +2761,7 @@ OMR::CodeGenerator::simulateTreeEvaluation(TR::Node *node, TR_RegisterPressureSt
                traceMsg(self()->comp(), " ++%s", self()->getDebug()->getName(child));
             }
 
-         if (enableHighWordGRA)
+         if (self()->supportsHighWordFacility())
             {
             // first time visiting this node, clear the flag
             if (node->getVisitCount() == state->_visitCountForInit && !self()->isCandidateLoad(node, state))
@@ -2773,7 +2771,7 @@ OMR::CodeGenerator::simulateTreeEvaluation(TR::Node *node, TR_RegisterPressureSt
             }
          self()->simulateNodeEvaluation(node, state, summary);
 
-         if (enableHighWordGRA)
+         if (self()->supportsHighWordFacility())
             {
             bool needToCheckHPR = false;
             for (uint16_t i = 0; i < node->getNumChildren(); i++)
@@ -2812,7 +2810,7 @@ OMR::CodeGenerator::simulateTreeEvaluation(TR::Node *node, TR_RegisterPressureSt
          }
       else
          {
-         if (enableHighWordGRA)
+         if (self()->supportsHighWordFacility())
             {
             // first time visiting this node, clear the flag
             if (node->getVisitCount() == state->_visitCountForInit && !self()->isCandidateLoad(node, state))
@@ -2841,7 +2839,7 @@ OMR::CodeGenerator::simulateTreeEvaluation(TR::Node *node, TR_RegisterPressureSt
 
          self()->simulateNodeEvaluation(node, state, summary);
 
-         if (enableHighWordGRA)
+         if (self()->supportsHighWordFacility())
             {
             bool needToCheckHPR = false;
             for (uint16_t i = 0; i < node->getNumChildren(); i++)

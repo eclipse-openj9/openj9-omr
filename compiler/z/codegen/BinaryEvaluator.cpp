@@ -1303,7 +1303,7 @@ genericIntShift(TR::Node * node, TR::CodeGenerator * cg, TR::InstOpCode::Mnemoni
          {
          if (trgReg != srcReg && canUseAltShiftOp )
             {
-            if (cg->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) && srcReg->assignToHPR() &&
+            if (cg->supportsHighWordFacility() && srcReg->assignToHPR() &&
                 (altShiftOp == TR::InstOpCode::SLLK || altShiftOp == TR::InstOpCode::SRLK ))
                {
                if (altShiftOp == TR::InstOpCode::SLLK)
@@ -1632,7 +1632,7 @@ genericRotateAndInsertHelper(TR::Node * node, TR::CodeGenerator * cg)
          {
          // if GRA had decided to assign HPR to these nodes, we cannot use RISBG because they are 64-bit
          // instructions
-         if (cg->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) &&
+         if (cg->supportsHighWordFacility() &&
              firstChild->getFirstChild()->getRegister() &&
              firstChild->getFirstChild()->getRegister()->assignToHPR())
             {

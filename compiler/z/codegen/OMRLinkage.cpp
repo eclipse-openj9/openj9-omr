@@ -395,8 +395,6 @@ OMR::Z::Linkage::saveArguments(void * cursor, bool genBinary, bool InPreProlog, 
    int8_t gprSize = self()->cg()->machine()->getGPRSize();
 
    bool unconditionalSave  = false;
-   bool enableHighWordRA = self()->cg()->supportsHighWordFacility() && !self()->comp()->getOption(TR_DisableHighWordRA);
-
 
    // If we use preexistence or FSD or HCR, then we could be reverting back to the
    // interpreter by creating prePrologue snippets.  In such cases, we need
@@ -414,7 +412,7 @@ OMR::Z::Linkage::saveArguments(void * cursor, bool genBinary, bool InPreProlog, 
    //  -> set means free
    // Keep a list of global registers
    //
-   if (enableHighWordRA)
+   if (self()->cg()->supportsHighWordFacility())
       {
       freeScratchable.init(TR::RealRegister::LastHPR + 1, self()->trMemory());
       globalAllocatedRegisters.init(TR::RealRegister::LastHPR + 1, self()->trMemory());
@@ -577,7 +575,7 @@ OMR::Z::Linkage::saveArguments(void * cursor, bool genBinary, bool InPreProlog, 
          }
 
       if (ai >= 0 &&
-         loadOpCode == TR::InstOpCode::L && enableHighWordRA && self()->getRealRegister(REGNUM(ai))->isHighWordRegister())
+         loadOpCode == TR::InstOpCode::L && self()->cg()->supportsHighWordFacility() && self()->getRealRegister(REGNUM(ai))->isHighWordRegister())
          loadOpCode = TR::InstOpCode::LFH;
 
       if (((self()->isSmallIntParmsAlignedRight() && paramCursor->getType().isIntegral()) ||
@@ -925,7 +923,7 @@ OMR::Z::Linkage::saveArguments(void * cursor, bool genBinary, bool InPreProlog, 
                         }
                      else
                         {
-                        if (enableHighWordRA && self()->getRealRegister(REGNUM(ai))->isHighWordRegister())
+                        if (self()->cg()->supportsHighWordFacility() && self()->getRealRegister(REGNUM(ai))->isHighWordRegister())
                            {
                            cursor = generateExtendedHighWordInstruction(firstNode, self()->cg(), TR::InstOpCode::LHLR, self()->getRealRegister(REGNUM(ai)),
                                                           self()->getRealRegister(regNum), 0, (TR::Instruction *) cursor);
@@ -1217,7 +1215,7 @@ OMR::Z::Linkage::saveArguments(void * cursor, bool genBinary, bool InPreProlog, 
             switch(busyMoves[2][i1])
                {
                case 0: // Reg 2 Reg
-                  if (enableHighWordRA && self()->getRealRegister(REGNUM(target))->isHighWordRegister())
+                  if (self()->cg()->supportsHighWordFacility() && self()->getRealRegister(REGNUM(target))->isHighWordRegister())
                      {
                      cursor = generateExtendedHighWordInstruction(firstNode, self()->cg(), TR::InstOpCode::LHLR, self()->getRealRegister(REGNUM(target)),
                                                                   self()->getRealRegister(REGNUM(source)), 0, (TR::Instruction *) cursor);

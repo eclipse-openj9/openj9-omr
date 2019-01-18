@@ -342,7 +342,6 @@ OMR::Z::Instruction::matchesAnyRegister(TR::Register * reg, TR::Register * instR
 
    bool enableHighWordRA =
       self()->cg()->supportsHighWordFacility() &&
-      !self()->cg()->comp()->getOption(TR_DisableHighWordRA) &&
       (reg->getKind()!=TR_FPR)                       &&
       (instReg->getKind()!=TR_FPR) &&
       (reg->getKind()!=TR_VRF) &&
@@ -764,7 +763,7 @@ OMR::Z::Instruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
                }
             }
 
-         if (self()->cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA))
+         if (self()->cg()->supportsHighWordFacility())
             {
             for (int32_t i = TR::RealRegister::FirstHPR; i <= TR::RealRegister::LastHPR; i++)
                {
@@ -784,7 +783,7 @@ OMR::Z::Instruction::assignRegisters(TR_RegisterKinds kindToBeAssigned)
             machine->setVirtualAssociatedWithReal((TR::RealRegister::RegNum) (j + 1), virtReg);
             }
 
-         if(self()->cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA))
+         if(self()->cg()->supportsHighWordFacility())
             {
             for (int32_t j = 0; j < TR::RealRegister::LastHPR-TR::RealRegister::FirstHPR; ++j)
                {
@@ -1012,7 +1011,7 @@ OMR::Z::Instruction::useSourceRegister(TR::Register * reg)
       }
 
    // mark used bit for HW/LW virtual regs
-   if (self()->cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA))
+   if (self()->cg()->supportsHighWordFacility())
       {
       if (!self()->isHPRUpgradable(_targetRegSize+_sourceRegSize-1))
          {
@@ -1156,7 +1155,7 @@ OMR::Z::Instruction::useTargetRegister(TR::Register* reg)
          }
 
    // mark used bit for HW/LW virtual regs
-   if (self()->cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA))
+   if (self()->cg()->supportsHighWordFacility())
       {
       if (!self()->isHPRUpgradable(_targetRegSize+_sourceRegSize-1))
          {
@@ -1527,7 +1526,7 @@ OMR::Z::Instruction::assignOrderedRegisters(TR_RegisterKinds kindToBeAssigned)
       if (!_targetReg[i]->getRegisterPair())
          continue;
 
-      if (self()->cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA))
+      if (self()->cg()->supportsHighWordFacility())
          _targetReg[i]->setAssignToHPR(false);
       TR::Register *virtReg=_targetReg[i];
       _targetReg[i] = self()->assignRegisterNoDependencies(virtReg);
@@ -1535,7 +1534,7 @@ OMR::Z::Instruction::assignOrderedRegisters(TR_RegisterKinds kindToBeAssigned)
 
       tgtAssigned[i] = 2;
 
-      if (self()->cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA))
+      if (self()->cg()->supportsHighWordFacility())
          {
          // don't need to block HPR here beacuse no Highword instruction uses register pair
          // but make sure we do not spill to the targetReg's HPR (even if it became free) while assigning sourceReg
@@ -1555,7 +1554,7 @@ OMR::Z::Instruction::assignOrderedRegisters(TR_RegisterKinds kindToBeAssigned)
       if (!_sourceReg[i]->getRegisterPair())
          continue;
 
-      if (self()->cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA))
+      if (self()->cg()->supportsHighWordFacility())
          (_sourceReg[i])->setAssignToHPR(false);
       (_sourceReg[i]) = self()->assignRegisterNoDependencies(_sourceReg[i]);
       (_sourceReg[i])->block();
@@ -1575,7 +1574,7 @@ OMR::Z::Instruction::assignOrderedRegisters(TR_RegisterKinds kindToBeAssigned)
 
          registerOperandNum = (_targetReg < _sourceReg) ? i+1 : _sourceRegSize+i+1;
 
-         if (self()->cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA))
+         if (self()->cg()->supportsHighWordFacility())
             {
             if ((self()->getOpCodeValue() == TR::InstOpCode::RISBLG || self()->getOpCodeValue() == TR::InstOpCode::RISBHG) &&
                 ((TR::S390RIEInstruction *)self())->getExtendedHighWordOpCode().getOpCodeValue() != TR::InstOpCode::BAD)
@@ -1598,7 +1597,7 @@ OMR::Z::Instruction::assignOrderedRegisters(TR_RegisterKinds kindToBeAssigned)
             }
          _targetReg[i] = self()->assignRegisterNoDependencies(_targetReg[i]);
 
-         if (self()->cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) &&
+         if (self()->cg()->supportsHighWordFacility() &&
              _targetReg[i]->getKind() != TR_FPR && _targetReg[i]->getKind() != TR_VRF)
             {
             if (toRealRegister(_targetReg[i])->getState() == TR::RealRegister::Free && targetRegIs64Bit)
@@ -1669,7 +1668,7 @@ OMR::Z::Instruction::assignOrderedRegisters(TR_RegisterKinds kindToBeAssigned)
    if (_sourceReg)
       {
       registerOperandNum = (_targetReg < _sourceReg) ? _targetRegSize+1 : 1;
-      if (self()->cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA))
+      if (self()->cg()->supportsHighWordFacility())
          {
          if (firstNonPairSourceRegister)
             {
@@ -1705,7 +1704,7 @@ OMR::Z::Instruction::assignOrderedRegisters(TR_RegisterKinds kindToBeAssigned)
       {
       for (i = 0; i < _sourceMemSize; ++i)
          {
-         if (self()->cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA))
+         if (self()->cg()->supportsHighWordFacility())
             {
             if (_sourceMem[i]->getBaseRegister())
                {
@@ -1724,7 +1723,7 @@ OMR::Z::Instruction::assignOrderedRegisters(TR_RegisterKinds kindToBeAssigned)
       {
       for (i = 0; i < _targetMemSize; ++i)
          {
-         if (self()->cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA))
+         if (self()->cg()->supportsHighWordFacility())
             {
             if (_targetMem[i]->getBaseRegister())
                {
@@ -2334,7 +2333,7 @@ OMR::Z::Instruction::setUseDefRegisters(bool updateDependencies)
       }
 
    // set all HPRs to alias GPRs
-   if (self()->cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA))
+   if (self()->cg()->supportsHighWordFacility())
       {
       if (_useRegs)
          {

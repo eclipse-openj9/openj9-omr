@@ -4732,7 +4732,7 @@ OMR::Z::TreeEvaluator::extendCastEvaluator(TR::Node * node, TR::CodeGenerator * 
    // value. If the result of the cast is then stored into an HPR,
    // we need a new virtual register. We cannot use a clobber evaluate by
    // reusing the source 64bit GPR, as this would trigger an assume in RA.
-   if (cg->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) && (numberOfExtendBits==64))
+   if (cg->supportsHighWordFacility() && (numberOfExtendBits==64))
       canClobberSrc = false;
 
    /**
@@ -13131,7 +13131,7 @@ OMR::Z::TreeEvaluator::iRegStoreEvaluator(TR::Node * node, TR::CodeGenerator * c
                               ((child->getOpCodeValue() == TR::su2i) && (child->getFirstChild()->getOpCodeValue() == TR::cloadi)) ||
                               ((child->getOpCodeValue() == TR::l2i) && (child->getFirstChild()->getOpCodeValue() == TR::i2l));
 
-   if (cg->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA))
+   if (cg->supportsHighWordFacility())
       {
       child_sign_extended = false;
       }

@@ -209,7 +209,7 @@ OMR::Z::Machine::registerExchange(TR::CodeGenerator* cg,
    char * REG_EXCHANGE = "LR=Reg_exchg";
    char * REG_PAIR     = "LR=Reg_pair";
    TR_Debug * debugObj = cg->getDebug();
-   bool enableHighWordRA = cg->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) &&
+   bool enableHighWordRA = cg->supportsHighWordFacility() &&
                            rk != TR_FPR && rk != TR_VRF;
    TR::Machine *machine = cg->machine();
 
@@ -2099,7 +2099,7 @@ OMR::Z::Machine::freeBestRegisterPair(TR::RealRegister ** firstReg, TR::RealRegi
 
    TR_Debug * debugObj = self()->cg()->getDebug();
 
-   bool enableHighWordRA = self()->cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) &&
+   bool enableHighWordRA = self()->cg()->supportsHighWordFacility() &&
                            rk != TR_FPR &&  rk != TR_VRF;
 
    // Look at all reg pairs (starting with an even reg)
@@ -3134,7 +3134,7 @@ OMR::Z::Machine::freeBestRegister(TR::Instruction * currentInstruction, TR::Regi
    TR::Machine *machine = self()->cg()->machine();
    bool useGPR0 = (virtReg == NULL) ? false : (virtReg->isUsedInMemRef() == false);
 
-   bool enableHighWordRA = self()->cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) &&
+   bool enableHighWordRA = self()->cg()->supportsHighWordFacility() &&
                            rk != TR_FPR && rk != TR_VRF;
 
    switch (rk)
@@ -3563,7 +3563,7 @@ OMR::Z::Machine::spillRegister(TR::Instruction * currentInstruction, TR::Registe
 
    // Highword RA flags
    // check: what if virtReg is actually a real Reg??
-   bool enableHighWordRA = self()->cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) &&
+   bool enableHighWordRA = self()->cg()->supportsHighWordFacility() &&
                            rk != TR_FPR && rk != TR_VRF;
    TR::RealRegister * freeHighWordReg = NULL;
    bool alreadySpilledToHPR = false;
@@ -3892,7 +3892,7 @@ OMR::Z::Machine::reverseSpillState(TR::Instruction      *currentInstruction,
 
    self()->cg()->traceRegisterAssignment("REVERSE SPILL STATE FOR %R", spilledRegister);
 
-   bool enableHighWordRA = self()->cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) &&
+   bool enableHighWordRA = self()->cg()->supportsHighWordFacility() &&
                            rk != TR_FPR && rk != TR_VRF;
 
    if (spilledRegister->isPlaceholderReg())
@@ -5723,7 +5723,7 @@ OMR::Z::Machine::initializeGlobalRegisterTable()
    // [2] https://github.com/eclipse/omr/blob/9d1d8cf3048781bc6d87e6a1079167586cc5aa4d/compiler/codegen/CodeGenRA.cpp#L2889-L2903
    // [3] https://github.com/eclipse/omr/blob/9d1d8cf3048781bc6d87e6a1079167586cc5aa4d/compiler/z/codegen/ControlFlowEvaluator.cpp#L1098-L1102
 
-   if (self()->cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) && !comp->getOption(TR_DisableRegisterPressureSimulation))
+   if (self()->cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableRegisterPressureSimulation))
       {
       // HPR
       // this is a bit tricky, we consider Global HPRs part of Global GPRs
@@ -6034,7 +6034,7 @@ OMR::Z::Machine::setRegisterWeightsFromAssociations()
    int32_t first = TR::RealRegister::FirstGPR;
    TR::Compilation *comp = self()->cg()->comp();
    int32_t last = TR::RealRegister::LastAssignableVRF;
-   if (self()->cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA))
+   if (self()->cg()->supportsHighWordFacility())
       last = TR::RealRegister::LastHPR;
 
    for (int32_t i = first; i <= last; ++i)
@@ -6081,7 +6081,7 @@ OMR::Z::Machine::createRegisterAssociationDirective(TR::Instruction * cursor)
    int32_t last = TR::RealRegister::LastAssignableVRF;
    TR::RegisterDependencyConditions * associations;
 
-   if (self()->cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA))
+   if (self()->cg()->supportsHighWordFacility())
       {
       int32_t lastHPR = last + TR::RealRegister::LastHPR - TR::RealRegister::FirstHPR;
       associations = new (self()->cg()->trHeapMemory(), TR_MemoryBase::RegisterDependencyConditions) TR::RegisterDependencyConditions(0, lastHPR, self()->cg());
@@ -6101,7 +6101,7 @@ OMR::Z::Machine::createRegisterAssociationDirective(TR::Instruction * cursor)
       associations->addPostCondition(self()->getVirtualAssociatedWithReal(regNum), regNum);
       }
 
-   if (self()->cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA))
+   if (self()->cg()->supportsHighWordFacility())
       {
       for (int32_t i = TR::RealRegister::FirstHPR; i < TR::RealRegister::LastHPR+1; i++)
          {
@@ -6260,7 +6260,7 @@ TR::RegisterDependencyConditions * OMR::Z::Machine::createDepCondForLiveGPRs(TR:
 
    c += spilledRegisterList ? spilledRegisterList->size() : 0;
 
-   if (self()->cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA))
+   if (self()->cg()->supportsHighWordFacility())
       {
       for (i = TR::RealRegister::FirstHPR; i <= TR::RealRegister::LastHPR; i++)
          {
@@ -6297,7 +6297,7 @@ TR::RegisterDependencyConditions * OMR::Z::Machine::createDepCondForLiveGPRs(TR:
             virtReg->incFutureUseCount();
             }
          }
-      if (self()->cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA))
+      if (self()->cg()->supportsHighWordFacility())
          {
          for (i = TR::RealRegister::FirstHPR; i <= TR::RealRegister::LastHPR; i++)
             {

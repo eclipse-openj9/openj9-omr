@@ -1345,6 +1345,22 @@ class OMR_EXTENSIBLE CodeGenerator
    bool enableRefinedAliasSets();
    void setEnableRefinedAliasSets() {_enabledFlags.set(EnableRefinedAliasSets);}
 
+   /**
+    * @brief Answers whether a trampoline is required for a direct call instruction to
+    *           reach a target address.  This function should be overridden by an
+    *           architecture-specific implementation.
+    *
+    * @param[in] targetAddress : the absolute address of the call target
+    * @param[in] sourceAddress : the absolute address of the call instruction
+    *
+    * @return : true, but will assert fatally before returning.
+    */
+   bool directCallRequiresTrampoline(intptrj_t targetAddress, intptrj_t sourceAddress)
+      {
+      TR_ASSERT_FATAL(0, "An architecture specialization of this function must be provided.");
+      return true;
+      }
+
    // --------------------------------------------------------------------------
 
    TR::Node *createOrFindClonedNode(TR::Node *node, int32_t numChildren);

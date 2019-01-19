@@ -1240,6 +1240,9 @@ uint8_t* TR::X86ImmSymInstruction::generateOperand(uint8_t* cursor)
                }
             }
 
+         intptrj_t currentInstructionAddress = (intptrj_t)(cursor-1);
+         intptrj_t nextInstructionAddress = (intptrj_t)(cursor+4);
+
          if (resolvedMethod && resolvedMethod->isSameMethod(comp->getCurrentMethod()) && !comp->isDLT())
             {
             // Compute method's jit entry point
@@ -1248,7 +1251,8 @@ uint8_t* TR::X86ImmSymInstruction::generateOperand(uint8_t* cursor)
             if (TR::Compiler->target.is64Bit())
                {
                start += TR_LinkageInfo::get(start)->getReservedWord();
-               TR_ASSERT(IS_32BIT_RIP(start, cursor+4), "Method start must be within RIP range");
+               TR_ASSERT_FATAL(TR::Compiler->target.cpu.isTargetWithinRIPRange((intptrj_t)start, nextInstructionAddress),
+                               "Method start must be within RIP range");
                cg()->fe()->reserveTrampolineIfNecessary(comp, getSymbolReference(), true);
                }
 
@@ -1293,24 +1297,22 @@ uint8_t* TR::X86ImmSymInstruction::generateOperand(uint8_t* cursor)
                      targetAddress = (intptrj_t)getSymbolReference()->getMethodAddress();
                   }
 
-               bool forceTrampolineUse = false;
+               bool isTrampolineRequired = cg()->directCallRequiresTrampoline(targetAddress, currentInstructionAddress);
 
                if (methodSym && methodSym->isHelper())
                   {
-                  if (!IS_32BIT_RIP(targetAddress, cursor+4) || forceTrampolineUse)
+                  if (isTrampolineRequired)
                      {
                      // TODO:AMD64: Consider AOT ramifications
                      targetAddress = cg()->fe()->indexedTrampolineLookup(getSymbolReference()->getReferenceNumber(), (void *)cursor);
-                     TR_ASSERT(IS_32BIT_RIP(targetAddress, cursor+4), "Local helper trampoline must be reachable directly.\n");
                      }
                   }
                else if (methodSym && methodSym->isJNI() && getNode() && getNode()->isPreparedForDirectJNI())
                   {
-                  if (!IS_32BIT_RIP(targetAddress, cursor+4) || forceTrampolineUse)
+                  if (isTrampolineRequired)
                      {
                      TR_ASSERT(0, "We seem to never generate CALLIMM instructions for JNI on 64Bit!!!");
                      }
-
                   }
                else
                   {
@@ -1319,19 +1321,20 @@ uint8_t* TR::X86ImmSymInstruction::generateOperand(uint8_t* cursor)
                   if (TR::Compiler->target.is64Bit())
                      cg()->fe()->reserveTrampolineIfNecessary(comp, getSymbolReference(), true);
 
-                  if (!IS_32BIT_RIP(targetAddress, cursor+4) || forceTrampolineUse)
+                  if (isTrampolineRequired)
                      {
                      targetAddress = cg()->fe()->methodTrampolineLookup(comp, getSymbolReference(), (void *)cursor);
-
-                     TR_ASSERT(IS_32BIT_RIP(targetAddress, cursor+4), "Local method trampoline must be reachable directly.\n");
                      }
                   }
+
+               TR_ASSERT_FATAL(TR::Compiler->target.cpu.isTargetWithinRIPRange(targetAddress, nextInstructionAddress),
+                               "Direct call target must be reachable directly");
                }
             }
 
          // Compute relative target displacement.
          //
-         *(int32_t *)cursor = (int32_t)(targetAddress - (intptrj_t)(cursor + 4));
+         *(int32_t *)cursor = (int32_t)(targetAddress - nextInstructionAddress);
          }
       else if (getOpCodeValue() == PUSHImm4)
          {

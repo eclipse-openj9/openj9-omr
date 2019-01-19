@@ -30,6 +30,7 @@
 #include "codegen/RealRegister.hpp"
 #include "codegen/SnippetGCMap.hpp"
 #include "compile/Compilation.hpp"
+#include "env/CompilerEnv.hpp"
 #include "env/IO.hpp"
 #include "env/jittypes.h"
 #include "il/DataTypes.hpp"
@@ -99,14 +100,17 @@ uint32_t TR::PPCHelperCallSnippet::getLength(int32_t estimatedSnippetStart)
 
 uint8_t *TR::PPCHelperCallSnippet::genHelperCall(uint8_t *buffer)
    {
-   intptrj_t distance = (intptrj_t)getDestination()->getSymbol()->castToMethodSymbol()->getMethodAddress() - (intptrj_t)buffer;
+   intptrj_t helperAddress = (intptrj_t)getDestination()->getSymbol()->castToMethodSymbol()->getMethodAddress();
 
-   if (!(distance>=BRANCH_BACKWARD_LIMIT && distance<=BRANCH_FORWARD_LIMIT))
+   if (cg()->directCallRequiresTrampoline(helperAddress, (intptrj_t)buffer))
       {
-      distance = cg()->comp()->fe()->indexedTrampolineLookup(getDestination()->getReferenceNumber(), (void *)buffer) - (intptrj_t)buffer;
-      TR_ASSERT(distance>=BRANCH_BACKWARD_LIMIT && distance<=BRANCH_FORWARD_LIMIT,
-             "CodeCache is more than 32MB.\n");
+      helperAddress = cg()->comp()->fe()->indexedTrampolineLookup(getDestination()->getReferenceNumber(), (void *)buffer);
+
+      TR_ASSERT_FATAL(TR::Compiler->target.cpu.isTargetWithinIFormBranchRange(helperAddress, (intptrj_t)buffer),
+                      "Helper address is out of range");
       }
+
+   intptrj_t distance = helperAddress - (intptrj_t)buffer;
 
    // b|bl distance
    *(int32_t *)buffer = 0x48000000 | (distance & 0x03fffffc);

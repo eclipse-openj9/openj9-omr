@@ -125,6 +125,7 @@ OMR::Z::Snippet::generatePICBinary(TR::CodeGenerator * cg, uint8_t * cursor, TR:
    else
       {
       // Generate BRASL instruction.
+      intptrj_t instructionStartAddress = (intptrj_t)cursor;
       *(int16_t *) cursor = 0xC0E5;
       cursor += sizeof(int16_t);
 
@@ -139,7 +140,7 @@ OMR::Z::Snippet::generatePICBinary(TR::CodeGenerator * cg, uint8_t * cursor, TR:
       if (cg->comp()->getOption(TR_EnableRMODE64))
 #endif
          {
-         if (NEEDS_TRAMPOLINE(destAddr, cursor, cg))
+         if (cg->directCallRequiresTrampoline(destAddr, instructionStartAddress))
             {
             // Destination is beyond our reachable jump distance, we'll find the
             // trampoline.
@@ -149,10 +150,11 @@ OMR::Z::Snippet::generatePICBinary(TR::CodeGenerator * cg, uint8_t * cursor, TR:
          }
 #endif
 
-      TR_ASSERT(CHECK_32BIT_TRAMPOLINE_RANGE(destAddr, cursor),  "Helper Call is not reachable.");
+      TR_ASSERT_FATAL(TR::Compiler->target.cpu.isTargetWithinBranchRelativeRILRange(destAddr, instructionStartAddress),
+                      "Helper Call is not reachable.");
       self()->setSnippetDestAddr(destAddr);
 
-      *(int32_t *) cursor = (int32_t)((destAddr - (intptrj_t)(cursor - 2)) / 2);
+      *(int32_t *) cursor = (int32_t)((destAddr - instructionStartAddress) / 2);
       AOTcgDiag1(cg->comp(), "add TR_AbsoluteHelperAddress cursor=%x\n", cursor);
       cg->addProjectSpecializedRelocation(cursor, (uint8_t*) glueRef, NULL, TR_HelperAddress,
                                       __FILE__, __LINE__, self()->getNode());

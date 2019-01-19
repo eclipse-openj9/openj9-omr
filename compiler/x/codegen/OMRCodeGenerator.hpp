@@ -824,7 +824,7 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
 //
 
 #if defined(TR_TARGET_64BIT)
-#define NEEDS_TRAMPOLINE(target, rip, cg) (!IS_32BIT_RIP((target), (rip)))
+#define NEEDS_TRAMPOLINE(target, rip, cg) (cg->directCallRequiresTrampoline((intptrj_t)target, (intptrj_t)rip))
 #else
 // Give the C++ compiler a hand
 #define NEEDS_TRAMPOLINE(target, rip, cg) (0)

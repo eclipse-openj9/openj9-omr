@@ -67,6 +67,8 @@ TR::S390HelperCallSnippet::emitSnippetBody()
    // Generate RIOFF if RI is supported.
    cursor = generateRuntimeInstrumentationOnOffInstruction(cg(), cursor, TR::InstOpCode::RIOFF);
 
+   intptrj_t branchInstructionStartAddress;
+
    if (                                                                               // Methods that require
              alwaysExcept())                                                          // R14 to point to snippet:
       {
@@ -79,6 +81,7 @@ TR::S390HelperCallSnippet::emitSnippetBody()
       // will see R14 is pointing to this snippet, and pick up the correct
       // stack map.
 
+      branchInstructionStartAddress = (intptrj_t)cursor;
       *(int16_t *) cursor = 0xC0E5;                                                   // BRASL  R14, <Helper Addr>
       cursor += sizeof(int16_t);
       }
@@ -95,6 +98,7 @@ TR::S390HelperCallSnippet::emitSnippetBody()
       *(int32_t *) cursor = (int32_t)((returnAddr - (intptrj_t)(cursor - 2)) / 2);
       cursor += sizeof(int32_t);
 
+      branchInstructionStartAddress = (intptrj_t)cursor;
       *(int16_t *) cursor = 0xC0F4;                                                   // BRCL   <Helper Addr>
       cursor += sizeof(int16_t);
       }
@@ -110,7 +114,7 @@ TR::S390HelperCallSnippet::emitSnippetBody()
    if (cg()->comp()->getOption(TR_EnableRMODE64))
 #endif
       {
-      if (NEEDS_TRAMPOLINE(destAddr, cursor, cg()))
+      if (cg()->directCallRequiresTrampoline(destAddr, branchInstructionStartAddress))
          {
          destAddr = cg()->fe()->indexedTrampolineLookup(helperSymRef->getReferenceNumber(), (void *)cursor);
          this->setUsedTrampoline(true);
@@ -124,10 +128,11 @@ TR::S390HelperCallSnippet::emitSnippetBody()
       }
 #endif
 
-   TR_ASSERT(CHECK_32BIT_TRAMPOLINE_RANGE(destAddr, cursor), "Helper Call is not reachable.");
+   TR_ASSERT_FATAL(TR::Compiler->target.cpu.isTargetWithinBranchRelativeRILRange(destAddr, branchInstructionStartAddress),
+                   "Helper Call is not reachable.");
    this->setSnippetDestAddr(destAddr);
 
-   *(int32_t *) cursor = (int32_t)((destAddr - (intptrj_t)(cursor - 2)) / 2);
+   *(int32_t *) cursor = (int32_t)((destAddr - branchInstructionStartAddress) / 2);
    AOTcgDiag1(cg()->comp(), "add TR_HelperAddress cursor=%x\n", cursor);
    cg()->addProjectSpecializedRelocation(cursor, (uint8_t*) helperSymRef, NULL, TR_HelperAddress,
                              __FILE__, __LINE__, getNode());

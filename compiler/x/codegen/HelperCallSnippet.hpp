@@ -66,7 +66,7 @@ class X86HelperCallSnippet : public TR::X86RestartSnippet
    TR::SymbolReference *setDestination(TR::SymbolReference *s) {return (_destination = s);}
    int32_t             getStackPointerAdjustment()           {return _stackPointerAdjustment;}
 
-   static int32_t branchDisplacementToHelper(uint8_t *nextInstructionAddress, TR::SymbolReference *helper, TR::CodeGenerator *cg);
+   static int32_t branchDisplacementToHelper(uint8_t *callInstructionAddress, TR::SymbolReference *helper, TR::CodeGenerator *cg);
 
    int32_t getOffset() {return _offset;}
 

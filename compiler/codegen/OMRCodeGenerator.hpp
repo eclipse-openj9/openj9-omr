@@ -1338,9 +1338,6 @@ class OMR_EXTENSIBLE CodeGenerator
 
    TR::RealRegister **_unlatchedRegisterList; // dynamically allocated
 
-   bool alwaysUseTrampolines() { return _enabledFlags.testAny(AlwaysUseTrampolines); }
-   void setAlwaysUseTrampolines() {_enabledFlags.set(AlwaysUseTrampolines);}
-
    bool shouldBuildStructure() { return _enabledFlags.testAny(ShouldBuildStructure); }
    void setShouldBuildStructure() {_enabledFlags.set(ShouldBuildStructure);}
 
@@ -1788,7 +1785,7 @@ class OMR_EXTENSIBLE CodeGenerator
       // AVAILABLE                     = 0x0002,
       // AVAILABLE                     = 0x0004,
       EnableRefinedAliasSets           = 0x0008,
-      AlwaysUseTrampolines             = 0x0010,
+      // AVAILABLE                     = 0x0010,
       ShouldBuildStructure             = 0x0020,
       LockFreeSpillList                = 0x0040,  // TAROK only (until it matures)
       UseNonLinearRegisterAssigner     = 0x0080,  // TAROK only (until it matures)

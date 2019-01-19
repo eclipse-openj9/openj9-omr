@@ -33,7 +33,9 @@ namespace OMR { typedef OMR::ARM64::CPU CPUConnector; }
 #error OMR::ARM64::CPU expected to be a primary connector, but an OMR connector is already defined
 #endif
 
+#include <stdint.h>
 #include "compiler/env/OMRCPU.hpp"
+#include "env/jittypes.h"
 
 
 namespace OMR
@@ -47,6 +49,39 @@ class CPU : public OMR::CPU
 protected:
 
    CPU() : OMR::CPU() {}
+
+public:
+
+   /**
+    * @brief Provides the maximum forward branch displacement in bytes reachable
+    *        with a relative unconditional branch with immediate (B or BL) instruction.
+    *
+    * @return Maximum forward branch displacement in bytes.
+    */
+   int32_t maxUnconditionalBranchImmediateForwardOffset() { return 0x07fffffc; }
+
+   /**
+    * @brief Provides the maximum backward branch displacement in bytes reachable
+    *        with a relative unconditional branch with immediate (B or BL) instruction.
+    *
+    * @return Maximum backward branch displacement in bytes.
+    */
+   int32_t maxUnconditionalBranchImmediateBackwardOffset() { return 0xf8000000; }
+
+   /**
+    * @brief Answers whether the distance between a target and source address
+    *        is within the reachable displacement range for a relative unconditional
+    *        branch with immediate (B or BL) instruction.
+    *
+    * @param[in] : targetAddress : the address of the target
+    *
+    * @param[in] : sourceAddress : the address of the relative unconditional branch
+    *                 with immediate (B or BL) instruction from which the
+    *                 displacement range is measured.
+    *
+    * @return true if the target is within range; false otherwise.
+    */
+   bool isTargetWithinUnconditionalBranchImmediateRange(intptrj_t targetAddress, intptrj_t sourceAddress);
 
    };
 

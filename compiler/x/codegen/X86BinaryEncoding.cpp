@@ -1094,6 +1094,11 @@ TR::X86ImmSymInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
                         (TR_ExternalRelocationTargetKind) reloTypes [rType], cg()),
                         __FILE__, __LINE__, getNode());
                   }
+               else if (resolvedMethod)
+                  {
+                  cg()->addProjectSpecializedRelocation(cursor, (uint8_t *)getSymbolReference()->getMethodAddress(), NULL, TR_MethodCallAddress,
+                                         __FILE__, __LINE__, getNode());
+                  }
                else
                   {
                   cg()->addProjectSpecializedRelocation(cursor, (uint8_t *)getSymbolReference(), NULL, TR_RelativeMethodAddress,

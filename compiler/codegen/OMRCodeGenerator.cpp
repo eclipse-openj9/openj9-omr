@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -2952,16 +2952,6 @@ void OMR::CodeGenerator::addRelocation(TR::Relocation *r)
       {
       _relocationList.push_front(r);
       }
-   }
-
-void OMR::CodeGenerator::addAOTRelocation(TR::Relocation *r, const char *generatingFileName, uintptr_t generatingLineNumber, TR::Node *node, TR::AOTRelocationPositionRequest where)
-   {
-   self()->addExternalRelocation(r, generatingFileName, generatingLineNumber, node, static_cast<TR::ExternalRelocationPositionRequest>(where));
-   }
-
-void OMR::CodeGenerator::addAOTRelocation(TR::Relocation *r, TR::RelocationDebugInfo* info, TR::AOTRelocationPositionRequest where)
-   {
-   self()->addExternalRelocation(r, info, static_cast<TR::ExternalRelocationPositionRequest>(where));
    }
 
 void OMR::CodeGenerator::addExternalRelocation(TR::Relocation *r, const char *generatingFileName, uintptr_t generatingLineNumber, TR::Node *node, TR::ExternalRelocationPositionRequest where)

@@ -97,12 +97,12 @@
     TR::TreeEvaluator::returnEvaluator, // TR::return		// void return
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::asynccheckEvaluator ,	// TR::asynccheck	// GC point
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::athrowEvaluator ,	// TR::athrow		// throw an exception
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::icallEvaluator ,	// TR::icall		// direct call returning integer
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::lcallEvaluator ,	// TR::lcall		// direct call returning long integer
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::fcallEvaluator ,	// TR::fcall		// direct call returning float
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::dcallEvaluator ,	// TR::dcall		// direct call returning double
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::acallEvaluator ,	// TR::acall		// direct call returning reference
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::callEvaluator ,	// TR::call		// direct call returning void
+    TR::TreeEvaluator::directCallEvaluator, // TR::icall		// direct call returning integer
+    TR::TreeEvaluator::directCallEvaluator, // TR::lcall		// direct call returning long integer
+    TR::TreeEvaluator::directCallEvaluator, // TR::fcall		// direct call returning float
+    TR::TreeEvaluator::directCallEvaluator, // TR::dcall		// direct call returning double
+    TR::TreeEvaluator::directCallEvaluator, // TR::acall		// direct call returning reference
+    TR::TreeEvaluator::directCallEvaluator, // TR::call		// direct call returning void
     TR::TreeEvaluator::iaddEvaluator, // TR::iadd		// add 2 integers
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::laddEvaluator ,	// TR::ladd		// add 2 long integers
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::faddEvaluator ,	// TR::fadd		// add 2 floats

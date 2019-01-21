@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2017 IBM Corp. and others
+ * Copyright (c) 2017, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -20,11 +20,9 @@
  *******************************************************************************/
 
 #include "default_compiler.hpp"
+#include "Jit.hpp"
 #include <cstdio>
 #include <string>
-
-extern bool internal_initializeJit();
-extern void internal_shutdownJit();
 
 int main(int argc, char** argv)
    { 
@@ -48,12 +46,12 @@ int main(int argc, char** argv)
       printTrees(out, trees, 1); 
       if (!isDumper) 
          {
-         internal_initializeJit();
+         initializeJit();
          Tril::DefaultCompiler compiler{trees}; 
          if (compiler.compile() != 0) { 
             fprintf(out, "Error compiling trees!"); 
          }
-         internal_shutdownJit();
+         shutdownJit();
          }
       }
    else

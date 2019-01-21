@@ -7006,14 +7006,6 @@ inlineTrailingZerosQuadWordAtATime(
    regDeps->addPostCondition(rBranchCounter,  TR::RealRegister::AssignAny);
    regDeps->addPostCondition(rInputByteArray, TR::RealRegister::AssignAny);
 
-   if (is64)
-      {
-      rInput->setIs64BitReg(true);
-      rOffset->setIs64BitReg(true);
-      rBranchCounter->setIs64BitReg(true);
-      rInputByteArray->setIs64BitReg(true);
-      }
-
    cursor = generateRILInstruction  (cg, TR::InstOpCode::NIHF, node, rOffset, 0x0);
    cursor = generateRXInstruction   (cg, TR::InstOpCode::getLoadAddressOpCode(), node, rInputByteArray, generateS390MemoryReference(rInputByteArray, valueContentOffset, cg)); iComment("get to the actual content of the byte array");
    cursor = generateRSInstruction   (cg, TR::InstOpCode::getShiftRightLogicalSingleOpCode(), node, rBranchCounter, rOffset, 3);                                                                                                                   iComment("divide by 8 to use BCTRG");
@@ -8502,10 +8494,6 @@ inlineP256Multiply(TR::Node * node, TR::CodeGenerator * cg)
    TR::Register * R1 = cg->allocateRegister();
    TR::Register * R2;
 
-   zero->setIs64BitReg(false);
-   R0->setIs64BitReg(false);
-   R1->setIs64BitReg(false);
-
    generateRIInstruction(cg, TR::InstOpCode::LHI, node, R0, 0);
    generateRIInstruction(cg, TR::InstOpCode::LHI, node, R1, 0);
    generateRIInstruction(cg, TR::InstOpCode::LHI, node, zero, 0);
@@ -8514,7 +8502,6 @@ inlineP256Multiply(TR::Node * node, TR::CodeGenerator * cg)
    for (int k = 15; k>=8; k--) {
 //      R2 = 0;
       R2 = cg->allocateRegister();
-      R2->setIs64BitReg(false);
       generateRIInstruction(cg, TR::InstOpCode::LHI, node, R2, 0);
 
       for (int i = k, j = 15; i<16; j--, i++) {
@@ -8568,7 +8555,6 @@ inlineP256Multiply(TR::Node * node, TR::CodeGenerator * cg)
    for (int k = 7; k>=0; k--) {
       //      R2 = 0;
       R2 = cg->allocateRegister();
-      R2->setIs64BitReg(false);
       generateRIInstruction(cg, TR::InstOpCode::LHI, node, R2, 0);
 
       for (int i = 7, j = k+8; j>=8; j--, i++) {
@@ -8772,7 +8758,6 @@ inlineP256Mod(TR::Node * node, TR::CodeGenerator * cg)
    for (int i = 0; i<9; i++)
       {
       RESregs[i] = cg->allocateRegister();
-      RESregs[i]->setIs64BitReg(false);
       }
 
 #define p256digit(x) generateS390MemoryReference(Carr, TR::Compiler->om.contiguousArrayHeaderSizeInBytes()+4*(15-x), cg)
@@ -8795,7 +8780,6 @@ inlineP256Mod(TR::Node * node, TR::CodeGenerator * cg)
 #undef p256digit
 
    TR::Register * zero = cg->allocateRegister();
-   zero->setIs64BitReg(false);
 
    generateRIInstruction(cg, TR::InstOpCode::LHI, node, zero, 0);
    generateRIInstruction(cg, TR::InstOpCode::LHI, node, RESregs[0], 0);
@@ -11714,13 +11698,6 @@ OMR::Z::TreeEvaluator::arraytranslateEvaluator(TR::Node * node, TR::CodeGenerato
       }
 
    TR::RegisterPair * outputPair = cg->allocateConsecutiveRegisterPair(inputLenReg, outputReg);
-
-   outputReg->setIs64BitReg(true);
-   inputLenReg->setIs64BitReg(true);
-   termCharReg->setIs64BitReg(false);
-   tableReg->setIs64BitReg(true);
-   inputReg->setIs64BitReg(true);
-   resultReg->setIs64BitReg(true);
 
    // If it's constant, the result and outLenReg are already initialized properly.
    if (!isLengthConstant)
@@ -15964,12 +15941,6 @@ OMR::Z::TreeEvaluator::arraytranslateDecodeSIMDEvaluator(TR::Node * node, TR::Co
       generateRIInstruction(cg, TR::InstOpCode::NILL, node, inputLen16, static_cast <int16_t> (0xFFF0));
       }
 
-   output->setIs64BitReg(true);
-   input->setIs64BitReg(true);
-   inputLen->setIs64BitReg(true);
-   inputLen16->setIs64BitReg(true);
-   translated->setIs64BitReg(true);
-
    // Create the necessary labels
    TR::LabelSymbol * processMultiple16Bytes    = generateLabelSymbol(cg);
    TR::LabelSymbol * processMultiple16BytesEnd = generateLabelSymbol(cg);
@@ -16247,12 +16218,6 @@ OMR::Z::TreeEvaluator::arraytranslateEncodeSIMDEvaluator(TR::Node * node, TR::Co
       // Truncate the 4 right most bits
       generateRIInstruction(cg, TR::InstOpCode::NILL, node, inputLen16, static_cast <int16_t> (0xFFF0));
       }
-
-   output->setIs64BitReg(true);
-   input->setIs64BitReg(true);
-   inputLen->setIs64BitReg(true);
-   inputLen16->setIs64BitReg(true);
-   translated->setIs64BitReg(true);
 
    // Create the necessary labels
    TR::LabelSymbol * processMultiple16Chars    = generateLabelSymbol(cg);
@@ -16544,9 +16509,6 @@ inlineStringHashCode(TR::Node* node, TR::CodeGenerator* cg, bool isCompressed)
 
    if (TR::Compiler->target.is64Bit())
       {
-      registerIndex->setIs64BitReg(true);
-      registerCount->setIs64BitReg(true);
-
       generateRRInstruction(cg, TR::InstOpCode::getLoadRegWidenOpCode(), node, registerIndex, registerIndex);
       generateRRInstruction(cg, TR::InstOpCode::getLoadRegWidenOpCode(), node, registerCount, registerCount);
       }
@@ -16764,9 +16726,6 @@ TR::Register* inlineStringHashCodeUnrolled(TR::Node* node, TR::CodeGenerator* cg
 
    if (TR::Compiler->target.is64Bit())
       {
-      indexRegister->setIs64BitReg(true);
-      countRegister->setIs64BitReg(true);
-
       generateRRInstruction(cg, TR::InstOpCode::getLoadRegWidenOpCode(), node, indexRegister, indexRegister);
       generateRRInstruction(cg, TR::InstOpCode::getLoadRegWidenOpCode(), node, countRegister, countRegister);
       }
@@ -16956,12 +16915,6 @@ inlineUTF16BEEncodeSIMD(TR::Node *node, TR::CodeGenerator *cg)
       generateRIInstruction(cg, TR::InstOpCode::NILL, node, inputLen16, static_cast <int16_t> (0xFFF0));
       }
 
-   output->setIs64BitReg(true);
-   input->setIs64BitReg(true);
-   inputLen->setIs64BitReg(true);
-   inputLen16->setIs64BitReg(true);
-   translated->setIs64BitReg(true);
-
    // Create the necessary vector registers
    TR::Register* vInput     = cg->allocateRegister(TR_VRF);
    TR::Register* vSurrogate = cg->allocateRegister(TR_VRF); // Track index of first surrogate char
@@ -17135,12 +17088,6 @@ inlineUTF16BEEncode(TR::Node *node, TR::CodeGenerator *cg)
    // Number of bytes currently translated (also used as a stride register)
    TR::Register* translated = cg->allocateRegister();
 
-   output->setIs64BitReg(true);
-   input->setIs64BitReg(true);
-   inputLen ->setIs64BitReg(true);
-   inputLen8->setIs64BitReg(true);
-   translated->setIs64BitReg(true);
-
    // Convert input length in number of characters to number of bytes
    generateRSInstruction(cg, TR::InstOpCode::getShiftLeftLogicalSingleOpCode(), node, inputLen, inputLen, 1);
 
@@ -17310,15 +17257,7 @@ OMR::Z::TreeEvaluator::arraycmpSIMDHelper(TR::Node *node,
    TR::Register * vectorSecondInputReg = cg->allocateRegister(TR_VRF);
    TR::Register * vectorOutputReg = cg->allocateRegister(TR_VRF);
    TR::Register * resultReg = needResultReg ? cg->allocateRegister() : NULL;
-
-   firstAddrReg->setIs64BitReg(true);
-   secondAddrReg->setIs64BitReg(true);
-   lastByteIndexReg->setIs64BitReg(true);
-   if (needResultReg)
-      {
-      resultReg->setIs64BitReg(true);
-      }
-
+   
    // VLL uses lastByteIndexReg as the highest 0-based index to load, which is length - 1
    generateRILInstruction(cg, TR::InstOpCode::getSubtractLogicalImmOpCode(), node, lastByteIndexReg, 1);
    if(needResultReg && isArrayCmp && node->isArrayCmpLen())

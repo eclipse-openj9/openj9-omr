@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2018 IBM Corp. and others
+ * Copyright (c) 2015, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -60,6 +60,7 @@
 #undef OMR_GC_CONCURRENT_SCAVENGER
 #undef OMR_GC_MODRON_STANDARD
 #undef OMR_GC_NON_ZERO_TLH
+#undef OMR_GC_SCAVENGER_DELEGATE
 #undef OMR_GC_SEGREGATED_HEAP
 #undef OMR_GC_THREAD_LOCAL_HEAP
 

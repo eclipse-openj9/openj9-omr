@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -688,6 +688,7 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"enableIprofilerChanges",             "O\tenable iprofiler changes", SET_OPTION_BIT(TR_EnableIprofilerChanges), "F"},
    {"enableIVTT",                         "O\tenable IV Type Transformation", TR::Options::enableOptimization, IVTypeTransformation, 0, "P"},
    {"enableJCLInline",                    "O\tenable JCL Integer and Long methods inlining", SET_OPTION_BIT(TR_EnableJCLInline), "F"},
+   {"enableJITaaSDoLocalCompilesForRemoteCompiles","O\tenable JITaaS to perform local compilations for its remotely compiled methods", SET_OPTION_BIT(TR_EnableJITaaSDoLocalCompilesForRemoteCompiles), "F"},
    {"enableJITaaSHeuristics",             "O\tenable JITaaS heuristics", SET_OPTION_BIT(TR_EnableJITaaSHeuristics), "F"},
    {"enableJITHelpershashCodeImpl",       "O\tenable java version of object hashCode()", SET_OPTION_BIT(TR_EnableJITHelpershashCodeImpl), "F"},
    {"enableJITHelpersoptimizedClone",     "O\tenable java version of object clone()", SET_OPTION_BIT(TR_EnableJITHelpersoptimizedClone), "F"},

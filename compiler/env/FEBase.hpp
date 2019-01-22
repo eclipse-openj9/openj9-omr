@@ -69,8 +69,6 @@ class FEBase : public FECommon
    public:
    // Define our types in terms of the Traits
    typedef typename TR::FETraits<Derived>::JitConfig        JitConfig;
-   typedef typename TR::FETraits<Derived>::CodeCacheManager CodeCacheManager;
-   typedef typename TR::FETraits<Derived>::CodeCache        CodeCache;
 
    private:
    JitConfig            _config;

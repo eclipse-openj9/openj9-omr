@@ -4192,6 +4192,30 @@ MM_Scavenger::internalGarbageCollect(MM_EnvironmentBase *envBase, MM_MemorySubSp
 		}
 	}
 
+	if (!_extensions->concurrentMark) {
+			uintptr_t previousUsedOldHeap = _extensions->oldHeapSizeOnLastGlobalGC - _extensions->freeOldHeapSizeOnLastGlobalGC;
+			float maxTenureFreeRatio = _extensions->heapFreeMaximumRatioMultiplier / 100.0f;
+			float midTenureFreeRatio = (_extensions->heapFreeMinimumRatioMultiplier + _extensions->heapFreeMaximumRatioMultiplier) / 200.0f;
+			uintptr_t soaFreeMemorySize = _extensions->heap->getApproximateActiveFreeMemorySize(MEMORY_TYPE_OLD) - _extensions->heap->getApproximateActiveFreeLOAMemorySize(MEMORY_TYPE_OLD);
+
+			/* We suspect that next scavegne will cause Tenure expansion, while Tenure free ratio is (was) already high enough */
+			if ((scavengerGCStats->_avgTenureBytes > soaFreeMemorySize) && (_extensions->freeOldHeapSizeOnLastGlobalGC > (_extensions->oldHeapSizeOnLastGlobalGC * midTenureFreeRatio))) {
+				Trc_MM_Scavenger_percolate_preventTenureExpand(env->getLanguageVMThread());
+
+				bool result = percolateGarbageCollect(env, subSpace, NULL, PREVENT_TENURE_EXPAND, J9MMCONSTANT_IMPLICIT_GC_PERCOLATE);
+				Assert_MM_true(result);
+				return true;
+			}
+			/* There was Tenure heap growth since last Global GC, and we suspect (assuming live set size did not grow) we might be going beyond max free bound. */
+			if ((_extensions->heap->getActiveMemorySize(MEMORY_TYPE_OLD) > _extensions->oldHeapSizeOnLastGlobalGC) && (_extensions->heap->getActiveMemorySize(MEMORY_TYPE_OLD) * maxTenureFreeRatio < (_extensions->heap->getActiveMemorySize(MEMORY_TYPE_OLD) - previousUsedOldHeap))) {
+				Trc_MM_Scavenger_percolate_tenureMaxFree(env->getLanguageVMThread());
+
+				bool result = percolateGarbageCollect(env, subSpace, NULL, MET_PROJECTED_TENURE_MAX_FREE, J9MMCONSTANT_IMPLICIT_GC_PERCOLATE);
+				Assert_MM_true(result);
+				return true;
+			}
+	}
+
 	/**
 	 * Language percolation trigger	
 	 * Allow the CollectorLanguageInterface to advise if percolation should occur.

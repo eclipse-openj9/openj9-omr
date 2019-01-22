@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2017 IBM Corp. and others
+ * Copyright (c) 1991, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -404,7 +404,7 @@ omrfile_lastmod(struct OMRPortLibrary *portLibrary, const char *path)
 		WIN32_FILE_ATTRIBUTE_DATA myStat;
 		if (0 == GetFileAttributesExW(unicodePath, GetFileExInfoStandard, &myStat)) {
 			int32_t error = GetLastError();
-			result = portLibrary->error_set_last_error(portLibrary, error, findError(error));
+			portLibrary->error_set_last_error(portLibrary, error, findError(error));
 		} else {
 			/*
 			 * Search MSDN for 'Converting a time_t Value to a File Time' for following implementation.

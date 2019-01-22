@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -73,7 +73,6 @@ class FEBase : public FECommon
    typedef typename TR::FETraits<Derived>::CodeCache        CodeCache;
 
    private:
-   uint64_t             _start_time;
    JitConfig            _config;
    TR::CodeCacheManager _codeCacheManager;
 
@@ -85,7 +84,6 @@ class FEBase : public FECommon
       : FECommon(),
       _config(),
       _codeCacheManager(TR::Compiler->rawAllocator),
-      _start_time(TR::Compiler->vm.getUSecClock()),
       _persistentMemory(jitConfig(), TR::Compiler->persistentAllocator())
       {
       ::trPersistentMemory = &_persistentMemory;
@@ -107,8 +105,6 @@ class FEBase : public FECommon
 
    virtual TR_PersistentMemory       * persistentMemory() { return &_persistentMemory; }
    virtual TR::PersistentInfo * getPersistentInfo() { return _persistentMemory.getPersistentInfo(); }
-
-   uint64_t getStartTime() { return _start_time; }
 
    private:
    virtual void switchCodeCache(TR::CodeCache *newCache);

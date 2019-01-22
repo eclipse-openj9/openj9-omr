@@ -409,6 +409,19 @@ MM_Scavenger::masterSetupForGC(MM_EnvironmentStandard *env)
 	scavengerStats->_tenureSpaceAllocBytesAcumulation += heapStatsTenureSpace._allocBytes;
 	scavengerStats->_semiSpaceAllocBytesAcumulation += heapStatsSemiSpace._allocBytes;
 
+	/* Check if scvTenureAdaptiveTenureAge has not been initialized or forced (by cmdline option) */
+	if (0 == _extensions->scvTenureAdaptiveTenureAge) {
+		/* With larger initial Nursery sizes, we'll reduce initial tenure age, to help promote peristant object sooner. */
+		_extensions->scvTenureAdaptiveTenureAge = OMR_OBJECT_HEADER_AGE_DEFAULT;
+
+		uintptr_t tenureAgeAdjustement = MM_Math::floorLog2(_extensions->heap->getActiveMemorySize(MEMORY_TYPE_NEW) / MINIMUM_NEW_SPACE_SIZE);
+		if (tenureAgeAdjustement < _extensions->scvTenureAdaptiveTenureAge) {
+			_extensions->scvTenureAdaptiveTenureAge -= tenureAgeAdjustement;
+		} else {
+			_extensions->scvTenureAdaptiveTenureAge = 1;
+		}
+	}
+
 	/* Record the tenure mask */
 	_tenureMask = calculateTenureMask();
 	

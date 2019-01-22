@@ -106,8 +106,6 @@ class FEBase : public FECommon
    virtual TR_PersistentMemory       * persistentMemory() { return &_persistentMemory; }
    virtual TR::PersistentInfo * getPersistentInfo() { return _persistentMemory.getPersistentInfo(); }
 
-   private:
-   virtual void switchCodeCache(TR::CodeCache *newCache);
    };
 
 } /* namespace TR */

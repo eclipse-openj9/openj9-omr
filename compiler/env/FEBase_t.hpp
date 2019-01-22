@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -127,13 +127,6 @@ FEBase<Derived>::allocateRelocationData(TR::Compilation* comp, uint32_t size)
   #undef NO_MAP_ANONYMOUS
 #endif
 
-template <class Derived>
-void
-FEBase<Derived>::switchCodeCache(TR::CodeCache *newCache)
-   {
-   TR::Compilation *comp = TR::comp();
-   comp->cg()->switchCodeCacheTo(newCache);
-   }
 
 template <class Derived>
 intptrj_t

@@ -143,6 +143,10 @@ typedef struct OMR_VM {
 	struct OMRTraceEngine *_trcEngine;
 	void *_methodDictionary;
 #endif /* OMR_RAS_TDF_TRACE */
+#if defined(OMR_GC_REALTIME)
+	omrthread_monitor_t _gcCycleOnMonitor;
+	uintptr_t _gcCycleOn;
+#endif /* defined(OMR_GC_REALTIME) */
 } OMR_VM;
 
 typedef struct OMR_VMThread {

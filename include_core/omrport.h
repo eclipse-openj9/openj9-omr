@@ -1542,7 +1542,7 @@ typedef struct OMRPortLibrary {
 	/** see @ref omrsysinfo.c::omrsysinfo_get_cgroup_subsystem_list "omrsysinfo_get_cgroup_subsystem_list"*/
 	struct OMRCgroupEntry *(*sysinfo_get_cgroup_subsystem_list)(struct OMRPortLibrary *portLibrary);
 	/** see @ref omrsysinfo.c::omrsysinfo_is_running_in_container "omrsysinfo_is_running_in_container"*/
-	BOOLEAN (*sysinfo_is_running_in_container)(struct OMRPortLibrary *portLibrary, int32_t *errorCode);
+	BOOLEAN (*sysinfo_is_running_in_container)(struct OMRPortLibrary *portLibrary);
 	/** see @ref omrsysinfo.c::omrsysinfo_cgroup_subsystem_iterator_init "omrsysinfo_cgroup_subsystem_iterator_init"*/
 	int32_t (*sysinfo_cgroup_subsystem_iterator_init)(struct OMRPortLibrary *portLibrary, uint64_t subsystem, struct OMRCgroupMetricIteratorState *state);
 	/** see @ref omrsysinfo.c::omrsysinfo_cgroup_subsystem_iterator_hasNext "omrsysinfo_cgroup_subsystem_iterator_hasNext"*/
@@ -2009,7 +2009,7 @@ extern J9_CFUNC int32_t omrport_getVersion(struct OMRPortLibrary *portLibrary);
 #define omrsysinfo_cgroup_get_memlimit(param1) privateOmrPortLibrary->sysinfo_cgroup_get_memlimit(privateOmrPortLibrary, param1)
 #define omrsysinfo_cgroup_is_memlimit_set() privateOmrPortLibrary->sysinfo_cgroup_is_memlimit_set(privateOmrPortLibrary)
 #define omrsysinfo_get_cgroup_subsystem_list() privateOmrPortLibrary->sysinfo_get_cgroup_subsystem_list(privateOmrPortLibrary)
-#define omrsysinfo_is_running_in_container(param1) privateOmrPortLibrary->sysinfo_is_running_in_container(privateOmrPortLibrary, param1)
+#define omrsysinfo_is_running_in_container() privateOmrPortLibrary->sysinfo_is_running_in_container(privateOmrPortLibrary)
 #define omrsysinfo_cgroup_subsystem_iterator_init(param1, param2) privateOmrPortLibrary->sysinfo_cgroup_subsystem_iterator_init(privateOmrPortLibrary, param1, param2)
 #define omrsysinfo_cgroup_subsystem_iterator_hasNext(param1) privateOmrPortLibrary->sysinfo_cgroup_subsystem_iterator_hasNext(privateOmrPortLibrary, param1)
 #define omrsysinfo_cgroup_subsystem_iterator_metricKey(param1, param2) privateOmrPortLibrary->sysinfo_cgroup_subsystem_iterator_metricKey(privateOmrPortLibrary, param1, param2)

@@ -254,24 +254,24 @@
     TR::TreeEvaluator::lucmpgeEvaluator, // TR::lucmpge		// unsigned long compare if greater than or equal
     TR::TreeEvaluator::lucmpgtEvaluator, // TR::lucmpgt		// unsigned long compare if greater than
     TR::TreeEvaluator::lucmpleEvaluator, // TR::lucmple		// unsigned long compare if less than or equal
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::fcmpeqEvaluator ,	// TR::fcmpeq		// float compare if equal
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::fcmpneEvaluator ,	// TR::fcmpne		// float compare if not equal
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::fcmpltEvaluator ,	// TR::fcmplt		// float compare if less than
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::fcmpgeEvaluator ,	// TR::fcmpge		// float compare if greater than or equal
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::fcmpgtEvaluator ,	// TR::fcmpgt		// float compare if greater than
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::fcmpleEvaluator ,	// TR::fcmple		// float compare if less than or equal
+    TR::TreeEvaluator::fcmpeqEvaluator, // TR::fcmpeq		// float compare if equal
+    TR::TreeEvaluator::fcmpneEvaluator, // TR::fcmpne		// float compare if not equal
+    TR::TreeEvaluator::fcmpltEvaluator, // TR::fcmplt		// float compare if less than
+    TR::TreeEvaluator::fcmpgeEvaluator, // TR::fcmpge		// float compare if greater than or equal
+    TR::TreeEvaluator::fcmpgtEvaluator, // TR::fcmpgt		// float compare if greater than
+    TR::TreeEvaluator::fcmpleEvaluator, // TR::fcmple		// float compare if less than or equal
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::fcmpequEvaluator ,	// TR::fcmpequ		// float compare if equal or unordered
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::fcmpneuEvaluator ,	// TR::fcmpneu		// float compare if not equal or unordered
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::fcmpltuEvaluator ,	// TR::fcmpltu		// float compare if less than or unordered
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::fcmpgeuEvaluator ,	// TR::fcmpgeu		// float compare if greater than or equal or unordered
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::fcmpgtuEvaluator ,	// TR::fcmpgtu		// float compare if greater than or unordered
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::fcmpleuEvaluator ,	// TR::fcmpleu		// float compare if less than or equal or unordered
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::dcmpeqEvaluator ,	// TR::dcmpeq		// double compare if equal
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::dcmpneEvaluator ,	// TR::dcmpne		// double compare if not equal
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::dcmpltEvaluator ,	// TR::dcmplt		// double compare if less than
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::dcmpgeEvaluator ,	// TR::dcmpge		// double compare if greater than or equal
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::dcmpgtEvaluator ,	// TR::dcmpgt		// double compare if greater than
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::dcmpleEvaluator ,	// TR::dcmple		// double compare if less than or equal
+    TR::TreeEvaluator::dcmpeqEvaluator, // TR::dcmpeq		// double compare if equal
+    TR::TreeEvaluator::dcmpneEvaluator, // TR::dcmpne		// double compare if not equal
+    TR::TreeEvaluator::dcmpltEvaluator, // TR::dcmplt		// double compare if less than
+    TR::TreeEvaluator::dcmpgeEvaluator, // TR::dcmpge		// double compare if greater than or equal
+    TR::TreeEvaluator::dcmpgtEvaluator, // TR::dcmpgt		// double compare if greater than
+    TR::TreeEvaluator::dcmpleEvaluator, // TR::dcmple		// double compare if less than or equal
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::dcmpequEvaluator ,	// TR::dcmpequ		// double compare if equal or unordered
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::dcmpneuEvaluator ,	// TR::dcmpneu		// double compare if not equal or unordered
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::dcmpltuEvaluator ,	// TR::dcmpltu		// double compare if less than or unordered

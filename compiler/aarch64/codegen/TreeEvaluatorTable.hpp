@@ -140,14 +140,14 @@
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::iuremEvaluator ,	// TR::iurem		// remainder of 2 unsigned integers       (child1 % child2)
     TR::TreeEvaluator::inegEvaluator, // TR::ineg		// negate an integer
     TR::TreeEvaluator::lnegEvaluator, // TR::lneg		// negate a long integer
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::fnegEvaluator ,	// TR::fneg		// negate a float
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::dnegEvaluator ,	// TR::dneg		// negate a double
+    TR::TreeEvaluator::fnegEvaluator, // TR::fneg		// negate a float
+    TR::TreeEvaluator::dnegEvaluator, // TR::dneg		// negate a double
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::bnegEvaluator ,	// TR::bneg		// negate a bytes
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::snegEvaluator ,	// TR::sneg		// negate a short integer
     TR::TreeEvaluator::iabsEvaluator, // TR::iabs		// absolute value of integer
     TR::TreeEvaluator::labsEvaluator, // TR::labs		// absolute value of long
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::fabsEvaluator ,	// TR::fabs		// absolute value of float
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::dabsEvaluator ,	// TR::dabs		// absolute value of double
+    TR::TreeEvaluator::fabsEvaluator, // TR::fabs		// absolute value of float
+    TR::TreeEvaluator::dabsEvaluator, // TR::dabs		// absolute value of double
     TR::TreeEvaluator::ishlEvaluator, // TR::ishl		// shift integer left                (child1 << child2)
     TR::TreeEvaluator::ishlEvaluator, // TR::lshl		// shift long integer left           (child1 << child2)
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::bshlEvaluator ,	// TR::bshl		// shift byte left                   (child1 << child2)

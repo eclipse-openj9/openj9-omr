@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -119,6 +119,7 @@
 #include "ras/Debug.hpp"
 #include "ras/DebugCounter.hpp"
 #include "ras/Delimiter.hpp"
+#include "runtime/CodeCache.hpp"
 #include "runtime/Runtime.hpp"
 #include "z/codegen/CallSnippet.hpp"
 #include "z/codegen/EndianConversion.hpp"
@@ -1557,20 +1558,9 @@ OMR::Z::CodeGenerator::insertInstructionPrefetchesForCalls(TR_BranchPreloadCallD
     *
     */
    bool canReachWithBPRP = false;
-   intptrj_t codeCacheBase, codeCacheTop;
-   // _currentCodeCache in the compilation object is set right before Instruction selection.
-   // if it returns null, we have a call during optimizer stage, in which case, we use
-   // the next best estimate which is the base of our first code cache.
-   if (self()->comp()->getCurrentCodeCache() == NULL)
-      {
-      codeCacheBase = (intptrj_t)self()->fe()->getCodeCacheBase();
-      codeCacheTop = (intptrj_t)self()->fe()->getCodeCacheTop();
-      }
-   else
-      {
-      codeCacheBase = (intptrj_t)self()->fe()->getCodeCacheBase(self()->comp()->getCurrentCodeCache());
-      codeCacheTop = (intptrj_t)self()->fe()->getCodeCacheTop(self()->comp()->getCurrentCodeCache());
-      }
+
+   intptrj_t codeCacheBase = (intptrj_t)(self()->comp()->getCurrentCodeCache()->getCodeBase());
+   intptrj_t codeCacheTop = (intptrj_t)(self()->comp()->getCurrentCodeCache()->getCodeTop());
 
    intptrj_t offset1 = (intptrj_t) data->_callSymRef->getMethodAddress() - codeCacheBase;
    intptrj_t offset2 = (intptrj_t) data->_callSymRef->getMethodAddress() - codeCacheTop;
@@ -5361,21 +5351,9 @@ OMR::Z::CodeGenerator::canUseRelativeLongInstructions(int64_t value)
 
    if (TR::Compiler->target.isLinux())
       {
-      TR_FrontEnd * fe = self()->comp()->fe();
-      intptrj_t codeCacheBase, codeCacheTop;
-      // _currentCodeCache in the compilation object is set right before Instruction selection.
-      // if it returns null, we have a call during optimizer stage, in which case, we use
-      // the next best estimate which is the base of our first code cache.
-      if (self()->comp()->getCurrentCodeCache() == NULL)
-         {
-         codeCacheBase = (intptrj_t)fe->getCodeCacheBase();
-         codeCacheTop = (intptrj_t)fe->getCodeCacheTop();
-         }
-      else
-         {
-         codeCacheBase = (intptrj_t)fe->getCodeCacheBase(self()->comp()->getCurrentCodeCache());
-         codeCacheTop = (intptrj_t)fe->getCodeCacheTop(self()->comp()->getCurrentCodeCache());
-         }
+      intptrj_t codeCacheBase = (intptrj_t)(self()->comp()->getCurrentCodeCache()->getCodeBase());
+      intptrj_t codeCacheTop = (intptrj_t)(self()->comp()->getCurrentCodeCache()->getCodeTop());
+
       return ( (((intptrj_t)value - codeCacheBase ) <=  (intptrj_t)(INT_MAX))
             && (((intptrj_t)value - codeCacheBase ) >=  (intptrj_t)(INT_MIN))
             && (((intptrj_t)value - codeCacheTop ) <=  (intptrj_t)(INT_MAX))

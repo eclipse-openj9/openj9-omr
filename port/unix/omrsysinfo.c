@@ -4261,6 +4261,7 @@ static int32_t
 isRunningInContainer(struct OMRPortLibrary *portLibrary, BOOLEAN *inContainer)
 {
 	int32_t rc = 0;
+	FILE *cgroupFile = NULL;
 
 	/* Assume we are not in container */
 	*inContainer = FALSE;
@@ -4271,7 +4272,7 @@ isRunningInContainer(struct OMRPortLibrary *portLibrary, BOOLEAN *inContainer)
 		 * then the process is not running in a container.
 		 * For any other cgroup name, assume we are in a container.
 		 */
-		FILE *cgroupFile = fopen(OMR_PROC_PID_ONE_CGROUP_FILE, "r");
+		cgroupFile = fopen(OMR_PROC_PID_ONE_CGROUP_FILE, "r");
 
 		if (NULL == cgroupFile) {
 			int32_t osErrCode = errno;
@@ -4324,6 +4325,9 @@ isRunningInContainer(struct OMRPortLibrary *portLibrary, BOOLEAN *inContainer)
 	}
 	Trc_PRT_isRunningInContainer_container_detected((uintptr_t)*inContainer);
 _end:
+	if (NULL != cgroupFile) {
+		fclose(cgroupFile);
+	}
 	return rc;
 }
 

@@ -58,6 +58,10 @@ int64_t lxor(int64_t l, int64_t r) {
     return l ^ r;
 }
 
+int64_t lneg(int64_t l) {
+    return l == INT64_MIN ? INT64_MIN : -l;
+}
+
 class Int32LogicalUnary : public TRTest::UnaryOpTest<int32_t> {}; 
 
 TEST_P(Int32LogicalUnary, UsingConst) {
@@ -213,3 +217,63 @@ INSTANTIATE_TEST_CASE_P(LogicalTest, Int64LogicalBinary, ::testing::Combine(
 				)));
 
                 
+class Int64LogicalUnary : public TRTest::UnaryOpTest<int64_t> {};
+
+TEST_P(Int64LogicalUnary, UsingConst) {
+    auto param = TRTest::to_struct(GetParam());
+
+    char inputTrees[120] = {0};
+    std::snprintf(inputTrees, 120,
+        "(method return=Int64"
+        "  (block"
+        "    (lreturn"
+        "      (%s"
+        "        (lconst %ld) )"
+        ")))",
+        param.opcode.c_str(),
+        param.value);
+
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler{trees};
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<int64_t (*)()>();
+    volatile auto exp = param.oracle(param.value);
+    volatile auto act = entry_point();
+    ASSERT_EQ(exp, act);
+}
+
+TEST_P(Int64LogicalUnary, UsingLoadParam) {
+    auto param = TRTest::to_struct(GetParam());
+
+    char inputTrees[120] = {0};
+    std::snprintf(inputTrees, 120,
+        "(method return=Int64 args=[Int64]"
+        "  (block"
+        "    (lreturn"
+        "      (%s"
+        "        (lload parm=0) )"
+        ")))",
+        param.opcode.c_str());
+
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler{trees};
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<int64_t (*)(int64_t)>();
+    ASSERT_EQ(param.oracle(param.value), entry_point(param.value));
+}
+
+INSTANTIATE_TEST_CASE_P(LogicalTest, Int64LogicalUnary, ::testing::Combine(
+    ::testing::ValuesIn(TRTest::const_values<int64_t>()),
+    ::testing::Values(
+        std::make_tuple("lneg", lneg)
+        )));

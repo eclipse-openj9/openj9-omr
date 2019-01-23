@@ -2756,8 +2756,16 @@ MM_Scavenger::rescanThreadSlot(MM_EnvironmentStandard *env, omrobjectptr_t *obje
 			Assert_MM_true(!isObjectInNewSpace(tenuredObjectPtr));
 
 			*objectPtrIndirect = tenuredObjectPtr;
-			rememberObject(env, tenuredObjectPtr);
-			_extensions->objectModel.setRememberedBits(tenuredObjectPtr, OMR_TENURED_STACK_OBJECT_CURRENTLY_REFERENCED);
+
+			/*
+			 * This call sets OMR_TENURED_STACK_OBJECT_CURRENTLY_REFERENCED Remembered state in the object header:
+			 * - if object has any Remembered state set already (it means object has been added to RS) just upgrade it to OMR_TENURED_STACK_OBJECT_CURRENTLY_REFERENCED
+			 * - if object has no Remembered state set add object to the Remembered Set here.
+			 */
+			if (_extensions->objectModel.atomicSwitchReferencedState(tenuredObjectPtr, OMR_TENURED_STACK_OBJECT_CURRENTLY_REFERENCED)) {
+				/* Allocate an entry in the remembered set */
+				addToRememberedSetFragment(env, tenuredObjectPtr);
+			}
 		}
 	}
 }

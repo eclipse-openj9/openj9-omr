@@ -96,7 +96,6 @@ class FEBase : public FECommon
 
    virtual uint8_t *allocateCodeMemory(TR::Compilation *comp, uint32_t warmCodeSize, uint32_t coldCodeSize,
                                        uint8_t **coldCode, bool isMethodHeaderNeeded);
-   virtual void resizeCodeMemory(TR::Compilation * comp, uint8_t *bufferStart, uint32_t numBytes);
    virtual uint8_t * allocateRelocationData(TR::Compilation* comp, uint32_t size);
 
    virtual intptrj_t indexedTrampolineLookup(int32_t helperIndex, void * callSite);

@@ -1753,10 +1753,12 @@ OMR::CodeGenerator::allocateCodeMemory(uint32_t size, bool isCold, bool isMethod
    }
 
 void
-OMR::CodeGenerator::resizeCodeMemory()
+OMR::CodeGenerator::trimCodeMemoryToActualSize()
    {
-   int32_t codeLength = self()->getCodeEnd()-self()->getBinaryBufferStart();
-   self()->fe()->resizeCodeMemory(self()->comp(), self()->getBinaryBufferStart(), codeLength);
+   uint8_t *bufferStart = self()->getBinaryBufferStart();
+   size_t actualCodeLengthInBytes = self()->getCodeEnd() - bufferStart;
+
+   self()->getCodeCache()->trimCodeMemoryAllocation(bufferStart, actualCodeLengthInBytes);
    }
 
 bool

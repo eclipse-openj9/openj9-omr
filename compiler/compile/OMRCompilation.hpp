@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -519,15 +519,6 @@ public:
    //
    // J9
 
-   /**
-    * These functions are deprecated and live in Compilation only to redirect
-    * downstream projects to the new CodeGenerator API.  They will be removed
-    * once all downstream projects have been updated to the new API once it is
-    * merged (currently only OpenJ9).
-    */
-   int32_t getNumReservedIPICTrampolines();
-   void setNumReservedIPICTrampolines(int32_t n);
-
    TR::list<TR::Instruction*> *getStaticPICSites() {return &_staticPICSites;}
    TR::list<TR::Instruction*> *getStaticHCRPICSites() {return &_staticHCRPICSites;}
    TR::list<TR::Instruction*> *getStaticMethodPICSites() {return &_staticMethodPICSites;}
@@ -538,17 +529,6 @@ public:
    TR::list<TR::Snippet*> *getMethodSnippetsToBePatchedOnClassUnload() { return &_methodSnippetsToBePatchedOnClassUnload; }
    TR::list<TR::Snippet*> *getSnippetsToBePatchedOnClassRedefinition() { return &_snippetsToBePatchedOnClassRedefinition; }
    TR::list<TR_Pair<TR::Snippet,TR_ResolvedMethod> *> *getSnippetsToBePatchedOnRegisterNative() { return &_snippetsToBePatchedOnRegisterNative; }
-
-   void switchCodeCache(TR::CodeCache *newCodeCache);
-
-   /**
-    * These functions are deprecated and live in Compilation only to redirect
-    * downstream projects to the new CodeGenerator API.  They will be removed
-    * once all downstream projects have been updated to the new API once it is
-    * merged (currently only OpenJ9).
-    */
-   bool getCodeCacheSwitched();
-   void setCodeCacheSwitched(bool s);
 
    void setCurrentCodeCache(TR::CodeCache *codeCache);
    TR::CodeCache *getCurrentCodeCache();
@@ -1177,7 +1157,6 @@ private:
 
    bool                              _usesPreexistence;
    bool                              _loopVersionedWrtAsyncChecks;
-   bool                              _codeCacheSwitched;
    bool                              _commitedCallSiteInfo;
    bool                              _containsBigDecimalLoad;
    bool                              _isOptServer;

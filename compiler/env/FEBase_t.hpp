@@ -129,13 +129,6 @@ FEBase<Derived>::allocateRelocationData(TR::Compilation* comp, uint32_t size)
   #undef NO_MAP_ANONYMOUS
 #endif
 
-template <class Derived>
-void
-FEBase<Derived>::switchCodeCache(TR::CodeCache *newCache)
-   {
-   TR::Compilation *comp = TR::comp();
-   comp->cg()->switchCodeCacheTo(newCache);
-   }
 
 template <class Derived>
 intptrj_t

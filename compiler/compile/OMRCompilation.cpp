@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -259,7 +259,6 @@ OMR::Compilation::Compilation(
    _numNestingLevels(0),
    _usesPreexistence(options.getOption(TR_ForceUsePreexistence)),
    _loopVersionedWrtAsyncChecks(false),
-   _codeCacheSwitched(false),
    _commitedCallSiteInfo(false),
    _containsBigDecimalLoad(false),
    _osrStateIsReliable(true),
@@ -2028,27 +2027,6 @@ OMR::Compilation::setCurrentCodeCache(TR::CodeCache * codeCache)
    if (_codeGenerator) _codeGenerator->setCodeCache(codeCache);
    }
 
-void OMR::Compilation::switchCodeCache(TR::CodeCache *newCodeCache)
-   {
-   TR_ASSERT( self()->getCurrentCodeCache() != newCodeCache, "Attempting to switch to the currently held code cache");
-   self()->setCurrentCodeCache(newCodeCache);  // Even if we signal, we need to update the reserved code cache for recompilations.
-   self()->cg()->setCodeCacheSwitched(true);
-
-#ifdef TR_TARGET_X86
-   self()->cg()->setNumReservedIPICTrampolines(0);
-#endif
-
-   if ( self()->cg()->committedToCodeCache() || !newCodeCache )
-      {
-      if (newCodeCache)
-         {
-         self()->failCompilation<TR::RecoverableCodeCacheError>("Already committed to current code cache");
-         }
-
-      self()->failCompilation<TR::CodeCacheError>("Already committed to current code cache");
-      }
-   }
-
 void OMR::Compilation::validateIL(TR::ILValidationContext ilValidationContext)
    {
    TR_ASSERT_FATAL(_ilValidator != NULL, "Attempting to validate the IL without the ILValidator being initialized");
@@ -2773,30 +2751,4 @@ void OMR::Compilation::invalidateAliasRegion()
 bool OMR::Compilation::incompleteOptimizerSupportForReadWriteBarriers()
    {
    return false;
-   }
-
-int32_t OMR::Compilation::getNumReservedIPICTrampolines()
-   {
-#ifdef TR_TARGET_X86
-   return self()->cg()->getNumReservedIPICTrampolines();
-#else
-   return 0;
-#endif
-   }
-
-void OMR::Compilation::setNumReservedIPICTrampolines(int32_t n)
-   {
-#ifdef TR_TARGET_X86
-   return self()->cg()->setNumReservedIPICTrampolines(n);
-#endif
-   }
-
-bool OMR::Compilation::getCodeCacheSwitched()
-   {
-   return self()->cg()->hasCodeCacheSwitched();
-   }
-
-void OMR::Compilation::setCodeCacheSwitched(bool s)
-   {
-   self()->cg()->setCodeCacheSwitched(s);
    }

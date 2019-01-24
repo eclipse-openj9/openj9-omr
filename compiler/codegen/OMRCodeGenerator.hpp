@@ -785,7 +785,15 @@ class OMR_EXTENSIBLE CodeGenerator
    void  reserveCodeCache();
    uint8_t * allocateCodeMemory(uint32_t size, bool isCold, bool isMethodHeaderNeeded=true);
    uint8_t * allocateCodeMemory(uint32_t warmSize, uint32_t coldSize, uint8_t **coldCode, bool isMethodHeaderNeeded=true);
-   void  resizeCodeMemory();
+
+   /**
+    * \brief Trim the size of code memory required by this method to match the
+    *        actual code length required, allowing the reclaimed memory to be
+    *        reused.  This is needed when the conservative length estimate
+    *        exceeds the actual memory requirement.
+    */
+   void trimCodeMemoryToActualSize();
+
    void  registerAssumptions() {}
 
    static void syncCode(uint8_t *codeStart, uint32_t codeSize);

@@ -146,14 +146,4 @@ FEBase<Derived>::indexedTrampolineLookup(int32_t helperIndex, void * callSite)
    return (intptrj_t)tramp;
    }
 
-template <class Derived>
-void
-FEBase<Derived>::resizeCodeMemory(TR::Compilation * comp, uint8_t *bufferStart, uint32_t numBytes)
-   {
-   // I don't see a reason to acquire VM access for this call
-   TR::CodeCache *codeCache = comp->getCurrentCodeCache();
-   codeCache->resizeCodeMemory(bufferStart, numBytes);
-   }
-
-
 } /* namespace TR */

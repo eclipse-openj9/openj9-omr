@@ -97,12 +97,6 @@ TR_FrontEnd::allocateCodeMemory(TR::Compilation *, uint32_t warmCodeSize, uint32
    return 0;
    }
 
-void
-TR_FrontEnd::resizeCodeMemory(TR::Compilation *, uint8_t *, uint32_t numBytes)
-   {
-   notImplemented("resizeCodeMemory");
-   }
-
 /*
  * Return conservative approximation of code-cache base.
  */

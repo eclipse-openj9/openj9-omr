@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2018, 2018 IBM Corp. and others
+# Copyright (c) 2018, 2019 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -43,7 +43,8 @@ JIT_PRODUCT_BACKEND_SOURCES+= \
     $(JIT_OMR_DIRTY_DIR)/aarch64/codegen/OpBinary.cpp \
     $(JIT_OMR_DIRTY_DIR)/aarch64/codegen/UnaryEvaluator.cpp
 
-#environement files
+#environment files
 
 JIT_PRODUCT_BACKEND_SOURCES+= \
+    $(JIT_OMR_DIRTY_DIR)/aarch64/env/OMRCPU.cpp \
     $(JIT_OMR_DIRTY_DIR)/aarch64/env/OMRDebugEnv.cpp

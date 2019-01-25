@@ -1559,8 +1559,8 @@ OMR::Z::CodeGenerator::insertInstructionPrefetchesForCalls(TR_BranchPreloadCallD
     */
    bool canReachWithBPRP = false;
 
-   intptrj_t codeCacheBase = (intptrj_t)(self()->comp()->getCurrentCodeCache()->getCodeBase());
-   intptrj_t codeCacheTop = (intptrj_t)(self()->comp()->getCurrentCodeCache()->getCodeTop());
+   intptrj_t codeCacheBase = (intptrj_t)(self()->getCodeCache()->getCodeBase());
+   intptrj_t codeCacheTop = (intptrj_t)(self()->getCodeCache()->getCodeTop());
 
    intptrj_t offset1 = (intptrj_t) data->_callSymRef->getMethodAddress() - codeCacheBase;
    intptrj_t offset2 = (intptrj_t) data->_callSymRef->getMethodAddress() - codeCacheTop;
@@ -5351,8 +5351,8 @@ OMR::Z::CodeGenerator::canUseRelativeLongInstructions(int64_t value)
 
    if (TR::Compiler->target.isLinux())
       {
-      intptrj_t codeCacheBase = (intptrj_t)(self()->comp()->getCurrentCodeCache()->getCodeBase());
-      intptrj_t codeCacheTop = (intptrj_t)(self()->comp()->getCurrentCodeCache()->getCodeTop());
+      intptrj_t codeCacheBase = (intptrj_t)(self()->getCodeCache()->getCodeBase());
+      intptrj_t codeCacheTop = (intptrj_t)(self()->getCodeCache()->getCodeTop());
 
       return ( (((intptrj_t)value - codeCacheBase ) <=  (intptrj_t)(INT_MAX))
             && (((intptrj_t)value - codeCacheBase ) >=  (intptrj_t)(INT_MIN))

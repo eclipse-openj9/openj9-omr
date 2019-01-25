@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -148,6 +148,7 @@ OMR::SymbolReference::getUseonlyAliasesBV(TR::SymbolReferenceTable * symRefTab)
             case TR_checkAssignable:
             case TR_monitorEntry:
             case TR_transactionEntry:
+            case TR_reportFinalFieldModified:
             case TR_reportMethodEnter:
             case TR_reportStaticMethodEnter:
             case TR_reportMethodExit:
@@ -335,6 +336,7 @@ OMR::SymbolReference::getUseDefAliasesBV(bool isDirectCall, bool includeGCSafePo
             case TR_arrayStoreException:
             case TR_incompatibleReceiver:
             case TR_IncompatibleClassChangeError:
+            case TR_reportFinalFieldModified:
             case TR_reportMethodEnter:
             case TR_reportStaticMethodEnter:
             case TR_reportMethodExit:

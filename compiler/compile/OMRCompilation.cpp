@@ -2015,18 +2015,6 @@ OMR::Compilation::getCounterFromStaticAddress(TR::SymbolReference *symRef)
       }
    }
 
-TR::CodeCache *
-OMR::Compilation::getCurrentCodeCache()
-   {
-   return _codeGenerator ? _codeGenerator->getCodeCache() : 0;
-   }
-
-void
-OMR::Compilation::setCurrentCodeCache(TR::CodeCache * codeCache)
-   {
-   if (_codeGenerator) _codeGenerator->setCodeCache(codeCache);
-   }
-
 void OMR::Compilation::validateIL(TR::ILValidationContext ilValidationContext)
    {
    TR_ASSERT_FATAL(_ilValidator != NULL, "Attempting to validate the IL without the ILValidator being initialized");

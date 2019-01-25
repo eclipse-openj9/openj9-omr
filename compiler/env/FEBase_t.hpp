@@ -50,19 +50,20 @@ uint8_t *
 FEBase<Derived>::allocateCodeMemory(TR::Compilation *comp, uint32_t warmCodeSize, uint32_t coldCodeSize,
                             uint8_t **coldCode, bool isMethodHeaderNeeded)
    {
-   TR::CodeCache *codeCache = static_cast<TR::CodeCache *>(comp->getCurrentCodeCache());
+   TR::CodeGenerator *cg = comp->cg();
+   TR::CodeCache *codeCache = cg->getCodeCache();
 
    TR_ASSERT(codeCache->isReserved(), "Code cache should have been reserved.");
 
    uint8_t *warmCode = codeCacheManager().allocateCodeMemory(warmCodeSize, coldCodeSize, &codeCache,
                                                              coldCode, false, isMethodHeaderNeeded);
 
-   if (codeCache != comp->getCurrentCodeCache())
+   if (codeCache != cg->getCodeCache())
       {
       // Either we didn't get a code cache, or the one we get should be reserved
       TR_ASSERT(!codeCache || codeCache->isReserved(), "Substitute code cache isn't marked as reserved");
       comp->setRelocatableMethodCodeStart(warmCode);
-      comp->cg()->switchCodeCacheTo(codeCache);
+      cg->switchCodeCacheTo(codeCache);
       }
 
    if (warmCode == NULL)

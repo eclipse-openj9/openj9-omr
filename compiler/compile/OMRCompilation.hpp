@@ -530,9 +530,6 @@ public:
    TR::list<TR::Snippet*> *getSnippetsToBePatchedOnClassRedefinition() { return &_snippetsToBePatchedOnClassRedefinition; }
    TR::list<TR_Pair<TR::Snippet,TR_ResolvedMethod> *> *getSnippetsToBePatchedOnRegisterNative() { return &_snippetsToBePatchedOnRegisterNative; }
 
-   void setCurrentCodeCache(TR::CodeCache *codeCache);
-   TR::CodeCache *getCurrentCodeCache();
-
    TR_RegisterCandidates *getGlobalRegisterCandidates() { return _globalRegisterCandidates; }
    void setGlobalRegisterCandidates(TR_RegisterCandidates *t) { _globalRegisterCandidates = t; }
 

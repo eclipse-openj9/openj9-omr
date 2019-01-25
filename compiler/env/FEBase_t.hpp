@@ -51,7 +51,7 @@ FEBase<Derived>::allocateCodeMemory(TR::Compilation *comp, uint32_t warmCodeSize
                             uint8_t **coldCode, bool isMethodHeaderNeeded)
    {
    TR::CodeGenerator *cg = comp->cg();
-   TR::CodeCache *codeCache = static_cast<TR::CodeCache *>(cg->getCodeCache());
+   TR::CodeCache *codeCache = cg->getCodeCache();
 
    TR_ASSERT(codeCache->isReserved(), "Code cache should have been reserved.");
 

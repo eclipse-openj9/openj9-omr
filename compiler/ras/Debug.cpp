@@ -999,11 +999,7 @@ TR_Debug::nodePrintAllFlags(TR::Node *node, TR_PrettyPrinterString &output)
    output.append(format, node->printCannotOverflow());
    output.append(format, node->printPointsToNonNull());
 
-#ifdef TR_TARGET_S390
-   output.append(format, node->printIsHPREligible());
-#else
    output.append(format, node->printIsInvalid8BitGlobalRegister());
-#endif
    output.append(format, node->printIsDirectMemoryUpdate());
    output.append(format, node->printIsTheVirtualCallNodeForAGuardedInlinedCall());
    if (!inDebugExtension())
@@ -4338,8 +4334,6 @@ TR_Debug::getSpillKindName(uint8_t kind)
          return "gpr";
       case TR_fprSpill:
          return "fpr";
-      case TR_hprSpill:
-         return "hpr";
       case TR_vrfSpill:
          return "vrf";
       case TR_volatileSpill:

@@ -148,10 +148,12 @@ OMR::Z::Machine::registerCopy(TR::CodeGenerator* cg,
                TR::InstOpCode::LR;
 
             cursor = generateRRInstruction(cg, mnemonic, node, targetReg, sourceReg, precedingInstruction);
+            TR::DebugCounter::incStaticDebugCounter(cg->comp(), "hpr/shuffle/GPR");
             }
          else
             {
             cursor = generateExtendedHighWordInstruction(node, cg, TR::InstOpCode::LLHFR, targetReg, sourceReg, 0, precedingInstruction);
+            TR::DebugCounter::incStaticDebugCounter(cg->comp(), "hpr/shuffle/HPR");
             }
          break;
          }
@@ -164,14 +166,16 @@ OMR::Z::Machine::registerCopy(TR::CodeGenerator* cg,
             TR::InstOpCode::LHHR;
 
          cursor = generateExtendedHighWordInstruction(node, cg, mnemonic, targetReg, sourceReg, 0, precedingInstruction);
+         TR::DebugCounter::incStaticDebugCounter(cg->comp(), "hpr/shuffle/HPR");
          break;
          }
       case TR_FPR:
          cursor = generateRRInstruction(cg, TR::InstOpCode::LDR, node, targetReg, sourceReg, precedingInstruction);
+         TR::DebugCounter::incStaticDebugCounter(cg->comp(), "hpr/shuffle/FPR");
          break;
       case TR_VRF:
          cursor = generateVRRaInstruction(cg, TR::InstOpCode::VLR, node, targetReg, sourceReg, precedingInstruction);
-         
+         TR::DebugCounter::incStaticDebugCounter(cg->comp(), "hpr/shuffle/VRF");         
          break;
       }
 
@@ -229,6 +233,8 @@ OMR::Z::Machine::registerExchange(TR::CodeGenerator* cg,
          }
       else
          {
+         TR::DebugCounter::incStaticDebugCounter(cg->comp(), "hpr/shuffle/FPR", 3);
+
          TR::Instruction * currentInstruction = precedingInstruction;
          TR_BackingStore * location;
          location = cg->allocateSpill(8, false, NULL);
@@ -265,6 +271,8 @@ OMR::Z::Machine::registerExchange(TR::CodeGenerator* cg,
          }
       else
          {
+         TR::DebugCounter::incStaticDebugCounter(cg->comp(), "hpr/shuffle/VRF", 3);
+
          TR_BackingStore * location;
          location = cg->allocateSpill(16, false, NULL);
          TR::MemoryReference * tempMR = generateS390MemoryReference(currentNode, location->getSymbolReference(), cg);
@@ -358,6 +366,15 @@ OMR::Z::Machine::registerExchange(TR::CodeGenerator* cg,
          cg->traceRAInstruction(currentInstruction);
 
          cg->freeSpill(location, TR::Compiler->om.sizeofReferenceAddress(), 0);
+
+         if (srcRegIsHPR || tgtRegIsHPR)
+            {
+            TR::DebugCounter::incStaticDebugCounter(cg->comp(), "hpr/shuffle/HPR");
+            }
+         else
+            {
+            TR::DebugCounter::incStaticDebugCounter(cg->comp(), "hpr/shuffle/GPR");
+            }
          }
       else
          {
@@ -367,6 +384,14 @@ OMR::Z::Machine::registerExchange(TR::CodeGenerator* cg,
 
          if (enableHighWordRA)
             {
+            if (srcRegIsHPR || tgtRegIsHPR)
+               {
+               TR::DebugCounter::incStaticDebugCounter(cg->comp(), "hpr/shuffle/HPR");
+               }
+            else
+               {
+               TR::DebugCounter::incStaticDebugCounter(cg->comp(), "hpr/shuffle/GPR");
+               }
             if (srcRegIsHPR != middleRegIsHPR)
                {
                currentInstruction =
@@ -418,6 +443,14 @@ OMR::Z::Machine::registerExchange(TR::CodeGenerator* cg,
             }
          else
             {
+            if (srcRegIsHPR || tgtRegIsHPR)
+               {
+               TR::DebugCounter::incStaticDebugCounter(cg->comp(), "hpr/shuffle/HPR");
+               }
+            else
+               {
+               TR::DebugCounter::incStaticDebugCounter(cg->comp(), "hpr/shuffle/GPR");
+               }
             currentInstruction =
                generateRRInstruction(cg, opLoadReg, currentNode, sourceReg, middleReg, precedingInstruction);
             cg->traceRAInstruction(currentInstruction);
@@ -561,7 +594,6 @@ OMR::Z::Machine::Machine(TR::CodeGenerator * cg)
    _lastGlobalFPRRegisterNumber(-1), _lastGlobalCCRRegisterNumber(-1), _lastVolatileNonLinkGPR(-1), _lastLinkageGPR(-1),
      _lastVolatileNonLinkFPR(-1), _lastLinkageFPR(-1), _globalEnvironmentRegisterNumber(-1), _globalCAARegisterNumber(-1), _globalParentDSARegisterNumber(-1),
     _globalReturnAddressRegisterNumber(-1),_globalEntryPointRegisterNumber(-1)
-   ,_lastGlobalHPRRegisterNumber(-1), _firstGlobalHPRRegisterNumber(-1)
    {
    self()->initializeRegisterFile();
    self()->initializeFPRegPairTable();
@@ -3648,6 +3680,8 @@ OMR::Z::Machine::spillRegister(TR::Instruction * currentInstruction, TR::Registe
             }
          self()->cg()->traceRegisterAssignment("\nHW RA: HW spill: %R(%R) into %R\n", virtReg, best, freeHighWordReg);
 
+         TR::DebugCounter::incStaticDebugCounter(comp, "hpr/spill/HPR/register");
+
          // spill to HW
          if (alreadySpilledToHPR)
             {
@@ -3749,17 +3783,27 @@ OMR::Z::Machine::spillRegister(TR::Instruction * currentInstruction, TR::Registe
          {
          if (best->isHighWordRegister())
            {
+            TR::DebugCounter::incStaticDebugCounter(comp, "hpr/spill/HPR/memory");
            opCode = TR::InstOpCode::LFH;
            }
          else if (best->isLowWordRegister() && best->getHighWordRegister()->getAssignedRegister() != virtReg)
            {
+            TR::DebugCounter::incStaticDebugCounter(comp, "hpr/spill/GPR");
            opCode = TR::InstOpCode::L;
            }
+         else
+            {
+            TR::DebugCounter::incStaticDebugCounter(comp, "hpr/spill/GPR");
+            }
          //TR_ASSERTC( TR::Compiler->target.is64Bit(),comp, "\nallocateSpill has incorrect spill slot size");
          //this assume kicks in for SLLG, MGHI etc on 31bit
          if (debugObj)
            self()->cg()->traceRegisterAssignment(" HW RA: spilling %R:%R", virtReg, best);
          }
+       else
+          {
+          TR::DebugCounter::incStaticDebugCounter(comp, "hpr/spill/GPR");
+          }
        break;
      case TR_FPR:
        if (!comp->getOption(TR_DisableOOL) &&
@@ -3773,6 +3817,7 @@ OMR::Z::Machine::spillRegister(TR::Instruction * currentInstruction, TR::Registe
          }
        else
          {
+          TR::DebugCounter::incStaticDebugCounter(comp, "hpr/spill/FPR");
          location = self()->cg()->allocateSpill(8, false, NULL, true); // TODO: Use 4 for single-precision values
          if (debugObj)
            self()->cg()->traceRegisterAssignment("\nSpilling FPR %s to (%p)\n", debugObj->getName(virtReg),location);
@@ -3780,6 +3825,7 @@ OMR::Z::Machine::spillRegister(TR::Instruction * currentInstruction, TR::Registe
        opCode = TR::InstOpCode::LD;
        break;
      case TR_VRF:
+        TR::DebugCounter::incStaticDebugCounter(comp, "hpr/spill/VRF");
        // Spill of size 16 has never been done before. The call hierarchy seems to support it but this should be watched closely.
        location = self()->cg()->allocateSpill(16, false, NULL, true);
        if (debugObj)
@@ -5697,59 +5743,6 @@ OMR::Z::Machine::initializeGlobalRegisterTable()
    if (linkage->isXPLinkLinkageType())
       p = self()->addGlobalRegLater(TR::RealRegister::GPR7, p);
 
-   // Register pressure simulation is a prerequisite for HPR GRA because GRA and local RA need to make consistent
-   // choices and register pressure simulation is the only part of GRA that is HPR aware. As concrete examples, among
-   // others, consider the following:
-   //
-   // 1. A collected reference coming in as a parameter
-   //
-   // In this case GRA needs to know that on 64-bit such a register candidate should not be considered for HPRs, since
-   // they are really 32-bit registers. However GRA does not know anything about this. It is the register pressure
-   // simulation algorithm [1] that coordinates with the codegen on whether collected references are HPR elligible.
-   //
-   // 2. A valid HPR candidate is being used as a return value
-   //
-   // In this case GRA needs to be aware of the choices local RA will make. Because a value feeds into a return point
-   // of a method local RA must enforce that the virtual register corresponding to the return value is 64-bit [3].
-   // Otherwise the high order half of the register may get locally allocated to an HPR spill, and of course this
-   // would not be valid. As such GRA must know this fact and it must not globally allocate the return value to an
-   // HPR, otherwise we will get into an impossible scenario where local RA is forced to coerce a 64-bit GPR (the
-   // return value) into a 32-bit HPR.
-   // 
-   // The register pressure algorithm is once again aware of these interactions and prevents such values feeding
-   // into return points from being globally HPR allocated [2].
-   //
-   // [1] https://github.com/eclipse/omr/blob/9d1d8cf3048781bc6d87e6a1079167586cc5aa4d/compiler/codegen/CodeGenRA.cpp#L2691-L2702
-   // [2] https://github.com/eclipse/omr/blob/9d1d8cf3048781bc6d87e6a1079167586cc5aa4d/compiler/codegen/CodeGenRA.cpp#L2889-L2903
-   // [3] https://github.com/eclipse/omr/blob/9d1d8cf3048781bc6d87e6a1079167586cc5aa4d/compiler/z/codegen/ControlFlowEvaluator.cpp#L1098-L1102
-
-   if (self()->cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableRegisterPressureSimulation))
-      {
-      // HPR
-      // this is a bit tricky, we consider Global HPRs part of Global GPRs
-      self()->setFirstGlobalHPRRegisterNumber(p);
-      // volatile HPRs
-      // might use HPR4 on 31-bit zLinux
-      p = self()->addGlobalReg(TR::RealRegister::HPR3, p);
-      p = self()->addGlobalReg(TR::RealRegister::HPR2, p);
-      p = self()->addGlobalReg(TR::RealRegister::HPR1, p);
-      // for preserved regs, we can only use HPR6-12 because VM only saves/restores those
-      if (TR::Compiler->target.is32Bit())
-         {
-         // might use GPR6 on 64-bit for lit pool reg
-         p = self()->addGlobalReg(TR::RealRegister::HPR6, p);
-         }
-
-      p = self()->addGlobalReg(TR::RealRegister::HPR7, p);
-      p = self()->addGlobalReg(TR::RealRegister::HPR8, p);
-      p = self()->addGlobalReg(TR::RealRegister::HPR9, p);
-      p = self()->addGlobalReg(TR::RealRegister::HPR10, p);
-      p = self()->addGlobalReg(TR::RealRegister::HPR11, p);
-      p = self()->addGlobalReg(TR::RealRegister::HPR12, p);
-      self()->setLastGlobalHPRRegisterNumber(p-1);
-      // might use HPR15 on 31-bit zOS
-      }
-
    self()->setLastGlobalGPRRegisterNumber(p-1);
 
    // Volatiles that aren't linkage regs
@@ -5943,21 +5936,9 @@ OMR::Z::Machine::setLastGlobalGPRRegisterNumber(TR_GlobalRegisterNumber reg)
    }
 
 TR_GlobalRegisterNumber
-OMR::Z::Machine::setLastGlobalHPRRegisterNumber(TR_GlobalRegisterNumber reg)
-   {
-   return _lastGlobalHPRRegisterNumber = reg;
-   }
-
-TR_GlobalRegisterNumber
 OMR::Z::Machine::setFirstGlobalGPRRegisterNumber(TR_GlobalRegisterNumber reg)
    {
    return _firstGlobalGPRRegisterNumber = reg;
-   }
-
-TR_GlobalRegisterNumber
-OMR::Z::Machine::setFirstGlobalHPRRegisterNumber(TR_GlobalRegisterNumber reg)
-   {
-   return _firstGlobalHPRRegisterNumber = reg;
    }
 
 TR_GlobalRegisterNumber
@@ -5990,40 +5971,6 @@ TR_GlobalRegisterNumber
 OMR::Z::Machine::setLastGlobalCCRRegisterNumber(TR_GlobalRegisterNumber reg)
    {
    return _lastGlobalCCRRegisterNumber=reg;
-   }
-
-TR::Register*
-OMR::Z::Machine::getGPRFromGlobalRegisterNumber(TR_GlobalRegisterNumber reg)
-   {
-   auto firstGlobalGPR = self()->getFirstGlobalGPRRegisterNumber();
-   auto firstGlobalHPR = self()->getFirstGlobalHPRRegisterNumber();
-
-   if (firstGlobalHPR != -1 && 
-         reg >= firstGlobalGPR &&
-         reg <= firstGlobalHPR && 
-         _globalRegisterNumberToRealRegisterMap[reg] >= 0)
-      {
-      return _registerFile[_globalRegisterNumberToRealRegisterMap[reg]];
-      }
-
-   return NULL;
-   }
-
-TR::Register*
-OMR::Z::Machine::getHPRFromGlobalRegisterNumber(TR_GlobalRegisterNumber reg)
-   {
-   auto firstGlobalHPR = self()->getFirstGlobalHPRRegisterNumber();
-   auto lastGlobalHPR = self()->getLastGlobalHPRRegisterNumber();
-
-   if (firstGlobalHPR != -1 &&
-         reg >= firstGlobalHPR &&
-         reg <= lastGlobalHPR &&
-         _globalRegisterNumberToRealRegisterMap[reg] >= 0)
-      {
-      return _registerFile[_globalRegisterNumberToRealRegisterMap[reg]];
-      }
-
-   return NULL;
    }
 
 // Register Association ////////////////////////////////////////////

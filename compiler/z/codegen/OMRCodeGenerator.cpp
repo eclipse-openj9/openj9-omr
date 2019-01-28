@@ -549,6 +549,8 @@ OMR::Z::CodeGenerator::CodeGenerator()
    TR::Compilation *comp = self()->comp();
    _cgFlags = 0;
 
+   TR::DebugCounter::incStaticDebugCounter(comp, "hpr/total-compilations");
+
    // Initialize Linkage for Code Generator
    self()->initializeLinkage();
 
@@ -836,27 +838,6 @@ OMR::Z::CodeGenerator::getSupportsBitPermute()
    return true;
    }
 
-TR_GlobalRegisterNumber
-OMR::Z::CodeGenerator::getGlobalHPRFromGPR (TR_GlobalRegisterNumber n)
-   {
-   TR_ASSERT(self()->isGlobalGPR(n), "getGlobalHPRFromGPR:  n != GPR?");
-   TR::RealRegister *gpr = toRealRegister(self()->machine()->getGPRFromGlobalRegisterNumber(n));
-   TR::RealRegister *hpr = gpr->getHighWordRegister();
-   return self()->machine()->getGlobalReg(hpr->getRegisterNumber());
-   }
-
-TR_GlobalRegisterNumber
-OMR::Z::CodeGenerator::getGlobalGPRFromHPR (TR_GlobalRegisterNumber n)
-   {
-   TR_ASSERT(self()->isGlobalHPR(n), "getGlobalGPRFromHPR:  n != HPR?");
-   //traceMsg(comp(), "getGlobalGPRFromHPR called with n=%d ",n);
-   TR::RealRegister *hpr = toRealRegister(self()->machine()->getHPRFromGlobalRegisterNumber(n));
-   //traceMsg(comp(), "hpr = %s ", getDebug()->getName(hpr));
-   TR::RealRegister *gpr = hpr->getLowWordRegister();
-   //traceMsg(comp(), "gpr = %s\n", getDebug()->getName(gpr));
-   return self()->machine()->getGlobalReg(gpr->getRegisterNumber());
-   }
-
 bool OMR::Z::CodeGenerator::prepareForGRA()
    {
    bool enableVectorGRA = self()->getSupportsVectorRegisters() && !self()->comp()->getOption(TR_DisableVectorRegGRA);
@@ -865,8 +846,6 @@ bool OMR::Z::CodeGenerator::prepareForGRA()
       {
       self()->machine()->initializeGlobalRegisterTable();
       self()->setGlobalRegisterTable(self()->machine()->getGlobalRegisterTable());
-      self()->setFirstGlobalHPR(self()->machine()->getFirstGlobalHPRRegisterNumber());
-      self()->setLastGlobalHPR(self()->machine()->getLastGlobalHPRRegisterNumber());
       self()->setLastGlobalGPR(self()->machine()->getLastGlobalGPRRegisterNumber());
       self()->setLast8BitGlobalGPR(self()->machine()->getLast8BitGlobalGPRRegisterNumber());
       self()->setFirstGlobalFPR(self()->machine()->getFirstGlobalFPRRegisterNumber());
@@ -912,16 +891,8 @@ bool OMR::Z::CodeGenerator::prepareForGRA()
       // Initialize _globalGPRsPreservedAcrossCalls and _globalFPRsPreservedAcrossCalls
       // We call init here because getNumberOfGlobal[FG]PRs() is initialized during the call to initialize() above.
       //
-      if (self()->supportsHighWordFacility())
-         {
-         _globalGPRsPreservedAcrossCalls.init(NUM_S390_GPR + NUM_S390_FPR + NUM_S390_HPR, self()->trMemory());
-         _globalFPRsPreservedAcrossCalls.init(NUM_S390_GPR + NUM_S390_FPR + NUM_S390_HPR, self()->trMemory());
-         }
-      else
-         {
-         _globalGPRsPreservedAcrossCalls.init(NUM_S390_GPR + NUM_S390_FPR, self()->trMemory());
-         _globalFPRsPreservedAcrossCalls.init(NUM_S390_GPR + NUM_S390_FPR, self()->trMemory());
-         }
+      _globalGPRsPreservedAcrossCalls.init(NUM_S390_GPR + NUM_S390_FPR, self()->trMemory());
+      _globalFPRsPreservedAcrossCalls.init(NUM_S390_GPR + NUM_S390_FPR, self()->trMemory());
 
       TR_GlobalRegisterNumber grn;
       for (grn = self()->getFirstGlobalGPR(); grn <= self()->getLastGlobalGPR(); grn++)
@@ -953,15 +924,7 @@ bool OMR::Z::CodeGenerator::prepareForGRA()
             TR_ASSERT(reg != -1, "Register pressure simulator doesn't support gaps in the global register table; reg %d must be removed", grn);
             if (self()->getFirstGlobalGPR() <= grn && grn <= self()->getLastGlobalGPR())
                {
-               if (self()->supportsHighWordFacility() && self()->getFirstGlobalHPR() <= grn)
-                  {
-                  // this is a bit tricky, we consider Global HPRs part of Global GPRs
-                  _globalRegisterBitVectors[ TR_hprSpill ].set(grn);
-                  }
-               else
-                  {
-                  _globalRegisterBitVectors[ TR_gprSpill ].set(grn);
-                  }
+               _globalRegisterBitVectors[ TR_gprSpill ].set(grn);
                }
             else if (self()->getFirstGlobalFPR() <= grn && grn <= self()->getLastGlobalFPR())
                {
@@ -976,11 +939,6 @@ bool OMR::Z::CodeGenerator::prepareForGRA()
                _globalRegisterBitVectors[ TR_volatileSpill ].set(grn);
             if (linkage->getIntegerArgument(reg) || linkage->getFloatArgument(reg))
                {
-               if ((self()->supportsHighWordFacility()) && (grn >= self()->getFirstGlobalGPR() && grn <= self()->getLastGlobalGPR()))
-                  {
-                  TR_GlobalRegisterNumber grnHPR = self()->getFirstGlobalHPR() - self()->getFirstGlobalGPR() + grn;
-                  _globalRegisterBitVectors[ TR_linkageSpill  ].set(grnHPR);
-                  }
                _globalRegisterBitVectors[ TR_linkageSpill  ].set(grn);
                }
             if (reg == linkage->getMethodMetaDataRegister())
@@ -2344,6 +2302,24 @@ OMR::Z::CodeGenerator::upgradeToHPRInstruction(TR::Instruction * inst)
          s390NewInst->setNeedsGCMap(s390Inst->getGCRegisterMask());
 
       self()->replaceInst(inst, newInst);
+
+      TR::DebugCounter::incStaticDebugCounter(self()->comp(), "hpr/upgrade");
+
+      if (srcUpgradable)
+         {
+         if (self()->machine()->findBestFreeRegister(inst, TR_GPR, srcReg) != NULL)
+            {
+            TR::DebugCounter::incStaticDebugCounter(self()->comp(), "hpr/upgrade-found-free-source-GPR");
+            }
+         }
+
+      if (targetUpgradable)
+         {
+         if (self()->machine()->findBestFreeRegister(inst, TR_GPR, targetReg) != NULL)
+            {
+            TR::DebugCounter::incStaticDebugCounter(self()->comp(), "hpr/upgrade-found-free-target-GPR");
+            }
+         }
 
       if (self()->getDebug())
          self()->getDebug()->addInstructionComment(s390NewInst, "HPR Upgraded");

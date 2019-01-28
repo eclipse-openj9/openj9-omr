@@ -1478,32 +1478,6 @@ OMR::Z::Instruction::assignOrderedRegisters(TR_RegisterKinds kindToBeAssigned)
      postInstrFreeReg = _targetReg[0];
      }
 
-   // Keep track of the first and second non-pair source registers for later
-   // when determining if "setAssignToHPR" should be called.
-   TR::Register *  firstNonPairSourceRegister = 0;
-   TR::Register * secondNonPairSourceRegister = 0;
-
-   for (i = 0; i < _sourceRegSize; i++)
-      {
-      if (_sourceReg[i]->getRegisterPair())
-         continue;
-
-      if (firstNonPairSourceRegister == 0)
-         {
-         firstNonPairSourceRegister = _sourceReg[i];
-         }
-      else if (secondNonPairSourceRegister == 0)
-         {
-         secondNonPairSourceRegister = _sourceReg[i];
-         break;
-         }
-      }
-
-   if (firstNonPairSourceRegister == secondNonPairSourceRegister)
-      {
-      secondNonPairSourceRegister = 0;
-      }
-
    //  If there is only 1 target register we don't need to block
    //
    if (numTrgtPairs==0 && _targetReg &&
@@ -1669,24 +1643,6 @@ OMR::Z::Instruction::assignOrderedRegisters(TR_RegisterKinds kindToBeAssigned)
    if (_sourceReg)
       {
       registerOperandNum = (_targetReg < _sourceReg) ? _targetRegSize+1 : 1;
-      if (self()->cg()->supportsHighWordFacility())
-         {
-         if (firstNonPairSourceRegister)
-            {
-            if ((self()->getOpCodeValue() == TR::InstOpCode::RISBLG || self()->getOpCodeValue() == TR::InstOpCode::RISBHG) &&
-                ((TR::S390RIEInstruction *)self())->getExtendedHighWordOpCode().getOpCodeValue() != TR::InstOpCode::BAD)
-               {
-               firstNonPairSourceRegister->setAssignToHPR(((TR::S390RIEInstruction *)self())->getExtendedHighWordOpCode().isOperandHW(registerOperandNum));
-               }
-            else
-               firstNonPairSourceRegister->setAssignToHPR(_opcode.isOperandHW(registerOperandNum));
-            }
-
-         if (secondNonPairSourceRegister)
-            {
-            secondNonPairSourceRegister->setAssignToHPR(_opcode.isOperandHW(registerOperandNum+1));
-            }
-         }
 
       for (i = 0; i < _sourceRegSize; ++i)
          {
@@ -1705,17 +1661,6 @@ OMR::Z::Instruction::assignOrderedRegisters(TR_RegisterKinds kindToBeAssigned)
       {
       for (i = 0; i < _sourceMemSize; ++i)
          {
-         if (self()->cg()->supportsHighWordFacility())
-            {
-            if (_sourceMem[i]->getBaseRegister())
-               {
-               _sourceMem[i]->getBaseRegister()->setAssignToHPR(false);
-               }
-            if (_sourceMem[i]->getIndexRegister())
-               {
-               _sourceMem[i]->getIndexRegister()->setAssignToHPR(false);
-               }
-            }
          _sourceMem[i]->assignRegisters(self(), self()->cg());
          _sourceMem[i]->blockRegisters();
          }
@@ -1724,17 +1669,6 @@ OMR::Z::Instruction::assignOrderedRegisters(TR_RegisterKinds kindToBeAssigned)
       {
       for (i = 0; i < _targetMemSize; ++i)
          {
-         if (self()->cg()->supportsHighWordFacility())
-            {
-            if (_targetMem[i]->getBaseRegister())
-               {
-               _targetMem[i]->getBaseRegister()->setAssignToHPR(false);
-               }
-            if (_targetMem[i]->getIndexRegister())
-               {
-               _targetMem[i]->getIndexRegister()->setAssignToHPR(false);
-               }
-            }
          _targetMem[i]->assignRegisters(self(), self()->cg());
          _targetMem[i]->blockRegisters();
          }

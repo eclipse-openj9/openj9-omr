@@ -503,9 +503,6 @@ public:
    TR_BitVector *getGlobalGPRsPreservedAcrossCalls(){ return &_globalGPRsPreservedAcrossCalls; }
    TR_BitVector *getGlobalFPRsPreservedAcrossCalls(){ return &_globalFPRsPreservedAcrossCalls; }
 
-   TR_GlobalRegisterNumber getGlobalHPRFromGPR (TR_GlobalRegisterNumber n);
-   TR_GlobalRegisterNumber getGlobalGPRFromHPR (TR_GlobalRegisterNumber n);
-
    bool considerTypeForGRA(TR::Node *node);
    bool considerTypeForGRA(TR::DataType dt);
    bool considerTypeForGRA(TR::SymbolReference *symRef);

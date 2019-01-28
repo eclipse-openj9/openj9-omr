@@ -133,31 +133,13 @@ OMR::Z::RegisterDependencyConditions::RegisterDependencyConditions(TR::CodeGener
          }
 
       TR::RegisterPair * regPair = reg->getRegisterPair();
-      resolveSplitDependencies(cg, node, child, regPair, regList,
-         reg, highReg, copyReg, highCopyReg, iCursor, regNum);
+      resolveSplitDependencies(cg, node, child, regPair, regList, reg, highReg, copyReg, highCopyReg, iCursor, regNum);
 
-      TR::Register * copyHPR = NULL;
-      if (cg->machine()->getHPRFromGlobalRegisterNumber(child->getGlobalRegisterNumber()))
-         {
-         if (reg->is64BitReg() && !reg->containsCollectedReference())
-            {
-            //if GRA wants a 64-bit scalar into an HPR we must split this register
-            copyHPR = cg->allocateRegister(TR_GPR);
-            iCursor = generateRRInstruction(cg, TR::InstOpCode::LR, node, copyHPR, reg, iCursor);
-            reg = copyHPR;
-            }
-         reg->setAssignToHPR(true);
-         }
       reg->setAssociation(regNum);
       cg->setRealRegisterAssociation(reg, regNum);
 
       addPreCondition(reg, regNum);
       addPostCondition(reg, regNum);
-
-      if (copyHPR != NULL)
-         {
-         cg->stopUsingRegister(copyHPR);
-         }
 
       if (copyReg != NULL)
          {
@@ -406,11 +388,6 @@ void OMR::Z::RegisterDependencyConditions::resolveSplitDependencies(
          {
          copyReg->setContainsInternalPointer();
          copyReg->setPinningArrayPointer(reg->getPinningArrayPointer());
-         }
-
-      if (cg->machine()->getHPRFromGlobalRegisterNumber(child->getGlobalRegisterNumber()) != NULL)
-         {
-         copyReg->setAssignToHPR(true);
          }
 
       switch (kind)

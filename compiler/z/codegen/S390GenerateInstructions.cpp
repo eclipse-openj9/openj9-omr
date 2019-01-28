@@ -3246,6 +3246,8 @@ generateExtendedHighWordInstruction(TR::Node * node, TR::CodeGenerator *cg, TR::
 
    ((TR::S390RIEInstruction *)cursor)->setExtendedHighWordOpCode(op);
 
+   TR::DebugCounter::incStaticDebugCounter(cg->comp(), "hpr/shuffle/HPR");
+
    if (debugObj)
       {
       debugObj->addInstructionComment(cursor, COMMENT);

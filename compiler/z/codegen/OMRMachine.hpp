@@ -198,8 +198,6 @@ class OMR_EXTENSIBLE Machine : public OMR::Machine
 
    TR_GlobalRegisterNumber  _firstGlobalGPRRegisterNumber;
    TR_GlobalRegisterNumber  _lastGlobalGPRRegisterNumber;
-   TR_GlobalRegisterNumber  _firstGlobalHPRRegisterNumber;
-   TR_GlobalRegisterNumber  _lastGlobalHPRRegisterNumber;
    TR_GlobalRegisterNumber  _last8BitGlobalGPRRegisterNumber;
    TR_GlobalRegisterNumber  _firstGlobalFPRRegisterNumber;
    TR_GlobalRegisterNumber  _firstOverlappedGlobalFPRRegisterNumber;
@@ -377,27 +375,13 @@ class OMR_EXTENSIBLE Machine : public OMR::Machine
       }
 
    TR_GlobalRegisterNumber setLastGlobalGPRRegisterNumber(TR_GlobalRegisterNumber reg);
-
-   TR_GlobalRegisterNumber getLastGlobalHPRRegisterNumber()
-      {
-      return _lastGlobalHPRRegisterNumber;
-      }
-
-   TR_GlobalRegisterNumber setLastGlobalHPRRegisterNumber(TR_GlobalRegisterNumber reg);
-
+   
    TR_GlobalRegisterNumber getFirstGlobalGPRRegisterNumber()
       {
       return _firstGlobalGPRRegisterNumber;
       }
 
    TR_GlobalRegisterNumber setFirstGlobalGPRRegisterNumber(TR_GlobalRegisterNumber reg);
-
-   TR_GlobalRegisterNumber getFirstGlobalHPRRegisterNumber()
-      {
-      return _firstGlobalHPRRegisterNumber;
-      }
-
-   TR_GlobalRegisterNumber setFirstGlobalHPRRegisterNumber(TR_GlobalRegisterNumber reg);
 
    TR_GlobalRegisterNumber getLast8BitGlobalGPRRegisterNumber()
       {
@@ -580,10 +564,6 @@ class OMR_EXTENSIBLE Machine : public OMR::Machine
      {
      return _lastLinkageFPR=reg;
      }
-
-   TR::Register * getGPRFromGlobalRegisterNumber(TR_GlobalRegisterNumber reg);
-
-   TR::Register * getHPRFromGlobalRegisterNumber(TR_GlobalRegisterNumber reg);
 
    ////////////////////////////////
 

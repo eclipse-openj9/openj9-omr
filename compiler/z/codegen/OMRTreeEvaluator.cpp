@@ -9800,10 +9800,7 @@ OMR::Z::TreeEvaluator::passThroughEvaluator(TR::Node * node, TR::CodeGenerator *
          copyReg->setContainsInternalPointer();
          copyReg->setPinningArrayPointer(reg->getPinningArrayPointer());
          }
-      if (cg->machine()->getHPRFromGlobalRegisterNumber(node->getGlobalRegisterNumber()) != NULL)
-         {
-         copyReg->setAssignToHPR(true);
-         }
+
       switch (kind)
          {
          case TR_GPR:
@@ -12004,10 +12001,6 @@ OMR::Z::TreeEvaluator::iRegLoadEvaluator(TR::Node * node, TR::CodeGenerator * cg
       node->setRegister(globalReg);
 
       globalReg->setAssignToHPR(false);
-      if (cg->machine()->getHPRFromGlobalRegisterNumber(globalRegNum) != NULL)
-         {
-         globalReg->setAssignToHPR(true);
-         }
       }
 
    return globalReg;
@@ -12089,50 +12082,21 @@ OMR::Z::TreeEvaluator::iRegStoreEvaluator(TR::Node * node, TR::CodeGenerator * c
          }
       }
 
-   bool useHPR = !cg->comp()->compileRelocatableCode() && cg->machine()->getHPRFromGlobalRegisterNumber(globalRegNum) != NULL;
-
-   if (useHPR && child->getOpCode().isLoadConst())
+   if (!useLGHI)
       {
-      // change LHI into IIHF if GRA assigned an HPR to globalReg
-      globalReg = child->getRegister();
-      if (globalReg == NULL)
-         {
-         globalReg = cg->allocateRegister();
-         generateRILInstruction(cg, TR::InstOpCode::IIHF, child, globalReg, static_cast<int32_t>((getIntegralValue(child))));
-         child->setRegister(globalReg);
-         }
-      globalReg->setAssignToHPR(true);
-      }
-   else if (useHPR && child->getOpCode().isLoadVar() && child->getType().isInt32())
-      {
-      TR_ASSERT(!needsLGFR, " GlobalHPR should not need signExt! \n");
-      needsLGFR = false;
-      globalReg = child->getRegister();
-      if (globalReg == NULL)
-         {
-         globalReg = cg->allocateRegister();
-         generateRXInstruction(cg, TR::InstOpCode::LFH, child, globalReg, generateS390MemoryReference(child,cg));
-         child->setRegister(globalReg);
-         }
-      globalReg->setAssignToHPR(true);
+      globalReg = cg->evaluate(child);
       }
    else
       {
-      if (!useLGHI)
+      globalReg = child->getRegister();
+      if (globalReg == NULL)
          {
-         globalReg = cg->evaluate(child);
+         globalReg = child->setRegister(cg->allocateRegister());
          }
-      else
-         {
-         globalReg = child->getRegister();
-         if (globalReg == NULL)
-            {
-            globalReg = child->setRegister(cg->allocateRegister());
-            }
-         globalReg->setIs64BitReg(true);
-         genLoadLongConstant(cg, child, getIntegralValue(child), globalReg);
-         }
+      globalReg->setIs64BitReg(true);
+      genLoadLongConstant(cg, child, getIntegralValue(child), globalReg);
       }
+
    // Without extensive evaluation of children & context, assume that we might have swapped signs
    globalReg->resetAlreadySignExtended();
 
@@ -12140,11 +12104,6 @@ OMR::Z::TreeEvaluator::iRegStoreEvaluator(TR::Node * node, TR::CodeGenerator * c
    bool child_sign_extended = ((child->getOpCodeValue() == TR::b2i) && (child->getFirstChild()->getOpCodeValue() == TR::bloadi)) ||
                               ((child->getOpCodeValue() == TR::su2i) && (child->getFirstChild()->getOpCodeValue() == TR::cloadi)) ||
                               ((child->getOpCodeValue() == TR::l2i) && (child->getFirstChild()->getOpCodeValue() == TR::i2l));
-
-   if (cg->supportsHighWordFacility())
-      {
-      child_sign_extended = false;
-      }
 
    if (needsLGFR)
       {

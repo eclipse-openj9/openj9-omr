@@ -2830,12 +2830,6 @@ OMR::Node::isRematerializable(TR::Node *parent, bool onlyConsiderOpCode)
    }
 
 bool
-OMR::Node::canEvaluate()
-   {
-   return true;
-   }
-
-bool
 OMR::Node::isDoNotPropagateNode()
    {
    // Generally, "do not propagate" nodes are those that

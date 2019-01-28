@@ -819,12 +819,6 @@ bool TR_PartialRedundancy::isNodeAnImplicitNoOp(TR::Node *node)
    if (TR::ILOpCode::isOpCodeAnImplicitNoOp(node->getOpCode())) //FIXME: disables 190546!!!
       return true;
 
-   // loads and stores of structures that cannot fit into register
-   if (!node->canEvaluate() &&
-       (node->getOpCode().isLoad() || node->getOpCode().isStore()))
-      return true;
-
-
    if (node->getType().isAggregate() && node->getSize() > 8)
       {
       // if (trace())

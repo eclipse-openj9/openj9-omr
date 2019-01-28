@@ -39,8 +39,8 @@ enum TR_RegisterKinds
    TR_VRF           = 4,
    TR_VSX_SCALAR    = 5,
    TR_VSX_VECTOR    = 6,
-   TR_SSR           = 8,   // used for TR_PseudoRegisters for SS (storage to storage) instructions to return results
-   TR_HPR           = 9,   // High word register for zGryphon
+   TR_SSR           = 7,   // used for TR_PseudoRegisters for SS (storage to storage) instructions to return results
+   TR_HPR           = 8,   // High word register for zGryphon
    LastRegisterKind = TR_HPR,
    NumRegisterKinds = LastRegisterKind+1,
 

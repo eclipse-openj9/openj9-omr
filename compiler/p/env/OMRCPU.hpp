@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -35,7 +35,7 @@ namespace OMR { typedef OMR::Power::CPU CPUConnector; }
 
 #include "compiler/env/OMRCPU.hpp"
 
-#include "infra/Assert.hpp"  // for TR_ASSERT
+#include "infra/Assert.hpp"
 
 #define VALID_PROCESSOR TR_ASSERT(id() >= TR_FirstPPCProcessor && id() <= TR_LastPPCProcessor, "Not a valid PPC Processor Type")
 

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -19,20 +19,20 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#include <stdint.h>                        // for uint32_t
-#include <stdlib.h>                        // for NULL, atoi
-#include "codegen/CodeGenerator.hpp"       // for CodeGenerator
-#include "codegen/FrontEnd.hpp"            // for feGetEnv
-#include "codegen/InstOpCode.hpp"          // for InstOpCode, etc
-#include "codegen/Instruction.hpp"         // for Instruction, etc
-#include "codegen/MemoryReference.hpp"     // for MemoryReference
-#include "codegen/PPCInstruction.hpp"      // for PPCDepImmSymInstruction 
-#include "codegen/RegisterConstants.hpp"   // for TR_RegisterKinds
+#include <stdint.h>
+#include <stdlib.h>
+#include "codegen/CodeGenerator.hpp"
+#include "codegen/FrontEnd.hpp"
+#include "codegen/InstOpCode.hpp"
+#include "codegen/Instruction.hpp"
+#include "codegen/MemoryReference.hpp"
+#include "codegen/PPCInstruction.hpp"
+#include "codegen/RegisterConstants.hpp"
 #include "codegen/RegisterDependency.hpp"
-#include "compile/Compilation.hpp"         // for Compilation, comp
-#include "il/Block.hpp"                    // for Block
-#include "il/ILOpCodes.hpp"                // for ILOpCodes::BBStart
-#include "il/Node.hpp"                     // for Node
+#include "compile/Compilation.hpp"
+#include "il/Block.hpp"
+#include "il/ILOpCodes.hpp"
+#include "il/Node.hpp"
 
 namespace TR { class PPCConditionalBranchInstruction; }
 namespace TR { class PPCDepImmInstruction;            }

@@ -22,27 +22,27 @@
 #ifndef S390INSTRUCTION_INCL
 #define S390INSTRUCTION_INCL
 
-#include <stdint.h>                           // for uint8_t, int32_t, etc
-#include <string.h>                           // for NULL, strcpy, strlen
-#include "codegen/CodeGenerator.hpp"          // for CodeGenerator
-#include "codegen/InstOpCode.hpp"             // for InstOpCode, etc
-#include "codegen/Instruction.hpp"            // for Instruction, etc
-#include "codegen/MemoryReference.hpp"        // for MemoryReference
-#include "codegen/RealRegister.hpp"           // for RealRegister, etc
-#include "codegen/Register.hpp"               // for Register
-#include "codegen/RegisterConstants.hpp"      // for TR_RegisterKinds, etc
-#include "codegen/RegisterPair.hpp"           // for RegisterPair
-#include "codegen/Snippet.hpp"                // for Snippet
+#include <stdint.h>
+#include <string.h>
+#include "codegen/CodeGenerator.hpp"
+#include "codegen/InstOpCode.hpp"
+#include "codegen/Instruction.hpp"
+#include "codegen/MemoryReference.hpp"
+#include "codegen/RealRegister.hpp"
+#include "codegen/Register.hpp"
+#include "codegen/RegisterConstants.hpp"
+#include "codegen/RegisterPair.hpp"
+#include "codegen/Snippet.hpp"
 #include "codegen/UnresolvedDataSnippet.hpp"
-#include "compile/Compilation.hpp"            // for Compilation
+#include "compile/Compilation.hpp"
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"
 #include "env/TRMemory.hpp"
-#include "env/jittypes.h"                     // for uintptrj_t, intptrj_t
-#include "il/symbol/LabelSymbol.hpp"          // for LabelSymbol
-#include "infra/Assert.hpp"                   // for TR_ASSERT
-#include "infra/Flags.hpp"                    // for flags8_t, flags32_t
-#include "ras/Debug.hpp"                      // for TR_DebugBase
+#include "env/jittypes.h"
+#include "il/symbol/LabelSymbol.hpp"
+#include "infra/Assert.hpp"
+#include "infra/Flags.hpp"
+#include "ras/Debug.hpp"
 
 #include "codegen/RegisterDependency.hpp"
 

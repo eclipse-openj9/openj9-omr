@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -21,25 +21,25 @@
 
 #include "z/codegen/S390HelperCallSnippet.hpp"
 
-#include <stddef.h>                             // for NULL
-#include <stdint.h>                             // for int32_t, int16_t, etc
-#include "codegen/CodeGenerator.hpp"            // for CodeGenerator, etc
-#include "codegen/FrontEnd.hpp"                 // for TR_FrontEnd
-#include "codegen/GCStackMap.hpp"               // for TR_GCStackMap
-#include "codegen/InstOpCode.hpp"               // for InstOpCode, etc
-#include "codegen/Relocation.hpp"               // for AOTcgDiag1
+#include <stddef.h>
+#include <stdint.h>
+#include "codegen/CodeGenerator.hpp"
+#include "codegen/FrontEnd.hpp"
+#include "codegen/GCStackMap.hpp"
+#include "codegen/InstOpCode.hpp"
+#include "codegen/Relocation.hpp"
 #include "codegen/SnippetGCMap.hpp"
-#include "compile/SymbolReferenceTable.hpp"     // for SymbolReferenceTable
+#include "compile/SymbolReferenceTable.hpp"
 #include "env/IO.hpp"
-#include "env/jittypes.h"                       // for intptrj_t
-#include "il/Symbol.hpp"                        // for Symbol
-#include "il/SymbolReference.hpp"               // for SymbolReference
-#include "il/symbol/LabelSymbol.hpp"            // for LabelSymbol
-#include "il/symbol/MethodSymbol.hpp"           // for MethodSymbol
-#include "infra/Assert.hpp"                     // for TR_ASSERT
-#include "ras/Debug.hpp"                        // for TR_Debug
+#include "env/jittypes.h"
+#include "il/Symbol.hpp"
+#include "il/SymbolReference.hpp"
+#include "il/symbol/LabelSymbol.hpp"
+#include "il/symbol/MethodSymbol.hpp"
+#include "infra/Assert.hpp"
+#include "ras/Debug.hpp"
 #include "runtime/Runtime.hpp"
-#include "z/codegen/CallSnippet.hpp"            // for TR::S390CallSnippet
+#include "z/codegen/CallSnippet.hpp"
 
 namespace TR { class Node; }
 

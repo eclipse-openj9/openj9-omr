@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -21,59 +21,59 @@
 
 #include "optimizer/GlobalRegisterAllocator.hpp"
 
-#include <stdint.h>                                 // for int8_t, int32_t, etc
-#include <string.h>                                 // for NULL, memset, etc
-#include "codegen/CodeGenerator.hpp"                // for CodeGenerator
-#include "codegen/FrontEnd.hpp"                     // for TR_FrontEnd, etc
-#include "codegen/Linkage.hpp"                      // for Linkage
-#include "codegen/Machine.hpp"                      // for Machine
+#include <stdint.h>
+#include <string.h>
+#include "codegen/CodeGenerator.hpp"
+#include "codegen/FrontEnd.hpp"
+#include "codegen/Linkage.hpp"
+#include "codegen/Machine.hpp"
 #include "codegen/RegisterConstants.hpp"
-#include "compile/Compilation.hpp"                  // for Compilation
+#include "compile/Compilation.hpp"
 #include "compile/SymbolReferenceTable.hpp"
 #include "control/Options.hpp"
-#include "control/Options_inlines.hpp"              // for TR::Options, etc
+#include "control/Options_inlines.hpp"
 #include "cs2/bitvectr.h"
-#include "cs2/hashtab.h"                            // for HashTable, etc
-#include "cs2/sparsrbit.h"                          // for ASparseBitVector, etc
+#include "cs2/hashtab.h"
+#include "cs2/sparsrbit.h"
 #include "env/CompilerEnv.hpp"
-#include "env/IO.hpp"                               // for POINTER_PRINTF_FORMAT
-#include "env/ObjectModel.hpp"                      // for ObjectModel
+#include "env/IO.hpp"
+#include "env/ObjectModel.hpp"
 #include "env/StackMemoryRegion.hpp"
-#include "env/TRMemory.hpp"                         // for SparseBitVector, etc
+#include "env/TRMemory.hpp"
 #include "il/AliasSetInterface.hpp"
-#include "il/Block.hpp"                             // for Block
-#include "il/DataTypes.hpp"                         // for DataType, etc
+#include "il/Block.hpp"
+#include "il/DataTypes.hpp"
 #include "il/ILOpCodes.hpp"
-#include "il/ILOps.hpp"                             // for ILOpCode, etc
-#include "il/Node.hpp"                              // for Node, etc
+#include "il/ILOps.hpp"
+#include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
-#include "il/Symbol.hpp"                            // for Symbol
-#include "il/SymbolReference.hpp"                   // for SymbolReference, etc
-#include "il/TreeTop.hpp"                           // for TreeTop
-#include "il/TreeTop_inlines.hpp"                   // for TreeTop::getNode, etc
-#include "il/symbol/AutomaticSymbol.hpp"            // for AutomaticSymbol
-#include "il/symbol/ParameterSymbol.hpp"            // for ParameterSymbol
+#include "il/Symbol.hpp"
+#include "il/SymbolReference.hpp"
+#include "il/TreeTop.hpp"
+#include "il/TreeTop_inlines.hpp"
+#include "il/symbol/AutomaticSymbol.hpp"
+#include "il/symbol/ParameterSymbol.hpp"
 #include "il/symbol/RegisterMappedSymbol.hpp"
 #include "il/symbol/ResolvedMethodSymbol.hpp"
-#include "infra/Array.hpp"                          // for TR_Array
-#include "infra/Assert.hpp"                         // for TR_ASSERT
-#include "infra/BitVector.hpp"                      // for TR_BitVector, etc
-#include "infra/Cfg.hpp"                            // for CFG
-#include "infra/Link.hpp"                           // for TR_LinkHead
-#include "infra/List.hpp"                           // for ListIterator, etc
-#include "infra/CfgEdge.hpp"                        // for CFGEdge
-#include "infra/CfgNode.hpp"                        // for CFGNode
-#include "optimizer/Optimization.hpp"               // for Optimization
+#include "infra/Array.hpp"
+#include "infra/Assert.hpp"
+#include "infra/BitVector.hpp"
+#include "infra/Cfg.hpp"
+#include "infra/Link.hpp"
+#include "infra/List.hpp"
+#include "infra/CfgEdge.hpp"
+#include "infra/CfgNode.hpp"
+#include "optimizer/Optimization.hpp"
 #include "optimizer/Optimization_inlines.hpp"
 #include "optimizer/OptimizationManager.hpp"
 #include "optimizer/Optimizations.hpp"
-#include "optimizer/Optimizer.hpp"                  // for Optimizer
+#include "optimizer/Optimizer.hpp"
 #include "optimizer/RegisterCandidate.hpp"
 #include "optimizer/Structure.hpp"
-#include "optimizer/TransformUtil.hpp"              // for TransformUtil
-#include "optimizer/DataFlowAnalysis.hpp"           // for TR_Liveness
-#include "optimizer/UseDefInfo.hpp"                 // for TR_UseDefInfo, etc
-#include "ras/Debug.hpp"                            // for TR_DebugBase
+#include "optimizer/TransformUtil.hpp"
+#include "optimizer/DataFlowAnalysis.hpp"
+#include "optimizer/UseDefInfo.hpp"
+#include "ras/Debug.hpp"
 
 
 #define GRA_COMPLEXITY_LIMIT 1000000000

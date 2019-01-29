@@ -21,30 +21,30 @@
 
 #include "z/codegen/BinaryAnalyser.hpp"
 
-#include <stddef.h>                                // for NULL
-#include <stdint.h>                                // for uint8_t
-#include "codegen/Analyser.hpp"                    // for NUM_ACTIONS
-#include "codegen/CodeGenerator.hpp"               // for CodeGenerator, etc
-#include "codegen/FrontEnd.hpp"                    // for TR_FrontEnd
-#include "codegen/InstOpCode.hpp"                  // for InstOpCode, etc
-#include "codegen/MemoryReference.hpp"             // for MemoryReference, etc
-#include "codegen/RealRegister.hpp"                // for RealRegister, etc
-#include "codegen/Register.hpp"                    // for Register
+#include <stddef.h>
+#include <stdint.h>
+#include "codegen/Analyser.hpp"
+#include "codegen/CodeGenerator.hpp"
+#include "codegen/FrontEnd.hpp"
+#include "codegen/InstOpCode.hpp"
+#include "codegen/MemoryReference.hpp"
+#include "codegen/RealRegister.hpp"
+#include "codegen/Register.hpp"
 #include "codegen/RegisterConstants.hpp"
 #include "codegen/RegisterDependency.hpp"
-#include "codegen/RegisterPair.hpp"                // for RegisterPair
+#include "codegen/RegisterPair.hpp"
 #include "codegen/TreeEvaluator.hpp"
-#include "codegen/S390Evaluator.hpp"               // for TR_S390ComputeCC
-#include "compile/Compilation.hpp"                 // for Compilation, comp
+#include "codegen/S390Evaluator.hpp"
+#include "compile/Compilation.hpp"
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"
 #include "env/TRMemory.hpp"
-#include "il/ILOpCodes.hpp"                        // for ILOpCodes::lusubb, etc
-#include "il/ILOps.hpp"                            // for ILOpCode
-#include "il/Node.hpp"                             // for Node
+#include "il/ILOpCodes.hpp"
+#include "il/ILOps.hpp"
+#include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
-#include "il/symbol/LabelSymbol.hpp"               // for LabelSymbol
-#include "infra/Assert.hpp"                        // for TR_ASSERT
+#include "il/symbol/LabelSymbol.hpp"
+#include "infra/Assert.hpp"
 #include "z/codegen/S390GenerateInstructions.hpp"
 
 namespace TR { class Instruction; }

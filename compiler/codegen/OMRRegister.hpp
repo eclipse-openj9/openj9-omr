@@ -31,14 +31,14 @@ namespace OMR { class Register; }
 namespace OMR { typedef OMR::Register RegisterConnector; }
 #endif
 
-#include <stddef.h>                         // for NULL
-#include <stdint.h>                         // for uint32_t, uint16_t
-#include "codegen/RegisterConstants.hpp"    // for TR_RegisterKinds, etc
-#include "env/TRMemory.hpp"                 // for TR_Memory, etc
-#include "il/Node.hpp"                      // for ncount_t, MAX_NODE_COUNT
-#include "infra/Assert.hpp"                 // for TR_ASSERT
-#include "infra/Flags.hpp"                  // for flags32_t
-#include "infra/Annotations.hpp"            // for OMR_EXTENSIBLE
+#include <stddef.h>
+#include <stdint.h>
+#include "codegen/RegisterConstants.hpp"
+#include "env/TRMemory.hpp"
+#include "il/Node.hpp"
+#include "infra/Assert.hpp"
+#include "infra/Flags.hpp"
+#include "infra/Annotations.hpp"
 
 class TR_BackingStore;
 namespace TR { class AutomaticSymbol; }

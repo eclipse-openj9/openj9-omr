@@ -21,53 +21,53 @@
 
 #include "z/codegen/S390GenerateInstructions.hpp"
 
-#include <stdint.h>                               // for uint8_t, int32_t, etc
-#include <stdio.h>                                // for sprintf
-#include <stdlib.h>                               // for atoi
-#include <string.h>                               // for NULL, strlen, etc
-#include "codegen/CodeGenerator.hpp"              // for CodeGenerator, etc
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "codegen/CodeGenerator.hpp"
 #include "codegen/ConstantDataSnippet.hpp"
-#include "codegen/FrontEnd.hpp"                   // for feGetEnv, etc
-#include "codegen/InstOpCode.hpp"                 // for InstOpCode, etc
-#include "codegen/Instruction.hpp"                // for Instruction
-#include "codegen/Linkage.hpp"                    // for Linkage
-#include "codegen/Machine.hpp"                    // for Machine, etc
-#include "codegen/MemoryReference.hpp"            // for MemoryReference, etc
-#include "codegen/RealRegister.hpp"               // for RealRegister, etc
-#include "codegen/Register.hpp"                   // for Register
+#include "codegen/FrontEnd.hpp"
+#include "codegen/InstOpCode.hpp"
+#include "codegen/Instruction.hpp"
+#include "codegen/Linkage.hpp"
+#include "codegen/Machine.hpp"
+#include "codegen/MemoryReference.hpp"
+#include "codegen/RealRegister.hpp"
+#include "codegen/Register.hpp"
 #include "codegen/RegisterConstants.hpp"
 #include "codegen/RegisterDependency.hpp"
-#include "codegen/RegisterDependencyStruct.hpp"   // for RegisterDependency
-#include "codegen/RegisterPair.hpp"               // for RegisterPair
-#include "codegen/Relocation.hpp"                 // for AOTcgDiag1, etc
-#include "codegen/Snippet.hpp"                    // for Snippet, etc
+#include "codegen/RegisterDependencyStruct.hpp"
+#include "codegen/RegisterPair.hpp"
+#include "codegen/Relocation.hpp"
+#include "codegen/Snippet.hpp"
 #include "codegen/S390Snippets.hpp"
-#include "codegen/TreeEvaluator.hpp"              // for generateS390ImmOp
+#include "codegen/TreeEvaluator.hpp"
 #include "codegen/S390Evaluator.hpp"
 #include "codegen/UnresolvedDataSnippet.hpp"
-#include "compile/Compilation.hpp"                // for Compilation
-#include "compile/ResolvedMethod.hpp"             // for TR_ResolvedMethod
+#include "compile/Compilation.hpp"
+#include "compile/ResolvedMethod.hpp"
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"
 #include "env/CompilerEnv.hpp"
 #include "env/TRMemory.hpp"
-#include "env/jittypes.h"                         // for uintptrj_t
-#include "il/Block.hpp"                           // for Block
-#include "il/DataTypes.hpp"                       // for DataTypes::Double, etc
+#include "env/jittypes.h"
+#include "il/Block.hpp"
+#include "il/DataTypes.hpp"
 #include "il/ILOpCodes.hpp"
-#include "il/ILOps.hpp"                           // for ILOpCode
-#include "il/Node.hpp"                            // for Node
+#include "il/ILOps.hpp"
+#include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
-#include "il/Symbol.hpp"                          // for Symbol, etc
-#include "il/SymbolReference.hpp"                 // for SymbolReference
-#include "il/symbol/LabelSymbol.hpp"              // for LabelSymbol
-#include "il/symbol/MethodSymbol.hpp"             // for MethodSymbol
+#include "il/Symbol.hpp"
+#include "il/SymbolReference.hpp"
+#include "il/symbol/LabelSymbol.hpp"
+#include "il/symbol/MethodSymbol.hpp"
 #include "il/symbol/ResolvedMethodSymbol.hpp"
-#include "infra/Assert.hpp"                       // for TR_ASSERT
-#include "infra/List.hpp"                         // for List
-#include "ras/Debug.hpp"                          // for TR_DebugBase
-#include "z/codegen/CallSnippet.hpp"              // for TR::S390CallSnippet
-#include "z/codegen/S390Instruction.hpp"          // for etc
+#include "infra/Assert.hpp"
+#include "infra/List.hpp"
+#include "ras/Debug.hpp"
+#include "z/codegen/CallSnippet.hpp"
+#include "z/codegen/S390Instruction.hpp"
 
 
 class TR_OpaqueClassBlock;

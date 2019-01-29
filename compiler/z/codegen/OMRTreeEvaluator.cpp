@@ -27,79 +27,79 @@
 #pragma csect(STATIC,"TRZTreeEvalBase#S")
 #pragma csect(TEST,"TRZTreeEvalBase#T")
 
-#include <ctype.h>                                  // for isdigit
-#include <math.h>                                   // for fabs
-#include <stddef.h>                                 // for size_t
-#include <stdint.h>                                 // for int32_t, int64_t, etc
-#include <stdio.h>                                  // for NULL, sprintf, etc
-#include <stdlib.h>                                 // for abs, atoi
-#include <string.h>                                 // for memset, strlen, etc
-#include "codegen/CodeGenerator.hpp"                // for CodeGenerator, etc
+#include <ctype.h>
+#include <math.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "codegen/CodeGenerator.hpp"
 #include "codegen/ConstantDataSnippet.hpp"
-#include "codegen/FrontEnd.hpp"                     // for TR_FrontEnd, etc
-#include "codegen/InstOpCode.hpp"                   // for InstOpCode, etc
-#include "codegen/Instruction.hpp"                  // for Instruction
-#include "codegen/Linkage.hpp"                      // for Linkage, REGNUM, etc
+#include "codegen/FrontEnd.hpp"
+#include "codegen/InstOpCode.hpp"
+#include "codegen/Instruction.hpp"
+#include "codegen/Linkage.hpp"
 #include "codegen/LinkageConventionsEnum.hpp"
 #include "codegen/LiveRegister.hpp"
-#include "codegen/Machine.hpp"                      // for Machine, etc
+#include "codegen/Machine.hpp"
 #include "codegen/MemoryReference.hpp"
-#include "codegen/RealRegister.hpp"                 // for RealRegister, etc
-#include "codegen/Register.hpp"                     // for Register
+#include "codegen/RealRegister.hpp"
+#include "codegen/Register.hpp"
 #include "codegen/RegisterConstants.hpp"
 #include "codegen/RegisterDependency.hpp"
 #include "codegen/RegisterDependencyStruct.hpp"
-#include "codegen/RegisterPair.hpp"                 // for RegisterPair
-#include "codegen/Snippet.hpp"                      // for Snippet
+#include "codegen/RegisterPair.hpp"
+#include "codegen/Snippet.hpp"
 #include "codegen/StorageInfo.hpp"
-#include "codegen/SystemLinkage.hpp"                // for SystemLinkage, etc
+#include "codegen/SystemLinkage.hpp"
 #include "codegen/TreeEvaluator.hpp"
 #include "codegen/S390Evaluator.hpp"
 #include "codegen/UnresolvedDataSnippet.hpp"
-#include "compile/Compilation.hpp"                  // for Compilation, etc
+#include "compile/Compilation.hpp"
 #include "compile/ResolvedMethod.hpp"
 #include "compile/SymbolReferenceTable.hpp"
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"
 #include "env/CompilerEnv.hpp"
-#include "env/ObjectModel.hpp"                      // for ObjectModel
-#include "env/PersistentInfo.hpp"                   // for PersistentInfo
-#include "env/StackMemoryRegion.hpp"                // for TR::StackMemoryRegion
-#include "env/TRMemory.hpp"                         // for TR_HeapMemory, etc
-#include "env/defines.h"                            // for TR_HOST_64BIT
+#include "env/ObjectModel.hpp"
+#include "env/PersistentInfo.hpp"
+#include "env/StackMemoryRegion.hpp"
+#include "env/TRMemory.hpp"
+#include "env/defines.h"
 #include "env/jittypes.h"
-#include "il/Block.hpp"                             // for Block, toBlock, etc
-#include "il/DataTypes.hpp"                         // for DataTypes::Int64, etc
+#include "il/Block.hpp"
+#include "il/DataTypes.hpp"
 #include "il/ILOpCodes.hpp"
-#include "il/ILOps.hpp"                             // for ILOpCode, etc
-#include "il/Node.hpp"                              // for Node, etc
+#include "il/ILOps.hpp"
+#include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
-#include "il/Symbol.hpp"                            // for Symbol
-#include "il/SymbolReference.hpp"                   // for SymbolReference
-#include "il/TreeTop.hpp"                           // for TreeTop
+#include "il/Symbol.hpp"
+#include "il/SymbolReference.hpp"
+#include "il/TreeTop.hpp"
 #include "il/TreeTop_inlines.hpp"
-#include "il/symbol/AutomaticSymbol.hpp"            // for AutomaticSymbol
-#include "il/symbol/LabelSymbol.hpp"                // for LabelSymbol, etc
-#include "il/symbol/MethodSymbol.hpp"               // for MethodSymbol
-#include "il/symbol/ParameterSymbol.hpp"            // for ParameterSymbol
+#include "il/symbol/AutomaticSymbol.hpp"
+#include "il/symbol/LabelSymbol.hpp"
+#include "il/symbol/MethodSymbol.hpp"
+#include "il/symbol/ParameterSymbol.hpp"
 #include "il/symbol/ResolvedMethodSymbol.hpp"
-#include "il/symbol/StaticSymbol.hpp"               // for StaticSymbol
-#include "infra/Array.hpp"                          // for TR_Array
-#include "infra/Assert.hpp"                         // for TR_ASSERT
-#include "infra/Bit.hpp"                            // for isEven
+#include "il/symbol/StaticSymbol.hpp"
+#include "infra/Array.hpp"
+#include "infra/Assert.hpp"
+#include "infra/Bit.hpp"
 #include "infra/BitVector.hpp"
-#include "infra/HashTab.hpp"                        // for TR_HashId
-#include "infra/List.hpp"                           // for List, etc
+#include "infra/HashTab.hpp"
+#include "infra/List.hpp"
 #include "infra/Random.hpp"
-#include "infra/CfgEdge.hpp"                        // for CFGEdge
-#include "infra/CfgNode.hpp"                        // for CFGNode
+#include "infra/CfgEdge.hpp"
+#include "infra/CfgNode.hpp"
 #include "optimizer/OptimizationManager.hpp"
 #include "optimizer/Optimizations.hpp"
-#include "optimizer/Optimizer.hpp"                  // for Optimizer
+#include "optimizer/Optimizer.hpp"
 #include "optimizer/TransformUtil.hpp"
-#include "ras/Debug.hpp"                            // for TR_DebugBase
-#include "ras/DebugCounter.hpp"                     // for TR::DebugCounter, etc
-#include "runtime/Runtime.hpp"                      // for ::TR_DataAddress, etc
+#include "ras/Debug.hpp"
+#include "ras/DebugCounter.hpp"
+#include "runtime/Runtime.hpp"
 #include "z/codegen/BinaryCommutativeAnalyser.hpp"
 #include "z/codegen/OpMemToMem.hpp"
 #include "z/codegen/S390GenerateInstructions.hpp"
@@ -144,7 +144,7 @@ generateS390PackedCompareAndBranchOps(TR::Node * node,
 // Add another version of PRINT_ME, undef EVAL_BLOCK to go back to the old one
 #define EVAL_BLOCK
 #if defined (EVAL_BLOCK)
-#include "ras/Delimiter.hpp"                    // for TR::Delimiter
+#include "ras/Delimiter.hpp"
 #define PRINT_ME(string,node,cg) TR::Delimiter evalDelimiter(cg->comp(), cg->comp()->getOption(TR_TraceCG), "EVAL", string)
 #else
 void

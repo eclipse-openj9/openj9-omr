@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -19,74 +19,74 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#include <algorithm>                            // for std::max, etc
-#include <stdint.h>                             // for int32_t, int64_t, etc
-#include <stdio.h>                              // for printf, fflush, etc
-#include <string.h>                             // for NULL, strncmp, etc
-#include "codegen/CodeGenerator.hpp"            // for CodeGenerator
-#include "codegen/FrontEnd.hpp"                 // for TR_FrontEnd, etc
-#include "env/KnownObjectTable.hpp"         // for KnownObjectTable, etc
-#include "codegen/RecognizedMethods.hpp"        // for RecognizedMethod, etc
-#include "codegen/InstOpCode.hpp"               // for InstOpCode
-#include "compile/Compilation.hpp"              // for Compilation, comp
-#include "compile/Method.hpp"                   // for TR_Method, etc
-#include "compile/ResolvedMethod.hpp"           // for TR_ResolvedMethod
-#include "compile/SymbolReferenceTable.hpp"     // for SymbolReferenceTable
-#include "compile/VirtualGuard.hpp"             // for TR_VirtualGuard
+#include <algorithm>
+#include <stdint.h>
+#include <stdio.h>
+#include <string.h>
+#include "codegen/CodeGenerator.hpp"
+#include "codegen/FrontEnd.hpp"
+#include "env/KnownObjectTable.hpp"
+#include "codegen/RecognizedMethods.hpp"
+#include "codegen/InstOpCode.hpp"
+#include "compile/Compilation.hpp"
+#include "compile/Method.hpp"
+#include "compile/ResolvedMethod.hpp"
+#include "compile/SymbolReferenceTable.hpp"
+#include "compile/VirtualGuard.hpp"
 #include "control/Options.hpp"
-#include "control/Options_inlines.hpp"          // for TR::Options, etc
-#include "cs2/bitvectr.h"                       // for ABitVector<>::Cursor
+#include "control/Options_inlines.hpp"
+#include "cs2/bitvectr.h"
 #include "env/CompilerEnv.hpp"
-#include "env/IO.hpp"                           // for POINTER_PRINTF_FORMAT
-#include "env/ObjectModel.hpp"                  // for ObjectModel
-#include "env/PersistentInfo.hpp"               // for PersistentInfo
+#include "env/IO.hpp"
+#include "env/ObjectModel.hpp"
+#include "env/PersistentInfo.hpp"
 #include "env/TRMemory.hpp"
 #include "env/jittypes.h"
 #ifdef J9_PROJECT_SPECIFIC
-#include "env/VMAccessCriticalSection.hpp"      // for VMAccessCriticalSection
+#include "env/VMAccessCriticalSection.hpp"
 #endif
 #include "il/AliasSetInterface.hpp"
-#include "il/Block.hpp"                         // for Block, etc
-#include "il/DataTypes.hpp"                     // for DataTypes, etc
-#include "il/ILOpCodes.hpp"                     // for ILOpCodes::treetop, etc
-#include "il/ILOps.hpp"                         // for ILOpCode, etc
-#include "il/Node.hpp"                          // for Node, etc
-#include "il/Node_inlines.hpp"                  // for Node::getFirstChild, etc
-#include "il/Symbol.hpp"                        // for Symbol, etc
-#include "il/SymbolReference.hpp"               // for SymbolReference, etc
-#include "il/TreeTop.hpp"                       // for TreeTop
-#include "il/TreeTop_inlines.hpp"               // for TreeTop::getNode, etc
-#include "il/symbol/AutomaticSymbol.hpp"        // for AutomaticSymbol
-#include "il/symbol/MethodSymbol.hpp"           // for MethodSymbol, etc
-#include "il/symbol/ResolvedMethodSymbol.hpp"   // for ResolvedMethodSymbol
-#include "il/symbol/StaticSymbol.hpp"           // for StaticSymbol
-#include "infra/Array.hpp"                      // for TR_Array
-#include "infra/Assert.hpp"                     // for TR_ASSERT
+#include "il/Block.hpp"
+#include "il/DataTypes.hpp"
+#include "il/ILOpCodes.hpp"
+#include "il/ILOps.hpp"
+#include "il/Node.hpp"
+#include "il/Node_inlines.hpp"
+#include "il/Symbol.hpp"
+#include "il/SymbolReference.hpp"
+#include "il/TreeTop.hpp"
+#include "il/TreeTop_inlines.hpp"
+#include "il/symbol/AutomaticSymbol.hpp"
+#include "il/symbol/MethodSymbol.hpp"
+#include "il/symbol/ResolvedMethodSymbol.hpp"
+#include "il/symbol/StaticSymbol.hpp"
+#include "infra/Array.hpp"
+#include "infra/Assert.hpp"
 #include "infra/Bit.hpp"
 #include "infra/Cfg.hpp"
-#include "infra/Link.hpp"                       // for TR_LinkHead, TR_Pair
-#include "infra/List.hpp"                       // for ListIterator, etc
+#include "infra/Link.hpp"
+#include "infra/List.hpp"
 #include "infra/SimpleRegex.hpp"
-#include "infra/CfgEdge.hpp"                    // for CFGEdge
+#include "infra/CfgEdge.hpp"
 #include "optimizer/Optimization_inlines.hpp"
-#include "optimizer/OptimizationManager.hpp"    // for OptimizationManager
+#include "optimizer/OptimizationManager.hpp"
 #include "optimizer/Optimizations.hpp"
-#include "optimizer/Optimizer.hpp"              // for Optimizer
-#include "optimizer/PreExistence.hpp"           // for TR_PrexArgInfo, etc
+#include "optimizer/Optimizer.hpp"
+#include "optimizer/PreExistence.hpp"
 #include "optimizer/TransformUtil.hpp"
-#include "optimizer/UseDefInfo.hpp"             // for TR_UseDefInfo, etc
-#include "optimizer/VPConstraint.hpp"           // for TR::VPConstraint, etc
-#include "optimizer/OMRValuePropagation.hpp"       // for OMR::ValuePropagation, etc
-#include "ras/Debug.hpp"                        // for TR_Debug
+#include "optimizer/UseDefInfo.hpp"
+#include "optimizer/VPConstraint.hpp"
+#include "optimizer/OMRValuePropagation.hpp"
+#include "ras/Debug.hpp"
 #include "ras/DebugCounter.hpp"
 #include "runtime/Runtime.hpp"
 
 #ifdef J9_PROJECT_SPECIFIC
 #include "env/CHTable.hpp"
-#include "env/PersistentCHTable.hpp"            // for TR_PersistentCHTable
+#include "env/PersistentCHTable.hpp"
 #include "runtime/RuntimeAssumptions.hpp"
 #include "env/VMJ9.h"
-#include "optimizer/VPBCDConstraint.hpp"        // for VP BCD constraint specifics
+#include "optimizer/VPBCDConstraint.hpp"
 #endif
 
 #define OPT_DETAILS "O^O VALUE PROPAGATION: "

@@ -19,69 +19,69 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#include <stdint.h>                                  // for int32_t, etc
-#include <stdio.h>                                   // for NULL, fprintf, etc
-#include <string.h>                                  // for strstr
-#include "codegen/AheadOfTimeCompile.hpp"            // for AheadOfTimeCompile
-#include "codegen/BackingStore.hpp"                  // for TR_BackingStore
-#include "codegen/CodeGenerator.hpp"                 // for CodeGenerator
-#include "codegen/CodeGenerator_inlines.hpp"         // for CodeGenerator
-#include "codegen/FrontEnd.hpp"                      // for feGetEnv, etc
-#include "codegen/InstOpCode.hpp"                    // for InstOpCode, etc
-#include "codegen/Instruction.hpp"                   // for Instruction
-#include "codegen/Linkage.hpp"                       // for addDependency, etc
+#include <stdint.h>
+#include <stdio.h>
+#include <string.h>
+#include "codegen/AheadOfTimeCompile.hpp"
+#include "codegen/BackingStore.hpp"
+#include "codegen/CodeGenerator.hpp"
+#include "codegen/CodeGenerator_inlines.hpp"
+#include "codegen/FrontEnd.hpp"
+#include "codegen/InstOpCode.hpp"
+#include "codegen/Instruction.hpp"
+#include "codegen/Linkage.hpp"
 #include "codegen/LinkageConventionsEnum.hpp"
-#include "codegen/Machine.hpp"                       // for Machine, etc
-#include "codegen/MemoryReference.hpp"               // for MemoryReference
-#include "codegen/RealRegister.hpp"                  // for RealRegister, etc
+#include "codegen/Machine.hpp"
+#include "codegen/MemoryReference.hpp"
+#include "codegen/RealRegister.hpp"
 #include "codegen/RecognizedMethods.hpp"
-#include "codegen/Register.hpp"                      // for Register
+#include "codegen/Register.hpp"
 #include "codegen/RegisterConstants.hpp"
 #include "codegen/RegisterDependency.hpp"
 #include "codegen/RegisterDependencyStruct.hpp"
-#include "codegen/RegisterPair.hpp"                  // for RegisterPair
+#include "codegen/RegisterPair.hpp"
 #include "codegen/Relocation.hpp"
 #include "codegen/TreeEvaluator.hpp"
 #include "codegen/PPCEvaluator.hpp"
 #include "codegen/UnresolvedDataSnippet.hpp"
-#include "compile/Compilation.hpp"                   // for Compilation, etc
+#include "compile/Compilation.hpp"
 #include "compile/ResolvedMethod.hpp"
 #include "compile/SymbolReferenceTable.hpp"
-#include "compile/VirtualGuard.hpp"                  // for TR_VirtualGuard
+#include "compile/VirtualGuard.hpp"
 #include "control/Options.hpp"
-#include "control/Options_inlines.hpp"               // for TR::Options, etc
-#include "env/CPU.hpp"                               // for Cpu
+#include "control/Options_inlines.hpp"
+#include "env/CPU.hpp"
 #include "env/CompilerEnv.hpp"
-#include "env/ObjectModel.hpp"                       // for ObjectModel
-#include "env/PersistentInfo.hpp"                    // for PersistentInfo
+#include "env/ObjectModel.hpp"
+#include "env/PersistentInfo.hpp"
 #include "env/Processors.hpp"
 #include "env/TRMemory.hpp"
-#include "env/jittypes.h"                            // for intptrj_t, uintptrj_t
-#include "il/Block.hpp"                              // for Block, etc
-#include "il/DataTypes.hpp"                          // for DataTypes, etc
+#include "env/jittypes.h"
+#include "il/Block.hpp"
+#include "il/DataTypes.hpp"
 #include "il/ILOpCodes.hpp"
-#include "il/ILOps.hpp"                              // for ILOpCode
-#include "il/Node.hpp"                               // for Node, etc
+#include "il/ILOps.hpp"
+#include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
-#include "il/Symbol.hpp"                             // for Symbol, etc
-#include "il/SymbolReference.hpp"                    // for SymbolReference
-#include "il/TreeTop.hpp"                            // for TreeTop
+#include "il/Symbol.hpp"
+#include "il/SymbolReference.hpp"
+#include "il/TreeTop.hpp"
 #include "il/TreeTop_inlines.hpp"
-#include "il/symbol/AutomaticSymbol.hpp"             // for AutomaticSymbol
+#include "il/symbol/AutomaticSymbol.hpp"
 #include "il/symbol/LabelSymbol.hpp"
-#include "il/symbol/MethodSymbol.hpp"                // for MethodSymbol
-#include "il/symbol/ParameterSymbol.hpp"             // for ParameterSymbol
-#include "infra/Annotations.hpp"                     // for OMR_LIKELY, OMR_UNLIKELY
-#include "infra/Assert.hpp"                          // for TR_ASSERT
-#include "infra/Bit.hpp"                             // for intParts
-#include "infra/List.hpp"                            // for List, etc
+#include "il/symbol/MethodSymbol.hpp"
+#include "il/symbol/ParameterSymbol.hpp"
+#include "infra/Annotations.hpp"
+#include "infra/Assert.hpp"
+#include "infra/Bit.hpp"
+#include "infra/List.hpp"
 #include "optimizer/Structure.hpp"
 #include "p/codegen/OMRCodeGenerator.hpp"
 #include "p/codegen/GenerateInstructions.hpp"
 #include "p/codegen/PPCAOTRelocation.hpp"
 #include "p/codegen/PPCHelperCallSnippet.hpp"
-#include "p/codegen/PPCOpsDefines.hpp"               // for Op_load, etc
-#include "p/codegen/PPCTableOfConstants.hpp"         // for PTOC_FULL_INDEX, etc
+#include "p/codegen/PPCOpsDefines.hpp"
+#include "p/codegen/PPCTableOfConstants.hpp"
 #include "runtime/Runtime.hpp"
 
 class TR_OpaqueClassBlock;

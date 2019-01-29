@@ -35,11 +35,11 @@ namespace OMR { typedef OMR::X86::Instruction InstructionConnector; }
 
 #include "compiler/codegen/OMRInstruction.hpp"
 
-#include <stddef.h>                                    // for NULL
-#include <stdint.h>                                    // for int32_t, etc
-#include "codegen/InstOpCode.hpp"                      // for InstOpCode, etc
+#include <stddef.h>
+#include <stdint.h>
+#include "codegen/InstOpCode.hpp"
 #include "codegen/RegisterConstants.hpp"
-#include "x/codegen/X86Ops.hpp"                        // for TR_X86OpCode, etc
+#include "x/codegen/X86Ops.hpp"
 
 namespace TR { class X86ImmInstruction;   }
 namespace TR { class X86LabelInstruction; }

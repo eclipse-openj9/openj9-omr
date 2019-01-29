@@ -38,28 +38,28 @@
 #include "infra/List.hpp"
 #include "infra/Random.hpp"
 
-#include <stdarg.h>                              // for va_list
-#include <stddef.h>                              // for size_t
-#include <stdint.h>                              // for int32_t, uint32_t, etc
-#include <stdio.h>                               // for FILE
-#include <string.h>                              // for NULL, strlen
-#include "codegen/CodeGenPhase.hpp"              // for CodeGenPhase
-#include "env/KnownObjectTable.hpp"          // for KnownObjectTable, etc
+#include <stdarg.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <string.h>
+#include "codegen/CodeGenPhase.hpp"
+#include "env/KnownObjectTable.hpp"
 #include "codegen/Snippet.hpp"
-#include "compile/CompilationTypes.hpp"          // for TR_CallingContext
-#include "env/Processors.hpp"                    // for TR_Processor
+#include "compile/CompilationTypes.hpp"
+#include "env/Processors.hpp"
 #include "env/ProcessorInfo.hpp"
 #include "env/jittypes.h"
-#include "il/DataTypes.hpp"                      // for DataTypes, etc
-#include "il/ILOpCodes.hpp"                      // for ILOpCodes, etc
+#include "il/DataTypes.hpp"
+#include "il/ILOpCodes.hpp"
 #include "il/ILOps.hpp"
 #include "infra/Array.hpp"
-#include "infra/Assert.hpp"                      // for TR_ASSERT
-#include "infra/Flags.hpp"                       // for flags32_t
+#include "infra/Assert.hpp"
+#include "infra/Flags.hpp"
 #include "optimizer/OptimizationStrategies.hpp"
-#include "optimizer/Optimizations.hpp"           // for Optimizations
-#include "runtime/Runtime.hpp"                   // for TR_AOTStats, etc
-#include "env/VerboseLog.hpp"                    // for TR_VerboseLog, etc
+#include "optimizer/Optimizations.hpp"
+#include "runtime/Runtime.hpp"
+#include "env/VerboseLog.hpp"
 
 #ifdef J9_PROJECT_SPECIFIC
 #include "env/SharedCache.hpp"

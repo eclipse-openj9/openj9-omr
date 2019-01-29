@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -19,61 +19,61 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#include <stddef.h>                                 // for NULL
-#include <stdint.h>                                 // for int32_t, etc
-#include "codegen/CodeGenerator.hpp"                // for CodeGenerator, etc
+#include <stddef.h>
+#include <stdint.h>
+#include "codegen/CodeGenerator.hpp"
 #include "codegen/CodeGenerator_inlines.hpp"
 #include "codegen/ConstantDataSnippet.hpp"
-#include "codegen/FrontEnd.hpp"                     // for TR_FrontEnd, etc
-#include "codegen/Instruction.hpp"                  // for Instruction
-#include "codegen/Linkage.hpp"                      // for Linkage, etc
+#include "codegen/FrontEnd.hpp"
+#include "codegen/Instruction.hpp"
+#include "codegen/Linkage.hpp"
 #include "codegen/LinkageConventionsEnum.hpp"
-#include "codegen/LiveRegister.hpp"                 // for TR_LiveRegisters
-#include "codegen/Machine.hpp"                      // for Machine
+#include "codegen/LiveRegister.hpp"
+#include "codegen/Machine.hpp"
 #include "codegen/MemoryReference.hpp"
 #include "codegen/RealRegister.hpp"
 #include "codegen/RecognizedMethods.hpp"
-#include "codegen/Register.hpp"                     // for Register
+#include "codegen/Register.hpp"
 #include "codegen/RegisterConstants.hpp"
 #include "codegen/RegisterDependency.hpp"
 #include "codegen/RegisterDependencyStruct.hpp"
-#include "codegen/RegisterPair.hpp"                 // for RegisterPair
+#include "codegen/RegisterPair.hpp"
 #include "codegen/Relocation.hpp"
 #include "codegen/TreeEvaluator.hpp"
-#include "compile/Compilation.hpp"                  // for Compilation, etc
+#include "compile/Compilation.hpp"
 #include "compile/ResolvedMethod.hpp"
 #include "compile/SymbolReferenceTable.hpp"
-#include "compile/VirtualGuard.hpp"                 // for TR_VirtualGuard
+#include "compile/VirtualGuard.hpp"
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"
 #include "env/CompilerEnv.hpp"
 #ifdef J9_PROJECT_SPECIFIC
-#include "env/CHTable.hpp"                          // for TR_AOTGuardSite, etc
+#include "env/CHTable.hpp"
 #endif
 #include "env/TRMemory.hpp"
-#include "env/jittypes.h"                           // for intptrj_t
-#include "il/Block.hpp"                             // for Block
-#include "il/DataTypes.hpp"                         // for DataTypes::Int32, etc
+#include "env/jittypes.h"
+#include "il/Block.hpp"
+#include "il/DataTypes.hpp"
 #include "il/ILOpCodes.hpp"
-#include "il/ILOps.hpp"                             // for ILOpCode, etc
-#include "il/Node.hpp"                              // for Node
+#include "il/ILOps.hpp"
+#include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
-#include "il/Symbol.hpp"                            // for Symbol
-#include "il/TreeTop.hpp"                           // for TreeTop
-#include "il/TreeTop_inlines.hpp"                   // for TreeTop::getNode
-#include "il/symbol/LabelSymbol.hpp"                // for LabelSymbol, etc
-#include "il/symbol/MethodSymbol.hpp"               // for MethodSymbol
+#include "il/Symbol.hpp"
+#include "il/TreeTop.hpp"
+#include "il/TreeTop_inlines.hpp"
+#include "il/symbol/LabelSymbol.hpp"
+#include "il/symbol/MethodSymbol.hpp"
 #include "il/symbol/ResolvedMethodSymbol.hpp"
-#include "infra/Assert.hpp"                         // for TR_ASSERT
-#include "infra/Bit.hpp"                            // for isPowerOf2
-#include "infra/List.hpp"                           // for List, etc
-#include "ras/Debug.hpp"                            // for TR_DebugBase
+#include "infra/Assert.hpp"
+#include "infra/Bit.hpp"
+#include "infra/List.hpp"
+#include "ras/Debug.hpp"
 #include "runtime/Runtime.hpp"
 #include "x/codegen/BinaryCommutativeAnalyser.hpp"
 #include "x/codegen/CompareAnalyser.hpp"
 #include "x/codegen/FPTreeEvaluator.hpp"
 #include "x/codegen/X86Instruction.hpp"
-#include "x/codegen/X86Ops.hpp"                     // for TR_X86OpCodes, etc
+#include "x/codegen/X86Ops.hpp"
 
 class TR_OpaqueClassBlock;
 class TR_OpaqueMethodBlock;

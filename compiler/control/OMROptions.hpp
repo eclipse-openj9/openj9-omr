@@ -32,22 +32,22 @@ namespace OMR { typedef OMR::Options OptionsConnector; }
 #endif
 
 
-#include <limits.h>                      // for INT_MAX
-#include <stddef.h>                      // for size_t
-#include <stdint.h>                      // for int32_t, uint32_t, uintptr_t, etc
-#include <string.h>                      // for NULL, strcpy, memset, strlen, etc
-#include "codegen/FrontEnd.hpp"          // for TR_FrontEnd
-#include "compile/CompilationTypes.hpp"  // for TR_Hotness
-#include "control/OMROptions.hpp"        // for OMR::Options
+#include <limits.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
+#include "codegen/FrontEnd.hpp"
+#include "compile/CompilationTypes.hpp"
+#include "control/OMROptions.hpp"
 #include "control/OptionsUtil.hpp"
-#include "env/Processors.hpp"            // for TR_Processor
+#include "env/Processors.hpp"
 #include "env/RawAllocator.hpp"
-#include "env/TRMemory.hpp"              // for TR_Memory, etc
-#include "env/jittypes.h"                // for intptrj_t
-#include "il/DataTypes.hpp"              // for TR_YesNoMaybe, etc
-#include "infra/Assert.hpp"              // for TR_ASSERT
-#include "optimizer/Optimizations.hpp"   // for Optimizations, etc
-#include "ras/DebugCounter.hpp"          // for TR::DebugCounter, etc
+#include "env/TRMemory.hpp"
+#include "env/jittypes.h"
+#include "il/DataTypes.hpp"
+#include "infra/Assert.hpp"
+#include "optimizer/Optimizations.hpp"
+#include "ras/DebugCounter.hpp"
 
 namespace TR { class CFGNode; }
 

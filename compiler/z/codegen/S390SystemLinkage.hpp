@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -31,21 +31,21 @@ namespace TR { class S390SystemLinkage; }
 namespace OMR { typedef TR::S390SystemLinkage SystemLinkageConnector; }
 #endif
 
-#include <stddef.h>                            // for NULL, size_t
-#include <stdint.h>                            // for int32_t, uintptr_t, etc
-#include "codegen/InstOpCode.hpp"              // for InstOpCode, etc
+#include <stddef.h>
+#include <stdint.h>
+#include "codegen/InstOpCode.hpp"
 #include "codegen/Linkage.hpp"
-#include "codegen/LinkageConventionsEnum.hpp"  // for TR_LinkageConventions, etc
-#include "codegen/RealRegister.hpp"            // for RealRegister, etc
-#include "codegen/Register.hpp"                // for Register
-#include "compile/Compilation.hpp"             // for Compilation
-#include "env/TRMemory.hpp"                    // for Allocator, etc
-#include "env/jittypes.h"                      // for intptrj_t
-#include "il/Symbol.hpp"                       // for Symbol
-#include "il/SymbolReference.hpp"              // for SymbolReference
-#include "il/symbol/AutomaticSymbol.hpp"       // for AutomaticSymbol
-#include "infra/Array.hpp"                     // for TR_Array
-#include "infra/Assert.hpp"                    // for TR_ASSERT
+#include "codegen/LinkageConventionsEnum.hpp"
+#include "codegen/RealRegister.hpp"
+#include "codegen/Register.hpp"
+#include "compile/Compilation.hpp"
+#include "env/TRMemory.hpp"
+#include "env/jittypes.h"
+#include "il/Symbol.hpp"
+#include "il/SymbolReference.hpp"
+#include "il/symbol/AutomaticSymbol.hpp"
+#include "infra/Array.hpp"
+#include "infra/Assert.hpp"
 
 namespace TR { class S390JNICallDataSnippet; }
 namespace TR { class Block; }

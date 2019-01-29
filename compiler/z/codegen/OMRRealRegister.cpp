@@ -27,13 +27,13 @@
 #pragma csect(STATIC,"TRZRealRegtBase#S")
 #pragma csect(TEST,"TRZRealRegBase#T")
 
-#include <stddef.h>                        // for NULL
-#include <stdint.h>                        // for uint32_t, int32_t, uint8_t, etc
-#include "codegen/RealRegister.hpp"        // for RealRegister, etc
-#include "codegen/Register.hpp"            // for Register
-#include "codegen/RegisterConstants.hpp"   // for TR_RegisterKinds, etc
-#include "infra/Assert.hpp"                // for TR_ASSERT
-#include "z/codegen/EndianConversion.hpp"  // for boi
+#include <stddef.h>
+#include <stdint.h>
+#include "codegen/RealRegister.hpp"
+#include "codegen/Register.hpp"
+#include "codegen/RegisterConstants.hpp"
+#include "infra/Assert.hpp"
+#include "z/codegen/EndianConversion.hpp"
 
 namespace TR { class CodeGenerator; }
 

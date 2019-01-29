@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -24,32 +24,32 @@
 #pragma csect(TEST,"OMRZSnippet#T")
 
 
-#include <stddef.h>                             // for NULL
-#include <stdint.h>                             // for int32_t, uint32_t, etc
-#include "codegen/BackingStore.hpp"             // for TR_BackingStore
-#include "codegen/CodeGenerator.hpp"            // for CodeGenerator, etc
+#include <stddef.h>
+#include <stdint.h>
+#include "codegen/BackingStore.hpp"
+#include "codegen/CodeGenerator.hpp"
 #include "codegen/ConstantDataSnippet.hpp"
-#include "codegen/FrontEnd.hpp"                 // for TR_FrontEnd
-#include "codegen/InstOpCode.hpp"               // for InstOpCode, etc
-#include "codegen/RealRegister.hpp"             // for RealRegister
-#include "codegen/Register.hpp"                 // for Register
+#include "codegen/FrontEnd.hpp"
+#include "codegen/InstOpCode.hpp"
+#include "codegen/RealRegister.hpp"
+#include "codegen/Register.hpp"
 #include "codegen/Relocation.hpp"
-#include "codegen/Snippet.hpp"                  // for TR::S390Snippet, etc
+#include "codegen/Snippet.hpp"
 #include "codegen/UnresolvedDataSnippet.hpp"
-#include "compile/Compilation.hpp"              // for Compilation
+#include "compile/Compilation.hpp"
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"
 #include "env/CompilerEnv.hpp"
 #include "env/TRMemory.hpp"
-#include "env/jittypes.h"                       // for intptrj_t
-#include "il/Symbol.hpp"                        // for Symbol
-#include "il/SymbolReference.hpp"               // for SymbolReference
-#include "il/symbol/LabelSymbol.hpp"            // for LabelSymbol
-#include "il/symbol/MethodSymbol.hpp"           // for MethodSymbol
-#include "infra/Assert.hpp"                     // for TR_ASSERT
-#include "ras/Debug.hpp"                        // for TR_Debug
-#include "runtime/Runtime.hpp"                  // for ::TR_HelperAddress, etc
-#include "z/codegen/CallSnippet.hpp"            // for TR::S390CallSnippet
+#include "env/jittypes.h"
+#include "il/Symbol.hpp"
+#include "il/SymbolReference.hpp"
+#include "il/symbol/LabelSymbol.hpp"
+#include "il/symbol/MethodSymbol.hpp"
+#include "infra/Assert.hpp"
+#include "ras/Debug.hpp"
+#include "runtime/Runtime.hpp"
+#include "z/codegen/CallSnippet.hpp"
 #include "z/codegen/S390HelperCallSnippet.hpp"
 
 namespace TR { class Node; }

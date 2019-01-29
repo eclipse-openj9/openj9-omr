@@ -21,33 +21,33 @@
 
 #include "z/codegen/BinaryCommutativeAnalyser.hpp"
 
-#include <stddef.h>                                 // for NULL
-#include <stdint.h>                                 // for uint16_t, etc
-#include "codegen/Analyser.hpp"                     // for NUM_ACTIONS
-#include "codegen/CodeGenerator.hpp"                // for CodeGenerator, etc
-#include "codegen/InstOpCode.hpp"                   // for InstOpCode, etc
-#include "codegen/Instruction.hpp"                  // for Instruction
-#include "codegen/MemoryReference.hpp"              // for MemoryReference, etc
-#include "codegen/RealRegister.hpp"                 // for RealRegister, etc
-#include "codegen/Register.hpp"                     // for Register
+#include <stddef.h>
+#include <stdint.h>
+#include "codegen/Analyser.hpp"
+#include "codegen/CodeGenerator.hpp"
+#include "codegen/InstOpCode.hpp"
+#include "codegen/Instruction.hpp"
+#include "codegen/MemoryReference.hpp"
+#include "codegen/RealRegister.hpp"
+#include "codegen/Register.hpp"
 #include "codegen/RegisterConstants.hpp"
 #include "codegen/RegisterDependency.hpp"
-#include "codegen/RegisterPair.hpp"                 // for RegisterPair
+#include "codegen/RegisterPair.hpp"
 #include "codegen/TreeEvaluator.hpp"
-#include "compile/Compilation.hpp"                  // for Compilation
+#include "compile/Compilation.hpp"
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"
 #include "env/CompilerEnv.hpp"
 #include "env/TRMemory.hpp"
-#include "il/DataTypes.hpp"                         // for DataTypes::Int32, etc
-#include "il/ILOpCodes.hpp"                         // for ILOpCodes::land, etc
-#include "il/ILOps.hpp"                             // for ILOpCode
-#include "il/Node.hpp"                              // for Node
+#include "il/DataTypes.hpp"
+#include "il/ILOpCodes.hpp"
+#include "il/ILOps.hpp"
+#include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
-#include "il/SymbolReference.hpp"                   // for SymbolReference
-#include "il/symbol/LabelSymbol.hpp"                // for LabelSymbol
-#include "infra/Assert.hpp"                         // for TR_ASSERT
-#include "ras/Debug.hpp"                            // for TR_DebugBase
+#include "il/SymbolReference.hpp"
+#include "il/symbol/LabelSymbol.hpp"
+#include "infra/Assert.hpp"
+#include "ras/Debug.hpp"
 #include "z/codegen/S390Evaluator.hpp"
 #include "z/codegen/S390GenerateInstructions.hpp"
 #include "z/codegen/S390Instruction.hpp"

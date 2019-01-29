@@ -22,29 +22,29 @@
 #ifndef OMR_X86INSTRUCTION_INCL
 #define OMR_X86INSTRUCTION_INCL
 
-#include <stddef.h>                                   // for NULL
-#include <stdint.h>                                   // for int32_t, etc
-#include "codegen/CodeGenerator.hpp"                  // for CodeGenerator, etc
-#include "codegen/Instruction.hpp"                    // for Instruction, etc
-#include "codegen/Machine.hpp"                        // for Machine
+#include <stddef.h>
+#include <stdint.h>
+#include "codegen/CodeGenerator.hpp"
+#include "codegen/Instruction.hpp"
+#include "codegen/Machine.hpp"
 #include "codegen/MemoryReference.hpp"
-#include "codegen/RealRegister.hpp"                   // for RealRegister, etc
-#include "codegen/Register.hpp"                       // for Register
+#include "codegen/RealRegister.hpp"
+#include "codegen/Register.hpp"
 #include "codegen/RegisterConstants.hpp"
 #include "codegen/RegisterDependency.hpp"
 #include "codegen/RegisterRematerializationInfo.hpp"
-#include "codegen/Snippet.hpp"                        // for Snippet
-#include "compile/Compilation.hpp"                    // for Compilation
+#include "codegen/Snippet.hpp"
+#include "compile/Compilation.hpp"
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"
 #include "env/TRMemory.hpp"
-#include "il/ILOpCodes.hpp"                           // for ILOpCodes
-#include "il/Node.hpp"                                // for ncount_t
-#include "il/symbol/LabelSymbol.hpp"                  // for LabelSymbol
-#include "infra/Assert.hpp"                           // for TR_ASSERT
-#include "infra/List.hpp"                             // for List
+#include "il/ILOpCodes.hpp"
+#include "il/Node.hpp"
+#include "il/symbol/LabelSymbol.hpp"
+#include "infra/Assert.hpp"
+#include "infra/List.hpp"
 #include "runtime/Runtime.hpp"
-#include "x/codegen/X86Ops.hpp"                       // for TR_X86OpCodes, etc
+#include "x/codegen/X86Ops.hpp"
 #include "env/CompilerEnv.hpp"
 
 namespace TR { class LabelRelocation; }

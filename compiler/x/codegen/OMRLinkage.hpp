@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -33,20 +33,20 @@ namespace OMR { typedef OMR::X86::Linkage LinkageConnector; }
 
 #include "compiler/codegen/OMRLinkage.hpp"
 
-#include <algorithm>                      // for std::max
-#include <stddef.h>                       // for NULL
-#include <stdint.h>                       // for uint32_t, uint8_t, etc
-#include "codegen/CodeGenerator.hpp"      // for CodeGenerator
-#include "codegen/Machine.hpp"            // for Machine, etc
+#include <algorithm>
+#include <stddef.h>
+#include <stdint.h>
+#include "codegen/CodeGenerator.hpp"
+#include "codegen/Machine.hpp"
 #include "codegen/RealRegister.hpp"
-#include "codegen/Register.hpp"           // for Register
+#include "codegen/Register.hpp"
 #include "codegen/RegisterConstants.hpp"
-#include "env/TRMemory.hpp"               // for TR_HeapMemory, etc
-#include "il/DataTypes.hpp"               // for DataTypes, etc
-#include "il/symbol/ParameterSymbol.hpp"  // for ParameterSymbol
-#include "infra/Annotations.hpp"          // for OMR_EXTENSIBLE
-#include "infra/Assert.hpp"               // for TR_ASSERT
-#include "x/codegen/X86Ops.hpp"           // for TR_X86OpCodes, etc
+#include "env/TRMemory.hpp"
+#include "il/DataTypes.hpp"
+#include "il/symbol/ParameterSymbol.hpp"
+#include "infra/Annotations.hpp"
+#include "infra/Assert.hpp"
+#include "x/codegen/X86Ops.hpp"
 
 // linkage properties
 #define CallerCleanup                              0x0001

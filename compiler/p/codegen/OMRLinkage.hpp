@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -33,16 +33,16 @@ namespace OMR { typedef OMR::Power::Linkage LinkageConnector; }
 
 #include "compiler/codegen/OMRLinkage.hpp"
 
-#include <stddef.h>                               // for NULL
-#include <stdint.h>                               // for uint32_t, uint8_t, etc
-#include "codegen/CodeGenerator.hpp"              // for CodeGenerator
-#include "codegen/InstOpCode.hpp"                 // for InstOpCode, etc
+#include <stddef.h>
+#include <stdint.h>
+#include "codegen/CodeGenerator.hpp"
+#include "codegen/InstOpCode.hpp"
 #include "codegen/RealRegister.hpp"
-#include "codegen/Register.hpp"                   // for Register
-#include "codegen/RegisterConstants.hpp"          // for TR_RegisterKinds, etc
+#include "codegen/Register.hpp"
+#include "codegen/RegisterConstants.hpp"
 #include "codegen/RegisterDependency.hpp"
-#include "env/TRMemory.hpp"                       // for TR_Memory, etc
-#include "infra/Annotations.hpp"                  // for OMR_EXTENSIBLE
+#include "env/TRMemory.hpp"
+#include "infra/Annotations.hpp"
 
 class TR_FrontEnd;
 namespace TR { class AutomaticSymbol; }

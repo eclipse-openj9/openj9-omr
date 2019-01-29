@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -22,12 +22,12 @@
 #ifndef GENERATEINSTRUCTION_INCL
 #define GENERATEINSTRUCTION_INCL
 
-#include <stddef.h>                // for NULL
-#include <stdint.h>                // for uint8_t, uint32_t, int8_t, etc
-#include "codegen/InstOpCode.hpp"  // for InstOpCode, InstOpCode::Mnemonic, etc
-#include "codegen/Snippet.hpp"     // for Snippet
-#include "env/jittypes.h"          // for uintptrj_t
-#include "il/Symbol.hpp"           // for Symbol, etc
+#include <stddef.h>
+#include <stdint.h>
+#include "codegen/InstOpCode.hpp"
+#include "codegen/Snippet.hpp"
+#include "env/jittypes.h"
+#include "il/Symbol.hpp"
 
 #include "z/codegen/S390Instruction.hpp"
 

@@ -21,65 +21,65 @@
 
 #include "il/OMRNode.hpp"
 
-#include <stddef.h>                             // for size_t, NULL
-#include <stdint.h>                             // for uint16_t, int32_t, uint32_t, etc
-#include <string.h>                             // for memcpy
-#include "codegen/CodeGenerator.hpp"            // for CodeGenerator
-#include "codegen/FrontEnd.hpp"                 // for TR_FrontEnd, feGetEnv
-#include "codegen/Linkage.hpp"                  // for Linkage
-#include "codegen/LiveRegister.hpp"             // for TR_LiveRegisterInfo
-#include "codegen/RecognizedMethods.hpp"        // for RecognizedMethod, etc
-#include "codegen/Register.hpp"                 // for Register
-#include "codegen/RegisterPair.hpp"             // for RegisterPair
-#include "compile/Compilation.hpp"              // for Compilation, comp
-#include "compile/Method.hpp"                   // for TR_Method, etc
-#include "compile/ResolvedMethod.hpp"           // for TR_ResolvedMethod
-#include "compile/SymbolReferenceTable.hpp"     // for SymbolReferenceTable
-#include "control/Options.hpp"                  // for Options
-#include "cs2/allocator.h"                      // for allocator
-#include "cs2/sparsrbit.h"                      // for ASparseBitVector
-#include "env/ClassEnv.hpp"                     // for ClassEnv
-#include "env/CompilerEnv.hpp"                  // for CompilerEnv, Compiler
-#include "env/Environment.hpp"                  // for Environment
-#include "env/IO.hpp"                           // for POINTER_PRINTF_FORMAT
-#include "env/TRMemory.hpp"                     // for TR_ArenaAllocator
-#include "env/VMEnv.hpp"                        // for VMEnv
-#include "env/defines.h"                        // for TR_HOST_X86
-#include "il/AliasSetInterface.hpp"            // for TR_NodeUseAliasSetInterface, etc
-#include "il/Block.hpp"                         // for Block, etc
-#include "il/DataTypes.hpp"                     // for DataTypes
-#include "il/IL.hpp"                            // for IL
-#include "il/ILOpCodes.hpp"                     // for ILOpCodes
-#include "il/ILOps.hpp"                         // for ILOpCode
-#include "il/Node.hpp"                          // for Node, etc
-#include "il/NodeExtension.hpp"                 // for TR::NodeExtension
-#include "il/NodePool.hpp"                      // for NodePool
-#include "il/NodeUtils.hpp"                     // for GlobalRegisterInfo
-#include "il/Node_inlines.hpp"                  // for Node::self, etc
-#include "il/Symbol.hpp"                        // for Symbol
-#include "il/SymbolReference.hpp"               // for SymbolReference
-#include "il/TreeTop.hpp"                       // for TreeTop
-#include "il/TreeTop_inlines.hpp"               // for TreeTop::getNode, etc
-#include "il/symbol/AutomaticSymbol.hpp"        // for AutomaticSymbol
-#include "il/symbol/ParameterSymbol.hpp"        // for ParameterSymbol
-#include "il/symbol/MethodSymbol.hpp"           // for MethodSymbol
-#include "il/symbol/ResolvedMethodSymbol.hpp"   // for ResolvedMethodSymbol
-#include "il/symbol/StaticSymbol.hpp"           // for StaticSymbol
-#include "ilgen/IlGen.hpp"                      // for TR_IlGenerator
-#include "infra/Assert.hpp"                     // for TR_ASSERT
-#include "infra/BitVector.hpp"                  // for TR_BitVector, etc
-#include "infra/Flags.hpp"                      // for flags32_t
-#include "infra/List.hpp"                       // for List, ListElement
-#include "infra/TRlist.hpp"                     // for list
-#include "infra/Checklist.hpp"                  // for NodeChecklist, etc
-#include "optimizer/LoadExtensions.hpp"         // for TR_LoadExtensions
-#include "optimizer/Optimizer.hpp"              // for Optimizer
-#include "optimizer/ValueNumberInfo.hpp"        // for TR_ValueNumberInfo
-#include "ras/Debug.hpp"                        // for TR_Debug
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
+#include "codegen/CodeGenerator.hpp"
+#include "codegen/FrontEnd.hpp"
+#include "codegen/Linkage.hpp"
+#include "codegen/LiveRegister.hpp"
+#include "codegen/RecognizedMethods.hpp"
+#include "codegen/Register.hpp"
+#include "codegen/RegisterPair.hpp"
+#include "compile/Compilation.hpp"
+#include "compile/Method.hpp"
+#include "compile/ResolvedMethod.hpp"
+#include "compile/SymbolReferenceTable.hpp"
+#include "control/Options.hpp"
+#include "cs2/allocator.h"
+#include "cs2/sparsrbit.h"
+#include "env/ClassEnv.hpp"
+#include "env/CompilerEnv.hpp"
+#include "env/Environment.hpp"
+#include "env/IO.hpp"
+#include "env/TRMemory.hpp"
+#include "env/VMEnv.hpp"
+#include "env/defines.h"
+#include "il/AliasSetInterface.hpp"
+#include "il/Block.hpp"
+#include "il/DataTypes.hpp"
+#include "il/IL.hpp"
+#include "il/ILOpCodes.hpp"
+#include "il/ILOps.hpp"
+#include "il/Node.hpp"
+#include "il/NodeExtension.hpp"
+#include "il/NodePool.hpp"
+#include "il/NodeUtils.hpp"
+#include "il/Node_inlines.hpp"
+#include "il/Symbol.hpp"
+#include "il/SymbolReference.hpp"
+#include "il/TreeTop.hpp"
+#include "il/TreeTop_inlines.hpp"
+#include "il/symbol/AutomaticSymbol.hpp"
+#include "il/symbol/ParameterSymbol.hpp"
+#include "il/symbol/MethodSymbol.hpp"
+#include "il/symbol/ResolvedMethodSymbol.hpp"
+#include "il/symbol/StaticSymbol.hpp"
+#include "ilgen/IlGen.hpp"
+#include "infra/Assert.hpp"
+#include "infra/BitVector.hpp"
+#include "infra/Flags.hpp"
+#include "infra/List.hpp"
+#include "infra/TRlist.hpp"
+#include "infra/Checklist.hpp"
+#include "optimizer/LoadExtensions.hpp"
+#include "optimizer/Optimizer.hpp"
+#include "optimizer/ValueNumberInfo.hpp"
+#include "ras/Debug.hpp"
 
 #ifdef J9_PROJECT_SPECIFIC
 #ifdef TR_TARGET_S390
-#include "z/codegen/S390Register.hpp"                        // for TR_PseudoRegister, etc
+#include "z/codegen/S390Register.hpp"
 #endif
 #endif
 /**

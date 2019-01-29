@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -21,49 +21,49 @@
 
 #include "z/codegen/ConstantDataSnippet.hpp"
 
-#include <stddef.h>                             // for NULL
-#include <stdint.h>                             // for uint8_t, uint32_t, etc
-#include <string.h>                             // for memcpy, strlen
-#include <algorithm>                            // for std::find
-#include "codegen/CodeGenerator.hpp"            // for CodeGenerator
-#include "codegen/FrontEnd.hpp"                 // for TR_FrontEnd
-#include "codegen/InstOpCode.hpp"               // for InstOpCode
-#include "codegen/Instruction.hpp"              // for Instruction
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
+#include <algorithm>
+#include "codegen/CodeGenerator.hpp"
+#include "codegen/FrontEnd.hpp"
+#include "codegen/InstOpCode.hpp"
+#include "codegen/Instruction.hpp"
 #include "codegen/Relocation.hpp"
 #include "codegen/Snippet.hpp"
 #include "codegen/UnresolvedDataSnippet.hpp"
-#include "compile/Compilation.hpp"              // for Compilation
-#include "compile/Method.hpp"                   // for TR_Method
-#include "compile/ResolvedMethod.hpp"           // for TR_ResolvedMethod
+#include "compile/Compilation.hpp"
+#include "compile/Method.hpp"
+#include "compile/ResolvedMethod.hpp"
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"
 #include "env/CompilerEnv.hpp"
 #ifdef J9_PROJECT_SPECIFIC
-#include "env/CHTable.hpp"                      // for TR_PatchJNICallSite
+#include "env/CHTable.hpp"
 #endif
 #include "env/IO.hpp"
-#include "env/ObjectModel.hpp"                  // for ObjectModel
+#include "env/ObjectModel.hpp"
 #include "env/TRMemory.hpp"
-#include "env/jittypes.h"                       // for intptrj_t, uintptrj_t
+#include "env/jittypes.h"
 #include "il/DataTypes.hpp"
-#include "il/ILOpCodes.hpp"                     // for ILOpCodes::aconst
-#include "il/Node.hpp"                          // for Node
+#include "il/ILOpCodes.hpp"
+#include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
-#include "il/Symbol.hpp"                        // for Symbol
-#include "il/SymbolReference.hpp"               // for SymbolReference
-#include "il/TreeTop.hpp"                       // for TreeTop
-#include "il/TreeTop_inlines.hpp"               // for TreeTop::getNode
-#include "il/symbol/LabelSymbol.hpp"            // for LabelSymbol
-#include "il/symbol/ResolvedMethodSymbol.hpp"   // for ResolvedMethodSymbol
-#include "il/symbol/StaticSymbol.hpp"           // for StaticSymbol
-#include "infra/Assert.hpp"                     // for TR_ASSERT
-#include "infra/Link.hpp"                       // for TR_Pair
-#include "infra/List.hpp"                       // for List, ListIterator
-#include "ras/Debug.hpp"                        // for TR_Debug
+#include "il/Symbol.hpp"
+#include "il/SymbolReference.hpp"
+#include "il/TreeTop.hpp"
+#include "il/TreeTop_inlines.hpp"
+#include "il/symbol/LabelSymbol.hpp"
+#include "il/symbol/ResolvedMethodSymbol.hpp"
+#include "il/symbol/StaticSymbol.hpp"
+#include "infra/Assert.hpp"
+#include "infra/Link.hpp"
+#include "infra/List.hpp"
+#include "ras/Debug.hpp"
 #include "runtime/Runtime.hpp"
 
 #if defined(TR_HOST_S390)
-#include <time.h>                               // for NULL
+#include <time.h>
 #endif
 
 TR::S390ConstantDataSnippet::S390ConstantDataSnippet(TR::CodeGenerator * cg, TR::Node * n, void * c, uint16_t size) :

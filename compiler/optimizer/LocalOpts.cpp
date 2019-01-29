@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -21,79 +21,79 @@
 
 #include "optimizer/LocalOpts.hpp"
 
-#include <algorithm>                           // for std::max, etc
-#include <limits.h>                            // for INT_MAX, UINT_MAX, etc
-#include <math.h>                              // for exp
-#include <stddef.h>                            // for size_t
-#include <stdint.h>                            // for int32_t, uint32_t, etc
-#include <stdio.h>                             // for printf, fflush, etc
-#include <stdlib.h>                            // for atoi
-#include <string.h>                            // for NULL, strncmp, strcmp, etc
-#include "codegen/CodeGenerator.hpp"           // for CodeGenerator, etc
-#include "codegen/FrontEnd.hpp"                // for TR_FrontEnd, feGetEnv, etc
-#include "env/KnownObjectTable.hpp"        // for KnownObjectTable, etc
-#include "codegen/Linkage.hpp"                 // for Linkage
-#include "codegen/RecognizedMethods.hpp"       // for RecognizedMethod, etc
+#include <algorithm>
+#include <limits.h>
+#include <math.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "codegen/CodeGenerator.hpp"
+#include "codegen/FrontEnd.hpp"
+#include "env/KnownObjectTable.hpp"
+#include "codegen/Linkage.hpp"
+#include "codegen/RecognizedMethods.hpp"
 #include "codegen/RegisterConstants.hpp"
-#include "compile/Compilation.hpp"             // for Compilation, comp, etc
-#include "compile/Method.hpp"                  // for TR_Method
-#include "compile/ResolvedMethod.hpp"          // for TR_ResolvedMethod
-#include "compile/SymbolReferenceTable.hpp"    // for SymbolReferenceTable, etc
-#include "compile/VirtualGuard.hpp"            // for TR_VirtualGuard
+#include "compile/Compilation.hpp"
+#include "compile/Method.hpp"
+#include "compile/ResolvedMethod.hpp"
+#include "compile/SymbolReferenceTable.hpp"
+#include "compile/VirtualGuard.hpp"
 #include "control/Options.hpp"
-#include "control/Options_inlines.hpp"         // for TR::Options, etc
+#include "control/Options_inlines.hpp"
 #include "control/Recompilation.hpp"
-#include "cs2/bitvectr.h"                      // for ABitVector
-#include "cs2/hashtab.h"                       // for HashTable, HashIndex
-#include "cs2/llistof.h"                       // for QueueOf
-#include "cs2/sparsrbit.h"                     // for ASparseBitVector, etc
+#include "cs2/bitvectr.h"
+#include "cs2/hashtab.h"
+#include "cs2/llistof.h"
+#include "cs2/sparsrbit.h"
 #include "env/CompilerEnv.hpp"
-#include "env/PersistentInfo.hpp"              // for PersistentInfo
+#include "env/PersistentInfo.hpp"
 #include "env/StackMemoryRegion.hpp"
-#include "env/TRMemory.hpp"                    // for SparseBitVector, etc
-#include "env/jittypes.h"                      // for TR_ByteCodeInfo, etc
+#include "env/TRMemory.hpp"
+#include "env/jittypes.h"
 #include "il/AliasSetInterface.hpp"
-#include "il/Block.hpp"                        // for Block, toBlock, etc
-#include "il/DataTypes.hpp"                    // for TR::DataType, etc
-#include "il/ILOpCodes.hpp"                    // for ILOpCodes::treetop, etc
-#include "il/ILOps.hpp"                        // for ILOpCode, TR::ILOpCode
-#include "il/Node.hpp"                         // for Node, etc
-#include "il/NodePool.hpp"                     // for TR::NodePool
-#include "il/Node_inlines.hpp"                 // for Node::getFirstChild, etc
-#include "il/Symbol.hpp"                       // for Symbol, etc
-#include "il/SymbolReference.hpp"              // for SymbolReference, etc
-#include "il/TreeTop.hpp"                      // for TreeTop
-#include "il/TreeTop_inlines.hpp"              // for TreeTop::getNode, etc
-#include "il/symbol/MethodSymbol.hpp"          // for MethodSymbol, etc
-#include "il/symbol/ParameterSymbol.hpp"       // for ParameterSymbol
-#include "il/symbol/ResolvedMethodSymbol.hpp"  // for ResolvedMethodSymbol
-#include "il/symbol/StaticSymbol.hpp"          // for StaticSymbol
-#include "ilgen/IlGenRequest.hpp"              // for IlGenRequest
+#include "il/Block.hpp"
+#include "il/DataTypes.hpp"
+#include "il/ILOpCodes.hpp"
+#include "il/ILOps.hpp"
+#include "il/Node.hpp"
+#include "il/NodePool.hpp"
+#include "il/Node_inlines.hpp"
+#include "il/Symbol.hpp"
+#include "il/SymbolReference.hpp"
+#include "il/TreeTop.hpp"
+#include "il/TreeTop_inlines.hpp"
+#include "il/symbol/MethodSymbol.hpp"
+#include "il/symbol/ParameterSymbol.hpp"
+#include "il/symbol/ResolvedMethodSymbol.hpp"
+#include "il/symbol/StaticSymbol.hpp"
+#include "ilgen/IlGenRequest.hpp"
 #include "ilgen/IlGeneratorMethodDetails.hpp"
-#include "infra/Array.hpp"                     // for TR_Array
-#include "infra/Assert.hpp"                    // for TR_ASSERT
-#include "infra/Bit.hpp"                       // for isPowerOf2, etc
-#include "infra/BitVector.hpp"                 // for TR_BitVector, etc
-#include "infra/Cfg.hpp"                       // for CFG, etc
+#include "infra/Array.hpp"
+#include "infra/Assert.hpp"
+#include "infra/Bit.hpp"
+#include "infra/BitVector.hpp"
+#include "infra/Cfg.hpp"
 #include "infra/ILWalk.hpp"
-#include "infra/Link.hpp"                      // for TR_LinkHeadAndTail, etc
-#include "infra/List.hpp"                      // for List, TR_ScratchList, etc
-#include "optimizer/Inliner.hpp"               // for TR_InlineCall, etc
-#include "infra/Stack.hpp"                     // for TR_Stack
-#include "infra/CfgEdge.hpp"                   // for CFGEdge
-#include "infra/CfgNode.hpp"                   // for CFGNode
-#include "optimizer/Optimization.hpp"          // for Optimization
+#include "infra/Link.hpp"
+#include "infra/List.hpp"
+#include "optimizer/Inliner.hpp"
+#include "infra/Stack.hpp"
+#include "infra/CfgEdge.hpp"
+#include "infra/CfgNode.hpp"
+#include "optimizer/Optimization.hpp"
 #include "optimizer/Optimization_inlines.hpp"
-#include "optimizer/OptimizationManager.hpp"   // for OptimizationManager
+#include "optimizer/OptimizationManager.hpp"
 #include "optimizer/Optimizations.hpp"
-#include "optimizer/Optimizer.hpp"             // for Optimizer
-#include "optimizer/OrderBlocks.hpp"           // for TR_OrderBlocks
-#include "optimizer/PreExistence.hpp"          // for TR_PrexArgument, etc
-#include "optimizer/Structure.hpp"             // for TR_RegionStructure, etc
+#include "optimizer/Optimizer.hpp"
+#include "optimizer/OrderBlocks.hpp"
+#include "optimizer/PreExistence.hpp"
+#include "optimizer/Structure.hpp"
 #include "optimizer/TransformUtil.hpp"
-#include "optimizer/UseDefInfo.hpp"            // for TR_UseDefInfo
-#include "ras/Debug.hpp"                       // for TR_DebugBase
-#include "ras/DebugCounter.hpp"                // for TR::DebugCounter, etc
+#include "optimizer/UseDefInfo.hpp"
+#include "ras/Debug.hpp"
+#include "ras/DebugCounter.hpp"
 #include "ras/ILValidator.hpp"
 #include "ras/ILValidationStrategies.hpp"
 #include "runtime/Runtime.hpp"
@@ -102,9 +102,9 @@
 #include "control/RecompilationInfo.hpp"
 #include "runtime/J9ValueProfiler.hpp"
 #include "runtime/J9Profiler.hpp"
-#include "env/CHTable.hpp"                     // for TR_CHTable, etc
-#include "env/ClassTableCriticalSection.hpp"   // for ClassTableCriticalSection
-#include "env/PersistentCHTable.hpp"           // for TR_PersistentCHTable
+#include "env/CHTable.hpp"
+#include "env/ClassTableCriticalSection.hpp"
+#include "env/PersistentCHTable.hpp"
 #include "env/RuntimeAssumptionTable.hpp"
 #include "env/VMJ9.h"
 #include "runtime/RuntimeAssumptions.hpp"

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -19,66 +19,66 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#include <algorithm>                                  // for std::min
-#include <assert.h>                                   // for assert
-#include <stdint.h>                                   // for uint8_t, etc
-#include <stdlib.h>                                   // for NULL, atoi
-#include <string.h>                                   // for strstr
-#include "codegen/CodeGenerator.hpp"                  // for CodeGenerator, etc
-#include "codegen/FrontEnd.hpp"                       // for TR_FrontEnd, etc
-#include "codegen/Instruction.hpp"                    // for Instruction
-#include "codegen/Linkage.hpp"                        // for Linkage, etc
+#include <algorithm>
+#include <assert.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
+#include "codegen/CodeGenerator.hpp"
+#include "codegen/FrontEnd.hpp"
+#include "codegen/Instruction.hpp"
+#include "codegen/Linkage.hpp"
 #include "codegen/LiveRegister.hpp"
-#include "codegen/Machine.hpp"                        // for Machine
+#include "codegen/Machine.hpp"
 #include "codegen/MemoryReference.hpp"
-#include "codegen/RealRegister.hpp"                   // for RealRegister, etc
+#include "codegen/RealRegister.hpp"
 #include "codegen/RecognizedMethods.hpp"
-#include "codegen/Register.hpp"                       // for Register
+#include "codegen/Register.hpp"
 #include "codegen/RegisterConstants.hpp"
 #include "codegen/RegisterDependency.hpp"
-#include "codegen/RegisterPair.hpp"                   // for RegisterPair
+#include "codegen/RegisterPair.hpp"
 #include "codegen/RegisterRematerializationInfo.hpp"
 #include "codegen/TreeEvaluator.hpp"
-#include "compile/Compilation.hpp"                    // for Compilation, etc
+#include "compile/Compilation.hpp"
 #include "compile/ResolvedMethod.hpp"
 #include "compile/SymbolReferenceTable.hpp"
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"
 #include "env/CompilerEnv.hpp"
-#include "env/IO.hpp"                                 // for POINTER_PRINTF_FORMAT
-#include "env/ObjectModel.hpp"                        // for ObjectModel
-#include "env/TRMemory.hpp"                           // for TR_HeapMemory, etc
-#include "env/jittypes.h"                             // for uintptrj_t, intptrj_t
-#include "il/Block.hpp"                               // for Block, etc
-#include "il/DataTypes.hpp"                           // for DataTypes, TR::DataType, etc
+#include "env/IO.hpp"
+#include "env/ObjectModel.hpp"
+#include "env/TRMemory.hpp"
+#include "env/jittypes.h"
+#include "il/Block.hpp"
+#include "il/DataTypes.hpp"
 #include "il/ILOpCodes.hpp"
-#include "il/ILOps.hpp"                               // for ILOpCode
-#include "il/Node.hpp"                                // for Node, etc
-#include "il/Node_inlines.hpp"                        // for Node::getChild, etc
-#include "il/Symbol.hpp"                              // for Symbol, etc
+#include "il/ILOps.hpp"
+#include "il/Node.hpp"
+#include "il/Node_inlines.hpp"
+#include "il/Symbol.hpp"
 #include "il/SymbolReference.hpp"
-#include "il/TreeTop.hpp"                             // for TreeTop
+#include "il/TreeTop.hpp"
 #include "il/TreeTop_inlines.hpp"
 #include "il/symbol/AutomaticSymbol.hpp"
 #include "il/symbol/LabelSymbol.hpp"
-#include "il/symbol/MethodSymbol.hpp"                 // for MethodSymbol
-#include "infra/Assert.hpp"                           // for TR_ASSERT
-#include "infra/Bit.hpp"                              // for leadingZeroes
-#include "infra/List.hpp"                             // for List, etc
-#include "infra/CfgEdge.hpp"                          // for CFGEdge
-#include "ras/Debug.hpp"                              // for TR_DebugBase
+#include "il/symbol/MethodSymbol.hpp"
+#include "infra/Assert.hpp"
+#include "infra/Bit.hpp"
+#include "infra/List.hpp"
+#include "infra/CfgEdge.hpp"
+#include "ras/Debug.hpp"
 #include "ras/DebugCounter.hpp"
 #include "runtime/Runtime.hpp"
 #ifdef J9_PROJECT_SPECIFIC
 #include "runtime/J9Profiler.hpp"
-#include "runtime/J9ValueProfiler.hpp"         // for TR_ValueInfo
+#include "runtime/J9ValueProfiler.hpp"
 #endif
 #include "x/codegen/HelperCallSnippet.hpp"
 #include "x/codegen/OutlinedInstructions.hpp"
 #include "x/codegen/RegisterRematerialization.hpp"
 #include "x/codegen/X86Evaluator.hpp"
 #include "x/codegen/X86Instruction.hpp"
-#include "x/codegen/X86Ops.hpp"                       // for ::LABEL, etc
+#include "x/codegen/X86Ops.hpp"
 #include "x/codegen/BinaryCommutativeAnalyser.hpp"
 #include "x/codegen/SubtractAnalyser.hpp"
 

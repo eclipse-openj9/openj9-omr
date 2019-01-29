@@ -19,25 +19,25 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#include <stddef.h>                              // for NULL
-#include <stdint.h>                              // for uint32_t, int32_t, etc
-#include "codegen/CodeGenerator.hpp"             // for CodeGenerator, etc
-#include "codegen/InstOpCode.hpp"                // for InstOpCode, etc
-#include "codegen/Instruction.hpp"               // for Instruction, etc
-#include "codegen/Machine.hpp"                   // for Machine
-#include "codegen/MemoryReference.hpp"           // for MemoryReference
-#include "codegen/RealRegister.hpp"              // for RealRegister, etc
-#include "codegen/Register.hpp"                  // for Register
+#include <stddef.h>
+#include <stdint.h>
+#include "codegen/CodeGenerator.hpp"
+#include "codegen/InstOpCode.hpp"
+#include "codegen/Instruction.hpp"
+#include "codegen/Machine.hpp"
+#include "codegen/MemoryReference.hpp"
+#include "codegen/RealRegister.hpp"
+#include "codegen/Register.hpp"
 #include "codegen/RegisterConstants.hpp"
 #include "codegen/RegisterDependency.hpp"
-#include "codegen/RegisterDependencyStruct.hpp"  // for RegisterDependency, etc
-#include "compile/Compilation.hpp"               // for Compilation
-#include "env/ObjectModel.hpp"                   // for ObjectModel
+#include "codegen/RegisterDependencyStruct.hpp"
+#include "compile/Compilation.hpp"
+#include "env/ObjectModel.hpp"
 #include "env/TRMemory.hpp"
-#include "infra/Assert.hpp"                      // for TR_ASSERT
-#include "ras/Debug.hpp"                         // for TR_DebugBase
+#include "infra/Assert.hpp"
+#include "ras/Debug.hpp"
 #include "codegen/X86Instruction.hpp"
-#include "x/codegen/X86Ops.hpp"                  // for TR_X86OpCodes, etc
+#include "x/codegen/X86Ops.hpp"
 #include "env/CompilerEnv.hpp"
 
 namespace TR { class Node; }

@@ -37,35 +37,35 @@ namespace OMR { typedef OMR::Compilation CompilationConnector; }
  */
 
 
-#include <stdarg.h>                           // for va_list
-#include <stddef.h>                           // for NULL, size_t
-#include <stdint.h>                           // for int32_t, int16_t, etc
-#include "codegen/FrontEnd.hpp"               // for TR_FrontEnd
-#include "codegen/RecognizedMethods.hpp"      // for RecognizedMethod
-#include "compile/CompilationTypes.hpp"       // for TR_Hotness
-#include "compile/OSRData.hpp"                // for HCRMode
-#include "compile/Method.hpp"                 // for mcount_t
-#include "compile/TLSCompilationManager.hpp"  // for TLSCompilationManager
-#include "control/OptimizationPlan.hpp"       // for TR_OptimizationPlan
+#include <stdarg.h>
+#include <stddef.h>
+#include <stdint.h>
+#include "codegen/FrontEnd.hpp"
+#include "codegen/RecognizedMethods.hpp"
+#include "compile/CompilationTypes.hpp"
+#include "compile/OSRData.hpp"
+#include "compile/Method.hpp"
+#include "compile/TLSCompilationManager.hpp"
+#include "control/OptimizationPlan.hpp"
 #include "control/Options.hpp"                // For Options
-#include "control/Options_inlines.hpp"        // for TR::Options, etc
-#include "cs2/timer.h"                        // for LexicalBlockTimer, etc
-#include "env/PersistentInfo.hpp"             // for PersistentInfo
-#include "env/TRMemory.hpp"                   // for TR_Memory, etc
-#include "env/Region.hpp"                     // for Region
+#include "control/Options_inlines.hpp"
+#include "cs2/timer.h"
+#include "env/PersistentInfo.hpp"
+#include "env/TRMemory.hpp"
+#include "env/Region.hpp"
 #include "env/jittypes.h"
-#include "il/DataTypes.hpp"                   // for etc
+#include "il/DataTypes.hpp"
 #include "il/IL.hpp"
-#include "il/Node.hpp"                        // for vcount_t, ncount_t
-#include "infra/Array.hpp"                    // for TR_Array
-#include "infra/Flags.hpp"                    // for flags32_t
-#include "infra/Link.hpp"                     // for TR_Pair (ptr only), etc
-#include "infra/List.hpp"                     // for List, ListHeadAndTail, etc
-#include "infra/Stack.hpp"                    // for TR_Stack
-#include "infra/ThreadLocal.h"                // for tlsSet
-#include "optimizer/Optimizations.hpp"        // for Optimizations, etc
-#include "ras/Debug.hpp"                      // for TR_DebugBase
-#include "ras/DebugCounter.hpp"               // for TR::DebugCounter, etc
+#include "il/Node.hpp"
+#include "infra/Array.hpp"
+#include "infra/Flags.hpp"
+#include "infra/Link.hpp"
+#include "infra/List.hpp"
+#include "infra/Stack.hpp"
+#include "infra/ThreadLocal.h"
+#include "optimizer/Optimizations.hpp"
+#include "ras/Debug.hpp"
+#include "ras/DebugCounter.hpp"
 #include "ras/ILValidationStrategies.hpp"
 
 #include "il/symbol/ResolvedMethodSymbol.hpp"

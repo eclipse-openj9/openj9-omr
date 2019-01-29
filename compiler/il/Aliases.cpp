@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -19,49 +19,49 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#include <assert.h>                            // for assert
-#include <stddef.h>                            // for size_t
-#include <stdint.h>                            // for int32_t, uint8_t, etc
-#include <string.h>                            // for NULL, memcpy, strchr
-#include "codegen/CodeGenerator.hpp"           // for SharedSparseBitVector, etc
-#include "codegen/FrontEnd.hpp"                // for TR_FrontEnd, etc
+#include <assert.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
+#include "codegen/CodeGenerator.hpp"
+#include "codegen/FrontEnd.hpp"
 #include "codegen/RecognizedMethods.hpp"
-#include "compile/Compilation.hpp"             // for Compilation, comp
-#include "compile/Method.hpp"                  // for TR_Method
-#include "compile/ResolvedMethod.hpp"          // for TR_ResolvedMethod
-#include "compile/SymbolReferenceTable.hpp"    // for SymbolReferenceTable, etc
+#include "compile/Compilation.hpp"
+#include "compile/Method.hpp"
+#include "compile/ResolvedMethod.hpp"
+#include "compile/SymbolReferenceTable.hpp"
 #include "control/Options.hpp"
-#include "control/Options_inlines.hpp"         // for TR::Options, etc
+#include "control/Options_inlines.hpp"
 #include "control/Recompilation.hpp"
-#include "env/KnownObjectTable.hpp"            // for KnownObjectTable, etc
-#include "env/PersistentInfo.hpp"              // for PersistentInfo
+#include "env/KnownObjectTable.hpp"
+#include "env/PersistentInfo.hpp"
 #include "env/TRMemory.hpp"
-#include "env/jittypes.h"                      // for intptrj_t
+#include "env/jittypes.h"
 #include "il/AliasSetInterface.hpp"
-#include "il/DataTypes.hpp"                    // for DataTypes, etc
-#include "il/ILOpCodes.hpp"                    // for ILOpCodes::BadILOp, etc
-#include "il/ILOps.hpp"                        // for ILOpCode
-#include "il/Node.hpp"                         // for Node
-#include "il/Node_inlines.hpp"                 // for Node::getFirstChild
-#include "il/Symbol.hpp"                       // for Symbol, etc
-#include "il/SymbolReference.hpp"              // for SymbolReference, etc
-#include "il/TreeTop.hpp"                      // for TreeTop
+#include "il/DataTypes.hpp"
+#include "il/ILOpCodes.hpp"
+#include "il/ILOps.hpp"
+#include "il/Node.hpp"
+#include "il/Node_inlines.hpp"
+#include "il/Symbol.hpp"
+#include "il/SymbolReference.hpp"
+#include "il/TreeTop.hpp"
 #include "il/TreeTop_inlines.hpp"
-#include "il/symbol/MethodSymbol.hpp"          // for MethodSymbol
-#include "il/symbol/ParameterSymbol.hpp"       // for ParameterSymbol
-#include "il/symbol/RegisterMappedSymbol.hpp"  // for RegisterMappedSymbol, etc
-#include "il/symbol/ResolvedMethodSymbol.hpp"  // for ResolvedMethodSymbol
-#include "il/symbol/StaticSymbol.hpp"          // for StaticSymbol
-#include "infra/Assert.hpp"                    // for TR_ASSERT
-#include "infra/BitVector.hpp"                 // for TR_BitVector, etc
-#include "infra/Flags.hpp"                     // for flags32_t
-#include "infra/List.hpp"                      // for List
+#include "il/symbol/MethodSymbol.hpp"
+#include "il/symbol/ParameterSymbol.hpp"
+#include "il/symbol/RegisterMappedSymbol.hpp"
+#include "il/symbol/ResolvedMethodSymbol.hpp"
+#include "il/symbol/StaticSymbol.hpp"
+#include "infra/Assert.hpp"
+#include "infra/BitVector.hpp"
+#include "infra/Flags.hpp"
+#include "infra/List.hpp"
 #include "runtime/Runtime.hpp"
 
 #ifdef J9_PROJECT_SPECIFIC
 #include "control/RecompilationInfo.hpp"
 #include "env/CHTable.hpp"
-#include "env/PersistentCHTable.hpp"           // for TR_PersistentCHTable
+#include "env/PersistentCHTable.hpp"
 #include "runtime/RuntimeAssumptions.hpp"
 #endif
 

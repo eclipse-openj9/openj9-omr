@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -35,17 +35,17 @@ namespace OMR { typedef OMR::Power::CodeGenerator CodeGeneratorConnector; }
 
 #include "compiler/codegen/OMRCodeGenerator.hpp"
 
-#include "codegen/InstOpCode.hpp"              // for InstOpCode, etc
-#include "codegen/Machine.hpp"                 // for LOWER_IMMED, etc
-#include "codegen/RealRegister.hpp"            // for RealRegister, etc
+#include "codegen/InstOpCode.hpp"
+#include "codegen/Machine.hpp"
+#include "codegen/RealRegister.hpp"
 #include "codegen/ScratchRegisterManager.hpp"
 #include "compile/SymbolReferenceTable.hpp"
-#include "env/CPU.hpp"                         // for Cpu
-#include "env/PersistentInfo.hpp"              // for PersistentInfo
+#include "env/CPU.hpp"
+#include "env/PersistentInfo.hpp"
 #include "env/Processors.hpp"
 #include "env/TypedAllocator.hpp"
-#include "env/jittypes.h"                      // for intptrj_t
-#include "infra/BitVector.hpp"                 // for TR_BitVector
+#include "env/jittypes.h"
+#include "infra/BitVector.hpp"
 #include "infra/TRlist.hpp"
 #include "optimizer/DataFlowAnalysis.hpp"
 

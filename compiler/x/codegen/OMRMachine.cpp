@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -19,47 +19,47 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#include <stdint.h>                                   // for int32_t, etc
-#include <stdio.h>                                    // for NULL, printf, etc
-#include <string.h>                                   // for memcpy, memset
-#include <algorithm>                                  // for std::find
+#include <stdint.h>
+#include <stdio.h>
+#include <string.h>
+#include <algorithm>
 #include "codegen/BackingStore.hpp"
-#include "codegen/CodeGenerator.hpp"                  // for CodeGenerator
+#include "codegen/CodeGenerator.hpp"
 #include "codegen/ConstantDataSnippet.hpp"
-#include "codegen/FrontEnd.hpp"                       // for TR::IO::fprintf, etc
-#include "codegen/Instruction.hpp"                    // for Instruction
+#include "codegen/FrontEnd.hpp"
+#include "codegen/Instruction.hpp"
 #include "codegen/Linkage.hpp"
 #include "codegen/LiveRegister.hpp"
-#include "codegen/Machine.hpp"                        // for MachineBase, etc
+#include "codegen/Machine.hpp"
 #include "codegen/Machine_inlines.hpp"
 #include "codegen/MemoryReference.hpp"
-#include "codegen/RealRegister.hpp"                   // for RealRegister, etc
-#include "codegen/Register.hpp"                       // for Register
+#include "codegen/RealRegister.hpp"
+#include "codegen/Register.hpp"
 #include "codegen/RegisterConstants.hpp"
 #include "codegen/RegisterDependency.hpp"
 #include "codegen/RegisterRematerializationInfo.hpp"
-#include "codegen/RegisterUsage.hpp"                  // for RegisterUsage
-#include "codegen/TreeEvaluator.hpp"                  // for TreeEvaluator
-#include "compile/Compilation.hpp"                    // for Compilation, etc
+#include "codegen/RegisterUsage.hpp"
+#include "codegen/TreeEvaluator.hpp"
+#include "compile/Compilation.hpp"
 #include "control/Options.hpp"
-#include "control/Options_inlines.hpp"                // for TR::Options, etc
+#include "control/Options_inlines.hpp"
 #include "env/CompilerEnv.hpp"
-#include "env/IO.hpp"                                 // for IO
-#include "env/ObjectModel.hpp"                        // for ObjectModel
+#include "env/IO.hpp"
+#include "env/ObjectModel.hpp"
 #include "env/TRMemory.hpp"
-#include "il/Block.hpp"                               // for Block
-#include "il/DataTypes.hpp"                           // for DataTypes, etc
+#include "il/Block.hpp"
+#include "il/DataTypes.hpp"
 #include "il/ILOpCodes.hpp"
-#include "il/ILOps.hpp"                               // for ILOpCode
-#include "il/Node.hpp"                                // for Node
-#include "il/Symbol.hpp"                              // for Symbol
+#include "il/ILOps.hpp"
+#include "il/Node.hpp"
+#include "il/Symbol.hpp"
 #include "il/SymbolReference.hpp"
-#include "infra/Assert.hpp"                           // for TR_ASSERT
-#include "infra/List.hpp"                             // for List, etc
-#include "ras/Debug.hpp"                              // for TR_DebugBase
+#include "infra/Assert.hpp"
+#include "infra/List.hpp"
+#include "ras/Debug.hpp"
 #include "x/codegen/OutlinedInstructions.hpp"
 #include "codegen/X86Instruction.hpp"
-#include "x/codegen/X86Ops.hpp"                       // for TR_X86OpCodes, etc
+#include "x/codegen/X86Ops.hpp"
 #include "x/codegen/X86Register.hpp"
 
 extern bool existsNextInstructionToTestFlags(TR::Instruction *startInstr,

@@ -23,12 +23,12 @@
 #define TR_S390_TREE_EVALUATOR_INCL
 
 
-#include <stddef.h>                   // for NULL, size_t
-#include <stdint.h>                   // for int32_t, int64_t, etc
-#include "codegen/InstOpCode.hpp"     // for InstOpCode, etc
-#include "env/jittypes.h"             // for uintptrj_t
-#include "il/ILOpCodes.hpp"           // for ILOpCodes
-#include "codegen/TreeEvaluator.hpp"  // for TR::TreeEvaluator
+#include <stddef.h>
+#include <stdint.h>
+#include "codegen/InstOpCode.hpp"
+#include "env/jittypes.h"
+#include "il/ILOpCodes.hpp"
+#include "codegen/TreeEvaluator.hpp"
 
 namespace TR { class CodeGenerator; }
 namespace TR { class Instruction; }

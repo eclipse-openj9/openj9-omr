@@ -19,31 +19,31 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#include <assert.h>                                // for assert
-#include <limits.h>                                // for UCHAR_MAX
-#include <stddef.h>                                // for size_t
-#include <stdint.h>                                // for uint8_t, uint32_t, etc
-#include <stdio.h>                                 // for printf
-#include <string.h>                                // for NULL, memset, etc
-#include <algorithm>                               // for std::find
-#include "codegen/CodeGenerator.hpp"               // for CodeGenerator, etc
+#include <assert.h>
+#include <limits.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <string.h>
+#include <algorithm>
+#include "codegen/CodeGenerator.hpp"
 #include "codegen/ConstantDataSnippet.hpp"
-#include "codegen/FrontEnd.hpp"                    // for TR_FrontEnd, etc
-#include "codegen/InstOpCode.hpp"                  // for InstOpCode, etc
-#include "codegen/Instruction.hpp"                 // for Instruction, etc
-#include "codegen/Linkage.hpp"                     // for Linkage, etc
-#include "codegen/Machine.hpp"                     // for MAX_IMMEDIATE_VAL, etc
-#include "codegen/MemoryReference.hpp"             // for MemoryReference, etc
-#include "codegen/RealRegister.hpp"                // for RealRegister, etc
-#include "codegen/Register.hpp"                    // for Register
+#include "codegen/FrontEnd.hpp"
+#include "codegen/InstOpCode.hpp"
+#include "codegen/Instruction.hpp"
+#include "codegen/Linkage.hpp"
+#include "codegen/Machine.hpp"
+#include "codegen/MemoryReference.hpp"
+#include "codegen/RealRegister.hpp"
+#include "codegen/Register.hpp"
 #include "codegen/RegisterConstants.hpp"
 #include "codegen/RegisterDependency.hpp"
-#include "codegen/RegisterPair.hpp"                // for RegisterPair
+#include "codegen/RegisterPair.hpp"
 #include "codegen/Relocation.hpp"
-#include "codegen/Snippet.hpp"                     // for Snippet, etc
+#include "codegen/Snippet.hpp"
 #include "codegen/S390Snippets.hpp"
-#include "compile/Compilation.hpp"                 // for Compilation
-#include "compile/ResolvedMethod.hpp"              // for TR_ResolvedMethod
+#include "compile/Compilation.hpp"
+#include "compile/ResolvedMethod.hpp"
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"
 #include "env/CompilerEnv.hpp"
@@ -51,25 +51,25 @@
 #include "env/CHTable.hpp"
 #endif
 #include "env/TRMemory.hpp"
-#include "env/jittypes.h"                          // for TR_ByteCodeInfo, etc
-#include "il/Block.hpp"                            // for Block, toBlock
+#include "env/jittypes.h"
+#include "il/Block.hpp"
 #include "il/ILOpCodes.hpp"
-#include "il/ILOps.hpp"                            // for ILOpCode
-#include "il/Node.hpp"                             // for Node
-#include "il/Symbol.hpp"                           // for Symbol
-#include "il/SymbolReference.hpp"                  // for SymbolReference
-#include "il/symbol/LabelSymbol.hpp"               // for LabelSymbol
-#include "il/symbol/MethodSymbol.hpp"              // for MethodSymbol
+#include "il/ILOps.hpp"
+#include "il/Node.hpp"
+#include "il/Symbol.hpp"
+#include "il/SymbolReference.hpp"
+#include "il/symbol/LabelSymbol.hpp"
+#include "il/symbol/MethodSymbol.hpp"
 #include "il/symbol/ResolvedMethodSymbol.hpp"
-#include "il/symbol/StaticSymbol.hpp"              // for StaticSymbol
-#include "infra/Assert.hpp"                        // for TR_ASSERT
-#include "infra/Bit.hpp"                           // for isOdd
-#include "infra/List.hpp"                          // for List, etc
-#include "infra/CfgEdge.hpp"                       // for CFGEdge
+#include "il/symbol/StaticSymbol.hpp"
+#include "infra/Assert.hpp"
+#include "infra/Bit.hpp"
+#include "infra/List.hpp"
+#include "infra/CfgEdge.hpp"
 #include "optimizer/Structure.hpp"
-#include "ras/Debug.hpp"                           // for TR_DebugBase
+#include "ras/Debug.hpp"
 #include "runtime/Runtime.hpp"
-#include "z/codegen/EndianConversion.hpp"          // for boi, bos, etc
+#include "z/codegen/EndianConversion.hpp"
 #include "z/codegen/S390GenerateInstructions.hpp"
 #include "z/codegen/S390Instruction.hpp"
 #include "z/codegen/S390OutOfLineCodeSection.hpp"

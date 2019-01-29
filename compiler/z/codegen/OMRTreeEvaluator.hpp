@@ -35,9 +35,9 @@ namespace OMR { typedef OMR::Z::TreeEvaluator TreeEvaluatorConnector; }
 
 #include "compiler/codegen/OMRTreeEvaluator.hpp"
 
-#include "codegen/InstOpCode.hpp"          // for InstOpCode, etc
-#include "il/DataTypes.hpp"                // for DataTypes
-#include "il/ILOpCodes.hpp"                // for ILOpCodes
+#include "codegen/InstOpCode.hpp"
+#include "il/DataTypes.hpp"
+#include "il/ILOpCodes.hpp"
 
 class TR_OpaquePseudoRegister;
 class TR_PseudoRegister;

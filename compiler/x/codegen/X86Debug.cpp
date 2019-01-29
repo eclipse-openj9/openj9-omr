@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -19,46 +19,46 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#include <stdint.h>                              // for int32_t, uint8_t, etc
-#include <stdio.h>                               // for NULL, sprintf
-#include <string.h>                              // for memset
-#include "codegen/CodeGenerator.hpp"             // for CodeGenerator, etc
-#include "codegen/GCRegisterMap.hpp"             // for GCRegisterMap
-#include "codegen/Instruction.hpp"               // for Instruction, etc
+#include <stdint.h>
+#include <stdio.h>
+#include <string.h>
+#include "codegen/CodeGenerator.hpp"
+#include "codegen/GCRegisterMap.hpp"
+#include "codegen/Instruction.hpp"
 #include "codegen/Linkage.hpp"
-#include "codegen/Machine.hpp"                   // for MachineBase, etc
-#include "codegen/MemoryReference.hpp"           // for MemoryReference
-#include "codegen/RealRegister.hpp"              // for RealRegister, etc
+#include "codegen/Machine.hpp"
+#include "codegen/MemoryReference.hpp"
+#include "codegen/RealRegister.hpp"
 #include "codegen/RegisterConstants.hpp"
 #include "codegen/RegisterDependency.hpp"
 #include "codegen/RegisterDependencyStruct.hpp"
-#include "codegen/Snippet.hpp"                   // for commentString, etc
-#include "compile/Compilation.hpp"               // for Compilation
+#include "codegen/Snippet.hpp"
+#include "compile/Compilation.hpp"
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"
-#include "env/IO.hpp"                            // for IO
-#include "env/jittypes.h"                        // for intptrj_t
-#include "il/Block.hpp"                          // for Block
-#include "il/DataTypes.hpp"                      // for DataTypes::Double, etc
-#include "il/ILOpCodes.hpp"                      // for ILOpCodes::BBStart, etc
-#include "il/Node.hpp"                           // for Node
-#include "il/Node_inlines.hpp"                   // for Node::getDataType, etc
-#include "il/Symbol.hpp"                         // for Symbol
-#include "il/SymbolReference.hpp"                // for SymbolReference
-#include "il/symbol/LabelSymbol.hpp"             // for LabelSymbol
-#include "il/symbol/MethodSymbol.hpp"            // for MethodSymbol
-#include "infra/Assert.hpp"                      // for TR_ASSERT
-#include "infra/List.hpp"                        // for ListIterator, List
-#include "ras/Debug.hpp"                         // for TR_Debug, etc
-#include "x/codegen/DataSnippet.hpp"             // for TR::X86DataSnippet
+#include "env/IO.hpp"
+#include "env/jittypes.h"
+#include "il/Block.hpp"
+#include "il/DataTypes.hpp"
+#include "il/ILOpCodes.hpp"
+#include "il/Node.hpp"
+#include "il/Node_inlines.hpp"
+#include "il/Symbol.hpp"
+#include "il/SymbolReference.hpp"
+#include "il/symbol/LabelSymbol.hpp"
+#include "il/symbol/MethodSymbol.hpp"
+#include "infra/Assert.hpp"
+#include "infra/List.hpp"
+#include "ras/Debug.hpp"
+#include "x/codegen/DataSnippet.hpp"
 #include "x/codegen/OutlinedInstructions.hpp"
 #include "x/codegen/X86Instruction.hpp"
-#include "x/codegen/X86Ops.hpp"                  // for TR_X86OpCode, etc
+#include "x/codegen/X86Ops.hpp"
 #include "x/codegen/X86Register.hpp"
 #include "env/CompilerEnv.hpp"
 
 #ifdef J9_PROJECT_SPECIFIC
-#include "x/codegen/CallSnippet.hpp"             // for TR::X86CallSnippet
+#include "x/codegen/CallSnippet.hpp"
 #endif
 
 namespace TR { class Register; }

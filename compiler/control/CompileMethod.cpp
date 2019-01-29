@@ -22,38 +22,38 @@
 #include "control/CompileMethod.hpp"
 
 #if defined(OMR_OS_WINDOWS)
-#include <process.h>                           // for _getpid
+#include <process.h>
 #else
-#include <unistd.h>                            // for getpid, intptr_t, etc
+#include <unistd.h>
 #endif
-#include <exception>                           // for exception
-#include <stdint.h>                            // for int32_t, uint8_t, etc
-#include <stdio.h>                             // for NULL, fprintf, fflush, etc
-#include <string.h>                            // for strlen
-#include "codegen/CodeGenerator.hpp"           // for CodeGenerator
-#include "codegen/FrontEnd.hpp"                // for TR_VerboseLog, etc
+#include <exception>
+#include <stdint.h>
+#include <stdio.h>
+#include <string.h>
+#include "codegen/CodeGenerator.hpp"
+#include "codegen/FrontEnd.hpp"
 #include "codegen/LinkageConventionsEnum.hpp"
-#include "compile/Compilation.hpp"             // for Compilation, comp
-#include "compile/CompilationTypes.hpp"        // for TR_Hotness
-#include "compile/ResolvedMethod.hpp"          // for TR_ResolvedMethod
-#include "control/OptimizationPlan.hpp"        // for TR_OptimizationPlan, etc
+#include "compile/Compilation.hpp"
+#include "compile/CompilationTypes.hpp"
+#include "compile/ResolvedMethod.hpp"
+#include "control/OptimizationPlan.hpp"
 #include "control/Options.hpp"
-#include "control/Options_inlines.hpp"         // for TR::Options, etc
-#include "env/CPU.hpp"                         // for Cpu
+#include "control/Options_inlines.hpp"
+#include "env/CPU.hpp"
 #include "env/CompilerEnv.hpp"
-#include "env/ConcreteFE.hpp"                  // for FrontEnd
-#include "env/IO.hpp"                          // for IO
+#include "env/ConcreteFE.hpp"
+#include "env/IO.hpp"
 #include "env/JitConfig.hpp"
-#include "env/PersistentInfo.hpp"              // for PersistentInfo
+#include "env/PersistentInfo.hpp"
 #include "env/Processors.hpp"
-#include "env/TRMemory.hpp"                    // for TR_Memory, etc
-#include "env/defines.h"                       // for TR_HOST_64BIT, etc
-#include "env/jittypes.h"                      // for uintptrj_t
-#include "il/symbol/ResolvedMethodSymbol.hpp"  // for ResolvedMethodSymbol
-#include "ilgen/IlGenRequest.hpp"              // for CompileIlGenRequest
+#include "env/TRMemory.hpp"
+#include "env/defines.h"
+#include "env/jittypes.h"
+#include "il/symbol/ResolvedMethodSymbol.hpp"
+#include "ilgen/IlGenRequest.hpp"
 #include "ilgen/IlGeneratorMethodDetails.hpp"
-#include "infra/Assert.hpp"                    // for TR_ASSERT
-#include "ras/Debug.hpp"                       // for createDebugObject, etc
+#include "infra/Assert.hpp"
+#include "ras/Debug.hpp"
 #include "env/SystemSegmentProvider.hpp"
 #include "env/DebugSegmentProvider.hpp"
 #include "runtime/CodeCacheManager.hpp"

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -19,39 +19,39 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#include <stddef.h>                              // for NULL
-#include <stdint.h>                              // for int32_t, uint8_t, etc
-#include <algorithm>                             // for std::find
-#include "codegen/BackingStore.hpp"              // for TR_BackingStore
-#include "codegen/CodeGenPhase.hpp"              // for CodeGenPhase, etc
-#include "codegen/CodeGenerator.hpp"             // for CodeGenerator
-#include "codegen/InstOpCode.hpp"                // for InstOpCode, etc
-#include "codegen/Instruction.hpp"               // for Instruction
+#include <stddef.h>
+#include <stdint.h>
+#include <algorithm>
+#include "codegen/BackingStore.hpp"
+#include "codegen/CodeGenPhase.hpp"
+#include "codegen/CodeGenerator.hpp"
+#include "codegen/InstOpCode.hpp"
+#include "codegen/Instruction.hpp"
 #include "codegen/Linkage.hpp"
-#include "codegen/LiveRegister.hpp"              // for TR_LiveRegisters
-#include "codegen/Machine.hpp"                   // for Machine
-#include "codegen/MemoryReference.hpp"           // for MemoryReference
-#include "codegen/RealRegister.hpp"              // for RealRegister, etc
-#include "codegen/Register.hpp"                  // for Register
+#include "codegen/LiveRegister.hpp"
+#include "codegen/Machine.hpp"
+#include "codegen/MemoryReference.hpp"
+#include "codegen/RealRegister.hpp"
+#include "codegen/Register.hpp"
 #include "codegen/RegisterConstants.hpp"
 #include "codegen/RegisterDependency.hpp"
-#include "codegen/RegisterDependencyStruct.hpp"  // for RegisterDependency
-#include "codegen/RegisterPair.hpp"              // for RegisterPair
-#include "codegen/TreeEvaluator.hpp"             // for getHighGlobalRegisterNumberIfAny()
-#include "compile/Compilation.hpp"               // for Compilation
+#include "codegen/RegisterDependencyStruct.hpp"
+#include "codegen/RegisterPair.hpp"
+#include "codegen/TreeEvaluator.hpp"
+#include "compile/Compilation.hpp"
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"
-#include "env/ObjectModel.hpp"                   // for ObjectModel
+#include "env/ObjectModel.hpp"
 #include "env/TRMemory.hpp"
-#include "il/Node.hpp"                           // for Node
-#include "il/Node_inlines.hpp"                   // for Node::getChild
-#include "il/symbol/LabelSymbol.hpp"             // for LabelSymbol
-#include "infra/Assert.hpp"                      // for TR_ASSERT
-#include "infra/List.hpp"                        // for List
+#include "il/Node.hpp"
+#include "il/Node_inlines.hpp"
+#include "il/symbol/LabelSymbol.hpp"
+#include "infra/Assert.hpp"
+#include "infra/List.hpp"
 #include "p/codegen/GenerateInstructions.hpp"
 #include "p/codegen/PPCInstruction.hpp"
-#include "p/codegen/PPCOpsDefines.hpp"           // for Op_load
-#include "ras/Debug.hpp"                         // for TR_DebugBase
+#include "p/codegen/PPCOpsDefines.hpp"
+#include "ras/Debug.hpp"
 
 namespace TR { class SymbolReference; }
 

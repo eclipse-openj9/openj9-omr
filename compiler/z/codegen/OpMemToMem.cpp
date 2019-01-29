@@ -21,30 +21,30 @@
 
 #include "z/codegen/OpMemToMem.hpp"
 
-#include <limits.h>                                // for INT_MAX
-#include <stdio.h>                                 // for printf
-#include "codegen/CodeGenerator.hpp"               // for CodeGenerator, etc
-#include "codegen/FrontEnd.hpp"                    // for feGetEnv, etc
-#include "codegen/Linkage.hpp"                     // for Linkage
-#include "codegen/RealRegister.hpp"                // for RealRegister, etc
-#include "codegen/Register.hpp"                    // for Register
+#include <limits.h>
+#include <stdio.h>
+#include "codegen/CodeGenerator.hpp"
+#include "codegen/FrontEnd.hpp"
+#include "codegen/Linkage.hpp"
+#include "codegen/RealRegister.hpp"
+#include "codegen/Register.hpp"
 #include "codegen/RegisterDependency.hpp"
-#include "codegen/TreeEvaluator.hpp"               // for generateLoad32BitConstant, etc
+#include "codegen/TreeEvaluator.hpp"
 #include "codegen/S390Evaluator.hpp"
 #include "compile/SymbolReferenceTable.hpp"
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"
 #include "env/CompilerEnv.hpp"
-#include "env/jittypes.h"                          // for intptrj_t, uintptrj_t
+#include "env/jittypes.h"
 #include "il/AliasSetInterface.hpp"
 #include "il/ILOpCodes.hpp"
-#include "il/ILOps.hpp"                            // for ILOpCode
-#include "il/Node.hpp"                             // for Node
-#include "il/Symbol.hpp"                           // for Symbol, etc
-#include "il/SymbolReference.hpp"                  // for SymbolReference
-#include "il/symbol/LabelSymbol.hpp"              // for LabelSymbol
+#include "il/ILOps.hpp"
+#include "il/Node.hpp"
+#include "il/Symbol.hpp"
+#include "il/SymbolReference.hpp"
+#include "il/symbol/LabelSymbol.hpp"
 #include "il/symbol/ResolvedMethodSymbol.hpp"
-#include "infra/List.hpp"                          // for List
+#include "infra/List.hpp"
 #include "runtime/Runtime.hpp"
 #include "z/codegen/S390GenerateInstructions.hpp"
 #include "z/codegen/S390OutOfLineCodeSection.hpp"

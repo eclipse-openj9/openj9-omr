@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -28,8 +28,8 @@ namespace OMR { class MonitorTable; }
 namespace OMR { typedef MonitorTable MonitorTableConnector; }
 #endif
 
-#include "infra/Annotations.hpp" // for OMR_EXTENSIBLE
-#include "infra/Assert.hpp"      // for TR_ASSERT
+#include "infra/Annotations.hpp"
+#include "infra/Assert.hpp"
 
 namespace TR { class MonitorTable; }
 namespace TR { class Monitor; }

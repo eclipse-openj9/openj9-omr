@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -22,67 +22,67 @@
 #include "optimizer/OMRValuePropagation.hpp"
 #include "optimizer/GlobalValuePropagation.hpp"
 
-#include <algorithm>                            // for std::find, etc
-#include <stddef.h>                             // for size_t
-#include <stdint.h>                             // for int32_t, uint64_t, etc
-#include <stdio.h>                              // for printf
-#include <stdlib.h>                             // for atoi
-#include <string.h>                             // for NULL, strncmp, etc
-#include "codegen/CodeGenerator.hpp"            // for CodeGenerator
-#include "codegen/FrontEnd.hpp"                 // for TR_FrontEnd, etc
+#include <algorithm>
+#include <stddef.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "codegen/CodeGenerator.hpp"
+#include "codegen/FrontEnd.hpp"
 #include "codegen/RecognizedMethods.hpp"
-#include "compile/Compilation.hpp"              // for Compilation, etc
+#include "compile/Compilation.hpp"
 #include "compile/Method.hpp"
-#include "compile/ResolvedMethod.hpp"           // for TR_ResolvedMethod
-#include "compile/SymbolReferenceTable.hpp"     // for SymbolReferenceTable
-#include "compile/VirtualGuard.hpp"             // for TR_VirtualGuard
+#include "compile/ResolvedMethod.hpp"
+#include "compile/SymbolReferenceTable.hpp"
+#include "compile/VirtualGuard.hpp"
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"
-#include "cs2/bitvectr.h"                       // for ABitVector<>::Cursor, etc
+#include "cs2/bitvectr.h"
 #include "env/CompilerEnv.hpp"
 #include "env/IO.hpp"
-#include "env/PersistentInfo.hpp"               // for PersistentInfo
+#include "env/PersistentInfo.hpp"
 #include "env/TRMemory.hpp"
 #include "env/jittypes.h"
 #include "il/AliasSetInterface.hpp"
-#include "il/Block.hpp"                         // for Block, toBlock, etc
-#include "il/DataTypes.hpp"                     // for DataTypes, etc
-#include "il/ILOpCodes.hpp"                     // for ILOpCodes::aload, etc
-#include "il/ILOps.hpp"                         // for ILOpCode, etc
-#include "il/Node.hpp"                          // for Node, etc
-#include "il/Node_inlines.hpp"                  // for Node::getFirstChild, etc
-#include "il/Symbol.hpp"                        // for Symbol
-#include "il/SymbolReference.hpp"               // for SymbolReference
-#include "il/TreeTop.hpp"                       // for TreeTop
-#include "il/TreeTop_inlines.hpp"               // for TreeTop::getNode, etc
-#include "il/symbol/MethodSymbol.hpp"           // for MethodSymbol, etc
-#include "il/symbol/ParameterSymbol.hpp"        // for ParameterSymbol
-#include "il/symbol/ResolvedMethodSymbol.hpp"   // for ResolvedMethodSymbol
-#include "infra/Array.hpp"                      // for TR_Array
-#include "infra/Assert.hpp"                     // for TR_ASSERT
+#include "il/Block.hpp"
+#include "il/DataTypes.hpp"
+#include "il/ILOpCodes.hpp"
+#include "il/ILOps.hpp"
+#include "il/Node.hpp"
+#include "il/Node_inlines.hpp"
+#include "il/Symbol.hpp"
+#include "il/SymbolReference.hpp"
+#include "il/TreeTop.hpp"
+#include "il/TreeTop_inlines.hpp"
+#include "il/symbol/MethodSymbol.hpp"
+#include "il/symbol/ParameterSymbol.hpp"
+#include "il/symbol/ResolvedMethodSymbol.hpp"
+#include "infra/Array.hpp"
+#include "infra/Assert.hpp"
 #include "infra/Bit.hpp"
-#include "infra/BitVector.hpp"                  // for TR_BitVector, etc
-#include "infra/Cfg.hpp"                        // for CFG, etc
-#include "infra/Link.hpp"                       // for TR_LinkHead, TR_Pair
-#include "infra/List.hpp"                       // for ListIterator, List, etc
-#include "infra/CfgEdge.hpp"                    // for CFGEdge
-#include "infra/CfgNode.hpp"                    // for CFGNode
-#include "optimizer/Inliner.hpp"                // for TR_InlineCall, etc
-#include "optimizer/Optimization.hpp"           // for Optimization
+#include "infra/BitVector.hpp"
+#include "infra/Cfg.hpp"
+#include "infra/Link.hpp"
+#include "infra/List.hpp"
+#include "infra/CfgEdge.hpp"
+#include "infra/CfgNode.hpp"
+#include "optimizer/Inliner.hpp"
+#include "optimizer/Optimization.hpp"
 #include "optimizer/Optimization_inlines.hpp"
 #include "optimizer/Optimizations.hpp"
-#include "optimizer/Optimizer.hpp"              // for Optimizer
+#include "optimizer/Optimizer.hpp"
 #include "optimizer/Structure.hpp"
 #include "optimizer/Reachability.hpp"
-#include "optimizer/UseDefInfo.hpp"             // for TR_UseDefInfo, etc
-#include "optimizer/VPConstraint.hpp"           // for TR::VPConstraint, etc
+#include "optimizer/UseDefInfo.hpp"
+#include "optimizer/VPConstraint.hpp"
 #include "optimizer/TransformUtil.hpp"
-#include "ras/Debug.hpp"                        // for TR_DebugBase
+#include "ras/Debug.hpp"
 
 #ifdef J9_PROJECT_SPECIFIC
-#include "env/ClassTableCriticalSection.hpp"    // for ClassTableCriticalSection
-#include "env/CHTable.hpp"                      // for TR_CHTable, etc
-#include "env/PersistentCHTable.hpp"            // for TR_PersistentCHTable
+#include "env/ClassTableCriticalSection.hpp"
+#include "env/CHTable.hpp"
+#include "env/PersistentCHTable.hpp"
 #include "runtime/RuntimeAssumptions.hpp"
 #include "runtime/J9Profiler.hpp"
 #include "runtime/J9ValueProfiler.hpp"

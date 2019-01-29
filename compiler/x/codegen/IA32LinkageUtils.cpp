@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -21,27 +21,27 @@
 
 #include "codegen/IA32LinkageUtils.hpp"
 
-#include <stddef.h>                          // for NULL
-#include <stdint.h>                          // for int32_t
-#include "codegen/CodeGenerator.hpp"         // for CodeGenerator
-#include "codegen/Machine.hpp"               // for Machine
-#include "codegen/MemoryReference.hpp"       // for generateX86MemoryReference, etc
-#include "codegen/RealRegister.hpp"          // for RealRegister
-#include "codegen/Register.hpp"              // for Register
-#include "codegen/RegisterConstants.hpp"     // for TR_RegisterKinds::TR_FPR
-#include "compile/Compilation.hpp"           // for Compilation
-#include "compile/SymbolReferenceTable.hpp"  // for SymbolReferenceTable
-#include "env/jittypes.h"                    // for uintptrj_t
-#include "il/ILOpCodes.hpp"                  // for ILOpCodes::dbits2l, etc
-#include "il/ILOps.hpp"                      // for ILOpCode
-#include "il/Node.hpp"                       // for Node
-#include "il/Node_inlines.hpp"               // for Node::getReferenceCount, etc
-#include "il/Symbol.hpp"                     // for Symbol
-#include "il/SymbolReference.hpp"            // for SymbolReference
-#include "il/symbol/StaticSymbol.hpp"        // for StaticSymbol
-#include "infra/Assert.hpp"                  // for TR_ASSERT
-#include "x/codegen/X86Instruction.hpp"      // for generateImmInstruction, etc
-#include "x/codegen/X86Ops.hpp"              // for ::PUSHImm4, ::PUSHImms, etc
+#include <stddef.h>
+#include <stdint.h>
+#include "codegen/CodeGenerator.hpp"
+#include "codegen/Machine.hpp"
+#include "codegen/MemoryReference.hpp"
+#include "codegen/RealRegister.hpp"
+#include "codegen/Register.hpp"
+#include "codegen/RegisterConstants.hpp"
+#include "compile/Compilation.hpp"
+#include "compile/SymbolReferenceTable.hpp"
+#include "env/jittypes.h"
+#include "il/ILOpCodes.hpp"
+#include "il/ILOps.hpp"
+#include "il/Node.hpp"
+#include "il/Node_inlines.hpp"
+#include "il/Symbol.hpp"
+#include "il/SymbolReference.hpp"
+#include "il/symbol/StaticSymbol.hpp"
+#include "infra/Assert.hpp"
+#include "x/codegen/X86Instruction.hpp"
+#include "x/codegen/X86Ops.hpp"
 
 namespace TR
 {

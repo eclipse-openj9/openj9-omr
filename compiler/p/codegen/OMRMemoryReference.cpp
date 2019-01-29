@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -19,49 +19,49 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#include <stddef.h>                                  // for NULL
-#include <stdint.h>                                  // for int32_t, etc
-#include "codegen/AheadOfTimeCompile.hpp"            // for AheadOfTimeCompile
-#include "codegen/CodeGenerator.hpp"                 // for CodeGenerator, etc
-#include "codegen/FrontEnd.hpp"                      // for TR_FrontEnd
-#include "codegen/InstOpCode.hpp"                    // for InstOpCode, etc
-#include "codegen/Instruction.hpp"                   // for Instruction, etc
-#include "codegen/Linkage.hpp"                       // for addDependency
-#include "codegen/Machine.hpp"                       // for Machine, etc
-#include "codegen/MemoryReference.hpp"               // for MemoryReference, etc
-#include "codegen/RealRegister.hpp"                  // for RealRegister, etc
+#include <stddef.h>
+#include <stdint.h>
+#include "codegen/AheadOfTimeCompile.hpp"
+#include "codegen/CodeGenerator.hpp"
+#include "codegen/FrontEnd.hpp"
+#include "codegen/InstOpCode.hpp"
+#include "codegen/Instruction.hpp"
+#include "codegen/Linkage.hpp"
+#include "codegen/Machine.hpp"
+#include "codegen/MemoryReference.hpp"
+#include "codegen/RealRegister.hpp"
 #include "codegen/RecognizedMethods.hpp"
-#include "codegen/Register.hpp"                      // for Register
+#include "codegen/Register.hpp"
 #include "codegen/RegisterConstants.hpp"
 #include "codegen/RegisterDependency.hpp"
 #include "codegen/Relocation.hpp"
 #include "codegen/UnresolvedDataSnippet.hpp"
-#include "compile/Compilation.hpp"                   // for Compilation, etc
+#include "compile/Compilation.hpp"
 #include "compile/ResolvedMethod.hpp"
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"
 #include "env/CompilerEnv.hpp"
 #include "env/Processors.hpp"
 #include "env/TRMemory.hpp"
-#include "env/jittypes.h"                            // for intptrj_t, uintptrj_t
-#include "il/DataTypes.hpp"                          // for TR::DataType
+#include "env/jittypes.h"
+#include "il/DataTypes.hpp"
 #include "il/ILOpCodes.hpp"
-#include "il/ILOps.hpp"                              // for ILOpCode
-#include "il/Node.hpp"                               // for Node
+#include "il/ILOps.hpp"
+#include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
-#include "il/Symbol.hpp"                             // for Symbol
-#include "il/SymbolReference.hpp"                    // for SymbolReference
-#include "il/TreeTop.hpp"                            // for TreeTop
+#include "il/Symbol.hpp"
+#include "il/SymbolReference.hpp"
+#include "il/TreeTop.hpp"
 #include "il/TreeTop_inlines.hpp"
-#include "il/symbol/MethodSymbol.hpp"                // for MethodSymbol
-#include "il/symbol/StaticSymbol.hpp"                // for StaticSymbol
-#include "infra/Assert.hpp"                          // for TR_ASSERT
-#include "infra/List.hpp"                            // for List
+#include "il/symbol/MethodSymbol.hpp"
+#include "il/symbol/StaticSymbol.hpp"
+#include "infra/Assert.hpp"
+#include "infra/List.hpp"
 #include "p/codegen/GenerateInstructions.hpp"
 #include "p/codegen/PPCAOTRelocation.hpp"
 #include "p/codegen/PPCInstruction.hpp"
-#include "p/codegen/PPCOpsDefines.hpp"               // for Op_load, Op_st
-#include "p/codegen/PPCTableOfConstants.hpp"         // for PTOC_FULL_INDEX, etc
+#include "p/codegen/PPCOpsDefines.hpp"
+#include "p/codegen/PPCTableOfConstants.hpp"
 #include "runtime/Runtime.hpp"
 
 class TR_OpaqueClassBlock;

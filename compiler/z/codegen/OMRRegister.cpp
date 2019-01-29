@@ -27,11 +27,11 @@
 #pragma csect(STATIC,"TRZRegtBase#S")
 #pragma csect(TEST,"TRZRegBase#T")
 
-#include <stddef.h>                       // for NULL
-#include <stdint.h>                       // for uint16_t, uint32_t
-#include "codegen/Register.hpp"           // for RegisterExt, Register, etc
-#include "codegen/RegisterConstants.hpp"  // for TR_RegisterKinds, etc
-#include "infra/Flags.hpp"                // for flags32_t
+#include <stddef.h>
+#include <stdint.h>
+#include "codegen/Register.hpp"
+#include "codegen/RegisterConstants.hpp"
+#include "infra/Flags.hpp"
 
 OMR::Z::Register::Register(uint32_t f): OMR::Register(f)
    { _liveRegisterInfo._liveRegister = NULL; _memRef=NULL;}

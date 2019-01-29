@@ -29,49 +29,49 @@
 
 #include "codegen/Instruction.hpp"
 
-#include <stdint.h>                                // for int32_t
-#include <stdio.h>                                 // for sprintf
-#include <string.h>                                // for NULL, strlen, etc
-#include "codegen/CodeGenPhase.hpp"                // for CodeGenPhase, etc
+#include <stdint.h>
+#include <stdio.h>
+#include <string.h>
+#include "codegen/CodeGenPhase.hpp"
 #include "codegen/CodeGenerator.hpp"
 #include "codegen/ConstantDataSnippet.hpp"
-#include "codegen/FrontEnd.hpp"                    // for TR_FrontEnd
-#include "codegen/InstOpCode.hpp"                  // for InstOpCode, etc
-#include "codegen/Instruction.hpp"                 // for Instruction, etc
-#include "codegen/Linkage.hpp"                     // for Linkage, etc
-#include "codegen/Machine.hpp"                     // for Machine, etc
-#include "codegen/MemoryReference.hpp"             // for MemoryReference
-#include "codegen/RealRegister.hpp"                // for RealRegister, etc
-#include "codegen/Register.hpp"                    // for Register
+#include "codegen/FrontEnd.hpp"
+#include "codegen/InstOpCode.hpp"
+#include "codegen/Instruction.hpp"
+#include "codegen/Linkage.hpp"
+#include "codegen/Machine.hpp"
+#include "codegen/MemoryReference.hpp"
+#include "codegen/RealRegister.hpp"
+#include "codegen/Register.hpp"
 #include "codegen/RegisterConstants.hpp"
 #include "codegen/RegisterDependency.hpp"
-#include "codegen/RegisterPair.hpp"                // for RegisterPair
-#include "compile/Compilation.hpp"                 // for Compilation, comp
-#include "compile/Method.hpp"                      // for TR_Method
+#include "codegen/RegisterPair.hpp"
+#include "compile/Compilation.hpp"
+#include "compile/Method.hpp"
 #include "compile/SymbolReferenceTable.hpp"
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"
-#include "cs2/arrayof.h"                           // for ArrayOf
-#include "cs2/hashtab.h"                           // for HashTable
+#include "cs2/arrayof.h"
+#include "cs2/hashtab.h"
 #include "env/CompilerEnv.hpp"
-#include "env/TRMemory.hpp"                        // for Allocator, etc
-#include "env/jittypes.h"                          // for uintptrj_t
-#include "il/Block.hpp"                            // for Block
-#include "il/DataTypes.hpp"                        // for DataTypes::Int32
-#include "il/ILOpCodes.hpp"                        // for opcodes
-#include "il/ILOps.hpp"                            // for ILOpCode
-#include "il/Node.hpp"                             // for Node
+#include "env/TRMemory.hpp"
+#include "env/jittypes.h"
+#include "il/Block.hpp"
+#include "il/DataTypes.hpp"
+#include "il/ILOpCodes.hpp"
+#include "il/ILOps.hpp"
+#include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
-#include "il/Symbol.hpp"                           // for Symbol
-#include "il/SymbolReference.hpp"                  // for SymbolReference
-#include "il/TreeTop.hpp"                          // for TreeTop
-#include "il/TreeTop_inlines.hpp"                  // for TreeTop::getNode
-#include "il/symbol/LabelSymbol.hpp"               // for LabelSymbol
+#include "il/Symbol.hpp"
+#include "il/SymbolReference.hpp"
+#include "il/TreeTop.hpp"
+#include "il/TreeTop_inlines.hpp"
+#include "il/symbol/LabelSymbol.hpp"
 #include "il/symbol/ResolvedMethodSymbol.hpp"
-#include "il/symbol/StaticSymbol.hpp"              // for StaticSymbol
-#include "infra/Assert.hpp"                        // for TR_ASSERT
+#include "il/symbol/StaticSymbol.hpp"
+#include "infra/Assert.hpp"
 #include "infra/deque.hpp"
-#include "ras/Debug.hpp"                           // for TR_DebugBase
+#include "ras/Debug.hpp"
 #include "z/codegen/S390Instruction.hpp"
 #include "z/codegen/S390OutOfLineCodeSection.hpp"
 #include "env/TRMemory.hpp"

@@ -22,13 +22,13 @@
 #ifndef OMR_CODECACHEMANAGER_INCL
 #define OMR_CODECACHEMANAGER_INCL
 
-#include <stddef.h>                            // for size_t
-#include <stdint.h>                            // for uint8_t, int32_t, etc
-#include "il/DataTypes.hpp"                    // for TR_YesNoMaybe
-#include "infra/CriticalSection.hpp"           // for CriticalSection
-#include "runtime/CodeCacheConfig.hpp"         // for CodeCacheConfig
-#include "runtime/MethodExceptionData.hpp"     // for MethodExceptionData
-#include "runtime/Runtime.hpp"                 // for TR_CCPreLoadedCode, etc
+#include <stddef.h>
+#include <stdint.h>
+#include "il/DataTypes.hpp"
+#include "infra/CriticalSection.hpp"
+#include "runtime/CodeCacheConfig.hpp"
+#include "runtime/MethodExceptionData.hpp"
+#include "runtime/Runtime.hpp"
 #include "runtime/CodeCacheTypes.hpp"
 #include "env/RawAllocator.hpp"
 #include "codegen/StaticRelocation.hpp"

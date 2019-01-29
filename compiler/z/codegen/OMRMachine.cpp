@@ -29,49 +29,49 @@
 #pragma csect(TEST,"OMRZMachine#T")
 
 
-#include <stdint.h>                                // for uint32_t, int32_t, etc
-#include <stdio.h>                                 // for NULL, printf, etc
-#include <string.h>                                // for memset
-#include "codegen/BackingStore.hpp"                // for TR_BackingStore
-#include "codegen/CodeGenerator.hpp"               // for CodeGenerator
-#include "codegen/FrontEnd.hpp"                    // for feGetEnv, etc
-#include "codegen/InstOpCode.hpp"                  // for InstOpCode, etc
-#include "codegen/Instruction.hpp"                 // for Instruction
-#include "codegen/Linkage.hpp"                     // for Linkage
-#include "codegen/Machine.hpp"                     // for MachineBase, etc
+#include <stdint.h>
+#include <stdio.h>
+#include <string.h>
+#include "codegen/BackingStore.hpp"
+#include "codegen/CodeGenerator.hpp"
+#include "codegen/FrontEnd.hpp"
+#include "codegen/InstOpCode.hpp"
+#include "codegen/Instruction.hpp"
+#include "codegen/Linkage.hpp"
+#include "codegen/Machine.hpp"
 #include "codegen/Machine_inlines.hpp"
 #include "codegen/MemoryReference.hpp"
-#include "codegen/RealRegister.hpp"                // for RealRegister, etc
-#include "codegen/Register.hpp"                    // for Register
+#include "codegen/RealRegister.hpp"
+#include "codegen/Register.hpp"
 #include "codegen/RegisterConstants.hpp"
 #include "codegen/RegisterDependency.hpp"
-#include "codegen/RegisterPair.hpp"                // for RegisterPair
-#include "compile/Compilation.hpp"                 // for Compilation, comp
-#include "compile/ResolvedMethod.hpp"              // for TR_ResolvedMethod
+#include "codegen/RegisterPair.hpp"
+#include "compile/Compilation.hpp"
+#include "compile/ResolvedMethod.hpp"
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"
 #include "env/CompilerEnv.hpp"
-#include "env/ObjectModel.hpp"                     // for ObjectModel
+#include "env/ObjectModel.hpp"
 #include "env/TRMemory.hpp"
-#include "env/jittypes.h"                          // for uintptrj_t
-#include "il/Block.hpp"                            // for Block
+#include "env/jittypes.h"
+#include "il/Block.hpp"
 #include "il/ILOpCodes.hpp"
-#include "il/ILOps.hpp"                            // for ILOpCode
-#include "il/Node.hpp"                             // for Node
+#include "il/ILOps.hpp"
+#include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
-#include "il/Symbol.hpp"                           // for Symbol
-#include "il/SymbolReference.hpp"                  // for SymbolReference
-#include "il/symbol/LabelSymbol.hpp"               // for LabelSymbol
+#include "il/Symbol.hpp"
+#include "il/SymbolReference.hpp"
+#include "il/symbol/LabelSymbol.hpp"
 #include "il/symbol/ResolvedMethodSymbol.hpp"
-#include "infra/Assert.hpp"                        // for TR_ASSERT
-#include "infra/Flags.hpp"                         // for flags32_t
-#include "infra/List.hpp"                          // for List, etc
+#include "infra/Assert.hpp"
+#include "infra/Flags.hpp"
+#include "infra/List.hpp"
 #include "infra/Random.hpp"
-#include "infra/Stack.hpp"                         // for TR_Stack
+#include "infra/Stack.hpp"
 #include "codegen/TRSystemLinkage.hpp"
-#include "ras/Debug.hpp"                           // for TR_DebugBase
+#include "ras/Debug.hpp"
 #include "z/codegen/S390GenerateInstructions.hpp"
-#include "z/codegen/S390Instruction.hpp"           // for etc
+#include "z/codegen/S390Instruction.hpp"
 
 
 // Register Association

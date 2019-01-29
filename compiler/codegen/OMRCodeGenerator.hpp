@@ -31,40 +31,40 @@ namespace OMR { class CodeGenerator; }
 namespace OMR { typedef OMR::CodeGenerator CodeGeneratorConnector; }
 #endif
 
-#include <limits.h>                             // for INT_MAX, etc
-#include <stddef.h>                             // for NULL, size_t
-#include <stdint.h>                             // for uint8_t, etc
+#include <limits.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <map>
-#include "codegen/CodeGenPhase.hpp"             // for CodeGenPhase
-#include "codegen/FrontEnd.hpp"                 // for feGetEnv
+#include "codegen/CodeGenPhase.hpp"
+#include "codegen/FrontEnd.hpp"
 #include "codegen/LinkageConventionsEnum.hpp"
 #include "codegen/RecognizedMethods.hpp"
 #include "codegen/RegisterConstants.hpp"
 #include "codegen/StorageInfo.hpp"
 #include "codegen/TreeEvaluator.hpp"
-#include "compile/Compilation.hpp"              // for Compilation
+#include "compile/Compilation.hpp"
 #include "compile/SymbolReferenceTable.hpp"
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"
-#include "cs2/hashtab.h"                        // for HashTable, etc
-#include "env/CompilerEnv.hpp"                  // for TR::Host
-#include "env/ObjectModel.hpp"                  // for ObjectModel
-#include "env/TRMemory.hpp"                     // for Allocator, etc
+#include "cs2/hashtab.h"
+#include "env/CompilerEnv.hpp"
+#include "env/ObjectModel.hpp"
+#include "env/TRMemory.hpp"
 #include "env/jittypes.h"
-#include "il/DataTypes.hpp"                     // for DataTypes, etc
-#include "il/ILOpCodes.hpp"                     // for ILOpCodes
-#include "il/ILOps.hpp"                         // for TR::ILOpCode
-#include "il/Node.hpp"                          // for vcount_t, etc
-#include "infra/Array.hpp"                      // for TR_Array
-#include "infra/Assert.hpp"                     // for TR_ASSERT
-#include "infra/Flags.hpp"                      // for flags32_t, etc
-#include "infra/HashTab.hpp"                    // for TR_HashTab, etc
+#include "il/DataTypes.hpp"
+#include "il/ILOpCodes.hpp"
+#include "il/ILOps.hpp"
+#include "il/Node.hpp"
+#include "infra/Array.hpp"
+#include "infra/Assert.hpp"
+#include "infra/Flags.hpp"
+#include "infra/HashTab.hpp"
 #include "infra/Link.hpp"
-#include "infra/List.hpp"                       // for List, etc
+#include "infra/List.hpp"
 #include "infra/TRlist.hpp"
 #include "infra/Random.hpp"
-#include "infra/Stack.hpp"                      // for TR_Stack
-#include "optimizer/Dominators.hpp"             // for TR_Dominators
+#include "infra/Stack.hpp"
+#include "optimizer/Dominators.hpp"
 #include "ras/DebugCounter.hpp"
 #include "runtime/Runtime.hpp"
 #include "codegen/StaticRelocation.hpp"

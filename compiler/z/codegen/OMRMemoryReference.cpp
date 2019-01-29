@@ -2034,6 +2034,11 @@ OMR::Z::MemoryReference::alignmentBumpMayRequire4KFixup(TR::Node * node, TR::Cod
    return false;
    }
 
+/**
+ * \brief
+ *  Enforces format limits on several instruction formats that have a displacement and base register without
+ *  an index register. This routine was originally meant for SS formats and is now used on SS, VRS, VRV and VSI formats.
+*/
 TR::Instruction *
 OMR::Z::MemoryReference::enforceSSFormatLimits(TR::Node * node, TR::CodeGenerator * cg, TR::Instruction *preced)
    {
@@ -2047,11 +2052,7 @@ OMR::Z::MemoryReference::enforceSSFormatLimits(TR::Node * node, TR::CodeGenerato
 TR::Instruction *
 OMR::Z::MemoryReference::enforceRSLFormatLimits(TR::Node * node, TR::CodeGenerator * cg, TR::Instruction *preced)
    {
-   bool forceDueToAlignmentBump = self()->alignmentBumpMayRequire4KFixup(node, cg);
-   // call separateIndexRegister first so any large offset is handled along with the index register folding
-   preced = self()->separateIndexRegister(node, cg, true, preced, forceDueToAlignmentBump); // enforce4KDisplacementLimit=true
-   preced = self()->enforce4KDisplacementLimit(node, cg, preced, false, forceDueToAlignmentBump);
-   return preced;
+   return self()->enforceSSFormatLimits(node, cg, preced);
    }
 
 TR::Instruction *
@@ -3032,7 +3033,18 @@ OMR::Z::MemoryReference::generateBinaryEncoding(uint8_t * cursor, TR::CodeGenera
              instructionFormat == TR::Instruction::IsSS1 ||
              instructionFormat == TR::Instruction::IsSS2 ||
              instructionFormat == TR::Instruction::IsSS4 ||
-             instructionFormat == TR::Instruction::IsS)
+             instructionFormat == TR::Instruction::IsS   ||
+             instructionFormat == TR::Instruction::IsRIS ||
+             instructionFormat == TR::Instruction::IsRRS ||
+             instructionFormat == TR::Instruction::IsSSE ||
+             instructionFormat == TR::Instruction::IsSSF ||
+             // Vector instruction formats that have 12-bit displacements and no index registers
+             instructionFormat == TR::Instruction::IsVSI ||
+             instructionFormat == TR::Instruction::IsVRV ||
+             instructionFormat == TR::Instruction::IsVRSa||
+             instructionFormat == TR::Instruction::IsVRSb||
+             instructionFormat == TR::Instruction::IsVRSc||
+             instructionFormat == TR::Instruction::IsVRSd)
             {
             TR_ASSERT_FATAL(base != NULL, "Expected non-NULL base register for long displacement on %s [%p] instruction", instr->getOpCode().getMnemonicName(), instr);
 

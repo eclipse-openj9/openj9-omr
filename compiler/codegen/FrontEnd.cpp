@@ -97,12 +97,6 @@ TR_FrontEnd::allocateCodeMemory(TR::Compilation *, uint32_t warmCodeSize, uint32
    return 0;
    }
 
-void
-TR_FrontEnd::releaseCodeMemory(void *, uint8_t)
-   {
-   notImplemented("releaseCodeMemory");
-   }
-
 uint8_t *
 TR_FrontEnd::allocateRelocationData(TR::Compilation * comp, uint32_t numBytes)
    {

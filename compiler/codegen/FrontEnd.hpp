@@ -242,7 +242,6 @@ public:
 
    virtual uint8_t * allocateCodeMemory(TR::Compilation *, uint32_t warmCodeSize, uint32_t coldCodeSize, uint8_t ** coldCode, bool isMethodHeaderNeeded=true);
    virtual void releaseCodeMemory(void *, uint8_t);
-   virtual TR::CodeCache *getDesignatedCodeCache(TR::Compilation* comp); // MCT
    virtual void reserveTrampolineIfNecessary(TR::Compilation *, TR::SymbolReference *symRef, bool inBinaryEncoding);
    virtual intptrj_t methodTrampolineLookup(TR::Compilation *, TR::SymbolReference *symRef, void * callSite);
    virtual intptrj_t indexedTrampolineLookup(int32_t helperIndex, void * callSite); // No TR::Compilation parameter so this can be called from runtime code

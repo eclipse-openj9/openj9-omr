@@ -36,16 +36,6 @@ namespace TR
 {
 
 template <class Derived>
-TR::CodeCache *
-FEBase<Derived>::getDesignatedCodeCache(TR::Compilation *)
-   {
-   int32_t numReserved = 0;
-   int32_t compThreadID = 0;
-   return codeCacheManager().reserveCodeCache(false, 0, compThreadID, &numReserved);
-   }
-
-
-template <class Derived>
 uint8_t *
 FEBase<Derived>::allocateCodeMemory(TR::Compilation *comp, uint32_t warmCodeSize, uint32_t coldCodeSize,
                             uint8_t **coldCode, bool isMethodHeaderNeeded)

@@ -107,6 +107,7 @@
 #include "ras/Delimiter.hpp"                        // for Delimiter
 #include "runtime/CodeCache.hpp"
 #include "runtime/CodeCacheExceptions.hpp"
+#include "runtime/CodeCacheManager.hpp"
 #include "runtime/Runtime.hpp"                      // for HI_VALUE, etc
 #include "stdarg.h"                                 // for va_end, etc
 
@@ -1695,19 +1696,25 @@ OMR::CodeGenerator::addressesMatch(TR::Node *addr1, TR::Node *addr2, bool addres
 void
 OMR::CodeGenerator::reserveCodeCache()
    {
-   _codeCache = self()->fe()->getDesignatedCodeCache(self()->comp());
+   int32_t numReserved = 0;
+   int32_t compThreadID = 0;
+
+   _codeCache = TR::CodeCacheManager::instance()->reserveCodeCache(false, 0, compThreadID, &numReserved);
+
    if (!_codeCache) // Cannot reserve a cache; all are used
       {
-      // We may reach this point if all code caches have been used up
-      // If some code caches have some space but cannot be used because they are reserved
-      // we will throw an exception in the call to getDesignatedCodeCache
+      TR::Compilation *comp = self()->comp();
 
-      if (self()->comp()->compileRelocatableCode())
+      // We may reach this point if all code caches have been used up.
+      // If some code caches have some space but cannot be used because they are reserved
+      // we will throw an exception in the call to TR::CodeCacheManager::reserveCodeCache
+      //
+      if (comp->compileRelocatableCode())
          {
-         self()->comp()->failCompilation<TR::RecoverableCodeCacheError>("Cannot reserve code cache");
+         comp->failCompilation<TR::RecoverableCodeCacheError>("Cannot reserve code cache");
          }
 
-      self()->comp()->failCompilation<TR::CodeCacheError>("Cannot reserve code cache");
+      comp->failCompilation<TR::CodeCacheError>("Cannot reserve code cache");
       }
    }
 

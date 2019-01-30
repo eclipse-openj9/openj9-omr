@@ -197,18 +197,6 @@ OMR::CodeCache::writeMethodHeader(void *freeBlock, size_t size, bool isCold)
    }
 
 
-// Resize code memory within a code cache
-//
-// Deprecated API.  This will be deleted when known downstream consumers of
-// this API are changed to use `trimCodeMemoryAllocation`
-//
-bool
-OMR::CodeCache::resizeCodeMemory(void *memoryBlock, size_t newSize)
-   {
-   return self()->trimCodeMemoryAllocation(memoryBlock, newSize);
-   }
-
-
 bool
 OMR::CodeCache::trimCodeMemoryAllocation(void *codeMemoryStart, size_t actualSizeInBytes)
    {

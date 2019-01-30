@@ -116,7 +116,6 @@ public:
                                uint8_t **coldCode,
                                bool needsToBeContiguous,
                                bool isMethodHeaderNeeded=true);
-   bool resizeCodeMemory(void *memoryBlock, size_t newSize);
 
    /**
     * @brief Trims the size of the previously allocated code memory in this

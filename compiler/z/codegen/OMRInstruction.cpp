@@ -679,7 +679,8 @@ OMR::Z::Instruction::setupThrowsImplicitNullPointerException(TR::Node *n, TR::Me
                firstChild->getOpCodeValue() == TR::l2a)
             {
             TR::ILOpCodes loadOp = comp->il.opCodeForIndirectLoad(TR::Int32);
-            while (firstChild->getOpCodeValue() != loadOp)
+            TR::ILOpCodes rdbarOp = comp->il.opCodeForIndirectReadBarrier(TR::Int32);
+            while (firstChild->getOpCodeValue() != loadOp && firstChild->getOpCodeValue() != rdbarOp)
                firstChild = firstChild->getFirstChild();
             nullCheckReference = firstChild->getFirstChild();
             }

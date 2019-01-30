@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -19,40 +19,40 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#include <stdint.h>                            // for int32_t, int64_t, etc
-#include <stdlib.h>                            // for NULL, abs
-#include "codegen/CodeGenerator.hpp"           // for CodeGenerator, etc
-#include "codegen/FrontEnd.hpp"                // for feGetEnv
-#include "codegen/InstOpCode.hpp"              // for InstOpCode, etc
-#include "codegen/Linkage.hpp"                 // for addDependency
-#include "codegen/Machine.hpp"                 // for LOWER_IMMED, etc
-#include "codegen/RealRegister.hpp"            // for RealRegister, etc
-#include "codegen/Register.hpp"                // for Register
+#include <stdint.h>
+#include <stdlib.h>
+#include "codegen/CodeGenerator.hpp"
+#include "codegen/FrontEnd.hpp"
+#include "codegen/InstOpCode.hpp"
+#include "codegen/Linkage.hpp"
+#include "codegen/Machine.hpp"
+#include "codegen/RealRegister.hpp"
+#include "codegen/Register.hpp"
 #include "codegen/RegisterConstants.hpp"
 #include "codegen/RegisterDependency.hpp"
-#include "codegen/RegisterPair.hpp"            // for RegisterPair
-#include "codegen/TreeEvaluator.hpp"           // for TreeEvaluator, etc
+#include "codegen/RegisterPair.hpp"
+#include "codegen/TreeEvaluator.hpp"
 #include "codegen/PPCEvaluator.hpp"
-#include "compile/Compilation.hpp"             // for Compilation
-#include "compile/SymbolReferenceTable.hpp"    // for SymbolReferenceTable
+#include "compile/Compilation.hpp"
+#include "compile/SymbolReferenceTable.hpp"
 #include "env/CompilerEnv.hpp"
 #include "env/Processors.hpp"
 #include "env/TRMemory.hpp"
-#include "env/jittypes.h"                      // for uintptrj_t
-#include "il/DataTypes.hpp"                    // for CONSTANT64, etc
-#include "il/ILOpCodes.hpp"                    // for ILOpCodes, etc
-#include "il/ILOps.hpp"                        // for ILOpCode
-#include "il/Node.hpp"                         // for Node
-#include "il/Node_inlines.hpp"                 // for Node::getFirstChild, etc
-#include "il/Symbol.hpp"                       // for Symbol
-#include "il/SymbolReference.hpp"              // for SymbolReference
-#include "il/symbol/AutomaticSymbol.hpp"       // for AutomaticSymbol
-#include "il/symbol/LabelSymbol.hpp"           // for generateLabelSymbol, etc
-#include "infra/Assert.hpp"                    // for TR_ASSERT
-#include "infra/Bit.hpp"                       // for intParts, etc
+#include "env/jittypes.h"
+#include "il/DataTypes.hpp"
+#include "il/ILOpCodes.hpp"
+#include "il/ILOps.hpp"
+#include "il/Node.hpp"
+#include "il/Node_inlines.hpp"
+#include "il/Symbol.hpp"
+#include "il/SymbolReference.hpp"
+#include "il/symbol/AutomaticSymbol.hpp"
+#include "il/symbol/LabelSymbol.hpp"
+#include "infra/Assert.hpp"
+#include "infra/Bit.hpp"
 #include "p/codegen/GenerateInstructions.hpp"
 #include "p/codegen/PPCInstruction.hpp"
-#include "runtime/Runtime.hpp"                 // for TR_RuntimeHelper, etc
+#include "runtime/Runtime.hpp"
 
 extern TR::Register *addConstantToInteger(TR::Node * node, TR::Register *srcReg, int32_t value, TR::CodeGenerator *cg);
 extern TR::Register *addConstantToLong(TR::Node * node, TR::Register *srcReg, int64_t value, TR::Register *trgReg, TR::CodeGenerator *cg);

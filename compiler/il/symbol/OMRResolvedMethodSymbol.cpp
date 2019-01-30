@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -21,16 +21,16 @@
 
 #include "il/symbol/OMRResolvedMethodSymbol.hpp"
 
-#include <stdint.h>                             // for int32_t, etc
-#include <stdlib.h>                             // for strtol, atoi
-#include <string.h>                             // for NULL, strncmp, etc
-#include "codegen/CodeGenerator.hpp"            // for CodeGenerator
-#include "codegen/FrontEnd.hpp"                 // for TR_FrontEnd, etc
-#include "codegen/Linkage.hpp"                  // for Linkage
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
+#include "codegen/CodeGenerator.hpp"
+#include "codegen/FrontEnd.hpp"
+#include "codegen/Linkage.hpp"
 #include "codegen/LinkageConventionsEnum.hpp"
 #include "codegen/RecognizedMethods.hpp"
-#include "compile/Compilation.hpp"              // for Compilation
-#include "compile/Method.hpp"                   // for TR_Method, etc
+#include "compile/Compilation.hpp"
+#include "compile/Method.hpp"
 #include "compile/OSRData.hpp"
 #include "compile/ResolvedMethod.hpp"
 #include "compile/SymbolReferenceTable.hpp"
@@ -39,34 +39,34 @@
 #include "env/TRMemory.hpp"
 #include "env/jittypes.h"
 #include "env/CompilerEnv.hpp"
-#include "il/Block.hpp"                         // for Block
+#include "il/Block.hpp"
 #include "il/DataTypes.hpp"
-#include "il/ILOpCodes.hpp"                     // for ILOpCodes::treetop, etc
-#include "il/ILOps.hpp"                         // for ILOpCode
-#include "il/Node.hpp"                          // for Node, etc
-#include "il/Node_inlines.hpp"                  // for Node::getChild, etc
-#include "il/Symbol.hpp"                        // for Symbol
+#include "il/ILOpCodes.hpp"
+#include "il/ILOps.hpp"
+#include "il/Node.hpp"
+#include "il/Node_inlines.hpp"
+#include "il/Symbol.hpp"
 #include "il/SymbolReference.hpp"
-#include "il/TreeTop.hpp"                       // for TreeTop
+#include "il/TreeTop.hpp"
 #include "il/TreeTop_inlines.hpp"
 #include "il/symbol/AutomaticSymbol.hpp"
-#include "il/symbol/MethodSymbol.hpp"           // for MethodSymbol
+#include "il/symbol/MethodSymbol.hpp"
 #include "il/symbol/ParameterSymbol.hpp"
 #include "il/symbol/RegisterMappedSymbol.hpp"
 #include "il/symbol/ResolvedMethodSymbol.hpp"
-#include "ilgen/IlGen.hpp"                      // for TR_IlGenerator
-#include "ilgen/IlGenRequest.hpp"               // for IlGenRequest
-#include "infra/Array.hpp"                      // for TR_Array
-#include "infra/Assert.hpp"                     // for TR_ASSERT
-#include "infra/BitVector.hpp"                  // for TR_BitVector, etc
-#include "infra/Cfg.hpp"                        // for CFG
-#include "infra/Flags.hpp"                      // for flags32_t
-#include "infra/List.hpp"                       // for List, etc
+#include "ilgen/IlGen.hpp"
+#include "ilgen/IlGenRequest.hpp"
+#include "infra/Array.hpp"
+#include "infra/Assert.hpp"
+#include "infra/BitVector.hpp"
+#include "infra/Cfg.hpp"
+#include "infra/Flags.hpp"
+#include "infra/List.hpp"
 #include "infra/Random.hpp"
-#include "infra/CfgEdge.hpp"                    // for CFGEdge
-#include "infra/CfgNode.hpp"                    // for CFGNode
-#include "optimizer/Optimizer.hpp"              // for Optimizer
-#include "ras/Debug.hpp"                        // for TR_Debug
+#include "infra/CfgEdge.hpp"
+#include "infra/CfgNode.hpp"
+#include "optimizer/Optimizer.hpp"
+#include "ras/Debug.hpp"
 #include "runtime/Runtime.hpp"
 #include "infra/SimpleRegex.hpp"
 

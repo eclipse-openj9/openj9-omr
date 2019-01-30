@@ -21,55 +21,55 @@
 
 #include "optimizer/PartialRedundancy.hpp"
 
-#include <limits.h>                                 // for USHRT_MAX
-#include <stddef.h>                                 // for size_t
-#include <stdint.h>                                 // for int32_t
-#include <stdlib.h>                                 // for atoi
-#include <string.h>                                 // for NULL, memset
-#include "codegen/CodeGenerator.hpp"                // for CodeGenerator
-#include "codegen/FrontEnd.hpp"                     // for TR_FrontEnd, etc
-#include "codegen/Linkage.hpp"                      // for Linkage
-#include "compile/Compilation.hpp"                  // for Compilation
+#include <limits.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
+#include "codegen/CodeGenerator.hpp"
+#include "codegen/FrontEnd.hpp"
+#include "codegen/Linkage.hpp"
+#include "compile/Compilation.hpp"
 #include "compile/SymbolReferenceTable.hpp"
 #include "control/Options.hpp"
-#include "control/Options_inlines.hpp"              // for TR::Options, etc
-#include "control/Recompilation.hpp"                // for TR_Recompilation
+#include "control/Options_inlines.hpp"
+#include "control/Recompilation.hpp"
 #include "cs2/bitvectr.h"
 #include "cs2/sparsrbit.h"
 #include "env/CompilerEnv.hpp"
-#include "env/TRMemory.hpp"                         // for TR_Memory, etc
-#include "env/jittypes.h"                           // for TR_ByteCodeInfo
+#include "env/TRMemory.hpp"
+#include "env/jittypes.h"
 #include "il/AliasSetInterface.hpp"
-#include "il/Block.hpp"                             // for Block
-#include "il/DataTypes.hpp"                         // for TR::DataType, etc
-#include "il/ILOps.hpp"                             // for TR::ILOpCode, etc
-#include "il/Node.hpp"                              // for Node, etc
+#include "il/Block.hpp"
+#include "il/DataTypes.hpp"
+#include "il/ILOps.hpp"
+#include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
-#include "il/Symbol.hpp"                            // for Symbol
-#include "il/SymbolReference.hpp"                   // for SymbolReference
-#include "il/TreeTop.hpp"                           // for TreeTop
-#include "il/TreeTop_inlines.hpp"                   // for TreeTop::getNode, etc
-#include "il/symbol/MethodSymbol.hpp"               // for MethodSymbol
-#include "infra/Assert.hpp"                         // for TR_ASSERT
-#include "infra/BitVector.hpp"                      // for TR_BitVector, etc
-#include "infra/Cfg.hpp"                            // for CFG
-#include "infra/Link.hpp"                           // for TR_LinkHead
-#include "infra/List.hpp"                           // for ListElement, etc
-#include "infra/CfgEdge.hpp"                        // for CFGEdge
-#include "infra/CfgNode.hpp"                        // for CFGNode
+#include "il/Symbol.hpp"
+#include "il/SymbolReference.hpp"
+#include "il/TreeTop.hpp"
+#include "il/TreeTop_inlines.hpp"
+#include "il/symbol/MethodSymbol.hpp"
+#include "infra/Assert.hpp"
+#include "infra/BitVector.hpp"
+#include "infra/Cfg.hpp"
+#include "infra/Link.hpp"
+#include "infra/List.hpp"
+#include "infra/CfgEdge.hpp"
+#include "infra/CfgNode.hpp"
 #include "optimizer/DataFlowAnalysis.hpp"
-#include "optimizer/InductionVariable.hpp"          // for TR_PrimaryInductionVariable
+#include "optimizer/InductionVariable.hpp"
 #include "optimizer/LocalAnalysis.hpp"
-#include "optimizer/Optimization.hpp"               // for Optimization
+#include "optimizer/Optimization.hpp"
 #include "optimizer/Optimization_inlines.hpp"
 #include "optimizer/OptimizationManager.hpp"
 #include "optimizer/Optimizations.hpp"
-#include "optimizer/Optimizer.hpp"                  // for Optimizer
+#include "optimizer/Optimizer.hpp"
 #include "optimizer/Structure.hpp"
 #include "optimizer/TransformUtil.hpp"
-#include "ras/Debug.hpp"                            // for TR_DebugBase
+#include "ras/Debug.hpp"
 #ifdef J9_PROJECT_SPECIFIC
-#include "runtime/J9Profiler.hpp"                   // for TR_ValueProfiler
+#include "runtime/J9Profiler.hpp"
 #endif
 
 

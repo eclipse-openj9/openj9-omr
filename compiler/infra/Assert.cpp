@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -21,21 +21,21 @@
 
 #include "infra/Assert.hpp"
 
-#include <assert.h>                            // for assert
-#include <stdarg.h>                            // for va_list
-#include <stdio.h>                             // for fprintf, stderr, etc
-#include <stdlib.h>                            // for exit
-#include "codegen/FrontEnd.hpp"                // for TR_FrontEnd, isJ9
-#include "compile/Compilation.hpp"             // for Compilation, comp
-#include "compile/ResolvedMethod.hpp"          // for TR_ResolvedMethod
+#include <assert.h>
+#include <stdarg.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include "codegen/FrontEnd.hpp"
+#include "compile/Compilation.hpp"
+#include "compile/ResolvedMethod.hpp"
 #include "control/Options.hpp"
-#include "control/Options_inlines.hpp"         // for TR::Options, etc
-#include "control/Recompilation.hpp"           // for TR_Recompilation
+#include "control/Options_inlines.hpp"
+#include "control/Recompilation.hpp"
 #include "env/CompilerEnv.hpp"
-#include "il/symbol/ResolvedMethodSymbol.hpp"  // for ResolvedMethodSymbol
-#include "infra/Annotations.hpp"               // for OMR_NORETURN
-#include "ras/Debug.hpp"                       // for TR_Debug
-#include "stdarg.h"                            // for va_end, va_copy, etc
+#include "il/symbol/ResolvedMethodSymbol.hpp"
+#include "infra/Annotations.hpp"
+#include "ras/Debug.hpp"
+#include "stdarg.h"
 
 #ifdef J9_PROJECT_SPECIFIC
 #include "env/VMJ9.h"

@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright (c) 2017, 2018 IBM Corp. and others
+* Copyright (c) 2017, 2019 IBM Corp. and others
 *
 * This program and the accompanying materials are made available under
 * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -25,8 +25,8 @@
 #include "il/Node_inlines.hpp"
 #include "il/TreeTop.hpp"
 #include "il/TreeTop_inlines.hpp"
-#include "infra/Checklist.hpp"       // for NodeChecklist, etc
-#include "codegen/CodeGenerator.hpp" // for CodeGenerator
+#include "infra/Checklist.hpp"
+#include "codegen/CodeGenerator.hpp"
 #include "codegen/CodeGenerator_inlines.hpp"
 #include "optimizer/TransformUtil.hpp"
 

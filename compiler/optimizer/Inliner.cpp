@@ -21,88 +21,88 @@
 
 #include "optimizer/Inliner.hpp"
 
-#include <algorithm>                                      // for std::max, etc
-#include <assert.h>                                       // for assert
-#include <limits.h>                                       // for INT_MAX
-#include <stdarg.h>                                       // for va_list, etc
-#include <stddef.h>                                       // for NULL, size_t
-#include <stdint.h>                                       // for int32_t, etc
-#include <stdio.h>                                        // for printf, fflush, etc
-#include <stdlib.h>                                       // for atoi, atof
-#include <string.h>                                       // for strncmp, etc
+#include <algorithm>
+#include <assert.h>
+#include <limits.h>
+#include <stdarg.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <exception>
-#include <vector>                                         // for std::vector
-#include "codegen/CodeGenerator.hpp"                      // for CodeGenerator
-#include "codegen/FrontEnd.hpp"                           // for TR_FrontEnd, etc
+#include <vector>
+#include "codegen/CodeGenerator.hpp"
+#include "codegen/FrontEnd.hpp"
 #include "env/KnownObjectTable.hpp"
-#include "codegen/Linkage.hpp"                            // for Linkage
+#include "codegen/Linkage.hpp"
 #include "codegen/RecognizedMethods.hpp"
-#include "compile/Compilation.hpp"                        // for Compilation
+#include "compile/Compilation.hpp"
 #include "compile/InlineBlock.hpp"
-#include "compile/Method.hpp"                             // for TR_Method
-#include "compile/OSRData.hpp"                            // for HCRMode, etc
+#include "compile/Method.hpp"
+#include "compile/OSRData.hpp"
 #include "compile/ResolvedMethod.hpp"
 #include "compile/SymbolReferenceTable.hpp"
 #include "compile/VirtualGuard.hpp"
 #include "control/Options.hpp"
-#include "control/Options_inlines.hpp"                    // for TR::Options, etc
+#include "control/Options_inlines.hpp"
 #include "control/Recompilation.hpp"
 #include "cs2/allocator.h"
 #include "cs2/bitvectr.h"
 #include "cs2/sparsrbit.h"
 #include "env/ClassEnv.hpp"
 #include "env/CompilerEnv.hpp"
-#include "env/ObjectModel.hpp"                            // for ObjectModel
-#include "env/PersistentInfo.hpp"                         // for PersistentInfo
+#include "env/ObjectModel.hpp"
+#include "env/PersistentInfo.hpp"
 #include "env/StackMemoryRegion.hpp"
 #include "env/TRMemory.hpp"
 #include "env/jittypes.h"
 #include "il/AliasSetInterface.hpp"
-#include "il/Block.hpp"                                   // for Block
-#include "il/DataTypes.hpp"                               // for DataType, etc
+#include "il/Block.hpp"
+#include "il/DataTypes.hpp"
 #include "il/ILOpCodes.hpp"
-#include "il/ILOps.hpp"                                   // for ILOpCode, etc
-#include "il/Node.hpp"                                    // for Node, etc
+#include "il/ILOps.hpp"
+#include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
-#include "il/Symbol.hpp"                                  // for Symbol
+#include "il/Symbol.hpp"
 #include "il/SymbolReference.hpp"
-#include "il/TreeTop.hpp"                                 // for TreeTop
+#include "il/TreeTop.hpp"
 #include "il/TreeTop_inlines.hpp"
 #include "il/symbol/AutomaticSymbol.hpp"
 #include "il/symbol/LabelSymbol.hpp"
-#include "il/symbol/MethodSymbol.hpp"                     // for MethodSymbol
+#include "il/symbol/MethodSymbol.hpp"
 #include "il/symbol/ParameterSymbol.hpp"
 #include "il/symbol/ResolvedMethodSymbol.hpp"
-#include "il/symbol/StaticSymbol.hpp"                     // for StaticSymbol
+#include "il/symbol/StaticSymbol.hpp"
 #include "ilgen/IlGenRequest.hpp"
 #include "ilgen/IlGeneratorMethodDetails.hpp"
 #include "ilgen/IlGeneratorMethodDetails_inlines.hpp"
-#include "infra/Array.hpp"                                // for TR_Array
-#include "infra/Assert.hpp"                               // for TR_ASSERT
-#include "infra/BitVector.hpp"                            // for TR_BitVector
-#include "infra/Cfg.hpp"                                  // for CFG
+#include "infra/Array.hpp"
+#include "infra/Assert.hpp"
+#include "infra/BitVector.hpp"
+#include "infra/Cfg.hpp"
 #include "infra/HashTab.hpp"
-#include "infra/Link.hpp"                                 // for TR_LinkHead, etc
-#include "infra/List.hpp"                                 // for ListIterator, etc
+#include "infra/Link.hpp"
+#include "infra/List.hpp"
 #include "infra/Random.hpp"
 #include "infra/SimpleRegex.hpp"
-#include "infra/Stack.hpp"                                // for TR_Stack
-#include "infra/CfgEdge.hpp"                              // for CFGEdge
-#include "infra/CfgNode.hpp"                              // for CFGNode
-#include "infra/ILWalk.hpp"                              //  for PreorderNodeIterator
-#include "optimizer/CallInfo.hpp"                         // for TR_CallTarget, etc
+#include "infra/Stack.hpp"
+#include "infra/CfgEdge.hpp"
+#include "infra/CfgNode.hpp"
+#include "infra/ILWalk.hpp"
+#include "optimizer/CallInfo.hpp"
 #include "optimizer/InlinerFailureReason.hpp"
-#include "optimizer/Optimization.hpp"                     // for Optimization
+#include "optimizer/Optimization.hpp"
 #include "optimizer/OptimizationManager.hpp"
 #include "optimizer/Optimizations.hpp"
-#include "optimizer/Optimizer.hpp"                        // for Optimizer
-#include "optimizer/PreExistence.hpp"                     // for TR_PrexArgInfo, etc
-#include "optimizer/RematTools.hpp"                       // for RematTools, RematSafetyInfo
+#include "optimizer/Optimizer.hpp"
+#include "optimizer/PreExistence.hpp"
+#include "optimizer/RematTools.hpp"
 #include "optimizer/Structure.hpp"
 #include "optimizer/StructuralAnalysis.hpp"
-#include "ras/Debug.hpp"                                  // for TR_DebugBase, etc
+#include "ras/Debug.hpp"
 #include "ras/DebugCounter.hpp"
-#include "ras/LogTracer.hpp"                              // for heuristicTrace, etc
+#include "ras/LogTracer.hpp"
 #include "runtime/Runtime.hpp"
 
 #ifdef J9_PROJECT_SPECIFIC

@@ -33,18 +33,18 @@ namespace OMR { typedef OMR::Z::Linkage LinkageConnector; }
 
 #include "compiler/codegen/OMRLinkage.hpp"
 
-#include <stddef.h>                            // for NULL
-#include <stdint.h>                            // for int32_t, uint32_t, etc
-#include "codegen/CodeGenerator.hpp"           // for CodeGenerator
-#include "codegen/InstOpCode.hpp"              // for InstOpCode, etc
+#include <stddef.h>
+#include <stdint.h>
+#include "codegen/CodeGenerator.hpp"
+#include "codegen/InstOpCode.hpp"
 #include "codegen/LinkageConventionsEnum.hpp"
-#include "codegen/Machine.hpp"                 // for Machine
-#include "codegen/RealRegister.hpp"            // for RealRegister, etc
+#include "codegen/Machine.hpp"
+#include "codegen/RealRegister.hpp"
 #include "codegen/RegisterConstants.hpp"
-#include "codegen/Snippet.hpp"                 // for Snippet
-#include "env/TRMemory.hpp"                    // for TR_HeapMemory, etc
-#include "il/DataTypes.hpp"                    // for TR::DataType, DataTypes
-#include "infra/Assert.hpp"                    // for TR_ASSERT
+#include "codegen/Snippet.hpp"
+#include "env/TRMemory.hpp"
+#include "il/DataTypes.hpp"
+#include "infra/Assert.hpp"
 
 #include "codegen/RegisterDependency.hpp"
 

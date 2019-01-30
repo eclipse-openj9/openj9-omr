@@ -21,22 +21,22 @@
 
 #include "codegen/FrontEnd.hpp"
 
-#include <stdarg.h>                            // for va_end, va_list, etc
-#include <stdint.h>                            // for int32_t
-#include "env/KnownObjectTable.hpp"        // for KnownObjectTable, etc
-#include "compile/Compilation.hpp"             // for Compilation
-#include "compile/CompilationTypes.hpp"        // for TR_CallingContext
-#include "compile/Method.hpp"                  // for TR_Method
+#include <stdarg.h>
+#include <stdint.h>
+#include "env/KnownObjectTable.hpp"
+#include "compile/Compilation.hpp"
+#include "compile/CompilationTypes.hpp"
+#include "compile/Method.hpp"
 #include "control/Options.hpp"
 #include "control/OptionsUtil.hpp"
 #include "control/Options_inlines.hpp"
 #include "env/CompilerEnv.hpp"
-#include "env/CPU.hpp"                         // for Cpu
-#include "env/jittypes.h"                      // for uintptrj_t, etc
-#include "env/PersistentInfo.hpp"              // for PersistentInfo
+#include "env/CPU.hpp"
+#include "env/jittypes.h"
+#include "env/PersistentInfo.hpp"
 
 #if defined(LINUX) || defined(OSX)
-#include <unistd.h>                 // for getpid, intptr_t, pid_t
+#include <unistd.h>
 #endif
 
 

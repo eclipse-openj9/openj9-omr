@@ -21,31 +21,31 @@
 
 #include "runtime/OMRCodeCacheManager.hpp"
 
-#include <algorithm>                    // for std::max, etc
-#include <stddef.h>                     // for size_t
-#include <stdint.h>                     // for uint8_t, int32_t, uint32_t, etc
-#include <stdio.h>                      // for fprintf, stderr, printf, etc
-#include <string.h>                     // for memcpy, strcpy, memset, etc
-#include "codegen/FrontEnd.hpp"         // for TR_VerboseLog, etc
+#include <algorithm>
+#include <stddef.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <string.h>
+#include "codegen/FrontEnd.hpp"
 #include "control/Options.hpp"
-#include "control/Options_inlines.hpp"  // for TR::Options, etc
-#include "env/IO.hpp"                   // for POINTER_PRINTF_FORMAT
-#include "env/defines.h"                // for HOST_OS, OMR_LINUX
-#include "env/CompilerEnv.hpp"          // for TR::Compiler
-#include "env/jittypes.h"               // for FLUSH_MEMORY
-#include "il/DataTypes.hpp"             // for TR_YesNoMaybe::TR_yes, etc
-#include "infra/Assert.hpp"             // for TR_ASSERT
-#include "infra/CriticalSection.hpp"    // for CriticalSection
-#include "infra/Monitor.hpp"            // for Monitor
-#include "runtime/CodeCache.hpp"        // for CodeCache
-#include "runtime/CodeCacheManager.hpp" // for CodeCacheManager
-#include "runtime/CodeCacheMemorySegment.hpp" // for CodeCacheMemorySegment
-#include "runtime/CodeCacheConfig.hpp"  // for CodeCacheConfig, etc
+#include "control/Options_inlines.hpp"
+#include "env/IO.hpp"
+#include "env/defines.h"
+#include "env/CompilerEnv.hpp"
+#include "env/jittypes.h"
+#include "il/DataTypes.hpp"
+#include "infra/Assert.hpp"
+#include "infra/CriticalSection.hpp"
+#include "infra/Monitor.hpp"
+#include "runtime/CodeCache.hpp"
+#include "runtime/CodeCacheManager.hpp"
+#include "runtime/CodeCacheMemorySegment.hpp"
+#include "runtime/CodeCacheConfig.hpp"
 #include "runtime/Runtime.hpp"
 
 #if (HOST_OS == OMR_LINUX)
-#include <elf.h>                        // for EV_CURRENT, SHT_STRTAB, etc
-#include <unistd.h>                     // for getpid, pid_t
+#include <elf.h>
+#include <unistd.h>
 #include "codegen/ELFGenerator.hpp"
 
 TR::CodeCacheSymbolContainer * OMR::CodeCacheManager::_symbolContainer = NULL;

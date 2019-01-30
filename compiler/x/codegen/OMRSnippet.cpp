@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -21,16 +21,16 @@
 
 #include "codegen/Snippet.hpp"
 
-#include <stddef.h>                                // for NULL
-#include <stdint.h>                                // for int32_t, uint8_t
-#include "codegen/CodeGenerator.hpp"               // for CodeGenerator
+#include <stddef.h>
+#include <stdint.h>
+#include "codegen/CodeGenerator.hpp"
 #include "codegen/ConstantDataSnippet.hpp"
-#include "infra/Assert.hpp"                        // for TR_ASSERT
-#include "ras/Debug.hpp"                           // for TR_Debug
+#include "infra/Assert.hpp"
+#include "ras/Debug.hpp"
 #include "x/codegen/DataSnippet.hpp"
 #include "x/codegen/HelperCallSnippet.hpp"
 #include "x/codegen/RestartSnippet.hpp"
-#include "x/codegen/X86Ops.hpp"                    // for ::JMP4, etc
+#include "x/codegen/X86Ops.hpp"
 #include "codegen/UnresolvedDataSnippet.hpp"
 
 namespace TR { class X86BoundCheckWithSpineCheckSnippet; }

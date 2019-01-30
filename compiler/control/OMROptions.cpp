@@ -23,36 +23,36 @@
 #include "control/OptionsUtil.hpp"
 #include "control/Options_inlines.hpp"
 
-#include <algorithm>                     // for std::max, etc
-#include <ctype.h>                       // for isdigit
-#include <limits.h>                      // for INT_MAX, USHRT_MAX
-#include <stddef.h>                      // for offsetof
-#include <stdio.h>                       // for sprintf, printf
-#include <stdlib.h>                      // for atoi, malloc, strtol
+#include <algorithm>
+#include <ctype.h>
+#include <limits.h>
+#include <stddef.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include "codegen/CodeGenerator.hpp"
-#include "compile/Compilation.hpp"       // for Compilation, comp
-#include "compile/CompilationTypes.hpp"  // for TR_Hotness
-#include "compile/ResolvedMethod.hpp"    // for TR_ResolvedMethod
-#include "control/OptimizationPlan.hpp"  // for TR_OptimizationPlan
-#include "control/Recompilation.hpp"     // for TR_PersistentJittedBodyInfo, etc
+#include "compile/Compilation.hpp"
+#include "compile/CompilationTypes.hpp"
+#include "compile/ResolvedMethod.hpp"
+#include "control/OptimizationPlan.hpp"
+#include "control/Recompilation.hpp"
 #include "env/CompilerEnv.hpp"
-#include "env/IO.hpp"                    // for IO
-#include "env/ObjectModel.hpp"           // for ObjectModel
-#include "env/Processors.hpp"            // for TR_Processor, etc
-#include "env/defines.h"                 // for TR_HOST_64BIT, TR_HOST_X86
-#include "env/jittypes.h"                // for intptrj_t, uintptrj_t
-#include "il/DataTypes.hpp"              // for DataType, etc
-#include "il/ILOps.hpp"                  // for TR::ILOpCode
+#include "env/IO.hpp"
+#include "env/ObjectModel.hpp"
+#include "env/Processors.hpp"
+#include "env/defines.h"
+#include "env/jittypes.h"
+#include "il/DataTypes.hpp"
+#include "il/ILOps.hpp"
 #include "infra/SimpleRegex.hpp"
-#include "ras/Debug.hpp"                 // for TR_Debug
-#include "ras/IgnoreLocale.hpp"          // for stricmp_ignore_locale, etc
+#include "ras/Debug.hpp"
+#include "ras/IgnoreLocale.hpp"
 
 #if !defined(J9_PROJECT_SPECIFIC)
 #include "env/JitConfig.hpp"
 #endif
 
 #ifdef J9_PROJECT_SPECIFIC
-#include "control/RecompilationInfo.hpp"     // for TR_PersistentJittedBodyInfo, etc
+#include "control/RecompilationInfo.hpp"
 #include "env/VMJ9.h"
 #endif
 

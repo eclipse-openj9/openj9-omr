@@ -35,8 +35,8 @@ namespace OMR { typedef OMR::Z::Register RegisterConnector; }
 
 #include "compiler/codegen/OMRRegister.hpp"
 
-#include "il/Node.hpp"      // for ncount_t
-#include "infra/Flags.hpp"  // for flags32_t
+#include "il/Node.hpp"
+#include "infra/Flags.hpp"
 
 class TR_LiveRegisterInfo;
 class TR_OpaquePseudoRegister;

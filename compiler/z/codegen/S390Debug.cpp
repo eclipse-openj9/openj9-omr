@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -23,52 +23,52 @@
 #define snprintf _snprintf_s
 #endif
 
-#include <limits.h>                                // for INT_MIN
-#include <stdint.h>                                // for int32_t, uint8_t, etc
-#include <stdio.h>                                 // for sprintf, snprintf
-#include <string.h>                                // for strcmp, NULL, etc
-#include "codegen/CodeGenPhase.hpp"                // for CodeGenPhase, etc
-#include "codegen/CodeGenerator.hpp"               // for CodeGenerator, etc
+#include <limits.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <string.h>
+#include "codegen/CodeGenPhase.hpp"
+#include "codegen/CodeGenerator.hpp"
 #include "codegen/ConstantDataSnippet.hpp"
-#include "codegen/FrontEnd.hpp"                    // for TR_FrontEnd
-#include "codegen/GCRegisterMap.hpp"               // for GCRegisterMap
-#include "codegen/InstOpCode.hpp"                  // for InstOpCode, etc
-#include "codegen/Instruction.hpp"                 // for Instruction, etc
-#include "codegen/Linkage.hpp"                     // for Linkage
-#include "codegen/Machine.hpp"                     // for Machine
-#include "codegen/MemoryReference.hpp"             // for MemoryReference
-#include "codegen/RealRegister.hpp"                // for RealRegister, etc
-#include "codegen/Register.hpp"                    // for Register
+#include "codegen/FrontEnd.hpp"
+#include "codegen/GCRegisterMap.hpp"
+#include "codegen/InstOpCode.hpp"
+#include "codegen/Instruction.hpp"
+#include "codegen/Linkage.hpp"
+#include "codegen/Machine.hpp"
+#include "codegen/MemoryReference.hpp"
+#include "codegen/RealRegister.hpp"
+#include "codegen/Register.hpp"
 #include "codegen/RegisterConstants.hpp"
 #include "codegen/RegisterDependency.hpp"
 #include "codegen/RegisterDependencyStruct.hpp"
-#include "codegen/RegisterPair.hpp"                // for RegisterPair
-#include "codegen/Snippet.hpp"                     // for Snippet
+#include "codegen/RegisterPair.hpp"
+#include "codegen/Snippet.hpp"
 #include "codegen/UnresolvedDataSnippet.hpp"
-#include "compile/Compilation.hpp"                 // for Compilation, comp
+#include "compile/Compilation.hpp"
 #include "control/Options.hpp"
-#include "control/Options_inlines.hpp"             // for TR::Options, etc
+#include "control/Options_inlines.hpp"
 #include "env/CompilerEnv.hpp"
-#include "env/IO.hpp"                              // for IO
-#include "env/TRMemory.hpp"                        // for TR_Memory, etc
-#include "env/defines.h"                           // for TR_HOST_X86
-#include "env/jittypes.h"                          // for intptrj_t
-#include "il/DataTypes.hpp"                        // for DataTypes, etc
+#include "env/IO.hpp"
+#include "env/TRMemory.hpp"
+#include "env/defines.h"
+#include "env/jittypes.h"
+#include "il/DataTypes.hpp"
 #include "il/ILOpCodes.hpp"
-#include "il/ILOps.hpp"                            // for ILOpCode
-#include "il/Node.hpp"                             // for Node
-#include "il/Node_inlines.hpp"                     // for Node::getDataType, etc
-#include "il/Symbol.hpp"                           // for Symbol, etc
-#include "il/SymbolReference.hpp"                  // for SymbolReference
-#include "il/symbol/AutomaticSymbol.hpp"           // for AutomaticSymbol
-#include "il/symbol/LabelSymbol.hpp"               // for LabelSymbol
-#include "il/symbol/MethodSymbol.hpp"              // for MethodSymbol
+#include "il/ILOps.hpp"
+#include "il/Node.hpp"
+#include "il/Node_inlines.hpp"
+#include "il/Symbol.hpp"
+#include "il/SymbolReference.hpp"
+#include "il/symbol/AutomaticSymbol.hpp"
+#include "il/symbol/LabelSymbol.hpp"
+#include "il/symbol/MethodSymbol.hpp"
 #include "il/symbol/RegisterMappedSymbol.hpp"
 #include "il/symbol/ResolvedMethodSymbol.hpp"
-#include "infra/Assert.hpp"                        // for TR_ASSERT
-#include "infra/List.hpp"                          // for ListIterator, etc
+#include "infra/Assert.hpp"
+#include "infra/List.hpp"
 #include "infra/SimpleRegex.hpp"
-#include "ras/Debug.hpp"                           // for TR_Debug, etc
+#include "ras/Debug.hpp"
 #include "z/codegen/S390Instruction.hpp"
 #include "z/codegen/S390OutOfLineCodeSection.hpp"
 

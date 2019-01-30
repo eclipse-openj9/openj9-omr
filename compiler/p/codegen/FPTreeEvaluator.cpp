@@ -19,45 +19,45 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#include <stddef.h>                              // for NULL
-#include <stdint.h>                              // for int32_t
-#include "codegen/CodeGenerator.hpp"             // for CodeGenerator, etc
-#include "codegen/FrontEnd.hpp"                  // for TR_FrontEnd
-#include "codegen/InstOpCode.hpp"                // for InstOpCode, etc
-#include "codegen/Instruction.hpp"               // for Instruction
-#include "codegen/Linkage.hpp"                   // for addDependency, etc
-#include "codegen/Machine.hpp"                   // for Machine, etc
-#include "codegen/MemoryReference.hpp"           // for MemoryReference
-#include "codegen/RealRegister.hpp"              // for RealRegister, etc
-#include "codegen/Register.hpp"                  // for Register
+#include <stddef.h>
+#include <stdint.h>
+#include "codegen/CodeGenerator.hpp"
+#include "codegen/FrontEnd.hpp"
+#include "codegen/InstOpCode.hpp"
+#include "codegen/Instruction.hpp"
+#include "codegen/Linkage.hpp"
+#include "codegen/Machine.hpp"
+#include "codegen/MemoryReference.hpp"
+#include "codegen/RealRegister.hpp"
+#include "codegen/Register.hpp"
 #include "codegen/RegisterConstants.hpp"
 #include "codegen/RegisterDependency.hpp"
-#include "codegen/RegisterDependencyStruct.hpp"  // for RegisterDependency
-#include "codegen/RegisterPair.hpp"              // for RegisterPair
-#include "codegen/TreeEvaluator.hpp"             // for TreeEvaluator
+#include "codegen/RegisterDependencyStruct.hpp"
+#include "codegen/RegisterPair.hpp"
+#include "codegen/TreeEvaluator.hpp"
 #include "codegen/UnresolvedDataSnippet.hpp"
-#include "compile/Compilation.hpp"               // for isSMP, Compilation
+#include "compile/Compilation.hpp"
 #include "compile/SymbolReferenceTable.hpp"
 #include "env/CompilerEnv.hpp"
 #include "env/Processors.hpp"
 #include "env/TRMemory.hpp"
-#include "env/jittypes.h"                        // for uintptrj_t
-#include "il/DataTypes.hpp"                      // for DataTypes::Float, etc
-#include "il/ILOpCodes.hpp"                      // for ILOpCodes::i2f, etc
-#include "il/ILOps.hpp"                          // for ILOpCode
-#include "il/Node.hpp"                           // for Node, etc
-#include "il/Node_inlines.hpp"                   // for Node::getFirstChild, etc
-#include "il/Symbol.hpp"                         // for Symbol
-#include "il/SymbolReference.hpp"                // for SymbolReference
-#include "il/TreeTop.hpp"                        // for TreeTop
-#include "il/TreeTop_inlines.hpp"                // for TreeTop::getNode
-#include "il/symbol/LabelSymbol.hpp"             // for generateLabelSymbol, etc
-#include "il/symbol/MethodSymbol.hpp"            // for MethodSymbol
-#include "infra/Assert.hpp"                      // for TR_ASSERT
+#include "env/jittypes.h"
+#include "il/DataTypes.hpp"
+#include "il/ILOpCodes.hpp"
+#include "il/ILOps.hpp"
+#include "il/Node.hpp"
+#include "il/Node_inlines.hpp"
+#include "il/Symbol.hpp"
+#include "il/SymbolReference.hpp"
+#include "il/TreeTop.hpp"
+#include "il/TreeTop_inlines.hpp"
+#include "il/symbol/LabelSymbol.hpp"
+#include "il/symbol/MethodSymbol.hpp"
+#include "infra/Assert.hpp"
 #include "p/codegen/GenerateInstructions.hpp"
 #include "p/codegen/PPCInstruction.hpp"
-#include "p/codegen/PPCTableOfConstants.hpp"     // for PTOC_FULL_INDEX
-#include "runtime/Runtime.hpp"                   // for HI_VALUE, LO_VALUE, etc
+#include "p/codegen/PPCTableOfConstants.hpp"
+#include "runtime/Runtime.hpp"
 
 static void ifFloatEvaluator( TR::Node *node, TR::InstOpCode::Mnemonic branchOp1, TR::InstOpCode::Mnemonic branchOp2, TR::CodeGenerator *cg);
 static TR::Register *compareFloatAndSetOrderedBoolean(TR::InstOpCode::Mnemonic branchOp1, TR::InstOpCode::Mnemonic branchOp2, int64_t imm, TR::Node *node, TR::CodeGenerator *cg);

@@ -28,62 +28,62 @@
 
 #include "codegen/OMRLinkage.hpp"
 
-#include <stddef.h>                                // for NULL, size_t
-#include <stdint.h>                                // for int32_t, uint8_t, etc
-#include "codegen/CodeGenerator.hpp"               // for CodeGenerator
+#include <stddef.h>
+#include <stdint.h>
+#include "codegen/CodeGenerator.hpp"
 #include "codegen/ConstantDataSnippet.hpp"
-#include "codegen/FrontEnd.hpp"                    // for TR_FrontEnd, etc
-#include "codegen/InstOpCode.hpp"                  // for InstOpCode, etc
-#include "codegen/Instruction.hpp"                 // for Instruction, etc
-#include "codegen/Linkage.hpp"                     // for LinkageBase, etc
+#include "codegen/FrontEnd.hpp"
+#include "codegen/InstOpCode.hpp"
+#include "codegen/Instruction.hpp"
+#include "codegen/Linkage.hpp"
 #include "codegen/LinkageConventionsEnum.hpp"
-#include "codegen/LiveRegister.hpp"                // for TR_LiveRegisters
-#include "codegen/Machine.hpp"                     // for Machine
+#include "codegen/LiveRegister.hpp"
+#include "codegen/Machine.hpp"
 #include "codegen/MemoryReference.hpp"
-#include "codegen/RealRegister.hpp"                // for RealRegister, etc
+#include "codegen/RealRegister.hpp"
 #include "codegen/RecognizedMethods.hpp"
-#include "codegen/Register.hpp"                    // for Register
+#include "codegen/Register.hpp"
 #include "codegen/RegisterConstants.hpp"
 #include "codegen/RegisterDependency.hpp"
 #include "codegen/RegisterDependencyStruct.hpp"
-#include "codegen/RegisterPair.hpp"                // for RegisterPair
-#include "codegen/SystemLinkage.hpp"               // for SystemLinkage
+#include "codegen/RegisterPair.hpp"
+#include "codegen/SystemLinkage.hpp"
 #include "codegen/TreeEvaluator.hpp"
 #include "codegen/S390Evaluator.hpp"
-#include "compile/Compilation.hpp"                 // for Compilation
+#include "compile/Compilation.hpp"
 #include "compile/SymbolReferenceTable.hpp"
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"
 #include "env/CompilerEnv.hpp"
-#include "env/ObjectModel.hpp"                     // for ObjectModel
+#include "env/ObjectModel.hpp"
 #include "env/TRMemory.hpp"
 #include "env/jittypes.h"
-#include "il/Block.hpp"                            // for Block
-#include "il/DataTypes.hpp"                        // for TR::DataType, etc
+#include "il/Block.hpp"
+#include "il/DataTypes.hpp"
 #include "il/ILOpCodes.hpp"
-#include "il/ILOps.hpp"                            // for ILOpCode
-#include "il/Node.hpp"                             // for Node
-#include "il/Node_inlines.hpp"                     // for Node::getDataType, etc
-#include "il/Symbol.hpp"                           // for Symbol, etc
-#include "il/SymbolReference.hpp"                  // for SymbolReference
-#include "il/TreeTop.hpp"                          // for TreeTop
-#include "il/TreeTop_inlines.hpp"                  // for TreeTop::getNode
-#include "il/symbol/AutomaticSymbol.hpp"           // for AutomaticSymbol
+#include "il/ILOps.hpp"
+#include "il/Node.hpp"
+#include "il/Node_inlines.hpp"
+#include "il/Symbol.hpp"
+#include "il/SymbolReference.hpp"
+#include "il/TreeTop.hpp"
+#include "il/TreeTop_inlines.hpp"
+#include "il/symbol/AutomaticSymbol.hpp"
 #include "il/symbol/LabelSymbol.hpp"
-#include "il/symbol/MethodSymbol.hpp"              // for MethodSymbol
-#include "il/symbol/ParameterSymbol.hpp"           // for ParameterSymbol
+#include "il/symbol/MethodSymbol.hpp"
+#include "il/symbol/ParameterSymbol.hpp"
 #include "il/symbol/RegisterMappedSymbol.hpp"
 #include "il/symbol/ResolvedMethodSymbol.hpp"
-#include "il/symbol/StaticSymbol.hpp"              // for StaticSymbol
-#include "infra/Assert.hpp"                        // for TR_ASSERT
-#include "infra/BitVector.hpp"                     // for TR_BitVector
-#include "infra/List.hpp"                          // for ListIterator, etc
-#include "ras/Debug.hpp"                           // for TR_DebugBase
+#include "il/symbol/StaticSymbol.hpp"
+#include "infra/Assert.hpp"
+#include "infra/BitVector.hpp"
+#include "infra/List.hpp"
+#include "ras/Debug.hpp"
 #include "runtime/Runtime.hpp"
 #include "z/codegen/CallSnippet.hpp"
 #include "z/codegen/S390GenerateInstructions.hpp"
 #include "z/codegen/S390HelperCallSnippet.hpp"
-#include "z/codegen/S390Instruction.hpp"           // for etc
+#include "z/codegen/S390Instruction.hpp"
 #include "z/codegen/TRSystemLinkage.hpp"
 
 

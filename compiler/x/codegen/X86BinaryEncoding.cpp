@@ -19,47 +19,47 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#include <algorithm>                               // for std::find, etc
-#include <stddef.h>                                // for NULL
-#include <stdint.h>                                // for uint8_t, int32_t, etc
-#include "codegen/BackingStore.hpp"                // for TR_BackingStore
-#include "codegen/CodeGenerator.hpp"               // for CodeGenerator, etc
-#include "codegen/FrontEnd.hpp"                    // for TR_FrontEnd, etc
-#include "codegen/Instruction.hpp"                 // for EnlargementResult, etc
+#include <algorithm>
+#include <stddef.h>
+#include <stdint.h>
+#include "codegen/BackingStore.hpp"
+#include "codegen/CodeGenerator.hpp"
+#include "codegen/FrontEnd.hpp"
+#include "codegen/Instruction.hpp"
 #include "codegen/Linkage.hpp"
-#include "codegen/Machine.hpp"                     // for Machine
-#include "codegen/MemoryReference.hpp"             // for MemoryReference, etc
-#include "codegen/RealRegister.hpp"                // for RealRegister, etc
-#include "codegen/Register.hpp"                    // for Register
+#include "codegen/Machine.hpp"
+#include "codegen/MemoryReference.hpp"
+#include "codegen/RealRegister.hpp"
+#include "codegen/Register.hpp"
 #include "codegen/Relocation.hpp"
-#include "codegen/Snippet.hpp"                     // for Snippet
+#include "codegen/Snippet.hpp"
 #include "codegen/UnresolvedDataSnippet.hpp"
-#include "compile/Compilation.hpp"                 // for Compilation, etc
-#include "compile/ResolvedMethod.hpp"              // for TR_ResolvedMethod
+#include "compile/Compilation.hpp"
+#include "compile/ResolvedMethod.hpp"
 #include "compile/SymbolReferenceTable.hpp"
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"
 #include "env/CompilerEnv.hpp"
-#include "env/PersistentInfo.hpp"                  // for PersistentInfo
+#include "env/PersistentInfo.hpp"
 #include "env/TRMemory.hpp"
-#include "env/jittypes.h"                          // for intptrj_t, uintptrj_t
-#include "il/ILOpCodes.hpp"                        // for ILOpCodes::aconst, etc
-#include "il/ILOps.hpp"                            // for ILOpCode
-#include "il/Node.hpp"                             // for Node
+#include "env/jittypes.h"
+#include "il/ILOpCodes.hpp"
+#include "il/ILOps.hpp"
+#include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
-#include "il/Symbol.hpp"                           // for Symbol
-#include "il/SymbolReference.hpp"                  // for SymbolReference
-#include "il/symbol/LabelSymbol.hpp"               // for LabelSymbol
-#include "il/symbol/MethodSymbol.hpp"              // for MethodSymbol
+#include "il/Symbol.hpp"
+#include "il/SymbolReference.hpp"
+#include "il/symbol/LabelSymbol.hpp"
+#include "il/symbol/MethodSymbol.hpp"
 #include "il/symbol/ResolvedMethodSymbol.hpp"
-#include "il/symbol/StaticSymbol.hpp"              // for StaticSymbol
-#include "infra/Assert.hpp"                        // for TR_ASSERT
-#include "infra/List.hpp"                          // for List
-#include "ras/Debug.hpp"                           // for TR_DebugBase
-#include "ras/DebugCounter.hpp"                    // for TR::DebugCounter, etc
+#include "il/symbol/StaticSymbol.hpp"
+#include "infra/Assert.hpp"
+#include "infra/List.hpp"
+#include "ras/Debug.hpp"
+#include "ras/DebugCounter.hpp"
 #include "runtime/Runtime.hpp"
 #include "x/codegen/X86Instruction.hpp"
-#include "x/codegen/X86Ops.hpp"                    // for TR_X86OpCode, etc
+#include "x/codegen/X86Ops.hpp"
 #include "x/codegen/X86Ops_inlines.hpp"
 #include "codegen/StaticRelocation.hpp"
 

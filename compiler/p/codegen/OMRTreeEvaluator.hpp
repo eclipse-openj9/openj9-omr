@@ -35,8 +35,8 @@ namespace OMR { typedef OMR::Power::TreeEvaluator TreeEvaluatorConnector; }
 
 #include "compiler/codegen/OMRTreeEvaluator.hpp"
 
-#include <stdint.h>                         // for int32_t
-#include "codegen/InstOpCode.hpp"           // for InstOpCode, etc
+#include <stdint.h>
+#include "codegen/InstOpCode.hpp"
 #include "runtime/Runtime.hpp"
 
 namespace TR { class CodeGenerator; }

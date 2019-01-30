@@ -28,40 +28,40 @@
 #pragma csect(STATIC,"OMRZRegisterDependency#S")
 #pragma csect(TEST,"OMRZRegisterDependency#T")
 
-#include <stddef.h>                                // for NULL
-#include <stdint.h>                                // for int32_t, uint32_t, etc
-#include "codegen/BackingStore.hpp"                // for TR_BackingStore
-#include "codegen/CodeGenerator.hpp"               // for CodeGenerator
-#include "codegen/FrontEnd.hpp"                    // for TR::IO::fprintf, etc
-#include "codegen/InstOpCode.hpp"                  // for InstOpCode, etc
-#include "codegen/Instruction.hpp"                 // for Instruction
-#include "codegen/Machine.hpp"                     // for Machine, etc
+#include <stddef.h>
+#include <stdint.h>
+#include "codegen/BackingStore.hpp"
+#include "codegen/CodeGenerator.hpp"
+#include "codegen/FrontEnd.hpp"
+#include "codegen/InstOpCode.hpp"
+#include "codegen/Instruction.hpp"
+#include "codegen/Machine.hpp"
 #include "codegen/MemoryReference.hpp"
-#include "codegen/RealRegister.hpp"                // for RealRegister, etc
-#include "codegen/Register.hpp"                    // for Register
+#include "codegen/RealRegister.hpp"
+#include "codegen/Register.hpp"
 #include "codegen/RegisterConstants.hpp"
 #include "codegen/RegisterDependency.hpp"
 #include "codegen/RegisterDependencyStruct.hpp"
-#include "codegen/RegisterPair.hpp"                // for RegisterPair
-#include "compile/Compilation.hpp"                 // for Compilation
+#include "codegen/RegisterPair.hpp"
+#include "compile/Compilation.hpp"
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"
-#include "cs2/hashtab.h"                           // for HashTable
+#include "cs2/hashtab.h"
 #include "env/CompilerEnv.hpp"
-#include "env/ObjectModel.hpp"                     // for ObjectModel
-#include "env/TRMemory.hpp"                        // for TR_Memory, etc
-#include "il/DataTypes.hpp"                        // for DataTypes::Int32
-#include "il/ILOpCodes.hpp"                        // for ILOpCodes::icall, etc
-#include "il/ILOps.hpp"                            // for ILOpCode
-#include "il/Node.hpp"                             // for Node
-#include "il/Node_inlines.hpp"                     // for Node::getChild, etc
-#include "il/Symbol.hpp"                           // for Symbol
-#include "il/SymbolReference.hpp"                  // for SymbolReference
-#include "il/symbol/AutomaticSymbol.hpp"           // for AutomaticSymbol
-#include "il/symbol/LabelSymbol.hpp"               // for LabelSymbol
-#include "infra/Assert.hpp"                        // for TR_ASSERT
-#include "infra/List.hpp"                          // for List, TR_Queue
-#include "ras/Debug.hpp"                           // for TR_DebugBase
+#include "env/ObjectModel.hpp"
+#include "env/TRMemory.hpp"
+#include "il/DataTypes.hpp"
+#include "il/ILOpCodes.hpp"
+#include "il/ILOps.hpp"
+#include "il/Node.hpp"
+#include "il/Node_inlines.hpp"
+#include "il/Symbol.hpp"
+#include "il/SymbolReference.hpp"
+#include "il/symbol/AutomaticSymbol.hpp"
+#include "il/symbol/LabelSymbol.hpp"
+#include "infra/Assert.hpp"
+#include "infra/List.hpp"
+#include "ras/Debug.hpp"
 #include "z/codegen/S390GenerateInstructions.hpp"
 #include "z/codegen/S390Instruction.hpp"
 #include "env/IO.hpp"

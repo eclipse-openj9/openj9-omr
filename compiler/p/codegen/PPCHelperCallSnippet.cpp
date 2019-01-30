@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -21,29 +21,29 @@
 
 #include "p/codegen/PPCHelperCallSnippet.hpp"
 
-#include <stddef.h>                            // for NULL
-#include <stdint.h>                            // for uint8_t, int32_t, etc
-#include "codegen/CodeGenerator.hpp"           // for CodeGenerator
-#include "codegen/FrontEnd.hpp"                // for TR_FrontEnd
-#include "codegen/InstOpCode.hpp"              // for InstOpCode, etc
-#include "codegen/Machine.hpp"                 // for Machine, UPPER_IMMED
-#include "codegen/RealRegister.hpp"            // for RealRegister
+#include <stddef.h>
+#include <stdint.h>
+#include "codegen/CodeGenerator.hpp"
+#include "codegen/FrontEnd.hpp"
+#include "codegen/InstOpCode.hpp"
+#include "codegen/Machine.hpp"
+#include "codegen/RealRegister.hpp"
 #include "codegen/SnippetGCMap.hpp"
-#include "compile/Compilation.hpp"             // for Compilation, comp
-#include "env/IO.hpp"                          // for POINTER_PRINTF_FORMAT
-#include "env/jittypes.h"                      // for intptrj_t
-#include "il/DataTypes.hpp"                    // for TR::DataType
-#include "il/ILOpCodes.hpp"                    // for ILOpCodes::arraycopy
-#include "il/ILOps.hpp"                        // for ILOpCode
-#include "il/Node.hpp"                         // for Node
-#include "il/Node_inlines.hpp"                 // for Node::getChild, etc
-#include "il/Symbol.hpp"                       // for Symbol
-#include "il/SymbolReference.hpp"              // for SymbolReference
-#include "il/symbol/LabelSymbol.hpp"           // for LabelSymbol
-#include "il/symbol/MethodSymbol.hpp"          // for MethodSymbol
-#include "infra/Assert.hpp"                    // for TR_ASSERT
-#include "ras/Debug.hpp"                       // for TR_Debug
-#include "runtime/Runtime.hpp"                 // for BRANCH_BACKWARD_LIMIT, etc
+#include "compile/Compilation.hpp"
+#include "env/IO.hpp"
+#include "env/jittypes.h"
+#include "il/DataTypes.hpp"
+#include "il/ILOpCodes.hpp"
+#include "il/ILOps.hpp"
+#include "il/Node.hpp"
+#include "il/Node_inlines.hpp"
+#include "il/Symbol.hpp"
+#include "il/SymbolReference.hpp"
+#include "il/symbol/LabelSymbol.hpp"
+#include "il/symbol/MethodSymbol.hpp"
+#include "infra/Assert.hpp"
+#include "ras/Debug.hpp"
+#include "runtime/Runtime.hpp"
 
 uint8_t *TR::PPCHelperCallSnippet::emitSnippetBody()
    {

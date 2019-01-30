@@ -23,7 +23,7 @@
 
 #include "codegen/CodeGenerator.hpp"
 #include "env/CompilerEnv.hpp"
-#include "il/Node.hpp"                                         // for Node
+#include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
 
 const OMR::Z::InstOpCode::OpCodeMetaData OMR::Z::InstOpCode::metadata[NumOpCodes] =

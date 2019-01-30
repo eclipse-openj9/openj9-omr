@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -21,68 +21,68 @@
 
 #include "optimizer/LoopVersioner.hpp"
 
-#include <algorithm>                               // for std::max, etc
-#include <stdint.h>                                // for int32_t, int64_t, etc
-#include <stdio.h>                                 // for printf
-#include <stdlib.h>                                // for atoi, atof
-#include <string.h>                                // for NULL, memset, etc
-#include "codegen/CodeGenerator.hpp"               // for CodeGenerator
-#include "codegen/FrontEnd.hpp"                    // for TR_FrontEnd, etc
-#include "compile/Compilation.hpp"                 // for Compilation
-#include "compile/Method.hpp"                      // for TR_Method
-#include "compile/ResolvedMethod.hpp"              // for TR_ResolvedMethod
+#include <algorithm>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "codegen/CodeGenerator.hpp"
+#include "codegen/FrontEnd.hpp"
+#include "compile/Compilation.hpp"
+#include "compile/Method.hpp"
+#include "compile/ResolvedMethod.hpp"
 #include "compile/SymbolReferenceTable.hpp"
-#include "compile/VirtualGuard.hpp"                // for TR_VirtualGuard
+#include "compile/VirtualGuard.hpp"
 #include "control/Options.hpp"
-#include "control/Options_inlines.hpp"             // for TR::Options, etc
+#include "control/Options_inlines.hpp"
 #include "cs2/bitvectr.h"
 #include "cs2/llistof.h"
 #include "cs2/sparsrbit.h"
 #include "env/CompilerEnv.hpp"
-#include "env/ObjectModel.hpp"                     // for ObjectModel
-#include "env/PersistentInfo.hpp"                  // for PersistentInfo
-#include "env/StackMemoryRegion.hpp"               // for TR::StackMemoryRegion
-#include "env/TRMemory.hpp"                        // for TR_Memory, etc
-#include "env/jittypes.h"                          // for TR_ByteCodeInfo, etc
+#include "env/ObjectModel.hpp"
+#include "env/PersistentInfo.hpp"
+#include "env/StackMemoryRegion.hpp"
+#include "env/TRMemory.hpp"
+#include "env/jittypes.h"
 #include "il/AliasSetInterface.hpp"
-#include "il/Block.hpp"                            // for Block, toBlock, etc
-#include "il/DataTypes.hpp"                        // for DataTypes::Int32, etc
-#include "il/ILOpCodes.hpp"                        // for ILOpCodes::iconst, etc
-#include "il/ILOps.hpp"                            // for ILOpCode, etc
-#include "il/Node.hpp"                             // for Node, etc
+#include "il/Block.hpp"
+#include "il/DataTypes.hpp"
+#include "il/ILOpCodes.hpp"
+#include "il/ILOps.hpp"
+#include "il/Node.hpp"
 #include "il/NodePool.hpp"
 #include "il/Node_inlines.hpp"
-#include "il/Symbol.hpp"                           // for Symbol
-#include "il/SymbolReference.hpp"                  // for SymbolReference, etc
-#include "il/TreeTop.hpp"                          // for TreeTop
-#include "il/TreeTop_inlines.hpp"                  // for TreeTop::getNode, etc
-#include "il/symbol/AutomaticSymbol.hpp"           // for AutomaticSymbol
-#include "il/symbol/MethodSymbol.hpp"              // for MethodSymbol
+#include "il/Symbol.hpp"
+#include "il/SymbolReference.hpp"
+#include "il/TreeTop.hpp"
+#include "il/TreeTop_inlines.hpp"
+#include "il/symbol/AutomaticSymbol.hpp"
+#include "il/symbol/MethodSymbol.hpp"
 #include "il/symbol/RegisterMappedSymbol.hpp"
 #include "il/symbol/ResolvedMethodSymbol.hpp"
-#include "il/symbol/StaticSymbol.hpp"              // for StaticSymbol
-#include "infra/Assert.hpp"                        // for TR_ASSERT
-#include "infra/BitVector.hpp"                     // for TR_BitVector, etc
-#include "infra/Cfg.hpp"                           // for CFG, etc
-#include "infra/Link.hpp"                          // for TR_LinkHead, etc
-#include "infra/List.hpp"                          // for List, ListElement, etc
-#include "infra/CfgEdge.hpp"                       // for CFGEdge
-#include "infra/CfgNode.hpp"                       // for CFGNode
-#include "optimizer/Dominators.hpp"                // for TR_PostDominators
-#include "optimizer/LocalAnalysis.hpp"             // for TR_LocalAnalysis
+#include "il/symbol/StaticSymbol.hpp"
+#include "infra/Assert.hpp"
+#include "infra/BitVector.hpp"
+#include "infra/Cfg.hpp"
+#include "infra/Link.hpp"
+#include "infra/List.hpp"
+#include "infra/CfgEdge.hpp"
+#include "infra/CfgNode.hpp"
+#include "optimizer/Dominators.hpp"
+#include "optimizer/LocalAnalysis.hpp"
 #include "optimizer/LoopCanonicalizer.hpp"
-#include "optimizer/Optimization.hpp"              // for Optimization
+#include "optimizer/Optimization.hpp"
 #include "optimizer/Optimization_inlines.hpp"
 #include "optimizer/Optimizations.hpp"
-#include "optimizer/Optimizer.hpp"                 // for Optimizer, etc
+#include "optimizer/Optimizer.hpp"
 #include "optimizer/RegisterCandidate.hpp"
 #include "optimizer/Structure.hpp"
 #include "optimizer/TransformUtil.hpp"
-#include "optimizer/UseDefInfo.hpp"                // for TR_UseDefInfo, etc
+#include "optimizer/UseDefInfo.hpp"
 #include "optimizer/ValueNumberInfo.hpp"
-#include "optimizer/VPConstraint.hpp"              // for TR::VPConstraint
-#include "ras/Debug.hpp"                           // for TR_DebugBase
-#include "ras/DebugCounter.hpp"                    // for TR::DebugCounter, etc
+#include "optimizer/VPConstraint.hpp"
+#include "ras/Debug.hpp"
+#include "ras/DebugCounter.hpp"
 
 #ifdef J9_PROJECT_SPECIFIC
 #include "runtime/J9ValueProfiler.hpp"

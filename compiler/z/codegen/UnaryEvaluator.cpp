@@ -19,42 +19,42 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#include <stddef.h>                                // for NULL, size_t
-#include <stdint.h>                                // for int32_t, uint32_t, etc
-#include "codegen/CodeGenerator.hpp"               // for CodeGenerator, etc
-#include "codegen/FrontEnd.hpp"                    // for TR_FrontEnd
-#include "codegen/InstOpCode.hpp"                  // for InstOpCode, etc
-#include "codegen/Instruction.hpp"                 // for Instruction
-#include "codegen/MemoryReference.hpp"             // for MemoryReference, etc
-#include "codegen/RealRegister.hpp"                // for RealRegister, etc
-#include "codegen/Register.hpp"                    // for Register
+#include <stddef.h>
+#include <stdint.h>
+#include "codegen/CodeGenerator.hpp"
+#include "codegen/FrontEnd.hpp"
+#include "codegen/InstOpCode.hpp"
+#include "codegen/Instruction.hpp"
+#include "codegen/MemoryReference.hpp"
+#include "codegen/RealRegister.hpp"
+#include "codegen/Register.hpp"
 #include "codegen/RegisterConstants.hpp"
 #include "codegen/RegisterDependency.hpp"
-#include "codegen/RegisterPair.hpp"                // for RegisterPair
-#include "codegen/TreeEvaluator.hpp"               // for TreeEvaluator, etc
-#include "compile/Compilation.hpp"                 // for Compilation
-#include "compile/ResolvedMethod.hpp"              // for TR_ResolvedMethod
+#include "codegen/RegisterPair.hpp"
+#include "codegen/TreeEvaluator.hpp"
+#include "compile/Compilation.hpp"
+#include "compile/ResolvedMethod.hpp"
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"
 #include "env/CompilerEnv.hpp"
-#include "env/TRMemory.hpp"                        // for TR_HeapMemory, etc
-#include "il/DataTypes.hpp"                        // for TR::DataType, etc
+#include "env/TRMemory.hpp"
+#include "il/DataTypes.hpp"
 #include "il/ILOpCodes.hpp"
-#include "il/ILOps.hpp"                            // for ILOpCode
-#include "il/Node.hpp"                             // for Node, etc
+#include "il/ILOps.hpp"
+#include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
-#include "il/symbol/AutomaticSymbol.hpp"           // for AutomaticSymbol
-#include "il/symbol/LabelSymbol.hpp"               // for LabelSymbol
+#include "il/symbol/AutomaticSymbol.hpp"
+#include "il/symbol/LabelSymbol.hpp"
 #include "il/symbol/ResolvedMethodSymbol.hpp"
-#include "infra/Assert.hpp"                        // for TR_ASSERT
-#include "infra/Bit.hpp"                           // for trailingZeroes, etc
-#include "ras/Debug.hpp"                           // for TR_DebugBase
-#include "ras/Delimiter.hpp"                       // for Delimiter
+#include "infra/Assert.hpp"
+#include "infra/Bit.hpp"
+#include "ras/Debug.hpp"
+#include "ras/Delimiter.hpp"
 #include "z/codegen/S390Evaluator.hpp"
 #include "z/codegen/S390GenerateInstructions.hpp"
 
 #ifdef J9_PROJECT_SPECIFIC
-#include "z/codegen/S390Register.hpp"              // for TR_PseudoRegister, etc
+#include "z/codegen/S390Register.hpp"
 #endif
 
 namespace TR { class SymbolReference; }

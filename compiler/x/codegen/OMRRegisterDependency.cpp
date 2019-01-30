@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -19,36 +19,36 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#include <algorithm>                             // for std::find, etc
-#include <stdint.h>                              // for int32_t, uint32_t, etc
-#include <string.h>                              // for NULL, memset
-#include "codegen/BackingStore.hpp"              // for TR_BackingStore
-#include "codegen/CodeGenerator.hpp"             // for CodeGenerator
-#include "codegen/Instruction.hpp"               // for Instruction
-#include "codegen/LiveRegister.hpp"              // for TR_LiveRegisters
-#include "codegen/Machine.hpp"                   // for Machine
+#include <algorithm>
+#include <stdint.h>
+#include <string.h>
+#include "codegen/BackingStore.hpp"
+#include "codegen/CodeGenerator.hpp"
+#include "codegen/Instruction.hpp"
+#include "codegen/LiveRegister.hpp"
+#include "codegen/Machine.hpp"
 #include "codegen/MemoryReference.hpp"
-#include "codegen/RealRegister.hpp"              // for RealRegister, etc
-#include "codegen/Register.hpp"                  // for Register
+#include "codegen/RealRegister.hpp"
+#include "codegen/Register.hpp"
 #include "codegen/RegisterConstants.hpp"
 #include "codegen/RegisterDependency.hpp"
-#include "codegen/RegisterDependencyStruct.hpp"  // for RegisterDependency, etc
-#include "codegen/RegisterPair.hpp"              // for RegisterPair
-#include "compile/Compilation.hpp"               // for Compilation
+#include "codegen/RegisterDependencyStruct.hpp"
+#include "codegen/RegisterPair.hpp"
+#include "compile/Compilation.hpp"
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"
 #include "env/TRMemory.hpp"
-#include "il/Block.hpp"                          // for Block
-#include "il/DataTypes.hpp"                      // for DataTypes::Double, etc
+#include "il/Block.hpp"
+#include "il/DataTypes.hpp"
 #include "il/ILOpCodes.hpp"
-#include "il/Node.hpp"                           // for Node
-#include "il/Node_inlines.hpp"                   // for Node::getDataType, etc
-#include "infra/Assert.hpp"                      // for TR_ASSERT
-#include "infra/List.hpp"                        // for List, ListIterator
-#include "ras/Debug.hpp"                         // for TR_DebugBase
+#include "il/Node.hpp"
+#include "il/Node_inlines.hpp"
+#include "infra/Assert.hpp"
+#include "infra/List.hpp"
+#include "ras/Debug.hpp"
 #include "ras/DebugCounter.hpp"
 #include "x/codegen/X86Instruction.hpp"
-#include "x/codegen/X86Ops.hpp"                  // for LRegMem, MOVRegReg, etc
+#include "x/codegen/X86Ops.hpp"
 #include "x/codegen/X86Register.hpp"
 
 ////////////////////////

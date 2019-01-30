@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -22,12 +22,12 @@
 #ifndef OMR_RUNTIME_ASSUMPTIONS_INCL
 #define OMR_RUNTIME_ASSUMPTIONS_INCL
 
-#include <stddef.h>                        // for NULL
-#include <stdint.h>                        // for int32_t, uint8_t, etc
-#include "env/RuntimeAssumptionTable.hpp"  // for TR_RuntimeAssumptionKind, etc
-#include "env/TRMemory.hpp"                // for TR_Memory, etc
-#include "env/jittypes.h"                  // for uintptrj_t
-#include "infra/Link.hpp"                  // for TR_LinkHead0, TR_Link0
+#include <stddef.h>
+#include <stdint.h>
+#include "env/RuntimeAssumptionTable.hpp"
+#include "env/TRMemory.hpp"
+#include "env/jittypes.h"
+#include "infra/Link.hpp"
 
 
 class TR_FrontEnd;

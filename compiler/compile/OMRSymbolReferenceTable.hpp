@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -33,28 +33,28 @@ namespace OMR { typedef OMR::SymbolReferenceTable SymbolReferenceTableConnector;
 
 #include "il/symbol/ResolvedMethodSymbol.hpp"
 
-#include <map>                                 // for std::map
-#include <stddef.h>                            // for NULL, size_t
-#include <stdint.h>                            // for int32_t, etc
-#include "env/TRMemory.hpp"                    // for Allocator, etc
-#include "codegen/FrontEnd.hpp"                // for TR_FrontEnd
+#include <map>
+#include <stddef.h>
+#include <stdint.h>
+#include "env/TRMemory.hpp"
+#include "codegen/FrontEnd.hpp"
 #include "env/KnownObjectTable.hpp"
 #include "codegen/RecognizedMethods.hpp"
 #include "codegen/RegisterConstants.hpp"
-#include "compile/AliasBuilder.hpp"            // for AliasBuilder
-#include "compile/Method.hpp"                  // for mcount_t
-#include "cs2/hashtab.h"                       // for HashTable, etc
-#include "env/jittypes.h"                      // for intptrj_t, uintptrj_t
-#include "il/DataTypes.hpp"                    // for DataTypes, etc
-#include "il/Symbol.hpp"                       // for Symbol
-#include "il/symbol/MethodSymbol.hpp"          // for MethodSymbol
-#include "il/symbol/RegisterMappedSymbol.hpp"  // for RegsiterMappedSymbol
-#include "infra/Array.hpp"                     // for TR_Array
-#include "infra/Assert.hpp"                    // for TR_ASSERT
-#include "infra/BitVector.hpp"                 // for TR_BitVector
-#include "infra/Flags.hpp"                     // for flags8_t
-#include "infra/Link.hpp"                      // for TR_Link, etc
-#include "infra/List.hpp"                      // for List, etc
+#include "compile/AliasBuilder.hpp"
+#include "compile/Method.hpp"
+#include "cs2/hashtab.h"
+#include "env/jittypes.h"
+#include "il/DataTypes.hpp"
+#include "il/Symbol.hpp"
+#include "il/symbol/MethodSymbol.hpp"
+#include "il/symbol/RegisterMappedSymbol.hpp"
+#include "infra/Array.hpp"
+#include "infra/Assert.hpp"
+#include "infra/BitVector.hpp"
+#include "infra/Flags.hpp"
+#include "infra/Link.hpp"
+#include "infra/List.hpp"
 #include "runtime/Runtime.hpp"
 
 

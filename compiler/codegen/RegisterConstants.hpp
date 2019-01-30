@@ -22,8 +22,8 @@
 #ifndef REGISTERKINDS_INCL
 #define REGISTERKINDS_INCL
 
-#include <stdint.h>         // for int16_t, uint32_t
-#include "infra/Flags.hpp"  // for flags32_t
+#include <stdint.h>
+#include "infra/Flags.hpp"
 
 typedef uint32_t TR_RegisterMask;
 

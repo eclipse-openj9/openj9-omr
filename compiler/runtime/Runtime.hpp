@@ -22,9 +22,9 @@
 #ifndef RUNTIME_INCL
 #define RUNTIME_INCL
 
-#include <stdint.h>        // for int32_t, uint32_t, uintptr_t, etc
-#include "env/defines.h"   // for TR_HOST_X86, TR_HOST_64BIT
-#include "env/jittypes.h"  // for intptrj_t
+#include <stdint.h>
+#include "env/defines.h"
+#include "env/jittypes.h"
 
 #include "env/Processors.hpp"
 

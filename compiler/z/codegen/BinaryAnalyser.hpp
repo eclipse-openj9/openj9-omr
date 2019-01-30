@@ -22,11 +22,11 @@
 #ifndef S390BINARYANALYSER_INCL
 #define S390BINARYANALYSER_INCL
 
-#include <stdint.h>                   // for uint8_t
-#include "codegen/Analyser.hpp"       // for NUM_ACTIONS, TR_Analyser
-#include "codegen/CodeGenerator.hpp"  // for CodeGenerator
-#include "codegen/InstOpCode.hpp"     // for InstOpCode, etc
-#include "compile/Compilation.hpp"    // for Compilation
+#include <stdint.h>
+#include "codegen/Analyser.hpp"
+#include "codegen/CodeGenerator.hpp"
+#include "codegen/InstOpCode.hpp"
+#include "compile/Compilation.hpp"
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"
 

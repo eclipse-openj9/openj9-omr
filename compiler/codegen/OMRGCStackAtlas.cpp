@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -19,18 +19,18 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#include "codegen/OMRGCStackAtlas.hpp"  // for GCStackAtlas
+#include "codegen/OMRGCStackAtlas.hpp"
 
-#include <stdint.h>                               // for int32_t, uint32_t, etc
-#include <string.h>                               // for memcmp
-#include "codegen/CodeGenerator.hpp"              // for CodeGenerator
-#include "codegen/GCStackAtlas.hpp"               // for TR::GCStackAtlas
-#include "codegen/GCStackMap.hpp"                 // for TR_GCStackMap, etc
-#include "compile/Compilation.hpp"                // for Compilation
+#include <stdint.h>
+#include <string.h>
+#include "codegen/CodeGenerator.hpp"
+#include "codegen/GCStackAtlas.hpp"
+#include "codegen/GCStackMap.hpp"
+#include "compile/Compilation.hpp"
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"
-#include "infra/List.hpp"                         // for List, ListIterator, etc
-#include "ras/Debug.hpp"                          // for TR_DebugBase
+#include "infra/List.hpp"
+#include "ras/Debug.hpp"
 
 namespace TR { class AutomaticSymbol; }
 

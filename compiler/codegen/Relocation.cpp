@@ -21,23 +21,23 @@
 
 #include "codegen/Relocation.hpp"
 
-#include <stddef.h>                         // for NULL
-#include <stdint.h>                         // for uint8_t, uintptr_t, etc
-#include "codegen/AheadOfTimeCompile.hpp"   // for AheadOfTimeCompile
-#include "codegen/CodeGenerator.hpp"        // for CodeGenerator
-#include "codegen/Instruction.hpp"          // for Instruction
-#include "codegen/Linkage.hpp"              // for Linkage
-#include "compile/Compilation.hpp"          // for Compilation
+#include <stddef.h>
+#include <stdint.h>
+#include "codegen/AheadOfTimeCompile.hpp"
+#include "codegen/CodeGenerator.hpp"
+#include "codegen/Instruction.hpp"
+#include "codegen/Linkage.hpp"
+#include "compile/Compilation.hpp"
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"
 #include "env/CompilerEnv.hpp"
-#include "env/IO.hpp"                       // for POINTER_PRINTF_FORMAT
-#include "env/TRMemory.hpp"                 // for TR_Link::operator new
-#include "env/jittypes.h"                   // for intptrj_t
-#include "il/symbol/LabelSymbol.hpp"        // for LabelSymbol
-#include "infra/Assert.hpp"                 // for TR_ASSERT
-#include "infra/Flags.hpp"                  // for flags8_t
-#include "infra/Link.hpp"                   // for TR_LinkHead, TR_Link
+#include "env/IO.hpp"
+#include "env/TRMemory.hpp"
+#include "env/jittypes.h"
+#include "il/symbol/LabelSymbol.hpp"
+#include "infra/Assert.hpp"
+#include "infra/Flags.hpp"
+#include "infra/Link.hpp"
 #include "runtime/Runtime.hpp"
 
 void TR::Relocation::apply(TR::CodeGenerator *codeGen)

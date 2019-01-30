@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -24,15 +24,15 @@
 
 #include "compile/InlineBlock.hpp"
 
-#include <limits.h>                         // for INT_MAX
-#include <stddef.h>                         // for NULL, size_t
-#include <stdint.h>                         // for uint8_t, uint16_t
-#include "codegen/RecognizedMethods.hpp"    // for RecognizedMethod, etc
-#include "env/TRMemory.hpp"                 // for TR_Memory, etc
-#include "il/DataTypes.hpp"                 // for TR::DataType, DataTypes
-#include "il/ILOpCodes.hpp"                 // for ILOpCodes
-#include "il/Node.hpp"                      // for rcount_t
-#include "infra/Assert.hpp"                 // for TR_ASSERT
+#include <limits.h>
+#include <stddef.h>
+#include <stdint.h>
+#include "codegen/RecognizedMethods.hpp"
+#include "env/TRMemory.hpp"
+#include "il/DataTypes.hpp"
+#include "il/ILOpCodes.hpp"
+#include "il/Node.hpp"
+#include "infra/Assert.hpp"
 
 class TR_BitVector;
 class TR_CompactLocals;

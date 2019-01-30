@@ -21,48 +21,48 @@
 
 #include "codegen/X86Instruction.hpp"
 
-#include <stddef.h>                                   // for NULL
-#include <stdint.h>                                   // for int32_t, etc
-#include "codegen/CodeGenerator.hpp"                  // for CodeGenerator, etc
-#include "codegen/Instruction.hpp"                    // for Instruction, etc
-#include "codegen/Linkage.hpp"                        // for Linkage
-#include "codegen/Machine.hpp"                        // for Machine
+#include <stddef.h>
+#include <stdint.h>
+#include "codegen/CodeGenerator.hpp"
+#include "codegen/Instruction.hpp"
+#include "codegen/Linkage.hpp"
+#include "codegen/Machine.hpp"
 #include "codegen/MemoryReference.hpp"
-#include "codegen/RealRegister.hpp"                   // for RealRegister, etc
-#include "codegen/Register.hpp"                       // for Register
+#include "codegen/RealRegister.hpp"
+#include "codegen/Register.hpp"
 #include "codegen/RegisterConstants.hpp"
 #include "codegen/RegisterDependency.hpp"
 #include "codegen/RegisterDependencyStruct.hpp"
 #include "codegen/RegisterRematerializationInfo.hpp"
 #include "codegen/Relocation.hpp"
-#include "codegen/Snippet.hpp"                        // for Snippet, etc
+#include "codegen/Snippet.hpp"
 #include "codegen/UnresolvedDataSnippet.hpp"
-#include "compile/Compilation.hpp"                    // for Compilation
+#include "compile/Compilation.hpp"
 #include "compile/SymbolReferenceTable.hpp"
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"
 #include "env/CompilerEnv.hpp"
 #include "env/TRMemory.hpp"
-#include "env/jittypes.h"                             // for uintptrj_t
-#include "il/Block.hpp"                               // for Block
-#include "il/ILOpCodes.hpp"                           // for ILOpCodes, etc
-#include "il/ILOps.hpp"                               // for ILOpCode
-#include "il/Node.hpp"                                // for Node, etc
+#include "env/jittypes.h"
+#include "il/Block.hpp"
+#include "il/ILOpCodes.hpp"
+#include "il/ILOps.hpp"
+#include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
-#include "il/Symbol.hpp"                              // for Symbol
+#include "il/Symbol.hpp"
 #include "il/SymbolReference.hpp"
-#include "il/TreeTop.hpp"                             // for TreeTop
+#include "il/TreeTop.hpp"
 #include "il/TreeTop_inlines.hpp"
-#include "il/symbol/LabelSymbol.hpp"                  // for LabelSymbol
-#include "infra/Assert.hpp"                           // for TR_ASSERT
-#include "infra/List.hpp"                             // for List, etc
-#include "ras/Debug.hpp"                              // for TR_DebugBase
+#include "il/symbol/LabelSymbol.hpp"
+#include "infra/Assert.hpp"
+#include "infra/List.hpp"
+#include "ras/Debug.hpp"
 #include "runtime/Runtime.hpp"
 #ifdef J9_PROJECT_SPECIFIC
 #include "x/codegen/GuardedDevirtualSnippet.hpp"
 #endif
 #include "x/codegen/OutlinedInstructions.hpp"
-#include "x/codegen/X86Ops.hpp"                       // for TR_X86OpCodes, etc
+#include "x/codegen/X86Ops.hpp"
 #include "x/codegen/X86Register.hpp"
 
 class TR_VirtualGuardSite;

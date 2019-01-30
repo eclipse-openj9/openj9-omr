@@ -35,18 +35,18 @@ namespace OMR { typedef OMR::Z::Instruction InstructionConnector; }
 
 #include "compiler/codegen/OMRInstruction.hpp"
 
-#include <stddef.h>                                    // for NULL
-#include <stdint.h>                                    // for uint32_t, etc
-#include "codegen/InstOpCode.hpp"                      // for InstOpCode, InstOpCode::Mnemonic
-#include "codegen/Register.hpp"                        // for Register
+#include <stddef.h>
+#include <stdint.h>
+#include "codegen/InstOpCode.hpp"
+#include "codegen/Register.hpp"
 #include "codegen/RegisterConstants.hpp"
-#include "compile/Compilation.hpp"                     // for Compilation, etc
-#include "cs2/arrayof.h"                               // for ArrayOf
-#include "cs2/hashtab.h"                               // for HashTable, etc
+#include "compile/Compilation.hpp"
+#include "cs2/arrayof.h"
+#include "cs2/hashtab.h"
 #include "cs2/sparsrbit.h"
-#include "env/TRMemory.hpp"                            // for Allocator, etc
-#include "infra/Assert.hpp"                            // for TR_ASSERT
-#include "infra/Flags.hpp"                             // for flags16_t
+#include "env/TRMemory.hpp"
+#include "infra/Assert.hpp"
+#include "infra/Flags.hpp"
 
 class TR_Debug;
 namespace TR { class S390ImmInstruction; }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -23,47 +23,47 @@
 int jitDebugPPC;
 #else
 
-#include <stdint.h>                                // for int32_t, uint32_t, etc
-#include <string.h>                                // for NULL, strcmp, etc
-#include "codegen/CodeGenPhase.hpp"                // for CodeGenPhase, etc
-#include "codegen/CodeGenerator.hpp"               // for CodeGenerator
-#include "codegen/FrontEnd.hpp"                    // for TR_FrontEnd
-#include "codegen/GCRegisterMap.hpp"               // for GCRegisterMap
-#include "codegen/InstOpCode.hpp"                  // for InstOpCode, etc
-#include "codegen/Instruction.hpp"                 // for Instruction, etc
-#include "codegen/Machine.hpp"                     // for Machine
-#include "codegen/MemoryReference.hpp"             // for MemoryReference
-#include "codegen/RealRegister.hpp"                // for RealRegister, etc
-#include "codegen/Register.hpp"                    // for Register
+#include <stdint.h>
+#include <string.h>
+#include "codegen/CodeGenPhase.hpp"
+#include "codegen/CodeGenerator.hpp"
+#include "codegen/FrontEnd.hpp"
+#include "codegen/GCRegisterMap.hpp"
+#include "codegen/InstOpCode.hpp"
+#include "codegen/Instruction.hpp"
+#include "codegen/Machine.hpp"
+#include "codegen/MemoryReference.hpp"
+#include "codegen/RealRegister.hpp"
+#include "codegen/Register.hpp"
 #include "codegen/RegisterConstants.hpp"
 #include "codegen/RegisterDependency.hpp"
 #include "codegen/RegisterDependencyStruct.hpp"
 #include "codegen/UnresolvedDataSnippet.hpp"
-#include "compile/Compilation.hpp"                 // for Compilation
+#include "compile/Compilation.hpp"
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"
 #include "env/CompilerEnv.hpp"
-#include "env/IO.hpp"                              // for IO
-#include "env/jittypes.h"                          // for intptrj_t
-#include "il/Block.hpp"                            // for Block
-#include "il/DataTypes.hpp"                        // for DataTypes::Double, etc
-#include "il/ILOpCodes.hpp"                        // for ILOpCodes::BBEnd, etc
-#include "il/Node.hpp"                             // for Node
-#include "il/Symbol.hpp"                           // for Symbol
-#include "il/SymbolReference.hpp"                  // for SymbolReference
-#include "il/symbol/LabelSymbol.hpp"               // for LabelSymbol
-#include "infra/Assert.hpp"                        // for TR_ASSERT
-#include "infra/List.hpp"                          // for ListIterator, etc
+#include "env/IO.hpp"
+#include "env/jittypes.h"
+#include "il/Block.hpp"
+#include "il/DataTypes.hpp"
+#include "il/ILOpCodes.hpp"
+#include "il/Node.hpp"
+#include "il/Symbol.hpp"
+#include "il/SymbolReference.hpp"
+#include "il/symbol/LabelSymbol.hpp"
+#include "infra/Assert.hpp"
+#include "infra/List.hpp"
 #include "p/codegen/PPCHelperCallSnippet.hpp"
 #include "p/codegen/PPCInstruction.hpp"
 #include "p/codegen/PPCOpsDefines.hpp"
 #include "p/codegen/PPCOutOfLineCodeSection.hpp"
-#include "codegen/Snippet.hpp"                     // for TR::PPCSnippet, etc
-#include "ras/Debug.hpp"                           // for TR_Debug
+#include "codegen/Snippet.hpp"
+#include "ras/Debug.hpp"
 #include "runtime/Runtime.hpp"
 
 #ifdef J9_PROJECT_SPECIFIC
-#include "p/codegen/CallSnippet.hpp"               // for TR::PPCCallSnippet, etc
+#include "p/codegen/CallSnippet.hpp"
 #include "p/codegen/InterfaceCastSnippet.hpp"
 #include "p/codegen/StackCheckFailureSnippet.hpp"
 #endif

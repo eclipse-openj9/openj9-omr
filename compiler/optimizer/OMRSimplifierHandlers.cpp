@@ -29,22 +29,22 @@
 #include <math.h>
 #include "compile/Compilation.hpp"
 #include "codegen/CodeGenerator.hpp"
-#include "codegen/Linkage.hpp"                 // for Linkage
+#include "codegen/Linkage.hpp"
 #include "codegen/TreeEvaluator.hpp"
 #include "env/CompilerEnv.hpp"
-#include "env/IO.hpp"                          // for POINTER_PRINTF_FORMAT
+#include "env/IO.hpp"
 #include "env/jittypes.h"
 #include "il/AliasSetInterface.hpp"
 #include "il/Block.hpp"
-#include "il/DataTypes.hpp"                    // for getMinSigned, etc
+#include "il/DataTypes.hpp"
 #include "il/ILOpCodes.hpp"
 #include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
 #include "il/SymbolReference.hpp"
 #include "il/TreeTop.hpp"
 #include "il/TreeTop_inlines.hpp"
-#include "il/symbol/LabelSymbol.hpp"           // for LabelSymbol
-#include "il/symbol/StaticSymbol.hpp"          // for StaticSymbol
+#include "il/symbol/LabelSymbol.hpp"
+#include "il/symbol/StaticSymbol.hpp"
 #include "infra/Bit.hpp"
 #include "infra/BitVector.hpp"
 #include "infra/Cfg.hpp"

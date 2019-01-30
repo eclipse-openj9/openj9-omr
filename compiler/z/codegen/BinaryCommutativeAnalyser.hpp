@@ -22,10 +22,10 @@
 #ifndef S390BINARYCOMMUTATIVEANALYSER_INCL
 #define S390BINARYCOMMUTATIVEANALYSER_INCL
 
-#include <stddef.h>                // for NULL
-#include <stdint.h>                // for uint8_t, uint16_t
-#include "codegen/Analyser.hpp"    // for NUM_ACTIONS, TR_Analyser
-#include "codegen/InstOpCode.hpp"  // for InstOpCode, InstOpCode::Mnemonic, etc
+#include <stddef.h>
+#include <stdint.h>
+#include "codegen/Analyser.hpp"
+#include "codegen/InstOpCode.hpp"
 
 namespace TR { class CodeGenerator; }
 namespace TR { class LabelSymbol; }

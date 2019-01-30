@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -19,44 +19,44 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#include <stdint.h>                                      // for int32_t, etc
-#include <stdlib.h>                                      // for NULL, abs
+#include <stdint.h>
+#include <stdlib.h>
 #include "codegen/CodeGenerator.hpp"
-#include "codegen/FrontEnd.hpp"                          // for TR_FrontEnd, etc
-#include "codegen/Instruction.hpp"                       // for Instruction
-#include "codegen/Linkage.hpp"                           // for Linkage
+#include "codegen/FrontEnd.hpp"
+#include "codegen/Instruction.hpp"
+#include "codegen/Linkage.hpp"
 #include "codegen/LinkageConventionsEnum.hpp"
 #include "codegen/LiveRegister.hpp"
-#include "codegen/Machine.hpp"                           // for Machine
+#include "codegen/Machine.hpp"
 #include "codegen/MemoryReference.hpp"
 #include "codegen/RecognizedMethods.hpp"
 #include "codegen/RealRegister.hpp"
-#include "codegen/Register.hpp"                          // for Register
+#include "codegen/Register.hpp"
 #include "codegen/RegisterConstants.hpp"
 #include "codegen/RegisterDependency.hpp"
 #include "codegen/RegisterPair.hpp"
 #include "codegen/TreeEvaluator.hpp"
 #include "codegen/X86Evaluator.hpp"
-#include "compile/Compilation.hpp"                       // for Compilation, etc
+#include "compile/Compilation.hpp"
 #include "compile/ResolvedMethod.hpp"
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"
 #include "env/CompilerEnv.hpp"
-#include "env/IO.hpp"                                    // for POINTER_PRINTF_FORMAT
+#include "env/IO.hpp"
 #include "env/TRMemory.hpp"
 #include "il/DataTypes.hpp"
 #include "il/ILOpCodes.hpp"
-#include "il/ILOps.hpp"                                  // for ILOpCode
-#include "il/Node.hpp"                                   // for Node, etc
+#include "il/ILOps.hpp"
+#include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
-#include "il/Symbol.hpp"                                 // for Symbol
+#include "il/Symbol.hpp"
 #include "il/SymbolReference.hpp"
-#include "il/TreeTop.hpp"                                // for TreeTop
+#include "il/TreeTop.hpp"
 #include "il/TreeTop_inlines.hpp"
-#include "il/symbol/LabelSymbol.hpp"                     // for LabelSymbol
+#include "il/symbol/LabelSymbol.hpp"
 #include "il/symbol/ResolvedMethodSymbol.hpp"
-#include "infra/Assert.hpp"                              // for TR_ASSERT
-#include "infra/List.hpp"                                // for List, etc
+#include "infra/Assert.hpp"
+#include "infra/List.hpp"
 #include "ras/Debug.hpp"
 #include "runtime/Runtime.hpp"
 #include "x/codegen/BinaryCommutativeAnalyser.hpp"

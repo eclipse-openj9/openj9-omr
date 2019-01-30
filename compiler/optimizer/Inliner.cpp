@@ -1364,30 +1364,15 @@ TR_DumbInliner::analyzeCallSite(
 static TR::TreeTop * cloneAndReplaceCallNodeReference(TR::TreeTop *, TR::Node *, TR::Node *, TR::TreeTop *, TR::Compilation *);
 static void addSymRefsToList(List<TR::SymbolReference> &, List<TR::SymbolReference> &);
 
-static TR::Node *findPotentialDecompilationPoint(TR::Node *node, TR::Compilation *comp)
-   {
-   if (node->getVisitCount() == comp->getVisitCount())
-      return NULL;
-   else
-      node->setVisitCount(comp->getVisitCount());
-
-   TR::Node *result = NULL;
-   if (node->getOpCode().hasSymbolReference() && node->getSymbolReference()->canCauseGC())
-      return result = node;
-   else
-      for (int32_t i = 0; !result && i < node->getNumChildren(); i++)
-         result = findPotentialDecompilationPoint(node->getChild(i), comp);
-
-   return result;
-   }
-
 static TR::Node *findPotentialDecompilationPoint(TR::ResolvedMethodSymbol *calleeSymbol, TR::Compilation *comp)
    {
-   comp->incVisitCount();
-   TR::Node *result = NULL;
-   for (TR::TreeTop *tt = calleeSymbol->getFirstTreeTop(); tt && !result; tt = tt->getNextTreeTop())
-      result = findPotentialDecompilationPoint(tt->getNode(), comp);
-   return result;
+   for (TR::PreorderNodeIterator it(calleeSymbol->getFirstTreeTop(), comp); it.currentTree() != NULL; ++it)
+      {
+      TR::Node *node = it.currentNode();
+      if (node->getOpCode().hasSymbolReference() && comp->isPotentialOSRPoint(node))
+         return node;
+      }
+   return NULL;
    }
 
 void
@@ -1424,20 +1409,19 @@ TR_InlinerBase::replaceCallNode(
    TR::ResolvedMethodSymbol * callerSymbol, TR::Node * resultNode, rcount_t originalCallNodeReferenceCount,
    TR::TreeTop * callNodeTreeTop, TR::Node * parent, TR::Node * callNode)
    {
-
+   TR::NodeChecklist visitedNodes(comp());
    // replace the call node with resultNode or remove the caller tree top
    //
    if (resultNode)
       {
-      resultNode->setVisitCount(_visitCount); // make sure we don't visit this node again
+      visitedNodes.add(resultNode);
       parent->setChild(0, resultNode);
       callNode->recursivelyDecReferenceCount();
       resultNode->incReferenceCount();
       rcount_t numberOfReferencesToFind = originalCallNodeReferenceCount - 1;
       TR::TreeTop * tt = callNodeTreeTop->getNextTreeTop();
-      comp()->incVisitCount();
       for (; tt && numberOfReferencesToFind; tt = tt->getNextTreeTop())
-         replaceCallNodeReferences(tt->getNode(), 0, 0, callNode, resultNode, numberOfReferencesToFind);
+         replaceCallNodeReferences(tt->getNode(), 0, 0, callNode, resultNode, numberOfReferencesToFind, visitedNodes);
       }
    else
       callerSymbol->removeTree(callNodeTreeTop);
@@ -1450,7 +1434,7 @@ TR_InlinerBase::replaceCallNode(
 void
 TR_InlinerBase::replaceCallNodeReferences(
    TR::Node * node, TR::Node * parent, uint32_t childIndex,
-   TR::Node * callNode, TR::Node * replacementNode, rcount_t & numberOfReferencesToFind)
+   TR::Node * callNode, TR::Node * replacementNode, rcount_t & numberOfReferencesToFind, TR::NodeChecklist &visitedNodes)
    {
    bool replacedNode = false;
    if (node == callNode)
@@ -1471,15 +1455,14 @@ TR_InlinerBase::replaceCallNodeReferences(
    // consider when changing below code.
    //
    if ((_inliningAsWeWalk && node->getOpCode().isCall() && (node->getVisitCount() == _visitCount)) ||
-         (node->getVisitCount() == comp()->getVisitCount()))
+         visitedNodes.contains(node))
       return;
-
-   node->setVisitCount(comp()->getVisitCount());
-
+   
+   visitedNodes.add(node);
    if (!replacedNode)
       {
       for (int32_t i = 0; i < node->getNumChildren() && numberOfReferencesToFind; ++i)
-         replaceCallNodeReferences(node->getChild(i), node, i, callNode, replacementNode, numberOfReferencesToFind);
+         replaceCallNodeReferences(node->getChild(i), node, i, callNode, replacementNode, numberOfReferencesToFind, visitedNodes);
       }
    }
 
@@ -2258,12 +2241,10 @@ TR_ParameterToArgumentMapper::printMapping()
       return;
    for (TR_ParameterMapping * pm = _mappings.getFirst(); pm; pm = pm->getNext())
       {
-      debugTrace(tracer(),"Mapping at addr %p:\n\tparmSymbol = %p (offset %d) \treplacementSymRef = %d\t_parameterNode = %p\treplacementSymRef2 = %d\treplacementSymRef3 = %d\n"
+      debugTrace(tracer(),"Mapping at addr %p:\n\tparmSymbol = %p (offset %d) \treplacementSymRef = %d\t_parameterNode = %p\n"
                            "\t_argIndex = %d\t_parmIsModified = %d\t_isConst = %d\t_addressTaken =%d",
                            pm, pm->_parmSymbol,pm->_parmSymbol->getOffset(),pm->_replacementSymRef ? pm->_replacementSymRef->getReferenceNumber() : -1, pm->_parameterNode,
-                           pm->_replacementSymRef2 ? pm->_replacementSymRef2->getReferenceNumber() : -1, pm->_replacementSymRef3 ? pm->_replacementSymRef3->getReferenceNumber() : -1,
                            pm->_argIndex, pm->_parmIsModified, pm->_isConst, pm->_addressTaken);
-
       }
    }
 
@@ -2708,11 +2689,12 @@ TR_TransformInlinedFunction::transform()
    TR::Node * penultimateNode = _penultimateTreeTop->getNode();
    if (!_penultimateTreeTop->getNode()->getOpCode().isReturn() || _firstCatchBlock)
       _generatedLastBlock = TR::Block::createEmptyBlock(penultimateNode, comp(), firstBlock->getFrequency(), firstBlock);
-   comp()->incVisitCount();
 
+
+   TR::NodeChecklist visitedNodes(comp());
    for (_currentTreeTop = tt; _currentTreeTop; _currentTreeTop = _currentTreeTop->getNextTreeTop())
       {
-      transformNode(_currentTreeTop->getNode(), 0, 0);
+      transformNode(_currentTreeTop->getNode(), 0, 0, visitedNodes);
       }
 
    _parameterMapper.mapOSRCallSiteRematTable(comp()->getCurrentInlinedSiteIndex());
@@ -2759,16 +2741,14 @@ TR_TransformInlinedFunction::transform()
    }
 
 void
-TR_TransformInlinedFunction::transformNode(TR::Node * node, TR::Node * parent, uint32_t childIndex)
+TR_TransformInlinedFunction::transformNode(TR::Node * node, TR::Node * parent, uint32_t childIndex, TR::NodeChecklist &visitedNodes)
    {
-   //     printf("transformNode on node with symbol ID %d, for childIndex %d\n", node->getSymbol()->getWCodeId(), childIndex);
-   vcount_t i, visitCount = comp()->getVisitCount();
-   if (visitCount == node->getVisitCount())
+   if (visitedNodes.contains(node))
       return;
-   node->setVisitCount(visitCount);
+   visitedNodes.add(node);
 
-   for (i = 0; i < node->getNumChildren(); ++i)
-      transformNode(node->getChild(i), node, i);
+   for (int i = 0; i < node->getNumChildren(); ++i)
+      transformNode(node->getChild(i), node, i, visitedNodes);
 
    TR::ILOpCode opcode = node->getOpCode();
    if (opcode.isReturn())
@@ -2846,7 +2826,7 @@ TR_TransformInlinedFunction::transformNode(TR::Node * node, TR::Node * parent, u
                }
 
             parent->setChild(childIndex, newNode);
-            node->setVisitCount(visitCount - 1);
+            visitedNodes.remove(node);
             }
          }
       }
@@ -2966,9 +2946,8 @@ TR_HandleInjectedBasicBlock::printNodesWithMultipleReferences()
       return;
    for(MultiplyReferencedNode *mn = _multiplyReferencedNodes.getFirst() ; mn ; mn = mn->getNext())
       {
-      debugTrace(tracer(),"MultiplyReferencedNode = %p\ttreetop = %p\n\treplacementSymRef =%d\treplacementSymRef2 = %d\treplacementSymRef3 = %d\t_referencesToBeFound = %d"
+      debugTrace(tracer(),"MultiplyReferencedNode = %p\ttreetop = %p\n\treplacementSymRef =%d\t_referencesToBeFound = %d"
                            "\tisConst = %d\tsymbolCanBeReloaded = %d",mn->_node,mn->_treeTop,mn->_replacementSymRef ? mn->_replacementSymRef->getReferenceNumber() : -1,
-                                 mn->_replacementSymRef2 ? mn->_replacementSymRef2->getReferenceNumber() : -1, mn->_replacementSymRef3 ? mn->_replacementSymRef3->getReferenceNumber() : -1,
                                  mn->_referencesToBeFound, mn->_isConst, mn->_symbolCanBeReloaded);
       }
    }
@@ -2979,7 +2958,6 @@ TR_HandleInjectedBasicBlock::findAndReplaceReferences(
    {
    TR_InlinerDelimiter delimiter(tracer(),"hibb.findAndReplaceReferences");
    debugTrace(tracer(),"replaceBlock1 = %d replaceBlock2 = %d callBBStart->getNode = %p",replaceBlock1 ? replaceBlock1->getNumber():-1, replaceBlock2 ? replaceBlock2->getNumber() : -1 , callBBStart->getNode());
-   comp()->incVisitCount();
 
    TR::Block * lastBlock = callBBStart->getNode()->getBlock();
    TR::Block * startBlock = lastBlock->startOfExtendedBlock();
@@ -2994,12 +2972,12 @@ TR_HandleInjectedBasicBlock::findAndReplaceReferences(
       {
       createTemps(false);
 
-      vcount_t visitCount = comp()->incVisitCount();
-      replaceNodesReferencedFromAbove(replaceBlock1, visitCount);
+      TR::NodeChecklist visitedNodes(comp());
+      replaceNodesReferencedFromAbove(replaceBlock1, visitedNodes);
 
       if (replaceBlock2)
          {
-         replaceNodesReferencedFromAbove(replaceBlock2, visitCount);
+         replaceNodesReferencedFromAbove(replaceBlock2, visitedNodes);
          }
       }
    if (replaceBlock2)
@@ -3011,10 +2989,10 @@ TR_HandleInjectedBasicBlock::findAndReplaceReferences(
       if (_multiplyReferencedNodes.getFirst())
          {
          createTemps(true);
-         vcount_t visitCount = comp()->incVisitCount();
-         replaceNodesReferencedFromAbove(replaceBlock1, visitCount);
+         TR::NodeChecklist visitedNodes(comp());
+         replaceNodesReferencedFromAbove(replaceBlock1, visitedNodes);
          if (replaceBlock2)
-            replaceNodesReferencedFromAbove(replaceBlock2, visitCount);
+            replaceNodesReferencedFromAbove(replaceBlock2, visitedNodes);
          }
       }
    }
@@ -3040,19 +3018,19 @@ TR_HandleInjectedBasicBlock::collectNodesWithMultipleReferences(TR::TreeTop * tt
    }
 
 void
-TR_HandleInjectedBasicBlock::replaceNodesReferencedFromAbove(TR::Block * block, vcount_t visitCount)
+TR_HandleInjectedBasicBlock::replaceNodesReferencedFromAbove(TR::Block * block, TR::NodeChecklist &visitedNodes)
    {
    TR::Block * lastBlock = block;
    while (lastBlock->getNextBlock() && lastBlock->getNextBlock()->isExtensionOfPreviousBlock())
       lastBlock = lastBlock->getNextBlock();
    TR::TreeTop * tt = block->getEntry();
    for (; _multiplyReferencedNodes.getFirst() && tt != lastBlock->getExit(); tt = tt->getNextTreeTop())
-      replaceNodesReferencedFromAbove(tt, tt->getNode(), 0, 0, visitCount);
+      replaceNodesReferencedFromAbove(tt, tt->getNode(), 0, 0, visitedNodes);
    }
 
 void
 TR_HandleInjectedBasicBlock::replaceNodesReferencedFromAbove(
-   TR::TreeTop * tt, TR::Node * node, TR::Node * parent, uint32_t childIndex, vcount_t visitCount)
+   TR::TreeTop * tt, TR::Node * node, TR::Node * parent, uint32_t childIndex, TR::NodeChecklist &visitedNodes)
    {
    MultiplyReferencedNode * found;
    if (node->getReferenceCount() > 1 && (found = find(node)))
@@ -3066,12 +3044,12 @@ TR_HandleInjectedBasicBlock::replaceNodesReferencedFromAbove(
       }
    else
       {
-      if (visitCount == node->getVisitCount())
+      if (visitedNodes.contains(node))
          return;
-      node->setVisitCount(visitCount);
+      visitedNodes.add(node);
 
       for (int32_t i = 0; i < node->getNumChildren(); ++i)
-         replaceNodesReferencedFromAbove(tt, node->getChild(i), node, i, visitCount);
+         replaceNodesReferencedFromAbove(tt, node->getChild(i), node, i, visitedNodes);
       }
    }
 
@@ -3181,7 +3159,7 @@ TR_HandleInjectedBasicBlock::find(TR::Node * node)
 
 TR_HandleInjectedBasicBlock::MultiplyReferencedNode::MultiplyReferencedNode(TR::Node *node, TR::TreeTop *tt, uint32_t refsToBeFound,bool symCanBeReloaded) :
       _node(node),_treeTop(tt),_referencesToBeFound(refsToBeFound),_symbolCanBeReloaded(symCanBeReloaded),
-      _replacementSymRef(0), _replacementSymRef2(0), _replacementSymRef3(0), _isConst(false)
+      _replacementSymRef(0), _isConst(false)
    {
 
    }

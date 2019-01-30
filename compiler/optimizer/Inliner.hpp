@@ -372,7 +372,7 @@ class TR_InlinerBase: public TR_HasRandomGenerator
       TR::Node * createVirtualGuard(TR::Node *, TR::ResolvedMethodSymbol *, TR::TreeTop *, int16_t, TR_OpaqueClassBlock *, bool, TR_VirtualGuardSelection *);
    private:
 
-      void replaceCallNodeReferences(TR::Node *, TR::Node *, uint32_t, TR::Node *, TR::Node *, rcount_t &);
+      void replaceCallNodeReferences(TR::Node *, TR::Node *, uint32_t, TR::Node *, TR::Node *, rcount_t &, TR::NodeChecklist &visitedNodes);
       void cloneChildren(TR::Node *, TR::Node *, uint32_t);
 
    protected:
@@ -446,16 +446,13 @@ class TR_InlineCall : public TR_DumbInliner
 struct TR_ParameterMapping : TR_Link<TR_ParameterMapping>
    {
    TR_ParameterMapping(TR::ParameterSymbol * ps)
-      : _parmSymbol(ps), _replacementSymRef(0), _replacementSymRef2(0),
-         _parameterNode(0),_replacementSymRef3(0),
-        _parmIsModified(false), _addressTaken(false), _isConst(false)
+      : _parmSymbol(ps), _replacementSymRef(0), _parameterNode(0),
+       _parmIsModified(false), _addressTaken(false), _isConst(false)
       { }
 
    TR::ParameterSymbol * _parmSymbol;
    TR::SymbolReference * _replacementSymRef;
    TR::Node *            _parameterNode;                 //The Node under the call which matches the argument at argIndex
-   TR::SymbolReference * _replacementSymRef2;
-   TR::SymbolReference * _replacementSymRef3;
    uint32_t             _argIndex;
    bool                 _parmIsModified;
    bool                 _isConst;
@@ -674,7 +671,7 @@ class TR_TransformInlinedFunction
       TR_HeapMemory  trHeapMemory()             { return trMemory(); }
 
    protected:
-      void                 transformNode(TR::Node *, TR::Node *, uint32_t);
+      void                 transformNode(TR::Node *, TR::Node *, uint32_t, TR::NodeChecklist &visitedNodes);
       void                 transformReturn(TR::Node *, TR::Node *);
 
       TR::Compilation *               _comp;
@@ -724,8 +721,8 @@ class TR_HandleInjectedBasicBlock
    private:
       void printNodesWithMultipleReferences();
       void collectNodesWithMultipleReferences(TR::TreeTop *, TR::Node *, TR::Node *);
-      void replaceNodesReferencedFromAbove(TR::Block *, vcount_t);
-      void replaceNodesReferencedFromAbove(TR::TreeTop *, TR::Node *, TR::Node *, uint32_t, vcount_t);
+      void replaceNodesReferencedFromAbove(TR::Block *, TR::NodeChecklist &visitedNodes);
+      void replaceNodesReferencedFromAbove(TR::TreeTop *, TR::Node *, TR::Node *, uint32_t, TR::NodeChecklist &visitedNodes);
       void createTemps(bool);
 
       struct MultiplyReferencedNode : TR_Link<MultiplyReferencedNode>
@@ -734,8 +731,6 @@ class TR_HandleInjectedBasicBlock
          TR::Node *                _node;
          TR::TreeTop *             _treeTop;
          TR::SymbolReference *     _replacementSymRef;
-         TR::SymbolReference *     _replacementSymRef2;
-         TR::SymbolReference *     _replacementSymRef3;
          uint32_t                 _referencesToBeFound;
          bool                     _isConst;
          bool                     _symbolCanBeReloaded;

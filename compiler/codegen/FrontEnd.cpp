@@ -187,12 +187,6 @@ TR_FrontEnd::getFormattedName(
 
    }
 
-uintptrj_t
-TR_FrontEnd::getClassDepthAndFlagsValue(TR_OpaqueClassBlock * classPointer)
-   {
-   notImplemented("getClassDepthAndFlagsValue");
-   return 0;
-   }
 
 TR_OpaqueMethodBlock*
 TR_FrontEnd::getMethodFromName(char * className, char *methodName, char *signature, TR_OpaqueMethodBlock *callingMethod)
@@ -311,13 +305,6 @@ TR_FrontEnd::getClassFromMethodBlock(TR_OpaqueMethodBlock *mb)
    {
    notImplemented("getClassFromMethodBlock");
    return NULL;
-   }
-
-int32_t
-TR_FrontEnd::getStringLength(uintptrj_t objectPointer)
-   {
-   notImplemented("getStringLength");
-   return 0;
    }
 
 intptrj_t

@@ -228,10 +228,6 @@ public:
    virtual TR_OpaqueClassBlock * getComponentClassFromArrayClass(TR_OpaqueClassBlock *arrayClass);
    virtual TR_OpaqueClassBlock * getLeafComponentClassFromArrayClass(TR_OpaqueClassBlock *arrayClass);
 
-   // to J9
-   virtual uintptrj_t getClassDepthAndFlagsValue(TR_OpaqueClassBlock * classPointer);
-   virtual int32_t getStringLength(uintptrj_t objectPointer);
-
    // Null-terminated.  bufferSize >= 1+getStringUTF8Length(objectPointer).  Returns buffer just for convenience.
    virtual char *getStringUTF8(uintptrj_t objectPointer, char *buffer, intptrj_t bufferSize);
    virtual intptrj_t getStringUTF8Length(uintptrj_t objectPointer);

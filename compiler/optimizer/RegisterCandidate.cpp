@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -2852,7 +2852,7 @@ TR_RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, in
       TR::CodeGenerator * cg = comp()->cg();
       cg->removeUnavailableRegisters(rc, blocks, availableRegisters);
 
-      if (comp()->cg()->supportsHighWordFacility() && !comp()->getOption(TR_DisableHighWordRA) && !comp()->getOption(TR_DisableRegisterPressureSimulation))
+      if (comp()->cg()->supportsHighWordFacility() && !comp()->getOption(TR_DisableRegisterPressureSimulation))
          {
          if (!rc->getType().isInt8() && !rc->getType().isInt16() && !rc->getType().isInt32())
             {

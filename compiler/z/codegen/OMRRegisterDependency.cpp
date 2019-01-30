@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -137,8 +137,7 @@ OMR::Z::RegisterDependencyConditions::RegisterDependencyConditions(TR::CodeGener
          reg, highReg, copyReg, highCopyReg, iCursor, regNum);
 
       TR::Register * copyHPR = NULL;
-      if (cg->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) &&
-          cg->machine()->getHPRFromGlobalRegisterNumber(child->getGlobalRegisterNumber()))
+      if (cg->machine()->getHPRFromGlobalRegisterNumber(child->getGlobalRegisterNumber()))
          {
          if (reg->is64BitReg() && !reg->containsCollectedReference())
             {
@@ -148,7 +147,6 @@ OMR::Z::RegisterDependencyConditions::RegisterDependencyConditions(TR::CodeGener
             reg = copyHPR;
             }
          reg->setAssignToHPR(true);
-         //traceMsg(comp, "\nregDeps: setAssignToHPR %s: %d\n", cg->getDebug()->getName(reg), child->getGlobalRegisterNumber());
          }
       reg->setAssociation(regNum);
       cg->setRealRegisterAssociation(reg, regNum);
@@ -409,25 +407,20 @@ void OMR::Z::RegisterDependencyConditions::resolveSplitDependencies(
          copyReg->setContainsInternalPointer();
          copyReg->setPinningArrayPointer(reg->getPinningArrayPointer());
          }
-      if (cg->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA))
+
+      if (cg->machine()->getHPRFromGlobalRegisterNumber(child->getGlobalRegisterNumber()) != NULL)
          {
-         if (cg->machine()->getHPRFromGlobalRegisterNumber(child->getGlobalRegisterNumber()) != NULL)
-            {
-            copyReg->setAssignToHPR(true);
-            }
+         copyReg->setAssignToHPR(true);
          }
+
       switch (kind)
          {
-         case TR_GPR64:
-            opCode = TR::InstOpCode::LGR;
-            break;
          case TR_GPR:
-            opCode = TR::InstOpCode::getLoadRegOpCode();
-            if (cg->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) &&
-                  (!reg->is64BitReg() ||
-                  child->getOpCodeValue() == TR::icall ||
-                  child->getOpCodeValue() == TR::icalli ||
-                  TR::RealRegister::isHPR(regNum)))
+            if (reg->is64BitReg())
+               {
+               opCode = TR::InstOpCode::LGR;
+               }
+            else
                {
                opCode = TR::InstOpCode::LR;
                }
@@ -474,12 +467,7 @@ void OMR::Z::RegisterDependencyConditions::resolveSplitDependencies(
             highCopyReg->setPinningArrayPointer(highReg->getPinningArrayPointer());
             }
 
-         TR::InstOpCode::Mnemonic loadOpHigh = TR::InstOpCode::getLoadRegOpCode();
-         if (cg->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) && kind == TR_GPR)
-            {
-            loadOpHigh = TR::InstOpCode::LR;
-            }
-         iCursor = generateRRInstruction(cg, loadOpHigh, node, highCopyReg, highReg, iCursor);
+         iCursor = generateRRInstruction(cg, opCode, node, highCopyReg, highReg, iCursor);
          highReg = highCopyReg;
          }
         else // kind == FPR
@@ -705,7 +693,6 @@ TR_S390RegisterDependencyGroup::checkRegisterPairSufficiencyAndHPRAssignment(TR:
    {
    TR::Machine* machine = cg->machine();
 
-   bool isHighWordSupported = cg->supportsHighWordFacility() && !(cg->comp()->getOption(TR_DisableHighWordRA));
    uint32_t numReqPairs = 0, numAvailPairs = 0;
 
    // Count the number of required pairs to be assigned in reg deps
@@ -718,34 +705,31 @@ TR_S390RegisterDependencyGroup::checkRegisterPairSufficiencyAndHPRAssignment(TR:
          numReqPairs++;
 
       // Set HPR or 64-bit register assignment flags
-      if (isHighWordSupported)
+      virtRegI->setIsNotHighWordUpgradable(true);
+
+      if (virtRegI &&
+            virtRegI->getKind() != TR_FPR &&
+            virtRegI->getKind() != TR_VRF)
          {
-         virtRegI->setIsNotHighWordUpgradable(true);
-
-         if (virtRegI &&
-             virtRegI->getKind() != TR_FPR &&
-             virtRegI->getKind() != TR_VRF)
+         // on 64-bit conservatively assume rEP and rRA are going to clobber highword
+         if (TR::Compiler->target.is64Bit() &&
+               !(currentInstruction->isLabel() &&
+               toS390LabelInstruction(currentInstruction)->getLabelSymbol()->isStartOfColdInstructionStream()) &&
+               (realRegI == cg->getReturnAddressRegister() ||
+               realRegI == cg->getEntryPointRegister()))
             {
-            // on 64-bit conservatively assume rEP and rRA are going to clobber highword
-            if (TR::Compiler->target.is64Bit() &&
-                !(currentInstruction->isLabel() &&
-                  toS390LabelInstruction(currentInstruction)->getLabelSymbol()->isStartOfColdInstructionStream()) &&
-                (realRegI == cg->getReturnAddressRegister() ||
-                 realRegI == cg->getEntryPointRegister()))
-               {
-               virtRegI->setIs64BitReg(true);
-               }
+            virtRegI->setIs64BitReg(true);
+            }
 
-            virtRegI->setAssignToHPR(false);
-            if (TR::RealRegister::isHPR(realRegI))
-               {
-               virtRegI->setAssignToHPR(true);
-               cg->maskAvailableHPRSpillMask(~(machine->getRealRegister(realRegI)->getRealRegisterMask()));
-               }
-            else if (TR::RealRegister::isGPR(realRegI) && virtRegI->is64BitReg())
-               {
-               cg->maskAvailableHPRSpillMask(~(machine->getRealRegister(realRegI)->getRealRegisterMask() << 16));
-               }
+         virtRegI->setAssignToHPR(false);
+         if (TR::RealRegister::isHPR(realRegI))
+            {
+            virtRegI->setAssignToHPR(true);
+            cg->maskAvailableHPRSpillMask(~(machine->getRealRegister(realRegI)->getRealRegisterMask()));
+            }
+         else if (TR::RealRegister::isGPR(realRegI) && virtRegI->is64BitReg())
+            {
+            cg->maskAvailableHPRSpillMask(~(machine->getRealRegister(realRegI)->getRealRegisterMask() << 16));
             }
          }
       }
@@ -811,8 +795,6 @@ TR_S390RegisterDependencyGroup::checkRegisterDependencyDuplicates(TR::CodeGenera
    if (numOfDependencies <= 1)
       return;
 
-   bool isHighWordSupported = cg->supportsHighWordFacility() && !cg->comp()->getOption(TR_DisableHighWordRA);
-
    for (uint32_t i = 0; i < numOfDependencies - 1; ++i)
       {
       TR::Register* virtRegI = _dependencies[i].getRegister();
@@ -838,9 +820,7 @@ TR_S390RegisterDependencyGroup::checkRegisterDependencyDuplicates(TR::CodeGenera
             TR_ASSERT(false, "Real register duplicate found in a register dependency\n");
             }
 
-         // highword RA: remove duplicated GPR/HPR deps
-         if (isHighWordSupported &&
-                realRegI == realRegJ + (TR::RealRegister::FirstHPR - TR::RealRegister::FirstGPR) &&
+         if (realRegI == realRegJ + (TR::RealRegister::FirstHPR - TR::RealRegister::FirstGPR) &&
                 virtRegI->isPlaceholderReg() &&
                 virtRegJ->is64BitReg() &&
                 virtRegJ->getKind() != TR_FPR &&
@@ -850,8 +830,7 @@ TR_S390RegisterDependencyGroup::checkRegisterDependencyDuplicates(TR::CodeGenera
             _dependencies[i].setRealRegister(TR::RealRegister::NoReg);
             }
 
-         if (isHighWordSupported &&
-                realRegJ == realRegI + (TR::RealRegister::FirstHPR - TR::RealRegister::FirstGPR) &&
+         if (realRegJ == realRegI + (TR::RealRegister::FirstHPR - TR::RealRegister::FirstGPR) &&
                 virtRegJ->isPlaceholderReg() &&
                 virtRegI->is64BitReg() &&
                 virtRegI->getKind() != TR_FPR &&
@@ -929,10 +908,9 @@ TR_S390RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstru
          dependentRegNum = _dependencies[i].getRealRegister();
          if (dependentRegNum == TR::RealRegister::SpilledReg && !_dependencies[i].getRegister()->getRealRegister())
             {
-            TR_ASSERT( virtReg->getBackingStorage(),"should have a backing store if dependentRegNum == spillRegIndex()\n");
+            TR_ASSERT_FATAL(virtReg->getBackingStorage() != NULL, "Spilled virtual register on dependency list does not have backing storage");
             TR::RealRegister * spilledHPR = NULL;
-            if (cg->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) && virtReg->getKind() != TR_FPR &&
-                  virtReg->getKind() != TR_VRF && virtReg->getAssignedRealRegister() == NULL)
+            if (virtReg->getKind() != TR_FPR && virtReg->getKind() != TR_VRF && virtReg->getAssignedRealRegister() == NULL)
                {
                spilledHPR = cg->machine()->findVirtRegInHighWordRegister(virtReg);
                cg->traceRegisterAssignment (" \nOOL: found %R spilled to %R", virtReg, spilledHPR);
@@ -954,9 +932,6 @@ TR_S390RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstru
                TR_RegisterKinds rk = virtReg->getKind();
                switch (rk)
                   {
-                  case TR_GPR64:
-                     opCode = TR::InstOpCode::LG;
-                     break;
                   case TR_GPR:
                      if (virtReg->is64BitReg())
                         {
@@ -978,8 +953,7 @@ TR_S390RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstru
                      break;
                   }
                
-               if (cg->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) &&
-                   rk != TR_FPR && rk != TR_VRF)
+               if (rk != TR_FPR && rk != TR_VRF)
                   {
                   if (assignedReg->isHighWordRegister())
                      {
@@ -1005,8 +979,7 @@ TR_S390RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstru
                virtReg->setAssignedRegister(NULL);
                assignedReg->setState(TR::RealRegister::Free);
 
-               if (cg->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) &&
-                   virtReg->is64BitReg() && rk != TR_FPR && rk != TR_VRF)
+               if (virtReg->is64BitReg() && rk != TR_FPR && rk != TR_VRF)
                   {
                   assignedReg->getHighWordRegister()->setAssignedRegister(NULL);
                   assignedReg->getHighWordRegister()->setState(TR::RealRegister::Free);
@@ -1193,8 +1166,7 @@ TR_S390RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstru
          }
 
       // Check for directive to spill high registers. Used on callouts
-      if ( _dependencies[i].getRealRegister() == TR::RealRegister::KillVolHighRegs &&
-           cg->use64BitRegsOn32Bit() )
+      if ( _dependencies[i].getRealRegister() == TR::RealRegister::KillVolHighRegs && TR::Compiler->target.is32Bit())
          {
          machine->spillAllVolatileHighRegisters(currentInstruction);
          _dependencies[i].setRealRegister(TR::RealRegister::NoReg);  // ignore from now on
@@ -1469,7 +1441,7 @@ TR_S390RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstru
             #endif
 
             // Assign the real reg to the virt reg
-            machine->coerceRegisterAssignment(currentInstruction, virtReg, dependentRegNum, DEPSREG);
+            machine->coerceRegisterAssignment(currentInstruction, virtReg, dependentRegNum);
             virtReg->block();
             changed = true;
             }
@@ -1509,7 +1481,7 @@ TR_S390RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstru
                fprintf(stdout, "COERCE2 %i (%s, %d)\n", i, cg->getDebug()->getName(virtReg), dependentRegNum-1);
               #endif
 
-               machine->coerceRegisterAssignment(currentInstruction, virtReg, dependentRegNum, DEPSREG);
+               machine->coerceRegisterAssignment(currentInstruction, virtReg, dependentRegNum);
                virtReg->block();
                changed = true;
 
@@ -1533,7 +1505,7 @@ TR_S390RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstru
 
                         // Coerce the assignment
                         TR::Register *depReg = _dependencies[lcount].getRegister();
-                        machine->coerceRegisterAssignment(currentInstruction, depReg, aRealNum, DEPSREG);
+                        machine->coerceRegisterAssignment(currentInstruction, depReg, aRealNum);
                         _dependencies[lcount].getRegister()->block();
                         break;
                      }
@@ -1635,7 +1607,7 @@ TR_S390RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstru
          if (dependentRegister->getFutureUseCount() == 0)
             {
             // check if need to free HW
-            if (assignedRealRegister != NULL && cg->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA))
+            if (assignedRealRegister != NULL)
                {
                if (dependentRegister->is64BitReg() && dependentRegister->getKind() != TR_FPR && dependentRegister->getKind() != TR_VRF)
                   {
@@ -1678,15 +1650,12 @@ TR_S390RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstru
                assignedRegister->setAssignedRegister(NULL);
 
             cg->traceRegFreed(dependentRegisterHigh, assignedRegister);
-            // check if need to free HW
-            if (cg->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA))
+
+            if (dependentRegisterHigh->is64BitReg() && dependentRegisterHigh->getKind() != TR_FPR &&
+                  dependentRegisterHigh->getKind() != TR_VRF)
                {
-               if (dependentRegisterHigh->is64BitReg() && dependentRegisterHigh->getKind() != TR_FPR &&
-                     dependentRegisterHigh->getKind() != TR_VRF)
-                  {
-                  toRealRegister(assignedRegister)->getHighWordRegister()->setState(TR::RealRegister::Unlatched);
-                  cg->traceRegFreed(dependentRegisterHigh, toRealRegister(assignedRegister)->getHighWordRegister());
-                  }
+               toRealRegister(assignedRegister)->getHighWordRegister()->setState(TR::RealRegister::Unlatched);
+               cg->traceRegFreed(dependentRegisterHigh, toRealRegister(assignedRegister)->getHighWordRegister());
                }
             }
 
@@ -1713,15 +1682,12 @@ TR_S390RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstru
             if (assignedRegister->getState() == TR::RealRegister::Locked)
                assignedRegister->setAssignedRegister(NULL);
             cg->traceRegFreed(dependentRegisterLow, assignedRegister);
-            // check if need to free HW
-            if (cg->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA))
+
+            if (dependentRegisterLow->is64BitReg() && dependentRegisterLow->getKind() != TR_FPR &&
+                  dependentRegisterLow->getKind() != TR_VRF)
                {
-               if (dependentRegisterLow->is64BitReg() && dependentRegisterLow->getKind() != TR_FPR &&
-                     dependentRegisterLow->getKind() != TR_VRF)
-                  {
-                  toRealRegister(assignedRegister)->getHighWordRegister()->setState(TR::RealRegister::Unlatched);
-                  cg->traceRegFreed(dependentRegisterLow, toRealRegister(assignedRegister)->getHighWordRegister());
-                  }
+               toRealRegister(assignedRegister)->getHighWordRegister()->setState(TR::RealRegister::Unlatched);
+               cg->traceRegFreed(dependentRegisterLow, toRealRegister(assignedRegister)->getHighWordRegister());
                }
             }
          }

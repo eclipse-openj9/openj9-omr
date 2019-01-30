@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -145,7 +145,6 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static TR::Register *mulhEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 
    static TR::Register *dualMulHelper64(TR::Node * node, TR::Node * lmulNode, TR::Node * lumulhNode, TR::CodeGenerator * cg);
-   static TR::Register *dualMulHelper32(TR::Node * node, TR::Node * lmulNode, TR::Node * lumulhNode, TR::CodeGenerator * cg);
    static TR::Register *dualMulEvaluator(TR::Node * node, TR::CodeGenerator *cg);
 
    static TR::Register *lmulEvaluator(TR::Node *node, TR::CodeGenerator *cg);
@@ -680,8 +679,6 @@ class OMR_EXTENSIBLE TreeEvaluator: public OMR::TreeEvaluator
    static void referenceArraycopyEvaluator(TR::Node* node, TR::CodeGenerator* cg, TR::Node* byteSrcNode, TR::Node* byteDstNode, TR::Node* byteLenNode, TR::Node* byteSrcObjNode, TR::Node* byteDstObjNode);
 
    static TR::Register *arraysetEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *o2xEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-   static TR::Register *x2oEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 
    static TR::Register * evaluateLengthMinusOneForMemoryCmp(TR::Node *node, TR::CodeGenerator *cg, bool clobberEvaluate, bool &lenMinusOne);
 

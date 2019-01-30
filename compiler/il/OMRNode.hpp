@@ -515,8 +515,6 @@ public:
 
    bool                   isRematerializable(TR::Node *parent, bool onlyConsiderOpCode);
 
-   bool                   canEvaluate();
-
    bool                   isDoNotPropagateNode();
    bool                   containsDoNotPropagateNode(vcount_t vc);
 

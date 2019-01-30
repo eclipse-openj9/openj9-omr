@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -130,11 +130,9 @@ TR::Instruction * genLoadAddressConstantInSnippet(TR::CodeGenerator *cg, TR::Nod
 
 TR::MemoryReference * sstoreHelper(TR::Node * node, TR::CodeGenerator * cg, bool isReversed=false);
 TR::MemoryReference * istoreHelper(TR::Node * node, TR::CodeGenerator * cg, bool isReversed=false);
-TR::MemoryReference * lstoreHelper(TR::Node * node, TR::CodeGenerator * cg, bool isReversed=false);
 TR::MemoryReference * lstoreHelper64(TR::Node * node, TR::CodeGenerator * cg, bool isReversed=false);
 
 TR::Register * iloadHelper(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference * tempMR, bool isReversed=false);
-TR::Register * lloadHelper(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference * tempMR, bool isReversed=false);
 TR::Register * lloadHelper64(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference * tempMR, bool isReversed=false);
 TR::Register * sloadHelper(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference * tempMR, bool isReversed=false);
 

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -225,8 +225,6 @@ public:
    bool shouldValueBeInACommonedNode(int64_t value);
    int64_t getLargestNegConstThatMustBeMaterialized() {return ((-1ll) << 31) - 1;}   // min 32bit signed integer minus 1
    int64_t getSmallestPosConstThatMustBeMaterialized() {return ((int64_t)0x000000007FFFFFFF) + 1;}   // max 32bit signed integer plus 1
-   
-   void changeRegisterKind(TR::Register * temp, TR_RegisterKinds rk);
 
    void beginInstructionSelection();
    void endInstructionSelection();
@@ -542,7 +540,6 @@ public:
    uint8_t getRCondMoveBranchOpCond() { return 0xF - fCondMoveBranchOpCond; }
 
    bool canUseImmedInstruction(int64_t v);
-   void ensure64BitRegister(TR::Register *reg);
 
    virtual bool isAddMemoryUpdate(TR::Node * node, TR::Node * valueChild);
 

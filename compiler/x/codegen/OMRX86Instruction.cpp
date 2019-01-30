@@ -273,10 +273,6 @@ void TR::X86LabelInstruction::assignRegisters(TR_RegisterKinds kindsToBeAssigned
       {
       if (getDependencyConditions())
          {
-         // No way to know why a regdep is on a label, so we must be conservative
-         //
-         aboutToAssignRegDeps(TR_always);
-
          // ----------------------
          // Assign post conditions
          // ----------------------
@@ -697,9 +693,6 @@ bool TR::X86RegInstruction::usesRegister(TR::Register *reg)
 
 void TR::X86RegInstruction::assignRegisters(TR_RegisterKinds kindsToBeAssigned)
    {
-   aboutToAssignRegDeps();
-   aboutToAssignTargetRegister();
-
    if (getDependencyConditions())
       {
       getTargetRegister()->block();
@@ -850,10 +843,6 @@ bool TR::X86RegRegInstruction::usesRegister(TR::Register *reg)
 
 void TR::X86RegRegInstruction::assignRegisters(TR_RegisterKinds kindsToBeAssigned)
    {
-   aboutToAssignRegDeps();
-   aboutToAssignTargetRegister();
-   aboutToAssignSourceRegister();
-
    if (getDependencyConditions())
       {
       if ((cg()->getAssignmentDirection() == cg()->Backward))
@@ -1283,11 +1272,6 @@ bool TR::X86RegRegRegInstruction::usesRegister(TR::Register *reg)
 
 void TR::X86RegRegRegInstruction::assignRegisters(TR_RegisterKinds kindsToBeAssigned)
    {
-   aboutToAssignRegDeps();
-   aboutToAssignTargetRegister();
-   aboutToAssignSourceRegister();
-   aboutToAssignSource2ndRegister();
-
    if ((cg()->getAssignmentDirection() == cg()->Backward))
       {
       if (getDependencyConditions())
@@ -1317,10 +1301,6 @@ void TR::X86RegRegRegInstruction::assignRegisters(TR_RegisterKinds kindsToBeAssi
       firstRegister  = getTargetRegister();
       secondRegister = getSourceRegister();
       thirdRegister  = getSource2ndRegister();
-
-      aboutToAssignRegister(firstRegister,  TR_ifUses64bitTarget, TR_ifModifies32or64bitTarget);
-      aboutToAssignRegister(secondRegister, TR_if64bitSource,     TR_ifModifies32or64bitSource);
-      aboutToAssignRegister(thirdRegister,  TR_if64bitSource,     TR_ifModifies32or64bitSource);
 
       secondRegister->block();
       thirdRegister->block();
@@ -1695,9 +1675,6 @@ TR::Snippet *TR::X86MemInstruction::getSnippetForGC()
 
 void TR::X86MemInstruction::assignRegisters(TR_RegisterKinds kindsToBeAssigned)
    {
-   aboutToAssignRegDeps();
-   aboutToAssignMemRef(getMemoryReference());
-
    if (getDependencyConditions())
       {
       getMemoryReference()->blockRegisters();
@@ -1803,12 +1780,8 @@ TR::X86CallMemInstruction::X86CallMemInstruction(TR_X86OpCodes                  
 
 void TR::X86CallMemInstruction::assignRegisters(TR_RegisterKinds kindsToBeAssigned)
    {
-   aboutToAssignRegDeps();
-   aboutToAssignMemRef(getMemoryReference());
-
    if ((cg()->getAssignmentDirection() == cg()->Backward))
       {
-      aboutToAssignRegDeps(TR_always);
       if (getDependencyConditions())
          {
          getMemoryReference()->blockRegisters();
@@ -1972,10 +1945,6 @@ bool TR::X86MemRegInstruction::usesRegister(TR::Register *reg)
 
 void TR::X86MemRegInstruction::assignRegisters(TR_RegisterKinds kindsToBeAssigned)
    {
-   aboutToAssignRegDeps();
-   aboutToAssignSourceRegister();
-   aboutToAssignMemRef(getMemoryReference());
-
    if ((cg()->getAssignmentDirection() == cg()->Backward))
       {
       if (getDependencyConditions())
@@ -2266,10 +2235,6 @@ TR::Snippet *TR::X86RegMemInstruction::getSnippetForGC()
 
 void TR::X86RegMemInstruction::assignRegisters(TR_RegisterKinds kindsToBeAssigned)
    {
-   aboutToAssignRegDeps();
-   aboutToAssignTargetRegister();
-   aboutToAssignMemRef(getMemoryReference());
-
    if (getDependencyConditions())
       {
       if (cg()->getAssignmentDirection() == cg()->Backward)
@@ -2483,11 +2448,6 @@ bool TR::X86RegRegMemInstruction::usesRegister(TR::Register *reg)
 
 void TR::X86RegRegMemInstruction::assignRegisters(TR_RegisterKinds kindsToBeAssigned)
    {
-   aboutToAssignRegDeps();
-   aboutToAssignTargetRegister();
-   aboutToAssignSource2ndRegister();
-   aboutToAssignMemRef(getMemoryReference());
-
    if ((cg()->getAssignmentDirection() == cg()->Backward))
       {
       if (getDependencyConditions())

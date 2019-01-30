@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -72,47 +72,16 @@ extern void PRINT_ME(char * string, TR::Node * node, TR::CodeGenerator * cg);
 #endif
 
 /**
- * 32bit version lconstHelper: load long integer constant (64-bit signed 2's complement)
- */
-TR::Register *
-lconstHelper(TR::Node * node, TR::CodeGenerator * cg)
-   {
-   TR_ASSERT(TR::Compiler->target.is32Bit(), "lconstHelper() is for 32bit only!");
-   TR::Register * lowRegister = cg->allocateRegister();
-   TR::Register * highRegister = cg->allocateRegister();
-
-   TR::RegisterPair * longRegister = cg->allocateConsecutiveRegisterPair(lowRegister, highRegister);
-
-   node->setRegister(longRegister);
-
-   int32_t highValue = node->getLongIntHigh();
-   int32_t lowValue = node->getLongIntLow();
-
-   generateLoad32BitConstant(cg, node, lowValue, lowRegister, true);
-   generateLoad32BitConstant(cg, node, highValue, highRegister, true);
-
-   return longRegister;
-   }
-
-/**
  * 64bit version lconstHelper: load long integer constant (64-bit signed 2's complement)
  */
 TR::Register *
 lconstHelper64(TR::Node * node, TR::CodeGenerator * cg)
    {
    TR::Compilation *comp = cg->comp();
-   TR_ASSERT(TR::Compiler->target.is64Bit() || cg->use64BitRegsOn32Bit(),
-      "lconstHelper64() is for 64bit only!");
-   TR::Register * longRegister = cg->allocate64bitRegister();
+   TR::Register * longRegister = cg->allocateRegister();
    node->setRegister(longRegister);
    int64_t longValue = node->getLongInt();
    genLoadLongConstant(cg, node, longValue, longRegister);
-
-   // on 64bit, lconst returns 64bit registers
-   if (cg->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) && TR::Compiler->target.is64Bit())
-      {
-      longRegister->setIs64BitReg(true);
-      }
 
    return longRegister;
    }
@@ -153,15 +122,7 @@ TR::Register *
 OMR::Z::TreeEvaluator::lconstEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    PRINT_ME("lconst", node, cg);
-   TR::Register * longRegister;
-   if (TR::Compiler->target.is64Bit() || cg->use64BitRegsOn32Bit())
-      {
-      return lconstHelper64(node, cg);
-      }
-   else
-      {
-      return lconstHelper(node, cg);
-      }
+   return lconstHelper64(node, cg);
    }
 
 /**
@@ -207,128 +168,6 @@ OMR::Z::TreeEvaluator::cconstEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    return tempReg;
    }
 
-#ifdef J9_PROJECT_SPECIFIC
-TR::Register *
-OMR::Z::TreeEvaluator::o2xEvaluator(TR::Node * node, TR::CodeGenerator * cg)
-   {
-   PRINT_ME("o2x", node, cg);
-   cg->traceBCDEntry("o2x",node);
-   int32_t destSize = node->getSize();
-
-   TR::Node *srcNode = node->getFirstChild();
-   TR::Register *srcReg = cg->evaluate(srcNode);
-   TR_OpaquePseudoRegister *srcAggrReg = srcReg->getOpaquePseudoRegister();
-   TR_ASSERT(srcAggrReg,"srcAggrReg is not an opaque register for srcNode %p\n",srcNode);
-   size_t srcSize = srcAggrReg->getSize();
-
-   if (cg->traceBCDCodeGen())
-      traceMsg(cg->comp(),"\to2xEval : %s (%p) srcReg->aggrSize = %d, destSize = %d\n",node->getOpCode().getName(),node,srcSize,node->getSize());
-
-   TR::Register *targetReg = cg->evaluateAggregateToGPR(destSize, srcNode, srcAggrReg, NULL); // srcMR = NULL
-
-   cg->decReferenceCount(srcNode);
-   node->setRegister(targetReg);
-   cg->traceBCDExit("o2x",node);
-   return targetReg;
-   }
-
-TR::Register *
-OMR::Z::TreeEvaluator::x2oEvaluator(TR::Node * node, TR::CodeGenerator * cg)
-   {
-   PRINT_ME("x2o", node, cg);
-
-   cg->traceBCDEntry("x2o",node);
-   TR::Node *srcNode = node->getFirstChild();
-   TR::Register *srcReg = cg->evaluate(srcNode);
-   size_t dstAggrSize = 0;
-
-   TR_OpaquePseudoRegister *targetReg = cg->allocateOpaquePseudoRegister(node->getDataType());
-   TR::Compilation *comp = cg->comp();
-
-   TR_StorageReference *hint = node->getStorageReferenceHint();
-   TR_StorageReference *targetStorageReference = NULL;
-   if (hint)
-      targetStorageReference = hint;
-   else
-      targetStorageReference = TR_StorageReference::createTemporaryBasedStorageReference(dstAggrSize, comp);
-   targetReg->setStorageReference(targetStorageReference, node);
-
-   TR::MemoryReference *destMR = generateS390MemRefFromStorageRef(node, targetStorageReference, cg, false); // enforceSSLimits=false
-
-   if (cg->traceBCDCodeGen())
-      traceMsg(comp,"\tx2oEval : %s (%p) srcSize = %d (srcAddrPrec %d), destNode->aggrSize = %d\n",
-         node->getOpCode().getName(),node,srcNode->getSize(),srcNode->getType().isAddress() ? (TR::Compiler->target.is64Bit() ? 8 : 4 ) : -1, dstAggrSize);
-
-   bool srcIsRegPair = srcReg->getRegisterPair();
-   TR::Register * srcRegLow = NULL;
-   TR::Register * srcRegHi  = NULL;
-   TR::Register * srcReg64  = NULL;
-   if (srcIsRegPair)
-      {
-      srcRegLow = srcReg->getLowOrder();
-      srcRegHi  = srcReg->getHighOrder();
-      }
-   else
-      {
-      srcReg64 = srcReg;
-      }
-
-   size_t srcSize = srcNode->getSize();
-   size_t storeSize = dstAggrSize;
-   if (storeSize > srcSize)
-      {
-      int64_t bytesToClear = storeSize - srcSize;
-      if (cg->traceBCDCodeGen())
-         traceMsg(comp,"\tisWidening=true : clear upper %lld bytes, set storeSize to %d, add %lld to destMR offset (dstAggrSize %d > srcIntSize %d)\n",
-            bytesToClear,srcSize,bytesToClear,dstAggrSize,srcSize);
-      cg->genMemClear(destMR, node, bytesToClear);
-      storeSize = srcSize;
-      destMR = reuseS390MemoryReference(destMR, bytesToClear, node, cg, true); // enforceSSLimits=true
-      }
-
-   switch (storeSize)
-      {
-      case 1:
-         generateRXInstruction(cg, TR::InstOpCode::STC, node, srcIsRegPair ? srcRegLow : srcReg64, destMR);
-         break;
-      case 2:
-         generateRXInstruction(cg, TR::InstOpCode::STH, node, srcIsRegPair ? srcRegLow : srcReg64, destMR);
-         break;
-      case 3:
-         generateRSInstruction(cg, TR::InstOpCode::STCM, node, srcIsRegPair ? srcRegLow : srcReg64, (uint32_t)0x7, destMR);
-         break;
-      case 4:
-         generateRXInstruction(cg, TR::InstOpCode::ST, node, srcIsRegPair ? srcRegLow : srcReg64, destMR);
-         break;
-      case 5:
-      case 6:
-      case 7:
-         generateRSInstruction(cg, srcIsRegPair ? TR::InstOpCode::STCM : TR::InstOpCode::STCMH, node, srcIsRegPair ? srcRegHi : srcReg64, (uint32_t)((1 << (dstAggrSize-4)) - 1), destMR);
-         generateRXInstruction(cg, TR::InstOpCode::ST, node, srcIsRegPair ? srcRegLow : srcReg64, generateS390MemoryReference(*destMR, dstAggrSize-4, cg));
-         break;
-      case 8:
-         if (srcIsRegPair)
-            {
-            generateRXInstruction(cg, TR::InstOpCode::ST, node, srcRegHi, destMR);
-            generateRXInstruction(cg, TR::InstOpCode::ST, node, srcRegLow, generateS390MemoryReference(*destMR, 4, cg));
-            }
-         else
-            {
-            generateRXInstruction(cg, TR::InstOpCode::STG, node, srcReg64, destMR);
-            }
-         break;
-      default:
-         TR_ASSERT(false,"unexpected dstAggrSize %d on node %p\n", dstAggrSize,node);
-      }
-
-   targetReg->setIsInitialized();
-   cg->decReferenceCount(srcNode);
-   node->setRegister(targetReg);
-   cg->traceBCDExit("x2o",node);
-   return targetReg;
-   }
-#endif
-
 /**
  * labsEvaluator -
  */
@@ -337,26 +176,9 @@ OMR::Z::TreeEvaluator::labsEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    PRINT_ME("labs", node, cg);
    TR::Node * firstChild = node->getFirstChild();
-   TR::Register * targetRegister;
-   if (TR::Compiler->target.is64Bit() || cg->use64BitRegsOn32Bit())
-      {
-      TR::Register * sourceRegister = cg->evaluate(firstChild);
-      targetRegister = cg->allocate64bitRegister();
-      generateRRInstruction(cg, TR::InstOpCode::LPGR, node, targetRegister, sourceRegister);
-      }
-   else
-      {
-      targetRegister = cg->gprClobberEvaluate(firstChild);
-      TR_ASSERT(targetRegister->getRegisterPair() != NULL, "in 32-bit mode, a 64-bit value is not in a register pair");
-      TR::Register *tempReg = cg->allocateRegister();
-      generateRRInstruction(cg, TR::InstOpCode::LR, node, tempReg, targetRegister->getHighOrder());
-      generateRSInstruction(cg, TR::InstOpCode::SRA, node, tempReg, 31);
-      generateRRInstruction(cg, TR::InstOpCode::XR, node, targetRegister->getHighOrder(), tempReg);
-      generateRRInstruction(cg, TR::InstOpCode::XR, node, targetRegister->getLowOrder(), tempReg);
-      generateRRInstruction(cg, TR::InstOpCode::SLR, node, targetRegister->getLowOrder(), tempReg);
-      generateRRInstruction(cg, TR::InstOpCode::SLBR, node, targetRegister->getHighOrder(), tempReg);
-      cg->stopUsingRegister(tempReg);
-      }
+   TR::Register * targetRegister = cg->allocateRegister();;
+   TR::Register * sourceRegister = cg->evaluate(firstChild);
+   generateRRInstruction(cg, TR::InstOpCode::LPGR, node, targetRegister, sourceRegister);
    node->setRegister(targetRegister);
    cg->decReferenceCount(firstChild);
    return targetRegister;

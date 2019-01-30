@@ -852,14 +852,10 @@ bool
 OMR::CodeGenerator::use64BitRegsOn32Bit()
    {
 #ifdef TR_TARGET_S390
-   if (TR::Compiler->target.is64Bit())
-      return false;
-   else
-      {
-      return !self()->comp()->getOption(TR_Disable64BitRegsOn32Bit);
-      }
-#endif // TR_TARGET_S390
+   return TR::Compiler->target.is32Bit();
+#else
    return false;
+#endif // TR_TARGET_S390
    }
 
 TR_PersistentMemory *
@@ -1142,7 +1138,7 @@ OMR::CodeGenerator::getNumberOfGlobalRegisters()
 #ifdef TR_HOST_S390
 uint16_t OMR::CodeGenerator::getNumberOfGlobalGPRs()
    {
-   if (self()->supportsHighWordFacility() && !self()->comp()->getOption(TR_DisableHighWordRA))
+   if (self()->supportsHighWordFacility())
       {
       return _firstGlobalHPR;
       }
@@ -1168,18 +1164,6 @@ TR::Register *OMR::CodeGenerator::allocateSinglePrecisionRegister(TR_RegisterKin
    {
    TR::Register * temp = self()->allocateRegister(rk);
    temp->setIsSinglePrecision();
-   return temp;
-   }
-
-TR::Register *OMR::CodeGenerator::allocate64bitRegister()
-   {
-   TR::Register * temp = NULL;
-
-   if (TR::Compiler->target.is64Bit())
-      temp = self()->allocateRegister();
-   else
-      temp = self()->allocateRegister(TR_GPR64);
-
    return temp;
    }
 
@@ -3056,16 +3040,6 @@ void OMR::CodeGenerator::addAllocatedRegister(TR::Register * temp)
    uint32_t idx = _registerArray.add(temp);
    temp->setIndex(idx);
    self()->startUsingRegister(temp);
-   }
-
-
-TR::RegisterPair * OMR::CodeGenerator::allocate64bitRegisterPair(TR::Register * lo, TR::Register * ho)
-   {
-   TR::RegisterPair *temp = new (self()->trHeapMemory()) TR::RegisterPair(TR_GPR64);
-   temp->setLowOrder(lo, self());
-   temp->setHighOrder(ho, self());
-   self()->addAllocatedRegisterPair(temp);
-   return temp;
    }
 
 TR::RegisterPair * OMR::CodeGenerator::allocateRegisterPair(TR::Register * lo, TR::Register * ho)

@@ -427,8 +427,8 @@ enum TR_CompilationOptions
    TR_EnableLargePages                    = 0x02000000 + 10,
    TR_DisableNewX86VolatileSupport        = 0x04000000 + 10,
    // Available                           = 0x08000000 + 10,
-   TR_Disable64BitRegsOn32Bit             = 0x10000000 + 10,
-   TR_Disable64BitRegsOn32BitHeuristic    = 0x20000000 + 10,
+   // Available                           = 0x10000000 + 10,
+   // Available                           = 0x20000000 + 10,
    TR_TraceRegisterState                  = 0x40000000 + 10,
    TR_DisableDirectToJNIInline            = 0x80000000 + 10,
 
@@ -684,7 +684,7 @@ enum TR_CompilationOptions
    // Available                                       = 0x04000000 + 19,
    // Available                                       = 0x08000000 + 19,
    TR_UpgradeBootstrapAtWarm                          = 0x10000000 + 19,
-   TR_ForceLargeRAMoves                               = 0x20000000 + 19,  // force 64 register moves in RA
+   // Available                                       = 0x20000000 + 19,
    // Available                                       = 0x40000000 + 19,
    // Available                                       = 0x80000000 + 19,
 

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -97,28 +97,10 @@ TR::S390SystemLinkage::initS390RealRegisterLinkage()
    spReal->setAssignedRegister(spReal);
    spReal->setHasBeenAssignedInMethod(true);
 
-   if (cg()->supportsHighWordFacility() && !comp()->getOption(TR_DisableHighWordRA) && TR::Compiler->target.is64Bit())
-      {
-      TR::RealRegister * tempHigh = toRealRegister(spReal)->getHighWordRegister();
-      tempHigh->setState(TR::RealRegister::Locked);
-      tempHigh->setAssignedRegister(tempHigh);
-      tempHigh->setHasBeenAssignedInMethod(true);
-      }
-
-#if 0
-   TR::RealRegister * gpr0Real  = machine()->getRealRegister(TR::RealRegister::GPR0);
-   gpr0Real->setState(TR::RealRegister::Locked);
-   gpr0Real->setAssignedRegister(gpr0Real);
-   gpr0Real->setHasBeenAssignedInMethod(true);
-#endif
-
-#if 0
-// May lock this if GOT needed
-   TR::RealRegister * gpr12Real  = cg()->machine()->getRealRegister(TR::RealRegister::GPR12);
-   gpr12Real->setState(TR::RealRegister::Locked);
-   gpr12Real->setAssignedRegister(gpr12Real);
-   gpr12Real->setHasBeenAssignedInMethod(true);
-#endif
+   TR::RealRegister * tempHigh = toRealRegister(spReal)->getHighWordRegister();
+   tempHigh->setState(TR::RealRegister::Locked);
+   tempHigh->setAssignedRegister(tempHigh);
+   tempHigh->setHasBeenAssignedInMethod(true);
 
    // set register weight
    for (icount = TR::RealRegister::FirstGPR; icount >= TR::RealRegister::LastAssignableGPR; icount++)
@@ -948,7 +930,12 @@ TR::S390zOSSystemLinkage::callNativeFunction(TR::Node * callNode, TR::RegisterDe
       case TR::lcall:
       case TR::lucall:
          {
-         if (codeGen->use64BitRegsOn32Bit())
+         if (TR::Compiler->target.is64Bit())
+            {
+            retReg = deps->searchPostConditionRegister(getIntegerReturnRegister());
+            returnRegister = deps->searchPostConditionRegister(getIntegerReturnRegister());
+            }
+         else
             {
             TR::Instruction *cursor = NULL;
             lowReg = deps->searchPostConditionRegister(getLongLowReturnRegister());
@@ -960,19 +947,6 @@ TR::S390zOSSystemLinkage::callNativeFunction(TR::Node * callNode, TR::RegisterDe
 
             codeGen->stopUsingRegister(lowReg);
             retReg = highReg;
-            returnRegister = retReg;
-            }
-         else if (TR::Compiler->target.is64Bit())
-            {
-            retReg = deps->searchPostConditionRegister(getIntegerReturnRegister());
-            returnRegister = deps->searchPostConditionRegister(getIntegerReturnRegister());
-            }
-         else
-            {
-            lowReg = deps->searchPostConditionRegister(getLongLowReturnRegister());
-            highReg = deps->searchPostConditionRegister(getLongHighReturnRegister());
-
-            retReg = codeGen->allocateConsecutiveRegisterPair(lowReg, highReg);
             returnRegister = retReg;
             }
          }
@@ -1095,28 +1069,7 @@ TR::S390zLinuxSystemLinkage::callNativeFunction(TR::Node * callNode,
       case TR::lucall:
       case TR::lucalli:
          {
-         if (cg()->use64BitRegsOn32Bit())
-            {
-            TR::Instruction *cursor = NULL;
-            lowReg = deps->searchPostConditionRegister(getLongLowReturnRegister());
-            highReg = deps->searchPostConditionRegister(getLongHighReturnRegister());
-
-            generateRSInstruction(cg(), TR::InstOpCode::SLLG, callNode, highReg, highReg, 32);
-            cursor =
-               generateRRInstruction(cg(), TR::InstOpCode::LR, callNode, highReg, lowReg);
-
-/*
-            TR::RegisterDependencyConditions * deps =
-               new (cg()->trHeapMemory()) TR::RegisterDependencyConditions(0, 2, cg());
-            deps->addPostCondition(lowReg, getLongLowReturnRegister());
-            deps->addPostCondition(highReg, getLongHighReturnRegister());
-            cursor->setDependencyConditions(deps);
-*/
-
-            cg()->stopUsingRegister(lowReg);
-            returnRegister = highReg;
-            }
-         else if (TR::Compiler->target.is64Bit())
+         if (TR::Compiler->target.is64Bit())
             {
             returnRegister = deps->searchPostConditionRegister(getIntegerReturnRegister());
             }
@@ -1124,7 +1077,12 @@ TR::S390zLinuxSystemLinkage::callNativeFunction(TR::Node * callNode,
             {
             lowReg = deps->searchPostConditionRegister(getLongLowReturnRegister());
             highReg = deps->searchPostConditionRegister(getLongHighReturnRegister());
-            returnRegister = cg()->allocateConsecutiveRegisterPair(lowReg, highReg);
+
+            generateRSInstruction(cg(), TR::InstOpCode::SLLG, callNode, highReg, highReg, 32);
+            generateRRInstruction(cg(), TR::InstOpCode::LR, callNode, highReg, lowReg);
+            
+            cg()->stopUsingRegister(lowReg);
+            returnRegister = highReg;
             }
          }
          break;
@@ -1721,47 +1679,6 @@ TR::S390zLinuxSystemLinkage::checkLeafRoutine(int32_t stackFrameSize, TR::Instru
       return ft;
       }
 
-
-   // d) no calls
-
-
-   // For no calls we check if method contains possible branch instruction
-   // and for small sized methods - so some leafs may skip by
-   //
-
-   #define ZLINUX_SYSTEMLINK_LEAF_INSTRUCTION_CHECK_THRESHOLD 150
-   TR::Instruction *cursor = comp()->cg()->getFirstInstruction();
-   int32_t numToCheck = ZLINUX_SYSTEMLINK_LEAF_INSTRUCTION_CHECK_THRESHOLD;
-   bool regs[TR::RealRegister::NumRegisters] = { };
-
-
-
-   bool hasCalls = findPossibleCallInstruction(cursor, numToCheck,callInstruction,regs,TR::RealRegister::NumRegisters);
-
-
-   if (!hasCalls && cursor == NULL)
-      {
-      if(comp()->getOption(TR_TraceCG))
-         traceMsg(comp(), "callInstruction = %p cursor = %p\n",*callInstruction,cursor);
-
-      if (callInstruction && *callInstruction && checkPreservedRegisterUsage(regs,TR::RealRegister::NumRegisters))
-         {
-         ft = noStackForwardingFrame;
-         }
-      else if (callInstruction && *callInstruction) // register usage doesn't allow a framewithout a stack.
-         {
-         ft = standardFrame;
-         }
-      else if (checkPreservedRegisterUsage(regs,TR::RealRegister::NumRegisters))
-         {
-         ft = noStackLeafFrame;
-         }
-      else
-         {
-         ft = StackLeafFrame;
-         }
-      }
-
    return ft;
    }
 //returns true if there are no preserved registers used in the method
@@ -2194,162 +2111,6 @@ TR::S390zOSSystemLinkage::getRegisterSaveOffset(TR::RealRegister::RegNum srcReg)
       TR_ASSERT(false, "ERROR: TR::S390zOSSystemLinkage::getRegisterSaveOffset called for volatile reg: %d\n",srcReg);
       return -1;
       }
-   }
-
-/**
- * Find first instruction, within a window of instructions, that may be a possible call banch instruction
- * Window of instructions is determined by starting instruction and count.
- *
- * Input arguments are updated on return and a boolean result is returned.
- *
- * Usage: Predocminantly used for "leaf" detection.
- *
- * @note
- *  1) Some linkages may have different instructions used for branching to callee
- *     In those cases, the code below should include a linkage check or the
- *     particular linkage should have derived version of this routine.
- *  2) A "true" return does not mean the instruction found is a call, it may be a call.
- *     If necessary, The caller of this routine can do further verication base on
- *     the returned instruction.
- */
-void
-OMR::Z::Linkage::setUsedRegisters(TR::Instruction *instruction, bool *regs, int32_t regsSize)
-   {
-   if(!regs || regsSize == 0)
-      return;
-
-   TR::list<TR::Register *> usedRegs(getTypedAllocator<TR::Register*>(self()->comp()->allocator()));
-   if(instruction->getRegisters(usedRegs))
-      {
-      for(auto cursor = usedRegs.begin(); cursor != usedRegs.end(); ++cursor)
-         {
-         if ((*cursor) && (*cursor)->getRealRegister())
-            {
-            TR::RealRegister::RegNum regNum = toRealRegister((*cursor))->getRegisterNumber();
-
-            TR_ASSERT(regNum < regsSize, "Trying to set regNum %d to true when max regsSize = %d\n",regNum,regsSize);
-
-            if(self()->comp()->getOption(TR_TraceCG))
-               traceMsg(self()->comp(), "Instruction %p uses reg %d\n",instruction,regNum - TR::RealRegister::FirstGPR );
-            regs[regNum] = true;
-            }
-         }
-      }
-
-
-   }
-/**
- * @param cursor Both an input and output parameter
- *        On Input: Instruction to start at
- *        On Output: Instruction found or instruction just outside window (or NULL if no more -- this is the successful indicator that this may be a leaf routine)
- * @param numToCheck Both an input and output parameter
- *        On Input: Max number of instructions to check
- *        On Output: Number of instructions checked
- * @param regs Calculate which registers are used
- * @param regsSize Size of regs array
- * @return Either true for no call found or a single call that can be changed to a jump
- */
-bool
-OMR::Z::Linkage::findPossibleCallInstruction(
-           TR::Instruction * &cursor,
-           int32_t& numToCheck,
-           TR::Instruction **callInstruction,
-           bool *regs, int32_t regsSize)
-
-   {
-   bool result = false;
-
-   TR::Instruction *instruction = cursor;
-
-   int32_t n = 0;
-
-   while ((instruction != NULL) && (result == false))
-      {
-      if (n == numToCheck) break;
-      n++;
-
-      TR::InstOpCode::Mnemonic opCode = instruction->getOpCodeValue();
-      switch (opCode)
-         {
-         case TR::InstOpCode::BASSM:
-         case TR::InstOpCode::BASR:
-         case TR::InstOpCode::BALR:
-         case TR::InstOpCode::BAS:   // fastlink uses this
-         case TR::InstOpCode::BAL:
-         case TR::InstOpCode::BRAS:
-         case TR::InstOpCode::BRASL:
-            {
-            result = true;
-            }
-            break;
-         default:
-            {
-            // The first call instruction, don't set any of the registers as being
-            // used (r14) because it will be transformed if possible
-            //
-            self()->setUsedRegisters(instruction,regs,regsSize);
-            instruction = instruction->getNext();
-            }
-            break;
-         }
-      }
-
-
-   bool canReplaceCallWithJump = false;
-   if(callInstruction)
-      {
-      *callInstruction = instruction;
-      canReplaceCallWithJump = true;
-      }
-
-
-   if (instruction)
-      instruction = instruction->getNext();
-
-   while (instruction !=NULL && canReplaceCallWithJump)
-      {
-      if (n == numToCheck) break;
-         n++;
-
-      self()->setUsedRegisters(instruction,regs,regsSize);
-
-      TR::InstOpCode::Mnemonic opCode = instruction->getOpCodeValue();
-      switch (opCode)
-         {
-         case TR::InstOpCode::ASSOCREGS:
-         case TR::InstOpCode::FENCE:
-         case TR::InstOpCode::LABEL:
-         case TR::InstOpCode::RET:
-            break;
-         default:
-            canReplaceCallWithJump = false;
-            break;
-         }
-      instruction = instruction->getNext();
-      }
-
-
-   if (result && canReplaceCallWithJump && *callInstruction && n < numToCheck)
-      {
-      TR::InstOpCode::Mnemonic opCode = (*callInstruction)->getOpCodeValue();
-
-      if(opCode == TR::InstOpCode::BASR)     // don't know which instruction to use for a virtual dispatch (yet).  In theory, BCR.
-         {
-         canReplaceCallWithJump = false;
-         }
-      else      // otherwise, we found only 1 call that can be changed to a jump
-         {
-         result = false;
-         }
-      }
-   else if (callInstruction)
-      {
-      *callInstruction = NULL;
-      }
-
-   cursor = instruction;
-   numToCheck = n;
-   return result;
    }
 
 void OMR::Z::Linkage::replaceCallWithJumpInstruction(TR::Instruction *callInstruction)

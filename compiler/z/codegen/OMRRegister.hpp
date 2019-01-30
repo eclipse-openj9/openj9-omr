@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -86,7 +86,7 @@ class OMR_EXTENSIBLE Register: public OMR::Register
    void setIsUsedInMemRef(bool b = true)    {_flags.set(IsUsedInMemRef, b);}
 
    bool is64BitReg();
-   void setIs64BitReg(bool b = true)               {_flags.set(Is64Bit, b);}
+   void setIs64BitReg(bool b = true);
 
    bool assignToHPR();
    void setAssignToHPR(bool b = true)              {_flags.set(AssignToHPR, b);}

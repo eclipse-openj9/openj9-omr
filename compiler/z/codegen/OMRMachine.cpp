@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -111,113 +111,80 @@ getRegisterName(TR::Register * reg, TR::CodeGenerator * cg)
 //  Copy Register by moving source register to target register
 ///////////////////////////////////////////////////////////////////////////////
 TR::Instruction *
-OMR::Z::Machine::registerCopy(TR::Instruction *precedingInstruction,
-             TR_RegisterKinds rk,
-             TR::Register *targetReg,
-             TR::Register *sourceReg,
-             TR::CodeGenerator    *cg,
-             flags32_t            instFlags)
+OMR::Z::Machine::registerCopy(TR::CodeGenerator* cg,
+      TR_RegisterKinds rk,
+      TR::RealRegister* targetReg,
+      TR::RealRegister* sourceReg,
+      TR::Instruction* precedingInstruction)
    {
-   TR::Compilation *comp = cg->comp();
-   TR::Node * currentNode = precedingInstruction->getNode();
-   TR::Instruction * currentInstruction = NULL;
-   TR::RealRegister      *targetRealReg = toRealRegister(targetReg->getRealRegister());
-   TR::RealRegister      *sourceRealReg = toRealRegister(sourceReg->getRealRegister());
-   char * REG_MOVE = "LR=Reg_move";
-   char * REG_PAIR = "LR=Reg_pair";
-   char * VREG_MOVE = "VLR=VReg_move";
+   // TODO: In reality we should be validating that the the source is NULL and target is non-NULL however we cannot
+   // currently do this because the registerCopy and registerExchange APIs are not updating the register states as
+   // registers are shuffled around.
+   //
+   // A typical example of when this assert would fire is when attempting a register exchange (which uses this API)
+   // via a spare reigster. We will generate 3 register shuffles but the register state is only updated later, thus
+   // during the second shuffle the spare register will the the target in the above parameter and as such we would
+   // assert since the spare register presumably did not have any virtual register associated with it.
+   TR_ASSERT_FATAL(sourceReg->getAssignedRegister() != NULL || targetReg->getAssignedRegister() != NULL, "Attempting register copy with source (%s) and target (%s) real registers not corresponding to any virtual register", getRegisterName(sourceReg, cg), getRegisterName(targetReg, cg));
 
-   TR_Debug * debugObj = cg->getDebug();
-
-   bool enableHighWordRA = cg->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) &&
-                           rk != TR_FPR && rk != TR_VRF;
+   TR::Node* node = precedingInstruction->getNode();
+   TR::Instruction* cursor = NULL;
 
    switch (rk)
       {
-      case TR_GPR64:
-         currentInstruction =
-            generateRRInstruction(cg, TR::InstOpCode::LGR, currentNode, targetReg, sourceReg, precedingInstruction);
-
-         if(sourceRealReg) sourceRealReg->setAssignedHigh(true);
-         if(targetRealReg) targetRealReg->setAssignedHigh(true);
-
-         cg->traceRAInstruction(currentInstruction);
-#ifdef DEBUG
-         if (debug("traceMsg90GPR") || debug("traceGPRStats"))
-            {
-            cg->incTotalRegisterMoves();
-            }
-#endif
-         break;
       case TR_GPR:
-         currentInstruction =
-            generateRRInstruction(cg, (comp->getOption(TR_ForceLargeRAMoves)) ? TR::InstOpCode::LGR : TR::InstOpCode::getLoadRegOpCode(), currentNode, targetReg, sourceReg, precedingInstruction);
-         if (enableHighWordRA && targetRealReg && sourceRealReg)
-            TR_ASSERT( !targetRealReg->isHighWordRegister() && !sourceRealReg->isHighWordRegister(), "\nREG COPY: LR with HPR?\n");
-         cg->traceRAInstruction(currentInstruction);
-#ifdef DEBUG
-         if (debug("traceMsg90GPR") || debug("traceGPRStats"))
+         {
+         TR_ASSERT_FATAL(targetReg->isLowWordRegister(), "Attempting GPR register copy with target real register (%s) which is not a GPR", getRegisterName(targetReg, cg));
+
+         if (sourceReg->isLowWordRegister())
             {
-            cg->incTotalRegisterMoves();
+            // TODO: Once above is fixed we can always rely on targetReg->getAssignedRegister()
+            auto nonNullAssignedReg = targetReg->getAssignedRegister() != NULL ?
+               targetReg->getAssignedRegister() :
+               sourceReg->getAssignedRegister();
+
+            auto mnemonic = nonNullAssignedReg->is64BitReg() ?
+               TR::InstOpCode::LGR :
+               TR::InstOpCode::LR;
+
+            cursor = generateRRInstruction(cg, mnemonic, node, targetReg, sourceReg, precedingInstruction);
             }
-#endif
+         else
+            {
+            cursor = generateExtendedHighWordInstruction(node, cg, TR::InstOpCode::LLHFR, targetReg, sourceReg, 0, precedingInstruction);
+            }
          break;
+         }
       case TR_HPR:
-         //TR_ASSERTC( "Highword RA is disabled,comp, enableHighWordRA, but REG COPY is working on HPR??");
-         //TR_ASSERTC(comp, sourceReg->isHighWordRegister() && targetReg->isHighWordRegister(),
-         //"REG COPY HPR: both target and source Regs have to be HPR!");
-         if (sourceRealReg && sourceRealReg->isLowWordRegister())
-            currentInstruction = generateExtendedHighWordInstruction(currentNode, cg, TR::InstOpCode::LHLR, targetReg, sourceReg, 0, precedingInstruction);
-         else
-            currentInstruction = generateExtendedHighWordInstruction(currentNode, cg, TR::InstOpCode::LHHR, targetReg, sourceReg, 0, precedingInstruction);
-         cg->traceRAInstruction(currentInstruction);
-#ifdef DEBUG
-         if (debug("traceMsg90GPR") || debug("traceGPRStats"))
-            {
-            cg->incTotalRegisterMoves();
-            }
-#endif
+         {
+         TR_ASSERT_FATAL(targetReg->isHighWordRegister(), "Attempting HPR register copy with target real register (%s) which is not an HPR", getRegisterName(targetReg, cg));
+
+         auto mnemonic = sourceReg->isLowWordRegister() ? 
+            TR::InstOpCode::LHLR :
+            TR::InstOpCode::LHHR;
+
+         cursor = generateExtendedHighWordInstruction(node, cg, mnemonic, targetReg, sourceReg, 0, precedingInstruction);
          break;
-      case TR_GPRL:
-         //TR_ASSERTC( "Highword RA is disabled,comp, enableHighWordRA, but REG COPY is working on GPR Low word??");
-         //TR_ASSERTC(comp, sourceReg->isLowWordRegister() && targetReg->isLowWordRegister(),
-         //"REG COPY HPR: both target and source Regs have to be Low word GPR!");
-         if (sourceRealReg && sourceRealReg->isLowWordRegister())
-            currentInstruction = generateRRInstruction(cg, TR::InstOpCode::LR, currentNode, targetReg, sourceReg, precedingInstruction);
-         else
-            currentInstruction = generateExtendedHighWordInstruction(currentNode, cg, TR::InstOpCode::LLHFR, targetReg, sourceReg, 0, precedingInstruction);
-         cg->traceRAInstruction(currentInstruction);
-#ifdef DEBUG
-         if (debug("traceMsg90GPR") || debug("traceGPRStats"))
-            {
-            cg->incTotalRegisterMoves();
-            }
-#endif
-         break;
+         }
       case TR_FPR:
-         currentInstruction = generateRRInstruction(cg, TR::InstOpCode::LDR, currentNode, targetReg, sourceReg, precedingInstruction);
-         cg->traceRAInstruction(currentInstruction);
+         cursor = generateRRInstruction(cg, TR::InstOpCode::LDR, node, targetReg, sourceReg, precedingInstruction);
          break;
       case TR_VRF:
-         currentInstruction = generateVRRaInstruction(cg, TR::InstOpCode::VLR, currentNode, targetReg, sourceReg, precedingInstruction);
-         cg->traceRAInstruction(currentInstruction);
+         cursor = generateVRRaInstruction(cg, TR::InstOpCode::VLR, node, targetReg, sourceReg, precedingInstruction);
+         
          break;
       }
 
-   if (debugObj)
+   cg->traceRAInstruction(cursor);
+
+   TR_Debug* debug = cg->getDebug();
+
+   if (debug)
       {
-      if (rk == TR_VRF)
-         debugObj->addInstructionComment(toS390VRRaInstruction(currentInstruction), VREG_MOVE);
-      else
-         debugObj->addInstructionComment(toS390RRInstruction(currentInstruction), REG_MOVE);
+      debug->addInstructionComment(cursor, "Register copy");
       }
 
-   if (debugObj && instFlags.testAny(PAIRREG) && rk != TR_VRF)
-      {
-      debugObj->addInstructionComment(toS390RRInstruction(currentInstruction), REG_PAIR);
-      }
-
-   return currentInstruction;
+   return cursor;
    }
 
 
@@ -225,14 +192,16 @@ OMR::Z::Machine::registerCopy(TR::Instruction *precedingInstruction,
  * Exchange the contents of two registers
  */
 TR::Instruction *
-OMR::Z::Machine::registerExchange(TR::Instruction      *precedingInstruction,
-                 TR_RegisterKinds     rk,
-                 TR::RealRegister *targetReg,
-                 TR::RealRegister *sourceReg,
-                 TR::RealRegister *middleReg,
-                 TR::CodeGenerator    *cg,
-                 flags32_t            instFlags)
+OMR::Z::Machine::registerExchange(TR::CodeGenerator* cg,
+      TR_RegisterKinds rk,
+      TR::RealRegister* targetReg,
+      TR::RealRegister* sourceReg,
+      TR::RealRegister* middleReg,
+      TR::Instruction* precedingInstruction)
    {
+   TR_ASSERT_FATAL(sourceReg->getAssignedRegister() != NULL, "Attempting register exchange with source real register (%s) not corresponding to any virtual register", getRegisterName(sourceReg, cg));
+   TR_ASSERT_FATAL(targetReg->getAssignedRegister() != NULL, "Attempting register exchange with target real register (%s) not corresponding to any virtual register", getRegisterName(targetReg, cg));
+
    // middleReg is not used if rk==TR_GPR.
    TR::Compilation *comp = cg->comp();
    TR::Node * currentNode = precedingInstruction->getNode();
@@ -240,7 +209,7 @@ OMR::Z::Machine::registerExchange(TR::Instruction      *precedingInstruction,
    char * REG_EXCHANGE = "LR=Reg_exchg";
    char * REG_PAIR     = "LR=Reg_pair";
    TR_Debug * debugObj = cg->getDebug();
-   bool enableHighWordRA = cg->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) &&
+   bool enableHighWordRA = cg->supportsHighWordFacility() &&
                            rk != TR_FPR && rk != TR_VRF;
    TR::Machine *machine = cg->machine();
 
@@ -251,11 +220,11 @@ OMR::Z::Machine::registerExchange(TR::Instruction      *precedingInstruction,
          {
          middleReg->setHasBeenAssignedInMethod(true);
 
-         currentInstruction = machine->registerCopy(precedingInstruction, rk, sourceReg, middleReg, cg, instFlags);
+         currentInstruction = machine->registerCopy(cg, rk, sourceReg, middleReg, precedingInstruction);
          cg->traceRAInstruction(currentInstruction);
-         currentInstruction = machine->registerCopy(precedingInstruction, rk, targetReg, sourceReg, cg, instFlags);
+         currentInstruction = machine->registerCopy(cg, rk, targetReg, sourceReg, precedingInstruction);
          cg->traceRAInstruction(currentInstruction);
-         currentInstruction = machine->registerCopy(precedingInstruction, rk, middleReg, targetReg, cg, instFlags);
+         currentInstruction = machine->registerCopy(cg, rk, middleReg, targetReg, precedingInstruction);
          cg->traceRAInstruction(currentInstruction);
          }
       else
@@ -287,11 +256,11 @@ OMR::Z::Machine::registerExchange(TR::Instruction      *precedingInstruction,
          {
          middleReg->setHasBeenAssignedInMethod(true);
 
-         currentInstruction = machine->registerCopy(precedingInstruction, rk, sourceReg, middleReg, cg, instFlags);
+         currentInstruction = machine->registerCopy(cg, rk, sourceReg, middleReg, precedingInstruction);
          cg->traceRAInstruction(currentInstruction);
-         currentInstruction = machine->registerCopy(precedingInstruction, rk, targetReg, sourceReg, cg, instFlags);
+         currentInstruction = machine->registerCopy(cg, rk, targetReg, sourceReg, precedingInstruction);
          cg->traceRAInstruction(currentInstruction);
-         currentInstruction = machine->registerCopy(precedingInstruction, rk, middleReg, targetReg, cg, instFlags);
+         currentInstruction = machine->registerCopy(cg, rk, middleReg, targetReg, precedingInstruction);
          cg->traceRAInstruction(currentInstruction);
          }
       else
@@ -316,12 +285,24 @@ OMR::Z::Machine::registerExchange(TR::Instruction      *precedingInstruction,
       }
    else
       {
-      TR::InstOpCode::Mnemonic opLoadReg = TR::InstOpCode::getLoadRegOpCode();
-      TR::InstOpCode::Mnemonic opLoad    = TR::InstOpCode::getLoadOpCode();
-      TR::InstOpCode::Mnemonic opStore   = TR::InstOpCode::getStoreOpCode();
+      TR_ASSERT_FATAL(targetReg->getAssignedRegister()->is64BitReg() == sourceReg->getAssignedRegister()->is64BitReg(), "Attempting register exchange with one 64-bit register (%s) and one 32-bit register (%s)", getRegisterName(sourceReg, cg), getRegisterName(targetReg, cg));
 
-      if (comp->getOption(TR_ForceLargeRAMoves))
-         rk = TR_GPR64;
+      TR::InstOpCode::Mnemonic opLoadReg = TR::InstOpCode::BAD;
+      TR::InstOpCode::Mnemonic opLoad = TR::InstOpCode::BAD;
+      TR::InstOpCode::Mnemonic opStore = TR::InstOpCode::BAD;
+
+      if (targetReg->getAssignedRegister()->is64BitReg())
+         {
+         opLoadReg = TR::InstOpCode::LGR;
+         opLoad = TR::InstOpCode::LG;
+         opStore = TR::InstOpCode::STG;
+         }
+      else
+         {
+         opLoadReg = TR::InstOpCode::LR;
+         opLoad = TR::InstOpCode::L;
+         opStore = TR::InstOpCode::ST;
+         }
 
       bool srcRegIsHPR = sourceReg->isHighWordRegister();
       bool tgtRegIsHPR = targetReg->isHighWordRegister();
@@ -343,15 +324,8 @@ OMR::Z::Machine::registerExchange(TR::Instruction      *precedingInstruction,
             }
          else
             {
-            opLoadReg = tgtRegIsHPR? TR::InstOpCode::LHHR:InstOpCode::LR;
+            opLoadReg = tgtRegIsHPR? TR::InstOpCode::LHHR:opLoadReg;
             }
-         }
-
-      if (rk == TR_GPR64)
-         {
-         opLoadReg = TR::InstOpCode::LGR;
-         opLoad    = TR::InstOpCode::LG;
-         opStore   = TR::InstOpCode::STG;
          }
 
       // exchange general purpose registers
@@ -364,13 +338,13 @@ OMR::Z::Machine::registerExchange(TR::Instruction      *precedingInstruction,
          TR::Instruction * currentInstruction = precedingInstruction;
          TR_BackingStore * location;
 
-         if (rk == TR_GPR64)
+         if (targetReg->getAssignedRegister()->is64BitReg())
             {
-            location = cg->allocateSpill(8, false, NULL);      // No chance of a gcpoint
+            location = cg->allocateSpill(8, false, NULL);
             }
          else
             {
-            location = cg->allocateSpill(TR::Compiler->om.sizeofReferenceAddress(), false, NULL); // No chance of a gcpoint
+            location = cg->allocateSpill(4, false, NULL);
             }
          TR::MemoryReference * tempMR = generateS390MemoryReference(currentNode, location->getSymbolReference(), cg);
          location->getSymbolReference()->getSymbol()->setSpillTempLoaded();
@@ -389,14 +363,9 @@ OMR::Z::Machine::registerExchange(TR::Instruction      *precedingInstruction,
          {
          middleReg->setHasBeenAssignedInMethod(true);
 
-         if (rk == TR_GPR64)
-            {
-            middleReg->setAssignedHigh(true);
-            }
-
          bool middleRegIsHPR = middleReg->isHighWordRegister();
 
-         if (enableHighWordRA && rk != TR_GPR64)
+         if (enableHighWordRA)
             {
             if (srcRegIsHPR != middleRegIsHPR)
                {
@@ -406,7 +375,7 @@ OMR::Z::Machine::registerExchange(TR::Instruction      *precedingInstruction,
             else
                {
                currentInstruction =
-                  generateRRInstruction(cg, srcRegIsHPR? TR::InstOpCode::LHHR:InstOpCode::LR, currentNode, sourceReg, middleReg, precedingInstruction);
+                  generateRRInstruction(cg, srcRegIsHPR? TR::InstOpCode::LHHR:opLoadReg, currentNode, sourceReg, middleReg, precedingInstruction);
                }
             cg->traceRAInstruction(currentInstruction);
             if (debugObj)
@@ -422,7 +391,7 @@ OMR::Z::Machine::registerExchange(TR::Instruction      *precedingInstruction,
             else
                {
                currentInstruction =
-                  generateRRInstruction(cg, tgtRegIsHPR? TR::InstOpCode::LHHR:InstOpCode::LR, currentNode, targetReg, sourceReg, precedingInstruction);
+                  generateRRInstruction(cg, tgtRegIsHPR? TR::InstOpCode::LHHR:opLoadReg, currentNode, targetReg, sourceReg, precedingInstruction);
                }
             cg->traceRAInstruction(currentInstruction);
             if (debugObj)
@@ -438,7 +407,7 @@ OMR::Z::Machine::registerExchange(TR::Instruction      *precedingInstruction,
             else
                {
                currentInstruction =
-                  generateRRInstruction(cg, middleRegIsHPR? TR::InstOpCode::LHHR:InstOpCode::LR, currentNode, middleReg, targetReg, precedingInstruction);
+                  generateRRInstruction(cg, middleRegIsHPR? TR::InstOpCode::LHHR:opLoadReg, currentNode, middleReg, targetReg, precedingInstruction);
                }
 
             cg->traceRAInstruction(currentInstruction);
@@ -456,10 +425,6 @@ OMR::Z::Machine::registerExchange(TR::Instruction      *precedingInstruction,
                {
                debugObj->addInstructionComment(toS390RRInstruction(currentInstruction), REG_EXCHANGE);
                }
-            if (debugObj && instFlags.testAny(PAIRREG))
-               {
-               debugObj->addInstructionComment(toS390RRInstruction(currentInstruction), REG_PAIR);
-               }
 
             currentInstruction =
                generateRRInstruction(cg, opLoadReg, currentNode, targetReg, sourceReg, precedingInstruction);
@@ -467,10 +432,6 @@ OMR::Z::Machine::registerExchange(TR::Instruction      *precedingInstruction,
             if (debugObj)
                {
                debugObj->addInstructionComment(toS390RRInstruction(currentInstruction), REG_EXCHANGE);
-               }
-            if (debugObj && instFlags.testAny(PAIRREG))
-               {
-               debugObj->addInstructionComment(toS390RRInstruction(currentInstruction), REG_PAIR);
                }
 
             currentInstruction =
@@ -480,18 +441,8 @@ OMR::Z::Machine::registerExchange(TR::Instruction      *precedingInstruction,
                {
                debugObj->addInstructionComment(toS390RRInstruction(currentInstruction), REG_EXCHANGE);
                }
-            if (debugObj && instFlags.testAny(PAIRREG))
-               {
-               debugObj->addInstructionComment(toS390RRInstruction(currentInstruction), REG_PAIR);
-               }
             }
          }
-#ifdef DEBUG
-      if (debug("traceMsg90GPR") || debug("traceGPRStats"))
-         {
-         cg->incTotalRegisterXfers();
-         }
-#endif
 
       cg->generateDebugCounter(precedingInstruction, "RegisterAllocator/Exchange/GPR", 1, TR::DebugCounter::Free);
       }
@@ -596,88 +547,6 @@ boundNext(TR::Instruction * currentInstruction, int32_t realNum, TR::Register * 
    return true;
    }
 
-/*
-///////////////////////////////////////////////////////////////////////////////
-// updateInterference - For Highword RA, not all instructions interfere with
-//                      both words of a register
-///////////////////////////////////////////////////////////////////////////////
-static uint32_t
-updateInterference (TR::Instruction * currentInstruction, TR::Register * virtualReg,
-                    uint32_t interference, bool updateHW)
-   {
-   TR::Instruction * cursor = currentInstruction;
-   TR::Node * nodeBBStart = NULL;
-   uint32_t checkRegList = 0;
-   int32_t maskI = TR::RealRegister::FirstGPR;
-   int32_t first = TR::RealRegister::FirstGPR;
-   int32_t last = TR::RealRegister::LastAssignableGPR;
-
-   while (cursor->getOpCodeValue() != TR::InstOpCode::PROC)
-      {
-      TR::RegisterDependencyConditions * conditions;
-      if ((conditions = cursor->getDependencyConditions()) != NULL)
-         {
-         for (int32_t i=first; i<=last; i++)
-            {
-            if ((interference & (1 << (i - maskI))) && !(checkRegList & (1 << (i - maskI))))
-               {
-               TR::RealRegister::RegNum realReg = (TR::RealRegister::RegNum) i;
-               TR::Register * interferedVReg = conditions->searchPostConditionRegister(realReg);
-               if (interferedVReg == NULL)
-                  {
-                  interferedVReg = conditions->searchPreConditionRegister(realReg);
-                  }
-               if (interferedVReg != NULL)
-                  {
-                  // updateHW == true: remove interferences that do not clobber HW
-                  //            false: remove interferences that do not clobber LW
-                  if (interferedVReg->assignToHPR() && updateHW)
-                     {
-                     // if the highWord is free, this is not an interference
-                     interference &= ~(1 << (i - maskI));
-                     traceMsg(cursor->cg()->comp(),"removed GPR%d, does not interfere HW\n", i - maskI);
-                     }
-                  else if (interferedVReg->assignToGPR() && !updateHW)
-                     {
-                     // if the lowWord is free, this is not an interference
-                     interference &= ~(1 << (i - maskI));
-                     traceMsg(cursor->cg()->comp(),"removed GPR%d, does not interfere LW\n", i - maskI);
-                     }
-                  // only check this real reg once
-                  checkRegList |= (1 << (i - maskI));
-                  }
-               }
-            }
-         }
-
-      // we reached the beginning of live range
-      if (currentInstruction == virtualReg->getStartOfRange())
-         return interference;
-
-      TR::Node * node = cursor->getNode();
-      if (nodeBBStart != NULL && node != nodeBBStart)
-         {
-         return interference;
-         }
-      if (node != NULL && node->getOpCodeValue() == TR::BBStart)
-         {
-         TR::Block * block = node->getBlock();
-         if (!block->isExtensionOfPreviousBlock())
-            {
-            nodeBBStart = node;
-            }
-         }
-      cursor = cursor->getPrev();
-      // OOL entry label could cause this
-      if (!cursor)
-         return interference;
-      }
-
-   return interference;
-   }
-
-*/
-
 uint8_t
 OMR::Z::Machine::getGPRSize()
    {
@@ -710,7 +579,7 @@ OMR::Z::Machine::findBestSwapRegister(TR::Register* reg1, TR::Register* reg2)
    {
    TR_RegisterKinds rk = reg1->getKind();
    int32_t first, last;
-   if (rk == TR_GPR || rk == TR_GPR64)
+   if (rk == TR_GPR)
       {
       first = TR::RealRegister::FirstGPR;
       last  = TR::RealRegister::LastAssignableGPR;
@@ -1228,7 +1097,7 @@ OMR::Z::Machine::shuffleOrSpillRegister(TR::Instruction *currInst,
       self()->spillRegister(currInst, toFreeReg);
    else
       {
-      TR::Instruction * cursor = self()->registerCopy(currInst, toFreeReg->getKind(), assignedRegister, bestRegister, self()->cg(), 0);
+      TR::Instruction * cursor = self()->registerCopy(self()->cg(), toFreeReg->getKind(), assignedRegister, bestRegister, currInst);
       toFreeReg->setAssignedRegister(bestRegister);
       bestRegister->setAssignedRegister(toFreeReg);
       bestRegister->setState(TR::RealRegister::Assigned);
@@ -1255,19 +1124,15 @@ OMR::Z::Machine::assignBestRegisterSingle(TR::Register    *targetRegister,
 
    bool reverseSpilled = false;
 
-   bool enableHighWordRA = self()->cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) &&
-                           kindOfRegister != TR_FPR && kindOfRegister != TR_VRF;
-
    bool defsRegister=currInst->defsRegister(targetRegister);
    if (assignedRegister == NULL)
       {
       if (self()->cg()->insideInternalControlFlow())
          {
-         TR_ASSERT_FATAL(0, "ASSERTION assignBestRegisterSingle inside Internal Control Flow on currInst=%p.\n"
-                      "Ensure all registers within ICF have a dependency anchored at the end-ICF label\n",currInst);
+         TR_ASSERT_FATAL(false, "Attempting to assign a register (%s) inside ICF", getRegisterName(targetRegister, self()->cg()));
          }
       }
-   if (enableHighWordRA && assignedRegister != NULL)
+   if (kindOfRegister != TR_FPR && kindOfRegister != TR_VRF && assignedRegister != NULL)
       {
       // In case we need a register shuffle, if the register we are assigning is a source register of the instruction,
       // the shuffling instruction should happen before this instruction
@@ -1278,34 +1143,34 @@ OMR::Z::Machine::assignBestRegisterSingle(TR::Register    *targetRegister,
          }
       if (targetRegister->is64BitReg())
          {
-         if ((toRealRegister(assignedRegister)->getRealRegisterMask() & availRegMask) == 0)
-           {
-           // Oh no.. targetRegister is assigned something it shouldn't be assigned to. Do some shuffling
-           // find a new register to shuffle to
-           TR::RealRegister * newAssignedRegister = self()->findBestRegisterForShuffle(currInst, targetRegister, availRegMask);
-           TR::Instruction *cursor = self()->registerCopy(appendInst, kindOfRegister, toRealRegister(assignedRegister), newAssignedRegister, self()->cg(), 0);
-           assignedRegister->setAssignedRegister(NULL);
-           assignedRegister->setState(TR::RealRegister::Free);
-           assignedRegister = newAssignedRegister;
-           }
-         else if (toRealRegister(assignedRegister)->isLowWordRegister() &&
-             toRealRegister(assignedRegister)->getHighWordRegister()->getAssignedRegister() != targetRegister)
+         if ((assignedRegister->getRealRegisterMask() & availRegMask) == 0)
             {
-            self()->cg()->traceRegisterAssignment("%R is 64bit but HPR is assigned to a different vreg, freeing up HPR", targetRegister);
-            if (toRealRegister(assignedRegister)->getHighWordRegister()->getState() == TR::RealRegister::Assigned)
-               {
-               assignedRegister->block();
-               TR::Instruction * cursor = self()->freeHighWordRegister(currInst, toRealRegister(assignedRegister)->getHighWordRegister(), 0);
-               assignedRegister->unblock();
-               self()->cg()->traceRAInstruction(cursor);
-               }
-            else if (toRealRegister(assignedRegister)->getHighWordRegister()->getState() == TR::RealRegister::Blocked ||
-                     toRealRegister(assignedRegister)->getHighWordRegister()->getState() == TR::RealRegister::Locked)
-               {
-               TR_ASSERT(0, "\n HPR RA: shouldn't get here, not supported yet!");
-               }
+            // Oh no.. targetRegister is assigned something it shouldn't be assigned to. Do some shuffling
+            // find a new register to shuffle to
+            TR::RealRegister * newAssignedRegister = self()->findBestRegisterForShuffle(currInst, targetRegister, availRegMask);
+            TR::Instruction *cursor = self()->registerCopy(self()->cg(), kindOfRegister, toRealRegister(assignedRegister), newAssignedRegister, appendInst);
+            assignedRegister->setAssignedRegister(NULL);
+            assignedRegister->setState(TR::RealRegister::Free);
+            assignedRegister = newAssignedRegister;
             }
-        else if (toRealRegister(assignedRegister)->isHighWordRegister())
+         else if (assignedRegister->isLowWordRegister() &&
+             assignedRegister->getHighWordRegister()->getAssignedRegister() != targetRegister)
+           {
+           self()->cg()->traceRegisterAssignment("%R is 64bit but HPR is assigned to a different vreg, freeing up HPR", targetRegister);
+           if (assignedRegister->getHighWordRegister()->getState() == TR::RealRegister::Assigned)
+              {
+              assignedRegister->block();
+              TR::Instruction * cursor = self()->freeHighWordRegister(currInst, assignedRegister->getHighWordRegister());
+              assignedRegister->unblock();
+              self()->cg()->traceRAInstruction(cursor);
+              }
+           else if (assignedRegister->getHighWordRegister()->getState() == TR::RealRegister::Blocked ||
+                    assignedRegister->getHighWordRegister()->getState() == TR::RealRegister::Locked)
+              {
+              TR_ASSERT(0, "\n HPR RA: shouldn't get here, not supported yet!");
+              }
+           }
+        else if (assignedRegister->isHighWordRegister())
             {
             self()->cg()->traceRegisterAssignment("%R is 64bit but currently assigned to HPR, shuffling", targetRegister);
 
@@ -1321,10 +1186,10 @@ OMR::Z::Machine::assignBestRegisterSingle(TR::Register    *targetRegister,
             // todo: in regdepds make sure to do the other half: if the register comes in as 64-bit but requires an HPR, need to do shuffling
             }
          targetRegister->setAssignedRegister(assignedRegister);
-         toRealRegister(assignedRegister)->getHighWordRegister()->setAssignedRegister(targetRegister);
-         toRealRegister(assignedRegister)->getLowWordRegister()->setAssignedRegister(targetRegister);
-         toRealRegister(assignedRegister)->getHighWordRegister()->setState(TR::RealRegister::Assigned);
-         toRealRegister(assignedRegister)->getLowWordRegister()->setState(TR::RealRegister::Assigned);
+         assignedRegister->getHighWordRegister()->setAssignedRegister(targetRegister);
+         assignedRegister->getLowWordRegister()->setAssignedRegister(targetRegister);
+         assignedRegister->getHighWordRegister()->setState(TR::RealRegister::Assigned);
+         assignedRegister->getLowWordRegister()->setState(TR::RealRegister::Assigned);
          }
       else
          {
@@ -1336,7 +1201,7 @@ OMR::Z::Machine::assignBestRegisterSingle(TR::Register    *targetRegister,
             appendInst = currInst->getPrev();
             }
          //for 32-bit Registers, we need to make sure that the register is in the correct low/high word
-         if ((toRealRegister(assignedRegister))->isLowWordRegister() && targetRegister->assignToHPR())
+         if (assignedRegister->isLowWordRegister() && targetRegister->assignToHPR())
             {
             // need to find a free HPR and move assignedRegister there
             TR::RealRegister * assignedHighWordRegister = NULL;
@@ -1350,8 +1215,9 @@ OMR::Z::Machine::assignBestRegisterSingle(TR::Register    *targetRegister,
 
             TR::Instruction * cursor = generateExtendedHighWordInstruction(currInst->getNode(), self()->cg(), TR::InstOpCode::LLHFR, assignedRegister, assignedHighWordRegister, 0, appendInst);
 
-            self()->addToUpgradedBlockedList(assignedRegister) ? assignedRegister->setState(TR::RealRegister::Blocked) :
-                                                         assignedRegister->setState(TR::RealRegister::Free);
+            self()->addToUpgradedBlockedList(assignedRegister) ? 
+               assignedRegister->setState(TR::RealRegister::Blocked) :
+               assignedRegister->setState(TR::RealRegister::Free);
             targetRegister->setAssignedRegister(assignedHighWordRegister);
             assignedHighWordRegister->setAssignedRegister(targetRegister);
             assignedHighWordRegister->setState(TR::RealRegister::Assigned);
@@ -1359,7 +1225,7 @@ OMR::Z::Machine::assignBestRegisterSingle(TR::Register    *targetRegister,
             assignedRegister = assignedHighWordRegister;
             self()->cg()->traceRAInstruction(cursor);
             }
-         else if ((toRealRegister(assignedRegister))->isHighWordRegister() && targetRegister->assignToGPR())
+         else if (assignedRegister->isHighWordRegister() && targetRegister->assignToGPR())
             {
            // special case for RISBG, we can change the rotate amount to shuffle low word/ high word
             if (currInst->getOpCodeValue() == TR::InstOpCode::RISBG || currInst->getOpCodeValue() == TR::InstOpCode::RISBGN)
@@ -1380,8 +1246,10 @@ OMR::Z::Machine::assignBestRegisterSingle(TR::Register    *targetRegister,
 
                TR::Instruction * cursor = generateExtendedHighWordInstruction(currInst->getNode(), self()->cg(), TR::InstOpCode::LHLR, assignedRegister, assignedLowWordRegister, 0, appendInst);
 
-               self()->addToUpgradedBlockedList(assignedRegister) ? assignedRegister->setState(TR::RealRegister::Blocked):
-                                                            assignedRegister->setState(TR::RealRegister::Free);
+               self()->addToUpgradedBlockedList(assignedRegister) ? 
+                  assignedRegister->setState(TR::RealRegister::Blocked):
+                  assignedRegister->setState(TR::RealRegister::Free);
+
                targetRegister->setAssignedRegister(assignedLowWordRegister);
                assignedLowWordRegister->setAssignedRegister(targetRegister);
                assignedLowWordRegister->setState(TR::RealRegister::Assigned);
@@ -1390,12 +1258,12 @@ OMR::Z::Machine::assignBestRegisterSingle(TR::Register    *targetRegister,
                self()->cg()->traceRAInstruction(cursor);
                }
             }
-         else if ((toRealRegister(assignedRegister)->getRealRegisterMask() & availRegMask) == 0)
+         else if ((assignedRegister->getRealRegisterMask() & availRegMask) == 0)
            {
            // Oh no.. targetRegister is assigned something it shouldn't be assigned to. Do some shuffling
            // find a new register to shuffle to
            TR::RealRegister * newAssignedRegister = self()->findBestRegisterForShuffle(currInst, targetRegister, availRegMask);
-           TR::Instruction *cursor = self()->registerCopy(appendInst, kindOfRegister, toRealRegister(assignedRegister), newAssignedRegister, self()->cg(), 0);
+           TR::Instruction *cursor = self()->registerCopy(self()->cg(), kindOfRegister, toRealRegister(assignedRegister), newAssignedRegister, appendInst);
            newAssignedRegister->setAssignedRegister(targetRegister);
            newAssignedRegister->setState(TR::RealRegister::Assigned);
            assignedRegister->setAssignedRegister(NULL);
@@ -1404,7 +1272,7 @@ OMR::Z::Machine::assignBestRegisterSingle(TR::Register    *targetRegister,
            }
          }
       } // end if(enabledHighWordRA && assignedRegister != NULL)
-   else if(assignedRegister != NULL && (toRealRegister(assignedRegister)->getRealRegisterMask() & availRegMask) == 0)
+   else if(assignedRegister != NULL && (assignedRegister->getRealRegisterMask() & availRegMask) == 0)
       {
       // Oh no.. targetRegister is assigned something it shouldn't be assigned to
       // Do some shuffling
@@ -1412,7 +1280,7 @@ OMR::Z::Machine::assignBestRegisterSingle(TR::Register    *targetRegister,
       assignedRegister->block();
       TR::RealRegister * newAssignedRegister = self()->findBestRegisterForShuffle(currInst, targetRegister, availRegMask);
       assignedRegister->unblock();
-      TR::Instruction *cursor=self()->registerCopy(currInst, kindOfRegister, toRealRegister(assignedRegister), newAssignedRegister, self()->cg(), 0);
+      TR::Instruction *cursor=self()->registerCopy(self()->cg(), kindOfRegister, assignedRegister, newAssignedRegister, currInst);
       self()->cg()->setRegisterAssignmentFlag(TR_IndirectCoercion);
       self()->cg()->traceRegAssigned(targetRegister,assignedRegister);
       targetRegister->setAssignedRegister(newAssignedRegister);
@@ -1444,7 +1312,7 @@ OMR::Z::Machine::assignBestRegisterSingle(TR::Register    *targetRegister,
          // If no free reg available,  free one up
          if ((assignedRegister = self()->findBestFreeRegister(currInst, kindOfRegister, targetRegister, availRegMask)) == NULL)
             {
-            if (enableHighWordRA && targetRegister->is64BitReg())
+            if (targetRegister->is64BitReg())
                {
                // do not highword spill to itself for 64bit reg
                //traceMsg(comp,"\nDo not spill to its own HPR!");
@@ -1467,12 +1335,12 @@ OMR::Z::Machine::assignBestRegisterSingle(TR::Register    *targetRegister,
 
       // in addition, for 64bit assignment, assign HPR to targetRegister also
       // reverseSpill state already take cares of this itself
-      if (enableHighWordRA && targetRegister->is64BitReg() && !reverseSpilled)
+      if (targetRegister->is64BitReg() && !reverseSpilled)
          {
          //TR_ASSERTC(comp, toRealRegister(assignedRegister)->getHighWordRegister()->getState() == TR::RealRegister::Free,
          //       "\nHW RA: assigning a 64bit virtual reg but HPR is not free!");
-         toRealRegister(assignedRegister)->getHighWordRegister()->setAssignedRegister(targetRegister);
-         toRealRegister(assignedRegister)->getHighWordRegister()->setState(TR::RealRegister::Assigned);
+         assignedRegister->getHighWordRegister()->setAssignedRegister(targetRegister);
+         assignedRegister->getHighWordRegister()->setState(TR::RealRegister::Assigned);
          }
       self()->cg()->traceRegAssigned(targetRegister, assignedRegister);
       self()->cg()->clearRegisterAssignmentFlags();
@@ -1514,10 +1382,10 @@ OMR::Z::Machine::assignBestRegisterSingle(TR::Register    *targetRegister,
          {
          self()->cg()->traceRegFreed(targetRegister, assignedRegister);
          targetRegister->resetIsLive();
-         if (enableHighWordRA && targetRegister->is64BitReg())
+         if (targetRegister->is64BitReg())
             {
-            toRealRegister(assignedRegister)->getHighWordRegister()->setAssignedRegister(NULL);
-            toRealRegister(assignedRegister)->getHighWordRegister()->setState(TR::RealRegister::Free);
+            assignedRegister->getHighWordRegister()->setAssignedRegister(NULL);
+            assignedRegister->getHighWordRegister()->setState(TR::RealRegister::Free);
             self()->cg()->traceRegFreed(targetRegister, toRealRegister(assignedRegister)->getHighWordRegister());
             }
          if (assignedRegister->getState() == TR::RealRegister::Locked )
@@ -1533,8 +1401,6 @@ OMR::Z::Machine::assignBestRegisterSingle(TR::Register    *targetRegister,
          }
       }
 
-
-   // return the real reg
    return assignedRegister;
    }
 
@@ -1590,16 +1456,10 @@ OMR::Z::Machine::assignBestRegisterPair(TR::Register    *regPair,
 
   self()->cg()->traceRegisterAssignment("attempt to assign components of register pair ( %R %R )", firstReg, lastReg);
 
-   bool enableHighWordRA = self()->cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) &&
-                           regPairKind != TR_FPR && regPairKind != TR_VRF;
-
-   if (enableHighWordRA)
-      {
-      if (firstReg->is64BitReg())
-         self()->cg()->traceRegisterAssignment("%R is64BitReg", firstReg);
-      if (lastReg->is64BitReg())
-         self()->cg()->traceRegisterAssignment("%R is64BitReg", lastReg);
-      }
+   if (firstReg->is64BitReg())
+      self()->cg()->traceRegisterAssignment("%R is64BitReg", firstReg);
+   if (lastReg->is64BitReg())
+      self()->cg()->traceRegisterAssignment("%R is64BitReg", lastReg);
 
    if (freeRegisterHigh == NULL || freeRegisterLow == NULL)
       {
@@ -1615,11 +1475,6 @@ OMR::Z::Machine::assignBestRegisterPair(TR::Register    *regPair,
       {
       availRegMask &= ~TR::RealRegister::GPR0Mask;
       availRegMask &= ~TR::RealRegister::GPR1Mask;
-      }
-
-   if (enableHighWordRA && (lastReg->is64BitReg() || firstReg->is64BitReg()))
-      {
-      regPairKind = TR_GPR64;
       }
 
    // We need a new placeholder for the pair that will stay with the instruction, leaving the
@@ -1699,13 +1554,13 @@ OMR::Z::Machine::assignBestRegisterPair(TR::Register    *regPair,
       firstReg->setAssignedRegister(freeRegisterHigh);
       lastReg->setAssignedRegister(freeRegisterLow);
 
-      if (enableHighWordRA && firstReg->is64BitReg())
+      if (firstReg->is64BitReg())
          {
          toRealRegister(freeRegisterHigh)->getHighWordRegister()->setState(TR::RealRegister::Assigned);
          toRealRegister(freeRegisterHigh)->getHighWordRegister()->setAssignedRegister(firstReg);
          }
 
-      if (enableHighWordRA && lastReg->is64BitReg())
+      if (lastReg->is64BitReg())
          {
          toRealRegister(freeRegisterLow)->getHighWordRegister()->setState(TR::RealRegister::Assigned);
          toRealRegister(freeRegisterLow)->getHighWordRegister()->setAssignedRegister(lastReg);
@@ -1731,7 +1586,7 @@ OMR::Z::Machine::assignBestRegisterPair(TR::Register    *regPair,
             lastReg->unblock();
             TR::RealRegister * newOddReg = self()->findBestLegalOddRegister(availRegMask);
             TR_ASSERT(newOddReg, "OMR::Z::Machine::assignBestRegisterPair: newOddReg is NULL!\n");
-            self()->coerceRegisterAssignment(currInst, lastReg, newOddReg->getRegisterNumber(), PAIRREG);
+            self()->coerceRegisterAssignment(currInst, lastReg, newOddReg->getRegisterNumber());
             freeRegisterLow = newOddReg;
             }
          if (lastReg)
@@ -1740,7 +1595,7 @@ OMR::Z::Machine::assignBestRegisterPair(TR::Register    *regPair,
             }
 
          self()->coerceRegisterAssignment(currInst, firstReg,
-            (TR::RealRegister::RegNum) (toRealRegister(freeRegisterLow)->getRegisterNumber() - 1), PAIRREG);
+            (TR::RealRegister::RegNum) (toRealRegister(freeRegisterLow)->getRegisterNumber() - 1));
          freeRegisterHigh = self()->getRealRegister((TR::RealRegister::RegNum) (toRealRegister(freeRegisterLow)->getRegisterNumber() - 1));
          }
       else if (!self()->isLegalOddRegister(freeRegisterLow, DISALLOWBLOCKED, availRegMask))
@@ -1754,7 +1609,7 @@ OMR::Z::Machine::assignBestRegisterPair(TR::Register    *regPair,
             }
 
          self()->coerceRegisterAssignment(currInst, lastReg,
-            (TR::RealRegister::RegNum) (toRealRegister(freeRegisterHigh)->getRegisterNumber() + 1), PAIRREG);
+            (TR::RealRegister::RegNum) (toRealRegister(freeRegisterHigh)->getRegisterNumber() + 1));
          freeRegisterLow = self()->getRealRegister((TR::RealRegister::RegNum) (toRealRegister(freeRegisterHigh)->getRegisterNumber() + 1));
          }
       else if (!self()->isLegalEvenOddPair(freeRegisterHigh, freeRegisterLow, availRegMask))
@@ -1773,7 +1628,7 @@ OMR::Z::Machine::assignBestRegisterPair(TR::Register    *regPair,
                }
 
             self()->coerceRegisterAssignment(currInst, lastReg,
-                                     (TR::RealRegister::RegNum) (toRealRegister(freeRegisterHigh)->getRegisterNumber() + 1), PAIRREG);
+                                     (TR::RealRegister::RegNum) (toRealRegister(freeRegisterHigh)->getRegisterNumber() + 1));
             freeRegisterLow = self()->getRealRegister((TR::RealRegister::RegNum) (toRealRegister(freeRegisterHigh)->getRegisterNumber() + 1));
             }
          else if (self()->isLegalOddRegister(freeRegisterLow, DISALLOWBLOCKED, availRegMask))
@@ -1784,7 +1639,7 @@ OMR::Z::Machine::assignBestRegisterPair(TR::Register    *regPair,
                }
 
             self()->coerceRegisterAssignment(currInst, firstReg,
-                                     (TR::RealRegister::RegNum) (toRealRegister(freeRegisterLow)->getRegisterNumber() - 1), PAIRREG);
+                                     (TR::RealRegister::RegNum) (toRealRegister(freeRegisterLow)->getRegisterNumber() - 1));
             freeRegisterHigh = self()->getRealRegister((TR::RealRegister::RegNum) (toRealRegister(freeRegisterLow)->getRegisterNumber() - 1));
             }
          else
@@ -1799,8 +1654,8 @@ OMR::Z::Machine::assignBestRegisterPair(TR::Register    *regPair,
                self()->freeBestRegisterPair(&tfreeRegisterHigh, &tfreeRegisterLow, regPairKind, currInst, availRegMask);
                }
 
-            self()->coerceRegisterAssignment(currInst, firstReg, (toRealRegister(tfreeRegisterHigh)->getRegisterNumber()), PAIRREG);
-            self()->coerceRegisterAssignment(currInst, lastReg, (toRealRegister(tfreeRegisterLow)->getRegisterNumber()), PAIRREG);
+            self()->coerceRegisterAssignment(currInst, firstReg, (toRealRegister(tfreeRegisterHigh)->getRegisterNumber()));
+            self()->coerceRegisterAssignment(currInst, lastReg, (toRealRegister(tfreeRegisterLow)->getRegisterNumber()));
 
             freeRegisterLow = tfreeRegisterLow;
             freeRegisterHigh = tfreeRegisterHigh;
@@ -1815,7 +1670,7 @@ OMR::Z::Machine::assignBestRegisterPair(TR::Register    *regPair,
          if (!self()->isLegalSecondOfFPRegister(freeRegisterLow, DISALLOWBLOCKED, availRegMask))
             {
             TR::RealRegister * newLowFPReg = self()->findBestLegalSiblingFPRegister(false,availRegMask);
-            self()->coerceRegisterAssignment(currInst, lastReg, newLowFPReg->getRegisterNumber(), PAIRREG);
+            self()->coerceRegisterAssignment(currInst, lastReg, newLowFPReg->getRegisterNumber());
             freeRegisterLow = newLowFPReg;
             }
          if (lastReg)
@@ -1823,7 +1678,7 @@ OMR::Z::Machine::assignBestRegisterPair(TR::Register    *regPair,
             lastReg->block(); // Make sure we don't move this anymore when coercing firstReg
             }
          self()->coerceRegisterAssignment(currInst, firstReg,
-            (TR::RealRegister::RegNum) (toRealRegister(freeRegisterLow->getSiblingRegister())->getRegisterNumber()), PAIRREG);
+            (TR::RealRegister::RegNum) (toRealRegister(freeRegisterLow->getSiblingRegister())->getRegisterNumber()));
          freeRegisterHigh = toRealRegister(freeRegisterLow->getSiblingRegister());
          }
       else if (!self()->isLegalSecondOfFPRegister(freeRegisterLow, DISALLOWBLOCKED, availRegMask))
@@ -1833,7 +1688,7 @@ OMR::Z::Machine::assignBestRegisterPair(TR::Register    *regPair,
          if (!self()->isLegalFirstOfFPRegister(freeRegisterHigh, DISALLOWBLOCKED, availRegMask))
             {
             TR::RealRegister * newHighFPReg = self()->findBestLegalSiblingFPRegister(true,availRegMask);
-            self()->coerceRegisterAssignment(currInst, firstReg, newHighFPReg->getRegisterNumber(), PAIRREG);
+            self()->coerceRegisterAssignment(currInst, firstReg, newHighFPReg->getRegisterNumber());
             freeRegisterHigh = newHighFPReg;
             }
          if (firstReg)
@@ -1842,7 +1697,7 @@ OMR::Z::Machine::assignBestRegisterPair(TR::Register    *regPair,
             }
 
          self()->coerceRegisterAssignment(currInst, lastReg,
-            (TR::RealRegister::RegNum) (toRealRegister(freeRegisterHigh->getSiblingRegister())->getRegisterNumber()), PAIRREG);
+            (TR::RealRegister::RegNum) (toRealRegister(freeRegisterHigh->getSiblingRegister())->getRegisterNumber()));
          freeRegisterLow = toRealRegister(freeRegisterHigh->getSiblingRegister());
          }
       else if (!self()->isLegalFPPair(freeRegisterHigh, freeRegisterLow, availRegMask))
@@ -1861,8 +1716,8 @@ OMR::Z::Machine::assignBestRegisterPair(TR::Register    *regPair,
             self()->freeBestRegisterPair(&tfreeRegisterHigh, &tfreeRegisterLow, regPair->getKind(), currInst, availRegMask);
             }
 
-         self()->coerceRegisterAssignment(currInst, firstReg, (toRealRegister(tfreeRegisterHigh)->getRegisterNumber()), PAIRREG);
-         self()->coerceRegisterAssignment(currInst, lastReg, (toRealRegister(tfreeRegisterLow)->getRegisterNumber()), PAIRREG);
+         self()->coerceRegisterAssignment(currInst, firstReg, (toRealRegister(tfreeRegisterHigh)->getRegisterNumber()));
+         self()->coerceRegisterAssignment(currInst, lastReg, (toRealRegister(tfreeRegisterLow)->getRegisterNumber()));
 
          freeRegisterLow = tfreeRegisterLow;
          freeRegisterHigh = tfreeRegisterHigh;
@@ -1885,7 +1740,7 @@ OMR::Z::Machine::assignBestRegisterPair(TR::Register    *regPair,
          {
          firstReg->resetIsLive();
          firstReg->setAssignedRegister(NULL);
-         if (enableHighWordRA && firstReg->is64BitReg())
+         if (firstReg->is64BitReg())
             {
             toRealRegister(freeRegisterHigh)->getHighWordRegister()->setAssignedRegister(NULL);
             toRealRegister(freeRegisterHigh)->getHighWordRegister()->setState(TR::RealRegister::Free);
@@ -1901,7 +1756,7 @@ OMR::Z::Machine::assignBestRegisterPair(TR::Register    *regPair,
          {
          lastReg->resetIsLive();
          lastReg->setAssignedRegister(NULL);
-         if (enableHighWordRA && lastReg->is64BitReg())
+         if (lastReg->is64BitReg())
             {
             toRealRegister(freeRegisterLow)->getHighWordRegister()->setAssignedRegister(NULL);
             toRealRegister(freeRegisterLow)->getHighWordRegister()->setState(TR::RealRegister::Free);
@@ -1927,46 +1782,30 @@ bool
 OMR::Z::Machine::findBestFreeRegisterPair(TR::RealRegister ** firstRegister, TR::RealRegister ** lastRegister,
    TR_RegisterKinds rk, TR::Instruction * currInst, uint64_t availRegMask)
    {
-   uint32_t interference = 0;
-
-   TR::Compilation *comp = self()->cg()->comp();
-
    TR::RealRegister * freeRegisterLow = NULL;
    TR::RealRegister * freeRegisterHigh = NULL;
 
-   uint64_t bestWeightSoFar = (uint64_t) (-1);
-   int32_t iOld = 0, iNew;
+   uint64_t bestWeightSoFar = -1;
 
-   bool enableHighWordRA = self()->cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) &&
-                           rk != TR_FPR && rk != TR_VRF;
-   bool highWordPairIsFree = true;
-
-   if (rk != TR_FPR  && rk != TR_VRF)
+   if (rk != TR_FPR && rk != TR_VRF)
       {
       // Look at all reg pairs (starting with an even register)
       for (int32_t i = TR::RealRegister::FirstGPR; i <= TR::RealRegister::LastAssignableGPR; i += 2)
          {
          // Don't consider registers that can't be assigned.
-         if ((_registerFile[i + 0]->getState() == TR::RealRegister::Locked) ||
-             (_registerFile[i + 1]->getState() == TR::RealRegister::Locked) ||
-             (_registerFile[i + 0]->getRealRegisterMask() & availRegMask) == 0 ||
-             (_registerFile[i + 1]->getRealRegisterMask() & availRegMask) == 0)
+         if (_registerFile[i + 0]->getState() == TR::RealRegister::Locked || (_registerFile[i + 0]->getRealRegisterMask() & availRegMask) == 0 ||
+             _registerFile[i + 1]->getState() == TR::RealRegister::Locked || (_registerFile[i + 1]->getRealRegisterMask() & availRegMask) == 0)
             {
             continue;
             }
 
-         //self()->cg()->traceRegWeight(_registerFile[i], _registerFile[i]->getWeight());
-         //self()->cg()->traceRegWeight(_registerFile[i + 1], _registerFile[i + 1]->getWeight());
-
-         if (enableHighWordRA && rk == TR_GPR64)
+         // TODO: This is a little too conservative. This API needs to be taught whether the register pair requires
+         // 64-bit registers or not and if and only if we require 64-bit registers do we need to check the highword.
+         bool highWordPairIsFree = false;
+         if ((_registerFile[i + 0]->getHighWordRegister()->getState() == TR::RealRegister::Free || _registerFile[i + 0]->getHighWordRegister()->getState() == TR::RealRegister::Unlatched) &&
+             (_registerFile[i + 1]->getHighWordRegister()->getState() == TR::RealRegister::Free || _registerFile[i + 1]->getHighWordRegister()->getState() == TR::RealRegister::Unlatched))
             {
-            // for 64 bit reg pair, need to check high word pairs also
-            highWordPairIsFree = false;
-            if ((_registerFile[i + 0]->getHighWordRegister()->getState() == TR::RealRegister::Free ||
-                 _registerFile[i + 0]->getHighWordRegister()->getState() == TR::RealRegister::Unlatched) &&
-                (_registerFile[i + 1]->getHighWordRegister()->getState() == TR::RealRegister::Free ||
-                 _registerFile[i + 1]->getHighWordRegister()->getState() == TR::RealRegister::Unlatched))
-               highWordPairIsFree = true;
+            highWordPairIsFree = true;
             }
 
          // See if this pair is available, and better than the prev
@@ -1982,23 +1821,23 @@ OMR::Z::Machine::findBestFreeRegisterPair(TR::RealRegister ** firstRegister, TR:
             }
          }
       }
-   else // if FP Reg Pair
+   else
       {
+      // TODO: What about VRFs?
+      // TODO: We look for _registerFile[i + 0] and _registerFile[i + 2] below, is this correct?
       // Look at all FP reg pairs
       for (int32_t k = 0; k < NUM_S390_FPR_PAIRS; k++)
          {
          int32_t i = _S390FirstOfFPRegisterPairs[k];
          // Don't consider registers that can't be assigned
-         if ((_registerFile[i + 0]->getState() == TR::RealRegister::Locked) ||
-             (_registerFile[i + 2]->getState() == TR::RealRegister::Locked) ||
-             (_registerFile[i + 0]->getRealRegisterMask() & availRegMask) == 0 ||
-             (_registerFile[i + 2]->getRealRegisterMask() & availRegMask) == 0)
+         if (_registerFile[i + 0]->getState() == TR::RealRegister::Locked || (_registerFile[i + 0]->getRealRegisterMask() & availRegMask) == 0 ||
+             _registerFile[i + 2]->getState() == TR::RealRegister::Locked || (_registerFile[i + 2]->getRealRegisterMask() & availRegMask) == 0)
             {
             continue;
             }
 
          // See if this pair is available and better than the previous
-         if ((_registerFile[i + 0]->getState() == TR::RealRegister::Free || _registerFile[i]->getState() == TR::RealRegister::Unlatched) &&
+         if ((_registerFile[i + 0]->getState() == TR::RealRegister::Free || _registerFile[i + 0]->getState() == TR::RealRegister::Unlatched) &&
              (_registerFile[i + 2]->getState() == TR::RealRegister::Free || _registerFile[i + 2]->getState() == TR::RealRegister::Unlatched) &&
              (_registerFile[i + 0]->getWeight() + _registerFile[i + 2]->getWeight()) < bestWeightSoFar)
             {
@@ -2024,21 +1863,18 @@ OMR::Z::Machine::findBestFreeRegisterPair(TR::RealRegister ** firstRegister, TR:
       freeRegisterLow->setState(TR::RealRegister::Free);
       }
 
-   if (enableHighWordRA && rk == TR_GPR64)
+   // If unlatched, set it free
+   if (freeRegisterHigh != NULL && freeRegisterHigh->getHighWordRegister()->getState() == TR::RealRegister::Unlatched)
       {
-      // If unlatched, set it free
-      if (freeRegisterHigh != NULL && freeRegisterHigh->getHighWordRegister()->getState() == TR::RealRegister::Unlatched)
-         {
-         freeRegisterHigh->getHighWordRegister()->setAssignedRegister(NULL);
-         freeRegisterHigh->getHighWordRegister()->setState(TR::RealRegister::Free);
-         }
+      freeRegisterHigh->getHighWordRegister()->setAssignedRegister(NULL);
+      freeRegisterHigh->getHighWordRegister()->setState(TR::RealRegister::Free);
+      }
 
-      // If unlatched, set it free
-      if (freeRegisterLow != NULL && freeRegisterLow->getHighWordRegister()->getState() == TR::RealRegister::Unlatched)
-         {
-         freeRegisterLow->getHighWordRegister()->setAssignedRegister(NULL);
-         freeRegisterLow->getHighWordRegister()->setState(TR::RealRegister::Free);
-         }
+   // If unlatched, set it free
+   if (freeRegisterLow != NULL && freeRegisterLow->getHighWordRegister()->getState() == TR::RealRegister::Unlatched)
+      {
+      freeRegisterLow->getHighWordRegister()->setAssignedRegister(NULL);
+      freeRegisterLow->getHighWordRegister()->setState(TR::RealRegister::Free);
       }
 
    // Did we find a pair, then update the register set structure.
@@ -2263,7 +2099,7 @@ OMR::Z::Machine::freeBestRegisterPair(TR::RealRegister ** firstReg, TR::RealRegi
 
    TR_Debug * debugObj = self()->cg()->getDebug();
 
-   bool enableHighWordRA = self()->cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) &&
+   bool enableHighWordRA = self()->cg()->supportsHighWordFacility() &&
                            rk != TR_FPR &&  rk != TR_VRF;
 
    // Look at all reg pairs (starting with an even reg)
@@ -2301,13 +2137,15 @@ OMR::Z::Machine::freeBestRegisterPair(TR::RealRegister ** firstReg, TR::RealRegi
          }
       } // for all regs
 
-   //Assert if no register pair was found
-   if(bestCandidateHigh == NULL && bestCandidateLow == NULL)
+   // Assert if no register pair was found
+   if (bestCandidateHigh == NULL && bestCandidateLow == NULL)
       {
-      self()->cg()->getDebug()->printGPRegisterStatus(comp->getOutFile(), machine);
-      traceMsg(comp, "OMR::Z::Machine::freeBestRegisterPair -- Ran out of regs to use as pair on Inst %p.\n",currInst);
+      if (self()->cg()->getDebug() != NULL)
+         {
+         self()->cg()->getDebug()->printGPRegisterStatus(comp->getOutFile(), machine);
+         }
 
-      TR_ASSERT(0,"OMR::Z::Machine::freeBestRegisterPair -- Ran out of regs to use as a pair on Inst %p.\n",currInst);
+      TR_ASSERT_FATAL(0, "Ran out of register pairs to use as a pair on instruction [%p]", currInst);
       }
 
    // Now that we've decided on a pair of real-regs to spill, we will need
@@ -2315,299 +2153,201 @@ OMR::Z::Machine::freeBestRegisterPair(TR::RealRegister ** firstReg, TR::RealRegi
    TR::Register * bestVirtCandidateHigh = bestCandidateHigh->getAssignedRegister();
    TR::Register * bestVirtCandidateLow = bestCandidateLow->getAssignedRegister();
 
-   if (enableHighWordRA && rk== TR_GPR64)
-      {
-      // this is to prevent us from spilling into the high word of candidates
-      self()->cg()->setAvailableHPRSpillMask(availRegMask);
-
-      self()->cg()->maskAvailableHPRSpillMask(bestCandidateHigh->getHighWordRegister()->getRealRegisterMask());
-      self()->cg()->maskAvailableHPRSpillMask(bestCandidateLow->getHighWordRegister()->getRealRegisterMask());
-      }
    if (bestVirtCandidateLow != NULL)
       {
-         TR::InstOpCode::Mnemonic opCodeLow;
-         if (comp->getOption(TR_ForceLargeRAMoves) ||
-             bestVirtCandidateLow->is64BitReg() ||
-             bestVirtCandidateLow->getKind() == TR_GPR64)
-            {
-            opCodeLow = TR::InstOpCode::LG;
-            }
-         else
-            {
-            opCodeLow = TR::InstOpCode::getLoadOpCode();
-            }
+      // Check to see if the value has already been spilled
+      locationLow = bestVirtCandidateLow->getBackingStorage();
 
-         //if we selected the VM Thread Register to be freed, check to see if the value has already been spilled
-         locationLow = bestVirtCandidateLow->getBackingStorage();
-         if (locationLow == NULL && !bestVirtCandidateLow->containsInternalPointer())
-            {
-            if (bestVirtCandidateLow->getKind() == TR_GPR64)
-               {
-               locationLow = self()->cg()->allocateSpill(8, bestVirtCandidateLow->containsCollectedReference(), NULL, true);
-               opCodeLow = TR::InstOpCode::LG;
-               }
-            else
-               {
-               if (enableHighWordRA)
-                  {
-                  if (bestVirtCandidateLow->is64BitReg())
-                     {
-                     locationLow = self()->cg()->allocateSpill(8,bestVirtCandidateLow->containsCollectedReference(), NULL, true);
-                     opCodeLow = TR::InstOpCode::LG;
-                     }
-                  else
-                     {
-                     locationLow = self()->cg()->allocateSpill(4,bestVirtCandidateLow->containsCollectedReference(), NULL, true);
-                     opCodeLow = TR::InstOpCode::L;
-                     }
-                  }
-               else
-                  {
-                  locationLow = self()->cg()->allocateSpill(TR::Compiler->om.sizeofReferenceAddress(), bestVirtCandidateLow->containsCollectedReference(), NULL, true);
-                  }
-               }
-            }
-         else if(locationLow == NULL)
+      if (locationLow == NULL)
+         {
+         if (bestVirtCandidateLow->containsInternalPointer())
             {
             locationLow = self()->cg()->allocateInternalPointerSpill(bestVirtCandidateLow->getPinningArrayPointer());
             }
-
-         if (enableHighWordRA)
+         else
             {
-            if (rk == TR_GPR64 && bestCandidateLow->getHighWordRegister()->getAssignedRegister() != NULL)
-               {
-               // if the candidate is assigned on both GPR and HPR, need to spill HPR
-               if (bestCandidateLow->getHighWordRegister()->getAssignedRegister() != bestVirtCandidateLow)
-                  {
-                  self()->cg()->traceRegisterAssignment("spilling HPR %R for reg pair low",
-                                                bestCandidateLow->getHighWordRegister()->getAssignedRegister());
-                  currInst = self()->freeHighWordRegister(currInst, bestCandidateLow->getHighWordRegister(),0);
-                  }
-               }
-
-            //TODO: change the logic here so that we don't generate 2 separate Loads to spill a 64-bit reg
-            /*
-            if (bestVirtCandidateLow->is64BitReg())
-               opCodeLow = TR::InstOpCode::LG;
-            else
-               opCodeLow = TR::InstOpCode::L;
-            */
+            locationLow = bestVirtCandidateLow->is64BitReg() ?
+               self()->cg()->allocateSpill(8, bestVirtCandidateLow->containsCollectedReference(), NULL, true) :
+               self()->cg()->allocateSpill(4, bestVirtCandidateLow->containsCollectedReference(), NULL, true);
             }
 
-         TR::MemoryReference * tempMRLow = generateS390MemoryReference(currentNode, locationLow->getSymbolReference(), self()->cg());
-         locationLow->getSymbolReference()->getSymbol()->setSpillTempLoaded();
          bestVirtCandidateLow->setBackingStorage(locationLow);
-         cursor = generateRXInstruction(self()->cg(), opCodeLow, currentNode, bestCandidateLow, tempMRLow, currInst);
+         }
 
-         if (enableHighWordRA && bestVirtCandidateLow->is64BitReg())
+      TR::MemoryReference * tempMRLow = generateS390MemoryReference(currentNode, locationLow->getSymbolReference(), self()->cg());
+      locationLow->getSymbolReference()->getSymbol()->setSpillTempLoaded();
+         
+      if (bestVirtCandidateLow->is64BitReg())
+         {
+         cursor = generateRXInstruction(self()->cg(), TR::InstOpCode::LG, currentNode, bestCandidateLow, tempMRLow, currInst);
+
+         bestCandidateLow->getHighWordRegister()->setState(TR::RealRegister::Free);
+         bestCandidateLow->getHighWordRegister()->setAssignedRegister(NULL);
+         }
+      else
+         {
+         cursor = generateRXInstruction(self()->cg(), TR::InstOpCode::L, currentNode, bestCandidateLow, tempMRLow, currInst);
+         }
+
+      self()->cg()->traceRAInstruction(cursor);
+      if (debugObj)
+         {
+         debugObj->addInstructionComment(cursor, "Load Spill : reg pair even");
+         }
+
+      if ( !cursor->assignFreeRegBitVector() )
+         {
+         cursor->assignBestSpillRegister();
+         }
+
+      bestVirtCandidateLow->setAssignedRegister(NULL);
+
+      if (!comp->getOption(TR_DisableOOL))
+         {
+         if (!self()->cg()->isOutOfLineColdPath())
             {
-            bestCandidateLow->getHighWordRegister()->setState(TR::RealRegister::Free);
-            bestCandidateLow->getHighWordRegister()->setAssignedRegister(NULL);
-            }
+            // the spilledRegisterList contains all registers that are spilled before entering
+            // the OOL cold path, post dependencies will be generated using this list
+            self()->cg()->getSpilledRegisterList()->push_front(bestVirtCandidateLow);
 
-         self()->cg()->traceRAInstruction(cursor);
-         if (debugObj)
-            {
-            debugObj->addInstructionComment(cursor, "Load Spill : reg pair even");
-            }
-
-         if ( !cursor->assignFreeRegBitVector() )
-            {
-            cursor->assignBestSpillRegister();
-            }
-
-         bestVirtCandidateLow->setAssignedRegister(NULL);
-
-         if (!comp->getOption(TR_DisableOOL))
-            {
-            if (!self()->cg()->isOutOfLineColdPath())
-               {
-               // the spilledRegisterList contains all registers that are spilled before entering
-               // the OOL cold path, post dependencies will be generated using this list
-               self()->cg()->getSpilledRegisterList()->push_front(bestVirtCandidateLow);
-
-               // OOL cold path: depth = 3, hot path: depth =2,  main line: depth = 1
-               // if the spill is outside of the OOL cold/hot path, we need to protect the spill slot
-               // if we reverse spill this register inside the OOL cold/hot path
-               if (!self()->cg()->isOutOfLineHotPath())
-                  {// main line
-                  locationLow->setMaxSpillDepth(1);
-                  }
-               else
-                  {
-                  // hot path
-                  // do not overwrite main line spill depth
-                  if (locationLow->getMaxSpillDepth() != 1)
-                     locationLow->setMaxSpillDepth(2);
-                  }
-               if (debugObj)
-                  self()->cg()->traceRegisterAssignment("OOL: adding reg pair low %s to the spilledRegisterList, maxSpillDepth = %d\n",
-                                                debugObj->getName(bestVirtCandidateLow), locationLow->getMaxSpillDepth());
+            // OOL cold path: depth = 3, hot path: depth =2,  main line: depth = 1
+            // if the spill is outside of the OOL cold/hot path, we need to protect the spill slot
+            // if we reverse spill this register inside the OOL cold/hot path
+            if (!self()->cg()->isOutOfLineHotPath())
+               {// main line
+               locationLow->setMaxSpillDepth(1);
                }
             else
                {
-               // do not overwrite mainline and hot path spill depth
-               // if this spill is inside OOL cold path, we do not need to protecting the spill slot
-               // because the post condition at OOL entry does not expect this register to be spilled
-               if (locationLow->getMaxSpillDepth() != 1 &&
-                   locationLow->getMaxSpillDepth() != 2 )
-                  locationLow->setMaxSpillDepth(3);
+               // hot path
+               // do not overwrite main line spill depth
+               if (locationLow->getMaxSpillDepth() != 1)
+                  locationLow->setMaxSpillDepth(2);
                }
+            if (debugObj)
+               self()->cg()->traceRegisterAssignment("OOL: adding reg pair low %s to the spilledRegisterList, maxSpillDepth = %d\n",
+                                             debugObj->getName(bestVirtCandidateLow), locationLow->getMaxSpillDepth());
             }
-      } // if bestVirtCandidateLow != NULL
+         else
+            {
+            // do not overwrite mainline and hot path spill depth
+            // if this spill is inside OOL cold path, we do not need to protecting the spill slot
+            // because the post condition at OOL entry does not expect this register to be spilled
+            if (locationLow->getMaxSpillDepth() != 1 &&
+                  locationLow->getMaxSpillDepth() != 2 )
+               locationLow->setMaxSpillDepth(3);
+            }
+         }
+      }
    else
       {
-      if (enableHighWordRA && rk == TR_GPR64 &&
-          bestCandidateLow->getHighWordRegister()->getAssignedRegister() != NULL)
+      // TODO: This is a little too conservative. This API needs to be taught whether the register pair requires 64-bit
+      // registers or not and if and only if we require 64-bit registers do we need to evict the highword register.
+      if (enableHighWordRA && bestCandidateLow->getHighWordRegister()->getAssignedRegister() != NULL)
          {
          // if the candidate is assigned on both GPR and HPR, need to spill HPR
          self()->cg()->traceRegisterAssignment("spilling HPR %R for reg pair low",
                                        bestCandidateLow->getHighWordRegister()->getAssignedRegister());
-         currInst = self()->freeHighWordRegister(currInst, bestCandidateLow->getHighWordRegister(),0);
+         currInst = self()->freeHighWordRegister(currInst, bestCandidateLow->getHighWordRegister());
          }
       }
 
    if (bestVirtCandidateHigh != NULL)
       {
-         TR::InstOpCode::Mnemonic opCodeHigh;
-         if (comp->getOption(TR_ForceLargeRAMoves) ||
-             bestVirtCandidateHigh->is64BitReg() ||
-             bestVirtCandidateHigh->getKind() == TR_GPR64)
-            {
-            opCodeHigh = TR::InstOpCode::LG;
-            }
-         else
-            {
-            opCodeHigh = TR::InstOpCode::getLoadOpCode();
-            }
+      // Check to see if the value has already been spilled
+      locationHigh = bestVirtCandidateHigh->getBackingStorage();
 
-         //if we selected the VM Thread Register to be freed, check to see if the value has already been spilled
-         locationHigh = bestVirtCandidateHigh->getBackingStorage();
-         if (locationHigh == NULL && !bestVirtCandidateHigh->containsInternalPointer())
-            {
-            if (bestVirtCandidateHigh->getKind() == TR_GPR64)
-               {
-               locationHigh = self()->cg()->allocateSpill(8, bestVirtCandidateHigh->containsCollectedReference(), NULL, true);
-               opCodeHigh = TR::InstOpCode::LG;
-               }
-            else
-               {
-               if (enableHighWordRA)
-                  {
-                  if (bestVirtCandidateHigh->is64BitReg())
-                     {
-                     locationHigh = self()->cg()->allocateSpill(8,bestVirtCandidateHigh->containsCollectedReference(), NULL, true);
-                     opCodeHigh = TR::InstOpCode::LG;
-                     }
-                  else
-                     {
-                     locationHigh = self()->cg()->allocateSpill(4,bestVirtCandidateHigh->containsCollectedReference(), NULL, true);
-                     opCodeHigh = TR::InstOpCode::L;
-                     }
-                  }
-               else
-                  {
-                  locationHigh = self()->cg()->allocateSpill(TR::Compiler->om.sizeofReferenceAddress(), bestVirtCandidateHigh->containsCollectedReference(), NULL, true);
-                  }
-               }
-            }
-         else if(locationHigh == NULL)
+      if (locationHigh == NULL)
+         {
+         if (bestVirtCandidateHigh->containsInternalPointer())
             {
             locationHigh = self()->cg()->allocateInternalPointerSpill(bestVirtCandidateHigh->getPinningArrayPointer());
             }
-
-         if (enableHighWordRA)
+         else
             {
-            if (rk == TR_GPR64 && bestCandidateHigh->getHighWordRegister()->getAssignedRegister() != NULL)
-               {
-               // if the candidate is assigned on both GPR and HPR, need to spill HPR
-               if (bestCandidateHigh->getHighWordRegister()->getAssignedRegister() != bestVirtCandidateHigh)
-                  {
-                  self()->cg()->traceRegisterAssignment("spilling HPR %R for reg pair high",
-                                                bestCandidateHigh->getHighWordRegister()->getAssignedRegister());
-                  // todo: inst flags?
-                  currInst = self()->freeHighWordRegister(currInst, bestCandidateHigh->getHighWordRegister(),0);
-                  }
-               }
-            //TODO: change the logic here so that we don't generate 2 separate Loads to spill a 64-bit reg
-            /*
-            if (bestVirtCandidateHigh->is64BitReg())
-               opCodeHigh = TR::InstOpCode::LG;
-            else
-               opCodeHigh = TR::InstOpCode::L;
-            */
+            locationHigh = bestVirtCandidateHigh->is64BitReg() ?
+               self()->cg()->allocateSpill(8, bestVirtCandidateHigh->containsCollectedReference(), NULL, true) :
+               self()->cg()->allocateSpill(4, bestVirtCandidateHigh->containsCollectedReference(), NULL, true);
             }
 
-         TR::MemoryReference * tempMRHigh = generateS390MemoryReference(currentNode, locationHigh->getSymbolReference(), self()->cg());
-         locationHigh->getSymbolReference()->getSymbol()->setSpillTempLoaded();
          bestVirtCandidateHigh->setBackingStorage(locationHigh);
-         cursor = generateRXInstruction(self()->cg(), opCodeHigh, currentNode, bestCandidateHigh, tempMRHigh, currInst);
+         }
 
-         if (enableHighWordRA && bestVirtCandidateHigh->is64BitReg())
+      TR::MemoryReference * tempMRHigh = generateS390MemoryReference(currentNode, locationHigh->getSymbolReference(), self()->cg());
+      locationHigh->getSymbolReference()->getSymbol()->setSpillTempLoaded();
+         
+      if (bestVirtCandidateHigh->is64BitReg())
+         {
+         cursor = generateRXInstruction(self()->cg(), TR::InstOpCode::LG, currentNode, bestCandidateHigh, tempMRHigh, currInst);
+
+         bestCandidateHigh->getHighWordRegister()->setState(TR::RealRegister::Free);
+         bestCandidateHigh->getHighWordRegister()->setAssignedRegister(NULL);
+         }
+      else
+         {
+         cursor = generateRXInstruction(self()->cg(), TR::InstOpCode::L, currentNode, bestCandidateHigh, tempMRHigh, currInst);
+         }
+
+      self()->cg()->traceRAInstruction(cursor);
+      if (debugObj)
+         {
+         debugObj->addInstructionComment(cursor, "Load Spill : reg pair odd");
+         }
+
+      if ( !cursor->assignFreeRegBitVector() )
+         {
+         cursor->assignBestSpillRegister();
+         }
+
+      bestVirtCandidateHigh->setAssignedRegister(NULL);
+
+      if (!comp->getOption(TR_DisableOOL))
+         {
+         if (!self()->cg()->isOutOfLineColdPath())
             {
-            bestCandidateHigh->getHighWordRegister()->setState(TR::RealRegister::Free);
-            bestCandidateHigh->getHighWordRegister()->setAssignedRegister(NULL);
-            }
+            // the spilledRegisterList contains all registers that are spilled before entering
+            // the OOL cold path, post dependencies will be generated using this list
+            self()->cg()->getSpilledRegisterList()->push_front(bestVirtCandidateHigh);
 
-         self()->cg()->traceRAInstruction(cursor);
-         if (debugObj)
-            {
-            debugObj->addInstructionComment(cursor, "Load Spill : reg pair odd");
-            }
-
-         if ( !cursor->assignFreeRegBitVector() )
-            {
-            cursor->assignBestSpillRegister();
-            }
-
-         bestVirtCandidateHigh->setAssignedRegister(NULL);
-
-         if (!comp->getOption(TR_DisableOOL))
-            {
-            if (!self()->cg()->isOutOfLineColdPath())
-               {
-               // the spilledRegisterList contains all registers that are spilled before entering
-               // the OOL cold path, post dependencies will be generated using this list
-               self()->cg()->getSpilledRegisterList()->push_front(bestVirtCandidateHigh);
-
-               // OOL cold path: depth = 3, hot path: depth =2,  main line: depth = 1
-               // if the spill is outside of the OOL cold/hot path, we need to protect the spill slot
-               // if we reverse spill this register inside the OOL cold/hot path
-               if (!self()->cg()->isOutOfLineHotPath())
-                  {// main line
-                  locationHigh->setMaxSpillDepth(1);
-                  }
-               else
-                  {
-                  // hot path
-                  // do not overwrite main line spill depth
-                  if (locationHigh->getMaxSpillDepth() != 1)
-                     locationHigh->setMaxSpillDepth(2);
-                  }
-               if (debugObj)
-                  self()->cg()->traceRegisterAssignment("OOL: adding reg pair high %s to the spilledRegisterList, maxSpillDepth = %d\n",
-                                                debugObj->getName(bestVirtCandidateHigh), locationHigh->getMaxSpillDepth());
+            // OOL cold path: depth = 3, hot path: depth =2,  main line: depth = 1
+            // if the spill is outside of the OOL cold/hot path, we need to protect the spill slot
+            // if we reverse spill this register inside the OOL cold/hot path
+            if (!self()->cg()->isOutOfLineHotPath())
+               {// main line
+               locationHigh->setMaxSpillDepth(1);
                }
             else
                {
-               // do not overwrite mainline and hot path spill depth
-               // if this spill is inside OOL cold path, we do not need to protecting the spill slot
-               // because the post condition at OOL entry does not expect this register to be spilled
-               if (locationHigh->getMaxSpillDepth() != 1 &&
-                   locationHigh->getMaxSpillDepth() != 2 )
-                  locationHigh->setMaxSpillDepth(3);
+               // hot path
+               // do not overwrite main line spill depth
+               if (locationHigh->getMaxSpillDepth() != 1)
+                  locationHigh->setMaxSpillDepth(2);
                }
+            if (debugObj)
+               self()->cg()->traceRegisterAssignment("OOL: adding reg pair high %s to the spilledRegisterList, maxSpillDepth = %d\n",
+                                             debugObj->getName(bestVirtCandidateHigh), locationHigh->getMaxSpillDepth());
+            }
+         else
+            {
+            // do not overwrite mainline and hot path spill depth
+            // if this spill is inside OOL cold path, we do not need to protecting the spill slot
+            // because the post condition at OOL entry does not expect this register to be spilled
+            if (locationHigh->getMaxSpillDepth() != 1 &&
+                  locationHigh->getMaxSpillDepth() != 2 )
+               locationHigh->setMaxSpillDepth(3);
+            }
          }
-      } // if (bestVirtCandidateHigh != NULL)
+      }
    else
       {
-      if (enableHighWordRA && rk == TR_GPR64 &&
-          bestCandidateHigh->getHighWordRegister()->getAssignedRegister() != NULL)
+      // TODO: This is a little too conservative. This API needs to be taught whether the register pair requires 64-bit
+      // registers or not and if and only if we require 64-bit registers do we need to evict the highword register.
+      if (enableHighWordRA && bestCandidateHigh->getHighWordRegister()->getAssignedRegister() != NULL)
          {
          // if the candidate is assigned on both GPR and HPR, need to spill HPR
          self()->cg()->traceRegisterAssignment("spilling HPR %R for reg pair high",
                                        bestCandidateHigh->getHighWordRegister()->getAssignedRegister());
-         currInst = self()->freeHighWordRegister(currInst, bestCandidateHigh->getHighWordRegister(),0);
+         currInst = self()->freeHighWordRegister(currInst, bestCandidateHigh->getHighWordRegister());
          }
       }
 
@@ -2618,20 +2358,15 @@ OMR::Z::Machine::freeBestRegisterPair(TR::RealRegister ** firstReg, TR::RealRegi
    bestCandidateHigh->setAssignedRegister(NULL);
    bestCandidateLow->setAssignedRegister(NULL);
 
-   if (enableHighWordRA && rk == TR_GPR64)
-      {
-      bestCandidateHigh->getHighWordRegister()->setState(TR::RealRegister::Free);
-      bestCandidateLow->getHighWordRegister()->setState(TR::RealRegister::Free);
-      bestCandidateHigh->getHighWordRegister()->setAssignedRegister(NULL);
-      bestCandidateLow->getHighWordRegister()->setAssignedRegister(NULL);
-      }
+   bestCandidateHigh->getHighWordRegister()->setState(TR::RealRegister::Free);
+   bestCandidateLow->getHighWordRegister()->setState(TR::RealRegister::Free);
+   bestCandidateHigh->getHighWordRegister()->setAssignedRegister(NULL);
+   bestCandidateLow->getHighWordRegister()->setAssignedRegister(NULL);
 
    // Return free registers
    *firstReg = bestCandidateHigh;
    *lastReg = bestCandidateLow;
    }
-
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // SINGLE REGISTER assignment methods
@@ -2658,8 +2393,6 @@ OMR::Z::Machine::findBestFreeRegister(TR::Instruction   *currentInstruction,
 
    bool useGPR0 = (virtualReg == NULL) ? false : (virtualReg->isUsedInMemRef() == false);
    bool liveRegOn = (self()->cg()->getLiveRegisters(rk) != NULL);
-   bool enableHighWordRA = self()->cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) &&
-                          (rk == TR_GPR || rk == TR_GPR64);
 
    if (comp->getOption(TR_Randomize))
       {
@@ -2734,7 +2467,7 @@ OMR::Z::Machine::findBestFreeRegister(TR::Instruction   *currentInstruction,
        }
      }
 
-   if (rk == TR_GPR || rk == TR_GPR64)
+   if (rk == TR_GPR)
       {
       maskI = first = TR::RealRegister::FirstGPR;
       last = TR::RealRegister::LastAssignableGPR;
@@ -2798,7 +2531,7 @@ OMR::Z::Machine::findBestFreeRegister(TR::Instruction   *currentInstruction,
        *    4. TR::RealRegister::LegalSecondOfFPPair    N/A
        * 5. None of the above
        */
-      if (self()->cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) && virtualReg->is64BitReg())
+      if (virtualReg->is64BitReg())
          {
          if (bestRegister != NULL &&
              (bestRegister->getState() == TR::RealRegister::Free ||
@@ -2863,7 +2596,7 @@ OMR::Z::Machine::findBestFreeRegister(TR::Instruction   *currentInstruction,
 
       // If the desired register is indeed free use it.
       // If not, default to standard search
-      if (self()->cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) && virtualReg->is64BitReg())
+      if (virtualReg->is64BitReg())
          {
          if (bestRegister != NULL &&
              (bestRegister->getState() == TR::RealRegister::Free ||
@@ -2989,7 +2722,7 @@ OMR::Z::Machine::findBestFreeRegister(TR::Instruction   *currentInstruction,
          prefRegMask = TR::RealRegister::isRealReg((TR::RealRegister::RegNum)preference) ? _registerFile[preference]->getRealRegisterMask() : 0;
          }
 
-      if (!enableHighWordRA)
+      if (rk != TR_GPR)
          {
          if ((prefRegMask & availRegMask) && _registerFile[preference] != NULL &&
              ((_registerFile[preference]->getState() == TR::RealRegister::Free) ||
@@ -3007,7 +2740,6 @@ OMR::Z::Machine::findBestFreeRegister(TR::Instruction   *currentInstruction,
             return bestRegister;
             }
          }
-      // HighWord RA stuff
       else
          {
          if (virtualReg->is64BitReg() && !needsHighWord)
@@ -3098,7 +2830,7 @@ OMR::Z::Machine::findBestFreeRegister(TR::Instruction   *currentInstruction,
       {
       uint64_t tRegMask = _registerFile[i]->getRealRegisterMask();
 
-      if(!enableHighWordRA)
+      if (rk != TR_GPR)
          {
          // Don't consider registers that can't be assigned.
          if ((_registerFile[i]->getState() == TR::RealRegister::Locked) || ((tRegMask & availRegMask) == 0))
@@ -3220,7 +2952,7 @@ OMR::Z::Machine::findBestFreeRegister(TR::Instruction   *currentInstruction,
       freeRegister->setState(TR::RealRegister::Free);
       }
 
-   if (enableHighWordRA && virtualReg->is64BitReg())
+   if (virtualReg->is64BitReg())
       {
       // need to update HW for full size regs
       if (freeRegister != NULL && freeRegister->getHighWordRegister()->getState() == TR::RealRegister::Unlatched)
@@ -3378,7 +3110,7 @@ OMR::Z::Machine::spillAllVolatileHighRegisters(TR::Instruction *currentInstructi
       if (volatileReg                                      &&
           realReg->getState() == TR::RealRegister::Assigned &&
           (virtReg = realReg->getAssignedRegister())       &&
-          virtReg->getKind() == TR_GPR64
+          virtReg->is64BitReg()
          )
          {
          self()->spillRegister(currentInstruction, virtReg);
@@ -3402,12 +3134,11 @@ OMR::Z::Machine::freeBestRegister(TR::Instruction * currentInstruction, TR::Regi
    TR::Machine *machine = self()->cg()->machine();
    bool useGPR0 = (virtReg == NULL) ? false : (virtReg->isUsedInMemRef() == false);
 
-   bool enableHighWordRA = self()->cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) &&
+   bool enableHighWordRA = self()->cg()->supportsHighWordFacility() &&
                            rk != TR_FPR && rk != TR_VRF;
 
    switch (rk)
       {
-      case TR_GPR64:
       case TR_GPR:
          maskI = first = TR::RealRegister::FirstGPR;
          last = TR::RealRegister::LastAssignableGPR;
@@ -3449,7 +3180,7 @@ OMR::Z::Machine::freeBestRegister(TR::Instruction * currentInstruction, TR::Regi
       int32_t iInterfere = interference & (1 << (i - maskI));
       TR::RealRegister * realReg = machine->getRealRegister((TR::RealRegister::RegNum) i);
 
-      if (!enableHighWordRA)
+      if (rk == TR_FPR || rk == TR_VRF)
          {
          if (realReg->getState() == TR::RealRegister::Assigned)
             {
@@ -3485,7 +3216,6 @@ OMR::Z::Machine::freeBestRegister(TR::Instruction * currentInstruction, TR::Regi
             numCandidates++;
             }
          }
-      // HighWord RA stuff
       else
          {
          TR::RealRegister * realRegHW = realReg->getHighWordRegister();
@@ -3616,13 +3346,11 @@ OMR::Z::Machine::freeBestRegister(TR::Instruction * currentInstruction, TR::Regi
          if (self()->cg()->getDebug() != NULL)
             {
             self()->cg()->getDebug()->printGPRegisterStatus(comp->getOutFile(), machine);
-            if (!useGPR0)
-               traceMsg(comp, "GPR0 is not allowed for %s\n", self()->cg()->getDebug()->getName(virtReg));
             }
-         traceMsg(comp, "OMR::Z::Machine::freeBestRegister -- Ran out of regs on Inst %p.\n",currentInstruction);
 
-         TR_ASSERT(0,"OMR::Z::Machine::freeBestRegister -- Ran out of regs on Inst %p.\n",currentInstruction);
+         TR_ASSERT_FATAL(false, "Ran out of register candidates to free on instruction [%p]", currentInstruction);
          }
+
       return NULL;
       }
 
@@ -3637,7 +3365,7 @@ OMR::Z::Machine::freeBestRegister(TR::Instruction * currentInstruction, TR::Regi
             i--; // on continue repeat test for candidate[i] as candidate[i] is now new.
             }
          // also need to check HW. if it's assigned, push the candidate back
-         else if (enableHighWordRA && virtReg->is64BitReg() && candidates[i]->getAssignedRegister())
+         else if (virtReg->is64BitReg() && candidates[i]->getAssignedRegister())
             {
             TR::RealRegister *candidateHW =
                toRealRegister(candidates[i]->getAssignedRegister())->getHighWordRegister();
@@ -3663,7 +3391,7 @@ OMR::Z::Machine::freeBestRegister(TR::Instruction * currentInstruction, TR::Regi
       }
    else
       {
-      TR_ASSERT( enableHighWordRA, "freeBestRegister:a virtual reg is assigned to NULL?");
+      TR_ASSERT_FATAL( enableHighWordRA, "freeBestRegister:a virtual reg is assigned to NULL?");
       // if the best candidate is a previously spilled HPR
       best = toRealRegister(self()->findVirtRegInHighWordRegister(candidates[0]));
       }
@@ -3672,13 +3400,17 @@ OMR::Z::Machine::freeBestRegister(TR::Instruction * currentInstruction, TR::Regi
    // that real
    if ( virtReg && virtReg->getRealRegister() )
       {
+      // TODO: I'm fairly certain this should never happen as the input parameter virtReg to this function must be a
+      // virtual register, and calling virtReg->getRealRegister() should always return NULL so we should not be able
+      // to get into this if statement. Leaving the fatal assert here however so this gets baked in for a while. We
+      // need to remove this eventually.
+      TR_ASSERT_FATAL(false, "Virtual register (%s) is really a real register (%s)?", getRegisterName(virtReg, self()->cg()), getRegisterName(virtReg->getRealRegister(), self()->cg()));
       candidates[0] = virtReg;
       }
 
    // check if we need to spill both words
    // todo fix this
-   else if (enableHighWordRA &&
-            virtReg->is64BitReg() &&
+   else if (virtReg->is64BitReg() &&
             best->isLowWordRegister() &&
             best->getHighWordRegister()->getAssignedRegister() &&
             best->getHighWordRegister()->getAssignedRegister() != candidates[0])
@@ -3688,17 +3420,17 @@ OMR::Z::Machine::freeBestRegister(TR::Instruction * currentInstruction, TR::Regi
       self()->cg()->traceRegisterAssignment("HW RA: freeBestReg Spill %R for fullsize reg: %R ", best->getHighWordRegister(), virtReg);
       self()->spillRegister(currentInstruction, best->getHighWordRegister()->getAssignedRegister());
       }
-   else if (enableHighWordRA && virtReg->assignToHPR())
+   else if (virtReg->assignToHPR())
       {
       best = best->getHighWordRegister();
       }
-   else if (enableHighWordRA && (virtReg->is64BitReg() || virtReg->assignToGPR()))
+   else if ((rk != TR_FPR && rk != TR_VRF) && (virtReg->is64BitReg() || virtReg->assignToGPR()))
       {
       best = best->getLowWordRegister();
       }
 
    // If we spill into highword, make sure to not to spill it into the one that will clobber fullsize reg
-   if (enableHighWordRA && (virtReg->is64BitReg() || doNotSpillToSiblingHPR))
+   if (virtReg->is64BitReg() || doNotSpillToSiblingHPR)
       {
       uint32_t availHighWordRegMap = ~(toRealRegister(best->getHighWordRegister())->getRealRegisterMask()) & availRegMask & 0xffff0000;
       self()->spillRegister(currentInstruction, candidates[0], availHighWordRegMap);
@@ -3717,30 +3449,20 @@ void OMR::Z::Machine::freeRealRegister(TR::Instruction *currentInstruction, TR::
   {
   TR::Compilation *comp = self()->cg()->comp();
   TR::Register *virtReg=targetReal->getAssignedRegister();
-  bool enableHighWordRA = self()->cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) &&
-                          targetReal->getKind() != TR_FPR && targetReal->getKind() != TR_VRF;
 
-  if(virtReg)
-    {
-    if (enableHighWordRA && is64BitReg)
-      {
-      uint32_t availHighWordRegMap = ~(toRealRegister(targetReal->getHighWordRegister())->getRealRegisterMask()) & 0xffff0000;
-      self()->spillRegister(currentInstruction, virtReg, availHighWordRegMap);
-      }
-    else
-      {
-      self()->spillRegister(currentInstruction, virtReg);
-      }
-    }
-  else if(targetReal->getState() == TR::RealRegister::Assigned)
-    {
-    // Something is spilled to this register's high word
-    TR_ASSERT(false,"freeRealRegister needs to free its high word");
-    }
+  if (is64BitReg)
+     {
+     uint32_t availHighWordRegMap = ~(toRealRegister(targetReal->getHighWordRegister())->getRealRegisterMask()) & 0xffff0000;
+     self()->spillRegister(currentInstruction, virtReg, availHighWordRegMap);
+     }
+  else
+     {
+     self()->spillRegister(currentInstruction, virtReg);
+     }
   }
 
 TR::Instruction*
-OMR::Z::Machine::freeHighWordRegister(TR::Instruction *currentInstruction, TR::RealRegister * targetRegisterHW, flags32_t instFlags)
+OMR::Z::Machine::freeHighWordRegister(TR::Instruction *currentInstruction, TR::RealRegister * targetRegisterHW)
    {
    TR::Register * virtRegHW = targetRegisterHW->getAssignedRegister();
    TR::RealRegister * spareReg = NULL;
@@ -3762,7 +3484,7 @@ OMR::Z::Machine::freeHighWordRegister(TR::Instruction *currentInstruction, TR::R
 
       if (spareReg)
          {
-         cursor = self()->registerCopy(currentInstruction, TR_HPR, targetRegisterHW, spareReg, self()->cg(), instFlags);
+         cursor = self()->registerCopy(self()->cg(), TR_HPR, targetRegisterHW, spareReg, currentInstruction);
          targetRegisterHW->setState(TR::RealRegister::Unlatched);
          targetRegisterHW->setAssignedRegister(NULL);
          spareReg->setState(TR::RealRegister::Assigned);
@@ -3789,7 +3511,7 @@ OMR::Z::Machine::freeHighWordRegister(TR::Instruction *currentInstruction, TR::R
          }
       TR_ASSERT(spareReg != NULL, "freeHighWordRegister: blocked, must find a spareReg");
 
-      cursor = self()->registerCopy(currentInstruction, TR_HPR, targetRegisterHW, spareReg, self()->cg(), instFlags);
+      cursor = self()->registerCopy(self()->cg(), TR_HPR, targetRegisterHW, spareReg, currentInstruction);
       //TR_ASSERTC( spareReg->isHighWordRegister(),self()->cg()->comp(), "\nfreeHighWordRegister: spareReg is not an HPR?\n");
       spareReg->setAssignedRegister(virtRegHW);
       spareReg->setState(TR::RealRegister::Assigned);
@@ -3799,7 +3521,7 @@ OMR::Z::Machine::freeHighWordRegister(TR::Instruction *currentInstruction, TR::R
       {
       if (spareReg)
          {
-         cursor = self()->registerCopy(currentInstruction, TR_HPR, targetRegisterHW, spareReg, self()->cg(), instFlags);
+         cursor = self()->registerCopy(self()->cg(), TR_HPR, targetRegisterHW, spareReg, currentInstruction);
          //TR_ASSERTC( spareReg->isHighWordRegister(),self()->cg()->comp(), "\nfreeHighWordRegister: spareReg is not an HPR?\n");
          spareReg->setAssignedRegister(virtRegHW);
          spareReg->setState(TR::RealRegister::Assigned);
@@ -3841,7 +3563,7 @@ OMR::Z::Machine::spillRegister(TR::Instruction * currentInstruction, TR::Registe
 
    // Highword RA flags
    // check: what if virtReg is actually a real Reg??
-   bool enableHighWordRA = self()->cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) &&
+   bool enableHighWordRA = self()->cg()->supportsHighWordFacility() &&
                            rk != TR_FPR && rk != TR_VRF;
    TR::RealRegister * freeHighWordReg = NULL;
    bool alreadySpilledToHPR = false;
@@ -3993,24 +3715,6 @@ OMR::Z::Machine::spillRegister(TR::Instruction * currentInstruction, TR::Registe
    location = virtReg->getBackingStorage();
    switch (rk)
      {
-     case TR_GPR64:
-       if (!comp->getOption(TR_DisableOOL) &&
-           (self()->cg()->isOutOfLineColdPath() || self()->cg()->isOutOfLineHotPath()) &&
-           virtReg->getBackingStorage())
-         {
-         // reuse the spill slot
-         if (debugObj)
-           self()->cg()->traceRegisterAssignment("\nOOL: Reuse backing store (%p) for %s inside OOL\n",
-                                         location,debugObj->getName(virtReg));
-         }
-       else
-         {
-         location = self()->cg()->allocateSpill(8, virtReg->containsCollectedReference(), NULL, true);
-         if (debugObj)
-           self()->cg()->traceRegisterAssignment("\nSpilling %s to (%p)\n", debugObj->getName(virtReg),location);
-         }
-       opCode = TR::InstOpCode::LG;
-       break;
      case TR_GPR:
        if (!comp->getOption(TR_DisableOOL) &&
            (self()->cg()->isOutOfLineColdPath() || self()->cg()->isOutOfLineHotPath()) &&
@@ -4023,14 +3727,10 @@ OMR::Z::Machine::spillRegister(TR::Instruction * currentInstruction, TR::Registe
          }
        else if (!containsInternalPointer)
          {
-         if ((enableHighWordRA && virtReg->is64BitReg()) || comp->getOption(TR_ForceLargeRAMoves))
-            {
-            location = self()->cg()->allocateSpill(8,virtReg->containsCollectedReference(), NULL, true);
-            }
-         else
-            {
-            location = self()->cg()->allocateSpill(TR::Compiler->om.sizeofReferenceAddress(), virtReg->containsCollectedReference(), NULL, true);
-            }
+         location = virtReg->is64BitReg() ?
+            self()->cg()->allocateSpill(8, virtReg->containsCollectedReference(), NULL, true) :
+            self()->cg()->allocateSpill(4, virtReg->containsCollectedReference(), NULL, true);
+
          if (debugObj)
              self()->cg()->traceRegisterAssignment("\nSpilling %s to (%p)\n",debugObj->getName(virtReg),location);
          }
@@ -4041,14 +3741,9 @@ OMR::Z::Machine::spillRegister(TR::Instruction * currentInstruction, TR::Registe
            self()->cg()->traceRegisterAssignment("\nSpilling internal pointer %s to (%p)\n", debugObj->getName(virtReg),location);
          }
 
-       if (comp->getOption(TR_ForceLargeRAMoves))
-         {
-         opCode = TR::InstOpCode::LG;
-         }
-       else
-         {
-         opCode = TR::InstOpCode::getLoadOpCode();
-         }
+       opCode = virtReg->is64BitReg() ?
+          TR::InstOpCode::LG :
+          TR::InstOpCode::L;
 
        if (enableHighWordRA)
          {
@@ -4060,8 +3755,6 @@ OMR::Z::Machine::spillRegister(TR::Instruction * currentInstruction, TR::Registe
            {
            opCode = TR::InstOpCode::L;
            }
-         else
-           opCode = TR::InstOpCode::LG;
          //TR_ASSERTC( TR::Compiler->target.is64Bit(),comp, "\nallocateSpill has incorrect spill slot size");
          //this assume kicks in for SLLG, MGHI etc on 31bit
          if (debugObj)
@@ -4165,10 +3858,10 @@ OMR::Z::Machine::spillRegister(TR::Instruction * currentInstruction, TR::Registe
       }
    best->setAssignedRegister(NULL);
    best->setState(TR::RealRegister::Free);
-   if (enableHighWordRA && virtReg->is64BitReg())
+   if (virtReg->is64BitReg())
       {
       best->getHighWordRegister()->setAssignedRegister(NULL);
-      best->getHighWordRegister()->setState(TR::RealRegister::Free);
+      best->getHighWordRegister()->setState(TR::RealRegister::Free); 
       }
    virtReg->setAssignedRegister(NULL);
    }
@@ -4182,6 +3875,8 @@ OMR::Z::Machine::reverseSpillState(TR::Instruction      *currentInstruction,
                                   TR::Register         *spilledRegister,
                                   TR::RealRegister *targetRegister)
    {
+   TR_ASSERT_FATAL(spilledRegister->getAssignedRegister() == NULL, "Attempting to fill an already assigned virtual register (%s)", getRegisterName(spilledRegister, self()->cg()));
+
    TR_BackingStore * location = spilledRegister->getBackingStorage();
    TR::Node * currentNode = currentInstruction->getNode();
    TR_RegisterKinds rk = spilledRegister->getKind();
@@ -4197,7 +3892,7 @@ OMR::Z::Machine::reverseSpillState(TR::Instruction      *currentInstruction,
 
    self()->cg()->traceRegisterAssignment("REVERSE SPILL STATE FOR %R", spilledRegister);
 
-   bool enableHighWordRA = self()->cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) &&
+   bool enableHighWordRA = self()->cg()->supportsHighWordFacility() &&
                            rk != TR_FPR && rk != TR_VRF;
 
    if (spilledRegister->isPlaceholderReg())
@@ -4249,7 +3944,7 @@ OMR::Z::Machine::reverseSpillState(TR::Instruction      *currentInstruction,
             targetRegister->setAssignedRegister(spilledRegister);
             spilledRegister->setAssignedRegister(targetRegister);
 
-            if (enableHighWordRA && spilledRegister->is64BitReg())
+            if (spilledRegister->is64BitReg())
                {
                targetRegister->getHighWordRegister()->setState(TR::RealRegister::Assigned);
                targetRegister->getHighWordRegister()->setAssignedRegister(spilledRegister);
@@ -4264,14 +3959,9 @@ OMR::Z::Machine::reverseSpillState(TR::Instruction      *currentInstruction,
       {
       if (rk == TR_GPR)
          {
-         if (enableHighWordRA && spilledRegister->is64BitReg())
-            location = self()->cg()->allocateSpill(8, spilledRegister->containsCollectedReference(), NULL, true);
-         else
-            location = self()->cg()->allocateSpill(TR::Compiler->om.sizeofReferenceAddress(), spilledRegister->containsCollectedReference(), NULL, true);
-         }
-      else if (rk == TR_GPR64)
-         {
-         location = self()->cg()->allocateSpill(8, spilledRegister->containsCollectedReference(), NULL, true);
+         location = spilledRegister->is64BitReg() ? 
+            self()->cg()->allocateSpill(8, spilledRegister->containsCollectedReference(), NULL, true) :
+            self()->cg()->allocateSpill(4, spilledRegister->containsCollectedReference(), NULL, true);
          }
       else if (rk == TR_VRF)
          {
@@ -4288,7 +3978,7 @@ OMR::Z::Machine::reverseSpillState(TR::Instruction      *currentInstruction,
    targetRegister->setAssignedRegister(spilledRegister);
    spilledRegister->setAssignedRegister(targetRegister);
 
-   if (enableHighWordRA && spilledRegister->is64BitReg())
+   if (spilledRegister->is64BitReg())
       {
       targetRegister->getHighWordRegister()->setState(TR::RealRegister::Assigned);
       targetRegister->getHighWordRegister()->setAssignedRegister(spilledRegister);
@@ -4341,45 +4031,34 @@ OMR::Z::Machine::reverseSpillState(TR::Instruction      *currentInstruction,
       case TR_GPR:
          dataSize = TR::Compiler->om.sizeofReferenceAddress();
          opCode = TR::InstOpCode::getStoreOpCode();
-         if (comp->getOption(TR_ForceLargeRAMoves))
+
+         if (spilledRegister->assignToHPR() || targetRegister->isHighWordRegister())
+            {
+            //dataSize = 4;
+            opCode = TR::InstOpCode::STFH;
+
+            if (spilledRegister->containsCollectedReference())
+               {
+               // decompressing: store into the lower bytes in memory
+               // need to zero out the higher bytes later too
+               needMVHI = true;
+               }
+            else
+               {
+               TR_ASSERT_FATAL(!spilledRegister->is64BitReg(), "Spilled register (%s) is 64-bit but it was assigned to an HPR", getRegisterName(spilledRegister, self()->cg()));
+               }
+            }
+         if (spilledRegister->assignToGPR() || targetRegister->isLowWordRegister())
+            {
+            // dont want to involve halfslot spills yet
+            //dataSize = 4;
+            opCode = TR::InstOpCode::ST;
+            }
+         if (spilledRegister->is64BitReg())
             {
             dataSize = 8;
             opCode = TR::InstOpCode::STG;
             }
-         if (enableHighWordRA)
-            {
-            if (spilledRegister->assignToHPR() || targetRegister->isHighWordRegister())
-               {
-               //dataSize = 4;
-               opCode = TR::InstOpCode::STFH;
-
-               if (spilledRegister->containsCollectedReference())
-                  {
-                  // decompressing: store into the lower bytes in memory
-                  // need to zero out the higher bytes later too
-                  needMVHI = true;
-                  }
-               else
-                  {
-                  TR_ASSERT(!spilledRegister->is64BitReg(), "ReverseSpill: HPR cannot be 64 bit!\n");
-                  }
-               }
-            if (spilledRegister->assignToGPR() || targetRegister->isLowWordRegister())
-               {
-               // dont want to involve halfslot spills yet
-               //dataSize = 4;
-               opCode = TR::InstOpCode::ST;
-               }
-            if (spilledRegister->is64BitReg())
-               {
-               dataSize = 8;
-               opCode = TR::InstOpCode::STG;
-               }
-            }
-         break;
-      case TR_GPR64:
-         dataSize = 8;
-         opCode = TR::InstOpCode::STG;
          break;
       case TR_FPR:
          dataSize = 8;
@@ -4511,8 +4190,7 @@ OMR::Z::Machine::isAssignable(TR::Register * virtReg, TR::RealRegister * realReg
       }
    else
       {
-      if (self()->cg()->supportsHighWordFacility() && !self()->cg()->comp()->getOption(TR_DisableHighWordRA) &&
-          virtReg->getKind() != TR_FPR && virtReg->getKind() != TR_VRF)
+      if (virtReg->getKind() != TR_FPR && virtReg->getKind() != TR_VRF)
          {
          if ((virtReg->is64BitReg() && realReg->getLowWordRegister()->getAssignedRegister() == realReg->getHighWordRegister()->getAssignedRegister()) ||
              (!virtReg->is64BitReg() && realReg->getLowWordRegister()->getAssignedRegister() != realReg->getHighWordRegister()->getAssignedRegister()))
@@ -4538,8 +4216,7 @@ OMR::Z::Machine::isAssignable(TR::Register * virtReg, TR::RealRegister * realReg
 TR::Instruction *
 OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                            *currentInstruction,
                                          TR::Register                               *virtualRegister,
-                                         TR::RealRegister::RegNum  registerNumber,
-                                         flags32_t                                  instFlags)
+                                         TR::RealRegister::RegNum  registerNumber)
    {
    TR::RealRegister * targetRegister = _registerFile[registerNumber];
    TR::RealRegister * realReg = virtualRegister->getAssignedRealRegister();
@@ -4557,36 +4234,17 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
 
    virtualRegister->setIsLive();
 
-   bool enableHighWordRA = self()->cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) &&
-                           rk != TR_FPR && rk != TR_VRF;
    uint32_t availHighWordRegMap;
-   if (enableHighWordRA)
+   if (rk != TR_FPR && rk != TR_VRF)
       {
       availHighWordRegMap = ~(toRealRegister(targetRegister)->getHighWordRegister()->getRealRegisterMask());
       }
     self()->cg()->traceRegisterAssignment("COERCE %R into %R", virtualRegister, targetRegister);
 
-   // If either the virtual we are coercing or the assigned reg we are
-   //
-   //
-   if (targetRegister->getAssignedRegister() && targetRegister->getAssignedRegister()->getKind() == TR_GPR64)
-      {
-      rk = TR_GPR64;
-      currentTargetVirtualRK = TR_GPR64;
-      currentAssignedRegisterRK = TR_GPR64;
-      }
-
-   if (enableHighWordRA && currentAssignedRegister)
+   if (rk != TR_FPR && rk != TR_VRF && currentAssignedRegister)
       {
       if (currentAssignedRegister->isHighWordRegister())
          currentAssignedRegisterRK = TR_HPR;
-      else
-         {
-         if (!virtualRegister->is64BitReg())
-            currentAssignedRegisterRK = TR_GPRL;
-         else
-            currentAssignedRegisterRK = TR_GPR64;
-         }
       }
 
    // in addition to the 4 GPR's involved, we have 4 more registers for high words:
@@ -4600,7 +4258,7 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
    TR::Register * virtualRegisterHW = NULL;
    TR::RealRegister * spareRegHW = NULL;
 
-   if (enableHighWordRA)
+   if (rk != TR_FPR && rk != TR_VRF)
       {
       targetRegisterHW = targetRegister->getHighWordRegister();
       currentTargetVirtualHW = targetRegisterHW->getAssignedRegister();
@@ -4613,11 +4271,11 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
 
       if (virtualRegister->is64BitReg())
          {
-         self()->cg()->traceRegisterAssignment(" HW RA coerceRA: %R needs 64 bit reg ", virtualRegister);
+         self()->cg()->traceRegisterAssignment(" coerceRA: %R needs 64 bit reg ", virtualRegister);
          }
       else
          {
-         self()->cg()->traceRegisterAssignment(" HW RA coerceRA: %R needs 32 bit reg ", virtualRegister);
+         self()->cg()->traceRegisterAssignment(" coerceRA: %R needs 32 bit reg ", virtualRegister);
          }
       }
 
@@ -4633,7 +4291,7 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
       if(virtualRegister->isPlaceholderReg())
         targetRegister->setIsAssignedMoreThanOnce(); // Register is killed invalidate it for moving spill out of loop
       self()->cg()->traceRegisterAssignment("target %R is free", targetRegister);
-      if (enableHighWordRA && virtualRegister->is64BitReg())
+      if (virtualRegister->is64BitReg())
          {
          if (targetRegister->isHighWordRegister() && !virtualRegister->isPlaceholderReg())
             {
@@ -4713,7 +4371,7 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
             virtualRegister->block();
             targetRegister->setState(TR::RealRegister::Blocked);
             // free up this highword register by either spilling it or moving it
-            cursor = self()->freeHighWordRegister(currentInstruction, targetRegisterHW, instFlags);
+            cursor = self()->freeHighWordRegister(currentInstruction, targetRegisterHW);
             virtualRegister->unblock();
             targetRegister->setState(TR::RealRegister::Free);
             }
@@ -4741,11 +4399,9 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
          {
          // virtual register is currently assigned to a different register,
          // override it with the target reg
-
-         // todo: HW copy, LW copy or 64bit?
-         // if targetReg is HW, copy need to be HW
-         cursor = self()->registerCopy(currentInstruction, currentAssignedRegisterRK, currentAssignedRegister, targetRegister, self()->cg(), instFlags);
-         if (enableHighWordRA && virtualRegister->is64BitReg())
+         cursor = self()->registerCopy(self()->cg(), currentAssignedRegisterRK, currentAssignedRegister, targetRegister, currentInstruction);
+         
+         if (virtualRegister->is64BitReg())
             {
             currentAssignedRegisterHW->setState(TR::RealRegister::Free);
             currentAssignedRegisterHW->setAssignedRegister(NULL);
@@ -4760,24 +4416,17 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
       currentTargetVirtual = targetRegister->getAssignedRegister();
       self()->cg()->traceRegisterAssignment("target %R is blocked, assigned to %R", targetRegister, currentTargetVirtual);
 
-      if (enableHighWordRA && currentTargetVirtual)
+      if (rk != TR_FPR && rk != TR_VRF && currentTargetVirtual)
          {
          if (targetRegister->isHighWordRegister() &&
                targetRegister->getLowWordRegister()->getAssignedRegister() != currentTargetVirtual)
             {
             currentTargetVirtualRK = TR_HPR;
             }
-         else
-            {
-         if (!currentTargetVirtual->is64BitReg())
-            currentTargetVirtualRK = TR_GPRL;
-         else
-            currentTargetVirtualRK = TR_GPR64;
-            }
          }
 
       // in this case we cannot use the HPR of target reg as spareReg
-      if (enableHighWordRA && virtualRegister->is64BitReg())
+      if (virtualRegister->is64BitReg())
          spareReg = self()->findBestFreeRegister(currentInstruction, rk, currentTargetVirtual, availHighWordRegMap);
       else
          spareReg = self()->findBestFreeRegister(currentInstruction, rk, currentTargetVirtual);
@@ -4790,7 +4439,7 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
          virtualRegister->block();
          currentTargetVirtual->block();
 
-         if (enableHighWordRA && virtualRegister->is64BitReg())
+         if (virtualRegister->is64BitReg())
             {
             // if we end up spilling currentTargetVirtual to HPR, make sure to not pick the HPR of targetRegister since it will not
             // free up the full 64 bit register
@@ -4809,7 +4458,7 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
 
       // if currentTargetVirtual is low word only, spare Reg will be low word
       // but virtual Reg could require full size, in this case, need to free the HW of target Reg
-      if (enableHighWordRA && virtualRegister->is64BitReg())
+      if (virtualRegister->is64BitReg())
          {
 
          // There is an extra check at the end to avoid the scenario in which virtualRegister is assigned to
@@ -4826,7 +4475,7 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
                currentTargetVirtual->block();
                spareReg->block(); //to do: is this necessary? only need to block HPR?
                // free up this highword register by either spilling it or moving it
-               cursor = self()->freeHighWordRegister(currentInstruction, targetRegisterHW, instFlags);
+               cursor = self()->freeHighWordRegister(currentInstruction, targetRegisterHW);
                spareReg->unblock();
                currentTargetVirtual->unblock();
                virtualRegister->unblock();
@@ -4842,7 +4491,7 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
          // todo :HW fix
          if (!self()->isAssignable(currentTargetVirtual, currentAssignedRegister))
             {
-            if (enableHighWordRA && spareReg == NULL && currentTargetVirtualRK != currentAssignedRegisterRK)
+            if (rk != TR_FPR && rk != TR_VRF && spareReg == NULL && currentTargetVirtualRK != currentAssignedRegisterRK)
                {
                // register kinds mismatch and we do not have a free spare reg, take the OSC penalty...
                TR_BackingStore * location;
@@ -4904,14 +4553,26 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
                TR_ASSERT(spareReg!=NULL, "coerce reg - blocked, sparereg cannot be NULL.");
                self()->cg()->traceRegAssigned(currentTargetVirtual, spareReg);
 
-               cursor = self()->registerCopy(currentInstruction, currentTargetVirtualRK, targetRegister, spareReg, self()->cg(), instFlags);
-               cursor = self()->registerCopy(currentInstruction, currentAssignedRegisterRK, currentAssignedRegister, targetRegister, self()->cg(), instFlags);
+               auto targetRegisterForCopy = currentTargetVirtual->is64BitReg() && targetRegister->isHighWordRegister() ?
+                  targetRegister->getLowWordRegister() :
+                  targetRegister;
+
+               // TODO: Once registerCopy and registerExchange APIs properly keep track of register states as they 
+               // shuffle things around we need to remove this targetRegisterForCopy hack above. The reason it was
+               // put in place here is because the target register can be an HPR but the virtual register inside of
+               // the HPR can be a 64-bit register, in which case we really wish to copy the entire 64-bit value to
+               // a spare register. This is what the subsequent if statement 2 lines below effectively does. This
+               // should really be the job of registerCopy however and it should be acting on virtual registers and
+               // know whether it needs to generate a 64-bit copy or not. This workaround is placed in multiple
+               // locations. Make sure it is removed everywhere.
+               cursor = self()->registerCopy(self()->cg(), currentTargetVirtualRK, targetRegisterForCopy, spareReg, currentInstruction);
+               cursor = self()->registerCopy(self()->cg(), currentAssignedRegisterRK, currentAssignedRegister, targetRegister, currentInstruction);
 
                spareReg->setState(TR::RealRegister::Assigned);
                currentTargetVirtual->setAssignedRegister(spareReg);
                spareReg->setAssignedRegister(currentTargetVirtual);
 
-               if (enableHighWordRA && currentTargetVirtual->is64BitReg())
+               if (currentTargetVirtual->is64BitReg())
                   {
                   targetRegister->getLowWordRegister()->setState(TR::RealRegister::Unlatched);
                   targetRegister->getLowWordRegister()->setAssignedRegister(NULL);
@@ -4923,7 +4584,7 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
                   }
                currentAssignedRegister->setState(TR::RealRegister::Unlatched);
                currentAssignedRegister->setAssignedRegister(NULL);
-               if (enableHighWordRA && virtualRegister->is64BitReg())
+               if (virtualRegister->is64BitReg())
                   {
                   currentAssignedRegisterHW->setState(TR::RealRegister::Unlatched);
                   currentAssignedRegisterHW->setAssignedRegister(NULL);
@@ -4933,9 +4594,9 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
          else
             {
             self()->cg()->traceRegAssigned(currentTargetVirtual, currentAssignedRegister);
-            if (enableHighWordRA)
+            if (rk != TR_FPR && rk != TR_VRF)
                {
-               cursor = self()->registerExchange(currentInstruction, currentAssignedRegisterRK, targetRegister, currentAssignedRegister, spareReg, self()->cg(), instFlags);
+               cursor = self()->registerExchange(self()->cg(), currentAssignedRegisterRK, targetRegister, currentAssignedRegister, spareReg, currentInstruction);
                if (currentTargetVirtual->is64BitReg())
                   {
                   //currentAssignedRegister->getHighWordRegister()->setState(TR::RealRegister::Blocked);  //not necessary
@@ -4945,7 +4606,7 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
             else
                {
                // Vector coercion most likely to take this path.
-            cursor = self()->registerExchange(currentInstruction, rk, targetRegister, currentAssignedRegister, spareReg, self()->cg(), instFlags);
+            cursor = self()->registerExchange(self()->cg(), rk, targetRegister, currentAssignedRegister, spareReg, currentInstruction);
                }
             currentAssignedRegister->setState(TR::RealRegister::Blocked);
             currentAssignedRegister->setAssignedRegister(currentTargetVirtual);
@@ -4957,14 +4618,27 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
          {
          self()->cg()->traceRegAssigned(currentTargetVirtual, spareReg);
 
+         auto targetRegisterForCopy = currentTargetVirtual->is64BitReg() && targetRegister->isHighWordRegister() ?
+            targetRegister->getLowWordRegister() :
+            targetRegister;
+
+         // TODO: Once registerCopy and registerExchange APIs properly keep track of register states as they 
+         // shuffle things around we need to remove this targetRegisterForCopy hack above. The reason it was
+         // put in place here is because the target register can be an HPR but the virtual register inside of
+         // the HPR can be a 64-bit register, in which case we really wish to copy the entire 64-bit value to
+         // a spare register. This is what the subsequent if statement 2 lines below effectively does. This
+         // should really be the job of registerCopy however and it should be acting on virtual registers and
+         // know whether it needs to generate a 64-bit copy or not. This workaround is placed in multiple
+         // locations. Make sure it is removed everywhere.
+
          // virtual register is not assigned yet, copy register
-         cursor = self()->registerCopy(currentInstruction, currentTargetVirtualRK, targetRegister, spareReg, self()->cg(), instFlags);
+         cursor = self()->registerCopy(self()->cg(), currentTargetVirtualRK, targetRegisterForCopy, spareReg, currentInstruction);
 
          spareReg->setState(TR::RealRegister::Assigned);
          spareReg->setAssignedRegister(currentTargetVirtual);
          currentTargetVirtual->setAssignedRegister(spareReg);
 
-         if (enableHighWordRA && currentTargetVirtual->is64BitReg())
+         if (currentTargetVirtual->is64BitReg())
             {
             //TR_ASSERT(targetRegisterHW->getState() == TR::RealRegister::Blocked,
             //        "currentTargetVirtual is blocked and is fullsize, but the HW is not blocked?");
@@ -4998,7 +4672,7 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
       currentTargetVirtual = targetRegister->getAssignedRegister();
       self()->cg()->traceRegisterAssignment("target %R is assigned, assigned to %R", targetRegister, currentTargetVirtual);
 
-      if (enableHighWordRA && currentTargetVirtual)
+      if (rk != TR_FPR && rk != TR_VRF && currentTargetVirtual)
          {
          // this happens for OOL HPR spill, simply return
          if (currentTargetVirtual == virtualRegister)
@@ -5013,17 +4687,10 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
             {
             currentTargetVirtualRK = TR_HPR;
             }
-         else
-            {
-         if (!currentTargetVirtual->is64BitReg())
-            currentTargetVirtualRK = TR_GPRL;
-         else
-            currentTargetVirtualRK = TR_GPR64;
-            }
          }
 
       // If the target HPR was a spill slot
-      if (enableHighWordRA &&
+      if (rk != TR_FPR && rk != TR_VRF &&
           currentTargetVirtual->getAssignedRegister() == NULL &&
           targetRegister->isHighWordRegister())
          {
@@ -5031,7 +4698,7 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
 
          // free this spill slot up first
          // block virtual reg?
-         cursor = self()->freeHighWordRegister(currentInstruction, targetRegister, instFlags);
+         cursor = self()->freeHighWordRegister(currentInstruction, targetRegister);
 
          if (virtualRegister->is64BitReg() && !virtualRegister->isPlaceholderReg())
             {
@@ -5148,7 +4815,7 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
                {
                // the 32-bit virtual register is currently assigned to a real register
                // do register copy
-               cursor = self()->registerCopy(currentInstruction, currentAssignedRegisterRK, currentAssignedRegister, targetRegister, self()->cg(), instFlags);
+               cursor = self()->registerCopy(self()->cg(), currentAssignedRegisterRK, currentAssignedRegister, targetRegister, currentInstruction);
                currentAssignedRegister->setState(TR::RealRegister::Free);
                currentAssignedRegister->setAssignedRegister(NULL);
                }
@@ -5163,7 +4830,7 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
       else
          {
          // in this case we cannot use the HPR of target reg as spareReg
-         if (enableHighWordRA && virtualRegister->is64BitReg())
+         if (virtualRegister->is64BitReg())
             spareReg = self()->findBestFreeRegister(currentInstruction, rk, currentTargetVirtual, availHighWordRegMap);
          else
             // Look for a free reg in case we need a spare.
@@ -5182,9 +4849,7 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
          //  We may not be able to do an exchange as the target virtReg is not
          //  allowed to be assigned to the source's realReg (e.g. GPR0).
          //  reg exchange with HW not implemented yet
-         if (!self()->isAssignable(currentTargetVirtual, currentAssignedRegister)
-             || enableHighWordRA
-             )
+         if (!self()->isAssignable(currentTargetVirtual, currentAssignedRegister) || (rk != TR_FPR && rk != TR_VRF))
             {
             // There is an alternative to blindly spilling because:
             //   1. there was a FREE reg
@@ -5195,7 +4860,7 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
 
                //  The current source reg's assignment is automatically blocked out
                virtualRegister->block();
-               if (enableHighWordRA && virtualRegister->is64BitReg())
+               if (virtualRegister->is64BitReg())
                   {
                   // if we end up spilling currentTargetVirtual to HPR, make sure to not pick the HPR of targetRegister since it will not
                   // free up the full 64 bit register
@@ -5208,12 +4873,12 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
 
                // For some reason (blocked/locked regs etc), we couldn't find a spare reg so spill the virtual in the target and use it for coercion
                if (spareReg == NULL)
-               {
-               self()->spillRegister(currentInstruction, currentTargetVirtual);
-               targetRegister->setAssignedRegister(virtualRegister);
-               virtualRegister->setAssignedRegister(targetRegister);
-               targetRegister->setState(TR::RealRegister::Assigned);
-               }
+                  {
+                  self()->spillRegister(currentInstruction, currentTargetVirtual);
+                  targetRegister->setAssignedRegister(virtualRegister);
+                  virtualRegister->setAssignedRegister(targetRegister);
+                  targetRegister->setState(TR::RealRegister::Assigned);
+                  }
 
                // freeBestRegister could spill currentTargetVirtual directly to free up targetRegister.
                // If currentTargetVirtual is 64-bit, spareReg will be a GPR (targetRegister's low word)
@@ -5228,7 +4893,7 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
 
             // if currentTargetVirtual is low word only, spare Reg will be low word
             // but virtual Reg could require full size, in this case, need to free the HW of target Reg
-            if (enableHighWordRA && virtualRegister->is64BitReg())
+            if (virtualRegister->is64BitReg())
                {
                if (targetRegisterHW->getState() != TR::RealRegister::Free &&
                    targetRegisterHW->getState() != TR::RealRegister::Unlatched)
@@ -5242,7 +4907,7 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
                      currentTargetVirtual->block();
                      spareReg->block(); //to do: is this necessary? only need to block HPR?
                      // free up this highword register by either spilling it or moving it
-                     cursor = self()->freeHighWordRegister(currentInstruction, targetRegisterHW, instFlags);
+                     cursor = self()->freeHighWordRegister(currentInstruction, targetRegisterHW);
                      spareReg->unblock();
                      currentTargetVirtual->unblock();
                      virtualRegister->unblock();
@@ -5256,8 +4921,20 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
                {
                self()->cg()->traceRegAssigned(currentTargetVirtual, spareReg);
 
-               cursor = self()->registerCopy(currentInstruction, currentTargetVirtualRK, targetRegister, spareReg, self()->cg(), instFlags);
-               if (enableHighWordRA && currentTargetVirtual->is64BitReg())
+               auto targetRegisterForCopy = currentTargetVirtual->is64BitReg() && targetRegister->isHighWordRegister() ?
+                  targetRegister->getLowWordRegister() :
+                  targetRegister;
+
+               // TODO: Once registerCopy and registerExchange APIs properly keep track of register states as they 
+               // shuffle things around we need to remove this targetRegisterForCopy hack above. The reason it was
+               // put in place here is because the target register can be an HPR but the virtual register inside of
+               // the HPR can be a 64-bit register, in which case we really wish to copy the entire 64-bit value to
+               // a spare register. This is what the subsequent if statement 2 lines below effectively does. This
+               // should really be the job of registerCopy however and it should be acting on virtual registers and
+               // know whether it needs to generate a 64-bit copy or not. This workaround is placed in multiple
+               // locations. Make sure it is removed everywhere.
+               cursor = self()->registerCopy(self()->cg(), currentTargetVirtualRK, targetRegisterForCopy, spareReg, currentInstruction);
+               if (currentTargetVirtual->is64BitReg())
                   {
                   spareReg->getHighWordRegister()->setState(TR::RealRegister::Assigned);
                   spareReg->getHighWordRegister()->setAssignedRegister(currentTargetVirtual);
@@ -5271,10 +4948,10 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
                currentTargetVirtual->setAssignedRegister(spareReg);
                }
 
-            cursor = self()->registerCopy(currentInstruction, currentAssignedRegisterRK, currentAssignedRegister, targetRegister, self()->cg(), instFlags);
+            cursor = self()->registerCopy(self()->cg(), currentAssignedRegisterRK, currentAssignedRegister, targetRegister, currentInstruction);
             currentAssignedRegister->setState(TR::RealRegister::Unlatched);
             currentAssignedRegister->setAssignedRegister(NULL);
-            if (enableHighWordRA && virtualRegister->is64BitReg())
+            if (virtualRegister->is64BitReg())
                {
                currentAssignedRegisterHW->setState(TR::RealRegister::Unlatched);
                currentAssignedRegisterHW->setAssignedRegister(NULL);
@@ -5303,13 +4980,13 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
                self()->cg()->traceRegAssigned(currentTargetVirtual, currentAssignedRegister);
                self()->cg()->setRegisterAssignmentFlag(TR_RegisterSpilled);
 
-               cursor = self()->registerCopy(currentInstruction, rk, currentAssignedRegister, targetRegister, self()->cg(), instFlags);
+               cursor = self()->registerCopy(self()->cg(), rk, currentAssignedRegister, targetRegister, currentInstruction);
                currentAssignedRegister->setState(TR::RealRegister::Unlatched);
                currentAssignedRegister->setAssignedRegister(NULL);
                }
             else
                {
-               cursor = self()->registerExchange(currentInstruction, rk, targetRegister, currentAssignedRegister, spareReg, self()->cg(), instFlags);
+               cursor = self()->registerExchange(self()->cg(), rk, targetRegister, currentAssignedRegister, spareReg, currentInstruction);
                currentAssignedRegister->setState(TR::RealRegister::Assigned);
                currentAssignedRegister->setAssignedRegister(currentTargetVirtual);
                currentTargetVirtual->setAssignedRegister(currentAssignedRegister);
@@ -5329,7 +5006,7 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
             {
             int32_t availHWRegs = -1;
             bool spillTargetHWReg = false;
-            if (enableHighWordRA && virtualRegister->is64BitReg())
+            if (virtualRegister->is64BitReg())
                {
                // for 64-bit, do not spill to the sibling HPR
                availHWRegs = availHighWordRegMap;
@@ -5360,7 +5037,7 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
                self()->spillRegister(currentInstruction, targetRegisterHW->getAssignedRegister(), 0);
                }
 
-            if (enableHighWordRA && currentTargetVirtual->is64BitReg())
+            if (currentTargetVirtual->is64BitReg())
                {
                targetRegister->getLowWordRegister()->setState(TR::RealRegister::Unlatched);
                targetRegister->getLowWordRegister()->setAssignedRegister(NULL);
@@ -5377,7 +5054,7 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
                self()->cg()->setRegisterAssignmentFlag(TR_RegisterSpilled);
 
                virtualRegister->block();
-               if (enableHighWordRA && virtualRegister->is64BitReg())
+               if (virtualRegister->is64BitReg())
                   {
                   // if we end up spilling currentTargetVirtual to HPR, make sure to not pick the HPR of targetRegister since it will not
                   // free up the full 64 bit register
@@ -5410,7 +5087,7 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
 
             // if currentTargetVirtual is low word only, spare Reg will be low word
             // but virtual Reg could require full size, in this case, need to free the HW of target Reg
-            if (enableHighWordRA && virtualRegister->is64BitReg())
+            if (virtualRegister->is64BitReg())
                {
                if (targetRegisterHW->getState() != TR::RealRegister::Free &&
                    targetRegisterHW->getState() != TR::RealRegister::Unlatched)
@@ -5423,7 +5100,7 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
                      currentTargetVirtual->block();
                      spareReg->block(); //to do: is this necessary? only need to block HPR?
                      // free up this highword register by either spilling it or moving it
-                     cursor = self()->freeHighWordRegister(currentInstruction, targetRegisterHW, instFlags);
+                     cursor = self()->freeHighWordRegister(currentInstruction, targetRegisterHW);
                      spareReg->unblock();
                      currentTargetVirtual->unblock();
                      virtualRegister->unblock();
@@ -5438,11 +5115,23 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
                self()->cg()->resetRegisterAssignmentFlag(TR_RegisterSpilled);
                self()->cg()->traceRegAssigned(currentTargetVirtual, spareReg);
 
-               cursor = self()->registerCopy(currentInstruction, currentTargetVirtualRK, targetRegister, spareReg, self()->cg(), instFlags);
+               auto targetRegisterForCopy = currentTargetVirtual->is64BitReg() && targetRegister->isHighWordRegister() ?
+                  targetRegister->getLowWordRegister() :
+                  targetRegister;
+
+               // TODO: Once registerCopy and registerExchange APIs properly keep track of register states as they 
+               // shuffle things around we need to remove this targetRegisterForCopy hack above. The reason it was
+               // put in place here is because the target register can be an HPR but the virtual register inside of
+               // the HPR can be a 64-bit register, in which case we really wish to copy the entire 64-bit value to
+               // a spare register. This is what the subsequent if statement 2 lines below effectively does. This
+               // should really be the job of registerCopy however and it should be acting on virtual registers and
+               // know whether it needs to generate a 64-bit copy or not. This workaround is placed in multiple
+               // locations. Make sure it is removed everywhere.
+               cursor = self()->registerCopy(self()->cg(), currentTargetVirtualRK, targetRegisterForCopy, spareReg, currentInstruction);
                spareReg->setState(TR::RealRegister::Assigned);
                spareReg->setAssignedRegister(currentTargetVirtual);
 
-               if (enableHighWordRA && currentTargetVirtual->is64BitReg())
+               if (currentTargetVirtual->is64BitReg())
                   {
                   spareReg->getHighWordRegister()->setState(TR::RealRegister::Assigned);
                   spareReg->getHighWordRegister()->setAssignedRegister(currentTargetVirtual);
@@ -5516,8 +5205,8 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
 
          // todo: HW copy, LW copy or 64bit?
          // if targetReg is HW, copy need to be HW
-         cursor = self()->registerCopy(currentInstruction, currentAssignedRegisterRK, currentAssignedRegister, targetRegister, self()->cg(), instFlags);
-         if (enableHighWordRA && virtualRegister->is64BitReg())
+         cursor = self()->registerCopy(self()->cg(), currentAssignedRegisterRK, currentAssignedRegister, targetRegister, currentInstruction);
+         if (virtualRegister->is64BitReg())
             {
             currentAssignedRegisterHW->setState(TR::RealRegister::Free);
             currentAssignedRegisterHW->setAssignedRegister(NULL);
@@ -5528,7 +5217,7 @@ OMR::Z::Machine::coerceRegisterAssignment(TR::Instruction                       
       }
 
    virtualRegister->setAssignedRegister(targetRegister);
-   if (enableHighWordRA && virtualRegister->is64BitReg())
+   if (virtualRegister->is64BitReg())
       {
       targetRegisterHW->setAssignedRegister(virtualRegister);
       targetRegisterHW->setState(TR::RealRegister::Assigned);
@@ -6034,7 +5723,7 @@ OMR::Z::Machine::initializeGlobalRegisterTable()
    // [2] https://github.com/eclipse/omr/blob/9d1d8cf3048781bc6d87e6a1079167586cc5aa4d/compiler/codegen/CodeGenRA.cpp#L2889-L2903
    // [3] https://github.com/eclipse/omr/blob/9d1d8cf3048781bc6d87e6a1079167586cc5aa4d/compiler/z/codegen/ControlFlowEvaluator.cpp#L1098-L1102
 
-   if (self()->cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) && !comp->getOption(TR_DisableRegisterPressureSimulation))
+   if (self()->cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableRegisterPressureSimulation))
       {
       // HPR
       // this is a bit tricky, we consider Global HPRs part of Global GPRs
@@ -6345,7 +6034,7 @@ OMR::Z::Machine::setRegisterWeightsFromAssociations()
    int32_t first = TR::RealRegister::FirstGPR;
    TR::Compilation *comp = self()->cg()->comp();
    int32_t last = TR::RealRegister::LastAssignableVRF;
-   if (self()->cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA))
+   if (self()->cg()->supportsHighWordFacility())
       last = TR::RealRegister::LastHPR;
 
    for (int32_t i = first; i <= last; ++i)
@@ -6392,7 +6081,7 @@ OMR::Z::Machine::createRegisterAssociationDirective(TR::Instruction * cursor)
    int32_t last = TR::RealRegister::LastAssignableVRF;
    TR::RegisterDependencyConditions * associations;
 
-   if (self()->cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA))
+   if (self()->cg()->supportsHighWordFacility())
       {
       int32_t lastHPR = last + TR::RealRegister::LastHPR - TR::RealRegister::FirstHPR;
       associations = new (self()->cg()->trHeapMemory(), TR_MemoryBase::RegisterDependencyConditions) TR::RegisterDependencyConditions(0, lastHPR, self()->cg());
@@ -6412,7 +6101,7 @@ OMR::Z::Machine::createRegisterAssociationDirective(TR::Instruction * cursor)
       associations->addPostCondition(self()->getVirtualAssociatedWithReal(regNum), regNum);
       }
 
-   if (self()->cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA))
+   if (self()->cg()->supportsHighWordFacility())
       {
       for (int32_t i = TR::RealRegister::FirstHPR; i < TR::RealRegister::LastHPR+1; i++)
          {
@@ -6571,7 +6260,7 @@ TR::RegisterDependencyConditions * OMR::Z::Machine::createDepCondForLiveGPRs(TR:
 
    c += spilledRegisterList ? spilledRegisterList->size() : 0;
 
-   if (self()->cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA))
+   if (self()->cg()->supportsHighWordFacility())
       {
       for (i = TR::RealRegister::FirstHPR; i <= TR::RealRegister::LastHPR; i++)
          {
@@ -6608,7 +6297,7 @@ TR::RegisterDependencyConditions * OMR::Z::Machine::createDepCondForLiveGPRs(TR:
             virtReg->incFutureUseCount();
             }
          }
-      if (self()->cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA))
+      if (self()->cg()->supportsHighWordFacility())
          {
          for (i = TR::RealRegister::FirstHPR; i <= TR::RealRegister::LastHPR; i++)
             {

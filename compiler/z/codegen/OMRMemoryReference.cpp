@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -577,20 +577,6 @@ OMR::Z::MemoryReference::MemoryReference(TR::Node * rootLoadOrStore, TR::CodeGen
          {
          self()->createUnresolvedDataSnippet(rootLoadOrStore, cg, symRef, tempReg, isStore);
          }
-
-      // indexRegister may setup in populateMemoryReference to hold the address for the load/store
-      // since indexRegister is invalid in a RS instruction (LM/STM for long), we need to insert an intermediate
-      // LA instruction to get the address using index and base register before doing LM/STM
-      // we'll never generate LM to load/store long int on 64bit platform
-      // storageReference cases may contain symbol sizes from 1->64 and in any case this condition is now enforced when
-      // the subsequent generate*Instruction routine is called with this memRef
-      if ((rootLoadOrStore->getType().isInt64() || (symbol && symbol->getSize() == 8)) &&
-         !(TR::Compiler->target.is64Bit() || cg->use64BitRegsOn32Bit()) &&
-          !canUseRX &&
-          (storageReference == NULL))
-         {
-         self()->separateIndexRegister(rootLoadOrStore, cg, false, NULL); // enforce4KDisplacementLimit=false
-         }
       }
    else
       {
@@ -611,7 +597,7 @@ OMR::Z::MemoryReference::MemoryReference(TR::Node * rootLoadOrStore, TR::CodeGen
                // Storing to the symbol reference
                TR::Register * tempReg;
                if (TR::Compiler->target.is64Bit())
-                  tempReg = cg->allocate64bitRegister();
+                  tempReg = cg->allocateRegister();
                else
                   tempReg = cg->allocateRegister();
                self()->setBaseRegister(tempReg, cg);
@@ -873,7 +859,7 @@ OMR::Z::MemoryReference::MemoryReference(TR::Snippet * s, TR::CodeGenerator * cg
       if (cg->isLiteralPoolOnDemandOn())
          {
          if (TR::Compiler->target.is64Bit())
-            self()->setBaseRegister(cg->allocate64bitRegister(), cg);
+            self()->setBaseRegister(cg->allocateRegister(), cg);
          else
             self()->setBaseRegister(cg->allocateRegister(), cg);
          generateLoadLiteralPoolAddress(cg, node, _baseRegister);
@@ -1917,7 +1903,7 @@ OMR::Z::MemoryReference::consolidateRegisters(TR::Node * node, TR::CodeGenerator
       if (node && node->isInternalPointer() && node->getPinningArrayPointer())
          {
          if (TR::Compiler->target.is64Bit())
-            tempTargetRegister = cg->allocate64bitRegister();
+            tempTargetRegister = cg->allocateRegister();
          else
             tempTargetRegister = cg->allocateRegister();
 
@@ -1932,7 +1918,7 @@ OMR::Z::MemoryReference::consolidateRegisters(TR::Node * node, TR::CodeGenerator
    else
       {
       if (TR::Compiler->target.is64Bit())
-         tempTargetRegister = cg->allocate64bitRegister();
+         tempTargetRegister = cg->allocateRegister();
       else
          tempTargetRegister = cg->allocateRegister();
       }
@@ -2097,7 +2083,7 @@ OMR::Z::MemoryReference::enforce4KDisplacementLimit(TR::Node * node, TR::CodeGen
       {
       TR::Register * tempTargetRegister = NULL;
       if (TR::Compiler->target.is64Bit())
-         tempTargetRegister = cg->allocate64bitRegister();
+         tempTargetRegister = cg->allocateRegister();
       else
          tempTargetRegister = cg->allocateRegister();
       TR::MemoryReference * interimMemoryReference = generateS390MemoryReference(cg);
@@ -2167,7 +2153,7 @@ OMR::Z::MemoryReference::enforceDisplacementLimit(TR::Node * node, TR::CodeGener
       TR_ASSERT( node,"node should be non-null for enforceDisplacementLimit\n");
       TR::Register * tempTargetRegister;
       if (TR::Compiler->target.is64Bit())
-         tempTargetRegister = cg->allocate64bitRegister();
+         tempTargetRegister = cg->allocateRegister();
       else
          tempTargetRegister = cg->allocateRegister();
 
@@ -2220,7 +2206,7 @@ OMR::Z::MemoryReference::eliminateNegativeDisplacement(TR::Node * node, TR::Code
 
       TR::Register * tempTargetRegister;
       if (TR::Compiler->target.is64Bit())
-         tempTargetRegister = cg->allocate64bitRegister();
+         tempTargetRegister = cg->allocateRegister();
       else
          tempTargetRegister = cg->allocateRegister();
       TR::MemoryReference * interimMemoryReference = generateS390MemoryReference(cg);
@@ -2269,7 +2255,7 @@ OMR::Z::MemoryReference::separateIndexRegister(TR::Node * node, TR::CodeGenerato
          }
       TR::Register * tempTargetRegister = NULL;
       if (TR::Compiler->target.is64Bit())
-         tempTargetRegister = cg->allocate64bitRegister();
+         tempTargetRegister = cg->allocateRegister();
       else
          tempTargetRegister = cg->allocateRegister();
      TR::MemoryReference * interimMemoryReference = generateS390MemoryReference(cg);
@@ -2404,8 +2390,7 @@ OMR::Z::MemoryReference::assignRegisters(TR::Instruction * currentInstruction, T
          assignedBaseRegister->setAssignedRegister(NULL);
          assignedBaseRegister->setState(TR::RealRegister::Free);
          cg->traceRegFreed(_baseRegister, assignedBaseRegister);
-         if (cg->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) &&
-             _baseRegister->is64BitReg())
+         if (_baseRegister->is64BitReg())
             {
             toRealRegister(assignedBaseRegister)->getHighWordRegister()->setAssignedRegister(NULL);
             toRealRegister(assignedBaseRegister)->getHighWordRegister()->setState(TR::RealRegister::Free);

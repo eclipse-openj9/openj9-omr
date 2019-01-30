@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -818,12 +818,6 @@ bool TR_PartialRedundancy::isNodeAnImplicitNoOp(TR::Node *node)
 
    if (TR::ILOpCode::isOpCodeAnImplicitNoOp(node->getOpCode())) //FIXME: disables 190546!!!
       return true;
-
-   // loads and stores of structures that cannot fit into register
-   if (!node->canEvaluate() &&
-       (node->getOpCode().isLoad() || node->getOpCode().isStore()))
-      return true;
-
 
    if (node->getType().isAggregate() && node->getSize() > 8)
       {

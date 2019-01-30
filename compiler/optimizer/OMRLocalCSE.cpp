@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -114,13 +114,7 @@ bool OMR::LocalCSE::shouldCopyPropagateNode(TR::Node *parent, TR::Node *node, in
 
 bool OMR::LocalCSE::shouldCommonNode(TR::Node *parent, TR::Node *node)
    {
-   if (!isTreetopSafeToCommon())
-      return false;
-
-   if (node->getType().isAggregate())
-      return true;
-
-   return node->canEvaluate();
+   return isTreetopSafeToCommon();
    }
 
 TR::Node * getRHSOfStoreDefNode(TR::Node * storeNode)

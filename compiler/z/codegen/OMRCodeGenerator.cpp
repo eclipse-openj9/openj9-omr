@@ -607,12 +607,9 @@ OMR::Z::CodeGenerator::CodeGenerator()
       _callsForPreloadList = new (self()->trHeapMemory()) TR::list<TR_BranchPreloadCallData*>(getTypedAllocator<TR_BranchPreloadCallData*>(comp->allocator()));
       }
 
-   // Check if platform supports highword facility - both hardware and OS combination.
-   if (self()->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z196) && !comp->getOption(TR_MimicInterpreterFrameShape))
+   if (TR::Compiler->target.cpu.getS390SupportsHPRDebug() && !comp->getOption(TR_DisableHighWordRA) && !comp->getOption(TR_MimicInterpreterFrameShape))
       {
-      // On 31-bit zlinux we need to check RAS support
-      if (!TR::Compiler->target.isLinux() || TR::Compiler->target.is64Bit() || TR::Compiler->target.cpu.getS390SupportsHPRDebug())
-         self()->setSupportsHighWordFacility(true);
+      self()->setSupportsHighWordFacility(true);
       }
 
    self()->setOnDemandLiteralPoolRun(true);
@@ -744,12 +741,10 @@ OMR::Z::CodeGenerator::CodeGenerator()
 
    self()->addSupportedLiveRegisterKind(TR_GPR);
    self()->addSupportedLiveRegisterKind(TR_FPR);
-   self()->addSupportedLiveRegisterKind(TR_GPR64);
    self()->addSupportedLiveRegisterKind(TR_VRF);
 
    self()->setLiveRegisters(new (self()->trHeapMemory()) TR_LiveRegisters(comp), TR_GPR);
    self()->setLiveRegisters(new (self()->trHeapMemory()) TR_LiveRegisters(comp), TR_FPR);
-   self()->setLiveRegisters(new (self()->trHeapMemory()) TR_LiveRegisters(comp), TR_GPR64);
    self()->setLiveRegisters(new (self()->trHeapMemory()) TR_LiveRegisters(comp), TR_VRF);
 
    self()->setSupportsPrimitiveArrayCopy();
@@ -802,7 +797,7 @@ OMR::Z::CodeGenerator::CodeGenerator()
 bool
 OMR::Z::CodeGenerator::getSupportsBitPermute()
    {
-   return TR::Compiler->target.is64Bit() || self()->use64BitRegsOn32Bit();
+   return true;
    }
 
 TR_GlobalRegisterNumber
@@ -828,7 +823,6 @@ OMR::Z::CodeGenerator::getGlobalGPRFromHPR (TR_GlobalRegisterNumber n)
 
 bool OMR::Z::CodeGenerator::prepareForGRA()
    {
-   bool enableHighWordGRA = self()->supportsHighWordFacility() && !self()->comp()->getOption(TR_DisableHighWordRA);
    bool enableVectorGRA = self()->getSupportsVectorRegisters() && !self()->comp()->getOption(TR_DisableVectorRegGRA);
 
    if (!_globalRegisterTable)
@@ -882,7 +876,7 @@ bool OMR::Z::CodeGenerator::prepareForGRA()
       // Initialize _globalGPRsPreservedAcrossCalls and _globalFPRsPreservedAcrossCalls
       // We call init here because getNumberOfGlobal[FG]PRs() is initialized during the call to initialize() above.
       //
-      if (enableHighWordGRA)
+      if (self()->supportsHighWordFacility())
          {
          _globalGPRsPreservedAcrossCalls.init(NUM_S390_GPR + NUM_S390_FPR + NUM_S390_HPR, self()->trMemory());
          _globalFPRsPreservedAcrossCalls.init(NUM_S390_GPR + NUM_S390_FPR + NUM_S390_HPR, self()->trMemory());
@@ -923,7 +917,7 @@ bool OMR::Z::CodeGenerator::prepareForGRA()
             TR_ASSERT(reg != -1, "Register pressure simulator doesn't support gaps in the global register table; reg %d must be removed", grn);
             if (self()->getFirstGlobalGPR() <= grn && grn <= self()->getLastGlobalGPR())
                {
-               if (enableHighWordGRA && self()->getFirstGlobalHPR() <= grn)
+               if (self()->supportsHighWordFacility() && self()->getFirstGlobalHPR() <= grn)
                   {
                   // this is a bit tricky, we consider Global HPRs part of Global GPRs
                   _globalRegisterBitVectors[ TR_hprSpill ].set(grn);
@@ -946,7 +940,7 @@ bool OMR::Z::CodeGenerator::prepareForGRA()
                _globalRegisterBitVectors[ TR_volatileSpill ].set(grn);
             if (linkage->getIntegerArgument(reg) || linkage->getFloatArgument(reg))
                {
-               if ((enableHighWordGRA) && (grn >= self()->getFirstGlobalGPR() && grn <= self()->getLastGlobalGPR()))
+               if ((self()->supportsHighWordFacility()) && (grn >= self()->getFirstGlobalGPR() && grn <= self()->getLastGlobalGPR()))
                   {
                   TR_GlobalRegisterNumber grnHPR = self()->getFirstGlobalHPR() - self()->getFirstGlobalGPR() + grn;
                   _globalRegisterBitVectors[ TR_linkageSpill  ].set(grnHPR);
@@ -1194,25 +1188,6 @@ OMR::Z::CodeGenerator::canUseImmedInstruction( int64_t value )
       return true;
    else
       return false;
-   }
-
-
-// Use with care, lightly tested
-// Z
-void OMR::Z::CodeGenerator::changeRegisterKind(TR::Register * temp, TR_RegisterKinds rk)
-   {
-   if (rk == temp->getKind()) return;
-   if (_liveRegisters[temp->getKind()] && _liveRegisters[rk])
-      TR_LiveRegisters::moveRegToList(_liveRegisters[temp->getKind()], _liveRegisters[rk], temp);
-   temp->setKind(rk);
-   }
-
-void
-OMR::Z::CodeGenerator::ensure64BitRegister(TR::Register *reg)
-   {
-   if (self()->use64BitRegsOn32Bit() && TR::Compiler->target.is32Bit() &&
-       reg->getKind() == TR_GPR)
-      self()->changeRegisterKind(reg, TR_GPR64);
    }
 
 bool
@@ -2573,30 +2548,9 @@ OMR::Z::CodeGenerator::doRegisterAssignment(TR_RegisterKinds kindsToAssign)
       {
       if (self()->getDebug())
          {
-         TR_RegisterKinds rks = (TR_RegisterKinds)(TR_GPR_Mask | TR_FPR_Mask | TR_VRF_Mask);
-         if (self()->supportsHighWordFacility() && !self()->comp()->getOption(TR_DisableHighWordRA))
-            rks = (TR_RegisterKinds) ((int)rks | TR_HPR_Mask);
+         TR_RegisterKinds rks = (TR_RegisterKinds)(TR_GPR_Mask | TR_HPR_Mask | TR_FPR_Mask | TR_VRF_Mask);
 
          self()->getDebug()->startTracingRegisterAssignment("backward", rks);
-         }
-      }
-
-   // pre-pass to set all internal control flow reg deps to 64bit regs
-   TR::Instruction * currInst = instructionCursor;
-   if (self()->supportsHighWordFacility() && !self()->comp()->getOption(TR_DisableHighWordRA) && TR::Compiler->target.is64Bit())
-      {
-      while (currInst)
-         {
-         TR::LabelSymbol *labelSym = currInst->isLabel() ? toS390LabelInstruction(currInst)->getLabelSymbol() : NULL;
-         if (labelSym && labelSym->isEndInternalControlFlow())
-            {
-            if (currInst->getDependencyConditions())
-               {
-               // traceMsg(comp(), "\nsetting all conds on [%p] to be 64-bit regs", currInst);
-               currInst->getDependencyConditions()->set64BitRegisters();
-               }
-            }
-         currInst = currInst->getPrev();
          }
       }
 
@@ -2663,7 +2617,7 @@ OMR::Z::CodeGenerator::doRegisterAssignment(TR_RegisterKinds kindsToAssign)
 
       self()->tracePreRAInstruction(instructionCursor);
 
-      if (self()->supportsHighWordFacility() && !self()->comp()->getOption(TR_DisableHighWordRA) && !self()->comp()->getOption(TR_DisableHPRUpgrade))
+      if (self()->supportsHighWordFacility() && !self()->comp()->getOption(TR_DisableHPRUpgrade))
          {
          TR::Instruction * newInst = self()->upgradeToHPRInstruction(instructionCursor);
          if (newInst)
@@ -2671,7 +2625,7 @@ OMR::Z::CodeGenerator::doRegisterAssignment(TR_RegisterKinds kindsToAssign)
             instructionCursor = newInst;
             }
          }
-      if (self()->supportsHighWordFacility() && self()->comp()->getOption(TR_DisableHighWordRA))
+      if (self()->supportsHighWordFacility())
          self()->setAvailableHPRSpillMask(0xffff0000);
 
       prevInstruction = instructionCursor->getPrev();
@@ -2962,7 +2916,7 @@ OMR::Z::CodeGenerator::supportsNonHelper(TR::SymbolReferenceTable::CommonNonhelp
       case TR::SymbolReferenceTable::atomicAddSymbol:
       case TR::SymbolReferenceTable::atomicFetchAndAddSymbol:
          {
-         result = self()->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z196) && (TR::Compiler->target.is64Bit() || self()->use64BitRegsOn32Bit());
+         result = self()->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z196);
          break;
          }
 
@@ -3387,16 +3341,7 @@ OMR::Z::CodeGenerator::allocateConsecutiveRegisterPair()
 TR::RegisterPair *
 OMR::Z::CodeGenerator::allocateConsecutiveRegisterPair(TR::Register * lowRegister, TR::Register * highRegister)
    {
-   TR::RegisterPair * regPair = NULL;
-
-   if (lowRegister->getKind() == TR_GPR64 && highRegister->getKind() == TR_GPR64)
-      {
-      regPair = self()->allocate64bitRegisterPair(lowRegister, highRegister);
-      }
-   else
-      {
-      regPair = self()->allocateRegisterPair(lowRegister, highRegister);
-      }
+   TR::RegisterPair * regPair = self()->allocateRegisterPair(lowRegister, highRegister);
 
    // Set associations for providing hint to RA
    regPair->setAssociation(TR::RealRegister::EvenOddPair);
@@ -3691,9 +3636,6 @@ OMR::Z::CodeGenerator::getMaximumNumberOfGPRsAllowedAcrossEdge(TR::Node * node)
    bool isFloat = false;
    bool isBCD = false;
 
-   bool longNeeds1Reg = TR::Compiler->target.is64Bit() || self()->use64BitRegsOn32Bit();
-
-
    if (node->getOpCode().isIf() && node->getNumChildren() > 0 && !node->getOpCode().isCompBranchOnly())
       {
       TR::DataType dt = node->getFirstChild()->getDataType();
@@ -3731,36 +3673,18 @@ OMR::Z::CodeGenerator::getMaximumNumberOfGPRsAllowedAcrossEdge(TR::Node * node)
          {
          int64_t value = getIntegralValue(node->getSecondChild());
 
-         if (longNeeds1Reg)
+         if (value >= MIN_IMMEDIATE_VAL && value <= MAX_IMMEDIATE_VAL)
             {
-            if (value >= MIN_IMMEDIATE_VAL && value <= MAX_IMMEDIATE_VAL)
-               {
-               return maxGPRs - 1;   // CGHI R,IMM
-               }
-            else
-               {
-               return maxGPRs - 2;   // CGR R1,R2
-               }
+            return maxGPRs - 1;   // CGHI R,IMM
             }
-         else // 32bit
+         else
             {
-            int32_t valueHigh = node->getSecondChild()->getLongIntHigh();
-            int32_t valueLow = node->getSecondChild()->getLongIntLow();
-
-            if ((valueHigh >= MIN_IMMEDIATE_VAL && valueHigh <= MAX_IMMEDIATE_VAL) &&
-               (valueLow >= MIN_IMMEDIATE_VAL && valueLow <= MAX_IMMEDIATE_VAL))
-               {
-               return maxGPRs - 2;   // CHI Rh,IMM_H & CLFI Rl,IMM_L
-               }
-            else
-               {
-               return maxGPRs - 3;   // Need one extra reg to manufacture IMM
-               }
+            return maxGPRs - 2;   // CGR R1,R2
             }
          }
       else
          {
-         return longNeeds1Reg ? maxGPRs - 2 : maxGPRs - 5;
+         return maxGPRs - 2;
          }
       }
    else if (node->getOpCode().isIf() && isFloat)
@@ -3873,7 +3797,7 @@ OMR::Z::CodeGenerator::allocateClobberableRegister(TR::Register *srcRegister)
       }
    else //todo: what about FPR?
       {
-      targetRegister = self()->allocate64bitRegister();
+      targetRegister = self()->allocateRegister();
       }
 
    if (srcRegister->containsInternalPointer())
@@ -3906,46 +3830,7 @@ OMR::Z::CodeGenerator::gprClobberEvaluate(TR::Node * node, bool force_copy, bool
    if (!self()->canClobberNodesRegister(node, 1, &data, ignoreRefCount) || force_copy)
       {
       char * CLOBBER_EVAL = "LR=Clobber_eval";
-      if (TR::Compiler->target.is32Bit() && !self()->use64BitRegsOn32Bit() && node->getType().isInt64())
-         {
-         TR::RegisterPair * trgRegPair = (TR::RegisterPair *) srcRegister;
-         TR::Register * lowRegister = srcRegister->getLowOrder();
-         TR::Register * highRegister = srcRegister->getHighOrder();
-         bool allocatePair=false;
-         if (!data.canClobberLowWord())
-            {
-            lowRegister = self()->allocateRegister();
-            self()->stopUsingRegister(lowRegister); // Allocate pair will make these live again
-            allocatePair = true;
-            }
-         if (!data.canClobberHighWord())
-            {
-            highRegister = self()->allocateRegister();
-            self()->stopUsingRegister(highRegister); // Allocate pair will make these live again
-            allocatePair = true;
-            }
-
-         TR::RegisterPair * tempRegPair = allocatePair ? self()->allocateConsecutiveRegisterPair(lowRegister, highRegister) : trgRegPair;
-         if (!data.canClobberLowWord())
-            {
-            cursor = generateRRInstruction(self(), TR::InstOpCode::LR, node, tempRegPair->getLowOrder(), trgRegPair->getLowOrder());
-            if (debugObj)
-               {
-               debugObj->addInstructionComment(toS390RRInstruction(cursor), CLOBBER_EVAL);
-               }
-            }
-
-         if (!data.canClobberHighWord())
-            {
-            cursor = generateRRInstruction(self(), TR::InstOpCode::LR, node, tempRegPair->getHighOrder(), trgRegPair->getHighOrder());
-            if (debugObj)
-               {
-               debugObj->addInstructionComment(toS390RRInstruction(cursor), CLOBBER_EVAL);
-               }
-            }
-         return tempRegPair;
-         }
-      else if (node->getOpCode().isFloat())
+      if (node->getOpCode().isFloat())
          {
          TR::Register * targetRegister = self()->allocateSinglePrecisionRegister();
          cursor = generateRRInstruction(self(), TR::InstOpCode::LER, node, targetRegister, srcRegister);
@@ -5098,7 +4983,7 @@ OMR::Z::CodeGenerator::buildRegisterMapForInstruction(TR_GCStackMap * map)
    TR::GCStackAtlas * atlas = self()->getStackAtlas();
 
 
-   if (self()->supportsHighWordFacility() && !self()->comp()->getOption(TR_DisableHighWordRA))
+   if (self()->supportsHighWordFacility())
       {
       for (int32_t i = TR::RealRegister::FirstHPR; i <= TR::RealRegister::LastHPR; i++)
          {
@@ -5344,10 +5229,7 @@ OMR::Z::CodeGenerator::isAddressOfPrivateStaticSymRefWithLockedReg(TR::SymbolRef
 bool
 OMR::Z::CodeGenerator::canUseRelativeLongInstructions(int64_t value)
    {
-
    if ((value < 0) || (value % 2 != 0)) return false;
-
-   if (TR::Compiler->target.is32Bit() && !self()->use64BitRegsOn32Bit()) return true;
 
    if (TR::Compiler->target.isLinux())
       {
@@ -5638,8 +5520,6 @@ OMR::Z::CodeGenerator::signExtendedHighOrderBits( TR::Node * node, TR::Register 
 bool
 OMR::Z::CodeGenerator::signExtendedHighOrderBits( TR::Node * node, TR::Register * targetRegister, TR::Register * srcRegister, uint32_t numberOfBits)
    {
-   bool is64BitReg = (targetRegister->getKind() == TR_GPR64);
-
    switch (numberOfBits)
       {
       case 16:
@@ -5652,15 +5532,11 @@ OMR::Z::CodeGenerator::signExtendedHighOrderBits( TR::Node * node, TR::Register 
          break;
 
       case 48:
-         TR_ASSERT(TR::Compiler->target.is64Bit() || is64BitReg, "This shift can only work on 64 bits register!\n");
-
          // Can use Load Halfword to sign extended & load bits 48-63 from source to target register
          generateRRInstruction(self(), TR::InstOpCode::LGHR, node, targetRegister, srcRegister);
          break;
 
       case 56:
-         TR_ASSERT(TR::Compiler->target.is64Bit() || is64BitReg, "This shift can only work on 64 bits register!\n");
-
          // Can use Load Byte to sign extended & load bits 56-63 from source to target register
          generateRRInstruction(self(), TR::InstOpCode::LGBR, node, targetRegister, srcRegister);
          break;
@@ -5706,15 +5582,11 @@ OMR::Z::CodeGenerator::clearHighOrderBits( TR::Node * node, TR::Register * targe
          break;
 
       case 48:
-         TR_ASSERT(TR::Compiler->target.is64Bit() || srcRegister->getKind()==TR_GPR64, "This shift can only work on 64 bits register!\n");
-
          // Can use Load Logical Halfword to load bits 48-63 from source to target register.
          generateRRInstruction(self(), TR::InstOpCode::LLGHR, node, targetRegister, srcRegister);
          break;
 
       case 56:
-         TR_ASSERT(TR::Compiler->target.is64Bit() || srcRegister->getKind()==TR_GPR64, "This shift can only work on 64 bits register!\n");
-
          // Can use Load Logical Character to load bits 56-63 from source to target register.
          generateRRInstruction(self(), TR::InstOpCode::LLGCR, node, targetRegister, srcRegister);
          break;

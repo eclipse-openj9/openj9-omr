@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -149,7 +149,7 @@ OMR::Z::RealRegister::getSiblingWordRegister()
 bool
 OMR::Z::RealRegister::setHasBeenAssignedInMethod(bool b)
    {
-   if (self()->getAssignedRegister() && (self()->getAssignedRegister()->isUpperBitsAreDirty() || self()->getAssignedRegister()->getKind() == TR_GPR64) )
+   if (self()->getAssignedRegister() && self()->getAssignedRegister()->isUpperBitsAreDirty())
       (b)? self()->setAssignedHigh(true) : self()->setAssignedHigh(false);
 
    return OMR::RealRegister::setHasBeenAssignedInMethod(b); //call base class

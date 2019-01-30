@@ -407,9 +407,6 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"disableLocalVP",                     "O\tdisable local value propagation",                TR::Options::disableOptimization, localValuePropagation, 0, "P"},
    {"disableLocalVPSkipLowFreqBlock",     "O\tDo not skip processing of low frequency blocks in localVP", RESET_OPTION_BIT(TR_EnableLocalVPSkipLowFreqBlock), "F" },
    {"disableLockReservation",             "O\tdisable lock reservation",                       SET_OPTION_BIT(TR_DisableLockResevation), "F"},
-   // For PLX debug use
-   {"disableLongRegAllocation",           "O\tdisable allocation of 64-bit regs on 32-bit",    SET_OPTION_BIT(TR_Disable64BitRegsOn32Bit), "F"},
-   {"disableLongRegAllocationHeuristic",  "O\tdisable heuristic for long register allocation", SET_OPTION_BIT(TR_Disable64BitRegsOn32BitHeuristic), "F"},
    {"disableLookahead",                   "O\tdisable class lookahead",                        SET_OPTION_BIT(TR_DisableLookahead), "P"},
    {"disableLoopAliasRefiner",            "O\tdisable loop alias refinement",                         TR::Options::disableOptimization, loopAliasRefiner, 0, "P"},
    {"disableLoopCanonicalization",        "O\tdisable loop canonicalization",                  TR::Options::disableOptimization, loopCanonicalization, 0, "P"},
@@ -789,7 +786,6 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"forceFullSpeedDebug", "M\tForce JIT to pretend that debug mode is activated",
     SET_OPTION_BIT(TR_FullSpeedDebug), "P", NOT_IN_SUBSET},
    {"forceIEEEDivideByZeroException", "O\tForce IEEE divide by zero exception bit on when performing DFP division", SET_OPTION_BIT(TR_ForceIEEEDivideByZeroException), "F"},
-   {"forceLargeRAMoves", "O\tAlways use 64 bit register moves in RA", SET_OPTION_BIT(TR_ForceLargeRAMoves), "F"},
    {"forceLoadAOT", "M\tForce loading of relocatable code outside of class load phase from the shared cache",
     SET_OPTION_BIT(TR_ForceLoadAOT), "P", NOT_IN_SUBSET},
    {"forceNonSMP",                           "D\tforce UniP code generation.", SET_OPTION_BIT(TR_ForceNonSMP), "F"},

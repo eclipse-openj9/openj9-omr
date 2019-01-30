@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -3115,7 +3115,6 @@ TR_Debug::getRegisterKindName(TR_RegisterKinds rk)
       case TR_VRF:   return "VRF";
       case TR_VSX_SCALAR:   return "VSX_SCALAR";
       case TR_VSX_VECTOR:   return "VSX_VECTOR";
-      case TR_GPR64: return "GPR64";
       case TR_SSR:   return "SSR";
       default:       return "??R";
       }

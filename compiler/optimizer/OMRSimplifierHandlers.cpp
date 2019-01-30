@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -11297,10 +11297,8 @@ TR::Node *lorSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
       }
 
-
-   // For 32 bit platforms (p and z), evaluator due to historical reasons, evaluator for rotate does not support 64 bit regs on a 32 bit platform by default
-   // Need to disable this transform until that support is added.
-   if((TR::Compiler->target.is64Bit() || s->comp()->cg()->use64BitRegsOn32Bit()) && checkAndReplaceRotation<int64_t>(node,block,s))
+   // Disable transformation if rotate evaluator does not support 64-bit registers on 32-bit platform
+   if ((TR::Compiler->target.is64Bit() || s->comp()->cg()->use64BitRegsOn32Bit()) && checkAndReplaceRotation<int64_t>(node,block,s))
       {
       return node;
       }
@@ -11618,10 +11616,8 @@ TR::Node *lxorSimplifier(TR::Node * node, TR::Block * block, TR::Simplifier * s)
 
       }
 
-
-   // For 32 bit platforms (p and z), evaluator due to historical reasons, evaluator for rotate does not support 64 bit regs on a 32 bit platform by default
-   // Need to disable this transform until that support is added.
-   if( (TR::Compiler->target.is64Bit() || s->comp()->cg()->use64BitRegsOn32Bit()) && checkAndReplaceRotation<int64_t>(node,block,s))
+   // Disable transformation if rotate evaluator does not support 64-bit registers on 32-bit platform
+   if ((TR::Compiler->target.is64Bit() || s->comp()->cg()->use64BitRegsOn32Bit()) && checkAndReplaceRotation<int64_t>(node,block,s))
       {
       return node;
       }

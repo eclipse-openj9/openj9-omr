@@ -3917,6 +3917,7 @@ TR_Debug::getRuntimeHelperName(int32_t index)
          case TR_jitResolveStaticFieldDirect: return "jitResolveStaticFieldDirect";
          case TR_jitResolveStaticFieldSetterDirect:  return "jitResolveStaticFieldSetterDirect";
          case TR_reportMethodExit:          return "jitReportMethodExit";
+         case TR_reportFinalFieldModified:  return "jitReportFinalFieldModified";
          case TR_acquireVMAccess:           return "jitAcquireVMAccess";
          case TR_jitCheckIfFinalizeObject:  return "jitCheckIfFinalizeObject";
          case TR_releaseVMAccess:           return "jitReleaseVMAccess";

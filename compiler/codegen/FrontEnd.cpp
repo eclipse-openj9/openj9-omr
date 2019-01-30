@@ -361,15 +361,6 @@ TR_FrontEnd::getClassClassPointer(TR_OpaqueClassBlock *objectClassPointer)
    return 0;
    }
 
-
-TR::CodeCache *
-TR_FrontEnd::getDesignatedCodeCache(TR::Compilation *comp)
-   {
-   notImplemented("getDesignatedCodeCache");
-   return 0;
-   }
-
-
 void
 TR_FrontEnd::reserveTrampolineIfNecessary(TR::Compilation *, TR::SymbolReference *symRef, bool inBinaryEncoding)
    {

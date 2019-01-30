@@ -92,8 +92,6 @@ class FEBase : public FECommon
    JitConfig *jitConfig() { return &_config; }
    TR::CodeCacheManager &codeCacheManager() { return _codeCacheManager; }
 
-   virtual TR::CodeCache *getDesignatedCodeCache(TR::Compilation *);
-
    virtual uint8_t *allocateCodeMemory(TR::Compilation *comp, uint32_t warmCodeSize, uint32_t coldCodeSize,
                                        uint8_t **coldCode, bool isMethodHeaderNeeded);
    virtual uint8_t * allocateRelocationData(TR::Compilation* comp, uint32_t size);

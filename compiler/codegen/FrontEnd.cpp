@@ -97,18 +97,6 @@ TR_FrontEnd::allocateCodeMemory(TR::Compilation *, uint32_t warmCodeSize, uint32
    return 0;
    }
 
-/*
- * Return conservative approximation of code-cache base.
- */
-uint8_t * TR_FrontEnd::getCodeCacheBase()                          { return 0; }
-uint8_t * TR_FrontEnd::getCodeCacheBase(TR::CodeCache *codeCache)  { return 0; }
-
-/*
- * Return conservative approximation of code cache top.
- */
-uint8_t * TR_FrontEnd::getCodeCacheTop()                           { return (uint8_t*)(~0); }
-uint8_t * TR_FrontEnd::getCodeCacheTop(TR::CodeCache *codeCache)   { return (uint8_t*)(~0); }
-
 void
 TR_FrontEnd::releaseCodeMemory(void *, uint8_t)
    {

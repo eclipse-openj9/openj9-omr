@@ -247,12 +247,6 @@ public:
    virtual intptrj_t methodTrampolineLookup(TR::Compilation *, TR::SymbolReference *symRef, void * callSite);
    virtual intptrj_t indexedTrampolineLookup(int32_t helperIndex, void * callSite); // No TR::Compilation parameter so this can be called from runtime code
 
-   // Z only
-   virtual uint8_t * getCodeCacheBase();
-   virtual uint8_t * getCodeCacheBase(TR::CodeCache *);
-   virtual uint8_t * getCodeCacheTop();
-   virtual uint8_t * getCodeCacheTop(TR::CodeCache *);
-
    // --------------------------------------------------------------------------
    // Stay in FrontEnd
    // --------------------------------------------------------------------------

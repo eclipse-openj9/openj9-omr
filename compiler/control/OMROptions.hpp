@@ -955,7 +955,7 @@ enum TR_CompilationOptions
    TR_IncreaseCountsForNonBootstrapMethods            = 0x00080000 + 29,
    TR_ReduceCountsForMethodsCompiledDuringStartup     = 0x00100000 + 29,
    TR_IncreaseCountsForMethodsCompiledOutsideStartup  = 0x00200000 + 29,
-   TR_EnableMethodTrampolineReservation               = 0x00400000 + 29,
+   // Available                                       = 0x00400000 + 29,
    TR_UseGlueIfMethodTrampolinesAreNotNeeded          = 0x00800000 + 29,
    TR_EnableFpreductionAnnotation                     = 0x01000000 + 29,
    TR_ExtractExitsByInvalidatingStructure             = 0x02000000 + 29,

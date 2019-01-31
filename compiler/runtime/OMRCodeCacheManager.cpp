@@ -151,7 +151,6 @@ OMR::CodeCacheManager::initialize(
         || config.maxNumberOfCodeCaches() == 1
 #if !defined(TR_HOST_POWER)
         || (!TR::Options::getCmdLineOptions()->getOption(TR_StressTrampolines) &&
-            !TR::Options::getCmdLineOptions()->getOption(TR_EnableMethodTrampolineReservation) &&
             _codeCacheRepositorySegment &&
             config.codeCacheTotalKB() <= REACHEABLE_RANGE_KB)
 #endif

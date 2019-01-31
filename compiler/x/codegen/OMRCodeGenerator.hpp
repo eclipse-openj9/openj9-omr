@@ -604,6 +604,17 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
 
    virtual void simulateNodeEvaluation (TR::Node *node, TR_RegisterPressureState *state, TR_RegisterPressureSummary *summary);
 
+   /**
+    * @brief Answers whether a trampoline is required for a direct call instruction to
+    *           reach a target address.
+    *
+    * @param[in] targetAddress : the absolute address of the call target
+    * @param[in] sourceAddress : the absolute address of the call instruction
+    *
+    * @return : true if a trampoline is required; false otherwise.
+    */
+   bool directCallRequiresTrampoline(intptrj_t targetAddress, intptrj_t sourceAddress);
+
    protected:
 
    CodeGenerator();
@@ -813,7 +824,7 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
 //
 
 #if defined(TR_TARGET_64BIT)
-#define NEEDS_TRAMPOLINE(target, rip, cg) (cg->alwaysUseTrampolines() || !IS_32BIT_RIP((target), (rip)))
+#define NEEDS_TRAMPOLINE(target, rip, cg) (cg->directCallRequiresTrampoline((intptrj_t)target, (intptrj_t)rip))
 #else
 // Give the C++ compiler a hand
 #define NEEDS_TRAMPOLINE(target, rip, cg) (0)

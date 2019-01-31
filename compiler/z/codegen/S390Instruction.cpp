@@ -1969,7 +1969,7 @@ TR::S390RILInstruction::adjustCallOffsetWithTrampoline(int32_t offset, uint8_t *
    // Check to make sure that we can reach our target!  Otherwise, we need to look up appropriate
    // trampoline and branch through the trampoline.
 
-   if (cg()->comp()->getOption(TR_StressTrampolines) || (!CHECK_32BIT_TRAMPOLINE_RANGE(getTargetPtr(), (uintptrj_t)currentInst)))
+   if (cg()->directCallRequiresTrampoline(getTargetPtr(), (intptrj_t)currentInst))
       {
       intptrj_t targetAddr;
 
@@ -1981,7 +1981,9 @@ TR::S390RILInstruction::adjustCallOffsetWithTrampoline(int32_t offset, uint8_t *
       else
          targetAddr = cg()->fe()->methodTrampolineLookup(cg()->comp(), getSymbolReference(), (void *)currentInst);
 
-      TR_ASSERT(CHECK_32BIT_TRAMPOLINE_RANGE(targetAddr,(uintptrj_t)currentInst), "Local Trampoline must be directly reachable.\n");
+      TR_ASSERT_FATAL(TR::Compiler->target.cpu.isTargetWithinBranchRelativeRILRange(targetAddr, (intptrj_t)currentInst),
+                      "Local trampoline must be directly reachable.");
+
       offsetHalfWords = (int32_t)((targetAddr - (uintptrj_t)currentInst) / 2);
       }
 
@@ -2041,7 +2043,7 @@ TR::S390RILInstruction::generateBinaryEncoding()
 
       i2 = (int32_t)((addr - (uintptrj_t)cursor) / 2);
 
-      if (CHECK_32BIT_TRAMPOLINE_RANGE(getTargetPtr(), (uintptrj_t)cursor))
+      if (TR::Compiler->target.cpu.isTargetWithinBranchRelativeRILRange((intptrj_t)getTargetPtr(), (intptrj_t)cursor))
          {
          getOpCode().copyBinaryToBuffer(instructionStart);
          toRealRegister(getRegisterOperand(1))->setRegister1Field((uint32_t *) cursor);
@@ -2282,7 +2284,7 @@ TR::S390RILInstruction::generateBinaryEncoding()
             // Check to make sure that we can reach our target!  Otherwise, we
             // need to look up appropriate trampoline and branch through the
             // trampoline.
-            if (!isImmediateOffsetInBytes() && !CHECK_32BIT_TRAMPOLINE_RANGE(getTargetPtr(), (uintptrj_t)cursor))
+            if (!isImmediateOffsetInBytes() && !TR::Compiler->target.cpu.isTargetWithinBranchRelativeRILRange((intptrj_t)getTargetPtr(), (intptrj_t)cursor))
                {
                intptrj_t targetAddr = ((intptrj_t)(cursor) + ((intptrj_t)(i2) * 2));
                TR_ASSERT( targetAddr != getTargetPtr(), "LARL is correct already!\n");

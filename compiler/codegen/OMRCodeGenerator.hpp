@@ -1387,15 +1387,28 @@ class OMR_EXTENSIBLE CodeGenerator
 
    TR::RealRegister **_unlatchedRegisterList; // dynamically allocated
 
-   bool alwaysUseTrampolines() { return _enabledFlags.testAny(AlwaysUseTrampolines); }
-   void setAlwaysUseTrampolines() {_enabledFlags.set(AlwaysUseTrampolines);}
-
    bool shouldBuildStructure() { return _enabledFlags.testAny(ShouldBuildStructure); }
    void setShouldBuildStructure() {_enabledFlags.set(ShouldBuildStructure);}
 
 
    bool enableRefinedAliasSets();
    void setEnableRefinedAliasSets() {_enabledFlags.set(EnableRefinedAliasSets);}
+
+   /**
+    * @brief Answers whether a trampoline is required for a direct call instruction to
+    *           reach a target address.  This function should be overridden by an
+    *           architecture-specific implementation.
+    *
+    * @param[in] targetAddress : the absolute address of the call target
+    * @param[in] sourceAddress : the absolute address of the call instruction
+    *
+    * @return : true, but will assert fatally before returning.
+    */
+   bool directCallRequiresTrampoline(intptrj_t targetAddress, intptrj_t sourceAddress)
+      {
+      TR_ASSERT_FATAL(0, "An architecture specialization of this function must be provided.");
+      return true;
+      }
 
    // --------------------------------------------------------------------------
 
@@ -1837,7 +1850,7 @@ class OMR_EXTENSIBLE CodeGenerator
       // AVAILABLE                     = 0x0002,
       // AVAILABLE                     = 0x0004,
       EnableRefinedAliasSets           = 0x0008,
-      AlwaysUseTrampolines             = 0x0010,
+      // AVAILABLE                     = 0x0010,
       ShouldBuildStructure             = 0x0020,
       LockFreeSpillList                = 0x0040,  // TAROK only (until it matures)
       UseNonLinearRegisterAssigner     = 0x0080,  // TAROK only (until it matures)

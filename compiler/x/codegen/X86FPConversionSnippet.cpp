@@ -32,6 +32,7 @@
 #include "codegen/Snippet.hpp"
 #include "codegen/SnippetGCMap.hpp"
 #include "compile/Compilation.hpp"
+#include "env/CompilerEnv.hpp"
 #include "env/IO.hpp"
 #include "env/jittypes.h"
 #include "il/DataTypes.hpp"
@@ -54,15 +55,20 @@ uint8_t *TR::X86FPConversionSnippet::emitSnippetBody()
 
 uint8_t *TR::X86FPConversionSnippet::emitCallToConversionHelper(uint8_t *buffer)
    {
+   intptrj_t callInstructionAddress = (intptrj_t)buffer;
+   intptrj_t nextInstructionAddress = callInstructionAddress+5;
+
    *buffer++ = 0xe8;      // CallImm4
 
    intptrj_t helperAddress = (intptrj_t)getHelperSymRef()->getMethodAddress();
-   if (NEEDS_TRAMPOLINE(helperAddress, buffer+4, cg()))
+   if (cg()->directCallRequiresTrampoline(helperAddress, callInstructionAddress))
       {
       helperAddress = cg()->fe()->indexedTrampolineLookup(getHelperSymRef()->getReferenceNumber(), (void *)buffer);
-      TR_ASSERT(IS_32BIT_RIP(helperAddress, buffer+4), "Local helper trampoline should be reachable directly.\n");
+
+      TR_ASSERT_FATAL(TR::Compiler->target.cpu.isTargetWithinRIPRange(helperAddress, nextInstructionAddress),
+                      "Local helper trampoline must be reachable directly");
       }
-   *(int32_t *)buffer = (int32_t)(helperAddress - (intptrj_t)(buffer+4));
+   *(int32_t *)buffer = (int32_t)(helperAddress - nextInstructionAddress);
    cg()->addProjectSpecializedRelocation(buffer, (uint8_t *)getHelperSymRef(), NULL, TR_HelperAddress,
                                                          __FILE__, __LINE__, getNode());
    buffer += 4;

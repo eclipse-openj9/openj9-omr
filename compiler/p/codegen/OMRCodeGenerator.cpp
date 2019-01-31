@@ -3704,3 +3704,12 @@ OMR::Power::CodeGenerator::supportsNonHelper(TR::SymbolReferenceTable::CommonNon
 
    return result;
    }
+
+bool
+OMR::Power::CodeGenerator::directCallRequiresTrampoline(intptrj_t targetAddress, intptrj_t sourceAddress)
+   {
+   return
+      !TR::Compiler->target.cpu.isTargetWithinIFormBranchRange(targetAddress, sourceAddress) ||
+      self()->comp()->getOption(TR_StressTrampolines);
+   }
+

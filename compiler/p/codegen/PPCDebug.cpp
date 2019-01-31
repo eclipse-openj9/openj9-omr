@@ -389,24 +389,24 @@ TR_Debug::print(TR::FILE *pOutFile, TR::PPCDepImmInstruction * instr)
 bool
 TR_Debug::isBranchToTrampoline(TR::SymbolReference *symRef, uint8_t *cursor, int32_t &distance)
    {
-   void *methodAddress = symRef->getMethodAddress();
+   intptrj_t methodAddress = (intptrj_t)(symRef->getMethodAddress());
+   bool requiresTrampoline = false;
 
-   distance = (intptrj_t)methodAddress - (intptrj_t)cursor;
-
-   if (distance < BRANCH_BACKWARD_LIMIT || distance > BRANCH_FORWARD_LIMIT)
+   if (_cg->directCallRequiresTrampoline(methodAddress, (intptrj_t)cursor))
       {
-      distance = _comp->fe()->indexedTrampolineLookup(symRef->getReferenceNumber(), (void *)cursor) - (intptrj_t)cursor;
-      return true;
+      methodAddress = _comp->fe()->indexedTrampolineLookup(symRef->getReferenceNumber(), (void *)cursor);
+      requiresTrampoline = true;
       }
-   return false;
+
+   distance = (int32_t)(methodAddress - (intptrj_t)cursor);
+   return requiresTrampoline;
    }
 
 void
 TR_Debug::print(TR::FILE *pOutFile, TR::PPCDepImmSymInstruction * instr)
    {
-   intptrj_t imm = instr->getAddrImmediate();
+   intptrj_t targetAddress = instr->getAddrImmediate();
    uint8_t *cursor = instr->getBinaryEncoding();
-   intptrj_t distance = 0;
    TR::Symbol *target = instr->getSymbolReference()->getSymbol();
    TR::LabelSymbol *label = target->getLabelSymbol();
 
@@ -414,31 +414,32 @@ TR_Debug::print(TR::FILE *pOutFile, TR::PPCDepImmSymInstruction * instr)
 
    if (cursor)
       {
-      distance = imm - (intptrj_t)cursor;
       if (label)
          {
-         distance = (intptrj_t)label->getCodeLocation() - (intptrj_t)cursor;
+         targetAddress = (intptrj_t)label->getCodeLocation();
          }
-      else if (imm == 0)
+      else if (targetAddress == 0)
          {
          uint8_t *jitTojitStart = _cg->getCodeStart();
 
          jitTojitStart += ((*(int32_t *)(jitTojitStart - 4)) >> 16) & 0x0000ffff;
-         distance = (intptrj_t)jitTojitStart - (intptrj_t)cursor;
+         targetAddress = (intptrj_t)jitTojitStart;
          }
-      else if (distance < BRANCH_BACKWARD_LIMIT || distance > BRANCH_FORWARD_LIMIT)
+      else if (_cg->directCallRequiresTrampoline(targetAddress, (intptrj_t)cursor))
          {
          int32_t refNum = instr->getSymbolReference()->getReferenceNumber();
          if (refNum < TR_PPCnumRuntimeHelpers)
             {
-            distance = _comp->fe()->indexedTrampolineLookup(refNum, (void *)cursor) - (intptrj_t)cursor;
+            targetAddress = _comp->fe()->indexedTrampolineLookup(refNum, (void *)cursor);
             }
          else
             {
-            distance = _comp->fe()->methodTrampolineLookup(_comp, instr->getSymbolReference(), (void *)cursor) - (intptrj_t)cursor;
+            targetAddress = _comp->fe()->methodTrampolineLookup(_comp, instr->getSymbolReference(), (void *)cursor);
             }
          }
       }
+
+   intptrj_t distance = targetAddress - (intptrj_t)cursor;
 
    const char *name = target ? getName(instr->getSymbolReference()) : 0;
    if (name)

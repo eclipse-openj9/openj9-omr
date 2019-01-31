@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -2332,10 +2332,12 @@ int32_t OMR::X86::CodeGenerator::branchDisplacementToHelperOrTrampoline(
    {
    intptrj_t helperAddress = (intptrj_t)helper->getMethodAddress();
 
-   if (NEEDS_TRAMPOLINE(helperAddress, nextInstructionAddress, self()))
+   if (self()->directCallRequiresTrampoline(helperAddress, (intptrj_t)nextInstructionAddress))
       {
       helperAddress = self()->fe()->indexedTrampolineLookup(helper->getReferenceNumber(), (void *)(nextInstructionAddress-4));
-      TR_ASSERT(IS_32BIT_RIP(helperAddress, nextInstructionAddress), "Local helper trampoline should be reachable directly.\n");
+
+      TR_ASSERT_FATAL(TR::Compiler->target.cpu.isTargetWithinRIPRange(helperAddress, (intptrj_t)nextInstructionAddress),
+                      "Local helper trampoline should be reachable directly");
       }
 
    return (int32_t)(helperAddress - (intptrj_t)(nextInstructionAddress));
@@ -3120,4 +3122,15 @@ OMR::X86::CodeGenerator::switchCodeCacheTo(TR::CodeCache *newCodeCache)
    {
    self()->setNumReservedIPICTrampolines(0);
    OMR::CodeGenerator::switchCodeCacheTo(newCodeCache);
+   }
+
+
+bool
+OMR::X86::CodeGenerator::directCallRequiresTrampoline(intptrj_t targetAddress, intptrj_t sourceAddress)
+   {
+   // Adjust the sourceAddress to the start of the following instruction (+5 bytes)
+   //
+   return
+      !TR::Compiler->target.cpu.isTargetWithinRIPRange(targetAddress, sourceAddress+5) ||
+      self()->comp()->getOption(TR_StressTrampolines);
    }

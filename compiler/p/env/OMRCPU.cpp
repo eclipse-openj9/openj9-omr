@@ -32,3 +32,11 @@ OMR::Power::CPU::getPPCis64bit()
 
    return (p >= TR_FirstPPC64BitProcessor)? true : false;
    }
+
+bool
+OMR::Power::CPU::isTargetWithinIFormBranchRange(intptrj_t targetAddress, intptrj_t sourceAddress)
+   {
+   intptrj_t range = targetAddress - sourceAddress;
+   return range <= self()->maxIFormBranchForwardOffset() &&
+          range >= self()->maxIFormBranchBackwardOffset();
+   }

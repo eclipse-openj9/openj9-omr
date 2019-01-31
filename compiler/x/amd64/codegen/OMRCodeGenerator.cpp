@@ -71,10 +71,6 @@ OMR::X86::AMD64::CodeGenerator::CodeGenerator() :
    if (accessStaticsIndirectly)
       self()->setAccessStaticsIndirectly(true);
 
-   static char *alwaysUseTrampolines = feGetEnv("TR_AlwaysUseTrampolines");
-   if (alwaysUseTrampolines)
-      self()->setAlwaysUseTrampolines();
-
    self()->setSupportsDoubleWordCAS();
    self()->setSupportsDoubleWordSet();
 

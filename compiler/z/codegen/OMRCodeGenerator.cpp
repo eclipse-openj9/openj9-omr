@@ -6924,3 +6924,11 @@ OMR::Z::CodeGenerator::findOrCreateLiteral(void *value, size_t len)
    return 0;
    }
 
+
+bool
+OMR::Z::CodeGenerator::directCallRequiresTrampoline(intptrj_t targetAddress, intptrj_t sourceAddress)
+   {
+   return
+      !TR::Compiler->target.cpu.isTargetWithinBranchRelativeRILRange(targetAddress, sourceAddress) ||
+      self()->comp()->getOption(TR_StressTrampolines);
+   }

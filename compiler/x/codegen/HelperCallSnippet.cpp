@@ -282,8 +282,9 @@ uint8_t *TR::X86HelperCallSnippet::genHelperCall(uint8_t *buffer)
 
    _callInstructionBufferAddress = buffer;
 
+   uint8_t *callInstructionAddress = buffer;
    *buffer++ = 0xe8; // CallImm4
-   *(int32_t *)buffer = branchDisplacementToHelper(buffer+4, getDestination(), cg());
+   *(int32_t *)buffer = branchDisplacementToHelper(callInstructionAddress, getDestination(), cg());
 
    cg()->addProjectSpecializedRelocation(buffer,(uint8_t *)getDestination(), NULL, TR_HelperAddress, __FILE__, __LINE__, _callNode);
 
@@ -481,19 +482,22 @@ uint32_t TR::X86HelperCallSnippet::getLength(int32_t estimatedSnippetStart)
 
 
 int32_t TR::X86HelperCallSnippet::branchDisplacementToHelper(
-   uint8_t            *nextInstructionAddress,
+   uint8_t            *callInstructionAddress,
    TR::SymbolReference *helper,
    TR::CodeGenerator   *cg)
    {
    intptrj_t helperAddress = (intptrj_t)helper->getMethodAddress();
+   intptrj_t nextInstructionAddress = (intptrj_t)(callInstructionAddress + 5);
 
-   if (NEEDS_TRAMPOLINE(helperAddress, nextInstructionAddress, cg))
+   if (cg->directCallRequiresTrampoline(helperAddress, (intptrj_t)callInstructionAddress))
       {
-      helperAddress = cg->fe()->indexedTrampolineLookup(helper->getReferenceNumber(), (void *)(nextInstructionAddress-4));
-      TR_ASSERT(IS_32BIT_RIP(helperAddress, nextInstructionAddress), "Local helper trampoline should be reachable directly.\n");
+      helperAddress = cg->fe()->indexedTrampolineLookup(helper->getReferenceNumber(), (void *)(callInstructionAddress+1));
+
+      TR_ASSERT_FATAL(TR::Compiler->target.cpu.isTargetWithinRIPRange(helperAddress, nextInstructionAddress),
+                      "Local helper trampoline should be reachable directly");
       }
 
-   return (int32_t)(helperAddress - (intptrj_t)(nextInstructionAddress));
+   return (int32_t)(helperAddress - nextInstructionAddress);
    }
 
 

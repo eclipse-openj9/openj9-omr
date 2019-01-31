@@ -127,7 +127,7 @@ extern int64_t getIntegralValue(TR::Node* node);
 #endif
 
 // Multi Code Cache Routines for checking whether an entry point is within reach of a BASRL.
-#define NEEDS_TRAMPOLINE(target, rip, cg) (cg->alwaysUseTrampolines() || !CHECK_32BIT_TRAMPOLINE_RANGE(target,rip))
+#define NEEDS_TRAMPOLINE(target, rip, cg) (cg->directCallRequiresTrampoline((intptrj_t)target, (intptrj_t)rip))
 
 #define TR_MAX_MVC_SIZE 256
 #define TR_MAX_CLC_SIZE 256
@@ -211,6 +211,17 @@ public:
    void insertInstructionPrefetches();
    void insertInstructionPrefetchesForCalls(TR_BranchPreloadCallData * data);
    bool hasWarmCallsBeforeReturn();
+
+   /**
+    * @brief Answers whether a trampoline is required for a direct call instruction to
+    *           reach a target address.
+    *
+    * @param[in] targetAddress : the absolute address of the call target
+    * @param[in] sourceAddress : the absolute address of the call instruction
+    *
+    * @return : true if a trampoline is required; false otherwise.
+    */
+   bool directCallRequiresTrampoline(intptrj_t targetAddress, intptrj_t sourceAddress);
 
    /**
     * \brief Tells the optimzers and codegen whether a load constant node should be rematerialized.

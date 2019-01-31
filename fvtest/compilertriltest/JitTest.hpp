@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2018 IBM Corp. and others
+ * Copyright (c) 2017, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -24,7 +24,7 @@
 
 #include <gtest/gtest.h>
 #include <vector>
-#include <stdexcept> 
+#include <stdexcept>
 #include "control/Options.hpp"
 #include "optimizer/Optimizer.hpp"
 #include "ilgen/MethodBuilder.hpp"
@@ -60,7 +60,7 @@ class JitTest : public ::testing::Test
    JitTest()
       {
       auto initSuccess = initializeJitWithOptions((char*)"-Xjit:acceptHugeMethods,enableBasicBlockHoisting,omitFramePointer,useILValidator,paranoidoptcheck");
-      if (!initSuccess) 
+      if (!initSuccess)
          throw std::runtime_error("Failed to initialize jit");
       }
 
@@ -71,26 +71,26 @@ class JitTest : public ::testing::Test
    };
 
 /**
- * @brief A fixture for testing with a customized optimization strategy. 
+ * @brief A fixture for testing with a customized optimization strategy.
  *
- * The design of this is such that it is expected sublasses will 
+ * The design of this is such that it is expected sublasses will
  * call addOptimization inside their constructor, so that SetUp will
  * know what opts to use.
  */
-class JitOptTest : public JitTest 
+class JitOptTest : public JitTest
    {
    public:
 
    JitOptTest() :
       JitTest(), _optimizations(), _strategy(NULL)
       {
-      } 
+      }
 
    virtual void SetUp()
       {
       JitTest::SetUp();
 
-      // This is an allocated pointer because the strategy needs to 
+      // This is an allocated pointer because the strategy needs to
       // live as long as this fixture
       _strategy = new OptimizationStrategy[_optimizations.size() + 1];
 
@@ -99,7 +99,7 @@ class JitOptTest : public JitTest
       }
 
 
-   ~JitOptTest() 
+   ~JitOptTest()
       {
       TR::Optimizer::setMockStrategy(NULL);
       delete[] _strategy;
@@ -243,7 +243,7 @@ std::vector<T> const_values()
                       static_cast<T>(std::numeric_limits<T>::min() + 1),
                       static_cast<T>(std::numeric_limits<T>::max() - 1)
                     };
-   
+
    return std::vector<T>(inputArray, inputArray + sizeof(inputArray) / sizeof(T));
    }
 

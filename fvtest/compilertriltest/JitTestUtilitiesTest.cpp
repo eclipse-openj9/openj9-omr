@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2017 IBM Corp. and others
+ * Copyright (c) 2017, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -84,7 +84,7 @@ TEST(TRTestCombineVectorTest, CombineEmptyVectorsOfDifferentTypes)
 TEST(TRTestCombineVectorTest, CombineEmptyAndNonEmptyVectorsOfSameType)
    {
    using namespace std;
-   int test_array[3] = {1, 2 ,3}; 
+   int test_array[3] = {1, 2 ,3};
    auto v = TRTest::combine(vector<int>{}, vector<int> (test_array, test_array+3));
    ::testing::StaticAssertTypeEq<vector<tuple<int,int>>, decltype (v)>();
    ASSERT_TRUE(v.empty())

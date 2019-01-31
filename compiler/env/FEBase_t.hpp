@@ -35,44 +35,6 @@
 namespace TR
 {
 
-template <class Derived>
-uint8_t *
-FEBase<Derived>::allocateCodeMemory(TR::Compilation *comp, uint32_t warmCodeSize, uint32_t coldCodeSize,
-                            uint8_t **coldCode, bool isMethodHeaderNeeded)
-   {
-   TR::CodeGenerator *cg = comp->cg();
-   TR::CodeCache *codeCache = cg->getCodeCache();
-
-   TR_ASSERT(codeCache->isReserved(), "Code cache should have been reserved.");
-
-   uint8_t *warmCode = codeCacheManager().allocateCodeMemory(warmCodeSize, coldCodeSize, &codeCache,
-                                                             coldCode, false, isMethodHeaderNeeded);
-
-   if (codeCache != cg->getCodeCache())
-      {
-      // Either we didn't get a code cache, or the one we get should be reserved
-      TR_ASSERT(!codeCache || codeCache->isReserved(), "Substitute code cache isn't marked as reserved");
-      comp->setRelocatableMethodCodeStart(warmCode);
-      cg->switchCodeCacheTo(codeCache);
-      }
-
-   if (warmCode == NULL)
-      {
-      if (codeCacheManager().codeCacheIsFull())
-         {
-         comp->failCompilation<TR::CodeCacheError>("Code Cache Full");
-         }
-      else
-         {
-         comp->failCompilation<TR::RecoverableCodeCacheError>("Failed to allocate code memory");
-         }
-      }
-
-   TR_ASSERT( !((warmCodeSize && !warmCode) || (coldCodeSize && !coldCode)), "Allocation failed but didn't throw an exception");
-
-   return warmCode;
-   }
-
 // This code does not really belong here (along with allocateRelocationData, really)
 // We should be relying on the port library to allocate memory, but this connection
 // has not yet been made, so as a quick workaround for platforms like OS X <= 10.9,

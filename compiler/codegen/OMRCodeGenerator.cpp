@@ -1719,28 +1719,76 @@ OMR::CodeGenerator::reserveCodeCache()
    }
 
 uint8_t *
-OMR::CodeGenerator::allocateCodeMemory(uint32_t warmSize, uint32_t coldSize, uint8_t **coldCode, bool isMethodHeaderNeeded)
+OMR::CodeGenerator::allocateCodeMemoryInner(
+      uint32_t warmCodeSizeInBytes,
+      uint32_t coldCodeSizeInBytes,
+      uint8_t **coldCode,
+      bool isMethodHeaderNeeded)
    {
-   uint8_t *warmCode;
-   warmCode = self()->fe()->allocateCodeMemory(self()->comp(), warmSize, coldSize, coldCode, isMethodHeaderNeeded);
-   if (self()->getCodeGeneratorPhase() == TR::CodeGenPhase::BinaryEncodingPhase)
+   TR::CodeCache *codeCache = self()->getCodeCache();
+
+   TR_ASSERT(codeCache->isReserved(), "Code cache should have been reserved.");
+
+   uint8_t *warmCode = TR::CodeCacheManager::instance()->allocateCodeMemory(
+         warmCodeSizeInBytes,
+         coldCodeSizeInBytes,
+         &codeCache,
+         coldCode,
+         false,
+         isMethodHeaderNeeded);
+
+   if (codeCache != self()->getCodeCache())
       {
-      self()->commitToCodeCache();
+      // Either we didn't get a code cache, or the one we got should be reserved
+      TR_ASSERT(!codeCache || codeCache->isReserved(), "Substitute code cache isn't marked as reserved");
+      self()->comp()->setRelocatableMethodCodeStart(warmCode);
+      self()->switchCodeCacheTo(codeCache);
       }
-   TR_ASSERT( !((warmSize && !warmCode) || (coldSize && !coldCode)), "Allocation failed but didn't throw an exception");
+
+   if (warmCode == NULL)
+      {
+      TR::Compilation *comp = self()->comp();
+
+      if (TR::CodeCacheManager::instance()->codeCacheIsFull())
+         {
+         comp->failCompilation<TR::CodeCacheError>("Code Cache Full");
+         }
+      else
+         {
+         comp->failCompilation<TR::RecoverableCodeCacheError>("Failed to allocate code memory");
+         }
+      }
+
+   TR_ASSERT( !((warmCodeSizeInBytes && !warmCode) || (coldCodeSizeInBytes && !coldCode)), "Allocation failed but didn't throw an exception");
+
    return warmCode;
    }
 
 uint8_t *
-OMR::CodeGenerator::allocateCodeMemory(uint32_t size, bool isCold, bool isMethodHeaderNeeded)
+OMR::CodeGenerator::allocateCodeMemory(uint32_t warmCodeSizeInBytes, uint32_t coldCodeSizeInBytes, uint8_t **coldCode, bool isMethodHeaderNeeded)
+   {
+   uint8_t *warmCode;
+   warmCode = self()->allocateCodeMemoryInner(warmCodeSizeInBytes, coldCodeSizeInBytes, coldCode, isMethodHeaderNeeded);
+
+   if (self()->getCodeGeneratorPhase() == TR::CodeGenPhase::BinaryEncodingPhase)
+      {
+      self()->commitToCodeCache();
+      }
+
+   TR_ASSERT( !((warmCodeSizeInBytes && !warmCode) || (coldCodeSizeInBytes && !coldCode)), "Allocation failed but didn't throw an exception");
+   return warmCode;
+   }
+
+uint8_t *
+OMR::CodeGenerator::allocateCodeMemory(uint32_t codeSizeInBytes, bool isCold, bool isMethodHeaderNeeded)
    {
    uint8_t *coldCode;
    if (isCold)
       {
-      self()->allocateCodeMemory(0, size, &coldCode, isMethodHeaderNeeded);
+      self()->allocateCodeMemory(0, codeSizeInBytes, &coldCode, isMethodHeaderNeeded);
       return coldCode;
       }
-   return self()->allocateCodeMemory(size, 0, &coldCode, isMethodHeaderNeeded);
+   return self()->allocateCodeMemory(codeSizeInBytes, 0, &coldCode, isMethodHeaderNeeded);
    }
 
 void

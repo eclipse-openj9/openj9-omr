@@ -783,8 +783,57 @@ class OMR_EXTENSIBLE CodeGenerator
    TR::CodeCache * getCodeCache() { return _codeCache; }
    void  setCodeCache(TR::CodeCache * codeCache) { _codeCache = codeCache; }
    void  reserveCodeCache();
-   uint8_t * allocateCodeMemory(uint32_t size, bool isCold, bool isMethodHeaderNeeded=true);
-   uint8_t * allocateCodeMemory(uint32_t warmSize, uint32_t coldSize, uint8_t **coldCode, bool isMethodHeaderNeeded=true);
+
+   /**
+    * \brief Allocates code memory of the specified size in the specified area of
+    *        the code cache.  The compilation will fail if unsuccessful.
+    *
+    * \param[in]  codeSizeInBytes : the number of bytes to allocate
+    * \param[in]  isCold : whether the allocation should be done in the cold area or not
+    * \param[in]  isMethodHeaderNeeded : boolean indicating whether space for a
+    *                method header must be allocated
+    *
+    * \return address of the allocated code (if allocated)
+    */
+   uint8_t *allocateCodeMemory(uint32_t codeSizeInBytes, bool isCold, bool isMethodHeaderNeeded=true);
+
+   /**
+    * \brief Allocates code memory of the specified size in the specified area of
+    *        the code cache.  The compilation will fail if unsuccessful.
+    *
+    * \param[in]  warmCodeSizeInBytes : the number of bytes to allocate in the warm area
+    * \param[in]  coldCodeSizeInBytes : the number of bytes to allocate in the cold area
+    * \param[out] coldCode : address of the cold code (if allocated)
+    * \param[in]  isMethodHeaderNeeded : boolean indicating whether space for a
+    *                method header must be allocated
+    *
+    * \return address of the allocated warm code (if allocated)
+    */
+   uint8_t *allocateCodeMemory(
+      uint32_t warmCodeSizeInBytes,
+      uint32_t coldCodeSizeInBytes,
+      uint8_t **coldCode,
+      bool isMethodHeaderNeeded=true);
+
+   /**
+    * \brief Allocates code memory of the specified size in the specified area of
+    *        the code cache.  The compilation will fail if unsuccessful.  This function
+    *        provides a means of specialization in the allocation process for downstream
+    *        consumers of this API.
+    *
+    * \param[in]  warmCodeSizeInBytes : the number of bytes to allocate in the warm area
+    * \param[in]  coldCodeSizeInBytes : the number of bytes to allocate in the cold area
+    * \param[out] coldCode : address of the cold code (if allocated)
+    * \param[in]  isMethodHeaderNeeded : boolean indicating whether space for a
+    *                method header must be allocated
+    *
+    * \return address of the allocated warm code (if allocated)
+    */
+   uint8_t *allocateCodeMemoryInner(
+      uint32_t warmCodeSizeInBytes,
+      uint32_t coldCodeSizeInBytes,
+      uint8_t **coldCode,
+      bool isMethodHeaderNeeded);
 
    /**
     * \brief Trim the size of code memory required by this method to match the

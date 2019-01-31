@@ -91,13 +91,6 @@ TR_FrontEnd::classHasBeenReplaced(TR_OpaqueClassBlock *)
    }
 
 uint8_t *
-TR_FrontEnd::allocateCodeMemory(TR::Compilation *, uint32_t warmCodeSize, uint32_t coldCodeSize, uint8_t ** coldCode, bool isMethodHeaderNeeded)
-   {
-   notImplemented("allocateCodeMemory");
-   return 0;
-   }
-
-uint8_t *
 TR_FrontEnd::allocateRelocationData(TR::Compilation * comp, uint32_t numBytes)
    {
    notImplemented("allocateRelocationData");

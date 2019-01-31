@@ -115,7 +115,7 @@ public:
 	static TR::Register *bstoreiEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *sstoreiEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *istoreiEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *GotoEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+	static TR::Register *gotoEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *ireturnEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *lreturnEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *freturnEvaluator(TR::Node *node, TR::CodeGenerator *cg);
@@ -130,6 +130,7 @@ public:
 	static TR::Register *dcallEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *acallEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *callEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+	static TR::Register *directCallEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *iaddEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *laddEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *faddEvaluator(TR::Node *node, TR::CodeGenerator *cg);
@@ -446,7 +447,7 @@ public:
 	static TR::Register *treetopEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *MethodEnterHookEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *MethodExitHookEvaluator(TR::Node *node, TR::CodeGenerator *cg);
-	static TR::Register *PassThroughEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+	static TR::Register *passThroughEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *compressedRefsEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *BBStartEvaluator(TR::Node *node, TR::CodeGenerator *cg);
 	static TR::Register *BBEndEvaluator(TR::Node *node, TR::CodeGenerator *cg);

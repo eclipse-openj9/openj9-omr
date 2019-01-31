@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -518,8 +518,6 @@ public:
    // Should be in Code Generator
    //
    // J9
-   int32_t getNumReservedIPICTrampolines() const { return _numReservedIPICTrampolines; }
-   void setNumReservedIPICTrampolines(int32_t n) { _numReservedIPICTrampolines = n; }
 
    TR::list<TR::Instruction*> *getStaticPICSites() {return &_staticPICSites;}
    TR::list<TR::Instruction*> *getStaticHCRPICSites() {return &_staticHCRPICSites;}
@@ -532,17 +530,24 @@ public:
    TR::list<TR::Snippet*> *getSnippetsToBePatchedOnClassRedefinition() { return &_snippetsToBePatchedOnClassRedefinition; }
    TR::list<TR_Pair<TR::Snippet,TR_ResolvedMethod> *> *getSnippetsToBePatchedOnRegisterNative() { return &_snippetsToBePatchedOnRegisterNative; }
 
-   void switchCodeCache(TR::CodeCache *newCodeCache);
-   bool getCodeCacheSwitched() { return _codeCacheSwitched; }
-
-   void setCurrentCodeCache(TR::CodeCache *codeCache);
-   TR::CodeCache *getCurrentCodeCache();
-
    TR_RegisterCandidates *getGlobalRegisterCandidates() { return _globalRegisterCandidates; }
    void setGlobalRegisterCandidates(TR_RegisterCandidates *t) { _globalRegisterCandidates = t; }
 
    bool hasNativeCall()                         { return _flags.testAny(HasNativeCall); }
    void setHasNativeCall()                      { _flags.set(HasNativeCall); }
+
+   /*
+   * \brief
+   *    This query tells whether the trees might contain rdbar/wrtbar opcodes
+   *    that are not fully supported by optimizer yet
+   *
+   * \note
+   *    This query is for temporarily fixing up unanchored rdbars or disable
+   *    opts not supporting the newly added rdbar/wrtbar opcodes. Subprojects
+   *    can override the answer. This query should be deleted eventually if
+   *    all the optimizations support the opcodes.
+   */
+   bool incompleteOptimizerSupportForReadWriteBarriers();
 
    // P codegen
    TR::list<TR_PrefetchInfo*> &getExtraPrefetchInfo() { return _extraPrefetchInfo; }
@@ -675,6 +680,18 @@ public:
    void verifyTrees(TR::ResolvedMethodSymbol *s = 0);
    void verifyBlocks(TR::ResolvedMethodSymbol *s = 0);
    void verifyCFG(TR::ResolvedMethodSymbol *s = 0);
+
+   /*
+   * \brief
+   *    Check to make sure the rdbars are anchored and anchor a rdbar if it's found unanchored
+   *
+   * \note
+   *    Ideally all optimizations should anchor a rdbar when it's created.
+   *    This API is for fixing the unanchored rdbars in case some optimizations forget to
+   *    anchor the node by mistake. Optimizations should still try to generate correct rdbar
+   *    trees instead of relying on this API.
+   */
+   void verifyAndFixRdbarAnchors();
 
    void setIlVerifier(TR::IlVerifier *ilVerifier) { _ilVerifier = ilVerifier; }
 
@@ -1137,7 +1154,6 @@ private:
 
    bool                              _usesPreexistence;
    bool                              _loopVersionedWrtAsyncChecks;
-   bool                              _codeCacheSwitched;
    bool                              _commitedCallSiteInfo;
    bool                              _containsBigDecimalLoad;
    bool                              _isOptServer;
@@ -1193,10 +1209,6 @@ private:
    void *                            _relocatableMethodCodeStart;
    const int32_t                     _compThreadID; // The ID of the supporting compilation thread; 0 for compilation an application thread
    volatile bool                     _failCHtableCommitFlag;
-
-   int32_t                           _numReservedIPICTrampolines;
-                                                              // The list is moved to the jittedBodyInfo at end of compilatuion
-
 
    PhaseTimingSummary                _phaseTimer;
    TR::PhaseMemSummary               _phaseMemProfiler;

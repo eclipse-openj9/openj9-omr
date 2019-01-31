@@ -31,6 +31,7 @@ set(OMR_EXAMPLE ON CACHE BOOL "Enable the Example application")
 ###
 ### Major Feature Flags
 ###
+
 set(OMR_TOOLS ON CACHE BOOL "Enable the native build tools")
 set(OMR_DDR ON CACHE BOOL "Enable DDR")
 set(OMR_RAS_TDF_TRACE ON CACHE BOOL "Enable trace engine")
@@ -45,6 +46,7 @@ set(OMR_JITBUILDER OFF CACHE BOOL "Enable building JitBuilder")
 set(OMR_TEST_COMPILER OFF CACHE BOOL "Enable building the test compiler")
 
 set(OMR_GC ON CACHE BOOL "Enable the GC")
+set(OMR_GC_TEST ${OMR_GC} CACHE BOOL "Enable the GC tests.")
 
 ## OMR_COMPILER is required for OMR_JITBUILDER and OMR_TEST_COMPILER
 if(NOT OMR_COMPILER)
@@ -105,6 +107,8 @@ set(OMR_GC_ARRAYLETS ON CACHE BOOL "TODO: Document")
 set(OMR_GC_BATCH_CLEAR_TLH ON CACHE BOOL "TODO: Document")
 set(OMR_GC_COMBINATION_SPEC ON CACHE BOOL "TODO: Document")
 set(OMR_GC_DEBUG_ASSERTS ON CACHE BOOL "TODO: Document")
+set(OMR_GC_EXPERIMENTAL_CONTEXT OFF CACHE BOOL "An experimental set of APIs for the GC. Off by default")
+set(OMR_GC_EXPERIMENTAL_OBJECT_SCANNER OFF CACHE BOOL "An experimental object scanner glue API.")
 set(OMR_GC_LARGE_OBJECT_AREA ON CACHE BOOL "TODO: Document")
 set(OMR_GC_MINIMUM_OBJECT_SIZE ON CACHE BOOL "TODO: Document")
 set(OMR_GC_MODRON_STANDARD ON CACHE BOOL "TODO: Document")

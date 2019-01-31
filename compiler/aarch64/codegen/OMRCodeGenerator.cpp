@@ -113,8 +113,8 @@ OMR::ARM64::CodeGenerator::CodeGenerator() :
 
    if (self()->comp()->getOptions()->getRegisterAssignmentTraceOption(TR_TraceRARegisterStates))
       {
-      self()->setGPRegisterIterator(new (self()->trHeapMemory()) TR::RegisterIterator(self()->machine(), TR_GPR));
-      self()->setFPRegisterIterator(new (self()->trHeapMemory()) TR::RegisterIterator(self()->machine(), TR_FPR));
+      self()->setGPRegisterIterator(new (self()->trHeapMemory()) TR::RegisterIterator(self()->machine(), TR::RealRegister::FirstGPR, TR::RealRegister::LastGPR));
+      self()->setFPRegisterIterator(new (self()->trHeapMemory()) TR::RegisterIterator(self()->machine(), TR::RealRegister::FirstFPR, TR::RealRegister::LastFPR));
       }
    }
 
@@ -392,6 +392,24 @@ TR_GlobalRegisterNumber OMR::ARM64::CodeGenerator::getLinkageGlobalRegisterNumbe
    TR_ASSERT(false, "Not implemented yet.");
 
    return 0;
+   }
+
+void OMR::ARM64::CodeGenerator::apply24BitLabelRelativeRelocation(int32_t *cursor, TR::LabelSymbol *label)
+   {
+   // for "b.cond" instruction
+   TR_ASSERT(label->getCodeLocation(), "Attempt to relocate to a NULL label address!");
+
+   intptrj_t distance = (uintptrj_t)label->getCodeLocation() - (uintptrj_t)cursor;
+   *cursor |= ((distance >> 2) & 0x7ffff) << 5; // imm19
+   }
+
+void OMR::ARM64::CodeGenerator::apply32BitLabelRelativeRelocation(int32_t *cursor, TR::LabelSymbol *label)
+   {
+   // for unconditional "b" instruction
+   TR_ASSERT(label->getCodeLocation(), "Attempt to relocate to a NULL label address!");
+
+   intptrj_t distance = (uintptrj_t)label->getCodeLocation() - (uintptrj_t)cursor;
+   *cursor |= ((distance >> 2) & 0x3ffffff); // imm26
    }
 
 int64_t OMR::ARM64::CodeGenerator::getLargestNegConstThatMustBeMaterialized()

@@ -21,7 +21,12 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
+#include "codegen/CodeGenerator.hpp"
 #include "codegen/Linkage.hpp"
+#include "codegen/MemoryReference.hpp"
+#include "il/Node.hpp"
+#include "il/Node_inlines.hpp"
 
 void OMR::ARM64::Linkage::mapStack(TR::ResolvedMethodSymbol *method)
    {
@@ -48,6 +53,19 @@ bool OMR::ARM64::Linkage::hasToBeOnStack(TR::ParameterSymbol *parm)
    return(false);
    }
 
+TR::MemoryReference *OMR::ARM64::Linkage::getOutgoingArgumentMemRef(TR::Register *argMemReg, TR::Register *argReg, TR::InstOpCode::Mnemonic opCode, TR::ARM64MemoryArgument &memArg)
+   {
+   TR::Machine *machine = cg()->machine();
+   const TR::ARM64LinkageProperties& properties = self()->getProperties();
+
+   TR::MemoryReference *result = new (self()->trHeapMemory()) TR::MemoryReference(argMemReg, 8, cg()); // post-increment
+   memArg.argRegister = argReg;
+   memArg.argMemory = result;
+   memArg.opCode = opCode; // opCode must be post-index form
+
+   return result;
+   }
+
 TR::Instruction *OMR::ARM64::Linkage::saveArguments(TR::Instruction *cursor)
    {
    TR_ASSERT(false, "Not implemented yet.");
@@ -71,36 +89,62 @@ TR::Instruction *OMR::ARM64::Linkage::flushArguments(TR::Instruction *cursor)
 
 TR::Register *OMR::ARM64::Linkage::pushIntegerWordArg(TR::Node *child)
    {
-   TR_ASSERT(false, "Not implemented yet.");
-
-   return NULL;
+   TR::CodeGenerator *cg = self()->cg();
+   TR::Register *pushRegister = NULL;
+   if (child->getRegister() == NULL && child->getOpCode().isLoadConst())
+      {
+      pushRegister = cg->allocateRegister();
+      loadConstant32(cg, child, child->getInt(), pushRegister);
+      child->setRegister(pushRegister);
+      }
+   else
+      {
+      pushRegister = cg->evaluate(child);
+      }
+   cg->decReferenceCount(child);
+   return pushRegister;
    }
 
 TR::Register *OMR::ARM64::Linkage::pushAddressArg(TR::Node *child)
    {
-   TR_ASSERT(false, "Not implemented yet.");
-
-   return NULL;
+   TR_ASSERT(child->getDataType() == TR::Address, "assumption violated");
+   TR::CodeGenerator *cg = self()->cg();
+   TR::Register *pushRegister = cg->evaluate(child);
+   cg->decReferenceCount(child);
+   return pushRegister;
    }
 
 TR::Register *OMR::ARM64::Linkage::pushLongArg(TR::Node *child)
    {
-   TR_ASSERT(false, "Not implemented yet.");
-
-   return NULL;
+   TR::CodeGenerator *cg = self()->cg();
+   TR::Register *pushRegister = NULL;
+   if (child->getRegister() == NULL && child->getOpCode().isLoadConst())
+      {
+      pushRegister = cg->allocateRegister();
+      loadConstant64(cg, child, child->getLongInt(), pushRegister);
+      child->setRegister(pushRegister);
+      }
+   else
+      {
+      pushRegister = cg->evaluate(child);
+      }
+   cg->decReferenceCount(child);
+   return pushRegister;
    }
 
 TR::Register *OMR::ARM64::Linkage::pushFloatArg(TR::Node *child)
    {
-   TR::Register *pushRegister = self()->cg()->evaluate(child);
-   self()->cg()->decReferenceCount(child);
+   TR::CodeGenerator *cg = self()->cg();
+   TR::Register *pushRegister = cg->evaluate(child);
+   cg->decReferenceCount(child);
    return pushRegister;
    }
 
 TR::Register *OMR::ARM64::Linkage::pushDoubleArg(TR::Node *child)
    {
-   TR::Register *pushRegister = self()->cg()->evaluate(child);
-   self()->cg()->decReferenceCount(child);
+   TR::CodeGenerator *cg = self()->cg();
+   TR::Register *pushRegister = cg->evaluate(child);
+   cg->decReferenceCount(child);
    return pushRegister;
    }
 

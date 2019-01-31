@@ -883,10 +883,12 @@ int32_t floatToInt(float value, bool roundUp)
    else
       {
       if (roundUp)
+         {
          if (value > 0)
             value += 0.5;
          else
             value -= 0.5;
+         }
       result = (int32_t)value;
       }
    return result;
@@ -906,10 +908,12 @@ int32_t doubleToInt(double value, bool roundUp)
    else
       {
       if (roundUp)
+         {
          if (value > 0)
             value += 0.5;
          else
             value -= 0.5;
+         }
 
       result = (int32_t)value;
       }

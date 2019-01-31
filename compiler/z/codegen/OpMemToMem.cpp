@@ -1864,7 +1864,7 @@ MemToMemTypedVarLenMacroOp::generateLoop()
 
       if (_srcReg != _startReg)
          {
-         generateRXYInstruction(_cg, TR::InstOpCode::LAY, _srcNode, _srcReg, new (_cg->trHeapMemory()) TR::MemoryReference(_srcReg, -1 * strideSize(), _cg));
+         generateRXInstruction(_cg, TR::InstOpCode::LAY, _srcNode, _srcReg, new (_cg->trHeapMemory()) TR::MemoryReference(_srcReg, -1 * strideSize(), _cg));
          }
 
       // _dstReg is decremented as part of BRXH
@@ -2046,7 +2046,7 @@ MemCpyVarLenTypedMacroOp::generateInstruction()
             {
             if (_needsGuardedLoad)
                {
-               cursor = generateRXYInstruction(_cg, TR::InstOpCode::LGG, _srcNode, _workReg, srcMR);
+               cursor = generateRXInstruction(_cg, TR::InstOpCode::LGG, _srcNode, _workReg, srcMR);
                }
             else
                {
@@ -2059,7 +2059,7 @@ MemCpyVarLenTypedMacroOp::generateInstruction()
             if (_needsGuardedLoad)
                {
                int32_t shiftAmount = TR::Compiler->om.compressedReferenceShift();
-               cursor = generateRXYInstruction(_cg, TR::InstOpCode::LLGFSG, _srcNode, _workReg, srcMR);
+               cursor = generateRXInstruction(_cg, TR::InstOpCode::LLGFSG, _srcNode, _workReg, srcMR);
                if (shiftAmount != 0)
                   {
                   cursor = generateRSInstruction(_cg, TR::InstOpCode::SRLG, _srcNode, _workReg, _workReg, shiftAmount);

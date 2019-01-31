@@ -286,6 +286,7 @@ class TR_LoopVersioner : public TR_LoopTransformer
 
    TR_PostDominators *_postDominators;
    bool _loopTransferDone;
+   bool _skipWrtbarVersion;
    };
 
 

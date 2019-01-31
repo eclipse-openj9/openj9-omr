@@ -420,4 +420,48 @@ const OMR::ARM64::InstOpCode::OpCodeBinaryEntry OMR::ARM64::InstOpCode::binaryEn
 		0xDAC00400,	/* REV16     	rev16w	 */
 		0x5AC00400,	/* REV16     	rev16x	 */
 		0xDAC00800,	/* REV32     	rev32	 */
+/* VFP instructions */
+	/* Floating-Point Conversion */
+		0x1E260000,	/* FMOV      	fmov_stow	 */
+		0x1E270000,	/* FMOV      	fmov_wtos	 */
+		0x9E660000,	/* FMOV      	fmov_dtox	 */
+		0x9E670000,	/* FMOV      	fmov_xtod	 */
+		0x1E22C000,	/* FCVT      	fcvt_stod	 */
+		0x1E624000,	/* FCVT      	fcvt_dtos	 */
+		0x1E380000,	/* FCVTZS    	fcvtzs_stow	 */
+		0x1E780000,	/* FCVTZS    	fcvtzs_dtow	 */
+		0x9E380000,	/* FCVTZS    	fcvtzs_stox	 */
+		0x9E780000,	/* FCVTZS    	fcvtzs_dtox	 */
+		0x1E220000,	/* SCVTF     	scvtf_wtos	 */
+		0x1E620000,	/* SCVTF     	scvtf_wtod	 */
+		0x9E220000,	/* SCVTF     	scvtf_xtos	 */
+		0x9E620000,	/* SCVTF     	scvtf_xtod	 */
+	/* Floating-Point Immediate */
+		0x1E201000,	/* FMOV      	fmovimms	 */
+		0x1E601000,	/* FMOV      	fmovimmd	 */
+	/* Floating-Point Compare */
+		0x1E202000,	/* FCMP      	fcmps	 */
+		0x1E202008,	/* FCMP      	fcmps_zero	 */
+		0x1E602000,	/* FCMP      	fcmpd	 */
+		0x1E602008,	/* FCMP      	fcmpd_zero	 */
+	/* Floating-Point Data-processing (1 source) */
+		0x1E204000,	/* FMOV      	fmovs	 */
+		0x1E604000,	/* FMOV      	fmovd	 */
+		0x1E20C000,	/* FABS      	fabss	 */
+		0x1E60C000,	/* FABS      	fabsd	 */
+		0x1E214000,	/* FNEG      	fnegs	 */
+		0x1E614000,	/* FNEG      	fnegd	 */
+	/* Floating-Point Data-processing (2 source) */
+		0x1E202800,	/* FADD      	fadds	 */
+		0x1E602800,	/* FADD      	faddd	 */
+		0x1E203800,	/* FSUB      	fsubs	 */
+		0x1E603800,	/* FSUB      	fsubd	 */
+		0x1E200800,	/* FMUL      	fmuls	 */
+		0x1E600800,	/* FMUL      	fmuld	 */
+		0x1E201800,	/* FDIV      	fdivs	 */
+		0x1E601800,	/* FDIV      	fdivd	 */
+		0x1E204800,	/* FMAX      	fmaxs	 */
+		0x1E604800,	/* FMAX      	fmaxd	 */
+		0x1E205800,	/* FMIN      	fmins	 */
+		0x1E605800,	/* FMIN      	fmind	 */
 };

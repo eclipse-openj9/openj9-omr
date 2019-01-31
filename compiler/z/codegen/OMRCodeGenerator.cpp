@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -27,101 +27,102 @@
 #pragma csect(STATIC,"TRZCGBase#S")
 #pragma csect(TEST,"TRZCGBase#T")
 
-#include <algorithm>                                // for std::find, etc
-#include <limits.h>                                 // for INT_MAX, INT_MIN
-#include <stddef.h>                                 // for size_t
-#include <stdint.h>                                 // for int32_t, etc
-#include <stdio.h>                                  // for printf, sprintf
-#include <stdlib.h>                                 // for atoi, abs
-#include <string.h>                                 // for NULL, strcmp, etc
-#include "codegen/BackingStore.hpp"                 // for TR_BackingStore
-#include "codegen/CodeGenPhase.hpp"                 // for CodeGenPhase, etc
-#include "codegen/CodeGenerator.hpp"                // for CodeGenerator, etc
+#include <algorithm>
+#include <limits.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "codegen/BackingStore.hpp"
+#include "codegen/CodeGenPhase.hpp"
+#include "codegen/CodeGenerator.hpp"
 #include "codegen/CodeGenerator_inlines.hpp"
 #include "codegen/ConstantDataSnippet.hpp"
-#include "codegen/FrontEnd.hpp"                     // for TR_FrontEnd, etc
-#include "codegen/GCStackAtlas.hpp"                 // for GCStackAtlas
-#include "codegen/GCStackMap.hpp"                   // for TR_GCStackMap, etc
-#include "codegen/InstOpCode.hpp"                   // for InstOpCode, etc
-#include "codegen/Instruction.hpp"                  // for Instruction, etc
-#include "codegen/Linkage.hpp"                      // for Linkage, REGNUM, etc
+#include "codegen/FrontEnd.hpp"
+#include "codegen/GCStackAtlas.hpp"
+#include "codegen/GCStackMap.hpp"
+#include "codegen/InstOpCode.hpp"
+#include "codegen/Instruction.hpp"
+#include "codegen/Linkage.hpp"
 #include "codegen/LinkageConventionsEnum.hpp"
-#include "codegen/LiveRegister.hpp"                 // for TR_LiveRegisters, etc
-#include "codegen/Machine.hpp"                      // for Machine, etc
-#include "codegen/MemoryReference.hpp"              // for MemoryReference, etc
-#include "codegen/RealRegister.hpp"                 // for RealRegister, etc
-#include "codegen/RecognizedMethods.hpp"            // for RecognizedMethod, etc
-#include "codegen/Register.hpp"                     // for Register
+#include "codegen/LiveRegister.hpp"
+#include "codegen/Machine.hpp"
+#include "codegen/MemoryReference.hpp"
+#include "codegen/RealRegister.hpp"
+#include "codegen/RecognizedMethods.hpp"
+#include "codegen/Register.hpp"
 #include "codegen/RegisterConstants.hpp"
 #include "codegen/RegisterDependency.hpp"
 #include "codegen/RegisterDependencyStruct.hpp"
-#include "codegen/RegisterIterator.hpp"             // for RegisterIterator
-#include "codegen/RegisterPair.hpp"                 // for RegisterPair
-#include "codegen/Snippet.hpp"                      // for TR::S390Snippet, etc
+#include "codegen/RegisterIterator.hpp"
+#include "codegen/RegisterPair.hpp"
+#include "codegen/Snippet.hpp"
 #include "codegen/StorageInfo.hpp"
-#include "codegen/SystemLinkage.hpp"                // for toSystemLinkage, etc
-#include "codegen/TreeEvaluator.hpp"                // for TreeEvaluator, etc
-#include "compile/Compilation.hpp"                  // for Compilation, etc
-#include "compile/Method.hpp"                       // for TR_Method, mcount_t
+#include "codegen/SystemLinkage.hpp"
+#include "codegen/TreeEvaluator.hpp"
+#include "compile/Compilation.hpp"
+#include "compile/Method.hpp"
 #include "compile/ResolvedMethod.hpp"
 #include "compile/SymbolReferenceTable.hpp"
 #include "compile/VirtualGuard.hpp"
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"
-#include "control/Recompilation.hpp"                // for TR_Recompilation, etc
+#include "control/Recompilation.hpp"
 #ifdef J9_PROJECT_SPECIFIC
-#include "control/RecompilationInfo.hpp"                // for TR_Recompilation, etc
+#include "control/RecompilationInfo.hpp"
 #endif
-#include "cs2/arrayof.h"                            // for ArrayOf
-#include "cs2/hashtab.h"                            // for HashTable, etc
+#include "cs2/arrayof.h"
+#include "cs2/hashtab.h"
 #include "cs2/sparsrbit.h"
 #include "env/CompilerEnv.hpp"
 #include "env/IO.hpp"
-#include "env/Processors.hpp"                       // for TR_Processor, etc
-#include "env/StackMemoryRegion.hpp"                // for TR::StackMemoryRegion
-#include "env/TRMemory.hpp"                         // for Allocator, etc
+#include "env/Processors.hpp"
+#include "env/StackMemoryRegion.hpp"
+#include "env/TRMemory.hpp"
 #include "env/jittypes.h"
 #include "il/AliasSetInterface.hpp"
-#include "il/Block.hpp"                             // for Block, toBlock, etc
-#include "il/DataTypes.hpp"                         // for DataTypes, etc
+#include "il/Block.hpp"
+#include "il/DataTypes.hpp"
 #include "il/ILOpCodes.hpp"
-#include "il/ILOps.hpp"                             // for ILOpCode, etc
-#include "il/Node.hpp"                              // for Node, etc
+#include "il/ILOps.hpp"
+#include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
-#include "il/Symbol.hpp"                            // for Symbol
-#include "il/SymbolReference.hpp"                   // for SymbolReference
-#include "il/TreeTop.hpp"                           // for TreeTop
-#include "il/TreeTop_inlines.hpp"                   // for TreeTop::getNode, etc
-#include "il/symbol/AutomaticSymbol.hpp"            // for AutomaticSymbol
-#include "il/symbol/LabelSymbol.hpp"                // for LabelSymbol, etc
-#include "il/symbol/MethodSymbol.hpp"               // for MethodSymbol
-#include "il/symbol/ParameterSymbol.hpp"            // for ParameterSymbol
+#include "il/Symbol.hpp"
+#include "il/SymbolReference.hpp"
+#include "il/TreeTop.hpp"
+#include "il/TreeTop_inlines.hpp"
+#include "il/symbol/AutomaticSymbol.hpp"
+#include "il/symbol/LabelSymbol.hpp"
+#include "il/symbol/MethodSymbol.hpp"
+#include "il/symbol/ParameterSymbol.hpp"
 #include "il/symbol/ResolvedMethodSymbol.hpp"
-#include "il/symbol/StaticSymbol.hpp"               // for StaticSymbol
-#include "infra/Array.hpp"                          // for TR_Array
-#include "infra/Assert.hpp"                         // for TR_ASSERT
-#include "infra/Bit.hpp"                            // for isOdd, isEven
-#include "infra/BitVector.hpp"                      // for TR_BitVector, etc
-#include "infra/Cfg.hpp"                            // for CFG
-#include "infra/Flags.hpp"                          // for flags32_t
-#include "infra/HashTab.hpp"                        // for TR_HashTabInt, etc
-#include "infra/List.hpp"                           // for ListIterator, etc
+#include "il/symbol/StaticSymbol.hpp"
+#include "infra/Array.hpp"
+#include "infra/Assert.hpp"
+#include "infra/Bit.hpp"
+#include "infra/BitVector.hpp"
+#include "infra/Cfg.hpp"
+#include "infra/Flags.hpp"
+#include "infra/HashTab.hpp"
+#include "infra/List.hpp"
 #include "infra/Random.hpp"
 #include "infra/SimpleRegex.hpp"
-#include "infra/Stack.hpp"                          // for TR_Stack
-#include "infra/CfgEdge.hpp"                        // for CFGEdge
+#include "infra/Stack.hpp"
+#include "infra/CfgEdge.hpp"
 #include "optimizer/OptimizationManager.hpp"
 #include "optimizer/Optimizations.hpp"
-#include "optimizer/Optimizer.hpp"                  // for Optimizer
+#include "optimizer/Optimizer.hpp"
 #include "optimizer/RegisterCandidate.hpp"
 #include "optimizer/Structure.hpp"
 #include "optimizer/DataFlowAnalysis.hpp"
-#include "ras/Debug.hpp"                            // for TR_DebugBase, etc
+#include "ras/Debug.hpp"
 #include "ras/DebugCounter.hpp"
-#include "ras/Delimiter.hpp"                        // for Delimiter
-#include "runtime/Runtime.hpp"                      // for TR_LinkageInfo
+#include "ras/Delimiter.hpp"
+#include "runtime/CodeCache.hpp"
+#include "runtime/Runtime.hpp"
 #include "z/codegen/CallSnippet.hpp"
-#include "z/codegen/EndianConversion.hpp"           // for bos
+#include "z/codegen/EndianConversion.hpp"
 #include "z/codegen/OpMemToMem.hpp"
 #include "z/codegen/S390Evaluator.hpp"
 #include "z/codegen/S390GenerateInstructions.hpp"
@@ -541,7 +542,6 @@ OMR::Z::CodeGenerator::CodeGenerator()
      _interfaceSnippetToPICsListHashTab(NULL),
      _currentCheckNode(NULL),
      _currentBCDCHKHandlerLabel(NULL),
-     _internalControlFlowRegisters(getTypedAllocator<TR::Register*>(self()->comp()->allocator())),
      _nodesToBeEvaluatedInRegPairs(self()->comp()->allocator()),
      _ccInstruction(NULL),
      _previouslyAssignedTo(self()->comp()->allocator("LocalRA"))
@@ -620,9 +620,6 @@ OMR::Z::CodeGenerator::CodeGenerator()
 
    self()->setGlobalPrivateStaticBaseRegisterOn(false);
 
-   if (!TR::Compiler->target.isLinux())
-      self()->setExpandExponentiation();
-
    self()->setMultiplyIsDestructive();
 
    self()->setIsOutOfLineHotPath(false);
@@ -663,8 +660,6 @@ OMR::Z::CodeGenerator::CodeGenerator()
    self()->setSupportsReverseLoadAndStore();
    self()->setSupportsSearchCharString(); // CISC Transformation into SRSTU loop - only on z9.
    self()->setSupportsTranslateAndTestCharString(); // CISC Transformation into TRTE loop - only on z6.
-   self()->setSupportsBCDToDFPReduction();
-   self()->setSupportsIntDFPConversions();
 
    // On 31-Bit zOS/zLinux We rely on optimizer to generate array copy trees specialized for direction
    if (TR::Compiler->target.is32Bit())
@@ -675,9 +670,6 @@ OMR::Z::CodeGenerator::CodeGenerator()
    if (_processorInfo.supportsArch(TR_S390ProcessorInfo::TR_z10))
       {
       self()->setSupportsTranslateAndTestCharString();
-
-      self()->setSupportsBCDToDFPReduction();
-      self()->setSupportsIntDFPConversions();
 
       if (!comp->getOption(TR_DisableTraps) && TR::Compiler->vm.hasResumableTrapHandler(comp))
          {
@@ -785,10 +777,10 @@ OMR::Z::CodeGenerator::CodeGenerator()
 
    if (comp->getOptions()->getRegisterAssignmentTraceOption(TR_TraceRARegisterStates))
       {
-      self()->setGPRegisterIterator(new (self()->trHeapMemory()) TR::RegisterIterator(self()->machine(), TR_GPR));
-      self()->setFPRegisterIterator(new (self()->trHeapMemory()) TR::RegisterIterator(self()->machine(), TR_FPR));
-      self()->setHPRegisterIterator(new (self()->trHeapMemory()) TR::RegisterIterator(self()->machine(), TR_HPR));
-      self()->setVRFRegisterIterator(new (self()->trHeapMemory()) TR::RegisterIterator(self()->machine(), TR_VRF));
+      self()->setGPRegisterIterator(new (self()->trHeapMemory()) TR::RegisterIterator(self()->machine(), TR::RealRegister::FirstGPR, TR::RealRegister::LastAssignableGPR));
+      self()->setFPRegisterIterator(new (self()->trHeapMemory()) TR::RegisterIterator(self()->machine(), TR::RealRegister::FirstFPR, TR::RealRegister::LastFPR));
+      self()->setHPRegisterIterator(new (self()->trHeapMemory()) TR::RegisterIterator(self()->machine(), TR::RealRegister::FirstHPR, TR::RealRegister::LastHPR));
+      self()->setVRFRegisterIterator(new (self()->trHeapMemory()) TR::RegisterIterator(self()->machine(), TR::RealRegister::FirstVRF, TR::RealRegister::LastVRF));
       }
 
    if (!comp->getOption(TR_DisableTLHPrefetch) && !comp->compileRelocatableCode())
@@ -1510,7 +1502,7 @@ OMR::Z::CodeGenerator::insertInstructionPrefetches()
 
          TR::MemoryReference * tempMR = generateS390MemoryReference(spReg, frameSize, self());
          tempMR->setCreatedDuringInstructionSelection();
-         cursor = generateRXYInstruction(self(), TR::InstOpCode::getExtendedLoadOpCode(), node,
+         cursor = generateRXInstruction(self(), TR::InstOpCode::getExtendedLoadOpCode(), node,
                tempReg,
                tempMR, cursor);
 
@@ -1566,20 +1558,9 @@ OMR::Z::CodeGenerator::insertInstructionPrefetchesForCalls(TR_BranchPreloadCallD
     *
     */
    bool canReachWithBPRP = false;
-   intptrj_t codeCacheBase, codeCacheTop;
-   // _currentCodeCache in the compilation object is set right before Instruction selection.
-   // if it returns null, we have a call during optimizer stage, in which case, we use
-   // the next best estimate which is the base of our first code cache.
-   if (self()->comp()->getCurrentCodeCache() == NULL)
-      {
-      codeCacheBase = (intptrj_t)self()->fe()->getCodeCacheBase();
-      codeCacheTop = (intptrj_t)self()->fe()->getCodeCacheTop();
-      }
-   else
-      {
-      codeCacheBase = (intptrj_t)self()->fe()->getCodeCacheBase(self()->comp()->getCurrentCodeCache());
-      codeCacheTop = (intptrj_t)self()->fe()->getCodeCacheTop(self()->comp()->getCurrentCodeCache());
-      }
+
+   intptrj_t codeCacheBase = (intptrj_t)(self()->getCodeCache()->getCodeBase());
+   intptrj_t codeCacheTop = (intptrj_t)(self()->getCodeCache()->getCodeTop());
 
    intptrj_t offset1 = (intptrj_t) data->_callSymRef->getMethodAddress() - codeCacheBase;
    intptrj_t offset2 = (intptrj_t) data->_callSymRef->getMethodAddress() - codeCacheTop;
@@ -1960,7 +1941,7 @@ OMR::Z::CodeGenerator::upgradeToHPRInstruction(TR::Instruction * inst)
             mr->resetMemRefUsedBefore();
             // mr re-use?
             newOpCode = TR::InstOpCode::CHF;
-            newInst = generateRXYInstruction(self(), newOpCode, node, targetReg, mr, inst->getPrev());
+            newInst = generateRXInstruction(self(), newOpCode, node, targetReg, mr, inst->getPrev());
             targetReg->decTotalUseCount();
             // mem ref need to dec ref count too
             if (mr->getBaseRegister())
@@ -1978,7 +1959,7 @@ OMR::Z::CodeGenerator::upgradeToHPRInstruction(TR::Instruction * inst)
             mr->resetMemRefUsedBefore();
             // mr re-use?
             newOpCode = TR::InstOpCode::CLHF;
-            newInst = generateRXYInstruction(self(), newOpCode, node, targetReg, mr, inst->getPrev());
+            newInst = generateRXInstruction(self(), newOpCode, node, targetReg, mr, inst->getPrev());
             targetReg->decTotalUseCount();
             // mem ref need to dec ref count too
             if (mr->getBaseRegister())
@@ -2007,7 +1988,7 @@ OMR::Z::CodeGenerator::upgradeToHPRInstruction(TR::Instruction * inst)
             mr = ((TR::S390RXInstruction *)inst)->getMemoryReference();
             mr->resetMemRefUsedBefore();
             // mr re-use?
-            newInst = generateRXYInstruction(self(), newOpCode, node, targetReg, mr, inst->getPrev());
+            newInst = generateRXInstruction(self(), newOpCode, node, targetReg, mr, inst->getPrev());
             targetReg->decTotalUseCount();
             // mem ref need to dec ref count too
             if (mr->getBaseRegister())
@@ -2025,7 +2006,7 @@ OMR::Z::CodeGenerator::upgradeToHPRInstruction(TR::Instruction * inst)
             mr = ((TR::S390RXInstruction *)inst)->getMemoryReference();
             mr->resetMemRefUsedBefore();
             // mr re-use?
-            newInst = generateRXYInstruction(self(), newOpCode, node, targetReg, mr, inst->getPrev());
+            newInst = generateRXInstruction(self(), newOpCode, node, targetReg, mr, inst->getPrev());
             targetReg->decTotalUseCount();
             // mem ref need to dec ref count too
             if (mr->getBaseRegister())
@@ -2043,7 +2024,7 @@ OMR::Z::CodeGenerator::upgradeToHPRInstruction(TR::Instruction * inst)
             mr = ((TR::S390RXInstruction *)inst)->getMemoryReference();
             mr->resetMemRefUsedBefore();
             // mr re-use?
-            newInst = generateRXYInstruction(self(), newOpCode, node, targetReg, mr, inst->getPrev());
+            newInst = generateRXInstruction(self(), newOpCode, node, targetReg, mr, inst->getPrev());
             targetReg->decTotalUseCount();
             // mem ref need to dec ref count too
             if (mr->getBaseRegister())
@@ -2060,7 +2041,7 @@ OMR::Z::CodeGenerator::upgradeToHPRInstruction(TR::Instruction * inst)
             mr = ((TR::S390RXInstruction *)inst)->getMemoryReference();
             mr->resetMemRefUsedBefore();
             // mr re-use?
-            newInst = generateRXYInstruction(self(), newOpCode, node, targetReg, mr, inst->getPrev());
+            newInst = generateRXInstruction(self(), newOpCode, node, targetReg, mr, inst->getPrev());
             targetReg->decTotalUseCount();
             // mem ref need to dec ref count too
             if (mr->getBaseRegister())
@@ -2077,7 +2058,7 @@ OMR::Z::CodeGenerator::upgradeToHPRInstruction(TR::Instruction * inst)
             mr = ((TR::S390RXInstruction *)inst)->getMemoryReference();
             mr->resetMemRefUsedBefore();
             // mr re-use?
-            newInst = generateRXYInstruction(self(), newOpCode, node, targetReg, mr, inst->getPrev());
+            newInst = generateRXInstruction(self(), newOpCode, node, targetReg, mr, inst->getPrev());
             targetReg->decTotalUseCount();
             // mem ref need to dec ref count too
             if (mr->getBaseRegister())
@@ -2094,7 +2075,7 @@ OMR::Z::CodeGenerator::upgradeToHPRInstruction(TR::Instruction * inst)
             mr = ((TR::S390RXInstruction *)inst)->getMemoryReference();
             mr->resetMemRefUsedBefore();
             // mr re-use?
-            newInst = generateRXYInstruction(self(), newOpCode, node, targetReg, mr, inst->getPrev());
+            newInst = generateRXInstruction(self(), newOpCode, node, targetReg, mr, inst->getPrev());
             targetReg->decTotalUseCount();
             // mem ref need to dec ref count too
             if (mr->getBaseRegister())
@@ -2200,7 +2181,7 @@ OMR::Z::CodeGenerator::upgradeToHPRInstruction(TR::Instruction * inst)
             mr = ((TR::S390RXInstruction *)inst)->getMemoryReference();
             mr->resetMemRefUsedBefore();
             // mr re-use?
-            newInst = generateRXYInstruction(self(), newOpCode, node, targetReg, mr, inst->getPrev());
+            newInst = generateRXInstruction(self(), newOpCode, node, targetReg, mr, inst->getPrev());
             targetReg->decTotalUseCount();
             // mem ref need to dec ref count too
             if (mr->getBaseRegister())
@@ -2218,7 +2199,7 @@ OMR::Z::CodeGenerator::upgradeToHPRInstruction(TR::Instruction * inst)
             mr = ((TR::S390RXInstruction *)inst)->getMemoryReference();
             mr->resetMemRefUsedBefore();
             // mr re-use?
-            newInst = generateRXYInstruction(self(), newOpCode, node, targetReg, mr, inst->getPrev());
+            newInst = generateRXInstruction(self(), newOpCode, node, targetReg, mr, inst->getPrev());
             targetReg->decTotalUseCount();
             // mem ref need to dec ref count too
             if (mr->getBaseRegister())
@@ -2236,7 +2217,7 @@ OMR::Z::CodeGenerator::upgradeToHPRInstruction(TR::Instruction * inst)
             mr = ((TR::S390RXInstruction *)inst)->getMemoryReference();
             mr->resetMemRefUsedBefore();
             // mr re-use?
-            newInst = generateRXYInstruction(self(), newOpCode, node, targetReg, mr, inst->getPrev());
+            newInst = generateRXInstruction(self(), newOpCode, node, targetReg, mr, inst->getPrev());
             targetReg->decTotalUseCount();
             // mem ref need to dec ref count too
             if (mr->getBaseRegister())
@@ -2715,14 +2696,11 @@ OMR::Z::CodeGenerator::doRegisterAssignment(TR_RegisterKinds kindsToAssign)
             {
             if (li->getLabelSymbol()->isStartInternalControlFlow())
                {
-               _internalControlFlowNestingDepth--;
-               if (_internalControlFlowNestingDepth == 0)
-                  self()->endInternalControlFlow(instructionCursor);        // Walking backwards so start is end
+               self()->decInternalControlFlowNestingDepth();
                }
             if (li->getLabelSymbol()->isEndInternalControlFlow())
                {
-               _internalControlFlowNestingDepth++;
-               self()->startInternalControlFlow(instructionCursor);
+               self()->incInternalControlFlowNestingDepth();
                }
             }
          }
@@ -3871,48 +3849,6 @@ OMR::Z::CodeGenerator::isGlobalRegisterAvailable(TR_GlobalRegisterNumber i, TR::
      return false;
    }
 
-
-bool OMR::Z::CodeGenerator::isInternalControlFlowReg(TR::Register *reg)
-  {
-  for(auto cursor = _internalControlFlowRegisters.begin(); cursor != _internalControlFlowRegisters.end(); ++cursor)
-     {
-     if (reg == *cursor)
-        return true;
-     }
-  return false;
-  }
-
-void OMR::Z::CodeGenerator::startInternalControlFlow(TR::Instruction *instr)
-  {
-  // Visit all the post conditions of instr. All virtual registers in this post condition should remain
-  // conservatively alive though out the entire internal control flow.
-  TR::RegisterDependencyConditions *conds = instr->getDependencyConditions();
-
-  if (conds) // we may have an empty internal control flow
-     {
-     TR_S390RegisterDependencyGroup *postConds = conds->getPostConditions();
-     OMR::Z::Machine *mach=self()->machine();
-     int32_t n = conds->getNumPostConditions();
-     int32_t i;
-     for (i = 0; i < n; i++)
-        {
-        TR::Register *r=NULL;
-        if(!self()->afterRA())
-          r = postConds->getRegisterDependency(i)->getRegister();
-        else
-          {
-          TR::RealRegister::RegNum rr = postConds->getRegisterDependency(i)->getRealRegister();
-          if(rr>TR::RealRegister::NoReg && rr<=TR::RealRegister::LastHPR)
-            r = mach->getRealRegister(rr);
-          }
-        if(r) _internalControlFlowRegisters.push_back(r);
-        }
-     }
-  // At the outermost internal control flow bottom remember the instruction for any spill insertion
-  if (_internalControlFlowNestingDepth == 1)
-     _instructionAtEndInternalControlFlow = instr;
-  }
-
 /**
  * Allocates a register with the same collectible and internal pointer
  * characteristics as the given source register.  Used by clobber evaluate
@@ -3970,56 +3906,44 @@ OMR::Z::CodeGenerator::gprClobberEvaluate(TR::Node * node, bool force_copy, bool
    if (!self()->canClobberNodesRegister(node, 1, &data, ignoreRefCount) || force_copy)
       {
       char * CLOBBER_EVAL = "LR=Clobber_eval";
-      if ((node->getType().isInt64() || TR::Compiler->target.is64Bit() )
-         && TR::Compiler->target.is32Bit())
+      if (TR::Compiler->target.is32Bit() && !self()->use64BitRegsOn32Bit() && node->getType().isInt64())
          {
-         if (self()->use64BitRegsOn32Bit())
+         TR::RegisterPair * trgRegPair = (TR::RegisterPair *) srcRegister;
+         TR::Register * lowRegister = srcRegister->getLowOrder();
+         TR::Register * highRegister = srcRegister->getHighOrder();
+         bool allocatePair=false;
+         if (!data.canClobberLowWord())
             {
-            TR::Register * targetRegister = self()->allocate64bitRegister();
-
-            cursor = generateRRInstruction(self(), TR::InstOpCode::LGR, node, targetRegister, srcRegister);
-
-            return targetRegister;
+            lowRegister = self()->allocateRegister();
+            self()->stopUsingRegister(lowRegister); // Allocate pair will make these live again
+            allocatePair = true;
             }
-         else
+         if (!data.canClobberHighWord())
             {
-            TR::RegisterPair * trgRegPair = (TR::RegisterPair *) srcRegister;
-            TR::Register * lowRegister = srcRegister->getLowOrder();
-            TR::Register * highRegister = srcRegister->getHighOrder();
-            bool allocatePair=false;
-            if (!data.canClobberLowWord())
-               {
-               lowRegister = self()->allocateRegister();
-               self()->stopUsingRegister(lowRegister); // Allocate pair will make these live again
-               allocatePair = true;
-               }
-            if (!data.canClobberHighWord())
-               {
-               highRegister = self()->allocateRegister();
-               self()->stopUsingRegister(highRegister); // Allocate pair will make these live again
-               allocatePair = true;
-               }
-
-            TR::RegisterPair * tempRegPair = allocatePair ? self()->allocateConsecutiveRegisterPair(lowRegister, highRegister) : trgRegPair;
-            if (!data.canClobberLowWord())
-               {
-               cursor = generateRRInstruction(self(), TR::InstOpCode::LR, node, tempRegPair->getLowOrder(), trgRegPair->getLowOrder());
-               if (debugObj)
-                  {
-                  debugObj->addInstructionComment(toS390RRInstruction(cursor), CLOBBER_EVAL);
-                  }
-               }
-
-            if (!data.canClobberHighWord())
-               {
-               cursor = generateRRInstruction(self(), TR::InstOpCode::LR, node, tempRegPair->getHighOrder(), trgRegPair->getHighOrder());
-               if (debugObj)
-                  {
-                  debugObj->addInstructionComment(toS390RRInstruction(cursor), CLOBBER_EVAL);
-                  }
-               }
-            return tempRegPair;
+            highRegister = self()->allocateRegister();
+            self()->stopUsingRegister(highRegister); // Allocate pair will make these live again
+            allocatePair = true;
             }
+
+         TR::RegisterPair * tempRegPair = allocatePair ? self()->allocateConsecutiveRegisterPair(lowRegister, highRegister) : trgRegPair;
+         if (!data.canClobberLowWord())
+            {
+            cursor = generateRRInstruction(self(), TR::InstOpCode::LR, node, tempRegPair->getLowOrder(), trgRegPair->getLowOrder());
+            if (debugObj)
+               {
+               debugObj->addInstructionComment(toS390RRInstruction(cursor), CLOBBER_EVAL);
+               }
+            }
+
+         if (!data.canClobberHighWord())
+            {
+            cursor = generateRRInstruction(self(), TR::InstOpCode::LR, node, tempRegPair->getHighOrder(), trgRegPair->getHighOrder());
+            if (debugObj)
+               {
+               debugObj->addInstructionComment(toS390RRInstruction(cursor), CLOBBER_EVAL);
+               }
+            }
+         return tempRegPair;
          }
       else if (node->getOpCode().isFloat())
          {
@@ -4065,22 +3989,13 @@ OMR::Z::CodeGenerator::gprClobberEvaluate(TR::Node * node, bool force_copy, bool
       else
          {
          TR::Register * targetRegister = self()->allocateClobberableRegister(srcRegister);
-         TR::InstOpCode::Mnemonic loadRegOpCode = TR::InstOpCode::getLoadRegOpCode();
-         if (node->getType().isAddress())
+         TR::InstOpCode::Mnemonic loadRegOpCode = TR::InstOpCode::getLoadRegOpCodeFromNode(self(), node);
+
+         if (srcRegister->is64BitReg())
             {
-            if (TR::Compiler->target.is64Bit())
-               loadRegOpCode = TR::InstOpCode::LGR;
-            else
-               loadRegOpCode = TR::InstOpCode::LR;
+            loadRegOpCode = TR::InstOpCode::LGR;
             }
-         if (self()->supportsHighWordFacility() && !self()->comp()->getOption(TR_DisableHighWordRA) && TR::Compiler->target.is64Bit())
-            {
-            loadRegOpCode = TR::InstOpCode::getLoadRegOpCodeFromNode(self(), node);
-            if (srcRegister->is64BitReg())
-               {
-               loadRegOpCode = TR::InstOpCode::LGR;
-               }
-            }
+
          cursor = generateRRInstruction(self(), loadRegOpCode, node, targetRegister, srcRegister);
 
          if (debugObj)
@@ -4091,7 +4006,7 @@ OMR::Z::CodeGenerator::gprClobberEvaluate(TR::Node * node, bool force_copy, bool
          return targetRegister;
          }
       }
-   return self()->evaluate(node);
+   return srcRegister;
    }
 
 
@@ -5436,21 +5351,9 @@ OMR::Z::CodeGenerator::canUseRelativeLongInstructions(int64_t value)
 
    if (TR::Compiler->target.isLinux())
       {
-      TR_FrontEnd * fe = self()->comp()->fe();
-      intptrj_t codeCacheBase, codeCacheTop;
-      // _currentCodeCache in the compilation object is set right before Instruction selection.
-      // if it returns null, we have a call during optimizer stage, in which case, we use
-      // the next best estimate which is the base of our first code cache.
-      if (self()->comp()->getCurrentCodeCache() == NULL)
-         {
-         codeCacheBase = (intptrj_t)fe->getCodeCacheBase();
-         codeCacheTop = (intptrj_t)fe->getCodeCacheTop();
-         }
-      else
-         {
-         codeCacheBase = (intptrj_t)fe->getCodeCacheBase(self()->comp()->getCurrentCodeCache());
-         codeCacheTop = (intptrj_t)fe->getCodeCacheTop(self()->comp()->getCurrentCodeCache());
-         }
+      intptrj_t codeCacheBase = (intptrj_t)(self()->getCodeCache()->getCodeBase());
+      intptrj_t codeCacheTop = (intptrj_t)(self()->getCodeCache()->getCodeTop());
+
       return ( (((intptrj_t)value - codeCacheBase ) <=  (intptrj_t)(INT_MAX))
             && (((intptrj_t)value - codeCacheBase ) >=  (intptrj_t)(INT_MIN))
             && (((intptrj_t)value - codeCacheTop ) <=  (intptrj_t)(INT_MAX))
@@ -6007,7 +5910,7 @@ OMR::Z::CodeGenerator::genLoadAddressToRegister(TR::Register *reg, TR::MemoryRef
       }
    else if (offset > MINLONGDISP && offset < MAXLONGDISP)
       {
-      preced = generateRXYInstruction(cg, TR::InstOpCode::LAY, node, reg, origMR, preced);
+      preced = generateRXInstruction(cg, TR::InstOpCode::LAY, node, reg, origMR, preced);
       }
    else
       {

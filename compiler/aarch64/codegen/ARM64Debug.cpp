@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2018 IBM Corp. and others
+ * Copyright (c) 2018, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -435,6 +435,44 @@ static const char *opCodeToNameMap[] =
    "rev16w",
    "rev16x",
    "rev32",
+   "fmov_stow",
+   "fmov_wtos",
+   "fmov_dtox",
+   "fmov_xtod",
+   "fcvt_stod",
+   "fcvt_dtos",
+   "fcvtzs_stow",
+   "fcvtzs_dtow",
+   "fcvtzs_stox",
+   "fcvtzs_dtox",
+   "scvtf_wtos",
+   "scvtf_wtod",
+   "scvtf_xtos",
+   "scvtf_xtod",
+   "fmovimms",
+   "fmovimmd",
+   "fcmps",
+   "fcmps_zero",
+   "fcmpd",
+   "fcmpd_zero",
+   "fmovs",
+   "fmovd",
+   "fabss",
+   "fabsd",
+   "fnegs",
+   "fnegd",
+   "fadds",
+   "faddd",
+   "fsubs",
+   "fsubd",
+   "fmuls",
+   "fmuld",
+   "fdivs",
+   "fdivd",
+   "fmaxs",
+   "fmaxd",
+   "fmins",
+   "fmind",
    "proc",
    "fence",
    "return",
@@ -472,6 +510,9 @@ TR_Debug::print(TR::FILE *pOutFile, TR::Instruction *instr)
       {
       case OMR::Instruction::IsImm:
          print(pOutFile, (TR::ARM64ImmInstruction *)instr);
+         break;
+      case OMR::Instruction::IsImmSym:
+         print(pOutFile, (TR::ARM64ImmSymInstruction *)instr);
          break;
       case OMR::Instruction::IsLabel:
          print(pOutFile, (TR::ARM64LabelInstruction *)instr);
@@ -524,6 +565,12 @@ TR_Debug::print(TR::FILE *pOutFile, TR::Instruction *instr)
       case OMR::Instruction::IsMemSrc1:
          print(pOutFile, (TR::ARM64MemSrc1Instruction *)instr);
          break;
+      case OMR::Instruction::IsSrc1:
+         print(pOutFile, (TR::ARM64Src1Instruction *)instr);
+         break;
+      case OMR::Instruction::IsSrc2:
+         print(pOutFile, (TR::ARM64Src2Instruction *)instr);
+         break;
       default:
          TR_ASSERT(false, "unexpected instruction kind");
             // fall through
@@ -565,6 +612,23 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64ImmInstruction *instr)
    }
 
 void
+TR_Debug::print(TR::FILE *pOutFile, TR::ARM64ImmSymInstruction *instr)
+   {
+   printPrefix(pOutFile, instr);
+
+   TR::Symbol *target = instr->getSymbolReference()->getSymbol();
+   const char *name = target ? getName(instr->getSymbolReference()) : 0;
+   if (name)
+      trfprintf(pOutFile, "%s \t" POINTER_PRINTF_FORMAT "\t\t; Direct Call \"%s\"", getOpCodeName(&instr->getOpCode()), instr->getAddrImmediate(), name);
+   else
+      trfprintf(pOutFile, "%s \t" POINTER_PRINTF_FORMAT, getOpCodeName(&instr->getOpCode()), instr->getAddrImmediate());
+
+   if (instr->getDependencyConditions())
+      print(pOutFile, instr->getDependencyConditions());
+   trfflush(_comp->getOutFile());
+   }
+
+void
 TR_Debug::print(TR::FILE *pOutFile, TR::ARM64LabelInstruction *instr)
    {
    printPrefix(pOutFile, instr);
@@ -599,7 +663,8 @@ void
 TR_Debug::print(TR::FILE *pOutFile, TR::ARM64ConditionalBranchInstruction *instr)
    {
    printPrefix(pOutFile, instr);
-   trfprintf(pOutFile, "%s.%s \t", getOpCodeName(&instr->getOpCode()), ARM64ConditionNames[instr->getConditionCode()]);
+   TR_ASSERT(instr->getOpCodeValue() == TR::InstOpCode::b_cond, "Unsupported instruction for conditional branch");
+   trfprintf(pOutFile, "b.%s \t", ARM64ConditionNames[instr->getConditionCode()]);
    print(pOutFile, instr->getLabelSymbol());
    if (instr->getDependencyConditions())
       print(pOutFile, instr->getDependencyConditions());
@@ -619,6 +684,8 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64RegBranchInstruction *instr)
    printPrefix(pOutFile, instr);
    trfprintf(pOutFile, "%s \t", getOpCodeName(&instr->getOpCode()));
    print(pOutFile, instr->getTargetRegister(), TR_DoubleWordReg);
+   if (instr->getDependencyConditions())
+      print(pOutFile, instr->getDependencyConditions());
    trfflush(_comp->getOutFile());
    }
 
@@ -813,6 +880,26 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64MemSrc1Instruction *instr)
    print(pOutFile, instr->getMemoryReference());
 
    printMemoryReferenceComment(pOutFile, instr->getMemoryReference());
+   trfflush(_comp->getOutFile());
+   }
+
+void
+TR_Debug::print(TR::FILE *pOutFile, TR::ARM64Src1Instruction *instr)
+   {
+   printPrefix(pOutFile, instr);
+   trfprintf(pOutFile, "%s \t", getOpCodeName(&instr->getOpCode()));
+   print(pOutFile, instr->getSource1Register(), TR_WordReg);
+   trfflush(_comp->getOutFile());
+   }
+
+void
+TR_Debug::print(TR::FILE *pOutFile, TR::ARM64Src2Instruction *instr)
+   {
+   printPrefix(pOutFile, instr);
+   trfprintf(pOutFile, "%s \t", getOpCodeName(&instr->getOpCode()));
+   print(pOutFile, instr->getSource1Register(), TR_WordReg); trfprintf(pOutFile, ", ");
+   print(pOutFile, instr->getSource2Register(), TR_WordReg);
+
    trfflush(_comp->getOutFile());
    }
 

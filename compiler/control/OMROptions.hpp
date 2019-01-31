@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -200,7 +200,7 @@ enum TR_CompilationOptions
    TR_Timing                              = 0x00000200 + 3,
    TR_SupportSwitchToInterpreter          = 0x00000400 + 3,
    TR_DisableFPCodeGen                    = 0x00000800 + 3,
-   // Available                           = 0x00001000 + 3,
+   TR_DisableAotAtCheapWarm               = 0x00001000 + 3,
    TR_Profile                             = 0x00002000 + 3,
    TR_DisableAsyncCompilation             = 0x00004000 + 3,
    TR_DisableCompilationThread            = 0x00008000 + 3,
@@ -348,7 +348,7 @@ enum TR_CompilationOptions
    TR_DisableDirectToJNI                  = 0x00000040 + 8,
    TR_OldJVMPI                            = 0x00000080 + 8,
    TR_EmitExecutableELFFile               = 0x00000100 + 8,
-   // Available                           = 0x00000200 + 8,
+   TR_EnableJITaaSDoLocalCompilesForRemoteCompiles = 0x00000200 + 8,
    // Available                           = 0x00000800 + 8,
    TR_DisableLinkageRegisterAllocation    = 0x00001000 + 8,
    // Available                           = 0x00002000 + 8,
@@ -685,7 +685,7 @@ enum TR_CompilationOptions
    // Available                                       = 0x08000000 + 19,
    TR_UpgradeBootstrapAtWarm                          = 0x10000000 + 19,
    TR_ForceLargeRAMoves                               = 0x20000000 + 19,  // force 64 register moves in RA
-   TR_EnableLateCleanFolding                          = 0x40000000 + 19,  // fold pdclean flags into pdstore nodes right before codegen
+   // Available                                       = 0x40000000 + 19,
    // Available                                       = 0x80000000 + 19,
 
    // Option word 20
@@ -731,7 +731,7 @@ enum TR_CompilationOptions
    // Available                                       = 0x00010000 + 21,
    TR_OldDataCacheImplementation                      = 0x00020000 + 21,
    TR_EnableDataCacheStatistics                       = 0x00040000 + 21,
-   TR_DisableRedundantBCDSignElimination              = 0x00080000 + 21,
+   // Available                                       = 0x00080000 + 21,
    // Available                                       = 0x00100000 + 21,
    TR_AllowVPRangeNarrowingBasedOnDeclaredType        = 0x00200000 + 21,
    TR_EnableScratchMemoryDebugging                    = 0x00400000 + 21,
@@ -837,7 +837,7 @@ enum TR_CompilationOptions
    // Available                                       = 0x00000800 + 25,
    // Available                                       = 0x00001000 + 25,
    TR_TracePREForOptimalSubNodeReplacement            = 0x00002000 + 25,
-   TR_EnableTrueRegisterModel                         = 0x00008000 + 25,
+   // Available                                       = 0x00008000 + 25,
    TR_PerfTool                                        = 0x00010000 + 25,
    // Available                                       = 0x00020000 + 25,
    TR_DisableBranchOnCount                            = 0x00040000 + 25,
@@ -1691,6 +1691,7 @@ public:
    void setAggressiveQuickStart();
    void setGlobalAggressiveAOT();
    void setLocalAggressiveAOT();
+   void setInlinerOptionsForAggressiveAOT();
    void setConservativeDefaultBehavior();
 
    static bool getCountsAreProvidedByUser() { return _countsAreProvidedByUser; } // set very late in setCounts()

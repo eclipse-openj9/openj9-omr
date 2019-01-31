@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -563,6 +563,20 @@ TR::Register *OMR::Power::TreeEvaluator::dloadEvaluator(TR::Node *node, TR::Code
    {
    TR::Register *tempReg = node->setRegister(cg->allocateRegister(TR_FPR));
    return TR::TreeEvaluator::dloadHelper(node, cg, tempReg, TR::InstOpCode::lfd);
+   }
+
+TR::Register *OMR::Power::TreeEvaluator::frdbarEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   if (node->getSymbolReference()->getSymbol()->isStatic())
+      cg->decReferenceCount(node->getFirstChild());
+   return TR::TreeEvaluator::floadEvaluator(node, cg);
+   }
+
+TR::Register *OMR::Power::TreeEvaluator::drdbarEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   if (node->getSymbolReference()->getSymbol()->isStatic())
+      cg->decReferenceCount(node->getFirstChild());
+   return TR::TreeEvaluator::dloadEvaluator(node, cg);
    }
 
 TR::Register *OMR::Power::TreeEvaluator::vsplatsEvaluator(TR::Node *node, TR::CodeGenerator *cg)

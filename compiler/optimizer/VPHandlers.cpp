@@ -191,8 +191,8 @@ static void checkForNonNegativeAndOverflowProperties(OMR::ValuePropagation *vp, 
          if (high <= 0)
              node->setIsNonPositive(true);
 
-         if ((node->getOpCode().isLoad() && ((low > TR::getMinSigned<TR::Int16>()) || (high < TR::getMaxSigned<TR::Int16>())) ||
-             (node->getOpCode().isArithmetic() && (range->canOverflow() != TR_yes))))
+         if ((node->getOpCode().isLoad() && ((low > TR::getMinSigned<TR::Int16>()) || (high < TR::getMaxSigned<TR::Int16>()))) ||
+             (node->getOpCode().isArithmetic() && (range->canOverflow() != TR_yes)))
               {
               node->setCannotOverflow(true);
               }
@@ -649,8 +649,8 @@ static bool findConstant(OMR::ValuePropagation *vp, TR::Node *node)
                       (value < vp->cg()->getSmallestPosConstThatMustBeMaterialized() &&
                        value > vp->cg()->getLargestNegConstThatMustBeMaterialized()) ||
                       (vp->getCurrentParent()->getOpCode().isMul() &&
-                       vp->getCurrentParent()->getSecondChild() == node) &&
-                       isNonNegativePowerOf2(value))
+                       vp->getCurrentParent()->getSecondChild() == node &&
+                       isNonNegativePowerOf2(value)))
                        {
                        vp->replaceByConstant(node,constraint,isGlobal);
                        replacedConst = true;
@@ -740,7 +740,7 @@ bool constraintFitsInIntegerRange(OMR::ValuePropagation *vp, TR::VPConstraint *c
 
 bool canMoveLongOpChildDirectly(TR::Node *node, int32_t numChild, TR::Node *arithNode)
    {
-   return node->getChild(numChild)->getDataType() == arithNode->getDataType() || node->getOpCodeValue() == TR::lshr && numChild > 0;
+   return node->getChild(numChild)->getDataType() == arithNode->getDataType() || (node->getOpCodeValue() == TR::lshr && numChild > 0);
    }
 
 bool reduceLongOpToIntegerOp(OMR::ValuePropagation *vp, TR::Node *node, TR::VPConstraint *nodeConstraint)
@@ -1564,7 +1564,7 @@ TR::Node *constrainAload(OMR::ValuePropagation *vp, TR::Node *node)
       return node;
 
    // before undertaking aload specific handling see if the default load transformation helps
-   if (TR::TransformUtil::transformDirectLoad(vp->comp(), node))
+   if (vp->transformDirectLoad(node))
       {
       constrainNewlyFoldedConst(vp, node, false /* !isGlobal, conservative */);
       return node;
@@ -2934,7 +2934,7 @@ TR::Node *constrainWrtBar(OMR::ValuePropagation *vp, TR::Node *node)
    // The case of ArrayStoreCHK will be taken care in constrainArrayStoreChk().
    //
    if (!vp->getCurrentParent() ||
-        vp->getCurrentParent() && vp->getCurrentParent()->getOpCodeValue() != TR::ArrayStoreCHK)
+        (vp->getCurrentParent() && vp->getCurrentParent()->getOpCodeValue() != TR::ArrayStoreCHK))
       canRemoveWrtBar(vp, node);
 
    static bool doOpt = feGetEnv("TR_DisableWrtBarOpt") ? false : true;
@@ -3891,7 +3891,7 @@ TR::Node *constrainCheckcast(OMR::ValuePropagation *vp, TR::Node *node)
    bool exceptionTaken = false;
    if ((result == 0) ||
        ((node->getOpCodeValue() == TR::checkcastAndNULLCHK) &&
-        (objectConstraint && objectConstraint->isNullObject() ||
+        ((objectConstraint && objectConstraint->isNullObject()) ||
          (isInstance == TR_no ))))
       {
       // Everything past this point in the block is dead, since the
@@ -5762,6 +5762,8 @@ TR::Node *constrainAcall(OMR::ValuePropagation *vp, TR::Node *node)
       if (!node->getOpCode().isIndirect())
          {
          static char *enableDynamicObjectClone = feGetEnv("TR_enableDynamicObjectClone");
+         // Dynamic cloning kicks in when we attempt to make direct call to Object.clone  
+         // or J9VMInternals.primitiveClone where the cloned object is an array.
          if (method->getRecognizedMethod() == TR::java_lang_Object_clone
              || method->getRecognizedMethod() == TR::java_lang_J9VMInternals_primitiveClone)
             {
@@ -5802,22 +5804,43 @@ TR::Node *constrainAcall(OMR::ValuePropagation *vp, TR::Node *node)
                               && !vp->_arrayCloneCalls.find(vp->_curTree))
                         {
                         vp->_arrayCloneCalls.add(vp->_curTree);
-                        vp->_arrayCloneTypes.add(constraint->getClass());
+                        vp->_arrayCloneTypes.add(new (vp->trStackMemory()) OMR::ValuePropagation::ArrayCloneInfo(constraint->getClass(), true));
                         }
                      }
                   }
+               // Dynamic object clone is enabled only with FLAGS_IN_CLASS_SLOT and LOCK_NURSERY enabled
+               // as currenty codegen anewarray evaluator only supports this case for object header initialization.
+               // Even though all existing supported build config has these 2 falgs set, this ifdef serves as a safety precaution.
+#if defined(J9VM_INTERP_FLAGS_IN_CLASS_SLOT) && defined(J9VM_THR_LOCK_NURSERY)
                else if ( constraint->getClassType()
                          && constraint->getClassType()->asResolvedClass() )
                   {
                   newTypeConstraint = TR::VPResolvedClass::create(vp, constraint->getClass());
+                  if (vp->trace())
+                     traceMsg(vp->comp(), "Object Clone: Resolved Class of node %p \n", node);
                   if (enableDynamicObjectClone
                       && constraint->getClassType()->isArray() == TR_no
                       && !vp->_objectCloneCalls.find(vp->_curTree))
                      {
+                     if (vp->trace())
+                        traceMsg(vp->comp(), "Object Clone: Resolved Class of node %p object clone\n", node);
                      vp->_objectCloneCalls.add(vp->_curTree);
                      vp->_objectCloneTypes.add(new (vp->trStackMemory()) OMR::ValuePropagation::ObjCloneInfo(constraint->getClass(), false));
                      }
+                  // Currently enabled for X86 as the required codegen support is implemented on X86 only.
+                  // Remove the condition as other platforms receive support.
+                  else if (vp->comp()->cg()->getSupportsDynamicANewArray()
+                      && constraint->getClassType()->isArray() == TR_yes
+                      && !vp->_arrayCloneCalls.find(vp->_curTree)
+                      && !vp->comp()->generateArraylets())
+                     {
+                     if (vp->trace())
+                        traceMsg(vp->comp(), "Object Clone: Resolved Class of node %p array clone\n", node);
+                     vp->_arrayCloneCalls.add(vp->_curTree);
+                     vp->_arrayCloneTypes.add(new (vp->trStackMemory()) OMR::ValuePropagation::ArrayCloneInfo(constraint->getClass(), false));;
+                     }
                   }
+#endif	       
                }
 
             if (!constraint || (!constraint->isFixedClass()
@@ -11250,12 +11273,12 @@ TR::Node *constrainLoadaddr(OMR::ValuePropagation *vp, TR::Node *node)
       TR::VPClassType *typeConstraint = 0;
       TR::AutomaticSymbol *localObj = symbol->castToLocalObjectSymbol();
       symRef                       = localObj->getClassSymbolReference();
-      if (localObj->getKind() == TR::New)
+      if (localObj->getOpCodeKind() == TR::New)
          {
          if (symRef)
             typeConstraint = TR::VPClassType::create(vp, symRef, true);
          }
-      else if (localObj->getKind() == TR::anewarray)
+      else if (localObj->getOpCodeKind() == TR::anewarray)
          {
          typeConstraint = TR::VPClassType::create(vp, symRef, true);
          typeConstraint = typeConstraint->getClassType()->getArrayClass(vp);

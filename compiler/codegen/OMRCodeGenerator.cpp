@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -105,8 +105,9 @@
 #include "ras/Debug.hpp"                            // for TR_DebugBase
 #include "ras/DebugCounter.hpp"
 #include "ras/Delimiter.hpp"                        // for Delimiter
-#include "runtime/Runtime.hpp"                      // for HI_VALUE, etc
+#include "runtime/CodeCache.hpp"
 #include "runtime/CodeCacheExceptions.hpp"
+#include "runtime/Runtime.hpp"                      // for HI_VALUE, etc
 #include "stdarg.h"                                 // for va_end, etc
 
 namespace TR { class Optimizer; }
@@ -221,6 +222,7 @@ OMR::CodeGenerator::CodeGenerator() :
      _blocksWithCalls(NULL),
      _codeCache(0),
      _committedToCodeCache(false),
+     _codeCacheSwitched(false),
      _dummyTempStorageRefNode(NULL),
      _blockRegisterPressureCache(NULL),
      _simulatedNodeStates(NULL),
@@ -1751,10 +1753,12 @@ OMR::CodeGenerator::allocateCodeMemory(uint32_t size, bool isCold, bool isMethod
    }
 
 void
-OMR::CodeGenerator::resizeCodeMemory()
+OMR::CodeGenerator::trimCodeMemoryToActualSize()
    {
-   int32_t codeLength = self()->getCodeEnd()-self()->getBinaryBufferStart();
-   self()->fe()->resizeCodeMemory(self()->comp(), self()->getBinaryBufferStart(), codeLength);
+   uint8_t *bufferStart = self()->getBinaryBufferStart();
+   size_t actualCodeLengthInBytes = self()->getCodeEnd() - bufferStart;
+
+   self()->getCodeCache()->trimCodeMemoryAllocation(bufferStart, actualCodeLengthInBytes);
    }
 
 bool
@@ -2574,23 +2578,6 @@ OMR::CodeGenerator::sizeOfInstructionToBePatchedHCRGuard(TR::Instruction *vgdnop
    }
 
 #ifdef DEBUG
-
-void
-OMR::CodeGenerator::dumpSpillStats(TR_FrontEnd *fe)
-   {
-   if (debug("spillStats"))
-      {
-      TR_VerboseLog::writeLine(TR_Vlog_INFO,"Register Spilling/Rematerialization:");
-      TR_VerboseLog::writeLine(TR_Vlog_INFO,"%8d registers spilled", _totalNumSpilledRegisters);
-      TR_VerboseLog::writeLine(TR_Vlog_INFO,"%8d constants rematerialized", _totalNumRematerializedConstants);
-      TR_VerboseLog::writeLine(TR_Vlog_INFO,"%8d locals rematerialized", _totalNumRematerializedLocals);
-      TR_VerboseLog::writeLine(TR_Vlog_INFO,"%8d statics rematerialized", _totalNumRematerializedStatics);
-      TR_VerboseLog::writeLine(TR_Vlog_INFO,"%8d indirect accesses rematerialized", _totalNumRematerializedIndirects);
-      TR_VerboseLog::writeLine(TR_Vlog_INFO,"%8d addresses rematerialized", _totalNumRematerializedAddresses);
-      TR_VerboseLog::writeLine(TR_Vlog_INFO,"%8d XMMRs rematerialized", _totalNumRematerializedXMMRs);
-      }
-   }
-
 void
 OMR::CodeGenerator::shutdown(TR_FrontEnd *fe, TR::FILE *logFile)
    {
@@ -2969,16 +2956,6 @@ void OMR::CodeGenerator::addRelocation(TR::Relocation *r)
       }
    }
 
-void OMR::CodeGenerator::addAOTRelocation(TR::Relocation *r, const char *generatingFileName, uintptr_t generatingLineNumber, TR::Node *node, TR::AOTRelocationPositionRequest where)
-   {
-   self()->addExternalRelocation(r, generatingFileName, generatingLineNumber, node, static_cast<TR::ExternalRelocationPositionRequest>(where));
-   }
-
-void OMR::CodeGenerator::addAOTRelocation(TR::Relocation *r, TR::RelocationDebugInfo* info, TR::AOTRelocationPositionRequest where)
-   {
-   self()->addExternalRelocation(r, info, static_cast<TR::ExternalRelocationPositionRequest>(where));
-   }
-
 void OMR::CodeGenerator::addExternalRelocation(TR::Relocation *r, const char *generatingFileName, uintptr_t generatingLineNumber, TR::Node *node, TR::ExternalRelocationPositionRequest where)
    {
    TR_ASSERT(generatingFileName, "External relocation location has improper NULL filename specified");
@@ -3248,4 +3225,38 @@ void
 OMR::CodeGenerator::insertPrefetchIfNecessary(TR::Node *node, TR::Register *targetRegister)
    {
    return;
+   }
+
+
+void
+OMR::CodeGenerator::switchCodeCacheTo(TR::CodeCache *newCodeCache)
+   {
+   TR::CodeCache *oldCodeCache = self()->getCodeCache();
+
+   TR_ASSERT(oldCodeCache != newCodeCache, "Attempting to switch to the currently held code cache");
+
+   self()->setCodeCache(newCodeCache);
+   self()->setCodeCacheSwitched(true);
+
+   if (self()->committedToCodeCache() || !newCodeCache)
+      {
+      TR::Compilation *comp = self()->comp();
+
+      if (newCodeCache)
+         {
+         comp->failCompilation<TR::RecoverableCodeCacheError>("Already committed to current code cache");
+         }
+
+      comp->failCompilation<TR::CodeCacheError>("Already committed to current code cache");
+      }
+
+   // If the old CodeCache had pre-loaded code, the current compilation may have
+   // initialized it and will therefore depend on it.  The new CodeCache must be
+   // initialized as well.
+   //
+   if (oldCodeCache->isCCPreLoadedCodeInitialized())
+      {
+      newCodeCache->getCCPreLoadedCodeAddress(TR_numCCPreLoadedCode, self());
+      }
+
    }

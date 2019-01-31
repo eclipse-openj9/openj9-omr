@@ -7165,6 +7165,19 @@ void OMR::ValuePropagation::constrainRecognizedMethod(TR::Node *node)
    }
 
 
+/** \brief
+ *     Extension point for language specific optimizations on direct load
+ *
+ * \parm node
+ *     The direct load node to be constrained
+ *
+ * \return
+ *     True if node is transformed, false otherwise
+ */
+bool OMR::ValuePropagation::transformDirectLoad(TR::Node *node)
+   {
+   return TR::TransformUtil::transformDirectLoad(comp(), node);
+   }
 
 bool OMR::ValuePropagation::checkAllUnsafeReferences(TR::Node *node, vcount_t visitCount)
    {
@@ -7281,15 +7294,15 @@ void OMR::ValuePropagation::doDelayedTransformations()
    _objectCloneTypes.deleteAll();
 
    ListIterator<TR::TreeTop> arrayCloneIt(&_arrayCloneCalls);
-   ListIterator<TR_OpaqueClassBlock> arrayCloneTypeIt(&_arrayCloneTypes);
+   ListIterator<ArrayCloneInfo> arrayCloneTypeIt(&_arrayCloneTypes);
       {
       TR::TreeTop *callTree = arrayCloneIt.getFirst();
-      TR_OpaqueClassBlock *clazz = arrayCloneTypeIt.getFirst();
-      while (callTree && clazz)
+      ArrayCloneInfo *cloneInfo = arrayCloneTypeIt.getFirst();
+      while (callTree && cloneInfo)
          {
-         transformArrayCloneCall(callTree, clazz);
+         transformArrayCloneCall(callTree, cloneInfo);
          callTree = arrayCloneIt.getNext();
-         clazz = arrayCloneTypeIt.getNext();
+         cloneInfo = arrayCloneTypeIt.getNext();
          }
       }
    _arrayCloneCalls.deleteAll();

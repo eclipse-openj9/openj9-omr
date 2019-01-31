@@ -19,51 +19,15 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#ifndef OMR_X86_REGISTER_ITERATOR_INCL
-#define OMR_X86_REGISTER_ITERATOR_INCL
-
 /*
- * The following #define and typedef must appear before any #includes in this file
+ * This file will be included within an enum.  Only comments, preprocessor macros,
+ * and enumerator definitions are permitted.
  */
-#ifndef OMR_REGISTER_ITERATOR_CONNECTOR
-#define OMR_REGISTER_ITERATOR_CONNECTOR
-namespace OMR { namespace X86 { class RegisterIterator; } }
-namespace OMR { typedef OMR::X86::RegisterIterator RegisterIteratorConnector; }
-#else
-#error OMR::X86::RegisterIterator expected to be a primary connector, but a OMR connector is already defined
-#endif
 
-#include "compiler/codegen/OMRRegisterIterator.hpp"
-
-#include <stdint.h>                       // for int32_t
-#include "codegen/RegisterConstants.hpp"  // for TR_RegisterKinds
-
-namespace TR { class Machine; }
-namespace OMR
-{
-
-namespace X86
-{
-
-class OMR_EXTENSIBLE RegisterIterator
-   {
-   public:
-   RegisterIterator(TR::Machine *machine, TR_RegisterKinds kind);
-
-   TR::Register *getFirst();
-   TR::Register *getCurrent();
-   TR::Register *getNext();
-
-   private:
-
-   TR::Machine *_machine;
-   int32_t _firstRegIndex;
-   int32_t _lastRegIndex;
-   int32_t _cursor;
-   };
-
-}
-
-}
-
-#endif
+   TR_None = 0,
+   TR_Private,
+   TR_System,
+   TR_AllRegister,
+   TR_InterpretedStatic,
+   TR_Helper,
+   TR_J9JNILinkage,

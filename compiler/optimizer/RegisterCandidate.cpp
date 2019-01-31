@@ -1850,8 +1850,8 @@ TR_RegisterCandidates::reprioritizeCandidates(
       if (rc->getBlocksLiveOnEntry().intersects(*successorBits))
          {
          if ((!onlyReprioritizeLongs ||
-              (rc->getType().isInt64()) &&
-               TR::Compiler->target.is32Bit()) &&
+              (rc->getType().isInt64() &&
+               TR::Compiler->target.is32Bit())) &&
              ((reprioritizeFP && isFPCandidate) ||
               (!reprioritizeFP && !isFPCandidate)))
             {
@@ -3218,9 +3218,9 @@ TR_RegisterCandidates::assign(TR::Block ** cfgBlocks, int32_t numberOfBlocks, in
                      maxFrequency < smallestMaxFrequency ||
                      ((maxFrequency == smallestMaxFrequency) &&
                       ((numClearStructures > maxClearStructures) ||
-                       (numClearStructures == maxClearStructures) &&
+                       ((numClearStructures == maxClearStructures) &&
                         ((numBlocksAtMaxFrequency < numberOfConflicts) ||
-                         ((numBlocksAtMaxFrequency == numberOfConflicts) && (_liveOnEntryConflicts[i].elementCount() < _liveOnEntryConflicts[conflictingRegister].elementCount()))))))
+                         ((numBlocksAtMaxFrequency == numberOfConflicts) && (_liveOnEntryConflicts[i].elementCount() < _liveOnEntryConflicts[conflictingRegister].elementCount())))))))
                     {
                     smallestMaxFrequency = maxFrequency;
                     maxClearStructures = numClearStructures;

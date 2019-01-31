@@ -161,7 +161,7 @@ private:
 	/**
 	 * Check if concurrent phase of the cycle should yield to an external activity. If so, set the flag so that other GC threads react appropriately
 	 */ 
-	bool checkAndSetShouldYieldFlag();
+	MMINLINE bool checkAndSetShouldYieldFlag(MM_EnvironmentStandard *env);
 	
 	/**
 	 * Check if top level scan loop should be aborted before the work is done
@@ -589,7 +589,13 @@ public:
 
 	static MM_Scavenger *newInstance(MM_EnvironmentStandard *env, MM_HeapRegionManager *regionManager);
 	virtual void kill(MM_EnvironmentBase *env);
-	
+
+	/* Read Barrier Verifier specific methods */
+#if defined(OMR_ENV_DATA64) && !defined(OMR_GC_COMPRESSED_POINTERS)
+	virtual void scavenger_poisonSlots(MM_EnvironmentBase *env);
+	virtual void scavenger_healSlots(MM_EnvironmentBase *env);
+#endif /* defined(OMR_ENV_DATA64) && !defined(OMR_GC_COMPRESSED_POINTERS) */
+
 	virtual bool collectorStartup(MM_GCExtensionsBase* extensions);
 	virtual void collectorShutdown(MM_GCExtensionsBase* extensions);
 

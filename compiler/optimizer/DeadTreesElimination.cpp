@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -139,6 +139,11 @@ static bool fixUpTree(TR::Node *node, TR::TreeTop *treeTop, TR::NodeChecklist &v
          }
       }
    return containsFloatingPoint;
+   }
+
+static inline bool isReadBarrierUnderTreetop(TR::Node *node)
+   {
+   return node->getOpCodeValue() == TR::treetop && node->getFirstChild()->getOpCode().isReadBar();
    }
 
 bool collectSymbolReferencesInNode(TR::Node *node,
@@ -480,6 +485,21 @@ int32_t TR::DeadTreesElimination::performOnBlock(TR::Block *block)
    return 0;
    }
 
+typedef std::pair<ncount_t const, TR::TreeTop* > ReadBarToTreeTopMapEntry;
+typedef TR::typed_allocator<ReadBarToTreeTopMapEntry, TR::Region &> ReadBarToTreeTopMapAlloc;
+typedef std::map<ncount_t, TR::TreeTop *, std::less<ncount_t>, ReadBarToTreeTopMapAlloc> ReadBarToTreeTopMap;
+
+static void findReadBarInSubTree(TR::Node *node, TR::NodeChecklist &visitedNodesInCurrentTree, TR::list<TR::Node*> &rdbarsInCurrentSubTree)
+   {
+   if (visitedNodesInCurrentTree.contains(node))
+      return;
+   visitedNodesInCurrentTree.add(node);
+   if (node->getOpCode().isReadBar())
+      rdbarsInCurrentSubTree.push_back(node);
+   for (int i = 0; i < node->getNumChildren(); i++)
+      findReadBarInSubTree(node->getChild(i), visitedNodesInCurrentTree, rdbarsInCurrentSubTree);
+   }
+
 void TR::DeadTreesElimination::prePerformOnBlocks()
    {
    _cannotBeEliminated = false;
@@ -487,13 +507,46 @@ void TR::DeadTreesElimination::prePerformOnBlocks()
 
    _targetTrees.deleteAll();
 
-   // Walk through all the blocks to remove trivial dead trees of the form
-   // treetop
-   //   => node
-   // The problem with these trees is in the scenario where the earlier use
-   // of 'node' is also dead.  However, our analysis won't find that because
-   // the reference count is > 1.
+   /*
+    * Walk through all the blocks to remove trivial dead trees in the following forms:
+    *
+    * case 1:
+    * treetop
+    *   => node
+    *
+    * case 2:
+    * treetop
+    *    xrdbari
+    * anchor
+    *    =>xrdbari
+    *
+    * The problem with these trees is in the scenario where the earlier use
+    * of 'node' is also dead.  However, our analysis won't find that because
+    * the reference count is > 1.
+    *
+    * Here are some clarification about case 2:
+    * 1. Case 2 is seen very often because ilgen creates trees in the following form:
+    *    NULLCHK
+    *      ardbari
+    *          aload
+    *    anchor
+    *      => ardbari
+    *    And the NULLCHK can be optimized away by optimizations like value propagation and
+    *    turned into a treetop.
+    * 2. We do not remove the treetop node if there is any other tree whose subtree
+    *    references to that rdbar before the anchor node, like the following:
+    *    treetop
+    *      ardbari
+    *    SOMETREE (that's not anchor nor treetop)
+    *      => ardbari
+    *    anchor
+    *      => ardbari
+    *    Because those SOMETREE would need a treetop to anchor the rdbar node as the first evaluation point.
+    *
+    */
    vcount_t visitCount = comp()->incOrResetVisitCount();
+   ReadBarToTreeTopMap rdbar2ttMap(std::less<ncount_t>(), comp()->trMemory()->currentStackRegion());
+
    for (TR::TreeTop *tt = comp()->getStartTree();
         tt != 0;
         tt = tt->getNextTreeTop())
@@ -508,8 +561,28 @@ void TR::DeadTreesElimination::prePerformOnBlocks()
          TR::TransformUtil::removeTree(comp(), tt);
          removed = true;
          }
+      else if (node->getOpCode().isAnchor() && rdbar2ttMap.find(node->getFirstChild()->getGlobalIndex()) != rdbar2ttMap.end())
+         {
+         TR::TreeTop *ttToRemove = rdbar2ttMap[node->getFirstChild()->getGlobalIndex()];
+         if (performTransformation(comp(), "%sRemove trivial dead tree (rdbar under treetop before compressedrefs): %p\n", optDetailString(), ttToRemove->getNode()))
+            TR::TransformUtil::removeTree(comp(), ttToRemove);
+         rdbar2ttMap.erase(node->getFirstChild()->getGlobalIndex());
+         }
       else
          {
+         if (comp()->useCompressedPointers() && !node->getOpCode().isAnchor() && !rdbar2ttMap.empty())
+            {
+            TR::NodeChecklist visitedNodesInCurrentTree(comp());
+            TR::list<TR::Node*> rdbarsInSubTree(getTypedAllocator<TR::Node*>(comp()->allocator()));
+            findReadBarInSubTree(node, visitedNodesInCurrentTree, rdbarsInSubTree);
+            for (auto it = rdbarsInSubTree.begin(); it != rdbarsInSubTree.end(); it++)
+               {
+               TR::Node *rdbarNode = *it;
+               if (rdbar2ttMap.find(rdbarNode->getGlobalIndex()) != rdbar2ttMap.end())
+                  rdbar2ttMap.erase(rdbarNode->getGlobalIndex());
+               }
+            }
+
          if (node->getOpCode().isCheck() &&
              node->getFirstChild()->getOpCode().isCall() &&
              node->getFirstChild()->getReferenceCount() == 1 &&
@@ -532,6 +605,14 @@ void TR::DeadTreesElimination::prePerformOnBlocks()
 
       if (node->getVisitCount() >= visitCount)
          continue;
+
+      if (comp()->useCompressedPointers() && !removed &&
+         isReadBarrierUnderTreetop(node) &&
+         node->getFirstChild()->getType() == TR::Address && node->getFirstChild()->getOpCode().isLoadIndirect())
+         {
+         ncount_t nodeIndex = node->getFirstChild()->getGlobalIndex();
+         rdbar2ttMap[nodeIndex] = tt;
+         }
       TR::TransformUtil::recursivelySetNodeVisitCount(tt->getNode(), visitCount);
       }
 
@@ -618,6 +699,32 @@ namespace
       };
    }
 
+/** \brief
+ *       Tells whether it is possible to remove a tree node without considering actual side effect.
+ *       Only the child's reference count is taken into consideration at this stage.
+ *
+ *  \parm node
+ *       The tree node to be considered for removing
+ *
+ *  \note
+ *       In general, anchoring nodes with its child's reference count == 1 might be removed, like
+ *       compressedrefs, reg store, rdbar under a treetop. Any TR::treetop node (except rdbar
+ *       under a treetop) can be considered for removing no matter what the child's reference count is.
+ */
+static bool treeCanPossiblyBeRemoved(TR::Node *node)
+   {
+   // If the tree node is not TR::treetop, it can only be removed if it's anchoring node and no
+   // other uses exist
+   if (node->getOpCodeValue() != TR::treetop)
+      {
+      return (node->getOpCode().isAnchor() && node->getFirstChild()->getReferenceCount() == 1) ||
+             (node->getOpCode().isStoreReg() && node->getFirstChild()->getReferenceCount() == 1);
+      }
+
+   // rdbar under a treetop can also be removed if there are no other uses
+   return (!isReadBarrierUnderTreetop(node) || node->getFirstChild()->getReferenceCount() == 1);
+   }
+
 int32_t TR::DeadTreesElimination::process(TR::TreeTop *startTree, TR::TreeTop *endTree)
    {
    TR::StackMemoryRegion stackRegion(*comp()->trMemory());
@@ -659,14 +766,21 @@ int32_t TR::DeadTreesElimination::process(TR::TreeTop *startTree, TR::TreeTop *e
 
       // correct at all intermediate stages
       //
-      if ((node->getOpCodeValue() != TR::treetop) &&
-          (!node->getOpCode().isAnchor() || (node->getFirstChild()->getReferenceCount() != 1)) &&
-          (!node->getOpCode().isStoreReg() || (node->getFirstChild()->getReferenceCount() != 1)) &&
+      if (!treeCanPossiblyBeRemoved(node) &&
           (delayedRegStoresBeforeThisPass ||
            (iter.currentTree() == block->getLastRealTreeTop()) ||
            !node->getOpCode().isStoreReg() ||
            (node->getVisitCount() == visitCount)))
          {
+         /*
+          * second chance for anchoring nodes like compressedrefs
+          * Given the following trees, the anchoring node can still be removed  if the first treetop is removed
+          *
+          * treetop
+          *    xloadi #x
+          * anchor
+          *    =>xloadi #x
+          */
          if (node->getOpCode().isAnchor() && node->getFirstChild()->getOpCode().isLoadIndirect())
             anchors.push_front(CRAnchor(iter.currentTree(), block));
 

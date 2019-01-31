@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2016, 2016 IBM Corp. and others
+# Copyright (c) 2016, 2019 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -63,7 +63,7 @@ $(call RULE.cpp,$(JIT_PRODUCT_BUILDNAME_OBJ),$(JIT_PRODUCT_BUILDNAME_SRC))
 .phony: $(JIT_PRODUCT_BUILDNAME_SRC)
 $(JIT_PRODUCT_BUILDNAME_SRC):
 	@mkdir -p $(dir $@)
-	$(PERL_PATH) $(GENERATE_VERSION_SCRIPT) $(PRODUCT_RELEASE) > $@
+	$(PERL_PATH) $(GENERATE_VERSION_SCRIPT) $(PRODUCT_RELEASE) $@
 
 jit_clean::
 	rm -f $(JIT_PRODUCT_BUILDNAME_SRC)

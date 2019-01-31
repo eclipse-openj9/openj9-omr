@@ -118,6 +118,20 @@ public:
                                bool isMethodHeaderNeeded=true);
    bool resizeCodeMemory(void *memoryBlock, size_t newSize);
 
+   /**
+    * @brief Trims the size of the previously allocated code memory in this
+    *        CodeCache to the specified length.  Any leftover bytes are reclaimed.
+    *
+    * @param[in] codeMemoryStart : void* address of the start of the code memory
+    *               to trim
+    * @param[in] actualSizeInBytes : size_t describing the actual number of code
+    *               memory bytes to allocate.  A specified size of 0 will return
+    *               without any adjustment.
+    *
+    * @return true if the code memory was successfully reduced; false otherwise.
+    */
+   bool trimCodeMemoryAllocation(void *codeMemoryStart, size_t actualSizeInBytes);
+
    CodeCacheMethodHeader *addFreeBlock(void *metaData);
 
    uint8_t *findFreeBlock(size_t size, bool isCold, bool isMethodHeaderNeeded);

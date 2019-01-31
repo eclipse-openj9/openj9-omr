@@ -19,47 +19,23 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#include <stddef.h>
-#include "codegen/Machine.hpp"
-#include "codegen/RealRegister.hpp"
-#include "codegen/Register.hpp"
-#include "codegen/RegisterIterator.hpp"
-#include "infra/Assert.hpp"
+#ifndef TR_JITBUILDERRECORDER_TEXTFILE_INCL
+#define TR_JITBUILDERRECORDER_TEXTFILE_INCL
 
-OMR::ARM64::RegisterIterator::RegisterIterator(TR::Machine *machine, TR_RegisterKinds kind)
-   {
-   _machine = machine;
-   if (kind == TR_GPR)
+#include "ilgen/OMRJitBuilderRecorderTextFile.hpp"
+
+namespace TR
+{
+   class JitBuilderRecorderTextFile : public OMR::JitBuilderRecorderTextFile
       {
-      _firstRegIndex = TR::RealRegister::FirstGPR;
-      _lastRegIndex = TR::RealRegister::LastGPR;
-      }
-   else if (kind == TR_FPR)
-      {
-      _firstRegIndex = TR::RealRegister::FirstFPR;
-      _lastRegIndex = TR::RealRegister::LastFPR;
-      }
-   else
-      {
-      TR_ASSERT(0, "Bad register kind for ARM64\n");
-      }
-   _cursor = _firstRegIndex;
-   }
+      public:
+         JitBuilderRecorderTextFile(const TR::MethodBuilder *mb, const char *fileName)
+            : OMR::JitBuilderRecorderTextFile(mb, fileName)
+            { }
+         virtual ~JitBuilderRecorderTextFile()
+            { }
+      };
 
-TR::Register *
-OMR::ARM64::RegisterIterator::getFirst()
-   {
-   return _machine->getRealRegister((TR::RealRegister::RegNum)(_cursor = _firstRegIndex));
-   }
+} // namespace TR
 
-TR::Register *
-OMR::ARM64::RegisterIterator::getCurrent()
-   {
-   return _machine->getRealRegister((TR::RealRegister::RegNum)_cursor);
-   }
-
-TR::Register *
-OMR::ARM64::RegisterIterator::getNext()
-   {
-   return _cursor == _lastRegIndex ? NULL : _machine->getRealRegister((TR::RealRegister::RegNum)(++_cursor));
-   }
+#endif // !defined(TR_JITBUILDERRECORDER_TEXTFILE_INCL)

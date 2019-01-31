@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -257,7 +257,7 @@ OMR::ILOpCode::compareOpCode(TR::DataType dt,
             switch(ct)
                {
                case TR_cmpEQ: return TR::fcmpeq;
-               case TR_cmpNE: return TR::fcmpne;
+               case TR_cmpNE: return TR::fcmpneu;
                case TR_cmpLT: return TR::fcmplt;
                case TR_cmpLE: return TR::fcmple;
                case TR_cmpGT: return TR::fcmpgt;
@@ -271,7 +271,7 @@ OMR::ILOpCode::compareOpCode(TR::DataType dt,
             switch(ct)
                {
                case TR_cmpEQ: return TR::dcmpeq;
-               case TR_cmpNE: return TR::dcmpne;
+               case TR_cmpNE: return TR::dcmpneu;
                case TR_cmpLT: return TR::dcmplt;
                case TR_cmpLE: return TR::dcmple;
                case TR_cmpGT: return TR::dcmpgt;

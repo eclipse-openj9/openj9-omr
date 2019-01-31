@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2015 IBM Corp. and others
+ * Copyright (c) 1991, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -153,7 +153,7 @@ MM_PhysicalSubArenaVirtualMemorySemiSpace::inflate(MM_EnvironmentBase *env)
 		Assert_MM_true(size == (semiSpaceSize * 2));
 
 		/* Add the spaces as table-backed heap regions */
-		if(NULL == (_highSemiSpaceRegion = getHeapRegionManager()->createAuxiliaryRegionDescriptor(env, subSpaceSurvivor, semiSpaceMiddle, _highAddress))) {
+		if(NULL == (_highSemiSpaceRegion = getHeapRegionManager()->createAuxiliaryRegionDescriptor(env, subSpaceAllocate, semiSpaceMiddle, _highAddress))) {
 			return false;
 		}
 		
@@ -170,7 +170,7 @@ MM_PhysicalSubArenaVirtualMemorySemiSpace::inflate(MM_EnvironmentBase *env)
 					semiSpaceMiddle, _highAddress);
 			Assert_MM_inflateInvalidRange();
 		}
-		if(NULL == (_lowSemiSpaceRegion = getHeapRegionManager()->createAuxiliaryRegionDescriptor(env, subSpaceAllocate, _lowAddress, semiSpaceMiddle))) {
+		if(NULL == (_lowSemiSpaceRegion = getHeapRegionManager()->createAuxiliaryRegionDescriptor(env, subSpaceSurvivor, _lowAddress, semiSpaceMiddle))) {
 			return false;
 		}
 
@@ -189,9 +189,9 @@ MM_PhysicalSubArenaVirtualMemorySemiSpace::inflate(MM_EnvironmentBase *env)
 		}
 
 		/* Inform the semi spaces that they have been expanded */
-		bool result = subSpaceAllocate->expanded(env, this, _lowSemiSpaceRegion->getSize(), _lowSemiSpaceRegion->getLowAddress(), _lowSemiSpaceRegion->getHighAddress(), false);
+		bool result = subSpaceAllocate->expanded(env, this, _highSemiSpaceRegion->getSize(), _highSemiSpaceRegion->getLowAddress(), _highSemiSpaceRegion->getHighAddress(), false);
 		subSpaceAllocate->heapReconfigured(env);
-		result = result && subSpaceSurvivor->expanded(env, this, _highSemiSpaceRegion->getSize(), _highSemiSpaceRegion->getLowAddress(), _highSemiSpaceRegion->getHighAddress(), false);
+		result = result && subSpaceSurvivor->expanded(env, this, _lowSemiSpaceRegion->getSize(), _lowSemiSpaceRegion->getLowAddress(), _lowSemiSpaceRegion->getHighAddress(), false);
 		subSpaceSurvivor->heapReconfigured(env);
 		return result;
 	}

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2018 IBM Corp. and others
+ * Copyright (c) 1991, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -371,7 +371,8 @@ typedef enum {
 	UNLOADING_CLASSES,
 	EXPAND_FAILED,
 	ABORTED_SCAVENGE,
-	CRITICAL_REGIONS
+	CRITICAL_REGIONS,
+	CONCURRENT_MARK_EXHAUSTED
 } PercolateReason;
 /**
  * @}
@@ -403,7 +404,8 @@ typedef enum {
 	SCAV_RATIO_TOO_HIGH,
 	SATISFY_COLLECTOR,
 	EXPAND_DESPERATE,
-	FORCED_NURSERY_EXPAND
+	FORCED_NURSERY_EXPAND,
+	HINT_PREVIOUS_RUNS
 } ExpandReason;
 
 typedef enum {

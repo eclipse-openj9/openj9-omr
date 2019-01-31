@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2019, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -19,48 +19,4 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#ifndef OMR_ARM_REGISTER_ITERATOR_INCL
-#define OMR_ARM_REGISTER_ITERATOR_INCL
-
-/*
- * The following #define and typedef must appear before any #includes in this file
- */
-#ifndef OMR_REGISTER_ITERATOR_CONNECTOR
-#define OMR_REGISTER_ITERATOR_CONNECTOR
-   namespace OMR { namespace ARM { class RegisterIterator; } }
-   namespace OMR { typedef OMR::ARM::RegisterIterator RegisterIteratorConnector; }
-#else
-   #error OMR::ARM::RegisterIterator expected to be a primary connector, but a OMR connector is already defined
-#endif
-
-#include "compiler/codegen/OMRRegisterIterator.hpp"
-namespace TR { class Machine; }
-
-namespace OMR
-{
-
-namespace ARM
-{
-
-class OMR_EXTENSIBLE RegisterIterator : public OMR::RegisterIterator
-   {
-   public:
-   RegisterIterator(TR::Machine *machine, TR_RegisterKinds kind);
-
-   TR::Register *getFirst();
-   TR::Register *getCurrent();
-   TR::Register *getNext();
-
-   private:
-   TR::Machine *_machine;
-   int32_t _firstRegIndex;
-   int32_t _lastRegIndex;
-   int32_t _cursor;
-   };
-
-}
-
-}
-
-
-#endif
+#include "env/CPU.hpp"

@@ -320,7 +320,7 @@ TR::S390SystemLinkage::addImmediateToRealRegister(TR::RealRegister *targetReg, i
       }
 
    if (!checkTempNeeded)
-      cursor = generateRXYInstruction(cg(), TR::InstOpCode::LAY, node, targetReg, generateS390MemoryReference(targetReg,value,cg()), cursor);
+      cursor = generateRXInstruction(cg(), TR::InstOpCode::LAY, node, targetReg, generateS390MemoryReference(targetReg,value,cg()), cursor);
 
    return cursor;
    }
@@ -1900,7 +1900,7 @@ void TR::S390SystemLinkage::createPrologue(TR::Instruction * cursor)
       if (!largeStack)
          {
          // Adjust stack pointer with LA (reduce AGI delay)
-         cursor = generateRXYInstruction(cg(), TR::InstOpCode::LAY, firstNode, spReg, generateS390MemoryReference(spReg,(stackFrameSize) * -1, cg()),cursor);
+         cursor = generateRXInstruction(cg(), TR::InstOpCode::LAY, firstNode, spReg, generateS390MemoryReference(spReg,(stackFrameSize) * -1, cg()),cursor);
          }
       else
          {

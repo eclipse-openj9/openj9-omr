@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2018 IBM Corp. and others
+ * Copyright (c) 1991, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1250,28 +1250,23 @@ getMemoryInRangeForDefaultPages(struct OMRPortLibrary *portLibrary, struct J9Por
 				(1 == direction) ? FALSE : TRUE,
 	 			OMR_ARE_ANY_BITS_SET(vmemOptions, OMRPORT_VMEM_STRICT_ADDRESS) ? TRUE : FALSE);
 
-		if (NULL == smartAddress) {
-			/* None of the available regions are suitable. There's no point in performing
-			 * the linear search below: it would (slowly) arrive at the same conclusion.
-			 */
-			return NULL;
-		}
-
-		/* smartAddress is not NULL: try to get memory there */
-		memoryPointer = default_pageSize_reserve_memory(portLibrary, smartAddress, byteAmount, identifier, mode, PPG_vmem_pageSize[0], category);
-		if (NULL != memoryPointer) {
-			if (OMR_ARE_NO_BITS_SET(vmemOptions, OMRPORT_VMEM_STRICT_ADDRESS)) {
-				/* OMRPORT_VMEM_STRICT_ADDRESS is not set: accept whatever we get */
-			} else if ((startAddress <= memoryPointer) && (memoryPointer <= endAddress)) {
-				/* the address is in the requested range */
-			} else {
-				/* the address is outside of the range, free it */
-				if (0 != omrvmem_free_memory(portLibrary, memoryPointer, byteAmount, identifier)) {
-					/* free failed: we fail too */
-					return NULL;
+		if (NULL != smartAddress) {
+			/* smartAddress is not NULL: try to get memory there */
+			memoryPointer = default_pageSize_reserve_memory(portLibrary, smartAddress, byteAmount, identifier, mode, PPG_vmem_pageSize[0], category);
+			if (NULL != memoryPointer) {
+				if (OMR_ARE_NO_BITS_SET(vmemOptions, OMRPORT_VMEM_STRICT_ADDRESS)) {
+					/* OMRPORT_VMEM_STRICT_ADDRESS is not set: accept whatever we get */
+				} else if ((startAddress <= memoryPointer) && (memoryPointer <= endAddress)) {
+					/* the address is in the requested range */
+				} else {
+					/* the address is outside of the range, free it */
+					if (0 != omrvmem_free_memory(portLibrary, memoryPointer, byteAmount, identifier)) {
+						/* free failed: we fail too */
+						return NULL;
+					}
+					/* try a linear search below */
+					memoryPointer = NULL;
 				}
-				/* try a linear search below */
-				memoryPointer = NULL;
 			}
 		}
 		/*

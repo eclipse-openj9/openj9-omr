@@ -5511,6 +5511,7 @@ int32_t TR_InductionVariableAnalysis::perform()
 
    if (comp()->hasLargeNumberOfLoops())
       {
+      removeStaleIVs(comp()->getFlowGraph()->getStructure()->asRegion());
       return 0;
       }
 
@@ -5519,7 +5520,8 @@ int32_t TR_InductionVariableAnalysis::perform()
    // FIXME: Why is this allocated with heap memory?
    _dominators = new (trHeapMemory()) TR_Dominators(comp());
 
-   // Gathers symrefs that are assigned inside a loop
+   // Gathers symrefs that are assigned inside a loop. This removes stale IVs
+   // in the same traversal, so there's no need to removeStaleIVs().
    //
    gatherCandidates(comp()->getFlowGraph()->getStructure(), NULL, NULL);
 
@@ -5529,11 +5531,26 @@ int32_t TR_InductionVariableAnalysis::perform()
    return 1;
    }
 
+void TR_InductionVariableAnalysis::removeStaleIVs(TR_RegionStructure *region)
+   {
+   region->clearInductionVariables();
+
+   TR_RegionStructure::Cursor it(*region);
+   for (TR_StructureSubGraphNode *n = it.getFirst(); n != NULL; n = it.getNext())
+      {
+      TR_RegionStructure *subRegion = n->getStructure()->asRegion();
+      if (subRegion != NULL)
+         removeStaleIVs(subRegion);
+      }
+   }
+
 void TR_InductionVariableAnalysis::gatherCandidates(TR_Structure *s, TR_BitVector *loopLocalDefs, TR_BitVector *allDefs)
    {
    if (s->asRegion())
       {
       TR_RegionStructure *region = s->asRegion();
+      region->clearInductionVariables(); // Remove stale IVs
+
       TR_BitVector *myAllDefs = 0;
 
       if (!region->isAcyclic())

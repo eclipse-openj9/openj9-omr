@@ -40,6 +40,8 @@
 /compiler/ @0xdaryl @mstoodle
 /compiler/optimizer/ @vijaysun-omr
 /compiler/il/ @vijaysun-omr @Leonardo2718
+/compiler/arm/ @0xdaryl
+/compiler/aarch64/ @0xdaryl
 /compiler/z/ @fjeremic
 
 # JitBuilder
@@ -52,7 +54,10 @@
 # Thread Library
 /thread/ @charliegracie
 
+# OMR Core Utilities
+/include_core/OMR/ @youngar @charliegracie @Leonardo2718
+
 # Tril and Testing
-/test/tril/ @Leonardo2718 @fjeremic @0xdaryl
-/test/compilertriltest/ @Leonardo2718 @fjeremic @0xdaryl
-/test/jitbuildertest/ @mstoodle @charliegracie @Leonardo2718
+/fvtest/tril/ @Leonardo2718 @fjeremic @0xdaryl
+/fvtest/compilertriltest/ @Leonardo2718 @fjeremic @0xdaryl
+/fvtest/jitbuildertest/ @mstoodle @charliegracie @Leonardo2718

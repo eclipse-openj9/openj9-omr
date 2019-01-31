@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2018, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -19,51 +19,23 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#ifndef OMR_POWER_REGISTER_ITERATOR_INCL
-#define OMR_POWER_REGISTER_ITERATOR_INCL
+#ifndef TR_JITBUILDERRECORDER_BINARYBUFFER_INCL
+#define TR_JITBUILDERRECORDER_BINARYBUFFER_INCL
 
-/*
- * The following #define and typedef must appear before any #includes in this file
- */
-#ifndef OMR_REGISTER_ITERATOR_CONNECTOR
-#define OMR_REGISTER_ITERATOR_CONNECTOR
-namespace OMR { namespace Power { class RegisterIterator; } }
-namespace OMR { typedef OMR::Power::RegisterIterator RegisterIteratorConnector; }
-#else
-#error OMR::Power::RegisterIterator expected to be a primary connector, but a OMR connector is already defined
-#endif
+#include "ilgen/OMRJitBuilderRecorderBinaryBuffer.hpp"
 
-#include "compiler/codegen/OMRRegisterIterator.hpp"
-#include "infra/Annotations.hpp"                // for OMR_EXTENSIBLE
-
-#include <stdint.h>  // for int32_t
-
-namespace TR { class Machine; }
-
-namespace OMR
+namespace TR
 {
+   class JitBuilderRecorderBinaryBuffer : public OMR::JitBuilderRecorderBinaryBuffer
+      {
+      public:
+         JitBuilderRecorderBinaryBuffer(const TR::MethodBuilder *mb, const char *fileName)
+            : OMR::JitBuilderRecorderBinaryBuffer(mb, fileName)
+            { }
+         virtual ~JitBuilderRecorderBinaryBuffer()
+            { }
+      };
 
-namespace Power
-{
+} // namespace TR
 
-class OMR_EXTENSIBLE RegisterIterator
-   {
-   public:
-   RegisterIterator(TR::Machine *machine, TR_RegisterKinds kind);
-
-   TR::Register *getFirst();
-   TR::Register *getCurrent();
-   TR::Register *getNext();
-
-   private:
-   TR::Machine *_machine;
-   int32_t _firstRegIndex;
-   int32_t _lastRegIndex;
-   int32_t _cursor;
-   };
-
-}
-
-}
-
-#endif
+#endif // !defined(TR_JITBUILDERRECORDER_BINARYBUFFER_INCL)

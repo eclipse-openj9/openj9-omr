@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2018 IBM Corp. and others
+ * Copyright (c) 1991, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -38,6 +38,7 @@
 #include "GlobalGCStats.hpp"
 #include "GlobalVLHGCStats.hpp"
 #include "LargeObjectAllocateStats.hpp"
+#include "MemoryHandle.hpp"
 #include "MixedObjectModel.hpp"
 #include "NUMAManager.hpp"
 #include "OMRVMThreadListIterator.hpp"
@@ -262,6 +263,12 @@ public:
 	void* heapBaseForBarrierRange0;
 	uintptr_t heapSizeForBarrierRange0;
 
+#if defined(OMR_ENV_DATA64) && !defined(OMR_GC_COMPRESSED_POINTERS)
+	void* shadowHeapBase; 	/* Read Barrier Verifier shadow heap base address */
+	void* shadowHeapTop;	/* Read Barrier Verifier shadow heap base address */
+	MM_MemoryHandle shadowHeapHandle; /* Read Barrier Verifier shadow heap Virtual Memory handle (descriptor) */
+#endif /* defined(OMR_ENV_DATA64) && !defined(OMR_GC_COMPRESSED_POINTERS) */
+
 	bool doOutOfLineAllocationTrace;
 	bool doFrequentObjectAllocationSampling; /**< Whether to track object allocations*/
 	uintptr_t oolObjectSamplingBytesGranularity; /**< How often (in bytes) we do an ool allocation trace */
@@ -320,20 +327,17 @@ public:
 	double largeObjectAreaInitialRatio;
 	double largeObjectAreaMinimumRatio;
 	double largeObjectAreaMaximumRatio;
-	bool debugLOAResize;
 	bool debugLOAFreelist;
 	bool debugLOAAllocate;
 	int loaFreeHistorySize; /**< max size of _loaFreeRatioHistory array */
 	ConcurrentMetering concurrentMetering;
 #endif /* OMR_GC_LARGE_OBJECT_AREA */
 
-	uintptr_t** markingStackList;
 	bool disableExplicitGC;
 	uintptr_t heapAlignment;
 	uintptr_t absoluteMinimumOldSubSpaceSize;
 	uintptr_t absoluteMinimumNewSubSpaceSize;
 	uintptr_t parSweepChunkSize;
-	uintptr_t markingStackSize;
 	uintptr_t heapExpansionMinimumSize;
 	uintptr_t heapExpansionMaximumSize;
 	uintptr_t heapFreeMinimumRatioDivisor;
@@ -345,6 +349,9 @@ public:
 	uintptr_t heapExpansionStabilizationCount; /**< GC count required before the heap is allowed to expand due to excessvie time after last heap expansion */
 	uintptr_t heapContractionStabilizationCount; /**< GC count required before the heap is allowed to contract due to excessvie time after last heap expansion */
 
+	float heapSizeStartupHintConservativeFactor; /**< Use only a fraction of hints stored in SC */
+	float heapSizeStartupHintWeightNewValue;		/**< Learn slowly by historic averaging of stored hints */	
+
 	uintptr_t workpacketCount; /**< this value is ONLY set if -Xgcworkpackets is specified - otherwise the workpacket count is determined heuristically */
 	uintptr_t packetListSplit; /**< the number of ways to split packet lists, set by -XXgc:packetListLockSplit=, or determined heuristically based on the number of GC threads */
 	uintptr_t cacheListSplit; /**< the number of ways to split scanCache lists, set by -XXgc:cacheListLockSplit=, or determined heuristically based on the number of GC threads */
@@ -353,6 +360,7 @@ public:
 	uintptr_t markingArraySplitMinimumAmount; /**< minimum number of elements to split array scanning work in marking scheme */
 
 	bool rootScannerStatsEnabled; /**< Enable/disable recording of performance statistics for the root scanner.  Defaults to false. */
+	bool rootScannerStatsUsed; /**< Flag that indicates if rootScannerStats are used for in the last increment (by any thread, for any of its roots) */
 
 	/* bools and counters for -Xgc:fvtest options */
 	bool fvtest_forceOldResize;
@@ -378,6 +386,13 @@ public:
 
 	uintptr_t fvtest_forceSweepChunkArrayCommitFailure; /**< Force failure at Sweep Chunk Array commit operation */
 	uintptr_t fvtest_forceSweepChunkArrayCommitFailureCounter; /**< Force failure at Sweep Chunk Array commit operation counter */
+#if defined(OMR_ENV_DATA64) && !defined(OMR_GC_COMPRESSED_POINTERS)
+	uintptr_t fvtest_enableReadBarrierVerification; /**< Forces failure at all direct memory read sites */
+	uintptr_t fvtest_enableMonitorObjectsReadBarrierVerification; /**< Forces failure at all direct memory read sites for monitor slot objects */
+	uintptr_t fvtest_enableClassStaticsReadBarrierVerification; /**< Forces failure at all direct memory read sites for class statics */
+	uintptr_t fvtest_enableJNIGlobalWeakReadBarrierVerification; /**< Forces failure at all direct memory read sites for JNI Global weak references */
+	uintptr_t fvtest_enableHeapReadBarrierVerification; /**< Forces failure at all direct memory read sites for heap references */
+#endif /* defined(OMR_ENV_DATA64) && !defined(OMR_GC_COMPRESSED_POINTERS) */
 
 	uintptr_t fvtest_forceMarkMapCommitFailure; /**< Force failure at Mark Map commit operation */
 	uintptr_t fvtest_forceMarkMapCommitFailureCounter; /**< Force failure at Mark Map commit operation counter */
@@ -574,7 +589,11 @@ public:
 	MM_HeapMap* previousMarkMap; /**< the previous valid mark map. This can be used to walk marked objects in regions which have _markMapUpToDate set to true */
 
 	MM_GlobalAllocationManager* globalAllocationManager; /**< Used for attaching threads to AllocationContexts */
+	
+#if defined(OMR_GC_REALTIME) || defined(OMR_GC_SEGREGATED_HEAP)
 	uintptr_t managedAllocationContextCount; /**< The number of allocation contexts which will be instantiated and managed by the GlobalAllocationManagerRealtime (currently 2*cpu_count) */
+#endif /* OMR_GC_REALTIME || OMR_GC_SEGREGATED_HEAP */
+
 #if defined(OMR_GC_SEGREGATED_HEAP)
 	MM_SizeClasses* defaultSizeClasses;
 #endif
@@ -1244,6 +1263,9 @@ public:
 		, scavengerStats()
 		, copyScanRatio()
 #endif /* OMR_GC_MODRON_SCAVENGER */		
+#if defined(OMR_GC_VLHGC)
+		, globalVLHGCStats()
+#endif /* OMR_GC_VLHGC */
 #if defined(OMR_GC_CONCURRENT_SWEEP)
 		, concurrentSweep(false)
 #endif /* OMR_GC_CONCURRENT_SWEEP */
@@ -1257,9 +1279,13 @@ public:
 #if defined(OMR_GC_STACCATO)
 		, sATBBarrierRememberedSet(NULL)
 #endif /* OMR_GC_STACCATO */
-
 		, heapBaseForBarrierRange0(NULL)
 		, heapSizeForBarrierRange0(0)
+#if defined(OMR_ENV_DATA64) && !defined(OMR_GC_COMPRESSED_POINTERS)
+		, shadowHeapBase(0)
+		, shadowHeapTop(0)
+		, shadowHeapHandle()
+#endif /* defined(OMR_ENV_DATA64) && !defined(OMR_GC_COMPRESSED_POINTERS) */
 		, doOutOfLineAllocationTrace(true) /* Tracing after ever x bytes allocated per thread. Enabled by default. */
 		, doFrequentObjectAllocationSampling(false) /* Finds most frequently allocated classes. Disabled by default. */
 		, oolObjectSamplingBytesGranularity(16*1024*1024) /* Default granularity set to 16M (shows <1% perf loss). */
@@ -1294,6 +1320,7 @@ public:
 		, vmThreadAllocatedMost(NULL)
 		, gcModeString(NULL)
 		, splitFreeListSplitAmount(0)
+		, splitFreeListNumberChunksPrepared(0)
 		, enableHybridMemoryPool(false)
 		, largeObjectArea(false)
 #if defined(OMR_GC_LARGE_OBJECT_AREA)
@@ -1301,16 +1328,16 @@ public:
 		, largeObjectAreaInitialRatio(0.050) /* initial LOA 5% */
 		, largeObjectAreaMinimumRatio(0.01) /* initial LOA 1% */
 		, largeObjectAreaMaximumRatio(0.500) /* maximum LOA 50% */
-		, debugLOAResize(false)
 		, debugLOAFreelist(false)
 		, debugLOAAllocate(false)
 		, loaFreeHistorySize(15)
+		, concurrentMetering(METER_BY_SOA)
 #endif /* OMR_GC_LARGE_OBJECT_AREA */
+		, disableExplicitGC(false)
 		, heapAlignment(HEAP_ALIGNMENT)
 		, absoluteMinimumOldSubSpaceSize(MINIMUM_OLD_SPACE_SIZE)
 		, absoluteMinimumNewSubSpaceSize(MINIMUM_NEW_SPACE_SIZE)
 		, parSweepChunkSize(0)
-		, markingStackSize(4096)
 		, heapExpansionMinimumSize(1024 * 1024)
 		, heapExpansionMaximumSize(0)
 		, heapFreeMinimumRatioDivisor(100)
@@ -1321,12 +1348,15 @@ public:
 		, heapContractionGCTimeThreshold(5)
 		, heapExpansionStabilizationCount(0)
 		, heapContractionStabilizationCount(3)
+		, heapSizeStartupHintConservativeFactor((float)0.7)
+		, heapSizeStartupHintWeightNewValue((float)0.0)		
 		, workpacketCount(0) /* only set if -Xgcworkpackets specified */
 		, packetListSplit(0)
 		, cacheListSplit(0)
 		, markingArraySplitMaximumAmount(DEFAULT_ARRAY_SPLIT_MAXIMUM_SIZE)
 		, markingArraySplitMinimumAmount(DEFAULT_ARRAY_SPLIT_MINIMUM_SIZE)
 		, rootScannerStatsEnabled(false)
+		, rootScannerStatsUsed(false)
 		, fvtest_forceOldResize(0)
 		, fvtest_oldResizeCounter(0)
 #if defined(OMR_GC_MODRON_SCAVENGER) || defined(OMR_GC_VLHGC)
@@ -1349,6 +1379,13 @@ public:
 		, fvtest_disableInlineAllocation(0)
 		, fvtest_forceSweepChunkArrayCommitFailure(0)
 		, fvtest_forceSweepChunkArrayCommitFailureCounter(0)
+#if defined(OMR_ENV_DATA64) && !defined(OMR_GC_COMPRESSED_POINTERS)
+		, fvtest_enableReadBarrierVerification(0)
+		, fvtest_enableMonitorObjectsReadBarrierVerification(0)
+		, fvtest_enableClassStaticsReadBarrierVerification(0)
+		, fvtest_enableJNIGlobalWeakReadBarrierVerification(0)
+		, fvtest_enableHeapReadBarrierVerification(0)
+#endif /* defined(OMR_ENV_DATA64) && !defined(OMR_GC_COMPRESSED_POINTERS) */
 		, fvtest_forceMarkMapCommitFailure(0)
 		, fvtest_forceMarkMapCommitFailureCounter(0)
 		, fvtest_forceMarkMapDecommitFailure(0)
@@ -1357,7 +1394,10 @@ public:
 		, fvtest_forceReferenceChainWalkerMarkMapCommitFailureCounter(0)
 		, fvtest_forceCopyForwardHybridRatio(0)
 		, softMx(0) /* softMx only set if specified */
+#if defined(OMR_GC_BATCH_CLEAR_TLH)
 		, batchClearTLH(0)
+#endif /* OMR_GC_BATCH_CLEAR_TLH */
+		, gcThreadCount(0)
 		, gcThreadCountForced(false)
 #if defined(OMR_GC_MODRON_SCAVENGER) || defined(OMR_GC_VLHGC)
 		, scavengerScanOrdering(OMR_GC_SCAVENGER_SCANORDERING_HIERARCHICAL)
@@ -1373,6 +1413,7 @@ public:
 		, scvTenureStrategyLookback(true)
 		, scvTenureStrategyHistory(true)
 		, scavengerEnabled(false)
+		, scavengerRsoScanUnsafe(false)
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
 		, softwareRangeCheckReadBarrier(false)
 		, concurrentScavenger(false)
@@ -1432,8 +1473,8 @@ public:
 		, compactOnSystemGC(0)
 		, nocompactOnSystemGC(0)
 		, compactToSatisfyAllocate(false)
-		, payAllocationTax(false)
 #endif /* OMR_GC_MODRON_COMPACTION */
+		, payAllocationTax(false)
 #if defined(OMR_GC_MODRON_CONCURRENT_MARK)
 		, concurrentMark(false)
 		, concurrentKickoffEnabled(true)
@@ -1444,7 +1485,7 @@ public:
 		, concurrentLevel(8)
 #if defined(LINUX) && defined(S390)
 		, concurrentBackground(0) /* TODO: remove this workaround once pthread library on z/linux fixed. see CMVC 94776 */
-#else
+#else /* LINUX && S390 */
 		, concurrentBackground(1)
 #endif /* LINUX && S390 */
 		, concurrentSlack(0)
@@ -1477,6 +1518,7 @@ public:
 		, maxSizeDefaultMemorySpace(0)
 		, allocationIncrementSetByUser(0)
 		, overflowSafeAllocSize(0)
+		, usablePhysicalMemory(0)
 #if defined(OMR_GC_REALTIME)
 		, RTC_Frequency(2048) // must be power of 2 - translates to ~488us delay
 		, itPeriodMicro(1000)
@@ -1503,12 +1545,12 @@ public:
 		, instrumentableAllocateHookEnabled(false) /* by default the hook J9HOOK_VM_OBJECT_ALLOCATE_INSTRUMENTABLE is disabled */
 		, previousMarkMap(NULL)
 		, globalAllocationManager(NULL)
-#if defined (OMR_GC_REALTIME)
+#if defined(OMR_GC_REALTIME) || defined(OMR_GC_SEGREGATED_HEAP)
 		, managedAllocationContextCount(0)
-#endif /* OMR_GC_REALTIME */
+#endif /* OMR_GC_REALTIME || OMR_GC_SEGREGATED_HEAP */
 #if defined(OMR_GC_SEGREGATED_HEAP)
 		, defaultSizeClasses(NULL)
-#endif
+#endif /* OMR_GC_SEGREGATED_HEAP */
 		, distanceToYieldTimeCheck(0)
 		, traceCostToCheckYield(500) /* weighted sum of marked objects and scanned pointers before we check yield in main tracing loop */
 		, sweepCostToCheckYield(500) /* weighted count of free chunks/marked objects before we check yield in sweep small loop */
@@ -1526,6 +1568,7 @@ public:
 		, allocationCacheInitialSize(256)
 		, allocationCacheIncrementSize(256)
 		, nonDeterministicSweep(false)
+		, configuration(NULL)
 		, verboseGCManager(NULL)
 		, verbosegcCycleTime(1000)  /* by default metronome outputs verbosegc every 1sec */
 		, verboseExtensions(false)
@@ -1536,9 +1579,9 @@ public:
 		, disableInlineCacheForAllocationThreshold(false)
 #if defined (OMR_GC_COMPRESSED_POINTERS)
 		, heapCeiling(LOW_MEMORY_HEAP_CEILING) /* By default, compressed pointers builds run in the low 64GiB */
-#else
+#else /* OMR_GC_COMPRESSED_POINTERS */
 		, heapCeiling(0) /* default for normal platforms is 0 (i.e. no ceiling) */
-#endif
+#endif /* OMR_GC_COMPRESSED_POINTERS */
 		, heapInitializationFailureReason(HEAP_INITIALIZATION_FAILURE_REASON_NO_ERROR)
 		, scavengerAlignHotFields(true) /* VM Design 1774: hot field alignment is on by default */
 		, suballocatorInitialSize(SUBALLOCATOR_INITIAL_SIZE) /* default for J9Heap suballocator initial size is 200 MB */
@@ -1629,7 +1672,11 @@ public:
 		, lastGCFreeBytes(0)
 		, gcOnIdle(false)
 		, compactOnIdle(false)
-#endif
+#endif /* defined(OMR_GC_IDLE_HEAP_MANAGER) */
+#if defined(OMR_VALGRIND_MEMCHECK)
+		, valgrindMempoolAddr(0)
+		, memcheckHashTable(NULL)
+#endif /* defined(OMR_VALGRIND_MEMCHECK) */
 	{
 		_typeId = __FUNCTION__;
 	}

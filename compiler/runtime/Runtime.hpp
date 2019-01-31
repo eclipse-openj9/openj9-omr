@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -393,7 +393,8 @@ typedef enum
    TR_ValidateMethodFromSingleAbstractImplementer = 96,
    TR_ValidateImproperInterfaceMethodFromCP=97,
    TR_SymbolFromManager                   = 98,
-   TR_NumExternalRelocationKinds          = 99,
+   TR_MethodCallAddress                   = 99,
+   TR_NumExternalRelocationKinds          = 100,
    TR_ExternalRelocationTargetKindMask    = 0xff,
    } TR_ExternalRelocationTargetKind;
 

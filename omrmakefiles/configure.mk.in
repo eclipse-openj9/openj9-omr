@@ -207,8 +207,6 @@ DIASDK_HOME := @DIASDK_HOME@
 MODULE_INCLUDES += .
 GLOBAL_INCLUDES += $(top_srcdir)/include_core $(top_srcdir)/nls
 
-GLOBAL_CPPFLAGS += -DUT_DIRECT_TRACE_REGISTRATION
-
 # By default, shared libs are built into exe_output_dir, and
 # static libs are built into lib_output_dir.
 GLOBAL_LIBPATH += . $(exe_output_dir) $(lib_output_dir)

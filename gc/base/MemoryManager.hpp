@@ -167,6 +167,15 @@ public:
 	 * @param[in/out] handle pointer to memory handle
 	 */
 	void destroyVirtualMemory(MM_EnvironmentBase* env, MM_MemoryHandle* handle);
+	
+	/**
+	 * Destroy virtual memory instance, plus everything that is heap specific (for example, shadow heap)
+	 *
+	 * @param env environment
+	 * @param[in/out] handle pointer to memory handle
+	 */
+	void destroyVirtualMemoryForHeap(MM_EnvironmentBase* env, MM_MemoryHandle* handle);
+	
 
 	/**
 	 * Commit memory for range for specified virtual memory instance

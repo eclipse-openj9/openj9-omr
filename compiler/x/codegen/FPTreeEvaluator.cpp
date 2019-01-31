@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -68,7 +68,6 @@
 #include "x/codegen/X86Instruction.hpp"
 #include "x/codegen/X86Ops.hpp"                       // for ::LABEL, ::JE4, etc
 #include "x/codegen/X86Register.hpp"
-#include "x/codegen/XMMBinaryArithmeticAnalyser.hpp"
 
 namespace TR { class Instruction; }
 
@@ -562,26 +561,9 @@ TR::Register *OMR::X86::TreeEvaluator::fpBinaryArithmeticEvaluator(TR::Node     
                                                               bool              isFloat,
                                                               TR::CodeGenerator *cg)
    {
-   static auto Disable3OpForFP = (bool)feGetEnv("TR_Disable3OpForFP");
-   if (!Disable3OpForFP && cg->useSSEForSinglePrecision() && cg->useSSEForDoublePrecision())
+   if (cg->useSSEForSinglePrecision() && cg->useSSEForDoublePrecision())
       {
       return TR::TreeEvaluator::FloatingPointAndVectorBinaryArithmeticEvaluator(node, cg);
-      }
-   // Attempt to use SSE/SSE2 instructions if the CPU supports them, and
-   // either neither child is in a register, or at least one of them is
-   // already in an XMM register.
-   TR::Register *firstRegister  = node->getFirstChild()->getRegister();
-   TR::Register *secondRegister = node->getSecondChild()->getRegister();
-
-   if ((( isFloat && cg->useSSEForSinglePrecision())  ||
-        (!isFloat && cg->useSSEForDoublePrecision()))  &&
-       ((!firstRegister && !secondRegister)                      ||
-        (firstRegister  && firstRegister->getKind()  == TR_FPR) ||
-        (secondRegister && secondRegister->getKind() == TR_FPR)))
-      {
-      TR_X86XMMBinaryArithmeticAnalyser temp(node, cg);
-      temp.genericXMMAnalyser(node);
-      return node->getRegister();
       }
    else
       {

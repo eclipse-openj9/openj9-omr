@@ -22,6 +22,7 @@
 #include "codegen/ARM64ShiftCode.hpp"
 #include "codegen/CodeGenerator.hpp"
 #include "codegen/GenerateInstructions.hpp"
+#include "codegen/Linkage.hpp"
 #include "codegen/MemoryReference.hpp"
 #include "codegen/RegisterDependency.hpp"
 #include "codegen/TreeEvaluator.hpp"
@@ -53,7 +54,7 @@ TR::Instruction *loadConstant32(TR::CodeGenerator *cg, TR::Node *node, int32_t v
    else if ((value & 0xFFFF) == 0)
       {
       op = TR::InstOpCode::movzw;
-      imm = (value >> 16) | TR::MOV_LSL16;
+      imm = ((value >> 16) & 0xFFFF) | TR::MOV_LSL16;
       }
    else if ((value & 0xFFFF) == 0xFFFF)
       {
@@ -71,7 +72,7 @@ TR::Instruction *loadConstant32(TR::CodeGenerator *cg, TR::Node *node, int32_t v
       cursor = generateTrg1ImmInstruction(cg, TR::InstOpCode::movzw, node, trgReg,
                                           (value & 0xFFFF), cursor);
       cursor = generateTrg1ImmInstruction(cg, TR::InstOpCode::movkw, node, trgReg,
-                                          ((value >> 16) | TR::MOV_LSL16), cursor);
+                                          (((value >> 16) & 0xFFFF) | TR::MOV_LSL16), cursor);
       }
 
    if (!insertingInstructions)
@@ -187,7 +188,18 @@ TR::Register *commonLoadEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic op, i
    TR::Register *tempReg;
    bool needSync = (node->getSymbolReference()->getSymbol()->isSyncVolatile() && TR::Compiler->target.isSMP());
 
-   tempReg = cg->allocateRegister();
+   if (op == TR::InstOpCode::vldrimms)
+      {
+      tempReg = cg->allocateSinglePrecisionRegister();
+      }
+   else if (op == TR::InstOpCode::vldrimmd)
+      {
+      tempReg = cg->allocateRegister(TR_FPR);
+      }
+   else
+      {
+      tempReg = cg->allocateRegister();
+      }
    node->setRegister(tempReg);
    TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(node, memSize, cg);
    generateTrg1MemInstruction(cg, op, node, tempReg, tempMR);
@@ -204,37 +216,74 @@ TR::Register *commonLoadEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic op, i
    return tempReg;
    }
 
+// also handles iloadi
 TR::Register *
 OMR::ARM64::TreeEvaluator::iloadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return commonLoadEvaluator(node, TR::InstOpCode::ldrimmw, 4, cg);
    }
 
+// also handles aloadi
 TR::Register *
 OMR::ARM64::TreeEvaluator::aloadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// TODO:ARM64: Enable TR::TreeEvaluator::aloadEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
-	}
+   {
+   TR::Compilation *comp = cg->comp();
+   TR::Register *tempReg;
 
+   if (!node->getSymbolReference()->getSymbol()->isInternalPointer())
+      {
+      if (node->getSymbolReference()->getSymbol()->isNotCollected())
+         tempReg = cg->allocateRegister();
+      else
+         tempReg = cg->allocateCollectedReferenceRegister();
+      }
+   else
+      {
+      tempReg = cg->allocateRegister();
+      tempReg->setPinningArrayPointer(node->getSymbolReference()->getSymbol()->castToInternalPointerAutoSymbol()->getPinningArrayPointer());
+      tempReg->setContainsInternalPointer();
+      }
+
+   node->setRegister(tempReg);
+
+   TR::MemoryReference *tempMR = new (cg->trHeapMemory()) TR::MemoryReference(node, 8, cg);
+   generateTrg1MemInstruction(cg, TR::InstOpCode::ldrimmx, node, tempReg, tempMR);
+
+   /*
+    * Enable this part when dmb instruction becomes available
+   bool needSync = (node->getSymbolReference()->getSymbol()->isSyncVolatile() && TR::Compiler->target.isSMP());
+   if (needSync)
+      {
+      generateInstruction(cg, TR::InstOpCode::dmb, node);
+      }
+    */
+   tempMR->decNodeReferenceCounts(cg);
+
+   return tempReg;
+   }
+
+// also handles lloadi
 TR::Register *
 OMR::ARM64::TreeEvaluator::lloadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return commonLoadEvaluator(node, TR::InstOpCode::ldrimmx, 8, cg);
    }
 
+// also handles bloadi
 TR::Register *
 OMR::ARM64::TreeEvaluator::bloadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return commonLoadEvaluator(node, TR::InstOpCode::ldrsbimmx, 1, cg);
    }
 
+// also handles sloadi
 TR::Register *
 OMR::ARM64::TreeEvaluator::sloadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return commonLoadEvaluator(node, TR::InstOpCode::ldrshimmx, 2, cg);
    }
 
+// also handles cloadi
 TR::Register *
 OMR::ARM64::TreeEvaluator::cloadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
@@ -285,24 +334,28 @@ TR::Register *commonStoreEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic op, 
    return NULL;
    }
 
+// also handles lstorei, astore, astorei
 TR::Register *
 OMR::ARM64::TreeEvaluator::lstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return commonStoreEvaluator(node, TR::InstOpCode::strimmx, 8, cg);
    }
 
+// also handles bstorei
 TR::Register *
 OMR::ARM64::TreeEvaluator::bstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return commonStoreEvaluator(node, TR::InstOpCode::strbimm, 1, cg);
    }
 
+// also handles sstorei, cstore, cstorei
 TR::Register *
 OMR::ARM64::TreeEvaluator::sstoreEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    return commonStoreEvaluator(node, TR::InstOpCode::strhimm, 2, cg);
    }
 
+// also handles istorei
 TR::Register *
 OMR::ARM64::TreeEvaluator::istoreEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
@@ -392,6 +445,17 @@ OMR::ARM64::TreeEvaluator::checkcastAndNULLCHKEvaluator(TR::Node *node, TR::Code
 	// TODO:ARM64: Enable TR::TreeEvaluator::checkcastAndNULLCHKEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
 	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
 	}
+
+// handles call, icall, lcall, fcall, dcall, acall
+TR::Register *
+OMR::ARM64::TreeEvaluator::directCallEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   TR::SymbolReference *symRef = node->getSymbolReference();
+   TR::MethodSymbol *callee = symRef->getSymbol()->castToMethodSymbol();
+   TR::Linkage *linkage = cg->getLinkage(callee->getLinkageConvention());
+
+   return linkage->buildDirectDispatch(node);
+   }
 
 TR::Register *
 OMR::ARM64::TreeEvaluator::treetopEvaluator(TR::Node *node, TR::CodeGenerator *cg)
@@ -557,4 +621,15 @@ OMR::ARM64::TreeEvaluator::BBEndEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    generateAdminInstruction(cg, TR::InstOpCode::fence, node, deps, fenceNode);
 
    return NULL;
+   }
+
+// handles l2a, lu2a, a2l
+TR::Register *
+OMR::ARM64::TreeEvaluator::passThroughEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   TR::Node *child = node->getFirstChild();
+   TR::Register *trgReg = cg->evaluate(child);
+   child->decReferenceCount();
+   node->setRegister(trgReg);
+   return trgReg;
    }

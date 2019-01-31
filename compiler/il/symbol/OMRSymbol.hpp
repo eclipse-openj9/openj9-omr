@@ -340,6 +340,9 @@ public:
    inline void setGCRPatchPoint();
    inline bool isGCRPatchPoint();
 
+   inline void setConstantPoolAddress();
+   inline bool isConstantPoolAddress();
+
    // flag methods specific to resolved
    //
    inline bool isJittedMethod();
@@ -507,6 +510,7 @@ public:
       StartPC                   = 0x04000000,
       CountForRecompile         = 0x02000000,
       RecompilationCounter      = 0x01000000,
+      ConstantPoolAddress       = 0x00800000,
       GCRPatchPoint             = 0x00400000,
 
       //Only Used by Symbols for which isResolvedMethod is true;

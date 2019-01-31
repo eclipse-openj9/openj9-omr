@@ -589,6 +589,7 @@ class ValuePropagation : public TR::Optimization
    void transformReferenceArrayCopy(TR_TreeTopWrtBarFlag *);
    void transformReferenceArrayCopyWithoutCreatingStoreTrees(TR_TreeTopWrtBarFlag *arrayTree, TR::SymbolReference *srcObjRef, TR::SymbolReference *dstObjRef, TR::SymbolReference *srcRef, TR::SymbolReference *dstRef, TR::SymbolReference *lenRef);
    virtual void constrainRecognizedMethod(TR::Node *node);
+   virtual bool transformDirectLoad(TR::Node *node);
 
    struct ObjCloneInfo {
       TR_ALLOC(TR_Memory::ValuePropagation)
@@ -599,10 +600,19 @@ class ValuePropagation : public TR::Optimization
          : _clazz(clazz), _isFixed(isFixed)  { }
    };
 
+   struct ArrayCloneInfo {
+      TR_ALLOC(TR_Memory::ValuePropagation)
+
+      TR_OpaqueClassBlock *_clazz;
+      bool _isFixed;
+      ArrayCloneInfo(TR_OpaqueClassBlock *clazz, bool isFixed)
+         : _clazz(clazz), _isFixed(isFixed)  { }
+   };
+
 #ifdef J9_PROJECT_SPECIFIC
    void transformConverterCall(TR::TreeTop *);
    void transformObjectCloneCall(TR::TreeTop *, ObjCloneInfo *cloneInfo);
-   void transformArrayCloneCall(TR::TreeTop *, TR_OpaqueClassBlock *j9class);
+   void transformArrayCloneCall(TR::TreeTop *, ArrayCloneInfo *cloneInfo);
 #endif
 
 
@@ -904,7 +914,7 @@ class ValuePropagation : public TR::Optimization
    List<TR::TreeTop> _objectCloneCalls;
    List<TR::TreeTop> _arrayCloneCalls;
    List<ObjCloneInfo> _objectCloneTypes;
-   List<TR_OpaqueClassBlock> _arrayCloneTypes;
+   List<ArrayCloneInfo> _arrayCloneTypes;
 
    int32_t    *_parmInfo;
    bool       *_parmTypeValid;

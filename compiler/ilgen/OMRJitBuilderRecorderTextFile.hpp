@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2018, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -19,41 +19,43 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#ifndef OMR_REGISTER_ITERATOR_INCL
-#define OMR_REGISTER_ITERATOR_INCL
+#ifndef OMR_JITBUILDERRECORDER_TEXTFILE_INCL
+#define OMR_JITBUILDERRECORDER_TEXTFILE_INCL
 
-/*
- * The following #define and typedef must appear before any #includes in this file
- */
-#ifndef OMR_REGISTER_ITERATOR_CONNECTOR
-#define OMR_REGISTER_ITERATOR_CONNECTOR
-namespace OMR { class RegisterIterator; }
-namespace OMR { typedef OMR::RegisterIterator RegisterIteratorConnector; }
-#endif
+#include "ilgen/JitBuilderRecorder.hpp"
 
-#include "env/TRMemory.hpp"  // for TR_Memory, etc
-namespace TR { class Register; }
+namespace TR { class IlBuilder; }
+namespace TR { class MethodBuilder; }
+namespace TR { class IlType; }
+namespace TR { class IlValue; }
 
 namespace OMR
 {
 
-/*
- * This interface must be implemented by platform-specific descendents,
- * using either List and ListIterator, or some cheaper alternatives.
- */
-class OMR_EXTENSIBLE RegisterIterator
+class JitBuilderRecorderTextFile : public TR::JitBuilderRecorder
    {
    public:
-   TR_ALLOC(TR_Memory::RegisterIterator)
+   JitBuilderRecorderTextFile(const TR::MethodBuilder *mb, const char *fileName);
+   virtual ~JitBuilderRecorderTextFile() { }
 
-   virtual TR::Register *getFirst() = 0;
-
-   virtual TR::Register *getCurrent() = 0;
-
-   virtual TR::Register *getNext() = 0;
+   virtual void Close();
+   virtual void String(const char * const string);
+   virtual void Number(int8_t num);
+   virtual void Number(int16_t num);
+   virtual void Number(int32_t num);
+   virtual void Number(int64_t num);
+   virtual void Number(float num);
+   virtual void Number(double num);
+   virtual void ID(TypeID id);
+   virtual void Statement(const char *s);
+   virtual void Type(const TR::IlType *type);
+   virtual void Value(const TR::IlValue *v);
+   virtual void Builder(const TR::IlBuilder *b);
+   virtual void Location(const void * location);
+   virtual void EndStatement();
 
    };
 
-}
+} // namespace OMR
 
-#endif
+#endif // !defined(OMR_JITBUILDERRECORDER_TEXTFILE_INCL)

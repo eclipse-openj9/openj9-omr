@@ -180,7 +180,7 @@ bool isConditionCodeSetForCompareToZero(TR::Node *node, bool justTestZeroFlag)
         prevInstr;
         prevInstr = prevInstr->getPrev())
       {
-      prevRegInstr = prevInstr->getIA32RegInstruction();
+      prevRegInstr = prevInstr->getX86RegInstruction();
 
       // The register must be equal and the node size must be equal in order to
       // insure the instruction is setting the condition code based on the
@@ -462,12 +462,33 @@ TR::Register *OMR::X86::TreeEvaluator::tableEvaluator(TR::Node *node, TR::CodeGe
          cg->evaluate(secondChild->getFirstChild()); // evaluate the glRegDeps
       }
 
-   TR::MemoryReference *tempMR = generateX86MemoryReference((TR::Register *)NULL,
-                                                            selectorReg,
-                                                            (uint8_t)(TR::Compiler->target.is64Bit()? 3 : 2),
-                                                            (intptrj_t)branchTable, cg);
+   TR::MemoryReference *jumpMR = NULL;
+   TR::Register *branchTableReg = NULL;
+   if (TR::Compiler->target.is64Bit() && cg->comp()->compileRelocatableCode())
+      {
+      // Generate position-independent code so that no (external) relocation is
+      // necessary:
+      //
+      //    lea rBranchTable, [rip + OFFSET_TO_JUMP_TABLE]
+      //    jmp qword ptr [rBranchTable + 8*rIndex]
+      //
+      TR::LabelSymbol *label = generateLabelSymbol(cg);
+      label->setCodeLocation(reinterpret_cast<uint8_t*>(branchTable));
+      TR::MemoryReference *branchTableLeaMR = generateX86MemoryReference(label, cg);
+      branchTableReg = cg->allocateRegister();
+      generateRegMemInstruction(LEA8RegMem, node, branchTableReg, branchTableLeaMR, cg);
+      jumpMR = generateX86MemoryReference(branchTableReg, selectorReg, 3, cg);
+      }
+   else
+      {
+      jumpMR = generateX86MemoryReference(
+         (TR::Register *)NULL,
+         selectorReg,
+         (uint8_t)(TR::Compiler->target.is64Bit()? 3 : 2),
+         (intptrj_t)branchTable, cg);
 
-   tempMR->setNeedsCodeAbsoluteExternalRelocation();
+      jumpMR->setNeedsCodeAbsoluteExternalRelocation();
+      }
 
    TR::X86MemTableInstruction *jmpTableInstruction = NULL;
 
@@ -481,11 +502,11 @@ TR::Register *OMR::X86::TreeEvaluator::tableEvaluator(TR::Node *node, TR::CodeGe
          deps->stopAddingConditions();
          }
 
-      jmpTableInstruction = generateMemTableInstruction(JMPMem, node, tempMR, numBranchTableEntries, deps, cg);
+      jmpTableInstruction = generateMemTableInstruction(JMPMem, node, jumpMR, numBranchTableEntries, deps, cg);
       }
    else
       {
-      generateMemInstruction(JMPMem, node, tempMR, cg);
+      generateMemInstruction(JMPMem, node, jumpMR, cg);
       }
 
    for (i = 2; i < node->getNumChildren(); ++i)
@@ -499,6 +520,9 @@ TR::Register *OMR::X86::TreeEvaluator::tableEvaluator(TR::Node *node, TR::CodeGe
       {
       cg->decReferenceCount(node->getChild(i));
       }
+
+   if (branchTableReg != NULL)
+      cg->stopUsingRegister(branchTableReg);
 
    return NULL;
    }

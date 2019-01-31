@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -405,7 +405,7 @@ compileMethodFromDetails(
             }
 
          if (
-               compiler.getOption(TR_PerfTool) 
+               compiler.getOption(TR_PerfTool)
             || compiler.getOption(TR_EmitExecutableELFFile)
             || compiler.getOption(TR_EmitRelocatableELFFile)
             )
@@ -454,7 +454,7 @@ compileMethodFromDetails(
 #else
       printCompFailureInfo(jitConfig, &compiler, exception.what());
 #endif
-      } 
+      }
    catch (const std::exception &exception)
       {
       // failed! :-(
@@ -472,7 +472,8 @@ compileMethodFromDetails(
    // TR::Compilation. We'll need exceptions working instead of setjmp
    // before we can get working, and we need to make sure the other
    // frontends are properly calling the destructor
-   TR::CodeCacheManager::instance()->unreserveCodeCache(compiler.getCurrentCodeCache());
+   TR::CodeCache *codeCache = compiler.cg() ? compiler.cg()->getCodeCache() : NULL;
+   TR::CodeCacheManager::instance()->unreserveCodeCache(codeCache);
 
    TR_OptimizationPlan::freeOptimizationPlan(plan);
 

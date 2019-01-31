@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -19,74 +19,74 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#include <stdint.h>                                 // for int32_t, etc
-#include <stdio.h>                                  // for NULL
-#include <stdlib.h>                                 // for abs, atoi
-#include "codegen/AheadOfTimeCompile.hpp"           // for AheadOfTimeCompile
-#include "codegen/BackingStore.hpp"                 // for TR_BackingStore
-#include "codegen/CodeGenPhase.hpp"                 // for CodeGenPhase, etc
-#include "codegen/CodeGenerator.hpp"                // for CodeGenerator, etc
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include "codegen/AheadOfTimeCompile.hpp"
+#include "codegen/BackingStore.hpp"
+#include "codegen/CodeGenPhase.hpp"
+#include "codegen/CodeGenerator.hpp"
 #include "codegen/CodeGenerator_inlines.hpp"
 #include "codegen/ConstantDataSnippet.hpp"
-#include "codegen/FrontEnd.hpp"                     // for feGetEnv, etc
-#include "codegen/GCStackAtlas.hpp"                 // for GCStackAtlas
-#include "codegen/GCStackMap.hpp"                   // for TR_GCStackMap, etc
-#include "codegen/InstOpCode.hpp"                   // for InstOpCode, etc
-#include "codegen/Instruction.hpp"                  // for Instruction, etc
-#include "codegen/Linkage.hpp"                      // for Linkage
+#include "codegen/FrontEnd.hpp"
+#include "codegen/GCStackAtlas.hpp"
+#include "codegen/GCStackMap.hpp"
+#include "codegen/InstOpCode.hpp"
+#include "codegen/Instruction.hpp"
+#include "codegen/Linkage.hpp"
 #include "codegen/LinkageConventionsEnum.hpp"
-#include "codegen/LiveRegister.hpp"                 // for TR_LiveRegisters, etc
-#include "codegen/Machine.hpp"                      // for Machine, etc
-#include "codegen/MemoryReference.hpp"              // for MemoryReference
-#include "codegen/RealRegister.hpp"                 // for RealRegister, etc
-#include "codegen/RecognizedMethods.hpp"            // for RecognizedMethod, etc
-#include "codegen/Register.hpp"                     // for Register
+#include "codegen/LiveRegister.hpp"
+#include "codegen/Machine.hpp"
+#include "codegen/MemoryReference.hpp"
+#include "codegen/RealRegister.hpp"
+#include "codegen/RecognizedMethods.hpp"
+#include "codegen/Register.hpp"
 #include "codegen/RegisterConstants.hpp"
 #include "codegen/RegisterDependency.hpp"
-#include "codegen/RegisterIterator.hpp"             // for RegisterIterator
-#include "codegen/RegisterPair.hpp"                 // for RegisterPair
+#include "codegen/RegisterIterator.hpp"
+#include "codegen/RegisterPair.hpp"
 #include "codegen/Relocation.hpp"
-#include "codegen/Snippet.hpp"                      // for Snippet, etc
+#include "codegen/Snippet.hpp"
 #include "codegen/TreeEvaluator.hpp"
-#include "compile/Compilation.hpp"                  // for Compilation, etc
+#include "compile/Compilation.hpp"
 #include "compile/ResolvedMethod.hpp"
 #include "compile/SymbolReferenceTable.hpp"
 #include "control/Options.hpp"
-#include "control/Options_inlines.hpp"              // for TR::Options, etc
-#include "control/Recompilation.hpp"                // for TR_Recompilation
+#include "control/Options_inlines.hpp"
+#include "control/Recompilation.hpp"
 #ifdef J9_PROJECT_SPECIFIC
-#include "control/RecompilationInfo.hpp"                // for TR_Recompilation
+#include "control/RecompilationInfo.hpp"
 #endif
 #include "env/CompilerEnv.hpp"
-#include "env/CPU.hpp"                              // for Cpu
-#include "env/PersistentInfo.hpp"                   // for PersistentInfo
+#include "env/CPU.hpp"
+#include "env/PersistentInfo.hpp"
 #include "env/Processors.hpp"
 #include "env/TRMemory.hpp"
-#include "env/jittypes.h"                           // for uintptrj_t, intptrj_t
-#include "il/Block.hpp"                             // for Block
-#include "il/DataTypes.hpp"                         // for DataTypes, etc
+#include "env/jittypes.h"
+#include "il/Block.hpp"
+#include "il/DataTypes.hpp"
 #include "il/ILOpCodes.hpp"
-#include "il/ILOps.hpp"                             // for ILOpCode, etc
-#include "il/Node.hpp"                              // for Node, vcount_t
+#include "il/ILOps.hpp"
+#include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
-#include "il/Symbol.hpp"                            // for Symbol
-#include "il/SymbolReference.hpp"                   // for SymbolReference
-#include "il/TreeTop.hpp"                           // for TreeTop
-#include "il/TreeTop_inlines.hpp"                   // for TreeTop::getNode, etc
-#include "il/symbol/AutomaticSymbol.hpp"            // for AutomaticSymbol
-#include "il/symbol/LabelSymbol.hpp"                // for LabelSymbol, etc
-#include "il/symbol/MethodSymbol.hpp"               // for MethodSymbol
-#include "il/symbol/ParameterSymbol.hpp"            // for ParameterSymbol
+#include "il/Symbol.hpp"
+#include "il/SymbolReference.hpp"
+#include "il/TreeTop.hpp"
+#include "il/TreeTop_inlines.hpp"
+#include "il/symbol/AutomaticSymbol.hpp"
+#include "il/symbol/LabelSymbol.hpp"
+#include "il/symbol/MethodSymbol.hpp"
+#include "il/symbol/ParameterSymbol.hpp"
 #include "il/symbol/ResolvedMethodSymbol.hpp"
-#include "il/symbol/StaticSymbol.hpp"               // for StaticSymbol
-#include "infra/Array.hpp"                          // for TR_Array
-#include "infra/Assert.hpp"                         // for TR_ASSERT
-#include "infra/Bit.hpp"                            // for contiguousBits, etc
-#include "infra/BitVector.hpp"                      // for TR_BitVector, etc
-#include "infra/Cfg.hpp"                            // for CFG
-#include "infra/Link.hpp"                           // for TR_LinkHead
-#include "infra/List.hpp"                           // for List, etc
-#include "optimizer/Optimizer.hpp"                  // for Optimizer
+#include "il/symbol/StaticSymbol.hpp"
+#include "infra/Array.hpp"
+#include "infra/Assert.hpp"
+#include "infra/Bit.hpp"
+#include "infra/BitVector.hpp"
+#include "infra/Cfg.hpp"
+#include "infra/Link.hpp"
+#include "infra/List.hpp"
+#include "optimizer/Optimizer.hpp"
 #include "optimizer/RegisterCandidate.hpp"
 #include "optimizer/Structure.hpp"
 #include "optimizer/DataFlowAnalysis.hpp"
@@ -96,9 +96,9 @@
 #include "p/codegen/PPCOutOfLineCodeSection.hpp"
 #include "p/codegen/PPCSystemLinkage.hpp"
 #include "p/codegen/PPCTableOfConstants.hpp"
-#include "ras/Debug.hpp"                            // for TR_DebugBase
+#include "ras/Debug.hpp"
 #include "ras/DebugCounter.hpp"
-#include "runtime/Runtime.hpp"                      // for TR_LinkageInfo, etc
+#include "runtime/Runtime.hpp"
 
 #if defined(AIXPPC)
 #include <sys/debug.h>
@@ -280,7 +280,10 @@ OMR::Power::CodeGenerator::CodeGenerator() :
    if (TR::Compiler->vm.hasResumableTrapHandler(self()->comp()))
       self()->setHasResumableTrapHandler();
 
-   if (TR::Compiler->target.cpu.getPPCSupportsTM() && !self()->comp()->getOption(TR_DisableTM))
+   /*
+    * TODO: TM is currently not compatible with read barriers. If read barriers are required, TM is disabled until the issue is fixed.
+    */
+   if (TR::Compiler->target.cpu.getPPCSupportsTM() && !self()->comp()->getOption(TR_DisableTM) && !TR::Compiler->om.shouldGenerateReadBarriersForFieldLoads())
       self()->setSupportsTM();
 
    // enable LM if hardware supports instructions and running the reduced-pause GC policy
@@ -289,15 +292,6 @@ OMR::Power::CodeGenerator::CodeGenerator() :
 
    if (TR::Compiler->target.cpu.getPPCSupportsVMX() && TR::Compiler->target.cpu.getPPCSupportsVSX())
       self()->setSupportsAutoSIMD();
-
-   static bool disableTMDCAS = (feGetEnv("TR_DisablePPCTMDCAS") != NULL);
-   if (self()->getSupportsTM() && !disableTMDCAS &&
-       TR::Compiler->target.is64Bit() &&
-       !TR::Options::useCompressedPointers())
-      {
-      self()->setSupportsTMDoubleWordCASORSet();
-      }
-
 
    if (!self()->comp()->getOption(TR_DisableRegisterPressureSimulation))
       {
@@ -346,8 +340,8 @@ OMR::Power::CodeGenerator::CodeGenerator() :
 
    if (self()->comp()->getOptions()->getRegisterAssignmentTraceOption(TR_TraceRARegisterStates))
       {
-      self()->setGPRegisterIterator(new (self()->trHeapMemory()) TR::RegisterIterator(self()->machine(), TR_GPR));
-      self()->setFPRegisterIterator(new (self()->trHeapMemory()) TR::RegisterIterator(self()->machine(), TR_FPR));
+      self()->setGPRegisterIterator(new (self()->trHeapMemory()) TR::RegisterIterator(self()->machine(), TR::RealRegister::FirstGPR, TR::RealRegister::LastGPR));
+      self()->setFPRegisterIterator(new (self()->trHeapMemory()) TR::RegisterIterator(self()->machine(), TR::RealRegister::FirstFPR, TR::RealRegister::LastFPR));
       }
 
    self()->setSupportsProfiledInlining();
@@ -943,6 +937,41 @@ static void mrPeepholes(TR::CodeGenerator *cg, TR::Instruction *mrInstruction)
                   if (performTransformation(comp, "O^O PPC PEEPHOLE: Rewrite Trg1Src2 2nd source register %p.\n", current))
                      {
                      inst->setSource2Register(mrSourceReg);
+                     extendWindow = true;
+                     }
+                  else
+                     return;
+                  }
+               break;
+               }
+            case OMR::Instruction::IsTrg1Src3:
+               {
+               TR::PPCTrg1Src3Instruction *inst = (TR::PPCTrg1Src3Instruction *)current;
+               if (inst->getSource1Register() == mrTargetReg)
+                  {
+                  if (performTransformation(comp, "O^O PPC PEEPHOLE: Rewrite Trg1Src3 1st source register %p.\n", current))
+                     {
+                     inst->setSource1Register(mrSourceReg);
+                     extendWindow = true;
+                     }
+                  else
+                     return;
+                  }
+               if (inst->getSource2Register() == mrTargetReg)
+                  {
+                  if (performTransformation(comp, "O^O PPC PEEPHOLE: Rewrite Trg1Src3 2nd source register %p.\n", current))
+                     {
+                     inst->setSource2Register(mrSourceReg);
+                     extendWindow = true;
+                     }
+                  else
+                     return;
+                  }
+               if (inst->getSource3Register() == mrTargetReg)
+                  {
+                  if (performTransformation(comp, "O^O PPC PEEPHOLE: Rewrite Trg1Src3 3nd source register %p.\n", current))
+                     {
+                     inst->setSource3Register(mrSourceReg);
                      extendWindow = true;
                      }
                   else
@@ -3667,7 +3696,8 @@ OMR::Power::CodeGenerator::supportsNonHelper(TR::SymbolReferenceTable::CommonNon
       case TR::SymbolReferenceTable::atomicFetchAndAddSymbol:
       case TR::SymbolReferenceTable::atomicSwapSymbol:
          {
-         result = true;
+         // Atomic non-helpers for Power only supported on 64-bit, for now
+         result = TR::Compiler->target.is64Bit();
          break;
          }
       }

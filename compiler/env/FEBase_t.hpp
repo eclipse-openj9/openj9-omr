@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -24,10 +24,13 @@
 #else
 #include <sys/mman.h>
 #endif /* OMR_OS_WINDOWS */
+#include "codegen/CodeGenerator.hpp"
 #include "compile/Compilation.hpp"
 #include "env/FEBase.hpp"
 #include "env/jittypes.h"
+#include "runtime/CodeCache.hpp"
 #include "runtime/CodeCacheExceptions.hpp"
+#include "runtime/CodeCacheManager.hpp"
 
 namespace TR
 {
@@ -47,19 +50,20 @@ uint8_t *
 FEBase<Derived>::allocateCodeMemory(TR::Compilation *comp, uint32_t warmCodeSize, uint32_t coldCodeSize,
                             uint8_t **coldCode, bool isMethodHeaderNeeded)
    {
-   TR::CodeCache *codeCache = static_cast<TR::CodeCache *>(comp->getCurrentCodeCache());
+   TR::CodeGenerator *cg = comp->cg();
+   TR::CodeCache *codeCache = cg->getCodeCache();
 
    TR_ASSERT(codeCache->isReserved(), "Code cache should have been reserved.");
 
    uint8_t *warmCode = codeCacheManager().allocateCodeMemory(warmCodeSize, coldCodeSize, &codeCache,
                                                              coldCode, false, isMethodHeaderNeeded);
 
-   if (codeCache != comp->getCurrentCodeCache())
+   if (codeCache != cg->getCodeCache())
       {
       // Either we didn't get a code cache, or the one we get should be reserved
       TR_ASSERT(!codeCache || codeCache->isReserved(), "Substitute code cache isn't marked as reserved");
       comp->setRelocatableMethodCodeStart(warmCode);
-      switchCodeCache(codeCache);
+      cg->switchCodeCacheTo(codeCache);
       }
 
    if (warmCode == NULL)
@@ -126,24 +130,6 @@ FEBase<Derived>::allocateRelocationData(TR::Compilation* comp, uint32_t size)
   #undef NO_MAP_ANONYMOUS
 #endif
 
-template <class Derived>
-void
-FEBase<Derived>::switchCodeCache(TR::CodeCache *newCache)
-   {
-   TR::Compilation *comp = TR::comp();
-   TR::CodeCache *oldCache = comp->getCurrentCodeCache();
-
-   comp->switchCodeCache(newCache);
-
-   // If the old CC had pre-loaded code, the current compilation may have initialized it and will therefore depend on it
-   // so we should initialize it in the new CC as well
-   // XXX: We could avoid this if we knew for sure that this compile wasn't the one who initialized it
-   if (newCache && oldCache->isCCPreLoadedCodeInitialized())
-      {
-      TR::CodeCache *newCC = newCache;
-      newCC->getCCPreLoadedCodeAddress(TR_numCCPreLoadedCode, comp->cg());
-      }
-   }
 
 template <class Derived>
 intptrj_t
@@ -153,15 +139,5 @@ FEBase<Derived>::indexedTrampolineLookup(int32_t helperIndex, void * callSite)
    TR_ASSERT(tramp!=NULL, "Error: CodeCache is not initialized properly.\n");
    return (intptrj_t)tramp;
    }
-
-template <class Derived>
-void
-FEBase<Derived>::resizeCodeMemory(TR::Compilation * comp, uint8_t *bufferStart, uint32_t numBytes)
-   {
-   // I don't see a reason to acquire VM access for this call
-   TR::CodeCache *codeCache = comp->getCurrentCodeCache();
-   codeCache->resizeCodeMemory(bufferStart, numBytes);
-   }
-
 
 } /* namespace TR */

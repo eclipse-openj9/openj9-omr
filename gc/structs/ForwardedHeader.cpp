@@ -174,7 +174,11 @@ MM_ForwardedHeader::copySetup(omrobjectptr_t destinationObjectPtr, uintptr_t *re
 
 	/* set the remaining length to copy */
 	objectHeader->slot = (fomrobject_t)(*remainingSizeToCopy | (0 << OUTSTANDING_COPIES_SHIFT)) | _beingCopiedTag;
-	/* write sync not necessary (atomic in follow-up set forward is an implicit barrier) */
+	/* Make sure that destination object header is visible to other potential participating threads.
+	 * About to be executed atomic as part of forwarding operation is executed on source object header,
+	 * hence it will not synchronize memory in the destination object header.
+	 */
+	MM_AtomicOperations::storeSync();
 
 	return sizeToCopy;
 #else

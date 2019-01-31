@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -97,12 +97,6 @@ TR_FrontEnd::allocateCodeMemory(TR::Compilation *, uint32_t warmCodeSize, uint32
    return 0;
    }
 
-void
-TR_FrontEnd::resizeCodeMemory(TR::Compilation *, uint8_t *, uint32_t numBytes)
-   {
-   notImplemented("resizeCodeMemory");
-   }
-
 /*
  * Return conservative approximation of code-cache base.
  */
@@ -126,6 +120,12 @@ TR_FrontEnd::allocateRelocationData(TR::Compilation * comp, uint32_t numBytes)
    {
    notImplemented("allocateRelocationData");
    return 0;
+   }
+
+bool
+TR_FrontEnd::isMethodTracingEnabled(TR_OpaqueMethodBlock *method)
+   {
+   return false;
    }
 
 bool

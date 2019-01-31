@@ -199,40 +199,50 @@ OMR::CodeCache::writeMethodHeader(void *freeBlock, size_t size, bool isCold)
 
 // Resize code memory within a code cache
 //
+// Deprecated API.  This will be deleted when known downstream consumers of
+// this API are changed to use `trimCodeMemoryAllocation`
+//
 bool
 OMR::CodeCache::resizeCodeMemory(void *memoryBlock, size_t newSize)
    {
-   if (newSize == 0) return false; // nothing to resize, just return
+   return self()->trimCodeMemoryAllocation(memoryBlock, newSize);
+   }
+
+
+bool
+OMR::CodeCache::trimCodeMemoryAllocation(void *codeMemoryStart, size_t actualSizeInBytes)
+   {
+   if (actualSizeInBytes == 0) return false; // nothing to resize, just return
 
    TR::CodeCacheConfig & config = _manager->codeCacheConfig();
    size_t round = config.codeCacheAlignment() - 1;
 
-   memoryBlock = (uint8_t *) memoryBlock - sizeof(CodeCacheMethodHeader); // Do we always have a header?
-   newSize     = (newSize + sizeof(CodeCacheMethodHeader) + round) & ~round;
+   codeMemoryStart = (uint8_t *) codeMemoryStart - sizeof(CodeCacheMethodHeader); // Do we always have a header?
+   actualSizeInBytes = (actualSizeInBytes + sizeof(CodeCacheMethodHeader) + round) & ~round;
 
-   CodeCacheMethodHeader *cacheHeader = (CodeCacheMethodHeader *) memoryBlock;
+   CodeCacheMethodHeader *cacheHeader = (CodeCacheMethodHeader *) codeMemoryStart;
 
    // sanity check, the eyecatcher must be there
-   TR_ASSERT(cacheHeader->_eyeCatcher[0] == config.warmEyeCatcher()[0], "Missing eyecatcher during resizeCodeMemory");
+   TR_ASSERT(cacheHeader->_eyeCatcher[0] == config.warmEyeCatcher()[0], "Missing eyecatcher during trimCodeMemoryAllocation");
 
    size_t oldSize = cacheHeader->_size;
 
-   if (newSize >= oldSize)
+   if (actualSizeInBytes >= oldSize)
       return false;
 
-   size_t shrinkage = oldSize - newSize;
+   size_t shrinkage = oldSize - actualSizeInBytes;
 
-   uint8_t *expectedHeapAlloc = (uint8_t *) memoryBlock + oldSize;
+   uint8_t *expectedHeapAlloc = (uint8_t *) codeMemoryStart + oldSize;
    if (config.verboseReclamation())
       {
-      TR_VerboseLog::writeLineLocked(TR_Vlog_CODECACHE,"--resizeCodeMemory-- CC=%p cacheHeader=%p oldSize=%u newSize=%d shrinkage=%u", this, cacheHeader, oldSize, newSize, shrinkage);
+      TR_VerboseLog::writeLineLocked(TR_Vlog_CODECACHE,"--trimCodeMemoryAllocation-- CC=%p cacheHeader=%p oldSize=%u actualSizeInBytes=%d shrinkage=%u", this, cacheHeader, oldSize, actualSizeInBytes, shrinkage);
       }
 
    if (expectedHeapAlloc == _warmCodeAlloc)
       {
       _manager->increaseFreeSpaceInCodeCacheRepository(shrinkage);
       _warmCodeAlloc -= shrinkage;
-      cacheHeader->_size = newSize;
+      cacheHeader->_size = actualSizeInBytes;
       return true;
       }
    else // the allocation could have been from a free block or from the cold portion
@@ -241,11 +251,11 @@ OMR::CodeCache::resizeCodeMemory(void *memoryBlock, size_t newSize)
          {
          // addFreeBlock needs to be done with VM access because the GC may also
          // change the list of free blocks
-         if (self()->addFreeBlock2((uint8_t *) memoryBlock+newSize, (uint8_t *)expectedHeapAlloc))
+         if (self()->addFreeBlock2((uint8_t *) codeMemoryStart+actualSizeInBytes, (uint8_t *)expectedHeapAlloc))
             {
             //fprintf(stderr, "---ccr--- addFreeBlock due to shrinkage\n");
             }
-         cacheHeader->_size = newSize;
+         cacheHeader->_size = actualSizeInBytes;
          return true;
          }
       }

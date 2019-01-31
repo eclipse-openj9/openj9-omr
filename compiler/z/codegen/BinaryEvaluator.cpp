@@ -579,14 +579,7 @@ generic32BitAddEvaluator(TR::Node * node, TR::CodeGenerator * cg)
       else if (useLA && performTransformation(comp, "O^O Use LA/LAY instead of AHI for %p.\n",node))
          {
          TR::MemoryReference * memRef = generateS390MemoryReference(childTargetReg, value, cg);
-         if (value < 0 || value > MAXDISP)
-            {
-            generateRXYInstruction(cg, TR::InstOpCode::LAY, node, targetRegister, memRef);
-            }
-         else
-            {
-            generateRXInstruction(cg, TR::InstOpCode::LA, node, targetRegister, memRef);
-            }
+         generateRXInstruction(cg, TR::InstOpCode::LA, node, targetRegister, memRef);
          }
       else
          {
@@ -4664,8 +4657,6 @@ OMR::Z::TreeEvaluator::integerRolEvaluator(TR::Node *node, TR::CodeGenerator *cg
          {
          sourceRegister = cg->evaluate(firstChild);
          targetRegister = nodeIs64Bit ? cg->allocate64bitRegister() : cg->allocateRegister();
-         //generateRSYInstruction(cg, nodeIs64Bit ? TR::InstOpCode::RLLG : TR::InstOpCode::RLL, node,targetRegister,0,0);
-         //generateRegImmInstruction(ROLRegImm1(nodeIs64Bit), node, targetRegister, rotateAmount , cg);
          generateRSInstruction(cg, nodeIs64Bit ? TR::InstOpCode::RLLG : TR::InstOpCode::RLL, node, targetRegister, sourceRegister, rotateAmount);
          }
       }

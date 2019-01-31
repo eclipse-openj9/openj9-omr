@@ -1087,3 +1087,5 @@ TraceExit=Trc_PRT_signal_omrsig_is_signal_ignored_exiting Group=signal Overhead=
 TraceException=Trc_PRT_signal_unblockSignals_sigemptyset_failed Group=signal Overhead=1 Level=1 NoEnv Template="omrsignal unblockSignals: sigemptyset failed with rc=%d and errno=%d"
 TraceException=Trc_PRT_signal_unblockSignals_sigaddset_failed Group=signal Overhead=1 Level=1 NoEnv Template="omrsignal unblockSignals: sigaddset failed with signal=0x%X, rc=%d and errno=%d"
 TraceException=Trc_PRT_signal_unblockSignals_pthread_sigmask_failed Group=signal Overhead=1 Level=1 NoEnv Template="omrsignal unblockSignals: pthread_sigmask failed with rc=%d and errno=%d"
+
+TraceException=Trc_PRT_sysinfo_get_open_file_count_memAllocFailed Group=sysinfo Overhead=1 Level=1 NoEnv Template="omrsysinfo_get_open_file_count: Error: memory allocation for proc_fdinfo failed."

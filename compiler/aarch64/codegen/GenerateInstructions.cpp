@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2018 IBM Corp. and others
+ * Copyright (c) 2018, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -67,6 +67,15 @@ TR::Instruction *generateImmInstruction(TR::CodeGenerator *cg, TR::InstOpCode::M
    return new (cg->trHeapMemory()) TR::ARM64ImmInstruction(op, node, imm, relocationKind, sr, cg);
    }
 
+TR::Instruction *generateImmSymInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node *node,
+   uintptr_t imm, TR::RegisterDependencyConditions *cond, TR::SymbolReference *sr, TR::Snippet *s,
+   TR::Instruction *preced)
+   {
+   if (preced)
+      return new (cg->trHeapMemory()) TR::ARM64ImmSymInstruction(op, node, imm, cond, sr, s, preced, cg);
+   return new (cg->trHeapMemory()) TR::ARM64ImmSymInstruction(op, node, imm, cond, sr, s, cg);
+   }
+
 TR::Instruction *generateLabelInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node *node,
    TR::LabelSymbol *sym, TR::Instruction *preced)
    {
@@ -113,6 +122,14 @@ TR::Instruction *generateRegBranchInstruction(TR::CodeGenerator *cg, TR::InstOpC
    if (preced)
       return new (cg->trHeapMemory()) TR::ARM64RegBranchInstruction(op, node, treg, preced, cg);
    return new (cg->trHeapMemory()) TR::ARM64RegBranchInstruction(op, node, treg, cg);
+   }
+
+TR::Instruction *generateRegBranchInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node *node,
+   TR::Register *treg, TR::RegisterDependencyConditions *cond, TR::Instruction *preced)
+   {
+   if (preced)
+      return new (cg->trHeapMemory()) TR::ARM64RegBranchInstruction(op, node, treg, cond, preced, cg);
+   return new (cg->trHeapMemory()) TR::ARM64RegBranchInstruction(op, node, treg, cond, cg);
    }
 
 TR::Instruction *generateAdminInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node *node,
@@ -189,6 +206,15 @@ TR::Instruction *generateTrg1Src3Instruction(TR::CodeGenerator *cg, TR::InstOpCo
    return new (cg->trHeapMemory()) TR::ARM64Trg1Src3Instruction(op, node, treg, s1reg, s2reg, s3reg, cg);
    }
 
+TR::Instruction *generateTrg1Src3Instruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node *node,
+   TR::Register *treg, TR::Register *s1reg, TR::Register *s2reg, TR::Register *s3reg,
+   TR::RegisterDependencyConditions *cond, TR::Instruction *preced)
+   {
+   if (preced)
+      return new (cg->trHeapMemory()) TR::ARM64Trg1Src3Instruction(op, node, treg, s1reg, s2reg, s3reg, cond, preced, cg);
+   return new (cg->trHeapMemory()) TR::ARM64Trg1Src3Instruction(op, node, treg, s1reg, s2reg, s3reg, cond, cg);
+   }
+
 TR::Instruction *generateTrg1MemInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node *node,
    TR::Register *treg, TR::MemoryReference *mr, TR::Instruction *preced)
    {
@@ -203,6 +229,22 @@ TR::Instruction *generateMemSrc1Instruction(TR::CodeGenerator *cg, TR::InstOpCod
    if (preced)
       return new (cg->trHeapMemory()) TR::ARM64MemSrc1Instruction(op, node, mr, sreg, preced, cg);
    return new (cg->trHeapMemory()) TR::ARM64MemSrc1Instruction(op, node, mr, sreg, cg);
+   }
+
+TR::Instruction *generateSrc1Instruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node *node,
+   TR::Register *s1reg, TR::Instruction *preced)
+   {
+   if (preced)
+      return new (cg->trHeapMemory()) TR::ARM64Src1Instruction(op, node, s1reg, preced, cg);
+   return new (cg->trHeapMemory()) TR::ARM64Src1Instruction(op, node, s1reg, cg);
+   }
+
+TR::Instruction *generateSrc2Instruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node *node,
+   TR::Register *s1reg, TR::Register *s2reg, TR::Instruction *preced)
+   {
+   if (preced)
+      return new (cg->trHeapMemory()) TR::ARM64Src2Instruction(op, node, s1reg, s2reg, preced, cg);
+   return new (cg->trHeapMemory()) TR::ARM64Src2Instruction(op, node, s1reg, s2reg, cg);
    }
 
 TR::Instruction *generateArithmeticShiftRightImmInstruction(TR::CodeGenerator *cg, TR::Node *node,
@@ -263,7 +305,7 @@ TR::Instruction *generateLogicalShiftLeftImmInstruction(TR::CodeGenerator *cg, T
    }
 
 /* Use xzr as the target register */
-static TR::Instruction *generateSrc1ImmInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node *node,
+static TR::Instruction *generateZeroSrc1ImmInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node *node,
    TR::Register *sreg, int32_t imm, TR::Instruction *preced)
    {
    TR::Register *zeroReg = cg->allocateRegister();
@@ -287,7 +329,7 @@ TR::Instruction *generateCompareImmInstruction(TR::CodeGenerator *cg, TR::Node *
 
    TR::InstOpCode::Mnemonic op = is64bit ? TR::InstOpCode::subsimmx : TR::InstOpCode::subsimmw;
 
-   return generateSrc1ImmInstruction(cg, op, node, sreg, imm, preced);
+   return generateZeroSrc1ImmInstruction(cg, op, node, sreg, imm, preced);
    }
 
 TR::Instruction *generateTestImmInstruction(TR::CodeGenerator *cg, TR::Node *node,
@@ -297,11 +339,11 @@ TR::Instruction *generateTestImmInstruction(TR::CodeGenerator *cg, TR::Node *nod
 
    TR::InstOpCode::Mnemonic op = is64bit ? TR::InstOpCode::andsimmx : TR::InstOpCode::andsimmw;
 
-   return generateSrc1ImmInstruction(cg, op, node, sreg, imm, preced);
+   return generateZeroSrc1ImmInstruction(cg, op, node, sreg, imm, preced);
    }
 
 /* Use xzr as the target register */
-static TR::Instruction *generateSrc2Instruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node *node,
+static TR::Instruction *generateZeroSrc2Instruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node *node,
    TR::Register *s1reg, TR::Register *s2reg, TR::Instruction *preced)
    {
    TR::Register *zeroReg = cg->allocateRegister();
@@ -325,7 +367,7 @@ TR::Instruction *generateCompareInstruction(TR::CodeGenerator *cg, TR::Node *nod
 
    TR::InstOpCode::Mnemonic op = is64bit ? TR::InstOpCode::subsx : TR::InstOpCode::subsw;
 
-   return generateSrc2Instruction(cg, op, node, s1reg, s2reg, preced);
+   return generateZeroSrc2Instruction(cg, op, node, s1reg, s2reg, preced);
    }
 
 TR::Instruction *generateTestInstruction(TR::CodeGenerator *cg, TR::Node *node,
@@ -335,7 +377,7 @@ TR::Instruction *generateTestInstruction(TR::CodeGenerator *cg, TR::Node *node,
 
    TR::InstOpCode::Mnemonic op = is64bit ? TR::InstOpCode::andsx : TR::InstOpCode::andsw;
 
-   return generateSrc2Instruction(cg, op, node, s1reg, s2reg, preced);
+   return generateZeroSrc2Instruction(cg, op, node, s1reg, s2reg, preced);
    }
 
 /* Use xzr as the first source register */
@@ -357,12 +399,10 @@ static TR::Instruction *generateTrg1ZeroSrc1Instruction(TR::CodeGenerator *cg, T
    }
 
 TR::Instruction *generateMovInstruction(TR::CodeGenerator *cg, TR::Node *node,
-   TR::Register *treg, TR::Register *sreg, TR::Instruction *preced)
+   TR::Register *treg, TR::Register *sreg, bool is64bit, TR::Instruction *preced)
    {
    /* Alias of ORR instruction */
-   TR_ASSERT(node->getDataType().isIntegral(), "Only GPRs are allowed.");
 
-   bool is64bit = node->getDataType().isInt64();
    TR::InstOpCode::Mnemonic op = is64bit ? TR::InstOpCode::orrx : TR::InstOpCode::orrw;
 
    return generateTrg1ZeroSrc1Instruction(cg, op, node, treg, sreg, preced);

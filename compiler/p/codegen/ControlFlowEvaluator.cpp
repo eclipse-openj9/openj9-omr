@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -3815,8 +3815,9 @@ TR::Register *OMR::Power::TreeEvaluator::evaluateNULLCHKWithPossibleResolve(TR::
       {
       hasCompressedPointers = true;
       TR::ILOpCodes loadOp = cg->comp()->il.opCodeForIndirectLoad(TR::Int32);
+      TR::ILOpCodes rdbarOp = cg->comp()->il.opCodeForIndirectReadBarrier(TR::Int32);
       TR::Node *n = firstChild;
-      while (n->getOpCodeValue() != loadOp)
+      while ((n->getOpCodeValue() != loadOp) && (n->getOpCodeValue() != rdbarOp))
          n = n->getFirstChild();
       reference = n->getFirstChild();
       }
@@ -3846,7 +3847,8 @@ TR::Register *OMR::Power::TreeEvaluator::evaluateNULLCHKWithPossibleResolve(TR::
       reference->setIsNonNull(true);
       n = reference->getFirstChild();
       TR::ILOpCodes loadOp = cg->comp()->il.opCodeForIndirectLoad(TR::Int32);
-      while (n->getOpCodeValue() != loadOp)
+      TR::ILOpCodes rdbarOp = cg->comp()->il.opCodeForIndirectReadBarrier(TR::Int32);
+      while ((n->getOpCodeValue() != loadOp) && (n->getOpCodeValue() != rdbarOp))
          {
          n->setIsNonZero(true);
          n = n->getFirstChild();
@@ -3856,16 +3858,23 @@ TR::Register *OMR::Power::TreeEvaluator::evaluateNULLCHKWithPossibleResolve(TR::
 
    reference->setIsNonNull(true);
 
-   // If this is a load with ref count of 1, just decrease the ref count
-   // since it must have been evaluated. Otherwise, evaluate it.
-   // for compressedPointers, the firstChild will have a refCount
-   // of atleast 2 (the other under an anchor node)
-   //
+   /*
+    * If the first child is a load with a ref count of 1, just decrement the reference count on the child.
+    * If the first child does not have a register, it means it was never evaluated.
+    * As a result, the grandchild (the variable reference) needs to be decremented as well.
+    *
+    * In other cases, evaluate the child node.
+    *
+    * Under compressedpointers, the first child will have a refCount of at least 2 (the other under an anchor node).
+    */
    if (opCode.isLoad() && firstChild->getReferenceCount()==1 &&
        !firstChild->getSymbolReference()->isUnresolved())
       {
       cg->decReferenceCount(firstChild);
-      cg->decReferenceCount(reference);
+      if (firstChild->getRegister() == NULL)
+         {
+         cg->decReferenceCount(reference);
+         }
       }
    else
       {

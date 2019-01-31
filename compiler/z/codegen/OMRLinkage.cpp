@@ -1262,7 +1262,7 @@ OMR::Z::Linkage::saveArguments(void * cursor, bool genBinary, bool InPreProlog, 
                      cursor = generateRSInstruction(self()->cg(), TR::InstOpCode::ICM, firstNode, self()->getRealRegister(REGNUM(target)), busyMoves[4][i1], mr, (TR::Instruction *) cursor);
 
                   else if ((TR::InstOpCode::Mnemonic) busyMoves[3][i1] == TR::InstOpCode::LFH)
-                     cursor = generateRXYInstruction(self()->cg(), TR::InstOpCode::LFH, firstNode, self()->getRealRegister(REGNUM(target)), mr, (TR::Instruction *) cursor);
+                     cursor = generateRXInstruction(self()->cg(), TR::InstOpCode::LFH, firstNode, self()->getRealRegister(REGNUM(target)), mr, (TR::Instruction *) cursor);
 
                   else
                      cursor = generateRXInstruction(self()->cg(), (TR::InstOpCode::Mnemonic) busyMoves[3][i1], firstNode, self()->getRealRegister(REGNUM(target)), mr, (TR::Instruction *) cursor);
@@ -3438,12 +3438,6 @@ TR_StackMemory
 OMR::Z::Linkage::trStackMemory()
    {
    return self()->trMemory();
-   }
-
-TR::RealRegister *
-OMR::Z::Linkage::getS390RealRegister(TR::RealRegister::RegNum rNum)
-   {
-   return self()->cg()->machine()->getRealRegister(rNum);
    }
 
 TR::RealRegister *

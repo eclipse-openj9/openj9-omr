@@ -29,85 +29,6 @@ import unittest
 
 import genutils
 
-try:
-    from jsonschema import Draft6Validator, validate, ValidationError
-    """
-    Because 'jsonchema' is not guaranteed to be installed on test machines
-    and we don't want to make it a mandatory test-dependency, these tests
-    are wrapped in a try-catch block. If the import fails, `ImportError` is
-    thrown. Catching the exception allows us to safely skip these tests.
-    """
-
-    class ValidateSchemas(unittest.TestCase):
-        """Validate API description schema against JSON Schema specification."""
-
-        def test_api_schema(self):
-            with open('schema/api.schema.json') as f:
-                schema = json.load(f)
-                Draft6Validator.check_schema(schema)
-
-        def test_api_type_schema(self):
-            with open('schema/api-type.schema.json') as f:
-                schema = json.load(f)
-                Draft6Validator.check_schema(schema)
-
-        def test_api_field_schema(self):
-            with open('schema/api-field.schema.json') as f:
-                schema = json.load(f)
-                Draft6Validator.check_schema(schema)
-
-        def test_api_service_schema(self):
-            with open('schema/api-service.schema.json') as f:
-                schema = json.load(f)
-                Draft6Validator.check_schema(schema)
-
-        def test_api_class_schema(self):
-            with open('schema/api-class.schema.json') as f:
-                schema = json.load(f)
-                Draft6Validator.check_schema(schema)
-
-        @unittest.skipIf(sys.version_info < (3,2),
-                        "assertRaises as a context manager requires Python 3.2 support")
-        def test_bad_apis(self):
-            """Test that schema correctly find ill-formed API descriptions."""
-
-            bad_apis_dir = 'test/bad_api'
-            schema = {}
-            with open('schema/api.schema.json') as f:
-                schema = json.load(f)
-            for filename in os.listdir(bad_apis_dir):
-                path = os.path.join(bad_apis_dir, filename)
-                if sys.version_info >= (3,4):
-                    # if Python version is >= 3.4, we can use `self.subTest()`
-                    with self.subTest(filename), open(path) as f, self.assertRaises(ValidationError):
-                            validate(json.load(f), schema)
-                else:
-                    with open(path) as f, self.assertRaises(ValidationError):
-                            validate(json.load(f), schema)
-
-        def test_minimal_api(self):
-            """Test that a minimally correct validates against the schema."""
-            with open('schema/api.schema.json') as schema, open('test/minimal_api.json') as api:
-                validate(json.load(api), json.load(schema))
-
-        def test_sample_api(self):
-            """Test that the test schema used in other tests is well-formed."""
-            with open('schema/api.schema.json') as schema, open('test/test_sample.json') as api:
-                validate(json.load(api), json.load(schema))
-
-    class ValidateJitBuilderAPI(unittest.TestCase):
-        """Validate the JitBuilder API description against the schema."""
-
-        def test_jitbuilder_api(self):
-            schema = {}
-            with open('schema/api.schema.json') as f:
-                schema = json.load(f)
-            with open('jitbuilder.api.json') as f:
-                validate(json.load(f), schema)
-
-except ImportError:
-    print("warning: The package 'jsonschema' is not installed so certain tests will be skipped")
-
 class GenUtilsTests(unittest.TestCase):
     """Tests for free functions in genutils."""
 
@@ -130,7 +51,7 @@ class GenUtilsTests(unittest.TestCase):
 # the tests. Parts of the API description that are relevant to
 # to the tests are cached in member variables. Instances of the
 # class(es) under test corresponding to the API description
-# are also constructed and stored in member variables. 
+# are also constructed and stored in member variables.
 
 class APITypeTests(unittest.TestCase):
     """Tests for methods in genutils.APIType."""
@@ -208,11 +129,11 @@ class APIServiceTests(unittest.TestCase):
             self.raw_class_1 = self.raw_api["classes"][0]
             self.class_1 = genutils.APIClass(self.raw_class_1, self.api)
             self.raw_service_1 = self.raw_class_1["services"][0]
-            self.service_1 = genutils.APIService(self.raw_service_1, self.api)
+            self.service_1 = genutils.APIService(self.raw_service_1, self.class_1, self.api)
             self.raw_service_2 = self.raw_class_1["services"][1]
-            self.service_2 = genutils.APIService(self.raw_service_2, self.api)
+            self.service_2 = genutils.APIService(self.raw_service_2, self.class_1, self.api)
             self.raw_service_3 = self.raw_api["services"][0]
-            self.service_3 = genutils.APIService(self.raw_service_3, self.api)
+            self.service_3 = genutils.APIService(self.raw_service_3, None, self.api)
 
     def test_name_1(self):
         self.assertEqual("class_1_service_1", self.service_1.name())
@@ -269,6 +190,15 @@ class APIServiceTests(unittest.TestCase):
     def test_is_vararg_2(self):
         self.assertTrue(self.service_3.is_vararg())
 
+    def test_owning_class_1(self):
+        self.assertEqual(self.class_1, self.service_1.owning_class())
+
+    def test_owning_class_2(self):
+        self.assertEqual(self.class_1, self.service_2.owning_class())
+
+    def test_owning_class_3(self):
+        self.assertEqual(None, self.service_3.owning_class())
+
 class APIParameterTests(unittest.TestCase):
     """Tests for methods in genutils.APIParameter."""
 
@@ -277,7 +207,7 @@ class APIParameterTests(unittest.TestCase):
             self.raw_api = json.load(f)
             self.api = genutils.APIDescription(self.raw_api)
             self.raw_service_1 = self.raw_api["services"][0]
-            self.service_1 = genutils.APIService(self.raw_service_1, self.api)
+            self.service_1 = genutils.APIService(self.raw_service_1, None, self.api)
             self.raw_parm_1 = self.raw_service_1["parms"][0]
             self.parm_1 = genutils.APIService.APIParameter(self.raw_parm_1, self.service_1)
             self.raw_parm_2 = self.raw_service_1["parms"][1]
@@ -384,6 +314,12 @@ class APIClassTests(unittest.TestCase):
     def test_name_2(self):
         self.assertEqual("class_2", self.class_2.name())
 
+    def test_short_name_1(self):
+        self.assertEqual("c1", self.class_1.short_name())
+
+    def test_short_name_2(self):
+        self.assertEqual("c2", self.class_2.short_name())
+
     def test_has_parent_1(self):
         self.assertFalse(self.class_1.has_parent())
 
@@ -408,7 +344,7 @@ class APIClassTests(unittest.TestCase):
         self.assertListEqual([], self.class_2.inner_classes())
 
     def test_services_1(self):
-        expect = [genutils.APIService(s, self.api) for s in self.raw_class_1["services"]]
+        expect = [genutils.APIService(s, self.class_1, self.api) for s in self.raw_class_1["services"]]
         self.assertListEqual(expect, self.class_1.services())
 
     def test_services_2(self):
@@ -423,7 +359,7 @@ class APIClassTests(unittest.TestCase):
         self.assertListEqual(expect, self.class_2.constructors())
 
     def test_callbacks_1(self):
-        expect = [genutils.APICallback(c, self.api) for c in self.raw_class_1["callbacks"]]
+        expect = [genutils.APICallback(c, self.class_1, self.api) for c in self.raw_class_1["callbacks"]]
         self.assertListEqual(expect, self.class_1.callbacks())
 
     def test_callbacks_2(self):
@@ -486,11 +422,6 @@ class APIDescriptionTest(unittest.TestCase):
         self.assertIsInstance(c, genutils.APIClass)
         self.assertEqual("class_1", c.name())
 
-    def test_get_class_by_name_1(self):
-        c = self.api.get_class_by_name("class_1")
-        self.assertIsInstance(c, genutils.APIClass)
-        self.assertEqual("class_1", c.name())
-
     @unittest.skipIf(sys.version_info < (3, 2),
                     "assertRaisesRegex as a context manager requires Python 3.2 support")
     def test_get_class_by_name_2(self):
@@ -529,6 +460,3 @@ class APIDescriptionTest(unittest.TestCase):
     def test_base_of_3(self):
         with self.assertRaisesRegex(AssertionError, "'foo' is not a class in the Project API"):
             self.api.base_of("foo")
-
-if __name__ == '__main__':
-    unittest.main()

@@ -1111,8 +1111,8 @@ TEST(PortSysinfoTest, sysinfo_testMemoryInfo)
 static int32_t
 onlineProcessorCount(const struct J9ProcessorInfos *procInfo)
 {
-	register int32_t cntr = 0;
-	register int32_t n_onln = 0;
+	int32_t cntr = 0;
+	int32_t n_onln = 0;
 
 	for (cntr = 1; cntr < procInfo->totalProcessorCount + 1; cntr++) {
 		if (OMRPORT_PROCINFO_PROC_ONLINE == procInfo->procInfoArray[cntr].online) {

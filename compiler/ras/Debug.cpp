@@ -21,75 +21,75 @@
 
 #include "ras/Debug.hpp"
 
-#include <algorithm>                                  // for std::max, etc
-#include <ctype.h>                                    // for isprint
-#include <stdarg.h>                                   // for va_list
-#include <stddef.h>                                   // for size_t
-#include <stdint.h>                                   // for int32_t, etc
-#include <stdio.h>                                    // for sprintf, NULL, etc
-#include <stdlib.h>                                   // for qsort, calloc, etc
-#include <string.h>                                   // for strlen, memcpy, etc
+#include <algorithm>
+#include <ctype.h>
+#include <stdarg.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "codegen/BackingStore.hpp"
-#include "codegen/CodeGenPhase.hpp"                   // for CodeGenPhase, etc
-#include "codegen/CodeGenerator.hpp"                  // for CodeGenerator, etc
-#include "codegen/FrontEnd.hpp"                       // for feGetEnv, etc
-#include "codegen/GCStackAtlas.hpp"                   // for GCStackAtlas
-#include "codegen/GCStackMap.hpp"                     // for TR_GCStackMap, etc
-#include "codegen/InstOpCode.hpp"                     // for InstOpCode, etc
-#include "codegen/Instruction.hpp"                    // for Instruction
+#include "codegen/CodeGenPhase.hpp"
+#include "codegen/CodeGenerator.hpp"
+#include "codegen/FrontEnd.hpp"
+#include "codegen/GCStackAtlas.hpp"
+#include "codegen/GCStackMap.hpp"
+#include "codegen/InstOpCode.hpp"
+#include "codegen/Instruction.hpp"
 #include "env/KnownObjectTable.hpp"
 #include "codegen/LinkageConventionsEnum.hpp"
 #include "codegen/LiveRegister.hpp"
 #include "codegen/Machine.hpp"
 #include "codegen/RealRegister.hpp"
-#include "codegen/Register.hpp"                       // for Register
+#include "codegen/Register.hpp"
 #include "codegen/RegisterConstants.hpp"
 #include "codegen/RegisterIterator.hpp"
-#include "codegen/RegisterPair.hpp"                   // for RegisterPair
+#include "codegen/RegisterPair.hpp"
 #include "codegen/RegisterRematerializationInfo.hpp"
-#include "codegen/Snippet.hpp"                        // for Snippet
-#include "compile/Compilation.hpp"                    // for Compilation, etc
-#include "compile/Method.hpp"                         // for TR_Method
+#include "codegen/Snippet.hpp"
+#include "compile/Compilation.hpp"
+#include "compile/Method.hpp"
 #include "compile/ResolvedMethod.hpp"
 #include "compile/SymbolReferenceTable.hpp"
 #include "compile/VirtualGuard.hpp"
 #include "control/Options.hpp"
-#include "control/Options_inlines.hpp"                // for TR::Options, etc
+#include "control/Options_inlines.hpp"
 #include "control/Recompilation.hpp"
 #include "cs2/bitvectr.h"
-#include "cs2/hashtab.h"                              // for HashTable, etc
+#include "cs2/hashtab.h"
 #include "cs2/sparsrbit.h"
 #include "env/CompilerEnv.hpp"
-#include "env/IO.hpp"                                 // for IO
+#include "env/IO.hpp"
 #include "env/RawAllocator.hpp"
 #include "env/StackMemoryRegion.hpp"
-#include "env/TRMemory.hpp"                           // for TR_Memory, etc
+#include "env/TRMemory.hpp"
 #include "env/jittypes.h"
-#include "il/Block.hpp"                               // for Block
-#include "il/DataTypes.hpp"                           // for TR::DataType, etc
+#include "il/Block.hpp"
+#include "il/DataTypes.hpp"
 #include "il/ILOpCodes.hpp"
-#include "il/ILOps.hpp"                               // for ILOpCode, etc
-#include "il/Node.hpp"                                // for Node
+#include "il/ILOps.hpp"
+#include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
-#include "il/Symbol.hpp"                              // for Symbol, etc
+#include "il/Symbol.hpp"
 #include "il/SymbolReference.hpp"
-#include "il/TreeTop.hpp"                             // for TreeTop
+#include "il/TreeTop.hpp"
 #include "il/TreeTop_inlines.hpp"
 #include "il/symbol/AutomaticSymbol.hpp"
-#include "il/symbol/LabelSymbol.hpp"                  // for LabelSymbol
-#include "il/symbol/MethodSymbol.hpp"                 // for MethodSymbol, etc
+#include "il/symbol/LabelSymbol.hpp"
+#include "il/symbol/MethodSymbol.hpp"
 #include "il/symbol/ParameterSymbol.hpp"
 #include "il/symbol/RegisterMappedSymbol.hpp"
 #include "il/symbol/ResolvedMethodSymbol.hpp"
-#include "il/symbol/StaticSymbol.hpp"                 // for StaticSymbol, etc
-#include "infra/Array.hpp"                            // for TR_Array
-#include "infra/Assert.hpp"                           // for TR_ASSERT
-#include "infra/BitVector.hpp"                        // for TR_BitVector, etc
-#include "infra/List.hpp"                             // for ListIterator, etc
+#include "il/symbol/StaticSymbol.hpp"
+#include "infra/Array.hpp"
+#include "infra/Assert.hpp"
+#include "infra/BitVector.hpp"
+#include "infra/List.hpp"
 #include "infra/SimpleRegex.hpp"
-#include "infra/CfgNode.hpp"                          // for CFGNode
+#include "infra/CfgNode.hpp"
 #include "optimizer/Optimizations.hpp"
-#include "optimizer/Optimizer.hpp"                    // for Optimizer
+#include "optimizer/Optimizer.hpp"
 #include "optimizer/PreExistence.hpp"
 #include "optimizer/Structure.hpp"
 #include "ras/CallStackIterator.hpp"
@@ -97,8 +97,8 @@
 #include "runtime/Runtime.hpp"
 
 #ifdef J9_PROJECT_SPECIFIC
-#include "env/CHTable.hpp"                            // for TR_CHTable, etc
-#include "env/VMAccessCriticalSection.hpp"            // for VMAccessCriticalSection
+#include "env/CHTable.hpp"
+#include "env/VMAccessCriticalSection.hpp"
 #include "env/VMJ9.h"
 #endif
 
@@ -111,13 +111,13 @@
 #endif
 
 #ifdef LINUX
-#include <arpa/inet.h>                                // for inet_addr
-#include <dlfcn.h>                                    // for dlsym, dlerror, etc
-#include <netdb.h>                                    // for gethostbyname, etc
+#include <arpa/inet.h>
+#include <dlfcn.h>
+#include <netdb.h>
 #endif
 
 #if defined(J9ZOS390) || defined(AIXPPC) || defined(LINUX)
-#include <unistd.h>                                   // for intptr_t, etc
+#include <unistd.h>
 #endif
 
 #ifdef J9OS_I5
@@ -1913,6 +1913,8 @@ TR_Debug::getStaticName(TR::SymbolReference * symRef)
          }
       return "unknown class object";
       }
+   else if (sym->isConstantPoolAddress())
+      return "<constant pool address>";
    else if (symRef->getCPIndex() >= 0)
       {
       if (sym->isAddressOfClassObject())
@@ -3880,18 +3882,6 @@ TR_Debug::getRuntimeHelperName(int32_t index)
          case TR_getStateGPU:               return "getStateGPU";
          case TR_flushGPU:                  return "flushGPU";
          case TR_callGPU:                   return "callGPU";
-
-         case TR_MTUnresolvedInt32Load:     return "MTUnresolvedInt32Load";
-         case TR_MTUnresolvedInt64Load:     return "MTUnresolvedInt64Load";
-         case TR_MTUnresolvedFloatLoad:     return "MTUnresolvedFloatLoad";
-         case TR_MTUnresolvedDoubleLoad:    return "MTUnresolvedDoubleLoad";
-         case TR_MTUnresolvedAddressLoad:   return "MTUnresolvedAddressLoad";
-
-         case TR_MTUnresolvedInt32Store:    return "MTUnresolvedInt32Store";
-         case TR_MTUnresolvedInt64Store:    return "MTUnresolvedInt64Store";
-         case TR_MTUnresolvedFloatStore:    return "MTUnresolvedFloatStore";
-         case TR_MTUnresolvedDoubleStore:   return "MTUnresolvedDoubleStore";
-         case TR_MTUnresolvedAddressStore:  return "MTUnresolvedAddressStore";
 
          case TR_newObject:                 return "jitNewObject";
          case TR_newObjectNoZeroInit:       return "jitNewObjectNoZeroInit";

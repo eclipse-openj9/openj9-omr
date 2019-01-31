@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2018 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -113,8 +113,12 @@ private:
 TR::Instruction           *_targetSnippetInstruction;
 TR::Snippet                   *_targetSnippet;
 flags32_t                 _flags;
-int32_t                   _displacement;
-int64_t                   _offset;
+
+/** \brief
+  *     The offset of the memory reference relative to the entity being referenced.
+  */
+intptrj_t _offset;
+
 TR_StorageReference       *_storageReference;
 
 /**
@@ -191,8 +195,20 @@ TR::Register *setIndexRegister(TR::Register *ir) {return _indexRegister = ir;}
 TR::Node *getIndexNode()            {return _indexNode;}
 TR::Node *setIndexNode(TR::Node *in) {return _indexNode = in;}
 
+/** \brief
+  *    Gets the offset of the memory reference relative to the entity being referenced.
+  *
+  * \note
+  *    The offset may not represent the final displacement which will be used to encode the memory reference until the
+  *    binary encoding of this memory reference is generated.
+  */
 intptrj_t getOffset() {return _offset;}
+
+/** \brief
+  *    Sets the offset of the memory reference relative to the entity being referenced.
+  */
 void setOffset(intptrj_t amount) {_offset = amount;}
+
 void addToOffset(intptrj_t amount) {_offset += amount;}
 
 /**
@@ -265,6 +281,32 @@ void setLeftAlignMemRef(int32_t leftMostByte);
 
 bool isAligned();
 
+/** \brief
+ *     Determines whether this memory reference may require long displacement (as defined by PoPs).
+ *
+ * \return
+ *    `true` if this memory reference requires long displacement; `false` if long displacement may not be required.
+ *
+ * \note
+ *    A return value of `false` does not imply long displacement is not required. This is because the displacement of
+ *    this memory reference is not fully known until binary encoding. Only after the binary encoding of this memory
+ *    reference will a return value of `false` indicate that long displacement is not required. The offset may increase
+ *    by some amount during code generation, however it will never decrease. This is why a return value of `true` 
+ *    always implies long displacement will be required.
+ */
+const bool isLongDisplacementRequired();
+
+/** \brief
+ *     Determines whether this memory reference may require huge displacement.
+ *
+ * \return
+ *    `true` if this memory reference requires huge displacement; `false` if huge displacement may not be required.
+ *
+ * \note
+ *    \see isLongDisplacementRequired notes section.
+ */
+const bool isHugeDisplacementRequired();
+
 bool forceEvaluation()        { return _flags.testAny(TR_S390MemRef_ForceEvaluation); }
 void setForceEvaluation()
    {
@@ -312,9 +354,6 @@ bool refsRegister(TR::Register *reg)
       }
    return false;
    }
-
-int32_t getDisp()          {return _displacement;}
-void setDisp(int32_t f)    {_displacement=f;}
 
 bool isUnresolvedDataSnippet()  {return _flags.testAny(S390MemRef_UnresolvedDataSnippet);}
 void setUnresolvedDataSnippet() {_flags.set(S390MemRef_UnresolvedDataSnippet);}

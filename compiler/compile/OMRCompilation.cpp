@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -80,6 +80,7 @@
 #include "infra/BitVector.hpp"                 // for TR_BitVector, etc
 #include "infra/Cfg.hpp"                       // for CFG
 #include "infra/Flags.hpp"                     // for flags32_t
+#include "infra/ILWalk.hpp"                    // for PreorderNodeIterator
 #include "infra/Link.hpp"                      // for TR_Pair
 #include "infra/List.hpp"                      // for List, ListIterator, etc
 #include "infra/Random.hpp"                    // for TR_RandomGenerator
@@ -258,7 +259,6 @@ OMR::Compilation::Compilation(
    _numNestingLevels(0),
    _usesPreexistence(options.getOption(TR_ForceUsePreexistence)),
    _loopVersionedWrtAsyncChecks(false),
-   _codeCacheSwitched(false),
    _commitedCallSiteInfo(false),
    _containsBigDecimalLoad(false),
    _osrStateIsReliable(true),
@@ -280,7 +280,6 @@ OMR::Compilation::Compilation(
    _relocatableMethodCodeStart(NULL),
    _compThreadID(id),
    _failCHtableCommitFlag(false),
-   _numReservedIPICTrampolines(0),
    _phaseTimer("Compilation", self()->allocator("phaseTimer"), self()->getOption(TR_Timing)),
    _phaseMemProfiler("Compilation", self()->allocator("phaseMemProfiler"), self()->getOption(TR_LexicalMemProfiler)),
    _compilationNodes(NULL),
@@ -1084,6 +1083,11 @@ int32_t OMR::Compilation::compile()
             dumpOptDetails(self(), "failed while verifying compressedRefs anchors\n");
          }
 #endif
+
+#if !defined(DEBUG) && !defined(PROD_WITH_ASSUMES)
+      if (self()->incompleteOptimizerSupportForReadWriteBarriers())
+#endif
+         self()->verifyAndFixRdbarAnchors();
 
 #if !defined(DISABLE_CFG_CHECK)
       if (self()->getOption(TR_UseILValidator))
@@ -2011,35 +2015,6 @@ OMR::Compilation::getCounterFromStaticAddress(TR::SymbolReference *symRef)
       }
    }
 
-TR::CodeCache *
-OMR::Compilation::getCurrentCodeCache()
-   {
-   return _codeGenerator ? _codeGenerator->getCodeCache() : 0;
-   }
-
-void
-OMR::Compilation::setCurrentCodeCache(TR::CodeCache * codeCache)
-   {
-   if (_codeGenerator) _codeGenerator->setCodeCache(codeCache);
-   }
-
-void OMR::Compilation::switchCodeCache(TR::CodeCache *newCodeCache)
-   {
-   TR_ASSERT( self()->getCurrentCodeCache() != newCodeCache, "Attempting to switch to the currently held code cache");
-   self()->setCurrentCodeCache(newCodeCache);  // Even if we signal, we need to update the reserved code cache for recompilations.
-   _codeCacheSwitched = true;
-   _numReservedIPICTrampolines = 0;
-   if ( self()->cg()->committedToCodeCache() || !newCodeCache )
-      {
-      if (newCodeCache)
-         {
-         self()->failCompilation<TR::RecoverableCodeCacheError>("Already committed to current code cache");
-         }
-
-      self()->failCompilation<TR::CodeCacheError>("Already committed to current code cache");
-      }
-   }
-
 void OMR::Compilation::validateIL(TR::ILValidationContext ilValidationContext)
    {
    TR_ASSERT_FATAL(_ilValidator != NULL, "Attempting to validate the IL without the ILValidator being initialized");
@@ -2073,6 +2048,32 @@ void OMR::Compilation::verifyCFG(TR::ResolvedMethodSymbol *methodSymbol)
       if (!methodSymbol)
     methodSymbol = _methodSymbol;
       self()->getDebug()->verifyCFG(methodSymbol);
+      }
+   }
+
+void OMR::Compilation::verifyAndFixRdbarAnchors()
+   {
+   TR::NodeChecklist anchoredRdbarNodes(self());
+   for (TR::PreorderNodeIterator iter(self()->getStartTree(), self()); iter.currentTree() != NULL; ++iter)
+      {
+      TR::Node *node = iter.currentNode();
+      if (node->getOpCodeValue() == TR::treetop ||
+          node->getOpCode().isResolveOrNullCheck() ||
+          node->getOpCode().isAnchor())
+         {
+         if (node->getFirstChild()->getOpCode().isReadBar())
+            anchoredRdbarNodes.add(node->getFirstChild());
+         }
+      else if (node->getOpCode().isReadBar())
+         {
+         if (!anchoredRdbarNodes.contains(node))
+            {
+            TR_ASSERT(0, "node (n%dn) %p is rdbar but not anchored\n", node->getGlobalIndex(), node);
+            TR::Node *newttNode = TR::Node::create(TR::treetop, 1, node);
+            iter.currentTree()->insertBefore(TR::TreeTop::create(self(), newttNode));
+            traceMsg(self(), "node (n%dn) %p is an unanchored readbar, anchor it now under treetop node (n%dn) %p\n", node->getGlobalIndex(), node, newttNode->getGlobalIndex(), newttNode);
+            }
+         }
       }
    }
 
@@ -2733,4 +2734,9 @@ void OMR::Compilation::invalidateAliasRegion()
       self()->_aliasRegion.~Region();
       new (&self()->_aliasRegion) TR::Region(_heapMemoryRegion);
       }
+   }
+
+bool OMR::Compilation::incompleteOptimizerSupportForReadWriteBarriers()
+   {
+   return false;
    }

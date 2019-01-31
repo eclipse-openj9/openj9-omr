@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2018 IBM Corp. and others
+ * Copyright (c) 2018, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -110,6 +110,28 @@ TR::Instruction *generateImmInstruction(
                    TR::Instruction *preced = NULL);
 
 /*
+ * @brief Generates imm sym instruction
+ * @param[in] cg : CodeGenerator
+ * @param[in] op : instruction opcode
+ * @param[in] node : node
+ * @param[in] imm : immediate value
+ * @param[in] cond : register dependency condition
+ * @param[in] sr : symbol reference
+ * @param[in] s : call snippet
+ * @param[in] preced : preceding instruction
+ * @return generated instruction
+ */
+TR::Instruction *generateImmSymInstruction(
+                   TR::CodeGenerator *cg,
+                   TR::InstOpCode::Mnemonic op,
+                   TR::Node *node,
+                   uintptr_t imm,
+                   TR::RegisterDependencyConditions *cond,
+                   TR::SymbolReference *sr,
+                   TR::Snippet *s,
+                   TR::Instruction *preced = NULL);
+
+/*
  * @brief Generates label instruction
  * @param[in] cg : CodeGenerator
  * @param[in] op : instruction opcode
@@ -216,6 +238,24 @@ TR::Instruction *generateRegBranchInstruction(
                    TR::Instruction *preced = NULL);
 
 /*
+ * @brief Generates branch-to-register instruction with register dependency
+ * @param[in] cg : CodeGenerator
+ * @param[in] op : instruction opcode
+ * @param[in] node : node
+ * @param[in] treg : target register
+ * @param[in] cond : register dependency condition
+ * @param[in] preced : preceding instruction
+ * @return generated instruction
+ */
+TR::Instruction *generateRegBranchInstruction(
+                   TR::CodeGenerator *cg,
+                   TR::InstOpCode::Mnemonic op,
+                   TR::Node *node,
+                   TR::Register *treg,
+                   TR::RegisterDependencyConditions *cond,
+                   TR::Instruction *preced = NULL);
+
+/*
  * @brief Generates admin instruction
  * @param[in] cg : CodeGenerator
  * @param[in] op : instruction opcode
@@ -232,7 +272,7 @@ TR::Instruction *generateAdminInstruction(
                    TR::Instruction *preced = NULL);
 
 /*
- * @brief Generates admin instruction
+ * @brief Generates admin instruction with register dependency
  * @param[in] cg : CodeGenerator
  * @param[in] op : instruction opcode
  * @param[in] node : node
@@ -396,6 +436,30 @@ TR::Instruction *generateTrg1Src3Instruction(
                    TR::Instruction *preced = NULL);
 
 /*
+ * @brief Generates src3-to-trg instruction with register dependency
+ * @param[in] cg : CodeGenerator
+ * @param[in] op : instruction opcode
+ * @param[in] node : node
+ * @param[in] treg : target register
+ * @param[in] s1reg : source register 1
+ * @param[in] s2reg : source register 2
+ * @param[in] s3reg : source register 3
+ * @param[in] cond : register dependency condition
+ * @param[in] preced : preceding instruction
+ * @return generated instruction
+ */
+TR::Instruction *generateTrg1Src3Instruction(
+                   TR::CodeGenerator *cg,
+                   TR::InstOpCode::Mnemonic op,
+                   TR::Node *node,
+                   TR::Register *treg,
+                   TR::Register *s1reg,
+                   TR::Register *s2reg,
+                   TR::Register *s3reg,
+                   TR::RegisterDependencyConditions *cond,
+                   TR::Instruction *preced = NULL);
+
+/*
  * @brief Generates mem-to-trg instruction
  * @param[in] cg : CodeGenerator
  * @param[in] op : instruction opcode
@@ -429,6 +493,40 @@ TR::Instruction *generateMemSrc1Instruction(
                    TR::Node *node,
                    TR::MemoryReference *mr,
                    TR::Register *sreg,
+                   TR::Instruction *preced = NULL);
+
+/*
+ * @brief Generates src1 instruction
+ * @param[in] cg : CodeGenerator
+ * @param[in] op : instruction opcode
+ * @param[in] node : node
+ * @param[in] s1reg : source register
+ * @param[in] preced : preceding instruction
+ * @return generated instruction
+ */
+TR::Instruction *generateSrc1Instruction(
+                   TR::CodeGenerator *cg,
+                   TR::InstOpCode::Mnemonic op,
+                   TR::Node *node,
+                   TR::Register *s1reg,
+                   TR::Instruction *preced = NULL);
+
+/*
+ * @brief Generates src2 instruction
+ * @param[in] cg : CodeGenerator
+ * @param[in] op : instruction opcode
+ * @param[in] node : node
+ * @param[in] s1reg : source register 1
+ * @param[in] s2reg : source register 2
+ * @param[in] preced : preceding instruction
+ * @return generated instruction
+ */
+TR::Instruction *generateSrc2Instruction(
+                   TR::CodeGenerator *cg,
+                   TR::InstOpCode::Mnemonic op,
+                   TR::Node *node,
+                   TR::Register *s1reg,
+                   TR::Register *s2reg,
                    TR::Instruction *preced = NULL);
 
 /*
@@ -563,6 +661,7 @@ TR::Instruction *generateTestInstruction(
  * @param[in] node : node
  * @param[in] treg : target register
  * @param[in] sreg : source register
+ * @param[in] is64bit : true when it is 64-bit operation
  * @param[in] preced : preceding instruction
  * @return generated instruction
  */
@@ -571,6 +670,7 @@ TR::Instruction *generateMovInstruction(
                   TR::Node *node,
                   TR::Register *treg,
                   TR::Register *sreg,
+                  bool is64bit = true,
                   TR::Instruction *preced = NULL);
 
 /*

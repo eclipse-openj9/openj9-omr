@@ -341,6 +341,7 @@ namespace TR { class J9S390InterfaceCallDataSnippet; }
 #endif
 
 namespace TR { class ARM64ImmInstruction; }
+namespace TR { class ARM64ImmSymInstruction; }
 namespace TR { class ARM64LabelInstruction; }
 namespace TR { class ARM64ConditionalBranchInstruction; }
 namespace TR { class ARM64CompareBranchInstruction; }
@@ -358,6 +359,8 @@ namespace TR { class ARM64Trg1Src3Instruction; }
 namespace TR { class ARM64Trg1MemInstruction; }
 namespace TR { class ARM64MemInstruction; }
 namespace TR { class ARM64MemSrc1Instruction; }
+namespace TR { class ARM64Src1Instruction; }
+namespace TR { class ARM64Src2Instruction; }
 
 
 TR_Debug *createDebugObject(TR::Compilation *);
@@ -1082,6 +1085,7 @@ public:
    void printPrefix(TR::FILE *, TR::Instruction *);
 
    void print(TR::FILE *, TR::ARM64ImmInstruction *);
+   void print(TR::FILE *, TR::ARM64ImmSymInstruction *);
    void print(TR::FILE *, TR::ARM64LabelInstruction *);
    void print(TR::FILE *, TR::ARM64ConditionalBranchInstruction *);
    void print(TR::FILE *, TR::ARM64CompareBranchInstruction *);
@@ -1099,6 +1103,8 @@ public:
    void print(TR::FILE *, TR::ARM64Trg1MemInstruction *);
    void print(TR::FILE *, TR::ARM64MemInstruction *);
    void print(TR::FILE *, TR::ARM64MemSrc1Instruction *);
+   void print(TR::FILE *, TR::ARM64Src1Instruction *);
+   void print(TR::FILE *, TR::ARM64Src2Instruction *);
 
    void print(TR::FILE *, TR::RealRegister *, TR_RegisterSizes size = TR_WordReg);
    void print(TR::FILE *, TR::RegisterDependency *);

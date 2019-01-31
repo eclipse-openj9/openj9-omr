@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1094,6 +1094,11 @@ TR::X86ImmSymInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
                         (TR_ExternalRelocationTargetKind) reloTypes [rType], cg()),
                         __FILE__, __LINE__, getNode());
                   }
+               else if (resolvedMethod)
+                  {
+                  cg()->addProjectSpecializedRelocation(cursor, (uint8_t *)getSymbolReference()->getMethodAddress(), NULL, TR_MethodCallAddress,
+                                         __FILE__, __LINE__, getNode());
+                  }
                else
                   {
                   cg()->addProjectSpecializedRelocation(cursor, (uint8_t *)getSymbolReference(), NULL, TR_RelativeMethodAddress,
@@ -1215,7 +1220,7 @@ uint8_t* TR::X86ImmSymInstruction::generateOperand(uint8_t* cursor)
 
          intptrj_t targetAddress = (int32_t)getSourceImmediate();
 
-         if (TR::Compiler->target.is64Bit() && comp->getCodeCacheSwitched() && getOpCodeValue() == CALLImm4)
+         if (TR::Compiler->target.is64Bit() && cg()->hasCodeCacheSwitched() && getOpCodeValue() == CALLImm4)
             {
             TR::SymbolReference *calleeSymRef = NULL;
 
@@ -1661,7 +1666,7 @@ TR::X86RegImmSymInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
    switch (getReloKind())
       {
       case TR_ConstantPool:
-         TR_ASSERT(symbol->isConst(), "assertion failure");
+         TR_ASSERT(symbol->isConst() || symbol->isConstantPoolAddress(), "unknown symbol type for TR_ConstantPool relocation %p\n", this);
          cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor,
                                                                                    (uint8_t *)getSymbolReference()->getOwningMethod(comp)->constantPool(),
                                                                                    getNode() ? (uint8_t *)(uintptr_t)getNode()->getInlinedSiteIndex() : (uint8_t *)-1,

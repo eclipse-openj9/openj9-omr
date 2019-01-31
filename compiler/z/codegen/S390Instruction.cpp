@@ -2402,7 +2402,7 @@ TR::S390RILInstruction::generateBinaryEncoding()
       if (comp->getOption(TR_EnableRMODE64))
 #endif
          {
-         if (comp->getCodeCacheSwitched())
+         if (cg()->hasCodeCacheSwitched())
             {
             TR::SymbolReference *calleeSymRef = NULL;
 
@@ -2571,11 +2571,9 @@ TR::S390RSInstruction::generateBinaryEncoding()
 
    if (getMemoryReference() != NULL)
       {
-      int32_t displacement = getMemoryReference()->getDisp();
-
-      if ((displacement > MINLONGDISP && displacement < 0) || (displacement >= MAXDISP && displacement < MAXLONGDISP))
+      if (getMemoryReference()->isLongDisplacementRequired())
          {
-         auto longDisplacementMnemonic = TR::Instruction::opCodeCanBeAdjustedTo(getOpCodeValue());
+         auto longDisplacementMnemonic = TR::InstOpCode::getEquivalentLongDisplacementMnemonic(getOpCodeValue());
 
          if (longDisplacementMnemonic != TR::InstOpCode::BAD)
             {
@@ -3349,11 +3347,9 @@ TR::S390RXInstruction::generateBinaryEncoding()
 
    TR::InstOpCode& opCode = getOpCode();
 
-   int32_t displacement = getMemoryReference()->getDisp();
-
-   if ((displacement > MINLONGDISP && displacement < MINDISP) || (displacement >= MAXDISP && displacement < MAXLONGDISP))
+   if (getMemoryReference()->isLongDisplacementRequired())
       {
-      auto longDisplacementMnemonic = TR::Instruction::opCodeCanBeAdjustedTo(getOpCodeValue());
+      auto longDisplacementMnemonic = TR::InstOpCode::getEquivalentLongDisplacementMnemonic(getOpCodeValue());
 
       if (longDisplacementMnemonic != TR::InstOpCode::BAD)
          {
@@ -4705,7 +4701,7 @@ TR::S390SS1Instruction::generateBinaryEncoding()
       {
       toRealRegister(getMemoryReference()->getBaseRegister())->setBaseRegisterField((uint32_t *)cursor);
       *(uint32_t *)cursor &= boi(0xFFFFF000); // Clear out the memory first
-      *(uint32_t *)cursor |= boi(getMemoryReference()->getDisp() & 0x00000FFF);
+      *(uint32_t *)cursor |= boi(getMemoryReference()->getOffset() & 0x00000FFF);
       }
 
    // Overlay the actual instruction op and length
@@ -4763,7 +4759,7 @@ TR::S390SS2Instruction::generateBinaryEncoding()
       {
       toRealRegister(getMemoryReference()->getBaseRegister())->setBaseRegisterField((uint32_t *)cursor);
       *(uint32_t *)cursor &= boi(0xFFFFF000); // Clear out the memory first
-      *(uint32_t *)cursor |= boi(getMemoryReference()->getDisp() & 0x00000FFF);
+      *(uint32_t *)cursor |= boi(getMemoryReference()->getOffset() & 0x00000FFF);
       }
 
    // Overlay the actual instruction op and lengths
@@ -5090,11 +5086,9 @@ TR::S390SIInstruction::generateBinaryEncoding()
 
    TR::InstOpCode& opCode = getOpCode();
 
-   int32_t displacement = getMemoryReference()->getDisp();
-
-   if ((displacement > MINLONGDISP && displacement < 0) || (displacement >= MAXDISP && displacement < MAXLONGDISP))
+   if (getMemoryReference()->isLongDisplacementRequired())
       {
-      auto longDisplacementMnemonic = TR::Instruction::opCodeCanBeAdjustedTo(getOpCodeValue());
+      auto longDisplacementMnemonic = TR::InstOpCode::getEquivalentLongDisplacementMnemonic(getOpCodeValue());
 
       if (longDisplacementMnemonic != TR::InstOpCode::BAD)
          {

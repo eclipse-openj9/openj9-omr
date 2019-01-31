@@ -2908,7 +2908,7 @@ TR::Register *OMR::Z::TreeEvaluator::evaluateNULLCHKWithPossibleResolve(TR::Node
              reference->getRegister() == NULL)
             {
             targetRegister = cg->allocateCollectedReferenceRegister();
-            appendTo = generateRXYInstruction(cg, TR::InstOpCode::getLoadAndTrapOpCode(), node, targetRegister, generateS390MemoryReference(reference, cg), appendTo);
+            appendTo = generateRXInstruction(cg, TR::InstOpCode::getLoadAndTrapOpCode(), node, targetRegister, generateS390MemoryReference(reference, cg), appendTo);
             reference->setRegister(targetRegister);
             }
          else if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_zEC12) &&
@@ -2982,7 +2982,7 @@ TR::Register *OMR::Z::TreeEvaluator::evaluateNULLCHKWithPossibleResolve(TR::Node
 
             reference->setRegister(targetRegister);
             TR::MemoryReference * tempMR = generateS390MemoryReference(reference, cg);
-            appendTo = generateRXYInstruction(cg, TR::InstOpCode::getLoadTestOpCode(), reference, targetRegister, tempMR, appendTo);
+            appendTo = generateRXInstruction(cg, TR::InstOpCode::getLoadTestOpCode(), reference, targetRegister, tempMR, appendTo);
             tempMR->stopUsingMemRefRegister(cg);
 
             appendTo = generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BE, node, snippetLabel, appendTo);

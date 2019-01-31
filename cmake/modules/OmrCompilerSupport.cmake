@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2017, 2018 IBM Corp. and others
+# Copyright (c) 2017, 2019 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -24,7 +24,6 @@ if(OMR_COMPILER_SUPPORT_)
 	return()
 endif()
 set(OMR_COMPILER_SUPPORT_ 1)
-
 
 # This file contains a number of support pieces required to build the compiler
 # component.
@@ -74,7 +73,6 @@ function(make_compiler_target TARGET_NAME SCOPE)
 	# TODO: Extract into platform specific section.
 	target_compile_definitions(${TARGET_NAME} ${SCOPE}
 		BITVECTOR_BIT_NUMBERING_MSB
-		UT_DIRECT_TRACE_REGISTRATION
 		${TR_COMPILE_DEFINITIONS}
 		${COMPILER_DEFINES}
 	)
@@ -119,7 +117,6 @@ function(pasm2asm_files out_var compiler)
 	endforeach()
 	set(${out_var} "${result}" PARENT_SCOPE)
 endfunction()
-
 
 # Filter through the provided list, and rewrite any
 # .asm files to .s files, and add the .s file to the list
@@ -176,7 +173,6 @@ function(spp2s_files out_var compiler)
 	# Convert an SPP file to an IPP using the pre-processor.
 	# Rewrite the IPP file to a .s file using sed.
 
-
 	# Get the definitions already set in this directory
 	# - A concern would be how this would interact with target_compile_definitions
 	get_property(compile_defs DIRECTORY PROPERTY COMPILE_DEFINITIONS)
@@ -224,7 +220,6 @@ function(spp2s_files out_var compiler)
 	set(${out_var} "${result}" PARENT_SCOPE)
 endfunction()
 
-
 # Some source files in OMR don't map well into the transforms
 # CMake already knows about. This generates a pipeline of custom commands
 # to transform these source files into files that CMake _does_ understand.
@@ -237,7 +232,6 @@ function(omr_inject_object_modification_targets result compiler_name)
 
 	# Run masm2gas on contained .asm files
 	masm2gas_asm_files(arg ${compiler_name} ${arg})
-
 
 	# COnvert SPP files to .s files
 	spp2s_files(arg ${compiler_name} ${arg})
@@ -334,7 +328,6 @@ function(create_omr_compiler_library)
 
 	set_tr_compile_options()
 
-
 	get_filename_component(abs_root ${CMAKE_CURRENT_LIST_DIR} ABSOLUTE)
 	# We use the cache to allow passing information about compiler targets
 	# from function to function without having to use lots of temps.
@@ -354,11 +347,10 @@ function(create_omr_compiler_library)
 
 	message("${COMPILER_NAME}_ROOT = ${${COMPILER_NAME}_ROOT}")
 
-
 	# Generate a build name file.
 	set(BUILD_NAME_FILE "${CMAKE_BINARY_DIR}/${COMPILER_NAME}Name.cpp")
 	add_custom_command(OUTPUT ${BUILD_NAME_FILE}
-		COMMAND perl ${omr_SOURCE_DIR}/tools/compiler/scripts/generateVersion.pl ${COMPILER_NAME} > ${BUILD_NAME_FILE}
+		COMMAND perl ${omr_SOURCE_DIR}/tools/compiler/scripts/generateVersion.pl ${COMPILER_NAME} ${BUILD_NAME_FILE}
 		VERBATIM
 		COMMENT "Generate ${BUILD_NAME_FILE}"
 	)
@@ -386,14 +378,10 @@ function(create_omr_compiler_library)
 		list(REMOVE_ITEM core_compiler_objects ${abs_filename})
 	endforeach()
 
-
-
 	omr_inject_object_modification_targets(core_compiler_objects ${COMPILER_NAME} ${core_compiler_objects})
 
 	# Append to the compiler sources list
 	target_sources(${COMPILER_NAME} PRIVATE ${core_compiler_objects})
-
-
 
 	# Set include paths and defines.
 	make_compiler_target(${COMPILER_NAME} PRIVATE COMPILER ${COMPILER_NAME})

@@ -85,6 +85,15 @@ TR_FieldPrivatizer::TR_FieldPrivatizer(TR::OptimizationManager *manager)
 
 int32_t TR_FieldPrivatizer::perform()
    {
+
+   // Need to confirm places calling opCodeFor* APIs are doing the right
+   // thing for readbar and wrtbar. All the transformations applied to normal
+   // load/store s should be applied to rd/wrtbar s. However, we need to be
+   // careful about the difference in the shape of the trees and the
+   // mapping relationship between different loads and stores
+   if (comp()->incompleteOptimizerSupportForReadWriteBarriers())
+      return 0;
+
    TR::StackMemoryRegion stackMemoryRegion(*trMemory());
 
    _postDominators = NULL;
@@ -826,7 +835,9 @@ bool TR_FieldPrivatizer::bothSubtreesMatch(TR::Node *node1, TR::Node *node2)
       {
       if (node1->getOpCode().isLoadVar() ||
           (node1->getOpCodeValue() == TR::loadaddr && node1->getSymbolReference()->getSymbol()->isNotCollected()))
+         {
          if (node1->getSymbolReference()->getReferenceNumber() == node2->getSymbolReference()->getReferenceNumber())
+            {
             if (node1->getNumChildren() > 0)
                {
                if (bothSubtreesMatch(node1->getFirstChild(), node2->getFirstChild()))
@@ -836,7 +847,8 @@ bool TR_FieldPrivatizer::bothSubtreesMatch(TR::Node *node1, TR::Node *node2)
                {
                return true;
                }
-
+            }
+         }
       }
 
    return false;

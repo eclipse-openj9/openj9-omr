@@ -356,7 +356,7 @@ TR::Instruction * generateRXInstruction(
                    TR::Node* n, 
                    uint8_t mask, 
                    TR::MemoryReference* mf, 
-                   TR::Instruction* preced);
+                   TR::Instruction* preced = 0);
 
 TR::Instruction * generateRXEInstruction(
                    TR::CodeGenerator       *cg,
@@ -366,30 +366,6 @@ TR::Instruction * generateRXEInstruction(
                    TR::MemoryReference *mf,
                    uint8_t                mask3,
                    TR::Instruction     *preced = 0);
-
-TR::Instruction * generateRXYInstruction(
-                   TR::CodeGenerator *cg,
-                   TR::InstOpCode::Mnemonic          op,
-                   TR::Node                 *n,
-                   TR::Register            *treg,
-                   TR::MemoryReference *mf,
-                   TR::Instruction         *preced = 0);
-
-TR::Instruction * generateRXYbInstruction(
-                   TR::CodeGenerator        *cg,
-                   TR::InstOpCode::Mnemonic      op,
-                   TR::Node                 *n,
-                   uint8_t                   mask,
-                   TR::MemoryReference    *mf,
-                   TR::Instruction          *preced = 0);
-
-TR::Instruction * generateRXYInstruction(
-                   TR::CodeGenerator *cg,
-                   TR::InstOpCode::Mnemonic          op,
-                   TR::Node                 *n,
-                   TR::RegisterPair         *regp,
-                   TR::MemoryReference *mf,
-                   TR::Instruction         *preced = 0);
 
 TR::Instruction * generateRXFInstruction(
                    TR::CodeGenerator *cg,
@@ -590,14 +566,6 @@ TR::Instruction * generateRILInstruction(
                    TR::Instruction          *preced = 0);
 
 TR::Instruction * generateSIInstruction(
-                   TR::CodeGenerator *cg,
-                   TR::InstOpCode::Mnemonic          op,
-                   TR::Node                *n,
-                   TR::MemoryReference *mf,
-                   uint32_t                imm,
-                   TR::Instruction         *preced = 0);
-
-TR::Instruction * generateSIYInstruction(
                    TR::CodeGenerator *cg,
                    TR::InstOpCode::Mnemonic          op,
                    TR::Node                *n,
@@ -906,33 +874,6 @@ TR::Instruction * generateRSWithImplicitPairStoresInstruction(
                    TR::RegisterPair        *sreg,
                    TR::MemoryReference *mf,
                    TR::Instruction         *preced = 0);
-
-TR::Instruction * generateRSYInstruction(
-                   TR::CodeGenerator *cg,
-                   TR::InstOpCode::Mnemonic          op,
-                   TR::Node                *n,
-                   TR::Register            *treg,
-                   uint32_t                mask,
-                   TR::MemoryReference *mf,
-                   TR::Instruction         *preced = 0);
-
-TR::Instruction * generateRSYInstruction(
-                   TR::CodeGenerator* cg, 
-                   TR::InstOpCode::Mnemonic op, 
-                   TR::Node* n, 
-                   TR::RegisterPair* treg, 
-                   TR::RegisterPair* sreg, 
-                   TR::MemoryReference* mf, 
-                   TR::Instruction* preced);
-
-TR::Instruction * generateRSYInstruction(
-                   TR::CodeGenerator* cg, 
-                   TR::InstOpCode::Mnemonic op, 
-                   TR::Node* n, 
-                   TR::Register* freg, 
-                   TR::Register* lreg, 
-                   TR::MemoryReference* mf, 
-                   TR::Instruction* preced);
 
 TR::Instruction * generateRRSInstruction(
                    TR::CodeGenerator       * cg,

@@ -705,7 +705,6 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
        SET_OPTION_BIT(TR_EnableLowerCompilationLimitsDecisionMaking), "F", NOT_IN_SUBSET},
    {"enableMetadataBytecodePCToIAMap",   "O\tenable bytecode pc to IA map in the metadata", SET_OPTION_BIT(TR_EnableMetadataBytecodePCToIAMap), "F", NOT_IN_SUBSET},
    {"enableMetadataReclamation",         "I\tenable J9JITExceptionTable reclamation", RESET_OPTION_BIT(TR_DisableMetadataReclamation), "F", NOT_IN_SUBSET},
-   {"enableMethodTrampolineReservation", "O\tReserve method trampolines even if they are not needed; only applicable on x86 and zLinux", SET_OPTION_BIT(TR_EnableMethodTrampolineReservation), "F"},
    {"enableMHCustomizationLogicCalls",   "C\tinsert calls to MethodHandle.doCustomizationLogic for handle invocations outside of thunks", SET_OPTION_BIT(TR_EnableMHCustomizationLogicCalls), "F"},
    {"enableMonitorCacheLookup",          "O\tenable  monitor cache lookup under lock nursery ",                       SET_OPTION_BIT(TR_EnableMonitorCacheLookup), "F"},
    {"enableMultipleGCRPeriods",          "M\tallow JIT to get in and out of GCR", SET_OPTION_BIT(TR_EnableMultipleGCRPeriods), "F", NOT_IN_SUBSET},

@@ -3191,151 +3191,94 @@ OMR::Power::CodeGenerator::addMetaDataForLoadAddressConstantFixed(
       int16_t typeAddress,
       intptrj_t value)
    {
+   if (value == 0x0)
+      return;
 
-   bool doAOTRelocation = true;
+   if (typeAddress == -1)
+      typeAddress = TR_FixedSequenceAddress2;
+
+   TR_FixedSequenceKind seqKind = tempReg ? fixedSequence5 : fixedSequence1;
    TR::Compilation *comp = self()->comp();
 
-   if (tempReg == NULL)
-      {
-      if (value != 0x0)
-         {
-         TR_FixedSequenceKind seqKind = fixedSequence1;
-         if (typeAddress == -1)
-            {
-            if (doAOTRelocation)
-               self()->addExternalRelocation(new (self()->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(
-                                 firstInstruction,
-                                 (uint8_t *)value,
-                                 (uint8_t *)seqKind,
-                                 TR_FixedSequenceAddress2, self()),
-                                 __FILE__,
-                                 __LINE__,
-                                 node);
-            }
-         else
-            {
-            if (typeAddress == TR_DataAddress)
-               {
-               if (doAOTRelocation)
-                  {
-                  TR_RelocationRecordInformation *recordInfo = ( TR_RelocationRecordInformation *)comp->trMemory()->allocateMemory(sizeof( TR_RelocationRecordInformation), heapAlloc);
-                  recordInfo->data1 = (uintptr_t)node->getSymbolReference();
-                  recordInfo->data2 = (uintptr_t)node->getInlinedSiteIndex();
-                  recordInfo->data3 = (uintptr_t)seqKind;
-                  self()->addExternalRelocation(new (self()->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(
-                                    firstInstruction,
-                                    (uint8_t *)recordInfo,
-                                    TR_DataAddress, self()),
-                                    __FILE__,
-                                    __LINE__,
-                                    node);
-                  }
-               }
-            else if (typeAddress == TR_DebugCounter)
-               {
-               if (doAOTRelocation)
-                  {
-                  TR::DebugCounterBase *counter = comp->getCounterFromStaticAddress(node->getSymbolReference());
-                  if (counter == NULL)
-                     {
-                     comp->failCompilation<TR::CompilationException>("Could not generate relocation for debug counter in OMR::Power::CodeGenerator::addMetaDataForLoadAddressConstantFixed\n");
-                     }
+   TR::Relocation *relo = NULL;
 
-                  TR::DebugCounter::generateRelocation(comp, firstInstruction, node, counter, seqKind);
-                  }
-               }
-            else
-               {
-               if (doAOTRelocation)
-                  self()->addExternalRelocation(new (self()->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(
-                                    firstInstruction,
-                                    (uint8_t *)value,
-                                    (uint8_t *)seqKind,
-                                    (TR_ExternalRelocationTargetKind)typeAddress, self()),
-                                    __FILE__,
-                                    __LINE__,
-                                    node);
-               }
-            }
+   switch (typeAddress)
+      {
+      case TR_DataAddress:
+         {
+         TR_RelocationRecordInformation *recordInfo = ( TR_RelocationRecordInformation *)comp->trMemory()->allocateMemory(sizeof(TR_RelocationRecordInformation), heapAlloc);
+         recordInfo->data1 = (uintptr_t)node->getSymbolReference();
+         recordInfo->data2 = (uintptr_t)node->getInlinedSiteIndex();
+         recordInfo->data3 = (uintptr_t)seqKind;
+         relo = new (self()->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(
+            firstInstruction,
+            (uint8_t *)recordInfo,
+            TR_DataAddress, self());
+         break;
+         }
+
+      case TR_DebugCounter:
+         {
+         TR::DebugCounterBase *counter = comp->getCounterFromStaticAddress(node->getSymbolReference());
+         if (counter == NULL)
+            comp->failCompilation<TR::CompilationException>("Could not generate relocation for debug counter in OMR::Power::CodeGenerator::addMetaDataForLoadAddressConstantFixed\n");
+
+         TR::DebugCounter::generateRelocation(comp, firstInstruction, node, counter, seqKind);
+         return;
          }
       }
-   else
-      {
-      if (value != 0x0)
-         {
-         TR_FixedSequenceKind seqKind = fixedSequence5;
-         if (typeAddress == -1)
-            {
-            if (doAOTRelocation)
-               self()->addExternalRelocation(new (self()->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(
-                                 firstInstruction,
-                                 (uint8_t *)value,
-                                 (uint8_t *)seqKind,
-                                 TR_FixedSequenceAddress2, self()),
-                                 __FILE__,
-                                 __LINE__,
-                                 node);
-            }
-         else
-            {
-            if (typeAddress == TR_RamMethodSequence) // NOTE: 32 bit changed to use TR_RamMethodSequence for ordered pair, hence, we should check this instead
-               {
-               if (doAOTRelocation)
-                  self()->addExternalRelocation(new (self()->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(
-                                    firstInstruction,
-                                    (uint8_t *)value,
-                                    (uint8_t *)seqKind,
-                                    TR_RamMethodSequenceReg, self()),
-                                    __FILE__,
-                                    __LINE__,
-                                    node);
-               }
-            else if (typeAddress == TR_DataAddress)
-               {
-               if (doAOTRelocation)
-                  {
-                  TR_RelocationRecordInformation *recordInfo = ( TR_RelocationRecordInformation *)comp->trMemory()->allocateMemory(sizeof( TR_RelocationRecordInformation), heapAlloc);
-                  recordInfo->data1 = (uintptr_t)node->getSymbolReference();
-                  recordInfo->data2 = (uintptr_t)node->getInlinedSiteIndex();
-                  recordInfo->data3 = (uintptr_t)seqKind;
-                  self()->addExternalRelocation(new (self()->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(
-                                    firstInstruction,
-                                    (uint8_t *)recordInfo,
-                                    TR_DataAddress, self()),
-                                    __FILE__,
-                                    __LINE__,
-                                    node);
-                  }
-               }
-            else if (typeAddress == TR_DebugCounter)
-               {
-               if (doAOTRelocation)
-                  {
-                  TR::DebugCounterBase *counter = comp->getCounterFromStaticAddress(node->getSymbolReference());
-                  if (counter == NULL)
-                     {
-                     comp->failCompilation<TR::CompilationException>("Could not generate relocation for debug counter in OMR::Power::CodeGenerator::addMetaDataForLoadAddressConstantFixed\n");
-                     }
 
-                  TR::DebugCounter::generateRelocation(comp, firstInstruction, node, counter, seqKind);
-                  }
-               }
-            else
-               {
-               if (doAOTRelocation)
-                  self()->addExternalRelocation(new (self()->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(
-                                    firstInstruction,
-                                    (uint8_t *)value,
-                                    (uint8_t *)seqKind,
-                                    (TR_ExternalRelocationTargetKind)typeAddress, self()),
-                                    __FILE__,
-                                    __LINE__,
-                                    node);
-               }
+   if (comp->getOption(TR_UseSymbolValidationManager) && !relo)
+      {
+      switch (typeAddress)
+         {
+         case TR_ClassAddress:
+            {
+            TR::SymbolReference *symRef = (TR::SymbolReference *)value;
+
+            TR_RelocationRecordInformation *recordInfo = (TR_RelocationRecordInformation *)comp->trMemory()->allocateMemory(sizeof(TR_RelocationRecordInformation), heapAlloc);
+            recordInfo->data1 = (uintptr_t)symRef->getSymbol()->getStaticSymbol()->getStaticAddress();
+            recordInfo->data2 = (uintptr_t)TR::SymbolType::typeClass;
+            recordInfo->data3 = (uintptr_t)seqKind;
+            relo = new (self()->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(
+               firstInstruction,
+               (uint8_t *)recordInfo,
+               TR_DiscontiguousSymbolFromManager,
+               self());
+            break;
+            }
+
+         case TR_RamMethodSequence:
+            {
+            TR_RelocationRecordInformation *recordInfo = (TR_RelocationRecordInformation *)comp->trMemory()->allocateMemory(sizeof(TR_RelocationRecordInformation), heapAlloc);
+            recordInfo->data1 = (uintptr_t)self()->comp()->getJittedMethodSymbol()->getResolvedMethod()->resolvedMethodAddress();
+            recordInfo->data2 = (uintptr_t)TR::SymbolType::typeMethod;
+            recordInfo->data3 = (uintptr_t)seqKind;
+            relo = new (self()->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(
+               firstInstruction,
+               (uint8_t *)recordInfo,
+               TR_DiscontiguousSymbolFromManager,
+               self());
+            break;
             }
          }
       }
 
+   if (!relo)
+      {
+      relo = new (self()->trHeapMemory()) TR::BeforeBinaryEncodingExternalRelocation(
+         firstInstruction,
+         (uint8_t *)value,
+         (uint8_t *)seqKind,
+         (TR_ExternalRelocationTargetKind)typeAddress,
+         self());
+      }
+
+   self()->addExternalRelocation(
+      relo,
+      __FILE__,
+      __LINE__,
+      node);
    }
 
 

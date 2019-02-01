@@ -25,6 +25,7 @@
 #include <gtest/gtest.h>
 #include <vector>
 #include <stdexcept>
+#include <iostream>
 #include "control/Options.hpp"
 #include "optimizer/Optimizer.hpp"
 #include "ilgen/MethodBuilder.hpp"
@@ -311,5 +312,112 @@ std::vector<std::tuple<L,R>> const_value_pairs()
    }
 
 } // namespace CompTest
+
+/**
+ * @brief Enum values representing the reason for skipping a test
+ *
+ * These values are intended to be short descriptions of why a test is skipped
+ * and are mostly useful for logging and reporting purposes. Additional explenations
+ * should be specified in the skip message.
+ */
+enum SkipReason {
+   KnownBug,               // test is skipped because of a known bug
+   MissingImplementation,  // feature under test is not implemented
+   UnsupportedFeature,     // feature under test is not supported
+   NumSkipReasons_,        // DO NOT USE IN USER CODE
+};
+
+/**
+ * @brief Stringification of SkipReason enum values
+ */
+static const char * const skipReasonStrings[] = {
+   "Known Bug",
+   "Missing Implementation",
+   "Unsupported Feature",
+};
+
+static_assert(SkipReason::NumSkipReasons_ == sizeof(skipReasonStrings)/sizeof(char*),
+             "SkipReason and skipReasonStrings do not have the same number of elements");
+
+/**
+ * @breif allow SkipReason instances to be streamed
+ */
+inline std::ostream& operator << (std::ostream& os, SkipReason reason)
+   {
+   return os <<  skipReasonStrings[static_cast<int>(reason)];
+   }
+
+/**
+ * @brief A helper class to allow streaming messages to the SKIP_IF macro
+ *
+ * The strategy used to allow message streaming is based on the technique
+ * used to implement message streaming in Google Tests ASSERT*() macros.
+ *
+ * This class serves a similar purpose as the `AssertHelper` class in
+ * Google Test.
+ */
+class SkipHelper
+   {
+   public:
+
+   explicit SkipHelper(SkipReason reason)
+      : reason_(reason)
+      {}
+
+   /**
+    * @brief Hack to allow a message to be streamed to the SKIP_IF macro
+    *
+    * The overload for this operator implements the "side effects" the SKIP_IF
+    * macro performs when a test is skipped:
+    *
+    * - prints to stdout:
+    *   - the reason for skipping
+    *   - the name of the skipped test
+    *   - the skip message
+    * - records the skip reason as a property of the current test in Google Test generated logs
+    * - emits a "success" event with the skip message
+    *
+    * @param stream object that represents the messages for a SKIP_IF invocation
+    * @return void so that the result of an assignment can be used
+    *         as the "return value" of a void retuning function
+    */
+   void operator = (const ::testing::Message& message) const
+      {
+      const ::testing::TestInfo* const test_info = ::testing::UnitTest::GetInstance()->current_test_info();
+      ::testing::Test::RecordProperty("skipped", skipReasonStrings[static_cast<int>(reason_)]);
+      std::cout << reason_ << ": Skipping test: " << test_info->name() << "\n    " << message << "\n";
+      SUCCEED() << message;
+      }
+
+   private:
+
+   SkipReason reason_;
+   };
+
+/**
+ * @brief A macro to allow a test to be conditionally skipped
+ *
+ * This macro allows a test to be conditionally skipped without failing the test.
+ * Multiple invocations can be specified per test. While the macro can can be used
+ * anywhere within the scope of a test, it is best to only use at at the beggining,
+ * before the main body of a test.
+ *
+ * To skip a test, a condition aswell as a "reason" for skipping must be specified.
+ * The condition may be any boolean expression. The "reason" must be a value from
+ * the `SkipReason` enum (see its documentation for further details). Optionally,
+ * a more detailed message can also be specified using the `<<` stream operator;
+ * as is done with `ASSERT*()` macros. When the test suite is executed, skipped
+ * tests will print the (short) reason for skipping, the test name, and the skip
+ * message to stdout.
+ *
+ * The basic syntax for using this macro is:
+ *
+ *    SKIP_IF(<condition>, <reason>) << <message>;
+ */
+#define SKIP_IF(condition, reason) \
+   switch (0) case 0: default: /* guard against ambiguous else */ \
+   if (!(condition)) { /* allow test to proceed normally */ } \
+   else \
+      return SkipHelper(SkipReason::reason) = ::testing::Message()
 
 #endif // JITTEST_HPP

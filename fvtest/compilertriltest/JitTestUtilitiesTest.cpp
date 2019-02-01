@@ -284,3 +284,19 @@ TEST(TRTestFilter, FilterVectorWithManyOccurrences)
    ASSERT_EQ(0, std::count_if(v_out.cbegin(), v_out.cend(), isChar_c))
          << "Filtering should leave no elements matching the filter predicate.";
    }
+
+TEST(SkipTest, SkipIfTrue)
+   {
+   SKIP_IF(true, UnsupportedFeature) << "Test is itentionally skipped to verify that skipping works";
+   FAIL() << "SKIP_IF did not skip this test";
+   }
+
+TEST(SkipTest, SkipIfFalse)
+   {
+   EXPECT_FATAL_FAILURE(
+      {
+         SKIP_IF(false, KnownBug) << "Test should not have been skipped! SKIP_IF must have a bug.";
+         FAIL() << "This test should not be skipped by SKIP_IF";
+      },
+      "This test should not be skipped by SKIP_IF");
+   }

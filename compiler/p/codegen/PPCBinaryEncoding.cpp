@@ -385,7 +385,23 @@ TR::PPCImmInstruction::addMetaDataForCodeAddress(uint8_t *cursor)
                cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor, (uint8_t *)getSymbolReference(), TR_AbsoluteHelperAddress, cg()), __FILE__, __LINE__, getNode());
                break;
             case TR_RamMethod:
-               cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor, NULL, TR_RamMethod, cg()), __FILE__, __LINE__, getNode());
+               if (comp()->getOption(TR_UseSymbolValidationManager))
+                  {
+                  cg()->addExternalRelocation(
+                     new (comp()->trHeapMemory()) TR::ExternalRelocation(
+                        cursor,
+                        (uint8_t *)comp()->getJittedMethodSymbol()->getResolvedMethod()->resolvedMethodAddress(),
+                        (uint8_t *)TR::SymbolType::typeMethod,
+                        TR_SymbolFromManager,
+                        cg()),
+                     __FILE__,
+                     __LINE__,
+                     getNode());
+                  }
+               else
+                  {
+                  cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor, NULL, TR_RamMethod, cg()), __FILE__, __LINE__, getNode());
+                  }
                break;
             case TR_BodyInfoAddress:
                cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor, 0, TR_BodyInfoAddress, cg()), __FILE__, __LINE__, getNode());

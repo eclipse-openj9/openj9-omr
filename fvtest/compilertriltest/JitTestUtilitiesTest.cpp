@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2017 IBM Corp. and others
+ * Copyright (c) 2017, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -84,7 +84,7 @@ TEST(TRTestCombineVectorTest, CombineEmptyVectorsOfDifferentTypes)
 TEST(TRTestCombineVectorTest, CombineEmptyAndNonEmptyVectorsOfSameType)
    {
    using namespace std;
-   int test_array[3] = {1, 2 ,3}; 
+   int test_array[3] = {1, 2 ,3};
    auto v = TRTest::combine(vector<int>{}, vector<int> (test_array, test_array+3));
    ::testing::StaticAssertTypeEq<vector<tuple<int,int>>, decltype (v)>();
    ASSERT_TRUE(v.empty())
@@ -283,4 +283,20 @@ TEST(TRTestFilter, FilterVectorWithManyOccurrences)
    auto v_out = TRTest::filter(v_in, isChar_c);
    ASSERT_EQ(0, std::count_if(v_out.cbegin(), v_out.cend(), isChar_c))
          << "Filtering should leave no elements matching the filter predicate.";
+   }
+
+TEST(SkipTest, SkipIfTrue)
+   {
+   SKIP_IF(true, UnsupportedFeature) << "Test is itentionally skipped to verify that skipping works";
+   FAIL() << "SKIP_IF did not skip this test";
+   }
+
+TEST(SkipTest, SkipIfFalse)
+   {
+   EXPECT_FATAL_FAILURE(
+      {
+         SKIP_IF(false, KnownBug) << "Test should not have been skipped! SKIP_IF must have a bug.";
+         FAIL() << "This test should not be skipped by SKIP_IF";
+      },
+      "This test should not be skipped by SKIP_IF");
    }

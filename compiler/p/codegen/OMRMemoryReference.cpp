@@ -1175,18 +1175,37 @@ uint8_t *OMR::Power::MemoryReference::generateBinaryEncoding(TR::Instruction *cu
                   (TR_RelocationRecordInformation*)comp->trMemory()->allocateMemory(
                      sizeof(TR_RelocationRecordInformation),
                      heapAlloc);
-               recordInfo->data1 = (uintptr_t)self()->getSymbolReference();
-               recordInfo->data2 = node == NULL ? -1 : node->getInlinedSiteIndex();
-               recordInfo->data3 = fixedSequence1;
-               cg->addExternalRelocation(
-                  new (cg->trHeapMemory()) TR::ExternalRelocation(
-                     cursor,
-                     (uint8_t*)recordInfo,
-                     TR_ClassAddress,
-                     cg),
-                  __FILE__,
-                  __LINE__,
-                  node);
+
+               if (comp->getOption(TR_UseSymbolValidationManager))
+                  {
+                  recordInfo->data1 = (uintptr_t)self()->getSymbolReference()->getSymbol()->getStaticSymbol()->getStaticAddress();
+                  recordInfo->data2 = (uintptr_t)TR::SymbolType::typeClass;
+                  recordInfo->data3 = fixedSequence1;
+                  cg->addExternalRelocation(
+                     new (cg->trHeapMemory()) TR::ExternalRelocation(
+                        cursor,
+                        (uint8_t*)recordInfo,
+                        TR_DiscontiguousSymbolFromManager,
+                        cg),
+                     __FILE__,
+                     __LINE__,
+                     node);
+                  }
+               else
+                  {
+                  recordInfo->data1 = (uintptr_t)self()->getSymbolReference();
+                  recordInfo->data2 = node == NULL ? -1 : node->getInlinedSiteIndex();
+                  recordInfo->data3 = fixedSequence1;
+                  cg->addExternalRelocation(
+                     new (cg->trHeapMemory()) TR::ExternalRelocation(
+                        cursor,
+                        (uint8_t*)recordInfo,
+                        TR_ClassAddress,
+                        cg),
+                     __FILE__,
+                     __LINE__,
+                     node);
+                  }
 
                // The relocation will OR its values into the immediates, so
                // they have to be zero beforehand
@@ -1600,6 +1619,16 @@ void OMR::Power::MemoryReference::accessStaticItem(TR::Node *node, TR::SymbolRef
             TR::Register *reg = _baseRegister = cg->allocateRegister();
             loadAddressConstant(cg, nodeForSymbol, 1, reg, NULL, false, TR_DataAddress);
             return;
+            }
+         else if (isClass && !ref->isUnresolved() && comp->getOption(TR_UseSymbolValidationManager))
+            {
+            TR::Register *reg = _baseRegister = cg->allocateRegister();
+            loadAddressConstant(cg, nodeForSymbol, (intptrj_t)ref, reg, NULL, false, TR_ClassAddress);
+            return;
+            }
+         else
+            {
+            TR_ASSERT_FATAL(!comp->getOption(TR_UseSymbolValidationManager) || ref->isUnresolved(), "SVM relocation unhandled");
             }
          }
 

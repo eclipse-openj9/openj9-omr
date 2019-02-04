@@ -1218,23 +1218,6 @@ OMR::CodeCacheManager::undoCarvingFromRepository(TR::CodeCacheMemorySegment *seg
    }
 
 
-void
-OMR::CodeCacheManager::reservationInterfaceCache(void *callSite, TR_OpaqueMethodBlock *method)
-   {
-   TR::CodeCacheConfig &config = self()->codeCacheConfig();
-   if (!config.needsMethodTrampolines())
-      return;
-
-   TR::CodeCache *codeCache = self()->findCodeCacheFromPC(callSite);
-   if (!codeCache)
-      return;
-
-   codeCache->findOrAddResolvedMethod(method);
-   }
-
-
-
-
 #if (HOST_OS == OMR_LINUX)
 
 void

@@ -198,7 +198,6 @@ public:
                                                void *oldTargetPC,
                                                void *newTargetPC,
                                                bool needSync);
-   void reservationInterfaceCache(void *callSite, TR_OpaqueMethodBlock *method);
 
    void performSizeAdjustments(size_t &warmCodeSize,
                                size_t &coldCodeSize,

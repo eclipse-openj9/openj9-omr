@@ -168,7 +168,7 @@ OMR::CodeCacheManager::initialize(
       // These code caches must not be reserved. A value of -2 for reservingCompThreadID
       // instructs allocate() routine to not reserve the code caches
       //
-      codeCache = TR::CodeCache::allocate(self(), config.codeCacheKB() << 10, -2); // MCT
+      codeCache = self()->allocateCodeCacheFromNewSegment(config.codeCacheKB() << 10, -2);
       }
 
    _curNumberOfCodeCaches = cachesCreatedOnInit;
@@ -358,9 +358,10 @@ OMR::CodeCacheManager::reserveCodeCache(bool compilationCodeAllocationsMustBeCon
       }
 
    // No existing code cache is available; try to allocate a new one
-   if (self()->canAddNewCodeCache()) {
+   if (self()->canAddNewCodeCache())
+      {
       TR::CodeCacheConfig &config = self()->codeCacheConfig();
-      codeCache = TR::CodeCache::allocate(self(), config.codeCacheKB() << 10, compThreadID);
+      codeCache = self()->allocateCodeCacheFromNewSegment(config.codeCacheKB() << 10, compThreadID);
       }
    else
       {
@@ -398,7 +399,7 @@ OMR::CodeCacheManager::getNewCodeCache(int32_t reservingCompThreadID)
    if (self()->canAddNewCodeCache())
       {
       TR::CodeCacheConfig &config = self()->codeCacheConfig();
-      codeCache = TR::CodeCache::allocate(self(), config.codeCacheKB() << 10, reservingCompThreadID);
+      codeCache = self()->allocateCodeCacheFromNewSegment(config.codeCacheKB() << 10, reservingCompThreadID);
       }
 
    return codeCache;
@@ -674,17 +675,6 @@ OMR::CodeCacheManager::canAddNewCodeCache()
    }
 
 
-#if DEBUG
-void
-OMR::CodeCacheManager::dumpCodeCaches()
-   {
-   CacheListCriticalSection scanCacheList(self());
-   for (TR::CodeCache *codeCache = self()->getFirstCodeCache(); codeCache; codeCache = codeCache->next())
-      codeCache->dumpCodeCache();
-   }
-#endif
-
-
 // May add block defined by metaData to freeBlockList.
 // Caller should expect that block may sometimes not be added.
 void
@@ -856,12 +846,14 @@ OMR::CodeCacheManager::allocateCodeMemoryWithRetries(size_t warmCodeSize,
       }
 
    /* Create a new code cache structure and initialize it */
-   codeCache = TR::CodeCache::allocate(self(), segmentSize, compThreadID); // the allocated cache is in reserved state // MCT
-   if (!codeCache) {
+   codeCache = self()->allocateCodeCacheFromNewSegment(segmentSize, compThreadID);
+   if (!codeCache)
+      {
       self()->setCodeCacheFull();
       return NULL;
-   }
-    // Unreserve the original cache
+      }
+
+   // Unreserve the original cache
    TR_ASSERT((*codeCache_pp)->isReserved(), "Code cache must be reserved. Original code cache=%p pp=%p\n", originalCodeCache, *codeCache_pp); // MCT
 
    (*codeCache_pp)->unreserve();
@@ -1226,23 +1218,6 @@ OMR::CodeCacheManager::undoCarvingFromRepository(TR::CodeCacheMemorySegment *seg
    }
 
 
-void
-OMR::CodeCacheManager::reservationInterfaceCache(void *callSite, TR_OpaqueMethodBlock *method)
-   {
-   TR::CodeCacheConfig &config = self()->codeCacheConfig();
-   if (!config.needsMethodTrampolines())
-      return;
-
-   TR::CodeCache *codeCache = self()->findCodeCacheFromPC(callSite);
-   if (!codeCache)
-      return;
-
-   codeCache->findOrAddResolvedMethod(method);
-   }
-
-
-
-
 #if (HOST_OS == OMR_LINUX)
 
 void
@@ -1283,3 +1258,59 @@ OMR::CodeCacheManager::initializeExecutableELFGenerator(void)
          );
    }
 #endif // HOST_OS==OMR_LINUX
+
+
+TR::CodeCache *
+OMR::CodeCacheManager::allocateCodeCacheFromNewSegment(
+      size_t segmentSizeInBytes,
+      int32_t reservingCompilationTID)
+   {
+   TR::CodeCacheConfig & config = self()->codeCacheConfig();
+   bool verboseCodeCache = config.verboseCodeCache();
+
+   size_t actualCodeCacheSizeAllocated;
+   TR::CodeCacheMemorySegment *codeCacheSegment = self()->getNewCacheMemorySegment(segmentSizeInBytes, actualCodeCacheSizeAllocated);
+
+   if (codeCacheSegment)
+      {
+      TR::CodeCache *codeCache = self()->allocateCodeCacheObject(codeCacheSegment, actualCodeCacheSizeAllocated);
+
+      if (codeCache)
+         {
+         // If we wanted to reserve this code cache, then mark it as reserved now
+         if (reservingCompilationTID >= -1)
+            {
+            codeCache->reserve(reservingCompilationTID);
+            }
+
+         // Add it to our list of code caches
+         self()->addCodeCache(codeCache);
+
+         if (verboseCodeCache)
+            {
+            TR_VerboseLog::writeLineLocked(TR_Vlog_CODECACHE, "CodeCache allocated %p @ " POINTER_PRINTF_FORMAT "-" POINTER_PRINTF_FORMAT " HelperBase:" POINTER_PRINTF_FORMAT, codeCache, codeCache->getCodeBase(), codeCache->getCodeTop(), codeCache->_helperBase);
+            }
+
+         return codeCache;
+         }
+
+      // A meta CodeCache object could not be allocated.  Free the code cache segment.
+      //
+      if (self()->usingRepository())
+         {
+         // return back the portion we carved
+         self()->undoCarvingFromRepository(codeCacheSegment);
+         }
+      else
+         {
+         self()->freeMemorySegment(codeCacheSegment);
+         }
+      }
+
+   if (verboseCodeCache)
+      {
+      TR_VerboseLog::writeLineLocked(TR_Vlog_CODECACHE, "CodeCache maximum allocated");
+      }
+
+   return NULL;
+   }

@@ -1841,52 +1841,5 @@ OMR::CodeCache::allocate(TR::CodeCacheManager *manager,
                          size_t segmentSize,
                          int32_t reservingCompThreadID)
    {
-   TR::CodeCacheConfig & config = manager->codeCacheConfig();
-   bool verboseCodeCache = config.verboseCodeCache();
-
-   size_t codeCacheSizeAllocated;
-   TR::CodeCacheMemorySegment *codeCacheSegment = manager->getNewCacheMemorySegment(segmentSize, codeCacheSizeAllocated);
-
-   if (codeCacheSegment)
-      {
-      TR::CodeCache *codeCache = manager->allocateCodeCacheObject(codeCacheSegment,
-                                                                  codeCacheSizeAllocated);
-
-      if (codeCache)
-         {
-         // If we wanted to reserve this code cache, then mark it as reserved now
-         if (reservingCompThreadID >= -1)
-            {
-            codeCache->reserve(reservingCompThreadID);
-            }
-
-         // Add it to our list of code caches
-         manager->addCodeCache(codeCache);
-
-         if (verboseCodeCache)
-            {
-            TR_VerboseLog::writeLineLocked(TR_Vlog_CODECACHE, "CodeCache allocated %p @ " POINTER_PRINTF_FORMAT "-" POINTER_PRINTF_FORMAT " HelperBase:" POINTER_PRINTF_FORMAT, codeCache, codeCache->getCodeBase(), codeCache->getCodeTop(), codeCache->_helperBase);
-            }
-
-         return codeCache;
-         }
-
-      // Free code cache segment
-      if (manager->usingRepository())
-         {
-         // return back the portion we carved
-         manager->undoCarvingFromRepository(codeCacheSegment);
-         }
-      else
-         {
-         manager->freeMemorySegment(codeCacheSegment);
-         }
-      }
-
-   if (verboseCodeCache)
-      {
-      TR_VerboseLog::writeLineLocked(TR_Vlog_CODECACHE, "CodeCache maximum allocated");
-      }
-
-   return NULL;
+   return manager->allocateCodeCacheFromNewSegment(segmentSize, reservingCompThreadID);
    }

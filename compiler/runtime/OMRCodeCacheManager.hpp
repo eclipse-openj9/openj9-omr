@@ -113,7 +113,6 @@ protected:
       };
 
 public:
-   enum ErrorCode { };
 
    CodeCacheManager(TR::RawAllocator rawAllocator);
 
@@ -171,6 +170,23 @@ public:
                                 bool needsToBeContiguous,
                                 bool isMethodHeaderNeeded=true);
 
+   /**
+    * @brief Allocate and initialize a new code cache from a new memory segment
+    *
+    * @param[in] segmentSizeInBytes : segment size to create the code cache from
+    * @param[in] reservingCompilationTID : thread id of the requestor
+    *               if (reservingCompilationTID)
+    *                  <= -2 : no reservation is requested
+    *                  == -1 : the application thread is requesting the allocation; new code cache will be reserved
+    *                  >=  0 : a compilation thread is requesting the allocation; new code cache will be reserved
+    *
+    * @return if allocation is successful, the allocated TR::CodeCache object from
+    *           the new segment; NULL otherwise.
+    */
+   TR::CodeCache * allocateCodeCacheFromNewSegment(
+      size_t segmentSizeInBytes,
+      int32_t reservingCompilationTID);
+
    TR::CodeCache * findCodeCacheFromPC(void *inCacheAddress);
 
    CodeCacheTrampolineCode * findMethodTrampoline(TR_OpaqueMethodBlock *method, void *callingPC);
@@ -182,7 +198,6 @@ public:
                                                void *oldTargetPC,
                                                void *newTargetPC,
                                                bool needSync);
-   void reservationInterfaceCache(void *callSite, TR_OpaqueMethodBlock *method);
 
    void performSizeAdjustments(size_t &warmCodeSize,
                                size_t &coldCodeSize,
@@ -212,10 +227,6 @@ public:
    bool usingRepository()                          { return _codeCacheRepositorySegment != NULL; }
    TR::CodeCache * getRepositoryCodeCacheAddress() { return _repositoryCodeCache; }
    TR::Monitor *   getCodeCacheRepositoryMonitor() { return _codeCacheRepositoryMonitor; }
-
-#if DEBUG
-   void dumpCodeCaches();
-#endif
 
    uint8_t * allocateCodeMemoryWithRetries(size_t warmCodeSize,
                                            size_t coldCodeSize,

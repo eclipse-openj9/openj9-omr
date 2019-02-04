@@ -300,3 +300,11 @@ TEST(SkipTest, SkipIfFalse)
       },
       "This test should not be skipped by SKIP_IF");
    }
+
+class TestWithPortLib : public TRTest::TestWithPortLib {};
+
+TEST_F(TestWithPortLib, CheckCurrentPlatform)
+   {
+   ASSERT_STRNE("unknown", omrsysinfo_get_CPU_architecture())
+      << "The host architecture should be known";
+   }

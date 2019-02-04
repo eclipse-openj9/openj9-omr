@@ -287,7 +287,7 @@ TEST(TRTestFilter, FilterVectorWithManyOccurrences)
 
 TEST(SkipTest, SkipIfTrue)
    {
-   SKIP_IF(true, UnsupportedFeature) << "Test is itentionally skipped to verify that skipping works";
+   SKIP_IF(true, UnsupportedFeature) << "Test is intentionally skipped to verify that skipping works";
    FAIL() << "SKIP_IF did not skip this test";
    }
 

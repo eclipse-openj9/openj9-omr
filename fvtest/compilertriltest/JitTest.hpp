@@ -317,7 +317,7 @@ std::vector<std::tuple<L,R>> const_value_pairs()
  * @brief Enum values representing the reason for skipping a test
  *
  * These values are intended to be short descriptions of why a test is skipped
- * and are mostly useful for logging and reporting purposes. Additional explenations
+ * and are mostly useful for logging and reporting purposes. Additional explanations
  * should be specified in the skip message.
  */
 enum SkipReason {
@@ -399,7 +399,7 @@ class SkipHelper
  *
  * This macro allows a test to be conditionally skipped without failing the test.
  * Multiple invocations can be specified per test. While the macro can can be used
- * anywhere within the scope of a test, it is best to only use at at the beggining,
+ * anywhere within the scope of a test, it is best to only use at at the beginning,
  * before the main body of a test.
  *
  * To skip a test, a condition aswell as a "reason" for skipping must be specified.

@@ -148,7 +148,6 @@ namespace TR { class X86FPConvertToLongSnippet; }
 namespace TR { class X86GuardedDevirtualSnippet; }
 namespace TR { class X86HelperCallSnippet; }
 namespace TR { class UnresolvedDataSnippet; }
-namespace TR { class X86UnresolvedVirtualCallSnippet; } // TODO: delete
 namespace TR { class AMD64Imm64Instruction;    }
 namespace TR { class AMD64Imm64SymInstruction; }
 namespace TR { class AMD64RegImm64Instruction; }
@@ -833,7 +832,6 @@ public:
 #ifdef J9_PROJECT_SPECIFIC
    void print(TR::FILE *, TR::X86CallSnippet *);
    void print(TR::FILE *, TR::X86PicDataSnippet *);
-   void print(TR::FILE *, TR::X86UnresolvedVirtualCallSnippet *); // TODO: delete
    void print(TR::FILE *, TR::IA32WriteBarrierSnippet *);
    void print(TR::FILE *, TR::X86JNIPauseSnippet *);
    void print(TR::FILE *, TR::X86PassJNINullSnippet *);

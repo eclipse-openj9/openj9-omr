@@ -113,7 +113,6 @@ protected:
       };
 
 public:
-   enum ErrorCode { };
 
    CodeCacheManager(TR::RawAllocator rawAllocator);
 
@@ -229,10 +228,6 @@ public:
    bool usingRepository()                          { return _codeCacheRepositorySegment != NULL; }
    TR::CodeCache * getRepositoryCodeCacheAddress() { return _repositoryCodeCache; }
    TR::Monitor *   getCodeCacheRepositoryMonitor() { return _codeCacheRepositoryMonitor; }
-
-#if DEBUG
-   void dumpCodeCaches();
-#endif
 
    uint8_t * allocateCodeMemoryWithRetries(size_t warmCodeSize,
                                            size_t coldCodeSize,

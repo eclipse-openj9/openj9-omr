@@ -675,17 +675,6 @@ OMR::CodeCacheManager::canAddNewCodeCache()
    }
 
 
-#if DEBUG
-void
-OMR::CodeCacheManager::dumpCodeCaches()
-   {
-   CacheListCriticalSection scanCacheList(self());
-   for (TR::CodeCache *codeCache = self()->getFirstCodeCache(); codeCache; codeCache = codeCache->next())
-      codeCache->dumpCodeCache();
-   }
-#endif
-
-
 // May add block defined by metaData to freeBlockList.
 // Caller should expect that block may sometimes not be added.
 void

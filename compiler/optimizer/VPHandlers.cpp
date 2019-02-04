@@ -9396,7 +9396,7 @@ static TR::Node *constrainIfcmpeqne(OMR::ValuePropagation *vp, TR::Node *node, b
 
 #ifdef J9_PROJECT_SPECIFIC
 
-   if ((!vp->comp()->compileRelocatableCode() || vp->comp()->getOption(TR_UseSymbolValidationManager)) &&
+   if (!vp->comp()->compileRelocatableCode() &&
        vp->lastTimeThrough() &&
        vp->comp()->performVirtualGuardNOPing() &&
        !vp->_curBlock->isCold() &&

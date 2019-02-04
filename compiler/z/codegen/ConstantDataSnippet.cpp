@@ -84,7 +84,7 @@ TR::S390ConstantDataSnippet::addMetaDataForCodeAddress(uint8_t *cursor)
    TR::Compilation *comp = cg()->comp();
 
    uint32_t reloType = getReloType();
-
+   TR::SymbolType symbolKind = TR::SymbolType::typeClass;
    switch (reloType)
       {
       case 0:
@@ -92,6 +92,33 @@ TR::S390ConstantDataSnippet::addMetaDataForCodeAddress(uint8_t *cursor)
 
       case TR_ClassAddress:
       case TR_ClassObject:
+         {
+         AOTcgDiag3(comp, "add relocation (%d) cursor=%x symbolReference=%x\n", reloType, cursor, getSymbolReference());
+         TR::SymbolReference *reloSymRef= (reloType==TR_ClassAddress)?getNode()->getSymbolReference():getSymbolReference();
+         if (cg()->comp()->getOption(TR_UseSymbolValidationManager))
+            {
+            TR_ASSERT_FATAL(getDataAs8Bytes(), "Static Sym can not be NULL");
+
+            cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor,
+                                                                                       (uint8_t *) getDataAs8Bytes(),
+                                                                                       (uint8_t *) TR::SymbolType::typeClass,
+                                                                                       TR_SymbolFromManager,
+                                                                                       cg()),
+                                                                                       __FILE__, __LINE__, getNode());
+
+            }
+         else
+            {
+            cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor, (uint8_t *) reloSymRef,
+                                                                                 getNode() ? (uint8_t *)(intptr_t)getNode()->getInlinedSiteIndex() : (uint8_t *)-1,
+                                                                                 (TR_ExternalRelocationTargetKind) reloType, cg()),
+                                                                                 __FILE__, __LINE__, getNode());
+
+            }
+
+
+         }
+         break;
       case TR_MethodObject:
          {
          AOTcgDiag3(comp, "add relocation (%d) cursor=%x symbolReference=%x\n", reloType, cursor, getSymbolReference());
@@ -170,24 +197,38 @@ TR::S390ConstantDataSnippet::addMetaDataForCodeAddress(uint8_t *cursor)
 
       case TR_RamMethod:
       case TR_MethodPointer:
+         symbolKind = TR::SymbolType::typeMethod;
+         // intentional fall through
       case TR_ClassPointer:
-         {
          AOTcgDiag2(comp, "add relocation (%d) cursor=%x\n", reloType, cursor);
-         TR::Relocation *relo;
-         //for optimizations where we are trying to relocate either profiled j9class or getfrom signature we can't use node to get the target address
-         //so we need to pass it to relocation in targetaddress2 for now
-         //two instances where use this relotype in such way are: profile checkcast and arraystore check object check optimiztaions
-         uint8_t * targetAdress2 = NULL;
-         if (getNode()->getOpCodeValue() != TR::aconst)
+         if (cg()->comp()->getOption(TR_UseSymbolValidationManager))
             {
-            if (TR::Compiler->target.is64Bit())
-               targetAdress2 = (uint8_t *) *((uint64_t*) cursor);
-            else
-               targetAdress2 = (uint8_t *) *((uintptrj_t*) cursor);
+            TR_ASSERT_FATAL(getDataAs8Bytes(), "Static Sym can not be NULL");
+            cg()->addExternalRelocation(new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor,
+                                                                                 (uint8_t *) getDataAs8Bytes(),
+                                                                                 (uint8_t *)symbolKind,
+                                                                                 TR_SymbolFromManager,
+                                                                                 cg()),
+                                                                              __FILE__, __LINE__,
+                                                                              getNode());
             }
-         relo = new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor, (uint8_t *) getNode(), targetAdress2, (TR_ExternalRelocationTargetKind) reloType, cg());
-         cg()->addExternalRelocation(relo, __FILE__, __LINE__, getNode());
-         }
+         else
+            {
+            TR::Relocation *relo;
+            //for optimizations where we are trying to relocate either profiled j9class or getfrom signature we can't use node to get the target address
+            //so we need to pass it to relocation in targetaddress2 for now
+            //two instances where use this relotype in such way are: profile checkcast and arraystore check object check optimiztaions
+            uint8_t * targetAdress2 = NULL;
+            if (getNode()->getOpCodeValue() != TR::aconst)
+               {
+               if (TR::Compiler->target.is64Bit())
+                  targetAdress2 = (uint8_t *) *((uint64_t*) cursor);
+               else
+                  targetAdress2 = (uint8_t *) *((uintptrj_t*) cursor);
+               }
+            relo = new (cg()->trHeapMemory()) TR::ExternalRelocation(cursor, (uint8_t *) getNode(), targetAdress2, (TR_ExternalRelocationTargetKind) reloType, cg());
+            cg()->addExternalRelocation(relo, __FILE__, __LINE__, getNode());
+            }
          break;
 
       case TR_DebugCounter:

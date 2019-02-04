@@ -2287,11 +2287,7 @@ static bool virtualGuardHelper(TR::Node *node, TR::CodeGenerator *cg)
       }
 
    TR_VirtualGuardSite *site = NULL;
-   if (node->isSideEffectGuard())
-      {
-      site = comp->addSideEffectNOPSite();
-      }
-   else if (cg->needClassAndMethodPointerRelocations())
+   if (cg->needClassAndMethodPointerRelocations())
       {
       site = (TR_VirtualGuardSite *)comp->addAOTNOPSite();
       TR_AOTGuardSite *aotSite = (TR_AOTGuardSite *)site;
@@ -2304,10 +2300,9 @@ static bool virtualGuardHelper(TR::Node *node, TR::CodeGenerator *cg)
          case TR_DirectMethodGuard:
          case TR_NonoverriddenGuard:
          case TR_InterfaceGuard:
-         case TR_AbstractGuard:
          case TR_MethodEnterExitGuard:
          case TR_HCRGuard:
-         //case TR_AbstractGuard:
+         case TR_AbstractGuard:
             aotSite->setGuard(virtualGuard);
             break;
 
@@ -2315,13 +2310,17 @@ static bool virtualGuardHelper(TR::Node *node, TR::CodeGenerator *cg)
             break;
 
          default:
-            TR_ASSERT(0, "AOT guard in node but not one of known guards supported for AOT. Guard: %d", reloKind);
+            TR_ASSERT_FATAL(0, "AOT guard in node but not one of known guards supported for AOT. Guard: %d", reloKind);
             break;
          }
       }
-   else
+   else if (!node->isSideEffectGuard())
       {
       site = virtualGuard->addNOPSite();
+      }
+   else 
+      {
+      site = comp->addSideEffectNOPSite();
       }
 
    List<TR::Register> popRegisters(cg->trMemory());

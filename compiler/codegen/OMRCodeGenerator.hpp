@@ -1418,7 +1418,6 @@ class OMR_EXTENSIBLE CodeGenerator
    bool profiledPointersRequireRelocation();
    bool needGuardSitesEvenWhenGuardRemoved();
    bool supportVMInternalNatives();
-   bool supportsNativeLongOperations();
 
    // will a BCD left shift always leave the sign code unchanged and thus allow it to be propagated through and upwards
    bool propagateSignThroughBCDLeftShift(TR::DataType type) { return false; }

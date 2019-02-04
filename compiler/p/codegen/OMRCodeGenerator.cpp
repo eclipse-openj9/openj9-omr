@@ -2865,27 +2865,26 @@ bool OMR::Power::CodeGenerator::isRotateAndMask(TR::Node * node)
 
    TR::Node *firstChild = node->getFirstChild();
    TR::Node *secondChild = node->getSecondChild();
+   TR::ILOpCodes firstOp  = firstChild->getOpCodeValue();
    TR::ILOpCodes secondOp = secondChild->getOpCodeValue();
 
    if (secondChild->getOpCode().isLoadConst() &&
        secondChild->getRegister() == NULL &&
 
-         ((secondOp == TR::iconst || secondOp == TR::iuconst) &&
+         (secondOp == TR::iconst &&
           contiguousBits(secondChild->getInt()) &&
           firstChild->getReferenceCount() == 1 &&
           firstChild->getRegister() == NULL &&
-          (((firstChild->getOpCodeValue() == TR::imul ||
-             firstChild->getOpCodeValue() == TR::iumul) &&
-            (firstChild->getSecondChild()->getOpCodeValue() == TR::iconst ||
-             firstChild->getSecondChild()->getOpCodeValue() == TR::iuconst) &&
+          (((firstOp == TR::imul ||
+             firstOp == TR::iumul) &&
+             firstChild->getSecondChild()->getOpCodeValue() == TR::iconst &&
             firstChild->getSecondChild()->getInt() > 0 &&
             isNonNegativePowerOf2(firstChild->getSecondChild()->getInt())) ||
-           ((firstChild->getOpCodeValue() == TR::ishr ||
-             firstChild->getOpCodeValue() == TR::iushr) &&
-            (firstChild->getSecondChild()->getOpCodeValue() == TR::iconst ||
-             firstChild->getSecondChild()->getOpCodeValue() == TR::iuconst) &&
+           ((firstOp == TR::ishr ||
+             firstOp == TR::iushr) &&
+             firstChild->getSecondChild()->getOpCodeValue() == TR::iconst  &&
             firstChild->getSecondChild()->getInt() > 0 &&
-            (firstChild->getOpCodeValue() == TR::iushr ||
+            (firstOp == TR::iushr ||
              leadingZeroes(secondChild->getInt()) >=
               firstChild->getSecondChild()->getInt())))))
       return true;

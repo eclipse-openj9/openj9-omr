@@ -1264,9 +1264,6 @@ class OMR_EXTENSIBLE CodeGenerator
    // Unclassified
    //
 
-   // P now
-   bool isRotateAndMask(TR::Node *node) { return false; }
-
    TR::Instruction *generateNop(TR::Node *node, TR::Instruction *instruction=0, TR_NOPKind nopKind=TR_NOPStandard);
    bool isOutOfLineHotPath() { TR_ASSERT(0, "isOutOfLineHotPath is only implemented for 390 and ppc"); return false;}
 

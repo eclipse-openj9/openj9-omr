@@ -155,6 +155,10 @@ getPercolateReasonAsString(PercolateReason mode)
 		return "previous scavenge aborted";
 	case CONCURRENT_MARK_EXHAUSTED:
 		return "concurrent mark exhausted";
+	case PREVENT_TENURE_EXPAND:
+		return "prevent tenure expand";
+	case MET_PROJECTED_TENURE_MAX_FREE:
+		return "met projected tenure max free";
 	case NONE_SET:
 	default:
 		return "unknown";

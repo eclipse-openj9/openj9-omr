@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2018 IBM Corp. and others
+ * Copyright (c) 1991, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -540,6 +540,9 @@ MM_ParallelGlobalGC::masterThreadGarbageCollect(MM_EnvironmentBase *env, MM_Allo
 #if defined(OMR_GC_MODRON_SCAVENGER)
 	/* Merge sublists in the remembered set (if necessary) */
 	_extensions->rememberedSet.compact(env);
+
+	_extensions->oldHeapSizeOnLastGlobalGC = _extensions->heap->getActiveMemorySize(MEMORY_TYPE_OLD);
+	_extensions->freeOldHeapSizeOnLastGlobalGC = _extensions->heap->getApproximateActiveFreeMemorySize(MEMORY_TYPE_OLD);
 #endif /* OMR_GC_MODRON_SCAVENGER */
 	
 	/* Restart the allocation caches associated to all threads */

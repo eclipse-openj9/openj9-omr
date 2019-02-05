@@ -251,6 +251,8 @@ public:
 
 #if defined(OMR_GC_MODRON_SCAVENGER)
 	MM_SublistPool rememberedSet;
+	uintptr_t oldHeapSizeOnLastGlobalGC;
+	uintptr_t freeOldHeapSizeOnLastGlobalGC;
 #endif /* OMR_GC_MODRON_SCAVENGER */
 #if defined(OMR_GC_STACCATO)
 	MM_RememberedSetSATB* sATBBarrierRememberedSet; /**< The snapshot at the beginning barrier remembered set used for the write barrier */
@@ -1276,6 +1278,11 @@ public:
 		, requestedPageFlags(OMRPORT_VMEM_PAGE_FLAG_NOT_USED)
 		, gcmetadataPageSize(0)
 		, gcmetadataPageFlags(OMRPORT_VMEM_PAGE_FLAG_NOT_USED)
+#if defined(OMR_GC_MODRON_SCAVENGER)
+		, rememberedSet()
+		, oldHeapSizeOnLastGlobalGC(UDATA_MAX)
+		, freeOldHeapSizeOnLastGlobalGC(UDATA_MAX)
+#endif /* OMR_GC_MODRON_SCAVENGER */		
 #if defined(OMR_GC_STACCATO)
 		, sATBBarrierRememberedSet(NULL)
 #endif /* OMR_GC_STACCATO */

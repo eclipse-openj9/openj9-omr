@@ -88,6 +88,7 @@ typedef struct OMRPortPlatformGlobals {
 	uint64_t cgroupSubsystemsAvailable; /**< cgroup subsystems available for port library to use; it is valid only when cgroupEntryList is non-null */
 	uint64_t cgroupSubsystemsEnabled; /**< cgroup subsystems enabled in port library; it is valid only when cgroupEntryList is non-null */
 	OMRCgroupEntry *cgroupEntryList; /**< head of the circular linked list, each element contains information about cgroup of the process for a subsystem */
+	BOOLEAN syscallNotAllowed; /**< Assigned True if the mempolicy syscall is failed due to security opts (Can be seen in case of docker) */
 #endif /* defined(LINUX) */
 } OMRPortPlatformGlobals;
 
@@ -134,6 +135,7 @@ typedef struct OMRPortPlatformGlobals {
 #define PPG_cgroupSubsystemsAvailable (portLibrary->portGlobals->platformGlobals.cgroupSubsystemsAvailable)
 #define PPG_cgroupSubsystemsEnabled (portLibrary->portGlobals->platformGlobals.cgroupSubsystemsEnabled)
 #define PPG_cgroupEntryList (portLibrary->portGlobals->platformGlobals.cgroupEntryList)
+#define PPG_numaSyscallNotAllowed (portLibrary->portGlobals->platformGlobals.syscallNotAllowed)
 #endif /* defined(LINUX) */
 
 #endif /* omrportpg_h */

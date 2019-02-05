@@ -222,6 +222,7 @@
 #define OMRPORT_VMEM_MEMORY_MODE_EXECUTE 0x00000004
 #define OMRPORT_VMEM_MEMORY_MODE_COMMIT 0x00000008
 #define OMRPORT_VMEM_MEMORY_MODE_VIRTUAL 0x00000010
+#define OMRPORT_VMEM_MEMORY_MODE_SHARE_FILE_OPEN 0x000000200
 #define OMRPORT_VMEM_ALLOCATE_TOP_DOWN 0x00000020
 #define OMRPORT_VMEM_ALLOCATE_PERSIST 0x00000040
 #define OMRPORT_VMEM_NO_AFFINITY 0x00000080
@@ -961,6 +962,7 @@ typedef struct J9PortVmemIdentifier {
 	uintptr_t pageFlags;
 	uintptr_t mode;
 	uintptr_t allocator;
+	int fd;
 	OMRMemCategory *category;
 } J9PortVmemIdentifier;
 

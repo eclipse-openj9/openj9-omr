@@ -431,6 +431,11 @@ reserveMemory(struct OMRPortLibrary *portLibrary, void *address, uintptr_t byteA
 	void *result = NULL;
 	int protectionFlags = PROT_NONE;
 
+	if(mode & OMRPORT_VMEM_MEMORY_MODE_SHARE_FILE_OPEN) {
+		portLibrary->error_set_last_error(portLibrary,  errno, OMRPORT_ERROR_VMEM_NOT_SUPPORTED);
+		return result;
+	}
+
 	flags |= MAP_ANON;
 	if (0 != (OMRPORT_VMEM_MEMORY_MODE_COMMIT & mode)) {
 		protectionFlags = get_protectionBits(mode);

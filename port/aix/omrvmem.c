@@ -747,6 +747,11 @@ default_pageSize_reserve_memory(struct OMRPortLibrary *portLibrary, void *addres
 	int protMask;
 	void *result = NULL;
 
+	if(mode & OMRPORT_VMEM_MEMORY_MODE_SHARE_FILE_OPEN) {
+		portLibrary->error_set_last_error(portLibrary,  errno, OMRPORT_ERROR_VMEM_NOT_SUPPORTED);
+		return result;
+	}
+
 	Trc_PRT_vmem_default_reserve_entry(address, byteAmount);
 
 	if (0 != (OMRPORT_VMEM_MEMORY_MODE_EXECUTE & mode)) {

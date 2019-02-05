@@ -388,6 +388,126 @@ exit:
 	reportTestExit(OMRPORTLIB, testName);
 }
 
+/**
+ * Get all the page sizes and make sure we can allocate a memory chunk for each page size.
+ * This particular test is testing the flag OMRPORT_VMEM_MEMORY_MODE_SHARE_FILE_OPEN where it
+ * forces default_pageSize_reserve_memory to mmap using a shared file handle.
+ * 
+ * Checks that each allocation manipulates the memory categories appropriately.
+ */
+TEST(PortVmemTest, vmem_test_shared_file_handle)
+{
+	portTestEnv->changeIndent(1);
+	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
+	const char *testName = "omrvmem_test_shared_file_handle";
+	char *memPtr = NULL;
+	uintptr_t *pageSizes = NULL;
+#if defined(J9ZOS390)
+	uintptr_t *pageFlags = NULL;
+#endif /* J9ZOS390 */
+	int i = 0;
+	struct J9PortVmemIdentifier vmemID;
+	char allocName[allocNameSize];
+	int32_t rc = 0;
+	char *lastErrorMessage = NULL;
+	int32_t lastErrorNumber = 0;
+
+	reportTestEntry(OMRPORTLIB, testName);
+
+	/* First get all the supported page sizes */
+	pageSizes = omrvmem_supported_page_sizes();
+#if defined(J9ZOS390)
+	pageFlags = omrvmem_supported_page_flags();
+#endif /* J9ZOS390 */
+
+	/* reserve and commit memory for each page size */
+	for (i = 0 ; pageSizes[i] != 0 ; i++) {
+		uintptr_t initialBlocks = 0;
+		uintptr_t initialBytes = 0;
+
+		/* Sample baseline category data */
+		getPortLibraryMemoryCategoryData(OMRPORTLIB, &initialBlocks, &initialBytes);
+
+		/* reserve and commit */
+#if defined(J9ZOS390)
+		/* On z/OS skip this test for newly added large pages as obsolete omrvmem_reserve_memory() does not support them */
+		if (isNewPageSize(pageSizes[i], pageFlags[i])) {
+			continue;
+		}
+#endif /* J9ZOS390 */
+		memPtr = (char *)omrvmem_reserve_memory(
+						0, pageSizes[i], &vmemID,
+						OMRPORT_VMEM_MEMORY_MODE_READ | OMRPORT_VMEM_MEMORY_MODE_WRITE | OMRPORT_VMEM_MEMORY_MODE_COMMIT | OMRPORT_VMEM_MEMORY_MODE_SHARE_FILE_OPEN,
+						pageSizes[i], OMRMEM_CATEGORY_PORT_LIBRARY);
+
+
+		/* did we get any memory? */
+		if (memPtr == NULL) {
+			lastErrorMessage = (char *)omrerror_last_error_message();
+			lastErrorNumber = omrerror_last_error_number();
+			/* Succeed instead of error then continue since the platform is not supported */
+			if (OMRPORT_ERROR_VMEM_NOT_SUPPORTED == lastErrorNumber) {
+				goto exit;
+			}
+			outputErrorMessage(PORTTEST_ERROR_ARGS, "unable to reserve and commit 0x%zx bytes with page size 0x%zx.\n"
+					"\tlastErrorNumber=%d, lastErrorMessage=%s\n", pageSizes[i], pageSizes[i], lastErrorNumber, lastErrorMessage);
+
+			if (OMRPORT_ERROR_VMEM_INSUFFICENT_RESOURCES == lastErrorNumber) {
+				portTestEnv->log(LEVEL_ERROR, "Portable error OMRPORT_ERROR_VMEM_INSUFFICENT_RESOURCES...\n");
+				portTestEnv->changeIndent(1);
+				portTestEnv->log(LEVEL_ERROR, "REBOOT THE MACHINE to free up resources AND TRY THE TEST AGAIN\n");
+				portTestEnv->changeIndent(-1);
+			}
+			goto exit;
+		} else {
+			/* Need to close the file handle since it was not closed by reserve API */
+			uintptr_t finalBlocks = 0;
+			uintptr_t finalBytes = 0;
+			portTestEnv->log("reserved and committed 0x%zx bytes with page size 0x%zx at address 0x%zx\n", pageSizes[i], vmemID.pageSize, memPtr);
+
+			getPortLibraryMemoryCategoryData(OMRPORTLIB, &finalBlocks, &finalBytes);
+
+			if (finalBlocks <= initialBlocks) {
+				outputErrorMessage(PORTTEST_ERROR_ARGS, "vmem reserve didn't increment category block as expected. Final blocks=%zu, initial blocks=%zu, page size=%zu.\n", finalBlocks, initialBlocks, pageSizes[i]);
+			}
+
+			if (finalBytes < (initialBytes + pageSizes[i])) {
+				outputErrorMessage(PORTTEST_ERROR_ARGS, "vmem reserve didn't increment category bytes as expected. Initial bytes=%zu, final bytes=%zu, page size=%zu.\n", finalBytes, initialBytes, pageSizes[i]);
+			}
+		}
+		/* can we read and write to the memory? */
+		omrstr_printf(allocName, allocNameSize, "omrvmem_reserve_memory(%d)", pageSizes[i]);
+		verifyMemory(OMRPORTLIB, testName, memPtr, pageSizes[i], allocName);
+		/* free the memory (reuse the vmemID) */
+		rc = omrvmem_free_memory(memPtr, pageSizes[i], &vmemID);
+		if (rc != 0) {
+			outputErrorMessage(
+				PORTTEST_ERROR_ARGS,
+				"omrvmem_free_memory returned %i when trying to free 0x%zx bytes at 0x%zx\n",
+				rc, pageSizes[i], memPtr);
+			goto exit;
+		}
+
+		{
+			uintptr_t finalBlocks = 0;
+			uintptr_t finalBytes = 0;
+
+			getPortLibraryMemoryCategoryData(OMRPORTLIB, &finalBlocks, &finalBytes);
+
+			if (finalBlocks != initialBlocks) {
+				outputErrorMessage(PORTTEST_ERROR_ARGS, "vmem free didn't decrement category block as expected. Final blocks=%zu, initial blocks=%zu, page size=%zu.\n", finalBlocks, initialBlocks, pageSizes[i]);
+			}
+
+			if (finalBytes != initialBytes) {
+				outputErrorMessage(PORTTEST_ERROR_ARGS, "vmem free didn't decrement category bytes as expected. Initial bytes=%zu, final bytes=%zu, page size=%zu.\n", initialBytes, finalBytes, pageSizes[i]);
+			}
+		}
+	}
+	portTestEnv->changeIndent(-1);
+exit:
+	reportTestExit(OMRPORTLIB, testName);
+}
+
 static void
 setDisclaimVirtualMemory(struct OMRPortLibrary *portLibrary, BOOLEAN disclaim)
 {

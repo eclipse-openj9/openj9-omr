@@ -177,22 +177,6 @@ OMR::CodeCacheManager::initialize(
    }
 
 
-// Re-do the helper trampoline initialization for existing codeCaches
-void
-OMR::CodeCacheManager::lateInitialization()
-   {
-   TR::CodeCacheConfig &config = self()->codeCacheConfig();
-   if (!config.trampolineCodeSize())
-      return;
-
-   for (TR::CodeCache * codeCache = self()->getFirstCodeCache(); codeCache; codeCache = codeCache->next())
-      {
-      config.mccCallbacks().createHelperTrampolines((uint8_t *)codeCache->getHelperBase(), config.numRuntimeHelpers());
-      }
-   }
-
-
-
 void
 OMR::CodeCacheManager::destroy()
    {
@@ -346,11 +330,6 @@ OMR::CodeCacheManager::reserveCodeCache(bool compilationCodeAllocationsMustBeCon
 
    *numReserved = numCachesAlreadyReserved;
 
-#ifdef CODECACHE_STATS
-   // Stats: count how many caches were not selected because they were already reserved
-   statNumReservedCaches.update(numCachesAlreadyReserved);
-#endif
-
    if (codeCache)
       {
       TR_ASSERT(codeCache->isReserved(), "cache must be reserved\n");
@@ -419,9 +398,6 @@ OMR::CodeCacheManager::allocateCodeMemory(size_t warmCodeSize,
                                         bool isMethodHeaderNeeded)
    {
    uint8_t *methodBlockAddress;
-#ifdef CODECACHE_STATS
-   statWarmAllocationSizes.update(warmCodeSize);
-#endif
 
    TR_ASSERT((*codeCache_pp)->isReserved(), "Code cache must be reserved"); // MCT
 
@@ -439,52 +415,6 @@ OMR::CodeCacheManager::allocateCodeMemory(size_t warmCodeSize,
       (*codeCache_pp)->checkForErrors();
 
    return methodBlockAddress;
-   }
-
-// Code executed by compilation thread and by application threads when trying to
-// induce a profiling compilation. Acquires codeCacheList.mutex
-bool
-OMR::CodeCacheManager::almostOutOfCodeCache()
-   {
-   if (self()->lowCodeCacheSpaceThresholdReached())
-      return true;
-
-   TR::CodeCacheConfig &config = self()->codeCacheConfig();
-
-   // If we can allocate another code cache we are fine
-   // Put common case first
-   if (self()->canAddNewCodeCache())
-      return false;
-   else
-      {
-      // Check the space in the the most current code cache
-      bool foundSpace = false;
-
-         {
-         CacheListCriticalSection scanCacheList(self());
-         for (TR::CodeCache *codeCache = self()->getFirstCodeCache(); codeCache; codeCache = codeCache->next())
-            {
-            if (codeCache->getFreeContiguousSpace() >= config.lowCodeCacheThreshold())
-               {
-               foundSpace = true;
-               break;
-               }
-            }
-         }
-
-      if (!foundSpace)
-         {
-         _lowCodeCacheSpaceThresholdReached = true;   // Flag can be checked under debugger
-         if (config.verbosePerformance())
-            {
-            TR_VerboseLog::writeLineLocked(TR_Vlog_CODECACHE,"Reached code cache space threshold. Disabling JIT profiling.");
-            }
-
-         return true;
-         }
-      }
-
-   return false;
    }
 
 
@@ -519,41 +449,6 @@ OMR::CodeCacheManager::performSizeAdjustments(size_t &warmCodeSize,
       }
    }
 
-
-void
-OMR::CodeCacheManager::printMccStats()
-   {
-   self()->printRemainingSpaceInCodeCaches();
-   self()->printOccupancyStats();
-#ifdef CODECACHE_STATS
-   self()->statNumReservedCaches.report(stderr);
-   self()->statWarmAllocationSizes.report(stderr);
-#endif // CODECACHE_STATS
-   }
-
-
-void
-OMR::CodeCacheManager::printRemainingSpaceInCodeCaches()
-   {
-   CacheListCriticalSection scanCacheList(self());
-   for (TR::CodeCache *codeCache = self()->getFirstCodeCache(); codeCache; codeCache = codeCache->next())
-      {
-      fprintf(stderr, "cache %p has %u bytes empty\n", codeCache, codeCache->getFreeContiguousSpace());
-      if (codeCache->isReserved())
-         fprintf(stderr, "Above cache is reserved by compThread %d\n", codeCache->getReservingCompThreadID());
-      }
-   }
-
-
-void
-OMR::CodeCacheManager::printOccupancyStats()
-   {
-   CacheListCriticalSection scanCacheList(self());
-   for (TR::CodeCache *codeCache = self()->getFirstCodeCache(); codeCache; codeCache = codeCache->next())
-      {
-      codeCache->printOccupancyStats();
-      }
-   }
 
 // Find a code cache containing the given address
 //
@@ -673,23 +568,6 @@ OMR::CodeCacheManager::canAddNewCodeCache()
 
    return false;
    }
-
-
-// May add block defined by metaData to freeBlockList.
-// Caller should expect that block may sometimes not be added.
-void
-OMR::CodeCacheManager::addFreeBlock(void *metaData, uint8_t *startPC)
-   {
-   TR::CodeCache *owningCodeCache = self()->findCodeCacheFromPC(startPC);
-   owningCodeCache->addFreeBlock(metaData);
-   }
-
-
-#ifdef CODECACHE_STATS
-#include "infra/Statistics.hpp"
-TR_StatsHisto<3> statNumReservedCaches("Caches already reserved", 1, 4);
-TR_StatsHisto<20> statWarmAllocationSizes("WarmAllocationSizes", 8, 168);
-#endif
 
 
 // Allocate code memory with separate warm and cold sections.

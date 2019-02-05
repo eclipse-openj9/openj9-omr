@@ -133,7 +133,6 @@ public:
    void setCodeCacheIsFull(bool codeCacheIsFull) { _codeCacheIsFull = codeCacheIsFull; }
 
    TR::CodeCache *initialize(bool useConsolidatedCache, uint32_t numberOfCodeCachesToCreateAtStartup);
-   void lateInitialization();
 
    void destroy();
 
@@ -160,8 +159,6 @@ public:
                                     int32_t compThreadID,
                                     int32_t *numReserved);
    TR::CodeCache * getNewCodeCache(int32_t reservingCompThreadID);
-
-   void addFreeBlock(void *metaData, uint8_t *startPC);
 
    uint8_t * allocateCodeMemory(size_t warmCodeSize,
                                 size_t coldCodeSize,
@@ -203,9 +200,6 @@ public:
                                size_t &coldCodeSize,
                                bool needsToBeContiguous,
                                bool isMethodHeaderNeeded);
-
-   bool almostOutOfCodeCache();
-   void printMccStats();
 
    bool canAddNewCodeCache();
 
@@ -261,9 +255,6 @@ public:
    void freeCodeCacheSegment(TR::CodeCacheMemorySegment * memSegment) {}
 
 protected:
-
-   void printRemainingSpaceInCodeCaches();
-   void printOccupancyStats();
 
    TR::RawAllocator               _rawAllocator;
    TR::CodeCacheConfig            _config;

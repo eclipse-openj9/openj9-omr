@@ -1749,7 +1749,7 @@ OMR::CodeGenerator::allocateCodeMemoryInner(
       {
       TR::Compilation *comp = self()->comp();
 
-      if (TR::CodeCacheManager::instance()->codeCacheIsFull())
+      if (TR::CodeCacheManager::instance()->codeCacheFull())
          {
          comp->failCompilation<TR::CodeCacheError>("Code Cache Full");
          }

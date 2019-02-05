@@ -55,7 +55,7 @@ TR::CodeCacheSymbolContainer * OMR::CodeCacheManager::_symbolContainer = NULL;
 OMR::CodeCacheManager::CodeCacheManager(TR::RawAllocator rawAllocator) :
    _rawAllocator(rawAllocator),
    _initialized(false),
-   _codeCacheIsFull(false)
+   _codeCacheFull(false)
    {
    }
 

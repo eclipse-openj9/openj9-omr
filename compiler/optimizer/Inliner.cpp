@@ -2692,7 +2692,7 @@ TR_TransformInlinedFunction::transform()
    if (comp()->getOption(TR_EnableJProfiling) ||
        (firstBlock->getPredecessors().size() > 1) ||
        firstBlock->hasExceptionSuccessors() ||
-       comp()->fe()->isMethodEnterTracingEnabled(calleeResolvedMethod->getPersistentIdentifier()) ||
+       comp()->fe()->isMethodTracingEnabled(calleeResolvedMethod->getPersistentIdentifier()) ||
        TR::Compiler->vm.canMethodEnterEventBeHooked(comp()))
       {
       int32_t freq = firstBlock->getFrequency();

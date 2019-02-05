@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2019 IBM Corp. and others
+ * Copyright (c) 2019, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -19,9 +19,14 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
+#include "omrcfg.h"
+
+#if defined(OMR_GC_SCAVENGER_DELEGATE)
+
+#include "ScavengerDelegate.hpp"
+
 #include "j9nongenerated.h"
 #include "modronbase.h"
-
 #if defined(OMR_GC_MODRON_CONCURRENT_MARK)
 #include "CardTable.hpp"
 #endif /* OMR_GC_MODRON_CONCURRENT_MARK */
@@ -51,93 +56,51 @@
 #include "Scavenger.hpp"
 #include "SlotObject.hpp"
 
-/**
- * Initialization
- */
-MM_CollectorLanguageInterfaceImpl *
-MM_CollectorLanguageInterfaceImpl::newInstance(MM_EnvironmentBase *env)
-{
-	MM_CollectorLanguageInterfaceImpl *cli = NULL;
-	OMR_VM *omrVM = env->getOmrVM();
-	MM_GCExtensionsBase *extensions = MM_GCExtensionsBase::getExtensions(omrVM);
-
-	cli = (MM_CollectorLanguageInterfaceImpl *)extensions->getForge()->allocate(sizeof(MM_CollectorLanguageInterfaceImpl), OMR::GC::AllocationCategory::FIXED, OMR_GET_CALLSITE());
-	if (NULL != cli) {
-		new(cli) MM_CollectorLanguageInterfaceImpl(omrVM);
-		if (!cli->initialize(omrVM)) {
-			cli->kill(env);
-			cli = NULL;
-		}
-	}
-
-	return cli;
-}
-
 void
-MM_CollectorLanguageInterfaceImpl::kill(MM_EnvironmentBase *env)
-{
-	OMR_VM *omrVM = env->getOmrVM();
-	tearDown(omrVM);
-	MM_GCExtensionsBase::getExtensions(omrVM)->getForge()->free(this);
-}
-
-void
-MM_CollectorLanguageInterfaceImpl::tearDown(OMR_VM *omrVM)
-{
-
-}
-
-bool
-MM_CollectorLanguageInterfaceImpl::initialize(OMR_VM *omrVM)
-{
-	return true;
-}
-#if defined(OMR_GC_MODRON_SCAVENGER) && !defined(OMR_GC_SCAVENGER_DELEGATE)
-void
-MM_CollectorLanguageInterfaceImpl::scavenger_masterSetupForGC(MM_EnvironmentBase *env)
+MM_ScavengerDelegate::masterSetupForGC(MM_EnvironmentBase *env)
 {
 	/* Do nothing for now */
 }
 
 void
-MM_CollectorLanguageInterfaceImpl::scavenger_workerSetupForGC_clearEnvironmentLangStats(MM_EnvironmentBase *env)
+MM_ScavengerDelegate::workerSetupForGC_clearEnvironmentLangStats(MM_EnvironmentBase *env)
 {
 	/* Do nothing for now */
 }
 
 void
-MM_CollectorLanguageInterfaceImpl::scavenger_reportScavengeEnd(MM_EnvironmentBase * envBase, bool scavengeSuccessful)
+MM_ScavengerDelegate::reportScavengeEnd(MM_EnvironmentBase * envBase, bool scavengeSuccessful)
 {
 	/* Do nothing for now */
 }
 
 void
-MM_CollectorLanguageInterfaceImpl::scavenger_mergeGCStats_mergeLangStats(MM_EnvironmentBase *envBase)
+MM_ScavengerDelegate::mergeGCStats_mergeLangStats(MM_EnvironmentBase *envBase)
 {
 	/* Do nothing for now */
 }
 
 void
-MM_CollectorLanguageInterfaceImpl::scavenger_masterThreadGarbageCollect_scavengeComplete(MM_EnvironmentBase *envBase)
+MM_ScavengerDelegate::masterThreadGarbageCollect_scavengeComplete(MM_EnvironmentBase *envBase)
 {
 	/* Do nothing for now */
 }
 
 void
-MM_CollectorLanguageInterfaceImpl::scavenger_masterThreadGarbageCollect_scavengeSuccess(MM_EnvironmentBase *envBase)
+MM_ScavengerDelegate::masterThreadGarbageCollect_scavengeSuccess(MM_EnvironmentBase *envBase)
 {
 	/* Do nothing for now */
 }
 
 bool
-MM_CollectorLanguageInterfaceImpl::scavenger_internalGarbageCollect_shouldPercolateGarbageCollect(MM_EnvironmentBase *envBase, PercolateReason *reason, uint32_t *gcCode)
+MM_ScavengerDelegate::internalGarbageCollect_shouldPercolateGarbageCollect(MM_EnvironmentBase *envBase, PercolateReason *reason, uint32_t *gcCode)
 {
 	/* Do nothing for now */
 	return false;
 }
 
 GC_ObjectScanner *
-MM_CollectorLanguageInterfaceImpl::scavenger_getObjectScanner(MM_EnvironmentStandard *env, omrobjectptr_t objectPtr, void *allocSpace, uintptr_t flags)
+MM_ScavengerDelegate::getObjectScanner(MM_EnvironmentStandard *env, omrobjectptr_t objectPtr, void *allocSpace, uintptr_t flags)
 {
 #if defined(OMR_GC_MODRON_SCAVENGER_STRICT)
 	Assert_MM_true((GC_ObjectScanner::scanHeap == flags) ^ (GC_ObjectScanner::scanRoots == flags));
@@ -148,13 +111,13 @@ MM_CollectorLanguageInterfaceImpl::scavenger_getObjectScanner(MM_EnvironmentStan
 }
 
 void
-MM_CollectorLanguageInterfaceImpl::scavenger_flushReferenceObjects(MM_EnvironmentStandard *env)
+MM_ScavengerDelegate::flushReferenceObjects(MM_EnvironmentStandard *env)
 {
 	/* Do nothing for now */
 }
 
 bool
-MM_CollectorLanguageInterfaceImpl::scavenger_hasIndirectReferentsInNewSpace(MM_EnvironmentStandard *env, omrobjectptr_t objectPtr)
+MM_ScavengerDelegate::hasIndirectReferentsInNewSpace(MM_EnvironmentStandard *env, omrobjectptr_t objectPtr)
 {
 	/* This method must be implemented and return true an object may hold any object references that are live
 	 * but not reachable by traversing the reference graph from the root set or remembered set. Otherwise this
@@ -164,7 +127,7 @@ MM_CollectorLanguageInterfaceImpl::scavenger_hasIndirectReferentsInNewSpace(MM_E
 }
 
 bool
-MM_CollectorLanguageInterfaceImpl::scavenger_scavengeIndirectObjectSlots(MM_EnvironmentStandard *env, omrobjectptr_t objectPtr)
+MM_ScavengerDelegate::scavengeIndirectObjectSlots(MM_EnvironmentStandard *env, omrobjectptr_t objectPtr)
 {
 	/* This method must be implemented if an object may hold any object references that are live but not reachable
 	 * by traversing the reference graph from the root set or remembered set. In that case, this method should
@@ -175,7 +138,7 @@ MM_CollectorLanguageInterfaceImpl::scavenger_scavengeIndirectObjectSlots(MM_Envi
 }
 
 void
-MM_CollectorLanguageInterfaceImpl::scavenger_backOutIndirectObjectSlots(MM_EnvironmentStandard *env, omrobjectptr_t objectPtr)
+MM_ScavengerDelegate::backOutIndirectObjectSlots(MM_EnvironmentStandard *env, omrobjectptr_t objectPtr)
 {
 	/* This method must be implemented if an object may hold any object references that are live but not reachable
 	 * by traversing the reference graph from the root set or remembered set. In that case, this method should
@@ -185,7 +148,7 @@ MM_CollectorLanguageInterfaceImpl::scavenger_backOutIndirectObjectSlots(MM_Envir
 }
 
 void
-MM_CollectorLanguageInterfaceImpl::scavenger_backOutIndirectObjects(MM_EnvironmentStandard *env)
+MM_ScavengerDelegate::backOutIndirectObjects(MM_EnvironmentStandard *env)
 {
 	/* This method must be implemented if an object may hold any object references that are live but not reachable
 	 * by traversing the reference graph from the root set or remembered set. In that case, this method should locate
@@ -199,7 +162,7 @@ MM_CollectorLanguageInterfaceImpl::scavenger_backOutIndirectObjects(MM_Environme
 }
 
 void
-MM_CollectorLanguageInterfaceImpl::scavenger_reverseForwardedObject(MM_EnvironmentBase *env, MM_ForwardedHeader *forwardedHeader)
+MM_ScavengerDelegate::reverseForwardedObject(MM_EnvironmentBase *env, MM_ForwardedHeader *forwardedHeader)
 {
 	if (forwardedHeader->isForwardedPointer()) {
 		omrobjectptr_t originalObject = forwardedHeader->getObject();
@@ -223,7 +186,7 @@ MM_CollectorLanguageInterfaceImpl::scavenger_reverseForwardedObject(MM_Environme
 
 #if defined (OMR_INTERP_COMPRESSED_OBJECT_HEADER)
 void
-MM_CollectorLanguageInterfaceImpl::scavenger_fixupDestroyedSlot(MM_EnvironmentBase *env, MM_ForwardedHeader *forwardedHeader, MM_MemorySubSpaceSemiSpace *subSpaceNew)
+MM_ScavengerDelegate::fixupDestroyedSlot(MM_EnvironmentBase *env, MM_ForwardedHeader *forwardedHeader, MM_MemorySubSpaceSemiSpace *subSpaceNew)
 {
 	/* This method must be implemented if (and only if) the object header is stored in a compressed slot. in that
 	 * case the other half of the full (omrobjectptr_t sized) slot may hold a compressed object reference that
@@ -254,6 +217,6 @@ MM_CollectorLanguageInterfaceImpl::scavenger_fixupDestroyedSlot(MM_EnvironmentBa
 		}
 	}
 }
-#endif /* OMR_INTERP_COMPRESSED_OBJECT_HEADER */
-#endif /* OMR_GC_MODRON_SCAVENGER && !OMR_GC_SCAVENGER_DELEGATE */
+#endif /* defined (OMR_INTERP_COMPRESSED_OBJECT_HEADER) */
 
+#endif /* defined(OMR_GC_SCAVENGER_DELEGATE) */

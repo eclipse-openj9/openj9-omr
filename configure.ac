@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2015, 2018 IBM Corp. and others
+# Copyright (c) 2015, 2019 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -403,6 +403,7 @@ OMRCFG_DEFINE_FLAG_OFF([OMR_THR_TRACING])
 ############### Flags that are conditionally enabled.
 # Each flag must have a corresponding entry in omrcfg.h.in
 
+OMRCFG_DEFINE_FLAG_OFF([OMR_GC_SCAVENGER_DELEGATE])
 OMRCFG_DEFINE_FLAG_OFF([OMR_GC_DYNAMIC_CLASS_UNLOADING])
 OMRCFG_DEFINE_FLAG_OFF([OMR_GC_MODRON_COMPACTION])
 OMRCFG_DEFINE_FLAG_OFF([OMR_GC_MODRON_CONCURRENT_MARK])

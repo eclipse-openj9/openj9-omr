@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2017 IBM Corp. and others
+ * Copyright (c) 2019, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -20,8 +20,12 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#ifndef COLLECTORLANGUAGEINTERFACE_HPP_
-#define COLLECTORLANGUAGEINTERFACE_HPP_
+#ifndef SCAVENGERDELEGATE_HPP_
+#define SCAVENGERDELEGATE_HPP_
+
+#include "omrcfg.h"
+
+#if defined(OMR_GC_MODRON_SCAVENGER) && defined(OMR_GC_SCAVENGER_DELEGATE)
 
 #include "modronbase.h"
 #include "objectdescription.h"
@@ -38,33 +42,23 @@ class MM_ForwardedHeader;
 class MM_MarkMap;
 class MM_MemorySubSpaceSemiSpace;
 
-/**
- * Class representing a collector language interface. This defines the API between the OMR
- * functionality and the language being implemented.
- */
-class MM_CollectorLanguageInterface : public MM_BaseVirtual {
-
+class MM_ScavengerDelegate : public MM_BaseVirtual {
 private:
-
 protected:
-
 public:
 
 private:
-
 protected:
-
 public:
 
-	virtual void kill(MM_EnvironmentBase *env) = 0;
+	void kill(MM_EnvironmentBase *env);
 
 	/* Read Barrier Verifier specific methods */
-#if defined(OMR_ENV_DATA64) && !defined(OMR_GC_COMPRESSED_POINTERS) && !defined(OMR_GC_SCAVENGER_DELEGATE)
-	virtual void scavenger_poisonSlots(MM_EnvironmentBase *env) {}
-	virtual void scavenger_healSlots(MM_EnvironmentBase *env) {}
+#if defined(OMR_ENV_DATA64) && !defined(OMR_GC_COMPRESSED_POINTERS)
+	void poisonSlots(MM_EnvironmentBase *env) {}
+	void healSlots(MM_EnvironmentBase *env) {}
 #endif /* defined(OMR_ENV_DATA64) && !defined(OMR_GC_COMPRESSED_POINTERS) */
 
-#if defined(OMR_GC_MODRON_SCAVENGER) && !defined(OMR_GC_SCAVENGER_DELEGATE)
 	/**
 	 * This method will be called on the master GC thread after each scavenger cycle, successful or
 	 * otherwise. It may be used for reporting or other tasks as required.
@@ -72,7 +66,7 @@ public:
 	 * @param[in] env The environment for the calling thread.
 	 * @param[in] scavengeSuccessful Indicates whether the scavenge cycle completed normally or aborted.
 	 */
-	virtual void scavenger_reportScavengeEnd(MM_EnvironmentBase * env, bool scavengeSuccessful) = 0;
+	void reportScavengeEnd(MM_EnvironmentBase * env, bool scavengeSuccessful);
 
 	/**
 	 * This method is called on the master GC thread when a scavenge cycle is started. Implementations of
@@ -80,7 +74,7 @@ public:
 	 *
 	 * @param[in] env The environment for the calling thread.
 	 */
-	virtual void scavenger_masterSetupForGC(MM_EnvironmentBase * env) = 0;
+	void masterSetupForGC(MM_EnvironmentBase * env);
 
 	/**
 	 * This method is called on each GC worker thread when a scavenge cycle is started. Implementations of
@@ -89,27 +83,27 @@ public:
 	 *
 	 * @param[in] env The environment for the calling thread.
 	 */
-	virtual void scavenger_workerSetupForGC_clearEnvironmentLangStats(MM_EnvironmentBase * env) = 0;
+	void workerSetupForGC_clearEnvironmentLangStats(MM_EnvironmentBase * env);
 
 	/**
 	 * This method is called on each GC worker thread when it completes its participation in a scavenge
 	 * cycle. It may be used to merge stats collected on each worker thread into global stats.
 	 */
-	virtual void scavenger_mergeGCStats_mergeLangStats(MM_EnvironmentBase * env) = 0;
+	void mergeGCStats_mergeLangStats(MM_EnvironmentBase * env);
 
 	/**
 	 * This method is called on the master GC thread when a scavenge cycle completes, successfully or otherwise.
 	 *
 	 * @param[in] env The environment for the calling thread.
 	 */
-	virtual void scavenger_masterThreadGarbageCollect_scavengeComplete(MM_EnvironmentBase * env) = 0;
+	void masterThreadGarbageCollect_scavengeComplete(MM_EnvironmentBase * env);
 
 	/**
 	 * This method is called on the master GC thread when a scavenge cycle completes successfully.
 	 *
 	 * @param[in] env The environment for the calling thread.
 	 */
-	virtual void scavenger_masterThreadGarbageCollect_scavengeSuccess(MM_EnvironmentBase *env) = 0;
+	void masterThreadGarbageCollect_scavengeSuccess(MM_EnvironmentBase *env);
 
 	/**
 	 * If a scavenge cycle is unable to start or complete successfully, the GC may be "percolated" up
@@ -122,7 +116,7 @@ public:
 	 * @param[out] gcCode GC code to use for global collection
 	 * @return true if GC should percolate to global collection
 	 */
-	virtual bool scavenger_internalGarbageCollect_shouldPercolateGarbageCollect(MM_EnvironmentBase * env, PercolateReason * percolateReason, uint32_t * gcCode) = 0;
+	bool internalGarbageCollect_shouldPercolateGarbageCollect(MM_EnvironmentBase * env, PercolateReason * percolateReason, uint32_t * gcCode);
 
 	/**
 	 * An object scanner is required to locate and scan all object references associated with each root object
@@ -138,7 +132,7 @@ public:
 	 * @return Pointer to object scanner, or NULL if object not to be scanned (eg, leaf object).
 	 * @see GC_ObjectScanner
 	 */
-	virtual GC_ObjectScanner *scavenger_getObjectScanner(MM_EnvironmentStandard *env, omrobjectptr_t objectPtr, void *allocSpace, uintptr_t flags) = 0;
+	GC_ObjectScanner *getObjectScanner(MM_EnvironmentStandard *env, omrobjectptr_t objectPtr, void *allocSpace, uintptr_t flags);
 
 	/**
 	 * Scavenger calls this method when required to force GC threads to flush any locally-held references into
@@ -146,7 +140,7 @@ public:
 	 * 
 	 * @param[in] env The environment for the calling thread.
 	 */
-	virtual void scavenger_flushReferenceObjects(MM_EnvironmentStandard *env) = 0;
+	void flushReferenceObjects(MM_EnvironmentStandard *env);
 	
 	/**
 	 * An indirect referent is a refernce to an object in the heap that is not a root object and is not reachable from
@@ -157,7 +151,7 @@ public:
 	 * @param[in] objectPtr Reference to the object that may have associated indirect referents.
 	 * @return true if the object has associated indirect referents.
 	 */
-	virtual bool scavenger_hasIndirectReferentsInNewSpace(MM_EnvironmentStandard *env, omrobjectptr_t objectPtr) = 0;
+	bool hasIndirectReferentsInNewSpace(MM_EnvironmentStandard *env, omrobjectptr_t objectPtr);
 
 	/**
 	 * This method will be called for any object that has indirect object references. The implementation must call
@@ -168,7 +162,7 @@ public:
 	 * @param[in] objectPtr Reference to the object that has associated indirect referents.
 	 * @return true if MM_Scavenger::copyObjectSlot(env, slot) returns true for any slot.
 	 */
-	virtual bool scavenger_scavengeIndirectObjectSlots(MM_EnvironmentStandard *env, omrobjectptr_t objectPtr) = 0;
+	bool scavengeIndirectObjectSlots(MM_EnvironmentStandard *env, omrobjectptr_t objectPtr);
 
 	/**
 	 * If scavenger is unable to complete a cycle eg, because there is insufficient tenure space remaining to promote
@@ -182,7 +176,7 @@ public:
 	 * @param[in] env The environment for the calling thread.
 	 * @param[in] objectPtr Reference to an object that may have associated indirect referents.
 	 */
-	virtual void scavenger_backOutIndirectObjectSlots(MM_EnvironmentStandard *env, omrobjectptr_t objectPtr) = 0;
+	void backOutIndirectObjectSlots(MM_EnvironmentStandard *env, omrobjectptr_t objectPtr);
 
 	/* This method must be implemented if an object may hold any object references that are live but not reachable
 	 * by traversing the reference graph from the root set or remembered set. In that case, this method should locate
@@ -199,7 +193,7 @@ public:
 	 *
 	 * @param[in] env The environment for the calling thread.
 	 */
-	virtual void scavenger_backOutIndirectObjects(MM_EnvironmentStandard *env) = 0;
+	void backOutIndirectObjects(MM_EnvironmentStandard *env);
 
 	/**
 	 * This method is called during backout while undoing an object copy operation. This may involve restoring the scavenger
@@ -213,11 +207,11 @@ public:
 	 * @param[in] env The environment for the calling thread.
 	 * @param[in] forwardedObject A forwarded header containing the original and destination addresses of the object.
 	 */
-	virtual void scavenger_reverseForwardedObject(MM_EnvironmentBase *env, MM_ForwardedHeader *forwardedObject) = 0;
+	void reverseForwardedObject(MM_EnvironmentBase *env, MM_ForwardedHeader *forwardedObject);
 
 #if defined (OMR_INTERP_COMPRESSED_OBJECT_HEADER)
 	/**
-	 * This method is similar to scavenger_reverseForwardedObject() but is called from a different context. The implementation
+	 * This method is similar to reverseForwardedObject() but is called from a different context. The implementation
 	 * must first determine whether or not the compressed slot adjacent to the scavenger forwarding slot may contain an object
 	 * reference. In that case, this implementation must:
 	 *
@@ -232,29 +226,35 @@ public:
 	 * @param[in] forwardedObject A forwarded header containing the original and destination addresses of the object.
 	 * @param[in] subSpaceNew Pointer to new space
 	 */
-	virtual void scavenger_fixupDestroyedSlot(MM_EnvironmentBase *env, MM_ForwardedHeader *forwardedObject, MM_MemorySubSpaceSemiSpace *subSpaceNew) = 0;
+	void fixupDestroyedSlot(MM_EnvironmentBase *env, MM_ForwardedHeader *forwardedObject, MM_MemorySubSpaceSemiSpace *subSpaceNew);
 #endif /* OMR_INTERP_COMPRESSED_OBJECT_HEADER */
+
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
 	/**
 	 * Enable/disable language specific thread local resource on Concurrent Scavenger cycle start/end 
 	 * @param[in] env The environment for the calling thread.
 	 */	 
-	virtual void scavenger_switchConcurrentForThread(MM_EnvironmentBase *env) = 0;
+	void switchConcurrentForThread(MM_EnvironmentBase *env);
 	/**
 	 * After aborted Concurrent Scavenger, handle indirect object references (off heap structures associated with object with refs to Nursery). 
 	 * Fixup should update slots to point to the forwarded version of the object and/or remove self forwarded bit in the object itself.
 	 */
-	virtual void scavenger_fixupIndirectObjectSlots(MM_EnvironmentStandard *env, omrobjectptr_t objectPtr) = 0;
+	void fixupIndirectObjectSlots(MM_EnvironmentStandard *env, omrobjectptr_t objectPtr);
 	
-	virtual bool scavenger_shouldYield() { return false; }
+	bool shouldYield() { return false; }
 #endif /* OMR_GC_CONCURRENT_SCAVENGER */
-#endif /* OMR_GC_MODRON_SCAVENGER && !OMR_GC_SCAVENGER_DELEGATE */
 
-	MM_CollectorLanguageInterface()
+	bool initialize(MM_EnvironmentBase* env) { return true; }
+
+	void tearDown(MM_EnvironmentBase* env) {}
+
+	MM_ScavengerDelegate(MM_EnvironmentBase* env)
 		: MM_BaseVirtual()
 	{
 		_typeId = __FUNCTION__;
 	}
 };
 
-#endif /* COLLECTORLANGUAGEINTERFACE_HPP_ */
+#endif /* defined(OMR_GC_MODRON_SCAVENGER) && defined(OMR_GC_SCAVENGER_DELEGATE) */
+
+#endif /* SCAVENGERDELEGATE_HPP_ */

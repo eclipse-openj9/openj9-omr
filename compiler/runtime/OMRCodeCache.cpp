@@ -457,34 +457,46 @@ OMR::CodeCache::allocateTempTrampoline()
    return freeTrampolineSlot;
    }
 
-// Reserve space for a trampoline
-//
-// The returned trampoline pointer is meaningless, ie should not be used to
-// create trampoline code in just yet.
-//
+
 OMR::CodeCacheTrampolineCode *
 OMR::CodeCache::reserveTrampoline()
    {
+   return self()->reserveSpaceForTrampoline();
+   }
+
+
+OMR::CodeCacheTrampolineCode *
+OMR::CodeCache::reserveSpaceForTrampoline()
+   {
    TR::CodeCacheConfig &config = _manager->codeCacheConfig();
 
-   // see if we are hitting against the method body allocation pointer
+   // See if we are hitting against the method body allocation pointer
    // indicating that there is no more free space left in this code cache
+   //
    if (_trampolineReservationMark < _trampolineBase + config.trampolineCodeSize())
       {
-      // no free trampoline space
+      // No free trampoline space
+      //
       return NULL;
       }
 
-   // advance the reservation mark
+   // Advance the reservation mark
+   //
    _trampolineReservationMark -= config.trampolineCodeSize();
 
    return (CodeCacheTrampolineCode *) _trampolineReservationMark;
    }
 
-// Cancel a reservation for a trampoline
-//
+
 void
 OMR::CodeCache::unreserveTrampoline()
+   {
+   self()->unreserveSpaceForTrampoline();
+   }
+
+
+void
+OMR::CodeCache::unreserveSpaceForTrampoline()
    {
    // sanity check, should never have the reservation mark dip past the
    // allocation mark

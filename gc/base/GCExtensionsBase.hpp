@@ -1410,10 +1410,10 @@ public:
 		, scavengerScanOrdering(OMR_GC_SCAVENGER_SCANORDERING_HIERARCHICAL)
 #endif /* OMR_GC_MODRON_SCAVENGER || OMR_GC_VLHGC */
 #if defined(OMR_GC_MODRON_SCAVENGER)
-		, scvTenureRatioHigh(J9_SCV_TENURE_RATIO_HIGH)
-		, scvTenureRatioLow(J9_SCV_TENURE_RATIO_LOW)
+		, scvTenureRatioHigh(OMR_SCV_TENURE_RATIO_HIGH)
+		, scvTenureRatioLow(OMR_SCV_TENURE_RATIO_LOW)
 		, scvTenureFixedTenureAge(OBJECT_HEADER_AGE_MAX)
-		, scvTenureAdaptiveTenureAge(J9_OBJECT_HEADER_AGE_DEFAULT)
+		, scvTenureAdaptiveTenureAge(0)
 		, scvTenureStrategySurvivalThreshold(0.99)
 		, scvTenureStrategyFixed(false)
 		, scvTenureStrategyAdaptive(true)

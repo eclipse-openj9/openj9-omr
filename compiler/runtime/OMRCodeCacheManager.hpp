@@ -129,8 +129,18 @@ public:
       };
 
    TR::CodeCacheConfig & codeCacheConfig() { return _config; }
-   bool codeCacheIsFull() { return _codeCacheIsFull; }
-   void setCodeCacheIsFull(bool codeCacheIsFull) { _codeCacheIsFull = codeCacheIsFull; }
+
+   /**
+    * @brief Inquires whether the code cache full flag has been set
+    *
+    * @return true if code cache full flag is set; false otherwise.
+    */
+   bool codeCacheFull() { return _codeCacheFull; }
+
+   /**
+    * @brief Sets the flag indicating a full code cache
+    */
+   void setCodeCacheFull() { _codeCacheFull = true; };
 
    TR::CodeCache *initialize(bool useConsolidatedCache, uint32_t numberOfCodeCachesToCreateAtStartup);
 
@@ -229,7 +239,6 @@ public:
                                            uint8_t ** coldCode,
                                            bool needsToBeContiguous,
                                            bool isMethodHeaderNeeded=true);
-   void setCodeCacheFull() { };  // default does nothing
    void setHasFailedCodeCacheAllocation() { }
 
    bool initialized() const                 { return _initialized; }
@@ -269,7 +278,7 @@ protected:
 
    bool                           _initialized;                       /*!< flag to indicate if code cache manager has been initialized or not */
    bool                           _lowCodeCacheSpaceThresholdReached; /*!< true if close to exhausting available code cache */
-   bool                           _codeCacheIsFull;
+   bool                           _codeCacheFull;
 
 #if (HOST_OS == OMR_LINUX)
    public:

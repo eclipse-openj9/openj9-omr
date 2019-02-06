@@ -151,7 +151,7 @@ OMR::CodeCacheManager::initialize(
         || config.maxNumberOfCodeCaches() == 1
 #if !defined(TR_HOST_POWER)
         || (!TR::Options::getCmdLineOptions()->getOption(TR_StressTrampolines) &&
-            _codeCacheRepositorySegment &&
+            self()->usingRepository() &&
             config.codeCacheTotalKB() <= REACHEABLE_RANGE_KB)
 #endif
         );
@@ -761,12 +761,13 @@ OMR::CodeCacheManager::allocateCodeMemoryWithRetries(size_t warmCodeSize,
 
 
 TR::CodeCacheMemorySegment *
-OMR::CodeCacheManager::getNewCacheMemorySegment(size_t segmentSize,
-                                              size_t & codeCacheSizeAllocated)
+OMR::CodeCacheManager::getNewCodeCacheMemorySegment(
+      size_t segmentSize,
+      size_t & codeCacheSizeAllocated)
    {
    TR::CodeCacheMemorySegment *codeCacheSegment;
 
-   if (_codeCacheRepositorySegment)
+   if (self()->usingRepository())
       {
       codeCacheSegment = self()->carveCodeCacheSpaceFromRepository(segmentSize, codeCacheSizeAllocated);
       if (!codeCacheSegment)
@@ -967,7 +968,7 @@ OMR::CodeCacheManager::increaseFreeSpaceInCodeCacheRepository(size_t size)
 
    // Either use monitors or atomic operations for the following because
    // multiple compilation threads can adjust this value
-   if (_codeCacheRepositorySegment) // check whether we use the repository at all
+   if (self()->usingRepository())
       {
       RepositoryMonitorCriticalSection updateRepository(self());
       _repositoryCodeCache->setColdCodeAlloc(_repositoryCodeCache->getColdCodeAlloc() + size);
@@ -984,7 +985,7 @@ OMR::CodeCacheManager::decreaseFreeSpaceInCodeCacheRepository(size_t size)
 
    // Either use monitors or atomic operations for the following because
    // multiple compilation threads can adjust this value
-   if (_codeCacheRepositorySegment) // check whether we use the repository at all
+   if (self()->usingRepository())
       {
       RepositoryMonitorCriticalSection updateRepository(self());
       _repositoryCodeCache->setColdCodeAlloc(_repositoryCodeCache->getColdCodeAlloc() - size);
@@ -1147,7 +1148,7 @@ OMR::CodeCacheManager::allocateCodeCacheFromNewSegment(
    bool verboseCodeCache = config.verboseCodeCache();
 
    size_t actualCodeCacheSizeAllocated;
-   TR::CodeCacheMemorySegment *codeCacheSegment = self()->getNewCacheMemorySegment(segmentSizeInBytes, actualCodeCacheSizeAllocated);
+   TR::CodeCacheMemorySegment *codeCacheSegment = self()->getNewCodeCacheMemorySegment(segmentSizeInBytes, actualCodeCacheSizeAllocated);
 
    if (codeCacheSegment)
       {

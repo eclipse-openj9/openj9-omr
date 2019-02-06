@@ -161,7 +161,7 @@ public:
 
    void addCodeCache(TR::CodeCache *codeCache);
 
-   TR::CodeCacheMemorySegment *getNewCacheMemorySegment(size_t segmentSize, size_t & codeCacheSizeAllocated);
+   TR::CodeCacheMemorySegment *getNewCodeCacheMemorySegment(size_t segmentSize, size_t & codeCacheSizeAllocated);
 
    void        unreserveCodeCache(TR::CodeCache *codeCache);
    TR::CodeCache * reserveCodeCache(bool compilationCodeAllocationsMustBeContiguous,

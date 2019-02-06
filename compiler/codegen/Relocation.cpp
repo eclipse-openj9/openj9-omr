@@ -132,19 +132,7 @@ uint8_t TR::ExternalRelocation::collectModifier()
    {
    TR::Compilation *comp = TR::comp();
    uint8_t * relocatableMethodCodeStart = (uint8_t *)comp->getRelocatableMethodCodeStart();
-   uint8_t * updateLocation;
-
-   if (TR::Compiler->target.cpu.isPower() &&
-          (_kind == TR_ArrayCopyHelper || _kind == TR_ArrayCopyToc || _kind == TR_RamMethod || _kind == TR_GlobalValue || _kind == TR_BodyInfoAddressLoad || _kind == TR_DataAddress || _kind == TR_JNISpecialTargetAddress || _kind == TR_JNIStaticTargetAddress || _kind == TR_JNIVirtualTargetAddress
-                || _kind == TR_StaticRamMethodConst || _kind == TR_VirtualRamMethodConst || _kind == TR_SpecialRamMethodConst || _kind == TR_DebugCounter))
-      {
-      TR::Instruction *instr = (TR::Instruction *)getUpdateLocation();
-      updateLocation = instr->getBinaryEncoding();
-      }
-   else
-      {
-      updateLocation = getUpdateLocation();
-      }
+   uint8_t * updateLocation = getUpdateLocation();
 
    int32_t distanceFromStartOfBuffer = updateLocation - relocatableMethodCodeStart;
    int32_t distanceFromStartOfMethod = updateLocation - comp->cg()->getCodeStart();

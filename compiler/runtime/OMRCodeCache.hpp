@@ -204,11 +204,6 @@ public:
 
    TR::CodeCacheMemorySegment *segment() { return _segment; }
 
-   bool                       initialize(TR::CodeCacheManager *manager,
-                                         TR::CodeCacheMemorySegment *codeCacheSegment,
-                                         size_t codeCacheSizeAllocated,
-                                         CodeCacheHashEntrySlab *hashEntrySlab);
-
    /**
     * @brief Initialize an allocated CodeCache object
     *

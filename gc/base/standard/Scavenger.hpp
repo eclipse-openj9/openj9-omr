@@ -599,6 +599,10 @@ public:
 	static MM_Scavenger *newInstance(MM_EnvironmentStandard *env, MM_HeapRegionManager *regionManager);
 	virtual void kill(MM_EnvironmentBase *env);
 
+#if defined (OMR_GC_SCAVENGER_DELEGATE)
+	MM_ScavengerDelegate* getDelegate() { return &_delegate; }
+#endif /* OMR_GC_SCAVENGER_DELEGATE */
+
 	/* Read Barrier Verifier specific methods */
 #if defined(OMR_ENV_DATA64) && !defined(OMR_GC_COMPRESSED_POINTERS)
 	virtual void scavenger_poisonSlots(MM_EnvironmentBase *env);

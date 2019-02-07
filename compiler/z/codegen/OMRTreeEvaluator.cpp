@@ -5188,33 +5188,6 @@ aloadHelper(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference * tempM
       return tempReg;
       }
 
-
-   if ((node->getOpCodeValue() == TR::aload)
-       && cg->isAddressOfStaticSymRefWithLockedReg(node->getSymbolReference()))
-      {
-      tempReg = cg->allocateRegister();
-      generateRRInstruction(cg, TR::InstOpCode::getLoadRegOpCode(), node, tempReg, cg->getS390Linkage()->getStaticBaseRealRegister());
-      node->setRegister(tempReg);
-      return tempReg;
-      }
-
-   if ((node->getOpCodeValue() == TR::aload)
-       && cg->isAddressOfPrivateStaticSymRefWithLockedReg(node->getSymbolReference()))
-      {
-      if (node->getSymbol()->getSize() == 8)
-         {
-         tempReg = cg->allocateRegister();
-         }
-      else
-         {
-         tempReg = cg->allocateRegister();
-         }
-
-      generateRRInstruction(cg, TR::InstOpCode::getLoadRegOpCode(), node, tempReg, cg->getS390Linkage()->getPrivateStaticBaseRealRegister());
-      node->setRegister(tempReg);
-      return tempReg;
-      }
-
    TR::SymbolReference * symRef = node->getSymbolReference();
    TR::Symbol * symbol = symRef->getSymbol();
    TR::Node *constNode=(TR::Node *) (node->getSymbolReference()->getOffset());
@@ -6119,15 +6092,6 @@ astoreHelper(TR::Node * node, TR::CodeGenerator * cg)
 
    TR::MemoryReference * tempMR = NULL;
 
-   if (cg->isAddressOfStaticSymRefWithLockedReg(node->getSymbolReference()))
-      {
-      storeToStaticBaseNodeHelper(node, valueChild, cg, cg->getS390Linkage()->getStaticBaseRealRegister());
-      }
-   else if(cg->isAddressOfPrivateStaticSymRefWithLockedReg(node->getSymbolReference()))
-      {
-      storeToStaticBaseNodeHelper(node, valueChild, cg, cg->getS390Linkage()->getPrivateStaticBaseRealRegister());
-      }
-
    if (!relativeLongStoreHelper(cg, node, valueChild))
       {
       // Determine the Store OpCode.
@@ -6171,8 +6135,6 @@ astoreHelper(TR::Node * node, TR::CodeGenerator * cg)
               valueChild->getRegister() == NULL &&
               generateS390MemoryReference(node, cg)->getIndexRegister() == NULL &&
               !valueChild->getSymbolReference()->isLiteralPoolAddress() &&
-              !(cg->isAddressOfStaticSymRefWithLockedReg(valueChild->getSymbolReference())) &&
-              !(cg->isAddressOfPrivateStaticSymRefWithLockedReg(valueChild->getSymbolReference())) &&
         node->getSymbol()->getSize() == node->getSize() &&
         node->getSymbol()->getSize() == valueChild->getSymbol()->getSize() &&
         !cg->getConditionalMovesEvaluationMode())

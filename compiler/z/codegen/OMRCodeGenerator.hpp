@@ -713,9 +713,6 @@ public:
    virtual void setGlobalPrivateStaticBaseRegisterOn(bool val)     { _cgFlags.set(S390CG_globalPrivateStaticBaseRegisterOn, val); }
    virtual bool isGlobalPrivateStaticBaseRegisterOn () { return _cgFlags.testAny(S390CG_globalPrivateStaticBaseRegisterOn); }
 
-   bool isAddressOfStaticSymRefWithLockedReg(TR::SymbolReference *symRef);
-   bool isAddressOfPrivateStaticSymRefWithLockedReg(TR::SymbolReference *symRef);
-
    bool canUseRelativeLongInstructions(int64_t value);
    bool supportsOnDemandLiteralPool();
 

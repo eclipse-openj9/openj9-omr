@@ -1170,7 +1170,8 @@ TR::Instruction * generateVRSaInstruction(
                       TR::Register            * targetReg  ,
                       TR::Register            * sourceReg  ,
                       TR::MemoryReference * mr         ,
-                      uint8_t                  mask4      );   /* 4 bits */
+                      uint8_t                  mask4     ,   /* 4 bits */
+                      TR::Instruction         * preced = NULL);
 
 TR::Instruction * generateVRSbInstruction(
                       TR::CodeGenerator     * cg         ,
@@ -1179,7 +1180,8 @@ TR::Instruction * generateVRSbInstruction(
                       TR::Register            * targetReg  ,   /* VRF */
                       TR::Register            * sourceReg  ,
                       TR::MemoryReference * mr         ,
-                      uint8_t                  mask4 = 0  );  /* 4 bits */
+                      uint8_t                  mask4 = 0  ,  /* 4 bits */
+                      TR::Instruction         * preced = NULL);
 
 TR::Instruction * generateVRScInstruction(
                       TR::CodeGenerator     * cg         ,
@@ -1188,7 +1190,8 @@ TR::Instruction * generateVRScInstruction(
                       TR::Register            * targetReg  ,
                       TR::Register            * sourceReg  ,
                       TR::MemoryReference * mr         ,
-                      uint8_t                  mask4      );  /* 4 bits */
+                      uint8_t                  mask4      ,  /* 4 bits */
+                      TR::Instruction         * preced = NULL);
 
 TR::Instruction * generateVRSdInstruction(
                       TR::CodeGenerator       * cg         ,
@@ -1196,7 +1199,8 @@ TR::Instruction * generateVRSdInstruction(
                       TR::Node                * n          ,
                       TR::Register            * targetReg  ,   /* VRF */
                       TR::Register            * sourceReg3 ,   /* GPR R3 */
-                      TR::MemoryReference     * mr        );
+                      TR::MemoryReference     * mr         ,
+                      TR::Instruction         * preced = NULL);
 
 /****** VRV ******/
 TR::Instruction * generateVRVInstruction(
@@ -1205,7 +1209,8 @@ TR::Instruction * generateVRVInstruction(
                       TR::Node              * n          ,
                       TR::Register            * sourceReg  ,
                       TR::MemoryReference * mr         ,
-                      uint8_t                  mask3      );  /* 4 bits */
+                      uint8_t                  mask3      ,  /* 4 bits */
+                      TR::Instruction* preced = NULL);
 
 /****** VRX ******/
 TR::Instruction * generateVRXInstruction(
@@ -1225,7 +1230,8 @@ TR::Instruction * generateVSIInstruction(
                       TR::Node               * n          ,
                       TR::Register           * reg        ,   /* VRF */
                       TR::MemoryReference    * mr         ,
-                      uint8_t                  imm3  = 0);   /* 8 bits */
+                      uint8_t                  imm3   = 0,    /* 8 bits */
+                      TR::Instruction        * preced = NULL);
 
 /************************************************************ Misc Instructions ************************************************************/
 TR::Instruction *generateS390ImmSymInstruction(

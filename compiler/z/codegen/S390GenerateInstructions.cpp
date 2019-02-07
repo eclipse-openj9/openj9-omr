@@ -2051,24 +2051,38 @@ TR::Instruction * generateVRRiInstruction(
 /* Note subtle differences between register types and optionality of masks between these 3*/
 TR::Instruction *
 generateVRSaInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register * targetReg, TR::Register * sourceReg, TR::MemoryReference * mr,
-                        uint8_t mask4 /* 4 bits */)
+                        uint8_t mask4 /* 4 bits */, TR::Instruction* preced)
    {
-   return new (INSN_HEAP) TR::S390VRSaInstruction(cg, op, n, targetReg, sourceReg, mr, mask4);
+   preced = mr->enforceSSFormatLimits(n, cg, preced);
+
+   if (preced)
+      return new (INSN_HEAP) TR::S390VRSaInstruction(cg, op, n, targetReg, sourceReg, mr, mask4, preced);
+   else
+      return new (INSN_HEAP) TR::S390VRSaInstruction(cg, op, n, targetReg, sourceReg, mr, mask4);
    }
 
 TR::Instruction *
 generateVRSbInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register * targetReg, TR::Register * sourceReg, TR::MemoryReference * mr,
-                        uint8_t mask4 /* 4 bits */)
+                        uint8_t mask4 /* 4 bits */, TR::Instruction* preced)
    {
-   mr->separateIndexRegister(n, cg, true, NULL);
-   return new (INSN_HEAP) TR::S390VRSbInstruction(cg, op, n, targetReg, sourceReg, mr, mask4);
+   preced = mr->enforceSSFormatLimits(n, cg, preced);
+
+   if (preced)
+      return new (INSN_HEAP) TR::S390VRSbInstruction(cg, op, n, targetReg, sourceReg, mr, mask4, preced);
+   else
+      return new (INSN_HEAP) TR::S390VRSbInstruction(cg, op, n, targetReg, sourceReg, mr, mask4);
    }
 
 TR::Instruction *
 generateVRScInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register * targetReg, TR::Register * sourceReg, TR::MemoryReference * mr,
-                        uint8_t mask4 /* 4 bits */)
+                        uint8_t mask4 /* 4 bits */, TR::Instruction* preced)
    {
-   return new (INSN_HEAP) TR::S390VRScInstruction(cg, op, n, targetReg, sourceReg, mr, mask4);
+   preced = mr->enforceSSFormatLimits(n, cg, preced);
+
+   if (preced)
+      return new (INSN_HEAP) TR::S390VRScInstruction(cg, op, n, targetReg, sourceReg, mr, mask4, preced);
+   else
+      return new (INSN_HEAP) TR::S390VRScInstruction(cg, op, n, targetReg, sourceReg, mr, mask4);
    }
 
 TR::Instruction *
@@ -2078,17 +2092,28 @@ generateVRSdInstruction(
                       TR::Node                * n          ,
                       TR::Register            * targetReg  ,   /* VRF */
                       TR::Register            * sourceReg3 ,   /* GPR R3 */
-                      TR::MemoryReference     * mr        )
+                      TR::MemoryReference     * mr         ,
+                      TR::Instruction         * preced)
    {
-   return new (INSN_HEAP) TR::S390VRSdInstruction(cg, op, n, targetReg, sourceReg3, mr);
+   preced = mr->enforceSSFormatLimits(n, cg, preced);
+
+   if (preced)
+      return new (INSN_HEAP) TR::S390VRSdInstruction(cg, op, n, targetReg, sourceReg3, mr, preced);
+   else
+      return new (INSN_HEAP) TR::S390VRSdInstruction(cg, op, n, targetReg, sourceReg3, mr);
    }
 
 /****** VRV ******/
 TR::Instruction *
 generateVRVInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register *sourceReg, TR::MemoryReference * mr,
-                       uint8_t mask3 /* 4 bits */)
+                       uint8_t mask3 /* 4 bits */, TR::Instruction* preced)
    {
-   return new (INSN_HEAP) TR::S390VRVInstruction(cg, op, n, sourceReg, mr, mask3);
+   preced = mr->enforceSSFormatLimits(n, cg, preced);
+
+   if (preced != NULL)
+      return new (INSN_HEAP) TR::S390VRVInstruction(cg, op, n, sourceReg, mr, mask3, preced);
+   else
+      return new (INSN_HEAP) TR::S390VRVInstruction(cg, op, n, sourceReg, mr, mask3);
    }
 
 /****** VRX ******/
@@ -2096,7 +2121,7 @@ TR::Instruction *
 generateVRXInstruction(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic op, TR::Node * n, TR::Register * reg,
                        TR::MemoryReference * memRef, uint8_t mask3, TR::Instruction * preced)
    {
-   if (memRef) preced = memRef->enforceVRXFormatLimits(n, cg, preced);
+   preced = memRef->enforceVRXFormatLimits(n, cg, preced);
 
    if (preced)
       return new (INSN_HEAP) TR::S390VRXInstruction(cg, op, n, reg, memRef, mask3, preced);
@@ -2111,12 +2136,15 @@ TR::Instruction * generateVSIInstruction(
                       TR::Node               * n  ,
                       TR::Register           * reg,   /* VRF */
                       TR::MemoryReference    * mr ,
-                      uint8_t                  imm3)  /* 8 bits */
+                      uint8_t                  imm3,    /* 8 bits */
+                      TR::Instruction        * preced)
    {
-   TR_ASSERT_FATAL(mr != NULL, "NULL memory reference for VSI instruction\n");
-   mr->separateIndexRegister(n, cg, true, NULL);
+   preced = mr->enforceSSFormatLimits(n, cg, preced);
 
-   return new (INSN_HEAP) TR::S390VSIInstruction(cg, op, n, reg, mr, imm3);
+   if (preced != NULL)
+      return new (INSN_HEAP) TR::S390VSIInstruction(cg, op, n, reg, mr, imm3, preced);
+   else
+      return new (INSN_HEAP) TR::S390VSIInstruction(cg, op, n, reg, mr, imm3);
    }
 
 /************************************************************ Misc Instructions ************************************************************/

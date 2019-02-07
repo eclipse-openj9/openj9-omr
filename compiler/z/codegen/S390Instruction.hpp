@@ -5768,6 +5768,21 @@ class S390VRSaInstruction : public S390VStorageInstruction
       {
       setPrintMaskField(getOpCode().usesM4());
       }
+
+   S390VRSaInstruction(
+                         TR::CodeGenerator       * cg       ,
+                         TR::InstOpCode::Mnemonic   op      ,
+                         TR::Node                * n        ,
+                         TR::Register            * targetReg,   /* VRF */
+                         TR::Register            * sourceReg,   /* VRF */
+                         TR::MemoryReference     * mr       ,
+                         uint8_t                  mask4     ,      /*  4 bits */
+                         TR::Instruction         * preced)
+   : S390VStorageInstruction(cg, op, n, targetReg, sourceReg, mr, mask4, preced)
+      {
+      setPrintMaskField(getOpCode().usesM4());
+      }
+
    Kind getKind() { return IsVRSa; }
    virtual char *description() { return "S390VRSaInstruction"; }
    };
@@ -5791,6 +5806,20 @@ class S390VRSbInstruction : public S390VStorageInstruction
                          TR::MemoryReference * mr               = NULL,
                          uint8_t                  mask4         = 0)      /*  4 bits */
    : S390VStorageInstruction(cg, op, n, targetReg, sourceReg, mr, mask4)
+      {
+      setPrintMaskField(getOpCode().usesM4());
+      }
+
+   S390VRSbInstruction(
+                         TR::CodeGenerator       * cg       ,
+                         TR::InstOpCode::Mnemonic  op       ,
+                         TR::Node                * n        ,
+                         TR::Register            * targetReg,   /* VRF */
+                         TR::Register            * sourceReg,   /* GPR */
+                         TR::MemoryReference * mr           ,
+                         uint8_t                  mask4     ,      /*  4 bits */
+                         TR::Instruction         * preced)
+   : S390VStorageInstruction(cg, op, n, targetReg, sourceReg, mr, mask4, preced)
       {
       setPrintMaskField(getOpCode().usesM4());
       }
@@ -5821,11 +5850,24 @@ class S390VRScInstruction : public S390VStorageInstruction
       {
       setPrintMaskField(getOpCode().usesM4());
       }
+
+   S390VRScInstruction(
+                         TR::CodeGenerator       * cg       ,
+                         TR::InstOpCode::Mnemonic  op       ,
+                         TR::Node                * n        ,
+                         TR::Register            * targetReg,   /* GPR */
+                         TR::Register            * sourceReg,   /* VRF */
+                         TR::MemoryReference * mr           ,
+                         uint8_t                  mask4     ,      /*  4 bits */
+                         TR::Instruction          * preced)
+   : S390VStorageInstruction(cg, op, n, targetReg, sourceReg, mr, mask4, preced)
+      {
+      setPrintMaskField(getOpCode().usesM4());
+      }
+
    Kind getKind() { return IsVRSc; }
    virtual char *description() { return "S390VRScInstruction"; }
    };
-
-
 
 /**
  * VRS-d
@@ -5853,6 +5895,29 @@ class S390VRSdInstruction : public S390VStorageInstruction
                          TR::MemoryReference * mr               = NULL)
    : S390VStorageInstruction(cg, op, n)
       {
+      initVRSd(r3Reg, v1Reg, mr);
+      }
+
+   S390VRSdInstruction(
+                         TR::CodeGenerator       * cg   ,
+                         TR::InstOpCode::Mnemonic     op,
+                         TR::Node                * n    ,
+                         TR::Register            * r3Reg,   /* GPR */
+                         TR::Register            * v1Reg,   /* VRF */
+                         TR::MemoryReference * mr       ,
+                         TR::Instruction* preced        )
+   : S390VStorageInstruction(cg, op, n, r3Reg, NULL, mr, 0, preced)
+      {
+      initVRSd(r3Reg, v1Reg, mr);
+      }
+
+   Kind getKind() { return IsVRSd; }
+   uint8_t * generateBinaryEncoding();
+   char *description() { return "S390VRSdInstruction"; }
+
+private:
+   void initVRSd(TR::Register* r3Reg, TR::Register* v1Reg, TR::MemoryReference* mr)
+      {
       if(getOpCode().isStore())
          {
          useTargetRegister(r3Reg);
@@ -5868,10 +5933,6 @@ class S390VRSdInstruction : public S390VStorageInstruction
          }
       setPrintMaskField(false);
       }
-
-   Kind getKind() { return IsVRSd; }
-   uint8_t * generateBinaryEncoding();
-   char *description() { return "S390VRSdInstruction"; }
    };
 
 
@@ -5898,6 +5959,20 @@ class S390VRVInstruction : public S390VStorageInstruction
       {
       setPrintMaskField(getOpCode().usesM3());
       }
+
+   S390VRVInstruction(
+                         TR::CodeGenerator       * cg       ,
+                         TR::InstOpCode::Mnemonic  op       ,
+                         TR::Node                * n        ,
+                         TR::Register            * sourceReg,   /* VRF */
+                         TR::MemoryReference     * mr       ,
+                         uint8_t                  mask3     ,      /*  4 bits */
+                        TR::Instruction          * preced)
+   : S390VStorageInstruction(cg, op, n, sourceReg, sourceReg, mr, mask3, preced)
+      {
+      setPrintMaskField(getOpCode().usesM3());
+      }
+
    Kind getKind() { return IsVRV; }
    uint8_t * generateBinaryEncoding();
    };
@@ -5955,44 +6030,60 @@ class S390VRXInstruction : public S390VStorageInstruction
  */
 class S390VSIInstruction : public S390VStorageInstruction
    {
-   uint8_t    _constantImm3;
-
    public:
-   S390VSIInstruction(
-                         TR::CodeGenerator       * cg           = NULL,
-                         TR::InstOpCode::Mnemonic  op           = TR::InstOpCode::BAD,
-                         TR::Node                * n            = NULL,
-                         TR::Register            * v1Reg        = NULL,
-                         TR::MemoryReference     * memRef       = NULL,
-                         uint8_t                  constantImm3 = 0)
-   : S390VStorageInstruction(cg, op, n),
-     _constantImm3(constantImm3)
+   S390VSIInstruction(TR::CodeGenerator       * cg           = NULL,
+                      TR::InstOpCode::Mnemonic  op           = TR::InstOpCode::BAD,
+                      TR::Node                * n            = NULL,
+                      TR::Register            * v1Reg        = NULL,
+                      TR::MemoryReference     * memRef       = NULL,
+                      uint8_t                  constantImm3 = 0)
+     : S390VStorageInstruction(cg, op, n),
+       _constantImm3(constantImm3)
       {
-      if(getOpCode().setsOperand1())
-         {
-         useTargetRegister(v1Reg);
-         }
-      else
-         {
-         useSourceRegister(v1Reg);
-         }
+      initVSI(n, v1Reg, memRef);
+      }
 
-      // memrefs are always named source memory reference regardless of what they actually are.
-      useSourceMemoryReference(memRef);
-      setupThrowsImplicitNullPointerException(n, memRef);
-
-      if (memRef->getUnresolvedSnippet() != NULL)
-         {
-         (memRef->getUnresolvedSnippet())->setDataReferenceInstruction(this);
-         }
-
-      setPrintMaskField(false);
+   S390VSIInstruction(TR::CodeGenerator       * cg    ,
+                      TR::InstOpCode::Mnemonic  op    ,
+                      TR::Node                * n     ,
+                      TR::Register            * v1Reg ,
+                      TR::MemoryReference     * memRef,
+                      uint8_t                  constantImm3,
+                      TR::Instruction         * preced)
+     : S390VStorageInstruction(cg, op, n, v1Reg, NULL, memRef, 0, preced),
+       _constantImm3(constantImm3)
+      {
       }
 
    Kind getKind() { return IsVSI; }
    uint8_t getImmediateField3() { return _constantImm3; }
    char *description() { return "S390VSIInstruction"; }
    uint8_t * generateBinaryEncoding();
+private:
+   uint8_t _constantImm3;
+
+   void initVSI(TR::Node* n, TR::Register* v1Reg, TR::MemoryReference* memRef)
+      {
+       if(getOpCode().setsOperand1())
+          {
+          useTargetRegister(v1Reg);
+          }
+       else
+          {
+          useSourceRegister(v1Reg);
+          }
+
+       // memrefs are always named source memory reference regardless of what they actually are.
+       useSourceMemoryReference(memRef);
+       setupThrowsImplicitNullPointerException(n, memRef);
+
+       if (memRef->getUnresolvedSnippet() != NULL)
+          {
+          (memRef->getUnresolvedSnippet())->setDataReferenceInstruction(this);
+          }
+
+       setPrintMaskField(false);
+      }
    };
 
 ////////////////////////////////////////////////////////////////////////////////

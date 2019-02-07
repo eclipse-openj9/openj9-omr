@@ -29,6 +29,7 @@
 #include "control/Options.hpp"
 #include "optimizer/Optimizer.hpp"
 #include "ilgen/MethodBuilder.hpp"
+#include "omrport.h"
 
 #define ASSERT_NULL(pointer) ASSERT_EQ(NULL, (pointer))
 #define ASSERT_NOTNULL(pointer) ASSERT_TRUE(NULL != (pointer))
@@ -46,15 +47,96 @@ namespace TRTest
 {
 
 /**
- * @brief The JitBuilderTest class is a basic test fixture for JitBuilder test cases.
+ * @brief A test fixture that makes the port library available to its users
  *
- * Most JitBuilder test case fixtures should publically inherit from this class.
+ * This class makes it possible to make calls to the port library from within test cases.
+ * Specifically, it makes it possible to use the port library macros without having to
+ * write extra code in the test case body.
+ *
+ * The static methods `initPortLib()` and `shutdownPortLib()` must be called
+ * externally (ideally from the global environment setup and teardown) to initialize
+ * and shutdown the port library, respectively.
+ */
+class TestWithPortLib : public ::testing::Test
+   {
+   public:
+   TestWithPortLib() : privateOmrPortLibrary(&PortLib) {}
+
+   /**
+    * @brief Exception for failed thread library initialization
+    */
+   class FailedThreadLibraryInit : public std::runtime_error
+      {
+      public:
+      FailedThreadLibraryInit() : std::runtime_error("Failed to initialize the thread library.") {}
+      };
+
+   /**
+    * @brief Exception for failing to attach current thread to thread library
+    */
+   class FailedCurrentThreadAttachment : public std::runtime_error
+      {
+      public:
+      FailedCurrentThreadAttachment() : std::runtime_error("Failed to attach current thread to thread library.") {}
+      };
+
+   /**
+    * @brief Exception for failed port library initialization
+    */
+   class FailedPortLibraryInit : public std::runtime_error
+      {
+      public:
+      FailedPortLibraryInit() : std::runtime_error("Failed to initialize the port library.") {}
+      };
+
+   /**
+    * @brief Initialize port library and thread library as a dependency
+    *
+    * Initialization should happen before any tests deriving from the JitTest
+    * fixture are executed. If an error occures during one of the initialization
+    * steps, an exception is thrown.
+    */
+   static void initPortLib()
+      {
+      if (0 != omrthread_init_library()) { throw FailedThreadLibraryInit(); }
+      if (0 != omrthread_attach_ex(&current_thread, J9THREAD_ATTR_DEFAULT)) { throw FailedCurrentThreadAttachment(); }
+      if (0 != omrport_init_library(&PortLib, sizeof(OMRPortLibrary))) { throw FailedPortLibraryInit(); }
+      }
+
+   /**
+    * @brief Shutdown the port library and thread library
+    *
+    * Shutdown should only happen after all tests that derive from the JitTest
+    * fixture have finished executing.
+    */
+   static void shutdownPortLib()
+      {
+      PortLib.port_shutdown_library(&PortLib);
+      omrthread_shutdown_library();
+      }
+
+   protected:
+   static OMRPortLibrary PortLib;         // global port library object for use in tests
+   OMRPortLibrary *privateOmrPortLibrary; // pointer to object to be used by port library macro calls in tests
+
+   private:
+   static omrthread_t current_thread;  // handle for current thread; needed to initialize thread library
+   };
+
+/**
+ * @brief The JitTest class is a basic test fixture for OMR compiler test cases.
+ *
+ * The fixture does the following for OMR compiler tests that use it:
+ *
+ * - initialize JIT just before the test starts
+ * - shutdown JIT just after the test finishes executing
+ * - makes port library macros available for use in test cases
  *
  * Example use:
  *
- *    class MyTestCase : public JitBuilderTest {};
+ *    class MyTestCase : public TRTest::JitTest {};
  */
-class JitTest : public ::testing::Test
+class JitTest : public TestWithPortLib
    {
    public:
 
@@ -69,7 +151,7 @@ class JitTest : public ::testing::Test
       {
       shutdownJit();
       }
-   };
+  };
 
 /**
  * @brief A fixture for testing with a customized optimization strategy.
@@ -317,7 +399,7 @@ std::vector<std::tuple<L,R>> const_value_pairs()
  * @brief Enum values representing the reason for skipping a test
  *
  * These values are intended to be short descriptions of why a test is skipped
- * and are mostly useful for logging and reporting purposes. Additional explenations
+ * and are mostly useful for logging and reporting purposes. Additional explanations
  * should be specified in the skip message.
  */
 enum SkipReason {
@@ -399,7 +481,7 @@ class SkipHelper
  *
  * This macro allows a test to be conditionally skipped without failing the test.
  * Multiple invocations can be specified per test. While the macro can can be used
- * anywhere within the scope of a test, it is best to only use at at the beggining,
+ * anywhere within the scope of a test, it is best to only use at at the beginning,
  * before the main body of a test.
  *
  * To skip a test, a condition aswell as a "reason" for skipping must be specified.

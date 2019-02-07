@@ -287,7 +287,7 @@ TEST(TRTestFilter, FilterVectorWithManyOccurrences)
 
 TEST(SkipTest, SkipIfTrue)
    {
-   SKIP_IF(true, UnsupportedFeature) << "Test is itentionally skipped to verify that skipping works";
+   SKIP_IF(true, UnsupportedFeature) << "Test is intentionally skipped to verify that skipping works";
    FAIL() << "SKIP_IF did not skip this test";
    }
 
@@ -299,4 +299,12 @@ TEST(SkipTest, SkipIfFalse)
          FAIL() << "This test should not be skipped by SKIP_IF";
       },
       "This test should not be skipped by SKIP_IF");
+   }
+
+class TestWithPortLib : public TRTest::TestWithPortLib {};
+
+TEST_F(TestWithPortLib, CheckCurrentPlatform)
+   {
+   ASSERT_STRNE("unknown", omrsysinfo_get_CPU_architecture())
+      << "The host architecture should be known";
    }

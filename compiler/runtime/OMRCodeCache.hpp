@@ -144,9 +144,36 @@ public:
    TR_YesNoMaybe almostFull()                 { return _almostFull; }
    void setAlmostFull(TR_YesNoMaybe fullness) { _almostFull = fullness; }
 
+   /**
+    * @brief Reserve space for a trampoline in the current code cache
+    *
+    * @return The returned trampoline pointer is meaningless and should not
+    *         be used to create trampoline code in just yet.
+    */
+   CodeCacheTrampolineCode *reserveSpaceForTrampoline();
+
+   /**
+    * @brief This function is deprecated.  It simply invokes reserveSpaceForTrampoline().
+    *        It will be removed when downstream dependencies are changed to call
+    *        reserveSpaceForTrampoline() directly.
+    */
    CodeCacheTrampolineCode *reserveTrampoline();
+
    CodeCacheErrorCode::ErrorCode reserveNTrampolines(int64_t n);
+
+   /**
+    * @brief Reclaim the previously reserved space for a single trampoline in the
+    *        current code cache.
+    */
+   void unreserveSpaceForTrampoline();
+
+   /**
+    * @brief This function is deprecated.  It simply invokes unreserveSpaceForTrampoline().
+    *        It will be removed when downstream dependencies are changed to call
+    *        unreserveSpaceForTrampoline() directly.
+    */
    void unreserveTrampoline();
+
    CodeCacheTrampolineCode *allocateTrampoline();
    CodeCacheTrampolineCode *allocateTempTrampoline();
    CodeCacheTrampolineCode *findTrampoline(TR_OpaqueMethodBlock *method);

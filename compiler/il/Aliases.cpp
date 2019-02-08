@@ -381,7 +381,6 @@ OMR::SymbolReference::getUseDefAliasesBV(bool isDirectCall, bool includeGCSafePo
             case TR_transactionExit:
             case TR_transactionEntry:
 
-            case TR_emilyCallGlue:
             default:
                // The following is the place to check for
                // a use of killsAllMethodSymbolRef... However,

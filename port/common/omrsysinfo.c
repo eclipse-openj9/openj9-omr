@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2018 IBM Corp. and others
+ * Copyright (c) 1991, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -469,6 +469,8 @@ omrsysinfo_get_limit(struct OMRPortLibrary *portLibrary, uint32_t resourceID, ui
  *          Operating system specific core information
  *            On AIX this attempts to set the sys_parm fullcore value to limit (requires root to successfully change)
  *            No effect on other operating systems
+ *   OMRPORT_RESOURCE_FILE_DESCRIPTORS
+ *   		Sets the maximum number of file descriptors that can opened in a process.
  *
  * resourceID may be bit-wise or'ed with one of:
  *    OMRPORT_LIMIT_SOFT

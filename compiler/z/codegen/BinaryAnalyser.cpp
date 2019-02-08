@@ -105,15 +105,7 @@ TR_S390BinaryAnalyser::genericAnalyser(TR::Node * root,
    TR::Register * secondRegister = secondChild->getRegister();
    TR::Compilation *comp = TR::comp();
 
-   TR::SymbolReference * firstReference = firstChild->getOpCode().hasSymbolReference() ? firstChild->getSymbolReference() : NULL;
-   TR::SymbolReference * secondReference = secondChild->getOpCode().hasSymbolReference() ? secondChild->getSymbolReference() : NULL;
-
-   setInputs(firstChild, firstRegister, secondChild, secondRegister,
-             false, false, comp,
-             (cg()->isAddressOfStaticSymRefWithLockedReg(firstReference) ||
-              cg()->isAddressOfPrivateStaticSymRefWithLockedReg(firstReference)),
-             (cg()->isAddressOfStaticSymRefWithLockedReg(secondReference) ||
-              cg()->isAddressOfPrivateStaticSymRefWithLockedReg(secondReference)));
+   setInputs(firstChild, firstRegister, secondChild, secondRegister, false, false, comp, false, false);
 
    /*
     * Check if SH or CH can be used to evaluate this integer subtract/compare node.

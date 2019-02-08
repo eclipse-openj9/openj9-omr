@@ -1823,16 +1823,6 @@ OMR::Z::MemoryReference::populateMemoryReference(TR::Node * subTree, TR::CodeGen
          {
          self()->populateLoadAddrTree(subTree, cg);
          }
-      else if (subTree->getOpCodeValue() == TR::aload &&
-               cg->isAddressOfStaticSymRefWithLockedReg(subTree->getSymbolReference()))
-         {
-         self()->populateAloadTree(subTree, cg, false);
-         }
-      else if (subTree->getOpCodeValue() == TR::aload &&
-               cg->isAddressOfPrivateStaticSymRefWithLockedReg(subTree->getSymbolReference()))
-         {
-         self()->populateAloadTree(subTree, cg, true);
-         }
       else if (subTree->getOpCodeValue() == TR::aconst)
          {
          if (TR::Compiler->target.is64Bit())
@@ -3277,15 +3267,6 @@ OMR::Z::MemoryReference::doEvaluate(TR::Node * subTree, TR::CodeGenerator * cg)
       self()->setForceEvaluation();
       return false;
       }
-
-   if (subTree->getOpCodeValue() == TR::aload &&
-       cg->isAddressOfStaticSymRefWithLockedReg(subTree->getSymbolReference()))
-      return false;
-
-   if (subTree->getOpCodeValue() == TR::aload &&
-       cg->isAddressOfPrivateStaticSymRefWithLockedReg(subTree->getSymbolReference()))
-      return false;
-
 
    if (subTree->getOpCodeValue() != TR::loadaddr && subTree->getReferenceCount() > 1)
       return true;

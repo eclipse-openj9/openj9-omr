@@ -1145,11 +1145,6 @@ OMR::Z::CodeGenerator::considerTypeForGRA(TR::SymbolReference *symRef)
    if (symRef &&
        symRef->getSymbol())
       {
-      if (self()->isAddressOfStaticSymRefWithLockedReg(symRef))
-         return false;
-
-      if (self()->isAddressOfPrivateStaticSymRefWithLockedReg(symRef))
-         return false;
 #ifdef J9_PROJECT_SPECIFIC
       if (symRef->getSymbol()->getDataType().isBCD())
          return false;
@@ -5187,18 +5182,6 @@ OMR::Z::CodeGenerator::setGlobalStaticBaseRegisterOnFlag()
    {
    if (self()->comp()->getOption(TR_DisableGlobalStaticBaseRegister))
       self()->setGlobalStaticBaseRegisterOn(false);
-   }
-
-bool
-OMR::Z::CodeGenerator::isAddressOfStaticSymRefWithLockedReg(TR::SymbolReference *symRef)
-   {
-   return false;
-   }
-
-bool
-OMR::Z::CodeGenerator::isAddressOfPrivateStaticSymRefWithLockedReg(TR::SymbolReference *symRef)
-   {
-   return false;
    }
 
 /**

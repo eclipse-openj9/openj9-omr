@@ -419,6 +419,24 @@ omrsysinfo_get_groupname(struct OMRPortLibrary *portLibrary, char *buffer, uintp
 }
 
 /**
+ * Query the operating system for the name of the current host
+*
+* @param[in] portLibrary The port Library
+* @param[out] buffer Buffer for the name
+* @param[in,out] length The length of the buffer
+*
+* @return 0 on success, number of bytes required to hold the
+* information if the output buffer was too small, -1 on failure.
+*
+* @note buffer is undefined on error or when supplied buffer was too small.
+*/
+intptr_t
+omrsysinfo_get_hostname(struct OMRPortLibrary *portLibrary, char *buffer, uintptr_t length)
+{
+	return -1;
+}
+
+/**
  * Fetch the system limit associated with the specified resource.
  * This is roughly equivalent to the POSIX getrlimit API.
  *

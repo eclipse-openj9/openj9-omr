@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2018 IBM Corp. and others
+ * Copyright (c) 2015, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -30,6 +30,11 @@
 #include <stdio.h>
 #include <windows.h>
 #include <WinSDKVer.h>
+/* Undefine the winsockapi because winsock2 defines it.  Removes warnings. */
+#if defined(_WINSOCKAPI_) && !defined(_WINSOCK2API_)
+#undef _WINSOCKAPI_
+#endif
+#include <winsock2.h>
 
 #if defined(_WIN32_WINNT_WINBLUE) && (_WIN32_WINNT_MAXVER >= _WIN32_WINNT_WINBLUE)
 #include <VersionHelpers.h>
@@ -950,6 +955,16 @@ omrsysinfo_get_groupname(struct OMRPortLibrary *portLibrary, char *buffer, uintp
 {
 	/* Not applicable to Windows */
 	return -1;
+}
+
+intptr_t
+omrsysinfo_get_hostname(struct OMRPortLibrary *portLibrary, char *buffer, size_t length)
+{
+	if (0 != gethostname(buffer, (int) length)) {
+		Trc_PRT_sysinfo_gethostname_error(OMRPORT_ERROR_SYSINFO_OPFAILED);
+		return OMRPORT_ERROR_SYSINFO_OPFAILED;
+	}
+	return 0;
 }
 
 uint32_t

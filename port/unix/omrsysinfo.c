@@ -2231,6 +2231,17 @@ omrsysinfo_get_groupname(struct OMRPortLibrary *portLibrary, char *buffer, uintp
 	return 0;
 }
 
+intptr_t
+omrsysinfo_get_hostname(struct OMRPortLibrary *portLibrary, char *buffer, size_t length)
+{
+	if (0 != gethostname(buffer, length)) {
+		int32_t err = errno;
+		Trc_PRT_sysinfo_gethostname_error(findError(errno));
+		return portLibrary->error_set_last_error(portLibrary, err, findError(err));
+	}
+	return 0;
+}
+
 uint32_t
 omrsysinfo_get_limit(struct OMRPortLibrary *portLibrary, uint32_t resourceID, uint64_t *limit)
 {

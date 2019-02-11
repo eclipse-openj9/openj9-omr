@@ -199,6 +199,8 @@ TEST_P(Int8ShiftAndRotate, UsingLoadParam) {
     std::string arch = omrsysinfo_get_CPU_architecture();
     SKIP_IF(param.opcode == "bshr" && (OMRPORT_ARCH_PPC == arch || OMRPORT_ARCH_PPC64 == arch || OMRPORT_ARCH_PPC64LE == arch), KnownBug)
         << "The POWER code generator zero-extends the input argument instead of sign-extending (see issue #3535)";
+    SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, KnownBug)
+        << "The Z code generator incorrectly spills sub-integer types arguments (see issue #3525)";
 
     char inputTrees[120] = {0};
     std::snprintf(inputTrees, 120, "(method return=Int8 args=[Int8, Int32] (block (ireturn (b2i (%s (bload parm=0) (iload parm=1)) ))))", param.opcode.c_str());
@@ -240,6 +242,10 @@ TEST_P(Int16ShiftAndRotate, UsingConst) {
 
 #if !defined(TR_TARGET_POWER)
 TEST_P(Int16ShiftAndRotate, UsingLoadParam) {
+    std::string arch = omrsysinfo_get_CPU_architecture();
+    SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, KnownBug)
+        << "The Z code generator incorrectly spills sub-integer types arguments (see issue #3525)";
+
     auto param = TRTest::to_struct(GetParam());
 
     char inputTrees[120] = {0};
@@ -363,6 +369,10 @@ TEST_P(UInt8ShiftAndRotate, UsingConst) {
 }
 
 TEST_P(UInt8ShiftAndRotate, UsingLoadParam) {
+    std::string arch = omrsysinfo_get_CPU_architecture();
+    SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, KnownBug)
+        << "The Z code generator incorrectly spills sub-integer types arguments (see issue #3525)";
+
     auto param = TRTest::to_struct(GetParam());
 
     char inputTrees[120] = {0};
@@ -406,6 +416,8 @@ TEST_P(UInt16ShiftAndRotate, UsingLoadParam) {
     std::string arch = omrsysinfo_get_CPU_architecture();
     SKIP_IF(OMRPORT_ARCH_PPC == arch || OMRPORT_ARCH_PPC64 == arch || OMRPORT_ARCH_PPC64LE == arch, KnownBug)
         << "The POWER code generator sign-extends the input argument instead of zero-extending (see issue #3535)";
+    SKIP_IF(OMRPORT_ARCH_S390 == arch || OMRPORT_ARCH_S390X == arch, KnownBug)
+        << "The Z code generator incorrectly spills sub-integer types arguments (see issue #3525)";
 
     auto param = TRTest::to_struct(GetParam());
 

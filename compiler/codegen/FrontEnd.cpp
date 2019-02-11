@@ -103,18 +103,6 @@ TR_FrontEnd::isMethodTracingEnabled(TR_OpaqueMethodBlock *method)
    return false;
    }
 
-bool
-TR_FrontEnd::isMethodEnterTracingEnabled(TR_OpaqueMethodBlock *method)
-   {
-   return false;
-   }
-
-bool
-TR_FrontEnd::isMethodExitTracingEnabled(TR_OpaqueMethodBlock *method)
-   {
-   return false;
-   }
-
 int32_t
 TR_FrontEnd::getArraySpineShift(int32_t)
    {

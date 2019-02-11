@@ -151,12 +151,8 @@ public:
 
    // Needs VMThread
 
-   // In practice we never enable methodEnterTracing without methodExitTracing.
-   // Combine them into one method: isMethodTracingEnabled() which should be used
-   // to replace all usages of isMethodEnterTracingEnabled() and isMethodExitTracingEnabled().
+   // Check if method entry and exit tracing is enabled
    virtual bool isMethodTracingEnabled(TR_OpaqueMethodBlock *method);
-   virtual bool isMethodEnterTracingEnabled(TR_OpaqueMethodBlock *method);
-   virtual bool isMethodExitTracingEnabled(TR_OpaqueMethodBlock *method);
 
    virtual const char * sampleSignature(TR_OpaqueMethodBlock * aMethod, char * bug = 0, int32_t bufLen = 0,TR_Memory *memory = NULL);
 

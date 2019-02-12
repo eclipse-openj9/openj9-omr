@@ -162,58 +162,6 @@ PRINT_ME(char * string, TR::Node * node, TR::CodeGenerator * cg)
 #define PRINT_ME(string,node,cg)
 #endif
 
-TR::InstOpCode::S390BranchCondition intToBrCond(const int32_t brCondInt){
-   switch(brCondInt){
-      case 0: return TR::InstOpCode::COND_MASK0;
-      case 1: return TR::InstOpCode::COND_MASK1;
-      case 2: return TR::InstOpCode::COND_MASK2;
-      case 3: return TR::InstOpCode::COND_MASK3;
-      case 4: return TR::InstOpCode::COND_MASK4;
-      case 5: return TR::InstOpCode::COND_MASK5;
-      case 6: return TR::InstOpCode::COND_MASK6;
-      case 7: return TR::InstOpCode::COND_MASK7;
-      case 8: return TR::InstOpCode::COND_MASK8;
-      case 9: return TR::InstOpCode::COND_MASK9;
-      case 10: return TR::InstOpCode::COND_MASK10;
-      case 11: return TR::InstOpCode::COND_MASK11;
-      case 12: return TR::InstOpCode::COND_MASK12;
-      case 13: return TR::InstOpCode::COND_MASK13;
-      case 14: return TR::InstOpCode::COND_MASK14;
-      case 15: return TR::InstOpCode::COND_MASK15;
-      default: TR_ASSERT(false, "Bad condition mask integer.\n"); return TR::InstOpCode::COND_NOP;
-   }
-}
-
-int32_t brCondToInt(const TR::InstOpCode::S390BranchCondition brCond){
-   switch(brCond){
-      case TR::InstOpCode::COND_MASK0: return 0;
-      case TR::InstOpCode::COND_MASK1: return 1;
-      case TR::InstOpCode::COND_MASK2: return 2;
-      case TR::InstOpCode::COND_MASK3: return 3;
-      case TR::InstOpCode::COND_MASK4: return 4;
-      case TR::InstOpCode::COND_MASK5: return 5;
-      case TR::InstOpCode::COND_MASK6: return 6;
-      case TR::InstOpCode::COND_MASK7: return 7;
-      case TR::InstOpCode::COND_MASK8: return 8;
-      case TR::InstOpCode::COND_MASK9: return 9;
-      case TR::InstOpCode::COND_MASK10: return 10;
-      case TR::InstOpCode::COND_MASK11: return 11;
-      case TR::InstOpCode::COND_MASK12: return 12;
-      case TR::InstOpCode::COND_MASK13: return 13;
-      case TR::InstOpCode::COND_MASK14: return 14;
-      case TR::InstOpCode::COND_MASK15: return 15;
-      default: TR_ASSERT(false, "Bad condition mask.\n"); return -1;
-   }
-}
-
-TR::InstOpCode::S390BranchCondition getOppositeBranchCondition(TR::InstOpCode::S390BranchCondition brCond){
-   return intToBrCond((~brCondToInt(brCond)) & 0xf);
-}
-
-void orInPlace(TR::InstOpCode::S390BranchCondition& brCond, const TR::InstOpCode::S390BranchCondition other){
-   brCond = intToBrCond(brCondToInt(brCond) | brCondToInt(other));
-}
-
 TR::Instruction*
 generateLoad32BitConstant(TR::CodeGenerator* cg, TR::Node* node, int32_t value, TR::Register* targetRegister, bool canSetConditionCode, TR::Instruction* cursor, TR::RegisterDependencyConditions* dependencies, TR::Register* literalPoolRegister)
    {
@@ -1271,8 +1219,6 @@ generateS390ImmOp(TR::CodeGenerator * cg,  TR::InstOpCode::Mnemonic memOp, TR::N
       }
    }
 
-
-
 TR::Instruction *
 generateS390ImmOp(TR::CodeGenerator * cg,
    TR::InstOpCode::Mnemonic memOp, TR::Node * node, TR::Register * sourceRegister, TR::Register * targetRegister, int64_t value,
@@ -1313,165 +1259,165 @@ generateS390ImmOp(TR::CodeGenerator * cg,
          }
       }
 
-    // LL: Verify we have a register pair for bitwise immediate op for long constant
-    // in 32bit target.  Currently we only handle long constant for 32bit target for
-    // bitwise instructions.
-    // NOTE: You can only get in here if bitwiseOpNeedsLiteralFromPool() return false.
-    if (TR::Compiler->target.is32Bit() &&
+   // LL: Verify we have a register pair for bitwise immediate op for long constant
+   // in 32bit target.  Currently we only handle long constant for 32bit target for
+   // bitwise instructions.
+   // NOTE: You can only get in here if bitwiseOpNeedsLiteralFromPool() return false.
+   if (TR::Compiler->target.is32Bit() &&
         (memOp == TR::InstOpCode::N || memOp == TR::InstOpCode::O || memOp == TR::InstOpCode::X))
-       {
-       TR_ASSERT( sourceRegister->getRegisterPair(), "Long value in 32-bit target must be in a register pair : OpCode %s\n", memOp);
-       }
+      {
+      TR_ASSERT( sourceRegister->getRegisterPair(), "Long value in 32-bit target must be in a register pair : OpCode %s\n", memOp);
+      }
 
-    switch (memOp)
-       {
-       // generate some bitwise immediate ops if on zarch and bit pattern is suitable
-       case TR::InstOpCode::O:
-       case TR::InstOpCode::OG:
-          if (value == 0) return NULL;  // do not generate useless instructions, such as O r1, 0
+   switch (memOp)
+      {
+      // generate some bitwise immediate ops if on zarch and bit pattern is suitable
+      case TR::InstOpCode::O:
+      case TR::InstOpCode::OG:
+         if (value == 0) return NULL;  // do not generate useless instructions, such as O r1, 0
 
-          // Prefer shorter instruction encodings if possible
-          if (!(value & hhMask))
-             {  // value = 0x****000000000000
-             value = value >> 48;
-             immOp = TR::InstOpCode::OIHH;
-             }
-          else if (!(value & hlMask))
-             {  // value = 0x0000****00000000
-             value = (value & CONSTANT64(0x0000FFFF00000000)) >> 32;
-             immOp = TR::InstOpCode::OIHL;
-             }
-          else if (!(value & lhMask))
-             { // value = 0x00000000****0000
-             value = (value & CONSTANT64(0x00000000FFFF0000)) >> 16;
-             immOp = TR::InstOpCode::OILH;
-             }
-          else if (!(value & llMask))
-             { // value = 0x000000000000****
-             value = value;
-             immOp = TR::InstOpCode::OILL;
-             }
-          else
-             {
-             if (!(value & highMask))
-                {
-                // value = 0x********00000000
-                value = value >> 32;
-                ei_immOp = TR::InstOpCode::OIHF;
-                }
-             else if (!(value & lowMask))
-                {
-                // value = 0x00000000********
-                ei_immOp= TR::InstOpCode::OILF;
-                }
-             else
-                {
-                int32_t h_value = (int32_t)(value>>32);
-                int32_t l_value = (int32_t)value;
+         // Prefer shorter instruction encodings if possible
+         if (!(value & hhMask))
+            {  // value = 0x****000000000000
+            value = value >> 48;
+            immOp = TR::InstOpCode::OIHH;
+            }
+         else if (!(value & hlMask))
+            {  // value = 0x0000****00000000
+            value = (value & CONSTANT64(0x0000FFFF00000000)) >> 32;
+            immOp = TR::InstOpCode::OIHL;
+            }
+         else if (!(value & lhMask))
+            { // value = 0x00000000****0000
+            value = (value & CONSTANT64(0x00000000FFFF0000)) >> 16;
+            immOp = TR::InstOpCode::OILH;
+            }
+         else if (!(value & llMask))
+            { // value = 0x000000000000****
+            value = value;
+            immOp = TR::InstOpCode::OILL;
+            }
+         else
+            {
+            if (!(value & highMask))
+               {
+               // value = 0x********00000000
+               value = value >> 32;
+               ei_immOp = TR::InstOpCode::OIHF;
+               }
+            else if (!(value & lowMask))
+               {
+               // value = 0x00000000********
+               ei_immOp= TR::InstOpCode::OILF;
+               }
+            else
+               {
+               int32_t h_value = (int32_t)(value>>32);
+               int32_t l_value = (int32_t)value;
 
-                generateRILInstruction(cg, TR::InstOpCode::OILF, node, targetRegister, l_value);
-                cursor = generateRILInstruction(cg, TR::InstOpCode::OIHF, node, targetRegister, h_value);
+               generateRILInstruction(cg, TR::InstOpCode::OILF, node, targetRegister, l_value);
+               cursor = generateRILInstruction(cg, TR::InstOpCode::OIHF, node, targetRegister, h_value);
 
-                return cursor;
-                }
-             }
-          break;
+               return cursor;
+               }
+            }
+         break;
 
-       case TR::InstOpCode::N:
-       case TR::InstOpCode::NG:
-          // Avoid generating useless instructions such as N R1, 0x00000000
-          if (value == -1)
-             {
-             return NULL;
-             }
+      case TR::InstOpCode::N:
+      case TR::InstOpCode::NG:
+         // Avoid generating useless instructions such as N R1, 0x00000000
+         if (value == -1)
+            {
+            return NULL;
+            }
 
-          // Prefer shorter instruction encodings if possible
-          if ((value & hhMask) == hhMask)
-             {
-             // value = 0x****FFFFFFFFFFFF
-             value = value >> 48;
-             immOp = TR::InstOpCode::NIHH;
-             }
-          else if ((value & hlMask) == hlMask)
-             {
-             // value = 0xFFFF****FFFFFFFF
-             value = (value & CONSTANT64(0x0000FFFF00000000)) >> 32;
-             immOp = TR::InstOpCode::NIHL;
-             }
-          else if ((value & lhMask) == lhMask)
-             {
-             // value = 0xFFFFFFFF****FFFF
-             value = (value & CONSTANT64(0x00000000FFFF0000)) >> 16;
-             immOp = TR::InstOpCode::NILH;
-             }
-          else if ((value & llMask) == llMask)
-             {
-             // value = 0xFFFFFFFFFFFF****
-             immOp = TR::InstOpCode::NILL;
-             }
-          else
-             {
-             // LL: If Golden Eagle - can use generate fast AND-Immediate on the 32 bits value depending on the bits pattern.
-             if ((value & highMask) == highMask)
-                {  // value = 0x********FFFFFFFF
-                value = value >> 32;
-                ei_immOp = TR::InstOpCode::NIHF;
-                }
-             else if ((value & lowMask) == lowMask)
-                {  // value = 0xFFFFFFFF********
-                ei_immOp = TR::InstOpCode::NILF;
-                }
-             else
-                {
-                int32_t h_value = (int32_t)(value>>32);
-                int32_t l_value = (int32_t)value;
+         // Prefer shorter instruction encodings if possible
+         if ((value & hhMask) == hhMask)
+            {
+            // value = 0x****FFFFFFFFFFFF
+            value = value >> 48;
+            immOp = TR::InstOpCode::NIHH;
+            }
+         else if ((value & hlMask) == hlMask)
+            {
+            // value = 0xFFFF****FFFFFFFF
+            value = (value & CONSTANT64(0x0000FFFF00000000)) >> 32;
+            immOp = TR::InstOpCode::NIHL;
+            }
+         else if ((value & lhMask) == lhMask)
+            {
+            // value = 0xFFFFFFFF****FFFF
+            value = (value & CONSTANT64(0x00000000FFFF0000)) >> 16;
+            immOp = TR::InstOpCode::NILH;
+            }
+         else if ((value & llMask) == llMask)
+            {
+            // value = 0xFFFFFFFFFFFF****
+            immOp = TR::InstOpCode::NILL;
+            }
+         else
+            {
+            // LL: If Golden Eagle - can use generate fast AND-Immediate on the 32 bits value depending on the bits pattern.
+            if ((value & highMask) == highMask)
+               {  // value = 0x********FFFFFFFF
+               value = value >> 32;
+               ei_immOp = TR::InstOpCode::NIHF;
+               }
+            else if ((value & lowMask) == lowMask)
+               {  // value = 0xFFFFFFFF********
+               ei_immOp = TR::InstOpCode::NILF;
+               }
+            else
+               {
+               int32_t h_value = (int32_t)(value >> 32);
+               int32_t l_value = (int32_t)value;
 
-                generateRILInstruction(cg, TR::InstOpCode::NILF, node, targetRegister, l_value);
-                cursor = generateRILInstruction(cg, TR::InstOpCode::NIHF, node, targetRegister, h_value);
+               generateRILInstruction(cg, TR::InstOpCode::NILF, node, targetRegister, l_value);
+               cursor = generateRILInstruction(cg, TR::InstOpCode::NIHF, node, targetRegister, h_value);
 
-                return cursor;
-                }
-             }
-          break;
+               return cursor;
+               }
+            }
+         break;
 
-       case TR::InstOpCode::X:
-       case TR::InstOpCode::XG:
-          if (!(value & highMask))
-             {
-             // value = 0x********00000000
-             value = value >> 32;
-             ei_immOp = TR::InstOpCode::XIHF;
-             }
-          else if (!(value & lowMask))
-             {
-             // value = 0x00000000********
-             ei_immOp = TR::InstOpCode::XILF;
-             }
-          else
-             {
-             int32_t h_value = (int32_t)(value>>32);
-             int32_t l_value = (int32_t)value;
+      case TR::InstOpCode::X:
+      case TR::InstOpCode::XG:
+         if (!(value & highMask))
+            {
+            // value = 0x********00000000
+            value = value >> 32;
+            ei_immOp = TR::InstOpCode::XIHF;
+            }
+         else if (!(value & lowMask))
+            {
+            // value = 0x00000000********
+            ei_immOp = TR::InstOpCode::XILF;
+            }
+         else
+            {
+            int32_t h_value = (int32_t)(value >> 32);
+            int32_t l_value = (int32_t)value;
 
-             generateRILInstruction(cg, TR::InstOpCode::XILF, node, targetRegister, l_value);
-             cursor = generateRILInstruction(cg, TR::InstOpCode::XIHF, node, targetRegister, h_value);
+            generateRILInstruction(cg, TR::InstOpCode::XILF, node, targetRegister, l_value);
+            cursor = generateRILInstruction(cg, TR::InstOpCode::XIHF, node, targetRegister, h_value);
 
-             return cursor;
-             }
-          break;
+            return cursor;
+            }
+         break;
 
-       case TR::InstOpCode::MSG:
-          if (value==0)
-             {
-             return generateRRInstruction(cg, TR::InstOpCode::XGR, node, targetRegister, sourceRegister);
-             }
-          if (value >= MIN_IMMEDIATE_VAL && value <= MAX_IMMEDIATE_VAL)
-             {
-             immOp=TR::InstOpCode::MGHI;
-             }
+      case TR::InstOpCode::MSG:
+         if (value == 0)
+            {
+            return generateRRInstruction(cg, TR::InstOpCode::XGR, node, targetRegister, sourceRegister);
+            }
+         if (value >= MIN_IMMEDIATE_VAL && value <= MAX_IMMEDIATE_VAL)
+            {
+            immOp = TR::InstOpCode::MGHI;
+            }
          else if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10) && value >= GE_MIN_IMMEDIATE_VAL && value <= GE_MAX_IMMEDIATE_VAL)
-             {
-             ei_immOp=TR::InstOpCode::MSGFI;
-             }
+            {
+            ei_immOp = TR::InstOpCode::MSGFI;
+            }
 
          // TODO: Do not overwrite cursor in case the value returned is null?
          cursor = multiply64Reduction(cg, node, sourceRegister, targetRegister, value);
@@ -1480,122 +1426,121 @@ generateS390ImmOp(TR::CodeGenerator * cg,
             return cursor;
             }
 
-          break;
+         break;
 
-       case TR::InstOpCode::MLG:
-          if (value==0)
-             {
-             generateRRInstruction(cg, TR::InstOpCode::XGR, node, targetRegister->getHighOrder(), sourceRegister->getHighOrder());
-             return generateRRInstruction(cg, TR::InstOpCode::XGR, node, targetRegister->getLowOrder(), sourceRegister->getLowOrder());
-             }
-          // Check if we can reduce the multiplication and get the high word when multiplied by power of 2
-          cursor=multiplyHigh64Reduction(cg, node, sourceRegister->getLowOrder(), targetRegister->getHighOrder(), value);
-          if (cursor!=NULL) return cursor;
-          break;
+      case TR::InstOpCode::MLG:
+         if (value == 0)
+            {
+            generateRRInstruction(cg, TR::InstOpCode::XGR, node, targetRegister->getHighOrder(), sourceRegister->getHighOrder());
+            return generateRRInstruction(cg, TR::InstOpCode::XGR, node, targetRegister->getLowOrder(), sourceRegister->getLowOrder());
+            }
+         // Check if we can reduce the multiplication and get the high word when multiplied by power of 2
+         cursor = multiplyHigh64Reduction(cg, node, sourceRegister->getLowOrder(), targetRegister->getHighOrder(), value);
+         if (cursor != NULL) return cursor;
+         break;
 
-       case TR::InstOpCode::CG:
-          if (value >= MIN_IMMEDIATE_VAL && value <= MAX_IMMEDIATE_VAL)
-             {
-             immOp   = TR::InstOpCode::CGHI;
-             }
-          else if (cg->canUseGoldenEagleImmediateInstruction(value))
-             {
-             ei_immOp = TR::InstOpCode::CGFI;
-             }
-          else if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10))
-             {
-             memOp = TR::InstOpCode::CGRL;
-             }
-          break;
-       case TR::InstOpCode::CLG:
-          if (cg->canUseGoldenEagleUnsignedImmediateInstruction(value))
-             {
-             ei_immOp = TR::InstOpCode::CLGFI;
-             }
-          else if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10))
-             {
-             memOp = TR::InstOpCode::CLGRL;
-             }
-          break;
-       case TR::InstOpCode::LG:
-          if (value >= MIN_IMMEDIATE_VAL && value <= MAX_IMMEDIATE_VAL)
-             {
-             immOp   = TR::InstOpCode::LGHI;
-             }
-          else if (cg->canUseGoldenEagleUnsignedImmediateInstruction(value))
-             {
-             ei_immOp = TR::InstOpCode::LLILF;
-             }
-          else if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10))
-             {
-             memOp = TR::InstOpCode::LGRL;
-             }
-          else
-             {
-             // Didn't fit in IILF, so we need two instructions to build the immediate
-             // Note... there is a tradeoff here between going to the lit-pool (extra reg and
-             // potential d-cache) vs the extra cycle for 1 extra instr.   The latter would
-             // seem to be more likely to be a win.
-             //
-             generateRILInstruction(cg, TR::InstOpCode::LLIHF, node, targetRegister, static_cast<int32_t>(value));
+      case TR::InstOpCode::CG:
+         if (value >= MIN_IMMEDIATE_VAL && value <= MAX_IMMEDIATE_VAL)
+            {
+            immOp = TR::InstOpCode::CGHI;
+            }
+         else if (cg->canUseGoldenEagleImmediateInstruction(value))
+            {
+            ei_immOp = TR::InstOpCode::CGFI;
+            }
+         else if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10))
+            {
+            memOp = TR::InstOpCode::CGRL;
+            }
+         break;
+      case TR::InstOpCode::CLG:
+         if (cg->canUseGoldenEagleUnsignedImmediateInstruction(value))
+            {
+            ei_immOp = TR::InstOpCode::CLGFI;
+            }
+         else if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10))
+            {
+            memOp = TR::InstOpCode::CLGRL;
+            }
+         break;
+      case TR::InstOpCode::LG:
+         if (value >= MIN_IMMEDIATE_VAL && value <= MAX_IMMEDIATE_VAL)
+            {
+            immOp = TR::InstOpCode::LGHI;
+            }
+         else if (cg->canUseGoldenEagleUnsignedImmediateInstruction(value))
+            {
+            ei_immOp = TR::InstOpCode::LLILF;
+            }
+         else if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10))
+            {
+            memOp = TR::InstOpCode::LGRL;
+            }
+         else
+            {
+            // Didn't fit in IILF, so we need two instructions to build the immediate
+            // Note... there is a tradeoff here between going to the lit-pool (extra reg and
+            // potential d-cache) vs the extra cycle for 1 extra instr.   The latter would
+            // seem to be more likely to be a win.
+            //
+            generateRILInstruction(cg, TR::InstOpCode::LLIHF, node, targetRegister, static_cast<int32_t>(value));
 
-             ei_immOp = TR::InstOpCode::IILF;
-             }
-          break;
-       case TR::InstOpCode::AG:
-             {
-             // This case is to handle adding unsigned operands, and the immediate operand is 32-bit.
-             if(cg->canUseGoldenEagleUnsignedImmediateInstruction(value))
-                {
-                ei_immOp = TR::InstOpCode::ALGFI;
-                }
-             //This case is to convert the addition to a subtraction of 32-bit immediate operand.
-             else if((value & lowMask) == lowMask && (value & highMask) > 0)
-                {
-                ei_immOp = TR::InstOpCode::SLGFI;
-                value = 1 + ~value;
-                }
-             }
-          break;
-       case TR::InstOpCode::ALG:
-       case TR::InstOpCode::ADB:
-       case TR::InstOpCode::CDB:
-       case TR::InstOpCode::SDB:
-       case TR::InstOpCode::AD:
-       case TR::InstOpCode::CD:
-       case TR::InstOpCode::SD:
-       case TR::InstOpCode::SG:
-          break;
-       default:
-          TR_ASSERT( 0,"Unsupported opcode in  generateS390ImmOp !\n");
-          break;
+            ei_immOp = TR::InstOpCode::IILF;
+            }
+         break;
+      case TR::InstOpCode::AG:
+         {
+         // This case is to handle adding unsigned operands, and the immediate operand is 32-bit.
+         if (cg->canUseGoldenEagleUnsignedImmediateInstruction(value))
+            {
+            ei_immOp = TR::InstOpCode::ALGFI;
+            }
+         //This case is to convert the addition to a subtraction of 32-bit immediate operand.
+         else if ((value & lowMask) == lowMask && (value & highMask) > 0)
+            {
+            ei_immOp = TR::InstOpCode::SLGFI;
+            value = 1 + ~value;
+            }
+         }
+         break;
+      case TR::InstOpCode::ALG:
+      case TR::InstOpCode::ADB:
+      case TR::InstOpCode::CDB:
+      case TR::InstOpCode::SDB:
+      case TR::InstOpCode::AD:
+      case TR::InstOpCode::CD:
+      case TR::InstOpCode::SD:
+      case TR::InstOpCode::SG:
+         break;
+      default:
+         TR_ASSERT(0, "Unsupported opcode in  generateS390ImmOp !\n");
+         break;
 
-       }  // end switch
+      }  // end switch
 
-    if (targetRegister != sourceRegister)
-       {
-       cursor = generateRRInstruction(cg, TR::InstOpCode::getLoadRegOpCodeFromNode(cg, node), node, targetRegister, sourceRegister);
-       }
+   if (targetRegister != sourceRegister)
+      {
+      cursor = generateRRInstruction(cg, TR::InstOpCode::getLoadRegOpCodeFromNode(cg, node), node, targetRegister, sourceRegister);
+      }
 
-    // LL: Golden Eagle extended immediate instructions
-    if (ei_immOp != TR::InstOpCode::BAD)
-       {
-       return generateRILInstruction(cg, ei_immOp, node, targetRegister, static_cast<int32_t>(value));
-       }
-    else if (immOp != TR::InstOpCode::BAD)
-       {
-       return generateRIInstruction(cg, immOp, node, targetRegister, (int16_t)value);
-       }
-    else
-       {
-       if (TR::Compiler->target.is32Bit() && memOp!=TR::InstOpCode::MLG)
-          {
-          TR_ASSERT(!targetRegister->getRegisterPair(), "This instruction is for 64bit target only, it should not take a register pair.\n");
-          }
-       return generateRegLitRefInstruction(cg, memOp, node, targetRegister, value, cond, NULL, base);
-       }
+   // LL: Golden Eagle extended immediate instructions
+   if (ei_immOp != TR::InstOpCode::BAD)
+      {
+      return generateRILInstruction(cg, ei_immOp, node, targetRegister, static_cast<int32_t>(value));
+      }
+   else if (immOp != TR::InstOpCode::BAD)
+      {
+      return generateRIInstruction(cg, immOp, node, targetRegister, (int16_t)value);
+      }
+   else
+      {
+      if (TR::Compiler->target.is32Bit() && memOp != TR::InstOpCode::MLG)
+         {
+         TR_ASSERT(!targetRegister->getRegisterPair(), "This instruction is for 64bit target only, it should not take a register pair.\n");
+         }
+      return generateRegLitRefInstruction(cg, memOp, node, targetRegister, value, cond, NULL, base);
+      }
    }
-
 
 TR::Instruction *
 generateS390ImmOp(TR::CodeGenerator * cg, TR::InstOpCode::Mnemonic memOp, TR::Node * node, TR::Register * targetRegister, float value,
@@ -2050,15 +1995,12 @@ memoryReferenceMightNeedAnIndexRegister(TR::Node *node, TR::CodeGenerator *cg)
       if (addrChild->getOpCode().isLoadAddr() ||
           addrChild->getNumChildren() > 1)
          {
-#define ENABLE_ALADD_HEURISTIC 1
-#ifdef ENABLE_ALADD_HEURISTIC
          if (addrChild->getOpCode().isAdd() &&
              !addrChild->getFirstChild()->getOpCode().isAdd()  &&
              addrChild->getSecondChild()->getOpCode().isLoadConst())
             {
             return false;
             }
-#endif
          return true;
          }
       }
@@ -2947,9 +2889,6 @@ generateS390CompareAndBranchOpsHelper(TR::Node * node, TR::CodeGenerator * cg, T
           getIntegralValue(constNode) == 0 &&
           (!nonConstNode->isExtendedTo64BitAtSource() || cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10) ))
          {
-         // case 1.3
-         TR_ASSERT( NULLVALUE == 0, "Can not generate ICM if NULL is not 0");
-
          TR::SymbolReference * symRef = nonConstNode->getSymbolReference();
          TR::Symbol * symbol = symRef->getSymbol();
          bool useLTG = (TR::Compiler->target.is64Bit() && (constType == TR::Int64 || constType == TR::Address)) ||
@@ -3672,20 +3611,18 @@ genCompareAndBranchInstructionIfPossible(TR::CodeGenerator * cg, TR::Node * node
    return cursor;
    }
 
-/**
- * \brief
+/** \brief
  *    Converts a comparison branch condition to the correct branch condition for the test under mask instruction
  *    being generated.
  *
- * \param constNode
+ *  \param constNode
  *    The constant the comparison branch condition is comparing against.
  *
- * \param brCond
+ *  \param brCond
  *    The comparison branch condition to be converted.
  *
- * \return newCond
+ *  \return newCond
  *    The branch condition to be used in generated test under mask instruction.
- *
  */
 TR::InstOpCode::S390BranchCondition convertComparisonBranchConditionToTestUnderMaskBranchCondition(TR::Node * constNode, TR::InstOpCode::S390BranchCondition brCond)
    {
@@ -3716,7 +3653,6 @@ TR::InstOpCode::S390BranchCondition convertComparisonBranchConditionToTestUnderM
    return newCond;
 
    }
-
 
 TR::InstOpCode::S390BranchCondition
 generateTestUnderMaskIfPossible(TR::Node * node, TR::CodeGenerator * cg, TR::InstOpCode::S390BranchCondition fBranchOpCond, TR::InstOpCode::S390BranchCondition rBranchOpCond)
@@ -4098,7 +4034,6 @@ generateTestUnderMaskIfPossible(TR::Node * node, TR::CodeGenerator * cg, TR::Ins
          newBranchOpCond = convertComparisonBranchConditionToTestUnderMaskBranchCondition(constNode, fBranchOpCond);
          }
    return newBranchOpCond;
-
    }
 
 static bool
@@ -4639,29 +4574,6 @@ genericLoadHelper(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference *
    return targetRegister;
    }
 
-void OMR::Z::TreeEvaluator::evaluateRegLoads(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   using namespace CS2;
-   QueueOf<TR::Node*, TR::Allocator> queue(cg->comp()->allocator());
-   queue.Push(node);
-   TR::BitVector visited(cg->comp()->allocator());
-   while (!queue.IsEmpty())
-      {
-      auto tmp = queue.Pop();
-      if (tmp->getRegister())
-         visited[tmp->getGlobalIndex()] = 1;
-      if (visited[tmp->getGlobalIndex()])
-         continue;
-      visited[tmp->getGlobalIndex()] = 1;
-      for(int i=0; i<tmp->getNumChildren(); i++)
-         {
-         auto child = tmp->getChild(i);
-         if (!visited[child->getGlobalIndex()])
-            queue.Push(child);
-         }
-      }
-   }
-
 /**
  * This function is a wrapper for generiLoadHelper. It is intended to handle all the conversions that narrow data.
  * Narrowing conversions are done by either zero- or sign-extending; which of the two, depends only on the signnedness of the
@@ -4799,29 +4711,21 @@ OMR::Z::TreeEvaluator::addressCastEvaluator(TR::Node * node, TR::CodeGenerator *
    uint8_t addrSize = dirToAddr ? 8 * node->getSize()
                                 : 8 * node->getFirstChild()->getSize();
 
-
-   /*traceMsg(cg, "[%p] Calling addressCastEvaluator %d%s%d", node,
-                                                     dirToAddr ? otherSize : addrSize,
-                                                     dirToAddr ? "2a" : "a2" ,
-                                                    !dirToAddr ? otherSize : addrSize);*/
-
    if (otherSize == addrSize)
       {
-      //CASE(1);
       return TR::TreeEvaluator::passThroughEvaluator(node, cg);
       }
    else if (dirToAddr && otherSize > addrSize) //i.e. (otherSize)2a
       {
-      //CASE(2);
       switch (addrSize)
          {
-      case 56:         return TR::TreeEvaluator::extendCastEvaluator<false, 56, 64>(node, cg);   break;
-      case 48:         return TR::TreeEvaluator::extendCastEvaluator<false, 48, 64>(node, cg);   break;
-      case 40:         return TR::TreeEvaluator::extendCastEvaluator<false, 40, 64>(node, cg);   break;
-      case 32:         return TR::TreeEvaluator::narrowCastEvaluator<false, 32>(node, cg);         break;
-      case 24:         return TR::TreeEvaluator::narrowCastEvaluator<false, 24>(node, cg);         break;
-      case 16:         return TR::TreeEvaluator::narrowCastEvaluator<false, 16>(node, cg);         break;
-      case 8:          return TR::TreeEvaluator::narrowCastEvaluator<false,  8>(node, cg);         break;
+      case 56: return TR::TreeEvaluator::extendCastEvaluator<false, 56, 64>(node, cg); break;
+      case 48: return TR::TreeEvaluator::extendCastEvaluator<false, 48, 64>(node, cg); break;
+      case 40: return TR::TreeEvaluator::extendCastEvaluator<false, 40, 64>(node, cg); break;
+      case 32: return TR::TreeEvaluator::narrowCastEvaluator<false, 32>(node, cg); break;
+      case 24: return TR::TreeEvaluator::narrowCastEvaluator<false, 24>(node, cg); break;
+      case 16: return TR::TreeEvaluator::narrowCastEvaluator<false, 16>(node, cg); break;
+      case 8:  return TR::TreeEvaluator::narrowCastEvaluator<false,  8>(node, cg); break;
       default:
          TR_ASSERT(0, "Invalid Address Precision (%d)\n", addrSize);
          break;
@@ -4829,7 +4733,6 @@ OMR::Z::TreeEvaluator::addressCastEvaluator(TR::Node * node, TR::CodeGenerator *
       }
    else if (!dirToAddr && addrSize > otherSize) //i.e. a2(otherSize)
       {
-      //CASE(3);
       return narrowCastEvaluator<false, otherSize>(node,cg);
       }
    else if (dirToAddr && otherSize < addrSize) //i.e. (otherSize)2a
@@ -4837,7 +4740,7 @@ OMR::Z::TreeEvaluator::addressCastEvaluator(TR::Node * node, TR::CodeGenerator *
       if (addrSize>32)
          {
          TR::Node* child = node->getFirstChild();
-         //CASE(4);
+
          // We need to generate LLGT (Load 31 bit into 64)
          // iu2a <addr size = 8>
          //   aload
@@ -4851,13 +4754,11 @@ OMR::Z::TreeEvaluator::addressCastEvaluator(TR::Node * node, TR::CodeGenerator *
          }
       else
          {
-         //CASE(5);
          return extendCastEvaluator<false, otherSize, 32>(node, cg);
          }
       }
    else //if (!dirToAddr && addrSize < otherSize) //i.e. a2(otherSize)
       {
-      //CASE(6);
       switch (addrSize)
          {
       case 56:         return TR::TreeEvaluator::extendCastEvaluator<false, 56, 64>(node, cg);   break;
@@ -4930,7 +4831,6 @@ template TR::Register * OMR::Z::TreeEvaluator::addressCastEvaluator<64, false>(T
 }
 }
 
-
 template TR::Register * genericLoadHelper<32, 32, MemReg>
       (TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference * tempMR, TR::Register * srcRegister, bool isSourceSigned, bool couldIgnoreExtend);
 template TR::Register * genericLoadHelper<64, 64, MemReg>
@@ -4942,9 +4842,7 @@ sloadHelper(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference * tempM
    TR::Compilation *comp = cg->comp();
    //TR_ASSERTC( !isReversed,comp, "need to write logic for reverse load still");
 
-
    TR::Register * tempReg = cg->allocateRegister();
-
 
    if (tempMR == NULL)
       {
@@ -4969,7 +4867,6 @@ sloadHelper(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference * tempM
    tempMR->stopUsingMemRefRegister(cg);
    return tempReg;
    }
-
 
 bool relativeLongLoadHelper(TR::CodeGenerator * cg, TR::Node * node, TR::Register* tReg)
    {
@@ -5169,7 +5066,6 @@ aloadHelper(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryReference * tempM
    TR::Snippet * firstSnippet = NULL;
    TR::S390RILInstruction * LARLinst;
    TR::Compilation *comp = cg->comp();
-
 
    TR::Register * tempReg; // msf - ia32 does not check for not internal pointer...
 
@@ -5566,67 +5462,6 @@ bool storeHelperImmediateInstruction(TR::Node * valueChild, TR::CodeGenerator * 
       }
    generateSILInstruction(cg, op, node, mf, imm);
    return false;
-   }
-
-void traverseRegisterStoreTree(TR::Compilation *comp,
-                               TR::Node * node,
-                               int32_t regNum,
-                               int32_t &loadCount,
-                               bool &doCopy)
-   {
-   int32_t childNum = 0;
-   TR::Node * child = NULL;
-
-   for (childNum = 0; childNum < node->getNumChildren(); childNum++)
-      {
-      child = node->getChild(childNum);
-
-      //these take register pairs
-      if (child->getOpCode().isMul() ||
-          child->getOpCode().isDiv() ||
-          child->getOpCode().isRem())
-          {
-          doCopy = true;
-          }
-
-      traverseRegisterStoreTree(comp, child, regNum,loadCount,doCopy);
-      }
-   }
-
-
-void
-storeToRegStarNodeHelper(TR::Node * node, TR::Node * valueChild, TR::CodeGenerator * cg)
-   {
-   }
-
-void
-storeToStaticBaseNodeHelper(TR::Node * node, TR::Node * valueChild, TR::CodeGenerator * cg, OMR::RealRegister * staticRegister)
-   {
-   TR::Register * srcRegister = cg->evaluate(valueChild);
-   //TR_Register *srcRegister = cg->gprClobberEvaluate(valueChild, false);
-   TR::Register * tempReg;
-
-   TR_ASSERT((srcRegister->getAssignedRegister() == NULL || srcRegister->getAssignedRegister() == staticRegister), " static base is assigned with a different register than the locked static register");
-
-   if (valueChild->getReferenceCount() == 1)
-      {
-      srcRegister->setAssignedRegister(staticRegister);
-      cg->stopUsingRegister(srcRegister);
-      }
-   else
-      {
-      tempReg = cg->allocateRegister();
-      if (node->getSymbol()->getSize() == 8)
-         {
-         generateRRInstruction(cg, TR::InstOpCode::LGR, node, tempReg, srcRegister);
-         }
-      else
-         {
-         generateRRInstruction(cg, TR::InstOpCode::LR, node, tempReg, srcRegister);
-         }
-      tempReg->setAssignedRegister(staticRegister);
-      cg->stopUsingRegister(tempReg);
-      }
    }
 
 /** \brief
@@ -6182,116 +6017,6 @@ astoreHelper(TR::Node * node, TR::CodeGenerator * cg)
    return tempMR;
    }
 
-
-
-/**
- * Used for comp->useCompressedPointers
- */
-bool
-OMR::Z::TreeEvaluator::genNullTestForCompressedPointers(TR::Node *node,
-                                                         TR::CodeGenerator *cg,
-                                                         TR::Register *targetRegister,
-                                                         TR::LabelSymbol * &skipAdd)
-   {
-
-   // test for null here
-   //
-   TR::Compilation *comp = cg->comp();
-   bool hasCompressedPointers = false;
-   if (TR::Compiler->target.is64Bit() &&
-         comp->useCompressedPointers() &&
-         node->containsCompressionSequence()  /* &&
-         !node->isNonZero() */ )
-      {
-      hasCompressedPointers = true;
-//      TR::ILOpCodes loadOp = comp->il.opCodeForIndirectLoad(TR_SInt32);
-      TR::Node *n = node;
-      bool isNonZero = false;
-      if (n->isNonZero())
-        isNonZero = true;
-
-      if ((n->getOpCodeValue() == TR::lshl) ||
-          (n->getOpCodeValue() == TR::lushr))
-         n = n->getFirstChild();
-
-      TR::Node *addOrSubNode = NULL;
-      if (n->getOpCodeValue() == TR::ladd)
-         {
-         addOrSubNode = n;
-
-         if (n->getFirstChild()->isNonZero())
-            isNonZero = true;
-         if (n->getFirstChild()->getOpCodeValue() == TR::iu2l || n->getFirstChild()->getOpCode().isShift())
-            {
-            if (n->getFirstChild()->getFirstChild()->isNonZero())
-               isNonZero = true;
-            }
-         }
-      else if (n->getOpCodeValue() == TR::lsub)
-         {
-         addOrSubNode = n;
-
-         if (n->getFirstChild()->isNonZero())
-            isNonZero = true;
-         if (n->getFirstChild()->getOpCodeValue() == TR::a2l || n->getFirstChild()->getOpCode().isShift())
-            {
-            if (n->getFirstChild()->getFirstChild()->isNonNull())
-               isNonZero = true;
-            }
-         }
-
-      if (!isNonZero)
-         {
-
-         TR::Instruction *current = cg->getAppendInstruction();
-         TR_ASSERT( current != NULL, "Could not get current instruction");
-
-         if (!targetRegister)
-            {
-            targetRegister = cg->gprClobberEvaluate(addOrSubNode->getFirstChild());
-             //targetRegister->incReferenceCount();
-            //node->setRegister(targetRegister);
-            }
-
-         skipAdd = generateLabelSymbol(cg);
-         skipAdd->setEndInternalControlFlow();
-
-         TR::LabelSymbol * cFlowRegionStart = generateLabelSymbol( cg);
-
-         if (addOrSubNode->getFirstChild()->getOpCode().isShift() && addOrSubNode->getFirstChild()->getRegister())
-            {
-            TR::Register* r = addOrSubNode->getFirstChild()->getRegister();
-            generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionStart);
-            generateS390CompareAndBranchInstruction(cg, TR::InstOpCode::getCmpOpCode(), node, r, (signed char)0, TR::InstOpCode::COND_BE, skipAdd);
-            }
-         else
-            {
-            generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionStart);
-            generateS390CompareAndBranchInstruction(cg, TR::InstOpCode::getCmpOpCode(), node, targetRegister, (signed char)0, TR::InstOpCode::COND_BE, skipAdd);
-            }
-
-         cFlowRegionStart->setStartInternalControlFlow();
-         }
-      }
-
-
-   return hasCompressedPointers;
-   }
-
-
-/**
- * badILOpEvaluator - illegal op
- * Cause assert
- */
-TR::Register *
-OMR::Z::TreeEvaluator::badILOpEvaluator(TR::Node * node, TR::CodeGenerator * cg)
-   {
-   PRINT_ME("badILOp", node, cg);
-   TR_ASSERT(0, "badILOpEvaluator called for opcode %s\n",node->getOpCode().getName());
-   return NULL;
-   }
-
-
 /**
  * aload Evaluator: load address
  *   - also handles aload and iaload
@@ -6302,7 +6027,6 @@ OMR::Z::TreeEvaluator::aloadEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    PRINT_ME("aload", node, cg);
    return aloadHelper(node, cg, NULL);
    }
-
 
 TR::Register *
 OMR::Z::TreeEvaluator::aiaddEvaluator(TR::Node * node, TR::CodeGenerator * cg)
@@ -6499,7 +6223,6 @@ OMR::Z::TreeEvaluator::bloadEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    tempMR->stopUsingMemRefRegister(cg);
    return tempReg;
    }
-
 
 /**
  * Indirect Store Evaluators:
@@ -6772,7 +6495,6 @@ OMR::Z::TreeEvaluator::bstoreEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    return NULL;
    }
 
-
 /**
  * performCall - build dispatch method
  */
@@ -6874,7 +6596,6 @@ OMR::Z::TreeEvaluator::z990PopCountHelper(TR::Node *node, TR::CodeGenerator *cg,
 
    generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionEnd, regDeps);
    cFlowRegionEnd->setEndInternalControlFlow();
-
 
    return outReg;
    }
@@ -7781,7 +7502,6 @@ inline256Multiply(TR::Node * node, TR::CodeGenerator * cg)
 
    return NULL;
    }
-
 
 TR::Register *
 inlineSIMDP256KaratsubaMultiply
@@ -8835,16 +8555,6 @@ inlineP256Mod(TR::Node * node, TR::CodeGenerator * cg)
    return NULL;
    }
 
-void generateLongDoubleStore(TR::Node *node, TR::CodeGenerator *cg, TR::Register *reg, TR::Register *addressReg)
-{
-   TR::MemoryReference *lowRef = generateS390MemoryReference(addressReg, 0, cg);
-   TR::MemoryReference *highRef = generateS390MemoryReference(addressReg, 8, cg);
-   generateRSInstruction(cg, TR::InstOpCode::STD, node, reg->getHighOrder(), lowRef);
-   lowRef->stopUsingMemRefRegister(cg);
-   generateRSInstruction(cg, TR::InstOpCode::STD, node, reg->getLowOrder(), highRef);
-   highRef->stopUsingMemRefRegister(cg);
-}
-
 TR::Register *inlineShortReverseBytes(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR_ASSERT(node->getNumChildren()==1, "Wrong number of children in inlineShortReverseBytes");
@@ -8881,141 +8591,6 @@ TR::Register *inlineLongReverseBytes(TR::Node *node, TR::CodeGenerator *cg)
    node->setRegister(trgReg);
    return trgReg;
    }
-
-extern TR::Register *
-forwardArraycopyEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   // edTODO
-   //   Options to disable
-   //   Optimizer level stuff
-   //   Overlap
-   //   Backward direction
-   //   Reference arrays
-   //   Discontiguous arrays
-   //   Compressed references
-   //   Return value (num bytes copird etc..)
-
-   /*
-   This version of arraycopy only works in simple cases i.e arraycopy has 3 children:
-   source
-   dest
-   length (in bytes)
-
-   It is broken up into 5 sections:
-   1. Setup
-         Registers
-         Dependencies
-         Zero out registers
-   2. Length calculations
-         Align to 16
-         Get residue (if any)
-   3. Process residue (since < 16 is probably the most common case)
-   4. Process 16 bytes at a time in a loop
-   5. Cleanup
-   */
-
-   TR_ASSERT(node->getNumChildren() == 3, "vectorized arraycopy can only have 3 children");
-
-   cg->generateDebugCounter("z13/simd/arraycopy", 1, TR::DebugCounter::Free);
-
-
-   /* ===================== Step 1: SETUP  =====================*/
-
-   TR::Register      * rSrc          = cg->evaluate(node->getChild(0));          // The actual char array storing the contents of j.l.S.value of input String
-   TR::Register      * rDst          = cg->evaluate(node->getChild(1));          // The actual char array storing the contents of j.l.S.value of output String
-   TR::Register      * rLen          = cg->evaluate(node->getChild(2));          // Number of code-points j.l.S.value.length. Not to be confused with length of the String
-   TR::Register      * rIdx          = cg->allocateRegister();                   // Used to iterate over input (and output since they overlap)
-   TR::Register      * rResidue      = cg->allocateRegister();                   // rResidue after alignment of length to 16
-   TR::Register      * rLoopCounter  = cg->allocateRegister();
-   TR::Register      * rResult       = cg->allocateCollectedReferenceRegister(); // To return the reg containing reference to output String
-
-   TR::Register      * vBuf          = cg->allocateRegister(TR_VRF);             // Temp buffer used to store output of upper/lower case conversion
-
-   TR_Debug       * debug         = cg->getDebug();
-   TR::Compilation   * comp          = cg->comp();
-
-   const int          sizeOfVector  = cg->machine()->getVRFSize();
-   const int          numPostDeps   = 8;
-
-   bool usesCompressedrefs          = comp->useCompressedPointers();
-   int32_t shiftAmount              = TR::Compiler->om.compressedReferenceShift();
-   int32_t indexScale               = usesCompressedrefs ? 2 : TR::Compiler->target.is64Bit() ? 3 : 2;
-
-   TR::RegisterDependencyConditions * regDeps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, numPostDeps, cg);
-
-   regDeps->addPostCondition(rSrc          ,TR::RealRegister::AssignAny);
-   regDeps->addPostCondition(rDst          ,TR::RealRegister::AssignAny);
-   regDeps->addPostCondition(rIdx          ,TR::RealRegister::AssignAny);
-   regDeps->addPostCondition(rLen          ,TR::RealRegister::AssignAny);
-   regDeps->addPostCondition(rResidue      ,TR::RealRegister::AssignAny);
-   regDeps->addPostCondition(rLoopCounter  ,TR::RealRegister::AssignAny);
-   regDeps->addPostCondition(rResult       ,TR::RealRegister::AssignAny);
-   regDeps->addPostCondition(vBuf          ,TR::RealRegister::AssignAny);
-
-   TR::LabelSymbol * cFlowRegionStart  = generateLabelSymbol(cg);
-   TR::LabelSymbol * processNext16Bytes = generateLabelSymbol(cg);
-   TR::LabelSymbol * cFlowRegionEnd     = generateLabelSymbol(cg);
-
-
-   generateRRInstruction(cg, TR::InstOpCode::getXORRegOpCode(), node, rIdx, rIdx);
-
-   /* ===================== Step 2: Length calculations (rResidue and 16 alignment) =====================*/
-
-
-   // The core loop works in multiples of 16 so we need to align the length to 16, and also load the rResidue so we can operate on them separately
-   generateRRInstruction         (cg, TR::InstOpCode::getLoadRegOpCode(), node, rResidue, rLen);
-   generateRILInstruction        (cg, TR::InstOpCode::NILF, node, rResidue, 0xF);
-   generateRSInstruction         (cg, TR::InstOpCode::SRLG, node, rLoopCounter, rLen, 4);
-   generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionStart);
-   cFlowRegionStart->setStartInternalControlFlow();
-   generateS390BranchInstruction (cg, TR::InstOpCode::BRC , TR::InstOpCode::COND_BZ, node, processNext16Bytes);
-
-
-   /* ===================== Step 3: Residue processing =====================*/
-
-   // Process residue
-   generateVRSbInstruction       (cg, TR::InstOpCode::VLL , node, vBuf, rResidue, generateS390MemoryReference(rSrc, rIdx, 0, cg));
-   generateVRSbInstruction       (cg, TR::InstOpCode::VSTL, node, vBuf, rResidue, generateS390MemoryReference(rDst, rIdx, 0, cg), 0); // Intentionally use srcIndex since we only want to increment 1 reg
-
-   // If len < 16 then we're done else continue to main loop that does 16 byte at a time
-   // eds : add getCompareImmAndBranchOpCode(cg) for CIJ, CGIJ.
-   generateRIEInstruction        (cg, TR::InstOpCode::CIJ, node, rLen, (int8_t) sizeOfVector, cFlowRegionEnd, TR::InstOpCode::COND_BNH);
-   generateRRInstruction         (cg, TR::InstOpCode::AR , node, rIdx, rResidue);
-
-   /* ===================== Step 4: Core loop - 16 byte at a time processing =====================*/
-
-
-   generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, processNext16Bytes);
-
-   generateVRXInstruction        (cg, TR::InstOpCode::VL , node, vBuf, generateS390MemoryReference(rSrc, rIdx, 0, cg));
-   generateVRXInstruction        (cg, TR::InstOpCode::VST, node, vBuf, generateS390MemoryReference(rDst, rIdx, 0, cg), 0);
-   generateRXInstruction         (cg, TR::InstOpCode::getLoadAddressOpCode(), node, rIdx, generateS390MemoryReference(rIdx, sizeOfVector, cg));
-   generateS390BranchInstruction (cg, TR::InstOpCode::BRCT, node, rLoopCounter, processNext16Bytes);
-
-   /* ===================== Step 5: Done - Perform cleanup =====================*/
-
-
-   generateS390LabelInstruction   (cg, TR::InstOpCode::LABEL, node, cFlowRegionEnd, regDeps);
-   cFlowRegionEnd->setEndInternalControlFlow();
-
-   cg->stopUsingRegister(rSrc);
-   cg->stopUsingRegister(rDst);
-   cg->stopUsingRegister(rIdx);
-
-   cg->stopUsingRegister(rLen);
-   cg->stopUsingRegister(rResidue);
-   cg->stopUsingRegister(rLoopCounter);
-   cg->stopUsingRegister(vBuf);
-
-   cg->decReferenceCount(node->getFirstChild());
-   cg->decReferenceCount(node->getSecondChild());
-   cg->decReferenceCount(node->getThirdChild());
-
-   node->setRegister(rResult);
-   return rResult;
-   #undef createConst
-}
-
 
 TR::Register *
 OMR::Z::TreeEvaluator::evaluateLengthMinusOneForMemoryCmp(TR::Node *node, TR::CodeGenerator *cg, bool clobberEvaluate, bool &lenMinusOne)
@@ -9819,14 +9394,6 @@ OMR::Z::TreeEvaluator::arraycmpHelper(TR::Node *node,
       }
    }
 
-
-TR::Register *
-OMR::Z::TreeEvaluator::memcmpEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   return TR::TreeEvaluator::arraycmpHelper(node, cg, false);
-   }
-
-
 TR::Register *
 OMR::Z::TreeEvaluator::inlineIfArraycmpEvaluator(TR::Node *node, TR::CodeGenerator *cg, bool& inlined)
    {
@@ -9883,483 +9450,6 @@ OMR::Z::TreeEvaluator::inlineIfArraycmpEvaluator(TR::Node *node, TR::CodeGenerat
 
    cg->decReferenceCount(constNode);
    return ret;
-   }
-
-TR::Register *
-OMR::Z::TreeEvaluator::ixfrsEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   TR::Node *valueNode = node->getChild(0);
-   TR::Node *signNode = node->getChild(1);
-
-   TR::Register *valueReg = NULL;
-   int32_t value = 0;
-   bool isConstValue = false;
-   if(valueNode->getOpCode().isLoadConst())
-      {
-      value = valueNode->getIntegerNodeValue<int32_t>();
-      isConstValue = true;
-      }
-   else
-      valueReg = cg->gprClobberEvaluate(valueNode);
-
-   TR::Register *signReg = NULL;
-   int32_t sign = 0;
-   bool isConstSign = false;
-   if(signNode->getOpCode().isLoadConst())
-      {
-      sign = signNode->getIntegerNodeValue<int32_t>();
-      isConstSign = true;
-      }
-   else
-      signReg = cg->gprClobberEvaluate(signNode);
-
-   if(isConstValue && isConstSign)
-      {
-      int32_t result = abs(value);
-      if(sign < 0)
-         result *= -1;
-
-      TR::Register *resultReg = cg->allocateRegister();
-      generateLoad32BitConstant(cg, node, result, resultReg, true);
-
-      node->setRegister(resultReg);
-      }
-   else if(isConstSign)
-      {
-      if(sign < 0)
-         generateRRInstruction(cg, TR::InstOpCode::LNR, node, valueReg, valueReg);
-      else
-         generateRRInstruction(cg, TR::InstOpCode::LPR, node, valueReg, valueReg);
-
-      node->setRegister(valueReg);
-      }
-   else if(isConstValue)
-      {
-      TR::Register *valueReg = cg->allocateRegister();
-
-      generateRSInstruction(cg, TR::InstOpCode::SRA, node, signReg, 31);
-      generateRRInstruction(cg, TR::Compiler->target.is64Bit() ? TR::InstOpCode::LGR : TR::InstOpCode::LR, node, valueReg, signReg);
-      if(TR::Compiler->target.is64Bit())
-         generateS390ImmOp(cg, TR::InstOpCode::XG, node, valueReg, valueReg, (int64_t)(abs(value)));
-      else
-         generateS390ImmOp(cg, TR::InstOpCode::X, node, valueReg, valueReg, (int32_t)(abs(value)));
-      generateRRInstruction(cg, TR::Compiler->target.is64Bit() ? TR::InstOpCode::SLGR : TR::InstOpCode::SLR, node, valueReg, signReg);
-
-      node->setRegister(valueReg);
-
-      cg->stopUsingRegister(signReg);
-      }
-   else
-      {
-      generateRRInstruction(cg, TR::InstOpCode::LPR, node, valueReg, valueReg);
-      generateRSInstruction(cg, TR::InstOpCode::SRA, node, signReg, 31);
-      generateRRInstruction(cg, TR::InstOpCode::getXORRegOpCode(), node, valueReg, signReg);
-      generateRRInstruction(cg, TR::Compiler->target.is64Bit() ? TR::InstOpCode::SLGR : TR::InstOpCode::SLR, node, valueReg, signReg);
-
-      node->setRegister(valueReg);
-
-      cg->stopUsingRegister(signReg);
-      }
-
-   cg->decReferenceCount(valueNode);
-   cg->decReferenceCount(signNode);
-
-   return node->getRegister();
-   }
-
-TR::Register *
-OMR::Z::TreeEvaluator::lxfrsEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   TR::Node *valueNode = node->getChild(0);
-   TR::Node *signNode = node->getChild(1);
-
-   TR::Register *valueReg = NULL;
-   int64_t value = 0;
-   bool isConstValue = false;
-   if(valueNode->getOpCode().isLoadConst())
-      {
-      value = valueNode->getIntegerNodeValue<int64_t>();
-      isConstValue = true;
-      }
-   else
-      valueReg = cg->gprClobberEvaluate(valueNode);
-
-   TR::Register *signReg = NULL;
-   int64_t sign = 0;
-   bool isConstSign = false;
-   if(signNode->getOpCode().isLoadConst())
-      {
-      sign = signNode->getIntegerNodeValue<int64_t>();
-      isConstSign = true;
-      }
-   else
-      signReg = cg->gprClobberEvaluate(signNode);
-
-   if(isConstValue && isConstSign)
-      {
-      int64_t result = (value < 0 ? -value : value);
-      if(sign < 0)
-         result *= -1;
-
-      if(TR::Compiler->target.is64Bit())
-         {
-         TR::Register *valueReg = cg->allocateRegister();
-         genLoadLongConstant(cg, node, result, valueReg);
-         node->setRegister(valueReg);
-         }
-      else
-         {
-         uint64_t unsignedResult = (uint64_t)result;
-         TR::Register * valueLowReg = cg->allocateRegister();
-         TR::Register * valueHighReg = cg->allocateRegister();
-
-         TR::Register *valuePair = cg->allocateConsecutiveRegisterPair(valueLowReg, valueHighReg);
-         generateLoad32BitConstant(cg, node, (uint32_t)(unsignedResult >> 32), valueHighReg, true);
-         generateLoad32BitConstant(cg, node, (uint32_t)(unsignedResult & 0xFFFFFFFF), valueLowReg, true);
-
-         node->setRegister(valuePair);
-         }
-      }
-   else if(isConstSign)
-      {
-      if(TR::Compiler->target.is64Bit())
-         {
-         if(sign < 0)
-            generateRRInstruction(cg, TR::InstOpCode::LNGR, node, valueReg, valueReg);
-         else
-            generateRRInstruction(cg, TR::InstOpCode::LPGR, node, valueReg, valueReg);
-
-         node->setRegister(valueReg);
-         }
-      else
-         {
-         TR::Register *valueLowReg = valueReg->getLowOrder();
-         TR::Register *valueHighReg = valueReg->getHighOrder();
-
-         TR::Register *valueHighCopyReg = cg->allocateRegister();
-         generateRRInstruction(cg, TR::InstOpCode::LR, node, valueHighCopyReg, valueHighReg);
-         generateRSInstruction(cg, TR::InstOpCode::SRA, node, valueHighCopyReg, 31);
-
-         generateRRInstruction(cg, TR::InstOpCode::XR, node, valueHighReg, valueHighCopyReg);
-         generateRRInstruction(cg, TR::InstOpCode::XR, node, valueLowReg, valueHighCopyReg);
-         generateRRInstruction(cg, TR::InstOpCode::SLR, node, valueLowReg, valueHighCopyReg);
-         generateRRInstruction(cg, TR::InstOpCode::SLBR, node, valueHighReg, valueHighCopyReg);
-
-         if(sign < 0)
-            {
-            generateS390ImmOp(cg, TR::InstOpCode::X, node, valueHighReg, valueHighReg, (int32_t)0xFFFFFFFF);
-            generateS390ImmOp(cg, TR::InstOpCode::X, node, valueLowReg, valueLowReg, (int32_t)0xFFFFFFFF);
-
-            TR::Register *oneTemp = cg->allocateRegister();
-            TR::Register *zeroTemp = cg->allocateRegister();
-            generateRIInstruction(cg, TR::InstOpCode::LHI, node, oneTemp, 1);
-            generateRIInstruction(cg, TR::InstOpCode::XR, node, zeroTemp, 0);
-
-            generateRRInstruction(cg, TR::InstOpCode::ALR, node, valueLowReg, oneTemp);
-            generateRRInstruction(cg, TR::InstOpCode::ALCR, node, valueHighReg, zeroTemp);
-
-            cg->stopUsingRegister(oneTemp);
-            cg->stopUsingRegister(zeroTemp);
-            }
-
-         node->setRegister(valueReg);
-
-         cg->stopUsingRegister(valueHighCopyReg);
-         }
-      }
-   else if(isConstValue)
-      {
-      if(TR::Compiler->target.is64Bit())
-         {
-         TR::Register *valueReg = cg->allocateRegister();
-
-         generateRSInstruction(cg, TR::InstOpCode::SRAG, node, signReg, signReg, 63);
-         generateRRInstruction(cg, TR::InstOpCode::LGR, node, valueReg, signReg);
-         generateS390ImmOp(cg, TR::InstOpCode::XG, node, valueReg, valueReg, (int64_t)(value < 0 ? -value : value));
-         generateRRInstruction(cg, TR::InstOpCode::SLGR, node, valueReg, signReg);
-
-         node->setRegister(valueReg);
-
-         cg->stopUsingRegister(signReg);
-         }
-      else
-         {
-         TR::Register *signLowReg = signReg->getLowOrder();
-         TR::Register *signHighReg = signReg->getHighOrder();
-         TR::Register * valueLowReg = cg->allocateRegister();
-         TR::Register * valueHighReg = cg->allocateRegister();
-
-         TR::Register *valuePair = cg->allocateConsecutiveRegisterPair(valueLowReg, valueHighReg);
-         generateLoad32BitConstant(cg, valueNode, valueNode->getLongIntLow(), valueLowReg, true);
-         generateLoad32BitConstant(cg, valueNode, valueNode->getLongIntHigh(), valueHighReg, true);
-
-         TR::RegisterDependencyConditions *regDeps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 3, cg);
-
-         TR::Register *signPair = cg->allocateConsecutiveRegisterPair(signLowReg, signHighReg);
-         regDeps->addPostCondition(signPair, TR::RealRegister::EvenOddPair);
-         regDeps->addPostCondition(signHighReg, TR::RealRegister::LegalEvenOfPair);
-         regDeps->addPostCondition(signLowReg, TR::RealRegister::LegalOddOfPair);
-
-         TR::Instruction *cursor = generateRSInstruction(cg, TR::InstOpCode::SRDA, node, signPair, 63); //SRDA operates on a register pair
-         cursor->setDependencyConditions(regDeps);
-
-         generateRRInstruction(cg, TR::InstOpCode::XR, node, valueHighReg, signHighReg);
-         generateRRInstruction(cg, TR::InstOpCode::XR, node, valueLowReg, signLowReg);
-         generateRRInstruction(cg, TR::InstOpCode::SLR, node, valueLowReg, signLowReg);
-         generateRRInstruction(cg, TR::InstOpCode::SLBR, node, valueHighReg, signHighReg);
-
-         node->setRegister(valuePair);
-
-         cg->stopUsingRegister(signReg);
-         cg->stopUsingRegister(signPair);
-         cg->stopUsingRegister(signLowReg);
-         cg->stopUsingRegister(signHighReg);
-         }
-      }
-   else
-      {
-      if(TR::Compiler->target.is64Bit())
-         {
-         generateRRInstruction(cg, TR::InstOpCode::LPGR, node, valueReg, valueReg);
-         generateRSInstruction(cg, TR::InstOpCode::SRAG, node, signReg, signReg, 63);
-         generateRRInstruction(cg, TR::InstOpCode::XGR, node, valueReg, signReg);
-         generateRRInstruction(cg, TR::InstOpCode::SLGR, node, valueReg, signReg);
-
-         node->setRegister(valueReg);
-
-         cg->stopUsingRegister(signReg);
-         }
-      else
-         {
-         TR::Register *valueLowReg = valueReg->getLowOrder();
-         TR::Register *valueHighReg = valueReg->getHighOrder();
-         TR::Register *signLowReg = signReg->getLowOrder();
-         TR::Register *signHighReg = signReg->getHighOrder();
-
-         TR::Register *valueHighCopyReg = cg->allocateRegister();
-         generateRRInstruction(cg, TR::InstOpCode::LR, node, valueHighCopyReg, valueHighReg);
-         generateRSInstruction(cg, TR::InstOpCode::SRA, node, valueHighCopyReg, 31);
-
-         generateRRInstruction(cg, TR::InstOpCode::XR, node, valueHighReg, valueHighCopyReg);
-         generateRRInstruction(cg, TR::InstOpCode::XR, node, valueLowReg, valueHighCopyReg);
-         generateRRInstruction(cg, TR::InstOpCode::SLR, node, valueLowReg, valueHighCopyReg);
-         generateRRInstruction(cg, TR::InstOpCode::SLBR, node, valueHighReg, valueHighCopyReg);
-
-         TR::RegisterDependencyConditions *regDeps = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 3, cg);
-
-         TR::Register *signPair = cg->allocateConsecutiveRegisterPair(signLowReg, signHighReg);
-         regDeps->addPostCondition(signPair, TR::RealRegister::EvenOddPair);
-         regDeps->addPostCondition(signHighReg, TR::RealRegister::LegalEvenOfPair);
-         regDeps->addPostCondition(signLowReg, TR::RealRegister::LegalOddOfPair);
-
-         TR::Instruction *cursor = generateRSInstruction(cg, TR::InstOpCode::SRDA, node, signPair, 63); //SRDA operates on a register pair
-         cursor->setDependencyConditions(regDeps);
-
-         generateRRInstruction(cg, TR::InstOpCode::XR, node, valueHighReg, signHighReg);
-         generateRRInstruction(cg, TR::InstOpCode::XR, node, valueLowReg, signLowReg);
-         generateRRInstruction(cg, TR::InstOpCode::SLR, node, valueLowReg, signLowReg);
-         generateRRInstruction(cg, TR::InstOpCode::SLBR, node, valueHighReg, signHighReg);
-
-         node->setRegister(valueReg);
-
-         cg->stopUsingRegister(signReg);
-         cg->stopUsingRegister(signPair);
-         cg->stopUsingRegister(signLowReg);
-         cg->stopUsingRegister(signHighReg);
-         cg->stopUsingRegister(valueHighCopyReg);
-         }
-      }
-
-   cg->decReferenceCount(valueNode);
-   cg->decReferenceCount(signNode);
-
-   return node->getRegister();
-   }
-
-TR::Register *
-OMR::Z::TreeEvaluator::fxfrsEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   TR::Node *valueNode = node->getChild(0);
-   TR::Node *signNode = node->getChild(1);
-
-   TR::Register *valueFprReg = NULL;
-   float value = 0.0f;
-   bool isConstValue = false;
-   if(valueNode->getOpCode().isLoadConst())
-      {
-      value = valueNode->getFloat();
-      isConstValue = true;
-      }
-   else
-      valueFprReg = cg->evaluate(valueNode);
-
-   TR::Register *signFprReg = NULL;
-   float sign = 0.0f;
-   bool isConstSign = false;
-   if(signNode->getOpCode().isLoadConst())
-      {
-      sign = signNode->getFloat();
-      isConstSign = true;
-      }
-   else
-      signFprReg = cg->evaluate(signNode);
-
-   if(isConstValue && isConstSign)
-      {
-      float absVal = ::fabs(value);
-      if(sign < 0.0f)
-         absVal = -absVal;
-      TR::Register *resultReg = cg->allocateRegister(TR_FPR);
-      generateRegLitRefInstruction(cg, TR::InstOpCode::LE, node, resultReg, absVal);
-
-      node->setRegister(resultReg);
-      }
-   else if(isConstSign)
-      {
-      TR::Register *resultReg = cg->allocateRegister(TR_FPR);
-      if(sign < 0.0f)
-         generateRRInstruction(cg, TR::InstOpCode::LNER, node, resultReg, valueFprReg);
-      else
-         generateRRInstruction(cg, TR::InstOpCode::LPER, node, resultReg, valueFprReg);
-
-      node->setRegister(resultReg);
-
-      cg->stopUsingRegister(valueFprReg);
-      }
-   else if(isConstValue)
-      {
-      // allocate a GPR for the value to go to
-      TR::Register *signReg = cg->allocateRegister();
-
-      // use a temp slot to transfer the sign
-      TR::SymbolReference* tempSlotSymRef = cg->allocateReusableTempSlot();
-      TR::MemoryReference * tempSlotStoreMemRef = generateS390MemoryReference(node, tempSlotSymRef, cg);
-      TR::MemoryReference * tempSlotLoadMemRef = generateS390MemoryReference(node, tempSlotSymRef, cg);
-
-      // store and load to transfer
-      generateRXInstruction(cg, TR::InstOpCode::STE, node, signFprReg, tempSlotStoreMemRef);
-      generateRXInstruction(cg, TR::Compiler->target.is64Bit() ? TR::InstOpCode::LLGF : TR::InstOpCode::L, node, signReg, tempSlotLoadMemRef);
-
-      // make a copy of the value for later use
-      TR::Register *signCopyReg = cg->allocateRegister();
-      generateRRInstruction(cg, TR::Compiler->target.is64Bit() ? TR::InstOpCode::LGR : TR::InstOpCode::LR, node, signCopyReg, signReg);
-
-      // manipulate the bits to remove the sign
-      TR::Register *complementReg = cg->allocateRegister();
-      if(TR::Compiler->target.is64Bit())
-         generateRRInstruction(cg, TR::InstOpCode::LLGTR, node, signCopyReg, signCopyReg);
-      else
-         generateS390ImmOp(cg, TR::InstOpCode::N, node, signCopyReg, signCopyReg, (int32_t)(0x7FFFFFFF));
-      generateRRInstruction(cg, TR::Compiler->target.is64Bit() ? TR::InstOpCode::LCGR : TR::InstOpCode::LCR, node, complementReg, signCopyReg);
-      generateRRInstruction(cg, TR::Compiler->target.is64Bit() ? TR::InstOpCode::OGR : TR::InstOpCode::OR, node, signCopyReg, complementReg);
-      generateRRInstruction(cg, TR::Compiler->target.is64Bit() ? TR::InstOpCode::NGR : TR::InstOpCode::NR, node, signReg, signCopyReg);
-      if(TR::Compiler->target.is64Bit())
-         generateS390ImmOp(cg, TR::InstOpCode::NG, node, signReg, signReg, (int64_t)(0x0000000080000000LL));
-      else
-         generateS390ImmOp(cg, TR::InstOpCode::N, node, signReg, signReg, (int32_t)(0x80000000));
-
-      // generate an OR with a calculate value
-      int32_t immValue = *((int32_t *)&value);
-      immValue &= 0x7FFFFFFF;
-      generateS390ImmOp(cg, TR::InstOpCode::O, node, signReg, signReg, immValue);
-
-      // store and load into result
-      TR::Register *resultReg = cg->allocateRegister(TR_FPR);
-      tempSlotStoreMemRef = generateS390MemoryReference(node, tempSlotSymRef, cg);
-      tempSlotLoadMemRef = generateS390MemoryReference(node, tempSlotSymRef, cg);
-      generateRXInstruction(cg, TR::InstOpCode::ST, node, signReg, tempSlotStoreMemRef);
-      generateRXInstruction(cg, TR::InstOpCode::LE, node, resultReg, tempSlotLoadMemRef);
-
-      // set the result
-      node->setRegister(resultReg);
-
-      // don't forget to free the temp slot
-      cg->freeReusableTempSlot();
-
-      // done with all the registers
-      cg->stopUsingRegister(signCopyReg);
-      cg->stopUsingRegister(complementReg);
-      cg->stopUsingRegister(signFprReg);
-      cg->stopUsingRegister(signReg);
-      }
-   else
-      {
-      // allocate a GPR for the value to go to
-      TR::Register *signReg = cg->allocateRegister();
-
-      // use a temp slot to transfer the value
-      TR::SymbolReference* tempSlotSymRef = cg->allocateReusableTempSlot();
-      TR::MemoryReference * tempSlotStoreMemRef = generateS390MemoryReference(node, tempSlotSymRef, cg);
-      TR::MemoryReference * tempSlotLoadMemRef = generateS390MemoryReference(node, tempSlotSymRef, cg);
-
-      // store and load to transfer
-      generateRXInstruction(cg, TR::InstOpCode::STE, node, signFprReg, tempSlotStoreMemRef);
-      generateRXInstruction(cg, TR::Compiler->target.is64Bit() ? TR::InstOpCode::LLGF : TR::InstOpCode::L, node, signReg, tempSlotLoadMemRef);
-
-      // make a copy of the value for later use
-      TR::Register *signCopyReg = cg->allocateRegister();
-      generateRRInstruction(cg, TR::Compiler->target.is64Bit() ? TR::InstOpCode::LGR : TR::InstOpCode::LR, node, signCopyReg, signReg);
-
-      // manipulate the bits to remove the sign
-      TR::Register *complementReg = cg->allocateRegister();
-      if(TR::Compiler->target.is64Bit())
-         generateRRInstruction(cg, TR::InstOpCode::LLGTR, node, signCopyReg, signCopyReg);
-      else
-         generateS390ImmOp(cg, TR::InstOpCode::N, node, signCopyReg, signCopyReg, (int32_t)(0x7FFFFFFF));
-      generateRRInstruction(cg, TR::Compiler->target.is64Bit() ? TR::InstOpCode::LCGR : TR::InstOpCode::LCR, node, complementReg, signCopyReg);
-      generateRRInstruction(cg, TR::Compiler->target.is64Bit() ? TR::InstOpCode::OGR : TR::InstOpCode::OR, node, signCopyReg, complementReg);
-      generateRRInstruction(cg, TR::Compiler->target.is64Bit() ? TR::InstOpCode::NGR : TR::InstOpCode::NR, node, signReg, signCopyReg);
-
-      // allocate a GPR for the sign to go to
-      TR::Register *valueReg = cg->allocateRegister();
-
-      // use a temp slot to transfer the sign
-      tempSlotStoreMemRef = generateS390MemoryReference(node, tempSlotSymRef, cg);
-      tempSlotLoadMemRef = generateS390MemoryReference(node, tempSlotSymRef, cg);
-
-      // store and load to transfer
-      generateRXInstruction(cg, TR::InstOpCode::STE, node, valueFprReg, tempSlotStoreMemRef);
-      generateRXInstruction(cg, TR::Compiler->target.is64Bit() ? TR::InstOpCode::LLGF : TR::InstOpCode::L, node, valueReg, tempSlotLoadMemRef);
-
-      // manipulate the bits to extract the sign
-      if(TR::Compiler->target.is64Bit())
-         generateS390ImmOp(cg, TR::InstOpCode::NG, node, signReg, signReg, (int64_t)(0x0000000080000000LL));
-      else
-         generateS390ImmOp(cg, TR::InstOpCode::N, node, signReg, signReg, (int32_t)(0x80000000));
-
-      // merge the sign and value
-      if(TR::Compiler->target.is64Bit())
-         generateRRInstruction(cg, TR::InstOpCode::LLGTR, node, valueReg, valueReg);
-      else
-         generateS390ImmOp(cg, TR::InstOpCode::N, node, valueReg, valueReg, (int32_t)(0x7FFFFFFF));
-      generateRRInstruction(cg, TR::Compiler->target.is64Bit() ? TR::InstOpCode::OGR : TR::InstOpCode::OR, node, signReg, valueReg);
-
-      // store and load into result
-      TR::Register *resultReg = cg->allocateRegister(TR_FPR);
-      tempSlotStoreMemRef = generateS390MemoryReference(node, tempSlotSymRef, cg);
-      tempSlotLoadMemRef = generateS390MemoryReference(node, tempSlotSymRef, cg);
-      generateRXInstruction(cg, TR::InstOpCode::ST, node, signReg, tempSlotStoreMemRef);
-      generateRXInstruction(cg, TR::InstOpCode::LE, node, resultReg, tempSlotLoadMemRef);
-
-      // set the result
-      node->setRegister(resultReg);
-
-      // don't forget to free the temp slot
-      cg->freeReusableTempSlot();
-
-      // done with all the registers
-      cg->stopUsingRegister(valueFprReg);
-      cg->stopUsingRegister(signCopyReg);
-      cg->stopUsingRegister(complementReg);
-      cg->stopUsingRegister(valueReg);
-      cg->stopUsingRegister(signFprReg);
-      cg->stopUsingRegister(signReg);
-      }
-
-   cg->decReferenceCount(valueNode);
-   cg->decReferenceCount(signNode);
-
-   return node->getRegister();
    }
 
 /**
@@ -10441,12 +9531,6 @@ OMR::Z::TreeEvaluator::indirectCallEvaluator(TR::Node * node, TR::CodeGenerator 
    return returnRegister;
    }
 
-bool
-OMR::Z::TreeEvaluator::isCandidateForBIFEvaluation(TR::Node * node)
-   {
-   return false;
-   }
-
 /**
  * treetopEvaluator - tree top to anchor subtrees with side-effects
  */
@@ -10522,18 +9606,6 @@ TR::Register *
 OMR::Z::TreeEvaluator::fenceEvaluator(TR::Node * node, TR::CodeGenerator *cg)
    {
    PRINT_ME("fence", node, cg);
-   return NULL;
-   }
-
-/**
- * exceptionRangeFenceEvaluator - SymbolReference is the aliasing effect, initializer is where the
- *   code address gets put when binary is generated
- */
-TR::Register *
-OMR::Z::TreeEvaluator::exceptionRangeFenceEvaluator(TR::Node * node, TR::CodeGenerator * cg)
-   {
-   PRINT_ME("exceptionRangeFence", node, cg);
-   TR_ASSERT( 0, "exceptionRangeFenceEvaluator: not implemented yet");
    return NULL;
    }
 
@@ -10683,10 +9755,6 @@ OMR::Z::TreeEvaluator::loadaddrEvaluator(TR::Node * node, TR::CodeGenerator * cg
    return targetRegister;
    }
 
-#define NULLVALUE 0
-/**
- *
- */
 TR::Register *
 OMR::Z::TreeEvaluator::passThroughEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
@@ -10910,8 +9978,6 @@ OMR::Z::TreeEvaluator::BBStartEvaluator(TR::Node * node, TR::CodeGenerator * cg)
 
    return NULL;
    }
-
-
 
 /**
  * BBEndEvaluator - End of Basic Block
@@ -12661,7 +11727,6 @@ OMR::Z::TreeEvaluator::backwardArrayCopySequenceGenerator(TR::Node *node, TR::Co
    #undef iComment
    }
 
-
 TR::Register*
 OMR::Z::TreeEvaluator::arraycopyEvaluator(TR::Node* node, TR::CodeGenerator* cg)
    {
@@ -12902,7 +11967,6 @@ OMR::Z::TreeEvaluator::aRegLoadEvaluator(TR::Node * node, TR::CodeGenerator * cg
 
    return globalReg;
    }
-
 
 TR::Register *
 OMR::Z::TreeEvaluator::iRegLoadEvaluator(TR::Node * node, TR::CodeGenerator * cg)
@@ -13158,7 +12222,6 @@ OMR::Z::TreeEvaluator::NOPEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    return NULL;
    }
 
-
 /**
  * barrierFenceEvaluator - evaluator for various memory barriers
  */
@@ -13193,7 +12256,6 @@ OMR::Z::TreeEvaluator::barrierFenceEvaluator(TR::Node * node, TR::CodeGenerator 
       }
    return NULL;
    }
-
 
 /**
  * long2StringEvaluator - Convert integer/long value to String
@@ -13727,31 +12789,6 @@ TR::Register *OMR::Z::TreeEvaluator::bitOpMemEvaluator(TR::Node * node, TR::Code
    return TR::TreeEvaluator::getConditionCodeOrFold(node, cg, foldType, parent);
    }
 
-
-
-TR::Register *OMR::Z::TreeEvaluator::getstackEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   TR::Register *spReg = ((cg->getS390Linkage()))->getNormalStackPointerRealRegister();
-   TR::Register *trgReg = cg->allocateRegister();
-
-   generateRRInstruction(cg, TR::InstOpCode::LR, node, trgReg, spReg);
-
-   node->setRegister(trgReg);
-   return trgReg;
-   }
-
-TR::Register *OMR::Z::TreeEvaluator::deallocaEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   TR::Node * firstChild = node->getFirstChild();
-   TR::Register *srcReg = cg->evaluate(firstChild);
-
-   // TODO: restore save area (or make sure it is preserved by alloca)
-
-   node->setRegister(NULL);
-   cg->decReferenceCount(firstChild);
-   return NULL;
-   }
-
 TR::Register *OMR::Z::TreeEvaluator::libmFuncEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
    if (node->getOpCode().isFloat())
@@ -13763,62 +12800,6 @@ TR::Register *OMR::Z::TreeEvaluator::libmFuncEvaluator(TR::Node *node, TR::CodeG
 
    TR::Register *trgReg = TR::TreeEvaluator::directCallEvaluator(node, cg);
    return trgReg;
-   }
-
-/**
- * This evaluator builds a call to a function found in a library such us our XLOPT library.
- * The function name is selected here based on the opcode
- */
-TR::Register *OMR::Z::TreeEvaluator::libxloptFuncEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   TR::Compilation *comp = cg->comp();
-   // First choose library function name
-
-   TR::SymbolReference *callSymRef=NULL;
-
-   if(TR::Compiler->target.isLinux())
-     {
-     switch(node->getOpCodeValue())
-       {
-       default:
-         TR_ASSERT( 0,"Unknown opcode (%d) for libxoptFuncEvaluator.\n",node->getOpCodeValue());
-         break;
-       }
-     }
-   else
-     {
-     switch(node->getOpCodeValue())
-       {
-       default:
-         TR_ASSERT( 0,"Unknown opcode (%d) for libxoptFuncEvaluator.\n",node->getOpCodeValue());
-         break;
-       }
-     }
-
-   TR::Node::recreate(node, TR::ILOpCode::getDirectCall(node->getDataType()));
-   node->setSymbolReference(callSymRef);
-
-   // And finally evaluate the tree
-   TR::Register *trgReg = TR::TreeEvaluator::directCallEvaluator(node,cg);
-
-   return trgReg;
-   }
-
-TR::Register *
-OMR::Z::TreeEvaluator::aletEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   TR_ASSERT(0, "not expected to be here after TR::alet folding");
-   return NULL;
-   }
-
-/**
- * Load address and alet of ar pointer
- */
-TR::Register *
-OMR::Z::TreeEvaluator::composeEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-   {
-   TR_ASSERT(0, "not expected to be here after TR::alet folding");
-   return NULL;
    }
 
 TR::Register *OMR::Z::TreeEvaluator::PrefetchEvaluator(TR::Node *node, TR::CodeGenerator *cg)
@@ -13946,9 +12927,6 @@ TR::Register *OMR::Z::TreeEvaluator::loadAutoOffsetEvaluator(TR::Node *node, TR:
    cg->stopUsingRegister(reg);
    return reg;
    }
-
-
-//#endif
 
 /**
  * Determines the appropriate branch mask to use for a BRC following a TM/TMLL
@@ -15337,13 +14315,10 @@ TR::Register *OMR::Z::TreeEvaluator::trtEvaluator(TR::Node *node, TR::CodeGenera
    return inlineTrtEvaluator(node, cg, TR::InstOpCode::TRT, false, false, NULL);
    }
 
-
 TR::Register *OMR::Z::TreeEvaluator::integerHighestOneBit(TR::Node *node, TR::CodeGenerator *cg)
    {
    return inlineHighestOneBit(node, cg, false);
    }
-
-TR::Register *OMR::Z::TreeEvaluator::integerLowestOneBit(TR::Node *node, TR::CodeGenerator *cg){ TR_ASSERT(0, "not implemented!"); return NULL; }
 
 TR::Register *OMR::Z::TreeEvaluator::integerNumberOfLeadingZeros(TR::Node *node, TR::CodeGenerator *cg)
    {
@@ -15365,7 +14340,6 @@ TR::Register *OMR::Z::TreeEvaluator::longHighestOneBit(TR::Node *node, TR::CodeG
    {
    return inlineHighestOneBit(node, cg, true);
    }
-TR::Register *OMR::Z::TreeEvaluator::longLowestOneBit(TR::Node *node, TR::CodeGenerator *cg){ TR_ASSERT(0, "not implemented!"); return NULL; }
 
 TR::Register *OMR::Z::TreeEvaluator::longNumberOfLeadingZeros(TR::Node *node, TR::CodeGenerator *cg)
    {
@@ -15534,15 +14508,8 @@ OMR::Z::TreeEvaluator::ifxcmpoEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    return NULL;
    }
 
-///// SIMD Evaluators Begin //////////
-
-
 // anchor instruction to assist in debugging
 TR::Instruction * breakInst = NULL;
-
-/*********************************/
-/*   Helpers for vector ops      */
-/*********************************/
 
 /**
  * @return a vector register, trying to reuse children registers if possible
@@ -15710,9 +14677,6 @@ OMR::Z::TreeEvaluator::inlineVectorTernaryOp(TR::Node * node, TR::CodeGenerator 
    return targetReg;
    }
 
-/*********************************/
-/*          vector ops           */
-/*********************************/
 TR::Register *
 OMR::Z::TreeEvaluator::vloadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
@@ -16652,182 +15616,6 @@ inlineStringHashCode(TR::Node* node, TR::CodeGenerator* cg, bool isCompressed)
    return node->setRegister(registerHash);
    }
 
-/** \brief Inline evaluates a call to java/lang/String.hashCodeImpl([CII)I
-  *
-  * This function uses an implementation of a 4 time unrolled Duff's Device loop to implement the Java String hashcode
-  * algorithm with a switch table and a do while loop. This implementation contains only 2 branches (one for the switch
-  * and one for the backwards loop branch). Empirically this implementation is measured to be faster than a naive for
-  * loop implementation at low optimization levels, however in production benchmark environments this implementation
-  * seems to perform 10% slower than the naive for loop due to the JIT doing a great job unrolling the loop and using
-  * multiple registers in the unrolled version to avoid stalls.
-  *
-  * Because of these shortcomings this implementation is checked in for reference and is not being used in production.
-  */
-TR::Register* inlineStringHashCodeUnrolled(TR::Node* node, TR::CodeGenerator* cg)
-   {
-   TR::Compilation* comp = cg->comp();
-
-   TR::Node* valueNode = node->getChild(0);
-   TR::Node* indexNode = node->getChild(1);
-   TR::Node* countNode = node->getChild(2);
-
-   // Create the necessary labels
-   TR::LabelSymbol * adjustIndexForCase0Label = generateLabelSymbol(cg);
-
-   TR::LabelSymbol * switchTableLabel = generateLabelSymbol(cg);
-
-   TR::LabelSymbol * case0Label = generateLabelSymbol(cg);
-   TR::LabelSymbol * case6Label = generateLabelSymbol(cg);
-   TR::LabelSymbol * case4Label = generateLabelSymbol(cg);
-   TR::LabelSymbol * case2Label = generateLabelSymbol(cg);
-
-   TR::LabelSymbol * cFlowRegionEnd = generateLabelSymbol(cg);
-
-   // Create the necessary registers
-   TR::Register* hashRegister = cg->allocateRegister();
-   TR::Register* tempRegister = cg->allocateRegister();
-
-   TR::Register* valueRegister = cg->gprClobberEvaluate(valueNode);
-   TR::Register* indexRegister = cg->gprClobberEvaluate(indexNode);
-   TR::Register* countRegister = cg->gprClobberEvaluate(countNode);
-
-   if (TR::Compiler->target.is64Bit())
-      {
-      generateRRInstruction(cg, TR::InstOpCode::getLoadRegWidenOpCode(), node, indexRegister, indexRegister);
-      generateRRInstruction(cg, TR::InstOpCode::getLoadRegWidenOpCode(), node, countRegister, countRegister);
-      }
-
-   TR::RegisterDependencyConditions* dependencies = new (cg->trHeapMemory()) TR::RegisterDependencyConditions(0, 5, cg);
-
-   // registerCount *= 2
-   generateRSInstruction(cg, TR::InstOpCode::getShiftLeftLogicalSingleOpCode(), node, countRegister, countRegister, 1);
-
-   // registerTemp = registerCount
-   generateRRInstruction(cg, TR::InstOpCode::getLoadRegOpCode(), node, tempRegister, countRegister);
-
-   // registerTemp = registerTemp % 8
-   generateRILInstruction(cg, TR::InstOpCode::NILF, node, tempRegister, 0x00000007);
-
-   // registerIndex = registerTemp
-   generateRRInstruction(cg, TR::InstOpCode::getLoadRegOpCode(), node, indexRegister, tempRegister);
-
-   // registerIndex -= 8
-   generateRILInstruction(cg, TR::InstOpCode::getSubtractLogicalImmOpCode(), node, indexRegister, 8);
-
-   // registerTemp *= 2 or 4 depending on the address size
-   generateRSInstruction(cg, TR::InstOpCode::getShiftLeftLogicalSingleOpCode(), node, tempRegister, tempRegister, TR::Compiler->target.is64Bit() ? 2 : 1);
-
-   // registerHash = current PSW address
-   generateRILInstruction(cg, TR::InstOpCode::LARL, node, hashRegister, switchTableLabel);
-
-   // registerTemp += registerHash
-   generateRRInstruction(cg, TR::InstOpCode::getAddRegOpCode(), node, tempRegister, hashRegister);
-
-   // registerHash = 0
-   generateRREInstruction(cg, TR::InstOpCode::getXORRegOpCode(), node, hashRegister, hashRegister);
-
-   // Branch to the correct case label
-   generateRXInstruction(cg, TR::InstOpCode::getLoadOpCode(), node, tempRegister, generateS390MemoryReference(tempRegister, 0, cg));
-
-   static_cast <TR::S390RegInstruction*> (generateS390RegInstruction(cg, TR::InstOpCode::BCR, node, tempRegister))->setBranchCondition(TR::InstOpCode::COND_MASK15);
-
-   generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, switchTableLabel);
-
-   // Generate the data constants with the case label addresses
-   generateS390LabelInstruction(cg, TR::InstOpCode::DC, node, adjustIndexForCase0Label);
-   generateS390LabelInstruction(cg, TR::InstOpCode::DC, node, case2Label);
-   generateS390LabelInstruction(cg, TR::InstOpCode::DC, node, case4Label);
-   generateS390LabelInstruction(cg, TR::InstOpCode::DC, node, case6Label);
-
-   generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, adjustIndexForCase0Label);
-   adjustIndexForCase0Label->setStartInternalControlFlow();
-
-   // registerIndex += 8
-   generateRXInstruction(cg, TR::InstOpCode::getLoadAddressOpCode(), node, indexRegister, generateS390MemoryReference(indexRegister, 8, cg));
-
-   // ----------------- Incoming branch -----------------
-
-   generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, case0Label);
-
-   // registerTemp = registerHash << 5
-   generateRSInstruction(cg, TR::InstOpCode::SLLK, node, tempRegister, hashRegister, 5);
-
-   // registerHash = registerTemp - registerHash
-   generateRRRInstruction(cg, TR::InstOpCode::getSubtractThreeRegOpCode(), node, hashRegister, tempRegister, hashRegister);
-
-   // registerHash += char at registerIndex
-   generateRXInstruction(cg, TR::InstOpCode::AH, node, hashRegister, generateS390MemoryReference(valueRegister, indexRegister, TR::Compiler->om.contiguousArrayHeaderSizeInBytes(), cg));
-
-   // ----------------- Incoming branch -----------------
-
-   generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, case6Label);
-
-   // registerTemp = registerHash << 5
-   generateRSInstruction(cg, TR::InstOpCode::SLLK, node, tempRegister, hashRegister, 5);
-
-   // registerHash = registerTemp - registerHash
-   generateRRRInstruction(cg, TR::InstOpCode::getSubtractThreeRegOpCode(), node, hashRegister, tempRegister, hashRegister);
-
-   // registerHash += char at registerIndex
-   generateRXInstruction(cg, TR::InstOpCode::AH, node, hashRegister, generateS390MemoryReference(valueRegister, indexRegister, TR::Compiler->om.contiguousArrayHeaderSizeInBytes() + 2, cg));
-
-   // ----------------- Incoming branch -----------------
-
-   generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, case4Label);
-
-   // registerTemp = registerHash << 5
-   generateRSInstruction(cg, TR::InstOpCode::SLLK, node, tempRegister, hashRegister, 5);
-
-   // registerHash = registerTemp - registerHash
-   generateRRRInstruction(cg, TR::InstOpCode::getSubtractThreeRegOpCode(), node, hashRegister, tempRegister, hashRegister);
-
-   // registerHash += char at registerIndex
-   generateRXInstruction(cg, TR::InstOpCode::AH, node, hashRegister, generateS390MemoryReference(valueRegister, indexRegister, TR::Compiler->om.contiguousArrayHeaderSizeInBytes() + 4, cg));
-
-   // ----------------- Incoming branch -----------------
-
-   generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, case2Label);
-
-   // registerTemp = registerHash << 5
-   generateRSInstruction(cg, TR::InstOpCode::SLLK, node, tempRegister, hashRegister, 5);
-
-   // registerHash = registerTemp - registerHash
-   generateRRRInstruction(cg, TR::InstOpCode::getSubtractThreeRegOpCode(), node, hashRegister, tempRegister, hashRegister);
-
-   // registerHash += char at registerIndex
-   generateRXInstruction(cg, TR::InstOpCode::AH, node, hashRegister, generateS390MemoryReference(valueRegister, indexRegister, TR::Compiler->om.contiguousArrayHeaderSizeInBytes() + 6, cg));
-
-   // registerIndex += 8
-   generateRXInstruction(cg, TR::InstOpCode::getLoadAddressOpCode(), node, indexRegister, generateS390MemoryReference(indexRegister, 8, cg));
-
-   // Branch to caseLabel0 if registerIndex < registerCount
-   generateS390CompareAndBranchInstruction(cg, TR::InstOpCode::getCmpLogicalRegOpCode(), node, indexRegister, countRegister, TR::InstOpCode::COND_MASK4, case0Label, false, false);
-
-   // Set up the proper register dependencies
-   dependencies->addPostConditionIfNotAlreadyInserted(valueRegister, TR::RealRegister::AssignAny);
-   dependencies->addPostConditionIfNotAlreadyInserted(indexRegister, TR::RealRegister::AssignAny);
-   dependencies->addPostConditionIfNotAlreadyInserted(countRegister, TR::RealRegister::AssignAny);
-   dependencies->addPostConditionIfNotAlreadyInserted(hashRegister, TR::RealRegister::AssignAny);
-   dependencies->addPostConditionIfNotAlreadyInserted(tempRegister, TR::RealRegister::AssignAny);
-
-   generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionEnd, dependencies);
-   cFlowRegionEnd->setEndInternalControlFlow();
-
-   // Cleanup nodes before returning
-   cg->decReferenceCount(valueNode);
-   cg->decReferenceCount(indexNode);
-   cg->decReferenceCount(countNode);
-
-   // Cleanup registers before returning
-   cg->stopUsingRegister(valueRegister);
-   cg->stopUsingRegister(indexRegister);
-   cg->stopUsingRegister(countRegister);
-
-   cg->stopUsingRegister(tempRegister);
-
-   return node->setRegister(hashRegister);
-   }
-
 TR::Register *
 inlineUTF16BEEncodeSIMD(TR::Node *node, TR::CodeGenerator *cg)
    {
@@ -17182,7 +15970,6 @@ inlineUTF16BEEncode(TR::Node *node, TR::CodeGenerator *cg)
 
    return node->setRegister(translated);
    }
-
 
 TR::Register *
 OMR::Z::TreeEvaluator::arraycmpSIMDHelper(TR::Node *node,
@@ -17919,7 +16706,6 @@ OMR::Z::TreeEvaluator::vcmpneEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    cg->stopUsingRegister(vecZeroReg);
    return node->getRegister();
    }
-
 
 TR::Register *
 OMR::Z::TreeEvaluator::vcmpltEvaluator(TR::Node *node, TR::CodeGenerator *cg)

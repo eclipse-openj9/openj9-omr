@@ -955,7 +955,7 @@ OMR::SymbolReferenceTable::methodSymRefFromName(TR::ResolvedMethodSymbol * ownin
    // No existing symref.  Create a new one.
    //
 
-   TR_OpaqueMethodBlock *method = fe()->getMethodFromName(className, methodName, methodSignature, comp()->getCurrentMethod()->getNonPersistentIdentifier());
+   TR_OpaqueMethodBlock *method = fe()->getMethodFromName(className, methodName, methodSignature);
    TR_ASSERT(method, "methodSymRefFromName: method must exist: %s.%s%s", className, methodName, methodSignature);
    TR_ASSERT(kind != TR::MethodSymbol::Virtual, "methodSymRefFromName doesn't support virtual methods"); // Until we're able to look up vtable index
 

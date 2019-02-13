@@ -491,23 +491,34 @@ OMR::CodeCacheManager::findMethodTrampoline(TR_OpaqueMethodBlock *method, void *
    return codeCache->findTrampoline(method);
    }
 
-// Helper trampoline Lookup
-// Find the trampoline for the given helper in the code cache containing the
-// callingPC.
-//
+
 OMR::CodeCacheTrampolineCode *
-OMR::CodeCacheManager::findHelperTrampoline(void *callingPC, int32_t helperIndex)
+OMR::CodeCacheManager::findHelperTrampoline(int32_t helperIndex, void *callSite)
    {
    /* does the platform need trampolines at all? */
    TR::CodeCacheConfig &config = self()->codeCacheConfig();
    if (!config.trampolineCodeSize())
       return NULL;
 
-   TR::CodeCache *codeCache = self()->findCodeCacheFromPC(callingPC);
+   TR::CodeCache *codeCache = self()->findCodeCacheFromPC(callSite);
    if (!codeCache)
       return NULL;
 
    return codeCache->findTrampoline(helperIndex);
+   }
+
+
+// Helper trampoline Lookup
+// Find the trampoline for the given helper in the code cache containing the
+// callingPC.
+//
+// This function is deprecated and simply calls findHelperTrampoline() with
+// parameters transposed.
+//
+OMR::CodeCacheTrampolineCode *
+OMR::CodeCacheManager::findHelperTrampoline(void *callingPC, int32_t helperIndex)
+   {
+   return self()->findHelperTrampoline(helperIndex, callingPC);
    }
 
 // Synchronize temporary trampolines in all code caches

@@ -30,6 +30,7 @@
 #include "optimizer/Optimizer.hpp"
 #include "ilgen/MethodBuilder.hpp"
 #include "omrport.h"
+#include "Jit.hpp"
 
 #define ASSERT_NULL(pointer) ASSERT_EQ(NULL, (pointer))
 #define ASSERT_NOTNULL(pointer) ASSERT_TRUE(NULL != (pointer))
@@ -37,11 +38,6 @@
 #define EXPECT_NOTNULL(pointer) EXPECT_TRUE(NULL != (pointer))
 
 #define TRIL(code) #code
-
-bool initializeJit();
-bool initializeJitWithOptions(char *options);
-int32_t compileMethodBuilder(TR::MethodBuilder * methodBuilder, void ** entryPoint);
-void shutdownJit();
 
 namespace TRTest
 {

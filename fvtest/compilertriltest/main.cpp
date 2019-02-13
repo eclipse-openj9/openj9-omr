@@ -26,30 +26,6 @@ extern "C" {
 int omr_main_entry(int argc, char **argv, char **envp);
 }
 
-extern bool internal_initializeJit();
-extern bool internal_initializeJitWithOptions(char *options);
-extern int32_t internal_compileMethodBuilder(TR::MethodBuilder * methodBuilder, void ** entryPoint);
-extern void internal_shutdownJit();
-
-bool initializeJit() {
-   auto ret = internal_initializeJit();
-   return ret;
-}
-
-bool initializeJitWithOptions(char * options) {
-auto ret = internal_initializeJitWithOptions(options);
-return ret;
-}
-
-int32_t compileMethodBuilder(TR::MethodBuilder * methodBuilder, void ** entryPoint) {
-   auto ret = internal_compileMethodBuilder(methodBuilder, entryPoint);
-   return ret;
-}
-
-void shutdownJit() {
-   internal_shutdownJit();
-}
-
 OMRPortLibrary TRTest::TestWithPortLib::PortLib;
 omrthread_t TRTest::TestWithPortLib::current_thread = NULL;
 

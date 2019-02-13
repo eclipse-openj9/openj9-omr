@@ -1684,27 +1684,6 @@ OMR::Z::TreeEvaluator::lcmpEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    return lcmpHelper64(node, cg);
    }
 
-TR::Register *
-OMR::Z::TreeEvaluator::lucmpEvaluator(TR::Node * node, TR::CodeGenerator * cg)
-   {
-   PRINT_ME("lucmp", node, cg);
-   return TR::TreeEvaluator::badILOpEvaluator(node, cg);
-   }
-
-TR::Register *
-OMR::Z::TreeEvaluator::icmpEvaluator(TR::Node * node, TR::CodeGenerator * cg)
-   {
-   PRINT_ME("icmp", node, cg);
-   return TR::TreeEvaluator::badILOpEvaluator(node, cg);
-   }
-
-TR::Register *
-OMR::Z::TreeEvaluator::iucmpEvaluator(TR::Node * node, TR::CodeGenerator * cg)
-   {
-   PRINT_ME("iucmp", node, cg);
-   return TR::TreeEvaluator::badILOpEvaluator(node, cg);
-   }
-
 void OMR::Z::TreeEvaluator::tableEvaluatorCaseLabelHelper(TR::Node * node, TR::CodeGenerator * cg, tableKind tableKindToBeEvaluated, int32_t numBranchTableEntries, TR::Register * selectorReg, TR::Register * branchTableReg, TR::Register *reg1)
    {
    TR::Compilation *comp = cg->comp();

@@ -138,12 +138,6 @@ TR::Register * sloadHelper(TR::Node * node, TR::CodeGenerator * cg, TR::MemoryRe
 
 TR::Register *getLitPoolBaseReg(TR::Node *node, TR::CodeGenerator * cg);
 
-TR::InstOpCode::S390BranchCondition intToBrCond(const int32_t brCondInt);
-int32_t brCondToInt(const TR::InstOpCode::S390BranchCondition brCond);
-TR::InstOpCode::S390BranchCondition getOppositeBranchCondition(TR::InstOpCode::S390BranchCondition brCond);
-void orInPlace(TR::InstOpCode::S390BranchCondition& brCond, const TR::InstOpCode::S390BranchCondition other);
-
-
 enum LoadForm
    {
    RegReg,
@@ -222,7 +216,6 @@ extern template TR::Register * TR::TreeEvaluator::addressCastEvaluator<64, false
 
 TR::Register *getConditionCode(TR::Node *node, TR::CodeGenerator *cg, TR::Register *programRegister = NULL);
 TR::RegisterDependencyConditions *getGLRegDepsDependenciesFromIfNode(TR::CodeGenerator *cg, TR::Node* ificmpNode);
-void generateLongDoubleStore(TR::Node *node, TR::CodeGenerator *cg, TR::Register *reg, TR::Register *addressReg);
 
 class TR_S390ComputeCC : public TR::TreeEvaluator
    {

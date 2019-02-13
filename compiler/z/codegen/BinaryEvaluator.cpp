@@ -244,6 +244,90 @@ laddConst(TR::Node * node, TR::CodeGenerator * cg, TR::RegisterPair * targetRegi
    return targetRegisterPair;
    }
 
+static bool
+genNullTestForCompressedPointers(TR::Node *node, TR::CodeGenerator *cg, TR::Register *targetRegister, TR::LabelSymbol * &skipAdd)
+   {
+   TR::Compilation *comp = cg->comp();
+   bool hasCompressedPointers = false;
+   if (TR::Compiler->target.is64Bit() &&
+         comp->useCompressedPointers() &&
+         node->containsCompressionSequence()  /* &&
+         !node->isNonZero() */ )
+      {
+      hasCompressedPointers = true;
+//      TR::ILOpCodes loadOp = comp->il.opCodeForIndirectLoad(TR_SInt32);
+      TR::Node *n = node;
+      bool isNonZero = false;
+      if (n->isNonZero())
+        isNonZero = true;
+
+      if ((n->getOpCodeValue() == TR::lshl) ||
+          (n->getOpCodeValue() == TR::lushr))
+         n = n->getFirstChild();
+
+      TR::Node *addOrSubNode = NULL;
+      if (n->getOpCodeValue() == TR::ladd)
+         {
+         addOrSubNode = n;
+
+         if (n->getFirstChild()->isNonZero())
+            isNonZero = true;
+         if (n->getFirstChild()->getOpCodeValue() == TR::iu2l || n->getFirstChild()->getOpCode().isShift())
+            {
+            if (n->getFirstChild()->getFirstChild()->isNonZero())
+               isNonZero = true;
+            }
+         }
+      else if (n->getOpCodeValue() == TR::lsub)
+         {
+         addOrSubNode = n;
+
+         if (n->getFirstChild()->isNonZero())
+            isNonZero = true;
+         if (n->getFirstChild()->getOpCodeValue() == TR::a2l || n->getFirstChild()->getOpCode().isShift())
+            {
+            if (n->getFirstChild()->getFirstChild()->isNonNull())
+               isNonZero = true;
+            }
+         }
+
+      if (!isNonZero)
+         {
+
+         TR::Instruction *current = cg->getAppendInstruction();
+         TR_ASSERT( current != NULL, "Could not get current instruction");
+
+         if (!targetRegister)
+            {
+            targetRegister = cg->gprClobberEvaluate(addOrSubNode->getFirstChild());
+             //targetRegister->incReferenceCount();
+            //node->setRegister(targetRegister);
+            }
+
+         skipAdd = generateLabelSymbol(cg);
+         skipAdd->setEndInternalControlFlow();
+
+         TR::LabelSymbol * cFlowRegionStart = generateLabelSymbol( cg);
+
+         if (addOrSubNode->getFirstChild()->getOpCode().isShift() && addOrSubNode->getFirstChild()->getRegister())
+            {
+            TR::Register* r = addOrSubNode->getFirstChild()->getRegister();
+            generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionStart);
+            generateS390CompareAndBranchInstruction(cg, TR::InstOpCode::getCmpOpCode(), node, r, (signed char)0, TR::InstOpCode::COND_BE, skipAdd);
+            }
+         else
+            {
+            generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionStart);
+            generateS390CompareAndBranchInstruction(cg, TR::InstOpCode::getCmpOpCode(), node, targetRegister, (signed char)0, TR::InstOpCode::COND_BE, skipAdd);
+            }
+
+         cFlowRegionStart->setStartInternalControlFlow();
+         }
+      }
+
+   return hasCompressedPointers;
+   }
+
 /**
  * laddHelper64- add 2 long integers for 64bit platform
  */
@@ -299,7 +383,7 @@ laddHelper64(TR::Node * node, TR::CodeGenerator * cg)
                secondRegister = cg->evaluate(secondChild);
       }
 
-   bool hasCompressedPointers = TR::TreeEvaluator::genNullTestForCompressedPointers(node, cg, targetRegister, skipAdd);
+   bool hasCompressedPointers = genNullTestForCompressedPointers(node, cg, targetRegister, skipAdd);
 
    if (hasCompressedPointers &&
          ((secondChild->getOpCodeValue() != TR::lconst) ||
@@ -1964,7 +2048,7 @@ lsubHelper64(TR::Node * node, TR::CodeGenerator * cg)
             secondRegister = cg->evaluate(secondChild);
 
    TR::LabelSymbol *skipAdd = NULL;
-   bool hasCompressedPointers = TR::TreeEvaluator::genNullTestForCompressedPointers(node, cg, targetRegister, skipAdd);
+   bool hasCompressedPointers = genNullTestForCompressedPointers(node, cg, targetRegister, skipAdd);
 
 
    if (hasCompressedPointers &&

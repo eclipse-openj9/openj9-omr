@@ -196,6 +196,18 @@ public:
 
    TR::CodeCache * findCodeCacheFromPC(void *inCacheAddress);
 
+   /**
+    * @brief Finds a helper trampoline for the given helper reachable from the
+    *        given code cache address.
+    *
+    * @param[in] helperIndex : the index of the helper requested
+    * @param[in] callSite : the call site address
+    *
+    * @return The address of the helper trampoline in the same code cache as
+    *         the call site address
+    */
+   CodeCacheTrampolineCode * findHelperTrampoline(int32_t helperIndex, void *callSite);
+
    CodeCacheTrampolineCode * findMethodTrampoline(TR_OpaqueMethodBlock *method, void *callingPC);
    CodeCacheTrampolineCode * findHelperTrampoline(void *callingPC, int32_t helperIndex);
    void synchronizeTrampolines();

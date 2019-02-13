@@ -87,7 +87,7 @@ template <class Derived>
 intptrj_t
 FEBase<Derived>::indexedTrampolineLookup(int32_t helperIndex, void * callSite)
    {
-   void * tramp = codeCacheManager().findHelperTrampoline(callSite, helperIndex);
+   void * tramp = codeCacheManager().findHelperTrampoline(helperIndex, callSite);
    TR_ASSERT(tramp!=NULL, "Error: CodeCache is not initialized properly.\n");
    return (intptrj_t)tramp;
    }

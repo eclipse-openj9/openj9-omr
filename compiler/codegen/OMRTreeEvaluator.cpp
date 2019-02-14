@@ -51,6 +51,90 @@
 #include "infra/TreeServices.hpp"
 #include "ras/Debug.hpp"
 
+TR::Register *
+OMR::TreeEvaluator::irdbarEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   if (node->getSymbolReference()->getSymbol()->isStatic())
+      cg->decReferenceCount(node->getFirstChild());
+   return TR::TreeEvaluator::iloadEvaluator(node, cg);
+   }
+
+TR::Register *
+OMR::TreeEvaluator::ardbarEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   if (node->getSymbolReference()->getSymbol()->isStatic())
+      cg->decReferenceCount(node->getFirstChild());
+   return TR::TreeEvaluator::aloadEvaluator(node, cg);
+   }
+
+TR::Register *
+OMR::TreeEvaluator::frdbarEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   if (node->getSymbolReference()->getSymbol()->isStatic())
+      cg->decReferenceCount(node->getFirstChild());
+   return TR::TreeEvaluator::floadEvaluator(node, cg);
+   }
+
+TR::Register *
+OMR::TreeEvaluator::drdbarEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   if (node->getSymbolReference()->getSymbol()->isStatic())
+      cg->decReferenceCount(node->getFirstChild());
+   return TR::TreeEvaluator::dloadEvaluator(node, cg);
+   }
+
+TR::Register *
+OMR::TreeEvaluator::brdbarEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   if (node->getSymbolReference()->getSymbol()->isStatic())
+      cg->decReferenceCount(node->getFirstChild());
+   return TR::TreeEvaluator::bloadEvaluator(node, cg);
+   }
+
+TR::Register *
+OMR::TreeEvaluator::srdbarEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   if (node->getSymbolReference()->getSymbol()->isStatic())
+      cg->decReferenceCount(node->getFirstChild());
+   return TR::TreeEvaluator::sloadEvaluator(node, cg);
+   }
+
+TR::Register *
+OMR::TreeEvaluator::lrdbarEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   if (node->getSymbolReference()->getSymbol()->isStatic())
+      cg->decReferenceCount(node->getFirstChild());
+   return TR::TreeEvaluator::lloadEvaluator(node, cg);
+   }
+
+TR::Register *
+OMR::TreeEvaluator::iwrtbarEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   cg->recursivelyDecReferenceCount(node->getSymbolReference()->getSymbol()->isStatic() ? node->getSecondChild() : node->getThirdChild());
+   return TR::TreeEvaluator::istoreEvaluator(node, cg);
+   }
+
+TR::Register *
+OMR::TreeEvaluator::bwrtbarEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   cg->recursivelyDecReferenceCount(node->getSymbolReference()->getSymbol()->isStatic() ? node->getSecondChild() : node->getThirdChild());
+   return TR::TreeEvaluator::bstoreEvaluator(node, cg);
+   }
+
+TR::Register *
+OMR::TreeEvaluator::swrtbarEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   cg->recursivelyDecReferenceCount(node->getSymbolReference()->getSymbol()->isStatic() ? node->getSecondChild() : node->getThirdChild());
+   return TR::TreeEvaluator::sstoreEvaluator(node, cg);
+   }
+
+TR::Register *
+OMR::TreeEvaluator::lwrtbarEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   cg->recursivelyDecReferenceCount(node->getSymbolReference()->getSymbol()->isStatic() ? node->getSecondChild() : node->getThirdChild());
+   return TR::TreeEvaluator::lstoreEvaluator(node, cg);
+   }
+
 bool OMR::TreeEvaluator::isStaticClassSymRef(TR::SymbolReference * symRef)
    {
    return (symRef && symRef->getSymbol() && symRef->getSymbol()->isStatic() && symRef->getSymbol()->isClassObject());

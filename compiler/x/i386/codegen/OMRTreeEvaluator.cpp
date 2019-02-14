@@ -3781,3 +3781,4 @@ TR::Register *OMR::X86::I386::TreeEvaluator::dwrtbarEvaluator(TR::Node *node, TR
    cg->recursivelyDecReferenceCount(node->getSymbolReference()->getSymbol()->isStatic() ? node->getSecondChild() : node->getThirdChild());
    return TR::TreeEvaluator::dstoreEvaluator(node, cg);
    }
+

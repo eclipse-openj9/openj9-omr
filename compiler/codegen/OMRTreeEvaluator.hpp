@@ -49,6 +49,18 @@ namespace OMR
 class OMR_EXTENSIBLE TreeEvaluator
    {
    public:
+   static TR::Register *irdbarEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *ardbarEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *frdbarEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *drdbarEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *brdbarEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *srdbarEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *lrdbarEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *iwrtbarEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *bwrtbarEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *swrtbarEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+   static TR::Register *lwrtbarEvaluator(TR::Node *node, TR::CodeGenerator *cg);
+
    static bool instanceOfOrCheckCastNeedEqualityTest(TR::Node * castClassNode, TR::CodeGenerator *cg);
    static bool instanceOfOrCheckCastNeedSuperTest(TR::Node * castClassNode, TR::CodeGenerator *cg);
 

@@ -6013,6 +6013,12 @@ OMR::Z::TreeEvaluator::iloadEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    return iloadHelper(node, cg, NULL);
    }
 
+TR::Register *
+OMR::Z::TreeEvaluator::dwrtbarEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   cg->recursivelyDecReferenceCount(node->getSymbolReference()->getSymbol()->isStatic() ? node->getSecondChild() : node->getThirdChild());
+   return TR::TreeEvaluator::dstoreEvaluator(node, cg);
+   }
 
 /**
  * lload Evaluator: load long integer
@@ -6315,6 +6321,20 @@ OMR::Z::TreeEvaluator::bstoreEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    tempMR->stopUsingMemRefRegister(cg);
 
    return NULL;
+   }
+
+TR::Register *
+OMR::Z::TreeEvaluator::fwrtbarEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   cg->recursivelyDecReferenceCount(node->getSymbolReference()->getSymbol()->isStatic() ? node->getSecondChild() : node->getThirdChild());
+   return TR::TreeEvaluator::fstoreEvaluator(node, cg);
+   }
+
+TR::Register *
+OMR::Z::TreeEvaluator::awrtbarEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+   {
+   cg->recursivelyDecReferenceCount(node->getSymbolReference()->getSymbol()->isStatic() ? node->getSecondChild() : node->getThirdChild());
+   return TR::TreeEvaluator::astoreEvaluator(node, cg);
    }
 
 /**

@@ -609,14 +609,14 @@ OMR::Z::CodeGenerator::CodeGenerator()
             break;
             }
 
-         case 3:
+         case 4:
             {
             _processorInfo.disableArch(TR_S390ProcessorInfo::TR_z14);
             traceMsg(comp, "RandomGen: Disabling z14 processor architecture.");
             break;
             }
 
-         case 4:
+         case 5:
             {
             _processorInfo.disableArch(TR_S390ProcessorInfo::TR_zNext);
             traceMsg(comp, "RandomGen: Disabling zNext processor architecture.");

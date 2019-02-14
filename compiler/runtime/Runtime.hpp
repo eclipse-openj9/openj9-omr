@@ -394,7 +394,9 @@ typedef enum
    TR_ValidateImproperInterfaceMethodFromCP=97,
    TR_SymbolFromManager                   = 98,
    TR_MethodCallAddress                   = 99,
-   TR_NumExternalRelocationKinds          = 100,
+   TR_DiscontiguousSymbolFromManager      = 100,
+   TR_ResolvedTrampolines                 = 101,
+   TR_NumExternalRelocationKinds          = 102,
    TR_ExternalRelocationTargetKindMask    = 0xff,
    } TR_ExternalRelocationTargetKind;
 

@@ -518,7 +518,7 @@ OMR::CodeCacheManager::findHelperTrampoline(int32_t helperIndex, void *callSite)
 OMR::CodeCacheTrampolineCode *
 OMR::CodeCacheManager::findHelperTrampoline(void *callingPC, int32_t helperIndex)
    {
-   return self()->findHelperTrampoline(helperIndex, callingPC);
+   return reinterpret_cast<OMR::CodeCacheTrampolineCode *>(self()->findHelperTrampoline(helperIndex, callingPC));
    }
 
 // Synchronize temporary trampolines in all code caches

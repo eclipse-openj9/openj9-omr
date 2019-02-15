@@ -9032,7 +9032,8 @@ static TR::VPConstraint*
 passingTypeTestObjectConstraint(
    OMR::ValuePropagation *vp,
    TR::VPConstraint *classConstraint,
-   bool testingForFixedType)
+   bool testingForFixedType,
+   bool constrainVft)
    {
    TR_ASSERT_FATAL(
       classConstraint->isClassObject() == TR_yes,
@@ -9052,22 +9053,31 @@ passingTypeTestObjectConstraint(
       type = TR::VPResolvedClass::create(vp, type->getClass());
       }
 
-   // Use the signature to check whether type is java/lang/Class exactly. We
-   // can't rely on isJavaLangClassObject() because it returns TR_maybe in this
-   // case. (If it were to return TR_yes, it would mean the referent is a
-   // java/lang/Class representing java/lang/Class, i.e. Class.class, which
-   // would be incorrect in this case.)
    TR::VPObjectLocation *loc = NULL;
-   int sigLen;
-   const char *sig = type->getClassSignature(sigLen);
-   if (sig != NULL && sigLen == 17 && !strncmp(sig, "Ljava/lang/Class;", sigLen))
+   if (constrainVft)
       {
-      // Just say that it's a java/lang/Class, with no information about the
-      // class that it represents.
-      type = NULL;
-      loc = TR::VPObjectLocation::create(
-         vp,
-         TR::VPObjectLocation::JavaLangClassObject);
+      // The resulting constraint applies to the object's VFT pointer, not to
+      // the object itself.
+      loc = TR::VPObjectLocation::create(vp, TR::VPObjectLocation::J9ClassObject);
+      }
+   else
+      {
+      // Use the signature to check whether type is java/lang/Class exactly. We
+      // can't rely on isJavaLangClassObject() because it returns TR_maybe in this
+      // case. (If it were to return TR_yes, it would mean the referent is a
+      // java/lang/Class representing java/lang/Class, i.e. Class.class, which
+      // would be incorrect in this case.)
+      int sigLen;
+      const char *sig = type->getClassSignature(sigLen);
+      if (sig != NULL && sigLen == 17 && !strncmp(sig, "Ljava/lang/Class;", sigLen))
+         {
+         // Just say that it's a java/lang/Class, with no information about the
+         // class that it represents.
+         type = NULL;
+         loc = TR::VPObjectLocation::create(
+            vp,
+            TR::VPObjectLocation::JavaLangClassObject);
+         }
       }
 
    // Objects passing any kind of instanceof are non-null:
@@ -9535,6 +9545,7 @@ static TR::Node *constrainIfcmpeqne(OMR::ValuePropagation *vp, TR::Node *node, b
    //
    TR::VPConstraint *instanceofConstraint = NULL;
    TR::Node         *instanceofObjectRef = NULL;
+   bool             instanceofObjectRefIsVft = false;
    bool             instanceofOnBranch = false;
    bool instanceofDetectedAndFixedType = false;
    bool isInstanceOf = false;
@@ -9577,6 +9588,7 @@ static TR::Node *constrainIfcmpeqne(OMR::ValuePropagation *vp, TR::Node *node, b
                   {
 #ifdef J9_PROJECT_SPECIFIC
                   instanceofObjectRef = node->getFirstChild();
+                  instanceofObjectRefIsVft = true;
                   TR::Node *classChild = node->getSecondChild();
                   bool foldedGuard = false;
                   static const char* enableJavaLangClassFolding = feGetEnv ("TR_EnableFoldJavaLangClass");
@@ -9604,7 +9616,10 @@ static TR::Node *constrainIfcmpeqne(OMR::ValuePropagation *vp, TR::Node *node, b
 
                   if (!foldedGuard && (instanceofObjectRef->getOpCodeValue() == TR::aloadi) &&
                       (instanceofObjectRef->getSymbolReference() == vp->comp()->getSymRefTab()->findVftSymbolRef()))
+                     {
                      instanceofObjectRef = instanceofObjectRef->getFirstChild();
+                     instanceofObjectRefIsVft = false;
+                     }
 
                   TR::VPConstraint *classConstraint = vp->getConstraint(classChild, isGlobal);
                   //foldedGuard indicates that we already set cannotBranch or cannotFallThrough
@@ -9792,7 +9807,8 @@ static TR::Node *constrainIfcmpeqne(OMR::ValuePropagation *vp, TR::Node *node, b
       TR::VPConstraint *newConstraint = passingTypeTestObjectConstraint(
          vp,
          instanceofConstraint,
-         instanceofDetectedAndFixedType);
+         instanceofDetectedAndFixedType,
+         instanceofObjectRefIsVft);
 
       if (!isVirtualGuardNopable
           && !vp->addEdgeConstraint(instanceofObjectRef, newConstraint, edgeConstraints))
@@ -9910,7 +9926,8 @@ static TR::Node *constrainIfcmpeqne(OMR::ValuePropagation *vp, TR::Node *node, b
       TR::VPConstraint *newConstraint = passingTypeTestObjectConstraint(
          vp,
          instanceofConstraint,
-         instanceofDetectedAndFixedType);
+         instanceofDetectedAndFixedType,
+         instanceofObjectRefIsVft);
 
       if (!isVirtualGuardNopable
           && !vp->addBlockConstraint(instanceofObjectRef, newConstraint, NULL, false))

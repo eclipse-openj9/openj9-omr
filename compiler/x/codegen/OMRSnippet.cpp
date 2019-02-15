@@ -45,7 +45,6 @@ namespace TR { class X86GuardedDevirtualSnippet; }
 namespace TR { class X86PicDataSnippet; }
 namespace TR { class X86RecompilationSnippet; }
 namespace TR { class X86SpineCheckSnippet; }
-namespace TR { class X86UnresolvedVirtualCallSnippet; }
 namespace TR { class LabelSymbol; }
 namespace TR { class Node; }
 
@@ -83,9 +82,6 @@ TR_Debug::getNamex(TR::Snippet *snippet)
          break;
       case TR::Snippet::IsIPicData:
          return "IPic Data";
-         break;
-      case TR::Snippet::IsUnresolvedVirtualCall:
-         return "Unresolved Virtual Call Snippet";
          break;
       case TR::Snippet::IsForceRecompilation:
          return "Force Recompilation Snippet";
@@ -157,9 +153,6 @@ TR_Debug::printx(TR::FILE *pOutFile, TR::Snippet *snippet)
       case TR::Snippet::IsIPicData:
       case TR::Snippet::IsVPicData:
          print(pOutFile, (TR::X86PicDataSnippet *)snippet);
-         break;
-      case TR::Snippet::IsUnresolvedVirtualCall:
-         print(pOutFile, (TR::X86UnresolvedVirtualCallSnippet *)snippet);
          break;
       case TR::Snippet::IsCheckFailure:
          print(pOutFile, (TR::X86CheckFailureSnippet *)snippet);

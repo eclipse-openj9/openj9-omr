@@ -583,6 +583,48 @@ OMR::Z::CodeGenerator::CodeGenerator()
       _processorInfo.disableArch(TR_S390ProcessorInfo::TR_zNext);
       }
 
+   // Randomly disable an architecture if we are in randomGen mode
+   if (comp->getOption(TR_Randomize))
+      {
+      switch (randomizer.randomInt(TR::Compiler->target.cpu.id() - TR_s370gp7))
+         {
+         case 1:
+            {
+            _processorInfo.disableArch(TR_S390ProcessorInfo::TR_z196);
+            traceMsg(comp, "RandomGen: Disabling z196 processor architecture.");
+            break;
+            }
+
+         case 2:
+            {
+            _processorInfo.disableArch(TR_S390ProcessorInfo::TR_zEC12);
+            traceMsg(comp, "RandomGen: Disabling zEC12 processor architecture.");
+            break;
+            }
+
+         case 3:
+            {
+            _processorInfo.disableArch(TR_S390ProcessorInfo::TR_z13);
+            traceMsg(comp, "RandomGen: Disabling z13 processor architecture.");
+            break;
+            }
+
+         case 4:
+            {
+            _processorInfo.disableArch(TR_S390ProcessorInfo::TR_z14);
+            traceMsg(comp, "RandomGen: Disabling z14 processor architecture.");
+            break;
+            }
+
+         case 5:
+            {
+            _processorInfo.disableArch(TR_S390ProcessorInfo::TR_zNext);
+            traceMsg(comp, "RandomGen: Disabling zNext processor architecture.");
+            break;
+            }
+         }
+      }
+
    _unlatchedRegisterList =
       (TR::RealRegister**)self()->trMemory()->allocateHeapMemory(sizeof(TR::RealRegister*)*(TR::RealRegister::NumRegisters));
    _unlatchedRegisterList[0] = 0; // mark that list is empty

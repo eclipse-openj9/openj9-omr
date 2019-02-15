@@ -25,7 +25,7 @@
 
 #include "omrcfg.h"
 
-#if defined(OMR_GC_MODRON_SCAVENGER) && defined(OMR_GC_SCAVENGER_DELEGATE)
+#if defined(OMR_GC_MODRON_SCAVENGER)
 
 #include "modronbase.h"
 #include "objectdescription.h"
@@ -255,6 +255,6 @@ public:
 	}
 };
 
-#endif /* defined(OMR_GC_MODRON_SCAVENGER) && defined(OMR_GC_SCAVENGER_DELEGATE) */
+#endif /* defined(OMR_GC_MODRON_SCAVENGER) */
 
 #endif /* SCAVENGERDELEGATE_HPP_ */

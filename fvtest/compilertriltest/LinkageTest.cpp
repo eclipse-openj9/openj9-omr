@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2018 IBM Corp. and others
+ * Copyright (c) 2017, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -46,7 +46,6 @@ TEST(TypeToString,TestTemplate) {
    EXPECT_STREQ("Double", TypeToString<double>::type);
 }
 
-
 template <typename T>
 T passThrough(T x) { return x; }
 
@@ -56,7 +55,12 @@ class LinkageTest : public TRTest::JitTest {};
 typedef ::testing::Types<int32_t, int64_t, float, double> InputTypes;
 TYPED_TEST_CASE(LinkageTest, InputTypes);
 
-TYPED_TEST(LinkageTest, InvalidLinkageTest) { 
+TYPED_TEST(LinkageTest, InvalidLinkageTest) {
+    OMRPORT_ACCESS_FROM_OMRPORT(TRTest::TestWithPortLib::privateOmrPortLibrary);
+    std::string arch = omrsysinfo_get_CPU_architecture();
+    SKIP_IF(OMRPORT_ARCH_HAMMER != arch, MissingImplementation)
+        << "Test is skipped on non-x86-64 platforms because calls are not currently supported on other platforms (see issue #1645)";
+
     char inputTrees[200] = {0};
     const auto format_string = "(method return=Int32  args=[Int32] (block (ireturn (icall address=0x%jX args=[Int32] linkage=noexist  (iload parm=0)) )  ))";
     std::snprintf(inputTrees, 200, format_string, reinterpret_cast<uintmax_t>(static_cast<TypeParam (*)(TypeParam)>(passThrough<TypeParam>)));
@@ -64,13 +68,16 @@ TYPED_TEST(LinkageTest, InvalidLinkageTest) {
     auto trees = parseString(inputTrees);
     ASSERT_NOTNULL(trees) << "Trees failed to parse\n" << inputTrees;
 
-#ifdef TR_TARGET_X86
     Tril::DefaultCompiler compiler{trees};
     ASSERT_NE(0, compiler.compile()) << "Compilation succeeded unexpectedly\n" << "Input trees: " << inputTrees;
-#endif
 }
 
 TYPED_TEST(LinkageTest, SystemLinkageParameterPassingSingleArg) {
+    OMRPORT_ACCESS_FROM_OMRPORT(TRTest::TestWithPortLib::privateOmrPortLibrary);
+    std::string arch = omrsysinfo_get_CPU_architecture();
+    SKIP_IF(OMRPORT_ARCH_HAMMER != arch, MissingImplementation)
+        << "Test is skipped on non-x86-64 platforms because calls are not currently supported on other platforms (see issue #1645)";
+
     char inputTrees[200] = {0};
     const auto format_string = "(method return=%s args=[%s] (block (%sreturn (%scall address=0x%jX args=[%s] linkage=system (%sload parm=0)) )  ))";
     std::snprintf(inputTrees, 200, format_string, TypeToString<TypeParam>::type, // Return
@@ -86,26 +93,25 @@ TYPED_TEST(LinkageTest, SystemLinkageParameterPassingSingleArg) {
 
     ASSERT_NOTNULL(trees) << "Trees failed to parse\n" << inputTrees;
 
-    // Execution of this test is disabled on non-X86 platforms, as we
-    // do not have trampoline support, and so this call may be out of
-    // range for some architectures.
-#ifdef TR_TARGET_X86
     Tril::DefaultCompiler compiler{trees};
     ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
-
 
     auto entry_point = compiler.getEntryPoint<TypeParam (*)(TypeParam)>();
 
     EXPECT_EQ(static_cast<TypeParam>(0), entry_point( static_cast<TypeParam>(0)))  << "Input Trees: " << inputTrees;
     EXPECT_EQ(static_cast<TypeParam>(1), entry_point( static_cast<TypeParam>(1)))  << "Input Trees: " << inputTrees;
     EXPECT_EQ(static_cast<TypeParam>(-1), entry_point(static_cast<TypeParam>(-1))) << "Input Trees: " << inputTrees;
-#endif
 }
 
 template <typename T>
 T fourthArg(T a, T b, T c, T d) { return d; }
 
 TYPED_TEST(LinkageTest, SystemLinkageParameterPassingFourArg) {
+    OMRPORT_ACCESS_FROM_OMRPORT(TRTest::TestWithPortLib::privateOmrPortLibrary);
+    std::string arch = omrsysinfo_get_CPU_architecture();
+    SKIP_IF(OMRPORT_ARCH_HAMMER != arch, MissingImplementation)
+        << "Test is skipped on non-x86-64 platforms because calls are not currently supported on other platforms (see issue #1645)";
+
     char inputTrees[400] = {0};
     const auto format_string = "(method return=%s args=[%s,%s,%s,%s] (block (%sreturn (%scall address=0x%jX args=[%s,%s,%s,%s] linkage=system"
                                  " (%sload parm=0)"
@@ -135,20 +141,14 @@ TYPED_TEST(LinkageTest, SystemLinkageParameterPassingFourArg) {
 
     ASSERT_NOTNULL(trees) << "Trees failed to parse\n" << inputTrees;
 
-    // Execution of this test is disabled on non-X86 platforms, as we
-    // do not have trampoline support, and so this call may be out of
-    // range for some architectures.
-#ifdef TR_TARGET_X86
     Tril::DefaultCompiler compiler{trees};
     ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
-
 
     auto entry_point = compiler.getEntryPoint<TypeParam (*)(TypeParam,TypeParam,TypeParam,TypeParam)>();
 
     EXPECT_EQ(static_cast<TypeParam>(1024),    entry_point(0,0,0,static_cast<TypeParam>(1024)))     << "Input Trees: " << inputTrees;
     EXPECT_EQ(static_cast<TypeParam>(-1),      entry_point(0,0,0,static_cast<TypeParam>(-1)))       << "Input Trees: " << inputTrees;
     EXPECT_EQ(static_cast<TypeParam>(0xf0f0f), entry_point(0,0,0,static_cast<TypeParam>(0xf0f0f)))  << "Input Trees: " << inputTrees;
-#endif
 }
 
 template <typename T>
@@ -181,6 +181,11 @@ T (*get_fourth_arg_from_callee())(T,T,T,T) {
 }
 
 TYPED_TEST(LinkageTest, SystemLinkageJitedToJitedParameterPassingFourArg) {
+    OMRPORT_ACCESS_FROM_OMRPORT(TRTest::TestWithPortLib::privateOmrPortLibrary);
+    std::string arch = omrsysinfo_get_CPU_architecture();
+    SKIP_IF(OMRPORT_ARCH_HAMMER != arch, MissingImplementation)
+        << "Test is skipped on non-x86-64 platforms because calls are not currently supported on other platforms (see issue #1645)";
+
     char inputTrees[400] = {0};
 
     auto callee_entry_point = get_fourth_arg_from_callee<TypeParam>();
@@ -218,10 +223,6 @@ TYPED_TEST(LinkageTest, SystemLinkageJitedToJitedParameterPassingFourArg) {
 
     ASSERT_NOTNULL(trees) << "Trees failed to parse\n" << inputTrees;
 
-    // Execution of this test is disabled on non-X86 platforms, as we
-    // do not have trampoline support, and so this call may be out of
-    // range for some architectures.
-#ifdef TR_TARGET_X86
     Tril::DefaultCompiler compiler{trees};
     ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
 
@@ -230,7 +231,6 @@ TYPED_TEST(LinkageTest, SystemLinkageJitedToJitedParameterPassingFourArg) {
     EXPECT_EQ(static_cast<TypeParam>(1024),    entry_point(0,0,0,static_cast<TypeParam>(1024)))     << "Input Trees: " << inputTrees;
     EXPECT_EQ(static_cast<TypeParam>(-1),      entry_point(0,0,0,static_cast<TypeParam>(-1)))       << "Input Trees: " << inputTrees;
     EXPECT_EQ(static_cast<TypeParam>(0xf0f0f), entry_point(0,0,0,static_cast<TypeParam>(0xf0f0f)))  << "Input Trees: " << inputTrees;
-#endif
 }
 
 template <typename T>
@@ -242,6 +242,11 @@ T fifthArg(T a, T b, T c, T d, T e) { return e; }
  * method calls a method with more than four parameters.
  */
 TYPED_TEST(LinkageTest, SystemLinkageParameterPassingFiveArg) {
+    OMRPORT_ACCESS_FROM_OMRPORT(TRTest::TestWithPortLib::privateOmrPortLibrary);
+    std::string arch = omrsysinfo_get_CPU_architecture();
+    SKIP_IF(OMRPORT_ARCH_HAMMER != arch, MissingImplementation)
+        << "Test is skipped on non-x86-64 platforms because calls are not currently supported on other platforms (see issue #1645)";
+
     char inputTrees[400] = {0};
     const auto format_string = "(method return=%s args=[%s,%s,%s,%s,%s] (block (%sreturn (%scall address=0x%jX args=[%s,%s,%s,%s,%s] linkage=system"
                                  " (%sload parm=0)"
@@ -275,20 +280,14 @@ TYPED_TEST(LinkageTest, SystemLinkageParameterPassingFiveArg) {
 
     ASSERT_NOTNULL(trees) << "Trees failed to parse\n" << inputTrees;
 
-    // Execution of this test is disabled on non-X86 platforms, as we
-    // do not have trampoline support, and so this call may be out of
-    // range for some architectures.
-#ifdef TR_TARGET_X86
     Tril::DefaultCompiler compiler{trees};
     ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
-
 
     auto entry_point = compiler.getEntryPoint<TypeParam (*)(TypeParam,TypeParam,TypeParam,TypeParam,TypeParam)>();
 
     EXPECT_EQ(static_cast<TypeParam>(1024),    entry_point(0,0,0,0,static_cast<TypeParam>(1024)))     << "Input Trees: " << inputTrees;
     EXPECT_EQ(static_cast<TypeParam>(-1),      entry_point(0,0,0,0,static_cast<TypeParam>(-1)))       << "Input Trees: " << inputTrees;
     EXPECT_EQ(static_cast<TypeParam>(0xf0f0f), entry_point(0,0,0,0,static_cast<TypeParam>(0xf0f0f)))  << "Input Trees: " << inputTrees;
-#endif
 }
 
 /*
@@ -315,6 +314,11 @@ T stackUser(T a, T b, T c, T d, T e) {
  * an actively stack user.
  */
 TYPED_TEST(LinkageTest, SystemLinkageParameterPassingFiveArgToStackUser) {
+    OMRPORT_ACCESS_FROM_OMRPORT(TRTest::TestWithPortLib::privateOmrPortLibrary);
+    std::string arch = omrsysinfo_get_CPU_architecture();
+    SKIP_IF(OMRPORT_ARCH_HAMMER != arch, MissingImplementation)
+        << "Test is skipped on non-x86-64 platforms because calls are not currently supported on other platforms (see issue #1645)";
+
     char inputTrees[400] = {0};
     const auto format_string = "(method return=%s args=[%s,%s,%s,%s,%s] (block (%sreturn (%scall address=0x%jX args=[%s,%s,%s,%s,%s] linkage=system"
                                  " (%sload parm=0)"
@@ -348,13 +352,8 @@ TYPED_TEST(LinkageTest, SystemLinkageParameterPassingFiveArgToStackUser) {
 
     ASSERT_NOTNULL(trees) << "Trees failed to parse\n" << inputTrees;
 
-    // Execution of this test is disabled on non-X86 platforms, as we
-    // do not have trampoline support, and so this call may be out of
-    // range for some architectures.
-#ifdef TR_TARGET_X86
     Tril::DefaultCompiler compiler{trees};
     ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
-
 
     auto entry_point = compiler.getEntryPoint<TypeParam (*)(TypeParam,TypeParam,TypeParam,TypeParam,TypeParam)>();
 
@@ -365,7 +364,6 @@ TYPED_TEST(LinkageTest, SystemLinkageParameterPassingFiveArgToStackUser) {
     EXPECT_EQ(static_cast<TypeParam>(2053),     entry_point(1,1,1,1,static_cast<TypeParam>(1024)))     << "Input Trees: " << inputTrees;
     EXPECT_EQ(static_cast<TypeParam>(3),        entry_point(1,1,1,1,static_cast<TypeParam>(-1)))       << "Input Trees: " << inputTrees;
     EXPECT_EQ(static_cast<TypeParam>(0x1e1e23), entry_point(1,1,1,1,static_cast<TypeParam>(0xf0f0f)))  << "Input Trees: " << inputTrees;
-#endif
 }
 
 class LinkageWithMixedTypesTest : public TRTest::JitTest {};
@@ -375,6 +373,11 @@ int32_t fourthArgFromMixedTypes(double a, int32_t b, double c, int32_t d) { retu
 typedef int32_t (*FourMixedArgumentFunction)(double,int32_t,double,int32_t);
 
 TEST_F(LinkageWithMixedTypesTest, SystemLinkageParameterPassingFourArgWithMixedTypes) {
+    OMRPORT_ACCESS_FROM_OMRPORT(TRTest::TestWithPortLib::privateOmrPortLibrary);
+    std::string arch = omrsysinfo_get_CPU_architecture();
+    SKIP_IF(OMRPORT_ARCH_HAMMER != arch, MissingImplementation)
+        << "Test is skipped on non-x86-64 platforms because calls are not currently supported on other platforms (see issue #1645)";
+
     char inputTrees[400] = {0};
     const auto format_string = "(method return=Int32 args=[Double,Int32,Double,Int32]"
                                "  (block (ireturn (icall address=0x%jX args=[Double,Int32,Double,Int32] linkage=system"
@@ -389,10 +392,6 @@ TEST_F(LinkageWithMixedTypesTest, SystemLinkageParameterPassingFourArgWithMixedT
     auto trees = parseString(inputTrees);
     ASSERT_NOTNULL(trees) << "Trees failed to parse\n" << inputTrees;
 
-    // Execution of this test is disabled on non-X86 platforms, as we
-    // do not have trampoline support, and so this call may be out of
-    // range for some architectures.
-#ifdef TR_TARGET_X86
     Tril::DefaultCompiler compiler{trees};
     ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
 
@@ -401,7 +400,6 @@ TEST_F(LinkageWithMixedTypesTest, SystemLinkageParameterPassingFourArgWithMixedT
     EXPECT_EQ(1024,    entry_point(0.0,0,0.0,1024))     << "Input Trees: " << inputTrees;
     EXPECT_EQ(-1,      entry_point(0.0,0,0.0,-1))       << "Input Trees: " << inputTrees;
     EXPECT_EQ(0xf0f0f, entry_point(0.0,0,0.0,0xf0f0f))  << "Input Trees: " << inputTrees;
-#endif
 }
 
 double fifthArgFromMixedTypes(double a, int32_t b, double c, int32_t d, double e) { return e; }
@@ -409,6 +407,11 @@ double fifthArgFromMixedTypes(double a, int32_t b, double c, int32_t d, double e
 typedef double (*FiveMixedArgumentFunction)(double,int32_t,double,int32_t,double);
 
 TEST_F(LinkageWithMixedTypesTest, SystemLinkageParameterPassingFiveArgWithMixedTypes) {
+    OMRPORT_ACCESS_FROM_OMRPORT(TRTest::TestWithPortLib::privateOmrPortLibrary);
+    std::string arch = omrsysinfo_get_CPU_architecture();
+    SKIP_IF(OMRPORT_ARCH_HAMMER != arch, MissingImplementation)
+        << "Test is skipped on non-x86-64 platforms because calls are not currently supported on other platforms (see issue #1645)";
+
     char inputTrees[400] = {0};
     const auto format_string = "(method return=Double args=[Double,Int32,Double,Int32,Double]"
                                "  (block (dreturn (dcall address=0x%jX args=[Double,Int32,Double,Int32,Double] linkage=system"
@@ -424,10 +427,6 @@ TEST_F(LinkageWithMixedTypesTest, SystemLinkageParameterPassingFiveArgWithMixedT
     auto trees = parseString(inputTrees);
     ASSERT_NOTNULL(trees) << "Trees failed to parse\n" << inputTrees;
 
-    // Execution of this test is disabled on non-X86 platforms, as we
-    // do not have trampoline support, and so this call may be out of
-    // range for some architectures.
-#ifdef TR_TARGET_X86
     Tril::DefaultCompiler compiler{trees};
     ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
 
@@ -436,5 +435,4 @@ TEST_F(LinkageWithMixedTypesTest, SystemLinkageParameterPassingFiveArgWithMixedT
     EXPECT_DOUBLE_EQ(1024.3, entry_point(0.0,0,0.0,0,1024.3)) << "Input Trees: " << inputTrees;
     EXPECT_DOUBLE_EQ(-1.7,   entry_point(0.0,0,0.0,0,-1.7))   << "Input Trees: " << inputTrees;
     EXPECT_DOUBLE_EQ(0.001,  entry_point(0.0,0,0.0,0,0.001))  << "Input Trees: " << inputTrees;
-#endif
 }

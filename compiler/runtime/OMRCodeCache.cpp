@@ -459,13 +459,6 @@ OMR::CodeCache::allocateTempTrampoline()
 
 
 OMR::CodeCacheTrampolineCode *
-OMR::CodeCache::reserveTrampoline()
-   {
-   return self()->reserveSpaceForTrampoline();
-   }
-
-
-OMR::CodeCacheTrampolineCode *
 OMR::CodeCache::reserveSpaceForTrampoline()
    {
    TR::CodeCacheConfig &config = _manager->codeCacheConfig();
@@ -485,13 +478,6 @@ OMR::CodeCache::reserveSpaceForTrampoline()
    _trampolineReservationMark -= config.trampolineCodeSize();
 
    return (CodeCacheTrampolineCode *) _trampolineReservationMark;
-   }
-
-
-void
-OMR::CodeCache::unreserveTrampoline()
-   {
-   self()->unreserveSpaceForTrampoline();
    }
 
 
@@ -534,7 +520,7 @@ OMR::CodeCache::reserveResolvedTrampoline(TR_OpaqueMethodBlock *method,
       if (!entry)
          {
          // reserve a new trampoline since we got no active reservation for given method */
-         CodeCacheTrampolineCode *trampoline = self()->reserveTrampoline();
+         CodeCacheTrampolineCode *trampoline = self()->reserveSpaceForTrampoline();
          if (trampoline)
             {
             // add hashtable entry

@@ -152,13 +152,6 @@ public:
     */
    CodeCacheTrampolineCode *reserveSpaceForTrampoline();
 
-   /**
-    * @brief This function is deprecated.  It simply invokes reserveSpaceForTrampoline().
-    *        It will be removed when downstream dependencies are changed to call
-    *        reserveSpaceForTrampoline() directly.
-    */
-   CodeCacheTrampolineCode *reserveTrampoline();
-
    CodeCacheErrorCode::ErrorCode reserveNTrampolines(int64_t n);
 
    /**
@@ -166,13 +159,6 @@ public:
     *        current code cache.
     */
    void unreserveSpaceForTrampoline();
-
-   /**
-    * @brief This function is deprecated.  It simply invokes unreserveSpaceForTrampoline().
-    *        It will be removed when downstream dependencies are changed to call
-    *        unreserveSpaceForTrampoline() directly.
-    */
-   void unreserveTrampoline();
 
    CodeCacheTrampolineCode *allocateTrampoline();
    CodeCacheTrampolineCode *allocateTempTrampoline();

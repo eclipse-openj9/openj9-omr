@@ -82,14 +82,4 @@ FEBase<Derived>::allocateRelocationData(TR::Compilation* comp, uint32_t size)
   #undef NO_MAP_ANONYMOUS
 #endif
 
-
-template <class Derived>
-intptrj_t
-FEBase<Derived>::indexedTrampolineLookup(int32_t helperIndex, void * callSite)
-   {
-   intptrj_t tramp = codeCacheManager().findHelperTrampoline(helperIndex, callSite);
-   TR_ASSERT(tramp, "Error: CodeCache is not initialized properly.\n");
-   return tramp;
-   }
-
 } /* namespace TR */

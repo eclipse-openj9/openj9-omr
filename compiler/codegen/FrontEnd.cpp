@@ -323,10 +323,3 @@ TR_FrontEnd::methodTrampolineLookup(TR::Compilation *comp, TR::SymbolReference *
    notImplemented("methodTrampolineLookup");
    return 0;
    }
-
-intptrj_t
-TR_FrontEnd::indexedTrampolineLookup(int32_t helperIndex, void * callSite)
-   {
-   notImplemented("indexedTrampolineLookup");
-   return 0;
-   }

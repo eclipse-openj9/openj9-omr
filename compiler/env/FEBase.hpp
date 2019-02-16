@@ -94,8 +94,6 @@ class FEBase : public FECommon
 
    virtual uint8_t * allocateRelocationData(TR::Compilation* comp, uint32_t size);
 
-   virtual intptrj_t indexedTrampolineLookup(int32_t helperIndex, void * callSite);
-
    virtual TR_PersistentMemory       * persistentMemory() { return &_persistentMemory; }
    virtual TR::PersistentInfo * getPersistentInfo() { return _persistentMemory.getPersistentInfo(); }
 

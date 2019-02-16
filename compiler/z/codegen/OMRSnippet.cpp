@@ -48,6 +48,7 @@
 #include "il/symbol/MethodSymbol.hpp"
 #include "infra/Assert.hpp"
 #include "ras/Debug.hpp"
+#include "runtime/CodeCacheManager.hpp"
 #include "runtime/Runtime.hpp"
 #include "z/codegen/CallSnippet.hpp"
 #include "z/codegen/S390HelperCallSnippet.hpp"
@@ -144,7 +145,7 @@ OMR::Z::Snippet::generatePICBinary(TR::CodeGenerator * cg, uint8_t * cursor, TR:
             {
             // Destination is beyond our reachable jump distance, we'll find the
             // trampoline.
-            destAddr = cg->fe()->indexedTrampolineLookup(glueRef->getReferenceNumber(), (void *)cursor);
+            destAddr = TR::CodeCacheManager::instance()->findHelperTrampoline(glueRef->getReferenceNumber(), (void *)cursor);
             self()->setUsedTrampoline(true);
             }
          }

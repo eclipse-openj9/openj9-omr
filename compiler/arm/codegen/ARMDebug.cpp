@@ -38,6 +38,7 @@ int jitDebugARM;
 #include "env/jittypes.h"
 #include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
+#include "runtime/CodeCacheManager.hpp"
 
 #ifdef J9_PROJECT_SPECIFIC
 #include "arm/codegen/ARMHelperCallSnippet.hpp"
@@ -830,7 +831,7 @@ TR_Debug::printARMHelperBranch(TR::SymbolReference *symRef, uint8_t *bufferPos, 
       int32_t refNum = symRef->getReferenceNumber();
       if (refNum < TR_ARMnumRuntimeHelpers)
          {
-         target = _comp->fe()->indexedTrampolineLookup(refNum, (void *)bufferPos);
+         target = TR::CodeCacheManager::instance()->findHelperTrampoline(refNum, (void *)bufferPos);
          info   = " through trampoline";
          }
       else if (*((uintptr_t*)bufferPos) == 0xe28fe004)  // This is a JNI method

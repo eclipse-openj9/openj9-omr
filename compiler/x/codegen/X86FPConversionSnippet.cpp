@@ -42,6 +42,7 @@
 #include "il/symbol/LabelSymbol.hpp"
 #include "infra/Assert.hpp"
 #include "ras/Debug.hpp"
+#include "runtime/CodeCacheManager.hpp"
 #include "runtime/Runtime.hpp"
 #include "x/codegen/X86Instruction.hpp"
 
@@ -63,7 +64,7 @@ uint8_t *TR::X86FPConversionSnippet::emitCallToConversionHelper(uint8_t *buffer)
    intptrj_t helperAddress = (intptrj_t)getHelperSymRef()->getMethodAddress();
    if (cg()->directCallRequiresTrampoline(helperAddress, callInstructionAddress))
       {
-      helperAddress = cg()->fe()->indexedTrampolineLookup(getHelperSymRef()->getReferenceNumber(), (void *)buffer);
+      helperAddress = TR::CodeCacheManager::instance()->findHelperTrampoline(getHelperSymRef()->getReferenceNumber(), (void *)buffer);
 
       TR_ASSERT_FATAL(TR::Compiler->target.cpu.isTargetWithinRIPRange(helperAddress, nextInstructionAddress),
                       "Local helper trampoline must be reachable directly");

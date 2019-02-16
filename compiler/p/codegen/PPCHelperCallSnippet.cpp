@@ -44,6 +44,7 @@
 #include "il/symbol/MethodSymbol.hpp"
 #include "infra/Assert.hpp"
 #include "ras/Debug.hpp"
+#include "runtime/CodeCacheManager.hpp"
 #include "runtime/Runtime.hpp"
 
 uint8_t *TR::PPCHelperCallSnippet::emitSnippetBody()
@@ -104,7 +105,7 @@ uint8_t *TR::PPCHelperCallSnippet::genHelperCall(uint8_t *buffer)
 
    if (cg()->directCallRequiresTrampoline(helperAddress, (intptrj_t)buffer))
       {
-      helperAddress = cg()->comp()->fe()->indexedTrampolineLookup(getDestination()->getReferenceNumber(), (void *)buffer);
+      helperAddress = TR::CodeCacheManager::instance()->findHelperTrampoline(getDestination()->getReferenceNumber(), (void *)buffer);
 
       TR_ASSERT_FATAL(TR::Compiler->target.cpu.isTargetWithinIFormBranchRange(helperAddress, (intptrj_t)buffer),
                       "Helper address is out of range");

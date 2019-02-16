@@ -57,6 +57,7 @@
 #include "infra/List.hpp"
 #include "ras/Debug.hpp"
 #include "ras/DebugCounter.hpp"
+#include "runtime/CodeCacheManager.hpp"
 #include "runtime/Runtime.hpp"
 #include "x/codegen/X86Instruction.hpp"
 #include "x/codegen/X86Ops.hpp"
@@ -1304,7 +1305,7 @@ uint8_t* TR::X86ImmSymInstruction::generateOperand(uint8_t* cursor)
                   if (isTrampolineRequired)
                      {
                      // TODO:AMD64: Consider AOT ramifications
-                     targetAddress = cg()->fe()->indexedTrampolineLookup(getSymbolReference()->getReferenceNumber(), (void *)cursor);
+                     targetAddress = TR::CodeCacheManager::instance()->findHelperTrampoline(getSymbolReference()->getReferenceNumber(), (void *)cursor);
                      }
                   }
                else if (methodSym && methodSym->isJNI() && getNode() && getNode()->isPreparedForDirectJNI())

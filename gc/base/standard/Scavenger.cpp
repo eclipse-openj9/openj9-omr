@@ -1700,7 +1700,7 @@ MM_Scavenger::scavengeObjectSlots(MM_EnvironmentStandard *env, MM_CopyScanCacheS
 	uint64_t slotsScanned = 0;
 	bool shouldRemember = false;
 	GC_SlotObject *slotObject = NULL;
-	bool isParentInNewSpace = isObjectInNewSpace(objectPtr);
+
 	MM_CopyScanCacheStandard **copyCache = &(env->_effectiveCopyScanCache);
 	while (NULL != (slotObject = objectScanner->getNextSlot())) {
 		bool isSlotObjectInNewSpace = copyAndForward(env, slotObject);
@@ -1720,6 +1720,7 @@ MM_Scavenger::scavengeObjectSlots(MM_EnvironmentStandard *env, MM_CopyScanCacheS
 		*rememberedSetSlot = objectPtr;
 	}
 #if defined(OMR_GC_MODRON_CONCURRENT_MARK)
+	bool isParentInNewSpace = isObjectInNewSpace(objectPtr);
 	if (_extensions->shouldScavengeNotifyGlobalGCOfOldToOldReference() && IS_CONCURRENT_ENABLED && !isParentInNewSpace && !shouldRemember) {
 		/* Old object that has only references to old objects. If parent object has already been scanned (in Marking sense)
 		 * since it has been tenured, let Concurrent Marker know it has a newly created old reference, otherwise it may miss to find it. */
@@ -1787,7 +1788,7 @@ MM_Scavenger::incrementalScavengeObjectSlots(MM_EnvironmentStandard *env, omrobj
 	GC_SlotObject *slotObject;
 	uint64_t slotsCopied = 0;
 	uint64_t slotsScanned = 0;
-	bool isParentInNewSpace = isObjectInNewSpace(objectPtr);
+
 	while (NULL != (slotObject = objectScanner->getNextSlot())) {
 		/* If the object should be remembered and it is in old space, remember it */
 		bool isSlotObjectInNewSpace = copyAndForward(env, slotObject);
@@ -1824,6 +1825,7 @@ MM_Scavenger::incrementalScavengeObjectSlots(MM_EnvironmentStandard *env, omrobj
 	}
 
 #if defined(OMR_GC_MODRON_CONCURRENT_MARK)
+	bool isParentInNewSpace = isObjectInNewSpace(objectPtr);
 	if (_extensions->shouldScavengeNotifyGlobalGCOfOldToOldReference() && IS_CONCURRENT_ENABLED && !isParentInNewSpace && !scanCache->_shouldBeRemembered) {
 		/* Old object that has only references to old objects. If parent object has already been scanned (in Marking sense)
 		 * since it has been tenured, let Concurrent Marker know it has a newly created old reference, otherwise it may miss to find it. */
@@ -4297,13 +4299,14 @@ MM_Scavenger::internalGarbageCollect(MM_EnvironmentBase *envBase, MM_MemorySubSp
 		}
 	}
 
+#if defined(OMR_GC_MODRON_CONCURRENT_MARK)
 	if (!_extensions->concurrentMark) {
 			uintptr_t previousUsedOldHeap = _extensions->oldHeapSizeOnLastGlobalGC - _extensions->freeOldHeapSizeOnLastGlobalGC;
 			float maxTenureFreeRatio = _extensions->heapFreeMaximumRatioMultiplier / 100.0f;
 			float midTenureFreeRatio = (_extensions->heapFreeMinimumRatioMultiplier + _extensions->heapFreeMaximumRatioMultiplier) / 200.0f;
 			uintptr_t soaFreeMemorySize = _extensions->heap->getApproximateActiveFreeMemorySize(MEMORY_TYPE_OLD) - _extensions->heap->getApproximateActiveFreeLOAMemorySize(MEMORY_TYPE_OLD);
 
-			/* We suspect that next scavegne will cause Tenure expansion, while Tenure free ratio is (was) already high enough */
+			/* We suspect that next scavenge will cause Tenure expansion, while Tenure free ratio is (was) already high enough */
 			if ((scavengerGCStats->_avgTenureBytes > soaFreeMemorySize) && (_extensions->freeOldHeapSizeOnLastGlobalGC > (_extensions->oldHeapSizeOnLastGlobalGC * midTenureFreeRatio))) {
 				Trc_MM_Scavenger_percolate_preventTenureExpand(env->getLanguageVMThread());
 
@@ -4320,6 +4323,7 @@ MM_Scavenger::internalGarbageCollect(MM_EnvironmentBase *envBase, MM_MemorySubSp
 				return true;
 			}
 	}
+#endif /* OMR_GC_MODRON_CONCURRENT_MARK */
 
 	/**
 	 * Language percolation trigger	

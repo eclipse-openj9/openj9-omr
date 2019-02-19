@@ -194,22 +194,22 @@ MM_ScavengerDelegate::fixupDestroyedSlot(MM_EnvironmentBase *env, MM_ForwardedHe
 	 */
 	/* This assumes that all slots are object slots, including the slot adjacent to the header slot */
 	if ((0 != forwardedHeader->getPreservedOverlap()) && !_extensions->objectModel.isIndexable(forwardedHeader)) {
-		MM_GCExtensionsBase *extensions = MM_GCExtensionsBase::getExtensions(_omrVM);
+		OMR_VM* omrVM = _extensions->getOmrVM();
 		/* Get the uncompressed reference from the slot */
 		fomrobject_t preservedOverlap = (fomrobject_t)forwardedHeader->getPreservedOverlap();
-		GC_SlotObject preservedSlotObject(_omrVM, &preservedOverlap);
+		GC_SlotObject preservedSlotObject(omrVM, &preservedOverlap);
 		omrobjectptr_t survivingCopyAddress = preservedSlotObject.readReferenceFromSlot();
 		/* Check if the address we want to read is aligned (since mis-aligned reads may still be less than a top address but extend beyond it) */
-		if (0 == ((uintptr_t)survivingCopyAddress & (extensions->getObjectAlignmentInBytes() - 1))) {
+		if (0 == ((uintptr_t)survivingCopyAddress & (_extensions->getObjectAlignmentInBytes() - 1))) {
 			/* Ensure that the address we want to read is within part of the heap which could contain copied objects (tenure or survivor) */
 			void *topOfObject = (void *)((uintptr_t *)survivingCopyAddress + 1);
-			if (subSpaceNew->isObjectInNewSpace(survivingCopyAddress, topOfObject) || extensions->isOld(survivingCopyAddress, topOfObject)) {
+			if (subSpaceNew->isObjectInNewSpace(survivingCopyAddress, topOfObject) || _extensions->isOld(survivingCopyAddress, topOfObject)) {
 				/* if the slot points to a reverse-forwarded object, restore the original location (in evacuate space) */
 				MM_ForwardedHeader reverseForwardedHeader(survivingCopyAddress);
 				if (reverseForwardedHeader.isReverseForwardedPointer()) {
 					/* overlapped slot must be fixed up */
 					fomrobject_t fixupSlot = 0;
-					GC_SlotObject fixupSlotObject(_omrVM, &fixupSlot);
+					GC_SlotObject fixupSlotObject(omrVM, &fixupSlot);
 					fixupSlotObject.writeReferenceToSlot(reverseForwardedHeader.getReverseForwardedPointer());
 					forwardedHeader->restoreDestroyedOverlap((uint32_t)fixupSlot);
 				}

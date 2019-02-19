@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2018 IBM Corp. and others
+ * Copyright (c) 1991, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1573,11 +1573,16 @@ thread_wrapper(WRAPPER_ARG arg)
 				affinityCount += 1;
 			}
 		}
-		/* If the affinityCount is zero, this call will have the effect of clearing any affinity that the thread may have inherited
-		 * and it assuming the initial affinity that the process had (if reverting to that affinity isn't possible on the platform,
-		 * the call is supposed to do nothing).
+		/* if J9THREAD_LIB_FLAG_NO_DEFAULT_AFFINITY is set we only want to modify the affinity if
+		 * the caller provided us with a non-zero affinity
 		 */
-		omrthread_numa_set_node_affinity_nolock(thread, affinity, affinityCount, 0);
+		if ((affinityCount != 0) || OMR_ARE_NO_BITS_SET(lib->flags, J9THREAD_LIB_FLAG_NO_DEFAULT_AFFINITY)) {
+			/* If the affinityCount is zero, this call will have the effect of clearing any affinity that the thread may have inherited
+			* and it assuming the initial affinity that the process had (if reverting to that affinity isn't possible on the platform,
+			* the call is supposed to do nothing).
+			*/
+			omrthread_numa_set_node_affinity_nolock(thread, affinity, affinityCount, 0);
+		}
 	}
 #endif /* OMR_PORT_NUMA_SUPPORT */
 	THREAD_UNLOCK(thread);

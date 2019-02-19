@@ -44,6 +44,8 @@ class MM_MemorySubSpaceSemiSpace;
 
 class MM_ScavengerDelegate : public MM_BaseVirtual {
 private:
+	MM_GCExtensionsBase* _extensions;
+
 protected:
 public:
 
@@ -250,6 +252,7 @@ public:
 
 	MM_ScavengerDelegate(MM_EnvironmentBase* env)
 		: MM_BaseVirtual()
+		, _extensions(env->getExtensions())
 	{
 		_typeId = __FUNCTION__;
 	}

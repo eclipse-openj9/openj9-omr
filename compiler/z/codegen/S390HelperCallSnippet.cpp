@@ -38,6 +38,7 @@
 #include "il/symbol/MethodSymbol.hpp"
 #include "infra/Assert.hpp"
 #include "ras/Debug.hpp"
+#include "runtime/CodeCacheManager.hpp"
 #include "runtime/Runtime.hpp"
 #include "z/codegen/CallSnippet.hpp"
 
@@ -116,7 +117,7 @@ TR::S390HelperCallSnippet::emitSnippetBody()
       {
       if (cg()->directCallRequiresTrampoline(destAddr, branchInstructionStartAddress))
          {
-         destAddr = cg()->fe()->indexedTrampolineLookup(helperSymRef->getReferenceNumber(), (void *)cursor);
+         destAddr = TR::CodeCacheManager::instance()->findHelperTrampoline(helperSymRef->getReferenceNumber(), (void *)cursor);
          this->setUsedTrampoline(true);
 
          // We clobber rEP if we take a trampoline. Update our register map if necessary.

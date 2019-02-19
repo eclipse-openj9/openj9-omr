@@ -31,6 +31,7 @@
 #include "env/CHTable.hpp"
 #endif
 #include "env/CompilerEnv.hpp"
+#include "runtime/CodeCacheManager.hpp"
 
 void OMR::ARM::Instruction::generateConditionBinaryEncoding(uint8_t *instructionStart)
    {
@@ -73,7 +74,7 @@ uint32_t encodeHelperBranch(bool isBranchAndLink, TR::SymbolReference *symRef, u
 
    if (cg->directCallRequiresTrampoline(target, (intptrj_t)cursor))
       {
-      target = cg->fe()->indexedTrampolineLookup(symRef->getReferenceNumber(), (void *)cursor);
+      target = TR::CodeCacheManager::instance()->findHelperTrampoline(symRef->getReferenceNumber(), (void *)cursor);
 
       TR_ASSERT_FATAL(TR::Compiler->target.cpu.isTargetWithinBranchImmediateRange(target, (intptrj_t)cursor),
                       "Target address is out of range");

@@ -91,6 +91,7 @@
 #include "optimizer/RegisterCandidate.hpp"
 #include "ras/Debug.hpp"
 #include "ras/DebugCounter.hpp"
+#include "runtime/CodeCacheManager.hpp"
 #include "x/codegen/DataSnippet.hpp"
 #include "x/codegen/OutlinedInstructions.hpp"
 #include "x/codegen/FPTreeEvaluator.hpp"
@@ -2334,7 +2335,7 @@ int32_t OMR::X86::CodeGenerator::branchDisplacementToHelperOrTrampoline(
 
    if (self()->directCallRequiresTrampoline(helperAddress, (intptrj_t)nextInstructionAddress))
       {
-      helperAddress = self()->fe()->indexedTrampolineLookup(helper->getReferenceNumber(), (void *)(nextInstructionAddress-4));
+      helperAddress = TR::CodeCacheManager::instance()->findHelperTrampoline(helper->getReferenceNumber(), (void *)(nextInstructionAddress-4));
 
       TR_ASSERT_FATAL(TR::Compiler->target.cpu.isTargetWithinRIPRange(helperAddress, (intptrj_t)nextInstructionAddress),
                       "Local helper trampoline should be reachable directly");

@@ -34,6 +34,7 @@
 #include "il/Block.hpp"
 #include "il/ILOpCodes.hpp"
 #include "il/Node.hpp"
+#include "runtime/CodeCacheManager.hpp"
 
 namespace TR { class PPCConditionalBranchInstruction; }
 namespace TR { class PPCDepImmInstruction;            }
@@ -247,7 +248,7 @@ uint8_t *TR::PPCDepImmSymInstruction::generateBinaryEncoding()
             int32_t refNum = getSymbolReference()->getReferenceNumber();
             if (refNum < TR_PPCnumRuntimeHelpers)
                {
-               targetAddress = cg()->fe()->indexedTrampolineLookup(refNum, (void *)cursor);
+               targetAddress = TR::CodeCacheManager::instance()->findHelperTrampoline(refNum, (void *)cursor);
                }
             else
                {

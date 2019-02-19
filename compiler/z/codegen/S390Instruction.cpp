@@ -68,6 +68,7 @@
 #include "infra/CfgEdge.hpp"
 #include "optimizer/Structure.hpp"
 #include "ras/Debug.hpp"
+#include "runtime/CodeCacheManager.hpp"
 #include "runtime/Runtime.hpp"
 #include "z/codegen/EndianConversion.hpp"
 #include "z/codegen/S390GenerateInstructions.hpp"
@@ -1977,7 +1978,7 @@ TR::S390RILInstruction::adjustCallOffsetWithTrampoline(int32_t offset, uint8_t *
       printf("Target: %p,  Cursor: %p, Our Reference # is: %d\n",getTargetPtr(),(uintptrj_t)currentInst,getSymbolReference()->getReferenceNumber());
 #endif
       if (getSymbolReference()->getReferenceNumber() < TR_S390numRuntimeHelpers)
-         targetAddr = cg()->fe()->indexedTrampolineLookup(getSymbolReference()->getReferenceNumber(), (void *)currentInst);
+         targetAddr = TR::CodeCacheManager::instance()->findHelperTrampoline(getSymbolReference()->getReferenceNumber(), (void *)currentInst);
       else
          targetAddr = cg()->fe()->methodTrampolineLookup(cg()->comp(), getSymbolReference(), (void *)currentInst);
 

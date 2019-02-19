@@ -60,6 +60,7 @@ int jitDebugPPC;
 #include "p/codegen/PPCOutOfLineCodeSection.hpp"
 #include "codegen/Snippet.hpp"
 #include "ras/Debug.hpp"
+#include "runtime/CodeCacheManager.hpp"
 #include "runtime/Runtime.hpp"
 
 #ifdef J9_PROJECT_SPECIFIC
@@ -394,7 +395,7 @@ TR_Debug::isBranchToTrampoline(TR::SymbolReference *symRef, uint8_t *cursor, int
 
    if (_cg->directCallRequiresTrampoline(methodAddress, (intptrj_t)cursor))
       {
-      methodAddress = _comp->fe()->indexedTrampolineLookup(symRef->getReferenceNumber(), (void *)cursor);
+      methodAddress = TR::CodeCacheManager::instance()->findHelperTrampoline(symRef->getReferenceNumber(), (void *)cursor);
       requiresTrampoline = true;
       }
 
@@ -430,7 +431,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::PPCDepImmSymInstruction * instr)
          int32_t refNum = instr->getSymbolReference()->getReferenceNumber();
          if (refNum < TR_PPCnumRuntimeHelpers)
             {
-            targetAddress = _comp->fe()->indexedTrampolineLookup(refNum, (void *)cursor);
+            targetAddress = TR::CodeCacheManager::instance()->findHelperTrampoline(refNum, (void *)cursor);
             }
          else
             {

@@ -51,6 +51,7 @@
 #include "il/symbol/StaticSymbol.hpp"
 #include "infra/Assert.hpp"
 #include "ras/Debug.hpp"
+#include "runtime/CodeCacheManager.hpp"
 #include "runtime/Runtime.hpp"
 #include "x/codegen/RestartSnippet.hpp"
 #include "env/IO.hpp"
@@ -491,7 +492,7 @@ int32_t TR::X86HelperCallSnippet::branchDisplacementToHelper(
 
    if (cg->directCallRequiresTrampoline(helperAddress, (intptrj_t)callInstructionAddress))
       {
-      helperAddress = cg->fe()->indexedTrampolineLookup(helper->getReferenceNumber(), (void *)(callInstructionAddress+1));
+      helperAddress = TR::CodeCacheManager::instance()->findHelperTrampoline(helper->getReferenceNumber(), (void *)(callInstructionAddress+1));
 
       TR_ASSERT_FATAL(TR::Compiler->target.cpu.isTargetWithinRIPRange(helperAddress, nextInstructionAddress),
                       "Local helper trampoline should be reachable directly");

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2018 IBM Corp. and others
+ * Copyright (c) 2018, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -64,11 +64,11 @@ uint8_t *TR::ARM64ImmSymInstruction::generateBinaryEncoding()
 
    if (getOpCodeValue() == TR::InstOpCode::bl)
       {
-      uintptrj_t destination = getAddrImmediate();
-      intptrj_t distance = destination - (uintptrj_t)cursor;
+      intptrj_t destination = getAddrImmediate();
 
-      if (constantIsSignedImm28(distance))
+      if (!cg()->directCallRequiresTrampoline(destination, (intptrj_t)cursor))
          {
+         intptrj_t distance = destination - (intptrj_t)cursor;
          insertImmediateField(toARM64Cursor(cursor), distance);
          }
       else
@@ -101,13 +101,19 @@ uint8_t *TR::ARM64LabelInstruction::generateBinaryEncoding()
       {
       TR_ASSERT(getOpCodeValue() == OMR::InstOpCode::b, "Unsupported opcode in LabelInstruction.");
 
-      uintptr_t destination = (uintptr_t)label->getCodeLocation();
+      intptr_t destination = (intptr_t)label->getCodeLocation();
       cursor = getOpCode().copyBinaryToBuffer(instructionStart);
       if (destination != 0)
          {
-         intptr_t distance = destination - (uintptr_t)cursor;
-         TR_ASSERT(-0x8000000 <= distance && distance < 0x8000000, "Branch destination is too far away.");
-         insertImmediateField(toARM64Cursor(cursor), distance);
+         if (!cg()->directCallRequiresTrampoline(destination, (intptrj_t)cursor))
+            {
+            intptr_t distance = destination - (intptr_t)cursor;
+            insertImmediateField(toARM64Cursor(cursor), distance);
+            }
+         else
+            {
+            TR_ASSERT(false, "Branch destination is too far away. Not implemented yet.");
+            }
          }
       else
          {

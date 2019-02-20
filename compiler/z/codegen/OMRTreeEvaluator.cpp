@@ -4671,7 +4671,7 @@ OMR::Z::TreeEvaluator::extendCastEvaluator(TR::Node * node, TR::CodeGenerator * 
       {
       targetRegister = genericLoadHelper<srcSize, numberOfExtendBits, RegReg> (firstChild, cg, NULL, targetRegister, isSourceTypeSigned, canClobberSrc);
       }
-   
+
    if (numberOfExtendBits == 64)
       {
       // TODO: Think about whether or not this is actually needed. My current thinking is that setting this flag is
@@ -6773,7 +6773,7 @@ inlineHighestOneBit(
    TR::Register * evenReg = cg->allocateRegister();
    TR::Register * oddReg = cg->allocateRegister();
    TR::Register * pairReg = cg->allocateConsecutiveRegisterPair(oddReg, evenReg);
-      
+
    // for Integer APIs:
    //  AND out high order to get proper FLOGR val for a 32-bit sint
    if (!isLong)
@@ -11518,38 +11518,38 @@ OMR::Z::TreeEvaluator::generateMemToMemElementCopy(TR::Node *node, TR::CodeGener
    deps->addPostCondition(endReg, TR::RealRegister::LegalOddOfPair);
    deps->addPostCondition(brxReg, TR::RealRegister::EvenOddPair);
    TR::DataType elementType = node->getArrayCopyElementType();
-   int32_t elementSize = (elementType == TR::Address && TR::Compiler->target.is64Bit() && cg->comp()->useCompressedPointers()) ? 4 : TR::DataType::getSize(elementType); 
+   int32_t elementSize = (elementType == TR::Address && TR::Compiler->target.is64Bit() && cg->comp()->useCompressedPointers()) ? 4 : TR::DataType::getSize(elementType);
    TR::Instruction *cursor = NULL;
    TR_Debug *debug = cg->getDebug();
 #define iComment(str) if (debug) debug->addInstructionComment(cursor, (str));
 
    if (isForward)
       {
-      cursor = generateRIInstruction(cg, TR::InstOpCode::getLoadHalfWordImmOpCode(), node, incRegister, elementSize); 
+      cursor = generateRIInstruction(cg, TR::InstOpCode::getLoadHalfWordImmOpCode(), node, incRegister, elementSize);
       iComment("Load increment Value");
       cursor = generateRRInstruction(cg, TR::InstOpCode::getLoadRegOpCode(), node, endReg, byteDstReg);
       cursor = generateRIInstruction(cg, TR::InstOpCode::getAddHalfWordImmOpCode(), node, endReg, -1 * elementSize);
-      cursor = generateRRInstruction(cg, TR::InstOpCode::getAddRegWidenOpCode(), node, endReg, byteLenReg); 
+      cursor = generateRRInstruction(cg, TR::InstOpCode::getAddRegWidenOpCode(), node, endReg, byteLenReg);
       iComment("Pointer to last element in destination");
       TR::MemoryReference *srcMemRef = generateS390MemoryReference(byteSrcReg, 0, cg);
       TR::MemoryReference *dstMemRef = generateS390MemoryReference(byteDstReg, 0, cg);
       TR::LabelSymbol *topOfLoop = generateLabelSymbol(cg);
-      cursor = generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, topOfLoop); 
+      cursor = generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, topOfLoop);
       iComment("topOfLoop");
       // needsGuardedLoad means we are generating MemToMemCopy sequence in OOL where ICF starts here
       if (needsGuardedLoad)
          topOfLoop->setStartInternalControlFlow();
       TR::TreeEvaluator::generateLoadAndStoreForArrayCopy(node, cg, srcMemRef, dstMemRef, srm, elementType, needsGuardedLoad);
       cursor = generateRXInstruction(cg, TR::InstOpCode::LA, node, byteSrcReg, generateS390MemoryReference(byteSrcReg, elementSize, cg));
-      cursor = generateS390BranchInstruction(cg, TR::InstOpCode::getBranchRelIndexEqOrLowOpCode(), node, brxReg, byteDstReg, topOfLoop); 
+      cursor = generateS390BranchInstruction(cg, TR::InstOpCode::getBranchRelIndexEqOrLowOpCode(), node, brxReg, byteDstReg, topOfLoop);
       iComment("byteDst+=elementSize ; if (byteDst <= lastElement) GoTo topOfLoop");
       }
    else
       {
-      cursor = generateRIInstruction(cg, TR::InstOpCode::getLoadHalfWordImmOpCode(), node, incRegister, -1 * elementSize); 
+      cursor = generateRIInstruction(cg, TR::InstOpCode::getLoadHalfWordImmOpCode(), node, incRegister, -1 * elementSize);
       iComment("Load increment Value");
       cursor = generateRRInstruction(cg, TR::InstOpCode::getLoadRegOpCode(), node, endReg, byteDstReg);
-      cursor = generateRRInstruction(cg, TR::InstOpCode::getAddRegOpCode(), node, endReg, incRegister); 
+      cursor = generateRRInstruction(cg, TR::InstOpCode::getAddRegOpCode(), node, endReg, incRegister);
       iComment("exitCond = Pointer to one element before last element to copy in destination");
       cursor = generateRRInstruction(cg, TR::InstOpCode::getAddRegWidenOpCode(), node, byteLenReg, incRegister);
       cursor = generateRRInstruction(cg, TR::InstOpCode::getAddRegOpCode(), node, byteSrcReg, byteLenReg);
@@ -11563,23 +11563,23 @@ OMR::Z::TreeEvaluator::generateMemToMemElementCopy(TR::Node *node, TR::CodeGener
       if (needsGuardedLoad || genStartICFLabel)
          topOfLoop->setStartInternalControlFlow();
       TR::TreeEvaluator::generateLoadAndStoreForArrayCopy(node, cg, srcMemRef, dstMemRef, srm, elementType, needsGuardedLoad);
-      cursor = generateRXInstruction(cg, TR::InstOpCode::LAY, node, byteSrcReg, 
+      cursor = generateRXInstruction(cg, TR::InstOpCode::LAY, node, byteSrcReg,
          generateS390MemoryReference(byteSrcReg, -1 * elementSize, cg));
-      cursor = generateS390BranchInstruction(cg, TR::InstOpCode::getBranchRelIndexHighOpCode(), node, brxReg, byteDstReg, topOfLoop); 
+      cursor = generateS390BranchInstruction(cg, TR::InstOpCode::getBranchRelIndexHighOpCode(), node, brxReg, byteDstReg, topOfLoop);
       iComment("byteDst-=elementSize; if (byteDst > exitCond) GoTo topOfLoop");
       }
    return deps;
 #undef iComment
    }
 
-void 
+void
 OMR::Z::TreeEvaluator::genLoopForwardArrayCopy(TR::Node *node, TR::CodeGenerator *cg, TR::Register *byteSrcReg, TR::Register *byteDstReg, TR::Register *loopIterReg, bool isConstantLength)
    {
    TR::LabelSymbol *processingLoop = generateLabelSymbol(cg);
    generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, processingLoop);
    generateSS1Instruction(cg, TR::InstOpCode::MVC, node, 255,
       generateS390MemoryReference(byteDstReg, 0, cg),
-      generateS390MemoryReference(byteSrcReg, 0, cg)); 
+      generateS390MemoryReference(byteSrcReg, 0, cg));
    generateRXInstruction(cg, TR::InstOpCode::LA, node, byteSrcReg, generateS390MemoryReference(byteSrcReg, 256, cg));
    generateRXInstruction(cg, TR::InstOpCode::LA, node, byteDstReg, generateS390MemoryReference(byteDstReg, 256, cg));
    generateS390BranchInstruction(cg, TR::InstOpCode::BRCT, node, loopIterReg, processingLoop);
@@ -11597,7 +11597,7 @@ OMR::Z::TreeEvaluator::forwardArrayCopySequenceGenerator(TR::Node *node, TR::Cod
                                          node->getArrayCopyElementType() == TR::Address;
    if (mustGenerateOOLGuardedLoadPath)
       {
-      // It might be possible that we have constant byte lenght load and it is forward array copy. 
+      // It might be possible that we have constant byte lenght load and it is forward array copy.
       // In this case if we need to do guarded Load then need to evaluate byteLenNode.
       if (byteLenReg == NULL)
          byteLenReg = cg->gprClobberEvaluate(byteLenNode);
@@ -11621,14 +11621,14 @@ OMR::Z::TreeEvaluator::forwardArrayCopySequenceGenerator(TR::Node *node, TR::Cod
          TR::TreeEvaluator::genLoopForwardArrayCopy(node, cg, byteSrcReg, byteDstReg, loopIterReg, true);
          srm->reclaimScratchRegister(loopIterReg);
          }
-      // In following cases following MVC instruction should be generated. 
+      // In following cases following MVC instruction should be generated.
       // 1. byteLength <= 256
       // 2. byteLength > 256 && byteLength is not multiple of 256
       uint8_t residueLength = static_cast<uint8_t>(byteLen & 0xFF);
       if (byteLen <= 256 || residueLength != 0)
-         generateSS1Instruction(cg, TR::InstOpCode::MVC, node, static_cast<uint8_t>(residueLength-1), 
+         generateSS1Instruction(cg, TR::InstOpCode::MVC, node, static_cast<uint8_t>(residueLength-1),
             generateS390MemoryReference(byteDstReg, 0, cg),
-            generateS390MemoryReference(byteSrcReg, 0, cg)); 
+            generateS390MemoryReference(byteSrcReg, 0, cg));
       }
    else
       {
@@ -11641,9 +11641,9 @@ OMR::Z::TreeEvaluator::forwardArrayCopySequenceGenerator(TR::Node *node, TR::Cod
       generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BRC, node, exrlInstructionLabel);
       TR::LabelSymbol *exrlTargetLabel = generateLabelSymbol(cg);
       generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, exrlTargetLabel);
-      TR::Instruction *residueMVC = generateSS1Instruction(cg, TR::InstOpCode::MVC, node, 0, 
+      TR::Instruction *residueMVC = generateSS1Instruction(cg, TR::InstOpCode::MVC, node, 0,
                                        generateS390MemoryReference(byteDstReg, 0, cg),
-                                       generateS390MemoryReference(byteSrcReg, 0, cg)); 
+                                       generateS390MemoryReference(byteSrcReg, 0, cg));
       generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, exrlInstructionLabel);
       if (cg->getS390ProcessorInfo()->supportsArch(TR_S390ProcessorInfo::TR_z10) && !cg->comp()->getOption(TR_DisableInlineEXTarget))
          {
@@ -11682,9 +11682,9 @@ OMR::Z::TreeEvaluator::backwardArrayCopySequenceGenerator(TR::Node *node, TR::Co
    else
       {
       TR::Register *loopIterReg = srm->findOrCreateScratchRegister();
-      cursor = generateShiftRightImmediate(cg, node, loopIterReg, byteLenReg, 4); 
+      cursor = generateShiftRightImmediate(cg, node, loopIterReg, byteLenReg, 4);
       iComment("Calculate loop iterations");
-         
+
       TR::LabelSymbol *handleResidueLabel = generateLabelSymbol(cg);
       if (genStartICFLabel)
          {
@@ -11692,23 +11692,23 @@ OMR::Z::TreeEvaluator::backwardArrayCopySequenceGenerator(TR::Node *node, TR::Co
          generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, cFlowRegionStart);
          cFlowRegionStart->setStartInternalControlFlow();
          }
-      cursor = generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BZ, node, handleResidueLabel); 
+      cursor = generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BZ, node, handleResidueLabel);
       iComment("if length <= 16, jump to handling residue");
-      
+
       TR::LabelSymbol *loopLabel = generateLabelSymbol(cg);
-      cursor = generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, loopLabel); 
+      cursor = generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, loopLabel);
       iComment("Vector Load and Strore Loop");
       cursor = generateRIInstruction(cg, TR::InstOpCode::getAddHalfWordImmOpCode(), node, byteLenReg, -16);
-      
+
       TR::Register *vectorBuffer = srm->findOrCreateScratchRegister(TR_VRF);
       generateVRXInstruction(cg, TR::InstOpCode::VL , node, vectorBuffer, generateS390MemoryReference(byteSrcReg, byteLenReg, 0, cg));
       generateVRXInstruction(cg, TR::InstOpCode::VST, node, vectorBuffer, generateS390MemoryReference(byteDstReg, byteLenReg, 0, cg), 0);
       generateS390BranchInstruction(cg, TR::InstOpCode::BRCT, node, loopIterReg, loopLabel);
-      
-      cursor = generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, handleResidueLabel); 
+
+      cursor = generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, handleResidueLabel);
       iComment("Handle residue");
-      
-      cursor = generateRIInstruction(cg, TR::InstOpCode::getAddHalfWordImmOpCode(), node, byteLenReg, -1); 
+
+      cursor = generateRIInstruction(cg, TR::InstOpCode::getAddHalfWordImmOpCode(), node, byteLenReg, -1);
       iComment("Adjust remaining bytes for vectore load/store length instruction");
       TR::LabelSymbol *skipResidueLabel = generateLabelSymbol(cg);
     /** TODO: Exploit constant length in vectorized implementation
@@ -11813,7 +11813,7 @@ OMR::Z::TreeEvaluator::primitiveArraycopyEvaluator(TR::Node* node, TR::CodeGener
       TR::LabelSymbol *forwardArrayCopyLabel = generateLabelSymbol(cg);
       cursor = generateS390CompareAndBranchInstruction(cg, TR::InstOpCode::getCmpRegOpCode(), node, byteSrcReg, byteDstReg, TR::InstOpCode::COND_BNL, forwardArrayCopyLabel, false);
       iComment("if byteSrcPointer >= byteDstPointer then GoTo forwardArrayCopy");
-      
+
 
       TR::Register *checkBoundReg = srm->findOrCreateScratchRegister();
       if (byteLenReg == NULL)
@@ -11824,19 +11824,19 @@ OMR::Z::TreeEvaluator::primitiveArraycopyEvaluator(TR::Node* node, TR::CodeGener
          }
       cursor = generateRXInstruction(cg, TR::InstOpCode::LA, node, checkBoundReg, generateS390MemoryReference(byteSrcReg, byteLenReg, 0, cg));
       iComment("nextPointerToLastElement=byteSrcPointer+lengthInBytes");
-      
+
       TR::LabelSymbol *backwardArrayCopyLabel = generateLabelSymbol(cg);
       cursor = generateS390CompareAndBranchInstruction(cg, TR::InstOpCode::getCmpRegOpCode(), node, checkBoundReg, byteDstReg, TR::InstOpCode::COND_BH, backwardArrayCopyLabel, false);
       iComment("lastElementToCopy > byteDstPointer then GoTo backwardArrayCopy");
       srm->reclaimScratchRegister(checkBoundReg);
-      
+
       cursor = generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, forwardArrayCopyLabel);
       iComment("Forward Array Copy Sequence");
       TR::TreeEvaluator::forwardArrayCopySequenceGenerator(node, cg, byteSrcReg, byteDstReg, byteLenReg, byteLenNode, srm, mergeLabel);
-      cursor = generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BRC, node, mergeLabel); 
+      cursor = generateS390BranchInstruction(cg, TR::InstOpCode::BRC, TR::InstOpCode::COND_BRC, node, mergeLabel);
       iComment("Jump to MergeLabel");
-      
-      cursor = generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, backwardArrayCopyLabel); 
+
+      cursor = generateS390LabelInstruction(cg, TR::InstOpCode::LABEL, node, backwardArrayCopyLabel);
       iComment("Backward Array Copy Sequence");
       deps = TR::TreeEvaluator::backwardArrayCopySequenceGenerator(node, cg, byteSrcReg, byteDstReg, byteLenReg, byteLenNode, srm, mergeLabel);
       }
@@ -14490,23 +14490,6 @@ OMR::Z::TreeEvaluator::ifxcmpoEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    cg->decReferenceCount(node->getFirstChild());
    cg->decReferenceCount(node->getSecondChild());
 
-#if defined(OMR_RUBY)
-   TR::Node * thirdChild = NULL;
-   TR::RegisterDependencyConditions *deps = NULL;
-   if (node->getNumChildren() == 3)
-      {
-      thirdChild = node->getChild(2);
-      if (thirdChild->getOpCodeValue() == TR::GlRegDeps )
-         {
-         cg->evaluate(thirdChild);
-         deps = generateRegisterDependencyConditions(cg, thirdChild, 0);
-         cg->decReferenceCount(thirdChild);
-         }
-      else
-         TR_ASSERT(thirdChild->getOpCodeValue() == TR::GlRegDeps,"The third child of a compare is assumed to be a TR::GlRegDeps, but wasn't");
-      }
-#endif
-
    return NULL;
    }
 
@@ -16013,7 +15996,7 @@ OMR::Z::TreeEvaluator::arraycmpSIMDHelper(TR::Node *node,
    TR::Register * vectorSecondInputReg = cg->allocateRegister(TR_VRF);
    TR::Register * vectorOutputReg = cg->allocateRegister(TR_VRF);
    TR::Register * resultReg = needResultReg ? cg->allocateRegister() : NULL;
-   
+
    // VLL uses lastByteIndexReg as the highest 0-based index to load, which is length - 1
    generateRILInstruction(cg, TR::InstOpCode::getSubtractLogicalImmOpCode(), node, lastByteIndexReg, 1);
    if(needResultReg && isArrayCmp && node->isArrayCmpLen())

@@ -33,7 +33,7 @@
 #include "runtime/Runtime.hpp"
 #include "env/CompilerEnv.hpp"
 
-#if defined(OMR_RUBY) || defined(PYTHON) || defined(JITTEST)
+#if defined(PYTHON) || defined(JITTEST)
 #include "env/ConcreteFE.hpp"
 #endif
 
@@ -332,7 +332,7 @@ void armCodeCacheParameters(int32_t *trampolineSize, void **callBacks, int32_t *
 #define TRAMPOLINE_SIZE         8
 
 /*copied here from Runtime.hpp*/
-// TODO:ARM64 
+// TODO:ARM64
 #define BRANCH_FORWARD_LIMIT      (0x01fffffc)
 #define BRANCH_BACKWARD_LIMIT     ((int32_t)0xfe000000)
 

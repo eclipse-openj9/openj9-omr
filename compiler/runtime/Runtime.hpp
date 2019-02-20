@@ -28,10 +28,6 @@
 
 #include "env/Processors.hpp"
 
-#ifdef RUBY_PROJECT_SPECIFIC
-#include "ruby/config.h"
-#endif
-
 #include "codegen/LinkageConventionsEnum.hpp"
 
 namespace TR { class Compilation; }

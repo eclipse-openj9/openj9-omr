@@ -1457,7 +1457,7 @@ TR_InlinerBase::replaceCallNodeReferences(
    if ((_inliningAsWeWalk && node->getOpCode().isCall() && (node->getVisitCount() == _visitCount)) ||
          visitedNodes.contains(node))
       return;
-   
+
    visitedNodes.add(node);
    if (!replacedNode)
       {
@@ -1528,11 +1528,6 @@ TR_InlinerBase::createVirtualGuard(
       //TR_ASSERT(thisClass == info->getThisClass(), "type info mismatch");
       return TR_VirtualGuard::createVftGuard(guard->_kind, comp(), calleeIndex, callNode,
                                              destination, thisClass);
-      }
-   else if (guard->_type == TR_RubyInlineTest)
-      {
-      return TR_VirtualGuard::createRubyInlineGuard(guard->_kind, comp(), calleeIndex, callNode,
-                                             destination, guard->_thisClass);
       }
    else if (guard->_type == TR_MethodTest)
       return TR_VirtualGuard::createMethodGuard(guard->_kind, comp(), calleeIndex, callNode,

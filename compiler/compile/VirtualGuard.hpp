@@ -68,7 +68,6 @@ enum TR_VirtualGuardTestType
    TR_VftTest,
    TR_MethodTest,
    TR_NonoverriddenTest,
-   TR_RubyInlineTest,
    TR_FSDTest /**< used in debugging mode to test if a breakpoint is set for the inlined callee */
    };
 
@@ -98,14 +97,6 @@ class TR_VirtualGuard
          TR::Node *callNode,
          TR::Node *guardNode=NULL,
          int32_t currentSiteIndex=-2);
-
-   static TR::Node *createRubyInlineGuard(
-         TR_VirtualGuardKind,
-         TR::Compilation *,
-         int16_t calleeIndex,
-         TR::Node *,
-         TR::TreeTop *,
-         TR_OpaqueClassBlock *);
 
    static TR::Node *createVftGuard(
          TR_VirtualGuardKind,

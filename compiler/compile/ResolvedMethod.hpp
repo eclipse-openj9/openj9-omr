@@ -82,7 +82,7 @@ public:
    virtual bool isProtected();
    virtual bool isPublic();
    virtual bool isFinal();
-   
+
    virtual bool isInterpreted();
    virtual bool isInterpretedForHeuristics();
    virtual bool hasBackwardBranches();
@@ -236,7 +236,6 @@ public:
 
    bool isJ9() { return convertToMethod()->isJ9(); }
    bool isPython() { return convertToMethod()->isPython(); }
-   bool isRuby() { return convertToMethod()->isRuby(); }
 
    virtual TR::IlGeneratorMethodDetails *getIlGeneratorMethodDetails();
 

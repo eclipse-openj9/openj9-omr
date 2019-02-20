@@ -47,10 +47,6 @@
 #include "env/CHTable.hpp"
 #endif
 
-#ifdef RUBY_PROJECT_SPECIFIC
-#include "ruby/config.h"
-#endif
-
 TR_VirtualGuard::TR_VirtualGuard(TR_VirtualGuardTestType test, TR_VirtualGuardKind kind,
              TR::Compilation * comp, TR::Node* callNode, TR::Node*guardNode,
              int16_t calleeIndex, int32_t currentSiteIndex, TR_OpaqueClassBlock *thisClass)
@@ -74,7 +70,7 @@ TR_VirtualGuard::TR_VirtualGuard(TR_VirtualGuardTestType test, TR_VirtualGuardKi
       _bcInfo.setInvalidByteCodeIndex();
       _bcInfo.setDoNotProfile(true);
       }
-      
+
    comp->addVirtualGuard(this);
    if(kind != TR_ArrayStoreCheckGuard)
       {
@@ -112,7 +108,7 @@ TR_VirtualGuard::TR_VirtualGuard(TR_VirtualGuardTestType test, TR_VirtualGuardKi
       _bcInfo.setInvalidByteCodeIndex();
       _bcInfo.setDoNotProfile(true);
       }
-      
+
    comp->addVirtualGuard(this);
    if (comp->getOption(TR_TraceRelocatableDataDetailsCG))
       traceMsg(comp, "addVirtualGuard %p, guardkind = %d, virtualGuardTestType %d, bc index %d, callee index %d, callNode %p, guardNode %p, currentInlinedSiteIdx %d\n", this, _kind, test, this->getByteCodeIndex(), this->getCalleeIndex(), callNode, guardNode, _currentInlinedSiteIndex);
@@ -132,56 +128,6 @@ TR_VirtualGuard::addNOPSite()
    }
 #endif
 
-TR::Node*
-TR_VirtualGuard::createRubyInlineGuard
-(TR_VirtualGuardKind kind, TR::Compilation * comp, int16_t calleeIndex,
- TR::Node* callNode, TR::TreeTop * destination, TR_OpaqueClassBlock *thisClass)
-{
-#ifdef RUBY_PROJECT_SPECIFIC
-  //Ensure that ILGen hasn't changed the children's layout we expect.
-  TR_ASSERT(  ((callNode->getNumChildren() == 4) &&
-       callNode->getSecondChild() &&
-       callNode->getSecondChild()->getOpCodeValue() == TR::aconst), "Unexpected children in hierarchy of vm_send_without_block when creating ruby inline guard.");
-
-  TR::Node* receiver  = callNode->getChild(3);
-  TR::Node* callCache = callNode->getThirdChild();
-  CALL_CACHE cc = reinterpret_cast<CALL_CACHE>(callCache->getAddress());
-
-
-  //Call the ruby inline guard routine.
-  TR::SymbolReferenceTable *symRefTab = comp->getSymRefTab();
-  TR::SymbolReference *inline_guard_helperSymRef = symRefTab->findOrCreateRuntimeHelper(RubyHelper_vm_send_woblock_inlineable_guard, true, true, false);
-
-  TR::Node* isInlineable = TR::Node::create(TR::lcall, 3);
-
-  // Nail down what the serial numbers are at time of inlining -- these will
-  // match the inlined body serial numbers.
-  isInlineable->setSymbolReference(inline_guard_helperSymRef);
-
-  // Ensure serial number types are 8 bytes (so lconsts below are correct)
-  static_assert(sizeof(rb_serial_t) == 8, "loads of serial number type are incorrect");
-
-  isInlineable->setAndIncChild(0,
-                               TR::Node::lconst(callCache, cc->method_state));
-
-  isInlineable->setAndIncChild(1,
-                               TR::Node::lconst(callCache, cc->class_serial));
-
-  isInlineable->setAndIncChild(2, receiver);
-
-  TR::Node* guard = TR::Node::createif(TR::ificmpne,
-					 isInlineable,
-					 TR::Node::iconst(callNode, (uintptrj_t)1),
-					 destination);
-
-  setGuardKind(guard, kind, comp);
-
-  TR_VirtualGuard *vg = new (comp->trHeapMemory()) TR_VirtualGuard(TR_RubyInlineTest, kind, comp, callNode, guard, calleeIndex, comp->getCurrentInlinedSiteIndex(), thisClass);
-  return guard;
-#else
-  return NULL;
-#endif
-}
 
 TR::Node*
 TR_VirtualGuard::createVftGuard
@@ -231,8 +177,8 @@ TR_VirtualGuard::createBreakpointGuardNode
  *    land/iand
  *       lloadi/iloadi <ConstantPool shadow>
  *          aconst J9Method
- *       isBreakpointedBit 
- *    iconst 0 
+ *       isBreakpointedBit
+ *    iconst 0
  */
    TR::SymbolReferenceTable * symRefTab = comp->getSymRefTab();
    TR::SymbolReference * fieldSymRef = symRefTab->findOrCreateJ9MethodConstantPoolFieldSymbolRef(offsetof(struct J9Method, constantPool));
@@ -273,7 +219,7 @@ TR_VirtualGuard::createBreakpointGuardNode
    return NULL;
 #endif
    }
- 
+
 /*
  * a breakpoint guard jumps to the slow path if a breakpoint is set for the inlined callee
  */

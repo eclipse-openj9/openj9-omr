@@ -271,13 +271,13 @@ OMR::SymbolReference::getUseDefAliasesBV(bool isDirectCall, bool includeGCSafePo
          case TR::Symbol::IsShadow:
          case TR::Symbol::IsStatic:
             {
-            // For unresolved constant dynamic, we need to invoke a Java bootstrap method, 
+            // For unresolved constant dynamic, we need to invoke a Java bootstrap method,
             // which can have arbitrary side effects, so the aliasing should be conservative here.
-            // isConstObjectRef now returns true for condy, so we add an explicit condition, 
-            // more like a short-circuit, to say if we are unresolved and not isConstObjectRef 
-            // (this is the same as before), or if we are unresolved and condy 
+            // isConstObjectRef now returns true for condy, so we add an explicit condition,
+            // more like a short-circuit, to say if we are unresolved and not isConstObjectRef
+            // (this is the same as before), or if we are unresolved and condy
             // (this is the extra condition added), we would return conservative aliases.
-            if ((self()->isUnresolved() && (_symbol->isConstantDynamic() || !_symbol->isConstObjectRef())) || 
+            if ((self()->isUnresolved() && (_symbol->isConstantDynamic() || !_symbol->isConstObjectRef())) ||
 	        _symbol->isVolatile() || self()->isLiteralPoolAddress() ||
                 self()->isFromLiteralPool() || _symbol->isUnsafeShadowSymbol() ||
                 (_symbol->isArrayShadowSymbol() && comp->getMethodSymbol()->hasVeryRefinedAliasSets()))
@@ -305,9 +305,6 @@ OMR::SymbolReference::getUseDefAliasesBV(bool isDirectCall, bool includeGCSafePo
       {
       case TR::Symbol::IsMethod:
          {
-         if (comp->getCurrentMethod()->isRuby())
-            return _useDefAliases;         // FIXME: what about non-method symbols??
-
          TR::MethodSymbol * methodSymbol = _symbol->castToMethodSymbol();
 
          if (!methodSymbol->isHelper())
@@ -748,7 +745,7 @@ OMR::SymbolReference::getUseDefAliasesBV(bool isDirectCall, bool includeGCSafePo
          // more like a short-circuit, to say if we are unresolved and not isConstObjectRef
          // (this is the same as before), or if we are unresolved and condy
          // (this is the extra condition added), we would return conservative aliases.
-         if ((self()->isUnresolved() && (_symbol->isConstantDynamic() || !_symbol->isConstObjectRef())) || 
+         if ((self()->isUnresolved() && (_symbol->isConstantDynamic() || !_symbol->isConstObjectRef())) ||
 	     self()->isLiteralPoolAddress() || self()->isFromLiteralPool() || _symbol->isVolatile())
             {
             return &comp->getSymRefTab()->aliasBuilder.defaultMethodDefAliases();
@@ -818,7 +815,7 @@ OMR::SymbolReference::sharesSymbol(bool includingGCSafePoint)
          // more like a short-circuit, to say if we are unresolved and not isConstObjectRef
          // (this is the same as before), or if we are unresolved and condy
          // (this is the extra condition added), we would return conservative aliases.
-         if ((self()->isUnresolved() && (_symbol->isConstantDynamic() || !_symbol->isConstObjectRef())) || 
+         if ((self()->isUnresolved() && (_symbol->isConstantDynamic() || !_symbol->isConstObjectRef())) ||
 	       _symbol->isVolatile() || self()->isLiteralPoolAddress() ||
                self()->isFromLiteralPool() || _symbol->isUnsafeShadowSymbol() ||
                (_symbol->isArrayShadowSymbol() && c->getMethodSymbol()->hasVeryRefinedAliasSets()))
@@ -1000,7 +997,7 @@ addVeryRefinedCallAliasSets(TR::ResolvedMethodSymbol * methodSymbol, TR_BitVecto
    // This can't be allocated into the alias region as it must be accessed across optimizations
    TR_BitVector *heapAliases = new (comp->trHeapMemory()) TR_BitVector(comp->getSymRefCount(), comp->trMemory(), heapAlloc, growable);
    *heapAliases |= *aliases;
-   return heapAliases; 
+   return heapAliases;
    }
 #endif
 

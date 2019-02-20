@@ -110,6 +110,7 @@
 #include "optimizer/ReorderIndexExpr.hpp"
 #include "optimizer/GlobalRegisterAllocator.hpp"
 #include "optimizer/RecognizedCallTransformer.hpp"
+#include "optimizer/SwitchAnalyzer.hpp"
 #include "env/RegionProfiler.hpp"
 
 #if defined (_MSC_VER) && _MSC_VER < 1900
@@ -357,6 +358,7 @@ const OptimizationStrategy earlyLocalOpts[] =
    { localValuePropagation                },
    //{ localValuePropagationGroup           },
    { localReordering                      },
+   { switchAnalyzer,                      },
    { treeSimplification,        IfEnabled }, // simplify any exprs created by LCP/LCSE
 #ifdef J9_PROJECT_SPECIFIC
    { catchBlockRemoval                    }, // if all possible exceptions in a try were removed by inlining/LCP/LCSE
@@ -863,6 +865,8 @@ OMR::Optimizer::Optimizer(TR::Compilation *comp, TR::ResolvedMethodSymbol *metho
       new (comp->allocator()) TR::OptimizationManager(self(), TR_LoopSpecializer::create, OMR::loopSpecializer);
    _opts[OMR::recognizedCallTransformer] =
       new (comp->allocator()) TR::OptimizationManager(self(), TR::RecognizedCallTransformer::create, OMR::recognizedCallTransformer);
+   _opts[OMR::switchAnalyzer] =
+      new (comp->allocator()) TR::OptimizationManager(self(), TR::SwitchAnalyzer::create, OMR::switchAnalyzer);
 
    // NOTE: Please add new OMR optimizations here!
 

@@ -171,6 +171,7 @@ JIT_PRODUCT_BACKEND_SOURCES+=\
     $(JIT_OMR_DIRTY_DIR)/optimizer/RegDepCopyRemoval.cpp \
     $(JIT_OMR_DIRTY_DIR)/optimizer/StructuralAnalysis.cpp \
     $(JIT_OMR_DIRTY_DIR)/optimizer/Structure.cpp \
+    $(JIT_OMR_DIRTY_DIR)/optimizer/SwitchAnalyzer.cpp \
     $(JIT_OMR_DIRTY_DIR)/optimizer/TranslateTable.cpp \
     $(JIT_OMR_DIRTY_DIR)/optimizer/TrivialDeadBlockRemover.cpp \
     $(JIT_OMR_DIRTY_DIR)/optimizer/UnionBitVectorAnalysis.cpp \

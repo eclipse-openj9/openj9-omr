@@ -3925,8 +3925,6 @@ TR_Debug::getRuntimeHelperName(int32_t index)
          case TR_throwClassCastException:   return "jitThrowClassCastException";
 
          case TR_IncompatibleClassChangeError:return "jitThrowIncompatibleClassChangeError";
-         case TR_AbstractMethodError:       return "jitThrowAbstractMethodError";
-         case TR_IllegalAccessError:        return "jitThrowIllegalAccessError";
          case TR_newInstanceImplAccessCheck:return "jitNewInstanceImplAccessCheck";
 
          case TR_icallVMprJavaSendStatic0:                        return "icallVMprJavaSendStatic0";

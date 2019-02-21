@@ -37,6 +37,7 @@
 #include "infra/Assert.hpp"
 #include "infra/CriticalSection.hpp"
 #include "infra/Monitor.hpp"
+#include "omrformatconsts.h"
 #include "runtime/CodeCache.hpp"
 #include "runtime/CodeCacheManager.hpp"
 #include "runtime/CodeCacheMemorySegment.hpp"
@@ -129,9 +130,9 @@ OMR::CodeCacheManager::initialize(
       }
 
    mcc_printf("mcc_initialize: initializing %d code cache(s)\n", numberOfCodeCachesToCreateAtStartup);
-   mcc_printf("mcc_initialize: code cache size = %u kb\n",  config.codeCacheKB());
-   mcc_printf("mcc_initialize: code cache pad size = %u kb\n",  config.codeCachePadKB());
-   mcc_printf("mcc_initialize: code cache total size = %u kb\n",  config.codeCacheTotalKB());
+   mcc_printf("mcc_initialize: code cache size = %" OMR_PRIuSIZE " kb\n",  config.codeCacheKB());
+   mcc_printf("mcc_initialize: code cache pad size = %" OMR_PRIuSIZE " kb\n",  config.codeCachePadKB());
+   mcc_printf("mcc_initialize: code cache total size = %" OMR_PRIuSIZE " kb\n",  config.codeCacheTotalKB());
 
    // Initialize the list of code caches
    //

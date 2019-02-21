@@ -25,6 +25,7 @@
 #include <map>
 #include <set>
 #include <fstream>
+#include "env/TRMemory.hpp"
 #include "ilgen/IlBuilder.hpp"
 #include "env/TypedAllocator.hpp"
 
@@ -39,12 +40,6 @@ namespace TR { class VirtualMachineState; }
 
 namespace TR { class SegmentProvider; }
 namespace TR { class Region; }
-class TR_Memory;
-
-#ifndef TR_ALLOC
-#define TR_ALLOC(x)
-#endif
-
 
 extern "C"
 {

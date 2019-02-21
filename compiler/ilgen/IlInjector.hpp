@@ -30,6 +30,7 @@
 
 #include <stdint.h>
 #include "env/jittypes.h"
+#include "env/TRMemory.hpp"
 #include "il/ILOpCodes.hpp"
 #include "ilgen/IlGen.hpp"
 
@@ -50,11 +51,6 @@ namespace TR { class SymbolReferenceTable; }
 namespace TR { class TreeTop; }
 namespace TR { class IlType; }
 namespace TR { class TypeDictionary; }
-
-// This macro reduces dependencies for this header file
-#ifndef TR_ALLOC
-#define TR_ALLOC(x)
-#endif
 
 namespace OMR
 {

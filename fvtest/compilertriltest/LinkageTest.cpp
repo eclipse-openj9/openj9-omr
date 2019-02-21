@@ -98,9 +98,11 @@ TYPED_TEST(LinkageTest, SystemLinkageParameterPassingSingleArg) {
 
     auto entry_point = compiler.getEntryPoint<TypeParam (*)(TypeParam)>();
 
-    EXPECT_EQ(static_cast<TypeParam>(0), entry_point( static_cast<TypeParam>(0)))  << "Input Trees: " << inputTrees;
-    EXPECT_EQ(static_cast<TypeParam>(1), entry_point( static_cast<TypeParam>(1)))  << "Input Trees: " << inputTrees;
-    EXPECT_EQ(static_cast<TypeParam>(-1), entry_point(static_cast<TypeParam>(-1))) << "Input Trees: " << inputTrees;
+    auto inputs = TRTest::const_values<TypeParam>();
+    for (auto i = inputs.cbegin(); i != inputs.cend(); ++i) {
+        SCOPED_TRACE(*i);
+        EXPECT_EQ(static_cast<TypeParam>(*i), entry_point(*i))  << "Input Trees: " << inputTrees;
+    }
 }
 
 template <typename T>
@@ -146,9 +148,11 @@ TYPED_TEST(LinkageTest, SystemLinkageParameterPassingFourArg) {
 
     auto entry_point = compiler.getEntryPoint<TypeParam (*)(TypeParam,TypeParam,TypeParam,TypeParam)>();
 
-    EXPECT_EQ(static_cast<TypeParam>(1024),    entry_point(0,0,0,static_cast<TypeParam>(1024)))     << "Input Trees: " << inputTrees;
-    EXPECT_EQ(static_cast<TypeParam>(-1),      entry_point(0,0,0,static_cast<TypeParam>(-1)))       << "Input Trees: " << inputTrees;
-    EXPECT_EQ(static_cast<TypeParam>(0xf0f0f), entry_point(0,0,0,static_cast<TypeParam>(0xf0f0f)))  << "Input Trees: " << inputTrees;
+    auto inputs = TRTest::const_values<TypeParam>();
+    for (auto i = inputs.cbegin(); i != inputs.cend(); ++i) {
+        SCOPED_TRACE(*i);
+        EXPECT_EQ(static_cast<TypeParam>(*i), entry_point(0,0,0, *i))  << "Input Trees: " << inputTrees;
+    }
 }
 
 template <typename T>
@@ -228,9 +232,11 @@ TYPED_TEST(LinkageTest, SystemLinkageJitedToJitedParameterPassingFourArg) {
 
     auto entry_point = compiler.getEntryPoint<TypeParam (*)(TypeParam,TypeParam,TypeParam,TypeParam)>();
 
-    EXPECT_EQ(static_cast<TypeParam>(1024),    entry_point(0,0,0,static_cast<TypeParam>(1024)))     << "Input Trees: " << inputTrees;
-    EXPECT_EQ(static_cast<TypeParam>(-1),      entry_point(0,0,0,static_cast<TypeParam>(-1)))       << "Input Trees: " << inputTrees;
-    EXPECT_EQ(static_cast<TypeParam>(0xf0f0f), entry_point(0,0,0,static_cast<TypeParam>(0xf0f0f)))  << "Input Trees: " << inputTrees;
+    auto inputs = TRTest::const_values<TypeParam>();
+    for (auto i = inputs.cbegin(); i != inputs.cend(); ++i) {
+        SCOPED_TRACE(*i);
+        EXPECT_EQ(static_cast<TypeParam>(*i), entry_point(0,0,0, *i))  << "Input Trees: " << inputTrees;
+    }
 }
 
 template <typename T>
@@ -285,9 +291,11 @@ TYPED_TEST(LinkageTest, SystemLinkageParameterPassingFiveArg) {
 
     auto entry_point = compiler.getEntryPoint<TypeParam (*)(TypeParam,TypeParam,TypeParam,TypeParam,TypeParam)>();
 
-    EXPECT_EQ(static_cast<TypeParam>(1024),    entry_point(0,0,0,0,static_cast<TypeParam>(1024)))     << "Input Trees: " << inputTrees;
-    EXPECT_EQ(static_cast<TypeParam>(-1),      entry_point(0,0,0,0,static_cast<TypeParam>(-1)))       << "Input Trees: " << inputTrees;
-    EXPECT_EQ(static_cast<TypeParam>(0xf0f0f), entry_point(0,0,0,0,static_cast<TypeParam>(0xf0f0f)))  << "Input Trees: " << inputTrees;
+    auto inputs = TRTest::const_values<TypeParam>();
+    for (auto i = inputs.cbegin(); i != inputs.cend(); ++i) {
+        SCOPED_TRACE(*i);
+        EXPECT_EQ(static_cast<TypeParam>(*i), entry_point(0,0,0,0, *i))  << "Input Trees: " << inputTrees;
+    }
 }
 
 /*
@@ -357,10 +365,12 @@ TYPED_TEST(LinkageTest, SystemLinkageParameterPassingFiveArgToStackUser) {
 
     auto entry_point = compiler.getEntryPoint<TypeParam (*)(TypeParam,TypeParam,TypeParam,TypeParam,TypeParam)>();
 
+    // Check the compiled function itself
     EXPECT_EQ(static_cast<TypeParam>(2053),     stackUser<TypeParam>(1,1,1,1,static_cast<TypeParam>(1024)))     << "Input Trees: " << inputTrees;
     EXPECT_EQ(static_cast<TypeParam>(3),        stackUser<TypeParam>(1,1,1,1,static_cast<TypeParam>(-1)))       << "Input Trees: " << inputTrees;
     EXPECT_EQ(static_cast<TypeParam>(0x1e1e23), stackUser<TypeParam>(1,1,1,1,static_cast<TypeParam>(0xf0f0f)))  << "Input Trees: " << inputTrees;
 
+    // Check the linkage
     EXPECT_EQ(static_cast<TypeParam>(2053),     entry_point(1,1,1,1,static_cast<TypeParam>(1024)))     << "Input Trees: " << inputTrees;
     EXPECT_EQ(static_cast<TypeParam>(3),        entry_point(1,1,1,1,static_cast<TypeParam>(-1)))       << "Input Trees: " << inputTrees;
     EXPECT_EQ(static_cast<TypeParam>(0x1e1e23), entry_point(1,1,1,1,static_cast<TypeParam>(0xf0f0f)))  << "Input Trees: " << inputTrees;
@@ -397,9 +407,11 @@ TEST_F(LinkageWithMixedTypesTest, SystemLinkageParameterPassingFourArgWithMixedT
 
     auto entry_point = compiler.getEntryPoint<FourMixedArgumentFunction>();
 
-    EXPECT_EQ(1024,    entry_point(0.0,0,0.0,1024))     << "Input Trees: " << inputTrees;
-    EXPECT_EQ(-1,      entry_point(0.0,0,0.0,-1))       << "Input Trees: " << inputTrees;
-    EXPECT_EQ(0xf0f0f, entry_point(0.0,0,0.0,0xf0f0f))  << "Input Trees: " << inputTrees;
+    auto inputs = TRTest::const_values<int32_t>();
+    for (auto i = inputs.cbegin(); i != inputs.cend(); ++i) {
+        SCOPED_TRACE(*i);
+        EXPECT_EQ(*i, entry_point(0.0,0,0.0, *i))  << "Input Trees: " << inputTrees;
+    }
 }
 
 double fifthArgFromMixedTypes(double a, int32_t b, double c, int32_t d, double e) { return e; }
@@ -432,7 +444,9 @@ TEST_F(LinkageWithMixedTypesTest, SystemLinkageParameterPassingFiveArgWithMixedT
 
     auto entry_point = compiler.getEntryPoint<FiveMixedArgumentFunction>();
 
-    EXPECT_DOUBLE_EQ(1024.3, entry_point(0.0,0,0.0,0,1024.3)) << "Input Trees: " << inputTrees;
-    EXPECT_DOUBLE_EQ(-1.7,   entry_point(0.0,0,0.0,0,-1.7))   << "Input Trees: " << inputTrees;
-    EXPECT_DOUBLE_EQ(0.001,  entry_point(0.0,0,0.0,0,0.001))  << "Input Trees: " << inputTrees;
+    auto inputs = TRTest::const_values<double>();
+    for (auto i = inputs.cbegin(); i != inputs.cend(); ++i) {
+        SCOPED_TRACE(*i);
+        EXPECT_DOUBLE_EQ(*i, entry_point(0.0,0,0.0,0, *i))  << "Input Trees: " << inputTrees;
+    }
 }

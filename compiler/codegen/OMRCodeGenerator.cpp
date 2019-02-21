@@ -1977,6 +1977,8 @@ OMR::CodeGenerator::processRelocations()
 
 #if defined(TR_HOST_ARM)
 void armCodeSync(uint8_t *start, uint32_t size);
+#elif defined(TR_HOST_ARM64)
+void arm64CodeSync(uint8_t *start, uint32_t size);
 #elif defined(TR_HOST_POWER)
 void ppcCodeSync(uint8_t *start, uint32_t size);
 #else
@@ -1988,6 +1990,8 @@ OMR::CodeGenerator::syncCode(uint8_t *start, uint32_t size)
    {
 #if defined(TR_HOST_ARM)
    armCodeSync(start, size);
+#elif defined(TR_HOST_ARM64)
+   arm64CodeSync(start, size);
 #elif defined(TR_HOST_POWER)
    ppcCodeSync(start, size);
 #else

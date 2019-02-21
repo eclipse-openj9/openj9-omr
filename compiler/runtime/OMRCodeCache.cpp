@@ -37,6 +37,7 @@
 #include "infra/Assert.hpp"
 #include "infra/CriticalSection.hpp"
 #include "infra/Monitor.hpp"
+#include "omrformatconsts.h"
 #include "runtime/CodeCache.hpp"
 #include "runtime/CodeCacheManager.hpp"
 #include "runtime/CodeCacheMemorySegment.hpp"
@@ -1275,8 +1276,8 @@ void
 OMR::CodeCache::dumpCodeCache()
    {
    printf("Code Cache @%p\n", this);
-   printf("  |-- warmCodeAlloc          = 0x%08x\n", _warmCodeAlloc );
-   printf("  |-- coldCodeAlloc          = 0x%08x\n", _coldCodeAlloc );
+   printf("  |-- warmCodeAlloc          = 0x%08" OMR_PRIxPTR "\n", (uintptr_t)_warmCodeAlloc );
+   printf("  |-- coldCodeAlloc          = 0x%08" OMR_PRIxPTR "\n", (uintptr_t)_coldCodeAlloc );
    printf("  |-- tempTrampsMax          = %d\n",     _tempTrampolinesMax );
    printf("  |-- flags                  = %d\n",     _flags );
    printf("  |-- next                   = 0x%p\n",   _next );
@@ -1287,18 +1288,18 @@ void
 OMR::CodeCache::printOccupancyStats()
    {
    fprintf(stderr, "Code Cache @%p flags=0x%x almostFull=%d\n", this, _flags, _almostFull);
-   fprintf(stderr, "   cold-warm hole size        = %8u bytes\n", self()->getFreeContiguousSpace());
+   fprintf(stderr, "   cold-warm hole size        = %8" OMR_PRIuSIZE " bytes\n", self()->getFreeContiguousSpace());
    fprintf(stderr, "   warmCodeAlloc=%p coldCodeAlloc=%p\n", (void*)_warmCodeAlloc, (void*)_coldCodeAlloc);
    if (_freeBlockList)
       {
-      fprintf(stderr, "   sizeOfLargestFreeColdBlock = %8d bytes\n", _sizeOfLargestFreeColdBlock);
-      fprintf(stderr, "   sizeOfLargestFreeWarmBlock = %8d bytes\n", _sizeOfLargestFreeWarmBlock);
+      fprintf(stderr, "   sizeOfLargestFreeColdBlock = %8" OMR_PRIuSIZE " bytes\n", _sizeOfLargestFreeColdBlock);
+      fprintf(stderr, "   sizeOfLargestFreeWarmBlock = %8" OMR_PRIuSIZE " bytes\n", _sizeOfLargestFreeWarmBlock);
       fprintf(stderr, "   reclaimed sizes:");
       // scope for critical section
          {
          CacheCriticalSection resolveAndCreateTrampoline(self());
          for (CodeCacheFreeCacheBlock *currLink = _freeBlockList; currLink; currLink = currLink->_next)
-            fprintf(stderr, " %u", currLink->_size);
+            fprintf(stderr, " %" OMR_PRIuSIZE, currLink->_size);
          }
       fprintf(stderr, "\n");
       }
@@ -1411,12 +1412,12 @@ OMR::CodeCache::checkForErrors()
             } // end for
          if (_sizeOfLargestFreeWarmBlock != maxFreeWarmSize)
             {
-            fprintf(stderr, "checkForErrors cache %p: Error: _sizeOfLargestFreeWarmBlock(%d) != maxFreeWarmSize(%d)\n", this, _sizeOfLargestFreeWarmBlock, maxFreeWarmSize);
+            fprintf(stderr, "checkForErrors cache %p: Error: _sizeOfLargestFreeWarmBlock(%" OMR_PRIuSIZE ") != maxFreeWarmSize(%" OMR_PRIuSIZE ")\n", this, _sizeOfLargestFreeWarmBlock, maxFreeWarmSize);
             doCrash = true;
             }
          if (_sizeOfLargestFreeColdBlock != maxFreeColdSize)
             {
-            fprintf(stderr, "checkForErrors cache %p: Error: _sizeOfLargestFreeColdBlock(%d) != maxFreeColdSize(%d)\n", this, _sizeOfLargestFreeColdBlock, maxFreeColdSize);
+            fprintf(stderr, "checkForErrors cache %p: Error: _sizeOfLargestFreeColdBlock(%" OMR_PRIuSIZE ") != maxFreeColdSize(%" OMR_PRIuSIZE ")\n", this, _sizeOfLargestFreeColdBlock, maxFreeColdSize);
             doCrash = true;
             }
 

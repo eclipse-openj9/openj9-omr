@@ -31,6 +31,7 @@
 #include "env/jittypes.h"
 #include "il/ILOpCodes.hpp"
 #include "il/Node.hpp"
+#include "il/Node_inlines.hpp"
 #include "il/Symbol.hpp"
 #include "il/symbol/StaticSymbol.hpp"
 #include "infra/Assert.hpp"
@@ -381,22 +382,33 @@ OMR::ConstantDataSnippet::emitAddressConstant(
       TR::Node *node = acursor->getNode();
       if (node != NULL && node->getOpCodeValue() == TR::aconst)
          {
-         TR_ExternalRelocationTargetKind kind=TR_NoRelocation;
-         if (node->isClassPointerConstant())
-            kind = TR_ClassPointer;
-         else if (node->isMethodPointerConstant())
+         if (comp->getOption(TR_UseSymbolValidationManager))
             {
-            if (node->getInlinedSiteIndex() == -1)
-               kind = TR_RamMethod;
-            else
-               kind = TR_MethodPointer;
-            }
+            TR::SymbolType type;
 
-         if (kind != TR_NoRelocation)
-            {
-            TR::Relocation *relo;
-            relo = new (cg()->trHeapMemory()) TR::ExternalRelocation(codeCursor, (uint8_t *)node, kind, cg());
+            if (node->isClassPointerConstant())
+               type = TR::SymbolType::typeClass;
+            else if (node->isMethodPointerConstant())
+               type = TR::SymbolType::typeMethod;
+            else
+               TR_ASSERT_FATAL(false, "Unable to relocate node %p", node);
+
+            TR::Relocation *relo = new (cg()->trHeapMemory()) TR::ExternalRelocation(codeCursor, (uint8_t *)node->getAddress(), (uint8_t*)type, TR_SymbolFromManager, cg());
             cg()->addExternalRelocation(relo, __FILE__, __LINE__, node);
+            }
+         else
+            {
+            TR_ExternalRelocationTargetKind kind=TR_NoRelocation;
+            if (node->isClassPointerConstant())
+               kind = TR_ClassPointer;
+            else if (node->isMethodPointerConstant())
+               kind = (node->getInlinedSiteIndex() == -1) ? TR_RamMethod : TR_MethodPointer;
+
+            if (kind != TR_NoRelocation)
+               {
+               TR::Relocation *relo = new (cg()->trHeapMemory()) TR::ExternalRelocation(codeCursor, (uint8_t *)node, kind, cg());
+               cg()->addExternalRelocation(relo, __FILE__, __LINE__, node);
+               }
             }
          }
       }

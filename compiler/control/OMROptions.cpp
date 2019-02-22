@@ -733,8 +733,6 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"enableReorderArrayIndexExpr",        "O\treorder array index expressions to encourage hoisting", TR::Options::enableOptimization, reorderArrayExprGroup, 0, "P"},
    {"enableRIEMIT",                       "O\tAllows the z Codegen to emit RIEMIT instructions", SET_OPTION_BIT(TR_EnableRIEMIT), "F", NOT_IN_SUBSET},
    {"enableRMODE64",                      "O\tEnable residence mode of compiled bodies on z/OS to reside above the 2-gigabyte bar", SET_OPTION_BIT(TR_EnableRMODE64), "F"},
-   {"enableRubyCodeCacheReclamation",     "O\tEnable Tiered Compilation on Ruby", SET_OPTION_BIT(TR_EnableRubyCodeCacheReclamation), "F", NOT_IN_SUBSET},
-   {"enableRubyTieredCompilation",        "O\tEnable Tiered Compilation on Ruby", SET_OPTION_BIT(TR_EnableRubyTieredCompilation), "F", NOT_IN_SUBSET},
    {"enableSamplingJProfiling=",          "R\tenable generation of profiling code by the JIT", TR::Options::setSamplingJProfilingBits, 0, 0, "F", NOT_IN_SUBSET},
    {"enableSCHint=","R<nnn>\tOverride default SC Hints to user-specified hints", TR::Options::set32BitHexadecimal, offsetof(OMR::Options, _enableSCHintFlags), 0, "F%d"},
    {"enableScorchInterpBlkFreqProfiling",   "R\tenable profiling blocks in the jit", SET_OPTION_BIT(TR_EnableScorchInterpBlockFrequencyProfiling), "F"},
@@ -2477,17 +2475,10 @@ OMR::Options::jitPreProcess()
    self()->setOption(TR_DisableIntrinsics);
 #endif
 
-#if defined(RUBY_PROJECT_SPECIFIC)
-   // Ruby has been known to spawn other Ruby VMs.  Log filenames must be unique
-   // or corruption will occur.
-   //
-   bool forceSuffixLogs = true;
-#else
 #if defined(DEBUG) || defined(PROD_WITH_ASSUMES)
    bool forceSuffixLogs = false;
 #else
    bool forceSuffixLogs = true;
-#endif
 #endif
 
    if (forceSuffixLogs)

@@ -1053,14 +1053,7 @@ OMR::SymbolReferenceTable::findOrCreateTransactionExitSymbolRef(TR::ResolvedMeth
 TR::SymbolReference *
 OMR::SymbolReferenceTable::findOrCreateAsyncCheckSymbolRef(TR::ResolvedMethodSymbol *)
    {
-#ifdef RUBY_PROJECT_SPECIFIC
-   return self()->findOrCreateRubyHelperSymbolRef(RubyHelper_rb_threadptr_execute_interrupts,
-                                          true,    /*canGCandReturn*/
-                                          true,    /*canGCandExcept*/
-                                          false);  /*preservesAllRegisters*/
-#else
    return findOrCreateRuntimeHelper(TR_asyncCheck, true, false, true);
-#endif
    }
 
 TR::SymbolReference *

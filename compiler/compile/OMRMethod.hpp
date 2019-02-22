@@ -116,7 +116,7 @@ class TR_Method
 
    TR_ALLOC(TR_Memory::Method);
 
-   enum Type {J9, Python, Ruby, Test, JitBuilder};
+   enum Type {J9, Python, Test, JitBuilder};
 
 
    virtual TR::DataType parmType(uint32_t parmNumber); // returns the type of the parmNumber'th parameter (0-based)
@@ -139,7 +139,6 @@ class TR_Method
 
    bool isJ9()     { return _typeOfMethod == J9;     }
    bool isPython() { return _typeOfMethod == Python; }
-   bool isRuby()   { return _typeOfMethod == Ruby;   }
    Type methodType() { return _typeOfMethod; }
 
    TR_Method(Type t = J9) : _typeOfMethod(t) { _recognizedMethod = _mandatoryRecognizedMethod = TR::unknownMethod; }

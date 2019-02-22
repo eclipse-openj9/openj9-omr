@@ -647,8 +647,8 @@ TR::PPCSystemLinkage::createPrologue(
    TR::RealRegister::RegNum regIndex;
    int32_t                    size = bodySymbol->getLocalMappingCursor();
    int32_t                    argSize;
-    
-   
+
+
 #ifdef __LITTLE_ENDIAN__
    //Move TOCBase into r2
    cursor = loadConstant(cg(), firstNode, (int64_t)(cg()->getTOCBase()), gr2, cursor, false, false);
@@ -1432,8 +1432,6 @@ void TR::PPCSystemLinkage::buildDirectCall(TR::Node *callNode,
    int32_t                        refNum = callSymRef->getReferenceNumber();
 
    //This is not JIT pseudo TOC, but jit-module system TOC.
-   //Unfortunately, Ruby JIT is multiplexing gr2(as system module TOC) for JIT-pseudo TOC
-
 
    if(aix_style_linkage)
          {
@@ -1442,7 +1440,7 @@ void TR::PPCSystemLinkage::buildDirectCall(TR::Node *callNode,
          //for the time being.
          if(TR::Compiler->target.cpu.isBigEndian())
             {
-#if !(defined(PYTHON) || defined(OMR_RUBY) || defined(JITTEST))
+#if !(defined(PYTHON) || defined(JITTEST))
             TR::TreeEvaluator::restoreTOCRegister(callNode, cg(), dependencies);
 #endif
             }
@@ -1463,7 +1461,7 @@ void TR::PPCSystemLinkage::buildDirectCall(TR::Node *callNode,
 
    //Bug fix: JIT doesn't need to restore caller's system TOC since there is no infrastructure to generate
    //         ABI-conforming module of dynamic code.  Plus, linux32 has no system TOC.
-#if defined(PYTHON) || defined(OMR_RUBY) || defined(JITTEST)
+#if defined(PYTHON) || defined(JITTEST)
    TR::TreeEvaluator::restoreTOCRegister(callNode, cg(), dependencies);
 #endif
    }

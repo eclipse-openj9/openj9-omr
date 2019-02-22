@@ -877,8 +877,8 @@ TR::S390zOSSystemLinkage::generateInstructionsForCall(TR::Node * callNode, TR::R
       TR::Register * methodAddressReg, TR::Register * javaLitOffsetReg, TR::LabelSymbol * returnFromJNICallLabel,
       TR::S390JNICallDataSnippet * jniCallDataSnippet, bool isJNIGCPoint)
    {
- #if defined(PYTHON) || defined(OMR_RUBY) || defined(JITTEST)
-   TR_ASSERT(0,"Python/Ruby/Test should have their own front-end customization.");
+ #if defined(PYTHON) || defined(JITTEST)
+   TR_ASSERT(0,"Python/Test should have their own front-end customization.");
  #endif
 
    }
@@ -1009,9 +1009,9 @@ TR::S390zLinuxSystemLinkage::generateInstructionsForCall(TR::Node * callNode, TR
    TR::Register * systemReturnAddressRegister =
       deps->searchPostConditionRegister(getReturnAddressRegister());
 
-   //omr todo: this should be placed in Test/Python/Ruby
+   //omr todo: this should be placed in Test/Python
    //zLinux SystemLinkage
-#if defined(PYTHON) || defined(OMR_RUBY) || defined(JITTEST)
+#if defined(PYTHON) || defined(JITTEST)
       {
 
       if (callNode->getOpCode().isIndirect())
@@ -1080,7 +1080,7 @@ TR::S390zLinuxSystemLinkage::callNativeFunction(TR::Node * callNode,
 
             generateRSInstruction(cg(), TR::InstOpCode::SLLG, callNode, highReg, highReg, 32);
             generateRRInstruction(cg(), TR::InstOpCode::LR, callNode, highReg, lowReg);
-            
+
             cg()->stopUsingRegister(lowReg);
             returnRegister = highReg;
             }
@@ -1797,8 +1797,8 @@ void TR::S390SystemLinkage::createPrologue(TR::Instruction * cursor)
 
    int16_t GPRSaveMask = getGPRSaveMask();
 
-#if defined(PYTHON) || defined(OMR_RUBY) || defined(JITTEST)
-   // Literal Pool for Ruby and Python and test
+#if defined(PYTHON) || defined(JITTEST)
+   // Literal Pool for Python and test
    firstSnippet = cg()->getFirstSnippet();
    if ( cg()->isLiteralPoolOnDemandOn() != true && firstSnippet != NULL )
       cursor = new (trHeapMemory()) TR::S390RILInstruction(TR::InstOpCode::LARL, firstNode, lpReg, firstSnippet, cursor, cg());
@@ -2028,7 +2028,7 @@ void TR::S390SystemLinkage::createEpilogue(TR::Instruction * cursor)
    TR::LabelSymbol * epilogBeginLabel = generateLabelSymbol(cg());
 
    cursor = generateS390LabelInstruction(cg(), TR::InstOpCode::LABEL, nextNode, epilogBeginLabel, cursor);
-   
+
    //Restore preserved FPRs
    firstSaved = TR::Linkage::getFirstMaskedBit(FPRSaveMask);
    lastSaved = TR::Linkage::getLastMaskedBit(FPRSaveMask);

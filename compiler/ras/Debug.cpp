@@ -124,10 +124,6 @@
 #include "Xj9I5OSJitDebug.H"
 #endif
 
-#ifdef RUBY_PROJECT_SPECIFIC
-#include "ruby/config.h"
-#endif
-
 // -----------------------------------------------------------------------------
 
 // TODO: the following would look much better as instance fields in TR_Debug
@@ -3755,101 +3751,6 @@ TR_Debug::getRuntimeHelperName(int32_t index)
       }
 #endif
 
-#if defined(OMR_RUBY)
-   if (index < TR_FSRH)
-      {
-      switch (index)
-         {
-         case RubyHelper_rb_funcallv:            return "rb_funcallv";
-         case RubyHelper_vm_send:                return "vm_send";
-         case RubyHelper_vm_send_without_block:  return "vm_send_without_block";
-         case RubyHelper_vm_getspecial:          return "vm_getspecial";
-         case RubyHelper_lep_svar_set:           return "vm_lep_svar_set";
-         case RubyHelper_vm_getivar:             return "vm_getivar";
-         case RubyHelper_vm_setivar:             return "vm_setivar";
-         case RubyHelper_vm_opt_plus:            return "vm_opt_plus";
-         case RubyHelper_vm_opt_minus:           return "vm_opt_minus";
-         case RubyHelper_vm_opt_mult:            return "vm_opt_mult";
-         case RubyHelper_vm_opt_div:             return "vm_opt_div";
-         case RubyHelper_vm_opt_mod:             return "vm_opt_mod";
-         case RubyHelper_vm_opt_eq:              return "vm_opt_eq";
-         case RubyHelper_vm_opt_neq:             return "vm_opt_neq";
-         case RubyHelper_vm_opt_lt:              return "vm_opt_lt";
-         case RubyHelper_vm_opt_le:              return "vm_opt_le";
-         case RubyHelper_vm_opt_gt:              return "vm_opt_gt";
-         case RubyHelper_vm_opt_ge:              return "vm_opt_ge";
-         case RubyHelper_vm_opt_ltlt:            return "vm_opt_ltlt";
-         case RubyHelper_vm_opt_not:             return "vm_opt_not";
-         case RubyHelper_vm_opt_aref:            return "vm_opt_aref";
-         case RubyHelper_vm_opt_aset:            return "vm_opt_aset";
-         case RubyHelper_vm_opt_length:          return "vm_opt_length";
-         case RubyHelper_vm_opt_size:            return "vm_opt_size";
-         case RubyHelper_vm_opt_empty_p:         return "vm_opt_empty_p";
-         case RubyHelper_vm_opt_succ:            return "vm_opt_succ";
-         case RubyHelper_rb_ary_new_capa:        return "rb_ary_new_capa";
-         case RubyHelper_rb_ary_new_from_values: return "rb_ary_new_from_values";
-         case RubyHelper_vm_expandarray:         return "vm_expandarray";
-         case RubyHelper_rb_ary_resurrect:       return "rb_ary_resurrect";
-         case RubyHelper_vm_concatarray:         return "vm_concatarray";
-         case RubyHelper_vm_splatarray:          return "vm_splatarray";
-         case RubyHelper_rb_range_new:           return "rb_range_new";
-         case RubyHelper_rb_hash_new:            return "rb_hash_new";
-         case RubyHelper_rb_hash_aset:           return "rb_hash_aset";
-         case RubyHelper_vm_trace:               return "vm_trace";
-         case RubyHelper_rb_str_new:             return "rb_str_new";
-         case RubyHelper_rb_str_new_cstr:        return "rb_str_new_cstr";
-         case RubyHelper_rb_str_resurrect:       return "rb_str_resurrect";
-
-         case RubyHelper_vm_get_ev_const:        return "vm_get_ev_const";
-         case RubyHelper_vm_check_if_namespace:  return "vm_check_if_namespace";
-         case RubyHelper_rb_const_set:           return "rb_const_set";
-         case RubyHelper_rb_gvar_get:            return "rb_gvar_get";
-         case RubyHelper_rb_gvar_set:            return "rb_gvar_set";
-         case RubyHelper_rb_iseq_add_mark_object:return "rb_iseq_add_mark_object";
-         case RubyHelper_vm_setinlinecache:      return "vm_setinlinecache";
-         case RubyHelper_vm_throw:               return "vm_throw";
-         case RubyHelper_rb_threadptr_execute_interrupts:
-                                                 return "rb_threadptr_execute_interrupts";
-         case RubyHelper_rb_vm_ep_local_ep:      return "rb_vm_ep_local_ep";
-         case RubyHelper_vm_get_cbase:           return "vm_get_cbase";
-         case RubyHelper_vm_get_const_base:      return "vm_get_const_base";
-         case RubyHelper_rb_vm_get_cref:         return "rb_vm_get_cref";
-         case RubyHelper_vm_get_cvar_base:       return "vm_get_cvar_base";
-         case RubyHelper_rb_cvar_get:            return "rb_cvar_get";
-         case RubyHelper_rb_cvar_set:            return "rb_cvar_set";
-         case RubyHelper_vm_checkmatch:          return "vm_checkmatch";
-         case RubyHelper_rb_obj_as_string:       return "rb_obj_as_string";
-         case RubyHelper_rb_str_append:          return "rb_str_append";
-         case RubyHelper_rb_ary_tmp_new:         return "rb_ary_tmp_new";
-         case RubyHelper_rb_ary_store:           return "rb_ary_store";
-         case RubyHelper_rb_reg_new_ary:         return "rb_reg_new_ary";
-         case RubyHelper_vm_opt_regexpmatch1:    return "vm_opt_regexpmatch1";
-         case RubyHelper_vm_opt_regexpmatch2:    return "vm_opt_regexpmatch2";
-         case RubyHelper_vm_defined:             return "vm_defined";
-         case RubyHelper_vm_invokesuper:         return "vm_invokesuper";
-         case RubyHelper_vm_invokeblock:         return "vm_invokeblock";
-         case RubyHelper_vm_get_block_ptr:       return "vm_get_block_ptr";
-         case RubyHelper_rb_bug:                 return "rb_bug";
-         case RubyHelper_vm_exec_core:           return "vm_exec_core";
-         case RubyHelper_rb_class_of:            return "rb_class_of";
-         case RubyHelper_vm_send_woblock_inlineable_guard:  return "vm_send_woblock_inlineable_guard";
-         case RubyHelper_vm_send_woblock_jit_inline_frame:  return "vm_send_woblock_jit_inline_frame";
-         case RubyHelper_ruby_omr_is_valid_object:  return "ruby_omr_is_valid_object";
-         case RubyHelper_rb_class2name:          return "rb_class2name";
-         case RubyHelper_vm_opt_aref_with:       return "vm_opt_aref_with";
-         case RubyHelper_vm_opt_aset_with:       return "vm_opt_aset_with";
-         case RubyHelper_vm_setconstant:         return "vm_setconstant";
-         case RubyHelper_rb_vm_env_write:        return "rb_vm_env_write";
-         case RubyHelper_vm_jit_stack_check:     return "vm_jit_stack_check";
-         case RubyHelper_rb_str_freeze:          return "rb_str_freeze";
-         case RubyHelper_rb_ivar_set:            return "rb_ivar_set";
-         case RubyHelper_vm_compute_case_dest:   return "vm_compute_case_dest";
-         case RubyHelper_vm_getinstancevariable: return "vm_getinstancevariable";
-         case RubyHelper_vm_setinstancevariable: return "vm_setinstancevariable";
-         }
-      }
-#endif
-
 #ifdef J9_PROJECT_SPECIFIC
    if (index < TR_FSRH)
       {
@@ -4514,8 +4415,6 @@ TR_Debug::getVirtualGuardTestTypeName(TR_VirtualGuardTestType testType)
          return "MethodTest";
       case TR_NonoverriddenTest:
          return "NonoverriddenTest";
-      case TR_RubyInlineTest:
-         return "RubyInlineTest";
       case TR_FSDTest:
          return "FSDTest";
       }

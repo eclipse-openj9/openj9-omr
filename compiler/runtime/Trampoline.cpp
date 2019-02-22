@@ -33,7 +33,7 @@
 #include "runtime/Runtime.hpp"
 #include "env/CompilerEnv.hpp"
 
-#if defined(PYTHON) || defined(JITTEST)
+#if defined(JITTEST)
 #include "env/ConcreteFE.hpp"
 #endif
 

@@ -90,7 +90,7 @@ namespace TR
    {
    static bool isJ9()
       {
-#if defined(NONJAVA) || defined(PYTHON) || defined(JITTEST)
+#if defined(NONJAVA) || defined(JITTEST)
       return false;
 #else
       return true;

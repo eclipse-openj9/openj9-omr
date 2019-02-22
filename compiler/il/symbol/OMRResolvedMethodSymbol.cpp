@@ -131,9 +131,6 @@ OMR::ResolvedMethodSymbol::ResolvedMethodSymbol(TR_ResolvedMethod * method, TR::
      _comp(comp),
      _firstJitTempIndex(-1),
      _cannotAttemptOSR(NULL),
-     _pythonConstsSymRef(NULL),
-     _pythonNumLocalVars(0),
-     _pythonLocalVarSymRefs(NULL),
      _properties(0),
      _bytecodeProfilingOffsets(comp->allocator())
    {

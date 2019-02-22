@@ -1440,7 +1440,7 @@ void TR::PPCSystemLinkage::buildDirectCall(TR::Node *callNode,
          //for the time being.
          if(TR::Compiler->target.cpu.isBigEndian())
             {
-#if !(defined(PYTHON) || defined(JITTEST))
+#if !defined(JITTEST)
             TR::TreeEvaluator::restoreTOCRegister(callNode, cg(), dependencies);
 #endif
             }
@@ -1461,7 +1461,7 @@ void TR::PPCSystemLinkage::buildDirectCall(TR::Node *callNode,
 
    //Bug fix: JIT doesn't need to restore caller's system TOC since there is no infrastructure to generate
    //         ABI-conforming module of dynamic code.  Plus, linux32 has no system TOC.
-#if defined(PYTHON) || defined(JITTEST)
+#if defined(JITTEST)
    TR::TreeEvaluator::restoreTOCRegister(callNode, cg(), dependencies);
 #endif
    }

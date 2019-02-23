@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -195,8 +195,6 @@ char *feGetEnv(const char *s)
    }
 
 
-#define notImplemented(A) TR_ASSERT(0, "This function is not defined for FEBase %s", (A) )
-
 // Brought this debug stuff from Compilation.cpp
 //
 // Limit on the size of the debug string
@@ -266,20 +264,20 @@ void TR_LinkageInfo::setHasFailedRecompilation()
 
 // S390 specific fucntion - FIXME: make this only be a problem when HOST is s390.  Also, use a better
 // name for this
-void setDllSlip(char*CodeStart,char*CodeEnd,char*dllName,  TR::Compilation *comp) { notImplemented("setDllSlip"); }
+void setDllSlip(char*CodeStart,char*CodeEnd,char*dllName,  TR::Compilation *comp) { TR_UNIMPLEMENTED(); }
 
 // runtime assumptions
 #ifdef J9_PROJECT_SPECIFIC
 // FIXME:
 #include "runtime/RuntimeAssumptions.hpp"
-void TR::PatchNOPedGuardSite::compensate(TR_FrontEnd *fe, bool isSMP, uint8_t *location, uint8_t *destination) { notImplemented("TR::PatchNOPedGuardSite::compensate"); }
-void TR_PersistentClassInfo::removeASubClass(TR_PersistentClassInfo *) { notImplemented("TR_PersistentClassInfo::removeASubClass"); }
-bool isOrderedPair(uint8_t recordType) { notImplemented("isOrderedPair"); return false; }
-void OMR::RuntimeAssumption::addToRAT(TR_PersistentMemory * persistentMemory, TR_RuntimeAssumptionKind kind, TR_FrontEnd *fe, OMR::RuntimeAssumption** sentinel) { notImplemented("addToRAT"); }
-void OMR::RuntimeAssumption::dumpInfo(char *subclassName) { notImplemented("dumpInfo"); }
-void TR_PatchJNICallSite::compensate(TR_FrontEnd*, bool, void *) { notImplemented("TR_PatchJNICallSite::compensate"); }
-void TR_PreXRecompile::compensate(TR_FrontEnd*, bool, void *) { notImplemented("TR_PreXRecompile::compensate"); }
-TR_PatchNOPedGuardSiteOnClassPreInitialize *TR_PatchNOPedGuardSiteOnClassPreInitialize::make(TR_FrontEnd *fe, TR_PersistentMemory *, char*, unsigned int, unsigned char*, unsigned char*, OMR::RuntimeAssumption**) { notImplemented("TR_PatchNOPedGuardSiteOnClassPreInitialize::allocate"); return 0; }
+void TR::PatchNOPedGuardSite::compensate(TR_FrontEnd *fe, bool isSMP, uint8_t *location, uint8_t *destination) { TR_UNIMPLEMENTED(); }
+void TR_PersistentClassInfo::removeASubClass(TR_PersistentClassInfo *) { TR_UNIMPLEMENTED(); }
+bool isOrderedPair(uint8_t recordType) { TR_UNIMPLEMENTED(); return false; }
+void OMR::RuntimeAssumption::addToRAT(TR_PersistentMemory * persistentMemory, TR_RuntimeAssumptionKind kind, TR_FrontEnd *fe, OMR::RuntimeAssumption** sentinel) { TR_UNIMPLEMENTED(); }
+void OMR::RuntimeAssumption::dumpInfo(char *subclassName) { TR_UNIMPLEMENTED(); }
+void TR_PatchJNICallSite::compensate(TR_FrontEnd*, bool, void *) { TR_UNIMPLEMENTED(); }
+void TR_PreXRecompile::compensate(TR_FrontEnd*, bool, void *) { TR_UNIMPLEMENTED(); }
+TR_PatchNOPedGuardSiteOnClassPreInitialize *TR_PatchNOPedGuardSiteOnClassPreInitialize::make(TR_FrontEnd *fe, TR_PersistentMemory *, char*, unsigned int, unsigned char*, unsigned char*, OMR::RuntimeAssumption**) { TR_UNIMPLEMENTED(); return 0; }
 #endif
 
 

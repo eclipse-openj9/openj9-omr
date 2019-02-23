@@ -758,50 +758,50 @@ TR::Register *OMR::ARM::TreeEvaluator::monexitfenceEvaluator(TR::Node *node, TR:
    return NULL;         //this op code does not evaluate to anything
    }
 
-TR::Register *OMR::ARM::TreeEvaluator::integerHighestOneBit(TR::Node *node, TR::CodeGenerator *cg){ TR_ASSERT(0, "not implemented!"); return NULL; }
-TR::Register *OMR::ARM::TreeEvaluator::integerLowestOneBit(TR::Node *node, TR::CodeGenerator *cg){ TR_ASSERT(0, "not implemented!"); return NULL; }
-TR::Register *OMR::ARM::TreeEvaluator::integerNumberOfLeadingZeros(TR::Node *node, TR::CodeGenerator *cg){ TR_ASSERT(0, "not implemented!"); return NULL; }
-TR::Register *OMR::ARM::TreeEvaluator::integerNumberOfTrailingZeros(TR::Node *node, TR::CodeGenerator *cg){ TR_ASSERT(0, "not implemented!"); return NULL; }
-TR::Register *OMR::ARM::TreeEvaluator::integerBitCount(TR::Node *node, TR::CodeGenerator *cg){ TR_ASSERT(0, "not implemented!"); return NULL; }
-TR::Register *OMR::ARM::TreeEvaluator::longHighestOneBit(TR::Node *node, TR::CodeGenerator *cg){ TR_ASSERT(0, "not implemented!"); return NULL; }
-TR::Register *OMR::ARM::TreeEvaluator::longLowestOneBit(TR::Node *node, TR::CodeGenerator *cg){ TR_ASSERT(0, "not implemented!"); return NULL; }
-TR::Register *OMR::ARM::TreeEvaluator::longNumberOfLeadingZeros(TR::Node *node, TR::CodeGenerator *cg){ TR_ASSERT(0, "not implemented!"); return NULL; }
-TR::Register *OMR::ARM::TreeEvaluator::longNumberOfTrailingZeros(TR::Node *node, TR::CodeGenerator *cg){ TR_ASSERT(0, "not implemented!"); return NULL; }
-TR::Register *OMR::ARM::TreeEvaluator::longBitCount(TR::Node *node, TR::CodeGenerator *cg){ TR_ASSERT(0, "not implemented!"); return NULL; }
+TR::Register *OMR::ARM::TreeEvaluator::integerHighestOneBit(TR::Node *node, TR::CodeGenerator *cg) { TR_UNIMPLEMENTED(); return NULL; }
+TR::Register *OMR::ARM::TreeEvaluator::integerLowestOneBit(TR::Node *node, TR::CodeGenerator *cg) { TR_UNIMPLEMENTED(); return NULL; }
+TR::Register *OMR::ARM::TreeEvaluator::integerNumberOfLeadingZeros(TR::Node *node, TR::CodeGenerator *cg) { TR_UNIMPLEMENTED(); return NULL; }
+TR::Register *OMR::ARM::TreeEvaluator::integerNumberOfTrailingZeros(TR::Node *node, TR::CodeGenerator *cg) { TR_UNIMPLEMENTED(); return NULL; }
+TR::Register *OMR::ARM::TreeEvaluator::integerBitCount(TR::Node *node, TR::CodeGenerator *cg) { TR_UNIMPLEMENTED(); return NULL; }
+TR::Register *OMR::ARM::TreeEvaluator::longHighestOneBit(TR::Node *node, TR::CodeGenerator *cg) { TR_UNIMPLEMENTED(); return NULL; }
+TR::Register *OMR::ARM::TreeEvaluator::longLowestOneBit(TR::Node *node, TR::CodeGenerator *cg) { TR_UNIMPLEMENTED(); return NULL; }
+TR::Register *OMR::ARM::TreeEvaluator::longNumberOfLeadingZeros(TR::Node *node, TR::CodeGenerator *cg) { TR_UNIMPLEMENTED(); return NULL; }
+TR::Register *OMR::ARM::TreeEvaluator::longNumberOfTrailingZeros(TR::Node *node, TR::CodeGenerator *cg) { TR_UNIMPLEMENTED(); return NULL; }
+TR::Register *OMR::ARM::TreeEvaluator::longBitCount(TR::Node *node, TR::CodeGenerator *cg) { TR_UNIMPLEMENTED(); return NULL; }
 
 TR::Register *OMR::ARM::TreeEvaluator::reverseLoadEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR_ASSERT(0, "reverseLoad not implemented yet for this platform");
+   TR_UNIMPLEMENTED();
    return NULL;
    }
 
 TR::Register *OMR::ARM::TreeEvaluator::reverseStoreEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR_ASSERT(0, "reverseStore not implemented yet for this platform");
+   TR_UNIMPLEMENTED();
    return NULL;
    }
 
 TR::Register *OMR::ARM::TreeEvaluator::arraytranslateAndTestEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR_ASSERT(0, "arraytranslateAndTest not implemented yet for this platform");
+   TR_UNIMPLEMENTED();
    return NULL;
    }
 
 TR::Register *OMR::ARM::TreeEvaluator::arraytranslateEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR_ASSERT(0, "arraytranslate not implemented yet for this platform");
+   TR_UNIMPLEMENTED();
    return NULL;
    }
 
 TR::Register *OMR::ARM::TreeEvaluator::arraysetEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR_ASSERT(0, "arrayset not implemented yet for this platform");
+   TR_UNIMPLEMENTED();
    return NULL;
    }
 
 TR::Register *OMR::ARM::TreeEvaluator::arraycmpEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR_ASSERT(0, "arraycmp not implemented yet for this platform");
+   TR_UNIMPLEMENTED();
    return NULL;
    }
 

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2018 IBM Corp. and others
+ * Copyright (c) 2018, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -68,22 +68,19 @@ TR::MemoryReference *OMR::ARM64::Linkage::getOutgoingArgumentMemRef(TR::Register
 
 TR::Instruction *OMR::ARM64::Linkage::saveArguments(TR::Instruction *cursor)
    {
-   TR_ASSERT(false, "Not implemented yet.");
-
+   TR_UNIMPLEMENTED();
    return cursor;
    }
 
 TR::Instruction *OMR::ARM64::Linkage::loadUpArguments(TR::Instruction *cursor)
    {
-   TR_ASSERT(false, "Not implemented yet.");
-
+   TR_UNIMPLEMENTED();
    return cursor;
    }
 
 TR::Instruction *OMR::ARM64::Linkage::flushArguments(TR::Instruction *cursor)
    {
-   TR_ASSERT(false, "Not implemented yet.");
-
+   TR_UNIMPLEMENTED();
    return cursor;
    }
 

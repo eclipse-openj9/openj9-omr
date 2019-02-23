@@ -181,7 +181,7 @@ uint8_t *TR::ARM64CompareBranchInstruction::generateBinaryEncoding()
    uint8_t *cursor = instructionStart;
    TR::LabelSymbol *label = getLabelSymbol();
 
-   TR_ASSERT(false, "Not implemented yet.");
+   TR_UNIMPLEMENTED();
 
    return cursor;
    }

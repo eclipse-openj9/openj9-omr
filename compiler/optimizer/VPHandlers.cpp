@@ -3401,7 +3401,6 @@ TR::Node *constrainMonexitfence(OMR::ValuePropagation *vp, TR::Node *node)
 
 TR::Node *constrainTstart(OMR::ValuePropagation *vp, TR::Node *node)
    {
-   //TR_ASSERT(0, "Not implemented!");
    constrainChildren(vp,node);
    vp->setUnreachablePath(); // no fallthrough
    return node;
@@ -3409,14 +3408,12 @@ TR::Node *constrainTstart(OMR::ValuePropagation *vp, TR::Node *node)
 
 TR::Node *constrainTfinish(OMR::ValuePropagation *vp, TR::Node *node)
    {
-   //TR_ASSERT(0, "Not implemented!");
    constrainChildren(vp,node);
    return node;
    }
 
 TR::Node *constrainTabort(OMR::ValuePropagation *vp, TR::Node *node)
    {
-   //TR_ASSERT(0, "Not implemented!");
    constrainChildren(vp,node);
    return node;
    }

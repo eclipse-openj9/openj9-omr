@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -1115,7 +1115,7 @@ TR::Register *OMR::ARM::TreeEvaluator::lrolEvaluator(TR::Node *node, TR::CodeGen
       }
    else
       {
-      TR_ASSERT(false, "TR::lrol - Not Implemented yet");
+      TR_UNIMPLEMENTED();
       }
 
    node->setRegister(trgReg);

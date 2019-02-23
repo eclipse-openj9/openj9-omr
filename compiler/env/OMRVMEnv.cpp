@@ -38,9 +38,6 @@
 
 namespace TR { class Node; }
 
-#define notImplemented(A) TR_ASSERT(0, "OMR::VMEnv::%s is undefined", (A) )
-
-
 TR::VMEnv *
 OMR::VMEnv::self()
    {
@@ -51,7 +48,7 @@ OMR::VMEnv::self()
 uintptrj_t
 OMR::VMEnv::heapBaseAddress()
    {
-   notImplemented("heapBaseAddress");
+   TR_UNIMPLEMENTED();
    return 0;
    }
 

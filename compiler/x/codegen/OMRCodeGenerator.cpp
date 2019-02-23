@@ -1076,17 +1076,18 @@ OMR::X86::CodeGenerator::supportsMergingGuards()
 bool
 OMR::X86::CodeGenerator::supportsNonHelper(TR::SymbolReferenceTable::CommonNonhelperSymbol symbol)
    {
-   bool result = false;
+   bool result;
 
    switch (symbol)
       {
       case TR::SymbolReferenceTable::atomicAddSymbol:
       case TR::SymbolReferenceTable::atomicFetchAndAddSymbol:
       case TR::SymbolReferenceTable::atomicSwapSymbol:
-         {
          result = true;
          break;
-         }
+      default:
+         result = false;
+         break;
       }
 
    return result;

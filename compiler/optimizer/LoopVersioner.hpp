@@ -640,6 +640,9 @@ class TR_LoopVersioner : public TR_LoopTransformer
    typedef TR::typed_allocator<std::pair<const PrepKey, LoopEntryPrep*>, TR::Region&> PrepTableAlloc;
    typedef std::map<PrepKey, LoopEntryPrep*, std::less<PrepKey>, PrepTableAlloc> PrepTable;
 
+   typedef TR::typed_allocator<std::pair<const Expr * const, LoopEntryPrep*>, TR::Region&> NullTestPrepMapAlloc;
+   typedef std::map<const Expr*, LoopEntryPrep*, std::less<const Expr*>, NullTestPrepMapAlloc> NullTestPrepMap;
+
    typedef TR::typed_allocator<std::pair<const Expr * const, PrivTemp>, TR::Region&> PrivTempMapAlloc;
    typedef std::map<const Expr*, PrivTemp, std::less<const Expr*>, PrivTempMapAlloc> PrivTempMap;
 
@@ -671,6 +674,9 @@ class TR_LoopVersioner : public TR_LoopTransformer
 
       /// Table of LoopEntryPrep objects for deduplication.
       PrepTable _prepTable;
+
+      /// Map from null-tested Expr to the null test LoopEntryPrep.
+      NullTestPrepMap _nullTestPreps;
 
       /// Check and branch nodes that will definitely be removed.
       TR::NodeChecklist _definitelyRemovableNodes;
@@ -730,6 +736,25 @@ class TR_LoopVersioner : public TR_LoopTransformer
       TR::TreeTop * const _asyncCheckTree;
       };
 
+   class RemoveNullCheck : public LoopImprovement
+      {
+      public:
+      TR_ALLOC(TR_Memory::LoopTransformer)
+
+      RemoveNullCheck(
+         TR_LoopVersioner *versioner,
+         LoopEntryPrep *prep,
+         TR::Node *nullCheckNode)
+         : LoopImprovement(versioner, prep)
+         , _nullCheckNode(nullCheckNode)
+         {}
+
+      virtual void improveLoop();
+
+      private:
+      TR::Node * const _nullCheckNode;
+      };
+
    bool shouldOnlySpecializeLoops() { return _onlySpecializingLoops; }
    void setOnlySpecializeLoops(bool b) { _onlySpecializingLoops = b; }
 
@@ -784,7 +809,7 @@ class TR_LoopVersioner : public TR_LoopTransformer
 
    bool detectChecksToBeEliminated(TR_RegionStructure *, List<TR::Node> *, List<TR::TreeTop> *, List<int32_t> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<int32_t> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::Node> *, List<TR_NodeParentSymRef> *,List<TR_NodeParentSymRefWeightTuple> *, bool &);
 
-   void buildNullCheckComparisonsTree(List<TR::Node> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::Node> *);
+   void buildNullCheckComparisonsTree(List<TR::Node> *, List<TR::TreeTop> *);
    void buildBoundCheckComparisonsTree(List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *,List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::Node> *, bool);
    void buildSpineCheckComparisonsTree(List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::Node> *);
    void buildDivCheckComparisonsTree(List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::Node> *);

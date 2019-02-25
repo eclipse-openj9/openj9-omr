@@ -3881,29 +3881,6 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
          }
       }
 
-   // Construct the tests for invariant expressions that need
-   // to be null checked.
-
-   // default hotness threshold
-   TR_Hotness hotnessThreshold = hot;
-
-   // If aggressive loop versioning is requested, don't call buildNullCheckComparisonsTree based on hotness
-   if (comp()->getOption(TR_EnableAggressiveLoopVersioning))
-      {
-      if (trace()) traceMsg(comp(), "aggressiveLoopVersioning: raising hotnessThreshold for buildNullCheckComparisonsTree\n");
-      hotnessThreshold = maxHotness; // threshold which can't be matched by the > operator
-      }
-
-   if (comp()->cg()->performsChecksExplicitly() ||
-       (comp()->getMethodHotness() > hotnessThreshold))
-      {
-      if (!nullCheckTrees->isEmpty() &&
-          !shouldOnlySpecializeLoops())
-         {
-         buildNullCheckComparisonsTree(nullCheckedReferences, nullCheckTrees, boundCheckTrees, divCheckTrees, checkCastTrees, arrayStoreCheckTrees, &comparisonTrees);
-         }
-      }
-
    // Construct the tests for invariant or induction var expressions that need
    // to be bounds checked.
    //
@@ -4033,6 +4010,64 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
       //printf("Reached here in %s\n", comp()->signature());
       buildLoopInvariantTree(invariantNodes);
       invariantNodes->deleteAll();
+      }
+
+   // Construct the tests for invariant expressions that need
+   // to be null checked.
+
+   // default hotness threshold
+   TR_Hotness hotnessThreshold = hot;
+
+   // If aggressive loop versioning is requested, don't call buildNullCheckComparisonsTree based on hotness
+   if (comp()->getOption(TR_EnableAggressiveLoopVersioning))
+      {
+      if (trace()) traceMsg(comp(), "aggressiveLoopVersioning: raising hotnessThreshold for buildNullCheckComparisonsTree\n");
+      hotnessThreshold = maxHotness; // threshold which can't be matched by the > operator
+      }
+
+   if (comp()->cg()->performsChecksExplicitly() ||
+       (comp()->getMethodHotness() > hotnessThreshold))
+      {
+      if (!nullCheckTrees->isEmpty() &&
+          !shouldOnlySpecializeLoops())
+         {
+         buildNullCheckComparisonsTree(nullCheckedReferences, nullCheckTrees);
+         }
+      }
+   else
+      {
+      // Find null checks for which some other prep has already created a
+      // versioning test as a dependency. If the versioning test can be
+      // emitted, we might as well remove the null check.
+      ListElement<TR::TreeTop> *head = nullCheckTrees->getListHead();
+      for (ListElement<TR::TreeTop> *elt = head; elt != NULL; elt = elt->getNextElement())
+         {
+         TR::Node *check = elt->getData()->getNode();
+         TR::Node *refNode = check->getNullCheckReference();
+         const Expr *refExpr = findCanonicalExpr(refNode);
+         if (refExpr == NULL)
+            continue;
+
+         auto nullTestEntry = _curLoop->_nullTestPreps.find(refExpr);
+         if (nullTestEntry == _curLoop->_nullTestPreps.end())
+            continue;
+
+         LoopEntryPrep *prep = nullTestEntry->second;
+         if (!performTransformation(
+               comp(),
+               "%sOpportunistically attempting to eliminate null check n%un [%p] using existing prep %p\n",
+               optDetailString(),
+               check->getGlobalIndex(),
+               check,
+               prep))
+            {
+            continue;
+            }
+
+         nodeWillBeRemovedIfPossible(check, prep);
+         _curLoop->_loopImprovements.push_back(
+            new (_curLoop->_memRegion) RemoveNullCheck(this, prep, check));
+         }
       }
 
    // Attempt to remove any HCR guards in the loop. This is important because
@@ -4929,7 +4964,9 @@ void TR_LoopVersioner::RemoveAsyncCheck::improveLoop()
       }
    }
 
-void TR_LoopVersioner::buildNullCheckComparisonsTree(List<TR::Node> *nullCheckedReferences, List<TR::TreeTop> *nullCheckTrees, List<TR::TreeTop> *boundCheckTrees, List<TR::TreeTop> *divCheckTrees, List<TR::TreeTop> *checkCastTrees, List<TR::TreeTop> *arrayStoreCheckTrees, List<TR::Node> *comparisonTrees)
+void TR_LoopVersioner::buildNullCheckComparisonsTree(
+   List<TR::Node> *nullCheckedReferences,
+   List<TR::TreeTop> *nullCheckTrees)
    {
    ListElement<TR::Node> *nextNode = nullCheckedReferences->getListHead();
    ListElement<TR::TreeTop> *nextTree = nullCheckTrees->getListHead();
@@ -4968,10 +5005,6 @@ void TR_LoopVersioner::buildNullCheckComparisonsTree(List<TR::Node> *nullChecked
                   }
                else
                   {
-                  dupInvariantNullCheckReference= invariantNullCheckReference->duplicateTreeForCodeMotion();
-                  TR::Node *oldInvariantNullCheckReference = nextNode->getData();
-                  nextTree->getData()->getNode()->setNullCheckReference(dupInvariantNullCheckReference);
-                  oldInvariantNullCheckReference->recursivelyDecReferenceCount();
                   nodeToBeNullChkd = invariantNullCheckReference;
                   }
 
@@ -4987,9 +5020,14 @@ void TR_LoopVersioner::buildNullCheckComparisonsTree(List<TR::Node> *nullChecked
       if (!nodeToBeNullChkd)
          nodeToBeNullChkd = nextNode->getData();
 
-      collectAllExpressionsToBeChecked(nodeToBeNullChkd, comparisonTrees);
-
-      if (performTransformation(comp(), "%s Creating test outside loop for checking if %p is null\n", OPT_DETAILS_LOOP_VERSIONER, nextNode->getData()))
+      if (performTransformation(
+            comp(),
+            "%s Creating test outside loop for checking if n%un [%p] is null at n%un [%p]\n",
+            OPT_DETAILS_LOOP_VERSIONER,
+            nextNode->getData()->getGlobalIndex(),
+            nextNode->getData(),
+            nextTree->getData()->getNode()->getGlobalIndex(),
+            nextTree->getData()->getNode()))
          {
          ///TR::Node *duplicateNullCheckReference = nextNode->getData()->duplicateTree();
          TR::Node *duplicateNullCheckReference = NULL;
@@ -5005,19 +5043,14 @@ void TR_LoopVersioner::buildNullCheckComparisonsTree(List<TR::Node> *nullChecked
 
          //TR::Node *nextComparisonNode = TR::Node::createif(TR::ifacmpeq, duplicateNullCheckReference, TR::Node::create(duplicateNullCheckReference, TR::aconst, 0, 0), _exitGotoTarget);
          TR::Node *nextComparisonNode = TR::Node::createif(TR::ifacmpeq, duplicateNullCheckReference, TR::Node::aconst(duplicateNullCheckReference, 0), _exitGotoTarget);
-         comparisonTrees->add(nextComparisonNode);
-
-         dumpOptDetails(comp(), "The node %p has been created for testing if null check is required\n", nextComparisonNode);
-
-         if (nextTree->getData()->getNode()->getOpCodeValue() == TR::NULLCHK)
-            TR::Node::recreate(nextTree->getData()->getNode(), TR::treetop);
-         else if (nextTree->getData()->getNode()->getOpCodeValue() == TR::ResolveAndNULLCHK)
-            TR::Node::recreate(nextTree->getData()->getNode(), TR::ResolveCHK);
-
-         if (trace())
+         LoopEntryPrep *prep =
+            createLoopEntryPrep(LoopEntryPrep::TEST, nextComparisonNode);
+         if (prep != NULL)
             {
-            traceMsg(comp(), "Doing check for null check reference %p\n", nextNode->getData());
-            traceMsg(comp(), "Adjusting tree %p\n", nextTree->getData()->getNode());
+            TR::Node *checkNode = nextTree->getData()->getNode();
+            nodeWillBeRemovedIfPossible(checkNode, prep);
+            _curLoop->_loopImprovements.push_back(
+               new (_curLoop->_memRegion) RemoveNullCheck(this, prep, checkNode));
             }
          }
       nextNode = nextNode->getNextElement();
@@ -5025,6 +5058,21 @@ void TR_LoopVersioner::buildNullCheckComparisonsTree(List<TR::Node> *nullChecked
       }
    }
 
+void TR_LoopVersioner::RemoveNullCheck::improveLoop()
+   {
+   dumpOptDetails(
+      comp(),
+      "Removing null check n%un [%p]\n",
+      _nullCheckNode->getGlobalIndex(),
+      _nullCheckNode);
+
+   if (_nullCheckNode->getOpCodeValue() == TR::NULLCHK)
+      TR::Node::recreate(_nullCheckNode, TR::treetop);
+   else if (_nullCheckNode->getOpCodeValue() == TR::ResolveAndNULLCHK)
+      TR::Node::recreate(_nullCheckNode, TR::ResolveCHK);
+   else
+      TR_ASSERT_FATAL(false, "unexpected opcode");
+   }
 
 void TR_LoopVersioner::buildAwrtbariComparisonsTree(List<TR::TreeTop> *awrtbariTrees, List<TR::TreeTop> *nullCheckTrees, List<TR::TreeTop> *divCheckTrees, List<TR::TreeTop> *checkCastTrees, List<TR::TreeTop> *arrayStoreCheckTrees, List<TR::Node> *comparisonTrees)
    {
@@ -7566,6 +7614,9 @@ bool TR_LoopVersioner::depsForLoopEntryPrep(
             dumpOptDetailsFailedToCreateTest("null", node->getFirstChild());
             return false;
             }
+
+         const Expr *refExpr = nullTestPrep->_expr->_children[0];
+         _curLoop->_nullTestPreps.insert(std::make_pair(refExpr, nullTestPrep));
          }
 
       TR::Node *firstChild = node->getFirstChild();
@@ -9852,6 +9903,7 @@ TR_LoopVersioner::CurLoop::CurLoop(
    , _exprTable(std::less<Expr>(), memRegion)
    , _nodeToExpr(std::less<TR::Node*>(), memRegion)
    , _prepTable(std::less<PrepKey>(), memRegion)
+   , _nullTestPreps(std::less<const Expr*>(), memRegion)
    , _definitelyRemovableNodes(comp)
    , _optimisticallyRemovableNodes(comp)
    , _takenBranches(comp)

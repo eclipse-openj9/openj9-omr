@@ -448,7 +448,7 @@ char *       TR_ResolvedMethod::localName (uint32_t, uint32_t, int32_t&, TR_Memo
 char *       TR_ResolvedMethod::fieldNameChars(int32_t, int32_t &)         { TR_UNIMPLEMENTED(); return 0; }
 char *       TR_ResolvedMethod::fieldSignatureChars(int32_t, int32_t &)    { TR_UNIMPLEMENTED(); return 0; }
 char *       TR_ResolvedMethod::staticSignatureChars(int32_t, int32_t &)   { TR_UNIMPLEMENTED(); return 0; }
-void * &     TR_ResolvedMethod::addressOfClassOfMethod()                   { TR_UNIMPLEMENTED(); return *(void **)0; }
+void * &     TR_ResolvedMethod::addressOfClassOfMethod()                   { TR_UNIMPLEMENTED(); }
 uint32_t     TR_ResolvedMethod::vTableSlot(uint32_t)                       { TR_UNIMPLEMENTED(); return 0; }
 bool         TR_ResolvedMethod::virtualMethodIsOverridden()                { TR_UNIMPLEMENTED(); return false; }
 void         TR_ResolvedMethod::setVirtualMethodIsOverridden()             { TR_UNIMPLEMENTED(); }

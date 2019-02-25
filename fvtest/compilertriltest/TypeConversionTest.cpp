@@ -972,6 +972,11 @@ class FloatToInt32 : public TRTest::UnaryOpTest<int32_t,float> {};
 
 TEST_P(FloatToInt32, UsingConst) {
     auto param = TRTest::to_struct(GetParam());
+    std::string arch = omrsysinfo_get_CPU_architecture();
+    SKIP_IF((param.value <= static_cast<float>(std::numeric_limits<int32_t>::min())
+            || param.value >= static_cast<float>(std::numeric_limits<int32_t>::max()))
+        && (OMRPORT_ARCH_HAMMER == arch), KnownBug)
+        << "f2i test behaves unexpectedly on x86-64 with certain high input values (see issue #3602)";
 
     char inputTrees[160] = {0};
     std::snprintf(inputTrees, 160,
@@ -997,6 +1002,11 @@ TEST_P(FloatToInt32, UsingConst) {
 
 TEST_P(FloatToInt32, UsingLoadParam) {
     auto param = TRTest::to_struct(GetParam());
+    std::string arch = omrsysinfo_get_CPU_architecture();
+    SKIP_IF((param.value <= static_cast<float>(std::numeric_limits<int32_t>::min())
+            || param.value >= static_cast<float>(std::numeric_limits<int32_t>::max()))
+        && (OMRPORT_ARCH_HAMMER == arch), KnownBug)
+        << "f2i test behaves unexpectedly on x86-64 with certain high input values (see issue #3602)";
 
     char *inputTrees =
         "(method return=Int32 args=[Float]"

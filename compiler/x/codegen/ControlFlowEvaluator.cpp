@@ -491,22 +491,23 @@ TR::Register *OMR::X86::TreeEvaluator::tableEvaluator(TR::Node *node, TR::CodeGe
       }
 
    TR::X86MemTableInstruction *jmpTableInstruction = NULL;
+   TR::RegisterDependencyConditions *deps = NULL;
+
+   // Add GlRegDep dependencies to indirect jump
+   //
+   if (secondChild->getNumChildren() > 0)
+      {
+      deps = generateRegisterDependencyConditions(secondChild->getFirstChild(), cg, 0, NULL);
+      deps->stopAddingConditions();
+      }
 
    if (cg->getLinkage()->getProperties().getMethodMetaDataRegister() != TR::RealRegister::NoReg)
       {
-      TR::RegisterDependencyConditions *deps = NULL;
-
-      if (secondChild->getNumChildren() > 0)
-         {
-         deps = generateRegisterDependencyConditions(secondChild->getFirstChild(), cg, 0, NULL);
-         deps->stopAddingConditions();
-         }
-
       jmpTableInstruction = generateMemTableInstruction(JMPMem, node, jumpMR, numBranchTableEntries, deps, cg);
       }
    else
       {
-      generateMemInstruction(JMPMem, node, jumpMR, cg);
+      generateMemInstruction(JMPMem, node, jumpMR, deps, cg);
       }
 
    for (i = 2; i < node->getNumChildren(); ++i)
@@ -2318,7 +2319,7 @@ static bool virtualGuardHelper(TR::Node *node, TR::CodeGenerator *cg)
       {
       site = virtualGuard->addNOPSite();
       }
-   else 
+   else
       {
       site = comp->addSideEffectNOPSite();
       }

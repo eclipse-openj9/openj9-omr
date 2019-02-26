@@ -2353,13 +2353,13 @@ TR::Register *OMR::Power::TreeEvaluator::fRegStoreEvaluator(TR::Node *node, TR::
 
 TR::Register *OMR::Power::TreeEvaluator::iexpEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR_ASSERT(0, "not implemented");
+   TR_UNIMPLEMENTED();
    return 0;
    }
 
 TR::Register *OMR::Power::TreeEvaluator::lexpEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR_ASSERT(0, "not implemented");
+   TR_UNIMPLEMENTED();
    return 0;
    }
 
@@ -2367,7 +2367,7 @@ TR::Register *OMR::Power::TreeEvaluator::lexpEvaluator(TR::Node *node, TR::CodeG
 // also handles fexp
 TR::Register *OMR::Power::TreeEvaluator::dexpEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR_ASSERT(0, "not implemented");
+   TR_UNIMPLEMENTED();
    return 0;
    }
 

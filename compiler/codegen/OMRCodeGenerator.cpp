@@ -1058,7 +1058,7 @@ void OMR::CodeGenerator::initializeLinkage()
 
 TR::Linkage *OMR::CodeGenerator::createLinkage(TR_LinkageConventions lc)
    {
-   TR_ASSERT(0, "Unimplemented createLinkage");
+   TR_UNIMPLEMENTED();
    return NULL;
    }
 

@@ -650,7 +650,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARM64LabelInstruction *instr)
       print(pOutFile, label);
       if (snippet)
          {
-         TR_ASSERT(false, "Not implemented yet.");
+         TR_UNIMPLEMENTED();
          }
       }
    printInstructionComment(pOutFile, 1, instr);
@@ -675,7 +675,7 @@ void
 TR_Debug::print(TR::FILE *pOutFile, TR::ARM64CompareBranchInstruction *instr)
    {
    printPrefix(pOutFile, instr);
-   TR_ASSERT(false, "Not implemented yet.");
+   TR_UNIMPLEMENTED();
    }
 
 void
@@ -955,7 +955,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::MemoryReference *mr)
 void
 TR_Debug::printARM64GCRegisterMap(TR::FILE *pOutFile, TR::GCRegisterMap *map)
    {
-   TR_ASSERT(false, "Not implemented yet.");
+   TR_UNIMPLEMENTED();
    }
 
 void
@@ -1054,5 +1054,5 @@ TR_Debug::getARM64RegisterName(uint32_t regNum, bool is64bit)
 
 void TR_Debug::printARM64OOLSequences(TR::FILE *pOutFile)
    {
-   TR_ASSERT(false, "Not implemented yet.");
+   TR_UNIMPLEMENTED();
    }

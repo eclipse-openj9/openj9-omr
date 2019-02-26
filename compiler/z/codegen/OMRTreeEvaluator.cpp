@@ -9749,7 +9749,7 @@ OMR::Z::TreeEvaluator::loadaddrEvaluator(TR::Node * node, TR::CodeGenerator * cg
       else
          {
          // We probably have not yet implemented all possible cases here.
-         TR_ASSERT(0, "loadaddrEvaluator: Not Implemented yet\n");
+         TR_UNIMPLEMENTED();
          }
       }
    return targetRegister;
@@ -14334,7 +14334,7 @@ TR::Register *OMR::Z::TreeEvaluator::integerNumberOfTrailingZeros(TR::Node *node
 
 TR::Register *OMR::Z::TreeEvaluator::integerBitCount(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR_ASSERT(0, "not implemented!");
+   TR_UNIMPLEMENTED();
    return NULL;
    }
 
@@ -14355,7 +14355,7 @@ TR::Register *OMR::Z::TreeEvaluator::longNumberOfTrailingZeros(TR::Node *node, T
 
 TR::Register *OMR::Z::TreeEvaluator::longBitCount(TR::Node *node, TR::CodeGenerator *cg)
    {
-   TR_ASSERT(0, "not implemented!");
+   TR_UNIMPLEMENTED();
    return NULL;
    }
 

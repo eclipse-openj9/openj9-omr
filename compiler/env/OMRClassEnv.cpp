@@ -27,8 +27,6 @@
 #include "infra/Assert.hpp"
 #include "compile/Compilation.hpp"
 
-#define notImplemented(A) TR_ASSERT(0, "OMR::ClassEnv::%s is undefined", (A) )
-
 char *
 OMR::ClassEnv::classNameChars(TR::Compilation *comp, TR::SymbolReference *symRef, int32_t & len)
    {
@@ -40,7 +38,7 @@ OMR::ClassEnv::classNameChars(TR::Compilation *comp, TR::SymbolReference *symRef
 uintptrj_t
 OMR::ClassEnv::getArrayElementWidthInBytes(TR::Compilation *comp, TR_OpaqueClassBlock* arrayClass)
    {
-   notImplemented("getArrayElementWidthInBytes");
+   TR_UNIMPLEMENTED();
    return 0;
    }
 

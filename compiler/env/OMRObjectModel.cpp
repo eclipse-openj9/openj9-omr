@@ -32,8 +32,6 @@
 
 namespace TR { class Node; }
 
-#define notImplemented(A) TR_ASSERT(0, "OMR::ObjectModel::%s is undefined", (A) )
-
 OMR::ObjectModel::ObjectModel()
    {
    }
@@ -41,7 +39,7 @@ OMR::ObjectModel::ObjectModel()
 int32_t
 OMR::ObjectModel::sizeofReferenceField()
    {
-   notImplemented("sizeofReferenceField");
+   TR_UNIMPLEMENTED();
    return 0;
    }
 
@@ -54,7 +52,7 @@ OMR::ObjectModel::sizeofReferenceAddress()
 uintptrj_t
 OMR::ObjectModel::elementSizeOfBooleanArray()
    {
-   notImplemented("elementSizeOfBooleanArray");
+   TR_UNIMPLEMENTED();
    return 0;
    }
 
@@ -62,7 +60,7 @@ OMR::ObjectModel::elementSizeOfBooleanArray()
 uint32_t
 OMR::ObjectModel::getSizeOfArrayElement(TR::Node * node)
    {
-   notImplemented("getSizeOfArrayElement");
+   TR_UNIMPLEMENTED();
    return 0;
    }
 
@@ -81,42 +79,42 @@ OMR::ObjectModel::maxArraySizeInElements(int32_t knownMinElementSize, TR::Compil
 bool
 OMR::ObjectModel::isDiscontiguousArray(TR::Compilation* comp, uintptrj_t objectPointer)
    {
-   notImplemented("isDiscontiguousArray");
+   TR_UNIMPLEMENTED();
    return false;
    }
 
 intptrj_t
 OMR::ObjectModel::getArrayLengthInElements(TR::Compilation* comp, uintptrj_t objectPointer)
    {
-   notImplemented("getArrayLengthInElements");
+   TR_UNIMPLEMENTED();
    return 0;
    }
 
 uintptrj_t
 OMR::ObjectModel::getArrayLengthInBytes(TR::Compilation* comp, uintptrj_t objectPointer)
    {
-   notImplemented("getArrayLengthInBytes");
+   TR_UNIMPLEMENTED();
    return 0;
    }
 
 uintptrj_t
 OMR::ObjectModel::getArrayElementWidthInBytes(TR::DataType type)
    {
-   notImplemented("getArrayElementWidthInBytes");
+   TR_UNIMPLEMENTED();
    return 0;
    }
 
 uintptrj_t
 OMR::ObjectModel::getArrayElementWidthInBytes(TR::Compilation* comp, uintptrj_t objectPointer)
    {
-   notImplemented("getArrayElementWidthInBytes");
+   TR_UNIMPLEMENTED();
    return 0;
    }
 
 uintptrj_t
 OMR::ObjectModel::decompressReference(TR::Compilation* comp, uintptrj_t compressedReference)
    {
-   notImplemented("decompressReference");
+   TR_UNIMPLEMENTED();
    return 0;
    }
 

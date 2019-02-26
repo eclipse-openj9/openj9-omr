@@ -25,7 +25,7 @@
 uint8_t *
 TR::ARM64HelperCallSnippet::emitSnippetBody()
    {
-   TR_ASSERT(false, "Not implemented yet");
+   TR_UNIMPLEMENTED();
 
    uint8_t *buffer = cg()->getBinaryBufferCursor();
    return buffer;
@@ -34,7 +34,6 @@ TR::ARM64HelperCallSnippet::emitSnippetBody()
 uint32_t
 TR::ARM64HelperCallSnippet::getLength(int32_t estimatedSnippetStart)
    {
-   TR_ASSERT(false, "Not implemented yet");
-
+   TR_UNIMPLEMENTED();
    return 0;
    }

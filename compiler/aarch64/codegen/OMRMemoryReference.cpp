@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2018 IBM Corp. and others
+ * Copyright (c) 2018, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -107,7 +107,7 @@ OMR::ARM64::MemoryReference::MemoryReference(
       {
       if (ref->isUnresolved())
          {
-         TR_ASSERT(false, "Not implemented yet.");
+         TR_UNIMPLEMENTED();
          }
       self()->populateMemoryReference(rootLoadOrStore->getFirstChild(), cg);
       }
@@ -115,7 +115,7 @@ OMR::ARM64::MemoryReference::MemoryReference(
       {
       if (symbol->isStatic())
          {
-         TR_ASSERT(false, "Not implemented yet.");
+         TR_UNIMPLEMENTED();
          }
       else
          {
@@ -132,7 +132,7 @@ OMR::ARM64::MemoryReference::MemoryReference(
    self()->addToOffset(rootLoadOrStore, ref->getOffset(), cg);
    if (self()->getUnresolvedSnippet() != NULL)
       {
-      TR_ASSERT(false, "Not implemented yet.");
+      TR_UNIMPLEMENTED();
       }
    }
 
@@ -153,13 +153,13 @@ OMR::ARM64::MemoryReference::MemoryReference(
    _offset(0),
    _symbolReference(symRef)
    {
-   TR_ASSERT(false, "Not implemented yet.");
+   TR_UNIMPLEMENTED();
    }
 
 
 bool OMR::ARM64::MemoryReference::useIndexedForm()
    {
-   TR_ASSERT(false, "Not implemented yet.");
+   TR_UNIMPLEMENTED();
 
    return false;
    }
@@ -337,7 +337,7 @@ void OMR::ARM64::MemoryReference::populateMemoryReference(TR::Node *subTree, TR:
 
          if (symbol->isStatic())
             {
-            TR_ASSERT(false, "Not implemented yet.");
+            TR_UNIMPLEMENTED();
             }
          if (symbol->isRegisterMappedSymbol())
             {
@@ -402,7 +402,7 @@ void OMR::ARM64::MemoryReference::consolidateRegisters(TR::Register *srcReg, TR:
 
    if (self()->getUnresolvedSnippet() != NULL)
       {
-      TR_ASSERT(false, "Not implemented yet.");
+      TR_UNIMPLEMENTED();
       }
    else
       {
@@ -618,7 +618,7 @@ uint8_t *OMR::ARM64::MemoryReference::generateBinaryEncoding(TR::Instruction *cu
 
    if (self()->getUnresolvedSnippet())
       {
-      TR_ASSERT(false, "Not implemented yet.");
+      TR_UNIMPLEMENTED();
       }
    else
       {
@@ -638,7 +638,7 @@ uint8_t *OMR::ARM64::MemoryReference::generateBinaryEncoding(TR::Instruction *cu
 
             if (self()->getScale() != 0)
                {
-               TR_ASSERT(false, "Not implemented yet.");
+               TR_UNIMPLEMENTED();
                }
 
             cursor += ARM64_INSTRUCTION_LENGTH;
@@ -688,7 +688,7 @@ uint8_t *OMR::ARM64::MemoryReference::generateBinaryEncoding(TR::Instruction *cu
          else
             {
             /* Register pair, literal, exclusive instructions to be supported */
-            TR_ASSERT(false, "Not implemented yet.");
+            TR_UNIMPLEMENTED();
             }
          }
       }
@@ -701,7 +701,7 @@ uint32_t OMR::ARM64::MemoryReference::estimateBinaryLength(TR::InstOpCode op)
    {
    if (self()->getUnresolvedSnippet() != NULL)
       {
-      TR_ASSERT(false, "Not implemented yet.");
+      TR_UNIMPLEMENTED();
       }
    else
       {
@@ -748,7 +748,7 @@ uint32_t OMR::ARM64::MemoryReference::estimateBinaryLength(TR::InstOpCode op)
          else
             {
             /* Register pair, literal, exclusive instructions to be supported */
-            TR_ASSERT(false, "Not implemented yet.");
+            TR_UNIMPLEMENTED();
             }
          }
       }

@@ -41,8 +41,6 @@
 
 #define RANGE_NEEDS_FOUR_BYTE_OFFSET(r) (((r) >= (USHRT_MAX   )) ? 1 : 0)
 
-#define notImplemented(A) TR_ASSERT(0, "This function is not defined for TestCompiler::FrontEnd %s", (A) )
-
 namespace TestCompiler
 {
 
@@ -72,7 +70,7 @@ FrontEnd::createResolvedMethod(TR_Memory * trMemory, TR_OpaqueMethodBlock * aMet
 intptrj_t
 FrontEnd::methodTrampolineLookup(TR::Compilation *comp, TR::SymbolReference *symRef, void *callSite)
    {
-   TR_ASSERT(0, "methodTrampolineLookup not implemented yet");
+   TR_UNIMPLEMENTED();
    return 0;
    }
 

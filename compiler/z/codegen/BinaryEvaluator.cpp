@@ -2730,7 +2730,7 @@ TR::Register *
 OMR::Z::TreeEvaluator::bmulEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    PRINT_ME("bmul", node, cg);
-   TR_ASSERT( 0,"bmulEvaluator: not implemented\n");
+   TR_UNIMPLEMENTED();
    return NULL;
    }
 
@@ -2741,7 +2741,7 @@ TR::Register *
 OMR::Z::TreeEvaluator::smulEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    PRINT_ME("smul", node, cg);
-   TR_ASSERT( 0, "smulEvaluator: not implemented\n");
+   TR_UNIMPLEMENTED();
    return NULL;
    }
 
@@ -2902,7 +2902,7 @@ TR::Register *
 OMR::Z::TreeEvaluator::bdivEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    PRINT_ME("bdiv", node, cg);
-   TR_ASSERT( 0, "bdivEvaluator: not implemented\n");
+   TR_UNIMPLEMENTED();
    return NULL;
    }
 
@@ -2914,7 +2914,7 @@ TR::Register *
 OMR::Z::TreeEvaluator::sdivEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    PRINT_ME("sdiv", node, cg);
-   TR_ASSERT( 0,"sdivEvaluator: not implemented\n");
+   TR_UNIMPLEMENTED();
    return NULL;
    }
 
@@ -3054,7 +3054,7 @@ TR::Register *
 OMR::Z::TreeEvaluator::bremEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    PRINT_ME("brem", node, cg);
-   TR_ASSERT( 0, "bremEvaluator: not implemented\n");
+   TR_UNIMPLEMENTED();
    return NULL;
    }
 
@@ -3066,7 +3066,7 @@ TR::Register *
 OMR::Z::TreeEvaluator::sremEvaluator(TR::Node * node, TR::CodeGenerator * cg)
    {
    PRINT_ME("srem", node, cg);
-   TR_ASSERT( 0, "sremEvaluator: not implemented\n");
+   TR_UNIMPLEMENTED();
    return NULL;
    }
 

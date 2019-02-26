@@ -3669,7 +3669,7 @@ TR::Register *OMR::Power::TreeEvaluator::reverseStoreEvaluator(TR::Node *node, T
 #endif
       {
       // somehow break here because we have an unimplemented
-      TR_ASSERT(0, "reverseStore not implemented yet for this platform");
+      TR_UNIMPLEMENTED();
       return NULL;
       }
    }
@@ -3693,7 +3693,7 @@ TR::Register *OMR::Power::TreeEvaluator::reverseLoadEvaluator(TR::Node *node, TR
 #endif
      {
      // somehow break here because we have an unimplemented
-     TR_ASSERT(0, "reverseLoad not implemented yet for this platform");
+     TR_UNIMPLEMENTED();
      return NULL;
      }
    }
@@ -6125,7 +6125,7 @@ TR::Register *OMR::Power::TreeEvaluator::integerHighestOneBit(
    return inlineIntegerHighestOneBit(node, cg);
    }
 
-TR::Register *OMR::Power::TreeEvaluator::integerLowestOneBit(TR::Node *node, TR::CodeGenerator *cg){ TR_ASSERT(0, "not implemented!"); return NULL; }
+TR::Register *OMR::Power::TreeEvaluator::integerLowestOneBit(TR::Node *node, TR::CodeGenerator *cg){ TR_UNIMPLEMENTED(); return NULL; }
 
 TR::Register *OMR::Power::TreeEvaluator::integerNumberOfLeadingZeros(TR::Node *node, TR::CodeGenerator *cg)
    {
@@ -6147,7 +6147,7 @@ TR::Register *OMR::Power::TreeEvaluator::longHighestOneBit(TR::Node *node, TR::C
    return inlineLongHighestOneBit(node, cg);
    }
 
-TR::Register *OMR::Power::TreeEvaluator::longLowestOneBit(TR::Node *node, TR::CodeGenerator *cg){ TR_ASSERT(0, "not implemented!"); return NULL; }
+TR::Register *OMR::Power::TreeEvaluator::longLowestOneBit(TR::Node *node, TR::CodeGenerator *cg){ TR_UNIMPLEMENTED(); return NULL; }
 
 TR::Register *OMR::Power::TreeEvaluator::longNumberOfLeadingZeros(TR::Node *node, TR::CodeGenerator *cg)
    {

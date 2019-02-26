@@ -85,11 +85,6 @@ static void assumeDontCallMeDirectlyImpl( const char * file, int32_t line, const
 
    if (!condition) condition = "";
 
-#ifdef J9_PROJECT_SPECIFIC
-   if (comp && comp->fej9()->traceIsEnabled())
-      comp->fej9()->traceAssumeFailure(line, file);
-#endif
-
    // Fatal assertions fire always, however, non fatal assertions
    // can be disabled via TR_SoftFailOnAssume.
    if (comp && comp->getOption(TR_SoftFailOnAssume) && !fatal)

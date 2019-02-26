@@ -30,6 +30,80 @@
 #include "il/Node_inlines.hpp"
 #include "infra/Bit.hpp"
 
+/**
+ * Generic helper that handles a number of similar binary operations.
+ * @param[in] node : calling node
+ * @param[in] regOp : the target AArch64 instruction opcode
+ * @param[in] regOpImm : the matching AArch64 immediate instruction opcode 
+ * regOpImm == regOp indicates that the passed opcode has no immediate form.
+ * @param[in] cg : codegenerator
+ * @return target register
+ */
+static inline TR::Register *
+genericBinaryEvaluator(TR::Node *node, TR::InstOpCode::Mnemonic regOp, TR::InstOpCode::Mnemonic regOpImm, bool is64Bit, TR::CodeGenerator *cg)
+   {
+   TR::Node *firstChild = node->getFirstChild();
+   TR::Node *secondChild = node->getSecondChild();
+   TR::Register *src1Reg = cg->evaluate(firstChild);
+   TR::Register *src2Reg = NULL;
+   TR::Register *trgReg = NULL;
+   int64_t value = 0;
+
+   if(1 == firstChild->getReferenceCount())
+      {
+      trgReg = src1Reg;
+      }
+   else if(1 == secondChild->getReferenceCount() && secondChild->getRegister() != NULL)
+      {
+      trgReg = src2Reg;
+      }
+   else
+      {
+      trgReg = cg->allocateRegister();
+      }
+
+   if (secondChild->getOpCode().isLoadConst() && secondChild->getRegister() == NULL)
+      {
+      if(is64Bit)
+         {
+         value = secondChild->getLongInt();
+         }
+      else
+         {
+         value = secondChild->getInt();
+         }
+      /* When regOp == regOpImm, an immediate version of the instruction does not exist. */
+      if(constantIsUnsignedImm12(value) && regOp != regOpImm)
+         {
+         generateTrg1Src1ImmInstruction(cg, regOpImm, node, trgReg, src1Reg, value);
+         }
+      else
+         {
+         src2Reg = cg->allocateRegister();
+         if(is64Bit)
+            {
+            loadConstant64(cg, node, value, src2Reg);
+            }
+         else
+            {
+            loadConstant32(cg, node, value, src2Reg);
+            }
+         generateTrg1Src2Instruction(cg, regOp, node, trgReg, src1Reg, src2Reg);
+         cg->stopUsingRegister(src2Reg);
+         }
+      }
+   else
+      {
+      src2Reg = cg->evaluate(secondChild);
+      generateTrg1Src2Instruction(cg, regOp, node, trgReg, src1Reg, src2Reg);
+      }
+   
+   firstChild->decReferenceCount();
+   secondChild->decReferenceCount();
+   node->setRegister(trgReg);
+   return trgReg;
+   }
+
 static TR::Register *addOrSubInteger(TR::Node *node, TR::CodeGenerator *cg)
    {
    TR::Node *firstChild = node->getFirstChild();
@@ -68,27 +142,25 @@ static TR::Register *addOrSubInteger(TR::Node *node, TR::CodeGenerator *cg)
 TR::Register *
 OMR::ARM64::TreeEvaluator::iaddEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return addOrSubInteger(node, cg);
+   return genericBinaryEvaluator(node, TR::InstOpCode::addw, TR::InstOpCode::addimmw, false, cg);
    }
 
 TR::Register *
 OMR::ARM64::TreeEvaluator::laddEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 	{
-	// TODO:ARM64: Enable TR::TreeEvaluator::laddEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
+	return genericBinaryEvaluator(node, TR::InstOpCode::addx, TR::InstOpCode::addimmx, true, cg);
 	}
 
 TR::Register *
 OMR::ARM64::TreeEvaluator::isubEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return addOrSubInteger(node, cg);
+   return genericBinaryEvaluator(node, TR::InstOpCode::subw, TR::InstOpCode::subimmw, false, cg);
    }
 
 TR::Register *
 OMR::ARM64::TreeEvaluator::lsubEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 	{
-	// TODO:ARM64: Enable TR::TreeEvaluator::lsubEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
+	return genericBinaryEvaluator(node, TR::InstOpCode::subx, TR::InstOpCode::subimmx, true, cg);
 	}
 
 // Multiply a register by a 32-bit constant
@@ -279,7 +351,7 @@ OMR::ARM64::TreeEvaluator::lmulhEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 TR::Register *
 OMR::ARM64::TreeEvaluator::idivEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return idivHelper(node, false, cg);
+   return genericBinaryEvaluator(node, TR::InstOpCode::sdivw, TR::InstOpCode::sdivw, false, cg);
    }
 
 TR::Register *
@@ -291,7 +363,7 @@ OMR::ARM64::TreeEvaluator::iremEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 TR::Register *
 OMR::ARM64::TreeEvaluator::ldivEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    {
-   return idivHelper(node, true, cg);
+   return genericBinaryEvaluator(node, TR::InstOpCode::sdivx, TR::InstOpCode::sdivx, true, cg);
    }
 
 TR::Register *
@@ -419,43 +491,43 @@ OMR::ARM64::TreeEvaluator::irolEvaluator(TR::Node *node, TR::CodeGenerator *cg)
    }
 
 TR::Register *
+OMR::ARM64::TreeEvaluator::iandEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+	{
+	// boolean and of 2 integers
+	return genericBinaryEvaluator(node, TR::InstOpCode::andw, TR::InstOpCode::andimmw, false, cg);
+	}
+
+TR::Register *
 OMR::ARM64::TreeEvaluator::landEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 	{
-	// TODO:ARM64: Enable TR::TreeEvaluator::landEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
+	// boolean and of 2 integers
+	return genericBinaryEvaluator(node, TR::InstOpCode::andx, TR::InstOpCode::andimmx, true, cg);
+	}
+	
+TR::Register *
+OMR::ARM64::TreeEvaluator::iorEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+	{
+	// boolean or of 2 integers
+	return genericBinaryEvaluator(node, TR::InstOpCode::orrw, TR::InstOpCode::orrimmw, false, cg);
 	}
 
 TR::Register *
 OMR::ARM64::TreeEvaluator::lorEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 	{
-	// TODO:ARM64: Enable TR::TreeEvaluator::lorEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
-	}
-
-TR::Register *
-OMR::ARM64::TreeEvaluator::lxorEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// TODO:ARM64: Enable TR::TreeEvaluator::lxorEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
-	}
-
-TR::Register *
-OMR::ARM64::TreeEvaluator::iandEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// TODO:ARM64: Enable TR::TreeEvaluator::iandEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
-	}
-
-TR::Register *
-OMR::ARM64::TreeEvaluator::iorEvaluator(TR::Node *node, TR::CodeGenerator *cg)
-	{
-	// TODO:ARM64: Enable TR::TreeEvaluator::iorEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
+	// boolean or of 2 integers
+	return genericBinaryEvaluator(node, TR::InstOpCode::orrx, TR::InstOpCode::orrimmx, true, cg);
 	}
 
 TR::Register *
 OMR::ARM64::TreeEvaluator::ixorEvaluator(TR::Node *node, TR::CodeGenerator *cg)
 	{
-	// TODO:ARM64: Enable TR::TreeEvaluator::ixorEvaluator in compiler/aarch64/codegen/TreeEvaluatorTable.hpp when Implemented.
-	return OMR::ARM64::TreeEvaluator::unImpOpEvaluator(node, cg);
+	// boolean xor of 2 integers
+	return genericBinaryEvaluator(node, TR::InstOpCode::eorw, TR::InstOpCode::eorimmw, false, cg);
+	}
+	
+TR::Register *
+OMR::ARM64::TreeEvaluator::lxorEvaluator(TR::Node *node, TR::CodeGenerator *cg)
+	{
+	// boolean xor of 2 integers
+	return genericBinaryEvaluator(node, TR::InstOpCode::eorx, TR::InstOpCode::eorimmx, true, cg);
 	}

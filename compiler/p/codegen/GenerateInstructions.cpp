@@ -568,11 +568,11 @@ TR::Instruction *generateShiftRightLogicalImmediateLong(TR::CodeGenerator *cg, T
 
 
 TR::Instruction *generateControlFlowInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node * n,
-   TR::RegisterDependencyConditions *deps, TR::Instruction *preced)
+   TR::RegisterDependencyConditions *deps, TR::Instruction *preced, bool useRegPairForResult, bool useRegPairForCond)
    {
    if (preced)
-      return new (cg->trHeapMemory()) TR::PPCControlFlowInstruction(op, n, preced, cg, deps);
-   return new (cg->trHeapMemory()) TR::PPCControlFlowInstruction(op, n, cg, deps);
+      return new (cg->trHeapMemory()) TR::PPCControlFlowInstruction(op, n, preced, cg, deps, useRegPairForResult, useRegPairForCond);
+   return new (cg->trHeapMemory()) TR::PPCControlFlowInstruction(op, n, cg, deps, useRegPairForResult, useRegPairForCond);
    }
 
 TR::Instruction *generateAdminInstruction(TR::CodeGenerator *cg, TR::InstOpCode::Mnemonic op, TR::Node * n,

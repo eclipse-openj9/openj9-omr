@@ -538,14 +538,14 @@ const OptimizationStrategy finalGlobalOpts[] =
 static const OptimizationStrategy ilgenStrategyOpts[] =
    {
 #ifdef J9_PROJECT_SPECIFIC
+   { osrLiveRangeAnalysis,          IfOSR   },
+   { osrDefAnalysis,                IfInvoluntaryOSR },
    { varHandleTransformer,          MustBeDone     },
    { unsafeFastPath                                },
    { recognizedCallTransformer                     },
    { coldBlockMarker                               },
    { allocationSinking,             IfNews         },
    { invariantArgumentPreexistence, IfNotClassLoadPhaseAndNotProfiling }, // Should not run if a recompilation is possible
-   { osrLiveRangeAnalysis,          IfOSR   },
-   { osrDefAnalysis,                IfInvoluntaryOSR },
 #endif
    { endOpts },
    };

@@ -1403,6 +1403,8 @@ int32_t TR_OSRLiveRangeAnalysis::fullAnalysis(bool includeParms, bool containsPe
    vcount_t visitCount = comp()->incVisitCount();
    block = comp()->getStartBlock();
    _visitedBCI->empty();
+   int32_t callerIndex = comp()->getCurrentInlinedSiteIndex();
+
    while (block)
       {
       blockNum    = block->getNumber();
@@ -1507,8 +1509,9 @@ int32_t TR_OSRLiveRangeAnalysis::fullAnalysis(bool includeParms, bool containsPe
             && (comp()->isOSRTransitionTarget(TR::preExecutionOSR) || comp()->requiresAnalysisOSRPoint(node)))
             {
             TR_ByteCodeInfo bcInfo = node->getByteCodeInfo();
+            TR_ASSERT_FATAL(bcInfo.getCallerIndex() == callerIndex, "Found node with invalid caller index");
             TR_OSRPoint *osrPoint = comp()->getMethodSymbol()->findOSRPoint(bcInfo);
-            TR_ASSERT(osrPoint != NULL, "Cannot find a pre OSR point for node %p", node);
+            TR_ASSERT_FATAL(osrPoint != NULL, "Cannot find a pre OSR point for node %p", node);
 
             buildOSRLiveRangeInfo(node, _liveVars, osrPoint, liveLocalIndexToSymRefNumberMap,
                numBits, osrMethodData, containsPendingPushes);
@@ -1799,7 +1802,7 @@ void TR_OSRLiveRangeAnalysis::buildOSRLiveRangeInfo(TR::Node *node, TR_BitVector
             *deadSymRefs |= *_workDeadSymRefs; 
          }
 
-      if (newlyAllocated && !deadSymRefs->isEmpty())
+      if (newlyAllocated && deadSymRefs && !deadSymRefs->isEmpty())
          osrMethodData->addLiveRangeInfo(byteCodeIndex, deadSymRefs);
       }
 

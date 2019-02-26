@@ -840,6 +840,7 @@ OMR::Compilation::requiresAnalysisOSRPoint(TR::Node *node)
    if (!self()->isPotentialOSRPoint(node, &osrNode))
       {
       TR_ASSERT(0, "requiresAnalysisOSRPoint should only be called on OSR points\n");
+      return false;
       }
 
    // Calls require an analysis and transition point as liveness may change across them

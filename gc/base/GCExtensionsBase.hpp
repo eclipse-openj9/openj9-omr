@@ -1490,11 +1490,7 @@ public:
 		, optimizeConcurrentWB(true)
 		, dirtCardDuringRSScan(false)
 		, concurrentLevel(8)
-#if defined(LINUX) && defined(S390)
-		, concurrentBackground(0) /* TODO: remove this workaround once pthread library on z/linux fixed. see CMVC 94776 */
-#else /* LINUX && S390 */
 		, concurrentBackground(1)
-#endif /* LINUX && S390 */
 		, concurrentSlack(0)
 		, cardCleanPass2Boost(2)
 		, cardCleaningPasses(2)

@@ -7566,8 +7566,14 @@ void TR_LoopVersioner::collectAllExpressionsToBeChecked(List<TR::TreeTop> *nullC
        (((node->getOpCode().isIndirect() && node->getOpCode().hasSymbolReference() && !node->getSymbolReference()->getSymbol()->isStatic()) || node->getOpCode().isArrayLength()) &&
         !node->getFirstChild()->isInternalPointer()))
       {
-      if (!node->getFirstChild()->isThisPointer() && performTransformation(comp(), "%s Creating test outside loop for checking if %p is null\n", OPT_DETAILS_LOOP_VERSIONER, node->getFirstChild()))
+      if (!node->getFirstChild()->isThisPointer())
          {
+         dumpOptDetails(
+            comp(),
+            "Creating test outside loop for checking if n%un [%p] is null\n",
+            node->getFirstChild()->getGlobalIndex(),
+            node->getFirstChild());
+
          ListElement<TR::TreeTop> *nullCheckTree = nullCheckTrees->getListHead();
 
          // Null check the pointer being dereferenced; also
@@ -7779,8 +7785,14 @@ void TR_LoopVersioner::collectAllExpressionsToBeChecked(List<TR::TreeTop> *nullC
             }
          }
       }
-  else if (node->getOpCode().isIndirect() && node->getFirstChild()->isInternalPointer() && performTransformation(comp(), "%s Creating test outside loop for checking if %p requires bound check\n", OPT_DETAILS_LOOP_VERSIONER, node))
+  else if (node->getOpCode().isIndirect() && node->getFirstChild()->isInternalPointer())
       {
+      dumpOptDetails(
+         comp(),
+         "Creating test outside loop for checking if n%un [%p] requires bound check\n",
+         node->getGlobalIndex(),
+         node);
+
       // This is an array access; so we need to insert explicit
       // checks to mimic the bounds check for the access.
       //
@@ -7880,8 +7892,14 @@ void TR_LoopVersioner::collectAllExpressionsToBeChecked(List<TR::TreeTop> *nullC
       dumpOptDetails(comp(), "The node %p has been created for testing if bounds check is required\n", ificmpgeNode);
       dumpOptDetails(comp(), "The node %p has been created for testing if bounds check is required\n", ificmpltNode);
       }
-   else if (((node->getOpCodeValue() == TR::idiv) || (node->getOpCodeValue() == TR::irem) || (node->getOpCodeValue() == TR::lrem) || (node->getOpCodeValue() == TR::ldiv)) && performTransformation(comp(), "%s Creating test outside loop for checking if %p is divide by zero\n", OPT_DETAILS_LOOP_VERSIONER))
+   else if (((node->getOpCodeValue() == TR::idiv) || (node->getOpCodeValue() == TR::irem) || (node->getOpCodeValue() == TR::lrem) || (node->getOpCodeValue() == TR::ldiv)))
       {
+      dumpOptDetails(
+         comp(),
+         "Creating test outside loop for checking if n%un [%p] is divide by zero\n",
+         node->getGlobalIndex(),
+         node);
+
       // This is a divide; so we need to insert explicit checks
       // to mimic the div check.
       //

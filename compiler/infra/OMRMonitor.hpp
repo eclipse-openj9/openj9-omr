@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -28,9 +28,9 @@ namespace OMR { class Monitor; }
 namespace OMR { typedef OMR::Monitor MonitorConnector; }
 #endif
 
-#include <stdint.h>          // for int32_t, int64_t
-#include "infra/Assert.hpp"  // for TR_ASSERT
-#include "omrmutex.h"        // for MUTEX
+#include <stdint.h>
+#include "infra/Assert.hpp"
+#include "omrmutex.h"
 
 namespace TR { class Monitor; }
 

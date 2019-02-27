@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2015, 2018 IBM Corp. and others
+# Copyright (c) 2015, 2019 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -70,6 +70,7 @@ OMR_GC_NON_ZERO_TLH := @OMR_GC_NON_ZERO_TLH@
 OMR_GC_OBJECT_ALLOCATION_NOTIFY := @OMR_GC_OBJECT_ALLOCATION_NOTIFY@
 OMR_GC_OBJECT_MAP := @OMR_GC_OBJECT_MAP@
 OMR_GC_REALTIME := @OMR_GC_REALTIME@
+OMR_GC_SCAVENGER_DELEGATE := @OMR_GC_SCAVENGER_DELEGATE@
 OMR_GC_SEGREGATED_HEAP := @OMR_GC_SEGREGATED_HEAP@
 OMR_GC_STACCATO := @OMR_GC_STACCATO@
 OMR_GC_THREAD_LOCAL_HEAP := @OMR_GC_THREAD_LOCAL_HEAP@

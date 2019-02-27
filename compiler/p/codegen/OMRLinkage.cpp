@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -21,34 +21,34 @@
 
 #include "codegen/OMRLinkage.hpp"
 
-#include <stddef.h>                            // for NULL
-#include <stdint.h>                            // for int32_t, uint32_t
-#include "codegen/CodeGenerator.hpp"           // for CodeGenerator, etc
-#include "codegen/FrontEnd.hpp"                // for TR_FrontEnd
-#include "codegen/InstOpCode.hpp"              // for InstOpCode, etc
-#include "codegen/Instruction.hpp"             // for Instruction
-#include "codegen/Linkage.hpp"                 // for LinkageBase, etc
-#include "codegen/Machine.hpp"                 // for Machine
-#include "codegen/MemoryReference.hpp"         // for MemoryReference
-#include "codegen/RealRegister.hpp"            // for RealRegister, etc
-#include "codegen/RegisterPair.hpp"            // for RegisterPair
-#include "compile/Compilation.hpp"             // for Compilation
+#include <stddef.h>
+#include <stdint.h>
+#include "codegen/CodeGenerator.hpp"
+#include "codegen/FrontEnd.hpp"
+#include "codegen/InstOpCode.hpp"
+#include "codegen/Instruction.hpp"
+#include "codegen/Linkage.hpp"
+#include "codegen/Machine.hpp"
+#include "codegen/MemoryReference.hpp"
+#include "codegen/RealRegister.hpp"
+#include "codegen/RegisterPair.hpp"
+#include "compile/Compilation.hpp"
 #include "env/CompilerEnv.hpp"
-#include "env/ObjectModel.hpp"                 // for ObjectModel
+#include "env/ObjectModel.hpp"
 #include "env/TRMemory.hpp"
-#include "il/DataTypes.hpp"                    // for DataTypes::Address, etc
-#include "il/ILOps.hpp"                        // for ILOpCode
-#include "il/Node.hpp"                         // for Node
-#include "il/Node_inlines.hpp"                 // for Node::getAddress, etc
-#include "il/TreeTop.hpp"                      // for TreeTop
-#include "il/TreeTop_inlines.hpp"              // for TreeTop::getNode
-#include "il/symbol/ParameterSymbol.hpp"       // for ParameterSymbol
-#include "il/symbol/ResolvedMethodSymbol.hpp"  // for ResolvedMethodSymbol
-#include "infra/Assert.hpp"                    // for TR_ASSERT
-#include "infra/BitVector.hpp"                 // for TR_BitVector
-#include "infra/List.hpp"                      // for ListIterator, List
+#include "il/DataTypes.hpp"
+#include "il/ILOps.hpp"
+#include "il/Node.hpp"
+#include "il/Node_inlines.hpp"
+#include "il/TreeTop.hpp"
+#include "il/TreeTop_inlines.hpp"
+#include "il/symbol/ParameterSymbol.hpp"
+#include "il/symbol/ResolvedMethodSymbol.hpp"
+#include "infra/Assert.hpp"
+#include "infra/BitVector.hpp"
+#include "infra/List.hpp"
 #include "p/codegen/GenerateInstructions.hpp"
-#include "p/codegen/PPCOpsDefines.hpp"         // for Op_st, Op_load
+#include "p/codegen/PPCOpsDefines.hpp"
 #include "runtime/Runtime.hpp"
 
 class TR_OpaqueClassBlock;

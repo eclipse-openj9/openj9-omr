@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2018 IBM Corp. and others
+ * Copyright (c) 1991, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -41,6 +41,10 @@
 #if defined(OMR_GC_CONCURRENT_SCAVENGER)
 #include "MasterGCThread.hpp"
 #endif /* OMR_GC_CONCURRENT_SCAVENGER */
+#if defined(OMR_GC_SCAVENGER_DELEGATE)
+#include "ScavengerDelegate.hpp"
+#endif
+
 struct J9HookInterface;
 class GC_ObjectScanner;
 class MM_AllocateDescription;
@@ -67,7 +71,12 @@ class MM_Scavenger : public MM_Collector
 	 * Data members
 	 */
 private:
+#if defined(OMR_GC_SCAVENGER_DELEGATE)
+	MM_ScavengerDelegate _delegate;
+#else
 	MM_CollectorLanguageInterface *_cli;
+#endif
+
 	const uintptr_t _objectAlignmentInBytes;	/**< Run-time objects alignment in bytes */
 	bool _isRememberedSetInOverflowAtTheBeginning; /**< Cached RS Overflow flag at the beginning of the scavenge */
 
@@ -590,6 +599,10 @@ public:
 	static MM_Scavenger *newInstance(MM_EnvironmentStandard *env, MM_HeapRegionManager *regionManager);
 	virtual void kill(MM_EnvironmentBase *env);
 
+#if defined (OMR_GC_SCAVENGER_DELEGATE)
+	MM_ScavengerDelegate* getDelegate() { return &_delegate; }
+#endif /* OMR_GC_SCAVENGER_DELEGATE */
+
 	/* Read Barrier Verifier specific methods */
 #if defined(OMR_ENV_DATA64) && !defined(OMR_GC_COMPRESSED_POINTERS)
 	virtual void scavenger_poisonSlots(MM_EnvironmentBase *env);
@@ -777,7 +790,11 @@ public:
 
 	MM_Scavenger(MM_EnvironmentBase *env, MM_HeapRegionManager *regionManager) :
 		MM_Collector()
+#if defined(OMR_GC_SCAVENGER_DELEGATE)
+		, _delegate(env)
+#else
 		, _cli(env->getExtensions()->collectorLanguageInterface)
+#endif
 		, _objectAlignmentInBytes(env->getObjectAlignmentInBytes())
 		, _isRememberedSetInOverflowAtTheBeginning(false)
 		, _extensions(env->getExtensions())

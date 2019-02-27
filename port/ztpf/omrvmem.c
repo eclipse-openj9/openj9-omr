@@ -196,6 +196,7 @@ initializeNumaGlobals(struct OMRPortLibrary *portLibrary)
 	int schedReturnCode = 0;
 	int mempolicyReturnCode = 0;
 	int useAllNodes = 0;
+	PPG_numaSyscallNotAllowed = FALSE;
 
 	memset(&PPG_numa_available_node_mask, 0, sizeof(J9PortNodeMask));
 	PPG_numa_max_node_bits = 0;
@@ -208,7 +209,9 @@ initializeNumaGlobals(struct OMRPortLibrary *portLibrary)
 	PPG_numa_policy_mode = -1;
 	memset(&PPG_numa_mempolicy_node_mask, 0, sizeof(J9PortNodeMask));
 	mempolicyReturnCode = do_get_mempolicy(&PPG_numa_policy_mode, PPG_numa_mempolicy_node_mask.mask, maxNodes, (unsigned long)NULL, 0);
-
+	if ((0 != mempolicyReturnCode) && (EPERM == errno)) {
+                PPG_numaSyscallNotAllowed = TRUE;
+        }
 	if (0 == mempolicyReturnCode) {
 
 		long anySet = 0;
@@ -235,8 +238,10 @@ initializeNumaGlobals(struct OMRPortLibrary *portLibrary)
 		Trc_PRT_vmem_omrvmem_initializeNumaGlobals_get_mempolicy_failure(errno);
 	}
 
-	/* only proceed if we could successfully look up the memory policy and default affinity */
-	if ((0 == schedReturnCode) && (0 == mempolicyReturnCode)) {
+	/* Proceed if we could successfully look up the default affinity.
+	 * We proceed to get node count even if `getmempolicy` fails due to security restrictions.
+	 */
+        if ((0 == schedReturnCode) && ((0 == mempolicyReturnCode) || (PPG_numaSyscallNotAllowed))) {
 		DIR* nodes = opendir("/sys/devices/system/node/");
 		if (NULL != nodes) {
 			struct dirent *node = readdir(nodes);
@@ -1757,6 +1762,10 @@ omrvmem_numa_get_node_details(struct OMRPortLibrary *portLibrary,
 				/* do nothing */
 				break;
 			}
+			if (PPG_numaSyscallNotAllowed) {
+                                nodeSetState = J9NUMA_DENIED;
+                                nodeClearState = J9NUMA_DENIED;
+                        }
 
 			/* walk through the /sys/devices/system/node/ directory to find each individual node */
 			while ((0 == readdir_r(nodes, &nodeStorage, &node)) && (NULL != node)) {

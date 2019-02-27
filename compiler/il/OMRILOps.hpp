@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -22,13 +22,13 @@
 #ifndef OMR_ILOPS_INCL
 #define OMR_ILOPS_INCL
 
-#include <stdint.h>          // for int32_t, uint32_t, int16_t, etc
-#include "il/DataTypes.hpp"  // for DataTypes, DataTypes::Int32, etc
-#include "il/ILHelpers.hpp"  // for TR_ComparisonTypes
-#include "il/ILOpCodes.hpp"  // for ILOpCodes
-#include "il/ILProps.hpp"    // for ILProp1::Indirect, ILProp1::LoadVar, etc
-#include "infra/Assert.hpp"  // for TR_ASSERT
-#include "infra/Flags.hpp"   // for flags32_t
+#include <stdint.h>
+#include "il/DataTypes.hpp"
+#include "il/ILHelpers.hpp"
+#include "il/ILOpCodes.hpp"
+#include "il/ILProps.hpp"
+#include "infra/Assert.hpp"
+#include "infra/Flags.hpp"
 
 class TR_DebugExt;
 namespace TR { class SymbolReference; }

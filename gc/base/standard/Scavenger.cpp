@@ -288,12 +288,22 @@ MM_Scavenger::initialize(MM_EnvironmentBase *env)
 	}
 #endif /* OMR_GC_CONCURRENT_SCAVENGER */
 
+#if defined(OMR_GC_SCAVENGER_DELEGATE)
+	if (!_delegate.initialize(env)) {
+		return false;
+	}
+#endif /* OMR_GC_SCAVENGER_DELEGATE */
+
 	return true;
 }
 
 void
 MM_Scavenger::tearDown(MM_EnvironmentBase *env)
 {
+#if defined(OMR_GC_SCAVENGER_DELEGATE)
+	_delegate.tearDown(env);
+#endif
+
 	_scavengeCacheFreeList.tearDown(env);
 	_scavengeCacheScanList.tearDown(env);
 
@@ -382,7 +392,11 @@ MM_Scavenger::masterSetupForGC(MM_EnvironmentStandard *env)
 	clearCycleGCStats(env);
 
 	/* invoke collector language interface callback */
+#if defined(OMR_GC_SCAVENGER_DELEGATE)
+	_delegate.masterSetupForGC(env);
+#else
 	_cli->scavenger_masterSetupForGC(env);
+#endif
 
 	/* Allow expansion in the tenure area on failed promotions (but no resizing on the semispace) */
 	_expandTenureOnFailedAllocate = true;
@@ -409,6 +423,19 @@ MM_Scavenger::masterSetupForGC(MM_EnvironmentStandard *env)
 	scavengerStats->_tenureSpaceAllocBytesAcumulation += heapStatsTenureSpace._allocBytes;
 	scavengerStats->_semiSpaceAllocBytesAcumulation += heapStatsSemiSpace._allocBytes;
 
+	/* Check if scvTenureAdaptiveTenureAge has not been initialized or forced (by cmdline option) */
+	if (0 == _extensions->scvTenureAdaptiveTenureAge) {
+		/* With larger initial Nursery sizes, we'll reduce initial tenure age, to help promote peristant object sooner. */
+		_extensions->scvTenureAdaptiveTenureAge = OMR_OBJECT_HEADER_AGE_DEFAULT;
+
+		uintptr_t tenureAgeAdjustement = MM_Math::floorLog2(_extensions->heap->getActiveMemorySize(MEMORY_TYPE_NEW) / MINIMUM_NEW_SPACE_SIZE);
+		if (tenureAgeAdjustement < _extensions->scvTenureAdaptiveTenureAge) {
+			_extensions->scvTenureAdaptiveTenureAge -= tenureAgeAdjustement;
+		} else {
+			_extensions->scvTenureAdaptiveTenureAge = 1;
+		}
+	}
+
 	/* Record the tenure mask */
 	_tenureMask = calculateTenureMask();
 	
@@ -428,7 +455,11 @@ MM_Scavenger::workerSetupForGC(MM_EnvironmentStandard *env)
 	clearThreadGCStats(env, true);
 
 	/* Clear local language-specific stats */
+#if defined(OMR_GC_SCAVENGER_DELEGATE)
+	_delegate.workerSetupForGC_clearEnvironmentLangStats(env);
+#else
 	_cli->scavenger_workerSetupForGC_clearEnvironmentLangStats(env);
+#endif
 
 	/* record that this thread is participating in this cycle */
 	env->_scavengerStats._gcCount = _extensions->scavengerStats._gcCount;
@@ -486,7 +517,12 @@ MM_Scavenger::reportScavengeEnd(MM_EnvironmentStandard *env, bool lastIncrement)
 	OMRPORT_ACCESS_FROM_OMRPORT(env->getPortLibrary());
 
 	bool scavengeSuccessful = scavengeCompletedSuccessfully(env);
+
+#if defined(OMR_GC_SCAVENGER_DELEGATE)
+	_delegate.reportScavengeEnd(env, scavengeSuccessful);
+#else
 	_cli->scavenger_reportScavengeEnd(env, scavengeSuccessful);
+#endif
 
 	if (lastIncrement) {
 		_extensions->scavengerStats._tiltRatio = calculateTiltRatio();
@@ -723,7 +759,11 @@ MM_Scavenger::mergeThreadGCStats(MM_EnvironmentBase *env)
 	mergeGCStatsBase(env, &_extensions->incrementScavengerStats, scavStats);
 
 	/* Merge language specific statistics. No known interesting data per increment - they are merged directly to aggregate cycle stats */
+#if defined(OMR_GC_SCAVENGER_DELEGATE)
+	_delegate.mergeGCStats_mergeLangStats(env);
+#else
 	_cli->scavenger_mergeGCStats_mergeLangStats(env);
+#endif
 
 	omrthread_monitor_exit(_extensions->gcStatsMutex);
 
@@ -1535,7 +1575,11 @@ MM_Scavenger::copy(MM_EnvironmentStandard *env, MM_ForwardedHeader* forwardedHea
 GC_ObjectScanner *
 MM_Scavenger::getObjectScanner(MM_EnvironmentStandard *env, omrobjectptr_t objectptr, void *objectScannerState, uintptr_t flags)
 {
+#if defined(OMR_GC_SCAVENGER_DELEGATE)
+	return _delegate.getObjectScanner(env, objectptr, (void*) objectScannerState, flags);
+#else
 	return _cli->scavenger_getObjectScanner(env, objectptr, (void*) objectScannerState, flags);
+#endif
 }
 
 uintptr_t
@@ -1656,7 +1700,7 @@ MM_Scavenger::scavengeObjectSlots(MM_EnvironmentStandard *env, MM_CopyScanCacheS
 	uint64_t slotsScanned = 0;
 	bool shouldRemember = false;
 	GC_SlotObject *slotObject = NULL;
-	bool isParentInNewSpace = isObjectInNewSpace(objectPtr);
+
 	MM_CopyScanCacheStandard **copyCache = &(env->_effectiveCopyScanCache);
 	while (NULL != (slotObject = objectScanner->getNextSlot())) {
 		bool isSlotObjectInNewSpace = copyAndForward(env, slotObject);
@@ -1676,6 +1720,7 @@ MM_Scavenger::scavengeObjectSlots(MM_EnvironmentStandard *env, MM_CopyScanCacheS
 		*rememberedSetSlot = objectPtr;
 	}
 #if defined(OMR_GC_MODRON_CONCURRENT_MARK)
+	bool isParentInNewSpace = isObjectInNewSpace(objectPtr);
 	if (_extensions->shouldScavengeNotifyGlobalGCOfOldToOldReference() && IS_CONCURRENT_ENABLED && !isParentInNewSpace && !shouldRemember) {
 		/* Old object that has only references to old objects. If parent object has already been scanned (in Marking sense)
 		 * since it has been tenured, let Concurrent Marker know it has a newly created old reference, otherwise it may miss to find it. */
@@ -1743,7 +1788,7 @@ MM_Scavenger::incrementalScavengeObjectSlots(MM_EnvironmentStandard *env, omrobj
 	GC_SlotObject *slotObject;
 	uint64_t slotsCopied = 0;
 	uint64_t slotsScanned = 0;
-	bool isParentInNewSpace = isObjectInNewSpace(objectPtr);
+
 	while (NULL != (slotObject = objectScanner->getNextSlot())) {
 		/* If the object should be remembered and it is in old space, remember it */
 		bool isSlotObjectInNewSpace = copyAndForward(env, slotObject);
@@ -1780,6 +1825,7 @@ MM_Scavenger::incrementalScavengeObjectSlots(MM_EnvironmentStandard *env, omrobj
 	}
 
 #if defined(OMR_GC_MODRON_CONCURRENT_MARK)
+	bool isParentInNewSpace = isObjectInNewSpace(objectPtr);
 	if (_extensions->shouldScavengeNotifyGlobalGCOfOldToOldReference() && IS_CONCURRENT_ENABLED && !isParentInNewSpace && !scanCache->_shouldBeRemembered) {
 		/* Old object that has only references to old objects. If parent object has already been scanned (in Marking sense)
 		 * since it has been tenured, let Concurrent Marker know it has a newly created old reference, otherwise it may miss to find it. */
@@ -1798,7 +1844,12 @@ MM_Scavenger::incrementalScavengeObjectSlots(MM_EnvironmentStandard *env, omrobj
 MMINLINE void
 MM_Scavenger::flushBuffersForGetNextScanCache(MM_EnvironmentStandard *env)
 {
+#if defined(OMR_GC_SCAVENGER_DELEGATE)
+	_delegate.flushReferenceObjects(env);
+#else
 	_cli->scavenger_flushReferenceObjects(env);
+#endif
+
 	flushRememberedSet(env);
 }
 
@@ -2332,7 +2383,11 @@ MM_Scavenger::shouldRememberObject(MM_EnvironmentStandard *env, omrobjectptr_t o
 
 	/* The remembered state of a class object also depends on the class statics */
 	if (_extensions->objectModel.hasIndirectObjectReferents((CLI_THREAD_TYPE*)env->getLanguageVMThread(), objectPtr)) {
+#if defined(OMR_GC_SCAVENGER_DELEGATE)
+		return _delegate.hasIndirectReferentsInNewSpace(env, objectPtr);
+#else
 		return _cli->scavenger_hasIndirectReferentsInNewSpace(env, objectPtr);
+#endif
 	}
 
 	return false;
@@ -2346,11 +2401,15 @@ MM_Scavenger::shouldRememberObject(MM_EnvironmentStandard *env, omrobjectptr_t o
 MMINLINE bool
 MM_Scavenger::scavengeRememberedObject(MM_EnvironmentStandard *env, omrobjectptr_t objectPtr)
 {
-	bool shouldBeBemembered = scavengeObjectSlots(env, NULL, objectPtr, GC_ObjectScanner::scanRoots, NULL);
+	bool shouldBeRemembered = scavengeObjectSlots(env, NULL, objectPtr, GC_ObjectScanner::scanRoots, NULL);
 	if (_extensions->objectModel.hasIndirectObjectReferents((CLI_THREAD_TYPE*)env->getLanguageVMThread(), objectPtr)) {
-		shouldBeBemembered |= _cli->scavenger_scavengeIndirectObjectSlots(env, objectPtr);
+#if defined(OMR_GC_SCAVENGER_DELEGATE)
+		shouldBeRemembered |= _delegate.scavengeIndirectObjectSlots(env, objectPtr);
+#else
+		shouldBeRemembered |= _cli->scavenger_scavengeIndirectObjectSlots(env, objectPtr);
+#endif
 	}
-	return shouldBeBemembered;
+	return shouldBeRemembered;
 }
 
 void
@@ -2611,7 +2670,11 @@ MM_Scavenger::scavengeRememberedSetListIndirect(MM_EnvironmentStandard *env)
 					numElements += 1;
 					Assert_MM_true(_extensions->objectModel.isRemembered(objectPtr));
 					*slotPtr = (omrobjectptr_t)((uintptr_t)objectPtr | DEFERRED_RS_REMOVE_FLAG);
+#if defined(OMR_GC_SCAVENGER_DELEGATE)
+					bool shouldBeRemembered = _delegate.scavengeIndirectObjectSlots(env, objectPtr);
+#else
 					bool shouldBeRemembered = _cli->scavenger_scavengeIndirectObjectSlots(env, objectPtr);
+#endif
 					shouldBeRemembered |= scavengeObjectSlots(env, NULL, objectPtr, GC_ObjectScanner::scanRoots, slotPtr);
 					if (shouldBeRemembered) {
 						/* We want to remember this object after all; clear the flag for removal. */
@@ -2659,7 +2722,11 @@ MM_Scavenger::scavengeRememberedSetList(MM_EnvironmentStandard *env)
 				*slotPtr = (omrobjectptr_t)((uintptr_t)*slotPtr | DEFERRED_RS_REMOVE_FLAG);
 				bool shouldBeRemembered = scavengeObjectSlots(env, NULL, objectPtr, GC_ObjectScanner::scanRoots, slotPtr);
 				if (_extensions->objectModel.hasIndirectObjectReferents((CLI_THREAD_TYPE*)env->getLanguageVMThread(), objectPtr)) {
+#if defined(OMR_GC_SCAVENGER_DELEGATE)
+					shouldBeRemembered |= _delegate.scavengeIndirectObjectSlots(env, objectPtr);
+#else
 					shouldBeRemembered |= _cli->scavenger_scavengeIndirectObjectSlots(env, objectPtr);
+#endif
 				}
 
 				shouldBeRemembered |= isRememberedThreadReference(env, objectPtr);
@@ -3244,7 +3311,11 @@ MM_Scavenger::checkAndSetShouldYieldFlag(MM_EnvironmentStandard *env) {
 	 * Most of the time we could rely on being in 'concurrent_state_scan' but it's more reliable to actually check if exclusive access
 	 * is indeed being requested (hence scavenger_shouldYield() call too).
 	 */
+#if defined(OMR_GC_SCAVENGER_DELEGATE)
+	if (!_shouldYield && env->isExclusiveAccessRequestWaiting() && _delegate.shouldYield()) {
+#else
 	if (!_shouldYield && env->isExclusiveAccessRequestWaiting() && _cli->scavenger_shouldYield()) {
+#endif
 		_shouldYield = true;
 	}
 	return _shouldYield;
@@ -3338,7 +3409,11 @@ MM_Scavenger::backOutObjectScan(MM_EnvironmentStandard *env, omrobjectptr_t obje
 	}
 
 	if (_extensions->objectModel.hasIndirectObjectReferents((CLI_THREAD_TYPE*)env->getLanguageVMThread(), objectPtr)) {
+#if defined(OMR_GC_SCAVENGER_DELEGATE)
+		_delegate.backOutIndirectObjectSlots(env, objectPtr);
+#else
 		_cli->scavenger_backOutIndirectObjectSlots(env, objectPtr);
+#endif
 	}
 }
 
@@ -3370,7 +3445,11 @@ MM_Scavenger::backoutFixupAndReverseForwardPointersInSurvivor(MM_EnvironmentStan
 				if (header.isForwardedPointer()) {
 					omrobjectptr_t forwardedObject = header.getForwardedObject();
 					omrobjectptr_t originalObject = header.getObject();
+#if defined(OMR_GC_SCAVENGER_DELEGATE)
+					_delegate.reverseForwardedObject(env, &header);
+#else
 					_cli->scavenger_reverseForwardedObject(env, &header);
+#endif
 					/* A reverse forwarded object is a hole whose 'next' pointer actually points at the original object.
 					 * This keeps tenure space walkable once the reverse forwarded objects are abandoned.
 					 */
@@ -3414,7 +3493,11 @@ MM_Scavenger::backoutFixupAndReverseForwardPointersInSurvivor(MM_EnvironmentStan
 #if defined(OMR_SCAVENGER_TRACE_BACKOUT)
 				uint32_t originalOverlap = header.getPreservedOverlap();
 #endif /* OMR_SCAVENGER_TRACE_BACKOUT */
+#if defined(OMR_GC_SCAVENGER_DELEGATE)
+				_delegate.fixupDestroyedSlot(env, &header, _activeSubSpace);
+#else
 				_cli->scavenger_fixupDestroyedSlot(env, &header, _activeSubSpace);
+#endif
 #if defined(OMR_SCAVENGER_TRACE_BACKOUT)
 				omrobjectptr_t fwdObjectPtr = header.getForwardedObject();
 				omrtty_printf("{SCAV: Fixup destroyed slot %p@%p -> %u->%u}\n", objectPtr, fwdObjectPtr, originalOverlap, header.getPreservedOverlap());
@@ -3477,7 +3560,11 @@ MM_Scavenger::fixupObjectScan(MM_EnvironmentStandard *env, omrobjectptr_t object
 	}
 
 	if (_extensions->objectModel.hasIndirectObjectReferents((CLI_THREAD_TYPE*)env->getLanguageVMThread(), objectPtr)) {
+#if defined(OMR_GC_SCAVENGER_DELEGATE)
+		_delegate.fixupIndirectObjectSlots(env, objectPtr);
+#else
 		_cli->scavenger_fixupIndirectObjectSlots(env, objectPtr);
+#endif
 	}
 }
 
@@ -3674,7 +3761,11 @@ MM_Scavenger::completeBackOut(MM_EnvironmentStandard *env)
 				}
 
 				/* Walk all classes that are flagged as remembered */
+#if defined(OMR_GC_SCAVENGER_DELEGATE)
+				_delegate.backOutIndirectObjects(env);
+#else
 				_cli->scavenger_backOutIndirectObjects(env);
+#endif
 			}
 		} else {
 			/* RS not in overflow */
@@ -3759,7 +3850,11 @@ MM_Scavenger::masterThreadGarbageCollect(MM_EnvironmentBase *envBase, MM_Allocat
 
 	if (lastIncrement) {
 		/* defer to collector language interface */
+#if defined(OMR_GC_SCAVENGER_DELEGATE)
+		_delegate.masterThreadGarbageCollect_scavengeComplete(env);
+#else
 		_cli->scavenger_masterThreadGarbageCollect_scavengeComplete(env);
+#endif
 
 		/* Reset the resizable flag of the semi space.
 		 * NOTE: Must be done before we attempt to resize the new space.
@@ -3781,7 +3876,11 @@ MM_Scavenger::masterThreadGarbageCollect(MM_EnvironmentBase *envBase, MM_Allocat
 			_activeSubSpace->masterTeardownForSuccessfulGC(env);
 
 			/* Defer to collector language interface */
+#if defined(OMR_GC_SCAVENGER_DELEGATE)
+			_delegate.masterThreadGarbageCollect_scavengeSuccess(env);
+#else
 			_cli->scavenger_masterThreadGarbageCollect_scavengeSuccess(env);
+#endif
 
 			if(_extensions->scvTenureStrategyAdaptive) {
 				/* Adjust the tenure age based on the percentage of new space used.  Also, avoid / by 0 */
@@ -4200,6 +4299,32 @@ MM_Scavenger::internalGarbageCollect(MM_EnvironmentBase *envBase, MM_MemorySubSp
 		}
 	}
 
+#if defined(OMR_GC_MODRON_CONCURRENT_MARK)
+	if (!_extensions->concurrentMark) {
+			uintptr_t previousUsedOldHeap = _extensions->oldHeapSizeOnLastGlobalGC - _extensions->freeOldHeapSizeOnLastGlobalGC;
+			float maxTenureFreeRatio = _extensions->heapFreeMaximumRatioMultiplier / 100.0f;
+			float midTenureFreeRatio = (_extensions->heapFreeMinimumRatioMultiplier + _extensions->heapFreeMaximumRatioMultiplier) / 200.0f;
+			uintptr_t soaFreeMemorySize = _extensions->heap->getApproximateActiveFreeMemorySize(MEMORY_TYPE_OLD) - _extensions->heap->getApproximateActiveFreeLOAMemorySize(MEMORY_TYPE_OLD);
+
+			/* We suspect that next scavenge will cause Tenure expansion, while Tenure free ratio is (was) already high enough */
+			if ((scavengerGCStats->_avgTenureBytes > soaFreeMemorySize) && (_extensions->freeOldHeapSizeOnLastGlobalGC > (_extensions->oldHeapSizeOnLastGlobalGC * midTenureFreeRatio))) {
+				Trc_MM_Scavenger_percolate_preventTenureExpand(env->getLanguageVMThread());
+
+				bool result = percolateGarbageCollect(env, subSpace, NULL, PREVENT_TENURE_EXPAND, J9MMCONSTANT_IMPLICIT_GC_PERCOLATE);
+				Assert_MM_true(result);
+				return true;
+			}
+			/* There was Tenure heap growth since last Global GC, and we suspect (assuming live set size did not grow) we might be going beyond max free bound. */
+			if ((_extensions->heap->getActiveMemorySize(MEMORY_TYPE_OLD) > _extensions->oldHeapSizeOnLastGlobalGC) && (_extensions->heap->getActiveMemorySize(MEMORY_TYPE_OLD) * maxTenureFreeRatio < (_extensions->heap->getActiveMemorySize(MEMORY_TYPE_OLD) - previousUsedOldHeap))) {
+				Trc_MM_Scavenger_percolate_tenureMaxFree(env->getLanguageVMThread());
+
+				bool result = percolateGarbageCollect(env, subSpace, NULL, MET_PROJECTED_TENURE_MAX_FREE, J9MMCONSTANT_IMPLICIT_GC_PERCOLATE);
+				Assert_MM_true(result);
+				return true;
+			}
+	}
+#endif /* OMR_GC_MODRON_CONCURRENT_MARK */
+
 	/**
 	 * Language percolation trigger	
 	 * Allow the CollectorLanguageInterface to advise if percolation should occur.
@@ -4207,7 +4332,11 @@ MM_Scavenger::internalGarbageCollect(MM_EnvironmentBase *envBase, MM_MemorySubSp
 	PercolateReason percolateReason = NONE_SET;
 	uint32_t gcCode = J9MMCONSTANT_IMPLICIT_GC_DEFAULT;
 
+#if defined(OMR_GC_SCAVENGER_DELEGATE)
+	bool shouldPercolate = _delegate.internalGarbageCollect_shouldPercolateGarbageCollect(env, & percolateReason, & gcCode);
+#else
 	bool shouldPercolate = _cli->scavenger_internalGarbageCollect_shouldPercolateGarbageCollect(env, & percolateReason, & gcCode);
+#endif
 
 	if (shouldPercolate) {
 		bool didPercolate = percolateGarbageCollect(env, subSpace, NULL, percolateReason, gcCode);
@@ -5070,7 +5199,11 @@ MM_Scavenger::switchConcurrentForThread(MM_EnvironmentBase *env)
 	if (env->_concurrentScavengerSwitchCount != _concurrentScavengerSwitchCount) {
 		Trc_MM_Scavenger_switchConcurrent(env->getLanguageVMThread(), _concurrentState, _concurrentScavengerSwitchCount, env->_concurrentScavengerSwitchCount);
 		env->_concurrentScavengerSwitchCount = _concurrentScavengerSwitchCount;
+#if defined(OMR_GC_SCAVENGER_DELEGATE)
+		_delegate.switchConcurrentForThread(env);
+#else
 		_cli->scavenger_switchConcurrentForThread(env);
+#endif
 	}
 }
 
@@ -5122,12 +5255,20 @@ void
 MM_Scavenger::scavenger_poisonSlots(MM_EnvironmentBase *env)
 {
 	/* This will poison only the root slots */
+#if defined(OMR_GC_SCAVENGER_DELEGATE)
+	_delegate.poisonSlots(env);
+#else
 	_cli->scavenger_poisonSlots(env);
+#endif
 }
 void
 MM_Scavenger::scavenger_healSlots(MM_EnvironmentBase *env)
 {
 	/* This will heal only the root slots */
+#if defined(OMR_GC_SCAVENGER_DELEGATE)
+	_delegate.healSlots(env);
+#else
 	_cli->scavenger_healSlots(env);
+#endif
 }
 #endif /* defined(OMR_ENV_DATA64) && !defined(OMR_GC_COMPRESSED_POINTERS) */

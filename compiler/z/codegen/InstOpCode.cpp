@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -23,7 +23,7 @@
 
 #include "codegen/CodeGenerator.hpp"
 #include "env/CompilerEnv.hpp"
-#include "il/Node.hpp"                                         // for Node
+#include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
 
 const OMR::Z::InstOpCode::OpCodeMetaData OMR::Z::InstOpCode::metadata[NumOpCodes] =
@@ -591,17 +591,10 @@ OMR::Z::InstOpCode::getLoadRegOpCodeFromNode(TR::CodeGenerator *cg, TR::Node *no
    {
    if (node->getType().isAddress())
       {
-      if (TR::Compiler->target.is64Bit())
-         return TR::InstOpCode::LGR;
-      else
-         return TR::InstOpCode::LR;
+      return TR::Compiler->target.is64Bit() ? TR::InstOpCode::LGR : TR::InstOpCode::LR;
       }
 
-   if ((TR::Compiler->target.is64Bit() || cg->use64BitRegsOn32Bit()) && node->getType().isInt64())
-      {
-      return TR::InstOpCode::LGR;
-      }
-   return TR::InstOpCode::LR;
+   return node->getType().isInt64() ? TR::InstOpCode::LGR : TR::InstOpCode::LR;
    }
 
 

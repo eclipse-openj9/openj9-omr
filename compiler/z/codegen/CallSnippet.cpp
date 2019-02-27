@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -21,33 +21,33 @@
 
 #include "z/codegen/CallSnippet.hpp"
 
-#include <stddef.h>                          // for NULL
-#include <stdint.h>                          // for int32_t, uint8_t, uint32_t, etc
-#include "codegen/CodeGenerator.hpp"         // for CodeGenerator
-#include "codegen/FrontEnd.hpp"              // for TR_FrontEnd
-#include "codegen/InstOpCode.hpp"            // for InstOpCode, etc
-#include "codegen/Instruction.hpp"           // for Instruction
-#include "codegen/Linkage.hpp"               // for Linkage
-#include "codegen/Machine.hpp"               // for Machine
-#include "codegen/RealRegister.hpp"          // for RealRegister
-#include "compile/Compilation.hpp"           // for Compilation
-#include "compile/SymbolReferenceTable.hpp"  // for SymbolReferenceTable
+#include <stddef.h>
+#include <stdint.h>
+#include "codegen/CodeGenerator.hpp"
+#include "codegen/FrontEnd.hpp"
+#include "codegen/InstOpCode.hpp"
+#include "codegen/Instruction.hpp"
+#include "codegen/Linkage.hpp"
+#include "codegen/Machine.hpp"
+#include "codegen/RealRegister.hpp"
+#include "compile/Compilation.hpp"
+#include "compile/SymbolReferenceTable.hpp"
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"
 #include "env/CompilerEnv.hpp"
 #include "env/IO.hpp"
-#include "env/jittypes.h"                    // for intptrj_t, uintptrj_t
-#include "il/DataTypes.hpp"                  // for DataTypes::Address, etc
-#include "il/Node.hpp"                       // for Node
-#include "il/Node_inlines.hpp"               // for Node::getDataType, etc
-#include "il/Symbol.hpp"                     // for Symbol
-#include "il/SymbolReference.hpp"            // for SymbolReference
-#include "il/symbol/LabelSymbol.hpp"         // for LabelSymbol
-#include "il/symbol/MethodSymbol.hpp"        // for MethodSymbol
-#include "infra/Assert.hpp"                  // for TR_ASSERT
-#include "ras/Debug.hpp"                     // for TR_Debug
-#include "runtime/Runtime.hpp"               // for TR_RuntimeHelper, etc
-#include "z/codegen/S390Instruction.hpp"     // for toS390Cursor
+#include "env/jittypes.h"
+#include "il/DataTypes.hpp"
+#include "il/Node.hpp"
+#include "il/Node_inlines.hpp"
+#include "il/Symbol.hpp"
+#include "il/SymbolReference.hpp"
+#include "il/symbol/LabelSymbol.hpp"
+#include "il/symbol/MethodSymbol.hpp"
+#include "infra/Assert.hpp"
+#include "ras/Debug.hpp"
+#include "runtime/Runtime.hpp"
+#include "z/codegen/S390Instruction.hpp"
 
 #define TR_S390_ARG_SLOT_SIZE 4
 
@@ -381,7 +381,7 @@ TR_RuntimeHelper TR::S390CallSnippet::getInterpretedDispatchHelper(
       isJitInduceOSRCall = true;
       }
 
-   if (methodSymRef->isUnresolved() || comp->compileRelocatableCode())
+   if (methodSymRef->isUnresolved() || (comp->compileRelocatableCode() && !comp->getOption(TR_UseSymbolValidationManager)))
       {
       TR_ASSERT(!isJitInduceOSRCall || !comp->compileRelocatableCode(), "calling jitInduceOSR is not supported yet under AOT\n");
       if (methodSymbol->isSpecial())
@@ -440,7 +440,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::S390CallSnippet * snippet)
 
    bufferPos = printS390ArgumentsFlush(pOutFile, callNode, bufferPos, snippet->getSizeOfArguments());
 
-   if (methodSymRef->isUnresolved() || _comp->compileRelocatableCode())
+   if (methodSymRef->isUnresolved() || (_comp->compileRelocatableCode() && !_comp->getOption(TR_UseSymbolValidationManager)))
       {
       if (methodSymbol->isSpecial())
          {

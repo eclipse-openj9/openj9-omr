@@ -19,58 +19,58 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#include <stddef.h>                                  // for NULL, size_t
-#include <stdint.h>                                  // for int32_t, etc
-#include "codegen/AheadOfTimeCompile.hpp"            // for AheadOfTimeCompile
-#include "codegen/CodeGenerator.hpp"                 // for CodeGenerator, etc
-#include "codegen/FrontEnd.hpp"                      // for TR_FrontEnd, etc
-#include "codegen/InstOpCode.hpp"                    // for InstOpCode, etc
-#include "codegen/Instruction.hpp"                   // for Instruction
-#include "codegen/Linkage.hpp"                       // for addDependency, etc
-#include "codegen/Machine.hpp"                       // for UPPER_IMMED, etc
-#include "codegen/MemoryReference.hpp"               // for MemoryReference
-#include "codegen/RealRegister.hpp"                  // for RealRegister, etc
-#include "codegen/Register.hpp"                      // for Register
+#include <stddef.h>
+#include <stdint.h>
+#include "codegen/AheadOfTimeCompile.hpp"
+#include "codegen/CodeGenerator.hpp"
+#include "codegen/FrontEnd.hpp"
+#include "codegen/InstOpCode.hpp"
+#include "codegen/Instruction.hpp"
+#include "codegen/Linkage.hpp"
+#include "codegen/Machine.hpp"
+#include "codegen/MemoryReference.hpp"
+#include "codegen/RealRegister.hpp"
+#include "codegen/Register.hpp"
 #include "codegen/RegisterConstants.hpp"
 #include "codegen/RegisterDependency.hpp"
 #include "codegen/RegisterDependencyStruct.hpp"
-#include "codegen/RegisterPair.hpp"                  // for RegisterPair
-#include "codegen/Snippet.hpp"                       // for TR::PPCSnippet, etc
+#include "codegen/RegisterPair.hpp"
+#include "codegen/Snippet.hpp"
 #include "codegen/TreeEvaluator.hpp"
-#include "compile/Compilation.hpp"                   // for Compilation, etc
+#include "compile/Compilation.hpp"
 #include "compile/SymbolReferenceTable.hpp"
-#include "compile/VirtualGuard.hpp"                  // for TR_VirtualGuard
+#include "compile/VirtualGuard.hpp"
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"
 #include "env/CompilerEnv.hpp"
 #ifdef J9_PROJECT_SPECIFIC
-#include "env/CHTable.hpp"                           // for TR_AOTGuardSite, etc
+#include "env/CHTable.hpp"
 #endif
-#include "env/ObjectModel.hpp"                       // for ObjectModel
+#include "env/ObjectModel.hpp"
 #include "env/Processors.hpp"
 #include "env/TRMemory.hpp"
-#include "env/jittypes.h"                            // for intptrj_t
-#include "il/Block.hpp"                              // for Block
-#include "il/DataTypes.hpp"                          // for DataTypes, LONG_SHIFT_MASK
-#include "il/ILOpCodes.hpp"                          // for ILOpCodes, etc
-#include "il/ILOps.hpp"                              // for ILOpCode, etc
-#include "il/Node.hpp"                               // for Node, etc
+#include "env/jittypes.h"
+#include "il/Block.hpp"
+#include "il/DataTypes.hpp"
+#include "il/ILOpCodes.hpp"
+#include "il/ILOps.hpp"
+#include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
-#include "il/SymbolReference.hpp"                    // for SymbolReference
-#include "il/TreeTop.hpp"                            // for TreeTop
+#include "il/SymbolReference.hpp"
+#include "il/TreeTop.hpp"
 #include "il/TreeTop_inlines.hpp"
 #include "il/symbol/LabelSymbol.hpp"
-#include "infra/Assert.hpp"                          // for TR_ASSERT
-#include "infra/BitVector.hpp"                       // for TR_BitVector
-#include "infra/List.hpp"                            // for List
+#include "infra/Assert.hpp"
+#include "infra/BitVector.hpp"
+#include "infra/List.hpp"
 #include "p/codegen/GenerateInstructions.hpp"
 #include "p/codegen/PPCAOTRelocation.hpp"
 #include "p/codegen/PPCHelperCallSnippet.hpp"
 #include "p/codegen/PPCInstruction.hpp"
-#include "p/codegen/PPCOpsDefines.hpp"               // for Op_load, etc
+#include "p/codegen/PPCOpsDefines.hpp"
 #include "p/codegen/PPCOutOfLineCodeSection.hpp"
 #include "p/codegen/PPCTableOfConstants.hpp"
-#include "runtime/Runtime.hpp"                       // for LO_VALUE, etc
+#include "runtime/Runtime.hpp"
 
 
 extern TR::Register *addConstantToInteger(TR::Node * node, TR::Register *srcReg, int32_t value, TR::CodeGenerator *cg);
@@ -4056,6 +4056,7 @@ static bool virtualGuardHelper(TR::Node *node, TR::CodeGenerator *cg)
          case TR_DirectMethodGuard:
          case TR_NonoverriddenGuard:
          case TR_InterfaceGuard:
+         case TR_AbstractGuard:
          case TR_MethodEnterExitGuard:
          case TR_HCRGuard:
             aotSite->setGuard(virtualGuard);

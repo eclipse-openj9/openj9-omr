@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -31,11 +31,11 @@ namespace TR { namespace Z {class ZOSBaseSystemLinkage; } }
 namespace TR { typedef TR::Z::ZOSBaseSystemLinkage ZOSBaseSystemLinkageConnector; }
 #endif
 
-#include <stdint.h>                            // for int32_t
+#include <stdint.h>
 #include "codegen/Linkage.hpp"
-#include "codegen/LinkageConventionsEnum.hpp"  // for TR_LinkageConventions, etc
+#include "codegen/LinkageConventionsEnum.hpp"
 #include "codegen/RealRegister.hpp"
-#include "codegen/SystemLinkage.hpp"           // for SystemLinkage
+#include "codegen/SystemLinkage.hpp"
 
 class TR_zOSGlobalCompilationInfo;
 namespace TR { class CodeGenerator; }

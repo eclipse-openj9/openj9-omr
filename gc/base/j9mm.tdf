@@ -912,3 +912,5 @@ TraceEvent=Trc_MM_LOAResize_expandWithRange2 Overhead=1 Level=1 Group=loaresize 
 TraceEvent=Trc_MM_LOAResize_contractWithRange Overhead=1 Level=1 Group=loaresize Template="LOA resized on heap contraction: heapSize %zu,  LOA ratio is %.3f --> LOA base is now %p LOA size %zu"
 
 TraceEvent=Trc_MM_Scavenger_percolate_concurrentMarkExhausted Overhead=1 Level=1 Group=percolate Template="Percolating due to exhausted Concurrent Mark"
+TraceEvent=Trc_MM_Scavenger_percolate_preventTenureExpand Overhead=1 Level=1 Group=percolate Template="Percolating to prevent Tenure expand"
+TraceEvent=Trc_MM_Scavenger_percolate_tenureMaxFree Overhead=1 Level=1 Group=percolate Template="Percolating due to meeting Tenure max free"

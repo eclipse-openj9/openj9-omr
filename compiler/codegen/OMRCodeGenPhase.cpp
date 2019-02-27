@@ -31,46 +31,46 @@
 
 #include "codegen/OMRCodeGenPhase.hpp"
 
-#include <stdarg.h>                                   // for va_list, etc
-#include <stddef.h>                                   // for NULL
-#include <stdint.h>                                   // for int32_t, etc
+#include <stdarg.h>
+#include <stddef.h>
+#include <stdint.h>
 #include "codegen/AheadOfTimeCompile.hpp"
-#include "codegen/CodeGenPhase.hpp"                   // for CodeGenPhase, etc
-#include "codegen/CodeGenerator.hpp"                  // for CodeGenerator, etc
+#include "codegen/CodeGenPhase.hpp"
+#include "codegen/CodeGenerator.hpp"
 #include "codegen/CodeGenerator_inlines.hpp"
-#include "codegen/FrontEnd.hpp"                       // for TR_FrontEnd, etc
-#include "codegen/GCStackAtlas.hpp"                   // for GCStackAtlas
-#include "codegen/Linkage.hpp"                        // for Linkage
+#include "codegen/FrontEnd.hpp"
+#include "codegen/GCStackAtlas.hpp"
+#include "codegen/Linkage.hpp"
 #include "codegen/RegisterConstants.hpp"
-#include "codegen/Snippet.hpp"                        // for Snippet
-#include "compile/Compilation.hpp"                    // for Compilation, etc
+#include "codegen/Snippet.hpp"
+#include "compile/Compilation.hpp"
 #include "compile/OSRData.hpp"
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"
 #include "env/CompilerEnv.hpp"
-#include "env/IO.hpp"                                 // for IO
-#include "env/PersistentInfo.hpp"                     // for PersistentInfo
+#include "env/IO.hpp"
+#include "env/PersistentInfo.hpp"
 #include "env/TRMemory.hpp"
-#include "il/Block.hpp"                               // for Block
-#include "il/Node.hpp"                                // for vcount_t
+#include "il/Block.hpp"
+#include "il/Node.hpp"
 #include "il/symbol/ResolvedMethodSymbol.hpp"
-#include "infra/Assert.hpp"                           // for TR_ASSERT
-#include "infra/BitVector.hpp"                        // for TR_BitVector
+#include "infra/Assert.hpp"
+#include "infra/BitVector.hpp"
 #include "infra/ILWalk.hpp"
-#include "infra/Cfg.hpp"                              // for CFG
-#include "infra/Link.hpp"                             // for TR_LinkHead
-#include "infra/List.hpp"                             // for ListIterator, etc
+#include "infra/Cfg.hpp"
+#include "infra/Link.hpp"
+#include "infra/List.hpp"
 #include "infra/SimpleRegex.hpp"
 #include "optimizer/DebuggingCounters.hpp"
 #include "optimizer/LoadExtensions.hpp"
-#include "optimizer/Optimization.hpp"                 // for Optimization
+#include "optimizer/Optimization.hpp"
 #include "optimizer/OptimizationManager.hpp"
 #include "optimizer/Optimizations.hpp"
-#include "optimizer/Optimizer.hpp"                    // for Optimizer
+#include "optimizer/Optimizer.hpp"
 #include "optimizer/DataFlowAnalysis.hpp"
 #include "optimizer/StructuralAnalysis.hpp"
-#include "ras/Debug.hpp"                              // for TR_DebugBase, etc
-#include "runtime/Runtime.hpp"                        // for setDllSlip
+#include "ras/Debug.hpp"
+#include "runtime/Runtime.hpp"
 #include "env/RegionProfiler.hpp"
 
 #include <map>

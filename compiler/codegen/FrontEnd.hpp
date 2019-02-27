@@ -38,28 +38,28 @@
 #include "infra/List.hpp"
 #include "infra/Random.hpp"
 
-#include <stdarg.h>                              // for va_list
-#include <stddef.h>                              // for size_t
-#include <stdint.h>                              // for int32_t, uint32_t, etc
-#include <stdio.h>                               // for FILE
-#include <string.h>                              // for NULL, strlen
-#include "codegen/CodeGenPhase.hpp"              // for CodeGenPhase
-#include "env/KnownObjectTable.hpp"          // for KnownObjectTable, etc
+#include <stdarg.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <string.h>
+#include "codegen/CodeGenPhase.hpp"
+#include "env/KnownObjectTable.hpp"
 #include "codegen/Snippet.hpp"
-#include "compile/CompilationTypes.hpp"          // for TR_CallingContext
-#include "env/Processors.hpp"                    // for TR_Processor
+#include "compile/CompilationTypes.hpp"
+#include "env/Processors.hpp"
 #include "env/ProcessorInfo.hpp"
 #include "env/jittypes.h"
-#include "il/DataTypes.hpp"                      // for DataTypes, etc
-#include "il/ILOpCodes.hpp"                      // for ILOpCodes, etc
+#include "il/DataTypes.hpp"
+#include "il/ILOpCodes.hpp"
 #include "il/ILOps.hpp"
 #include "infra/Array.hpp"
-#include "infra/Assert.hpp"                      // for TR_ASSERT
-#include "infra/Flags.hpp"                       // for flags32_t
+#include "infra/Assert.hpp"
+#include "infra/Flags.hpp"
 #include "optimizer/OptimizationStrategies.hpp"
-#include "optimizer/Optimizations.hpp"           // for Optimizations
-#include "runtime/Runtime.hpp"                   // for TR_AOTStats, etc
-#include "env/VerboseLog.hpp"                    // for TR_VerboseLog, etc
+#include "optimizer/Optimizations.hpp"
+#include "runtime/Runtime.hpp"
+#include "env/VerboseLog.hpp"
 
 #ifdef J9_PROJECT_SPECIFIC
 #include "env/SharedCache.hpp"
@@ -90,7 +90,7 @@ namespace TR
    {
    static bool isJ9()
       {
-#if defined(NONJAVA) || defined(PYTHON) || defined(OMR_RUBY) || defined(JITTEST)
+#if defined(NONJAVA) || defined(PYTHON) || defined(JITTEST)
       return false;
 #else
       return true;
@@ -146,17 +146,13 @@ public:
    virtual TR_ResolvedMethod * createResolvedMethod(TR_Memory *, TR_OpaqueMethodBlock *, TR_ResolvedMethod * = 0, TR_OpaqueClassBlock * = 0);
    virtual OMR::MethodMetaDataPOD *createMethodMetaData(TR::Compilation *comp) { return NULL; }
 
-   virtual TR_OpaqueMethodBlock * getMethodFromName(char * className, char *methodName, char *signature, TR_OpaqueMethodBlock *callingMethod=0);
+   virtual TR_OpaqueMethodBlock * getMethodFromName(char * className, char *methodName, char *signature);
    virtual uint32_t offsetOfIsOverriddenBit();
 
    // Needs VMThread
 
-   // In practice we never enable methodEnterTracing without methodExitTracing.
-   // Combine them into one method: isMethodTracingEnabled() which should be used
-   // to replace all usages of isMethodEnterTracingEnabled() and isMethodExitTracingEnabled().
+   // Check if method entry and exit tracing is enabled
    virtual bool isMethodTracingEnabled(TR_OpaqueMethodBlock *method);
-   virtual bool isMethodEnterTracingEnabled(TR_OpaqueMethodBlock *method);
-   virtual bool isMethodExitTracingEnabled(TR_OpaqueMethodBlock *method);
 
    virtual const char * sampleSignature(TR_OpaqueMethodBlock * aMethod, char * bug = 0, int32_t bufLen = 0,TR_Memory *memory = NULL);
 
@@ -228,10 +224,6 @@ public:
    virtual TR_OpaqueClassBlock * getComponentClassFromArrayClass(TR_OpaqueClassBlock *arrayClass);
    virtual TR_OpaqueClassBlock * getLeafComponentClassFromArrayClass(TR_OpaqueClassBlock *arrayClass);
 
-   // to J9
-   virtual uintptrj_t getClassDepthAndFlagsValue(TR_OpaqueClassBlock * classPointer);
-   virtual int32_t getStringLength(uintptrj_t objectPointer);
-
    // Null-terminated.  bufferSize >= 1+getStringUTF8Length(objectPointer).  Returns buffer just for convenience.
    virtual char *getStringUTF8(uintptrj_t objectPointer, char *buffer, intptrj_t bufferSize);
    virtual intptrj_t getStringUTF8Length(uintptrj_t objectPointer);
@@ -240,18 +232,8 @@ public:
    // Code cache
    // --------------------------------------------------------------------------
 
-   virtual uint8_t * allocateCodeMemory(TR::Compilation *, uint32_t warmCodeSize, uint32_t coldCodeSize, uint8_t ** coldCode, bool isMethodHeaderNeeded=true);
-   virtual void releaseCodeMemory(void *, uint8_t);
-   virtual TR::CodeCache *getDesignatedCodeCache(TR::Compilation* comp); // MCT
    virtual void reserveTrampolineIfNecessary(TR::Compilation *, TR::SymbolReference *symRef, bool inBinaryEncoding);
    virtual intptrj_t methodTrampolineLookup(TR::Compilation *, TR::SymbolReference *symRef, void * callSite);
-   virtual intptrj_t indexedTrampolineLookup(int32_t helperIndex, void * callSite); // No TR::Compilation parameter so this can be called from runtime code
-
-   // Z only
-   virtual uint8_t * getCodeCacheBase();
-   virtual uint8_t * getCodeCacheBase(TR::CodeCache *);
-   virtual uint8_t * getCodeCacheTop();
-   virtual uint8_t * getCodeCacheTop(TR::CodeCache *);
 
    // --------------------------------------------------------------------------
    // Stay in FrontEnd

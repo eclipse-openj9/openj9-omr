@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -19,17 +19,17 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#include "codegen/OMRRegister.hpp"      // for RegisterExt, etc
+#include "codegen/OMRRegister.hpp"
 
-#include <stddef.h>                              // for NULL
-#include <stdint.h>                              // for uint16_t, uint32_t
-#include "codegen/RealRegister.hpp"              // for RealRegister
-#include "codegen/Register.hpp"                  // for Register
-#include "codegen/RegisterConstants.hpp"         // for TR_RegisterKinds, etc
+#include <stddef.h>
+#include <stdint.h>
+#include "codegen/RealRegister.hpp"
+#include "codegen/Register.hpp"
+#include "codegen/RegisterConstants.hpp"
 #include "codegen/RegisterRematerializationInfo.hpp"
 #include "codegen/OMRRealRegister.hpp"
-#include "compile/Compilation.hpp"               // for Compilation
-#include "ras/Debug.hpp"                         // for TR_DebugBase
+#include "compile/Compilation.hpp"
+#include "ras/Debug.hpp"
 
 OMR::Register::Register(uint32_t f):
    _flags(f),

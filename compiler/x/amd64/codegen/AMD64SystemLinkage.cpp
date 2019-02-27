@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -21,34 +21,34 @@
 
 #include "x/amd64/codegen/AMD64SystemLinkage.hpp"
 
-#include <stdio.h>                                       // for printf
-#include <string.h>                                      // for memset, etc
+#include <stdio.h>
+#include <string.h>
 #include "codegen/CodeGenerator.hpp"
-#include "codegen/Instruction.hpp"                       // for Instruction
-#include "codegen/Machine.hpp"                           // for Machine, etc
+#include "codegen/Instruction.hpp"
+#include "codegen/Machine.hpp"
 #include "codegen/MemoryReference.hpp"
 #include "codegen/RealRegister.hpp"
 #include "codegen/RegisterConstants.hpp"
 #include "codegen/RegisterDependency.hpp"
 #include "codegen/RegisterDependencyStruct.hpp"
-#include "compile/Compilation.hpp"                       // for Compilation
+#include "compile/Compilation.hpp"
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"
-#include "env/jittypes.h"                                // for uintptrj_t
-#include "il/ILOps.hpp"                                  // for ILOpCode
-#include "il/Node.hpp"                                   // for Node
+#include "env/jittypes.h"
+#include "il/ILOps.hpp"
+#include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
-#include "il/Symbol.hpp"                                 // for Symbol
+#include "il/Symbol.hpp"
 #include "il/SymbolReference.hpp"
 #include "il/symbol/LabelSymbol.hpp"
 #include "il/symbol/MethodSymbol.hpp"
 #include "il/symbol/ParameterSymbol.hpp"
 #include "il/symbol/ResolvedMethodSymbol.hpp"
-#include "infra/Assert.hpp"                              // for TR_ASSERT
+#include "infra/Assert.hpp"
 #include "infra/List.hpp"
 #include "ras/Debug.hpp"
 #include "x/codegen/X86Instruction.hpp"
-#include "x/codegen/X86Ops.hpp"                          // for ::CALLReg, etc
+#include "x/codegen/X86Ops.hpp"
 #include "x/codegen/X86SystemLinkage.hpp"
 
 ////////////////////////////////////////////////

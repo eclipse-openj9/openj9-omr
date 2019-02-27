@@ -22,14 +22,14 @@
 #ifndef RELOCATION_INCL
 #define RELOCATION_INCL
 
-#include <stddef.h>                         // for NULL
-#include <stdint.h>                         // for uint8_t, uint32_t, etc
-#include "env/TRMemory.hpp"                 // for TR_Memory, etc
-#include "infra/Assert.hpp"                 // for TR_ASSERT
-#include "infra/Flags.hpp"                  // for flags8_t
-#include "infra/Link.hpp"                   // for TR_Link
+#include <stddef.h>
+#include <stdint.h>
+#include "env/TRMemory.hpp"
+#include "infra/Assert.hpp"
+#include "infra/Flags.hpp"
+#include "infra/Link.hpp"
 #include "runtime/Runtime.hpp"
-#include "ras/DebugCounter.hpp"             // for TR::DebugCounter
+#include "ras/DebugCounter.hpp"
 
 namespace TR { class CodeGenerator; }
 namespace TR { class Compilation; }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -35,47 +35,47 @@ namespace OMR { typedef OMR::Z::CodeGenerator CodeGeneratorConnector; }
 
 #include "compiler/codegen/OMRCodeGenerator.hpp"
 
-#include <stddef.h>                                 // for size_t, NULL
-#include <stdint.h>                                 // for int32_t, etc
-#include <string.h>                                 // for memcmp
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
 #include "codegen/FrontEnd.hpp"
 #include "codegen/InstOpCode.hpp"
 #include "codegen/LinkageConventionsEnum.hpp"
-#include "codegen/Machine.hpp"                      // for Machine, etc
-#include "codegen/RealRegister.hpp"                 // for RealRegister, etc
-#include "codegen/RecognizedMethods.hpp"            // for RecognizedMethod
+#include "codegen/Machine.hpp"
+#include "codegen/RealRegister.hpp"
+#include "codegen/RecognizedMethods.hpp"
 #include "codegen/RegisterConstants.hpp"
 #include "codegen/ScratchRegisterManager.hpp"
-#include "codegen/Snippet.hpp"                      // for Snippet
-#include "codegen/TreeEvaluator.hpp"                // for TreeEvaluator
-#include "compile/Compilation.hpp"                  // for Compilation, etc
+#include "codegen/Snippet.hpp"
+#include "codegen/TreeEvaluator.hpp"
+#include "compile/Compilation.hpp"
 #include "compile/ResolvedMethod.hpp"
 #include "control/Options.hpp"
-#include "control/Options_inlines.hpp"              // for TR::Options, etc
-#include "cs2/arrayof.h"                            // for ArrayOf, etc
-#include "cs2/hashtab.h"                            // for HashTable, etc
+#include "control/Options_inlines.hpp"
+#include "cs2/arrayof.h"
+#include "cs2/hashtab.h"
 #include "env/CompilerEnv.hpp"
-#include "env/CPU.hpp"                              // for Cpu
-#include "env/jittypes.h"                           // for uintptrj_t
-#include "env/PersistentInfo.hpp"                   // for PersistentInfo
-#include "env/Processors.hpp"                       // for TR_Processor
-#include "env/TRMemory.hpp"                         // for Allocator, etc
-#include "il/Block.hpp"                             // for Block
-#include "il/DataTypes.hpp"                         // for DataTypes, etc
-#include "il/ILOpCodes.hpp"                         // for ILOpCodes, etc
-#include "il/ILOps.hpp"                             // for TR::ILOpCode, etc
-#include "il/Node.hpp"                              // for Node, etc
+#include "env/CPU.hpp"
+#include "env/jittypes.h"
+#include "env/PersistentInfo.hpp"
+#include "env/Processors.hpp"
+#include "env/TRMemory.hpp"
+#include "il/Block.hpp"
+#include "il/DataTypes.hpp"
+#include "il/ILOpCodes.hpp"
+#include "il/ILOps.hpp"
+#include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
-#include "il/TreeTop.hpp"                           // for TreeTop
-#include "il/TreeTop_inlines.hpp"                   // for TreeTop::getNode
+#include "il/TreeTop.hpp"
+#include "il/TreeTop_inlines.hpp"
 #include "il/symbol/ResolvedMethodSymbol.hpp"
-#include "infra/Array.hpp"                          // for TR_Array
-#include "infra/Assert.hpp"                         // for TR_ASSERT
-#include "infra/BitVector.hpp"                      // for TR_BitVector
-#include "infra/Flags.hpp"                          // for flags32_t
-#include "infra/List.hpp"                           // for List
+#include "infra/Array.hpp"
+#include "infra/Assert.hpp"
+#include "infra/BitVector.hpp"
+#include "infra/Flags.hpp"
+#include "infra/List.hpp"
 #include "optimizer/DataFlowAnalysis.hpp"
-#include "ras/Debug.hpp"                            // for TR_DebugBase
+#include "ras/Debug.hpp"
 #include "runtime/Runtime.hpp"
 #include "env/IO.hpp"
 
@@ -127,7 +127,7 @@ extern int64_t getIntegralValue(TR::Node* node);
 #endif
 
 // Multi Code Cache Routines for checking whether an entry point is within reach of a BASRL.
-#define NEEDS_TRAMPOLINE(target, rip, cg) (cg->alwaysUseTrampolines() || !CHECK_32BIT_TRAMPOLINE_RANGE(target,rip))
+#define NEEDS_TRAMPOLINE(target, rip, cg) (cg->directCallRequiresTrampoline((intptrj_t)target, (intptrj_t)rip))
 
 #define TR_MAX_MVC_SIZE 256
 #define TR_MAX_CLC_SIZE 256
@@ -213,6 +213,17 @@ public:
    bool hasWarmCallsBeforeReturn();
 
    /**
+    * @brief Answers whether a trampoline is required for a direct call instruction to
+    *           reach a target address.
+    *
+    * @param[in] targetAddress : the absolute address of the call target
+    * @param[in] sourceAddress : the absolute address of the call instruction
+    *
+    * @return : true if a trampoline is required; false otherwise.
+    */
+   bool directCallRequiresTrampoline(intptrj_t targetAddress, intptrj_t sourceAddress);
+
+   /**
     * \brief Tells the optimzers and codegen whether a load constant node should be rematerialized.
     *
     * \details Large constants should be materialized (constant node should be commoned up)
@@ -225,8 +236,6 @@ public:
    bool shouldValueBeInACommonedNode(int64_t value);
    int64_t getLargestNegConstThatMustBeMaterialized() {return ((-1ll) << 31) - 1;}   // min 32bit signed integer minus 1
    int64_t getSmallestPosConstThatMustBeMaterialized() {return ((int64_t)0x000000007FFFFFFF) + 1;}   // max 32bit signed integer plus 1
-   
-   void changeRegisterKind(TR::Register * temp, TR_RegisterKinds rk);
 
    void beginInstructionSelection();
    void endInstructionSelection();
@@ -542,7 +551,6 @@ public:
    uint8_t getRCondMoveBranchOpCond() { return 0xF - fCondMoveBranchOpCond; }
 
    bool canUseImmedInstruction(int64_t v);
-   void ensure64BitRegister(TR::Register *reg);
 
    virtual bool isAddMemoryUpdate(TR::Node * node, TR::Node * valueChild);
 
@@ -704,9 +712,6 @@ public:
    virtual void setGlobalStaticBaseRegisterOnFlag();
    virtual void setGlobalPrivateStaticBaseRegisterOn(bool val)     { _cgFlags.set(S390CG_globalPrivateStaticBaseRegisterOn, val); }
    virtual bool isGlobalPrivateStaticBaseRegisterOn () { return _cgFlags.testAny(S390CG_globalPrivateStaticBaseRegisterOn); }
-
-   bool isAddressOfStaticSymRefWithLockedReg(TR::SymbolReference *symRef);
-   bool isAddressOfPrivateStaticSymRefWithLockedReg(TR::SymbolReference *symRef);
 
    bool canUseRelativeLongInstructions(int64_t value);
    bool supportsOnDemandLiteralPool();

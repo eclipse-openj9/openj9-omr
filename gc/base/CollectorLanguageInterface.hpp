@@ -59,12 +59,12 @@ public:
 	virtual void kill(MM_EnvironmentBase *env) = 0;
 
 	/* Read Barrier Verifier specific methods */
-#if defined(OMR_ENV_DATA64) && !defined(OMR_GC_COMPRESSED_POINTERS)
+#if defined(OMR_ENV_DATA64) && !defined(OMR_GC_COMPRESSED_POINTERS) && !defined(OMR_GC_SCAVENGER_DELEGATE)
 	virtual void scavenger_poisonSlots(MM_EnvironmentBase *env) {}
 	virtual void scavenger_healSlots(MM_EnvironmentBase *env) {}
 #endif /* defined(OMR_ENV_DATA64) && !defined(OMR_GC_COMPRESSED_POINTERS) */
 
-#if defined(OMR_GC_MODRON_SCAVENGER)
+#if defined(OMR_GC_MODRON_SCAVENGER) && !defined(OMR_GC_SCAVENGER_DELEGATE)
 	/**
 	 * This method will be called on the master GC thread after each scavenger cycle, successful or
 	 * otherwise. It may be used for reporting or other tasks as required.
@@ -248,7 +248,7 @@ public:
 	
 	virtual bool scavenger_shouldYield() { return false; }
 #endif /* OMR_GC_CONCURRENT_SCAVENGER */
-#endif /* OMR_GC_MODRON_SCAVENGER */
+#endif /* OMR_GC_MODRON_SCAVENGER && !OMR_GC_SCAVENGER_DELEGATE */
 
 	MM_CollectorLanguageInterface()
 		: MM_BaseVirtual()

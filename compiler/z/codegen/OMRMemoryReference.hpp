@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -35,22 +35,22 @@ namespace OMR { typedef OMR::Z::MemoryReference MemoryReferenceConnector; }
 
 #include "compiler/codegen/OMRMemoryReference.hpp"
 
-#include <stddef.h>                         // for NULL
-#include <stdint.h>                         // for int32_t, uint8_t, etc
-#include "codegen/CodeGenerator.hpp"        // for CodeGenerator
+#include <stddef.h>
+#include <stdint.h>
+#include "codegen/CodeGenerator.hpp"
 #include "codegen/ConstantDataSnippet.hpp"
-#include "codegen/InstOpCode.hpp"           // for InstOpCode, etc
-#include "codegen/Register.hpp"             // for Register
-#include "codegen/Snippet.hpp"              // for Snippet
-#include "compile/Compilation.hpp"          // for Compilation
-#include "env/TRMemory.hpp"                 // for TR_Memory, etc
-#include "env/jittypes.h"                   // for intptrj_t
-#include "il/DataTypes.hpp"                 // for DataTypes
-#include "il/Symbol.hpp"                    // for Symbol
-#include "il/SymbolReference.hpp"           // for SymbolReference
-#include "infra/Assert.hpp"                 // for TR_ASSERT
-#include "infra/Flags.hpp"                  // for flags32_t, flags16_t
-#include "infra/List.hpp"                   // for List
+#include "codegen/InstOpCode.hpp"
+#include "codegen/Register.hpp"
+#include "codegen/Snippet.hpp"
+#include "compile/Compilation.hpp"
+#include "env/TRMemory.hpp"
+#include "env/jittypes.h"
+#include "il/DataTypes.hpp"
+#include "il/Symbol.hpp"
+#include "il/SymbolReference.hpp"
+#include "infra/Assert.hpp"
+#include "infra/Flags.hpp"
+#include "infra/List.hpp"
 
 class TR_StorageReference;
 namespace TR { class Instruction; }

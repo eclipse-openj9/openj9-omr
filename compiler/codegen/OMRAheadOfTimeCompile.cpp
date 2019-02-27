@@ -21,22 +21,22 @@
 
 #include "codegen/AheadOfTimeCompile.hpp"
 
-#include "codegen/CodeGenerator.hpp"         // for CodeGenerator
-#include "codegen/Relocation.hpp"            // for TR::Relocation
-#include "compile/Method.hpp"                // for TR_AOTMethodInfo
-#include "compile/ResolvedMethod.hpp"        // for TR_ResolvedMethod
-#include "compile/SymbolReferenceTable.hpp"  // for SymbolReferenceTable
-#include "compile/VirtualGuard.hpp"          // for TR_VirtualGuard
+#include "codegen/CodeGenerator.hpp"
+#include "codegen/Relocation.hpp"
+#include "compile/Method.hpp"
+#include "compile/ResolvedMethod.hpp"
+#include "compile/SymbolReferenceTable.hpp"
+#include "compile/VirtualGuard.hpp"
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"
 #ifdef J9_PROJECT_SPECIFIC
-#include "env/CHTable.hpp"                   // for TR_AOTGuardSite
+#include "env/CHTable.hpp"
 #endif
-#include "env/jittypes.h"                    // for TR_InlinedCallSite
-#include "il/Node.hpp"                       // for Node
-#include "infra/Assert.hpp"                  // for TR_ASSERT
-#include "infra/List.hpp"                    // for ListHeadAndTail, ListElement
-#include "ras/Debug.hpp"                     // for TR_DebugBase
+#include "env/jittypes.h"
+#include "il/Node.hpp"
+#include "infra/Assert.hpp"
+#include "infra/List.hpp"
+#include "ras/Debug.hpp"
 #include "env/CompilerEnv.hpp"
 
 namespace TR { class SymbolReference; }

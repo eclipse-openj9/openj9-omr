@@ -31,40 +31,40 @@ namespace OMR { class CodeGenerator; }
 namespace OMR { typedef OMR::CodeGenerator CodeGeneratorConnector; }
 #endif
 
-#include <limits.h>                             // for INT_MAX, etc
-#include <stddef.h>                             // for NULL, size_t
-#include <stdint.h>                             // for uint8_t, etc
+#include <limits.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <map>
-#include "codegen/CodeGenPhase.hpp"             // for CodeGenPhase
-#include "codegen/FrontEnd.hpp"                 // for feGetEnv
+#include "codegen/CodeGenPhase.hpp"
+#include "codegen/FrontEnd.hpp"
 #include "codegen/LinkageConventionsEnum.hpp"
 #include "codegen/RecognizedMethods.hpp"
 #include "codegen/RegisterConstants.hpp"
 #include "codegen/StorageInfo.hpp"
 #include "codegen/TreeEvaluator.hpp"
-#include "compile/Compilation.hpp"              // for Compilation
+#include "compile/Compilation.hpp"
 #include "compile/SymbolReferenceTable.hpp"
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"
-#include "cs2/hashtab.h"                        // for HashTable, etc
-#include "env/CompilerEnv.hpp"                  // for TR::Host
-#include "env/ObjectModel.hpp"                  // for ObjectModel
-#include "env/TRMemory.hpp"                     // for Allocator, etc
+#include "cs2/hashtab.h"
+#include "env/CompilerEnv.hpp"
+#include "env/ObjectModel.hpp"
+#include "env/TRMemory.hpp"
 #include "env/jittypes.h"
-#include "il/DataTypes.hpp"                     // for DataTypes, etc
-#include "il/ILOpCodes.hpp"                     // for ILOpCodes
-#include "il/ILOps.hpp"                         // for TR::ILOpCode
-#include "il/Node.hpp"                          // for vcount_t, etc
-#include "infra/Array.hpp"                      // for TR_Array
-#include "infra/Assert.hpp"                     // for TR_ASSERT
-#include "infra/Flags.hpp"                      // for flags32_t, etc
-#include "infra/HashTab.hpp"                    // for TR_HashTab, etc
+#include "il/DataTypes.hpp"
+#include "il/ILOpCodes.hpp"
+#include "il/ILOps.hpp"
+#include "il/Node.hpp"
+#include "infra/Array.hpp"
+#include "infra/Assert.hpp"
+#include "infra/Flags.hpp"
+#include "infra/HashTab.hpp"
 #include "infra/Link.hpp"
-#include "infra/List.hpp"                       // for List, etc
+#include "infra/List.hpp"
 #include "infra/TRlist.hpp"
 #include "infra/Random.hpp"
-#include "infra/Stack.hpp"                      // for TR_Stack
-#include "optimizer/Dominators.hpp"             // for TR_Dominators
+#include "infra/Stack.hpp"
+#include "optimizer/Dominators.hpp"
 #include "ras/DebugCounter.hpp"
 #include "runtime/Runtime.hpp"
 #include "codegen/StaticRelocation.hpp"
@@ -783,8 +783,57 @@ class OMR_EXTENSIBLE CodeGenerator
    TR::CodeCache * getCodeCache() { return _codeCache; }
    void  setCodeCache(TR::CodeCache * codeCache) { _codeCache = codeCache; }
    void  reserveCodeCache();
-   uint8_t * allocateCodeMemory(uint32_t size, bool isCold, bool isMethodHeaderNeeded=true);
-   uint8_t * allocateCodeMemory(uint32_t warmSize, uint32_t coldSize, uint8_t **coldCode, bool isMethodHeaderNeeded=true);
+
+   /**
+    * \brief Allocates code memory of the specified size in the specified area of
+    *        the code cache.  The compilation will fail if unsuccessful.
+    *
+    * \param[in]  codeSizeInBytes : the number of bytes to allocate
+    * \param[in]  isCold : whether the allocation should be done in the cold area or not
+    * \param[in]  isMethodHeaderNeeded : boolean indicating whether space for a
+    *                method header must be allocated
+    *
+    * \return address of the allocated code (if allocated)
+    */
+   uint8_t *allocateCodeMemory(uint32_t codeSizeInBytes, bool isCold, bool isMethodHeaderNeeded=true);
+
+   /**
+    * \brief Allocates code memory of the specified size in the specified area of
+    *        the code cache.  The compilation will fail if unsuccessful.
+    *
+    * \param[in]  warmCodeSizeInBytes : the number of bytes to allocate in the warm area
+    * \param[in]  coldCodeSizeInBytes : the number of bytes to allocate in the cold area
+    * \param[out] coldCode : address of the cold code (if allocated)
+    * \param[in]  isMethodHeaderNeeded : boolean indicating whether space for a
+    *                method header must be allocated
+    *
+    * \return address of the allocated warm code (if allocated)
+    */
+   uint8_t *allocateCodeMemory(
+      uint32_t warmCodeSizeInBytes,
+      uint32_t coldCodeSizeInBytes,
+      uint8_t **coldCode,
+      bool isMethodHeaderNeeded=true);
+
+   /**
+    * \brief Allocates code memory of the specified size in the specified area of
+    *        the code cache.  The compilation will fail if unsuccessful.  This function
+    *        provides a means of specialization in the allocation process for downstream
+    *        consumers of this API.
+    *
+    * \param[in]  warmCodeSizeInBytes : the number of bytes to allocate in the warm area
+    * \param[in]  coldCodeSizeInBytes : the number of bytes to allocate in the cold area
+    * \param[out] coldCode : address of the cold code (if allocated)
+    * \param[in]  isMethodHeaderNeeded : boolean indicating whether space for a
+    *                method header must be allocated
+    *
+    * \return address of the allocated warm code (if allocated)
+    */
+   uint8_t *allocateCodeMemoryInner(
+      uint32_t warmCodeSizeInBytes,
+      uint32_t coldCodeSizeInBytes,
+      uint8_t **coldCode,
+      bool isMethodHeaderNeeded);
 
    /**
     * \brief Trim the size of code memory required by this method to match the
@@ -1055,9 +1104,7 @@ class OMR_EXTENSIBLE CodeGenerator
    TR::Register * allocateRegister(TR_RegisterKinds rk = TR_GPR);
    TR::Register * allocateCollectedReferenceRegister();
    TR::Register * allocateSinglePrecisionRegister(TR_RegisterKinds rk = TR_FPR);
-   TR::Register * allocate64bitRegister();
 
-   TR::RegisterPair * allocate64bitRegisterPair(TR::Register * lo = 0, TR::Register * ho = 0);
    TR::RegisterPair * allocateRegisterPair(TR::Register * lo = 0, TR::Register * ho = 0);
    TR::RegisterPair * allocateSinglePrecisionRegisterPair(TR::Register * lo = 0, TR::Register * ho = 0);
    TR::RegisterPair * allocateFloatingPointRegisterPair(TR::Register * lo = 0, TR::Register * ho = 0);
@@ -1217,9 +1264,6 @@ class OMR_EXTENSIBLE CodeGenerator
    // Unclassified
    //
 
-   // P now
-   bool isRotateAndMask(TR::Node *node) { return false; }
-
    TR::Instruction *generateNop(TR::Node *node, TR::Instruction *instruction=0, TR_NOPKind nopKind=TR_NOPStandard);
    bool isOutOfLineHotPath() { TR_ASSERT(0, "isOutOfLineHotPath is only implemented for 390 and ppc"); return false;}
 
@@ -1340,15 +1384,28 @@ class OMR_EXTENSIBLE CodeGenerator
 
    TR::RealRegister **_unlatchedRegisterList; // dynamically allocated
 
-   bool alwaysUseTrampolines() { return _enabledFlags.testAny(AlwaysUseTrampolines); }
-   void setAlwaysUseTrampolines() {_enabledFlags.set(AlwaysUseTrampolines);}
-
    bool shouldBuildStructure() { return _enabledFlags.testAny(ShouldBuildStructure); }
    void setShouldBuildStructure() {_enabledFlags.set(ShouldBuildStructure);}
 
 
    bool enableRefinedAliasSets();
    void setEnableRefinedAliasSets() {_enabledFlags.set(EnableRefinedAliasSets);}
+
+   /**
+    * @brief Answers whether a trampoline is required for a direct call instruction to
+    *           reach a target address.  This function should be overridden by an
+    *           architecture-specific implementation.
+    *
+    * @param[in] targetAddress : the absolute address of the call target
+    * @param[in] sourceAddress : the absolute address of the call instruction
+    *
+    * @return : true, but will assert fatally before returning.
+    */
+   bool directCallRequiresTrampoline(intptrj_t targetAddress, intptrj_t sourceAddress)
+      {
+      TR_ASSERT_FATAL(0, "An architecture specialization of this function must be provided.");
+      return true;
+      }
 
    // --------------------------------------------------------------------------
 
@@ -1358,7 +1415,6 @@ class OMR_EXTENSIBLE CodeGenerator
    bool profiledPointersRequireRelocation();
    bool needGuardSitesEvenWhenGuardRemoved();
    bool supportVMInternalNatives();
-   bool supportsNativeLongOperations();
 
    // will a BCD left shift always leave the sign code unchanged and thus allow it to be propagated through and upwards
    bool propagateSignThroughBCDLeftShift(TR::DataType type) { return false; }
@@ -1790,7 +1846,7 @@ class OMR_EXTENSIBLE CodeGenerator
       // AVAILABLE                     = 0x0002,
       // AVAILABLE                     = 0x0004,
       EnableRefinedAliasSets           = 0x0008,
-      AlwaysUseTrampolines             = 0x0010,
+      // AVAILABLE                     = 0x0010,
       ShouldBuildStructure             = 0x0020,
       LockFreeSpillList                = 0x0040,  // TAROK only (until it matures)
       UseNonLinearRegisterAssigner     = 0x0080,  // TAROK only (until it matures)

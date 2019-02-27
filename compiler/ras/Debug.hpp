@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -31,28 +31,28 @@
 #ifndef DEBUG_INCL
 #define DEBUG_INCL
 
-#include <stdarg.h>                         // for va_list
-#include <stddef.h>                         // for NULL, size_t
-#include <stdint.h>                         // for int32_t, uint32_t, etc
-#include <stdio.h>                          // for FILE
-#include <string.h>                         // for strcpy
-#include "codegen/Machine.hpp"              // for MachineBaseConnector
-#include "codegen/RegisterConstants.hpp"    // for TR_RegisterKinds, etc
-#include "compile/Method.hpp"               // for TR_Method, etc
-#include "compile/VirtualGuard.hpp"         // for TR_VirtualGuardKind, etc.
-#include "cs2/hashtab.h"                    // for HashTable
+#include <stdarg.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <string.h>
+#include "codegen/Machine.hpp"
+#include "codegen/RegisterConstants.hpp"
+#include "compile/Method.hpp"
+#include "compile/VirtualGuard.hpp"
+#include "cs2/hashtab.h"
 #include "env/RawAllocator.hpp"
-#include "env/TRMemory.hpp"                 // for Allocator, etc
+#include "env/TRMemory.hpp"
 #include "env/jittypes.h"
-#include "il/DataTypes.hpp"                 // for DataTypes, etc
-#include "il/ILOpCodes.hpp"                 // for ILOpCodes, etc
-#include "il/ILOps.hpp"                     // for TR::ILOpCode
-#include "infra/Assert.hpp"                 // for TR_ASSERT
-#include "infra/BitVector.hpp"              // for TR_BitVector
+#include "il/DataTypes.hpp"
+#include "il/ILOpCodes.hpp"
+#include "il/ILOps.hpp"
+#include "infra/Assert.hpp"
+#include "infra/BitVector.hpp"
 #include "infra/TRlist.hpp"
-#include "optimizer/Optimizations.hpp"      // for Optimizations
-#include "runtime/Runtime.hpp"              // for TR_CCPreLoadedCode
-#include "infra/CfgNode.hpp"              // for TR::CFGEdgeList
+#include "optimizer/Optimizations.hpp"
+#include "runtime/Runtime.hpp"
+#include "infra/CfgNode.hpp"
 
 #include "codegen/RegisterRematerializationInfo.hpp"
 
@@ -148,7 +148,7 @@ namespace TR { class X86FPConvertToLongSnippet; }
 namespace TR { class X86GuardedDevirtualSnippet; }
 namespace TR { class X86HelperCallSnippet; }
 namespace TR { class UnresolvedDataSnippet; }
-namespace TR { class X86UnresolvedVirtualCallSnippet; }
+namespace TR { class X86UnresolvedVirtualCallSnippet; } // TODO: delete
 namespace TR { class AMD64Imm64Instruction;    }
 namespace TR { class AMD64Imm64SymInstruction; }
 namespace TR { class AMD64RegImm64Instruction; }
@@ -833,7 +833,7 @@ public:
 #ifdef J9_PROJECT_SPECIFIC
    void print(TR::FILE *, TR::X86CallSnippet *);
    void print(TR::FILE *, TR::X86PicDataSnippet *);
-   void print(TR::FILE *, TR::X86UnresolvedVirtualCallSnippet *);
+   void print(TR::FILE *, TR::X86UnresolvedVirtualCallSnippet *); // TODO: delete
    void print(TR::FILE *, TR::IA32WriteBarrierSnippet *);
    void print(TR::FILE *, TR::X86JNIPauseSnippet *);
    void print(TR::FILE *, TR::X86PassJNINullSnippet *);

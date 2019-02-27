@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -28,62 +28,62 @@
 
 #include "codegen/OMRLinkage.hpp"
 
-#include <stddef.h>                                // for NULL, size_t
-#include <stdint.h>                                // for int32_t, uint8_t, etc
-#include "codegen/CodeGenerator.hpp"               // for CodeGenerator
+#include <stddef.h>
+#include <stdint.h>
+#include "codegen/CodeGenerator.hpp"
 #include "codegen/ConstantDataSnippet.hpp"
-#include "codegen/FrontEnd.hpp"                    // for TR_FrontEnd, etc
-#include "codegen/InstOpCode.hpp"                  // for InstOpCode, etc
-#include "codegen/Instruction.hpp"                 // for Instruction, etc
-#include "codegen/Linkage.hpp"                     // for LinkageBase, etc
+#include "codegen/FrontEnd.hpp"
+#include "codegen/InstOpCode.hpp"
+#include "codegen/Instruction.hpp"
+#include "codegen/Linkage.hpp"
 #include "codegen/LinkageConventionsEnum.hpp"
-#include "codegen/LiveRegister.hpp"                // for TR_LiveRegisters
-#include "codegen/Machine.hpp"                     // for Machine
+#include "codegen/LiveRegister.hpp"
+#include "codegen/Machine.hpp"
 #include "codegen/MemoryReference.hpp"
-#include "codegen/RealRegister.hpp"                // for RealRegister, etc
+#include "codegen/RealRegister.hpp"
 #include "codegen/RecognizedMethods.hpp"
-#include "codegen/Register.hpp"                    // for Register
+#include "codegen/Register.hpp"
 #include "codegen/RegisterConstants.hpp"
 #include "codegen/RegisterDependency.hpp"
 #include "codegen/RegisterDependencyStruct.hpp"
-#include "codegen/RegisterPair.hpp"                // for RegisterPair
-#include "codegen/SystemLinkage.hpp"               // for SystemLinkage
+#include "codegen/RegisterPair.hpp"
+#include "codegen/SystemLinkage.hpp"
 #include "codegen/TreeEvaluator.hpp"
 #include "codegen/S390Evaluator.hpp"
-#include "compile/Compilation.hpp"                 // for Compilation
+#include "compile/Compilation.hpp"
 #include "compile/SymbolReferenceTable.hpp"
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"
 #include "env/CompilerEnv.hpp"
-#include "env/ObjectModel.hpp"                     // for ObjectModel
+#include "env/ObjectModel.hpp"
 #include "env/TRMemory.hpp"
 #include "env/jittypes.h"
-#include "il/Block.hpp"                            // for Block
-#include "il/DataTypes.hpp"                        // for TR::DataType, etc
+#include "il/Block.hpp"
+#include "il/DataTypes.hpp"
 #include "il/ILOpCodes.hpp"
-#include "il/ILOps.hpp"                            // for ILOpCode
-#include "il/Node.hpp"                             // for Node
-#include "il/Node_inlines.hpp"                     // for Node::getDataType, etc
-#include "il/Symbol.hpp"                           // for Symbol, etc
-#include "il/SymbolReference.hpp"                  // for SymbolReference
-#include "il/TreeTop.hpp"                          // for TreeTop
-#include "il/TreeTop_inlines.hpp"                  // for TreeTop::getNode
-#include "il/symbol/AutomaticSymbol.hpp"           // for AutomaticSymbol
+#include "il/ILOps.hpp"
+#include "il/Node.hpp"
+#include "il/Node_inlines.hpp"
+#include "il/Symbol.hpp"
+#include "il/SymbolReference.hpp"
+#include "il/TreeTop.hpp"
+#include "il/TreeTop_inlines.hpp"
+#include "il/symbol/AutomaticSymbol.hpp"
 #include "il/symbol/LabelSymbol.hpp"
-#include "il/symbol/MethodSymbol.hpp"              // for MethodSymbol
-#include "il/symbol/ParameterSymbol.hpp"           // for ParameterSymbol
+#include "il/symbol/MethodSymbol.hpp"
+#include "il/symbol/ParameterSymbol.hpp"
 #include "il/symbol/RegisterMappedSymbol.hpp"
 #include "il/symbol/ResolvedMethodSymbol.hpp"
-#include "il/symbol/StaticSymbol.hpp"              // for StaticSymbol
-#include "infra/Assert.hpp"                        // for TR_ASSERT
-#include "infra/BitVector.hpp"                     // for TR_BitVector
-#include "infra/List.hpp"                          // for ListIterator, etc
-#include "ras/Debug.hpp"                           // for TR_DebugBase
+#include "il/symbol/StaticSymbol.hpp"
+#include "infra/Assert.hpp"
+#include "infra/BitVector.hpp"
+#include "infra/List.hpp"
+#include "ras/Debug.hpp"
 #include "runtime/Runtime.hpp"
 #include "z/codegen/CallSnippet.hpp"
 #include "z/codegen/S390GenerateInstructions.hpp"
 #include "z/codegen/S390HelperCallSnippet.hpp"
-#include "z/codegen/S390Instruction.hpp"           // for etc
+#include "z/codegen/S390Instruction.hpp"
 #include "z/codegen/TRSystemLinkage.hpp"
 
 
@@ -395,8 +395,6 @@ OMR::Z::Linkage::saveArguments(void * cursor, bool genBinary, bool InPreProlog, 
    int8_t gprSize = self()->cg()->machine()->getGPRSize();
 
    bool unconditionalSave  = false;
-   bool enableHighWordRA = self()->cg()->supportsHighWordFacility() && !self()->comp()->getOption(TR_DisableHighWordRA);
-
 
    // If we use preexistence or FSD or HCR, then we could be reverting back to the
    // interpreter by creating prePrologue snippets.  In such cases, we need
@@ -414,7 +412,7 @@ OMR::Z::Linkage::saveArguments(void * cursor, bool genBinary, bool InPreProlog, 
    //  -> set means free
    // Keep a list of global registers
    //
-   if (enableHighWordRA)
+   if (self()->cg()->supportsHighWordFacility())
       {
       freeScratchable.init(TR::RealRegister::LastHPR + 1, self()->trMemory());
       globalAllocatedRegisters.init(TR::RealRegister::LastHPR + 1, self()->trMemory());
@@ -577,7 +575,7 @@ OMR::Z::Linkage::saveArguments(void * cursor, bool genBinary, bool InPreProlog, 
          }
 
       if (ai >= 0 &&
-         loadOpCode == TR::InstOpCode::L && enableHighWordRA && self()->getRealRegister(REGNUM(ai))->isHighWordRegister())
+         loadOpCode == TR::InstOpCode::L && self()->cg()->supportsHighWordFacility() && self()->getRealRegister(REGNUM(ai))->isHighWordRegister())
          loadOpCode = TR::InstOpCode::LFH;
 
       if (((self()->isSmallIntParmsAlignedRight() && paramCursor->getType().isIntegral()) ||
@@ -856,8 +854,7 @@ OMR::Z::Linkage::saveArguments(void * cursor, bool genBinary, bool InPreProlog, 
             // Or we have long reg on 31bir, so we need to build the 64bit register from the two
             // arguments (reg + reg) or (reg + mem)
             // also need to take care of longdouble/complex types which takes 2 or more slots
-            if (regNum != ai || ((dtype == TR::Int64) &&
-                self()->cg()->use64BitRegsOn32Bit()))
+            if (regNum != ai || (dtype == TR::Int64 && TR::Compiler->target.is32Bit()))
                {
                //  Global register is available as scratch reg, so make the move
                //
@@ -895,7 +892,7 @@ OMR::Z::Linkage::saveArguments(void * cursor, bool genBinary, bool InPreProlog, 
 #endif
                   else
                      {
-                     if ((dtype == TR::Int64) && self()->cg()->use64BitRegsOn32Bit())
+                     if (dtype == TR::Int64 && TR::Compiler->target.is32Bit())
                         {
                         cursor = generateRSInstruction(self()->cg(), TR::InstOpCode::SLLG, firstNode, self()->getRealRegister(REGNUM(ai)),
                                     self()->getRealRegister(regNum), 32, (TR::Instruction *) cursor);
@@ -926,7 +923,7 @@ OMR::Z::Linkage::saveArguments(void * cursor, bool genBinary, bool InPreProlog, 
                         }
                      else
                         {
-                        if (enableHighWordRA && self()->getRealRegister(REGNUM(ai))->isHighWordRegister())
+                        if (self()->cg()->supportsHighWordFacility() && self()->getRealRegister(REGNUM(ai))->isHighWordRegister())
                            {
                            cursor = generateExtendedHighWordInstruction(firstNode, self()->cg(), TR::InstOpCode::LHLR, self()->getRealRegister(REGNUM(ai)),
                                                           self()->getRealRegister(regNum), 0, (TR::Instruction *) cursor);
@@ -952,8 +949,7 @@ OMR::Z::Linkage::saveArguments(void * cursor, bool genBinary, bool InPreProlog, 
                   // We have to handle the high and low word.  We use two entries
                   // in the busyMoves to represent high and low word.
                   //
-                  if ((dtype == TR::Int64) &&
-                     self()->cg()->use64BitRegsOn32Bit())
+                  if (dtype == TR::Int64 && TR::Compiler->target.is32Bit())
                      {
                      if (fullLong)
                         {
@@ -1115,28 +1111,6 @@ OMR::Z::Linkage::saveArguments(void * cursor, bool genBinary, bool InPreProlog, 
                   busyMoves[4][busyIndex] = opcodeMask;
                   busyIndex++;
                   }
-
-               if (ai_l>=0 && TR::Compiler->target.is32Bit() && !self()->cg()->use64BitRegsOn32Bit())
-                  {
-                  if (freeScratchable.isSet(ai_l))
-                     {
-                     cursor = generateRXInstruction(self()->cg(), TR::InstOpCode::getLoadOpCode(), firstNode,
-                                  self()->getRealRegister(REGNUM(ai_l)),
-                                  generateS390MemoryReference(stackPtr, offset + 4, self()->cg()), (TR::Instruction *) cursor);
-                     ((TR::Instruction*)cursor)->setBinLocalFreeRegs(binLocalRegs);
-
-                     freeScratchable.reset(ai_l);
-                     }
-                  else
-                     {
-                     busyMoves[0][busyIndex] = offset + 4;
-                     busyMoves[1][busyIndex] = ai_l;
-                     busyMoves[2][busyIndex] = 1;
-                     busyMoves[3][busyIndex] = TR::InstOpCode::getLoadOpCode();
-                     busyMoves[4][busyIndex] = 0;
-                     busyIndex++;
-                     }
-                  }
                break;
             case TR::Float:
 #ifdef J9_PROJECT_SPECIFIC
@@ -1241,7 +1215,7 @@ OMR::Z::Linkage::saveArguments(void * cursor, bool genBinary, bool InPreProlog, 
             switch(busyMoves[2][i1])
                {
                case 0: // Reg 2 Reg
-                  if (enableHighWordRA && self()->getRealRegister(REGNUM(target))->isHighWordRegister())
+                  if (self()->cg()->supportsHighWordFacility() && self()->getRealRegister(REGNUM(target))->isHighWordRegister())
                      {
                      cursor = generateExtendedHighWordInstruction(firstNode, self()->cg(), TR::InstOpCode::LHLR, self()->getRealRegister(REGNUM(target)),
                                                                   self()->getRealRegister(REGNUM(source)), 0, (TR::Instruction *) cursor);
@@ -1582,7 +1556,7 @@ OMR::Z::Linkage::copyArgRegister(TR::Node * callNode, TR::Node * child, TR::Regi
 
    TR_Debug * debugObj = self()->cg()->getDebug();
    char * REG_PARAM = "LR=Reg_param";
-   if (TR::Compiler->target.is32Bit() && self()->cg()->use64BitRegsOn32Bit() && child->getDataType() == TR::Int64 && !argRegister->getRegisterPair())
+   if (TR::Compiler->target.is32Bit() && child->getDataType() == TR::Int64 && !argRegister->getRegisterPair())
       {
       TR::Register * tempRegH = self()->cg()->allocateRegister();
       TR::Register * tempRegL = self()->cg()->allocateRegister();
@@ -1606,55 +1580,29 @@ OMR::Z::Linkage::copyArgRegister(TR::Node * callNode, TR::Node * child, TR::Regi
       }
    else if (!self()->cg()->canClobberNodesRegister(child, 0))
       {
-      if (TR::Compiler->target.is32Bit() && child->getDataType() == TR::Int64)
+      if (argRegister->containsCollectedReference())
          {
-         TR_ASSERT_FATAL(!self()->cg()->use64BitRegsOn32Bit(), "Long values should not be passed in register pairs, they can be stored in a single GPR");
-         TR::Register * tempRegH = self()->cg()->allocateRegister();
-         TR::Register * tempRegL = self()->cg()->allocateRegister();
-
-         cursor = generateRRInstruction(self()->cg(), copyOpCode,
-             callNode, tempRegH, argRegister->getRegisterPair()->getHighOrder());
-         if (debugObj)
-            {
-            debugObj->addInstructionComment(toS390RRInstruction(cursor), REG_PARAM);
-            }
-
-         cursor = generateRRInstruction(self()->cg(), copyOpCode,
-           callNode, tempRegL, argRegister->getRegisterPair()->getLowOrder());
-         if (debugObj)
-            {
-            debugObj->addInstructionComment(toS390RRInstruction(cursor), REG_PARAM);
-            }
-
-         tempRegister = self()->cg()->allocateConsecutiveRegisterPair(tempRegL, tempRegH);
-         self()->cg()->stopUsingRegister(tempRegister);
+         tempRegister = self()->cg()->allocateCollectedReferenceRegister();
+         }
+      else if (argRegister->getKind() == TR_FPR)
+         {
+         TR_ASSERT(argRegister->getRegisterPair() == NULL, "No longer should have regpair arg here");
+         if ( argRegister->getRegisterPair() == NULL )
+            tempRegister = self()->cg()->allocateRegister(TR_FPR);
          }
       else
          {
-         if (argRegister->containsCollectedReference())
-            {
-            tempRegister = self()->cg()->allocateCollectedReferenceRegister();
-            }
-         else if (argRegister->getKind() == TR_FPR)
-            {
-            TR_ASSERT(argRegister->getRegisterPair() == NULL, "No longer should have regpair arg here");
-            if ( argRegister->getRegisterPair() == NULL )
-               tempRegister = self()->cg()->allocateRegister(TR_FPR);
-            }
-         else
-            {
-            tempRegister = self()->cg()->allocateRegister();
-            }
+         tempRegister = self()->cg()->allocateRegister();
+         }
 
-            cursor = generateRRInstruction(self()->cg(), copyOpCode, callNode, tempRegister, argRegister);
+         cursor = generateRRInstruction(self()->cg(), copyOpCode, callNode, tempRegister, argRegister);
 
-         if ((argRegister->getKind() == TR_FPR) && ( argRegister->getRegisterPair() != NULL ))
-               self()->cg()->stopUsingRegister(tempRegister);
+      if ((argRegister->getKind() == TR_FPR) && ( argRegister->getRegisterPair() != NULL ))
+            self()->cg()->stopUsingRegister(tempRegister);
 
-         if (debugObj)
-            {
-            debugObj->addInstructionComment(toS390RRInstruction(cursor), REG_PARAM);
-            }
+      if (debugObj)
+         {
+         debugObj->addInstructionComment(toS390RRInstruction(cursor), REG_PARAM);
          }
       self()->cg()->stopUsingRegister(argRegister);
       argRegister = tempRegister;
@@ -2466,16 +2414,8 @@ OMR::Z::Linkage::buildArgs(TR::Node * callNode, TR::RegisterDependencyConditions
                {
                //In this case, private and system linkage use same regs for return value
                TR::Register * resultRegLow = self()->cg()->allocateRegister();
-               TR::Register * resultRegHigh =  NULL;
+               TR::Register * resultRegHigh = self()->cg()->allocateRegister();
 
-               if (self()->cg()->use64BitRegsOn32Bit())
-                  {
-                  resultRegHigh = self()->cg()->allocate64bitRegister();
-                  }
-               else
-                  {
-                  resultRegHigh = self()->cg()->allocateRegister();
-                  }
                self()->cg()->setRealRegisterAssociation(resultRegLow, self()->getLongLowReturnRegister());
                dependencies->addPostCondition(resultRegLow, self()->getLongLowReturnRegister(),DefinesDependentRegister);
                killMask &= (~(0x1L << REGINDEX(self()->getLongLowReturnRegister())));
@@ -2538,39 +2478,36 @@ OMR::Z::Linkage::buildArgs(TR::Node * callNode, TR::RegisterDependencyConditions
          }
       }
 
-   if (self()->cg()->supportsHighWordFacility() && !self()->comp()->getOption(TR_DisableHighWordRA))
+   dummyReg = NULL;
+   self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR0), self()->cg(), true, true );
+   self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR1), self()->cg(), true, true );
+   self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR2), self()->cg(), true, true );
+   self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR3), self()->cg(), true, true );
+   self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR14), self()->cg(), true, true );
+
+   // consider all HPR volatile on 31-bit
+   if (TR::Compiler->target.is32Bit())
       {
-      dummyReg = NULL;
-      self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR0), self()->cg(), true, true );
-      self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR1), self()->cg(), true, true );
-      self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR2), self()->cg(), true, true );
-      self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR3), self()->cg(), true, true );
-      self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR14), self()->cg(), true, true );
+      self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR6), self()->cg(), true, true );
+      self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR7), self()->cg(), true, true );
+      self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR8), self()->cg(), true, true );
+      self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR9), self()->cg(), true, true );
+      self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR10), self()->cg(), true, true );
+      self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR11), self()->cg(), true, true );
+      self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR12), self()->cg(), true, true );
+      }
 
-      // consider all HPR volatile on 31-bit
-      if (TR::Compiler->target.is32Bit())
+   if (TR::Compiler->target.isZOS())
+      {
+      self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR15), self()->cg(), true, true );
+      if (self()->cg()->supportsJITFreeSystemStackPointer())
          {
-         self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR6), self()->cg(), true, true );
-         self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR7), self()->cg(), true, true );
-         self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR8), self()->cg(), true, true );
-         self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR9), self()->cg(), true, true );
-         self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR10), self()->cg(), true, true );
-         self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR11), self()->cg(), true, true );
-         self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR12), self()->cg(), true, true );
+         self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR4),self()->cg(), true, true );
          }
-
-      if (TR::Compiler->target.isZOS())
-         {
-         self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR15), self()->cg(), true, true );
-         if (self()->cg()->supportsJITFreeSystemStackPointer())
-            {
-            self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR4),self()->cg(), true, true );
-            }
-         }
-      else
-         {
-         self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR4), self()->cg(), true, true );
-         }
+      }
+   else
+      {
+      self()->killAndAssignRegister(killMask, dependencies, &dummyReg, REGNUM(TR::RealRegister::HPR4), self()->cg(), true, true );
       }
 
    // spill all overlapped vector registers if vector linkage is enabled
@@ -2588,11 +2525,12 @@ OMR::Z::Linkage::buildArgs(TR::Node * callNode, TR::RegisterDependencyConditions
 
    // spill all high regs
    //
-   if (self()->cg()->use64BitRegsOn32Bit())
+   if (TR::Compiler->target.is32Bit())
       {
       TR::Register *reg = self()->cg()->allocateRegister();
 
       dependencies->addPostCondition(reg, TR::RealRegister::KillVolHighRegs);
+      self()->cg()->stopUsingRegister(reg);
       }
 
    // Adjust largest outgoing argument area
@@ -2760,8 +2698,8 @@ OMR::Z::Linkage::setupRegisterDepForLinkage(TR::Node * callNode, TR_DispatchType
    {
    int32_t numDeps = systemLinkage->getNumberOfDependencyGPRegisters();
 
-   if (self()->cg()->supportsHighWordFacility() && !self()->comp()->getOption(TR_DisableHighWordRA))
-      numDeps += 16; //HPRs need to be spilled
+   numDeps += 16; //HPRs need to be spilled
+
    if (self()->cg()->getSupportsVectorRegisters())
       numDeps += 32; //VRFs need to be spilled
 
@@ -2945,13 +2883,10 @@ OMR::Z::Linkage::lockRegister(TR::RealRegister * lpReal)
    lpReal->setAssignedRegister(lpReal);
    lpReal->setHasBeenAssignedInMethod(true);
 
-   if (self()->cg()->supportsHighWordFacility() && !self()->comp()->getOption(TR_DisableHighWordRA) && TR::Compiler->target.is64Bit())
-      {
-      TR::RealRegister * lpRealHigh = toRealRegister(lpReal)->getHighWordRegister();
-      lpRealHigh->setState(TR::RealRegister::Locked);
-      lpRealHigh->setAssignedRegister(lpRealHigh);
-      lpRealHigh->setHasBeenAssignedInMethod(true);
-      }
+   TR::RealRegister * lpRealHigh = toRealRegister(lpReal)->getHighWordRegister();
+   lpRealHigh->setState(TR::RealRegister::Locked);
+   lpRealHigh->setAssignedRegister(lpRealHigh);
+   lpRealHigh->setHasBeenAssignedInMethod(true);
    }
 
 void
@@ -2962,13 +2897,10 @@ OMR::Z::Linkage::unlockRegister(TR::RealRegister * lpReal)
    lpReal->setAssignedRegister(NULL);
    lpReal->setHasBeenAssignedInMethod(false);
 
-   if (self()->cg()->supportsHighWordFacility() && !self()->comp()->getOption(TR_DisableHighWordRA))
-      {
-      TR::RealRegister * lpRealHigh = toRealRegister(lpReal)->getHighWordRegister();
-      lpRealHigh->resetState(TR::RealRegister::Free);
-      lpRealHigh->setAssignedRegister(NULL);
-      lpRealHigh->setHasBeenAssignedInMethod(false);
-      }
+   TR::RealRegister * lpRealHigh = toRealRegister(lpReal)->getHighWordRegister();
+   lpRealHigh->resetState(TR::RealRegister::Free);
+   lpRealHigh->setAssignedRegister(NULL);
+   lpRealHigh->setHasBeenAssignedInMethod(false);
    }
 
 bool OMR::Z::Linkage::needsAlignment(TR::DataType dt, TR::CodeGenerator * cg)
@@ -3003,9 +2935,7 @@ OMR::Z::Linkage::getFirstSavedRegister(int32_t fromreg, int32_t toreg)
    TR::RealRegister::RegNum firstUsedReg = TR::RealRegister::NoReg;
 
    // if the first saved reg is an HPR, we will return the corresponding GPR
-   bool checkHPR = (self()->cg()->supportsHighWordFacility() &&
-                    !self()->comp()->getOption(TR_DisableHighWordRA) &&
-                    (self()->getRealRegister(REGNUM(fromreg)))->isLowWordRegister() &&
+   bool checkHPR = ((self()->getRealRegister(REGNUM(fromreg)))->isLowWordRegister() &&
                     (self()->getRealRegister(REGNUM(toreg)))->isLowWordRegister());
    for (int32_t i = fromreg; i <= toreg; ++i)
       {
@@ -3029,9 +2959,7 @@ OMR::Z::Linkage::getLastSavedRegister(int32_t fromreg, int32_t toreg)
    TR::RealRegister::RegNum lastUsedReg = TR::RealRegister::NoReg;
 
    // if the last saved reg is an HPR, we will return the corresponding GPR
-   bool checkHPR = (self()->cg()->supportsHighWordFacility() &&
-                    !self()->comp()->getOption(TR_DisableHighWordRA) &&
-                    (self()->getRealRegister(REGNUM(fromreg)))->isLowWordRegister() &&
+   bool checkHPR = ((self()->getRealRegister(REGNUM(fromreg)))->isLowWordRegister() &&
                     (self()->getRealRegister(REGNUM(toreg)))->isLowWordRegister());
 
    for (int32_t i = fromreg; i <= toreg; ++i)

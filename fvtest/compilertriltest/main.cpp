@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2017 IBM Corp. and others
+ * Copyright (c) 2017, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -26,32 +26,26 @@ extern "C" {
 int omr_main_entry(int argc, char **argv, char **envp);
 }
 
-extern bool internal_initializeJit();
-extern bool internal_initializeJitWithOptions(char *options);
-extern int32_t internal_compileMethodBuilder(TR::MethodBuilder * methodBuilder, void ** entryPoint);
-extern void internal_shutdownJit();
+OMRPortLibrary TRTest::TestWithPortLib::PortLib;
+omrthread_t TRTest::TestWithPortLib::current_thread = NULL;
 
-bool initializeJit() {
-   auto ret = internal_initializeJit();
-   return ret;
-}
+/**
+ * @brief Global test environment to initialize and shutdown the port library
+ */
+class JitTestEnvironment: public ::testing::Environment {
+   public:
+   virtual void SetUp() {
+      TRTest::TestWithPortLib::initPortLib();
+   }
 
-bool initializeJitWithOptions(char * options) {
-auto ret = internal_initializeJitWithOptions(options);
-return ret;
-}
-
-int32_t compileMethodBuilder(TR::MethodBuilder * methodBuilder, void ** entryPoint) {
-   auto ret = internal_compileMethodBuilder(methodBuilder, entryPoint);
-   return ret;
-}
-
-void shutdownJit() {
-   internal_shutdownJit();
-}
+   virtual void TearDown() {
+      TRTest::TestWithPortLib::shutdownPortLib();
+   }
+};
 
 int omr_main_entry(int argc, char **argv, char **envp) {
    ::testing::InitGoogleTest(&argc, argv);
    OMREventListener::setDefaultTestListener();
+   ::testing::AddGlobalTestEnvironment(new JitTestEnvironment);
    return RUN_ALL_TESTS();
 }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -35,8 +35,8 @@
 #include "codegen/Register.hpp"
 #include "codegen/RegisterPair.hpp"
 #include "codegen/TreeEvaluator.hpp"
-#include "compile/VirtualGuard.hpp"               // for TR_VirtualGuard
-#include "env/jittypes.h"                         // for intptrj_t
+#include "compile/VirtualGuard.hpp"
+#include "env/jittypes.h"
 #include "env/CompilerEnv.hpp"
 #include "il/Block.hpp"
 #include "il/Node.hpp"

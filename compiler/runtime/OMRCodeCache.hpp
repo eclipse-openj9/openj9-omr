@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -32,13 +32,13 @@ namespace OMR { class CodeCache; }
 namespace OMR { typedef CodeCache CodeCacheConnector; }
 #endif
 
-#include <stddef.h>                            // for size_t
-#include <stdint.h>                            // for uint8_t, int32_t, etc
-#include "env/defines.h"                       // for HOST_OS, OMR_LINUX, etc
-#include "il/DataTypes.hpp"                    // for TR_YesNoMaybe
-#include "infra/CriticalSection.hpp"           // for CriticalSection
-#include "runtime/CodeCacheConfig.hpp"         // for CodeCacheConfig
-#include "runtime/Runtime.hpp"                 // for TR_CCPreLoadedCode, etc
+#include <stddef.h>
+#include <stdint.h>
+#include "env/defines.h"
+#include "il/DataTypes.hpp"
+#include "infra/CriticalSection.hpp"
+#include "runtime/CodeCacheConfig.hpp"
+#include "runtime/Runtime.hpp"
 #include "runtime/CodeCacheTypes.hpp"
 
 class TR_OpaqueMethodBlock;
@@ -116,7 +116,6 @@ public:
                                uint8_t **coldCode,
                                bool needsToBeContiguous,
                                bool isMethodHeaderNeeded=true);
-   bool resizeCodeMemory(void *memoryBlock, size_t newSize);
 
    /**
     * @brief Trims the size of the previously allocated code memory in this
@@ -145,9 +144,22 @@ public:
    TR_YesNoMaybe almostFull()                 { return _almostFull; }
    void setAlmostFull(TR_YesNoMaybe fullness) { _almostFull = fullness; }
 
-   CodeCacheTrampolineCode *reserveTrampoline();
+   /**
+    * @brief Reserve space for a trampoline in the current code cache
+    *
+    * @return The returned trampoline pointer is meaningless and should not
+    *         be used to create trampoline code in just yet.
+    */
+   CodeCacheTrampolineCode *reserveSpaceForTrampoline();
+
    CodeCacheErrorCode::ErrorCode reserveNTrampolines(int64_t n);
-   void unreserveTrampoline();
+
+   /**
+    * @brief Reclaim the previously reserved space for a single trampoline in the
+    *        current code cache.
+    */
+   void unreserveSpaceForTrampoline();
+
    CodeCacheTrampolineCode *allocateTrampoline();
    CodeCacheTrampolineCode *allocateTempTrampoline();
    CodeCacheTrampolineCode *findTrampoline(TR_OpaqueMethodBlock *method);
@@ -204,11 +216,6 @@ public:
    void *                     getCCPreLoadedCodeAddress(TR_CCPreLoadedCode h, TR::CodeGenerator *cg);
 
    TR::CodeCacheMemorySegment *segment() { return _segment; }
-
-   bool                       initialize(TR::CodeCacheManager *manager,
-                                         TR::CodeCacheMemorySegment *codeCacheSegment,
-                                         size_t codeCacheSizeAllocated,
-                                         CodeCacheHashEntrySlab *hashEntrySlab);
 
    /**
     * @brief Initialize an allocated CodeCache object

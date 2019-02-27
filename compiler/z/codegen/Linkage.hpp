@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2016 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -24,8 +24,8 @@
 
 #include "codegen/OMRLinkage.hpp"
 
-#include "codegen/LinkageConventionsEnum.hpp"  // for TR_LinkageConventions
-#include "infra/Annotations.hpp"               // for OMR_EXTENSIBLE
+#include "codegen/LinkageConventionsEnum.hpp"
+#include "infra/Annotations.hpp"
 
 namespace TR { class CodeGenerator; }
 

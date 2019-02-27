@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -31,21 +31,21 @@ namespace OMR { class Node; }
 namespace OMR { typedef OMR::Node NodeConnector; }
 #endif
 
-#include <limits.h>                       // for UINT_MAX, USHRT_MAX
-#include <stddef.h>                       // for size_t
-#include <stdint.h>                       // for uint16_t, int32_t, int64_t
-#include <string.h>                       // for memset
-#include "codegen/RegisterConstants.hpp"  // for TR_GlobalRegisterNumber
-#include "cs2/hashtab.h"                  // for HashTable
-#include "env/TRMemory.hpp"               // for TR_ArenaAllocator
-#include "il/DataTypes.hpp"               // for DataTypes, etc
-#include "il/ILOpCodes.hpp"               // for ILOpCodes
-#include "il/ILOps.hpp"                   // for ILOpCode
-#include "il/NodeUnions.hpp"              // for UnionedWithChildren
-#include "infra/Annotations.hpp"          // for OMR_EXTENSIBLE
-#include "infra/Assert.hpp"               // for TR_ASSERT
-#include "infra/Flags.hpp"                // for flags32_t
-#include "infra/TRlist.hpp"               // for TR::list
+#include <limits.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
+#include "codegen/RegisterConstants.hpp"
+#include "cs2/hashtab.h"
+#include "env/TRMemory.hpp"
+#include "il/DataTypes.hpp"
+#include "il/ILOpCodes.hpp"
+#include "il/ILOps.hpp"
+#include "il/NodeUnions.hpp"
+#include "infra/Annotations.hpp"
+#include "infra/Assert.hpp"
+#include "infra/Flags.hpp"
+#include "infra/TRlist.hpp"
 
 class TR_BitVector;
 class TR_Debug;
@@ -514,8 +514,6 @@ public:
    bool                   uses64BitGPRs();
 
    bool                   isRematerializable(TR::Node *parent, bool onlyConsiderOpCode);
-
-   bool                   canEvaluate();
 
    bool                   isDoNotPropagateNode();
    bool                   containsDoNotPropagateNode(vcount_t vc);

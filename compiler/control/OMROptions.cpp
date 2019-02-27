@@ -23,36 +23,36 @@
 #include "control/OptionsUtil.hpp"
 #include "control/Options_inlines.hpp"
 
-#include <algorithm>                     // for std::max, etc
-#include <ctype.h>                       // for isdigit
-#include <limits.h>                      // for INT_MAX, USHRT_MAX
-#include <stddef.h>                      // for offsetof
-#include <stdio.h>                       // for sprintf, printf
-#include <stdlib.h>                      // for atoi, malloc, strtol
+#include <algorithm>
+#include <ctype.h>
+#include <limits.h>
+#include <stddef.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include "codegen/CodeGenerator.hpp"
-#include "compile/Compilation.hpp"       // for Compilation, comp
-#include "compile/CompilationTypes.hpp"  // for TR_Hotness
-#include "compile/ResolvedMethod.hpp"    // for TR_ResolvedMethod
-#include "control/OptimizationPlan.hpp"  // for TR_OptimizationPlan
-#include "control/Recompilation.hpp"     // for TR_PersistentJittedBodyInfo, etc
+#include "compile/Compilation.hpp"
+#include "compile/CompilationTypes.hpp"
+#include "compile/ResolvedMethod.hpp"
+#include "control/OptimizationPlan.hpp"
+#include "control/Recompilation.hpp"
 #include "env/CompilerEnv.hpp"
-#include "env/IO.hpp"                    // for IO
-#include "env/ObjectModel.hpp"           // for ObjectModel
-#include "env/Processors.hpp"            // for TR_Processor, etc
-#include "env/defines.h"                 // for TR_HOST_64BIT, TR_HOST_X86
-#include "env/jittypes.h"                // for intptrj_t, uintptrj_t
-#include "il/DataTypes.hpp"              // for DataType, etc
-#include "il/ILOps.hpp"                  // for TR::ILOpCode
+#include "env/IO.hpp"
+#include "env/ObjectModel.hpp"
+#include "env/Processors.hpp"
+#include "env/defines.h"
+#include "env/jittypes.h"
+#include "il/DataTypes.hpp"
+#include "il/ILOps.hpp"
 #include "infra/SimpleRegex.hpp"
-#include "ras/Debug.hpp"                 // for TR_Debug
-#include "ras/IgnoreLocale.hpp"          // for stricmp_ignore_locale, etc
+#include "ras/Debug.hpp"
+#include "ras/IgnoreLocale.hpp"
 
 #if !defined(J9_PROJECT_SPECIFIC)
 #include "env/JitConfig.hpp"
 #endif
 
 #ifdef J9_PROJECT_SPECIFIC
-#include "control/RecompilationInfo.hpp"     // for TR_PersistentJittedBodyInfo, etc
+#include "control/RecompilationInfo.hpp"
 #include "env/VMJ9.h"
 #endif
 
@@ -407,9 +407,6 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"disableLocalVP",                     "O\tdisable local value propagation",                TR::Options::disableOptimization, localValuePropagation, 0, "P"},
    {"disableLocalVPSkipLowFreqBlock",     "O\tDo not skip processing of low frequency blocks in localVP", RESET_OPTION_BIT(TR_EnableLocalVPSkipLowFreqBlock), "F" },
    {"disableLockReservation",             "O\tdisable lock reservation",                       SET_OPTION_BIT(TR_DisableLockResevation), "F"},
-   // For PLX debug use
-   {"disableLongRegAllocation",           "O\tdisable allocation of 64-bit regs on 32-bit",    SET_OPTION_BIT(TR_Disable64BitRegsOn32Bit), "F"},
-   {"disableLongRegAllocationHeuristic",  "O\tdisable heuristic for long register allocation", SET_OPTION_BIT(TR_Disable64BitRegsOn32BitHeuristic), "F"},
    {"disableLookahead",                   "O\tdisable class lookahead",                        SET_OPTION_BIT(TR_DisableLookahead), "P"},
    {"disableLoopAliasRefiner",            "O\tdisable loop alias refinement",                         TR::Options::disableOptimization, loopAliasRefiner, 0, "P"},
    {"disableLoopCanonicalization",        "O\tdisable loop canonicalization",                  TR::Options::disableOptimization, loopCanonicalization, 0, "P"},
@@ -708,7 +705,6 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
        SET_OPTION_BIT(TR_EnableLowerCompilationLimitsDecisionMaking), "F", NOT_IN_SUBSET},
    {"enableMetadataBytecodePCToIAMap",   "O\tenable bytecode pc to IA map in the metadata", SET_OPTION_BIT(TR_EnableMetadataBytecodePCToIAMap), "F", NOT_IN_SUBSET},
    {"enableMetadataReclamation",         "I\tenable J9JITExceptionTable reclamation", RESET_OPTION_BIT(TR_DisableMetadataReclamation), "F", NOT_IN_SUBSET},
-   {"enableMethodTrampolineReservation", "O\tReserve method trampolines even if they are not needed; only applicable on x86 and zLinux", SET_OPTION_BIT(TR_EnableMethodTrampolineReservation), "F"},
    {"enableMHCustomizationLogicCalls",   "C\tinsert calls to MethodHandle.doCustomizationLogic for handle invocations outside of thunks", SET_OPTION_BIT(TR_EnableMHCustomizationLogicCalls), "F"},
    {"enableMonitorCacheLookup",          "O\tenable  monitor cache lookup under lock nursery ",                       SET_OPTION_BIT(TR_EnableMonitorCacheLookup), "F"},
    {"enableMultipleGCRPeriods",          "M\tallow JIT to get in and out of GCR", SET_OPTION_BIT(TR_EnableMultipleGCRPeriods), "F", NOT_IN_SUBSET},
@@ -737,8 +733,6 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"enableReorderArrayIndexExpr",        "O\treorder array index expressions to encourage hoisting", TR::Options::enableOptimization, reorderArrayExprGroup, 0, "P"},
    {"enableRIEMIT",                       "O\tAllows the z Codegen to emit RIEMIT instructions", SET_OPTION_BIT(TR_EnableRIEMIT), "F", NOT_IN_SUBSET},
    {"enableRMODE64",                      "O\tEnable residence mode of compiled bodies on z/OS to reside above the 2-gigabyte bar", SET_OPTION_BIT(TR_EnableRMODE64), "F"},
-   {"enableRubyCodeCacheReclamation",     "O\tEnable Tiered Compilation on Ruby", SET_OPTION_BIT(TR_EnableRubyCodeCacheReclamation), "F", NOT_IN_SUBSET},
-   {"enableRubyTieredCompilation",        "O\tEnable Tiered Compilation on Ruby", SET_OPTION_BIT(TR_EnableRubyTieredCompilation), "F", NOT_IN_SUBSET},
    {"enableSamplingJProfiling=",          "R\tenable generation of profiling code by the JIT", TR::Options::setSamplingJProfilingBits, 0, 0, "F", NOT_IN_SUBSET},
    {"enableSCHint=","R<nnn>\tOverride default SC Hints to user-specified hints", TR::Options::set32BitHexadecimal, offsetof(OMR::Options, _enableSCHintFlags), 0, "F%d"},
    {"enableScorchInterpBlkFreqProfiling",   "R\tenable profiling blocks in the jit", SET_OPTION_BIT(TR_EnableScorchInterpBlockFrequencyProfiling), "F"},
@@ -789,7 +783,6 @@ TR::OptionTable OMR::Options::_jitOptions[] = {
    {"forceFullSpeedDebug", "M\tForce JIT to pretend that debug mode is activated",
     SET_OPTION_BIT(TR_FullSpeedDebug), "P", NOT_IN_SUBSET},
    {"forceIEEEDivideByZeroException", "O\tForce IEEE divide by zero exception bit on when performing DFP division", SET_OPTION_BIT(TR_ForceIEEEDivideByZeroException), "F"},
-   {"forceLargeRAMoves", "O\tAlways use 64 bit register moves in RA", SET_OPTION_BIT(TR_ForceLargeRAMoves), "F"},
    {"forceLoadAOT", "M\tForce loading of relocatable code outside of class load phase from the shared cache",
     SET_OPTION_BIT(TR_ForceLoadAOT), "P", NOT_IN_SUBSET},
    {"forceNonSMP",                           "D\tforce UniP code generation.", SET_OPTION_BIT(TR_ForceNonSMP), "F"},
@@ -2482,17 +2475,10 @@ OMR::Options::jitPreProcess()
    self()->setOption(TR_DisableIntrinsics);
 #endif
 
-#if defined(RUBY_PROJECT_SPECIFIC)
-   // Ruby has been known to spawn other Ruby VMs.  Log filenames must be unique
-   // or corruption will occur.
-   //
-   bool forceSuffixLogs = true;
-#else
 #if defined(DEBUG) || defined(PROD_WITH_ASSUMES)
    bool forceSuffixLogs = false;
 #else
    bool forceSuffixLogs = true;
-#endif
 #endif
 
    if (forceSuffixLogs)

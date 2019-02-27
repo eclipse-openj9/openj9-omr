@@ -704,6 +704,7 @@ OMR_GC_MODRON_SCAVENGER
 OMR_GC_MODRON_CONCURRENT_MARK
 OMR_GC_MODRON_COMPACTION
 OMR_GC_DYNAMIC_CLASS_UNLOADING
+OMR_GC_SCAVENGER_DELEGATE
 OMR_THR_TRACING
 OMR_THR_LOCK_NURSERY
 OMR_THR_JLM_HOLD_TIMES
@@ -729,7 +730,7 @@ OMR_THREAD
 OMR_PORT
 OMR_TEST_COMPILER
 OMR_JITBUILDER
-OMR_JIT
+OMR_COMPILER
 OMR_GC
 ac_ct_CXX
 CXXFLAGS
@@ -825,7 +826,7 @@ enable_tracegen
 enable_native_encoding
 enable_auto_build_flag
 enable_OMR_GC
-enable_OMR_JIT
+enable_OMR_COMPILER
 enable_OMR_JITBUILDER
 enable_OMR_TEST_COMPILER
 enable_OMR_PORT
@@ -851,6 +852,7 @@ enable_OMR_THR_JLM
 enable_OMR_THR_JLM_HOLD_TIMES
 enable_OMR_THR_LOCK_NURSERY
 enable_OMR_THR_TRACING
+enable_OMR_GC_SCAVENGER_DELEGATE
 enable_OMR_GC_DYNAMIC_CLASS_UNLOADING
 enable_OMR_GC_MODRON_COMPACTION
 enable_OMR_GC_MODRON_CONCURRENT_MARK
@@ -1567,7 +1569,7 @@ Optional Features:
                           are not explicitly enabled or disabled. (Default:
                           yes)
   --disable-OMR_GC        Enable building the OMR GC. (Default: yes)
-  --enable-OMR_JIT        Enable building the OMR JIT. (Default: no)
+  --enable-OMR_COMPILER   Enable building the OMR Compiler. (Default: no)
   --enable-OMR_JITBUILDER Enable building JitBuilder. (Default: no)
   --enable-OMR_TEST_COMPILER
                           Enable building the Test compiler. (Default: no)
@@ -1611,6 +1613,8 @@ Optional Features:
   --disable-OMR_THR_LOCK_NURSERY
 
   --enable-OMR_THR_TRACING
+
+  --enable-OMR_GC_SCAVENGER_DELEGATE
 
   --enable-OMR_GC_DYNAMIC_CLASS_UNLOADING
 
@@ -5330,20 +5334,20 @@ else
 fi
 
 
-# Check whether --enable-OMR_JIT was given.
-if test "${enable_OMR_JIT+set}" = set; then :
-  enableval=$enable_OMR_JIT; if test "x${enableval}" = xyes; then :
-  OMR_JIT=1
+# Check whether --enable-OMR_COMPILER was given.
+if test "${enable_OMR_COMPILER+set}" = set; then :
+  enableval=$enable_OMR_COMPILER; if test "x${enableval}" = xyes; then :
+  OMR_COMPILER=1
 
-   $as_echo "#define OMR_JIT 1" >>confdefs.h
+   $as_echo "#define OMR_COMPILER 1" >>confdefs.h
 
 else
-  OMR_JIT=0
+  OMR_COMPILER=0
 
 
 fi
 else
-  OMR_JIT=0
+  OMR_COMPILER=0
 
 
 fi
@@ -5875,6 +5879,25 @@ fi
 
 ############### Flags that are conditionally enabled.
 # Each flag must have a corresponding entry in omrcfg.h.in
+
+# Check whether --enable-OMR_GC_SCAVENGER_DELEGATE was given.
+if test "${enable_OMR_GC_SCAVENGER_DELEGATE+set}" = set; then :
+  enableval=$enable_OMR_GC_SCAVENGER_DELEGATE; if test "x${enableval}" = xyes; then :
+  OMR_GC_SCAVENGER_DELEGATE=1
+
+   $as_echo "#define OMR_GC_SCAVENGER_DELEGATE 1" >>confdefs.h
+
+else
+  OMR_GC_SCAVENGER_DELEGATE=0
+
+
+fi
+else
+  OMR_GC_SCAVENGER_DELEGATE=0
+
+
+fi
+
 
 # Check whether --enable-OMR_GC_DYNAMIC_CLASS_UNLOADING was given.
 if test "${enable_OMR_GC_DYNAMIC_CLASS_UNLOADING+set}" = set; then :

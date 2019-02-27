@@ -43,4 +43,5 @@ compiler_library(aarch64
 	${CMAKE_CURRENT_LIST_DIR}/codegen/UnaryEvaluator.cpp
 	${CMAKE_CURRENT_LIST_DIR}/env/OMRCPU.cpp
 	${CMAKE_CURRENT_LIST_DIR}/env/OMRDebugEnv.cpp
+	${CMAKE_CURRENT_LIST_DIR}/runtime/CodeSync.cpp
 )

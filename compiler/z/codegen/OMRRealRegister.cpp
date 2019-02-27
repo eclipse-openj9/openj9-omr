@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -27,13 +27,13 @@
 #pragma csect(STATIC,"TRZRealRegtBase#S")
 #pragma csect(TEST,"TRZRealRegBase#T")
 
-#include <stddef.h>                        // for NULL
-#include <stdint.h>                        // for uint32_t, int32_t, uint8_t, etc
-#include "codegen/RealRegister.hpp"        // for RealRegister, etc
-#include "codegen/Register.hpp"            // for Register
-#include "codegen/RegisterConstants.hpp"   // for TR_RegisterKinds, etc
-#include "infra/Assert.hpp"                // for TR_ASSERT
-#include "z/codegen/EndianConversion.hpp"  // for boi
+#include <stddef.h>
+#include <stdint.h>
+#include "codegen/RealRegister.hpp"
+#include "codegen/Register.hpp"
+#include "codegen/RegisterConstants.hpp"
+#include "infra/Assert.hpp"
+#include "z/codegen/EndianConversion.hpp"
 
 namespace TR { class CodeGenerator; }
 
@@ -149,7 +149,7 @@ OMR::Z::RealRegister::getSiblingWordRegister()
 bool
 OMR::Z::RealRegister::setHasBeenAssignedInMethod(bool b)
    {
-   if (self()->getAssignedRegister() && (self()->getAssignedRegister()->isUpperBitsAreDirty() || self()->getAssignedRegister()->getKind() == TR_GPR64) )
+   if (self()->getAssignedRegister() && self()->getAssignedRegister()->isUpperBitsAreDirty())
       (b)? self()->setAssignedHigh(true) : self()->setAssignedHigh(false);
 
    return OMR::RealRegister::setHasBeenAssignedInMethod(b); //call base class

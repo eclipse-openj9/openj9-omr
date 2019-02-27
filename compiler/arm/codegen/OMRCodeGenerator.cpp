@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -822,4 +822,12 @@ bool OMR::ARM::CodeGenerator::shouldValueBeInACommonedNode(int64_t value)
 bool OMR::ARM::CodeGenerator::isGlobalRegisterAvailable(TR_GlobalRegisterNumber i, TR::DataType dt)
    {
    return self()->machine()->getRealRegister((TR::RealRegister::RegNum)self()->getGlobalRegister(i))->getState() == TR::RealRegister::Free;
+   }
+
+bool
+OMR::ARM::CodeGenerator::directCallRequiresTrampoline(intptrj_t targetAddress, intptrj_t sourceAddress)
+   {
+   return
+      !TR::Compiler->target.cpu.isTargetWithinBranchImmediateRange(targetAddress, sourceAddress) ||
+      self()->comp()->getOption(TR_StressTrampolines);
    }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -35,18 +35,18 @@ namespace OMR { typedef OMR::Z::Instruction InstructionConnector; }
 
 #include "compiler/codegen/OMRInstruction.hpp"
 
-#include <stddef.h>                                    // for NULL
-#include <stdint.h>                                    // for uint32_t, etc
-#include "codegen/InstOpCode.hpp"                      // for InstOpCode, InstOpCode::Mnemonic
-#include "codegen/Register.hpp"                        // for Register
+#include <stddef.h>
+#include <stdint.h>
+#include "codegen/InstOpCode.hpp"
+#include "codegen/Register.hpp"
 #include "codegen/RegisterConstants.hpp"
-#include "compile/Compilation.hpp"                     // for Compilation, etc
-#include "cs2/arrayof.h"                               // for ArrayOf
-#include "cs2/hashtab.h"                               // for HashTable, etc
+#include "compile/Compilation.hpp"
+#include "cs2/arrayof.h"
+#include "cs2/hashtab.h"
 #include "cs2/sparsrbit.h"
-#include "env/TRMemory.hpp"                            // for Allocator, etc
-#include "infra/Assert.hpp"                            // for TR_ASSERT
-#include "infra/Flags.hpp"                             // for flags16_t
+#include "env/TRMemory.hpp"
+#include "infra/Assert.hpp"
+#include "infra/Flags.hpp"
 
 class TR_Debug;
 namespace TR { class S390ImmInstruction; }
@@ -143,11 +143,6 @@ class OMR_EXTENSIBLE Instruction : public OMR::Instruction
    bool matchesAnyRegister(TR::Register* reg, TR::Register* instReg);
    bool matchesAnyRegister(TR::Register* reg, TR::Register* instReg1, TR::Register* instReg2);
    bool isDefRegister(TR::Register * reg);
-
-   virtual bool getRegisters(TR::list<TR::Register *> &regs);
-   virtual bool getUsedRegisters(TR::list<TR::Register *> &usedRegs);
-   virtual bool getDefinedRegisters(TR::list<TR::Register *> &defedRegs);
-   virtual bool getKilledRegisters(TR::list<TR::Register *> &killedRegs);
 
    int32_t renameRegister(TR::Register *from, TR::Register *to);
 

@@ -92,13 +92,7 @@ class FEBase : public FECommon
    JitConfig *jitConfig() { return &_config; }
    TR::CodeCacheManager &codeCacheManager() { return _codeCacheManager; }
 
-   virtual TR::CodeCache *getDesignatedCodeCache(TR::Compilation *);
-
-   virtual uint8_t *allocateCodeMemory(TR::Compilation *comp, uint32_t warmCodeSize, uint32_t coldCodeSize,
-                                       uint8_t **coldCode, bool isMethodHeaderNeeded);
    virtual uint8_t * allocateRelocationData(TR::Compilation* comp, uint32_t size);
-
-   virtual intptrj_t indexedTrampolineLookup(int32_t helperIndex, void * callSite);
 
    virtual TR_PersistentMemory       * persistentMemory() { return &_persistentMemory; }
    virtual TR::PersistentInfo * getPersistentInfo() { return _persistentMemory.getPersistentInfo(); }

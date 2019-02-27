@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2017 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -24,15 +24,15 @@
 
 #include "il/symbol/LabelSymbol.hpp"
 
-#include <stddef.h>                         // for size_t
-#include <stdint.h>                         // for uint8_t
-#include <string.h>                         // for memset, memcpy
-#include "codegen/GCRegisterMap.hpp"        // for GCRegisterMap
-#include "env/TRMemory.hpp"                 // for TR_Memory, etc
-#include "env/jittypes.h"                   // for TR_ByteCodeInfo
-#include "il/symbol/AutomaticSymbol.hpp"    // for AutomaticSymbol
-#include "infra/Assert.hpp"                 // for TR_ASSERT
-#include "infra/List.hpp"                   // for List, ListIterator
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
+#include "codegen/GCRegisterMap.hpp"
+#include "env/TRMemory.hpp"
+#include "env/jittypes.h"
+#include "il/symbol/AutomaticSymbol.hpp"
+#include "infra/Assert.hpp"
+#include "infra/List.hpp"
 
 #define DEFAULT_BYTES_OF_MAP_BITS       4
 #define DEFAULT_NUMBER_OF_SLOTS_MAPPED 32

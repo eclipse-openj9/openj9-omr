@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -22,69 +22,69 @@
 #include "compile/SymbolReferenceTable.hpp"
 #include "compile/Compilation.hpp"
 
-#include <stddef.h>                            // for NULL, size_t
-#include <stdint.h>                            // for intptr_t, uint8_t, etc
-#include <stdio.h>                             // for sprintf
-#include <string.h>                            // for strlen, strncmp, etc
-#include "codegen/CodeGenerator.hpp"           // for CodeGenerator
-#include "codegen/FrontEnd.hpp"                // for TR_FrontEnd, feGetEnv
-#include "env/KnownObjectTable.hpp"            // for KnownObjectTable, etc
+#include <stddef.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <string.h>
+#include "codegen/CodeGenerator.hpp"
+#include "codegen/FrontEnd.hpp"
+#include "env/KnownObjectTable.hpp"
 #include "codegen/LinkageConventionsEnum.hpp"
-#include "codegen/Machine.hpp"                 // for Machine
-#include "codegen/RealRegister.hpp"            // for RealRegister
-#include "codegen/RecognizedMethods.hpp"       // for RecognizedMethod, etc
+#include "codegen/Machine.hpp"
+#include "codegen/RealRegister.hpp"
+#include "codegen/RecognizedMethods.hpp"
 #include "codegen/RegisterConstants.hpp"
-#include "compile/Compilation.hpp"             // for Compilation, comp, etc
-#include "compile/Method.hpp"                  // for TR_Method, etc
-#include "compile/ResolvedMethod.hpp"          // for TR_ResolvedMethod
+#include "compile/Compilation.hpp"
+#include "compile/Method.hpp"
+#include "compile/ResolvedMethod.hpp"
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"
 #include "control/Recompilation.hpp"
-#include "cs2/allocator.h"                     // for shared_allocator
-#include "cs2/bitvectr.h"                      // for ABitVector, etc
-#include "cs2/hashtab.h"                       // for HashTable<>::Cursor, etc
+#include "cs2/allocator.h"
+#include "cs2/bitvectr.h"
+#include "cs2/hashtab.h"
 #include "cs2/sparsrbit.h"
 #include "env/ClassEnv.hpp"
 #include "env/CompilerEnv.hpp"
-#include "env/PersistentInfo.hpp"              // for PersistentInfo
+#include "env/PersistentInfo.hpp"
 #include "env/StackMemoryRegion.hpp"
-#include "env/TRMemory.hpp"                    // for TR_HeapMemory, etc
-#include "env/jittypes.h"                      // for intptrj_t, uintptrj_t
+#include "env/TRMemory.hpp"
+#include "env/jittypes.h"
 #include "il/AliasSetInterface.hpp"
-#include "il/Block.hpp"                        // for Block, toBlock
-#include "il/DataTypes.hpp"                    // for DataTypes::Address, etc
-#include "il/ILOpCodes.hpp"                    // for ILOpCodes::New, etc
-#include "il/ILOps.hpp"                        // for ILOpCode
-#include "il/Node.hpp"                         // for Node, etc
-#include "il/Node_inlines.hpp"                 // for Node::getFirstChild, etc
-#include "il/Symbol.hpp"                       // for Symbol, etc
-#include "il/SymbolReference.hpp"              // for SymbolReference, etc
-#include "il/TreeTop.hpp"                      // for TreeTop
-#include "il/TreeTop_inlines.hpp"              // for TreeTop::getNode, etc
-#include "il/symbol/AutomaticSymbol.hpp"       // for AutomaticSymbol
-#include "il/symbol/MethodSymbol.hpp"          // for MethodSymbol, etc
-#include "il/symbol/ParameterSymbol.hpp"       // for ParameterSymbol
-#include "il/symbol/RegisterMappedSymbol.hpp"  // for RegisterMappedSymbol, etc
-#include "il/symbol/ResolvedMethodSymbol.hpp"  // for ResolvedMethodSymbol
-#include "il/symbol/StaticSymbol.hpp"          // for StaticSymbol, etc
-#include "ilgen/IlGen.hpp"                     // for TR_IlGenerator
-#include "infra/Array.hpp"                     // for TR_Array
-#include "infra/Assert.hpp"                    // for TR_ASSERT
-#include "infra/BitVector.hpp"                 // for TR_BitVector, etc
-#include "infra/Cfg.hpp"                       // for CFG, TR_SuccessorIterator, etc
-#include "infra/Flags.hpp"                     // for flags8_t
-#include "infra/Link.hpp"                      // for TR_LinkHead, TR_Pair
-#include "infra/List.hpp"                      // for List, ListIterator, etc
-#include "infra/CfgEdge.hpp"                   // for CFGEdge
-#include "infra/CfgNode.hpp"                   // for CFGNode
-#include "ras/Debug.hpp"                       // for TR_DebugBase
-#include "runtime/Runtime.hpp"                 // for TR_RuntimeHelper, etc
+#include "il/Block.hpp"
+#include "il/DataTypes.hpp"
+#include "il/ILOpCodes.hpp"
+#include "il/ILOps.hpp"
+#include "il/Node.hpp"
+#include "il/Node_inlines.hpp"
+#include "il/Symbol.hpp"
+#include "il/SymbolReference.hpp"
+#include "il/TreeTop.hpp"
+#include "il/TreeTop_inlines.hpp"
+#include "il/symbol/AutomaticSymbol.hpp"
+#include "il/symbol/MethodSymbol.hpp"
+#include "il/symbol/ParameterSymbol.hpp"
+#include "il/symbol/RegisterMappedSymbol.hpp"
+#include "il/symbol/ResolvedMethodSymbol.hpp"
+#include "il/symbol/StaticSymbol.hpp"
+#include "ilgen/IlGen.hpp"
+#include "infra/Array.hpp"
+#include "infra/Assert.hpp"
+#include "infra/BitVector.hpp"
+#include "infra/Cfg.hpp"
+#include "infra/Flags.hpp"
+#include "infra/Link.hpp"
+#include "infra/List.hpp"
+#include "infra/CfgEdge.hpp"
+#include "infra/CfgNode.hpp"
+#include "ras/Debug.hpp"
+#include "runtime/Runtime.hpp"
 
 #ifdef J9_PROJECT_SPECIFIC
 #include "runtime/RuntimeAssumptions.hpp"
 #include "env/CHTable.hpp"
-#include "env/PersistentCHTable.hpp"           // for TR_PersistentCHTable
-#include "env/VMJ9.h"                          // for TR_J9VMBase
+#include "env/PersistentCHTable.hpp"
+#include "env/VMJ9.h"
 #endif
 
 class TR_OpaqueClassBlock;
@@ -955,7 +955,7 @@ OMR::SymbolReferenceTable::methodSymRefFromName(TR::ResolvedMethodSymbol * ownin
    // No existing symref.  Create a new one.
    //
 
-   TR_OpaqueMethodBlock *method = fe()->getMethodFromName(className, methodName, methodSignature, comp()->getCurrentMethod()->getNonPersistentIdentifier());
+   TR_OpaqueMethodBlock *method = fe()->getMethodFromName(className, methodName, methodSignature);
    TR_ASSERT(method, "methodSymRefFromName: method must exist: %s.%s%s", className, methodName, methodSignature);
    TR_ASSERT(kind != TR::MethodSymbol::Virtual, "methodSymRefFromName doesn't support virtual methods"); // Until we're able to look up vtable index
 
@@ -1053,14 +1053,7 @@ OMR::SymbolReferenceTable::findOrCreateTransactionExitSymbolRef(TR::ResolvedMeth
 TR::SymbolReference *
 OMR::SymbolReferenceTable::findOrCreateAsyncCheckSymbolRef(TR::ResolvedMethodSymbol *)
    {
-#ifdef RUBY_PROJECT_SPECIFIC
-   return self()->findOrCreateRubyHelperSymbolRef(RubyHelper_rb_threadptr_execute_interrupts,
-                                          true,    /*canGCandReturn*/
-                                          true,    /*canGCandExcept*/
-                                          false);  /*preservesAllRegisters*/
-#else
    return findOrCreateRuntimeHelper(TR_asyncCheck, true, false, true);
-#endif
    }
 
 TR::SymbolReference *

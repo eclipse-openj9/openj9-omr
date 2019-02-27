@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -19,31 +19,31 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
 
-#include <assert.h>                                // for assert
-#include <limits.h>                                // for UCHAR_MAX
-#include <stddef.h>                                // for size_t
-#include <stdint.h>                                // for uint8_t, uint32_t, etc
-#include <stdio.h>                                 // for printf
-#include <string.h>                                // for NULL, memset, etc
-#include <algorithm>                               // for std::find
-#include "codegen/CodeGenerator.hpp"               // for CodeGenerator, etc
+#include <assert.h>
+#include <limits.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <string.h>
+#include <algorithm>
+#include "codegen/CodeGenerator.hpp"
 #include "codegen/ConstantDataSnippet.hpp"
-#include "codegen/FrontEnd.hpp"                    // for TR_FrontEnd, etc
-#include "codegen/InstOpCode.hpp"                  // for InstOpCode, etc
-#include "codegen/Instruction.hpp"                 // for Instruction, etc
-#include "codegen/Linkage.hpp"                     // for Linkage, etc
-#include "codegen/Machine.hpp"                     // for MAX_IMMEDIATE_VAL, etc
-#include "codegen/MemoryReference.hpp"             // for MemoryReference, etc
-#include "codegen/RealRegister.hpp"                // for RealRegister, etc
-#include "codegen/Register.hpp"                    // for Register
+#include "codegen/FrontEnd.hpp"
+#include "codegen/InstOpCode.hpp"
+#include "codegen/Instruction.hpp"
+#include "codegen/Linkage.hpp"
+#include "codegen/Machine.hpp"
+#include "codegen/MemoryReference.hpp"
+#include "codegen/RealRegister.hpp"
+#include "codegen/Register.hpp"
 #include "codegen/RegisterConstants.hpp"
 #include "codegen/RegisterDependency.hpp"
-#include "codegen/RegisterPair.hpp"                // for RegisterPair
+#include "codegen/RegisterPair.hpp"
 #include "codegen/Relocation.hpp"
-#include "codegen/Snippet.hpp"                     // for Snippet, etc
+#include "codegen/Snippet.hpp"
 #include "codegen/S390Snippets.hpp"
-#include "compile/Compilation.hpp"                 // for Compilation
-#include "compile/ResolvedMethod.hpp"              // for TR_ResolvedMethod
+#include "compile/Compilation.hpp"
+#include "compile/ResolvedMethod.hpp"
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"
 #include "env/CompilerEnv.hpp"
@@ -51,25 +51,26 @@
 #include "env/CHTable.hpp"
 #endif
 #include "env/TRMemory.hpp"
-#include "env/jittypes.h"                          // for TR_ByteCodeInfo, etc
-#include "il/Block.hpp"                            // for Block, toBlock
+#include "env/jittypes.h"
+#include "il/Block.hpp"
 #include "il/ILOpCodes.hpp"
-#include "il/ILOps.hpp"                            // for ILOpCode
-#include "il/Node.hpp"                             // for Node
-#include "il/Symbol.hpp"                           // for Symbol
-#include "il/SymbolReference.hpp"                  // for SymbolReference
-#include "il/symbol/LabelSymbol.hpp"               // for LabelSymbol
-#include "il/symbol/MethodSymbol.hpp"              // for MethodSymbol
+#include "il/ILOps.hpp"
+#include "il/Node.hpp"
+#include "il/Symbol.hpp"
+#include "il/SymbolReference.hpp"
+#include "il/symbol/LabelSymbol.hpp"
+#include "il/symbol/MethodSymbol.hpp"
 #include "il/symbol/ResolvedMethodSymbol.hpp"
-#include "il/symbol/StaticSymbol.hpp"              // for StaticSymbol
-#include "infra/Assert.hpp"                        // for TR_ASSERT
-#include "infra/Bit.hpp"                           // for isOdd
-#include "infra/List.hpp"                          // for List, etc
-#include "infra/CfgEdge.hpp"                       // for CFGEdge
+#include "il/symbol/StaticSymbol.hpp"
+#include "infra/Assert.hpp"
+#include "infra/Bit.hpp"
+#include "infra/List.hpp"
+#include "infra/CfgEdge.hpp"
 #include "optimizer/Structure.hpp"
-#include "ras/Debug.hpp"                           // for TR_DebugBase
+#include "ras/Debug.hpp"
+#include "runtime/CodeCacheManager.hpp"
 #include "runtime/Runtime.hpp"
-#include "z/codegen/EndianConversion.hpp"          // for boi, bos, etc
+#include "z/codegen/EndianConversion.hpp"
 #include "z/codegen/S390GenerateInstructions.hpp"
 #include "z/codegen/S390Instruction.hpp"
 #include "z/codegen/S390OutOfLineCodeSection.hpp"
@@ -899,7 +900,7 @@ TR::S390BranchOnCountInstruction::generateBinaryEncoding()
       distance /= 2;
       doRelocation = true;
       }
-   if (cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) && (binOpCode & 0xFF0F) == 0xCC06) //BRCTH
+   if ((binOpCode & 0xFF0F) == 0xCC06) //BRCTH
       {
       getOpCode().copyBinaryToBuffer(instructionStart);
       *(int32_t *) (cursor + 2) |= boi(distance);
@@ -1969,7 +1970,7 @@ TR::S390RILInstruction::adjustCallOffsetWithTrampoline(int32_t offset, uint8_t *
    // Check to make sure that we can reach our target!  Otherwise, we need to look up appropriate
    // trampoline and branch through the trampoline.
 
-   if (cg()->comp()->getOption(TR_StressTrampolines) || (!CHECK_32BIT_TRAMPOLINE_RANGE(getTargetPtr(), (uintptrj_t)currentInst)))
+   if (cg()->directCallRequiresTrampoline(getTargetPtr(), (intptrj_t)currentInst))
       {
       intptrj_t targetAddr;
 
@@ -1977,11 +1978,13 @@ TR::S390RILInstruction::adjustCallOffsetWithTrampoline(int32_t offset, uint8_t *
       printf("Target: %p,  Cursor: %p, Our Reference # is: %d\n",getTargetPtr(),(uintptrj_t)currentInst,getSymbolReference()->getReferenceNumber());
 #endif
       if (getSymbolReference()->getReferenceNumber() < TR_S390numRuntimeHelpers)
-         targetAddr = cg()->fe()->indexedTrampolineLookup(getSymbolReference()->getReferenceNumber(), (void *)currentInst);
+         targetAddr = TR::CodeCacheManager::instance()->findHelperTrampoline(getSymbolReference()->getReferenceNumber(), (void *)currentInst);
       else
          targetAddr = cg()->fe()->methodTrampolineLookup(cg()->comp(), getSymbolReference(), (void *)currentInst);
 
-      TR_ASSERT(CHECK_32BIT_TRAMPOLINE_RANGE(targetAddr,(uintptrj_t)currentInst), "Local Trampoline must be directly reachable.\n");
+      TR_ASSERT_FATAL(TR::Compiler->target.cpu.isTargetWithinBranchRelativeRILRange(targetAddr, (intptrj_t)currentInst),
+                      "Local trampoline must be directly reachable.");
+
       offsetHalfWords = (int32_t)((targetAddr - (uintptrj_t)currentInst) / 2);
       }
 
@@ -2041,7 +2044,7 @@ TR::S390RILInstruction::generateBinaryEncoding()
 
       i2 = (int32_t)((addr - (uintptrj_t)cursor) / 2);
 
-      if (CHECK_32BIT_TRAMPOLINE_RANGE(getTargetPtr(), (uintptrj_t)cursor))
+      if (TR::Compiler->target.cpu.isTargetWithinBranchRelativeRILRange((intptrj_t)getTargetPtr(), (intptrj_t)cursor))
          {
          getOpCode().copyBinaryToBuffer(instructionStart);
          toRealRegister(getRegisterOperand(1))->setRegister1Field((uint32_t *) cursor);
@@ -2282,7 +2285,7 @@ TR::S390RILInstruction::generateBinaryEncoding()
             // Check to make sure that we can reach our target!  Otherwise, we
             // need to look up appropriate trampoline and branch through the
             // trampoline.
-            if (!isImmediateOffsetInBytes() && !CHECK_32BIT_TRAMPOLINE_RANGE(getTargetPtr(), (uintptrj_t)cursor))
+            if (!isImmediateOffsetInBytes() && !TR::Compiler->target.cpu.isTargetWithinBranchRelativeRILRange((intptrj_t)getTargetPtr(), (intptrj_t)cursor))
                {
                intptrj_t targetAddr = ((intptrj_t)(cursor) + ((intptrj_t)(i2) * 2));
                TR_ASSERT( targetAddr != getTargetPtr(), "LARL is correct already!\n");
@@ -3232,10 +3235,7 @@ bool
 TR::S390MemInstruction::refsRegister(TR::Register * reg)
    {
    // 64bit mem refs clobber high word regs
-   TR::Compilation *comp = cg()->comp();
-   bool enableHighWordRA = cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) &&
-                           reg->getKind() != TR_FPR && reg->getKind() != TR_VRF;
-   if (enableHighWordRA && reg->getRealRegister() && TR::Compiler->target.is64Bit())
+   if (reg->getKind() != TR_FPR && reg->getKind() != TR_VRF && reg->getRealRegister())
       {
       TR::RealRegister * realReg = (TR::RealRegister *)reg;
       TR::Register * regMem = reg;
@@ -3288,10 +3288,7 @@ bool
 TR::S390RXInstruction::refsRegister(TR::Register * reg)
    {
    // 64bit mem refs clobber high word regs
-   TR::Compilation *comp = cg()->comp();
-   bool enableHighWordRA = cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) &&
-                           reg->getKind() != TR_FPR && reg->getKind() != TR_VRF;
-   if (enableHighWordRA && getMemoryReference()&& reg->getRealRegister() && TR::Compiler->target.is64Bit())
+   if (reg->getKind() != TR_FPR && reg->getKind() != TR_VRF && getMemoryReference()&& reg->getRealRegister())
       {
       TR::RealRegister * realReg = (TR::RealRegister *)reg;
       TR::Register * regMem = reg;
@@ -3475,10 +3472,7 @@ bool
 TR::S390RXFInstruction::refsRegister(TR::Register * reg)
    {
    // 64bit mem refs clobber high word regs
-   TR::Compilation *comp = cg()->comp();
-   bool enableHighWordRA = cg()->supportsHighWordFacility() && !comp->getOption(TR_DisableHighWordRA) &&
-                           reg->getKind() != TR_FPR && reg->getKind() != TR_VRF;
-   if (enableHighWordRA && reg->getRealRegister() && TR::Compiler->target.is64Bit())
+   if (reg->getKind() != TR_FPR && reg->getKind() != TR_VRF && reg->getRealRegister())
       {
       TR::RealRegister * realReg = (TR::RealRegister *)reg;
       TR::Register * regMem = reg;
@@ -4847,9 +4841,7 @@ bool
 TR::S390SSFInstruction::refsRegister(TR::Register * reg)
    {
    // 64bit mem refs clobber high word regs
-   bool enableHighWordRA = cg()->supportsHighWordFacility() && !cg()->comp()->getOption(TR_DisableHighWordRA) &&
-                           reg->getKind() != TR_FPR && reg->getKind() != TR_VRF;
-   if (enableHighWordRA && getMemoryReference()&& reg->getRealRegister() && TR::Compiler->target.is64Bit())
+   if (reg->getKind() != TR_FPR && reg->getKind() != TR_VRF && getMemoryReference()&& reg->getRealRegister())
       {
       TR::RealRegister * realReg = (TR::RealRegister *)reg;
       TR::Register * regMem = reg;

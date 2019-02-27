@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -21,29 +21,29 @@
 
 #include "x/codegen/X86SystemLinkage.hpp"
 
-#include <stddef.h>                            // for NULL
-#include "codegen/CodeGenerator.hpp"           // for CodeGenerator
-#include "codegen/Instruction.hpp"             // for Instruction
-#include "codegen/Machine.hpp"                 // for Machine, etc
+#include <stddef.h>
+#include "codegen/CodeGenerator.hpp"
+#include "codegen/Instruction.hpp"
+#include "codegen/Machine.hpp"
 #include "codegen/MemoryReference.hpp"
-#include "codegen/RealRegister.hpp"            // for RealRegister, etc
-#include "compile/Compilation.hpp"             // for Compilation
+#include "codegen/RealRegister.hpp"
+#include "compile/Compilation.hpp"
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"
-#include "env/TRMemory.hpp"                    // for TR_Memory, etc
-#include "il/ILOpCodes.hpp"                    // for ILOpCodes::BBStart, etc
-#include "il/Node.hpp"                         // for Node
-#include "il/Node_inlines.hpp"                 // for Node::getChild, etc
-#include "il/Symbol.hpp"                       // for Symbol
-#include "il/symbol/AutomaticSymbol.hpp"       // for AutomaticSymbol
-#include "il/symbol/ParameterSymbol.hpp"       // for ParameterSymbol
-#include "il/symbol/ResolvedMethodSymbol.hpp"  // for ResolvedMethodSymbol
-#include "infra/Assert.hpp"                    // for TR_ASSERT
-#include "infra/BitVector.hpp"                 // for TR_BitVector
-#include "infra/List.hpp"                      // for ListIterator, List
-#include "ras/Debug.hpp"                       // for TR_DebugBase
-#include "codegen/X86Instruction.hpp"        // for TR::X86RegInstruction, etc
-#include "x/codegen/X86Ops.hpp"                // for TR_X86OpCodes, etc
+#include "env/TRMemory.hpp"
+#include "il/ILOpCodes.hpp"
+#include "il/Node.hpp"
+#include "il/Node_inlines.hpp"
+#include "il/Symbol.hpp"
+#include "il/symbol/AutomaticSymbol.hpp"
+#include "il/symbol/ParameterSymbol.hpp"
+#include "il/symbol/ResolvedMethodSymbol.hpp"
+#include "infra/Assert.hpp"
+#include "infra/BitVector.hpp"
+#include "infra/List.hpp"
+#include "ras/Debug.hpp"
+#include "codegen/X86Instruction.hpp"
+#include "x/codegen/X86Ops.hpp"
 #include "env/CompilerEnv.hpp"
 
 TR::X86SystemLinkage::X86SystemLinkage(TR::CodeGenerator *cg)

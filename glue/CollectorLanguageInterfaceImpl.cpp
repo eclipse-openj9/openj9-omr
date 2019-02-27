@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2017 IBM Corp. and others
+ * Copyright (c) 1991, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -83,7 +83,7 @@ MM_CollectorLanguageInterfaceImpl::initialize(OMR_VM *omrVM)
 	return true;
 }
 
-#if defined(OMR_GC_MODRON_SCAVENGER)
+#if defined(OMR_GC_MODRON_SCAVENGER) && !defined(OMR_GC_SCAVENGER_DELEGATE)
 void
 MM_CollectorLanguageInterfaceImpl::scavenger_masterSetupForGC(MM_EnvironmentBase *env)
 {
@@ -205,5 +205,5 @@ MM_CollectorLanguageInterfaceImpl::scavenger_fixupDestroyedSlot(MM_EnvironmentBa
 	Assert_MM_unimplemented();
 }
 #endif /* OMR_INTERP_COMPRESSED_OBJECT_HEADER */
-#endif /* OMR_GC_MODRON_SCAVENGER */
+#endif /* OMR_GC_MODRON_SCAVENGER && !OMR_GC_SCAVENGER_DELEGATE */
 

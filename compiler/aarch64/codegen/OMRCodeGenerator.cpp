@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2018 IBM Corp. and others
+ * Copyright (c) 2018, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -413,13 +413,21 @@ void OMR::ARM64::CodeGenerator::apply32BitLabelRelativeRelocation(int32_t *curso
    }
 
 int64_t OMR::ARM64::CodeGenerator::getLargestNegConstThatMustBeMaterialized()
-   { 
-   TR_ASSERT(0, "Not Implemented on AArch64"); 
-   return 0; 
+   {
+   TR_ASSERT(0, "Not Implemented on AArch64");
+   return 0;
    }
 
 int64_t OMR::ARM64::CodeGenerator::getSmallestPosConstThatMustBeMaterialized()
-   { 
-   TR_ASSERT(0, "Not Implemented on AArch64"); 
-   return 0; 
+   {
+   TR_ASSERT(0, "Not Implemented on AArch64");
+   return 0;
+   }
+
+bool
+OMR::ARM64::CodeGenerator::directCallRequiresTrampoline(intptrj_t targetAddress, intptrj_t sourceAddress)
+   {
+   return
+      !TR::Compiler->target.cpu.isTargetWithinUnconditionalBranchImmediateRange(targetAddress, sourceAddress) ||
+      self()->comp()->getOption(TR_StressTrampolines);
    }

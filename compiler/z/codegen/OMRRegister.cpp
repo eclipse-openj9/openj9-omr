@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -27,11 +27,11 @@
 #pragma csect(STATIC,"TRZRegtBase#S")
 #pragma csect(TEST,"TRZRegBase#T")
 
-#include <stddef.h>                       // for NULL
-#include <stdint.h>                       // for uint16_t, uint32_t
-#include "codegen/Register.hpp"           // for RegisterExt, Register, etc
-#include "codegen/RegisterConstants.hpp"  // for TR_RegisterKinds, etc
-#include "infra/Flags.hpp"                // for flags32_t
+#include <stddef.h>
+#include <stdint.h>
+#include "codegen/Register.hpp"
+#include "codegen/RegisterConstants.hpp"
+#include "infra/Flags.hpp"
 
 OMR::Z::Register::Register(uint32_t f): OMR::Register(f)
    { _liveRegisterInfo._liveRegister = NULL; _memRef=NULL;}
@@ -70,8 +70,12 @@ void
 OMR::Z::Register::setPlaceholderReg()
    {
 #if defined(TR_TARGET_64BIT)
-   self()->setIs64BitReg(true);
+   if (self()->getKind() == TR_GPR)
+      {
+      self()->setIs64BitReg(true);
+      }
 #endif
+
    OMR::Register::setPlaceholderReg();
    }
 
@@ -126,3 +130,10 @@ OMR::Z::Register::setContainsCollectedReference()
 #else
    bool OMR::Z::Register::is64BitReg()  {return _flags.testAny(Is64Bit);}
 #endif
+
+void OMR::Z::Register::setIs64BitReg(bool b)
+   {
+   TR_ASSERT_FATAL(self()->getKind() == TR_GPR, "Setting is64BitReg flag on a non-GPR register [%p]", self());
+
+   _flags.set(Is64Bit, b);
+   }

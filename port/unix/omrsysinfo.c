@@ -2359,74 +2359,82 @@ omrsysinfo_set_limit(struct OMRPortLibrary *portLibrary, uint32_t resourceID, ui
 
 	Trc_PRT_sysinfo_set_limit_Entered(resourceID, limit);
 
-	if (OMRPORT_RESOURCE_ADDRESS_SPACE == resourceRequested) {
+	switch (resourceRequested) {
+	case OMRPORT_RESOURCE_FILE_DESCRIPTORS:
+		resource = RLIMIT_NOFILE;
+		break;
+	case OMRPORT_RESOURCE_ADDRESS_SPACE:
 #if !defined(OMRZTPF)
 		resource = RLIMIT_AS;
 #else /* !defined(OMRZTPF) */
 		/* z/TPF does not have virtual address support */
 		rc = -1;
-		Trc_PRT_sysinfo_set_limit_Exit(rc);
-		return rc;
 #endif /* !defined(OMRZTPF) */
-	} else if (OMRPORT_RESOURCE_CORE_FILE == resourceRequested) {
+		break;
+	case OMRPORT_RESOURCE_CORE_FILE:
 #if !defined(OMRZTPF)
 		resource = RLIMIT_CORE;
 #else /* !defined(OMRZTPF) */
 		rc = -1;
-		Trc_PRT_sysinfo_set_limit_Exit(rc);
-		return rc;
 #endif /* !defined(OMRZTPF) */
+		break;
+	default:
+		break;
 	}
 
-	switch (resourceRequested) {
-	case OMRPORT_RESOURCE_ADDRESS_SPACE:
-		/* FALLTHROUGH */
-	case OMRPORT_RESOURCE_CORE_FILE: {
+	if (0 == rc) {
+		switch (resourceRequested) {
+		case OMRPORT_RESOURCE_FILE_DESCRIPTORS:
+			/* FALLTHROUGH */
+		case OMRPORT_RESOURCE_ADDRESS_SPACE:
+			/* FALLTHROUGH */
+		case OMRPORT_RESOURCE_CORE_FILE: {
 #if !defined(OMRZTPF)
-		rc = getrlimit(resource, &lim);
-		if (-1 == rc) {
-			portLibrary->error_set_last_error(portLibrary, errno, findError(errno));
-			Trc_PRT_sysinfo_getrlimit_error(resource, findError(errno));
+			rc = getrlimit(resource, &lim);
+			if (-1 == rc) {
+				portLibrary->error_set_last_error(portLibrary, errno, findError(errno));
+				Trc_PRT_sysinfo_getrlimit_error(resource, findError(errno));
+				break;
+			}
+
+			if (hardLimitRequested) {
+				lim.rlim_max = limit;
+			} else {
+				lim.rlim_cur = limit;
+			}
+
+			rc = setrlimit(resource, &lim);
+			if (-1 == rc) {
+				portLibrary->error_set_last_error(portLibrary, errno, findError(errno));
+				Trc_PRT_sysinfo_setrlimit_error(resource, limit, findError(errno));
+			}
+#else /* !defined(OMRZTPF) */
+			rc = -1;
+#endif /* !defined(OMRZTPF) */
 			break;
 		}
 
-		if (hardLimitRequested) {
-			lim.rlim_max = limit;
-		} else {
-			lim.rlim_cur = limit;
-		}
-
-		rc = setrlimit(resource, &lim);
-		if (-1 == rc) {
-			portLibrary->error_set_last_error(portLibrary, errno, findError(errno));
-			Trc_PRT_sysinfo_setrlimit_error(resource, limit, findError(errno));
-		}
-#else /* !defined(OMRZTPF) */
-		rc = -1;
-#endif /* !defined(OMRZTPF) */
-		break;
-	}
-
-	case OMRPORT_RESOURCE_CORE_FLAGS: {
+		case OMRPORT_RESOURCE_CORE_FLAGS: {
 #if defined(AIXPPC)
-		struct vario myvar;
+			struct vario myvar;
 
-		myvar.v.v_fullcore.value = limit;
-		rc = sys_parm(SYSP_SET, SYSP_V_FULLCORE, &myvar);
-		if (-1 == rc) {
-			portLibrary->error_set_last_error(portLibrary, errno, findError(errno));
-			Trc_PRT_sysinfo_sysparm_error(errno);
-		}
+			myvar.v.v_fullcore.value = limit;
+			rc = sys_parm(SYSP_SET, SYSP_V_FULLCORE, &myvar);
+			if (-1 == rc) {
+				portLibrary->error_set_last_error(portLibrary, errno, findError(errno));
+				Trc_PRT_sysinfo_sysparm_error(errno);
+			}
 #else
-		/* unsupported so return error */
-		rc = -1;
+			/* unsupported so return error */
+			rc = -1;
 #endif
-		break;
-	}
+			break;
+		}
 
-	default:
-		Trc_PRT_sysinfo_setLimit_unrecognised_resourceID(resourceID);
-		rc = -1;
+		default:
+			Trc_PRT_sysinfo_setLimit_unrecognised_resourceID(resourceID);
+			rc = -1;
+		}
 	}
 
 	Trc_PRT_sysinfo_set_limit_Exit(rc);

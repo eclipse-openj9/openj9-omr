@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2018 IBM Corp. and others
+ * Copyright (c) 2018, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -21,27 +21,27 @@
 
 #include "z/codegen/S390Peephole.hpp"
 
-#include <stdint.h>                                 // for int32_t, etc
-#include <stdio.h>                                  // for printf, sprintf
-#include <string.h>                                 // for NULL, strcmp, etc
-#include "codegen/CodeGenPhase.hpp"                 // for CodeGenPhase, etc
-#include "codegen/CodeGenerator.hpp"                // for CodeGenerator, etc
+#include <stdint.h>
+#include <stdio.h>
+#include <string.h>
+#include "codegen/CodeGenPhase.hpp"
+#include "codegen/CodeGenerator.hpp"
 #include "codegen/CodeGenerator_inlines.hpp"
 #include "codegen/ConstantDataSnippet.hpp"
-#include "codegen/FrontEnd.hpp"                     // for TR_FrontEnd, etc
-#include "codegen/InstOpCode.hpp"                   // for InstOpCode, etc
-#include "codegen/Instruction.hpp"                  // for Instruction, etc
-#include "codegen/MemoryReference.hpp"              // for MemoryReference, etc
-#include "codegen/RealRegister.hpp"                 // for RealRegister, etc
-#include "codegen/Register.hpp"                     // for Register
+#include "codegen/FrontEnd.hpp"
+#include "codegen/InstOpCode.hpp"
+#include "codegen/Instruction.hpp"
+#include "codegen/MemoryReference.hpp"
+#include "codegen/RealRegister.hpp"
+#include "codegen/Register.hpp"
 #include "codegen/RegisterDependency.hpp"
-#include "codegen/RegisterPair.hpp"                 // for RegisterPair
-#include "codegen/Snippet.hpp"                      // for TR::S390Snippet, etc
-#include "il/symbol/LabelSymbol.hpp"                // for LabelSymbol
-#include "ras/Debug.hpp"                            // for TR_DebugBase, etc
+#include "codegen/RegisterPair.hpp"
+#include "codegen/Snippet.hpp"
+#include "il/symbol/LabelSymbol.hpp"
+#include "ras/Debug.hpp"
 #include "ras/DebugCounter.hpp"
-#include "ras/Delimiter.hpp"                        // for Delimiter
-#include "runtime/Runtime.hpp"                      // for TR_LinkageInfo
+#include "ras/Delimiter.hpp"
+#include "runtime/Runtime.hpp"
 #include "z/codegen/CallSnippet.hpp"
 #include "z/codegen/OpMemToMem.hpp"
 #include "z/codegen/S390Evaluator.hpp"

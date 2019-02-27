@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -21,31 +21,31 @@
 
 #include "runtime/OMRCodeCache.hpp"
 
-#include <algorithm>                    // for std::max, etc
-#include <stddef.h>                     // for size_t
-#include <stdint.h>                     // for uint8_t, int32_t, uint32_t, etc
-#include <stdio.h>                      // for fprintf, stderr, printf, etc
-#include <string.h>                     // for memcpy, strcpy, memset, etc
-#include "codegen/FrontEnd.hpp"         // for TR_VerboseLog, etc
+#include <algorithm>
+#include <stddef.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <string.h>
+#include "codegen/FrontEnd.hpp"
 #include "control/Options.hpp"
-#include "control/Options_inlines.hpp"  // for TR::Options, etc
+#include "control/Options_inlines.hpp"
 #include "env/CompilerEnv.hpp"
-#include "env/IO.hpp"                   // for POINTER_PRINTF_FORMAT
-#include "env/defines.h"                // for HOST_OS, OMR_LINUX
-#include "env/jittypes.h"               // for FLUSH_MEMORY
-#include "il/DataTypes.hpp"             // for TR_YesNoMaybe::TR_yes, etc
-#include "infra/Assert.hpp"             // for TR_ASSERT
-#include "infra/CriticalSection.hpp"    // for CriticalSection
-#include "infra/Monitor.hpp"            // for Monitor
-#include "runtime/CodeCache.hpp"        // for CodeCache
-#include "runtime/CodeCacheManager.hpp" // for CodeCache Manager
-#include "runtime/CodeCacheMemorySegment.hpp" // for CodeCacheMemorySegment
-#include "runtime/CodeCacheConfig.hpp"  // for CodeCacheConfig, etc
+#include "env/IO.hpp"
+#include "env/defines.h"
+#include "env/jittypes.h"
+#include "il/DataTypes.hpp"
+#include "infra/Assert.hpp"
+#include "infra/CriticalSection.hpp"
+#include "infra/Monitor.hpp"
+#include "runtime/CodeCache.hpp"
+#include "runtime/CodeCacheManager.hpp"
+#include "runtime/CodeCacheMemorySegment.hpp"
+#include "runtime/CodeCacheConfig.hpp"
 #include "runtime/Runtime.hpp"
 
 #ifdef LINUX
-#include <elf.h>                        // for EV_CURRENT, SHT_STRTAB, etc
-#include <unistd.h>                     // for getpid, pid_t
+#include <elf.h>
+#include <unistd.h>
 #endif
 
 namespace TR { class CodeGenerator; }
@@ -197,18 +197,6 @@ OMR::CodeCache::writeMethodHeader(void *freeBlock, size_t size, bool isCold)
    }
 
 
-// Resize code memory within a code cache
-//
-// Deprecated API.  This will be deleted when known downstream consumers of
-// this API are changed to use `trimCodeMemoryAllocation`
-//
-bool
-OMR::CodeCache::resizeCodeMemory(void *memoryBlock, size_t newSize)
-   {
-   return self()->trimCodeMemoryAllocation(memoryBlock, newSize);
-   }
-
-
 bool
 OMR::CodeCache::trimCodeMemoryAllocation(void *codeMemoryStart, size_t actualSizeInBytes)
    {
@@ -261,145 +249,6 @@ OMR::CodeCache::trimCodeMemoryAllocation(void *codeMemoryStart, size_t actualSiz
       }
    //fprintf(stderr, "--ccr-- shrink code by %d\n", shrinkage);
    return false;
-   }
-
-
-// Initialize a code cache
-//
-bool
-OMR::CodeCache::initialize(TR::CodeCacheManager *manager,
-                         TR::CodeCacheMemorySegment *codeCacheSegment,
-                         size_t codeCacheSizeAllocated,
-                         CodeCacheHashEntrySlab *hashEntrySlab)
-   {
-   _manager = manager;
-
-   // heapSize can be calculated as (codeCache->helperTop - codeCacheSegment->heapBase), which is equal to segmentSize
-   // If codeCachePadKB is set, this will make the system believe that we allocated segmentSize bytes,
-   // instead of _jitConfig->codeCachePadKB * 1024 bytes
-   // If codeCachePadKB is not set, heapSize is segmentSize anyway
-   _segment = codeCacheSegment;
-
-   // helperTop is heapTop, usually
-   // When codeCachePadKB > segmentSize, the helperTop is not at the very end of the segemnt
-   _helperTop = _segment->segmentBase() + codeCacheSizeAllocated;
-
-   _hashEntrySlab = hashEntrySlab;
-   TR::CodeCacheConfig &config = manager->codeCacheConfig();
-
-   // FIXME: try to provide different names to the mutex based on the codecache
-   if (!(_mutex = TR::Monitor::create("JIT-CodeCacheMonitor-??")))
-      return false;
-
-   _hashEntryFreeList = NULL;
-   _freeBlockList     = NULL;
-   _flags = 0;
-   _CCPreLoadedCodeInitialized = false;
-   self()->unreserve();
-   _almostFull = TR_no;
-   _sizeOfLargestFreeColdBlock = 0;
-   _sizeOfLargestFreeWarmBlock = 0;
-   _lastAllocatedBlock = NULL; // MP
-
-   *((TR::CodeCache **)(_segment->segmentBase())) = self(); // Write a pointer to this cache at the beginning of the segment
-   _warmCodeAlloc = _segment->segmentBase() + sizeof(this);
-
-   _warmCodeAlloc = align(_warmCodeAlloc, config.codeCacheAlignment() -  1);
-
-   if (!config.trampolineCodeSize())
-      {
-      // _helperTop is heapTop
-      _trampolineBase = _helperTop;
-      _helperBase = _helperTop;
-      _trampolineReservationMark = _trampolineAllocationMark = _trampolineBase;
-
-      // set the pre loaded per Cache Helper slab
-      _CCPreLoadedCodeTop = (uint8_t *)(((size_t)_trampolineBase) & (~config.codeCacheHelperAlignmentMask()));
-      _CCPreLoadedCodeBase = _CCPreLoadedCodeTop - config.ccPreLoadedCodeSize();
-      TR_ASSERT( (((size_t)_CCPreLoadedCodeBase) & config.codeCacheHelperAlignmentMask()) == 0, "Per-code cache helper sizes do not account for alignment requirements." );
-      _coldCodeAlloc = _CCPreLoadedCodeBase;
-      _trampolineSyncList = NULL;
-
-      return true;
-      }
-
-   // Helpers are located at the top of the code cache (offset N), growing down towards the base (offset 0)
-   size_t trampolineSpaceSize = config.trampolineCodeSize() * config.numRuntimeHelpers();
-   // _helperTop is heapTop
-   _helperBase = _helperTop - trampolineSpaceSize;
-   _helperBase = (uint8_t *)(((size_t)_helperBase) & (~config.codeCacheTrampolineAlignmentBytes()));
-
-   if (!config.needsMethodTrampolines())
-      {
-      // There is no need in method trampolines when there is going to be
-      // only one code cache segment
-      //
-      _trampolineBase = _helperBase;
-      _tempTrampolinesMax = 0;
-      }
-   else
-      {
-      // _helperTop is heapTop
-      // (_helperTop - segment->heapBase) is heapSize
-
-      _trampolineBase = _helperBase -
-                        ((_helperBase - _segment->segmentBase())*config.trampolineSpacePercentage()/100);
-
-      // Grab the configuration details from the JIT platform code
-      //
-      // (_helperTop - segment->heapBase) is heapSize
-      config.mccCallbacks().codeCacheConfig((_helperTop - _segment->segmentBase()), &_tempTrampolinesMax);
-      }
-
-   mcc_printf("mcc_initialize: trampoline base %p\n",  _trampolineBase);
-
-   // set the temporary trampoline slab right under the helper trampolines, should be already aligned
-   _tempTrampolineTop  = _helperBase;
-   _tempTrampolineBase = _tempTrampolineTop - (config.trampolineCodeSize() * _tempTrampolinesMax);
-   _tempTrampolineNext = _tempTrampolineBase;
-
-   // Check if we have enough space in the code cache to contain the trampolines
-   if (_trampolineBase >= _tempTrampolineNext && config.needsMethodTrampolines())
-      return false;
-
-   // set the allocation pointer to right after the temporary trampolines
-   _trampolineAllocationMark  = _tempTrampolineBase;
-   _trampolineReservationMark = _trampolineAllocationMark;
-
-   // set the pre loaded per Cache Helper slab
-   _CCPreLoadedCodeTop = (uint8_t *)(((size_t)_trampolineBase) & (~config.codeCacheHelperAlignmentMask()));
-   _CCPreLoadedCodeBase = _CCPreLoadedCodeTop - config.ccPreLoadedCodeSize();
-   TR_ASSERT( (((size_t)_CCPreLoadedCodeBase) & config.codeCacheHelperAlignmentMask()) == 0, "Per-code cache helper sizes do not account for alignment requirements." );
-   _coldCodeAlloc = _CCPreLoadedCodeBase;
-
-   // Set helper trampoline table available
-   //
-   config.mccCallbacks().createHelperTrampolines((uint8_t *)_helperBase, config.numRuntimeHelpers());
-
-   _trampolineSyncList = NULL;
-   if (_tempTrampolinesMax)
-      {
-      // Initialize temporary trampoline synchronization list
-      if (!self()->allocateTempTrampolineSyncBlock())
-         return false;
-      }
-
-   if (config.needsMethodTrampolines())
-      {
-      // Initialize hashtables to hold trampolines for resolved and unresolved methods
-      _resolvedMethodHT   = CodeCacheHashTable::allocate(manager);
-      _unresolvedMethodHT = CodeCacheHashTable::allocate(manager);
-      if (_resolvedMethodHT==NULL || _unresolvedMethodHT==NULL)
-         return false;
-      }
-
-   // Before returning, let's adjust the free space seen by VM.
-   // Usable space is between _warmCodeAlloc and _trampolineBase. Everything else is overhead
-   // Only relevant if code cache repository is used
-   size_t spaceLost = (_warmCodeAlloc - _segment->segmentBase()) + (_segment->segmentTop() - _trampolineBase);
-   _manager->decreaseFreeSpaceInCodeCacheRepository(spaceLost);
-
-   return true;
    }
 
 
@@ -608,34 +457,32 @@ OMR::CodeCache::allocateTempTrampoline()
    return freeTrampolineSlot;
    }
 
-// Reserve space for a trampoline
-//
-// The returned trampoline pointer is meaningless, ie should not be used to
-// create trampoline code in just yet.
-//
+
 OMR::CodeCacheTrampolineCode *
-OMR::CodeCache::reserveTrampoline()
+OMR::CodeCache::reserveSpaceForTrampoline()
    {
    TR::CodeCacheConfig &config = _manager->codeCacheConfig();
 
-   // see if we are hitting against the method body allocation pointer
+   // See if we are hitting against the method body allocation pointer
    // indicating that there is no more free space left in this code cache
+   //
    if (_trampolineReservationMark < _trampolineBase + config.trampolineCodeSize())
       {
-      // no free trampoline space
+      // No free trampoline space
+      //
       return NULL;
       }
 
-   // advance the reservation mark
+   // Advance the reservation mark
+   //
    _trampolineReservationMark -= config.trampolineCodeSize();
 
    return (CodeCacheTrampolineCode *) _trampolineReservationMark;
    }
 
-// Cancel a reservation for a trampoline
-//
+
 void
-OMR::CodeCache::unreserveTrampoline()
+OMR::CodeCache::unreserveSpaceForTrampoline()
    {
    // sanity check, should never have the reservation mark dip past the
    // allocation mark
@@ -673,7 +520,7 @@ OMR::CodeCache::reserveResolvedTrampoline(TR_OpaqueMethodBlock *method,
       if (!entry)
          {
          // reserve a new trampoline since we got no active reservation for given method */
-         CodeCacheTrampolineCode *trampoline = self()->reserveTrampoline();
+         CodeCacheTrampolineCode *trampoline = self()->reserveSpaceForTrampoline();
          if (trampoline)
             {
             // add hashtable entry
@@ -1853,52 +1700,5 @@ OMR::CodeCache::allocate(TR::CodeCacheManager *manager,
                          size_t segmentSize,
                          int32_t reservingCompThreadID)
    {
-   TR::CodeCacheConfig & config = manager->codeCacheConfig();
-   bool verboseCodeCache = config.verboseCodeCache();
-
-   size_t codeCacheSizeAllocated;
-   TR::CodeCacheMemorySegment *codeCacheSegment = manager->getNewCacheMemorySegment(segmentSize, codeCacheSizeAllocated);
-
-   if (codeCacheSegment)
-      {
-      TR::CodeCache *codeCache = manager->allocateCodeCacheObject(codeCacheSegment,
-                                                                  codeCacheSizeAllocated);
-
-      if (codeCache)
-         {
-         // If we wanted to reserve this code cache, then mark it as reserved now
-         if (reservingCompThreadID >= -1)
-            {
-            codeCache->reserve(reservingCompThreadID);
-            }
-
-         // Add it to our list of code caches
-         manager->addCodeCache(codeCache);
-
-         if (verboseCodeCache)
-            {
-            TR_VerboseLog::writeLineLocked(TR_Vlog_CODECACHE, "CodeCache allocated %p @ " POINTER_PRINTF_FORMAT "-" POINTER_PRINTF_FORMAT " HelperBase:" POINTER_PRINTF_FORMAT, codeCache, codeCache->getCodeBase(), codeCache->getCodeTop(), codeCache->_helperBase);
-            }
-
-         return codeCache;
-         }
-
-      // Free code cache segment
-      if (manager->usingRepository())
-         {
-         // return back the portion we carved
-         manager->undoCarvingFromRepository(codeCacheSegment);
-         }
-      else
-         {
-         manager->freeMemorySegment(codeCacheSegment);
-         }
-      }
-
-   if (verboseCodeCache)
-      {
-      TR_VerboseLog::writeLineLocked(TR_Vlog_CODECACHE, "CodeCache maximum allocated");
-      }
-
-   return NULL;
+   return manager->allocateCodeCacheFromNewSegment(segmentSize, reservingCompThreadID);
    }

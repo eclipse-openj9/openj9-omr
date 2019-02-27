@@ -25,90 +25,91 @@
 
 #include "codegen/OMRCodeGenerator.hpp"
 
-#include <limits.h>                                 // for UINT_MAX
-#include <stdarg.h>                                 // for va_list
-#include <stddef.h>                                 // for NULL, size_t
-#include <stdint.h>                                 // for int64_t, etc
-#include <stdio.h>                                  // for sprintf
-#include <stdlib.h>                                 // for abs, atoi
-#include <string.h>                                 // for memset, memcpy
-#include <algorithm>                                // for std::find
-#include "codegen/CodeGenPhase.hpp"                 // for CodeGenPhase
-#include "codegen/CodeGenerator.hpp"                // for CodeGenerator, etc
+#include <limits.h>
+#include <stdarg.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <algorithm>
+#include "codegen/CodeGenPhase.hpp"
+#include "codegen/CodeGenerator.hpp"
 #include "codegen/CodeGenerator_inlines.hpp"
-#include "codegen/FrontEnd.hpp"                     // for TR_FrontEnd, etc
-#include "codegen/Instruction.hpp"                  // for Instruction
-#include "codegen/Linkage.hpp"                      // for Linkage
+#include "codegen/FrontEnd.hpp"
+#include "codegen/Instruction.hpp"
+#include "codegen/Linkage.hpp"
 #include "codegen/LinkageConventionsEnum.hpp"
 #include "codegen/LiveRegister.hpp"
-#include "codegen/Machine.hpp"                      // for Machine
-#include "codegen/RealRegister.hpp"                 // for RealRegister
+#include "codegen/Machine.hpp"
+#include "codegen/RealRegister.hpp"
 #include "codegen/RecognizedMethods.hpp"
-#include "codegen/Register.hpp"                     // for Register
+#include "codegen/Register.hpp"
 #include "codegen/RegisterConstants.hpp"
-#include "codegen/RegisterPair.hpp"                 // for RegisterPair
-#include "codegen/RegisterUsage.hpp"                // for RegisterUsage
-#include "codegen/Relocation.hpp"                   // for TR::Relocation, etc
-#include "codegen/Snippet.hpp"                      // for Snippet
-#include "codegen/StorageInfo.hpp"                  // for TR_StorageInfo, etc
-#include "codegen/TreeEvaluator.hpp"                // for TreeEvaluator
-#include "codegen/GCStackMap.hpp"                   // for GCStackMap
-#include "codegen/GCStackAtlas.hpp"                   // for GCStackMap
-#include "compile/Compilation.hpp"                  // for Compilation
+#include "codegen/RegisterPair.hpp"
+#include "codegen/RegisterUsage.hpp"
+#include "codegen/Relocation.hpp"
+#include "codegen/Snippet.hpp"
+#include "codegen/StorageInfo.hpp"
+#include "codegen/TreeEvaluator.hpp"
+#include "codegen/GCStackMap.hpp"
+#include "codegen/GCStackAtlas.hpp"
+#include "compile/Compilation.hpp"
 #include "compile/OSRData.hpp"
 #include "compile/ResolvedMethod.hpp"
 #include "compile/SymbolReferenceTable.hpp"
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"
 #include "cs2/allocator.h"
-#include "cs2/bitmanip.h"                           // for LeadingZeroes
-#include "cs2/hashtab.h"                            // for HashTable, etc
-#include "cs2/sparsrbit.h"                          // for operator<<
+#include "cs2/bitmanip.h"
+#include "cs2/hashtab.h"
+#include "cs2/sparsrbit.h"
 #include "env/CompilerEnv.hpp"
-#include "env/IO.hpp"                               // for IO
-#include "env/PersistentInfo.hpp"                   // for PersistentInfo
+#include "env/IO.hpp"
+#include "env/PersistentInfo.hpp"
 #include "env/StackMemoryRegion.hpp"
-#include "env/TRMemory.hpp"                         // for Allocator, etc
+#include "env/TRMemory.hpp"
 #include "env/jittypes.h"
 #include "il/AliasSetInterface.hpp"
-#include "il/Block.hpp"                             // for Block
-#include "il/DataTypes.hpp"                         // for DataTypes, etc
-#include "il/ILOpCodes.hpp"                         // for ILOpCodes, etc
-#include "il/ILOps.hpp"                             // for ILOpCode, etc
-#include "il/Node.hpp"                              // for Node, vcount_t
-#include "il/NodePool.hpp"                          // for TR::NodePool
-#include "il/Node_inlines.hpp"                      // for Node::getType, etc
-#include "il/Symbol.hpp"                            // for Symbol
+#include "il/Block.hpp"
+#include "il/DataTypes.hpp"
+#include "il/ILOpCodes.hpp"
+#include "il/ILOps.hpp"
+#include "il/Node.hpp"
+#include "il/NodePool.hpp"
+#include "il/Node_inlines.hpp"
+#include "il/Symbol.hpp"
 #include "il/SymbolReference.hpp"
-#include "il/TreeTop.hpp"                           // for TreeTop
+#include "il/TreeTop.hpp"
 #include "il/TreeTop_inlines.hpp"
 #include "il/symbol/AutomaticSymbol.hpp"
-#include "il/symbol/LabelSymbol.hpp"                // for LabelSymbol
+#include "il/symbol/LabelSymbol.hpp"
 #include "il/symbol/RegisterMappedSymbol.hpp"
 #include "il/symbol/ResolvedMethodSymbol.hpp"
 #include "il/symbol/StaticSymbol.hpp"
-#include "infra/Array.hpp"                          // for TR_Array
-#include "infra/Assert.hpp"                         // for TR_ASSERT
-#include "infra/Bit.hpp"                            // for isEven, etc
-#include "infra/BitVector.hpp"                      // for TR_BitVector, etc
-#include "infra/Cfg.hpp"                            // for CFG
-#include "infra/Flags.hpp"                          // for flags32_t, etc
-#include "infra/HashTab.hpp"                        // for TR_HashTab, etc
-#include "infra/Link.hpp"                           // for TR_LinkHead, etc
-#include "infra/List.hpp"                           // for ListIterator, etc
-#include "infra/Stack.hpp"                          // for TR_Stack
-#include "infra/Checklist.hpp"                      // for TR::NodeCheckList
-#include "infra/CfgEdge.hpp"                        // for CFGEdge
-#include "infra/CfgNode.hpp"                        // for CFGNode
+#include "infra/Array.hpp"
+#include "infra/Assert.hpp"
+#include "infra/Bit.hpp"
+#include "infra/BitVector.hpp"
+#include "infra/Cfg.hpp"
+#include "infra/Flags.hpp"
+#include "infra/HashTab.hpp"
+#include "infra/Link.hpp"
+#include "infra/List.hpp"
+#include "infra/Stack.hpp"
+#include "infra/Checklist.hpp"
+#include "infra/CfgEdge.hpp"
+#include "infra/CfgNode.hpp"
 #include "optimizer/Optimizations.hpp"
 #include "optimizer/DataFlowAnalysis.hpp"
-#include "ras/Debug.hpp"                            // for TR_DebugBase
+#include "ras/Debug.hpp"
 #include "ras/DebugCounter.hpp"
-#include "ras/Delimiter.hpp"                        // for Delimiter
+#include "ras/Delimiter.hpp"
 #include "runtime/CodeCache.hpp"
 #include "runtime/CodeCacheExceptions.hpp"
-#include "runtime/Runtime.hpp"                      // for HI_VALUE, etc
-#include "stdarg.h"                                 // for va_end, etc
+#include "runtime/CodeCacheManager.hpp"
+#include "runtime/Runtime.hpp"
+#include "stdarg.h"
 
 namespace TR { class Optimizer; }
 namespace TR { class RegisterDependencyConditions; }
@@ -852,14 +853,10 @@ bool
 OMR::CodeGenerator::use64BitRegsOn32Bit()
    {
 #ifdef TR_TARGET_S390
-   if (TR::Compiler->target.is64Bit())
-      return false;
-   else
-      {
-      return !self()->comp()->getOption(TR_Disable64BitRegsOn32Bit);
-      }
-#endif // TR_TARGET_S390
+   return TR::Compiler->target.is32Bit();
+#else
    return false;
+#endif // TR_TARGET_S390
    }
 
 TR_PersistentMemory *
@@ -1118,8 +1115,6 @@ bool OMR::CodeGenerator::needGuardSitesEvenWhenGuardRemoved() { return self()->c
 
 bool OMR::CodeGenerator::supportVMInternalNatives() { return !self()->comp()->compileRelocatableCode(); }
 
-bool OMR::CodeGenerator::supportsNativeLongOperations() { return (TR::Compiler->target.is64Bit() || self()->use64BitRegsOn32Bit()); }
-
 bool OMR::CodeGenerator::supportsInternalPointers()
    {
    if (_disableInternalPointers)
@@ -1142,7 +1137,7 @@ OMR::CodeGenerator::getNumberOfGlobalRegisters()
 #ifdef TR_HOST_S390
 uint16_t OMR::CodeGenerator::getNumberOfGlobalGPRs()
    {
-   if (self()->supportsHighWordFacility() && !self()->comp()->getOption(TR_DisableHighWordRA))
+   if (self()->supportsHighWordFacility())
       {
       return _firstGlobalHPR;
       }
@@ -1168,18 +1163,6 @@ TR::Register *OMR::CodeGenerator::allocateSinglePrecisionRegister(TR_RegisterKin
    {
    TR::Register * temp = self()->allocateRegister(rk);
    temp->setIsSinglePrecision();
-   return temp;
-   }
-
-TR::Register *OMR::CodeGenerator::allocate64bitRegister()
-   {
-   TR::Register * temp = NULL;
-
-   if (TR::Compiler->target.is64Bit())
-      temp = self()->allocateRegister();
-   else
-      temp = self()->allocateRegister(TR_GPR64);
-
    return temp;
    }
 
@@ -1711,45 +1694,99 @@ OMR::CodeGenerator::addressesMatch(TR::Node *addr1, TR::Node *addr2, bool addres
 void
 OMR::CodeGenerator::reserveCodeCache()
    {
-   _codeCache = self()->fe()->getDesignatedCodeCache(self()->comp());
+   int32_t numReserved = 0;
+   int32_t compThreadID = 0;
+
+   _codeCache = TR::CodeCacheManager::instance()->reserveCodeCache(false, 0, compThreadID, &numReserved);
+
    if (!_codeCache) // Cannot reserve a cache; all are used
       {
-      // We may reach this point if all code caches have been used up
-      // If some code caches have some space but cannot be used because they are reserved
-      // we will throw an exception in the call to getDesignatedCodeCache
+      TR::Compilation *comp = self()->comp();
 
-      if (self()->comp()->compileRelocatableCode())
+      // We may reach this point if all code caches have been used up.
+      // If some code caches have some space but cannot be used because they are reserved
+      // we will throw an exception in the call to TR::CodeCacheManager::reserveCodeCache
+      //
+      if (comp->compileRelocatableCode())
          {
-         self()->comp()->failCompilation<TR::RecoverableCodeCacheError>("Cannot reserve code cache");
+         comp->failCompilation<TR::RecoverableCodeCacheError>("Cannot reserve code cache");
          }
 
-      self()->comp()->failCompilation<TR::CodeCacheError>("Cannot reserve code cache");
+      comp->failCompilation<TR::CodeCacheError>("Cannot reserve code cache");
       }
    }
 
 uint8_t *
-OMR::CodeGenerator::allocateCodeMemory(uint32_t warmSize, uint32_t coldSize, uint8_t **coldCode, bool isMethodHeaderNeeded)
+OMR::CodeGenerator::allocateCodeMemoryInner(
+      uint32_t warmCodeSizeInBytes,
+      uint32_t coldCodeSizeInBytes,
+      uint8_t **coldCode,
+      bool isMethodHeaderNeeded)
    {
-   uint8_t *warmCode;
-   warmCode = self()->fe()->allocateCodeMemory(self()->comp(), warmSize, coldSize, coldCode, isMethodHeaderNeeded);
-   if (self()->getCodeGeneratorPhase() == TR::CodeGenPhase::BinaryEncodingPhase)
+   TR::CodeCache *codeCache = self()->getCodeCache();
+
+   TR_ASSERT(codeCache->isReserved(), "Code cache should have been reserved.");
+
+   uint8_t *warmCode = TR::CodeCacheManager::instance()->allocateCodeMemory(
+         warmCodeSizeInBytes,
+         coldCodeSizeInBytes,
+         &codeCache,
+         coldCode,
+         false,
+         isMethodHeaderNeeded);
+
+   if (codeCache != self()->getCodeCache())
       {
-      self()->commitToCodeCache();
+      // Either we didn't get a code cache, or the one we got should be reserved
+      TR_ASSERT(!codeCache || codeCache->isReserved(), "Substitute code cache isn't marked as reserved");
+      self()->comp()->setRelocatableMethodCodeStart(warmCode);
+      self()->switchCodeCacheTo(codeCache);
       }
-   TR_ASSERT( !((warmSize && !warmCode) || (coldSize && !coldCode)), "Allocation failed but didn't throw an exception");
+
+   if (warmCode == NULL)
+      {
+      TR::Compilation *comp = self()->comp();
+
+      if (TR::CodeCacheManager::instance()->codeCacheFull())
+         {
+         comp->failCompilation<TR::CodeCacheError>("Code Cache Full");
+         }
+      else
+         {
+         comp->failCompilation<TR::RecoverableCodeCacheError>("Failed to allocate code memory");
+         }
+      }
+
+   TR_ASSERT( !((warmCodeSizeInBytes && !warmCode) || (coldCodeSizeInBytes && !coldCode)), "Allocation failed but didn't throw an exception");
+
    return warmCode;
    }
 
 uint8_t *
-OMR::CodeGenerator::allocateCodeMemory(uint32_t size, bool isCold, bool isMethodHeaderNeeded)
+OMR::CodeGenerator::allocateCodeMemory(uint32_t warmCodeSizeInBytes, uint32_t coldCodeSizeInBytes, uint8_t **coldCode, bool isMethodHeaderNeeded)
+   {
+   uint8_t *warmCode;
+   warmCode = self()->allocateCodeMemoryInner(warmCodeSizeInBytes, coldCodeSizeInBytes, coldCode, isMethodHeaderNeeded);
+
+   if (self()->getCodeGeneratorPhase() == TR::CodeGenPhase::BinaryEncodingPhase)
+      {
+      self()->commitToCodeCache();
+      }
+
+   TR_ASSERT( !((warmCodeSizeInBytes && !warmCode) || (coldCodeSizeInBytes && !coldCode)), "Allocation failed but didn't throw an exception");
+   return warmCode;
+   }
+
+uint8_t *
+OMR::CodeGenerator::allocateCodeMemory(uint32_t codeSizeInBytes, bool isCold, bool isMethodHeaderNeeded)
    {
    uint8_t *coldCode;
    if (isCold)
       {
-      self()->allocateCodeMemory(0, size, &coldCode, isMethodHeaderNeeded);
+      self()->allocateCodeMemory(0, codeSizeInBytes, &coldCode, isMethodHeaderNeeded);
       return coldCode;
       }
-   return self()->allocateCodeMemory(size, 0, &coldCode, isMethodHeaderNeeded);
+   return self()->allocateCodeMemory(codeSizeInBytes, 0, &coldCode, isMethodHeaderNeeded);
    }
 
 void
@@ -1940,6 +1977,8 @@ OMR::CodeGenerator::processRelocations()
 
 #if defined(TR_HOST_ARM)
 void armCodeSync(uint8_t *start, uint32_t size);
+#elif defined(TR_HOST_ARM64)
+void arm64CodeSync(uint8_t *start, uint32_t size);
 #elif defined(TR_HOST_POWER)
 void ppcCodeSync(uint8_t *start, uint32_t size);
 #else
@@ -1951,6 +1990,8 @@ OMR::CodeGenerator::syncCode(uint8_t *start, uint32_t size)
    {
 #if defined(TR_HOST_ARM)
    armCodeSync(start, size);
+#elif defined(TR_HOST_ARM64)
+   arm64CodeSync(start, size);
 #elif defined(TR_HOST_POWER)
    ppcCodeSync(start, size);
 #else
@@ -3056,16 +3097,6 @@ void OMR::CodeGenerator::addAllocatedRegister(TR::Register * temp)
    uint32_t idx = _registerArray.add(temp);
    temp->setIndex(idx);
    self()->startUsingRegister(temp);
-   }
-
-
-TR::RegisterPair * OMR::CodeGenerator::allocate64bitRegisterPair(TR::Register * lo, TR::Register * ho)
-   {
-   TR::RegisterPair *temp = new (self()->trHeapMemory()) TR::RegisterPair(TR_GPR64);
-   temp->setLowOrder(lo, self());
-   temp->setHighOrder(ho, self());
-   self()->addAllocatedRegisterPair(temp);
-   return temp;
    }
 
 TR::RegisterPair * OMR::CodeGenerator::allocateRegisterPair(TR::Register * lo, TR::Register * ho)

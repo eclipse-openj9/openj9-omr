@@ -175,8 +175,8 @@
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::bxorEvaluator ,	// TR::bxor		// boolean xor of 2 bytes
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::sxorEvaluator ,	// TR::sxor		// boolean xor of 2 short integers
     TR::TreeEvaluator::i2lEvaluator, // TR::i2l		// convert integer to long integer with sign extension
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::i2fEvaluator ,	// TR::i2f		// convert integer to float
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::i2dEvaluator ,	// TR::i2d		// convert integer to double
+    TR::TreeEvaluator::i2fEvaluator, // TR::i2f		// convert integer to float
+    TR::TreeEvaluator::i2dEvaluator, // TR::i2d		// convert integer to double
     TR::TreeEvaluator::l2iEvaluator, // TR::i2b		// convert integer to byte
     TR::TreeEvaluator::l2iEvaluator, // TR::i2s		// convert integer to short integer
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::i2aEvaluator ,	// TR::i2a		// convert integer to address
@@ -185,22 +185,22 @@
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::iu2dEvaluator ,	// TR::iu2d		// convert unsigned integer to double
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::iu2aEvaluator ,	// TR::iu2a		// convert unsigned integer to address
     TR::TreeEvaluator::l2iEvaluator, // TR::l2i		// convert long integer to integer
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::l2fEvaluator ,	// TR::l2f		// convert long integer to float
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::l2dEvaluator ,	// TR::l2d		// convert long integer to double
+    TR::TreeEvaluator::l2fEvaluator, // TR::l2f		// convert long integer to float
+    TR::TreeEvaluator::l2dEvaluator, // TR::l2d		// convert long integer to double
     TR::TreeEvaluator::l2iEvaluator, // TR::l2b		// convert long integer to byte
     TR::TreeEvaluator::l2iEvaluator, // TR::l2s		// convert long integer to short integer
     TR::TreeEvaluator::passThroughEvaluator, // TR::l2a		// convert long integer to address
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::lu2fEvaluator ,	// TR::lu2f		// convert unsigned long integer to float
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::lu2dEvaluator ,	// TR::lu2d		// convert unsigned long integer to double
     TR::TreeEvaluator::passThroughEvaluator, // TR::lu2a		// convert unsigned long integer to address
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::f2iEvaluator ,	// TR::f2i		// convert float to integer
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::f2lEvaluator ,	// TR::f2l		// convert float to long integer
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::f2dEvaluator ,	// TR::f2d		// convert float to double
+    TR::TreeEvaluator::f2iEvaluator, // TR::f2i		// convert float to integer
+    TR::TreeEvaluator::f2lEvaluator, // TR::f2l		// convert float to long integer
+    TR::TreeEvaluator::f2dEvaluator, // TR::f2d		// convert float to double
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::f2bEvaluator ,	// TR::f2b		// convert float to byte
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::f2sEvaluator ,	// TR::f2s		// convert float to short integer
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::d2iEvaluator ,	// TR::d2i		// convert double to integer
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::d2lEvaluator ,	// TR::d2l		// convert double to long integer
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::d2fEvaluator ,	// TR::d2f		// convert double to float
+    TR::TreeEvaluator::d2iEvaluator, // TR::d2i		// convert double to integer
+    TR::TreeEvaluator::d2lEvaluator, // TR::d2l		// convert double to long integer
+    TR::TreeEvaluator::d2fEvaluator, // TR::d2f		// convert double to float
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::d2bEvaluator ,	// TR::d2b		// convert double to byte
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::d2sEvaluator ,	// TR::d2s		// convert double to short integer
     TR::TreeEvaluator::b2iEvaluator, // TR::b2i		// convert byte to integer with sign extension
@@ -337,24 +337,24 @@
     TR::TreeEvaluator::iflucmpgeEvaluator, // TR::iflucmpge		// unsigned long compare and branch if greater than or equal
     TR::TreeEvaluator::iflucmpgtEvaluator, // TR::iflucmpgt		// unsigned long compare and branch if greater than
     TR::TreeEvaluator::iflucmpleEvaluator, // TR::iflucmple		// unsigned long compare and branch if less than or equal
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::iffcmpeqEvaluator ,	// TR::iffcmpeq		// float compare and branch if equal
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::iffcmpneEvaluator ,	// TR::iffcmpne		// float compare and branch if not equal
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::iffcmpltEvaluator ,	// TR::iffcmplt		// float compare and branch if less than
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::iffcmpgeEvaluator ,	// TR::iffcmpge		// float compare and branch if greater than or equal
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::iffcmpgtEvaluator ,	// TR::iffcmpgt		// float compare and branch if greater than
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::iffcmpleEvaluator ,	// TR::iffcmple		// float compare and branch if less than or equal
+    TR::TreeEvaluator::iffcmpeqEvaluator, // TR::iffcmpeq		// float compare and branch if equal
+    TR::TreeEvaluator::iffcmpneEvaluator, // TR::iffcmpne		// float compare and branch if not equal
+    TR::TreeEvaluator::iffcmpltEvaluator, // TR::iffcmplt		// float compare and branch if less than
+    TR::TreeEvaluator::iffcmpgeEvaluator, // TR::iffcmpge		// float compare and branch if greater than or equal
+    TR::TreeEvaluator::iffcmpgtEvaluator, // TR::iffcmpgt		// float compare and branch if greater than
+    TR::TreeEvaluator::iffcmpleEvaluator, // TR::iffcmple		// float compare and branch if less than or equal
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::iffcmpequEvaluator ,	// TR::iffcmpequ		// float compare and branch if equal or unordered
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::iffcmpneuEvaluator ,	// TR::iffcmpneu		// float compare and branch if not equal or unordered
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::iffcmpltuEvaluator ,	// TR::iffcmpltu		// float compare and branch if less than or unordered
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::iffcmpgeuEvaluator ,	// TR::iffcmpgeu		// float compare and branch if greater than or equal or unordered
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::iffcmpgtuEvaluator ,	// TR::iffcmpgtu		// float compare and branch if greater than or unordered
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::iffcmpleuEvaluator ,	// TR::iffcmpleu		// float compare and branch if less than or equal or unordered
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::ifdcmpeqEvaluator ,	// TR::ifdcmpeq		// double compare and branch if equal
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::ifdcmpneEvaluator ,	// TR::ifdcmpne		// double compare and branch if not equal
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::ifdcmpltEvaluator ,	// TR::ifdcmplt		// double compare and branch if less than
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::ifdcmpgeEvaluator ,	// TR::ifdcmpge		// double compare and branch if greater than or equal
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::ifdcmpgtEvaluator ,	// TR::ifdcmpgt		// double compare and branch if greater than
-    TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::ifdcmpleEvaluator ,	// TR::ifdcmple		// double compare and branch if less than or equal
+    TR::TreeEvaluator::ifdcmpeqEvaluator, // TR::ifdcmpeq		// double compare and branch if equal
+    TR::TreeEvaluator::ifdcmpneEvaluator, // TR::ifdcmpne		// double compare and branch if not equal
+    TR::TreeEvaluator::ifdcmpltEvaluator, // TR::ifdcmplt		// double compare and branch if less than
+    TR::TreeEvaluator::ifdcmpgeEvaluator, // TR::ifdcmpge		// double compare and branch if greater than or equal
+    TR::TreeEvaluator::ifdcmpgtEvaluator, // TR::ifdcmpgt		// double compare and branch if greater than
+    TR::TreeEvaluator::ifdcmpleEvaluator, // TR::ifdcmple		// double compare and branch if less than or equal
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::ifdcmpequEvaluator ,	// TR::ifdcmpequ		// double compare and branch if equal or unordered
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::ifdcmpneuEvaluator ,	// TR::ifdcmpneu		// double compare and branch if not equal or unordered
     TR::TreeEvaluator::unImpOpEvaluator ,        // TODO:ARM64: Enable when Implemented: TR::TreeEvaluator::ifdcmpltuEvaluator ,	// TR::ifdcmpltu		// double compare and branch if less than or unordered

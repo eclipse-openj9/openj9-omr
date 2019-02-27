@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -21,48 +21,48 @@
 
 #include "p/codegen/PPCSystemLinkage.hpp"
 
-#include <stddef.h>                            // for NULL, size_t
-#include <stdint.h>                            // for uint32_t, int32_t, etc
-#include "codegen/CodeGenerator.hpp"           // for CodeGenerator, etc
-#include "codegen/GCStackAtlas.hpp"            // for GCStackAtlas
-#include "codegen/InstOpCode.hpp"              // for InstOpCode, etc
-#include "codegen/Instruction.hpp"             // for Instruction
-#include "codegen/Linkage.hpp"                 // for Linkage
-#include "codegen/LiveRegister.hpp"            // for TR_LiveRegisters
-#include "codegen/Machine.hpp"                 // for Machine, LOWER_IMMED, etc
-#include "codegen/MemoryReference.hpp"         // for MemoryReference
-#include "codegen/RealRegister.hpp"            // for RealRegister, etc
-#include "codegen/Register.hpp"                // for Register
+#include <stddef.h>
+#include <stdint.h>
+#include "codegen/CodeGenerator.hpp"
+#include "codegen/GCStackAtlas.hpp"
+#include "codegen/InstOpCode.hpp"
+#include "codegen/Instruction.hpp"
+#include "codegen/Linkage.hpp"
+#include "codegen/LiveRegister.hpp"
+#include "codegen/Machine.hpp"
+#include "codegen/MemoryReference.hpp"
+#include "codegen/RealRegister.hpp"
+#include "codegen/Register.hpp"
 #include "codegen/RegisterConstants.hpp"
 #include "codegen/RegisterDependency.hpp"
-#include "codegen/RegisterPair.hpp"            // for RegisterPair
-#include "codegen/TreeEvaluator.hpp"           // for TreeEvaluator
-#include "compile/Compilation.hpp"             // for Compilation
+#include "codegen/RegisterPair.hpp"
+#include "codegen/TreeEvaluator.hpp"
+#include "compile/Compilation.hpp"
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"
 #include "env/CompilerEnv.hpp"
-#include "env/ObjectModel.hpp"                 // for ObjectModel
+#include "env/ObjectModel.hpp"
 #include "env/Processors.hpp"
-#include "env/StackMemoryRegion.hpp"           // for TR::StackMemoryRegion
+#include "env/StackMemoryRegion.hpp"
 #include "env/TRMemory.hpp"
-#include "env/jittypes.h"                      // for uintptrj_t
-#include "il/DataTypes.hpp"                    // for DataTypes::Float, etc
-#include "il/ILOpCodes.hpp"                    // for ILOpCodes, etc
-#include "il/Node.hpp"                         // for Node
-#include "il/Node_inlines.hpp"                 // for Node::getChild, etc
-#include "il/Symbol.hpp"                       // for Symbol
-#include "il/SymbolReference.hpp"              // for SymbolReference
-#include "il/TreeTop.hpp"                      // for TreeTop
-#include "il/TreeTop_inlines.hpp"              // for TreeTop::getNode
-#include "il/symbol/AutomaticSymbol.hpp"       // for AutomaticSymbol
-#include "il/symbol/MethodSymbol.hpp"          // for MethodSymbol
-#include "il/symbol/ParameterSymbol.hpp"       // for ParameterSymbol
-#include "il/symbol/ResolvedMethodSymbol.hpp"  // for ResolvedMethodSymbol
-#include "infra/Array.hpp"                     // for TR_Array
-#include "infra/Assert.hpp"                    // for TR_ASSERT
-#include "infra/List.hpp"                      // for ListIterator, List
+#include "env/jittypes.h"
+#include "il/DataTypes.hpp"
+#include "il/ILOpCodes.hpp"
+#include "il/Node.hpp"
+#include "il/Node_inlines.hpp"
+#include "il/Symbol.hpp"
+#include "il/SymbolReference.hpp"
+#include "il/TreeTop.hpp"
+#include "il/TreeTop_inlines.hpp"
+#include "il/symbol/AutomaticSymbol.hpp"
+#include "il/symbol/MethodSymbol.hpp"
+#include "il/symbol/ParameterSymbol.hpp"
+#include "il/symbol/ResolvedMethodSymbol.hpp"
+#include "infra/Array.hpp"
+#include "infra/Assert.hpp"
+#include "infra/List.hpp"
 #include "p/codegen/GenerateInstructions.hpp"
-#include "p/codegen/PPCOpsDefines.hpp"         // for Op_load, Op_st, etc
+#include "p/codegen/PPCOpsDefines.hpp"
 #include "runtime/Runtime.hpp"
 
 uint32_t
@@ -647,8 +647,8 @@ TR::PPCSystemLinkage::createPrologue(
    TR::RealRegister::RegNum regIndex;
    int32_t                    size = bodySymbol->getLocalMappingCursor();
    int32_t                    argSize;
-    
-   
+
+
 #ifdef __LITTLE_ENDIAN__
    //Move TOCBase into r2
    cursor = loadConstant(cg(), firstNode, (int64_t)(cg()->getTOCBase()), gr2, cursor, false, false);
@@ -1432,8 +1432,6 @@ void TR::PPCSystemLinkage::buildDirectCall(TR::Node *callNode,
    int32_t                        refNum = callSymRef->getReferenceNumber();
 
    //This is not JIT pseudo TOC, but jit-module system TOC.
-   //Unfortunately, Ruby JIT is multiplexing gr2(as system module TOC) for JIT-pseudo TOC
-
 
    if(aix_style_linkage)
          {
@@ -1442,7 +1440,7 @@ void TR::PPCSystemLinkage::buildDirectCall(TR::Node *callNode,
          //for the time being.
          if(TR::Compiler->target.cpu.isBigEndian())
             {
-#if !(defined(PYTHON) || defined(OMR_RUBY) || defined(JITTEST))
+#if !(defined(PYTHON) || defined(JITTEST))
             TR::TreeEvaluator::restoreTOCRegister(callNode, cg(), dependencies);
 #endif
             }
@@ -1463,7 +1461,7 @@ void TR::PPCSystemLinkage::buildDirectCall(TR::Node *callNode,
 
    //Bug fix: JIT doesn't need to restore caller's system TOC since there is no infrastructure to generate
    //         ABI-conforming module of dynamic code.  Plus, linux32 has no system TOC.
-#if defined(PYTHON) || defined(OMR_RUBY) || defined(JITTEST)
+#if defined(PYTHON) || defined(JITTEST)
    TR::TreeEvaluator::restoreTOCRegister(callNode, cg(), dependencies);
 #endif
    }

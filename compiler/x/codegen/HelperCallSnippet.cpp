@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -21,37 +21,38 @@
 
 #include "x/codegen/HelperCallSnippet.hpp"
 
-#include <stddef.h>                              // for NULL
-#include <stdint.h>                              // for int32_t, uint8_t, etc
-#include "codegen/CodeGenerator.hpp"             // for CodeGenerator, etc
-#include "codegen/FrontEnd.hpp"                  // for TR_FrontEnd
-#include "codegen/Instruction.hpp"               // for Instruction
-#include "codegen/Linkage.hpp"                   // for Linkage, etc
-#include "codegen/Machine.hpp"                   // for Machine
-#include "codegen/RealRegister.hpp"              // for RealRegister
+#include <stddef.h>
+#include <stdint.h>
+#include "codegen/CodeGenerator.hpp"
+#include "codegen/FrontEnd.hpp"
+#include "codegen/Instruction.hpp"
+#include "codegen/Linkage.hpp"
+#include "codegen/Machine.hpp"
+#include "codegen/RealRegister.hpp"
 #include "codegen/RegisterConstants.hpp"
 #include "codegen/RegisterDependency.hpp"
-#include "codegen/RegisterDependencyStruct.hpp"  // for RegisterDependency
-#include "codegen/Snippet.hpp"                   // for commentString
+#include "codegen/RegisterDependencyStruct.hpp"
+#include "codegen/Snippet.hpp"
 #include "codegen/SnippetGCMap.hpp"
-#include "compile/Compilation.hpp"               // for Compilation, isSMP
+#include "compile/Compilation.hpp"
 #include "compile/SymbolReferenceTable.hpp"
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"
 #include "env/jittypes.h"
-#include "il/ILOpCodes.hpp"                      // for ILOpCodes::loadaddr
-#include "il/ILOps.hpp"                          // for ILOpCode
-#include "il/Node.hpp"                           // for Node
-#include "il/Node_inlines.hpp"                   // for Node::getChild, etc
-#include "il/Symbol.hpp"                         // for Symbol
-#include "il/SymbolReference.hpp"                // for SymbolReference
-#include "il/symbol/LabelSymbol.hpp"             // for LabelSymbol
-#include "il/symbol/MethodSymbol.hpp"            // for MethodSymbol
+#include "il/ILOpCodes.hpp"
+#include "il/ILOps.hpp"
+#include "il/Node.hpp"
+#include "il/Node_inlines.hpp"
+#include "il/Symbol.hpp"
+#include "il/SymbolReference.hpp"
+#include "il/symbol/LabelSymbol.hpp"
+#include "il/symbol/MethodSymbol.hpp"
 #include "il/symbol/ResolvedMethodSymbol.hpp"
-#include "il/symbol/StaticSymbol.hpp"            // for StaticSymbol
-#include "infra/Assert.hpp"                      // for TR_ASSERT
-#include "ras/Debug.hpp"                         // for TR_Debug
-#include "runtime/Runtime.hpp"                   // for ::TR_HelperAddress
+#include "il/symbol/StaticSymbol.hpp"
+#include "infra/Assert.hpp"
+#include "ras/Debug.hpp"
+#include "runtime/CodeCacheManager.hpp"
+#include "runtime/Runtime.hpp"
 #include "x/codegen/RestartSnippet.hpp"
 #include "env/IO.hpp"
 #include "env/CompilerEnv.hpp"
@@ -282,8 +283,9 @@ uint8_t *TR::X86HelperCallSnippet::genHelperCall(uint8_t *buffer)
 
    _callInstructionBufferAddress = buffer;
 
+   uint8_t *callInstructionAddress = buffer;
    *buffer++ = 0xe8; // CallImm4
-   *(int32_t *)buffer = branchDisplacementToHelper(buffer+4, getDestination(), cg());
+   *(int32_t *)buffer = branchDisplacementToHelper(callInstructionAddress, getDestination(), cg());
 
    cg()->addProjectSpecializedRelocation(buffer,(uint8_t *)getDestination(), NULL, TR_HelperAddress, __FILE__, __LINE__, _callNode);
 
@@ -481,19 +483,22 @@ uint32_t TR::X86HelperCallSnippet::getLength(int32_t estimatedSnippetStart)
 
 
 int32_t TR::X86HelperCallSnippet::branchDisplacementToHelper(
-   uint8_t            *nextInstructionAddress,
+   uint8_t            *callInstructionAddress,
    TR::SymbolReference *helper,
    TR::CodeGenerator   *cg)
    {
    intptrj_t helperAddress = (intptrj_t)helper->getMethodAddress();
+   intptrj_t nextInstructionAddress = (intptrj_t)(callInstructionAddress + 5);
 
-   if (NEEDS_TRAMPOLINE(helperAddress, nextInstructionAddress, cg))
+   if (cg->directCallRequiresTrampoline(helperAddress, (intptrj_t)callInstructionAddress))
       {
-      helperAddress = cg->fe()->indexedTrampolineLookup(helper->getReferenceNumber(), (void *)(nextInstructionAddress-4));
-      TR_ASSERT(IS_32BIT_RIP(helperAddress, nextInstructionAddress), "Local helper trampoline should be reachable directly.\n");
+      helperAddress = TR::CodeCacheManager::instance()->findHelperTrampoline(helper->getReferenceNumber(), (void *)(callInstructionAddress+1));
+
+      TR_ASSERT_FATAL(TR::Compiler->target.cpu.isTargetWithinRIPRange(helperAddress, nextInstructionAddress),
+                      "Local helper trampoline should be reachable directly");
       }
 
-   return (int32_t)(helperAddress - (intptrj_t)(nextInstructionAddress));
+   return (int32_t)(helperAddress - nextInstructionAddress);
    }
 
 

@@ -251,6 +251,8 @@ public:
 
 #if defined(OMR_GC_MODRON_SCAVENGER)
 	MM_SublistPool rememberedSet;
+	uintptr_t oldHeapSizeOnLastGlobalGC;
+	uintptr_t freeOldHeapSizeOnLastGlobalGC;
 #endif /* OMR_GC_MODRON_SCAVENGER */
 #if defined(OMR_GC_STACCATO)
 	MM_RememberedSetSATB* sATBBarrierRememberedSet; /**< The snapshot at the beginning barrier remembered set used for the write barrier */
@@ -1276,6 +1278,11 @@ public:
 		, requestedPageFlags(OMRPORT_VMEM_PAGE_FLAG_NOT_USED)
 		, gcmetadataPageSize(0)
 		, gcmetadataPageFlags(OMRPORT_VMEM_PAGE_FLAG_NOT_USED)
+#if defined(OMR_GC_MODRON_SCAVENGER)
+		, rememberedSet()
+		, oldHeapSizeOnLastGlobalGC(UDATA_MAX)
+		, freeOldHeapSizeOnLastGlobalGC(UDATA_MAX)
+#endif /* OMR_GC_MODRON_SCAVENGER */		
 #if defined(OMR_GC_STACCATO)
 		, sATBBarrierRememberedSet(NULL)
 #endif /* OMR_GC_STACCATO */
@@ -1403,10 +1410,10 @@ public:
 		, scavengerScanOrdering(OMR_GC_SCAVENGER_SCANORDERING_HIERARCHICAL)
 #endif /* OMR_GC_MODRON_SCAVENGER || OMR_GC_VLHGC */
 #if defined(OMR_GC_MODRON_SCAVENGER)
-		, scvTenureRatioHigh(J9_SCV_TENURE_RATIO_HIGH)
-		, scvTenureRatioLow(J9_SCV_TENURE_RATIO_LOW)
+		, scvTenureRatioHigh(OMR_SCV_TENURE_RATIO_HIGH)
+		, scvTenureRatioLow(OMR_SCV_TENURE_RATIO_LOW)
 		, scvTenureFixedTenureAge(OBJECT_HEADER_AGE_MAX)
-		, scvTenureAdaptiveTenureAge(J9_OBJECT_HEADER_AGE_DEFAULT)
+		, scvTenureAdaptiveTenureAge(0)
 		, scvTenureStrategySurvivalThreshold(0.99)
 		, scvTenureStrategyFixed(false)
 		, scvTenureStrategyAdaptive(true)

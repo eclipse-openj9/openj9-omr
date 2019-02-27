@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -21,30 +21,30 @@
 
 #include "z/codegen/OpMemToMem.hpp"
 
-#include <limits.h>                                // for INT_MAX
-#include <stdio.h>                                 // for printf
-#include "codegen/CodeGenerator.hpp"               // for CodeGenerator, etc
-#include "codegen/FrontEnd.hpp"                    // for feGetEnv, etc
-#include "codegen/Linkage.hpp"                     // for Linkage
-#include "codegen/RealRegister.hpp"                // for RealRegister, etc
-#include "codegen/Register.hpp"                    // for Register
+#include <limits.h>
+#include <stdio.h>
+#include "codegen/CodeGenerator.hpp"
+#include "codegen/FrontEnd.hpp"
+#include "codegen/Linkage.hpp"
+#include "codegen/RealRegister.hpp"
+#include "codegen/Register.hpp"
 #include "codegen/RegisterDependency.hpp"
-#include "codegen/TreeEvaluator.hpp"               // for generateLoad32BitConstant, etc
+#include "codegen/TreeEvaluator.hpp"
 #include "codegen/S390Evaluator.hpp"
 #include "compile/SymbolReferenceTable.hpp"
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"
 #include "env/CompilerEnv.hpp"
-#include "env/jittypes.h"                          // for intptrj_t, uintptrj_t
+#include "env/jittypes.h"
 #include "il/AliasSetInterface.hpp"
 #include "il/ILOpCodes.hpp"
-#include "il/ILOps.hpp"                            // for ILOpCode
-#include "il/Node.hpp"                             // for Node
-#include "il/Symbol.hpp"                           // for Symbol, etc
-#include "il/SymbolReference.hpp"                  // for SymbolReference
-#include "il/symbol/LabelSymbol.hpp"              // for LabelSymbol
+#include "il/ILOps.hpp"
+#include "il/Node.hpp"
+#include "il/Symbol.hpp"
+#include "il/SymbolReference.hpp"
+#include "il/symbol/LabelSymbol.hpp"
 #include "il/symbol/ResolvedMethodSymbol.hpp"
-#include "infra/List.hpp"                          // for List
+#include "infra/List.hpp"
 #include "runtime/Runtime.hpp"
 #include "z/codegen/S390GenerateInstructions.hpp"
 #include "z/codegen/S390OutOfLineCodeSection.hpp"
@@ -1929,15 +1929,7 @@ MemInitVarLenTypedMacroOp::generateInstruction()
          cursor = generateRXInstruction(_cg, TR::InstOpCode::ST, _dstNode, _initReg, newMR);
          break;
       case TR::Int64:
-         if (TR::Compiler->target.is64Bit() || _cg->use64BitRegsOn32Bit())
-            {
-            cursor = generateRXInstruction(_cg, TR::InstOpCode::STG, _dstNode, _initReg, newMR);
-            }
-         else
-            {
-            cursor = generateRSInstruction(_cg, TR::InstOpCode::STM, _dstNode, (TR::RegisterPair *) _initReg, newMR);
-            }
-
+         cursor = generateRXInstruction(_cg, TR::InstOpCode::STG, _dstNode, _initReg, newMR);
          break;
       case TR::Float:
          cursor = generateRXInstruction(_cg, TR::InstOpCode::STE, _dstNode, _initReg, newMR);
@@ -1946,10 +1938,7 @@ MemInitVarLenTypedMacroOp::generateInstruction()
          cursor = generateRXInstruction(_cg, TR::InstOpCode::STD, _dstNode, _initReg, newMR);
          break;
       default:
-         if (TR::Compiler->target.is64Bit() || _cg->use64BitRegsOn32Bit())
-            cursor = generateRXInstruction(_cg, TR::InstOpCode::STG, _dstNode, _initReg, newMR);
-         else
-            cursor = generateRXInstruction(_cg, TR::InstOpCode::ST, _dstNode, _initReg, newMR);
+         cursor = generateRXInstruction(_cg, TR::InstOpCode::STG, _dstNode, _initReg, newMR);
          break;
       }
    newMR->stopUsingMemRefRegister(_cg);
@@ -1959,40 +1948,9 @@ MemInitVarLenTypedMacroOp::generateInstruction()
 void
 MemInitVarLenTypedMacroOp::createLoopDependencies(TR::Instruction * cursor)
    {
-   TR::RegisterDependencyConditions * loopDep;
    int32_t core = numCoreDependencies();
-   switch (_destType)
-      {
-      case TR::Int8:
-      case TR::Int16:
-      case TR::Int32:
-      case TR::Float:
-      case TR::Double:
-         loopDep = new (_cg->trHeapMemory()) TR::RegisterDependencyConditions(core, core + 1, _cg);
-         loopDep->addPostCondition(_initReg, TR::RealRegister::AssignAny);
-         break;
-
-      case TR::Int64:
-         if (TR::Compiler->target.is64Bit() || _cg->use64BitRegsOn32Bit())
-            {
-            loopDep = new (_cg->trHeapMemory()) TR::RegisterDependencyConditions(core, core + 1, _cg);
-            loopDep->addPostCondition(_initReg, TR::RealRegister::AssignAny);
-            }
-         else
-            {
-            TR::RegisterPair * valueReg = (TR::RegisterPair *) _initReg;
-            loopDep = new (_cg->trHeapMemory()) TR::RegisterDependencyConditions(core, core + 3, _cg);
-            loopDep->addPostCondition(valueReg, TR::RealRegister::EvenOddPair);
-            loopDep->addPostCondition(valueReg->getHighOrder(), TR::RealRegister::LegalEvenOfPair);
-            loopDep->addPostCondition(valueReg->getLowOrder(), TR::RealRegister::LegalOddOfPair);
-            }
-         break;
-
-      default:
-         loopDep = new (_cg->trHeapMemory()) TR::RegisterDependencyConditions(core, core + 1, _cg);
-         loopDep->addPostCondition(_initReg, TR::RealRegister::AssignAny);
-         break;
-      }
+   TR::RegisterDependencyConditions * loopDep = new (_cg->trHeapMemory()) TR::RegisterDependencyConditions(core, core + 1, _cg);
+   loopDep->addPostCondition(_initReg, TR::RealRegister::AssignAny);
 
    addCoreDependencies(loopDep);
    if (_applyDepLocally)
@@ -2030,16 +1988,8 @@ MemCpyVarLenTypedMacroOp::generateInstruction()
          break;
       case TR::Int64:
       case TR::Double:
-         if (TR::Compiler->target.is64Bit() || _cg->use64BitRegsOn32Bit())
-            {
-            cursor = generateRXInstruction(_cg, TR::InstOpCode::LG, _srcNode, _workReg, srcMR);
-            cursor = generateRXInstruction(_cg, TR::InstOpCode::STG, _dstNode, _workReg, dstMR);
-            }
-         else // needs Reg. Pair on 32bit
-            {
-            cursor = generateRSInstruction(_cg, TR::InstOpCode::LM, _srcNode, _workReg, srcMR);
-            cursor = generateRSInstruction(_cg, TR::InstOpCode::STM, _dstNode, _workReg, dstMR);
-            }
+         cursor = generateRXInstruction(_cg, TR::InstOpCode::LG, _srcNode, _workReg, srcMR);
+         cursor = generateRXInstruction(_cg, TR::InstOpCode::STG, _dstNode, _workReg, dstMR);
          break;
       case TR::Address:
          if (TR::Compiler->target.is64Bit() && !comp->useCompressedPointers())
@@ -2084,74 +2034,15 @@ MemCpyVarLenTypedMacroOp::generateInstruction()
 void
 MemCpyVarLenTypedMacroOp::allocWorkReg()
    {
-   switch (_destType)
-      {
-      case TR::Int8:
-      case TR::Int16:
-      case TR::Int32:
-      case TR::Float:
-         _workReg = _cg->allocateRegister();
-         break;
-
-      case TR::Int64:
-      case TR::Double:
-         if (TR::Compiler->target.is64Bit() || _cg->use64BitRegsOn32Bit())
-            {
-            _workReg = _cg->allocateRegister();
-            }
-         else //needs Reg. Pair on 32bit platform
-         {
-            TR::Register * lowRegister = _cg->allocateRegister();
-            TR::Register * highRegister = _cg->allocateRegister();
-
-            _workReg = _cg->allocateConsecutiveRegisterPair(lowRegister, highRegister);
-            }
-         break;
-
-      default:
-         _workReg = _cg->allocateRegister();
-         break;
-      }
+   _workReg = _cg->allocateRegister();
    }
 
 void
 MemCpyVarLenTypedMacroOp::createLoopDependencies(TR::Instruction * cursor)
    {
-   TR::RegisterDependencyConditions * loopDep;
-
    int32_t core = numCoreDependencies();
-   switch (_destType)
-      {
-      case TR::Int8:
-      case TR::Int16:
-      case TR::Int32:
-      case TR::Float:
-         loopDep = new (_cg->trHeapMemory()) TR::RegisterDependencyConditions(core, core + 1, _cg);
-         loopDep->addPostCondition(_workReg, TR::RealRegister::AssignAny);
-         break;
-
-      case TR::Int64:
-      case TR::Double:
-         if (TR::Compiler->target.is64Bit() || _cg->use64BitRegsOn32Bit())
-            {
-            loopDep = new (_cg->trHeapMemory()) TR::RegisterDependencyConditions(core, core + 1, _cg);
-            loopDep->addPostCondition(_workReg, TR::RealRegister::AssignAny);
-            }
-         else // needs Reg. Pair on 32bit
-         {
-            TR::RegisterPair * valuePair = (TR::RegisterPair *) _workReg;
-            loopDep = new (_cg->trHeapMemory()) TR::RegisterDependencyConditions(core, core + 3, _cg);
-            loopDep->addPostCondition(valuePair, TR::RealRegister::EvenOddPair);
-            loopDep->addPostCondition(valuePair->getHighOrder(), TR::RealRegister::LegalEvenOfPair);
-            loopDep->addPostCondition(valuePair->getLowOrder(), TR::RealRegister::LegalOddOfPair);
-            }
-         break;
-
-      default:
-         loopDep = new (_cg->trHeapMemory()) TR::RegisterDependencyConditions(core, core + 1, _cg);
-         loopDep->addPostCondition(_workReg, TR::RealRegister::AssignAny);
-         break;
-      }
+   TR::RegisterDependencyConditions * loopDep = new (_cg->trHeapMemory()) TR::RegisterDependencyConditions(core, core + 1, _cg);
+   loopDep->addPostCondition(_workReg, TR::RealRegister::AssignAny);
 
    addCoreDependencies(loopDep);
    if (_applyDepLocally)
@@ -2690,7 +2581,7 @@ MemCpyAtomicMacroOp::generateLoop()
          cursor = generateSTXLoop(strideSize(), unalignedLoadOp, unalignedStoreOp, false);
          break;
       default:
-         if ((TR::Compiler->target.is64Bit() || _cg->use64BitRegsOn32Bit()) && !comp->useCompressedPointers())
+         if (!comp->useCompressedPointers())
             {
             cursor = generateSTXLoop(8, TR::InstOpCode::LG, TR::InstOpCode::STG, false);
             }

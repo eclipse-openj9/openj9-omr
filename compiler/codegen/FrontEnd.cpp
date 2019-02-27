@@ -21,22 +21,22 @@
 
 #include "codegen/FrontEnd.hpp"
 
-#include <stdarg.h>                            // for va_end, va_list, etc
-#include <stdint.h>                            // for int32_t
-#include "env/KnownObjectTable.hpp"        // for KnownObjectTable, etc
-#include "compile/Compilation.hpp"             // for Compilation
-#include "compile/CompilationTypes.hpp"        // for TR_CallingContext
-#include "compile/Method.hpp"                  // for TR_Method
+#include <stdarg.h>
+#include <stdint.h>
+#include "env/KnownObjectTable.hpp"
+#include "compile/Compilation.hpp"
+#include "compile/CompilationTypes.hpp"
+#include "compile/Method.hpp"
 #include "control/Options.hpp"
 #include "control/OptionsUtil.hpp"
 #include "control/Options_inlines.hpp"
 #include "env/CompilerEnv.hpp"
-#include "env/CPU.hpp"                         // for Cpu
-#include "env/jittypes.h"                      // for uintptrj_t, etc
-#include "env/PersistentInfo.hpp"              // for PersistentInfo
+#include "env/CPU.hpp"
+#include "env/jittypes.h"
+#include "env/PersistentInfo.hpp"
 
 #if defined(LINUX) || defined(OSX)
-#include <unistd.h>                 // for getpid, intptr_t, pid_t
+#include <unistd.h>
 #endif
 
 
@@ -91,31 +91,6 @@ TR_FrontEnd::classHasBeenReplaced(TR_OpaqueClassBlock *)
    }
 
 uint8_t *
-TR_FrontEnd::allocateCodeMemory(TR::Compilation *, uint32_t warmCodeSize, uint32_t coldCodeSize, uint8_t ** coldCode, bool isMethodHeaderNeeded)
-   {
-   notImplemented("allocateCodeMemory");
-   return 0;
-   }
-
-/*
- * Return conservative approximation of code-cache base.
- */
-uint8_t * TR_FrontEnd::getCodeCacheBase()                          { return 0; }
-uint8_t * TR_FrontEnd::getCodeCacheBase(TR::CodeCache *codeCache)  { return 0; }
-
-/*
- * Return conservative approximation of code cache top.
- */
-uint8_t * TR_FrontEnd::getCodeCacheTop()                           { return (uint8_t*)(~0); }
-uint8_t * TR_FrontEnd::getCodeCacheTop(TR::CodeCache *codeCache)   { return (uint8_t*)(~0); }
-
-void
-TR_FrontEnd::releaseCodeMemory(void *, uint8_t)
-   {
-   notImplemented("releaseCodeMemory");
-   }
-
-uint8_t *
 TR_FrontEnd::allocateRelocationData(TR::Compilation * comp, uint32_t numBytes)
    {
    notImplemented("allocateRelocationData");
@@ -124,18 +99,6 @@ TR_FrontEnd::allocateRelocationData(TR::Compilation * comp, uint32_t numBytes)
 
 bool
 TR_FrontEnd::isMethodTracingEnabled(TR_OpaqueMethodBlock *method)
-   {
-   return false;
-   }
-
-bool
-TR_FrontEnd::isMethodEnterTracingEnabled(TR_OpaqueMethodBlock *method)
-   {
-   return false;
-   }
-
-bool
-TR_FrontEnd::isMethodExitTracingEnabled(TR_OpaqueMethodBlock *method)
    {
    return false;
    }
@@ -205,15 +168,9 @@ TR_FrontEnd::getFormattedName(
 
    }
 
-uintptrj_t
-TR_FrontEnd::getClassDepthAndFlagsValue(TR_OpaqueClassBlock * classPointer)
-   {
-   notImplemented("getClassDepthAndFlagsValue");
-   return 0;
-   }
 
 TR_OpaqueMethodBlock*
-TR_FrontEnd::getMethodFromName(char * className, char *methodName, char *signature, TR_OpaqueMethodBlock *callingMethod)
+TR_FrontEnd::getMethodFromName(char * className, char *methodName, char *signature)
    {
    notImplemented("getMethodFromName");
    return 0;
@@ -331,13 +288,6 @@ TR_FrontEnd::getClassFromMethodBlock(TR_OpaqueMethodBlock *mb)
    return NULL;
    }
 
-int32_t
-TR_FrontEnd::getStringLength(uintptrj_t objectPointer)
-   {
-   notImplemented("getStringLength");
-   return 0;
-   }
-
 intptrj_t
 TR_FrontEnd::getStringUTF8Length(uintptrj_t objectPointer)
    {
@@ -361,15 +311,6 @@ TR_FrontEnd::getClassClassPointer(TR_OpaqueClassBlock *objectClassPointer)
    return 0;
    }
 
-
-TR::CodeCache *
-TR_FrontEnd::getDesignatedCodeCache(TR::Compilation *comp)
-   {
-   notImplemented("getDesignatedCodeCache");
-   return 0;
-   }
-
-
 void
 TR_FrontEnd::reserveTrampolineIfNecessary(TR::Compilation *, TR::SymbolReference *symRef, bool inBinaryEncoding)
    {
@@ -380,12 +321,5 @@ intptrj_t
 TR_FrontEnd::methodTrampolineLookup(TR::Compilation *comp, TR::SymbolReference *symRef, void * callSite)
    {
    notImplemented("methodTrampolineLookup");
-   return 0;
-   }
-
-intptrj_t
-TR_FrontEnd::indexedTrampolineLookup(int32_t helperIndex, void * callSite)
-   {
-   notImplemented("indexedTrampolineLookup");
    return 0;
    }

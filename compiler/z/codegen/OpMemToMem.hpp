@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -22,22 +22,22 @@
 #ifndef OPMEMTOMEM_INCL
 #define OPMEMTOMEM_INCL
 
-#include <stddef.h>                               // for NULL
-#include <stdint.h>                               // for int32_t, int64_t, int8_t, etc
-#include "codegen/CodeGenerator.hpp"              // for CodeGenerator
-#include "codegen/InstOpCode.hpp"                 // for InstOpCode, etc
-#include "codegen/Instruction.hpp"                // for Instruction
-#include "codegen/Machine.hpp"                    // for MAXDISP
+#include <stddef.h>
+#include <stdint.h>
+#include "codegen/CodeGenerator.hpp"
+#include "codegen/InstOpCode.hpp"
+#include "codegen/Instruction.hpp"
+#include "codegen/Machine.hpp"
 #include "codegen/MemoryReference.hpp"
-#include "codegen/RegisterPair.hpp"               // for RegisterPair
-#include "compile/Compilation.hpp"                // for Compilation, comp
+#include "codegen/RegisterPair.hpp"
+#include "compile/Compilation.hpp"
 #include "env/CompilerEnv.hpp"
-#include "env/TRMemory.hpp"                       // for TR_Memory, etc
-#include "env/jittypes.h"                         // for intptrj_t
-#include "il/DataTypes.hpp"                       // for DataTypes, etc
-#include "il/symbol/LabelSymbol.hpp"              // for LabelSymbol
-#include "infra/Assert.hpp"                       // for TR_ASSERT
-#include "z/codegen/S390GenerateInstructions.hpp" // for generate label instructions
+#include "env/TRMemory.hpp"
+#include "env/jittypes.h"
+#include "il/DataTypes.hpp"
+#include "il/symbol/LabelSymbol.hpp"
+#include "infra/Assert.hpp"
+#include "z/codegen/S390GenerateInstructions.hpp"
 
 namespace TR { class Node; }
 namespace TR { class Register; }

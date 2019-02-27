@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -38,6 +38,7 @@ int jitDebugARM;
 #include "env/jittypes.h"
 #include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
+#include "runtime/CodeCacheManager.hpp"
 
 #ifdef J9_PROJECT_SPECIFIC
 #include "arm/codegen/ARMHelperCallSnippet.hpp"
@@ -414,7 +415,6 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARMImmSymInstruction * instr)
    {
    uint8_t *bufferPos = instr->getBinaryEncoding();
    int32_t  imm       = instr->getSourceImmediate();
-   int32_t  distance  = imm - (intptr_t)bufferPos;
 
    TR::SymbolReference      *symRef    = instr->getSymbolReference();
    TR::Symbol                *sym       = symRef->getSymbol();
@@ -422,7 +422,7 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARMImmSymInstruction * instr)
    TR_ResolvedMethod     *callee    = calleeSym ? calleeSym->getResolvedMethod() : NULL;
 
    bool longJump = imm &&
-                   (distance > BRANCH_FORWARD_LIMIT || distance < BRANCH_BACKWARD_LIMIT) &&
+                   _cg->directCallRequiresTrampoline((intptrj_t)imm, (intptrj_t)bufferPos) &&
                    (!callee || !callee->isSameMethod(_comp->getCurrentMethod()));
 
    if (bufferPos != NULL && longJump)
@@ -823,21 +823,20 @@ void
 TR_Debug::printARMHelperBranch(TR::SymbolReference *symRef, uint8_t *bufferPos, TR::FILE *pOutFile, const char * opcodeName)
    {
    TR::MethodSymbol *methodSym = symRef->getSymbol()->castToMethodSymbol();
-   uintptr_t        target    = (uintptr_t)methodSym->getMethodAddress();
-   int32_t          distance  = target - (uintptr_t)bufferPos;
-   char            *info      = "";
+   intptrj_t         target    = (intptrj_t)methodSym->getMethodAddress();
+   char             *info      = "";
 
-   if ((distance > BRANCH_FORWARD_LIMIT || distance < BRANCH_BACKWARD_LIMIT))
+   if (_cg->directCallRequiresTrampoline(target, (intptrj_t)bufferPos))
       {
       int32_t refNum = symRef->getReferenceNumber();
       if (refNum < TR_ARMnumRuntimeHelpers)
          {
-         target = _comp->fe()->indexedTrampolineLookup(refNum, (void *)bufferPos);
+         target = TR::CodeCacheManager::instance()->findHelperTrampoline(refNum, (void *)bufferPos);
          info   = " through trampoline";
          }
       else if (*((uintptr_t*)bufferPos) == 0xe28fe004)  // This is a JNI method
          {
-         target = *((uintptr_t*)(bufferPos+8));
+         target = *((intptrj_t*)(bufferPos+8));
          info   = " long jump";
          }
       else
@@ -1505,31 +1504,14 @@ TR_Debug::print(TR::FILE *pOutFile, TR::ARMRecompilationSnippet * snippet)
 
    printSnippetLabel(pOutFile, snippet->getSnippetLabel(), cursor, "Counting Recompilation Snippet");
 
-   char     *info = "";
-   int32_t   distance;
-   uintptr_t target;
    TR::SymbolReference *symRef = _cg->getSymRef(TR_ARMcountingRecompileMethod);
-   int32_t refNum = symRef->getReferenceNumber();
-   if ((distance > BRANCH_FORWARD_LIMIT || distance < BRANCH_BACKWARD_LIMIT))
-      {
-      target = _comp->fe()->indexedTrampolineLookup(refNum, (void *)cursor);
-      info = " Through trampoline";
-      }
+   printARMHelperBranch(symRef, cursor, pOutFile);
+   cursor += 4;
 
-   const char *name = getName(symRef);
-   printPrefix(pOutFile, NULL, cursor, 4);
-   if (name)
-      trfprintf(pOutFile, "bl\t%s\t;%s (" POINTER_PRINTF_FORMAT ")", name, info, target);
-   else
-      trfprintf(pOutFile, "bl\t" POINTER_PRINTF_FORMAT "\t\t;%s", target, info);
-   printPrefix(pOutFile, NULL, cursor, 4);
-
-#ifdef J9_PROJECT_SPECIFIC
    // methodInfo
    printPrefix(pOutFile, NULL, cursor, 4);
    trfprintf(pOutFile, "dd \t0x%08x\t\t;%s", _comp->getRecompilationInfo()->getMethodInfo(), "methodInfo");
    cursor += 4;
-#endif
 
    // startPC
    printPrefix(pOutFile, NULL, cursor, 4);

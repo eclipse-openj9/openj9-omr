@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -21,18 +21,18 @@
 
 #include "compile/Method.hpp"
 
-#include <string.h>                            // for memchr
-#include "compile/Compilation.hpp"             // for Compilation
-#include "compile/ResolvedMethod.hpp"          // for TR_ResolvedMethod
-#include "compile/SymbolReferenceTable.hpp"    // for SymbolReferenceTable
+#include <string.h>
+#include "compile/Compilation.hpp"
+#include "compile/ResolvedMethod.hpp"
+#include "compile/SymbolReferenceTable.hpp"
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"
-#include "env/jittypes.h"                      // for intptrj_t, uintptrj_t
-#include "il/SymbolReference.hpp"              // for classNameToSignature
-#include "il/symbol/ParameterSymbol.hpp"       // for ParameterSymbol
-#include "il/symbol/ResolvedMethodSymbol.hpp"  // for ResolvedMethodSymbol
-#include "infra/List.hpp"                      // for ListAppender
-#include "runtime/Runtime.hpp"                 // for TR_RuntimeHelper
+#include "env/jittypes.h"
+#include "il/SymbolReference.hpp"
+#include "il/symbol/ParameterSymbol.hpp"
+#include "il/symbol/ResolvedMethodSymbol.hpp"
+#include "infra/List.hpp"
+#include "runtime/Runtime.hpp"
 
 class TR_FrontEnd;
 class TR_OpaqueMethodBlock;

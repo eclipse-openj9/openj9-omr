@@ -21,44 +21,44 @@
 
 #include "x/codegen/FPTreeEvaluator.hpp"
 
-#include <stdint.h>                                   // for uint8_t, etc
-#include <stdio.h>                                    // for NULL, printf, etc
-#include "codegen/CodeGenerator.hpp"                  // for CodeGenerator, etc
+#include <stdint.h>
+#include <stdio.h>
+#include "codegen/CodeGenerator.hpp"
 #include "codegen/ConstantDataSnippet.hpp"
-#include "codegen/FrontEnd.hpp"                       // for feGetEnv
-#include "codegen/Linkage.hpp"                        // for Linkage
+#include "codegen/FrontEnd.hpp"
+#include "codegen/Linkage.hpp"
 #include "codegen/LinkageConventionsEnum.hpp"
 #include "codegen/LiveRegister.hpp"
-#include "codegen/Machine.hpp"                        // for Machine
+#include "codegen/Machine.hpp"
 #include "codegen/MemoryReference.hpp"
 #include "codegen/RealRegister.hpp"
-#include "codegen/Register.hpp"                       // for Register
+#include "codegen/Register.hpp"
 #include "codegen/RegisterConstants.hpp"
 #include "codegen/RegisterDependency.hpp"
-#include "codegen/RegisterPair.hpp"                   // for RegisterPair
+#include "codegen/RegisterPair.hpp"
 #include "codegen/TreeEvaluator.hpp"
-#include "compile/Compilation.hpp"                    // for Compilation
+#include "compile/Compilation.hpp"
 #include "compile/ResolvedMethod.hpp"
 #include "compile/SymbolReferenceTable.hpp"
 #include "control/Options.hpp"
 #include "control/Options_inlines.hpp"
 #include "env/CompilerEnv.hpp"
-#include "env/TRMemory.hpp"                           // for TR_HeapMemory, etc
-#include "env/jittypes.h"                             // for intptrj_t
-#include "il/DataTypes.hpp"                           // for DataTypes, etc
-#include "il/ILOpCodes.hpp"                           // for ILOpCodes, etc
-#include "il/ILOps.hpp"                               // for ILOpCode
-#include "il/Node.hpp"                                // for Node, etc
+#include "env/TRMemory.hpp"
+#include "env/jittypes.h"
+#include "il/DataTypes.hpp"
+#include "il/ILOpCodes.hpp"
+#include "il/ILOps.hpp"
+#include "il/Node.hpp"
 #include "il/Node_inlines.hpp"
-#include "il/Symbol.hpp"                              // for Symbol
+#include "il/Symbol.hpp"
 #include "il/SymbolReference.hpp"
-#include "il/TreeTop.hpp"                             // for TreeTop
+#include "il/TreeTop.hpp"
 #include "il/TreeTop_inlines.hpp"
-#include "il/symbol/LabelSymbol.hpp"                  // for LabelSymbol
-#include "il/symbol/MethodSymbol.hpp"                 // for MethodSymbol
+#include "il/symbol/LabelSymbol.hpp"
+#include "il/symbol/MethodSymbol.hpp"
 #include "il/symbol/ResolvedMethodSymbol.hpp"
-#include "infra/Assert.hpp"                           // for TR_ASSERT
-#include "infra/List.hpp"                             // for List, etc
+#include "infra/Assert.hpp"
+#include "infra/List.hpp"
 #include "runtime/Runtime.hpp"
 #include "x/codegen/FPBinaryArithmeticAnalyser.hpp"
 #include "x/codegen/FPCompareAnalyser.hpp"
@@ -66,7 +66,7 @@
 #include "x/codegen/RegisterRematerialization.hpp"
 #include "x/codegen/X86FPConversionSnippet.hpp"
 #include "x/codegen/X86Instruction.hpp"
-#include "x/codegen/X86Ops.hpp"                       // for ::LABEL, ::JE4, etc
+#include "x/codegen/X86Ops.hpp"
 #include "x/codegen/X86Register.hpp"
 
 namespace TR { class Instruction; }

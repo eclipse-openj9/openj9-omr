@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -33,23 +33,23 @@ namespace OMR { typedef OMR::X86::CodeGenerator CodeGeneratorConnector; }
 
 #include "compiler/codegen/OMRCodeGenerator.hpp"
 
-#include "codegen/Machine.hpp"                 // for Machine, etc
+#include "codegen/Machine.hpp"
 #include "codegen/RealRegister.hpp"
-#include "codegen/Register.hpp"                // for Register
+#include "codegen/Register.hpp"
 #include "codegen/ScratchRegisterManager.hpp"
-#include "compile/Compilation.hpp"             // for Compilation
-#include "env/jittypes.h"                      // for intptrj_t
-#include "il/SymbolReference.hpp"              // for SymbolReference
-#include "il/symbol/AutomaticSymbol.hpp"       // for AutomaticSymbol
-#include "il/symbol/ResolvedMethodSymbol.hpp"  // for ResolvedMethodSymbol
-#include "infra/BitVector.hpp"                 // for TR_BitVector
+#include "compile/Compilation.hpp"
+#include "env/jittypes.h"
+#include "il/SymbolReference.hpp"
+#include "il/symbol/AutomaticSymbol.hpp"
+#include "il/symbol/ResolvedMethodSymbol.hpp"
+#include "infra/BitVector.hpp"
 #include "infra/TRlist.hpp"
-#include "x/codegen/X86Ops.hpp"                // for TR_X86OpCodes
-#include "x/codegen/X86Register.hpp"           // for TR_X86FPStackRegister, etc
+#include "x/codegen/X86Ops.hpp"
+#include "x/codegen/X86Register.hpp"
 #include "env/CompilerEnv.hpp"
 
 #if defined(LINUX) || defined(OSX)
-#include <sys/time.h>                          // for timeval
+#include <sys/time.h>
 #endif
 
 #include "codegen/Instruction.hpp"
@@ -604,6 +604,17 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
 
    virtual void simulateNodeEvaluation (TR::Node *node, TR_RegisterPressureState *state, TR_RegisterPressureSummary *summary);
 
+   /**
+    * @brief Answers whether a trampoline is required for a direct call instruction to
+    *           reach a target address.
+    *
+    * @param[in] targetAddress : the absolute address of the call target
+    * @param[in] sourceAddress : the absolute address of the call instruction
+    *
+    * @return : true if a trampoline is required; false otherwise.
+    */
+   bool directCallRequiresTrampoline(intptrj_t targetAddress, intptrj_t sourceAddress);
+
    protected:
 
    CodeGenerator();
@@ -813,7 +824,7 @@ class OMR_EXTENSIBLE CodeGenerator : public OMR::CodeGenerator
 //
 
 #if defined(TR_TARGET_64BIT)
-#define NEEDS_TRAMPOLINE(target, rip, cg) (cg->alwaysUseTrampolines() || !IS_32BIT_RIP((target), (rip)))
+#define NEEDS_TRAMPOLINE(target, rip, cg) (cg->directCallRequiresTrampoline((intptrj_t)target, (intptrj_t)rip))
 #else
 // Give the C++ compiler a hand
 #define NEEDS_TRAMPOLINE(target, rip, cg) (0)

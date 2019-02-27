@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018 IBM Corp. and others
+ * Copyright (c) 2000, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -34,7 +34,7 @@
 #include "codegen/RegisterPair.hpp"
 #include "codegen/TreeEvaluator.hpp"
 #include "compile/SymbolReferenceTable.hpp"
-#include "compile/VirtualGuard.hpp"                  // for TR_VirtualGuard
+#include "compile/VirtualGuard.hpp"
 #include "env/CompilerEnv.hpp"
 #include "infra/Bit.hpp"
 #include "il/Block.hpp"
@@ -44,7 +44,7 @@
 #include "il/TreeTop_inlines.hpp"
 
 #ifdef J9_PROJECT_SPECIFIC
-#include "env/CHTable.hpp"                      // for TR_AOTGuardSite, etc
+#include "env/CHTable.hpp"
 #endif
 
 static void lookupScheme1(TR::CodeGenerator *cg, TR::Node *node, bool unbalanced);

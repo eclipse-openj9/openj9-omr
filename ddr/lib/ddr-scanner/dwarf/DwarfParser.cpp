@@ -467,7 +467,7 @@ parseAttribute(char *line, Dwarf_Die *lastCreatedDie,
 			} else if (DW_FORM_udata == form) {
 				newAttr->_udata = strtoul(line + span + 1, NULL, 0);
 			} else if (DW_FORM_sdata == form) {
-				newAttr->_udata = strtol(line + span + 1, NULL, 0);
+				newAttr->_sdata = strtol(line + span + 1, NULL, 0);
 			} else if (DW_FORM_flag == form) {
 				size_t whitespace = strspn(line + span + 1, " \t") + span + 1;
 				if (0 == strncmp(line + whitespace, "true", 4)) {

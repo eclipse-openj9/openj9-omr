@@ -2107,17 +2107,7 @@ static const char *commonNonhelperSymbolNames[] =
    "<atomicSwap32Bit>",
    "<atomicSwap64Bit>",
    "<atomicCompareAndSwap32Bit>",
-   "<atomicCompareAndSwap64Bit>",
-   "<pythonFrame_CodeObject>",
-   "<pythonFrame_FastLocals>",
-   "<pythonFrame_Globals>",
-   "<pythonFrame_Builtins>",
-   "<pythonCode_Constants>",
-   "<pythonCode_NumLocals>",
-   "<pythonCode_Names>",
-   "<pythonObject_Type>",
-   "<pythonType_IteratorMethod>",
-   "<pythonObject_ReferenceCount>"
+   "<atomicCompareAndSwap64Bit>"
    };
 
 const char *
@@ -2169,21 +2159,6 @@ TR_Debug::getShadowName(TR::SymbolReference * symRef)
          {
          return symRef->getSymbol()->getNamedShadowSymbol()->getName();
          }
-
-      if (symRef->getSymbol()->isPythonLocalVariableShadowSymbol())
-         {
-         auto comp = TR::comp();
-         return symRef->getOwningMethod(comp)->localName(symRef->getOffset() / TR::DataType::getSize(TR::Address),
-                                                         -1,
-                                                         comp->trMemory());
-         }
-
-      if (symRef->getSymbol()->isPythonConstantShadowSymbol())
-         return "<constant>";
-
-      if (symRef->getSymbol()->isPythonNameShadowSymbol())
-         return "<name>";
-
       }
 
    const int32_t numCommonNonhelperSymbols = TR::SymbolReferenceTable::lastCommonNonhelperSymbol - TR::SymbolReferenceTable::firstCommonNonhelperNonArrayShadowSymbol - TR_numCCPreLoadedCode;
@@ -3666,90 +3641,6 @@ TR_Debug::dump(TR::FILE *pOutFile, TR_CHTable * chTable)
 const char *
 TR_Debug::getRuntimeHelperName(int32_t index)
    {
-
-#if defined(PYTHON)
-   if (index <= PyHelper_Last)
-      {
-      switch (index)
-         {
-         case PyHelper_TupleGetItem:                 return "PyTuple_GetItem";
-         case PyHelper_UnaryNot:                     return "Py_doUnaryNot";
-         case PyHelper_BinaryRemainder:              return "Py_doBinaryRemainder";
-         case PyHelper_BinaryAdd:                    return "Py_doBinaryAdd";
-         case PyHelper_InPlaceAdd:                   return "Py_doInPlaceAdd";
-         case PyHelper_LoadGlobal:                   return "Py_LoadGlobal";
-         case PyHelper_ListAppend:                   return "PyList_Append";
-         case PyHelper_ObjectDelItem:                return "PyObject_DelItem";
-         case PyHelper_ObjectGetItem:                return "PyObject_GetItem";
-         case PyHelper_ObjectGetIter:                return "PyObject_GetIter";
-         case PyHelper_ObjectRichCompare:            return "PyObject_RichCompare";
-         case PyHelper_NumberPositive:               return "PyNumber_Positive";
-         case PyHelper_NumberNegative:               return "PyNumber_Negative";
-         case PyHelper_NumberInvert:                 return "PyNumber_Invert";
-         case PyHelper_NumberPower:                  return "PyNumber_Power";
-         case PyHelper_NumberMultiply:               return "PyNumber_Multiply";
-         case PyHelper_NumberTrueDivide:             return "PyNumber_TrueDivide";
-         case PyHelper_NumberFloorDivide:            return "PyNumber_FloorDivide";
-         case PyHelper_NumberSubtract:               return "PyNumber_Subtract";
-         case PyHelper_NumberLshift:                 return "PyNumber_Lshift";
-         case PyHelper_NumberRshift:                 return "PyNumber_Rshift";
-         case PyHelper_NumberAnd:                    return "PyNumber_And";
-         case PyHelper_NumberXor:                    return "PyNumber_Xor";
-         case PyHelper_NumberOr:                     return "PyNumber_Or";
-         case PyHelper_NumberInPlacePower:           return "PyNumber_InPlacePower";
-         case PyHelper_NumberInPlaceMultiply:        return "PyNumber_InPlaceMultiply";
-         case PyHelper_NumberInPlaceTrueDivide:      return "PyNumber_InPlaceTrueDivide";
-         case PyHelper_NumberInPlaceFloorDivide:     return "PyNumber_InPlaceFloorDivide";
-         case PyHelper_NumberInPlaceRemainder:       return "PyNumber_InPlaceRemainder";
-         case PyHelper_NumberInPlaceSubtract:        return "PyNumber_InPlaceSubtract";
-         case PyHelper_NumberInPlaceLshift:          return "PyNumber_InPlaceLshift";
-         case PyHelper_NumberInPlaceRshift:          return "PyNumber_InPlaceRshift";
-         case PyHelper_NumberInPlaceAnd:             return "PyNumber_InPlaceAnd";
-         case PyHelper_NumberInPlaceXor:             return "PyNumber_InPlaceXor";
-         case PyHelper_NumberInPlaceOr:              return "PyNumber_InPlaceOr";
-         case PyHelper_SequenceContains:             return "PySequence_Contains";
-         case PyHelper_SetAdd:                       return "PySet_Add";
-         case PyHelper_exceptionFromFrame:           return "Py_exceptionFromFrame";
-         case PyHelper_exceptionOnByteCode:          return "Py_exceptionOnByteCode";
-         case PyHelper_exceptionOnByteCodeAndReturn: return "Py_exceptionOnByteCode";
-         case PyHelper_exceptionLoadFast:            return "Py_exceptionLoadFast";
-         case PyHelper_exceptionLoadFastAndReturn:   return "Py_exceptionLoadFastNoHandler";
-         case PyHelper_compareOpForExceptionMatch:   return "Py_compareOpForExceptionMatch";
-         case PyHelper_ObjectSetItem:                return "PyObject_SetItem";
-         case PyHelper_DictSetItem:                  return "PyDict_SetItem";
-         case PyHelper_ObjectIsTrue:                 return "PyObject_IsTrue";
-         case PyHelper_callfunction:                 return "call_function";
-         case PyHelper_long_neg:                     return "long_neg";
-         case PyHelper_long_long:                    return "long_long";
-         case PyHelper_long_add:                     return "long_add";
-         case PyHelper_long_sub:                     return "long_sub";
-         case PyHelper_long_mul:                     return "long_mul";
-         case PyHelper_long_div:                     return "long_div";
-         case PyHelper_long_true_divide:             return "long_true_divide";
-         case PyHelper_long_mod:                     return "long_mod";
-         case PyHelper_long_lshift:                  return "long_lshift";
-         case PyHelper_long_rshift:                  return "long_rshift";
-         case PyHelper_long_and:                     return "long_and";
-         case PyHelper_long_xor:                     return "long_xor";
-         case PyHelper_long_or:                      return "long_or";
-         case PyHelper_UnpackSequence:               return "unpack_iterable";
-         case PyHelper_TupleNew:                     return "PyTuple_New";
-         case PyHelper_TupleSetItem:                 return "PyTuple_SetItem";
-         case PyHelper_ListNew:                      return "PyList_New";
-         case PyHelper_ListSetItem:                  return "PyList_SetItem";
-         case PyHelper_SetNew:                       return "PySet_New";
-         case PyHelper_DictNewPresized:              return "_PyDict_NewPresized";
-         case PyHelper_SliceNew:                     return "PySlice_New";
-         case PyHelper_ObjectGetAttr:                return "PyObject_GetAttr";
-         case PyHelper_ObjectSetAttr:                return "PyObject_SetAttr";
-         case PyHelper_DestroyObject:                return "_Py_Dealloc";
-         case PyHelper_DictDelItem:                  return "PyDict_DelItem";
-         case PyHelper_IncRef:                       return "Py_IncRef";
-         case PyHelper_DecRef:                       return "Py_DecRef";
-         case PyHelper_StopIterating:                return "stopIterating";
-         }
-      }
-#endif
 
 #ifdef J9_PROJECT_SPECIFIC
    if (index < TR_FSRH)

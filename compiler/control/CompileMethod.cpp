@@ -184,7 +184,7 @@ int32_t init_options(TR::JitConfig *jitConfig, char *cmdLineOptions)
 
    if (cmdLineOptions)
       {
-      // The callers (python) guarantee that we have at least -Xjit in cmdline options
+      // The callers must guarantee that we have at least -Xjit in cmdline options
       //
       cmdLineOptions += 5; // skip the leading -Xjit
       if (*cmdLineOptions == ':') cmdLineOptions++; // also skip :

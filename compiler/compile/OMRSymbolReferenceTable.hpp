@@ -285,18 +285,6 @@ class SymbolReferenceTable
       atomicSwap64BitSymbol,
       atomicCompareAndSwapSymbol,
 
-      // python symbols start here
-      pythonFrameCodeObjectSymbol,   // code object from the frame object
-      pythonFrameFastLocalsSymbol,   // fastlocals array base from the frame object
-      pythonFrameGlobalsSymbol,      // globals dict object from the frame object
-      pythonFrameBuiltinsSymbol,     // builtins dict object from the frame object
-      pythonCodeConstantsSymbol,     // the code constants tuple object
-      pythonCodeNumLocalsSymbol,     // number of local variables from the code object
-      pythonCodeNamesSymbol,         // names tuple object from the code object
-      pythonObjectTypeSymbol,        // type pointer from a python object
-      pythonTypeIteratorMethodSymbol,// used for the iterator method slot from a python type
-      pythonObjectRefCountSymbol,
-
       firstPerCodeCacheHelperSymbol,
       lastPerCodeCacheHelperSymbol = firstPerCodeCacheHelperSymbol + TR_numCCPreLoadedCode - 1,
 

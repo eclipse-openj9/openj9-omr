@@ -143,31 +143,6 @@ static_assert(TR::NumIlOps ==
 
 #define OPT_DETAILS "O^O CODE GENERATION: "
 
-TR::Node* generatePoisonNode(TR::Compilation *comp, TR::Block *currentBlock, TR::SymbolReference *liveAutoSymRef)
-   {
-
-   bool poisoned = true;
-   TR::Node *storeNode = NULL;
-
-   if (liveAutoSymRef->getSymbol()->getType().isAddress())
-       storeNode = TR::Node::createStore(liveAutoSymRef, TR::Node::aconst(currentBlock->getEntry()->getNode(), 0x0));
-   else if (liveAutoSymRef->getSymbol()->getType().isInt64())
-       storeNode = TR::Node::createStore(liveAutoSymRef, TR::Node::lconst(currentBlock->getEntry()->getNode(), 0xc1aed1e5));
-   else if (liveAutoSymRef->getSymbol()->getType().isInt32())
-       storeNode = TR::Node::createStore(liveAutoSymRef, TR::Node::iconst(currentBlock->getEntry()->getNode(), 0xc1aed1e5));
-   else
-         poisoned = false;
-
-   if (comp->getOption(TR_TraceCG) && comp->getOption(TR_PoisonDeadSlots))
-      {
-      if (poisoned)
-         traceMsg(comp, "POISON DEAD SLOTS --- Live local %d  from parent block %d going dead .... poisoning slot with node 0x%x .\n", liveAutoSymRef->getReferenceNumber() , currentBlock->getNumber(), storeNode);
-      else
-         traceMsg(comp, "POISON DEAD SLOTS --- Live local %d of unsupported type from parent block %d going dead .... poisoning skipped.\n", liveAutoSymRef->getReferenceNumber() , currentBlock->getNumber());
-      }
-
-   return storeNode;
-   }
 
 TR::Instruction *
 OMR::CodeGenerator::generateNop(TR::Node * node, TR::Instruction *instruction, TR_NOPKind nopKind)

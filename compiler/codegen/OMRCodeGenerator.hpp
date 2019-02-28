@@ -1907,8 +1907,6 @@ class OMR_EXTENSIBLE CodeGenerator
    TR::list<TR::Register*> *_firstTimeLiveOOLRegisterList;
    TR::list<OMR::RegisterUsage*> *_referencedRegistersList;
    int32_t _currentPathDepth;
-   TR::list<TR::Node*> _nodesUnderComputeCCList;
-   TR::list<TR::Node*> _nodesToUncommonList;
    TR::list<TR::Node*> _nodesSpineCheckedList;
 
    TR::list<TR_Pair<TR_ResolvedMethod, TR::Instruction> *> _jniCallSites; // list of instrutions representing direct jni call sites

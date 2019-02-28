@@ -1961,7 +1961,7 @@
                 , "flags": []
                 , "return": "none"
                 , "parms": [
-                    {"name":"vmState","type":"VirtualMachineOperandArray"},
+                    {"name":"vmState","type":"VirtualMachineState"},
                     {"name":"b","type":"IlBuilder"}
                     ]
                 }
@@ -2048,7 +2048,7 @@
                 , "flags": []
                 , "return": "none"
                 , "parms": [
-                    {"name":"vmState","type":"VirtualMachineOperandStack"},
+                    {"name":"vmState","type":"VirtualMachineState"},
                     {"name":"b","type":"IlBuilder"}
                     ]
                 }

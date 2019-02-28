@@ -681,9 +681,6 @@ TR_S390RegisterDependencyGroup::checkRegisterPairSufficiencyAndHPRAssignment(TR:
       if (realRegI == TR::RealRegister::EvenOddPair)
          numReqPairs++;
 
-      // Set HPR or 64-bit register assignment flags
-      virtRegI->setIsNotHighWordUpgradable(true);
-
       if (virtRegI &&
             virtRegI->getKind() != TR_FPR &&
             virtRegI->getKind() != TR_VRF)

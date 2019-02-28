@@ -479,8 +479,6 @@ public:
    // Query to codegen to know if regs are available or not
    bool isLitPoolFreeForAssignment();
 
-   // zGryphon HPR
-   TR::Instruction * upgradeToHPRInstruction(TR::Instruction * inst);
    // REG ASSOCIATION
    //
    bool enableRegisterAssociations();

@@ -121,7 +121,6 @@
    {  include:  [  "\"z/codegen/OMRRegisterIterator.hpp\"",              private,  "\"codegen/RegisterIterator.hpp\"",                public  ]  },
 
    {  include:  [  "\"codegen/OMRRegisterPair.hpp\"",                    private,  "\"codegen/RegisterPair.hpp\"",                    public  ]  },
-   {  include:  [  "\"z/codegen/OMRRegisterPair.hpp\"",                  private,  "\"codegen/RegisterPair.hpp\"",                    public  ]  },
 
    {  include:  [  "\"codegen/OMRSnippet.hpp\"",                         private,  "\"codegen/Snippet.hpp\"",                         public  ]  },
    {  include:  [  "\"arm/codegen/OMRSnippet.hpp\"",                     private,  "\"codegen/Snippet.hpp\"",                         public  ]  },

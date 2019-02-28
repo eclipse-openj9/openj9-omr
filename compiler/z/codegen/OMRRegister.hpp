@@ -92,9 +92,6 @@ class OMR_EXTENSIBLE Register: public OMR::Register
    void setAssignToHPR(bool b = true)              {_flags.set(AssignToHPR, b);}
    bool assignToGPR();
 
-   bool isHighWordUpgradable();
-   void setIsNotHighWordUpgradable(bool b = true){_flags.set(IsNotHighWordUpgradable, b);}
-
    bool isSpilledToHPR() {return (_flags.testAny(SpilledToHPR));}
    void setSpilledToHPR(bool b = true)             {_flags.set(SpilledToHPR, b);}
 
@@ -140,7 +137,6 @@ class OMR_EXTENSIBLE Register: public OMR::Register
          IsUsedInMemRef                = 0x0800, // 390 cannot associate GPR0 to regs used in memrefs
          Is64Bit                       = 0x0002, // 390 flag indicates that this Register contained a 64-bit value
          AssignToHPR                   = 0x0004, // 390 flag indicates that this virtual register needs to be assigned to an HPR
-         IsNotHighWordUpgradable       = 0x2000, // 390 flag indicates that this Reg can be upgraded to use HPR
          SpilledToHPR                  = 0x4000, // 390 flag indicates that this virtual register is spilled to
          DependencySet                 = 0x0200,  // 390 flag, post dependancy was assigned
 

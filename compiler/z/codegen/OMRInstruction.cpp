@@ -1011,22 +1011,6 @@ OMR::Z::Instruction::useSourceRegister(TR::Register * reg)
          }
       }
 
-   // mark used bit for HW/LW virtual regs
-   if (self()->cg()->supportsHighWordFacility())
-      {
-      if (!self()->isHPRUpgradable(_targetRegSize+_sourceRegSize-1))
-         {
-         reg->setIsNotHighWordUpgradable(true);
-         }
-
-      if (reg->getRegisterPair())
-         {
-         reg->setIsNotHighWordUpgradable(true);
-         reg->getLowOrder()->setIsNotHighWordUpgradable(true);
-         reg->getHighOrder()->setIsNotHighWordUpgradable(true);
-         }
-      }
-
    return _sourceRegSize-1;   // index into the source register array
    }
 
@@ -1154,23 +1138,7 @@ OMR::Z::Instruction::useTargetRegister(TR::Register* reg)
             reg->getHighOrder()->setIs64BitReg(true);
             }
          }
-
-   // mark used bit for HW/LW virtual regs
-   if (self()->cg()->supportsHighWordFacility())
-      {
-      if (!self()->isHPRUpgradable(_targetRegSize+_sourceRegSize-1))
-         {
-         reg->setIsNotHighWordUpgradable(true);
-         }
-
-      if (reg->getRegisterPair())
-         {
-         reg->setIsNotHighWordUpgradable(true);
-         reg->getLowOrder()->setIsNotHighWordUpgradable(true);
-         reg->getHighOrder()->setIsNotHighWordUpgradable(true);
-         }
-      }
-
+   
    return _targetRegSize-1;      // index into the target register array
    }
 

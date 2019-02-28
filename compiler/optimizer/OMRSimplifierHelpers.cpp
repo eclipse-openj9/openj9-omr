@@ -141,7 +141,7 @@ void setIsHighWordZero(TR::Node * node, TR::Simplifier * s)
       node->setIsHighWordZero(false);
    }
 
-TR::Node *_gotoSimplifier(TR::Node * node, TR::Block * block,  TR::TreeTop* curTree,  TR::Optimization * s)
+TR::Node *_gotoSimplifier(TR::Node * node, TR::Block * block, TR::TreeTop* curTree, TR::Optimization * s)
    {
    if (branchToFollowingBlock(node, block, s->comp()))
       {
@@ -149,7 +149,7 @@ TR::Node *_gotoSimplifier(TR::Node * node, TR::Block * block,  TR::TreeTop* curT
          {
          TR_ASSERT(node->getFirstChild()->getOpCodeValue() == TR::GlRegDeps, "Expecting TR::GlRegDeps");
 
-         // has GlRegDeps(after GRA), can be removed only if BBExit has exaclty the same GlRegDeps
+         // has GlRegDeps(after GRA), can be removed only if BBExit has exactly the same GlRegDeps
          if (block->getExit()->getNode()->getNumChildren() == 0)
             return node;
          if (!s->optimizer()->areNodesEquivalent(node->getFirstChild(), block->getExit()->getNode()->getFirstChild()))

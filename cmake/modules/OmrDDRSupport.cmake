@@ -25,6 +25,7 @@ endif()
 set(_OMR_DDR_SUPPORT 1)
 
 include(OmrAssert)
+include(OmrUtility)
 include(ExternalProject)
 
 set(OMR_MODULES_DIR ${CMAKE_CURRENT_LIST_DIR})
@@ -71,7 +72,7 @@ function(target_enable_ddr tgt ddr_set)
 
 	get_property(DDR_BIN_DIR TARGET "${DDR_SET_TARGET}" PROPERTY DDR_BIN_DIR)
 
-	string(JOIN "\n" MAGIC_TEMPLATE
+	omr_join("\n" MAGIC_TEMPLATE
 		"SOURCE_DIR"
 		"$<TARGET_PROPERTY:${tgt},SOURCE_DIR>"
 		"INCLUDE_PATH"

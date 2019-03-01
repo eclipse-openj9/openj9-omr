@@ -755,6 +755,25 @@ class TR_LoopVersioner : public TR_LoopTransformer
       TR::Node * const _nullCheckNode;
       };
 
+   class RemoveBoundCheck : public LoopImprovement
+      {
+      public:
+      TR_ALLOC(TR_Memory::LoopTransformer)
+
+      RemoveBoundCheck(
+         TR_LoopVersioner *versioner,
+         LoopEntryPrep *prep,
+         TR::TreeTop *boundCheckTree)
+         : LoopImprovement(versioner, prep)
+         , _boundCheckTree(boundCheckTree)
+         {}
+
+      virtual void improveLoop();
+
+      private:
+      TR::TreeTop * const _boundCheckTree;
+      };
+
    bool shouldOnlySpecializeLoops() { return _onlySpecializingLoops; }
    void setOnlySpecializeLoops(bool b) { _onlySpecializingLoops = b; }
 
@@ -810,7 +829,8 @@ class TR_LoopVersioner : public TR_LoopTransformer
    bool detectChecksToBeEliminated(TR_RegionStructure *, List<TR::Node> *, List<TR::TreeTop> *, List<int32_t> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<int32_t> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::Node> *, List<TR_NodeParentSymRef> *,List<TR_NodeParentSymRefWeightTuple> *, bool &);
 
    void buildNullCheckComparisonsTree(List<TR::Node> *, List<TR::TreeTop> *);
-   void buildBoundCheckComparisonsTree(List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *,List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::Node> *, bool);
+   void buildBoundCheckComparisonsTree(List<TR::TreeTop> *, List<TR::TreeTop> *, bool);
+   void createRemoveBoundCheck(TR::TreeTop *, LoopEntryPrep *, List<TR::TreeTop> *);
    void buildSpineCheckComparisonsTree(List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::Node> *);
    void buildDivCheckComparisonsTree(List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::Node> *);
    void buildAwrtbariComparisonsTree(List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::Node> *);

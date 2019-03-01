@@ -3909,7 +3909,7 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
    if (!divCheckTrees->isEmpty() &&
       !shouldOnlySpecializeLoops())
       {
-      buildDivCheckComparisonsTree(nullCheckTrees, divCheckTrees, checkCastTrees, arrayStoreCheckTrees, &comparisonTrees);
+      buildDivCheckComparisonsTree(divCheckTrees);
       }
 
    //Construct the tests for invariant expressions that need to be checked for write barriers.
@@ -5143,19 +5143,17 @@ void TR_LoopVersioner::buildAwrtbariComparisonsTree(List<TR::TreeTop> *awrtbariT
    }
 
 
-void TR_LoopVersioner::buildDivCheckComparisonsTree(List<TR::TreeTop> *nullCheckTrees, List<TR::TreeTop> *divCheckTrees, List<TR::TreeTop> *checkCastTrees, List<TR::TreeTop> *arrayStoreCheckTrees, List<TR::Node> *comparisonTrees)
+void TR_LoopVersioner::buildDivCheckComparisonsTree(List<TR::TreeTop> *divCheckTrees)
    {
    ListElement<TR::TreeTop> *nextTree = divCheckTrees->getListHead();
    while (nextTree)
       {
       TR::TreeTop *divCheckTree = nextTree->getData();
       TR::Node *divCheckNode = divCheckTree->getNode();
-      collectAllExpressionsToBeChecked(divCheckNode->getFirstChild()->getSecondChild(), comparisonTrees);
 
       if (performTransformation(
             comp(),
-            "%s Creating test outside loop for checking if n%un [%p] "
-            "is divide by zero\n",
+            "%s Creating test outside loop for checking if n%un [%p] is divide by zero\n",
             OPT_DETAILS_LOOP_VERSIONER,
             divCheckNode->getGlobalIndex(),
             divCheckNode))
@@ -5166,16 +5164,31 @@ void TR_LoopVersioner::buildDivCheckComparisonsTree(List<TR::TreeTop> *nullCheck
             ifNode =  TR::Node::createif(TR::iflcmpeq, duplicateDivisor, TR::Node::create(duplicateDivisor, TR::lconst, 0, 0), _exitGotoTarget);
          else
             ifNode =  TR::Node::createif(TR::ificmpeq, duplicateDivisor, TR::Node::create(duplicateDivisor, TR::iconst, 0, 0), _exitGotoTarget);
-         comparisonTrees->add(ifNode);
-         dumpOptDetails(comp(), "The node %p has been created for testing if div check is required\n", ifNode);
-         TR::Node::recreate(divCheckNode, TR::treetop);
+
+         LoopEntryPrep *prep = createLoopEntryPrep(LoopEntryPrep::TEST, ifNode);
+         if (prep != NULL)
+            {
+            nodeWillBeRemovedIfPossible(divCheckNode, prep);
+            _curLoop->_loopImprovements.push_back(
+               new (_curLoop->_memRegion) RemoveDivCheck(this, prep, divCheckNode));
+            }
          }
+
       nextTree = nextTree->getNextElement();
       }
    }
 
+void TR_LoopVersioner::RemoveDivCheck::improveLoop()
+   {
+   dumpOptDetails(
+      comp(),
+      "Removing div check n%un [%p]\n",
+      _divCheckNode->getGlobalIndex(),
+      _divCheckNode);
 
-
+   TR_ASSERT_FATAL(_divCheckNode->getOpCodeValue() == TR::DIVCHK, "unexpected opcode");
+   TR::Node::recreate(_divCheckNode, TR::treetop);
+   }
 
 void TR_LoopVersioner::buildCheckCastComparisonsTree(List<TR::TreeTop> *nullCheckTrees, List<TR::TreeTop> *divCheckTrees, List<TR::TreeTop> *checkCastTrees, List<TR::TreeTop> *arrayStoreCheckTrees, List<TR::Node> *comparisonTrees)
 

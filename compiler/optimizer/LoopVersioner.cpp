@@ -4389,27 +4389,7 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
    // to be cast.
    //
    if (!checkCastTrees->isEmpty())
-      {
       buildCheckCastComparisonsTree(nullCheckTrees, divCheckTrees, checkCastTrees, arrayStoreCheckTrees, &comparisonTrees, clonedLoopInvariantBlock);
-
-      ListElement<TR::TreeTop> *nextTree = checkCastTrees->getListHead();
-      while (nextTree)
-         {
-         TR::TreeTop *checkCastTree = nextTree->getData();
-         TR::Node *checkCastNode = checkCastTree->getNode();
-
-         TR::TreeTop *prevTreeTop = checkCastTree->getPrevTreeTop();
-         TR::TreeTop *nextTreeTop = checkCastTree->getNextTreeTop();
-         TR::TreeTop *firstNewTree = TR::TreeTop::create(comp(), TR::Node::create(TR::treetop, 1, checkCastNode->getFirstChild()), NULL, NULL);
-         TR::TreeTop *secondNewTree = TR::TreeTop::create(comp(), TR::Node::create(TR::treetop, 1, checkCastNode->getSecondChild()), NULL, NULL);
-         prevTreeTop->join(firstNewTree);
-         firstNewTree->join(secondNewTree);
-         secondNewTree->join(nextTreeTop);
-         checkCastNode->recursivelyDecReferenceCount();
-
-         nextTree = nextTree->getNextElement();
-         }
-      }
 
    if (!arrayStoreCheckTrees->isEmpty())
       buildArrayStoreCheckComparisonsTree(nullCheckTrees, divCheckTrees, checkCastTrees, arrayStoreCheckTrees, &comparisonTrees, clonedLoopInvariantBlock);
@@ -5293,8 +5273,38 @@ void TR_LoopVersioner::buildCheckCastComparisonsTree(List<TR::TreeTop> *nullChec
       {
       TR::TreeTop *checkCastTree = nextTree->getData();
       TR::Node *checkCastNode = checkCastTree->getNode();
+
+      if (!performTransformation(
+            comp(),
+            "%s Creating test outside loop for checking that checkcast n%un [%p] passes\n",
+            OPT_DETAILS_LOOP_VERSIONER,
+            checkCastNode->getGlobalIndex(),
+            checkCastNode))
+         {
+         nextTree = nextTree->getNextElement();
+         continue;
+         }
+
       vcount_t visitCount = comp()->incVisitCount();
-      collectAllExpressionsToBeChecked(nullCheckTrees, divCheckTrees, checkCastTrees, arrayStoreCheckTrees, checkCastNode, comparisonTrees, exitGotoBlock, visitCount);
+      collectAllExpressionsToBeChecked(nullCheckTrees, divCheckTrees, checkCastTrees, arrayStoreCheckTrees, checkCastNode->getChild(0), comparisonTrees, exitGotoBlock, visitCount);
+      collectAllExpressionsToBeChecked(nullCheckTrees, divCheckTrees, checkCastTrees, arrayStoreCheckTrees, checkCastNode->getChild(1), comparisonTrees, exitGotoBlock, visitCount);
+
+      TR::Node *duplicateClassPtr = checkCastNode->getSecondChild()->duplicateTreeForCodeMotion();
+      TR::Node *duplicateCheckedValue = checkCastNode->getFirstChild()->duplicateTreeForCodeMotion();
+      TR::Node *instanceofNode = TR::Node::createWithSymRef(TR::instanceof, 2, 2, duplicateCheckedValue, duplicateClassPtr, comp()->getSymRefTab()->findOrCreateInstanceOfSymbolRef(comp()->getMethodSymbol()));
+      TR::Node *ificmpeqNode =  TR::Node::createif(TR::ificmpeq, instanceofNode, TR::Node::create(checkCastNode, TR::iconst, 0, 0), exitGotoBlock->getEntry());
+      comparisonTrees->add(ificmpeqNode);
+      dumpOptDetails(comp(), "The node %p has been created for testing if checkcast is required\n", ificmpeqNode);
+
+      TR::TreeTop *prevTreeTop = checkCastTree->getPrevTreeTop();
+      TR::TreeTop *nextTreeTop = checkCastTree->getNextTreeTop();
+      TR::TreeTop *firstNewTree = TR::TreeTop::create(comp(), TR::Node::create(TR::treetop, 1, checkCastNode->getFirstChild()), NULL, NULL);
+      TR::TreeTop *secondNewTree = TR::TreeTop::create(comp(), TR::Node::create(TR::treetop, 1, checkCastNode->getSecondChild()), NULL, NULL);
+      prevTreeTop->join(firstNewTree);
+      firstNewTree->join(secondNewTree);
+      secondNewTree->join(nextTreeTop);
+      checkCastNode->recursivelyDecReferenceCount();
+
       nextTree = nextTree->getNextElement();
       }
    }
@@ -7926,37 +7936,10 @@ void TR_LoopVersioner::collectAllExpressionsToBeChecked(List<TR::TreeTop> *nullC
       }
    else if (node->getOpCode().isCheckCast()) //(node->getOpCodeValue() == TR::checkcast)
       {
-      // This is a checkcast node; so we need to insert the
-      // corresponding instanceof check.
-      //
-      ListElement<TR::TreeTop> *checkCastTree = checkCastTrees->getListHead();
-      while (checkCastTree)
-         {
-         TR::Node *checkCastNode = checkCastTree->getData()->getNode();
-         if (checkCastNode->getOpCode().isCheckCast()) //(checkCastNode->getOpCodeValue() == TR::checkcast)
-            {
-            if ((checkCastNode == node) && performTransformation(comp(), "%s Creating test outside loop for checking if %p is casted\n", OPT_DETAILS_LOOP_VERSIONER, node))
-               {
-               TR::Node *duplicateClassPtr = node->getSecondChild()->duplicateTreeForCodeMotion();
-               TR::Node *duplicateCheckedValue = node->getFirstChild()->duplicateTreeForCodeMotion();
-               if (node->getOpCodeValue() == TR::checkcastAndNULLCHK)
-                  {
-                  TR::Node *duplicateNullCheckReference = node->getFirstChild()->duplicateTreeForCodeMotion();
-                  TR::Node *ifacmpeqNode =  TR::Node::createif(TR::ifacmpeq, duplicateNullCheckReference, TR::Node::aconst(node, 0),  exitGotoBlock->getEntry());
-                  comparisonTrees->add(ifacmpeqNode);
-                  dumpOptDetails(comp(), "The node %p has been created for testing if null check is required\n", ifacmpeqNode);
-                  }
-
-              TR::Node *instanceofNode = TR::Node::createWithSymRef(TR::instanceof, 2, 2, duplicateCheckedValue,  duplicateClassPtr, comp()->getSymRefTab()->findOrCreateInstanceOfSymbolRef(comp()->getMethodSymbol()));
-               TR::Node *ificmpeqNode =  TR::Node::createif(TR::ificmpeq, instanceofNode, TR::Node::create(node, TR::iconst, 0, 0), exitGotoBlock->getEntry());
-               comparisonTrees->add(ificmpeqNode);
-               dumpOptDetails(comp(), "The node %p has been created for testing if checkcast is required\n", ificmpeqNode);
-               break;
-               }
-            }
-
-         checkCastTree = checkCastTree->getNextElement();
-         }
+      TR_ASSERT_FATAL(
+         false,
+         "collectAllExpressionsToBeChecked: n%un is a checkcast",
+         node->getGlobalIndex());
       }
    }
 

@@ -3823,14 +3823,6 @@ TR::Register *OMR::X86::TreeEvaluator::PrefetchEvaluator(TR::Node *node, TR::Cod
    return NULL;
    }
 
-
-void
-TR_X86ComputeCC::bitwise32(TR::Node *node, TR::Register *ccReg, TR::Register *target,
-                             TR::CodeGenerator *cg)
-   {
-   generateRegInstruction(SETNE1Reg, node, ccReg, cg);
-   }
-
 bool
 TR_X86ComputeCC::setCarryBorrow(TR::Node *flagNode, bool invertValue, TR::CodeGenerator *cg)
    {

@@ -105,7 +105,6 @@
 #endif
 
 static int32_t identifyFarConditionalBranches(int32_t estimate, TR::CodeGenerator *cg);
-extern TR::Register *computeCC_bitwise(TR::CodeGenerator *cg, TR::Node *node, TR::Register *targetReg, bool needsZeroExtension = true);
 
 
 

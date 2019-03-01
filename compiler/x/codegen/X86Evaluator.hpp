@@ -69,7 +69,6 @@ class TR_X86ComputeCC : public TR::TreeEvaluator
    {
    public:
 
-   static void bitwise32(TR::Node *node, TR::Register *ccReg, TR::Register *target, TR::CodeGenerator *cg);
    static bool setCarryBorrow(TR::Node *flagNode, bool invertValue, TR::CodeGenerator *cg);
 
    };

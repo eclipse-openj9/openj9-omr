@@ -3981,7 +3981,7 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
       buildCheckCastComparisonsTree(checkCastTrees);
 
    if (!arrayStoreCheckTrees->isEmpty())
-      buildArrayStoreCheckComparisonsTree(nullCheckTrees, divCheckTrees, checkCastTrees, arrayStoreCheckTrees, &comparisonTrees);
+      buildArrayStoreCheckComparisonsTree(arrayStoreCheckTrees);
 
    // Construct tests for invariant expressions
    //
@@ -5263,12 +5263,17 @@ void TR_LoopVersioner::RemoveCheckCast::improveLoop()
    checkCastNode->recursivelyDecReferenceCount();
    }
 
-void TR_LoopVersioner::buildArrayStoreCheckComparisonsTree(List<TR::TreeTop> *nullCheckTrees, List<TR::TreeTop> *divCheckTrees, List<TR::TreeTop> *checkCastTrees, List<TR::TreeTop> *arrayStoreCheckTrees, List<TR::Node> *comparisonTrees)
+void TR_LoopVersioner::buildArrayStoreCheckComparisonsTree(List<TR::TreeTop> *arrayStoreCheckTrees)
    {
    ListElement<TR::TreeTop> *nextTree = arrayStoreCheckTrees->getListHead();
    while (nextTree)
       {
-      if (!performTransformation(comp(), "%s Creating test outside loop for checking if %p is casted\n", OPT_DETAILS_LOOP_VERSIONER, nextTree->getData()->getNode()))
+      if (!performTransformation(
+            comp(),
+            "%s Creating test outside loop for checking if n%un [%p] is casted\n",
+            OPT_DETAILS_LOOP_VERSIONER,
+            nextTree->getData()->getNode()->getGlobalIndex(),
+            nextTree->getData()->getNode()))
 	 {
          nextTree = nextTree->getNextElement();
          continue;
@@ -5277,12 +5282,6 @@ void TR_LoopVersioner::buildArrayStoreCheckComparisonsTree(List<TR::TreeTop> *nu
 
       TR::TreeTop *arrayStoreCheckTree = nextTree->getData();
       TR::Node *arrayStoreCheckNode = arrayStoreCheckTree->getNode();
-
-      // this is a general fix
-      // NOTE: since buildArrayStoreCheckComparisonTree only checks part
-      // of the arrayStoreCheckNode for invariancy, we should only call
-      // collectExprToBeChecked on the same subtree to avoid versioning for
-      // other part of the tree that may be loop variant
 
       TR::Node *childNode = arrayStoreCheckNode->getFirstChild();
       TR::Node *arrayNode = NULL;
@@ -5298,66 +5297,78 @@ void TR_LoopVersioner::buildArrayStoreCheckComparisonsTree(List<TR::TreeTop> *nu
       TR::Node *addressNode = valueNode->getFirstChild();
       TR_ASSERT(addressNode->getOpCode().isArrayRef(), "expecting array ref for addressNode");
       TR::Node *childOfAddressNode = addressNode->getFirstChild();
-      collectAllExpressionsToBeChecked(childOfAddressNode, comparisonTrees);
 
       TR::Node *duplicateSrcArray = arrayNode->duplicateTreeForCodeMotion();
       TR::Node *duplicateClassPtr = TR::Node::createWithSymRef(TR::aloadi, 1, 1, duplicateSrcArray, comp()->getSymRefTab()->findOrCreateVftSymbolRef());
-
-      collectAllExpressionsToBeChecked(duplicateClassPtr, comparisonTrees);
-
       TR::Node *duplicateCheckedValue = childOfAddressNode->duplicateTreeForCodeMotion();
 
       TR::Node *instanceofNode = TR::Node::createWithSymRef(TR::instanceof, 2, 2, duplicateCheckedValue,  duplicateClassPtr, comp()->getSymRefTab()->findOrCreateInstanceOfSymbolRef(comp()->getMethodSymbol()));
       TR::Node *ificmpeqNode =  TR::Node::createif(TR::ificmpeq, instanceofNode, TR::Node::create(arrayStoreCheckNode, TR::iconst, 0, 0), _exitGotoTarget);
-      comparisonTrees->add(ificmpeqNode);
-      dumpOptDetails(comp(), "The node %p has been created for testing if arraystorecheck is required\n", ificmpeqNode);
 
-      TR::TreeTop *prevTreeTop = arrayStoreCheckTree->getPrevTreeTop();
-      TR::TreeTop *nextTreeTop = arrayStoreCheckTree->getNextTreeTop();
-      TR::TreeTop *firstNewTree = TR::TreeTop::create(comp(), TR::Node::create(TR::treetop, 1, arrayStoreCheckNode->getFirstChild()), NULL, NULL);
-      TR::Node *child = arrayStoreCheckNode->getFirstChild();
-      if (child->getOpCodeValue() == TR::awrtbari && TR::Compiler->om.writeBarrierType() == gc_modron_wrtbar_none &&
-         performTransformation(comp(), "%sChanging awrtbari node [%p] to an iastore\n", OPT_DETAILS_LOOP_VERSIONER, child))
+      LoopEntryPrep *prep = createLoopEntryPrep(LoopEntryPrep::TEST, ificmpeqNode);
+      if (prep != NULL)
          {
-         TR::Node::recreate(child, TR::astorei);
-         child->getChild(2)->recursivelyDecReferenceCount();
-         child->setNumChildren(2);
+         nodeWillBeRemovedIfPossible(arrayStoreCheckNode, prep);
+         _curLoop->_loopImprovements.push_back(
+            new (_curLoop->_memRegion) RemoveArrayStoreCheck(
+               this,
+               prep,
+               arrayStoreCheckTree));
          }
-
-      TR::TreeTop *secondNewTree = NULL;
-      if (arrayStoreCheckNode->getNumChildren() > 1)
-         {
-         TR_ASSERT((arrayStoreCheckNode->getNumChildren() == 2), "Unknown array store check tree\n");
-         secondNewTree = TR::TreeTop::create(comp(), TR::Node::create(TR::treetop, 1, arrayStoreCheckNode->getSecondChild()), NULL, NULL);
-         child = arrayStoreCheckNode->getSecondChild();
-         if (child->getOpCodeValue() == TR::awrtbari && TR::Compiler->om.writeBarrierType() == gc_modron_wrtbar_none &&
-             performTransformation(comp(), "%sChanging awrtbari node [%p] to an iastore\n", OPT_DETAILS_LOOP_VERSIONER, child))
-            {
-            TR::Node::recreate(child, TR::astorei);
-            child->getChild(2)->recursivelyDecReferenceCount();
-            child->setNumChildren(2);
-            }
-         }
-
-      prevTreeTop->join(firstNewTree);
-      if (secondNewTree)
-         {
-         firstNewTree->join(secondNewTree);
-         secondNewTree->join(nextTreeTop);
-         }
-      else
-         firstNewTree->join(nextTreeTop);
-
-      arrayStoreCheckNode->recursivelyDecReferenceCount();
 
       nextTree = nextTree->getNextElement();
       }
    }
 
+void TR_LoopVersioner::RemoveArrayStoreCheck::improveLoop()
+   {
+   TR::Node *arrayStoreCheckNode = _arrayStoreCheckTree->getNode();
+   dumpOptDetails(
+      comp(),
+      "Removing array store check n%un [%p]\n",
+      arrayStoreCheckNode->getGlobalIndex(),
+      arrayStoreCheckNode);
 
+   TR_ASSERT_FATAL(arrayStoreCheckNode->getOpCodeValue() == TR::ArrayStoreCHK, "unexpected opcode");
 
+   TR::TreeTop *prevTreeTop = _arrayStoreCheckTree->getPrevTreeTop();
+   TR::TreeTop *nextTreeTop = _arrayStoreCheckTree->getNextTreeTop();
+   TR::TreeTop *firstNewTree = TR::TreeTop::create(comp(), TR::Node::create(TR::treetop, 1, arrayStoreCheckNode->getFirstChild()), NULL, NULL);
+   TR::Node *child = arrayStoreCheckNode->getFirstChild();
+   if (child->getOpCodeValue() == TR::awrtbari && TR::Compiler->om.writeBarrierType() == gc_modron_wrtbar_none &&
+      performTransformation(comp(), "%sChanging awrtbari node [%p] to an iastore\n", OPT_DETAILS_LOOP_VERSIONER, child))
+      {
+      TR::Node::recreate(child, TR::astorei);
+      child->getChild(2)->recursivelyDecReferenceCount();
+      child->setNumChildren(2);
+      }
 
+   TR::TreeTop *secondNewTree = NULL;
+   if (arrayStoreCheckNode->getNumChildren() > 1)
+      {
+      TR_ASSERT((arrayStoreCheckNode->getNumChildren() == 2), "Unknown array store check tree\n");
+      secondNewTree = TR::TreeTop::create(comp(), TR::Node::create(TR::treetop, 1, arrayStoreCheckNode->getSecondChild()), NULL, NULL);
+      child = arrayStoreCheckNode->getSecondChild();
+      if (child->getOpCodeValue() == TR::awrtbari && TR::Compiler->om.writeBarrierType() == gc_modron_wrtbar_none &&
+          performTransformation(comp(), "%sChanging awrtbari node [%p] to an iastore\n", OPT_DETAILS_LOOP_VERSIONER, child))
+         {
+         TR::Node::recreate(child, TR::astorei);
+         child->getChild(2)->recursivelyDecReferenceCount();
+         child->setNumChildren(2);
+         }
+      }
 
+   prevTreeTop->join(firstNewTree);
+   if (secondNewTree)
+      {
+      firstNewTree->join(secondNewTree);
+      secondNewTree->join(nextTreeTop);
+      }
+   else
+      firstNewTree->join(nextTreeTop);
+
+   arrayStoreCheckNode->recursivelyDecReferenceCount();
+   }
 
 void TR_LoopVersioner::convertSpecializedLongsToInts(TR::Node *node, vcount_t visitCount, TR::SymbolReference **symRefs)
    {

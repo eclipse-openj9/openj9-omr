@@ -21,7 +21,7 @@
 
 #include "omrcfg.h"
 
-#if defined(OMR_GC_SCAVENGER_DELEGATE)
+#if defined(OMR_GC_MODRON_SCAVENGER)
 
 #include "ScavengerDelegate.hpp"
 
@@ -167,4 +167,4 @@ MM_ScavengerDelegate::fixupDestroyedSlot(MM_EnvironmentBase *env, MM_ForwardedHe
 	Assert_MM_unimplemented();
 }
 #endif /* defined (OMR_INTERP_COMPRESSED_OBJECT_HEADER) */
-#endif /* defined(OMR_GC_SCAVENGER_DELEGATE) */
+#endif /* defined(OMR_GC_MODRON_SCAVENGER) */

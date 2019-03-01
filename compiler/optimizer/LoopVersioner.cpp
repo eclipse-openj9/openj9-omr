@@ -92,6 +92,10 @@
 #include "env/VMJ9.h"
 #endif
 
+#if defined (_MSC_VER) && (_MSC_VER < 1900)
+#define snprintf _snprintf
+#endif
+
 #define DEFAULT_LOOP_LIMIT 100000000
 
 
@@ -155,7 +159,9 @@ TR_LoopVersioner::TR_LoopVersioner(TR::OptimizationManager *manager, bool onlySp
      _refineLoopAliases(refineAliases),_addressingTooComplicated(false),
    _visitedNodes(comp()->getNodeCount() /*an estimate*/, trMemory(), heapAlloc, growable),
    _checksInDupHeader(trMemory()),
-   _exitGotoTarget(NULL)
+   _exitGotoTarget(NULL),
+   _curLoop(NULL),
+   _invalidateAliasSets(false)
    {
    _nonInlineGuardConditionalsWillNotBeEliminated = false;
    setOnlySpecializeLoops(onlySpecialize);
@@ -400,6 +406,10 @@ int32_t TR_LoopVersioner::performWithoutDominators()
       if (trace())
          comp()->dumpMethodTrees("Trees after this versioning");
 
+      TR::Region curLoopMemRegion(stackMemoryRegion);
+      CurLoop curLoop(comp(), curLoopMemRegion, naturalLoop);
+      _curLoop = &curLoop;
+
       TR_ScratchList<TR::Node> nullCheckedReferences(trMemory());
       TR_ScratchList<TR::TreeTop> nullCheckTrees(trMemory());
       TR_ScratchList<int32_t> numIndirections(trMemory());
@@ -449,7 +459,10 @@ int32_t TR_LoopVersioner::performWithoutDominators()
       _derivedVersionableInductionVariables.deleteAll();
 
       if(detectCanonicalizedPredictableLoops(naturalLoop, NULL, -1)<0)  //if there was a problem detecting, move to next iteration of the loop
+         {
+         _curLoop = NULL;
          continue;
+         }
 
       _loopConditionInvariant = false;
 
@@ -459,7 +472,11 @@ int32_t TR_LoopVersioner::performWithoutDominators()
                                                                   &checkCastTrees, &arrayStoreCheckTrees, &specializedInvariantNodes, invariantNodes,
                                                                   &invariantTranslationNodesList, discontinue);
 
-      if (discontinue) continue;
+      if (discontinue)
+         {
+         _curLoop = NULL;
+         continue;
+         }
 
       if (_loopTestTree)
          {
@@ -717,15 +734,16 @@ int32_t TR_LoopVersioner::performWithoutDominators()
                }
             }
          }
+
+      _curLoop = NULL;
       }
 
-   ////if (!_virtualGuardPairs.isEmpty())
+   // If there are any entries in _virtualGuardInfo, they were taken into
+   // account in the above analyses (i.e. their cold calls were assumed to have
+   // been removed from the loop after transformation), so at this point loop
+   // transfer is mandatory.
    if (!_virtualGuardInfo.isEmpty())
-      {
-      bool disableLT = comp()->getOption(TR_DisableLoopTransfer);
-      if (!disableLT)
-         performLoopTransfer();
-      }
+      performLoopTransfer();
 
    // Use/def info and value number info are now bad.
    //
@@ -758,6 +776,9 @@ int32_t TR_LoopVersioner::performWithoutDominators()
       }
 
    //comp()->dumpMethodTrees("Trees after this versioning");
+
+   if (_invalidateAliasSets)
+      optimizer()->setAliasSetsAreValid(false);
 
    return 1; // actual cost
    }
@@ -1372,8 +1393,11 @@ bool TR_LoopVersioner::detectInvariantTrees(TR_RegionStructure *whileLoop, List<
          {
          isTreeInvariant = true;
 
-         if (onlyDetectHighlyBiasedBranches && (thisChild || nextRealNode) &&
-             node->isTheVirtualGuardForAGuardedInlinedCall() && !node->isHCRGuard())
+         if (onlyDetectHighlyBiasedBranches
+             && (thisChild || nextRealNode)
+             && node->isTheVirtualGuardForAGuardedInlinedCall()
+             && !node->isHCRGuard()
+             && !node->isBreakpointGuard())
             {
             if (!guardInfo)
                guardInfo = comp()->findVirtualGuardInfo(node);
@@ -1443,7 +1467,7 @@ bool TR_LoopVersioner::detectInvariantTrees(TR_RegionStructure *whileLoop, List<
                   }
                }
             }
-         else if (!node->isHCRGuard())
+         else if (!node->isHCRGuard() && !node->isBreakpointGuard())
             {
             for (int32_t childNum=0;childNum < node->getNumChildren(); childNum++)
                {
@@ -2430,6 +2454,10 @@ bool TR_LoopVersioner::isExprInvariant(TR::Node *node, bool ignoreHeapificationS
 
 	bool TR_LoopVersioner::isExprInvariantRecursive(TR::Node *node, bool ignoreHeapificationStore)
    {
+   static const bool paranoid = feGetEnv("TR_paranoidVersioning") != NULL;
+   if (paranoid && requiresPrivatization(node))
+      return false;
+
    if (_visitedNodes.isSet(node->getGlobalIndex()))
       return true;
 
@@ -3384,12 +3412,24 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
 
       TR::Node *lastTree = nextBlock->getLastRealTreeTop()->getNode();
       bool disableLT = comp()->getOption(TR_DisableLoopTransfer);
-      if (!disableLT &&
-          lastTree->getOpCode().isIf() &&
-          blocksInWhileLoop.find(lastTree->getBranchDestination()->getNode()->getBlock()) &&
-          lastTree->isTheVirtualGuardForAGuardedInlinedCall() &&
-          isBranchSuitableToDoLoopTransfer(&blocksInWhileLoop, lastTree, comp()))
+      if (!disableLT
+         && lastTree->getOpCode().isIf()
+         && blocksInWhileLoop.find(lastTree->getBranchDestination()->getNode()->getBlock())
+         && lastTree->isTheVirtualGuardForAGuardedInlinedCall()
+         && isBranchSuitableToDoLoopTransfer(&blocksInWhileLoop, lastTree, comp())
+         && performTransformation(
+               comp(),
+               "%s Adding loop transfer candidate (VirtualGuardPair) for n%un [%p]\n",
+               OPT_DETAILS_LOOP_VERSIONER,
+               lastTree->getGlobalIndex(),
+               lastTree))
          {
+         dumpOptDetails(
+            comp(),
+            "hotGuardBlock %d coldGuardBlock %d\n",
+            nextBlock->getNumber(),
+            nextClonedBlock->getNumber());
+
          // create the virtual guard info for this loop
          //
          if (!vgInfo)
@@ -3402,7 +3442,6 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
          VirtualGuardPair *virtualGuardPair = (VirtualGuardPair *) trMemory()->allocateStackMemory(sizeof(VirtualGuardPair));
          virtualGuardPair->_hotGuardBlock = nextBlock;
          virtualGuardPair->_coldGuardBlock = nextClonedBlock;
-         traceMsg(comp(), "virtualGuardPair at guard node %p hotGuardBlock %d coldGuardBlock %d\n", nextBlock->getLastRealTreeTop()->getNode(), nextBlock->getNumber(), nextClonedBlock->getNumber());
          virtualGuardPair->_isGuarded = false;
          // check if the virtual guard is in an inner loop
          //
@@ -3418,7 +3457,14 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
             virtualGuardPair->_isInsideInnerLoop = false;
 
          vgInfo->_virtualGuardPairs.add(virtualGuardPair);
-         ///_virtualGuardPair.add(virtualGuardPair);
+
+         // Since we've decided to do loop transfer (assuming that we don't
+         // version this guard first), the taken side of the guard will
+         // definitely be absent from the loop after all transformations have
+         // been done, so it should be ignored when searching the loop for GC
+         // points or calls.
+         _curLoop->_definitelyRemovableNodes.add(lastTree);
+         _curLoop->_optimisticallyRemovableNodes.add(lastTree);
          }
 
       correspondingBlocks[nextBlock->getNumber()] = nextClonedBlock;
@@ -3996,13 +4042,183 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
       invariantNodes->deleteAll();
       }
 
-   if (comparisonTrees.isEmpty() &&
-      _containsGuard && performTransformation(comp(), "%s Creating test outside loop for checking if virtual guard is required\n", OPT_DETAILS_LOOP_VERSIONER))
+   // Attempt to remove any HCR guards in the loop. This is important because
+   // if the loop contains any call, including on the taken side of an HCR
+   // guard, then it is impossible to privatize expressions to ensure they are
+   // invariant.
+   //
+   // TODO: For each of the following, confirm whether installation is a
+   // stop-the-world event. If it is, guards/tests for these can be treated
+   // like HCR guards.
+   // - breakpoints
+   // - method enter/exit hooks
+   //
+   bool safeToRemoveHCRGuards = false;
+   TR_ScratchList<TR::TreeTop> hcrGuards(trMemory());
+   static char *disableLoopHCR = feGetEnv("TR_DisableHCRGuardLoopVersioner");
+
+   if (comp()->getHCRMode() != TR::none && disableLoopHCR == NULL)
       {
-      TR::Node *constNode = TR::Node::create(blockHeadNode, TR::iconst, 0, 0);
-      TR::Node *nextComparisonNode = TR::Node::createif(TR::ificmpne, constNode, constNode, clonedLoopInvariantBlock->getEntry());
-      comparisonTrees.add(nextComparisonNode);
-      dumpOptDetails(comp(), "The node %p has been created for testing if virtual guard is required\n", nextComparisonNode);
+      safeToRemoveHCRGuards = true;
+
+      // Search the part of the loop body that would remain *after removing
+      // all optimistically removable checks and HCR guards*. If the loop would
+      // still contain yield points that allow HCR, then the HCR guards can't
+      // be removed.
+      //
+      // Copy _optimisticallyRemovableNodes to allow the HCR guards to be added
+      // during the search.
+      TR::NodeChecklist removedNodes(comp());
+      removedNodes.add(_curLoop->_optimisticallyRemovableNodes);
+      LoopBodySearch search(
+         comp(),
+         _curLoop->_memRegion,
+         whileLoop,
+         &removedNodes,
+         &_curLoop->_takenBranches);
+
+      TR::Node *culprit = NULL; // only matters when !safeToRemoveHCRGuards
+      for (; search.hasTreeTop() && safeToRemoveHCRGuards; search.advance())
+         {
+         TR::TreeTop *tt = search.currentTreeTop();
+         TR::Node *ttNode = tt->getNode();
+         culprit = ttNode;
+         if (removedNodes.contains(ttNode))
+            continue;
+
+         if (ttNode->isHCRGuard())
+            {
+            hcrGuards.add(tt);
+            removedNodes.add(ttNode); // Don't search the taken side.
+            continue;
+            }
+
+         // There is no need to identify the call nodes corresponding to HCR
+         // guards. Typically none will be found by this search, but even if
+         // HCR guards are removed, it's possible for such a call to be
+         // reachable, e.g. due to virtual guard tail splitter, in which case
+         // the call must be taken into account in the analysis, not ignored.
+
+         if (ttNode->canGCandReturn())
+            {
+            safeToRemoveHCRGuards = false;
+            }
+         else if (ttNode->canGCandExcept())
+            {
+            TR::Block *block = search.currentBlock();
+            TR::CFGEdgeList &excSuccs = block->getExceptionSuccessors();
+            for (auto it = excSuccs.begin(); it != excSuccs.end(); ++it)
+               {
+               TR::Block *handler = (*it)->getTo()->asBlock();
+               if (whileLoop->contains(handler->getStructureOf()))
+                  {
+                  safeToRemoveHCRGuards = false;
+                  break;
+                  }
+               }
+            }
+         }
+
+      if (!safeToRemoveHCRGuards)
+         {
+         dumpOptDetails(
+            comp(),
+            "Cannot remove HCR guards in loop %d due to n%un [%p]\n",
+            whileLoop->getNumber(),
+            culprit->getGlobalIndex(),
+            culprit);
+         }
+      else if (hcrGuards.isEmpty())
+         {
+         // Nothing to do. The analysis result (safeToRemoveHCRGuards) is not
+         // dependent on the removal of any HCR guards, so it can be used as-is
+         // for _privatizationOK and safeToVersionAwrtbari below.
+
+         // OTOH in the case where there are HCR guards (handled below in the
+         // remaining part of this if-else chain), it's fine to remove them
+         // immediately, because safeToRemoveHCRGuards means that after
+         // removing them, there will be no trees in the loop that
+         // canGCandReturn(). In particular there will be no calls, so
+         // privatization will definitely succeed, and the optimistic
+         // assumptions in the above search will be satisfied. However, this
+         // does require that all HCR guards be removed, so the
+         // performTransformation() is all-or-nothing.
+         }
+      else if (!performTransformation(
+         comp(),
+         "%sCreating versioned HCR guards\n", OPT_DETAILS_LOOP_VERSIONER))
+         {
+         dumpOptDetails(comp(), "Denied permission to version HCR guards\n");
+         safeToRemoveHCRGuards = false;
+         }
+      else
+         {
+         ListIterator<TR::TreeTop> guardIt(&hcrGuards);
+         for (TR::TreeTop *tt = guardIt.getCurrent(); tt; tt = guardIt.getNext())
+            {
+            dumpOptDetails(
+               comp(),
+               "Creating versioned HCRGuard for guard n%dn\n",
+               tt->getNode()->getGlobalIndex());
+
+            TR::Node *guard = tt->getNode()->duplicateTree();
+            guard->setBranchDestination(clonedLoopInvariantBlock->getEntry());
+            comparisonTrees.add(guard);
+            }
+         }
+
+      _curLoop->_privatizationOK = safeToRemoveHCRGuards;
+      }
+
+   // Determine whether privatization of expressions is possible. For
+   // expressions that load from mutable memory that may be accessible to other
+   // threads, privatization is the only way to ensure that the value is truly
+   // loop-invariant.
+   //
+   // Skip this search if the HCR guard search has already succeeded, or if no
+   // privatizations have been requested (since in that case the result of the
+   // analysis is irrelevant).
+   if (!_curLoop->_privatizationOK && _curLoop->_privatizationsRequested)
+      {
+      // Search the part of the loop body that would remain *after removing
+      // all optimistically removable checks*. If the loop would still contain
+      // calls, then it is not possible to privatize.
+      //
+      // Note that because _privatizationsRequested holds, nodes for which
+      // PRIVATIZE LoopEntryPreps were created were considered invariant in the
+      // earlier parts of versioner's analysis of this loop. If there was any
+      // such node that requiresPrivatization(), then any call found here must
+      // be the cold call for an inline guard. If not, it would have caused the
+      // earlier analysis to consider fields, etc. to be written in the loop.
+      // Similarly, in that case there is no synchronization inside the loop.
+      //
+      LoopBodySearch search(
+         comp(),
+         _curLoop->_memRegion,
+         whileLoop,
+         &_curLoop->_optimisticallyRemovableNodes,
+         &_curLoop->_takenBranches);
+
+      _curLoop->_privatizationOK = true;
+      for (; search.hasTreeTop(); search.advance())
+         {
+         TR::Node *node = search.currentTreeTop()->getNode();
+         if (node->getNumChildren() == 0)
+            continue;
+
+         TR::Node *child = node->getChild(0);
+         if (child->getOpCode().isFunctionCall())
+            {
+            _curLoop->_privatizationOK = false;
+            dumpOptDetails(
+               comp(),
+               "NO PRIVATIZATION in loop %d due to n%un [%p]\n",
+               whileLoop->getNumber(),
+               node->getGlobalIndex(),
+               node);
+            break;
+            }
+         }
       }
 
    // If all yield points have been removed from the loop but OSR guards remain,
@@ -4012,33 +4228,60 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
    //
    bool safeToRemoveOSRGuards = false;
    bool seenOSRGuards = false;
-   bool safeToRemoveHCRGuards = false;
-   TR_ScratchList<TR::TreeTop> hcrGuards(trMemory());
    static char *disableLoopOSR = feGetEnv("TR_DisableOSRGuardLoopVersioner");
-   static char *disableLoopHCR = feGetEnv("TR_DisableHCRGuardLoopVersioner");
    if (comp()->getHCRMode() == TR::osr && disableLoopOSR == NULL)
       {
+      // Search the part of the loop body that would remain *after removing
+      // all possible checks and OSR guards* (based on privatizationOK). If the
+      // loop would still contain an OSR yield/invalidation point, then it is
+      // not possible to remove the OSR guards.
+
       safeToRemoveOSRGuards = true;
       ListIterator<TR::Block> blocksIt(&blocksInWhileLoop);
       TR::Node *osrGuard = NULL;
-      for (TR::Block *block = blocksIt.getCurrent(); safeToRemoveOSRGuards && block; block = blocksIt.getNext())
+
+      TR_ASSERT_FATAL(
+          _curLoop->_optimisticallyRemovableNodes.contains(_curLoop->_definitelyRemovableNodes),
+          "all _definitelyRemovableNodes should also be _optimisticallyRemovableNodes in loop %d",
+          whileLoop->getNumber());
+
+      // Make a copy of the set of nodes to be removed so that we can add OSR
+      // guards as we go. Because _privatizationOK is determined, the set of
+      // checks and branches to be removed is known exactly.
+      TR::NodeChecklist removedNodes(comp());
+      if (_curLoop->_privatizationOK)
+         removedNodes.add(_curLoop->_optimisticallyRemovableNodes);
+      else
+         removedNodes.add(_curLoop->_definitelyRemovableNodes);
+
+      LoopBodySearch search(
+         comp(),
+         _curLoop->_memRegion,
+         whileLoop,
+         &removedNodes,
+         &_curLoop->_takenBranches);
+
+      for (; search.hasTreeTop(); search.advance())
          {
-         for (TR::TreeTop *tt = block->getEntry(); tt != block->getExit(); tt = tt->getNextTreeTop())
+         TR::TreeTop *tt = search.currentTreeTop();
+         if (comp()->isPotentialOSRPoint(tt->getNode(), NULL, true))
             {
-            if (comp()->isPotentialOSRPoint(tt->getNode(), NULL, true))
-               {
-               safeToRemoveOSRGuards = false;
-               break;
-               }
-            else if (tt->getNode()->isOSRGuard())
-               {
-               osrGuard = tt->getNode();
-               seenOSRGuards = true;
-               }
+            safeToRemoveOSRGuards = false;
+            break;
+            }
+         else if (tt->getNode()->isOSRGuard())
+            {
+            osrGuard = tt->getNode();
+            seenOSRGuards = true;
+            removedNodes.add(osrGuard); // Don't search the taken side.
             }
          }
+
       if (seenOSRGuards && safeToRemoveOSRGuards)
          {
+         // It's fine to remove the OSR guards immediately. There is no
+         // dependency (in either direction) between this and any other loop
+         // improvement.
          if (performTransformation(comp(), "%sCreate versioned OSRGuard\n", OPT_DETAILS_LOOP_VERSIONER))
             {
             TR_ASSERT(osrGuard, "should have found an OSR guard to version");
@@ -4056,55 +4299,74 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
             }
          }
       }
-   if (comp()->getHCRMode() != TR::none && disableLoopHCR == NULL)
-      {
-      safeToRemoveHCRGuards = true;
-      ListIterator<TR::Block> blocksIt(&blocksInWhileLoop);
-      for (TR::Block *block = blocksIt.getCurrent(); safeToRemoveHCRGuards && block; block = blocksIt.getNext())
-         {
-         for (TR::TreeTop *tt = block->getEntry(); tt != block->getExit(); tt = tt->getNextTreeTop())
-            {
-            if (tt->getNode()->isHCRGuard())
-               {
-               hcrGuards.add(tt);
-               }
-            else
-               {
-               // Identify virtual call nodes for the taken side of HCR guards
-               bool isVirtualCallForHCR = (tt->getNode()->getOpCodeValue() == TR::treetop || tt->getNode()->getOpCode().isCheck())
-                  && tt->getNode()->getFirstChild()->isTheVirtualCallNodeForAGuardedInlinedCall()
-                  && block->getPredecessors().size() == 1
-                  && block->getPredecessors().front()->getFrom()->asBlock()->getLastRealTreeTop()->getNode()->isHCRGuard();
 
-               if ((tt->getNode()->canGCandReturn() || tt->getNode()->canGCandExcept()) && !isVirtualCallForHCR)
-                  {
-                  safeToRemoveHCRGuards = false;
-                  break;
-                  }
+   // For each loop improvement that is still possible, emit its loop entry
+   // prep and transform the loop.
+   auto improvementsBegin = _curLoop->_loopImprovements.begin();
+   auto improvementsEnd = _curLoop->_loopImprovements.end();
+   for (auto it = improvementsBegin; it != improvementsEnd; ++it)
+      {
+      LoopImprovement *improvement = *it;
+      LoopEntryPrep *prep = improvement->_prep;
+      if (!prep->_requiresPrivatization || _curLoop->_privatizationOK)
+         {
+         emitPrep(prep, &comparisonTrees);
+         improvement->improveLoop();
+         }
+      }
+
+   // Substitute in loads of temps for expressions that have been privatized
+   // throughout the loop.
+   if (_curLoop->_privatizationsRequested && !_curLoop->_privTemps.empty())
+      {
+      // Since checks and conditionals have already been modified, both
+      // removedNodes and takenBranches can be empty.
+      TR::NodeChecklist empty(comp());
+      TR::NodeChecklist *removedNodes = &empty;
+      TR::NodeChecklist *takenBranches = &empty;
+      LoopBodySearch search(
+         comp(),
+         _curLoop->_memRegion,
+         whileLoop,
+         removedNodes,
+         takenBranches);
+
+      TR::NodeChecklist visited(comp());
+      for (; search.hasTreeTop(); search.advance())
+         {
+         TR::TreeTop *tt = search.currentTreeTop();
+         TR::Node *node = tt->getNode();
+         substitutePrivTemps(tt, node, &visited);
+
+         TR::ILOpCode op = node->getOpCode();
+         if (op.isNullCheck() || op.getOpCodeValue() == TR::DIVCHK)
+            {
+            TR::Node *child = node->getChild(0);
+            if (child->getOpCode().isLoadDirect())
+               {
+               dumpOptDetails(
+                  comp(),
+                  "Removing check n%un [%p] because child has been privatized\n",
+                  node->getGlobalIndex(),
+                  node);
+
+               TR::Node::recreate(node, TR::treetop);
                }
             }
-         }
-      if (safeToRemoveHCRGuards && !hcrGuards.isEmpty())
-         {
-         ListIterator<TR::TreeTop> guardIt(&hcrGuards);
-         for (TR::TreeTop *tt = guardIt.getCurrent(); tt; tt = guardIt.getNext())
-             {
-             if (performTransformation(comp(), "%sCreated versioned HCRGuard for guard n%dn\n", OPT_DETAILS_LOOP_VERSIONER, tt->getNode()->getGlobalIndex()))
-                {
-                TR::Node *guard = tt->getNode()->duplicateTree();
-                guard->setBranchDestination(clonedLoopInvariantBlock->getEntry());
-                comparisonTrees.add(guard);
-                }
-             else
-                {
-                safeToRemoveHCRGuards = false;
-                }
-             }
          }
       }
 
    // Due to RAS changes to make each loop version test a transformation, disableOptTransformations or lastOptTransformationIndex can now potentially remove all the tests above the 2 versioned loops.  When there are two versions of the loop, it is necessary that there be at least one test at the top.  Therefore, the following is required to ensure that a test is created.
-   if (comparisonTrees.isEmpty())
+   size_t comparisonTreesCount = comparisonTrees.getSize();
+   size_t privatizationCount = _curLoop->_privTemps.size();
+   TR_ASSERT_FATAL(
+      privatizationCount <= comparisonTreesCount,
+      "more privatizations (%d) than entries in comparisonTrees (%d)",
+      privatizationCount,
+      comparisonTreesCount);
+
+   size_t testCount = comparisonTreesCount - privatizationCount;
+   if (testCount == 0)
       {
       TR::Node *constNode = TR::Node::create(blockHeadNode, TR::iconst, 0, 0);
       TR::Node *nextComparisonNode = TR::Node::createif(TR::ificmpne, constNode, constNode, clonedLoopInvariantBlock->getEntry());
@@ -4139,7 +4401,11 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
       TR::Block *comparisonBlock = TR::Block::createEmptyBlock(invariantBlock->getEntry()->getNode(), comp(), invariantBlock->getFrequency(), invariantBlock);
       comparisonBlock->setIsSpecialized(invariantBlock->isSpecialized());
 
-      if (firstComparisonNode)
+      if (actualComparisonNode->getOpCode().isStore())
+         {
+         // No critical edge splitting necessary.
+         }
+      else if (firstComparisonNode)
          {
          firstComparisonNode = false;
          //////TR::Node::recreate(actualComparisonNode, actualComparisonNode->getOpCode().getOpCodeForReverseBranch());
@@ -4199,35 +4465,6 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
       comparisonTree->join(comparisonExitTree);
 
       comparisonExitTree->join(insertionPoint);
-
-      // hookup the anchor node if needed
-      //
-      if (comp()->useCompressedPointers())
-         {
-         for (int32_t i = 0; i < actualComparisonNode->getNumChildren(); i++)
-            {
-            TR::Node *objectRef = actualComparisonNode->getChild(i);
-            bool shouldBeCompressed = false;
-            if (objectRef->getOpCode().isLoadIndirect() &&
-                  objectRef->getDataType() == TR::Address &&
-                  TR::TransformUtil::fieldShouldBeCompressed(objectRef, comp()))
-               {
-               shouldBeCompressed = true;
-               }
-            else if (objectRef->getOpCode().isArrayLength() &&
-                        objectRef->getFirstChild()->getOpCode().isLoadIndirect() &&
-                        TR::TransformUtil::fieldShouldBeCompressed(objectRef->getFirstChild(), comp()))
-               {
-               objectRef = objectRef->getFirstChild();
-               shouldBeCompressed = true;
-               }
-            if (shouldBeCompressed)
-               {
-               TR::TreeTop *translateTT = TR::TreeTop::create(comp(), TR::Node::createCompressedRefsAnchor(objectRef), NULL, NULL);
-               comparisonBlock->prepend(translateTT);
-               }
-            }
-         }
 
       if (treeBeforeInsertionPoint)
          treeBeforeInsertionPoint->join(comparisonEntryTree);
@@ -4322,19 +4559,30 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
       TR::Block *currentBlock = currComparisonBlock->getData();
       _cfg->addNode(currentBlock);
       ListElement<TR::Block> *nextComparisonBlock = currComparisonBlock->getNextElement();
-      const char *debugCounter = TR::DebugCounter::debugCounterName(comp(), "loopVersioner.fail/(%s)/%s/origin=block_%d", comp()->signature(), comp()->getHotnessName(comp()->getMethodHotness()), currentBlock->getNumber());
+      bool isTest =
+         !currentBlock->getLastRealTreeTop()->getNode()->getOpCode().isStore();
+      const char *debugCounter = NULL;
+      if (isTest)
+         debugCounter = TR::DebugCounter::debugCounterName(comp(), "loopVersioner.fail/(%s)/%s/origin=block_%d", comp()->signature(), comp()->getHotnessName(comp()->getMethodHotness()), currentBlock->getNumber());
+
       if (nextComparisonBlock)
-         {
          _cfg->addEdge(TR::CFGEdge::createEdge(currentBlock, nextComparisonBlock->getData(), trMemory()));
-         _cfg->addEdge(TR::CFGEdge::createEdge(currentBlock, currCriticalEdgeBlock->getData(), trMemory()));
-         _cfg->addEdge(TR::CFGEdge::createEdge(currCriticalEdgeBlock->getData(), clonedLoopInvariantBlock, trMemory()));
-         TR::DebugCounter::prependDebugCounter(comp(), debugCounter, currCriticalEdgeBlock->getData()->getEntry()->getNextTreeTop());
-         currCriticalEdgeBlock = currCriticalEdgeBlock->getNextElement();
-         }
       else
-         {
          _cfg->addEdge(TR::CFGEdge::createEdge(currentBlock,  invariantBlock, trMemory()));
-         _cfg->addEdge(TR::CFGEdge::createEdge(currentBlock,  clonedLoopInvariantBlock, trMemory()));
+
+      if (isTest)
+         {
+         if (currCriticalEdgeBlock == NULL)
+            {
+            _cfg->addEdge(TR::CFGEdge::createEdge(currentBlock,  clonedLoopInvariantBlock, trMemory()));
+            }
+         else
+            {
+            _cfg->addEdge(TR::CFGEdge::createEdge(currentBlock, currCriticalEdgeBlock->getData(), trMemory()));
+            _cfg->addEdge(TR::CFGEdge::createEdge(currCriticalEdgeBlock->getData(), clonedLoopInvariantBlock, trMemory()));
+            TR::DebugCounter::prependDebugCounter(comp(), debugCounter, currCriticalEdgeBlock->getData()->getEntry()->getNextTreeTop());
+            currCriticalEdgeBlock = currCriticalEdgeBlock->getNextElement();
+            }
          }
 
       currComparisonBlock = nextComparisonBlock;
@@ -4397,6 +4645,8 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
    while (currComparisonBlock)
       {
       TR::Block *actualComparisonBlock = currComparisonBlock->getData();
+      bool isTest =
+         !actualComparisonBlock->getLastRealTreeTop()->getNode()->getOpCode().isStore();
 
       TR_BlockStructure *comparisonBlockStructure = new (_cfg->structureRegion()) TR_BlockStructure(comp(), actualComparisonBlock->getNumber(), actualComparisonBlock);
       comparisonBlockStructure->setCreatedByVersioning(true);
@@ -4415,16 +4665,19 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
       prevComparisonNode = comparisonNode;
       currComparisonBlock = currComparisonBlock->getNextElement();
 
-      if (currComparisonBlock)
+      if (isTest)
          {
-         TR_StructureSubGraphNode *criticalEdgeNode = new (_cfg->structureRegion()) TR_StructureSubGraphNode(currCriticalEdgeBlock->getData()->getStructureOf());
-         properRegion->addSubNode(criticalEdgeNode);
-         TR::CFGEdge::createEdge(prevComparisonNode,  criticalEdgeNode, trMemory());
-         TR::CFGEdge::createEdge(criticalEdgeNode,  clonedInvariantNode, trMemory());
-         currCriticalEdgeBlock = currCriticalEdgeBlock->getNextElement();
+         if (currCriticalEdgeBlock != NULL)
+            {
+            TR_StructureSubGraphNode *criticalEdgeNode = new (_cfg->structureRegion()) TR_StructureSubGraphNode(currCriticalEdgeBlock->getData()->getStructureOf());
+            properRegion->addSubNode(criticalEdgeNode);
+            TR::CFGEdge::createEdge(prevComparisonNode,  criticalEdgeNode, trMemory());
+            TR::CFGEdge::createEdge(criticalEdgeNode,  clonedInvariantNode, trMemory());
+            currCriticalEdgeBlock = currCriticalEdgeBlock->getNextElement();
+            }
+         else
+            TR::CFGEdge::createEdge(prevComparisonNode,  clonedInvariantNode, trMemory());
          }
-      else
-         TR::CFGEdge::createEdge(prevComparisonNode,  clonedInvariantNode, trMemory());
       }
 
    TR::CFGEdge::createEdge(prevComparisonNode,  invariantNode, trMemory());
@@ -7152,346 +7405,54 @@ void TR_LoopVersioner::collectAllExpressionsToBeChecked(List<TR::TreeTop> *nullC
  * conditions (e.g. that the child of an indirect load is non-null) are not
  * known to hold.
  *
+ * \deprecated This method generates versioning tests immediately instead of
+ * deferring them. The only reason to do so is because the caller is also
+ * generating versioning tests immediately. Such versioning tests cannot rely
+ * on the ability to do privatization.
+ *
  * \param node The node that should be made safe to evaluate
  * \param comparisonTrees The list of all versioning tests for the loop
+ *
+ * \see unsafelyEmitAllTests()
  */
 void TR_LoopVersioner::collectAllExpressionsToBeChecked(TR::Node *node, List<TR::Node> *comparisonTrees)
    {
-   TR::NodeChecklist visited(comp());
-   collectAllExpressionsToBeChecked(node, comparisonTrees, &visited);
-   }
+   // Some callers pass an original tree instead of a duplicate. Including
+   // original nodes in the safety tests generated by depsForLoopEntryPrep()
+   // incorrectly increases the refcount of those original nodes. To prevent
+   // this, copy defensively here.
+   node = node->duplicateTreeForCodeMotion();
 
-/// Implementation of collectAllExpressionsToBeChecked(TR::Node*, List<TR::Node>*)
-void TR_LoopVersioner::collectAllExpressionsToBeChecked(TR::Node *node, List<TR::Node> *comparisonTrees, TR::NodeChecklist *visited)
-   {
-   if (visited->contains(node))
-      return;
+   // Because node will no longer appear verbatim in the trees, print it to
+   // the log so that other dumpOptDetails() messages that refer to its
+   // descendants make sense.
+   bool optDetails =
+      comp()->getOutFile() != NULL
+      && (trace() || comp()->getOption(TR_TraceOptDetails));
 
-   visited->add(node);
-
-   int32_t i;
-   for (i = 0; i < node->getNumChildren(); i++)
+   if (optDetails)
       {
-      // Do not process the load or store child of a BNDCHKwithSpineCHK node because we are
-      // already generating check trees for it as part of the topmost bound check node.
-      //
-      if (node->getOpCodeValue() == TR::BNDCHKwithSpineCHK && i == 0)
-         continue;
-
-      collectAllExpressionsToBeChecked(node->getChild(i), comparisonTrees, visited);
-      }
-
-   // If this is an indirect access
-   //
-   if (node->isInternalPointer() ||
-       (((node->getOpCode().isIndirect() && node->getOpCode().hasSymbolReference() && !node->getSymbolReference()->getSymbol()->isStatic()) || node->getOpCode().isArrayLength()) &&
-        !node->getFirstChild()->isInternalPointer()))
-      {
-      if (!node->getFirstChild()->isThisPointer())
-         {
-         dumpOptDetails(
-            comp(),
-            "Creating test outside loop for checking if n%un [%p] is null\n",
-            node->getFirstChild()->getGlobalIndex(),
-            node->getFirstChild());
-
-         TR::Node *duplicateNullCheckReference = node->getFirstChild()->duplicateTreeForCodeMotion();
-         TR::Node *ifacmpeqNode =  TR::Node::createif(TR::ifacmpeq, duplicateNullCheckReference, TR::Node::aconst(node, 0), _exitGotoTarget);
-         comparisonTrees->add(ifacmpeqNode);
-         dumpOptDetails(comp(), "The node %p has been created for testing if null check is required\n", ifacmpeqNode);
-         }
-
-      TR::Node *firstChild = node->getFirstChild();
-      bool instanceOfReqd = true;
-      TR_OpaqueClassBlock *otherClassObject = NULL;
-      TR::Node *duplicateClassPtr = NULL;
-      bool testIsArray = false;
-      if (node->isInternalPointer() &&
-          (firstChild->isInternalPointer() ||
-           (firstChild->getOpCode().hasSymbolReference() &&
-            firstChild->getSymbolReference()->getSymbol()->isAuto() &&
-            firstChild->getSymbolReference()->getSymbol()->castToAutoSymbol()->isInternalPointer())))
-         instanceOfReqd = false;
-      else if (firstChild->getOpCode().hasSymbolReference())
-         {
-         TR::SymbolReference *symRef = firstChild->getSymbolReference();
-         int32_t len;
-         const char *sig = symRef->getTypeSignature(len);
-
-         if (node->isInternalPointer() || node->getOpCode().isArrayLength())
-            {
-            if (sig && (len > 0) && (sig[0] == '['))
-               instanceOfReqd = false;
-            else
-               testIsArray = true;
-            }
-         else if (node->getOpCode().hasSymbolReference() &&
-                  !node->getSymbolReference()->isUnresolved())
-            {
-            TR::SymbolReference *otherSymRef = node->getSymbolReference();
-
-            TR_OpaqueClassBlock *cl = NULL;
-            if (sig && (len > 0))
-               {
-               // Currently it's not possible to use this class to eliminate
-               // the type check in AOT. That would require a verification
-               // record to check the subtyping relationship.
-               cl = fe()->getClassFromSignature(sig, len, symRef->getOwningMethod(comp()));
-               }
-
-            int32_t otherLen;
-            char *otherSig = otherSymRef->getOwningMethod(comp())->classNameOfFieldOrStatic(otherSymRef->getCPIndex(), otherLen);
-            dumpOptDetails(comp(), "For node %p len %d other len %d sig %p other sig %p\n", node, len, otherLen, sig, otherSig);
-            TR::ResolvedMethodSymbol *owningMethodSym = otherSymRef->getOwningMethodSymbol(comp());
-            int32_t classCPI = 0;
-            int32_t fieldCPI = otherSymRef->getCPIndex();
-            instanceOfReqd = false;
-            if (otherSymRef->getSymbol()->isShadow() && fieldCPI >= 0)
-               {
-               TR_ResolvedMethod *owningMethod = owningMethodSym->getResolvedMethod();
-               classCPI = owningMethod->classCPIndexOfFieldOrStatic(fieldCPI);
-               bool aotOK = true;
-               otherClassObject = owningMethod->getClassFromConstantPool(comp(), classCPI, aotOK);
-               instanceOfReqd = true;
-               }
-#ifdef J9_PROJECT_SPECIFIC
-            else
-               {
-               switch (otherSymRef->getReferenceNumber() - comp()->getSymRefTab()->getNumHelperSymbols())
-                  {
-                  case TR::SymbolReferenceTable::classFromJavaLangClassSymbol:
-                  case TR::SymbolReferenceTable::classFromJavaLangClassAsPrimitiveSymbol:
-                     {
-                     bool aotOK = true;
-                     otherClassObject = comp()->getClassClassPointer(aotOK);
-                     classCPI = -1;
-                     instanceOfReqd = true;
-                     break;
-                     }
-                  }
-               }
-#endif
-
-            if (!instanceOfReqd)
-               {
-               // nothing to do
-               }
-            else if (otherClassObject == NULL)
-               {
-               // A type test against the class that's expected to have the
-               // field is mandatory but the class pointer is not forthcoming.
-               // At this point it would be difficult to prevent the
-               // transformation responsible for hoisting this load.
-               traceMsg(
-                  comp(),
-                  "failed to find class from field #%d\n",
-                  otherSymRef->getReferenceNumber());
-               comp()->failCompilation<TR::CompilationException>(
-                  "failed to find class from field during versioning");
-               }
-            else if (cl != NULL && fe()->isInstanceOf(cl, otherClassObject, true) == TR_yes)
-               {
-               instanceOfReqd = false;
-               }
-            else
-               {
-               TR::SymbolReference *otherClassSymRef =
-                  comp()->getSymRefTab()->findOrCreateClassSymbol(
-                     owningMethodSym,
-                     classCPI,
-                     otherClassObject);
-
-               duplicateClassPtr = TR::Node::createWithSymRef(
-                  node,
-                  TR::loadaddr,
-                  0,
-                  otherClassSymRef);
-               }
-            }
-         }
-
-      if (instanceOfReqd)
-         {
-         if (otherClassObject)
-            {
-            dumpOptDetails(comp(), "%s Creating test outside loop for checking if %p is of the correct type\n", OPT_DETAILS_LOOP_VERSIONER, node->getFirstChild());
-            TR::Node *duplicateCheckedValue = node->getFirstChild()->duplicateTreeForCodeMotion();
-            TR::Node *instanceofNode = TR::Node::createWithSymRef(TR::instanceof, 2, 2, duplicateCheckedValue,  duplicateClassPtr, comp()->getSymRefTab()->findOrCreateInstanceOfSymbolRef(comp()->getMethodSymbol()));
-            TR::Node *ificmpeqNode =  TR::Node::createif(TR::ificmpeq, instanceofNode, TR::Node::create(node, TR::iconst, 0, 0), _exitGotoTarget);
-            comparisonTrees->add(ificmpeqNode);
-            dumpOptDetails(comp(), "The node %p has been created for testing if object is of the right type\n", ificmpeqNode);
-            //printf("The node %p has been created for testing if object is of the right type in %s\n", ificmpeqNode, comp()->signature());
-            //fflush(stdout);
-            }
-         else if (testIsArray)
-            {
-#ifdef J9_PROJECT_SPECIFIC
-            dumpOptDetails(comp(), "%s Creating test outside loop for checking if %p is of array type\n", OPT_DETAILS_LOOP_VERSIONER, node->getFirstChild());
-            TR::Node *duplicateCheckedValue = node->getFirstChild()->duplicateTreeForCodeMotion();
-            TR::Node *vftLoad = TR::Node::createWithSymRef(TR::aloadi, 1, 1, duplicateCheckedValue, comp()->getSymRefTab()->findOrCreateVftSymbolRef());
-            //TR::Node *componentTypeLoad = TR::Node::create(TR::aloadi, 1, vftLoad, comp()->getSymRefTab()->findOrCreateArrayComponentTypeSymbolRef());
-            TR::Node *classFlag = NULL;
-            if (TR::Compiler->target.is32Bit())
-               {
-               classFlag = TR::Node::createWithSymRef(TR::iloadi, 1, 1, vftLoad, comp()->getSymRefTab()->findOrCreateClassAndDepthFlagsSymbolRef());
-               }
-            else
-               {
-               classFlag = TR::Node::createWithSymRef(TR::lloadi, 1, 1, vftLoad, comp()->getSymRefTab()->findOrCreateClassAndDepthFlagsSymbolRef());
-               classFlag = TR::Node::create(TR::l2i, 1, classFlag);
-               }
-            TR::Node *andConstNode = TR::Node::create(classFlag, TR::iconst, 0, TR::Compiler->cls.flagValueForArrayCheck(comp()));
-            TR::Node * andNode   = TR::Node::create(TR::iand, 2, classFlag, andConstNode);
-            TR::Node *cmp = TR::Node::createif(TR::ificmpne, andNode, andConstNode, _exitGotoTarget);
-            comparisonTrees->add(cmp);
-            dumpOptDetails(comp(), "The node %p has been created for testing if object is of array type\n", cmp);
-            //printf("The node %p has been created for testing if object is of array type in %s\n", cmp, comp()->signature());
-            //fflush(stdout);
-#endif
-            }
-         else
-            {
-            //TR_ASSERT(((node->getSymbolReference() == comp()->getSymRefTab()->findVftSymbolRef()) || comp()->getSymRefTab()->findVtableEntrySymbolRef(node->getSymbolReference())), "Not enough information to emit the instanceof test that is reqd\n");
-            //dumpOptDetails(comp(), "otherClassObject is NULL in node %p\n", node);
-            //printf("otherClassObject is NULL in %s\n", comp()->signature());
-            //fflush(stdout);
-            }
-         }
-      }
-  else if (node->getOpCode().isIndirect() && node->getFirstChild()->isInternalPointer())
-      {
-      dumpOptDetails(
-         comp(),
-         "Creating test outside loop for checking if n%un [%p] requires bound check\n",
-         node->getGlobalIndex(),
-         node);
-
-      // This is an array access; so we need to insert explicit
-      // checks to mimic the bounds check for the access.
-      //
-      TR::Node *offset = node->getFirstChild()->getSecondChild();
-      TR::Node *childInRequiredForm = NULL;
-      TR::Node *duplicateIndex = NULL;
-
-      int32_t headerSize = TR::Compiler->om.contiguousArrayHeaderSizeInBytes();
-      static struct temps
-         {
-         TR::ILOpCodes addOp;
-         TR::ILOpCodes constOp;
-         int32_t k;
-         }
-      a[] =
-         {{TR::iadd, TR::iconst,  headerSize},
-          {TR::isub, TR::iconst, -headerSize},
-          {TR::ladd, TR::lconst,  headerSize},
-          {TR::lsub, TR::lconst, -headerSize}};
-
-      for (int32_t index = sizeof(a)/sizeof(temps) - 1; index >= 0; --index)
-         {
-         if (offset->getOpCodeValue() == a[index].addOp &&
-             offset->getSecondChild()->getOpCodeValue() == a[index].constOp &&
-             offset->getSecondChild()->getInt() == a[index].k)
-            {
-            childInRequiredForm = offset->getFirstChild();
-            break;
-            }
-         }
-
-      TR::DataType type = offset->getType();
-
-      // compute the right shift width
-      //
-      int32_t dataWidth = TR::Symbol::convertTypeToSize(node->getDataType());
-      if (comp()->useCompressedPointers() &&
-            node->getDataType() == TR::Address)
-         dataWidth = TR::Compiler->om.sizeofReferenceField();
-      int32_t shiftWidth = TR::TransformUtil::convertWidthToShift(dataWidth);
-
-      if (childInRequiredForm)
-         {
-         if (childInRequiredForm->getOpCodeValue() == TR::ishl || childInRequiredForm->getOpCodeValue() == TR::lshl)
-            {
-            if (childInRequiredForm->getSecondChild()->getOpCode().isLoadConst() &&
-               (childInRequiredForm->getSecondChild()->getInt() == shiftWidth))
-               duplicateIndex = childInRequiredForm->getFirstChild()->duplicateTreeForCodeMotion();
-            }
-         else if (childInRequiredForm->getOpCodeValue() == TR::imul || childInRequiredForm->getOpCodeValue() == TR::lmul)
-            {
-            if (childInRequiredForm->getSecondChild()->getOpCode().isLoadConst() &&
-               (childInRequiredForm->getSecondChild()->getInt() == dataWidth))
-               duplicateIndex = childInRequiredForm->getFirstChild()->duplicateTreeForCodeMotion();
-            }
-         }
-
-
-     if (!duplicateIndex)
-         {
-         if (!childInRequiredForm)
-            {
-            TR::Node *constNode = TR::Node::create(node, type.isInt32() ? TR::iconst : TR::lconst, 0, 0);
-            duplicateIndex = TR::Node::create(type.isInt32() ? TR::isub : TR::lsub, 2, offset->duplicateTreeForCodeMotion(), constNode);
-            if (type.isInt64())
-               constNode->setLongInt((int64_t)headerSize);
-            else
-               constNode->setInt((int64_t)headerSize);
-            }
-         else
-            duplicateIndex = childInRequiredForm->duplicateTreeForCodeMotion();
-
-
-         duplicateIndex = TR::Node::create(type.isInt32() ? TR::iushr : TR::lushr, 2, duplicateIndex,
-                                          TR::Node::create(node, TR::iconst, 0, shiftWidth));
-         }
-
-      TR::Node *duplicateBase = node->getFirstChild()->getFirstChild()->duplicateTreeForCodeMotion();
-      TR::Node *arrayLengthNode = TR::Node::create(TR::arraylength, 1, duplicateBase);
-
-      arrayLengthNode->setArrayStride(dataWidth);
-      if (type.isInt64())
-         arrayLengthNode = TR::Node::create(TR::i2l, 1, arrayLengthNode);
-
-      TR::Node *ificmpgeNode = TR::Node::createif(type.isInt32() ? TR::ificmpge : TR::iflcmpge, duplicateIndex, arrayLengthNode, _exitGotoTarget);
-      comparisonTrees->add(ificmpgeNode);
-      TR::Node *constNode = 0;
-      if(type.isInt32())
-         constNode = TR::Node::create(arrayLengthNode, TR::iconst , 0, 0);
-      else
-         constNode = TR::Node::create(arrayLengthNode, TR::lconst, 0, 0);
-      // Note: duplicateIndex was already duplicated for code motion, we don't need to duplicate the duplicate for code motion
-      TR::Node *ificmpltNode = TR::Node::createif(type.isInt32() ? TR::ificmplt : TR::iflcmplt, duplicateIndex->duplicateTree(), constNode, _exitGotoTarget);
-      if (type.isInt64())
-         ificmpltNode->getSecondChild()->setLongInt(0);
-      comparisonTrees->add(ificmpltNode);
-      dumpOptDetails(comp(), "The node %p has been created for testing if bounds check is required\n", ificmpgeNode);
-      dumpOptDetails(comp(), "The node %p has been created for testing if bounds check is required\n", ificmpltNode);
-      }
-   else if (((node->getOpCodeValue() == TR::idiv) || (node->getOpCodeValue() == TR::irem) || (node->getOpCodeValue() == TR::lrem) || (node->getOpCodeValue() == TR::ldiv)))
-      {
-      dumpOptDetails(
-         comp(),
-         "Creating test outside loop for checking if n%un [%p] is divide by zero\n",
-         node->getGlobalIndex(),
-         node);
-
-      // This is a divide; so we need to insert explicit checks
-      // to mimic the div check.
-      //
-      TR::Node *duplicateDivisor = node->getSecondChild()->duplicateTreeForCodeMotion();
-      TR::Node *ifNode;
-      if (duplicateDivisor->getType().isInt64())
-         ifNode =  TR::Node::createif(TR::iflcmpeq, duplicateDivisor, TR::Node::create(node, TR::lconst, 0, 0), _exitGotoTarget);
-      else
-         ifNode =  TR::Node::createif(TR::ificmpeq, duplicateDivisor, TR::Node::create(node, TR::iconst, 0, 0), _exitGotoTarget);
-      comparisonTrees->add(ifNode);
-      dumpOptDetails(comp(), "The node %p has been created for testing if div check is required\n", ifNode);
-      }
-   else if (node->getOpCode().isCheckCast()) //(node->getOpCodeValue() == TR::checkcast)
-      {
-      TR_ASSERT_FATAL(
+      dumpOptDetails(comp(), "collectAllExpressionsToBeChecked on tree:\n");
+      comp()->getDebug()->clearNodeChecklist();
+      comp()->getDebug()->printWithFixedPrefix(
+         comp()->getOutFile(),
+         node,
+         1,
+         true,
          false,
-         "collectAllExpressionsToBeChecked: n%un is a checkcast",
-         node->getGlobalIndex());
+         "\t\t");
+      traceMsg(comp(), "\n");
       }
+
+   TR::NodeChecklist visited(comp());
+   TR::list<LoopEntryPrep*, TR::Region&> deps(_curLoop->_memRegion);
+   if (!depsForLoopEntryPrep(node, &deps, &visited, true))
+      {
+      comp()->failCompilation<TR::CompilationException>(
+         "failed to generate safety tests");
+      }
+
+   unsafelyEmitAllTests(deps, comparisonTrees);
    }
 
 /**
@@ -7517,7 +7478,14 @@ bool TR_LoopVersioner::requiresPrivatization(TR::Node *node)
       feGetEnv("TR_nothingRequiresPrivatizationInVersioner") != NULL;
 
    if (nothingRequiresPrivatization)
+      {
+      // NB. It's tempting to think that turning off privatization for
+      // everything this way would work for single-threaded programs, but that
+      // isn't the case. The loop may still contain cold calls that could
+      // overwrite values observed in the versioning tests. See the logic for
+      // TR_assumeSingleThreadedVersioning in emitPrep().
       return false;
+      }
 
    if (!node->getOpCode().hasSymbolReference())
       return false;
@@ -7631,6 +7599,430 @@ bool TR_LoopVersioner::suppressInvarianceAndPrivatization(TR::SymbolReference *s
       }
 
    return false;
+   }
+
+void TR_LoopVersioner::dumpOptDetailsCreatingTest(
+   const char *description,
+   TR::Node *node)
+   {
+   dumpOptDetails(
+      comp(),
+      "Creating %s test for n%un [%p]\n",
+      description,
+      node->getGlobalIndex(),
+      node);
+   }
+
+void TR_LoopVersioner::dumpOptDetailsFailedToCreateTest(
+   const char *description,
+   TR::Node *node)
+   {
+   dumpOptDetails(
+      comp(),
+      "Failed to create %s test for n%un [%p]\n",
+      description,
+      node->getGlobalIndex(),
+      node);
+   }
+
+/**
+ * \brief Create and add to \p deps dependencies for a LoopEntryPrep whose
+ * expression is based on \p node.
+ *
+ * Identify descendants of node that need to be privatized to guarantee a
+ * stable value, or that need safety conditions to be checked before
+ * evaluation (e.g. that the child of an indirect load is non-null), and create
+ * the appropriate LoopEntryPrep instances. An effort is made not to copy
+ * transitive dependencies directly into \p deps.
+ *
+ * \param node A subtree belonging to the LoopEntryPrep that owns \p deps
+ * \param deps The list to which to add dependencies
+ * \param visited The visited set corresponding to \p deps
+ * \param canPrivatizeRootNode True if \p node can be privatized. Should be
+ * false only when computing dependencies for a privatization of \p node, to
+ * avoid circularity.
+ *
+ * \return true on success, false on failure
+ */
+bool TR_LoopVersioner::depsForLoopEntryPrep(
+   TR::Node *node,
+   TR::list<LoopEntryPrep*, TR::Region&> *deps,
+   TR::NodeChecklist *visited,
+   bool canPrivatizeRootNode)
+   {
+   if (visited->contains(node))
+      return true;
+
+   visited->add(node);
+
+   if (canPrivatizeRootNode && requiresPrivatization(node))
+      return addLoopEntryPrepDep(LoopEntryPrep::PRIVATIZE, node, deps, visited) != NULL;
+
+   // If this is an indirect access
+   //
+   if (node->isInternalPointer() ||
+       (((node->getOpCode().isIndirect() && node->getOpCode().hasSymbolReference() && !node->getSymbolReference()->getSymbol()->isStatic()) || node->getOpCode().isArrayLength()) &&
+        !node->getFirstChild()->isInternalPointer()))
+      {
+      if (!node->getFirstChild()->isThisPointer())
+         {
+         dumpOptDetailsCreatingTest("null", node->getFirstChild());
+         TR::Node *ifacmpeqNode = TR::Node::createif(TR::ifacmpeq, node->getFirstChild(), TR::Node::aconst(node, 0), _exitGotoTarget);
+         LoopEntryPrep *nullTestPrep =
+            addLoopEntryPrepDep(LoopEntryPrep::TEST, ifacmpeqNode, deps, visited);
+
+         if (nullTestPrep == NULL)
+            {
+            dumpOptDetailsFailedToCreateTest("null", node->getFirstChild());
+            return false;
+            }
+         }
+
+      TR::Node *firstChild = node->getFirstChild();
+      bool instanceOfReqd = true;
+      TR_OpaqueClassBlock *otherClassObject = NULL;
+      TR::Node *duplicateClassPtr = NULL;
+      bool testIsArray = false;
+      if (node->isInternalPointer() &&
+          (firstChild->isInternalPointer() ||
+           (firstChild->getOpCode().hasSymbolReference() &&
+            firstChild->getSymbolReference()->getSymbol()->isAuto() &&
+            firstChild->getSymbolReference()->getSymbol()->castToAutoSymbol()->isInternalPointer())))
+         instanceOfReqd = false;
+      else if (firstChild->getOpCode().hasSymbolReference())
+         {
+         TR::SymbolReference *symRef = firstChild->getSymbolReference();
+         int32_t len;
+         const char *sig = symRef->getTypeSignature(len);
+
+         if (node->isInternalPointer() || node->getOpCode().isArrayLength())
+            {
+            if (sig && (len > 0) && (sig[0] == '['))
+               instanceOfReqd = false;
+            else
+               testIsArray = true;
+            }
+         else if (node->getOpCode().hasSymbolReference() &&
+                  !node->getSymbolReference()->isUnresolved())
+            {
+            TR::SymbolReference *otherSymRef = node->getSymbolReference();
+
+            TR_OpaqueClassBlock *cl = NULL;
+            if (sig && (len > 0))
+               {
+               // Currently it's not possible to use this class to eliminate
+               // the type check in AOT. That would require a verification
+               // record to check the subtyping relationship.
+               cl = fe()->getClassFromSignature(sig, len, symRef->getOwningMethod(comp()));
+               }
+
+            int32_t otherLen;
+            char *otherSig = otherSymRef->getOwningMethod(comp())->classNameOfFieldOrStatic(otherSymRef->getCPIndex(), otherLen);
+            dumpOptDetails(comp(), "For node %p len %d other len %d sig %p other sig %p\n", node, len, otherLen, sig, otherSig);
+            TR::ResolvedMethodSymbol *owningMethodSym = otherSymRef->getOwningMethodSymbol(comp());
+            int32_t classCPI = 0;
+            int32_t fieldCPI = otherSymRef->getCPIndex();
+            instanceOfReqd = false;
+            if (otherSymRef->getSymbol()->isShadow() && fieldCPI >= 0)
+               {
+               TR_ResolvedMethod *owningMethod = owningMethodSym->getResolvedMethod();
+               classCPI = owningMethod->classCPIndexOfFieldOrStatic(fieldCPI);
+               bool aotOK = true;
+               otherClassObject = owningMethod->getClassFromConstantPool(comp(), classCPI, aotOK);
+               instanceOfReqd = true;
+               }
+#ifdef J9_PROJECT_SPECIFIC
+            else
+               {
+               switch (otherSymRef->getReferenceNumber() - comp()->getSymRefTab()->getNumHelperSymbols())
+                  {
+                  case TR::SymbolReferenceTable::classFromJavaLangClassSymbol:
+                  case TR::SymbolReferenceTable::classFromJavaLangClassAsPrimitiveSymbol:
+                     {
+                     bool aotOK = true;
+                     otherClassObject = comp()->getClassClassPointer(aotOK);
+                     classCPI = -1;
+                     instanceOfReqd = true;
+                     break;
+                     }
+                  }
+               }
+#endif
+
+            if (!instanceOfReqd)
+               {
+               // nothing to do
+               }
+            else if (otherClassObject == NULL)
+               {
+               // A type test against the class that's expected to have the
+               // field is mandatory but the class pointer is not forthcoming.
+               dumpOptDetails(
+                  comp(),
+                  "Failed to find class from field #%d\n",
+                  otherSymRef->getReferenceNumber());
+               return false;
+               }
+            else if (cl != NULL && fe()->isInstanceOf(cl, otherClassObject, true) == TR_yes)
+               {
+               instanceOfReqd = false;
+               }
+            else
+               {
+               TR::SymbolReference *otherClassSymRef =
+                  comp()->getSymRefTab()->findOrCreateClassSymbol(
+                     owningMethodSym,
+                     classCPI,
+                     otherClassObject);
+
+               duplicateClassPtr = TR::Node::createWithSymRef(
+                  node,
+                  TR::loadaddr,
+                  0,
+                  otherClassSymRef);
+               }
+            }
+         }
+
+      if (instanceOfReqd)
+         {
+         if (otherClassObject)
+            {
+            dumpOptDetailsCreatingTest("type", node->getFirstChild());
+            TR::Node *instanceofNode = TR::Node::createWithSymRef(TR::instanceof, 2, 2, node->getFirstChild(), duplicateClassPtr, comp()->getSymRefTab()->findOrCreateInstanceOfSymbolRef(comp()->getMethodSymbol()));
+            TR::Node *ificmpeqNode =  TR::Node::createif(TR::ificmpeq, instanceofNode, TR::Node::create(node, TR::iconst, 0, 0), _exitGotoTarget);
+            if (addLoopEntryPrepDep(LoopEntryPrep::TEST, ificmpeqNode, deps, visited) == NULL)
+               {
+               dumpOptDetailsFailedToCreateTest("type", node->getFirstChild());
+               return false;
+               }
+            }
+         else if (testIsArray)
+            {
+#ifdef J9_PROJECT_SPECIFIC
+            dumpOptDetailsCreatingTest("array type", node->getFirstChild());
+
+            TR::Node *vftLoad = TR::Node::createWithSymRef(TR::aloadi, 1, 1, node->getFirstChild(), comp()->getSymRefTab()->findOrCreateVftSymbolRef());
+            //TR::Node *componentTypeLoad = TR::Node::create(TR::aloadi, 1, vftLoad, comp()->getSymRefTab()->findOrCreateArrayComponentTypeSymbolRef());
+            TR::Node *classFlag = NULL;
+            if (TR::Compiler->target.is32Bit())
+               {
+               classFlag = TR::Node::createWithSymRef(TR::iloadi, 1, 1, vftLoad, comp()->getSymRefTab()->findOrCreateClassAndDepthFlagsSymbolRef());
+               }
+            else
+               {
+               classFlag = TR::Node::createWithSymRef(TR::lloadi, 1, 1, vftLoad, comp()->getSymRefTab()->findOrCreateClassAndDepthFlagsSymbolRef());
+               classFlag = TR::Node::create(TR::l2i, 1, classFlag);
+               }
+            TR::Node *andConstNode = TR::Node::create(classFlag, TR::iconst, 0, TR::Compiler->cls.flagValueForArrayCheck(comp()));
+            TR::Node * andNode   = TR::Node::create(TR::iand, 2, classFlag, andConstNode);
+            TR::Node *cmp = TR::Node::createif(TR::ificmpne, andNode, andConstNode, _exitGotoTarget);
+            if (addLoopEntryPrepDep(LoopEntryPrep::TEST, cmp, deps, visited) == NULL)
+               {
+               dumpOptDetailsFailedToCreateTest("array type", node->getFirstChild());
+               return false;
+               }
+#endif
+            }
+         else
+            {
+            //TR_ASSERT(((node->getSymbolReference() == comp()->getSymRefTab()->findVftSymbolRef()) || comp()->getSymRefTab()->findVtableEntrySymbolRef(node->getSymbolReference())), "Not enough information to emit the instanceof test that is reqd\n");
+            //dumpOptDetails(comp(), "otherClassObject is NULL in node %p\n", node);
+            //printf("otherClassObject is NULL in %s\n", comp()->signature());
+            //fflush(stdout);
+            }
+         }
+      }
+  else if (node->getOpCode().isIndirect() && node->getFirstChild()->isInternalPointer())
+      {
+      dumpOptDetailsCreatingTest("bounds", node);
+
+      // This is an array access; so we need to insert explicit
+      // checks to mimic the bounds check for the access.
+      //
+      TR::Node *offset = node->getFirstChild()->getSecondChild();
+      TR::Node *childInRequiredForm = NULL;
+      TR::Node *indexNode = NULL;
+
+      int32_t headerSize = TR::Compiler->om.contiguousArrayHeaderSizeInBytes();
+      static struct temps
+         {
+         TR::ILOpCodes addOp;
+         TR::ILOpCodes constOp;
+         int32_t k;
+         }
+      a[] =
+         {{TR::iadd, TR::iconst,  headerSize},
+          {TR::isub, TR::iconst, -headerSize},
+          {TR::ladd, TR::lconst,  headerSize},
+          {TR::lsub, TR::lconst, -headerSize}};
+
+      for (int32_t index = sizeof(a)/sizeof(temps) - 1; index >= 0; --index)
+         {
+         if (offset->getOpCodeValue() == a[index].addOp &&
+             offset->getSecondChild()->getOpCodeValue() == a[index].constOp &&
+             offset->getSecondChild()->getInt() == a[index].k)
+            {
+            childInRequiredForm = offset->getFirstChild();
+            break;
+            }
+         }
+
+      TR::DataType type = offset->getType();
+
+      // compute the right shift width
+      //
+      int32_t dataWidth = TR::Symbol::convertTypeToSize(node->getDataType());
+      if (comp()->useCompressedPointers() &&
+            node->getDataType() == TR::Address)
+         dataWidth = TR::Compiler->om.sizeofReferenceField();
+      int32_t shiftWidth = TR::TransformUtil::convertWidthToShift(dataWidth);
+
+      if (childInRequiredForm)
+         {
+         if (childInRequiredForm->getOpCodeValue() == TR::ishl || childInRequiredForm->getOpCodeValue() == TR::lshl)
+            {
+            if (childInRequiredForm->getSecondChild()->getOpCode().isLoadConst() &&
+               (childInRequiredForm->getSecondChild()->getInt() == shiftWidth))
+               indexNode = childInRequiredForm->getFirstChild();
+            }
+         else if (childInRequiredForm->getOpCodeValue() == TR::imul || childInRequiredForm->getOpCodeValue() == TR::lmul)
+            {
+            if (childInRequiredForm->getSecondChild()->getOpCode().isLoadConst() &&
+               (childInRequiredForm->getSecondChild()->getInt() == dataWidth))
+               indexNode = childInRequiredForm->getFirstChild();
+            }
+         }
+
+
+     if (!indexNode)
+         {
+         if (!childInRequiredForm)
+            {
+            TR::Node *constNode = TR::Node::create(node, type.isInt32() ? TR::iconst : TR::lconst, 0, 0);
+            indexNode = TR::Node::create(type.isInt32() ? TR::isub : TR::lsub, 2, offset, constNode);
+            if (type.isInt64())
+               constNode->setLongInt((int64_t)headerSize);
+            else
+               constNode->setInt((int64_t)headerSize);
+            }
+         else
+            indexNode = childInRequiredForm;
+
+
+         indexNode = TR::Node::create(type.isInt32() ? TR::iushr : TR::lushr, 2, indexNode,
+                                          TR::Node::create(node, TR::iconst, 0, shiftWidth));
+         }
+
+      TR::Node *base = node->getFirstChild()->getFirstChild();
+      TR::Node *arrayLengthNode = TR::Node::create(TR::arraylength, 1, base);
+
+      arrayLengthNode->setArrayStride(dataWidth);
+      if (type.isInt64())
+         arrayLengthNode = TR::Node::create(TR::i2l, 1, arrayLengthNode);
+
+      TR::Node *ificmpgeNode = TR::Node::createif(type.isInt32() ? TR::ificmpge : TR::iflcmpge, indexNode, arrayLengthNode, _exitGotoTarget);
+      if (addLoopEntryPrepDep(LoopEntryPrep::TEST, ificmpgeNode, deps, visited) == NULL)
+         {
+         dumpOptDetailsFailedToCreateTest("part 1 of bounds", node);
+         return false;
+         }
+
+      TR::Node *constNode = 0;
+      if(type.isInt32())
+         constNode = TR::Node::create(arrayLengthNode, TR::iconst , 0, 0);
+      else
+         constNode = TR::Node::create(arrayLengthNode, TR::lconst, 0, 0);
+
+      TR::Node *ificmpltNode = TR::Node::createif(type.isInt32() ? TR::ificmplt : TR::iflcmplt, indexNode, constNode, _exitGotoTarget);
+      if (type.isInt64())
+         ificmpltNode->getSecondChild()->setLongInt(0);
+
+      if (addLoopEntryPrepDep(LoopEntryPrep::TEST, ificmpltNode, deps, visited) == NULL)
+         {
+         dumpOptDetailsFailedToCreateTest("part 2 of bounds", node);
+         return false;
+         }
+      }
+   else if (((node->getOpCodeValue() == TR::idiv) || (node->getOpCodeValue() == TR::irem) || (node->getOpCodeValue() == TR::lrem) || (node->getOpCodeValue() == TR::ldiv)))
+      {
+      // This is a divide; so we need to insert explicit checks
+      // to mimic the div check.
+      //
+      TR::Node *divisor = node->getSecondChild();
+      bool divisorIsNonzeroConstant =
+         divisor->getOpCodeValue() == TR::lconst && divisor->getLongInt() != 0
+         || divisor->getOpCodeValue() == TR::iconst && divisor->getInt() != 0;
+
+      if (!divisorIsNonzeroConstant)
+         {
+         dumpOptDetailsCreatingTest("divide-by-zero", node);
+
+         TR::Node *ifNode;
+         if (divisor->getType().isInt64())
+            ifNode = TR::Node::createif(TR::iflcmpeq, divisor, TR::Node::create(node, TR::lconst, 0, 0), _exitGotoTarget);
+         else
+            ifNode = TR::Node::createif(TR::ificmpeq, divisor, TR::Node::create(node, TR::iconst, 0, 0), _exitGotoTarget);
+
+         if (addLoopEntryPrepDep(LoopEntryPrep::TEST, ifNode, deps, visited) == NULL)
+            {
+            dumpOptDetailsFailedToCreateTest("divide-by-zero", node);
+            return false;
+            }
+         }
+      }
+   else if (node->getOpCode().isCheckCast()) //(node->getOpCodeValue() == TR::checkcast)
+      {
+      TR_ASSERT_FATAL(
+         false,
+         "depsForLoopEntryPrep: n%un is a checkcast",
+         node->getGlobalIndex());
+      }
+
+   // Get any further prerequisite LoopEntryPreps beyond those required for the
+   // ones already in deps. Doing this last avoids copying transitive dependencies
+   // into deps.
+   for (int i = 0; i < node->getNumChildren(); i++)
+      {
+      TR::Node *child = node->getChild(i);
+      if (!depsForLoopEntryPrep(child, deps, visited, true))
+         return false;
+      }
+
+   return true;
+   }
+
+/**
+ * \brief Create a LoopEntryPrep and add it as a dependency to \p deps.
+ *
+ * \param kind The kind of LoopEntryPrep to create
+ * \param node The node specifying the expression of the LoopEntryPrep
+ * \param deps The dependency list to which to add the resulting LoopEntryPrep
+ * \param visited The visited set corresponding to \p deps
+ * \return the created LoopEntryPrep, or null on failure
+ *
+ * \see depsForLoopEntryPrep()
+ * \see createLoopEntryPrep()
+ */
+TR_LoopVersioner::LoopEntryPrep *TR_LoopVersioner::addLoopEntryPrepDep(
+   LoopEntryPrep::Kind kind,
+   TR::Node *node,
+   TR::list<LoopEntryPrep*, TR::Region&> *deps,
+   TR::NodeChecklist *visited)
+   {
+   // The checklist passed to createLoopEntryPrep() here must be fresh. It's
+   // fine to propagate visited nodes up to dependents, but not down to
+   // dependencies, because propagating down could cause a dependency to miss
+   // one of *its* (transitive) dependencies that had already been seen in a
+   // sibling.
+   TR::NodeChecklist innerVisited(comp());
+   LoopEntryPrep *prep = createLoopEntryPrep(kind, node, &innerVisited);
+   if (prep == NULL)
+      return NULL;
+
+   deps->push_back(prep);
+   visited->add(innerVisited);
+   return prep;
    }
 
 TR::Node *TR_LoopVersioner::findLoad(TR::Node *node, TR::SymbolReference *symRef, vcount_t origVisitCount)
@@ -8374,4 +8766,1342 @@ const char *
 TR_LoopVersioner::optDetailString() const throw()
    {
    return "O^O LOOP VERSIONER: ";
+   }
+
+/**
+ * \brief Initialize \p expr based on \p node.
+ *
+ * The children are set to null, and populating them is the caller's
+ * responsibility, because different callers have different requirements.
+ *
+ * \param expr The Expr to initialize
+ * \param node The node based on which to initialize \p expr
+ * \param onlySearching True when \p expr will only be used as a key for
+ * lookup, and won't be inserted into CurLoop::_exprTable
+ * \return true on success, false if \p node is unrepresentable
+ */
+bool TR_LoopVersioner::initExprFromNode(Expr *expr, TR::Node *node, bool onlySearching)
+   {
+   // Reject nodes that can't be properly represented.
+#ifdef J9_PROJECT_SPECIFIC
+   if (node->getOpCode().isConversionWithFraction())
+      return false;
+#endif
+
+   if (node->getNumChildren() > Expr::MAX_CHILDREN)
+      return false;
+
+   // Reject unrecognized nop-able guards, which may contain unevaluable nodes.
+   if (node->isNopableInlineGuard() && !guardOkForExpr(node, onlySearching))
+      return false;
+
+   // Initialize _op.
+   expr->_op = node->getOpCode();
+
+   // Initialize _constValue or _symRef as appropriate.
+   expr->_constValue = 0;
+   if (expr->_op.isLoadConst())
+      {
+      expr->_constValue = node->getConstValue();
+      }
+   else if (expr->_op.hasSymbolReference())
+      {
+      // Loads from the same original symref should intern to the same Expr.
+      expr->_symRef = node->getSymbolReference()->getOriginalUnimprovedSymRef(comp());
+      }
+   else
+      {
+      TR_ASSERT_FATAL(
+         !expr->_op.isIf() || node->getBranchDestination() == _exitGotoTarget,
+         "versioning test n%un [%p] does not target _exitGotoTarget",
+         node->getGlobalIndex(),
+         node);
+      }
+
+   // Initialize _mandatoryFlags. Any flag not preserved here may be cleared.
+   // IMPORTANT: Only flags that affect the semantics of a node should be
+   // included in _mandatoryFlags. Otherwise irrelevant flags set on original
+   // nodes in the loop will prevent substitution of privatization temps.
+   expr->_mandatoryFlags = flags32_t(0);
+   if (expr->_op.getOpCodeValue() == TR::aconst)
+      {
+      flags32_t origFlags = node->getFlags();
+      bool isClassPointerConstant = node->isClassPointerConstant();
+      bool isMethodPointerConstant = node->isMethodPointerConstant();
+      node->setFlags(flags32_t(0));
+      node->setIsClassPointerConstant(isClassPointerConstant);
+      node->setIsMethodPointerConstant(isMethodPointerConstant);
+      expr->_mandatoryFlags = node->getFlags();
+      node->setFlags(origFlags);
+      }
+
+   // Clear _children. Proper values here are the caller's responsibility.
+   for (int i = 0; i < Expr::MAX_CHILDREN; i++)
+      expr->_children[i] = NULL;
+
+   // Set advisory info.
+   expr->_bci = node->getByteCodeInfo();
+   expr->_flags = node->getFlags();
+
+   // _flags must be a superset of _mandatoryFlags.
+   int32_t allFlags = expr->_flags.getValue();
+   int32_t mandatoryFlags = expr->_mandatoryFlags.getValue();
+   TR_ASSERT_FATAL(
+      (allFlags & mandatoryFlags) == mandatoryFlags,
+      "setting _flags 0x%x would fail to preserve _mandatoryFlags 0x%x\n",
+      allFlags,
+      mandatoryFlags);
+
+   return true;
+   }
+
+// needle both begins and ends with a comma
+static bool containsCommaSeparated(const char *haystack, const char *needle)
+   {
+   int haystackLen = (int)strlen(haystack);
+   int needleLen = (int)strlen(needle);
+
+   if (haystackLen < needleLen - 2)
+      return false;
+   else if (haystackLen == needleLen - 2)
+      return strncmp(haystack, needle + 1, needleLen - 2) == 0;
+   else if (strncmp(haystack, needle + 1, needleLen - 1) == 0)
+      return true;
+   else if (strncmp(haystack + haystackLen - needleLen + 1, needle, needleLen - 1) == 0)
+      return true;
+   else
+      return strstr(haystack, needle) != NULL;
+   }
+
+/**
+ * \brief Determine whether to allow the nop-able guard \p node to be
+ * represented as an Expr.
+ *
+ * Nop-able guards may contain unevaluable nodes, the values of which versioner
+ * must be sure not to privatize. Check whether it is known to be safe to
+ * version the guard kind/test combination found in \p node.
+ *
+ * The result of this function can be controlled using the environment variables
+ * \c TR_allowGuardForVersioning and \c TR_forbidGuardForVersioning to
+ * respectively allow and forbid guard kind/test combinations. Each is a
+ * comma-separated list of kind:test pairs, where the kind and test are both
+ * specified as the integer values of the TR_VirtualGuardKind and
+ * TR_VirtualGuardTestType, e.g. to forbid TR_AbstractGuard:TR_MethodTest and
+ * TR_HierarchyGuard:TR_VftTest, <tt>TR_forbidGuardForVersioning=5:2,6:1</tt>
+ * (subject to rearrangement of the enum entries). Integers are used because
+ * names currently require a TR_Debug object. No leading + or 0, or leading or
+ * trailing whitespace is accepted.
+ *
+ * \param node The nop-able guard node
+ * \param onlySearching True when node is not being copied into CurLoop::_exprTable
+ * \return true if the guard is allowed, or else false to prevent versioning
+ *
+ * \see suppressInvarianceAndPrivatization()
+ * \see makeCanonicalExpr()
+ */
+bool TR_LoopVersioner::guardOkForExpr(TR::Node *node, bool onlySearching)
+   {
+   TR_VirtualGuard *guard = comp()->findVirtualGuardInfo(node);
+   TR_VirtualGuardKind kind = guard->getKind();
+   TR_VirtualGuardTestType test = guard->getTestType();
+
+   if (trace())
+      {
+      traceMsg(
+         comp(),
+         "guardOkForExpr? %s:%s\n",
+         comp()->getDebug()->getVirtualGuardKindName(kind),
+         comp()->getDebug()->getVirtualGuardTestTypeName(test));
+      }
+
+   static const char * const allowEnv = feGetEnv("TR_allowGuardForVersioning");
+   static const char * const forbidEnv = feGetEnv("TR_forbidGuardForVersioning");
+   if (allowEnv != NULL || forbidEnv != NULL)
+      {
+      char needle[32];
+      int needleLen = snprintf(needle, sizeof (needle), ",%d:%d,", (int)kind, (int)test);
+      TR_ASSERT_FATAL(0 <= needleLen && needleLen < sizeof (needle), "needle buffer is too small");
+
+      if (allowEnv != NULL && containsCommaSeparated(allowEnv, needle))
+         return true;
+      else if (forbidEnv != NULL && containsCommaSeparated(forbidEnv, needle))
+         return false;
+      }
+
+   switch (kind)
+      {
+      // A guard type may be allowed here only after determining whether it
+      // has unevaluable nodes, and if it does, ensuring that those nodes
+      // are detected by suppressInvarianceAndPrivatization(), so that they
+      // will not be privatized.
+
+      case TR_InterfaceGuard:
+      case TR_AbstractGuard:
+         return test == TR_MethodTest;
+
+      case TR_HierarchyGuard:
+         return test == TR_VftTest || test == TR_MethodTest;
+
+      case TR_NonoverriddenGuard:
+         return test == TR_NonoverriddenTest || test == TR_VftTest;
+
+      case TR_DirectMethodGuard:
+         return test == TR_NonoverriddenTest;
+
+      // These guard types are versionable, but they require special
+      // handling. They should not go through makeCanonicalExpr().
+      case TR_HCRGuard:
+         TR_ASSERT_FATAL(
+            onlySearching,
+            "guardOkForExpr: should not intern HCR guard n%un [%p]",
+            node->getGlobalIndex(),
+            node);
+         return false;
+
+      case TR_OSRGuard:
+         TR_ASSERT_FATAL(
+            onlySearching,
+            "guardOkForExpr: should not intern OSR guard n%un [%p]",
+            node->getGlobalIndex(),
+            node);
+         return false;
+
+      // Never versioned, only holds inner assumptions.
+      case TR_DummyGuard:
+         TR_ASSERT_FATAL(
+            onlySearching,
+            "guardOkForExpr: should not intern dummy guard n%un [%p]",
+            node->getGlobalIndex(),
+            node);
+         return false;
+
+      // Never versioned (for now).
+      case TR_BreakpointGuard:
+         TR_ASSERT_FATAL(
+            onlySearching,
+            "guardOkForExpr: should not intern breakpoint guard n%un [%p]",
+            node->getGlobalIndex(),
+            node);
+         return false;
+
+      // These kinds have not yet been checked. Conservatively disallow
+      // versioning for now.
+      case TR_SideEffectGuard:
+      case TR_MutableCallSiteTargetGuard:
+      case TR_MethodEnterExitGuard:
+      case TR_InnerGuard:
+      case TR_ArrayStoreCheckGuard:
+      case TR_RemovedProfiledGuard:
+      case TR_RemovedNonoverriddenGuard:
+      case TR_RemovedInterfaceGuard:
+         return false;
+
+      default:
+         // Alert developers adding a new guard kind to the potential
+         // performance problem caused by refusing to version. This can be
+         // fixed by opting in or out just above.
+         //
+         // This assert will also fire in case guard is somehow not nop-able.
+         //
+         TR_ASSERT_FATAL(
+            false,
+            "guardOkForExpr: n%un [%p]: unrecognized nop-able guard kind %d",
+            node->getGlobalIndex(),
+            node,
+            (int)kind);
+      }
+   }
+
+/**
+ * \brief Intern \p node as an Expr.
+ *
+ * The resulting Expr is effectively a copy of \p node, but nonetheless \p node
+ * and its descendants must \em not be mutated in-place after interning, since
+ * CurLoop::_nodeToExpr is updated to remember the correspondence between each
+ * node in the subtree and its respective Expr, and modifications to any of
+ * these nodes could invalidate the associations.
+ *
+ * While it is not necessarily incorrect for \p node for to be unrepresentable,
+ * it is unexpected and likely to cause a performance problem. So in case
+ * \p node \em is unrepresentable, this method increments a static debug
+ * counter matching <tt>{loopVersioner.unrepresentable/*}</tt>, and optionally
+ * fails an assertion when enabled using \c ASSERT_REPRESENTABLE_IN_VERSIONER
+ * or \c TR_assertRepresentableInVersioner.
+ *
+ * \p node The node to be represented as an Expr
+ * \return the pointer to the canonical Expr instance corresponding to \p node,
+ * or null if \p node is unrepresentable
+ */
+const TR_LoopVersioner::Expr *TR_LoopVersioner::makeCanonicalExpr(TR::Node *node)
+   {
+   auto cached = _curLoop->_nodeToExpr.find(node);
+   if (cached != _curLoop->_nodeToExpr.end())
+      return cached->second;
+
+   static const bool assertRepresentableEnv =
+      feGetEnv("TR_assertRepresentableInVersioner") != NULL;
+
+   Expr expr;
+   bool onlySearching = false; // expr will be inserted into CurLoop::_exprTable
+   if (!initExprFromNode(&expr, node, onlySearching))
+      {
+      dumpOptDetails(
+         comp(),
+         "n%un [%p] is unrepresentable\n",
+         node->getGlobalIndex(),
+         node);
+
+#ifdef ASSERT_REPRESENTABLE_IN_VERSIONER
+      bool shouldAssert = true;
+#else
+      bool shouldAssert = assertRepresentableEnv;
+#endif
+      if (shouldAssert)
+         {
+         if (node->isNopableInlineGuard())
+            {
+            TR_VirtualGuard *guard = comp()->findVirtualGuardInfo(node);
+            TR_ASSERT_FATAL(
+               false,
+               "n%un [%p] is unrepresentable guard kind=%d, test=%d",
+               node->getGlobalIndex(),
+               node,
+               (int)guard->getKind(),
+               (int)guard->getTestType());
+            }
+         else
+            {
+            TR_ASSERT_FATAL(
+               false,
+               "n%un [%p] is unrepresentable",
+               node->getGlobalIndex(),
+               node);
+            }
+         }
+
+      TR::DebugCounter::incStaticDebugCounter(
+         comp(),
+         TR::DebugCounter::debugCounterName(
+            comp(),
+            "loopVersioner.unrepresentable/(%s)/%s/loop=%d/n%un",
+            comp()->signature(),
+            comp()->getHotnessName(comp()->getMethodHotness()),
+            _curLoop->_loop->getNumber(),
+            node->getGlobalIndex()));
+
+      return NULL;
+      }
+
+   for (int i = 0; i < node->getNumChildren(); i++)
+      {
+      const Expr *child = makeCanonicalExpr(node->getChild(i));
+      if (child == NULL)
+         return NULL;
+
+      expr._children[i] = child;
+      }
+
+   const Expr *result = NULL;
+   auto existing = _curLoop->_exprTable.find(expr);
+   if (existing != _curLoop->_exprTable.end())
+      {
+      result = existing->second;
+      }
+   else
+      {
+      result = new (_curLoop->_memRegion) Expr(expr);
+      _curLoop->_exprTable.insert(std::make_pair(expr, result));
+      }
+
+   if (trace())
+      {
+      traceMsg(
+         comp(),
+         "Canonical n%un [%p] is expr %p\n",
+         node->getGlobalIndex(),
+         node,
+         result);
+      }
+
+   _curLoop->_nodeToExpr.insert(std::make_pair(node, result));
+   return result;
+   }
+
+/**
+ * \brief Find the canonical Expr corresponding to \p node, if any.
+ *
+ * \p node The node whose Expr representation is requested
+ * \return the pointer to the canonical Expr instance corresponding to \p node,
+ * or null if no such Expr has been created
+ */
+const TR_LoopVersioner::Expr *TR_LoopVersioner::findCanonicalExpr(TR::Node *node)
+   {
+   auto cached = _curLoop->_nodeToExpr.find(node);
+   if (cached != _curLoop->_nodeToExpr.end())
+      return cached->second;
+
+   TR::Node *defRHS = NULL;
+   if (node->getOpCode().isLoadVarDirect()
+       && node->getSymbol()->isAutoOrParm()
+       && !isExprInvariant(node))
+      defRHS = isDependentOnInvariant(node);
+
+   const Expr *result = NULL;
+   if (defRHS != NULL)
+      {
+      result = findCanonicalExpr(defRHS);
+      if (result == NULL)
+         return NULL;
+      }
+   else
+      {
+      Expr expr;
+      bool onlySearching = true;
+      if (!initExprFromNode(&expr, node, onlySearching))
+         return NULL;
+
+      for (int i = 0; i < node->getNumChildren(); i++)
+         {
+         const Expr *child = findCanonicalExpr(node->getChild(i));
+         if (child == NULL)
+            return NULL;
+
+         expr._children[i] = child;
+         }
+
+      auto existing = _curLoop->_exprTable.find(expr);
+      if (existing == _curLoop->_exprTable.end())
+         return NULL;
+
+      result = existing->second;
+      }
+
+   if (trace())
+      {
+      traceMsg(
+         comp(),
+         "findCanonicalExpr: Canonical n%un [%p] is expr %p\n",
+         node->getGlobalIndex(),
+         node,
+         result);
+      }
+
+   _curLoop->_nodeToExpr.insert(std::make_pair(node, result));
+   return result;
+   }
+
+/**
+ * \brief Find occurrences of privatized expressions beneath \p node and
+ * transmute them into loads of the temps into which the values have been
+ * stored.
+ *
+ * Any child node removed from a parent as a result of this process is anchored
+ * before \p tt.
+ *
+ * \p tt The tree where \p node (if it is unvisited) is evaluated
+ * \p node The subtree within which to substitute loads of privatization temps
+ * \p visited The set of nodes within which substitution has already been performed
+ * \return the pointer to the canonical Expr instance corresponding to \p node,
+ * or null if no such Expr has been created
+ */
+const TR_LoopVersioner::Expr *TR_LoopVersioner::substitutePrivTemps(
+   TR::TreeTop *tt,
+   TR::Node *node,
+   TR::NodeChecklist *visited)
+   {
+   if (visited->contains(node))
+      {
+      auto cached = _curLoop->_nodeToExpr.find(node);
+      if (cached == _curLoop->_nodeToExpr.end())
+         return NULL;
+      else
+         return cached->second;
+      }
+
+   visited->add(node);
+
+   TR::Node *defRHS = NULL;
+   if (node->getOpCode().isLoadVarDirect()
+       && node->getSymbol()->isAutoOrParm()
+       && !isExprInvariant(node))
+      defRHS = isDependentOnInvariant(node);
+
+   const Expr *canonicalExpr = NULL;
+   if (defRHS != NULL)
+      {
+      // Because tt isn't the point of evaluation of defRHS, use
+      // findCanonicalExpr() instead of recursing here to ensure nodes beneath
+      // defRHS are anchored correctly.
+      canonicalExpr = findCanonicalExpr(defRHS);
+      if (canonicalExpr == NULL)
+         return NULL;
+      }
+   else
+      {
+      // Nodes whose opcodes satisfy isTreeTop() don't produce a value and
+      // won't be privatized. Check isTreeTop() here to avoid passing them into
+      // initExprFromNode() to exempt any conditional nodes encountered here
+      // from the assertion on the branch target for versioning tests.
+      Expr expr;
+      bool onlySearching = true;
+      bool rootMayBePrivatized =
+         !node->getOpCode().isTreeTop()
+         && initExprFromNode(&expr, node, onlySearching);
+
+      for (int i = 0; i < node->getNumChildren(); i++)
+         {
+         const Expr *child = substitutePrivTemps(tt, node->getChild(i), visited);
+         if (rootMayBePrivatized)
+            {
+            if (child == NULL)
+               rootMayBePrivatized = false;
+            else
+               expr._children[i] = child;
+            }
+         }
+
+      if (!rootMayBePrivatized)
+         return NULL;
+
+      auto exprEntry = _curLoop->_exprTable.find(expr);
+      if (exprEntry == _curLoop->_exprTable.end())
+         return NULL;
+
+      canonicalExpr = exprEntry->second;
+      }
+
+   if (trace())
+      {
+      traceMsg(
+         comp(),
+         "substitutePrivTemps: Canonical n%un [%p] is expr %p\n",
+         node->getGlobalIndex(),
+         node,
+         canonicalExpr);
+      }
+
+   auto insertResult =
+      _curLoop->_nodeToExpr.insert(std::make_pair(node, canonicalExpr));
+
+   TR_ASSERT_FATAL(
+      insertResult.second || insertResult.first->second == canonicalExpr,
+      "failed to insert n%un [%p] into _nodeToExpr",
+      node->getGlobalIndex(),
+      node);
+
+   auto tempEntry = _curLoop->_privTemps.find(canonicalExpr);
+   if (tempEntry == _curLoop->_privTemps.end())
+      return canonicalExpr;
+
+   // NB. Once the entry has been put into _privTemps, this transformation is
+   // required.
+   TR::SymbolReference *temp = tempEntry->second._symRef;
+   dumpOptDetails(
+      comp(),
+      "Transforming n%un [%p] into a load of privatization temp #%d\n",
+      node->getGlobalIndex(),
+      node,
+      temp->getReferenceNumber());
+
+   anchorChildren(node, tt);
+   node->removeAllChildren();
+   node->setUseDefIndex(0);
+   node->setFlags(0);
+
+   TR::DataType type = tempEntry->second._type;
+   if (type == TR::Int8 || type == TR::Int16)
+      {
+      TR::Node::recreate(node, type == TR::Int8 ? TR::i2b : TR::i2s);
+      node->setNumChildren(1);
+      node->setAndIncChild(0, TR::Node::createWithSymRef(node, TR::iload, 0, temp));
+      }
+   else
+      {
+      TR::ILOpCodes op = comp()->il.opCodeForDirectLoad(type);
+      TR::Node::recreateWithSymRef(node, op, temp);
+      }
+
+   return canonicalExpr;
+   }
+
+/**
+ * \brief Generate a node from \p expr.
+ *
+ * Repeated subexpressions will be commoned. If \p expr or any subexpression
+ * has been privatized (i.e. if the privatization has been emitted), then the
+ * outermost privatized subexpressions will be generated as loads of their
+ * respective temps.
+ *
+ * \param expr The expression to emit
+ * \return the generated node
+ *
+ * \see emitPrep()
+ */
+TR::Node *TR_LoopVersioner::emitExpr(const Expr *expr)
+   {
+   TR::Region emitExprRegion(comp()->trMemory()->currentStackRegion());
+   EmitExprMemo memo(std::less<const Expr*>(), emitExprRegion);
+   return emitExpr(expr, memo);
+   }
+
+/// Implementation of emitExpr(const Expr*)
+TR::Node *TR_LoopVersioner::emitExpr(const Expr *expr, EmitExprMemo &memo)
+   {
+   auto existing = memo.find(expr);
+   if (existing != memo.end())
+      return existing->second;
+
+   auto tempEntry = _curLoop->_privTemps.find(expr);
+   if (tempEntry != _curLoop->_privTemps.end())
+      {
+      TR::SymbolReference *temp = tempEntry->second._symRef;
+      TR::Node *node = TR::Node::createLoad(temp);
+      node->setByteCodeInfo(expr->_bci);
+
+      TR::DataType type = tempEntry->second._type;
+      if (type == TR::Int8)
+         node = TR::Node::create(node, TR::i2b, 1, node);
+      else if (type == TR::Int16)
+         node = TR::Node::create(node, TR::i2s, 1, node);
+
+      if (trace())
+         {
+         traceMsg(
+            comp(),
+            "Emitted expr %p as privatized temp #%d load n%un [%p]\n",
+            expr,
+            temp->getReferenceNumber(),
+            node->getGlobalIndex(),
+            node);
+         }
+
+      memo.insert(std::make_pair(expr, node));
+      return node;
+      }
+
+   int numChildren = 0;
+   while (numChildren < Expr::MAX_CHILDREN && expr->_children[numChildren] != NULL)
+      numChildren++;
+
+   TR::Node *children[Expr::MAX_CHILDREN] = {0};
+   for (int i = 0; i < numChildren; i++)
+      children[i] = emitExpr(expr->_children[i], memo);
+
+   TR::Node *node = NULL;
+   TR::ILOpCode op = expr->_op;
+   TR::ILOpCodes opVal = op.getOpCodeValue();
+   if (!op.isLoadConst() && op.hasSymbolReference())
+      {
+      node = TR::Node::createWithSymRef(opVal, numChildren, expr->_symRef);
+      setAndIncChildren(node, numChildren, children);
+      }
+   else if (op.isIf())
+      {
+      TR_ASSERT_FATAL(numChildren == 2, "expected if %p to have 2 children", expr);
+      node = TR::Node::createif(opVal, children[0], children[1], _exitGotoTarget);
+      }
+   else
+      {
+      node = TR::Node::create(opVal, numChildren);
+      setAndIncChildren(node, numChildren, children);
+      }
+
+   if (op.isLoadConst())
+      node->setConstValue(expr->_constValue);
+
+   node->setByteCodeInfo(expr->_bci);
+   node->setFlags(expr->_flags);
+
+   if (trace())
+      {
+      traceMsg(
+         comp(),
+         "Emitted expr %p as n%un [%p]\n",
+         expr,
+         node->getGlobalIndex(),
+         node);
+      }
+
+   memo.insert(std::make_pair(expr, node));
+   return node;
+   }
+
+/**
+ * \brief Generate a tree for \p prep and add it to \p comparisonTrees.
+ *
+ * If \p prep is a versioning test, its expression specifies the entire tree.
+ *
+ * If on the other hand it is a privatization, the expression specifies only
+ * the value to be privatized, and the tree is a store of this value into a
+ * fresh temp \c t. After emitting the privatization of an Expr \c e,
+ * emitExpr(const Expr*) will generate a load of \c t instead of
+ * rematerializing \c e, so that occurrences of \c e in later preparations will
+ * all have the same value. Occurrences within the loop are substituted later.
+ *
+ * Preparations are emitted in post-order, so all of the dependencies of
+ * \p prep are emitted before \p prep itself. No instance is emitted more than
+ * once.
+ *
+ * **For debugging purposes only**, the \c TR_assumeSingleThreadedVersioning
+ * environment variable can be set to cause this method to skip privatization.
+ *
+ * \param prep The preparation to emit
+ * \param comparisonTrees The list of all versioning test and privatization
+ * trees for the loop
+ *
+ * \see emitExpr(const Expr*)
+ * \see substitutePrivTemps(const Expr*)
+ */
+void TR_LoopVersioner::emitPrep(LoopEntryPrep *prep, List<TR::Node> *comparisonTrees)
+   {
+   TR_ASSERT_FATAL(
+      !prep->_requiresPrivatization || _curLoop->_privatizationOK,
+      "should not be emitting prep %p because it requires privatization",
+      prep);
+
+   if (prep->_emitted)
+      return;
+
+   prep->_emitted = true;
+
+   for (auto it = prep->_deps.begin(); it != prep->_deps.end(); ++it)
+      emitPrep(*it, comparisonTrees);
+
+   if (prep->_kind == LoopEntryPrep::TEST)
+      {
+      TR::Node *node = emitExpr(prep->_expr);
+      comparisonTrees->add(node);
+      dumpOptDetails(
+         comp(),
+         "Emitted prep %p as n%un [%p]\n",
+         prep,
+         node->getGlobalIndex(),
+         node);
+      }
+   else
+      {
+      TR_ASSERT_FATAL(
+         prep->_kind == LoopEntryPrep::PRIVATIZE,
+         "prep %p has unrecognized kind %d\n",
+         prep,
+         prep->_kind);
+
+      // If in the future it is desirable not to privatize within a
+      // single-threaded system, the way to do it is to simply ignore
+      // privatizations here. If privatizations are allowed, then there will be
+      // no calls remaining in the loop, and the only possible writers will be
+      // other threads (of which there are none). If OTOH privatizations are
+      // not allowed, then any dependent LoopEntryPreps and LoopImprovements
+      // must be skipped, just as in the multi-threaded case.
+      //
+      // TR_assumeSingleThreadedVersioning is only for debugging multi-threaded
+      // systems such as OpenJ9. If/when a single-threaded system wishes to
+      // stop privatization, some other mechanism should be used here to
+      // determine whether we are doing threading.
+      //
+      static const bool singleThreaded =
+         feGetEnv("TR_assumeSingleThreadedVersioning") != NULL;
+
+      if (singleThreaded)
+         return;
+
+      // Actually privatize now.
+      TR::Node *value = emitExpr(prep->_expr);
+      TR::DataType nodeType = value->getDataType();
+
+      // Privatization of internal pointers is unhandled. Existing internal
+      // pointer temps are already autos, so they will not be privatized. For
+      // performance we may hoist expressions containing pointer arithmetic
+      // (aladd, aiadd), but not expressions that do pointer arithmetic at the
+      // root, because those opcodes do not satisfy isSupportedForPRE().
+      //
+      // If in the future we want to store the results of pointer arithmetic,
+      // it should be possible to do so by making the temp an internal pointer
+      // temp with an associated pinning array temp, and setting both temps.
+      //
+      TR_ASSERT_FATAL(
+         !value->isInternalPointer(),
+         "prep %p attempting to privatize an internal pointer",
+         prep);
+
+      // OpenJ9 does not allow narrow integer-typed temps, requiring values to
+      // be extended to 32-bit before storing them to the stack.
+      TR::DataType tempType = nodeType;
+      if (tempType == TR::Int8 || tempType == TR::Int16)
+         tempType = TR::Int32;
+
+      TR::SymbolReference *temp = comp()->getSymRefTab()->createTemporary(
+         comp()->getMethodSymbol(),
+         tempType);
+
+      if (value->getDataType() == TR::Address && value->isNotCollected())
+         temp->getSymbol()->setNotCollected();
+
+      auto insertResult = _curLoop->_privTemps.insert(
+         std::make_pair(prep->_expr, PrivTemp(temp, nodeType)));
+
+      TR_ASSERT_FATAL(
+         insertResult.second,
+         "_privTemps insert failed for expr %p",
+         prep->_expr);
+
+      // Extend when nodeType is a narrow integer, since tempType is Int32.
+      if (nodeType == TR::Int8)
+         value = TR::Node::create(value, TR::b2i, 1, value);
+      else if (nodeType == TR::Int16)
+         value = TR::Node::create(value, TR::s2i, 1, value);
+
+      TR::Node *store = TR::Node::createStore(value, temp, value);
+      comparisonTrees->add(store);
+
+      // Don't invalidate use-def info, etc. quite yet. It's still needed
+      // during substitutePrivTemps() (for isDependentOnInvariant()). Use-def
+      // info and value number info are always invalidated at the end of
+      // versioner's optimization pass, but remember to invalidate alias sets
+      // as well.
+      _invalidateAliasSets = true;
+
+      optimizer()->setRequestOptimization(OMR::globalValuePropagation, true);
+
+      dumpOptDetails(
+         comp(),
+         "Emitted prep %p as n%un [%p] storing to temp #%d\n",
+         prep,
+         store->getGlobalIndex(),
+         store,
+         temp->getReferenceNumber());
+      }
+   }
+
+/**
+ * \brief Emit all versioning tests in \p preps and its elements' transitive
+ * dependencies, with no privatization.
+ *
+ * \deprecated This is useful only for collectAllExpressionsToBeChecked().
+ *
+ * \param preps The list of preparations from which to emit versioning tests
+ * \param comparisonTrees The list of all versioning test trees for this loop
+ */
+void TR_LoopVersioner::unsafelyEmitAllTests(
+   const TR::list<LoopEntryPrep*, TR::Region&> &preps,
+   List<TR::Node> *comparisonTrees)
+   {
+   for (auto it = preps.begin(); it != preps.end(); ++it)
+      {
+      LoopEntryPrep *prep = *it;
+      if (prep->_unsafelyEmitted)
+         continue;
+
+      prep->_unsafelyEmitted = true;
+
+      unsafelyEmitAllTests(prep->_deps, comparisonTrees);
+
+      if (prep->_kind == LoopEntryPrep::TEST)
+         {
+         TR::Node *node = emitExpr(prep->_expr);
+         comparisonTrees->add(node);
+
+         dumpOptDetails(
+            comp(),
+            "Unsafely emitted prep %p as n%un [%p]\n",
+            prep,
+            node->getGlobalIndex(),
+            node);
+
+         if (!prep->_requiresPrivatization)
+            {
+            prep->_emitted = true;
+            dumpOptDetails(
+               comp(),
+               "This prep happens to be safe (no privatization required)\n");
+            }
+         }
+      }
+   }
+
+void TR_LoopVersioner::setAndIncChildren(TR::Node *node, int n, TR::Node **children)
+   {
+   for (int i = 0; i < n; i++)
+      node->setAndIncChild(i, children[i]);
+   }
+
+/**
+ * \brief Commit to removing \p node if \p prep can be emitted.
+ *
+ * This commitment is trusted by the analysis that determines whether
+ * privatization is safe, so at this point the removal of \p node becomes
+ * **mandatory** if it is at all possible.
+ *
+ * The node must be a root-level node, typically a check. If it's a conditional
+ * branch, then the analysis will assume that it unconditionally falls through,
+ * unless it is also present in CurLoop::_takenBranches, in which case the
+ * analysis will assume that it is unconditionally taken.
+ *
+ * \param node The node to be removed
+ * \param prep The preparation upon which the removal of \p node is predicated
+ *
+ * \see LoopBodySearch
+ */
+void TR_LoopVersioner::nodeWillBeRemovedIfPossible(
+   TR::Node *node,
+   LoopEntryPrep *prep)
+   {
+   _curLoop->_optimisticallyRemovableNodes.add(node);
+   if (!prep->_requiresPrivatization)
+      _curLoop->_definitelyRemovableNodes.add(node);
+   }
+
+/**
+ * \brief Compare two \ref Expr "Exprs" for ordering.
+ *
+ * Comparison ignores the "best-effort" fields Expr::_bci and Expr::_flags.
+ *
+ * \param lhs The first Expr to compare
+ * \param rhs The second Expr to compare
+ * \return true if \p lhs is less than \p rhs
+ */
+bool TR_LoopVersioner::Expr::operator<(const Expr &rhs) const
+   {
+   const Expr &lhs = *this;
+
+   if ((int)lhs._op.getOpCodeValue() < (int)rhs._op.getOpCodeValue())
+      return true;
+   else if ((int)lhs._op.getOpCodeValue() > (int)rhs._op.getOpCodeValue())
+      return false;
+
+   if (lhs._op.isLoadConst())
+      {
+      if (lhs._constValue < rhs._constValue)
+         return true;
+      else if (lhs._constValue > rhs._constValue)
+         return false;
+      }
+   else if (lhs._op.hasSymbolReference())
+      {
+      std::less<TR::SymbolReference*> symRefLt;
+      if (symRefLt(lhs._symRef, rhs._symRef))
+         return true;
+      else if (symRefLt(rhs._symRef, lhs._symRef))
+         return false;
+      }
+
+   if (lhs._mandatoryFlags.getValue() < rhs._mandatoryFlags.getValue())
+      return true;
+   else if (lhs._mandatoryFlags.getValue() > rhs._mandatoryFlags.getValue())
+      return false;
+
+   for (int i = 0; i < Expr::MAX_CHILDREN; i++)
+      {
+      std::less<const Expr*> exprPtrLt;
+      if (exprPtrLt(lhs._children[i], rhs._children[i]))
+         return true;
+      else if (exprPtrLt(rhs._children[i], lhs._children[i]))
+         return false;
+      }
+
+   return false;
+   }
+
+/**
+ * \brief Create a new LoopEntryPrep.
+ *
+ * For versioning tests, \p node should be the entire conditional tree. For
+ * privatizations, it should be just the node whose value is to be privatized.
+ *
+ * This process can fail, either because \p node is not representable as an
+ * Expr, or because of a problem generating prerequisite safety tests, so
+ * **callers must be prepared to abandon the desired transformation in case of
+ * failure**.
+ *
+ * If a LoopEntryPrep has already been created with the same kind and with an
+ * Expr that corresponds to \p node, then the existing instance is returned.
+ *
+ * \param kind The kind of LoopEntryPrep to create.
+ * \param node The node to be converted into the Expr of the LoopEntryPrep.
+ * \param visited The visited set. Do not specify outside of addLoopEntryPrepDep()
+ * \param prev A previous preparation to depend on. Do not specify outside of
+ * createChainedLoopEntryPrep().
+ *
+ * \return the (new or existing) LoopEntryPrep, or null on failure
+ */
+TR_LoopVersioner::LoopEntryPrep *TR_LoopVersioner::createLoopEntryPrep(
+   LoopEntryPrep::Kind kind,
+   TR::Node *node,
+   TR::NodeChecklist *visited,
+   LoopEntryPrep *prev)
+   {
+   bool optDetails =
+      comp()->getOutFile() != NULL
+      && (trace() || comp()->getOption(TR_TraceOptDetails));
+
+   if (visited == NULL)
+      {
+      // This is the top-level call. Ensure that node's flags have been reset
+      // for code motion.
+      node->resetFlagsForCodeMotion();
+      }
+
+   // Because node will no longer appear verbatim in the trees, print it to
+   // the log so that other dumpOptDetails() messages that refer to its
+   // descendants make sense.
+   if (optDetails)
+      {
+      const char *kindName = kind == LoopEntryPrep::PRIVATIZE ? "PRIVATIZE" : "TEST";
+      if (prev == NULL)
+         dumpOptDetails(comp(), "Creating %s prep for tree:\n", kindName);
+      else
+         dumpOptDetails(comp(), "Creating %s prep for tree with prev=%p:\n", kindName, prev);
+
+      if (visited == NULL)
+         comp()->getDebug()->clearNodeChecklist();
+
+      comp()->getDebug()->printWithFixedPrefix(
+         comp()->getOutFile(),
+         node,
+         1,
+         true,
+         false,
+         "\t\t");
+
+      traceMsg(comp(), "\n");
+      }
+
+   const Expr *expr = makeCanonicalExpr(node);
+   if (expr == NULL)
+      return NULL;
+
+   PrepKey key(kind, expr, prev);
+   auto existing = _curLoop->_prepTable.find(key);
+   if (existing != _curLoop->_prepTable.end())
+      {
+      if (visited != NULL)
+         {
+         // This is happening as part of depsForLoopEntryPrep(). Update the
+         // visited set as though the subtree rooted at node were put through
+         // the normal recursive processing, so that reusing the existing
+         // LoopEntryPrep doesn't affect the outer dependency list.
+         visitSubtree(node, visited);
+         }
+
+      dumpOptDetails(
+         comp(),
+         "Using existing prep %p for n%un [%p]\n",
+         existing->second,
+         node->getGlobalIndex(),
+         node);
+
+      return existing->second;
+      }
+
+   LoopEntryPrep *prep =
+      new (_curLoop->_memRegion) LoopEntryPrep(kind, expr, _curLoop->_memRegion);
+
+   bool ok = false;
+   bool isPrivatization = kind == LoopEntryPrep::PRIVATIZE;
+   bool canPrivatizeRootNode = !isPrivatization;
+   if (isPrivatization)
+      _curLoop->_privatizationsRequested = true;
+
+   if (visited != NULL)
+      {
+      ok = depsForLoopEntryPrep(node, &prep->_deps, visited, canPrivatizeRootNode);
+      }
+   else
+      {
+      TR::NodeChecklist myVisited(comp());
+      ok = depsForLoopEntryPrep(node, &prep->_deps, &myVisited, canPrivatizeRootNode);
+      }
+
+   if (!ok)
+      {
+      dumpOptDetails(
+         comp(),
+         "Failed to create prep for n%un [%p]\n",
+         node->getGlobalIndex(),
+         node);
+
+      return NULL;
+      }
+
+   // Even if this LoopEntryPrep is a PRIVATIZE, the privatization may not be
+   // required per se. For instance, this may be an attempt to hoist an
+   // expression that does not observe state that could be written by other
+   // threads, e.g. (8 + 4 * i2l(k)), where k is a loop-invariant auto.
+   //
+   // Set _requiresPrivatization only when correctness actually relies on it.
+   //
+   prep->_requiresPrivatization = isPrivatization && requiresPrivatization(node);
+
+   if (!prep->_requiresPrivatization)
+      {
+      for (auto it = prep->_deps.begin(); it != prep->_deps.end(); ++it)
+         {
+         if ((*it)->_requiresPrivatization)
+            {
+            prep->_requiresPrivatization = true;
+            break;
+            }
+         }
+      }
+
+   if (optDetails)
+      {
+      dumpOptDetails(
+         comp(),
+         "Prep for n%un [%p] is prep %p %s expr %p%s, deps: ",
+         node->getGlobalIndex(),
+         node,
+         prep,
+         prep->_kind == LoopEntryPrep::PRIVATIZE ? "PRIVATIZE" : "TEST",
+         prep->_expr,
+         prep->_requiresPrivatization ? " (requires privatization)" : "");
+
+      if (prep->_deps.empty())
+         {
+         traceMsg(comp(), "none\n");
+         }
+      else
+         {
+         auto it = prep->_deps.begin();
+         traceMsg(comp(), "%p", *it);
+         while (++it != prep->_deps.end())
+            traceMsg(comp(), ", %p", *it);
+         traceMsg(comp(), "\n");
+         }
+      }
+
+   _curLoop->_prepTable.insert(std::make_pair(key, prep));
+   return prep;
+   }
+
+/**
+ * \brief Create a LoopEntryPrep that depends on \p prev.
+ *
+ * This can be used to create a series of multiple preparations all required
+ * for a single transformation, e.g.
+ *
+ *     LoopEntryPrep *prep = createLoopEntryPrep(LoopEntryPrep::TEST, test0);
+ *     prep = createChainedLoopEntryPrep(LoopEntryPrep::TEST, test1, prep);
+ *     prep = createChainedLoopEntryPrep(LoopEntryPrep::TEST, test2, prep);
+ *     if (prep != NULL) {
+ *         // success
+ *     }
+ *
+ * This method fails when \p prev is null, so that LoopEntryPrep creation
+ * failure cascades, and callers need only check the final result.
+ *
+ * \param kind The kind of LoopEntryPrep to create.
+ * \param node The node to be converted into the Expr of the LoopEntryPrep.
+ * \param prev The previous preparation to depend on. If null, no new
+ * preparation is created.
+ *
+ * \return the created LoopEntryPrep, or null on failure
+ *
+ * \see createLoopEntryPrep()
+ */
+TR_LoopVersioner::LoopEntryPrep *TR_LoopVersioner::createChainedLoopEntryPrep(
+   LoopEntryPrep::Kind kind,
+   TR::Node *node,
+   LoopEntryPrep *prev)
+   {
+   if (prev == NULL)
+      return NULL;
+
+   return createLoopEntryPrep(kind, node, NULL, prev);
+   }
+
+bool TR_LoopVersioner::PrepKey::operator<(const PrepKey &rhs) const
+   {
+   const PrepKey &lhs = *this;
+
+   if ((int)lhs._kind < (int)rhs._kind)
+      return true;
+   else if ((int)lhs._kind > (int)rhs._kind)
+      return false;
+
+   std::less<const Expr*> ltExpr;
+   if (ltExpr(lhs._expr, rhs._expr))
+      return true;
+   else if (ltExpr(rhs._expr, lhs._expr))
+      return false;
+
+   std::less<LoopEntryPrep*> ltPrep;
+   if (ltPrep(lhs._prev, rhs._prev))
+      return true;
+   else if (ltPrep(rhs._prev, lhs._prev))
+      return false;
+
+   return false;
+   }
+
+void TR_LoopVersioner::visitSubtree(TR::Node *node, TR::NodeChecklist *visited)
+   {
+   if (visited->contains(node))
+      return;
+
+   visited->add(node);
+   for (int i = 0; i < node->getNumChildren(); i++)
+      visitSubtree(node->getChild(i), visited);
+   }
+
+/**
+ * \brief Construct this CurLoop.
+ *
+ * This should be done once for each loop considered by versioner.
+ *
+ * \param comp The compilation object
+ * \param memRegion A memory region local to the consideration of this loop
+ * \param loop The structure of the loop
+ */
+TR_LoopVersioner::CurLoop::CurLoop(
+   TR::Compilation *comp,
+   TR::Region &memRegion,
+   TR_RegionStructure *loop)
+   : _memRegion(memRegion)
+   , _loop(loop)
+   , _exprTable(std::less<Expr>(), memRegion)
+   , _nodeToExpr(std::less<TR::Node*>(), memRegion)
+   , _prepTable(std::less<PrepKey>(), memRegion)
+   , _definitelyRemovableNodes(comp)
+   , _optimisticallyRemovableNodes(comp)
+   , _takenBranches(comp)
+   , _loopImprovements(memRegion)
+   , _privTemps(std::less<const Expr*>(), memRegion)
+   , _privatizationsRequested(false)
+   , _privatizationOK(false)
+   {}
+
+/**
+ * \brief Construct this LoopBodySearch and start iterating.
+ *
+ * The first tree will be the \c BBStart of the loop header.
+ *
+ * \param comp The current compilation
+ * \param memRegion The region in which to allocate the search queue
+ * \param loop The loop structure
+ * \param removedNodes The set of nodes to ignore/assume removed
+ * \param takenBranches The subset of \p removedNodes that should be assumed to
+ * be taken if they are branches
+ */
+TR_LoopVersioner::LoopBodySearch::LoopBodySearch(
+   TR::Compilation *comp,
+   TR::Region &memRegion,
+   TR_RegionStructure *loop,
+   TR::NodeChecklist *removedNodes,
+   TR::NodeChecklist *takenBranches)
+   : _loop(loop)
+   , _removedNodes(removedNodes)
+   , _takenBranches(takenBranches)
+   , _queue(memRegion)
+   , _alreadyEnqueuedBlocks(comp)
+   , _currentBlock(loop->getEntryBlock())
+   , _currentTreeTop(_currentBlock->getEntry())
+   , _blockHasExceptionPoint(false)
+   {
+   _alreadyEnqueuedBlocks.add(_currentBlock);
+   }
+
+/**
+ * \brief Move to the next tree in the loop.
+ *
+ * The search must not have already terminated.
+ */
+void TR_LoopVersioner::LoopBodySearch::advance()
+   {
+   TR_ASSERT_FATAL(_currentTreeTop != NULL, "Search has already terminated");
+   if (_currentTreeTop != _currentBlock->getExit())
+      {
+      _currentTreeTop = _currentTreeTop->getNextTreeTop();
+      TR::Node *node = _currentTreeTop->getNode();
+      if (!_removedNodes->contains(node) && node->canGCandExcept())
+         _blockHasExceptionPoint = true;
+      }
+   else
+      {
+      enqueueReachableSuccessorsInLoop();
+
+      // Move to the next block in the queue.
+      if (!_queue.empty())
+         {
+         _currentBlock = _queue.front();
+         _queue.pop_front();
+         _currentTreeTop = _currentBlock->getEntry();
+         _blockHasExceptionPoint = false;
+         }
+      else
+         {
+         _currentBlock = NULL;
+         _currentTreeTop = NULL;
+         }
+      }
+   }
+
+void TR_LoopVersioner::LoopBodySearch::enqueueReachableSuccessorsInLoop()
+   {
+   TR::Node *lastNode = _currentBlock->getLastRealTreeTop()->getNode();
+   if (!lastNode->getOpCode().isIf() || !isBranchConstant(lastNode))
+      enqueueReachableSuccessorsInLoopFrom(_currentBlock->getSuccessors());
+   else if (isConstantBranchTaken(lastNode))
+      enqueueBlockIfInLoop(lastNode->getBranchDestination());
+   else
+      enqueueBlockIfInLoop(_currentBlock->getExit()->getNextTreeTop());
+
+   if (_blockHasExceptionPoint)
+      enqueueReachableSuccessorsInLoopFrom(_currentBlock->getExceptionSuccessors());
+   }
+
+bool TR_LoopVersioner::LoopBodySearch::isBranchConstant(TR::Node *ifNode)
+   {
+   if (_removedNodes->contains(ifNode))
+      return true;
+
+   // Detect branches that have already been transformed in the current pass of
+   // versioner.
+   TR::ILOpCodes op = ifNode->getOpCodeValue();
+   if (op != TR::ificmpeq && op != TR::ificmpne)
+      return false;
+
+   TR::Node *lhs = ifNode->getChild(0);
+   TR::Node *rhs = ifNode->getChild(1);
+   return lhs->getOpCodeValue() == TR::iconst && rhs->getOpCodeValue() == TR::iconst;
+   }
+
+bool TR_LoopVersioner::LoopBodySearch::isConstantBranchTaken(TR::Node *ifNode)
+   {
+   TR_ASSERT_FATAL(
+      isBranchConstant(ifNode),
+      "unexpected branch n%un",
+      ifNode->getGlobalIndex());
+
+   if (_removedNodes->contains(ifNode))
+      return _takenBranches->contains(ifNode);
+
+   // Handle branches that have already been transformed in the current pass of
+   // versioner.
+   bool branchOnEqual = ifNode->getOpCodeValue() == TR::ificmpeq;
+   TR::Node *lhs = ifNode->getChild(0);
+   TR::Node *rhs = ifNode->getChild(1);
+   return (lhs->getInt() == rhs->getInt()) == branchOnEqual;
+   }
+
+void TR_LoopVersioner::LoopBodySearch::enqueueReachableSuccessorsInLoopFrom(
+   TR::CFGEdgeList &outgoingEdges)
+   {
+   for (auto it = outgoingEdges.begin(); it != outgoingEdges.end(); ++it)
+      enqueueBlockIfInLoop((*it)->getTo()->asBlock());
+   }
+
+void TR_LoopVersioner::LoopBodySearch::enqueueBlockIfInLoop(TR::TreeTop *entry)
+   {
+   enqueueBlockIfInLoop(entry->getNode()->getBlock());
+   }
+
+void TR_LoopVersioner::LoopBodySearch::enqueueBlockIfInLoop(TR::Block *block)
+   {
+   if (!_alreadyEnqueuedBlocks.contains(block)
+       && _loop->contains(block->getStructureOf()))
+      {
+      _queue.push_back(block);
+      _alreadyEnqueuedBlocks.add(block);
+      }
    }

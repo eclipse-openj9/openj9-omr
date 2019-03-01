@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 
 ###############################################################################
-# Copyright (c) 2018, 2018 IBM Corp. and others
+# Copyright (c) 2018, 2019 IBM Corp. and others
 #
 # This program and the accompanying materials are made available under
 # the terms of the Eclipse Public License 2.0 which accompanies this
@@ -97,6 +97,9 @@ class CppGenerator:
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0 OR GPL-2.0 WITH Classpath-exception-2.0 OR LicenseRef-GPL-2.0 WITH Assembly-exception
  *******************************************************************************/
         """.format(datetime.datetime.now().year)
+
+    def get_common_system_includes(self):
+        return ["stdint.h", "stddef.h"]
 
     def gen_api_impl_includes(self, classes_desc, api_headers_dir):
         """
@@ -773,7 +776,10 @@ class CppGenerator:
         writer.write("#define {}_INCL\n\n".format(api_desc.project()))
 
         # write some needed includes and defines
-        writer.write("#include <stdint.h>\n\n")
+        for header in self.get_common_system_includes():
+            writer.write(self.generate_include(header))
+        writer.write("\n")
+
         writer.write("#define TOSTR(x) #x\n")
         writer.write("#define LINETOSTR(x) TOSTR(x)\n\n")
 
@@ -888,6 +894,9 @@ class CppGenerator:
 
         writer.write("#ifndef {}_INCL\n".format(class_desc.name()))
         writer.write("#define {}_INCL\n\n".format(class_desc.name()))
+
+        for header in self.get_common_system_includes():
+            writer.write(self.generate_include(header))
 
         if class_desc.has_parent():
             writer.write(self.generate_include("{}.hpp".format(class_desc.parent().name())))

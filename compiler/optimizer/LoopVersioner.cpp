@@ -445,7 +445,6 @@ int32_t TR_LoopVersioner::performWithoutDominators()
          naturalLoop->computeInvariantExpressions();
          }
 
-      _skipWrtbarVersion = false;
       _seenDefinedSymbolReferences->empty();
       _writtenAndNotJustForHeapification->empty();
       _additionInfo->empty();
@@ -552,16 +551,10 @@ int32_t TR_LoopVersioner::performWithoutDominators()
       //   divCheckTrees.deleteAll();
 
       bool awrtBarisWillBeEliminated = false;
-      // Use separate env variables to completely disable wrtbar versioning,
-      // or reenable wrtbar version (i.e. revert to old, more aggressive behavior)
-      static char *disableWrtbarVersion = feGetEnv("TR_disableWrtbarVersion");
-      static char *enableWrtbarVersion = feGetEnv("TR_enableWrtbarVersion");
-      if ((!enableWrtbarVersion && _skipWrtbarVersion) || disableWrtbarVersion)
-         awrtbariTrees.deleteAll();
-      else if (!shouldOnlySpecializeLoops() && !refineAliases())
+      if (!shouldOnlySpecializeLoops() && !refineAliases())
          awrtBarisWillBeEliminated = detectInvariantAwrtbaris(&awrtbariTrees);
-      //else
-      //   awrtBariTrees.deleteAll();
+      else
+         awrtbariTrees.deleteAll();
 
       SharedSparseBitVector reverseBranchInLoops(comp()->allocator());
       bool containsNonInlineGuard = false;
@@ -2892,11 +2885,6 @@ bool TR_LoopVersioner::detectChecksToBeEliminated(TR_RegionStructure *whileLoop,
          _nullCheckReference = NULL;
          _inNullCheckReference = false;
 
-         // If the node is a GC point (either cause GC and return, or cause GC and throw),
-         // be conservative and do not version wrtbars.
-         if (currentNode->canCauseGC())
-            _skipWrtbarVersion = true;
-
          if (currentOpCode.isNullCheck())
             _nullCheckReference = currentNode->getNullCheckReference();
 
@@ -3912,15 +3900,6 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
       buildDivCheckComparisonsTree(divCheckTrees);
       }
 
-   //Construct the tests for invariant expressions that need to be checked for write barriers.
-   //
-   if (!awrtbariTrees->isEmpty() &&
-      !shouldOnlySpecializeLoops())
-      {
-      buildAwrtbariComparisonsTree(awrtbariTrees, nullCheckTrees, divCheckTrees, checkCastTrees, arrayStoreCheckTrees, &comparisonTrees);
-      }
-
-
    // Construct specialization tests
    //
    if (!specializedNodes->isEmpty())
@@ -4197,6 +4176,32 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
          }
 
       _curLoop->_privatizationOK = safeToRemoveHCRGuards;
+      }
+
+   // Construct the tests for invariant expressions that need to be checked for
+   // write barriers. Note that none of the above types of transformations
+   // depend on whether or not write barriers are removed.
+   //
+   // Use separate env variables to completely disable wrtbar versioning,
+   // or reenable wrtbar version (i.e. revert to old, more aggressive behavior)
+   //
+   // Piggy-back on the search that determines the safety of removing HCR
+   // guards. If HCR guards can be removed, privatization will succeed, and
+   // after removing the HCR guards and carrying out all LoopImprovements,
+   // there will be no GC points remaining in the loop (at least none that
+   // allow the loop to continue running after GC). That is, if it's safe to
+   // remove HCR guards, then it's also safe to version write barriers.
+   //
+   static char *disableWrtbarVersion = feGetEnv("TR_disableWrtbarVersion");
+   static char *enableWrtbarVersion = feGetEnv("TR_enableWrtbarVersion");
+   bool safeToVersionAwrtbari = safeToRemoveHCRGuards;
+   if (!awrtbariTrees->isEmpty()
+      && !disableWrtbarVersion
+      && (safeToVersionAwrtbari || enableWrtbarVersion)
+      && !shouldOnlySpecializeLoops()
+      && !refineAliases())
+      {
+      buildAwrtbariComparisonsTree(awrtbariTrees);
       }
 
    // Determine whether privatization of expressions is possible. For
@@ -5075,7 +5080,7 @@ void TR_LoopVersioner::RemoveNullCheck::improveLoop()
       TR_ASSERT_FATAL(false, "unexpected opcode");
    }
 
-void TR_LoopVersioner::buildAwrtbariComparisonsTree(List<TR::TreeTop> *awrtbariTrees, List<TR::TreeTop> *nullCheckTrees, List<TR::TreeTop> *divCheckTrees, List<TR::TreeTop> *checkCastTrees, List<TR::TreeTop> *arrayStoreCheckTrees, List<TR::Node> *comparisonTrees)
+void TR_LoopVersioner::buildAwrtbariComparisonsTree(List<TR::TreeTop> *awrtbariTrees)
    {
 #ifdef J9_PROJECT_SPECIFIC
    ListElement<TR::TreeTop> *nextTree = awrtbariTrees->getListHead();
@@ -5086,12 +5091,12 @@ void TR_LoopVersioner::buildAwrtbariComparisonsTree(List<TR::TreeTop> *awrtbariT
       if (awrtbariNode->getOpCodeValue() != TR::awrtbari)
         awrtbariNode = awrtbariNode->getFirstChild();
 
-      //traceMsg(comp(), "awrtbari node %p\n", awrtbariNode);
-
-      //vcount_t visitCount = comp()->incVisitCount();
-      //collectAllExpressionsToBeChecked(nullCheckTrees, divCheckTrees, checkCastTrees, arrayStoreCheckTrees, divCheckNode->getFirstChild()->getSecondChild(), comparisonTrees, exitGotoBlock, visitCount);
-
-      if (performTransformation(comp(), "%s Creating test outside loop for checking if %p is awrtbari is required\n", OPT_DETAILS_LOOP_VERSIONER, awrtbariNode))
+      if (performTransformation(
+            comp(),
+            "%s Creating test outside loop for checking if n%un [%p] requires a write barrier\n",
+            OPT_DETAILS_LOOP_VERSIONER,
+            awrtbariNode->getGlobalIndex(),
+            awrtbariNode))
          {
          TR::Node *duplicateBase = awrtbariNode->getLastChild()->duplicateTreeForCodeMotion();
          TR::Node *ifNode, *ifNode1, *ifNode2;
@@ -5111,10 +5116,6 @@ void TR_LoopVersioner::buildAwrtbariComparisonsTree(List<TR::TreeTop> *awrtbariT
             ifNode1 =  TR::Node::create(TR::acmpge, 2, duplicateBase, TR::Node::aconst(duplicateBase, fej9->getLowTenureAddress()));
             }
 
-         //comparisonTrees->add(ifNode);
-
-         dumpOptDetails(comp(), "1 The node %p has been created for testing if awrtbari is required\n", ifNode1);
-
          duplicateBase = awrtbariNode->getLastChild()->duplicateTreeForCodeMotion();
 
          if (isVariableHeapBase || isVariableHeapSize)
@@ -5126,15 +5127,18 @@ void TR_LoopVersioner::buildAwrtbariComparisonsTree(List<TR::TreeTop> *awrtbariT
             ifNode2 =  TR::Node::create(TR::acmplt, 2, duplicateBase, TR::Node::aconst(duplicateBase, fej9->getHighTenureAddress()));
             }
 
-         ifNode =  TR::Node::createif(TR::ificmpne, TR::Node::create(TR::iand, 2, ifNode1, ifNode2), TR::Node::create(duplicateBase, TR::iconst, 0, 0), _exitGotoTarget);
+         ifNode = TR::Node::createif(TR::ificmpne, TR::Node::create(TR::iand, 2, ifNode1, ifNode2), TR::Node::create(duplicateBase, TR::iconst, 0, 0), _exitGotoTarget);
 
-         comparisonTrees->add(ifNode);
-
-         dumpOptDetails(comp(), "2 The node %p has been created for testing if awrtbari is required\n", ifNode2);
-
-         //printf("Found opportunity for skipping wrtbar %p in %s at freq %d\n", awrtbariNode, comp()->signature(), awrtbariTree->getEnclosingBlock()->getFrequency()); fflush(stdout);
-
-         awrtbariNode->setSkipWrtBar(true);
+         LoopEntryPrep *prep = createLoopEntryPrep(LoopEntryPrep::TEST, ifNode);
+         if (prep != NULL)
+            {
+            // nodeWillBeRemovedIfPossible() doesn't apply here.
+            _curLoop->_loopImprovements.push_back(
+               new (_curLoop->_memRegion) RemoveWriteBarrier(
+                  this,
+                  prep,
+                  awrtbariNode));
+            }
          }
 
       nextTree = nextTree->getNextElement();
@@ -5142,6 +5146,17 @@ void TR_LoopVersioner::buildAwrtbariComparisonsTree(List<TR::TreeTop> *awrtbariT
 #endif
    }
 
+void TR_LoopVersioner::RemoveWriteBarrier::improveLoop()
+   {
+   dumpOptDetails(
+      comp(),
+      "Removing write barrier n%un [%p]\n",
+      _awrtbariNode->getGlobalIndex(),
+      _awrtbariNode);
+
+   TR_ASSERT_FATAL(_awrtbariNode->getOpCodeValue() == TR::awrtbari, "unexpected opcode");
+   _awrtbariNode->setSkipWrtBar(true);
+   }
 
 void TR_LoopVersioner::buildDivCheckComparisonsTree(List<TR::TreeTop> *divCheckTrees)
    {

@@ -823,6 +823,25 @@ class TR_LoopVersioner : public TR_LoopTransformer
       TR::Node * const _divCheckNode;
       };
 
+   class RemoveWriteBarrier : public LoopImprovement
+      {
+      public:
+      TR_ALLOC(TR_Memory::LoopTransformer)
+
+      RemoveWriteBarrier(
+         TR_LoopVersioner *versioner,
+         LoopEntryPrep *prep,
+         TR::Node *awrtbariNode)
+         : LoopImprovement(versioner, prep)
+         , _awrtbariNode(awrtbariNode)
+         {}
+
+      virtual void improveLoop();
+
+      private:
+      TR::Node * const _awrtbariNode;
+      };
+
    bool shouldOnlySpecializeLoops() { return _onlySpecializingLoops; }
    void setOnlySpecializeLoops(bool b) { _onlySpecializingLoops = b; }
 
@@ -882,7 +901,7 @@ class TR_LoopVersioner : public TR_LoopTransformer
    void createRemoveBoundCheck(TR::TreeTop *, LoopEntryPrep *, List<TR::TreeTop> *);
    void buildSpineCheckComparisonsTree(List<TR::TreeTop> *);
    void buildDivCheckComparisonsTree(List<TR::TreeTop> *);
-   void buildAwrtbariComparisonsTree(List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::Node> *);
+   void buildAwrtbariComparisonsTree(List<TR::TreeTop> *);
    void buildCheckCastComparisonsTree(List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::Node> *);
    void buildConditionalTree(List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::Node> *, SharedSparseBitVector &reverseBranchInLoops);
    void buildArrayStoreCheckComparisonsTree(List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::Node> *);
@@ -958,7 +977,6 @@ class TR_LoopVersioner : public TR_LoopTransformer
 
    TR_PostDominators *_postDominators;
    bool _loopTransferDone;
-   bool _skipWrtbarVersion;
 
    /**
     * \brief The entry of the preheader of the duplicate (usually cold) loop.

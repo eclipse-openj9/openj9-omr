@@ -3978,7 +3978,7 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
    // to be cast.
    //
    if (!checkCastTrees->isEmpty())
-      buildCheckCastComparisonsTree(nullCheckTrees, divCheckTrees, checkCastTrees, arrayStoreCheckTrees, &comparisonTrees);
+      buildCheckCastComparisonsTree(checkCastTrees);
 
    if (!arrayStoreCheckTrees->isEmpty())
       buildArrayStoreCheckComparisonsTree(nullCheckTrees, divCheckTrees, checkCastTrees, arrayStoreCheckTrees, &comparisonTrees);
@@ -5205,8 +5205,7 @@ void TR_LoopVersioner::RemoveDivCheck::improveLoop()
    TR::Node::recreate(_divCheckNode, TR::treetop);
    }
 
-void TR_LoopVersioner::buildCheckCastComparisonsTree(List<TR::TreeTop> *nullCheckTrees, List<TR::TreeTop> *divCheckTrees, List<TR::TreeTop> *checkCastTrees, List<TR::TreeTop> *arrayStoreCheckTrees, List<TR::Node> *comparisonTrees)
-
+void TR_LoopVersioner::buildCheckCastComparisonsTree(List<TR::TreeTop> *checkCastTrees)
    {
    ListElement<TR::TreeTop> *nextTree = checkCastTrees->getListHead();
    while (nextTree)
@@ -5225,30 +5224,44 @@ void TR_LoopVersioner::buildCheckCastComparisonsTree(List<TR::TreeTop> *nullChec
          continue;
          }
 
-      collectAllExpressionsToBeChecked(checkCastNode->getChild(0), comparisonTrees);
-      collectAllExpressionsToBeChecked(checkCastNode->getChild(1), comparisonTrees);
-
       TR::Node *duplicateClassPtr = checkCastNode->getSecondChild()->duplicateTreeForCodeMotion();
       TR::Node *duplicateCheckedValue = checkCastNode->getFirstChild()->duplicateTreeForCodeMotion();
       TR::Node *instanceofNode = TR::Node::createWithSymRef(TR::instanceof, 2, 2, duplicateCheckedValue, duplicateClassPtr, comp()->getSymRefTab()->findOrCreateInstanceOfSymbolRef(comp()->getMethodSymbol()));
       TR::Node *ificmpeqNode =  TR::Node::createif(TR::ificmpeq, instanceofNode, TR::Node::create(checkCastNode, TR::iconst, 0, 0), _exitGotoTarget);
-      comparisonTrees->add(ificmpeqNode);
-      dumpOptDetails(comp(), "The node %p has been created for testing if checkcast is required\n", ificmpeqNode);
 
-      TR::TreeTop *prevTreeTop = checkCastTree->getPrevTreeTop();
-      TR::TreeTop *nextTreeTop = checkCastTree->getNextTreeTop();
-      TR::TreeTop *firstNewTree = TR::TreeTop::create(comp(), TR::Node::create(TR::treetop, 1, checkCastNode->getFirstChild()), NULL, NULL);
-      TR::TreeTop *secondNewTree = TR::TreeTop::create(comp(), TR::Node::create(TR::treetop, 1, checkCastNode->getSecondChild()), NULL, NULL);
-      prevTreeTop->join(firstNewTree);
-      firstNewTree->join(secondNewTree);
-      secondNewTree->join(nextTreeTop);
-      checkCastNode->recursivelyDecReferenceCount();
+      LoopEntryPrep *prep = createLoopEntryPrep(LoopEntryPrep::TEST, ificmpeqNode);
+      if (prep != NULL)
+         {
+         nodeWillBeRemovedIfPossible(checkCastNode, prep);
+         _curLoop->_loopImprovements.push_back(
+            new (_curLoop->_memRegion) RemoveCheckCast(this, prep, checkCastTree));
+         }
 
       nextTree = nextTree->getNextElement();
       }
    }
 
+void TR_LoopVersioner::RemoveCheckCast::improveLoop()
+   {
+   TR::Node *checkCastNode = _checkCastTree->getNode();
+   dumpOptDetails(
+      comp(),
+      "Removing checkcast n%un [%p]\n",
+      checkCastNode->getGlobalIndex(),
+      checkCastNode);
 
+   TR_ASSERT_FATAL(checkCastNode->getOpCode().isCheckCast(), "unexpected opcode");
+
+   TR::TreeTop *prevTreeTop = _checkCastTree->getPrevTreeTop();
+   TR::TreeTop *nextTreeTop = _checkCastTree->getNextTreeTop();
+   TR::TreeTop *firstNewTree = TR::TreeTop::create(comp(), TR::Node::create(TR::treetop, 1, checkCastNode->getFirstChild()), NULL, NULL);
+   TR::TreeTop *secondNewTree = TR::TreeTop::create(comp(), TR::Node::create(TR::treetop, 1, checkCastNode->getSecondChild()), NULL, NULL);
+
+   prevTreeTop->join(firstNewTree);
+   firstNewTree->join(secondNewTree);
+   secondNewTree->join(nextTreeTop);
+   checkCastNode->recursivelyDecReferenceCount();
+   }
 
 void TR_LoopVersioner::buildArrayStoreCheckComparisonsTree(List<TR::TreeTop> *nullCheckTrees, List<TR::TreeTop> *divCheckTrees, List<TR::TreeTop> *checkCastTrees, List<TR::TreeTop> *arrayStoreCheckTrees, List<TR::Node> *comparisonTrees)
    {

@@ -842,6 +842,24 @@ class TR_LoopVersioner : public TR_LoopTransformer
       TR::Node * const _awrtbariNode;
       };
 
+   class RemoveCheckCast : public LoopImprovement
+      {
+      public:
+      TR_ALLOC(TR_Memory::LoopTransformer)
+
+      RemoveCheckCast(
+         TR_LoopVersioner *versioner,
+         LoopEntryPrep *prep,
+         TR::TreeTop *checkCastTree)
+         : LoopImprovement(versioner, prep)
+         , _checkCastTree(checkCastTree) {}
+
+      virtual void improveLoop();
+
+      private:
+      TR::TreeTop * const _checkCastTree;
+      };
+
    bool shouldOnlySpecializeLoops() { return _onlySpecializingLoops; }
    void setOnlySpecializeLoops(bool b) { _onlySpecializingLoops = b; }
 
@@ -902,7 +920,7 @@ class TR_LoopVersioner : public TR_LoopTransformer
    void buildSpineCheckComparisonsTree(List<TR::TreeTop> *);
    void buildDivCheckComparisonsTree(List<TR::TreeTop> *);
    void buildAwrtbariComparisonsTree(List<TR::TreeTop> *);
-   void buildCheckCastComparisonsTree(List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::Node> *);
+   void buildCheckCastComparisonsTree(List<TR::TreeTop> *);
    void buildConditionalTree(List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::Node> *, SharedSparseBitVector &reverseBranchInLoops);
    void buildArrayStoreCheckComparisonsTree(List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::Node> *);
    bool buildSpecializationTree(List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::Node> *, List<TR::Node> *, TR::Block *, TR::SymbolReference **);

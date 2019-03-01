@@ -2283,10 +2283,10 @@ TR::Register *OMR::X86::TreeEvaluator::arraycopyEvaluator(TR::Node *node, TR::Co
    // There are two variants of TR::arraycopy: one has 5 children, the other has 3 children. Details can be found from
    // compiler/il/ILOpCodeProperties.hpp
    //
-   // In most, if not all, cases, the 5-child variant requires language specific semantics, which OMR is not aware of. The fact 
+   // In most, if not all, cases, the 5-child variant requires language specific semantics, which OMR is not aware of. The fact
    // that a 5-child arraycopy is generated indicates at least one of the first two children must be needed when performing the
-   // copy; otherwise a 3-child arraycopy should be generated instead. Interpreting the meanings of the first two children 
-   // definitely requires language specific semantics. For example, the first two children may be for dealing with an arraycopy 
+   // copy; otherwise a 3-child arraycopy should be generated instead. Interpreting the meanings of the first two children
+   // definitely requires language specific semantics. For example, the first two children may be for dealing with an arraycopy
    // where the Garbage Collector may need to be notified about the copy or something to that affect.
    //
    // Therefore, this OMR evaluator only handles the 3-child variant, is an operation equivalent to C++'s std::memmove().
@@ -3829,7 +3829,6 @@ TR_X86ComputeCC::bitwise32(TR::Node *node, TR::Register *ccReg, TR::Register *ta
                              TR::CodeGenerator *cg)
    {
    generateRegInstruction(SETNE1Reg, node, ccReg, cg);
-   target->setCCRegister(ccReg);
    }
 
 bool

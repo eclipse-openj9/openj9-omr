@@ -133,7 +133,6 @@ TR::Register *computeCC_bitwise(TR::CodeGenerator *cg, TR::Node *node, TR::Regis
    // 0 - Result is zero
    // 1 - Result is not zero
    TR::Register *ccReg = computeCC_setNotZero(cg, node, NULL, testReg, needsZeroExtension);
-   testReg->setCCRegister(ccReg);
    return ccReg;
    }
 

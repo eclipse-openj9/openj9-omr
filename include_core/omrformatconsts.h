@@ -53,6 +53,15 @@
 #define OMR_PRIx8 "x" /* promote to unsigned int */
 #endif
 
+/* OMR_PRIX8: uint8_t (uppercase hex) */
+#if defined(PRIX8)
+#define OMR_PRIX8 PRIX8
+#elif defined(__GNUC__) || defined(__clang__) || defined(__xlC__)
+#define OMR_PRIX8 "hhX"
+#else
+#define OMR_PRIX8 "X" /* promote to unsigned int */
+#endif
+
 /* OMR_PRId16: int16_t */
 #if defined(PRId16)
 #define OMR_PRId16 PRId16
@@ -72,6 +81,13 @@
 #define OMR_PRIx16 PRIx16
 #else
 #define OMR_PRIx16 "hx"
+#endif
+
+/* OMR_PRIX16: uint16_t (uppercase hex) */
+#if defined(PRIX16)
+#define OMR_PRIX16 PRIX16
+#else
+#define OMR_PRIX16 "hX"
 #endif
 
 /* OMR_PRId32: int32_t */
@@ -104,6 +120,16 @@
 #define OMR_PRIx32 "x"
 #endif
 
+/* OMR_PRIX32: uint32_t (uppercase hex) */
+#if defined(_MSC_VER) && (1900 <= _MSC_VER)
+/* msvc has a badly defined format macro for int32 */
+#define OMR_PRIX32 "I32X"
+#elif defined(PRIX32)
+#define OMR_PRIX32 PRIX32
+#else
+#define OMR_PRIX32 "X"
+#endif
+
 /* OMR_PRId64: int64_t */
 #if defined(PRId64)
 #define OMR_PRId64 PRId64
@@ -131,6 +157,15 @@
 #define OMR_PRIx64 "llx"
 #endif
 
+/* OMR_PRIX64: uint64_t (uppercase hex) */
+#if defined(PRIX64)
+#define OMR_PRIX64 PRIX64
+#elif defined(_MSC_VER)
+#define OMR_PRIX64 "I64X"
+#else
+#define OMR_PRIX64 "llX"
+#endif
+
 /* OMR_PRIdSIZE: signed size_t */
 #if defined(_MSC_VER)
 #define OMR_PRIdSIZE "Iu"
@@ -145,11 +180,18 @@
 #define OMR_PRIuSIZE "zu"
 #endif
 
-/* OMR_PRIxSIZE: size_t */
+/* OMR_PRIxSIZE: size_t (hex) */
 #if defined(_MSC_VER)
 #define OMR_PRIxSIZE "Ix"
 #else
 #define OMR_PRIxSIZE "zx"
+#endif
+
+/* OMR_PRIXSIZE: size_t (uppercase hex) */
+#if defined(_MSC_VER)
+#define OMR_PRIXSIZE "IX"
+#else
+#define OMR_PRIXSIZE "zX"
 #endif
 
 /* PRIdPTR: intptr_t */
@@ -179,6 +221,15 @@
 #define OMR_PRIxPTR "zu"
 #endif
 
+/* PRIXPTR: uintptr_t (uppercase hex) */
+#if defined(PRIXPTR)
+#define OMR_PRIXPTR PRIXPTR
+#elif defined(_MSC_VER)
+#define OMR_PRIXPTR "IX"
+#else
+#define OMR_PRIXPTR "zX"
+#endif
+
 /* OMR_PRIdPTRDIFF: ptrdiff_t */
 #if defined(_MSC_VER)
 #define OMR_PRIdPTRDIFF "Id"
@@ -198,6 +249,13 @@
 #define OMR_PRIxPTRDIFF "Ix"
 #else
 #define OMR_PRIxPTRDIFF "tx"
+#endif
+
+/* OMR_PRIXPTRDIFF: unsigned ptrdiff_t (uppercase hex) */
+#if defined(_MSC_VER)
+#define OMR_PRIXPTRDIFF "IX"
+#else
+#define OMR_PRIXPTRDIFF "tX"
 #endif
 
 #endif // OMRFORMATCONSTANTS_H_

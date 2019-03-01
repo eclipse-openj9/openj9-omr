@@ -2975,7 +2975,8 @@ bool TR_LoopVersioner::detectChecksToBeEliminated(TR_RegionStructure *whileLoop,
 
                foundPotentialChecks = true;
                }
-             else if (currentOpCode.isBndCheck())
+             else if (currentOpCode.isBndCheck()
+                      && currentOpCode.getOpCodeValue() != TR::arraytranslateAndTest)
                {
                if (trace())
                   traceMsg(comp(), "Bound check %p\n", currentTree->getNode());
@@ -3898,7 +3899,7 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
    //
    if (shouldOnlySpecializeLoops() && !spineCheckTrees->isEmpty())
       {
-      buildSpineCheckComparisonsTree(nullCheckTrees, spineCheckTrees, divCheckTrees, checkCastTrees, arrayStoreCheckTrees, &comparisonTrees);
+      buildSpineCheckComparisonsTree(spineCheckTrees);
       }
 
 
@@ -6052,160 +6053,215 @@ bool TR_LoopVersioner::replaceInductionVariable(TR::Node *parent, TR::Node *node
    return false;
    }
 
-void TR_LoopVersioner::buildSpineCheckComparisonsTree(List<TR::TreeTop> *nullCheckTrees, List<TR::TreeTop> *spineCheckTrees, List<TR::TreeTop> *divCheckTrees, List<TR::TreeTop> *checkCastTrees, List<TR::TreeTop> *arrayStoreCheckTrees, List<TR::Node> *comparisonTrees)
+void TR_LoopVersioner::buildSpineCheckComparisonsTree(List<TR::TreeTop> *spineCheckTrees)
    {
    ListElement<TR::TreeTop> *nextTree = spineCheckTrees->getListHead();
 
    bool isAddition;
    while (nextTree)
       {
+      // NOTE: It could be a BNDCHKwithSpineCHK, since at this point no bound
+      // checks have been removed yet. Only the array base is used, and it's at
+      // the same position for both SpineCHK and BNDCHKwithSpineCHK.
       TR::Node *spineCheckNode = nextTree->getData()->getNode();
       TR::Node *arrayBase = spineCheckNode->getChild(1);
       vcount_t visitCount = comp()->incVisitCount();
-      bool performSpineCheck = false;
 
-      if (performTransformation(comp(), "%s Creating test outside loop for checking if %p has spine\n", OPT_DETAILS_LOOP_VERSIONER, spineCheckNode))
+      if (performTransformation(
+            comp(),
+            "%s Creating test outside loop for checking if n%un [%p] has spine\n",
+            OPT_DETAILS_LOOP_VERSIONER,
+            spineCheckNode->getGlobalIndex(),
+            spineCheckNode))
          {
-         performSpineCheck = true;
          TR::Node *contigArrayLength = TR::Node::create(TR::contigarraylength, 1, arrayBase->duplicateTreeForCodeMotion());
          TR::Node *nextComparisonNode = TR::Node::createif(TR::ificmpne, contigArrayLength, TR::Node::create(spineCheckNode, TR::iconst, 0, 0), _exitGotoTarget);
 
-         comparisonTrees->add(nextComparisonNode);
-         if (trace())
-            traceMsg(comp(), "Spine versioning -> Creating %p (%s)\n", nextComparisonNode, nextComparisonNode->getOpCode().getName());
+         // In case of BNDCHKwithSpineCHK, make this prep depend on the
+         // one for removing the bound check. Otherwise we could fail to
+         // remove the bound check, but "succeed" in removing the spine check,
+         // and the spine check transformation would find an unexpected tree.
+         LoopEntryPrep *prep = NULL;
+         TR::ILOpCodes op = spineCheckNode->getOpCodeValue();
+         if (op == TR::SpineCHK)
+            {
+            prep = createLoopEntryPrep(LoopEntryPrep::TEST, nextComparisonNode);
+            }
+         else
+            {
+            TR_ASSERT_FATAL(
+               op == TR::BNDCHKwithSpineCHK,
+               "expected either SpineCHK or BNDCHKwithSpineCHK, got %s",
+               TR::ILOpCode(op).getName());
+
+            auto prereqEntry =
+               _curLoop->_boundCheckPrepsWithSpineChecks.find(spineCheckNode);
+
+            TR_ASSERT_FATAL(
+               prereqEntry != _curLoop->_boundCheckPrepsWithSpineChecks.end(),
+               "missing prep for removal of bound check from BNDCHKwithSpineCHK n%un [%p]",
+               spineCheckNode->getGlobalIndex(),
+               spineCheckNode);
+
+            LoopEntryPrep *prereq = prereqEntry->second;
+            prep = createChainedLoopEntryPrep(
+               LoopEntryPrep::TEST,
+               nextComparisonNode,
+               prereq);
+            }
+
+         if (prep != NULL)
+            {
+            nodeWillBeRemovedIfPossible(spineCheckNode, prep);
+            _curLoop->_loopImprovements.push_back(
+               new (_curLoop->_memRegion) RemoveSpineCheck(
+                  this,
+                  prep,
+                  nextTree->getData()));
+            }
          }
 
-      if (performSpineCheck)
-         {
-         //fixup node to have arraylets.
-         // aiadd
-         //   iaload
-         //       aiadd
-         //          aload a
-         //          iadd
-         //             ishl
-         //                 ishr
-         //                    i
-         //                    spineShift
-         //                 shift
-         //             hdrsize
-         //    ishl
-         //       iand
-         //          iconst mask
-         //          i
-         //       iconst strideShift
+      nextTree = nextTree->getNextElement();
+      }
+   }
 
-         bool is64BitTarget = TR::Compiler->target.is64Bit() ? true : false;
-         TR::DataType type =  spineCheckNode->getChild(0)->getDataType();
-         uint32_t elementSize = TR::Symbol::convertTypeToSize(type);
-         if (comp()->useCompressedPointers() && (type == TR::Address))
-            elementSize = TR::Compiler->om.sizeofReferenceField();
+void TR_LoopVersioner::RemoveSpineCheck::improveLoop()
+   {
+   TR::Node *spineCheckNode = _spineCheckTree->getNode();
+   dumpOptDetails(
+      comp(),
+      "Removing spine check n%un [%p]\n",
+      spineCheckNode->getGlobalIndex(),
+      spineCheckNode);
 
-         TR::Node* hdrSize = NULL;
-         if (is64BitTarget)
-            {
-            hdrSize = TR::Node::create(spineCheckNode, TR::lconst);
-            hdrSize->setLongInt((int64_t)TR::Compiler->om.discontiguousArrayHeaderSizeInBytes());
-            }
-         else
-            hdrSize = TR::Node::create(spineCheckNode, TR::iconst, 0, (int32_t)TR::Compiler->om.discontiguousArrayHeaderSizeInBytes());
+   TR_ASSERT_FATAL(spineCheckNode->getOpCodeValue() == TR::SpineCHK, "unexpected opcode");
 
+   TR::Node *arrayBase = spineCheckNode->getChild(1);
 
-         int32_t shift = TR::TransformUtil::convertWidthToShift(TR::Compiler->om.sizeofReferenceField());
-         TR::Node *shiftNode = is64BitTarget ? TR::Node::lconst(spineCheckNode, (int64_t)shift) :
-                                              TR::Node::iconst(spineCheckNode, shift);
+   //fixup node to have arraylets.
+   // aiadd
+   //   iaload
+   //       aiadd
+   //          aload a
+   //          iadd
+   //             ishl
+   //                 ishr
+   //                    i
+   //                    spineShift
+   //                 shift
+   //             hdrsize
+   //    ishl
+   //       iand
+   //          iconst mask
+   //          i
+   //       iconst strideShift
 
-         int32_t strideShift = TR::TransformUtil::convertWidthToShift(elementSize);
-         TR::Node *strideShiftNode = NULL;
-         if (strideShift)
-            strideShiftNode = is64BitTarget ? TR::Node::lconst(spineCheckNode, (int64_t)strideShift) :
-                                              TR::Node::iconst(spineCheckNode, strideShift);
+   bool is64BitTarget = TR::Compiler->target.is64Bit() ? true : false;
+   TR::DataType type =  spineCheckNode->getChild(0)->getDataType();
+   uint32_t elementSize = TR::Symbol::convertTypeToSize(type);
+   if (comp()->useCompressedPointers() && (type == TR::Address))
+      elementSize = TR::Compiler->om.sizeofReferenceField();
 
-         int32_t arraySpineShift = fe()->getArraySpineShift(elementSize);
-         TR::Node *spineShiftNode = is64BitTarget ? TR::Node::lconst(spineCheckNode, (int64_t)arraySpineShift) :
-                                                   TR::Node::iconst(spineCheckNode, arraySpineShift);
-
-         TR::Node *spineIndex = spineCheckNode->getChild(2);
-         if (is64BitTarget && spineIndex->getType().isInt32())
-            spineIndex = TR::Node::create(TR::i2l, 1, spineIndex);
-
-         TR::Node *node = NULL;
-
-         node = TR::Node::create(is64BitTarget ? TR::lshr : TR::ishr, 2, spineIndex, spineShiftNode);
-         node = TR::Node::create(is64BitTarget ? TR::lshl : TR::ishl, 2, node, shiftNode);
-         node = TR::Node::create(is64BitTarget ? TR::ladd : TR::iadd, 2, node, hdrSize);
-         node = TR::Node::create(is64BitTarget ? TR::aladd : TR::aiadd, 2, arrayBase, node);
-         node = TR::Node::createWithSymRef(TR::aloadi, 1, 1, node, comp()->getSymRefTab()->findOrCreateArrayletShadowSymbolRef(type));
-
-         TR::Node *leafOffset = NULL;
-
-         if (is64BitTarget)
-            {
-            leafOffset = TR::Node::create(spineCheckNode , TR::lconst);
-            leafOffset->setLongInt((int64_t) fe()->getArrayletMask(elementSize));
-            }
-         else
-            {
-            leafOffset = TR::Node::create(spineCheckNode, TR::iconst, 0, (int32_t)fe()->getArrayletMask(elementSize));
-            }
-
-         TR::Node *nodeLeafOffset = TR::Node::create(is64BitTarget ? TR::land : TR::iand, 2, leafOffset, spineIndex);
-
-         if (strideShiftNode)
-            {
-            nodeLeafOffset = TR::Node::create(is64BitTarget ? TR::lshl : TR::ishl, 2, nodeLeafOffset, strideShiftNode);
-            }
-
-         node = TR::Node::create(is64BitTarget ? TR::aladd : TR::aiadd, 2, node, nodeLeafOffset);
-         TR::TreeTop *compressTree = NULL;
-         if (comp()->useCompressedPointers())
-            {
-            compressTree = TR::TreeTop::create(comp(), TR::Node::createCompressedRefsAnchor(node->getFirstChild()),NULL,NULL);
-            }
-
-         TR::Node *arrayTT = spineCheckNode; //->getFirstChild();
+   TR::Node* hdrSize = NULL;
+   if (is64BitTarget)
+      {
+      hdrSize = TR::Node::create(spineCheckNode, TR::lconst);
+      hdrSize->setLongInt((int64_t)TR::Compiler->om.discontiguousArrayHeaderSizeInBytes());
+      }
+   else
+      hdrSize = TR::Node::create(spineCheckNode, TR::iconst, 0, (int32_t)TR::Compiler->om.discontiguousArrayHeaderSizeInBytes());
 
 
-         if (arrayTT->getFirstChild()->getOpCode().hasSymbolReference() &&
-             arrayTT->getFirstChild()->getSymbol()->isArrayShadowSymbol())
-            {
-            arrayTT = arrayTT->getFirstChild();
-            arrayTT->getChild(0)->recursivelyDecReferenceCount();
-            arrayTT->setAndIncChild(0,node);
-            }
-         else
-            arrayTT = node;
+   int32_t shift = TR::TransformUtil::convertWidthToShift(TR::Compiler->om.sizeofReferenceField());
+   TR::Node *shiftNode = is64BitTarget ? TR::Node::lconst(spineCheckNode, (int64_t)shift) :
+                                        TR::Node::iconst(spineCheckNode, shift);
 
-         if (!spineCheckNode->getFirstChild()->getOpCode().isStore())
-            {
-            arrayTT = TR::Node::create(TR::treetop, 1, arrayTT);
-            spineCheckNode->getFirstChild()->recursivelyDecReferenceCount();
-            }
-         else
-            arrayTT->setReferenceCount(0);
+   int32_t strideShift = TR::TransformUtil::convertWidthToShift(elementSize);
+   TR::Node *strideShiftNode = NULL;
+   if (strideShift)
+      strideShiftNode = is64BitTarget ? TR::Node::lconst(spineCheckNode, (int64_t)strideShift) :
+                                        TR::Node::iconst(spineCheckNode, strideShift);
+
+   int32_t arraySpineShift = fe()->getArraySpineShift(elementSize);
+   TR::Node *spineShiftNode = is64BitTarget ? TR::Node::lconst(spineCheckNode, (int64_t)arraySpineShift) :
+                                             TR::Node::iconst(spineCheckNode, arraySpineShift);
+
+   TR::Node *spineIndex = spineCheckNode->getChild(2);
+   if (is64BitTarget && spineIndex->getType().isInt32())
+      spineIndex = TR::Node::create(TR::i2l, 1, spineIndex);
+
+   TR::Node *node = NULL;
+
+   node = TR::Node::create(is64BitTarget ? TR::lshr : TR::ishr, 2, spineIndex, spineShiftNode);
+   node = TR::Node::create(is64BitTarget ? TR::lshl : TR::ishl, 2, node, shiftNode);
+   node = TR::Node::create(is64BitTarget ? TR::ladd : TR::iadd, 2, node, hdrSize);
+   node = TR::Node::create(is64BitTarget ? TR::aladd : TR::aiadd, 2, arrayBase, node);
+   node = TR::Node::createWithSymRef(TR::aloadi, 1, 1, node, comp()->getSymRefTab()->findOrCreateArrayletShadowSymbolRef(type));
+
+   TR::Node *leafOffset = NULL;
+
+   if (is64BitTarget)
+      {
+      leafOffset = TR::Node::create(spineCheckNode , TR::lconst);
+      leafOffset->setLongInt((int64_t) fe()->getArrayletMask(elementSize));
+      }
+   else
+      {
+      leafOffset = TR::Node::create(spineCheckNode, TR::iconst, 0, (int32_t)fe()->getArrayletMask(elementSize));
+      }
+
+   TR::Node *nodeLeafOffset = TR::Node::create(is64BitTarget ? TR::land : TR::iand, 2, leafOffset, spineIndex);
+
+   if (strideShiftNode)
+      {
+      nodeLeafOffset = TR::Node::create(is64BitTarget ? TR::lshl : TR::ishl, 2, nodeLeafOffset, strideShiftNode);
+      }
+
+   node = TR::Node::create(is64BitTarget ? TR::aladd : TR::aiadd, 2, node, nodeLeafOffset);
+   TR::TreeTop *compressTree = NULL;
+   if (comp()->useCompressedPointers())
+      {
+      compressTree = TR::TreeTop::create(comp(), TR::Node::createCompressedRefsAnchor(node->getFirstChild()),NULL,NULL);
+      }
+
+   TR::Node *arrayTT = spineCheckNode; //->getFirstChild();
 
 
-         TR::TreeTop *firstNewTree = TR::TreeTop::create(comp(), arrayTT, NULL, NULL);
-         spineCheckNode->getChild(1)->recursivelyDecReferenceCount();
-         spineCheckNode->getChild(2)->recursivelyDecReferenceCount();
+   if (arrayTT->getFirstChild()->getOpCode().hasSymbolReference() &&
+       arrayTT->getFirstChild()->getSymbol()->isArrayShadowSymbol())
+      {
+      arrayTT = arrayTT->getFirstChild();
+      arrayTT->getChild(0)->recursivelyDecReferenceCount();
+      arrayTT->setAndIncChild(0,node);
+      }
+   else
+      arrayTT = node;
+
+   if (!spineCheckNode->getFirstChild()->getOpCode().isStore())
+      {
+      arrayTT = TR::Node::create(TR::treetop, 1, arrayTT);
+      spineCheckNode->getFirstChild()->recursivelyDecReferenceCount();
+      }
+   else
+      arrayTT->setReferenceCount(0);
 
 
-         TR::TreeTop *prevTree = nextTree->getData()->getPrevTreeTop();
-         TR::TreeTop *succTree = nextTree->getData()->getNextTreeTop();
+   TR::TreeTop *firstNewTree = TR::TreeTop::create(comp(), arrayTT, NULL, NULL);
+   spineCheckNode->getChild(1)->recursivelyDecReferenceCount();
+   spineCheckNode->getChild(2)->recursivelyDecReferenceCount();
 
-         if (comp()->useCompressedPointers())
-            {
-            prevTree->join(compressTree);
-            compressTree->join(firstNewTree);
-            }
-         else
-            prevTree->join(firstNewTree);
+   TR::TreeTop *prevTree = _spineCheckTree->getPrevTreeTop();
+   TR::TreeTop *succTree = _spineCheckTree->getNextTreeTop();
 
-         firstNewTree->join(succTree);
-         } //if perform
+   if (comp()->useCompressedPointers())
+      {
+      prevTree->join(compressTree);
+      compressTree->join(firstNewTree);
+      }
+   else
+      prevTree->join(firstNewTree);
 
-     nextTree = nextTree->getNextElement();
-     }
+   firstNewTree->join(succTree);
    }
 
 void TR_LoopVersioner::buildBoundCheckComparisonsTree(
@@ -6221,13 +6277,6 @@ void TR_LoopVersioner::buildBoundCheckComparisonsTree(
       isAddition = false;
       TR::TreeTop *boundCheckTree = nextTree->getData();
       TR::Node *boundCheckNode = boundCheckTree->getNode();
-
-      // TODO: Handle BNDCHKwithSpineCHK.
-      if (boundCheckNode->getOpCodeValue() == TR::BNDCHKwithSpineCHK)
-         {
-         nextTree = nextTree->getNextElement();
-         continue;
-         }
 
       int32_t boundChildIndex = (boundCheckNode->getOpCodeValue() == TR::BNDCHKwithSpineCHK) ? 2 : 0;
       TR::Node *arrayLengthNode = boundCheckNode->getChild(boundChildIndex);
@@ -7252,9 +7301,49 @@ void TR_LoopVersioner::createRemoveBoundCheck(
          prep,
          boundCheckTree));
 
-   // TODO: Handle BNDCHKwithSpineCHK.
    TR::Node *boundCheckNode = boundCheckTree->getNode();
-   nodeWillBeRemovedIfPossible(boundCheckNode, prep);
+   TR::ILOpCodes op = boundCheckNode->getOpCodeValue();
+   if (op == TR::BNDCHK || op == TR::ArrayCopyBNDCHK)
+      {
+      // Bound check only, which if prep is allowed will be completely removed.
+      //
+      // Note that the condition for BNDCHK is stronger than the one for
+      // ArrayCopyBNDCHK. It's safe to remove an ArrayCopyBNDCHK based on
+      // versioning tests that would guarantee BNDCHK, though such tests may be
+      // more conservative than necessary.
+      nodeWillBeRemovedIfPossible(boundCheckNode, prep);
+      }
+   else
+      {
+      TR_ASSERT_FATAL(
+         op == TR::BNDCHKwithSpineCHK,
+         "expected BNDCHK, ArrayCopyBNDCHK, or BNDCHKwithSpineCHK, but got %s",
+         TR::ILOpCode(op).getName());
+
+      // After eliminating the bound check part of BNDCHKwithSpineCHK, it will
+      // still be SpineCHK, so nodeWillBeRemovedIfPossible() is inappropriate
+      // here. By adding the tree to spineCheckTrees, an attempt will be made
+      // to remove the spine check as well, and spine check removal can call
+      // nodeWillBeRemovedIfPossible().
+      spineCheckTrees->add(boundCheckTree);
+
+      // The spine check should only be removed if the bound check is
+      // successfully removed first. Remember this prep so that the prep for
+      // spine check removal can depend on it.
+      auto insertResult =
+         _curLoop->_boundCheckPrepsWithSpineChecks.insert(
+            std::make_pair(boundCheckNode, prep));
+
+      bool insertSucceeded = insertResult.second;
+      NodePrepMap::iterator entryPreventingInsertion = insertResult.first;
+      TR_ASSERT_FATAL(
+         insertSucceeded,
+         "multiple preps %p and %p for removing bound check n%un [%p]",
+         entryPreventingInsertion->second,
+         prep,
+         boundCheckNode->getGlobalIndex(),
+         boundCheckNode);
+      }
    }
 
 void TR_LoopVersioner::RemoveBoundCheck::improveLoop()
@@ -9885,6 +9974,7 @@ TR_LoopVersioner::CurLoop::CurLoop(
    , _nodeToExpr(std::less<TR::Node*>(), memRegion)
    , _prepTable(std::less<PrepKey>(), memRegion)
    , _nullTestPreps(std::less<const Expr*>(), memRegion)
+   , _boundCheckPrepsWithSpineChecks(std::less<TR::Node*>(), memRegion)
    , _definitelyRemovableNodes(comp)
    , _optimisticallyRemovableNodes(comp)
    , _takenBranches(comp)

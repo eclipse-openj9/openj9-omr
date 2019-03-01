@@ -643,6 +643,9 @@ class TR_LoopVersioner : public TR_LoopTransformer
    typedef TR::typed_allocator<std::pair<const Expr * const, LoopEntryPrep*>, TR::Region&> NullTestPrepMapAlloc;
    typedef std::map<const Expr*, LoopEntryPrep*, std::less<const Expr*>, NullTestPrepMapAlloc> NullTestPrepMap;
 
+   typedef TR::typed_allocator<std::pair<TR::Node * const, LoopEntryPrep*>, TR::Region&> NodePrepMapAlloc;
+   typedef std::map<TR::Node*, LoopEntryPrep*, std::less<TR::Node*>, NodePrepMapAlloc> NodePrepMap;
+
    typedef TR::typed_allocator<std::pair<const Expr * const, PrivTemp>, TR::Region&> PrivTempMapAlloc;
    typedef std::map<const Expr*, PrivTemp, std::less<const Expr*>, PrivTempMapAlloc> PrivTempMap;
 
@@ -677,6 +680,14 @@ class TR_LoopVersioner : public TR_LoopTransformer
 
       /// Map from null-tested Expr to the null test LoopEntryPrep.
       NullTestPrepMap _nullTestPreps;
+
+      /**
+       * \brief Map from \c BNDCHKwithSpineCheck node to bound check LoopEntryPrep.
+       *
+       * This allows the LoopEntryPrep for spine check removal to depend on the
+       * one for bound check removal.
+       */
+      NodePrepMap _boundCheckPrepsWithSpineChecks;
 
       /// Check and branch nodes that will definitely be removed.
       TR::NodeChecklist _definitelyRemovableNodes;
@@ -774,6 +785,25 @@ class TR_LoopVersioner : public TR_LoopTransformer
       TR::TreeTop * const _boundCheckTree;
       };
 
+   class RemoveSpineCheck : public LoopImprovement
+      {
+      public:
+      TR_ALLOC(TR_Memory::LoopTransformer)
+
+      RemoveSpineCheck(
+         TR_LoopVersioner *versioner,
+         LoopEntryPrep *prep,
+         TR::TreeTop *spineCheckTree)
+         : LoopImprovement(versioner, prep)
+         , _spineCheckTree(spineCheckTree)
+         {}
+
+      virtual void improveLoop();
+
+      private:
+      TR::TreeTop * const _spineCheckTree;
+      };
+
    bool shouldOnlySpecializeLoops() { return _onlySpecializingLoops; }
    void setOnlySpecializeLoops(bool b) { _onlySpecializingLoops = b; }
 
@@ -831,7 +861,7 @@ class TR_LoopVersioner : public TR_LoopTransformer
    void buildNullCheckComparisonsTree(List<TR::Node> *, List<TR::TreeTop> *);
    void buildBoundCheckComparisonsTree(List<TR::TreeTop> *, List<TR::TreeTop> *, bool);
    void createRemoveBoundCheck(TR::TreeTop *, LoopEntryPrep *, List<TR::TreeTop> *);
-   void buildSpineCheckComparisonsTree(List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::Node> *);
+   void buildSpineCheckComparisonsTree(List<TR::TreeTop> *);
    void buildDivCheckComparisonsTree(List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::Node> *);
    void buildAwrtbariComparisonsTree(List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::Node> *);
    void buildCheckCastComparisonsTree(List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::Node> *);

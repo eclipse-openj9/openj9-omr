@@ -6947,7 +6947,24 @@ OMR::Z::CodeGenerator::findOrCreateLiteral(void *value, size_t len)
 bool
 OMR::Z::CodeGenerator::directCallRequiresTrampoline(intptrj_t targetAddress, intptrj_t sourceAddress)
    {
+#if defined(TR_TARGET_S390) && defined(TR_TARGET_64BIT) && !defined(J9ZOS390)
    return
       !TR::Compiler->target.cpu.isTargetWithinBranchRelativeRILRange(targetAddress, sourceAddress) ||
       self()->comp()->getOption(TR_StressTrampolines);
+#else
+   // On zOS, executable code can only be allocated below the bar so trampolines
+   // are not required for RIL form instructions.
+   //
+   // However, if RMODE64 is enabled then executable code may be allocated above
+   // the bar requiring a range check.
+   //
+   if (self()->comp()->getOption(TR_EnableRMODE64))
+      {
+      return
+         !TR::Compiler->target.cpu.isTargetWithinBranchRelativeRILRange(targetAddress, sourceAddress) ||
+         self()->comp()->getOption(TR_StressTrampolines);
+      }
+   else
+      return false;
+#endif
    }

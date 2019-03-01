@@ -37,16 +37,6 @@ namespace TR { class Register; }
 namespace TR { class RegisterDependencyConditions; }
 
 
-extern void constLengthArrayCopy(
-   TR::Node *node,
-   TR::CodeGenerator *cg,
-   TR::Register *byteSrcReg,
-   TR::Register *byteDstReg,
-   TR::Node *byteLenNode,
-   bool preserveSrcPointer,
-   bool preserveDstPointer);
-
-
 class TR_X86ComputeCC : public TR::TreeEvaluator
    {
    public:

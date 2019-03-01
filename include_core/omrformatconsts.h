@@ -174,9 +174,9 @@
 #if defined(PRIxPTR)
 #define OMR_PRIxPTR PRIxPTR
 #elif defined(_MSC_VER)
-#define OMR_PRIxPTR "Iu"
+#define OMR_PRIxPTR "Ix"
 #else
-#define OMR_PRIxPTR "zu"
+#define OMR_PRIxPTR "zx"
 #endif
 
 /* OMR_PRIdPTRDIFF: ptrdiff_t */

@@ -4265,7 +4265,7 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
             TR::Node::create(TR::isub, 2, upperBound, lowerBound) :
             TR::Node::create(TR::isub, 2, lowerBound, upperBound);
 
-         collectAllExpressionsToBeChecked(loopLimit, &comparisonTrees, comp()->incVisitCount());
+         collectAllExpressionsToBeChecked(loopLimit, &comparisonTrees);
          TR::Node *nextComparisonNode = TR::Node::createif(comparisonOpCode, loopLimit, TR::Node::create(loopLimit, TR::iconst, 0, profiledLoopLimit), clonedLoopInvariantBlock->getEntry());
          nextComparisonNode->setIsMaxLoopIterationGuard(true);
 
@@ -5161,11 +5161,10 @@ void TR_LoopVersioner::buildNullCheckComparisonsTree(List<TR::Node> *nullChecked
             TR_ASSERT(0, "Should not be considering null check for versioning\n");
          }
 
-      vcount_t visitCount = comp()->incVisitCount();
       if (!nodeToBeNullChkd)
          nodeToBeNullChkd = nextNode->getData();
 
-      collectAllExpressionsToBeChecked(nodeToBeNullChkd, comparisonTrees, visitCount);
+      collectAllExpressionsToBeChecked(nodeToBeNullChkd, comparisonTrees);
 
       if (performTransformation(comp(), "%s Creating test outside loop for checking if %p is null\n", OPT_DETAILS_LOOP_VERSIONER, nextNode->getData()))
          {
@@ -5279,8 +5278,7 @@ void TR_LoopVersioner::buildDivCheckComparisonsTree(List<TR::TreeTop> *nullCheck
       {
       TR::TreeTop *divCheckTree = nextTree->getData();
       TR::Node *divCheckNode = divCheckTree->getNode();
-      vcount_t visitCount = comp()->incVisitCount();
-      collectAllExpressionsToBeChecked(divCheckNode->getFirstChild()->getSecondChild(), comparisonTrees, visitCount);
+      collectAllExpressionsToBeChecked(divCheckNode->getFirstChild()->getSecondChild(), comparisonTrees);
 
       if (performTransformation(
             comp(),
@@ -5327,9 +5325,8 @@ void TR_LoopVersioner::buildCheckCastComparisonsTree(List<TR::TreeTop> *nullChec
          continue;
          }
 
-      vcount_t visitCount = comp()->incVisitCount();
-      collectAllExpressionsToBeChecked(checkCastNode->getChild(0), comparisonTrees, visitCount);
-      collectAllExpressionsToBeChecked(checkCastNode->getChild(1), comparisonTrees, visitCount);
+      collectAllExpressionsToBeChecked(checkCastNode->getChild(0), comparisonTrees);
+      collectAllExpressionsToBeChecked(checkCastNode->getChild(1), comparisonTrees);
 
       TR::Node *duplicateClassPtr = checkCastNode->getSecondChild()->duplicateTreeForCodeMotion();
       TR::Node *duplicateCheckedValue = checkCastNode->getFirstChild()->duplicateTreeForCodeMotion();
@@ -5367,7 +5364,6 @@ void TR_LoopVersioner::buildArrayStoreCheckComparisonsTree(List<TR::TreeTop> *nu
 
       TR::TreeTop *arrayStoreCheckTree = nextTree->getData();
       TR::Node *arrayStoreCheckNode = arrayStoreCheckTree->getNode();
-      vcount_t visitCount = comp()->incVisitCount();
 
       // this is a general fix
       // NOTE: since buildArrayStoreCheckComparisonTree only checks part
@@ -5389,14 +5385,12 @@ void TR_LoopVersioner::buildArrayStoreCheckComparisonsTree(List<TR::TreeTop> *nu
       TR::Node *addressNode = valueNode->getFirstChild();
       TR_ASSERT(addressNode->getOpCode().isArrayRef(), "expecting array ref for addressNode");
       TR::Node *childOfAddressNode = addressNode->getFirstChild();
-      collectAllExpressionsToBeChecked(childOfAddressNode, comparisonTrees, visitCount);
-      visitCount = comp()->incVisitCount();
-
+      collectAllExpressionsToBeChecked(childOfAddressNode, comparisonTrees);
 
       TR::Node *duplicateSrcArray = arrayNode->duplicateTreeForCodeMotion();
       TR::Node *duplicateClassPtr = TR::Node::createWithSymRef(TR::aloadi, 1, 1, duplicateSrcArray, comp()->getSymRefTab()->findOrCreateVftSymbolRef());
 
-      collectAllExpressionsToBeChecked(duplicateClassPtr, comparisonTrees, visitCount);
+      collectAllExpressionsToBeChecked(duplicateClassPtr, comparisonTrees);
 
       TR::Node *duplicateCheckedValue = childOfAddressNode->duplicateTreeForCodeMotion();
 
@@ -5563,8 +5557,7 @@ bool TR_LoopVersioner::buildLoopInvariantTree(List<TR::TreeTop> *nullCheckTrees,
          continue;
          }
 
-      vcount_t visitCount = comp()->incVisitCount();
-      collectAllExpressionsToBeChecked(invariantNode, comparisonTrees, visitCount);
+      collectAllExpressionsToBeChecked(invariantNode, comparisonTrees);
 
       //printf("Creating test for loop invariant expression %p in in block_%d %s\n", invariantNode, loopInvariantBlock->getNumber(), comp()->signature());
 
@@ -5611,7 +5604,7 @@ bool TR_LoopVersioner::buildLoopInvariantTree(List<TR::TreeTop> *nullCheckTrees,
             if (!otherInvariantNodeElem->getData()->_symRef &&
                 optimizer()->areNodesEquivalent(otherInvariantNode, invariantNode))
                {
-               visitCount = comp()->incVisitCount();
+               vcount_t visitCount = comp()->incVisitCount();
                if (optimizer()->areSyntacticallyEquivalent(otherInvariantNode, invariantNode, visitCount))
                   {
                   otherInvariantNodeElem->getData()->_symRef = newSymbolReference;
@@ -5741,8 +5734,7 @@ bool TR_LoopVersioner::buildSpecializationTree(List<TR::TreeTop> *nullCheckTrees
       if (dupSpecializedNode)
          nodeToBeChecked = dupSpecializedNode;
 
-      vcount_t visitCount = comp()->incVisitCount();
-      collectAllExpressionsToBeChecked(nodeToBeChecked, comparisonTrees, visitCount);
+      collectAllExpressionsToBeChecked(nodeToBeChecked, comparisonTrees);
 
 #ifdef J9_PROJECT_SPECIFIC
       if (performTransformation(comp(), "%s Creating test outside loop for checking if %p is value profiled\n", OPT_DETAILS_LOOP_VERSIONER, specializedNode))
@@ -5939,8 +5931,7 @@ void TR_LoopVersioner::buildConditionalTree(List<TR::TreeTop> *nullCheckTrees, L
 
       //if (includeComparisonTree)
          {
-         vcount_t visitCount = comp()->incVisitCount();
-         collectAllExpressionsToBeChecked(conditionalNode, comparisonTrees, visitCount);
+         collectAllExpressionsToBeChecked(conditionalNode, comparisonTrees);
 
          if (performTransformation(comp(), "%s Creating test outside loop for checking if %p is conditional\n", OPT_DETAILS_LOOP_VERSIONER, conditionalNode))
             {
@@ -6531,8 +6522,7 @@ void TR_LoopVersioner::buildBoundCheckComparisonsTree(List<TR::TreeTop> *nullChe
             }
          }
 
-      vcount_t visitCount = comp()->incVisitCount(); //@TODO: unsafe API/use pattern
-      collectAllExpressionsToBeChecked(boundCheckNode, comparisonTrees, visitCount);
+      collectAllExpressionsToBeChecked(boundCheckNode, comparisonTrees);
       TR::Node *nextComparisonNode;
 
 
@@ -7011,7 +7001,7 @@ void TR_LoopVersioner::buildBoundCheckComparisonsTree(List<TR::TreeTop> *nullChe
                      //printf("Changing test in %s\n", comp()->signature());
                      if (!duplicateIndex->getOpCode().isLoad())
                         {
-                        visitCount = comp()->incVisitCount();
+                        vcount_t visitCount = comp()->incVisitCount();
                         replaceInductionVariable(NULL, duplicateIndex, -1, origIndexSymRef->getReferenceNumber(), storeRhs, visitCount);
                         }
                      else
@@ -7454,7 +7444,7 @@ void TR_LoopVersioner::buildBoundCheckComparisonsTree(List<TR::TreeTop> *nullChe
 
                      if (!firstChild->getOpCode().isLoad())
                         {
-                        visitCount = comp()->incVisitCount();
+                        vcount_t visitCount = comp()->incVisitCount();
                         replaceInductionVariable(NULL, firstChild, -1, origIndexSymRef->getReferenceNumber(), storeRhs, visitCount);
                         }
                      else
@@ -7510,7 +7500,7 @@ void TR_LoopVersioner::buildBoundCheckComparisonsTree(List<TR::TreeTop> *nullChe
                     (!isAddition && indVarOccursAsSecondChildOfSub))
                      {
                      traceMsg(comp(), " Its addition indexsymref %d, duplicateMulNode %p \n",indexSymRef->getReferenceNumber(),duplicateMulNode);
-                     visitCount = comp()->incVisitCount();
+                     vcount_t visitCount = comp()->incVisitCount();
                      replaceInductionVariable(NULL, duplicateMulNode, -1, indexSymRef->getReferenceNumber(), loopLimit->duplicateTree(), visitCount);
                      visitCount = comp()->incVisitCount();
                      replaceInductionVariable(NULL, duplicateMulHNode, -1, indexSymRef->getReferenceNumber(), loopLimit->duplicateTree(), visitCount);
@@ -7586,7 +7576,7 @@ void TR_LoopVersioner::buildBoundCheckComparisonsTree(List<TR::TreeTop> *nullChe
  * \brief Emit versioning tests to check that \p node is safe to evaluate.
  *
  * \deprecated Many of the parameters are unused. Prefer
- * collectAllExpressionsToBeChecked(TR::Node*, List<TR::Node>*, vcount_t).
+ * collectAllExpressionsToBeChecked(TR::Node*, List<TR::Node>*).
  * This overload remains for compatibility with downstream projects.
  *
  * \param nullCheckTrees Unused
@@ -7596,11 +7586,11 @@ void TR_LoopVersioner::buildBoundCheckComparisonsTree(List<TR::TreeTop> *nullChe
  * \param node The node that should be made safe to evaluate
  * \param comparisonTrees The list of all versioning tests for the loop
  * \param exitGotoBlock Unused in favor of _exitGotoTarget
- * \param visitCount The visit count to use for tracking the visited set
+ * \param visitCount Unused
  */
 void TR_LoopVersioner::collectAllExpressionsToBeChecked(List<TR::TreeTop> *nullCheckTrees, List<TR::TreeTop> *divCheckTrees, List<TR::TreeTop> *checkCastTrees, List<TR::TreeTop> *arrayStoreCheckTrees, TR::Node *node, List<TR::Node> *comparisonTrees, TR::Block *exitGotoBlock, vcount_t visitCount)
    {
-   collectAllExpressionsToBeChecked(node, comparisonTrees, visitCount);
+   collectAllExpressionsToBeChecked(node, comparisonTrees);
    }
 
 /**
@@ -7613,14 +7603,20 @@ void TR_LoopVersioner::collectAllExpressionsToBeChecked(List<TR::TreeTop> *nullC
  *
  * \param node The node that should be made safe to evaluate
  * \param comparisonTrees The list of all versioning tests for the loop
- * \param visitCount The visit count to use for tracking the visited set
  */
-void TR_LoopVersioner::collectAllExpressionsToBeChecked(TR::Node *node, List<TR::Node> *comparisonTrees, vcount_t visitCount)
+void TR_LoopVersioner::collectAllExpressionsToBeChecked(TR::Node *node, List<TR::Node> *comparisonTrees)
    {
-   if (node->getVisitCount() == visitCount)
+   TR::NodeChecklist visited(comp());
+   collectAllExpressionsToBeChecked(node, comparisonTrees, &visited);
+   }
+
+/// Implementation of collectAllExpressionsToBeChecked(TR::Node*, List<TR::Node>*)
+void TR_LoopVersioner::collectAllExpressionsToBeChecked(TR::Node *node, List<TR::Node> *comparisonTrees, TR::NodeChecklist *visited)
+   {
+   if (visited->contains(node))
       return;
 
-   node->setVisitCount(visitCount);
+   visited->add(node);
 
    int32_t i;
    for (i = 0; i < node->getNumChildren(); i++)
@@ -7631,7 +7627,7 @@ void TR_LoopVersioner::collectAllExpressionsToBeChecked(TR::Node *node, List<TR:
       if (node->getOpCodeValue() == TR::BNDCHKwithSpineCHK && i == 0)
          continue;
 
-      collectAllExpressionsToBeChecked(node->getChild(i), comparisonTrees, visitCount);
+      collectAllExpressionsToBeChecked(node->getChild(i), comparisonTrees, visited);
       }
 
    // If this is an indirect access

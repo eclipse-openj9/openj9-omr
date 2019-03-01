@@ -33,6 +33,7 @@
 #include "il/TreeTop.hpp"
 #include "il/TreeTop_inlines.hpp"
 #include "infra/BitVector.hpp"
+#include "infra/Checklist.hpp"
 #include "infra/Link.hpp"
 #include "infra/List.hpp"
 #include "optimizer/OptimizationManager.hpp"
@@ -240,7 +241,8 @@ class TR_LoopVersioner : public TR_LoopTransformer
    bool buildLoopInvariantTree(List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::Node> *, List<TR_NodeParentSymRef> *, List<TR_NodeParentSymRefWeightTuple> *, TR::Block *);
    void convertSpecializedLongsToInts(TR::Node *, vcount_t, TR::SymbolReference **);
    void collectAllExpressionsToBeChecked(List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, TR::Node *, List<TR::Node> *, TR::Block *, vcount_t);
-   void collectAllExpressionsToBeChecked(TR::Node *, List<TR::Node> *, vcount_t);
+   void collectAllExpressionsToBeChecked(TR::Node *, List<TR::Node> *);
+   void collectAllExpressionsToBeChecked(TR::Node *, List<TR::Node> *, TR::NodeChecklist *);
    bool requiresPrivatization(TR::Node *);
    bool suppressInvarianceAndPrivatization(TR::SymbolReference *);
 

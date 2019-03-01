@@ -240,6 +240,7 @@ class TR_LoopVersioner : public TR_LoopTransformer
    bool buildLoopInvariantTree(List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::Node> *, List<TR_NodeParentSymRef> *, List<TR_NodeParentSymRefWeightTuple> *, TR::Block *, TR::Block *);
    void convertSpecializedLongsToInts(TR::Node *, vcount_t, TR::SymbolReference **);
    void collectAllExpressionsToBeChecked(List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, TR::Node *, List<TR::Node> *, TR::Block *, vcount_t);
+   void collectAllExpressionsToBeChecked(TR::Node *, List<TR::Node> *, TR::Block *, vcount_t);
    bool requiresPrivatization(TR::Node *);
    bool suppressInvarianceAndPrivatization(TR::SymbolReference *);
 

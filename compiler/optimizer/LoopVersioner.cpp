@@ -68,6 +68,7 @@
 #include "infra/List.hpp"
 #include "infra/CfgEdge.hpp"
 #include "infra/CfgNode.hpp"
+#include "infra/ILWalk.hpp"
 #include "optimizer/Dominators.hpp"
 #include "optimizer/LocalAnalysis.hpp"
 #include "optimizer/LoopCanonicalizer.hpp"
@@ -4260,7 +4261,7 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
             TR::Node::create(TR::isub, 2, upperBound, lowerBound) :
             TR::Node::create(TR::isub, 2, lowerBound, upperBound);
 
-         collectAllExpressionsToBeChecked(nullCheckTrees, divCheckTrees, checkCastTrees, arrayStoreCheckTrees, loopLimit, &comparisonTrees, clonedLoopInvariantBlock, comp()->incVisitCount());
+         collectAllExpressionsToBeChecked(loopLimit, &comparisonTrees, clonedLoopInvariantBlock, comp()->incVisitCount());
          TR::Node *nextComparisonNode = TR::Node::createif(comparisonOpCode, loopLimit, TR::Node::create(loopLimit, TR::iconst, 0, profiledLoopLimit), clonedLoopInvariantBlock->getEntry());
          nextComparisonNode->setIsMaxLoopIterationGuard(true);
 
@@ -4370,6 +4371,43 @@ void TR_LoopVersioner::versionNaturalLoop(TR_RegionStructure *whileLoop, List<TR
                {
                convertSpecializedLongsToInts(cursor->getNode(), visitCount, symRefs);
                cursor = cursor->getNextTreeTop();
+               }
+            }
+         }
+
+      // Ensure that substitution for specialization leaves behind no malformed
+      // NULLCHK or DIVCHK nodes. These checks used to be eagerly (and
+      // generally incorrectly) removed by collectAllExpressionsToBeChecked().
+      //
+      // TODO: Specialization should be changed to defer its transformations,
+      // using the privatization analysis to determine whether it's okay to
+      // stop re-reading certain data each iteration. Substitution of constant
+      // values should probably be integrated with substitution of loads of
+      // privatization temps.
+      //
+      ListIterator<TR::Block> blocksIt(&blocksInWhileLoop);
+      for (TR::Block *block = blocksIt.getCurrent(); block != NULL; block = blocksIt.getNext())
+         {
+         TR::TreeTop *entry = block->getEntry();
+         TR::TreeTop *exit = block->getExit();
+         for (TR::TreeTopIterator it(entry, comp()); !it.isAt(exit); it.stepForward())
+            {
+            TR::TreeTop *tt = it.currentTree();
+            TR::Node *node = tt->getNode();
+            TR::ILOpCode op = node->getOpCode();
+            if (op.isNullCheck() || op.getOpCodeValue() == TR::DIVCHK)
+               {
+               TR::ILOpCodes childOp = node->getChild(0)->getOpCodeValue();
+               if (childOp == TR::iconst || childOp == TR::iu2l)
+                  {
+                  dumpOptDetails(
+                     comp(),
+                     "Removing check n%un [%p] because child has been specialized\n",
+                     node->getGlobalIndex(),
+                     node);
+
+                  TR::Node::recreate(node, TR::treetop);
+                  }
                }
             }
          }
@@ -5122,8 +5160,8 @@ void TR_LoopVersioner::buildNullCheckComparisonsTree(List<TR::Node> *nullChecked
       vcount_t visitCount = comp()->incVisitCount();
       if (!nodeToBeNullChkd)
          nodeToBeNullChkd = nextNode->getData();
-      ///collectAllExpressionsToBeChecked(nullCheckTrees, divCheckTrees, checkCastTrees, arrayStoreCheckTrees, nextNode->getData(), comparisonTrees, exitGotoBlock, visitCount);
-      collectAllExpressionsToBeChecked(nullCheckTrees, divCheckTrees, checkCastTrees, arrayStoreCheckTrees, nodeToBeNullChkd, comparisonTrees, exitGotoBlock, visitCount);
+
+      collectAllExpressionsToBeChecked(nodeToBeNullChkd, comparisonTrees, exitGotoBlock, visitCount);
 
       if (performTransformation(comp(), "%s Creating test outside loop for checking if %p is null\n", OPT_DETAILS_LOOP_VERSIONER, nextNode->getData()))
          {
@@ -5238,7 +5276,7 @@ void TR_LoopVersioner::buildDivCheckComparisonsTree(List<TR::TreeTop> *nullCheck
       TR::TreeTop *divCheckTree = nextTree->getData();
       TR::Node *divCheckNode = divCheckTree->getNode();
       vcount_t visitCount = comp()->incVisitCount();
-      collectAllExpressionsToBeChecked(nullCheckTrees, divCheckTrees, checkCastTrees, arrayStoreCheckTrees, divCheckNode->getFirstChild()->getSecondChild(), comparisonTrees, exitGotoBlock, visitCount);
+      collectAllExpressionsToBeChecked(divCheckNode->getFirstChild()->getSecondChild(), comparisonTrees, exitGotoBlock, visitCount);
 
       if (performTransformation(
             comp(),
@@ -5286,8 +5324,8 @@ void TR_LoopVersioner::buildCheckCastComparisonsTree(List<TR::TreeTop> *nullChec
          }
 
       vcount_t visitCount = comp()->incVisitCount();
-      collectAllExpressionsToBeChecked(nullCheckTrees, divCheckTrees, checkCastTrees, arrayStoreCheckTrees, checkCastNode->getChild(0), comparisonTrees, exitGotoBlock, visitCount);
-      collectAllExpressionsToBeChecked(nullCheckTrees, divCheckTrees, checkCastTrees, arrayStoreCheckTrees, checkCastNode->getChild(1), comparisonTrees, exitGotoBlock, visitCount);
+      collectAllExpressionsToBeChecked(checkCastNode->getChild(0), comparisonTrees, exitGotoBlock, visitCount);
+      collectAllExpressionsToBeChecked(checkCastNode->getChild(1), comparisonTrees, exitGotoBlock, visitCount);
 
       TR::Node *duplicateClassPtr = checkCastNode->getSecondChild()->duplicateTreeForCodeMotion();
       TR::Node *duplicateCheckedValue = checkCastNode->getFirstChild()->duplicateTreeForCodeMotion();
@@ -5347,15 +5385,14 @@ void TR_LoopVersioner::buildArrayStoreCheckComparisonsTree(List<TR::TreeTop> *nu
       TR::Node *addressNode = valueNode->getFirstChild();
       TR_ASSERT(addressNode->getOpCode().isArrayRef(), "expecting array ref for addressNode");
       TR::Node *childOfAddressNode = addressNode->getFirstChild();
-      collectAllExpressionsToBeChecked(nullCheckTrees, divCheckTrees, checkCastTrees, arrayStoreCheckTrees, childOfAddressNode, comparisonTrees, exitGotoBlock, visitCount);
+      collectAllExpressionsToBeChecked(childOfAddressNode, comparisonTrees, exitGotoBlock, visitCount);
       visitCount = comp()->incVisitCount();
-      //collectAllExpressionsToBeChecked(nullCheckTrees, divCheckTrees, checkCastTrees, arrayStoreCheckTrees, arrayNode, comparisonTrees, exitGotoBlock, visitCount);
 
 
       TR::Node *duplicateSrcArray = arrayNode->duplicateTreeForCodeMotion();
       TR::Node *duplicateClassPtr = TR::Node::createWithSymRef(TR::aloadi, 1, 1, duplicateSrcArray, comp()->getSymRefTab()->findOrCreateVftSymbolRef());
 
-      collectAllExpressionsToBeChecked(nullCheckTrees, divCheckTrees, checkCastTrees, arrayStoreCheckTrees, duplicateClassPtr, comparisonTrees, exitGotoBlock, visitCount);
+      collectAllExpressionsToBeChecked(duplicateClassPtr, comparisonTrees, exitGotoBlock, visitCount);
 
       TR::Node *duplicateCheckedValue = childOfAddressNode->duplicateTreeForCodeMotion();
 
@@ -5523,7 +5560,7 @@ bool TR_LoopVersioner::buildLoopInvariantTree(List<TR::TreeTop> *nullCheckTrees,
          }
 
       vcount_t visitCount = comp()->incVisitCount();
-      collectAllExpressionsToBeChecked(nullCheckTrees, divCheckTrees, checkCastTrees, arrayStoreCheckTrees, invariantNode, comparisonTrees, exitGotoBlock, visitCount);
+      collectAllExpressionsToBeChecked(invariantNode, comparisonTrees, exitGotoBlock, visitCount);
 
       //printf("Creating test for loop invariant expression %p in in block_%d %s\n", invariantNode, loopInvariantBlock->getNumber(), comp()->signature());
 
@@ -5701,7 +5738,7 @@ bool TR_LoopVersioner::buildSpecializationTree(List<TR::TreeTop> *nullCheckTrees
          nodeToBeChecked = dupSpecializedNode;
 
       vcount_t visitCount = comp()->incVisitCount();
-      collectAllExpressionsToBeChecked(nullCheckTrees, divCheckTrees, checkCastTrees, arrayStoreCheckTrees, nodeToBeChecked, comparisonTrees, exitGotoBlock, visitCount);
+      collectAllExpressionsToBeChecked(nodeToBeChecked, comparisonTrees, exitGotoBlock, visitCount);
 
 #ifdef J9_PROJECT_SPECIFIC
       if (performTransformation(comp(), "%s Creating test outside loop for checking if %p is value profiled\n", OPT_DETAILS_LOOP_VERSIONER, specializedNode))
@@ -5899,7 +5936,7 @@ void TR_LoopVersioner::buildConditionalTree(List<TR::TreeTop> *nullCheckTrees, L
       //if (includeComparisonTree)
          {
          vcount_t visitCount = comp()->incVisitCount();
-         collectAllExpressionsToBeChecked(nullCheckTrees, divCheckTrees, checkCastTrees, arrayStoreCheckTrees, conditionalNode, comparisonTrees, exitGotoBlock, visitCount);
+         collectAllExpressionsToBeChecked(conditionalNode, comparisonTrees, exitGotoBlock, visitCount);
 
          if (performTransformation(comp(), "%s Creating test outside loop for checking if %p is conditional\n", OPT_DETAILS_LOOP_VERSIONER, conditionalNode))
             {
@@ -6491,7 +6528,7 @@ void TR_LoopVersioner::buildBoundCheckComparisonsTree(List<TR::TreeTop> *nullChe
          }
 
       vcount_t visitCount = comp()->incVisitCount(); //@TODO: unsafe API/use pattern
-      collectAllExpressionsToBeChecked(nullCheckTrees, divCheckTrees, checkCastTrees, arrayStoreCheckTrees, boundCheckNode, comparisonTrees, exitGotoBlock, visitCount);
+      collectAllExpressionsToBeChecked(boundCheckNode, comparisonTrees, exitGotoBlock, visitCount);
       TR::Node *nextComparisonNode;
 
 
@@ -7541,7 +7578,41 @@ void TR_LoopVersioner::buildBoundCheckComparisonsTree(List<TR::TreeTop> *nullChe
       }
    }
 
+/**
+ * \brief Emit versioning tests to check that \p node is safe to evaluate.
+ *
+ * \deprecated Many of the parameters are unused. Prefer
+ * collectAllExpressionsToBeChecked(TR::Node*, List<TR::Node>*, TR::Block*, vcount_t).
+ * This overload remains for compatibility with downstream projects.
+ *
+ * \param nullCheckTrees Unused
+ * \param divCheckTrees Unused
+ * \param checkCastTrees Unused
+ * \param arrayStoreCheckTrees Unused
+ * \param node The node that should be made safe to evaluate
+ * \param comparisonTrees The list of all versioning tests for the loop
+ * \param exitGotoBlock The duplicate (usually cold) loop preheader
+ * \param visitCount The visit count to use for tracking the visited set
+ */
 void TR_LoopVersioner::collectAllExpressionsToBeChecked(List<TR::TreeTop> *nullCheckTrees, List<TR::TreeTop> *divCheckTrees, List<TR::TreeTop> *checkCastTrees, List<TR::TreeTop> *arrayStoreCheckTrees, TR::Node *node, List<TR::Node> *comparisonTrees, TR::Block *exitGotoBlock, vcount_t visitCount)
+   {
+   collectAllExpressionsToBeChecked(node, comparisonTrees, exitGotoBlock, visitCount);
+   }
+
+/**
+ * \brief Emit versioning tests to check that \p node is safe to evaluate.
+ *
+ * This is used to allow generating a copy of \p node as part of a versioning
+ * test, which otherwise would be evaluated in a context where the safety
+ * conditions (e.g. that the child of an indirect load is non-null) are not
+ * known to hold.
+ *
+ * \param node The node that should be made safe to evaluate
+ * \param comparisonTrees The list of all versioning tests for the loop
+ * \param exitGotoBlock The duplicate (usually cold) loop preheader
+ * \param visitCount The visit count to use for tracking the visited set
+ */
+void TR_LoopVersioner::collectAllExpressionsToBeChecked(TR::Node *node, List<TR::Node> *comparisonTrees, TR::Block *exitGotoBlock, vcount_t visitCount)
    {
    if (node->getVisitCount() == visitCount)
       return;
@@ -7557,7 +7628,7 @@ void TR_LoopVersioner::collectAllExpressionsToBeChecked(List<TR::TreeTop> *nullC
       if (node->getOpCodeValue() == TR::BNDCHKwithSpineCHK && i == 0)
          continue;
 
-      collectAllExpressionsToBeChecked(nullCheckTrees, divCheckTrees, checkCastTrees, arrayStoreCheckTrees, node->getChild(i), comparisonTrees, exitGotoBlock, visitCount);
+      collectAllExpressionsToBeChecked(node->getChild(i), comparisonTrees, exitGotoBlock, visitCount);
       }
 
    // If this is an indirect access
@@ -7573,54 +7644,6 @@ void TR_LoopVersioner::collectAllExpressionsToBeChecked(List<TR::TreeTop> *nullC
             "Creating test outside loop for checking if n%un [%p] is null\n",
             node->getFirstChild()->getGlobalIndex(),
             node->getFirstChild());
-
-         ListElement<TR::TreeTop> *nullCheckTree = nullCheckTrees->getListHead();
-
-         // Null check the pointer being dereferenced; also
-         // get rid of the corresponding TR::NULLCHK if it exists
-         //
-         bool eliminatedNullCheck = false;
-         while (nullCheckTree)
-            {
-            TR::Node *nullCheckNode = nullCheckTree->getData()->getNode();
-            if (nullCheckNode->getOpCode().isNullCheck())
-               {
-               if (nullCheckNode->getNullCheckReference() == node->getFirstChild())
-                  {
-                  if (nullCheckTree->getData()->getNode()->getOpCodeValue() == TR::NULLCHK)
-                     TR::Node::recreate(nullCheckTree->getData()->getNode(), TR::treetop);
-                  else if (nullCheckTree->getData()->getNode()->getOpCodeValue() == TR::ResolveAndNULLCHK)
-                     TR::Node::recreate(nullCheckTree->getData()->getNode(), TR::ResolveCHK);
-                  eliminatedNullCheck = true;
-                  break;
-                  }
-               }
-
-              nullCheckTree = nullCheckTree->getNextElement();
-            }
-
-         if (!eliminatedNullCheck)
-            {
-            nullCheckTree = _checksInDupHeader.getListHead();
-            while (nullCheckTree)
-               {
-               TR::Node *nullCheckNode = nullCheckTree->getData()->getNode();
-               if (nullCheckNode->getOpCode().isNullCheck())
-                  {
-                  if (nullCheckNode->getNullCheckReference() == node->getFirstChild())
-                     {
-                     if (nullCheckTree->getData()->getNode()->getOpCodeValue() == TR::NULLCHK)
-                        TR::Node::recreate(nullCheckTree->getData()->getNode(), TR::treetop);
-                     else if (nullCheckTree->getData()->getNode()->getOpCodeValue() == TR::ResolveAndNULLCHK)
-                        TR::Node::recreate(nullCheckTree->getData()->getNode(), TR::ResolveCHK);
-                     eliminatedNullCheck = true;
-                     break;
-                     }
-                  }
-               nullCheckTree = nullCheckTree->getNextElement();
-               }
-            }
-
 
          TR::Node *duplicateNullCheckReference = node->getFirstChild()->duplicateTreeForCodeMotion();
          TR::Node *ifacmpeqNode =  TR::Node::createif(TR::ifacmpeq, duplicateNullCheckReference, TR::Node::aconst(node, 0),  exitGotoBlock->getEntry());
@@ -7903,46 +7926,6 @@ void TR_LoopVersioner::collectAllExpressionsToBeChecked(List<TR::TreeTop> *nullC
       // This is a divide; so we need to insert explicit checks
       // to mimic the div check.
       //
-      // Get rid of the coresponding TR::DIVCHK node if there was one
-      //
-      ListElement<TR::TreeTop> *divCheckTree = divCheckTrees->getListHead();
-      bool eliminatedDivCheck = false;
-      while (divCheckTree)
-         {
-         TR::Node *divCheckNode = divCheckTree->getData()->getNode();
-         if (divCheckNode->getOpCodeValue() == TR::DIVCHK)
-            {
-            if (divCheckNode->getFirstChild() == node)
-               {
-               TR::Node::recreate(divCheckTree->getData()->getNode(), TR::treetop);
-               eliminatedDivCheck = true;
-               break;
-               }
-            }
-
-         divCheckTree = divCheckTree->getNextElement();
-         }
-
-     if (!eliminatedDivCheck)
-        {
-        divCheckTree = _checksInDupHeader.getListHead();
-        while (divCheckTree)
-           {
-           TR::Node *divCheckNode = divCheckTree->getData()->getNode();
-           if (divCheckNode->getOpCodeValue() == TR::DIVCHK)
-              {
-              if (divCheckNode->getFirstChild() == node)
-                 {
-                 TR::Node::recreate(divCheckTree->getData()->getNode(), TR::treetop);
-                 break;
-                 }
-              }
-
-           divCheckTree = divCheckTree->getNextElement();
-           }
-   }
-
-
       TR::Node *duplicateDivisor = node->getSecondChild()->duplicateTreeForCodeMotion();
       TR::Node *ifNode;
       if (duplicateDivisor->getType().isInt64())

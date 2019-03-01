@@ -879,6 +879,31 @@ class TR_LoopVersioner : public TR_LoopTransformer
       TR::TreeTop * const _arrayStoreCheckTree;
       };
 
+   class FoldConditional : public LoopImprovement
+      {
+      public:
+      TR_ALLOC(TR_Memory::LoopTransformer)
+
+      FoldConditional(
+         TR_LoopVersioner *versioner,
+         LoopEntryPrep *prep,
+         TR::Node *conditionalNode,
+         bool reverseBranch,
+         bool original)
+         : LoopImprovement(versioner, prep)
+         , _conditionalNode(conditionalNode)
+         , _reverseBranch(reverseBranch)
+         , _original(original)
+         {}
+
+      virtual void improveLoop();
+
+      private:
+      TR::Node * const _conditionalNode;
+      const bool _reverseBranch;
+      const bool _original;
+      };
+
    bool shouldOnlySpecializeLoops() { return _onlySpecializingLoops; }
    void setOnlySpecializeLoops(bool b) { _onlySpecializingLoops = b; }
 
@@ -940,7 +965,7 @@ class TR_LoopVersioner : public TR_LoopTransformer
    void buildDivCheckComparisonsTree(List<TR::TreeTop> *);
    void buildAwrtbariComparisonsTree(List<TR::TreeTop> *);
    void buildCheckCastComparisonsTree(List<TR::TreeTop> *);
-   void buildConditionalTree(List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::Node> *, SharedSparseBitVector &reverseBranchInLoops);
+   void buildConditionalTree(List<TR::TreeTop> *, SharedSparseBitVector &reverseBranchInLoops);
    void buildArrayStoreCheckComparisonsTree(List<TR::TreeTop> *);
    bool buildSpecializationTree(List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::TreeTop> *, List<TR::Node> *, List<TR::Node> *, TR::Block *, TR::SymbolReference **);
    bool buildLoopInvariantTree(List<TR_NodeParentSymRef> *);
@@ -953,6 +978,8 @@ class TR_LoopVersioner : public TR_LoopTransformer
    void dumpOptDetailsFailedToCreateTest(const char *, TR::Node *);
    bool depsForLoopEntryPrep(TR::Node *, TR::list<LoopEntryPrep*, TR::Region&> *, TR::NodeChecklist *, bool);
    LoopEntryPrep *addLoopEntryPrepDep(LoopEntryPrep::Kind, TR::Node *, TR::list<LoopEntryPrep*, TR::Region&> *, TR::NodeChecklist *);
+
+   void copyOnWriteNode(TR::Node *original, TR::Node **current);
 
    void updateDefinitionsAndCollectProfiledExprs(TR::Node *,TR::Node *, vcount_t, List<TR::Node> *, List<TR_NodeParentSymRef> *, List<TR_NodeParentSymRefWeightTuple> *, TR::Node *, bool, TR::Block *, int32_t);
    void findAndReplaceContigArrayLen(TR::Node *, TR::Node *, vcount_t);

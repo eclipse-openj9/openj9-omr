@@ -1482,24 +1482,6 @@ TR::Register *OMR::X86::TreeEvaluator::SSE2ArraycmpLenEvaluator(TR::Node *node, 
    return resultReg;
    }
 
-void genCodeToPerformLeftToRightAndBlockConcurrentOpIfNeeded(
-   TR::Node *node,
-   TR::MemoryReference *memRef,
-   TR::Register *vReg,
-   TR::Register *tempReg,
-   TR::Register *tempReg1,
-   TR::Register *tempReg2,
-   TR::LabelSymbol * nonLockedOpLabel,
-   TR::LabelSymbol *&opDoneLabel,
-   TR::RegisterDependencyConditions *&deps,
-   uint8_t size,
-   TR::CodeGenerator* cg,
-   bool isLoad,
-   bool genOutOfline,
-   bool keepValueRegAlive,
-   TR::LabelSymbol *startControlFlowLabel)
-   {
-   }
 
 bool OMR::X86::TreeEvaluator::stopUsingCopyRegAddr(TR::Node* node, TR::Register*& reg, TR::CodeGenerator* cg)
    {

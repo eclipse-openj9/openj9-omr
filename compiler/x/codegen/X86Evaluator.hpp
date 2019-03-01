@@ -46,24 +46,6 @@ extern void constLengthArrayCopy(
    bool preserveSrcPointer,
    bool preserveDstPointer);
 
-extern void genCodeToPerformLeftToRightAndBlockConcurrentOpIfNeeded(
-   TR::Node *node,
-   TR::MemoryReference *memRef,
-   TR::Register *valueReg,
-   TR::Register *tempReg,
-   TR::Register *tempReg1,
-   TR::Register *tempReg2,
-   TR::LabelSymbol *nonLockedOpLabel,
-   TR::LabelSymbol *&opDoneLabel,
-   TR::RegisterDependencyConditions *&deps,
-   uint8_t size,
-   TR::CodeGenerator *cg,
-   bool isLoad,
-   bool genOutOfline,
-   bool keepValueRegAlive = false,
-   TR::LabelSymbol *startControlFlowLabel = NULL);
-
-
 
 class TR_X86ComputeCC : public TR::TreeEvaluator
    {

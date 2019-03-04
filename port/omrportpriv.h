@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 1991, 2018 IBM Corp. and others
+ * Copyright (c) 1991, 2019 IBM Corp. and others
  *
  * This program and the accompanying materials are made available under
  * the terms of the Eclipse Public License 2.0 which accompanies this
@@ -479,6 +479,8 @@ extern J9_CFUNC void
 omrsysinfo_shutdown(struct OMRPortLibrary *portLibrary);
 extern J9_CFUNC intptr_t
 omrsysinfo_get_groupname(struct OMRPortLibrary *portLibrary, char *buffer, uintptr_t length);
+extern J9_CFUNC intptr_t
+omrsysinfo_get_hostname(struct OMRPortLibrary *portLibrary, char *buffer, size_t length);
 extern J9_CFUNC uintptr_t
 omrsysinfo_get_pid(struct OMRPortLibrary *portLibrary);
 extern J9_CFUNC uintptr_t

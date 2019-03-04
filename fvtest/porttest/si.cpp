@@ -246,6 +246,32 @@ TEST(PortSysinfoTest, sysinfo_test1)
 	reportTestExit(OMRPORTLIB, testName);
 }
 
+TEST(PortSysinfoTest, hostname_test)
+{
+	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());
+#define J9SYSINFO_HOSTNAME_LENGTH 1024
+	const char *testName = "omrsysinfo_hostname_test";
+	char hostname[J9SYSINFO_HOSTNAME_LENGTH];
+	intptr_t rc = 0;
+
+	reportTestEntry(OMRPORTLIB, testName);
+
+	rc = omrsysinfo_get_hostname(hostname, J9SYSINFO_HOSTNAME_LENGTH);
+	if (rc == -1) {
+		portTestEnv->log(LEVEL_ERROR, "omrsysinfo_get_hostname returned -1.\n");
+		reportTestExit(OMRPORTLIB, testName);
+		return;
+	} else {
+		char msg[256] = "";
+		omrstr_printf(msg, sizeof(msg), "Host name returned = \"%s\"\n", hostname);
+		portTestEnv->log(msg);
+	}
+	/* Don't check for buffers that are too small, since the call to gethostname() will
+	 * silently truncate the name and return 0 on some platforms, e.g. MacOS.
+	 */
+	reportTestExit(OMRPORTLIB, testName);
+}
+
 TEST(PortSysinfoTest, sysinfo_test2)
 {
 	OMRPORT_ACCESS_FROM_OMRPORT(portTestEnv->getPortLibrary());

@@ -591,6 +591,15 @@
                     {"name":"right","type":"IlValue"}
                     ]
                 },
+                { "name": "UnsignedDiv"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "IlValue"
+                , "parms": [
+                    {"name":"left","type":"IlValue"},
+                    {"name":"right","type":"IlValue"}
+                    ]
+                },
                 { "name": "IndexAt"
                 , "overloadsuffix": ""
                 , "flags": []
@@ -636,6 +645,15 @@
                     ]
                 },
                 { "name": "Rem"
+                , "overloadsuffix": ""
+                , "flags": []
+                , "return": "IlValue"
+                , "parms": [
+                    {"name":"left","type":"IlValue"},
+                    {"name":"right","type":"IlValue"}
+                    ]
+                },
+                { "name": "UnsignedRem"
                 , "overloadsuffix": ""
                 , "flags": []
                 , "return": "IlValue"

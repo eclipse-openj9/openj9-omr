@@ -796,6 +796,16 @@ public:
       return TR::BadILOp;
       }
 
+   static TR::ILOpCodes unsignedDivideOpCode(TR::DataType type)
+      {
+      switch (type)
+         {
+         case TR::Int32: return TR::iudiv;
+         case TR::Int64: return TR::ludiv;
+         default: TR_ASSERT(0, "no unsigned div opcode for this datatype");
+         }
+      }
+
    static TR::ILOpCodes remainderOpCode(TR::DataType type)
       {
       switch(type)

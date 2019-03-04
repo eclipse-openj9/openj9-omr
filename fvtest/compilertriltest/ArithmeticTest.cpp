@@ -45,7 +45,15 @@ int32_t idiv(int32_t l, int32_t r) {
     return l/r;
 }
 
+uint32_t iudiv(uint32_t l, uint32_t r) {
+    return l/r;
+}
+
 int32_t irem(int32_t l, int32_t r) {
+    return l%r;
+}
+
+uint32_t iurem(uint32_t l, uint32_t r) {
     return l%r;
 }
 
@@ -65,13 +73,21 @@ int64_t _ldiv(int64_t l, int64_t r) {
     return l/r;
 }
 
+uint64_t ludiv(uint64_t l, uint64_t r) {
+    return l/r;
+}
+
 int64_t lrem(int64_t l, int64_t r) {
     return l%r;
 }
 
 class Int32Arithmetic : public TRTest::BinaryOpTest<int32_t> {};
 
+class UInt32Arithmetic : public TRTest::BinaryOpTest<uint32_t> {};
+
 class Int64Arithmetic : public TRTest::BinaryOpTest<int64_t> {};
+
+class UInt64Arithmetic : public TRTest::BinaryOpTest<uint64_t> {};
 
 TEST_P(Int32Arithmetic, UsingConst) {
     auto param = TRTest::to_struct(GetParam());
@@ -109,6 +125,42 @@ TEST_P(Int32Arithmetic, UsingLoadParam) {
     ASSERT_EQ(param.oracle(param.lhs, param.rhs), entry_point(param.lhs, param.rhs));
 }
 
+TEST_P(UInt32Arithmetic, UsingConst) {
+    auto param = TRTest::to_struct(GetParam());
+
+    char inputTrees[120] = {0};
+    std::snprintf(inputTrees, 120, "(method return=Int32 (block (ireturn (%s (iconst %d) (iconst %d)) )))", param.opcode.c_str(), param.lhs, param.rhs);
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler{trees};
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<uint32_t (*)(void)>();
+    volatile auto exp = param.oracle(param.lhs, param.rhs);
+    volatile auto act = entry_point();
+    ASSERT_EQ(exp, act);
+}
+
+TEST_P(UInt32Arithmetic, UsingLoadParam) {
+    auto param = TRTest::to_struct(GetParam());
+
+    char inputTrees[120] = {0};
+    std::snprintf(inputTrees, 120, "(method return=Int32 args=[Int32, Int32] (block (ireturn (%s (iload parm=0) (iload parm=1)) )))", param.opcode.c_str());
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler{trees};
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<uint32_t (*)(uint32_t, uint32_t)>();
+    ASSERT_EQ(param.oracle(param.lhs, param.rhs), entry_point(param.lhs, param.rhs));
+}
+
 TEST_P(Int64Arithmetic, UsingConst) {
     auto param = TRTest::to_struct(GetParam());
 
@@ -142,6 +194,42 @@ TEST_P(Int64Arithmetic, UsingLoadParam) {
     ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
 
     auto entry_point = compiler.getEntryPoint<int64_t (*)(int64_t, int64_t)>();
+    ASSERT_EQ(param.oracle(param.lhs, param.rhs), entry_point(param.lhs, param.rhs));
+}
+
+TEST_P(UInt64Arithmetic, UsingConst) {
+    auto param = TRTest::to_struct(GetParam());
+
+    char inputTrees[120] = {0};
+    std::snprintf(inputTrees, 120, "(method return=Int64 (block (lreturn (%s (lconst %lld) (lconst %lld)) )))", param.opcode.c_str(), param.lhs, param.rhs);
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler{trees};
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<uint64_t (*)(void)>();
+    volatile auto exp = param.oracle(param.lhs, param.rhs);
+    volatile auto act = entry_point();
+    ASSERT_EQ(exp, act);
+}
+
+TEST_P(UInt64Arithmetic, UsingLoadParam) {
+    auto param = TRTest::to_struct(GetParam());
+
+    char inputTrees[120] = {0};
+    std::snprintf(inputTrees, 120, "(method return=Int64 args=[Int64, Int64] (block (lreturn (%s (lload parm=0) (lload parm=1)) )))", param.opcode.c_str());
+    auto trees = parseString(inputTrees);
+
+    ASSERT_NOTNULL(trees);
+
+    Tril::DefaultCompiler compiler{trees};
+
+    ASSERT_EQ(0, compiler.compile()) << "Compilation failed unexpectedly\n" << "Input trees: " << inputTrees;
+
+    auto entry_point = compiler.getEntryPoint<uint64_t (*)(uint64_t, uint64_t)>();
     ASSERT_EQ(param.oracle(param.lhs, param.rhs), entry_point(param.lhs, param.rhs));
 }
 
@@ -195,6 +283,33 @@ INSTANTIATE_TEST_CASE_P(DivArithmeticTest, Int64Arithmetic, ::testing::Combine(
     ::testing::Values(
         std::make_tuple("ldiv", _ldiv),
         std::make_tuple("lrem", lrem) )));
+
+/**
+ * @brief Filter function for *udiv opcodes
+ * @tparam T is the data type of the udiv opcode
+ * @param a is the set of input values to be tested for filtering
+ *
+ * This function is a predicate for filtering invalid input values for the
+ * *udiv opcodes, namely pairs where the divisor is 0.
+ */
+template <typename T>
+bool udiv_filter(std::tuple<T, T> a)
+   {
+   return std::get<1>(a) == 0;
+   }
+
+INSTANTIATE_TEST_CASE_P(DivArithmeticTest, UInt32Arithmetic, ::testing::Combine(
+    ::testing::ValuesIn(
+        TRTest::filter(TRTest::const_value_pairs<uint32_t, uint32_t>(), udiv_filter<uint32_t> )),
+    ::testing::Values(
+        std::make_tuple("iudiv", iudiv),
+        std::make_tuple("iurem", iurem) )));
+
+INSTANTIATE_TEST_CASE_P(DivArithmeticTest, UInt64Arithmetic, ::testing::Combine(
+    ::testing::ValuesIn(
+        TRTest::filter(TRTest::const_value_pairs<uint64_t, uint64_t>(), udiv_filter<uint64_t> )),
+    ::testing::Values(
+        std::make_tuple("ludiv", ludiv) )));
 
 template <typename T>
 bool smallFp_filter(std::tuple<T, T> a)

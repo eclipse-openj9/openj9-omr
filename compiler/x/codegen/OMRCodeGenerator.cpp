@@ -108,18 +108,18 @@ namespace TR { class RegisterDependencyConditions; }
 
 TR_X86ProcessorInfo OMR::X86::CodeGenerator::_targetProcessorInfo;
 
-void TR_X86ProcessorInfo::initialize(TR::Compilation *comp)
+void TR_X86ProcessorInfo::initialize()
    {
    // For now, we only convert the feature bits into a flags32_t, for easier querying.
    // To retrieve other information, the VM functions can be called directly.
    //
-   _featureFlags.set(TR::Compiler->target.cpu.getX86ProcessorFeatureFlags(comp));
-   _featureFlags2.set(TR::Compiler->target.cpu.getX86ProcessorFeatureFlags2(comp));
-   _featureFlags8.set(TR::Compiler->target.cpu.getX86ProcessorFeatureFlags8(comp));
+   _featureFlags.set(TR::Compiler->target.cpu.getX86ProcessorFeatureFlags());
+   _featureFlags2.set(TR::Compiler->target.cpu.getX86ProcessorFeatureFlags2());
+   _featureFlags8.set(TR::Compiler->target.cpu.getX86ProcessorFeatureFlags8());
 
    // Determine the processor vendor.
    //
-   const char *vendor = TR::Compiler->target.cpu.getX86ProcessorVendorId(comp);
+   const char *vendor = TR::Compiler->target.cpu.getX86ProcessorVendorId();
    if (!strncmp(vendor, "GenuineIntel", 12))
       _vendorFlags.set(TR_GenuineIntel);
    else if (!strncmp(vendor, "AuthenticAMD", 12))
@@ -136,7 +136,7 @@ void TR_X86ProcessorInfo::initialize(TR::Compilation *comp)
 
    // set up the processor family and cache description
 
-   uint32_t _processorSignature = TR::Compiler->target.cpu.getX86ProcessorSignature(comp);
+   uint32_t _processorSignature = TR::Compiler->target.cpu.getX86ProcessorSignature();
 
    if (isGenuineIntel())
       {
@@ -205,7 +205,7 @@ OMR::X86::CodeGenerator::initialize(TR::Compilation *comp)
    {
 
    bool supportsSSE2 = false;
-   _targetProcessorInfo.initialize(comp);
+   _targetProcessorInfo.initialize();
 
    // Pick a padding table
    //
@@ -226,7 +226,7 @@ OMR::X86::CodeGenerator::initialize(TR::Compilation *comp)
    //
 
 #if defined(TR_TARGET_X86) && !defined(J9HAMMER)
-   if (_targetProcessorInfo.supportsSSE2() && TR::Compiler->target.cpu.testOSForSSESupport(comp))
+   if (_targetProcessorInfo.supportsSSE2() && TR::Compiler->target.cpu.testOSForSSESupport())
       supportsSSE2 = true;
 #endif // defined(TR_TARGET_X86) && !defined(J9HAMMER)
 
@@ -280,7 +280,7 @@ OMR::X86::CodeGenerator::initialize(TR::Compilation *comp)
    // 32-bit platforms must check the processor and OS.
    // 64-bit platforms unconditionally support prefetching.
    //
-   if (_targetProcessorInfo.supportsSSE() && TR::Compiler->target.cpu.testOSForSSESupport(comp))
+   if (_targetProcessorInfo.supportsSSE() && TR::Compiler->target.cpu.testOSForSSESupport())
 #endif // defined(TR_TARGET_X86) && !defined(J9HAMMER)
       {
       self()->setTargetSupportsSoftwarePrefetches();

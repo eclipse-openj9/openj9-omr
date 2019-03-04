@@ -55,14 +55,14 @@ protected:
 
 public:
 
-   TR_X86CPUIDBuffer *queryX86TargetCPUID(TR::Compilation *comp);
-   const char *getX86ProcessorVendorId(TR::Compilation *comp);
-   uint32_t getX86ProcessorSignature(TR::Compilation *comp);
-   uint32_t getX86ProcessorFeatureFlags(TR::Compilation *comp);
-   uint32_t getX86ProcessorFeatureFlags2(TR::Compilation *comp);
-   uint32_t getX86ProcessorFeatureFlags8(TR::Compilation *comp);
+   TR_X86CPUIDBuffer *queryX86TargetCPUID();
+   const char *getX86ProcessorVendorId();
+   uint32_t getX86ProcessorSignature();
+   uint32_t getX86ProcessorFeatureFlags();
+   uint32_t getX86ProcessorFeatureFlags2();
+   uint32_t getX86ProcessorFeatureFlags8();
 
-   bool testOSForSSESupport(TR::Compilation *comp);
+   bool testOSForSSESupport();
 
    /**
     * @brief Answers whether the distance between a target and source address

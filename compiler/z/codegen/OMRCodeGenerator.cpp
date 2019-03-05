@@ -2040,7 +2040,7 @@ OMR::Z::CodeGenerator::doRegisterAssignment(TR_RegisterKinds kindsToAssign)
             {
             realReg = self()->machine()->realRegister(static_cast<TR::RealRegister::RegNum>(i));
 
-            if ( realReg->getState() == TR::RealRegister::Free && realReg->getHighWordRegister()->getState() == TR::RealRegister::Free)
+            if ( realReg->getState() == TR::RealRegister::Free)
                {
                dcbInstr->setAssignableReg(realReg);
                realReg->setHasBeenAssignedInMethod(true);

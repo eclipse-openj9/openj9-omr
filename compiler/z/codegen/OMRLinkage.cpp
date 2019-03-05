@@ -2820,11 +2820,6 @@ OMR::Z::Linkage::lockRegister(TR::RealRegister * lpReal)
    lpReal->setState(TR::RealRegister::Locked);
    lpReal->setAssignedRegister(lpReal);
    lpReal->setHasBeenAssignedInMethod(true);
-
-   TR::RealRegister * lpRealHigh = toRealRegister(lpReal)->getHighWordRegister();
-   lpRealHigh->setState(TR::RealRegister::Locked);
-   lpRealHigh->setAssignedRegister(lpRealHigh);
-   lpRealHigh->setHasBeenAssignedInMethod(true);
    }
 
 void
@@ -2834,11 +2829,6 @@ OMR::Z::Linkage::unlockRegister(TR::RealRegister * lpReal)
    lpReal->resetState(TR::RealRegister::Free);
    lpReal->setAssignedRegister(NULL);
    lpReal->setHasBeenAssignedInMethod(false);
-
-   TR::RealRegister * lpRealHigh = toRealRegister(lpReal)->getHighWordRegister();
-   lpRealHigh->resetState(TR::RealRegister::Free);
-   lpRealHigh->setAssignedRegister(NULL);
-   lpRealHigh->setHasBeenAssignedInMethod(false);
    }
 
 bool OMR::Z::Linkage::needsAlignment(TR::DataType dt, TR::CodeGenerator * cg)
@@ -2872,13 +2862,9 @@ OMR::Z::Linkage::getFirstSavedRegister(int32_t fromreg, int32_t toreg)
    {
    TR::RealRegister::RegNum firstUsedReg = TR::RealRegister::NoReg;
 
-   // if the first saved reg is an HPR, we will return the corresponding GPR
-   bool checkHPR = ((self()->getRealRegister(REGNUM(fromreg)))->isLowWordRegister() &&
-                    (self()->getRealRegister(REGNUM(toreg)))->isLowWordRegister());
    for (int32_t i = fromreg; i <= toreg; ++i)
       {
-      if ((self()->getRealRegister(REGNUM(i)))->getHasBeenAssignedInMethod() ||
-          (checkHPR && (self()->getRealRegister(REGNUM(i)))->getHighWordRegister()->getHasBeenAssignedInMethod()))
+      if ((self()->getRealRegister(REGNUM(i)))->getHasBeenAssignedInMethod())
          {
          firstUsedReg = REGNUM(i);
          return firstUsedReg;
@@ -2896,14 +2882,9 @@ OMR::Z::Linkage::getLastSavedRegister(int32_t fromreg, int32_t toreg)
    {
    TR::RealRegister::RegNum lastUsedReg = TR::RealRegister::NoReg;
 
-   // if the last saved reg is an HPR, we will return the corresponding GPR
-   bool checkHPR = ((self()->getRealRegister(REGNUM(fromreg)))->isLowWordRegister() &&
-                    (self()->getRealRegister(REGNUM(toreg)))->isLowWordRegister());
-
    for (int32_t i = fromreg; i <= toreg; ++i)
       {
-      if ((self()->getRealRegister(REGNUM(i)))->getHasBeenAssignedInMethod() ||
-          (checkHPR && (self()->getRealRegister(REGNUM(i)))->getHighWordRegister()->getHasBeenAssignedInMethod()))
+      if ((self()->getRealRegister(REGNUM(i)))->getHasBeenAssignedInMethod())
          {
          lastUsedReg = REGNUM(i);
          }

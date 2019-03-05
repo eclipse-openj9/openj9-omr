@@ -1178,12 +1178,7 @@ OMR::Z::Instruction::assignRegisterNoDependencies(TR::Register * reg)
          virtReg->setAssignedRegister(NULL);
          realReg->setAssignedRegister(NULL);
          realReg->setState(TR::RealRegister::Free);
-         if (virtReg->getKind() != TR_FPR && virtReg->is64BitReg() && virtReg->getKind() != TR_VRF)
-            {
-            toRealRegister(realReg)->getHighWordRegister()->setAssignedRegister(NULL);
-            toRealRegister(realReg)->getHighWordRegister()->setState(TR::RealRegister::Free);
-            self()->cg()->traceRegFreed(virtReg, toRealRegister(realReg)->getHighWordRegister());
-            }
+
          self()->cg()->traceRegFreed(virtReg, realReg);
          }
 
@@ -1205,12 +1200,7 @@ OMR::Z::Instruction::assignRegisterNoDependencies(TR::Register * reg)
          virtRegHigh->setAssignedRegister(NULL);
          realRegHigh->setAssignedRegister(NULL);
          realRegHigh->setState(TR::RealRegister::Free);
-         if (virtRegHigh->getKind() != TR_FPR && virtRegHigh->is64BitReg() && virtRegHigh->getKind() != TR_VRF)
-            {
-            toRealRegister(realRegHigh)->getHighWordRegister()->setAssignedRegister(NULL);
-            toRealRegister(realRegHigh)->getHighWordRegister()->setState(TR::RealRegister::Free);
-            self()->cg()->traceRegFreed(virtRegHigh, toRealRegister(realRegHigh)->getHighWordRegister());
-            }
+
          self()->cg()->traceRegFreed(virtRegHigh, realRegHigh);
          }
 
@@ -1220,12 +1210,7 @@ OMR::Z::Instruction::assignRegisterNoDependencies(TR::Register * reg)
          virtRegLow->setAssignedRegister(NULL);
          realRegLow->setAssignedRegister(NULL);
          realRegLow->setState(TR::RealRegister::Free);
-         if (virtRegLow->getKind() != TR_FPR && virtRegLow->is64BitReg() && virtRegLow->getKind() != TR_VRF)
-            {
-            toRealRegister(realRegLow)->getHighWordRegister()->setAssignedRegister(NULL);
-            toRealRegister(realRegLow)->getHighWordRegister()->setState(TR::RealRegister::Free);
-            self()->cg()->traceRegFreed(virtRegLow, toRealRegister(realRegLow)->getHighWordRegister());
-            }
+
          self()->cg()->traceRegFreed(virtRegLow, realRegLow);
          }
 
@@ -1435,7 +1420,6 @@ OMR::Z::Instruction::assignOrderedRegisters(TR_RegisterKinds kindToBeAssigned)
 
       srcAssigned[i] = 2;
       }
-   bool blockTargetHighword = false;
    bool targetRegIs64Bit = false;
    // Assign all registers, blocking assignments as you go
    //
@@ -1541,11 +1525,6 @@ OMR::Z::Instruction::assignOrderedRegisters(TR_RegisterKinds kindToBeAssigned)
          }
       }
 
-
-   if (blockTargetHighword)
-      {
-      toRealRegister(_targetReg[0])->getHighWordRegister()->setState(TR::RealRegister::Free);
-      }
    // Unblock everything, as we are done assigning for this instr
    self()->unblock(_sourceReg, _sourceRegSize,  _targetReg, _targetRegSize, _sourceMem, _targetMem);
    }
@@ -1701,45 +1680,13 @@ OMR::Z::Instruction::renameRegister(TR::Register *from, TR::Register *to)
 void
 OMR::Z::Instruction::blockHPR(TR::Register * reg)
    {
-   TR::Compilation *comp = self()->cg()->comp();
-
-   if (reg->getKind() != TR_FPR && reg->getKind() != TR_VRF)
-      {
-      if (reg->is64BitReg() && reg->getAssignedRegister() != NULL)
-         {
-         TR::RealRegister *assignedReg = reg->getAssignedRegister()->getRealRegister();
-
-         if (assignedReg != NULL)
-            {
-            if (toRealRegister(assignedReg)->getHighWordRegister()->getState() == TR::RealRegister::Assigned)
-               {
-               toRealRegister(assignedReg)->getHighWordRegister()->setState(TR::RealRegister::Blocked);
-               }
-            }
-         }
-      }
+   
    }
 
 void
 OMR::Z::Instruction::unblockHPR(TR::Register * reg)
    {
-   TR::Compilation *comp = self()->cg()->comp();
-
-   if (reg->getKind() != TR_FPR && reg->getKind() != TR_VRF)
-      {
-      if (reg->is64BitReg() && reg->getAssignedRegister() != NULL)
-         {
-         TR::RealRegister *assignedReg = reg->getAssignedRegister()->getRealRegister();
-
-         if (assignedReg != NULL)
-            {
-            if (toRealRegister(assignedReg)->getHighWordRegister()->getState() == TR::RealRegister::Blocked)
-               {
-               toRealRegister(assignedReg)->getHighWordRegister()->setState(TR::RealRegister::Assigned, reg->isPlaceholderReg());
-               }
-            }
-         }
-      }
+   
    }
 
 void

@@ -919,12 +919,6 @@ TR_S390RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstru
                assignedReg->setAssignedRegister(NULL);
                virtReg->setAssignedRegister(NULL);
                assignedReg->setState(TR::RealRegister::Free);
-
-               if (virtReg->is64BitReg() && rk != TR_FPR && rk != TR_VRF)
-                  {
-                  assignedReg->getHighWordRegister()->setAssignedRegister(NULL);
-                  assignedReg->getHighWordRegister()->setState(TR::RealRegister::Free);
-                  }
                }
 
             // now we are leaving the OOL sequence, anything that was previously spilled in OOL hot path or main line
@@ -1513,15 +1507,6 @@ TR_S390RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstru
             }
          if (dependentRegister->getFutureUseCount() == 0)
             {
-            // check if need to free HW
-            if (assignedRealRegister != NULL)
-               {
-               if (dependentRegister->is64BitReg() && dependentRegister->getKind() != TR_FPR && dependentRegister->getKind() != TR_VRF)
-                  {
-                  toRealRegister(assignedRealRegister)->getHighWordRegister()->setState(TR::RealRegister::Unlatched);
-                  cg->traceRegFreed(dependentRegister, toRealRegister(assignedRealRegister)->getHighWordRegister());
-                  }
-               }
             dependentRegister->setAssignedRegister(NULL);
             dependentRegister->resetIsLive();
             if(assignedRealRegister)
@@ -1557,13 +1542,6 @@ TR_S390RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstru
                assignedRegister->setAssignedRegister(NULL);
 
             cg->traceRegFreed(dependentRegisterHigh, assignedRegister);
-
-            if (dependentRegisterHigh->is64BitReg() && dependentRegisterHigh->getKind() != TR_FPR &&
-                  dependentRegisterHigh->getKind() != TR_VRF)
-               {
-               toRealRegister(assignedRegister)->getHighWordRegister()->setState(TR::RealRegister::Unlatched);
-               cg->traceRegFreed(dependentRegisterHigh, toRealRegister(assignedRegister)->getHighWordRegister());
-               }
             }
 
          TR::Register * dependentRegisterLow = dependentRegister->getLowOrder();
@@ -1589,13 +1567,6 @@ TR_S390RegisterDependencyGroup::assignRegisters(TR::Instruction   *currentInstru
             if (assignedRegister->getState() == TR::RealRegister::Locked)
                assignedRegister->setAssignedRegister(NULL);
             cg->traceRegFreed(dependentRegisterLow, assignedRegister);
-
-            if (dependentRegisterLow->is64BitReg() && dependentRegisterLow->getKind() != TR_FPR &&
-                  dependentRegisterLow->getKind() != TR_VRF)
-               {
-               toRealRegister(assignedRegister)->getHighWordRegister()->setState(TR::RealRegister::Unlatched);
-               cg->traceRegFreed(dependentRegisterLow, toRealRegister(assignedRegister)->getHighWordRegister());
-               }
             }
          }
       }

@@ -61,7 +61,6 @@ class OMR_EXTENSIBLE RealRegister : public OMR::RealRegister
    void setHighWordRegister(TR::RealRegister *r) {_highWordRegister = r;}
    void setLowWordRegister(TR::RealRegister *r) {_lowWordRegister = r;}
 
-   TR::RealRegister * getHighWordRegister();
    TR::RealRegister * getLowWordRegister();
    TR::RealRegister * getSiblingWordRegister();
 

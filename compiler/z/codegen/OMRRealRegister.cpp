@@ -96,24 +96,6 @@ OMR::Z::RealRegister::setRegister4Field(uint32_t *instruction)
    TR::RealRegister::setRegister4Field(instruction, _registerNumber);
    }
 
-
-TR::RealRegister *
-OMR::Z::RealRegister::getHighWordRegister()
-   {
-   if (_registerNumber>=FirstGPR && _registerNumber<=LastGPR)
-      {
-      return _highWordRegister;
-      }
-   if (_registerNumber>=FirstHPR && _registerNumber<=LastHPR)
-      {
-      return self();
-      }
-   else
-      {
-      return NULL;
-      }
-   }
-
 TR::RealRegister *
 OMR::Z::RealRegister::getLowWordRegister()
       {
@@ -158,7 +140,7 @@ OMR::Z::RealRegister::setHasBeenAssignedInMethod(bool b)
 bool
 OMR::Z::RealRegister::isHighWordRegister()
    {
-   return self() == self()->getHighWordRegister();
+   return false;
    }
 
 bool

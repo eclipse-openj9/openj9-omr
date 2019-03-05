@@ -97,11 +97,6 @@ TR::S390SystemLinkage::initS390RealRegisterLinkage()
    spReal->setAssignedRegister(spReal);
    spReal->setHasBeenAssignedInMethod(true);
 
-   TR::RealRegister * tempHigh = toRealRegister(spReal)->getHighWordRegister();
-   tempHigh->setState(TR::RealRegister::Locked);
-   tempHigh->setAssignedRegister(tempHigh);
-   tempHigh->setHasBeenAssignedInMethod(true);
-
    // set register weight
    for (icount = TR::RealRegister::FirstGPR; icount >= TR::RealRegister::LastAssignableGPR; icount++)
       {
